@@ -268,7 +268,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
 
   if (data_fd != -1 && !is_detached)
     {
-      log_error ("data given for a non-detached signature");
+      log_error ("data given for a non-detached signature\n");
       rc = GNUPG_Conflict;
       goto leave;
     }

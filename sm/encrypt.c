@@ -35,11 +35,334 @@
 #include "i18n.h"
 
 
-KsbaCert
+struct dek_s {
+  const char *algoid;
+  int algo;
+  GCRY_CIPHER_HD chd;
+  char key[32];
+  int keylen;
+  char iv[32];
+  int ivlen;
+};
+typedef struct dek_s *DEK;
+
+struct encrypt_cb_parm_s {
+  FILE *fp;
+  DEK dek;
+  int eof_seen;
+  int ready;
+  int readerror;
+  int bufsize;
+  unsigned char *buffer;
+  int buflen;
+};
+
+
+static KsbaCert
 get_default_recipient (void)
 {
-  return NULL;
+  const char key[] =
+    "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=#44FC7373656C646F7266#,C=DE";
+
+  KsbaCert cert = NULL;
+  KEYDB_HANDLE kh = NULL;
+  int rc;
+
+  kh = keydb_new (0);
+  if (!kh)
+    return NULL;
+
+  rc = keydb_search_subject (kh, key);
+  if (rc)
+    {
+      log_debug ("failed to find default certificate: rc=%d\n", rc);
+    }
+  else 
+    {
+      rc = keydb_get_cert (kh, &cert);
+      if (rc)
+        {
+          log_debug ("failed to get cert: rc=%d\n", rc);
+        }
+    }
+
+  keydb_release (kh);
+  return cert;
 }
+
+
+
+/* initialize the data encryptionkey (session key) */
+static int
+init_dek (DEK dek)
+{
+  int rc=0, i;
+
+  dek->algo = gcry_cipher_map_name (dek->algoid);
+  if (!dek->algo)
+    {
+      log_error ("unsupported algorithm `%s'\n", dek->algoid);
+      return GNUPG_Unsupported_Algorithm;
+    }
+
+  dek->keylen = gcry_cipher_get_algo_keylen (dek->algo);
+  if (!dek->keylen || dek->keylen > sizeof (dek->key))
+    return GNUPG_Bug;
+
+  dek->ivlen = gcry_cipher_get_algo_blklen (dek->algo);
+  if (!dek->ivlen || dek->ivlen > sizeof (dek->iv))
+    return GNUPG_Bug;
+
+  if (dek->keylen < 100/8)
+    { /* make sure we don't use weak keys */
+      log_error ("key length of `%s' too small\n", dek->algoid);
+      return GNUPG_Unsupported_Algorithm;
+    }
+  
+
+  dek->chd = gcry_cipher_open (dek->algo,
+                               GCRY_CIPHER_MODE_CBC,
+                               GCRY_CIPHER_SECURE);
+  if (!dek->chd)
+    {
+      log_error ("failed to create cipher context: %s\n", gcry_strerror (-1));
+      return GNUPG_General_Error;
+    }
+  
+  for (i=0; i < 8; i++)
+    {
+      gcry_randomize (dek->key, dek->keylen, GCRY_STRONG_RANDOM );
+      rc = gcry_cipher_setkey (dek->chd, dek->key, dek->keylen);
+      if (rc != GCRYERR_WEAK_KEY)
+        break;
+      log_info(_("weak key created - retrying\n") );
+    }
+  if (rc)
+    {
+      log_error ("failed to set the key: %s\n", gcry_strerror (rc));
+      gcry_cipher_close (dek->chd);
+      dek->chd = NULL;
+      return map_gcry_err (rc);
+    }
+
+  gcry_randomize (dek->iv, dek->ivlen, GCRY_STRONG_RANDOM);
+  rc = gcry_cipher_setiv (dek->chd, dek->iv, dek->ivlen);
+  if (rc)
+    {
+      log_error ("failed to set the IV: %s\n", gcry_strerror (rc));
+      gcry_cipher_close (dek->chd);
+      dek->chd = NULL;
+      return map_gcry_err (rc);
+    }
+  
+  return 0;
+}
+
+
+/* Encode the session key. NBITS is the number of bits which should be
+   used for packing the session key.  returns: An mpi with the session
+   key (caller must free) */
+static GCRY_MPI
+encode_session_key (DEK dek, unsigned int nbits)
+{
+  int nframe = (nbits+7) / 8;
+  byte *p;
+  byte *frame;
+  int i,n;
+  MPI a;
+
+  if (dek->keylen + 7 > nframe || !nframe)
+    log_bug ("can't encode a %d bit key in a %d bits frame\n",
+             dek->keylen*8, nbits );
+
+  /* We encode the session key in this way:
+   *
+   *	   0  2  RND(n bytes)  0  KEY(k bytes)
+   *
+   * (But how can we store the leading 0 - the external representaion
+   *	of MPIs doesn't allow leading zeroes =:-)
+   *
+   * RND are non-zero random bytes.
+   * KEY is the encryption key (session key) 
+   */
+
+  frame = gcry_xmalloc_secure (nframe);
+  n = 0;
+  frame[n++] = 0;
+  frame[n++] = 2;
+  i = nframe - 3 - dek->keylen;
+  assert (i > 0);
+  p = gcry_random_bytes_secure (i, GCRY_STRONG_RANDOM);
+  /* replace zero bytes by new values */
+  for (;;)
+    {
+      int j, k;
+      byte *pp;
+
+      /* count the zero bytes */
+      for(j=k=0; j < i; j++ )
+        {
+          if( !p[j] )
+            k++;
+        }
+      if( !k )
+        break; /* okay: no zero bytes */
+
+      k += k/128; /* better get some more */
+      pp = gcry_random_bytes_secure (k, GCRY_STRONG_RANDOM);
+      for (j=0; j < i && k; j++)
+        {
+          if( !p[j] )
+            p[j] = pp[--k];
+        }
+      xfree (pp);
+    }
+  memcpy (frame+n, p, i);
+  xfree (p);
+
+  n += i;
+  frame[n++] = 0;
+  memcpy (frame+n, dek->key, dek->keylen);
+  n += dek->keylen;
+  assert (n == nframe);
+  if (gcry_mpi_scan (&a, GCRYMPI_FMT_USG, frame, &nframe) )
+    BUG ();
+  gcry_free(frame);
+
+  return a;
+}
+
+
+
+/* encrypt the DEK under the key contained in CERT and return it as a
+   canonical S-Exp in encval */
+static int
+encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
+{
+  GCRY_SEXP s_ciph, s_data, s_pkey;
+  int rc;
+  char *buf;
+  size_t len;
+
+  *encval = NULL;
+
+  /* get the key from the cert */
+  buf = ksba_cert_get_public_key (cert);
+  if (!buf)
+    {
+      log_error ("no public key for recipient\n");
+      return GNUPG_No_Public_Key;
+    }
+  rc = gcry_sexp_sscan (&s_pkey, NULL, buf, strlen(buf));
+  xfree (buf); buf = NULL;
+  if (rc)
+    {
+      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      return map_gcry_err (rc);
+    }
+
+  /* put the encoded cleartext into a simple list */
+  {
+    /* fixme: actually the pkcs-1 encoding should go into libgcrypt */
+    GCRY_MPI data = encode_session_key (dek, gcry_pk_get_nbits (s_pkey));
+    if (!data)
+      {
+        gcry_mpi_release (data);
+        return GNUPG_General_Error;
+      }
+    if (gcry_sexp_build (&s_data, NULL, "%m", data))
+      BUG ();
+    gcry_mpi_release (data);
+  }
+
+  /* pass it to libgcrypt */
+  rc = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);
+  gcry_sexp_release (s_data);
+  gcry_sexp_release (s_pkey);
+  
+  /* reformat it */
+  len = gcry_sexp_sprint (s_ciph, GCRYSEXP_FMT_CANON, NULL, 0);
+  assert (len); 
+  buf = xtrymalloc (len);
+  if (!buf)
+    {
+      gcry_sexp_release (s_ciph);
+      return GNUPG_Out_Of_Core;
+    }
+  len = gcry_sexp_sprint (s_ciph, GCRYSEXP_FMT_CANON, buf, len);
+  assert (len);
+
+  *encval = buf;
+  return 0;
+}
+
+
+
+/* do the actual encryption */
+static int
+encrypt_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
+{
+  struct encrypt_cb_parm_s *parm = cb_value;
+  int blklen = parm->dek->ivlen;
+  unsigned char *p;
+  size_t n;
+
+  *nread = 0;
+  if (!buffer)
+    return -1; /* not supported */
+
+  if (parm->ready)
+    return -1;
+
+  if (count < blklen)
+    BUG ();
+     
+  if (!parm->eof_seen)
+    { /* fillup the buffer */
+      p = parm->buffer;
+      for (n=parm->buflen; n < parm->bufsize; n++)
+        {
+          int c = getc (parm->fp);
+          if (c == EOF)
+            {
+              if (ferror (parm->fp))
+                {
+                  parm->readerror = errno;
+                  return -1;
+                }
+              parm->eof_seen = 1;
+              break; 
+            }
+          p[n] = c;
+        }
+      parm->buflen = n;
+    }
+  
+  n = parm->buflen < count? parm->buflen : count;
+  n = n/blklen * blklen;
+  if (n)
+    { /* encrypt the stuff */
+      gcry_cipher_encrypt (parm->dek->chd, buffer, n, parm->buffer, n);
+      *nread = n;
+      /* Who cares about cycles, take the easy way and shift the buffer */
+      parm->buflen -= n;
+      memmove (parm->buffer, parm->buffer+n, parm->buflen);
+    }
+  else if (parm->eof_seen)
+    { /* no complete block but eof: add padding */
+      /* fixme: we should try to do this also in the above code path */
+      int i, npad = blklen - (parm->buflen % blklen);
+      p = parm->buffer;
+      for (n=parm->buflen, i=0; n < parm->bufsize && i < npad; n++, i++)
+        p[n] = npad;
+      gcry_cipher_encrypt (parm->dek->chd, buffer, n, parm->buffer, n);
+      *nread = n;
+      parm->ready = 1;
+    }
+
+  return 0;
+}
+
 
 
 
@@ -50,23 +373,21 @@ get_default_recipient (void)
 int
 gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
 {
-  int i, rc;
-  Base64Context b64reader = NULL;
+  int rc = 0;
   Base64Context b64writer = NULL;
   KsbaError err;
   KsbaWriter writer;
-  KsbaReader reader;
+  KsbaReader reader = NULL;
   KsbaCMS cms = NULL;
   KsbaStopReason stopreason;
-  KsbaCert cert;
   KEYDB_HANDLE kh = NULL;
-  GCRY_MD_HD data_md = NULL;
-  int signer;
-  const char *algoid;
+  struct encrypt_cb_parm_s encparm;
+  DEK dek = NULL;
+  int recpno;
   FILE *data_fp = NULL;
-  int algo;
 
 
+  memset (&encparm, 0, sizeof encparm);
   kh = keydb_new (0);
   if (!kh)
     {
@@ -83,12 +404,17 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
       goto leave;
     }
 
-  rc = gpgsm_create_reader (&b64reader, ctrl, data_fp, &reader);
+  reader = ksba_reader_new ();
+  if (!reader)
+      rc = KSBA_Out_Of_Core;
+  if (!rc)
+    rc = ksba_reader_set_cb (reader, encrypt_cb, &encparm);
   if (rc)
     {
-      log_error ("can't create reader: %s\n", gnupg_strerror (rc));
+      rc = map_ksba_err (rc);
       goto leave;
     }
+  encparm.fp = data_fp;
 
   rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
@@ -113,10 +439,11 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
       goto leave;
     }
 
-  /* We are going to create signed data with data as encap. content */
+  /* We are going to create enveloped data with uninterpreted data as
+     inner content */
   err = ksba_cms_set_content_type (cms, 0, KSBA_CT_ENVELOPED_DATA);
   if (!err)
-    err = ksba_cms_set_content_type (cms, 1, KSBA_CT_ENCRYPTED_DATA);
+    err = ksba_cms_set_content_type (cms, 1, KSBA_CT_DATA);
   if (err)
     {
       log_debug ("ksba_cms_set_content_type failed: %s\n",
@@ -125,54 +452,92 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
       goto leave;
     }
 
-
-  /* gather certificates of recipients and store them in the CMS object */
-  cert = get_default_recipient ();
-  if (!cert)
+  /* create a session key */
+  dek = xtrycalloc (1, sizeof *dek); /* hmmm: should we put it into secmem?*/
+  if (!dek)
+    rc = GNUPG_Out_Of_Core;
+  else
+  {
+    dek->algoid = "1.2.840.113549.3.7";  /*des-EDE3-CBC*/
+    rc = init_dek (dek);
+  }
+  if (rc)
     {
-      log_error ("no default recipient found\n");
-      rc = seterr (General_Error);
+      log_error ("failed to create the session key: %s\n",
+                 gnupg_strerror (rc));
       goto leave;
     }
-/*    err = ksba_cms_add_signer (cms, cert); */
-/*    if (err) */
-/*      { */
-/*        log_debug ("ksba_cms_add_signer failed: %s\n",  ksba_strerror (err)); */
-/*        rc = map_ksba_err (err); */
-/*        goto leave; */
-/*      } */
-  cert = NULL; /* cms does now own the certificate */
 
-  /* Set the hash algorithm we are going to use */
-  err = ksba_cms_add_digest_algo (cms, "1.3.14.3.2.26" /*SHA-1*/);
+  err = ksba_cms_set_content_enc_algo (cms, dek->algoid, dek->iv, dek->ivlen);
   if (err)
     {
-      log_debug ("ksba_cms_add_digest_algo failed: %s\n", ksba_strerror (err));
+      log_error ("ksba_cms_set_content_enc_algo failed: %s\n",
+                 ksba_strerror (err));
       rc = map_ksba_err (err);
       goto leave;
     }
 
-  /* Prepare hashing (actually we are figuring out what we have set above)*/
-  data_md = gcry_md_open (0, 0);
-  if (!data_md)
+  encparm.dek = dek;
+  /* fixme: we should use a larger buffer - the small one is better
+     for testing */
+  encparm.bufsize = 10 * dek->ivlen;
+  encparm.buffer = xtrymalloc (encparm.bufsize);
+  if (!encparm.buffer)
     {
-      rc = map_gcry_err (gcry_errno());
-      log_error ("md_open failed: %s\n", gcry_strerror (-1));
+      rc = seterr (Out_Of_Core);
       goto leave;
     }
-  for (i=0; (algoid=ksba_cms_get_digest_algo_list (cms, i)); i++)
+
+  /* gather certificates of recipients, encrypt the session key for
+     each and store them in the CMS object */
+  for (recpno = 0; recpno < 1; recpno++)
     {
-      algo = gcry_md_map_name (algoid);
-      if (!algo)
+      KsbaCert cert;
+      char *encval;
+      
+      /* fixme: get the recipients out of the arguments passed to us */
+      cert = get_default_recipient ();
+      if (!cert)
         {
-          log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
-          rc = GNUPG_Bug;
+          log_error ("no default recipient found\n");
+          rc = seterr (General_Error);
           goto leave;
         }
-      gcry_md_enable (data_md, algo);
-    }
+      
+      rc = encrypt_dek (dek, cert, &encval);
+      if (rc)
+        {
+          log_error ("encryption failed for recipient no. %d: %s\n",
+                     recpno, gnupg_strerror (rc));
+          ksba_cert_release (cert);
+          goto leave;
+        }
+      
+      err = ksba_cms_add_recipient (cms, cert);
+      if (err)
+        {
+          log_error ("ksba_cms_add_recipient failed: %s\n",
+                     ksba_strerror (err));
+          rc = map_ksba_err (err);
+          xfree (encval);
+          ksba_cert_release (cert);
+          goto leave;
+        }
+      cert = NULL; /* cms does now own the certificate */
+      
+      err = ksba_cms_set_enc_val (cms, recpno, encval);
+      xfree (encval);
+      if (err)
+        {
+          log_error ("ksba_cms_set_enc_val failed: %s\n",
+                     ksba_strerror (err));
+          rc = map_ksba_err (err);
+          goto leave;
+        }
+  }
 
-  signer = 0;
+  /* main control loop for encryption */
+  recpno = 0;
   do 
     {
       err = ksba_cms_build (cms, &stopreason);
@@ -183,64 +548,16 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
           goto leave;
         }
       log_debug ("ksba_cms_build - stop reason %d\n", stopreason);
-
-      if (stopreason == KSBA_SR_BEGIN_DATA)
-        { 
-        }
-      else if (stopreason == KSBA_SR_NEED_SIG)
-        { /* calculate the signature for all signers */
-          GCRY_MD_HD md;
-
-          algo = GCRY_MD_SHA1;
-          signer = 0;
-          md = gcry_md_open (algo, 0);
-          if (!md)
-            {
-              log_error ("md_open failed: %s\n", gcry_strerror (-1));
-              goto leave;
-            }
-          ksba_cms_set_hash_function (cms, HASH_FNC, md);
-          rc = ksba_cms_hash_signed_attrs (cms, signer);
-          if (rc)
-            {
-              log_debug ("hashing signed attrs failed: %s\n",
-                         ksba_strerror (rc));
-              gcry_md_close (md);
-              goto leave;
-            }
-          
-          { /* This is all an temporary hack */
-            char *sigval;
-
-            cert = NULL;
-            if (!cert)
-              {
-                log_error ("oops - failed to get cert again\n");
-                rc = seterr (General_Error);
-                goto leave;
-              }
-
-            sigval = NULL;
-            rc = gpgsm_create_cms_signature (cert, md, algo, &sigval);
-            if (rc)
-              {
-                ksba_cert_release (cert);
-                goto leave;
-              }
-
-            err = ksba_cms_set_sig_val (cms, signer, sigval);
-            xfree (sigval);
-            if (err)
-              {
-                log_error ("failed to store the signature: %s\n",
-                           ksba_strerror (err));
-                rc = map_ksba_err (err);
-                goto leave;
-              }
-          }
-        }
     }
   while (stopreason != KSBA_SR_READY);   
+
+  if (encparm.readerror)
+    {
+      log_error ("error reading input: %s\n", strerror (encparm.readerror));
+      rc = seterr (Read_Error);
+      goto leave;
+    }
+
 
   rc = gpgsm_finish_writer (b64writer);
   if (rc) 
@@ -253,10 +570,11 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
  leave:
   ksba_cms_release (cms);
   gpgsm_destroy_writer (b64writer);
-  gpgsm_destroy_reader (b64reader);
+  ksba_reader_release (reader);
   keydb_release (kh); 
-  gcry_md_close (data_md);
+  xfree (dek);
   if (data_fp)
     fclose (data_fp);
+  xfree (encparm.buffer);
   return rc;
 }

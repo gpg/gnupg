@@ -43,7 +43,7 @@ struct decrypt_filter_parm_s {
   int any_data;  /* dod we push anything through the filter at all? */
   unsigned char lastblock[16];  /* to strip the padding we have to
                                    keep this one */
-  char helpblock[16];  /* needed because there is no block bufferin in
+  char helpblock[16];  /* needed because there is no block buffering in
                           libgcrypt (yet) */
   int  helpblocklen;
 };
@@ -141,7 +141,7 @@ prepare_decryption (const char *hexkeygrip, const char *enc_val,
 }
 
 
-/* This function is called by the KSab writer just before the actual
+/* This function is called by the KSBA writer just before the actual
    write is done.  The function must take INLEN bytes from INBUF,
    decrypt it and store it inoutbuf which has a maximum size of
    maxoutlen.  The valid bytes in outbuf should be return in outlen.
