@@ -1299,6 +1299,10 @@ proc_tree( CTX c, KBNODE node )
 		return;
 	    }
 	}
+        else if ( c->signed_data ) {
+            log_error (_("not a detached signature\n") );
+            return;
+        }
 
 	for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); )
 	    check_sig_and_print( c, n1 );
@@ -1308,6 +1312,10 @@ proc_tree( CTX c, KBNODE node )
         /* clear text signed message */
 	if( !c->have_data ) {
             log_error("cleartext signature without data\n" );
+            return;
+        }
+        else if ( c->signed_data ) {
+            log_error (_("not a detached signature\n") );
             return;
         }
 	
@@ -1368,6 +1376,10 @@ proc_tree( CTX c, KBNODE node )
 		return;
 	    }
 	}
+        else if ( c->signed_data ) {
+            log_error (_("not a detached signature\n") );
+            return;
+        }
 	else
 	    log_info(_("old style (PGP 2.x) signature\n"));
 

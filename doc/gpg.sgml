@@ -150,24 +150,25 @@ message.
 <listitem><para>
 Assume that <parameter/sigfile/ is a signature and verify it
 without generating any output.	With no arguments,
-the signature packet is read from stdin (it may be a
-detached signature when not used in batch mode). If
+the signature packet is read from stdin.  If
 only a sigfile is given, it may be a complete
 signature or a detached signature, in which case
 the signed stuff is expected in a file without the
-".sig" or ".asc" extension (if such a file does
-not exist it is expected at stdin; use a single dash ("-") as
-filename to force a read from stdin). With more than
+".sig" or ".asc" extension. 
+With more than
 1 argument, the first should be a detached signature
-and the remaining files are the signed stuff.
+and the remaining files are the signed stuff.  To read the signed
+stuff from stdin, use <literal>-</literal> as the second filename.
+For security reasons a detached signature cannot read the signed
+material from stdin without denoting it in the above way.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--verify-files <optional><parameter/files/</optional></term>
 <listitem><para>
 This is a special version of the --verify command which does not work with
-detached signatures.  The command expects the files to bee verified either
-on the commandline or reads the filenames from stdin;  each anem muts be on
+detached signatures.  The command expects the files to be verified either
+on the commandline or reads the filenames from stdin;  each name must be on
 separate line. The command is intended for quick checking of many files.
 </para></listitem></varlistentry>
 
@@ -1663,6 +1664,11 @@ directory very well.
 <para>
 Keep in mind that, if this program is used over a network (telnet), it
 is *very* easy to spy out your passphrase!
+</para>
+<para>
+If you are going to verify detached signatures, make sure that the
+program nows about it; either be giving both filenames on the
+commandline or using <literal>-</literal> to specify stdin.
 </para>
 </refsect1>
 

@@ -1,4 +1,13 @@
 
+    * WARNING: The semantics of --verify have changed to address a problem
+      with detached signature detection. --verify now ignores signed material
+      given on stdin unless this is requested by using a "-" as the name for
+      the file with the signed material.  
+        
+      !  Please check all your detached signature handling applications   !
+      !  and make sure that they don't pipe the signed material to stdin  !
+      !  without using a filename and "-" on the the command line.        !
+
     * Support for the gpg-agent from gpg 1.1
 
     * Better LFS support.

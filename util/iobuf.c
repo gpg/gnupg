@@ -1,5 +1,5 @@
 /* iobuf.c  -  file handling
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -620,7 +620,7 @@ iobuf_open( const char *fname )
 	print_only = 1;
     }
     else if ( (fd = check_special_filename ( fname )) != -1 )
-        return iobuf_fdopen ( fd, "rb" );
+        return iobuf_fdopen ( iobuf_translate_file_handle (fd,0), "rb" );
     else if( !(fp = fopen(fname, "rb")) )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
@@ -692,7 +692,7 @@ iobuf_create( const char *fname )
 	print_only = 1;
     }
     else if ( (fd = check_special_filename ( fname )) != -1 )
-        return iobuf_fdopen ( fd, "wb" );
+        return iobuf_fdopen ( iobuf_translate_file_handle (fd, 1), "wb" );
     else if( !(fp = fopen(fname, "wb")) )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
@@ -1620,3 +1620,20 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
     return nbytes;
 }
 
+
+int
+iobuf_translate_file_handle ( int fd, int for_write )
+{
+  #ifdef __MINGW32__
+    {
+        int x = _open_osfhandle ( (void*)fd, for_write? 1:0 );
+        if (x==-1 )
+            log_error ("failed to translate osfhandle %p\n", (void*)fd );
+        else {
+            log_info ("_open_osfhandle %p yields %d\n", (void*)fd, x );
+            fd = x;
+        }
+    }
+  #endif
+    return fd;
+}

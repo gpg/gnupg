@@ -257,7 +257,7 @@ open_sigfile( const char *iname )
 	    buf = m_strdup(iname);
 	    buf[len-4] = 0 ;
 	    a = iobuf_open( buf );
-	    if( opt.verbose )
+	    if( a && opt.verbose )
 		log_info(_("assuming signed data in `%s'\n"), buf );
 	    m_free(buf);
 	}

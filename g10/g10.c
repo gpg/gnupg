@@ -47,7 +47,6 @@
 #include "g10defs.h"
 #include "hkp.h"
 
-
 enum cmd_and_opt_values { aNull = 0,
     oArmor	  = 'a',
     aDetachedSign = 'b',
@@ -791,8 +790,13 @@ main( int argc, char **argv )
 	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
-	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
-	  case oLoggerFD: log_set_logfile( NULL, pargs.r.ret_int ); break;
+	  case oStatusFD:
+            set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
+            break;
+	  case oLoggerFD:
+            log_set_logfile( NULL,
+                             iobuf_translate_file_handle (pargs.r.ret_int, 1) );
+            break;
 	  case oWithFingerprint:
 		with_fpr=1; /*fall thru*/
 	  case oFingerprint: opt.fingerprint++; break;
@@ -905,8 +909,12 @@ main( int argc, char **argv )
 	    add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
 	    break;
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
-	  case oPasswdFD: pwfd = pargs.r.ret_int; break;
-	  case oCommandFD: opt.command_fd = pargs.r.ret_int; break;
+	  case oPasswdFD:
+            pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
+            break;
+	  case oCommandFD:
+            opt.command_fd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
+            break;
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
@@ -1001,6 +1009,7 @@ main( int argc, char **argv )
 
     set_debug();
     g10_opt_homedir = opt.homedir;
+
 
     /* must do this after dropping setuid, because string_to...
      * may try to load an module */

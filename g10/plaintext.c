@@ -370,7 +370,7 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 		const char *sigfilename, int textmode )
 {
     IOBUF fp;
-    STRLIST sl=NULL;
+    STRLIST sl;
 
     if( !files ) {
 	/* check whether we can open the signed material */
@@ -380,28 +380,26 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 	    iobuf_close(fp);
 	    return 0;
 	}
-	/* no we can't (no sigfile) - read signed stuff from stdin */
-	add_to_strlist( &sl, "-");
+        log_error (_("no signed data\n"));
+        return G10ERR_OPEN_FILE;
     }
-    else
-	sl = files;
 
-    for( ; sl; sl = sl->next ) {
+
+    for (sl=files; sl; sl = sl->next ) {
 	fp = iobuf_open( sl->d );
 	if( !fp ) {
 	    log_error(_("can't open signed data `%s'\n"),
 						print_fname_stdin(sl->d));
-	    if( !files )
-		free_strlist(sl);
 	    return G10ERR_OPEN_FILE;
 	}
 	do_hash( md, md2, fp, textmode );
 	iobuf_close(fp);
     }
 
-    if( !files )
-	free_strlist(sl);
     return 0;
 }
+
+
+
 
 

@@ -1,3 +1,18 @@
+2000-11-30  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Use iobuf_translate_file_handle for all options
+	with filehandles as arguments.  This is function does some magic
+	some for the W32 API.
+
+	* verify.c (verify_signatures): Add a comment rant about the
+	detached signature problem.
+	* mainproc.c (proc_tree): Issue an error if a detached signature
+	is assumed but a standard one was found.
+	* plaintext.c (hash_datafiles): Don't fall back to read signature
+	from stdin.
+	* openfile.c (open_sigfile): Print verbose message only if the
+	file could be accessed.
+
 2000-11-24  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c [HAVE_DOSISH_SYSTEM]: Disabled all the agent stuff.

@@ -1,3 +1,8 @@
+2000-11-30  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Fixed the description of --verify.  Add a short note
+	the warnings sections.
+
 2000-10-19  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Fixed doc for --allow-non-selfsigned-uid.
