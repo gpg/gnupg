@@ -18,7 +18,7 @@
 
 # Process this file with automake to create Makefile.in
 
-GPG_IMPORT  = ../g10/gpg --homedir . --quiet --yes --import
+GPG_IMPORT  = ../g10/gpg --homedir . --quiet --yes --no-permission-warning --import
 
 TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \
@@ -98,4 +98,3 @@ plain-large:
 	cat $(srcdir)/../doc/HACKING \
 	    $(srcdir)/../doc/DETAILS \
 	    $(srcdir)/../doc/FAQ	 >plain-large
-
