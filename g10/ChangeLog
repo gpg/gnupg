@@ -1,3 +1,13 @@
+2002-12-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (keygen_add_key_expire): Properly handle updating a key
+	expiration to a no-expiration value.
+
+	* keyedit.c (enable_disable_key): Comment.
+
+	* import.c (import_one): When in interactive mode and --verbose,
+	don't repeat some key information twice.
+
 2002-12-23  Timo Schulz  <ts@winpt.org>
 
 	* import.c (import_one): Use merge_keys_and_selfsig in the

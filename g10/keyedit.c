@@ -3208,7 +3208,10 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     return changed;
 }
 
-
+/* Note that update_ownertrust is going to mark the trustdb dirty when
+   enabling or disabling a key.  This is arguably sub-optimal as
+   disabled keys are still counted in the web of trust, but perhaps
+   not worth adding extra complexity to change. -ds */
 static int
 enable_disable_key( KBNODE keyblock, int disable )
 {

@@ -575,7 +575,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
       log_info(_("NOTE: Elgamal primary key detected - "
 		 "this may take some time to import\n"));
 
-    if( opt.verbose ) {
+    if( opt.verbose && !opt.interactive ) {
 	log_info( "pub  %4u%c/%08lX %s   ",
 		  nbits_from_pk( pk ),
 		  pubkey_letter( pk->pubkey_algo ),

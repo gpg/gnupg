@@ -163,6 +163,12 @@ keygen_add_key_expire( PKT_signature *sig, void *opaque )
 	buf[3] = u & 0xff;
 	build_sig_subpkt( sig, SIGSUBPKT_KEY_EXPIRE, buf, 4 );
     }
+    else
+      {
+	/* Make sure we don't leave a key expiration subpacket lying
+	   around */
+	delete_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE);
+      }
 
     return 0;
 }
