@@ -201,7 +201,7 @@ if test "$use_exec" = yes ; then
     AC_MSG_RESULT($try_hkp)
 
     if test "$try_hkp" = yes ; then
-      AC_SUBST(GPGKEYS_HKP,"gpgkeys_hkp")
+      AC_SUBST(GPGKEYS_HKP,"gpgkeys_hkp$EXEEXT")
     fi
 
     AC_MSG_CHECKING([whether email keyserver support is requested])
@@ -274,7 +274,7 @@ MPI_OPT_FLAGS=""
 
 try_gettext=yes
 case "${target}" in
-    *-*-mingw32*|*-*-cygwin*)
+    *-*-mingw32*)
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_ONLY_8DOT3,1,
@@ -384,7 +384,7 @@ if test "$try_ldap" = yes ; then
     if test "$gnupg_cv_func_ldap_init" = yes || \
   	test "$gnupg_cv_func_ldaplber_init" = yes ; then
        LDAPLIBS=$MY_LDAPLIBS
-       GPGKEYS_LDAP="gpgkeys_ldap"
+       GPGKEYS_LDAP="gpgkeys_ldap$EXEEXT"
 
        AC_MSG_CHECKING([whether LDAP supports ldap_get_option])
 
@@ -463,7 +463,7 @@ case "${target}" in
         PRINTABLE_OS_NAME="MingW32"
         ;;
     *-*-cygwin*)
-        PRINTABLE_OS_NAME="Cygwin32"
+        PRINTABLE_OS_NAME="Cygwin"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         PRINTABLE_OS_NAME="OS/2"
@@ -577,7 +577,7 @@ AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
-AC_CHECK_FUNCS(strcasecmp strncasecmp)
+AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)

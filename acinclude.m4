@@ -570,8 +570,8 @@ changequote([,])dnl
     fi
 
     # Make sure that we snagged all the symbols we need.
-    if egrep ' nm_test_var$' "$ac_nlist" >/dev/null; then
-      if egrep ' nm_test_func$' "$ac_nlist" >/dev/null; then
+    if egrep ' _?nm_test_var$' "$ac_nlist" >/dev/null; then
+      if egrep ' _?nm_test_func$' "$ac_nlist" >/dev/null; then
         cat <<EOF > conftest.c
 #ifdef __cplusplus
 extern "C" {
@@ -579,7 +579,7 @@ extern "C" {
 
 EOF
         # Now generate the symbol file.
-        sed 's/^.* \(.*\)$/extern char \1;/' < "$ac_nlist" >> conftest.c
+        sed 's/^.* _\?\(.*\)$/extern char \1;/' < "$ac_nlist" >> conftest.c
 
         cat <<EOF >> conftest.c
 #if defined (__STDC__) && __STDC__
@@ -601,7 +601,7 @@ dld_preloaded_symbols[] =
 changequote([,])dnl
 {
 EOF
-        sed 's/^\(.*\) \(.*\)$/  {"\1", (__ptr_t) \&\2},/' < "$ac_nlist" >> conftest.c
+        sed 's/^_\?\(.*\) _\?\(.*\)$/  {"\1", (__ptr_t) \&\2},/' < "$ac_nlist" >> conftest.c
         cat <<\EOF >> conftest.c
   {0, (__ptr_t) 0}
 };
@@ -661,7 +661,7 @@ AC_CHECK_TOOL(AS, as, false)
 AC_DEFUN(GNUPG_SYS_SYMBOL_UNDERSCORE,
 [tmp_do_check="no"
 case "${target}" in
-    i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp | *-*-cygwin)
+    i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp)
         ac_cv_sys_symbol_underscore=yes
         ;;
     *)

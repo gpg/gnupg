@@ -1,3 +1,29 @@
+2002-11-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* THANKS: Changes from stable branch.
+
+	* configure.ac: Check for ctermid().  From Werner on stable
+	branch.
+
+	* configure.ac (GPGKEYS_LDAP,GPGKEYS_HKP): Add $EXEEXT.  From
+	Werner on stable branch.
+
+	* configure.ac (try_gettext): Remove special case for cygwin.
+	This removes all the DOS specific macros and let Cygwin work like
+	a real OS.  Needs a couple of changes elsewhere but after all,
+	GnuPG presents itself much more like a Posix program and can be
+	used in a full Cygwin environment; e.g. used along with mutt.
+	Changes suggested by Volker Quetschke.  From Werner on stable
+	branch.
+
+	* acinclude.m4 (GNUPG_SYS_NM_PARSE): Allow for underscore in test
+	symbols.  Useful for Cygwin builds.
+	(GNUPG_SYS_SYMBOL_UNDERSCORE): Don't hardwire to yes for Cygwin.
+	From Werner on stable branch.
+
+	* README: Add an installation note for Darwin 6.1.  From Werner on
+	stable branch.
+
 2002-11-12  Werner Koch  <wk@gnupg.org>
 
 	Released 1.3.1
