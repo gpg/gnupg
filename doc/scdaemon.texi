@@ -170,7 +170,8 @@ default is 32768 (first USB device).
 
 @item --ctapi-driver @var{library}
 Use @var{library} to access the smartcard reader.  The current default
-is @code{libtowitoko.so}.
+is @code{libtowitoko.so}.  Note that the use of this interface is
+deprecated; it may be removed in future releases.
 
 
 @item --allow-admin

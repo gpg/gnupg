@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.9.12
 -------------------------------------------------
 
+ * [scdaemon] Partly rewrote the PC/SC code.
+
+ * Removed the sc-investigate tool.  It is now in the separate
+   gscutils package.
 
 
 Noteworthy changes in version 1.9.11 (2004-10-01)

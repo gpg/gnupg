@@ -126,15 +126,8 @@ iso7816_map_sw (int sw)
 gpg_error_t
 iso7816_select_application (int slot, const char *aid, size_t aidlen)
 {
-  static char const openpgp_aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
   int sw;
-  int p1 = 0x0C; /* No FCI to be returned. */
-  
-  if (aidlen == sizeof openpgp_aid
-      && !memcmp (aid, openpgp_aid, sizeof openpgp_aid))
-    p1 = 0; /* The current openpgp cards don't allow 0x0c. */
-
-  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4, p1, aidlen, aid);
+  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4, 0, aidlen, aid);
   return map_sw (sw);
 }
 

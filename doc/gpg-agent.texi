@@ -43,10 +43,8 @@ fi
 @end smallexample
 
 @noindent
-If you want to use a curses based pinentry (which is usually also the
-fallback mode for a GUI based pinentry), you should add these lines to
-your @code{.bashrc} or whatever initialization file is used for all shell
-invocations:
+You should aleays add the following lines to your @code{.bashrc} or
+whatever initialization file is used for all shell invocations:
 
 @smallexample
 GPG_TTY=`tty`

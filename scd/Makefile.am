@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS = scdaemon sc-investigate sc-copykeys
+bin_PROGRAMS = scdaemon sc-copykeys
 pkglib_PROGRAMS = pcsc-wrapper
 
 AM_CPPFLAGS = -I$(top_srcdir)/intl -I$(top_srcdir)/common
@@ -55,22 +55,6 @@ scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
           $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
 	  $(LIBUSB_LIBS) $(OPENSC_LIBS) -lgpg-error @LIBINTL@ \
 	  @DL_LIBS@
-
-sc_investigate_SOURCES = \
-	sc-investigate.c scdaemon.h \
-	apdu.c apdu.h \
-	ccid-driver.c ccid-driver.h \
-	iso7816.c iso7816.h \
-	tlv.c tlv.h \
-	atr.c atr.h \
-	app.c app-common.h app-help.c $(card_apps) 
-
-sc_investigate_LDADD = \
-	../jnlib/libjnlib.a ../common/libcommon.a \
-	$(LIBGCRYPT_LIBS) $(pth_libs) \
-	$(KSBA_LIBS) $(LIBUSB_LIBS) $(OPENSC_LIBS) \
-         @LIBINTL@  -lgpg-error @DL_LIBS@
-
 
 sc_copykeys_SOURCES = \
 	sc-copykeys.c scdaemon.h \

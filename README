@@ -472,7 +472,7 @@ HOW TO EXPORT A PRIVATE KEY
 There is also limited support to export a private key in PKCS-12
 format. However there is no MAC applied.
 
- gpgsm --export-secret-key-p12 userIDey  >foo.p12
+ gpgsm --export-secret-key-p12 userID  >foo.p12
 
 
 SMARTCARD INTRO

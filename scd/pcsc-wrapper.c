@@ -86,6 +86,26 @@ static int verbose;
 #define PCSC_UNPOWER_CARD    2
 #define PCSC_EJECT_CARD      3
 
+#define PCSC_UNKNOWN    0x0001  
+#define PCSC_ABSENT     0x0002  /* Card is absent.  */
+#define PCSC_PRESENT    0x0004  /* Card is present.  */
+#define PCSC_SWALLOWED  0x0008  /* Card is present and electrical connected. */
+#define PCSC_POWERED    0x0010  /* Card is powered.  */
+#define PCSC_NEGOTIABLE 0x0020  /* Card is awaiting PTS.  */
+#define PCSC_SPECIFIC   0x0040  /* Card is ready for use.  */
+
+#define PCSC_STATE_UNAWARE     0x0000  /* Want status.  */
+#define PCSC_STATE_IGNORE      0x0001  /* Ignore this reader.  */
+#define PCSC_STATE_CHANGED     0x0002  /* State has changed.  */
+#define PCSC_STATE_UNKNOWN     0x0004  /* Reader unknown.  */
+#define PCSC_STATE_UNAVAILABLE 0x0008  /* Status unavailable.  */
+#define PCSC_STATE_EMPTY       0x0010  /* Card removed.  */
+#define PCSC_STATE_PRESENT     0x0020  /* Card inserted.  */
+#define PCSC_STATE_ATRMATCH    0x0040  /* ATR matches card. */
+#define PCSC_STATE_EXCLUSIVE   0x0080  /* Exclusive Mode.  */
+#define PCSC_STATE_INUSE       0x0100  /* Shared mode.  */
+#define PCSC_STATE_MUTE	       0x0200  /* Unresponsive card.  */
+
 struct pcsc_io_request_s {
   unsigned long protocol; 
   unsigned long pci_len;
@@ -93,12 +113,25 @@ struct pcsc_io_request_s {
 
 typedef struct pcsc_io_request_s *pcsc_io_request_t;
 
+struct pcsc_readerstate_s
+{
+  const char *reader;
+  void *user_data;
+  unsigned long current_state;
+  unsigned long event_state;
+  unsigned long atrlen;
+  unsigned char atr[33];
+};
+
+typedef struct pcsc_readerstate_s *pcsc_readerstate_t;
+
 
 static int driver_is_open;     /* True if the PC/SC driver has been
                                   initialzied and is ready for
-                                  operations.  The follwoing variables
+                                  operations.  The following variables
                                   are then valid. */
 static unsigned long pcsc_context;  /* The current PC/CS context. */
+static char *current_rdrname;
 static unsigned long pcsc_card;
 static unsigned long pcsc_protocol;
 static unsigned char current_atr[33];
@@ -112,12 +145,21 @@ long (* pcsc_release_context) (unsigned long context);
 long (* pcsc_list_readers) (unsigned long context,
                             const char *groups,
                             char *readers, unsigned long*readerslen);
+long (* pcsc_get_status_change) (unsigned long context,
+                                 unsigned long timeout,
+                                 pcsc_readerstate_t readerstates,
+                                 unsigned long nreaderstates);
 long (* pcsc_connect) (unsigned long context,
                        const char *reader,
                        unsigned long share_mode,
                        unsigned long preferred_protocols,
                        unsigned long *r_card,
                        unsigned long *r_active_protocol);
+long (* pcsc_reconnect) (unsigned long card,
+                         unsigned long share_mode,
+                         unsigned long preferred_protocols,
+                         unsigned long initialization,
+                         unsigned long *r_active_protocol);
 long (* pcsc_disconnect) (unsigned long card,
                           unsigned long disposition);
 long (* pcsc_status) (unsigned long card,
@@ -284,7 +326,9 @@ load_pcsc_driver (const char *libname)
   pcsc_establish_context = dlsym (handle, "SCardEstablishContext");
   pcsc_release_context   = dlsym (handle, "SCardReleaseContext");
   pcsc_list_readers      = dlsym (handle, "SCardListReaders");
+  pcsc_get_status_change = dlsym (handle, "SCardGetStatusChange");
   pcsc_connect           = dlsym (handle, "SCardConnect");
+  pcsc_reconnect         = dlsym (handle, "SCardReconnect");
   pcsc_disconnect        = dlsym (handle, "SCardDisconnect");
   pcsc_status            = dlsym (handle, "SCardStatus");
   pcsc_begin_transaction = dlsym (handle, "SCardBeginTransaction");
@@ -295,7 +339,9 @@ load_pcsc_driver (const char *libname)
   if (!pcsc_establish_context
       || !pcsc_release_context  
       || !pcsc_list_readers     
+      || !pcsc_get_status_change
       || !pcsc_connect          
+      || !pcsc_reconnect          
       || !pcsc_disconnect
       || !pcsc_status
       || !pcsc_begin_transaction
@@ -307,11 +353,13 @@ load_pcsc_driver (const char *libname)
          available under Windows. */
       fprintf (stderr,
                "apdu_open_reader: invalid PC/SC driver "
-               "(%d%d%d%d%d%d%d%d%d%d)\n",
+               "(%d%d%d%d%d%d%d%d%d%d%d%d)\n",
                !!pcsc_establish_context,
                !!pcsc_release_context,  
                !!pcsc_list_readers,     
+               !!pcsc_get_status_change,     
                !!pcsc_connect,          
+               !!pcsc_reconnect,          
                !!pcsc_disconnect,
                !!pcsc_status,
                !!pcsc_begin_transaction,
@@ -327,8 +375,8 @@ load_pcsc_driver (const char *libname)
 
 
 /* Handle a open request.  The argument is expected to be a string
-   with the port indentification. ARGBUF is always guaranteed to be
-   terminted by a 0 which is not counted in ARGLEN. We may modifiy
+   with the port identification.  ARGBUF is always guaranteed to be
+   terminted by a 0 which is not counted in ARGLEN.  We may modifiy
    ARGBUF. */
 static void
 handle_open (unsigned char *argbuf, size_t arglen)
@@ -350,6 +398,7 @@ handle_open (unsigned char *argbuf, size_t arglen)
     {
       fprintf (stderr, PGM ": PC/SC has already been opened\n");
       request_failed (-1);
+      return;
     }
 
   err = pcsc_establish_context (PCSC_SCOPE_SYSTEM, NULL, NULL, &pcsc_context);
@@ -398,45 +447,64 @@ handle_open (unsigned char *argbuf, size_t arglen)
       p += strlen (p) + 1;
     }
 
+  current_rdrname = malloc (strlen (portstr && *portstr? portstr:list)+1);
+  if (!current_rdrname)
+    {
+      fprintf (stderr, PGM": error allocating memory for reader name\n");
+      exit (1);
+    }
+  strcpy (current_rdrname, portstr && *portstr? portstr:list);
+  free (list);
+
   err = pcsc_connect (pcsc_context,
-                      portstr && *portstr? portstr : list,
+                      current_rdrname,
                       PCSC_SHARE_EXCLUSIVE,
                       PCSC_PROTOCOL_T0|PCSC_PROTOCOL_T1,
                       &pcsc_card,
                       &pcsc_protocol);
-  if (err)
+  if (err == 0x8010000c) /* No smartcard.  */
+    {
+      pcsc_card = 0;
+    }
+  else if (err)
     {
       fprintf (stderr, PGM": pcsc_connect failed: %s (0x%lx)\n",
                pcsc_error_string (err), err);
       pcsc_release_context (pcsc_context);
-      free (list);
+      free (current_rdrname);
+      current_rdrname = NULL;
       request_failed (err);
       return;
     }      
   
-  atrlen = 32;
-  /* (We need to pass a dummy buffer.  We use LIST because it ought to
-     be large enough.) */
-  err = pcsc_status (pcsc_card,
-                     list, &listlen,
-                     &card_state, &card_protocol,
-                     atr, &atrlen);
-  free (list);
-  if (err)
+  current_atrlen = 0;
+  if (!err)
     {
-      fprintf (stderr, PGM": pcsc_status failed: %s (0x%lx)\n",
-               pcsc_error_string (err), err);
-      pcsc_release_context (pcsc_context);
-      request_failed (err);
-      return;
+      char reader[250];
+      unsigned long readerlen;
+
+      atrlen = 33;
+      readerlen = sizeof reader -1;
+      err = pcsc_status (pcsc_card,
+                         reader, &readerlen,
+                         &card_state, &card_protocol,
+                         atr, &atrlen);
+      if (err)
+        fprintf (stderr, PGM": pcsc_status failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      else
+        {
+          if (atrlen >= sizeof atr || atrlen >= sizeof current_atr)
+            {
+              fprintf (stderr, PGM": ATR returned by pcsc_status"
+                       " is too large\n");
+              exit (4);
+            }
+          memcpy (current_atr, atr, atrlen);
+          current_atrlen = atrlen;
+        }
     }
-  if (atrlen >= sizeof atr || atrlen >= sizeof current_atr)
-    {
-      fprintf (stderr, PGM": ATR returned by pcsc_status is too large\n");
-      exit (4);
-    }
-  memcpy (current_atr, atr, atrlen);
-  current_atrlen = atrlen;
+
   driver_is_open = 1;
   request_succeeded (current_atr, current_atrlen);
 }
@@ -452,8 +520,11 @@ handle_close (unsigned char *argbuf, size_t arglen)
     {
       fprintf (stderr, PGM ": PC/SC has not yet been opened\n");
       request_failed (-1);
+      return;
     }
 
+  free (current_rdrname);
+  current_rdrname = NULL;
   pcsc_release_context (pcsc_context);
 
   request_succeeded (NULL, 0);
@@ -461,7 +532,133 @@ handle_close (unsigned char *argbuf, size_t arglen)
 
 
 
-/* Handle a transmit request.  The argument is expected to be a bufer
+/* Handle a status request.  We expect no arguments.  We may modifiy
+   ARGBUF. */
+static void
+handle_status (unsigned char *argbuf, size_t arglen)
+{
+  long err;
+  struct pcsc_readerstate_s rdrstates[1];
+  int status;
+  unsigned char buf[20];
+
+  if (!driver_is_open)
+    {
+      fprintf (stderr, PGM ": PC/SC has not yet been opened\n");
+      request_failed (-1);
+      return;
+    }
+
+  memset (rdrstates, 0, sizeof *rdrstates);
+  rdrstates[0].reader = current_rdrname;
+  rdrstates[0].current_state = PCSC_STATE_UNAWARE;
+  err = pcsc_get_status_change (pcsc_context,
+                                0,
+                                rdrstates, 1);
+  if (err == 0x8010000a) /* Timeout.  */
+    err = 0;
+  if (err)
+    {
+      fprintf (stderr, PGM": pcsc_get_status_change failed: %s (0x%lx)\n",
+               pcsc_error_string (err), err);
+      request_failed (err);
+      return;
+    }
+
+  status = 0;
+  if ( (rdrstates[0].event_state & PCSC_STATE_PRESENT) )
+    status |= 2;
+  if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
+    status |= 4;
+  /* We indicate a useful card if it is not in use by another
+     application.  This is because we only use exclusive access
+     mode.  */
+  if ( (status & 6) == 6
+       && !(rdrstates[0].event_state & PCSC_STATE_INUSE) )
+    status |= 1;
+  
+  /* First word is identical to the one used by apdu.c. */
+  buf[0] = 0;
+  buf[1] = 0;
+  buf[2] = 0;
+  buf[3] = status;
+  /* The second word is the native PCSC state.  */
+  buf[4] = (rdrstates[0].event_state >> 24);
+  buf[5] = (rdrstates[0].event_state >> 16);
+  buf[6] = (rdrstates[0].event_state >>  8);
+  buf[7] = (rdrstates[0].event_state >>  0);
+
+  request_succeeded (buf, 8);
+}
+
+
+/* Handle a reset request.  We expect no arguments.  We may modifiy
+   ARGBUF. */
+static void
+handle_reset (unsigned char *argbuf, size_t arglen)
+{
+  long err;
+  char reader[250];
+  unsigned long nreader, atrlen;
+  unsigned long card_state, card_protocol;
+
+  if (!driver_is_open)
+    {
+      fprintf (stderr, PGM ": PC/SC has not yet been opened\n");
+      request_failed (-1);
+      return;
+    }
+
+  if (pcsc_card)
+    {
+      err = pcsc_disconnect (pcsc_card, PCSC_LEAVE_CARD);
+      if (err)
+        {
+          fprintf (stderr, PGM": pcsc_disconnect failed: %s (0x%lx)\n",
+                     pcsc_error_string (err), err);
+          request_failed (err);
+          return;
+        }
+      pcsc_card = 0;
+    }
+
+  err = pcsc_connect (pcsc_context,
+                      current_rdrname,
+                      PCSC_SHARE_EXCLUSIVE,
+                      PCSC_PROTOCOL_T0|PCSC_PROTOCOL_T1,
+                      &pcsc_card,
+                      &pcsc_protocol);
+  if (err)
+    {
+      fprintf (stderr, PGM": pcsc_connect failed: %s (0x%lx)\n",
+               pcsc_error_string (err), err);
+      pcsc_card = 0;
+      request_failed (err);
+      return;
+    }      
+
+  
+  atrlen = 33;
+  nreader = sizeof reader - 1;
+  err = pcsc_status (pcsc_card,
+                     reader, &nreader,
+                     &card_state, &card_protocol,
+                     current_atr, &atrlen);
+  if (err)
+    {
+      fprintf (stderr, PGM": pcsc_status failed: %s (0x%lx)\n",
+               pcsc_error_string (err), err);
+      current_atrlen = 0;
+      request_failed (err);
+      return;
+    }
+
+  request_succeeded (current_atr, current_atrlen);
+}
+
+
+
+/* Handle a transmit request.  The argument is expected to be a buffer
    with the APDU.  We may modifiy ARGBUF. */
 static void
 handle_transmit (unsigned char *argbuf, size_t arglen)
@@ -479,8 +676,8 @@ handle_transmit (unsigned char *argbuf, size_t arglen)
     {
       fprintf (stderr, PGM ": PC/SC has not yet been opened\n");
       request_failed (-1);
+      return;
     }
-
   if ((pcsc_protocol & PCSC_PROTOCOL_T1))
     send_pci.protocol = PCSC_PROTOCOL_T1;
   else
@@ -499,15 +696,6 @@ handle_transmit (unsigned char *argbuf, size_t arglen)
     }
   request_succeeded (buffer, recv_len);
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -611,6 +799,14 @@ main (int argc, char **argv)
 
         case 3:
           handle_transmit (argbuffer, arglen);
+          break;
+
+        case 4:
+          handle_status (argbuffer, arglen);
+          break;
+
+        case 5:
+          handle_reset (argbuffer, arglen);
           break;
 
         default:

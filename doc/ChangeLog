@@ -1,3 +1,8 @@
+2004-10-05  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.texi (Invoking GPG-AGENT): Tell that GPG_TTY needs to
+	be set in all cases.
+
 2004-09-30  Werner Koch  <wk@g10code.com>
 
 	* gpg.texi: New.
