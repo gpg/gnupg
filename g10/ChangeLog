@@ -1,5 +1,11 @@
 2002-11-24  David Shaw  <dshaw@jabberwocky.com>
 
+	* sign.c (hash_for): If --digest-algo is not set, but
+	--personal-digest-preferences is, then use the first hash
+	algorithm in the personal list.  If the signing algorithm is DSA,
+	then use the first 160-bit hash algorithm in the personal list.
+	If --pgp2 is set and it's a v3 RSA key, use MD5.
+
 	* g10.c (main), keydb.c (keydb_add_resource,
 	keydb_locate_writable): Rename --default-keyring as
 	--primary-keyring.  Stefan wins the naming contest.

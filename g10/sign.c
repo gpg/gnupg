@@ -332,14 +332,38 @@ complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
 static int
 hash_for(int pubkey_algo, int packet_version )
 {
-    if( opt.def_digest_algo )
-	return opt.def_digest_algo;
-    if( recipient_digest_algo )
-        return recipient_digest_algo;
-    if( pubkey_algo == PUBKEY_ALGO_DSA )
-	return DIGEST_ALGO_SHA1;
-    if( pubkey_algo == PUBKEY_ALGO_RSA && packet_version < 4 )
-	return DIGEST_ALGO_MD5;
+  if( opt.def_digest_algo )
+    return opt.def_digest_algo;
+  else if( recipient_digest_algo )
+    return recipient_digest_algo;
+  else if(opt.pgp2 && pubkey_algo == PUBKEY_ALGO_RSA && packet_version < 4 )
+    {
+      /* Old-style PGP only understands MD5 */
+      return DIGEST_ALGO_MD5;
+    }
+  else if( pubkey_algo == PUBKEY_ALGO_DSA )
+    {
+      /* We need a 160-bit hash for DSA, so we can't just take the first
+	 in the pref list */
+
+      if(opt.personal_digest_prefs)
+	{
+	  prefitem_t *prefs;
+
+	  for(prefs=opt.personal_digest_prefs;prefs->type;prefs++)
+	    if(md_digest_length(prefs->value)==20)
+	      return prefs->value;
+	}
+
+      return DIGEST_ALGO_SHA1;
+    }
+  else if( opt.personal_digest_prefs )
+    {
+      /* It's not DSA, so we can use whatever the first hash algorithm
+	 is in the pref list */
+      return opt.personal_digest_prefs[0].value;
+    }
+  else
     return DEFAULT_DIGEST_ALGO;
 }
 
