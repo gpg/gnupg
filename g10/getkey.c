@@ -1972,7 +1972,7 @@ merge_selfsigs( KBNODE keyblock )
                 PKT_public_key *pk = k->pkt->pkt.public_key;
 		if(!main_pk->is_valid)
 		  pk->is_valid = 0;
-		if(revoked)
+		if(revoked && !pk->is_revoked)
 		  pk->is_revoked = revoked;
                 if(main_pk->has_expired)
 		  pk->has_expired = main_pk->has_expired;

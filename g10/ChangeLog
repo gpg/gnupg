@@ -1,3 +1,9 @@
+2004-01-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs): If a subkey is already revoked by the
+	owner, don't allow a designated revokation of the whole key to
+	override this.  We're still revoked either way, of course.
+
 2004-01-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (list_config): Add "version" tag for --list-config.
