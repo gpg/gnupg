@@ -758,11 +758,11 @@ AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr tcgetattr strtoul mmap)
-AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times timegm)
+AC_CHECK_FUNCS(strcasecmp strncasecmp ctermid times unsetenv)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(atexit raise getpagesize strftime nl_langinfo setlocale)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat getaddrinfo)
-AC_REPLACE_FUNCS(mkdtemp setenv unsetenv)
+AC_REPLACE_FUNCS(mkdtemp timegm)
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
 # See if getopt is in libiberty.  This is of course not optimal since
