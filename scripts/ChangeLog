@@ -1,3 +1,9 @@
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	* mk-w32-dist: Convert hu.po to CP852 as suggested by Nagy Ferenc
+	László.  Convert ru.po and be.po to CP1251 according to some web
+	pages. Convert ro.po to CP852.
+
 2003-08-26  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh: Touch po/all for --build-w32.

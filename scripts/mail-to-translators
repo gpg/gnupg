@@ -40,7 +40,7 @@ GnuPG translation ($file).
 
 IMHO it is important to have a basic understanding of GnuPG's
 functionality to do a correct translation.  A false translation might
-need to security problems.  This is the reason why I prefer to contact
+lead to security problems.  This is the reason why I prefer to contact
 you directly and not to work only with the TP Robot.
 
 Output of msgfmt is:
