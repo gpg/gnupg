@@ -524,17 +524,8 @@ if test x"$try_hkp" = xyes ; then
   AC_SUBST(GPGKEYS_HKP,"gpgkeys_hkp$EXEEXT")
 fi
 
-if test x"$try_http" = xyes ; then
-  AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
-  AC_DEFINE(HTTP_SUPPORT,1,[Define to include HTTP support])
-fi
-
 if test x"$try_finger" = xyes ; then
   AC_SUBST(GPGKEYS_FINGER,"gpgkeys_finger$EXEEXT")
-fi
-
-if test x"$try_ftp" = xyes ; then
-  AC_DEFINE(FTP_SUPPORT,1,[Define to include FTP support])
 fi
 
 dnl Must check for network library requirements before doing link tests
@@ -653,16 +644,28 @@ AC_SUBST(GPGKEYS_LDAP)
 AC_SUBST(LDAPLIBS)
 AM_CONDITIONAL(GPGKEYS_LDAP, test "$GPGKEYS_LDAP" != "")
 
-dnl If we have neither FTP or HTTP defined, then don't bother to check
-dnl for curl.
+# If we have neither FTP or HTTP defined, then don't bother to check
+# for curl.
 
 if test "$try_ftp" = yes || test "$try_http" = yes ; then
-   GNUPG_CHECK_LIBCURL
+   LIBCURL_CHECK_CONFIG([no],,[have_libcurl=yes])
 fi
 
-AM_CONDITIONAL(HAVE_LIBCURL, test "$have_libcurl" = "yes")
+# Are we doing HTTP?
 
-if test x"$have_libcurl" = xyes ; then
+if test x"$try_http" = xyes ; then
+   if test x$libcurl_protocol_HTTP = xyes ; then
+      AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
+      AC_DEFINE(HTTP_VIA_LIBCURL,1,[Define if HTTP is handled via libcurl])
+   else
+      AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
+   fi
+fi
+
+# Are we doing FTP?  We only do FTP if we have libcurl.
+
+if test x"$try_ftp" = xyes && test x$libcurl_protocol_FTP = xyes ; then
+   AC_DEFINE(FTP_VIA_LIBCURL,1,[Define if FTP is handled via libcurl])
    AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
 fi
 
