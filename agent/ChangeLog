@@ -1,5 +1,10 @@
 2002-08-21  Werner Koch  <wk@gnupg.org>
 
+	* query.c (agent_askpin): Hack to show the right default prompt.
+	(agent_get_passphrase): Ditto.
+
+	* trans.c: Removed and replaced all usages with standard _()
+
 	* divert-scd.c (getpin_cb): Pass a more descritive text to the
 	pinentry.
 

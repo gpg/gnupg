@@ -32,6 +32,7 @@
 #endif
 
 #include "agent.h"
+#include "i18n.h"
 #include "../assuan/assuan.h"
 
 #ifdef _POSIX_OPEN_MAX
@@ -235,6 +236,7 @@ agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
   const char *errtext = NULL;
+  int is_pin;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -242,9 +244,11 @@ agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
   if (!pininfo || pininfo->max_length < 1)
     return seterr (Invalid_Value);
   if (!desc_text)
-    desc_text = trans ("Please enter you PIN, so that the secret key "
-                       "can be unlocked for this session");
-  
+    desc_text = _("Please enter you PIN, so that the secret key "
+                  "can be unlocked for this session");
+
+  is_pin = desc_text && strstr (desc_text, "PIN");
+
   rc = start_pinentry ();
   if (rc)
     return rc;
@@ -256,8 +260,8 @@ agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
     return unlock_pinentry (map_assuan_err (rc));
 
   rc = assuan_transact (entry_ctx,
-                        pininfo->min_digits? "SETPROMPT PIN:"
-                                           : "SETPROMPT Passphrase:",
+                        is_pin? "SETPROMPT PIN:"
+                              : "SETPROMPT Passphrase:",
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (map_assuan_err (rc));
@@ -283,21 +287,21 @@ agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
       rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
                             NULL, NULL, NULL, NULL);
       if (rc == ASSUAN_Too_Much_Data)
-        errtext = pininfo->min_digits? trans ("PIN too long")
-                                     : trans ("Passphrase too long");
+        errtext = is_pin? _("PIN too long")
+                        : _("Passphrase too long");
       else if (rc)
         return unlock_pinentry (map_assuan_err (rc));
 
-      if (!errtext && pininfo->min_digits)
+      if (!errtext && is_pin)
         {
           /* do some basic checks on the entered PIN. */
           if (!all_digitsp (pininfo->pin))
-            errtext = trans ("Invalid characters in PIN");
+            errtext = _("Invalid characters in PIN");
           else if (pininfo->max_digits
                    && strlen (pininfo->pin) > pininfo->max_digits)
-            errtext = trans ("PIN too long");
+            errtext = _("PIN too long");
           else if (strlen (pininfo->pin) < pininfo->min_digits)
-            errtext = trans ("PIN too short");
+            errtext = _("PIN too short");
         }
 
       if (!errtext && pininfo->check_cb)
@@ -308,8 +312,8 @@ agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
           if (rc == -1 && pininfo->cb_errtext)
             errtext = pininfo->cb_errtext;
           else if (rc == GNUPG_Bad_Passphrase || rc == GNUPG_Bad_PIN)
-            errtext = (pininfo->min_digits? trans ("Bad PIN")
-                       : trans ("Bad Passphrase"));
+            errtext = (is_pin? _("Bad PIN")
+                       : _("Bad Passphrase"));
           else if (rc)
             return unlock_pinentry (map_assuan_err (rc));
         }
@@ -346,6 +350,10 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
   if (rc)
     return rc;
 
+  if (!prompt)
+    prompt = desc && strstr (desc, "PIN")? "PIN": _("Passphrase");
+
+
   if (desc)
     snprintf (line, DIM(line)-1, "SETDESC %s", desc);
   else
@@ -355,7 +363,7 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
   if (rc)
     return unlock_pinentry (map_assuan_err (rc));
 
-  snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt? prompt : "Passphrase");
+  snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)

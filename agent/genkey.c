@@ -27,7 +27,7 @@
 #include <assert.h>
 
 #include "agent.h"
-
+#include "i18n.h"
 
 static int
 store_key (GCRY_SEXP private, const char *passphrase)
@@ -79,7 +79,7 @@ reenter_compare_cb (struct pin_entry_info_s *pi)
 
   if (!strcmp (pin1, pi->pin))
     return 0; /* okay */
-  pi->cb_errtext = trans ("does not match - try again");
+  pi->cb_errtext = _("does not match - try again");
   return -1;
 }
 
@@ -106,9 +106,9 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
 
   /* Get the passphrase now, cause key generation may take a while. */
   {
-    const char *text1 = trans ("Please enter the passphrase to%0A"
+    const char *text1 = _("Please enter the passphrase to%0A"
                                "to protect your new key");
-    const char *text2 = trans ("Please re-enter this passphrase");
+    const char *text2 = _("Please re-enter this passphrase");
 
     pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
     pi2 = pi + (sizeof *pi + 100);

@@ -107,9 +107,6 @@ enum {
 /*-- gpg-agent.c --*/
 void agent_exit (int rc); /* also implemented in other tools */
 
-/*-- trans.c --*/
-const char *trans (const char *text);
-
 /*-- command.c --*/
 void start_command_handler (int, int);
 

@@ -133,9 +133,9 @@ i18n_init (void)
     set_gettext_file( PACKAGE );
 #else
 #ifdef ENABLE_NLS
-    /* gtk_set_locale (); HMMM: We have not yet called gtk_init */
-    bindtextdomain( PACKAGE, LOCALEDIR );
-    textdomain( PACKAGE );
+    setlocale (LC_ALL, "");
+    bindtextdomain (PACKAGE, LOCALEDIR);
+    textdomain (PACKAGE);
 #endif
 #endif
 }
