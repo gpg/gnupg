@@ -1,3 +1,14 @@
+2003-08-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Note that keyserver.pgp.com isn't synchronized,
+	and explain the roundrobin a bit better.
+
+	* sig-check.c (check_key_signature2), import.c (import_one,
+	import_revoke_cert, chk_self_sigs, delete_inv_parts,
+	collapse_uids, merge_blocks): Make much quieter during import of
+	slightly munged, but recoverable, keys. Use log_error for
+	unrecoverable import failures.
+
 2003-08-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyring.c (keyring_rebuild_cache): Comment.

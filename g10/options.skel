@@ -109,8 +109,12 @@
 # regarding proxies (keyserver option honor-http-proxy)
 #
 # Most users just set the name and type of their preferred keyserver.
-# Most servers do synchronize with each other and DNS round-robin may
-# give you a quasi-random server each time.
+# Note that most servers (with the notable exception of
+# ldap://keyserver.pgp.com) synchronize changes with each other.  Note
+# also that a single server name may actually point to multiple
+# servers via DNS round-robin.  hkp://subkeys.pgp.net is an example of
+# such a "server", which spreads the load over a number of physical
+# servers.
 
 keyserver hkp://subkeys.pgp.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
