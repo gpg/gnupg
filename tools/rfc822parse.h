@@ -60,7 +60,8 @@ int rfc822parse_finish (rfc822parse_t msg);
 int rfc822parse_insert (rfc822parse_t msg,
                         const unsigned char *line, size_t length);
 
-char *rfc822parse_get_field (rfc822parse_t msg, const char *name, int which);
+char *rfc822parse_get_field (rfc822parse_t msg, const char *name, int which,
+                             size_t *valueoff);
 
 const char *rfc822parse_enum_header_lines (rfc822parse_t msg, void **context);
 

@@ -1,3 +1,7 @@
+2004-06-16  Werner Koch  <wk@gnupg.org>
+
+	* rfc822parse.c (rfc822parse_get_field): Add arg VALUEOFF.
+
 2004-06-14  Werner Koch  <wk@gnupg.org>
 
 	* no-libgcrypt.c (gcry_realloc, gcry_xmalloc, gcry_xcalloc): New.

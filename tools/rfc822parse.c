@@ -1,6 +1,6 @@
 /* rfc822parse.c - Simple mail and MIME parser
  *	Copyright (C) 1999, 2000 Werner Koch, Duesseldorf
- *      Copyright (C) 2003, g10 Code GmbH
+ *      Copyright (C) 2003, 2004 g10 Code GmbH
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -509,7 +509,7 @@ rfc822parse_finish (rfc822parse_t msg)
 /****************
  * Get a copy of a header line. The line is returned as one long
  * string with LF to separate the continuation line. Caller must free
- * the return buffer.  which may be used to enumerate over all lines.
+ * the return buffer.  WHICH may be used to enumerate over all lines.
  * Wildcards are allowed.  This function works on the current headers;
  * i.e. the regular mail headers or the MIME headers of the current
  * part.
@@ -521,9 +521,13 @@ rfc822parse_finish (rfc822parse_t msg)
  * Returns a newly allocated buffer or NULL on error.  errno is set in
  * case of a memory failure or set to 0 if the requested field is not
  * available.
+ * 
+ * If VALUEOFF is not NULL it will receive the offset of the first non
+ * space character in th value of the line.
  */
 char *
-rfc822parse_get_field (rfc822parse_t msg, const char *name, int which)
+rfc822parse_get_field (rfc822parse_t msg, const char *name, int which,
+                       size_t *valueoff)
 {
   HDR_LINE h, h2;
   char *buf, *p;
@@ -552,6 +556,21 @@ rfc822parse_get_field (rfc822parse_t msg, const char *name, int which)
         }
       p[-1] = 0;
     }
+
+  if (valueoff)
+    {
+      p = strchr (buf, ':');
+      if (!p)
+        *valueoff = 0; /* Oops: should never happen. */
+      else
+        {
+          p++;
+          while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')
+            p++;
+          *valueoff = p - buf;
+        }
+    }
+
   return buf;
 }
 
