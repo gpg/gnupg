@@ -53,8 +53,8 @@ struct keylist
   struct keylist *next;
 };
 
-/* 30 seconds seems reasonable */
-#define DEFAULT_KEYSERVER_TIMEOUT 30
+/* 2 minutes seems reasonable */
+#define DEFAULT_KEYSERVER_TIMEOUT 120
 
 unsigned int set_timeout(unsigned int seconds);
 int register_timeout(void);
