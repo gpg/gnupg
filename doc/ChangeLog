@@ -1,3 +1,7 @@
+2003-10-27  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.texi (Agent GET_CONFIRMATION): New.
+
 2002-12-04  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.texi (Agent Signals): New.

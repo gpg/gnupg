@@ -354,6 +354,7 @@ secret keys.
 * Agent EXPORT::          Exporting a Secret Key
 * Agent ISTRUSTED::       Importing a Root Certificate
 * Agent GET_PASSPHRASE::  Ask for a passphrase
+* Agent GET_CONFIRMATION:: Ask for confirmation
 * Agent HAVEKEY::         Check whether a key is available
 * Agent LEARN::           Register a smartcard
 * Agent PASSWD::          Change a Passphrase
@@ -698,6 +699,27 @@ implicitly limited by the maximum length of a command.
 
 may be used to invalidate the cache entry for a passphrase.  The
 function returns with OK even when there is no cached passphrase.
+
+
+@node Agent GET_CONFIRMATION
+@subsection Ask for confirmation
+
+This command may be used to ask for a simple confirmation by
+presenting a text and 2 bottonts: Okay and Cancel.
+
+@example
+  GET_CONFIRMATION @var{description}
+@end example
+
+@var{description}is displayed along with a Okay and Cancel
+button. Blanks must be percent escaped or replaced by @code{+}.  A
+@code{X} may be used to display confirmation dialog with a default
+text.
+
+The agent either returns with an error or with a OK.  Note, that the
+length of @var{description} is implicitly limited by the maximum
+length of a command.
+
 
 
 @node Agent HAVEKEY
