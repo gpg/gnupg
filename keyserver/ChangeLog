@@ -1,5 +1,8 @@
 2005-02-01  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_hkp.c (get_key), gpgkeys_http.c (get_key): Fix missing
+	http_close() calls.  Noted by Phil Pennock.
+
 	* ksutil.h: Up the default timeout to two minutes.
 
 2005-01-24  David Shaw  <dshaw@jabberwocky.com>

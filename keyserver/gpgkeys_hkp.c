@@ -289,6 +289,7 @@ get_key(char *getkey)
 	}
 
       m_free(line);
+      http_close(&hd);
     }
 
   free(request);
