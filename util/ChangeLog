@@ -13,6 +13,10 @@
  	* memory.c [__riscos__]: Minor patches
 	* riscos.c (set_filetype): New.
 
+	* secmem.c (lock_pool): Under HPUX mlock is broken but we might
+	have plock, so we use this to lock the entire process.  By Albert
+	Chin.
+	
 2001-07-03  Werner Koch  <wk@gnupg.org>
 
 	* strgutil.c (utf8_to_native): Fixed printing of invalid utf-8

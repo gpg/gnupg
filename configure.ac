@@ -239,6 +239,15 @@ case "${target}" in
             CFLAGS="$CFLAGS -w"
         fi
         ;;
+    *-dec-osf5*)
+        if test -z "$GCC" ; then
+            # Use the newer compiler `-msg_disable ptrmismatch' to
+            # get rid of the unsigned/signed char mismatch warnings.
+            # Using this may hide other pointer mismatch warnings, but
+	    # it at least lets other warning classes through
+            CFLAGS="$CFLAGS -msg_disable ptrmismatch"
+        fi
+        ;;
     m68k-atari-mint)
         ;;
     *)
@@ -279,7 +288,13 @@ esac
 AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
                    [A human readable text with the name of the OS])
 
-dnl  Fixme: Are these the best flags for OpenBSD????
+
+#
+# 1. Set flags to be used for the extension modules
+# 2. Set names of random devices
+#
+NAME_OF_DEV_RANDOM="/dev/random"
+NAME_OF_DEV_URANDOM="/dev/urandom"
 case "${target}" in
     *-openbsd* | *-netbsd*)
         NAME_OF_DEV_RANDOM="/dev/srandom"
@@ -287,15 +302,39 @@ case "${target}" in
         DYNLINK_MOD_CFLAGS="-shared -rdynamic $CFLAGS_PIC -Wl,-Bshareable -Wl,-x"
         ;;
 
+     hpux*)
+	# if using the vendor (ANSI) compiler, arrange to have `-b' passed
+	# to the linker.  If using gcc, it supports `-shared' to do the same.
+        if test -n "$GCC" ; then
+           DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
+        else
+           DYNLINK_MOD_CFLAGS='-Wl,-b'
+        fi
+        ;;
+
+    *-irix6.5*)
+        # Irix 6.5 (and probably a lot earlier, but I only still have
+	# access to 6.5.x) doesn't require any additional flags, as `-KPIC'
+	# is the default.  Also, `-shared' works with the vendor compiler
+	DYNLINK_MOD_CFLAGS="-shared"
+        ;;
+
+    alpha*-dec-osf*)
+	# osf (i.e. OSF/1, Digital UNIX, or Tru64 UNIX, pick any one...)
+	# on alpha doesn't require any PIC flags, everything is PIC.
+	# This may not be the case for osf ports to other machines, so
+	# hence the more specific match for target.
+	#
+	# Also, `-shared' works with the vendor compiler or gcc.
+	# -expect_unresolved turns off warnings about unresolved symbols.
+	DYNLINK_MOD_CFLAGS='-shared -Wl,-expect_unresolved,\*'
+         ;;
+
     *-solaris* | *-irix* | *-dec-osf* )
-        NAME_OF_DEV_RANDOM="/dev/random"
-        NAME_OF_DEV_URANDOM="/dev/urandom"
         DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
         ;;
 
     *)
-        NAME_OF_DEV_RANDOM="/dev/random"
-        NAME_OF_DEV_URANDOM="/dev/urandom"
         # -shared is a gcc-ism.  Find pic flags from GNUPG_CHECK_PIC.
         if test -n "$GCC" ; then
            DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"                            
@@ -335,28 +374,33 @@ if test "$ac_cv_header_gdbm_h" = yes ; then
 fi
 fi
 
+dnl This old test is here just for reference tin case it fails:
+dnl
 dnl Solaris needs -lsocket and -lnsl. Unisys system includes
 dnl gethostbyname in libsocket but needs libnsl for socket.
 dnl The test does not workfor all system, so some are hardcoded here.
-case "${target}" in
-   i386-univel-sysv4*)
-        LIBS="$LIBS -lsocket -lnsl"
-        ;;
-   *)
-      AC_CHECK_LIB(nsl, gethostbyname)
-      AC_CHECK_LIB(socket, socket, ac_need_libsocket=1, ac_try_nsl=1)
-      if test x$ac_need_libsocket = x1; then
-          LIBS="$LIBS -lsocket"
-      fi
-      if test x$ac_try_nsl = x1; then
-         AC_CHECK_LIB(nsl, gethostbyname, ac_need_libnsl=1)
-         if test x$ac_need_libnsl = x1
-         then
-            LIBS="$LIBS -lnsl"
-         fi
-      fi
-      ;;
-esac
+dnl case "${target}" in
+dnl    i386-univel-sysv4*)
+dnl         LIBS="$LIBS -lsocket -lnsl"
+dnl         ;;
+dnl    *)
+dnl       AC_CHECK_LIB(nsl, gethostbyname)
+dnl       AC_CHECK_LIB(socket, socket, ac_need_libsocket=1, ac_try_nsl=1)
+dnl       if test x$ac_need_libsocket = x1; then
+dnl           LIBS="$LIBS -lsocket"
+dnl       fi
+dnl       if test x$ac_try_nsl = x1; then
+dnl          AC_CHECK_LIB(nsl, gethostbyname, ac_need_libnsl=1)
+dnl          if test x$ac_need_libnsl = x1
+dnl          then
+dnl             LIBS="$LIBS -lnsl"
+dnl          fi
+dnl       fi
+dnl       ;;
+dnl esac
+
+AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
+AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt))
 
 
 if test "$try_dynload" = yes ; then
@@ -446,9 +490,16 @@ fi
 dnl Checks for library functions.
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror stpcpy strlwr stricmp tcgetattr rand strtoul mmap)
-AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit clock_gettime)
+AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask fseeko)
+
+AC_MSG_CHECKING(for gethrtime)
+AC_TRY_LINK([#include <sys/times.h>],[
+   hrtime_t tv;
+   tv = gethrtime();
+   ],[AC_MSG_RESULT(yes) AC_DEFINE(HAVE_GETHRTIME)], AC_MSG_RESULT(no))
+
 
 GNUPG_CHECK_MLOCK
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
@@ -696,12 +747,25 @@ use_local_zlib=yes
 if test "$g10_force_zlib" = "yes"; then
   :
 else
-  AC_CHECK_HEADERS(zlib.h)
-  if test "$ac_cv_header_zlib_h" = yes ; then
-      AC_CHECK_LIB(z,deflateInit2_,use_local_zlib=no,:)
-  fi
-fi
+  _cppflags="${CPPFLAGS}"
+  _ldflags="${LDFLAGS}"
 
+  AC_ARG_WITH(zlib,
+  [  --with-zlib=DIR         use libz in DIR],[
+    if test -d "$withval"; then
+      CPPFLAGS="${CPPFLAGS} -I$withval/include"
+      LDFLAGS="${LDFLAGS} -L$withval/lib"
+    fi
+  ])
+
+  AC_CHECK_HEADER(zlib.h,
+      AC_CHECK_LIB(z, deflateInit2_,
+       use_local_zlib=no
+       LIBS="$LIBS -lz",
+       CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
+       CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
+fi
+ 
 if test "$use_local_zlib" = yes ; then
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
     AC_CONFIG_LINKS(zlib.h:zlib/zlib.h zconf.h:zlib/zconf.h )
@@ -709,7 +773,6 @@ if test "$use_local_zlib" = yes ; then
 else
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
     ZLIBS=
-    LIBS="-lz $LIBS"
 fi
 AC_SUBST(ZLIBS)
 
@@ -757,7 +820,7 @@ cat >g10defs.tmp <<G10EOF
   #define GNUPG_DATADIR "c:/lib/gnupg"
   #define GNUPG_HOMEDIR "c:/gnupg"
 #else
-  #define G10_LOCALEDIR "${prefix}/${DATADIRNAME}/locale"
+  #define G10_LOCALEDIR "${datadir}/locale"
   #define GNUPG_LIBDIR  "${libdir}/gnupg"
   #define GNUPG_DATADIR "${datadir}/gnupg"
   #ifdef __VMS
@@ -806,14 +869,15 @@ checks/Makefile
 AC_OUTPUT
 
 # Give some feedback
-echo "Configured for: $PRINTABLE_OS_NAME ($target)"
+echo
+echo   "                Configured for: $PRINTABLE_OS_NAME ($target)"
 if test -n "$show_dynlink"; then
-  echo "Dynamically linked modules:$show_dynlink"
+  echo "    Dynamically linked modules:$show_dynlink"
 fi
 if test -n "$show_statlink"; then
-  echo "Statically linked modules:$show_statlink"
+  echo "     Statically linked modules:$show_statlink"
 fi
 if test -n "$show_extraasm"; then
-  echo "Extra cpu specific functions:$show_extraasm"
+  echo "  Extra cpu specific functions:$show_extraasm"
 fi
 

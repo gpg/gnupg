@@ -247,8 +247,19 @@ proc_symkey_enc( CTX c, PACKET *pkt )
     if (enc->seskeylen)
 	log_error ("symkey_enc packet with session keys are not supported!\n");
     else {
+        int algo = enc->cipher_algo;
+	const char *s;
+
+	s = cipher_algo_to_string (algo);
+	if( s )
+	    log_info(_("%s encrypted data\n"), s );
+	else
+	    log_info(_("encrypted with unknown algorithm %d\n"), algo );
+
 	c->last_was_session_key = 2;
-	c->dek = passphrase_to_dek( NULL, 0, enc->cipher_algo, &enc->s2k, 0 );
+	c->dek = passphrase_to_dek( NULL, 0, algo, &enc->s2k, 0 );
+        if (c->dek)
+            c->dek->algo_info_printed = 1;
     }
     free_packet(pkt);
 }
@@ -276,10 +287,10 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     }
 
     if( !opt.list_only && opt.override_session_key ) {
-	/* It does not make nuch sense to store the session key in
+	/* It does not make much sense to store the session key in
 	 * secure memory because it has already been passed on the
 	 * command line and the GCHQ knows about it */
-	c->dek = m_alloc( sizeof *c->dek );
+	c->dek = m_alloc_clear( sizeof *c->dek );
 	result = get_override_session_key ( c->dek, opt.override_session_key );
 	if ( result ) {
 	    m_free(c->dek); c->dek = NULL;
@@ -293,7 +304,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	    if( opt.list_only )
 		result = -1;
 	    else {
-		c->dek = m_alloc_secure( sizeof *c->dek );
+		c->dek = m_alloc_secure_clear( sizeof *c->dek );
 		if( (result = get_session_key( enc, c->dek )) ) {
 		    /* error: delete the DEK */
 		    m_free(c->dek); c->dek = NULL;
@@ -409,14 +420,14 @@ proc_encrypted( CTX c, PACKET *pkt )
     if( opt.list_only )
 	result = -1;
     else if( !c->dek && !c->last_was_session_key ) {
-        int def_algo;
-	/* assume this is old conventional encrypted data
-	 * We use IDEA here if it is installed */
-        def_algo = check_cipher_algo (CIPHER_ALGO_IDEA)?
-                                      DEFAULT_CIPHER_ALGO : CIPHER_ALGO_IDEA;
-	c->dek = passphrase_to_dek( NULL, 0,
-		    opt.def_cipher_algo ? opt.def_cipher_algo
-					: DEFAULT_CIPHER_ALGO, NULL, 0 );
+        int algo = opt.def_cipher_algo ? opt.def_cipher_algo
+                                       : opt.s2k_cipher_algo;
+	/* assume this is old style conventional encrypted data */
+        log_info(_("assuming %s encrypted data\n"),
+                 cipher_algo_to_string (algo) );
+	c->dek = passphrase_to_dek( NULL, 0, algo, NULL, 0);
+        if (c->dek)
+            c->dek->algo_info_printed = 1;
     }
     else if( !c->dek )
 	result = G10ERR_NO_SECKEY;

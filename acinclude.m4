@@ -436,6 +436,7 @@ define(GNUPG_CHECK_MLOCK,
              AC_DEFINE(HAVE_BROKEN_MLOCK,1,
                        [Defined if the mlock() call does not work])
              AC_MSG_RESULT(yes)
+             AC_CHECK_FUNCS(plock)
          else
             if test "$gnupg_cv_have_broken_mlock" = "no"; then
                 AC_MSG_RESULT(no)

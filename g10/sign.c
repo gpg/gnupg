@@ -797,6 +797,328 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     return rc;
 }
 
+/*
+ * Sign and conventionally encrypt the given file.
+ * FIXME: Far too much code is duplicated - revamp the whole file.
+ */
+int
+sign_symencrypt_file (const char *fname, STRLIST locusr)
+{
+    armor_filter_context_t afx;
+    compress_filter_context_t zfx;
+    md_filter_context_t mfx;
+    text_filter_context_t tfx;
+    cipher_filter_context_t cfx;
+    IOBUF inp = NULL, out = NULL;
+    PACKET pkt;
+    PKT_plaintext *pt = NULL;
+    STRING2KEY *s2k = NULL;
+    u32 filesize;
+    int rc = 0;
+    SK_LIST sk_list = NULL;
+    SK_LIST sk_rover = NULL;
+    int old_style = opt.rfc1991;
+    int compr_algo = -1; /* unknown */
+    int algo;
+
+    memset( &afx, 0, sizeof afx);
+    memset( &zfx, 0, sizeof zfx);
+    memset( &mfx, 0, sizeof mfx);
+    memset( &tfx, 0, sizeof tfx);
+    memset( &cfx, 0, sizeof cfx);
+    init_packet( &pkt );
+
+    rc = build_sk_list (locusr, &sk_list, 1, PUBKEY_USAGE_SIG);
+    if (rc) 
+	goto leave;
+    if( !old_style )
+	old_style = only_old_style( sk_list );
+
+    /* prepare iobufs */
+    inp = iobuf_open(fname);
+    if( !inp ) {
+	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
+					strerror(errno) );
+	rc = G10ERR_OPEN_FILE;
+	goto leave;
+    }
+
+    /* prepare key */
+    s2k = m_alloc_clear( sizeof *s2k );
+    s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
+    s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
+	                                 : opt.s2k_digest_algo;
+
+    algo = opt.def_cipher_algo ? opt.def_cipher_algo : opt.s2k_cipher_algo;
+    if (!opt.quiet || !opt.batch)
+        log_info (_("%s encryption will be used\n"),
+		    cipher_algo_to_string(algo) );
+    cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2 );
+
+    if (!cfx.dek || !cfx.dek->keylen) {
+        rc = G10ERR_PASSPHRASE;
+        log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
+        goto leave;
+    }
+
+    /* now create the outfile */
+    rc = open_outfile (fname, opt.armor? 1:0, &out);
+    if (rc)
+	goto leave;
+
+    /* prepare to calculate the MD over the input */
+    if (opt.textmode)
+	iobuf_push_filter (inp, text_filter, &tfx);
+    mfx.md = md_open(0, 0);
+
+    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
+	PKT_secret_key *sk = sk_rover->sk;
+	md_enable (mfx.md, hash_for (sk->pubkey_algo, sk->version ));
+    }
+
+    iobuf_push_filter (inp, md_filter, &mfx);
+
+    /* Push armor output filter */
+    if (opt.armor)
+	iobuf_push_filter (out, armor_filter, &afx);
+
+    /* Write the symmetric key packet */
+    /*(current filters: armor)*/
+    if (!opt.rfc1991) {
+	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
+	enc->version = 4;
+	enc->cipher_algo = cfx.dek->algo;
+	enc->s2k = *s2k;
+	pkt.pkttype = PKT_SYMKEY_ENC;
+	pkt.pkt.symkey_enc = enc;
+	if( (rc = build_packet( out, &pkt )) )
+	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
+	m_free(enc);
+    }
+
+    /* Push the encryption filter */
+    iobuf_push_filter( out, cipher_filter, &cfx );
+
+    /* Push the Zip filter */
+    if (opt.compress) {
+	if (!compr_algo)
+	    ; /* don't use compression */
+	else {
+	    if( old_style || compr_algo == 1 )
+		zfx.algo = 1; /* use the non optional algorithm */
+	    iobuf_push_filter( out, compress_filter, &zfx );
+	}
+    }
+
+    /* Write the one-pass signature packets */
+    /*(current filters: zip - encrypt - armor)*/
+    if (!old_style) {
+	int skcount=0;
+	/* loop over the secret certificates and build headers
+	 * The specs now say that the data should be bracket by
+	 * the onepass-sig and signature-packet; so we must build it
+	 * here in reverse order */
+	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
+	    skcount++;
+	for( ; skcount; skcount-- ) {
+	    PKT_secret_key *sk;
+	    PKT_onepass_sig *ops;
+	    int i = 0;
+
+	    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
+		if( ++i == skcount )
+		    break;
+
+	    sk = sk_rover->sk;
+	    ops = m_alloc_clear( sizeof *ops );
+	    ops->sig_class = opt.textmode? 0x01 : 0x00;
+	    ops->digest_algo = hash_for(sk->pubkey_algo, sk->version);
+	    ops->pubkey_algo = sk->pubkey_algo;
+	    keyid_from_sk( sk, ops->keyid );
+	    ops->last = skcount == 1;
+
+	    init_packet(&pkt);
+	    pkt.pkttype = PKT_ONEPASS_SIG;
+	    pkt.pkt.onepass_sig = ops;
+	    rc = build_packet( out, &pkt );
+	    free_packet( &pkt );
+	    if( rc ) {
+		log_error("build onepass_sig packet failed: %s\n",
+							g10_errstr(rc));
+		goto leave;
+	    }
+	}
+    }
+
+    /* Pipe data through all filters; i.e. write the signed stuff */
+    /*(current filters: zip - encrypt - armor)*/
+    if (!opt.no_literal) {
+        if (fname || opt.set_filename) {
+            char *s = make_basename (opt.set_filename? opt.set_filename
+                                     : fname );
+            pt = m_alloc (sizeof *pt + strlen(s) - 1 );
+            pt->namelen = strlen (s);
+            memcpy (pt->name, s, pt->namelen );
+            m_free (s);
+        }
+        else { /* no filename */
+            pt = m_alloc( sizeof *pt - 1 );
+            pt->namelen = 0;
+        }
+    }
+
+    /* try to calculate the length of the data */
+    if (fname) {
+        if( !(filesize = iobuf_get_filelength(inp)) )
+            log_info(_("WARNING: `%s' is an empty file\n"), fname );
+        /* we can't yet encode the length of very large files,
+         * so we switch to partial length encoding in this case */
+        if (filesize >= IOBUF_FILELENGTH_LIMIT)
+            filesize = 0;
+        
+        /* because the text_filter modifies the length of the
+         * data, it is not possible to know the used length
+         * without a double read of the file - to avoid that
+         * we simple use partial length packets.
+         */
+        if (opt.textmode)
+            filesize = 0;
+    }
+    else {
+        filesize = opt.set_filesize? opt.set_filesize : 0; /* stdin */
+    }
+        
+    if (!opt.no_literal) {
+        pt->timestamp = make_timestamp();
+        pt->mode = opt.textmode? 't':'b';
+        pt->len = filesize;
+        pt->new_ctb = !pt->len && !opt.rfc1991;
+        pt->buf = inp; /* take data from this iobuf */
+        pkt.pkttype = PKT_PLAINTEXT;
+        pkt.pkt.plaintext = pt;
+        /* build packet automagically write all the data */
+        if( (rc = build_packet( out, &pkt )) )
+            log_error("build_packet(PLAINTEXT) failed: %s\n", g10_errstr(rc) );
+        pt->buf = NULL;
+    }
+    else {
+        byte copy_buffer[4096];
+        int  bytes_copied;
+        while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
+            if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
+                rc = G10ERR_WRITE_FILE;
+                log_error("copying input to output failed: %s\n", g10_errstr(rc));
+                break;
+            }
+        memset(copy_buffer, 0, 4096); /* burn buffer */
+    }
+        
+    /* catch errors from above */
+    if (rc)
+	goto leave;
+    
+    /* Write the signature by looping over the secret certificates */
+    /*(current filters: zip - encrypt - armor)*/
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	PKT_secret_key *sk;
+	PKT_signature *sig;
+	MD_HANDLE md;
+
+	sk = sk_rover->sk;
+
+	/* build the signature packet */
+	/* fixme: this code is partly duplicated in make_keysig_packet */
+	sig = m_alloc_clear( sizeof *sig );
+	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
+	keyid_from_sk( sk, sig->keyid );
+	sig->digest_algo = hash_for(sk->pubkey_algo, sk->version);
+	sig->pubkey_algo = sk->pubkey_algo;
+	sig->timestamp = make_timestamp();
+	sig->sig_class = opt.textmode? 0x01 : 0x00;
+
+	md = md_copy( mfx.md );
+
+	if( sig->version >= 4 ) {
+	    build_sig_subpkt_from_sig( sig );
+	    md_putc( md, sig->version );
+	}
+
+	mk_notation_and_policy( sig );
+
+	md_putc( md, sig->sig_class );
+	if( sig->version < 4 ) {
+	    u32 a = sig->timestamp;
+	    md_putc( md, (a >> 24) & 0xff );
+	    md_putc( md, (a >> 16) & 0xff );
+	    md_putc( md, (a >>	8) & 0xff );
+	    md_putc( md,  a	   & 0xff );
+	}
+	else {
+	    byte buf[6];
+	    size_t n;
+
+	    md_putc( md, sig->pubkey_algo );
+	    md_putc( md, sig->digest_algo );
+	    if( sig->hashed ) {
+                n = sig->hashed->len;
+                md_putc (md, (n >> 8) );
+                md_putc (md,  n       );
+		md_write (md, sig->hashed->data, n );
+		n += 6;
+	    }
+	    else {
+		md_putc( md, 0 );  /* always hash the length of the subpacket*/
+		md_putc( md, 0 );
+		n = 6;
+	    }
+	    /* add some magic */
+	    buf[0] = sig->version;
+	    buf[1] = 0xff;
+	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
+	    buf[3] = n >> 16;
+	    buf[4] = n >>  8;
+	    buf[5] = n;
+	    md_write( md, buf, 6 );
+
+	}
+	md_final( md );
+
+	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo, sk->version) );
+	md_close( md );
+
+	if( !rc ) { /* and write it */
+	    init_packet(&pkt);
+	    pkt.pkttype = PKT_SIGNATURE;
+	    pkt.pkt.signature = sig;
+	    rc = build_packet( out, &pkt );
+	    if( !rc && is_status_enabled() ) {
+		print_status_sig_created ( sk, sig, 'S');
+	    }
+	    free_packet( &pkt );
+	    if( rc )
+		log_error("build signature packet failed: %s\n", g10_errstr(rc) );
+	}
+	if( rc )
+	    goto leave;
+
+    }
+
+
+  leave:
+    if( rc )
+	iobuf_cancel(out);
+    else {
+	iobuf_close(out);
+        write_status( STATUS_END_ENCRYPTION );
+    }
+    iobuf_close(inp);
+    release_sk_list( sk_list );
+    md_close( mfx.md );
+    m_free(cfx.dek);
+    m_free(s2k);
+    return rc;
+}
+
 
 /****************
  * Create a signature packet for the given public key certificate and

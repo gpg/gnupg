@@ -82,6 +82,7 @@ int complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md );
 int sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       int do_encrypt, STRLIST remusr, const char *outfile );
 int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
+int sign_symencrypt_file (const char *fname, STRLIST locusr);
 
 /*-- sig-check.c --*/
 int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );

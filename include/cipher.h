@@ -63,6 +63,7 @@
 typedef struct {
     int algo;
     int keylen;
+    int algo_info_printed;
     byte key[32]; /* this is the largest used keylen (256 bit) */
 } DEK;
 

@@ -1,5 +1,15 @@
 2001-08-20  Werner Koch  <wk@gnupg.org>
 
+	* acinclude.m4: Add check for plock if mlock is broken.
+	* configure.ac: Use regular tests for -lsocket and -lnsl,
+	more thorough test for gethrtime, allow specifying the path to
+	the zlib library if it is not in the default compiler/linker
+	search path, use ${datadir}.  All these test enhancements are by
+	Albert Chin.
+
+	* configure.ac: Set some compiler flags for dec-osf and hpux. By
+	Tim Mooney.
+
 	* configure.ac: Create g10defs.h with EXTSEP_S et al. 
 
 2001-08-03  Werner Koch  <wk@gnupg.org>

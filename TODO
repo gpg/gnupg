@@ -7,8 +7,6 @@
   * Put a note into readme.w32 that there is a man page and a options
     file;  write the registry stuff in regedit format.
 
-  * Allow "gpg -cs"
-
   * Show more info does not work from edit->trust
 
   * keyedit_menu: We first look for a secret key and then for a public
@@ -77,6 +75,8 @@
   * Using --list-only to check for recipients while decrypting may
     yield an error about an unknown packet.
 
+  * Check that the way we select cipher and digest algorithms w/o
+    preferences is okay and make AES the default.
 
 Scheduled for 1.1
 -----------------

@@ -73,6 +73,7 @@ enum cmd_and_opt_values { aNull = 0,
     aStore,
     aKeygen,
     aSignEncr,
+    aSignSym,
     aSignKey,
     aLSignKey,
     aListPackets,
@@ -607,6 +608,10 @@ set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 	cmd = aSignEncr;
     else if( cmd == aEncr && new_cmd == aSign )
 	cmd = aSignEncr;
+    else if( cmd == aSign && new_cmd == aSym )
+	cmd = aSignSym;
+    else if( cmd == aSym && new_cmd == aSign )
+	cmd = aSignSym;
     else if( cmd == aKMode && new_cmd == aSym )
 	cmd = aKModeC;
     else if(	( cmd == aSign	   && new_cmd == aClearsign )
@@ -1316,11 +1321,21 @@ main( int argc, char **argv )
 	free_strlist(sl);
 	break;
 
+      case aSignSym: /* sign and conventionally encrypt the given file */
+	if (argc > 1)
+	    wrong_args(_("--sign --symmetric [filename]"));
+	rc = sign_symencrypt_file (fname, locusr);
+        if (rc)
+	    log_error("%s: sign+symmetric failed: %s\n",
+                      print_fname_stdin(fname), g10_errstr(rc) );
+	break;
+
       case aClearsign: /* make a clearsig */
 	if( argc > 1 )
 	    wrong_args(_("--clearsign [filename]"));
 	if( (rc = clearsign_file(fname, locusr, NULL)) )
-	    log_error("%s: clearsign failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	    log_error("%s: clearsign failed: %s\n",
+                      print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
       case aVerify:

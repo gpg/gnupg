@@ -291,7 +291,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     }
   #endif
     /* create a session key */
-    cfx.dek = m_alloc_secure( sizeof *cfx.dek );
+    cfx.dek = m_alloc_secure_clear (sizeof *cfx.dek);
     if( !opt.def_cipher_algo ) { /* try to get it from the prefs */
 	cfx.dek->algo = select_algo_from_prefs( pk_list, PREFTYPE_SYM );
 	if( cfx.dek->algo == -1 )
@@ -415,13 +415,16 @@ encrypt_filter( void *opaque, int control,
     }
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	if( !efx->header_okay ) {
-	    efx->cfx.dek = m_alloc_secure( sizeof *efx->cfx.dek );
+	    efx->cfx.dek = m_alloc_secure_clear( sizeof *efx->cfx.dek );
 
 	    if( !opt.def_cipher_algo  ) { /* try to get it from the prefs */
 		efx->cfx.dek->algo =
 			  select_algo_from_prefs( efx->pk_list, PREFTYPE_SYM );
-		if( efx->cfx.dek->algo == -1 )
+		if( efx->cfx.dek->algo == -1 ) {
+                    /* because 3DES is implicitly in the prefs, this can only
+                     * happen if we do not have any public keys in the list */
 		    efx->cfx.dek->algo = DEFAULT_CIPHER_ALGO;
+                }
 	    }
 	    else
 		efx->cfx.dek->algo = opt.def_cipher_algo;

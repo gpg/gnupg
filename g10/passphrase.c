@@ -513,16 +513,14 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     STRING2KEY help_s2k;
 
     if( !s2k ) {
-        int def_algo;
+        /* This is used for the old rfc1991 mode 
+         * Note: This must match the code in encode.c with opt.rfc1991 set */
+        int algo = opt.def_digest_algo ? opt.def_digest_algo
+                                       : opt.s2k_digest_algo;
 
 	s2k = &help_s2k;
 	s2k->mode = 0;
-	/* If we have IDEA installed we use MD5 otherwise the default
-	 * hash algorithm.  This can always be overriden from the
-	 * commandline */
-        def_algo = check_cipher_algo (CIPHER_ALGO_IDEA)?
-                                    DEFAULT_DIGEST_ALGO : DIGEST_ALGO_MD5;
-	s2k->hash_algo = opt.def_digest_algo? opt.def_digest_algo : def_algo;
+	s2k->hash_algo = algo;
     }
 
     if( !next_pw && is_status_enabled() ) {
@@ -632,7 +630,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     if( !pw || !*pw )
 	write_status( STATUS_MISSING_PASSPHRASE );
 
-    dek = m_alloc_secure( sizeof *dek );
+    dek = m_alloc_secure_clear ( sizeof *dek );
     dek->algo = cipher_algo;
     if( !*pw && mode == 2 )
 	dek->keylen = 0;

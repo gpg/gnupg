@@ -60,12 +60,13 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     unsigned nprefix;
 
     memset( &dfx, 0, sizeof dfx );
-    if( opt.verbose ) {
+    if( opt.verbose && !dek->algo_info_printed ) {
 	const char *s = cipher_algo_to_string( dek->algo );
 	if( s )
 	    log_info(_("%s encrypted data\n"), s );
 	else
 	    log_info(_("encrypted with unknown algorithm %d\n"), dek->algo );
+        dek->algo_info_printed = 1;
     }
     if( (rc=check_cipher_algo(dek->algo)) )
 	goto leave;

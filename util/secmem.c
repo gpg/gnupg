@@ -32,6 +32,9 @@
   #ifdef USE_CAPABILITIES
     #include <sys/capability.h>
   #endif
+  #ifdef HAVE_PLOCK
+    #include <sys/lock.h>
+  #endif
 #endif
 
 #include "types.h"
@@ -120,6 +123,13 @@ lock_pool( void *p, size_t n )
     uid = getuid();
 
   #ifdef HAVE_BROKEN_MLOCK
+    /* ick. but at least we get secured memory. about to lock
+       entire data segment. */
+  #ifdef HAVE_PLOCK
+    err = plock( DATLOCK );
+    if( err && errno )
+        err = errno;
+#else /*!HAVE_PLOCK*/
     if( uid ) {
 	errno = EPERM;
 	err = errno;
@@ -129,6 +139,7 @@ lock_pool( void *p, size_t n )
 	if( err && errno )
 	    err = errno;
     }
+  #endif /*!HAVE_PLOCK*/
   #else
     err = mlock( p, n );
     if( err && errno )

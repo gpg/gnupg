@@ -1,5 +1,18 @@
 2001-08-20  Werner Koch  <wk@gnupg.org>
 
+	* encr-data.c (decrypt_data): Keep track on whether we already
+	printed information about the used algorithm.
+	* mainproc.c (proc_encrypted): Removed the non-working IDEA hack
+	and print a message about the assumed algorithm.
+	* passphrase.c (passphrase_to_dek): Use the same algorithm as above.
+	(proc_symkey_enc): Print the algorithm, so that the user knows it
+	before entering the passphrase.
+	(proc_pubkey_enc, proc_pubkey_enc): Zero the DEK out.
+	* encode.c (encode_crypt, encrypt_filter): Ditto.
+
+	* g10.c: Allow for --sign --symmetric.
+	* sign.c (sign_and_symencrypt): New.
+
 	Applied patches from Stefan Bellon <sbellon@sbellon.de> to support
 	the RISCOS.  Nearly all of these patches are identified by the
 	__riscos__ macro.
