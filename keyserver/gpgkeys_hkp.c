@@ -245,7 +245,7 @@ get_key(char *getkey)
       return KEYSERVER_NO_MEMORY;
     }
 
-  sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=get&search=%s",
+  sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=get&options=mr&search=%s",
 	  host,port[0]?":":"",port[0]?port:"", search);
 
   if(verbose>2)

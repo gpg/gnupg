@@ -1,3 +1,9 @@
+2003-01-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (get_key): Use options=mr when getting a key so
+	keyserver doesn't attach the HTML header which we will just have
+	to discard.
+
 2002-11-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (main), gpgkeys_hkp.c (main): Use new keyserver
