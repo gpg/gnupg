@@ -1397,12 +1397,14 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    /* fall through */
 
 	  case cmdADDUID:
-	    if( menu_adduid( keyblock, sec_keyblock, photo ) ) {
+	    if( menu_adduid( keyblock, sec_keyblock, photo ) )
+	      {
+	        update_trust = 1;
 		redisplay = 1;
 		sec_modified = modified = 1;
 		merge_keys_and_selfsig( sec_keyblock );
 		merge_keys_and_selfsig( keyblock );
-	    }
+	      }
 	    break;
 
 	  case cmdDELUID: {
