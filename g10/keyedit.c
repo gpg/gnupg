@@ -129,7 +129,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	break;
     }
     if( sigrc != '?' || print_without_key ) {
-        tty_printf("%s%c%c %c%c%c%c%c %08lX %s   ",
+        tty_printf("%s%c%c %c%c%c%c%c%c %08lX %s   ",
 		   is_rev? "rev":"sig",sigrc,
 		   (sig->sig_class-0x10>0 &&
 		    sig->sig_class-0x10<4)?'0'+sig->sig_class-0x10:' ',
@@ -138,6 +138,8 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 		   sig->flags.policy_url?'P':' ',
 		   sig->flags.notation?'N':' ',
                    sig->flags.expired?'X':' ',
+		   (sig->trust_depth>9)?'T':
+		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ',
 		   (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
 	    tty_printf("[%s] ", g10_errstr(rc) );
@@ -1925,7 +1927,7 @@ show_key_and_fingerprint( KBNODE keyblock )
     for( node = keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 	    pk = node->pkt->pkt.public_key;
-	    tty_printf("pub  %4u%c/%08lX %s ",
+	    tty_printf("pub   %4u%c/%08lX %s ",
 			  nbits_from_pk( pk ),
 			  pubkey_letter( pk->pubkey_algo ),
 			  (ulong)keyid_from_pk(pk,NULL),
@@ -2375,7 +2377,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 
       keyid_from_pk(revoker_pk,keyid);
 
-      tty_printf("\npub  %4u%c/%08lX %s   ",
+      tty_printf("\npub   %4u%c/%08lX %s   ",
 		 nbits_from_pk( revoker_pk ),
 		 pubkey_letter( revoker_pk->pubkey_algo ),
 		 (ulong)keyid[1], datestr_from_pk(pk) );

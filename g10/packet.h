@@ -140,6 +140,9 @@ typedef struct {
     byte    pubkey_algo;    /* algorithm used for public key scheme */
 			    /* (PUBKEY_ALGO_xxx) */
     byte    digest_algo;    /* algorithm used for digest (DIGEST_ALGO_xxxx) */
+    byte    trust_depth;
+    byte    trust_value;
+    const byte *trust_regexp;
     struct revocation_key **revkey;
     int numrevkeys;
     subpktarea_t *hashed;    /* all subpackets with hashed  data (v4 only) */

@@ -1197,6 +1197,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
         rec->r.trust.depth = *p++;
         p += 2;
 	rec->r.trust.validlist  = buftoulong(p); p += 4;
+        rec->r.trust.min_ownertrust = *p++;
 	break;
       case RECTYPE_VALID:
 	memcpy( rec->r.valid.namehash, p, 20); p+=20;
@@ -1275,6 +1276,7 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.trust.depth;
         p += 2;
 	ulongtobuf( p, rec->r.trust.validlist); p += 4;
+	*p++ = rec->r.trust.min_ownertrust;
 	break;
 
       case RECTYPE_VALID:

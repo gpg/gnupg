@@ -476,7 +476,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	pk = node->pkt->pkt.public_key;
 	sk = NULL;
 	keyid_from_pk( pk, keyid );
-        printf("pub  %4u%c/%08lX %s ", nbits_from_pk( pk ),
+        printf("pub   %4u%c/%08lX %s ", nbits_from_pk( pk ),
 				       pubkey_letter( pk->pubkey_algo ),
 				       (ulong)keyid[1],
 				       datestr_from_pk( pk ) );
@@ -528,7 +528,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    }
 
 	    keyid_from_pk( pk2, keyid2 );
-            printf("sub  %4u%c/%08lX %s", nbits_from_pk( pk2 ),
+            printf("sub   %4u%c/%08lX %s", nbits_from_pk( pk2 ),
                    pubkey_letter( pk2->pubkey_algo ),
                    (ulong)keyid2[1],
                    datestr_from_pk( pk2 ) );
@@ -620,7 +620,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    }
 
             fputs( sigstr, stdout );
-	    printf("%c%c %c%c%c%c%c %08lX %s   ",
+	    printf("%c%c %c%c%c%c%c%c %08lX %s   ",
                    sigrc,(sig->sig_class-0x10>0 &&
                           sig->sig_class-0x10<4)?'0'+sig->sig_class-0x10:' ',
                    sig->flags.exportable?' ':'L',
@@ -628,6 +628,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
                    sig->flags.policy_url?'P':' ',
                    sig->flags.notation?'N':' ',
                    sig->flags.expired?'X':' ',
+		   (sig->trust_depth>9)?'T':
+		      (sig->trust_depth>0)?'0'+sig->trust_depth:' ',
                    (ulong)sig->keyid[1], datestr_from_sig(sig));
 	    if( sigrc == '%' )
 		printf("[%s] ", g10_errstr(rc) );
@@ -1073,11 +1075,11 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
     }
     else if (mode == 3) {
         fp = NULL; /* use tty */
-	text = _("     Key fingerprint =");
+	text = _("      Key fingerprint =");
     }
     else {
         fp = stdout;
-	text = _("     Key fingerprint =");
+	text = _("      Key fingerprint =");
     }
   
     if (sk)

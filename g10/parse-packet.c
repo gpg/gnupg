@@ -778,13 +778,13 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	break;
       case SIGSUBPKT_TRUST:
 	if(length!=2)
-	  p="[invalid trust signature]";
+	  p="[invalid trust subpacket]";
 	else
-	  printf("trust signature of level %d, amount %d",buffer[0],buffer[1]);
+	  printf("trust signature of depth %d, amount %d",buffer[0],buffer[1]);
 	break;
       case SIGSUBPKT_REGEXP:
 	if(!length)
-	  p="[invalid regexp]";
+	  p="[invalid regexp subpacket]";
 	else
 	  printf("regular expression: \"%s\"",buffer);
 	break;
@@ -933,6 +933,7 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_COMPR:
       case SIGSUBPKT_POLICY:
       case SIGSUBPKT_FEATURES:
+      case SIGSUBPKT_REGEXP:
 	return 0;
       case SIGSUBPKT_EXPORTABLE:
       case SIGSUBPKT_REVOCABLE:
@@ -955,6 +956,10 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
           if ( n != 1 )
               break;
           return 0;   
+      case SIGSUBPKT_TRUST:
+	  if ( n != 2 )
+	      break;
+	  return 0;
       case SIGSUBPKT_PRIV_VERIFY_CACHE:
         /* We used this in gpg 1.0.5 and 1.0.6 to cache signature
          * verification results - it is no longer used.
@@ -1247,6 +1252,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( is_v4 && sig->pubkey_algo ) { /*extract required information */
 	const byte *p;
+	size_t len;
 
 	/* set sig->flags.unknown_critical if there is a
 	 * critical bit set for packets which we do not understand */
@@ -1287,6 +1293,21 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_REVOCABLE,NULL);
 	if(p && *p==0)
 	  sig->flags.revocable=0;
+
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_TRUST,&len);
+	if(p && len==2)
+	  {
+	    sig->trust_depth=p[0];
+	    sig->trust_value=p[1];
+
+	    sig->trust_regexp=
+	      parse_sig_subpkt(sig->hashed,SIGSUBPKT_REGEXP,&len);
+
+	    /* If the regular expression is of 0 length, there is no
+	       regular expression. */
+	    if(len==0)
+	      sig->trust_regexp=NULL;
+	  }
 
 	/* We accept the exportable subpacket from either the hashed
 	   or unhashed areas as older versions of gpg put it in the

@@ -1,3 +1,17 @@
+2002-10-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (print_and_check_one_sig, show_key_and_fingerprint,
+	menu_addrevoker), keylist.c (list_keyblock_print,
+	print_fingerprint): Show "T" or the trust depth for trust
+	signatures, and add spaces to some strings to make room for it.
+
+	* packet.h, parse-packet.c (dump_sig_subpkt, parse_one_sig_subpkt,
+	parse_signature): Parse trust signature values.
+
+	* tdbio.h, tdbio.c (tdbio_read_record, tdbio_write_record):
+	Reserve a byte for the minimum ownertrust value (for use with
+	trust signatures).
+
 2002-10-29  Stefan Bellon  <sbellon@sbellon.de>
 
 	* build-packet.c (calc_plaintext, do_plaintext): Removed RISC OS
