@@ -166,39 +166,21 @@ tty_printf( const char *fmt, ... )
 
     va_start( arg_ptr, fmt ) ;
   #ifdef __MINGW32__
-    { static char *buf;
-      static size_t bufsize;
-	int n;
+    {   
+        char *buf = NULL;
+        int n;
 	DWORD nwritten;
 
-      #if 0 /* the dox say, that there is a snprintf, but I didn't found
-	     * it, so we use a static buffer for now */
-	do {
-	    if( n == -1 || !buf ) {
-		m_free(buf);
-		bufsize += 200;
-		/* better check the new size; (we use M$ functions) */
-		if( bufsize > 50000 )
-		    log_bug("vsnprintf probably failed\n");
-		buf = m_alloc( bufsize );
-	    }
-	    n = _vsnprintf(buf, bufsize-1, fmt, arg_ptr);
-	} while( n == -1 );
-      #else
-	if( !buf ) {
-	    bufsize += 1000;
-	    buf = m_alloc( bufsize );
-	}
-	n = vsprintf(buf, fmt, arg_ptr);
-	if( n == -1 )
-	    log_bug("vsprintf() failed\n");
-      #endif
-
+	n = vasprintf(&buf, fmt, arg_ptr);
+	if( !buf )
+	    log_bug("vasprintf() failed\n");
+        
 	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
 	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
 	if( n != nwritten )
-	    log_fatal("WriteConsole failed: %d != %d\n", n, nwritten );
+	    log_fatal("WriteConsole failed: %d != %d\n", n, (int)nwritten );
 	last_prompt_len += n;
+        m_free (buf);
     }
   #else
     last_prompt_len += vfprintf(ttyfp,fmt,arg_ptr) ;

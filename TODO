@@ -1,4 +1,6 @@
 
+  * set default charset from nl_langinfo.
+
   * check all mpi_read() for error returns.
 
   * --preserve-perms so that permissions set on a secring don't get changed.

@@ -1,3 +1,13 @@
+2001-06-06  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (vasprintf) [__MINGW32__]: New. Taken from libiberty.
+	* ttyio.c (tty_printf) [__MINGW32__]:  Replaced the sprintf with
+	the new vasprintf. 
+
+2001-06-05  Werner Koch  <wk@gnupg.org>
+
+	* dotlock.c (make_dotlock): Typo fixes. 
+
 2001-05-25  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.c (do_get): Fixed a serious format string bug.  Thanks to

@@ -207,10 +207,12 @@ int strcasecmp( const char *, const char *b);
   #define stricmp(a,b)	 strcasecmp( (a), (b) )
 #endif
 
-/*-- w32reg.c --*/
 #ifdef __MINGW32__
+/*-- w32reg.c --*/
 char *read_w32_registry_string( const char *root,
 				const char *dir, const char *name );
+/*-- strgutil.c --*/
+int vasprintf ( char **result, const char *format, va_list args);
 #endif
 
 /**** other missing stuff ****/

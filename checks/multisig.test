@@ -123,7 +123,9 @@ save_IFS="${IFS}"
 IFS=""
 for i in "$sig_1ls1ls_valid" "$sig_ls_valid" "$sig_sl_valid"; do
     echo "$i" | $srcdir/run-gpg --dearmor >x
+    IFS="${save_IFS}"
     ../g10/gpg --homedir . --verify x 2>/dev/null || error "valid is invalid"
+    IFS=""
 done
 #for i in "$sig_11lss_valid_but_is_not" "$sig_11lss11lss_valid_but_is_not" \
 #         "$sig_ssl_valid_but_is_not"; do
@@ -136,7 +138,9 @@ set +e
 for i in "$sig_1lsls_invalid" "$sig_lsls_invalid" \
          "$sig_lss_invalid" "$sig_slsl_invalid" ; do
     echo "$i" | $srcdir/run-gpg --dearmor >x
+    IFS="${save_IFS}"
     ../g10/gpg --homedir . --verify <x 2>/dev/null && error "invalid is valid"
+    IFS=""
 done
 IFS="${save_IFS}"
 

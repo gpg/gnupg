@@ -1,3 +1,9 @@
+2001-05-30  Werner Koch  <wk@gnupg.org>
+
+	* ttyio.h (tty_printf): Add missing parenthesis for non gcc.
+	* http.h: Removed trailing comma to make old ccs happy.  Both are
+	by Albert Chin.
+
 2001-05-25  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.h (tty_printf): Add printf attribute.

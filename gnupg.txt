@@ -1,0 +1,98 @@
+%%comments:
+Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts. A copy of the license is included in the file COPYING.
+
+%%name: GnuPG
+
+%%short-description: Complete implementation of the OpenPGP Internet standard.
+ 
+%%full-description: A complete and free replacement for PGP. The
+program does not use any patented algorithms, and can be used as a
+filter program. Can handle all OpenPGP messages and messages generated
+by PGP 5.0 and newer unless they use the IDEA algorithm.
+
+Supports ElGamal (signature and encrytion), DSA, AES, 3DES, Blowfish,
+Twofish, CAST5, MD5, SHA-1, RIPE-MD-160 and TIGER, and has language
+support for sixteen different languages.
+
+It is believed to be fully OpenPGP (as defined in RFC2440) conform,
+and has integrated support for HKP keyservers. There are a lot of
+useful extra features like anonymous message recipients.
+
+%%category: security, administration, email
+
+%%license: GPL
+
+%%maintainer: Werner Koch <wk@gnupg.org>
+
+%%interface: Command line
+
+%%updated: 1 Jun 2001
+
+%%keywords: PGP, security, decryption, encryption, digital signatures 
+
+%%programs: 
+
+%%GNU: yes
+
+%%web-page: http://www.gnupg.org/
+
+%%support: Paid extension/consulting from http://www.g10code.com
+
+%%doc: English user manual available from:
+http://www.gnupg.org/gph/index.html; Spanish user manual available from:
+http://www.gnupg.org/gph/index.html; English HOWTO available from
+http://www.dewinter.com/gnupg_howto/english/; French HOWTO available
+from http://www.gnupg.org/howtos/fr/; German HOWTO available from
+http://www.gnupg.org/howtos/de/; Spanish HOWTO available from
+http://www.dewinter.com/gnupg_howto/spanish.
+ 
+%%developers: Matthew Skala, Michael Roth, Niklas Hernaeus, Remi
+Guyomarch, Werner Koch <wk@gnupg.org>.
+
+%%contributors: J. Michael Ashley
+
+%%sponsors: German Federal Ministry of Economics and Technology
+
+%%source: ftp://ftp.gnupg.org/gcrypt/gnupg
+
+%%debian: http://www.debian.org/Packages/stable/non-us/gnupg.html
+
+%%redhat: http://www.megaloman.com/~hany/RPM/gnupg.html
+
+%%repository: See http://www.gnupg.org/cvs-access.html
+
+%%related: shred
+
+%%source-language: C
+
+%%supported-languages:
+
+%%use-requirements:
+
+%%build-prerequisites:
+
+%%weak-prerequisites:
+
+%%source-prerequisites:
+
+%%version: 1.0.6 stable released on 29 May 2001
+
+%%announce-list: announce@gnupg.org
+
+%%announce-news:
+
+%%help-list: gnupg-users@gnupg.org
+
+%%help-news: 
+
+%%dev-list: gnupg-devel@gnupg.org
+
+%%dev-news:
+
+%%bug-list: bug-gnupg@gnupg.org

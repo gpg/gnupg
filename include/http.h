@@ -51,7 +51,7 @@ typedef enum {
 
 enum {	/* put flag values into an enum, so that gdb can display them */
     HTTP_FLAG_TRY_PROXY = 1,
-    HTTP_FLAG_NO_SHUTDOWN = 2,
+    HTTP_FLAG_NO_SHUTDOWN = 2
 };
 
 struct http_context {

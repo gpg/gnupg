@@ -237,7 +237,7 @@ make_dotlock( DOTLOCK h, long timeout )
 	    continue;
 	}
 	else if( pid == getpid() ) {
-	    log_info( "Oops: lock already hold by us\n");
+	    log_info( "Oops: lock already held by us\n");
 	    h->locked = 1;
 	    return 0; /* okay */
 	}
@@ -250,7 +250,7 @@ make_dotlock( DOTLOCK h, long timeout )
 	}
 	if( timeout == -1 ) {
 	    struct timeval tv;
-	    log_info( "waiting for lock (hold by %d%s) %s...\n",
+	    log_info( "waiting for lock (held by %d%s) %s...\n",
 		      pid, maybe_dead, maybe_deadlock(h)? "(deadlock?) ":"");
 
 
