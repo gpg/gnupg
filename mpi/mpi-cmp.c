@@ -46,27 +46,28 @@ mpi_cmp_ui( MPI u, unsigned long v )
 int
 mpi_cmp( MPI u, MPI v )
 {
-    mpi_size_t usize = u->nlimbs;
-    mpi_size_t vsize = v->nlimbs;
+    mpi_size_t usize, vsize;
     int cmp;
 
-    /* FIXME: are the numbers always normalized? */
+    mpi_normalize( u );
+    mpi_normalize( v );
+    usize = u->nlimbs;
+    vsize = v->nlimbs;
     if( !u->sign && v->sign )
 	return 1;
-    else if( u->sign && !v->sign )
+    if( u->sign && !v->sign )
 	return -1;
-    else if( usize != vsize && !u->sign && !v->sign )
+    if( usize != vsize && !u->sign && !v->sign )
 	return usize - vsize;
-    else if( usize != vsize && u->sign && v->sign )
+    if( usize != vsize && u->sign && v->sign )
 	return vsize + usize;
-    else if( !usize )
+    if( !usize )
 	return 0;
-    else if( !(cmp=mpihelp_cmp( u->d, v->d, usize )) )
+    if( !(cmp=mpihelp_cmp( u->d, v->d, usize )) )
 	return 0;
-    else if( (cmp < 0?1:0) == (u->sign?1:0))
+    if( (cmp < 0?1:0) == (u->sign?1:0))
 	return 1;
-    else
-	return -1;
+    return -1;
 }
 
 

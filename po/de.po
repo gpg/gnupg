@@ -513,7 +513,7 @@ msgstr "|N|Die Komprimierverfahren N benutzen"
 
 #: g10/g10.c:254
 msgid "throw keyid field of encrypted packets"
-msgstr "entferne die AbsenderI-ID verschlüsselter Pakete"
+msgstr "entferne die Absender-ID verschlüsselter Pakete"
 
 #: g10/g10.c:262
 msgid ""

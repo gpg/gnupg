@@ -1,3 +1,7 @@
+Thu Jan  7 18:00:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* cipher.h (MD_BUFFER_SIZE): Removed.
+
 Mon Dec 14 21:18:49 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* types.h: fix for SUNPRO_C

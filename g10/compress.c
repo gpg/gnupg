@@ -266,8 +266,8 @@ handle_compressed( PKT_compressed *cd,
 	rc = callback(cd->buf, passthru );
     else
 	rc = proc_packets(cd->buf);
-    iobuf_pop_filter( cd->buf, compress_filter, &cfx );
   #if 0
+    iobuf_pop_filter( cd->buf, compress_filter, &cfx );
     if( cd->len )
 	iobuf_set_limit( cd->buf, 0 ); /* disable the readlimit */
     else

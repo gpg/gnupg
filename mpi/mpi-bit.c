@@ -48,7 +48,19 @@ __clz_tab[] =
 #define A_LIMB_1 ((mpi_limb_t)1)
 
 
+/****************
+ * Sometimes we have MSL (most significant limbs) which are 0;
+ * this is for some reasons not good, so this function removes them.
+ */
+void
+mpi_normalize( MPI a )
+{
+    if( mpi_is_protected(a) )
+	return;
 
+    for( ; a->nlimbs && !a->d[a->nlimbs-1]; a->nlimbs-- )
+	;
+}
 
 
 
@@ -67,6 +79,7 @@ mpi_get_nbits( MPI a )
 	return n;
     }
 
+    mpi_normalize( a );
     if( a->nlimbs ) {
 	mpi_limb_t alimb = a->d[a->nlimbs-1];
 	if( alimb )

@@ -399,10 +399,10 @@ B<--s2k-mode> I<number>
 B<--compress-algo> I<number>
     Use compress algorithm I<number>. Default is I<2> which is
     RFC1950 compression; you may use I<1> to use the old zlib
-    version which is used by PGP. This is only used for
-    new messages. The default algorithm may give better
+    version which is used by PGP.
+    The default algorithm may give better
     results because the window size is not limited to 8K.
-    If this is not used the OpenPGP behaviour is used; i.e.
+    If this is not used the OpenPGP behavior is used; i.e.
     the compression algorith is selected from the preferences.
 
 B<--digest-algo> I<name>
@@ -418,7 +418,7 @@ B<--throw-keyid>
     process because all available secret keys are tried.
 
 B<--not-dash-escaped>
-    This option changes the behaviour of cleartext signature
+    This option changes the behavior of cleartext signature
     so that they can be used for patch files. You should not
     send such an armored file via email because all spaces
     and line endings are hashed too.  You can not use this

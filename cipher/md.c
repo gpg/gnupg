@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 #include "util.h"
 #include "cipher.h"
 #include "errors.h"
@@ -208,8 +209,18 @@ MD_HANDLE
 md_open( int algo, int secure )
 {
     MD_HANDLE hd;
-    hd = secure ? m_alloc_secure_clear( sizeof *hd )
-		: m_alloc_clear( sizeof *hd );
+    int bufsize;
+
+    if( secure ) {
+	bufsize = 512 - sizeof( *hd );
+	hd = m_alloc_secure_clear( sizeof *hd + bufsize );
+    }
+    else {
+	bufsize = 1024 - sizeof( *hd );
+	hd = m_alloc_clear( sizeof *hd + bufsize );
+    }
+
+    hd->bufsize = bufsize+1; /* hd has already one byte allocated */
     hd->secure = secure;
     if( algo )
 	md_enable( hd, algo );
@@ -252,9 +263,11 @@ md_copy( MD_HANDLE a )
     MD_HANDLE b;
     struct md_digest_list_s *ar, *br;
 
-    b = a->secure ? m_alloc_secure( sizeof *b )
-		  : m_alloc( sizeof *b );
-    memcpy( b, a, sizeof *a );
+    if( a->bufcount )
+	md_write( a, NULL, 0 );
+    b = a->secure ? m_alloc_secure( sizeof *b + a->bufsize - 1 )
+		  : m_alloc( sizeof *b + a->bufsize - 1 );
+    memcpy( b, a, sizeof *a + a->bufsize - 1 );
     b->list = NULL;
     b->debug = NULL;
     /* and now copy the complete list of algorithms */
@@ -266,6 +279,9 @@ md_copy( MD_HANDLE a )
 	br->next = b->list;
 	b->list = br;
     }
+
+    if( a->debug )
+	md_start_debug( b, "unknown" );
     return b;
 }
 
@@ -490,6 +506,8 @@ void
 md_stop_debug( MD_HANDLE md )
 {
     if( md->debug ) {
+	if( md->bufcount )
+	    md_write( md, NULL, 0 );
 	fclose(md->debug);
 	md->debug = NULL;
     }

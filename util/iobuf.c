@@ -1,5 +1,5 @@
 /* iobuf.c  -  file handling
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998,1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -434,7 +434,7 @@ iobuf_close( IOBUF a )
     if( a && a->directfp ) {
 	fclose( a->directfp );
 	if( DBG_IOBUF )
-	    log_debug("iobuf-close -> %p\n", a->directfp );
+	    log_debug("iobuf_close -> %p\n", a->directfp );
 	return 0;
     }
 
@@ -722,9 +722,10 @@ iobuf_push_filter( IOBUF a,
 
 /****************
  * Remove an i/o filter.
+ * Only needed for iobuf_seek?
  */
-int
-iobuf_pop_filter( IOBUF a, int (*f)(void *opaque, int control,
+static int
+pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 		      IOBUF chain, byte *buf, size_t *len), void *ov )
 {
     IOBUF b;
@@ -798,16 +799,26 @@ underflow(IOBUF a)
     size_t len;
     int rc;
 
-  /*log_debug("iobuf-%d.%d: underflow: start=%lu len=%lu\n",
-		a->no, a->subno, (ulong)a->d.start, (ulong)a->d.len );*/
     assert( a->d.start == a->d.len );
     if( a->usage == 3 )
 	return -1; /* EOF because a temp buffer can't do an underflow */
 
     if( a->filter_eof ) {
+	if( a->chain ) {
+	    IOBUF b = a->chain;
+	    m_free(a->d.buf);
+	    memcpy(a, b, sizeof *a);
+	    m_free(b);
+	    if( DBG_IOBUF )
+		log_debug("iobuf-%d.%d: popped filter in underflow\n",
+							 a->no, a->subno );
+	}
+	else
+	    a->filter_eof = 0;
 	if( DBG_IOBUF )
-	    log_debug("iobuf-%d.%d: filter eof\n", a->no, a->subno );
-	return -1;
+	    log_debug("iobuf-%d.%d: underflow: eof (due to filter eof)\n",
+						    a->no, a->subno );
+	return -1; /* return one(!) EOF */
     }
     if( a->error ) {
 	if( DBG_IOBUF )
@@ -822,8 +833,6 @@ underflow(IOBUF a)
 	if( len < a->d.size ) {
 	    if( ferror(fp) )
 		a->error = 1;
-	    else if( feof( fp ) )
-		a->filter_eof = 1;
 	}
 	a->d.len = len;
 	a->d.start = 0;
@@ -835,47 +844,48 @@ underflow(IOBUF a)
 	len = a->d.size;
 	rc = a->filter( a->filter_ov, IOBUFCTRL_UNDERFLOW, a->chain,
 			a->d.buf, &len );
+	if( DBG_IOBUF )
+	    log_debug("iobuf-%d.%d: underflow: req=%lu got=%lu rc=%d\n",
+		    a->no, a->subno, (ulong)a->d.size, (ulong)len, rc );
 	if( a->usage == 1 && rc == -1 ) { /* EOF: we can remove the filter */
 	    size_t dummy_len;
 
-	    /* and tell the filter to free it self */
-	    if( a->filter != file_filter ) {
-		if( (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE, a->chain,
-				   NULL, &dummy_len)) )
-		    log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
-		a->filter = NULL;
-		a->desc = NULL;
-		a->filter_ov = NULL;
-	    }
+	    /* and tell the filter to free itself */
+	    if( (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE, a->chain,
+			       NULL, &dummy_len)) )
+		log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
+	    a->filter = NULL;
+	    a->desc = NULL;
+	    a->filter_ov = NULL;
 	    a->filter_eof = 1;
+	    if( !len && a->chain ) {
+		IOBUF b = a->chain;
+		m_free(a->d.buf);
+		memcpy(a,b, sizeof *a);
+		m_free(b);
+		if( DBG_IOBUF )
+		    log_debug("iobuf-%d.%d: popped filter in underflow (!len)\n",
+							     a->no, a->subno );
+	    }
 	}
 	else if( rc )
 	    a->error = 1;
 
-	if( !len )
+	if( !len ) {
+	    if( DBG_IOBUF )
+		log_debug("iobuf-%d.%d: underflow: eof\n", a->no, a->subno );
 	    return -1;
+	}
 	a->d.len = len;
 	a->d.start = 0;
 	return a->d.buf[a->d.start++];
     }
-    else
+    else {
+	if( DBG_IOBUF )
+	    log_debug("iobuf-%d.%d: underflow: eof (no filter)\n",
+						    a->no, a->subno );
 	return -1;  /* no filter; return EOF */
-}
-
-
-void
-iobuf_clear_eof(IOBUF a)
-{
-    if( a->directfp )
-	return;
-
-    assert(a->usage == 1);
-
-    if( a->filter )
-	log_info("iobuf-%d.%d: clear_eof `%s' with enabled filter\n", a->no, a->subno, a->desc );
-    if( !a->filter_eof )
-	log_info("iobuf-%d.%d: clear_eof `%s' with no EOF pending\n", a->no, a->subno, a->desc );
-    iobuf_pop_filter(a, NULL, NULL);
+    }
 }
 
 
@@ -1209,8 +1219,10 @@ iobuf_seek( IOBUF a, ulong newpos )
     a->ntotal = newpos;
     a->error = 0;
     /* remove filters, but the last */
+    if( a->chain )
+	log_debug("pop_filter called in iobuf_seek - please report\n");
     while( a->chain )
-	iobuf_pop_filter( a, a->filter, NULL );
+	pop_filter( a, a->filter, NULL );
 
     return 0;
 }
@@ -1263,7 +1275,8 @@ iobuf_set_block_mode( IOBUF a, size_t n )
     assert( a->usage == 1 || a->usage == 2 );
     ctx->usage = a->usage;
     if( !n ) {
-	iobuf_pop_filter(a, block_filter, NULL );
+	log_debug("pop_filter called in set_block_mode - please report\n");
+	pop_filter(a, block_filter, NULL );
     }
     else {
 	ctx->size = n; /* only needed for usage 2 */
@@ -1283,7 +1296,8 @@ iobuf_set_partial_block_mode( IOBUF a, size_t len )
     assert( a->usage == 1 || a->usage == 2 );
     ctx->usage = a->usage;
     if( !len ) {
-	iobuf_pop_filter(a, block_filter, NULL );
+	log_debug("pop_filter called in set_partial_block_mode - please report\n");
+	pop_filter(a, block_filter, NULL );
     }
     else {
 	ctx->partial = 1;
@@ -1307,4 +1321,62 @@ iobuf_in_block_mode( IOBUF a )
 }
 
 
+/****************
+ * Same as fgets() but if the buffer is too short a larger one will
+ * be allocated up to some limit *max_length.
+ * A line is considered a byte stream ending in a LF.
+ * Returns the length of the line. EOF is indicated by a line of
+ * length zero. The last LF may be missing due to an EOF.
+ * is max_length is zero on return, the line has been truncated.
+ *
+ * Note: The buffer is allocated with enough space to append a CR,LF,EOL
+ */
+unsigned
+iobuf_read_line( IOBUF a, byte **addr_of_buffer,
+			  unsigned *length_of_buffer, unsigned *max_length )
+{
+    int c;
+    char *buffer = *addr_of_buffer;
+    unsigned length = *length_of_buffer;
+    unsigned nbytes = 0;
+    unsigned maxlen = *max_length;
+    char *p;
+
+    if( !buffer ) { /* must allocate a new buffer */
+	length = 256;
+	buffer = m_alloc( length );
+	*addr_of_buffer = buffer;
+	*length_of_buffer = length;
+    }
+
+    length -= 3; /* reserve 3 bytes (cr,lf,eol) */
+    p = buffer;
+    while( (c=iobuf_get(a)) != -1 ) {
+	if( nbytes == length ) { /* increase the buffer */
+	    if( length > maxlen  ) { /* this is out limit */
+		/* skip the rest of the line */
+		while( c != '\n' && (c=iobuf_get(a)) != -1 )
+		    ;
+		*p++ = '\n'; /* always append a LF (we have reserved space) */
+		nbytes++;
+		*max_length = 0; /* indicate truncation */
+		break;
+	    }
+	    length += 3; /* correct for the reserved byte */
+	    length += length < 1024? 256 : 1024;
+	    buffer = m_realloc( buffer, length );
+	    *addr_of_buffer = buffer;
+	    *length_of_buffer = length;
+	    length -= 3; /* and reserve again */
+	    p = buffer + nbytes;
+	}
+	*p++ = c;
+	nbytes++;
+	if( c == '\n' )
+	    break;
+    }
+    *p = 0; /* make sure the line is a string */
+
+    return nbytes;
+}
 

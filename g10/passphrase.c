@@ -147,16 +147,25 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 
 	if( !get_pubkey( pk, keyid ) ) {
 	    const char *s = pubkey_algo_to_string( pk->pubkey_algo );
-	    tty_printf( _("(%u-bit %s key, ID %08lX, created %s)\n"),
+	    tty_printf( _("%u-bit %s key, ID %08lX, created %s"),
 		       nbits_from_pk( pk ), s?s:"?", (ulong)keyid[1],
 		       strtimestamp(pk->timestamp) );
+	    if( keyid[2] && keyid[3] && keyid[0] != keyid[2]
+				     && keyid[1] != keyid[3] )
+		tty_printf( _(" (main key ID %08lX)"), (ulong)keyid[3] );
+	    tty_printf("\n");
 	}
+
 	tty_printf("\n");
 	free_public_key( pk );
     }
     else if( keyid && !next_pw ) {
-	char buf[20];
+	char buf[50];
 	sprintf( buf, "%08lX%08lX", (ulong)keyid[0], (ulong)keyid[1] );
+	if( keyid[2] && keyid[3] && keyid[0] != keyid[2]
+				 && keyid[1] != keyid[3] )
+	    sprintf( buf+strlen(buf), " %08lX%08lX",
+				      (ulong)keyid[2], (ulong)keyid[3] );
 	write_status_text( STATUS_NEED_PASSPHRASE, buf );
     }
 

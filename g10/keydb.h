@@ -138,6 +138,7 @@ int get_pubkey_byname( GETKEY_CTX *rx, PKT_public_key *pk,
 int get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock );
 void get_pubkey_end( GETKEY_CTX ctx );
 int get_seckey( PKT_secret_key *sk, u32 *keyid );
+int get_primary_seckey( PKT_secret_key *sk, u32 *keyid );
 int get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint,
 						 size_t fprint_len );
 int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,

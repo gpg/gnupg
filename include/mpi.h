@@ -158,6 +158,7 @@ void mpi_putbyte( MPI a, unsigned index, int value );
 unsigned mpi_trailing_zeros( MPI a );
 
 /*-- mpi-bit.c --*/
+void mpi_normalize( MPI a );
 unsigned mpi_get_nbits( MPI a );
 int  mpi_test_bit( MPI a, unsigned n );
 void mpi_set_bit( MPI a, unsigned n );

@@ -75,15 +75,13 @@ struct cipher_handle_s { char does_not_matter[1]; };
 #define CIPHER_MODE_AUTO_CFB  4
 #define CIPHER_MODE_DUMMY     5  /* used with algo DUMMY for no encryption */
 
-
-#define MD_BUFFER_SIZE 512
-
 typedef struct {
-    byte buffer[MD_BUFFER_SIZE];
-    int  bufcount;
     int  secure;
     FILE  *debug;
     struct md_digest_list_s *list;
+    int  bufcount;
+    int  bufsize;
+    byte buffer[1];
 } *MD_HANDLE;
 
 
@@ -118,9 +116,9 @@ const byte *md_asn_oid( int algo, size_t *asnlen, size_t *mdlen );
 void md_start_debug( MD_HANDLE a, const char *suffix );
 void md_stop_debug( MD_HANDLE a );
 #define md_is_secure(a) ((a)->secure)
-#define md_putc(h,c)					    \
+#define md_putc(h,c)  \
 	    do {					    \
-		if( (h)->bufcount == MD_BUFFER_SIZE )	    \
+		if( (h)->bufcount == (h)->bufsize )	    \
 		    md_write( (h), NULL, 0 );		    \
 		(h)->buffer[(h)->bufcount++] = (c) & 0xff;  \
 	    } while(0)

@@ -627,6 +627,16 @@ get_seckey( PKT_secret_key *sk, u32 *keyid )
 }
 
 /****************
+ * Get the primary secret key and store it into sk
+ * Note: This function does not unprotect the key!
+ */
+int
+get_primary_seckey( PKT_secret_key *sk, u32 *keyid )
+{
+    return lookup_sk( sk, 11, keyid, NULL, 1 );
+}
+
+/****************
  * Check whether the secret key is available
  * Returns: 0 := key is available
  *	    G10ERR_NO_SECKEY := not availabe

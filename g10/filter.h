@@ -29,23 +29,32 @@ typedef struct {
 } md_filter_context_t;
 
 typedef struct {
-    int status;
-    int what;
-    int only_keyblocks;  /* skip all headers but ".... key block" */
+    /* these fields may be initialized */
+    int what;		    /* what kind of armor headers to write */
+    int only_keyblocks;     /* skip all headers but ".... key block" */
+    const char *hdrlines;   /* write these headerlines */
+
+    /* the following fields must be initialized to zero */
+    int inp_checked;	    /* set if the input has been checked */
+    int inp_bypass;	    /* set if the input is not armored */
+    int in_cleartext;	    /* clear text message */
+    int not_dash_escaped;   /* clear text is not dash escaped */
+    int hashes; 	    /* detected hash algorithms */
+    int faked;		    /* we are faking a literal data packet */
+    int truncated;	    /* number of truncated lines */
+
+    byte *buffer;	    /* malloced buffer */
+    unsigned buffer_size;   /* and size of this buffer */
+    unsigned buffer_len;    /* used length of the buffer */
+    unsigned buffer_pos;    /* read position */
+
     byte radbuf[4];
-    int  idx, idx2;
+    int idx, idx2;
     u32 crc;
-    byte helpbuf[100];
-    int  helpidx, helplen;
-    unsigned empty;    /* empty line counter */
-    int hashes;        /* detected hash algorithms */
-    int faked;
-    int parse_state;
-    int inp_checked;   /* set if inp has been checked */
-    int inp_bypass;    /* set if the input is not armored */
-    int any_data;
-    const char *hdrlines;
-    int not_dash_escaped;
+
+    int status; 	    /* an internal state flag */
+    int any_data;	    /* any valid armored data seen */
+    unsigned empty;	    /* empty line counter USED??? */
 } armor_filter_context_t;
 
 

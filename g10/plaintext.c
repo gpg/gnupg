@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 #include "util.h"
 #include "memory.h"
 #include "options.h"
@@ -137,7 +138,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		goto leave;
 	    }
 	    if( mfx->md ) {
-		if( convert && clearsig )
+		if( 0 && convert && clearsig )
 		    special_md_putc(mfx->md, c, &special_state );
 		else
 		    md_putc(mfx->md, c );
@@ -157,7 +158,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     else {
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
 	    if( mfx->md ) {
-		if( convert && clearsig )
+		if( 0 && convert && clearsig )
 		    special_md_putc(mfx->md, c, &special_state	);
 		else
 		    md_putc(mfx->md, c );
@@ -173,9 +174,9 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		}
 	    }
 	}
-	iobuf_clear_eof(pt->buf);
+	pt->buf = NULL;
     }
-    if( mfx->md && convert && clearsig )
+    if( 0 && mfx->md && convert && clearsig )
 	special_md_putc(mfx->md, -1, &special_state  ); /* flush */
 
     if( fp && fp != stdout && fclose(fp) ) {

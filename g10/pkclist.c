@@ -264,7 +264,7 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
     else if( !changed )
 	tty_printf(_("No trust values changed.\n\n") );
 
-    return any? 0:-1;
+    return changed? 0:-1;
 }
 
 /****************

@@ -1,3 +1,23 @@
+Thu Jan  7 18:00:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* pkclist.c (add_ownertrust): Fixed return value.
+
+	* encr-data.c (decrypt_data): Disabled iobuf_set_limit and
+	iobuf_pop_filter stuff.
+	* compress.c (handle_compressed): Disabled iobuf_pop_filter.
+
+	* packet.h (PKT_secret_key): Add is_primary flag.
+	* parse-packet.c (parse_key): Set this flag.
+	* passphrase.c (passphrase_to_dek): Kludge to print the primary
+	keyid - changed the API: keyid must now hold 2 keyids.
+	* getkey.c (get_primary_seckey): New.
+	* seckey-cert.c (do_check): pass primary keyid to passphrase query
+
+	* tbdio.c (open_db): removed the atexit
+	(tdbio_set_dbname): and moved it to here.
+
+	* armor.c: Rewrote large parts.
+
 Tue Dec 29 19:55:38 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* revoke.c (gen_revoke): Removed compression.

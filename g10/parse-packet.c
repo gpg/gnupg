@@ -1201,6 +1201,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	sk->expiredate = expiredate;
 	sk->hdrbytes = hdrlen;
 	sk->version = version;
+	sk->is_primary = pkttype == PKT_SECRET_KEY;
 	sk->pubkey_algo = algorithm;
 	sk->pubkey_usage = 0; /* not yet used */
     }

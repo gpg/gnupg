@@ -1,6 +1,13 @@
 
     * Polish language support.
 
+    * When querying the passphrase, the key ID of the primary key is
+      displayed along with the one of the used secondary key.
+
+    * Fixed a bug occurring when decrypting pgp 5 encrypted messages,
+      fixed an infinite loop bug in the 3DES code and in the code
+      which looks for trusted signatures.
+
 
 Noteworthy changes in version 0.9.0
 -----------------------------------

@@ -389,11 +389,25 @@ tdbio_cancel_transaction()
  **************** cached I/O functions ******************
  ********************************************************/
 
+static void
+cleanup(void)
+{
+    if( lockname ) {
+	release_dotlock(lockname);
+	lockname = NULL;
+    }
+}
+
 int
 tdbio_set_dbname( const char *new_dbname, int create )
 {
     char *fname;
+    static int initialized = 0;
 
+    if( !initialized ) {
+	atexit( cleanup );
+	initialized = 1;
+    }
     fname = new_dbname? m_strdup( new_dbname )
 		      : make_filename(opt.homedir, "trustdb.gpg", NULL );
 
@@ -480,14 +494,6 @@ tdbio_get_dbname()
 }
 
 
-static void
-cleanup(void)
-{
-    if( lockname ) {
-	release_dotlock(lockname);
-	lockname = NULL;
-    }
-}
 
 static void
 open_db()
@@ -504,7 +510,6 @@ open_db()
 	log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
     if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
 	log_fatal( _("%s: invalid trustdb\n"), db_name );
-    atexit( cleanup );
 }
 
 

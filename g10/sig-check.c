@@ -217,6 +217,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 
     result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
 				      mpi_get_nbits(pk->pkey[0]));
+
     ctx.sig = sig;
     ctx.md = digest;
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,

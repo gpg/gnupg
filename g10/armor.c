@@ -1,5 +1,5 @@
 /* armor.c - Armor flter
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998,1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -36,6 +36,8 @@
 #include "status.h"
 #include "i18n.h"
 
+
+#define MAX_LINELEN 20000
 
 #define CRCINIT 0xB704CE
 #define CRCPOLY 0X864CFB
@@ -86,6 +88,7 @@ typedef enum {
 
 /* if we encounter this armor string with this index, go
  * into a mode which fakes packets and wait for the next armor */
+#define BEGIN_SIGNATURE 2
 #define BEGIN_SIGNED_MSG_IDX 3
 static char *head_strings[] = {
     "BEGIN PGP MESSAGE",
@@ -108,12 +111,6 @@ static char *tail_strings[] = {
     NULL
 };
 
-
-static fhdr_state_t find_header( fhdr_state_t state,
-				 byte *buf, size_t *r_buflen,
-				 IOBUF a, size_t n,
-				 unsigned *r_empty, int *r_hashes,
-				 int only_keyblocks, int *not_dashed );
 
 
 static void
@@ -153,7 +150,7 @@ initialize(void)
  * Returns: True if it seems to be armored
  */
 static int
-is_armored( byte *buf )
+is_armored( const byte *buf )
 {
     int ctb, pkttype;
 
@@ -256,6 +253,8 @@ parse_hash_header( const char *line )
 }
 
 
+
+#if 0 /* old code */
 /****************
  * parse an ascii armor.
  * Returns: the state,
@@ -656,10 +655,125 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	}
     }
 
+  fprintf(stderr,"ARMOR READ (state=%d): %.*s", state, n, buf );
+
     *r_buflen = n;
     *r_empty = empty;
     return state;
 }
+#endif
+
+
+static unsigned
+trim_trailing_spaces( byte *line, unsigned len )
+{
+    byte *p, *mark;
+    unsigned n;
+
+    for(mark=NULL, p=line, n=0; n < len; n++, p++ ) {
+	if( strchr(" \t\r\n", *p ) ) {
+	    if( !mark )
+		mark = p;
+	}
+	else
+	    mark = NULL;
+    }
+
+    if( mark ) {
+	*mark = 0;
+	return mark - line;
+    }
+    return len;
+}
+
+
+
+/****************
+ * Check whether this is a armor line.
+ * returns: -1 if it is not a armor header or the index number of the
+ * armor header.
+ */
+static int
+is_armor_header( byte *line, unsigned len )
+{
+    const char *s;
+    byte *save_p, *p;
+    int save_c;
+    int i;
+
+    if( len < 15 )
+	return -1; /* too short */
+    if( memcmp( line, "-----", 5 ) )
+	return -1; /* no */
+    p = strstr( line+5, "-----");
+    if( !p )
+	return -1;
+    save_p = p;
+    p += 5;
+    if( *p == '\r' )
+	p++;
+    if( *p == '\n' )
+	p++;
+    if( *p )
+	return -1; /* garbage after dashes */
+    save_c = *save_p; *save_p = 0;
+    p = line+5;
+    for(i=0; (s=head_strings[i]); i++ )
+	if( !strcmp(s, p) )
+	    break;
+    *save_p = save_c;
+    if( !s )
+	return -1; /* unknown armor line */
+
+    if( opt.verbose > 1 )
+	log_info(_("armor: %s\n"), head_strings[i]);
+    return i;
+}
+
+
+
+/****************
+ * Parse a header lines
+ * Return 0: Empty line (end of header lines)
+ *	 -1: invalid header line
+ *	 >0: Good header line
+ */
+static int
+parse_header_line( armor_filter_context_t *afx, byte *line, unsigned len )
+{
+    byte *p;
+    int hashes=0;
+
+    if( *line == '\n' || ( len && (*line == '\r' && line[1]=='\n') ) )
+	return 0; /* empty line */
+    len = trim_trailing_spaces( line, len );
+    p = strchr( line, ':');
+    if( !p || !p[1] ) {
+	log_error(_("invalid armor header: "));
+	print_string( stderr, line, len, 0 );
+	putc('\n', stderr);
+	return -1;
+    }
+
+    if( opt.verbose ) {
+	log_info(_("armor header: "));
+	print_string( stderr, line, len, 0 );
+	putc('\n', stderr);
+    }
+
+    if( afx->in_cleartext ) {
+	if( (hashes=parse_hash_header( line )) )
+	    afx->hashes |= hashes;
+	else if( strlen(line) > 15 && !memcmp( line, "NotDashEscaped:", 15 ) )
+	    afx->not_dash_escaped = 1;
+	else {
+	    log_error(_("invalid clearsig header\n"));
+	    return -1;
+	}
+    }
+    return 1;
+}
+
 
 
 /* figure out whether the data is armored or not */
@@ -667,73 +781,119 @@ static int
 check_input( armor_filter_context_t *afx, IOBUF a )
 {
     int rc = 0;
+    int i;
     size_t n;
-    fhdr_state_t state = afx->parse_state;
     unsigned emplines;
+    byte *line;
+    unsigned len;
+    unsigned maxlen;
+    int hdr_line = -1;
 
-    if( state != fhdrENDClearsig )
-	state = fhdrHASArmor;
-
-    n = DIM(afx->helpbuf);
-    state = find_header( state, afx->helpbuf, &n, a,
-				afx->helplen, &emplines, &afx->hashes,
-				afx->only_keyblocks, &afx->not_dash_escaped );
-    switch( state ) {
-      case fhdrNOArmor:
+    /* read the first line to see whether this is armored data */
+    maxlen = MAX_LINELEN;
+    len = afx->buffer_len = iobuf_read_line( a, &afx->buffer,
+					     &afx->buffer_size, &maxlen );
+    line = afx->buffer;
+    if( !maxlen ) {
+	/* line has been truncated: assume not armored */
 	afx->inp_checked = 1;
 	afx->inp_bypass = 1;
-	afx->helplen = n;
-	break;
+	return 0;
+    }
 
-      case fhdrERROR:
+    if( !len ) {
+	return -1; /* eof */
+    }
+
+    /* (the line is always a C string but maybe longer) */
+    if( *line == '\n' || ( len && (*line == '\r' && line[1]=='\n') ) )
+	;
+    else if( !is_armored( line ) ) {
+	afx->inp_checked = 1;
+	afx->inp_bypass = 1;
+	return 0;
+    }
+
+    /* find the armor header */
+    while(len) {
+	i = is_armor_header( line, len );
+	if( i >= 0 && !(afx->only_keyblocks && i != 1 && i != 5 && i != 6 )) {
+	    hdr_line = i;
+	    if( hdr_line == BEGIN_SIGNED_MSG_IDX ) {
+		if( afx->in_cleartext ) {
+		    log_error(_("nested clear text signatures\n"));
+		    rc = G10ERR_INVALID_ARMOR;
+		}
+		afx->in_cleartext = 1;
+	    }
+	    break;
+	}
+	/* read the next line (skip all truncated lines) */
+	do {
+	    maxlen = MAX_LINELEN;
+	    afx->buffer_len = iobuf_read_line( a, &afx->buffer,
+					       &afx->buffer_size, &maxlen );
+	    line = afx->buffer;
+	    len = afx->buffer_len;
+	} while( !maxlen );
+    }
+
+    /* parse the header lines */
+    while(len) {
+	/* read the next line (skip all truncated lines) */
+	do {
+	    maxlen = MAX_LINELEN;
+	    afx->buffer_len = iobuf_read_line( a, &afx->buffer,
+					       &afx->buffer_size, &maxlen );
+	    line = afx->buffer;
+	    len = afx->buffer_len;
+	} while( !maxlen );
+
+	i = parse_header_line( afx, line, len );
+	if( i <= 0 ) {
+	    if( i )
+		rc = G10ERR_INVALID_ARMOR;
+	    break;
+	}
+    }
+
+
+    if( rc )
 	invalid_armor();
-	break;
-
-      case fhdrEOF:
-	rc = -1;
-	break;
-
-      case fhdrNullClearsig:
-      case fhdrCLEARSIG: /* start fake package mode (for clear signatures) */
-      case fhdrREADClearsigNext:
-      case fhdrCLEARSIGSimple:
-      case fhdrCLEARSIGSimpleNext:
-	afx->helplen = n;
-	afx->helpidx = 0;
+    else if( afx->in_cleartext ) {
 	afx->faked = 1;
-	break;
-
-      case fhdrTEXT:
-	afx->helplen = n;
-	afx->helpidx = 0;
+    }
+    else {
 	afx->inp_checked = 1;
 	afx->crc = CRCINIT;
 	afx->idx = 0;
 	afx->radbuf[0] = 0;
-	break;
-
-      default: BUG();
     }
 
-    afx->parse_state = state;
     return rc;
 }
 
 
 
-/* fake a literal data packet and wait for an armor line */
+/****************
+ * Fake a literal data packet and wait for the next armor line
+ * fixme: empty line handling and null length clear text signature are
+ *	  not implemented/checked.
+ */
 static int
 fake_packet( armor_filter_context_t *afx, IOBUF a,
 	     size_t *retn, byte *buf, size_t size  )
 {
     int rc = 0;
     size_t len = 0;
-    size_t n, nn;
-    fhdr_state_t state = afx->parse_state;
     unsigned emplines = afx->empty;
+    int lastline = 0;
+    unsigned maxlen, n;
+    byte *p;
 
     len = 2;	/* reserve 2 bytes for the length header */
     size -= 3;	/* and 1 for empline handling and 2 for the term header */
+		/* or the appended CR,LF */
     while( !rc && len < size ) {
 	if( emplines ) {
 	    while( emplines && len < size ) {
@@ -743,70 +903,98 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    }
 	    continue;
 	}
-	if( state == fhdrENDClearsigHelp ) {
-	    state = fhdrENDClearsig;
-	    afx->faked = 0;
-	    rc = -1;
+
+	if( afx->faked == 1 )
+	    afx->faked++;  /* skip the first (empty) line */
+	else {
+	    while( len < size && afx->buffer_pos < afx->buffer_len )
+		buf[len++] = afx->buffer[afx->buffer_pos++];
+	    buf[len++] = '\r';
+	    buf[len++] = '\n';
+	    if( len >= size )
+		continue;
+	}
+
+	/* read the next line */
+	maxlen = MAX_LINELEN;
+	afx->buffer_pos = 0;
+	afx->buffer_len = iobuf_read_line( a, &afx->buffer,
+					   &afx->buffer_size, &maxlen );
+	if( !afx->buffer_len ) {
+	    rc = -1; /* eof */
 	    continue;
 	}
-	if( state != fhdrNullClearsig
-	    && afx->helpidx < afx->helplen ) { /* flush the last buffer */
-	    n = afx->helplen;
-	    for(nn=afx->helpidx; len < size && nn < n ; nn++ )
-		buf[len++] = afx->helpbuf[nn];
-	    afx->helpidx = nn;
-	    continue;
-	}
-	if( state == fhdrEOF ) {
-	    rc = -1;
-	    continue;
-	}
-	/* read a new one */
-	n = DIM(afx->helpbuf);
-	afx->helpidx = 0;
-	state = find_header( state, afx->helpbuf, &n, a,
-			      state == fhdrNullClearsig? afx->helplen:0,
-						&emplines, &afx->hashes,
-						afx->only_keyblocks,
-						&afx->not_dash_escaped );
-	switch( state) {
-	  case fhdrERROR:
-	    invalid_armor();
-	    break;
+	if( !maxlen )
+	    afx->truncated++;
+	afx->buffer_len = trim_trailing_spaces( afx->buffer, afx->buffer_len );
+	p = afx->buffer;
+	n = afx->buffer_len;
 
-	  case fhdrEOF:
-	    rc = -1;
-	    break;
-
-	  case fhdrCLEARSIG:
-	    BUG();
-
-	  case fhdrREADClearsig:
-	  case fhdrREADClearsigNext:
-	  case fhdrCLEARSIGSimple:
-	  case fhdrCLEARSIGSimpleNext:
-	    afx->helplen = n;
-	    break;
-
-	  case fhdrENDClearsig:
-	    state = fhdrENDClearsigHelp;
-	    afx->helplen = n;
-	    break;
-
-	  default: BUG();
+	if( n > 2 && *p == '-' ) {
+	    /* check for dash escaped or armor header */
+	    if( p[1] == ' ' && !afx->not_dash_escaped ) {
+		/* issue a warning if it is not regular encoded */
+		if( p[2] != '-' && !( n > 6 && !memcmp(p+2, "From ", 5))) {
+		    log_info(_("invalid dash escaped line: "));
+		    print_string( stderr, p, n, 0 );
+		    putc('\n', stderr);
+		}
+		afx->buffer_pos = 2; /* skip */
+	    }
+	    else if( n >= 15 &&  p[1] == '-' && p[2] == '-' && p[3] == '-' ) {
+		if( is_armor_header( p, n ) != BEGIN_SIGNATURE ) {
+		    log_info(_("unexpected armor:"));
+		    print_string( stderr, p, n, 0 );
+		    putc('\n', stderr);
+		}
+		lastline = 1;
+		assert( len >= 4 );
+		len -= 2; /* remove the last CR,LF */
+		rc = -1;
+	    }
 	}
     }
+
     buf[0] = (len-2) >> 8;
     buf[1] = (len-2);
-    if( state == fhdrENDClearsig ) { /* write last (ending) length header */
-	if( buf[0] || buf[1] ) { /* write only if length of text is > 0 */
+    if( lastline ) { /* write last (ending) length header */
+	if( buf[0] && buf[1] ) { /* only if we have some text */
 	    buf[len++] = 0;
 	    buf[len++] = 0;
 	}
 	rc = 0;
+	afx->faked = 0;
+	afx->in_cleartext = 0;
+	/* and now read the header lines */
+	afx->buffer_pos = 0;
+	for(;;) {
+	    int i;
+
+	    /* read the next line (skip all truncated lines) */
+	    do {
+		maxlen = MAX_LINELEN;
+		afx->buffer_len = iobuf_read_line( a, &afx->buffer,
+						 &afx->buffer_size, &maxlen );
+	    } while( !maxlen );
+	    p = afx->buffer;
+	    n = afx->buffer_len;
+	    if( !n ) {
+		rc = -1;
+		break; /* eof */
+	    }
+	    i = parse_header_line( afx, p , n );
+	    if( i <= 0 ) {
+		if( i )
+		    invalid_armor();
+		break;
+	    }
+	}
+	afx->inp_checked = 1;
+	afx->crc = CRCINIT;
+	afx->idx = 0;
+	afx->radbuf[0] = 0;
     }
 
-    afx->parse_state = state;
     afx->empty = emplines;
     *retn = len;
     return rc;
@@ -830,9 +1018,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     idx = afx->idx;
     val = afx->radbuf[0];
     for( n=0; n < size; ) {
-	if( afx->helpidx < afx->helplen )
-	    c = afx->helpbuf[afx->helpidx++];
-	else if( (c=iobuf_get(a)) == -1 )
+	if( (c=iobuf_get(a)) == -1 )
 	    break;
 	if( c == '\n' || c == ' ' || c == '\r' || c == '\t' )
 	    continue;
@@ -864,11 +1050,8 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	afx->any_data = 1;
 	afx->inp_checked=0;
 	afx->faked = 0;
-	afx->parse_state = 0;
 	for(;;) { /* skip lf and pad characters */
-	    if( afx->helpidx < afx->helplen )
-		c = afx->helpbuf[afx->helpidx++];
-	    else if( (c=iobuf_get(a)) == -1 )
+	    if( (c=iobuf_get(a)) == -1 )
 		break;
 	    if( c == '\n' || c == ' ' || c == '\r'
 		|| c == '\t' || c == '=' )
@@ -889,9 +1072,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		  case 2: val |= (c>>2)&15; mycrc |= val << 8;val=(c<<6)&0xc0;break;
 		  case 3: val |= c&0x3f; mycrc |= val; break;
 		}
-		if( afx->helpidx < afx->helplen )
-		    c = afx->helpbuf[afx->helpidx++];
-		else if( (c=iobuf_get(a)) == -1 )
+		if( (c=iobuf_get(a)) == -1 )
 		    break;
 	    } while( ++idx < 4 );
 	    if( c == -1 ) {
@@ -913,9 +1094,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		for(rc=0;!rc;) {
 		    rc = 0 /*check_trailer( &fhdr, c )*/;
 		    if( !rc ) {
-			if( afx->helpidx < afx->helplen )
-			    c = afx->helpbuf[afx->helpidx++];
-			else if( (c=iobuf_get(a)) == -1 )
+			if( (c=iobuf_get(a)) == -1 )
 			    rc = 2;
 		    }
 		}
@@ -955,7 +1134,7 @@ armor_filter( void *opaque, int control,
     int  idx, idx2;
     size_t n=0;
     u32 crc;
-  #if 0
+  #if 1
     static FILE *fp ;
 
     if( !fp ) {
@@ -967,7 +1146,14 @@ armor_filter( void *opaque, int control,
     if( DBG_FILTER )
 	log_debug("armor-filter: control: %d\n", control );
     if( control == IOBUFCTRL_UNDERFLOW && afx->inp_bypass ) {
-	for( n=0; n < size; n++ ) {
+	n = 0;
+	if( afx->buffer_len ) {
+	    for(; n < size && afx->buffer_pos < afx->buffer_len; n++ )
+		buf[n++] = afx->buffer[afx->buffer_pos++];
+	    if( afx->buffer_pos >= afx->buffer_len )
+		afx->buffer_len = 0;
+	}
+	for(; n < size; n++ ) {
 	    if( (c=iobuf_get(a)) == -1 )
 		break;
 	    buf[n] = c & 0xff;
@@ -985,12 +1171,12 @@ armor_filter( void *opaque, int control,
 	else if( !afx->inp_checked ) {
 	    rc = check_input( afx, a );
 	    if( afx->inp_bypass ) {
-		for( n=0; n < size && n < afx->helplen; n++ )
-		    buf[n] = afx->helpbuf[n];
+		for(n=0; n < size && afx->buffer_pos < afx->buffer_len; n++ )
+		    buf[n++] = afx->buffer[afx->buffer_pos++];
+		if( afx->buffer_pos >= afx->buffer_len )
+		    afx->buffer_len = 0;
 		if( !n )
 		    rc = -1;
-		assert( n == afx->helplen );
-		afx->helplen = 0;
 	    }
 	    else if( afx->faked ) {
 		unsigned hashes = afx->hashes;
@@ -1046,7 +1232,7 @@ armor_filter( void *opaque, int control,
 	}
 	else
 	    rc = radix64_read( afx, a, &n, buf, size );
-      #if 0
+      #if 1
 	if( n )
 	    if( fwrite(buf, n, 1, fp ) != 1 )
 		BUG();
@@ -1181,6 +1367,8 @@ armor_filter( void *opaque, int control,
 	}
 	else if( !afx->any_data && !afx->inp_bypass )
 	    log_error(_("no valid OpenPGP data found.\n"));
+	m_free( afx->buffer );
+	afx->buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC )
 	*(char**)buf = "armor_filter";

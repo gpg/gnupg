@@ -44,7 +44,7 @@ do_check( PKT_secret_key *sk )
 
     if( sk->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
-	u32 keyid[2];
+	u32 keyid[4]; /* 4! because we need two of them */
 	CIPHER_HANDLE cipher_hd=NULL;
 	PKT_secret_key *save_sk;
 	char save_iv[8];
@@ -58,6 +58,13 @@ do_check( PKT_secret_key *sk )
 	    return G10ERR_CIPHER_ALGO;
 	}
 	keyid_from_sk( sk, keyid );
+	keyid[2] = keyid[3] = 0;
+	if( !sk->is_primary ) {
+	    PKT_secret_key *sk2 = m_alloc_clear( sizeof *sk2 );
+	    if( !get_primary_seckey( sk2, keyid ) )
+		keyid_from_sk( sk2, keyid+2 );
+	    free_secret_key( sk2 );
+	}
 	dek = passphrase_to_dek( keyid, sk->protect.algo,
 				 &sk->protect.s2k, 0 );
 	cipher_hd = cipher_open( sk->protect.algo,

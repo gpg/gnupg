@@ -1,3 +1,10 @@
+Thu Jan  7 18:00:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* mpi-bit.c (mpi_normalize): New.
+	(mpi_get_nbits): Normalize the MPI.
+	* mpi-bit.c (mpi_cmp): Normalize the MPI before the compare.
+
+
 Tue Dec  8 13:15:16 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* config.links: Moved the case for powerpc*linux

@@ -131,6 +131,7 @@ typedef struct {
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    pubkey_usage;
+    byte is_primary;
     byte is_protected;	/* The secret info is protected and must */
 			/* be decrypted before use, the protected */
 			/* MPIs are simply (void*) pointers to memory */

@@ -1,3 +1,8 @@
+Thu Jan  7 18:00:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* md.c (md_stop_debug): Do a flush first.
+	(md_open): size of buffer now depends on the secure parameter
+
 Sun Jan  3 15:28:44 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* rndunix.c (start_gatherer): Fixed stupid ==/= bug

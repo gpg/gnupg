@@ -106,6 +106,8 @@ case "${target}" in
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
         fi
         ;;
+    m68k-atari-mint)
+        ;;
     *)
        ;;
 esac
