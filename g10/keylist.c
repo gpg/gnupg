@@ -453,7 +453,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
             char *sigstr;
 
 	    if( stats ) {
-	      //		fflush(stdout);
+                /*fflush(stdout);*/
 		rc = check_key_signature( keyblock, node, NULL );
 		switch( rc ) {
 		 case 0:		 sigrc = '!'; break;
