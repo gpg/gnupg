@@ -1,7 +1,7 @@
 2004-11-24  Werner Koch  <wk@g10code.com>
 
-	* gpgconf-comp.c <dirmngr>: Add --ignore-http-dp and
-        --ignore-ldap-dp.
+	* gpgconf-comp.c <dirmngr>: Add --ignore-http-dp, --ignore-ldap-dp
+	and --ignore-ocsp-service-url.
 
 2004-11-23  Werner Koch  <wk@g10code.com>
 
