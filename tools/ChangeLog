@@ -1,3 +1,7 @@
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* gpgconf-comp.c: Added empty components for gpgsm and scdaemon.
+
 2004-02-12  Werner Koch  <wk@gnupg.org>
 
 	* watchgnupg.c (main): Implement option "--".

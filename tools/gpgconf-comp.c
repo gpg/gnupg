@@ -369,6 +369,20 @@ static gc_option_t gc_options_gpg_agent[] =
  };
 
 
+/* The options of the GC_COMPONENT_SCDAEMON component.  */
+static gc_option_t gc_options_scdaemon[] =
+ {
+   GC_OPTION_NULL
+ };
+
+
+/* The options of the GC_COMPONENT_GPGSM component.  */
+static gc_option_t gc_options_gpgsm[] =
+ {
+   GC_OPTION_NULL
+ };
+
+
 /* The options of the GC_COMPONENT_DIRMNGR component.  */
 static gc_option_t gc_options_dirmngr[] =
  {
@@ -479,6 +493,12 @@ typedef enum
     /* The GPG Agent.  */
     GC_COMPONENT_GPG_AGENT,
 
+    /* The Smardcard Daemon.  */
+    GC_COMPONENT_SCDAEMON,
+
+    /* GPG for S/MIME.  */
+    GC_COMPONENT_GPGSM,
+
     /* The LDAP Directory Manager for CRLs.  */
     GC_COMPONENT_DIRMNGR,
 
@@ -507,6 +527,8 @@ static struct
 } gc_component[] =
   {
     { "gpg-agent", NULL, "GPG Agent", gc_options_gpg_agent },
+    { "scdaemon", NULL, "Smartcard Daemon", gc_options_scdaemon },
+    { "gpgsm", NULL, "GPG for S/MIME", gc_options_gpgsm },
     { "dirmngr", NULL, "CRL Manager", gc_options_dirmngr }
   };
 
