@@ -969,6 +969,7 @@ main ( int argc, char **argv)
 
     case aImport:
 /*        import_keys (argc? argv:NULL, argc); */
+      gpgsm_import (0);
       break;
       
     case aExport:

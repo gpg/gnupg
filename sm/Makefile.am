@@ -21,7 +21,8 @@
 bin_PROGRAMS = gpgsm
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
-LDFLAGS = @LDFLAGS@ $(LIBGCRYPT_LIBS)
+LDFLAGS = @LDFLAGS@ 
+#$(LIBGCRYPT_LIBS)
 BUILT_SOURCES = errors.c
 
 gpgsm_SOURCES = \
@@ -31,8 +32,11 @@ gpgsm_SOURCES = \
 	import.c 
 
 gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a \
-              ../../libksba/src/.libs/libksba.a
+              ../../libksba/src/.libs/libksba.a \
+              ../../libgcrypt/src/.libs/libgcrypt.so.1
 
 
 errors.c : gpgsm.h mkerrors
 	$(srcdir)/mkerrors < $(srcdir)/gpgsm.h > errors.c
+
+

@@ -27,6 +27,7 @@
 #include <time.h>
 #include <assert.h>
 
+#include <gcrypt.h>
 #include <ksba.h>
 
 #include "gpgsm.h"
@@ -37,7 +38,7 @@ struct reader_cb_parm_s {
 
 
 static int
-reader_cb (void *cb_value, unsigned char *buffer, size_t count, size_t *nread)
+reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 {
   struct reader_cb_parm_s *parm = cb_value;
   size_t n;
@@ -55,10 +56,10 @@ reader_cb (void *cb_value, unsigned char *buffer, size_t count, size_t *nread)
           if ( ferror (parm->fp) )
             return -1;
           if (n)
-            break; /* return what we have beofre an EOF */
+            break; /* return what we have before an EOF */
           return -1;
         }
-      *buffer++ = c;
+      *(byte *)buffer++ = c;
     }
 
   *nread = n;
@@ -111,6 +112,153 @@ print_dn (char *p)
     printf ("`%s'", p);
 }
 
+static void 
+print_cert (KsbaCert cert)
+{
+  unsigned char *p;
+  char *dn;
+  time_t t;
+    
+  p = ksba_cert_get_serial (cert);
+  fputs ("serial: ", stdout);
+  print_integer (p);
+  ksba_free (p);
+  putchar ('\n');
+
+  t = ksba_cert_get_validity (cert, 0);
+  fputs ("notBefore: ", stdout);
+  print_time (t);
+  putchar ('\n');
+  t = ksba_cert_get_validity (cert, 1);
+  fputs ("notAfter: ", stdout);
+  print_time (t);
+  putchar ('\n');
+    
+  dn = ksba_cert_get_issuer (cert);
+  fputs ("issuer: ", stdout);
+  print_dn (dn);
+  ksba_free (dn);
+  putchar ('\n');
+    
+  dn = ksba_cert_get_subject (cert);
+  fputs ("subject: ", stdout);
+  print_dn (dn);
+  ksba_free (dn);
+  putchar ('\n');
+
+  printf ("hash algo: %d\n", ksba_cert_get_digest_algo (cert));
+}
+
+
+
+static MPI
+do_encode_md (GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
+	      const byte *asn, size_t asnlen)
+{
+    int nframe = (nbits+7) / 8;
+    byte *frame;
+    int i,n;
+    MPI a;
+
+    if( len + asnlen + 4  > nframe )
+	log_bug("can't encode a %d bit MD into a %d bits frame\n",
+		    (int)(len*8), (int)nbits);
+
+    /* We encode the MD in this way:
+     *
+     *	   0  A PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
+     *
+     * PAD consists of FF bytes.
+     */
+    frame = xmalloc (nframe);
+    n = 0;
+    frame[n++] = 0;
+    frame[n++] = 1; /* block type */
+    i = nframe - len - asnlen -3 ;
+    assert( i > 1 );
+    memset( frame+n, 0xff, i ); n += i;
+    frame[n++] = 0;
+    memcpy( frame+n, asn, asnlen ); n += asnlen;
+    memcpy( frame+n, gcry_md_read(md, algo), len ); n += len;
+    assert( n == nframe );
+    gcry_mpi_scan ( &a, GCRYMPI_FMT_USG, frame, &nframe);
+    xfree(frame);
+    return a;
+}
+
+
+
+
+static void
+check_selfsigned_cert (KsbaCert cert)
+{
+  /* OID for MD5 as defined in PKCS#1 (rfc2313) */
+  static byte asn[18] = /* Object ID is 1.2.840.113549.2.5 (md5) */
+  { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86, 0x48,
+    0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10
+  };
+
+  GCRY_MD_HD md;
+  int rc, algo;
+  GCRY_MPI frame;
+  char *p;
+  GCRY_SEXP s_sig, s_hash, s_pkey;
+
+  algo = ksba_cert_get_digest_algo (cert);
+  md = gcry_md_open (algo, 0);
+  if (!md)
+    {
+      log_error ("md_open failed: %s\n", gcry_strerror (-1));
+      return;
+    }
+
+  gcry_md_start_debug (md, "cert");
+  rc = ksba_cert_hash (cert, gcry_md_write, md);
+  if (rc)
+    {
+      log_error ("ksba_cert_hash failed: %s\n", ksba_strerror (rc));
+      gcry_md_close (md);
+      return;
+    }
+  gcry_md_final (md);
+
+  p = ksba_cert_get_sig_val (cert);
+  printf ("signature: %s\n", p);
+
+  rc = gcry_sexp_sscan ( &s_sig, NULL, p, strlen(p));
+  if (rc)
+    {
+      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      return;
+    }
+  /*gcry_sexp_dump (s_sig);*/
+
+
+  /* FIXME: need to map the algo to the ASN OID - we assume a fixed
+     one for now */
+  frame = do_encode_md (md, algo, 16, 2048, asn, DIM(asn));
+
+  /* put hash into the S-Exp s_hash */
+  if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
+    BUG ();
+  /*fputs ("hash:\n", stderr); gcry_sexp_dump (s_hash);*/
+  _gcry_log_mpidump ("hash", frame);
+
+  p = ksba_cert_get_public_key (cert);
+  printf ("public key: %s\n", p);
+
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, strlen(p));
+  if (rc)
+    {
+      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      return;
+    }
+  /*gcry_sexp_dump (s_pkey);*/
+  
+  rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
+  log_error ("gcry_pk_verify: %s\n", gcry_strerror (rc));
+
+}
 
 
 
@@ -163,42 +311,9 @@ gpgsm_import (int in_fd)
       goto leave;
     }
 
-  {
-    unsigned char *p;
-    char *dn;
-    time_t t;
-    
-    p = ksba_cert_get_serial (cert);
-    fputs ("serial: ", stdout);
-    print_integer (p);
-    ksba_free (p);
-    putchar ('\n');
+  print_cert (cert);
+  check_selfsigned_cert (cert);
 
-    t = ksba_cert_get_validity (cert, 0);
-    fputs ("notBefore: ", stdout);
-    print_time (t);
-    putchar ('\n');
-    t = ksba_cert_get_validity (cert, 1);
-    fputs ("notAfter: ", stdout);
-    print_time (t);
-    putchar ('\n');
-    
-    dn = ksba_cert_get_issuer (cert);
-    fputs ("issuer: ", stdout);
-    print_dn (dn);
-    ksba_free (dn);
-    putchar ('\n');
-    
-    dn = ksba_cert_get_subject (cert);
-    fputs ("subject: ", stdout);
-    print_dn (dn);
-    ksba_free (dn);
-    putchar ('\n');
-
-    printf ("hash algo: %d\n", ksba_cert_get_digest_algo (cert));
-    
-    ksba_cert_hash (cert, NULL, NULL);
-  }
 
  leave:
   ksba_cert_release (cert);
@@ -207,7 +322,4 @@ gpgsm_import (int in_fd)
     fclose (rparm.fp);
   return rc;
 }
-
-
-
 

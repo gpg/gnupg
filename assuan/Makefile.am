@@ -19,6 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
+EXTRA_DIST = mkerrors
 INCLUDES = -I.. -I$(top_srcdir)/include
 BUILT_SOURCES = assuan-errors.c
 
