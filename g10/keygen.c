@@ -2385,11 +2385,12 @@ generate_keypair (const char *fname, const char *card_serialno,
            
           if (use)
             {
-              r = m_alloc_clear( sizeof *r + 20 );
+              r = m_alloc_clear( sizeof *r + 25 );
               r->key = pKEYUSAGE;
-              sprintf( r->u.value, "%s%s",
+              sprintf( r->u.value, "%s%s%s",
                        (use & PUBKEY_USAGE_SIG)? "sign ":"",
-                       (use & PUBKEY_USAGE_ENC)? "encrypt ":"" );
+                       (use & PUBKEY_USAGE_ENC)? "encrypt ":"",
+                       (use & PUBKEY_USAGE_AUTH)? "auth":"" );
               r->next = para;
               para = r;
             }
