@@ -117,11 +117,14 @@ encode_session_key( DEK *dek, unsigned nbits )
 		k++;
 	if( !k )
 	    break; /* okay: no zero bytes */
-	k += k/128; /* better get some more */
+	k += k/128 + 3; /* better get some more */
 	pp = get_random_bits( k*8, 1, 1);
-	for(j=0; j < i && k ; j++ )
+	for(j=0; j < i && k ;) {
 	    if( !p[j] )
 		p[j] = pp[--k];
+            if (p[j])
+              j++;
+        }
 	m_free(pp);
     }
     memcpy( frame+n, p, i );
