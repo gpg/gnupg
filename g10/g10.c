@@ -2241,9 +2241,9 @@ main( int argc, char **argv )
 	break;
 
       case aFastImport:
+        opt.import_options |= IMPORT_FAST_IMPORT;
       case aImport:
-	import_keys( argc? argv:NULL, argc, (cmd == aFastImport),
-		     NULL, opt.import_options );
+	import_keys( argc? argv:NULL, argc, NULL, opt.import_options );
 	break;
 
       case aExport:

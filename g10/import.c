@@ -56,12 +56,12 @@ struct stats_s {
 };
 
 
-static int import( IOBUF inp, int fast, const char* fname,
+static int import( IOBUF inp, const char* fname,
                    struct stats_s *stats, unsigned int options );
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void revocation_present(KBNODE keyblock);
 static void remove_bad_stuff (KBNODE keyblock);
-static int import_one( const char *fname, KBNODE keyblock, int fast,
+static int import_one( const char *fname, KBNODE keyblock,
                        struct stats_s *stats, unsigned int options);
 static int import_secret_one( const char *fname, KBNODE keyblock,
                               struct stats_s *stats );
@@ -97,6 +97,7 @@ parse_import_options(char *str,unsigned int *options)
     {
       {"allow-local-sigs",IMPORT_ALLOW_LOCAL_SIGS},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_HKP_SUBKEY_BUG},
+      {"fast-import",IMPORT_FAST_IMPORT},
       {NULL,0}
     };
 
@@ -174,7 +175,7 @@ import_release_stats_handle (void *p)
  *
  */
 static int
-import_keys_internal( IOBUF inp, char **fnames, int nnames, int fast,
+import_keys_internal( IOBUF inp, char **fnames, int nnames,
 		      void *stats_handle, unsigned int options )
 {
     int i, rc = 0;
@@ -184,7 +185,7 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames, int fast,
         stats = import_new_stats_handle ();
 
     if (inp) {
-        rc = import( inp, fast, "[stream]", stats, options);
+        rc = import( inp, "[stream]", stats, options);
     }
     else {
         if( !fnames && !nnames )
@@ -198,7 +199,7 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames, int fast,
 	    if( !inp )
 	        log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	    else {
-	        rc = import( inp, fast, fname, stats, options );
+	        rc = import( inp, fname, stats, options );
 	        iobuf_close(inp);
 	        if( rc )
 		    log_error("import from `%s' failed: %s\n", fname,
@@ -216,8 +217,9 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames, int fast,
        user ids, signatures or revocations, then update/check the
        trustdb if the user specified by setting interactive or by
        not setting no-auto-check-trustdb */
-    if (!fast && (stats->imported || stats->n_uids ||
-                  stats->n_sigs || stats->n_revoc)) {
+    if (!(options&IMPORT_FAST_IMPORT) &&
+         (stats->imported || stats->n_uids ||
+          stats->n_sigs || stats->n_revoc)) {
         if (opt.interactive)
 	    update_trustdb();
 	else if (!opt.no_auto_check_trustdb)
@@ -227,21 +229,20 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames, int fast,
 }
 
 void
-import_keys( char **fnames, int nnames, int fast,
+import_keys( char **fnames, int nnames,
 	     void *stats_handle, unsigned int options )
 {
-    import_keys_internal( NULL, fnames, nnames, fast, stats_handle, options);
+    import_keys_internal( NULL, fnames, nnames, stats_handle, options);
 }
 
 int
-import_keys_stream( IOBUF inp, int fast,
-		    void *stats_handle, unsigned int options )
+import_keys_stream( IOBUF inp, void *stats_handle, unsigned int options )
 {
-    return import_keys_internal( inp, NULL, NULL, fast, stats_handle, options);
+    return import_keys_internal( inp, NULL, NULL, stats_handle, options);
 }
 
 static int
-import( IOBUF inp, int fast, const char* fname,
+import( IOBUF inp, const char* fname,
 	struct stats_s *stats, unsigned int options )
 {
     PACKET *pending_pkt = NULL;
@@ -259,7 +260,7 @@ import( IOBUF inp, int fast, const char* fname,
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
         remove_bad_stuff (keyblock);
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
-	    rc = import_one( fname, keyblock, fast, stats, options );
+	    rc = import_one( fname, keyblock, stats, options );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
                 rc = import_secret_one( fname, keyblock, stats );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
@@ -557,7 +558,7 @@ print_import_ok (PKT_public_key *pk, PKT_secret_key *sk, unsigned int reason)
  * which called g10.
  */
 static int
-import_one( const char *fname, KBNODE keyblock, int fast,
+import_one( const char *fname, KBNODE keyblock,
             struct stats_s *stats, unsigned int options )
 {
     PKT_public_key *pk;
@@ -646,7 +647,6 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	if( opt.verbose )
 	    log_info( _("key %08lX: new key - skipped\n"), (ulong)keyid[1] );
 	rc = 0;
-	fast = 1; /* so that we don't get into the trustdb update */
 	stats->skipped_new_keys++;
     }
     else if( rc ) { /* insert this key */

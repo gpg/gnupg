@@ -1,3 +1,14 @@
+2002-09-23  Stefan Bellon  <sbellon@sbellon.de>
+
+	* main.h: Introduced fast-import as import option. Removed
+	fast as separate option from prototypes.
+	* import.c (parse_import_options): Added fast-import option.
+	(import_*): Removed fast as separate option.
+	* g10.c (main): Added option fast-import, removed old fast
+	as separate argument.
+	* keyserver.c (keyserver_spawn): Removed old fast as separate
+	argument.
+
 2002-09-22  Stefan Bellon  <sbellon@sbellon.de>
 
 	* import.c (import_keys, import_keys_stream,

@@ -605,7 +605,7 @@ keyserver_spawn(int action,STRLIST list,
 	     way to do this could be to continue parsing this
 	     line-by-line and make a temp iobuf for each key. */
 
-	  import_keys_stream(spawn->fromchild,0,stats_handle,
+	  import_keys_stream(spawn->fromchild,stats_handle,
 			     opt.keyserver_options.import_options);
 
 	  import_print_stats(stats_handle);

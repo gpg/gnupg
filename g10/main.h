@@ -152,11 +152,12 @@ KBNODE make_mpi_comment_node( const char *s, MPI a );
 /*-- import.c --*/
 #define IMPORT_ALLOW_LOCAL_SIGS      1
 #define IMPORT_REPAIR_HKP_SUBKEY_BUG 2
+#define IMPORT_FAST_IMPORT           4
 
 int parse_import_options(char *str,unsigned int *options);
-void import_keys( char **fnames, int nnames, int fast,
+void import_keys( char **fnames, int nnames,
 		  void *stats_hd, unsigned int options );
-int import_keys_stream( IOBUF inp, int fast,
+int import_keys_stream( IOBUF inp,
 			void *stats_hd, unsigned int options );
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
