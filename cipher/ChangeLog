@@ -1,3 +1,8 @@
+2005-03-07  Werner Koch  <wk@g10code.com>
+
+	* primegen.c (is_prime): Free A2.  Noted by pmike2001@mail.ru.
+	Fixes #423.
+
 2004-11-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* md.c (string_to_digest_algo): Allow read/write SHA384 and

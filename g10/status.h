@@ -107,6 +107,13 @@
 #define STATUS_NEED_PASSPHRASE_PIN 76
 #define STATUS_SIG_SUBPACKET    77
 
+/* Extra status codes for certain smartcard operations.  Primary
+   useful to double check that change PIN worked as expected.  */
+#define STATUS_BAD_PASSPHRASE_PIN 78
+#define STATUS_SC_OP_FAILURE    79
+#define STATUS_SC_OP_SUCCESS    80
+
+
 /*-- status.c --*/
 void set_status_fd ( int fd );
 int  is_status_enabled ( void );

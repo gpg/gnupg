@@ -1,5 +1,5 @@
 /* cardglue.c - mainly dispatcher for card related functions.
- * Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -737,12 +737,17 @@ agent_scd_setattr (const char *name,
                    const unsigned char *value, size_t valuelen)
 {
   APP app;
+  int rc;
 
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  return app->fnc.setattr (app, name, pin_cb, NULL, value, valuelen);
+  rc = app->fnc.setattr (app, name, pin_cb, NULL, value, valuelen);
+
+  if (rc)
+    write_status (STATUS_SC_OP_FAILURE);
+  return rc;
 }
 
 
@@ -805,6 +810,7 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
   APP app;
   char keynostr[20];
   struct ctrl_ctx_s ctrl;
+  int rc;
 
   app = current_app? current_app : open_card ();
   if (!app)
@@ -815,9 +821,12 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
   ctrl.status_cb = genkey_status_cb;
   ctrl.status_cb_arg = info;
 
-  return app->fnc.genkey (app, &ctrl, keynostr,
-                           force? 1:0,
-                           pin_cb, NULL);
+  rc = app->fnc.genkey (app, &ctrl, keynostr,
+                        force? 1:0,
+                        pin_cb, NULL);
+  if (rc)
+    write_status (STATUS_SC_OP_FAILURE);
+  return rc;
 }
 
 /* Send a PKSIGN command to the SCdaemon. */
@@ -840,13 +849,15 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   rc = check_card_serialno (app, serialno);
   if (rc == -1)
     goto retry;
-  if (rc)
-    return rc;
 
-  return app->fnc.sign (app, serialno, hashalgo,
+  if (!rc)
+    rc = app->fnc.sign (app, serialno, hashalgo,
                         pin_cb, NULL,
                         indata, indatalen,
                         r_buf, r_buflen);
+  if (rc)
+    write_status (STATUS_SC_OP_FAILURE);
+  return rc;
 }
 
 
@@ -870,13 +881,15 @@ agent_scd_pkdecrypt (const char *serialno,
   rc = check_card_serialno (app, serialno);
   if (rc == -1)
     goto retry;
-  if (rc)
-    return rc;
 
-  return app->fnc.decipher (app, serialno, 
+  if (!rc)
+    rc = app->fnc.decipher (app, serialno, 
                             pin_cb, NULL,
                             indata, indatalen,
                             r_buf, r_buflen);
+  if (rc)
+    write_status (STATUS_SC_OP_FAILURE);
+  return rc;
 }
 
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
@@ -886,6 +899,7 @@ agent_scd_change_pin (int chvno)
   APP app;
   char chvnostr[20];
   int reset = 0;
+  int rc;
 
   reset = (chvno >= 100);
   chvno %= 100;
@@ -895,8 +909,11 @@ agent_scd_change_pin (int chvno)
     return gpg_error (GPG_ERR_CARD);
 
   sprintf (chvnostr, "%d", chvno);
-  return app->fnc.change_pin (app, NULL, chvnostr, reset,
-                              pin_cb, NULL);
+  rc = app->fnc.change_pin (app, NULL, chvnostr, reset,
+                            pin_cb, NULL);
+  if (rc)
+    write_status (STATUS_SC_OP_FAILURE);
+  return rc;
 }
 
 /* Perform a CHECKPIN operation.  SERIALNO should be the serial
@@ -906,12 +923,16 @@ int
 agent_scd_checkpin (const char *serialnobuf)
 {
   APP app;
+  int rc;
 
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  return app->fnc.check_pin (app, serialnobuf, pin_cb, NULL);
+  rc = app->fnc.check_pin (app, serialnobuf, pin_cb, NULL);
+  if (rc)
+    write_status (STATUS_SC_OP_FAILURE);
+  return rc;
 }
 
 
@@ -924,12 +945,16 @@ agent_openpgp_storekey (int keyno,
                         const unsigned char *e, size_t elen)
 {
   APP app;
+  int rc;
 
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  return app_openpgp_storekey (app, keyno, template, template_len,
-                               created_at, m, mlen, e, elen,
-                               pin_cb, NULL);
+  rc = app_openpgp_storekey (app, keyno, template, template_len,
+                             created_at, m, mlen, e, elen,
+                             pin_cb, NULL);
+  if (rc)
+    write_status (STATUS_SC_OP_FAILURE);
+  return rc;
 }

@@ -349,6 +349,9 @@ more arguments in future versions.
 	The supplied passphrase was good and the secret key material
 	is therefore usable.
 
+    BAD_PASSPHRASE_PIN
+        Reserved for future use.
+
     DECRYPTION_FAILED
 	The symmetric decryption failed - one reason could be a wrong
 	passphrase for a symmetrical encrypted message.
@@ -569,6 +572,16 @@ more arguments in future versions.
     SIG_SUBPACKET <type> <flags> <len> <data>
         This indicates that a signature subpacket was seen.  The
         format is the same as the "spk" record above.
+
+    SC_OP_FAILURE
+        An operation on a smartcard definitely failed.  Currently
+        there is no indication of the actual error code, but
+        application should be prepared to later accept more arguments.
+
+    SC_OP_SUCCESS
+        A smart card operaion succeeded.  This status is only printed
+        for certain operation and is mostly useful to check whether a
+        PIN change really worked.
 
 
 Format of the "--attribute-fd" output

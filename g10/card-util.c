@@ -77,7 +77,10 @@ change_pin (int chvno, int allow_admin)
       if (rc)
 	tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
       else
-	tty_printf ("PIN changed.\n");
+        {
+          write_status (STATUS_SC_OP_SUCCESS);
+          tty_printf ("PIN changed.\n");
+        }
     }
   else
     for (;;)
@@ -103,7 +106,10 @@ change_pin (int chvno, int allow_admin)
 	    if (rc)
 	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
 	    else
-	      tty_printf ("PIN changed.\n");
+              {
+                write_status (STATUS_SC_OP_SUCCESS);
+                tty_printf ("PIN changed.\n");
+              }
 	  }
 	else if (*answer == '2')
 	  {
@@ -111,15 +117,21 @@ change_pin (int chvno, int allow_admin)
 	    if (rc)
 	      tty_printf ("Error unblocking the PIN: %s\n", gpg_strerror (rc));
 	    else
-	      tty_printf ("PIN unblocked and new PIN set.\n");
-	  }
+              {
+                write_status (STATUS_SC_OP_SUCCESS);
+                tty_printf ("PIN unblocked and new PIN set.\n");
+              }
+          }
 	else if (*answer == '3')
 	  {
 	    rc = agent_scd_change_pin (3);
 	    if (rc)
 	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
 	    else
-	      tty_printf ("PIN changed.\n");
+              {
+                write_status (STATUS_SC_OP_SUCCESS);
+                tty_printf ("PIN changed.\n");
+              }
 	  }
 	else if (*answer == 'q' || *answer == 'Q')
 	  {
@@ -529,7 +541,6 @@ change_name (void)
       return -1;
     }
 
-  log_debug ("setting Name to `%s'\n", isoname);
   rc = agent_scd_setattr ("DISP-NAME", isoname, strlen (isoname) );
   if (rc)
     log_error ("error setting Name: %s\n", gpg_strerror (rc));

@@ -462,15 +462,16 @@ is_prime( MPI n, int steps, int *count )
 	    mpi_set_ui( x, 2 );
 	}
 	else {
-	    /*mpi_set_bytes( x, nbits-1, get_random_byte, 0 );*/
-	    {	char *p = get_random_bits( nbits, 0, 0 );
-		mpi_set_buffer( x, p, (nbits+7)/8, 0 );
-		m_free(p);
-	    }
-	    /* make sure that the number is smaller than the prime
-	     * and keep the randomness of the high bit */
+            char *p;
+            
+            p = get_random_bits( nbits, 0, 0 );
+            mpi_set_buffer( x, p, (nbits+7)/8, 0 );
+            m_free(p);
+
+	    /* Make sure that the number is smaller than the prime
+	     * and keep the randomness of the high bit.  */
 	    if( mpi_test_bit( x, nbits-2 ) ) {
-		mpi_set_highbit( x, nbits-2 ); /* clear all higher bits */
+		mpi_set_highbit( x, nbits-2 ); /* Clear all higher bits */
 	    }
 	    else {
 		mpi_set_highbit( x, nbits-2 );
@@ -498,6 +499,7 @@ is_prime( MPI n, int steps, int *count )
     mpi_free( z );
     mpi_free( nminus1 );
     mpi_free( q );
+    mpi_free (a2);
 
     return rc;
 }
