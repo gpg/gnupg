@@ -1,3 +1,12 @@
+2004-01-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (search_key): Catch a mangled input file (useful
+	if something other than GnuPG is calling the program).
+	(main): Avoid possible pre-string write.  Noted by Christian
+	Biere.
+
+	* gpgkeys_ldap.c (main): Avoid possible pre-string write.
+
 2003-12-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (send_key, get_key, main): Work with new HTTP code

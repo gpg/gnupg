@@ -653,6 +653,12 @@ search_key(char *searchkey)
       skey++;
     }
 
+  if(!search)
+    {
+      fprintf(console,"gpgkeys: corrupt input?\n");
+      return -1;
+    }    
+
   search[len]='\0';
 
   fprintf(console,("gpgkeys: searching for \"%s\" from HKP server %s\n"),
@@ -939,7 +945,7 @@ main(int argc,char *argv[])
 	    break;
 	  else
 	    {
-	      if(line[0]=='\n')
+	      if(line[0]=='\n' || line[0]=='\0')
 		break;
 
 	      work=malloc(sizeof(struct keylist));
@@ -1069,7 +1075,8 @@ main(int argc,char *argv[])
 	  }
 
 	/* Nail that last space */
-	searchkey[strlen(searchkey)-1]='\0';
+	if(*searchkey)
+	  searchkey[strlen(searchkey)-1]='\0';
 
 	if(search_key(searchkey)!=KEYSERVER_OK)
 	  failed++;
