@@ -377,9 +377,13 @@ agent_send_all_options (int fd)
 
   if (!opt.ttyname)
     {
+      const char *tmp;
+
       dft_ttyname = getenv ("GPG_TTY");
-      if ((!dft_ttyname || !*dft_ttyname) && tty_get_ttyname ())
-        dft_ttyname = tty_get_ttyname ();
+      if ((!dft_ttyname || !*dft_ttyname) && (tmp=ttyname (0)))
+        dft_ttyname = tmp;
+      if ((!dft_ttyname || !*dft_ttyname) && (tmp=tty_get_ttyname ()))
+        dft_ttyname = tmp;
     }
   if (opt.ttyname || dft_ttyname)
     {

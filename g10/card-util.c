@@ -523,6 +523,7 @@ change_url (void)
 static int
 fetch_url(void)
 {
+#if GNUPG_MAJOR_VERSION == 1
   int rc;
   struct agent_card_info_s info;
 
@@ -560,6 +561,9 @@ fetch_url(void)
     log_error("no URL set on card\n");
 
   return rc;
+#else
+  return 0;
+#endif
 }
 
 
@@ -577,12 +581,14 @@ change_login (const char *args)
       for (args++; spacep (args); args++)
         ;
       fp = fopen (args, "rb");
+#if GNUPG_MAJOR_VERSION == 1
       if (fp && is_secured_file (fileno (fp)))
         {
           fclose (fp);
           fp = NULL;
           errno = EPERM;
         }
+#endif
       if (!fp)
         {
           tty_printf (_("can't open `%s': %s\n"), args, strerror (errno));
@@ -839,6 +845,7 @@ restore_forced_chv1 (int *forced_chv1)
     }
 }
 
+#if GNUPG_MAJOR_VERSION == 1
 /* Helper for the key generation/edit functions.  */
 static void
 show_card_key_info (struct agent_card_info_s *info)
@@ -851,8 +858,9 @@ show_card_key_info (struct agent_card_info_s *info)
   print_sha1_fpr (NULL, info->fpr3valid? info->fpr3:NULL);
   tty_printf ("\n");
 }
+#endif
 
-
+#if GNUPG_MAJOR_VERSION == 1
 /* Helper for the key generation/edit functions.  */
 static int
 replace_existing_key_p (struct agent_card_info_s *info, int keyno)
@@ -872,7 +880,7 @@ replace_existing_key_p (struct agent_card_info_s *info, int keyno)
     }
   return 0;
 }
-
+#endif
 
 
 static void
@@ -898,7 +906,7 @@ generate_card_keys (const char *serialno)
   want_backup = cpr_get_answer_is_yes 
                   ( "cardedit.genkeys.backup_enc",
                     _("Make off-card backup of encryption key? (Y/n) "));
-#warning we need answer_is_yes_no_default()
+  /*FIXME: we need answer_is_yes_no_default()*/
 #endif
 
   if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
@@ -928,8 +936,12 @@ generate_card_keys (const char *serialno)
   if (check_pin_for_key_operation (&info, &forced_chv1))
     goto leave;
   
+#if GNUPG_MAJOR_VERSION == 1
   generate_keypair (NULL, info.serialno,
                     want_backup? opt.homedir:NULL);
+#else
+  generate_keypair (NULL, info.serialno);
+#endif
 
  leave:
   agent_release_card_info (&info);
@@ -942,6 +954,7 @@ generate_card_keys (const char *serialno)
 int
 card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
 {
+#if GNUPG_MAJOR_VERSION == 1
   struct agent_card_info_s info;
   int okay = 0;
   int forced_chv1 = 0;
@@ -988,6 +1001,9 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
   agent_release_card_info (&info);
   restore_forced_chv1 (&forced_chv1);
   return okay;
+#else
+  return 0;
+#endif
 }
 
 
@@ -997,6 +1013,7 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
 int 
 card_store_subkey (KBNODE node, int use)
 {
+#if GNUPG_MAJOR_VERSION == 1
   struct agent_card_info_s info;
   int okay = 0;
   int rc;
@@ -1117,6 +1134,9 @@ card_store_subkey (KBNODE node, int use)
     free_secret_key (copied_sk);
   agent_release_card_info (&info);
   return okay;
+#else
+  return 0;
+#endif
 }
 
 

@@ -1,3 +1,17 @@
+2004-10-26  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (verify_chv3): The minimum length for CHV3 is
+	8. Changed string to match the other ones.
+
+	* passphrase.c (agent_send_all_options): Try to deduce the ttyname
+	from stdin.
+
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (fetch_url): Disable for gnupg 1.9
+	(card_generate_subkey): Ditto.
+	(card_store_subkey): Ditto.
+
 2004-10-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), mainproc.c (check_sig_and_print):
