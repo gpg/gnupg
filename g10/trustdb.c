@@ -1,5 +1,6 @@
 /* trustdb.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *                                             Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -423,7 +424,7 @@ init_trustdb()
  * This function returns a letter for a trustvalue  Trust flags
  * are ignore.
  */
-int
+static int
 trust_letter (unsigned int value)
 {
   switch( (value & TRUST_MASK) ) 
@@ -557,7 +558,7 @@ get_ownertrust_info (PKT_public_key *pk)
     int c;
 
     otrust = get_ownertrust (pk);
-    c = trust_letter( (otrust & TRUST_MASK) );
+    c = trust_letter( otrust );
     if( !c )
 	c = '?';
     return c;
@@ -651,7 +652,7 @@ update_validity (PKT_public_key *pk, PKT_user_id *uid,
   ulong recno;
   byte namehash[20];
 
-  if( uid->attrib_data )
+  if(uid->attrib_data)
     rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
   else
     rmd160_hash_buffer (namehash, uid->name, uid->len );
@@ -798,7 +799,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
 
   if(uid)
     {
-      if( uid->attrib_data )
+      if(uid->attrib_data)
 	rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
       else
 	rmd160_hash_buffer (namehash, uid->name, uid->len );
@@ -903,7 +904,7 @@ get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
 	return 'd';
     if( trustlevel & TRUST_FLAG_REVOKED )
 	return 'r';
-    c = trust_letter ( (trustlevel & TRUST_MASK) );
+    c = trust_letter ( trustlevel );
     if( !c )
 	c = '?';
     return c;
@@ -919,7 +920,7 @@ get_validity_counts (PKT_public_key *pk, PKT_user_id *uid)
   if(pk==NULL || uid==NULL)
     BUG();
 
-  if( uid->attrib_data )
+  if(uid->attrib_data)
     rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
   else
     rmd160_hash_buffer (namehash, uid->name, uid->len );

@@ -1,3 +1,12 @@
+2003-01-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.h, trustdb.c (trust_letter): Make static.
+	(get_ownertrust_info, get_validity_info): Don't mask the trust
+	level twice.
+
+	* armor.c (armor_filter): Comment about PGP's end of line tab
+	problem.
+
 2003-01-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, pkclist.c (build_pk_list), free-packet.c

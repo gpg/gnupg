@@ -1,5 +1,6 @@
 /* armor.c - Armor flter
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *                                             Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -871,6 +872,9 @@ armor_filter( void *opaque, int control,
 		hashes &= 1|2|4|8;
 		if( !hashes ) {
 		    hashes |= 4;  /* default to MD 5 */
+		    /* This is non-ideal since PGP 5-8 have the same
+		       end-of-line bugs as PGP 2. However, we only
+		       enable pgp2mode if there is no Hash: header. */
 		    if( opt.pgp2_workarounds )
 			afx->pgp2mode = 1;
 		}
