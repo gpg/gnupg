@@ -51,10 +51,12 @@ do_check( PKT_secret_key *sk )
 
 	if( sk->protect.algo == CIPHER_ALGO_NONE )
 	    BUG();
-	if( check_cipher_algo( sk->protect.algo ) )
-	    return G10ERR_CIPHER_ALGO; /* unsupported protection algorithm */
-	if( cipher_get_blocksize( sk->protect.algo ) != 8 )
-	    return G10ERR_CIPHER_ALGO; /* unsupported protection algorithm */
+	if( check_cipher_algo( sk->protect.algo )
+	    || cipher_get_blocksize( sk->protect.algo  ) != 8 ) {
+	    log_info(_("protection algorithm %d is not supported\n"),
+			sk->protect.algo );
+	    return G10ERR_CIPHER_ALGO;
+	}
 	keyid_from_sk( sk, keyid );
 	dek = passphrase_to_dek( keyid, sk->protect.algo,
 				 &sk->protect.s2k, 0 );
@@ -164,21 +166,6 @@ check_secret_key( PKT_secret_key *sk )
 	if( i )
 	    log_error(_("Invalid passphrase; please try again ...\n"));
 	rc = do_check( sk );
-      #if 0 /* set to 1 to enable the workaround */
-	if( rc == G10ERR_BAD_PASS && sk->is_protected
-	    && sk->protect.algo == CIPHER_ALGO_BLOWFISH
-	    && sk->pubkey_algo != PUBKEY_ALGO_ELGAMAL ) {
-	    /* Workaround for a bug in 0.2.16 which still used
-	     * a 160 bit key for BLOWFISH. */
-	    log_info("trying workaround for 0.2.16 passphrase bug ...\n");
-	    log_info("If you don't need this, uncomment it in g10/seckey-cert.c\n\n");
-	    sk->protect.algo = CIPHER_ALGO_BLOWFISH160;
-	    rc = do_check( sk );
-	    if( rc )
-		rc = G10ERR_BAD_PASS;
-	    sk->protect.algo = CIPHER_ALGO_BLOWFISH;
-	}
-      #endif
 	if( get_passphrase_fd() != -1 )
 	    break;
     }

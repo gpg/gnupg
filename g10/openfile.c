@@ -65,19 +65,22 @@ overwrite_filep( const char *fname )
 
 /****************
  * Make an output filename for the inputfile INAME.
- * Returns an IOBUF
+ * Returns an IOBUF and an errorcode
  * Mode 0 = use ".gpg"
  *	1 = use ".asc"
  *	2 = use ".sig"
  */
-IOBUF
-open_outfile( const char *iname, int mode )
+int
+open_outfile( const char *iname, int mode, IOBUF *a )
 {
-    IOBUF a = NULL;
+    int rc = 0;
 
+    *a = NULL;
     if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
-	if( !(a = iobuf_create(NULL)) )
+	if( !(*a = iobuf_create(NULL)) ) {
 	    log_error("can't open [stdout]: %s\n", strerror(errno) );
+	    rc = G10ERR_CREATE_FILE;
+	}
 	else if( opt.verbose )
 	    log_info("writing to stdout\n");
     }
@@ -94,14 +97,18 @@ open_outfile( const char *iname, int mode )
 	    name = buf;
 	}
 	if( overwrite_filep( name ) ) {
-	    if( !(a = iobuf_create( name )) )
+	    if( !(*a = iobuf_create( name )) ) {
 		log_error("can't create %s: %s\n", name, strerror(errno) );
+		rc = G10ERR_CREATE_FILE;
+	    }
 	    else if( opt.verbose )
 		log_info("writing to '%s'\n", name );
 	}
+	else
+	    rc = G10ERR_FILE_EXISTS;
 	m_free(buf);
     }
-    return a;
+    return rc;
 }
 
 

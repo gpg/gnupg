@@ -264,15 +264,11 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 	     "with your key: \""));
 	p = get_user_id( sk_keyid, &n );
 	tty_print_string( p, n );
+	m_free(p); p = NULL;
 	tty_printf("\"\n\n");
-	m_free(p);
-	p = cpr_get(N_("sign_uid.okay"), _("Really sign? "));
-	cpr_kill_prompt();
-	if( !answer_is_yes(p) ) {
-	    m_free(p);
-	    continue; /* No */
-	}
-	m_free(p);
+
+	if( !cpr_get_answer_is_yes(N_("sign_uid.okay"), _("Really sign? ")) )
+	    continue;;
 	/* now we can sign the user ids */
       reloop: /* (must use this, because we are modifing the list) */
 	primary_pk = NULL;
@@ -328,6 +324,7 @@ delete_key( const char *username, int secret )
     PKT_secret_key *sk = NULL;
     u32 keyid[2];
     int okay=0;
+    int yes;
 
     /* search the userid */
     rc = secret? find_secret_keyblock_byname( &kbpos, username )
@@ -376,11 +373,11 @@ delete_key( const char *username, int secret )
     if( rc )
 	rc = 0;
     else if( opt.batch && secret )
-	log_error(_("can't do that in batch-mode\n"));
+	log_error(_("can't do that in batchmode\n"));
     else if( opt.batch && opt.answer_yes )
 	okay++;
     else if( opt.batch )
-	log_error(_("can't do that in batch-mode without \"--yes\"\n"));
+	log_error(_("can't do that in batchmode without \"--yes\"\n"));
     else {
 	char *p;
 	size_t n;
@@ -400,23 +397,20 @@ delete_key( const char *username, int secret )
 	m_free(p);
 	tty_printf("\n\n");
 
-	p = cpr_get( secret? N_("delete_key.secret.okay")
+	yes = cpr_get_answer_is_yes( secret? N_("delete_key.secret.okay")
 			   : N_("delete_key.okay"),
 			      _("Delete this key from the keyring? "));
-	cpr_kill_prompt();
-	if( !cpr_enabled() && secret && answer_is_yes(p)) {
+	if( !cpr_enabled() && secret && yes ) {
 	    /* I think it is not required to check a passphrase; if
 	     * the user is so stupid as to let others access his secret keyring
 	     * (and has no backup) - it is up him to read some very
 	     * basic texts about security.
 	     */
-	    m_free(p);
-	    p = cpr_get(N_("delete_key.secret.okay"),
+	    yes = cpr_get_answer_is_yes(N_("delete_key.secret.okay"),
 			 _("This is a secret key! - really delete? "));
 	}
-	if( answer_is_yes(p) )
+	if( yes )
 	    okay++;
-	m_free(p);
     }
 
 
@@ -596,7 +590,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 
 
     if( opt.batch ) {
-	log_error(_("can't do that in batch-mode\n"));
+	log_error(_("can't do that in batchmode\n"));
 	goto leave;
     }
 
@@ -735,7 +729,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 
 	  case cmdSIGN: /* sign (only the public key) */
 	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) ) {
-		if( !cpr_get_answer_is_yes(N_("keyedit.signall.okay"),
+		if( !cpr_get_answer_is_yes(N_("keyedit.sign_all.okay"),
 					   _("Really sign all user ids? ")) ) {
 		    tty_printf(_("Hint: Select the user ids to sign\n"));
 		    break;

@@ -104,7 +104,7 @@ msgid "keyedit.cancel.okay"
 msgstr ""
 
 #: g10/keyedit.c:738
-msgid "keyedit.signall.okay"
+msgid "keyedit.sign_all.okay"
 msgstr ""
 
 #: g10/keyedit.c:772

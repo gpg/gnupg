@@ -81,9 +81,17 @@ edit_ownertrust( ulong lid, int mode )
 " 2 = I do NOT trust\n"
 " 3 = I trust marginally\n"
 " 4 = I trust fully\n"
-" s = please show me more information\n\n") );
+" s = please show me more information\n") );
+    if( mode )
+	tty_printf(_(" m = back to the main menu\n"));
+    tty_printf("\n");
 
     for(;;) {
+	/* a string with valid answers */
+	char *ans = _("sSmM");
+
+	if( strlen(ans) != 4 )
+	    BUG();
 	p = cpr_get(N_("edit_ownertrust.value"),_("Your decision? "));
 	trim_spaces(p);
 	cpr_kill_prompt();
@@ -102,8 +110,11 @@ edit_ownertrust( ulong lid, int mode )
 		changed++;
 	    break;
 	}
-	else if( *p == 's' || *p == 'S' ) {
+	else if( *p == ans[0] || *p == ans[1] ) {
 	    tty_printf(_("You will see a list of signators etc. here\n"));
+	}
+	else if( mode && (*p == ans[2] || *p == ans[3]) ) {
+	    break ; /* back to the menu */
 	}
 	m_free(p); p = NULL;
     }

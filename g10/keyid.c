@@ -40,7 +40,7 @@ pubkey_letter( int algo )
       case PUBKEY_ALGO_RSA:	return 'R' ;
       case PUBKEY_ALGO_RSA_E:	return 'r' ;
       case PUBKEY_ALGO_RSA_S:	return 's' ;
-      case PUBKEY_ALGO_ELGAMAL_E:
+      case PUBKEY_ALGO_ELGAMAL_E: return 'g';
       case PUBKEY_ALGO_ELGAMAL: return 'G' ;
       case PUBKEY_ALGO_DSA:	return 'D' ;
       default: return '?';

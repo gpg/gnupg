@@ -246,6 +246,7 @@ import_one( const char *fname, KBNODE keyblock )
     KBPOS kbpos;
     u32 keyid[2];
     int rc = 0;
+    int new_key = 0;
 
     /* get the key and print some info about it */
     node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -279,6 +280,7 @@ import_one( const char *fname, KBNODE keyblock )
     if( !delete_inv_parts( fname, keyblock, keyid ) ) {
 	log_info_f( fname, _("key %08lX: no valid user ids\n"),
 						    (ulong)keyid[1]);
+	log_info(_("this may be caused by a missing self-signature\n"));
 	return 0;
     }
 
@@ -307,6 +309,7 @@ import_one( const char *fname, KBNODE keyblock )
 	unlock_keyblock( &kbpos );
 	/* we are ready */
 	log_info_f( fname, _("key %08lX: public key imported\n"), (ulong)keyid[1]);
+	new_key = 1;
     }
     else { /* merge */
 	int n_uids, n_sigs, n_subk;
@@ -382,11 +385,11 @@ import_one( const char *fname, KBNODE keyblock )
 	    log_info_f(fname, _("key %08lX: not changed\n"), (ulong)keyid[1] );
     }
     if( !rc ) {
-	rc = query_trust_record( pk_orig );
+	rc = query_trust_record( new_key? pk : pk_orig );
 	if( rc && rc != -1 )
 	    log_error("trustdb error: %s\n", g10_errstr(rc) );
-	else if( rc == -1 ) {
-	    rc = insert_trust_record( pk_orig );
+	else if( rc == -1 ) { /* not found trustdb */
+	    rc = insert_trust_record( new_key? pk : pk_orig );
 	    if( rc )
 		log_error("key %08lX: trustdb insert failed: %s\n",
 					(ulong)keyid[1], g10_errstr(rc) );

@@ -58,10 +58,9 @@ dearmor_file( const char *fname )
 
     iobuf_push_filter( inp, armor_filter, &afx );
 
-    if( !(out = open_outfile( fname, 0 )) ) {
-	rc = G10ERR_CREATE_FILE;
+    if( (rc = open_outfile( fname, 0, &out )) )
 	goto leave;
-    }
+
 
 
     while( (c = iobuf_get(inp)) != -1 )
@@ -100,10 +99,8 @@ enarmor_file( const char *fname )
     }
 
 
-    if( !(out = open_outfile( fname, 1 )) ) {
-	rc = G10ERR_CREATE_FILE;
+    if( (rc = open_outfile( fname, 1, &out )) )
 	goto leave;
-    }
 
     afx.what = 4;
     afx.hdrlines = "Comment: Use \"gpgm --dearmor\" for unpacking\n";

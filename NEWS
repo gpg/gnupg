@@ -1,3 +1,11 @@
+Noteworthy changes in version 0.3.4
+-----------------------------------
+    * New options --comment and --set-filename; see g10/OPTIONS
+
+    * yes/no, y/n localized.
+
+    * Fixed some bugs.
+
 Noteworthy changes in version 0.3.3
 -----------------------------------
     * IMPORTANT: I found yet another bug in the way the secret keys

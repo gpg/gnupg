@@ -4,6 +4,7 @@
 # utility
 util/secmem.c
 util/argparse.c
+util/miscutil.c
 
 # cipher
 cipher/random.c
@@ -32,6 +33,6 @@ g10/trustdb.c
 g10/verify.c
 g10/status.c
 g10/pubkey-enc.c
-
+g10/openfile.c
 
 #---end--

@@ -44,9 +44,17 @@ write_comment( IOBUF out, const char *s )
     int rc=0;
 
     pkt.pkttype = PKT_COMMENT;
-    pkt.pkt.comment = m_alloc( sizeof *pkt.pkt.comment + n - 1 );
-    pkt.pkt.comment->len = n;
-    strcpy(pkt.pkt.comment->data, s);
+    if( *s != '#' ) {
+       pkt.pkt.comment = m_alloc( sizeof *pkt.pkt.comment + n );
+       pkt.pkt.comment->len = n+1;
+       *pkt.pkt.comment->data = '#';
+       strcpy(pkt.pkt.comment->data+1, s);
+    }
+    else {
+       pkt.pkt.comment = m_alloc( sizeof *pkt.pkt.comment + n - 1 );
+       pkt.pkt.comment->len = n;
+       strcpy(pkt.pkt.comment->data, s);
+    }
     if( (rc = build_packet( out, &pkt )) )
 	log_error("build_packet(comment) failed: %s\n", g10_errstr(rc) );
     free_packet( &pkt );

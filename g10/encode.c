@@ -80,6 +80,7 @@ encode_simple( const char *filename, int mode )
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
+    init_packet(&pkt);
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {
@@ -107,19 +108,21 @@ encode_simple( const char *filename, int mode )
 	}
     }
 
-    if( !(out = open_outfile( filename, opt.armor? 1:0 )) ) {
+    if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
 	iobuf_close(inp);
 	m_free(cfx.dek);
 	m_free(s2k);
-	return G10ERR_CREATE_FILE;  /* or user said: do not overwrite */
+	return rc;
     }
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
-    else
+    else {
 	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
-
+	if( opt.comment_string )
+	    write_comment( out, opt.comment_string );
+    }
     if( s2k && !opt.rfc1991 ) {
 	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
 	enc->version = 4;
@@ -133,18 +136,22 @@ encode_simple( const char *filename, int mode )
     }
 
     /* setup the inner packet */
-    if( filename ) {
-	pt = m_alloc( sizeof *pt + strlen(filename) - 1 );
-	pt->namelen = strlen(filename);
-	memcpy(pt->name, filename, pt->namelen );
-	if( !(filesize = iobuf_get_filelength(inp)) )
-	    log_info(_("%s: warning: empty file\n"), filename );
+    if( filename || opt.set_filename ) {
+	const char *s = opt.set_filename ? opt.set_filename : filename;
+	pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+	pt->namelen = strlen(s);
+	memcpy(pt->name, s, pt->namelen );
     }
     else { /* no filename */
 	pt = m_alloc( sizeof *pt - 1 );
 	pt->namelen = 0;
-	filesize = 0; /* stdin */
     }
+    if( filename ) {
+	if( !(filesize = iobuf_get_filelength(inp)) )
+	    log_info(_("%s: warning: empty file\n"), filename );
+    }
+    else
+	filesize = 0; /* stdin */
     pt->timestamp = make_timestamp();
     pt->mode = 'b';
     pt->len = filesize;
@@ -194,6 +201,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
+    init_packet(&pkt);
 
     if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
 	return rc;
@@ -208,16 +216,18 @@ encode_crypt( const char *filename, STRLIST remusr )
     else if( opt.verbose )
 	log_info(_("reading from '%s'\n"), filename? filename: "[stdin]");
 
-    if( !(out = open_outfile( filename, opt.armor? 1:0 )) ) {
-	rc = G10ERR_CREATE_FILE;  /* or user said: do not overwrite */
+    if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) )
 	goto leave;
-    }
+
 
     if( opt.armor )
 	iobuf_push_filter( out, armor_filter, &afx );
-    else
+    else {
 	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
+	if( opt.comment_string )
+	    write_comment( out, opt.comment_string );
+    }
 
     /* create a session key */
     cfx.dek = m_alloc_secure( sizeof *cfx.dek );
@@ -237,24 +247,27 @@ encode_crypt( const char *filename, STRLIST remusr )
 	goto leave;
 
     /* setup the inner packet */
-    if( filename ) {
-	pt = m_alloc( sizeof *pt + strlen(filename) - 1 );
-	pt->namelen = strlen(filename);
-	memcpy(pt->name, filename, pt->namelen );
-	if( !(filesize = iobuf_get_filelength(inp)) )
-	    log_info(_("%s: warning: empty file\n"), filename );
+    if( filename || opt.set_filename ) {
+	const char *s = opt.set_filename ? opt.set_filename : filename;
+	pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+	pt->namelen = strlen(s);
+	memcpy(pt->name, s, pt->namelen );
     }
     else { /* no filename */
 	pt = m_alloc( sizeof *pt - 1 );
 	pt->namelen = 0;
-	filesize = 0; /* stdin */
     }
+    if( filename ) {
+	if( !(filesize = iobuf_get_filelength(inp)) )
+	    log_info(_("%s: warning: empty file\n"), filename );
+    }
+    else
+	filesize = 0; /* stdin */
     pt->timestamp = make_timestamp();
     pt->mode = 'b';
     pt->len = filesize;
     pt->new_ctb = !pt->len && !opt.rfc1991;
     pt->buf = inp;
-    init_packet(&pkt);
     pkt.pkttype = PKT_PLAINTEXT;
     pkt.pkt.plaintext = pt;
     cfx.datalen = filesize && !opt.compress? calc_packet_length( &pkt ) : 0;

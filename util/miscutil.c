@@ -25,6 +25,7 @@
 #include <ctype.h>
 #include "types.h"
 #include "util.h"
+#include "i18n.h"
 
 u32
 make_timestamp()
@@ -79,14 +80,16 @@ print_string( FILE *fp, byte *p, size_t n, int delim )
 	    putc(*p, fp);
 }
 
+
 int
 answer_is_yes( const char *s )
 {
-    if( !stricmp(s, "yes") )
+    char *long_yes = _("yes");
+    char *short_yes = _("yY");
+
+    if( !stricmp(s, long_yes ) )
 	return 1;
-    if( *s == 'y' && !s[1] )
-	return 1;
-    if( *s == 'Y' && !s[1] )
+    if( strchr( short_yes, *s ) && !s[1] )
 	return 1;
     return 0;
 }

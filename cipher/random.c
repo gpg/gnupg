@@ -124,6 +124,8 @@ get_random_bits( size_t nbits, int level, int secure )
     byte *buf;
     size_t nbytes = (nbits+7)/8;
 
+    if( quick_test && level > 1 )
+	level = 1;
     MASK_LEVEL(level);
     buf = secure && secure_alloc ? m_alloc_secure( nbytes ) : m_alloc( nbytes );
     read_pool( buf, nbytes, level );

@@ -291,7 +291,8 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
     for(i=0; i < npkey; i++ )
 	mpi_write(a, sk->skey[i] );
     if( sk->is_protected ) {
-	if( is_RSA(sk->pubkey_algo) && sk->version < 4 ) {
+	if( is_RSA(sk->pubkey_algo) && sk->version < 4
+				    && !sk->protect.s2k.mode ) {
 	    iobuf_put(a, sk->protect.algo );
 	    iobuf_write(a, sk->protect.iv, 8 );
 	}

@@ -47,18 +47,68 @@
 #endif
 
 
+enum cmd_and_opt_values { aNull = 0,
+    oArmor	  = 'a',
+    aDetachedSign = 'b',
+    aSym	  = 'c',
+    aDecrypt	  = 'd',
+    aEncr	  = 'e',
+    oKOption	  = 'k',
+    oDryRun	  = 'n',
+    oOutput	  = 'o',
+    oRemote	  = 'r',
+    aSign	  = 's',
+    oTextmode	  = 't',
+    oUser	  = 'u',
+    oVerbose	  = 'v',
+    oCompress	  = 'z',
+    oBatch	  = 500,
+    aClearsign	  = 539,
+    aStore,
+    aKeygen,
+    aSignEncr,
+    aSignKey,
+    aListPackets,
+    aEditKey,
+    aDeleteKey,
+    aDeleteSecretKey,
+    aKMode,
+    aKModeC,
+    aImport,
+    aVerify,
+    aListKeys,
+    aListSigs,
+    aListSecretKeys,
+    aExport,
+    aExportSecret,
+    aCheckKeys,
+    aGenRevoke,
+    aPrimegen,
+    aPrintMD,
+    aPrintMDs,
+    aCheckTrustDB,
+    aListTrustDB,
+    aListTrustPath,
+    aExportOwnerTrust,
+    aImportOwnerTrust,
+    aDeArmor,
+    aEnArmor,
+    aGenRandom,
+aTest };
+
+
 static ARGPARSE_OPTS opts[] = {
 
     { 300, NULL, 0, N_("@Commands:\n ") },
 
   #ifdef IS_G10
-    { 's', "sign",      256, N_("|[file]|make a signature")},
-    { 539, "clearsign", 256, N_("|[file]|make a clear text signature") },
-    { 'b', "detach-sign", 256, N_("make a detached signature")},
-    { 'e', "encrypt",   256, N_("encrypt data")},
-    { 'c', "symmetric", 256, N_("encryption only with symmetric cipher")},
+    { aSign, "sign",      256, N_("|[file]|make a signature")},
+    { aClearsign, "clearsign", 256, N_("|[file]|make a clear text signature") },
+    { aDetachedSign, "detach-sign", 256, N_("make a detached signature")},
+    { aEncr, "encrypt",   256, N_("encrypt data")},
+    { aSym, "symmetric", 256, N_("encryption only with symmetric cipher")},
     { 507, "store",     256, N_("store only")},
-    { 'd', "decrypt",   256, N_("decrypt data (default)")},
+    { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
     { 550, "verify"   , 256, N_("verify a signature")},
   #endif
     { 551, "list-keys", 256, N_("list keys")},
@@ -93,17 +143,17 @@ static ARGPARSE_OPTS opts[] = {
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
-    { 'a', "armor",     0, N_("create ascii armored output")},
+    { oArmor, "armor",     0, N_("create ascii armored output")},
   #ifdef IS_G10
-    { 'u', "local-user",2, N_("use this user-id to sign or decrypt")},
-    { 'r', "remote-user", 2, N_("use this user-id for encryption")},
-    { 'z', NULL,        1, N_("|N|set compress level N (0 disables)") },
-    { 't', "textmode",  0, N_("use canonical text mode")},
+    { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
+    { oRemote, "remote-user", 2, N_("use this user-id for encryption")},
+    { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
+    { oTextmode, "textmode",  0, N_("use canonical text mode")},
   #endif
-    { 'o', "output",    2, N_("use as output file")},
-    { 'v', "verbose",   0, N_("verbose") },
-    { 'n', "dry-run",   0, N_("do not make any changes") },
-    { 500, "batch",     0, N_("batch mode: never ask")},
+    { oOutput, "output",    2, N_("use as output file")},
+    { oVerbose, "verbose",   0, N_("verbose") },
+ /* { oDryRun, "dry-run",   0, N_("do not make any changes") }, */
+    { oBatch, "batch",     0, N_("batch mode: never ask")},
     { 501, "yes",       0, N_("assume yes on most questions")},
     { 502, "no",        0, N_("assume no on most questions")},
     { 509, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
@@ -147,7 +197,7 @@ static ARGPARSE_OPTS opts[] = {
     { 533, "list-trust-path",0, "@"},
   #endif
   #ifdef IS_G10
-    { 'k', NULL,        0, "@"},
+    { oKOption, NULL,	 0, "@"},
     { 504, "delete-secret-key",0, "@" },
     { 524, "edit-sig"  ,0, "@"}, /* alias for edit-key */
     { 523, "passphrase-fd",1, "@" },
@@ -173,27 +223,18 @@ static ARGPARSE_OPTS opts[] = {
     { 559, "always-trust", 0, "@"},
     { 562, "emulate-checksum-bug", 0, "@"},
     { 554, "run-as-shm-coprocess", 4, "@" },
-     /* 568 unused */
+    { 568, "set-filename", 2, "@" },
+    { 569, "comment", 2, "@" },
 {0} };
 
 
-enum cmd_values { aNull = 0,
-    aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
-    aSignKey, aClearsign, aListPackets, aEditKey, aDeleteKey, aDeleteSecretKey,
-    aKMode, aKModeC,  aImport, aVerify, aDecrypt, aListKeys,
-    aListSigs, aListSecretKeys, aExport, aExportSecret,
-    aCheckKeys, aGenRevoke, aPrimegen, aPrintMD, aPrintMDs,
-    aCheckTrustDB, aListTrustDB, aListTrustPath,
-    aExportOwnerTrust, aImportOwnerTrust,
-    aDeArmor, aEnArmor, aGenRandom,
-aTest };
 
 static int maybe_setuid = 1;
 
 static char *build_list( const char *text,
 			 const char *(*mapf)(int), int (*chkf)(int) );
-static void set_cmd( enum cmd_values *ret_cmd,
-			enum cmd_values new_cmd );
+static void set_cmd( enum cmd_and_opt_values *ret_cmd,
+			enum cmd_and_opt_values new_cmd );
 #ifdef IS_G10MAINT
 static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname, int algo );
@@ -337,9 +378,9 @@ set_debug(void)
 
 
 static void
-set_cmd( enum cmd_values *ret_cmd, enum cmd_values new_cmd )
+set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 {
-    enum cmd_values cmd = *ret_cmd;
+    enum cmd_and_opt_values cmd = *ret_cmd;
 
     if( !cmd || cmd == new_cmd )
 	cmd = new_cmd;
@@ -383,7 +424,7 @@ main( int argc, char **argv )
     int errors=0;
     int default_keyring = 1;
     int greeting = 1;
-    enum cmd_values cmd = 0;
+    enum cmd_and_opt_values cmd = 0;
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
     char *def_digest_string = NULL;
@@ -478,27 +519,27 @@ main( int argc, char **argv )
 						&pargs, opts) ) {
 	switch( pargs.r_opt ) {
 
-	  case 'a': opt.armor = 1; opt.no_armor=0; break;
+	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	#ifdef IS_G10
-	  case 'b': detached_sig = 1; set_cmd( &cmd, aSign ); break;
-	  case 'c': set_cmd( &cmd, aSym); break;
-	  case 'd': set_cmd( &cmd, aDecrypt); break;
-	  case 'e': set_cmd( &cmd, aEncr); break;
-	  case 'r': /* store the remote users */
+	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
+	  case aSym: set_cmd( &cmd, aSym); break;
+	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
+	  case aEncr: set_cmd( &cmd, aEncr); break;
+	  case oRemote: /* store the remote users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
 	    strcpy(sl->d, pargs.r.ret_str);
 	    sl->next = remusr;
 	    remusr = sl;
 	    break;
-	  case 's': set_cmd( &cmd, aSign );  break;
-	  case 't': opt.textmode=1;  break;
-	  case 'u': /* store the local users */
+	  case aSign: set_cmd( &cmd, aSign );  break;
+	  case oTextmode: opt.textmode=1;  break;
+	  case oUser: /* store the local users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
 	    strcpy(sl->d, pargs.r.ret_str);
 	    sl->next = locusr;
 	    locusr = sl;
 	    break;
-	  case 'z': opt.compress = pargs.r.ret_int; break;
+	  case oCompress: opt.compress = pargs.r.ret_int; break;
 	  case 503: set_cmd( &cmd, aKeygen); break;
 	  case 504: set_cmd( &cmd, aDeleteSecretKey); break;
 	  case 505: set_cmd( &cmd, aDeleteKey); break;
@@ -508,7 +549,7 @@ main( int argc, char **argv )
 	  case 524: set_cmd( &cmd, aEditKey); break;
 	  case 527: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case 529: def_digest_string = m_strdup(pargs.r.ret_str); break;
-	  case 539: set_cmd( &cmd, aClearsign); break;
+	  case aClearsign: set_cmd( &cmd, aClearsign); break;
 	  case 540: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case 542: set_cmd( &cmd, aGenRevoke); break;
 	  case 550: set_cmd( &cmd, aVerify); break;
@@ -536,12 +577,12 @@ main( int argc, char **argv )
 	  case 525: set_cmd( &cmd, aImportOwnerTrust); break;
 	#endif /* IS_G10MAINT */
 
-	  case 'o': opt.outfile = pargs.r.ret_str; break;
-	  case 'v': g10_opt_verbose++;
+	  case oOutput: opt.outfile = pargs.r.ret_str; break;
+	  case oVerbose: g10_opt_verbose++;
 		    opt.verbose++; opt.list_sigs=1; break;
-	  case 'k': set_cmd( &cmd, aKMode ); break;
+	  case oKOption: set_cmd( &cmd, aKMode ); break;
 
-	  case 500: opt.batch = 1; greeting = 0; break;
+	  case oBatch: opt.batch = 1; greeting = 0; break;
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
 	  case 508: set_cmd( &cmd, aCheckKeys); break;
@@ -598,6 +639,8 @@ main( int argc, char **argv )
 	    log_error("shared memory coprocessing is not available\n");
 	  #endif
 	    break;
+	  case 568: opt.set_filename = pargs.r.ret_str; break;
+	  case 569: opt.comment_string = pargs.r.ret_str; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }

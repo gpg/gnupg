@@ -1,3 +1,7 @@
+Mon Aug 10 21:33:38 1998  Werner Koch  (wk@(none))
+
+	* genkey1024.test: Ariel fixed this.
+
 Wed Jul  8 10:43:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* seat.test: New.

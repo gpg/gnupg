@@ -1617,6 +1617,11 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
 	    }
 	    log_info(_("key %08lX.%lu: inserted into trustdb\n"),
 					  keyid[1], pk->local_id );
+	    /* and re-read the dir record */
+	    if( tdbio_read_record( pk->local_id, &rec, RECTYPE_DIR ) ) {
+		log_error("check_trust: reread dir record failed\n");
+		return G10ERR_TRUSTDB;
+	    }
 	}
     }
     cur_time = make_timestamp();

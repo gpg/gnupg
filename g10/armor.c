@@ -1002,8 +1002,25 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, "-----\n");
 	    iobuf_writestr(a, "Version: GNUPG v"  VERSION " ("
 					    PRINTABLE_OS_NAME ")\n");
-	    iobuf_writestr(a,
-		"Comment: Get GNUPG from ftp://ftp.guug.de/pub/gcrypt/\n");
+
+	    if( opt.comment_string ) {
+		const char *s = opt.comment_string;
+		iobuf_writestr(a, "Comment: " );
+		for( ; *s; s++ ) {
+		    if( *s == '\n' )
+			iobuf_writestr(a, "\\n" );
+		    else if( *s == '\r' )
+			iobuf_writestr(a, "\\r" );
+		    else if( *s == '\v' )
+			iobuf_writestr(a, "\\v" );
+		    else
+			iobuf_put(a, *s );
+		}
+		iobuf_put(a, '\n' );
+	    }
+	    else
+		iobuf_writestr(a,
+		    "Comment: Get GNUPG from ftp://ftp.guug.de/pub/gcrypt/\n");
 	    if( afx->hdrlines )
 		iobuf_writestr(a, afx->hdrlines);
 	    iobuf_put(a, '\n');

@@ -223,8 +223,9 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	    count -= len2;
 	}
 	if( count ) {
-	    if( count < 8 )
+	    if( count < 8 ) {
 		md_write( md, s2k->salt, count );
+	    }
 	    else {
 		md_write( md, s2k->salt, 8 );
 		count -= 8;

@@ -142,10 +142,8 @@ gen_revoke( const char *uname )
     if( !opt.armor )
 	tty_printf("ASCII armored output forced.\n");
 
-    if( !(out = open_outfile( NULL, 0 )) ) {
-	rc = G10ERR_CREATE_FILE;
+    if( (rc = open_outfile( NULL, 0, &out )) )
 	goto leave;
-    }
 
     afx.what = 1;
     afx.hdrlines = "Comment: A revocation certificate should follow\n";

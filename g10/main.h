@@ -82,7 +82,7 @@ int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );
-IOBUF open_outfile( const char *fname, int mode );
+int   open_outfile( const char *iname, int mode, IOBUF *a );
 IOBUF open_sigfile( const char *iname );
 
 /*-- seskey.c --*/
@@ -124,5 +124,6 @@ int hash_datafiles( MD_HANDLE md, STRLIST files, const char *sigfilename,
 
 /*-- signal.c --*/
 void init_signals(void);
+void pause_on_sigusr( int which );
 
 #endif /*G10_MAIN_H*/

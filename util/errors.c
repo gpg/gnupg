@@ -91,7 +91,7 @@ g10_errstr( int err )
       X(UNEXPECTED     ,"Unexpected data")
       X(TIME_CONFLICT  ,"Timestamp conflict")
       X(WR_PUBKEY_ALGO ,"Unusable pubkey algorithm")
-
+      X(FILE_EXISTS    ,"File exists")
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
   #undef X

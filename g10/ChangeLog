@@ -1,3 +1,48 @@
+Tue Aug 11 17:54:50 1998  Werner Koch  (wk@(none))
+
+	* build-packet.c (do_secret_key): Fixed handling of old keys.
+
+	* getkey.c (compare_name): Fixed exact and email matching
+
+	* openfile.c (open_outfile): Changed arguments and all callers.
+
+Tue Aug 11 09:14:35 1998  Werner Koch  (wk@(none))
+
+	* encode.c (encode_simple): Applied option set-filename and comment.
+	(encode_crypt): Ditto.
+	* sign.c (sign_file): Ditto.
+	* armor.c (armor_filter): Applied option comment.
+
+	* encode.c (encode_crypt): Moved init_packet to the begin.
+	(encode_simple): add an init_packet().
+
+	* comment (write_comment): Now enforces a hash sign as the 1st byte.
+
+	* import.c (import_one): Add explanation for "no user ids".
+
+	* compress.c (do_uncompress): Applied Brian Warner's patch to support
+	zlib 1.1.3 etc.
+
+	* trustdb.c (check_trust): Fixed a problem after inserting new keys.
+
+	* getkey (lookup): do not return the primary key if usage is given
+	(lookup_sk): Ditto and take usage into account.
+
+	* status.c (cpr_get_answer_is_yes): add display_help.
+
+Mon Aug 10 10:11:28 1998  Werner Koch  (wk@(none))
+
+	* getkey.c (lookup_sk): Now always returns the primary if arg
+	primary is true.
+	(lookup): Likewise.
+	(get_pubkey_byname): Now returns the primary key
+	(get_seckey_byname): Ditto.
+
+
+Mon Aug 10 08:34:03 1998  Werner Koch  (wk@(none))
+
+	* keyid.c (pubkey_letter): ELG_E is now a small g.
+
 Sat Aug  8 17:26:12 1998  Werner Koch  (wk@(none))
 
 	* openfile (overwrite_filep): Changed semantics and all callers.

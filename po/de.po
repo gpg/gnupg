@@ -13,6 +13,15 @@ msgstr ""
 "(Um dies zu vermeiden, kann das Programm suid(root) installiert werden;\n"
 " bitte wenden Sie sich hierzu an den Systemadministrator.)\n"
 
+#: util/miscutil.c:87
+msgid  "yes"
+msgstr "ja"
+
+#: util/miscutil.c:88
+msgid  "yY"
+msgstr "jJ"
+
+
 #: cipher/rand-dummy.c:106
 msgid "warning: using insecure random number generator!!\n"
 msgstr "Der Zufallszahlengenerator erzeugt keine sicheren Zufallszahlen!\n"
@@ -467,7 +476,6 @@ msgid ""
 " 3 = I trust marginally\n"
 " 4 = I trust fully\n"
 " s = please show me more information\n"
-"\n"
 msgstr ""
 "\"\n"
 "\n"
@@ -480,7 +488,14 @@ msgstr ""
 " 3 = Ich vertraue ihm normalerweise\n"
 " 4 = Ich vertraue ihm immer\n"
 " s = Bitte weitere Information anzeigen\n"
-"\n"
+
+msgid  " m = back to the main menu\n"
+msgstr " m = Zurück zum Menü\n"
+
+# valid user replies (not including 1..4)
+msgid  "sSmM"
+msgstr "sSmM"
+
 
 #: g10/pkclist.c:84
 msgid "Your decision? "
@@ -516,6 +531,11 @@ msgid ""
 "No owner trust values changed.\n"
 "\n"
 msgstr "Keine \"Owner trust\" Werte ge\344ndert.\n"
+
+#: g10/pkclist.c:186 g10/pkclist.c:273
+msgid "Use this key anyway? "
+msgstr "Den Schlüssel trotzdem benutzen?"
+
 
 #: g10/pkclist.c:268
 msgid ""
@@ -719,7 +739,7 @@ msgstr "Der Schl\374ssel verf\344llt am %s\n"
 
 #: g10/keygen.c:528
 msgid "Is this correct (y/n)? "
-msgstr "Ist dies richtig? (y/n) "
+msgstr "Ist dies richtig? (j/n) "
 
 #: g10/keygen.c:557
 msgid ""
@@ -923,7 +943,7 @@ msgstr "Sch\374ssel %08lX: \326ffentlicher Schlüssel importiert\n"
 
 #: g10/import.c:317
 msgid "key %08lX: doesn't match our copy\n"
-msgstr "Sch\374ssel %08lX: Stimmt nicht mit unserer Kopie \374berein"
+msgstr "Sch\374ssel %08lX: Stimmt nicht mit unserer Kopie \374berein\n"
 
 #: g10/import.c:330 g10/import.c:501
 msgid "key %08lX: can't locate original keyblock: %s\n"
@@ -1116,11 +1136,11 @@ msgid "use option \"--delete-secret-key\" to delete it first.\n"
 msgstr "Benutzen Sie das Kommando \"--delete-decret-key\", um ihn vorab zu entfernen.\n"
 
 #: g10/keyedit.c:508
-msgid "can't do that in batch-mode\n"
+msgid "can't do that in batchmode\n"
 msgstr "Dies kann im Batchmodus nicht durchgef\374hrt werden.\n"
 
 #: g10/keyedit.c:512
-msgid "can't do that in batch-mode without \"--yes\"\n"
+msgid "can't do that in batchmode without \"--yes\"\n"
 msgstr "Dies kann im Batchmodus ohne \"--yes\" nicht durchgef\374hrt werden.\n"
 
 #: g10/keyedit.c:532
@@ -1286,4 +1306,30 @@ msgstr ""
 
 msgid "keyedit.cmd"
 msgstr "Geben Sie bitte \"help\" ein."
+
+#: g10/status.c:207
+msgid "No help available"
+msgstr "Keine Hilfe vorhanden."
+
+#: g10/status.c:213
+msgid "No help available for '%s'"
+msgstr "Keine Hilfe für '%s' vorhanden."
+
+#: g10/pubkey-enc.c:138
+msgid "note: cipher algorithm %d not found in preferences\n"
+msgstr ""
+"Hinweis: Algorithmus %d ist kein bevorzugtes Verschlüsselungsverfahren\n"
+
+
+#: g10/openfile.c:58
+msgid "File '%s' exists. "
+msgstr "Datei '%s' exsitier bereits. "
+
+#: g10/openfile.c:59
+msgid "openfile.overwrite.okay"
+msgstr "Geben Sie \"ja\" ein, wenn Sie die Datei überschreiben möchten"
+
+#: g10/openfile.c:60
+msgid "Overwrite (y/N)? "
+msgstr "Überschreiben (j/N)? "
 

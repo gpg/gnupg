@@ -26,9 +26,6 @@
 
     * rewrite --list-packets or put it into another tool.
 
-    * add usage arguments to get_key_byname or return a PKC_LIST with
-      all keys and add a selection.
-
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
 
@@ -51,5 +48,9 @@
 
     * Is it okay to use gettext for the help system???
 
-    * There are still problems with old v3 keys after passphrase change.
+    * configure checks two times for gcc
+
+    * update gettext
+
+    * Add some stuff for DU cc
 

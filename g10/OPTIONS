@@ -50,3 +50,11 @@ run-as-shm-coprocess [request-locked-shm-size]
 # very special :-)
 # You will have to use "--status-fd" too
 
+
+set-filename <name>
+# Set <name> as the filename into the plaintext packet
+
+comment <string>
+# Add <string> as comment to the output
+
+

@@ -71,9 +71,9 @@ static int pk_cache_entries;   /* number of entries in pk cache */
 
 static int lookup( PKT_public_key *pk,
 		   int mode,  u32 *keyid, const char *name,
-		   KBNODE *ret_keyblock  );
+		   KBNODE *ret_keyblock, int primary  );
 static int lookup_sk( PKT_secret_key *sk,
-		   int mode,  u32 *keyid, const char *name );
+		   int mode,  u32 *keyid, const char *name, int primary );
 
 /* note this function may be called before secure memory is
  * available
@@ -263,7 +263,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 
 
     /* do a lookup */
-    rc = lookup( pk, 11, keyid, NULL, NULL );
+    rc = lookup( pk, 11, keyid, NULL, NULL, 0 );
     if( !rc )
 	goto leave;
 
@@ -321,15 +321,13 @@ hextobyte( const byte *s )
  *   on the length a short or complete one.
  * - If the username starts with 32,33,40 or 41 hex-digits (the first one
  *   must be in the range 0..9), this is considered a fingerprint.
- *   (Not yet implemented)
  * - If the username starts with a left angle, we assume it is a complete
  *   email address and look only at this part.
  * - If the username starts with a '.', we assume it is the ending
  *   part of an email address
  * - If the username starts with an '@', we assume it is a part of an
  *   email address
- * - If the userid start with an '=' an exact compare is done; this may
- *   also follow the keyid in which case both parts are matched.
+ * - If the userid start with an '=' an exact compare is done.
  * - If the userid starts with a '*' a case insensitive substring search is
  *   done (This is also the default).
  */
@@ -436,16 +434,16 @@ key_byname( int secret,
 	    sk = m_alloc_clear( sizeof *sk );
 	    internal++;
 	}
-	rc = mode < 16? lookup_sk( sk, mode, keyid, name )
-		      : lookup_sk( sk, mode, keyid, fprint );
+	rc = mode < 16? lookup_sk( sk, mode, keyid, s, 1 )
+		      : lookup_sk( sk, mode, keyid, fprint, 1 );
     }
     else {
 	if( !pk ) {
 	    pk = m_alloc_clear( sizeof *pk );
 	    internal++;
 	}
-	rc = mode < 16? lookup( pk, mode, keyid, name, NULL )
-		      : lookup( pk, mode, keyid, fprint, NULL );
+	rc = mode < 16? lookup( pk, mode, keyid, s, NULL, 1 )
+		      : lookup( pk, mode, keyid, fprint, NULL, 1 );
     }
 
 
@@ -473,7 +471,7 @@ get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint, size_t fprint_len)
     int rc;
 
     if( fprint_len == 20 || fprint_len == 16 )
-	rc = lookup( pk, fprint_len, NULL, fprint, NULL );
+	rc = lookup( pk, fprint_len, NULL, fprint, NULL, 0 );
     else
 	rc = G10ERR_GENERAL; /* Oops */
     return rc;
@@ -491,7 +489,7 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
     if( fprint_len == 20 || fprint_len == 16 )
-	rc = lookup( pk, fprint_len, NULL, fprint, ret_keyblock );
+	rc = lookup( pk, fprint_len, NULL, fprint, ret_keyblock, 0 );
     else
 	rc = G10ERR_GENERAL; /* Oops */
 
@@ -507,7 +505,7 @@ get_seckey( PKT_secret_key *sk, u32 *keyid )
 {
     int rc;
 
-    rc = lookup_sk( sk, 11, keyid, NULL );
+    rc = lookup_sk( sk, 11, keyid, NULL, 0 );
     if( !rc ) {
 	/* check the secret key (this may prompt for a passprase to
 	 * unlock the secret key
@@ -530,7 +528,7 @@ seckey_available( u32 *keyid )
     int rc;
 
     sk = m_alloc_clear( sizeof *sk );
-    rc = lookup_sk( sk, 11, keyid, NULL );
+    rc = lookup_sk( sk, 11, keyid, NULL, 0 );
     free_secret_key( sk );
     return rc;
 }
@@ -549,7 +547,7 @@ get_seckey_byname( PKT_secret_key *sk, const char *name, int unprotect )
     if( !name && opt.def_secret_key && *opt.def_secret_key )
 	rc = key_byname( 1, NULL, sk, opt.def_secret_key );
     else if( !name ) /* use the first one as default key */
-	rc = lookup_sk( sk, 15, NULL, NULL );
+	rc = lookup_sk( sk, 15, NULL, NULL, 1 );
     else
 	rc = key_byname( 1, NULL, sk, name );
     if( !rc && unprotect )
@@ -587,7 +585,7 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
 	    if( i < uidlen ) {
 		i = se - s;
 		if( mode == 3 ) { /* exact email address */
-		    if( strlen(name) == i && !memicmp( s, name, i) )
+		    if( strlen(name)-2 == i && !memicmp( s, name+1, i) )
 			return 0;
 		}
 		else if( mode == 4 ) {	/* email substring */
@@ -679,7 +677,7 @@ add_stuff_from_selfsig( KBNODE keyblock, KBNODE knode )
  */
 static int
 lookup( PKT_public_key *pk, int mode,  u32 *keyid,
-	const char *name, KBNODE *ret_keyblock )
+	const char *name, KBNODE *ret_keyblock, int primary )
 {
     int rc;
     KBNODE keyblock = NULL;
@@ -705,7 +703,7 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 		    && !compare_name( k->pkt->pkt.user_id->name,
 				      k->pkt->pkt.user_id->len, name, mode)) {
 		    /* we found a matching name, look for the key */
-		    for(kk=keyblock; kk; kk = kk->next )
+		    for(kk=keyblock; kk; kk = kk->next ) {
 			if( (	 kk->pkt->pkttype == PKT_PUBLIC_KEY
 			      || kk->pkt->pkttype == PKT_PUBLIC_SUBKEY )
 			    && ( !pk->pubkey_algo
@@ -716,7 +714,8 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 				       kk->pkt->pkt.public_key->pubkey_algo,
 							   pk->pubkey_usage ))
 			  )
-			break;
+			    break;
+		    }
 		    if( kk ) {
 			u32 aki[2];
 			keyid_from_pk( kk->pkt->pkt.public_key, aki );
@@ -805,9 +804,17 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 	if( k ) { /* found */
 	    assert(    k->pkt->pkttype == PKT_PUBLIC_KEY
 		    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY );
-	    copy_public_key_new_namehash( pk, k->pkt->pkt.public_key,
-					  use_namehash? namehash:NULL);
-	    add_stuff_from_selfsig( keyblock, k );
+	    assert( keyblock->pkt->pkttype == PKT_PUBLIC_KEY );
+	    if( primary && !pk->pubkey_usage ) {
+		copy_public_key_new_namehash( pk, keyblock->pkt->pkt.public_key,
+					      use_namehash? namehash:NULL);
+		add_stuff_from_selfsig( keyblock, keyblock );
+	    }
+	    else {
+		copy_public_key_new_namehash( pk, k->pkt->pkt.public_key,
+					      use_namehash? namehash:NULL);
+		add_stuff_from_selfsig( keyblock, k );
+	    }
 	    if( ret_keyblock ) {
 		*ret_keyblock = keyblock;
 		keyblock = NULL;
@@ -833,7 +840,8 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
  * Ditto for secret keys
  */
 static int
-lookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name )
+lookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name,
+	   int primary )
 {
     int rc;
     KBNODE keyblock = NULL;
@@ -857,13 +865,19 @@ lookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name )
 		    && !compare_name( k->pkt->pkt.user_id->name,
 				      k->pkt->pkt.user_id->len, name, mode)) {
 		    /* we found a matching name, look for the key */
-		    for(kk=keyblock; kk; kk = kk->next )
+		    for(kk=keyblock; kk; kk = kk->next ) {
 			if( (	 kk->pkt->pkttype == PKT_SECRET_KEY
 			      || kk->pkt->pkttype == PKT_SECRET_SUBKEY )
 			    && ( !sk->pubkey_algo
 				 || sk->pubkey_algo
-				    == kk->pkt->pkt.secret_key->pubkey_algo))
-			break;
+				    == kk->pkt->pkt.secret_key->pubkey_algo)
+			    && ( !sk->pubkey_usage
+				 || !check_pubkey_algo2(
+				       kk->pkt->pkt.secret_key->pubkey_algo,
+							   sk->pubkey_usage ))
+			  )
+			    break;
+		    }
 		    if( kk ) {
 			u32 aki[2];
 			keyid_from_sk( kk->pkt->pkt.secret_key, aki );
@@ -936,7 +950,11 @@ lookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name )
 	if( k ) { /* found */
 	    assert(    k->pkt->pkttype == PKT_SECRET_KEY
 		    || k->pkt->pkttype == PKT_SECRET_SUBKEY );
-	    copy_secret_key( sk, k->pkt->pkt.secret_key );
+	    assert( keyblock->pkt->pkttype == PKT_SECRET_KEY );
+	    if( primary && !sk->pubkey_usage )
+		copy_secret_key( sk, keyblock->pkt->pkt.secret_key );
+	    else
+		copy_secret_key( sk, k->pkt->pkt.secret_key );
 	    break; /* enumeration */
 	}
 	release_kbnode( keyblock );

@@ -444,8 +444,9 @@ ask_keysize( int algo )
 	else if( nbits < 768 )
 	    tty_printf(_("keysize too small; 768 is smallest value allowed.\n"));
 	else if( nbits > 2048 && !cpr_enabled() ) {
-	    tty_printf(_("Keysizes larger than 2048 are not suggested because "
-			 "computations take REALLY long!\n"));
+	    tty_printf(
+		_("Keysizes larger than 2048 are not suggested because\n"
+		  "computations take REALLY long!\n"));
 	    if( cpr_get_answer_is_yes(N_("keygen.size.huge.okay"),_(
 			"Are you sure that you want this keysize? ")) ) {
 		tty_printf(_("Okay, but keep in mind that your monitor "
@@ -625,8 +626,10 @@ ask_user_id( int mode )
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	/* fixme: add a warning if this user-id already exists */
 	for(;;) {
-	    char *ansstr = N_("NnCcEeOoQq");
+	    char *ansstr = _("NnCcEeOoQq");
 
+	    if( strlen(ansstr) != 10 )
+		BUG();
 	    if( cpr_enabled() ) {
 		answer = m_strdup(ansstr+6);
 		answer[1] = 0;

@@ -151,19 +151,23 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	if( DBG_FILTER )
 	    log_debug("call inflate: avail_in=%u, avail_out=%u\n",
 		    (unsigned)zs->avail_in, (unsigned)zs->avail_out);
+      #ifdef Z_SYNC_FLUSH
+	zrc = inflate( zs, Z_SYNC_FLUSH );
+      #else
 	zrc = inflate( zs, Z_PARTIAL_FLUSH );
+      #endif
 	if( DBG_FILTER )
 	    log_debug("inflate returned: avail_in=%u, avail_out=%u, zrc=%d\n",
 		   (unsigned)zs->avail_in, (unsigned)zs->avail_out, zrc);
 	if( zrc == Z_STREAM_END )
 	    rc = -1; /* eof */
-	else if( zrc != Z_OK ) {
+	else if( zrc != Z_OK && zrc != Z_BUF_ERROR ) {
 	    if( zs->msg )
 		log_fatal("zlib inflate problem: %s\n", zs->msg );
 	    else
 		log_fatal("zlib inflate problem: rc=%d\n", zrc );
 	}
-    } while( zs->avail_out && zrc != Z_STREAM_END );
+    } while( zs->avail_out && zrc != Z_STREAM_END  && zrc != Z_BUF_ERROR );
     *ret_len = zfx->outbufsize - zs->avail_out;
     if( DBG_FILTER )
 	log_debug("do_uncompress: returning %u bytes\n", (unsigned)*ret_len );

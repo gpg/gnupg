@@ -156,6 +156,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     int compr_algo = -1; /* unknown */
 
 
+
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
     memset( &mfx, 0, sizeof mfx);
@@ -203,10 +204,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	else if( opt.verbose )
 	    log_info("writing to '%s'\n", outfile );
     }
-    else if( !(out = open_outfile( fname, opt.armor? 1: detached? 2:0 )) ) {
-	rc = G10ERR_CREATE_FILE;
+    else if( (rc = open_outfile( fname, opt.armor? 1: detached? 2:0, &out )))
 	goto leave;
-    }
 
     /* prepare to calculate the MD over the input */
     if( opt.textmode && !outfile )
@@ -223,9 +222,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( opt.armor && !outfile  )
 	iobuf_push_filter( out, armor_filter, &afx );
-    else
+    else {
 	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
+	if( opt.comment_string )
+	    write_comment( out, opt.comment_string );
+    }
     if( encrypt ) {
 	efx.pk_list = pk_list;
 	/* fixme: set efx.cfx.datalen if known */
@@ -312,10 +314,17 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
     }
     else {
+	if( fname || opt.set_filename ) {
+	    const char *s = opt.set_filename ? opt.set_filename : fname;
+	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+	    pt->namelen = strlen(s);
+	    memcpy(pt->name, s, pt->namelen );
+	}
+	else { /* no filename */
+	    pt = m_alloc( sizeof *pt - 1 );
+	    pt->namelen = 0;
+	}
 	if( fname ) {
-	    pt = m_alloc( sizeof *pt + strlen(fname) - 1 );
-	    pt->namelen = strlen(fname);
-	    memcpy(pt->name, fname, pt->namelen );
 	    if( !(filesize = iobuf_get_filelength(inp)) )
 		log_info("warning: '%s' is an empty file\n", fname );
 
@@ -329,11 +338,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    if( opt.textmode && !outfile )
 		filesize = 0;
 	}
-	else { /* no filename */
-	    pt = m_alloc( sizeof *pt - 1 );
-	    pt->namelen = 0;
+	else
 	    filesize = 0; /* stdin */
-	}
 	pt->timestamp = make_timestamp();
 	pt->mode = opt.textmode && !outfile ? 't':'b';
 	pt->len = filesize;
@@ -533,10 +539,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	else if( opt.verbose )
 	    log_info("writing to '%s'\n", outfile );
     }
-    else if( !(out = open_outfile( fname, 1 )) ) {
-	rc = G10ERR_CREATE_FILE;
+    else if( (rc = open_outfile( fname, 1, &out )) )
 	goto leave;
-    }
 
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n" );
 

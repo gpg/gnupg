@@ -71,10 +71,9 @@ do_export( STRLIST users, int secret )
     memset( &zfx, 0, sizeof zfx);
     init_packet( &pkt );
 
-    if( !(out = open_outfile( NULL, 0 )) ) {
-	rc = G10ERR_CREATE_FILE;
+    if( (rc = open_outfile( NULL, 0, &out )) )
 	goto leave;
-    }
+
 
     if( opt.armor ) {
 	afx.what = secret?5:1;
