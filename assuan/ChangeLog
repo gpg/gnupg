@@ -1,4 +1,9 @@
-2001-12-13  Marcus Brinkmann  <marcus@gnu.org>
+2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* assuan-defs.h (LINELENGTH): Define as ASSUAN_LINELENGTH.
+	assuan.h: Define ASSUAN_LINELENGTH.
+
+2001-12-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-buffer.c (assuan_read_line): Fix order of execution to
 	get correct return values.

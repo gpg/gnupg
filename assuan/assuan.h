@@ -101,6 +101,7 @@ typedef enum {
   ASSUAN_CMD_USER = 256  /* Other commands should be used with this offset*/
 } AssuanCommand;
 
+#define ASSUAN_LINELENGTH 1002 /* 1000 + [CR,]LF */
 
 struct assuan_context_s;
 typedef struct assuan_context_s *ASSUAN_CONTEXT;

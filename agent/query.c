@@ -37,8 +37,6 @@
 #define MAX_OPEN_FDS 20
 #endif
 
-#define LINELENGTH 1002 /* 1000 + [CR,]LF */
-
 static ASSUAN_CONTEXT entry_ctx = NULL;
 
 /* data to be passed to our callbacks */
@@ -144,7 +142,7 @@ agent_askpin (const char *desc_text,
               struct pin_entry_info_s *pininfo)
 {
   int rc;
-  char line[LINELENGTH];
+  char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
   const char *errtext = NULL;
 

@@ -39,8 +39,6 @@
 #define MAX_OPEN_FDS 20
 #endif
 
-#define LINELENGTH 1002 /* 1000 + [CR,]LF */
-
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
@@ -221,7 +219,7 @@ gpgsm_agent_pksign (const char *keygrip,
                     char **r_buf, size_t *r_buflen )
 {
   int rc, i;
-  char *p, line[LINELENGTH];
+  char *p, line[ASSUAN_LINELENGTH];
   struct membuf data;
   size_t len;
 
@@ -287,7 +285,7 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
                        char **r_buf, size_t *r_buflen )
 {
   int rc;
-  char line[LINELENGTH];
+  char line[ASSUAN_LINELENGTH];
   struct membuf data;
   struct cipher_parm_s cipher_parm;
   size_t n, len;
