@@ -28,6 +28,10 @@
 #include <opensc-pkcs15.h>
 #include <ksba.h>
 
+#if SC_MAX_SEC_ATTR_SIZE < 36
+# error This is not the patched OpenSC version
+#endif
+
 #include "scdaemon.h"
 #include "card-common.h"
 
@@ -123,7 +127,7 @@ card_open (CARD *rcard)
     return GNUPG_Out_Of_Core;
   card->reader = 0;
   
-  rc = sc_establish_context (&card->ctx);
+  rc = sc_establish_context (&card->ctx, "scdaemon");
   if (rc)
     {
       log_error ("failed to establish SC context: %s\n", sc_strerror (rc));
@@ -138,7 +142,6 @@ card_open (CARD *rcard)
   card->ctx->error_file = log_get_stream ();
   if (opt.debug)
     {
-       card->ctx->debug = 1;
        card->ctx->debug_file = log_get_stream ();
     }
   if (sc_detect_card_presence (card->ctx->reader[card->reader], 0) != 1)
@@ -197,7 +200,7 @@ card_close (CARD card)
 	}
       if (card->ctx)
         {
-          sc_destroy_context (card->ctx);
+          sc_release_context (card->ctx);
           card->ctx = NULL;
         }
       xfree (card);
@@ -219,6 +222,10 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
 {
   char *s;
   int rc;
+  struct sc_path path;
+  struct sc_file *file;
+  unsigned char buf[12];
+  int i;
 
   if (!card || !serial || !stamp)
     return GNUPG_Invalid_Value;
@@ -248,67 +255,52 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
     }
       
 
-  if (!card->p15card)
-    { /* fixme: construct a serial number */
-      /* We should lookup the iso 7812-1 and 8583-3 - argh ISO
-         practice is suppressing innovation - IETF rules!  Anyway,
-         we try to get the serialnumber from the 2F00 GDO file. */
-      struct sc_path path;
-      struct sc_file *file;
-      unsigned char buf[12];
-      int i;
-
-      sc_format_path ("3F002F02", &path);
-      rc = sc_select_file (card->scard, &path, &file);
-      if (rc) 
-        {
-          log_error ("sc_select_file failed: %s\n", sc_strerror (rc));
-          return GNUPG_Card_Error;
-        }
-      if (file->type != SC_FILE_TYPE_WORKING_EF
-          || file->ef_structure != SC_FILE_EF_TRANSPARENT)
-        {
-          log_error ("wrong type or structure of GDO file\n");
-          sc_file_free (file);
-          return GNUPG_Card_Error;
-        }
-      if (file->size != 12)
-        { /* FIXME: Use a real parser */
-          log_error ("unsupported size of GDO file\n");
-          sc_file_free (file);
-          return GNUPG_Card_Error;
-        }
-      
-      rc = sc_read_binary (card->scard, 0, buf, DIM (buf), 0);
-      sc_file_free (file);
-      if (rc < 0) 
-        {
-          log_error ("error reading GDO file: %s\n", sc_strerror (rc));
-          return GNUPG_Card_Error;
-        }
-      if (rc != file->size)
-        {
-          log_error ("short read on GDO file\n");
-          return GNUPG_Card_Error;
-        }
-      if (buf[0] != 0x5a || buf[1] != 10)
-        {
-          log_error ("invalid structure of GDO file\n");
-          return GNUPG_Card_Error;
-        }
-      *serial = s = xtrymalloc (21);
-      if (!*serial)
-        return GNUPG_Out_Of_Core;
-      for (i=0; i < 10; i++, s += 2)
-        sprintf (s, "%02X", buf[2+i]);
-      return 0;
+  /* We should lookup the iso 7812-1 and 8583-3 - argh ISO
+     practice is suppressing innovation - IETF rules!  So we
+     always get the serialnumber from the 2F00 GDO file.  */
+  sc_format_path ("3F002F02", &path);
+  rc = sc_select_file (card->scard, &path, &file);
+  if (rc)
+    {
+      log_error ("sc_select_file failed: %s\n", sc_strerror (rc));
+      return GNUPG_Card_Error;
     }
-  s = card->p15card->serial_number;
-  if (!s || !hexdigitp (s) )
-    return GNUPG_Invalid_Card; /* the serial number is mandatory */
-  *serial = xstrdup (s);
+  if (file->type != SC_FILE_TYPE_WORKING_EF
+      || file->ef_structure != SC_FILE_EF_TRANSPARENT)
+    {
+      log_error ("wrong type or structure of GDO file\n");
+      sc_file_free (file);
+      return GNUPG_Card_Error;
+    }
+  if (file->size != 12)
+    { /* FIXME: Use a real parser */
+      log_error ("unsupported size of GDO file\n");
+      sc_file_free (file);
+      return GNUPG_Card_Error;
+    }
+      
+  rc = sc_read_binary (card->scard, 0, buf, DIM (buf), 0);
+  sc_file_free (file);
+  if (rc < 0) 
+    {
+      log_error ("error reading GDO file: %s\n", sc_strerror (rc));
+      return GNUPG_Card_Error;
+    }
+  if (rc != file->size)
+    {
+      log_error ("short read on GDO file\n");
+      return GNUPG_Card_Error;
+    }
+  if (buf[0] != 0x5a || buf[1] != 10)
+    {
+      log_error ("invalid structure of GDO file\n");
+      return GNUPG_Card_Error;
+    }
+  *serial = s = xtrymalloc (21);
   if (!*serial)
     return GNUPG_Out_Of_Core;
+  for (i=0; i < 10; i++, s += 2)
+    sprintf (s, "%02X", buf[2+i]);
   return 0;
 }
 

@@ -262,8 +262,7 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
       goto leave;
     }
 
-/*    cryptflags |= SC_PKCS15_HASH_SHA1; */
-/*    cryptflags |= SC_PKCS15_PAD_PKCS1_V1_5; */
+  cryptflags |= SC_ALGORITHM_RSA_PAD_PKCS1;
 
   outbuflen = 1024; 
   outbuf = xtrymalloc (outbuflen);

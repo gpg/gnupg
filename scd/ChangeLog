@@ -1,3 +1,7 @@
+2002-03-27  Werner Koch  <wk@gnupg.org>
+
+	* card.c (card_open, card_close): Adjusted for changes in OpenSC.
+
 2002-03-10  Werner Koch  <wk@gnupg.org>
 
 	* card-p15.c, card-dinsig.c, card-common.h: New.

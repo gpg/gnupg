@@ -30,10 +30,12 @@ scdaemon_SOURCES = \
 	card-common.h \
 	card-p15.c card-dinsig.c
 
-
+# fixme: We added -lpcslite because the opensc config script can't cope with 
+# a static only libopensc.
 scdaemon_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
 		../common/libcommon.a \
-		$(LIBOPENSC_LIBS) $(LIBGCRYPT_LIBS) $(LIBKSBA_LIBS)
+		$(LIBOPENSC_LIBS) $(LIBGCRYPT_LIBS) $(LIBKSBA_LIBS) \
+	        -lpcsclite -lpthread
 
 
 
