@@ -619,7 +619,7 @@ if test "$ac_cv_header_sys_capability_h" = "yes" ; then
   if test "$ac_cv_lib_cap_cap_init" = "yes"; then
      AC_DEFINE(USE_CAPABILITIES,1,
                [define if capabilities should be used])
-     LIBS="$LIBS -lcap"
+     AC_SUBST(CAPLIBS,"-lcap")
      use_capabilities=yes
   fi
 fi
