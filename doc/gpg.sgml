@@ -886,6 +886,8 @@ in an options file.
 <listitem><para>
 Shortcut for "--options /dev/null".  This option is
 detected before an attempt to open an option file.
+Using this option will also prevent the creation of a 
+"~./gnupg" homedir.
 </para></listitem></varlistentry>
 
 
@@ -941,7 +943,7 @@ to do with the comments in clear text signatures.
 <term>--comment &ParmString;</term>
 <listitem><para>
 Use &ParmString; as comment string in clear text signatures.
-To suppress those comment strings entirely, use an empty string here.
+The default is not do write a comment string.
 </para></listitem></varlistentry>
 
 
@@ -950,7 +952,8 @@ To suppress those comment strings entirely, use an empty string here.
 <listitem><para>
 Force to write the standard comment string in clear
 text signatures.  Use this to overwrite a --comment
-from a config file.
+from a config file.  This option is now obsolete because there is no
+default comment string anymore.
 </para></listitem></varlistentry>
 
 

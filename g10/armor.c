@@ -918,9 +918,8 @@ armor_filter( void *opaque, int control,
 					      PRINTABLE_OS_NAME ")" LF );
 
 	    /* write the comment string or a default one */
-	    s = opt.comment_string ? opt.comment_string
-				   : _("For info see http://www.gnupg.org");
-	    if( *s ) {
+	    s = opt.comment_string;
+	    if( s && *s ) {
 		iobuf_writestr(a, "Comment: " );
 		for( ; *s; s++ ) {
 		    if( *s == '\n' )

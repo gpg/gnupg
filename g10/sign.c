@@ -43,6 +43,8 @@
 
 #ifdef HAVE_DOSISH_SYSTEM
   #define LF "\r\n"
+  void __stdcall Sleep(ulong);
+  #define sleep(a)  Sleep((a)*1000)
 #else
   #define LF "\n"
 #endif

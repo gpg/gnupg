@@ -1,3 +1,7 @@
+2001-08-07  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Adjusted --build-w32 for autoconf 2.52 
+
 2001-07-09  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh (autoconf_vers): Require autoconf 2.50

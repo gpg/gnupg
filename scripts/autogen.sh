@@ -13,7 +13,7 @@
 
 PGM=GnuPG
 lib_config_files=""
-autoconf_vers=2.50
+autoconf_vers=2.52
 automake_vers=1.4
 aclocal_vers=1.4
 
@@ -22,20 +22,20 @@ DIE=no
 if test "$1" = "--build-w32"; then
     tsdir=$(cd `dirname $0`; cd ..; pwd)
     shift
-    target=i386--mingw32
+    host=i386--mingw32
     if [ ! -f $tsdir/scripts/config.guess ]; then
         echo "$tsdir/scripts/config.guess not found" >&2
         exit 1
     fi
-    host=`$tsdir/scripts/config.guess`
+    build=`$tsdir/scripts/config.guess`
         
     if ! mingw32 --version >/dev/null; then
         echo "We need at least version 0.3 of MingW32/CPD" >&2
         exit 1
     fi
 
-    if [ -f "$tsdir/config.h" ]; then
-        if grep HAVE_DOSISH_SYSTEM config.h | grep undef >/dev/null; then
+    if [ -f "$tsdir/config.log" ]; then
+        if ! head $tsdir/config.log | grep i386--mingw32 >/dev/null; then
             echo "Pease run a 'make distclean' first" >&2
             exit 1
         fi
@@ -64,7 +64,7 @@ if test "$1" = "--build-w32"; then
     fi
     [ $DIE = yes ] && exit 1
 
-    $tsdir/configure --host=${host} --target=${target} \
+    $tsdir/configure --build=${build} --host=${host} \
                 ${disable_foo_tests} $*
     exit $?
 fi

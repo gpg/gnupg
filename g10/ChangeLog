@@ -1,3 +1,17 @@
+2001-08-07  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (sleep): Redefine for W32.
+
+	* g10.c, options.h: Set new flag opt.no_homedir_creation when
+	--no-options is given.
+	* openfile.c (try_make_homedir): Don't create the homedir in that case.
+
+2001-08-03  Werner Koch  <wk@gnupg.org>
+
+	* armor.c (armor_filter): Removed the default comment string
+	because it could get us in trouble due to translations using non
+	ascii characters.
+
 2001-08-01  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (list_keyblock_print): Do not list revoked UIDs unless

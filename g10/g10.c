@@ -861,7 +861,7 @@ main( int argc, char **argv )
 		    m_free(opt.def_recipient); opt.def_recipient = NULL;
 		    opt.def_recipient_self = 0;
 		    break;
-	  case oNoOptions: break; /* no-options */
+	  case oNoOptions: opt.no_homedir_creation = 1; break; /* no-options */
 	  case oHomedir: break;
 	  case oNoBatch: opt.batch = 0; break;
 	  case oWithKeyData: opt.with_key_data=1; /* fall thru */

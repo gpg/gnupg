@@ -9,6 +9,8 @@
     * Revoked user-IDs are not listed unless signatures are listed too
       or we are in verbose mode.
 
+    * There is no default comment string with ascii armors anymore
+      except for revocation certificates and --enarmor mode.
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------

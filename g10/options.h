@@ -105,6 +105,7 @@ struct {
     int no_sig_cache;
     int no_sig_create_check;
     int preserve_permissions;
+    int no_homedir_creation;
 } opt;
 
 

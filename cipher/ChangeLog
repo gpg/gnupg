@@ -6,11 +6,11 @@
 
 2001-06-12  Werner Koch  <wk@gnupg.org>
 
-	* rndw32.c (slow_gatherer_windowsNT): Ditto.  Not really needed here but anyway.
-
 	* cipher.c (string_to_cipher_algo): Use ascii_strcasecmp().
 	* md.c (string_to_digest_algo): Ditto.
 	* pubkey.c (string_to_pubkey_algo): Ditto.
+	* rndw32.c (slow_gatherer_windowsNT): Ditto.  Not really needed
+	here but anyway.
 
 2001-04-29  Werner Koch  <wk@gnupg.org>
 
@@ -19,7 +19,7 @@
 
 2001-04-17  Werner Koch  <wk@gnupg.org>
 
-	* rndunix.c: Add a signal.h header to avoid warnings on SOlaris 7
+	* rndunix.c: Add a signal.h header to avoid warnings on Solaris 7
 	and 8.
 
 2001-04-16  Werner Koch  <wk@gnupg.org>
@@ -37,11 +37,11 @@
 	on stack frame based machines but it is highly portable and has no
 	side effects.  Just setting the automatic variables at the end of
 	a function to zero does not work well because the compiler will
-	optimize them away - marking them as volatile woule be bad for
+	optimize them away - marking them as volatile would be bad for
 	performance.
 	* md5.c, sha1.c, rmd160.c, tiger.c (burn_stack): Likewise.
 	* random.c (burn_stack): New.
-	(mix_pool): Use it here to burn the stack of te mixblock function.
+	(mix_pool): Use it here to burn the stack of the mixblock function.
 	
 2001-04-02  Werner Koch  <wk@gnupg.org>
 

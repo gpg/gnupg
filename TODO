@@ -1,4 +1,9 @@
 
+  * autogen.sh --build-w32, get that code from mingw32 so we can
+    better maintain it.
+
+  * Check that a key signature can be revoked and later be signed again.
+
   * Put a note into readme.w32 that there is a man page and a options
     file;  write the registry stuff in regedit format.
 

@@ -336,7 +336,7 @@ try_make_homedir( const char *fname )
      * To cope with HOME, we do compare only the suffix if we see that
      * the default homedir does start with a tilde.
      */
-    if( opt.dry_run )
+    if( opt.dry_run || opt.no_homedir_creation )
 	return;
 
     if ( ( *defhome == '~'
