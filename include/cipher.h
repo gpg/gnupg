@@ -61,7 +61,7 @@
 typedef struct {
     int algo;
     int keylen;
-    byte key[24]; /* this is the largest used keylen (3des) */
+    byte key[32]; /* this is the largest used keylen (256 bit) */
 } DEK;
 
 struct cipher_handle_s;

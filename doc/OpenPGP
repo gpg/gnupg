@@ -2,22 +2,13 @@
 		    =================
 
    See RFC2440 for a description of OpenPGP.  I have an annotated version
-   of this RFC online:	http://www.d.shuttle.de/isil/gnupg/rfc2440.html
+   of this RFC online:	http://www.gnupg.org/rfc2440.html
 
 
 
   Compatibility Notes
   ===================
    GnuPG (>0.4.5) is in compliance with RFC2440 despite these exceptions:
-
-    ===> Please can someone check this <=========
-
-    * (5.2) GnuPG generates V4 signatures for all V4 keys.  The option
-      --force-v3-sigs allows to override.
-
-    * (5.3) GnuPG has an option to use simple S2K for "Symmetric-Key
-      Encrypted Session-Key Packets"; however a warning message is
-      issued if this option is active.
 
     * (9.1) states that RSA SHOULD be implemented.  This is not done
       (except with an extension, usable outside the U.S.) due to
@@ -26,13 +17,6 @@
     * (9.2) states that IDEA SHOULD be implemented.  This is not done
       due to patent problems.
 
-    * (12.1) states that an implementation MUST NOT use a symmetric
-      algorithm which is not in the preference list.  GnuPG has an
-      option to override this.
-
-    * A special format of partial packet length exists for v3 packets
-      which can be considered to be in compliance with RFC1991;  this
-      format is only created if a special option is active.
 
    All MAY features are implemented with this exception:
 
@@ -41,14 +25,21 @@
 
    Most of the OPTIONAL stuff is implemented.
 
+   There are a couple of options which can be used to override some
+   RFC requirements.  This is always mentioned with the description
+   of that options.
 
+   A special format of partial packet length exists for v3 packets
+   which can be considered to be in compliance with RFC1991;  this
+   format is only created if a special option is active.
 
 
   Some Notes on OpenPGP / PGP Compatibility:
   ==========================================
 
      * PGP 5.x does not accept V4 signatures for anything other than
-       key material.
+       key material.  The GnuPG option --force-v3-sigs mimics this
+       behaviour.
 
      * PGP 5.x does not recognize the "five-octet" lengths in
        new-format headers or in signature subpacket lengths.

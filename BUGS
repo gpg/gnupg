@@ -50,21 +50,19 @@ and after about half a day in the rsync snapshots.
 
 [  *] #13 1999-04-05
     Trying to generate very large keys fails with a BUG in read_pool()
+    FIX: 1999-04-06
 
 
 [  *] #14 1999-04-05 <anonymous>
-    If you have the following lines in your "options" file:
-      load-extension twofish
-      cipher-algo twofish
-      s2k-cipher-algo twofish
-    and then try to "gpg --gen-key", everything goes along fine until you
-    verify your password. Then the program crashes with a BUG at line 226
-    of passphrase.c.
+    If you use --s2k-cipher-algo twofish, the the program crashes with
+    a BUG at line 226 of passphrase.c.
+    FIX: 1999-04-06
 
 
-[ **] #15 199-04-05
+[ **] #15 1999-04-05
     Hash calculation for subkey bindings is not according to rfc2440 if
     a 4 byte length header is used for the subkey.
+    FIX: 1999-04-06
 
 
 Next #16

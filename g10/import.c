@@ -796,7 +796,12 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && (p = parse_sig_subpkt2( node->pkt->pkt.signature,
 					    SIGSUBPKT_EXPORTABLE, NULL ))
-		 && !*p ) {
+		 && !*p
+		 && seckey_available( node->pkt->pkt.signature->keyid ) ) {
+	    /* here we violate the rfc a bit by still allowing
+	     * to import non-exportable signature when we have the
+	     * the secret key used to create this signature - it
+	     * seems that this makes sense */
 	    log_info_f(fname, _("key %08lX: non exportable signature "
 				    "(class %02x) - skipped\n"),
 				    (ulong)keyid[1],

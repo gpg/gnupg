@@ -1,3 +1,10 @@
+Tue Apr  6 19:58:12 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* random.c (get_random_bits): Can now handle requests > POOLSIZE
+
+	* cipher.c (cipher_open): Now uses standard CFB for automode if
+	the blocksize is gt 8 (according to rfc2440).
+
 Sat Mar 20 11:44:21 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* rndlinux.c (tty_printf) [IS_MODULE]: Removed.

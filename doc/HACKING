@@ -33,6 +33,14 @@ by sending a mail with "subscribe" in the body to
 Please run scripts/autogen.sh to create some required files.
 
 
+RSYNC access
+============
+The FTP archive is also available by anonymous rsync.  A daily snapshot
+of the CVS head revision is also available.  See rsync(1) and try
+"rsync ftp.gnupg.org::" to see available resources.
+
+
+
 RFCs
 ====
 
@@ -86,8 +94,8 @@ Directory Layout
   ./cipher	Cryptographic functions
   ./g10 	GnuPG application
   ./tools	Some helper and demo programs
-  ./keybox	The keybox library
-  ./gcrypt	Stuff needed to build libgcrypt
+  ./keybox	The keybox library (under construction)
+  ./gcrypt	Stuff needed to build libgcrypt (under construction)
 
 
 
@@ -127,13 +135,20 @@ The same option table is also used to parse resource files.
 
 
 
-What is an iobuf
+What is an IOBUF
 ----------------
 This is the data structure used for most I/O of gnupg.	It is similar
-to System V Streams but much simpler.  It should be replaced by a cleaner
-and faster implementation.  We are doing to much copying and the semantics
-of "filter" removing are not very clean.  EOF handling is also a problem.
-
+to System V Streams but much simpler.  Because OpenPGP messages are nested
+in different ways; the use of such a system has big advantages.  Here is
+an example, how it works:  If the parser sees a packet header with a partial
+length, it pushes the block_filter onto the IOBUF to handle these partial
+length packets: from now on you don't have to worry about this.  When it sees
+a compressed packet it pushes the uncompress filter and the next read byte
+is one which has already been uncompressed by this filter. Same goes for
+enciphered packet, plaintext packets and so on.  The file g10/encode.c
+might be a good staring point to see how it is used  - actually this is
+the other way: constructing messages using pushed filters but it may be
+easier to understand.
 
 
 How to use the message digest functions
@@ -171,11 +186,33 @@ Both methods may be combined. [Please see the source for the real syntax]
 
 How to use the cipher functions
 -------------------------------
+cipher/cipher.c implements the interface to symmetric encryption functions.
+As usual you have a function to open a cipher (which returns a handle to be used
+with all other functions), some functions to set the key and other stuff and
+a encrypt and decrypt function which does the real work.  YOu probably know
+how to work with files - so it should really be easy to work with these
+functions.  Here is an example:
 
+    CIPHER_HANDLE hd;
+
+    hd = cipher_open( CIPHER_ALGO_TWOFISH, CIPHER_MODE_CFB, 0 );
+    if( !hd )
+	oops( use other funtion to check for the real error );
+    rc = cipher_setkey( hd, key256bit, 32 ) )
+    if( rc )
+	oops( weak key or something like this );
+    cipher_setiv( hd, some_IV_or_NULL_for_all_zeroes );
+    cipher_encrypt( hd, plain, cipher, size );
+    cipher_close( hd );
 
 
 
 How to use the public key functions
 -----------------------------------
+cipher/pubkey.c implements the interface to asymmetric encryption and
+signature functions. This is basically the same as with the symmetric
+counterparts, but due to their nature it is a little bit more complicated.
+
+   [Give an example]
 
 

@@ -241,6 +241,8 @@ hash_public_key( MD_HANDLE md, PKT_public_key *pk )
 {
     PACKET pkt;
     int rc = 0;
+    int ctb;
+    ulong pktlen;
     int c;
     IOBUF a = iobuf_temp();
   #if 0
@@ -256,6 +258,38 @@ hash_public_key( MD_HANDLE md, PKT_public_key *pk )
     pkt.pkt.public_key = pk;
     if( (rc = build_packet( a, &pkt )) )
 	log_fatal("build public_key for hashing failed: %s\n", g10_errstr(rc));
+    /* skip the constructed header */
+    ctb = iobuf_get_noeof(a);
+    pktlen = 0;
+    if( (ctb & 0x40) ) {
+	c = iobuf_get_noeof(a);
+	if( c < 192 )
+	    pktlen = c;
+	else if( c < 224 ) {
+	    pktlen = (c - 192) * 256;
+	    c = iobuf_get_noeof(a);
+	    pktlen += c + 192;
+	}
+	else if( c == 255 ) {
+	    pktlen  = iobuf_get_noeof(a) << 24;
+	    pktlen |= iobuf_get_noeof(a) << 16;
+	    pktlen |= iobuf_get_noeof(a) << 8;
+	    pktlen |= iobuf_get_noeof(a);
+	}
+    }
+    else {
+	int lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
+	for( ; lenbytes; lenbytes-- ) {
+	    pktlen <<= 8;
+	    pktlen |= iobuf_get_noeof(a);
+	}
+    }
+    /* hash a header */
+    md_putc( md, 0x99 );
+    pktlen &= 0xffff; /* can't handle longer packets */
+    md_putc( md, pktlen >> 8 );
+    md_putc( md, pktlen & 0xff );
+    /* hash the packet body (don't use pktlen here!) */
     while( (c=iobuf_get(a)) != -1 ) {
       #if 0
 	fprintf( fp," %02x", c );

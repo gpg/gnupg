@@ -169,14 +169,19 @@ random_is_faked()
 byte *
 get_random_bits( size_t nbits, int level, int secure )
 {
-    byte *buf;
+    byte *buf, *p;
     size_t nbytes = (nbits+7)/8;
 
     if( quick_test && level > 1 )
 	level = 1;
     MASK_LEVEL(level);
     buf = secure && secure_alloc ? m_alloc_secure( nbytes ) : m_alloc( nbytes );
-    read_pool( buf, nbytes, level );
+    for( p = buf; nbytes > 0; ) {
+	size_t n = nbytes > POOLSIZE? POOLSIZE : nbytes;
+	read_pool( p, n, level );
+	nbytes -= n;
+	p += n;
+    }
     return buf;
 }
 

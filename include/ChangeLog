@@ -1,3 +1,8 @@
+Tue Apr  6 19:58:12 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* cipher.h (DEK): increased max. key length to 32 bytes
+
+
 Sat Feb 20 21:40:49 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* g10lib.h: Removed file and changed all files that includes this.
