@@ -87,6 +87,7 @@ struct assuan_context_s {
   void (*bye_notify_fnc)(ASSUAN_CONTEXT);
   void (*reset_notify_fnc)(ASSUAN_CONTEXT);
   void (*cancel_notify_fnc)(ASSUAN_CONTEXT);
+  int  (*option_handler_fnc)(ASSUAN_CONTEXT,const char*, const char*);
   void (*input_notify_fnc)(ASSUAN_CONTEXT, const char *);
   void (*output_notify_fnc)(ASSUAN_CONTEXT, const char *);
 

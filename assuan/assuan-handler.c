@@ -25,6 +25,7 @@
 
 #include "assuan-defs.h"
 
+#define spacep(p)  (*(p) == ' ' || *(p) == '\t')
 #define digitp(a) ((a) >= '0' && (a) <= '9')
 
 
@@ -47,6 +48,53 @@ std_handler_cancel (ASSUAN_CONTEXT ctx, char *line)
   if (ctx->cancel_notify_fnc)
     ctx->cancel_notify_fnc (ctx);
   return set_error (ctx, Not_Implemented, NULL); 
+}
+
+static int
+std_handler_option (ASSUAN_CONTEXT ctx, char *line)
+{
+  char *key, *value, *p;
+
+  for (key=line; spacep (key); key++)
+    ;
+  if (!*key)
+    return set_error (ctx, Syntax_Error, "argument required");
+  if (*key == '=')
+    return set_error (ctx, Syntax_Error, "no option name given");
+  for (value=key; *value && !spacep (value) && *value != '='; value++)
+    ;
+  if (*value)
+    {
+      if (spacep (value))
+        *value++ = 0; /* terminate key */
+      for (; spacep (value); value++)
+        ;
+      if (*value == '=')
+        {
+          *value++ = 0; /* terminate key */
+          for (; spacep (value); value++)
+            ;
+          if (!*value)
+            return set_error (ctx, Syntax_Error, "option argument expected");
+        }
+      if (*value)
+        {
+          for (p = value + strlen(value) - 1; p > value && spacep (p); p--)
+            ;
+          if (p > value)
+            *++p = 0; /* strip trailing spaces */
+        }
+    }
+
+  if (*key == '-' && key[1] == '-' && key[2])
+    key += 2; /* the double dashes are optional */
+  if (*key == '-')
+    return set_error (ctx, Syntax_Error,
+                      "option should not begin with one dash");
+
+  if (ctx->option_handler_fnc)
+    return ctx->option_handler_fnc (ctx, key, value);
+  return 0;
 }
   
 static int
@@ -147,6 +195,7 @@ static struct {
 } std_cmd_table[] = {
   { "NOP",    ASSUAN_CMD_NOP,    std_handler_nop, 1 },
   { "CANCEL", ASSUAN_CMD_CANCEL, std_handler_cancel, 1 },
+  { "OPTION", ASSUAN_CMD_OPTION, std_handler_option, 1 },
   { "BYE",    ASSUAN_CMD_BYE,    std_handler_bye, 1 },
   { "AUTH",   ASSUAN_CMD_AUTH,   std_handler_auth, 1 },
   { "RESET",  ASSUAN_CMD_RESET,  std_handler_reset, 1 },
@@ -154,6 +203,7 @@ static struct {
 
   { "INPUT",  ASSUAN_CMD_INPUT,  std_handler_input },
   { "OUTPUT", ASSUAN_CMD_OUTPUT, std_handler_output },
+  { "OPTION", ASSUAN_CMD_OPTION, std_handler_option, 1 },
   { NULL }
 };
 
@@ -263,6 +313,17 @@ assuan_register_cancel_notify (ASSUAN_CONTEXT ctx, void (*fnc)(ASSUAN_CONTEXT))
 }
 
 int
+assuan_register_option_handler (ASSUAN_CONTEXT ctx,
+                               int (*fnc)(ASSUAN_CONTEXT,
+                                          const char*, const char*))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->option_handler_fnc = fnc;
+  return 0;
+}
+
+int
 assuan_register_input_notify (ASSUAN_CONTEXT ctx,
                               void (*fnc)(ASSUAN_CONTEXT, const char *))
 {
@@ -312,6 +373,20 @@ handle_data_line (ASSUAN_CONTEXT ctx, char *line, int linelen)
   return set_error (ctx, Not_Implemented, NULL);
 }
 
+/* like ascii_strcasecmp but assume that B is already uppercase */
+static int
+my_strcasecmp (const char *a, const char *b)
+{
+    if (a == b)
+        return 0;
+
+    for (; *a && *b; a++, b++)
+      {
+	if (((*a >= 'a' && *a <= 'z')? (*a&~0x20):*a) != *b)
+	    break;
+      }
+    return *a == *b? 0 : (((*a >= 'a' && *a <= 'z')? (*a&~0x20):*a) - *b);
+}
 
 /* Parse the line, break out the command, find it in the command
    table, remove leading and white spaces from the arguments, all the
@@ -339,8 +414,18 @@ dispatch_command (ASSUAN_CONTEXT ctx, char *line, int linelen)
   shift = p - line;
 
   for (i=0; (s=ctx->cmdtbl[i].name); i++)
-    if (!strcmp (line, s))
-      break;
+    {
+      if (!strcmp (line, s))
+        break;
+    }
+  if (!s)
+    { /* and try case insensitive */
+      for (i=0; (s=ctx->cmdtbl[i].name); i++)
+        {
+          if (!my_strcasecmp (line, s))
+            break;
+        }
+    }
   if (!s)
     return set_error (ctx, Unknown_Command, NULL);
   line += shift;

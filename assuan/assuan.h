@@ -72,6 +72,7 @@ typedef enum {
   ASSUAN_Too_Much_Data = 119,
   ASSUAN_Inquire_Unknown = 120,
   ASSUAN_Inquire_Error = 121,
+  ASSUAN_Invalid_Option = 122,
 
   ASSUAN_Bad_Certificate = 201,
   ASSUAN_Bad_Certificate_Path = 202,
@@ -97,6 +98,7 @@ typedef enum {
   ASSUAN_CMD_BYE,
   ASSUAN_CMD_AUTH,
   ASSUAN_CMD_RESET,
+  ASSUAN_CMD_OPTION,
   ASSUAN_CMD_DATA,
   ASSUAN_CMD_END,
   ASSUAN_CMD_INPUT,
@@ -124,6 +126,11 @@ int assuan_register_input_notify (ASSUAN_CONTEXT ctx,
                                   void (*fnc)(ASSUAN_CONTEXT, const char *));
 int assuan_register_output_notify (ASSUAN_CONTEXT ctx,
                                   void (*fnc)(ASSUAN_CONTEXT, const char *));
+
+int assuan_register_option_handler (ASSUAN_CONTEXT ctx,
+                                    int (*fnc)(ASSUAN_CONTEXT,
+                                               const char*, const char*));
+
 int assuan_process (ASSUAN_CONTEXT ctx);
 int assuan_process_next (ASSUAN_CONTEXT ctx);
 int assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,

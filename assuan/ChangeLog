@@ -1,3 +1,13 @@
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* assuan.h: Added Invalid Option error code.
+
+	* assuan-handler.c (std_handler_option): New.
+	(std_cmd_tbl): Add OPTION as standard command.
+	(assuan_register_option_handler): New.
+	(dispatch_command): Use case insensitive matching as a fallback.
+	(my_strcasecmp): New.
+
 2002-01-19  Werner Koch  <wk@gnupg.org>
 
 	* assuan-buffer.c (_assuan_read_line): Add output logging.
