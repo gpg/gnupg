@@ -332,10 +332,13 @@ do_get_buffer( MPI a, unsigned *nbytes, int *sign, int force_secure )
     byte *p, *buffer;
     mpi_limb_t alimb;
     int i;
+    unsigned int n;
 
     if( sign )
 	*sign = a->sign;
-    *nbytes = a->nlimbs * BYTES_PER_MPI_LIMB;
+    *nbytes = n = a->nlimbs * BYTES_PER_MPI_LIMB;
+    if (!n)
+      n++; /* avoid zero length allocation */
     p = buffer = force_secure || mpi_is_secure(a) ? m_alloc_secure( *nbytes)
 						  : m_alloc( *nbytes );
 
