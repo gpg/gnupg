@@ -2365,6 +2365,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 	revkey.class|=0x40;
       revkey.algid=revoker_pk->pubkey_algo;
       free_public_key(revoker_pk);
+      revoker_pk=NULL;
       break;
     }
 

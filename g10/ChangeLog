@@ -1,3 +1,8 @@
+2002-10-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_addrevoker): Properly back out if the signature
+	fails.
+
 2002-10-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (symkey_decrypt_sesskey): Fix compiler warning.
