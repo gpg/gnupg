@@ -1,3 +1,11 @@
+2002-09-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_keys_stream): Fix compiler type warning.
+
+	* keyring.c (keyring_rebuild_cache), sig-check.c
+	(check_key_signature2), import.c (import, chk_self_sigs): Minor
+	language cleanups.
+
 2002-09-23  Stefan Bellon  <sbellon@sbellon.de>
 
 	* main.h: Introduced fast-import as import option. Removed

@@ -1374,7 +1374,7 @@ keyring_rebuild_cache (void *token)
         goto leave;
 
       if ( !(++count % 50) && !opt.quiet)
-        log_info(_("%lu keys so far checked (%lu signatures)\n"),
+        log_info(_("%lu keys checked so far (%lu signatures)\n"),
                  count, sigcount );
 
     } /* end main loop */ 

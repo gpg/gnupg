@@ -238,7 +238,7 @@ import_keys( char **fnames, int nnames,
 int
 import_keys_stream( IOBUF inp, void *stats_handle, unsigned int options )
 {
-    return import_keys_internal( inp, NULL, NULL, stats_handle, options);
+    return import_keys_internal( inp, NULL, 0, stats_handle, options);
 }
 
 static int
@@ -276,7 +276,7 @@ import( IOBUF inp, const char* fname,
 	if( rc )
 	    break;
 	if( !(++stats->count % 100) && !opt.quiet )
-	    log_info(_("%lu keys so far processed\n"), stats->count );
+	    log_info(_("%lu keys processed so far\n"), stats->count );
     }
     if( rc == -1 )
 	rc = 0;
@@ -1055,8 +1055,8 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		 revocation targets, this may need to be revised. */
 
 		if( !knode ) {
-		    log_info( _("key %08lX: no subkey for key binding\n"),
-					    (ulong)keyid[1]);
+		    log_info( _("key %08lX: no subkey for subkey "
+				"binding signature\n"),(ulong)keyid[1]);
 		    n->flag |= 4; /* delete this */
 		}
 		else {
@@ -1096,8 +1096,8 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
                  See the comment in getkey.c:merge_selfsigs_subkey for
                  more */
 		if( !knode ) {
-		    log_info( _("key %08lX: no subkey for key revocation\n"),
-					    (ulong)keyid[1]);
+		    log_info( _("key %08lX: no subkey for subkey "
+				"revocation signature\n"),(ulong)keyid[1]);
 		    n->flag |= 4; /* delete this */
 		}
 		else {
@@ -1117,7 +1117,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 					    sig since this one is
 					    newer */
 			log_info(_("key %08lX: removed multiple subkey "
-				   "revocation\n"),(ulong)keyid[1]);
+				   "revocation signatures\n"),(ulong)keyid[1]);
 		      }
 
 		      rsnode=n;
