@@ -20,6 +20,10 @@
 #ifndef G10_CIPHER_DYNLOAD_H
 #define G10_CIPHER_DYNLOAD_H
 
+
+void register_internal_cipher_extension( const char *module_id,
+			      void * (*enumfunc)(int, int*, int*, int*) );
+
 int
 enum_gnupgext_digests( void **enum_context,
 	    int *algo,
@@ -48,5 +52,11 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
     int (**verify)( int algo, MPI hash, MPI *data, MPI *pkey,
 		    int (*cmp)(void *, MPI), void *opaquev ),
     unsigned (**get_nbits)( int algo, MPI *pkey ) );
+
+
+int (*dynload_getfnc_gather_random(void))(byte*, size_t*, int);
+void (*dynload_getfnc_fast_random_poll(void)
+				)( void (*)(const void*, size_t, int));
+
 
 #endif /*G10_CIPHER_DYNLOAD_H*/

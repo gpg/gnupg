@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-gnupg_extensions = tiger twofish
+gnupg_extensions = tiger twofish rndunix
 
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
@@ -11,7 +11,7 @@ else
 pkglib_PROGRAMS  =
 endif
 
-DYNLINK_MOD_CFLAGS = @DYNLINK_MOD_CFLAGS@
+DYNLINK_MOD_CFLAGS = -DIS_MODULE @DYNLINK_MOD_CFLAGS@
 
 
 libcipher_a_SOURCES = cipher.c	\
@@ -33,9 +33,7 @@ libcipher_a_SOURCES = cipher.c	\
 		 random.h	\
 		 random.c	\
 		 rand-internal.h \
-		 rand-unix.c	\
-		 rand-w32.c	\
-		 rand-dummy.c	\
+		 rndlinux.c	\
 		 rmd.h		\
 		 rmd160.c	\
 		 sha1.h 	\
@@ -56,6 +54,11 @@ tiger: $(srcdir)/tiger.c
 twofish: $(srcdir)/twofish.c
 	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o twofish $(srcdir)/twofish.c | \
 	    sed -e 's/-O[0-9]*/  /' `
+
+
+rndunix: $(srcdir)/rndunix.c
+	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndunix $(srcdir)/rndunix.c
+
 
 
 install-exec-hook:

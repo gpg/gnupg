@@ -39,6 +39,7 @@
 
 typedef struct ext_list {
     struct ext_list *next;
+    int internal;
   #ifdef HAVE_DL_DLOPEN
     void *handle; /* handle from dlopen() */
   #else
@@ -83,7 +84,7 @@ static int dld_available;
 void
 register_cipher_extension( const char *mainpgm, const char *fname )
 {
-    EXTLIST r, el;
+    EXTLIST r, el, intex;
     char *p, *pe;
 
   #ifdef HAVE_DLD_DLD_LINK
@@ -114,13 +115,53 @@ register_cipher_extension( const char *mainpgm, const char *fname )
 	el->hintstr = NULL;
 
     /* check that it is not already registered */
-    for(r = extensions; r; r = r->next )
+    intex = NULL;
+    for(r = extensions; r; r = r->next ) {
 	if( !compare_filenames(r->name, el->name) ) {
 	    log_info("extension '%s' already registered\n", el->name );
 	    m_free(el);
 	    return;
 	}
+	else if( r->internal )
+	    intex = r;
+    }
     /* and register */
+    /* we put them after the internal extension modules */
+    /* this is so that the external modules do not get loaded */
+    /* as soon as the internal modules are requested */
+    if( intex ) {
+	el->next = intex->next;
+	intex->next = el;
+    }
+    else {
+	el->next = extensions;
+	extensions = el;
+    }
+}
+
+void
+register_internal_cipher_extension(
+			const char *module_id,
+			void * (*enumfunc)(int, int*, int*, int*)
+				  )
+{
+    EXTLIST r, el;
+
+    el = m_alloc_clear( sizeof *el + strlen(module_id) );
+    strcpy(el->name, module_id );
+    el->internal = 1;
+
+    /* check that it is not already registered */
+    for(r = extensions; r; r = r->next ) {
+	if( !compare_filenames(r->name, el->name) ) {
+	    log_info("extension '%s' already registered\n", el->name );
+	    m_free(el);
+	    return;
+	}
+    }
+    /* and register */
+    el->enumfunc = enumfunc;
+    el->handle = (void*)1;
     el->next = extensions;
     extensions = el;
 }
@@ -452,6 +493,54 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
 	ctx->seq1 = 0;
     }
     ctx->r = r;
+    return NULL;
+}
+
+
+int (*
+dynload_getfnc_gather_random())(byte*, size_t*, int)
+{
+    EXTLIST r;
+    void *sym;
+
+    for( r = extensions; r; r = r->next )  {
+	int seq, class, vers;
+
+	if( r->failed )
+	    continue;
+	if( !r->handle && load_extension(r) )
+	    continue;
+	seq = 0;
+	while( (sym = (*r->enumfunc)(40, &seq, &class, &vers)) ) {
+	    if( vers != 1 || class != 40 )
+		continue;
+	    return (int (*)(byte*, size_t*, int))sym;
+	}
+    }
+    return NULL;
+}
+
+
+void (*
+dynload_getfnc_fast_random_poll())( void (*)(const void*, size_t, int))
+{
+    EXTLIST r;
+    void *sym;
+
+    for( r = extensions; r; r = r->next )  {
+	int seq, class, vers;
+
+	if( r->failed )
+	    continue;
+	if( !r->handle && load_extension(r) )
+	    continue;
+	seq = 0;
+	while( (sym = (*r->enumfunc)(41, &seq, &class, &vers)) ) {
+	    if( vers != 1 || class != 41 )
+		continue;
+	    return (void (*)( void (*)(const void*, size_t, int)))sym;
+	}
+    }
     return NULL;
 }
 

@@ -1,14 +1,14 @@
-/* rand-unix.c	-  raw random number generator for unix like OSes
+/* rndlinux.c  -  raw random number for OSes with /dev/random
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -40,56 +40,47 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "util.h"
-#include "rmd.h"
 #include "ttyio.h"
 #include "i18n.h"
-#include "rand-internal.h"
-#ifdef USE_RAND_UNIX  /* This file is only for real systems */
+
+/* #define IS_MODULE 1 */
+
+static int open_device( const char *name, int minor );
+static int gather_random( byte *buffer, size_t *r_length, int level );
 
 
-void
-random_poll()
-{
-    char buf[POOLSIZE/5];
-    read_random_source( buf, POOLSIZE/5, 1 ); /* read /dev/urandom */
-    add_randomness( buf, POOLSIZE/5, 2);
-    memset( buf, 0, POOLSIZE/5);
-}
-
-
-void
-fast_random_poll()
+static void
+fast_poll( void (*add)(const void*, size_t, int) )
 {
   #if HAVE_GETHRTIME
     {	hrtime_t tv;
 	tv = gethrtime();
-	add_randomness( &tv, sizeof(tv), 1 );
+	(*add)( &tv, sizeof(tv), 1 );
     }
   #elif HAVE_GETTIMEOFDAY
     {	struct timeval tv;
 	if( gettimeofday( &tv, NULL ) )
 	    BUG();
-	add_randomness( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
-	add_randomness( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
+	(*add)( &tv.tv_sec, sizeof(tv.tv_sec), 1 );
+	(*add)( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
     }
   #else /* use times */
     {	struct tms buf;
 	times( &buf );
-	add_randomness( &buf, sizeof buf, 1 );
+	(*add)( &buf, sizeof buf, 1 );
     }
   #endif
   #ifdef HAVE_GETRUSAGE
     {	struct rusage buf;
 	if( getrusage( RUSAGE_SELF, &buf ) )
 	    BUG();
-	add_randomness( &buf, sizeof buf, 1 );
+	(*add)( &buf, sizeof buf, 1 );
 	memset( &buf, 0, sizeof buf );
     }
   #endif
 }
 
 
-#ifdef HAVE_DEV_RANDOM	/* we have the /dev/random devices */
 
 /****************
  * Used to open the Linux and xBSD /dev/random devices
@@ -115,14 +106,16 @@ open_device( const char *name, int minor )
 }
 
 
-void
-read_random_source( byte *buffer, size_t length, int level )
+static int
+gather_random( byte *buffer, size_t *r_length, int level )
 {
     static int fd_urandom = -1;
     static int fd_random = -1;
     int fd;
     int n;
     int warn=0;
+    size_t length = *r_length;
+    /* note: we will always return the requested length */
 
     if( level >= 2 ) {
 	if( fd_random == -1 )
@@ -170,28 +163,75 @@ read_random_source( byte *buffer, size_t length, int level )
 	buffer += n;
 	length -= n;
     } while( length );
+
+    return 100; /* 100% useful at the requested level */
 }
 
-#else /* not HAVE_DEV_RANDOM */
+
+
+#ifndef IS_MODULES
+static
+#endif
+const char * const gnupgext_version = "RNDLINUX ($Revision$)";
+
+static struct {
+    int class;
+    int version;
+    void *func;
+} func_table[] = {
+    { 40, 1, gather_random },
+    { 41, 1, fast_poll },
+};
+
 
 
 /****************
- * The real random data collector for Unix.
- * this function runs in a loop, waiting for commands from ctrl_fd
- * and normally starts a collection process, which outputs random
- * bytes to out_fd.
- *
- * Commands understand from ctrl_fd are single character:
- *  'Q' = Quit the loop
- *  'S' = Start a new collection process
+ * Enumerate the names of the functions together with informations about
+ * this function. Set sequence to an integer with a initial value of 0 and
+ * do not change it.
+ * If what is 0 all kind of functions are returned.
+ * Return values: class := class of function:
+ *			   10 = message digest algorithm info function
+ *			   11 = integer with available md algorithms
+ *			   20 = cipher algorithm info function
+ *			   21 = integer with available cipher algorithms
+ *			   30 = public key algorithm info function
+ *			   31 = integer with available pubkey algorithms
+ *			   40 = get gather_random function
+ *			   41 = get fast_random_poll function
+ *		  version = interface version of the function/pointer
+ *			    (currently this is 1 for all functions)
  */
-static void
-collector( FILE *ctrlfp, FILE *outfp )
+
+#ifndef IS_MODULE
+static
+#endif
+void *
+gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
 {
+    void *ret;
+    int i = *sequence;
 
+    do {
+	if ( i >= DIM(func_table) || i < 0 ) {
+	    return NULL;
+	}
+	*class = func_table[i].class;
+	*vers  = func_table[i].version;
+	ret = func_table[i].func;
+	i++;
+    } while ( what && what != *class );
 
-
+    *sequence = i;
+    return ret;
 }
 
-#endif /* no HAVE_DEV_RANDOM */
-#endif /* USE_RAND_UNIX */
+#ifndef IS_MODULE
+void
+rndlinux_constructor(void)
+{
+    register_internal_cipher_extension( gnupgext_version,
+					gnupgext_enum_func );
+}
+#endif
+

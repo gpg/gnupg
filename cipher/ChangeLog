@@ -1,6 +1,19 @@
+Wed Nov 25 12:33:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* rand-*.c: Removed.
+	* rndlinux.c : New.
+	* rndunix.c : New.
+	* random.c : Restructured the interface to the gather modules.
+	(intialize): Call constructor functions
+	(read_radnom_source): Moved to here.
+	* dynload.c (dynload_getfnc_gather_random): New.
+	(dynload_getfnc_fast_random_poll): New.
+	(register_internal_cipher_extension): New.
+	(register_cipher_extension): Support of internal modules.
+
 Sun Nov  8 17:44:36 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
-	* radn-unix.c (read_random_source): Removed the assert.
+	* rand-unix.c (read_random_source): Removed the assert.
 
 Mon Oct 19 18:34:30 1998  me,,,  (wk@tobold)
 

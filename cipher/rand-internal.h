@@ -20,34 +20,11 @@
 #ifndef G10_RAND_INTERNAL_H
 #define G10_RAND_INTERNAL_H
 
-/* For now we use the DUMMY random generator if we do not have
- * the real random device */
-#ifndef HAVE_DEV_RANDOM
-  #define USE_RAND_DUMMY 1
-  #undef  USE_RAND_UNIX
-  #undef  USE_RAND_W32
-#endif
-
-
-
-#include "random.h"
-
-#define BLOCKLEN  64   /* hash this amount of bytes */
-#define DIGESTLEN 20   /* into a digest of this length (rmd160) */
-/* poolblocks is the number of digests which make up the pool
- * and poolsize must be a multiple of the digest length
- * to make the AND operations faster, the size should also be
- * a multiple of ulong
- */
-#define POOLBLOCKS 30
-#define POOLSIZE (POOLBLOCKS*DIGESTLEN)
-#if (POOLSIZE % SIZEOF_UNSIGNED_LONG)
-  #error Please make sure that poolsize is a multiple of ulong
-#endif
-#define POOLWORDS (POOLSIZE / SIZEOF_UNSIGNED_LONG)
-
-
-void read_random_source( byte *buffer, size_t length, int level );
-
+void rndlinux_constructor(void);
+void rndunix_constructor(void);
+void rndw32_constructor(void);
+void rndos2_constructor(void);
+void rndatari_constructor(void);
+void rndmvs_constructor(void);
 
 #endif /*G10_RAND_INTERNAL_H*/
