@@ -22,7 +22,7 @@
 EXTRA_DIST = mkerrors mkerrtok
 #INCLUDES = 
 
-noinst_LIBRARIES = libcommon.a
+noinst_LIBRARIES = libcommon.a libsimple-pwquery.a
 
 AM_CPPFLAGS =  $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
@@ -42,6 +42,11 @@ libcommon_a_SOURCES = \
 
 
 libcommon_a_LIBADD = @LIBOBJS@
+
+libsimple_pwquery_a_SOURCES = \
+	simple-pwquery.c simple-pwquery.h
+
+libsimple_pwquery_a_LIBADD = @LIBOBJS@
 
 
 
