@@ -24,6 +24,10 @@ Provides: gpg openpgp
 BuildRoot: /tmp/rpmbuild_%{name}
 
 %changelog
+* Sat Oct 26 2002 David Shaw <dshaw@jabberwocky.com>
+- Use new path for keyserver helpers.
+- /usr/lib is no longer used for cipher/hash plugins.
+- Include gpgv, gpgsplit, and the new gnupg.7 man page.
 * Fri Apr 19 2002 David Shaw <dshaw@jabberwocky.com>
 - Removed OPTIONS and pubring.asc - no longer used
 - Added doc/samplekeys.asc
@@ -163,13 +167,12 @@ make install-strip prefix=$RPM_BUILD_ROOT/usr
 %doc %attr (-,root,root) doc/samplekeys.asc
 
 %attr (-,root,root) /usr/man/man1/gpg*.1*
+%attr (-,root,root) /usr/man/man7/gnupg.7*
 %attr (4755,root,root) /usr/bin/gpg
-%attr (-,root,root) /usr/bin/gpgkeys_*
-
+%attr (4755,root,root) /usr/bin/gpgv
+%attr (4755,root,root) /usr/bin/gpgsplit
+%attr (-,root,root) /usr/libexec/%{name}
 %attr (-,root,root) /usr/share/locale/*/*/%{name}.mo
-
-%attr (-,root,root) /usr/lib/%{name}
-
 %config %attr (-,root,root) /usr/share/%{name}/options.skel
 
 %clean
