@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 1.5[H p]
-Last-Modified: Jun 13, 2001[H p]
+Version: 1.5.1[H p]
+Last-Modified: Jun 15, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -147,6 +147,7 @@ you could search in the mailing list archive.
     load-extension idea 
     [H /pre]
 
+
 <S> USAGE
 
 <Q> What is the recommended key size?
@@ -156,7 +157,7 @@ you could search in the mailing list archive.
     is probably the weakest link if the key size is larger
     than 1024 bits.  Encryption keys may have greater sizes,
     but you should then check the fingerprint of this key:
-    "gpg --fingerprint --fingerprint <user ID>".
+    "gpg --fingerprint <user ID>".
 
     As for the key algorithms, you should stick with the default (i.e.,
     DSA signature and ElGamal encryption). A ElGamal signing key has the
@@ -166,8 +167,6 @@ you could search in the mailing list archive.
     DSA, there might be compatibility problems with certain PGP
     versions. It has only been introduced because at the time it was
     not clear whether there is was patent on DSA.
-
-
 
 <Q> Why does it sometimes take so long to create keys?
 

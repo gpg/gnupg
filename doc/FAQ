@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 1.5
-Last-Modified: Jun 13, 2001
+Version: 1.5.1
+Last-Modified: Jun 15, 2001
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -209,6 +209,7 @@ you could search in the mailing list archive.
     the following line to your ~/.gnupg/options: 
     load-extension idea 
 
+
 4. USAGE
 
 4.1) What is the recommended key size?
@@ -218,7 +219,7 @@ you could search in the mailing list archive.
     is probably the weakest link if the key size is larger
     than 1024 bits.  Encryption keys may have greater sizes,
     but you should then check the fingerprint of this key:
-    "gpg --fingerprint --fingerprint <user ID>".
+    "gpg --fingerprint <user ID>".
 
     As for the key algorithms, you should stick with the default (i.e.,
     DSA signature and ElGamal encryption). A ElGamal signing key has the
@@ -228,8 +229,6 @@ you could search in the mailing list archive.
     DSA, there might be compatibility problems with certain PGP
     versions. It has only been introduced because at the time it was
     not clear whether there is was patent on DSA.
-
-
 
 4.2) Why does it sometimes take so long to create keys?
 
