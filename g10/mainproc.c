@@ -740,6 +740,7 @@ do_proc_packets( CTX c, IOBUF a )
 	if( opt.list_packets ) {
 	    switch( pkt->pkttype ) {
 	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
+	      case PKT_SYMKEY_ENC:  proc_symkey_enc( c, pkt ); break;
 	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
 	      default: newpkt = 0; break;

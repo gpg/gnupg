@@ -20,6 +20,7 @@
   * when decryptiong multiple key: print a warning only if no usable pubkey
     encrypt package was found.	Extension: display a list of all recipients.
 
+  * Can't import ring1.pgp. Compressed keys? Should print a warning.
 
 Nice to have
 ------------

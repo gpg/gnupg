@@ -555,17 +555,18 @@ static int
 has_invalid_email_chars( const char *s )
 {
     int at_seen=0;
+    static char valid_chars[] = "01234567890_-."
+				"abcdefghijklmnopqrstuvwxyz"
+				"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     for( ; *s; s++ ) {
 	if( *s & 0x80 )
 	    return 1;
 	if( *s == '@' )
 	    at_seen=1;
-	else if( !at_seen
-		 && !strchr("01234567890abcdefghijklmnopqrstuvwxyz_-.+", *s ))
+	else if( !at_seen && !( !!strchr( valid_chars, *s ) || *s == '+' ) )
 	    return 1;
-	else if( at_seen
-		 && !strchr("01234567890abcdefghijklmnopqrstuvwxyz_-.", *s ) )
+	else if( at_seen && !strchr( valid_chars, *s ) )
 	    return 1;
     }
     return 0;
@@ -608,7 +609,6 @@ ask_user_id( int mode )
 		m_free(amail);
 		amail = cpr_get("keygen.email",_("Email address: "));
 		trim_spaces(amail);
-		strlwr(amail);
 		cpr_kill_prompt();
 		if( !*amail )
 		    break;   /* no email address is okay */

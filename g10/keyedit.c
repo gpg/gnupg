@@ -1337,11 +1337,12 @@ menu_select_uid( KBNODE keyblock, int idx )
     /* and toggle the new index */
     for( i=0, node = keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
-	    if( ++i == idx )
+	    if( ++i == idx ) {
 		if( (node->flag & NODFLG_SELUID) )
 		    node->flag &= ~NODFLG_SELUID;
 		else
 		    node->flag |= NODFLG_SELUID;
+	    }
 	}
     }
 
@@ -1384,11 +1385,12 @@ menu_select_key( KBNODE keyblock, int idx )
     for( i=0, node = keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
 	    || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-	    if( ++i == idx )
+	    if( ++i == idx ) {
 		if( (node->flag & NODFLG_SELKEY) )
 		    node->flag &= ~NODFLG_SELKEY;
 		else
 		    node->flag |= NODFLG_SELKEY;
+	    }
 	}
     }
 

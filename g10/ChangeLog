@@ -1,3 +1,15 @@
+Sun Feb 28 19:11:00 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* keygen.c (ask_user_id): Don't change the case of email addresses.
+	(has_invalid_email_chars): Adjusted.
+
+	* keylist.c (list_one): Really list serect keys (Remi Guyomarch)
+
+	* keyedit.c (menu_select_uid): Add some braces to make egcs happy.
+	(menu_select_key): Ditto.
+
+	* mainproc.c (do_proc_packets): List sym-enc packets (Remi Guyomarch)
+
 Fri Feb 26 17:55:41 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pkclist.c (build_pk_list): Return error if there are no recipients.

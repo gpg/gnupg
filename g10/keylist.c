@@ -132,7 +132,7 @@ list_one( STRLIST names, int secret )
 	}
 	do {
 	    merge_keys_and_selfsig( keyblock );
-	    list_keyblock( keyblock, 0 );
+	    list_keyblock( keyblock, 1 );
 	    release_kbnode( keyblock );
 	} while( !get_seckey_next( ctx, NULL, &keyblock ) );
 	get_seckey_end( ctx );

@@ -245,14 +245,17 @@ if test "$try_dynload" = yes ; then
       dnl work for freebsd
       AC_DEFINE(DLSYM_NEEDS_UNDERSCORE)
       use_gnupg_extensions=yes
-    else
-      AC_CHECK_LIB(dld,dld_link)
-      if test "$ac_cv_lib_dld_dld_link" = "yes"; then
-        AC_DEFINE(USE_DYNAMIC_LINKING)
-        AC_DEFINE(HAVE_DLD_DLD_LINK)
-        DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
-        use_gnupg_extensions=yes
-      fi
+dnl else
+dnl
+dnl  DLD is not ready for use. So I better disable this test
+dnl
+dnl    AC_CHECK_LIB(dld,dld_link)
+dnl    if test "$ac_cv_lib_dld_dld_link" = "yes"; then
+dnl      AC_DEFINE(USE_DYNAMIC_LINKING)
+dnl      AC_DEFINE(HAVE_DLD_DLD_LINK)
+dnl      DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
+dnl      use_gnupg_extensions=yes
+dnl    fi
     fi
   fi
 else
