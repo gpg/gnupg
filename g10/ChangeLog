@@ -1,5 +1,11 @@
 2002-11-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main), trustdb.c (ask_ownertrust): Add
+	--force-ownertrust option for debugging purposes.  This allows
+	setting a whole keyring to a given trust during an
+	--update-trustdb.  Not for normal use - it's just easier than
+	hitting "4" all the time to test a large trustdb.
+
 	* pubkey-enc.c (get_session_key): With hidden recipients or try a
 	given passphrase against all secret keys rather than trying all
 	secret keys in turn.  Don't if --try-all-secrets or --status-fd is

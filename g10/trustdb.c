@@ -1075,13 +1075,24 @@ ask_ownertrust (u32 *kid,int minimum)
       return TRUST_UNKNOWN;
     }
  
-  ot=edit_ownertrust(pk,0);
-  if(ot>0)
-    ot = get_ownertrust (pk);
-  else if(ot==0)
-    ot = minimum?minimum:TRUST_UNDEFINED;
+  if(opt.force_ownertrust)
+    {
+      log_info("force trust for key %08lX to %s\n",(ulong)kid[1],
+	       trust_string(opt.force_ownertrust));
+      update_ownertrust(pk,opt.force_ownertrust);
+      ot=opt.force_ownertrust;
+    }
   else
-    ot = -1; /* quit */
+    {
+      ot=edit_ownertrust(pk,0);
+      if(ot>0)
+	ot = get_ownertrust (pk);
+      else if(ot==0)
+	ot = minimum?minimum:TRUST_UNDEFINED;
+      else
+	ot = -1; /* quit */
+    }
+
   free_public_key( pk );
 
   return ot;

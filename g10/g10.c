@@ -206,6 +206,7 @@ enum cmd_and_opt_values { aNull = 0,
     oCompressSigs,
     oAlwaysTrust,
     oTrustModel,
+    oForceOwnertrust,
     oEmuChecksumBug,
     oRunAsShmCP,
     oSetFilename,
@@ -524,6 +525,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDefCertCheckLevel, "default-cert-check-level", 1, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oTrustModel, "trust-model", 2, "@"},
+    { oForceOwnertrust, "force-ownertrust", 1, "@"},
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
@@ -1459,6 +1461,15 @@ main( int argc, char **argv )
 	      opt.trust_model=TM_ALWAYS;
 	    else
 	      log_error("unknown trust model \"%s\"\n",pargs.r.ret_str);
+	    break;
+	  case oForceOwnertrust:
+	    log_info(_("NOTE: %s is not for normal use!\n"),
+		     "--force-ownertrust");
+	    if(pargs.r.ret_int>=TRUST_UNDEFINED
+	       && pargs.r.ret_int<=TRUST_ULTIMATE)
+	      opt.force_ownertrust=pargs.r.ret_int;
+	    else
+	      log_error("invalid ownertrust %d\n",pargs.r.ret_int);
 	    break;
 	  case oLoadExtension:
 #ifndef __riscos__
