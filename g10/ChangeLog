@@ -1,3 +1,11 @@
+2003-01-02  Werner Koch  <wk@gnupg.org>
+
+	* keydb.c (keydb_add_resource): Don't assume that try_make_homedir
+	terminates but check again for the existence of the directory and
+	continue then.
+	* openfile.c (copy_options_file): Print a warning if the skeleton
+	file has active options.
+
 2002-12-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs_main), main.h, sig-check.c

@@ -301,6 +301,8 @@ copy_options_file( const char *destdir )
     int linefeeds=0;
     int c;
     mode_t oldmask;
+    int esc = 0;
+    int any_option = 0;
 
     if( opt.dry_run )
 	return;
@@ -329,12 +331,27 @@ copy_options_file( const char *destdir )
 	    if( c == '\n' )
 		linefeeds++;
 	}
-	else
+	else {
 	    putc( c, dst );
+            if (c== '\n')
+                esc = 1;
+            else if (esc == 1) {
+                if (c == ' ' || c == '\t')
+                    ;
+                else if (c == '#')
+                    esc = 2;
+                else 
+                    any_option = 1;
+            }
+        }
     }
     fclose( dst );
     fclose( src );
     log_info(_("new configuration file `%s' created\n"), fname );
+    if (any_option)
+        log_info (_("WARNING: options in `%s'"
+                    " are not yet active during this run\n"),
+                  fname);
     m_free(fname);
 }
 
@@ -371,3 +388,5 @@ try_make_homedir( const char *fname )
 /*  	g10_exit(1); */
     }
 }
+
+

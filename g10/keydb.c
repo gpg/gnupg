@@ -159,14 +159,21 @@ keydb_add_resource (const char *url, int force, int secret)
 	    last_slash_in_filename = strrchr (filename, DIRSEP_C);
 	    *last_slash_in_filename = 0;
 	    if (access(filename, F_OK))
-              { /* on the first time we try to create the default
-		   homedir and in this case the process will be
-		   terminated, so that on the next invocation it can
-		   read the options file in on startup */
-		try_make_homedir (filename);
-		rc = G10ERR_OPEN_FILE;
-        	*last_slash_in_filename = DIRSEP_C;
-		goto leave;
+              { /* On the first time we try to create the default
+		   homedir and check again. */
+                static int tried;
+                
+                if (!tried)
+                  {
+                    tried = 1;
+                    try_make_homedir (filename);
+                  }
+         	if (access (filename, F_OK))
+                  {
+                    rc = G10ERR_OPEN_FILE;
+                    *last_slash_in_filename = DIRSEP_C;
+                    goto leave;
+                  }
               }
 	    *last_slash_in_filename = DIRSEP_C;
 
