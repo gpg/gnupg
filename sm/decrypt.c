@@ -34,6 +34,21 @@
 #include "keydb.h"
 #include "i18n.h"
 
+struct decrypt_filter_parm_s {
+  int algo;
+  int blklen;
+  GCRY_CIPHER_HD hd;
+  char iv[16];
+  size_t ivlen;
+  int any_data;  /* dod we push anything through the filter at all? */
+  unsigned char lastblock[16];  /* to strip the padding we have to
+                                   keep this one */
+  char helpblock[16];  /* needed because there is no block bufferin in
+                          libgcrypt (yet) */
+  int  helpblocklen;
+};
+
+
 static void
 print_integer (unsigned char *p)
 {
@@ -49,6 +64,174 @@ print_integer (unsigned char *p)
     }
 }
 
+/* decrypt the session key and fill in the parm structure.  The
+   algo and the IV is expected to be already in PARM. */
+static int 
+prepare_decryption (const char *hexkeygrip, const char *enc_val,
+                    struct decrypt_filter_parm_s *parm)
+{
+  char *seskey = NULL;
+  size_t n, seskeylen;
+  int rc;
+
+  rc = gpgsm_agent_pkdecrypt (hexkeygrip, enc_val, strlen (enc_val),
+                              &seskey, &seskeylen);
+  if (rc)
+    {
+      log_error ("error decrypting session key: %s\n", gnupg_strerror (rc));
+      goto leave;
+    }
+
+  if (DBG_CRYPTO)
+    log_printhex ("pkcs1 encoded session key:", seskey, seskeylen);
+
+  n=0;
+  if (n + 7 > seskeylen )
+    {
+      rc = seterr (Invalid_Session_Key);
+      goto leave; 
+    }
+
+  if (seskey[n] != 2 )  /* wrong block type version */
+    { 
+      rc = seterr (Invalid_Session_Key);
+      goto leave; 
+    }
+
+  for (n++; n < seskeylen && seskey[n]; n++) /* skip the random bytes */
+    ;
+  n++; /* and the zero byte */
+  if (n >= seskeylen )
+    { 
+      rc = seterr (Invalid_Session_Key);
+      goto leave; 
+    }
+  
+  if (DBG_CRYPTO)
+    log_printhex ("session key:", seskey+n, seskeylen-n);
+
+  parm->hd = gcry_cipher_open (parm->algo, GCRY_CIPHER_MODE_CBC, 0);
+  if (!parm->hd)
+    {
+      rc = gcry_errno ();
+      log_error ("error creating decryptor: %s\n", gcry_strerror (rc));
+      rc = map_gcry_err (rc);
+      goto leave;
+    }
+                        
+  rc = gcry_cipher_setkey (parm->hd, seskey+n, seskeylen-n);
+  if (rc == GCRYERR_WEAK_KEY)
+    {
+      log_info (_("WARNING: message was encrypted with "
+                  "a weak key in the symmetric cipher.\n"));
+      rc = 0;
+    }
+  if (rc)
+    {
+      log_error("key setup failed: %s\n", gcry_strerror(rc) );
+      rc = map_gcry_err (rc);
+      goto leave;
+    }
+
+  gcry_cipher_setiv (parm->hd, parm->iv, parm->ivlen);
+
+ leave:
+  xfree (seskey);
+  return rc;
+}
+
+
+/* This function is called by the KSab writer just before the actual
+   write is done.  The function must take INLEN bytes from INBUF,
+   decrypt it and store it inoutbuf which has a maximum size of
+   maxoutlen.  The valid bytes in outbuf should be return in outlen.
+   Due to different buffer sizes or different length of input and
+   output, it may happen that fewer bytes are process or fewer bytes
+   are written. */
+static KsbaError  
+decrypt_filter (void *arg,
+                const void *inbuf, size_t inlen, size_t *inused,
+                void *outbuf, size_t maxoutlen, size_t *outlen)
+{
+  struct decrypt_filter_parm_s *parm = arg;
+  int blklen = parm->blklen;
+  size_t orig_inlen = inlen;
+
+  /* fixme: Should we issue an error when we have not seen one full block? */
+  if (!inlen)
+    return KSBA_Bug;
+
+  if (maxoutlen < 2*parm->blklen)
+    return KSBA_Bug;
+  /* make some space becuase we will later need an extra block at the end */
+  maxoutlen -= blklen;
+
+  if (parm->helpblocklen)
+    {
+      int i, j;
+
+      for (i=parm->helpblocklen,j=0; i < blklen && j < inlen; i++, j++)
+        parm->helpblock[i] = ((const char*)inbuf)[j];
+      inlen -= j;
+      if (blklen > maxoutlen)
+        return KSBA_Bug;
+      if (i < blklen)
+        {
+          parm->helpblocklen = i;
+          *outlen = 0;
+        }
+      else
+        {
+          parm->helpblocklen = 0;
+          if (parm->any_data)
+            {
+              memcpy (outbuf, parm->lastblock, blklen);
+              *outlen =blklen;
+            }
+          else
+            *outlen = 0;
+          gcry_cipher_decrypt (parm->hd, parm->lastblock, blklen,
+                               parm->helpblock, blklen);
+          parm->any_data = 1;
+        }
+      *inused = orig_inlen - inlen;
+      return 0;
+    }
+
+
+  if (inlen > maxoutlen)
+    inlen = maxoutlen;
+  if (inlen % blklen)
+    { /* store the remainder away */
+      parm->helpblocklen = inlen%blklen;
+      inlen = inlen/blklen*blklen;
+      memcpy (parm->helpblock, (const char*)inbuf+inlen, parm->helpblocklen);
+    }
+
+  *inused = inlen + parm->helpblocklen;
+  if (inlen)
+    {
+      assert (inlen >= blklen);
+      if (parm->any_data)
+        {
+          gcry_cipher_decrypt (parm->hd, (char*)outbuf+blklen, inlen,
+                               inbuf, inlen);
+          memcpy (outbuf, parm->lastblock, blklen);
+          memcpy (parm->lastblock,(char*)outbuf+inlen, blklen);
+          *outlen = inlen;
+        }
+      else
+        {
+          gcry_cipher_decrypt (parm->hd, outbuf, inlen, inbuf, inlen);
+          memcpy (parm->lastblock, (char*)outbuf+inlen-blklen, blklen);
+          *outlen = inlen - blklen;
+          parm->any_data = 1;
+        }
+    }
+  else
+    *outlen = 0;
+  return 0;
+}
 
 
 
@@ -67,6 +250,9 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
   KEYDB_HANDLE kh;
   int recp;
   FILE *in_fp = NULL;
+  struct decrypt_filter_parm_s dfparm;
+
+  memset (&dfparm, 0, sizeof dfparm);
 
   kh = keydb_new (0);
   if (!kh)
@@ -130,6 +316,33 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
       if (stopreason == KSBA_SR_BEGIN_DATA
           || stopreason == KSBA_SR_DETACHED_DATA)
         {
+          int algo;
+          const char *algoid;
+          
+          algoid = ksba_cms_get_content_oid (cms, 2/* encryption algo*/);
+          algo = gcry_cipher_map_name (algoid);
+          if (!algo)
+            {
+              log_error ("unsupported algorithm `%s'\n", algoid? algoid:"?");
+              rc = GNUPG_Unsupported_Algorithm;
+              goto leave;
+            }
+          dfparm.algo = algo;
+          dfparm.blklen = gcry_cipher_get_algo_blklen (algo);
+          if (dfparm.blklen > sizeof (dfparm.helpblock))
+            return GNUPG_Bug;
+
+          rc = ksba_cms_get_content_enc_iv (cms,
+                                            dfparm.iv,
+                                            sizeof (dfparm.iv),
+                                            &dfparm.ivlen);
+          if (rc)
+            {
+              log_error ("error getting IV: %s\n", ksba_strerror (err));
+              rc = map_ksba_err (err);
+              goto leave;
+            }
+          
           for (recp=0; recp < 1; recp++)
             {
               char *issuer;
@@ -164,8 +377,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   if (rc)
                     {
                       log_debug ("failed to get cert: %s\n", gnupg_strerror (rc));
-                      goto oops;
-                    }
+                      goto oops;                    }
 
                   hexkeygrip = gpgsm_get_keygrip_hexstring (cert);
 
@@ -181,31 +393,54 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                            recp);
               else
                 {
-                  char *seskey;
-                  size_t seskeylen;
-
                   log_debug ("recp %d - enc-val: `%s'\n",
                              recp, enc_val);
-
-                  rc = gpgsm_agent_pkdecrypt (hexkeygrip,
-                                              enc_val, strlen (enc_val),
-                                              &seskey, &seskeylen);
-                  if (rc)
-                    log_debug ("problem: %s\n", gnupg_strerror (rc));
-                  else
-                    {
-                      unsigned char *p;
-                      log_debug ("plaintext=");
-                      for (p=seskey; seskeylen; seskeylen--, p++)
-                        log_printf (" %02X", *p);
-                      log_printf ("\n");
-                    }
+                  rc = prepare_decryption (hexkeygrip, enc_val,
+                                           &dfparm);
                   xfree (enc_val);
+                  if (rc)
+                    log_error ("decrypting session key failed: %s\n",
+                               gnupg_strerror (rc));
+                  else
+                    { /* setup the bulk decrypter */
+                      ksba_writer_set_filter (writer,
+                                              decrypt_filter,
+                                              &dfparm);
+                    }
                 }
             }
         }
-
-
+      else if (stopreason == KSBA_SR_END_DATA)
+        {
+          ksba_writer_set_filter (writer, NULL, NULL);
+          if (dfparm.any_data)
+            { /* write the last block with padding removed */
+              int i, npadding = dfparm.lastblock[dfparm.blklen-1];
+              if (!npadding || npadding > dfparm.blklen)
+                {
+                  log_error ("invalid padding with value %d\n", npadding);
+                  rc = seterr (Invalid_Data);
+                  goto leave;
+                }
+              rc = ksba_writer_write (writer,
+                                      dfparm.lastblock, 
+                                      dfparm.blklen - npadding);
+              if (rc)
+                {
+                  rc = map_ksba_err (rc);
+                  goto leave;
+                }
+              for (i=dfparm.blklen - npadding; i < dfparm.blklen; i++)
+                {
+                  if (dfparm.lastblock[i] != npadding)
+                    {
+                      log_error ("inconsistent padding\n");
+                      rc = seterr (Invalid_Data);
+                      goto leave;
+                    }
+                }
+            }
+        }
 
     }
   while (stopreason != KSBA_SR_READY);   
@@ -217,6 +452,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
   keydb_release (kh); 
   if (in_fp)
     fclose (in_fp);
+  if (dfparm.hd)
+    gcry_cipher_close (dfparm.hd); 
   return rc;
 }
 

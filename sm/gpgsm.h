@@ -167,5 +167,10 @@ int gpgsm_agent_pksign (const char *keygrip,
                         size_t digestlen,
                         int digestalgo,
                         char **r_buf, size_t *r_buflen);
+int gpgsm_agent_pkdecrypt (const char *keygrip,
+                           const char *ciphertext, size_t ciphertextlen,
+                           char **r_buf, size_t *r_buflen);
+
 
 #endif /*GPGSM_H*/
+

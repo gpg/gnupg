@@ -190,10 +190,12 @@ start_agent (void)
 
   log_debug ("connection to agent established\n");
 
-  log_debug ("waiting for debugger .....\n");
-  getchar ();
-  log_debug ("okay\n");
-
+  if (DBG_AGENT)
+    {
+      log_debug ("waiting for debugger [hit RETURN when ready] .....\n");
+      getchar ();
+      log_debug ("... okay\n");
+    }
 
   return 0;
 }
@@ -288,8 +290,9 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   char line[LINELENGTH];
   struct membuf data;
   struct cipher_parm_s cipher_parm;
-  size_t len;
-
+  size_t n, len;
+  char *buf, *endp;
+  
   if (!keygrip || strlen(keygrip) != 40 || !ciphertext || !r_buf || !r_buflen)
     return GNUPG_Invalid_Value;
   *r_buf = NULL;
@@ -321,7 +324,28 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
       xfree (get_membuf (&data, &len));
       return map_assuan_err (rc);
     }
-  *r_buf = get_membuf (&data, r_buflen);
-  return *r_buf? 0 : GNUPG_Out_Of_Core;
+
+  put_membuf (&data, "", 1); /* make sure it is 0 terminated */
+  buf = get_membuf (&data, &len);
+  if (!buf)
+    return seterr (Out_Of_Core);
+  assert (len);
+  len--; /* remove the terminating 0 */
+  n = strtoul (buf, &endp, 10);
+  if (!n || *endp != ':')
+    return seterr (Invalid_Sexp);
+  endp++;
+  if (endp-buf+n > len)
+    return seterr (Invalid_Sexp); /* oops len does not match internal len*/
+  memmove (buf, endp, n);
+  *r_buflen = n;
+  *r_buf = buf;
+  return 0;
 }
+
+
+
+
+
+
 

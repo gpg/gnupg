@@ -553,8 +553,3 @@ gpgsm_destroy_writer (Base64Context ctx)
 {
   xfree (ctx);
 }
-
-
-
-
-
