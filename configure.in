@@ -91,12 +91,6 @@ dnl AM_PROG_LIBTOOL
 MPI_OPT_FLAGS=""
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
-    dnl Always enable optimazation in MPI
-    if (echo "$CFLAGS" | grep '[-]O') >/dev/null ; then
-        :
-    else
-        MPI_OPT_FLAGS=-O2
-    fi
 fi
 
 

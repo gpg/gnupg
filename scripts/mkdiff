@@ -59,11 +59,12 @@ rm $tmp_name
 echo "Signing and compressing patch file"
 gpg --clearsign --not-dash-escaped -u "(gnupg sig)" \
     < $diff_name | gzip --best > $diff_name.gz
+rm $diff_name
 
 echo "Checking patch file"
 cd gnupg-$prev_ver
 zcat ../$diff_name.gz | patch -s -p1
-rm $(find . -name "*.orig")
+rm $(find . -name "*.orig") 2>/dev/null || true
 cd ..
 
 if ! diff -urN "gnupg-$prev_ver/" "gnupg-$curr_ver/" >/dev/null ; then
