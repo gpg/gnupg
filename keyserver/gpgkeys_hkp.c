@@ -1,5 +1,5 @@
 /* gpgkeys_hkp.c - talk to an HKP keyserver
- * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -361,6 +361,16 @@ dehtmlize(char *line)
 	      line+=5;
 	      break;
 	    }
+	  else if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='q') &&
+		  (*(line+2)!='\0' && ascii_tolower(*(line+2))=='u') &&
+		  (*(line+3)!='\0' && ascii_tolower(*(line+3))=='o') &&
+		  (*(line+4)!='\0' && ascii_tolower(*(line+4))=='t') &&
+		  (*(line+5)!='\0' && *(line+5)==';'))
+	    {
+	      parsed[parsedindex++]='"';
+	      line+=6;
+	      break;
+	    }
 
 	default:
 	  parsed[parsedindex++]=*line;
@@ -390,14 +400,12 @@ dehtmlize(char *line)
 int
 write_quoted(IOBUF a, const char *buf, char delim)
 {
-  char quoted[5];
-
-  sprintf(quoted,"%%%02X",delim);
-
   while(*buf)
     {
       if(*buf==delim)
 	{
+	  char quoted[5];
+	  sprintf(quoted,"%%%02X",delim);
 	  if(iobuf_writestr(a,quoted))
 	    return -1;
 	}
@@ -624,7 +632,8 @@ search_key(char *searchkey)
 {
   int max=0,len=0,ret=KEYSERVER_INTERNAL_ERROR,rc;
   struct http_context hd;
-  char *search=NULL,*request=NULL,*skey=searchkey;
+  char *search=NULL,*request=NULL;
+  unsigned char *skey=searchkey;
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
@@ -679,7 +688,7 @@ search_key(char *searchkey)
   sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&options=mr&search=%s",
 	  host,port[0]?":":"",port[0]?port:"",search);
 
- if(verbose>2)
+  if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
 
   rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);

@@ -1,5 +1,10 @@
 2004-08-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_hkp.c (dehtmlize): Understand the quote character
+	(i.e. "&quot;") in HTML responses.
+	(search_key): Search key must be unsigned for url encoder to work
+	properly for 8-bit values.
+
 	* gpgkeys_ldap.c (get_key): Factor out informational display into
 	new function build_info().
 
