@@ -374,7 +374,11 @@ agent_send_all_options (int fd)
     }
 
   if (!opt.ttyname)
-    dft_ttyname = tty_get_ttyname ();
+    {
+      dft_ttyname = getenv ("GPG_TTY");
+      if ((!dft_ttyname || !*dft_ttyname) && tty_get_ttyname ())
+        dft_ttyname = tty_get_ttyname ();
+    }
   if (opt.ttyname || dft_ttyname)
     {
       if (agent_send_option (fd, "ttyname",

@@ -1,5 +1,7 @@
 2003-07-30  Werner Koch  <wk@gnupg.org>
 
+	* passphrase.c (agent_send_all_options): Make use of $GPG_TTY.
+
 	* photoid.c, passphrase.c, g10.c, exec.c: Replaced some
 	__MINGW32__ by _WIN32.
 
