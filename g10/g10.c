@@ -1,5 +1,6 @@
 /* g10.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -74,6 +75,7 @@ enum cmd_and_opt_values { aNull = 0,
     oCompress	  = 'z',
     oSetNotation  = 'N',
     oBatch	  = 500,
+    aGPGConfList,
     oSigNotation,
     oCertNotation,
     oShowNotation,
@@ -153,6 +155,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoDefRecipient,
     oOptions,
     oDebug,
+    oDebugLevel,
     oDebugAll,
     oStatusFD,
 #ifdef __riscos__
@@ -260,6 +263,7 @@ enum cmd_and_opt_values { aNull = 0,
     oEncryptTo,
     oHiddenEncryptTo,
     oNoEncryptTo,
+    oLogFile,
     oLoggerFD,
 #ifdef __riscos__
     oLoggerFile,
@@ -383,6 +387,7 @@ static ARGPARSE_OPTS opts[] = {
     { aPrintMD,  "print-md" , 256, N_("|algo [files]|print message digests")},
     { aPrimegen, "gen-prime" , 256, "@" },
     { aGenRandom, "gen-random" , 256, "@" },
+    { aGPGConfList, "gpgconf-list", 256, "@" },
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -414,6 +419,7 @@ static ARGPARSE_OPTS opts[] = {
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",     0, "@" },
     { oNoTTY,   "no-tty",    0, "@" },
+    { oLogFile, "log-file"   ,2, "@" },
     { oForceV3Sigs, "force-v3-sigs", 0, "@" },
     { oNoForceV3Sigs, "no-force-v3-sigs", 0, "@" },
     { oForceV4Certs, "force-v4-certs", 0, "@" },
@@ -445,6 +451,7 @@ static ARGPARSE_OPTS opts[] = {
     { oOptions, "options"   , 2, "@"},
 
     { oDebug, "debug"     ,4|16, "@"},
+    { oDebugLevel, "debug-level" ,2, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oStatusFD, "status-fd" ,1, "@" },
 #ifdef __riscos__
@@ -835,9 +842,32 @@ add_to_strlist2 ( STRLIST *list, const char *string, int is_utf8)
 }
 
 
+/* Setup the debugging.  With a LEVEL of NULL only the active debug
+   flags are propagated to the subsystems.  With LEVEL set, a specific
+   set of debug flags is set; thus overriding all flags already
+   set. */
 static void
-set_debug(void)
+set_debug (const char *level)
 {
+  if (!level)
+    ;
+  else if (!strcmp (level, "none"))
+    opt.debug = 0;
+  else if (!strcmp (level, "basic"))
+    opt.debug = DBG_MEMSTAT_VALUE;
+  else if (!strcmp (level, "advanced"))
+    opt.debug = DBG_MEMSTAT_VALUE|DBG_TRUST_VALUE|DBG_EXTPROG_VALUE;
+  else if (!strcmp (level, "expert"))
+    opt.debug = (DBG_MEMSTAT_VALUE|DBG_TRUST_VALUE|DBG_EXTPROG_VALUE
+                 |DBG_CACHE_VALUE|DBG_FILTER_VALUE|DBG_PACKET_VALUE);
+  else if (!strcmp (level, "guru"))
+    opt.debug = ~0;
+  else
+    {
+      log_error (_("invalid debug-level `%s' given\n"), level);
+      g10_exit (2);
+    }
+
   if (opt.debug & DBG_MEMORY_VALUE )
     memory_debug_mode = 1;
   if (opt.debug & DBG_MEMSTAT_VALUE )
@@ -1141,14 +1171,17 @@ main( int argc, char **argv )
     int detached_sig = 0;
     FILE *configfp = NULL;
     char *configname = NULL;
+    const char *config_filename = NULL;
     unsigned configlineno;
     int parse_debug = 0;
     int default_config = 1;
     int default_keyring = 1;
     int greeting = 0;
     int nogreeting = 0;
+    char *logfile = NULL;
     int use_random_seed = 1;
     enum cmd_and_opt_values cmd = 0;
+    const char *debug_level = NULL;
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
     char *def_digest_string = NULL;
@@ -1294,22 +1327,34 @@ main( int argc, char **argv )
 
     set_native_charset (NULL); /* Try to auto set the character set */
 
+    /* Try for a version specific config file first */
     if( default_config )
       {
-       /* Try for a version specific config file first but strip our
-          usual cvs suffix.  That suffix indicates that it is not yet
-          the given version but we already want this config file.  */
-	configname = make_filename(opt.homedir,
-				   "gpg" EXTSEP_S "conf-" SAFE_VERSION, NULL );
-        if (!strcmp (configname + strlen (configname) - 4, "-cvs"))
-          configname[strlen (configname)-4] = 0;
+	char *name = xstrdup ("gpg" EXTSEP_S "conf-" SAFE_VERSION);
+	char *ver  = name + strlen("gpg" EXTSEP_S "conf-");
 
-	if(access(configname,R_OK))
+	do
 	  {
-	    xfree (configname);
-	    configname = make_filename(opt.homedir,
-				       "gpg" EXTSEP_S "conf", NULL );
+	    if(configname)
+	      {
+		char *tok;
+
+		xfree (configname);
+		configname=NULL;
+
+		if((tok=strrchr (ver,SAFE_VERSION_DASH)))
+		  *tok='\0';
+		else if((tok=strrchr (ver,SAFE_VERSION_DOT)))
+		  *tok='\0';
+		else
+		  break;
+	      }
+
+	    configname = make_filename (opt.homedir, name, NULL);
 	  }
+	while ( access(configname,R_OK) );
+	xfree(name);
+
         if (!access (configname, R_OK))
           { /* Print a warning when both config files are present. */
             char *p = make_filename(opt.homedir, "options", NULL );
@@ -1436,6 +1481,10 @@ main( int argc, char **argv )
           case aCardStatus: set_cmd (&cmd, aCardStatus); break;
           case aCardEdit: set_cmd (&cmd, aCardEdit); break;
           case aChangePIN: set_cmd (&cmd, aChangePIN); break;
+          case aGPGConfList: 
+            set_cmd (&cmd, aGPGConfList);
+            nogreeting = 1;
+            break;
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
@@ -1446,6 +1495,8 @@ main( int argc, char **argv )
 	  case oVerbose: g10_opt_verbose++;
 		    opt.verbose++; opt.list_sigs=1; break;
 
+          case oLogFile: logfile = pargs.r.ret_str; break;
+    
 	  case oBatch: opt.batch = 1; nogreeting = 1; break;
           case oUseAgent:
 #ifndef __riscos__
@@ -1467,6 +1518,7 @@ main( int argc, char **argv )
 	  case oShowKeyring: opt.list_options|=LIST_SHOW_KEYRING; break;
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
+          case oDebugLevel: debug_level = pargs.r.ret_str; break;
 	  case oStatusFD:
             set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
             break;
@@ -1962,7 +2014,9 @@ main( int argc, char **argv )
     if( configfp ) {
 	fclose( configfp );
 	configfp = NULL;
-	xfree (configname); configname = NULL;
+        config_filename = configname; /* Keep a copy of the config
+                                         file name. */
+	configname = NULL;
 	goto next_pass;
     }
     xfree ( configname ); configname = NULL;
@@ -1983,6 +2037,15 @@ main( int argc, char **argv )
 	log_info("used in a production environment or with production keys!\n");
     }
 #endif
+
+    /* FIXME: We should use the lggging to a file only in server mode;
+       however we have not yet implemetyed that thus we try to get
+       away with --batch as indication for logging to file required. */
+    if (logfile && opt.batch)
+      {
+        log_set_file (logfile);
+        log_set_prefix (NULL, 1|2|4);
+      }
 
     if (opt.verbose > 2)
         log_info ("using character set `%s'\n", get_native_charset ());
@@ -2015,7 +2078,7 @@ main( int argc, char **argv )
 	tty_batchmode( 1 );
 
     gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
-    set_debug();
+    set_debug (debug_level);
 
     /* Do these after the switch(), so they can override settings. */
     if(PGP2)
@@ -2309,7 +2372,7 @@ main( int argc, char **argv )
        avoid adding the secret keyring for a couple of commands to
        avoid unneeded access in case the secrings are stored on a
        floppy */
-    if( cmd != aDeArmor && cmd != aEnArmor )
+    if( cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfList )
       {
         if (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
             && cmd != aVerify && cmd != aSym)
@@ -2344,6 +2407,7 @@ main( int argc, char **argv )
       case aCardStatus:
       case aCardEdit:
       case aChangePIN:
+      case aGPGConfList:
 	break;
       case aExportOwnerTrust: rc = setup_trustdb( 0, trustdb_name ); break;
       case aListTrustDB: rc = setup_trustdb( argc? 1:0, trustdb_name ); break;
@@ -2867,6 +2931,42 @@ main( int argc, char **argv )
         change_pin ( atoi (*argv));
       else
         wrong_args ("--change-pin [no]");
+      break;
+
+    case aGPGConfList: 
+      { /* List options and default values in the GPG Conf format.  */
+
+        /* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
+        /* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
+           FLAGS, AS THEY ARE PART OF THE EXTERNAL INTERFACE.  */
+#define GC_OPT_FLAG_NONE	0UL
+        /* The RUNTIME flag for an option indicates that the option can be
+           changed at runtime.  */
+#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
+        /* The DEFAULT flag for an option indicates that the option has a
+           default value.  */
+#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
+        /* The DEF_DESC flag for an option indicates that the option has a
+           default, which is described by the value of the default field.  */
+#define GC_OPT_FLAG_DEF_DESC	(1UL << 5)
+        /* The NO_ARG_DESC flag for an option indicates that the argument has
+           a default, which is described by the value of the ARGDEF field.  */
+#define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
+
+        printf ("gpgconf-gpg.conf:%lu:\"%s\n",
+                GC_OPT_FLAG_DEFAULT,
+                config_filename?config_filename:"/dev/null");
+        
+        printf ("verbose:%lu:\n"
+                "quiet:%lu:\n"
+                "debug-level:%lu:\"none:\n"
+                "log-file:%lu:\n",
+                GC_OPT_FLAG_NONE,
+                GC_OPT_FLAG_NONE,
+                GC_OPT_FLAG_DEFAULT,
+                GC_OPT_FLAG_NONE );
+
+      }
       break;
 
       case aListPackets:

@@ -258,8 +258,12 @@ AH_BOTTOM([
 #endif
 
 /* This is the same as VERSION, but should be overridden if the
-   platform cannot handle things like dots '.' in filenames. */
+   platform cannot handle things like dots '.' in filenames. Set
+   SAFE_VERSION_DOT and SAFE_VERSION_DASH to whatever SAFE_VERSION
+   uses for dots and dashes. */
 #define SAFE_VERSION VERSION
+#define SAFE_VERSION_DOT  '.'
+#define SAFE_VERSION_DASH '-'
 
 /* For some systems (DOS currently), we hardcode the path here.  For
    POSIX systems the values are constructed by the Makefiles, so that

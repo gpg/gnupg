@@ -1,3 +1,7 @@
+2004-03-23  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Define SAFE_VERSION_DASH and SAFE_VERSION_DOT>
+
 2004-03-09  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (NEED_GPG_ERROR_VERSION): Set to 0.7.
