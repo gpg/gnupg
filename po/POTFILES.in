@@ -5,6 +5,7 @@ agent/protect-tool.c
 agent/divert-scd.c
 agent/genkey.c
 agent/query.c
+agent/trustlist.c
 
 common/sysutils.c
 common/simple-pwquery.c

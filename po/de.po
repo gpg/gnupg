@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.14\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-12-22 18:57+0100\n"
-"PO-Revision-Date: 2004-12-22 19:00+0100\n"
+"POT-Creation-Date: 2005-01-04 16:45+0100\n"
+"PO-Revision-Date: 2005-01-04 16:53+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
 "MIME-Version: 1.0\n"
@@ -302,6 +302,52 @@ msgstr "Falsches Mantra (Passphrase)"
 #: agent/query.c:431
 msgid "Passphrase"
 msgstr "Mantra"
+
+#. TRANSLATORS: This prompt is shown by the Pinentry
+#. and has one special property: A "%%0A" is used by
+#. Pinentry to insert a line break.  The double
+#. percent sign is actually needed because it is also
+#. a printf format string.  If you need to insert a
+#. plain % sign, you need to encode it as "%%25".  The
+#. second "%s" gets replaced by a hexdecimal
+#. fingerprint string whereas the first one receives
+#. the name as store in the certificate.
+#: agent/trustlist.c:305
+#, c-format
+msgid ""
+"Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
+"fingerprint:%%0A  %s"
+msgstr "Bitte pr¸fen Sie, daﬂ das Zertifikat mit dem Namen:%%0A  \"%s\"%%0Afolgenden Fingerabdruck hat:%%0A  %s"
+
+#. TRANSLATORS: "Correct" is the label of a button and intended to
+#. be hit if the fingerprint matches the one of the CA.  The other
+#. button is "the default "Cancel" of the Pinentry.
+#: agent/trustlist.c:317
+msgid "Correct"
+msgstr "Korrekt"
+
+#. TRANSLATORS: This prompt is shown by the Pinentry
+#. and has one special property: A "%%0A" is used by
+#. Pinentry to insert a line break.  The double
+#. percent sign is actually needed because it is also
+#. a printf format string.  If you need to insert a
+#. plain % sign, you need to encode it as "%%25".  The
+#. "%s" gets replaced by the name as store in the
+#. certificate.
+#: agent/trustlist.c:334
+#, c-format
+msgid ""
+"Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
+"certificates?"
+msgstr "Wenn Sie vollst‰ndiges Vertrauen haben, daﬂ%%0A  \"%s\"%%0ABenutzerzertifikate verl‰ﬂlich zertifiziert, so antworten Sie mit \"Ja\""
+
+#: agent/trustlist.c:342
+msgid "Yes"
+msgstr "Ja"
+
+#: agent/trustlist.c:342
+msgid "No"
+msgstr "Nein"
 
 #: common/sysutils.c:87
 #, c-format
