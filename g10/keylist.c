@@ -752,38 +752,46 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
+	    PKT_user_id *uid=node->pkt->pkt.user_id;
 	    if(attrib_fp && node->pkt->pkt.user_id->attrib_data!=NULL)
 	      dump_attribs(node->pkt->pkt.user_id,pk,sk);
             /*
              * Fixme: We need a is_valid flag here too 
              */
 	    if( any ) {
-	        char *str=node->pkt->pkt.user_id->attrib_data?"uat":"uid";
-                if ( node->pkt->pkt.user_id->is_revoked )
-        	    printf("%s:r::::::::",str);
-                else if ( node->pkt->pkt.user_id->is_expired )
-        	    printf("%s:e::::::::",str);
+	        int i;
+	        char *str=uid->attrib_data?"uat":"uid";
+                if ( uid->is_revoked )
+        	    printf("%s:r::::",str);
+                else if ( uid->is_expired )
+        	    printf("%s:e::::",str);
 		else if ( opt.no_expensive_trust_checks ) {
-        	    printf("%s:::::::::",str);
+        	    printf("%s:::::",str);
 	        }
                 else {
 		    int uid_validity;
 
 		    if( pk && !ulti_hack )
-		      uid_validity=get_validity_info (pk,
-						      node->pkt->pkt.user_id);
+		      uid_validity=get_validity_info (pk, uid);
 		    else
 			uid_validity = 'u';
-		    printf("%s:%c::::::::",str,uid_validity);
+		    printf("%s:%c::::",str,uid_validity);
                 }
+
+		printf("%s:",colon_strtime(uid->created));
+		printf("%s:",colon_strtime(uid->expiredate));
+
+		namehash_from_uid(uid);
+
+		for(i=0; i < 20; i++ )
+		  printf("%02X",uid->namehash[i]);
+
+		printf("::");
 	    }
-	    if(node->pkt->pkt.user_id->attrib_data)
-	      printf("%u %lu",
-		     node->pkt->pkt.user_id->numattribs,
-		     node->pkt->pkt.user_id->attrib_len);
+	    if(uid->attrib_data)
+	      printf("%u %lu",uid->numattribs,uid->attrib_len);
             else
-	      print_string( stdout,  node->pkt->pkt.user_id->name,
-			    node->pkt->pkt.user_id->len, ':' );
+	      print_string(stdout,uid->name,uid->len, ':' );
             putchar(':');
 	    if (any)
                 putchar('\n');

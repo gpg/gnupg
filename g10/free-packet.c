@@ -298,9 +298,8 @@ free_user_id (PKT_user_id *uid)
         return;
 
     free_attributes(uid);
-
-    if (uid->prefs)
-        m_free (uid->prefs);
+    m_free (uid->prefs);
+    m_free (uid->namehash);
     m_free (uid);
 }
 

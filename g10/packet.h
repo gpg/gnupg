@@ -168,6 +168,7 @@ typedef struct {
     int numattribs;
     byte *attrib_data;    /* if this is not NULL, the packet is an attribute */
     unsigned long attrib_len;
+    byte *namehash;
     int help_key_usage;
     u32 help_key_expire;
     int help_full_count;

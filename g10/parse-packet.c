@@ -1877,6 +1877,7 @@ static void setup_user_id(PACKET *packet)
   packet->pkt.user_id->help_key_usage = 0;
   packet->pkt.user_id->help_key_expire = 0;
   packet->pkt.user_id->prefs = NULL;
+  packet->pkt.user_id->namehash = NULL;
 }
 
 static int

@@ -1,3 +1,17 @@
+2003-01-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, parse-packet.c (setup_user_id), free-packet.c
+	(free_user_id), keydb.h, keyid.c (namehash_from_uid): New function
+	to rmd160-hash the contents of a user ID packet and cache it in
+	the uid object.
+
+	* keylist.c (list_keyblock_colon): Use namehash in field 8 of
+	uids.  Show dates for creation (selfsig date), and expiration in
+	fields 6 and 7.
+
+	* trustdb.c (get_validity, get_validity_counts, update_validity):
+	Use new namehash function rather than hashing it locally.
+
 2003-01-14  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (add_group): Fixed group parsing to allow more than one

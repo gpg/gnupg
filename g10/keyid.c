@@ -241,6 +241,22 @@ keyid_from_sig( PKT_signature *sig, u32 *keyid )
     return sig->keyid[1];
 }
 
+byte *
+namehash_from_uid(PKT_user_id *uid)
+{
+  if(uid->namehash==NULL)
+    {
+      uid->namehash=m_alloc(20);
+
+      if(uid->attrib_data)
+	rmd160_hash_buffer(uid->namehash,uid->attrib_data,uid->attrib_len);
+      else
+	rmd160_hash_buffer(uid->namehash,uid->name,uid->len);
+    }
+
+  return uid->namehash;
+}
+
 /****************
  * return the number of bits used in the pk
  */
