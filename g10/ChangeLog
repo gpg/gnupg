@@ -1,3 +1,9 @@
+2002-09-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_addrevoker): The direct key signature for
+	revocation keys must be at least v4 to carry the revocation key
+	subpacket.  Add a PGP 2.x warning for revocation keys.
+
 2002-09-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (check permissions): Back out previous change - some

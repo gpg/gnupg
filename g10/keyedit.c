@@ -1992,8 +1992,9 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 
       /* It is legal but bad for compatibility to add a photo ID to a
          v3 key as it means that PGP2 will not be able to use that key
-         anymore.  Don't bother to ask this if the key already has a
-         photo - any damage has already been done at that point. -dms */
+         anymore.  Also, PGP may not expect a photo on a v3 key.
+         Don't bother to ask this if the key already has a photo - any
+         damage has already been done at that point. -dms */
       if(pk->version==3 && !hasattrib)
 	{
 	  if(opt.expert)
@@ -2261,6 +2262,33 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
   assert(sec_keyblock->pkt->pkttype==PKT_SECRET_KEY);
 
   pk=pub_keyblock->pkt->pkt.public_key;
+
+  if(pk->numrevkeys==0 && pk->version==3)
+    {
+      /* It is legal but bad for compatibility to add a revoker to a
+         v3 key as it means that PGP2 will not be able to use that key
+         anymore.  Also, PGP may not expect a revoker on a v3 key.
+         Don't bother to ask this if the key already has a revoker -
+         any damage has already been done at that point. -dms */
+      if(opt.expert)
+	{
+	  tty_printf(_("WARNING: This is a PGP 2.x-style key.  "
+		       "Adding a designated revoker may cause\n"
+		       "         some versions of PGP to reject this key.\n"));
+
+	  if(!cpr_get_answer_is_yes("keyedit.v3_revoker.okay",
+				    _("Are you sure you still want "
+				      "to add it? (y/N) ")))
+	    return 0;
+	}
+      else
+	{
+	  tty_printf(_("You may not add a designated revoker to "
+		       "a PGP 2.x-style key.\n"));
+	  return 0;
+	}
+    }
+
   sk=copy_secret_key(NULL,sec_keyblock->pkt->pkt.secret_key);
 
   for(;;)
@@ -2340,7 +2368,9 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
       break;
     }
 
-  rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x1F, 0, 0, 0, 0,
+  /* The 1F signature must be at least v4 to carry the revocation key
+     subpacket. */
+  rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x1F, 0, 4, 0, 0,
 			   keygen_add_revkey,&revkey );
   if( rc )
     {
