@@ -1,5 +1,5 @@
-/* elgamal.c  -  ElGamal Public Key encryption
- *	Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
+/* elgamal.c  -  elgamal Public Key encryption
+ * Copyright (C) 1998, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * For a description of the algorithm, see:
  *   Bruce Schneier: Applied Cryptography. John Wiley & Sons, 1996.
@@ -47,7 +47,7 @@ typedef struct {
 
 
 static void test_keys( ELG_secret_key *sk, unsigned nbits );
-static MPI gen_k( MPI p );
+static MPI gen_k( MPI p, int small_k );
 static void generate( ELG_secret_key *sk, unsigned nbits, MPI **factors );
 static int  check_secret_key( ELG_secret_key *sk );
 static void do_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey );
@@ -139,11 +139,11 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
     do_encrypt( out1_a, out1_b, test, &pk );
     decrypt( out2, out1_a, out1_b, sk );
     if( mpi_cmp( test, out2 ) )
-	log_fatal("ElGamal operation: encrypt, decrypt failed\n");
+	log_fatal("Elgamal operation: encrypt, decrypt failed\n");
 
     sign( out1_a, out1_b, test, sk );
     if( !verify( out1_a, out1_b, test, &pk ) )
-	log_fatal("ElGamal operation: sign, verify failed\n");
+	log_fatal("Elgamal operation: sign, verify failed\n");
 
     mpi_free( test );
     mpi_free( out1_a );
@@ -153,11 +153,12 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
 
 
 /****************
- * generate a random secret exponent k from prime p, so
- * that k is relatively prime to p-1
+ * Generate a random secret exponent k from prime p, so that k is
+ * relatively prime to p-1.  With SMALL_K set, k will be selected for
+ * better encryption performance - this must never bee used signing!
  */
 static MPI
-gen_k( MPI p )
+gen_k( MPI p, int small_k )
 {
     MPI k = mpi_alloc_secure( 0 );
     MPI temp = mpi_alloc( mpi_get_nlimbs(p) );
@@ -167,13 +168,18 @@ gen_k( MPI p )
     unsigned int nbytes;
     char *rndbuf = NULL;
 
-    /* IMO using a k much lesser than p is sufficient and it greatly
-     * improves the encryption performance.  We use Wiener's table
-     * and add a large safety margin.
-     */
-    nbits = wiener_map( orig_nbits ) * 3 / 2;
-    if( nbits >= orig_nbits )
-	BUG();
+    if (small_k)
+      {
+        /* Using a k much lesser than p is sufficient for encryption and
+         * it greatly improves the encryption performance.  We use
+         * Wiener's table and add a large safety margin.
+         */
+        nbits = wiener_map( orig_nbits ) * 3 / 2;
+        if( nbits >= orig_nbits )
+          BUG();
+      }
+    else
+      nbits = orig_nbits;
 
     nbytes = (nbits+7)/8;
     if( DBG_CIPHER )
@@ -184,8 +190,8 @@ gen_k( MPI p )
 	    m_free(rndbuf);
 	    rndbuf = get_random_bits( nbits, 1, 1 );
 	}
-	else { /* change only some of the higher bits */
-	    /* we could impprove this by directly requesting more memory
+	else { /* Change only some of the higher bits. */
+	    /* We could impprove this by directly requesting more memory
 	     * at the first call to get_random_bits() and use this the here
 	     * maybe it is easier to do this directly in random.c
 	     * Anyway, it is highly inlikely that we will ever reach this code
@@ -193,14 +199,10 @@ gen_k( MPI p )
 	    char *pp = get_random_bits( 32, 1, 1 );
 	    memcpy( rndbuf,pp, 4 );
 	    m_free(pp);
-	    log_debug("gen_k: tsss, never expected to reach this\n");
 	}
 	mpi_set_buffer( k, rndbuf, nbytes, 0 );
 
 	for(;;) {
-	    /* Hmm, actually we don't need this step here
-	     * because we use k much smaller than p - we do it anyway
-	     * just in case the keep on adding a one to k ;) */
 	    if( !(mpi_cmp( k, p_1 ) < 0) ) {  /* check: k < (p-1) */
 		if( DBG_CIPHER )
 		    progress('+');
@@ -262,10 +264,13 @@ generate(  ELG_secret_key *sk, unsigned int nbits, MPI **ret_factors )
      * secret part.  The prime is public and may be shared anyway,
      * so a random generator level of 1 is used for the prime.
      *
-     * I don't see a reason to have a x of about the same size
-     * as the p.  It should be sufficient to have one about the size
-     * of q or the later used k plus a large safety margin. Decryption
-     * will be much faster with such an x.
+     * I don't see a reason to have a x of about the same size as the
+     * p.  It should be sufficient to have one about the size of q or
+     * the later used k plus a large safety margin. Decryption will be
+     * much faster with such an x.  Note that this is not optimal for
+     * signing keys becuase it makes an attack using accidential small
+     * K values even easier.  Well, one should not use ElGamal signing
+     * anyway.
      */
     xbits = qbits * 3 / 2;
     if( xbits >= nbits )
@@ -347,7 +352,7 @@ do_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
      * error code.
      */
 
-    k = gen_k( pkey->p );
+    k = gen_k( pkey->p, 1 );
     mpi_powm( a, pkey->g, k, pkey->p );
     /* b = (y^k * input) mod p
      *	 = ((y^k mod p) * (input mod p)) mod p
@@ -413,7 +418,7 @@ sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
     *
     */
     mpi_sub_ui(p_1, p_1, 1);
-    k = gen_k( skey->p );
+    k = gen_k( skey->p, 0 /* no small K ! */ );
     mpi_powm( a, skey->g, k, skey->p );
     mpi_mul(t, skey->x, a );
     mpi_subm(t, input, t, p_1 );

@@ -1,3 +1,10 @@
+2003-11-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* elgamal.c (gen_k): New arg SMALL_K.
+	(sign): Use it here with SMALL_K set to false
+	(do_encrypt): and here with SMALL_K set to true.  From Werner on
+	devel branch.
+
 2003-10-10  Werner Koch  <wk@gnupg.org>
 
 	* primegen.c (gen_prime): Bail out if we try to generate a prime
