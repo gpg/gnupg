@@ -35,32 +35,6 @@
 #include "i18n.h"
 
 
-static void
-store_cert (KsbaCert cert)
-{
-  KEYDB_HANDLE kh;
-  int rc;
-
-  kh = keydb_new (0);
-  if (!kh)
-    {
-      log_error (_("failed to allocated keyDB handle\n"));
-      return;
-    }
-  rc = keydb_locate_writable (kh, 0);
-  if (rc)
-      log_error (_("error finding writable keyDB: %s\n"), gnupg_strerror (rc));
-
-  rc = keydb_insert_cert (kh, cert);
-  if (rc)
-    {
-      log_error (_("error storing certificate: %s\n"), gnupg_strerror (rc));
-    }
-  keydb_release (kh);               
-}
-
-
-
 
 int
 gpgsm_import (CTRL ctrl, int in_fd)
@@ -100,8 +74,8 @@ gpgsm_import (CTRL ctrl, int in_fd)
       goto leave;
     }
 
-  if ( !gpgsm_validate_path (cert) )
-    store_cert (cert);
+  if ( !gpgsm_basic_cert_check (cert) )
+    keydb_store_cert (cert);
 
  leave:
   ksba_cert_release (cert);

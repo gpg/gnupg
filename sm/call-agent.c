@@ -182,7 +182,8 @@ start_agent (void)
       return seterr (Not_Implemented);
     }
 
-  log_debug ("connection to agent established\n");
+  if (DBG_AGENT)
+    log_debug ("connection to agent established\n");
   return 0;
 }
 
@@ -400,5 +401,31 @@ gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
   return 0;
 }
 
+
+/* Ask the agent whether the certificate is in the list of trusted
+   keys */
+int
+gpgsm_agent_istrusted (KsbaCert cert)
+{
+  int rc;
+  char *fpr;
+  char line[ASSUAN_LINELENGTH];
 
+  rc = start_agent ();
+  if (rc)
+    return rc;
 
+  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+  if (!fpr)
+    {
+      log_error ("error getting the fingerprint\n");
+      return seterr (General_Error);
+    }
+
+  snprintf (line, DIM(line)-1, "ISTRUSTED %s", fpr);
+  line[DIM(line)-1] = 0;
+  xfree (fpr);
+
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  return map_assuan_err (rc);
+}

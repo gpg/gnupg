@@ -1143,3 +1143,58 @@ keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc)
   return 0;
 }
 
+
+/* Store the certificate in the key Db but make sure that it does not
+   already exists.  We do this simply by comparing the fingerprint */
+int
+keydb_store_cert (KsbaCert cert)
+{
+  KEYDB_HANDLE kh;
+  int rc;
+  unsigned char fpr[20];
+
+  if (!gpgsm_get_fingerprint (cert, 0, fpr, NULL))
+    {
+      log_error (_("failed to get the fingerprint\n"));
+      return GNUPG_General_Error;
+    }
+
+  kh = keydb_new (0);
+  if (!kh)
+    {
+      log_error (_("failed to allocate keyDB handle\n"));
+      return GNUPG_Out_Of_Core;
+    }
+
+  rc = keydb_search_fpr (kh, fpr);
+  if (rc != -1)
+    {
+      keydb_release (kh);
+      if (!rc)
+        return 0; /* okay */
+      log_error (_("problem looking for existing certificate: %s\n"),
+                 gnupg_strerror (rc));
+      return rc;
+    }
+
+  rc = keydb_locate_writable (kh, 0);
+  if (rc)
+    {
+      log_error (_("error finding writable keyDB: %s\n"), gnupg_strerror (rc));
+      keydb_release (kh);
+      return rc;
+    }
+
+  rc = keydb_insert_cert (kh, cert);
+  if (rc)
+    {
+      log_error (_("error storing certificate: %s\n"), gnupg_strerror (rc));
+      keydb_release (kh);
+      return rc;
+    }
+  keydb_release (kh);               
+  return 0;
+}
+
+
+

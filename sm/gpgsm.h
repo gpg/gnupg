@@ -158,6 +158,7 @@ int gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
 
 /*-- certpath.c --*/
 int gpgsm_validate_path (KsbaCert cert);
+int gpgsm_basic_cert_check (KsbaCert cert);
 
 /*-- cetlist.c --*/
 int gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr);
@@ -195,6 +196,7 @@ int gpgsm_agent_pkdecrypt (const char *keygrip,
                            KsbaConstSexp  ciphertext, 
                            char **r_buf, size_t *r_buflen);
 int gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey);
+int gpgsm_agent_istrusted (KsbaCert cert);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (KsbaCert cert);

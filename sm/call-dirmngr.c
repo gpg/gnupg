@@ -113,7 +113,8 @@ start_dirmngr (void)
       return seterr (Not_Implemented);
     }
 
-  log_debug ("connection to dirmngr established\n");
+  if (DBG_AGENT)
+    log_debug ("connection to dirmngr established\n");
   return 0;
 }
 
@@ -206,3 +207,5 @@ gpgsm_dirmngr_isvalid (KsbaCert cert)
   rc = assuan_transact (dirmngr_ctx, line, NULL, NULL, inq_certificate, &parm);
   return map_assuan_err (rc);
 }
+
+

@@ -62,6 +62,8 @@ int keydb_search_subject (KEYDB_HANDLE hd, const char *issuer);
 
 int keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc);
 
+int keydb_store_cert (KsbaCert cert);
+
 
 #endif /*GNUPG_KEYDB_H*/
 

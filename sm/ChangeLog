@@ -1,3 +1,19 @@
+2002-01-15  Werner Koch  <wk@gnupg.org>
+
+	* import.c (gpgsm_import): Just do a basic cert check before
+	storing it.
+	* certpath.c (gpgsm_basic_cert_check): New.
+
+	* keydb.c (keydb_store_cert): New.
+	* import.c (store_cert): Removed and change all caller to use
+	the new function.
+	* verify.c (store_cert): Ditto.
+
+	* certlist.c (gpgsm_add_to_certlist): Validate the path
+
+	* certpath.c (gpgsm_validate_path): Check the trust list.
+	* call-agent.c (gpgsm_agent_istrusted): New.
+
 2002-01-14  Werner Koch  <wk@gnupg.org>
 
 	* call-dirmngr.c (inq_certificate): Changed for new interface semantic.

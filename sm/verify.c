@@ -57,32 +57,6 @@ strtimestamp (time_t atime)
 
 
 
-/* fixme: duplicated from import.c */
-static void
-store_cert (KsbaCert cert)
-{
-  KEYDB_HANDLE kh;
-  int rc;
-
-  kh = keydb_new (0);
-  if (!kh)
-    {
-      log_error (_("failed to allocated keyDB handle\n"));
-      return;
-    }
-  rc = keydb_locate_writable (kh, 0);
-  if (rc)
-      log_error (_("error finding writable keyDB: %s\n"), gnupg_strerror (rc));
-
-  rc = keydb_insert_cert (kh, cert);
-  if (rc)
-    {
-      log_error (_("error storing certificate: %s\n"), gnupg_strerror (rc));
-    }
-  keydb_release (kh);               
-}
-
-
 /* Hash the data for a detached signature */
 static void
 hash_data (int fd, GCRY_MD_HD md)
@@ -265,10 +239,11 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 
   for (i=0; (cert=ksba_cms_get_cert (cms, i)); i++)
     {
-      log_debug ("storing certifcate %d\n", i);
-      /* Fixme: we should mark the stored certificates as temporary
-         and put them in a cache first */
-      store_cert (cert);
+      /* Fixme: it might be better to check the validity of the
+         certificate first before entering it into the DB.  This way
+         we would avoid cluttering the DB with invalid
+         certificates. */
+      keydb_store_cert (cert);
       ksba_cert_release (cert);
     }
 

@@ -33,7 +33,8 @@
 #include "gpgsm.h"
 #include "keydb.h"
 
-
+/* add a certificate to a list of certificate and make sure that it is
+   a valid certificate */
 int
 gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
 {
@@ -54,6 +55,8 @@ gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
           rc = keydb_search (kh, &desc, 1);
           if (!rc)
             rc = keydb_get_cert (kh, &cert);
+          if (!rc)
+            rc = gpgsm_validate_path (cert);
           if (!rc)
             {
               CERTLIST cl = xtrycalloc (1, sizeof *cl);
@@ -87,7 +90,8 @@ gpgsm_release_certlist (CERTLIST list)
 }
 
 
-/* Like gpgsm_add_to_certlist, but lookonly for one certificate */
+/* Like gpgsm_add_to_certlist, but look only for one certificate.  No
+   path validation is done */
 int
 gpgsm_find_cert (const char *name, KsbaCert *r_cert)
 {

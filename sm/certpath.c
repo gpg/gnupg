@@ -50,9 +50,12 @@ gpgsm_validate_path (KsbaCert cert)
       goto leave;
     }
 
-  gpgsm_dump_cert ("subject", cert);
+  if (DBG_X509)
+    gpgsm_dump_cert ("subject", cert);
 
   subject_cert = cert;
+
+  /* FIXME: We need to check that none of the certs didexpire */
 
   for (;;)
     {
@@ -100,11 +103,33 @@ gpgsm_validate_path (KsbaCert cert)
         {
           if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
             {
-              log_debug ("selfsigned certificate has a BAD signatures\n");
+              log_error ("selfsigned certificate has a BAD signatures\n");
               rc = depth? GNUPG_Bad_Certificate_Path : GNUPG_Bad_Certificate;
               goto leave;
             }
-          log_debug ("selfsigned certificate is good\n");
+          rc = gpgsm_agent_istrusted (subject_cert);
+          if (!rc)
+            ;
+          else if (rc == GNUPG_Not_Trusted)
+            {
+              char *fpr = gpgsm_get_fingerprint_string (subject_cert,
+                                                        GCRY_MD_SHA1);
+              log_error (_("root certificate is not marked trusted\n"));
+              log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
+              xfree (fpr);
+              /* fixme: print a note while we have not yet the code to
+                 ask whether the cert should be netered into the trust
+                 list */
+              gpgsm_dump_cert ("issuer", subject_cert);
+              log_info ("after checking the fingerprint, you may want "
+                        "to enter it into \"~/.gnupg-test/trustlist.txt\"\n");
+            }
+          else 
+            {
+              log_error (_("checking the trust list failed: %s\n"),
+                         gnupg_strerror (rc));
+            }
+          
           break;  /* okay, a self-signed certicate is an end-point */
         }
       
@@ -116,7 +141,7 @@ gpgsm_validate_path (KsbaCert cert)
       rc = keydb_search_subject (kh, issuer);
       if (rc)
         {
-          log_debug ("failed to find issuer's certificate: rc=%d\n", rc);
+          log_error ("failed to find issuer's certificate: rc=%d\n", rc);
           rc = GNUPG_Missing_Certificate;
           goto leave;
         }
@@ -125,21 +150,25 @@ gpgsm_validate_path (KsbaCert cert)
       rc = keydb_get_cert (kh, &issuer_cert);
       if (rc)
         {
-          log_debug ("failed to get cert: rc=%d\n", rc);
+          log_error ("failed to get cert: rc=%d\n", rc);
           rc = GNUPG_General_Error;
           goto leave;
         }
 
-      log_debug ("got issuer's certificate:\n");
-      gpgsm_dump_cert ("issuer", issuer_cert);
+      if (DBG_X509)
+        {
+          log_debug ("got issuer's certificate:\n");
+          gpgsm_dump_cert ("issuer", issuer_cert);
+        }
 
       if (gpgsm_check_cert_sig (issuer_cert, subject_cert) )
         {
-          log_debug ("certificate has a BAD signatures\n");
+          log_error ("certificate has a BAD signatures\n");
           rc = GNUPG_Bad_Certificate_Path;
           goto leave;
         }
-      log_debug ("certificate is good\n");
+      if (opt.verbose)
+        log_info ("certificate is good\n");
       
       keydb_search_reset (kh);
       subject_cert = issuer_cert;
@@ -156,6 +185,84 @@ gpgsm_validate_path (KsbaCert cert)
   ksba_cert_release (issuer_cert);
   if (subject_cert != cert)
     ksba_cert_release (subject_cert);
+  return rc;
+}
+
+
+/* Check that the given certificate is valid but DO NOT check any
+   constraints.  We assume that the issuers certificate is already in
+   the DB and that this one is valid; which it should be because it
+   has been checked using this function. */
+int
+gpgsm_basic_cert_check (KsbaCert cert)
+{
+  int rc = 0;
+  char *issuer = NULL;
+  char *subject = NULL;
+  KEYDB_HANDLE kh = keydb_new (0);
+  KsbaCert issuer_cert = NULL;
+
+  if (!kh)
+    {
+      log_error (_("failed to allocated keyDB handle\n"));
+      rc = GNUPG_General_Error;
+      goto leave;
+    }
+
+  issuer = ksba_cert_get_issuer (cert, 0);
+  subject = ksba_cert_get_subject (cert, 0);
+  if (!issuer)
+    {
+      if (DBG_X509)
+        log_debug ("ERROR: issuer missing\n");
+      rc = GNUPG_Bad_Certificate;
+      goto leave;
+    }
+
+  if (subject && !strcmp (issuer, subject))
+    {
+      if (gpgsm_check_cert_sig (cert, cert) )
+        {
+          log_error ("selfsigned certificate has a BAD signatures\n");
+          rc = GNUPG_Bad_Certificate;
+          goto leave;
+        }
+    }
+  else
+    {
+      /* find the next cert up the tree */
+      keydb_search_reset (kh);
+      rc = keydb_search_subject (kh, issuer);
+      if (rc)
+        {
+          log_error ("failed to find issuer's certificate: rc=%d\n", rc);
+          rc = GNUPG_Missing_Certificate;
+          goto leave;
+        }
+      
+      ksba_cert_release (issuer_cert); issuer_cert = NULL;
+      rc = keydb_get_cert (kh, &issuer_cert);
+      if (rc)
+        {
+          log_error ("failed to get cert: rc=%d\n", rc);
+          rc = GNUPG_General_Error;
+          goto leave;
+        }
+
+      if (gpgsm_check_cert_sig (issuer_cert, cert) )
+        {
+          log_error ("certificate has a BAD signatures\n");
+          rc = GNUPG_Bad_Certificate;
+          goto leave;
+        }
+      if (opt.verbose)
+        log_info ("certificate is good\n");
+    }
+
+ leave:
+  xfree (issuer);
+  keydb_release (kh); 
+  ksba_cert_release (issuer_cert);
   return rc;
 }
 
