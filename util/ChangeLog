@@ -1,3 +1,7 @@
+2003-09-28  Werner Koch  <wk@gnupg.org>
+
+	* ttyio.c (tty_fprintf): New.
+
 2003-09-21  Timo Schulz  <twoaday@freakmail.de>
 
 	* http.c [WIN32]: Define MB_CUR_MAX.
