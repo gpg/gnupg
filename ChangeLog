@@ -1,3 +1,7 @@
+Mon Jan 31 16:37:34 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Create a symlink for types.h in gcrypt/.
+
 Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* configure.in (g10defs.h): Replaced by gnupg-defs.h

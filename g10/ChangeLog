@@ -1,3 +1,9 @@
+Mon Jan 31 16:37:34 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* keygen.c (gen_dsa): Modified to work with gcry_pk_genkey.
+
+	* Removed dummy-cipher.h from all files.
+
 Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* keygen.c (gen_elg): Modified to work with gcry_pk_genkey.

@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 # Those 2 files are in the CVS but currently not used.
-EXTRA_DIST = README xmalloc.c xmalloc.h logging.c logging.c
+EXTRA_DIST = README xmalloc.c xmalloc.h logging.c logging.h
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 

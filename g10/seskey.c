@@ -26,7 +26,6 @@
 
 #include <gcrypt.h>
 #include "util.h"
-#include "dummy-cipher.h"
 #include "main.h"
 #include "i18n.h"
 

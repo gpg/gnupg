@@ -32,7 +32,6 @@
 #include "keydb.h"
 #include "util.h"
 #include "i18n.h"
-#include "dummy-cipher.h"
 #include "main.h"
 
 

@@ -23,7 +23,6 @@
 
 #include "types.h"
 #include "iobuf.h"
-#include "dummy-cipher.h"
 #include "filter.h"
 
 #ifndef DID_MPI_TYPEDEF

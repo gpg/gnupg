@@ -29,7 +29,6 @@
 #include "main.h"
 #include "keydb.h"
 #include "trustdb.h"
-#include "dummy-cipher.h"
 #include "status.h"
 #include "options.h"
 #include "i18n.h"

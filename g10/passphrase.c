@@ -28,7 +28,6 @@
 #include <gcrypt.h>
 #include "options.h"
 #include "ttyio.h"
-#include "dummy-cipher.h"
 #include "keydb.h"
 #include "main.h"
 #include "i18n.h"

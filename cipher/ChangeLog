@@ -1,3 +1,8 @@
+Mon Jan 31 16:37:34 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* genprime.c (generate_elg_prime): Fixed returned factors which never
+	worked for non-DSA keys.
+
 Thu Jan 27 18:00:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* pubkey.c (sexp_to_key): Fixed mem leaks in case of errors.

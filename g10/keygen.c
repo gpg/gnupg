@@ -29,7 +29,6 @@
 #include <gcrypt.h>
 #include "main.h"
 #include "packet.h"
-#include "dummy-cipher.h"
 #include "ttyio.h"
 #include "options.h"
 #include "keydb.h"
@@ -296,8 +295,6 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 				   algo == GCRY_PK_ELG	 ? "elg" : "x-oops",0),
 			    gcry_sexp_new_name_data( "nbits", buf, 0 ) )
 			);
-    log_debug("input is:\n");
-    gcry_sexp_dump( s_parms );
 
     rc = gcry_pk_genkey( &s_key, s_parms );
     gcry_sexp_release( s_parms );
@@ -305,8 +302,6 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	log_error("pk_genkey failed: %s\n", gpg_errstr(rc) );
 	return rc;
     }
-    log_debug("output is:\n");
-    gcry_sexp_dump( s_key );
 
     sk = gcry_xcalloc( 1, sizeof *sk );
     pk = gcry_xcalloc( 1, sizeof *pk );
@@ -385,16 +380,23 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
-    MPI skey[5];
     MPI *factors;
+    char buf[100];
+    GCRY_SEXP s_parms, s_key;
 
     if( nbits > 1024 )
 	nbits = 1024;
 
-    /*rc = pubkey_generate( GCRY_PK_DSA, nbits, skey, &factors );*/
-    rc = gcry_pk_genkey( NULL, NULL );
+    sprintf(buf, "%u", nbits );
+    s_parms = SEXP_CONS( SEXP_NEW( "genkey", 0 ),
+		 SEXP_CONS( SEXP_NEW("dsa",0),
+			    gcry_sexp_new_name_data( "nbits", buf, 0 ) )
+			);
+
+    rc = gcry_pk_genkey( &s_key, s_parms );
+    gcry_sexp_release( s_parms );
     if( rc ) {
-	log_error("pubkey_generate failed: %s\n", gpg_errstr(rc) );
+	log_error("pk_genkey failed: %s\n", gpg_errstr(rc) );
 	return rc;
     }
 
@@ -406,15 +408,23 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
     }
     sk->pubkey_algo = pk->pubkey_algo = GCRY_PK_DSA;
-		       pk->pkey[0] = mpi_copy( skey[0] );
-		       pk->pkey[1] = mpi_copy( skey[1] );
-		       pk->pkey[2] = mpi_copy( skey[2] );
-		       pk->pkey[3] = mpi_copy( skey[3] );
-    sk->skey[0] = skey[0];
-    sk->skey[1] = skey[1];
-    sk->skey[2] = skey[2];
-    sk->skey[3] = skey[3];
-    sk->skey[4] = skey[4];
+
+    rc = key_from_sexp( pk->pkey, s_key, "public-key", "pqgy" );
+    if( rc ) {
+	log_error("key_from_sexp failed: rc=%d\n", rc );
+	return rc;
+    }
+    rc = key_from_sexp( sk->skey, s_key, "private-key", "pqgyx" );
+    if( rc ) {
+	log_error("key_from_sexp failed: rc=%d\n", rc );
+	return rc;
+    }
+    rc = factors_from_sexp( &factors, s_key );
+    if( rc ) {
+	log_error("factors_from_sexp failed: rc=%d\n", rc );
+	return rc;
+    }
+
     sk->is_protected = 0;
     sk->protect.algo = 0;
 
@@ -453,6 +463,8 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	add_kbnode( sec_root,
 		    make_mpi_comment_node("#:DSA_factor:", factors[i] ));
 
+    /* fixme: Merge this with the elg-generate function and release
+     * some more stuff */
     return 0;
 }
 

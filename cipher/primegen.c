@@ -221,7 +221,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		(*ret_factors)[i] = mpi_copy( factors[i] );
 	}
 	else {
-	    for(; i < n; i++ )
+	    for(i=0; i < n; i++ )
 		(*ret_factors)[i] = mpi_copy( factors[i] );
 	}
     }

@@ -28,7 +28,6 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "util.h"
-#include "dummy-cipher.h"
 #include <gcrypt.h>
 #include "options.h"
 #include "main.h"
