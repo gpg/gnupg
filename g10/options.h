@@ -133,7 +133,6 @@ struct {
     prefitem_t *personal_cipher_prefs,
                *personal_digest_prefs,
                *personal_compress_prefs;
-    int personal_mdc;
     int no_perm_warn;
     char *temp_dir;
     int no_encrypt_to;

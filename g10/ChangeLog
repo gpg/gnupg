@@ -1,3 +1,14 @@
+2002-06-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (expand_groups): Maintain the strlist flags while
+	expanding.  Members of an expansion inherit their flags from the
+	expansion key.
+
+	* options.h, cipher.c (write_header), g10.c (main), keygen.c
+	(keygen_set_std_prefs): remove the personal_mdc flag.  It no
+	longer serves a purpose now that the personal preference lists are
+	split into cipher/digest/zip.
+
 2002-06-14  Timo Schulz  <ts@winpt.org>
 
 	* skclist.c (is_insecure): Implemented.

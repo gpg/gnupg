@@ -695,7 +695,7 @@ default_recipient(void)
 static STRLIST
 expand_groups(STRLIST input)
 {
-  STRLIST output=NULL,rover;
+  STRLIST sl,output=NULL,rover;
   struct groupitem *groups;
 
   for(rover=input;rover;rover=rover->next)
@@ -709,7 +709,11 @@ expand_groups(STRLIST input)
 
 	      /* maintain current utf8-ness */
 	      for(each=groups->values;each;each=each->next)
-		add_to_strlist(&output,each->d);
+		{
+		  sl=add_to_strlist(&output,each->d);
+		  /* maintain the flags from the original */
+		  sl->flags=each->flags;
+		}
 
 	      break;
 	    }
@@ -717,7 +721,10 @@ expand_groups(STRLIST input)
 
       /* Didn't find any groups, so use the existing string */
       if(!groups)
-	add_to_strlist(&output,rover->d);
+	{
+	  sl=add_to_strlist(&output,rover->d);
+	  sl->flags=rover->flags;
+	}
     }
 
   return output;

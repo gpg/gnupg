@@ -344,8 +344,6 @@ keygen_set_std_prefs (const char *string,int personal)
 		    opt.personal_compress_prefs[i].value = 0;
 		  }
 	      }
-
-	    opt.personal_mdc = mdc;
 	  }
 	else
 	  {
