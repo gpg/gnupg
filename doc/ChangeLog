@@ -1,3 +1,8 @@
+2003-07-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS: Document "tru" trust record.  Document REVKEYSIG status
+	tag.
+
 2003-07-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Warning not to try and parse --list-keys in scripts.
@@ -8,12 +13,12 @@
 
 2003-06-18  David Shaw  <dshaw@jabberwocky.com>
 
-	* Add pointer in --ignore-time-conflict to see --ignore-valid
-	from, and vice versa.
+	* gpg.sgml: Add pointer in --ignore-time-conflict to see
+	--ignore-valid from, and vice versa.
 
-	* Document --set-notation.  Explain why it is not possible to
-	disable permission warnings in the gpg.conf file about the
-	homedir.
+	* gpg.sgml: Document --set-notation.  Explain why it is not
+	possible to disable permission warnings in the gpg.conf file about
+	the homedir.
 
 2003-05-21  David Shaw  <dshaw@jabberwocky.com>
 

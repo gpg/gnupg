@@ -36,6 +36,7 @@ record.
 	    pkd = public key data (special field format, see below)
             grp = reserved for gpgsm
             rvk = revocation key
+            tru = trust database information
 
  2. Field:  A letter describing the calculated trust. This is a single
 	    letter, but be prepared that additional information may follow
@@ -116,6 +117,21 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     !  !------ for information number of bits in the value
     !--------- index (eg. DSA goes from 0 to 3: p,q,g,y)
 
+
+The "tru" trust database records have the fields:
+
+ 1: Reason for staleness of trust.  If this field is empty, then the
+    trustdb is not stale.  This field may have multiple flags in it:
+
+    o: Trustdb is old
+    t: Trustdb was built with a different trust model than the one we
+       are using now.
+
+ 2: Trust model.  This is always zero (i.e. "Classic") in this version
+    of GnuPG.
+ 3: Date trustdb was created in seconds since 1/1/1970.
+ 4: Date trustdb will expire in seconds since 1/1/1970.
+
  
 
 Format of the "--status-fd" output
@@ -141,6 +157,11 @@ more arguments in future versions.
     EXPKEYSIG	<long keyid>  <username>
 	The signature with the keyid is good, but the signature was
 	made by an expired key. The username is the primary one
+	encoded in UTF-8 and %XX escaped.
+
+    REVKEYSIG	<long keyid>  <username>
+	The signature with the keyid is good, but the signature was
+	made by a revoked key. The username is the primary one
 	encoded in UTF-8 and %XX escaped.
 
     BADSIG	<long keyid>  <username>
