@@ -74,7 +74,7 @@ enum cmd_and_opt_values {
   aSendKeys,
   aRecvKeys,
   aExport,
-  aCheckKeys,
+  aCheckKeys, /* nyi */
   aServer,                        
   aLearnCard,
 
@@ -606,6 +606,10 @@ main ( int argc, char **argv)
   /* trap_unaligned ();*/
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
+  /* We don't need any locking in libgcrypt unless we use any kind of
+     threading. */
+  gcry_control (GCRYCTL_DISABLE_INTERNAL_LOCKING);
+
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to secmem_init()
      somewhere after the option parsing */
