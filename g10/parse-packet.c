@@ -1881,23 +1881,34 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 static void
 parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
 {
-    int c;
+  int c;
 
-    c = iobuf_get_noeof(inp);
-    pkt->pkt.ring_trust = m_alloc( sizeof *pkt->pkt.ring_trust );
-    pkt->pkt.ring_trust->trustval = c;
-    pkt->pkt.ring_trust->sigcache = 0;
-    if (!c && pktlen==2) {
-        c = iobuf_get_noeof (inp);
-        /* we require that bit 7 of the sigcache is 0 (easier eof handling)*/
-        if ( !(c & 0x80) )
+  if (pktlen)
+    {
+      c = iobuf_get_noeof(inp);
+      pktlen--;
+      pkt->pkt.ring_trust = m_alloc( sizeof *pkt->pkt.ring_trust );
+      pkt->pkt.ring_trust->trustval = c;
+      pkt->pkt.ring_trust->sigcache = 0;
+      if (!c && pktlen==1)
+        {
+          c = iobuf_get_noeof (inp);
+          pktlen--;
+          /* we require that bit 7 of the sigcache is 0 (easier eof handling)*/
+          if ( !(c & 0x80) )
             pkt->pkt.ring_trust->sigcache = c;
-    }
-    if( list_mode )
+        }
+      if( list_mode )
 	printf(":trust packet: flag=%02x sigcache=%02x\n",
                pkt->pkt.ring_trust->trustval,
                pkt->pkt.ring_trust->sigcache);
-    
+    }
+  else
+    {
+      if( list_mode )
+	printf(":trust packet: empty\n");
+    }
+  skip_rest (inp, pktlen);
 }
 
 

@@ -96,6 +96,10 @@
 	* hkp.c (parse_hkp_index): Bug fix - don't report non-revoked keys
 	as revoked in HKP key searches.
 
+2002-02-19  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_trust): Made parsing more robust.
+
 2002-02-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* hkp.c (parse_hkp_index): Catch corruption in HKP index lines
