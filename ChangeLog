@@ -1,3 +1,7 @@
+2000-10-09  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4: Changed wording of the faqprog.pl warning.
+
 Wed Oct  4 15:50:18 CEST 2000  Werner Koch  <wk@openit.de>
 
         * configure.in: Set DYNLINK_MOD_CFLAGS for Irix. It seems that Irix

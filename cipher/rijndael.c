@@ -39,7 +39,8 @@
 #include <string.h> /* for memcmp() */
 
 #include "types.h"  /* for byte and u32 typedefs */
-#include "g10lib.h"
+#include "util.h"
+#include "errors.h"
 #include "dynload.h"
 
 #define MAXKC			(256/32)
@@ -1726,7 +1727,7 @@ rijndael_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
             fprintf(stderr, "%s\n", selftest_failed );
     }
     if( selftest_failed )
-        return GCRYERR_SELFTEST;
+        return G10ERR_SELFTEST_FAILED;
 
     if( keylen == 128/8 ) {
         ROUNDS = 10;
@@ -1741,7 +1742,7 @@ rijndael_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
         KC = 8;
     }
     else
-	return GCRYERR_INV_KEYLEN;
+	return G10ERR_WRONG_KEYLEN;
 
     ctx->ROUNDS = ROUNDS;
     ctx->decryption_prepared = 0;
@@ -2121,9 +2122,8 @@ rijndael_get_info (int algo, size_t *keylen,
 }
 
 
-#ifndef IS_MODULE
+#ifdef IS_MODULE
 static
-#endif
 const char * const gnupgext_version = "RIJNDAEL ($Revision$)";
 
 static struct {
@@ -2155,9 +2155,7 @@ static struct {
  *		  version = interface version of the function/pointer
  *			    (currently this is 1 for all functions)
  */
-#ifndef IS_MODULE
 static
-#endif
 void *
 gnupgext_enum_func ( int what, int *sequence, int *class, int *vers )
 {
@@ -2186,7 +2184,7 @@ gnupgext_enum_func ( int what, int *sequence, int *class, int *vers )
     *sequence = i;
     return ret;
 }
-
+#endif
 
 
 

@@ -34,7 +34,7 @@
 
 
 #define MAX_BLOCKSIZE 16
-#define TABLE_SIZE 10
+#define TABLE_SIZE 14
 
 struct cipher_table_s {
     const char *name;
@@ -84,6 +84,39 @@ setup_cipher_table(void)
     int i;
 
     i = 0;
+    cipher_table[i].algo = CIPHER_ALGO_RIJNDAEL;
+    cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
+    cipher_table[i].algo = CIPHER_ALGO_RIJNDAEL192;
+    cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
+    cipher_table[i].algo = CIPHER_ALGO_RIJNDAEL256;
+    cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &cipher_table[i].blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name )
+	BUG();
+    i++;
     cipher_table[i].algo = CIPHER_ALGO_TWOFISH;
     cipher_table[i].name = twofish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,

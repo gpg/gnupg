@@ -29,19 +29,33 @@
 #ifndef G10_MPI_H
 #define G10_MPI_H
 
+#include <config.h>
 #include <stdio.h>
 #include "iobuf.h"
 #include "types.h"
 #include "memory.h"
+#include "../mpi/mpi-asm-defs.h"
+
+#if BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_INT
+  typedef unsigned int mpi_limb_t;
+  typedef   signed int mpi_limb_signed_t;
+#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_LONG
+  typedef unsigned long int mpi_limb_t;
+  typedef   signed long int mpi_limb_signed_t;
+#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_LONG_LONG
+  typedef unsigned long long int mpi_limb_t;
+  typedef   signed long long int mpi_limb_signed_t;
+#elif BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_SHORT
+  typedef unsigned short int mpi_limb_t;
+  typedef   signed short int mpi_limb_signed_t;
+#else
+  #error BYTES_PER_MPI_LIMB does not match any C type
+#endif
+#define BITS_PER_MPI_LIMB    (8*BYTES_PER_MPI_LIMB)
 
 
 #define DBG_MPI     mpi_debug_mode
 int mpi_debug_mode;
-
-#define BITS_PER_MPI_LIMB    (8*SIZEOF_UNSIGNED_LONG)
-#define BYTES_PER_MPI_LIMB   SIZEOF_UNSIGNED_LONG
-typedef unsigned long int mpi_limb_t;
-typedef   signed long int mpi_limb_signed_t;
 
 struct gcry_mpi {
     int alloced;    /* array size (# of allocated limbs) */

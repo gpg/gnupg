@@ -1,3 +1,7 @@
+2000-10-12  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (keygen_add_std_prefs): Add Rijndael to the prefs.
+
 2000-10-07  Werner Koch  <wk@gnupg.org>
 
 	* gpgv.c: Add more stubs for ununsed code to make the binary smaller.

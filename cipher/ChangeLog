@@ -1,3 +1,8 @@
+2000-10-12  Werner Koch  <wk@gnupg.org>
+
+        * rijndael.c: New.
+        * cipher.c: Add Rijndael support.
+
 Wed Oct  4 15:50:18 CEST 2000  Werner Koch  <wk@openit.de>
 
         * sha1.c (transform): Use rol() macro.  Actually this is not needed

@@ -2,6 +2,8 @@
     * New utility gpgv which is a stripped down version of gpg to
       be used to verify signatures against a list of trusted keys.
 
+    * Rijndael (AES) is now supported and listed as first preference.
+   
 
 Noteworthy changes in version 1.0.3 (2000-09-18)
 ------------------------------------------------

@@ -63,10 +63,11 @@ AC_DEFUN(GNUPG_CHECK_FAQPROG,
     if test $working_faqprog = no; then
 	AC_MSG_WARN([[
 ***
-*** It seems that the faqprog.pl program is not installed.
-*** Unless you do not change the source of the FAQs it is not required.
-*** The working version of this utility should be available at:
-***   ftp://ftp.gnupg.org/pub/gcrypt/contrib/faqprog.pl
+*** It seems that the faqprog.pl program is not installed;
+*** however it is only needed if you want to change the FAQ.
+***  (faqprog.pl should be available at:
+***    ftp://ftp.gnupg.org/pub/gcrypt/contrib/faqprog.pl )
+*** No need to worry about this warning.
 ***]])
     fi
   ])       

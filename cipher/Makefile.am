@@ -41,6 +41,7 @@ libcipher_a_SOURCES = cipher.c	\
 		 blowfish.h	\
 		 cast5.c	\
 		 cast5.h	\
+		 rijndael.c     \
 		 elgamal.c	\
 		 elgamal.h	\
 		 rsa.c rsa.h    \
