@@ -1,3 +1,20 @@
+Wed Jul  8 10:45:28 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* plaintext.c (special_md_putc): New.
+	(handle_plaintext): add clearsig argument
+	* mainproc.c (proc_plaintext): detection of clearsig
+	* sign.c (write_dased_escaped): Changed clearsig format
+
+Tue Jul  7 18:56:19 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (find_header): Now makes sure that there is only one
+	empty line for clearsigs, as this is what OP now says.
+
+Mon Jul  6 13:09:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): New option default-secret-key
+	* getkey.c (get_seckey_byname): support for this option.
+
 Mon Jul  6 09:03:49 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* getkey.c (add_keyring): Keyrings are now added to end of the

@@ -33,6 +33,7 @@
 #include "util.h"
 #include "trustdb.h"
 #include "main.h"
+#include "i18n.h"
 
 
 static int read_block( IOBUF a, compress_filter_context_t *cfx,
@@ -101,7 +102,7 @@ import_keys( const char *fname )
     if( !fname )
 	fname = "[stdin]";
     if( !inp ) {
-	log_error("%s: can't open file: %s\n", fname, strerror(errno) );
+	log_error_f(fname, _("can't open file: %s\n"), strerror(errno) );
 	return G10ERR_OPEN_FILE;
     }
 
@@ -116,9 +117,10 @@ import_keys( const char *fname )
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
 	    rc = import_revoke_cert( fname, keyblock );
-	else
-	    log_info("%s: skipping block of type %d\n",
-					    fname, keyblock->pkt->pkttype );
+	else {
+	    log_info_f(fname, _("skipping block of type %d\n"),
+					    keyblock->pkt->pkttype );
+	}
 	release_kbnode(keyblock);
 	if( rc )
 	    break;
@@ -126,7 +128,7 @@ import_keys( const char *fname )
     if( rc == -1 )
 	rc = 0;
     else if( rc && rc != G10ERR_INV_KEYRING )
-	log_error("%s: read error: %s\n", fname, g10_errstr(rc));
+	log_error_f( fname, _("read error: %s\n"), g10_errstr(rc));
 
     iobuf_close(inp);
     return rc;
@@ -255,7 +257,7 @@ import_one( const char *fname, KBNODE keyblock )
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
     if( opt.verbose ) {
-	log_info("%s: pub  %4u%c/%08lX %s   ", fname,
+	log_info_f( fname, "pub  %4u%c/%08lX %s   ",
 		  nbits_from_pk( pk ),
 		  pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_pk(pk) );
@@ -265,7 +267,7 @@ import_one( const char *fname, KBNODE keyblock )
 	putc('\n', stderr);
     }
     if( !uidnode ) {
-	log_error("%s: No user id for key %08lX\n", fname, (ulong)keyid[1]);
+	log_error_f(fname, _("key %08lX: no user id\n"), (ulong)keyid[1]);
 	return 0;
     }
 
@@ -275,8 +277,8 @@ import_one( const char *fname, KBNODE keyblock )
 	return rc== -1? 0:rc;
 
     if( !delete_inv_parts( fname, keyblock, keyid ) ) {
-	log_info("%s: key %08lX, no valid user ids\n",
-						    fname, (ulong)keyid[1]);
+	log_info_f( fname, _("key %08lX: no valid user ids\n"),
+						    (ulong)keyid[1]);
 	return 0;
     }
 
@@ -284,27 +286,27 @@ import_one( const char *fname, KBNODE keyblock )
     pk_orig = m_alloc_clear( sizeof *pk_orig );
     rc = get_pubkey( pk_orig, keyid );
     if( rc && rc != G10ERR_NO_PUBKEY ) {
-	log_error("%s: key %08lX, public key not found: %s\n",
-				fname, (ulong)keyid[1], g10_errstr(rc));
+	log_error_f( fname, _("key %08lX: public key not found: %s\n"),
+				(ulong)keyid[1], g10_errstr(rc));
     }
     else if( rc ) { /* insert this key */
 	/* get default resource */
 	if( get_keyblock_handle( NULL, 0, &kbpos ) ) {
-	    log_error("no default public keyring\n");
+	    log_error(_("no default public keyring\n"));
 	    return G10ERR_GENERAL;
 	}
 	if( opt.verbose > 1 )
-	    log_info("%s: writing to '%s'\n",
-				fname, keyblock_resource_name(&kbpos) );
+	    log_info_f( fname, _("writing to '%s'\n"),
+				keyblock_resource_name(&kbpos) );
 	if( (rc=lock_keyblock( &kbpos )) )
-	    log_error("can't lock public keyring '%s': %s\n",
-			     keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	    log_error_f( keyblock_resource_name(&kbpos),
+			_("can't lock public keyring: %s\n"), g10_errstr(rc) );
 	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
-	    log_error("%s: can't write to '%s': %s\n", fname,
-			     keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	    log_error_f( keyblock_resource_name(&kbpos),
+			_("can't write to keyring: %s\n"), g10_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
-	log_info("%s: key %08lX imported\n", fname, (ulong)keyid[1]);
+	log_info_f( fname, _("key %08lX: public key imported\n"), (ulong)keyid[1]);
     }
     else { /* merge */
 	int n_uids, n_sigs, n_subk;
@@ -312,8 +314,8 @@ import_one( const char *fname, KBNODE keyblock )
 	/* Compare the original against the new key; just to be sure nothing
 	 * weird is going on */
 	if( cmp_public_keys( pk_orig, pk ) ) {
-	    log_error("%s: key %08lX, doesn't match our copy\n",
-						    fname, (ulong)keyid[1]);
+	    log_error_f( fname, _("key %08lX: doesn't match our copy\n"),
+							  (ulong)keyid[1]);
 	    rc = G10ERR_GENERAL;
 	    goto leave;
 	}
@@ -324,14 +326,16 @@ import_one( const char *fname, KBNODE keyblock )
 	/* now read the original keyblock */
 	rc = find_keyblock_bypk( &kbpos, pk_orig );
 	if( rc ) {
-	    log_error("%s: key %08lX, can't locate original keyblock: %s\n",
-				     fname, (ulong)keyid[1], g10_errstr(rc));
+	    log_error_f(fname,
+			_("key %08lX: can't locate original keyblock: %s\n"),
+				     (ulong)keyid[1], g10_errstr(rc));
 	    goto leave;
 	}
 	rc = read_keyblock( &kbpos, &keyblock_orig );
 	if( rc ) {
-	    log_error("%s: key %08lX, can't read original keyblock: %s\n",
-				     fname, (ulong)keyid[1], g10_errstr(rc));
+	    log_error_f(fname,
+			_("key %08lX: can't read original keyblock: %s\n"),
+					    (ulong)keyid[1], g10_errstr(rc));
 	    goto leave;
 	}
 	/* and try to merge the block */
@@ -345,37 +349,37 @@ import_one( const char *fname, KBNODE keyblock )
 	if( n_uids || n_sigs || n_subk ) {
 	    /* keyblock_orig has been updated; write */
 	    if( opt.verbose > 1 )
-		log_info("%s: writing to '%s'\n",
-				    fname, keyblock_resource_name(&kbpos) );
+		log_info_f(keyblock_resource_name(&kbpos),
+				      _("writing keyblock\n"));
 	    if( (rc=lock_keyblock( &kbpos )) )
-		log_error("can't lock public keyring '%s': %s\n",
-				 keyblock_resource_name(&kbpos), g10_errstr(rc) );
+		log_error_f(keyblock_resource_name(&kbpos),
+			 _("can't lock public keyring: %s\n"), g10_errstr(rc) );
 	    else if( (rc=update_keyblock( &kbpos, keyblock )) )
-		log_error("%s: can't write to '%s': %s\n", fname,
-				 keyblock_resource_name(&kbpos), g10_errstr(rc) );
+		log_error_f( keyblock_resource_name(&kbpos),
+			    _("can't write keyblock: %s\n"), g10_errstr(rc) );
 	    unlock_keyblock( &kbpos );
 	    /* we are ready */
 	    if( n_uids == 1 )
-		log_info("%s: key %08lX, 1 new user-id\n",
-					 fname, (ulong)keyid[1]);
+		log_info_f(fname, _("key %08lX: 1 new user-id\n"),
+					 (ulong)keyid[1]);
 	    else if( n_uids )
-		log_info("%s: key %08lX, %d new user-ids\n",
-					 fname, (ulong)keyid[1], n_uids );
+		log_info_f(fname, _("key %08lX: %d new user-ids\n"),
+					 (ulong)keyid[1], n_uids );
 	    if( n_sigs == 1 )
-		log_info("%s: key %08lX, 1 new signature\n",
-					 fname, (ulong)keyid[1]);
+		log_info_f(fname, _("key %08lX: 1 new signature\n"),
+					 (ulong)keyid[1]);
 	    else if( n_sigs )
-		log_info("%s: key %08lX, %d new signatures\n",
-					 fname, (ulong)keyid[1], n_sigs );
+		log_info_f(fname, _("key %08lX: %d new signatures\n"),
+					 (ulong)keyid[1], n_sigs );
 	    if( n_subk == 1 )
-		log_info("%s: key %08lX, 1 new subkey\n",
-					 fname, (ulong)keyid[1]);
+		log_info_f(fname, _("key %08lX: 1 new subkey\n"),
+					 (ulong)keyid[1]);
 	    else if( n_subk )
-		log_info("%s: key %08lX, %d new subkeys\n",
-					 fname, (ulong)keyid[1], n_subk );
+		log_info_f(fname, _("key %08lX: %d new subkeys\n"),
+					 (ulong)keyid[1], n_subk );
 	}
 	else
-	    log_info("%s: key %08lX, not changed\n", fname, (ulong)keyid[1] );
+	    log_info_f(fname, _("key %08lX: not changed\n"), (ulong)keyid[1] );
     }
 
   leave:
@@ -408,7 +412,7 @@ import_secret_one( const char *fname, KBNODE keyblock )
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
     if( opt.verbose ) {
-	log_info("%s: sec  %4u%c/%08lX %s   ", fname,
+	log_info_f(fname, "sec  %4u%c/%08lX %s   ",
 		  nbits_from_sk( sk ),
 		  pubkey_letter( sk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_sk(sk) );
@@ -418,7 +422,7 @@ import_secret_one( const char *fname, KBNODE keyblock )
 	putc('\n', stderr);
     }
     if( !uidnode ) {
-	log_error("%s: No user id for key %08lX\n", fname, (ulong)keyid[1]);
+	log_error_f(fname, _("key %08lX: no user id\n"), (ulong)keyid[1]);
 	return 0;
     }
 
@@ -433,25 +437,24 @@ import_secret_one( const char *fname, KBNODE keyblock )
 	    return G10ERR_GENERAL;
 	}
 	if( opt.verbose > 1 )
-	    log_info("%s: writing to '%s'\n",
-				fname, keyblock_resource_name(&kbpos) );
+	    log_info_f(keyblock_resource_name(&kbpos), _("writing keyblock\n"));
 	if( (rc=lock_keyblock( &kbpos )) )
-	    log_error("can't lock secret keyring '%s': %s\n",
-			     keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	    log_error_f( keyblock_resource_name(&kbpos),
+		      _("can't lock secret keyring: %s\n"), g10_errstr(rc) );
 	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
-	    log_error("%s: can't write to '%s': %s\n", fname,
-			     keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	    log_error_f(keyblock_resource_name(&kbpos),
+		      _("can't write keyring\n"), g10_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
-	log_info("%s: key %08lX imported\n", fname, (ulong)keyid[1]);
+	log_info_f(fname, _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
     }
     else if( !rc ) { /* we can't merge secret keys */
-	log_error("%s: key %08lX already in secret keyring\n",
-						fname, (ulong)keyid[1]);
+	log_error_f(fname, _("key %08lX: already in secret keyring\n"),
+						(ulong)keyid[1]);
     }
     else
-	log_error("%s: key %08lX, secret key not found: %s\n",
-				fname, (ulong)keyid[1], g10_errstr(rc));
+	log_error_f(fname, _("key %08lX: secret key not found: %s\n"),
+				(ulong)keyid[1], g10_errstr(rc));
 
     release_kbnode( keyblock_orig );
     return rc;
@@ -480,29 +483,30 @@ import_revoke_cert( const char *fname, KBNODE node )
     pk = m_alloc_clear( sizeof *pk );
     rc = get_pubkey( pk, keyid );
     if( rc == G10ERR_NO_PUBKEY ) {
-	log_info("%s: key %08lX, no public key - "
-		 "can't apply revocation certificate\n",
-				fname, (ulong)keyid[1]);
+	log_info_f(fname, _("key %08lX: no public key - "
+		 "can't apply revocation certificate\n"), (ulong)keyid[1]);
 	rc = 0;
 	goto leave;
     }
     else if( rc ) {
-	log_error("%s: key %08lX, public key not found: %s\n",
-				fname, (ulong)keyid[1], g10_errstr(rc));
+	log_error_f(fname, _("key %08lX: public key not found: %s\n"),
+				       (ulong)keyid[1], g10_errstr(rc));
 	goto leave;
     }
 
     /* read the original keyblock */
     rc = find_keyblock_bypk( &kbpos, pk );
     if( rc ) {
-	log_error("%s: key %08lX, can't locate original keyblock: %s\n",
-				 fname, (ulong)keyid[1], g10_errstr(rc));
+	log_error_f(fname,
+		_("key %08lX: can't locate original keyblock: %s\n"),
+					(ulong)keyid[1], g10_errstr(rc));
 	goto leave;
     }
     rc = read_keyblock( &kbpos, &keyblock );
     if( rc ) {
-	log_error("%s: key %08lX, can't read original keyblock: %s\n",
-				 fname, (ulong)keyid[1], g10_errstr(rc));
+	log_error_f(fname,
+		_("key %08lX: can't read original keyblock: %s\n"),
+					(ulong)keyid[1], g10_errstr(rc));
 	goto leave;
     }
 
@@ -512,9 +516,8 @@ import_revoke_cert( const char *fname, KBNODE node )
      * special case. */
     rc = check_key_signature( keyblock, node, NULL);
     if( rc ) {
-	log_error("%s: key %08lX, invalid revocation certificate"
-		  ": %s - rejected\n",
-		  fname, (ulong)keyid[1], g10_errstr(rc));
+	log_error_f(fname, _("key %08lX: invalid revocation certificate"
+		  ": %s - rejected\n"), (ulong)keyid[1], g10_errstr(rc));
     }
 
 
@@ -537,18 +540,17 @@ import_revoke_cert( const char *fname, KBNODE node )
 
     /* and write the keyblock back */
     if( opt.verbose > 1 )
-	log_info("%s: writing to '%s'\n",
-			    fname, keyblock_resource_name(&kbpos) );
+	log_info_f( keyblock_resource_name(&kbpos), _("writing keyblock\n"));
     if( (rc=lock_keyblock( &kbpos )) )
-	log_error("can't lock public keyring '%s': %s\n",
-			 keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	log_error_f( keyblock_resource_name(&kbpos),
+		    _("can't lock public keyring: %s\n"), g10_errstr(rc) );
     else if( (rc=update_keyblock( &kbpos, keyblock )) )
-	log_error("%s: can't write to '%s': %s\n", fname,
-			 keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	log_error_f(keyblock_resource_name(&kbpos),
+		    _("can't write keyblock: %s\n"), g10_errstr(rc) );
     unlock_keyblock( &kbpos );
     /* we are ready */
-    log_info("%s: key %08lX, added revocation certificate\n",
-				 fname, (ulong)keyid[1]);
+    log_info_f(fname, _("key %08lX: revocation certificate imported\n"),
+					(ulong)keyid[1]);
 
   leave:
     release_kbnode( keyblock );
@@ -577,16 +579,16 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 	    unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
 	    if( !unode )  {
-		log_error("%s: key %08lX, no user-id for signature\n",
-					fname, (ulong)keyid[1]);
+		log_error_f(fname, _("key %08lX: no user-id for signature\n"),
+					(ulong)keyid[1]);
 		return -1;  /* the complete keyblock is invalid */
 	    }
 	    rc = check_key_signature( keyblock, n, NULL);
 	    if( rc ) {
-		log_error( rc == G10ERR_PUBKEY_ALGO ?
-			  "%s: key %08lX, unsupported public key algorithm\n":
-			  "%s: key %08lX, invalid self-signature\n",
-			  fname, (ulong)keyid[1]);
+		log_error_f( fname,  rc == G10ERR_PUBKEY_ALGO ?
+			  _("key %08lX: unsupported public key algorithm\n"):
+			  _("key %08lX: invalid self-signature\n"),
+				 (ulong)keyid[1]);
 
 		unode->flag |= 2; /* mark as invalid */
 	    }
@@ -614,8 +616,8 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	    uid_seen = 1;
 	    if( (node->flag & 2) || !(node->flag & 1) ) {
 		if( opt.verbose ) {
-		    log_info("%s: key %08lX, removed userid '",
-						  fname, (ulong)keyid[1]);
+		    log_info_f(fname, _("key %08lX: skipped userid '"),
+							 (ulong)keyid[1]);
 		    print_string( stderr, node->pkt->pkt.user_id->name,
 				      node->pkt->pkt.user_id->len, 0 );
 		    fputs("'\n", stderr );
@@ -637,15 +639,15 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && node->pkt->pkt.signature->sig_class == 0x20 )  {
 	    if( uid_seen ) {
-		log_error("%s: key %08lX, revocation certificate at wrong "
-			   "place - removed\n", fname, (ulong)keyid[1]);
+		log_error_f(fname, _("key %08lX: revocation certificate at wrong "
+			   "place - skipped\n"), fname, (ulong)keyid[1]);
 		delete_kbnode( node );
 	    }
 	    else {
 		int rc = check_key_signature( keyblock, node, NULL);
 		if( rc ) {
-		    log_error("%s: key %08lX, invalid revocation certificate"
-			      ": %s - removed\n",
+		    log_error_f(fname, _("key %08lX: invalid revocation certificate"
+			      ": %s - skipped\n"),
 			      fname, (ulong)keyid[1], g10_errstr(rc));
 		    delete_kbnode( node );
 		}
@@ -706,8 +708,8 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		insert_kbnode( keyblock_orig, n2, 0 );
 		n2->flag |= 1;
 		node->flag |= 1;
-		log_info("%s: key %08lX, added revocation certificate\n",
-					 fname, (ulong)keyid[1]);
+		log_info_f(fname, _("key %08lX: revocation certificate added\n"),
+					 (ulong)keyid[1]);
 	    }
 	}
     }
@@ -769,7 +771,7 @@ append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
     assert(node->pkt->pkttype == PKT_USER_ID );
     /* at lease a self signature comes next to the user-id */
     if( node->next->pkt->pkttype == PKT_USER_ID ) {
-	log_error("%s: key %08lX, our copy has no self-signature\n",
+	log_error_f(fname, _("key %08lX: our copy has no self-signature\n"),
 						  fname, (ulong)keyid[1]);
 	return G10ERR_GENERAL;
     }
@@ -805,8 +807,8 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
     /* at least a self signature comes next to the user-ids */
     assert(src->next->pkt->pkttype != PKT_USER_ID );
     if( dst->next->pkt->pkttype == PKT_USER_ID ) {
-	log_error("%s: key %08lX, our copy has no self-signature\n",
-						  fname, (ulong)keyid[1]);
+	log_error_f(fname, _("key %08lX: our copy has no self-signature\n"),
+						  (ulong)keyid[1]);
 	return 0;
     }
 

@@ -73,12 +73,32 @@ print_prefix(const char *text)
 	fprintf(stderr, "?%s: %s", pidstring, text );
 }
 
+static void
+print_prefix_f(const char *text, const char *fname)
+{
+    if( pgm_name )
+	fprintf(stderr, "%s%s:%s: %s", pgm_name, pidstring, fname, text );
+    else
+	fprintf(stderr, "?%s:%s: %s", pidstring, fname, text );
+}
+
 void
 g10_log_info( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
     print_prefix("");
+    va_start( arg_ptr, fmt ) ;
+    vfprintf(stderr,fmt,arg_ptr) ;
+    va_end(arg_ptr);
+}
+
+void
+g10_log_info_f( const char *fname, const char *fmt, ... )
+{
+    va_list arg_ptr ;
+
+    print_prefix_f("", fname);
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -97,11 +117,36 @@ g10_log_error( const char *fmt, ... )
 }
 
 void
+g10_log_error_f( const char *fname, const char *fmt, ... )
+{
+    va_list arg_ptr ;
+
+    print_prefix_f("", fname);
+    va_start( arg_ptr, fmt ) ;
+    vfprintf(stderr,fmt,arg_ptr) ;
+    va_end(arg_ptr);
+    errorcount++;
+}
+
+void
 g10_log_fatal( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
     print_prefix("fatal: ");
+    va_start( arg_ptr, fmt ) ;
+    vfprintf(stderr,fmt,arg_ptr) ;
+    va_end(arg_ptr);
+    secmem_dump_stats();
+    exit(2);
+}
+
+void
+g10_log_fatal_f( const char *fname, const char *fmt, ... )
+{
+    va_list arg_ptr ;
+
+    print_prefix_f("fatal: ", fname);
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -144,6 +189,17 @@ g10_log_debug( const char *fmt, ... )
     va_list arg_ptr ;
 
     print_prefix("DBG: ");
+    va_start( arg_ptr, fmt ) ;
+    vfprintf(stderr,fmt,arg_ptr) ;
+    va_end(arg_ptr);
+}
+
+void
+g10_log_debug_f( const char *fname, const char *fmt, ... )
+{
+    va_list arg_ptr ;
+
+    print_prefix_f("DBG: ", fname);
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);

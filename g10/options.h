@@ -37,9 +37,10 @@ struct {
     int no_armor;
     int list_packets; /* list-packets mode */
     int def_cipher_algo;
-    int reserved;
+    int do_not_export_rsa;
     int def_digest_algo;
     int def_compress_algo;
+    const char *def_secret_key;
     int no_comment;
     int marginals_needed;
     int completes_needed;

@@ -3,35 +3,21 @@ msgstr ""
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Werner Koch <wk@frodo>\n"
 "Content-Type: text/plain; charset=\n"
-"Xgettext-Options: --default-domain=g10 --directory=.. --add-comments --keyword=_ --keyword=N_ --files-from=./POTFILES.in\n"
-"Files: g10/g10.c g10/pkclist.c\n"
+"Xgettext-Options: --default-domain=gnupg --directory=.. --add-comments --keyword=_ --keyword=N_ --files-from=./POTFILES.in\n"
+"Files: util/secmem.c util/argparse.c cipher/random.c cipher/rand-dummy.c cipher/rand-unix.c cipher/rand-w32.c g10/g10.c g10/pkclist.c g10/keygen.c g10/decrypt.c g10/encode.c g10/import.c g10/keyedit.c g10/keylist.c g10/mainproc.c g10/passphrase.c g10/plaintext.c g10/pref.c g10/seckey-cert.c g10/sig-check.c g10/sign.c g10/trustdb.c g10/verify.c\n"
 
-
-#: util/secmem.c:85
+#: util/secmem.c:180
 msgid "Warning: using insecure memory!\n"
 msgstr ""
 "Achtung: Speicher mit sensibeln Daten kann auf Platte ausgelagert werden.\n"
 "(um dies zu vermeiden, kann das Programm suid(root) installiert werden;\n"
 " bitte wenden Sie sich hierzu an den Systemadministraor)\n"
 
-#: cipher/random.c:147
-msgid ""
-"\n"
-"Not enough random bytes available.  Please do some other work to give\n"
-"the OS a chance to collect more entropy! (Need %d more bytes)\n"
-msgstr ""
-"\n"
-"Es sind nicht genügend Zufalls Bytes vorhanden.  Bitte führen Sie andere\n"
-"Arbeiten durch, damit das BS weitere Entropy sammeln kann!\n"
-"(Es werden noch %d Bytes benötigt)\n"
-
-#: cipher/random.c:185
+#: cipher/rand-dummy.c:106
 msgid "warning: using insecure random number generator!!\n"
-msgstr ""
-"Der Zufallszahlengenerator erzeugt keine sicheren Zufallszahlen!\n"
+msgstr "Der Zufallszahlengenerator erzeugt keine sicheren Zufallszahlen!\n"
 
-
-#: cipher/random.c:186
+#: cipher/rand-dummy.c:107
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it compile - it is in no way a strong RNG!\n"
@@ -40,59 +26,23 @@ msgid ""
 "\n"
 msgstr ""
 "Der Zufallszahlengenerator ist lediglich ein \"kludge\", um ein\n"
-"übersetzen des Programms zu ermöglichen - Es ist KEIN starker RNG!\n"
+"\374bersetzen des Programms zu erm\366glichen - Es ist KEIN starker RNG!\n"
 "\n"
 "BENUTZEN SIE DIE DURCH DIESES PROGRAMM ERZEUGTEN DATEN NICHT!\n"
 "\n"
 
-
-#: g10/g10.c:214
+#: cipher/rand-unix.c:149
 msgid ""
-"Syntax: gpgm [options] [files]\n"
-"GNUPG maintenance utility\n"
+"\n"
+"Not enough random bytes available.  Please do some other work to give\n"
+"the OS a chance to collect more entropy! (Need %d more bytes)\n"
 msgstr ""
-"Syntax: gpgm [options] [files]\n"
-"GNUPG Wartungs Hilfsmittel\n"
+"\n"
+"Es sind nicht gen\374gend Zufalls Bytes vorhanden.  Bitte f\374hren Sie andere\n"
+"Arbeiten durch, damit das BS weitere Entropy sammeln kann!\n"
+"(Es werden noch %d Bytes ben\366tigt)\n"
 
-
-#: g10/g10.c:72
-msgid ""
-"Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
-msgstr ""
-"Aufruf: gpg [Optionen] [Dateien]\n"
-"Signieren, prüfen, verschlüsseln, entschlüsseln\n"
-"Die voreingestellte Operation ist abhängig von den Eingabedaten\n"
-
-
-#: g10/g10.c:77
-msgid "Please report bugs to <gnupg-bugs@isil.d.shuttle.de>.\n"
-msgstr "Berichte über Wanzen bitte an <gnupg-bugs@isil.d.shuttle.de>.\n"
-
-#: g10/g10.c:207
-msgid "Usage: gpgm [options] [files] (-h for help)"
-msgstr "Aufruf: gpgm [Optionen] [Dateien] (-h für Hilfe)"
-
-#: g10/g10.c:209
-msgid "Usage: gpg [options] [files] (-h for help)"
-msgstr "Aufruf: gpg [Optionen] [Dateien] (-h für Hilfe)"
-
-#: g10/g10.c:298
-msgid "usage: gpgm [options] "
-msgstr "Aufruf: gpgm [Optionen] "
-
-#: g10/g10.c:300
-msgid "usage: gpg [options] "
-msgstr "Aufruf: gpg [Optionen] "
-
-
-#: g10/g10.c:152
-msgid "conflicting commands\n"
-msgstr "Widersprechende Kommandos\n"
-
-
-#: g10/g10.c:57
+#: g10/g10.c:51
 msgid ""
 "@Commands:\n"
 " "
@@ -100,7 +50,115 @@ msgstr ""
 "@Kommandos:\n"
 " "
 
-#: g10/g10.c:92
+#: g10/g10.c:54
+msgid "|[file]|make a signature"
+msgstr ""
+
+#: g10/g10.c:55
+msgid "|[file]|make a clear text signature"
+msgstr ""
+
+#: g10/g10.c:56
+msgid "make a detached signature"
+msgstr "Eine abgetrennte Signatur erzeugen"
+
+#: g10/g10.c:57
+msgid "encrypt data"
+msgstr "Daten verschl\374sseln"
+
+#: g10/g10.c:58
+msgid "encryption only with symmetric cipher"
+msgstr "Daten nur symmetrisch verschl\374sseln"
+
+#: g10/g10.c:59
+msgid "store only"
+msgstr "nur speichern"
+
+#: g10/g10.c:60
+msgid "decrypt data (default)"
+msgstr "Daten enschl\374sseln"
+
+#: g10/g10.c:61
+msgid "verify a signature"
+msgstr "Signatur pr\374fen"
+
+#: g10/g10.c:63
+msgid "list keys"
+msgstr "Liste der Schl\374ssel"
+
+#: g10/g10.c:64
+msgid "list keys and signatures"
+msgstr "Liste der Schl\374ssel und deren Signaturen"
+
+#: g10/g10.c:65
+msgid "check key signatures"
+msgstr "Signaturen der Schl\374ssel pr\374fen"
+
+#: g10/g10.c:66
+msgid "list keys and fingerprints"
+msgstr "Liste der Schl\374ssel und deren \"Fingerprints\""
+
+#: g10/g10.c:67
+msgid "list secret keys"
+msgstr "Liste der geheimen Schl\374ssel"
+
+#: g10/g10.c:69
+msgid "generate a new key pair"
+msgstr "Ein neues Schl\374sselpaar erzeugen"
+
+#: g10/g10.c:70
+msgid "add a subkey to a key pair"
+msgstr "Einen Sekund\344rschl\374ssel dem Prim\344rschl\374ssel hinzuf\374gen"
+
+#: g10/g10.c:71
+msgid "make a signature on a key in the keyring"
+msgstr "Schl\374ssel signieren"
+
+#: g10/g10.c:72
+msgid "remove key from the public keyring"
+msgstr "Schl\374ssel entfernen"
+
+#: g10/g10.c:73
+msgid "edit a key signature"
+msgstr "Editieren de Schl\374ssel Signaturen"
+
+#: g10/g10.c:74
+msgid "change the passphrase of your secret keyring"
+msgstr "Die \"Passphrase\" des geheimen Schl\374ssels \344ndern"
+
+#: g10/g10.c:75
+msgid "generate a revocation certificate"
+msgstr "Ein \"Revocation\" Zertifikat erzeugen"
+
+#: g10/g10.c:77
+msgid "export keys"
+msgstr "Schl\374ssel exportieren"
+
+#: g10/g10.c:79
+msgid "import/merge keys"
+msgstr "Schl\374ssel importieren/kombinieren"
+
+#: g10/g10.c:80
+msgid "list only the sequence of packets"
+msgstr "Lediglich die Struktur der Daten Packete anzeigen"
+
+#: g10/g10.c:83
+msgid "De-Armor a file or stdin"
+msgstr "\"De-Armor\" einer Datei oder stdin"
+
+#: g10/g10.c:84
+msgid "En-Armor a file or stdin"
+msgstr "\"En-Armor\" einer Datei oder stdin"
+
+#: g10/g10.c:85
+msgid "|algo [files]|print message digests"
+msgstr "|algo [files]|Hashwerte der Dateien ausgeben"
+
+#: g10/g10.c:86
+msgid "print all message digests"
+msgstr "Message-Digests f\374r die Eingabedaten ausgeben"
+
+#: g10/g10.c:91
 msgid ""
 "@\n"
 "Options:\n"
@@ -110,252 +168,111 @@ msgstr ""
 "Optionen:\n"
 " "
 
-
-#: g10/g10.c:164
+#: g10/g10.c:93
 msgid "create ascii armored output"
 msgstr "Ausgabe mit ASCII Armor versehen"
 
-#: g10/g10.c:165
-msgid "verbose"
-msgstr "detailierte Informationen"
-
-#: g10/g10.c:166
-msgid "set compress level (0 disables)"
-msgstr "Kompressionspegel sethen (aussschalten mit 0)"
-
-#: g10/g10.c:167
-msgid "do not make any changes"
-msgstr "Keine wirklichen Änderungen durchführen"
-
-#: g10/g10.c:168
-msgid "do only a symmetric encryption"
-msgstr "Nur konventionell verschlüsseln"
-
-#: g10/g10.c:169
-msgid "use as output file"
-msgstr "dies als Ausgabedatei benutzen"
-
-#: g10/g10.c:170
-msgid "batch mode: never ask"
-msgstr "Stapel Modus: Keine Abfragen"
-
-#: g10/g10.c:171
-msgid "assume yes on most questions"
-msgstr "\"Ja\" als Standard Antwort annehmen"
-
-#: g10/g10.c:172
-msgid "assume no on most questions"
-msgstr "\"Nein\" als Standard Antwort annehmen"
-
-#: g10/g10.c:173
-msgid "generate a new key pair"
-msgstr "Ein neues Schlüsselpaar erzeugen"
-
-#: g10/g10.c:76
-msgid "remove key from the public keyring"
-msgstr "Schlüssel entfernen"
-
-#: g10/g10.c:79
-msgid "generate a revocation certificate"
-msgstr "Ein \"Revocation\" Zertifikat erzeugen"
-
-#: g10/g10.c:176
-msgid "make a signature on a key in the keyring"
-msgstr "Schlüssel signieren"
-
-#: g10/g10.c:177
-msgid "store only"
-msgstr "nur speichern"
-
-#: g10/g10.c:178
-msgid "check signatures on a key in the keyring"
-msgstr "Schlüssel Signaturen prüfen"
-
-#: g10/g10.c:179
-msgid "add this keyring to the list of keyrings"
-msgstr ""
-
-#: g10/g10.c:180
-msgid "|filename|make a signature"
-msgstr "|dateiname|Eine Signatur erzeugen"
-
-#: g10/g10.c:61
-msgid "|filename|make a clear text signature"
-msgstr "|dateiname|Eine Klartext Signatur erzeugen"
-
-#: g10/g10.c:181
-msgid "use canonical text mode"
-msgstr "Text Modus benutzen"
-
-#: g10/g10.c:182
-msgid "make a detached signature"
-msgstr "Eine abgetrennte Signatur erzeugen"
-
-#: g10/g10.c:183
-msgid "encrypt data"
-msgstr "Daten verschlüsseln"
-
-#: g10/g10.c:64
-msgid "encryption only with symmetric cipher"
-msgstr "Daten nur symmetrisch verschlüsseln"
-
-#: g10/g10.c:184
-msgid "decrypt data (default)"
-msgstr "Daten enschlüsseln"
-
-
-#: g10/g10.c:67
-msgid "verify a signature"
-msgstr "Signatur prüfen"
-
-#: g10/g10.c:185
+#: g10/g10.c:95
 msgid "use this user-id to sign or decrypt"
 msgstr "Mit dieser User-ID signieren"
 
-#: g10/g10.c:186
+#: g10/g10.c:96
 msgid "use this user-id for encryption"
-msgstr "Verschlüsseln für diese User-ID"
+msgstr "Verschl\374sseln f\374r diese User-ID"
 
-#: g10/g10.c:187
-msgid "list keys"
-msgstr "Liste der Schlüssel"
+#: g10/g10.c:97
+msgid "|N|set compress level N (0 disables)"
+msgstr "Kompressionsstufe auf N setzen (0 f\374r keine Kompression)"
 
+#: g10/g10.c:98
+msgid "use canonical text mode"
+msgstr "Text Modus benutzen"
 
-#: g10/g10.c:70
-msgid "list keys and signatures"
-msgstr "Liste der Schlüssel und deren Signaturen"
+#: g10/g10.c:100
+msgid "use as output file"
+msgstr "dies als Ausgabedatei benutzen"
 
-#: g10/g10.c:71
-msgid "check key signatures"
-msgstr "Signaturen der Schlüssel prüfen"
+#: g10/g10.c:101
+msgid "verbose"
+msgstr "detailierte Informationen"
 
-#: g10/g10.c:72
-msgid "list keys and fingerprints"
-msgstr "Liste der Schlüssel und deren \"Fingerprints\""
+#: g10/g10.c:102
+msgid "do not make any changes"
+msgstr "Keine wirklichen \304nderungen durchf\374hren"
 
-#: g10/g10.c:188
-msgid "set debugging flags"
-msgstr "Debug-Flags einschalten"
+#: g10/g10.c:103
+msgid "batch mode: never ask"
+msgstr "Stapel Modus: Keine Abfragen"
 
-#: g10/g10.c:189
-msgid "enable full debugging"
-msgstr "Alle Debug-Flags einschalten"
+#: g10/g10.c:104
+msgid "assume yes on most questions"
+msgstr "\"Ja\" als Standard Antwort annehmen"
 
-#: g10/g10.c:194
-msgid "print all message digests"
-msgstr "Message-Digests für die Eingabedaten ausgeben"
+#: g10/g10.c:105
+msgid "assume no on most questions"
+msgstr "\"Nein\" als Standard Antwort annehmen"
 
-#: g10/g10.c:195
+#: g10/g10.c:106
+msgid "add this keyring to the list of keyrings"
+msgstr "Den \366ffentlichen Schl\374sselring mitbenutzen"
+
+#: g10/g10.c:107
 msgid "add this secret keyring to the list"
-msgstr "Den geheimen Schlüsselring mitbenutzen"
+msgstr "Den geheimen Schl\374sselring mitbenutzen"
 
-#: g10/g10.c:196
+#: g10/g10.c:108
+msgid "|NAME|use NAME as default secret key"
+msgstr "|NAME|NAME als voreingestellten Schl\374ssel benutzen"
+
+#: g10/g10.c:109
 msgid "read options from file"
 msgstr "Optionen aus der Datei lesen"
 
-#: g10/g10.c:199
-msgid "list only the sequence of packets"
-msgstr "Lediglich die Struktur der Daten Packete anzeigen"
+#: g10/g10.c:111
+msgid "set debugging flags"
+msgstr "Debug-Flags einschalten"
 
-#: g10/g10.c:202
-msgid "edit a key signature"
-msgstr "Editieren de Schlüssel Signaturen"
+#: g10/g10.c:112
+msgid "enable full debugging"
+msgstr "Alle Debug-Flags einschalten"
 
-#: g10/g10.c:203
-msgid "change the passphrase of your secret keyring"
-msgstr "Die \"Passphrase\" des geheimen Schlüssels ändern"
+#: g10/g10.c:113
+msgid "|FD|write status info to this FD"
+msgstr "|FD|Status Informatiuon auf FD ausgeben"
 
-#: g10/g10.c:205
-msgid "select default cipher algorithm"
-msgstr "Den Cipher Algorithmus auswählen"
-
-#: g10/g10.c:206
-msgid "select default public key algorithm"
-msgstr "Den Public-Key Algorithmus auswählen"
-
-#: g10/g10.c:207
-msgid "select default message digest algorithm"
-msgstr "Den Message-Digest Algorithmus auswählen"
-
-
-#: g10/g10.c:212
+#: g10/g10.c:114
 msgid "do not write comment packets"
 msgstr "Keine Kommentarpackete schreiben"
 
-#: g10/g10.c:213
+#: g10/g10.c:115
 msgid "(default is 1)"
 msgstr "(voreingestellt ist 1)"
 
-#: g10/g10.c:214
+#: g10/g10.c:116
 msgid "(default is 3)"
 msgstr "(voreingestellt ist 3)"
 
-#: g10/g10.c:81
-msgid "export keys"
-msgstr "Schlüssel exportieren"
+#: g10/g10.c:117
+msgid "|file|load extension module"
+msgstr "|FILE|Erweierungsmodul |FILE| laden"
 
-#: g10/g10.c:82
-msgid "import/merge keys"
-msgstr "Schlüssel importieren/kombinieren"
+#: g10/g10.c:118
+msgid "emulate the mode described in RFC1991"
+msgstr "Den in RFC1991 beschriebenen Modus emulieren"
 
-#: g10/g10.c:85
-msgid "De-Armor a file or stdin"
-msgstr "\"De-Armor\" einer Datei oder stdin"
+#: g10/g10.c:120
+msgid "|NAME|use cipher algorithm NAME"
+msgstr "|NAME|Den Cipher-Algorithmus NAME benutzen"
 
-#: g10/g10.c:86
-msgid "En-Armor a file or stdin"
-msgstr "\"En-Armor\" einer Datei oder stdin"
+#: g10/g10.c:121
+msgid "|NAME|use message digest algorithm NAME"
+msgstr "|NAME|Den Hash-Algorithmus NAME benutzen"
 
+#: g10/g10.c:122
+msgid "|N|use compress algorithm N"
+msgstr "|N|Den Komressionsalgorithmus N benutzen"
 
-#: g10/g10.c:282
-msgid "note: no default option file '%s'\n"
-msgstr "Notiz: Keine voreingestellte Optionen Datei '%s' vorhanden\n"
-
-#: g10/g10.c:285
-msgid "option file '%s': %s\n"
-msgstr "Opionen Datei '%s': %s\n"
-
-#: g10/g10.c:290
-msgid "reading options from '%s'\n"
-msgstr "Optionen werden von '%s' gelesen\n"
-
-#: g10/g10.c:382
-msgid "selected cipher algorithm is invalid\n"
-msgstr "Der ausgewählte Cipher Algorithmus ist ungültig\n"
-
-#: g10/g10.c:386
-msgid "selected pubkey algorithm is invalid\n"
-msgstr "Der ausgewählte Public-Key Algorithmus ist ungültig\n"
-
-#: g10/g10.c:390
-msgid "selected digest algorithm is invalid\n"
-msgstr "Der ausgewählte Message-Digest Algorithmus ist ungültig\n"
-
-#: g10/g10.c:394
-msgid "completes-needed must be greater than 0\n"
-msgstr "completes-needed müßen größer als 0 sein\n"
-
-#: g10/g10.c:398
-msgid "marginals-needed must be greater than 1\n"
-msgstr "marginals-needed müßen größer als 1 sein\n"
-
-#: g10/g10.c:462
-msgid "failed to initialize the TrustDB: %s\n"
-msgstr "Die Trust-DB kann nicht initialisiert werden: %s\n"
-
-#: g10/g10.c:554 g10/g10.c:571 g10/g10.c:660
-msgid "can't open '%s'\n"
-msgstr "Datei '%s' kann nicht geöffnet werden\n"
-
-#: g10/g10.c:799
-msgid "can't open %s: %s\n"
-msgstr "Datei '%s' kann nicht geöffnet werden: %s\n"
-
-#: g10/g10.c:113
-msgid "write status info to this fd"
-msgstr "Status Informationen auf diesen FD schreiben"
-
-#: g10/g10.c:124
+#: g10/g10.c:130
 msgid ""
 "@\n"
 "Examples:\n"
@@ -369,99 +286,179 @@ msgstr ""
 "@\n"
 "Beispiele:\n"
 "\n"
-" -se -r Bob [file]          Signieren und verschlüsseln für Benutzer Bob\n"
+" -se -r Bob [file]          Signieren und verschl\374sseln f\374r Benutzer Bob\n"
 " -sat [file]                Eine Klartext Signatur erzeugen\n"
 " -sb  [file]                Eine abgetrennte Signatur erzeugen\n"
-" -k   [userid]              Die Schllüssel anzeigen\n"
+" -k   [userid]              Die Schll\374ssel anzeigen\n"
 " -kc  [userid]              Die \"Fingerprints\" anzeigen\n"
 
+#: g10/g10.c:211
+msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
+msgstr "Berichte \374ber Wanzen an <gnupg-bugs|gnu.org>.\n"
 
+#: g10/g10.c:216
+msgid "Usage: gpgm [options] [files] (-h for help)"
+msgstr "Aufruf: gpgm [Optionen] [Dateien] (-h f\374r Hilfe)"
 
-#: g10/g10.c:666
+#: g10/g10.c:218
+msgid "Usage: gpg [options] [files] (-h for help)"
+msgstr "Aufruf: gpg [Optionen] [Dateien] (-h f\374r Hilfe)"
+
+#: g10/g10.c:223
+msgid ""
+"Syntax: gpgm [options] [files]\n"
+"GNUPG maintenance utility\n"
+msgstr ""
+"Syntax: gpgm [options] [files]\n"
+"GNUPG Wartungs Hilfsmittel\n"
+
+#: g10/g10.c:226
+msgid ""
+"Syntax: gpg [options] [files]\n"
+"sign, check, encrypt or decrypt\n"
+"default operation depends on the input data\n"
+msgstr ""
+"Aufruf: gpg [Optionen] [Dateien]\n"
+"Signieren, pr\374fen, verschl\374sseln, entschl\374sseln\n"
+"Die voreingestellte Operation ist abh\344ngig von den Eingabedaten\n"
+
+#: g10/g10.c:303
+msgid "usage: gpgm [options] "
+msgstr "Aufruf: gpgm [Optionen] "
+
+#: g10/g10.c:305
+msgid "usage: gpg [options] "
+msgstr "Aufruf: gpg [Optionen] "
+
+#: g10/g10.c:346
+msgid "conflicting commands\n"
+msgstr "Widersprechende Kommandos\n"
+
+#: g10/g10.c:359
+msgid "selected cipher algorithm is invalid\n"
+msgstr "Der ausgew\344hlte Cipher Algorithmus ist ung\374ltig\n"
+
+#: g10/g10.c:361
+msgid "selected digest algorithm is invalid\n"
+msgstr "Der ausgew\344hlte Message-Digest Algorithmus ist ung\374ltig\n"
+
+#: g10/g10.c:363
+msgid "compress algorithm must be in range %d..%d\n"
+msgstr "Der Kompressionsalgorithmus muss %d bis %d sein\n"
+
+#: g10/g10.c:365
+msgid "completes-needed must be greater than 0\n"
+msgstr "completes-needed m\374\337en gr\366\337er als 0 sein\n"
+
+#: g10/g10.c:367
+msgid "marginals-needed must be greater than 1\n"
+msgstr "marginals-needed m\374\337en gr\366\337er als 1 sein\n"
+
+#: g10/g10.c:463
+msgid "note: no default option file '%s'\n"
+msgstr "Notiz: Keine voreingestellte Optionen Datei '%s' vorhanden\n"
+
+#: g10/g10.c:467
+msgid "option file '%s': %s\n"
+msgstr "Optionen Datei '%s': %s\n"
+
+#: g10/g10.c:474
+msgid "reading options from '%s'\n"
+msgstr "Optionen werden von '%s' gelesen\n"
+
+#: g10/g10.c:693
+msgid "failed to initialize the TrustDB: %s\n"
+msgstr "Die Trust-DB kann nicht initialisiert werden: %s\n"
+
+#: g10/g10.c:699
 msgid "--store [filename]"
 msgstr "--store [Dateiname]"
 
-#. encrypt the given file only with the symmetric cipher
-#: g10/g10.c:674
+#: g10/g10.c:707
 msgid "--symmetric [filename]"
 msgstr "--symmetric [Dateiname]"
 
-#: g10/g10.c:682
+#: g10/g10.c:715
 msgid "--encrypt [filename]"
 msgstr "--encrypt [Dateiname]"
 
-#: g10/g10.c:695
+#: g10/g10.c:728
 msgid "--sign [filename]"
 msgstr "--sign [Dateiname]"
 
-#: g10/g10.c:708
+#. sign and encrypt the given file
+#: g10/g10.c:741
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [Dateiname]"
 
-#. make a clearsig
-#: g10/g10.c:722
+#: g10/g10.c:755
 msgid "--clearsign [filename]"
 msgstr "--clearsign [Dateiname]"
 
-#: g10/g10.c:734
+#: g10/g10.c:767
 msgid "--decrypt [filename]"
 msgstr "--decrypt [Dateiname]"
 
-#: g10/g10.c:742
+#: g10/g10.c:775
 msgid "--sign-key username"
 msgstr "--sign-key Benutzername"
 
-#: g10/g10.c:750
-msgid "--edit-sig username"
-msgstr "--edit-sig Benutzername"
+#. Edit a key signature
+#: g10/g10.c:783
+msgid "--edit-key username"
+msgstr "--deit-key Benutzername"
 
-#: g10/g10.c:758
+#: g10/g10.c:791
 msgid "--delete-secret-key username"
 msgstr "--delete-secret-key Benutzername"
 
-#: g10/g10.c:761
+#: g10/g10.c:794
 msgid "--delete-key username"
 msgstr "--delete-key Benutzername"
 
-#. no arg: use default, 1 arg use this one
-#: g10/g10.c:769
+#: g10/g10.c:802
 msgid "--change-passphrase [username]"
 msgstr "--change-passphrase [Benutzername]"
 
-#: g10/g10.c:810
+#. -kv userid keyring
+#: g10/encode.c:200 g10/g10.c:826 g10/keylist.c:79 g10/trustdb.c:358
+msgid "can't open %s: %s\n"
+msgstr "Datei '%s' kann nicht ge\366ffnet werden: %s\n"
+
+#: g10/g10.c:837
 msgid "-k[v][v][v][c] [userid] [keyring]"
 msgstr "-h[v][v][v][c] [Benutzername] [Keyring]"
 
-#: g10/g10.c:857
+#: g10/g10.c:897
 msgid "dearmoring failed: %s\n"
 msgstr "De-Armor fehlgeschlagen: %s\n"
 
-#: g10/g10.c:865
+#: g10/g10.c:905
 msgid "enarmoring failed: %s\n"
 msgstr "En-Armor fehlgeschlagen: %s\n"
 
+#: g10/g10.c:961
+msgid "invalid hash algorithm '%s'\n"
+msgstr "Ung\374ltiger Hash Algorithmus '%s'\n"
 
+#: g10/g10.c:1014
+msgid "[filename]"
+msgstr "[Dateiname]"
 
+#: g10/decrypt.c:59 g10/g10.c:1016 g10/verify.c:66
+msgid "can't open '%s'\n"
+msgstr "Datei '%s' kann nicht ge\366ffnet werden\n"
 
-
-
-
-
-
-#: g10/pkclist.c:157
-msgid ""
-"No ownertrust values changed.\n"
-"\n"
-msgstr "Keine \"Ownertrust\" Werte geändert.\n"
-
-
+#: g10/g10.c:1061
+msgid "RSA keys are depreciated; please consider creating a new key and use this key in the future\n"
+msgstr "RSA Schl\374ssel sind nicht erw\374nscht; bitte denken Sie dar\374ber nach einen neuen Schl\374ssel zu erzeugen und diesen in Zukunft zu benutzen\n"
 
 #: g10/pkclist.c:65
 msgid ""
 "No ownertrust defined for %lu:\n"
 "%4u%c/%08lX %s \""
 msgstr ""
-"Es ist kein \"Ownertrust\" für %lu definiert:\n"
+"Es ist kein \"Ownertrust\" f\374r %lu definiert:\n"
 "%4u%c/%08lX %s \""
 
 #: g10/pkclist.c:72
@@ -482,10 +479,10 @@ msgstr ""
 "\"\n"
 "\n"
 "Bitte entscheiden Sie, in wieweit Sie diesem User zutrauen,\n"
-"eines anderen Users Key korrekt zu signieren (Vergleich mit dem Paß,\n"
+"eines anderen Users Key korrekt zu signieren (Vergleich mit dem Pa\337,\n"
 "vergleichen der Fingerprints aus unterschiedlichen Quellen ...)?\n"
 "\n"
-" 1 = Weiß nicht so recht\n"
+" 1 = Wei\337 nicht so recht\n"
 " 2 = Neeh, dem traue ich das nicht zu\n"
 " 3 = Ich vertraue ihm normalerweise\n"
 " 4 = Ich vertraue ihm immer\n"
@@ -502,6 +499,10 @@ msgid ""
 "to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
 "to do with the (implicitly created) web-of-certificates.\n"
 msgstr ""
+"Sie m\374\337en selbt entscheiden, welchen Wert Sie hier eintragen; dieser Wert\n"
+"wird niemals an eine dritte Seite weitergegeben.  Wir brauchen diesen Wert\n"
+"um das Netz-des-Vertrauens aufzubauen.  Dieses hat nichts mit dem (impliziet\n"
+"erzeugten) Netz-der-Zertifikate zu tun.\n"
 
 #: g10/pkclist.c:108
 msgid "You will see a list of signators etc. here\n"
@@ -513,10 +514,15 @@ msgid ""
 "can assign some missing owner trust values.\n"
 "\n"
 msgstr ""
-"Ein gültiger Trust Path konnte für diesen Key nicht gefunden werden.\n"
-"Mal sehen ob wir now weitere Ownertrust Werte zuordnen können.\n"
+"Ein g\374ltiger Trust Path konnte f\374r diesen Key nicht gefunden werden.\n"
+"Mal sehen ob wir now weitere Ownertrust Werte zuordnen k\366nnen.\n"
 "\n"
 
+#: g10/pkclist.c:157
+msgid ""
+"No ownertrust values changed.\n"
+"\n"
+msgstr "Keine \"Ownertrust\" Werte ge\344ndert.\n"
 
 #: g10/pkclist.c:267
 msgid ""
@@ -525,12 +531,15 @@ msgid ""
 "the next question with yes\n"
 "\n"
 msgstr ""
-"Es ist NICHT sicher, daß der Key dem vorgeblichen Besitzer gehört.\n"
-"Wenn Sie *wirklich* wissen, was Sie tun, können Sie die nächste\n"
+"Es ist NICHT sicher, da\337 der Key dem vorgeblichen Besitzer geh\366rt.\n"
+"Wenn Sie *wirklich* wissen, was Sie tun, k\366nnen Sie die n\344chste\n"
 "Frage mit ja beantworten\n"
 
+#: g10/pkclist.c:278
+msgid "WARNING: Using untrusted key!\n"
+msgstr "WARNUNG: Ein Schl\374ssel ohne gesichertes Vertrauen wird benutzt!\n"
 
-#: g10/pkclist.c:304
+#: g10/pkclist.c:308
 msgid ""
 "You did not specify a user ID. (you may use \"-r\")\n"
 "\n"
@@ -538,87 +547,146 @@ msgstr ""
 "Sie gaben keine User-ID angegeben. (benutzen Sie die Option \"-r\")\n"
 "\n"
 
-
-#: g10/pkclist.c:308
+#: g10/pkclist.c:312
 msgid "Enter the user ID: "
 msgstr "Geben Sie die User-ID ein: "
 
+#: g10/pkclist.c:323
+msgid "No such user ID.\n"
+msgstr "Keine solche User-ID.\n"
 
+#: g10/pkclist.c:357 g10/pkclist.c:384
+msgid "%s: skipped: %s\n"
+msgstr "%s: \374bergangen: %s\n"
 
-#: g10/keygen.c:109
+#: g10/pkclist.c:365
+msgid "%s: error checking key: %s\n"
+msgstr "%s: Fehler beim pr\374fen des Schl\374ssels: %s\n"
+
+#: g10/pkclist.c:391
+msgid "no valid addressees\n"
+msgstr "Keine g\374ltigen Adressaten"
+
+#: g10/keygen.c:122
 msgid "writing self signature\n"
 msgstr "Die Selbst-Signatur wird geschrieben\n"
 
-#: g10/keygen.c:299
-msgid "Key generation can only be used in interactive mode\n"
-msgstr "Die Schlüsselerzeugung kann nur im interaktiven Modus benutzt werden\n"
+#: g10/keygen.c:160
+msgid "writing key binding signature\n"
+msgstr "schreiben der \"key-binding\" Signatur\n"
 
-#: g10/keygen.c:301
-msgid ""
-"Please select the algorithm to use:\n"
-"   (1) ElGamal is the suggested one.\n"
-"   (2) DSA can only be used for signatures.\n"
-msgstr ""
-"Bitte wählen Sie den zu benutzenden Algorithmus aus:\n"
-"   (1) ElGamal wird empfohlen.\n"
-"   (2) DSA kann nur für Signaturen verwendet werden.\n"
+#: g10/keygen.c:382
+msgid "Please select what kind of key you want:\n"
+msgstr "Bitte w\344hlen Sie welche Art von Schl\374ssel is m\366chten:\n"
 
-#: g10/keygen.c:314
-msgid "Your selection? (1,2,3) "
-msgstr "Ihre Auswahl? (1,2,3) "
+#: g10/keygen.c:384
+msgid "   (%d) DSA and ElGamal (default)\n"
+msgstr "   (%d) DSA und ElGamal (voreingestellt)\n"
 
-#: g10/keygen.c:316
-msgid "Your selection? (1,2) "
-msgstr "Ihre Auswahl? (1,2) "
+#: g10/keygen.c:385
+msgid "   (%d) ElGamal (sign and encrypt)\n"
+msgstr "   (%d) ElGamal (signieren und verschl\374sseln)\n"
 
-#: g10/keygen.c:343
+#: g10/keygen.c:386
+msgid "   (%d) ElGamal (encrypt only)\n"
+msgstr "   (%d) ElGamal (nur  verschl\374sseln)\n"
+
+#: g10/keygen.c:387
+msgid "   (%d) DSA (sign only)\n"
+msgstr "   (%d) DSA (nur signieren)\n"
+
+#: g10/keygen.c:388
+msgid "   (%d) ElGamal in a v3 packet\n"
+msgstr "   ((%d) ElGamal in einem v4 Packet\n"
+
+#: g10/keygen.c:392
+msgid "Your selection? "
+msgstr "Ihre Auswahl? "
+
+#: g10/keygen.c:418
+msgid "Invalid selection.\n"
+msgstr "Ung\374ltige Auswahl.\n"
+
+#: g10/keygen.c:430
 msgid ""
 "About to generate a new %s keypair.\n"
 "              minimum keysize is  768 bits\n"
 "              default keysize is 1024 bits\n"
 "    highest suggested keysize is 2048 bits\n"
 msgstr ""
-"Es wird ein neues %s Schlüsselpaar erzeugt.\n"
-"              kleinste Schlüssellänge ist  768 bits\n"
-"              standard Schlüssellänge ist 1024 bits\n"
-"      größte sinnvolle Schlüssellänge ist 2048 bits\n"
+"Es wird ein neues %s Schl\374sselpaar erzeugt.\n"
+"              kleinste Schl\374ssell\344nge ist  768 bits\n"
+"              standard Schl\374ssell\344nge ist 1024 bits\n"
+"      gr\366\337te sinnvolle Schl\374ssell\344nge ist 2048 bits\n"
 
-#: g10/keygen.c:351
+#: g10/keygen.c:436
 msgid "What keysize do you want? (1024) "
-msgstr "Welche Schlüssellänge wünschen Sie? (1024)"
+msgstr "Welche Schl\374ssell\344nge w\374nschen Sie? (1024)"
 
-#: g10/keygen.c:357
+#: g10/keygen.c:441
 msgid "DSA only allows keysizes from 512 to 1024\n"
-msgstr ""
+msgstr "DSA erlaubt nur Schl\374ssell\344ngen von 512 bis 1024\n"
 
-#: g10/keygen.c:359
+#: g10/keygen.c:443
 msgid "keysize too small; 768 is smallest value allowed.\n"
-msgstr "zu kurz; 768 ist die kleinste mögliche Schlüssellänge.\n"
+msgstr "zu kurz; 768 ist die kleinste m\366gliche Schl\374ssell\344nge.\n"
 
-#: g10/keygen.c:361
+#: g10/keygen.c:445
 msgid "Keysizes larger than 2048 are not suggested, because computations take REALLY long!\n"
-msgstr ""
-"Schlüssellängen größer als 2048 werden nicht empfohlen, da die "
-"Berechnungen dann WIRKLICH lange brauchen\n"
+msgstr "Schl\374ssell\344ngen gr\366\337er als 2048 werden nicht empfohlen, da die Berechnungen dann WIRKLICH lange brauchen\n"
 
-#: g10/keygen.c:363
+#: g10/keygen.c:447
 msgid "Are you sure, that you want this keysize? "
-msgstr "Sind Sie sicher, daß Sie diese Schlüssellänge wünschen? "
+msgstr "Sind Sie sicher, da\337 Sie diese Schl\374ssell\344nge w\374nschen? "
 
-#: g10/keygen.c:367
+#: g10/keygen.c:451
 msgid "Okay, but keep in mind that your monitor and keyboard radiation is also very vulnerable to attacks!\n"
-msgstr "Gut, aber bitte denken Sie auch daran, daß Monitor und Tastatur "
-"Daten abstrahlen und diese leicht mitgelesen werden können.\n"
+msgstr "Gut, aber bitte denken Sie auch daran, da\337 Monitor und Tastatur Daten abstrahlen und diese leicht mitgelesen werden k\366nnen.\n"
 
-#: g10/keygen.c:377
+#: g10/keygen.c:459
+msgid "Do you really need such a large keysize? "
+msgstr "Brauchen Sie wirklich eine derartig gro\337e Schl\374ssell\344nge? "
+
+#: g10/keygen.c:470
 msgid "Requested keysize is %u bits\n"
-msgstr "Die verlangte Schlüssellänge ist %u Bits\n"
+msgstr "Die verlangte Schl\374ssell\344nge ist %u Bits\n"
 
-#: g10/keygen.c:380 g10/keygen.c:384
+#: g10/keygen.c:473 g10/keygen.c:477
 msgid "rounded up to %u bits\n"
 msgstr "aufgerundet auf %u Bits\n"
 
-#: g10/keygen.c:391
+#: g10/keygen.c:489
+msgid ""
+"Please specify how long the key should be valid.\n"
+"         0 = key does not expire\n"
+"      <n>  = key expires in n days\n"
+"      <n>w = key expires in n weeks\n"
+"      <n>m = key expires in n months\n"
+"      <n>y = key expires in n years\n"
+msgstr ""
+
+#: g10/keygen.c:504
+msgid "Key is valid for? (0) "
+msgstr "Der Schl\374ssel is g\374ltig f\374r? (0) "
+
+#: g10/keygen.c:515
+msgid "invalid value\n"
+msgstr "Ung\374ltiger Wert.\n"
+
+#: g10/keygen.c:520
+msgid "Key does not expire at all\n"
+msgstr "Der Schl\374ssel verf\344llt nie\n"
+
+#. print the date when the key expires
+#: g10/keygen.c:523
+msgid "Key expires at %s\n"
+msgstr "Der Schl\374ssel verf\344llt am %s\n"
+
+#: g10/keygen.c:528
+msgid "Is this correct (y/n)? "
+msgstr "Ist dies richtig? (y/n) "
+
+#: g10/keygen.c:557
 msgid ""
 "\n"
 "You need a User-ID to identify your key; the software constructs the user id\n"
@@ -627,115 +695,659 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"Sie benötigen einen User-ID um Ihren Schlüssel eindeutig zu machen; das\n"
+"Sie ben\366tigen einen User-ID um Ihren Schl\374ssel eindeutig zu machen; das\n"
 "Programm baut diese User-ID aus Ihrem echten Namen, einem Kommentar und\n"
 "Ihrer Email Adresse in dieser Form auf:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
-
-
-#: g10/keygen.c:403
+#: g10/keygen.c:568
 msgid "Real name: "
 msgstr "Vorname, Nachname: "
 
-#: g10/keygen.c:407
+#: g10/keygen.c:572
 msgid "Invalid character in name\n"
-msgstr "Ungültiges Zeichen im Namen\n"
+msgstr "Ung\374ltiges Zeichen im Namen\n"
 
-#: g10/keygen.c:409
+#: g10/keygen.c:574
 msgid "Name may not start with a digit\n"
 msgstr "Der Name darf nicht mit einer Ziffer beginnen\n"
 
-#: g10/keygen.c:411
+#: g10/keygen.c:576
 msgid "Name must be at least 5 characters long\n"
-msgstr "Der Name muß min. 5 Zeichen lang sein\n"
+msgstr "Der Name mu\337 min. 5 Zeichen lang sein\n"
 
-#: g10/keygen.c:419
+#: g10/keygen.c:584
 msgid "Email address: "
 msgstr "Email Adresse: "
 
-#: g10/keygen.c:431
+#: g10/keygen.c:596
 msgid "Not a valid email address\n"
-msgstr "Email Adresse is ungültig\n"
+msgstr "Email Adresse is ung\374ltig\n"
 
-#: g10/keygen.c:439
+#: g10/keygen.c:604
 msgid "Comment: "
 msgstr "Kommentar: "
 
 #. no comment is okay
-#: g10/keygen.c:445
+#: g10/keygen.c:610
 msgid "Invalid character in comment\n"
-msgstr "Ungültiges Zeichen im Kommentar\n"
+msgstr "Ung\374ltiges Zeichen im Kommentar\n"
 
-#: g10/keygen.c:465
+#: g10/keygen.c:630
 msgid ""
 "You selected this USER-ID:\n"
 "    \"%s\"\n"
 "\n"
 msgstr ""
-"Sie haben diese User-ID gewählt:\n"
+"Sie haben diese User-ID gew\344hlt:\n"
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:467
+#: g10/keygen.c:633
 msgid "Edit (N)ame, (C)omment, (E)mail or (O)kay? "
-msgstr "Ändern: N=Name, C=Kommentar, E=Email, O=Okay? "
+msgstr "\304ndern: N=Name, C=Kommentar, E=Email, O=Okay? "
 
-#: g10/keygen.c:499
+#: g10/keygen.c:672
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
 msgstr ""
-"Sie benötigen eine \"passphrase\" um den geheimen Schlüssel zu schützen.\n"
+"Sie ben\366tigen eine \"passphrase\" um den geheimen Schl\374ssel zu sch\374tzen.\n"
 "\n"
 
-#: g10/keygen.c:508
+#: g10/keyedit.c:663 g10/keygen.c:680
+msgid "passphrase not correctly repeated; try again.\n"
+msgstr "\"passphrase\" nicht richtig wiederholt; noch einmal.\n"
+
+#: g10/keygen.c:686
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
 "using this program with the option \"--change-passphrase\"\n"
 "\n"
 msgstr ""
-"Sie möchten keine \"passphrase\" - Dies ist einen *schlechte* Idee!\n"
-"Es ist trotzdem möglich.  Sie können Ihre \"phassphrase\" jederzeit\n"
-"ändern, indem sie dieses Programm mit dem Kommando \"--change-passphrase\"\n"
+"Sie m\366chten keine \"passphrase\" - Dies ist einen *schlechte* Idee!\n"
+"Es ist trotzdem m\366glich.  Sie k\366nnen Ihre \"phassphrase\" jederzeit\n"
+"\344ndern, indem sie dieses Programm mit dem Kommando \"--change-passphrase\"\n"
 "aufrufen\n"
 "\n"
 
-
-#: g10/keygen.c:514
-msgid "passphrase not correctly repeated; try again.\n"
-msgstr "\"passphrase\" nicht richtig wiederholt; noch einmal.\n"
-
-#: g10/keygen.c:531
-msgid "writing public certificate to '%s'\n"
-msgstr "schreiben des öffentlichen Schlüssels nach '%s'\n"
-
-#: g10/keygen.c:532
-msgid "writing secret certificate to '%s'\n"
-msgstr "schreiben des geheimen Schlüssels nach '%s'\n"
-
-#: g10/keygen.c:544
+#: g10/keygen.c:707
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (work in another window, move the mouse, utilize the\n"
 "network and the disks) during the prime generation; this gives the random\n"
 "number generator a better chance to gain enough entropy.\n"
 msgstr ""
-"Wir müßen eine ganze Menge Zufallszahlen erzeugen.  Sie können dies\n"
-"unterstützen, indem Sie z.B. in einem anderen Fenster/Konsole irgendetwas\n"
+"Wir m\374\337en eine ganze Menge Zufallszahlen erzeugen.  Sie k\366nnen dies\n"
+"unterst\374tzen, indem Sie z.B. in einem anderen Fenster/Konsole irgendetwas\n"
 "tippen oder irgendwelche anderen Programme benutzen.\n"
 
-#: g10/keygen.c:611
+#: g10/keygen.c:753 g10/keygen.c:900
+msgid "Key generation can only be used in interactive mode\n"
+msgstr "Die Schl\374sselerzeugung kann nur im interaktiven Modus benutzt werden\n"
+
+#: g10/keygen.c:761
+msgid "DSA keypair will have 1024 bits.\n"
+msgstr "Der DSA Schl\374ssel wird 1024 bits haben.\n"
+
+#: g10/keygen.c:773
+msgid "writing public certificate to '%s'\n"
+msgstr "schreiben des \366ffentlichen Schl\374ssels nach '%s'\n"
+
+#: g10/keygen.c:774
+msgid "writing secret certificate to '%s'\n"
+msgstr "schreiben des geheimen Schl\374ssels nach '%s'\n"
+
+#: g10/keygen.c:851
 msgid "public and secret key created and signed.\n"
-msgstr "Öffentlichen und geheimen Schlüssel erzeugt und signiert.\n"
+msgstr "\326ffentlichen und geheimen Schl\374ssel erzeugt und signiert.\n"
 
-#: g10/keygen.c:622
+#: g10/keygen.c:853
+msgid ""
+"Note that this key cannot be used for encryption.  You may want to use\n"
+"the command \"--add-key\" to generate a secondary key for this purpose.\n"
+msgstr ""
+"Bitte beachten Sie, da\337 dieser Schl\374ssel nicht zum verschl\374sseln benutzt\n"
+"werden kann.  Sie k\366nnen aber mit dem Kommando \"--add-key\" einen\n"
+"Sekund\344rschl\374ssel zu diesem Schl\374ssel hinzuf\374gen.\n"
+
+#: g10/keygen.c:867 g10/keygen.c:1019
 msgid "Key generation failed: %s\n"
-msgstr "Schlüssel-Erzeugung fehlgeschlagen: %s\n"
+msgstr "Schl\374ssel-Erzeugung fehlgeschlagen: %s\n"
 
+#: g10/keygen.c:1014
+msgid "public and secret subkey created.\n"
+msgstr "\326ffentlicher und privater Schl\374ssel erzeugt.\n"
 
+#. prepare iobufs
+#: g10/encode.c:85
+msgid "%s: can't open: %s\n"
+msgstr "%s: kann nicht ge\366ffnet werden: %s\n"
 
+#: g10/encode.c:102
+msgid "error creating passphrase: %s\n"
+msgstr "Fehler beim erzeugen der \"Passphrase\": %s\n"
 
+#: g10/encode.c:138 g10/encode.c:236
+msgid "%s: warning: empty file\n"
+msgstr "%s: Achtung: Leere Datei.\n"
 
+#: g10/encode.c:206
+msgid "reading from '%s'\n"
+msgstr "Lesen von '%s'\n"
+
+#: g10/encode.c:351
+msgid "%s encrypted for: %s\n"
+msgstr "%s verschl\374sselt f\374r: %s\n"
+
+#: g10/import.c:105
+msgid "can't open file: %s\n"
+msgstr "Kann die Datei nicht \366ffnen: %s\n"
+
+#: g10/import.c:121
+msgid "skipping block of type %d\n"
+msgstr "\374berspringe den Block vom Typ %d\n"
+
+#: g10/import.c:131
+msgid "read error: %s\n"
+msgstr "Lesefehler: %s\n"
+
+#: g10/import.c:270 g10/import.c:425
+msgid "key %08lX: no user id\n"
+msgstr "Schl\374ssel %08lX: Keine User-ID\n"
+
+#: g10/import.c:280
+msgid "key %08lX: no valid user ids\n"
+msgstr "Schl\374ssel %08lX: Keine g\374ltigen User-IDs\n"
+
+#: g10/import.c:289 g10/import.c:492
+msgid "key %08lX: public key not found: %s\n"
+msgstr "Schl\374ssel %08lX: \326ffentlicher Schl\374ssel nicht gefunden: %s\n"
+
+#: g10/import.c:295
+msgid "no default public keyring\n"
+msgstr "Kein voreingestellter \366ffentlicher Schl\374sselring\n"
+
+#: g10/import.c:299
+msgid "writing to '%s'\n"
+msgstr "Schreiben au '%s'\n"
+
+#: g10/import.c:303 g10/import.c:356 g10/import.c:546
+msgid "can't lock public keyring: %s\n"
+msgstr ""
+
+#: g10/import.c:306
+msgid "can't write to keyring: %s\n"
+msgstr ""
+
+#: g10/import.c:309
+msgid "key %08lX: public key imported\n"
+msgstr "Sch\374ssel %08lX: \326ffentlicher Schl\374\374sel importiert\n"
+
+#: g10/import.c:317
+msgid "key %08lX: doesn't match our copy\n"
+msgstr "Sch\374ssel %08lX: Stimmt nich mit usnerer Kopie \374berein"
+
+#: g10/import.c:330 g10/import.c:501
+msgid "key %08lX: can't locate original keyblock: %s\n"
+msgstr ""
+
+#: g10/import.c:337 g10/import.c:508
+msgid "key %08lX: can't read original keyblock: %s\n"
+msgstr ""
+
+#. and write the keyblock back
+#: g10/import.c:353 g10/import.c:440 g10/import.c:543
+msgid "writing keyblock\n"
+msgstr ""
+
+#: g10/import.c:359 g10/import.c:549
+msgid "can't write keyblock: %s\n"
+msgstr "Der Schl\374sselblock kann nicht geschrieben werden: %s\n"
+
+#: g10/import.c:363
+msgid "key %08lX: 1 new user-id\n"
+msgstr "Sch\374ssel %08lX: 1 neue User-ID\n"
+
+#: g10/import.c:366
+msgid "key %08lX: %d new user-ids\n"
+msgstr "Sch\374ssel %08lX: %d neue User-IDs\n"
+
+#: g10/import.c:369
+msgid "key %08lX: 1 new signature\n"
+msgstr "Sch\374ssel %08lX: 1 neue Signatur"
+
+#: g10/import.c:372
+msgid "key %08lX: %d new signatures\n"
+msgstr "Sch\374ssel %08lX: %d neue Signaturen\n"
+
+#: g10/import.c:375
+msgid "key %08lX: 1 new subkey\n"
+msgstr "Sch\374ssel %08lX: 1 neuer Sekund\344rschl\374ssel\n"
+
+#: g10/import.c:378
+msgid "key %08lX: %d new subkeys\n"
+msgstr "Sch\374ssel %08lX: %d neue Sekund\344rschl\374ssel\n"
+
+#: g10/import.c:382
+msgid "key %08lX: not changed\n"
+msgstr "Sch\374ssel %08lX: Nich ge\344ndert\n"
+
+#: g10/import.c:443
+msgid "can't lock secret keyring: %s\n"
+msgstr ""
+
+#: g10/import.c:446
+msgid "can't write keyring\n"
+msgstr ""
+
+#. we are ready
+#: g10/import.c:449
+msgid "key %08lX: secret key imported\n"
+msgstr "Sch\374ssel %08lX: Privater schl\374ssel importiert\n"
+
+#. we can't merge secret keys
+#: g10/import.c:452
+msgid "key %08lX: already in secret keyring\n"
+msgstr "Sch\374ssel %08lX: Ist bereits im privaten Schl\374sselring\n"
+
+#: g10/import.c:456
+msgid "key %08lX: secret key not found: %s\n"
+msgstr "Sch\374ssel %08lX: Privaten Schl\374ssel nicht gefunden: %s\n"
+
+#: g10/import.c:486
+msgid "key %08lX: no public key - can't apply revocation certificate\n"
+msgstr "Sch\374ssel %08lX: Kein \366ffentlicher Schl\374ssel - Das \"Revokation\"-Zertifikat kann nicht angebracht werden\n"
+
+#: g10/import.c:519
+msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
+msgstr "Sch\374ssel %08lX: Ung\374ltiges \"Revocation\"-Zertifikat: %s - zur\374ckgewiesen\n"
+
+#. we are ready
+#: g10/import.c:552
+msgid "key %08lX: revocation certificate imported\n"
+msgstr "Sch\374ssel %08lX: \"Revocation\"-Zertifikat importiert\n"
+
+#: g10/import.c:582
+msgid "key %08lX: no user-id for signature\n"
+msgstr "Sch\374ssel %08lX: Keine User-ID f\374r Signatur\n"
+
+#: g10/import.c:589
+msgid "key %08lX: unsupported public key algorithm\n"
+msgstr "Sch\374ssel %08lX: \"Public Key\" Algorithmus wird nicht unterst\374tzt\n"
+
+#: g10/import.c:590
+msgid "key %08lX: invalid self-signature\n"
+msgstr "Sch\374ssel %08lX: Ung\374ltige Selbst-Signatur\n"
+
+#: g10/import.c:619
+msgid "key %08lX: skipped userid '"
+msgstr "Sch\374ssel %08lX: \374bergehe User-ID '"
+
+#: g10/import.c:642
+msgid "key %08lX: revocation certificate at wrong place - skipped\n"
+msgstr "Sch\374ssel %08lX: \"Revocation\"-Zertifikat an falschem Platz - \374bergangen\n"
+
+#: g10/import.c:649
+msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
+msgstr "Sch\374ssel %08lX: Ung\374ltiges \"Revocation\"-Zertifikat: %s - \374bergangen\n"
+
+#: g10/import.c:711
+msgid "key %08lX: revocation certificate added\n"
+msgstr "Sch\374ssel %08lX: \"Revocation\"-Zertifikat hinzugef\374gt\n"
+
+#: g10/import.c:774 g10/import.c:810
+msgid "key %08lX: our copy has no self-signature\n"
+msgstr "Sch\374ssel %08lX: Unser Kopie hat keine Selbst-Signatur\n"
+
+#: g10/keyedit.c:79
+msgid ""
+"Are you really sure that you want to sign this key:\n"
+"\n"
+msgstr "Sind Sie wirklich sicher, da\337 Sie diesen Schl\374ssel signieren wollen:\n"
+
+#: g10/keyedit.c:89
+msgid "Sign this key? "
+msgstr "Signieren? "
+
+#: g10/keyedit.c:145
+msgid "%d bad signatures\n"
+msgstr "%d schlechte Signaturen\n"
+
+#: g10/keyedit.c:147
+msgid "No public key for %d signatures\n"
+msgstr "Kein \366ffentlicher Schl\374ssel f\374r %d Signaturen\n"
+
+#: g10/keyedit.c:149
+msgid "%d signatures not checked due to errors\n"
+msgstr "%s Signaturen nicht aufgrund von Fehlern nicht gepr\374ft\n"
+
+#: g10/keyedit.c:176
+msgid "[User name not available] "
+msgstr "[Benuzername nicht verf\374gbar] "
+
+#: g10/keyedit.c:185
+msgid "This is a BAD signature!\n"
+msgstr "Dies ist eine FALSCHE Signatur!\n"
+
+#: g10/keyedit.c:187
+msgid "Public key not available.\n"
+msgstr "\326ffentlicher Sch\374ssel ist nicht verf\374gbar.\n"
+
+#: g10/keyedit.c:189
+msgid "The signature could not be checked!\n"
+msgstr "Die Signatur konnte nicht gepr\374ft werden!\n"
+
+#: g10/keyedit.c:192
+msgid "Skipped self-signature\n"
+msgstr "Selbst-Signatur \374bersprungen\n"
+
+#: g10/keyedit.c:197
+msgid "Remove this signature? "
+msgstr "Die Signatur entfernen? "
+
+#: g10/keyedit.c:209
+msgid "Do you really want to remove the selected signatures? "
+msgstr "M\366chten Sie die ausgew\344hlten Siganturen wirklich entfernen? "
+
+#: g10/keyedit.c:250 g10/keyedit.c:396 g10/keyedit.c:465
+msgid "%s: user not found\n"
+msgstr "%s: Benutzer nich gefunden\n"
+
+#: g10/keyedit.c:277 g10/keyedit.c:417
+msgid "Checking signatures of this public key certificate:\n"
+msgstr "Die Signaturen diese Zertifkats werden \374berpr\374ft:\n"
+
+#: g10/keyedit.c:295
+msgid "To you want to remove some of the invalid sigs? "
+msgstr "M\366chten Sie einige der ung\374ltigen Signauren entfernen? "
+
+#: g10/keyedit.c:315
+msgid "Already signed by keyid %08lX\n"
+msgstr "Ist bereits mit Schl\374ssel %08lX signiert.\n"
+
+#: g10/keyedit.c:327
+msgid "Nothing to sign\n"
+msgstr "Nicht zu signieren.\n"
+
+#: g10/keyedit.c:494
+msgid "there is a secret key for this public key!\n"
+msgstr "Es gibt einen privaten schl\374ssel zu diesem \366ffentlichen Schl\374ssel!\n"
+
+#: g10/keyedit.c:496
+msgid "use option \"--delete-secret-key\" to delete it first.\n"
+msgstr "Benutzen Sie das Kommando \"--delete-decret-key\" um ihn vorab zu entfernen.\n"
+
+#: g10/keyedit.c:508
+msgid "can't do that in batch-mode\n"
+msgstr "Dies kann im Batchmodus nicht durchgef\374hrt werden\n"
+
+#: g10/keyedit.c:512
+msgid "can't do that in batch-mode without \"--yes\"\n"
+msgstr "Dies kann im Batchmodus ohne \"--yes\" nicht durchgef\374hrt werden\n"
+
+#: g10/keyedit.c:532
+msgid "Delete this key from the keyring? "
+msgstr "Diesen Schl\374ssel aus dem Schl\374sselring l\366schen? "
+
+#. I think it is not required to check a passphrase; if
+#. * the user is so stupid as to let others access his secret keyring
+#. * (and has no backup) - it is up him to read some very
+#. * basic texts about security.
+#.
+#: g10/keyedit.c:541
+msgid "This is a secret key! - really delete? "
+msgstr "Dies is ein private Schl\374ssel! - Wirklich l\366schen? "
+
+#: g10/keyedit.c:628
+msgid "This key is not protected.\n"
+msgstr "Dieser Schl\374ssel ist nicht gesch\374tzt.\n"
+
+#: g10/keyedit.c:631
+msgid "Key is protected.\n"
+msgstr "Schl\374ssel ist gesch\374tzt.\n"
+
+#: g10/keyedit.c:650
+msgid "Can't edit this key: %s\n"
+msgstr "Dieser Sch\374ssel kann nicht editiert werden: %s\n"
+
+#: g10/keyedit.c:655
+msgid ""
+"Enter the new passphrase for this secret key.\n"
+"\n"
+msgstr ""
+"Geben Sie die neue \"Passphrase\" f\374r diesen privaten Schl\374ssel.\n"
+"\n"
+
+#: g10/keyedit.c:667
+msgid ""
+"You don't want a passphrase - this is probably a *bad* idea!\n"
+"\n"
+msgstr ""
+"Yie m\366chten keine \"Passphrase\" - dies ist wahrscheinlich eine *schlechte* Idee!\n"
+"\n"
+
+#: g10/keyedit.c:669
+msgid "Do you really want to do this? "
+msgstr "M\366chten Sie dies wirklich tun? "
+
+#: g10/mainproc.c:196
+msgid "public key decryption failed: %s\n"
+msgstr "Erzeugung des \366ffentlichen Schl\374ssels fehlgeschlagen: %s\n"
+
+#: g10/mainproc.c:224
+msgid "decryption failed: %s\n"
+msgstr "Enschl\374sselung fehlgeschlagen: %s\n"
+
+#: g10/mainproc.c:817
+msgid "Signature made %.*s using %s key ID %08lX\n"
+msgstr "Signatur wurde am %.*s mit %s Schl\374ssel %08lX erzeugt\n"
+
+#: g10/mainproc.c:823
+msgid "BAD signature from \""
+msgstr "FALSCHE Signatur von \""
+
+#: g10/mainproc.c:824
+msgid "Good signature from \""
+msgstr "Gute Signatur von \""
+
+#: g10/mainproc.c:833
+msgid "Can't check signature: %s\n"
+msgstr "Signatur kann nicht gepr\374ft werden: %s\n"
+
+#: g10/passphrase.c:116
+msgid ""
+"\n"
+"You need a passphrase to unlock the secret key for\n"
+"user: \""
+msgstr ""
+"\n"
+"Sie ben\366tigen eine \"Passphrase\" um den geheimen Schl\374ssel zu entsperren.\n"
+"Benutzer: \""
+
+#: g10/passphrase.c:125
+msgid "(%u-bit %s key, ID %08lX, created %s)\n"
+msgstr "(%u-bit %s Schl\374ssel, ID %08lX, erzeugt %s)\n"
+
+#: g10/plaintext.c:216
+msgid "can't open signed data '%s'\n"
+msgstr ""
+
+#: g10/seckey-cert.c:128
+msgid "Invalid passphrase; please try again ...\n"
+msgstr ""
+
+#: g10/sig-check.c:165 g10/trustdb.c:1755
+msgid "public key created in future (time warp or clock problem)\n"
+msgstr ""
+
+#: g10/sig-check.c:171
+msgid "warning: signature key expired %s\n"
+msgstr ""
+
+#: g10/trustdb.c:331
+msgid "can't create %s: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:360
+msgid "TrustDB %s is invalid\n"
+msgstr ""
+
+#: g10/trustdb.c:435 g10/trustdb.c:596
+msgid "trustdb: lseek failed: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:443
+msgid "trustdb: read failed (n=%d): %s\n"
+msgstr ""
+
+#: g10/trustdb.c:460
+msgid "%s: not a trustdb file\n"
+msgstr ""
+
+#: g10/trustdb.c:601
+msgid "trustdb: write failed (n=%d): %s\n"
+msgstr ""
+
+#: g10/trustdb.c:633
+msgid "%s: failed to append a record: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:680
+msgid "%s: search_db failed: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:724
+msgid "error reading record with local_id %lu: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:729
+msgid "record with local_id %lu is not a dir record\n"
+msgstr ""
+
+#: g10/trustdb.c:762
+msgid "%lu: error reading dir record: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:773
+msgid "%lu: error building sigs on the fly: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:780
+msgid "%lu: error re-reading dir record: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:807
+msgid "error reading sigrec: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:812
+msgid "chained sigrec %lu has a wrong owner\n"
+msgstr ""
+
+#: g10/trustdb.c:862
+msgid "keyid %08lX: secret key without public key\n"
+msgstr ""
+
+#: g10/trustdb.c:867
+msgid "keyid %08lX: secret and public key don't match\n"
+msgstr ""
+
+#: g10/trustdb.c:878
+msgid "keyid %08lX: can't put it into the trustdb\n"
+msgstr ""
+
+#: g10/trustdb.c:884
+msgid "keyid %08lX: query record failed\n"
+msgstr ""
+
+#: g10/trustdb.c:893
+msgid "keyid %08lX: already in ultikey_table\n"
+msgstr ""
+
+#: g10/trustdb.c:901
+msgid "enum_secret_keys failed: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:1169
+msgid "%lu: build_sigrecs: can't read dir record\n"
+msgstr ""
+
+#: g10/trustdb.c:1173
+msgid "%lu: build_sigrecs: can't read key record\n"
+msgstr ""
+
+#: g10/trustdb.c:1179
+msgid "build_sigrecs: get_keyblock_byfprint failed\n"
+msgstr ""
+
+#: g10/trustdb.c:1185
+msgid "build_sigrecs: check_sigs failed\n"
+msgstr ""
+
+#: g10/trustdb.c:1189
+msgid "build_sigrecs: self-signature missing\n"
+msgstr ""
+
+#: g10/trustdb.c:1195
+msgid "build_sigrecs: key has been revoked\n"
+msgstr ""
+
+#: g10/trustdb.c:1220
+msgid "set_signature_packets_local_id failed: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:1231 g10/trustdb.c:1256 g10/trustdb.c:1267
+msgid "build_sigrecs: write_record failed\n"
+msgstr ""
+
+#: g10/trustdb.c:1277
+msgid "update_dir_record: read failed\n"
+msgstr ""
+
+#: g10/trustdb.c:1282
+msgid "update_dir_record: write failed\n"
+msgstr ""
+
+#: g10/trustdb.c:1292
+msgid "trustdb: build_sigrecs: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:1511
+msgid "can't access %s: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:1527
+msgid "can't create directory '%s': %s\n"
+msgstr ""
+
+#: g10/trustdb.c:1531
+msgid "directory '%s' does not exist!\n"
+msgstr ""
+
+#: g10/trustdb.c:1732
+msgid "check_trust: read record failed\n"
+msgstr ""
+
+#. no local_id: scan the trustdb
+#: g10/trustdb.c:1738
+msgid "check_trust: search_record failed: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:1745
+msgid "failed to insert pubkey into trustdb: %s\n"
+msgstr ""
+
+#: g10/trustdb.c:1749
+msgid "pubkey not in trustdb - inserted as %lu\n"
+msgstr ""
+
+#: g10/trustdb.c:1761
+msgid "key expiration date is %s\n"
+msgstr ""
+
+#: g10/trustdb.c:1769
+msgid "check_trust: do_check failed: %s\n"
+msgstr ""

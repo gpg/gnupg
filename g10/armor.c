@@ -380,16 +380,13 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		state = fhdrEOF;
 	    break;
 
-	  case fhdrWAITClearsig: /* skip all empty lines (for clearsig) */
+	  case fhdrWAITClearsig: /* skip the empty line (for clearsig) */
 	    c = 0;
 	    for(n=0; n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n'; )
 		buf[n++] = c;
 	    if( n < buflen || c == '\n' ) {
 		buf[n] = 0;
-		if( !n || (buf[0]=='\r' && !buf[1]) ) /* empty line */
-		    ;
-		else
-		    state = fhdrCHECKDashEscaped3;
+		state = fhdrCHECKDashEscaped3;
 	    }
 	    else {
 		/* fixme: we should check whether this line continues
@@ -590,6 +587,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    buf[1] = '\n';
 	    n = 2;
 	}
+
     }
 
 
@@ -715,13 +713,6 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    break;
 
 	  case fhdrENDClearsig:
-	    /* FIXME: this is wrong: Only the last CRLF should
-	     * not be included in the hash, muts rewrite the FSM again
-	     * This proble does only occur if the last line does not end
-	     * in with a LF?
-	     */
-	    if( emplines )
-		emplines--; /* don't count the last one */
 	    state = fhdrENDClearsigHelp;
 	    afx->helplen = n;
 	    break;

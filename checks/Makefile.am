@@ -4,7 +4,7 @@ TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \
 	sigs.test sigs-dsa.test \
 	encrypt.test encrypt-dsa.test  \
-	clearsig.test encryptp.test detach.test \
+	seat.test clearsig.test encryptp.test detach.test \
 	armsigs.test armencrypt.test armencryptp.test \
 	signencrypt.test signencrypt-dsa.test \
 	armsignencrypt.test armdetach.test \

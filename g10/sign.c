@@ -416,14 +416,14 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
 
 /****************
- * note: we do not count empty lines at the beginning
+ * Note: We do not calculate the hash over the last CR,LF
  */
 static int
 write_dash_escaped( IOBUF inp, IOBUF out, MD_HANDLE md )
 {
     int c;
     int lastlf = 1;
-    int skip_empty = 1;
+    int state = 0;
 
     while( (c = iobuf_get(inp)) != -1 ) {
 	/* Note: We don't escape "From " because the MUA should cope with it */
@@ -431,21 +431,41 @@ write_dash_escaped( IOBUF inp, IOBUF out, MD_HANDLE md )
 	    if( c == '-' ) {
 		iobuf_put( out, c );
 		iobuf_put( out, ' ' );
-		skip_empty = 0;
 	    }
-	    else if( skip_empty && c == '\r' )
-		skip_empty = 2;
-	    else
-		skip_empty = 0;
 	}
 
-	if( !skip_empty )
-	    md_putc(md, c );
+      again:
+	switch( state ) {
+	  case 0:
+	    if( c == '\r' )
+		state = 1;
+	    else
+		md_putc(md, c );
+	    break;
+	  case 1:
+	    if( c == '\n' )
+		state = 2;
+	    else {
+		md_putc(md, '\r');
+		state = 0;
+		goto again;
+	    }
+	    break;
+	  case 2:
+	    md_putc(md, '\r');
+	    md_putc(md, '\n');
+	    state = 0;
+	    goto again;
+	  default: BUG();
+	}
 	iobuf_put( out, c );
 	lastlf = c == '\n';
-	if( skip_empty == 2 )
-	    skip_empty = lastlf ? 0 : 1;
     }
+    if( state == 1 )
+	md_putc(md, '\r');
+    if( !lastlf )
+	iobuf_put( out, '\n' );
+
     return 0; /* fixme: add error handling */
 }
 
@@ -537,13 +557,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	PKT_secret_key *sk = sk_rover->sk;
 	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
-
     iobuf_push_filter( inp, text_filter, &tfx );
     rc = write_dash_escaped( inp, out, textmd );
     if( rc )
 	goto leave;
 
-    iobuf_writestr(out, "\n" );
     afx.what = 2;
     iobuf_push_filter( out, armor_filter, &afx );
 

@@ -1,7 +1,7 @@
 
     * add option --restore-ownertrust
 
-    * add options: --default-signature-user, --default-encryption-user
+    * always put key signatures before the first subkey.
 
     * Change the formatting of log_xxxx to GNU standards
       ("name:filename:line: text")

@@ -51,8 +51,11 @@ read_line( byte *buf, size_t *r_buflen, IOBUF a )
     for(c=0, n=0; n < buflen && (c=iobuf_get2(a)) != -1 && c != '\n'; )
 	buf[n++] = c;
     buf[n] = 0;
-    if( c == -1 )
+    if( c == -1 ) {
 	rc = -1;
+	if( !n || buf[n-1] != '\n' )
+	    no_lf = 1;
+    }
     else if( c != '\n' ) {
 	IOBUF b = iobuf_temp();
 	while( (c=iobuf_get2(a)) != -1 && c != '\n' ) {

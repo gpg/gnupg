@@ -125,6 +125,24 @@ do_export( STRLIST users, int secret )
 
 	/* and write it */
 	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
+	    if( opt.do_not_export_rsa ) {
+		int algo;
+		switch( node->pkt->pkttype ) {
+		  /* note: we can´ do this for subkeys here */
+		  case PKT_PUBLIC_KEY:
+		    algo = node->pkt->pkt.public_key->pubkey_algo;
+		    break;
+		  case PKT_SECRET_KEY:
+		    algo = node->pkt->pkt.secret_key->pubkey_algo;
+		    break;
+		  case PKT_SIGNATURE:
+		    algo = node->pkt->pkt.signature->pubkey_algo;
+		    break;
+		  default: algo = 0;
+		}
+		if( is_RSA(algo) )
+		    continue;
+	    }
 	    if( (rc = build_packet( out, node->pkt )) ) {
 		log_error("build_packet(%d) failed: %s\n",
 			    node->pkt->pkttype, g10_errstr(rc) );

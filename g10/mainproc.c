@@ -232,22 +232,34 @@ static void
 proc_plaintext( CTX c, PACKET *pkt )
 {
     PKT_plaintext *pt = pkt->pkt.plaintext;
-    int any, rc;
+    int any, clearsig, rc;
     KBNODE n;
 
     if( opt.verbose )
 	log_info("original file name='%.*s'\n", pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
-    /* fixme: look at the sigclass to check whether we should use the
-     *	      textmode filter (sigclass 0x01)
-     */
     c->mfx.md = md_open( 0, 0);
-    any = 0;
+    /* fixme: we may need to push the textfilter if we have sigclass 1
+     * and no armoring - Not yet tested */
+    any = clearsig = 0;
     for(n=c->list; n; n = n->next ) {
-	if( n->pkt->pkttype == PKT_ONEPASS_SIG
-	    && n->pkt->pkt.onepass_sig->digest_algo ) {
-	    md_enable( c->mfx.md, n->pkt->pkt.onepass_sig->digest_algo );
-	    any = 1;
+	if( n->pkt->pkttype == PKT_ONEPASS_SIG ) {
+	    if( n->pkt->pkt.onepass_sig->digest_algo ) {
+		md_enable( c->mfx.md, n->pkt->pkt.onepass_sig->digest_algo );
+		any = 1;
+	    }
+	    /* Check whether this is a cleartext signature.  We assume that
+	     * we have one if the sig_class is 1 and the keyid is 0, that
+	     * are the faked packets produced by armor.c.  There is a
+	     * possibility that this fails, but there is no other easy way
+	     * to do it. (We could use a special packet type to indicate
+	     * this, but this may also be faked - it simply can't be verified
+	     * and is _no_ security issue)
+	     */
+	    if( n->pkt->pkt.onepass_sig->sig_class == 0x01
+		&& !n->pkt->pkt.onepass_sig->keyid[0]
+		&& !n->pkt->pkt.onepass_sig->keyid[1]  )
+		clearsig = 1;
 	}
     }
     if( !any ) { /* no onepass sig packet: enable all algos */
@@ -260,7 +272,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 	if( c->mfx.md->list )
 	    m_check( c->mfx.md->list );
     }
-    rc = handle_plaintext( pt, &c->mfx, c->sigs_only );
+    rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
     if( c->mfx.md ) {

@@ -282,7 +282,8 @@ int decrypt_data( PKT_encrypted *ed, DEK *dek );
 int encrypt_data( PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/
-int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,int nooutput);
+int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
+					int nooutput, int clearsig );
 int ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname );
 
 /*-- comment.c --*/

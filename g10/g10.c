@@ -76,6 +76,7 @@ static ARGPARSE_OPTS opts[] = {
   #endif
     { 537, "export"          , 0, N_("export keys") },
     { 563, "export-secret-keys" , 0, "@" },
+    { 565, "do-not-export-rsa", 0, "@" },
     { 530, "import",      0     , N_("import/merge keys")},
     { 521, "list-packets",0,N_("list only the sequence of packets")},
   #ifdef IS_G10MAINT
@@ -105,6 +106,7 @@ static ARGPARSE_OPTS opts[] = {
     { 502, "no",        0, N_("assume no on most questions")},
     { 509, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
     { 517, "secret-keyring" ,2, N_("add this secret keyring to the list")},
+    { 541, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
     { 518, "options"   , 2, N_("read options from file")},
 
     { 510, "debug"     ,4|16, N_("set debugging flags")},
@@ -167,8 +169,6 @@ static ARGPARSE_OPTS opts[] = {
     { 562, "emulate-checksum-bug", 0, "@"},
 
 {0} };
-
-/* (Free numbers: 541) */
 
 
 enum cmd_values { aNull = 0,
@@ -575,6 +575,7 @@ main( int argc, char **argv )
 	  case 536: opt.marginals_needed = pargs.r.ret_int; break;
 	  case 537: set_cmd( &cmd, aExport); break;
 	  case 538: trustdb_name = pargs.r.ret_str; break;
+	  case 541: opt.def_secret_key = pargs.r.ret_str; break;
 	  case 543: break; /* no-options */
 	  case 544: opt.homedir = pargs.r.ret_str; break;
 	  case 545: opt.batch = 0; break;
@@ -591,6 +592,7 @@ main( int argc, char **argv )
 	  case 561: opt.rfc1991 = 1; break;
 	  case 562: opt.emulate_bugs |= 1; break;
 	  case 563: set_cmd( &cmd, aExportSecret); break;
+	  case 565: opt.do_not_export_rsa = 1; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }

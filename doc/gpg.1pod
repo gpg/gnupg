@@ -61,7 +61,7 @@ B<--verify> [[I<sigfile>] {I<signed-files>}]
 
 B<-k> [I<username>] [I<keyring>]
     Kludge to be somewhat compatible with PGP.
-    Without arguments, all public key-rings are listed.
+    Without arguments, all public keyrings are listed.
     With one argument, only I<keyring> is listed.
     Special combinations are also allowed, but it may
     give strange results when combined with more options.
@@ -129,8 +129,8 @@ B<--gen-revoke>
     Generate a revocation certificate.
 
 B<--export> [I<names>]
-    Either export all keys from all key-rings (default
-    key-rings and those registered via option B<--keyring>),
+    Either export all keys from all keyrings (default
+    keyrings and those registered via option B<--keyring>),
     or if at least one name is given, those of the given
     name. The new keyring is written to F<stdout> or to
     the file given with option "output".  Use together
@@ -164,6 +164,11 @@ B<-u> I<name>, B<--local-user> I<name>
     Use I<name> as the user-id to sign.
     This option is silently ignored for the list commands,
     so that it can be used in an options file.
+
+B<--default-key>  I<name>
+    Use I<name> as default user-id for signatures.  If this
+    is not used the default user-id is the first user-id in
+    the secret keyring.
 
 B<-r>  I<name>, B<--remote-user>  I<name>
     Use I<name> as the user-id for encryption.
@@ -202,14 +207,15 @@ B<--no>
     Assume no on most questions.
 
 B<--keyring> I<file>
-    Add I<file> to the list of key-rings.
+    Add I<file> to the list of keyrings.
     If I<file> begins with a tilde and a slash, these
     are replaced by the HOME directory. If the filename
     does not contain a slash, it is assumed to be in the
     home-directory (F<~/.gnupg> if B<--homedir>) is not used.
 
 B<--secret-keyring> I<file>
-    Same as B<--keyring> but for secret key-rings.
+    Same as B<--keyring> but for secret keyrings.
+
 
 B<--homedir> I<dir>
     Set the name of the home directory to I<dir>. If this
@@ -287,8 +293,8 @@ B<--no-armor>
     Assume the input data is not in ASCCI armored format.
 
 B<--no-default-keyring>
-    Do not add the default key-rings to the list of
-    key-rings.
+    Do not add the default keyrings to the list of
+    keyrings.
 
 B<--skip-verify>
     Skip the signature verification step.  This may be used to
@@ -329,16 +335,13 @@ C<GNUPGHOME>  If set, direcory used instead of F<~/.gnupg>.
 
 =head1 FILES
 
-F<~/.gnupg/secring.gpg>     The secret key-ring
+F<~/.gnupg/secring.gpg>     The secret keyring
 
-F<~/.gnupg/pubring.gpg>     The public key-ring
+F<~/.gnupg/pubring.gpg>     The public keyring
 
 F<~/.gnupg/trustdb.gpg>     The trust database
 
-F<~/.gnupg/gnupg.gpg>	    Signature of GNUPG files.
-
 F<~/.gnupg/options>	    May contain options
-
 
 =head1 SEE ALSO
 

@@ -532,8 +532,12 @@ get_seckey_byname( PKT_secret_key *sk, const char *name, int unprotect )
 {
     int rc;
 
-    rc = name ? key_byname( 1, NULL, sk, name )
-	      : lookup_sk( sk, 15, NULL, NULL );
+    if( !name && opt.def_secret_key && *opt.def_secret_key )
+	rc = key_byname( 1, NULL, sk, opt.def_secret_key );
+    else if( !name ) /* use the first one as default key */
+	rc = lookup_sk( sk, 15, NULL, NULL );
+    else
+	rc = key_byname( 1, NULL, sk, name );
     if( !rc && unprotect )
 	rc = check_secret_key( sk );
 

@@ -893,6 +893,8 @@ iobuf_peek(IOBUF a, byte *buf, unsigned buflen )
 {
     int n=0;
 
+    if( a->filter_eof )
+	return -1;
     if( !(a->d.start < a->d.len) ) {
 	if( underflow(a) == -1 )
 	    return -1;

@@ -3,14 +3,33 @@
 
 # utility
 util/secmem.c
+util/argparse.c
 
 # cipher
 cipher/random.c
-
+cipher/rand-dummy.c
+cipher/rand-unix.c
+cipher/rand-w32.c
 
 # main program
 
 g10/g10.c
 g10/pkclist.c
 g10/keygen.c
+g10/decrypt.c
+g10/encode.c
+g10/import.c
+g10/keyedit.c
+g10/keylist.c
+g10/mainproc.c
+g10/passphrase.c
+g10/plaintext.c
+g10/pref.c
+g10/seckey-cert.c
+g10/sig-check.c
+g10/sign.c
+g10/trustdb.c
+g10/verify.c
+
+
 #---end--
