@@ -1,3 +1,9 @@
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (SUBDIRS): Add keyserver.
+	(dist-hook): Only look in mpi and scripts for distfiles; this way
+	we don't include those of a stale "make dist" directory.
+
 2001-10-23  Werner Koch  <wk@gnupg.org>
 
 	Released 1.0.6b snapshot.

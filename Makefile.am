@@ -33,7 +33,8 @@ DISTCLEANFILES = g10defs.h
 # we need for the Prereq: patch file trick.
 dist-hook:
 	@set -e; \
-	 for file in `cd $(top_srcdir); find . -type f -name distfiles`; do \
+	 for file in `cd $(top_srcdir); \
+		     find scripts mpi -type f -name distfiles`; do \
 	    dir=`dirname $$file` ; $(mkinstalldirs) $(distdir)/$$dir ; \
 	    for i in distfiles `cat $(top_srcdir)/$$file` ; do \
 		ln $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i 2> /dev/null \
@@ -45,3 +46,9 @@ dist-hook:
 	    $(top_srcdir)/scripts/gnupg.spec.in \
 	    > $(distdir)/scripts/gnupg.spec
 	echo "$(VERSION)" > $(distdir)/VERSION
+
+
+
+
+
+
