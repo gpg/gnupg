@@ -79,13 +79,15 @@ urlencode_filter( void *opaque, int control,
 /* Returns 0 on success, -1 on failure, and 1 on eof */
 int send_key(void)
 {
-  int rc,gotit=0,ret=-1;
+  int rc,begin=0,end=0,ret=-1;
   char keyid[17];
   char *request;
   struct http_context hd;
   unsigned int status;
   IOBUF temp = iobuf_temp();
   char line[MAX_LINE];
+
+  memset(&hd,0,sizeof(hd));
 
   request=malloc(strlen(host)+100);
   if(!request)
@@ -101,25 +103,23 @@ int send_key(void)
   while(fgets(line,MAX_LINE,input)!=NULL)
     if(sscanf(line,"KEY %16s BEGIN\n",keyid)==1)
       {
-	gotit=1;
+	begin=1;
 	break;
       }
 
-  if(!gotit)
+  if(!begin)
     {
       /* i.e. eof before the KEY BEGIN was found */
       ret=1;
       goto fail;
     }
 
-  gotit=0;
-
   /* Now slurp up everything until we see the END */
 
   while(fgets(line,MAX_LINE,input))
     if(sscanf(line,"KEY %16s END\n",keyid)==1)
       {
-	gotit=1;
+	end=1;
 	break;
       }
     else
@@ -129,7 +129,7 @@ int send_key(void)
 	  goto fail;
 	}
 
-  if(!gotit)
+  if(!end)
     {
       fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
       goto fail;
@@ -172,7 +172,6 @@ int send_key(void)
   if((status/100)!=2)
     {
       fprintf(console,"gpgkeys: remote server returned error %d\n",status);
-      fprintf(output,"KEY %s FAILED\n",keyid);
       goto fail;
     }
 
@@ -182,6 +181,9 @@ int send_key(void)
   free(request);
   iobuf_close(temp);
   http_close(&hd);
+
+  if(ret!=0 && begin)
+    fprintf(output,"KEY %s FAILED\n",keyid);
 
   return ret;
 }

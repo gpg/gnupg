@@ -61,7 +61,7 @@ RISCOS_GLOBAL_STATICS("LDAP Keyfetcher Heap")
 /* Returns 0 on success, -1 on failure, and 1 on eof */
 int send_key(void)
 {
-  int err,gotit=0,keysize=1,ret=-1;
+  int err,begin=0,end=0,keysize=1,ret=-1;
   char *dn=NULL;
   char line[MAX_LINE];
   char *key[2]={0,0};
@@ -99,25 +99,23 @@ int send_key(void)
   while(fgets(line,MAX_LINE,input)!=NULL)
     if(sscanf(line,"KEY %16s BEGIN\n",keyid)==1)
       {
-	gotit=1;
+	begin=1;
 	break;
       }
 
-  if(!gotit)
+  if(!begin)
     {
       /* i.e. eof before the KEY BEGIN was found */
       ret=1;
       goto fail;
     }
 
-  gotit=0;
-
   /* Now slurp up everything until we see the END */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
     if(sscanf(line,"KEY %16s END\n",keyid)==1)
       {
-	gotit=1;
+	end=1;
 	break;
       }
     else
@@ -133,7 +131,7 @@ int send_key(void)
 	strcat(key[0],line);
       }
 
-  if(!gotit)
+  if(!end)
     {
       fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
       goto fail;
@@ -154,7 +152,7 @@ int send_key(void)
   free(key[0]);
   free(dn);
 
-  if(ret!=0)
+  if(ret!=0 && begin)
     fprintf(output,"KEY %s FAILED\n",keyid);
 
   return ret;
