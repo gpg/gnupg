@@ -81,6 +81,7 @@ void iobuf_set_limit( IOBUF a, unsigned long nlimit );
 int  iobuf_readbyte(IOBUF a);
 int  iobuf_writebyte(IOBUF a, unsigned c);
 int  iobuf_write(IOBUF a, byte *buf, unsigned buflen );
+int  iobuf_writestr(IOBUF a, const char *buf );
 
 int  iobuf_write_temp( IOBUF a, IOBUF temp );
 size_t iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen );

@@ -277,6 +277,8 @@ install-exec install-data install uninstall all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+$(PROGRAMS): ../cipher/libcipher.a ../mpi/libmpi.a
 .SUFFIXES:
 .SUFFIXES: .c .o
 

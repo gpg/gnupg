@@ -50,7 +50,11 @@ strusage( int level )
       case 12:	p =
     "\nSyntax: g10 [options] [files]\n"
     "sign, check, encrypt or decrypt\n"
-    "default operation depends on the input data\n";
+    "default operation depends on the input data\n"
+  #ifndef HAVE_RSA_CIPHER
+    "This version does not support RSA!\n"
+  #endif
+	;
 	break;
       default:	p = default_strusage(level);
     }

@@ -91,50 +91,57 @@ rsa_generate( RSA_public_key *pk, RSA_secret_key *sk, unsigned nbits )
     MPI n;    /* the public key */
     MPI e;    /* the exponent */
     MPI phi;  /* helper: (p-a)(q-1) */
+    MPI g;
+    MPI f;
 
     /* select two (very secret) primes */
     p = generate_random_prime( nbits / 2 );
     q = generate_random_prime( nbits / 2 );
-    if( mpi_cmp( p, q ) > 0 ) /* p shall be smaller than q */
+    if( mpi_cmp( p, q ) > 0 ) /* p shall be smaller than q (for calc of u)*/
 	mpi_swap(p,q);
-    /* calculate phi = (p-1)(q-1) */
+    /* calculate Euler totient: phi = (p-1)(q-1) */
     t1 = mpi_alloc_secure( mpi_get_nlimbs(p) );
     t2 = mpi_alloc_secure( mpi_get_nlimbs(p) );
     phi = mpi_alloc_secure( nbits / BITS_PER_MPI_LIMB  );
+    g	= mpi_alloc_secure( nbits / BITS_PER_MPI_LIMB  );
+    f	= mpi_alloc_secure( nbits / BITS_PER_MPI_LIMB  );
     mpi_sub_ui( t1, p, 1 );
     mpi_sub_ui( t2, q, 1 );
     mpi_mul( phi, t1, t2 );
+    mpi_gcd(g, t1, t2);
+    mpi_fdiv_q(f, phi, g);
     /* multiply them to make the private key */
     n = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
     mpi_mul( n, p, q );
     /* find a public exponent  */
     e = mpi_alloc(1);
     mpi_set_ui( e, 17); /* start with 17 */
-    while( !mpi_gcd(t1, e, phi) ) { /* (while gcd is not 1) */
-	if( DBG_CIPHER )
-	    log_mpidump("trying e=", e);
+    while( !mpi_gcd(t1, e, phi) ) /* (while gcd is not 1) */
 	mpi_add_ui( e, e, 2);
-    }
     /* calculate the secret key d = e^1 mod phi */
     d = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
-    mpi_inv_mod(d, e, phi );
+    mpi_inv_mod(d, e, f );
     /* calculate the inverse of p and q (used for chinese remainder theorem)*/
     u = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
     mpi_inv_mod(u, p, q );
 
     if( DBG_CIPHER ) {
-	log_mpidump("p=", p );
-	log_mpidump("q=", q );
-	log_mpidump("phi=", phi );
-	log_mpidump("n=", n );
-	log_mpidump("e=", e );
-	log_mpidump("d=", d );
-	log_mpidump("u=", u );
+	log_mpidump("  p= ", p );
+	log_mpidump("  q= ", q );
+	log_mpidump("phi= ", phi );
+	log_mpidump("  g= ", g );
+	log_mpidump("  f= ", f );
+	log_mpidump("  n= ", n );
+	log_mpidump("  e= ", e );
+	log_mpidump("  d= ", d );
+	log_mpidump("  u= ", u );
     }
 
     mpi_free(t1);
     mpi_free(t2);
     mpi_free(phi);
+    mpi_free(f);
+    mpi_free(g);
 
     pk->n = mpi_copy(n);
     pk->e = mpi_copy(e);
@@ -146,7 +153,7 @@ rsa_generate( RSA_public_key *pk, RSA_secret_key *sk, unsigned nbits )
     sk->u = u;
 
     /* now we can test our keys (this should never fail!) */
-    test_keys( pk, sk, nbits - 16 );
+    test_keys( pk, sk, nbits - 64 );
 }
 
 

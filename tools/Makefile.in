@@ -44,7 +44,7 @@ bin_PROGRAMS = mpicalc
 
 mpicalc_SOURCES = mpicalc.c
 
-LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil
+LDADD = -L ../cipher -L ../mpi -L ../util  -lmpi -lutil
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 PROGRAMS = $(bin_PROGRAMS)
@@ -244,6 +244,8 @@ install-exec install-data install uninstall all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+$(PROGRAMS): ../mpi/libmpi.a
 .SUFFIXES:
 .SUFFIXES: .c .o
 

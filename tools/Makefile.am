@@ -7,6 +7,7 @@ bin_PROGRAMS = mpicalc
 mpicalc_SOURCES = mpicalc.c
 
 
-LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil
+LDADD = -L ../cipher -L ../mpi -L ../util  -lmpi -lutil
 
+$(PROGRAMS): ../mpi/libmpi.a
 

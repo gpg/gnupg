@@ -40,7 +40,7 @@ int mpi_debug_mode;
   #error add definions for this machine here
 #endif
 
-typedef struct {
+typedef struct mpi_struct {
     int alloced;    /* array size (# of allocated limbs) */
     int nlimbs;     /* number of valid limbs */
     int sign;	    /* indicates a negative number */
@@ -139,9 +139,10 @@ int  mpi_test_bit( MPI a, unsigned n );
 void mpi_set_bit( MPI a, unsigned n );
 void mpi_clear_bit( MPI a, unsigned n );
 void mpi_set_bytes( MPI a, unsigned nbits, byte (*fnc)(int), int opaque );
+void mpi_rshift( MPI x, MPI a, unsigned n );
 
 /*-- mpi-inv.c --*/
-int  mpi_inv_mod( MPI x, MPI u, MPI v );
+void mpi_inv_mod( MPI x, MPI u, MPI v );
 
 
 #endif /*G10_MPI_H*/

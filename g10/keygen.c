@@ -204,7 +204,6 @@ generate_keypair()
 	    m_free(answer);
 	}
     }
-
     /* now check wether we a are allowed to write the keyrings */
     if( !(rc=overwrite_filep( pub_fname )) ) {
 	if( !(pub_io = iobuf_create( pub_fname )) )

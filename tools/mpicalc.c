@@ -179,6 +179,16 @@ do_gcd(void)
     stackidx--;
 }
 
+static void
+do_rshift(void)
+{
+    if( stackidx < 1 ) {
+	fputs("stack underflow\n", stderr);
+	return;
+    }
+    mpi_rshift( stack[stackidx-1],stack[stackidx-1], 1 );
+}
+
 
 int
 main(int argc, char **argv)
@@ -258,6 +268,9 @@ main(int argc, char **argv)
 		    break;
 		  case 'G':
 		    do_gcd();
+		    break;
+		  case '>':
+		    do_rshift();
 		    break;
 		  case 'i': /* dummy */
 		    if( !stackidx )

@@ -361,7 +361,7 @@ write_header( IOBUF out, int ctb, u32 len )
     if( iobuf_put(out, ctb ) )
 	return -1;
     if( !len ) {
-	iobuf_set_block_mode(out, 5 /*8196*/ );
+	iobuf_set_block_mode(out, 8196 );
     }
     else {
 	if( ctb & 2 ) {

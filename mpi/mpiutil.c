@@ -265,6 +265,7 @@ mpi_copy( MPI a )
 	b = mpi_alloc( a->nlimbs );
       #endif
 	b->nlimbs = a->nlimbs;
+	b->sign = a->sign;
 	for(i=0; i < b->nlimbs; i++ )
 	    b->d[i] = a->d[i];
     }
@@ -318,9 +319,9 @@ mpi_alloc_set_ui( unsigned long u)
 void
 mpi_swap( MPI a, MPI b)
 {
-    MPI x;
+    struct mpi_struct tmp;
 
-    x = a; a = b; b = x;
+    tmp = *a; *a = *b; *b = tmp;
 }
 
 

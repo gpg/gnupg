@@ -68,7 +68,7 @@ mpi_add_ui(MPI w, MPI u, unsigned long v )
 	else {
 	    mpihelp_sub_1(wp, up, usize, v);
 	    /* Size can decrease with at most one limb. */
-	    wsize = (usize - (wp[usize-1]? 0:1));
+	    wsize = usize - (wp[usize-1]==0);
 	    wsign = 1;
 	}
     }
@@ -85,27 +85,30 @@ mpi_add(MPI w, MPI u, MPI v)
     mpi_size_t usize, vsize, wsize;
     int usign, vsign, wsign;
 
-    usize = u->nlimbs;
-    vsize = v->nlimbs;
-    usign = u->sign;
-    vsign = v->sign;
-
-    if( usize < vsize ) { /* Swap U and V. */
-	{ MPI t; t = u; u = v; v = t; }
-	{ mpi_size_t t = usize; usize = vsize; vsize = t; }
-	{ int t = usign; usign = vsign; vsign = t; }
+    if( u->nlimbs < v->nlimbs ) { /* Swap U and V. */
+	usize = v->nlimbs;
+	usign = v->sign;
+	vsize = u->nlimbs;
+	vsign = u->sign;
+	wsize = usize + 1;
+	RESIZE_IF_NEEDED(w, wsize);
+	/* These must be after realloc (u or v may be the same as w).  */
+	up    = v->d;
+	vp    = u->d;
     }
-
-    /* If not space for w (and possible carry), increase space.  */
-    wsize = usize + 1;
-    if( w->alloced < wsize )
-	mpi_resize(w, wsize);
-    wsign = 0;
-
-    /* These must be after realloc (u or v may be the same as w).  */
-    up = u->d;
-    vp = v->d;
+    else {
+	usize = u->nlimbs;
+	usign = u->sign;
+	vsize = v->nlimbs;
+	vsign = v->sign;
+	wsize = usize + 1;
+	RESIZE_IF_NEEDED(w, wsize);
+	/* These must be after realloc (u or v may be the same as w).  */
+	up    = u->d;
+	vp    = v->d;
+    }
     wp = w->d;
+    wsign = 0;
 
     if( !vsize ) {  /* simple */
 	MPN_COPY(wp, up, usize );
@@ -140,7 +143,7 @@ mpi_add(MPI w, MPI u, MPI v)
 	wp[usize] = cy;
 	wsize = usize + cy;
 	if( usign )
-	    wsize = 1;
+	    wsign = 1;
     }
 
     w->nlimbs = wsize;
@@ -193,7 +196,7 @@ mpi_sub_ui(MPI w, MPI u, unsigned long v )
 	else {
 	    mpihelp_sub_1(wp, up, usize, v);
 	    /* Size can decrease with at most one limb. */
-	    wsize = (usize - (wp[usize-1]? 1:0));
+	    wsize = usize - (wp[usize-1]==0);
 	}
     }
 
@@ -204,7 +207,7 @@ mpi_sub_ui(MPI w, MPI u, unsigned long v )
 void
 mpi_sub(MPI w, MPI u, MPI v)
 {
-    if( w == v ) {
+    if( 1 || w == v ) {
 	MPI vv = mpi_copy(v);
 	vv->sign = !vv->sign;
 	mpi_add( w, u, vv );

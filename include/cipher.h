@@ -30,7 +30,9 @@
 #include "mpi.h"
 #include "../cipher/md5.h"
 #include "../cipher/rmd.h"
-#include "../cipher/rsa.h"
+#ifdef HAVE_RSA_CIPHER
+  #include "../cipher/rsa.h"
+#endif
 #include "../cipher/idea.h"
 #include "../cipher/blowfish.h"
 #include "../cipher/gost.h"

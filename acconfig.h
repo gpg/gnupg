@@ -22,10 +22,14 @@
 
 
 @@TOP@@
-
 #undef M_DEBUG
 #undef VERSION
 #undef PACKAGE
+/* RSA is only compiled in if you have these files. You can use
+ * RSA with out any restrictions, if your not in the U.S. or
+ * wait until sep 20, 2000
+ */
+#undef HAVE_RSA_CIPHER
 
 @@BOTTOM@@
 

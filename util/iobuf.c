@@ -627,6 +627,15 @@ iobuf_write(IOBUF a, byte *buf, unsigned buflen )
     return 0;
 }
 
+int
+iobuf_writestr(IOBUF a, const char *buf )
+{
+    for( ; *buf; buf++ )
+	if( iobuf_writebyte(a, *buf) )
+	    return -1;
+    return 0;
+}
+
 
 
 /****************

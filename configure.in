@@ -47,6 +47,15 @@ dnl Checks for library functions.
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror strtol strtoul)
 
+dnl
+AC_MSG_CHECKING(wether we have the rsa source)
+if test -f cipher/rsa.c && test -f cipher/rsa.h; then
+    AC_DEFINE(HAVE_RSA_CIPHER)
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
 AC_OUTPUT([ Makefile util/Makefile mpi/Makefile cipher/Makefile \
 	    g10/Makefile tools/Makefile ],
 	  [echo timestamp > stamp-h ])

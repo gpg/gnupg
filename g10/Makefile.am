@@ -31,3 +31,6 @@ g10_SOURCES = g10.c		\
 
 LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil
 
+
+$(PROGRAMS): ../cipher/libcipher.a ../mpi/libmpi.a
+

@@ -130,4 +130,25 @@ mpi_set_bytes( MPI a, unsigned nbits, byte (*fnc)(int), int opaque )
     assert(!xbits);
 }
 
+/****************
+ * Shift A by N bits to the right
+ * FIXME: should use alloc_limb if X and A are same.
+ */
+void
+mpi_rshift( MPI x, MPI a, unsigned n )
+{
+    mpi_ptr_t xp;
+    mpi_size_t xsize;
+
+    xsize = a->nlimbs;
+    x->sign = a->sign;
+    RESIZE_IF_NEEDED(x, xsize);
+    xp = x->d;
+
+    if( xsize ) {
+	mpihelp_rshift( xp, a->d, xsize, n);
+	MPN_NORMALIZE( xp, xsize);
+    }
+    x->nlimbs = xsize;
+}
 
