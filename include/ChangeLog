@@ -1,3 +1,7 @@
+2003-02-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.h: Add constants for new SHAs.
+
 2002-11-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h [__CYGWIN32__]: Don't need the registry prototypes.  From
