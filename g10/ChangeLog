@@ -1,5 +1,7 @@
 2003-08-24  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Use NETLIBS instead of EGDLIBS.
+
 	* mainproc.c (check_sig_and_print): Get the uid validity before
 	printing any sig results to avoid munging the output with trustdb
 	warnings.

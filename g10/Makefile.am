@@ -108,7 +108,7 @@ gpgv_SOURCES = gpgv.c           \
 
 LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@ @W32LIBS@
 # gpg gets LIBOBJS to add in mkdtemp if the platform doesn't have it
-gpg_LDADD = @LIBOBJS@ $(LDADD) @DLLIBS@ @EGDLIBS@
+gpg_LDADD = @LIBOBJS@ $(LDADD) @DLLIBS@ @NETLIBS@
 
 $(PROGRAMS): $(needed_libs)
 
