@@ -1,3 +1,9 @@
+2005-04-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (proc_plaintext): Properly handle SIG+LITERAL
+	(old-style PGP) signatures that use hashes other than SHA-1,
+	RIPEMD160, or MD5.
+
 2005-03-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* exec.h, exec.c (set_exec_path): Remove some dead code and change

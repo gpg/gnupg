@@ -600,7 +600,6 @@ proc_encrypted( CTX c, PACKET *pkt )
 }
 
 
-
 static void
 proc_plaintext( CTX c, PACKET *pkt )
 {
@@ -621,45 +620,62 @@ proc_plaintext( CTX c, PACKET *pkt )
      * See: Russ Allbery's mail 1999-02-09
      */
     any = clearsig = only_md5 = 0;
-    for(n=c->list; n; n = n->next ) {
-	if( n->pkt->pkttype == PKT_ONEPASS_SIG ) {
-	    if( n->pkt->pkt.onepass_sig->digest_algo ) {
+    for(n=c->list; n; n = n->next )
+      {
+	if( n->pkt->pkttype == PKT_ONEPASS_SIG )
+	  {
+  	    /* For the onepass signature case */
+	    if( n->pkt->pkt.onepass_sig->digest_algo )
+	      {
 		md_enable( c->mfx.md, n->pkt->pkt.onepass_sig->digest_algo );
 		if( !any && n->pkt->pkt.onepass_sig->digest_algo
-						      == DIGEST_ALGO_MD5 )
-		    only_md5 = 1;
+		    == DIGEST_ALGO_MD5 )
+		  only_md5 = 1;
 		else
-		    only_md5 = 0;
+		  only_md5 = 0;
 		any = 1;
-	    }
+	      }
 	    if( n->pkt->pkt.onepass_sig->sig_class != 0x01 )
-		only_md5 = 0;
-	}
+	      only_md5 = 0;
+	  }
 	else if( n->pkt->pkttype == PKT_GPG_CONTROL
                  && n->pkt->pkt.gpg_control->control
-                    == CTRLPKT_CLEARSIGN_START ) {
+		 == CTRLPKT_CLEARSIGN_START )
+	  {
+	    /* For the clearsigned message case */
             size_t datalen = n->pkt->pkt.gpg_control->datalen;
             const byte *data = n->pkt->pkt.gpg_control->data;
 
             /* check that we have at least the sigclass and one hash */
             if ( datalen < 2 )
-                log_fatal("invalid control packet CTRLPKT_CLEARSIGN_START\n"); 
+	      log_fatal("invalid control packet CTRLPKT_CLEARSIGN_START\n"); 
             /* Note that we don't set the clearsig flag for not-dash-escaped
              * documents */
             clearsig = (*data == 0x01);
             for( data++, datalen--; datalen; datalen--, data++ )
-                md_enable( c->mfx.md, *data );
+	      md_enable( c->mfx.md, *data );
             any = 1;
-            break;  /* no pass signature pakets are expected */
-        }
-    }
+            break;  /* no pass signature packets are expected */
+	  }
+	else if(n->pkt->pkttype==PKT_SIGNATURE)
+	  {
+	    /* For the SIG+LITERAL case that PGP used to use. */
+	    md_enable( c->mfx.md, n->pkt->pkt.signature->digest_algo );
+	    any=1;
+	  }
+      }
 
-    if( !any && !opt.skip_verify ) {
-	/* no onepass sig packet: enable all standard algos */
+    if( !any && !opt.skip_verify )
+      {
+	/* This is for the old GPG LITERAL+SIG case.  It's not legal
+	   according to 2440, so hopefully it won't come up that
+	   often.  There is no good way to specify what algorithms to
+	   use in that case, so these three are the historical
+	   answer. */
 	md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
-    }
+      }
     if( opt.pgp2_workarounds && only_md5 && !opt.skip_verify ) {
 	/* This is a kludge to work around a bug in pgp2.  It does only
 	 * catch those mails which are armored.  To catch the non-armored
