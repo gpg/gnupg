@@ -1,3 +1,12 @@
+2002-06-20  Stefan Bellon  <sbellon@sbellon.de>
+
+	* g10.c [__riscos__]: Added image file system feature.
+
+	* gpgv.c [__riscos__]: Added image file system feature.
+
+	* photoid.c (show_photos) [__riscos__]: Set RISC OS filetype of
+	photo id according to MIME type.
+
 2002-06-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* hkp.c (parse_hkp_index): Don't leak memory when failing out of a

@@ -260,6 +260,7 @@ int vasprintf ( char **result, const char *format, va_list args);
 #ifdef __riscos__
 /* needed for strcasecmp() */
 #include <strings.h>
+void riscos_set_filetype(const char *filename, const char *mimetype);
 pid_t riscos_getpid(void);
 int riscos_kill(pid_t pid, int sig);
 int riscos_access(const char *path, int amode);

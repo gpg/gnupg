@@ -30,6 +30,7 @@
 #endif
 #ifdef __riscos__
 #include <unixlib/local.h>
+#include <unixlib/features.h>
 #endif /* __riscos__ */
 
 #define INCLUDED_BY_MAIN_MODULE 1
@@ -875,6 +876,7 @@ main( int argc, char **argv )
   #ifdef __riscos__
     /* set global RISC OS specific properties */
     __riscosify_control = __RISCOSIFY_NO_PROCESS;
+    __feature_imagefs_is_file = 1;
     opt.lock_once = 1;
   #endif /* __riscos__ */
 

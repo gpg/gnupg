@@ -30,6 +30,7 @@
 #endif
 #ifdef __riscos__
 #include <unixlib/local.h>
+#include <unixlib/features.h>
 #endif /* __riscos__ */
 
 #define INCLUDED_BY_MAIN_MODULE 1
@@ -145,6 +146,7 @@ main( int argc, char **argv )
     unsigned configlineno;
   #ifdef __riscos__
     __riscosify_control = __RISCOSIFY_NO_PROCESS;
+    __feature_imagefs_is_file = 1;
   #endif /* __riscos__ */
 
     log_set_name("gpgv");

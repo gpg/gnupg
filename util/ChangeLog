@@ -1,3 +1,8 @@
+2002-06-20  Stefan Bellon  <sbellon@sbellon.de>
+
+	* riscos.c (riscos_set_filetype_by_number, riscos_set_filetype):
+	New. Set RISC OS filetype according to MIME type.
+
 2002-06-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* strgutil.c (pop_strlist): New function to pop the head off of a

@@ -38,6 +38,14 @@
 #include <unixlib/unix.h>
 #undef __UNIXLIB_INTERNALS
 
+/* RISC OS specific defines that are not yet in UnixLib */
+
+#define MimeMap_Translate      0x50B00
+#define MMM_TYPE_RISCOS        0
+#define MMM_TYPE_RISCOS_STRING 1
+#define MMM_TYPE_MIME          2
+#define MMM_TYPE_DOT_EXTN      3
+
 /* RISC OS file open descriptor control list */
 
 struct fds_item {
@@ -71,8 +79,36 @@ is_read_only(const char *filename)
     return 0;
 }
 
+static void
+riscos_set_filetype_by_number(const char *filename, int type)
+{
+    _kernel_swi_regs r;
+
+    r.r[0] = 18;
+    r.r[1] = (int) filename;
+    r.r[2] = type;
+    
+    if (_kernel_swi(OS_File, &r, &r))
+        log_fatal("Can't set filetype for file %s!\n"
+                  "Is the file on a read-only file system?\n", filename);
+}        
 
 /* exported RISC OS functions */
+
+void
+riscos_set_filetype(const char *filename, const char *mimetype)
+{
+    _kernel_swi_regs r;
+
+    r.r[0] = MMM_TYPE_MIME;
+    r.r[1] = (int) mimetype;
+    r.r[2] = MMM_TYPE_RISCOS;
+    
+    if (_kernel_swi(MimeMap_Translate, &r, &r))
+        log_fatal("Can't translate MIME type %s!\n", mimetype);
+
+    riscos_set_filetype_by_number(filename, r.r[3]);
+}        
 
 pid_t
 riscos_getpid(void)

@@ -273,6 +273,11 @@ void show_photos(const struct user_attribute *attrs,
 	    goto fail;
 	  }
 
+#ifdef __riscos__
+        riscos_set_filetype(spawn->tempfile_in,
+                            image_type_to_string(args.imagetype,2));
+#endif
+
 	m_free(name);
 
 	fwrite(&attrs[i].data[offset],attrs[i].len-offset,1,spawn->tochild);
