@@ -884,6 +884,10 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	    else if(desc[i].mode==KEYDB_SEARCH_MODE_SHORT_KID)
 	      fprintf(spawn->tochild,"0x%08lX\n",
 		      (ulong)desc[i].u.kid[1]);
+	    else if(desc[i].mode==KEYDB_SEARCH_MODE_NONE)
+	      continue;
+	    else
+	      BUG();
 
 	    log_info(_("requesting key %s from %s server %s\n"),
 		     keystr_from_desc(&desc[i]),

@@ -1,3 +1,14 @@
+2004-10-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* passphrase.c (agent_get_passphrase): Use keystrs for agent
+	strings, and fix sprintf warnings.
+
+	* keyserver.c (keyserver_spawn): Fix BUG() with certain sets of
+	mixed regular and preferred keyserver refreshes.  Noted by
+	Sebastian Wiesinger.
+
+	* keyedit.c (show_key_with_all_names): Show uid validity in menu.
+
 2004-10-03  Timo Schulz  <twoaday@g10code.de>
 
 	* apdu.c (apdu_open_remote_reader) [_WIN32]: Do not set ENOSYS.
