@@ -7,3 +7,6 @@ missing
 gnupg.spec.in
 autogen.sh
 ChangeLog
+ltconfig
+ltmain.sh
+
