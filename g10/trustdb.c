@@ -205,21 +205,29 @@ release_key_array ( struct key_array *keys )
  * FIXME: Should be replaced by a function to add those keys to the trustdb.
  */
 void
+register_trusted_keyid(u32 *keyid)
+{
+  struct key_item *k;
+
+  k = new_key_item ();
+  k->kid[0] = keyid[0];
+  k->kid[1] = keyid[1];
+  k->next = user_utk_list;
+  user_utk_list = k;
+}
+
+void
 register_trusted_key( const char *string )
 {
   KEYDB_SEARCH_DESC desc;
-  struct key_item *k;
 
-  if (classify_user_id (string, &desc) != KEYDB_SEARCH_MODE_LONG_KID ) {
-    log_error(_("`%s' is not a valid long keyID\n"), string );
-    return;
-  }
+  if (classify_user_id (string, &desc) != KEYDB_SEARCH_MODE_LONG_KID )
+    {
+      log_error(_("`%s' is not a valid long keyID\n"), string );
+      return;
+    }
 
-  k = new_key_item ();
-  k->kid[0] = desc.u.kid[0];
-  k->kid[1] = desc.u.kid[1];
-  k->next = user_utk_list;
-  user_utk_list = k;
+  register_trusted_keyid(desc.u.kid);
 }
 
 /*

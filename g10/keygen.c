@@ -2489,14 +2489,16 @@ do_generate_keypair( struct para_data_s *para,
                 && !(get_parameter_uint( para,pKEYUSAGE) & PUBKEY_USAGE_ENC);
             PKT_public_key *pk = find_kbnode (pub_root, 
                                     PKT_PUBLIC_KEY)->pkt->pkt.public_key;
-            
-            update_ownertrust (pk,
-                               ((get_ownertrust (pk) & ~TRUST_MASK)
-                                | TRUST_ULTIMATE ));
+
+	    keyid_from_pk(pk,pk->main_keyid);
+	    register_trusted_keyid(pk->main_keyid);
+
+	    update_ownertrust (pk,
+			       ((get_ownertrust (pk) & ~TRUST_MASK)
+				| TRUST_ULTIMATE ));
 
 	    if (!opt.batch) {
                 tty_printf(_("public and secret key created and signed.\n") );
-                tty_printf(_("key marked as ultimately trusted.\n") );
 		tty_printf("\n");
 		list_keyblock(pub_root,0,1,NULL);
             }

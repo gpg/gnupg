@@ -1,5 +1,6 @@
 /* g10.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1399,7 +1400,10 @@ main( int argc, char **argv )
 	  case aSearchKeys: set_cmd( &cmd, aSearchKeys); break;
 	  case aRefreshKeys: set_cmd( &cmd, aRefreshKeys); break;
 	  case aExport: set_cmd( &cmd, aExport); break;
-	  case aExportAll: set_cmd( &cmd, aExportAll); break;
+	  case aExportAll:
+	    opt.export_options|=EXPORT_INCLUDE_NON_RFC;
+	    set_cmd(&cmd,aExport);
+	    break;
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
@@ -2708,7 +2712,6 @@ main( int argc, char **argv )
 	break;
 
       case aExport:
-      case aExportAll:
       case aSendKeys:
       case aRecvKeys:
 	sl = NULL;
@@ -2736,7 +2739,6 @@ main( int argc, char **argv )
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	  append_to_strlist2( &sl, *argv, utf8_strings );
-
 	rc=keyserver_search( sl );
 	if(rc)
 	  log_error(_("keyserver search failed: %s\n"),g10_errstr(rc));

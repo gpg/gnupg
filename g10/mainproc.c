@@ -50,7 +50,6 @@ struct kidlist_item {
 };
 
 
-
 /****************
  * Structure to hold the context
  */
@@ -72,6 +71,7 @@ struct mainproc_context {
     IOBUF iobuf;    /* used to get the filename etc. */
     int trustletter; /* temp usage in list_node */
     ulong local_id;    /* ditto */
+    ulong symkeys;
     struct kidlist_item *pkenc_list;	/* list of encryption packets */
     struct {
         int op;
@@ -327,7 +327,9 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 	      c->dek->algo_info_printed = 1;
 	  }
       }
+
  leave:
+    c->symkeys++;
     free_packet(pkt);
 }
 
@@ -477,10 +479,15 @@ proc_encrypted( CTX c, PACKET *pkt )
 {
     int result = 0;
 
-    if (!opt.quiet) {
+    if (!opt.quiet)
+      {
+	if(c->symkeys>1)
+	  log_info(_("encrypted with %lu passphrases\n"),c->symkeys);
+	else if(c->symkeys==1)
+	  log_info(_("encrypted with 1 passphrase\n"));
         print_pkenc_list ( c->pkenc_list, 1 );
         print_pkenc_list ( c->pkenc_list, 0 );
-    }
+      }
 
     write_status( STATUS_BEGIN_DECRYPTION );
 

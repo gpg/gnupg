@@ -1,3 +1,24 @@
+2003-10-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.h, trustdb.c (register_trusted_keyid): New.  Adds a
+	keyid to the list of ultimately trusted keys.
+
+	* keygen.c (do_generate_keypair): Use it here so that the ultimate
+	ownertrust happens before the trustdb (might be) rebuilt.  Also
+	fix an error where the newly generated pk is thought to be a
+	subkey by the trustdb.
+
+	* g10.c (main): Fix --export-all do actually do something
+	different than --export.
+
+	* pkclist.c (build_pk_list): Show all recipients rather than
+	showing each recipient as they are added.
+
+	* mainproc.c (proc_symkey_enc, proc_encrypted): Keep a count of
+	the number of passphrases that can decrypt a symmetric or mixed
+	symmetric/pk message and include it in the list of keys shown to
+	the user.
+
 2003-10-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* misc.c (compress_algo_to_string, string_to_compress_algo,

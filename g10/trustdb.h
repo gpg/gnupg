@@ -39,6 +39,7 @@
 #define TRUST_FLAG_PENDING_CHECK 256 /* a check-trustdb is pending */
 
 /*-- trustdb.c --*/
+void register_trusted_keyid(u32 *keyid);
 void register_trusted_key( const char *string );
 void check_trustdb (void);
 void update_trustdb (void);
