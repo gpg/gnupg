@@ -19,17 +19,18 @@
 ## Process this file with automake to produce Makefile.in
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
-EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp gpgkeys_http
+EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp gpgkeys_http gpgkeys_finger
 EXTRA_SCRIPTS = gpgkeys_mailto
 libexecdir = @libexecdir@/@PACKAGE@
 
-libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_HTTP@
+libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_HTTP@ @GPGKEYS_FINGER@
 libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
 gpgkeys_ldap_LDADD = ../util/libutil.a @LDAPLIBS@ @NETLIBS@ @LIBINTL@ @CAPLIBS@ @GETOPT@ @W32LIBS@
 gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @LIBINTL@ @CAPLIBS@ @GETOPT@ @W32LIBS@
 gpgkeys_http_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @LIBINTL@ @CAPLIBS@ @GETOPT@ @W32LIBS@
+gpgkeys_finger_LDADD = ../util/libutil.a @NETLIBS@ @LIBINTL@ @CAPLIBS@ @GETOPT@ @W32LIBS@
 
 install-exec-hook:
 if GPGKEYS_LDAP

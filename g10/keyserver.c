@@ -894,7 +894,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
 	    log_info(_("requesting key %s from %s server %s\n"),
 		     keystr_from_desc(&desc[i]),
-		     keyserver->scheme,keyserver->host);
+		     keyserver->scheme,keyserver->host?keyserver->host:"");
 	  }
 
 	fprintf(spawn->tochild,"\n");
@@ -1039,7 +1039,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
 		log_info(_("sending key %s to %s server %s\n"),
 			 keystr(block->pkt->pkt.public_key->keyid),
-			 keyserver->scheme,keyserver->host);
+			 keyserver->scheme,keyserver->host?keyserver->host:"");
 
 		release_kbnode(block);
 	      }
@@ -1080,7 +1080,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	fprintf(spawn->tochild,"\n");
 
 	log_info(_("searching for \"%s\" from %s server %s\n"),
-		 searchstr,keyserver->scheme,keyserver->host);
+               searchstr,keyserver->scheme,keyserver->host?keyserver->host:"");
 
 	break;
       }

@@ -1,3 +1,7 @@
+2004-10-11  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: New option --disable-finger.
+
 2004-09-17  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Don't check for usb_create_match or

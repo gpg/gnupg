@@ -25,6 +25,8 @@
 #include "cardglue.h"
 #endif
 
+gpg_error_t iso7816_map_sw (int sw);
+
 gpg_error_t iso7816_select_application (int slot,
                                         const char *aid, size_t aidlen);
 gpg_error_t iso7816_select_file (int slot, int tag, int is_dir,

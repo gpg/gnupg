@@ -154,8 +154,6 @@
 
 
 
-
-
 enum {
   RDR_to_PC_NotifySlotChange= 0x50,
   RDR_to_PC_HardwareError   = 0x51,
@@ -183,12 +181,21 @@ enum {
 };
 
 
+/* We need to know the vendor to do some hacks. */
+enum {
+  VENDOR_SCM = 0x04e6
+};
+
+
 /* Store information on the driver's state.  A pointer to such a
    structure is used as handle for most functions. */
 struct ccid_driver_s 
 {
   usb_dev_handle *idev;
   char *rid;
+  unsigned short id_vendor;
+  unsigned short id_product;
+  unsigned short bcd_device;
   int seqno;
   unsigned char t1_ns;
   unsigned char t1_nr;
@@ -251,6 +258,8 @@ parse_ccid_descriptor (ccid_driver_t handle,
   handle->max_ifsd = 32;
   handle->ifsd = 0;
   handle->has_pinpad = 0;
+  DEBUGOUT_3 ("idVendor: %04X  idProduct: %04X  bcdDevice: %04X\n",
+              handle->id_vendor, handle->id_product, handle->bcd_device);
   if (buflen < 54 || buf[0] < 54)
     {
       DEBUGOUT ("CCID device descriptor is too short\n");
@@ -417,8 +426,25 @@ parse_ccid_descriptor (ccid_driver_t handle,
                 "this is not available\n");
       return -1;
     }
-  else
-    return 0;
+
+
+  /* SCM drivers get stuck in their internal USB stack if they try to
+     send a frame of n*wMaxPacketSize back to us.  Given that
+     wMaxPacketSize is 64 for these readers we set the IFSD to a value
+     lower than that:
+        64 - 10 CCID header -  4 T1frame - 2 reserved = 48 */
+  if (handle->id_vendor == VENDOR_SCM
+      /* FIXME: check whether it is the same
+                firmware version for all drivers.  */
+      && handle->bcd_device < 0x0513
+      && handle->max_ifsd > 48)
+    {
+      DEBUGOUT ("enabling workaround for buggy SCM readers\n");
+      handle->max_ifsd = 48;
+    }
+
+
+  return 0;
 }
 
 
@@ -436,7 +462,7 @@ get_escaped_usb_string (usb_dev_handle *idev, int idx,
   if (!idx)
     return NULL;
 
-  /* Fixme: The next line for the current Valgrid without support
+  /* Fixme: The next line is for the current Valgrid without support
      for USB IOCTLs. */
   memset (buf, 0, sizeof buf);
 
@@ -825,6 +851,9 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
     }
   (*handle)->idev = idev;
   (*handle)->rid = rid;
+  (*handle)->id_vendor = dev->descriptor.idVendor;
+  (*handle)->id_product = dev->descriptor.idProduct;
+  (*handle)->bcd_device = dev->descriptor.bcdDevice;
 
   DEBUGOUT_2 ("using CCID reader %d (ID=%s)\n",  readerno, rid );
 
@@ -1079,6 +1108,43 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
     case 3: /* RFU */ break;
     }
   return 0;
+}
+
+
+/* Note that this fucntion won't return the error codes NO_CARD or
+   CARD_INACTIVE */
+static int 
+send_escape_cmd (ccid_driver_t handle,
+                 const unsigned char *data, size_t datalen)
+{
+  int i, rc;
+  unsigned char msg[100];
+  size_t msglen;
+  unsigned char seqno;
+
+  if (datalen > sizeof msg - 10)
+    return CCID_DRIVER_ERR_INV_VALUE; /* Escape data too large.  */
+
+  msg[0] = PC_to_RDR_Escape;
+  msg[5] = 0; /* slot */
+  msg[6] = seqno = handle->seqno++;
+  msg[7] = 0; /* RFU */
+  msg[8] = 0; /* RFU */
+  msg[9] = 0; /* RFU */
+  memcpy (msg+10, data, datalen);
+  msglen = 10 + datalen;
+  set_msg_len (msg, datalen);
+
+  DEBUGOUT ("sending");
+  for (i=0; i < msglen; i++)
+    DEBUGOUT_CONT_1 (" %02X", msg[i]);
+  DEBUGOUT_LF ();
+  rc = bulk_out (handle, msg, msglen);
+  if (rc)
+    return rc;
+  rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Escape, seqno);
+
+  return rc;
 }
 
 
@@ -1617,9 +1683,231 @@ ccid_transceive (ccid_driver_t handle,
 }
 
 
+/* Send the CCID Secure command to the reader.  APDU_BUF should contain the APDU   template.  PIN_MODE defines now the pin gets formatted:
+   
+     1 := The PIN is ASCII encoded and of variable length.  The
+          length of the PIN entered will be put into Lc by the reader.
+          The APDU should me made up of 4 bytes without Lc.
+
+   PINLEN_MIN and PINLEN_MAX define the limits for the pin length. 0
+   may be used t enable usbale defaults.  PIN_PADLEN should be 0
+   
+   When called with RESP and NRESP set to NULL, the function will
+   merely check whether the reader supports the secure command for the
+   given APDU and PIN_MODE. */
+int
+ccid_transceive_secure (ccid_driver_t handle,
+                        const unsigned char *apdu_buf, size_t apdu_buflen,
+                        int pin_mode, int pinlen_min, int pinlen_max,
+                        int pin_padlen, 
+                        unsigned char *resp, size_t maxresplen, size_t *nresp)
+{
+  int rc;
+  unsigned char send_buffer[10+259], recv_buffer[10+259];
+  unsigned char *msg, *tpdu, *p;
+  size_t msglen, tpdulen, n;
+  unsigned char seqno;
+  int i;
+  size_t dummy_nresp;
+  int testmode;
+
+  testmode = !resp && !nresp;
+
+  if (!nresp)
+    nresp = &dummy_nresp;
+  *nresp = 0;
+
+  if (apdu_buflen >= 4 && apdu_buf[1] == 0x20 && (handle->has_pinpad & 1))
+    ;
+  else if (apdu_buflen >= 4 && apdu_buf[1] == 0x24 && (handle->has_pinpad & 2))
+    return CCID_DRIVER_ERR_NOT_SUPPORTED; /* Not yet by our code. */
+  else
+    return CCID_DRIVER_ERR_NOT_SUPPORTED;
+    
+  if (pin_mode != 1)
+    return CCID_DRIVER_ERR_NOT_SUPPORTED;
+
+  if (pin_padlen != 0)
+    return CCID_DRIVER_ERR_NOT_SUPPORTED;
+
+  if (!pinlen_min)
+    pinlen_min = 1;
+  if (!pinlen_max)
+    pinlen_max = 25;
+
+  /* Note that the 25 is the maximum value the SPR532 allows.  */
+  if (pinlen_min < 1 || pinlen_min > 25
+      || pinlen_max < 1 || pinlen_max > 25 
+      || pinlen_min > pinlen_max)
+    return CCID_DRIVER_ERR_INV_VALUE;
+
+  /* We have only tested this with an SCM reader so better don't risk
+     anything and do not allow the use with other readers. */
+  if (handle->id_vendor != VENDOR_SCM)
+    return CCID_DRIVER_ERR_NOT_SUPPORTED;
+
+  if (testmode)
+    return 0; /* Success */
+    
+  msg = send_buffer;
+  if (handle->id_vendor == VENDOR_SCM)
+    {
+      DEBUGOUT ("sending escape sequence to switch to a case 1 APDU\n");
+      rc = send_escape_cmd (handle, "\x80\x02\x00", 3);
+      if (rc)
+        return rc;
+    }
+
+  msg[0] = PC_to_RDR_Secure;
+  msg[5] = 0; /* slot */
+  msg[6] = seqno = handle->seqno++;
+  msg[7] = 4; /* bBWI */
+  msg[8] = 0; /* RFU */
+  msg[9] = 0; /* RFU */
+  msg[10] = 0; /* Perform PIN verification. */
+  msg[11] = 0; /* Timeout in seconds. */
+  msg[12] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
+  if (handle->id_vendor == VENDOR_SCM)
+    {
+      /* For the SPR532 the next 2 bytes need to be zero.  We do this
+         for all SCM product. Kudos to to Martin Paljak for this
+         hint.  */
+      msg[13] = msg[14] = 0;
+    }
+  else
+    {
+      msg[13] = 0x00; /* bmPINBlockString:
+                         0 bits of pin length to insert. 
+                         0 bytes of PIN block size.  */
+      msg[14] = 0x00; /* bmPINLengthFormat:
+                         Units are bytes, position is 0. */
+    }
+  msg[15] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
+  msg[16] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
+  msg[17] = 0x02; /* bEntryValidationCondition:
+                     Validation key pressed */
+  if (pinlen_min && pinlen_max && pinlen_min == pinlen_max)
+    msg[17] |= 0x01; /* Max size reached.  */
+  msg[18] = 0xff; /* bNumberMessage: Default. */
+  msg[19] = 0x04; /* wLangId-High. */
+  msg[20] = 0x09; /* wLangId-Low:  English FIXME: use the first entry. */
+  msg[21] = 0;    /* bMsgIndex. */
+  /* bTeoProlog follows: */
+  msg[22] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+  msg[23] = ((handle->t1_ns & 1) << 6); /* I-block */
+  msg[24] = 4; /* apdulen.  */
+  /* APDU follows:  */
+  msg[25] = apdu_buf[0]; /* CLA */
+  msg[26] = apdu_buf[1]; /* INS */
+  msg[27] = apdu_buf[2]; /* P1 */
+  msg[28] = apdu_buf[3]; /* P2 */
+  msglen = 29;
+  set_msg_len (msg, msglen - 10);
+
+  DEBUGOUT ("sending");
+  for (i=0; i < msglen; i++)
+    DEBUGOUT_CONT_1 (" %02X", msg[i]);
+  DEBUGOUT_LF ();
+  
+  rc = bulk_out (handle, msg, msglen);
+  if (rc)
+    return rc;
+  
+  msg = recv_buffer;
+  rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
+                RDR_to_PC_DataBlock, seqno);
+  if (rc)
+    return rc;
+  
+  tpdu = msg + 10;
+  tpdulen = msglen - 10;
+  
+  if (tpdulen < 4) 
+    {
+      usb_clear_halt (handle->idev, 0x82);
+      return CCID_DRIVER_ERR_ABORTED; 
+    }
+#ifdef DEBUG_T1
+  fprintf (stderr, "T1: got %c-block seq=%d err=%d\n",
+           ((msg[11] & 0xc0) == 0x80)? 'R' :
+           (msg[11] & 0x80)? 'S' : 'I',
+           ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)),
+           ((msg[11] & 0xc0) == 0x80)? (msg[11] & 0x0f) : 0
+           );
+#endif
+
+  if (!(tpdu[1] & 0x80))
+    { /* This is an I-block. */
+      /* Last block sent was successful. */
+      handle->t1_ns ^= 1;
+
+      if (!!(tpdu[1] & 0x40) != handle->t1_nr)
+        { /* Reponse does not match our sequence number. */
+          DEBUGOUT ("I-block with wrong seqno received\n");
+          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+        }
+
+      handle->t1_nr ^= 1;
+
+      p = tpdu + 3; /* Skip the prologue field. */
+      n = tpdulen - 3 - 1; /* Strip the epilogue field. */
+      /* fixme: verify the checksum. */
+      if (resp)
+        {
+          if (n > maxresplen)
+            {
+              DEBUGOUT_2 ("provided buffer too short for received data "
+                          "(%u/%u)\n",
+                          (unsigned int)n, (unsigned int)maxresplen);
+              return CCID_DRIVER_ERR_INV_VALUE;
+            }
+              
+          memcpy (resp, p, n); 
+          resp += n;
+          *nresp += n;
+          maxresplen -= n;
+        }
+          
+      if (!(tpdu[1] & 0x20))
+        return 0; /* No chaining requested - ready. */
+      
+      DEBUGOUT ("chaining requested but not supported for Secure operation\n");
+      return CCID_DRIVER_ERR_CARD_IO_ERROR;
+    }
+  else if ((tpdu[1] & 0xc0) == 0x80)
+    { /* This is a R-block. */
+      if ( (tpdu[1] & 0x0f)) 
+        { /* Error: repeat last block */
+          DEBUGOUT ("No retries supported for Secure operation\n");
+          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+        }
+      else if (!!(tpdu[1] & 0x40) == handle->t1_ns)
+        { /* Reponse does not match our sequence number. */
+          DEBUGOUT ("R-block with wrong seqno received on more bit\n");
+          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+        }
+      else
+        { /* Send next chunk. */
+          DEBUGOUT ("chaining not supported on Secure operation\n");
+          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+        }
+    }
+  else 
+    { /* This is a S-block. */
+      DEBUGOUT_2 ("T1 S-block %s received cmd=%d for Secure operation\n",
+                  (tpdu[1] & 0x20)? "response": "request",
+                  (tpdu[1] & 0x1f));
+      return CCID_DRIVER_ERR_CARD_IO_ERROR;
+    } 
+
+  return 0;
+}
+
+
 
 
 #ifdef TEST
+
 
 static void
 print_error (int err)
@@ -1682,6 +1970,9 @@ main (int argc, char **argv)
   unsigned int slotstat;
   unsigned char result[512];
   size_t resultlen;
+  int no_pinpad = 0;
+  int verify_123456 = 0;
+  int did_verify = 0;
 
   if (argc)
     {
@@ -1704,6 +1995,16 @@ main (int argc, char **argv)
       else if ( !strcmp (*argv, "--debug"))
         {
           ccid_set_debug_level (1);
+          argc--; argv++;
+        }
+      else if ( !strcmp (*argv, "--no-pinpad"))
+        {
+          no_pinpad = 1;
+          argc--; argv++;
+        }
+      else if ( !strcmp (*argv, "--verify-123456"))
+        {
+          verify_123456 = 1;
           argc--; argv++;
         }
       else
@@ -1755,28 +2056,55 @@ main (int argc, char **argv)
     print_result (rc, result, resultlen);
   }
 
-  ccid_poll (ccid);
+  if (!no_pinpad)
+    {
+    }
 
-/*   if (!ccid->has_pinpad) */
-/*     { */
-/*       fputs ("verifying that CHV1 is 123456....\n", stderr); */
-/*       { */
-/*         static unsigned char apdu[] = {0, 0x20, 0, 0x81, */
-/*                                        6, '1','2','3','4','5','6'}; */
-/*         rc = ccid_transceive (ccid, apdu, sizeof apdu, */
-/*                               result, sizeof result, &resultlen); */
-/*         print_result (rc, result, resultlen); */
-/*       } */
-/*     } */
-/*   else */
-/*     { */
-/*       fputs ("verifying CHV1 using the PINPad ....\n", stderr); */
-/*       { */
-/*         rc = ccid_secure_transceive (ccid, */
-/*                                      result, sizeof result, &resultlen); */
-/*         print_result (rc, result, resultlen); */
-/*       } */
-/*     } */
+  if (!no_pinpad)
+    {
+      static unsigned char apdu[] = { 0, 0x20, 0, 0x81 };
+
+      
+      if (ccid_transceive_secure (ccid,
+                                  apdu, sizeof apdu,
+                                  1, 0, 0, 0,
+                                  NULL, 0, NULL))
+        fputs ("can't verify using a PIN-Pad reader\n", stderr);
+      else
+        {
+          fputs ("verifying CHV1 using the PINPad ....\n", stderr);
+          
+          rc = ccid_transceive_secure (ccid,
+                                       apdu, sizeof apdu,
+                                       1, 0, 0, 0,
+                                       result, sizeof result, &resultlen);
+          print_result (rc, result, resultlen);
+          did_verify = 1;
+        }
+    }
+  
+  if (verify_123456 && !did_verify)
+    {
+      fputs ("verifying that CHV1 is 123456....\n", stderr);
+      {
+        static unsigned char apdu[] = {0, 0x20, 0, 0x81,
+                                       6, '1','2','3','4','5','6'};
+        rc = ccid_transceive (ccid, apdu, sizeof apdu,
+                              result, sizeof result, &resultlen);
+        print_result (rc, result, resultlen);
+      }
+    }
+
+  if (!rc)
+    {
+      fputs ("getting OpenPGP DO 0x5E ....\n", stderr);
+      {
+        static unsigned char apdu[] = { 0, 0xCA, 0, 0x5E, 254 };
+        rc = ccid_transceive (ccid, apdu, sizeof apdu,
+                              result, sizeof result, &resultlen);
+        print_result (rc, result, resultlen);
+      }
+    }
 
   ccid_close_reader (ccid);
 

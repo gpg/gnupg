@@ -1,3 +1,8 @@
+2004-10-11  Werner Koch  <wk@g10code.com>
+
+	* keyserver.c (keyserver_spawn): Print an empty string in log_info
+	if the host is not set (e.g. finger).
+
 2004-10-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* card-util.c, keyedit.c, openfile.c, pkclist.c, delkey.c,
@@ -50,6 +55,13 @@
 	* keyedit.c, keylist.c, keyserver.c, mainproc.c: The
 	revoked/expired/expires string change of 2004-09-29 was too
 	simple.  Use two styles for each tag.
+
+2004-10-06  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (ccid_open_reader): Store the vendor ID.
+	(ccid_transceive_secure): New.
+	(parse_ccid_descriptor): Workaround for an SCM reader problem.
+	(send_escape_cmd): New.
 
 2004-10-05  David Shaw  <dshaw@jabberwocky.com>
 

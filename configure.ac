@@ -303,6 +303,13 @@ if test "$use_exec" = yes ; then
         try_http=$enableval, try_http=yes)
     AC_MSG_RESULT($try_http)
 
+    AC_MSG_CHECKING([whether Finger key fetching support is requested])
+    AC_ARG_ENABLE(http,
+      AC_HELP_STRING([--disable-finger],
+                     [disable Finger key fetching interface]),
+        try_finger=$enableval, try_finger=yes)
+    AC_MSG_RESULT($try_finger)
+
     AC_MSG_CHECKING([whether email keyserver support is requested])
     AC_ARG_ENABLE(mailto,
     [  --disable-mailto        disable email keyserver interface],
@@ -490,6 +497,10 @@ fi
 
 if test x"$try_http" = xyes ; then
   AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
+fi
+
+if test x"$try_finger" = xyes ; then
+  AC_SUBST(GPGKEYS_FINGER,"gpgkeys_finger$EXEEXT")
 fi
 
 dnl Must check for network library requirements before doing link tests
