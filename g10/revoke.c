@@ -243,7 +243,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
     const char *text_1 = _("Key has been compromised");
     const char *text_2 = _("Key is superseded");
     const char *text_3 = _("Key is no longer used");
-    const char *text_4 = _("User ID is non longer valid");
+    const char *text_4 = _("User ID is no longer valid");
     const char *code_text = NULL;
 
     do {
@@ -293,7 +293,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 		code_text = text_3;
 	    }
 	    else if( cert_rev && n == 4 ) {
-		code = 0x20; /* uid is non longer valid */
+		code = 0x20; /* uid is no longer valid */
 		code_text = text_4;
 	    }
 	    else

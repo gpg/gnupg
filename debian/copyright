@@ -3,14 +3,14 @@ replacement.
 
 This package was put together by me, James Troup <james@nocrew.org>,
 from the sources, which I obtained from
-ftp://ftp.gnupg.org/pub/gcrypt/gnupg/gnupg-1.0.3.tar.gz.  The changes
+ftp://ftp.gnupg.org/pub/gcrypt/gnupg/gnupg-1.0.5.tar.gz.  The changes
 were minimal, namely:
 
 - adding support for the Debian package maintenance scheme, by adding
   various debian/* files.
 
-Program Copyright (C) 1998, 1999 Free Software Foundation, Inc.
-Modifications for Debian Copyright (C) 1998, 1999, 2000 James Troup.
+Program Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+Modifications for Debian Copyright (C) 1998, 1999, 2000, 2001 James Troup.
 
 GnuPG is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free

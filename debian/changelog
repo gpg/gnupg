@@ -1,3 +1,30 @@
+gnupg (1.0.5-1) unstable; urgency=low
+
+  * New upstream version.
+  * debian/README.Debian: fix spelling and update URL.
+  * debian/rules (binary): remove the new info files.
+  * scripts/config.{guess,sub}: sync with subversions, closes: #95729.
+
+ -- James Troup <james@nocrew.org>  Mon, 30 Apr 2001 02:12:38 +0100
+
+gnupg (1.0.4-4) unstable; urgency=low
+
+  * po/ru.po: patch by Ilya Martynov <m_ilya@agava.com> to replace German
+    entries and add missing translations, closes: #93987.
+  * g10/revoke.c (ask_revocation_reason): typo fix (s/non longer/no
+    longer/g); noticed by Colin Watson <cjw44@flatline.org.uk>, closes:
+    #93664.
+
+  * Deprecated depreciated; noticed by Vincent Broman
+    <broman@spawar.navy.mil>.
+
+  * Following two patches are from Vincent Broman.
+  * g10/mainproc.c (proc_tree): use iobuf_get_real_fname() in preference
+    to iobuf_get_fname().
+  * g10/openfile.c (open_sigfile): handle .sign prefixed files correctly.
+
+ -- James Troup <james@nocrew.org>  Fri, 20 Apr 2001 23:32:44 +0100
+
 gnupg (1.0.4-3) unstable; urgency=medium
 
   * debian/rules (binary): make gpg binary suid, closes: #86433.

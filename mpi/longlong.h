@@ -200,28 +200,27 @@ extern UDItype __udiv_qrnnd ();
 	     "rI" ((USItype)(bh)),                                      \
 	     "r" ((USItype)(al)),                                       \
 	     "rI" ((USItype)(bl)))
-#ifdef __ARM_ARCH_3__
-/* SAM This does not work on arm4 */
+#if defined __ARM_ARCH_2__ || defined __ARM_ARCH_3__
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("%@ Inlined umul_ppmm
-	mov	%|r0, %2, lsr #16
-	mov	%|r2, %3, lsr #16
-	bic	%|r1, %2, %|r0, lsl #16
-	bic	%|r2, %3, %|r2, lsl #16
-	mul	%1, %|r1, %|r2
-	mul	%|r2, %|r0, %|r2
-	mul	%|r1, %0, %|r1
-	mul	%0, %|r0, %0
-	adds	%|r1, %|r2, %|r1
-	addcs	%0, %0, #65536
-	adds	%1, %1, %|r1, lsl #16
-	adc	%0, %0, %|r1, lsr #16"                                  \
+	mov	%|r0, %2, lsr #16		@ AAAA
+	mov	%|r2, %3, lsr #16		@ BBBB
+	bic	%|r1, %2, %|r0, lsl #16		@ aaaa
+	bic	%0, %3, %|r2, lsl #16		@ bbbb
+	mul	%1, %|r1, %|r2			@ aaaa * BBBB
+	mul	%|r2, %|r0, %|r2		@ AAAA * BBBB
+	mul	%|r1, %0, %|r1			@ aaaa * bbbb
+	mul	%0, %|r0, %0			@ AAAA * bbbb
+	adds	%|r0, %1, %0			@ central sum
+	addcs	%|r2, %|r2, #65536
+	adds	%1, %|r1, %|r0, lsl #16
+	adc	%0, %|r2, %|r0, lsr #16"                                \
 	   : "=&r" ((USItype)(xh)),                                     \
 	     "=r" ((USItype)(xl))                                       \
 	   : "r" ((USItype)(a)),                                        \
 	     "r" ((USItype)(b))                                         \
 	   : "r0", "r1", "r2")
-#elif __ARM_ARCH_4__
+#else
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("%@ Inlined umul_ppmm
 	umull	%r1, %r0, %r2, %r3" \
@@ -230,8 +229,6 @@ extern UDItype __udiv_qrnnd ();
 		   : "r" ((USItype)(a)), \
 		     "r" ((USItype)(b)) \
 		   : "r0", "r1")
-#else
-#error Untested architecture
 #endif
 #define UMUL_TIME 20
 #define UDIV_TIME 100

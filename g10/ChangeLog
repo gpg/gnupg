@@ -1,3 +1,7 @@
+2001-05-06  Werner Koch  <wk@gnupg.org>
+
+	* revoke.c: Small typo fix
+
 2001-05-04  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c (passphrase_clear_cache): Shortcut if agent usage

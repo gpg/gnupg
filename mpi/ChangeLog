@@ -1,3 +1,7 @@
+2001-05-06  Werner Koch  <wk@gnupg.org>
+
+	* longlong.h: Fixes for ARM by Phil Blundell.
+
 2001-04-17  Werner Koch  <wk@gnupg.org>
 
 	Updated copyright notices.

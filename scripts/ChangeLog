@@ -1,3 +1,7 @@
+2001-05-06  Werner Koch  <wk@gnupg.org>
+
+	* config.guess, config.sub: Add updates from subversions.gnu.org.
+
 2001-04-19  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh: Add VPATH build support for option --build-w32. 
