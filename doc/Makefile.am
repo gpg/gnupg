@@ -2,7 +2,7 @@
 
 SUBDIRS = gph
 
-EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP
+EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP  README.W32
 
 man_MANS = gpg.1
 

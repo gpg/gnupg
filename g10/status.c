@@ -119,6 +119,7 @@ write_status_text ( int no, const char *text)
       case STATUS_IMPORT_RES	 : s = "IMPORT_RES\n"; break;
       case STATUS_FILE_START	 : s = "FILE_START\n"; break;
       case STATUS_FILE_DONE	 : s = "FILE_DONE\n"; break;
+      case STATUS_FILE_ERROR	 : s = "FILE_ERROR\n"; break;
       default: s = "?\n"; break;
     }
 

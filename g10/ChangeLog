@@ -1,5 +1,10 @@
-Wed Sep 22 10:14:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Thu Sep 23 09:52:58 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+	* verify.c (print_file_status): New.
+	(verify_one_file): Moved status print to th new fnc. Add error status.
+	* status.c, status.h (STATUS_FILE_ERROR): New
+
+Wed Sep 22 10:14:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* openfile.c (make_outfile_name): Use case-insenstive compare for
 	DOS systems.  Add ".pgp" to the list of know extensions.

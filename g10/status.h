@@ -67,6 +67,7 @@
 #define STATUS_IMPORT_RES	37
 #define STATUS_FILE_START	38
 #define STATUS_FILE_DONE	39
+#define STATUS_FILE_ERROR	40
 
 
 /*-- status.c --*/
