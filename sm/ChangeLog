@@ -1,3 +1,17 @@
+2002-01-25  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Disable core dumps.
+
+	* sign.c (add_certificate_list): New.
+	(gpgsm_sign): Add the certificates to the CMS object.
+	* certpath.c (gpgsm_walk_cert_chain): New.
+	* gpgsm.h (server_control_s): Add included_certs.
+	* gpgsm.c: Add option --include-certs.
+	(gpgsm_init_default_ctrl): New.
+	(main): Call it.
+	* server.c (gpgsm_server): Ditto.
+	(option_handler): Support --include-certs.
+
 2002-01-23  Werner Koch  <wk@gnupg.org>
 
 	* certpath.c (gpgsm_validate_path): Print the DN of a missing issuer.

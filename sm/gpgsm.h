@@ -89,6 +89,8 @@ struct {
 
 struct server_local_s;
 
+/* Note that the default values for this are set by
+   gpgsm_init_default_ctrl() */
 struct server_control_s {
   int no_server;     /* we are not running under server control */
   int  status_fd;    /* only for non-server mode */
@@ -102,6 +104,11 @@ struct server_control_s {
   int create_base64;  /* Create base64 encoded output */
   int create_pem;     /* create PEM output */
   const char *pem_name; /* PEM name to use */
+
+  int include_certs;  /* -1 to send all certificates in the chain
+                         along with a signature or the number of
+                         certificates up the chain (0 = none, 1 = only
+                         signer) */
  
 };
 typedef struct server_control_s *CTRL;
@@ -118,6 +125,7 @@ typedef struct certlist_s *CERTLIST;
 
 /*-- gpgsm.c --*/
 void gpgsm_exit (int rc);
+void gpgsm_init_default_ctrl (struct server_control_s *ctrl);
 
 /*-- server.c --*/
 void gpgsm_server (void);
@@ -158,10 +166,11 @@ int gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
 
 
 /*-- certpath.c --*/
+int gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next);
 int gpgsm_validate_path (KsbaCert cert);
 int gpgsm_basic_cert_check (KsbaCert cert);
 
-/*-- cetlist.c --*/
+/*-- cetrlist.c --*/
 int gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr);
 void gpgsm_release_certlist (CERTLIST list);
 int gpgsm_find_cert (const char *name, KsbaCert *r_cert);

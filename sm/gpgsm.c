@@ -33,6 +33,7 @@
 #include "../kbx/keybox.h" /* malloc hooks */
 #include "i18n.h"
 #include "keydb.h"
+#include "sysutils.h"
 
 enum cmd_and_opt_values {
   aNull = 0,
@@ -97,6 +98,14 @@ enum cmd_and_opt_values {
 
   oDisableCRLChecks,
   oEnableCRLChecks,
+
+  oIncludeCerts,
+
+
+
+
+
+
 
   oTextmode,
   oFingerprint,
@@ -228,6 +237,9 @@ static ARGPARSE_OPTS opts[] = {
 
     { oDisableCRLChecks, "disable-crl-checks", 0, N_("never consult a CRL")},
     { oEnableCRLChecks, "enable-crl-checks", 0, "@"},
+
+    { oIncludeCerts, "include-certs", 1,
+                                 N_("|N|number of certificates to include") },
 
 
 #if 0
@@ -577,7 +589,7 @@ main ( int argc, char **argv)
 
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
-  may_coredump = 0/* FIXME: disable_core_dumps()*/;
+  may_coredump = disable_core_dumps ();
   
   /* FIXME: init_signals();*/
   
@@ -631,8 +643,9 @@ main ( int argc, char **argv)
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 
-  /* Setup a default control structure */
+  /* Setup a default control structure for command line mode */
   memset (&ctrl, 0, sizeof ctrl);
+  gpgsm_init_default_ctrl (&ctrl);
   ctrl.no_server = 1;
   ctrl.status_fd = -1; /* not status output */
   ctrl.autodetect_encoding = 1;
@@ -741,7 +754,8 @@ main ( int argc, char **argv)
         case oEnableCRLChecks:
           opt.no_crl_check = 0;
           break;
-          
+
+        case oIncludeCerts: ctrl.include_certs = pargs.r.ret_int; break;
 
         case oOutput: opt.outfile = pargs.r.ret_str; break;
 
@@ -1196,6 +1210,14 @@ gpgsm_exit (int rc)
   rc = rc? rc : log_get_errorcount(0)? 2 : gpgsm_errors_seen? 1 : 0;
   exit (rc);
 }
+
+
+void
+gpgsm_init_default_ctrl (struct server_control_s *ctrl)
+{
+  ctrl->include_certs = 1;
+}
+
 
 
 /* Check whether the filename has the form "-&nnnn", where n is a

@@ -57,7 +57,18 @@ close_message_fd (CTRL ctrl)
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
-  log_debug ("got option key=`%s' value=`%s'\n", key, value);
+  CTRL ctrl = assuan_get_pointer (ctx);
+
+  if (!strcmp (key, "include-certs"))
+    {
+      int i = *value? atoi (value) : -1;
+      if (ctrl->include_certs < -1)
+        return ASSUAN_Parameter_Error;
+      ctrl->include_certs = i;
+    }
+  else
+    return ASSUAN_Invalid_Option;
+
   return 0;
 }
 
@@ -458,6 +469,7 @@ gpgsm_server (void)
   struct server_control_s ctrl;
 
   memset (&ctrl, 0, sizeof ctrl);
+  gpgsm_init_default_ctrl (&ctrl);
 
   /* For now we use a simple pipe based server so that we can work
      from scripts.  We will later add options to run as a daemon and

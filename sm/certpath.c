@@ -84,7 +84,68 @@ allowed_ca (KsbaCert cert, int *pathlen)
   return 0;
 }
 
+/* Return the next certificate up in the chain starting at START.
+   Returns -1 when there are no more certificates. */
+int
+gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
+{
+  int rc = 0; 
+  char *issuer = NULL;
+  char *subject = NULL;
+  KEYDB_HANDLE kh = keydb_new (0);
 
+  *r_next = NULL;
+  if (!kh)
+    {
+      log_error (_("failed to allocated keyDB handle\n"));
+      rc = GNUPG_General_Error;
+      goto leave;
+    }
+
+  issuer = ksba_cert_get_issuer (start, 0);
+  subject = ksba_cert_get_subject (start, 0);
+  if (!issuer)
+    {
+      log_error ("no issuer found in certificate\n");
+      rc = GNUPG_Bad_Certificate;
+      goto leave;
+    }
+  if (!subject)
+    {
+      log_error ("no subject found in certificate\n");
+      rc = GNUPG_Bad_Certificate;
+      goto leave;
+    }
+
+  if (!strcmp (issuer, subject))
+    {
+      rc = -1; /* we are at the root */
+      goto leave; 
+    }
+ 
+  rc = keydb_search_subject (kh, issuer);
+  if (rc)
+    {
+      log_error ("failed to find issuer's certificate: rc=%d\n", rc);
+      rc = GNUPG_Missing_Certificate;
+      goto leave;
+    }
+
+  rc = keydb_get_cert (kh, r_next);
+  if (rc)
+    {
+      log_error ("failed to get cert: rc=%d\n", rc);
+      rc = GNUPG_General_Error;
+    }
+
+ leave:
+  xfree (issuer);
+  xfree (subject);
+  keydb_release (kh); 
+  return rc;
+}
+
+
 int
 gpgsm_validate_path (KsbaCert cert)
 {

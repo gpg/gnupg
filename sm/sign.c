@@ -103,6 +103,49 @@ get_default_signer (void)
 }
 
 
+/* Depending on the options in CTRL add the certifcate CERT as well as
+   other certificate up in the chain to the Root-CA to the CMS
+   object. */
+static int 
+add_certificate_list (CTRL ctrl, KsbaCMS cms, KsbaCert cert)
+{
+  KsbaError err;
+  int rc = 0;
+  KsbaCert next = NULL;
+  int n;
+
+  ksba_cert_ref (cert);
+
+  n = ctrl->include_certs;
+  if (n < 0 || n > 50)
+    n = 50; /* We better apply an upper bound */
+
+  if (n)
+    {
+      err = ksba_cms_add_cert (cms, cert);
+      if (err)
+        goto ksba_failure;
+    }
+  while ( n-- && !(rc = gpgsm_walk_cert_chain (cert, &next)) )
+    {
+      err = ksba_cms_add_cert (cms, next);
+      ksba_cert_release (cert);
+      cert = next; next = NULL;
+      if (err)
+        goto ksba_failure;
+    }
+  ksba_cert_release (cert);
+
+  return rc == -1? 0: rc;
+
+ ksba_failure:
+  ksba_cert_release (cert);
+  log_error ("ksba_cms_add_cert failed: %s\n", ksba_strerror (err));
+  return map_ksba_err (err);
+}
+
+
+
 
 /* Perform a sign operation.  
 
@@ -192,16 +235,19 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
   err = ksba_cms_add_signer (cms, cert);
   if (err)
     {
-      log_debug ("ksba_cms_add_signer failed: %s\n",  ksba_strerror (err));
+      log_error ("ksba_cms_add_signer failed: %s\n",  ksba_strerror (err));
       rc = map_ksba_err (err);
+      goto leave;
+    }
+  rc = add_certificate_list (ctrl, cms, cert);
+  if (rc)
+    {
+      log_error ("failed to store list of certificates: %s\n",
+                 gnupg_strerror(rc));
       goto leave;
     }
   ksba_cert_release (cert); cert = NULL;
 
-  /* fixme: We might want to include a list of certificate which are
-     put as info into the signed data object - maybe we should add a
-     flag to ksba_cms_add_signer to decider whether this cert should
-     be send along with the signature */
   
   /* Set the hash algorithm we are going to use */
   err = ksba_cms_add_digest_algo (cms, "1.3.14.3.2.26" /*SHA-1*/);
