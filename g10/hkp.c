@@ -114,6 +114,7 @@ hkp_export( STRLIST users )
     IOBUF temp = iobuf_temp();
     struct http_context hd;
     char *request;
+    int attribs=EXPORT_FLAG_ONLYRFC;
     unsigned int status;
     unsigned int hflags = opt.keyserver_options.honor_http_proxy? HTTP_FLAG_TRY_PROXY : 0;
 
@@ -123,7 +124,10 @@ hkp_export( STRLIST users )
     afx.what = 1;
     iobuf_push_filter( temp, armor_filter, &afx );
 
-    rc = export_pubkeys_stream( temp, users, 1 );
+    if(!opt.keyserver_options.include_attributes)
+      attribs|=EXPORT_FLAG_SKIPATTRIBS;
+
+    rc = export_pubkeys_stream( temp, users, attribs );
     if( rc == -1 ) {
 	iobuf_close(temp);
 	return 0;

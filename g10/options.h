@@ -122,6 +122,7 @@ struct {
       int include_revoked;
       int include_disabled;
       int include_subkeys;
+      int include_attributes;
       int honor_http_proxy;
       int broken_http_proxy;
       int use_temp_files;

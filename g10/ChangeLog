@@ -1,3 +1,16 @@
+2002-07-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (show_key_with_all_names_colon): The 0x40 class bit in
+	a designated revoker means "sensitive", not "local".  It's
+	exportable under the right circumstances.
+
+	* main.h, options.h, export.c (do_export_stream), g10.c (main),
+	hkp.c (hkp_export), keyserver.c (keyserver_spawn: Add a flag to
+	skip attribute packets and their signatures while exporting.  This
+	is to accomodate keyservers (pksd again) that choke on attributes.
+	Use keyserver-option "include-attributes" to control it.  This
+	defaults to ON (i.e. don't skip).
+
 2002-07-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, keyserver.c (parse_keyserver_uri, keyserver_spawn,

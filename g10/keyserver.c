@@ -54,6 +54,7 @@ struct kopts
   {"include-revoked",1,&opt.keyserver_options.include_revoked},
   {"include-disabled",1,&opt.keyserver_options.include_disabled},
   {"include-subkeys",1,&opt.keyserver_options.include_subkeys},
+  {"include-attributes",0,&opt.keyserver_options.include_attributes},
   {"keep-temp-files",0,&opt.keyserver_options.keep_temp_files},
   {"honor-http-proxy",1,&opt.keyserver_options.honor_http_proxy},
   {"broken-http-proxy",1,&opt.keyserver_options.broken_http_proxy},
@@ -451,6 +452,10 @@ keyserver_spawn(int action,STRLIST list,
 	  {
 	    armor_filter_context_t afx;
 	    IOBUF buffer=iobuf_temp();
+	    int attribs=EXPORT_FLAG_ONLYRFC;
+
+	    if(!opt.keyserver_options.include_attributes)
+	      attribs|=EXPORT_FLAG_SKIPATTRIBS;
 
 	    temp=NULL;
 	    add_to_strlist(&temp,key->d);
@@ -459,7 +464,7 @@ keyserver_spawn(int action,STRLIST list,
 	    afx.what=1;
 	    iobuf_push_filter(buffer,armor_filter,&afx);
 
-	    if(export_pubkeys_stream(buffer,temp,1)==-1)
+	    if(export_pubkeys_stream(buffer,temp,attribs)==-1)
 	      iobuf_close(buffer);
 	    else
 	      {

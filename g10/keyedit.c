@@ -1612,8 +1612,8 @@ show_key_with_all_names_colon (KBNODE keyblock)
                   p = pk->revkey[i].fpr;
                   for (j=0; j < 20; j++, p++ )
                     printf ("%02X", *p);
-                  printf (":%02x%c:\n", pk->revkey[i].class,
-                          (pk->revkey[i].class&0x40)? 'l':'x');
+                  printf (":%02x%s:\n", pk->revkey[i].class,
+                          (pk->revkey[i].class&0x40)?"s":"");
                 }
             }
         }

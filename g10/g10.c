@@ -903,6 +903,7 @@ main( int argc, char **argv )
     opt.force_v3_sigs = 1;
     opt.escape_from = 1;
     opt.keyserver_options.include_subkeys=1;
+    opt.keyserver_options.include_attributes=1;
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
 #else
@@ -2008,7 +2009,7 @@ main( int argc, char **argv )
 	else if( cmd == aRecvKeys )
 	    keyserver_import( sl );
 	else
-	    export_pubkeys( sl, (cmd == aExport) );
+	    export_pubkeys( sl, (cmd == aExport)?EXPORT_FLAG_ONLYRFC:0 );
 	free_strlist(sl);
 	break;
 

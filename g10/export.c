@@ -34,20 +34,21 @@
 #include "main.h"
 #include "i18n.h"
 
-static int do_export( STRLIST users, int secret, int onlyrfc );
+static int do_export( STRLIST users, int secret, int flags );
 static int do_export_stream( IOBUF out, STRLIST users,
-			     int secret, int onlyrfc, int *any );
+			     int secret, int flags, int *any );
 
 /****************
  * Export the public keys (to standard out or --output).
  * Depending on opt.armor the output is armored.
- * If onlyrfc is True only RFC24404 compatible keys are exported.
- * If USERS is NULL, the complete ring will be exported.
- */
+ * flags has two bits: EXPORT_FLAG_ONLYRFC, so that only RFC2440
+ * compatible keys are exported, and EXPORT_FLAG_SKIPATTRIBS to not
+ * export attribute packets (photo IDs).
+ * If USERS is NULL, the complete ring will be exported.  */
 int
-export_pubkeys( STRLIST users, int onlyrfc )
+export_pubkeys( STRLIST users, int flags )
 {
-    return do_export( users, 0, onlyrfc );
+    return do_export( users, 0, flags );
 }
 
 /****************
@@ -55,11 +56,11 @@ export_pubkeys( STRLIST users, int onlyrfc )
  * been exported
  */
 int
-export_pubkeys_stream( IOBUF out, STRLIST users, int onlyrfc )
+export_pubkeys_stream( IOBUF out, STRLIST users, int flags )
 {
     int any, rc;
 
-    rc = do_export_stream( out, users, 0, onlyrfc, &any );
+    rc = do_export_stream( out, users, 0, flags, &any );
     if( !rc && !any )
 	rc = -1;
     return rc;
@@ -78,7 +79,7 @@ export_secsubkeys( STRLIST users )
 }
 
 static int
-do_export( STRLIST users, int secret, int onlyrfc )
+do_export( STRLIST users, int secret, int flags )
 {
     IOBUF out = NULL;
     int any, rc;
@@ -98,7 +99,7 @@ do_export( STRLIST users, int secret, int onlyrfc )
     }
     if( opt.compress_keys && opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
-    rc = do_export_stream( out, users, secret, onlyrfc, &any );
+    rc = do_export_stream( out, users, secret, flags, &any );
 
     if( rc || !any )
 	iobuf_cancel(out);
@@ -109,7 +110,7 @@ do_export( STRLIST users, int secret, int onlyrfc )
 
 
 static int
-do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
+do_export_stream( IOBUF out, STRLIST users, int secret, int flags, int *any )
 {
     int rc = 0;
     PACKET pkt;
@@ -166,7 +167,8 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	}
 
 	/* do not export keys which are incompatible with rfc2440 */
-	if( onlyrfc && (node = find_kbnode( keyblock, PKT_PUBLIC_KEY )) ) {
+	if( (flags&EXPORT_FLAG_ONLYRFC) &&
+	    (node = find_kbnode( keyblock, PKT_PUBLIC_KEY )) ) {
 	    PKT_public_key *pk = node->pkt->pkt.public_key;
 	    if( pk->version == 3 && pk->pubkey_algo > 3 ) {
 		log_info(_("key %08lX: not a rfc2440 key - skipped\n"),
@@ -229,6 +231,19 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	      /* delete our verification cache */
 	      delete_sig_subpkt (node->pkt->pkt.signature->unhashed,
 				 SIGSUBPKT_PRIV_VERIFY_CACHE);
+	    }
+
+	    /* Don't export attribs? */
+	    if( (flags&EXPORT_FLAG_SKIPATTRIBS) &&
+		node->pkt->pkttype == PKT_USER_ID &&
+		node->pkt->pkt.user_id->attrib_data ) {
+	      /* Skip until we get to something that is not an attrib
+		 or a signature on an attrib */
+	      while(kbctx->next && kbctx->next->pkt->pkttype==PKT_SIGNATURE) {
+		kbctx=kbctx->next;
+	      }
+ 
+	      continue;
 	    }
 
 	    if( secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY ) {
