@@ -12,7 +12,7 @@ TESTS = version.test mds.test \
 	conventional.test
 
 
-TEST_FILES = pubring.asc secring.asc plain-1 plain-2 plain-3o.asc \
+TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
 	     pubring.pkr.asc secring.skr.asc
 
@@ -21,30 +21,44 @@ DATA_FILES = data-500 data-9000 data-32000 data-80000
 EXTRA_DIST = defs.inc run-gpg run-gpgm $(TESTS) $(TEST_FILES)
 CLEANFILES = prepared.stamp x y z out err  $(DATA_FILES)
 
+
 check: prepared.stamp
 
-prepared.stamp: pubring.gpg secring.gpg plain-3 \
-		pubring.pkr secring.skr $(DATA_FILES)
+prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
+		./pubring.pkr ./secring.skr $(DATA_FILES)
 	 echo timestamp >./prepared.stamp
 
-pubring.gpg: pubring.asc
-	../g10/gpgm --yes --dearmor -o pubring.gpg pubring.asc
-secring.gpg: secring.asc
-	../g10/gpgm --yes --dearmor -o secring.gpg secring.asc
-plain-3: plain-3o.asc
-	../g10/gpgm --yes --dearmor -o plain-3 plain-3o.asc
-pubring.pkr: pubring.pkr.asc
-	../g10/gpgm --yes --dearmor -o pubring.pkr pubring.pkr.asc
-secring.skr: secring.skr.asc
-	../g10/gpgm --yes --dearmor -o secring.skr secring.skr.asc
+
+./pubring.gpg: $(srcdir)/pubring.asc
+	 ../g10/gpgm --yes --dearmor -o ./pubring.gpg $(srcdir)/pubring.asc
+
+./secring.gpg: $(srcdir)/secring.asc
+	 ../g10/gpgm --yes --dearmor -o ./secring.gpg $(srcdir)/secring.asc
+
+./pubring.pkr: $(srcdir)/pubring.pkr.asc
+	 ../g10/gpgm --yes --dearmor -o ./pubring.pkr $(srcdir)/pubring.pkr.asc
+
+./secring.skr: $(srcdir)/secring.skr.asc
+	 ../g10/gpgm --yes --dearmor -o ./secring.skr $(srcdir)/secring.skr.asc
+
+./plain-1: $(srcdir)/plain-1o.asc
+	 ../g10/gpgm --yes --dearmor -o ./plain-1 $(srcdir)/plain-1o.asc
+
+./plain-2: $(srcdir)/plain-2o.asc
+	 ../g10/gpgm --yes --dearmor -o ./plain-2 $(srcdir)/plain-2o.asc
+
+./plain-3: $(srcdir)/plain-3o.asc
+	 ../g10/gpgm --yes --dearmor -o ./plain-3 $(srcdir)/plain-3o.asc
+
+
 
 data-500:
-	../tools/mk-tdata   500 /dev/urandom >data-500
+	../tools/mk-tdata   500  >data-500
 data-9000:
-	../tools/mk-tdata  9000 /dev/urandom >data-9000
+	../tools/mk-tdata  9000  >data-9000
 data-32000:
-	../tools/mk-tdata 32000 /dev/urandom >data-32000
+	../tools/mk-tdata 32000  >data-32000
 data-80000:
-	../tools/mk-tdata 80000 /dev/urandom >data-80000
+	../tools/mk-tdata 80000  >data-80000
 
 

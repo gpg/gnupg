@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. defs.inc || exit 3
+. $srcdir/defs.inc || exit 3
 
 # I can't compare the out because plain-3 has no LF as last charcater
 # but the output has always one.  I do not thinkl this is a bug, because

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. defs.inc || exit 3
+. $srcdir/defs.inc || exit 3
 
 #info Checking conventional encryption
 for i in plain-2 data-32000 ; do

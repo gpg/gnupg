@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. defs.inc || exit 3
+. $srcdir/defs.inc || exit 3
 
 #info Checking signing and encryption for DSA
 for i in $plain_files $data_files ; do

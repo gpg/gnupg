@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. defs.inc || exit 3
+. $srcdir/defs.inc || exit 3
 
 
 #info Checking armored detached signatures

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. defs.inc || exit 3
+. $srcdir/defs.inc || exit 3
 
 for i in $plain_files ; do
     echo "$usrpass1" | ./run-gpg --passphrase-fd 0 -seat -r two -o x --yes $i

@@ -1,13 +1,13 @@
 #!/bin/sh
 
-. defs.inc || exit 3
+. $srcdir/defs.inc || exit 3
 
 expect - <<EOF
 #set timeout -1
 set timeout 5
 match_max 100000
 spawn ../g10/gpg --no-batch --quick-random --homedir . --gen-key
-expect { 
+expect {
     -exact "Please select what kind of key you want:\r
    (1) DSA and ElGamal (default)\r
    (2) ElGamal (sign and encrypt)\r
@@ -18,18 +18,18 @@ Your selection? "  { send -- "1\r" }
     timeout { exit 1 } }
 expect {
     -exact "1\r
-\r                 \rDSA keypair will have 1024 bits.\r
+\r		   \rDSA keypair will have 1024 bits.\r
 About to generate a new ELG-E keypair.\r
-              minimum keysize is  768 bits\r
-              default keysize is 1024 bits\r
+	      minimum keysize is  768 bits\r
+	      default keysize is 1024 bits\r
     highest suggested keysize is 2048 bits\r
 What keysize do you want? (1024) " { send -- "\r" }
     timeout { exit 1 } }
 expect {
     -exact "\r
-\r                                 \rRequested keysize is 1024 bits\r
+\r				   \rRequested keysize is 1024 bits\r
 Please specify how long the key should be valid.\r
-         0 = key does not expire\r
+	 0 = key does not expire\r
       <n>  = key expires in n days\r
       <n>w = key expires in n weeks\r
       <n>m = key expires in n months\r
@@ -38,9 +38,9 @@ Key is valid for? (0) " { send -- "1\r" }
     timeout { exit 1 } }
 expect {
      -exact "1\r
-\r                       \rKey expires at " { }
+\r			 \rKey expires at " { }
     timeout { exit 1 } }
-expect { 
+expect {
      -re "(.*)\r
 " {}
     timeout { exit 1 } }
@@ -49,7 +49,7 @@ expect {
     timeout { exit 1 } }
 expect {
     -exact "y\r
-\r                        \r\r
+\r			  \r\r
 You need a User-ID to identify your key; the software constructs the user id\r
 from Real Name, Comment and Email Address in this form:\r
     \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\r
@@ -58,29 +58,29 @@ Real name: " { send -- "Harry H.\r" }
     timeout { exit 1 } }
 expect {
    -exact "Harry H.\r
-\r                   \rEmail address: " { send -- "hh@ddorf.de\r" }
+\r		     \rEmail address: " { send -- "hh@ddorf.de\r" }
     timeout { exit 1 } }
 expect {
    -exact "hh@ddorf.de\r
-\r                          \rComment: " { send -- "a test\r" }
+\r			    \rComment: " { send -- "a test\r" }
     timeout { exit 1 } }
 expect {
    -exact "a test\r
-\r               \rYou selected this USER-ID:\r
+\r		 \rYou selected this USER-ID:\r
     \"Harry H. (a test) <hh@ddorf.de> (INSECURE!)\"\r
 \r
 Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? " { send -- "o\r" }
     timeout { exit 1 } }
 expect {
    -exact "o\r
-\r                                                     \rYou need a Passphrase to protect your secret key.\r
+\r						       \rYou need a Passphrase to protect your secret key.\r
 \r
 Enter pass phrase: " { sleep 1; send -- "abc\r" }
     timeout { exit 1 } }
 expect {
   -ex "\r                   \rRepeat pass phrase: " { sleep 1; send -- "abc\r" }
     timeout { exit 1 } }
-expect { 
+expect {
   -ex "\r                    \rWe need to generate a lot of random bytes. It is a good idea to perform\r
 some other action (work in another window, move the mouse, utilize the\r
 network and the disks) during the prime generation; this gives the random\r

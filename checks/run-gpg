@@ -2,7 +2,9 @@
 
 [ -n "$show_cmds" ] && echo "../g10/gpg --homedir . $*"
 
-if ! ../g10/gpg --homedir . $* 2>err.tmp.$$ ; then
+if ../g10/gpg --homedir . $* 2>err.tmp.$$ ; then
+    :
+else
     echo "(../g10/gpg --homedir . $*) failed" >&2
     cat err.tmp.$$ >&2
     rm err.tmp.$$
