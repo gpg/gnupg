@@ -1,5 +1,5 @@
 /* mainproc.c - handle packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1452,17 +1452,37 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	    if( !get_pubkey( pk, sig->keyid ) ) {
 		byte array[MAX_FINGERPRINT_LEN], *p;
-		char buf[MAX_FINGERPRINT_LEN*2+72];
+		char buf[MAX_FINGERPRINT_LEN*4+73], *bufp;
 		size_t i, n;
 
+                bufp = buf;
 		fingerprint_from_pk( pk, array, &n );
 		p = array;
-		for(i=0; i < n ; i++, p++ )
-		    sprintf(buf+2*i, "%02X", *p );
-		sprintf(buf+strlen(buf), " %s %lu %lu",
-					 strtimestamp( sig->timestamp ),
-					 (ulong)sig->timestamp,
-			                 (ulong)sig->expiredate );
+		for(i=0; i < n ; i++, p++, bufp += 2)
+                    sprintf(bufp, "%02X", *p );
+		sprintf(bufp, " %s %lu %lu ",
+                        strtimestamp( sig->timestamp ),
+                        (ulong)sig->timestamp,
+                        (ulong)sig->expiredate );
+                bufp = bufp + strlen (bufp);
+                if (!pk->is_primary) {
+                   u32 akid[2];
+ 
+                   akid[0] = pk->main_keyid[0];
+                   akid[1] = pk->main_keyid[1];
+                   free_public_key (pk);
+                   pk = m_alloc_clear( sizeof *pk );
+                   if (get_pubkey (pk, akid)) {
+                     /* impossible error, we simply return a zeroed out fpr */
+                     n = MAX_FINGERPRINT_LEN < 20? MAX_FINGERPRINT_LEN : 20;
+                     memset (array, 0, n);
+                   }
+                   else
+                     fingerprint_from_pk( pk, array, &n );
+                }
+		p = array;
+		for(i=0; i < n ; i++, p++, bufp += 2)
+                    sprintf(bufp, "%02X", *p );
 		write_status_text( STATUS_VALIDSIG, buf );
 	    }
 	    free_public_key( pk );

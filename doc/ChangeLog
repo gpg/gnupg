@@ -12,6 +12,10 @@
 
 	* Makefile.am: Allow CVS version to build without faqprog.pl.
 
+2003-04-01  Werner Koch  <wk@gnupg.org>
+
+	* DETAILS (VALIDSIG): Add primary keys fingerprint. 
+
 2003-01-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Document trust depth, value, and regexp.
