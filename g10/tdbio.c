@@ -639,36 +639,25 @@ create_hashtable( TRUSTREC *vr, int type )
 int
 tdbio_db_matches_options()
 {
-    static int yes_no = -1;
+  static int yes_no = -1;
 
-    if( yes_no == -1 ) {
-	TRUSTREC vr;
-	int rc;
+  if( yes_no == -1 )
+    {
+      TRUSTREC vr;
+      int rc;
 
-	rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
-	if( rc )
-	    log_fatal( _("%s: error reading version record: %s\n"),
-						    db_name, g10_errstr(rc) );
+      rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+      if( rc )
+	log_fatal( _("%s: error reading version record: %s\n"),
+		   db_name, g10_errstr(rc) );
 
-	if( !vr.r.ver.marginals && !vr.r.ver.completes
-				&& !vr.r.ver.cert_depth )
-	{   /* special hack for trustdbs created by old versions of GnuPG */
-	    vr.r.ver.marginals =  opt.marginals_needed;
-	    vr.r.ver.completes =  opt.completes_needed;
-	    vr.r.ver.cert_depth = opt.max_cert_depth;
-	    rc = tdbio_write_record( &vr );
-	    if( !rc && !in_transaction )
-		rc = tdbio_sync();
-	    if( rc )
-		log_error( _("%s: error writing version record: %s\n"),
-						db_name, g10_errstr(rc) );
-	}
-
-	yes_no = vr.r.ver.marginals == opt.marginals_needed
-		 && vr.r.ver.completes == opt.completes_needed
-		 && vr.r.ver.cert_depth == opt.max_cert_depth;
+      yes_no = vr.r.ver.marginals == opt.marginals_needed
+	&& vr.r.ver.completes == opt.completes_needed
+	&& vr.r.ver.cert_depth == opt.max_cert_depth
+	&& vr.r.ver.trust_model == opt.trust_model;
     }
-    return yes_no;
+
+  return yes_no;
 }
 
 

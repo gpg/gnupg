@@ -1,3 +1,14 @@
+2002-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (validate_keys): Show trust parameters when building
+	trustdb, and make sure that the version record update was
+	successful.
+	(init_trustdb): If the current parameters aren't what was used for
+	building the trustdb, the trustdb is invalid.
+
+	* tbio.c (tdbio_db_matches_options): Update to work with new
+	trustdbs.
+
 2002-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* tdbio.h, tdbio.c (tdbio_read_record, tdbio_write_record): Store
