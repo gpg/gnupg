@@ -1,3 +1,7 @@
+2002-09-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Some minor language cleanup.
+
 2002-09-20  Werner Koch  <wk@gnupg.org>
 
 	* DETAILS: s/XORed/ORed/.
