@@ -34,5 +34,7 @@ g10/verify.c
 g10/status.c
 g10/pubkey-enc.c
 g10/openfile.c
+g10/encr-data.c
+g10/seskey.c
 
 #---end--
