@@ -25,6 +25,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
+#ifdef NEED_LBER_H
+#include <lber.h>
+#endif
 #include <ldap.h>
 #include "keyserver.h"
 
