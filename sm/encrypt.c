@@ -247,7 +247,7 @@ encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
 {
   GCRY_SEXP s_ciph, s_data, s_pkey;
   int rc;
-  char *buf;
+  KsbaSexp buf;
   size_t len;
 
   *encval = NULL;
@@ -259,7 +259,13 @@ encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
       log_error ("no public key for recipient\n");
       return GNUPG_No_Public_Key;
     }
-  rc = gcry_sexp_sscan (&s_pkey, NULL, buf, strlen(buf));
+  len = gcry_sexp_canon_len (buf, 0, NULL, NULL);
+  if (!len)
+    {
+      log_error ("libksba did not return a proper S-Exp\n");
+      return GNUPG_Bug;
+    }
+  rc = gcry_sexp_sscan (&s_pkey, NULL, buf, len);
   xfree (buf); buf = NULL;
   if (rc)
     {

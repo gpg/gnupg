@@ -107,7 +107,8 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   GCRY_MD_HD md;
   int rc, algo;
   GCRY_MPI frame;
-  char *p;
+  KsbaSexp p;
+  size_t n;
   GCRY_SEXP s_sig, s_hash, s_pkey;
 
   algo = gcry_md_map_name ( (algoid=ksba_cert_get_digest_algo (cert)));
@@ -132,11 +133,14 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
     }
   gcry_md_final (md);
 
-  p = ksba_cert_get_sig_val (cert); /* fixme: check p*/
-  if (DBG_X509)
-    log_debug ("signature: %s\n", p);
-
-  rc = gcry_sexp_sscan ( &s_sig, NULL, p, strlen(p));
+  p = ksba_cert_get_sig_val (cert);
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    {
+      log_error ("libksba did not return a proper S-Exp\n");
+      return GNUPG_Bug;
+    }
+  rc = gcry_sexp_sscan ( &s_sig, NULL, p, n);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
@@ -144,10 +148,13 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
     }
 
   p = ksba_cert_get_public_key (issuer_cert);
-  if (DBG_X509)
-    log_debug ("issuer public key: %s\n", p);
-
-  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, strlen(p));
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    {
+      log_error ("libksba did not return a proper S-Exp\n");
+      return GNUPG_Bug;
+    }
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
@@ -174,46 +181,38 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
 
 
 int
-gpgsm_check_cms_signature (KsbaCert cert, const char *sigval,
+gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
                            GCRY_MD_HD md, int algo)
 {
   int rc;
-  char *p;
+  KsbaSexp p;
   GCRY_MPI frame;
   GCRY_SEXP s_sig, s_hash, s_pkey;
+  size_t n;
 
-  rc = gcry_sexp_sscan (&s_sig, NULL, sigval, strlen(sigval));
+  n = gcry_sexp_canon_len (sigval, 0, NULL, NULL);
+  if (!n)
+    {
+      log_error ("libksba did not return a proper S-Exp\n");
+      return GNUPG_Bug;
+    }
+  rc = gcry_sexp_sscan (&s_sig, NULL, sigval, n);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
       return map_gcry_err (rc);
     }
 
-  if (getenv ("GPGSM_FAKE_KEY"))
-    {
-      const char n[] = "#8732A669BB7C5057AD070EFA54E035C86DF474F7A7EBE2435"
-        "3DADEB86FFE74C32AEEF9E5C6BD7584CB572520167B3E8C89A1FA75C74FF9E938"
-        "2710F3B270B638EB96E7486491D81C53CA8A50B4E840B1C7458A4A1E52EC18D681"
-        "8A2805C9165827F77EF90D55014E4B2AF9386AE8F6462F46A547CB593ABD509311"
-        "4D3D16375F#";
-      const char e[] = "#11#";
-      char *tmp;
-
-      log_debug ("Using HARDWIRED public key\n");
-      asprintf (&tmp, "(public-key(rsa(n %s)(e %s)))", n, e);
-      /* asprintf does not use our allocation fucntions, so we can't
-         use our free */
-      p = xstrdup (tmp);
-      free (tmp);
-    }
-  else
-    {
-      p = ksba_cert_get_public_key (cert);
-    }
-
+  p = ksba_cert_get_public_key (cert);
   if (DBG_X509)
     log_debug ("public key: %s\n", p);
-  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, strlen(p));
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    {
+      log_error ("libksba did not return a proper S-Exp\n");
+      return GNUPG_Bug;
+    }
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
@@ -244,78 +243,6 @@ int
 gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
                             char **r_sigval)
 {
-#if 0
-
-  /* our sample key */
-  const char n[] = "#8732A669BB7C5057AD070EFA54E035C86DF474F7A7EBE2435"
-    "3DADEB86FFE74C32AEEF9E5C6BD7584CB572520167B3E8C89A1FA75C74FF9E938"
-    "2710F3B270B638EB96E7486491D81C53CA8A50B4E840B1C7458A4A1E52EC18D681"
-    "8A2805C9165827F77EF90D55014E4B2AF9386AE8F6462F46A547CB593ABD509311"
-    "4D3D16375F#";
-  const char e[] = "#11#";
-  const char d[] = "#07F3EBABDDDA22D7FB1E8869140D30571586D9B4370DE02213F"
-    "DD0DDAC3C24FC6BEFF0950BB0CAAD755F7AA788DA12BCF90987341AC8781CC7115"
-    "B59A115B05D9D99B3D7AF77854DC2EE6A36154512CC0EAD832601038A88E837112"
-    "AB2A39FD9FBE05E30D6FFA6F43D71C59F423CA43BC91C254A8C89673AB61F326B0"
-    "762FBC9#";
-  const char p[] = "#B2ABAD4328E66303E206C53CFBED17F18F712B1C47C966EE13DD"
-    "AA9AD3616A610ADF513F8376FA48BAE12FED64CECC1E73091A77B45119AF0FC1286A"
-    "85BD9BBD#";
-  const char q[] = "#C1B648B294BB9AEE7FEEB77C4F64E9333E4EA9A7C54D521356FB"
-    "BBB7558A0E7D6331EC7B42E3F0CD7BBBA9B7A013422F615F10DCC1E8462828BF8FC7"
-    "39C5E34B#";
-  const char  u[] = "#A9B5EFF9C80A4A356B9A95EB63E381B262071E5CE9C1F32FF03"
-    "83AD8289BED8BC690555E54411FA2FDB9B49638A21B2046C325F5633B4B1ECABEBFD"
-    "1B3519072#";
-
-  GCRY_SEXP s_skey, s_hash, s_sig;
-  GCRY_MPI frame;
-  int rc;
-  char *buf;
-  size_t len;
-
-  /* create a secret key as an sexp */
-  log_debug ("Using HARDWIRED secret key\n");
-  asprintf (&buf, "(private-key(oid.1.2.840.113549.1.1.1"
-           "(n %s)(e %s)(d %s)(p %s)(q %s)(u %s)))",
-           n, e, d, p, q, u);
-  /* asprintf does not use our allocation fucntions, so we can't
-     use our free */
-  rc = gcry_sexp_sscan (&s_skey, NULL, buf, strlen(buf));
-  free (buf);
-  if (rc)
-    {
-      log_error ("failed to build S-Exp: %s\n", gcry_strerror (rc));
-      return map_gcry_err (rc);
-    }
-  
-  /* put the hash into a sexp */
-  rc = do_encode_md (md, mdalgo, gcry_pk_get_nbits (s_skey), &frame);
-  if (rc)
-    {
-      /* fixme: clean up some things */
-      return rc;
-    }
-  if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
-    BUG ();
-
-
-  /* sign */
-  rc = gcry_pk_sign (&s_sig, s_hash, s_skey);
-  if (rc)
-    {
-      log_error ("signing failed: %s\n", gcry_strerror (rc));
-      return map_gcry_err (rc);
-    }
-
-  len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len);
-  buf = xmalloc (len);
-  len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, buf, len);
-  assert (len);
-
-  *r_sigval = buf;
-#else
   int rc;
   char *grip;
   size_t siglen;
@@ -330,10 +257,8 @@ gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
   xfree (grip);
   /* FIXME: we should check that the returnes S-Exp is valid fits int
      siglen.  It ould probaly be a good idea to scan and print it
-     again to make this sure and be sure that we have canocical
+     again to make this sure and be sure that we have canoncical
      encoding */
-
-#endif
   return rc;
 }
 

@@ -53,7 +53,7 @@ struct keydb_search_desc {
   int (*skipfnc)(void *,void*); /* used to be: void*, u32* */
   void *skipfncvalue;
   const unsigned char *sn; 
-  int sn_is_string;  /* very ugly */
+  int snlen;  /* -1 := sn is a hex string */
   union {
     const char *name;
     unsigned char fpr[24];

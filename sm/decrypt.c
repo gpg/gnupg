@@ -51,7 +51,7 @@ struct decrypt_filter_parm_s {
 
 
 static void
-print_integer (unsigned char *p)
+print_integer_sexp (unsigned char *p)
 {
   unsigned long len;
 
@@ -59,23 +59,30 @@ print_integer (unsigned char *p)
     log_printf ("none");
   else
     {
-      len = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-      for (p+=4; len; len--, p++)
-        log_printf ("%02X", *p);
+      len = gcry_sexp_canon_len (p, 0, NULL, NULL);
+      if (!len)
+        log_printf ("invalid encoding");
+      else
+        {
+          for (; len && *p != ':'; len--, p++)
+            ;
+          for (p++; len; len--, p++)
+            log_printf ("%02X", *p);
+        }
     }
 }
 
 /* decrypt the session key and fill in the parm structure.  The
    algo and the IV is expected to be already in PARM. */
 static int 
-prepare_decryption (const char *hexkeygrip, const char *enc_val,
+prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
                     struct decrypt_filter_parm_s *parm)
 {
   char *seskey = NULL;
   size_t n, seskeylen;
   int rc;
 
-  rc = gpgsm_agent_pkdecrypt (hexkeygrip, enc_val, strlen (enc_val),
+  rc = gpgsm_agent_pkdecrypt (hexkeygrip, enc_val,
                               &seskey, &seskeylen);
   if (rc)
     {
@@ -348,8 +355,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
           for (recp=0; recp < 1; recp++)
             {
               char *issuer;
-              unsigned char *serial;
-              char *enc_val;
+              KsbaSexp serial;
+              KsbaSexp enc_val;
               char *hexkeygrip = NULL;
 
               err = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
@@ -363,7 +370,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   log_debug ("recp %d - issuer: `%s'\n",
                              recp, issuer? issuer:"[NONE]");
                   log_debug ("recp %d - serial: ", recp);
-                  print_integer (serial);
+                  print_integer_sexp (serial);
                   log_printf ("\n");
 
                   keydb_search_reset (kh);
@@ -395,8 +402,6 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                            recp);
               else
                 {
-                  log_debug ("recp %d - enc-val: `%s'\n",
-                             recp, enc_val);
                   rc = prepare_decryption (hexkeygrip, enc_val,
                                            &dfparm);
                   xfree (enc_val);

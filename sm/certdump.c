@@ -34,19 +34,28 @@
 #include "keydb.h"
 
 static void
-print_integer (unsigned char *p)
+print_sexp (KsbaConstSexp p)
 {
-  unsigned long len;
+  unsigned long n;
+  KsbaConstSexp endp;
 
   if (!p)
     log_printf ("none");
   else
     {
-      len = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-      for (p+=4; len; len--, p++)
-        log_printf ("%02X", *p);
+      n = strtoul (p, (char**)&endp, 10);
+      p = endp;
+      if (*p!=':')
+        log_printf ("ERROR - invalid value");
+      else
+        {
+          for (p++; n; n--, p++)
+            log_printf ("%02X", *p);
+        }
     }
 }
+
+
 
 static void
 print_time (time_t t)
@@ -81,6 +90,7 @@ print_dn (char *p)
 void 
 gpgsm_dump_cert (const char *text, KsbaCert cert)
 {
+  KsbaSexp sexp;
   unsigned char *p;
   char *dn;
   time_t t;
@@ -88,10 +98,10 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
   log_debug ("BEGIN Certificate `%s':\n", text? text:"");
   if (cert)
     {
-      p = ksba_cert_get_serial (cert);
+      sexp = ksba_cert_get_serial (cert);
       log_debug ("  serial: ");
-      print_integer (p);
-      ksba_free (p);
+      print_sexp (sexp);
+      ksba_free (sexp);
       log_printf ("\n");
 
       t = ksba_cert_get_validity (cert, 0);

@@ -273,7 +273,7 @@ inq_ciphertext_cb (void *opaque, const char *keyword)
    the hex string KEYGRIP. */
 int
 gpgsm_agent_pkdecrypt (const char *keygrip,
-                       const char *ciphertext, size_t ciphertextlen,
+                       KsbaConstSexp ciphertext, 
                        char **r_buf, size_t *r_buflen )
 {
   int rc;
@@ -282,10 +282,15 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   struct cipher_parm_s cipher_parm;
   size_t n, len;
   char *buf, *endp;
+  size_t ciphertextlen;
   
   if (!keygrip || strlen(keygrip) != 40 || !ciphertext || !r_buf || !r_buflen)
     return GNUPG_Invalid_Value;
   *r_buf = NULL;
+
+  ciphertextlen = gcry_sexp_canon_len (ciphertext, 0, NULL, NULL);
+  if (!ciphertextlen)
+    return GNUPG_Invalid_Value;
 
   rc = start_agent ();
   if (rc)

@@ -116,7 +116,8 @@ static void
 list_cert_colon (KsbaCert cert, FILE *fp)
 {
   int idx, trustletter = 0;
-  unsigned char *p;
+  char *p;
+  KsbaSexp sexp;
 
   fputs ("crt:", fp);
   trustletter = 0;
@@ -144,12 +145,17 @@ list_cert_colon (KsbaCert cert, FILE *fp)
   print_time ( ksba_cert_get_validity (cert, 1), fp);
   putc (':', fp);
   putc (':', fp);
-  if ((p = ksba_cert_get_serial (cert)))
+  if ((sexp = ksba_cert_get_serial (cert)))
     {
-      int i, len = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-      for (i=0; i < len; i++)
-        fprintf (fp,"%02X", p[4+i]);
-      xfree (p);
+      int len;
+      const unsigned char *s = sexp;
+      
+      for (len=0; *s && *s != ':' && digitp (s); s++)
+        len = len*10 + atoi_1 (s);
+      if (*s == ':')
+        for (s++; len; len--, s++)
+          fprintf (fp,"%02X", *s);
+      xfree (sexp);
     }
   putc (':', fp);
   putc (':', fp);

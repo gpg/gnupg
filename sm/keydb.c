@@ -834,14 +834,19 @@ keydb_search_issuer (KEYDB_HANDLE hd, const char *issuer)
 
 int
 keydb_search_issuer_sn (KEYDB_HANDLE hd,
-                        const char *issuer, const unsigned char *serial)
+                        const char *issuer, KsbaConstSexp serial)
 {
   KEYDB_SEARCH_DESC desc;
   int rc;
+  const unsigned char *s;
   
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_ISSUER_SN;
-  desc.sn = serial;
+  for (s=serial,desc.snlen = 0; digitp (s); s++)
+    desc.snlen = 10*desc.snlen + atoi_1 (s);
+  if (*s !=':')
+    return GNUPG_Invalid_Value;
+  desc.sn = s+1;
   desc.u.name = issuer;
   rc = keydb_search (hd, &desc, 1);
   return rc;
@@ -975,7 +980,7 @@ classify_user_id (const char *name,
                   return 0; /* invalid digit in serial number*/
               }
             desc->sn = s;
-            desc->sn_is_string = 1;
+            desc->snlen = -1;
             if (!*si)
               mode = KEYDB_SEARCH_MODE_SN;
             else

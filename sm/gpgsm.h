@@ -141,7 +141,7 @@ void gpgsm_dump_cert (const char *text, KsbaCert cert);
 
 /*-- certcheck.c --*/
 int gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert);
-int gpgsm_check_cms_signature (KsbaCert cert, const char *sigval,
+int gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
                                GCRY_MD_HD md, int hash_algo);
 /* fixme: move create functions to another file */
 int gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
@@ -180,7 +180,7 @@ int gpgsm_agent_pksign (const char *keygrip,
                         int digestalgo,
                         char **r_buf, size_t *r_buflen);
 int gpgsm_agent_pkdecrypt (const char *keygrip,
-                           const char *ciphertext, size_t ciphertextlen,
+                           KsbaConstSexp  ciphertext, 
                            char **r_buf, size_t *r_buflen);
 
 

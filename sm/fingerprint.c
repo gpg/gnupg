@@ -125,7 +125,7 @@ gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo)
 }
 
 
-/* Return the sop called KEYGRIP which is the SHA-1 hash of the public
+/* Return the so called KEYGRIP which is the SHA-1 hash of the public
    key parameters expressed as an canoncial encoded S-Exp.  array must
    be 20 bytes long. returns the array or a newly allocated one if the
    passed one was NULL */
@@ -133,8 +133,9 @@ char *
 gpgsm_get_keygrip (KsbaCert cert, char *array)
 {
   GCRY_SEXP s_pkey;
-  int rc, len;
-  char *buf, *p;
+  int rc;
+  KsbaSexp p;
+  size_t n;
   
   p = ksba_cert_get_public_key (cert);
   if (!p)
@@ -142,25 +143,27 @@ gpgsm_get_keygrip (KsbaCert cert, char *array)
 
   if (DBG_X509)
     log_debug ("get_keygrip for public key: %s\n", p);
-  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, strlen(p));
+  n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+  if (!n)
+    {
+      log_error ("libksba did not return a proper S-Exp\n");
+      return NULL;
+    }
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
+  xfree (p);
   if (rc)
     {
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
       return NULL;
     }
-  /* and now convert it into canoncial form - fixme: we should modify
-     libksba to return it in this form */
-  len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len);
-  buf = xmalloc (len);
-  len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, buf, len);
-  assert (len);
-
+  array = gcry_pk_get_keygrip (s_pkey, array);
+  gcry_sexp_release (s_pkey);
   if (!array)
-    array = xmalloc (20);
-
-  gcry_md_hash_buffer (GCRY_MD_SHA1, array, buf, len);
-  xfree (buf);
+    {
+      rc = seterr (General_Error);
+      log_error ("can't calculate keygrip\n");
+      return NULL;
+    }
   if (DBG_X509)
     log_printhex ("keygrip=", array, 20);
 

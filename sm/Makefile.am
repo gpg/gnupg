@@ -20,9 +20,9 @@
 
 bin_PROGRAMS = gpgsm
 
-INCLUDES = -I$(top_srcdir)/common -I$(top_srcdir)/intl
+INCLUDES = -I$(top_srcdir)/common -I$(top_srcdir)/intl \
+	 $(LIBGCRYPT_CFLAGS) $(LIBKSBA_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
-#$(LIBGCRYPT_LIBS)
 
 gpgsm_SOURCES = \
 	gpgsm.c	gpgsm.h \
@@ -45,8 +45,6 @@ gpgsm_SOURCES = \
 
 
 gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a ../kbx/libkeybox.a \
-              ../common/libcommon.a \
-              ../../libksba/src/.libs/libksba.a \
-              ../../libgcrypt/src/.libs/libgcrypt.so.1 
+              ../common/libcommon.a $(LIBGCRYPT_LIBS) $(LIBKSBA_LIBS)
 
 

@@ -1,3 +1,14 @@
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* keybox-blob.c (_keybox_create_x509_blob): Use
+	gcry_sexp_canon_len to get the length of the serial number.
+	(_keybox_release_blob): Need to use a new serialbuf to free the memory.
+
+2001-12-17  Werner Koch  <wk@gnupg.org>
+
+	* keybox-search.c: Changed the way the serial number is
+	represented.
+
 2001-12-15  Werner Koch  <wk@gnupg.org>
 
 	* keybox-search.c (blob_cmp_name): There is no terminating 0 stored

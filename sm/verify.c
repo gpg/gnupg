@@ -85,7 +85,7 @@ store_cert (KsbaCert cert)
 
 
 static void
-print_integer (unsigned char *p)
+print_integer_sexp (unsigned char *p)
 {
   unsigned long len;
 
@@ -93,9 +93,16 @@ print_integer (unsigned char *p)
     log_printf ("none");
   else
     {
-      len = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-      for (p+=4; len; len--, p++)
-        log_printf ("%02X", *p);
+      len = gcry_sexp_canon_len (p, 0, NULL, NULL);
+      if (!len)
+        log_printf ("invalid encoding");
+      else
+        {
+          for (; len && *p != ':'; len--, p++)
+            ;
+          for (p++; len; len--, p++)
+            log_printf ("%02X", *p);
+        }
     }
 }
 
@@ -289,9 +296,9 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
   for (signer=0; signer < 1; signer++)
     {
       char *issuer = NULL;
-      char *sigval = NULL;
+      KsbaSexp sigval = NULL;
       time_t sigtime;
-      unsigned char *serial;
+      KsbaSexp serial;
       char *msgdigest = NULL;
       size_t msgdigestlen;
 
@@ -300,7 +307,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
         break;
       log_debug ("signer %d - issuer: `%s'\n", signer, issuer? issuer:"[NONE]");
       log_debug ("signer %d - serial: ", signer);
-      print_integer (serial);
+      print_integer_sexp (serial);
       log_printf ("\n");
 
       err = ksba_cms_get_signing_time (cms, signer, &sigtime);

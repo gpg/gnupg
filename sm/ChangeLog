@@ -1,4 +1,37 @@
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* verify.c (print_integer_sexp): Renamed from print_integer and
+	print the serial number according to the S-Exp rules.
+	* decrypt.c (print_integer_sexp): Ditto.
+
+2001-12-17  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Changed for new return value of
+	get_serial.
+	* keydb.c (keydb_search_issuer_sn): Ditto.
+	* certcheck.c (gpgsm_check_cert_sig): Likewise for other S-Exp
+	returingin functions.
+	* fingerprint.c (gpgsm_get_keygrip): Ditto.
+	* encrypt.c (encrypt_dek): Ditto
+	* certcheck.c (gpgsm_check_cms_signature): Ditto
+	* decrypt.c (prepare_decryption): Ditto.
+	* call-agent.c (gpgsm_agent_pkdecrypt): Removed arg ciphertextlen,
+	use KsbaSexp type and calculate the length.
+
+	* certdump.c (print_sexp): Remaned from print_integer, changed caller.
+
+	* Makefile.am: Use the LIBGCRYPT and LIBKSBA variables.
+
+	* fingerprint.c (gpgsm_get_keygrip): Use the new
+	gcry_pk_get_keygrip to calculate the grip - note the algorithm and
+	therefore the grip values changed.
+
 2001-12-15  Werner Koch  <wk@gnupg.org>
+
+	* certcheck.c (gpgsm_check_cms_signature): Removed the faked-key
+	kludge.
+	(gpgsm_create_cms_signature): Removed the commented fake key
+	code.  This makes the function pretty simple.
 
 	* gpgsm.c (main): Renamed the default key database to "keyring.kbx".
 

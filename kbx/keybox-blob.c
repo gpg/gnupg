@@ -172,7 +172,8 @@ struct keyboxblob {
   size_t bloblen;
   
   /* stuff used only by keybox_create_blob */
-  unsigned char *serial;
+  unsigned char *serialbuf;
+  const unsigned char *serial;
   size_t seriallen;
   int nkeys;
   struct keyboxblob_key *keys;
@@ -820,7 +821,14 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   p = ksba_cert_get_serial (cert);
   if (p)
     {
-      size_t n = (p[0] << 24) | (p[1] << 16) | (p[2] <<8) | p[3];
+      size_t n;
+      n = gcry_sexp_canon_len (p, 0, NULL, NULL);
+      if (!n)
+        return KEYBOX_General_Error;
+      blob->serialbuf = p;
+      for (; n && *p != ':'; n--, p++)
+        ;
+      p++;
       blob->seriallen = n;
       blob->serial = p;
     }
@@ -960,7 +968,7 @@ _keybox_release_blob (KEYBOXBLOB blob)
     return;
   /* hmmm: release membuf here?*/
   xfree (blob->keys );
-  xfree (blob->serial);
+  xfree (blob->serialbuf);
   for (i=0; i < blob->nuids; i++)
     xfree (blob->uids[i].name);
   xfree (blob->uids );

@@ -30,6 +30,12 @@
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
+struct sn_array_s {
+    int snlen;
+    unsigned char *sn;
+};
+
+
 
 static ulong
 get32 (const byte *buffer)
@@ -68,17 +74,13 @@ blob_get_type (KEYBOXBLOB blob)
 
 
 static int
-blob_cmp_sn (KEYBOXBLOB blob, const unsigned char *sn)
+blob_cmp_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
 {
-  size_t snlen;
   const unsigned char *buffer;
   size_t length;
   size_t pos, off;
   size_t nkeys, keyinfolen;
   size_t nserial;
-
-  snlen = (sn[0] << 24) | (sn[1] << 16) | (sn[2] << 8) | sn[3];
-  sn += 4;
 
   buffer = _keybox_get_blob_image (blob, &length);
   if (length < 40)
@@ -284,7 +286,8 @@ has_issuer (KEYBOXBLOB blob, const char *name)
 }
 
 static int
-has_issuer_sn (KEYBOXBLOB blob, const char *name, const unsigned char *sn)
+has_issuer_sn (KEYBOXBLOB blob, const char *name,
+               const unsigned char *sn, int snlen)
 {
   size_t namelen;
 
@@ -296,18 +299,18 @@ has_issuer_sn (KEYBOXBLOB blob, const char *name, const unsigned char *sn)
 
   namelen = strlen (name);
   
-  return (blob_cmp_sn (blob, sn)
+  return (blob_cmp_sn (blob, sn, snlen)
           && blob_cmp_name (blob, 0 /* issuer */, name, namelen));
 }
 
 static int
-has_sn (KEYBOXBLOB blob, const unsigned char *sn)
+has_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
 {
   return_val_if_fail (sn, 0);
 
   if (blob_get_type (blob) != BLOBTYPE_X509)
     return 0;
-  return blob_cmp_sn (blob, sn);
+  return blob_cmp_sn (blob, sn, snlen);
 }
 
 static int
@@ -357,12 +360,12 @@ has_mail (KEYBOXBLOB blob, const char *name)
 
 
 static void
-release_sn_array (unsigned char **array, size_t size)
+release_sn_array (struct sn_array_s *array, size_t size)
 {
   size_t n;
 
   for (n=0; n < size; n++)
-    xfree (array[n]);
+    xfree (array[n].sn);
   xfree (array);
 }
 
@@ -402,7 +405,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
   size_t n;
   int need_words, any_skip;
   KEYBOXBLOB blob = NULL;
-  unsigned char **sn_array = NULL;
+  struct sn_array_s *sn_array = NULL;
 
   if (!hd)
     return KEYBOX_Invalid_Value;
@@ -437,7 +440,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 	}
       if (desc[n].skipfnc) 
         any_skip = 1;
-      if (desc[n].sn_is_string && !sn_array)
+      if (desc[n].snlen == -1 && !sn_array)
         {
           sn_array = xtrycalloc (ndesc, sizeof *sn_array);
           if (!sn_array)
@@ -469,7 +472,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
         {
           if (!desc[n].sn)
             ;
-          else if (desc[n].sn_is_string)
+          else if (desc[n].snlen == -1)
             {
               unsigned char *sn;
 
@@ -478,13 +481,14 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
                 ;
               odd = (i & 1);
               snlen = (i+1)/2;
-              sn_array[n] = xtrymalloc (4+snlen);
-              if (!sn_array[n])
+              sn_array[n].sn = xtrymalloc (snlen);
+              if (!sn_array[n].sn)
                 {
                   release_sn_array (sn_array, n);
                   return (hd->error = KEYBOX_Out_Of_Core);
                 }
-              sn = sn_array[n] + 4;
+              sn_array[n].snlen = snlen;
+              sn = sn_array[n].sn;
               s = desc[n].sn;
               if (odd)
                 {
@@ -493,26 +497,21 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
                 }
               for (; *s && *s != '/';  s += 2)
                 *sn++ = xtoi_2 (s);
-              assert (sn - sn_array[n] == 4+snlen);
-              sn = sn_array[n];
-              sn[0] = snlen >> 24;
-              sn[1] = snlen >> 16;
-              sn[2] = snlen >> 8;
-              sn[3] = snlen;
             }
           else
             {
               const unsigned char *sn;
 
               sn = desc[n].sn;
-              snlen = (sn[0] << 24) | (sn[1] << 16) | (sn[2] << 8) | sn[3];
-              sn_array[n] = xtrymalloc (4+snlen);
-              if (!sn_array[n])
+              snlen = desc[n].snlen;
+              sn_array[n].sn = xtrymalloc (snlen);
+              if (!sn_array[n].sn)
                 {
                   release_sn_array (sn_array, n);
                   return (hd->error = KEYBOX_Out_Of_Core);
                 }
-              memcpy (sn_array[n], sn, 4+snlen);
+              sn_array[n].snlen = snlen;
+              memcpy (sn_array[n].sn, sn, snlen);
             }
         }
     }
@@ -552,11 +551,13 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               break;
             case KEYDB_SEARCH_MODE_ISSUER_SN:
               if (has_issuer_sn (blob, desc[n].u.name,
-                                 sn_array? sn_array[n] : desc[n].sn))
+                                 sn_array? sn_array[n].sn : desc[n].sn,
+                                 sn_array? sn_array[n].snlen : desc[n].snlen))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SN:
-              if (has_sn (blob, sn_array? sn_array[n] : desc[n].sn))
+              if (has_sn (blob, sn_array? sn_array[n].sn : desc[n].sn,
+                                sn_array? sn_array[n].snlen : desc[n].snlen))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SUBJECT:
