@@ -1,5 +1,5 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -373,6 +373,21 @@ keydb_set_ephemeral (KEYDB_HANDLE hd, int yes)
 }
 
 
+/* If the keyring has not yet been locked, lock it now.  This
+   operation is required before any update opeations; it is optionaly
+   for an insert operation.  The lock is released with
+   keydb_released. */
+gpg_error_t
+keydb_lock (KEYDB_HANDLE hd)
+{
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_HANDLE);
+  if (hd->locked)
+    return 0; /* Already locked. */
+  return lock_all (hd);
+}
+
+
 
 static int 
 lock_all (KEYDB_HANDLE hd)
@@ -380,8 +395,8 @@ lock_all (KEYDB_HANDLE hd)
   int i, rc = 0;
 
   /* Fixme: This locking scheme may lead to deadlock if the resources
-     are not added in the same sequence by all processes.  We are
-     cuurently only allowing one resource so it is not a problem. */
+     are not added in the same order all processes.  We are
+     currently only allowing one resource so it is not a problem. */
   for (i=0; i < hd->used; i++) 
     {
       switch (hd->active[i].type) 
@@ -416,7 +431,10 @@ lock_all (KEYDB_HANDLE hd)
     else
       hd->locked = 1;
 
-    return rc;
+    /* make_dotlock () does not yet guarantee that errno is set, thus
+       we can't rely on the error reason and will simply use
+       EACCES. */
+    return rc? gpg_error (GPG_ERR_EACCES) : 0;
 }
 
 static void
@@ -490,9 +508,8 @@ keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb)
     if( opt.dry_run )
 	return 0;
 
-    rc = lock_all (hd);
-    if (rc)
-        return rc;
+    if (!hd->locked)
+      return gpg_error (GPG_ERR_CONFLICT);
 
     switch (hd->active[hd->found].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
@@ -552,7 +569,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
 
 
 /*
-  Return the last found keybox.  Caller must free it.  The returned
+  Return the last found object.  Caller must free it.  The returned
   keyblock has the kbode flag bit 0 set for the node with the public
   key used to locate the keyblock or flag bit 1 set for the user ID
   node.  */
@@ -578,6 +595,67 @@ keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert)
     }
   
   return rc;
+}
+
+/* Return a flag of the last found object. WHICH is the flag requested;
+   it should be one of the KEYBOX_FLAG_ values.  If the operation is
+   successful, the flag value will be stored at the address given by
+   VALUE.  Return 0 on success or an error code. */
+gpg_error_t
+keydb_get_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int *value)
+{
+  int err = 0;
+
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  
+  if ( hd->found < 0 || hd->found >= hd->used) 
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
+  
+  switch (hd->active[hd->found].type) 
+    {
+    case KEYDB_RESOURCE_TYPE_NONE:
+      err = gpg_error (GPG_ERR_GENERAL); /* oops */
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      err = keybox_get_flags (hd->active[hd->found].u.kr, which, idx, value);
+      break;
+    }
+  
+  return err;
+}
+
+/* Set a flag of the last found object. WHICH is the flag to be set; it
+   should be one of the KEYBOX_FLAG_ values.  If the operation is
+   successful, the flag value will be stored in the keybox.  Note,
+   that some flag values can't be updated and thus may retrun an
+   error, some other flag values may be masked out before an update.
+   Returns 0 on success or an error code. */
+gpg_error_t
+keydb_set_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int value)
+{
+  int err = 0;
+
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  
+  if ( hd->found < 0 || hd->found >= hd->used) 
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
+  
+  if (!hd->locked)
+    return gpg_error (GPG_ERR_CONFLICT);
+
+  switch (hd->active[hd->found].type) 
+    {
+    case KEYDB_RESOURCE_TYPE_NONE:
+      err = gpg_error (GPG_ERR_GENERAL); /* oops */
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      err = keybox_set_flags (hd->active[hd->found].u.kr, which, idx, value);
+      break;
+    }
+  
+  return err;
 }
 
 /* 
@@ -679,9 +757,8 @@ keydb_delete (KEYDB_HANDLE hd)
   if( opt.dry_run )
     return 0;
 
-  rc = lock_all (hd);
-  if (rc)
-    return rc;
+  if (!hd->locked)
+    return gpg_error (GPG_ERR_CONFLICT); /* ...NOT_LOCKED would be better. */
 
   switch (hd->active[hd->found].type)
     {
@@ -1279,4 +1356,65 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
 }
 
 
+/* This is basically keydb_set_flags but it implements a complete
+   transaction by locating teh certificate in the DB and updating the
+   flags. */
+gpg_error_t
+keydb_set_cert_flags (ksba_cert_t cert, int which, int idx, unsigned int value)
+{
+  KEYDB_HANDLE kh;
+  gpg_error_t err;
+  unsigned char fpr[20];
+  unsigned int old_value;
+
+  if (!gpgsm_get_fingerprint (cert, 0, fpr, NULL))
+    {
+      log_error (_("failed to get the fingerprint\n"));
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  kh = keydb_new (0);
+  if (!kh)
+    {
+      log_error (_("failed to allocate keyDB handle\n"));
+      return gpg_error (GPG_ERR_ENOMEM);;
+    }
+
+  err = keydb_lock (kh);
+  if (err)
+    {
+      log_error (_("error locking keybox: %s\n"), gpg_strerror (err));
+      keydb_release (kh);
+      return err;
+    }
+
+  err = keydb_search_fpr (kh, fpr);
+  if (err)
+    {
+      log_error (_("problem re-searching certificate: %s\n"),
+                 gpg_strerror (err));
+      keydb_release (kh);
+      return err;
+    }
+
+  err = keydb_get_flags (kh, which, idx, &old_value);
+  if (err)
+    {
+      log_error (_("error getting stored flags: %s\n"), gpg_strerror (err));
+      keydb_release (kh);
+      return err;
+    }
+  if (value != old_value)
+    {
+      err = keydb_set_flags (kh, which, idx, value);
+      if (err)
+        {
+          log_error (_("error storing flags: %s\n"), gpg_strerror (err));
+          keydb_release (kh);
+          return err;
+        }
+    }
+  keydb_release (kh);               
+  return 0;
+}
 

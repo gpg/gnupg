@@ -1,5 +1,5 @@
 /* keybox-search.c - Search operations
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,11 +26,14 @@
 #include <errno.h>
 
 #include "../jnlib/stringhelp.h" /* ascii_xxxx() */
+
 #include "keybox-defs.h"
+
 
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
 
 struct sn_array_s {
     int snlen;
@@ -85,6 +88,97 @@ blob_get_blob_flags (KEYBOXBLOB blob)
     return 0; /* oops */
 
   return get16 (buffer + 6);
+}
+
+
+/* Return information on the flag WHAT within the blob BUFFER,LENGTH.
+   Return the offset and the length (in bytes) of the flag in
+   FLAGOFF,FLAG_SIZE. */
+gpg_err_code_t
+_keybox_get_flag_location (const unsigned char *buffer, size_t length,
+                           int what, size_t *flag_off, size_t *flag_size)
+{
+  size_t pos;
+  size_t nkeys, keyinfolen;
+  size_t nuids, uidinfolen;
+  size_t nserial;
+  size_t nsigs, siginfolen;
+
+  switch (what)
+    {
+    case KEYBOX_FLAG_BLOB:
+      if (length < 8)
+        return GPG_ERR_INV_OBJ;
+      *flag_off = 6;
+      *flag_size = 2;
+      break;
+    
+    case KEYBOX_FLAG_VALIDITY:
+    case KEYBOX_FLAG_OWNERTRUST:
+      if (length < 20)
+        return GPG_ERR_INV_OBJ;
+      /* Key info. */
+      nkeys = get16 (buffer + 16);
+      keyinfolen = get16 (buffer + 18 );
+      if (keyinfolen < 28)
+        return GPG_ERR_INV_OBJ;
+      pos = 20 + keyinfolen*nkeys;
+      if (pos+2 > length)
+        return GPG_ERR_INV_OBJ; /* Out of bounds. */
+      /* Serial number. */
+      nserial = get16 (buffer+pos); 
+      pos += 2 + nserial;
+      if (pos+4 > length)
+        return GPG_ERR_INV_OBJ; /* Out of bounds. */
+      /* User IDs. */
+      nuids = get16 (buffer + pos); pos += 2;
+      uidinfolen = get16 (buffer + pos); pos += 2;
+      if (uidinfolen < 12 )
+        return GPG_ERR_INV_OBJ; 
+      pos += uidinfolen*nuids;
+      if (pos+4 > length)
+        return GPG_ERR_INV_OBJ ; /* Out of bounds. */
+      /* Signature info. */
+      nsigs = get16 (buffer + pos); pos += 2;
+      siginfolen = get16 (buffer + pos); pos += 2;
+      if (siginfolen < 4 )
+        return GPG_ERR_INV_OBJ; 
+      pos += siginfolen*nsigs;
+      if (pos+1+1+2+4+4+4+4 > length)
+        return GPG_ERR_INV_OBJ ; /* Out of bounds. */
+      *flag_size = 1;
+      *flag_off = pos;
+      if (what == KEYBOX_FLAG_VALIDITY)
+        ++*flag_off;
+      break;
+
+    default:
+      return GPG_ERR_INV_FLAG;
+    }
+  return 0;
+}
+
+/* Return one of the flags WHAT in VALUE from teh blob BUFFER of
+   LENGTH bytes.  Return 0 on success or an raw error code. */
+static gpg_err_code_t
+get_flag_from_image (const unsigned char *buffer, size_t length,
+                     int what, unsigned int *value)
+{
+  gpg_err_code_t ec;
+  size_t pos, size;
+
+  *value = 0;
+  ec = _keybox_get_flag_location (buffer, length, what, &pos, &size);
+  if (!ec)
+    switch (size)
+      {
+      case 1: *value = buffer[pos]; break;
+      case 2: *value = get16 (buffer + pos); break;
+      case 4: *value = get32 (buffer + pos); break;
+      default: ec = GPG_ERR_BUG; break;
+      }
+  
+  return ec;
 }
 
 
@@ -811,3 +905,23 @@ keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *r_cert)
 }
 
 #endif /*KEYBOX_WITH_X509*/
+
+/* Return the flags named WHAT iat the address of VALUE. IDX is used
+   only for certain flags and should be 0 if not required. */
+int
+keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value)
+{
+  const unsigned char *buffer;
+  size_t length;
+  gpg_err_code_t ec;
+
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!hd->found.blob)
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
+
+  buffer = _keybox_get_blob_image (hd->found.blob, &length);
+  ec = get_flag_from_image (buffer, length, what, value);
+  return ec? gpg_error (ec):0;
+}
+

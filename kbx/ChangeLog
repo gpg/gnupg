@@ -1,3 +1,9 @@
+2004-02-02  Werner Koch  <wk@gnupg.org>
+
+	* keybox.h (keybox_flag_t): New.
+	* keybox-search.c (get_flag_from_image, keybox_get_flags): New.
+	(_keybox_get_flag_location): New.
+
 2003-11-12  Werner Koch  <wk@gnupg.org>
 
 	Adjusted for API changes in Libksba.

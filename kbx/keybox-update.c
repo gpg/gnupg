@@ -384,6 +384,88 @@ keybox_update_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
 
 #endif /*KEYBOX_WITH_X509*/
 
+/* Note: We assume that the keybox has been locked before the current
+   search was executed.  This is needed so that we can depend on the
+   offset information of the flags. */
+int
+keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
+{
+  off_t off;
+  const char *fname;
+  FILE *fp;
+  gpg_err_code_t ec;
+  size_t flag_pos, flag_size;
+  const unsigned char *buffer;
+  size_t length;
+
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!hd->found.blob)
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
+  if (!hd->kb)
+    return gpg_error (GPG_ERR_INV_HANDLE); 
+  if (!hd->found.blob)
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
+  fname = hd->kb->fname;
+  if (!fname)
+    return gpg_error (GPG_ERR_INV_HANDLE); 
+
+  off = _keybox_get_blob_fileoffset (hd->found.blob);
+  if (off == (off_t)-1)
+    return gpg_error (GPG_ERR_GENERAL);
+
+  buffer = _keybox_get_blob_image (hd->found.blob, &length);
+  ec = _keybox_get_flag_location (buffer, length, what, &flag_pos, &flag_size);
+  if (ec)
+    return gpg_error (ec);
+
+  off += flag_pos;
+
+  if (hd->fp)
+    {
+      fclose (hd->fp);
+      hd->fp = NULL;
+    }
+  fp = fopen (hd->kb->fname, "r+b");
+  if (!fp)
+    return gpg_error (gpg_err_code_from_errno (errno));
+
+  ec = 0;
+  if (fseeko (fp, off, SEEK_SET))
+    ec = gpg_error (gpg_err_code_from_errno (errno));
+  else
+    {
+      unsigned char tmp[4];
+
+      tmp[0] = value >> 24;
+      tmp[1] = value >> 16;
+      tmp[2] = value >>  8;
+      tmp[3] = value;
+
+      switch (flag_size)
+        {
+        case 1: 
+        case 2:
+        case 4:
+          if (fwrite (tmp+4-flag_size, flag_size, 1, fp) != 1)
+            ec = gpg_err_code_from_errno (errno);
+          break;
+        default:
+          ec = GPG_ERR_BUG;
+          break;
+        }
+    }
+
+  if (fclose (fp))
+    {
+      if (!ec)
+        ec = gpg_err_code_from_errno (errno);
+    }
+
+  return gpg_error (ec);
+}
+
+
 
 int
 keybox_delete (KEYBOX_HANDLE hd)

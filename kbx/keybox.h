@@ -42,9 +42,19 @@ extern "C" {
 # include <ksba.h>
 #endif
 
-
-
 typedef struct keybox_handle *KEYBOX_HANDLE;
+
+
+typedef enum
+  {
+    KEYBOX_FLAG_BLOB,       /* The blob flags. */
+    KEYBOX_FLAG_VALIDITY,   /* The validity of the entire key. */
+    KEYBOX_FLAG_OWNERTRUST, /* The assigned ownertrust. */
+    KEYBOX_FLAG_KEY,        /* The key flags; requires a key index. */
+    KEYBOX_FLAG_UID,        /* The user ID flags; requires an uid index. */
+    KEYBOX_FLAG_UID_VALIDITY/* The validity of a specific uid, requires
+                               an uid index. */
+  } keyxox_flag_t;
 
 
 /*-- keybox-init.c --*/
@@ -61,6 +71,7 @@ int keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes);
 #ifdef KEYBOX_WITH_X509 
 int keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *ret_cert);
 #endif /*KEYBOX_WITH_X509*/
+int keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value);
 
 int keybox_search_reset (KEYBOX_HANDLE hd);
 int keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc);
@@ -73,6 +84,7 @@ int keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
 int keybox_update_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
                         unsigned char *sha1_digest);
 #endif /*KEYBOX_WITH_X509*/
+int keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value);
 
 int keybox_delete (KEYBOX_HANDLE hd);
 

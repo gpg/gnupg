@@ -33,6 +33,7 @@
 #include <ksba.h>
 
 #include "keydb.h"
+#include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
 #include "i18n.h"
 
 struct list_external_parm_s {
@@ -145,7 +146,8 @@ email_kludge (const char *name)
 
 /* List one certificate in colon mode */
 static void
-list_cert_colon (ksba_cert_t cert, FILE *fp, int have_secret)
+list_cert_colon (ksba_cert_t cert, unsigned int validity,
+                 FILE *fp, int have_secret)
 {
   int idx, trustletter = 0;
   char *p;
@@ -155,19 +157,17 @@ list_cert_colon (ksba_cert_t cert, FILE *fp, int have_secret)
 
   fputs (have_secret? "crs:":"crt:", fp);
   trustletter = 0;
+  if ((validity & VALIDITY_REVOKED))
+    trustletter = 'r';
 #if 0
-  if (is_not_valid (cert))
+  else if (is_not_valid (cert))
     putc ('i', fp);
-  else if ( is_revoked (cert) )
-    putc ('r', fp);
   else if ( has_expired (cert))
     putcr ('e', fp);
-  else
 #endif
-    {
-      trustletter = '?'; /*get_validity_info ( pk, NULL );*/
-      putc (trustletter, fp);
-    }
+  else
+    trustletter = '?';
+  putc (trustletter, fp);
 
   fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
   fprintf (fp, ":%u:%d:%s:",
@@ -481,9 +481,17 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
   lastresname = NULL;
   while (!(rc = keydb_search (hd, desc, ndesc)))
     {
+      unsigned int validity;
+
       if (!names) 
         desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
+      rc = keydb_get_flags (hd, KEYBOX_FLAG_VALIDITY, 0, &validity);
+      if (rc)
+        {
+          log_error ("keydb_get_flags failed: %s\n", gpg_strerror (rc));
+          goto leave;
+        }
       rc = keydb_get_cert (hd, &cert);
       if (rc) 
         {
@@ -524,7 +532,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
           || ((mode & 2) && have_secret)  )
         {
           if (ctrl->with_colons)
-            list_cert_colon (cert, fp, have_secret);
+            list_cert_colon (cert, validity, fp, have_secret);
           else if (ctrl->with_chain)
             list_cert_chain (cert, fp);
           else
@@ -568,7 +576,7 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
     }
 
   if (parm->with_colons)
-    list_cert_colon (cert, parm->fp, 0);
+    list_cert_colon (cert, 0, parm->fp, 0);
   else if (parm->with_chain)
     list_cert_chain (cert, parm->fp);
   else

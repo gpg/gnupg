@@ -1,3 +1,20 @@
+2004-02-02  Werner Koch  <wk@gnupg.org>
+
+	* certchain.c (gpgsm_validate_chain): Mark revoked certs in the
+	keybox.
+
+	* keylist.c (list_cert_colon): New arg VALIDITY; use it to print a
+	revoked flag.
+	(list_internal_keys): Retrieve validity flag.
+	(list_external_cb): Pass 0 as validity flag.
+	* keydb.c (keydb_get_flags, keydb_set_flags): New.
+	(keydb_set_cert_flags): New.
+	(lock_all): Return a proper error code.
+	(keydb_lock): New.
+	(keydb_delete): Don't lock but check that it has been locked.
+	(keydb_update_keyblock): Ditto.
+	* delete.c (delete_one): Take a lock.
+
 2004-01-30  Werner Koch  <wk@gnupg.org>
 
 	* certchain.c (check_cert_policy): Fixed read error checking.

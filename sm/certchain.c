@@ -32,6 +32,7 @@
 #include <ksba.h>
 
 #include "keydb.h"
+#include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
 #include "i18n.h"
 
 static int
@@ -535,6 +536,11 @@ gpgsm_validate_chain (CTRL ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime)
                 case GPG_ERR_CERT_REVOKED:
                   log_error (_("the certificate has been revoked\n"));
                   any_revoked = 1;
+                  /* Store that in the keybox so that key listings are
+                     able to return the revoked flag.  We don't care
+                     about error, though. */
+                  keydb_set_cert_flags (subject_cert, KEYBOX_FLAG_VALIDITY, 0,
+                                        VALIDITY_REVOKED);
                   break;
                 case GPG_ERR_NO_CRL_KNOWN:
                   log_error (_("no CRL found for certificate\n"));

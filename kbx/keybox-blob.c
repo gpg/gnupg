@@ -39,7 +39,7 @@ The first record of a plain KBX file has a special format:
  byte pgp_completes  ditto.
  byte pgp_cert_depth ditto.
 
-The OpenPGP and X.509 blob are verry similiar, things which are
+The OpenPGP and X.509 blob are very similiar, things which are
 X.509 specific are noted like [X.509: xxx]
 
  u32  length of this blob (including these 4 bytes)
@@ -57,7 +57,7 @@ X.509 specific are noted like [X.509: xxx]
    b20	The keys fingerprint
 	(fingerprints are always 20 bytes, MD5 left padded with zeroes)
    u32	offset to the n-th key's keyID (a keyID is always 8 byte)
-        or 0 if not known which is the case opnly for X509.
+        or 0 if not known which is the case only for X509.
    u16	special key flags
 	 bit 0 =
    u16	reserved
@@ -82,8 +82,11 @@ X.509 specific are noted like [X.509: xxx]
 	0x00000002 = bad signature
 	0x10000000 = valid and expires at some date in 1978.
 	0xffffffff = valid and does not expire
- u8	assigned ownertrust [X509: no used]
- u8	all_validity        [X509: no used]
+ u8	assigned ownertrust [X509: not used]
+ u8	all_validity 
+           OpenPGP:  see ../g10/trustdb/TRUST_* [not yet used]
+           X509: Bit 4 set := key has been revoked.  nOte that this value
+                              matches TRUST_FLAG_REVOKED
  u16	reserved
  u32	recheck_after
  u32	Newest timestamp in the keyblock (useful for KS syncronsiation?)

@@ -105,7 +105,14 @@ delete_one (CTRL ctrl, const char *username)
       goto leave;
     }
 
-  /* we need to search again to get back to the right position. */
+  /* We need to search again to get back to the right position. */
+  rc = keydb_lock (kh);
+  if (rc)
+    {
+      log_error (_("error locking keybox: %s\n"), gpg_strerror (rc));
+      goto leave;
+    }
+                   
   do 
     {
       keydb_search_reset (kh);

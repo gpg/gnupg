@@ -116,6 +116,12 @@ off_t _keybox_get_blob_fileoffset (KEYBOXBLOB blob);
 int _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp);
 int _keybox_write_blob (KEYBOXBLOB blob, FILE *fp);
 
+/*-- keybox-search.c --*/
+gpg_err_code_t _keybox_get_flag_location (const unsigned char *buffer,
+                                          size_t length,
+                                          int what,
+                                          size_t *flag_off, size_t *flag_size);
+
 /*-- keybox-dump.c --*/
 int _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp);
 int _keybox_dump_file (const char *filename, FILE *outfp);
