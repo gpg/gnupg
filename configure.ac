@@ -860,6 +860,8 @@ if test "$GCC" = yes; then
     fi
 fi
 
+# Note the \\\\ for backslashes.  Autoconf eats one layer, leaving \\
+
 AC_CONFIG_COMMANDS(g10defs.h,[[
 cat >g10defs.tmp <<G10EOF
 /* Generated automatically by configure */
@@ -881,10 +883,17 @@ cat >g10defs.tmp <<G10EOF
 /* those are here to be redefined by handcrafted g10defs.h.
    Please note that the string version must not contain more
    than one character because the using code assumes strlen()==1 */
+#ifdef HAVE_DOSISH_SYSTEM
+#define DIRSEP_C '\\\\'
+#define EXTSEP_C '.'
+#define DIRSEP_S "\\\\"
+#define EXTSEP_S "."
+#else
 #define DIRSEP_C '/'
 #define EXTSEP_C '.'
 #define DIRSEP_S "/"
 #define EXTSEP_S "."
+#endif
 G10EOF
 cat mpi/mpi-asm-defs.h >>g10defs.tmp 
 if cmp -s g10defs.h g10defs.tmp 2>/dev/null; then

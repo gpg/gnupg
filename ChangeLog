@@ -1,5 +1,8 @@
 2002-05-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* configure.ac: In g10defs.h, use \ for the directory separator
+	when HAVE_DOSISH_SYSTEM is on.
+
 	* configure.ac: Add --disable-exec flag to disable all remote
 	program execution.  --disable-exec implies --disable-ldap and
 	--disable-mailto.  Also look in /usr/lib for sendmail.  If
