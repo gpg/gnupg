@@ -20,56 +20,27 @@
 
 <!DOCTYPE reference PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
 <!entity libgcrypt "Libgcrypt">
+<!entity sexp	   "S-Exp">
 <!entity cipherref system "gcryptref-cipher.sgml">
 <!entity digestref system "gcryptref-digest.sgml">
 <!entity pubkeyref system "gcryptref-pubkey.sgml">
 <!entity miscref   system "gcryptref-misc.sgml">
 ]>
 
-<!--
-<refentry>
-  <refnamediv>
-    <refname>XXX</refname>
-    <refpurpose>xxx</refpurpose>
-  </refnamediv>
-
-  <refsynopsisdiv>
-    <funcsynopsis>
-      <funcsynopsisinfo>
-      #include &lt;gcrypt.h&gt;
-      </funcsynopsisinfo>
-      <funcprototype>
-	<funcdef>int <function>XXX</function></funcdef>
-	<paramdef>int <parameter>algo</parameter></paramdef>
-      </funcprototype>
-  </refsynopsisdiv>
-
-
-  <refsect1><title>Description</title>
-  <para>
-  <indexterm><primary>cipher functions</primary>
-	     <secondary>XXX</secondary>
-	     </indexterm>
-  <function>XXX</function> xxx
-
-  </para>
-</refentry>
--->
 
 <reference>
 <title>&libgcrypt; Reference Pages</title>
-
-<subtitle>Symmetric Cipher Functions</subtitle>
+<!--FIXME: How can we subdivide a reference (Part?)
+    Symmetric Cipher Functions -->
 &cipherref;
 
-<subtitle>Hash Functions</subtitle>
+<!-- Hash Functions -->
 &digestref;
 
-<subtitle>Public Key Functions</subtitle>
+<!-- ublic Key Functions -->
 &pubkeyref;
 
-
-<subtitle>Miscellaneous Functions</subtitle>
+<!-- Miscellaneous Functions  -->
 &miscref;
 
 </reference>

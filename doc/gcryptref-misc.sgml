@@ -18,3 +18,50 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 -->
 
+<!--
+const char *gcry_check_version( const char *req_version );
+
+int gcry_errno(void);
+const char *gcry_strerror( int ec );
+int gcry_control( enum gcry_ctl_cmds, ... );
+
+
+
+
+void gcry_set_allocation_handler( void *(*new_alloc_func)(size_t n),
+				  void *(*new_alloc_secure_func)(size_t n),
+				  int (*new_is_secure_func)(const void*),
+				  void *(*new_realloc_func)(void *p, size_t n),
+				  void (*new_free_func)(void*) );
+void gcry_set_outofcore_handler( int (*h)( void*, size_t, unsigned int ),
+								void *opaque );
+void gcry_set_fatalerror_handler( void (*fnc)(void*,int, const char*),
+								void *opaque );
+void gcry_set_gettext_handler( const char *(*f)(const char*) );
+void gcry_set_log_handler( void (*f)(void*,int, const char*, va_list ),
+							     void *opaque );
+
+void *gcry_malloc( size_t n );
+void *gcry_calloc( size_t n, size_t m );
+void *gcry_malloc_secure( size_t n );
+void *gcry_calloc_secure( size_t n, size_t m );
+void *gcry_realloc( void *a, size_t n );
+void *gcry_xmalloc( size_t n );
+void *gcry_xcalloc( size_t n, size_t m );
+void *gcry_xmalloc_secure( size_t n );
+void *gcry_xcalloc_secure( size_t n, size_t m );
+void *gcry_xrealloc( void *a, size_t n );
+char *gcry_xstrdup( const char * a);
+void  gcry_free( void *a );
+int   gcry_is_secure( const void *a );
+
+
+void gcry_randomize( byte *buffer, size_t length,
+		     enum gcry_random_level level );
+void *gcry_random_bytes( size_t nbytes, enum gcry_random_level level );
+void *gcry_random_bytes_secure( size_t nbytes, enum gcry_random_level level );
+
+
+
+    -->
+

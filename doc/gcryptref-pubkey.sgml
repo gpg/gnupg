@@ -18,3 +18,75 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 -->
 
+
+<!--**********************************************
+***********  pk_encrypt  *************************
+***********************************************-->
+<refentry>
+  <refnamediv>
+    <refname>gcry_pk_encrypt</refname>
+    <refpurpose>do a public key encryption</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_pk_encrypt</function></funcdef>
+	<paramdef>GCRY_SEXP *<parameter>result</parameter></paramdef>
+	<paramdef>GCRY_SEXP  <parameter>data</parameter></paramdef>
+	<paramdef>GCRY_SEXP  <parameter>pkey</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>public key functions</primary>
+	     <secondary>gcry_pk_encrypt</secondary>
+	     </indexterm>
+  <function>gcry_pk_encrypt</function> performs public key encryption
+  operations.  The caller has to provide a public key as the &sexp;
+  <parameter>pkey</> and <parameter>data</> as a &sexp;
+  with just one MPI in it.  The function returns a &sexp; which may
+  be passed tp to pk_decrypt.
+  Later versions of this functions may take more complex input data.
+
+  Returns: 0 or an errorcode.
+  </para>
+  <literallayout>
+  s_data = (<replaceable/mpi/)
+  s_pkey = <replaceable/key-as-defined-in-sexp_to_key/
+  r_ciph = (enc-val
+	     (<replaceable/algo/
+	       (<replaceable/param_name1/ <replaceable/mpi/)
+	       ...
+	       (<replaceable/param_namen/ <replaceable/mpi/)
+	     ))
+  </literallayout>
+</refentry>
+
+
+<!--
+int gcry_pk_decrypt( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP skey );
+
+
+
+int gcry_pk_sign(    GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP skey );
+int gcry_pk_verify(  GCRY_SEXP sigval, GCRY_SEXP data, GCRY_SEXP pkey );
+int gcry_pk_testkey( GCRY_SEXP key );
+int gcry_pk_genkey(  GCRY_SEXP *r_key, GCRY_SEXP s_parms );
+
+int gcry_pk_ctl( int cmd, void *buffer, size_t buflen);
+int gcry_pk_algo_info( int algo, int what, void *buffer, size_t *nbytes);
+#define gcry_pk_test_algo(a) \
+	    gcry_pk_algo_info( (a), GCRYCTL_TEST_ALGO, NULL, NULL )
+
+const char *gcry_pk_algo_name( int algo );
+int gcry_pk_map_name( const char* name );
+unsigned int gcry_pk_get_nbits( GCRY_SEXP key );
+    -->
+

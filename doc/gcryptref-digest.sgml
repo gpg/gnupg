@@ -18,6 +18,9 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 -->
 
+<!--**********************************************
+***********  md_open, close, enable  ************
+***********************************************-->
 <refentry>
   <refnamediv>
     <refname>gcry_md_open</refname>
@@ -53,7 +56,11 @@
   <para>
   <indexterm><primary>hash functions</primary>
 	     <secondary>gcry_md_open</secondary>
+	     </indexterm>
+  <indexterm><primary>hash functions</primary>
 	     <secondary>gcry_md_enable</secondary>
+	     </indexterm>
+  <indexterm><primary>hash functions</primary>
 	     <secondary>gcry_md_close</secondary>
 	     </indexterm>
   <function>gcry_md_open</function> creates the context required for
@@ -69,6 +76,9 @@
   </para>
 </refentry>
 
+<!--**********************************************
+***********  md_copy *****************************
+***********************************************-->
 <refentry>
   <refnamediv>
     <refname>gcry_md_copy</refname>
@@ -99,6 +109,9 @@
   </para>
 </refentry>
 
+<!--**********************************************
+***********  md_reset  ***************************
+***********************************************-->
 <refentry>
   <refnamediv>
     <refname>gcry_md_reset</refname>
@@ -129,8 +142,13 @@
 </refentry>
 
 
+<!--**********************************************
+***********  md_ctl  *****************************
+***********************************************-->
+<refentry>
   <refnamediv>
     <refname>gcry_md_ctl</refname>
+    <refname>gcry_md_final</refname>
     <refpurpose>perform special operations on a digest context</refpurpose>
   </refnamediv>
 
@@ -159,33 +177,292 @@
   to control the behaviour of all gcry_md functions or one instance
   of it.
   </para>
+  <para>
+  Currently defined values for <parameter>cmd</> are:
+    <literal>GCRYCTL_FINALIZE</> and the conevnience macro
+    <function>gcry_md_final(a)</>
+  </para>
+</refentry>
+
+<!--**********************************************
+***********  md_write, putc  *********************
+***********************************************-->
+<refentry>
+  <refnamediv>
+    <refname>gcry_md_write</refname>
+    <refname>gcry_md_putc</refname>
+    <refpurpose>calculate the message digest of a buffer</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_md_write</function></funcdef>
+	<paramdef>GCRY_MD_HD <parameter>h</parameter></paramdef>
+	<paramdef>unsigned char * <parameter>buffer</parameter></paramdef>
+	<paramdef>size_t <parameter>buflen</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+	<funcdef>int <function>gcry_md_putc</function></funcdef>
+	<paramdef>GCRY_MD_HD <parameter>h</parameter></paramdef>
+	<paramdef>int <parameter>c</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_write</secondary></indexterm>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_putc</secondary></indexterm>
+  <function>gcry_md_write</function> is used to actually calulate the message
+  digest of a buffer.  This function updates the internal state of the message
+  digest.
+  </para>
+  <para>
+  <function>gcry_md_putc</function> is a macro which is used to update
+  the message digest by one byte.  this is the preferred way to calculate
+  a digest if only a few bytes at a time are available.
+  </para>
+</refentry>
+
+<!--**********************************************
+***********  md_read *****************************
+***********************************************-->
+<refentry>
+  <refnamediv>
+    <refname>gcry_md_read</refname>
+    <refpurpose>read out the message digest</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>unsigned char * <function>gcry_md_read</function></funcdef>
+	<paramdef>GCRY_MD_HD <parameter>h</parameter></paramdef>
+	<paramdef>int <parameter>algo</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_read</secondary>
+	     </indexterm>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_putc</secondary>
+	     </indexterm>
+  <function>gcry_md_read</function> returns the message digest after finalizing
+  the calculation.  This function may be used as often as required but it
+  will alwas return the same value for one handle.  The returned message
+  digest is allocated within the message context and therefore valid until
+  the conext is released.  <parameter>algo</> may be given as 0 to return the
+  only enbaled message digest or it may specify one of the enabled algorithms.
+  The function will return NULL if the algorithm has not been enabled.
+  </para>
 </refentry>
 
 
-void gcry_md_write( GCRY_MD_HD hd, const byte *buffer, size_t length);
-byte *gcry_md_read( GCRY_MD_HD hd, int algo );
-void gcry_md_hash_buffer( int algo, char *digest,
-			  const char *buffer, size_t length);
-int gcry_md_get_algo( GCRY_MD_HD hd );
-unsigned int gcry_md_get_algo_dlen( int algo );
-int gcry_md_info( GCRY_MD_HD h, int what, void *buffer, size_t *nbytes);
-int gcry_md_algo_info( int algo, int what, void *buffer, size_t *nbytes);
-const char *gcry_md_algo_name( int algo );
-int gcry_md_map_name( const char* name );
+<!--**********************************************
+***********  md_info  ****************************
+***********************************************-->
+<refentry>
+  <refnamediv>
+    <refname>gcry_md_info</refname>
+    <refpurpose>get information about a handle</refpurpose>
+  </refnamediv>
 
-#define gcry_md_putc(h,c)  \
-	    do {					\
-		if( (h)->bufpos == (h)->bufsize )	\
-		    gcry_md_write( (h), NULL, 0 );	\
-		(h)->buf[(h)->bufpos++] = (c) & 0xff;	\
-	    } while(0)
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_md_info</function></funcdef>
+	<paramdef>GCRY_MD_HD <parameter>h</parameter></paramdef>
+	<paramdef>int	     <parameter>what</parameter></paramdef>
+	<paramdef>void * <parameter>buffer</parameter></paramdef>
+	<paramdef>size_t <parameter>buflen</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
 
-#define gcry_md_final(a) \
-	    gcry_md_ctl( (a), GCRYCTL_FINALIZE, NULL, 0 )
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_info</secondary>
+	     </indexterm>
+  <function>gcry_md_info</function> returns some information about the
+  handle or an global parameter.
+  </para>
+  <para>
+  The only defined value for <parameter>what</> is
+  <literal>GCRYCTL_IS_SECURE</literal> to return whether the handle
+  has been allocated in secure memory.	Buffer and buflen are not needed
+  in this cases.  The convenience macro <function>gcry_md_is_secure(a)</>
+  may be also used for this purpose.
+  </para>
+</refentry>
 
-#define gcry_md_is_secure(a) \
-	    gcry_md_info( (a), GCRYCTL_IS_SECURE, NULL, NULL )
 
-#define gcry_md_test_algo(a) \
-	    gcry_md_algo_info( (a), GCRYCTL_TEST_ALGO, NULL, NULL )
+<!--**********************************************
+***********  md_algo_info  ***********************
+***********************************************-->
+<refentry>
+  <refnamediv>
+    <refname>gcry_md_algo_info</refname>
+    <refname>gcry_md_test_algo</refname>
+    <refname>gcry_md_get_algo_dlen</refname>
+    <refpurpose>get information about an algorithm</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_md_algo_info</function></funcdef>
+	<paramdef>int	     <parameter>algo</parameter></paramdef>
+	<paramdef>int	     <parameter>what</parameter></paramdef>
+	<paramdef>void * <parameter>buffer</parameter></paramdef>
+	<paramdef>size_t <parameter>buflen</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+	<funcdef>unsigned int <function>gcry_md_get_algo_dlen</function></funcdef>
+	<paramdef>int <parameter>algo</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_algo_info</secondary>
+	     </indexterm>
+  <function>gcry_md_algo_info</function> returns some information about an
+  algorithm.  On error the value -1 is return and a more detailed error
+  description is available with <function>gcry_errno</>.
+  </para>
+  <para>
+  The defined values for <parameter>what</> are
+  <literal>GCRYCTL_TEST_ALGO</literal> to return whether the algorithm
+  is supported. Buffer and buflen are not needed
+  in this cases.  The convenience macro <function>gcry_md_test_algo(a)</>
+  may be used for this purpose.
+  </para>
+  <para>
+  <literal>GCRYCTL_GET_ASNOID</literal> to return whether the ASN.1
+  object identifier.  IF buffer is specified as NULL, only the required
+  length for the buffer is returned.
+  </para>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_get_algo_dlen</secondary>
+	     </indexterm>
+  <function>gcry_md_get_algo_dlen</function> returns the length of the
+  digest for a given algorithm in bytes.
+  </para>
+</refentry>
+
+
+<!--**********************************************
+***********  md_algo_name, map_name  *************
+***********************************************-->
+<refentry>
+  <refnamediv>
+    <refname>gcry_md_algo_name</refname>
+    <refname>gcry_md_map_name</refname>
+    <refpurpose>map algorithm to string</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>const char * <function>gcry_md_algo_name</function></funcdef>
+	<paramdef>int	     <parameter>algo</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+	<funcdef>int <function>gcry_md_map_name</function></funcdef>
+	<paramdef>const char*<parameter>name</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_algo_name</secondary>
+	     </indexterm>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_map_name</secondary>
+	     </indexterm>
+  These both functions are used to map a string with the algorithm name to
+  the internal algorithm identifier value and vice versa.
+  </para>
+  <para>
+  <function>gcry_md_algo_name</> never returns NULL even in cases where the
+  algorithm string is not available.  Instead a string consisting of a
+  single question mark is returned.  Do not use this function to test
+  for the existence of an algorithm.
+  </para>
+  <para>
+  <function>gcry_md_map_name</> returns 0 if the algorithm is not known
+  to &libgcrypt;.
+  </para>
+</refentry>
+
+
+
+<!--**********************************************
+***********  md_hash_buffer  *********************
+***********************************************-->
+<refentry>
+  <refnamediv>
+    <refname>gcry_md_hash_buffer</refname>
+    <refpurpose>fast message calculation</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+      #include &lt;gcrypt.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+	<funcdef>int <function>gcry_md_hash_buffer</function></funcdef>
+	<paramdef>int  <parameter>algo</parameter></paramdef>
+	<paramdef>char * <parameter>digest</parameter></paramdef>
+	<paramdef>const char * <parameter>buffer</parameter></paramdef>
+	<paramdef>size_t <parameter>buflen</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>Description</title>
+  <para>
+  <indexterm><primary>hash functions</primary>
+	     <secondary>gcry_md_hash_buffer</secondary>
+	     </indexterm>
+  <function>gcry_md_hash_buffer</function> is a shortcut function
+  to calculate a message digest of a buffer.  This function does not require
+  a context and immediatley returns the message digest.
+  <parameter>digest</> must be string large enough to hold the digest
+  given by algo.  This length may be obtained by using the function
+  <function>gcry_md_get_algo_dlen</> but in most cases it will be a statically
+  allocated buffer.
+  </para>
+</refentry>
 
