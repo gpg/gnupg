@@ -27,7 +27,6 @@
 
 #include "g10lib.h"
 #include "util.h"
-#include "errors.h"
 #include "cipher.h"
 #include "des.h"
 #include "blowfish.h"
@@ -289,12 +288,12 @@ check_cipher_algo( int algo )
 	   if( cipher_table[i].algo == algo ) {
 		for(i=0; i < DIM(disabled_algos); i++ ) {
 		   if( disabled_algos[i] == algo )
-		       return G10ERR_CIPHER_ALGO;
+		       return GCRYERR_INV_CIPHER_ALGO;
 		}
 		return 0; /* okay */
 	   }
     } while( load_cipher_modules() );
-    return G10ERR_CIPHER_ALGO;
+    return GCRYERR_INV_CIPHER_ALGO;
 }
 
 
@@ -356,13 +355,13 @@ gcry_cipher_open( int algo, int mode, unsigned int flags )
 
     /* check whether the algo is available */
     if( check_cipher_algo( algo ) ) {
-	set_lasterr( GCRYERR_INV_ALGO );
+	set_lasterr( GCRYERR_INV_CIPHER_ALGO );
 	return NULL;
     }
 
     /* check flags */
     if( (flags & ~(GCRY_CIPHER_SECURE|GCRY_CIPHER_ENABLE_SYNC)) ) {
-	set_lasterr( GCRYERR_INV_ARG );
+	set_lasterr( GCRYERR_INV_CIPHER_ALGO );
 	return NULL;
     }
 
@@ -386,17 +385,21 @@ gcry_cipher_open( int algo, int mode, unsigned int flags )
 	/* FIXME: issue a warning when this mode is used */
 	break;
       default:
-	set_lasterr( GCRYERR_INV_ALGO );
+	set_lasterr( GCRYERR_INV_CIPHER_ALGO );
 	return NULL;
     }
 
     /* ? perform selftest here and mark this with a flag in cipher_table ? */
 
-    h = secure ? m_alloc_secure_clear( sizeof *h
+    h = secure ? g10_calloc_secure( 1, sizeof *h
 				       + cipher_table[idx].contextsize
 				       - sizeof(PROPERLY_ALIGNED_TYPE) )
-	       : m_alloc_clear( sizeof *h + cipher_table[idx].contextsize
+	       : g10_calloc( 1, sizeof *h + cipher_table[idx].contextsize
 					   - sizeof(PROPERLY_ALIGNED_TYPE)  );
+    if( !h ) {
+	set_lasterr( GCRYERR_NO_MEM );
+	return NULL;
+    }
     h->magic = secure ? CTX_MAGIC_SECURE : CTX_MAGIC_NORMAL;
     h->algo = algo;
     h->mode = mode;
@@ -420,7 +423,7 @@ gcry_cipher_close( GCRY_CIPHER_HD h )
 	return;
     }
     h->magic = 0;
-    m_free(h);
+    g10_free(h);
 }
 
 
@@ -449,7 +452,7 @@ cipher_setiv( GCRY_CIPHER_HD c, const byte *iv, unsigned ivlen )
 
 
 static void
-do_ecb_encrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nblocks )
+do_ecb_encrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nblocks )
 {
     unsigned n;
 
@@ -461,7 +464,7 @@ do_ecb_encrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nblocks )
 }
 
 static void
-do_ecb_decrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nblocks )
+do_ecb_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nblocks )
 {
     unsigned n;
 
@@ -473,7 +476,7 @@ do_ecb_decrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nblocks )
 }
 
 static void
-do_cbc_encrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nblocks )
+do_cbc_encrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nblocks )
 {
     unsigned int n;
     byte *ivp;
@@ -494,7 +497,7 @@ do_cbc_encrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nblocks )
 }
 
 static void
-do_cbc_decrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nblocks )
+do_cbc_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nblocks )
 {
     unsigned int n;
     byte *ivp;
@@ -517,7 +520,7 @@ do_cbc_decrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nblocks )
 
 
 static void
-do_cfb_encrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nbytes )
+do_cfb_encrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nbytes )
 {
     byte *ivp;
     size_t blocksize = c->blocksize;
@@ -561,7 +564,7 @@ do_cfb_encrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nbytes )
 }
 
 static void
-do_cfb_decrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nbytes )
+do_cfb_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf, unsigned nbytes )
 {
     byte *ivp;
     ulong temp;
@@ -624,7 +627,8 @@ do_cfb_decrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nbytes )
  * Depending on the mode some some contraints apply to NBYTES.
  */
 static void
-cipher_encrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nbytes )
+cipher_encrypt( GCRY_CIPHER_HD c, byte *outbuf,
+				  const byte *inbuf, unsigned nbytes )
 {
     switch( c->mode ) {
       case GCRY_CIPHER_MODE_ECB:
@@ -680,7 +684,8 @@ gcry_cipher_encrypt( GCRY_CIPHER_HD h, byte *out, size_t outsize,
  * Depending on the mode some some contraints apply to NBYTES.
  */
 static void
-cipher_decrypt( GCRY_CIPHER_HD c, byte *outbuf, byte *inbuf, unsigned nbytes )
+cipher_decrypt( GCRY_CIPHER_HD c, byte *outbuf, const byte *inbuf,
+							unsigned nbytes )
 {
     switch( c->mode ) {
       case GCRY_CIPHER_MODE_ECB:
@@ -760,7 +765,7 @@ gcry_cipher_ctl( GCRY_CIPHER_HD h, int cmd, void *buffer, size_t buflen)
 	 * integer with the algo number.
 	 */
 	if( h || !buffer || buflen != sizeof(int) )
-	    return set_lasterr( GCRYERR_INV_ARG );
+	    return set_lasterr( GCRYERR_INV_CIPHER_ALGO );
 	disable_cipher_algo( *(int*)buffer );
 	break;
 
@@ -819,26 +824,26 @@ gcry_cipher_algo_info( int algo, int what, void *buffer, size_t *nbytes)
     switch( what ) {
       case GCRYCTL_GET_KEYLEN:
 	if( buffer || nbytes ) {
-	    set_lasterr( GCRYERR_INV_ARG );
+	    set_lasterr( GCRYERR_INV_CIPHER_ALGO );
 	    break;
 	}
 	ui = cipher_get_keylen( algo );
 	if( ui > 0 && ui <= 512 )
 	    return (int)ui/8;
 	/* the only reason is an invalid algo or a strange blocksize */
-	set_lasterr( GCRYERR_INV_ALGO );
+	set_lasterr( GCRYERR_INV_CIPHER_ALGO );
 	break;
 
       case GCRYCTL_GET_BLKLEN:
 	if( buffer || nbytes ) {
-	    set_lasterr( GCRYERR_INV_ARG );
+	    set_lasterr( GCRYERR_INV_CIPHER_ALGO );
 	    break;
 	}
 	ui = cipher_get_blocksize( algo );
 	if( ui > 0 && ui < 10000 )
 	    return (int)ui;
 	/* the only reason is an invalid algo or a strange blocksize */
-	set_lasterr( GCRYERR_INV_ALGO );
+	set_lasterr( GCRYERR_INV_CIPHER_ALGO );
 	break;
 
       case GCRYCTL_TEST_ALGO:
@@ -847,7 +852,7 @@ gcry_cipher_algo_info( int algo, int what, void *buffer, size_t *nbytes)
 	    break;
 	}
 	if( check_cipher_algo( algo ) ) {
-	    set_lasterr( GCRYERR_INV_ALGO );
+	    set_lasterr( GCRYERR_INV_CIPHER_ALGO );
 	    break;
 	}
 	return 0;

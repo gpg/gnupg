@@ -27,13 +27,13 @@
 
 #include "g10lib.h"
 #include "util.h"
-#include "errors.h"
 #include "mpi.h"
 #include "cipher.h"
 #include "elgamal.h"
 #include "dsa.h"
 #include "dynload.h"
 
+/* FIXME: use set_lasterr() */
 
 #define TABLE_SIZE 10
 
@@ -58,31 +58,72 @@ struct pubkey_table_s {
 static struct pubkey_table_s pubkey_table[TABLE_SIZE];
 static int disabled_algos[TABLE_SIZE];
 
+static struct { const char* name; int algo;
+		const char* common_elements;
+		const char* public_elements;
+		const char* secret_elements;
+} algo_info_table[] = {
+	{  "dsa"            , PUBKEY_ALGO_DSA       , "pqgy", "", "x"    },
+	{  "rsa"            , PUBKEY_ALGO_RSA       , "ne",   "", "dpqu" },
+	{  "elg"            , PUBKEY_ALGO_ELGAMAL   , "pgy",  "", "x"    },
+	{  "openpgp-dsa"    , PUBKEY_ALGO_DSA       , "pqgy", "", "x"    },
+	{  "openpgp-rsa"    , PUBKEY_ALGO_RSA       , "pqgy", "", "x"    },
+	{  "openpgp-elg"    , PUBKEY_ALGO_ELGAMAL_E , "pgy",  "", "x"    },
+	{  "openpgp-elg-sig", PUBKEY_ALGO_ELGAMAL   , "pgy",  "", "x"    },
+	{  NULL }};
+
+static struct {
+    const char* name; int algo;
+    const char* elements;
+} sig_info_table[] = {
+	{  "dsa"            , PUBKEY_ALGO_DSA       , "rs" },
+	{  "rsa"            , PUBKEY_ALGO_RSA       , "s"  },
+	{  "elg"            , PUBKEY_ALGO_ELGAMAL   , "rs" },
+	{  "openpgp-dsa"    , PUBKEY_ALGO_DSA       , "rs" },
+	{  "openpgp-rsa"    , PUBKEY_ALGO_RSA       , "s"  },
+	{  "openpgp-elg-sig", PUBKEY_ALGO_ELGAMAL   , "rs" },
+	{  NULL }};
+
+static struct {
+    const char* name; int algo;
+    const char* elements;
+} enc_info_table[] = {
+	{  "elg"            , PUBKEY_ALGO_ELGAMAL   , "ab" },
+	{  "rsa"            , PUBKEY_ALGO_RSA       , "a"  },
+	{  "openpgp-rsa"    , PUBKEY_ALGO_RSA       , "a"  },
+	{  "openpgp-elg"    , PUBKEY_ALGO_ELGAMAL_E , "ab" },
+	{  "openpgp-elg-sig", PUBKEY_ALGO_ELGAMAL   , "ab" },
+	{  NULL }};
+
+
+static int pubkey_sign( int algo, MPI *resarr, MPI hash, MPI *skey );
+static int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
+		      int (*cmp)(void *, MPI), void *opaque );
 
 static int
 dummy_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
-{ log_bug("no generate() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+{ log_bug("no generate() for %d\n", algo ); return GCRYERR_INV_PK_ALGO; }
 
 static int
 dummy_check_secret_key( int algo, MPI *skey )
-{ log_bug("no check_secret_key() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+{ log_bug("no check_secret_key() for %d\n", algo ); return GCRYERR_INV_PK_ALGO; }
 
 static int
 dummy_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
-{ log_bug("no encrypt() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+{ log_bug("no encrypt() for %d\n", algo ); return GCRYERR_INV_PK_ALGO; }
 
 static int
 dummy_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
-{ log_bug("no decrypt() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+{ log_bug("no decrypt() for %d\n", algo ); return GCRYERR_INV_PK_ALGO; }
 
 static int
 dummy_sign( int algo, MPI *resarr, MPI data, MPI *skey )
-{ log_bug("no sign() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+{ log_bug("no sign() for %d\n", algo ); return GCRYERR_INV_PK_ALGO; }
 
 static int
 dummy_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 		int (*cmp)(void *, MPI), void *opaquev )
-{ log_bug("no verify() for %d\n", algo ); return G10ERR_PUBKEY_ALGO; }
+{ log_bug("no verify() for %d\n", algo ); return GCRYERR_INV_PK_ALGO; }
 
 static unsigned
 dummy_get_nbits( int algo, MPI *pkey )
@@ -269,7 +310,7 @@ gcry_pk_algo_name( int algo )
 }
 
 
-void
+static void
 disable_pubkey_algo( int algo )
 {
     int i;
@@ -284,38 +325,32 @@ disable_pubkey_algo( int algo )
 }
 
 
-int
-check_pubkey_algo( int algo )
-{
-    return check_pubkey_algo2( algo, 0 );
-}
-
 /****************
  * a use of 0 means: don't care
  */
-int
-check_pubkey_algo2( int algo, unsigned use )
+static int
+check_pubkey_algo( int algo, unsigned use )
 {
     int i;
 
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo ) {
-		if( (use & PUBKEY_USAGE_SIG)
-		    && !(pubkey_table[i].use & PUBKEY_USAGE_SIG) )
-		    return G10ERR_WR_PUBKEY_ALGO;
-		if( (use & PUBKEY_USAGE_ENC)
-		    && !(pubkey_table[i].use & PUBKEY_USAGE_ENC) )
-		    return G10ERR_WR_PUBKEY_ALGO;
+		if( (use & GCRY_PK_USAGE_SIGN)
+		    && !(pubkey_table[i].use & GCRY_PK_USAGE_SIGN) )
+		    return GCRYERR_WRONG_PK_ALGO;
+		if( (use & GCRY_PK_USAGE_ENCR)
+		    && !(pubkey_table[i].use & GCRY_PK_USAGE_ENCR) )
+		    return GCRYERR_WRONG_PK_ALGO;
 
 		for(i=0; i < DIM(disabled_algos); i++ ) {
 		    if( disabled_algos[i] == algo )
-			return G10ERR_PUBKEY_ALGO;
+			return GCRYERR_INV_PK_ALGO;
 		}
 		return 0; /* okay */
 	    }
     } while( load_pubkey_modules() );
-    return G10ERR_PUBKEY_ALGO;
+    return GCRYERR_INV_PK_ALGO;
 }
 
 
@@ -324,7 +359,7 @@ check_pubkey_algo2( int algo, unsigned use )
 /****************
  * Return the number of public key material numbers
  */
-int
+static int
 pubkey_get_npkey( int algo )
 {
     int i;
@@ -341,7 +376,7 @@ pubkey_get_npkey( int algo )
 /****************
  * Return the number of secret key material numbers
  */
-int
+static int
 pubkey_get_nskey( int algo )
 {
     int i;
@@ -358,7 +393,7 @@ pubkey_get_nskey( int algo )
 /****************
  * Return the number of signature material numbers
  */
-int
+static int
 pubkey_get_nsig( int algo )
 {
     int i;
@@ -375,7 +410,7 @@ pubkey_get_nsig( int algo )
 /****************
  * Return the number of encryption material numbers
  */
-int
+static int
 pubkey_get_nenc( int algo )
 {
     int i;
@@ -391,6 +426,9 @@ pubkey_get_nenc( int algo )
 
 /****************
  * Get the number of nbits from the public key
+ * FIXME: This should also take a S-Expt but must be optimized in
+ * some way becuase it is used in keylistsings ans such (store it with the
+ * S-Exp as some private data?)
  */
 unsigned
 pubkey_nbits( int algo, MPI *pkey )
@@ -419,7 +457,7 @@ pubkey_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
 		return (*pubkey_table[i].generate)( algo, nbits,
 						    skey, retfactors );
     } while( load_pubkey_modules() );
-    return G10ERR_PUBKEY_ALGO;
+    return GCRYERR_INV_PK_ALGO;
 }
 
 
@@ -433,7 +471,7 @@ pubkey_check_secret_key( int algo, MPI *skey )
 	    if( pubkey_table[i].algo == algo )
 		return (*pubkey_table[i].check_secret_key)( algo, skey );
     } while( load_pubkey_modules() );
-    return G10ERR_PUBKEY_ALGO;
+    return GCRYERR_INV_PK_ALGO;
 }
 
 
@@ -462,7 +500,7 @@ pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 		goto ready;
 	    }
     } while( load_pubkey_modules() );
-    rc = G10ERR_PUBKEY_ALGO;
+    rc = GCRYERR_INV_PK_ALGO;
   ready:
     if( !rc && DBG_CIPHER ) {
 	for(i=0; i < pubkey_get_nenc(algo); i++ )
@@ -501,7 +539,7 @@ pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 		goto ready;
 	    }
     } while( load_pubkey_modules() );
-    rc = G10ERR_PUBKEY_ALGO;
+    rc = GCRYERR_INV_PK_ALGO;
   ready:
     if( !rc && DBG_CIPHER ) {
 	log_mpidump(" plain:", *result );
@@ -516,7 +554,7 @@ pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
  * should be an array of MPIs of size PUBKEY_MAX_NSIG (or less if the
  * algorithm allows this - check with pubkey_get_nsig() )
  */
-int
+static int
 pubkey_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 {
     int i, rc;
@@ -535,7 +573,7 @@ pubkey_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 		goto ready;
 	    }
     } while( load_pubkey_modules() );
-    rc = G10ERR_PUBKEY_ALGO;
+    rc = GCRYERR_INV_PK_ALGO;
   ready:
     if( !rc && DBG_CIPHER ) {
 	for(i=0; i < pubkey_get_nsig(algo); i++ )
@@ -548,7 +586,7 @@ pubkey_sign( int algo, MPI *resarr, MPI data, MPI *skey )
  * Verify a public key signature.
  * Return 0 if the signature is good
  */
-int
+static int
 pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 		    int (*cmp)(void *, MPI), void *opaquev )
 {
@@ -562,10 +600,169 @@ pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 		goto ready;
 	    }
     } while( load_pubkey_modules() );
-    rc = G10ERR_PUBKEY_ALGO;
+    rc = GCRYERR_INV_PK_ALGO;
   ready:
     return rc;
 }
+
+
+static void
+release_mpi_array( MPI *array )
+{
+    for( ; *array; array++ ) {
+	mpi_free(*array);
+	*array = NULL;
+    }
+}
+
+/****************
+ * Convert a S-Exp with either a private or a public key to our
+ * internal format. Currently we do only support the following
+ * algorithms:
+ *    dsa
+ *    rsa
+ *    openpgp-dsa
+ *    openpgp-rsa
+ *    openpgp-elg
+ *    openpgp-elg-sig
+ * Provide a SE with the first element be either "private-key" or
+ * or "public-key". the followed by a list with its first element
+ * be one of the above algorithm identifiers and the following
+ * elements are pairs with parameter-id and value.
+ * NOTE: we look through the list to find a list beginning with
+ * "private-key" or "public-key" - the first one found is used.
+ *
+ * FIXME: Allow for encrypted secret keys here.
+ *
+ * Returns: A pointer to an allocated array of MPIs if the return value is
+ *	    zero; the caller has to release this array.
+ */
+static int
+sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
+{
+    GCRY_SEXP list, l2;
+    const char *name;
+    const char *s;
+    size_t n;
+    int i, idx;
+    int algo;
+    const char *elems1, *elems2;
+    GCRY_MPI *array;
+
+    /* check that the first element is valid */
+    list = gcry_sexp_find_token( sexp, want_private? "private-key"
+						    :"public-key", 0 );
+    if( !list )
+	return GCRYERR_INV_OBJ; /* Does not contain a public- or private-key object */
+    list = gcry_sexp_cdr( list );
+    if( !list )
+	return GCRYERR_NO_OBJ; /* no cdr for the key object */
+    name = gcry_sexp_car_data( list, &n );
+    if( !name )
+	return GCRYERR_INV_OBJ; /* invalid structure of object */
+    for(i=0; (s=algo_info_table[i].name); i++ ) {
+	if( strlen(s) == n && !memcmp( s, name, n ) )
+	    break;
+    }
+    if( !s )
+	return GCRYERR_INV_PK_ALGO; /* unknown algorithm */
+    algo = algo_info_table[i].algo;
+    elems1 = algo_info_table[i].common_elements;
+    elems2 = want_private? algo_info_table[i].secret_elements
+			 : algo_info_table[i].public_elements;
+    array = g10_calloc( (strlen(elems1)+strlen(elems2)+1, sizeof *array );
+    if( !array )
+	return GCRYERR_NO_MEM;
+
+    idx = 0;
+    for(s=elems1; *s; s++, idx++ ) {
+	l2 = gcry_sexp_find_token( list, s, 1 );
+	if( !l2 ) {
+	    g10_free( array );
+	    return GCRYERR_NO_OBJ; /* required parameter not found */
+	}
+	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	if( !array[idx] ) {
+	    g10_free( array );
+	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
+	}
+    }
+    for(s=elems2; *s; s++, idx++ ) {
+	l2 = gcry_sexp_find_token( list, s, 1 );
+	if( !l2 ) {
+	    g10_free( array );
+	    return GCRYERR_NO_OBJ; /* required parameter not found */
+	}
+	/* FIXME: put the MPI in secure memory when needed */
+	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	if( !array[idx] ) {
+	    g10_free( array );
+	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
+	}
+    }
+
+    *retarray = array;
+    *retalgo = algo;
+
+    return 0;
+}
+
+static int
+sexp_to_sig( GCRY_SEXP sexp, MPI **retarray, int *retalgo)
+{
+    GCRY_SEXP list, l2;
+    const char *name;
+    const char *s;
+    size_t n;
+    int i, idx;
+    int algo;
+    const char *elems;
+    GCRY_MPI *array;
+
+    /* check that the first element is valid */
+    list = gcry_sexp_find_token( sexp, "sig-val" , 0 );
+    if( !list )
+	return GCRYERR_INV_OBJ; /* Does not contain a signature value object */
+    list = gcry_sexp_cdr( list );
+    if( !list )
+	return GCRYERR_NO_OBJ; /* no cdr for the sig object */
+    name = gcry_sexp_car_data( list, &n );
+    if( !name )
+	return GCRYERR_INV_OBJ; /* invalid structure of object */
+    for(i=0; (s=sig_info_table[i].name); i++ ) {
+	if( strlen(s) == n && !memcmp( s, name, n ) )
+	    break;
+    }
+    if( !s )
+	return GCRYERR_INV_PK_ALGO; /* unknown algorithm */
+    algo = sig_info_table[i].algo;
+    elems = sig_info_table[i].elements;
+    array = g10_calloc( (strlen(elems)+1) , sizeof *array );
+    if( !array )
+	return GCRYERR_NO_MEM;
+
+    idx = 0;
+    for(s=elems; *s; s++, idx++ ) {
+	l2 = gcry_sexp_find_token( list, s, 1 );
+	if( !l2 ) {
+	    g10_free( array );
+	    return GCRYERR_NO_OBJ; /* required parameter not found */
+	}
+	array[idx] = gcry_sexp_cdr_mpi( l2, GCRYMPI_FMT_USG );
+	if( !array[idx] ) {
+	    g10_free( array );
+	    return GCRYERR_INV_OBJ; /* required parameter is invalid */
+	}
+    }
+
+    *retarray = array;
+    *retalgo = algo;
+
+    return 0;
+}
+
+
+
 
 
 int
@@ -582,26 +779,136 @@ gcry_pk_decrypt( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP skey )
     return 0;
 }
 
+
+
+/****************
+ * Create a signature.
+ *
+ * Caller has to provide a secret kez as the SEXP skey and data expressed
+ * as a SEXP list hash with only one emelennt which should instantly be
+ * available as a MPI.	Later versions of this functions may provide padding
+ * and other things depending on data.
+ *
+ * Returns: 0 or an errorcode.
+ *	    In case of 0 the function returns a new SEXP with the
+ *	    signature value; the structure of this signature depends on the
+ *	    other arguments but is always suitable to be passed to
+ *	    gcry_pk_verify
+ */
 int
-gcry_pk_sign( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP skey )
+gcry_pk_sign( GCRY_SEXP *r_sig, GCRY_SEXP s_hash, GCRY_SEXP s_skey )
 {
+    MPI *skey, hash;
+    MPI *result;
+    int i, algo, rc;
+    const char *algo_name, *algo_elems;
     GCRY_SEXP s;
-    /* get the secret key */
-    s = NULL; /*gcry_sexp_find_token( skey, "private-key", 0 );*/
-    if( !s )
-	return -1; /* no private key */
-	/* ... */
+
+    rc = sexp_to_key( s_skey, 1, &skey, &algo );
+    if( rc )
+	return rc;
+
+    /* get the name and the required size of the result array */
+    for(i=0; (algo_name = sig_info_table[i].name); i++ ) {
+	if( sig_info_table[i].algo == algo )
+	    break;
+    }
+    if( !algo_name ) {
+	release_mpi_array( skey );
+	return -4; /* oops: unknown algorithm */
+    }
+    algo_elems = sig_info_table[i].elements;
+
+    /* get the stuff we want to sign */
+    hash = gcry_sexp_car_mpi( s_hash, 0 );
+    if( !hash ) {
+	release_mpi_array( skey );
+	return -1; /* fixme: get a real errorcode for this */
+    }
+    result = g10_xcalloc_clear( (strlen(algo_elems)+1) , sizeof *result );
+    rc = pubkey_sign( algo, result, hash, skey );
+    release_mpi_array( skey );
+    mpi_free( hash );
+    if( rc ) {
+	g10_free( result );
+	return rc;
+    }
+
+    s = SEXP_NEW( algo_name, 0 );
+    for(i=0; algo_elems[i]; i++ ) {
+	char tmp[2];
+	tmp[0] = algo_elems[i];
+	tmp[1] = 0;
+	s = gcry_sexp_append( s, gcry_sexp_new_name_mpi( tmp, result[i] ) );
+    }
+    g10_free( result );
+    *r_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ), s );
+    gcry_sexp_dump( *r_sig );
     return 0;
 }
+
+
+/****************
+ * Verify a sgnature.  Caller has to supply the public key pkey,
+ * the signature sig and his hashvalue data.  Public key has to be
+ * a standard public key given as an S-Exp, sig is a S-Exp as returned
+ * from gcry_pk_sign and data must be an S-Exp like the one in sign too.
+ */
+int
+gcry_pk_verify( GCRY_SEXP s_sig, GCRY_SEXP s_hash, GCRY_SEXP s_pkey )
+{
+    MPI *pkey, hash, *sig;
+    int algo, sigalgo;
+    int rc;
+
+    rc = sexp_to_key( s_pkey, 0, &pkey, &algo );
+    if( rc )
+	return rc;
+    rc = sexp_to_sig( s_sig, &sig, &sigalgo );
+    if( rc ) {
+	release_mpi_array( pkey );
+	return rc;
+    }
+    if( algo != sigalgo ) {
+	release_mpi_array( pkey );
+	release_mpi_array( sig );
+	return -1; /* fixme: add real errornumber - algo does not match */
+    }
+
+    hash = gcry_sexp_car_mpi( s_hash, 0 );
+    if( !hash ) {
+	release_mpi_array( pkey );
+	release_mpi_array( sig );
+	return -1; /* fixme: get a real errorcode for this */
+    }
+
+    rc = pubkey_verify( algo, hash, sig, pkey, NULL, NULL );
+    release_mpi_array( pkey );
+    release_mpi_array( sig );
+    mpi_free(hash);
+
+    return rc;
+}
+
 
 int
-gcry_pk_verify( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP pkey )
+gcry_pk_ctl( int cmd, void *buffer, size_t buflen)
 {
-	/* ... */
+    switch( cmd ) {
+      case GCRYCTL_DISABLE_ALGO:
+	/* this one expects a buffer pointing to an
+	 * integer with the algo number.
+	 */
+	if( !buffer || buflen != sizeof(int) )
+	    return set_lasterr( GCRYERR_INV_CIPHER_ALGO );
+	disable_pubkey_algo( *(int*)buffer );
+	break;
+
+      default:
+	return set_lasterr( GCRYERR_INV_OP );
+    }
     return 0;
 }
-
-
 
 
 /****************
@@ -609,7 +916,9 @@ gcry_pk_verify( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP pkey )
  * WHAT select the kind of information returned:
  *  GCRYCTL_TEST_ALGO:
  *	Returns 0 when the specified algorithm is available for use.
- *	buffer and nbytes must be zero.
+ *	Buffer must be NULL, nbytes  may have the address of a variable
+ *	with the required usage of the algorithm. It may be 0 for don't
+ *	care or a combination of the GCRY_PK_USAGE_xxx flags;
  *
  * On error the value -1 is returned and the error reason may be
  * retrieved by gcry_errno().
@@ -623,16 +932,23 @@ int
 gcry_pk_algo_info( int algo, int what, void *buffer, size_t *nbytes)
 {
     switch( what ) {
-      case GCRYCTL_TEST_ALGO:
-	if( buffer || nbytes ) {
-	    set_lasterr( GCRYERR_INV_ARG );
-	    return -1;
-	}
-	if( check_pubkey_algo( algo ) ) {
-	    set_lasterr( GCRYERR_INV_ALGO );
-	    return -1;
+      case GCRYCTL_TEST_ALGO: {
+	    int use = nbytes? *nbytes: 0;
+	    if( buffer ) {
+		set_lasterr( GCRYERR_INV_ARG );
+		return -1;
+	    }
+	    if( check_pubkey_algo( algo, use ) ) {
+		set_lasterr( GCRYERR_INV_PK_ALGO );
+		return -1;
+	    }
 	}
 	break;
+
+      case GCRYCTL_GET_ALGO_NPKEY: return pubkey_get_npkey( algo );
+      case GCRYCTL_GET_ALGO_NSKEY: return pubkey_get_nskey( algo );
+      case GCRYCTL_GET_ALGO_NSIGN: return pubkey_get_nsig( algo );
+      case GCRYCTL_GET_ALGO_NENCR: return pubkey_get_nenc( algo );
 
       default:
 	set_lasterr( GCRYERR_INV_OP );

@@ -683,7 +683,8 @@ print_uid_from_keyblock( FILE *fp, KBNODE keyblock, ulong urecno )
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    PKT_user_id *uidpkt = node->pkt->pkt.user_id;
 
-	    rmd160_hash_buffer( uhash, uidpkt->name, uidpkt->len );
+	    gcry_md_hash_buffer( GCRY_MD_RMD160,  uhash,
+				   uidpkt->name, uidpkt->len );
 	    if( !memcmp( uhash, urec.r.uid.namehash, 20 ) ) {
 		print_string( fp,  uidpkt->name, uidpkt->len, ':' );
 		return;
@@ -1334,7 +1335,7 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
 	if( node->pkt->pkttype != PKT_USER_ID )
 	    continue;
 	uid = node->pkt->pkt.user_id;
-	rmd160_hash_buffer( uidhash, uid->name, uid->len );
+	gcry_md_hash_buffer( GCRY_MD_RMD160, uidhash, uid->name, uid->len );
 
 	/* create the uid record */
 	u = m_alloc_clear( sizeof *u );

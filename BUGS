@@ -47,7 +47,7 @@ and after about half a day in the rsync snapshots.
 [  *] #23 1999-09-03 <todd.brooks@yale.edu> 0.9.11
     Only the first signature of a cleartext sig seems to be verified.
     Can't fix it in 1.0 because the code is semi-frozen.
-    HMMM: Can't reprodude the bug here - it just works.  Check wehther
+    HMMM: Can't reprodude the bug here - it just works.
 
 [  *] #24 1999-09-05 <marcus@yoyo.cc.monash.edu.au> 0.9.11
     Does not link libc and libz expect when removing all "-lc -lz" except
@@ -60,5 +60,13 @@ and after about half a day in the rsync snapshots.
     validity) is used in all other cases.  The Edit menu does not have
     a way to disbly user ID based validity.
 
+[  *] #26 1999-11-11
+    gpg still does not take UTF8 strings to select a UID.
+    FIX: 1999-11-12
 
-Next #26
+[ **] #27 1999-11-12 <oren@hishome.net>
+    Unknown packets (type 17 - photo ID?) mess up the checking
+    of self-signature becuase they are simply ignored.
+
+
+Next #28

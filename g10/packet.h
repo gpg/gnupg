@@ -27,6 +27,12 @@
 #include "cipher.h"
 #include "filter.h"
 
+
+#define GNUPG_MAX_NPKEY  4
+#define GNUPG_MAX_NSKEY  6
+#define GNUPG_MAX_NSIG	 2
+#define GNUPG_MAX_NENC	 2
+
 #define DEBUG_PARSE_PACKET 1
 
 typedef enum {
@@ -72,7 +78,7 @@ typedef struct {
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    throw_keyid;
-    MPI     data[PUBKEY_MAX_NENC];
+    MPI     data[GNUPG_MAX_NENC];
 } PKT_pubkey_enc;
 
 
@@ -102,7 +108,7 @@ typedef struct {
     byte *hashed_data;	    /* all subpackets with hashed  data (v4 only) */
     byte *unhashed_data;    /* ditto for unhashed data */
     byte digest_start[2];   /* first 2 bytes of the digest */
-    MPI  data[PUBKEY_MAX_NSIG];
+    MPI  data[GNUPG_MAX_NSIG];
 } PKT_signature;
 
 
@@ -122,7 +128,7 @@ typedef struct {
     ulong   local_id;	    /* internal use, valid if > 0 */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
     byte    *namehash;	    /* if != NULL: found by this name */
-    MPI     pkey[PUBKEY_MAX_NPKEY];
+    MPI     pkey[GNUPG_MAX_NPKEY];
 } PKT_public_key;
 
 typedef struct {
@@ -143,7 +149,7 @@ typedef struct {
 	byte ivlen;  /* used length of the iv */
 	byte iv[16]; /* initialization vector for CFB mode */
     } protect;
-    MPI skey[PUBKEY_MAX_NSKEY];
+    MPI skey[GNUPG_MAX_NSKEY];
     u16 csum;		/* checksum */
 } PKT_secret_key;
 

@@ -1005,7 +1005,7 @@ show_prefs( KBNODE keyblock, PKT_user_id *uid )
 	return;
     }
 
-    rmd160_hash_buffer( namehash, uid->name, uid->len );
+    gcry_md_hash_buffer( GCRY_MD_RMD160, namehash, uid->name, uid->len );
 
     p = get_pref_data( pk->local_id, namehash, &n );
     if( !p )

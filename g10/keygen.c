@@ -280,7 +280,7 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     if( nbits > 1024 )
 	nbits = 1024;
 
-    rc = pubkey_generate( PUBKEY_ALGO_DSA, nbits, skey, &factors );
+    rc = pubkey_generate( GCRY_PK_DSA, nbits, skey, &factors );
     if( rc ) {
 	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -293,7 +293,7 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     if( expireval ) {
 	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
     }
-    sk->pubkey_algo = pk->pubkey_algo = PUBKEY_ALGO_DSA;
+    sk->pubkey_algo = pk->pubkey_algo = GCRY_PK_DSA;
 		       pk->pkey[0] = mpi_copy( skey[0] );
 		       pk->pkey[1] = mpi_copy( skey[1] );
 		       pk->pkey[2] = mpi_copy( skey[2] );
@@ -407,21 +407,21 @@ ask_algo( int *ret_v4, int addmode )
 	else if( algo == 4 ) {
 	    if( cpr_get_answer_is_yes("keygen.algo.elg_se",_(
 		"Do you really want to create a sign and encrypt key? "))) {
-		algo = PUBKEY_ALGO_ELGAMAL;
+		algo = GCRY_PK_ELG;
 		break;
 	    }
 	}
 	else if( algo == 3 && addmode ) {
-	    algo = PUBKEY_ALGO_ELGAMAL_E;
+	    algo = GCRY_PK_ELG_E;
 	    break;
 	}
 	else if( algo == 2 ) {
-	    algo = PUBKEY_ALGO_DSA;
+	    algo = GCRY_PK_DSA;
 	    break;
 	}
       #if 0
 	else if( algo == 5 ) {
-	    algo = PUBKEY_ALGO_ELGAMAL_E;
+	    algo = GCRY_PK_ELG_E;
 	    *ret_v4 = 0;
 	    break;
 	}
@@ -450,7 +450,7 @@ ask_keysize( int algo )
 	cpr_kill_prompt();
 	nbits = *answer? atoi(answer): 1024;
 	m_free(answer);
-	if( algo == PUBKEY_ALGO_DSA && (nbits < 512 || nbits > 1024) )
+	if( algo == GCRY_PK_DSA && (nbits < 512 || nbits > 1024) )
 	    tty_printf(_("DSA only allows keysizes from 512 to 1024\n"));
 	else if( nbits < 768 )
 	    tty_printf(_("keysize too small; 768 is smallest value allowed.\n"));
@@ -487,7 +487,7 @@ ask_keysize( int algo )
 	    break;
     }
     tty_printf(_("Requested keysize is %u bits\n"), nbits );
-    if( algo == PUBKEY_ALGO_DSA && (nbits % 64) ) {
+    if( algo == GCRY_PK_DSA && (nbits % 64) ) {
 	nbits = ((nbits + 63) / 64) * 64;
 	tty_printf(_("rounded up to %u bits\n"), nbits );
     }
@@ -788,10 +788,10 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 "disks) during the prime generation; this gives the random number\n"
 "generator a better chance to gain enough entropy.\n") );
 
-    if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )
+    if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E )
 	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k,
 			   sk, expiredate, v4_packet? 4:3 );
-    else if( algo == PUBKEY_ALGO_DSA )
+    else if( algo == GCRY_PK_DSA )
 	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
     else
 	BUG();
@@ -859,7 +859,7 @@ generate_keypair()
 
     algo = ask_algo( &v4, 0 );
     if( !algo ) {
-	algo = PUBKEY_ALGO_ELGAMAL_E;
+	algo = GCRY_PK_ELG_E;
 	both = 1;
 	tty_printf(_("DSA keypair will have 1024 bits.\n"));
     }
@@ -890,7 +890,7 @@ generate_keypair()
     sec_root = make_comment_node("#"); delete_kbnode(sec_root);
 
     if( both )
-	rc = do_create( PUBKEY_ALGO_DSA, 1024, pub_root, sec_root,
+	rc = do_create( GCRY_PK_DSA, 1024, pub_root, sec_root,
 					       dek, s2k, &sk, expire, 1);
     else
 	rc = do_create( algo,		nbits, pub_root, sec_root,
@@ -956,7 +956,7 @@ generate_keypair()
 	    log_error("can't write secret key: %s\n", g10_errstr(rc) );
 	else {
 	    tty_printf(_("public and secret key created and signed.\n") );
-	    if( algo == PUBKEY_ALGO_DSA )
+	    if( algo == GCRY_PK_DSA )
 		tty_printf(_("Note that this key cannot be used for "
 			     "encryption.  You may want to use\n"
 			     "the command \"--edit-key\" to generate a "

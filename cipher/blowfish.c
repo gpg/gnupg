@@ -35,7 +35,7 @@
 #include <string.h>
 #include <assert.h>
 #include "types.h"
-#include "errors.h"
+#include "g10lib.h"
 #include "blowfish.h"
 #include "dynload.h"
 
@@ -498,7 +498,7 @@ bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 	    fprintf(stderr,"%s\n", selftest_failed );
     }
     if( selftest_failed )
-	return G10ERR_SELFTEST_FAILED;
+	return GCRYERR_SELFTEST;
 
     for(i=0; i < BLOWFISH_ROUNDS+2; i++ )
 	c->p[i] = ps[i];
@@ -559,7 +559,7 @@ bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 	for( j=i+1; j < 256; j++) {
 	    if( (c->s0[i] == c->s0[j]) || (c->s1[i] == c->s1[j]) ||
 		(c->s2[i] == c->s2[j]) || (c->s3[i] == c->s3[j]) )
-		return G10ERR_WEAK_KEY;
+		return GCRYERR_WEAK_KEY;
 	}
     }
 

@@ -28,7 +28,6 @@
 #include "g10lib.h"
 #include "util.h"
 #include "cipher.h"
-#include "errors.h"
 #include "dynload.h"
 #include "rmd.h"
 
@@ -93,13 +92,13 @@ new_list_item( int algo,
 {
     struct md_digest_list_s *r;
 
-    r = m_alloc_clear( sizeof *r );
+    r = g10_xcalloc( 1, sizeof *r );
     r->algo = algo,
     r->name = (*get_info)( algo, &r->contextsize,
 			   &r->asnoid, &r->asnlen, &r->mdlen,
 			   &r->init, &r->write, &r->final, &r->read );
     if( !r->name ) {
-	m_free(r);
+	g10_free(r);
 	r = NULL;
     }
     return r;
@@ -230,7 +229,7 @@ check_digest_algo( int algo )
 	    if( r->algo == algo )
 		return 0;
     } while( !r && load_digest_module(algo) );
-    return G10ERR_DIGEST_ALGO;
+    return GCRYERR_INV_MD_ALGO;
 }
 
 
@@ -267,8 +266,13 @@ md_open( int algo, int secure )
 	 / sizeof(PROPERLY_ALIGNED_TYPE) ) * sizeof(PROPERLY_ALIGNED_TYPE);
 
     /* allocate and set the Context pointer to the private data */
-    hd = secure ? m_alloc_secure( n + sizeof( struct gcry_md_context ) )
-		: m_alloc(	  n + sizeof( struct gcry_md_context ) );
+    hd = secure ? g10_malloc_secure( n + sizeof( struct gcry_md_context ) )
+		: g10_malloc(	     n + sizeof( struct gcry_md_context ) );
+    if( !hd ) {
+	set_lasterr( GCRYERR_NO_MEM );
+	return NULL;
+    }
+
     hd->ctx = ctx = (struct gcry_md_context*)( (char*)hd + n );
     /* setup the globally visible data (bctl in the diagram)*/
     hd->bufsize = n - sizeof( struct gcry_md_handle ) + 1;
@@ -315,13 +319,16 @@ md_enable( GCRY_MD_HD hd, int algo )
     } while( !r && load_digest_module( algo ) );
     if( !r ) {
 	log_debug("md_enable: algorithm %d not available\n", algo );
-	return set_lasterr( GCRYERR_INV_ALGO );
+	return set_lasterr( GCRYERR_INV_MD_ALGO );
     }
     /* and allocate a new list entry */
-    ac = h->secure? m_alloc_secure( sizeof *ac + r->contextsize
+    ac = h->secure? g10_malloc_secure( sizeof *ac + r->contextsize
 					       - sizeof(r->context) )
-		  : m_alloc( sizeof *ac + r->contextsize
+		  : g10_malloc( sizeof *ac + r->contextsize
 					       - sizeof(r->context) );
+    if( !rc )
+	return set_lasterr( GCRYERR_NO_MEM );
+
     *ac = *r;
     ac->next = h->list;
     h->list = ac;
@@ -350,8 +357,13 @@ md_copy( GCRY_MD_HD ahd )
 	md_write( ahd, NULL, 0 );
 
     n = (char*)ahd->ctx - (char*)ahd;
-    bhd = a->secure ? m_alloc_secure( n + sizeof( struct gcry_md_context ) )
-		    : m_alloc(	      n + sizeof( struct gcry_md_context ) );
+    bhd = a->secure ? g10_malloc_secure( n + sizeof( struct gcry_md_context ) )
+		    : g10_malloc(	 n + sizeof( struct gcry_md_context ) );
+    if( !bhd ) {
+	set_lasterr( GCRYERR_NO_MEM );
+	return NULL;
+    }
+
     bhd->ctx = b = (struct gcry_md_context*)( (char*)bhd + n );
     /* no need to copy the buffer due to the write above */
     assert( ahd->bufsize == (n - sizeof( struct gcry_md_handle ) + 1) );
@@ -363,9 +375,9 @@ md_copy( GCRY_MD_HD ahd )
     /* and now copy the complete list of algorithms */
     /* I know that the copied list is reversed, but that doesn't matter */
     for( ar=a->list; ar; ar = ar->next ) {
-	br = a->secure ? m_alloc_secure( sizeof *br + ar->contextsize
+	br = a->secure ? g10_xmalloc_secure( sizeof *br + ar->contextsize
 					       - sizeof(ar->context) )
-		       : m_alloc( sizeof *br + ar->contextsize
+		       : g10_xmalloc( sizeof *br + ar->contextsize
 					       - sizeof(ar->context) );
 	memcpy( br, ar, sizeof(*br) + ar->contextsize
 				    - sizeof(ar->context) );
@@ -412,9 +424,9 @@ md_close(GCRY_MD_HD a)
 	md_stop_debug(a);
     for(r=a->ctx->list; r; r = r2 ) {
 	r2 = r->next;
-	m_free(r);
+	g10_free(r);
     }
-    m_free(a);
+    g10_free(a);
 }
 
 
@@ -555,8 +567,8 @@ md_digest( GCRY_MD_HD a, int algo, byte *buffer, int buflen )
 
     /* I don't want to change the interface, so I simply work on a copy
      * of the context (extra overhead - should be fixed)*/
-    context = a->ctx->secure ? m_alloc_secure( r->contextsize )
-			     : m_alloc( r->contextsize );
+    context = a->ctx->secure ? g10_xmalloc_secure( r->contextsize )
+			     : g10_xmalloc( r->contextsize );
     memcpy( context, r->context.c, r->contextsize );
     (*r->final)( context );
     digest = (*r->read)( context );
@@ -565,7 +577,7 @@ md_digest( GCRY_MD_HD a, int algo, byte *buffer, int buflen )
 	buflen = r->mdlen;
     memcpy( buffer, digest, buflen );
 
-    m_free(context);
+    g10_free(context);
     return buflen;
 }
 #endif
@@ -581,6 +593,20 @@ gcry_md_get( GCRY_MD_HD hd, int algo, byte *buffer, int buflen )
 }
 
 
+/****************
+ * Shortcut function to hash a buffer with a given algo. The only supported
+ * algorithm is RIPE-MD. The supplied digest buffer must be large enough
+ * to store the resulting hash.  No error is returned, the function will
+ * abort on an invalite algo.  DISABLED_ALGOS are ignored here.
+ */
+void
+gcry_md_hash_buffer( int algo, char *digest, const char *buffer, size_t length)
+{
+    if( algo == GCRY_MD_RMD160 )
+	rmd160_hash_buffer( digest, buffer, length );
+    else
+	BUG();
+}
 
 static int
 md_get_algo( GCRY_MD_HD a )
@@ -636,7 +662,7 @@ gcry_md_get_algo_dlen( int algo )
       default: {
 	    int len = md_digest_length( algo );
 	    if( !len )
-		set_lasterr( GCRYERR_INV_ALGO );
+		set_lasterr( GCRYERR_INV_MD_ALGO );
 	    return 0;
 	}
     }
@@ -695,7 +721,7 @@ gcry_md_algo_info( int algo, int what, void *buffer, size_t *nbytes)
 	    return -1;
 	}
 	if( check_digest_algo( algo ) ) {
-	    set_lasterr( GCRYERR_INV_ALGO );
+	    set_lasterr( GCRYERR_INV_MD_ALGO );
 	    return -1;
 	}
 	break;

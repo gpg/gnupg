@@ -45,6 +45,7 @@
 #ifdef HAVE_GETRUSAGE
   #include <sys/resource.h>
 #endif
+#include "g10lib.h"
 #include "util.h"
 #include "rmd.h"
 #include "ttyio.h"
@@ -97,6 +98,7 @@ static int quick_test;
 static int faked_rng;
 
 
+static byte *get_random_bytes( size_t nbytes, int level, int secure );
 static void read_pool( byte *buffer, size_t length, int level );
 static void add_randomness( const void *buffer, size_t length, int source );
 static void random_poll(void);
@@ -123,10 +125,10 @@ initialize(void)
     /* The data buffer is allocated somewhat larger, so that
      * we can use this extra space (which is allocated in secure memory)
      * as a temporary hash buffer */
-    rndpool = secure_alloc ? m_alloc_secure_clear(POOLSIZE+BLOCKLEN)
-			   : m_alloc_clear(POOLSIZE+BLOCKLEN);
-    keypool = secure_alloc ? m_alloc_secure_clear(POOLSIZE+BLOCKLEN)
-			   : m_alloc_clear(POOLSIZE+BLOCKLEN);
+    rndpool = secure_alloc ? g10_xcalloc_secure(1,POOLSIZE+BLOCKLEN)
+			   : g10_xcalloc(1,POOLSIZE+BLOCKLEN);
+    keypool = secure_alloc ? g10_xcalloc_secure(1,POOLSIZE+BLOCKLEN)
+			   : g10_xcalloc(1,POOLSIZE+BLOCKLEN);
     is_initialized = 1;
     cipher_modules_constructor();
 }
@@ -170,11 +172,11 @@ quick_random_gen( int onoff )
  * for most usage, 2 is good for key generation stuff but may be very slow.
  */
 void
-randomize_buffer( byte *buffer, size_t length, int level )
+gcry_randomize( byte *buffer, size_t length, enum gcry_random_level level )
 {
-    char *p = get_random_bits( length*8, level, 1 );
+    char *p = get_random_bytes( length, level, 1 );
     memcpy( buffer, p, length );
-    m_free(p);
+    g10_free(p);
 }
 
 
@@ -191,11 +193,10 @@ random_is_faked()
  * caller must free the buffer.
  * Note: The returned value is rounded up to bytes.
  */
-byte *
-get_random_bits( size_t nbits, int level, int secure )
+static byte *
+get_random_bytes( size_t nbytes, int level, int secure )
 {
     byte *buf, *p;
-    size_t nbytes = (nbits+7)/8;
 
     if( quick_test && level > 1 )
 	level = 1;
@@ -209,7 +210,8 @@ get_random_bits( size_t nbits, int level, int secure )
 	rndstats.ngetbytes2++;
     }
 
-    buf = secure && secure_alloc ? m_alloc_secure( nbytes ) : m_alloc( nbytes );
+    buf = secure && secure_alloc ? g10_xmalloc_secure( nbytes )
+				 : g10_xmalloc( nbytes );
     for( p = buf; nbytes > 0; ) {
 	size_t n = nbytes > POOLSIZE? POOLSIZE : nbytes;
 	read_pool( p, n, level );
@@ -217,6 +219,18 @@ get_random_bits( size_t nbits, int level, int secure )
 	p += n;
     }
     return buf;
+}
+
+void *
+gcry_random_bytes( size_t nbytes, enum gcry_random_level level )
+{
+    return get_random_bytes( nbytes, level, 0 );
+}
+
+void *
+gcry_random_bytes_secure( size_t nbytes, enum gcry_random_level level )
+{
+    return get_random_bytes( nbytes, level, 1 );
 }
 
 
@@ -461,7 +475,7 @@ gather_faked( void (*add)(const void*, size_t, int), int requester,
       #endif
     }
 
-    p = buffer = m_alloc( length );
+    p = buffer = g10_xmalloc( length );
     n = length;
   #ifdef HAVE_RAND
     while( n-- )
@@ -471,7 +485,7 @@ gather_faked( void (*add)(const void*, size_t, int), int requester,
 	*p++ = ((unsigned)(1 + (int) (256.0*random()/(RAND_MAX+1.0)))-1);
   #endif
     add_randomness( buffer, length, requester );
-    m_free(buffer);
+    g10_free(buffer);
     return 0; /* okay */
 }
 

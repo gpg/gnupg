@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <gcrypt.h>
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
@@ -33,6 +34,7 @@
 #include "util.h"
 #include "i18n.h"
 #include "cipher.h"
+#include "main.h"
 
 
 void
@@ -45,18 +47,6 @@ release_sk_list( SK_LIST sk_list )
 	free_secret_key( sk_list->sk );
 	m_free( sk_list );
     }
-}
-
-
-/* Check that we are only using keys which don't have
- * the string "(insecure!)" or "not secure" or "do not use"
- * in one of the user ids
- */
-static int
-is_insecure( PKT_secret_key *sk )
-{
-
-    return 0;  /* FIXME!! */
 }
 
 
@@ -76,17 +66,12 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	    free_secret_key( sk ); sk = NULL;
 	    log_error("no default secret key: %s\n", g10_errstr(rc) );
 	}
-	else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) ) {
+	else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo, use)) ) {
 	    SK_LIST r;
-	    if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
-		&& sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
+	    if( sk->version == 4 && (use & GCRY_PK_USAGE_SIGN)
+		&& sk->pubkey_algo == GCRY_PK_ELG_E ) {
 		log_info("this is a PGP generated "
 		    "ElGamal key which is NOT secure for signatures!\n");
-		free_secret_key( sk ); sk = NULL;
-	    }
-	    else if( random_is_faked() && !is_insecure( sk ) ) {
-		log_info(_("key is not flagged as insecure - "
-			   "can't use it with the faked RNG!\n"));
 		free_secret_key( sk ); sk = NULL;
 	    }
 	    else {
@@ -112,18 +97,13 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 		free_secret_key( sk ); sk = NULL;
 		log_error(_("skipped `%s': %s\n"), locusr->d, g10_errstr(rc) );
 	    }
-	    else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) ) {
+	    else if( !(rc=openpgp_pk_test_algo(sk->pubkey_algo, use)) ) {
 		SK_LIST r;
-		if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
-		    && sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
+		if( sk->version == 4 && (use & GCRY_PK_USAGE_SIGN)
+		    && sk->pubkey_algo == GCRY_PK_ELG_E ) {
 		    log_info(_("skipped `%s': this is a PGP generated "
 			"ElGamal key which is not secure for signatures!\n"),
 			locusr->d );
-		    free_secret_key( sk ); sk = NULL;
-		}
-		else if( random_is_faked() && !is_insecure( sk ) ) {
-		    log_info(_("key is not flagged as insecure - "
-			       "can't use it with the faked RNG!\n"));
 		    free_secret_key( sk ); sk = NULL;
 		}
 		else {

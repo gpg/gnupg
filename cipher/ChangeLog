@@ -1,3 +1,46 @@
+Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* pubkey.c (disable_pubkey_algo): Made static.
+	(gcry_pk_ctl): New.
+
+	* random.c (get_random_bits): Renamed to ...
+	(get_random_bytes): ... this and made static.
+	(gcry_random_bytes): New.
+	(gcry_random_bytes_secure): New.
+	(randomize_buffer): Renamed to ...
+	(gcry_randomize): ...this.
+
+	* md.c (gcry_md_hash_buffer): New.
+
+	* pubkey.c (gcry_pk_algo_info): 4 new commands.
+	(pubkey_get_npkey): Made static.
+	(pubkey_get_nskey): Made static.
+	(pubkey_get_nsig): Made static.
+	(pubkey_get_nenc): Made static.
+
+	* pubkey.c: Removed all G10ERR_xxx.
+	* cipher.c: Changed all GCRYERR_INV_ALGO to GCRYERR_INV_CIPHER_ALGO.
+	* md.c: Changed all GCRYERR_INV_ALGO to GCRYERR_INV_MD_ALGO.
+	* cast5.c (cast_setkey): Changed errocodes to GCRYERR_xxx.
+	* blowfish.c: Ditto.
+	* des.c: Ditto.
+	* twofish.c: Ditto.
+	* dsa.c: Ditto.
+	* elgamal.c: Ditto.
+
+	* g10c.c: Removed
+
+	* cipher.c (gcry_cipher_open): Replaced alloc functions and return NULL
+	if we are out of core.
+	* dynload.c: Replaced all memory allocation functions.
+	* md.c: Ditto.
+	* primegen.c: Ditto.
+	* pubkey.c: Ditto.
+	* random.c: Ditto.
+	* rndw32.c: Ditto.
+	* elgamal.c: Ditto.
+	* dsa.c: Ditto.
+
 Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* elgamal.c (sign): Hugh found strange code here. Replaced by BUG().

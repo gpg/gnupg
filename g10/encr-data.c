@@ -104,7 +104,6 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     }
     else if( rc ) {
 	log_error("key setup failed: %s\n", gcry_strerror(rc) );
-	rc = map_gcry_rc(rc);
 	goto leave;
     }
 

@@ -85,7 +85,7 @@ strusage( int level )
       case 33:
 	if( !pubkeys )
 	    pubkeys = build_list("Supported pubkeys: ", pubkey_algo_to_string,
-							check_pubkey_algo );
+							openpgp_pk_test_algo );
 	p = pubkeys;
 	break;
       case 34:

@@ -17,7 +17,7 @@ expect  - <<EOF >/dev/null
 #set timeout -1
 set timeout 8
 match_max 100000
-spawn ../g10/gpg --no-batch --quick-random --homedir . --gen-key
+spawn ../g10/gpg --no-batch --homedir . --gen-key
 expect {
     -exact "Please select what kind of key you want:\r
    (1) DSA and ElGamal (default)\r

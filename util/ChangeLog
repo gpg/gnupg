@@ -1,3 +1,9 @@
+Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* g10u.c: Removed.
+
+	* errors.c (g10_errstr): Use gcry_strerror as fallback
+
 Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* simple-gettext.c (set_gettext_file): Check charset and do

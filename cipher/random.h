@@ -27,7 +27,6 @@ void random_dump_stats(void);
 void secure_random_alloc(void);
 int  quick_random_gen( int onoff );
 int  random_is_faked(void);
-void randomize_buffer( byte *buffer, size_t length, int level );
 byte *get_random_bits( size_t nbits, int level, int secure );
 void fast_random_poll( void );
 

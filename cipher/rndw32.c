@@ -28,6 +28,7 @@
 #include <windows.h>
 
 #include "types.h"
+#include "g10lib.h"
 #include "util.h"
 #include "dynload.h"
 
@@ -126,7 +127,7 @@ load_and_init_winseed( void )
     g10_log_info("fast buffer size=%u\n", n2);
 
     entropy_buffer_size =  n1 > n2? n1: n2;
-    entropy_buffer = m_alloc( entropy_buffer_size );
+    entropy_buffer = g10_xmalloc( entropy_buffer_size );
     g10_log_info("using a buffer of size=%u\n", entropy_buffer_size );
 
     return;

@@ -116,7 +116,7 @@
 #include <stdio.h>
 #include <string.h>	       /* memcpy, memcmp */
 #include "types.h"             /* for byte and u32 typedefs */
-#include "errors.h"
+#include "g10lib.h"
 #include "des.h"
 
 #if defined(__GNUC__) && defined(__GNU_LIBRARY__)
@@ -558,7 +558,7 @@ des_setkey (struct _des_ctx *ctx, const byte * key)
   int i;
 
   if( selftest_failed )
-    return G10ERR_SELFTEST_FAILED;
+    return GCRYERR_SELFTEST;
 
   des_key_schedule (key, ctx->encrypt_subkeys);
 
@@ -944,14 +944,14 @@ static int
 do_tripledes_setkey ( struct _tripledes_ctx *ctx, byte *key, unsigned keylen )
 {
     if( selftest_failed )
-	return G10ERR_SELFTEST_FAILED;
+	return GCRYERR_SELFTEST;
     if( keylen != 24 )
-	return G10ERR_WRONG_KEYLEN;
+	return GCRYERR_INV_KEYLEN;
 
     tripledes_set3keys ( ctx, key, key+8, key+16);
 
     if( is_weak_key( key ) || is_weak_key( key+8 ) || is_weak_key( key+16 ) )
-	return G10ERR_WEAK_KEY;
+	return GCRYERR_WEAK_KEY;
 
     return 0;
 }

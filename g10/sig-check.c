@@ -47,6 +47,84 @@ static int do_check( PKT_public_key *pk, PKT_signature *sig,
 
 
 /****************
+ * Emulate our old PK interface here - sometime in the future we might
+ * change the internal design to directly fit to libgcrypt.
+ */
+static int
+pk_verify( int algo, MPI hash, MPI *data, MPI *pkey,
+	   int (*cmp)(void *, MPI), void *opaque )
+{
+    GCRY_SEXP s_sig, s_hash, s_pkey;
+    int rc;
+
+    /* forget about cmp and opaque - we never used it */
+
+    /* make a sexp from pkey */
+    if( algo == GCRY_PK_DSA ) {
+	s_pkey = SEXP_CONS( SEXP_NEW( "public-key", 10 ),
+			  gcry_sexp_vlist( SEXP_NEW( "dsa", 3 ),
+			  gcry_sexp_new_name_mpi( "p", pkey[0] ),
+			  gcry_sexp_new_name_mpi( "q", pkey[1] ),
+			  gcry_sexp_new_name_mpi( "g", pkey[2] ),
+			  gcry_sexp_new_name_mpi( "y", pkey[3] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	s_pkey = SEXP_CONS( SEXP_NEW( "public-key", 10 ),
+			  gcry_sexp_vlist( SEXP_NEW( "elg", 3 ),
+			  gcry_sexp_new_name_mpi( "p", pkey[0] ),
+			  gcry_sexp_new_name_mpi( "g", pkey[1] ),
+			  gcry_sexp_new_name_mpi( "y", pkey[2] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_RSA ) {
+	s_pkey = SEXP_CONS( SEXP_NEW( "public-key", 10 ),
+			  gcry_sexp_vlist( SEXP_NEW( "rsa", 3 ),
+			  gcry_sexp_new_name_mpi( "n", pkey[0] ),
+			  gcry_sexp_new_name_mpi( "e", pkey[1] ),
+			  NULL ));
+    }
+    else
+	return G10ERR_PUBKEY_ALGO;
+
+    /* put hash into a S-Exp s_hash */
+    s_hash = gcry_sexp_new_mpi( hash );
+
+    /* put data into a S-Exp s_sig */
+    if( algo == GCRY_PK_DSA ) {
+	s_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "dsa", 0 ),
+			  gcry_sexp_new_name_mpi( "r", data[0] ),
+			  gcry_sexp_new_name_mpi( "s", data[1] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	s_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "elg", 0 ),
+			  gcry_sexp_new_name_mpi( "r", data[0] ),
+			  gcry_sexp_new_name_mpi( "s", data[1] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_RSA ) {
+	s_sig = SEXP_CONS( SEXP_NEW( "public-key", 10 ),
+			  gcry_sexp_vlist( SEXP_NEW( "rsa", 3 ),
+			  gcry_sexp_new_name_mpi( "s", data[0] ),
+			  NULL ));
+    }
+    else
+	BUG();
+
+
+    rc = gcry_pk_verify( s_sig, s_hash, s_pkey );
+    gcry_sexp_release( s_sig );
+    gcry_sexp_release( s_hash );
+    gcry_sexp_release( s_pkey );
+    return rc;
+}
+
+
+
+/****************
  * Check the signature which is contained in SIG.
  * The GCRY_MD_HD should be currently open, so that this function
  * is able to append some data, before finalizing the digest.
@@ -293,7 +371,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
     struct cmp_help_context_s ctx;
     u32 cur_time;
 
-    if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
+    if( pk->version == 4 && pk->pubkey_algo == GCRY_PK_ELG_E ) {
 	log_info(_("this is a PGP generated "
 		  "ElGamal key which is NOT secure for signatures!\n"));
 	return G10ERR_PUBKEY_ALGO;
@@ -327,7 +405,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
 
     if( (rc=openpgp_md_test_algo(sig->digest_algo)) )
 	return rc;
-    if( (rc=openpgp_pk_test_algo(sig->pubkey_algo)) )
+    if( (rc=openpgp_pk_test_algo(sig->pubkey_algo, 0)) )
 	return rc;
 
     /* make sure the digest algo is enabled (in case of a detached signature)*/
@@ -372,7 +450,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
 
     ctx.sig = sig;
     ctx.md = digest;
-    rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
+    rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
 			cmp_help, &ctx );
     mpi_free( result );
     if( !rc && sig->flags.unknown_critical ) {

@@ -31,6 +31,7 @@
 #include "cipher.h"
 #include "memory.h"
 #include "options.h"
+#include "main.h"
 
 void
 free_symkey_enc( PKT_symkey_enc *enc )

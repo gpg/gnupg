@@ -258,10 +258,11 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    }
 
 	    assert( sk->protect.ivlen <= DIM(sk->protect.iv) );
-	    randomize_buffer(sk->protect.iv, sk->protect.ivlen, 1);
+	    gcry_randomize(sk->protect.iv, sk->protect.ivlen,
+							GCRY_STRONG_RANDOM);
 	    gcry_cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	    if( sk->version >= 4 ) {
-	      #define NMPIS (PUBKEY_MAX_NSKEY - PUBKEY_MAX_NPKEY)
+	      #define NMPIS (GNUPG_MAX_NSKEY - GNUPG_MAX_NPKEY)
 		byte *bufarr[NMPIS];
 		unsigned narr[NMPIS];
 		unsigned nbits[NMPIS];

@@ -32,6 +32,7 @@
 #include "cipher.h"
 #include "memory.h"
 #include "options.h"
+#include "main.h"
 
 
 static int do_comment( IOBUF out, int ctb, PKT_comment *rem );

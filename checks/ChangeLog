@@ -1,3 +1,7 @@
+Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* genkey1024.test: Does not use --quick-random anymore.
+
 Thu Oct 28 16:17:46 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* Makefile.am (GPG_DEARMOR): New and use --no-options.

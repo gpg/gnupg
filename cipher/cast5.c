@@ -39,8 +39,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "g10lib.h"
 #include "types.h"
-#include "errors.h"
 #include "cast5.h"
 
 
@@ -566,10 +566,10 @@ cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
 	    fprintf(stderr,"CAST5 selftest failed (%s).\n", selftest_failed );
     }
     if( selftest_failed )
-	return G10ERR_SELFTEST_FAILED;
+	return GCRYERR_SELFTEST;
 
     if( keylen != 16 )
-	return G10ERR_WRONG_KEYLEN;
+	return GCRYERR_INV_KEYLEN;
 
     x[0] = key[0]  << 24 | key[1]  << 16 | key[2]  << 8 | key[3];
     x[1] = key[4]  << 24 | key[5]  << 16 | key[6]  << 8 | key[7];

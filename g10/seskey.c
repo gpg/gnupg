@@ -51,7 +51,7 @@ make_session_key( DEK *dek )
 	BUG();
     }
 
-    randomize_buffer( dek->key, dek->keylen, 1 );
+    gcry_randomize( dek->key, dek->keylen, GCRY_STRONG_RANDOM );
     for(i=0; i < 16; i++ ) {
 	rc = gcry_cipher_setkey( chd, dek->key, dek->keylen );
 	if( !rc ) {
@@ -62,7 +62,7 @@ make_session_key( DEK *dek )
 	    BUG();
 	log_info(_("weak key created - retrying\n") );
 	/* Renew the session key until we get a non-weak key. */
-	randomize_buffer( dek->key, dek->keylen, 1 );
+	gcry_randomize( dek->key, dek->keylen, GCRY_STRONG_RANDOM );
     }
     log_fatal(_(
 	    "cannot avoid weak key for symmetric cipher; tried %d times!\n"),
@@ -116,7 +116,7 @@ encode_session_key( DEK *dek, unsigned nbits )
     frame[n++] = 2;
     i = nframe - 6 - dek->keylen;
     assert( i > 0 );
-    p = get_random_bits( i*8, 1, 1 );
+    p = gcry_random_bytes_secure( i, GCRY_STRONG_RANDOM );
     /* replace zero bytes by new values */
     for(;;) {
 	int j, k;
@@ -129,7 +129,7 @@ encode_session_key( DEK *dek, unsigned nbits )
 	if( !k )
 	    break; /* okay: no zero bytes */
 	k += k/128; /* better get some more */
-	pp = get_random_bits( k*8, 1, 1);
+	pp = gcry_random_bytes_secure( k, GCRY_STRONG_RANDOM);
 	for(j=0; j < i && k ; j++ )
 	    if( !p[j] )
 		p[j] = pp[--k];
@@ -197,7 +197,7 @@ encode_md_value( int pubkey_algo, GCRY_MD_HD md, int hash_algo, unsigned nbits )
     int algo = hash_algo? hash_algo : gcry_md_get_algo(md);
     MPI frame;
 
-    if( pubkey_algo == PUBKEY_ALGO_DSA ) {
+    if( pubkey_algo == GCRY_PK_DSA ) {
 	frame = gcry_md_is_secure(md)? mpi_alloc_secure(
 				(gcry_md_get_algo_dlen(hash_algo)
 				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )

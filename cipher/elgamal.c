@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "g10lib.h"
 #include "util.h"
 #include "mpi.h"
 #include "cipher.h"
@@ -79,7 +80,7 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
     /*mpi_set_bytes( test, nbits, get_random_byte, 0 );*/
     {	char *p = get_random_bits( nbits, 0, 0 );
 	mpi_set_buffer( test, p, (nbits+7)/8, 0 );
-	m_free(p);
+	g10_free(p);
     }
 
     encrypt( out1_a, out1_b, test, &pk );
@@ -119,7 +120,7 @@ gen_k( MPI p )
 	if( DBG_CIPHER )
 	    progress('.');
 	if( !rndbuf || nbits < 32 ) {
-	    m_free(rndbuf);
+	    g10_free(rndbuf);
 	    rndbuf = get_random_bits( nbits, 1, 1 );
 	}
 	else { /* change only some of the higher bits */
@@ -128,7 +129,7 @@ gen_k( MPI p )
 	     * maybe it is easier to do this directly in random.c */
 	    char *pp = get_random_bits( 32, 1, 1 );
 	    memcpy( rndbuf,pp, 4 );
-	    m_free(pp);
+	    g10_free(pp);
 	}
 	mpi_set_buffer( k, rndbuf, nbytes, 0 );
 
@@ -156,7 +157,7 @@ gen_k( MPI p )
 	}
     }
   found:
-    m_free(rndbuf);
+    g10_free(rndbuf);
     if( DBG_CIPHER )
 	progress('\n');
     mpi_free(p_1);
@@ -212,13 +213,13 @@ generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
 	    progress('.');
 	if( rndbuf ) { /* change only some of the higher bits */
 	    if( nbits < 16 ) {/* should never happen ... */
-		m_free(rndbuf);
+		g10_free(rndbuf);
 		rndbuf = get_random_bits( nbits, 2, 1 );
 	    }
 	    else {
 		char *r = get_random_bits( 16, 2, 1 );
 		memcpy(rndbuf, r, 16/8 );
-		m_free(r);
+		g10_free(r);
 	    }
 	}
 	else
@@ -226,7 +227,7 @@ generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
 	mpi_set_buffer( x, rndbuf, (nbits+7)/8, 0 );
 	mpi_clear_highbit( x, nbits+1 );
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
-    m_free(rndbuf);
+    g10_free(rndbuf);
 
     y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);
     mpi_powm( y, g, x, p );
@@ -443,7 +444,7 @@ elg_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
     ELG_secret_key sk;
 
     if( !is_ELGAMAL(algo) )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
 
     generate( &sk, nbits, retfactors );
     skey[0] = sk.p;
@@ -460,16 +461,16 @@ elg_check_secret_key( int algo, MPI *skey )
     ELG_secret_key sk;
 
     if( !is_ELGAMAL(algo) )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
     if( !skey[0] || !skey[1] || !skey[2] || !skey[3] )
-	return G10ERR_BAD_MPI;
+	return GCRYERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.g = skey[1];
     sk.y = skey[2];
     sk.x = skey[3];
     if( !check_secret_key( &sk ) )
-	return G10ERR_BAD_SECKEY;
+	return GCRYERR_BAD_SECRET_KEY;
 
     return 0;
 }
@@ -482,9 +483,9 @@ elg_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
     ELG_public_key pk;
 
     if( !is_ELGAMAL(algo) )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
     if( !data || !pkey[0] || !pkey[1] || !pkey[2] )
-	return G10ERR_BAD_MPI;
+	return GCRYERR_BAD_MPI;
 
     pk.p = pkey[0];
     pk.g = pkey[1];
@@ -501,10 +502,10 @@ elg_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
     ELG_secret_key sk;
 
     if( !is_ELGAMAL(algo) )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
     if( !data[0] || !data[1]
 	|| !skey[0] || !skey[1] || !skey[2] || !skey[3] )
-	return G10ERR_BAD_MPI;
+	return GCRYERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.g = skey[1];
@@ -521,9 +522,9 @@ elg_sign( int algo, MPI *resarr, MPI data, MPI *skey )
     ELG_secret_key sk;
 
     if( !is_ELGAMAL(algo) )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
     if( !data || !skey[0] || !skey[1] || !skey[2] || !skey[3] )
-	return G10ERR_BAD_MPI;
+	return GCRYERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.g = skey[1];
@@ -542,16 +543,16 @@ elg_verify( int algo, MPI hash, MPI *data, MPI *pkey,
     ELG_public_key pk;
 
     if( !is_ELGAMAL(algo) )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
     if( !data[0] || !data[1] || !hash
 	|| !pkey[0] || !pkey[1] || !pkey[2] )
-	return G10ERR_BAD_MPI;
+	return GCRYERR_BAD_MPI;
 
     pk.p = pkey[0];
     pk.g = pkey[1];
     pk.y = pkey[2];
     if( !verify( data[0], data[1], hash, &pk ) )
-	return G10ERR_BAD_SIGN;
+	return GCRYERR_BAD_SIGNATURE;
     return 0;
 }
 

@@ -1,3 +1,46 @@
+Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* mainproc.c (list_node): Print the PK algo in the --with-colon mode.
+	* keylist.c (list_keyblock): Ditto.
+
+	* misc.c (pull_in_libs): Removed pull in of g10c.
+
+	* misc.c (map_gcry_rc): Removed here and chnaged all users.
+
+	* getkey.c: Replaced check_pubkey_algo by openpgp_pk_test_algo.
+	* import.c (delete_inv_parts): Ditto.
+	* pkclist.c: Ditto.
+	* skclist.c: Ditto.
+	* pubkey-enc.c: Ditto.
+
+	* g10.c (main): Replaced the function to diable PK algos.
+
+	* g10.c (main): Replaced get_random_bits by gcry_random_bytes.
+	* seskey.c (encode_session_key): Likewise.
+	(make_session_key): Renamed randomize_buffer to gcry_randomize
+	and use the GCRY_xxx_RANDOM constants.
+	* cipher.c (write_header): Ditto.
+	* passphrase.c (hash_passphrase): Ditto.
+	* seckey-cert.c (protect_secret_key): Ditto.
+
+	* getkey.c (find_by_name): Replaced rmd160_hash_buffer
+	by gcry_md_hash_buffer.
+	* keyedit.c (show_prefs): Ditto.
+	* keylist.c (list_keyblock): Ditto.
+	* trustdb.c (print_uid_from_keyblock): Ditto.
+	(make_uid_records): Ditto.
+
+	* skclist.c (build_sk_list): Removed the test on faked RNGs.
+	(is_insecure): Removed.
+	* g10.c (--quick-random): Removed this option.
+
+	* Replaced all PUBKEY_ALGO_xxx by GCRY_PK_xxxx.
+
+	* misc.c (pubkey_algo_npkey): New as a wrapper around the gcry fucntion.
+	(pubkey_algo_nskey): Ditto.
+	(pubkey_algo_nsig): Ditto.
+	(pubkey_algo_nenc): Ditto.
+
 Tue Oct 26 20:03:44 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* Makefile.am (basicdefs.h): Added.

@@ -69,7 +69,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     if( blocksize < 8 || blocksize > 16 )
 	log_fatal("unsupported blocksize %d\n", blocksize );
     nprefix = blocksize;
-    randomize_buffer( temp, nprefix, 1 );
+    gcry_randomize( temp, nprefix, GCRY_STRONG_RANDOM );
     temp[nprefix] = temp[nprefix-2];
     temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );

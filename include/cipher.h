@@ -45,8 +45,10 @@
 #define PUBKEY_ALGO_DSA       17
 #define PUBKEY_ALGO_ELGAMAL   20     /* sign and encrypt elgamal */
 
+#if 0
 #define PUBKEY_USAGE_SIG     1	    /* key is good for signatures */
 #define PUBKEY_USAGE_ENC     2	    /* key is good for encryption */
+#endif
 
 #define DIGEST_ALGO_MD5       1
 #define DIGEST_ALGO_SHA1      2

@@ -20,57 +20,60 @@
 #ifndef G10_ERRORS_H
 #define G10_ERRORS_H
 
-#define G10ERR_GENERAL	       1
-#define G10ERR_UNKNOWN_PACKET  2
-#define G10ERR_UNKNOWN_VERSION 3 /* Unknown version (in packet) */
-#define G10ERR_PUBKEY_ALGO     4 /* Unknown pubkey algorithm */
-#define G10ERR_DIGEST_ALGO     5 /* Unknown digest algorithm */
-#define G10ERR_BAD_PUBKEY      6 /* Bad public key */
-#define G10ERR_BAD_SECKEY      7 /* Bad secret key */
-#define G10ERR_BAD_SIGN        8 /* Bad signature */
-#define G10ERR_NO_PUBKEY       9 /* public key not found */
-#define G10ERR_CHECKSUM       10 /* checksum error */
-#define G10ERR_BAD_PASS       11 /* Bad passphrase */
-#define G10ERR_CIPHER_ALGO    12 /* Unknown cipher algorithm */
-#define G10ERR_KEYRING_OPEN   13
-#define G10ERR_INVALID_PACKET 14
-#define G10ERR_INVALID_ARMOR  15
-#define G10ERR_NO_USER_ID     16
-#define G10ERR_NO_SECKEY      17 /* secret key not available */
-#define G10ERR_WRONG_SECKEY   18 /* wrong seckey used */
-#define G10ERR_UNSUPPORTED    19
-#define G10ERR_BAD_KEY	      20 /* bad (session) key */
-#define G10ERR_READ_FILE      21
-#define G10ERR_WRITE_FILE     22
-#define G10ERR_COMPR_ALGO     23 /* Unknown compress algorithm */
-#define G10ERR_OPEN_FILE      24
-#define G10ERR_CREATE_FILE    25
-#define G10ERR_PASSPHRASE     26 /* invalid passphrase */
-#define G10ERR_NI_PUBKEY      27
-#define G10ERR_NI_CIPHER      28
-#define G10ERR_SIG_CLASS      29
-#define G10ERR_BAD_MPI	      30
-#define G10ERR_RESOURCE_LIMIT 31
-#define G10ERR_INV_KEYRING    32
-#define G10ERR_TRUSTDB	      33 /* a problem with the trustdb */
-#define G10ERR_BAD_CERT       34 /* bad certicate */
-#define G10ERR_INV_USER_ID    35
-#define G10ERR_CLOSE_FILE     36
-#define G10ERR_RENAME_FILE    37
-#define G10ERR_DELETE_FILE    38
-#define G10ERR_UNEXPECTED     39
-#define G10ERR_TIME_CONFLICT  40
-#define G10ERR_WR_PUBKEY_ALGO 41 /* unusabe pubkey algo */
-#define G10ERR_FILE_EXISTS    42
-#define G10ERR_WEAK_KEY       43 /* NOTE: hardcoded into the cipher modules */
-#define G10ERR_WRONG_KEYLEN   44 /* NOTE: hardcoded into the cipher modules */
-#define G10ERR_INV_ARG	      45
-#define G10ERR_BAD_URI	      46  /* syntax error in URI */
-#define G10ERR_INVALID_URI    47  /* e.g. unsupported scheme */
-#define G10ERR_NETWORK	      48  /* general network error */
-#define G10ERR_UNKNOWN_HOST   49
-#define G10ERR_SELFTEST_FAILED 50
-#define G10ERR_NOT_ENCRYPTED  51
+
+/* FIXME: some constants have to be the same as the ones from
+ * libgcrypt - include gcrypt.h and use those constants */
+#define G10ERR_GENERAL	       101
+#define G10ERR_UNKNOWN_PACKET  102
+#define G10ERR_UNKNOWN_VERSION 103 /* Unknown version (in packet) */
+#define G10ERR_PUBKEY_ALGO	 4 /* Unknown pubkey algorithm */
+#define G10ERR_DIGEST_ALGO	 5 /* Unknown digest algorithm */
+#define G10ERR_BAD_PUBKEY	 6 /* Bad public key */
+#define G10ERR_BAD_SECKEY	 7 /* Bad secret key */
+#define G10ERR_BAD_SIGN 	 8 /* Bad signature */
+#define G10ERR_NO_PUBKEY       109 /* public key not found */
+#define G10ERR_CHECKSUM        110 /* checksum error */
+#define G10ERR_BAD_PASS        111 /* Bad passphrase */
+#define G10ERR_CIPHER_ALGO	12 /* Unknown cipher algorithm */
+#define G10ERR_KEYRING_OPEN    113
+#define G10ERR_INVALID_PACKET  114
+#define G10ERR_INVALID_ARMOR   115
+#define G10ERR_NO_USER_ID      116
+#define G10ERR_NO_SECKEY       117 /* secret key not available */
+#define G10ERR_WRONG_SECKEY    118 /* wrong seckey used */
+#define G10ERR_UNSUPPORTED     119
+#define G10ERR_BAD_KEY	       120 /* bad (session) key */
+#define G10ERR_READ_FILE       121
+#define G10ERR_WRITE_FILE      122
+#define G10ERR_COMPR_ALGO      123 /* Unknown compress algorithm */
+#define G10ERR_OPEN_FILE       124
+#define G10ERR_CREATE_FILE     125
+#define G10ERR_PASSPHRASE      126 /* invalid passphrase */
+#define G10ERR_NI_PUBKEY       127
+#define G10ERR_NI_CIPHER       128
+#define G10ERR_SIG_CLASS       129
+#define G10ERR_BAD_MPI		30
+#define G10ERR_RESOURCE_LIMIT  131
+#define G10ERR_INV_KEYRING     132
+#define G10ERR_TRUSTDB	       133 /* a problem with the trustdb */
+#define G10ERR_BAD_CERT        134 /* bad certicate */
+#define G10ERR_INV_USER_ID     135
+#define G10ERR_CLOSE_FILE      136
+#define G10ERR_RENAME_FILE     137
+#define G10ERR_DELETE_FILE     138
+#define G10ERR_UNEXPECTED      139
+#define G10ERR_TIME_CONFLICT   140
+#define G10ERR_WR_PUBKEY_ALGO	41 /* unusabe pubkey algo */
+#define G10ERR_FILE_EXISTS     142
+#define G10ERR_WEAK_KEY 	43 /* NOTE: hardcoded into the cipher modules */
+#define G10ERR_WRONG_KEYLEN	44 /* NOTE: hardcoded into the cipher modules */
+#define G10ERR_INV_ARG	       145
+#define G10ERR_BAD_URI	       146  /* syntax error in URI */
+#define G10ERR_INVALID_URI     147  /* e.g. unsupported scheme */
+#define G10ERR_NETWORK	       148  /* general network error */
+#define G10ERR_UNKNOWN_HOST    149
+#define G10ERR_SELFTEST_FAILED	50
+#define G10ERR_NOT_ENCRYPTED   151
 
 #ifndef HAVE_STRERROR
 char *strerror( int n );

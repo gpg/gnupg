@@ -831,8 +831,8 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	    }
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE
-		 && check_pubkey_algo( node->pkt->pkt.signature->pubkey_algo)
-		 && node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
+		 && openpgp_pk_test_algo( node->pkt->pkt.signature->pubkey_algo, 0)
+		 && node->pkt->pkt.signature->pubkey_algo != GCRY_PK_RSA )
 	    delete_kbnode( node ); /* build_packet() can't handle this */
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && (p = parse_sig_subpkt2( node->pkt->pkt.signature,

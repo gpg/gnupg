@@ -243,7 +243,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		    byte namehash[20];
 
 		    if( pk && !ulti_hack ) {
-			rmd160_hash_buffer( namehash,
+			gcry_md_hash_buffer( GCRY_MD_RMD160, namehash,
 					node->pkt->pkt.user_id->name,
 					node->pkt->pkt.user_id->len  );
 			trustletter = query_trust_info( pk, namehash );
@@ -394,7 +394,8 @@ list_keyblock( KBNODE keyblock, int secret )
 		putchar(':');
 		if( sigrc != ' ' )
 		    putchar(sigrc);
-		printf(":::%08lX%08lX:%s::::", (ulong)sig->keyid[0],
+		printf("::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
+						 (ulong)sig->keyid[0],
 			   (ulong)sig->keyid[1], datestr_from_sig(sig));
 	    }
 	    else

@@ -27,8 +27,8 @@
 #include <string.h> /* for memcmp() */
 
 #include "types.h"  /* for byte and u32 typedefs */
+#include "g10lib.h"
 #include "util.h"
-#include "errors.h"
 #include "dynload.h"
 
 
@@ -574,7 +574,7 @@ twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
 
     /* Check key length. */
     if( ( ( keylen - 16 ) | 16 ) != 16 )
-	return G10ERR_WRONG_KEYLEN;
+	return GCRYERR_INV_KEYLEN;
 
     /* Do self-test if necessary. */
     if (!initialized) {
@@ -584,7 +584,7 @@ twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
 	 fprintf(stderr, "%s\n", selftest_failed );
     }
     if( selftest_failed )
-       return G10ERR_SELFTEST_FAILED;
+       return GCRYERR_SELFTEST;
 
     /* Compute the first two words of the S vector.  The magic numbers are
      * the entries of the RS matrix, preprocessed through poly_to_exp.	The

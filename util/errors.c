@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include <gcrypt.h>
 #include "errors.h"
 #include "i18n.h"
 
@@ -100,7 +101,13 @@ g10_errstr( int err )
       X(NETWORK        ,N_("network error"))
       X(SELFTEST_FAILED,"selftest failed")
       X(NOT_ENCRYPTED  ,N_("not encrypted"))
-      default: p = buf; sprintf(buf, "g10err=%d", err); break;
+      default: /* pass on to libgcrypt */
+	if( err >= 0 ) /* pass on to libgcrypt */
+	    p = gcry_strerror(err); /* fimxe: how do we handle i18n? */
+	else {
+	    p = buf; sprintf(buf, "g10err=%d", err); break;
+	}
+	break;
     }
   #undef X
     return _(p);

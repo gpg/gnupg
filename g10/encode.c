@@ -252,7 +252,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
 
-    if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
+    if( (rc=build_pk_list( remusr, &pk_list, GCRY_PK_USAGE_ENCR)) )
 	return rc;
 
     /* prepare iobufs */

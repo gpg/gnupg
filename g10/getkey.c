@@ -24,6 +24,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
+#include <gcrypt.h>
 #include "util.h"
 #include "packet.h"
 #include "memory.h"
@@ -185,7 +186,7 @@ cache_public_key( PKT_public_key *pk )
 	return;
 
     if( is_ELGAMAL(pk->pubkey_algo)
-	|| pk->pubkey_algo == PUBKEY_ALGO_DSA
+	|| pk->pubkey_algo == GCRY_PK_DSA
 	|| is_RSA(pk->pubkey_algo) ) {
 	keyid_from_pk( pk, keyid );
     }
@@ -1269,7 +1270,7 @@ find_by_name( KBNODE keyblock, PKT_public_key *pk, const char *name,
 			 || pk->pubkey_algo
 			    == kk->pkt->pkt.public_key->pubkey_algo)
 		    && ( !pk->pubkey_usage
-			 || !check_pubkey_algo2(
+			 || !openpgp_pk_test_algo(
 			       kk->pkt->pkt.public_key->pubkey_algo,
 						   pk->pubkey_usage ))
 		  )
@@ -1279,7 +1280,7 @@ find_by_name( KBNODE keyblock, PKT_public_key *pk, const char *name,
 		u32 aki[2];
 		keyid_from_pk( kk->pkt->pkt.public_key, aki );
 		cache_user_id( k->pkt->pkt.user_id, aki );
-		rmd160_hash_buffer( namehash,
+		gcry_md_hash_buffer( GCRY_MD_RMD160, namehash,
 				    k->pkt->pkt.user_id->name,
 				    k->pkt->pkt.user_id->len );
 		*use_namehash = 1;
@@ -1312,7 +1313,7 @@ find_by_name_sk( KBNODE keyblock, PKT_secret_key *sk, const char *name,
 			 || sk->pubkey_algo
 			    == kk->pkt->pkt.secret_key->pubkey_algo)
 		    && ( !sk->pubkey_usage
-			 || !check_pubkey_algo2(
+			 || !openpgp_pk_test_algo(
 			       kk->pkt->pkt.secret_key->pubkey_algo,
 						   sk->pubkey_usage ))
 		  )
@@ -1530,7 +1531,7 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
     }
     else {
 	if( primary && pk->pubkey_usage
-	    && check_pubkey_algo2( k->pkt->pkt.public_key->pubkey_algo,
+	    && openpgp_pk_test_algo( k->pkt->pkt.public_key->pubkey_algo,
 		       pk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
 	    /* if the usage is not correct, try to use a subkey */
 	    KBNODE save_k = k;
@@ -1538,12 +1539,12 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 	    k = NULL;
 	    /* kludge for pgp 5: which doesn't accept type 20:
 	     * try to use a type 16 subkey instead */
-	    if( pk->pubkey_usage == PUBKEY_USAGE_ENC ) {
+	    if( pk->pubkey_usage == GCRY_PK_USAGE_ENCR ) {
 		for( k = save_k; k; k = k->next ) {
 		    if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
 			&& k->pkt->pkt.public_key->pubkey_algo
-			    == PUBKEY_ALGO_ELGAMAL_E
-			&& !check_pubkey_algo2(
+			    == GCRY_PK_ELG_E
+			&& !openpgp_pk_test_algo(
 				k->pkt->pkt.public_key->pubkey_algo,
 						 pk->pubkey_usage ) )
 			break;
@@ -1553,7 +1554,7 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 	    if( !k ) {
 		for(k = save_k ; k; k = k->next ) {
 		    if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
-			&& !check_pubkey_algo2(
+			&& !openpgp_pk_test_algo(
 				k->pkt->pkt.public_key->pubkey_algo,
 						 pk->pubkey_usage ) )
 			break;
@@ -1586,7 +1587,7 @@ finish_lookup_sk( KBNODE keyblock, PKT_secret_key *sk, KBNODE k, int primary )
     }
     else {
 	if( primary && sk->pubkey_usage
-	    && check_pubkey_algo2( k->pkt->pkt.secret_key->pubkey_algo,
+	    && openpgp_pk_test_algo( k->pkt->pkt.secret_key->pubkey_algo,
 		       sk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
 	    /* if the usage is not correct, try to use a subkey */
 	    KBNODE save_k = k;
@@ -1594,12 +1595,12 @@ finish_lookup_sk( KBNODE keyblock, PKT_secret_key *sk, KBNODE k, int primary )
 	    k = NULL;
 	    /* kludge for pgp 5: which doesn't accept type 20:
 	     * try to use a type 16 subkey instead */
-	    if( sk->pubkey_usage == PUBKEY_USAGE_ENC ) {
+	    if( sk->pubkey_usage == GCRY_PK_USAGE_ENCR ) {
 		for( k = save_k; k; k = k->next ) {
 		    if( k->pkt->pkttype == PKT_SECRET_SUBKEY
 			&& k->pkt->pkt.secret_key->pubkey_algo
-			    == PUBKEY_ALGO_ELGAMAL_E
-			&& !check_pubkey_algo2(
+			    == GCRY_PK_ELG_E
+			&& !openpgp_pk_test_algo(
 				k->pkt->pkt.secret_key->pubkey_algo,
 						 sk->pubkey_usage ) )
 			break;
@@ -1609,7 +1610,7 @@ finish_lookup_sk( KBNODE keyblock, PKT_secret_key *sk, KBNODE k, int primary )
 	    if( !k ) {
 		for(k = save_k ; k; k = k->next ) {
 		    if( k->pkt->pkttype == PKT_SECRET_SUBKEY
-			&& !check_pubkey_algo2(
+			&& !openpgp_pk_test_algo(
 				k->pkt->pkt.secret_key->pubkey_algo,
 						 sk->pubkey_usage ) )
 			break;

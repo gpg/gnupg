@@ -31,6 +31,7 @@
   #include <dl.h>
   #include <errno.h>
 #endif
+#include "g10lib.h"
 #include "util.h"
 #include "cipher.h"
 #include "dynload.h"
@@ -131,12 +132,12 @@ register_cipher_extension( const char *mainpgm, const char *fname )
 	    tmp = make_filename(fname, NULL);
 	else
 	    tmp = make_filename(GNUPG_LIBDIR, fname, NULL);
-	el = m_alloc_clear( sizeof *el + strlen(tmp) );
+	el = g10_xcalloc( 1, sizeof *el + strlen(tmp) );
 	strcpy(el->name, tmp );
-	m_free(tmp);
+	g10_free(tmp);
     }
     else {
-	el = m_alloc_clear( sizeof *el + strlen(fname) );
+	el = g10_xcalloc( 1, sizeof *el + strlen(fname) );
 	strcpy(el->name, fname );
     }
     /* check whether we have a class hint */
@@ -152,7 +153,7 @@ register_cipher_extension( const char *mainpgm, const char *fname )
     for(r = extensions; r; r = r->next ) {
 	if( !compare_filenames(r->name, el->name) ) {
 	    log_info("extension `%s' already registered\n", el->name );
-	    m_free(el);
+	    g10_free(el);
 	    return;
 	}
 	else if( r->internal )
@@ -180,7 +181,7 @@ register_internal_cipher_extension(
 {
     EXTLIST r, el;
 
-    el = m_alloc_clear( sizeof *el + strlen(module_id) );
+    el = g10_xcalloc( 1, sizeof *el + strlen(module_id) );
     strcpy(el->name, module_id );
     el->internal = 1;
 
@@ -188,7 +189,7 @@ register_internal_cipher_extension(
     for(r = extensions; r; r = r->next ) {
 	if( !compare_filenames(r->name, el->name) ) {
 	    log_info("extension `%s' already registered\n", el->name );
-	    m_free(el);
+	    g10_free(el);
 	    return;
 	}
     }
@@ -350,13 +351,13 @@ enum_gnupgext_digests( void **enum_context,
     ENUMCONTEXT *ctx;
 
     if( !*enum_context ) { /* init context */
-	ctx = m_alloc_clear( sizeof( *ctx ) );
+	ctx = g10_xcalloc( 1, sizeof( *ctx ) );
 	ctx->r = extensions;
 	ctx->reqalgo = *algo;
 	*enum_context = ctx;
     }
     else if( !algo ) { /* release the context */
-	m_free(*enum_context);
+	g10_free(*enum_context);
 	*enum_context = NULL;
 	return 0;
     }
@@ -411,12 +412,12 @@ enum_gnupgext_ciphers( void **enum_context, int *algo,
 			  void (**)( void *, byte *, byte *));
 
     if( !*enum_context ) { /* init context */
-	ctx = m_alloc_clear( sizeof( *ctx ) );
+	ctx = g10_xcalloc( 1, sizeof( *ctx ) );
 	ctx->r = extensions;
 	*enum_context = ctx;
     }
     else if( !algo ) { /* release the context */
-	m_free(*enum_context);
+	g10_free(*enum_context);
 	*enum_context = NULL;
 	return NULL;
     }
@@ -485,12 +486,12 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
 			   unsigned (**)( int , MPI * ) );
 
     if( !*enum_context ) { /* init context */
-	ctx = m_alloc_clear( sizeof( *ctx ) );
+	ctx = g10_xcalloc( 1, sizeof( *ctx ) );
 	ctx->r = extensions;
 	*enum_context = ctx;
     }
     else if( !algo ) { /* release the context */
-	m_free(*enum_context);
+	g10_free(*enum_context);
 	*enum_context = NULL;
 	return NULL;
     }

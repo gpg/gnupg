@@ -57,7 +57,6 @@ libcipher_la_SOURCES = cipher.c  \
 		 rmd.h		\
 		 dsa.h		\
 		 dsa.c		\
-		 g10c.c 	\
 		 smallprime.c	\
 		 construct.c
 

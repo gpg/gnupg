@@ -38,12 +38,12 @@ int
 pubkey_letter( int algo )
 {
     switch( algo ) {
-      case PUBKEY_ALGO_RSA:	return 'R' ;
-      case PUBKEY_ALGO_RSA_E:	return 'r' ;
-      case PUBKEY_ALGO_RSA_S:	return 's' ;
-      case PUBKEY_ALGO_ELGAMAL_E: return 'g';
-      case PUBKEY_ALGO_ELGAMAL: return 'G' ;
-      case PUBKEY_ALGO_DSA:	return 'D' ;
+      case GCRY_PK_RSA: return 'R' ;
+      case GCRY_PK_RSA_E:	return 'r' ;
+      case GCRY_PK_RSA_S:	return 's' ;
+      case GCRY_PK_ELG_E: return 'g';
+      case GCRY_PK_ELG: return 'G' ;
+      case GCRY_PK_DSA: return 'D' ;
       default: return '?';
     }
 }
@@ -54,9 +54,9 @@ do_fingerprint_md( PKT_public_key *pk )
 {
     GCRY_MD_HD md;
     unsigned n;
-    unsigned nb[PUBKEY_MAX_NPKEY];
-    unsigned nn[PUBKEY_MAX_NPKEY];
-    byte *pp[PUBKEY_MAX_NPKEY];
+    unsigned nb[GNUPG_MAX_NPKEY];
+    unsigned nn[GNUPG_MAX_NPKEY];
+    byte *pp[GNUPG_MAX_NPKEY];
     int i;
     int npkey = pubkey_get_npkey( pk->pubkey_algo );
 

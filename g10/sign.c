@@ -40,6 +40,63 @@
 #include "i18n.h"
 
 
+/****************
+ * Emulate our old PK interface here - sometime in the future we might
+ * change the internal design to directly fit to libgcrypt.
+ */
+static int
+pk_sign( int algo, MPI *data, MPI hash, MPI *skey )
+{
+    GCRY_SEXP s_sig, s_hash, s_skey, list;
+    int rc;
+
+    /* make a sexp from skey */
+    if( algo == GCRY_PK_DSA ) {
+	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "dsa", 3 ),
+			  gcry_sexp_new_name_mpi( "p", skey[0] ),
+			  gcry_sexp_new_name_mpi( "q", skey[1] ),
+			  gcry_sexp_new_name_mpi( "g", skey[2] ),
+			  gcry_sexp_new_name_mpi( "y", skey[3] ),
+			  gcry_sexp_new_name_mpi( "x", skey[4] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "elg", 3 ),
+			  gcry_sexp_new_name_mpi( "p", skey[0] ),
+			  gcry_sexp_new_name_mpi( "g", skey[1] ),
+			  gcry_sexp_new_name_mpi( "y", skey[2] ),
+			  gcry_sexp_new_name_mpi( "x", skey[3] ),
+			  NULL ));
+    }
+    else
+	return G10ERR_PUBKEY_ALGO;
+
+    /* put hash into a S-Exp s_hash */
+    s_hash = gcry_sexp_new_mpi( hash );
+
+    rc = gcry_pk_sign( &s_sig, s_hash, s_skey );
+    gcry_sexp_release( s_hash );
+    gcry_sexp_release( s_skey );
+
+    if( rc )
+	;
+    else {
+	list = gcry_sexp_find_token( s_sig, "r" , 0 );
+	assert( list );
+	data[0] = gcry_sexp_cdr_mpi( list, 0 );
+	assert( data[0] );
+	list = gcry_sexp_find_token( s_sig, "s" , 0 );
+	assert( list );
+	data[1] = gcry_sexp_cdr_mpi( list, 0 );
+	assert( data[1] );
+    }
+
+
+    gcry_sexp_release( s_sig );
+    return rc;
+}
 
 /****************
  * Create a notation.  It is assumed that the stings in STRLIST
@@ -123,7 +180,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     sig->digest_start[1] = dp[1];
     frame = encode_md_value( sk->pubkey_algo, md,
 			     digest_algo, mpi_get_nbits(sk->skey[0]));
-    rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
+    rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_free(frame);
     if( rc )
 	log_error(_("signing failed: %s\n"), g10_errstr(rc) );
@@ -159,9 +216,9 @@ hash_for(int pubkey_algo )
 {
     if( opt.def_digest_algo )
 	return opt.def_digest_algo;
-    if( pubkey_algo == PUBKEY_ALGO_DSA )
+    if( pubkey_algo == GCRY_PK_DSA )
 	return DIGEST_ALGO_SHA1;
-    if( pubkey_algo == PUBKEY_ALGO_RSA )
+    if( pubkey_algo == GCRY_PK_RSA )
 	return DIGEST_ALGO_MD5;
     return DEFAULT_DIGEST_ALGO;
 }
@@ -175,7 +232,7 @@ only_old_style( SK_LIST sk_list )
     /* if there are only old style capable key we use the old sytle */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	if( sk->pubkey_algo == PUBKEY_ALGO_RSA && sk->version < 4 )
+	if( sk->pubkey_algo == GCRY_PK_RSA && sk->version < 4 )
 	    old_style = 1;
 	else
 	    return 0;
@@ -237,13 +294,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encrypt) )
 	log_bug("multiple files can only be detached signed");
 
-    if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
+    if( (rc=build_sk_list( locusr, &sk_list, 1, GCRY_PK_USAGE_SIGN )) )
 	goto leave;
     if( !old_style )
 	old_style = only_old_style( sk_list );
 
     if( encrypt ) {
-	if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )) )
+	if( (rc=build_pk_list( remusr, &pk_list, GCRY_PK_USAGE_ENCR )) )
 	    goto leave;
 	if( !old_style )
 	    compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_COMPR );
@@ -559,7 +616,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
 
-    if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
+    if( (rc=build_sk_list( locusr, &sk_list, 1, GCRY_PK_USAGE_SIGN )) )
 	goto leave;
     if( !old_style )
 	old_style = only_old_style( sk_list );
@@ -756,9 +813,9 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	    || sigclass == 0x30 || sigclass == 0x28 );
     if( !digest_algo ) {
 	switch( sk->pubkey_algo ) {
-	  case PUBKEY_ALGO_DSA: digest_algo = DIGEST_ALGO_SHA1; break;
-	  case PUBKEY_ALGO_RSA_S:
-	  case PUBKEY_ALGO_RSA: digest_algo = DIGEST_ALGO_MD5; break;
+	  case GCRY_PK_DSA: digest_algo = DIGEST_ALGO_SHA1; break;
+	  case GCRY_PK_RSA_S:
+	  case GCRY_PK_RSA: digest_algo = DIGEST_ALGO_MD5; break;
 	  default:		digest_algo = DIGEST_ALGO_RMD160; break;
 	}
     }

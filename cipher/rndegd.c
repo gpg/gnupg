@@ -31,6 +31,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include "types.h"
+#include "g10lib.h"
 #include "util.h"
 #include "ttyio.h"
 #include "dynload.h"
@@ -126,7 +127,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	if( connect( fd, (struct sockaddr*)&addr, addr_len) == -1 )
 	    g10_log_fatal("can't connect to `%s': %s\n",
 						    name, strerror(errno) );
-	m_free(name);
+	g10_free(name);
     }
     do_restart = 0;
 

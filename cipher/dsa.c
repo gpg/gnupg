@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "g10lib.h"
 #include "util.h"
 #include "mpi.h"
 #include "cipher.h"
@@ -77,7 +78,7 @@ gen_k( MPI q )
 	    progress('.');
 
 	if( !rndbuf || nbits < 32 ) {
-	    m_free(rndbuf);
+	    g10_free(rndbuf);
 	    rndbuf = get_random_bits( nbits, 1, 1 );
 	}
 	else { /* change only some of the higher bits */
@@ -86,7 +87,7 @@ gen_k( MPI q )
 	     * maybe it is easier to do this directly in random.c */
 	    char *pp = get_random_bits( 32, 1, 1 );
 	    memcpy( rndbuf,pp, 4 );
-	    m_free(pp);
+	    g10_free(pp);
 	}
 	mpi_set_buffer( k, rndbuf, nbytes, 0 );
 	if( mpi_test_bit( k, nbits-1 ) )
@@ -108,7 +109,7 @@ gen_k( MPI q )
 	}
 	break;	/* okay */
     }
-    m_free(rndbuf);
+    g10_free(rndbuf);
     if( DBG_CIPHER )
 	progress('\n');
 
@@ -131,7 +132,7 @@ test_keys( DSA_secret_key *sk, unsigned qbits )
     /*mpi_set_bytes( test, qbits, get_random_byte, 0 );*/
     {	char *p = get_random_bits( qbits, 0, 0 );
 	mpi_set_buffer( test, p, (qbits+7)/8, 0 );
-	m_free(p);
+	g10_free(p);
     }
 
     sign( out1_a, out1_b, test, sk );
@@ -202,12 +203,12 @@ generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
 	else { /* change only some of the higher bits (= 2 bytes)*/
 	    char *r = get_random_bits( 16, 2, 1 );
 	    memcpy(rndbuf, r, 16/8 );
-	    m_free(r);
+	    g10_free(r);
 	}
 	mpi_set_buffer( x, rndbuf, (qbits+7)/8, 0 );
 	mpi_clear_highbit( x, qbits+1 );
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, h )<0 ) );
-    m_free(rndbuf);
+    g10_free(rndbuf);
     mpi_free( e );
     mpi_free( h );
 
@@ -347,7 +348,7 @@ dsa_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
     DSA_secret_key sk;
 
     if( algo != PUBKEY_ALGO_DSA )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
 
     generate( &sk, nbits, retfactors );
     skey[0] = sk.p;
@@ -365,9 +366,9 @@ dsa_check_secret_key( int algo, MPI *skey )
     DSA_secret_key sk;
 
     if( algo != PUBKEY_ALGO_DSA )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
     if( !skey[0] || !skey[1] || !skey[2] || !skey[3] || !skey[4] )
-	return G10ERR_BAD_MPI;
+	return GCRYERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.q = skey[1];
@@ -375,7 +376,7 @@ dsa_check_secret_key( int algo, MPI *skey )
     sk.y = skey[3];
     sk.x = skey[4];
     if( !check_secret_key( &sk ) )
-	return G10ERR_BAD_SECKEY;
+	return GCRYERR_BAD_SECRET_KEY;
 
     return 0;
 }
@@ -388,9 +389,9 @@ dsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
     DSA_secret_key sk;
 
     if( algo != PUBKEY_ALGO_DSA )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
     if( !data || !skey[0] || !skey[1] || !skey[2] || !skey[3] || !skey[4] )
-	return G10ERR_BAD_MPI;
+	return GCRYERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.q = skey[1];
@@ -410,17 +411,17 @@ dsa_verify( int algo, MPI hash, MPI *data, MPI *pkey,
     DSA_public_key pk;
 
     if( algo != PUBKEY_ALGO_DSA )
-	return G10ERR_PUBKEY_ALGO;
+	return GCRYERR_INV_PK_ALGO;
     if( !data[0] || !data[1] || !hash
 	|| !pkey[0] || !pkey[1] || !pkey[2] || !pkey[3] )
-	return G10ERR_BAD_MPI;
+	return GCRYERR_BAD_MPI;
 
     pk.p = pkey[0];
     pk.q = pkey[1];
     pk.g = pkey[2];
     pk.y = pkey[3];
     if( !verify( data[0], data[1], hash, &pk ) )
-	return G10ERR_BAD_SIGN;
+	return GCRYERR_BAD_SIGNATURE;
     return 0;
 }
 

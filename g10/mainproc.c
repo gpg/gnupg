@@ -1,4 +1,4 @@
-/* maPPPPinproc.c - handle packets
+/* mainproc.c - handle packets
  *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -221,7 +221,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 
 
     if( is_ELGAMAL(enc->pubkey_algo)
-	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
+	|| enc->pubkey_algo == GCRY_PK_DSA
 	|| is_RSA(enc->pubkey_algo)  ) {
 	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
 			  || !seckey_available( enc->keyid )) ) {
@@ -830,7 +830,8 @@ list_node( CTX c, KBNODE node )
 	    putchar(':');
 	    if( sigrc != ' ' )
 		putchar(sigrc);
-	    printf(":::%08lX%08lX:%s::::", (ulong)sig->keyid[0],
+	    printf("::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
+					     (ulong)sig->keyid[0],
 		       (ulong)sig->keyid[1], datestr_from_sig(sig));
 	}
 	else
@@ -1194,7 +1195,7 @@ proc_tree( CTX c, KBNODE node )
 		    BUG();
 	    }
 	    else if( sig->digest_algo == DIGEST_ALGO_SHA1
-		     && sig->pubkey_algo == PUBKEY_ALGO_DSA
+		     && sig->pubkey_algo == GCRY_PK_DSA
 		     && sig->sig_class == 0x01 ) {
 		/* enable the workaround also for pgp5 when the detached
 		 * signature has been created in textmode */

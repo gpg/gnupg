@@ -24,6 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <gcrypt.h>
 
 #include "options.h"
 #include "packet.h"
@@ -687,14 +688,14 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
     for( rov = remusr; rov; rov = rov->next ) {
 	if( !(rov->flags & 1) )
 	    any_recipients = 1;
-	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
+	else if( (use & GCRY_PK_USAGE_ENCR) && !opt.no_encrypt_to ) {
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->pubkey_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, rov->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
 	    }
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
+	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use )) ) {
 
 		/* Skip the actual key if the key is already present
 		 * in the list */
@@ -750,7 +751,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    rc = get_pubkey_byname( NULL, pk, answer, NULL );
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
+	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use)) ) {
 		if( have_def_rec ) {
 		    if (key_present_in_pk_list(pk_list, pk) == 0) {
 			free_public_key(pk); pk = NULL;
@@ -815,7 +816,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	rc = get_pubkey_byname( NULL, pk, def_rec, NULL );
 	if( rc )
 	    log_error(_("unknown default recipient `%s'\n"), def_rec );
-	else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
+	else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use)) ) {
 	    PK_LIST r = m_alloc( sizeof *r );
 	    r->pk = pk; pk = NULL;
 	    r->next = pk_list;
@@ -841,7 +842,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
 	    }
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
+	    else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use )) ) {
 		int trustlevel;
 
 		rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );

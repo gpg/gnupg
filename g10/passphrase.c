@@ -254,7 +254,7 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	    ulong count = len2;
 
 	    if( create && !pass ) {
-		randomize_buffer(s2k->salt, 8, 1);
+		gcry_randomize(s2k->salt, 8, GCRY_STRONG_RANDOM );
 		if( s2k->mode == 3 )
 		    s2k->count = 96; /* 65536 iterations */
 	    }

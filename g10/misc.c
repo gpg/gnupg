@@ -49,7 +49,6 @@ volatile
 pull_in_libs(void)
 {
     g10m_revision_string(0);
-    g10c_revision_string(0);
     g10u_revision_string(0);
 }
 
@@ -253,20 +252,6 @@ print_digest_algo_note( int algo )
 }
 
 
-
-/****************
- * Map errors retuned by libgcrypt to those used by GnuPG.
- */
-int
-map_gcry_rc( int rc )
-{
-    switch( rc )  {
-      case 0: return 0;
-      default: return G10ERR_GENERAL;
-    }
-}
-
-
 /****************
  * Wrapper around the libgcrypt function with addional checks on
  * openPGP contrainst for the algo ID.
@@ -275,23 +260,55 @@ int
 openpgp_cipher_test_algo( int algo )
 {
     if( algo < 0 || algo > 110 )
-	return GCRYERR_INV_ALGO;
+	return GCRYERR_INV_CIPHER_ALGO;
     return gcry_cipher_test_algo(algo);
 }
 
 int
-openpgp_pk_test_algo( int algo )
+openpgp_pk_test_algo( int algo, unsigned int usage_flags )
 {
+    size_t n = usage_flags;
+
     if( algo < 0 || algo > 110 )
-	return GCRYERR_INV_ALGO;
-    return gcry_pk_test_algo(algo);
+	return GCRYERR_INV_PK_ALGO;
+    return gcry_pk_algo_info( algo, GCRYCTL_TEST_ALGO, NULL, &n );
 }
+
 
 int
 openpgp_md_test_algo( int algo )
 {
     if( algo < 0 || algo > 110 )
-	return GCRYERR_INV_ALGO;
+	return GCRYERR_INV_MD_ALGO;
     return gcry_md_test_algo(algo);
+}
+
+
+int
+pubkey_get_npkey( int algo )
+{
+    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NPKEY, NULL, 0 );
+    return n > 0? n : 0;
+}
+
+int
+pubkey_get_nskey( int algo )
+{
+    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSKEY, NULL, 0 );
+    return n > 0? n : 0;
+}
+
+int
+pubkey_get_nsig( int algo )
+{
+    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSIGN, NULL, 0 );
+    return n > 0? n : 0;
+}
+
+int
+pubkey_get_nenc( int algo )
+{
+    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, 0 );
+    return n > 0? n : 0;
 }
 

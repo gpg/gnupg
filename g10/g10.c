@@ -131,7 +131,6 @@ enum cmd_and_opt_values { aNull = 0,
     oDigestAlgo,
     oCompressAlgo,
     oPasswdFD,
-    oQuickRandom,
     oNoVerbose,
     oTrustDBName,
     oNoSecmemWarn,
@@ -301,7 +300,6 @@ static ARGPARSE_OPTS opts[] = {
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
     { aDeleteSecretKey, "delete-secret-key",0, "@" },
-    { oQuickRandom, "quick-random", 0, "@"},
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
     { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
@@ -362,6 +360,13 @@ static void print_mds( const char *fname, int algo );
 static void add_notation_data( const char *string );
 static int  check_policy_url( const char *s );
 
+static int
+our_pk_test_algo( int algo )
+{
+    return openpgp_pk_test_algo( algo, 0 );
+}
+
+
 const char *
 strusage( int level )
 {
@@ -395,7 +400,7 @@ strusage( int level )
       case 33:
 	if( !pubkeys )
 	    pubkeys = build_list("Pubkey: ", gcry_pk_algo_name,
-					     openpgp_pk_test_algo );
+					     our_pk_test_algo );
 	p = pubkeys;
 	break;
       case 34:
@@ -745,7 +750,6 @@ main( int argc, char **argv )
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
-	  case oQuickRandom: quick_random_gen(1); break;
 	  case oNoComment: opt.no_comment=1; break;
 	  case oNoVersion: opt.no_version=1; break;
 	  case oEmitVersion: opt.no_version=0; break;
@@ -858,8 +862,11 @@ main( int argc, char **argv )
 					     &algo, sizeof algo );
 		}
 		break;
-	  case oDisablePubkeyAlgo:
-		disable_pubkey_algo( gcry_pk_map_name(pargs.r.ret_str) );
+	  case oDisablePubkeyAlgo: {
+		    int algo = gcry_pk_map_name(pargs.r.ret_str);
+		    gcry_pk_ctl( GCRYCTL_DISABLE_ALGO,
+				       &algo, sizeof algo );
+		}
 		break;
 	  case oAllowNonSelfsignedUID:
 		opt.allow_non_selfsigned_uid = 1;
@@ -1274,6 +1281,7 @@ main( int argc, char **argv )
       case aPrimegen:
 	{   int mode = argc < 2 ? 0 : atoi(*argv);
 
+	   #if 0 /* FIXME: disabled until we have an API to create primes */
 	    if( mode == 1 && argc == 2 ) {
 		mpi_print( stdout, generate_public_prime( atoi(argv[1]) ), 1);
 	    }
@@ -1300,6 +1308,7 @@ main( int argc, char **argv )
 		mpi_free(g);
 	    }
 	    else
+	  #endif
 		wrong_args("--gen-prime mode bits [qbits] ");
 	    putchar('\n');
 	}
@@ -1318,7 +1327,7 @@ main( int argc, char **argv )
 		byte *p;
 		size_t n = !endless && count < 100? count : 100;
 
-		p = get_random_bits( n*8, level, 0);
+		p = gcry_random_bytes( n, level );
 		fwrite( p, n, 1, stdout );
 		m_free(p);
 		if( !endless )
@@ -1457,10 +1466,10 @@ g10_exit( int rc )
 {
     if( opt.debug & DBG_MEMSTAT_VALUE ) {
 	m_print_stats("on exit");
-	random_dump_stats();
+	gcry_control( GCRYCTL_DUMP_RANDOM_STATS );
     }
     if( opt.debug )
-	secmem_dump_stats();
+	gcry_control( GCRYCTL_DUMP_SECMEM_STATS );
     secmem_term();
     rc = rc? rc : log_get_errorcount(0)? 2 :
 			g10_errors_seen? 1 : 0;
