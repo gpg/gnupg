@@ -1,16 +1,13 @@
 Thu Jul 15 10:15:35 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): Fixed last modification.
 
 Wed Jul  7 13:08:40 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* Makefile.am: Support for libtool.
 	* configure.in: Ditto.
 
 Tue Jun 29 21:44:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* configure.in (use_local_zlib): The lost dollar is back.
 

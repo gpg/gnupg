@@ -59,6 +59,7 @@ static int import_secret_one( const char *fname, KBNODE keyblock );
 static int import_revoke_cert( const char *fname, KBNODE node );
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
 			  PKT_public_key *pk, u32 *keyid );
+static void mark_non_selfsigned_uids_valid( KBNODE keyblock, u32 *kid );
 static int delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid );
 static int merge_blocks( const char *fname, KBNODE keyblock_orig,
 			 KBNODE keyblock, u32 *keyid,
@@ -366,6 +367,9 @@ import_one( const char *fname, KBNODE keyblock, int fast )
     rc = chk_self_sigs( fname, keyblock , pk, keyid );
     if( rc )
 	return rc== -1? 0:rc;
+
+    if( opt.allow_non_selfsigned_uid )
+	mark_non_selfsigned_uids_valid( keyblock, keyid );
 
     if( !delete_inv_parts( fname, keyblock, keyid ) ) {
 	if( !opt.quiet ) {
@@ -686,7 +690,7 @@ import_revoke_cert( const char *fname, KBNODE node )
  * loop over the keyblock and check all self signatures.
  * Mark all user-ids with a self-signature by setting flag bit 0.
  * Mark all user-ids with an invalid self-signature by setting bit 1.
- * This works allso for subkeys, here the subkey is marked.
+ * This works also for subkeys, here the subkey is marked.
  */
 static int
 chk_self_sigs( const char *fname, KBNODE keyblock,
@@ -726,7 +730,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		    knode = find_prev_kbnode( keyblock,
 						 n, PKT_SECRET_SUBKEY );
 
-		if( !knode )  {
+		if( !knode ) {
 		    log_error( _("key %08lX: no subkey for key binding\n"),
 					    (ulong)keyid[1]);
 		    n->flag |= 4; /* delete this */
@@ -747,6 +751,29 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	}
     }
     return 0;
+}
+
+
+
+/****************
+ * If a user ID has at least one signature, mark it as valid
+ */
+static void
+mark_non_selfsigned_uids_valid( KBNODE keyblock, u32 *kid )
+{
+    KBNODE node;
+    for(node=keyblock->next; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_USER_ID && !(node->flag & 1) ) {
+	    if( node->next && node->next->pkt->pkttype == PKT_SIGNATURE ) {
+		node->flag |= 1;
+		log_info( _("key %08lX: accepted non self-signed userid '"),
+							 (ulong)kid[1]);
+		print_string( log_stream(), node->pkt->pkt.user_id->name,
+					    node->pkt->pkt.user_id->len, 0 );
+		fputs("'\n", log_stream() );
+	    }
+	}
+    }
 }
 
 /****************

@@ -19,6 +19,9 @@
 
     * Enhanced info output in case of multiple recipients and fixed exit code.
 
+    * New option --allow-non-selfsigned-uid to work around a problem with
+      the German IN way of separating signing and encryption keys.
+
 
 Noteworthy changes in version 0.9.8
 -----------------------------------

@@ -148,7 +148,6 @@ Tue Jan 12 11:17:18 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* tiger.c: Only compile if we have the u64 type
 
-
 Sat Jan  9 16:02:23 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* rndunix.c (gather_random): check for setuid.

@@ -287,8 +287,15 @@ print_failed_pkenc( struct kidlist_item *list )
 	}
 	free_public_key( pk );
 
-	if( list->reason == G10ERR_NO_SECKEY )
+	if( list->reason == G10ERR_NO_SECKEY ) {
 	    log_info(_("no secret key for decryption available\n"));
+	    if( is_status_enabled() ) {
+		char buf[20];
+		sprintf(buf,"%08lX%08lX", (ulong)list->kid[0],
+					  (ulong)list->kid[1] );
+		write_status_text( STATUS_NO_SECKEY, buf );
+	    }
+	}
 	else
 	    log_error(_("public key decryption failed: %s\n"),
 						g10_errstr(list->reason));
@@ -1101,6 +1108,10 @@ check_sig_and_print( CTX c, KBNODE node )
 		     sig->pubkey_algo, sig->digest_algo,
 		     sig->sig_class, (ulong)sig->timestamp, rc );
 	write_status_text( STATUS_ERRSIG, buf );
+	if( rc == G10ERR_NO_PUBKEY ) {
+	    buf[16] = 0;
+	    write_status_text( STATUS_NO_PUBKEY, buf );
+	}
 	log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
     }
     return rc;

@@ -174,6 +174,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoUtf8Strings,
     oDisableCipherAlgo,
     oDisablePubkeyAlgo,
+    oAllowNonSelfsignedUID,
 aTest };
 
 
@@ -332,6 +333,7 @@ static ARGPARSE_OPTS opts[] = {
     { oWithFingerprint, "with-fingerprint", 0, "@" },
     { oDisableCipherAlgo,  "disable-cipher-algo", 2, "@" },
     { oDisablePubkeyAlgo,  "disable-pubkey-algo", 2, "@" },
+    { oAllowNonSelfsignedUID, "allow-non-selfsigned-uid", 0, "@" },
 {0} };
 
 
@@ -842,6 +844,9 @@ main( int argc, char **argv )
 		break;
 	  case oDisablePubkeyAlgo:
 		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
+		break;
+	  case oAllowNonSelfsignedUID:
+		opt.allow_non_selfsigned_uid = 1;
 		break;
 
 	  default : pargs.err = configfp? 1:2; break;

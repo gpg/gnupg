@@ -20,15 +20,15 @@ $Id$
 # If you have more than 1 secret key in your keyring, you may want
 # to uncomment the following option and set your preffered keyid
 
-# default-key 621CC013
+#default-key 621CC013
 
 # If you do not pass a recipient to gpg, it will ask for one.
 # Using this option you can encrypt to a default key.  key validation
 # will not be done in this case.
 # The second form uses the default key as default recipient.
 
-# default-recipient some-user-id
-# default-recipient-self
+#default-recipient some-user-id
+#default-recipient-self
 
 
 # The next option is enabled because this one is needed for interoperation

@@ -816,10 +816,12 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	    break;
 	  case rt_GDBM:
 	    break;
-	  default:
-	    log_error("OOPS in close enum_keyblocks - ignored\n");
+	  case rt_UNKNOWN:
+	    /* this happens when we have no keyring at all */
 	    return rc;
-	    break;
+
+	  default:
+	    BUG();
 	}
 	/* release pending packet */
 	free_packet( kbpos->pkt );

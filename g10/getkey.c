@@ -539,104 +539,134 @@ int
 classify_user_id( const char *name, u32 *keyid, byte *fprint,
 		  const char **retstr, size_t *retlen )
 {
-    const char *s;
-    int mode = 0;
+    const char *	s;
+    int 		mode = 0;
+    int 		hexprefix = 0;
+    int 		hexlength;
 
-    /* check what kind of name it is */
+    /* skip leading spaces.   FIXME: what is with leading spaces? */
     for(s = name; *s && isspace(*s); s++ )
 	;
-    if( isdigit( *s ) ) { /* a keyid or a fingerprint */
-	int i, j;
-	char buf[9];
 
-	if( *s == '0' && s[1] == 'x' && isxdigit(s[2]) )
-	    s += 2; /*kludge to allow 0x034343434 */
-	for(i=0; isxdigit(s[i]); i++ )
-	    ;
-	if( s[i] && !isspace(s[i]) ) /* not terminated by EOS or blank*/
+    switch (*s) {
+	case 0:    /* empty string is an error */
 	    return 0;
-	else if( i == 8 || (i == 9 && *s == '0') ) { /* short keyid */
-	    if( i==9 )
-		s++;
-	    if( keyid ) {
-		keyid[0] = 0;
-		keyid[1] = strtoul( s, NULL, 16 );
+
+	case '.':  /* an email address, compare from end */
+	    mode = 5;
+	    s++;
+	    break;
+
+	case '<':  /* an email address */
+	    mode = 3;
+	    break;
+
+	case '@':  /* part of an email address */
+	    mode = 4;
+	    s++;
+	    break;
+
+	case '=':  /* exact compare */
+	    mode = 1;
+	    s++;
+	    break;
+
+	case '*':  /* case insensitive substring search */
+	    mode = 2;
+	    s++;
+	    break;
+
+	case '+':  /* compare individual words */
+	    mode = 6;
+	    s++;
+	    break;
+
+	case '#':  /* local user id */
+	    mode = 12;
+	    s++;
+	    if (keyid) {
+		if (keyid_from_lid(strtoul(s, NULL, 10), keyid))
+		    keyid[0] = keyid[1] = 0;
 	    }
-	    mode = 10;
-	}
-	else if( i == 16 || (i == 17 && *s == '0') ) { /* complete keyid */
-	    if( i==17 )
-		s++;
-	    mem2str(buf, s, 9 );
-	    keyid[0] = strtoul( buf, NULL, 16 );
-	    keyid[1] = strtoul( s+8, NULL, 16 );
-	    mode = 11;
-	}
-	else if( i == 32 || ( i == 33 && *s == '0' ) ) { /* md5 fingerprint */
-	    if( i==33 )
-		s++;
-	    if( fprint ) {
-		memset(fprint+16, 4, 0);
-		for(j=0; j < 16; j++, s+=2 ) {
-		    int c = hextobyte( s );
-		    if( c == -1 )
-			return 0;
-		    fprint[j] = c;
+	    break;
+
+	default:
+	    if (s[0] == '0' && s[1] == 'x') {
+		hexprefix = 1;
+		s += 2;
+	    }
+
+	    hexlength = strspn(s, "0123456789abcdefABCDEF");
+
+	    /* check if a hexadecimal number is terminated by EOS or blank */
+	    if (hexlength && s[hexlength] && !isspace(s[hexlength])) {
+		if (hexprefix)	    /* a "0x" prefix without correct */
+		    return 0;	    /* termination is an error */
+		else		    /* The first chars looked like */
+		    hexlength = 0;  /* a hex number, but really were not. */
+	    }
+
+	    if (hexlength == 8 || (!hexprefix && hexlength == 9 && *s == '0')){
+		/* short keyid */
+		if (hexlength == 9)
+		    s++;
+		if (keyid) {
+		    keyid[0] = 0;
+		    keyid[1] = strtoul( s, NULL, 16 );
 		}
+		mode = 10;
 	    }
-	    mode = 16;
-	}
-	else if( i == 40 || ( i == 41 && *s == '0' ) ) { /* sha1/rmd160 fprint*/
-	    if( i==33 )
-		s++;
-	    if( fprint ) {
-		for(j=0; j < 20; j++, s+=2 ) {
-		    int c = hextobyte( s );
-		    if( c == -1 )
-			return 0;
-		    fprint[j] = c;
+	    else if (hexlength == 16 || (!hexprefix && hexlength == 17
+							  && *s == '0')) {
+		/* complete keyid */
+		char buf[9];
+		if (hexlength == 17)
+		    s++;
+		mem2str(buf, s, 9 );
+		keyid[0] = strtoul( buf, NULL, 16 );
+		keyid[1] = strtoul( s+8, NULL, 16 );
+		mode = 11;
+	    }
+	    else if (hexlength == 32 || (!hexprefix && hexlength == 33
+							    && *s == '0')) {
+		/* md5 fingerprint */
+		int i;
+		if (hexlength == 33)
+		    s++;
+		if (fprint) {
+		    memset(fprint+16, 4, 0);
+		    for (i=0; i < 16; i++, s+=2) {
+			int c = hextobyte(s);
+			if (c == -1)
+			    return 0;
+			fprint[i] = c;
+		    }
 		}
+		mode = 16;
 	    }
-	    mode = 20;
-	}
-	else
-	    return 0;
+	    else if (hexlength == 40 || (!hexprefix && hexlength == 41
+							      && *s == '0')) {
+		/* sha1/rmd160 fingerprint */
+		int i;
+		if (hexlength == 41)
+		    s++;
+		if (fprint) {
+		    for (i=0; i < 20; i++, s+=2) {
+			int c = hextobyte(s);
+			if (c == -1)
+			    return 0;
+			fprint[i] = c;
+		    }
+		}
+		mode = 20;
+	    }
+	    else {
+		if (hexprefix)	/* This was a hex number with a prefix */
+		    return 0;	/* and a wrong length */
+
+		mode = 2;   /* Default is case insensitive substring search */
+	    }
     }
-    else if( *s == '=' ) { /* exact search */
-	mode = 1;
-	s++;
-    }
-    else if( *s == '*' ) { /* substring search */
-	mode = 2;
-	s++;
-    }
-    else if( *s == '<' ) { /* an email address */
-	mode = 3;
-    }
-    else if( *s == '@' ) { /* a part of an email address */
-	mode = 4;
-	s++;
-    }
-    else if( *s == '.' ) { /* an email address, compare from end */
-	mode = 5;
-	s++;
-    }
-    else if( *s == '+' ) { /* word match mode */
-	mode = 6;
-	s++;
-    }
-    else if( *s == '#' ) { /* use local id */
-	mode = 12;
-	s++;
-	if( keyid ) {
-	    if( keyid_from_lid( strtoul( s, NULL, 10), keyid ) )
-		keyid[0] = keyid[1] = 0;
-	}
-    }
-    else if( !*s )  /* empty string */
-	return 0;
-    else
-	mode = 2;
 
     if( retstr )
 	*retstr = s;

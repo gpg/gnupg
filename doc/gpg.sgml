@@ -696,6 +696,13 @@ Assume "yes" on most questions.
  Assume "no" on most questions.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--always-trust</term>
+<listitem><para>
+Skip key validation and assume that used keys are always fully trusted.
+You won't use this unless you have installed some external validation scheme.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--keyserver &ParmName;</term>
@@ -1092,6 +1099,17 @@ signatures on data.
 Force the use of encryption with appended manipulation
 code.  This is always used with the newer cipher (those
 with a blocksize greater than 64 bit).
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--allow-non-self-signed-uid</term>
+<listitem><para>
+Allow the import of keys with user IDs which are not self-signed.
+This is only allows the import - key validation will fail und you
+have to check the validity of the key my other means.  This hack is
+needed for some German keys generated with pgp 2.6.3in. You should really
+avoid using it, because OpenPGP has better mechanics to do separate signing
+and encryption keys.
 </para></listitem></varlistentry>
 
 

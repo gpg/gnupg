@@ -1,21 +1,22 @@
 
-  * add some status output put for signing and encryption.
-    replace the putc in primegen with some kind of status-fd outputs.
+  * Check that uids without a self signature don't become fully trusted and
+    print a warning when such a key is used.
+
+
+Scheduled for 1.1
+-----------------
+  * With option -i prompt before adding a key to the keyring and show some
+    info what we are about to add.
 
   * Speed up calculation of key validation.
 
+  * Allow a replacement for the progress functions in ./cipher
+
+  * add an option to use an OpenPGP packet as input (and don't build a literal
+    data packet)
+
   * print a warning when a revoked/expired _secret_ key is used.
 
-  * Add NO_PUBKEY and NO_SECKEY status lines.
-
-  * Solaris make has problems with the generated POTFILES - seems to be a
-    gettext bug.
-
-  * find a way to allow the import of non-self-signed keys.  This is needed
-    for the IN ENCR/SIGN hack.
-
-  * add an option to use a OpenPGP packet as input (and don't build a literal
-    data packet)
 
 Nice to have
 ------------
