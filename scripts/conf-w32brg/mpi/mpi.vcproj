@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.10"
+	Name="mpi"
+	ProjectGUID="{0E153E2B-8820-4FD1-9537-02B15C279F31}"
+	RootNamespace="mpi"
+	Keyword="Win32Proj">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="Debug"
+			IntermediateDirectory="Debug"
+			ConfigurationType="4"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\include;..\"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+				MinimalRebuild="TRUE"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="5"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="$(OutDir)/mpi.lib"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="Release"
+			IntermediateDirectory="Release"
+			ConfigurationType="4"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\..\..\include;..\"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+				RuntimeLibrary="4"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="..\bin\mpi.lib"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			<File
+				RelativePath="..\..\..\mpi\g10m.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-add.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-bit.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-cmp.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-div.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-gcd.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-inline.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-inv.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-mpow.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-mul.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-pow.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-scan.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpicoder.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpih-cmp.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpih-div.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpih-mul.c">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpiutil.c">
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			<File
+				RelativePath="..\..\..\mpi\longlong.h">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-inline.h">
+			</File>
+			<File
+				RelativePath="..\..\..\mpi\mpi-internal.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="Assembler"
+			Filter="">
+			<File
+				RelativePath="..\nasm586\mpih-add1.asm">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\nasm586\mpih-lshift.asm">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\nasm586\mpih-mul1.asm">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\nasm586\mpih-mul2.asm">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\nasm586\mpih-mul3.asm">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\nasm586\mpih-rshift.asm">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\nasm586\mpih-sub1.asm">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasm -O2 -f win32 -o &quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
+						Outputs="&quot;$(ProjectDir)\$(OutDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
