@@ -1088,46 +1088,60 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
    intersection"), and PGP has no mechanism to fix such a broken
    preference list, so I'm including it. -dms */
 
-static int
-algo_available( int preftype, int algo, void *hint )
+int
+algo_available( preftype_t preftype, int algo, void *hint )
 {
-    if( preftype == PREFTYPE_SYM ) {
-        if( PGP6 && ( algo != 1 && algo != 2 && algo != 3) )
-	  return 0;
-
-        if( (PGP7 || PGP8)
-	    && (algo != 1 && algo != 2 && algo != 3
-		&& algo != 7 && algo != 8 && algo != 9 && algo != 10) )
-	  return 0;
-
-	return algo && !check_cipher_algo( algo );
-    }
-    else if( preftype == PREFTYPE_HASH ) {
-        int bits=0;
-
-	if(hint)
-	  bits=*(int *)hint;
-
-	if(bits && (bits != md_digest_length(algo)))
-	  return 0;
-
-        if( (PGP6 || PGP7) && (algo != 1 && algo != 2 && algo != 3) )
-	  return 0;
-
-	if( PGP8 && (algo != 1 && algo != 2 && algo != 3 && algo != 8))
-	  return 0;
-
-	return algo && !check_digest_algo( algo );
-    }
-    else if( preftype == PREFTYPE_ZIP ) {
-        if ( ( PGP6 || PGP7 || PGP8 )
-	     && ( algo !=0 && algo != 1) )
-	  return 0;
-
-	return !check_compress_algo( algo );
-    }
-    else
+  if( preftype == PREFTYPE_SYM )
+    {
+      if(PGP6 && (algo != CIPHER_ALGO_IDEA
+		  && algo != CIPHER_ALGO_3DES
+		  && algo != CIPHER_ALGO_CAST5))
 	return 0;
+      
+      if((PGP7 || PGP8) && (algo != CIPHER_ALGO_IDEA
+			    && algo != CIPHER_ALGO_3DES
+			    && algo != CIPHER_ALGO_CAST5
+			    && algo != CIPHER_ALGO_AES
+			    && algo != CIPHER_ALGO_AES192
+			    && algo != CIPHER_ALGO_AES256
+			    && algo != CIPHER_ALGO_TWOFISH))
+	return 0;
+
+      return algo && !check_cipher_algo( algo );
+    }
+  else if( preftype == PREFTYPE_HASH )
+    {
+      if(hint && ((*(int *)hint) != md_digest_length(algo)))
+	return 0;
+
+      if((PGP6 || PGP7) && (algo != DIGEST_ALGO_MD5
+			    && algo != DIGEST_ALGO_SHA1
+			    && algo != DIGEST_ALGO_RMD160))
+	return 0;
+
+
+      if(PGP8 && (algo != DIGEST_ALGO_MD5
+		  && algo != DIGEST_ALGO_SHA1
+		  && algo != DIGEST_ALGO_RMD160
+		  && algo != DIGEST_ALGO_SHA256))
+	return 0;
+
+      /* TIGER is not allowed any longer according to 2440bis. */
+      if( RFC2440 && algo == DIGEST_ALGO_TIGER )
+	return 0;
+
+      return algo && !check_digest_algo( algo );
+    }
+  else if( preftype == PREFTYPE_ZIP )
+    {
+      if((PGP6 || PGP7 || PGP8) && (algo != COMPRESS_ALGO_NONE
+				    && algo != COMPRESS_ALGO_ZIP))
+	return 0;
+
+      return !check_compress_algo( algo );
+    }
+  else
+    return 0;
 }
 
 

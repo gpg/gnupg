@@ -1458,7 +1458,7 @@ main( int argc, char **argv )
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
 	    opt.cert_digest_algo = 0;
-	    opt.def_compress_algo = 1;
+	    opt.def_compress_algo = -1;
             opt.s2k_mode = 3; /* iterated+salted */
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
@@ -1844,7 +1844,6 @@ main( int argc, char **argv )
 	opt.escape_from=1;
 	opt.force_v3_sigs=1;
 	opt.ask_sig_expire=0;
-	opt.def_compress_algo=1;
 	opt.force_mdc=0;
 	opt.disable_mdc=1;
       }
@@ -1854,12 +1853,10 @@ main( int argc, char **argv )
 	opt.escape_from=1;
 	opt.force_v3_sigs=1;
 	opt.ask_sig_expire=0;
-	opt.def_compress_algo=1;
       }
     else if(PGP8)
       {
 	opt.escape_from=1;
-	opt.def_compress_algo=1;
       }
 
     /* must do this after dropping setuid, because string_to...
@@ -1941,6 +1938,66 @@ main( int argc, char **argv )
 
     if( log_get_errorcount(0) )
 	g10_exit(2);
+
+    /* Check our chosen algorithms against the list of legal
+       algorithms. */
+
+    if(!GNUPG)
+      {
+	const char *badalg=NULL;
+	preftype_t badtype=PREFTYPE_NONE;
+
+	if(opt.def_cipher_algo
+	   && !algo_available(PREFTYPE_SYM,opt.def_cipher_algo,NULL))
+	  {
+	    badalg=cipher_algo_to_string(opt.def_cipher_algo);
+	    badtype=PREFTYPE_SYM;
+	  }
+	else if(opt.def_digest_algo
+		&& !algo_available(PREFTYPE_HASH,opt.def_digest_algo,NULL))
+	  {
+	    badalg=digest_algo_to_string(opt.def_digest_algo);
+	    badtype=PREFTYPE_HASH;
+	  }
+	else if(opt.cert_digest_algo
+		&& !algo_available(PREFTYPE_HASH,opt.cert_digest_algo,NULL))
+	  {
+	    badalg=digest_algo_to_string(opt.cert_digest_algo);
+	    badtype=PREFTYPE_HASH;
+	  }
+	else if(opt.def_compress_algo!=-1
+		&& !algo_available(PREFTYPE_ZIP,opt.def_compress_algo,NULL))
+	  {
+	    badalg=compress_algo_to_string(opt.def_compress_algo);
+	    badtype=PREFTYPE_ZIP;
+	  }
+
+	if(badalg)
+	  {
+	    switch(badtype)
+	      {
+	      case PREFTYPE_SYM:
+		log_info(_("you may not use cipher algorithm \"%s\" "
+			   "while in %s mode\n"),
+			 badalg,compliance_option_string());
+		break;
+	      case PREFTYPE_HASH:
+		log_info(_("you may not use digest algorithm \"%s\" "
+			   "while in %s mode\n"),
+			 badalg,compliance_option_string());
+		break;
+	      case PREFTYPE_ZIP:
+		log_info(_("you may not use compression algorithm \"%s\" "
+			   "while in %s mode\n"),
+			 badalg,compliance_option_string());
+		break;
+	      default:
+		BUG();
+	      }
+
+	    compliance_failure();
+	  }
+      }
 
     /* set the random seed file */
     if( use_random_seed ) {
@@ -2273,11 +2330,20 @@ main( int argc, char **argv )
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
 	if( cmd == aSendKeys )
-	    keyserver_export( sl );
+	    rc=keyserver_export( sl );
 	else if( cmd == aRecvKeys )
-	    keyserver_import( sl );
+	    rc=keyserver_import( sl );
 	else
-	    export_pubkeys( sl, opt.export_options );
+	    rc=export_pubkeys( sl, opt.export_options );
+	if(rc)
+	  {
+	    if(cmd==aSendKeys)
+	      log_error(_("keyserver send failed: %s\n"),g10_errstr(rc));
+	    else if(cmd==aRecvKeys)
+	      log_error(_("keyserver receive failed: %s\n"),g10_errstr(rc));
+	    else
+	      log_error(_("key export failed: %s\n"),g10_errstr(rc));
+	  }
 	free_strlist(sl);
 	break;
 
@@ -2286,7 +2352,9 @@ main( int argc, char **argv )
 	for( ; argc; argc--, argv++ )
 	  append_to_strlist2( &sl, *argv, utf8_strings );
 
-	keyserver_search( sl );
+	rc=keyserver_search( sl );
+	if(rc)
+	  log_error(_("keyserver search failed: %s\n"),g10_errstr(rc));
 	free_strlist(sl);
 	break;
 
@@ -2294,7 +2362,9 @@ main( int argc, char **argv )
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
-	keyserver_refresh(sl);
+	rc=keyserver_refresh(sl);
+	if(rc)
+	  log_error(_("keyserver refresh failed: %s\n"),g10_errstr(rc));
 	free_strlist(sl);
 	break;
 

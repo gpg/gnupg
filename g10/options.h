@@ -204,11 +204,12 @@ struct {
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 
+#define GNUPG   (opt.compliance==CO_GNUPG)
 #define RFC1991 (opt.compliance==CO_RFC1991 || opt.compliance==CO_PGP2)
 #define RFC2440 (opt.compliance==CO_RFC2440)
-#define PGP2 (opt.compliance==CO_PGP2)
-#define PGP6 (opt.compliance==CO_PGP6)
-#define PGP7 (opt.compliance==CO_PGP7)
-#define PGP8 (opt.compliance==CO_PGP8)
+#define PGP2    (opt.compliance==CO_PGP2)
+#define PGP6    (opt.compliance==CO_PGP6)
+#define PGP7    (opt.compliance==CO_PGP7)
+#define PGP8    (opt.compliance==CO_PGP8)
 
 #endif /*G10_OPTIONS_H*/

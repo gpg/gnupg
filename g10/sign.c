@@ -720,7 +720,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		hashlen=20;
 
 	    if((algo=
-		select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,&hashlen))>0)
+		select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,
+				       hashlen?&hashlen:NULL))>0)
 	      recipient_digest_algo=algo;
 	  }
       }

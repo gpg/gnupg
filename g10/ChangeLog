@@ -1,6 +1,20 @@
 2003-05-02  David Shaw  <dshaw@jabberwocky.com>
 
-	* sign.c (sign_file): Fix bug that causes spurious compression
+	* g10.c (main): Show errors for failure in export, send-keys,
+	recv-keys, and refresh-keys.
+
+	* keyserver.c (keyserver_work): Range check the TCP port for HKP.
+
+	* options.h, g10.c (main): Give algorithm warnings for algorithms
+	chosen against the --pgpX and --openpgp rules.
+
+	* keydb.h, pkclist.c (algo_available): Make TIGER192 invalid in
+	--openpgp mode.
+
+	* sign.c (sign_file), pkclist.c (algo_available): Allow passing a
+	hint of 0.
+
+	* sign.c (sign_file): Fix bug that causes a spurious compression
 	preference warning.
 
 	* sign.c (clearsign_file): Fix bug that prevents proper warning
