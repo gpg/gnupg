@@ -1306,7 +1306,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
     tstr = asctimestamp(sig->timestamp);
     astr = pubkey_algo_to_string( sig->pubkey_algo );
-    if(opt.verify_options&VERIFY_SHOW_LONG_KEYID)
+    if(opt.verify_options&VERIFY_SHOW_LONG_KEYIDS)
       {
 	log_info(_("Signature made %.*s\n"),(int)strlen(tstr), tstr);
 	log_info(_("               using %s key %08lX%08lX\n"),
@@ -1499,17 +1499,17 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if( !rc )
 	  {
-	    if(opt.verify_options&VERIFY_SHOW_POLICY)
+	    if(opt.verify_options&VERIFY_SHOW_POLICY_URLS)
 	      show_policy_url(sig,0,1);
 	    else
 	      show_policy_url(sig,0,2);
 
-	    if(opt.verify_options&VERIFY_SHOW_KEYSERVER)
+	    if(opt.verify_options&VERIFY_SHOW_KEYSERVER_URLS)
 	      show_keyserver_url(sig,0,1);
 	    else
 	      show_keyserver_url(sig,0,2);
 
-	    if(opt.verify_options&VERIFY_SHOW_NOTATION)
+	    if(opt.verify_options&VERIFY_SHOW_NOTATIONS)
 	      show_notation(sig,0,1);
 	    else
 	      show_notation(sig,0,2);

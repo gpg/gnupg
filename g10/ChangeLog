@@ -1,3 +1,8 @@
+2003-11-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c, keyedit.c, keylist.c, mainproc.c: Clarify the
+	plurarility (or not) of various list and verify options.
+
 2003-11-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Add --symmetric --sign --encrypt.

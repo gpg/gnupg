@@ -1224,7 +1224,7 @@ main( int argc, char **argv )
     opt.keyserver_options.include_revoked=1;
     opt.keyserver_options.try_dns_srv=1;
     opt.verify_options=
-      VERIFY_SHOW_POLICY|VERIFY_SHOW_NOTATION|VERIFY_SHOW_KEYSERVER;
+      VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
     opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames = 0;
 #if defined (_WIN32)
@@ -1691,19 +1691,19 @@ main( int argc, char **argv )
 	  case oCertPolicyURL: add_policy_url(pargs.r.ret_str,1); break;
           case oShowPolicyURL:
 	    deprecated_warning(configname,configlineno,"--show-policy-url",
-			       "--list-options ","show-policy-url");
+			       "--list-options ","show-policy-urls");
 	    deprecated_warning(configname,configlineno,"--show-policy-url",
-			       "--verify-options ","show-policy-url");
-	    opt.list_options|=LIST_SHOW_POLICY;
-	    opt.verify_options|=VERIFY_SHOW_POLICY;
+			       "--verify-options ","show-policy-urls");
+	    opt.list_options|=LIST_SHOW_POLICY_URLS;
+	    opt.verify_options|=VERIFY_SHOW_POLICY_URLS;
 	    break;
 	  case oNoShowPolicyURL:
 	    deprecated_warning(configname,configlineno,"--no-show-policy-url",
-			       "--list-options ","no-show-policy-url");
+			       "--list-options ","no-show-policy-urls");
 	    deprecated_warning(configname,configlineno,"--no-show-policy-url",
-			       "--verify-options ","no-show-policy-url");
-	    opt.list_options&=~LIST_SHOW_POLICY;
-	    opt.verify_options&=~VERIFY_SHOW_POLICY;
+			       "--verify-options ","no-show-policy-urls");
+	    opt.list_options&=~LIST_SHOW_POLICY_URLS;
+	    opt.verify_options&=~VERIFY_SHOW_POLICY_URLS;
 	    break;
 	  case oSigKeyserverURL: add_keyserver_url(pargs.r.ret_str,0); break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
@@ -1878,11 +1878,11 @@ main( int argc, char **argv )
 	      struct parse_options lopts[]=
 		{
 		  {"show-photos",LIST_SHOW_PHOTOS},
-		  {"show-policy-url",LIST_SHOW_POLICY},
-		  {"show-notation",LIST_SHOW_NOTATION},
-		  {"show-keyserver-url",LIST_SHOW_KEYSERVER},
+		  {"show-policy-urls",LIST_SHOW_POLICY_URLS},
+		  {"show-notations",LIST_SHOW_NOTATIONS},
+		  {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS},
 		  {"show-validity",LIST_SHOW_VALIDITY},
-		  {"show-long-keyid",LIST_SHOW_LONG_KEYID},
+		  {"show-long-keyids",LIST_SHOW_LONG_KEYIDS},
 		  {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS},
 		  {"show-keyring",LIST_SHOW_KEYRING},
 		  {"show-sig-expire",LIST_SHOW_SIG_EXPIRE},
@@ -1904,11 +1904,11 @@ main( int argc, char **argv )
 	      struct parse_options vopts[]=
 		{
 		  {"show-photos",VERIFY_SHOW_PHOTOS},
-		  {"show-policy-url",VERIFY_SHOW_POLICY},
-		  {"show-notation",VERIFY_SHOW_NOTATION},
-		  {"show-keyserver-url",VERIFY_SHOW_KEYSERVER},
+		  {"show-policy-urls",VERIFY_SHOW_POLICY_URLS},
+		  {"show-notations",VERIFY_SHOW_NOTATIONS},
+		  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS},
 		  {"show-validity",VERIFY_SHOW_VALIDITY},
-		  {"show-long-keyid",VERIFY_SHOW_LONG_KEYID},
+		  {"show-long-keyids",VERIFY_SHOW_LONG_KEYIDS},
 		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS},
 		  {NULL,0}
 		};
@@ -1938,19 +1938,19 @@ main( int argc, char **argv )
 	  case oCertNotation: add_notation_data( pargs.r.ret_str, 1 ); break;
 	  case oShowNotation:
 	    deprecated_warning(configname,configlineno,"--show-notation",
-			       "--list-options ","show-notation");
+			       "--list-options ","show-notations");
 	    deprecated_warning(configname,configlineno,"--show-notation",
-			       "--verify-options ","show-notation");
-	    opt.list_options|=LIST_SHOW_NOTATION;
-	    opt.verify_options|=VERIFY_SHOW_NOTATION;
+			       "--verify-options ","show-notations");
+	    opt.list_options|=LIST_SHOW_NOTATIONS;
+	    opt.verify_options|=VERIFY_SHOW_NOTATIONS;
 	    break;
 	  case oNoShowNotation:
 	    deprecated_warning(configname,configlineno,"--no-show-notation",
-			       "--list-options ","no-show-notation");
+			       "--list-options ","no-show-notations");
 	    deprecated_warning(configname,configlineno,"--no-show-notation",
-			       "--verify-options ","no-show-notation");
-	    opt.list_options&=~LIST_SHOW_NOTATION;
-	    opt.verify_options&=~VERIFY_SHOW_NOTATION;
+			       "--verify-options ","no-show-notations");
+	    opt.list_options&=~LIST_SHOW_NOTATIONS;
+	    opt.verify_options&=~VERIFY_SHOW_NOTATIONS;
 	    break;
 	  case oUtf8Strings: utf8_strings = 1; break;
 	  case oNoUtf8Strings: utf8_strings = 0; break;

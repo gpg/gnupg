@@ -227,32 +227,32 @@ struct {
 
 /* Various option flags */
 
-#define IMPORT_ALLOW_LOCAL_SIGS      1
-#define IMPORT_REPAIR_PKS_SUBKEY_BUG 2
-#define IMPORT_FAST_IMPORT           4
-#define IMPORT_SK2PK                 8
+#define IMPORT_ALLOW_LOCAL_SIGS          (1<<0)
+#define IMPORT_REPAIR_PKS_SUBKEY_BUG     (1<<1)
+#define IMPORT_FAST_IMPORT               (1<<2)
+#define IMPORT_SK2PK                     (1<<3)
 
-#define EXPORT_INCLUDE_NON_RFC           1
-#define EXPORT_INCLUDE_LOCAL_SIGS        2
-#define EXPORT_INCLUDE_ATTRIBUTES        4
-#define EXPORT_INCLUDE_SENSITIVE_REVKEYS 8
+#define EXPORT_INCLUDE_NON_RFC           (1<<0)
+#define EXPORT_INCLUDE_LOCAL_SIGS        (1<<1)
+#define EXPORT_INCLUDE_ATTRIBUTES        (1<<2)
+#define EXPORT_INCLUDE_SENSITIVE_REVKEYS (1<<3)
 
-#define LIST_SHOW_PHOTOS        (1<<0)
-#define LIST_SHOW_POLICY        (1<<1)
-#define LIST_SHOW_NOTATION      (1<<2)
-#define LIST_SHOW_KEYSERVER     (1<<3)
-#define LIST_SHOW_VALIDITY      (1<<4)
-#define LIST_SHOW_LONG_KEYID    (1<<5)
-#define LIST_SHOW_UNUSABLE_UIDS (1<<6)
-#define LIST_SHOW_KEYRING       (1<<7)
-#define LIST_SHOW_SIG_EXPIRE    (1<<8)
+#define LIST_SHOW_PHOTOS                 (1<<0)
+#define LIST_SHOW_POLICY_URLS            (1<<1)
+#define LIST_SHOW_NOTATIONS              (1<<2)
+#define LIST_SHOW_KEYSERVER_URLS         (1<<3)
+#define LIST_SHOW_VALIDITY               (1<<4)
+#define LIST_SHOW_LONG_KEYIDS            (1<<5)
+#define LIST_SHOW_UNUSABLE_UIDS          (1<<6)
+#define LIST_SHOW_KEYRING                (1<<7)
+#define LIST_SHOW_SIG_EXPIRE             (1<<8)
 
-#define VERIFY_SHOW_PHOTOS        (1<<0)
-#define VERIFY_SHOW_POLICY        (1<<1)
-#define VERIFY_SHOW_NOTATION      (1<<2)
-#define VERIFY_SHOW_KEYSERVER     (1<<3)
-#define VERIFY_SHOW_VALIDITY      (1<<4)
-#define VERIFY_SHOW_LONG_KEYID    (1<<5)
-#define VERIFY_SHOW_UNUSABLE_UIDS (1<<6)
+#define VERIFY_SHOW_PHOTOS               (1<<0)
+#define VERIFY_SHOW_POLICY_URLS          (1<<1)
+#define VERIFY_SHOW_NOTATIONS            (1<<2)
+#define VERIFY_SHOW_KEYSERVER_URLS       (1<<3)
+#define VERIFY_SHOW_VALIDITY             (1<<4)
+#define VERIFY_SHOW_LONG_KEYIDS          (1<<5)
+#define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
 
 #endif /*G10_OPTIONS_H*/

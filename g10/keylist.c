@@ -1,6 +1,6 @@
 /* keylist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -605,7 +605,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     struct sig_stats *stats=opaque;
     int skip_sigs=0;
     int newformat=((opt.list_options&LIST_SHOW_VALIDITY) && !secret)
-      || (opt.list_options & (LIST_SHOW_LONG_KEYID | LIST_SHOW_UNUSABLE_UIDS));
+      || (opt.list_options & (LIST_SHOW_LONG_KEYIDS|LIST_SHOW_UNUSABLE_UIDS));
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
@@ -625,7 +625,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
                                (sk->protect.s2k.mode==1002)?'>':' ',
 	       nbits_from_sk( sk ),pubkey_letter( sk->pubkey_algo ));
 
-	if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
 	  printf("%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
 	else
 	  printf("%08lX",(ulong)keyid[1]);
@@ -653,7 +653,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	printf("pub   %4u%c/",
 	       nbits_from_pk(pk),pubkey_letter(pk->pubkey_algo));
 
-	if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
 	  printf("%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
 	else
 	  printf("%08lX",(ulong)keyid[1]);
@@ -696,7 +696,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
 	    if(uid->is_revoked || uid->is_expired)
 	      printf("uid%*s[%s] ",
-		     (opt.list_options&LIST_SHOW_LONG_KEYID)?16:8,"",
+		     (opt.list_options&LIST_SHOW_LONG_KEYIDS)?16:8,"",
 		     uid->is_revoked?"revoked":"expired");
 	    else if((opt.list_options&LIST_SHOW_VALIDITY) && pk)
 	      {
@@ -704,7 +704,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		  trust_value_to_string(get_validity(pk,uid));
 
 		/* Includes the 3 spaces for [, ], and " ". */
-		indent=((opt.list_options&LIST_SHOW_LONG_KEYID)?23:15)
+		indent=((opt.list_options&LIST_SHOW_LONG_KEYIDS)?23:15)
 		  -strlen(validity);
 
 		if(indent<0)
@@ -714,7 +714,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	      }
 	    else if(newformat)
 	      printf("uid%*s",
-		     (opt.list_options&LIST_SHOW_LONG_KEYID)?26:18,"");
+		     (opt.list_options&LIST_SHOW_LONG_KEYIDS)?26:18,"");
 	    else if(any)
 	      printf("uid%*s",29,"");
 
@@ -745,7 +745,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    keyid_from_pk( pk2, keyid2 );
             printf("sub   %4u%c/",
 		   nbits_from_pk( pk2 ),pubkey_letter( pk2->pubkey_algo ));
-	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	    if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
 	      printf("%08lX%08lX",(ulong)keyid2[0],(ulong)keyid2[1]);
 	    else
 	      printf("%08lX",(ulong)keyid2[1]);
@@ -774,7 +774,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
                    (sk->protect.s2k.mode==1001)?'#':
                    (sk->protect.s2k.mode==1002)?'>':' ',
 		   nbits_from_sk( sk2 ),pubkey_letter( sk2->pubkey_algo ));
-	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	    if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
 	      printf("%08lX%08lX",(ulong)keyid2[0],(ulong)keyid2[1]);
 	    else
 	      printf("%08lX",(ulong)keyid2[1]);
@@ -857,7 +857,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
                    sig->flags.expired?'X':' ',
 		   (sig->trust_depth>9)?'T':
 		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ');
-	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	    if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
 	      printf("%08lX%08lX",(ulong)sig->keyid[0],(ulong)sig->keyid[1]);
 	    else
 	      printf("%08lX",(ulong)sig->keyid[1]);
@@ -877,13 +877,16 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    }
 	    putchar('\n');
 
-	    if(sig->flags.policy_url && (opt.list_options&LIST_SHOW_POLICY))
+	    if(sig->flags.policy_url
+	       && (opt.list_options&LIST_SHOW_POLICY_URLS))
 	      show_policy_url(sig,3,0);
 
-	    if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATION))
+	    if(sig->flags.notation
+	       && (opt.list_options&LIST_SHOW_NOTATIONS))
 	      show_notation(sig,3,0);
 
-	    if(sig->flags.pref_ks && (opt.list_options&LIST_SHOW_KEYSERVER))
+	    if(sig->flags.pref_ks
+	       && (opt.list_options&LIST_SHOW_KEYSERVER_URLS))
 	      show_keyserver_url(sig,3,0);
 
 	    /* fixme: check or list other sigs here */

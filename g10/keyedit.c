@@ -145,7 +145,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
                    sig->flags.expired?'X':' ',
 		   (sig->trust_depth>9)?'T':
 		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ');
-	if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
 	  tty_printf("%08lX%08lX",(ulong)sig->keyid[0],(ulong)sig->keyid[1]);
 	else
 	  tty_printf("%08lX",(ulong)sig->keyid[1]);
@@ -169,13 +169,13 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	}
 	tty_printf("\n");
 
-	if(sig->flags.policy_url && (opt.list_options&LIST_SHOW_POLICY))
+	if(sig->flags.policy_url && (opt.list_options&LIST_SHOW_POLICY_URLS))
 	  show_policy_url(sig,3,0);
 
-	if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATION))
+	if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATIONS))
 	  show_notation(sig,3,0);
 
-	if(sig->flags.pref_ks && (opt.list_options&LIST_SHOW_KEYSERVER))
+	if(sig->flags.pref_ks && (opt.list_options&LIST_SHOW_KEYSERVER_URLS))
 	  show_keyserver_url(sig,3,0);
     }
 
@@ -2068,7 +2068,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		       nbits_from_pk( pk ),
 		       pubkey_letter( pk->pubkey_algo ));
 
-	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	    if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
 	      tty_printf("%08lX",(ulong)pk->keyid[0]);
 
 	    tty_printf("%08lX  ",(ulong)pk->keyid[1]);
@@ -2082,7 +2082,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		if(opt.trust_model!=TM_ALWAYS)
 		  {
 		    tty_printf("                     ");
-		    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+		    if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
 		      tty_printf("        ");
 		    /* Ownertrust is only meaningful for the PGP or
 		       classic trust models */
