@@ -66,12 +66,16 @@ record.
  6. Field:  Creation Date (in UTC).  For UID and UAT records, this is the
             self-signature date.
  7. Field:  Key or user ID/user attribute expiration date or empty if none.
+
  8. Field:  Used for serial number in crt records (used to be the Local-ID).
             For UID and UAT records, this is the namehash: a RIPEMD/160 hash
-            of the user ID contents.
+            of the user ID contents.  For trust signatures, this is
+            the trust depth seperated by the trust value by a space.
  9. Field:  Ownertrust (primary public keys only)
 	    This is a single letter, but be prepared that additional
-	    information may follow in some future versions.
+	    information may follow in some future versions.  For trust
+	    signatures with a regular expression, this is the regular
+	    expression value, quoted as in field 10.
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
             This is not used with --fixed-list-mode in gpg.

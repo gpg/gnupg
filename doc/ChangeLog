@@ -1,3 +1,7 @@
+2003-01-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS: Document trust depth, value, and regexp.
+
 2003-01-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Minor language tweaks, spell check, copyright date,
