@@ -30,6 +30,8 @@ AM_CFLAGS = @GPG_ERROR_CFLAGS@
 
 sbin_SCRIPTS = addgnupghome
 
+bin_SCRIPTS = gpgsm-gencert.sh
+
 bin_PROGRAMS = gpgconf watchgnupg
 
 gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c

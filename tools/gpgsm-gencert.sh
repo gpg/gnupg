@@ -1,7 +1,7 @@
 #!/bin/sh
-
-# gpgsm-gencert.c - Generate X.509 certificates through GPGSM.
-#	Copyright (C) 2004 g10 Code GmbH
+#                                                              -*- sh -*-
+# gpgsm-gencert.c - Generate X.509 certificates through GPGSM.  
+#	Copyright (C) 2004 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -37,8 +37,8 @@ query_user()
 {
     message=$1; shift
     
-    echo "$message"
-    echo -n "> "
+    echo "$message" >&2
+    echo -n "> " >&2
     read answer
 
     ANSWER=$answer;
@@ -49,15 +49,15 @@ query_user_menu()
     message=$1; shift
     i=0
     
-    echo "$message"
+    echo "$message" >&2
     for choice in "$@"; do
 	i=$(expr $i + 1)
-	echo " [$i] $choice"
+	echo " [$i] $choice" >&2
     done
 
     while true; do
 	j=1
-	echo -n "Your selection: "
+	echo -n "Your selection: " >&2
 	read idx
 
 	while [ $j -lt $i -o $j -eq $i ]; do
@@ -81,7 +81,7 @@ query_user_menu()
 	shift
     done
     
-    echo "You selected: $ANSWER"
+    echo "You selected: $ANSWER" >&2
 }
 
 query_user_menu "Key type" "RSA"
@@ -90,7 +90,7 @@ KEY_TYPE=$ANSWER
 query_user_menu "Key length" "1024" "2048"
 KEY_LENGTH=$ANSWER
 
-query_user_menu "Key usage" "sign, encrypt"
+query_user_menu "Key usage" "sign, encrypt" "sign" "encrypt"
 KEY_USAGE=$ANSWER
 
 query_user "Name"
@@ -100,6 +100,7 @@ query_user "E-Mail address"
 EMAIL_ADDRESS=$ANSWER
 
 file_parameter=$(mktemp "/tmp/gpgsm.XXXXXX")
+outfile=$(mktemp "/tmp/gpgsm.XXXXXX")
 
 cat > "$file_parameter" <<EOF
 Key-Type: $KEY_TYPE
@@ -109,7 +110,10 @@ Name-DN: $NAME
 Name-Email: $EMAIL_ADDRESS
 EOF
 
-echo -e "$ASSUAN_COMMANDS" | gpgsm --server 4< "$file_parameter" 5>&1
+echo -e "$ASSUAN_COMMANDS" | \
+   gpgsm --server 4< "$file_parameter" 5>"$outfile" >/dev/null
 
-rm "$file_parameter"
+cat "$outfile"
+
+rm "$file_parameter" "$outfile"
 exit 0
