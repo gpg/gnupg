@@ -46,9 +46,6 @@
 
 #define CIPHER_ALGO_CAST5	 3
 
-#define FNCCAST_SETKEY(f)  (int(*)(void*, byte*, unsigned))(f)
-#define FNCCAST_CRYPT(f)   (void(*)(void*, byte*, byte*))(f)
-
 #define CAST5_BLOCKSIZE 8
 
 typedef struct {
@@ -610,9 +607,13 @@ cast5_get_info( int algo, size_t *keylen,
     *keylen = 128;
     *blocksize = CAST5_BLOCKSIZE;
     *contextsize = sizeof(CAST5_context);
-    *r_setkey = FNCCAST_SETKEY(cast_setkey);
-    *r_encrypt= FNCCAST_CRYPT(encrypt_block);
-    *r_decrypt= FNCCAST_CRYPT(decrypt_block);
+    *(int  (**)(CAST5_context*, byte*, unsigned))r_setkey
+							= cast_setkey;
+    *(void (**)(CAST5_context*, byte*, byte*))r_encrypt
+							= encrypt_block;
+    *(void (**)(CAST5_context*, byte*, byte*))r_decrypt
+							= decrypt_block;
+
 
     if( algo == CIPHER_ALGO_CAST5 )
 	return "CAST5";

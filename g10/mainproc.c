@@ -1,5 +1,5 @@
-/* maPPPPinproc.c - handle packets
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+/* mainproc.c - handle packets
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -225,10 +225,14 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	|| is_RSA(enc->pubkey_algo)  ) {
 	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
 			  || !seckey_available( enc->keyid )) ) {
-	    c->dek = m_alloc_secure( sizeof *c->dek );
-	    if( (result = get_session_key( enc, c->dek )) ) {
-		/* error: delete the DEK */
-		m_free(c->dek); c->dek = NULL;
+	    if( opt.list_only )
+		result = -1;
+	    else {
+		c->dek = m_alloc_secure( sizeof *c->dek );
+		if( (result = get_session_key( enc, c->dek )) ) {
+		    /* error: delete the DEK */
+		    m_free(c->dek); c->dek = NULL;
+		}
 	    }
 	}
 	else
@@ -268,6 +272,8 @@ print_failed_pkenc( struct kidlist_item *list )
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	const char *algstr = pubkey_algo_to_string( list->pubkey_algo );
 
+	if( !algstr )
+	    algstr = "[?]";
 	pk->pubkey_algo = list->pubkey_algo;
 	if( !get_pubkey( pk, list->kid ) ) {
 	    size_t n;
@@ -310,10 +316,14 @@ proc_encrypted( CTX c, PACKET *pkt )
 
     print_failed_pkenc( c->failed_pkenc );
 
+    write_status( STATUS_BEGIN_DECRYPTION );
+
     /*log_debug("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
-    if( !c->dek && !c->last_was_session_key ) {
+    if( opt.list_only )
+	result = -1;
+    else if( !c->dek && !c->last_was_session_key ) {
 	/* assume this is old conventional encrypted data
-	 * Actually we should use IDEA and MD5 in this case, but becuase
+	 * Actually we should use IDEA and MD5 in this case, but because
 	 * IDEA is patented we can't do so */
 	c->dek = passphrase_to_dek( NULL, 0,
 		    opt.def_cipher_algo ? opt.def_cipher_algo
@@ -345,6 +355,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     }
     free_packet(pkt);
     c->last_was_session_key = 0;
+    write_status( STATUS_END_DECRYPTION );
 }
 
 
@@ -397,12 +408,14 @@ proc_plaintext( CTX c, PACKET *pkt )
 		clearsig = 1;
 	}
     }
-    if( !any ) { /* no onepass sig packet: enable all standard algos */
+
+    if( !any && !opt.skip_verify ) {
+	/* no onepass sig packet: enable all standard algos */
 	md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     }
-    if( only_md5 ) {
+    if( opt.pgp2_workarounds && only_md5 && !opt.skip_verify ) {
 	/* This is a kludge to work around a bug in pgp2.  It does only
 	 * catch those mails which are armored.  To catch the non-armored
 	 * pgp mails we could see whether there is the signature packet
@@ -507,6 +520,11 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 	    || c->list->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    return check_key_signature( c->list, node, is_selfsig );
 	}
+	else if( sig->sig_class == 0x20 ) {
+	    log_info(_("standalone revocation - "
+		       "use \"gpg --import\" to apply\n"));
+	    return G10ERR_NOT_PROCESSED;
+	}
 	else {
 	    log_error("invalid root packet for sigclass %02x\n",
 							sig->sig_class);
@@ -534,8 +552,12 @@ print_userid( PACKET *pkt )
 	printf("ERROR: unexpected packet type %d", pkt->pkttype );
 	return;
     }
-    print_string( stdout,  pkt->pkt.user_id->name, pkt->pkt.user_id->len,
-							opt.with_colons );
+    if( opt.with_colons )
+	print_string( stdout,  pkt->pkt.user_id->name,
+				pkt->pkt.user_id->len, ':');
+    else
+	print_utf8_string( stdout,  pkt->pkt.user_id->name,
+				     pkt->pkt.user_id->len );
 }
 
 
@@ -638,11 +660,13 @@ list_node( CTX c, KBNODE node )
 	    keyid_from_pk( pk, keyid );
 	    if( mainkey ) {
 		c->local_id = pk->local_id;
-		c->trustletter = query_trust_info( pk, NULL );
+		c->trustletter = opt.fast_list_mode?
+					   0 : query_trust_info( pk, NULL );
 	    }
-	    printf("%s:%c:%u:%d:%08lX%08lX:%s:%s:",
-		    mainkey? "pub":"sub",
-		    c->trustletter,
+	    printf("%s:", mainkey? "pub":"sub" );
+	    if( c->trustletter )
+		putchar( c->trustletter );
+	    printf(":%u:%d:%08lX%08lX:%s:%s:",
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
@@ -651,7 +675,7 @@ list_node( CTX c, KBNODE node )
 	    if( c->local_id )
 		printf("%lu", c->local_id );
 	    putchar(':');
-	    if( c->local_id )
+	    if( c->local_id && !opt.fast_list_mode )
 		putchar( get_ownertrust_info( c->local_id ) );
 	    putchar(':');
 	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
@@ -669,6 +693,7 @@ list_node( CTX c, KBNODE node )
 				      pubkey_letter( pk->pubkey_algo ),
 				      (ulong)keyid_from_pk( pk, NULL ),
 				      datestr_from_pk( pk )	);
+
 	if( mainkey ) {
 	    /* and now list all userids with their signatures */
 	    for( node = node->next; node; node = node->next ) {
@@ -711,6 +736,10 @@ list_node( CTX c, KBNODE node )
 		}
 	    }
 	}
+	else if( pk->expiredate ) { /* of subkey */
+	    printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
+	}
+
 	if( !any )
 	    putchar('\n');
 	if( !mainkey && opt.fingerprint > 1 )
@@ -823,7 +852,8 @@ list_node( CTX c, KBNODE node )
 	    putchar(':');
 	    if( sigrc != ' ' )
 		putchar(sigrc);
-	    printf(":::%08lX%08lX:%s::::", (ulong)sig->keyid[0],
+	    printf("::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
+					     (ulong)sig->keyid[0],
 		       (ulong)sig->keyid[1], datestr_from_sig(sig));
 	}
 	else
@@ -840,7 +870,7 @@ list_node( CTX c, KBNODE node )
 	    if( opt.with_colons )
 		putchar(':');
 	}
-	else {
+	else if( !opt.fast_list_mode ) {
 	    p = get_user_id( sig->keyid, &n );
 	    print_string( stdout, p, n, opt.with_colons );
 	    m_free(p);
@@ -1114,7 +1144,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	    buf[16] = 0;
 	    write_status_text( STATUS_NO_PUBKEY, buf );
 	}
-	log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
+	if( rc != G10ERR_NOT_PROCESSED )
+	    log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
     }
     return rc;
 }
@@ -1129,7 +1160,7 @@ proc_tree( CTX c, KBNODE node )
     KBNODE n1;
     int rc;
 
-    if( opt.list_packets )
+    if( opt.list_packets || opt.list_only )
 	return;
 
     c->local_id = 0;
@@ -1174,12 +1205,17 @@ proc_tree( CTX c, KBNODE node )
     else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
 
-	if( !c->have_data ) {
+	if( sig->sig_class != 0x00 && sig->sig_class != 0x01 )
+	    log_info(_("standalone signature of class 0x%02x\n"),
+						    sig->sig_class);
+	else if( !c->have_data ) {
 	    /* detached signature */
 	    free_md_filter_context( &c->mfx );
 	    c->mfx.md = md_open(sig->digest_algo, 0);
-	    if( sig->digest_algo == DIGEST_ALGO_MD5
-		&& is_RSA( sig->pubkey_algo ) ) {
+	    if( !opt.pgp2_workarounds )
+		;
+	    else if( sig->digest_algo == DIGEST_ALGO_MD5
+		     && is_RSA( sig->pubkey_algo ) ) {
 		/* enable a workaround for a pgp2 bug */
 		c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0 );
 	    }

@@ -1,5 +1,5 @@
 /* keygen.c - generate a key pair
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,6 +35,58 @@
 #include "status.h"
 #include "i18n.h"
 
+enum para_name {
+  pKEYTYPE,
+  pKEYLENGTH,
+  pSUBKEYTYPE,
+  pSUBKEYLENGTH,
+  pNAMEREAL,
+  pNAMEEMAIL,
+  pNAMECOMMENT,
+  pUSERID,
+  pEXPIREDATE,
+  pKEYEXPIRE, /* in n seconds */
+  pSUBKEYEXPIRE, /* in n seconds */
+  pPASSPHRASE,
+  pPASSPHRASE_DEK,
+  pPASSPHRASE_S2K
+};
+
+struct para_data_s {
+    struct para_data_s *next;
+    int lnr;
+    enum para_name key;
+    union {
+       DEK *dek;
+       STRING2KEY *s2k;
+       u32 expire;
+       char value[1];
+    } u;
+};
+
+struct output_control_s {
+    int lnr;
+    int dryrun;
+    int use_files;
+    struct {
+	char  *fname;
+	char  *newfname;
+	IOBUF stream;
+	armor_filter_context_t afx;
+    } pub;
+    struct {
+	char  *fname;
+	char  *newfname;
+	IOBUF stream;
+	armor_filter_context_t afx;
+    } sec;
+};
+
+
+static void do_generate_keypair( struct para_data_s *para,
+				 struct output_control_s *outctrl );
+static int  write_keyblock( IOBUF out, KBNODE node );
+
 
 static void
 write_uid( KBNODE root, const char *s )
@@ -43,7 +95,7 @@ write_uid( KBNODE root, const char *s )
     size_t n = strlen(s);
 
     pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = m_alloc( sizeof *pkt->pkt.user_id + n - 1 );
+    pkt->pkt.user_id = m_alloc_clear( sizeof *pkt->pkt.user_id + n - 1 );
     pkt->pkt.user_id->len = n;
     strcpy(pkt->pkt.user_id->name, s);
     add_kbnode( root, new_kbnode( pkt ) );
@@ -84,8 +136,9 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
     keygen_add_key_expire( sig, opaque );
 
     buf[0] = CIPHER_ALGO_TWOFISH;
-    buf[1] = CIPHER_ALGO_CAST5;
-    build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 2 );
+    buf[1] = CIPHER_ALGO_BLOWFISH;
+    buf[2] = CIPHER_ALGO_CAST5;
+    build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 3 );
 
     buf[0] = DIGEST_ALGO_RMD160;
     buf[1] = DIGEST_ALGO_SHA1;
@@ -191,8 +244,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 
 static int
 gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval,
-							int version )
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
 {
     int rc;
     int i;
@@ -203,6 +255,17 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     MPI *factors;
 
     assert( is_ELGAMAL(algo) );
+
+    if( nbits < 512 ) {
+	nbits = 1024;
+	log_info(_("keysize invalid; using %u bits\n"), nbits );
+    }
+
+    if( (nbits % 32) ) {
+	nbits = ((nbits + 31) / 32) * 32;
+	log_info(_("keysize rounded up to %u bits\n"), nbits );
+    }
+
     rc = pubkey_generate( algo, nbits, skey, &factors );
     if( rc ) {
 	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
@@ -212,7 +275,7 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     sk = m_alloc_clear( sizeof *sk );
     pk = m_alloc_clear( sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
-    sk->version = pk->version = version;
+    sk->version = pk->version = 4;
     if( expireval ) {
 	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
     }
@@ -266,7 +329,7 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  * Generate a DSA key
  */
 static int
-gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
+gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	    STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
 {
     int rc;
@@ -277,8 +340,15 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     MPI skey[5];
     MPI *factors;
 
-    if( nbits > 1024 )
+    if( nbits > 1024 || nbits < 512 ) {
 	nbits = 1024;
+	log_info(_("keysize invalid; using %u bits\n"), nbits );
+    }
+
+    if( (nbits % 64) ) {
+	nbits = ((nbits + 63) / 64) * 64;
+	log_info(_("keysize rounded up to %u bits\n"), nbits );
+    }
 
     rc = pubkey_generate( PUBKEY_ALGO_DSA, nbits, skey, &factors );
     if( rc ) {
@@ -378,7 +448,7 @@ check_valid_days( const char *s )
  * Returns: 0 to create both a DSA and a ElGamal key.
  */
 static int
-ask_algo( int *ret_v4, int addmode )
+ask_algo( int addmode )
 {
     char *answer;
     int algo;
@@ -390,11 +460,7 @@ ask_algo( int *ret_v4, int addmode )
     if( addmode )
 	tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
     tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 4 );
-  #if 0
-    tty_printf(    _("   (%d) ElGamal in a v3 packet\n"), 5 );
-  #endif
 
-    *ret_v4 = 1;
     for(;;) {
 	answer = cpr_get("keygen.algo",_("Your selection? "));
 	cpr_kill_prompt();
@@ -419,13 +485,6 @@ ask_algo( int *ret_v4, int addmode )
 	    algo = PUBKEY_ALGO_DSA;
 	    break;
 	}
-      #if 0
-	else if( algo == 5 ) {
-	    algo = PUBKEY_ALGO_ELGAMAL_E;
-	    *ret_v4 = 0;
-	    break;
-	}
-      #endif
 	else
 	    tty_printf(_("Invalid selection.\n"));
     }
@@ -499,6 +558,41 @@ ask_keysize( int algo )
 }
 
 
+/****************
+ * Parse an expire string and return it's value in days.
+ * Returns -1 on error.
+ */
+static int
+parse_expire_string( const char *string )
+{
+    int mult;
+    u32 abs_date=0;
+    u32 curtime = make_timestamp();
+    int valid_days;
+
+    if( !*string )
+	valid_days = 0;
+    else if( (abs_date = scan_isodatestr(string)) && abs_date > curtime ) {
+	/* This calculation is not perfectly okay because we
+	 * are later going to simply multiply by 86400 and don't
+	 * correct for leapseconds.  A solution would be to change
+	 * the whole implemenation to work with dates and not intervals
+	 * which are required for v3 keys.
+	 */
+	valid_days = abs_date/86400-curtime/86400+1;
+    }
+    else if( (mult=check_valid_days(string)) ) {
+	valid_days = atoi(string) * mult;
+	if( valid_days < 0 || valid_days > 39447 )
+	    valid_days = 0;
+    }
+    else {
+	valid_days = -1;
+    }
+    return valid_days;
+}
+
+
 static u32
 ask_expire_interval(void)
 {
@@ -518,32 +612,14 @@ ask_expire_interval(void)
 
     answer = NULL;
     for(;;) {
-	int mult;
-	u32 abs_date=0;
-	u32 curtime=0;;
+	u32 curtime=make_timestamp();
 
 	m_free(answer);
 	answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
 	cpr_kill_prompt();
 	trim_spaces(answer);
-	curtime = make_timestamp();
-	if( !*answer )
-	    valid_days = 0;
-	else if( (abs_date = scan_isodatestr(answer)) && abs_date > curtime ) {
-	    /* This calculation is not perfectly okay because we
-	     * are later going to simply multiply by 86400 and don't
-	     * correct for leapseconds.  A solution would be to change
-	     * the whole implemenation to work with dates and not intervals
-	     * which are required for v3 keys.
-	     */
-	    valid_days = abs_date/86400-curtime/86400+1;
-	}
-	else if( (mult=check_valid_days(answer)) ) {
-	    valid_days = atoi(answer) * mult;
-	    if( valid_days < 0 || valid_days > 32767 )
-		valid_days = 0;
-	}
-	else {
+	valid_days = parse_expire_string( answer );
+	if( valid_days < 0 ) {
 	    tty_printf(_("invalid value\n"));
 	    continue;
 	}
@@ -556,7 +632,10 @@ ask_expire_interval(void)
 	    interval = valid_days * 86400L;
 	    /* print the date when the key expires */
 	    tty_printf(_("Key expires at %s\n"),
-			asctimestamp(curtime + interval ) );
+			asctimestamp((ulong)(curtime + interval) ) );
+	    if( (time_t)((ulong)(curtime+interval)) < 0 )
+		tty_printf(_("Your system can't display dates beyond 2038.\n"
+		    "However, it will be correctly handled up to 2106.\n"));
 	}
 
 	if( cpr_enabled() || cpr_get_answer_is_yes("keygen.valid.okay",
@@ -610,6 +689,7 @@ ask_user_id( int mode )
     uid = aname = acomment = amail = NULL;
     for(;;) {
 	char *p;
+	int fail=0;
 
 	if( !aname ) {
 	    for(;;) {
@@ -661,6 +741,7 @@ ask_user_id( int mode )
 	    }
 	}
 
+
 	m_free(uid);
 	uid = p = m_alloc(strlen(aname)+strlen(amail)+strlen(acomment)+12+10);
 	p = stpcpy(p, aname );
@@ -685,6 +766,12 @@ ask_user_id( int mode )
 
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	/* fixme: add a warning if this user-id already exists */
+	if( !*amail && (strchr( aname, '@' ) || strchr( acomment, '@'))) {
+	    fail = 1;
+	    tty_printf(_("Please don't put the email address "
+			  "into the real name or the comment\n") );
+	}
+
 	for(;;) {
 	    char *ansstr = _("NnCcEeOoQq");
 
@@ -695,8 +782,9 @@ ask_user_id( int mode )
 		answer[1] = 0;
 	    }
 	    else {
-		answer = cpr_get("keygen.userid.cmd",_(
-		    "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "));
+		answer = cpr_get("keygen.userid.cmd", fail?
+		  _("Change (N)ame, (C)omment, (E)mail or (Q)uit? ") :
+		  _("Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "));
 		cpr_kill_prompt();
 	    }
 	    if( strlen(answer) > 1 )
@@ -714,10 +802,15 @@ ask_user_id( int mode )
 		break;
 	    }
 	    else if( *answer == ansstr[6] || *answer == ansstr[7] ) {
-		m_free(aname); aname = NULL;
-		m_free(acomment); acomment = NULL;
-		m_free(amail); amail = NULL;
-		break;
+		if( fail ) {
+		    tty_printf(_("Please correct the error first\n"));
+		}
+		else {
+		    m_free(aname); aname = NULL;
+		    m_free(acomment); acomment = NULL;
+		    m_free(amail); amail = NULL;
+		    break;
+		}
 	    }
 	    else if( *answer == ansstr[8] || *answer == ansstr[9] ) {
 		m_free(aname); aname = NULL;
@@ -777,12 +870,12 @@ ask_passphrase( STRING2KEY **ret_s2k )
 
 static int
 do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
-	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, u32 expiredate,
-							     int v4_packet )
+	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, u32 expiredate )
 {
     int rc=0;
 
-    tty_printf(_(
+    if( !opt.batch )
+	tty_printf(_(
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
 "disks) during the prime generation; this gives the random number\n"
@@ -790,7 +883,7 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 
     if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )
 	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k,
-			   sk, expiredate, v4_packet? 4:3 );
+			   sk, expiredate );
     else if( algo == PUBKEY_ALGO_DSA )
 	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
     else
@@ -824,61 +917,553 @@ generate_user_id()
     if( !p )
 	return NULL;
     n = strlen(p);
-    uid = m_alloc( sizeof *uid + n - 1 );
+    uid = m_alloc_clear( sizeof *uid + n - 1 );
     uid->len = n;
     strcpy(uid->name, p);
     return uid;
 }
 
 
+static void
+release_parameter_list( struct para_data_s *r )
+{
+    struct para_data_s *r2;
+
+    for( ; r ; r = r2 ) {
+	r2 = r->next;
+	if( r->key == pPASSPHRASE_DEK )
+	    m_free( r->u.dek );
+	else if( r->key == pPASSPHRASE_S2K )
+	    m_free( r->u.s2k );
+
+	m_free(r);
+    }
+}
+
+static struct para_data_s *
+get_parameter( struct para_data_s *para, enum para_name key )
+{
+    struct para_data_s *r;
+
+    for( r = para; r && r->key != key; r = r->next )
+	;
+    return r;
+}
+
+static const char *
+get_parameter_value( struct para_data_s *para, enum para_name key )
+{
+    struct para_data_s *r = get_parameter( para, key );
+    return (r && *r->u.value)? r->u.value : NULL;
+}
+
+static int
+get_parameter_algo( struct para_data_s *para, enum para_name key )
+{
+    struct para_data_s *r = get_parameter( para, key );
+    if( !r )
+	return -1;
+    if( isdigit( *r->u.value ) )
+	return atoi( r->u.value );
+    return string_to_pubkey_algo( r->u.value );
+}
+
+
+static u32
+get_parameter_u32( struct para_data_s *para, enum para_name key )
+{
+    struct para_data_s *r = get_parameter( para, key );
+
+    if( !r )
+	return 0;
+    if( r->key == pKEYEXPIRE || r->key == pSUBKEYEXPIRE )
+	return r->u.expire;
+
+    return (unsigned int)strtoul( r->u.value, NULL, 10 );
+}
+
+static unsigned int
+get_parameter_uint( struct para_data_s *para, enum para_name key )
+{
+    return get_parameter_u32( para, key );
+}
+
+static DEK *
+get_parameter_dek( struct para_data_s *para, enum para_name key )
+{
+    struct para_data_s *r = get_parameter( para, key );
+    return r? r->u.dek : NULL;
+}
+
+static STRING2KEY *
+get_parameter_s2k( struct para_data_s *para, enum para_name key )
+{
+    struct para_data_s *r = get_parameter( para, key );
+    return r? r->u.s2k : NULL;
+}
+
+
+static int
+proc_parameter_file( struct para_data_s *para, const char *fname,
+				       struct output_control_s *outctrl )
+{
+    struct para_data_s *r;
+    const char *s1, *s2, *s3;
+    size_t n;
+    char *p;
+    int i;
+
+    /* check that we have all required parameters */
+    assert( get_parameter( para, pKEYTYPE ) );
+    i = get_parameter_algo( para, pKEYTYPE );
+    if( i < 1 || check_pubkey_algo2( i, PUBKEY_USAGE_SIG ) ) {
+	r = get_parameter( para, pKEYTYPE );
+	log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
+	return -1;
+    }
+
+    i = get_parameter_algo( para, pSUBKEYTYPE );
+    if( i > 1 && check_pubkey_algo( i ) ) {
+	r = get_parameter( para, pSUBKEYTYPE );
+	log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
+	return -1;
+    }
+
+    if( !get_parameter_value( para, pUSERID ) ) {
+	/* create the formatted user ID */
+	s1 = get_parameter_value( para, pNAMEREAL );
+	s2 = get_parameter_value( para, pNAMECOMMENT );
+	s3 = get_parameter_value( para, pNAMEEMAIL );
+	if( s1 || s2 || s3 ) {
+	    n = (s1?strlen(s1):0) + (s2?strlen(s2):0) + (s3?strlen(s3):0);
+	    r = m_alloc_clear( sizeof *r + n + 20 );
+	    r->key = pUSERID;
+	    p = r->u.value;
+	    if( s1 )
+		p = stpcpy(p, s1 );
+	    if( s2 )
+		p = stpcpy(stpcpy(stpcpy(p," ("), s2 ),")");
+	    if( s3 )
+		p = stpcpy(stpcpy(stpcpy(p," <"), s3 ),">");
+	    r->next = para;
+	    para = r;
+	}
+    }
+
+    /* make DEK and S2K from the Passphrase */
+    r = get_parameter( para, pPASSPHRASE );
+    if( r && *r->u.value ) {
+	/* we have a plain text passphrase - create a DEK from it.
+	 * It is a little bit ridiculous to keep it ih secure memory
+	 * but becuase we do this alwasy, why not here */
+	STRING2KEY *s2k;
+	DEK *dek;
+
+	s2k = m_alloc_secure( sizeof *s2k );
+	s2k->mode = opt.s2k_mode;
+	s2k->hash_algo = opt.s2k_digest_algo;
+	set_next_passphrase( r->u.value );
+	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2 );
+	set_next_passphrase( NULL );
+	assert( dek );
+	memset( r->u.value, 0, strlen(r->u.value) );
+
+	r = m_alloc_clear( sizeof *r );
+	r->key = pPASSPHRASE_S2K;
+	r->u.s2k = s2k;
+	r->next = para;
+	para = r;
+	r = m_alloc_clear( sizeof *r );
+	r->key = pPASSPHRASE_DEK;
+	r->u.dek = dek;
+	r->next = para;
+	para = r;
+    }
+
+    /* make KEYEXPIRE from Expire-Date */
+    r = get_parameter( para, pEXPIREDATE );
+    if( r && *r->u.value ) {
+	i = parse_expire_string( r->u.value );
+	if( i < 0 ) {
+	    log_error("%s:%d: invalid expire date\n", fname, r->lnr );
+	    return -1;
+	}
+	r->u.expire = i * 86400L;
+	r->key = pKEYEXPIRE;  /* change hat entry */
+	/* also set it for the subkey */
+	r = m_alloc_clear( sizeof *r + 20 );
+	r->key = pSUBKEYEXPIRE;
+	r->u.expire = i * 86400L;
+	r->next = para;
+	para = r;
+    }
+
+    if( !!outctrl->pub.newfname ^ !!outctrl->sec.newfname ) {
+	log_error("%s:%d: only one ring name is set\n", fname, outctrl->lnr );
+	return -1;
+    }
+
+    do_generate_keypair( para, outctrl );
+    return 0;
+}
+
+
+/****************
+ * Kludge to allow non interactive key generation controlled
+ * by a parameter file (which currently is only stdin)
+ * Note, that string parameters are expected to be in UTF-8
+ */
+static void
+read_parameter_file( const char *fname )
+{
+    static struct { const char *name;
+		    enum para_name key;
+    } keywords[] = {
+	{ "Key-Type",       pKEYTYPE},
+	{ "Key-Length",     pKEYLENGTH },
+	{ "Subkey-Type",    pSUBKEYTYPE },
+	{ "Subkey-Length",  pSUBKEYLENGTH },
+	{ "Name-Real",      pNAMEREAL },
+	{ "Name-Email",     pNAMEEMAIL },
+	{ "Name-Comment",   pNAMECOMMENT },
+	{ "Expire-Date",    pEXPIREDATE },
+	{ "Passphrase",     pPASSPHRASE },
+	{ NULL, 0 }
+    };
+    FILE *fp;
+    char line[1024], *p;
+    int lnr;
+    const char *err = NULL;
+    struct para_data_s *para, *r;
+    int i;
+    struct output_control_s outctrl;
+
+    memset( &outctrl, 0, sizeof( outctrl ) );
+
+    if( !fname || !*fname || !strcmp(fname,"-") ) {
+	fp = stdin;
+	fname = "-";
+    }
+    else {
+	fp = fopen( fname, "r" );
+	if( !fp ) {
+	    log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
+	    return;
+	}
+    }
+
+    lnr = 0;
+    err = NULL;
+    para = NULL;
+    while( fgets( line, DIM(line)-1, fp ) ) {
+	char *keyword, *value;
+
+	lnr++;
+	if( *line && line[strlen(line)-1] != '\n' ) {
+	    err = "line too long";
+	    break;
+	}
+	for( p = line; isspace(*p); p++ )
+	    ;
+	if( !*p || *p == '#' )
+	    continue;
+	keyword = p;
+	if( *keyword == '%' ) {
+	    for( ; !isspace(*p); p++ )
+		;
+	    if( *p )
+		*p++ = 0;
+	    for( ; isspace(*p); p++ )
+		;
+	    value = p;
+	    trim_trailing_ws( value, strlen(value) );
+	    if( !stricmp( keyword, "%echo" ) )
+		log_info("%s\n", value );
+	    else if( !stricmp( keyword, "%dry-run" ) )
+		outctrl.dryrun = 1;
+	    else if( !stricmp( keyword, "%commit" ) ) {
+		outctrl.lnr = lnr;
+		proc_parameter_file( para, fname, &outctrl );
+		release_parameter_list( para );
+		para = NULL;
+	    }
+	    else if( !stricmp( keyword, "%pubring" ) ) {
+		if( outctrl.pub.fname && !strcmp( outctrl.pub.fname, value ) )
+		    ; /* still the same file - ignore it */
+		else {
+		    m_free( outctrl.pub.newfname );
+		    outctrl.pub.newfname = m_strdup( value );
+		    outctrl.use_files = 1;
+		}
+	    }
+	    else if( !stricmp( keyword, "%secring" ) ) {
+		if( outctrl.sec.fname && !strcmp( outctrl.sec.fname, value ) )
+		    ; /* still the same file - ignore it */
+		else {
+		   m_free( outctrl.sec.newfname );
+		   outctrl.sec.newfname = m_strdup( value );
+		   outctrl.use_files = 1;
+		}
+	    }
+	    else
+		log_info("skipping control `%s' (%s)\n", keyword, value );
+
+
+	    continue;
+	}
+
+
+	if( !(p = strchr( p, ':' )) || p == keyword ) {
+	    err = "missing colon";
+	    break;
+	}
+	if( *p )
+	    *p++ = 0;
+	for( ; isspace(*p); p++ )
+	    ;
+	if( !*p ) {
+	    err = "missing argument";
+	    break;
+	}
+	value = p;
+	trim_trailing_ws( value, strlen(value) );
+
+	for(i=0; keywords[i].name; i++ ) {
+	    if( !stricmp( keywords[i].name, keyword ) )
+		break;
+	}
+	if( !keywords[i].name ) {
+	    err = "unknown keyword";
+	    break;
+	}
+	if( keywords[i].key != pKEYTYPE && !para ) {
+	    err = "parameter block does not start with \"Key-Type\"";
+	    break;
+	}
+
+	if( keywords[i].key == pKEYTYPE && para ) {
+	    outctrl.lnr = lnr;
+	    proc_parameter_file( para, fname, &outctrl );
+	    release_parameter_list( para );
+	    para = NULL;
+	}
+	else {
+	    for( r = para; r; r = r->next ) {
+		if( r->key == keywords[i].key )
+		    break;
+	    }
+	    if( r ) {
+		err = "duplicate keyword";
+		break;
+	    }
+	}
+	r = m_alloc_clear( sizeof *r + strlen( value ) );
+	r->lnr = lnr;
+	r->key = keywords[i].key;
+	strcpy( r->u.value, value );
+	r->next = para;
+	para = r;
+    }
+    if( err )
+	log_error("%s:%d: %s\n", fname, lnr, err );
+    else if( ferror(fp) ) {
+	log_error("%s:%d: read error: %s\n", fname, lnr, strerror(errno) );
+    }
+    else if( para ) {
+	outctrl.lnr = lnr;
+	proc_parameter_file( para, fname, &outctrl );
+    }
+
+    if( outctrl.use_files ) { /* close open streams */
+	iobuf_close( outctrl.pub.stream );
+	iobuf_close( outctrl.sec.stream );
+	m_free( outctrl.pub.fname );
+	m_free( outctrl.pub.newfname );
+	m_free( outctrl.sec.fname );
+	m_free( outctrl.sec.newfname );
+    }
+
+    release_parameter_list( para );
+    if( strcmp( fname, "-" ) )
+	fclose(fp);
+}
+
+
 /****************
  * Generate a keypair
+ * (fname is only used in batch mode)
  */
 void
-generate_keypair()
+generate_keypair( const char *fname )
 {
-    unsigned nbits;
-    char *pub_fname = NULL;
-    char *sec_fname = NULL;
+    unsigned int nbits;
     char *uid = NULL;
-    KBNODE pub_root = NULL;
-    KBNODE sec_root = NULL;
-    PKT_secret_key *sk = NULL;
     DEK *dek;
     STRING2KEY *s2k;
-    int rc;
     int algo;
-    u32 expire;
-    int v4;
     int both = 0;
+    u32 expire;
+    struct para_data_s *para = NULL;
+    struct para_data_s *r;
+    struct output_control_s outctrl;
 
-    if( opt.batch || opt.answer_yes || opt.answer_no ) {
-	log_error(_("Key generation can only be used in interactive mode\n"));
+    memset( &outctrl, 0, sizeof( outctrl ) );
+
+    if( opt.batch ) {
+	read_parameter_file( fname );
 	return;
     }
 
-    algo = ask_algo( &v4, 0 );
-    if( !algo ) {
-	algo = PUBKEY_ALGO_ELGAMAL_E;
+    algo = ask_algo( 0 );
+    if( !algo ) { /* default: DSA with ElG subkey of the specified size */
 	both = 1;
+	r = m_alloc_clear( sizeof *r + 20 );
+	r->key = pKEYTYPE;
+	sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
+	r->next = para;
+	para = r;
 	tty_printf(_("DSA keypair will have 1024 bits.\n"));
+	r = m_alloc_clear( sizeof *r + 20 );
+	r->key = pKEYLENGTH;
+	strcpy( r->u.value, "1024" );
+	r->next = para;
+	para = r;
+
+	algo = PUBKEY_ALGO_ELGAMAL_E;
+	r = m_alloc_clear( sizeof *r + 20 );
+	r->key = pSUBKEYTYPE;
+	sprintf( r->u.value, "%d", algo );
+	r->next = para;
+	para = r;
     }
+    else {
+	r = m_alloc_clear( sizeof *r + 20 );
+	r->key = pKEYTYPE;
+	sprintf( r->u.value, "%d", algo );
+	r->next = para;
+	para = r;
+    }
+
     nbits = ask_keysize( algo );
+    r = m_alloc_clear( sizeof *r + 20 );
+    r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
+    sprintf( r->u.value, "%u", nbits);
+    r->next = para;
+    para = r;
+
     expire = ask_expire_interval();
+    r = m_alloc_clear( sizeof *r + 20 );
+    r->key = pKEYEXPIRE;
+    r->u.expire = expire;
+    r->next = para;
+    para = r;
+    r = m_alloc_clear( sizeof *r + 20 );
+    r->key = pSUBKEYEXPIRE;
+    r->u.expire = expire;
+    r->next = para;
+    para = r;
+
     uid = ask_user_id(0);
     if( !uid ) {
 	log_error(_("Key generation canceled.\n"));
+	release_parameter_list( para );
 	return;
     }
+    r = m_alloc_clear( sizeof *r + strlen(uid) );
+    r->key = pUSERID;
+    strcpy( r->u.value, uid );
+    r->next = para;
+    para = r;
+
     dek = ask_passphrase( &s2k );
+    if( dek ) {
+	r = m_alloc_clear( sizeof *r );
+	r->key = pPASSPHRASE_DEK;
+	r->u.dek = dek;
+	r->next = para;
+	para = r;
+	r = m_alloc_clear( sizeof *r );
+	r->key = pPASSPHRASE_S2K;
+	r->u.s2k = s2k;
+	r->next = para;
+	para = r;
+    }
+
+    proc_parameter_file( para, "[internal]", &outctrl );
+    release_parameter_list( para );
+}
 
 
-    /* now check whether we are allowed to write to the keyrings */
-    pub_fname = make_filename(opt.homedir, "pubring.gpg", NULL );
-    sec_fname = make_filename(opt.homedir, "secring.gpg", NULL );
+static void
+do_generate_keypair( struct para_data_s *para,
+		     struct output_control_s *outctrl )
+{
+    char *pub_fname = NULL;
+    char *sec_fname = NULL;
+    KBNODE pub_root = NULL;
+    KBNODE sec_root = NULL;
+    PKT_secret_key *sk = NULL;
+    const char *s;
+    int rc;
+
+    if( outctrl->dryrun ) {
+	log_info("dry-run mode - key generation skipped\n");
+	return;
+    }
+
+
+    if( outctrl->use_files ) {
+	if( outctrl->pub.newfname ) {
+	    iobuf_close(outctrl->pub.stream);
+	    outctrl->pub.stream = NULL;
+	    m_free( outctrl->pub.fname );
+	    outctrl->pub.fname =  outctrl->pub.newfname;
+	    outctrl->pub.newfname = NULL;
+
+	    outctrl->pub.stream = iobuf_create( outctrl->pub.fname );
+	    if( !outctrl->pub.stream ) {
+		log_error("can't create `%s': %s\n", outctrl->pub.newfname,
+						     strerror(errno) );
+		return;
+	    }
+	    if( opt.armor ) {
+		outctrl->pub.afx.what = 1;
+		iobuf_push_filter( outctrl->pub.stream, armor_filter,
+						    &outctrl->pub.afx );
+	    }
+	}
+	if( outctrl->sec.newfname ) {
+	    iobuf_close(outctrl->sec.stream);
+	    outctrl->sec.stream = NULL;
+	    m_free( outctrl->sec.fname );
+	    outctrl->sec.fname =  outctrl->sec.newfname;
+	    outctrl->sec.newfname = NULL;
+
+	    outctrl->sec.stream = iobuf_create( outctrl->sec.fname );
+	    if( !outctrl->sec.stream ) {
+		log_error("can't create `%s': %s\n", outctrl->sec.newfname,
+						     strerror(errno) );
+		return;
+	    }
+	    if( opt.armor ) {
+		outctrl->sec.afx.what = 5;
+		iobuf_push_filter( outctrl->sec.stream, armor_filter,
+						    &outctrl->sec.afx );
+	    }
+	}
+	pub_fname = outctrl->pub.fname; /* only for info output */
+	sec_fname = outctrl->sec.fname; /* only for info output */
+	assert( outctrl->pub.stream );
+	assert( outctrl->sec.stream );
+    }
+    else {
+	pub_fname = get_writable_keyblock_file( 0 );
+	sec_fname = get_writable_keyblock_file( 1 );
+    }
+
     if( opt.verbose ) {
-	tty_printf(_("writing public certificate to `%s'\n"), pub_fname );
-	tty_printf(_("writing secret certificate to `%s'\n"), sec_fname );
+	log_info(_("writing public key to `%s'\n"), pub_fname );
+	log_info(_("writing secret key to `%s'\n"), sec_fname );
     }
 
     /* we create the packets as a tree of kbnodes. Because the structure
@@ -889,24 +1474,31 @@ generate_keypair()
     pub_root = make_comment_node("#"); delete_kbnode(pub_root);
     sec_root = make_comment_node("#"); delete_kbnode(sec_root);
 
-    if( both )
-	rc = do_create( PUBKEY_ALGO_DSA, 1024, pub_root, sec_root,
-					       dek, s2k, &sk, expire, 1);
-    else
-	rc = do_create( algo,		nbits, pub_root, sec_root,
-					       dek, s2k, &sk, expire, v4);
-    if( !rc )
-	write_uid(pub_root, uid );
-    if( !rc )
-	write_uid(sec_root, uid );
-    if( !rc )
-	rc = write_selfsig(pub_root, pub_root, sk);
-    if( !rc )
-	rc = write_selfsig(sec_root, pub_root, sk);
+    rc = do_create( get_parameter_algo( para, pKEYTYPE ),
+		    get_parameter_uint( para, pKEYLENGTH ),
+		    pub_root, sec_root,
+		    get_parameter_dek( para, pPASSPHRASE_DEK ),
+		    get_parameter_s2k( para, pPASSPHRASE_S2K ),
+		    &sk,
+		    get_parameter_u32( para, pKEYEXPIRE ) );
+    if( !rc && (s=get_parameter_value(para, pUSERID)) ) {
+	write_uid(pub_root, s );
+	if( !rc )
+	    write_uid(sec_root, s );
+	if( !rc )
+	    rc = write_selfsig(pub_root, pub_root, sk);
+	if( !rc )
+	    rc = write_selfsig(sec_root, pub_root, sk);
+    }
 
-    if( both ) {
-	rc = do_create( algo, nbits, pub_root, sec_root,
-					  dek, s2k, NULL, expire, 1 );
+    if( get_parameter( para, pSUBKEYTYPE ) ) {
+	rc = do_create( get_parameter_algo( para, pSUBKEYTYPE ),
+			get_parameter_uint( para, pSUBKEYLENGTH ),
+			pub_root, sec_root,
+			get_parameter_dek( para, pPASSPHRASE_DEK ),
+			get_parameter_s2k( para, pPASSPHRASE_S2K ),
+			NULL,
+			get_parameter_u32( para, pSUBKEYEXPIRE ) );
 	if( !rc )
 	    rc = write_keybinding(pub_root, pub_root, sk);
 	if( !rc )
@@ -914,7 +1506,18 @@ generate_keypair()
     }
 
 
-    if( !rc ) {
+    if( !rc && outctrl->use_files ) { /* direct write to specified files */
+	rc = write_keyblock( outctrl->pub.stream, pub_root );
+	if( rc )
+	    log_error("can't write public key: %s\n", g10_errstr(rc) );
+	if( !rc ) {
+	    rc = write_keyblock( outctrl->sec.stream, sec_root );
+	    if( rc )
+		log_error("can't write secret key: %s\n", g10_errstr(rc) );
+	}
+
+    }
+    else if( !rc ) { /* write to the standard keyrings */
 	KBPOS pub_kbpos;
 	KBPOS sec_kbpos;
 	int rc1 = -1;
@@ -955,12 +1558,17 @@ generate_keypair()
 	else if( (rc=insert_keyblock( &sec_kbpos, sec_root )) )
 	    log_error("can't write secret key: %s\n", g10_errstr(rc) );
 	else {
-	    tty_printf(_("public and secret key created and signed.\n") );
-	    if( algo == PUBKEY_ALGO_DSA )
+	    if( !opt.batch )
+		 tty_printf(_("public and secret key created and signed.\n") );
+	    if( !opt.batch
+		&& get_parameter_algo( para, pKEYTYPE ) == PUBKEY_ALGO_DSA
+		&& !get_parameter( para, pSUBKEYTYPE ) )
+	    {
 		tty_printf(_("Note that this key cannot be used for "
 			     "encryption.  You may want to use\n"
 			     "the command \"--edit-key\" to generate a "
 			     "secondary key for this purpose.\n") );
+	    }
 	}
 
 	if( !rc1 )
@@ -969,18 +1577,20 @@ generate_keypair()
 	    unlock_keyblock( &sec_kbpos );
     }
 
-
-    if( rc )
-	tty_printf(_("Key generation failed: %s\n"), g10_errstr(rc) );
+    if( rc ) {
+	if( opt.batch )
+	    log_error("key generation failed: %s\n", g10_errstr(rc) );
+	else
+	    tty_printf(_("Key generation failed: %s\n"), g10_errstr(rc) );
+    }
     release_kbnode( pub_root );
     release_kbnode( sec_root );
     if( sk ) /* the unprotected  secret key */
 	free_secret_key(sk);
-    m_free(uid);
-    m_free(dek);
-    m_free(s2k);
-    m_free(pub_fname);
-    m_free(sec_fname);
+    if( !outctrl->use_files ) {
+	m_free(pub_fname);
+	m_free(sec_fname);
+    }
 }
 
 
@@ -994,7 +1604,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     int okay=0, rc=0;
     KBNODE node;
     PKT_secret_key *sk = NULL; /* this is the primary sk */
-    int v4, algo;
+    int algo;
     u32 expire;
     unsigned nbits;
     char *passphrase = NULL;
@@ -1019,8 +1629,10 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	rc = G10ERR_TIME_CONFLICT;
-	goto leave;
+	if( !opt.ignore_time_conflict ) {
+	    rc = G10ERR_TIME_CONFLICT;
+	    goto leave;
+	}
     }
 
 
@@ -1043,7 +1655,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	goto leave;
 
 
-    algo = ask_algo( &v4, 1 );
+    algo = ask_algo( 1 );
     assert(algo);
     nbits = ask_keysize( algo );
     expire = ask_expire_interval();
@@ -1060,7 +1672,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
-				      dek, s2k, NULL, expire, v4 );
+				      dek, s2k, NULL, expire );
     if( !rc )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, sk);
     if( !rc )
@@ -1078,5 +1690,22 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	free_secret_key(sk);
     set_next_passphrase( NULL );
     return okay;
+}
+
+/****************
+ * Write a keyblock to an output stream
+ */
+static int
+write_keyblock( IOBUF out, KBNODE node )
+{
+    for( ; node ; node = node->next ) {
+	int rc = build_packet( out, node->pkt );
+	if( rc ) {
+	    log_error("build_packet(%d) failed: %s\n",
+			node->pkt->pkttype, g10_errstr(rc) );
+	    return G10ERR_WRITE_FILE;
+	}
+    }
+    return 0;
 }
 

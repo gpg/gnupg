@@ -1,5 +1,5 @@
 /* parse-packet.c  - read packets
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -60,6 +60,8 @@ static int  parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 static int  parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 				      byte *hdr, int hdrlen, PACKET *packet );
 static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
+							   PACKET *packet );
+static int  parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static int  parse_comment( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
@@ -416,6 +418,10 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	break;
       case PKT_USER_ID:
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
+	break;
+      case PKT_PHOTO_ID:
+	pkt->pkttype = pkttype = PKT_USER_ID;  /* must fix it */
+	rc = parse_photo_id(inp, pkttype, pktlen, pkt);
 	break;
       case PKT_OLD_COMMENT:
       case PKT_COMMENT:
@@ -805,6 +811,13 @@ dump_sig_subpkt( int hashed, int type, int critical,
       case SIGSUBPKT_SIGNERS_UID:
 	p = "signer's user ID";
 	break;
+      case SIGSUBPKT_REVOC_REASON:
+	if( length ) {
+	    printf("revocation reason 0x%02x (", *buffer );
+	    print_string( stdout, buffer+1, length-1, ')' );
+	    p = ")";
+	}
+	break;
       case SIGSUBPKT_PRIV_ADD_SIG:
 	p = "signs additional user ID";
 	break;
@@ -840,6 +853,10 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	return 0;
       case SIGSUBPKT_NOTATION:
 	if( n < 8 ) /* minimum length needed */
+	    break;
+	return 0;
+      case SIGSUBPKT_REVOC_REASON:
+	if( !n	)
 	    break;
 	return 0;
       case SIGSUBPKT_PREF_SYM:
@@ -879,7 +896,7 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_COMPR:
 	return 1;
 
-      case SIGSUBPKT_POLICY: /* Is enough to show the policy? */
+      case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */
       default:
 	return 0;
     }
@@ -1318,6 +1335,24 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
 		sk->protect.s2k.mode  = iobuf_get_noeof(inp); pktlen--;
 		sk->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
+		/* check for the special GNU extension */
+		if( is_v4 && sk->protect.s2k.mode == 101 ) {
+		    for(i=0; i < 4 && pktlen; i++, pktlen-- )
+			temp[i] = iobuf_get_noeof(inp);
+		    if( i < 4 || memcmp( temp, "GNU", 3 ) ) {
+			if( list_mode )
+			    printf(  "\tunknown S2K %d\n",
+						sk->protect.s2k.mode );
+			rc = G10ERR_INVALID_PACKET;
+			goto leave;
+		    }
+		    /* here we know that it is a gnu extension
+		     * What follows is the GNU protection mode:
+		     * All values have special meanings
+		     * and they are mapped in the mode with a base of 1000.
+		     */
+		    sk->protect.s2k.mode = 1000 + temp[3];
+		}
 		switch( sk->protect.s2k.mode ) {
 		  case 1:
 		  case 3:
@@ -1333,10 +1368,13 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    break;
 		  case 3: if( list_mode ) printf(  "\titer+salt S2K" );
 		    break;
+		  case 1001: if( list_mode ) printf(  "\tgnu-dummy S2K" );
+		    break;
 		  default:
 		    if( list_mode )
-			printf(  "\tunknown S2K %d\n",
-					    sk->protect.s2k.mode );
+			printf(  "\tunknown %sS2K %d\n",
+				 sk->protect.s2k.mode < 1000? "":"GNU ",
+						   sk->protect.s2k.mode );
 		    rc = G10ERR_INVALID_PACKET;
 		    goto leave;
 		}
@@ -1389,6 +1427,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	      default:
 		sk->protect.ivlen = 8;
 	    }
+	    if( sk->protect.s2k.mode == 1001 )
+		sk->protect.ivlen = 0;
+
 	    if( pktlen < sk->protect.ivlen ) {
 		rc = G10ERR_INVALID_PACKET;
 		goto leave;
@@ -1409,7 +1450,12 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	 * If the user is so careless, not to protect his secret key,
 	 * we can assume, that he operates an open system :=(.
 	 * So we put the key into secure memory when we unprotect it. */
-	if( is_v4 && sk->is_protected ) {
+	if( sk->protect.s2k.mode == 1001 ) {
+	    /* better set some dummy stuff here */
+	    sk->skey[npkey] = mpi_set_opaque(NULL, m_strdup("dummydata"), 10);
+	    pktlen = 0;
+	}
+	else if( is_v4 && sk->is_protected ) {
 	    /* ugly; the length is encrypted too, so we read all
 	     * stuff up to the end of the packet into the first
 	     * skey element */
@@ -1475,6 +1521,8 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
     packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + pktlen);
     packet->pkt.user_id->len = pktlen;
+    packet->pkt.user_id->photo = NULL;
+    packet->pkt.user_id->photolen = 0;
     p = packet->pkt.user_id->name;
     for( ; pktlen; pktlen--, p++ )
 	*p = iobuf_get_noeof(inp);
@@ -1495,6 +1543,31 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     return 0;
 }
 
+
+/****************
+ * PGP generates a packet of type 17. We assume this is a photo ID and
+ * simply store it here as a comment packet.
+ */
+static int
+parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
+{
+    byte *p;
+
+    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + 30);
+    sprintf( packet->pkt.user_id->name, "[image of size %lu]", pktlen );
+    packet->pkt.user_id->len = strlen(packet->pkt.user_id->name);
+
+    packet->pkt.user_id->photo = m_alloc(sizeof *packet->pkt.user_id + pktlen);
+    packet->pkt.user_id->photolen = pktlen;
+    p = packet->pkt.user_id->photo;
+    for( ; pktlen; pktlen--, p++ )
+	*p = iobuf_get_noeof(inp);
+
+    if( list_mode ) {
+	printf(":photo_id packet: %s\n", packet->pkt.user_id->name );
+    }
+    return 0;
+}
 
 
 static int

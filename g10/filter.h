@@ -1,5 +1,5 @@
 /* filter.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,6 +35,9 @@ typedef struct {
     int only_keyblocks;     /* skip all headers but ".... key block" */
     const char *hdrlines;   /* write these headerlines */
 
+    /* these fileds must be initialized to zero */
+    int no_openpgp_data;    /* output flag: "No valid OpenPGP data found" */
+
     /* the following fields must be initialized to zero */
     int inp_checked;	    /* set if the input has been checked */
     int inp_bypass;	    /* set if the input is not armored */
@@ -56,6 +59,7 @@ typedef struct {
     u32 crc;
 
     int status; 	    /* an internal state flag */
+    int cancel;
     int any_data;	    /* any valid armored data seen */
     int pending_lf;	    /* used together with faked */
 } armor_filter_context_t;

@@ -147,7 +147,7 @@ asctimestamp( u32 stamp )
     tp = localtime( &atime );
   #ifdef HAVE_STRFTIME
     #if defined(HAVE_NL_LANGINFO)
-      mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt) );
+      mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt)-3 );
       if( strstr( fmt, "%Z" ) == NULL )
 	strcat( fmt, " %Z");
       strftime( buffer, DIM(buffer)-1, fmt, tp );

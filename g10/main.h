@@ -1,5 +1,5 @@
 /* main.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -81,7 +81,7 @@ int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
 /*-- sig-check.c --*/
 int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 int check_key_signature2( KBNODE root, KBNODE node,
-			  int *is_selfsig, u32 *r_expire );
+			  int *is_selfsig, u32 *r_expiredate, int *r_expired );
 
 /*-- delkey.c --*/
 int delete_key( const char *username, int secure );
@@ -92,7 +92,7 @@ void keyedit_menu( const char *username, STRLIST locusr, STRLIST cmds,
 
 /*-- keygen.c --*/
 u32 ask_expiredate(void);
-void generate_keypair(void);
+void generate_keypair( const char *fname );
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
@@ -103,7 +103,7 @@ char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
 int   open_outfile( const char *iname, int mode, IOBUF *a );
 IOBUF open_sigfile( const char *iname );
-void copy_options_file( const char *destdir );
+void try_make_homedir( const char *fname );
 
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
@@ -116,7 +116,7 @@ KBNODE make_comment_node( const char *s );
 KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
-int import_keys( const char *filename, int fast );
+void import_keys( char **fnames, int nnames, int fast );
 int import_keys_stream( IOBUF inp, int fast );
 int collapse_uids( KBNODE *keyblock );
 
@@ -124,20 +124,27 @@ int collapse_uids( KBNODE *keyblock );
 int export_pubkeys( STRLIST users, int onlyrfc );
 int export_pubkeys_stream( IOBUF out, STRLIST users, int onlyrfc );
 int export_seckeys( STRLIST users );
+int export_secsubkeys( STRLIST users );
 
 /* dearmor.c --*/
 int dearmor_file( const char *fname );
 int enarmor_file( const char *fname );
 
 /*-- revoke.c --*/
+struct revocation_reason_info;
 int gen_revoke( const char *uname );
+int revocation_reason_build_cb( PKT_signature *sig, void *opaque );
+struct revocation_reason_info *
+		ask_revocation_reason( int key_rev, int cert_rev, int hint );
+void release_revocation_reason_info( struct revocation_reason_info *reason );
 
 /*-- keylist.c --*/
-void public_key_list( int nnames, char **names );
-void secret_key_list( int nnames, char **names );
+void public_key_list( STRLIST list );
+void secret_key_list( STRLIST list );
 
 /*-- verify.c --*/
 int verify_signatures( int nfiles, char **files );
+int verify_files( int nfiles, char **files );
 
 /*-- decrypt.c --*/
 int decrypt_message( const char *filename );

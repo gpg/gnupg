@@ -33,6 +33,15 @@
    which can be considered to be in compliance with RFC1991;  this
    format is only created if a special option is active.
 
+   GnuPG uses a S2K mode of 101 for GNU extensions to the secret key
+   protection algorithms.  This number is not defined in OpenPGP, but
+   given the fact that this number is in a range which used at many
+   other places in OpenPGP for private/experimenat algorithm identifiers,
+   this should be not a so bad choice.	The 3 bytes "GNU" are used
+   to identify this as a GNU extension - see the file DETAILS for a
+   definition of the used data formats.
+
+
 
   Some Notes on OpenPGP / PGP Compatibility:
   ==========================================

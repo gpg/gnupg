@@ -1,5 +1,5 @@
 /* free-packet.c - cleanup stuff for packets
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -220,6 +220,8 @@ free_comment( PKT_comment *rem )
 void
 free_user_id( PKT_user_id *uid )
 {
+    if( uid->photo )
+	m_free( uid->photo );
     m_free(uid);
 }
 

@@ -1,5 +1,5 @@
 /* packet.h - packet read/write stuff
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -46,6 +46,7 @@ typedef enum {
 	PKT_USER_ID	  =13, /* user id packet */
 	PKT_PUBLIC_SUBKEY =14, /* public subkey (OpenPGP) */
 	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
+	PKT_PHOTO_ID	  =17, /* PGP's photo ID */
 	PKT_COMMENT	  =61, /* new comment packet (private) */
 	PKT_ENCRYPTED_MDC =62, /* test: encrypted data with MDC */
 } pkttype_t;
@@ -53,7 +54,7 @@ typedef enum {
 typedef struct packet_struct PACKET;
 
 typedef struct {
-    byte mode;
+    int  mode;
     byte hash_algo;
     byte salt[8];
     u32  count;
@@ -155,6 +156,8 @@ typedef struct {
 
 typedef struct {
     int  len;		  /* length of the name */
+    char *photo;	  /* if this is not NULL, the packet is a photo ID */
+    int photolen;	  /* and the length of the photo */
     char name[1];
 } PKT_user_id;
 
@@ -236,6 +239,7 @@ typedef enum {
     SIGSUBPKT_POLICY	   =26, /* policy URL */
     SIGSUBPKT_KEY_FLAGS    =27, /* key flags */
     SIGSUBPKT_SIGNERS_UID  =28, /* signer's user id */
+    SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
     SIGSUBPKT_PRIV_ADD_SIG =101,/* signatur is also valid for this uid */
 
     SIGSUBPKT_FLAG_CRITICAL=128

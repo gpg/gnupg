@@ -27,7 +27,7 @@
 -->
 
 
-<!DOCTYPE RefEntry PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!DOCTYPE refentry PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
 <!entity ParmDir "<parameter>directory</parameter>">
 <!entity ParmFile "<parameter>file</parameter>">
 <!entity OptParmFile "<optional>&ParmFile;</optional>">
@@ -156,6 +156,15 @@ filename to force a read from stdin). With more than
 and the remaining files are the signed stuff.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--verify-files <optional><parameter/files/</optional></term>
+<listitem><para>
+This is a special version of the --verify command which does not work with
+detached signatures.  The command expects the files to bee verified either
+on the commandline or reads the filenames from stdin;  each anem muts be on
+separate line. The command is intended for quick checking of many files.
+</para></listitem></varlistentry>
+
 <!--
 B<-k> [I<username>] [I<keyring>]
     Kludge to be somewhat compatible with PGP.
@@ -226,8 +235,13 @@ useful for debugging.
 <varlistentry>
 <term>--gen-key</term>
 <listitem><para>
-Generate a new key pair. This command can only be
-used interactive.
+Generate a new key pair. This command is normally only used
+interactive.
+</para>
+<para>
+There is an experimental feature which allows to create keys
+in batch mode. See the file <filename>doc/DETAILS</filename>
+in the source distribution on how to use this.
 </para></listitem></varlistentry>
 
 
@@ -260,7 +274,7 @@ only in the local environment.</para></listitem></varlistentry>
     <term>revsig</term>
     <listitem><para>
 Revoke a signature.  GnuPG asks for every
-every signature which has been done by one of
+signature which has been done by one of
 the secret keys, whether a revocation
 certificate should be generated.</para></listitem></varlistentry>
     <varlistentry>
@@ -422,9 +436,14 @@ are not compatible to OpenPGP.
 
 <varlistentry>
 <term>--export-secret-keys &OptParmNames;</term>
+<term>--export-secret-subkeys &OptParmNames;</term>
 <listitem><para>
 Same as --export, but does export the secret keys.
 This is normally not very useful and a security risk.
+the second form of the command has the special property to
+render the secret part of the primary key useless; this is
+a GNU extension to OpenPGP and other implementations can
+not be expected to successful import such a key.
 </para></listitem></varlistentry>
 
 
@@ -676,6 +695,14 @@ Use batch mode.  Never ask, do not allow interactive
 commands.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-tty</term>
+<listitem><para>
+Make sure that the TTY (terminal) is never used for any output.
+This option is needed in some cases because GnuPG sometimes prints
+warnings to the TTY if if --batch is used.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--no-batch</term>
@@ -723,6 +750,12 @@ balancing using round-robin DNS you may notice
 that you get different key servers.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--honor-http-proxy</term>
+<listitem><para>
+Try to access the keyserver over the proxy set with the variable
+"http_proxy".
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--keyring &ParmFile;</term>
@@ -734,7 +767,8 @@ does not contain a slash, it is assumed to be in the
 home-directory ("~/.gnupg" if --homedir is not used).
 The filename may be prefixed with a scheme:</para>
 <para>"gnupg-ring:" is the default one.</para>
-<para>"gnupg-gdbm:" may be used for a GDBM ring.</para>
+<para>"gnupg-gdbm:" may be used for a GDBM ring. Note that GDBM
+is experimental and likely to be removed in future versions.</para>
 <para>It might make sense to use it together with --no-default-keyring.
 </para></listitem></varlistentry>
 
@@ -1074,6 +1108,16 @@ can only be used if only one passphrase is supplied.
 Don't use this option if you can avoid it.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--command-fd &ParmN;</term>
+<listitem><para>
+This is a replacement for the depreciated shared-memory IPC mode.
+If this option is enabled, user input on questions is not expected
+from the TTY but from the given file descriptor.  It should be used
+together with --status-fd. See the file doc/DETAILS in the source
+distribution for details on how to use it.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--rfc1991</term>
@@ -1089,7 +1133,8 @@ Reset all packet, cipher and digest options to OpenPGP
 behavior. Use this option to reset all previous
 options like --rfc1991, --force-v3-sigs, --s2k-*,
 --cipher-algo, --digest-algo and --compress-algo to
-OpenPGP compliant values.
+OpenPGP compliant values.  All PGP workarounds are also
+disabled.
 </para></listitem></varlistentry>
 
 
@@ -1125,6 +1170,16 @@ and encryption keys.
 
 
 <varlistentry>
+<term>--ignore-time-conflict</term>
+<listitem><para>
+GnuPG normally checks that the timestamps associated with keys and
+signatures have plausible values.  However, sometimes a signature seems to
+be older than the key due to clock problems.  This option makes these
+checks just a warning.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
 <term>--lock-once</term>
 <listitem><para>
 Lock the databases the first time a lock is requested
@@ -1139,6 +1194,25 @@ terminates.
 Release the locks every time a lock is no longer
 needed. Use this to override a previous --lock-once
 from a config file.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--lock-never</term>
+<listitem><para>
+Disable locking entirely.  This option should be used only in very
+special environments, where it can be assured that only one process
+is accessing those files.  A bootable floppy with a standalone
+encryption system will probably use this.  Improper usage of this
+option may lead to data and key corruption.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-random-seed-file</term>
+<listitem><para>
+GnuPG uses a file to store it's internal random pool over invocations.
+This makes random generation faster; however sometimes write operations
+are not desired.  This option can be used to achive that with the cost of
+slower random generation.
 </para></listitem></varlistentry>
 
 
@@ -1208,6 +1282,25 @@ and may be used together with another command.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--fast-list-mode</term>
+<listitem><para>
+Changes the output of the list commands to work faster; this is achieved
+by leaving some parts empty.  Some applications don't need the user ID and
+the trust information given in the listings.  By using this options they
+can get a faster listing.  The excact behaviour of this option may change
+in future versions.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--list-only</term>
+<listitem><para>
+Changes the behaviour of some commands.  This is like --dry-run but
+different in some cases.  The semantic of this command may be extended in
+the future.  Currently it does only skip the actual decryption pass and
+therefore enables a fast listing of the encryption keys.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--no-literal</term>
 <listitem><para>
 This is not for normal use.  Use the source to see for what it might be useful.
@@ -1219,16 +1312,104 @@ This is not for normal use.  Use the source to see for what it might be useful.
 This is not for normal use.  Use the source to see for what it might be useful.
 </para></listitem></varlistentry>
 
-<varlistentry>
-<term>--entropy-dll-name &ParmFile;</term>
-<listitem><para>
-This option is only used for the Win32 version of GnuPG and changes the
-default location (c:/gnupg/entropy.dll) of the Winseed DLL to &ParmFile;.
-</para></listitem></varlistentry>
-
 
 </variablelist>
 </refsect1>
+
+
+<refsect1>
+    <title>How to specify a user ID</title>
+    <para>
+There are different ways on how to specify a user ID to GnuPG;
+here are some examples:
+    </para>
+
+    <variablelist>
+<varlistentry>
+<term></term>
+<listitem><para>Used to locate the default home directory.</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>234567C4</term>
+<term>0F34E556E</term>
+<term>01347A56A</term>
+<term>0xAB123456</term>
+<listitem><para>
+Here the key ID is given in the usual short form.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>234AABBCC34567C4</term>
+<term>0F323456784E56EAB</term>
+<term>01AB3FED1347A5612</term>
+<term>0x234AABBCC34567C4</term>
+<listitem><para>
+Here the key ID is given in the long form as used by OpenPGP.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>1234343434343434C434343434343434</term>
+<term>123434343434343C3434343434343734349A3434</term>
+<term>0E12343434343434343434EAB3484343434343434</term>
+<term>0xE12343434343434343434EAB3484343434343434</term>
+<listitem><para>
+The best way to specify a key ID is by using the fingerprint of
+the key.  This avoids any ambiguities in case that there are duplicated
+key IDs (which are really rare for the long key IDs).
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>=Heinrich Heine &lt;heinrichh@uni-duesseldorf.de&gt;</term>
+<listitem><para>
+Using an exact to match string.  The equal sign indicates this.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>&lt;heinrichh@uni-duesseldorf.de&gt;</term>
+<listitem><para>
+Using the email address part which must match exactly.	The left angle bracket
+indicates this email address mode.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>+Heinrich Heine duesseldorf</term>
+<listitem><para>
+All words must match exactly (not case sensitive) but can appear in
+any order in the user ID.  Words are any sequences of letters,
+digits, the underscore and all characters with bit 7 set.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>#34</term>
+<listitem><para>
+Using the Local ID.  This is a very low level method and should
+only be used by applications which really need it.  The hash character
+indicates this method.	An application should not assume that this is
+only a number.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>Heine</term>
+<term>*Heine</term>
+<listitem><para>
+By case insensitive substring matching.  This is the default mode but
+applications may want to explicitely indicate this by putting the asterisk
+in front.
+</para></listitem>
+</varlistentry>
+
+    </variablelist>
+
+</refsect1>
+
 
 <refsect1>
     <title>RETURN VALUE</title>
@@ -1295,6 +1476,10 @@ constructed by cutting off the extension (".asc" or ".sig") of
 <term>GNUPGHOME</term>
 <listitem><para>If set directory used instead of "~/.gnupg".</para></listitem>
 </varlistentry>
+<varlistentry>
+<term>http_proxy</term>
+<listitem><para>Only honored when the option --honor-http-proxy is set.</para></listitem>
+</varlistentry>
     </variablelist>
 
 </refsect1>
@@ -1331,6 +1516,11 @@ constructed by cutting off the extension (".asc" or ".sig") of
 <varlistentry>
 <term>~/.gnupg/trustdb.gpg.lock</term>
 <listitem><para>and the lock file</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>~/.gnupg/random_seed</term>
+<listitem><para>used to preserve the internal random pool</para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -1375,7 +1565,7 @@ is *very* easy to spy out your passphrase!
 On many systems this program should be installed as setuid(root). This
 is necessary to lock memory pages. Locking memory pages prevents the
 operating system from writing memory pages to disk. If you get no
-warning message about insecure memory your operating system supports
+warning message about insecure memory 3our operating system supports
 locking without being root. The program drops root privileges as soon
 as locked memory is allocated.
 </para>

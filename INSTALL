@@ -70,6 +70,24 @@ This doesn't matter and we know about it (actually it is due to the some
 warning options which we have enabled for gcc)
 
 
+Specific problems on some machines
+==================================
+
+  * IBM RS/6000 running AIX:
+
+	Due to a change in gcc (since version 2.8) the MPI stuff may
+	not build. In this case try to run configure using:
+	    CFLAGS="-g -O2 -mcpu=powerpc" ./configure
+
+  * Solaris
+
+	There are reports that the function gethrtime() as used in
+	cipher/random.c raised a SIGILL.  It seems that is due to
+	a header/lib miscmatch.  Solution is to fix the Solaris
+	installation or comment the call to gethrtime().
+
+
+
 The Random Device
 =================
 Random devices are available in Linux, FreeBSD and OpenBSD.

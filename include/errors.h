@@ -71,6 +71,7 @@
 #define G10ERR_UNKNOWN_HOST   49
 #define G10ERR_SELFTEST_FAILED 50
 #define G10ERR_NOT_ENCRYPTED  51
+#define G10ERR_NOT_PROCESSED  52
 
 #ifndef HAVE_STRERROR
 char *strerror( int n );

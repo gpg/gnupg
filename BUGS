@@ -1,58 +1,8 @@
-		   List of some known bugs
-		  -------------------------
+Please see
 
-This following list contains those bugs which we are aware of.	Please
-make sure that bugs you report are not listed here.  If you can fix one
-of these bugs/limitations we will certainly be glad to receive a patch.
-(Please note that we need a disclaimer if a patch is longer than about
-10 lines; but it may help anyway to show us where we have to fix it. Do
-an "info standards" to find out why a disclaimer is needed for GNU.)
+    http://www.gnupg.org/buglist.html
 
-Format: severity: [  *] to [***], no, first reported, by, version.
-Bugs which are marked with "FIX: yyyy-mm-dd" are fixed in the CVS
-and after about half a day in the rsync snapshots.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+for a list know bugs in GnuPG.	We don't distribute this list anymore
+with the package because a more current one with notes in which version
+the bug is fixed can be found online.
 
-[  *] #3
-    --list-packets should continue even w/o a passphrase (or in batch
-    mode).  Maybe we have to move it to a separate program??
-
-[  *] #4  1999-01-13 <ralf.stephan@fitug.de> 0.9.1
-    v3 key 'expiration date' problem:
-       1. generate a key, set expiration date
-       2. <do other things, deleting etc.>
-       3. edit a v3 secret key, try to set expiration date
-       - output: "You can't change...
-       4. save
-       5. key has expiration date from 1. and gpg reports that pubkey
-	  and seckey differ.
-    The for loop the exp.date is set before v3 detection?
-    [is this bug still alive? - can someone please check it]
-
-[ **] #6 1999-02-22 <backes@rhrk.uni-kl.de> 0.9.3
-    Bus error on IRIX 6.4: Crash while doing a keygen. I think while creating
-    the prime.	Other bus errors are reported when doing a "gpg README"
-    on sparc-solaris2.6.
-    --> Solaris fixed.
-    --> IRIX bug still there but someone should test this again!
-
-[  *] #18 1999-05-27 <Steffen.Zahn@icn.siemens.de> 0.9.7
-    rndunix hangs on hp/ux.  The problem is related to my_plcose which is
-    not always called.	(I suggest to use EGD instead of rndunix.)
-
-[  *] #22 1999-07-22
-    Solaris make has problems with the generated POTFILES - seems to be a
-    gettext bug.  Use GNU gmake as a workaround.
-
-[  *] #23 1999-09-03 <todd.brooks@yale.edu> 0.9.11
-    Only the first signature of a cleartext sig seems to be verified.
-    Can't fix it in 1.0 because the code is semi-frozen.
-    HMMM: Can't reprodude the bug here - it just works.  Check wehther
-
-[  *] #24 1999-09-05 <marcus@yoyo.cc.monash.edu.au> 0.9.11
-    Does not link libc and libz expect when removing all "-lc -lz" except
-    for the last one.  This happens on some systems when not using the
-    GNU ld.  This need to be fixed in libtool.
-
-
-Next #25

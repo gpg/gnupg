@@ -25,6 +25,8 @@
 /*-- random.c --*/
 void random_dump_stats(void);
 void secure_random_alloc(void);
+void set_random_seed_file(const char *);
+void update_random_seed_file(void);
 int  quick_random_gen( int onoff );
 int  random_is_faked(void);
 void randomize_buffer( byte *buffer, size_t length, int level );

@@ -1,5 +1,5 @@
 /* status.c
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -44,6 +44,7 @@
 #include "options.h"
 #include "main.h"
 #include "i18n.h"
+#include "cipher.h" /* for progress functions */
 
 static int fd = -1;
 #ifdef USE_SHM_COPROCESSING
@@ -53,10 +54,29 @@ static int fd = -1;
   static int shm_is_locked;
 #endif /*USE_SHM_COPROCESSING*/
 
+
+static void
+progress_cb ( void *ctx, int c )
+{
+    char buf[50];
+
+    if ( c == '\n' )
+	sprintf ( buf, "%.20s X 100 100", (char*)ctx );
+    else
+	sprintf ( buf, "%.20s %c 0 0", (char*)ctx, c );
+    write_status_text ( STATUS_PROGRESS, buf );
+}
+
+
 void
 set_status_fd ( int newfd )
 {
     fd = newfd;
+    if ( fd != -1 ) {
+	register_primegen_progress ( progress_cb, "primegen" );
+	register_pk_dsa_progress ( progress_cb, "pk_dsa" );
+	register_pk_elg_progress ( progress_cb, "pk_elg" );
+    }
 }
 
 int
@@ -95,6 +115,10 @@ write_status_text ( int no, const char *text)
       case STATUS_TRUST_MARGINAL : s = "TRUST_MARGINAL\n"; break;
       case STATUS_TRUST_FULLY	 : s = "TRUST_FULLY\n"; break;
       case STATUS_TRUST_ULTIMATE : s = "TRUST_ULTIMATE\n"; break;
+      case STATUS_GET_BOOL	 : s = "GET_BOOL\n"; break;
+      case STATUS_GET_LINE	 : s = "GET_LINE\n"; break;
+      case STATUS_GET_HIDDEN	 : s = "GET_HIDDEN\n"; break;
+      case STATUS_GOT_IT	 : s = "GOT_IT\n"; break;
       case STATUS_SHM_INFO	 : s = "SHM_INFO\n"; break;
       case STATUS_SHM_GET	 : s = "SHM_GET\n"; break;
       case STATUS_SHM_GET_BOOL	 : s = "SHM_GET_BOOL\n"; break;
@@ -117,6 +141,15 @@ write_status_text ( int no, const char *text)
       case STATUS_ERRMDC	 : s = "ERRMDC\n"; break;
       case STATUS_IMPORTED	 : s = "IMPORTED\n"; break;
       case STATUS_IMPORT_RES	 : s = "IMPORT_RES\n"; break;
+      case STATUS_FILE_START	 : s = "FILE_START\n"; break;
+      case STATUS_FILE_DONE	 : s = "FILE_DONE\n"; break;
+      case STATUS_FILE_ERROR	 : s = "FILE_ERROR\n"; break;
+      case STATUS_BEGIN_DECRYPTION:s = "BEGIN_DECRYPTION\n"; break;
+      case STATUS_END_DECRYPTION : s = "END_DECRYPTION\n"; break;
+      case STATUS_BEGIN_ENCRYPTION:s = "BEGIN_ENCRYPTION\n"; break;
+      case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION\n"; break;
+      case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM\n"; break;
+      case STATUS_PROGRESS	 : s = "PROGRESS\n"; break;
       default: s = "?\n"; break;
     }
 
@@ -268,10 +301,50 @@ do_shm_get( const char *keyword, int hidden, int bool )
 #endif /* USE_SHM_COPROCESSING */
 
 
+/****************
+ * Request a string from the client over the command-fd
+ * If bool, returns static string on true (do not free) or NULL for false
+ */
+static char *
+do_get_from_fd( const char *keyword, int hidden, int bool )
+{
+    int i, len;
+    char *string;
+
+    write_status_text( bool? STATUS_GET_BOOL :
+		       hidden? STATUS_GET_HIDDEN : STATUS_GET_LINE, keyword );
+
+    for( string = NULL, i = len = 200; ; i++ ) {
+	if( i >= len-1 ) {
+	    char *save = string;
+	    len += 100;
+	    string = hidden? m_alloc_secure ( len ) : m_alloc ( len );
+	    if( save )
+		memcpy(string, save, i );
+	    else
+		i=0;
+	}
+	/* Hmmm: why not use our read_line function here */
+	if( read( fd, string+i, 1) != 1 || string[i] == '\n' )
+	    break;
+    }
+    string[i] = 0;
+
+    write_status( STATUS_GOT_IT );
+
+    if( bool )	 /* Fixme: is this correct??? */
+	return string[0] == 'Y' ? "" : NULL;
+
+    return string;
+}
+
+
 
 int
 cpr_enabled()
 {
+    if( opt.command_fd != -1 )
+	return 1;
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return 1;
@@ -284,6 +357,8 @@ cpr_get( const char *keyword, const char *prompt )
 {
     char *p;
 
+    if( opt.command_fd != -1 )
+	return do_get_from_fd ( keyword, 0, 0 );
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return do_shm_get( keyword, 0, 0 );
@@ -317,6 +392,8 @@ cpr_get_hidden( const char *keyword, const char *prompt )
 {
     char *p;
 
+    if( opt.command_fd != -1 )
+	return do_get_from_fd ( keyword, 1, 0 );
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return do_shm_get( keyword, 1, 0 );
@@ -335,6 +412,8 @@ cpr_get_hidden( const char *keyword, const char *prompt )
 void
 cpr_kill_prompt(void)
 {
+    if( opt.command_fd != -1 )
+	return;
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return;
@@ -349,6 +428,8 @@ cpr_get_answer_is_yes( const char *keyword, const char *prompt )
     int yes;
     char *p;
 
+    if( opt.command_fd != -1 )
+	return !!do_get_from_fd ( keyword, 0, 1 );
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return !!do_shm_get( keyword, 0, 1 );
@@ -375,6 +456,8 @@ cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt )
     int yes;
     char *p;
 
+    if( opt.command_fd != -1 )
+	return !!do_get_from_fd ( keyword, 0, 1 );
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess )
 	return !!do_shm_get( keyword, 0, 1 );

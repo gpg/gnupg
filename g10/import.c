@@ -1,5 +1,5 @@
 /* import.c
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -38,6 +38,7 @@
 
 
 static struct {
+    ulong count;
     ulong no_user_id;
     ulong imported;
     ulong imported_rsa;
@@ -53,6 +54,7 @@ static struct {
 
 
 static int import( IOBUF inp, int fast, const char* fname );
+static void print_stats(void);
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static int import_one( const char *fname, KBNODE keyblock, int fast );
 static int import_secret_one( const char *fname, KBNODE keyblock );
@@ -105,30 +107,51 @@ static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
  *  Key revocation certificates have special handling.
  *
  */
-int
-import_keys( const char *fname, int fast )
+void
+import_keys( char **fnames, int nnames, int fast )
 {
-    IOBUF inp = NULL;
-    int rc;
+    int i;
 
-    inp = iobuf_open(fname);
-    if( !fname )
-	fname = "[stdin]";
-    if( !inp ) {
-	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
-	return G10ERR_OPEN_FILE;
+    /* fixme: don't use static variables */
+    memset( &stats, 0, sizeof( stats ) );
+
+    if( !fnames && !nnames )
+	nnames = 1;  /* Ohh what a ugly hack to jump into the loop */
+
+    for(i=0; i < nnames; i++ ) {
+	const char *fname = fnames? fnames[i] : NULL;
+	IOBUF inp = iobuf_open(fname);
+	if( !fname )
+	    fname = "[stdin]";
+	if( !inp )
+	    log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
+	else {
+	    int rc = import( inp, fast, fname );
+	    iobuf_close(inp);
+	    if( rc )
+		log_error("import from `%s' failed: %s\n", fname,
+							   g10_errstr(rc) );
+	}
+	if( !fname )
+	    break;
     }
-
-    rc = import( inp, fast, fname );
-
-    iobuf_close(inp);
-    return rc;
+    print_stats();
+    if( !fast )
+	sync_trustdb();
 }
 
 int
 import_keys_stream( IOBUF inp, int fast )
 {
-    return import( inp, fast, "[stream]" );
+    int rc = 0;
+
+    /* fixme: don't use static variables */
+    memset( &stats, 0, sizeof( stats ) );
+    rc = import( inp, fast, "[stream]" );
+    print_stats();
+    if( !fast )
+	sync_trustdb();
+    return rc;
 }
 
 static int
@@ -137,10 +160,6 @@ import( IOBUF inp, int fast, const char* fname )
     PACKET *pending_pkt = NULL;
     KBNODE keyblock;
     int rc = 0;
-    ulong count=0;
-
-    /* fixme: don't use static variables */
-    memset( &stats, 0, sizeof( stats ) );
 
     getkey_disable_caches();
 
@@ -165,16 +184,23 @@ import( IOBUF inp, int fast, const char* fname )
 	release_kbnode(keyblock);
 	if( rc )
 	    break;
-	if( !(++count % 100) && !opt.quiet )
-	    log_info(_("%lu keys so far processed\n"), count );
+	if( !(++stats.count % 100) && !opt.quiet )
+	    log_info(_("%lu keys so far processed\n"), stats.count );
     }
     if( rc == -1 )
 	rc = 0;
     else if( rc && rc != G10ERR_INV_KEYRING )
 	log_error( _("error reading `%s': %s\n"), fname, g10_errstr(rc));
 
+    return rc;
+}
+
+
+static void
+print_stats()
+{
     if( !opt.quiet ) {
-	log_info(_("Total number processed: %lu\n"), count );
+	log_info(_("Total number processed: %lu\n"), stats.count );
 	if( stats.no_user_id )
 	    log_info(_("          w/o user IDs: %lu\n"), stats.no_user_id );
 	if( stats.imported || stats.imported_rsa ) {
@@ -202,9 +228,9 @@ import( IOBUF inp, int fast, const char* fname )
     }
 
     if( is_status_enabled() ) {
-	char buf[12*16];
+	char buf[12*20];
 	sprintf(buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
-		count,
+		stats.count,
 		stats.no_user_id,
 		stats.imported,
 		stats.imported_rsa,
@@ -218,8 +244,6 @@ import( IOBUF inp, int fast, const char* fname )
 		stats.secret_dups);
 	write_status_text( STATUS_IMPORT_RES, buf );
     }
-
-    return rc;
 }
 
 
@@ -354,8 +378,8 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 		  pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_pk(pk) );
 	if( uidnode )
-	    print_string( stderr, uidnode->pkt->pkt.user_id->name,
-				  uidnode->pkt->pkt.user_id->len, 0 );
+	    print_utf8_string( stderr, uidnode->pkt->pkt.user_id->name,
+				       uidnode->pkt->pkt.user_id->len );
 	putc('\n', stderr);
     }
     if( !uidnode ) {
@@ -545,8 +569,8 @@ import_secret_one( const char *fname, KBNODE keyblock )
 		  pubkey_letter( sk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_sk(sk) );
 	if( uidnode )
-	    print_string( stderr, uidnode->pkt->pkt.user_id->name,
-				  uidnode->pkt->pkt.user_id->len, 0 );
+	    print_utf8_string( stderr, uidnode->pkt->pkt.user_id->name,
+				       uidnode->pkt->pkt.user_id->len );
 	putc('\n', stderr);
     }
     stats.secret_read++;
@@ -678,6 +702,15 @@ import_revoke_cert( const char *fname, KBNODE node )
 	log_info( _("key %08lX: revocation certificate imported\n"),
 					(ulong)keyid[1]);
     stats.n_revoc++;
+    if( clear_trust_checked_flag( pk ) ) {
+	/* seems that we have to insert the record first */
+	rc = insert_trust_record( keyblock );
+	if( rc )
+	    log_error("key %08lX: trustdb insert failed: %s\n",
+					(ulong)keyid[1], g10_errstr(rc) );
+	else
+	    rc = clear_trust_checked_flag( pk );
+    }
 
   leave:
     release_kbnode( keyblock );
@@ -764,7 +797,8 @@ mark_non_selfsigned_uids_valid( KBNODE keyblock, u32 *kid )
     KBNODE node;
     for(node=keyblock->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !(node->flag & 1) ) {
-	    if( node->next && node->next->pkt->pkttype == PKT_SIGNATURE ) {
+	    if( (node->next && node->next->pkt->pkttype == PKT_SIGNATURE)
+		|| !node->next ) {
 		node->flag |= 1;
 		log_info( _("key %08lX: accepted non self-signed user ID '"),
 							 (ulong)kid[1]);
@@ -797,8 +831,8 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		if( opt.verbose ) {
 		    log_info( _("key %08lX: skipped user ID '"),
 							 (ulong)keyid[1]);
-		    print_string( stderr, node->pkt->pkt.user_id->name,
-				      node->pkt->pkt.user_id->len, 0 );
+		    print_utf8_string( stderr, node->pkt->pkt.user_id->name,
+				       node->pkt->pkt.user_id->len );
 		    fputs("'\n", stderr );
 		}
 		delete_kbnode( node ); /* the user-id */
@@ -1124,7 +1158,7 @@ append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
     KBNODE n, n_where=NULL;
 
     assert(node->pkt->pkttype == PKT_USER_ID );
-    if( node->next->pkt->pkttype == PKT_USER_ID ) {
+    if( !node->next || node->next->pkt->pkttype == PKT_USER_ID ) {
 	log_error( _("key %08lX: our copy has no self-signature\n"),
 						  (ulong)keyid[1]);
 	return G10ERR_GENERAL;
@@ -1177,9 +1211,7 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 
     assert(dst->pkt->pkttype == PKT_USER_ID );
     assert(src->pkt->pkttype == PKT_USER_ID );
-    /* at least a self signature comes next to the user IDs */
-    assert(src->next->pkt->pkttype != PKT_USER_ID );
-    if( dst->next->pkt->pkttype == PKT_USER_ID ) {
+    if( !dst->next || dst->next->pkt->pkttype == PKT_USER_ID ) {
 	log_error( _("key %08lX: our copy has no self-signature\n"),
 						  (ulong)keyid[1]);
 	return 0;

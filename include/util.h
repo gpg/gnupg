@@ -65,6 +65,7 @@ void log_set_name( const char *name );
 const char *log_get_name(void);
 void log_set_pid( int pid );
 int  log_get_errorcount( int clear );
+void log_inc_errorcount(void);
 void g10_log_hexdump( const char *text, const char *buf, size_t len );
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
@@ -131,6 +132,7 @@ const char *strusage( int level );
 struct dotlock_handle;
 typedef struct dotlock_handle *DOTLOCK;
 
+void disable_dotlock(void);
 DOTLOCK create_dotlock( const char *file_to_lock );
 int make_dotlock( DOTLOCK h, long timeout );
 int release_dotlock( DOTLOCK h );
@@ -188,6 +190,9 @@ char *stpcpy(char *a,const char *b);
 #ifndef HAVE_STRLWR
 char *strlwr(char *a);
 #endif
+#ifndef HAVE_STRCASECMP
+int strcasecmp( const char *, const char *b);
+#endif
 #ifndef HAVE_STRTOUL
   #define strtoul(a,b,c)  ((unsigned long)strtol((a),(b),(c)))
 #endif
@@ -196,6 +201,12 @@ char *strlwr(char *a);
 #endif
 #ifndef HAVE_STRICMP
   #define stricmp(a,b)	 strcasecmp( (a), (b) )
+#endif
+
+/*-- w32reg.c --*/
+#ifdef __MINGW32__
+char *read_w32_registry_string( const char *root,
+				const char *dir, const char *name );
 #endif
 
 /**** other missing stuff ****/

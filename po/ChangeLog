@@ -1,5 +1,80 @@
-Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+2000-05-02 10:44:42  Werner Koch  (wk@habibti.openit.de)
 
+	* fr.po: New version from the TP Robot.
+
+2000-05-01 14:19:52  Werner Koch  (wk@habibti.openit.de)
+
+	* de.po: Updated.
+	* de.glo: Ditto.
+
+2000-03-15 15:37:08  Werner Koch  (wk@habibti.openit.de)
+
+	* de.po: Updated.
+
+Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* nl.po: New. By Ivo Timmermans.
+
+Wed Feb 16 16:25:09 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* eo.po : New. By Edmund.
+
+Wed Feb 16 14:09:00 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* ja.po: New. By Yosiaki
+
+	* sv.po: New. By Daniel.
+
+Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* id.po: Updated.
+
+Thu Jan  6 16:56:18 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.in.in: Is not longer maintained as a symlink because we
+	have a patch to work around a bug in non-gnu Make.
+	Fixed by Dave Dykstra.
+
+Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* pt_PT.po: Updated.
+	* de.po: Updated.
+	* it.po: Updated.
+
+Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* de.po: Updated.
+	* pt_BR.po: Updated.
+
+Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* es_ES.po: Fixed 3 \n mismatches.
+
+	* de.po: Updated.
+
+Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* es_ES.po: Updated.
+
+	* pt_BR.po: Updated.
+
+Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* fr.po: Updated for 1.0.0d.
+
+Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* pl.po: New version by Alex.
+
+Thu Sep 23 06:26:28 1999  Werner Koch  (wk@gnupg.org)
+
+	* fr.po: Updated by Gaël.
+
+Sat Sep 18 11:49:51 1999  Werner Koch  (wk@gnupg.org)
+
+	* id.po: New. Done by Tedi Heriyanto.
+
+Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pt_PT.po: New. Done by Pedro Morais.
 

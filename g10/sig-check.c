@@ -1,5 +1,5 @@
 /* sig-check.c -  Check a signature
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -32,6 +32,7 @@
 #include "main.h"
 #include "status.h"
 #include "i18n.h"
+#include "options.h"
 
 struct cmp_help_context_s {
     PKT_signature *sig;
@@ -40,9 +41,9 @@ struct cmp_help_context_s {
 
 
 static int do_signature_check( PKT_signature *sig, MD_HANDLE digest,
-						      u32 *r_expire );
+					 u32 *r_expiredate, int *r_expired );
 static int do_check( PKT_public_key *pk, PKT_signature *sig,
-						MD_HANDLE digest );
+					 MD_HANDLE digest, int *r_expired );
 
 
 /****************
@@ -54,11 +55,13 @@ int
 signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
     u32 dummy;
-    return do_signature_check( sig, digest, &dummy );
+    int dum2;
+    return do_signature_check( sig, digest, &dummy, &dum2 );
 }
 
 static int
-do_signature_check( PKT_signature *sig, MD_HANDLE digest, u32 *r_expire )
+do_signature_check( PKT_signature *sig, MD_HANDLE digest,
+					u32 *r_expiredate, int *r_expired )
 {
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
@@ -66,12 +69,12 @@ do_signature_check( PKT_signature *sig, MD_HANDLE digest, u32 *r_expire )
     if( is_RSA(sig->pubkey_algo) )
 	write_status(STATUS_RSA_OR_IDEA);
 
-    *r_expire = 0;
+    *r_expiredate = 0;
     if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
     else {
-	*r_expire = pk->expiredate;
-	rc = do_check( pk, sig, digest );
+	*r_expiredate = pk->expiredate;
+	rc = do_check( pk, sig, digest, r_expired );
     }
 
     free_public_key( pk );
@@ -284,13 +287,15 @@ cmp_help( void *opaque, MPI result )
 
 
 static int
-do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
+do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
+						    int *r_expired )
 {
     MPI result = NULL;
     int rc=0;
     struct cmp_help_context_s ctx;
     u32 cur_time;
 
+    *r_expired = 0;
     if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 	log_info(_("this is a PGP generated "
 		  "ElGamal key which is NOT secure for signatures!\n"));
@@ -303,7 +308,8 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 		  ? _("public key is %lu second newer than the signature\n")
 		  : _("public key is %lu seconds newer than the signature\n"),
 		       d );
-	return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
+	if( !opt.ignore_time_conflict )
+	    return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
     }
 
     cur_time = make_timestamp();
@@ -313,13 +319,15 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	return G10ERR_TIME_CONFLICT;
+	if( !opt.ignore_time_conflict )
+	    return G10ERR_TIME_CONFLICT;
     }
 
     if( pk->expiredate && pk->expiredate < cur_time ) {
 	log_info(_("NOTE: signature key expired %s\n"),
 					asctimestamp( pk->expiredate ) );
 	write_status(STATUS_SIGEXPIRED);
+	*r_expired = 1;
     }
 
 
@@ -390,16 +398,30 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
     PKT_user_id *uid = unode->pkt->pkt.user_id;
 
     assert( unode->pkt->pkttype == PKT_USER_ID );
-    if( sig->version >=4 ) {
-	byte buf[5];
-	buf[0] = 0xb4; /* indicates a userid packet */
-	buf[1] = uid->len >> 24;  /* always use 4 length bytes */
-	buf[2] = uid->len >> 16;
-	buf[3] = uid->len >>  8;
-	buf[4] = uid->len;
-	md_write( md, buf, 5 );
+    if( uid->photo ) {
+	if( sig->version >=4 ) {
+	    byte buf[5];
+	    buf[0] = 0xd1;		   /* packet of type 17 */
+	    buf[1] = uid->photolen >> 24;  /* always use 4 length bytes */
+	    buf[2] = uid->photolen >> 16;
+	    buf[3] = uid->photolen >>  8;
+	    buf[4] = uid->photolen;
+	    md_write( md, buf, 5 );
+	}
+	md_write( md, uid->photo, uid->photolen );
     }
-    md_write( md, uid->name, uid->len );
+    else {
+	if( sig->version >=4 ) {
+	    byte buf[5];
+	    buf[0] = 0xb4;	      /* indicates a userid packet */
+	    buf[1] = uid->len >> 24;  /* always use 4 length bytes */
+	    buf[2] = uid->len >> 16;
+	    buf[3] = uid->len >>  8;
+	    buf[4] = uid->len;
+	    md_write( md, buf, 5 );
+	}
+	md_write( md, uid->name, uid->len );
+    }
 }
 
 /****************
@@ -411,11 +433,13 @@ int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
     u32 dummy;
-    return check_key_signature2(root, node, is_selfsig, &dummy );
+    int dum2;
+    return check_key_signature2(root, node, is_selfsig, &dummy, &dum2 );
 }
 
 int
-check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
+check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
+				       u32 *r_expiredate, int *r_expired )
 {
     MD_HANDLE md;
     PKT_public_key *pk;
@@ -425,7 +449,8 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 
     if( is_selfsig )
 	*is_selfsig = 0;
-    *r_expire = 0;
+    *r_expiredate = 0;
+    *r_expired = 0;
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( root->pkt->pkttype == PKT_PUBLIC_KEY );
 
@@ -445,7 +470,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
     if( sig->sig_class == 0x20 ) {
 	md = md_open( algo, 0 );
 	hash_public_key( md, pk );
-	rc = do_check( pk, sig, md );
+	rc = do_check( pk, sig, md, r_expired );
 	md_close(md);
     }
     else if( sig->sig_class == 0x28 ) { /* subkey revocation */
@@ -455,7 +480,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    md = md_open( algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md );
+	    rc = do_check( pk, sig, md, r_expired );
 	    md_close(md);
 	}
 	else {
@@ -477,7 +502,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    md = md_open( algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md );
+	    rc = do_check( pk, sig, md, r_expired );
 	    md_close(md);
 	}
 	else {
@@ -498,10 +523,10 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 		if( is_selfsig )
 		    *is_selfsig = 1;
-		rc = do_check( pk, sig, md );
+		rc = do_check( pk, sig, md, r_expired );
 	    }
 	    else
-		rc = do_signature_check( sig, md, r_expire );
+		rc = do_signature_check( sig, md, r_expiredate, r_expired );
 	    md_close(md);
 	}
 	else {

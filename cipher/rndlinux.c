@@ -89,6 +89,10 @@ open_device( const char *name, int minor )
 }
 
 
+/****************
+ * Note:  Using a level of 0 should never block and better add nothing
+ * to the pool.  This is easy to accomplish with /dev/urandom.
+ */
 static int
 gather_random( void (*add)(const void*, size_t, int), int requester,
 					  size_t length, int level )
@@ -106,6 +110,8 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	fd = fd_random;
     }
     else {
+	/* this will also be used for elve 0 but by using /dev/urandom
+	 * we can be sure that oit will never block. */
 	if( fd_urandom == -1 )
 	    fd_urandom = open_device( NAME_OF_DEV_URANDOM, 9 );
 	fd = fd_urandom;

@@ -342,3 +342,67 @@
      where pgpkeyring is the original keyring and not the GnuPG one you
      might have created in the first step.
 
+  Q: Are the headerlines of a cleartext signater part of the signed
+     material?
+  A: No.  For example you can add or remove "Comment:" lines.  They
+     have a purpose like the mail header lines.  However a "Hash:"
+     line is needed for OpenPGG signatures to tell the parser which
+     hash algorithm to use.
+
+  Q: How can a get list of key IDs used to encrypt a message?
+  A: gpg --batch --decrypt --list-only --status-fd 1 2>/dev/null \
+	      | awk '/^\[GNUPG:\] ENC_TO / { print $3 }'
+
+
+  Q: PGP 5.x, 6.x does not like my secret key.
+  A: PGP probably bails out on some private comment packets used by GnuPG.
+     These packets are fully in compliance with OpenPGP; however PGP is not
+     really OpenPGP aware.  A workaround is to eport the secret keys with
+     this command:
+
+	gpg --export-secret-keys --no-comment -a your-key-id
+
+  Q: I can't decrypt my symmetrical only (-c) encrypted message with
+     a new version of GnuPG.
+  A: There used to be a bug in GnuPG < 1.0.1 which happens only if 3DES or
+     Twofish has been used for symmetric only encryption (this has never been
+     the default).
+     The bug has been fixed but to enable you to decrypt old messages, you
+     should run gpg with the option "--emulate-3des-s2k-bug", decrypt the
+     message and encrypt it again without this option.	The option will
+     be removed in 1.1, so better re-encrypt your message now.
+
+  Q: How can I used GnuPG in an automated environment?
+  A: You should use the option --batch and don't use passphrases as
+     there is usually no way to store it more secure than the secret
+     keyring itself.  The suggested way to create the keys for the
+     automated envirionment ist:
+	On a secure machine:
+	1. If you want to do automatic signing, create a signing subkey
+	   for your key (edit menu, choose "addkey" and the DSA).
+	2. Make sure that you use a passphrase (Needed by the current
+	   implementation)
+	3. gpg --export-secret-subkeys --no-comment foo >secring.auto
+	4. Copy secring.auto and the public keyring to a test directory.
+	5. Cd to this diectory
+	6. gpg --homedir . --edit foo
+	   and use "passwd" to remove the passphrase from the subkeys.
+	   You may also want to remove all unused subkeys.
+	7. copy secring.auto to a floppy and carry it to the
+	   target box
+	On the target machine:
+	8. Install secring.auto as secret keyring.
+	9. Now you can start your new service.	It is a good idea to
+	   install some intrusion detection system so that you hopefully
+	   get a notice of an successful intrusion, so that you in turn can
+	   revoke all the subkeys installed on that machine and install new
+	   subkeys.
+
+  Q: In the edit meu the trust values is not displayed correctly after
+     signing uids - why?
+  A: This happens because the some informations are stored immediately
+     in the trustdb, but the actual trust calculation can be done after
+     the save command.	This is a not easy to fix design bug which will be
+     addressed in GnuPG 1.1
+
+

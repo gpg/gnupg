@@ -1,5 +1,5 @@
 /* options.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,6 +33,7 @@ struct {
     int compress;
     char *outfile;
     int dry_run;
+    int list_only;
     int textmode;
     int batch;	    /* run in batch mode */
     int answer_yes; /* answer yes on most questions */
@@ -63,6 +64,7 @@ struct {
     int compress_sigs;
     int always_trust;
     int rfc1991;
+    int pgp2_workarounds;
     unsigned emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
     const char *set_filename;
@@ -83,10 +85,15 @@ struct {
     int allow_non_selfsigned_uid;
     int no_literal;
     ulong set_filesize;
+    int honor_http_proxy;
+    int fast_list_mode;
+    int ignore_time_conflict;
+    int command_fd;
 } opt;
 
 
 #define EMUBUG_GPGCHKSUM  1
+#define EMUBUG_3DESS2K	  2
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */

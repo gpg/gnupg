@@ -1,5 +1,5 @@
 /* g10.c - The GnuPG utility (main for gpg)
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -79,6 +79,7 @@ enum cmd_and_opt_values { aNull = 0,
     aImport,
     aFastImport,
     aVerify,
+    aVerifyFiles,
     aListKeys,
     aListSigs,
     aListSecretKeys,
@@ -87,6 +88,7 @@ enum cmd_and_opt_values { aNull = 0,
     aExport,
     aExportAll,
     aExportSecret,
+    aExportSecretSub,
     aCheckKeys,
     aGenRevoke,
     aPrimegen,
@@ -131,6 +133,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDigestAlgo,
     oCompressAlgo,
     oPasswdFD,
+    oCommandFD,
     oQuickRandom,
     oNoVerbose,
     oTrustDBName,
@@ -166,6 +169,7 @@ enum cmd_and_opt_values { aNull = 0,
     oEscapeFrom,
     oLockOnce,
     oLockMultiple,
+    oLockNever,
     oKeyServer,
     oEncryptTo,
     oNoEncryptTo,
@@ -177,7 +181,12 @@ enum cmd_and_opt_values { aNull = 0,
     oAllowNonSelfsignedUID,
     oNoLiteral,
     oSetFilesize,
-    oEntropyDLLName,
+    oHonorHttpProxy,
+    oFastListMode,
+    oListOnly,
+    oIgnoreTimeConflict,
+    oNoRandomSeedFile,
+    oEmu3DESS2KBug,  /* will be removed in 1.1 */
 aTest };
 
 
@@ -193,6 +202,7 @@ static ARGPARSE_OPTS opts[] = {
     { aStore, "store",     256, N_("store only")},
     { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
     { aVerify, "verify"   , 256, N_("verify a signature")},
+    { aVerifyFiles, "verify-files" , 256, "@" },
     { aListKeys, "list-keys", 256, N_("list keys")},
     { aListKeys, "list-public-keys", 256, "@" },
     { aListSigs, "list-sigs", 256, N_("list keys and signatures")},
@@ -201,6 +211,8 @@ static ARGPARSE_OPTS opts[] = {
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
     { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
+    { aDeleteSecretKey, "delete-secret-key",256,
+				    N_("remove key from the secret keyring")},
     { aSignKey,  "sign-key"   ,256, N_("sign a key")},
     { aLSignKey, "lsign-key"  ,256, N_("sign a key locally")},
     { aEditKey,  "edit-key"   ,256, N_("sign or edit a key")},
@@ -210,6 +222,7 @@ static ARGPARSE_OPTS opts[] = {
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
     { aExportAll, "export-all"    , 256, "@" },
     { aExportSecret, "export-secret-keys" , 256, "@" },
+    { aExportSecretSub, "export-secret-subkeys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
     { aFastImport, "fast-import",  256 , "@"},
     { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
@@ -223,7 +236,9 @@ static ARGPARSE_OPTS opts[] = {
 	      "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
     { aFixTrustDB, "fix-trustdb",0 , N_("fix a corrupted trust database")},
     { aDeArmor, "dearmor", 256, N_("De-Armor a file or stdin") },
+    { aDeArmor, "dearmour", 256, "@" },
     { aEnArmor, "enarmor", 256, N_("En-Armor a file or stdin") },
+    { aEnArmor, "enarmour", 256, "@" },
     { aPrintMD,  "print-md" , 256, N_("|algo [files]|print message digests")},
     { aPrimegen, "gen-prime" , 256, "@" },
     { aGenRandom, "gen-random" , 256, "@" },
@@ -231,6 +246,7 @@ static ARGPARSE_OPTS opts[] = {
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
     { oArmor, "armor",     0, N_("create ascii armored output")},
+    { oArmor, "armour",     0, "@" },
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
     { oRecipient, "remote-user", 2, "@"},  /* old option name */
     { oDefRecipient, "default-recipient" ,2,
@@ -262,12 +278,12 @@ static ARGPARSE_OPTS opts[] = {
     { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 
-    { oDebug, "debug"     ,4|16, N_("set debugging flags")},
-    { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
+    { oDebug, "debug"     ,4|16, "@"},
+    { oDebugAll, "debug-all" ,0, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
-    { oNoComment, "no-comment", 0,   N_("do not write comment packets")},
-    { oCompletesNeeded, "completes-needed", 1, N_("(default is 1)")},
-    { oMarginalsNeeded, "marginals-needed", 1, N_("(default is 3)")},
+    { oNoComment, "no-comment", 0,   "@"},
+    { oCompletesNeeded, "completes-needed", 1, "@"},
+    { oMarginalsNeeded, "marginals-needed", 1, "@"},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
@@ -283,7 +299,11 @@ static ARGPARSE_OPTS opts[] = {
     { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
     { oNotation,   "notation-data", 2, N_("|NAME=VALUE|use this notation data")},
 
-    { 302, NULL, 0, N_("@\nExamples:\n\n"
+    { 302, NULL, 0, N_(
+  "@\n(See the man page for a complete listing of all commands and options)\n"
+		      )},
+
+    { 303, NULL, 0, N_("@\nExamples:\n\n"
     " -se -r Bob [file]          sign and encrypt for user Bob\n"
     " --clearsign [file]         make a clear text signature\n"
     " --detach-sign [file]       make a detached signature\n"
@@ -297,12 +317,13 @@ static ARGPARSE_OPTS opts[] = {
     { aListTrustPath, "list-trust-path",0, "@"},
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
-    { aDeleteSecretKey, "delete-secret-key",0, "@" },
+    { oCommandFD, "command-fd",1, "@" },
     { oQuickRandom, "quick-random", 0, "@"},
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
     { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
     { oNoArmor, "no-armor",   0, "@"},
+    { oNoArmor, "no-armour",   0, "@"},
     { oNoDefKeyring, "no-default-keyring", 0, "@" },
     { oNoGreeting, "no-greeting", 0, "@" },
     { oNoOptions, "no-options", 0, "@" }, /* shortcut for --options /dev/null */
@@ -329,6 +350,7 @@ static ARGPARSE_OPTS opts[] = {
     { oEscapeFrom, "escape-from-lines", 0, "@" },
     { oLockOnce, "lock-once", 0, "@" },
     { oLockMultiple, "lock-multiple", 0, "@" },
+    { oLockNever, "lock-never", 0, "@" },
     { oLoggerFD, "logger-fd",1, "@" },
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
     { oUtf8Strings, "utf8-strings", 0, "@" },
@@ -339,7 +361,12 @@ static ARGPARSE_OPTS opts[] = {
     { oAllowNonSelfsignedUID, "allow-non-selfsigned-uid", 0, "@" },
     { oNoLiteral, "no-literal", 0, "@" },
     { oSetFilesize, "set-filesize", 20, "@" },
-    { oEntropyDLLName, "entropy-dll-name", 2, "@" },
+    { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
+    { oFastListMode,"fast-list-mode", 0, "@" },
+    { oListOnly, "list-only", 0, "@"},
+    { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
+    { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
+    { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
 {0} };
 
 
@@ -381,25 +408,28 @@ strusage( int level )
 	      "default operation depends on the input data\n");
 	break;
 
-      case 31: p = _("\nSupported algorithms:\n"); break;
-      case 32:
+      case 31: p = "\nHome: "; break;
+      case 32: p = opt.homedir; break;
+      case 33: p = _("\nSupported algorithms:\n"); break;
+      case 34:
 	if( !ciphers )
 	    ciphers = build_list("Cipher: ", cipher_algo_to_string,
 							check_cipher_algo );
 	p = ciphers;
 	break;
-      case 33:
+      case 35:
 	if( !pubkeys )
 	    pubkeys = build_list("Pubkey: ", pubkey_algo_to_string,
 							check_pubkey_algo );
 	p = pubkeys;
 	break;
-      case 34:
+      case 36:
 	if( !digests )
 	    digests = build_list("Hash: ", digest_algo_to_string,
 							check_digest_algo );
 	p = digests;
 	break;
+
 
       default:	p = default_strusage(level);
     }
@@ -471,9 +501,9 @@ make_username( const char *string )
 {
     char *p;
     if( utf8_strings )
-	p = native_to_utf8( string );
-    else
 	p = m_strdup(string);
+    else
+	p = native_to_utf8( string );
     return p;
 }
 
@@ -543,6 +573,7 @@ main( int argc, char **argv )
     int default_keyring = 1;
     int greeting = 0;
     int nogreeting = 0;
+    int use_random_seed = 1;
     enum cmd_and_opt_values cmd = 0;
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
@@ -567,6 +598,7 @@ main( int argc, char **argv )
     init_signals();
     create_dotlock(NULL); /* register locking cleanup */
     i18n_init();
+    opt.command_fd = -1; /* no command fd */
     opt.compress = -1; /* defaults to standard compress level */
     /* note: if you change these lines, look at oOpenPGP */
     opt.def_cipher_algo = 0;
@@ -578,7 +610,12 @@ main( int argc, char **argv )
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
+    opt.pgp2_workarounds = 1;
+  #ifdef __MINGW32__
+    opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
+  #else
     opt.homedir = getenv("GNUPGHOME");
+  #endif
     if( !opt.homedir || !*opt.homedir ) {
       #ifdef HAVE_DRIVE_LETTERS
 	opt.homedir = "c:/gnupg";
@@ -676,13 +713,16 @@ main( int argc, char **argv )
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
+	  case aExportSecretSub: set_cmd( &cmd, aExportSecretSub); break;
 	  case aDeleteSecretKey: set_cmd( &cmd, aDeleteSecretKey);
 							greeting=1; break;
 	  case aDeleteKey: set_cmd( &cmd, aDeleteKey); greeting=1; break;
 
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
 	  case aSym: set_cmd( &cmd, aSym); break;
+
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
+
 	  case aEncr: set_cmd( &cmd, aEncr); break;
 	  case aSign: set_cmd( &cmd, aSign );  break;
 	  case aKeygen: set_cmd( &cmd, aKeygen); greeting=1; break;
@@ -693,6 +733,7 @@ main( int argc, char **argv )
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
 	  case aGenRevoke: set_cmd( &cmd, aGenRevoke); break;
 	  case aVerify: set_cmd( &cmd, aVerify); break;
+	  case aVerifyFiles: set_cmd( &cmd, aVerifyFiles); break;
 	  case aPrimegen: set_cmd( &cmd, aPrimegen); break;
 	  case aGenRandom: set_cmd( &cmd, aGenRandom); break;
 	  case aPrintMD: set_cmd( &cmd, aPrintMD); break;
@@ -785,6 +826,7 @@ main( int argc, char **argv )
 	    break;
 	  case oOpenPGP:
 	    opt.rfc1991 = 0;
+	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 0;
 	    opt.force_v3_sigs = 0;
 	    opt.compress_keys = 0;	    /* not mandated  but we do it */
@@ -798,6 +840,7 @@ main( int argc, char **argv )
 	    opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
 	    break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
+	  case oEmu3DESS2KBug:	opt.emulate_bugs |= EMUBUG_3DESS2K; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
 	  #ifndef USE_SHM_COPROCESSING
@@ -833,6 +876,7 @@ main( int argc, char **argv )
 	    break;
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
 	  case oPasswdFD: pwfd = pargs.r.ret_int; break;
+	  case oCommandFD: opt.command_fd = pargs.r.ret_int; break;
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
@@ -844,6 +888,7 @@ main( int argc, char **argv )
 	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
 	  case oEscapeFrom: opt.escape_from = 1; break;
 	  case oLockOnce: opt.lock_once = 1; break;
+	  case oLockNever: disable_dotlock(); break;
 	  case oLockMultiple: opt.lock_once = 0; break;
 	  case oKeyServer: opt.keyserver_name = pargs.r.ret_str; break;
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
@@ -855,22 +900,14 @@ main( int argc, char **argv )
 	  case oDisablePubkeyAlgo:
 		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
 		break;
-	  case oAllowNonSelfsignedUID:
-		opt.allow_non_selfsigned_uid = 1;
-		break;
-	  case oNoLiteral:
-		opt.no_literal = 1;
-		break;
-	  case oSetFilesize:
-		opt.set_filesize = pargs.r.ret_ulong;
-		break;
-
-	  case oEntropyDLLName:
-	      #ifdef USE_STATIC_RNDW32
-		log_info("set dllname to `%s'\n", pargs.r.ret_str );
-		rndw32_set_dll_name( pargs.r.ret_str );
-	      #endif
-		break;
+	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
+	  case oNoLiteral: opt.no_literal = 1; break;
+	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
+	  case oHonorHttpProxy: opt.honor_http_proxy = 1; break;
+	  case oFastListMode: opt.fast_list_mode = 1; break;
+	  case oListOnly: opt.list_only=1; break;
+	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
+	  case oNoRandomSeedFile: use_random_seed = 0; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -893,8 +930,11 @@ main( int argc, char **argv )
 	fprintf(stderr, "%s\n", strusage(15) );
     }
   #ifdef IS_DEVELOPMENT_VERSION
-    if( !opt.batch )
-	log_info("NOTE: this is a development version!\n");
+    if( !opt.batch ) {
+	log_info("NOTE: THIS IS A DEVELOPMENT VERSION!\n");
+	log_info("It is only intended for test purposes and should NOT be\n");
+	log_info("used in a production environment or with production keys!\n");
+    }
   #endif
     if( opt.force_mdc ) {
 	log_info("--force-mdc ignored because"
@@ -971,8 +1011,16 @@ main( int argc, char **argv )
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
-    if( !cmd && opt.fingerprint && !with_fpr )
+    /* set the random seed file */
+    if( use_random_seed ) {
+	char *p = make_filename(opt.homedir, "random_seed", NULL );
+	set_random_seed_file(p);
+	m_free(p);
+    }
+
+    if( !cmd && opt.fingerprint && !with_fpr ) {
 	set_cmd( &cmd, aListKeys);
+    }
 
     if( cmd == aKMode || cmd == aKModeC ) { /* kludge to be compatible to pgp */
 	if( cmd == aKModeC ) {
@@ -1112,6 +1160,11 @@ main( int argc, char **argv )
 	    log_error("verify signatures failed: %s\n", g10_errstr(rc) );
 	break;
 
+      case aVerifyFiles:
+	if( (rc = verify_files( argc, argv ) ))
+	    log_error("verify files failed: %s\n", g10_errstr(rc) );
+	break;
+
       case aDecrypt:
 	if( argc > 1 )
 	    wrong_args(_("--decrypt [filename]"));
@@ -1170,15 +1223,28 @@ main( int argc, char **argv )
       case aListSigs:
 	opt.list_sigs = 1;
       case aListKeys:
-	public_key_list( argc, argv );
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	    add_to_strlist2( &sl, *argv, utf8_strings );
+	public_key_list( sl );
+	free_strlist(sl);
 	break;
       case aListSecretKeys:
-	secret_key_list( argc, argv );
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	    add_to_strlist2( &sl, *argv, utf8_strings );
+	secret_key_list( sl );
+	free_strlist(sl);
 	break;
 
       case aKMode: /* list keyring -- NOTE: This will be removed soon */
-	if( argc < 2 )	/* -kv [userid] */
-	    public_key_list( (argc && **argv)? 1:0, argv );
+	if( argc < 2 ) { /* -kv [userid] */
+	    sl = NULL;
+	    if (argc && **argv)
+		add_to_strlist2( &sl, *argv, utf8_strings );
+	    public_key_list( sl );
+	    free_strlist(sl);
+	}
 	else if( argc == 2 ) { /* -kv userid keyring */
 	    if( access( argv[1], R_OK ) ) {
 		log_error(_("can't open %s: %s\n"),
@@ -1188,32 +1254,33 @@ main( int argc, char **argv )
 		/* add keyring (default keyrings are not registered in this
 		 * special case */
 		add_keyblock_resource( argv[1], 0, 0 );
-		public_key_list( **argv?1:0, argv );
+		sl = NULL;
+		if (**argv)
+		    add_to_strlist2( &sl, *argv, utf8_strings );
+		public_key_list( sl );
+		free_strlist(sl);
 	    }
 	}
 	else
 	    wrong_args(_("-k[v][v][v][c] [user-id] [keyring]") );
 	break;
 
-      case aKeygen: /* generate a key (interactive) */
-	if( argc )
-	    wrong_args("--gen-key");
-	generate_keypair();
+      case aKeygen: /* generate a key */
+	if( opt.batch ) {
+	    if( argc > 1 )
+		wrong_args("--gen-key [parameterfile]");
+	    generate_keypair( argc? *argv : NULL );
+	}
+	else {
+	    if( argc )
+		wrong_args("--gen-key");
+	    generate_keypair(NULL);
+	}
 	break;
 
       case aFastImport:
       case aImport:
-	if( !argc  ) {
-	    rc = import_keys( NULL, (cmd == aFastImport) );
-	    if( rc )
-		log_error("import failed: %s\n", g10_errstr(rc) );
-	}
-	for( ; argc; argc--, argv++ ) {
-	    rc = import_keys( *argv, (cmd == aFastImport) );
-	    if( rc )
-		log_error("import from `%s' failed: %s\n",
-						*argv, g10_errstr(rc) );
-	}
+	import_keys( argc? argv:NULL, argc, (cmd == aFastImport) );
 	break;
 
       case aExport:
@@ -1237,6 +1304,14 @@ main( int argc, char **argv )
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
 	export_seckeys( sl );
+	free_strlist(sl);
+	break;
+
+      case aExportSecretSub:
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	    add_to_strlist2( &sl, *argv, utf8_strings );
+	export_secsubkeys( sl );
 	free_strlist(sl);
 	break;
 
@@ -1379,7 +1454,7 @@ main( int argc, char **argv )
 	break;
 
       case aFixTrustDB:
-	log_error("this command ist not yet implemented.\"\n");
+	log_error("this command is not yet implemented.\n");
 	log_error("A workaround is to use \"--export-ownertrust\", remove\n");
 	log_error("the trustdb file and do an \"--import-ownertrust\".\n" );
 	break;
@@ -1449,6 +1524,7 @@ main( int argc, char **argv )
 void
 g10_exit( int rc )
 {
+    update_random_seed_file();
     if( opt.debug & DBG_MEMSTAT_VALUE ) {
 	m_print_stats("on exit");
 	random_dump_stats();

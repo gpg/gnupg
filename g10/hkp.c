@@ -55,19 +55,24 @@ hkp_ask_import( u32 *keyid )
     struct http_context hd;
     char *request;
     int rc;
+    unsigned int hflags = opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY : 0;
 
     if( !opt.keyserver_name )
 	return -1;
-    log_info("requesting key %08lX from %s ...\n", (ulong)keyid[1],
+    log_info(_("requesting key %08lX from %s ...\n"), (ulong)keyid[1],
 						   opt.keyserver_name );
     request = m_alloc( strlen( opt.keyserver_name ) + 100 );
     /* hkp does not accept the long keyid - we should really write a
-     * nicer one */
+     * nicer one :-)
+     * FIXME: request binary mode - need to pass no_armor mode
+     * down to the import function.  Marc told that there is such a
+     * binary mode ... how?
+     */
     sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX",
 			opt.keyserver_name, (ulong)keyid[1] );
-    rc = http_open_document( &hd, request, 0 );
+    rc = http_open_document( &hd, request, hflags );
     if( rc ) {
-	log_info("can't get key from keyserver: %s\n",
+	log_info(_("can't get key from keyserver: %s\n"),
 			rc == G10ERR_NETWORK? strerror(errno)
 					    : g10_errstr(rc) );
     }
@@ -90,7 +95,7 @@ hkp_import( STRLIST users )
     return -1;
   #else
     if( !opt.keyserver_name ) {
-	log_error("no keyserver known (use option --keyserver)\n");
+	log_error(_("no keyserver known (use option --keyserver)\n"));
 	return -1;
     }
 
@@ -98,10 +103,15 @@ hkp_import( STRLIST users )
 	u32 kid[2];
 	int type = classify_user_id( users->d, kid, NULL, NULL, NULL );
 	if( type != 10 && type != 11 ) {
-	    log_info("%s: not a valid key ID\n", users->d );
+	    log_info(_("%s: not a valid key ID\n"), users->d );
 	    continue;
 	}
-	hkp_ask_import( kid );
+	/* because the function may use log_info in some situations, the
+	 * errorcounter ist not increaed and the program will return
+	 * with success - which is not good when this function is used.
+	 */
+	if( hkp_ask_import( kid ) )
+	    log_inc_errorcount();
     }
     return 0;
   #endif
@@ -120,9 +130,10 @@ hkp_export( STRLIST users )
     struct http_context hd;
     char *request;
     unsigned int status;
+    unsigned int hflags = opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY : 0;
 
     if( !opt.keyserver_name ) {
-	log_error("no keyserver known (use option --keyserver)\n");
+	log_error(_("no keyserver known (use option --keyserver)\n"));
 	return -1;
     }
 
@@ -142,9 +153,9 @@ hkp_export( STRLIST users )
 
     request = m_alloc( strlen( opt.keyserver_name ) + 100 );
     sprintf( request, "x-hkp://%s:11371/pks/add", opt.keyserver_name );
-    rc = http_open( &hd, HTTP_REQ_POST, request , 0 );
+    rc = http_open( &hd, HTTP_REQ_POST, request , hflags );
     if( rc ) {
-	log_error("can't connect to `%s': %s\n",
+	log_error(_("can't connect to `%s': %s\n"),
 		   opt.keyserver_name,
 			rc == G10ERR_NETWORK? strerror(errno)
 					    : g10_errstr(rc) );
@@ -168,7 +179,7 @@ hkp_export( STRLIST users )
 
     rc = http_wait_response( &hd, &status );
     if( rc ) {
-	log_error("error sending to `%s': %s\n",
+	log_error(_("error sending to `%s': %s\n"),
 		   opt.keyserver_name, g10_errstr(rc) );
     }
     else {
@@ -180,10 +191,10 @@ hkp_export( STRLIST users )
 	}
       #endif
 	if( (status/100) == 2 )
-	    log_info("success sending to `%s' (status=%u)\n",
+	    log_info(_("success sending to `%s' (status=%u)\n"),
 					opt.keyserver_name, status  );
 	else
-	    log_error("failed sending to `%s': status=%u\n",
+	    log_error(_("failed sending to `%s': status=%u\n"),
 					opt.keyserver_name, status  );
     }
     http_close( &hd );

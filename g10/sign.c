@@ -1,5 +1,5 @@
 /* sign.c - sign data
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -38,6 +38,12 @@
 #include "trustdb.h"
 #include "i18n.h"
 
+
+#ifdef HAVE_DOSISH_SYSTEM
+  #define LF "\r\n"
+#else
+  #define LF "\n"
+#endif
 
 
 /****************
@@ -106,7 +112,8 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
-	return G10ERR_TIME_CONFLICT;
+	if( !opt.ignore_time_conflict )
+	    return G10ERR_TIME_CONFLICT;
     }
 
 
@@ -582,7 +589,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     else if( (rc = open_outfile( fname, 1, &out )) )
 	goto leave;
 
-    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n" );
+    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----" LF );
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
@@ -594,21 +601,28 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	}
     }
 
-    if( old_style || only_md5 )
+    if( old_style && only_md5 )
 	iobuf_writestr(out, "\n" );
     else {
 	const char *s;
 	int any = 0;
+	byte hashs_seen[256];
 
+	memset( hashs_seen, 0, sizeof hashs_seen );
 	iobuf_writestr(out, "Hash: " );
 	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	    PKT_secret_key *sk = sk_rover->sk;
-	    s = digest_algo_to_string( hash_for(sk->pubkey_algo) );
-	    if( s ) {
-		if( any )
-		    iobuf_put(out, ',' );
-		iobuf_writestr(out, s );
-		any = 1;
+	    int i = hash_for(sk->pubkey_algo);
+
+	    if( !hashs_seen[ i & 0xff ] ) {
+		s = digest_algo_to_string( i );
+		if( s ) {
+		    hashs_seen[ i & 0xff ] = 1;
+		    if( any )
+			iobuf_put(out, ',' );
+		    iobuf_writestr(out, s );
+		    any = 1;
+		}
 	    }
 	}
 	assert(any);

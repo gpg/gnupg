@@ -10,4 +10,23 @@ Some other reported cpu-vendor-os strings:
     sparc-sun-solaris5.4
     sparc-sun-sunos4.1.2
     i386-pc-sysv4.2   (USL Unixware v1.1.2)
+    powerpc-ibm-aix4.3.2.0  John Payne <jcapayne@att.com>
 
+gpg 1.0.1 okay with MP-RAS 3.02.01 Edition 5 using gcc 2.95.2 and EGD
+ By <CSpeicher@eisi.com>
+
+gpg 1.0.1 okay with 4.0.1 BSDI BSD/OS 4.0 i386
+
+
+rndw32 tested on:
+
+  Windows 98 4.10.1998 mit einem AMD-K6-2-450
+   	 Michael Engels <angel@dalrin.de>)
+
+  Windows 95 4.00.950a
+
+  Windows NT 4.00.1381
+
+
+
+  

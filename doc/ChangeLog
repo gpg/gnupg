@@ -1,0 +1,69 @@
+2000-05-12 10:57:21  Werner Koch  (wk@habibti.openit.de)
+
+	* gpg.sgml: Documented --no-tty.
+
+2000-03-09 15:01:51  Werner Koch  (wk@habibti.openit.de)
+
+	* DETAILS: Ad a short blurb about unattended key generation.
+
+Wed Feb  9 15:33:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* gpg.sgml: Describe --ignore-time-conflict.
+
+	* gpg.sgml: Fixed a few typos.	Thanks to Holger Trapp.
+
+Wed Jan  5 11:51:17 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* FAQ: Enhanced answer for the 3des-s2k bug.
+
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* gpg.sgml: Add section about the user ID
+
+Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* gph: Removed the directory from the dist becuase it will
+	go into it's own package.
+
+Thu Sep 23 09:52:58 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* README.W32: New.
+
+Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* Makefile.am (SUBDIRS): New subdir gph for the manual.
+
+Thu Jul 22 20:03:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* gpg.sgml (--always-trust): Added.
+
+Wed Jul 14 19:42:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* Makefile.am: Create a dummy man page if docbook-to-man is missing.
+
+Wed Jun 16 20:16:21 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* gpg1.pod: Removed.
+	* gpg.sgml: New. Replaces the pod file
+	* Makefile.am: Add rule to make a man file from sgml
+
+Tue Jun 15 12:21:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* Makefile.in.in: Use DESTDIR.
+
+Mon May 31 19:41:10 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* gpg.1pod: Enhanced the Bugs section (Michael).
+
+Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* gpg.1pod: Spelling and grammar corrections (John A. Martin)
+	* FAQ: Ditto.
+	* DETAILS: Ditto.
+

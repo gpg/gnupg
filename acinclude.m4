@@ -27,6 +27,24 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
   ])
 
 
+dnl GNUPG_CHECK_GNUMAKE
+dnl
+AC_DEFUN(GNUPG_CHECK_GNUMAKE,
+  [
+    if ${MAKE-make} --version 2>/dev/null | grep '^GNU ' >/dev/null 2>&1; then
+        :
+    else
+        AC_MSG_WARN([[
+***
+*** It seems that you are not using GNU make.  Some make tools have serious
+*** flaws and you may not be able to build this software at all. Before you
+*** complain, please try GNU make:  GNU make is easy to build and available
+*** at all GNU archives.  It is always available from ftp.gnu.org:/gnu/make.
+***]])
+    fi
+  ])
+
+
 
 dnl GNUPG_LINK_FILES( SRC, DEST )
 dnl same as AC_LINK_FILES, but collect the files to link in
@@ -208,7 +226,7 @@ define(GNUPG_CHECK_RDYNAMIC,
             CFLAGS_RDYNAMIC="-Wl,-E"
             ;;
 
-          openbsd* | freebsd2* | osf4* | irix* )
+          openbsd* | freebsd2* | osf4* | irix* | netbsd* | bsdi* )
             CFLAGS_RDYNAMIC=""
             ;;
 
@@ -275,7 +293,8 @@ define(GNUPG_CHECK_IPC,
           AC_TRY_COMPILE([#include <sys/types.h>
              #include <sys/ipc.h>
              #include <sys/shm.h>],[
-             int foo( int shm_id ) {  shmctl(shm_id, SHM_LOCK, 0); }
+             int shm_id;
+             shmctl(shm_id, SHM_LOCK, 0);
              ],
              gnupg_cv_ipc_have_shm_lock="yes",
              gnupg_cv_ipc_have_shm_lock="no"
@@ -294,11 +313,46 @@ define(GNUPG_CHECK_IPC,
 ######################################################################
 # Check whether mlock is broken (hpux 10.20 raises a SIGBUS if mlock
 # is not called from uid 0 (not tested whether uid 0 works)
+# For DECs Tru64 we have also to check whether mlock is in librt
+# mlock is there a macro using memlk()
 ######################################################################
 dnl GNUPG_CHECK_MLOCK
 dnl
 define(GNUPG_CHECK_MLOCK,
   [ AC_CHECK_FUNCS(mlock)
+    if test "$ac_cv_func_mlock" = "no"; then
+        AC_CHECK_HEADERS(sys/mman.h)
+        if test "$ac_cv_header_sys_mman_h" = "yes"; then
+            # Add librt to LIBS:
+            AC_CHECK_LIB(rt, memlk)
+            AC_CACHE_CHECK([whether mlock is in sys/mman.h],
+                            gnupg_cv_mlock_is_in_sys_mman,
+                [AC_TRY_LINK([
+                    #include <assert.h>
+                    #ifdef HAVE_SYS_MMAN_H
+                    #include <sys/mman.h>
+                    #endif
+                ], [
+                    mkdir ("foo", 0);
+                    int i;
+                    /* glibc defines this for functions which it implements
+                     * to always fail with ENOSYS.  Some functions are actually
+                     * named something starting with __ and the normal name
+                     * is an alias.  */
+                    #if defined (__stub_mlock) || defined (__stub___mlock)
+                    choke me
+                    #else
+                    mlock(&i, 4);
+                    #endif
+                    ; return 0;
+                ],
+                gnupg_cv_mlock_is_in_sys_mman=yes,
+                gnupg_cv_mlock_is_in_sys_mman=no)])
+            if test "$gnupg_cv_mlock_is_in_sys_mman" = "yes"; then
+                AC_DEFINE(HAVE_MLOCK)
+            fi
+        fi
+    fi
     if test "$ac_cv_func_mlock" = "yes"; then
         AC_MSG_CHECKING(whether mlock is broken)
           AC_CACHE_VAL(gnupg_cv_have_broken_mlock,
@@ -409,7 +463,7 @@ case "$host_os" in
 aix*)
   ac_symcode='[BCDTU]'
   ;;
-freebsd* | netbsd* | openbsd* | sunos* | cygwin32* | mingw32*)
+freebsd* | netbsd* | openbsd* | bsdi* | sunos* | cygwin32* | mingw32*)
   ac_sympat='_\([_A-Za-z][_A-Za-z0-9]*\)'
   ac_symxfrm='_\1 \1'
   ;;
@@ -562,7 +616,7 @@ AC_CHECK_TOOL(AS, as, false)
 AC_DEFUN(GNUPG_SYS_SYMBOL_UNDERSCORE,
 [tmp_do_check="no"
 case "${target}" in
-    i386-emx-os2 | i[3456]86-pc-os2*emx )
+    i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp)
         ac_cv_sys_symbol_underscore=yes
         ;;
     *)
@@ -633,7 +687,7 @@ AC_DEFUN(GNUPG_FUNC_MKDIR_TAKES_ONE_ARG,
 #ifdef HAVE_DIRECT_H
 # include <direct.h>
 #endif], [mkdir ("foo", 0);],
-	gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
+        gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
 if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
   AC_DEFINE(MKDIR_TAKES_ONE_ARG)
 fi

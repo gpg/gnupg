@@ -1,5 +1,64 @@
-Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Wed Mar 22 13:50:24 CET 2000  Werner Koch  <wk@openit.de>
 
+	* config.links: Add support for FreeBSD 5 and made the case stmt
+	looking nicer.	From Jun Kuriyama.
+
+Fri Mar 17 17:50:25 CET 2000  Werner Koch  <wk@openit.de>
+
+	* config.links (sparc64-unknown-linux-gnu): use udic module.
+	From Adam Mitchell.
+
+2000-03-14 12:03:56  Werner Koch  (wk@habibti.openit.de)
+
+	* Makefile.am: Do not use .s and .S files but a temp names, so that
+	OSes with caseinsensitive filenames do work.  From Frank Donahoe.
+
+Tue Mar  7 18:45:31 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* mpih-mul.c (mpihelp_mul_karatsuba_case): It seems that the
+	untested part works fine.  Removed the debugging message.
+
+	* longlong.h (umul_ppmm): Fixes for ARM-4. By Sean MacLennan.
+
+	* config.links: Add support for NetBSD.
+
+Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* mpi-internal.h (karatsuba_ctx): New.
+	* mpih-mul.c (mpihelp_release_karatsuba_ctx): New.
+	(mpihelp_mul_karatsuba_case): New.
+	(mpihelp_mul): Splitted to make use of the new functions.
+	* mpi-pow.c (mpi_powm): Make use of the new splitted function
+	to avoid multiple allocation of temporary memory during the
+	karatsuba operations.
+
+	* mpi_mpow.c: Removed the unused Barrett code.
+
+Sun Dec 19 15:22:26 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* power/ : Converted more comments to C comments because some AS
+	complain about ' in comments.
+
+Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.am: c/SFLAGS/ASFLAGS/. This has only been used by the
+	powerpc and actually never passed the -Wa,foo to the cc.
+
+Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* power/: Add all files from GMP for this CPU.
+
+	* config.links:  Support for BSDI 4.x. By Wayne Chapeskie.
+	(sparc8): Made the search path the same as sparc9
+
+	* mpih-div.c (mpihelp_divrem): The MPN_COPY_DECR copied one
+	elemnat too many.  This is gmp2.0.2p9.txt patch.
+
+Sat Oct  9 20:34:41 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.am:	Removed libtool.
+
+Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* config.links: Add case label for DJGPP
 

@@ -1,6 +1,25 @@
 
+  * g10/trustdb.c (make_sig_records): fix the fixme.
+
+  * at least an option to prefer DSA keys over RSA when selecting the key to
+    use.  Depending on creation time would be nice too.  I think this is
+    already done for the subkeys - check it.
+
+  * Fix localtime() in W32.
+
+  * export sollte exit(1) machen bei einem Fehler - testen! Es wird ein
+    leerer File erzeugt.  Nur unter Windows?
+
+  * No TCP support yet for W32? arggg - should go into a separate program
+    anyway.
+
+
 Scheduled for 1.1
 -----------------
+  * Rework the whole key selection stuff: Compile a list of valid
+    candidates for a keyblock first and the select one from it.
+    The current code is too ugly (getkey.c).
+
   * With option -i prompt before adding a key to the keyring and show some
     info what we are about to add.
 
@@ -21,6 +40,9 @@ Scheduled for 1.1
 
   * Check the beginning of file to detect already compressed files (gzip,
     bzip2, xdelta and some picture formats)
+
+  * Delay the read of the passphrase-fd after a NEED_PASSPHRASE.  But this
+    may break some scripts.
 
 
 Nice to have
@@ -51,5 +73,4 @@ Nice to have
     trustdb.
   * Evaluate whether it make sense to replace the namehashs either by
     using the user ID directly or by using pointers into the trustdb.
-  * --gen-prime may trigger a log_bug; should be a log_fatal.
 

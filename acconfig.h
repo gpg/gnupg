@@ -53,6 +53,7 @@
 
 #undef HAVE_STPCPY
 
+#undef HAVE_MLOCK
 
 #undef BIG_ENDIAN_HOST
 #undef LITTLE_ENDIAN_HOST

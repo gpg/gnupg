@@ -1,5 +1,5 @@
 /* signal.c - signal handling
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -59,14 +59,23 @@ got_fatal_signal( int sig )
     caught_fatal_sig = 1;
 
     secmem_term();
-  #ifdef IS_DEVELOPMENT_VERSION
+    /* better don't transtale these messages */
     write(2, "\n", 1 );
     s = log_get_name(); if( s ) write(2, s, strlen(s) );
     write(2, ": ", 2 );
     s = get_signal_name(sig); write(2, s, strlen(s) );
     write(2, " caught ... exiting\n", 21 );
+
+  #ifndef HAVE_DOSISH_SYSTEM
+    {	/* reset action to default action and raise signal again */
+	struct sigaction nact;
+	nact.sa_handler = SIG_DFL;
+	sigemptyset( &nact.sa_mask );
+	nact.sa_flags = 0;
+	sigaction( sig, &nact, NULL);
+    }
   #endif
-    exit(8); /* Hmmm, for some reasons rais2e does not work */
+    raise( sig );
 }
 
 

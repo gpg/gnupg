@@ -74,7 +74,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 {
     int rc;
 
-    if( flags || !(reqtype == HTTP_REQ_GET || reqtype == HTTP_REQ_POST) )
+    if( !(reqtype == HTTP_REQ_GET || reqtype == HTTP_REQ_POST) )
 	return G10ERR_INV_ARG;
 
     /* initialize the handle */
@@ -82,6 +82,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
     hd->sock = -1;
     hd->initialized = 1;
     hd->req_type = reqtype;
+    hd->flags = flags;
 
     rc = parse_uri( &hd->uri, url );
     if( !rc ) {
@@ -148,10 +149,7 @@ http_open_document( HTTP_HD hd, const char *document, unsigned int flags )
 {
     int rc;
 
-    if( flags )
-	return G10ERR_INV_ARG;
-
-    rc = http_open( hd, HTTP_REQ_GET, document, 0 );
+    rc = http_open( hd, HTTP_REQ_GET, document, flags );
     if( rc )
 	return rc;
 
@@ -427,21 +425,47 @@ send_request( HTTP_HD hd )
     byte *request, *p;
     ushort port;
     int rc;
+    const char *http_proxy = NULL;
 
     server = *hd->uri->host? hd->uri->host : "localhost";
     port   = hd->uri->port?  hd->uri->port : 80;
 
-    hd->sock = connect_server( server, port );
+    if( (hd->flags & HTTP_FLAG_TRY_PROXY)
+	&& (http_proxy = getenv( "http_proxy" )) ) {
+	PARSED_URI uri;
+
+	rc = parse_uri( &uri, http_proxy );
+	if (rc) {
+	    log_error("invalid $http_proxy: %s\n", g10_errstr(rc));
+	    release_parsed_uri( uri );
+	    return G10ERR_NETWORK;
+	}
+	hd->sock = connect_server( *uri->host? uri->host : "localhost",
+				    uri->port? uri->port : 80 );
+	release_parsed_uri( uri );
+    }
+    else
+	hd->sock = connect_server( server, port );
+
     if( hd->sock == -1 )
 	return G10ERR_NETWORK;
 
     p = build_rel_path( hd->uri );
-    request = m_alloc( strlen(p) + 20 );
-    sprintf( request, "%s %s%s HTTP/1.0\r\n",
+    request = m_alloc( strlen(server) + strlen(p) + 50 );
+    if( http_proxy ) {
+	sprintf( request, "%s http://%s:%hu%s%s HTTP/1.0\r\n",
+			  hd->req_type == HTTP_REQ_GET ? "GET" :
+			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
+			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
+			  server, port,  *p == '/'? "":"/", p );
+    }
+    else {
+	sprintf( request, "%s %s%s HTTP/1.0\r\n",
 			  hd->req_type == HTTP_REQ_GET ? "GET" :
 			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
 			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
 						  *p == '/'? "":"/", p );
+    }
     m_free(p);
 
     rc = write_server( hd->sock, request, strlen(request) );

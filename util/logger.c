@@ -101,6 +101,12 @@ log_get_errorcount( int clear)
     return n;
 }
 
+void
+log_inc_errorcount()
+{
+    errorcount++;
+}
+
 
 void
 g10_log_print_prefix(const char *text)

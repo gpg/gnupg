@@ -1,5 +1,128 @@
-Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Tue May 30 16:37:55 CEST 2000  Werner Koch  <wk@openit.de>
 
+  Version 1.0.1-ePit-1
+
+Sun May 28 13:55:17 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* acinclude.m4 (GNUPG_SYS_NM_PARSE): Added BSDI support.
+	(GNUPG_CHECK_RDYNAMIC): Ditto.
+
+Wed Apr 19 10:57:26 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* acconfig.h (HAVE_MLOCK): Added
+
+Wed Mar 22 13:50:24 CET 2000  Werner Koch  <wk@openit.de>
+
+	* acinclude.m4 (GNUPG_CHECK_MLOCK): Changed the way to test for
+	librt.	Test suggested by Jeff Long.
+
+Fri Mar 17 17:50:25 CET 2000  Werner Koch  <wk@openit.de>
+
+	* acinclude.m4 (GNUPG_CHECK_MLOCK): Do librt check only when
+	we can't link a test program.  This way GNU systems don't need
+	to link against linrt.
+	(GNUPG_CHECK_IPC): Fixed use of TRY_COMPILE macro.  From Tim Mooney.
+
+2000-03-14 12:07:54  Werner Koch  (wk@habibti.openit.de)
+
+	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): Add support for
+	DJGPP.
+	(GNUPG_CHECK_MLOCK): Check whether mlock sits in librt.
+	* configure.in: Add a test for unisgned long long.
+
+Tue Mar  7 18:45:31 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* acinclude.m4 (GNUPG_CHECK_RDYNAMIC): Add NetBSD. By Thomas Klausner.
+	* configure.in (DYNLINK_MOD_CFLAGS): Set different for NetBSD.
+
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Add check for clock_gettime
+
+Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in (ALL_LINGUAS): Add nl.
+
+Wed Feb 16 16:25:09 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in (ALL_LINGUAS): Add Esperanto.
+
+Wed Feb 16 14:09:00 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in (ALL_LINGUAS): Add sv and ja.
+
+	* AUTHORS: Converted to a more compact format.
+
+	* INSTALL: Wrote a note about a Solaris problem.
+
+Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Use /usr/local for CFLAGS and LDFLAGS when
+	target is freebsd.  By Rémi.
+
+Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Do not set development version when the version has
+	a dash in it.  Suggested by Dave Dykstra.
+
+Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* VERSION: Set to 1.0.1.
+
+	* configure.in: Removed substitution for doc/gph/Makefile.
+	Do all the gcc warning only in maintainer mode.
+
+Thu Dec  9 10:31:05 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* INSTALL: Add a hint for AIX. By Jos Backus.
+
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* configure.in (dlopen): Use CHECK_FUNC for a test of dlopen in libc.
+	Suggested by Alexandre Oliva.
+	(-Wall): Moved the settting of gcc warning options near to the end
+	so that tests don't get confused.  Suggested by Paul D. Smith.
+
+Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* BUGS: Replaced content with a link to the online list.
+
+Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* README: Fixed a type and add a note about the gnupg-i18n ML.
+
+Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* acinclude.m4, configure.in (GNUPG_CHECK_GNUMAKE): New.
+
+Sat Oct  9 20:34:41 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Tweaked handling of random modules and removed
+	dummy support for libgcrypt.
+	* Makefile.am: Removed libgcrypt support.
+	* cgrypt/ : Removed.
+
+	* Makefile.am:	Removed libtool.
+
+Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* configure.in: Fixed quoting in test for development version.
+
+	* THANKS: Add entries for Michael, Brenno and J Horacio who did
+	very nice Howto documents - I apoligize for forgetting to mention them
+	earlier.
+
+Tue Sep 28 20:54:37 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* textfilter.c (copy_clearsig_text) [__MINGW32__): Use CR,LF.
+
+Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* configure.in: Add "-lcap" when capabilities are requested.
+	Add the conditional CROSS_COMPILING.
+	* Makefile.am: Don't use checks when CROSS_COMPILING.
+
+Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in (ALL_LINGUAS): Add pt_PT.
 
@@ -8,11 +131,9 @@ Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 Tue Sep  7 17:08:10 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* VERSION: Set to 1.0.0.
 
 Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* configure.in: Create makefile in doc/gph
 
@@ -20,7 +141,6 @@ Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	* configure.in: use the above.
 
 Thu Sep  2 16:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* VERSION: Set to 0.9.11.
 

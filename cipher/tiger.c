@@ -899,10 +899,10 @@ tiger_get_info( int algo, size_t *contextsize,
     *r_asnoid = asn;
     *r_asnlen = DIM(asn);
     *r_mdlen = 24;
-    *r_init  = (void (*)(void *))tiger_init;
-    *r_write = (void (*)(void *, byte*, size_t))tiger_write;
-    *r_final = (void (*)(void *))tiger_final;
-    *r_read  = (byte *(*)(void *))tiger_read;
+    *(void  (**)(TIGER_CONTEXT *))r_init		 = tiger_init;
+    *(void  (**)(TIGER_CONTEXT *, byte*, size_t))r_write = tiger_write;
+    *(void  (**)(TIGER_CONTEXT *))r_final		 = tiger_final;
+    *(byte *(**)(TIGER_CONTEXT *))r_read		 = tiger_read;
 
     return "TIGER";
 }

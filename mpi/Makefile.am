@@ -3,18 +3,18 @@
 
 INCLUDES =  -I$(top_srcdir)/include
 CFLAGS = @CFLAGS@ @MPI_OPT_FLAGS@
-SFLAGS = @MPI_SFLAGS@
+ASFLAGS = @MPI_SFLAGS@
 
 EXTRA_DIST = config.links
 DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
 		 mpih-lshift.S mpih-rshift.S mpih-sub1.S asm-syntax.h sysdep.h
 # Note: we only use .S files so we should delete all left over .s
-CLEANFILES = *.s
+CLEANFILES = _*.s
 
-noinst_LTLIBRARIES = libmpi.la
+noinst_LIBRARIES = libmpi.a
 
-libmpi_la_LDFLAGS =
-libmpi_la_SOURCES = longlong.h	   \
+# libmpi_a_LDFLAGS =
+libmpi_a_SOURCES = longlong.h	  \
 	      mpi-add.c      \
 	      mpi-bit.c      \
 	      mpi-cmp.c      \
@@ -37,24 +37,24 @@ libmpi_la_SOURCES = longlong.h	   \
 
 # Note this objects are actually links, the sourcefiles are
 # distributed by special code in dist-hook
-common_asm_objects = mpih-mul1.lo    \
-		     mpih-mul2.lo    \
-		     mpih-mul3.lo    \
-		     mpih-add1.lo    \
-		     mpih-sub1.lo    \
-		     mpih-lshift.lo  \
-		     mpih-rshift.lo
+common_asm_objects = mpih-mul1.o    \
+		     mpih-mul2.o    \
+		     mpih-mul3.o    \
+		     mpih-add1.o    \
+		     mpih-sub1.o    \
+		     mpih-lshift.o  \
+		     mpih-rshift.o
 
-libmpi_la_DEPENDENCIES = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
-libmpi_la_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
+libmpi_a_DEPENDENCIES = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
+libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 
 # cancel the default rules used by libtool which do not really
 # work and add one to cpp .S files
 .S.o:
+	 $(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' > _$*.s
+	 $(COMPILE) -c _$*.s
+	 mv -f _$*.o $*.o
 
 .S.lo:
-
-.S.s:
-	 $(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' >$*.s
 
 

@@ -337,10 +337,10 @@ sha1_get_info( int algo, size_t *contextsize,
     *r_asnoid = asn;
     *r_asnlen = DIM(asn);
     *r_mdlen = 20;
-    *r_init  = (void (*)(void *))sha1_init;
-    *r_write = (void (*)(void *, byte*, size_t))sha1_write;
-    *r_final = (void (*)(void *))sha1_final;
-    *r_read  = (byte *(*)(void *))sha1_read;
+    *(void  (**)(SHA1_CONTEXT *))r_init 		= sha1_init;
+    *(void  (**)(SHA1_CONTEXT *, byte*, size_t))r_write = sha1_write;
+    *(void  (**)(SHA1_CONTEXT *))r_final		= sha1_final;
+    *(byte *(**)(SHA1_CONTEXT *))r_read 		= sha1_read;
 
     return "SHA1";
 }

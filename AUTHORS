@@ -1,84 +1,59 @@
-Authors of GNU Privacy Guard (GnuPG)
-====================================
+Program: GnuPG
+Maintainer:  Werner Koch <wk@gnupg.org>
 
-GNUPG	Werner Koch		  1998-02-23
-Assigns GNU Privacy Guard and future changes.
-werner.koch@guug.de
-Designed and implemented GnuPG.
+Authors
+=======
 
+Daniel Resare  <daniel@resare.com> xxxx [sv]
 
-GNUPG	Matthew Skala		   1998-08-10
-Disclaims changes.
-mskala@ansuz.sooke.bc.ca
-Wrote cipher/twofish.c.
+Gael Queri  <gqueri@mail.dotcom.fr>  Translations [fr]
+    (fixed a lot of typos)
 
-GNUPG	Natural Resources Canada    1998-08-11
-Disclaims changes by Matthew Skala.
+Gregory Steuck <steuck@iname.com> Translations [ru]
 
+Edmund GRIMLEY EVANS <edmundo@rano.org> Translations [eo]
 
-GNUPG	Michael Roth	Germany     1998-09-17
-Assigns changes.
-mroth@nessie.de
-Wrote cipher/des.c.
-Changes and bug fixes all over the place.
+Ivo Timmermans <itimmermans@bigfoot.com> Translations [nl]
 
+Janusz Aleksander Urbanowicz <alex@bofh.torun.pl> Translations [po]
 
-GNUPG	Niklas Hernaeus 	1998-09-18
-Disclaims changes.
-nh@df.lth.se
-Weak key patches.
+Michael Roth  <mroth@nessie.de>  Assignment
+    (wrote cipher/des.c., changes and bug fixes all over the place)
 
+Marco d'Itri <md@linux.it> Translations [it]
 
-GNUPG	Rémi Guyomarch		1999-05-25
-Assigns past and future changes. (g10/compress.c, g10/encr-data.c,
-g10/free-packet.c, g10/mdfilter.c, g10/plaintext.c, util/iobuf.c)
-rguyom@mail.dotcom.fr
+Matthew Skala <mskala@ansuz.sooke.bc.ca>  Disclaimer
+    (wrote cipher/twofish.c)
 
+Niklas Hernaeus <nh@df.lth.se> Disclaimer
+    (weak key patches)
 
-TRANSLATIONS	Marco d'Itri    1997-02-22
-Disclaimer.  [it]
-md@linux.it
+Pedro Morais <morais@poli.org> Translations [pt_BR]
 
+Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assignment
+    (g10/compress.c, g10/encr-data.c,
+     g10/free-packet.c, g10/mdfilter.c, g10/plaintext.c, util/iobuf.c)
 
-TRANSLATIONS	Gael Queri	1998-09-08
-Disclaimer.  [fr]
-gqueri@mail.dotcom.fr
-Fixed a lot of typos.
+Tedi Heriyanto	<tedi-h@usa.net> Translations [id]
 
+Thiago Jung Bauermann <jungmann@cwb.matrix.com.br> Translations [pt_BR]
 
-TRANSLATIONS	Walter Koch	1998-09-08
-Disclaimer.  [de]
-koch@hsp.de
+Urko Lusa <ulusa@euskalnet.net> Translations [es_ES]
 
+Walter Koch <koch@hsp.de>  Translations [de]
 
-TRANSLATIONS	Gregory Steuck	1998-10-20
-Disclaimer.  [ru]
-steuck@iname.com
+Werner Koch  <wk@gnupg.org>  Assignment
+    (started the whole thing)
 
-
-TRANSLATIONS	Urko Lusa
-Disclaimer.  [es_ES]
-ulusa@lacueva.ddns.org
-
-
-TRANSLATIONS	Thiago Jung Bauermann
-Disclaimer.  [pt_BR]
-jungmann@cwb.matrix.com.br
-
-
-TRANSLATIONS   Pedro Morais
-??????????.  [pt_PT]
-morais@poli.org
-
-
-TRANSLATIONS	Janusz Aleksander Urbanowicz	1999-01-09
-Disclaimer.  [po]
-alex@bofh.torun.pl
+Yosiaki IIDA <iida@secom.ne.jp> Translations [ja]
 
 
 
-More credits
-============
+Other legal information
+=======================
+
+Natural Resources Canada disclaims changes by Matthew Skala.
+
 This program uses the zlib compression library written by
 Jean-loup Gailly and Mark Adler.
 
@@ -87,7 +62,8 @@ Torbjorn Granlund <tege@noisy.tmg.se>.
 
 The keybox implementation is based on GDBM 1.7.3 by Philip A. Nelson.
 
-The file cipher/rndunix.c is based on rndunix.c from cryptlib.
+The files cipher/rndunix.c and cipher/rndw32.c are based on rndunix.c
+and rndwin32.c from cryptlib.
 Copyright Peter Gutmann, Paul Kendall, and Chris Wedgwood 1996-1999.
 
 The files in debian/ are by James Troup who is the Debian maintainer

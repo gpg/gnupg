@@ -75,9 +75,9 @@
 #ifndef __QNX__
 #include <sys/resource.h>
 #endif				/* __QNX__ */
-#ifdef _AIX
+#if defined( _AIX ) || defined( __QNX__ )
 #include <sys/select.h>
-#endif				/* _AIX */
+#endif				/* _AIX || __QNX__ */
 #ifndef __QNX__
 #include <sys/shm.h>
 #include <sys/signal.h>
@@ -89,6 +89,10 @@
 #endif				/* __hpux 9.x, after that it's in unistd.h */
 #include <sys/wait.h>
 /* #include <kitchensink.h> */
+#ifdef __QNX__
+#include <signal.h>
+#include <process.h>
+#endif		      /* __QNX__ */
 #include <errno.h>
 
 #include "types.h"  /* for byte and u32 typedefs */
@@ -716,6 +720,10 @@ read_a_msg( int fd, GATHER_MSG *msg )
 }
 
 
+/****************
+ * Using a level of 0 should never block and better add nothing
+ * to the pool.  So this is just a dummy for this gatherer.
+ */
 static int
 gather_random( void (*add)(const void*, size_t, int), int requester,
 	       size_t length, int level )
@@ -724,6 +732,9 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     static int pipedes[2];
     GATHER_MSG msg;
     size_t n;
+
+    if( !level )
+	return 0;
 
     if( !gatherer_pid ) {
 	/* make sure we are not setuid */

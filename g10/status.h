@@ -1,5 +1,5 @@
 /* status.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -65,7 +65,21 @@
 #define STATUS_ERRMDC		35
 #define STATUS_IMPORTED 	36
 #define STATUS_IMPORT_RES	37
+#define STATUS_FILE_START	38
+#define STATUS_FILE_DONE	39
+#define STATUS_FILE_ERROR	40
 
+#define STATUS_BEGIN_DECRYPTION 41
+#define STATUS_END_DECRYPTION	42
+#define STATUS_BEGIN_ENCRYPTION 43
+#define STATUS_END_ENCRYPTION	44
+
+#define STATUS_DELETE_PROBLEM	45
+#define STATUS_GET_BOOL 	46
+#define STATUS_GET_LINE 	47
+#define STATUS_GET_HIDDEN	48
+#define STATUS_GOT_IT		49
+#define STATUS_PROGRESS 	50
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

@@ -121,7 +121,7 @@
     c) If you don't have any of the above programs, you have to verify
        the MD5 checksum:
 
-	$ md5sum gnupg-x.y.z.tar.gz.sig
+	$ md5sum gnupg-x.y.z.tar.gz
 
        This should yield an output similar_to this:
 
@@ -135,10 +135,11 @@
     Documentation
     -------------
 
-    A draft version of the manual is included in the subdirectory doc/gph.
-    The supplied version is rendered in HTML and you may access it with any
-    browser (e.g.: lynx doc/gpg/index.html).  The GnuPG webpages have a link
-    to the latest development version and you may want to read those instead.
+    The manual will be distributed separate under the name "gnupgdoc".
+    An online version of the latest manual draft is available at the
+    GnuPG web pages:
+
+	http://www.gnupg.org/gph/
 
     A couple of HOWTO documents are available online; for a listing see:
 
@@ -473,7 +474,7 @@
     The primary WWW page is "http://www.gnupg.org"
     The primary FTP site is "ftp://ftp.gnupg.org/pub/gcrypt/"
 
-    See http://www.gnupg.org/mirrors.html for a list of FTP mirrors
+    See http://www.gnupg.org/mirrors.html for a list of mirrors
     and use them if possible.  You may also find GnuPG mirrored on
     some of the regular GNU mirrors.
 
@@ -485,6 +486,8 @@
 				    very low traffic.
 	gnupg-users@gnupg.org	    For general user discussion and
 				    help.
+	gnupg-i18n@gnupg.org	    Discussion about internationalization
+				    issues.
 	gnupg-devel@gnupg.org	    GnuPG developers main forum.
 
     You subscribe to one of the list by sending mail with a subject
@@ -508,11 +511,9 @@
     the GNU service directory or search other resources.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v0.9.11 (GNU/Linux)
-Comment: For info see http://www.gnupg.org
 
-iQB1AwUBN9QAwB0Z9MEMmFelAQG0XwMAqyH3UR0Jk+dm2ZkVoTqckGqmMMt5IdBN
-MlG4g3dau5De8XXHvbQ45cUpU4CC0MOlEuKDp+CKOc+xbzczdH35qYt/5XKmVWS8
-JwTvuKKCZ/95JRMk0ZMRueQduH7tSijZ
-=MefQ
+iQB1AwUBOEkX0B0Z9MEMmFelAQE2aQL/bo8po/atFACnG7eZBodfV0ikE+PFynOf
+uzQjirp00hSFwP8jMmv+ccnlyZkHRwrhl/Xc8GCmmeATwtb1fuAWvCO51T1YIv3i
++K8Y6ThnQxG6TS0A/DBcoxwKpT7jEEPG
+=WYfE
 -----END PGP SIGNATURE-----

@@ -1,5 +1,5 @@
 /* encode.c - encode data
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -116,7 +116,7 @@ encode_simple( const char *filename, int mode )
     }
 
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
-	iobuf_close(inp);
+	iobuf_cancel(inp);
 	m_free(cfx.dek);
 	m_free(s2k);
 	return rc;
@@ -177,6 +177,7 @@ encode_simple( const char *filename, int mode )
 	pt->timestamp = make_timestamp();
 	pt->mode = opt.textmode? 't' : 'b';
 	pt->len = filesize;
+	pt->new_ctb = !pt->len && !opt.rfc1991;
 	pt->buf = inp;
 	pkt.pkttype = PKT_PLAINTEXT;
 	pkt.pkt.plaintext = pt;
@@ -478,7 +479,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	    log_error("pubkey_encrypt failed: %s\n", g10_errstr(rc) );
 	else {
 	    if( opt.verbose ) {
-		char *ustr = get_user_id_string( enc->keyid );
+		char *ustr = get_user_id_string_native( enc->keyid );
 		log_info(_("%s/%s encrypted for: %s\n"),
 		    pubkey_algo_to_string(enc->pubkey_algo),
 		    cipher_algo_to_string(dek->algo), ustr );

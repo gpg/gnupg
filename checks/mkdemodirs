@@ -8,9 +8,9 @@ NAMES='Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel India
        Sierra Tango Uniform Victor Whisky XRay Yankee Zulu'
 
 if [ "$1" = "--clean" ]; then
-    for i in $NAMES; do
+    (for i in $NAMES; do
 	[ -d $i ] && rm -r $i
-    done
+    done) || true
     exit 0
 fi
 
@@ -24,10 +24,10 @@ for name in $NAMES; do
     /bin/echo " $name\c"
     [ -d $name ] && rm -r $name
     mkdir $name
-    $GPGDEMO --export-secret-key -o - $name | tee $name/Secret.gpg | \
-	    $GPG --homedir $name --import
-    $GPGDEMO --export -o - $name | tee $name/Public.gpg | \
-	    $GPG --homedir $name --import
+    $GPGDEMO --export-secret-key -o - $name > $name/Secret.gpg
+    $GPG --homedir $name --import $name/Secret.gpg
+    $GPGDEMO --export -o - $name > $name/Public.gpg
+    $GPG --homedir $name --import $name/Public.gpg
     [ -f $name/pubring.gpg~ ] && rm $name/pubring.gpg~
 done
 echo "."

@@ -1,5 +1,5 @@
 /* build-packet.c - assemble packets and write them
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -67,25 +67,31 @@ int
 build_packet( IOBUF out, PACKET *pkt )
 {
     int new_ctb=0, rc=0, ctb;
+    int pkttype;
 
     if( DBG_PACKET )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
     assert( pkt->pkt.generic );
 
-    switch( pkt->pkttype ) {
-      case PKT_OLD_COMMENT: pkt->pkttype = PKT_COMMENT; break;
+    switch( (pkttype = pkt->pkttype) ) {
+      case PKT_OLD_COMMENT: pkttype = pkt->pkttype = PKT_COMMENT; break;
       case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;
       case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
+      case PKT_USER_ID:
+	    if( pkt->pkt.user_id->photo )
+		pkttype = PKT_PHOTO_ID;
+	    break;
       default: break;
     }
 
-    if( new_ctb || pkt->pkttype > 15 ) /* new format */
-	ctb = 0xc0 | (pkt->pkttype & 0x3f);
+    if( new_ctb || pkttype > 15 ) /* new format */
+	ctb = 0xc0 | (pkttype & 0x3f);
     else
-	ctb = 0x80 | ((pkt->pkttype & 15)<<2);
-    switch( pkt->pkttype ) {
+	ctb = 0x80 | ((pkttype & 15)<<2);
+    switch( pkttype ) {
+      case PKT_PHOTO_ID:
       case PKT_USER_ID:
 	rc = do_user_id( out, ctb, pkt->pkt.user_id );
 	break;
@@ -149,6 +155,7 @@ calc_packet_length( PACKET *pkt )
 	n = calc_plaintext( pkt->pkt.plaintext );
 	new_ctb = pkt->pkt.plaintext->new_ctb;
 	break;
+      case PKT_PHOTO_ID:
       case PKT_USER_ID:
       case PKT_COMMENT:
       case PKT_PUBLIC_KEY:
@@ -196,9 +203,16 @@ do_comment( IOBUF out, int ctb, PKT_comment *rem )
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
-    write_header(out, ctb, uid->len);
-    if( iobuf_write( out, uid->name, uid->len ) )
-	return G10ERR_WRITE_FILE;
+    if( uid->photo ) {
+	write_header(out, ctb, uid->photolen);
+	if( iobuf_write( out, uid->photo, uid->photolen ) )
+	    return G10ERR_WRITE_FILE;
+    }
+    else {
+	write_header(out, ctb, uid->len);
+	if( iobuf_write( out, uid->name, uid->len ) )
+	    return G10ERR_WRITE_FILE;
+    }
     return 0;
 }
 
@@ -357,19 +371,30 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	else {
 	    iobuf_put(a, 0xff );
 	    iobuf_put(a, sk->protect.algo );
-	    iobuf_put(a, sk->protect.s2k.mode );
-	    iobuf_put(a, sk->protect.s2k.hash_algo );
+	    if( sk->protect.s2k.mode >= 1000 ) {
+		iobuf_put(a, 101 );
+		iobuf_put(a, sk->protect.s2k.hash_algo );
+		iobuf_write(a, "GNU", 3 );
+		iobuf_put(a, sk->protect.s2k.mode - 1000 );
+	    }
+	    else {
+		iobuf_put(a, sk->protect.s2k.mode );
+		iobuf_put(a, sk->protect.s2k.hash_algo );
+	    }
 	    if( sk->protect.s2k.mode == 1
 		|| sk->protect.s2k.mode == 3 )
 		iobuf_write(a, sk->protect.s2k.salt, 8 );
 	    if( sk->protect.s2k.mode == 3 )
 		iobuf_put(a, sk->protect.s2k.count );
-	    iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
+	    if( sk->protect.s2k.mode != 1001 )
+		iobuf_write(a, sk->protect.iv, sk->protect.ivlen );
 	}
     }
     else
 	iobuf_put(a, 0 );
-    if( sk->is_protected && sk->version >= 4 ) {
+    if( sk->protect.s2k.mode == 1001 )
+	;
+    else if( sk->is_protected && sk->version >= 4 ) {
 	byte *p;
 	assert( mpi_is_opaque( sk->skey[npkey] ) );
 	p = mpi_get_opaque( sk->skey[npkey], &i );
@@ -621,7 +646,6 @@ void
 build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 		  const byte *buffer, size_t buflen )
 {
-
     byte *data;
     size_t hlen, dlen, nlen;
     int found=0;
@@ -657,6 +681,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_KEY_EXPIRE:
       case SIGSUBPKT_NOTATION:
       case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_REVOC_REASON:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }

@@ -1,8 +1,6 @@
 ## Process this file with automake to create Makefile.in
 
-SUBDIRS = gph
-
-EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP
+EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP  README.W32
 
 man_MANS = gpg.1
 
@@ -26,4 +24,8 @@ endif
 %/%.html: %.sgml
 	-db2html $<
 
+
+dist-hook:
+	@if test `wc -c < gpg.1` -lt 200; then \
+	    echo 'ERROR: dummy man page'; false; fi
 

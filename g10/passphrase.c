@@ -1,5 +1,5 @@
 /* passphrase.c -  Get a passphrase
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -159,7 +159,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	tty_printf(_("\nYou need a passphrase to unlock the secret key for\n"
 		     "user: \"") );
 	p = get_user_id( keyid, &n );
-	tty_print_string( p, n );
+	tty_print_utf8_string( p, n );
 	m_free(p);
 	tty_printf("\"\n");
 
@@ -242,7 +242,13 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
     md = md_open( s2k->hash_algo, 1);
     for(pass=0; used < dek->keylen ; pass++ ) {
 	if( pass ) {
-	    md_reset(md);
+	    if( (opt.emulate_bugs & EMUBUG_3DESS2K)) {
+		int tmp = md->finalized;
+		md_reset( md );
+		md->finalized = tmp;
+	    }
+	    else
+		md_reset(md);
 	    for(i=0; i < pass; i++ ) /* preset the hash context */
 		md_putc(md, 0 );
 	}

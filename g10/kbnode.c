@@ -1,5 +1,5 @@
 /* kbnode.c -  keyblock node utility functions
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -165,7 +165,7 @@ find_prev_kbnode( KBNODE root, KBNODE node, int pkttype )
     KBNODE n1;
 
     for(n1=NULL ; root && root != node; root = root->next )
-	if( !pkttype || root->pkt->pkttype == pkttype )
+	if( !pkttype || root->pkt->pkttype == pkttype  )
 	    n1 = root;
     return n1;
 }

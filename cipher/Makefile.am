@@ -3,17 +3,10 @@
 
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
-noinst_LTLIBRARIES = libcipher.la
+noinst_LIBRARIES = libcipher.a
 
-# The configure script greps the module names from the following lines.
-# You must also add all these names to EXTRA_PROGRAMS some lines below
-# and EXTRA_foo_SOURCES entries.
-# Hmmm is there a more easy way to do this?  (EXTRA_PROGRAMS
-# might also list programs which are not modules)
-# MODULES: rndunix rndlinux rndegd rndw32
-# MODULES: sha1 rmd160 md5 tiger
-EXTRA_PROGRAMS = rndunix rndlinux rndegd rndw32 \
-		 sha1 rmd160 md5 tiger
+# The configure script greps the module names from the EXTRA_PROGRAMS line
+EXTRA_PROGRAMS = rndlinux rndunix rndegd rndw32 sha1 rmd160 md5 tiger
 
 EXTRA_rndlinux_SOURCES = rndlinux.c
 EXTRA_rndunix_SOURCES = rndunix.c
@@ -34,8 +27,8 @@ endif
 
 DYNLINK_MOD_CFLAGS = -DIS_MODULE @DYNLINK_MOD_CFLAGS@
 
-libcipher_la_LDFLAGS =
-libcipher_la_SOURCES = cipher.c  \
+#libcipher_a_LDFLAGS =
+libcipher_a_SOURCES = cipher.c	\
 		 pubkey.c	\
 		 md.c		\
 		 dynload.c	\
@@ -65,8 +58,8 @@ libcipher_la_SOURCES = cipher.c  \
 BUILT_SOURCES = construct.c
 
 
-libcipher_la_DEPENDENCIES = @STATIC_CIPHER_OBJS@
-libcipher_la_LIBADD =	    @STATIC_CIPHER_OBJS@
+libcipher_a_DEPENDENCIES = @STATIC_CIPHER_OBJS@
+libcipher_a_LIBADD =	   @STATIC_CIPHER_OBJS@
 
 
 # If I remember it correct, automake 1.4 has a feature to set
@@ -74,7 +67,7 @@ libcipher_la_LIBADD =	    @STATIC_CIPHER_OBJS@
 
 tiger: $(srcdir)/tiger.c
 	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o tiger $(srcdir)/tiger.c | \
-	    sed -e 's/-O[2-9s]*/-O1/g' `
+	    sed -e 's/-O[2-9s]*/-O/g' `
 
 tiger.o: $(srcdir)/tiger.c
 	`echo $(COMPILE) -c $(srcdir)/tiger.c | sed -e 's/-O[2-9s]*/-O1/g' `
@@ -98,5 +91,4 @@ rndlinux: $(srcdir)/rndlinux.c
 
 rndegd: $(srcdir)/rndegd.c
 	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndegd $(srcdir)/rndegd.c
-
 

@@ -1,5 +1,137 @@
-Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Sun May 28 13:55:17 CEST 2000  Werner Koch  <wk@openit.de>
 
+  * random.c (read_seed_file): Binary open for DOSish system
+  (update_random_seed_file): Ditto.
+
+  * rndw32.c: Add some debuging code enabled by an environment variable.
+
+Tue May 23 09:19:00 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* rndw32.c: Started with alternative code to replace entropy.dll
+
+Thu May 18 11:38:54 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* primegen.c (register_primegen_progress): New.
+	* dsa.c (register_pk_dsa_progress): New.
+	* elgamal.c (register_pk_elg_progress): New.
+
+Fri Apr 14 19:37:08 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* twofish.c (twofish_get_info): Fixed warning about cast.
+
+Tue Mar 28 14:26:58 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* random.c [MINGW32]: Include process.h for getpid.
+
+Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* random.c (fast_random_poll): Add clock_gettime() as fallback for
+	system which support this POSIX.4 fucntion. By Sam Roberts.
+
+	* rndunix.c: Add some more headers for QNX. By Sam Roberts.
+
+	* random.c (read_seed_file): Removed the S_ISLNK test becuase it
+	is already covered by !S_ISREG and is not defined in Unixware.
+	Reported by Dave Dykstra.
+
+	* sha1.c (sha1_get_info): Removed those stupid double lines. Dave
+	is really a good lint.
+
+Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* twofish.c (twofish_get_info): Add some const to the casts.  By Martin
+	Kahlert.
+
+Mon Feb 14 14:30:20 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	(update_random_seed_file): Silently ignore update request when pool
+	is not filled.
+
+Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* random.c (read_seed_file): New.
+	(set_random_seed_file): New.
+	(read_pool): Try to read the seeding file.
+	(update_random_seed_file): New.
+
+	(read_pool): Do an initial extra seeding when level 2 quality random
+	is requested the first time.  This requestes at least POOLSIZE/2 bytes
+	of entropy.  Compined with the seeding file this should make normal
+	random bytes cheaper and increase the quality of the random bytes
+	used for key generation.
+
+	* rndegd.c (gather_random): Shortcut level 0.
+	* rndunix.c (gather_random): Ditto.
+	* rndw32.c (gather_random): Ditto.
+
+Fri Jan 14 18:32:01 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* rmd160.c (rmd160_get_info): Moved casting to the left side due to a
+	problem with UTS4.3.  Suggested by Dave Dykstra.
+	* sha1.c (sha1_get_info): Ditto.
+	* tiger.c (tiger_get_info): Ditto.
+	* md5.c (md5_get_info): Ditto
+	* des.c (des_get_info): Ditto.
+	* blowfish.c (blowfish_get_info): Ditto.
+	* cast5.c (cast5_get_info): Ditto.
+	* twofish.c (twofish_get_info): Ditto.
+
+Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* elgamal.c (wiener_map): New.
+	(gen_k): Use a much smaller k.
+	(generate): Calculate the qbits using the wiener map and
+	choose an x at a size comparable to the one choosen in gen_k
+
+	* random.c (read_pool): Print a more friendly error message in
+	cases when too much random is requested in one call.
+
+	* Makefile.am (tiger): Replaced -O1 by -O. Suggested by Alec Habig.
+
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* primegen.c (generate_elg_prime): All primes are now generated with
+	the lowest random quality level.  Becuase they are public anyway we
+	don't need stronger random and by this we do not drain the systems
+	entropy so much.
+
+Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* random.c (fast_random_poll): Check whether RUSAGE_SELF is defined;
+	this is not the case for some ESIX and Unixware, although they have
+	getrusage().
+
+	* elgamal.c (sign): Hugh found strange code here. Replaced by BUG().
+
+Mon Oct 11 09:24:12 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* rndw32.c (gather_random): Handle PCP_SEEDER_TOO_SMALL.
+
+Sat Oct  9 20:34:41 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.am:	Tweaked module build and removed libtool
+
+Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* rndw32.c (load_and_init_winseed): Use the Registry to locate the DLL
+
+Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* md.c (md_reset): Clear finalized; thanks to Ulf Moeller for
+	fixing this bug.
+
+Sat Sep 18 12:51:51 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* Makefile.am: Never compile mingw32 as module
+
+Wed Sep 15 14:39:59 CEST 1999  Michael Roth <mroth@nessie.de>
+
+	* des.c: Various speed improvements: One bit pre rotation
+	  trick after initial permutation (Richard Outerbridge).
+	  Finished test of SSLeay Tripple-DES patterns.
+
+Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* rndw32.c: New.
 

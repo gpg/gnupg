@@ -1,5 +1,5 @@
 /* pubkey-enc.c -  public key encoded packet handling
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -152,6 +152,10 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	write_status(STATUS_RSA_OR_IDEA);
     rc = check_cipher_algo( dek->algo );
     if( rc ) {
+	if( !opt.quiet && rc == G10ERR_CIPHER_ALGO ) {
+	    log_info(_("cipher algorithm %d is unknown or disabled\n"),
+							    dek->algo);
+	}
 	dek->algo = 0;
 	goto leave;
     }
@@ -172,7 +176,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     }
     if( DBG_CIPHER )
 	log_hexdump("DEK is:", dek->key, dek->keylen );
-    /* check that the algo is in the preferences */
+    /* check that the algo is in the preferences and whether it has expired */
     {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	if( (rc = get_pubkey( pk, keyid )) )
@@ -191,9 +195,24 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 		    "NOTE: cipher algorithm %d not found in preferences\n"),
 								 dek->algo );
 	}
+
+
+	if( !rc && pk->expiredate && pk->expiredate <= make_timestamp() ) {
+	    log_info(_("NOTE: secret key %08lX expired at %s\n"),
+			   (ulong)keyid[1], asctimestamp( pk->expiredate) );
+	}
+
+	/* FIXME: check wheter the key has been revoked and display
+	 * the revocation reason.  Actually the user should know this himself,
+	 * but the sender might not know already and therefor the user
+	 * should get a notice that an revoked key has been used to decode
+	 * the message.  The user can than watch out for snakes send by
+	 * one of those Eves outside his paradise :-)
+	 */
 	free_public_key( pk );
 	rc = 0;
     }
+
 
   leave:
     mpi_free(plain_dek);

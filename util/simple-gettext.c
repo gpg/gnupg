@@ -242,19 +242,21 @@ set_gettext_file( const char *filename )
 	   #endif
 	   ) {
 	    /* absolute path - use it as is */
-	    log_info("trying `%s'\n", filename );
 	    domain = load_domain( filename );
 	}
-	else { /* relative path - append ".mo" and get DIR from env */
+	else { /* relative path - append ".mo" and get dir from the environment */
 	    char *buf = NULL;
-	    const char *s;
+	    char *dir;
 
-	    s = getenv("MINGW32_NLS_DIR");
-	    if( s && (buf=malloc(strlen(s)+strlen(filename)+1+3+1)) ) {
-		strcpy(stpcpy(stpcpy(stpcpy( buf, s),"/"), filename),".mo");
+	    dir = read_w32_registry_string( NULL,
+					    "Control Panel\\Mingw32\\NLS",
+					    "MODir" );
+	    if( dir && (buf=malloc(strlen(dir)+strlen(filename)+1+3+1)) ) {
+		strcpy(stpcpy(stpcpy(stpcpy( buf, dir),"/"), filename),".mo");
 		domain = load_domain( buf );
 		free(buf);
 	    }
+	    free(dir);
 	}
 	if( !domain )
 	    return -1;
@@ -464,5 +466,20 @@ gettext( const char *msgid )
     return msgid;
 }
 
+#if 0
+       unsigned int cp1, cp2;
+
+       cp1 = GetConsoleCP();
+       cp2 = GetConsoleOutputCP();
+
+       log_info("InputCP=%u  OutputCP=%u\n", cp1, cp2 );
+
+       if( !SetConsoleOutputCP( 1252 ) )
+	   log_info("SetConsoleOutputCP failed: %d\n", (int)GetLastError() );
+
+       cp1 = GetConsoleCP();
+       cp2 = GetConsoleOutputCP();
+       log_info("InputCP=%u  OutputCP=%u after switch1\n", cp1, cp2 );
+#endif
 
 #endif /* USE_SIMPLE_GETTEXT */
