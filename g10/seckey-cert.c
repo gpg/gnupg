@@ -59,8 +59,11 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	if( check_cipher_algo( sk->protect.algo ) ) {
 	    log_info(_("protection algorithm %d%s is not supported\n"),
 			sk->protect.algo,sk->protect.algo==1?" (IDEA)":"" );
-	    if(sk->protect.algo==CIPHER_ALGO_IDEA)
-	      idea_cipher_warn(0);
+	    if (sk->protect.algo==CIPHER_ALGO_IDEA)
+              {
+                write_status (STATUS_RSA_OR_IDEA);
+                idea_cipher_warn (0);
+              }
 	    return G10ERR_CIPHER_ALGO;
 	}
 	keyid_from_sk( sk, keyid );

@@ -2068,8 +2068,9 @@ premerge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
             if ( !sec ) {
                 KBNODE next, ll;
 
-                log_info ( "no secret subkey "
-                           "for public subkey %08lX - ignoring\n",  
+                if (opt.verbose)
+                  log_info ( _("no secret subkey "
+                               "for public subkey %08lX - ignoring\n"),  
                            (ulong)keyid_from_pk (pk,NULL) );
                 /* we have to remove the subkey in this case */
                 assert ( last );

@@ -110,7 +110,7 @@ typedef struct {
 
 
 typedef struct {
-    const char *what;		/* description */
+    char *what;		        /* description */
     u32 last_time;		/* last time reported */
     unsigned long last;		/* last amount reported */
     unsigned long offset;	/* current amount */

@@ -282,8 +282,7 @@ open_sigfile( const char *iname, progress_filter_context_t *pfx )
 		log_info(_("assuming signed data in `%s'\n"), buf );
 	    if (a && pfx)
 	      handle_progress (pfx, a, buf);
-	    else
-	      m_free(buf);
+            m_free(buf);
 	}
     }
     return a;
