@@ -1,22 +1,109 @@
-Wed Oct  4 13:16:18 CEST 2000  Werner Koch  <wk@openit.de>
+2002-05-10  Werner Koch  <wk@gnupg.org>
 
-        * run-gpg: redirect fgrep output to stderr
+	* Makefile.am: Add gpg_dearmor to all targets where it is used.
+	Noted by Andreas Haumer. 
 
-Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
+2002-04-19  Werner Koch  <wk@gnupg.org>
 
-	* genkey1024.test: Does not use --quick-random anymore.
+	* signencrypt-dsa.test, sigs-dsa.test: Don't check with MD5 as
+	this is not valid with DSA signatures.
 
-Thu Oct 28 16:17:46 CEST 1999  Werner Koch  <wk@gnupg.de>
+2001-12-22  Werner Koch  <wk@gnupg.org>
+
+	* options.in: Add no-permission-warning.
+
+2001-12-21  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (distclean-local): prefix mkdemodirs with srcdir
+	(DISTCLEANFILES): Add random_seed.
+
+2001-12-19  Werner Koch  <wk@gnupg.org>
+
+	* options.in: Remove load-extension tiger
+	* Makefile.am (./options): append it if there is such a module.
+
+2001-10-23  Werner Koch  <wk@gnupg.org>
+
+	* defs.inc, Makefile.am: Do not use $srcdir when invoking gpg.
+	Write the logfile to the current directory.
+
+2001-09-28  Werner Koch  <wk@gnupg.org>
+
+	* defs.inc: Write a log file for each test. 
+	* run-gpg, run-gpgm, run-gpg.patterns: Removed.  Replaced in all
+	tests by a simple macro from defs.inc.
+	* Makefile.am (CLEANFILES): Remove log files.
+	(./gpg_dearmor): create it and use it instead of the macro.
+	This is needed in multisig.test due to IFS tricks.
+
+	* armsignencrypt.test, signencrypt-dsa.test, signencrypt.test,
+	armencryptp.test, armencrypt.test, encryptp.test, seat.test,
+	encrypt-dsa.test, encrypt.test: Use --always-trust because the
+	test are not designed to check the validity.
+	
+2001-09-06  Werner Koch  <wk@gnupg.org>
+
+	* genkey1024.test: Simplified by using a parameter file.
+
+2001-05-30  Werner Koch  <wk@gnupg.org>
+
+	* multisig.test (IFS): Reset IFS just before the test.
+
+2001-04-30  Werner Koch  <wk@gnupg.org>
+
+	* multisig.test: Add an set +x to avoid ksh problems
+
+2001-04-28  Werner Koch  <wk@gnupg.org>
+
+	* run-gpg.patterns: a v3 test key expired yesterday, suppress the
+	messages.
+
+2001-03-27  Werner Koch  <wk@gnupg.org>
+
+	* defs.inc: Removed creation of options file.
+	* options.in: New.
+	* Makefile.am: Create options file and fixed import of pubdemo.asc.
+
+	* run-gpg.patterns (gpg): Add some more patterns.
+
+2001-03-20  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Import the pubdemo.asc file 
+
+	* sigs.test (hash_algo_list): s/tiger/tiger192/
+
+2001-03-19  Werner Koch  <wk@gnupg.org>
+
+	* mkdemodirs (GPGDEMO): Add --allow-secret-key-import to all gpg
+	invocations.  Use echon -n instead of an argument with \c.
+
+2001-02-12  Werner Koch  <wk@gnupg.org>
+
+	* multisig.test: new
+	* Makefile.am (TESTS): Added.
+
+2000-10-18  Werner Koch  <wk@gnupg.org>
+
+	* conventional-mdc.test: Add Rijndael and fix for empty plain texts.
+
+Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* mkdemodirs: Fixed the --clean loop.
+
+Thu Jan 13 19:31:58 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* defs.inc (chdir): Removed becuase it is unsused an plain old sh
+	does not like this name.  Reported by Alec Habig.
+
+Tue Oct 26 20:02:23 1999  Werner Koch  (wk@gnupg.org)
 
 	* Makefile.am (GPG_DEARMOR): New and use --no-options.
 
 Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* defs.inc: set LC_ALL empty
 
 Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* defs.inc (echo_n): New and used instead of /bin/echo "\c"
 
@@ -69,4 +156,16 @@ Mon May 18 15:40:02 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	* Makefile.am: Now uses mk-tdata to produce random test data.
 
 	* ChangeLog: New.
+
+
+ Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
 

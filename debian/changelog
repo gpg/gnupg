@@ -1,3 +1,155 @@
+gnupg (1.0.5-1) unstable; urgency=low
+
+  * New upstream version.
+  * debian/README.Debian: fix spelling and update URL.
+  * debian/rules (binary): remove the new info files.
+  * scripts/config.{guess,sub}: sync with subversions, closes: #95729.
+
+ -- James Troup <james@nocrew.org>  Mon, 30 Apr 2001 02:12:38 +0100
+
+gnupg (1.0.4-4) unstable; urgency=low
+
+  * po/ru.po: patch by Ilya Martynov <m_ilya@agava.com> to replace German
+    entries and add missing translations, closes: #93987.
+  * g10/revoke.c (ask_revocation_reason): typo fix (s/non longer/no
+    longer/g); noticed by Colin Watson <cjw44@flatline.org.uk>, closes:
+    #93664.
+
+  * Deprecated depreciated; noticed by Vincent Broman
+    <broman@spawar.navy.mil>.
+
+  * Following two patches are from Vincent Broman.
+  * g10/mainproc.c (proc_tree): use iobuf_get_real_fname() in preference
+    to iobuf_get_fname().
+  * g10/openfile.c (open_sigfile): handle .sign prefixed files correctly.
+
+ -- James Troup <james@nocrew.org>  Fri, 20 Apr 2001 23:32:44 +0100
+
+gnupg (1.0.4-3) unstable; urgency=medium
+
+  * debian/rules (binary): make gpg binary suid, closes: #86433.
+  * debian/postinst: don't use suidregister.
+  * debian/postrm: removed (only called suidunregister).
+  * debian/control: conflict with suidmanager << 0.50.
+  * mpi/longlong.h: apply fix for ARM long long artimetic from Philip
+    Blundell <philb@gnu.org>, closes: #87487.
+  * debian/preinst: the old GnuPG debs have moved to people.debian.org.
+  * cipher/random.c: #include <time.h> as well as <sys/time.h>
+  * g10/misc.c: likewise.
+  * debian/rules: define a strip alias which removes the .comment and
+    .note sections.
+  * debian/rules (binary-arch): use it.
+  * debian/lintian.override: new file; override the SUID warning from
+    lintian.
+  * debian/rules (binary-arch): install it.
+
+ -- James Troup <james@nocrew.org>  Sun, 25 Feb 2001 05:24:58 +0000
+
+gnupg (1.0.4-2) stable unstable; urgency=high
+
+  * Apply security fix patch from Werner.
+  * Apply another patch from Werner to fix bogus warning on Rijndael
+    usage.
+  * Change section to 'non-US'.
+
+ -- James Troup <james@nocrew.org>  Mon, 12 Feb 2001 07:47:02 +0000
+
+gnupg (1.0.4-1) stable unstable; urgency=high
+
+  * New upstream version.
+  * Fixes a serious bug which could lead to false signature verification
+    results when more than one signature is fed to gpg.
+
+ -- James Troup <james@nocrew.org>  Tue, 17 Oct 2000 17:26:17 +0100
+
+gnupg (1.0.3b-1) unstable; urgency=low
+
+  * New upstream snapshot version.
+
+ -- James Troup <james@nocrew.org>  Fri, 13 Oct 2000 18:08:14 +0100
+
+gnupg (1.0.3-2) unstable; urgency=low
+
+  * debian/control: Conflict, Replace and Provide gpg-rsa & gpg-rsaref.
+    Fix long description to reflect the fact that RSA is no longer
+    patented and now included. [#72177]
+  * debian/rules: move faq.html to /usr/share/doc/gnupg/ and remove FAQ
+    from /usr/share/gnupg/.  Thanks to Robert Luberda
+    <robert@pingu.ii.uj.edu.pl> for noticing. [#72151]
+  * debian/control: Suggest new package gnupg-doc. [#64323, #65560]
+  * utils/secmem.c (lock_pool): don't bomb out if mlock() returns ENOMEM,
+    as Linux will do this if resource limits (or other reasons) prevent
+    memory from being locked, instead treat it like permission was denied
+    and warn but continue.  Thanks to Topi Miettinen
+    <Topi.Miettinen@nic.fi>. [#70446]
+  * g10/hkp.c (not_implemented): s/ist/is/ in error message.
+  * debian/README.Debian: add a note about GDBM support and why it is
+    disabled.  Upstream already fixed the manpage.  [#65913]
+  * debian/rules (binary-arch): fix the Spanish translation to be 'es' not
+    'es_ES' at Nicolás Lichtmaier <nick@debian.org>'s request. [#57314]
+
+ -- James Troup <james@nocrew.org>  Sun,  1 Oct 2000 14:55:03 +0100
+
+gnupg (1.0.3-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- James Troup <james@nocrew.org>  Mon, 18 Sep 2000 15:56:54 +0100
+
+gnupg (1.0.2-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- James Troup <james@nocrew.org>  Thu, 13 Jul 2000 20:26:50 +0100
+
+gnupg (1.0.1-2) unstable; urgency=low
+
+  * debian/control (Build-Depends): added.
+  * debian/copyright: corrected location of copyright file.  Removed
+    references to Linux.  Removed warnings about beta nature of GnuPG.
+  * debian/rules (binary-arch): install documentation into
+    /usr/share/doc/gnupg/ and pass mandir to make install to ensure the
+    manpages go to /usr/share/man/.
+  * debian/postinst: create /usr/doc/gnupg symlink.
+  * debian/prerm: new file; remove /usr/doc/gnupg symlink.
+  * debian/rules (binary-arch): install prerm.
+  * debian/control (Standards-Version): updated to 3.1.1.1.
+
+ -- James Troup <james@nocrew.org>  Thu, 30 Dec 1999 16:16:49 +0000
+
+gnupg (1.0.1-1) unstable; urgency=low
+
+  * New upstream version.
+  * doc/gpg.1: updated to something usable from
+    ftp://ftp.gnupg.org/pub/gcrypt/gnupg/gpg.1.gz.
+
+ -- James Troup <james@nocrew.org>  Sun, 19 Dec 1999 23:47:10 +0000
+
+gnupg (1.0.0-3) unstable; urgency=low
+
+  * debian/rules (build): remove the stunningly ill-advised --host option
+    to configure.  [#44698, #48212, #48281]
+
+ -- James Troup <james@nocrew.org>  Tue, 26 Oct 1999 01:12:59 +0100
+
+gnupg (1.0.0-2) unstable; urgency=low
+
+  * debian/rules (binary-arch): fix the permissions on the
+    modules. [#47280]
+  * debian/postinst, debian/postrm: fix the package name passed to
+    suidregister. [#45013]
+  * debian/control: update long description. [#44636]
+  * debian/rules (build): pass the host explicitly to configure to avoid
+    problems on sparc64. [(Should fix) #44698].
+
+ -- James Troup <james@nocrew.org>  Wed, 20 Oct 1999 23:39:05 +0100
+
+gnupg (1.0.0-1) unstable; urgency=low
+
+  * New upstream release. [#44545]
+
+ -- James Troup <james@nocrew.org>  Wed,  8 Sep 1999 00:53:02 +0100
+
 gnupg (0.9.10-2) unstable; urgency=low
 
   * debian/rules (binary-arch): install lspgpot.  Requested by Kai

@@ -1,5 +1,5 @@
 <!-- gpg.sgml - the man page for GnuPG
-    Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+    Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
     This file is part of GnuPG.
 
@@ -27,7 +27,7 @@
 -->
 
 
-<!DOCTYPE RefEntry PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!DOCTYPE refentry PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
 <!entity ParmDir "<parameter>directory</parameter>">
 <!entity ParmFile "<parameter>file</parameter>">
 <!entity OptParmFile "<optional>&ParmFile;</optional>">
@@ -71,6 +71,16 @@
     <para>
 <command/gpg/ is the main program for the GnuPG system.
     </para>
+    <para>
+This man page only lists the commands and options available.
+For more verbose documentation get the GNU Privacy Handbook (GPH) or
+one of the other documents at http://www.gnupg.org/docs.html .
+</para>
+<para>
+Please remember that option parsing stops as soon as a non option is
+encountered, you can explicitly stop option parsing by using the
+special option "--".
+</para>
 </refsect1>
 
 <refsect1>
@@ -113,7 +123,7 @@ Encrypt data. This option may be combined with --sign.
 <varlistentry>
 <term>-c, --symmetric</term>
 <listitem><para>
-Encrypt with symmetric cipher only
+Encrypt with symmetric cipher only.
 This command asks for a passphrase.
 </para></listitem></varlistentry>
 
@@ -144,16 +154,42 @@ message.
 <listitem><para>
 Assume that <parameter/sigfile/ is a signature and verify it
 without generating any output.	With no arguments,
-the signature packet is read from stdin (it may be a
-detached signature when not used in batch mode). If
+the signature packet is read from stdin.  If
 only a sigfile is given, it may be a complete
 signature or a detached signature, in which case
 the signed stuff is expected in a file without the
-".sig" or ".asc" extension (if such a file does
-not exist it is expected at stdin; use a single dash ("-") as
-filename to force a read from stdin). With more than
+".sig" or ".asc" extension. 
+With more than
 1 argument, the first should be a detached signature
-and the remaining files are the signed stuff.
+and the remaining files are the signed stuff.  To read the signed
+stuff from stdin, use <literal>-</literal> as the second filename.
+For security reasons a detached signature cannot read the signed
+material from stdin without denoting it in the above way.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--verify-files <optional><parameter/files/</optional></term>
+<listitem><para>
+This is a special version of the --verify command which does not work with
+detached signatures.  The command expects the files to be verified either
+on the command line or reads the filenames from stdin;  each name must be on
+separate line. The command is intended for quick checking of many files.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--encrypt-files <optional><parameter/files/</optional></term>
+<listitem><para>
+This is a special version of the --encrypt command. The command expects
+the files to be encrypted either on the command line or reads the filenames
+from stdin; each name must be on separate line. The command is intended
+for a quick encryption of multiple files.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--decrypt-files <optional><parameter/files/</optional></term>
+<listitem><para>
+The same as --encrypt-files with the difference that files will be
+decrypted. The syntax or the filenames is the same.
 </para></listitem></varlistentry>
 
 <!--
@@ -202,7 +238,6 @@ Same as --list-keys, but the signatures are listed too.
 Same as --list-sigs, but the signatures are verified.
 </para></listitem></varlistentry>
 
-
 <varlistentry>
 <term>--fingerprint &OptParmNames;</term>
 <listitem><para>
@@ -226,8 +261,13 @@ useful for debugging.
 <varlistentry>
 <term>--gen-key</term>
 <listitem><para>
-Generate a new key pair. This command can only be
-used interactive.
+Generate a new key pair. This command is normally only used
+interactively.
+</para>
+<para>
+There is an experimental feature which allows you to create keys
+in batch mode. See the file <filename>doc/DETAILS</filename>
+in the source distribution on how to use this.
 </para></listitem></varlistentry>
 
 
@@ -257,6 +297,17 @@ non-exportable and will therefore never be used
 by others.  This may be used to make keys valid
 only in the local environment.</para></listitem></varlistentry>
     <varlistentry>
+    <term>nrsign</term>
+    <listitem><para>
+Same as --sign but the signature is marked as non-revocable and can
+therefore never be revoked.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>nrlsign</term>
+    <listitem><para>
+Combines the functionality of nrsign and lsign to make a signature
+that is both non-revocable and
+non-exportable.</para></listitem></varlistentry>
+    <varlistentry>
     <term>revsig</term>
     <listitem><para>
 Revoke a signature.  GnuPG asks for every
@@ -279,9 +330,13 @@ for encryption.</para></listitem></varlistentry>
     <listitem><para>
 Create an alternate user id.</para></listitem></varlistentry>
     <varlistentry>
+    <term>addphoto</term>
+    <listitem><para>
+Create a photographic user id.</para></listitem></varlistentry>
+    <varlistentry>
     <term>deluid</term>
     <listitem><para>
-Delete an user id.</para></listitem></varlistentry>
+Delete a user id.</para></listitem></varlistentry>
     <varlistentry>
     <term>addkey</term>
     <listitem><para>
@@ -290,6 +345,10 @@ Add a subkey to this key.</para></listitem></varlistentry>
     <term>delkey</term>
     <listitem><para>
 Remove a subkey.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>addrevoker</term>
+    <listitem><para>
+Add a designated revoker.</para></listitem></varlistentry>
     <varlistentry>
     <term>revkey</term>
     <listitem><para>
@@ -306,6 +365,16 @@ primary key is changed.</para></listitem></varlistentry>
     <listitem><para>
 Change the passphrase of the secret key.</para></listitem></varlistentry>
     <varlistentry>
+    <term>primary</term>
+    <listitem><para>
+Flag the current user id as the primary one, removes the primary user
+id flag from all other user ids and sets the timestamp of all affected
+self-signatures one second ahead.  Note that setting a photo user ID
+as primary makes it primary over other photo user IDs, and setting a
+regular user ID as primary makes it primary over other regular user
+IDs.
+</para></listitem></varlistentry>
+    <varlistentry>
     <term>uid &ParmN;</term>
     <listitem><para>
 Toggle selection of user id with index &ParmN;.
@@ -320,9 +389,35 @@ Use 0 to deselect all.</para></listitem></varlistentry>
     <listitem><para>
 Check all selected user ids.</para></listitem></varlistentry>
     <varlistentry>
+    <term>showphoto</term>
+    <listitem><para>
+Display the selected photographic user
+id.</para></listitem></varlistentry>
+    <varlistentry>
     <term>pref</term>
     <listitem><para>
 List preferences.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>showpref</term>
+    <listitem><para>
+More verbose preferences listing.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>setpref &ParmString;</term>
+    <listitem><para>
+Set the list of user ID preferences to &ParmString;, this should be 
+a string similar to the one printed by "pref".  Using an empty string
+will set the default preference string, using "none" will set the 
+preferences to nil.  Only available algorithms are allowed.  This
+command just initializes an internal list and does not change anything
+unless another command which changes the self-signatures is used.
+</para></listitem></varlistentry>
+    <varlistentry>
+    <term>updpref</term>
+    <listitem><para>
+Change the preferences of all user IDs (or just of the selected ones
+to the current list of preferences.  The timestamp of all affected
+self-signatures fill be advanced by one second.
+</para></listitem></varlistentry>
     <varlistentry>
     <term>toggle</term>
     <listitem><para>
@@ -346,7 +441,8 @@ assigned owner trust and the second is the calculated
 trust value.  Letters are used for the values:</para>
     <variablelist>
       <varlistentry><term>-</term><listitem><para>No ownertrust assigned / not yet calculated.</para></listitem></varlistentry>
-      <varlistentry><term>e</term><listitem><para>Trust calculation has failed.</para></listitem></varlistentry>
+      <varlistentry><term>e</term><listitem><para>Trust
+calculation has failed; probably due to an expired key.</para></listitem></varlistentry>
       <varlistentry><term>q</term><listitem><para>Not enough information for calculation.</para></listitem></varlistentry>
       <varlistentry><term>n</term><listitem><para>Never trust this key.</para></listitem></varlistentry>
       <varlistentry><term>m</term><listitem><para>Marginally trusted.</para></listitem></varlistentry>
@@ -358,15 +454,23 @@ trust value.  Letters are used for the values:</para>
 <varlistentry>
 <term>--sign-key &ParmName;</term>
 <listitem><para>
-Sign a public key with you secret key.	This is a shortcut version
-of the subcommand "sign" from --edit.
+Signs a public key with your secret key. This is a shortcut version of
+the subcommand "sign" from --edit.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--lsign-key &ParmName;</term>
 <listitem><para>
-Sign a public key with you secret key but mark it as non-exportable.
-This is a shortcut version of the subcommand "lsign" from --edit.
+Signs a public key with your secret key but marks it as
+non-exportable.  This is a shortcut version of the subcommand "lsign"
+from --edit.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--nrsign-key &ParmName;</term>
+<listitem><para>
+Signs a public key with your secret key but marks it as non-revocable.
+This is a shortcut version of the subcommand "nrsign" from --edit.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -382,12 +486,25 @@ Remove key from the secret and public keyring
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--delete-secret-and-public-key  &ParmName;</term>
+<listitem><para>
+Same as --delete-key, but if a secret key exists, it will be removed first.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--gen-revoke</term>
 <listitem><para>
 Generate a revocation certificate for the complete key. To revoke
 a subkey or a signature, use the --edit command.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--desig-revoke</term>
+<listitem><para>
+Generate a designated revocation certificate for a key.  This allows a
+user (with the permission of the keyholder) to revoke someone elses
+key.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--export &OptParmNames;</term>
@@ -415,16 +532,24 @@ or changed by you.
 <varlistentry>
 <term>--export-all &OptParmNames;</term>
 <listitem><para>
-Same as --export, but does also export keys which
-are not compatible to OpenPGP.
+Same as --export, but also exports keys which
+are not compatible with OpenPGP.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--export-secret-keys &OptParmNames;</term>
+<term>--export-secret-subkeys &OptParmNames;</term>
 <listitem><para>
-Same as --export, but does export the secret keys.
+Same as --export, but exports the secret keys instead.
 This is normally not very useful and a security risk.
+The second form of the command has the special property to
+render the secret part of the primary key useless; this is
+a GNU extension to OpenPGP and other implementations can
+not be expected to successfully import such a key.
+
+See the option --simple-sk-checksum if you want to import such an
+exported key with an older OpenPGP implementation.
 </para></listitem></varlistentry>
 
 
@@ -433,29 +558,67 @@ This is normally not very useful and a security risk.
 <term>--fast-import &OptParmFiles;</term>
 <listitem><para>
 Import/merge keys. This adds the given keys to the
-keyring.
-The fast version does not build
-the trustdb; this can be done at any time with the
-command --update-trustdb.
+keyring.  The fast version is currently just a synonym.
+</para>
+<para>
+There are a few other options which control how this command works.
+Most notable here is the --merge-only option which does not insert new keys
+but does only the merging of new signatures, user-IDs and subkeys.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--recv-keys &ParmKeyIDs;</term>
 <listitem><para>
-Import the keys with the given key IDs from a HKP
-keyserver. Option --keyserver must be used to
-give the name of this keyserver.
+Import the keys with the given key IDs from a keyserver. Option
+--keyserver must be used to give the name of this keyserver.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--search-keys &OptParmNames;</term>
+<listitem><para>
+Search the keyserver for the given names.  Multiple names given here
+will be joined together to create the search string for the keyserver.
+Option --keyserver must be used to give the name of this keyserver.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--update-trustdb</term>
+<listitem><para>
+Do trust DB maintenance.  This command goes over all keys and builds
+the Web-of-Trust. This is an interactive command because it may has to
+ask for the "ownertrust" values of keys.  The user has to give an
+estimation in how far she trusts the owner of the displayed key to
+correctly certify (sign) other keys.  It does only ask for that value
+if it has not yet been assigned to a key.  Using the edit menu, that
+value can be changed at any time later.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--check-trustdb</term>
+<listitem><para>
+Do trust DB maintenance without user interaction.  Form time to time
+the trust database must be updated so that expired keys and resulting
+changes in the Web-of-Trust can be tracked.  GnuPG tries to figure
+when this is required and then does it implicitly; this command can be
+used to force such a check.  The processing is identically to that of
+--update-trustdb but it skips keys with a not yet defined "ownertrust".
+</para>
+<para>
+For use with cron jobs, this command can be used together with --batch
+in which case the check is only done when it is due.  To force a run
+even in batch mode add the option --yes.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
-<term>--export-ownertrust</term>
+<term>--export-ownertrust &OptParmFile;</term>
 <listitem><para>
-List the assigned ownertrust values in ASCII format
-for backup purposes
+Store the ownertrust values into
+&ParmFile; (or stdin if not given).  This is useful for backup
+purposes as these values are the only ones which can't be re-created
+from a corrupted trust DB.
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--import-ownertrust &OptParmFiles;</term>
@@ -468,10 +631,11 @@ values will be overwritten.
 
 <varlistentry>
 <term>--print-md <parameter>algo</parameter> &OptParmFiles;</term>
+<term>--print-mds &OptParmFiles;</term>
 <listitem><para>
-Print message digest of algorithm ALGO for all given files of stdin.
-If "*" is used for the algorithm, digests for all available algorithms
-are printed.
+Print message digest of algorithm ALGO for all given files or stdin.
+With the second form (or a deprecated "*" as algo) digests for all
+available algorithms are printed.
 </para></listitem></varlistentry>
 
 
@@ -481,7 +645,7 @@ are printed.
 <listitem><para>
 Emit COUNT random bytes of the given quality level. If count is not given
 or zero, an endless sequence of random bytes will be emitted.
-PLEASE, don't use this command unless you know what you are doing, it may
+PLEASE, don't use this command unless you know what you are doing; it may
 remove precious entropy from the system!
 </para></listitem></varlistentry>
 
@@ -512,8 +676,8 @@ Print warranty information.
 <varlistentry>
 <term>-h, --help</term>
 <listitem><para>
-Print usage information.  This is a really long list even it does list
-not all options.
+Print usage information.  This is a really long list even though it doesn't list
+all options.
 </para></listitem></varlistentry>
 
 
@@ -581,7 +745,7 @@ specified, GnuPG asks for the user-id unless --default-recipient is given
 <term>--default-recipient &ParmName;</term>
 <listitem><para>
 Use &ParmName; as default recipient if option --recipient is not used and
-don't ask if this is a valid one. &ParmName; must be a non empty.
+don't ask if this is a valid one. &ParmName; must be non-empty.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -602,9 +766,9 @@ Reset --default-recipient and --default-recipient-self.
 <varlistentry>
 <term>--encrypt-to &ParmName;</term>
 <listitem><para>
-Same as --recipient but this one is intended for
-in the options file and may be used together with
-an own user-id as an "encrypt-to-self".  These keys
+Same as --recipient but this one is intended for use
+in the options file and may be used with
+your own user-id as an "encrypt-to-self".  These keys
 are only used when there are other recipients given
 either by use of --recipient or by the asked user id.
 No trust checking is performed for these user ids and
@@ -635,7 +799,7 @@ Try to be as quiet as possible.
 
 
 <varlistentry>
-<term>-z &ParmN;</term>
+<term>-z &ParmN;, --compress &ParmN;</term>
 <listitem><para>
 Set compression level to &ParmN;. A value of 0 for &ParmN;
 disables compression. Default is to use the default
@@ -676,6 +840,14 @@ Use batch mode.  Never ask, do not allow interactive
 commands.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-tty</term>
+<listitem><para>
+Make sure that the TTY (terminal) is never used for any output.
+This option is needed in some cases because GnuPG sometimes prints
+warnings to the TTY if --batch is used.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--no-batch</term>
@@ -699,30 +871,189 @@ Assume "yes" on most questions.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--default-cert-check-level &ParmN;</term>
+<listitem><para>
+The default to use for the check level when signing a key.
+</para><para>
+0 means you make no particular claim as to how carefully you verified
+the key.
+</para><para>
+1 means you believe the key is owned by the person who claims to own
+it but you could not, or did not verify the key at all.  This is
+useful for a "persona" verification, where you sign the key of a
+pseudonymous user.
+</para><para>
+2 means you did casual verification of the key.  For example, this
+could mean that you verified that the key fingerprint and checked the
+user ID on the key against a photo ID.
+</para><para>
+3 means you did extensive verification of the key.  For example, this
+could mean that you verified the key fingerprint with the owner of the
+key in person, and that you checked, by means of a hard to forge
+document with a photo ID (such as a passport) that the name of the key
+owner matches the name in the user ID on the key, and finally that you
+verified (by exchange of email) that the email address on the key
+belongs to the key owner.
+</para><para>
+Note that the examples given above for levels 2 and 3 are just that:
+examples.  In the end, it is up to you to decide just what "casual"
+and "extensive" mean to you.
+</para><para>
+This option defaults to 0.
+</para></listitem></varlistentry>
+
+
+
+<varlistentry>
+<term>--trusted-key <parameter>long key ID</parameter></term>
+<listitem><para>
+Assume that the specified key (which must be given
+as a  full 8 byte key ID) is as trustworthy as one of
+your own secret keys. This option is useful if you
+don't want to keep your secret keys (or one of them)
+online but still want to be able to check the validity of a given
+recipient's or signator's key. 
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--always-trust</term>
 <listitem><para>
 Skip key validation and assume that used keys are always fully trusted.
-You won't use this unless you have installed some external validation scheme.
+You won't use this unless you have installed some external validation
+scheme.  This option also suppresses the "[uncertain]" tag printed
+with signature checks when there is no evidence that the user ID
+is bound to the key.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--keyserver &ParmName;</term>
 <listitem><para>
-Use &ParmName to lookup keys which are not yet in
-your keyring.  This is only done while verifying
-messages with signatures.  The option is also
-required for the command --send-keys to
-specify the keyserver to where the keys should
-be send.  All keyservers synchronize with each
-other - so there is no need to send keys to more
-than one server.  Using the command
-"host -l pgp.net | grep wwwkeys" gives you a
-list of keyservers.  Because there is load
-balancing using round-robin DNS you may notice
-that you get different key servers.
+Use &ParmName as your keyserver.  This is the server that --recv-keys,
+--send-keys, and --search-keys will communicate with to receive keys
+from, send keys to, and search for keys on.  The format of the
+&ParmName is a URI: `scheme:[//]keyservername[:port]' The scheme is
+the type of keyserver: "hkp" for the Horowitz (or compatible)
+keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
+Horowitz email keyserver.  Note that your particular installation of
+GnuPG may have other keyserver types available as well.
+</para><para>
+Most keyservers synchronize with each other, so there is generally no
+need to send keys to more than one server.  Using the command "host -l
+pgp.net | grep wwwkeys" gives you a list of HKP keyservers.  When
+using one of the wwwkeys servers, due to load balancing using
+round-robin DNS you may notice that you get a different key server
+each time.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--keyserver-options <parameter>parameters</parameter></term>
+<listitem><para>
+This is a space or comma delimited string that gives options for the
+keyserver.  Options can be prepended with a `no-' to give the opposite
+meaning.  While not all options are available for all keyserver types,
+some common options are:
+<variablelist>
+
+<varlistentry>
+<term>include-revoked</term>
+<listitem><para>
+When receiving or searching for a key, include keys that are marked on
+the keyserver as revoked.  Note that this option is always set when
+using the NAI HKP keyserver, as this keyserver does not differentiate
+between revoked and unrevoked keys.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>include-disabled</term>
+<listitem><para>
+When receiving or searching for a key, include keys that are marked on
+the keyserver as disabled.  Note that this option is not used with HKP
+keyservers, as they do not support disabling keys.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>use-temp-files</term>
+<listitem><para>
+On most Unix-like platforms, GnuPG communicates with the keyserver
+helper program via pipes, which is the most efficient method.  This
+option forces GnuPG to use temporary files to communicate.  On some
+platforms (such as Win32 and RISC OS), this option is always enabled.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>keep-temp-files</term>
+<listitem><para>
+If using `use-temp-files', do not delete the temp files after using
+them.  This option is useful to learn the keyserver communication
+protocol by reading the temporary files.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>verbose</term>
+<listitem><para>
+Tell the keyserver helper program to be more verbose.  This option can
+be repeated multiple times to increase the verbosity level.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>honor-http-proxy</term>
+<listitem><para>
+For keyserver schemes that use HTTP (such as HKP), try to access the
+keyserver over the proxy set with the environment variable
+"http_proxy".
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>auto-key-retrieve</term>
+<listitem><para>
+This option enables the automatic retrieving of keys from a keyserver
+when verifying signatures made by keys that are not on the local
+keyring.
+</para></listitem></varlistentry>
+
+</variablelist>
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--show-photos</term>
+<listitem><para>
+Causes --list-keys, --list-sigs, --list-public-keys, and
+--list-secret-keys to also display the photo ID attached to a key, if
+any.
+See also --photo-viewer.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-show-photos</term>
+<listitem><para>
+Resets the --show-photos flag.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--photo-viewer &ParmString;</term>
+<listitem><para>
+This is the command line that should be run to view a photo ID.  "%i"
+will be expanded to a filename containing the photo.  "%I" does the
+same, except the file will not be deleted once the viewer exits.
+Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
+for the key fingerprint, "%t" for the extension of the image type
+(e.g. "jpg"), "%T" for the MIME type of the image (e.g. "image/jpeg"),
+and "%%" for an actual percent sign.  If neither %i or %I are present,
+then the photo will be supplied to the viewer on standard input.
+</para><para>
+The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
+stdin"
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--show-keyring</term>
+<listitem><para>
+Causes --list-keys, --list-public-keys, and --list-secret-keys to
+display the name of the keyring a given key resides on. This is only
+useful when you're listing a specific key or set of keys. It has no
+effect when listing all keys.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--keyring &ParmFile;</term>
@@ -734,7 +1065,6 @@ does not contain a slash, it is assumed to be in the
 home-directory ("~/.gnupg" if --homedir is not used).
 The filename may be prefixed with a scheme:</para>
 <para>"gnupg-ring:" is the default one.</para>
-<para>"gnupg-gdbm:" may be used for a GDBM ring.</para>
 <para>It might make sense to use it together with --no-default-keyring.
 </para></listitem></varlistentry>
 
@@ -772,6 +1102,10 @@ Valid values for &ParmName; are:</para>
 <varlistentry>
 <term>koi8-r</term><listitem><para>The usual Russian set (rfc1489).</para></listitem>
 </varlistentry>
+<varlistentry>
+<term>utf-8</term><listitem><para>Bypass all translations and assume
+that the OS uses native UTF-8 encoding.</para></listitem>
+</varlistentry>
 </variablelist>
 </listitem></varlistentry>
 
@@ -783,8 +1117,8 @@ Valid values for &ParmName; are:</para>
 Assume that the arguments are already given as UTF8 strings.  The default
 (--no-utf8-strings)
 is to assume that arguments are encoded in the character set as specified
-by --charset. These options effects all following arguments.  Both options may
-used multiple times.
+by --charset. These options affect all following arguments.  Both options may
+be used multiple times.
 </para></listitem></varlistentry>
 
 
@@ -803,6 +1137,8 @@ in an options file.
 <listitem><para>
 Shortcut for "--options /dev/null".  This option is
 detected before an attempt to open an option file.
+Using this option will also prevent the creation of a 
+"~./gnupg" homedir.
 </para></listitem></varlistentry>
 
 
@@ -846,11 +1182,34 @@ Write log output to file descriptor &ParmN; and not to stderr.
 
 
 <varlistentry>
+<term>--attribute-fd &ParmN;</term>
+<listitem><para>
+Write attribute subpackets to the file descriptor &ParmN;.  This is
+most useful for use with --status-fd, since the status messages are
+needed to separate out the various subpackets from the stream
+delivered to the file descriptor.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--sk-comments</term>
+<listitem><para>
+Include secret key comment packets when exporting secret keys.  This
+is a GnuPG extension to the OpenPGP standard, and is off by default.
+Please note that this has nothing to do with the comments in clear
+text signatures or armor headers.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-sk-comments</term>
+<listitem><para>
+Resets the --sk-comments option.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--no-comment</term>
 <listitem><para>
-Do not write comment packets.  This option affects only
-the generation of secret keys.	Output of option packets
-is disabled since version 0.4.2.
+See --sk-comments.  This option is deprecated and may be removed soon.
 </para></listitem></varlistentry>
 
 
@@ -858,6 +1217,7 @@ is disabled since version 0.4.2.
 <term>--comment &ParmString;</term>
 <listitem><para>
 Use &ParmString; as comment string in clear text signatures.
+The default is not do write a comment string.
 </para></listitem></varlistentry>
 
 
@@ -866,7 +1226,8 @@ Use &ParmString; as comment string in clear text signatures.
 <listitem><para>
 Force to write the standard comment string in clear
 text signatures.  Use this to overwrite a --comment
-from a config file.
+from a config file.  This option is now obsolete because there is no
+default comment string anymore.
 </para></listitem></varlistentry>
 
 
@@ -890,14 +1251,27 @@ signatures.  Use this to overwrite a previous
 <term>-N, --notation-data &ParmNameValue;</term>
 <listitem><para>
 Put the name value pair into the signature as notation data.
-&ParmName; must consists only of alphanumeric characters, digits
+&ParmName; must consist only of alphanumeric characters, digits
 or the underscore; the first character must not be a digit.
-&ParmValue; may be any printable string; it will encoded in UTF8,
-so sou should have check that your --charset is set right.
+&ParmValue; may be any printable string; it will be encoded in UTF8,
+so you should check that your --charset is set correctly.
 If you prefix &ParmName; with an exclamation mark, the notation
 data will be flagged as critical (rfc2440:5.2.3.15).
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--show-notation</term>
+<listitem><para>
+Show key signature notations in the --list-sigs or --check-sigs
+listings.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-show-notation</term>
+<listitem><para>
+Do not show key signature notations in the --list-sigs or --check-sigs
+listings.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--set-policy-url &ParmString;</term>
@@ -907,6 +1281,18 @@ If you prefix it with an exclamation mark, the policy URL
 packet will be flagged as critical.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--show-policy-url</term>
+<listitem><para>
+Show any policy URLs set in the --list-sigs or --check-sigs listings.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-show-policy-url</term>
+<listitem><para>
+Do not show any policy URLs set in the --list-sigs or --check-sigs
+listings.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--set-filename &ParmString;</term>
@@ -914,6 +1300,21 @@ packet will be flagged as critical.
 Use &ParmString; as the name of file which is stored in
 messages.
 </para></listitem></varlistentry>
+
+<varlistentry>
+<term>--for-your-eyes-only</term>
+<listitem><para>
+Set the `for your eyes only' flag in the message.  This causes GnuPG
+to refuse to save the file unless the --output option is given, and
+PGP to use the "secure viewer" with a Tempest-resistant font to
+display the message.  This option overrides --set-filename.
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--no-for-your-eyes-only</term>
+<listitem><para>
+Resets the --for-your-eyes-only flag.
+</para></listitem></varlistentry
 
 <varlistentry>
 <term>--use-embedded-filename</term>
@@ -956,25 +1357,32 @@ selected from the preferences stored with the key.
 </para></listitem></varlistentry>
 
 
-
 <varlistentry>
 <term>--digest-algo &ParmName;</term>
 <listitem><para>
-Use  &ParmName; as message digest algorithm. Running the
-program with the command --version yields a list of
-supported algorithms.  Please note that using this
-option may violate the OpenPGP requirement, that a
-160 bit hash is to be used for DSA.
+Use &ParmName; as the message digest algorithm. Running the program
+with the command --version yields a list of supported algorithms.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--cert-digest-algo &ParmName;</term>
+<listitem><para>
+Use &ParmName; as the message digest algorithm used when signing a
+key.  Running the program with the command --version yields a list of
+supported algorithms.  Be aware that if you choose an algorithm that
+GnuPG supports but other OpenPGP implementations do not, then some
+users will not be able to use the key signatures you make, or quite
+possibly your entire key.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--s2k-cipher-algo &ParmName;</term>
 <listitem><para>
-Use  &ParmName; as the cipher algorithm used to protect secret
-keys.  The default cipher is BLOWFISH.	This cipher is
-also used for conventional encryption if --cipher-algo
-is not given.
+Use &ParmName; as the cipher algorithm used to protect secret keys.
+The default cipher is CAST5.  This cipher is also used for
+conventional encryption if --cipher-algo is not given.
 </para></listitem></varlistentry>
 
 
@@ -1001,16 +1409,27 @@ for conventional encryption.
 
 
 <varlistentry>
+<term>--simple-sk-checksum</term>
+<listitem><para>
+Secret keys are integrity protected by using a SHA-1 checksum.  This
+method will be part of an enhanced OpenPGP specification but GnuPG
+already uses it as a countermeasure against certain attacks.  Old
+applications don't understand this new format, so this option may be
+used to switch back to the old behaviour.  Using this this option
+bears a security risk.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
 <term>--compress-algo &ParmN;</term>
 <listitem><para>
-Use compress algorithm	&ParmN;. Default is 2 which is
-RFC1950 compression. You may use 1 to use the old zlib
-version which is used by PGP. The default algorithm may
-give better results because the window size is not limited
-to 8K. If this is not used the OpenPGP behavior is used,
-i.e. the compression algorithm is selected from the
-preferences; note, that this can't be done if you do
-not encrypt the data.
+Use compression algorithm &ParmN;. Default is 2 which is RFC1950
+compression. You may use 1 to use the old zlib version (RFC1951) which
+is used by PGP. 0 disables compression. The default algorithm may give
+better results because the window size is not limited to 8K. If this
+is not used the OpenPGP behavior is used, i.e. the compression
+algorithm is selected from the preferences; note, that this can't be
+done if you do not encrypt the data.
 </para></listitem></varlistentry>
 
 
@@ -1028,6 +1447,42 @@ will still get disabled.
 Never allow the use of &ParmName; as public key algorithm.
 The given name will not be checked so that a later loaded algorithm
 will still get disabled.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-sig-cache</term>
+<listitem><para>
+Do not cache the verification status of key signatures.
+Caching gives a much better performance in key listings.  However, if
+you suspect that your public keyring is not save against write
+modifications, you can use this option to disable the caching.  It
+probably does not make sense to disable it because all kind of damage
+can be done if someone else has write access to your public keyring.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-sig-create-check</term>
+<listitem><para>
+GnuPG normally verifies each signature right after creation to protect
+against bugs and hardware malfunctions which could leak out bits from
+the secret key.  This extra verification needs some time (about 115%
+for DSA keys), and so this option can be used to disable it.
+However, due to the fact that the signature creation needs manual
+interaction, this performance penalty does not matter in most settings.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--auto-check-trustdb</term>
+<listitem><para>
+If GnuPG feels that its information about the Web-of-Trust has to be
+updated, it automatically runs the --check-trustdb command 
+internally.  This may be a time consuming process.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-auto-check-trustdb</term>
+<listitem><para>
+Resets the --auto-check-trustdb option.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1074,6 +1529,31 @@ can only be used if only one passphrase is supplied.
 Don't use this option if you can avoid it.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--command-fd &ParmN;</term>
+<listitem><para>
+This is a replacement for the deprecated shared-memory IPC mode.
+If this option is enabled, user input on questions is not expected
+from the TTY but from the given file descriptor.  It should be used
+together with --status-fd. See the file doc/DETAILS in the source
+distribution for details on how to use it.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--use-agent</term>
+<listitem><para>
+Try to use the GnuPG-Agent. Please note that this agent is still under
+development.  With this option, GnuPG first tries to connect to the
+agent before it asks for a passphrase.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--gpg-agent-info</term>
+<listitem><para>
+Override the value of the environment variable
+<literal>GPG_AGENT_INFO</>.  This is only used when --use-agent has been given
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--rfc1991</term>
@@ -1081,46 +1561,160 @@ Don't use this option if you can avoid it.
 Try to be more RFC1991 (PGP 2.x) compliant.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--pgp2</term>
+<listitem><para>
+Set up all options to be as PGP 2.x compliant as possible, and warn if
+an action is taken (e.g. encrypting to a non-RSA key) that will create
+a message that PGP 2.x will not be able to handle.  Note that `PGP
+2.x' here means `MIT PGP 2.6.2'.  There are other versions of PGP 2.x
+available, but the MIT release is a good common baseline.
+</para><para>
+This option implies `--rfc1991 --no-openpgp --disable-mdc
+--no-force-v4-certs --no-comment --escape-from-lines --force-v3-sigs
+--no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
+--digest-algo MD5 --compress-algo 1'
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-pgp2</term>
+<listitem><para>
+Resets the --pgp2 option.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--pgp6</term>
+<listitem><para>
+Set up all options to be as PGP 6 compliant as possible.  This
+restricts you to the ciphers IDEA (if the IDEA plugin is installed),
+3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
+compression algorithms none and ZIP.  This also disables making
+signatures with signing subkeys as PGP 6 does not understand
+signatures made by signing subkeys.
+</para><para>
+This option implies `--disable-mdc --no-comment --escape-from-lines
+--force-v3-sigs --no-ask-sig-expire --compress-algo 1'
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-pgp6</term>
+<listitem><para>
+Resets the --pgp6 option.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--pgp7</term>
+<listitem><para>
+Set up all options to be as PGP 7 compliant as possible.  This is
+identical to --pgp6 except that the list of allowable ciphers is
+expanded to add AES128, AES192, AES256, and TWOFISH.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-pgp7</term>
+<listitem><para>
+Resets the --pgp7 option.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--openpgp</term>
 <listitem><para>
-Reset all packet, cipher and digest options to OpenPGP
-behavior. Use this option to reset all previous
-options like --rfc1991, --force-v3-sigs, --s2k-*,
---cipher-algo, --digest-algo and --compress-algo to
-OpenPGP compliant values.
+Reset all packet, cipher and digest options to OpenPGP behavior. Use
+this option to reset all previous options like --rfc1991,
+--force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
+--compress-algo to OpenPGP compliant values.  All PGP workarounds are
+also disabled.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--force-v3-sigs</term>
 <listitem><para>
-OpenPGP states that an implementation should generate
-v4 signatures but PGP 5.x recognizes v4 signatures only
-on key material.  This options forces v3 signatures for
-signatures on data.
+OpenPGP states that an implementation should generate v4 signatures
+but PGP versions 5 and higher only recognize v4 signatures on key
+material.  This option forces v3 signatures for signatures on data.
+Note that this option overrides --ask-sig-expire, as v3 signatures
+cannot have expiration dates.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-force-v3-sigs</term>
+<listitem><para>
+Reset the --force-v3-sigs option.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--force-v4-certs</term>
+<listitem><para>
+Always use v4 key signatures even on v3 keys.  This option also
+changes the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-force-v4-certs</term>
+<listitem><para>
+Reset the --force-v4-certs option.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--force-mdc</term>
 <listitem><para>
-Force the use of encryption with appended manipulation
-code.  This is always used with the newer cipher (those
-with a blocksize greater than 64 bit).
-This option might not be implemented yet.
+Force the use of encryption with appended manipulation code.  This is
+always used with the newer ciphers (those with a blocksize greater
+than 64 bit).
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--allow-non-selfsigned-uid</term>
 <listitem><para>
-Allow the import of keys with user IDs which are not self-signed.
-This is only allows the import - key validation will fail and you
-have to check the validity of the key my other means.  This hack is
-needed for some German keys generated with pgp 2.6.3in. You should really
-avoid using it, because OpenPGP has better mechanics to do separate signing
-and encryption keys.
+Allow the import and use of keys with user IDs which are not
+self-signed.  This is not recommended, as a non self-signed user ID is
+trivial to forge.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-allow-non-selfsigned-uid</term>
+<listitem><para>
+Reset the --allow-non-selfsigned-uid option.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--allow-freeform-uid</term>
+<listitem><para>
+Disable all checks on the form of the user ID while generating a new
+one.  This option should only be used in very special environments as
+it does not ensure the de-facto standard format of user IDs.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--ignore-time-conflict</term>
+<listitem><para>
+GnuPG normally checks that the timestamps associated with keys and
+signatures have plausible values.  However, sometimes a signature seems to
+be older than the key due to clock problems.  This option makes these
+checks just a warning.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--ignore-valid-from</term>
+<listitem><para>
+GnuPG normally does not select and use subkeys created in the future.  This
+option allows the use of such keys and thus exhibits the pre-1.0.7
+behaviour.  You should not use this option unless you there is some
+clock problem.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--ignore-crc-error</term>
+<listitem><para>
+The ASCII armor used by OpenPG is protected by a CRC checksum against
+transmission errors.  Sometimes it happens that the CRC gets mangled
+somewhere on the transmission channel 
+but the actual content (which is anyway protected by
+the OpenPGP protocol) is still okay.  This option will let gpg ignore
+CRC errors.
 </para></listitem></varlistentry>
 
 
@@ -1139,6 +1733,25 @@ terminates.
 Release the locks every time a lock is no longer
 needed. Use this to override a previous --lock-once
 from a config file.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--lock-never</term>
+<listitem><para>
+Disable locking entirely.  This option should be used only in very
+special environments, where it can be assured that only one process
+is accessing those files.  A bootable floppy with a stand-alone
+encryption system will probably use this.  Improper usage of this
+option may lead to data and key corruption.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-random-seed-file</term>
+<listitem><para>
+GnuPG uses a file to store its internal random pool over invocations.
+This makes random generation faster; however sometimes write operations
+are not desired.  This option can be used to achieve that with the cost of
+slower random generation.
 </para></listitem></varlistentry>
 
 
@@ -1160,6 +1773,12 @@ enter batch mode.
 <term>--no-secmem-warning</term>
 <listitem><para>
 Suppress the warning about "using insecure memory".
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-permission-warning</term>
+<listitem><para>
+Suppress the warning about unsafe file permissions.
 </para></listitem></varlistentry>
 
 
@@ -1190,14 +1809,15 @@ verification is not needed.
 <varlistentry>
 <term>--with-colons</term>
 <listitem><para>
-Print key listings delimited by colons.
+Print key listings delimited by colons.  Note, that the output will be
+encoded in UTF-8 regardless of any --charset setting.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--with-key-data</term>
 <listitem><para>
-Print key listings delimited by colons and print the public key data.
+Print key listings delimited by colons (like --with-colons) and print the public key data.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1205,6 +1825,32 @@ Print key listings delimited by colons and print the public key data.
 <listitem><para>
 Same as the command --fingerprint but changes only the format of the output
 and may be used together with another command.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--fast-list-mode</term>
+<listitem><para>
+Changes the output of the list commands to work faster; this is achieved
+by leaving some parts empty.  Some applications don't need the user ID and
+the trust information given in the listings.  By using this options they
+can get a faster listing.  The exact behaviour of this option may change
+in future versions.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--fixed-list-mode</term>
+<listitem><para>
+Do not merge user ID and primary key in --with-colon listing mode and
+print all timestamps as seconds since 1970-01-01.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--list-only</term>
+<listitem><para>
+Changes the behaviour of some commands.  This is like --dry-run but
+different in some cases.  The semantic of this command may be extended in
+the future.  Currently it only skips the actual decryption pass and
+therefore enables a fast listing of the encryption keys.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1220,15 +1866,265 @@ This is not for normal use.  Use the source to see for what it might be useful.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--entropy-dll-name &ParmFile;</term>
+<term>--emulate-md-encode-bug</term>
 <listitem><para>
-This option is only used for the Win32 version of GnuPG and changes the
-default location (c:/gnupg/entropy.dll) of the Winseed DLL to &ParmFile;.
+GnuPG versions prior to 1.0.2 had a bug in the way a signature was encoded.
+This options enables a workaround by checking faulty signatures again with
+the encoding used in old versions.  This may only happen for ElGamal signatures
+which are not widely used.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--show-session-key</term>
+<listitem><para>
+Display the session key used for one message. See --override-session-key
+for the counterpart of this option.
+</para>
+<para>
+We think that Key-Escrow is a Bad Thing; however the user should
+have the freedom to decide whether to go to prison or to reveal the content of
+one specific message without compromising all messages ever encrypted for one
+secret key. DON'T USE IT UNLESS YOU ARE REALLY FORCED TO DO SO.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--override-session-key &ParmString; </term>
+<listitem><para>
+Don't use the public key but the session key &ParmString;.  The format of this
+string is the same as the one printed by --show-session-key.  This option
+is normally not used but comes handy in case someone forces you to reveal the
+content of an encrypted message; using this option you can do this without
+handing out the secret key.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--ask-sig-expire</term>
+<listitem><para>
+When making a data signature, prompt for an expiration time.  If this
+option is not specified, the expiration time is "never".
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--no-ask-sig-expire</term>
+<listitem><para>
+Resets the --ask-sig-expire option.
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--ask-cert-expire</term>
+<listitem><para>
+When making a key signature, prompt for an expiration time.  If this
+option is not specified, the expiration time is "never".
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--no-ask-cert-expire</term>
+<listitem><para>
+Resets the --ask-cert-expire option.
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--expert</term>
+<listitem><para>
+Allow the user to do certain nonsensical or "silly" things like
+signing an expired or revoked key, or certain potentially incompatible
+things like generating deprecated key types.  This also disables
+certain warning messages about potentially incompatible actions.  As
+the name implies, this option is for experts only.  If you don't fully
+understand the implications of what it allows you to do, leave this
+off.
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--no-expert</term>
+<listitem><para>
+Resets the --expert option.
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--merge-only</term>
+<listitem><para>
+Don't insert new keys into the keyrings while doing an import.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--allow-secret-key-import</term>
+<listitem><para>
+This is an obsolete option and is not used anywhere.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--try-all-secrets</term>
+<listitem><para>
+Don't look at the key ID as stored in the message but try all secret keys in
+turn to find the right decryption key.	This option forces the behaviour as
+used by anonymous recipients (created by using --throw-keyid) and might come
+handy in case where an encrypted message contains a bogus key ID.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--enable-special-filenames</term>
+<listitem><para>
+This options enables a mode in which filenames of the form
+<filename>-&#38;n</>, where n is a non-negative decimal number,
+refer to the file descriptor n and not to a file with that name.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-expensive-trust-checks</term>
+<listitem><para>
+Experimental use only.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--group &ParmNameValue;</term>
+<listitem><para>
+Sets up a name group, which is similar to aliases in email programs.
+Any time the group name is a receipient (-r or --recipient), it will
+be expanded to the values specified.  Note there is only one level of
+expansion - you cannot make an group that points to another group.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--preserve-permissions</term>
+<listitem><para>
+Don't change the permissions of a secret keyring back to user
+read/write only.  Use this option only if you really know what you are doing.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--personal-cipher-preferences &ParmString;</term>
+<listitem><para>
+Set the list of personal cipher preferences to &ParmString;, this list
+should be a string similar to the one printed by the command "pref" in
+the edit menu.  This allows the user to factor in their own preferred
+algorithms when algorithms are chosen via recipient key preferences.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--personal-digest-preferences &ParmString;</term>
+<listitem><para>
+Set the list of personal digest preferences to &ParmString;, this list
+should be a string similar to the one printed by the command "pref" in
+the edit menu.  This allows the user to factor in their own preferred
+algorithms when algorithms are chosen via recipient key preferences.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--personal-compress-preferences &ParmString;</term>
+<listitem><para>
+Set the list of personal compression preferences to &ParmString;, this
+list should be a string similar to the one printed by the command
+"pref" in the edit menu.  This allows the user to factor in their own
+preferred algorithms when algorithms are chosen via recipient key
+preferences.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--default-preference-list &ParmString;</term>
+<listitem><para>
+Set the list of default preferences to &ParmString;, this list should
+be a string similar to the one printed by the command "pref" in the
+edit menu.  This affects both key generation and "updpref" in the edit
+menu.
 </para></listitem></varlistentry>
 
 
 </variablelist>
 </refsect1>
+
+
+<refsect1>
+    <title>How to specify a user ID</title>
+    <para>
+There are different ways on how to specify a user ID to GnuPG;
+here are some examples:
+    </para>
+
+    <variablelist>
+<varlistentry>
+<term></term>
+<listitem><para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>234567C4</term>
+<term>0F34E556E</term>
+<term>01347A56A</term>
+<term>0xAB123456</term>
+<listitem><para>
+Here the key ID is given in the usual short form.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>234AABBCC34567C4</term>
+<term>0F323456784E56EAB</term>
+<term>01AB3FED1347A5612</term>
+<term>0x234AABBCC34567C4</term>
+<listitem><para>
+Here the key ID is given in the long form as used by OpenPGP
+(you can get the long key ID using the option --with-colons).
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>1234343434343434C434343434343434</term>
+<term>123434343434343C3434343434343734349A3434</term>
+<term>0E12343434343434343434EAB3484343434343434</term>
+<term>0xE12343434343434343434EAB3484343434343434</term>
+<listitem><para>
+The best way to specify a key ID is by using the fingerprint of
+the key.  This avoids any ambiguities in case that there are duplicated
+key IDs (which are really rare for the long key IDs).
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>=Heinrich Heine &#60;heinrichh@uni-duesseldorf.de&#62;</term>
+<listitem><para>
+Using an exact to match string.  The equal sign indicates this.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>&#60;heinrichh@uni-duesseldorf.de&#62;</term>
+<listitem><para>
+Using the email address part which must match exactly.	The left angle bracket
+indicates this email address mode.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>+Heinrich Heine duesseldorf</term>
+<listitem><para>
+All words must match exactly (not case sensitive) but can appear in
+any order in the user ID.  Words are any sequences of letters,
+digits, the underscore and all characters with bit 7 set.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>Heine</term>
+<term>*Heine</term>
+<listitem><para>
+By case insensitive substring matching.  This is the default mode but
+applications may want to explicitly indicate this by putting the asterisk
+in front.
+</para></listitem>
+</varlistentry>
+
+    </variablelist>
+
+    <para>
+Note that you can append an exclamation mark to key IDs or
+fingerprints.  This flag tells GnuPG to use exactly the given primary
+or secondary key and not to try to figure out which secondary or
+primary key to use.
+    </para>
+
+</refsect1>
+
 
 <refsect1>
     <title>RETURN VALUE</title>
@@ -1295,6 +2191,20 @@ constructed by cutting off the extension (".asc" or ".sig") of
 <term>GNUPGHOME</term>
 <listitem><para>If set directory used instead of "~/.gnupg".</para></listitem>
 </varlistentry>
+<varlistentry>
+<term>GPG_AGENT_INFO</term>
+<listitem><para>Used to locate the gpg-agent; only honored when
+--use-agent is set.  The value consists of 3 colon delimited fields: 
+The first is the path to the Unix Domain Socket, the second the PID of
+the gpg-agent and the protocol version which should be set to 1.  When
+starting the gpg-agent as described in its documentation, this
+variable is set to the correct value.  The option --gpg-agent-info can
+be used to overide it.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>http_proxy</term>
+<listitem><para>Only honored when the option --honor-http-proxy is set.</para></listitem>
+</varlistentry>
     </variablelist>
 
 </refsect1>
@@ -1334,6 +2244,11 @@ constructed by cutting off the extension (".asc" or ".sig") of
 </varlistentry>
 
 <varlistentry>
+<term>~/.gnupg/random_seed</term>
+<listitem><para>used to preserve the internal random pool</para></listitem>
+</varlistentry>
+
+<varlistentry>
 <term>~/.gnupg/options</term>
 <listitem><para>May contain options</para></listitem>
 </varlistentry>
@@ -1365,6 +2280,11 @@ directory very well.
 <para>
 Keep in mind that, if this program is used over a network (telnet), it
 is *very* easy to spy out your passphrase!
+</para>
+<para>
+If you are going to verify detached signatures, make sure that the
+program knows about it; either be giving both filenames on the
+commandline or using <literal>-</literal> to specify stdin.
 </para>
 </refsect1>
 

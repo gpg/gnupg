@@ -1,0 +1,8 @@
+REGEDIT4
+
+[HKEY_CURRENT_USER\Software\GNU\GNUPG]
+"HomeDir"="C:\\GnuPG"
+"gpgProgram"="C:\\GnuPG\\gpg.exe"
+
+[HKEY_CURRENT_USER\Control Panel\Mingw32\NLS]
+"MODir"="C:\\GnuPG\\Locale"

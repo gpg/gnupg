@@ -4,8 +4,7 @@
 
 #info Checking decryption of supplied files
 for i in $plain_files ; do
-    echo "$usrpass1" | $srcdir/run-gpg  --passphrase-fd 0 \
-		       -o y --yes $srcdir/$i.asc
+    echo "$usrpass1" | $GPG  --passphrase-fd 0 -o y --yes $srcdir/$i.asc
     cmp $i y || error "$i: mismatch"
 done
 

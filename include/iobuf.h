@@ -1,5 +1,5 @@
 /* iobuf.h - I/O buffer
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPG_IOBUF_H
-#define GPG_IOBUF_H
+#ifndef G10_IOBUF_H
+#define G10_IOBUF_H
 
 #include "types.h"
 
@@ -40,9 +40,9 @@ typedef struct iobuf_struct *IOBUF;
 /* fixme: we should hide most of this stuff */
 struct iobuf_struct {
     int use;	       /* 1 input , 2 output, 3 temp */
-    unsigned long nlimit;
-    unsigned long nbytes; /* used together with nlimit */
-    unsigned long ntotal; /* total bytes read (position of stream) */
+    off_t nlimit;
+    off_t nbytes;      /* used together with nlimit */
+    off_t ntotal;      /* total bytes read (position of stream) */
     int nofast; 	/* used by the iobuf_get() */
     void *directfp;
     struct {
@@ -71,17 +71,26 @@ struct iobuf_struct {
     } unget;
 };
 
-int iobuf_debug_mode;
+#ifndef EXTERN_UNLESS_MAIN_MODULE
+ #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
+  #define EXTERN_UNLESS_MAIN_MODULE extern
+ #else
+  #define EXTERN_UNLESS_MAIN_MODULE 
+ #endif
+#endif
+EXTERN_UNLESS_MAIN_MODULE int iobuf_debug_mode;
 
+void  iobuf_enable_special_filenames ( int yes );
 IOBUF iobuf_alloc(int use, size_t bufsize);
 IOBUF iobuf_temp(void);
 IOBUF iobuf_temp_with_content( const char *buffer, size_t length );
 IOBUF iobuf_open( const char *fname );
 IOBUF iobuf_fdopen( int fd, const char *mode );
-IOBUF iobuf_fopen( const char *fname, const char *mode );
+IOBUF iobuf_sockopen( int fd, const char *mode );
 IOBUF iobuf_create( const char *fname );
 IOBUF iobuf_append( const char *fname );
 IOBUF iobuf_openrw( const char *fname );
+int   iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval );
 int   iobuf_close( IOBUF iobuf );
 int   iobuf_cancel( IOBUF iobuf );
 
@@ -96,10 +105,10 @@ void iobuf_clear_eof(IOBUF a);
 #define iobuf_set_error(a)    do { (a)->error = 1; } while(0)
 #define iobuf_error(a)	      ((a)->error)
 
-void iobuf_set_limit( IOBUF a, unsigned long nlimit );
+void iobuf_set_limit( IOBUF a, off_t nlimit );
 
-ulong iobuf_tell( IOBUF a );
-int   iobuf_seek( IOBUF a, ulong newpos );
+off_t iobuf_tell( IOBUF a );
+int   iobuf_seek( IOBUF a, off_t newpos );
 
 int  iobuf_readbyte(IOBUF a);
 int  iobuf_read(IOBUF a, byte *buf, unsigned buflen );
@@ -115,7 +124,7 @@ int  iobuf_write_temp( IOBUF a, IOBUF temp );
 size_t iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen );
 void iobuf_unget_and_close_temp( IOBUF a, IOBUF temp );
 
-u32 iobuf_get_filelength( IOBUF a );
+off_t iobuf_get_filelength( IOBUF a );
 #define IOBUF_FILELENGTH_LIMIT 0xffffffff
 const char *iobuf_get_real_fname( IOBUF a );
 const char *iobuf_get_fname( IOBUF a );
@@ -123,6 +132,9 @@ const char *iobuf_get_fname( IOBUF a );
 void iobuf_set_block_mode( IOBUF a, size_t n );
 void iobuf_set_partial_block_mode( IOBUF a, size_t len );
 int  iobuf_in_block_mode( IOBUF a );
+
+int iobuf_translate_file_handle ( int fd, int for_write );
+
 
 /* get a byte form the iobuf; must check for eof prior to this function
  * this function returns values in the range 0 .. 255 or -1 to indicate EOF
@@ -146,4 +158,4 @@ int  iobuf_in_block_mode( IOBUF a );
 #define iobuf_get_temp_length(a) ( (a)->d.len )
 #define iobuf_is_temp(a)	 ( (a)->use == 3 )
 
-#endif /*GPG_IOBUF_H*/
+#endif /*G10_IOBUF_H*/

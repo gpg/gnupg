@@ -1,5 +1,5 @@
 /* i18n.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPG_I18N_H
-#define GPG_I18N_H
+#ifndef G10_I18N_H
+#define G10_I18N_H
 
 #ifdef USE_SIMPLE_GETTEXT
   int set_gettext_file( const char *filename );
@@ -34,7 +34,11 @@
 #endif
 
 #ifdef ENABLE_NLS
+#ifndef __riscos__
   #include <libintl.h>
+#else
+  #include "libgettext.h"
+#endif /* __riscos__ */
   #define _(a) gettext (a)
   #ifdef gettext_noop
     #define N_(a) gettext_noop (a)
@@ -47,4 +51,4 @@
 #endif
 #endif /* !USE_SIMPLE_GETTEXT */
 
-#endif /*GPG_I18N_H*/
+#endif /*G10_I18N_H*/

@@ -1,0 +1,114 @@
+New features since 1.0.0
+------------------------
+
+    * The default symmetric cipher algorithm is now AES (aka
+      Rijndael).  OpenPGP uses preferences to figure out the algorithm
+      to use, so this is only used if the recipient knows how to
+      handles AES.
+
+    * RSA keys can now be used (either old PGP 2 or new OpenPGP ones).
+      RSA key generation is not yet available.
+
+    * Unattended key generation.
+
+    * Faster and more robust random number generator under W32.
+
+    * Encryption is now much faster: About 2 times for 1k bit keys
+      and 8 times for 4k keys.
+
+    * New encryption keys are generated in a way which allows a much
+      faster decryption.
+
+    * GnuPG knows what the primary user ID is.
+
+    * Large File Support (LFS) is working.
+
+    * Ability to run gpg as a full controlled inferior process to speed up
+      mass verification of signatures.  
+
+    * Rewritten key selection code so that GnuPG can better cope with
+      multiple subkeys, expiration dates and so on.  The drawback is that it
+      is slower.
+
+    * New utility gpgv which is a stripped down version of gpg to
+      be used to verify signatures against a list of trusted keys.
+
+    * New command --export-secret-subkeys which outputs the
+      the _primary_ key with it's secret parts deleted.  This is
+      useful for automated decryption/signature creation as it
+      allows to keep the real secret primary key offline and
+      thereby protecting the key certificates and allowing to
+      create revocations for the subkeys.  See the FAQ for a
+      procedure to install such secret keys.
+
+    * New options --show-session-key and --override-session-key
+      to help the British folks to somewhat minimize the danger
+      of this Orwellian RIP bill.
+
+    * New option --no-auto-key-retrieve to disable retrieving of a
+      missing public key from a keyserver, even when a keyserver has
+      been configured.  Useful for dial-up connections.
+
+    * HTTP proxy support for keyservers.
+
+    * Keyserver support is how also available for W32 platforms (MS
+      Windows 95, 98, 2000, NT, ME).
+
+    * Experimental gpg-agent support to get the passphrase from a
+      daemon which can pop up a query window.  
+
+
+rfc2440bis support (PGP 6.5.8 does also handle them)
+-------------------
+
+    * MDC enhanced encryption is now used with the AES and Twofish
+      algorithms to detect manipulated messages. 
+
+    * The user is now asked for the reason of a revocation.
+
+
+Translations:
+------------
+
+    * Enhanced UTF-8 support
+
+    * New translations: Danish, Estonian, Indonesian, Portuguese and
+      Turkish.
+
+Serious bug fixes:
+------------------
+
+    * Fixed a serious bug which could lead to false signature
+      verification results when more than one signature is fed to gpg.
+      This is the primary reason for releasing this version.
+
+    * Protection against the recent Klima/Rosa attck on secret key
+      rings.
+
+    * Corrected hash calculation for input data larger than 512M - it
+      was just wrong, so you might notice bad signature in some very
+      big files.  It may be wise to keep an old copy of GnuPG around.
+
+    * Secret keys are no longer imported unless you use the new option
+      --allow-secret-key-import.
+
+PGP quirks
+----------
+
+    * Can handle (but not display) PGP's photo IDs. 
+
+    * Better default values to increase compatibilty with PGP.
+
+    * Many other small enhancements to support the not fully-OpenPGP
+      compliant PGP versions.
+
+Manual
+------
+
+    * The manual called GNU Privacy Handbook (GPH) is a separate
+      package and available preformatted in English, German, Italian,
+      Russian and Spanish at http://www.gnupg.org/docs.html.
+      [Due to the complicated build process, the source is currently
+      on available from CVS]
+
+

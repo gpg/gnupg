@@ -1,0 +1,116 @@
+2002-06-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Don't hard-code the LDAP libraries - get them from
+	LDAPLIBS via configure.  Also, gpgkeys_hkp is a program, not a
+	script.
+
+2002-06-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (include_subkeys): Default "include-subkeys" to
+	off, since GnuPG now defaults it to on.
+
+2002-06-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (parse_hkp_index): Type tweaks.
+
+	* gpgkeys_hkp.c (main): Add experimental code warning.
+
+2002-06-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am, gpgkeys_hkp.c (new): Experimental HKP keyserver
+	interface.
+
+2002-05-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: Include <lber.h> if we absolutely must.  This
+	helps when compiling against a very old OpenLDAP.
+
+2002-04-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Properly handle key requests in full
+	fingerprint form.
+
+2002-03-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (printquoted): Quote backslashes within keyserver
+	search responses.
+
+2002-02-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap (get_key): LDAP keyservers do not support v3
+	fingerprints, so error out if someone tries.  Actually, they don't
+	support any fingerprints, but at least we can calculate a keyid
+	from a v4 fingerprint.
+
+2002-02-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap: Clarify the notion of a partial failure.  This is
+	possible if more than one key is being handled in a batch, and one
+	fails while the other succeeds.  Note that a search that comes up
+	with no results is not a failure - that is a valid response of "no
+	answer".
+
+	* gpgkeys_ldap.c (get_key): Allow GnuPG to send us full v4
+	fingerprints, long key ids, or short key ids while fetching.
+	Since the LDAP server doesn't actually handle fingerprints, chop
+	them down to long key ids for actual use.
+
+	* gpgkeys_ldap.c (main, get_key): When searching for a keyid,
+	search for subkeys as well as primary keys.  This is mostly
+	significant when automatically fetching the key based on the id in
+	a header (i.e. "signature made by....").  "no-include-subkeys"
+	disables.
+
+2002-02-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: Fix compiler warning.
+
+	* gpgkeys_ldap.c: Be much more robust with mangled input files.
+
+2001-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Use the new OUTOFBAND indicator so gpg knows
+	not to try and import anything.  Also turn on perl -w for
+	warnings.
+
+	* gpgkeys_ldap.c (main): If we're using temp files (rather than
+	stdin/stdout), make sure the file is closed when we're done.
+
+2001-12-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* Properly free the LDAP response when we're done with it.
+
+	* Now that we handle multiple keys, we must remove duplicates as
+	the LDAP keyserver returns keys with multiple user IDs multiple
+	times.
+
+	* Properly handle multiple keys with the same key ID (it's really
+	rare, so fetch "0xDEADBEEF" to test this).
+
+2001-12-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c, gpgkeys_mailto.in: Fix GNU capitalization
+	issues.  Prefix log messages with "gpgkeys" to clarify which
+	program is generating them.
+
+2001-12-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (search_key): Use unsigned int rather than uint
+	for portability.
+
+2001-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* Initial version of gpgkeys_ldap (LDAP keyserver helper) and
+	gpgkeys_mailto (email keyserver helper)
+
+	
+ Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	

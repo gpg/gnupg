@@ -1,105 +1,26 @@
 #!/bin/sh
 
-echo "test is currently disabled"
-exit 0
-
-
 . $srcdir/defs.inc || exit 3
-ignore_errors=yes
 
-
-if (expect -v) < /dev/null > /dev/null 2>&1 ; then
-  :
-else
-  echo "\"expect\" needed but not found - test skipped"
-  exit 0
-fi
-
-LANG=
-LANGUAGE=
-
-expect  - <<EOF >/dev/null
-#set timeout -1
-set timeout 8
-match_max 100000
-spawn ../g10/gpg --no-batch --homedir . --gen-key
-expect {
-    -exact "Please select what kind of key you want:\r
-   (1) DSA and ElGamal (default)\r
-   (2) DSA (sign only)\r
-   (4) ElGamal (sign and encrypt)\r
-Your selection? "  { send -- "1\r" }
-    timeout { exit 1 } }
-expect {
-    -exact "1\r
-\r                 \rDSA keypair will have 1024 bits.\r
-About to generate a new ELG-E keypair.\r
-              minimum keysize is  768 bits\r
-              default keysize is 1024 bits\r
-    highest suggested keysize is 2048 bits\r
-What keysize do you want? (1024) " { send -- "\r" }
-    timeout { exit 1 } }
-expect {
-    -exact "\r
-\r                                 \rRequested keysize is 1024 bits\r
-Please specify how long the key should be valid.\r
-         0 = key does not expire\r
-      <n>  = key expires in n days\r
-      <n>w = key expires in n weeks\r
-      <n>m = key expires in n months\r
-      <n>y = key expires in n years\r
-Key is valid for? (0) " { send -- "1\r" }
-    timeout { exit 1 } }
-expect {
-     -exact "1\r
-\r                       \rKey expires at " { }
-    timeout { exit 1 } }
-expect {
-     -re "(.*)\r
-" {}
-    timeout { exit 1 } }
-expect {
-    -exact "Is this correct (y/n)? " { send -- "y\r" }
-    timeout { exit 1 } }
-expect {
-    -exact "y\r
-\r                        \r\r
-You need a User-ID to identify your key; the software constructs the user id\r
-from Real Name, Comment and Email Address in this form:\r
-    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\r
-\r
-Real name: " { send -- "Harry H.\r" }
-    timeout { exit 1 } }
-expect {
-   -exact "Harry H.\r
-\r                   \rEmail address: " { send -- "hh@ddorf.de\r" }
-    timeout { exit 1 } }
-expect {
-   -exact "hh@ddorf.de\r
-\r                          \rComment: " { send -- "a test\r" }
-    timeout { exit 1 } }
-expect {
-   -exact "a test\r
-\r               \rYou selected this USER-ID:\r
-    \"Harry H. (a test) <hh@ddorf.de>\"\r
-\r
-Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? " { send -- "o\r" }
-    timeout { exit 1 } }
-expect {
-   -exact "o\r
-\r                                                     \rYou need a Passphrase to protect your secret key.\r
-\r
-Enter passphrase: " { sleep 1; send -- "abc\r" }
-    timeout { exit 1 } }
-expect {
-  -ex "\r                  \rRepeat passphrase: " { sleep 1; send -- "abc\r" }
-    timeout { exit 1 } }
-set timeout 600
-expect {
-    -re "^.*\r\npublic and secret key" { exit 0 }
-    eof  { exit 1 }
-}
-exit 1
+../g10/gpg --quiet --batch --quick-random --homedir . --gen-key <<EOF
+Key-Type: DSA
+Key-Length: 1024
+Subkey-Type: ELG-E
+Subkey-Length: 1024
+Name-Real: Harry H.
+Name-Comment: test key 
+Name-Email: hh@@ddorf.de
+Expire-Date: 1
+Passphrase: abc
+%commit
+Key-Type: RSA
+Key-Length: 1024
+Key-Usage: sign,encrypt
+Name-Real: Harry A.
+Name-Comment: RSA test key 
+Name-Email: hh@@ddorf.de
+Expire-Date: 2
+Passphrase: abc
+%commit
 EOF
 
-#*-*wedit:notab*-*

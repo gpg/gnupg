@@ -1,5 +1,5 @@
 /* types.h - some common typedefs
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPG_TYPES_H
-#define GPG_TYPES_H
+#ifndef G10_TYPES_H
+#define G10_TYPES_H
 
 
 /* The AC_CHECK_SIZEOF() in configure fails for some machines.
@@ -43,7 +43,14 @@
 
 #ifndef HAVE_BYTE_TYPEDEF
   #undef byte	    /* maybe there is a macro with this name */
-  typedef unsigned char byte;
+  #ifndef __riscos__
+    typedef unsigned char byte;
+  #else 
+    /* Norcroft treats char  = unsigned char  as legal assignment
+                   but char* = unsigned char* as illegal assignment
+       and the same applies to the signed variants as well  */
+    typedef char byte;
+  #endif 
   #define HAVE_BYTE_TYPEDEF
 #endif
 
@@ -121,4 +128,4 @@ typedef struct string_list {
 } *STRLIST;
 
 
-#endif /*GPG_TYPES_H*/
+#endif /*G10_TYPES_H*/

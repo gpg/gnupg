@@ -1,0 +1,95 @@
+This is a binary version of GnuPG for MS-Windows 95, 98, WNT and W2000.
+
+A FAQ comes with this package and a probably more recent one can be
+found online at http://www.gnupg.org/faq.html.  See
+http://www.gnupg.org/docs-mls.html for a list of mailing lists. In
+particular the list gnupg-users@gnupg.org might be useful to answer
+questions - but please read the FAQ first.
+
+Installation instructions:
+--------------------------
+ 1. Unpack the ZIP archive (alright, you already did this).
+ 2. Copy "gpg.exe" to some place where you usually store your
+    binaries.
+ 3. Create a directory "c:\gnupg" (or any other as you like)
+ 4. If you did not use the default directory "c:\gnupg", you
+    should enter a string with the directory into the Registry
+    under the key:
+	 \\HKEY_CURRENT_USER\Software\GNU\GnuPG\HomeDir
+    Please use forward slashes and not the backslashes when
+    setting filenames for GnuPG into the Registry.
+ 5. Enter "gpg" and see what happens
+ 6. Read the file README and the online HOWTOs
+
+
+Internationalization support:
+-----------------------------
+  1. Decide where to store the translation files for your language.
+     Here we assume the directory "c:/gnu/locale/fr"
+  2. Set the directory with the translations into the Registry under the key: 
+	\\HKEY_CURRENT_USER\Control Panel\Mingw32\NLS\MODir
+     (Example entry: "c:/gnu/locale/fr")
+  3. Select which language to use and copy the currect translation file
+     under the name "gnupg.mo" into the directory set in step 2
+     (Example:	"copy fr.mo c:\gnu\locale\fr\gnupg.mo")
+  4. Done.
+
+Currently we only support the Codepages 437, 850 und Latin1.  If you have
+problems, either delete the gnupg.mo file or don't set the environment
+variable
+
+
+
+How to build it from the source:
+--------------------------------
+This version has been build with the Mingw32/CPD kit using the latest
+stable version of GnuPG.
+
+First get the source: It has to be available at the same location you
+found this binary package - if not you should have received a written
+offer to get the source delivered to you See the file COPYING (section
+3) for details.
+
+If you got this package from its canonical place (ftp.gnupg.org), the
+source is available at:
+
+  ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-1.0.n.tar.gz
+
+or for snapshots (with a letter appended to the version number)
+
+  ftp://ftp.gnupg.org/gcrypt/devel/gnupg-1.0.nx.tar.gz
+
+this is the same source as for the Unix version.  If your binary
+version of GnuPG is called something like gnupg-w32-1.0.4-1.zip, you
+should find a patch file named gnupg-w32-1.0.4-1.0.4-1.diff.gz at the
+same location, which has to be applied to the stock gpg source file.
+Instructions are at the top of this file.
+
+To build it, you need the MingW32/CPD kit, which is available at
+
+  ftp://ftp.gnupg.org/people/werner/cpd/mingw32-cpd-0.3.0.tar.gz
+  ftp://ftp.gnupg.org/people/werner/cpd/gcc-core-2.95.2.tar.gz
+  ftp://ftp.gnupg.org/people/werner/cpd/binutils-2.9.1.tar.gz
+
+gcc and binutils are stock GNU source which are available
+at every GNU mirror. 
+
+After you have installed this environment you should be able to do this:
+
+ $ scripts/autogen.sh --build-w32
+ $ make
+ $ mingw32 strip g10/gpg.exe
+ $ cp g10/gpg.exe  /some_windows_drive/
+
+And everything hopefully works.
+
+
+Don't forget that MS-Windows ist just a temporary workaround until
+you can switch to a GNU system ;-)
+
+Be the source always with you.
+
+    Werner
+
+
+

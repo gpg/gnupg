@@ -49,9 +49,6 @@ info () {
     echo "$pgmname:" $* >&2
 }
 
-chdir () {
-    cd $1 || fatal "cannot cd to $1"
-}
 
 echo_n_init=no
 echo_n () {
@@ -101,11 +98,9 @@ pgmname=`basename $0`
 
 [ -z "$srcdir" ] && fatal "not called from make"
 
-cat <<EOF  >./options
-no-greeting
-no-secmem-warning
-load-extension ../cipher/tiger
-batch
-emulate-md-encode-bug
-EOF
+GPG="../g10/gpg --homedir . "
 
+exec 2> ${pgmname}.log
+
+:
+# end

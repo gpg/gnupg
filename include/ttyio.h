@@ -1,5 +1,5 @@
 /* ttyio.h
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -17,11 +17,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef GPG_TTYIO_H
-#define GPG_TTYIO_H
+#ifndef G10_TTYIO_H
+#define G10_TTYIO_H
 
 int tty_batchmode( int onoff );
-void tty_printf( const char *fmt, ... );
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+ void tty_printf (const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+#else
+ void tty_printf (const char *fmt, ... );
+#endif
 void tty_print_string( byte *p, size_t n );
 void tty_print_utf8_string( byte *p, size_t n );
 void tty_print_utf8_string2( byte *p, size_t n, size_t max_n );
@@ -32,4 +36,4 @@ int tty_get_answer_is_yes( const char *prompt );
 int tty_no_terminal(int onoff);
 
 
-#endif /*GPG_TTYIO_H*/
+#endif /*G10_TTYIO_H*/

@@ -4,7 +4,7 @@
 
 #info Checking encryption with a pipe
 for i in $plain_files $data_files ; do
-    $srcdir/run-gpg -e --yes -r "$usrname2" <$i | tee yy | $srcdir/run-gpg --yes > y
+    $GPG --always-trust -e --yes -r "$usrname2" <$i | $GPG --yes > y
     cmp $i y || error "$i: mismatch"
 done
 

@@ -1,5 +1,5 @@
 /* host2net.h - Some macros
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPG_HOST2NET_H
-#define GPG_HOST2NET_H
+#ifndef G10_HOST2NET_H
+#define G10_HOST2NET_H
 
 #include "types.h"
 
@@ -40,4 +40,4 @@
 #define u32tobuf( p, a) ulongtobuf( (p), (a) )
 
 
-#endif /*GPG_HOST2NET_H*/
+#endif /*G10_HOST2NET_H*/

@@ -1,0 +1,1 @@
+gnupg: setuid-binary usr/bin/gpg 4755 root/root

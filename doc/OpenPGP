@@ -8,11 +8,7 @@
 
   Compatibility Notes
   ===================
-   GnuPG (>0.4.5) is in compliance with RFC2440 despite these exceptions:
-
-    * (9.1) states that RSA SHOULD be implemented.  This is not done
-      (except with an extension, usable outside the U.S.) due to
-      patent problems.
+   GnuPG (>=1.0.3) is in compliance with RFC2440 despite these exceptions:
 
     * (9.2) states that IDEA SHOULD be implemented.  This is not done
       due to patent problems.
@@ -21,7 +17,7 @@
    All MAY features are implemented with this exception:
 
     * multi-part armored messages are not supported.
-      MIME should be used instead.
+      MIME (rfc2015) should be used instead.
 
    Most of the OPTIONAL stuff is implemented.
 
@@ -32,6 +28,15 @@
    A special format of partial packet length exists for v3 packets
    which can be considered to be in compliance with RFC1991;  this
    format is only created if a special option is active.
+
+   GnuPG uses a S2K mode of 101 for GNU extensions to the secret key
+   protection algorithms.  This number is not defined in OpenPGP, but
+   given the fact that this number is in a range which used at many
+   other places in OpenPGP for private/experimenat algorithm identifiers,
+   this should be not a so bad choice.	The 3 bytes "GNU" are used
+   to identify this as a GNU extension - see the file DETAILS for a
+   definition of the used data formats.
+
 
 
   Some Notes on OpenPGP / PGP Compatibility:

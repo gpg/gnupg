@@ -1,0 +1,10 @@
+You find here translations to French of some of the documents in
+../doc.  Those translations are not necessary up-to-date and should
+not be used as reference without checking the original English
+versions.
+
+Gilbert Fernandes kindly contributed thses translatons.
+
+
+
+

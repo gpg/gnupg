@@ -1,23 +1,47 @@
 
-Format of "---with-colons" listings
-===================================
+Format of colon listings
+========================
+First an example:
 
-sec::1024:17:6C7EE1B8621CC013:1998-07-07:0:::Werner Koch <werner.koch@guug.de>:
-ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
+$ gpg --fixed-list-mode --with-colons --list-keys \
+   --with-fingerprint --with-fingerprint wk@gnupg.org
+
+pub:f:1024:17:6C7EE1B8621CC013:899817715:1055898235::m:::scESC:
+fpr:::::::::ECAF7590EB3443B5C7CF3ACB6C7EE1B8621CC013:
+uid:f::::::::Werner Koch <wk@g10code.com>:
+uid:f::::::::Werner Koch <wk@gnupg.org>:
+sub:f:1536:16:06AD222CADF6A6E1:919537416:1036177416:::::e:
+fpr:::::::::CF8BCC4B18DE08FCD8A1615906AD222CADF6A6E1:
+sub:r:1536:20:5CE086B5B5A18FF4:899817788:1025961788:::::esc:
+fpr:::::::::AB059359A3B81F410FCFF97F5CE086B5B5A18FF4:
+
+The double --with-fingerprint prints the fingerprint for the subkeys
+too, --fixed-list-mode is themodern listing way printing dates in
+seconds since Epoch and does not merge the first userID with the pub
+record.
+
 
  1. Field:  Type of record
 	    pub = public key
+            crt = X.509 certificate
+            crs = X.509 certificate and private key available
 	    sub = subkey (secondary key)
 	    sec = secret key
 	    ssb = secret subkey (secondary key)
 	    uid = user id (only field 10 is used).
+	    uat = user attribute (same as user id except for field 10).
+            sig = signature
+            rev = revocation signature
 	    fpr = fingerprint: (fingerprint is in field 10)
 	    pkd = public key data (special field format, see below)
+            grp = reserved for gpgsm
+            rvk = revocation key
 
  2. Field:  A letter describing the calculated trust. This is a single
 	    letter, but be prepared that additional information may follow
 	    in some future versions. (not used for secret keys)
 		o = Unknown (this key is new to the system)
+                i = The key is invalid (e.g. due to a missing self-signature)
 		d = The key has been disabled
 		r = The key has been revoked
 		e = The key has expired
@@ -33,21 +57,51 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 		       17 = DSA (sometimes called DH, sign only)
 		       20 = ElGamal (sign and encrypt)
 	    (for other id's see include/cipher.h)
- 5. Field:  KeyID
+ 5. Field:  KeyID either of 
  6. Field:  Creation Date (in UTC)
  7. Field:  Key expiration date or empty if none.
- 8. Field:  Local ID: record number of the dir record in the trustdb.
-	    This value is only valid as long as the trustdb is not
-	    deleted. You can use "#<local-id> as the user id when
-	    specifying a key. This is needed because keyids may not be
-	    unique - a program may use this number to access keys later.
+ 8. Field:  Used for serial number in crt records (used to be the Local-ID)
  9. Field:  Ownertrust (primary public keys only)
 	    This is a single letter, but be prepared that additional
 	    information may follow in some future versions.
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
+            This is not used with --fixed-list-mode in gpg.
+            A UAT record puts the attribute subpacket count here, a
+	    space, and then the total attribute subpacket size.
+            In gpgsm the issuer name comes here
+            An FPR record stores the fingerprint here.
+            The fingerprint of an revocation key is stored here.
+11. Field:  Signature class.  This is a 2 digit hexnumber followed by
+            either the letter 'x' for an exportable signature or the
+            letter 'l' for a local-only signature.
+            The class byte of an revocation key is also given here,
+            'x' and 'l' ist used the same way.
+12. Field:  Key capabilities:
+                e = encrypt
+                s = sign
+                c = certify
+            A key may have any combination of them.  The primary key has in
+            addition to these letters, uppercase version of the letter to
+            denote the _usable_ capabilities of the entire key.  
+13. Field:  Used in FPR records for S/MIME keys to store the fingerprint of
+            the issuer certificate.  This is useful to build the
+            certificate path based on certificates stored in the local
+            keyDB; it is only filled if the issue certificate is
+            available. The advantage of using this value is that it is
+            guaranteed to have been been build by the same lookup
+            algorithm as gpgsm uses.
+            For "uid" recods this lists the preferences n the sameway the 
+            -edit menu does.
+14. Field   Flag field used in the --edit menu output:
 
-More fields may be added later.
+
+All dates are displayed in the format yyyy-mm-dd unless you use the
+option --fixed-list-mode in which case they are displayed as seconds
+since Epoch.  More fields may be added later, so parsers should be
+prepared for this. When parsing a number the parser should stop at the
+first non-number character so that additional information can later be
+added.
 
 If field 1 has the tag "pkd", a listing looks like this:
 pkd:0:1024:B665B1435F4C2 .... FF26ABB:
@@ -55,7 +109,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     !  !------ for information number of bits in the value
     !--------- index (eg. DSA goes from 0 to 3: p,q,g,y)
 
-
+ 
 
 Format of the "--status-fd" output
 ==================================
@@ -66,10 +120,26 @@ more arguments in future versions.
 
 
     GOODSIG	<long keyid>  <username>
-	The signature with the keyid is good.
+	The signature with the keyid is good.  For each signature only
+        one of the three codes GOODSIG, BADSIG or ERRSIG will be
+        emitted and they may be used as a marker for a new signature.
+        The username is the primary one encoded in UTF-8 and %XX
+        escaped.
+
+    EXPSIG	<long keyid>  <username>
+	The signature with the keyid is good, but the signature is
+	expired. The username is the primary one encoded in UTF-8 and
+	%XX escaped.
+
+    EXPKEYSIG	<long keyid>  <username>
+	The signature with the keyid is good, but the signature was
+	made by an expired key. The username is the primary one
+	encoded in UTF-8 and %XX escaped.
 
     BADSIG	<long keyid>  <username>
 	The signature with the keyid has not been verified okay.
+        The username is the primary one encoded in UTF-8 and %XX
+        escaped.
 
     ERRSIG  <long keyid>  <pubkey_algo> <hash_algo> \
 	    <sig_class> <timestamp> <rc>
@@ -80,11 +150,14 @@ more arguments in future versions.
 	this signature.  sig_class is a 2 byte hex-value.
 
     VALIDSIG	<fingerprint in hex> <sig_creation_date> <sig-timestamp>
+		<expire-timestamp>
+
 	The signature with the keyid is good. This is the same
 	as GOODSIG but has the fingerprint as the argument. Both
-	status lines ere emitted for a good signature.
+	status lines are emitted for a good signature.
 	sig-timestamp is the signature creation time in seconds after
-	the epoch.
+	the epoch. expire-timestamp is the signature expiration time
+	in seconds after the epoch (zero means "does not expire").
 
     SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
 	This is emitted only for signatures of class 0 or 1 which
@@ -107,34 +180,51 @@ more arguments in future versions.
 	    3 - Invalid packet found, this may indicate a non OpenPGP message.
 	You may see more than one of these status lines.
 
-    TRUST_UNDEFINED
-    TRUST_NEVER
+    UNEXPECTED <what>
+        Unexpected data has been encountered
+            0 - not further specified               1       
+  
+
+    TRUST_UNDEFINED <error token>
+    TRUST_NEVER  <error token>
     TRUST_MARGINAL
     TRUST_FULLY
     TRUST_ULTIMATE
 	For good signatures one of these status lines are emitted
-	to indicate how trustworthy the signature is.  No arguments yet.
+	to indicate how trustworthy the signature is.  The error token
+        values are currently only emiited by gpgsm.
 
     SIGEXPIRED
-	The signature key has expired.	No arguments yet.
+	This is deprecated in favor of KEYEXPIRED.
+
+    KEYEXPIRED <expire-timestamp>
+	The key has expired.  expire-timestamp is the expiration time
+	in seconds after the epoch.
 
     KEYREVOKED
-	The used key has been revoked by his owner.  No arguments yet.
+	The used key has been revoked by its owner.  No arguments yet.
 
     BADARMOR
 	The ASCII armor is corrupted.  No arguments yet.
 
     RSA_OR_IDEA
-	The RSA or IDEA algorithms has been used in the data.  A
+	The IDEA algorithms has been used in the data.  A
 	program might want to fallback to another program to handle
-	the data if GnuPG failed.
+	the data if GnuPG failed.  This status message used to be emitted
+        also for RSA but this has been dropped after the RSA patent expired.
+        However we can't change the name of the message.
 
     SHM_INFO
     SHM_GET
     SHM_GET_BOOL
     SHM_GET_HIDDEN
 
-    NEED_PASSPHRASE <long keyid>  <keytype>  <keylength>
+    GET_BOOL
+    GET_LINE
+    GET_HIDDEN
+    GOT_IT
+
+    NEED_PASSPHRASE <long main keyid> <long keyid> <keytype> <keylength>
 	Issued whenever a passphrase is needed.
 	keytype is the numerical value of the public key algorithm
 	or 0 if this is not applicable, keylength is the length
@@ -149,7 +239,7 @@ more arguments in future versions.
 	will probably be a BAD_PASSPHRASE.  However, if the application
 	is a wrapper around the key edit menu functionality it might not
 	make sense to stop parsing but simply ignoring the following
-	PAD_PASSPHRASE.
+	BAD_PASSPHRASE.
 
     BAD_PASSPHRASE <long keyid>
 	The supplied passphrase was wrong or not given.  In the latter case
@@ -177,7 +267,7 @@ more arguments in future versions.
     IMPORTED   <long keyid>  <username>
 	The keyid and name of the signature just imported
 
-    IMPORTED_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
+    IMPORT_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
 	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported> <sec_dups>
 	Final statistics on import process (this is one long line)
 
@@ -185,10 +275,107 @@ more arguments in future versions.
 	Start processing a file <filename>.  <what> indicates the performed
 	operation:
 	    1 - verify
+            2 - encrypt
+            3 - decrypt        
 
     FILE_DONE
 	Marks the end of a file processing which has been started
 	by FILE_START.
+
+    BEGIN_DECRYPTION
+    END_DECRYPTION
+	Mark the start and end of the actual decryption process.  These
+	are also emitted when in --list-only mode.
+
+    BEGIN_ENCRYPTION  <mdc_method> <sym_algo>
+    END_ENCRYPTION
+	Mark the start and end of the actual encryption process.
+
+    DELETE_PROBLEM reason_code
+	Deleting a key failed.	Reason codes are:
+	    1 - No such key
+	    2 - Must delete secret key first
+
+    PROGRESS what char cur total
+	Used by the primegen and Public key functions to indicate progress.
+	"char" is the character displayed with no --status-fd enabled, with
+	the linefeed replaced by an 'X'.  "cur" is the current amount
+	done and "total" is amount to be done; a "total" of 0 indicates that
+	the total amount is not known.	100/100 may be used to detect the
+	end of operation.
+
+    SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
+	A signature has been created using these parameters.
+	    type:  'D' = detached
+		   'C' = cleartext
+		   'S' = standard
+		   (only the first character should be checked)
+	    class: 2 hex digits with the signature class
+        
+    KEY_CREATED <type>
+        A key has been created
+            type: 'B' = primary and subkey
+                  'P' = primary
+                  'S' = subkey
+
+    SESSION_KEY  <algo>:<hexdigits>
+	The session key used to decrypt the message.  This message will
+	only be emmited when the special option --show-session-key
+	is used.  The format is suitable to be passed to the option
+	--override-session-key
+
+    NOTATION_NAME <name> 
+    NOTATION_DATA <string>
+        name and string are %XX escaped; the data may be splitted
+        among several notation_data lines.
+
+    USERID_HINT <long main keyid> <string>
+        Give a hint about the user ID for a certain keyID. 
+
+    POLICY_URL <string>
+        string is %XX escaped
+
+    BEGIN_STREAM
+    END_STREAM
+        Issued by pipemode.
+
+    INV_RECP <reason> <requested_recipient>
+        Issued for each unusable recipient. The reasons codes
+        currently in use are:
+          0 := "No specific reason given".
+          1 := "Not Found"
+          2 := "Ambigious specification"
+
+    NO_RECP <reserved>
+        Issued when no recipients are usable.
+
+    ALREADY_SIGNED <long-keyid>
+        Warning: This is experimental and might be removed at any time.
+
+    TRUNCATED <maxno>
+        The output was truncated to MAXNO items.  This status code is issued
+        for certain external requests
+
+    ERROR <error location> <error code> 
+        This is a generic error status message, it might be followed
+        by error location specific data. <error token> and
+        <error_location> should not contain a space.
+
+    ATTRIBUTE <fpr> <octets> <type> <index> <count>
+	      <timestamp> <expiredate> <flags>
+	This is one long line issued for each attribute subpacket when
+	an attribute packet is seen during key listing.  <fpr> is the
+	fingerprint of the key. <octets> is the length of the
+	attribute subpacket. <type> is the attribute type
+	(1==image). <index>/<count> indicates that this is the Nth
+	indexed subpacket of count total subpackets in this attribute
+	packet.  <timestamp> and <expiredate> are from the
+	self-signature on the attribute packet.  If the attribute
+	packet does not have a valid self-signature, then the
+	timestamp is 0.  <flags> are a bitwise OR of:
+		0x01 = this attribute packet is a primary uid
+		0x02 = this attribute packet is revoked
+		0x04 = this attribute packet is expired
 
 
 Key generation
@@ -222,6 +409,121 @@ Key generation
     Crypto '97 proceedings p. 260.
 
 
+Unattended key generation
+=========================
+This feature allows unattended generation of keys controlled by a
+parameter file.  To use this feature, you use --gen-key together with
+--batch and feed the parameters either from stdin or from a file given
+on the commandline.
+
+The format of this file is as follows:
+  o Text only, line length is limited to about 1000 chars.
+  o You must use UTF-8 encoding to specify non-ascii characters.
+  o Empty lines are ignored.
+  o Leading and trailing spaces are ignored.
+  o A hash sign as the first non white space character indicates a comment line.
+  o Control statements are indicated by a leading percent sign, the
+    arguments are separated by white space from the keyword.
+  o Parameters are specified by a keyword, followed by a colon.  Arguments
+    are separated by white space.
+  o The first parameter must be "Key-Type", control statements
+    may be placed anywhere.
+  o Key generation takes place when either the end of the parameter file
+    is reached, the next "Key-Type" parameter is encountered or at the
+    control statement "%commit"
+  o Control statements:
+    %echo <text>
+	Print <text>.
+    %dry-run
+	Suppress actual key generation (useful for syntax checking).
+    %commit
+	Perform the key generation.  An implicit commit is done
+	at the next "Key-Type" parameter.
+    %pubring <filename>
+    %secring <filename>
+	Do not write the key to the default or commandline given
+	keyring but to <filename>.  This must be given before the first
+	commit to take place, duplicate specification of the same filename
+	is ignored, the last filename before a commit is used.
+	The filename is used until a new filename is used (at commit points)
+	and all keys are written to that file.	If a new filename is given,
+	this file is created (and overwrites an existing one).
+	Both control statements must be given.
+   o The order of the parameters does not matter except for "Key-Type"
+     which must be the first parameter.  The parameters are only for the
+     generated keyblock and parameters from previous key generations are not
+     used. Some syntactically checks may be performed.
+     The currently defined parameters are:
+     Key-Type: <algo-number>|<algo-string>
+	Starts a new parameter block by giving the type of the
+	primary key. The algorithm must be capable of signing.
+	This is a required parameter.
+     Key-Length: <length-in-bits>
+	Length of the key in bits.  Default is 1024.
+     Key-Usage: <usage-list>
+        Space or comma delimited list of key usage, allowed values are
+        "encrypt" and "sign".  This is used to generate the key flags.
+        Please make sure that the algorithm is capable of this usage.
+     Subkey-Type: <algo-number>|<algo-string>
+	This generates a secondary key.  Currently only one subkey
+	can be handled.
+     Subkey-Length: <length-in-bits>
+	Length of the subkey in bits.  Default is 1024.
+     Subkey-Usage: <usage-list>
+        Similar to Key-Usage.
+     Passphrase: <string>
+	If you want to specify a passphrase for the secret key,
+	enter it here.	Default is not to use any passphrase.
+     Name-Real: <string>
+     Name-Comment: <string>
+     Name-Email: <string>
+	The 3 parts of a key. Remember to use UTF-8 here.
+	If you don't give any of them, no user ID is created.
+     Expire-Date: <iso-date>|(<number>[d|w|m|y])
+	Set the expiration date for the key (and the subkey).  It
+	may either be entered in ISO date format (2000-08-15) or as
+	number of days, weeks, month or years. Without a letter days
+	are assumed.
+     Preferences: <string>
+        Set the cipher, hash, and compression preference values for
+	this key.  This expects the same type of string as "setpref"
+	in the --edit menu.
+     Revoker: <algo>:<fpr> [sensitive]
+        Add a designated revoker to the generated key.  Algo is the
+	public key algorithm of the designated revoker (i.e. RSA=1,
+	DSA=17, etc.)  Fpr is the fingerprint of the designated
+	revoker.  The optional "sensitive" flag marks the designated
+	revoker as sensitive information.  Only v4 keys may be
+	designated revokers.
+
+Here is an example:
+$ cat >foo <<EOF
+     %echo Generating a standard key
+     Key-Type: DSA
+     Key-Length: 1024
+     Subkey-Type: ELG-E
+     Subkey-Length: 1024
+     Name-Real: Joe Tester
+     Name-Comment: with stupid passphrase
+     Name-Email: joe@foo.bar
+     Expire-Date: 0
+     Passphrase: abc
+     %pubring foo.pub
+     %secring foo.sec
+     # Do a commit here, so that we can later print "done" :-)
+     %commit
+     %echo done
+EOF
+$ gpg --batch --gen-key -a foo
+ [...]
+$ gpg --no-default-keyring --secret-keyring foo.sec \
+				  --keyring foo.pub --list-secret-keys
+/home/wk/work/gnupg-stable/scratch/foo.sec
+------------------------------------------
+sec  1024D/915A878D 2000-03-09 Joe Tester (with stupid passphrase) <joe@foo.bar>
+ssb  1024g/8F70E2C0 2000-03-09
+
+
 
 Layout of the TrustDB
 =====================
@@ -229,6 +531,8 @@ The TrustDB is built from fixed length records, where the first byte
 describes the record type.  All numeric values are stored in network
 byte order. The length of each record is 40 bytes. The first record of
 the DB is always of type 1 and this is the only record of this type.
+
+FIXME:  The layout changed, document it here.
 
   Record type 0:
   --------------
@@ -259,7 +563,7 @@ the DB is always of type 1 and this is the only record of this type.
      1 u32  record number of shadow directory hash table
 	    It does not make sense to combine this table with the key table
 	    because the keyid is not in every case a part of the fingerprint.
-     4 bytes reserved for version extension record
+     1 u32  record number of the trusthashtbale
 
 
   Record type 2: (directory record)
@@ -316,7 +620,7 @@ the DB is always of type 1 and this is the only record of this type.
 
   Record type 5: (pref record)
   --------------
-    Informations about preferences
+    This record type is not anymore used.
 
      1 byte value 5
      1 byte   reserved
@@ -339,16 +643,16 @@ the DB is always of type 1 and this is the only record of this type.
      1 u32    next   next sigrec of this uid or 0 to indicate the
 		     last sigrec.
      6 times
-	1 u32  Local_id of signators dir or shadow dir record
+	1 u32  Local_id of signatures dir or shadow dir record
 	1 byte Flag: Bit 0 = checked: Bit 1 is valid (we have a real
 			     directory record for this)
-			 1 = valid is set (but my be revoked)
+			 1 = valid is set (but may be revoked)
 
 
 
   Record type 8: (shadow directory record)
   --------------
-    This record is used to reserved a LID for a public key.  We
+    This record is used to reserve a LID for a public key.  We
     need this to create the sig records of other keys, even if we
     do not yet have the public key of the signature.
     This record (the record number to be more precise) will be reused
@@ -477,7 +781,7 @@ There is one enhancement used with the old style packet headers:
 +  future extensions. These length markers must be inserted into the data
 +  stream just before writing the data out.
 +
-+  This 2 byte filed is large enough, because the application must buffer
++  This 2 byte field is large enough, because the application must buffer
 +  this amount of data to prepend the length marker before writing it out.
 +  Data block sizes larger than about 32k doesn't make any sense. Note
 +  that this may also be used for compressed data streams, but we must use
@@ -485,10 +789,19 @@ There is one enhancement used with the old style packet headers:
 +  that this is the last packet.
 
 
+GNU extensions to the S2K algorithm
+===================================
+S2K mode 101 is used to identify these extensions.
+After the hash algorithm the 3 bytes "GNU" are used to make
+clear that these are extensions for GNU, the next bytes gives the
+GNU protection mode - 1000.  Defined modes are:
+  1001 - do not store the secret part at all
+
+
 Usage of gdbm files for keyrings
 ================================
-    The key to store the keyblock is it's fingerprint, other records
-    are used for secondary keys.  fingerprints are always 20 bytes
+    The key to store the keyblock is its fingerprint, other records
+    are used for secondary keys.  Fingerprints are always 20 bytes
     where 16 bit fingerprints are appended with zero.
     The first byte of the key gives some information on the type of the
     key.
@@ -505,6 +818,41 @@ Usage of gdbm files for keyrings
       1 = keyblock
       2 = list of 20 byte padded fingerprints
       3 = list of list fingerprints (but how to we key them?)
+
+
+
+Pipemode
+========
+This mode can be used to perform multiple operations with one call to
+gpg. It comes handy in cases where you have to verify a lot of
+signatures. Currently we support only detached signatures.  This mode
+is a kludge to avoid running gpg n daemon mode and using Unix Domain
+Sockets to pass the data to it.  There is no easy portable way to do
+this under Windows, so we use plain old pipes which do work well under
+Windows.  Because there is no way to signal multiple EOFs in a pipe we
+have to embed control commands in the data stream: We distinguish
+between a data state and a control state.  Initially the system is in
+data state but it won't accept any data.  Instead it waits for
+transition to control state which is done by sending a single '@'
+character.  While in control state the control command os expected and
+this command is just a single byte after which the system falls back
+to data state (but does not necesary accept data now).  The simplest
+control command is a '@' which just inserts this character into the
+data stream.
+
+Here is the format we use for detached signatures:
+"@<"  - Begin of new stream
+"@B"  - Detached signature follows.
+        This emits a control packet (1,'B')
+<detached_signature>
+"@t"  - Signed text follows. 
+        This emits the control packet (2, 'B')
+<signed_text>
+"@."  - End of operation. The final control packet forces signature
+        verification
+"@>"  - End of stream   
+
+
 
 
 
@@ -596,11 +944,11 @@ The keyserver also recognizes http-POSTs to /pks/add. Use this to upload
 keys.
 
 
-A better way to to this would be a request like:
+A better way to do this would be a request like:
 
    /pks/lookup/<gnupg_formatierte_user_id>?op=<operation>
 
-this can be implemented using Hurd's translator mechanism.
+This can be implemented using Hurd's translator mechanism.
 However, I think the whole key server stuff has to be re-thought;
 I have some ideas and probably create a white paper.
 

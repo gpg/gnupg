@@ -4,16 +4,16 @@
 
 #info Checking encryption
 for i in $plain_files $data_files ; do
-    $srcdir/run-gpg $dsa_keyrings -e -o x --yes -r "$dsa_usrname2" $i
-    $srcdir/run-gpg $dsa_keyrings -o y --yes x
+    $GPG $dsa_keyrings --always-trust -e -o x --yes -r "$dsa_usrname2" $i
+    $GPG $dsa_keyrings -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
 
 # and with cast
 for i in $plain_files $data_files ; do
-    $srcdir/run-gpg $dsa_keyrings --cipher-algo cast5 -e \
+    $GPG $dsa_keyrings --always-trust --cipher-algo cast5 -e \
 					-o x --yes -r "$dsa_usrname2" $i
-    $srcdir/run-gpg $dsa_keyrings -o y --yes x
+    $GPG $dsa_keyrings -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
 
