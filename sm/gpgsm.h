@@ -39,6 +39,12 @@ struct {
 
   const char *homedir; /* configuration directory name */
   const char *agent_program; 
+  const char *display;
+  const char *ttyname;
+  const char *ttytype;
+  const char *lc_ctype;
+  const char *lc_messages;
+
   const char *dirmngr_program;
   char *outfile;    /* name of output file */
 

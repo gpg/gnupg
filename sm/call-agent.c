@@ -26,8 +26,10 @@
 #include <unistd.h> 
 #include <time.h>
 #include <assert.h>
-
 #include <gcrypt.h>
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 
 #include "gpgsm.h"
 #include "../assuan/assuan.h"
@@ -133,6 +135,11 @@ start_agent (void)
   int rc;
   char *infostr, *p;
   ASSUAN_CONTEXT ctx;
+  char *dft_display = NULL;
+  char *dft_ttyname = NULL;
+  char *dft_ttytype = NULL;
+  char *old_lc = NULL;
+  char *dft_lc = NULL;
 
   if (agent_ctx)
     return 0; /* fixme: We need a context for each thread or serialize
@@ -144,9 +151,8 @@ start_agent (void)
     {
       const char *pgmname;
       const char *argv[3];
-
       log_info (_("no running gpg-agent - starting one\n"));
-      
+
       if (fflush (NULL))
         {
           log_error ("error flushing pending output: %s\n", strerror (errno));
@@ -204,7 +210,6 @@ start_agent (void)
         }
     }
 
-
   if (rc)
     {
       log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
@@ -214,6 +219,92 @@ start_agent (void)
 
   if (DBG_AGENT)
     log_debug ("connection to agent established\n");
+
+  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  dft_display = getenv ("DISPLAY");
+  if (opt.display || dft_display)
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION display=%s",
+		    opt.display ? opt.display : dft_display) < 0)
+	return GNUPG_Out_Of_Core;
+      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      free (optstr);
+      if (rc)
+	return map_assuan_err (rc);
+    }
+  if (!opt.ttyname && ttyname (1))
+    dft_ttyname = ttyname (1);
+  if (opt.ttyname || dft_ttyname)
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION ttyname=%s",
+		    opt.ttyname ? opt.ttyname : dft_ttyname) < 0)
+	return GNUPG_Out_Of_Core;
+      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      free (optstr);
+      if (rc)
+	return map_assuan_err (rc);
+    }
+  dft_ttytype = getenv ("TERM");
+  if (!rc && (opt.ttytype || (dft_ttyname && dft_ttytype)))
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION ttytype=%s",
+		    opt.ttyname ? opt.ttytype : dft_ttytype) < 0)
+	return GNUPG_Out_Of_Core;
+      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      free (optstr);
+      if (rc)
+	return map_assuan_err (rc);
+    }
+#ifdef LC_CTYPE
+  old_lc = setlocale (LC_CTYPE, NULL);
+  dft_lc = setlocale (LC_CTYPE, "");
+#endif
+  if (!rc && (opt.lc_ctype || (dft_ttyname && dft_lc)))
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION lc-ctype=%s",
+		    opt.lc_ctype ? opt.lc_ctype : dft_lc) < 0)
+	return GNUPG_Out_Of_Core;
+      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      free (optstr);
+      if (rc)
+	return map_assuan_err (rc);
+    }
+#ifdef LC_CTYPE
+  if (old_lc)
+    setlocale (LC_CTYPE, old_lc);
+#endif
+#ifdef LC_MESSAGES
+  old_lc = setlocale (LC_MESSAGES, NULL);
+  dft_lc = setlocale (LC_MESSAGES, "");
+#endif
+  if (!rc && (opt.lc_messages || (dft_ttyname && dft_lc)))
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION lc-messages=%s",
+		    opt.lc_messages ? opt.lc_messages : dft_lc) < 0)
+	return GNUPG_Out_Of_Core;
+      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      free (optstr);
+      if (rc)
+	return map_assuan_err (rc);
+    }
+#ifdef LC_MESSAGES
+  if (old_lc)
+    setlocale (LC_MESSAGES, old_lc);
+#endif
+
   return 0;
 }
 

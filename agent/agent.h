@@ -36,6 +36,11 @@ struct {
   int batch;        /* batch mode */
   const char *homedir; /* configuration directory name */
   const char *pinentry_program; 
+  char *display;
+  char *ttyname;
+  char *ttytype;
+  char *lc_ctype;
+  char *lc_messages;
   const char *scdaemon_program; 
   int no_grab;      /* don't let the pinentry grab the keyboard */
   unsigned long def_cache_ttl;

@@ -83,7 +83,14 @@ enum cmd_and_opt_values {
   oDebugWait,
 
   oEnableSpecialFilenames,
+
   oAgentProgram,
+  oDisplay,
+  oTTYname,
+  oTTYtype,
+  oLCctype,
+  oLCmessages,
+
   oDirmngrProgram,
 
 
@@ -340,6 +347,11 @@ static ARGPARSE_OPTS opts[] = {
     { oNoOptions, "no-options", 0, "@" }, /* shortcut for --options /dev/null */
     { oHomedir, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
     { oAgentProgram, "agent-program", 2 , "@" },
+    { oDisplay,    "display",     2, "@" },
+    { oTTYname,    "ttyname",     2, "@" },
+    { oTTYtype,    "ttytype",     2, "@" },
+    { oLCctype,    "lc-ctype",    2, "@" },
+    { oLCmessages, "lc-messages", 2, "@" },
     { oDirmngrProgram, "dirmngr-program", 2 , "@" },
 
     { oNoBatch, "no-batch", 0, "@" },
@@ -842,6 +854,11 @@ main ( int argc, char **argv)
         case oNoOptions: break; /* no-options */
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
+        case oDisplay: opt.display = pargs.r.ret_str; break;
+        case oTTYname: opt.ttyname = pargs.r.ret_str; break;
+        case oTTYtype: opt.ttytype = pargs.r.ret_str; break;
+        case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
+        case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
           
         case oNoDefKeyring: default_keyring = 0; break;

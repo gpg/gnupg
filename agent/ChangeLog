@@ -1,3 +1,15 @@
+2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* agent.h (struct opt): Add members display, ttyname, ttytype,
+	lc_ctype, and lc_messages.
+	* gpg-agent.c (enum cmd_and_opt_values): Add oDisplay, oTTYname,
+	oTTYtype, oLCctype, and LCmessages.
+	(main): Handle these options.
+	* command.c (option_handler): New function.
+	(register_commands): Register option handler.
+	* query.c (start_pinentry): Pass the various display and tty
+	options to the pinentry.
+
 2002-04-05  Werner Koch  <wk@gnupg.org>
 
 	* protect-tool.c (show_file): New.  Used as default action.

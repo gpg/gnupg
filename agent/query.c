@@ -56,7 +56,7 @@ start_pinentry (void)
   int rc;
   const char *pgmname;
   ASSUAN_CONTEXT ctx;
-  const char *argv[3];
+  const char *argv[5];
 
   if (entry_ctx)
     return 0; /* No need to serialize things becuase the agent is
@@ -81,7 +81,14 @@ start_pinentry (void)
     pgmname++;
 
   argv[0] = pgmname;
-  argv[1] = NULL;
+  if (opt.display)
+    {
+      argv[1] = "--display";
+      argv[2] = opt.display;
+      argv[3] = NULL;
+    }
+  else
+    argv[1] = NULL;
 
   /* connect to the pinentry and perform initial handshaking */
   rc = assuan_pipe_connect (&ctx, opt.pinentry_program, (char**)argv, 0);
@@ -100,7 +107,47 @@ start_pinentry (void)
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return map_assuan_err (rc);
-
+  if (opt.ttyname)
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION ttyname=%s", opt.ttyname) < 0 )
+	return GNUPG_Out_Of_Core;
+      rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      free (optstr);
+      if (rc)
+	return map_assuan_err (rc);
+    }
+  if (opt.ttytype)
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION ttytype=%s", opt.ttytype) < 0 )
+	return GNUPG_Out_Of_Core;
+      rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      if (rc)
+	return map_assuan_err (rc);
+    }
+  if (opt.lc_ctype)
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION lc-ctype=%s", opt.lc_ctype) < 0 )
+	return GNUPG_Out_Of_Core;
+      rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      if (rc)
+	return map_assuan_err (rc);
+    }
+  if (opt.lc_messages)
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION lc-messages=%s", opt.lc_messages) < 0 )
+	return GNUPG_Out_Of_Core;
+      rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      if (rc)
+	return map_assuan_err (rc);
+    }
   return 0;
 }
 

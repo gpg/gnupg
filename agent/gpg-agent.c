@@ -67,8 +67,13 @@ enum cmd_and_opt_values
   oLogFile,
   oServer,
   oBatch,
-  
+
   oPinentryProgram,
+  oDisplay,
+  oTTYname,
+  oTTYtype,
+  oLCctype,
+  oLCmessages,
   oScdaemonProgram,
   oDefCacheTTL,
 
@@ -94,6 +99,12 @@ static ARGPARSE_OPTS opts[] = {
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
 
   { oPinentryProgram, "pinentry-program", 2 , "path to PIN Entry program" },
+  { oDisplay,    "display",     2, "set the display" },
+  { oTTYname,    "ttyname",     2, "set the tty terminal node name" },
+  { oTTYtype,    "ttytype",     2, "set the tty terminal type" },
+  { oLCctype,    "lc-ctype",    2, "set the tty LC_CTYPE value" },
+  { oLCmessages, "lc-messages", 2, "set the tty LC_MESSAGES value" },
+
   { oScdaemonProgram, "scdaemon-program", 2 , "path to SCdaemon program" },
   { oDefCacheTTL, "default-cache-ttl", 4,
                                  "|N|expire cached PINs after N seconds"},
@@ -374,6 +385,11 @@ main (int argc, char **argv )
         case oServer: pipe_server = 1; break;
 
         case oPinentryProgram: opt.pinentry_program = pargs.r.ret_str; break;
+        case oDisplay: opt.display = xstrdup (pargs.r.ret_str); break;
+        case oTTYname: opt.ttyname = xstrdup (pargs.r.ret_str); break;
+        case oTTYtype: opt.ttytype = xstrdup (pargs.r.ret_str); break;
+        case oLCctype: opt.lc_ctype = xstrdup (pargs.r.ret_str); break;
+        case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
         case oScdaemonProgram: opt.scdaemon_program = pargs.r.ret_str; break;
         case oDefCacheTTL: opt.def_cache_ttl = pargs.r.ret_ulong; break;
 

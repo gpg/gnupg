@@ -1,3 +1,14 @@
+2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgsm.h (struct opt): New members display, ttyname, ttytype,
+	lc_ctype, lc_messages.
+	* gpgsm.c (enum cmd_and_opt_values): New members oDisplay,
+	oTTYname, oTTYtype, oLCctype, oLCmessages.
+	(opts): New entries for these options.
+	(main): Handle these new options.
+	* call-agent.c (start_agent): Set the various display and tty
+	parameter after resetting.
+
 2002-04-18  Werner Koch  <wk@gnupg.org>
 
 	* certreqgen.c (gpgsm_genkey): Write status output on success.
