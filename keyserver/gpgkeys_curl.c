@@ -1,4 +1,4 @@
-/* gpgkeys_ftp.c - fetch a key via FTP
+/* gpgkeys_curl.c - fetch a key via libcurl
  * Copyright (C) 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -35,21 +35,32 @@ extern char *optarg;
 extern int optind;
 
 #define GET         0
+#define MAX_SCHEME 20
 #define MAX_LINE   80
 #define MAX_PATH 1023
 #define MAX_AUTH  127
 #define MAX_HOST   79
 #define MAX_PORT    9
-#define MAX_URL (3+3+MAX_AUTH+1+MAX_HOST+1+1+MAX_PORT+1+1+MAX_PATH+1+50)
+#define MAX_URL (MAX_SCHEME+3+MAX_AUTH+1+1+MAX_HOST+1+1+MAX_PORT+1+1+MAX_PATH+1+50)
 
 #define STRINGIFY(x) #x
 #define MKSTRING(x) STRINGIFY(x)
 
 static int verbose=0;
-static char auth[MAX_AUTH+1],host[MAX_HOST+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'};
+static char scheme[MAX_SCHEME+1],auth[MAX_AUTH+1],host[MAX_HOST+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'};
 static FILE *input=NULL,*output=NULL,*console=NULL;
 static CURL *curl;
 static char request[MAX_URL]={'\0'};
+
+static int
+curl_err_to_gpg_err(CURLcode error)
+{
+  switch(error)
+    {
+    case CURLE_FTP_COULDNT_RETR_FILE: return KEYSERVER_KEY_NOT_FOUND;
+    default: return KEYSERVER_INTERNAL_ERROR;
+    }
+}
 
 static int
 get_key(char *getkey)
@@ -62,7 +73,7 @@ get_key(char *getkey)
 
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
-  sprintf(request,"ftp://%s%s%s%s%s%s%s",auth[0]?auth:"",auth[0]?"@":"",
+  sprintf(request,"%s://%s%s%s%s%s%s%s",scheme,auth[0]?auth:"",auth[0]?"@":"",
 	  host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
@@ -70,7 +81,7 @@ get_key(char *getkey)
   curl_easy_setopt(curl,CURLOPT_FILE,output);
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 
-  if(verbose>2)
+  if(verbose>1)
     {
       curl_easy_setopt(curl,CURLOPT_STDERR,console);
       curl_easy_setopt(curl,CURLOPT_VERBOSE,TRUE);
@@ -79,10 +90,9 @@ get_key(char *getkey)
   res=curl_easy_perform(curl);
   if(res!=0)
     {
-      fprintf(console,"gpgkeys: FTP fetch error %d: %s\n",res,errorbuffer);
-      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,
-	      (res==CURLE_FTP_COULDNT_RETR_FILE)?KEYSERVER_KEY_NOT_FOUND:
-	      KEYSERVER_INTERNAL_ERROR);
+      fprintf(console,"gpgkeys: %s fetch error %d: %s\n",scheme,
+	      res,errorbuffer);
+      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,curl_err_to_gpg_err(res));
     }
   else
     fprintf(output,"KEY 0x%s END\n",getkey);
@@ -111,7 +121,7 @@ main(int argc,char *argv[])
   /* Kludge to implement standard GNU options.  */
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
-      fputs ("gpgkeys_ftp (GnuPG) " VERSION"\n", stdout);
+      fputs ("gpgkeys_curl (GnuPG) " VERSION"\n", stdout);
       return 0;
     }
   else if (argc > 1 && !strcmp (argv[1], "--help"))
@@ -186,9 +196,15 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
+      if(sscanf(line,"SCHEME %" MKSTRING(MAX_SCHEME) "s\n",scheme)==1)
+	{
+	  scheme[MAX_SCHEME]='\0';
+	  continue;
+	}
+
       if(sscanf(line,"AUTH %" MKSTRING(MAX_AUTH) "s\n",auth)==1)
 	{
-	  host[MAX_AUTH]='\0';
+	  auth[MAX_AUTH]='\0';
 	  continue;
 	}
 
@@ -252,6 +268,26 @@ main(int argc,char *argv[])
 	  continue;
 	}
     }
+
+  if(scheme[0]=='\0')
+    {
+      fprintf(console,"gpgkeys: no scheme supplied!\n");
+      return KEYSERVER_SCHEME_NOT_FOUND;
+    }
+#ifndef HTTP_SUPPORT
+  else if(strcasecmp(scheme,"http")==0)
+    {
+      fprintf(console,"gpgkeys: scheme `%s' not supported\n",scheme);
+      return KEYSERVER_SCHEME_NOT_FOUND;
+    }
+#endif /* HTTP_SUPPORT */
+#ifndef FTP_SUPPORT
+  else if(strcasecmp(scheme,"ftp")==0)
+    {
+      fprintf(console,"gpgkeys: scheme `%s' not supported\n",scheme);
+      return KEYSERVER_SCHEME_NOT_FOUND;
+    }
+#endif /* FTP_SUPPORT */
 
   if(timeout && register_timeout()==-1)
     {
@@ -318,8 +354,9 @@ main(int argc,char *argv[])
   fprintf(output,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(output,"PROGRAM %s\n\n",VERSION);
 
-  if(verbose>1)
+  if(verbose)
     {
+      fprintf(console,"Scheme:\t\t%s\n",scheme);
       fprintf(console,"Host:\t\t%s\n",host);
       if(port[0])
 	fprintf(console,"Port:\t\t%s\n",port);

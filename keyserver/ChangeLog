@@ -1,5 +1,12 @@
 2004-12-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Build gpgkeys_http or gpgkeys_curl as needed.
+
+	* gpgkeys_curl.c (main, get_key): Minor tweaks to work with either
+	FTP or HTTP.
+
+	* gpgkeys_ftp.c: renamed to gpgkeys_curl.c.
+
 	* gpgkeys_ftp.c (main, get_key): Use auth data as passed by gpg.
 	Use CURLOPT_FILE instead of CURLOPT_WRITEDATA (same option, but
 	backwards compatible).

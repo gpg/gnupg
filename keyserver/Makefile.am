@@ -19,19 +19,25 @@
 ## Process this file with automake to produce Makefile.in
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
-EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp gpgkeys_http gpgkeys_finger gpgkeys_ftp
+EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp gpgkeys_http gpgkeys_finger gpgkeys_curl
 EXTRA_SCRIPTS = gpgkeys_mailto
 libexecdir = @libexecdir@/@PACKAGE@
 
-libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_HTTP@ @GPGKEYS_FINGER@ @GPGKEYS_FTP@
+libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_FINGER@
 libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
+
+if HAVE_LIBCURL
+libexec_PROGRAMS += @GPGKEYS_CURL@
+else
+libexec_PROGRAMS += @GPGKEYS_HTTP@
+endif
 
 gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h
 gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h
 gpgkeys_http_SOURCES = gpgkeys_http.c ksutil.c ksutil.h
 gpgkeys_finger_SOURCES = gpgkeys_finger.c ksutil.c ksutil.h
-gpgkeys_ftp_SOURCES = gpgkeys_ftp.c ksutil.c ksutil.h
+gpgkeys_curl_SOURCES = gpgkeys_curl.c ksutil.c ksutil.h
 
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
@@ -39,5 +45,5 @@ gpgkeys_ldap_LDADD = ../util/libutil.a @LDAPLIBS@ @NETLIBS@ $(other_libs) @GETOP
 gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 gpgkeys_http_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 gpgkeys_finger_LDADD = ../util/libutil.a @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
-gpgkeys_ftp_CPPFLAGS = @LIBCURL_INCLUDES@
-gpgkeys_ftp_LDADD = @LIBCURL@ @GETOPT@
+gpgkeys_curl_CPPFLAGS = @LIBCURL_INCLUDES@
+gpgkeys_curl_LDADD = @LIBCURL@ @GETOPT@
