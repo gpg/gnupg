@@ -1,5 +1,5 @@
 /* call-scd.c - fork of the scdaemon to do SC operations
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -66,7 +66,7 @@ static pth_mutex_t scd_lock;
 static int active_connection_fd = -1;
 static int active_connection = 0;
 
-/* callback parameter for learn card */
+/* Callback parameter for learn card */
 struct learn_parm_s {
   void (*kpinfo_cb)(void*, const char *);
   void *kpinfo_cb_arg;
@@ -266,6 +266,41 @@ agent_reset_scd (ctrl_t ctrl)
 }
 
 
+
+/* Return a new malloced string by unescaping the string S.  Escaping
+   is percent escaping and '+'/space mapping.  A binary Nul will
+   silently be replaced by a 0xFF.  Function returns NULL to indicate
+   an out of memory status. */
+static char *
+unescape_status_string (const unsigned char *s)
+{
+  char *buffer, *d;
+
+  buffer = d = xtrymalloc (strlen (s)+1);
+  if (!buffer)
+    return NULL;
+  while (*s)
+    {
+      if (*s == '%' && s[1] && s[2])
+        { 
+          s++;
+          *d = xtoi_2 (s);
+          if (!*d)
+            *d = '\xff';
+          d++;
+          s += 2;
+        }
+      else if (*s == '+')
+        {
+          *d++ = ' ';
+          s++;
+        }
+      else
+        *d++ = *s++;
+    }
+  *d = 0; 
+  return buffer;
+}
 
 
 
@@ -375,14 +410,6 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno)
   if (rc)
     return rc;
 
-  /* Hmm, do we really need this reset - scddaemon should do this or
-     we can do this if we for some reason figure out that the
-     operation might have failed due to a missing RESET.  Hmmm, I feel
-     this is really SCdaemon's duty */
-/*    rc = assuan_transact (scd_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL); */
-/*    if (rc) */
-/*      return unlock_scd (map_assuan_err (rc)); */
-
   rc = assuan_transact (scd_ctx, "SERIALNO",
                         NULL, NULL, NULL, NULL,
                         get_serialno_cb, &serialno);
@@ -394,6 +421,8 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno)
   *r_serialno = serialno;
   return unlock_scd (0);
 }
+
+
 
 
 static AssuanError
@@ -641,6 +670,90 @@ agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
     }
 
   return unlock_scd (0);
+}
+
+
+
+/* Type used with the card_getattr_cb.  */
+struct card_getattr_parm_s {
+  const char *keyword;  /* Keyword to look for.  */
+  size_t keywordlen;    /* strlen of KEYWORD.  */
+  char *data;           /* Malloced and unescaped data.  */
+  int error;            /* ERRNO value or 0 on success. */
+};
+
+/* Callback function for agent_card_getattr.  */
+static assuan_error_t
+card_getattr_cb (void *opaque, const char *line)
+{
+  struct card_getattr_parm_s *parm = opaque;
+  const char *keyword = line;
+  int keywordlen;
+
+  if (parm->data)
+    return 0; /* We want only the first occurrence.  */
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == parm->keywordlen
+      && !memcmp (keyword, parm->keyword, keywordlen))
+    {
+      parm->data = unescape_status_string (line);
+      if (!parm->data)
+        parm->error = errno;
+    }
+  
+  return 0;
+}
+
+
+/* Call the agent to retrieve a single line data object. On success
+   the object is malloced and stored at RESULT; it is guaranteed that
+   NULL is never stored in this case.  On error an error code is
+   returned and NULL stored at RESULT. */
+gpg_error_t
+agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
+{
+  int err;
+  struct card_getattr_parm_s parm;
+  char line[ASSUAN_LINELENGTH];
+
+  *result = NULL;
+
+  if (!*name)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  memset (&parm, 0, sizeof parm);
+  parm.keyword = name;
+  parm.keywordlen = strlen (name);
+
+  /* We assume that NAME does not need escaping. */
+  if (8 + strlen (name) > DIM(line)-1)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+  stpcpy (stpcpy (line, "GETATTR "), name); 
+
+  err = start_scd (ctrl);
+  if (err)
+    return err;
+
+  err = map_assuan_err (assuan_transact (scd_ctx, line,
+                                         NULL, NULL, NULL, NULL,
+                                         card_getattr_cb, &parm));
+  if (!err && parm.error)
+    err = gpg_error_from_errno (parm.error);
+  
+  if (!err && !parm.data)
+    err = gpg_error (GPG_ERR_NO_DATA);
+  
+  if (!err)
+    *result = parm.data;
+  else
+    xfree (parm.data);
+
+  return unlock_scd (err);
 }
 
 

@@ -1,5 +1,13 @@
 2005-02-24  Werner Koch  <wk@g10code.com>
 
+	* call-scd.c (unescape_status_string): New. Actual a copy of
+	../g10/call-agent.c
+	(card_getattr_cb, agent_card_getattr): New.
+
+	* command-ssh.c (card_key_available): New.
+	(ssh_handler_request_identities): First see whether a card key is
+	available.
+
 	* gpg-agent.c (handle_connections): Need to check for events if
 	select returns with -1.
 

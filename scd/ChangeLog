@@ -1,5 +1,8 @@
 2005-02-24  Werner Koch  <wk@g10code.com>
 
+	* app.c (app_getattr): Return APPTYPE or SERIALNO type even if the
+	application does dot support the getattr call.
+
 	* app-openpgp.c (get_one_do): Never try to get a non cacheable
 	object from the cache.
 	(get_one_do): Add new arg to return an error code.  Changed all
@@ -13,6 +16,7 @@
 	been removed without a reset.
 	(do_reset, cmd_serialno): Clear that error flag.
 	(TEST_CARD_REMOVAL): New. Use it with all command handlers.
+	(scd_update_reader_status_file): Set the error flag on all changes.
 
 	* scdaemon.c (ticker_thread): Termintate if a shutdown is pending.
 

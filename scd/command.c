@@ -239,7 +239,7 @@ percent_plus_unescape (unsigned char *string)
    operations are done on the same card unless he calls this function.
  */
 static int
-cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
+cmd_serialno (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
@@ -248,7 +248,8 @@ cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
   time_t stamp;
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
-  ctrl->server_local->card_removed = 0;
+  if (ctrl->server_local->card_removed)
+    do_reset (ctrl, 0);
 
   if ((rc = open_card (ctrl, *line? line:NULL)))
     return rc;
@@ -1092,7 +1093,6 @@ cmd_checkpin (ASSUAN_CONTEXT ctx, char *line)
 
 
 
-
 
 /* Tell the assuan library about our commands */
 static int
@@ -1299,10 +1299,6 @@ scd_update_reader_status_file (void)
             char templ[50];
             FILE *fp;
 
-            last[slot].any = 1;
-            last[slot].status = status;
-            last[slot].changed = changed;
-
             log_info ("updating status of slot %d to 0x%04X\n", slot, status);
             
             sprintf (templ, "reader_%d.status", slot);
@@ -1318,7 +1314,19 @@ scd_update_reader_status_file (void)
               }
             xfree (fname);
 
-            /* Send a signal to the primary client, if any. */
+            /* Set the card removed flag.  We will set this on any
+               card change because a reset or SERIALNO request must be
+               done in any case.  */
+            if (primary_connection && primary_connection->server_local
+                && last[slot].any )
+              primary_connection->server_local->card_removed = 1;
+
+            last[slot].any = 1;
+            last[slot].status = status;
+            last[slot].changed = changed;
+
+
+            /* Send a signal to the primary client, if any.  */
             if (primary_connection && primary_connection->server_local
                 && primary_connection->server_local->assuan_ctx)
               {

@@ -1201,7 +1201,7 @@ sexp_key_extract (gcry_sexp_t sexp,
   return err;
 }
 
-/* Extract the car from SEXP, and create a newly created C-string it,
+/* Extract the car from SEXP, and create a newly created C-string 
    which is to be stored in IDENTIFIER.  */
 static gpg_error_t
 sexp_extract_identifier (gcry_sexp_t sexp, const char **identifier)
@@ -1404,6 +1404,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
 }
 			      
 
+/* Write the public key KEY_PUBLIC to STREAM in SSH key format. */
 static gpg_error_t
 ssh_send_key_public (estream_t stream, gcry_sexp_t key_public)
 {
@@ -1516,7 +1517,78 @@ key_secret_to_public (gcry_sexp_t *key_public,
   return err;
 }
 
-
+
+/* Chec whether a smartcard is available and whether it has a usable
+   key.  Store a copy of that key at R_PK and return 0.  If no key is
+   available store NULL at R_PK and return an error code.  */
+static gpg_error_t
+card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk)
+{
+  gpg_error_t err;
+  char *appname;
+  unsigned char *sbuf;
+  size_t sbuflen;
+  gcry_sexp_t pk;
+
+  *r_pk = NULL;
+
+  /* First see whether a card is available and whether the application
+     is supported.  */
+  err = agent_card_getattr (ctrl, "APPTYPE", &appname);
+  if ( gpg_err_code (err) == GPG_ERR_CARD_REMOVED )
+    {
+      /* Ask for the serial number to reset the card.  */
+      err = agent_card_serialno (ctrl, &appname);
+      if (err)
+        {
+          if (opt.verbose)
+            log_info (_("can't get serial number of card: %s\n"),
+                      gpg_strerror (err));
+          return err;
+        }
+      log_info (_("detected card with S/N: %s\n"), appname);
+      xfree (appname);
+      err = agent_card_getattr (ctrl, "APPTYPE", &appname);
+    }
+  if (err)
+    {
+      log_error (_("error getting application type of card: %s\n"),
+                 gpg_strerror (err));
+      return err;
+    }
+  if (strcmp (appname, "OPENPGP"))
+    {
+      log_info (_("card application `%s' is not supported\n"), appname);
+      xfree (appname);
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
+  xfree (appname);
+  appname = NULL;
+
+  /* Read the public key.  */
+  err = agent_card_readkey (ctrl, "OPENPGP.3", &sbuf);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info (_("no suitable card key found: %s\n"), gpg_strerror (err));
+      return err;
+    }
+
+  sbuflen = gcry_sexp_canon_len (sbuf, 0, NULL, NULL);
+  err = gcry_sexp_sscan (&pk, NULL, sbuf, sbuflen);
+  xfree (sbuf);
+  if (err)
+    {
+      log_error ("failed to build S-Exp from received card key: %s\n",
+                 gpg_strerror (err));
+      return err;
+    }
+  
+  *r_pk = pk;
+  return 0;
+}
+
+
 
 /*
   Request handler.  
@@ -1589,91 +1661,95 @@ ssh_handler_request_identities (ctrl_t ctrl,
       goto out;
     }
 
-  /* Iterate over key files.  */
 
-  /* FIXME: make sure that buffer gets deallocated properly.  */
+
+  /* First check whether a key is currently available in the card
+     reader - this should be allowed even without being listed in
+     sshcontrol.txt. */
+
+  if (!card_key_available (ctrl, &key_public))
+    {
+      err = ssh_send_key_public (key_blobs, key_public);
+      gcry_sexp_release (key_public);
+      key_public = NULL;
+      if (err)
+        goto out;
+      
+      key_counter++;
+    }
+
+
+  /* Then look at all the registered an allowed keys. */
+
 
   /* Fixme: We should better iterate over the control file and check
      whether the key file is there.  This is better in resepct to
      performance if tehre are a lot of key sin our key storage. */
-
+  /* FIXME: make sure that buffer gets deallocated properly.  */
   err = open_control_file (&ctrl_fp, 0);
   if (err)
     goto out;
 
-#warning Really need to fix this fixme.
-  /*
- FIXME:  First check whether a key is currently available in the card reader - this should be allowed even without being listed in sshcontrol.txt.
-  */
-
-  while (1)
+  while ( (dir_entry = readdir (dir)) )
     {
-      dir_entry = readdir (dir);
-      if (dir_entry)
-	{
-	  if ((strlen (dir_entry->d_name) == 44)
-	      && (! strncmp (dir_entry->d_name + 40, ".key", 4)))
-	    {
-              char hexgrip[41];
-              int disabled;
+      if ((strlen (dir_entry->d_name) == 44)
+          && (! strncmp (dir_entry->d_name + 40, ".key", 4)))
+        {
+          char hexgrip[41];
+          int disabled;
 
-              /* We do only want to return keys listed in our control
-                 file. */
-              strncpy (hexgrip, dir_entry->d_name, 40);
-              hexgrip[40] = 0;
-              if ( strlen (hexgrip) != 40 )
-                continue;
-              if (search_control_file (ctrl_fp, hexgrip, &disabled)
-                  || disabled)
-                continue;
+          /* We do only want to return keys listed in our control
+             file. */
+          strncpy (hexgrip, dir_entry->d_name, 40);
+          hexgrip[40] = 0;
+          if ( strlen (hexgrip) != 40 )
+            continue;
+          if (search_control_file (ctrl_fp, hexgrip, &disabled)
+              || disabled)
+            continue;
 
-	      strncpy (key_path + key_directory_n + 1, dir_entry->d_name, 40);
+          strncpy (key_path + key_directory_n + 1, dir_entry->d_name, 40);
 
-	      /* Read file content.  */
-	      err = file_to_buffer (key_path, &buffer, &buffer_n);
-	      if (err)
-		break;
+          /* Read file content.  */
+          err = file_to_buffer (key_path, &buffer, &buffer_n);
+          if (err)
+            goto out;
 	      
-	      err = gcry_sexp_sscan (&key_secret, NULL, buffer, buffer_n);
-	      if (err)
-		break;
+          err = gcry_sexp_sscan (&key_secret, NULL, buffer, buffer_n);
+          if (err)
+            goto out;
 
-	      xfree (buffer);
-	      buffer = NULL;
+          xfree (buffer);
+          buffer = NULL;
 
-	      err = sexp_extract_identifier (key_secret, &key_type);
-	      if (err)
-		break;
+          err = sexp_extract_identifier (key_secret, &key_type);
+          if (err)
+            goto out;
 
-	      err = ssh_key_type_lookup (NULL, key_type, &spec);
-	      if (err)
-		break;
+          err = ssh_key_type_lookup (NULL, key_type, &spec);
+          if (err)
+            goto out;
 
-	      xfree ((void *) key_type);
-	      key_type = NULL;
+          xfree ((void *) key_type);
+          key_type = NULL;
 
-	      err = key_secret_to_public (&key_public, spec, key_secret);
-	      if (err)
-		break;
+          err = key_secret_to_public (&key_public, spec, key_secret);
+          if (err)
+            goto out;
 
-	      gcry_sexp_release (key_secret);
-	      key_secret = NULL;
+          gcry_sexp_release (key_secret);
+          key_secret = NULL;
 	      
-	      err = ssh_send_key_public (key_blobs, key_public);
-	      if (err)
-		break;
+          err = ssh_send_key_public (key_blobs, key_public);
+          if (err)
+            goto out;
 
-	      gcry_sexp_release (key_public);
-	      key_public = NULL;
+          gcry_sexp_release (key_public);
+          key_public = NULL;
 
-	      key_counter++;
-	    }
-	}
-      else
-	break;
+          key_counter++;
+        }
     }
-  if (err)
-    goto out;
   
   ret = es_fseek (key_blobs, 0, SEEK_SET);
   if (ret)

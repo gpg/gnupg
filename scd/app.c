@@ -305,6 +305,35 @@ app_getattr (APP app, CTRL ctrl, const char *name)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!app->initialized)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+
+  if (app->apptype && name && !strcmp (name, "APPTYPE"))
+    {
+      send_status_info (ctrl, "APPTYPE",
+                        app->apptype, strlen (app->apptype), NULL, 0);
+      return 0;
+    }
+  if (name && !strcmp (name, "SERIALNO"))
+    {
+      char *serial_and_stamp;
+      char *serial;
+      time_t stamp;
+      int rc;
+      
+      rc = app_get_serial_and_stamp (app, &serial, &stamp);
+      if (rc)
+        return rc;
+      rc = asprintf (&serial_and_stamp, "%s %lu",
+                     serial, (unsigned long)stamp);
+      rc = (rc < 0)? gpg_error_from_errno (errno) : 0;
+      xfree (serial);
+      if (rc)
+        return rc;
+      send_status_info (ctrl, "SERIALNO",
+                        serial_and_stamp, strlen (serial_and_stamp), NULL, 0);
+      free (serial_and_stamp);
+      return 0;
+    }
+
   if (!app->fnc.getattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   return app->fnc.getattr (app, ctrl, name);

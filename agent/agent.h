@@ -259,6 +259,7 @@ int agent_card_pkdecrypt (ctrl_t ctrl,
 int agent_card_readcert (ctrl_t ctrl,
                          const char *id, char **r_buf, size_t *r_buflen);
 int agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf);
+gpg_error_t agent_card_getattr (ctrl_t ctrl, const char *name, char **result);
 int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *, char*, size_t),
                     void *getpin_cb_arg, void *assuan_context);
