@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"POT-Creation-Date: 2001-04-28 21:26+0200\n"
+"POT-Creation-Date: 2001-04-29 16:39+0200\n"
 "PO-Revision-Date: 2001-04-08 16:28+00:00\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
@@ -320,11 +320,11 @@ msgstr "impossível fechar `%s': %s\n"
 msgid "too many random bits requested; the limit is %d\n"
 msgstr "demasiados bits aletórios pedidos; o limite são %d\n"
 
-#: cipher/random.c:659
+#: cipher/random.c:661
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "AVISO: a utilizar gerador de números aleatórios inseguro!\n"
 
-#: cipher/random.c:660
+#: cipher/random.c:662
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"

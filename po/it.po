@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.5\n"
-"POT-Creation-Date: 2001-04-28 21:26+0200\n"
+"POT-Creation-Date: 2001-04-29 16:39+0200\n"
 "PO-Revision-Date: 2001-04-23 21:15+02:00\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -318,12 +318,12 @@ msgstr "impossibile chiudere `%s': %s\n"
 msgid "too many random bits requested; the limit is %d\n"
 msgstr "sono stati richiesti troppi bit casuali; il limite è %d\n"
 
-#: cipher/random.c:659
+#: cipher/random.c:661
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr ""
 "ATTENZIONE: si sta usando un generatore di numeri casuali non sicuro!!\n"
 
-#: cipher/random.c:660
+#: cipher/random.c:662
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"

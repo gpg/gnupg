@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4t\n"
-"POT-Creation-Date: 2001-04-28 21:26+0200\n"
+"POT-Creation-Date: 2001-04-29 16:39+0200\n"
 "PO-Revision-Date: 2001-04-24 17:46+02:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -327,12 +327,12 @@ msgstr ""
 "une quantité de données aléatoires trop importante a été demandée.\n"
 "La limite est %d bits.\n"
 
-#: cipher/random.c:659
+#: cipher/random.c:661
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr ""
 "ATTENTION: utilisation d'un générateur de nombres aléatoires peu sûr !!\n"
 
-#: cipher/random.c:660
+#: cipher/random.c:662
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4\n"
-"POT-Creation-Date: 2001-04-28 21:26+0200\n"
+"POT-Creation-Date: 2001-04-29 16:39+0200\n"
 "PO-Revision-Date: 2000-10-19 23:08+09:00\n"
 "Last-Translator: IIDA Yosiaki <y-iida@secom.co.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -320,11 +320,11 @@ msgstr "`%s'を閉じられません: %s\n"
 msgid "too many random bits requested; the limit is %d\n"
 msgstr "ランダム・ビットをたくさん要求し過ぎです。限界は %d\n"
 
-#: cipher/random.c:659
+#: cipher/random.c:661
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "警告: やばい乱数生成子が使われています!!\n"
 
-#: cipher/random.c:660
+#: cipher/random.c:662
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"

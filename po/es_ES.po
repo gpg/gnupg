@@ -7,7 +7,7 @@
 # GPG version: 1.0.0
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2001-04-28 21:26+0200\n"
+"POT-Creation-Date: 2001-04-29 16:39+0200\n"
 "PO-Revision-Date: 1999-10-27 06:35+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
@@ -328,12 +328,12 @@ msgstr "no puede abrirse `%s': %s\n"
 msgid "too many random bits requested; the limit is %d\n"
 msgstr ""
 
-#: cipher/random.c:659
+#: cipher/random.c:661
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr ""
 "ATENCIÓN: ¡se está usando un generador de números aleatorios inseguro!\n"
 
-#: cipher/random.c:660
+#: cipher/random.c:662
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
