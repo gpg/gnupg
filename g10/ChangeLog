@@ -1,3 +1,8 @@
+2001-02-09  Werner Koch  <wk@gnupg.org>
+
+	* delkey.c (delete_key): Removed that silly assert which rendered
+	the whole new stuff meaningless.
+
 2001-02-08  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c (key_byname): I can happe that we have both, sk and pk

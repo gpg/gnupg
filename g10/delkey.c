@@ -171,7 +171,6 @@ delete_key( const char *username, int secret, int allow_both )
 
     rc = do_delete_key (username, secret, &avail );
     if ( rc && avail ) { 
-        assert (secret);
         if ( allow_both ) {
             rc = do_delete_key (username, 1, &avail );
             if ( !rc )
