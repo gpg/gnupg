@@ -1,3 +1,7 @@
+2004-05-11  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.texi (Esoteric Options): Add --debug-allow-core-dump.
+
 2004-05-03  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.texi (Agent Options): Add --allow-mark-trusted.

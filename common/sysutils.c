@@ -70,21 +70,44 @@ trap_unaligned(void)
 int
 disable_core_dumps (void)
 {
- #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
     return 0;
- #else
-  #ifdef HAVE_SETRLIMIT
+#else
+# ifdef HAVE_SETRLIMIT
     struct rlimit limit;
 
+    /* We only set the current limit unless we were not able to
+       retrieve the old value. */
+    if (getrlimit (RLIMIT_CORE, &limit))
+      limit.rlim_max = 0;
     limit.rlim_cur = 0;
-    limit.rlim_max = 0;
-    if( !setrlimit( RLIMIT_CORE, &limit ) )
+    if( !setrlimit (RLIMIT_CORE, &limit) )
 	return 0;
     if( errno != EINVAL && errno != ENOSYS )
 	log_fatal (_("can't disable core dumps: %s\n"), strerror(errno) );
-  #endif
+#endif
     return 1;
- #endif
+#endif
+}
+
+int
+enable_core_dumps (void)
+{
+#ifdef HAVE_DOSISH_SYSTEM
+    return 0;
+#else
+# ifdef HAVE_SETRLIMIT
+    struct rlimit limit;
+
+    if (getrlimit (RLIMIT_CORE, &limit))
+      return 1;
+    limit.rlim_cur = limit.rlim_max;
+    setrlimit (RLIMIT_CORE, &limit);
+    return 1; /* We always return true because trhis function is
+                 merely a debugging aid. */
+#endif
+    return 1;
+#endif
 }
 
 

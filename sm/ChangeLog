@@ -1,7 +1,10 @@
 2004-05-11  Werner Koch  <wk@gnupg.org>
 
+	* gpgsm.c: New option --debug-allow-core-dump.
+
 	* gpgsm.h (opt): Add member CONFIG_FILENAME.
 	* gpgsm.c (main): Use it here instead of the local var.
+
 	* server.c (gpgsm_server): Print some additional information with
 	the hello in verbose mode.
 

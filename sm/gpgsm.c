@@ -92,6 +92,7 @@ enum cmd_and_opt_values {
   oDebugLevel,
   oDebugAll,
   oDebugWait,
+  oDebugAllowCoreDump,
   oDebugNoChainValidation,
   oDebugIgnoreExpiration,
   oLogFile,
@@ -335,6 +336,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDebugLevel, "debug-level" ,2, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oDebugWait, "debug-wait" ,1, "@"},
+    { oDebugAllowCoreDump, "debug-allow-core-dump", 0, "@" },
     { oDebugNoChainValidation, "debug-no-chain-validation", 0, "@"},
     { oDebugIgnoreExpiration,  "debug-ignore-expiration", 0, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
@@ -1010,6 +1012,9 @@ main ( int argc, char **argv)
         case oDebugAll: opt.debug = ~0; break;
         case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
+        case oDebugAllowCoreDump:
+          may_coredump = enable_core_dumps ();
+          break;
         case oDebugNoChainValidation: opt.no_chain_validation = 1; break;
         case oDebugIgnoreExpiration: opt.ignore_expiration = 1; break;
 

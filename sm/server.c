@@ -811,7 +811,7 @@ gpgsm_server (certlist_t default_recplist)
                  assuan_strerror(rc));
       gpgsm_exit (2);
     }
-  if (opt.verbose)
+  if (opt.verbose || opt.debug)
     {
       char *tmp = NULL;
       const char *s1 = getenv ("GPG_AGENT_INFO");

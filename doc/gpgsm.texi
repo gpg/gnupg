@@ -444,6 +444,14 @@ Note, that all flags set using this option may get overriden by
 @opindex debug-all
 Same as @code{--debug=0xffffffff}
 
+@item --debug-allow-core-dump
+@opindex debug-allow-core-dump
+Usually gpgsm tries to avoid dumping core by well written code and by
+disabling core dumps for security reasons.  However, bugs are pretty
+durable beasts and to squash them it is sometimes useful to have a core
+dump.  This option enables core dumps unless the Bad Thing happened
+before the option parsing.
+
 @item --debug-no-chain-validation
 @opindex debug-no-chain-validation
 This is actually not a debugging option but only useful as such.  It

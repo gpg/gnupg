@@ -23,6 +23,7 @@
 
 void trap_unaligned (void);
 int  disable_core_dumps (void);
+int  enable_core_dumps (void);
 const unsigned char *get_session_marker (size_t *rlen);
 int check_permissions (const char *path,int extension,int checkonly);
 
