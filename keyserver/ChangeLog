@@ -1,3 +1,14 @@
+2002-07-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (parse_hkp_index): Error if the keyserver returns
+	an unparseable HKP response.
+
+	* gpgkeys_hkp.c (main): Warn on honor-http-proxy,
+	broken-http-proxy, and include-subkeys (not supported yet).
+
+	* gpgkeys_ldap.c (main), gpgkeys_hkp.c (http_connect, main): Fix
+	some shadowing warnings.
+
 2002-06-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Don't hard-code the LDAP libraries - get them from

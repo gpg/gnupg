@@ -48,7 +48,7 @@ struct keylist
   struct keylist *next;
 };
 
-int http_connect(const char *host,unsigned short port)
+int http_connect(const char *http_host,unsigned short port)
 {
   int sock=-1;
   struct hostent *ent;
@@ -61,7 +61,7 @@ int http_connect(const char *host,unsigned short port)
       goto fail;
     }
 
-  ent=gethostbyname(host);
+  ent=gethostbyname(http_host);
   if(ent==NULL)
     {
       fprintf(console,"gpgkeys: DNS error: %s\n",hstrerror(h_errno));
@@ -88,7 +88,8 @@ int http_connect(const char *host,unsigned short port)
     }
 
   if(verbose>3)
-    fprintf(console,"gpgkeys: HKP connect to %s:%d\n",host,port?port:11371);
+    fprintf(console,"gpgkeys: HKP connect to %s:%d\n",
+	    http_host,port?port:11371);
 
   return 0;
 
@@ -397,9 +398,25 @@ unsigned int scan_isodatestr( const char *string )
 int parse_hkp_index(char *line,char **buffer)
 {
   static int open=0,revoked=0;
-  static char *key,*uid;
+  static char *key=NULL,*uid=NULL;
   static unsigned int bits,createtime;
   int ret=0;
+
+  /* printf("Open %d, LINE: %s, uid: %s\n",open,line,uid); */
+
+  /* Try and catch some bastardization of HKP.  If we don't have
+     certain unchanging landmarks, we can't reliably parse the
+     response. */
+
+  if(open && strncasecmp(line,"</pre>",6)!=0 &&
+     strncasecmp(line,"pub ",5)!=0 &&
+     strncasecmp(line,"     ",5)!=0)
+    {
+      free(key);
+      free(uid);
+      fprintf(console,"gpgkeys; this keyserver is not fully HKP compatible\n");
+      return -1;
+    }
 
   /* printf("Open %d, LINE: %s\n",open,line); */
 
@@ -640,7 +657,7 @@ int search_key(char *searchkey)
     }
 
   fprintf(output,"COUNT %d\n%s",count,buffer);
-  //  fprintf(output,"COUNT -1\n%s",buffer);
+  /* fprintf(output,"COUNT -1\n%s",buffer); */
 
   fprintf(output,"SEARCH %s END\n",searchkey);
 
@@ -789,6 +806,13 @@ int main(int argc,char *argv[])
 	      else
 		include_revoked=1;
 	    }
+	  else if(strcasecmp(start,"honor-http-proxy")==0 ||
+		  strcasecmp(start,"broken-http-proxy")==0 ||
+		  strcasecmp(start,"include-subkeys")==0)
+	    {
+	      fprintf(stderr,"gpgkeys: HKP does not currently support %s\n",
+		      start);
+	    }
 
 	  continue;
 	}
@@ -897,17 +921,17 @@ int main(int argc,char *argv[])
 
     case SEND:
       {
-	int ret;
+	int ret2;
 
 	do
 	  {
 	    http_connect(host,port);
-	    ret=send_key();
-	    if(ret==-1)
+	    ret2=send_key();
+	    if(ret2==-1)
 	      failed++;
 	    http_disconnect();
 	  }
-	while(ret!=1);
+	while(ret2!=1);
       }
       break;
 

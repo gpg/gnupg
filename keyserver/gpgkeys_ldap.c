@@ -901,15 +901,15 @@ int main(int argc,char *argv[])
 
     case SEND:
       {
-	int ret;
+	int ret2;
 
 	do
 	  {
-	    ret=send_key();
-	    if(ret==-1)
+	    ret2=send_key();
+	    if(ret2==-1)
 	      failed++;
 	  }
-	while(ret!=1);
+	while(ret2!=1);
       }
       break;
 
