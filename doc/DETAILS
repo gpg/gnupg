@@ -364,6 +364,8 @@ more arguments in future versions.
           7 := "CRL too old"
           8 := "Policy mismatch"
           9 := "Not a secret key"
+	 10 := "Key not trusted"
+
         Note that this status is also used for gpgsm's SIGNER command
         where it relates to signer's of course.
 

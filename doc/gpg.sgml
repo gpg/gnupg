@@ -997,6 +997,14 @@ keyservers, as they do not support disabling keys.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>include-subkeys</term>
+<listitem><para>
+When receiving a key, include subkeys in the search.  Note that this
+option is not used with HKP keyservers, as they do not support
+retrieving keys by subkey id.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>use-temp-files</term>
 <listitem><para>
 On most Unix-like platforms, GnuPG communicates with the keyserver
@@ -2328,7 +2336,8 @@ be used to overide it.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>http_proxy</term>
-<listitem><para>Only honored when the option --honor-http-proxy is set.</para></listitem>
+<listitem><para>Only honored when the keyserver-option
+honor-http-proxy is set.</para></listitem>
 </varlistentry>
     </variablelist>
 
