@@ -1,5 +1,3 @@
------BEGIN PGP SIGNED MESSAGE-----
-
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
 			    Version 1.0
@@ -135,10 +133,11 @@
     Documentation
     -------------
 
-    A draft version of the manual is included in the subdirectory doc/gph.
-    The supplied version is rendered in HTML and you may access it with any
-    browser (e.g.: lynx doc/gpg/index.html).  The GnuPG webpages have a link
-    to the latest development version and you may want to read those instead.
+    The manual will be distributed separate under the name "gnupgdoc".
+    An online version of the latest manual draft is available at the
+    GnuPG web pages:
+
+	http://www.gnupg.org/gph/
 
     A couple of HOWTO documents are available online; for a listing see:
 
@@ -473,7 +472,7 @@
     The primary WWW page is "http://www.gnupg.org"
     The primary FTP site is "ftp://ftp.gnupg.org/pub/gcrypt/"
 
-    See http://www.gnupg.org/mirrors.html for a list of FTP mirrors
+    See http://www.gnupg.org/mirrors.html for a list of mirrors
     and use them if possible.  You may also find GnuPG mirrored on
     some of the regular GNU mirrors.
 
@@ -509,10 +508,3 @@
     Commercial grade support for GnuPG is available; please see
     the GNU service directory or search other resources.
 
------BEGIN PGP SIGNATURE-----
-
-iQB1AwUBOCv6bB0Z9MEMmFelAQGktwL/SyzPDeU2I38lFj3Xx7IhL9vUTEaEDuAH
-FFjs0i4qpRlvYVfTtEQjkUMCUe6PCMXNXY+var1FOECpJwS93t4uf3VV83ESOMCu
-VR5JjhowfU2l957aFOFyzBpNuMPBuwBR
-=+Tbg
------END PGP SIGNATURE-----

@@ -63,10 +63,6 @@
 #include "i18n.h"
 
 
-#ifdef MKDIR_TAKES_ONE_ARG
-# undef mkdir
-# define mkdir(a,b) mkdir(a)
-#endif
 
 
 struct resource_table_struct {
@@ -291,24 +287,13 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    *last_slash_in_filename = 0;
 
 	    if( access(filename, F_OK) ) {
-		if( strlen(filename) >= 7
-		    && !strcmp(filename+strlen(filename)-7, "/.gnupg") ) {
-		    if( mkdir(filename, S_IRUSR|S_IWUSR|S_IXUSR) )
-		    {
-			log_error( _("%s: can't create directory: %s\n"),
-				  filename, strerror(errno));
-			rc = G10ERR_OPEN_FILE;
-			goto leave;
-		    }
-		    else if( !opt.quiet )
-			log_info( _("%s: directory created\n"), filename );
-		    copy_options_file( filename );
-		}
-		else
-		{
-		    rc = G10ERR_OPEN_FILE;
-		    goto leave;
-		}
+		/* on the first time we try to create the default homedir and
+		 * in this case the process will be terminated, so that on the
+		 * next invocation it can read the options file in on startup
+		 */
+		try_make_homedir( filename );
+		rc = G10ERR_OPEN_FILE;
+		goto leave;
 	    }
 
 	    *last_slash_in_filename = '/';

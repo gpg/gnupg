@@ -775,7 +775,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		else {
 		    int trustlevel;
 
-		    rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
+		    rc = check_trust( pk, &trustlevel, pk->namehash,
+						       NULL, NULL );
 		    if( rc ) {
 			log_error("error checking pk of `%s': %s\n",
 						     answer, g10_errstr(rc) );
@@ -849,7 +850,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		int trustlevel;
 
-		rc = check_trust( pk, &trustlevel, NULL, NULL, NULL );
+		rc = check_trust( pk, &trustlevel, pk->namehash, NULL, NULL );
 		if( rc ) {
 		    free_public_key( pk ); pk = NULL;
 		    log_error(_("%s: error checking key: %s\n"),

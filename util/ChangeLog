@@ -1,3 +1,8 @@
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* iobuf.c (iobuf_cancel): Broadcast the new Cancel mesaage to all
+	filters.
+
 Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* strgutil.c (strcasecmp): New.

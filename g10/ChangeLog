@@ -1,3 +1,27 @@
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* pkclist.c (build_pk_list): Validate the trust using the namehash
+	if this one has been set by the key lookup.
+
+	* g10.c: Add --delete-secret-key to the help page.
+
+	* openfile.c (copy_options_file): Made static.
+	(try_make_homedir): New.
+	* ringedit.c (add_keyblock_resource): Use the try_make_hoemdir logic.
+	* tdbio.c (tdbio_set_dbname): Likewise.
+
+	* keygen.c (generate_user_id): Use m_alloc_clear() here. We should
+	better use an allocation function specific to the user_id packet.
+
+	* keygen.c (keygen_add_std_prefs): Changed symmetric preferences
+	to include Blowfish again.  This is due to it's better speed compared
+	to CAST5.
+
+	* g10.c (strusage): Print the home directory.
+
+	* armor.c (armor_filter): Take action on the cancel control msg.
+	* filter.h (armor_filter_context_t): Add cancel flag.
+
 Mon Nov 29 21:52:11 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* g10.c: New option --fast-list-mode ..

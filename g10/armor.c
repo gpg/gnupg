@@ -874,7 +874,7 @@ armor_filter( void *opaque, int control,
       #endif
 	*ret_len = n;
     }
-    else if( control == IOBUFCTRL_FLUSH ) {
+    else if( control == IOBUFCTRL_FLUSH && !afx->cancel ) {
 	if( !afx->status ) { /* write the header line */
 	    if( afx->what >= DIM(head_strings) )
 		log_bug("afx->what=%d", afx->what);
@@ -951,8 +951,13 @@ armor_filter( void *opaque, int control,
 	if( !is_initialized )
 	    initialize();
     }
+    else if( control == IOBUFCTRL_CANCEL ) {
+	afx->cancel = 1;
+    }
     else if( control == IOBUFCTRL_FREE ) {
-	if( afx->status ) { /* pad, write cecksum, and bottom line */
+	if( afx->cancel )
+	    ;
+	else if( afx->status ) { /* pad, write cecksum, and bottom line */
 	    crc = afx->crc;
 	    idx = afx->idx;
 	    idx2 = afx->idx2;

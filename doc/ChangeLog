@@ -1,3 +1,7 @@
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* gpg.sgml: Add section about the user ID
+
 Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* gph: Removed the directory from the dist becuase it will

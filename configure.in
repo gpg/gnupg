@@ -314,8 +314,8 @@ if test "$try_dynload" = yes ; then
     DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
     use_gnupg_extensions=yes
   else
-    AC_CHECK_LIB(c,dlopen)
-    if test "$ac_cv_lib_c_dlopen" = "yes"; then
+    AC_CHECK_FUNCS(dlopen)
+    if test "$ac_cv_func_dlopen" = "yes"; then
       AC_DEFINE(USE_DYNAMIC_LINKING)
       AC_DEFINE(HAVE_DL_DLOPEN)
       DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
@@ -665,6 +665,10 @@ AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 GNUPG_DO_LINK_FILES
 
 GNUPG_CHECK_GNUMAKE
+
+if test "$GCC" = yes; then
+    CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+fi
 
 AC_OUTPUT_COMMANDS([
 cat >g10defs.tmp <<G10EOF

@@ -24,6 +24,9 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include "util.h"
 #include "memory.h"
@@ -45,6 +48,10 @@
   #define CMP_FILENAME(a,b) strcmp( (a), (b) )
 #endif
 
+#ifdef MKDIR_TAKES_ONE_ARG
+# undef mkdir
+# define mkdir(a,b) mkdir(a)
+#endif
 
 /* FIXME:  Implement opt.interactive. */
 
@@ -251,7 +258,7 @@ open_sigfile( const char *iname )
 /****************
  * Copy the option file skeleton to the given directory.
  */
-void
+static void
 copy_options_file( const char *destdir )
 {
     const char *datadir = GNUPG_DATADIR;
@@ -292,5 +299,25 @@ copy_options_file( const char *destdir )
     fclose( src );
     log_info(_("%s: new options file created\n"), fname );
     m_free(fname);
+}
+
+
+void
+try_make_homedir( const char *fname )
+{
+    if( opt.dry_run )
+	return;
+    if( strlen(fname) >= 7
+	&& !strcmp(fname+strlen(fname)-7, "/.gnupg" ) ) {
+	if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
+	    log_fatal( _("%s: can't create directory: %s\n"),
+					fname,	strerror(errno) );
+	else if( !opt.quiet )
+	    log_info( _("%s: directory created\n"), fname );
+	copy_options_file( fname );
+	log_info(_("you have to start GnuPG again, "
+		   "so it can read the new options file\n") );
+	g10_exit(1);
+    }
 }
 

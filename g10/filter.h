@@ -59,6 +59,7 @@ typedef struct {
     u32 crc;
 
     int status; 	    /* an internal state flag */
+    int cancel;
     int any_data;	    /* any valid armored data seen */
     int pending_lf;	    /* used together with faked */
 } armor_filter_context_t;

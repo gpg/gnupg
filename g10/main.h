@@ -103,7 +103,7 @@ char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
 int   open_outfile( const char *iname, int mode, IOBUF *a );
 IOBUF open_sigfile( const char *iname );
-void copy_options_file( const char *destdir );
+void try_make_homedir( const char *fname );
 
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );

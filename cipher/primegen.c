@@ -117,8 +117,8 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	log_debug("gen prime: pbits=%u qbits=%u fbits=%u/%u n=%d\n",
 		    pbits, req_qbits, qbits, fbits, n  );
     prime = mpi_alloc( (pbits + BITS_PER_MPI_LIMB - 1) /  BITS_PER_MPI_LIMB );
-    q = gen_prime( qbits, 0, 1 );
-    q_factor = mode==1? gen_prime( req_qbits, 0, 1 ) : NULL;
+    q = gen_prime( qbits, 0, 0 );
+    q_factor = mode==1? gen_prime( req_qbits, 0, 0 ) : NULL;
 
     /* allocate an array to hold the factors + 2 for later usage */
     factors = m_alloc_clear( (n+2) * sizeof *factors );
@@ -145,7 +145,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	    perms = m_alloc_clear( m );
 	    for(i=0; i < n; i++ ) {
 		perms[i] = 1;
-		pool[i] = gen_prime( fbits, 0, 1 );
+		pool[i] = gen_prime( fbits, 0, 0 );
 		factors[i] = pool[i];
 	    }
 	}
@@ -154,7 +154,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	    for(i=j=0; i < m && j < n ; i++ )
 		if( perms[i] ) {
 		    if( !pool[i] )
-			pool[i] = gen_prime( fbits, 0, 1 );
+			pool[i] = gen_prime( fbits, 0, 0 );
 		    factors[j++] = pool[i];
 		}
 	    if( i == n ) {
@@ -177,7 +177,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		count1 = 0;
 		qbits++;
 		progress('>');
-		q = gen_prime( qbits, 0, 1 );
+		q = gen_prime( qbits, 0, 0 );
 		goto next_try;
 	    }
 	}
@@ -188,7 +188,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		count2 = 0;
 		qbits--;
 		progress('<');
-		q = gen_prime( qbits, 0, 1 );
+		q = gen_prime( qbits, 0, 0 );
 		goto next_try;
 	    }
 	}

@@ -2664,7 +2664,7 @@ enum_cert_paths_print( void **context, FILE *fp,
 /*
  * Return an allocated buffer with the preference values for
  * the key with LID and the userid which is identified by the
- * HAMEHASH or the firstone if namehash is NULL.  ret_n receives
+ * HAMEHASH or the first one if namehash is NULL.  ret_n receives
  * the length of the allocated buffer.	Structure of the buffer is
  * a repeated sequences of 2 bytes; where the first byte describes the
  * type of the preference and the second one the value.  The constants

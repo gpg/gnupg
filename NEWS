@@ -1,5 +1,3 @@
-Noteworthy changes in version 1.0.x (1999-??-??)
------------------------------------
 
     * New command --verify-files.  New option --fast-list-mode.
 
@@ -23,6 +21,11 @@ Noteworthy changes in version 1.0.x (1999-??-??)
 
     * Passing non-ascii user IDs on the commandline should now work in all
       cases.
+
+    * New keys are now generated with an additional preference to Blowfish.
+
+    * Removed the GNU Privacy Handbook from the distribution as it will go
+      into a separate one.
 
 
 Noteworthy changes in version 1.0.0 (1999-09-07)

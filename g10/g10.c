@@ -205,6 +205,8 @@ static ARGPARSE_OPTS opts[] = {
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
     { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
+    { aDeleteSecretKey, "delete-secret-key",256,
+				    N_("remove key from the secret keyring")},
     { aSignKey,  "sign-key"   ,256, N_("sign a key")},
     { aLSignKey, "lsign-key"  ,256, N_("sign a key locally")},
     { aEditKey,  "edit-key"   ,256, N_("sign or edit a key")},
@@ -304,7 +306,6 @@ static ARGPARSE_OPTS opts[] = {
     { aListTrustPath, "list-trust-path",0, "@"},
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
-    { aDeleteSecretKey, "delete-secret-key",0, "@" },
     { oQuickRandom, "quick-random", 0, "@"},
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
@@ -391,25 +392,28 @@ strusage( int level )
 	      "default operation depends on the input data\n");
 	break;
 
-      case 31: p = _("\nSupported algorithms:\n"); break;
-      case 32:
+      case 31: p = "\nHome: "; break;
+      case 32: p = opt.homedir; break;
+      case 33: p = _("\nSupported algorithms:\n"); break;
+      case 34:
 	if( !ciphers )
 	    ciphers = build_list("Cipher: ", cipher_algo_to_string,
 							check_cipher_algo );
 	p = ciphers;
 	break;
-      case 33:
+      case 35:
 	if( !pubkeys )
 	    pubkeys = build_list("Pubkey: ", pubkey_algo_to_string,
 							check_pubkey_algo );
 	p = pubkeys;
 	break;
-      case 34:
+      case 36:
 	if( !digests )
 	    digests = build_list("Hash: ", digest_algo_to_string,
 							check_digest_algo );
 	p = digests;
 	break;
+
 
       default:	p = default_strusage(level);
     }

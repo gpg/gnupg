@@ -43,7 +43,7 @@ write_uid( KBNODE root, const char *s )
     size_t n = strlen(s);
 
     pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = m_alloc( sizeof *pkt->pkt.user_id + n - 1 );
+    pkt->pkt.user_id = m_alloc_clear( sizeof *pkt->pkt.user_id + n - 1 );
     pkt->pkt.user_id->len = n;
     strcpy(pkt->pkt.user_id->name, s);
     add_kbnode( root, new_kbnode( pkt ) );
@@ -84,8 +84,9 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
     keygen_add_key_expire( sig, opaque );
 
     buf[0] = CIPHER_ALGO_TWOFISH;
-    buf[1] = CIPHER_ALGO_CAST5;
-    build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 2 );
+    buf[1] = CIPHER_ALGO_BLOWFISH;
+    buf[2] = CIPHER_ALGO_CAST5;
+    build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 3 );
 
     buf[0] = DIGEST_ALGO_RMD160;
     buf[1] = DIGEST_ALGO_SHA1;
@@ -558,7 +559,7 @@ ask_expire_interval(void)
 	    tty_printf(_("Key expires at %s\n"),
 			asctimestamp((ulong)(curtime + interval) ) );
 	    if( (time_t)((ulong)(curtime+interval)) < 0 )
-		tty_printf(_("Your system can't display dates beyond 2036.\n"
+		tty_printf(_("Your system can't display dates beyond 2038.\n"
 		    "However, it will be correctly handled up to 2106.\n"));
 	}
 
@@ -827,7 +828,7 @@ generate_user_id()
     if( !p )
 	return NULL;
     n = strlen(p);
-    uid = m_alloc( sizeof *uid + n - 1 );
+    uid = m_alloc_clear( sizeof *uid + n - 1 );
     uid->len = n;
     strcpy(uid->name, p);
     return uid;

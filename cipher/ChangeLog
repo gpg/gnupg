@@ -1,3 +1,10 @@
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* primegen.c (generate_elg_prime): All primes are now generated with
+	the lowest random quality level.  Becuase they are public anyway we
+	don't need stronger random and by this we do not drain the systems
+	entropy so much.
+
 Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* random.c (fast_random_poll): Check whether RUSAGE_SELF is defined;

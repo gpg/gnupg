@@ -80,6 +80,8 @@ static int underflow(IOBUF a);
  * IOBUFCTRL_FLUSH: called by iobuf_flush() to write out the collected stuff.
  *		    *RET_LAN is the number of bytes in BUF.
  *
+ * IOBUFCTRL_CANCEL: send to all filters on behalf of iobuf_cancel.  The
+ *		    filter may take appropriate action on this message.
  */
 static int
 file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
@@ -497,12 +499,22 @@ int
 iobuf_cancel( IOBUF a )
 {
     const char *s;
+    IOBUF a2;
 
     if( a && a->use == 2 ) {
 	s = iobuf_get_real_fname(a);
 	if( s && *s )
 	    remove(s);	/* remove the file. Fixme: this will fail for MSDOZE*/
     }			/* because the file is still open */
+
+    /* send a cancel message to all filters */
+    for( a2 = a; a2 ; a2 = a2->chain ) {
+	size_t dummy;
+	if( a2->filter )
+	    a2->filter( a2->filter_ov, IOBUFCTRL_CANCEL, a2->chain,
+							 NULL, &dummy );
+    }
+
     return iobuf_close(a);
 }
 

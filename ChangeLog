@@ -1,3 +1,10 @@
+Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* configure.in (dlopen): Use CHECK_FUNC for a test of dlopen in libc.
+	Suggested by Alexandre Oliva.
+	(-Wall): Moved the settting of gcc warning options near to the end
+	so that tests don't get confused.  Suggested by Paul D. Smith.
+
 Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* BUGS: Replaced content with a link to the online list.

@@ -1248,6 +1248,101 @@ This is not for normal use.  Use the source to see for what it might be useful.
 </variablelist>
 </refsect1>
 
+
+<refsect1>
+    <title>How to specify a user ID</title>
+    <para>
+There are different ways on how to specify a user ID to GnuPG;
+here are some examples:
+    </para>
+
+    <variablelist>
+<varlistentry>
+<term></term>
+<listitem><para>Used to locate the default home directory.</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>234567C4</term>
+<term>0F34E556E</term>
+<term>01347A56A</term>
+<term>0xAB123456</term>
+<listitem><para>
+Here the key ID is given in the usual short form.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>234AABBCC34567C4</term>
+<term>0F323456784E56EAB</term>
+<term>01AB3FED1347A5612</term>
+<term>0x234AABBCC34567C4</term>
+<listitem><para>
+Here the key ID is given in the long form as used by OpenPGP.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>1234343434343434C434343434343434</term>
+<term>123434343434343C3434343434343734349A3434</term>
+<term>0E12343434343434343434EAB3484343434343434</term>
+<term>0xE12343434343434343434EAB3484343434343434</term>
+<listitem><para>
+The best way to specify a key ID is by using the fingerprint of
+the key.  This avoids any ambiguities in case that there are duplicated
+kez IDs (which are really rare for the long key IDs).
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>=Heinrich Heine &lt;heinrichh@uni-duesseldorf.de&gt;</term>
+<listitem><para>
+Using an exact to match string.  The equal sign indicates this.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>&lt;heinrichh@uni-duesseldorf.de&gt;</term>
+<listitem><para>
+Using the email address part which must match exactly.	The left angle bracket
+indicates this email address mode.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>+Heinrich Heine duesseldorf</term>
+<listitem><para>
+All words must match exactly (not case sensitive) but can appear in
+any order in the user ID.  Words are any sequences of letters,
+digits, the underscore and all characters with bit 7 set.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>#34</term>
+<listitem><para>
+Using the Local ID.  This is a very low level method and should
+only be used by applications which really need it.  The hash character
+indicates this method.	An application should not assume that this is
+only a number.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>Heine</term>
+<term>*Heine</term>
+<listitem><para>
+By case insensitive substring matching.  This is the default mode but
+applications maz want to explicitely indicate this bz putting the asterisk
+in front.
+</para></listitem>
+</varlistentry>
+
+    </variablelist>
+
+</refsect1>
+
+
 <refsect1>
     <title>RETURN VALUE</title>
     <para>
