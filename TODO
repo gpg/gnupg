@@ -1,9 +1,6 @@
 
   * Implement 256 bit key Twofish.
 
-  * clearsig: keep lineendings as they are. Remember that trailings
-    blanks are not hashed.
-
   * Check revocation and expire stuff.	[I'm currently working on this.]
 
   * Check calculation of key validity. [I'm currently working on this.]
@@ -23,6 +20,7 @@
 
 Nice to have
 ------------
+  * clearsig: Keep lineendings while writing the output of a clearsig
   * preferences of hash algorithms are not yet used.
   * new menu to delete signatures and list signature in menu
   * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.

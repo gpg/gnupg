@@ -99,81 +99,7 @@ standard( text_filter_context_t *tfx, IOBUF a,
     return rc;
 }
 
-static int
-clearsign( text_filter_context_t *tfx, IOBUF a,
-	    byte *buf, size_t size, size_t *ret_len)
-{
-    int rc=0;
-    size_t len = 0;
-    unsigned maxlen;
 
-    assert( size > 2 );
-    size -= 3;	/* reserve for dash escaping and extra LF */
-    while( !rc && len < size ) {
-	unsigned n;
-	byte *p;
-
-	if( tfx->pending_esc ) {
-	    buf[len++] = '-';
-	    buf[len++] = ' ';
-	    tfx->pending_esc = 0;
-	}
-	while( len < size && tfx->buffer_pos < tfx->buffer_len )
-	    buf[len++] = tfx->buffer[tfx->buffer_pos++];
-	if( len >= size )
-	    continue;
-
-	/* read the next line */
-	maxlen = MAX_LINELEN;
-	tfx->buffer_pos = 0;
-	tfx->buffer_len = iobuf_read_line( a, &tfx->buffer,
-					   &tfx->buffer_size, &maxlen );
-	p = tfx->buffer;
-	n = tfx->buffer_len;
-	if( !maxlen )
-	    tfx->truncated++;
-	if( !n ) { /* readline has returned eof */
-	    /* don't hash a pending lf here because the last one is
-	     * not part of the signed material. OpenPGP does not
-	     * hash the last LF because it may have to add an
-	     * extra one in case that the original material
-	     * does not end with one.  The clear signed text
-	     * must end in a LF, so that the following armor
-	     * line can be detected by the parser
-	     */
-	    if( !tfx->pending_lf ) {
-		/* make sure that the file ends with a LF */
-		buf[len++] = '\n';
-		if( tfx->not_dash_escaped )
-		    md_putc(tfx->md, '\n' );
-		tfx->pending_lf = 1;
-	    }
-	    if( !len )
-		rc = -1; /* eof */
-	    break;
-	}
-	if( tfx->md ) {
-	    if( tfx->not_dash_escaped )
-		md_write( tfx->md, p, n );
-	    else {
-		if( tfx->pending_lf ) {
-		    md_putc(tfx->md, '\r' );
-		    md_putc(tfx->md, '\n' );
-		}
-		md_write( tfx->md, p, len_without_trailing_ws( p, n ) );
-	    }
-	}
-	tfx->pending_lf = p[n-1] == '\n';
-	if( tfx->not_dash_escaped )
-	    ;
-	else if( *p == '-' )
-	    tfx->pending_esc = 1;
-	else if( tfx->escape_from && n > 4 && !memcmp(p, "From ", 5 ) )
-	    tfx->pending_esc = 1;
-    }
-    *ret_len = len;
-    return rc;
-}
 
 
 /****************
@@ -189,10 +115,7 @@ text_filter( void *opaque, int control,
     int rc=0;
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
-	if( tfx->clearsign )
-	    rc = clearsign( tfx, a, buf, size, ret_len );
-	else
-	    rc = standard( tfx, a, buf, size, ret_len );
+	rc = standard( tfx, a, buf, size, ret_len );
     }
     else if( control == IOBUFCTRL_FREE ) {
 	if( tfx->truncated )
@@ -207,4 +130,64 @@ text_filter( void *opaque, int control,
 }
 
 
+/****************
+ * Copy data from INP to OUT and do some escaping if requested.
+ * md is updated as required by rfc2440
+ */
+int
+copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
+			       int escape_dash, int escape_from )
+{
+    unsigned maxlen;
+    byte *buffer = NULL;    /* malloced buffer */
+    unsigned bufsize;	    /* and size of this buffer */
+    unsigned n;
+    int truncated = 0;
+    int pending_lf = 0;
+
+    if( !escape_dash )
+	escape_from = 0;
+
+    for(;;) {
+	maxlen = MAX_LINELEN;
+	n = iobuf_read_line( inp, &buffer, &bufsize, &maxlen );
+	if( !maxlen )
+	    truncated++;
+
+	if( !n )
+	    break; /* read_line has returned eof */
+
+	/* update the message digest */
+	if( escape_dash ) {
+	    if( pending_lf ) {
+		md_putc( md, '\r' );
+		md_putc( md, '\n' );
+	    }
+	    md_write( md, buffer, len_without_trailing_ws( buffer, n ) );
+	}
+	else
+	    md_write( md, buffer, n );
+	pending_lf = buffer[n-1] == '\n';
+
+	/* write the output */
+	if(    ( escape_dash && *buffer == '-')
+	    || ( escape_from && n > 4 && !memcmp(buffer, "From ", 5 ) ) ) {
+	    iobuf_put( out, '-' );
+	    iobuf_put( out, ' ' );
+	}
+	iobuf_write( out, buffer, n );
+    }
+
+    /* at eof */
+    if( !pending_lf ) { /* make sure that the file ends with a LF */
+	iobuf_put( out, '\n');
+	if( !escape_dash )
+	    md_putc( md, '\n' );
+    }
+
+    if( truncated )
+	log_info(_("input line longer than %d characters\n"), MAX_LINELEN );
+
+    return 0; /* okay */
+}
 

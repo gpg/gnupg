@@ -244,6 +244,12 @@ set_native_charset( const char *newset )
     return 0;
 }
 
+const char*
+get_native_charset()
+{
+    return use_koi8? "koi8-r" : "iso-8859-1";
+}
+
 /****************
  * Convert string, which is in native encoding to UTF8 and return the
  * new allocated UTF8 string.

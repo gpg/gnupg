@@ -322,3 +322,11 @@
      is required by the protocol.
 
 
+  Q: What does the "You are using the xxxx character set." mean?
+  A: This note is printed when UTF8 mapping has to be done.  Make sure that
+     the displayed charset is the one you have activated on your system
+     "iso-8859-1" is the most used one, so this is the default.  You can
+     change the charset with the option "--charset".  It is important that
+     you active characterset matches the one displayed - if not restrict
+     yourself to plain 7 bit ASCII and no mapping has to be done.
+

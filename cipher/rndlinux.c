@@ -71,12 +71,8 @@ open_device( const char *name, int minor )
 	g10_log_fatal("can't open %s: %s\n", name, strerror(errno) );
     if( fstat( fd, &sb ) )
 	g10_log_fatal("stat() off %s failed: %s\n", name, strerror(errno) );
-  #if defined(__sparc__) && defined(__linux__)
-    #warning something is wrong with UltraPenguin /dev/random
-  #else
     if( !S_ISCHR(sb.st_mode) )
 	g10_log_fatal("invalid random device!\n" );
-  #endif
     return fd;
 }
 

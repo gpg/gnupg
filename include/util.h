@@ -166,6 +166,7 @@ char *trim_spaces( char *string );
 unsigned trim_trailing_ws( byte *line, unsigned len );
 int string_count_chr( const char *string, int c );
 int set_native_charset( const char *newset );
+const char* get_native_charset(void);
 char *native_to_utf8( const char *string );
 char *utf8_to_native( const char *string );
 int  check_utf8_string( const char *string );

@@ -86,7 +86,6 @@ typedef struct {
     unsigned buffer_len;    /* used length of the buffer */
     unsigned buffer_pos;    /* read position */
     int truncated;	    /* number of truncated lines */
-    int clearsign;
     int not_dash_escaped;
     int escape_from;
     MD_HANDLE md;
@@ -117,6 +116,8 @@ int cipher_filter( void *opaque, int control,
 /*-- textfilter.c --*/
 int text_filter( void *opaque, int control,
 		 IOBUF chain, byte *buf, size_t *ret_len);
+int copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
+			  int escape_dash, int escape_from );
 
 
 

@@ -463,7 +463,6 @@ int
 clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 {
     armor_filter_context_t afx;
-    text_filter_context_t tfx;
     MD_HANDLE textmd = NULL;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
@@ -472,10 +471,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     SK_LIST sk_rover = NULL;
     int old_style = opt.rfc1991;
     int only_md5 = 0;
-    int c;
 
     memset( &afx, 0, sizeof afx);
-    memset( &tfx, 0, sizeof tfx);
     init_packet( &pkt );
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
@@ -547,19 +544,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
     /*md_start_debug( textmd, "sign" );*/
-    tfx.clearsign = 1;
-    tfx.not_dash_escaped = opt.not_dash_escaped;
-    tfx.escape_from = opt.escape_from;
-    tfx.md = textmd;
-    iobuf_push_filter( inp, text_filter, &tfx );
-    /* read input and write it to the output.  The textfilter handles
-     * the calculation of the hash and the dash escaping */
-    while( (c=iobuf_get(inp)) != -1 )  {
-	if( iobuf_put(out, c) == -1 ) {
-	    rc = G10ERR_WRITE_FILE;
-	    goto leave;
-	}
-    }
+    copy_clearsig_text( out, inp, textmd,
+			!opt.not_dash_escaped, opt.escape_from );
     /* fixme: check for read errors */
 
     /* now write the armor */

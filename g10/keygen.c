@@ -651,6 +651,14 @@ ask_user_id( int mode )
 	if( quick_random_gen(-1) )
 	    strcpy(p, " (INSECURE!)" );
 
+	/* print a note in case that UTF8 mapping has to be done */
+	for(p=uid; *p; p++ ) {
+	    if( *p & 0x80 ) {
+		tty_printf(_("You are using the `%s' character set.\n"),
+			   get_native_charset() );
+		break;
+	    }
+	}
 
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	/* fixme: add a warning if this user-id already exists */

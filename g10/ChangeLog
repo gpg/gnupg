@@ -1,3 +1,11 @@
+Tue Mar  2 16:44:57 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* textfilter.c (copy_clearsig_text): New.
+	(clearsign): Removed.
+	* sign.c (clearsign_file): does not use textfiler anymore.
+
+	* keygen.c (ask_user_id): print a note about the used charset.
+
 Tue Mar  2 10:38:42 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* sig-check.c (signature_check): sig-id now works for all algos.
