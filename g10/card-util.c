@@ -895,10 +895,10 @@ generate_card_keys (const char *serialno)
     m_free(answer);
   }
 #else
-  /* Does 1.9 have answer_is_yes_no_default() ? */
-  want_backup = !(cpr_get_answer_is_yes 
+  want_backup = cpr_get_answer_is_yes 
                   ( "cardedit.genkeys.backup_enc",
-		    _("Inhibit off-card backup of encryption key? (y/N) ")));
+                    _("Make off-card backup of encryption key? (Y/n) "));
+#warning we need answer_is_yes_no_default()
 #endif
 
   if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))

@@ -245,15 +245,6 @@ int asprintf (char **buf, const char *fmt, ...);
 
 /*-- Replacement functions from funcname.c --*/
 
-#if !HAVE_VASPRINTF
-int asprintf (char **result, const char *format, ...) 
-#if defined (__riscos__) \
-    || (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
-			    __attribute__ ((format (printf,2,3)))
-#endif
-     ;
-
-#endif
 
 
 /******** some macros ************/

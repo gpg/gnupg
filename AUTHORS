@@ -9,6 +9,8 @@ Authors
 
 Birger Langkjer <birger.langkjer@image.dk> Translations [da]
 
+Britov Ivanovich <maxbritov@tut.by> Translations [ru]
+
 Daniel Resare  <daniel@resare.com> Translations [sv]
 
 David Shaw <dshaw@jabberwocky.com> Assigns past and future changes.
@@ -57,6 +59,9 @@ Nils Ellmenreich  <nils 'at' infosun.fmi.uni-passau.de>
 
 Paul Eggert <eggert@twinsun.com> 
     (configuration macros for LFS)
+
+Pavel I. Shajdo <zwon@severodvinsk.ru> Translations [ru]
+    (man pages)
 
 Pedro Morais <morais@poli.org> Translations [pt_PT]
 

@@ -1,3 +1,13 @@
+2004-10-21  Werner Koch  <wk@g10code.com>
+
+	* app-common.h (app_openpgp_storekey: Add prototype.
+
+	* app-openpgp.c (do_sign): Replace asprintf by direct allocation.
+	This avoids problems with missing vasprintf implementations.
+
+	* card-util.c (generate_card_keys): Add a #warning for gnupg 1.9
+	and use the same string there.
+
 2004-10-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (parse_list_options): Fix non-constant initializer so we
