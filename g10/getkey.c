@@ -1051,7 +1051,8 @@ get_seckey_byname2( GETKEY_CTX *retctx,
         if (!rc && sk )
 	  {
 	    sk_from_block ( &ctx, sk, kb );
-	    if(sk->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+	    if(sk->pubkey_algo==PUBKEY_ALGO_ELGAMAL
+	       || (sk->pubkey_algo==PUBKEY_ALGO_ELGAMAL_E && sk->version<4))
 	      rc=G10ERR_UNU_SECKEY;
 	  }
         release_kbnode ( kb );
@@ -1660,8 +1661,10 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
             key_usage &= x; 
     }
 
-    /* Type 20 Elgamal keys are not usable. */
-    if(pk->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+    /* Type 20 Elgamal keys and the old v3 Elgamal keys are not
+       usable. */
+    if(pk->pubkey_algo==PUBKEY_ALGO_ELGAMAL
+       || (pk->pubkey_algo==PUBKEY_ALGO_ELGAMAL_E && pk->version<4))
       key_usage=0;
 
     pk->pubkey_usage = key_usage;
@@ -1879,10 +1882,11 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
             key_usage &= x; 
     }
 
-    /* Type 20 Elgamal subkeys or any subkey on a type 20 primary are
-       not usable. */
+    /* Type 20 Elgamal subkeys, any subkey on a type 20 primary, or
+       any subkey on an old v3 Elgamal(e) primary are not usable. */
     if(mainpk->pubkey_algo==PUBKEY_ALGO_ELGAMAL
-       || subpk->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+       || subpk->pubkey_algo==PUBKEY_ALGO_ELGAMAL
+       || (mainpk->pubkey_algo==PUBKEY_ALGO_ELGAMAL_E && mainpk->version<4))
       key_usage=0;
 
     subpk->pubkey_usage = key_usage;

@@ -1194,7 +1194,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
         continue; /* we only look at these signature classes */
       if (!is_in_klist (klist, sig))
         continue;  /* no need to check it then */
-      if(sig->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+      if(is_ELGAMAL(sig->pubkey_algo))
 	{
 	  if(opt.verbose)
 	    log_info(_("signature from Elgamal signing key %08lX "
@@ -1202,7 +1202,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
 		     (ulong)sig->keyid[1],(ulong)main_kid[1]);
 	  continue;
 	}
-      if(keyblock->pkt->pkt.public_key->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+      if(is_ELGAMAL(keyblock->pkt->pkt.public_key->pubkey_algo))
 	{
 	  if(opt.verbose)
 	    log_info(_("signature from %08lX to Elgamal signing key "

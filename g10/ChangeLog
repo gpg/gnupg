@@ -1,3 +1,17 @@
+2003-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs_main, merge_selfsigs_subkey,
+	get_seckey_byname2): Disallow use of encrypt-only v3 Elgamal keys
+	for anything except revocations.
+
+	* sign.c (do_sign): Add Elgamal encrypt-only keys to the signature
+	catchall.
+
+	* trustdb.c (mark_usable_uid_certs): Disallow signatures to and
+	from Elgamal encrypt-only keys in the trustdb.  Granted, this
+	sounds strange, but there are historical keys that fit this
+	description.
+
 2003-12-03  Werner Koch  <wk@gnupg.org>
 
 	* mainproc.c (check_sig_and_print): Removed the "0x" again.

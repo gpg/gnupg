@@ -270,7 +270,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
        sign+encrypt keys.  Note that this allows for Elgamal
        designated revocations as well, but that's arguably a good
        thing. */
-    if(sk->pubkey_algo==PUBKEY_ALGO_ELGAMAL && sig->sig_class!=0x20)
+    if(is_ELGAMAL(sk->pubkey_algo) && sig->sig_class!=0x20)
       return G10ERR_UNU_SECKEY;
 
     print_pubkey_algo_note(sk->pubkey_algo);
