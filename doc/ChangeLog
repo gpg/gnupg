@@ -1,5 +1,10 @@
 2002-11-25  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpg.sgml: Document --primary-keyring.  Clarify
+	--s2k-cipher-algo, --s2k-digest-algo,
+	--personal-cipher-preferences, --personal-digest-preferences, and
+	--personal-compress-preferences.
+
 	* gpg.sgml: Document --sig-policy-url, --cert-policy-url,
 	--sig-notation, --cert-notation.  Clarify --show-notation and
 	--show-policy-url that policy URLs and notations can be used in

@@ -1257,6 +1257,13 @@ The filename may be prefixed with a scheme:</para>
 Same as --keyring but for the secret keyrings.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--primary-keyring &ParmFile;</term>
+<listitem<para>
+Designate &ParmFile; as the primary public keyring.  This means that
+newly imported keys (via --import or keyserver --recv-from) will go to
+this keyring.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--homedir &ParmDir;</term>
@@ -1593,7 +1600,8 @@ possibly your entire key.
 <listitem><para>
 Use &ParmName; as the cipher algorithm used to protect secret keys.
 The default cipher is CAST5.  This cipher is also used for
-conventional encryption if --cipher-algo is not given.
+conventional encryption if --personal-cipher-preferences and
+--cipher-algo is not given.
 </para></listitem></varlistentry>
 
 
@@ -1601,8 +1609,7 @@ conventional encryption if --cipher-algo is not given.
 <term>--s2k-digest-algo &ParmName;</term>
 <listitem><para>
 Use &ParmName; as the digest algorithm used to mangle the passphrases.
-The default algorithm is SHA-1.  This digest algorithm is also used
-for conventional encryption if --digest-algo is not given.
+The default algorithm is SHA-1.
 </para></listitem></varlistentry>
 
 
@@ -2231,6 +2238,8 @@ Set the list of personal cipher preferences to &ParmString;, this list
 should be a string similar to the one printed by the command "pref" in
 the edit menu.  This allows the user to factor in their own preferred
 algorithms when algorithms are chosen via recipient key preferences.
+The most highly ranked cipher in this list is also used for the
+--symmetric encryption command.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2240,6 +2249,8 @@ Set the list of personal digest preferences to &ParmString;, this list
 should be a string similar to the one printed by the command "pref" in
 the edit menu.  This allows the user to factor in their own preferred
 algorithms when algorithms are chosen via recipient key preferences.
+The most highly ranked digest algorithm in this list is algo used when
+signing without encryption (e.g. --clearsign or --sign).
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2249,7 +2260,8 @@ Set the list of personal compression preferences to &ParmString;, this
 list should be a string similar to the one printed by the command
 "pref" in the edit menu.  This allows the user to factor in their own
 preferred algorithms when algorithms are chosen via recipient key
-preferences.
+preferences.  The most highly ranked algorithm in this list is also
+used when there are no recipient keys to consider (e.g. --symmetric).
 </para></listitem></varlistentry>
 
 <varlistentry>
