@@ -16,6 +16,10 @@ Provides: gpg openpgp
 BuildRoot: /tmp/rpmbuild_%{name}
 
 %changelog
+* Sat Jan 02 1999 Fabio Coatti <cova@felix.unife.it>
+- Added pl language file.
+- Included g10/pubring.asc in documentation files.
+
 * Sat Dec 19 1998 Fabio Coatti <cova@felix.unife.it>
 - Modified the spec file provided by Caskey L. Dickson <caskey-at-technocage.com>
 - Now it can be built also by non-root. Installation has to be done as
@@ -63,18 +67,21 @@ ln -s gpg.1 gpgm.1
 %doc %attr (-,root,root) doc/FAQ
 %doc %attr (-,root,root) doc/HACKING
 %doc %attr (-,root,root) doc/OpenPGP
+%doc %attr (-,root,root) g10/pubring.asc
 
 %attr (-,root,root) /usr/man/man1/gpg.1
 %attr (-,root,root) /usr/man/man1/gpgm.1
 %attr (4755,root,root) /usr/bin/gpg
 %attr (755,root,root) /usr/bin/gpgm
-#%attr (-,root,root) /usr/share/locale/en/LC_MESSAGES/%{name}.mo
+
 %attr (-,root,root) /usr/share/locale/de/LC_MESSAGES/%{name}.mo
 %attr (-,root,root) /usr/share/locale/it/LC_MESSAGES/%{name}.mo
 %attr (-,root,root) /usr/share/locale/fr/LC_MESSAGES/%{name}.mo
 %attr (-,root,root) /usr/share/locale/ru/LC_MESSAGES/%{name}.mo
 %attr (-,root,root) /usr/share/locale/es_ES/LC_MESSAGES/%{name}.mo
 %attr (-,root,root) /usr/share/locale/pt_BR/LC_MESSAGES/%{name}.mo
+%attr (-,root,root) /usr/share/locale/pl/LC_MESSAGES/%{name}.mo
+
 
 %attr (-,root,root) /usr/lib/%{name}
 %attr (-,root,root) /usr/share/%{name}

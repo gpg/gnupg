@@ -187,6 +187,31 @@ define(GNUPG_CHECK_PIC,
   ])
 
 
+######################################################################
+# Check for rdynamic flag
+# This sets CFLAGS_RDYNAMIC to the required flags
+######################################################################
+dnl GNUPG_CHECK_RDYNAMIC
+dnl
+define(GNUPG_CHECK_RDYNAMIC,
+  [ AC_MSG_CHECKING(how to specify -rdynamic)
+    CFLAGS_RDYNAMIC=
+    if test "$cross_compiling" = yes; then
+        AC_MSG_RESULT(assume none)
+    else
+        case "$host_os" in
+          solaris*)
+            CFLAGS_RDYNAMIC="-Wl,-dy"
+            ;;
+          *)
+            CFLAGS_RDYNAMIC="-Wl,-export-dynamic"
+            ;;
+        esac
+        AC_MSG_RESULT($CFLAGS_RDYNAMIC)
+    fi
+  ])
+
+
 #####################################################################
 # Check for SysV IPC  (from GIMP)
 #   And see whether we have a SHM_LOCK (FreeBSD does not have it).

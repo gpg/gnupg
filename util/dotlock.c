@@ -59,21 +59,20 @@ make_dotlock( const char *file_to_lock, long timeout )
     char *tname = NULL;
     int have_tfile = 0;
     struct utsname uts;
+    const char *nodename;
     const char *dirpart;
     int dirpartlen;
+    const char *maybe_dead="";
+    int backoff=0;
 
     sprintf( pidstr, "%10d\n", getpid() );
     /* fixme: add the hostname to the second line (FQDN or IP addr?) */
 
     /* create a temporary file */
-  #if defined(SYS_NMLN) && SYS_NMLN < 8
-    #error Aiiih
-  #elif !defined(SYS_NMLN) && MAXHOSTNAMELEN < 8
-    /* (SunOS uses a structure of size MAXHOSTNAMELEN) */
-    #error Aiiih
-  #endif
     if( uname( &uts ) )
-	strcpy( uts.nodename, "unknown" );
+	nodename = "unknown";
+    else
+	nodename = uts.nodename;
 
     if( !(dirpart = strrchr( file_to_lock, '/' )) ) {
 	dirpart = ".";
@@ -85,13 +84,13 @@ make_dotlock( const char *file_to_lock, long timeout )
     }
 
   #ifdef _THREAD_SAFE
-    tname = m_alloc( dirpartlen + 6 + strlen(uts.nodename) + 11+ 20 );
+    tname = m_alloc( dirpartlen + 6 + strlen(nodename) + 11+ 20 );
     sprintf( tname, "%.*s/.#lk.%s.%d.%p",
-		    dirpartlen, dirpart, uts.nodename, getpid(), &pid );
+		    dirpartlen, dirpart, nodename, getpid(), &pid );
   #else
-    tname = m_alloc( dirpartlen + 6 + strlen(uts.nodename) + 11 );
+    tname = m_alloc( dirpartlen + 6 + strlen(nodename) + 11 );
     sprintf( tname, "%.*s/.#lk.%s.%d",
-		    dirpartlen, dirpart, uts.nodename, getpid() );
+		    dirpartlen, dirpart, nodename, getpid() );
   #endif
     do {
 	errno = 0;
@@ -135,21 +134,24 @@ make_dotlock( const char *file_to_lock, long timeout )
 	    handle = lockname;
 	    lockname = NULL;
 	}
-      #if 0 /* we should not do this without checking the permissions */
-	    /* and the hostname */
 	else if( kill(pid, 0) && errno == ESRCH ) {
+	    maybe_dead = " - probably dead";
+	 #if 0 /* we should not do this without checking the permissions */
+	       /* and the hostname */
 	    log_info( "removing stale lockfile (created by %d)", pid );
 	    remove( lockname );
 	    goto retry;
+	 #endif
 	}
-      #endif
 	if( timeout == -1 ) {
 	    struct timeval tv;
-	    log_info( "waiting for lock (hold by %d) ...\n", pid );
+	    log_info( "waiting for lock (hold by %d%s) ...\n", pid, maybe_dead );
 	    /* can't use sleep, cause signals may be blocked */
-	    tv.tv_sec = 1;
+	    tv.tv_sec = 1 + backoff;
 	    tv.tv_usec = 0;
 	    select(0, NULL, NULL, NULL, &tv);
+	    if( backoff < 10 )
+		backoff++ ;
 	    goto retry;
 	}
 	/* fixme: implement timeouts */

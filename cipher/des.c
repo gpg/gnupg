@@ -723,15 +723,12 @@ is_weak_key ( const byte *key )
   /* binary search in the weak key table */
   left = 0;
   right = 63;
-  while(1)
+  while(left <= right)
     {
       middle = (left + right) / 2;
 
       if ( !(cmp_result=memcmp(work, weak_keys[middle], 8)) )
 	  return -1;
-
-      if ( left == right )
-	  break;
 
       if ( cmp_result > 0 )
 	  left = middle + 1;

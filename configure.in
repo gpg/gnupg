@@ -112,6 +112,7 @@ esac
 
 
 GNUPG_CHECK_PIC
+GNUPG_CHECK_RDYNAMIC
 if test "$NO_PIC" = yes; then
     try_dynload=no
 fi
@@ -159,14 +160,14 @@ if test "$try_dynload" = yes ; then
   if test "$ac_cv_lib_dl_dlopen" = "yes"; then
     AC_DEFINE(USE_DYNAMIC_LINKING)
     AC_DEFINE(HAVE_DL_DLOPEN)
-    DYNLINK_LDFLAGS="-Wl,-export-dynamic"
+    DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
     use_gnupg_extensions=yes
   else
     AC_CHECK_LIB(c,dlopen)
     if test "$ac_cv_lib_c_dlopen" = "yes"; then
       AC_DEFINE(USE_DYNAMIC_LINKING)
       AC_DEFINE(HAVE_DL_DLOPEN)
-      DYNLINK_LDFLAGS="-Wl,-export-dynamic"
+      DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
       dnl fixme: this is probably false but it should
       dnl work for freebsd
       AC_DEFINE(DLSYM_NEEDS_UNDERSCORE)
@@ -176,7 +177,7 @@ if test "$try_dynload" = yes ; then
       if test "$ac_cv_lib_dld_dld_link" = "yes"; then
         AC_DEFINE(USE_DYNAMIC_LINKING)
         AC_DEFINE(HAVE_DLD_DLD_LINK)
-        DYNLINK_LDFLAGS="-Wl,-export-dynamic"
+        DYNLINK_LDFLAGS="$CFLAGS_RDYNAMIC"
         use_gnupg_extensions=yes
       fi
     fi

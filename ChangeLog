@@ -1,3 +1,8 @@
+Sun Jan  3 15:28:44 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* acinclude.m4 (GNUPG_CHECK_RDYNAMIC): New.
+	* configure.in (DYNLOAD_CFLAGS): Use result from CHECK_RDYNAMIC
+
 Wed Dec 23 13:18:14 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* README: Replaced the command overview with a short intro.

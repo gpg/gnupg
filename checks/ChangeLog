@@ -1,3 +1,8 @@
+1999-01-01  Geoff Keating  <geoffk@ozemail.com.au>
+
+	* Makefile.am (CLEANFILES): Also delete trustdb and any leftover
+	lockfiles.
+
 Fri Nov 27 15:30:24 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* clearsig.test: Some more test cases.

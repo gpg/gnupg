@@ -627,7 +627,7 @@ start_gatherer( int pipefd )
 	    while( write( pipefd, &msg, sizeof(msg) ) != sizeof(msg) ) {
 		if( errno == EINTR )
 		    continue;
-		if( errno = EAGAIN ) {
+		if( errno == EAGAIN ) {
 		    struct timeval tv;
 		    tv.tv_sec = 0;
 		    tv.tv_usec = 50000;

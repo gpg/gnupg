@@ -1,3 +1,11 @@
+Sun Jan  3 15:28:44 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* rndunix.c (start_gatherer): Fixed stupid ==/= bug
+
+1998-12-31  Geoff Keating  <geoffk@ozemail.com.au>
+
+	* des.c (is_weak_key): Rewrite loop end condition.
+
 Tue Dec 29 14:41:47 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* random.c: add unistd.h for getpid().

@@ -188,7 +188,7 @@ B<--export-all> [I<names>]
     Same as B<--export> but does also export keys which
     are not compatible to OpenPGP.
 
-B<--export-secret-keys> [I<names>
+B<--export-secret-keys> [I<names>]
     Same as B<--export>, but does export the secret keys.
     This is normally not very useful.
 
