@@ -39,7 +39,7 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash)
   char * p, tmp[16];
   int i, rc;
 
-  p = xmalloc (64+mdlen);
+  p = xmalloc (64 + 2 * mdlen);
   s = gcry_md_algo_name (algo);
   if (s && strlen (s) < 16)
     {
@@ -50,7 +50,7 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash)
   sprintf (p, "(data\n (flags pkcs1)\n (hash %s #", tmp);
   for (i=0; i < mdlen; i++)
     {
-      sprintf (tmp, "%02x", md[i]);
+      sprintf (tmp, "%02x", (byte)md[i]);
       strcat (p, tmp);   
     }
   strcat (p, "#))\n");

@@ -1,6 +1,11 @@
+2003-08-20  Timo Schulz  <twoaday@freakmail.de>
+
+	* pksign.c (do_encode_md): Allocate enough space. Cast md
+	byte to unsigned char to prevent sign extension.
+	
 2003-08-14  Timo Schulz  <twoaday@freakmail.de>
 
-	* pksign.c: do_encode_md: Due to the fact pkcs#1 padding
+	* pksign.c (do_encode_md): Due to the fact pkcs#1 padding
 	is now in Libgcrypt, use the new interface.
 	
 2003-07-31  Werner Koch  <wk@gnupg.org>
