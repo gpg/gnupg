@@ -153,6 +153,7 @@ enum cmd_and_opt_values
     oAnswerYes,
     oAnswerNo,
     oDefCertCheckLevel,
+    oMinCertCheckLevel,
     oKeyring,
     oPrimaryKeyring,
     oSecretKeyring,
@@ -567,6 +568,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
     { oDefCertCheckLevel, "default-cert-check-level", 1, "@"},
+    { oMinCertCheckLevel, "min-cert-check-level", 1, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oTrustModel, "trust-model", 2, "@"},
     { oForceOwnertrust, "force-ownertrust", 2, "@"},
@@ -1437,7 +1439,8 @@ main( int argc, char **argv )
     opt.verify_options=
       VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
     opt.trust_model=TM_AUTO;
-    opt.mangle_dos_filenames = 0;
+    opt.mangle_dos_filenames=0;
+    opt.min_cert_check_level=2;
     set_screen_dimensions();
 #if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
@@ -1779,6 +1782,7 @@ main( int argc, char **argv )
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
           case oDefCertCheckLevel: opt.def_cert_check_level=pargs.r.ret_int; break;
+          case oMinCertCheckLevel: opt.min_cert_check_level=pargs.r.ret_int; break;
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
@@ -2471,11 +2475,13 @@ main( int argc, char **argv )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
     if( opt.completes_needed < 1 )
-	log_error(_("completes-needed must be greater than 0\n"));
+      log_error(_("completes-needed must be greater than 0\n"));
     if( opt.marginals_needed < 2 )
-	log_error(_("marginals-needed must be greater than 1\n"));
+      log_error(_("marginals-needed must be greater than 1\n"));
     if( opt.max_cert_depth < 1 || opt.max_cert_depth > 255 )
-	log_error(_("max-cert-depth must be in range 1 to 255\n"));
+      log_error(_("max-cert-depth must be in the range from 1 to 255\n"));
+    if( opt.min_cert_check_level < 1 || opt.min_cert_check_level > 3 )
+      log_error(_("min-cert-check-level must be in the range from 1 to 3\n"));
     switch( opt.s2k_mode ) {
       case 0:
 	log_info(_("NOTE: simple S2K mode (0) is strongly discouraged\n"));

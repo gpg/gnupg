@@ -77,6 +77,7 @@ struct {
     char *def_recipient;
     int def_recipient_self;
     int def_cert_check_level;
+    int min_cert_check_level;
     int sk_comments;
     int no_version;
     int marginals_needed;

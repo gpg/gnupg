@@ -1,3 +1,10 @@
+2004-02-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), trustdb.c (mark_usable_uid_certs): Add
+	--min-cert-check-level option to specify minimum cert check level.
+	Defaults to 2 (so 0x11 sigs are ignored).  0x10 sigs cannot be
+	ignored.
+
 2004-02-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* plaintext.c (handle_plaintext): Properly handle a --max-output
