@@ -1,5 +1,8 @@
 2004-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgconf-comp.c (gc_error): New function, use it instead of
+	error() throughout.
+
 	* gpgconf-comp.c: Use xmalloc, libcommon's asctimestamp and
 	gnupg_get_time, fix error() invocation and use getline()
 	consistently.

@@ -31,23 +31,60 @@
 #include <assert.h>
 #include <errno.h>
 #include <time.h>
+#include <stdarg.h>
 
-#include <error.h>
-
-/* For asctimestamp(), gnupg_get_time ().  */
+/* For log_logv(), asctimestamp(), gnupg_get_time ().  */
+#define JNLIB_NEED_LOG_LOGV
 #include "util.h"
 
 #include "gpgconf.h"
 
 
 /* TODO:
-   Portability - Add gnulib replacements for getline, error, etc.
+   Portability - Add gnulib replacements for getline, etc.
    Backend: File backend must be able to write out changes !!!
    Components: Add more components and their options.
    Robustness: Do more validation.  Call programs to do validation for us.
    Don't use popen, as this will not tell us if the program had a
    non-zero exit code.
+   Add options to change backend binary path.
+   Extract binary path for some backends from gpgsm/gpg config.
 */
+
+
+#if defined (__riscos__) \
+    || (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 ))
+void gc_error (int status, int errnum, const char *fmt, ...) \
+  __attribute__ ((format (printf, 3, 4)));
+#endif
+
+/* Output a diagnostic message.  If ERRNUM is not 0, then the output
+   is followed by a colon, a white space, and the error string for the
+   error number ERRNUM.  In any case the output is finished by a
+   newline.  The message is prepended by the program name, a colon,
+   and a whitespace.  The output may be further formatted or
+   redirected by the jnlib logging facility.  */
+void
+gc_error (int status, int errnum, const char *fmt, ...)
+{
+  va_list arg_ptr;
+
+  va_start (arg_ptr, fmt);
+  log_logv (JNLIB_LOG_ERROR, fmt, arg_ptr);
+  va_end (arg_ptr);
+
+  if (errnum)
+    log_printf (": %s\n", strerror (errnum));
+  else
+    log_printf ("\n");
+
+  if (status)
+    {
+      log_printf (NULL);
+      log_printf ("fatal error (exit status %i)\n", status);
+      exit (status);
+    }
+}
 
 
 /* Backend configuration.  Backends are used to decide how the default
@@ -498,7 +535,7 @@ percent_escape (const char *src)
     {
       char *new_esc_str = realloc (esc_str, new_len);
       if (!new_esc_str)
-	error (1, errno, "can not escape string");
+	gc_error (1, errno, "can not escape string");
       esc_str = new_esc_str;
       esc_str_len = new_len;
     }
@@ -709,18 +746,18 @@ get_config_pathname (gc_component_t component, gc_backend_t backend)
   assert (option);
 
   if (!option->default_value)
-    error (1, 0, "option %s, needed by backend %s, was not initialized",
-	   gc_backend[backend].option_config_filename,
-	   gc_backend[backend].name);
+    gc_error (1, 0, "option %s, needed by backend %s, was not initialized",
+	      gc_backend[backend].option_config_filename,
+	      gc_backend[backend].name);
   if (*option->value)
     pathname = option->value;
   else
     pathname = option->default_value;
 
   if (*pathname != '/')
-    error (1, 0, "option %s, needed by backend %s, is not absolute",
-	   gc_backend[backend].option_config_filename,
-	   gc_backend[backend].name);
+    gc_error (1, 0, "option %s, needed by backend %s, is not absolute",
+	      gc_backend[backend].option_config_filename,
+	      gc_backend[backend].name);
 
   return pathname;
 }
@@ -739,11 +776,11 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 
   asprintf (&cmd_line, "%s --gpgconf-list", gc_backend[backend].program);
   if (!cmd_line)
-    error (1, errno, "can not construct command line");
+    gc_error (1, errno, "can not construct command line");
 
   output = popen (cmd_line, "r");
   if (!output)
-    error (1, errno, "could not gather active options from %s", cmd_line);
+    gc_error (1, errno, "could not gather active options from %s", cmd_line);
 
   while ((length = getline (&line, &line_len, output)) > 0)
     {
@@ -787,18 +824,18 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
       if (option)
 	{
 	  if (option->default_value)
-	    error (1, errno, "option %s returned twice from %s",
-		   line, cmd_line);
+	    gc_error (1, errno, "option %s returned twice from %s",
+		      line, cmd_line);
 	  option->default_value = strdup (default_value);
 	  option->value = strdup (value);
 	  if (!option->default_value || !option->value)
-	    error (1, errno, "could not store options");
+	    gc_error (1, errno, "could not store options");
 	}
     }
   if (ferror (output))
-    error (1, errno, "error reading from %s", cmd_line);
+    gc_error (1, errno, "error reading from %s", cmd_line);
   if (fclose (output) && ferror (output))
-    error (1, errno, "error closing %s", cmd_line);
+    gc_error (1, errno, "error closing %s", cmd_line);
   free (cmd_line);
 }
 
@@ -824,11 +861,11 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 
   list_file = fopen (list_pathname, "r");
   if (ferror (list_file))
-    error (1, errno, "can not open list file %s", list_pathname);
+    gc_error (1, errno, "can not open list file %s", list_pathname);
 
   list = strdup ("\"");
   if (!list)
-    error (1, errno, "can not allocate initial list string");
+    gc_error (1, errno, "can not allocate initial list string");
 
   while ((length = getline (&line, &line_len, list_file)) > 0)
     {
@@ -861,10 +898,10 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 	  list = new_list;
 	}
       if (!list)
-	error (1, errno, "can not construct list");
+	gc_error (1, errno, "can not construct list");
     }
   if (ferror (list_file))
-    error (1, errno, "can not read list file %s", list_pathname);
+    gc_error (1, errno, "can not read list file %s", list_pathname);
   list_option->default_value = "";
   list_option->value = list;
 }
@@ -912,7 +949,7 @@ static void
 option_check_validity (gc_option_t *option, const char *new_value)
 {
   if (option->new_value)
-    error (1, 0, "option %s already changed", option->name);
+    gc_error (1, 0, "option %s already changed", option->name);
 
   if (!*new_value)
     return;
@@ -1203,7 +1240,7 @@ gc_component_change_options (int component, FILE *in)
 
       option = find_option (component, line, GC_BACKEND_ANY);
       if (!option)
-	error (1, 0, "unknown option %s", line);
+	gc_error (1, 0, "unknown option %s", line);
 
       option_check_validity (option, value);
       option->new_value = strdup (value);
@@ -1296,6 +1333,6 @@ gc_component_change_options (int component, FILE *in)
 		unlink (dest_pathname[i]);
 	    }
 	}
-      error (1, saved_errno, "could not commit changes");
+      gc_error (1, saved_errno, "could not commit changes");
     }
 }
