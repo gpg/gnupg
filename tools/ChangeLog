@@ -1,3 +1,16 @@
+2004-02-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* README.gpgconf: Revert last change.  Add new flags "default",
+	"default desc" and "no arg desc".  Add new field ARGDEF.  Add new
+	field FLAG to backend interface.
+	* gpgconf-comp.c (struct gc_option): Make flags of type unsigned
+	long.
+	(gc_component_list_options): Adjust type for flags.
+	Add default argument field.
+	(retrieve_options_from_program): Use "1" as value for non-option
+	arguments, not "Y".
+	(gc_component_change_options): Read in flags from input.
+
 2004-02-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* README.gpgconf: Change meaning of type 0 options value if it is

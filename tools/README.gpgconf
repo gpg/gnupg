@@ -82,9 +82,8 @@ argument depends on the type of the option and on some flags:
 The simplest case is that the option does not take an argument at all
 (TYPE is 0).  Then the option argument is either empty if the option
 is not set, or an unsigned number that specifies how often the option
-occurs.  If the LIST flag is not set, then the only valid numbers are
-0 and 1.  0 often has a special meaning in this context as it actually
-negates setting the option one or more times.
+occurs.  If the LIST flag is not set, then the only valid number is 1.
+Options that don't take an argument never have the "default" flag set.
 
 If the option takes a number argument (ALT-TYPE is 2 or 3), and it can
 only occur once (LIST flag is not set), then the option argument is
@@ -175,7 +174,7 @@ the next group and so on.
 
 The format of each line is:
 
-NAME:FLAGS:LEVEL:DESCRIPTION:TYPE:ALT-TYPE:ARGNAME:DEFAULT:VALUE
+NAME:FLAGS:LEVEL:DESCRIPTION:TYPE:ALT-TYPE:ARGNAME:DEFAULT:ARGDEF:VALUE
 
 NAME
 
@@ -189,13 +188,19 @@ FLAGS
 The flags field contains an unsigned number.  Its value is the
 OR-wise combination of the following flag values:
 
-	1 group		If this flag is set, this is a line describing
+	 1 group	If this flag is set, this is a line describing
 			a group and not an option.
-  O	2 optional arg	If this flag is set, the argument is optional.
-  O	4 list		If this flag is set, the option can be given
+  O	 2 optional arg	If this flag is set, the argument is optional.
+  O	 4 list		If this flag is set, the option can be given
 			multiple times.
-  O	8 runtime	If this flag is set, the option can be changed
+  O	 8 runtime	If this flag is set, the option can be changed
 			at runtime.
+  O	16 default	If this flag is set, a default value is available.
+  O	32 default desc If this flag is set, a (runtime) default is available.
+                        This and the 'default' flag are mutually exclusive.
+  O     64 no arg desc	If this flag is set, and the 'optional arg' flag
+			is set, then the option has a special meaning if no
+			argument is given.
 
 Flags marked with a 'O' are only defined for options (ie, if the GROUP
 flag is not set).
@@ -230,13 +235,16 @@ This field is only defined for options.  It contains an unsigned
 number that specifies the type of the option's argument, if any.
 The following types are defined:
 
-	0 none		No argument allowed.
-	1 string	An unformatted string.
-	2 int32		A signed integer number.
-	3 uint32	An unsigned integer number.
-	4 pathname	A string that describes the pathname of a file.
+	Basic types
+	 0 none		No argument allowed.
+	 1 string	An unformatted string.
+	 2 int32	A signed integer number.
+	 3 uint32	An unsigned integer number.
+
+	Complex types
+	32 pathname	A string that describes the pathname of a file.
 			The file does not necessarily need to exist.
-	5 ldap server	A string that describes an LDAP server in the format
+	33 ldap server	A string that describes an LDAP server in the format
 			HOSTNAME:PORT:USERNAME:PASSWORD:BASE_DN.
 
 More types will be added in the future.  Please see the ALT-TYPE field
@@ -244,12 +252,14 @@ for information on how to cope with unknown types.
 
 ALT-TYPE
 
-This field is identical to TYPE, except that only the types 0 to 3 are
-allowed.  The GUI is expected to present the user the option in the
-format specified by TYPE.  But if the argument type TYPE is not
+This field is identical to TYPE, except that only the types 0 to 31
+are allowed.  The GUI is expected to present the user the option in
+the format specified by TYPE.  But if the argument type TYPE is not
 supported by the GUI, it can still display the option in the more
-generic basic type ALT-TYPE.  The GUI must support the basic types 0
-to 3 to be able to display all options.
+generic basic type ALT-TYPE.  The GUI must support all the defined
+basic types to be able to display all options.  More basic types may
+be added in future versions.  If the GUI encounters a basic type it
+doesn't support, it should report an error and abort the operation.
 
 ARGNAME
 
@@ -264,6 +274,18 @@ This field is defined only for options.  Its format is that of an
 option argument (see section Format Conventions for details).  If the
 default value is empty, then no default is known.  Otherwise, the
 value specifies the default value for this option.  Note that this
+field is also meaningful if the option itself does not take a real
+argument.
+
+ARGDEF
+
+This field is defined only for options for which the "optional arg"
+flag is set.  If the "no arg desc" flag is not set, its format is that
+of an option argument (see section Format Conventions for details).
+If the default value is empty, then no default is known.  Otherwise,
+the value specifies the default value for this option.  If the "no arg
+desc" flag is set, the field is either empty or contains a description
+of the effect of this option if no argument is given.  Note that this
 field is also meaningful if the option itself does not take a real
 argument.
 
@@ -283,18 +305,35 @@ CHANGING OPTIONS
 To change the options for a component, you must provide them in the
 following format:
 
-NAME:NEW-VALUE
+NAME:FLAGS:NEW-VALUE
 
 NAME
 
 This is the name of the option to change.
 
+FLAGS
+
+The flags field contains an unsigned number.  Its value is the
+OR-wise combination of the following flag values:
+
+	16 default	If this flag is set, the option is deleted and the
+			default value is used instead (if applicable).
+
 NEW-VALUE
 
-The new value for the option.  The format is that of an option
-argument.  If it is empty (or the field is omitted), the option will
-be deleted, so that the default value is used.  Otherwise, the option
-will be set to the specified value.
+The new value for the option.  This field is only defined if the
+"default" flag is not set.  The format is that of an option argument.
+If it is empty (or the field is omitted), the default argument is used
+(only allowed if the argument is optional for this option).
+Otherwise, the option will be set to the specified value.
+
+
+Example:
+To set the option force, which is of basic type 0 (none).
+$ echo 'force:0:1' | gpgconf --change-options dirmngr
+To delete the option force:
+$ echo 'force:16:0' | gpgconf --change-options dirmngr
+
 
 Option --runtime
 ----------------
@@ -316,9 +355,62 @@ List the location of the configuration file, and all default values of
 all options.  The location of the configuration file must be an
 absolute pathname.
 
+The format of each line is:
+
+NAME:FLAGS:DEFAULT:ARGDEF
+
+NAME
+
+This field contains a name tag for the group or option.  The name tag
+is used to specify the group or option in all communication with
+GPGConf.  The name tag is to be used verbatim.  It is not in any
+escaped format.
+
+FLAGS
+
+The flags field contains an unsigned number.  Its value is the
+OR-wise combination of the following flag values:
+
+	16 default	If this flag is set, a default value is available.
+	32 default desc If this flag is set, a (runtime) default is available.
+			This and the "default" flag are mutually exclusive.
+	64 no arg desc	If this flag is set, and the "optional arg" flag
+			is set, then the option has a special meaning if no
+			argument is given.
+
+DEFAULT
+
+This field is defined only for options.  Its format is that of an
+option argument (see section Format Conventions for details).  If the
+default value is empty, then no default is known.  Otherwise, the
+value specifies the default value for this option.  Note that this
+field is also meaningful if the option itself does not take a real
+argument.
+
+ARGDEF
+
+This field is defined only for options for which the "optional arg"
+flag is set.  If the "no arg desc" flag is not set, its format is that
+of an option argument (see section Format Conventions for details).
+If the default value is empty, then no default is known.  Otherwise,
+the value specifies the default value for this option.  If the "no arg
+desc" flag is set, the field is either empty or contains a description
+of the effect of this option if no argument is given.  Note that this
+field is also meaningful if the option itself does not take a real
+argument.
+
+
 Example:
 $ dirmngr --gpgconf-list
 gpgconf-config-file:/mnt/marcus/.gnupg/dirmngr.conf
 ldapservers-file:/mnt/marcus/.gnupg/dirmngr_ldapservers.conf
 add-servers:0
 max-replies:10
+
+
+TODO
+----
+
+* Extend the backend interface to include gettext domain and
+description, if available, to avoid repeating this information in
+gpgconf.

@@ -176,20 +176,21 @@ typedef enum
     /* An unsigned integer argument.  */
     GC_ARG_TYPE_UINT32 = 3,
 
+    /* ADD NEW BASIC TYPE ENTRIES HERE.  */
 
     /* Complex argument types.  */
 
     /* A complete pathname.  */
-    GC_ARG_TYPE_PATHNAME = 4,
+    GC_ARG_TYPE_PATHNAME = 32,
 
     /* An LDAP server in the format
        HOSTNAME:PORT:USERNAME:PASSWORD:BASE_DN.  */
-    GC_ARG_TYPE_LDAP_SERVER = 5,
+    GC_ARG_TYPE_LDAP_SERVER = 33,
 
     /* A 40 character fingerprint.  */
-    GC_ARG_TYPE_KEY_FPR = 6,
+    GC_ARG_TYPE_KEY_FPR = 34,
 
-    /* ADD NEW ENTRIES HERE.  */
+    /* ADD NEW COMPLEX TYPE ENTRIES HERE.  */
 
     /* The number of the above entries.  */
     GC_ARG_TYPE_NR
@@ -213,6 +214,22 @@ static struct
     { GC_ARG_TYPE_STRING, "string" },
     { GC_ARG_TYPE_INT32, "int32" },
     { GC_ARG_TYPE_UINT32, "uint32" },
+
+    /* Reserved basic type entries for future extension.  */
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
+    { GC_ARG_TYPE_NR, NULL }, { GC_ARG_TYPE_NR, NULL },
 
     /* The complex argument types have a basic type as fallback.  */
     { GC_ARG_TYPE_STRING, "pathname" },
@@ -266,21 +283,32 @@ static struct
 
 /* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
    FLAGS, AS THEY ARE PART OF THE EXTERNAL INTERFACE.  */
-#define GC_OPT_FLAG_NONE	0
+#define GC_OPT_FLAG_NONE	0UL
 /* Some entries in the option list are not options, but mark the
    beginning of a new group of options.  These entries have the GROUP
    flag set.  */
-#define GC_OPT_FLAG_GROUP	(1 << 0)
+#define GC_OPT_FLAG_GROUP	(1UL << 0)
 /* The ARG_OPT flag for an option indicates that the argument is
    optional.  */
-#define GC_OPT_FLAG_ARG_OPT	(1 << 1)
+#define GC_OPT_FLAG_ARG_OPT	(1UL << 1)
 /* The LIST flag for an option indicates that the option can occur
    several times.  A comma separated list of arguments is used as the
    argument value.  */
-#define GC_OPT_FLAG_LIST	(1 << 2)
+#define GC_OPT_FLAG_LIST	(1UL << 2)
 /* The RUNTIME flag for an option indicates that the option can be
    changed at runtime.  */
-#define GC_OPT_FLAG_RUNTIME	(1 << 3)
+#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
+
+/* The following flags are incorporated from the backend.  */
+/* The DEFAULT flag for an option indicates that the option has a
+   default value.  */
+#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
+/* The DEF_DESC flag for an option indicates that the option has a
+   default, which is described by the value of the default field.  */
+#define GC_OPT_FLAG_DEF_DESC	(1UL << 5)
+/* The NO_ARG_DESC flag for an option indicates that the argument has
+   a default, which is described by the value of the ARGDEF field.  */
+#define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
 /* A human-readable description for each flag.  */
 static struct
@@ -311,7 +339,7 @@ struct gc_option
      group marker, not an option, and only the fields LEVEL,
      DESC_DOMAIN and DESC are valid.  In all other cases, this entry
      describes a new option and all fields are valid.  */
-  unsigned int flags;
+  unsigned long flags;
 
   /* The expert level.  This field is valid for options and groups.  A
      group has the expert level of the lowest-level option in the
@@ -349,6 +377,11 @@ struct gc_option
      not present in the backend, the empty string if no default is
      available, and otherwise a quoted string.  */
   char *default_value;
+
+  /* The default argument is only valid if the "optional arg" flag is
+     set, and specifies the default argument (value) that is used if
+     the argument is omitted.  */
+  char *default_arg;
 
   /* The current value of this option.  */
   char *value;
@@ -744,7 +777,7 @@ gc_component_list_options (int component, FILE *out)
       fprintf (out, "%s", option->name);
 
       /* The flags field.  */
-      fprintf (out, ":%u", option->flags);
+      fprintf (out, ":%lu", option->flags);
       if (opt.verbose)
 	{
 	  putc (' ', out);
@@ -753,9 +786,9 @@ gc_component_list_options (int component, FILE *out)
 	    fprintf (out, "none");
 	  else
 	    {
-	      unsigned int flags = option->flags;
-	      unsigned int flag = 0;
-	      unsigned int first = 1;
+	      unsigned long flags = option->flags;
+	      unsigned long flag = 0;
+	      unsigned long first = 1;
 
 	      while (flags)
 		{
@@ -799,6 +832,9 @@ gc_component_list_options (int component, FILE *out)
 
       /* The default value field.  */
       fprintf (out, ":%s", option->default_value ? option->default_value : "");
+
+      /* The default argument field.  */
+      fprintf (out, ":%s", option->default_arg ? option->default_arg : "");
 
       /* The value field.  */
       fprintf (out, ":%s", option->value ? option->value : "");
@@ -884,26 +920,53 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   while ((length = getline (&line, &line_len, config)) > 0)
     {
       gc_option_t *option;
-      char *value;
-
+      char *linep;
+      unsigned long flags = 0;
+      char *default_value = NULL;
+      
       /* Strip newline and carriage return, if present.  */
       while (length > 0
 	     && (line[length - 1] == '\n' || line[length - 1] == '\r'))
 	line[--length] = '\0';
 
+      linep = strchr (line, ':');
+      if (linep)
+	*(linep++) = '\0';
+      
+      /* Extract additional flags.  Default to none.  */
+      if (linep)
+	{
+	  char *end;
+	  char *tail;
+
+	  end = strchr (linep, ':');
+	  if (end)
+	    *(end++) = '\0';
+
+	  errno = 0;
+	  flags = strtoul (linep, &tail, 0);
+	  if (errno)
+	    gc_error (1, errno, "malformed flags in option %s from %s", line, cmd_line);
+	  if (!(*tail == '\0' || *tail == ':' || *tail == ' '))
+	    gc_error (1, 0, "garbage after flags in option %s from %s", line, cmd_line);
+
+	  linep = end;
+	}
+
       /* Extract default value, if present.  Default to empty if
 	 not.  */
-      value = strchr (line, ':');
-      if (!value)
-	value = "";
-      else
+      if (linep)
 	{
 	  char *end;
 
-	  *(value++) = '\0';
-	  end = strchr (value, ':');
+	  end = strchr (linep, ':');
 	  if (end)
-	    *end = '\0';
+	    *(end++) = '\0';
+
+	  if (flags & GC_OPT_FLAG_DEFAULT)
+	    default_value = linep;
+
+	  linep = end;
 	}
 
       /* Look up the option in the component and install the
@@ -915,8 +978,10 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	    gc_error (1, errno, "option %s returned twice from %s",
 		      line, cmd_line);
 	  option->active = 1;
-	  if (*value)
-	    option->default_value = xstrdup (value);
+
+	  option->flags |= flags;
+	  if (default_value && *default_value)
+	    option->default_value = xstrdup (default_value);
 	}
     }
   if (ferror (config))
@@ -981,7 +1046,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 		    gc_error (0, 0,
 			      "warning: ignoring argument %s for option %s",
 			      value, name);
-		  opt_value = xstrdup ("Y");
+		  opt_value = xstrdup ("1");
 		}
 	      else if (gc_arg_type[option->arg_type].fallback
 		       == GC_ARG_TYPE_STRING)
@@ -1011,6 +1076,8 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 			  == GC_ARG_TYPE_STRING)
 			opt_val++;
 
+		      /* FIXME.  For type none arguments, this is
+			 wrong.  */
 		      option->value = xasprintf ("%s,%s", option->value,
 						 opt_val);
 		      xfree (opt_value);
@@ -1411,32 +1478,66 @@ gc_component_change_options (int component, FILE *in)
 
   while ((length = getline (&line, &line_len, in)) > 0)
     {
-      char *value;
+      char *linep;
+      unsigned long flags = 0;
+      char *new_value = NULL;
 
       /* Strip newline and carriage return, if present.  */
       while (length > 0
 	     && (line[length - 1] == '\n' || line[length - 1] == '\r'))
 	line[--length] = '\0';
 
-      value = strchr (line, ':');
-      if (!value)
-	value = "";
-      else
+      linep = strchr (line, ':');
+      if (linep)
+	*(linep++) = '\0';
+
+      /* Extract additional flags.  Default to none.  */
+      if (linep)
+	{
+	  char *end;
+	  char *tail;
+
+	  end = strchr (linep, ':');
+	  if (end)
+	    *(end++) = '\0';
+
+	  errno = 0;
+	  flags = strtoul (linep, &tail, 0);
+	  if (errno)
+	    gc_error (1, errno, "malformed flags in option %s", line);
+	  if (!(*tail == '\0' || *tail == ':' || *tail == ' '))
+	    gc_error (1, 0, "garbage after flags in option %s", line);
+
+	  linep = end;
+	}
+
+      /* Extract default value, if present.  Default to empty if
+	 not.  */
+      if (linep)
 	{
 	  char *end;
 
-	  *(value++) = '\0';
-	  end = strchr (value, ':');
+	  end = strchr (linep, ':');
 	  if (end)
-	    *end = '\0';
+	    *(end++) = '\0';
+
+	  if (!(flags & GC_OPT_FLAG_DEFAULT))
+	    new_value = linep;
+
+	  linep = end;
 	}
 
       option = find_option (component, line, GC_BACKEND_ANY);
       if (!option)
 	gc_error (1, 0, "unknown option %s", line);
 
-      option_check_validity (option, value);
-      option->new_value = xstrdup (value);
+      /* FIXME: This is not correct, as it ignores the optional arg
+	 case.  */
+      if (flags & GC_OPT_FLAG_DEFAULT)
+	new_value = "";
+
+      option_check_validity (option, new_value);
+      option->new_value = xstrdup (new_value);
     }
 
   /* Now that we have collected and locally verified the changes,
