@@ -286,6 +286,12 @@ if test "$use_exec" = yes ; then
         try_hkp=$enableval, try_hkp=yes)
     AC_MSG_RESULT($try_hkp)
 
+    AC_MSG_CHECKING([whether HTTP key fetching support is requested])
+    AC_ARG_ENABLE(http,
+      AC_HELP_STRING([--disable-http],[disable HTTP key fetching interface]),
+        try_http=$enableval, try_http=yes)
+    AC_MSG_RESULT($try_http)
+
     AC_MSG_CHECKING([whether email keyserver support is requested])
     AC_ARG_ENABLE(mailto,
     [  --disable-mailto        disable email keyserver interface],
@@ -465,9 +471,13 @@ AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 AC_SUBST(MPI_OPT_FLAGS)
 GNUPG_SYS_SYMBOL_UNDERSCORE
 
-dnl This needs to go after AC_PROG_CC so that $EXEEXT is defined
-if test "$try_hkp" = yes ; then
+dnl These need to go after AC_PROG_CC so that $EXEEXT is defined
+if test x"$try_hkp" = xyes ; then
   AC_SUBST(GPGKEYS_HKP,"gpgkeys_hkp$EXEEXT")
+fi
+
+if test x"$try_http" = xyes ; then
+  AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
 fi
 
 dnl Must check for network library requirements before doing link tests
@@ -483,10 +493,11 @@ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 dnl Now try for the resolver functions so we can use DNS SRV
 
 AC_ARG_ENABLE(dns-srv,
-   AC_HELP_STRING([--disable-dns-srv],[disable the use of DNS SRV in HKP]),
+   AC_HELP_STRING([--disable-dns-srv],
+	[disable the use of DNS SRV in HKP and HTTP]),
    use_dns_srv=$enableval,use_dns_srv=yes)
 
-if test x"$try_hkp" = xyes && test x"$use_dns_srv" = xyes ; then
+if (test x"$try_hkp" = xyes || test x"$try_http" = xyes) && test x"$use_dns_srv" = xyes ; then
   _srv_save_libs=$LIBS
   LIBS=""
   # the double underscore thing is a glibc-ism?

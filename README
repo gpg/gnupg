@@ -1,7 +1,7 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			    Version 1.3.5
+			    Version 1.3.6
 
 	    Copyright 1998, 1999, 2000, 2001, 2002, 2003,
 		 2004 Free Software Foundation, Inc.
@@ -524,14 +524,13 @@
      --disable-exec
                     Disable all remote program execution.  This
 		    disables photo ID viewing as well as all keyserver
-		    types aside from HKP.
+		    access.
 
      --disable-photo-viewers
                     Disable only photo ID viewing.
 
      --disable-keyserver-helpers
-                    Disable only keyserver helpers (not including
-		    HKP).
+                    Disable only keyserver helpers.
 
      --disable-keyserver-path
                     Disables the user's ability to use the exec-path

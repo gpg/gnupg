@@ -1,3 +1,12 @@
+2004-05-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note HTTP key fetching.
+
+	* README: Update version and note that HKP is no longer build in.
+
+	* configure.ac: Handle --disable-http and other code to properly
+	build gpgkeys_http.
+
 2004-05-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note the addition of preferred keyserver support,
