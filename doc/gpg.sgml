@@ -1757,14 +1757,13 @@ disables this option.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--throw-keyid</term>
+<term>--throw-keyids</term>
 <listitem><para>
-Do not put the keyid into encrypted packets.  This option
-hides the receiver of the message and is a countermeasure
-against traffic analysis.  It may slow down the decryption
-process because all available secret keys are tried.
+Do not put the recipient keyid into encrypted packets.  This option
+hides the receiver of the message and is a countermeasure against
+traffic analysis.  It may slow down the decryption process because all
+available secret keys are tried.
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--not-dash-escaped</term>
@@ -1777,7 +1776,6 @@ option for data which has 5 dashes at the beginning of a
 line, patch files don't have this. A special armor header
 line tells GnuPG about this cleartext signature option.
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--escape-from-lines</term>
@@ -1894,7 +1892,7 @@ Set up all options to be as PGP 6 compliant as possible.  This
 restricts you to the ciphers IDEA (if the IDEA plugin is installed),
 3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
 compression algorithms none and ZIP.  This also disables
---throw-keyid, and making signatures with signing subkeys as PGP 6
+--throw-keyids, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 </para><para>
 This option implies `--disable-mdc --no-sk-comment --escape-from-lines
@@ -1915,7 +1913,7 @@ TWOFISH.
 <listitem><para>
 Set up all options to be as PGP 8 compliant as possible.  PGP 8 is a
 lot closer to the OpenPGP standard than previous versions of PGP, so
-all this does is disable --throw-keyid and set --escape-from-lines.
+all this does is disable --throw-keyids and set --escape-from-lines.
 All algorithms are allowed except for the SHA384 and SHA512 digests.
 </para></listitem></varlistentry>
 
@@ -2261,10 +2259,11 @@ This is an obsolete option and is not used anywhere.
 <varlistentry>
 <term>--try-all-secrets</term>
 <listitem><para>
-Don't look at the key ID as stored in the message but try all secret keys in
-turn to find the right decryption key.	This option forces the behaviour as
-used by anonymous recipients (created by using --throw-keyid) and might come
-handy in case where an encrypted message contains a bogus key ID.
+Don't look at the key ID as stored in the message but try all secret
+keys in turn to find the right decryption key. This option forces the
+behaviour as used by anonymous recipients (created by using
+--throw-keyids) and might come handy in case where an encrypted
+message contains a bogus key ID.
 </para></listitem></varlistentry>
 
 <varlistentry>
