@@ -1,3 +1,11 @@
+2005-02-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_finger.c (main), gpgkeys_hkp.c (main): Fix --version
+	output.
+
+	* gpgkeys_curl.c (main): Make sure the curl handle is cleaned up
+	on failure.
+
 2005-02-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (get_key), gpgkeys_http.c (get_key): Fix missing

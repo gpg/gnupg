@@ -470,8 +470,6 @@ main(int argc,char *argv[])
 
   ret=get_key(thekey);
 
-  curl_easy_cleanup(curl);
-
  fail:
 
   free(thekey);
@@ -481,6 +479,9 @@ main(int argc,char *argv[])
 
   if(output!=stdout)
     fclose(output);
+
+  if(curl)
+    curl_easy_cleanup(curl);
 
   curl_global_cleanup();
 

@@ -763,7 +763,7 @@ main(int argc,char *argv[])
   /* Kludge to implement standard GNU options.  */
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
-      fputs ("gpgkeys_ldap (GnuPG) " VERSION"\n", stdout);
+      fputs ("gpgkeys_hkp (GnuPG) " VERSION"\n", stdout);
       return 0;
     }
   else if (argc > 1 && !strcmp (argv[1], "--help"))
