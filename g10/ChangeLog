@@ -1,3 +1,11 @@
+2004-12-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_set_keyserver_url): Make sure we only operate on
+	the chosen selfsig so we don't accidentally promote an older
+	selfsig to chosen.  Discovered by Simon Josefsson and 'Todd'.
+
+	* keygen.c (ask_expire_interval): Fix typo.
+
 2004-12-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (list_keyblock_print): Secret key listings should

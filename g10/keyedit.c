@@ -3558,7 +3558,8 @@ menu_set_keyserver_url (const char *url,
 	{
 	  PKT_signature *sig = node->pkt->pkt.signature;
 	  if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
-	       && (uid && (sig->sig_class&~3) == 0x10) )
+	       && (uid && (sig->sig_class&~3) == 0x10)
+	       && sig->flags.chosen_selfsig)
 	    {
 	      char *user=utf8_to_native(uid->name,strlen(uid->name),0);
 	      if( sig->version < 4 )

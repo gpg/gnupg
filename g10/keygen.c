@@ -1569,12 +1569,13 @@ ask_expire_interval(int object)
 	    continue;
 	}
 
-	if( !valid_days ) {
+	if( !valid_days )
+	  {
             tty_printf((object==0)
-                       ? _("Key does not expire at all\n") :
+                       ? _("Key does not expire at all\n")
                        : _("Signature does not expire at all\n"));
 	    interval = 0;
-	}
+	  }
 	else {
 	    interval = valid_days * 86400L;
 
