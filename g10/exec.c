@@ -447,12 +447,17 @@ int exec_finish(struct exec_info *info)
     }
 #endif
 
-  if(info->fromchild)
+  if(info->fromchild) {
     iobuf_close(info->fromchild);
+#ifdef __riscos__
+    /* invalidate close cache, as otherwise unlink() below won't work */
+    iobuf_ioctl(NULL, 2, 0, info->tempfile_out);
+#endif
+  }
 
   if(info->tochild)
     fclose(info->tochild);
-
+    
   if(info->madedir && !info->keep_temp_files)
     {
       if(info->tempfile_in)
