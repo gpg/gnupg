@@ -1,5 +1,5 @@
 /* Implementation of the dgettext(3) function.
-   Copyright (C) 1995-1997, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995-1997, 2000, 2001, 2002 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -37,10 +37,10 @@
    prefix.  So we have to make a difference here.  */
 #ifdef _LIBC
 # define DGETTEXT __dgettext
-# define DCGETTEXT __dcgettext
+# define DCGETTEXT INTUSE(__dcgettext)
 #else
-# define DGETTEXT dgettext__
-# define DCGETTEXT dcgettext__
+# define DGETTEXT libintl_dgettext
+# define DCGETTEXT libintl_dcgettext
 #endif
 
 /* Look up MSGID in the DOMAINNAME message catalog of the current

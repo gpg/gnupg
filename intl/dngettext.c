@@ -1,5 +1,5 @@
 /* Implementation of the dngettext(3) function.
-   Copyright (C) 1995-1997, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995-1997, 2000, 2001, 2002 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -39,8 +39,8 @@
 # define DNGETTEXT __dngettext
 # define DCNGETTEXT __dcngettext
 #else
-# define DNGETTEXT dngettext__
-# define DCNGETTEXT dcngettext__
+# define DNGETTEXT libintl_dngettext
+# define DCNGETTEXT libintl_dcngettext
 #endif
 
 /* Look up MSGID in the DOMAINNAME message catalog of the current

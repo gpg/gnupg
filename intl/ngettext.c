@@ -1,5 +1,5 @@
 /* Implementation of ngettext(3) function.
-   Copyright (C) 1995, 1997, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 2000, 2001, 2002 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -46,8 +46,8 @@
 # define NGETTEXT __ngettext
 # define DCNGETTEXT __dcngettext
 #else
-# define NGETTEXT ngettext__
-# define DCNGETTEXT dcngettext__
+# define NGETTEXT libintl_ngettext
+# define DCNGETTEXT libintl_dcngettext
 #endif
 
 /* Look up MSGID in the current default message catalog for the current

@@ -1,5 +1,5 @@
 /* Implementation of the dcngettext(3) function.
-   Copyright (C) 1995-1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995-1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -37,8 +37,8 @@
 # define DCNGETTEXT __dcngettext
 # define DCIGETTEXT __dcigettext
 #else
-# define DCNGETTEXT dcngettext__
-# define DCIGETTEXT dcigettext__
+# define DCNGETTEXT libintl_dcngettext
+# define DCIGETTEXT libintl_dcigettext
 #endif
 
 /* Look up MSGID in the DOMAINNAME message catalog for the current CATEGORY

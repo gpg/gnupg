@@ -1,5 +1,5 @@
 /* Handle aliases for locale names.
-   Copyright (C) 1995-1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995-1999, 2000-2001, 2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -29,35 +29,44 @@
 
 #include <ctype.h>
 #include <stdio.h>
+#if defined _LIBC || defined HAVE___FSETLOCKING
+# include <stdio_ext.h>
+#endif
 #include <sys/types.h>
 
 #ifdef __GNUC__
+# undef alloca
 # define alloca __builtin_alloca
 # define HAVE_ALLOCA 1
 #else
-# if defined HAVE_ALLOCA_H || defined _LIBC
-#  include <alloca.h>
+# ifdef _MSC_VER
+#  include <malloc.h>
+#  define alloca _alloca
 # else
-#  ifdef _AIX
- #pragma alloca
+#  if defined HAVE_ALLOCA_H || defined _LIBC
+#   include <alloca.h>
 #  else
-#   ifndef alloca
+#   ifdef _AIX
+ #pragma alloca
+#   else
+#    ifndef alloca
 char *alloca ();
+#    endif
 #   endif
 #  endif
 # endif
 #endif
 
 #include <stdlib.h>
-
 #include <string.h>
-#if !HAVE_STRCHR && !defined _LIBC
-# ifndef strchr
-#  define strchr index
-# endif
-#endif
 
 #include "gettextP.h"
+
+#if ENABLE_RELOCATABLE
+# include "relocatable.h"
+#else
+# define relocate(pathname) (pathname)
+#endif
 
 /* @@ end of prolog @@ */
 
@@ -71,6 +80,7 @@ char *alloca ();
 #  define mempcpy __mempcpy
 # endif
 # define HAVE_MEMPCPY	1
+# define HAVE___FSETLOCKING	1
 
 /* We need locking here since we can be called from different places.  */
 # include <bits/libc-lock.h>
@@ -80,6 +90,15 @@ __libc_lock_define_initialized (static, lock);
 
 #ifndef internal_function
 # define internal_function
+#endif
+
+/* Some optimizations for glibc.  */
+#ifdef _LIBC
+# define FEOF(fp)		feof_unlocked (fp)
+# define FGETS(buf, n, fp)	fgets_unlocked (buf, n, fp)
+#else
+# define FEOF(fp)		feof (fp)
+# define FGETS(buf, n, fp)	fgets (buf, n, fp)
 #endif
 
 /* For those losing systems which don't have `alloca' we have to add
@@ -108,10 +127,14 @@ struct alias_map
 };
 
 
-static char *string_space;
+#ifndef _LIBC
+# define libc_freeres_ptr(decl) decl
+#endif
+
+libc_freeres_ptr (static char *string_space);
 static size_t string_space_act;
 static size_t string_space_max;
-static struct alias_map *map;
+libc_freeres_ptr (static struct alias_map *map);
 static size_t nmap;
 static size_t maxmap;
 
@@ -128,7 +151,7 @@ const char *
 _nl_expand_alias (name)
     const char *name;
 {
-  static const char *locale_alias_path = LOCALE_ALIAS_PATH;
+  static const char *locale_alias_path;
   struct alias_map *retval;
   const char *result = NULL;
   size_t added;
@@ -136,6 +159,9 @@ _nl_expand_alias (name)
 #ifdef _LIBC
   __libc_lock_lock (lock);
 #endif
+
+  if (locale_alias_path == NULL)
+    locale_alias_path = LOCALE_ALIAS_PATH;
 
   do
     {
@@ -207,58 +233,52 @@ read_alias_file (fname, fname_len)
   memcpy (&full_fname[fname_len], aliasfile, sizeof aliasfile);
 #endif
 
-  fp = fopen (full_fname, "r");
+  fp = fopen (relocate (full_fname), "r");
   freea (full_fname);
   if (fp == NULL)
     return 0;
 
+#ifdef HAVE___FSETLOCKING
+  /* No threads present.  */
+  __fsetlocking (fp, FSETLOCKING_BYCALLER);
+#endif
+
   added = 0;
-  while (!feof (fp))
+  while (!FEOF (fp))
     {
       /* It is a reasonable approach to use a fix buffer here because
 	 a) we are only interested in the first two fields
 	 b) these fields must be usable as file names and so must not
 	    be that long
-       */
-      char buf[BUFSIZ];
+	 We avoid a multi-kilobyte buffer here since this would use up
+	 stack space which we might not have if the program ran out of
+	 memory.  */
+      char buf[400];
       char *alias;
       char *value;
       char *cp;
 
-      if (fgets (buf, sizeof buf, fp) == NULL)
+      if (FGETS (buf, sizeof buf, fp) == NULL)
 	/* EOF reached.  */
 	break;
 
-      /* Possibly not the whole line fits into the buffer.  Ignore
-	 the rest of the line.  */
-      if (strchr (buf, '\n') == NULL)
-	{
-	  char altbuf[BUFSIZ];
-	  do
-	    if (fgets (altbuf, sizeof altbuf, fp) == NULL)
-	      /* Make sure the inner loop will be left.  The outer loop
-		 will exit at the `feof' test.  */
-	      break;
-	  while (strchr (altbuf, '\n') == NULL);
-	}
-
       cp = buf;
       /* Ignore leading white space.  */
-      while (isspace (cp[0]))
+      while (isspace ((unsigned char) cp[0]))
 	++cp;
 
       /* A leading '#' signals a comment line.  */
       if (cp[0] != '\0' && cp[0] != '#')
 	{
 	  alias = cp++;
-	  while (cp[0] != '\0' && !isspace (cp[0]))
+	  while (cp[0] != '\0' && !isspace ((unsigned char) cp[0]))
 	    ++cp;
 	  /* Terminate alias name.  */
 	  if (cp[0] != '\0')
 	    *cp++ = '\0';
 
 	  /* Now look for the beginning of the value.  */
-	  while (isspace (cp[0]))
+	  while (isspace ((unsigned char) cp[0]))
 	    ++cp;
 
 	  if (cp[0] != '\0')
@@ -267,7 +287,7 @@ read_alias_file (fname, fname_len)
 	      size_t value_len;
 
 	      value = cp++;
-	      while (cp[0] != '\0' && !isspace (cp[0]))
+	      while (cp[0] != '\0' && !isspace ((unsigned char) cp[0]))
 		++cp;
 	      /* Terminate value.  */
 	      if (cp[0] == '\n')
@@ -325,6 +345,14 @@ read_alias_file (fname, fname_len)
 	      ++added;
 	    }
 	}
+
+      /* Possibly not the whole line fits into the buffer.  Ignore
+	 the rest of the line.  */
+      while (strchr (buf, '\n') == NULL)
+	if (FGETS (buf, sizeof buf, fp) == NULL)
+	  /* Make sure the inner loop will be left.  The outer loop
+	     will exit at the `feof' test.  */
+	  break;
     }
 
   /* Should we test for ferror()?  I think we have to silently ignore
@@ -356,19 +384,6 @@ extend_alias_table ()
   maxmap = new_size;
   return 0;
 }
-
-
-#ifdef _LIBC
-static void __attribute__ ((unused))
-free_mem (void)
-{
-  if (string_space != NULL)
-    free (string_space);
-  if (map != NULL)
-    free (map);
-}
-text_set_element (__libc_subfreeres, free_mem);
-#endif
 
 
 static int
