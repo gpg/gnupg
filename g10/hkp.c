@@ -63,7 +63,11 @@ hkp_ask_import( u32 *keyid )
 						   opt.keyserver_name );
     request = m_alloc( strlen( opt.keyserver_name ) + 100 );
     /* hkp does not accept the long keyid - we should really write a
-     * nicer one */
+     * nicer one :-)
+     * FIXME: request binary mode - need to pass no_armor mode
+     * down to the import function.  Marc told that there is such a
+     * binary mode ... how?
+     */
     sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX",
 			opt.keyserver_name, (ulong)keyid[1] );
     rc = http_open_document( &hd, request, hflags );

@@ -10,7 +10,10 @@
   * INFO Kommand um z.B. default-recipients herauszufinden.
 
   * export sollte exit(1) machen bei einem Fehler - testen! Es wird ein
-    leerer File erzeugt.
+    leerer File erzeugt.  Nur unter Windows?
+
+  * No TCP support yet for W32? arggg - should go into a separate program
+    anyway.
 
 
 Scheduled for 1.1
