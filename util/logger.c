@@ -41,17 +41,19 @@ static FILE *logfp;
 void
 log_set_logfile( const char *name, int fd )
 {
-    if( name )
-	BUG();
-
     if( logfp && logfp != stderr && logfp != stdout )
-	fclose( logfp );
-    if( fd == 1 )
-	logfp = stdout;
-    else if( fd == 2 )
-	logfp = stderr;
-    else
-	logfp = fdopen( fd, "a" );
+        fclose( logfp );
+    if( name ) {
+        logfp = fopen ( name, "a" );
+    }
+    else {
+        if( fd == 1 )
+            logfp = stdout;
+        else if( fd == 2 )
+            logfp = stderr;
+        else
+            logfp = fdopen( fd, "a" );
+    }
     if( !logfp ) {
 	logfp = stderr;
 	log_fatal("can't open fd %d for logging: %s\n", fd, strerror(errno));

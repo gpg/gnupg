@@ -302,6 +302,19 @@ AC_SUBST(USE_NLS)
 AC_SUBST(USE_INCLUDED_LIBINTL)
 fi
 
+dnl Where is the GTK+ toolkit
+if test "$cross_compiling" = yes ; then
+  CFLAGS="$CFLAGS -I/home/wk/work/gtk+w32/include/gtk+/gdk/win32 \
+ -I/home/wk/work/gtk+w32/include -I/home/wk/work/gtk+w32/include/gtk+"
+  LIBS="$LIBS     -L/home/wk/work/gtk+w32/lib -lgtk -lgdk -lglib"
+  compile_agent=no
+else
+  AM_PATH_GTK(1.2.1, compile_agent=yes,compile_agent=no)
+fi
+AM_CONDITIONAL(COMPILE_AGENT, test x$compile_agent = xyes)
+
+
+
 dnl
 dnl There are lot of misconfigured systems.  We include
 dnl gdbm support only if the lib and the header is installed.
@@ -760,6 +773,7 @@ util/Makefile
 mpi/Makefile
 cipher/Makefile
 g10/Makefile
+agent/Makefile
 doc/Makefile
 doc/version.sgml
 tools/Makefile

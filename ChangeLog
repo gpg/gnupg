@@ -1,3 +1,8 @@
+Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * agent/: New.
+  * Makefile.am, configure.in: Support for the new directory.
+
 Mon Jul 17 16:35:47 CEST 2000  Werner Koch  <wk@>
 
   * configure.in (mingw32): Changes to allow for mingw32msvc

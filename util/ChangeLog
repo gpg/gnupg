@@ -1,3 +1,7 @@
+Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * logger.c (log_set_file): Allow to set the file by name.
+
 Fri Jul 28 18:19:11 CEST 2000  Werner Koch  <wk@openit.de>
 
   * iobuf.c: Use setmode() at several places to set stdin and stdout

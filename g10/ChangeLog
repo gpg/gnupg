@@ -1,3 +1,8 @@
+Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * status.c (do_get_from_fd): Ooops, we used fd instead of opt.command_fd.
+  Thanks to Michael Tokarev.
+
 Mon Jul 31 10:04:47 CEST 2000  Werner Koch  <wk@openit.de>
 
   * encode.c, sign.c, keygen.c, pubkey-enc.c: Replaced all
