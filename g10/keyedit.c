@@ -1880,15 +1880,12 @@ show_key_with_all_names_colon (KBNODE keyblock)
 	      putchar (trust);
 	    }
 
-          printf (":%u:%d:%08lX%08lX:%lu:%lu:",
+          printf (":%u:%d:%08lX%08lX:%lu:%lu::",
                   nbits_from_pk (pk),
                   pk->pubkey_algo,
                   (ulong)keyid[0], (ulong)keyid[1],
                   (ulong)pk->timestamp,
                   (ulong)pk->expiredate );
-          if (pk->local_id)
-            printf ("%lu", pk->local_id);
-          putchar (':');
           if (node->pkt->pkttype==PKT_PUBLIC_KEY
 	      && !(opt.fast_list_mode || opt.no_expensive_trust_checks ))
 	    putchar(get_ownertrust_info (pk));

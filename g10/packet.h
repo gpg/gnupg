@@ -122,7 +122,6 @@ struct revocation_key {
 };
 
 typedef struct {
-    ulong   local_id;	    /* internal use, valid if > 0 */
     struct {
 	unsigned checked:1; /* signature has been checked */
 	unsigned valid:1;   /* signature is good (if checked is set) */
@@ -211,7 +210,6 @@ typedef struct {
 			       without the key to check it */
     int     is_valid;       /* key (especially subkey) is valid */
     int     dont_cache;     /* do not cache this */
-    ulong   local_id;	    /* internal use, valid if > 0 */
     u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
     byte    is_primary;

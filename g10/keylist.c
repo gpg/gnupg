@@ -949,15 +949,12 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
                 ulti_hack = 1;
             putchar(trustletter);
         }
-        printf(":%u:%d:%08lX%08lX:%s:%s:",
+        printf(":%u:%d:%08lX%08lX:%s:%s::",
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    colon_datestr_from_pk( pk ),
 		    colon_strtime (pk->expiredate) );
-        if( pk->local_id )
-            printf("%lu", pk->local_id );
-        putchar(':');
         if( !opt.fast_list_mode && !opt.no_expensive_trust_checks  )
             putchar( get_ownertrust_info(pk) );
 	    putchar(':');
@@ -1079,7 +1076,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	        if(trustletter)
 		  printf("%c", trustletter );
             }
-            printf(":%u:%d:%08lX%08lX:%s:%s:",
+            printf(":%u:%d:%08lX%08lX:%s:%s:::::",
 			nbits_from_pk( pk2 ),
 			pk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
@@ -1087,12 +1084,6 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 			colon_strtime (pk2->expiredate)
 			/* fixme: add LID and ownertrust here */
 						);
-            if( pk->local_id ) /* use the local_id of the main key??? */
-                printf("%lu", pk->local_id );
-            putchar(':');
-            putchar(':');
-            putchar(':');
-            putchar(':');
             print_capabilities (pk2, NULL, NULL);
             putchar('\n');
 	    if( fpr > 1 )

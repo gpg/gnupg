@@ -323,6 +323,7 @@ enum cmd_and_opt_values
     oLCctype,
     oLCmessages,
     oGroup,
+    oUnGroup,
     oNoGroups,
     oStrict,
     oNoStrict,
@@ -647,6 +648,7 @@ static ARGPARSE_OPTS opts[] = {
     { oLCctype,    "lc-ctype",    2, "@" },
     { oLCmessages, "lc-messages", 2, "@" },
     { oGroup,      "group",       2, "@" },
+    { oUnGroup,    "ungroup",     2, "@" },
     { oNoGroups,   "no-groups",    0, "@" },
     { oStrict,     "strict",      0, "@" },
     { oNoStrict,   "no-strict",   0, "@" },
@@ -939,7 +941,6 @@ add_group(char *string)
 {
   char *name,*value;
   struct groupitem *item;
-  STRLIST values=NULL;
 
   /* Break off the group name */
   name=strsep(&string,"=");
@@ -951,20 +952,51 @@ add_group(char *string)
 
   trim_trailing_ws(name,strlen(name));
 
+  /* Does this group already exist? */
+  for(item=opt.grouplist;item;item=item->next)
+    if(strcasecmp(item->name,name)==0)
+      break;
+
+  if(!item)
+    {
+      item=m_alloc(sizeof(struct groupitem));
+      item->name=name;
+      item->next=opt.grouplist;
+      item->values=NULL;
+      opt.grouplist=item;
+    }
+
   /* Break apart the values */
   while ((value= strsep(&string," \t")))
     {
       if (*value)
-        add_to_strlist2 (&values,value,utf8_strings);
+        add_to_strlist2(&item->values,value,utf8_strings);
     }
-
-  item=m_alloc(sizeof(struct groupitem));
-  item->name=name;
-  item->values=values;
-  item->next=opt.grouplist;
-
-  opt.grouplist=item;
 }
+
+
+static void
+rm_group(char *name)
+{
+  struct groupitem *item,*last=NULL;
+
+  trim_trailing_ws(name,strlen(name));
+
+  for(item=opt.grouplist;item;last=item,item=item->next)
+    {
+      if(strcasecmp(item->name,name)==0)
+	{
+	  if(last)
+	    last->next=item->next;
+	  else
+	    opt.grouplist=item->next;
+
+	  free_strlist(item->values);
+	  m_free(item);
+	}
+    }
+}
+
 
 /* We need to check three things.
 
@@ -1205,6 +1237,8 @@ list_config(char *items)
 
   while(show_all || (name=strsep(&items," ")))
     {
+      int any=0;
+
       if(show_all || ascii_strcasecmp(name,"group")==0)
 	{
 	  struct groupitem *iter;
@@ -1226,6 +1260,8 @@ list_config(char *items)
 
 	      printf("\n");
 	    }
+
+	  any=1;
 	}
 
       if(show_all || ascii_strcasecmp(name,"version")==0)
@@ -1233,6 +1269,7 @@ list_config(char *items)
 	  printf("cfg:version:");
 	  print_string(stdout,VERSION,strlen(VERSION),':');
 	  printf("\n");
+	  any=1;
 	}
 
       if(show_all || ascii_strcasecmp(name,"pubkey")==0)
@@ -1240,6 +1277,7 @@ list_config(char *items)
 	  printf("cfg:pubkey:");
 	  print_algo_numbers(check_pubkey_algo);
 	  printf("\n");
+	  any=1;
 	}
 
       if(show_all || ascii_strcasecmp(name,"cipher")==0)
@@ -1247,6 +1285,7 @@ list_config(char *items)
 	  printf("cfg:cipher:");
 	  print_algo_numbers(check_cipher_algo);
 	  printf("\n");
+	  any=1;
 	}
 
       if(show_all
@@ -1256,6 +1295,7 @@ list_config(char *items)
 	  printf("cfg:digest:");
 	  print_algo_numbers(check_digest_algo);
 	  printf("\n");
+	  any=1;
 	}
 
       if(show_all || ascii_strcasecmp(name,"compress")==0)
@@ -1263,10 +1303,14 @@ list_config(char *items)
 	  printf("cfg:compress:");
 	  print_algo_numbers(check_compress_algo);
 	  printf("\n");
+	  any=1;
 	}
 
       if(show_all)
 	break;
+
+      if(!any)
+	log_error(_("unknown configuration item \"%s\"\n"),name);
     }
 }
 
@@ -2202,6 +2246,7 @@ main( int argc, char **argv )
           case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
           case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
 	  case oGroup: add_group(pargs.r.ret_str); break;
+	  case oUnGroup: rm_group(pargs.r.ret_str); break;
 	  case oNoGroups:
 	    while(opt.grouplist)
 	      {
@@ -2495,6 +2540,9 @@ main( int argc, char **argv )
 
     if( log_get_errorcount(0) )
 	g10_exit(2);
+
+    if(opt.compress_level==0)
+      opt.compress_algo=COMPRESS_ALGO_NONE;
 
     /* Check our chosen algorithms against the list of legal
        algorithms. */

@@ -70,7 +70,6 @@ struct mainproc_context {
     int have_data;
     IOBUF iobuf;    /* used to get the filename etc. */
     int trustletter; /* temp usage in list_node */
-    ulong local_id;    /* ditto */
     ulong symkeys;
     struct kidlist_item *pkenc_list;	/* list of encryption packets */
     struct {
@@ -843,23 +842,18 @@ list_node( CTX c, KBNODE node )
 	if( opt.with_colons ) {
 	    u32 keyid[2];
 	    keyid_from_pk( pk, keyid );
-	    if( mainkey ) {
-		c->local_id = pk->local_id;
-		c->trustletter = opt.fast_list_mode?
+	    if( mainkey )
+	      c->trustletter = opt.fast_list_mode?
 					   0 : get_validity_info( pk, NULL );
-	    }
 	    printf("%s:", mainkey? "pub":"sub" );
 	    if( c->trustletter )
 		putchar( c->trustletter );
-	    printf(":%u:%d:%08lX%08lX:%s:%s:",
+	    printf(":%u:%d:%08lX%08lX:%s:%s::",
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    colon_datestr_from_pk( pk ),
 		    colon_strtime (pk->expiredate) );
-	    if( c->local_id )
-		printf("%lu", c->local_id );
-	    putchar(':');
 	    if( mainkey && !opt.fast_list_mode )
                  putchar( get_ownertrust_info (pk) );
 	    putchar(':');
@@ -1658,7 +1652,6 @@ proc_tree( CTX c, KBNODE node )
     if (!node)
         return;
 
-    c->local_id = 0;
     c->trustletter = ' ';
     if( node->pkt->pkttype == PKT_PUBLIC_KEY
 	|| node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {

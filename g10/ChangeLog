@@ -1,3 +1,17 @@
+2004-01-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main, rm_group): Add --ungroup command to remove a
+	particular group.
+	(add_group): When adding a group with the same name as an already
+	existing group, merge the two groups.
+	(list_config): Show an error message when listing a config item
+	that doesn't exist.
+	(main): Replace -z0 trick for no compression.
+
+	* packet.h, keyedit.c (show_key_with_all_names_colon), keylist.c
+	(list_keyblock_colon), mainproc.c (list_node, proc_tree): Minor
+	cleanup to remove local_id, which is no longer used.
+
 2004-01-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c: Set MAX_PK_CACHE_ENTRIES and MAX_UID_CACHE_ENTRIES to
