@@ -329,14 +329,11 @@ Key generation
 
 Unattended key generation
 =========================
-There is an experimental feature which allows for unattended
-generation of keys controlled by a parameter file.
-This feature is not very well tested and does only make sense for some
-very special applications.  Please don't complain if we decide to change
-the behaviour of this command.
+This feature allows unattended generation of keys controlled by a
+parameter file.  To use this feature, you use --gen-key together with
+--batch and feed the parameters either from stdin or from a file given
+on the commandline.
 
-To use this feature, you use --gen-key together with --batch and feed the
-parameters either from stdin or from a file given on the commandline.
 The format of this file is as follows:
   o Text only, line length is limited to about 1000 chars.
   o You must use UTF-8 encoding to specify non-ascii characters.

@@ -1,3 +1,8 @@
+2002-01-07  Werner Koch  <wk@gnupg.org>
+
+	* DETAILS: Removed the comment that unattended key generation is
+	experimental.  It is now a standard feature.
+
 2001-12-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Fixed a few typos.
