@@ -149,6 +149,7 @@ unsigned mpi_get_nbits( MPI a );
 int  mpi_test_bit( MPI a, unsigned n );
 void mpi_set_bit( MPI a, unsigned n );
 void mpi_set_highbit( MPI a, unsigned n );
+void mpi_clear_highbit( MPI a, unsigned n );
 void mpi_clear_bit( MPI a, unsigned n );
 void mpi_set_bytes( MPI a, unsigned nbits, byte (*fnc)(int), int opaque );
 void mpi_rshift( MPI x, MPI a, unsigned n );

@@ -31,6 +31,7 @@
 #include <string.h>
 #include <unistd.h>
 
+
 #include "packet.h"
 #include "iobuf.h"
 #include "memory.h"
@@ -99,7 +100,7 @@ static ARGPARSE_OPTS opts[] = {
   #endif
     { 'o', "output",    2, N_("use as output file")},
     { 'v', "verbose",   0, N_("verbose") },
-    { 'n', "dry-run",   0, N_("don't make any changes") },
+    { 'n', "dry-run",   0, N_("do not make any changes") },
     { 500, "batch",     0, N_("batch mode: never ask")},
     { 501, "yes",       0, N_("assume yes on most questions")},
     { 502, "no",        0, N_("assume no on most questions")},
@@ -275,7 +276,7 @@ build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
 static void
 i18n_init(void)
 {
-  #ifdef HAVE_LIBINTL
+  #ifdef ENABLE_NLS
     #ifdef HAVE_LC_MESSAGES
        setlocale( LC_MESSAGES, "" );
     #else
@@ -393,6 +394,7 @@ main( int argc, char **argv )
      */
     log_set_name("gpg");
     secure_random_alloc(); /* put random number into secure memory */
+    init_signals();
   #endif
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */

@@ -47,10 +47,10 @@ cipher_filter( void *opaque, int control,
     cipher_filter_context_t *cfx = opaque;
     int rc=0;
 
-    if( control == IOBUFCTRL_UNDERFLOW ) { /* decrypted */
+    if( control == IOBUFCTRL_UNDERFLOW ) { /* decrypt */
 	rc = -1; /* FIXME:*/
     }
-    else if( control == IOBUFCTRL_FLUSH ) { /* encrypted */
+    else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	assert(a);
 	if( !cfx->header ) {
 	    PACKET pkt;

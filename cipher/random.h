@@ -27,6 +27,7 @@ void secure_random_alloc(void);
 int  quick_random_gen( int onoff );
 void randomize_buffer( byte *buffer, size_t length, int level );
 byte get_random_byte( int level );
+byte *get_random_bits( size_t nbits, int level, int secure );
 void add_randomness( const void *buffer, size_t length, int source );
 
 

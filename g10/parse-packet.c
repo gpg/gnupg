@@ -425,7 +425,6 @@ skip_rest( IOBUF inp, unsigned long pktlen )
 static int
 parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
-    int version;
     unsigned n;
     PKT_pubkey_enc *k;
 
@@ -434,17 +433,17 @@ parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	log_error("packet(%d) too short\n", pkttype);
 	goto leave;
     }
-    version = iobuf_get_noeof(inp); pktlen--;
-    if( version != 2 && version != 3 ) {
-	log_error("packet(%d) with unknown version %d\n", pkttype, version);
+    k->version = iobuf_get_noeof(inp); pktlen--;
+    if( k->version != 2 && k->version != 3 ) {
+	log_error("packet(%d) with unknown version %d\n", pkttype, k->version);
 	goto leave;
     }
     k->keyid[0] = read_32(inp); pktlen -= 4;
     k->keyid[1] = read_32(inp); pktlen -= 4;
     k->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
-	printf(":public key encoded packet: keyid %08lX%08lX\n",
-				      (ulong)k->keyid[0], (ulong)k->keyid[1]);
+	printf(":public key encoded packet: version %d, keyid %08lX%08lX\n",
+			    k->version, (ulong)k->keyid[0], (ulong)k->keyid[1]);
     if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	n = pktlen;
 	k->d.elg.a = mpi_read(inp, &n, 0); pktlen -=n;
@@ -791,7 +790,10 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     if( list_mode )
 	printf(":%s key packet:\n"
 	       "\tversion %d, created %lu, valid for %hu days\n",
-		pkttype == PKT_PUBLIC_CERT? "public": "secret",
+		pkttype == PKT_PUBLIC_CERT? "public" :
+		pkttype == PKT_SECRET_CERT? "secret" :
+		pkttype == PKT_PUBKEY_SUBCERT? "public sub" :
+		pkttype == PKT_SECKEY_SUBCERT? "secret sub" : "??",
 		version, timestamp, valid_period );
     if( pkttype == PKT_SECRET_CERT )  {
 	pkt->pkt.secret_cert->timestamp = timestamp;

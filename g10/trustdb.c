@@ -1388,8 +1388,8 @@ propagate_trust( TRUST_SEG_LIST tslist )
 
 
 /****************
- * we have the pubkey record but nothing more is known
- * function may re-read dr.
+ * we have the pubkey record but nothing more is known.
+ * (function may re-read dr)
  */
 static int
 do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
@@ -1736,7 +1736,11 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
 				    pkc->local_id );
 	}
     }
-    /* fixme: do some additional checks on the pubkey record */
+    if( pkc->timestamp > make_timestamp() ) {
+	log_info("public key created in future (time warp or clock problem)\n");
+	return G10ERR_TIME_CONFLICT;
+    }
+
 
     rc = do_check( pkc->local_id, &rec, &trustlevel );
     if( rc ) {

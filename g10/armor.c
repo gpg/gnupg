@@ -150,6 +150,7 @@ is_armored( byte *buf )
 	return 1; /* invalid packet: assume it is armored */
     pkttype =  ctb & 0x40 ? (ctb & 0x3f) : ((ctb>>2)&0xf);
     switch( pkttype ) {
+      case PKT_MARKER:
       case PKT_PUBLIC_CERT:
       case PKT_SECRET_CERT:
       case PKT_PUBKEY_ENC:

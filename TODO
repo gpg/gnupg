@@ -6,12 +6,12 @@
       function of iobuf.
     * add checking of armor trailers
     * remove all "Fixmes"
-    * speed up the RIPE-MD-160
-    * add signal handling
+
     * enable a SIGSEGV handler while using zlib functions
 
-    * complete cipher/cast.c
-    * complete cipher/dsa.c
+    * complete cipher/cast.c -- have to use the PGP CFBug
+
+    * key generation for dsa and subpacket support.
 
     * Burn the buffers used by fopen(), or use read(2).
 
@@ -34,9 +34,11 @@
 
     * add an option to re-create a public key from a secret key
 
-    * should we have a simple menu for all the key management options?
-
     * cleanup mainproc.c, much stuff is duplicated.
 
     * remove key management stuff from sign.c.
+
+    * add fingerprint/keyid hashing. We need a new filed in PKC to
+      flag that we may have a cached signature for this (and use the address
+      of PKC to lookup the hash).
 

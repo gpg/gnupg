@@ -68,10 +68,10 @@ static pkc_cache_entry_t pkc_cache;
 static int pkc_cache_entries;	/* number of entries in pkc cache */
 
 
-static int scan_keyring( PKT_public_cert *pkc, u32 *keyid,
-			 const char *name, const char *filename );
-static int scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
-				const char *name, const char *filename);
+static int lookup( PKT_public_cert *pkc,
+		   int mode,  u32 *keyid, const char *name );
+static int lookup_skc( PKT_secret_cert *skc,
+		   int mode,  u32 *keyid, const char *name );
 
 /* note this function may be called before secure memory is
  * available */
@@ -161,7 +161,7 @@ add_secret_keyring( const char *name )
 }
 
 
-void
+static void
 cache_public_cert( PKT_public_cert *pkc )
 {
     pkc_cache_entry_t ce;
@@ -214,7 +214,7 @@ cache_user_id( PKT_user_id *uid, u32 *keyid )
     for(r=user_id_db; r; r = r->next )
 	if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] ) {
 	    if( DBG_CACHE )
-		log_debug("cache_user_id: already in cache\n");
+	       log_debug("cache_user_id: already in cache\n");
 	    return;
 	}
 
@@ -241,7 +241,6 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
     int internal = 0;
     int rc = 0;
     pkc_cache_entry_t ce;
-    STRLIST sl;
 
 
     /* lets see wether we checked the keyid already */
@@ -249,14 +248,13 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
 	if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
 	    return G10ERR_NO_PUBKEY; /* already checked and not found */
 
-    /* 1. Try to get it from our cache */
+    /* Try to get it from our cache */
     for( ce = pkc_cache; ce; ce = ce->next )
 	if( ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1] ) {
 	    if( pkc )
 		copy_public_cert( pkc, ce->pkc );
 	    return 0;
 	}
-
     /* more init stuff */
     if( !pkc ) {
 	pkc = m_alloc_clear( sizeof *pkc );
@@ -264,14 +262,12 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
     }
 
 
-    /* 2. Try to get it from the keyrings */
-    for(sl = keyrings; sl; sl = sl->next )
-	if( !scan_keyring( pkc, keyid, NULL, sl->d ) )
-	    goto leave;
+    /* do a lookup */
+    rc = lookup( pkc, 11, keyid, NULL );
+    if( !rc )
+	goto leave;
 
-    /* 3. Try to get it from a key server */
-
-    /* 4. not found: store it for future reference */
+    /* not found: store it for future reference */
     kl = m_alloc( sizeof *kl );
     kl->keyid[0] = keyid[0];
     kl->keyid[1] = keyid[1];
@@ -285,6 +281,32 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
     if( internal )
 	m_free(pkc);
     return rc;
+}
+
+
+static int
+hextobyte( const byte *s )
+{
+    int c;
+
+    if( *s >= '0' && *s <= '9' )
+	c = 16 * (*s - '0');
+    else if( *s >= 'A' && *s <= 'F' )
+	c = 16 * (10 + *s - 'A');
+    else if( *s >= 'a' && *s <= 'f' )
+	c = 16 * (10 + *s - 'a');
+    else
+	return -1;
+    s++;
+    if( *s >= '0' && *s <= '9' )
+	c += *s - '0';
+    else if( *s >= 'A' && *s <= 'F' )
+	c += 10 + *s - 'A';
+    else if( *s >= 'a' && *s <= 'f' )
+	c += 10 + *s - 'a';
+    else
+	return -1;
+    return c;
 }
 
 
@@ -302,26 +324,30 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
  *   (Not yet implemented)
  * - If the username starts with a left angle, we assume it is a complete
  *   email address and look only at this part.
+ * - If the username starts with a '.', we assume it is the ending
+ *   part of an email address
+ * - If the username starts with an '@', we assume it is a part of an
+ *   email address
  * - If the userid start with an '=' an exact compare is done; this may
  *   also follow the keyid in which case both parts are matched.
- *   (Not yet implemented)
- *
+ * - If the userid starts with a '*' a case insensitive substring search is
+ *   done (This is also the default).
  */
 int
 get_pubkey_byname( PKT_public_cert *pkc, const char *name )
 {
     int internal = 0;
     int rc = 0;
-    STRLIST sl;
     const char *s;
     u32 keyid[2] = {0}; /* init to avoid compiler warning */
-    int use_keyid=0;
+    byte fprint[20];
+    int mode = 0;
 
     /* check what kind of name it is */
     for(s = name; *s && isspace(*s); s++ )
 	;
-    if( isdigit( *s ) ) { /* a keyid */
-	int i;
+    if( isdigit( *s ) ) { /* a keyid or a fingerprint */
+	int i, j;
 	char buf[9];
 
 	if( *s == '0' && s[1] == 'x' && isxdigit(s[2]) )
@@ -334,7 +360,7 @@ get_pubkey_byname( PKT_public_cert *pkc, const char *name )
 	    if( i==9 )
 		s++;
 	    keyid[1] = strtoul( s, NULL, 16 );
-	    use_keyid++;
+	    mode = 10;
 	}
 	else if( i == 16 || (i == 17 && *s == '0') ) { /* complete keyid */
 	    if( i==17 )
@@ -342,51 +368,73 @@ get_pubkey_byname( PKT_public_cert *pkc, const char *name )
 	    mem2str(buf, s, 9 );
 	    keyid[0] = strtoul( buf, NULL, 16 );
 	    keyid[1] = strtoul( s+8, NULL, 16 );
-	    return get_pubkey( pkc, keyid );
+	    mode = 11;
+	}
+	else if( i == 32 || ( i == 33 && *s == '0' ) ) { /* md5 fingerprint */
+	    if( i==33 )
+		s++;
+	    memset(fprint+16, 4, 0);
+	    for(j=0; !rc && j < 16; j++, s+=2 ) {
+		int c = hextobyte( s );
+		if( c == -1 )
+		    rc = G10ERR_INV_USER_ID;
+		else
+		    fprint[j] = c;
+	    }
+	    mode = 16;
+	}
+	else if( i == 40 || ( i == 41 && *s == '0' ) ) { /* sha1/rmd160 fprint*/
+	    if( i==33 )
+		s++;
+	    for(j=0; !rc && j < 20; j++, s+=2 ) {
+		int c = hextobyte( s );
+		if( c == -1 )
+		    rc = G10ERR_INV_USER_ID;
+		else
+		    fprint[j] = c;
+	    }
+	    mode = 20;
 	}
 	else
 	    rc = G10ERR_INV_USER_ID;
     }
-    else if( *s == '<' ) { /* an email address */
-	/* for now handled like a substring */
-	/* a keyserver might use this for quicker access */
-    }
     else if( *s == '=' ) { /* exact search */
-	rc = G10ERR_INV_USER_ID; /* nox yet implemented */
-    }
-    else if( *s == '#' ) { /* use local id */
-	rc = G10ERR_INV_USER_ID; /* nox yet implemented */
+	mode = 1;
+	s++;
     }
     else if( *s == '*' ) { /* substring search */
-	name++;
+	mode = 2;
+	s++;
+    }
+    else if( *s == '<' ) { /* an email address */
+	mode = 3;
+    }
+    else if( *s == '@' ) { /* a part of an email address */
+	mode = 4;
+	s++;
+    }
+    else if( *s == '.' ) { /* an email address, compare from end */
+	mode = 5;
+	s++;
+    }
+    else if( *s == '#' ) { /* use local id */
+	rc = G10ERR_INV_USER_ID; /* not yet implemented */
     }
     else if( !*s )  /* empty string */
 	rc = G10ERR_INV_USER_ID;
+    else
+	mode = 2;
 
     if( rc )
 	goto leave;
-
-
 
     if( !pkc ) {
 	pkc = m_alloc_clear( sizeof *pkc );
 	internal++;
     }
 
-    /* 2. Try to get it from the keyrings */
-    for(sl = keyrings; sl; sl = sl->next )
-	if( use_keyid ) {
-	    if( !scan_keyring( pkc, keyid, name, sl->d ) )
-		goto leave;
-	}
-	else {
-	    if( !scan_keyring( pkc, NULL, name, sl->d ) )
-		goto leave;
-	}
-    /* 3. Try to get it from a key server */
-
-    /* 4. not found: store it for future reference */
-    rc = G10ERR_NO_PUBKEY;
+    rc = mode < 16? lookup( pkc, mode, keyid, name )
+		  : lookup( pkc, mode, keyid, fprint );
 
   leave:
     if( internal )
@@ -401,23 +449,16 @@ get_pubkey_byname( PKT_public_cert *pkc, const char *name )
 int
 get_seckey( PKT_secret_cert *skc, u32 *keyid )
 {
-    STRLIST sl;
-    int rc=0;
+    int rc;
 
-    for(sl = secret_keyrings; sl; sl = sl->next )
-	if( !(rc=scan_secret_keyring( skc, keyid, NULL, sl->d )) )
-	    goto found;
-    /* fixme: look at other places */
-    goto leave;
+    rc = lookup_skc( skc, 11, keyid, NULL );
+    if( !rc ) {
+	/* check the secret key (this may prompt for a passprase to
+	 * unlock the secret key
+	 */
+	rc = check_secret_key( skc );
+    }
 
-  found:
-    /* get the secret key (this may prompt for a passprase to
-     * unlock the secret key
-     */
-    if( (rc = check_secret_key( skc )) )
-	goto leave;
-
-  leave:
     return rc;
 }
 
@@ -430,18 +471,10 @@ int
 seckey_available( u32 *keyid )
 {
     PKT_secret_cert *skc;
-    STRLIST sl;
-    int rc=0;
+    int rc;
 
     skc = m_alloc_clear( sizeof *skc );
-    for(sl = secret_keyrings; sl; sl = sl->next )
-	if( !(rc=scan_secret_keyring( skc, keyid, NULL, sl->d )) )
-	    goto found;
-    /* fixme: look at other places */
-    goto leave;
-
-  found:
-  leave:
+    rc = lookup_skc( skc, 11, keyid, NULL );
     free_secret_cert( skc );
     return rc;
 }
@@ -455,286 +488,293 @@ seckey_available( u32 *keyid )
 int
 get_seckey_byname( PKT_secret_cert *skc, const char *name, int unprotect )
 {
-    STRLIST sl;
-    int rc=0;
+    int rc;
 
-    for(sl = secret_keyrings; sl; sl = sl->next )
-	if( !(rc=scan_secret_keyring( skc, NULL, name, sl->d ) ) )
-	    goto found;
-    /* fixme: look at other places */
-    goto leave;
+    /* fixme: add support for compare_name */
+    rc = lookup_skc( skc, name? 2:15, NULL, name );
+    if( !rc && unprotect )
+	rc = check_secret_key( skc );
 
-  found:
-    /* get the secret key (this may prompt for a passprase to
-     * unlock the secret key
-     */
-    if( unprotect )
-	if( (rc = check_secret_key( skc )) )
-	    goto leave;
-
-  leave:
     return rc;
 }
 
 
-
-
-
-/****************
- * scan the keyring and look for either the keyid or the name.
- * If both, keyid and name are given, look for keyid but use only
- * the low word of it (name is only used as a flag to indicate this mode
- * of operation).
- */
 static int
-scan_keyring( PKT_public_cert *pkc, u32 *keyid,
-	      const char *name, const char *filename )
+compare_name( const char *uid, size_t uidlen, const char *name, int mode )
 {
-    compress_filter_context_t cfx;
-    int rc=0;
-    int found = 0;
-    IOBUF a;
-    PACKET pkt;
-    int save_mode;
-    u32 akeyid[2];
-    PKT_public_cert *last_pk = NULL;
-    int shortkeyid;
+    int i;
 
-    shortkeyid = keyid && name;
-    if( shortkeyid )
-	name = NULL; /* not used anymore */
-
-    if( !(a = iobuf_open( filename ) ) ) {
-	log_debug("scan_keyring: can't open '%s'\n", filename );
-	return G10ERR_KEYRING_OPEN;
+    if( mode == 1 ) {  /* exact match */
+	for(i=0; name[i] && uidlen; i++, uidlen-- )
+	    if( uid[i] != name[i] )
+		break;
+	if( !uidlen && !name[i] )
+	    return 0; /* found */
     }
-
-    if( !DBG_CACHE )
-	;
-    else if( shortkeyid )
-	log_debug("scan_keyring %s for %08lx\n",  filename, (ulong)keyid[1] );
-    else if( name )
-	log_debug("scan_keyring %s for '%s'\n",  filename, name );
-    else if( keyid )
-	log_debug("scan_keyring %s for %08lx %08lx\n",  filename,
-					     (ulong)keyid[0], (ulong)keyid[1] );
+    else if( mode == 2 ) { /* case insensitive substring */
+	if( memistr( uid, uidlen, name ) )
+	    return 0;
+    }
+    else if( mode == 3 ) { /* case insensitive email address */
+	/* FIXME: not yet implemented */
+	if( memistr( uid, uidlen, name ) )
+	    return 0;
+    }
+    else if( mode == 4 ) { /* email substring */
+	/* FIXME: not yet implemented */
+	if( memistr( uid, uidlen, name ) )
+	    return 0;
+    }
+    else if( mode == 5 ) { /* email from end */
+	/* FIXME: not yet implemented */
+	if( memistr( uid, uidlen, name ) )
+	    return 0;
+    }
     else
-	log_debug("scan_keyring %s (all)\n",  filename );
+	BUG();
 
-    save_mode = set_packet_list_mode(0);
-    init_packet(&pkt);
-    while( (rc=parse_packet(a, &pkt)) != -1 ) {
-	if( rc )
-	    ; /* e.g. unknown packet */
-	else if( keyid && found && pkt.pkttype == PKT_PUBLIC_CERT ) {
-	    log_error("Hmmm, pubkey without an user id in '%s'\n", filename);
-	    goto leave;
-	}
-	else if( pkt.pkttype == PKT_COMPRESSED ) {
-	    memset( &cfx, 0, sizeof cfx );
-	    if( pkt.pkt.compressed->algorithm == 1 )
-		cfx.pgpmode = 1;
-	    else if( pkt.pkt.compressed->algorithm != 2  ){
-		rc = G10ERR_COMPR_ALGO;
-		log_error("compressed keyring: %s\n", g10_errstr(rc) );
-		break;
-	    }
-
-	    pkt.pkt.compressed->buf = NULL;
-	    iobuf_push_filter( a, compress_filter, &cfx );
-	}
-	else if( keyid && pkt.pkttype == PKT_PUBLIC_CERT ) {
-	    switch( pkt.pkt.public_cert->pubkey_algo ) {
-	      case PUBKEY_ALGO_ELGAMAL:
-	      case PUBKEY_ALGO_DSA:
-	      case PUBKEY_ALGO_RSA:
-		keyid_from_pkc( pkt.pkt.public_cert, akeyid );
-		if( (shortkeyid || akeyid[0] == keyid[0])
-		    && akeyid[1] == keyid[1] ) {
-		    copy_public_cert( pkc, pkt.pkt.public_cert );
-		    found++;
-		}
-		break;
-	      default:
-		log_error("cannot handle pubkey algo %d\n",
-				     pkt.pkt.public_cert->pubkey_algo);
-	    }
-	}
-	else if( keyid && found && pkt.pkttype == PKT_USER_ID ) {
-	    cache_user_id( pkt.pkt.user_id, keyid );
-	    goto leave;
-	}
-	else if( name && pkt.pkttype == PKT_PUBLIC_CERT ) {
-	    if( last_pk )
-		free_public_cert(last_pk);
-	    last_pk = pkt.pkt.public_cert;
-	    pkt.pkt.public_cert = NULL;
-	}
-	else if( name && pkt.pkttype == PKT_USER_ID ) {
-	    if( memistr( pkt.pkt.user_id->name, pkt.pkt.user_id->len, name )) {
-		if( !last_pk )
-		    log_error("Ooops: no pubkey for userid '%.*s'\n",
-				pkt.pkt.user_id->len, pkt.pkt.user_id->name);
-		else if( pkc->pubkey_algo &&
-			 pkc->pubkey_algo != last_pk->pubkey_algo )
-		    log_info("skipping id '%.*s': want algo %d, found %d\n",
-				pkt.pkt.user_id->len, pkt.pkt.user_id->name,
-				pkc->pubkey_algo, last_pk->pubkey_algo );
-		else {
-		    copy_public_cert( pkc, last_pk );
-		    goto leave;
-		}
-	    }
-	}
-	else if( !keyid && !name && pkt.pkttype == PKT_PUBLIC_CERT ) {
-	    if( last_pk )
-		free_public_cert(last_pk);
-	    last_pk = pkt.pkt.public_cert;
-	    pkt.pkt.public_cert = NULL;
-	}
-	else if( !keyid && !name && pkt.pkttype == PKT_USER_ID ) {
-	    if( !last_pk )
-		log_error("Ooops: no pubkey for userid '%.*s'\n",
-			    pkt.pkt.user_id->len, pkt.pkt.user_id->name);
-	    else {
-		if( last_pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL
-		    || last_pk->pubkey_algo == PUBKEY_ALGO_DSA
-		    || last_pk->pubkey_algo == PUBKEY_ALGO_RSA ) {
-		     keyid_from_pkc( last_pk, akeyid );
-		     cache_user_id( pkt.pkt.user_id, akeyid );
-		}
-		cache_public_cert( last_pk );
-	    }
-	}
-	free_packet(&pkt);
-    }
-    rc = G10ERR_NO_PUBKEY;
-
-  leave:
-    if( last_pk )
-	free_public_cert(last_pk);
-    free_packet(&pkt);
-    iobuf_close(a);
-    set_packet_list_mode(save_mode);
-    return rc;
+    return -1; /* not found */
 }
 
 
 /****************
- * This is the function to get a secret key. We use an extra function,
- * so that we can easily add special handling for secret keyrings
- * PKT returns the secret key certificate.
+ * Lookup a key by scanning all keyrings
+ *   mode 1 = lookup by NAME (exact)
+ *	  2 = lookup by NAME (substring)
+ *	  3 = lookup by NAME (email address)
+ *	  4 = email address (substring)
+ *	  5 = email address (compare from end)
+ *	 10 = lookup by short KEYID (don't care about keyid[0])
+ *	 11 = lookup by long  KEYID
+ *	 15 = Get the first key.
+ *	 16 = lookup by 16 byte fingerprint which is stored in NAME
+ *	 20 = lookup by 20 byte fingerprint which is stored in NAME
+ * Caller must provide an empty PKC, if the pubkey_algo is filled in, only
+ * a key of this algo will be returned.
  */
 static int
-scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
-		     const char *name, const char *filename )
+lookup( PKT_public_cert *pkc, int mode,  u32 *keyid, const char *name )
 {
-    int rc=0;
-    int found = 0;
-    IOBUF a;
-    PACKET pkt;
-    int save_mode;
-    u32 akeyid[2];
-    PKT_secret_cert *last_pk = NULL;
-    int get_first;
-    u32 dummy_keyid[2];
+    int rc;
+    KBNODE keyblock = NULL;
+    KBPOS kbpos;
 
-    get_first = !keyid && !name;
-    if( get_first )
-	keyid = dummy_keyid;
-
-    if( !(a = iobuf_open( filename ) ) ) {
-	log_debug("scan_secret_keyring: can't open '%s'\n", filename );
-	return G10ERR_KEYRING_OPEN;
+    rc = enum_keyblocks( 0, &kbpos, &keyblock );
+    if( rc ) {
+	if( rc == -1 )
+	    rc = G10ERR_NO_PUBKEY;
+	else if( rc )
+	    log_error("enum_keyblocks(open) failed: %s\n", g10_errstr(rc) );
+	goto leave;
     }
 
-    save_mode = set_packet_list_mode(0);
-    init_packet(&pkt);
-    while( (rc=parse_packet(a, &pkt)) != -1 ) {
-	if( rc )
-	    ; /* e.g. unknown packet */
-	else if( keyid && found && pkt.pkttype == PKT_SECRET_CERT ) {
-	    log_error("Hmmm, seckey without an user id in '%s'\n", filename);
-	    goto leave;
-	}
-	else if( keyid && pkt.pkttype == PKT_SECRET_CERT ) {
-	    switch( pkt.pkt.secret_cert->pubkey_algo ) {
-	      case PUBKEY_ALGO_ELGAMAL:
-	      case PUBKEY_ALGO_DSA:
-	      case PUBKEY_ALGO_RSA:
-		if( get_first ) {
-		    copy_secret_cert( skc, pkt.pkt.secret_cert );
-		    found++;
-		}
-		else {
-		    keyid_from_skc( pkt.pkt.secret_cert, akeyid );
-		    if( (akeyid[0] == keyid[0] && akeyid[1] == keyid[1]) ) {
-			copy_secret_cert( skc, pkt.pkt.secret_cert );
-			found++;
+    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
+	KBNODE k, kk;
+	if( mode < 10 ) { /* name lookup */
+	    for(k=keyblock; k; k = k->next ) {
+		if( k->pkt->pkttype == PKT_USER_ID
+		    && !compare_name( k->pkt->pkt.user_id->name,
+				      k->pkt->pkt.user_id->len, name, mode)) {
+		    /* we found a matching name, look for the key */
+		    for(kk=keyblock; kk; kk = kk->next )
+			if( (	 kk->pkt->pkttype == PKT_PUBLIC_CERT
+			      || kk->pkt->pkttype == PKT_PUBKEY_SUBCERT )
+			    && ( !pkc->pubkey_algo
+				 || pkc->pubkey_algo
+				    == kk->pkt->pkt.public_cert->pubkey_algo))
+			break;
+		    if( kk ) {
+			u32 aki[2];
+			keyid_from_pkc( kk->pkt->pkt.public_cert, aki );
+			cache_user_id( k->pkt->pkt.user_id, aki );
+			k = kk;
+			break;
 		    }
-		}
-		break;
-	      default:
-		log_error("cannot handle pubkey algo %d\n",
-				     pkt.pkt.secret_cert->pubkey_algo);
-	    }
-	}
-	else if( keyid && found && pkt.pkttype == PKT_USER_ID ) {
-	    goto leave;
-	}
-	else if( name && pkt.pkttype == PKT_SECRET_CERT ) {
-	    if( last_pk )
-		free_secret_cert(last_pk);
-	    last_pk = pkt.pkt.secret_cert;
-	    pkt.pkt.secret_cert = NULL;
-	}
-	else if( name && pkt.pkttype == PKT_USER_ID ) {
-	    if( memistr( pkt.pkt.user_id->name, pkt.pkt.user_id->len, name )) {
-		if( !last_pk )
-		    log_error("Ooops: no seckey for userid '%.*s'\n",
-				pkt.pkt.user_id->len, pkt.pkt.user_id->name);
-		else if( skc->pubkey_algo &&
-			 skc->pubkey_algo != last_pk->pubkey_algo )
-		    log_info("skipping id '%.*s': want algo %d, found %d\n",
-				pkt.pkt.user_id->len, pkt.pkt.user_id->name,
-				skc->pubkey_algo, last_pk->pubkey_algo );
-		else {
-		    copy_secret_cert( skc, last_pk );
-		    goto leave;
+		    else
+			log_error("No key for userid\n");
 		}
 	    }
 	}
-	else if( !keyid && !name && pkt.pkttype == PKT_SECRET_CERT ) {
-	    if( last_pk )
-		free_secret_cert(last_pk);
-	    last_pk = pkt.pkt.secret_cert;
-	    pkt.pkt.secret_cert = NULL;
-	}
-	else if( !keyid && !name && pkt.pkttype == PKT_USER_ID ) {
-	    if( !last_pk )
-		log_error("Ooops: no seckey for userid '%.*s'\n",
-			    pkt.pkt.user_id->len, pkt.pkt.user_id->name);
-	    else {
-		if( last_pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL
-		   || last_pk->pubkey_algo == PUBKEY_ALGO_DSA
-		   || last_pk->pubkey_algo == PUBKEY_ALGO_RSA ) {
-		    keyid_from_skc( last_pk, akeyid );
-		    cache_user_id( pkt.pkt.user_id, akeyid );
-		}
+	else { /* keyid or fingerprint lookup */
+	    for(k=keyblock; k; k = k->next ) {
+		if(    k->pkt->pkttype == PKT_PUBLIC_CERT
+		    || k->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
+		    if( mode == 10 || mode == 11 ) {
+			u32 aki[2];
+			keyid_from_pkc( k->pkt->pkt.public_cert, aki );
+			if( aki[1] == keyid[1]
+			    && ( mode == 10 || aki[0] == keyid[0] )
+			    && ( !pkc->pubkey_algo
+				 || pkc->pubkey_algo
+				    == k->pkt->pkt.public_cert->pubkey_algo) ){
+			    /* cache the userid */
+			    for(kk=keyblock; kk; kk = kk->next )
+				if( kk->pkt->pkttype == PKT_USER_ID )
+				    break;
+			    if( kk )
+				cache_user_id( kk->pkt->pkt.user_id, aki );
+			    else
+				log_error("No userid for key\n");
+			    break; /* found */
+			}
+		    }
+		    else if( mode == 15 ) { /* get the first key */
+			if( !pkc->pubkey_algo
+			    || pkc->pubkey_algo
+				  == k->pkt->pkt.public_cert->pubkey_algo )
+			    break;
+		    }
+		    else if( mode == 16 || mode == 20 ) {
+			size_t an;
+			byte *afp = fingerprint_from_pkc(
+					k->pkt->pkt.public_cert, &an );
+			if( an == mode && !memcmp( afp, name, an)
+			    && ( !pkc->pubkey_algo
+				 || pkc->pubkey_algo
+				    == k->pkt->pkt.public_cert->pubkey_algo) ) {
+			    m_free(afp);
+			    break;
+			}
+			m_free(afp);
+		    }
+		    else
+			BUG();
+		} /* end compare public keys */
 	    }
 	}
-	free_packet(&pkt);
+	if( k ) { /* found */
+	    assert(    k->pkt->pkttype == PKT_PUBLIC_CERT
+		    || k->pkt->pkttype == PKT_PUBKEY_SUBCERT );
+	    copy_public_cert( pkc, k->pkt->pkt.public_cert );
+	    break; /* enumeration */
+	}
+	release_kbnode( keyblock );
+	keyblock = NULL;
     }
-    rc = G10ERR_NO_SECKEY;
+    if( rc == -1 )
+	rc = G10ERR_NO_PUBKEY;
+    else if( rc )
+	log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
 
   leave:
-    if( last_pk )
-	free_secret_cert(last_pk);
-    free_packet(&pkt);
-    iobuf_close(a);
-    set_packet_list_mode(save_mode);
+    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    release_kbnode( keyblock );
     return rc;
 }
+
+/****************
+ * Ditto for secret keys
+ */
+static int
+lookup_skc( PKT_secret_cert *skc, int mode,  u32 *keyid, const char *name )
+{
+    int rc;
+    KBNODE keyblock = NULL;
+    KBPOS kbpos;
+
+    rc = enum_keyblocks( 5 /* open secret */, &kbpos, &keyblock );
+    if( rc ) {
+	if( rc == -1 )
+	    rc = G10ERR_NO_PUBKEY;
+	else if( rc )
+	    log_error("enum_keyblocks(open secret) failed: %s\n", g10_errstr(rc) );
+	goto leave;
+    }
+
+    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
+	KBNODE k, kk;
+	if( mode < 10 ) { /* name lookup */
+	    for(k=keyblock; k; k = k->next ) {
+		if( k->pkt->pkttype == PKT_USER_ID
+		    && !compare_name( k->pkt->pkt.user_id->name,
+				      k->pkt->pkt.user_id->len, name, mode)) {
+		    /* we found a matching name, look for the key */
+		    for(kk=keyblock; kk; kk = kk->next )
+			if( (	 kk->pkt->pkttype == PKT_SECRET_CERT
+			      || kk->pkt->pkttype == PKT_SECKEY_SUBCERT )
+			    && ( !skc->pubkey_algo
+				 || skc->pubkey_algo
+				    == kk->pkt->pkt.secret_cert->pubkey_algo))
+			break;
+		    if( kk ) {
+			u32 aki[2];
+			keyid_from_skc( kk->pkt->pkt.secret_cert, aki );
+			cache_user_id( k->pkt->pkt.user_id, aki );
+			k = kk;
+			break;
+		    }
+		    else
+			log_error("No key for userid (in skc)\n");
+		}
+	    }
+	}
+	else { /* keyid or fingerprint lookup */
+	    for(k=keyblock; k; k = k->next ) {
+		if(    k->pkt->pkttype == PKT_SECRET_CERT
+		    || k->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
+		    if( mode == 10 || mode == 11 ) {
+			u32 aki[2];
+			keyid_from_skc( k->pkt->pkt.secret_cert, aki );
+			if( aki[1] == keyid[1]
+			    && ( mode == 10 || aki[0] == keyid[0] )
+			    && ( !skc->pubkey_algo
+				 || skc->pubkey_algo
+				    == k->pkt->pkt.secret_cert->pubkey_algo) ){
+			    /* cache the userid */
+			    for(kk=keyblock; kk; kk = kk->next )
+				if( kk->pkt->pkttype == PKT_USER_ID )
+				    break;
+			    if( kk )
+				cache_user_id( kk->pkt->pkt.user_id, aki );
+			    else
+				log_error("No userid for key\n");
+			    break; /* found */
+			}
+		    }
+		    else if( mode == 15 ) { /* get the first key */
+			if( !skc->pubkey_algo
+			    || skc->pubkey_algo
+				  == k->pkt->pkt.secret_cert->pubkey_algo )
+			    break;
+		    }
+		    else if( mode == 16 || mode == 20 ) {
+			size_t an;
+			byte *afp = fingerprint_from_skc(
+					k->pkt->pkt.secret_cert, &an );
+			if( an == mode && !memcmp( afp, name, an)
+			    && ( !skc->pubkey_algo
+				 || skc->pubkey_algo
+				    == k->pkt->pkt.secret_cert->pubkey_algo) ) {
+			    m_free(afp);
+			    break;
+			}
+			m_free(afp);
+		    }
+		    else
+			BUG();
+		} /* end compare secret keys */
+	    }
+	}
+	if( k ) { /* found */
+	    assert(    k->pkt->pkttype == PKT_SECRET_CERT
+		    || k->pkt->pkttype == PKT_SECKEY_SUBCERT );
+	    copy_secret_cert( skc, k->pkt->pkt.secret_cert );
+	    break; /* enumeration */
+	}
+	release_kbnode( keyblock );
+	keyblock = NULL;
+    }
+    if( rc == -1 )
+	rc = G10ERR_NO_PUBKEY;
+    else if( rc )
+	log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
+
+  leave:
+    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    release_kbnode( keyblock );
+    return rc;
+}
+
 
 
 /****************

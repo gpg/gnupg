@@ -706,7 +706,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	log_info("%s signature from ", rc? "BAD":"Good");
 	print_keyid( stderr, sig->keyid );
 	putc('\n', stderr);
-	if( opt.batch )
+	if( opt.batch && rc )
 	    g10_exit(1);
     }
     else {

@@ -54,7 +54,10 @@ g10_dsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
     sig->digest_start[1] = dp[1];
     sig->d.dsa.r = mpi_alloc( mpi_get_nlimbs(skc->d.dsa.p) );
     sig->d.dsa.s = mpi_alloc( mpi_get_nlimbs(skc->d.dsa.p) );
-    frame = encode_md_value( md, mpi_get_nbits(skc->d.dsa.p));
+    frame = mpi_alloc( (md_digest_length(digest_algo)+BYTES_PER_MPI_LIMB-1)
+		       / BYTES_PER_MPI_LIMB );
+    mpi_set_buffer( frame, md_read(md, digest_algo),
+			   md_digest_length(digest_algo), 0 );
     skey.p = skc->d.elg.p;
     skey.g = skc->d.elg.g;
     skey.y = skc->d.elg.y;

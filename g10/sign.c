@@ -871,8 +871,8 @@ delete_key( const char *username, int secret )
     KBNODE keyblock = NULL;
     KBNODE node;
     KBPOS kbpos;
-    PKT_public_cert *pkc;
-    PKT_secret_cert *skc;
+    PKT_public_cert *pkc = NULL;
+    PKT_secret_cert *skc = NULL;
     u32 keyid[2];
     int okay=0;
 

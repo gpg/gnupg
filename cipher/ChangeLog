@@ -1,3 +1,35 @@
+Thu Mar 19 13:54:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* blowfish.c (blowfish_decode_cfb): changed XOR operation
+	(blowfish_encode_cfb): Ditto.
+
+Thu Mar 12 14:04:05 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* sha1.c (transform): Rewrote
+
+	* blowfish.c (encrypt): Unrolled for rounds == 16
+	(decrypt): Ditto.
+
+Tue Mar 10 16:32:08 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* rmd160.c (transform): Unrolled the loop.
+
+Tue Mar 10 13:05:14 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* random.c (read_pool): Add pool_balance stuff.
+	(get_random_bits): New.
+
+	* elgamal.c (elg_generate): Now uses get_random_bits to generate x.
+
+
+Tue Mar 10 11:33:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* md.c (md_digest_length): New.
+
+Tue Mar 10 11:27:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* dsa.c (dsa_verify): Works.
+
 Mon Mar  9 12:59:08 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* dsa.c, dsa.h: Removed some unused code.

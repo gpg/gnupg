@@ -21,7 +21,7 @@ fi
 
 VERSION=`cat $srcdir/VERSION`
 PACKAGE=gnupg
-ALL_LINGUAS="de"
+ALL_LINGUAS="de it"
 AC_SUBST(VERSION)
 AC_SUBST(PACKAGE)
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
@@ -108,6 +108,8 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
+AC_TYPE_SIGNAL
+AC_DECL_SYS_SIGLIST
 
 WK_CHECK_ENDIAN
 

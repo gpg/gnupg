@@ -56,34 +56,8 @@ msgstr ""
 "Die voreingestellte Operation ist abhängig von den Eingabedaten\n"
 
 #: g10/g10.c:77
-msgid "Please report bugs to <g10-bugs@isil.d.shuttle.de>.\n"
-msgstr "Berichte über Wanzen bitte an <g10-bugs@isil.d.shuttle.de>.\n"
-
-#: g10/g10.c:82
-msgid ""
-"   NOTE: This version is compiled without ZLIB support;\n"
-"         you are not able to process compresssed data!\n"
-"WARNING: This version has RSA support! Your are not allowed to\n"
-"         use it inside the Unites States before Sep 30, 2000!\n"
-msgstr ""
-"Achtung: Komprimierte Daten können nicht bearbeiten werden,\n"
-"         da auf diesem System ZLIN nicht installiert ist!\n"
-"         (RSA Verfahren ist vorhanden.)\n"
-
-#: g10/g10.c:88
-msgid ""
-"   NOTE: This version is compiled without ZLIB support;\n"
-"         you are not able to process compresssed data!\n"
-msgstr ""
-"Achtung: Komprimierte Daten können nicht bearbeiten werden,\n"
-"         da auf diesem System ZLIB nicht installiert ist!\n"
-
-#: g10/g10.c:92
-msgid ""
-"WARNING: This version has RSA support! Your are not allowed to\n"
-"         use it inside the Unites States before Sep 30, 2000!\n"
-msgstr ""
-"         (RSA Verfahren ist vorhanden.)\n"
+msgid "Please report bugs to <gnupg-bugs@isil.d.shuttle.de>.\n"
+msgstr "Berichte über Wanzen bitte an <gnupg-bugs@isil.d.shuttle.de>.\n"
 
 #: g10/g10.c:116
 msgid "Usage: g10 [options] "
@@ -131,7 +105,7 @@ msgstr "\"Nein\" als Standard Antwort annehmen"
 
 #: g10/g10.c:173
 msgid "generate a new key pair"
-msgstr "Einen neues Schlüsselpaar erzeugen"
+msgstr "Ein neues Schlüsselpaar erzeugen"
 
 #: g10/g10.c:174
 msgid "add key to the public keyring"

@@ -78,7 +78,7 @@ static int keyring_search( PACKET *pkt, KBPOS *kbpos, IOBUF iobuf,
 static int keyring_search2( PUBKEY_FIND_INFO info, KBPOS *kbpos,
 						   const char *fname);
 static int keyring_read( KBPOS *kbpos, KBNODE *ret_root );
-static int keyring_enum( KBPOS *kbpos, KBNODE *ret_root );
+static int keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs );
 static int keyring_copy( KBPOS *kbpos, int mode, KBNODE root );
 
 
@@ -346,11 +346,13 @@ read_keyblock( KBPOS *kbpos, KBNODE *ret_root )
  * Mode is: 0 = open
  *	    1 = read
  *	    2 = close
+ *	    5 = open secret keyrings
+ *	    11 = read but skip signature and comment packets.
  *	    all others are reserved!
- * Note that you do not need a search prior to call this function,
- * only handle is needed.
- * NOTE: It is not alloed to do an insert/update/delte with this
- *	 keyblock, if you want to do this, user search/read!
+ * Note that you do not need a search prior to this function,
+ * only a handle is needed.
+ * NOTE: It is not allowed to do an insert/update/delte with this
+ *	 keyblock, if you want to do this, use search/read!
  */
 int
 enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
@@ -358,15 +360,23 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
     int rc = 0;
     RESTBL *rentry;
 
-    if( !mode || mode == 100 ) {
+    if( !mode || mode == 5 || mode == 100 ) {
 	int i;
 	kbpos->fp = NULL;
-	if( !mode )
+	if( !mode ) {
+	    kbpos->secret = 0;
 	    i = 0;
+	}
+	else if( mode == 5 ) {
+	    kbpos->secret = 1;
+	    mode = 0;
+	    i = 0;
+	}
 	else
 	    i = kbpos->resno+1;
 	for(; i < MAX_RESOURCES; i++ )
-	    if( resource_table[i].used && !resource_table[i].secret )
+	    if( resource_table[i].used
+		&& !resource_table[i].secret == !kbpos->secret )
 		break;
 	if( i == MAX_RESOURCES )
 	    return -1; /* no resources */
@@ -379,13 +389,13 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	}
 	kbpos->pkt = NULL;
     }
-    else if( mode == 1 ) {
+    else if( mode == 1 || mode == 11 ) {
 	int cont;
 	do {
 	    cont = 0;
 	    if( !kbpos->fp )
 		return G10ERR_GENERAL;
-	    rc = keyring_enum( kbpos, ret_root );
+	    rc = keyring_enum( kbpos, ret_root, mode == 11 );
 	    if( rc == -1 ) {
 		assert( !kbpos->pkt );
 		rentry = check_pos( kbpos );
@@ -703,13 +713,12 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 
 
 static int
-keyring_enum( KBPOS *kbpos, KBNODE *ret_root )
+keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 {
     PACKET *pkt;
     int rc;
     RESTBL *rentry;
     KBNODE root = NULL;
-    int in_cert = 0;
 
     if( !(rentry=check_pos(kbpos)) )
 	return G10ERR_GENERAL;
@@ -736,17 +745,28 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root )
 	switch( pkt->pkttype ) {
 	  case PKT_PUBLIC_CERT:
 	  case PKT_SECRET_CERT:
-	    if( in_cert ) { /* store this packet */
+	    if( root ) { /* store this packet */
 		kbpos->pkt = pkt;
 		pkt = NULL;
 		goto ready;
 	    }
-	    in_cert = 1;
+	    root = new_kbnode( pkt );
+	    pkt = m_alloc( sizeof *pkt );
+	    init_packet(pkt);
+	    break;
+
 	  default:
-	    if( !root )
-		root = new_kbnode( pkt );
-	    else
-		add_kbnode( root, new_kbnode( pkt ) );
+	    /* skip pakets at the begin of a keyring, until we find
+	     * a start packet; issue a warning if it is not a comment */
+	    if( !root && pkt->pkttype != PKT_COMMENT )
+		log_info("keyring_enum: skipped packet of type %d\n",
+			    pkt->pkttype );
+	    if( !root || (skipsigs && ( pkt->pkttype == PKT_SIGNATURE
+				      ||pkt->pkttype == PKT_COMMENT )) ) {
+		init_packet(pkt);
+		break;
+	    }
+	    add_kbnode( root, new_kbnode( pkt ) );
 	    pkt = m_alloc( sizeof *pkt );
 	    init_packet(pkt);
 	    break;

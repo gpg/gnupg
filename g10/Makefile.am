@@ -50,7 +50,8 @@ common_source =  \
 	      encode.c		\
 	      revoke.c		\
 	      keylist.c 	\
-	      sig-check.c
+	      sig-check.c	\
+	      signal.c
 
 gpg_SOURCES  = g10.c		\
 	      $(common_source)	\

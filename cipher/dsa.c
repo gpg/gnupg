@@ -27,6 +27,32 @@
 #include "cipher.h"
 #include "dsa.h"
 
+/****************
+ * Generate a random secret exponent k less than q
+ */
+static MPI
+gen_k( MPI q )
+{
+    MPI k = mpi_alloc_secure( mpi_get_nlimbs(q) );
+    unsigned nbits = mpi_get_nbits(q);
+
+    if( DBG_CIPHER )
+	log_debug("choosing a random k ");
+    for(;;) {
+	if( DBG_CIPHER )
+	    fputc('.', stderr);
+	mpi_set_bytes( k, nbits , get_random_byte, 1 );
+	if( !(mpi_cmp( k, q ) < 0) )  /* check: k < q */
+	    continue; /* no  */
+	if( !(mpi_cmp_ui( k, 0 ) > 0) ) /* check: k > 0 */
+	    continue; /* no */
+	break;	/* okay */
+    }
+    if( DBG_CIPHER )
+	fputc('\n', stderr);
+
+    return k;
+}
 
 void
 dsa_free_public_key( DSA_public_key *pk )
@@ -67,12 +93,36 @@ dsa_check_secret_key( DSA_secret_key *sk )
 
 
 /****************
- * Make a DSA signature out of INPUT
+ * Make a DSA signature from HASH and put it into r and s.
  */
 
 void
-dsa_sign(MPI r, MPI s, MPI input, DSA_secret_key *skey )
+dsa_sign(MPI r, MPI s, MPI hash, DSA_secret_key *skey )
 {
+    MPI k;
+    MPI kinv;
+    MPI tmp;
+
+    /* select a random k with 0 < k < q */
+    k = gen_k( skey->q );
+
+    /* r = (a^k mod p) mod q */
+    mpi_powm( r, skey->g, k, skey->p );
+    mpi_fdiv_r( r, r, skey->q );
+
+    /* kinv = k^(-1) mod q */
+    kinv = mpi_alloc( mpi_get_nlimbs(k) );
+    mpi_invm(kinv, k, skey->q );
+
+    /* s = (kinv * ( hash + x * r)) mod q */
+    tmp = mpi_alloc( mpi_get_nlimbs(skey->p) );
+    mpi_mul( tmp, skey->x, r );
+    mpi_add( tmp, tmp, hash );
+    mpi_mulm( s , kinv, tmp, skey->q );
+
+    mpi_free(k);
+    mpi_free(kinv);
+    mpi_free(tmp);
 }
 
 
@@ -80,7 +130,7 @@ dsa_sign(MPI r, MPI s, MPI input, DSA_secret_key *skey )
  * Returns true if the signature composed from R and S is valid.
  */
 int
-dsa_verify(MPI r, MPI s, MPI input, DSA_public_key *pkey )
+dsa_verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
 {
     int rc;
     MPI w, u1, u2, v;
@@ -100,8 +150,8 @@ dsa_verify(MPI r, MPI s, MPI input, DSA_public_key *pkey )
     /* w = s^(-1) mod q */
     mpi_invm( w, s, pkey->q );
 
-    /* u1 = (input * w) mod q */
-    mpi_mulm( u1, input, w, pkey->q );
+    /* u1 = (hash * w) mod q */
+    mpi_mulm( u1, hash, w, pkey->q );
 
     /* u2 = r * w mod q  */
     mpi_mulm( u2, r, w, pkey->q );

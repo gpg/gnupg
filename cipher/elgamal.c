@@ -152,9 +152,14 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
     if( DBG_CIPHER )
 	log_debug("choosing a random x ");
     do {
+	byte *rndbuf;
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
-	mpi_set_bytes( x, nbits, get_random_byte, 2 );
+	rndbuf = get_random_bits( nbits, 2, 1 );
+	mpi_set_buffer( x, rndbuf, (nbits+7)/8, 0 );
+	m_free(rndbuf);
+	mpi_clear_highbit( x, nbits+1 );
+	log_mpidump("  x: ", x );
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
 
     y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);

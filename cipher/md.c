@@ -170,6 +170,21 @@ md_get_algo( MD_HANDLE a )
     return 0;
 }
 
+/****************
+ * Return the length of the digest
+ */
+int
+md_digest_length( int algo )
+{
+    switch( algo ) {
+      case DIGEST_ALGO_RMD160:
+      case DIGEST_ALGO_SHA1:
+	return 20;
+      default:
+	return 16;
+    }
+}
+
 
 const byte *
 md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )

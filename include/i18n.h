@@ -25,7 +25,7 @@
   #include <locale.h>	/* suggested by Ernst Molitor */
 #endif
 
-#ifdef HAVE_LIBINTL
+#ifdef ENABLE_NLS
   #include <libintl.h>
   #define _(a) gettext (a)
   #ifdef gettext_noop

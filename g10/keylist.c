@@ -107,6 +107,7 @@ list_one( const char *name )
 	goto leave;
     }
 
+
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
     if( !node ) {

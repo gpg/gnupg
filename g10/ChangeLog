@@ -1,3 +1,38 @@
+Thu Mar 19 15:22:36 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* ringedit.c (keyring_enum): Fixed problem with reading too
+	many packets. Add support to read secret keyrings.
+
+	* getkey.c (scan_keyring): Removed
+	(lookup): New to replace scan_keyring.
+	(scan_secret_keyring): Removed.
+	(lookup_skc): New.
+
+Wed Mar 18 11:47:34 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* ringedit.c (enum_keyblocks): New read mode 11.
+
+	* keyid.c (elg_fingerprint_md): New and changed all other functions
+	to call this if the packet version is 4 or above.
+
+Tue Mar 17 20:46:16 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* parse-packet.c (parse_certificate): Add listing support for subkeys.
+
+Tue Mar 17 20:32:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (is_armored): Allow marker packet.
+
+Thu Mar 12 13:36:49 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (check_trust): Checks timestamp of pubkey.
+	* sig-check. (do_check): Compares timestamps.
+
+Tue Mar 10 17:01:56 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): Add call to init_signals.
+	* signal.c: New.
+
 Mon Mar  9 12:43:42 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* dsa.c: New

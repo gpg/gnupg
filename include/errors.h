@@ -59,5 +59,6 @@
 #define G10ERR_RENAME_FILE    37
 #define G10ERR_DELETE_FILE    38
 #define G10ERR_UNEXPECTED     39
+#define G10ERR_TIME_CONFLICT  40
 
 #endif /*G10_ERRORS_H*/

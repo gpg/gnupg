@@ -113,4 +113,7 @@ int decrypt_message( const char *filename );
 /*-- plaintext.c --*/
 int hash_datafiles( MD_HANDLE md, STRLIST files, int textmode );
 
+/*-- signal.c --*/
+void init_signals(void);
+
 #endif /*G10_MAIN_H*/

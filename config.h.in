@@ -61,6 +61,9 @@
 /* Define if you need to in order for stat and other things to work.  */
 #undef _POSIX_SOURCE
 
+/* Define as the return type of signal handlers (int or void).  */
+#undef RETSIGTYPE
+
 /* Define to `unsigned' if <sys/types.h> doesn't define.  */
 #undef size_t
 
@@ -75,6 +78,9 @@
 
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
+
+/* Define if `sys_siglist' is declared by <signal.h>.  */
+#undef SYS_SIGLIST_DECLARED
 
 #undef M_DEBUG
 #undef M_GUARD

@@ -89,6 +89,7 @@ static char *keypool;	/* allocated size is POOLSIZE+BLOCKLEN */
 static size_t pool_readpos;
 static size_t pool_writepos;
 static int pool_filled;
+static int pool_balance;
 static int just_mixed;
 
 static int secure_alloc;
@@ -166,6 +167,26 @@ get_random_byte( int level )
 }
 
 
+
+/****************
+ * Return a pointer to a randomized buffer of level 0 and LENGTH bits
+ * caller must free the buffer. This function does not use the
+ * cache (will be removed in future). Note: The returned value is
+ * rounded up to bytes.
+ */
+byte *
+get_random_bits( size_t nbits, int level, int secure )
+{
+    byte *buf;
+    size_t nbytes = (nbits+7)/8;
+
+    MASK_LEVEL(level);
+    buf = secure? m_alloc_secure( nbytes ) : m_alloc( nbytes );
+    read_pool( buf, nbytes, level );
+    return buf;
+}
+
+
 /****************
  * Mix the pool
  */
@@ -223,9 +244,23 @@ read_pool( byte *buffer, size_t length, int level )
 	return;
     }
 
-    /* always do a random poll if we need strong numbers */
-    if( pool_filled && level == 2 )
-	random_poll();
+    /* for level 2 make sure that there is enough random in the pool */
+    if( level == 2 && pool_balance < length ) {
+	size_t needed;
+	byte *p;
+
+	if( pool_balance < 0 )
+	    pool_balance = 0;
+	needed = length - pool_balance;
+	if( needed > POOLSIZE )
+	    BUG();
+	p = m_alloc_secure( needed );
+	read_dev_random( p, needed, 2 ); /* read /dev/random */
+	add_randomness( p, needed, 3);
+	m_free(p);
+	pool_balance += needed;
+    }
+
     /* make sure the pool is filled */
     while( !pool_filled )
 	random_poll();
@@ -250,7 +285,10 @@ read_pool( byte *buffer, size_t length, int level )
 	*buffer++ = keypool[pool_readpos++];
 	if( pool_readpos >= POOLSIZE )
 	    pool_readpos = 0;
+	pool_balance--;
     }
+    if( pool_balance < 0 )
+	pool_balance = 0;
     /* and clear the keypool */
     memset( keypool, 0, POOLSIZE );
 }

@@ -63,6 +63,10 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
     MPI result = NULL;
     int rc=0;
 
+
+    if( pkc->timestamp > sig->timestamp )
+	return G10ERR_TIME_CONFLICT; /* pubkey newer that signature */
+
     if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	ELG_public_key pkey;
 
@@ -96,8 +100,6 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	 * signature */
 	md_enable( digest, sig->digest_algo );
 
-	assert( sig->digest_algo == DIGEST_ALGO_SHA1 );
-
 	/* complete the digest */
 	if( sig->version >= 4 )
 	    md_putc( digest, sig->version );
@@ -117,10 +119,10 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    if( sig->hashed_data ) {
 		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
 		md_write( digest, sig->hashed_data, n+2 );
-		n += 4;
+		n += 6;
 	    }
 	    else
-		n = 4;
+		n = 6;
 	    /* add some magic */
 	    buf[0] = sig->version;
 	    buf[1] = 0xff;
@@ -131,8 +133,10 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    md_write( digest, buf, 6 );
 	}
 	md_final( digest );
-	log_hexdump("digest is: ", md_read(digest, DIGEST_ALGO_SHA1), 20);
-	result = encode_md_value( digest, mpi_get_nbits(pkc->d.dsa.p));
+	result = mpi_alloc( (md_digest_length(sig->digest_algo)
+			     +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+	mpi_set_buffer( result, md_read(digest, DIGEST_ALGO_SHA1),
+				md_digest_length(sig->digest_algo), 0 );
 	pkey.p = pkc->d.dsa.p;
 	pkey.q = pkc->d.dsa.q;
 	pkey.g = pkc->d.dsa.g;
@@ -288,13 +292,11 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 
 	    keyid_from_pkc( pkc, keyid );
 	    md = md_open( algo, 0 );
-     if( sig->sig_class== 16 )
-	 md->debug = fopen("dsahashsig","w");
 	    hash_public_cert( md, pkc );
 	    if( sig->version >=4 ) {
 		byte buf[5];
 		buf[0] = 0xb4; /* indicates a userid packet */
-		buf[1] = uid->len >> 24;  /* but use 4 length bytes */
+		buf[1] = uid->len >> 24;  /* always use 4 length bytes */
 		buf[2] = uid->len >> 16;
 		buf[3] = uid->len >>  8;
 		buf[4] = uid->len;
@@ -309,8 +311,6 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 	    else
 		rc = signature_check( sig, md );
 	    md_close(md);
-     if( sig->sig_class== 16 )
-	 fclose(md->debug);
 	}
 	else {
 	    log_error("no user id for key signature packet\n");

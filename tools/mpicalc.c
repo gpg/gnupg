@@ -65,7 +65,7 @@ strusage( int level )
 static void
 i18n_init(void)
 {
-  #ifdef HAVE_LIBINTL
+  #ifdef ENABLE_NLS
     #ifdef HAVE_LC_MESSAGES
        setlocale( LC_MESSAGES, "" );
     #else

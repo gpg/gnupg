@@ -135,6 +135,25 @@ mpi_set_highbit( MPI a, unsigned n )
 }
 
 /****************
+ * clear bit N of A and all bits above
+ */
+void
+mpi_clear_highbit( MPI a, unsigned n )
+{
+    unsigned limbno, bitno;
+
+    limbno = n / BITS_PER_MPI_LIMB;
+    bitno  = n % BITS_PER_MPI_LIMB;
+
+    if( limbno >= a->nlimbs )
+	return; /* not allocated, so need to clear bits :-) */
+
+    for( ; bitno < BITS_PER_MPI_LIMB; bitno++ )
+	a->d[limbno] &= ~(A_LIMB_1 << bitno);
+    a->nlimbs = limbno+1;
+}
+
+/****************
  * Clear bit N of A.
  */
 void

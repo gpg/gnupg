@@ -17,7 +17,8 @@ CLEANFILES = prepared.stamp x y z out err  $(DATA_FILES)
 
 check: prepared.stamp
 
-prepared.stamp: pubring.gpg secring.gpg gnupg.sig plain-3 $(DATA_FILES)
+prepared.stamp: pubring.gpg secring.gpg gnupg.sig plain-3 \
+		pubring.pkr secring.skr $(DATA_FILES)
 	@set -x; \
 	echo "def" | ../g10/gpg -v --no-operation; \
 	echo timestamp >./prepared.stamp
@@ -30,6 +31,10 @@ gnupg.sig: gnupg.asc
 	../g10/gpgm --yes --dearmor -o gnupg.sig gnupg.asc
 plain-3: plain-3o.asc
 	../g10/gpgm --yes --dearmor -o plain-3 plain-3o.asc
+pubring.pkr: pubring.pkr.asc
+	../g10/gpgm --yes --dearmor -o pubring.pkr pubring.pkr.asc
+secring.skr: secring.skr.asc
+	../g10/gpgm --yes --dearmor -o secring.skr secring.skr.asc
 
 data-500:
 	head -c 500 /dev/urandom >data-500

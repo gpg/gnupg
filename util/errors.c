@@ -71,6 +71,7 @@ g10_errstr( int err )
       X(RENAME_FILE    ,"File rename error")
       X(DELETE_FILE    ,"File delete error")
       X(UNEXPECTED     ,"Unexpected data")
+      X(TIME_CONFLICT  ,"Timestamp conflict")
 
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }

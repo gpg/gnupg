@@ -50,6 +50,7 @@ typedef struct packet_struct PACKET;
 
 typedef struct {
     u32     keyid[2];	    /* 64 bit keyid */
+    byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     union {
       struct {

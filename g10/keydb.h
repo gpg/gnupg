@@ -52,6 +52,7 @@ struct keyblock_pos_struct {
     ulong offset;    /* position information */
     unsigned count;  /* length of the keyblock in packets */
     IOBUF  fp;	     /* used by enum_keyblocks */
+    int secret;      /* working on a secret keyring */
     PACKET *pkt;     /* ditto */
 };
 typedef struct keyblock_pos_struct KBPOS;
@@ -102,8 +103,8 @@ int make_dek_from_passphrase( DEK *dek, int mode, byte *salt );
 void add_keyring( const char *name );
 const char *get_keyring( int sequence );
 void add_secret_keyring( const char *name );
-void cache_public_cert( PKT_public_cert *pkc );
-void cache_user_id( PKT_user_id *uid, u32 *keyid );
+/*void cache_public_cert( PKT_public_cert *pkc );
+void cache_user_id( PKT_user_id *uid, u32 *keyid );*/
 int get_pubkey( PKT_public_cert *pkc, u32 *keyid );
 int get_pubkey_byname( PKT_public_cert *pkc, const char *name );
 int get_seckey( PKT_secret_cert *skc, u32 *keyid );

@@ -77,15 +77,15 @@ strlist_last( STRLIST node )
  * substring in BUF or NULL if not found.
  * Comparison is case-in-sensitive.
  */
-char *
-memistr( char *buf, size_t buflen, const char *sub )
+const char *
+memistr( const char *buf, size_t buflen, const char *sub )
 {
     const byte *t, *s ;
     size_t n;
 
     for( t=buf, n=buflen, s=sub ; n ; t++, n-- )
 	if( toupper(*t) == toupper(*s) ) {
-	    for( buf=(char*)t++, buflen = n--, s++;
+	    for( buf=t++, buflen = n--, s++;
 		 n && toupper(*t) == toupper(*s); t++, s++, n-- )
 		;
 	    if( !*s )
