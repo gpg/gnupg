@@ -1,3 +1,8 @@
+2001-07-27  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (sign_uids): Check that we are not trying to to a
+	lsign with a pre-v4 key.  Bug noticed by Thomas Roessler.
+
 2001-07-26  Werner Koch  <wk@gnupg.org>
 
 	* parse-packet.c (parse_photo_id): Reset all variables.

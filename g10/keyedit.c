@@ -282,6 +282,17 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
     if( rc )
 	goto leave;
 
+    if (local) {
+        for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+            if (sk_rover->sk->version < 4) {
+                tty_printf ("Local only signing not possible "
+                            "due to an old style key\n");
+                rc = G10ERR_UNU_SECKEY;
+                goto leave;
+            }
+        }
+    }
+
     /* loop over all signaturs */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	u32 sk_keyid[2];
