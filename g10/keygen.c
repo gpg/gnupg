@@ -2072,9 +2072,11 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	}
     }
 
-    if (sk->version < 4) 
+    if (sk->version < 4) {
         log_info (_("NOTE: creating subkeys for v3 keys "
                     "is not OpenPGP compliant\n"));
+	goto leave;
+    }
 
     /* unprotect to get the passphrase */
     switch( is_secret_key_protected( sk ) ) {

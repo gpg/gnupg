@@ -1,3 +1,12 @@
+2002-04-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (generate_subkeypair): 2440bis04 adds that creating
+	subkeys on v3 keys is a MUST NOT.
+
+	* getkey.c (finish_lookup): The --pgp6 "use the primary key"
+	behavior should only apply while data signing and not encryption.
+	Noted by Roger Sondermann.
+
 2002-04-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_deluid): Only cause a trust update if we delete
