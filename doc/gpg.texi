@@ -792,8 +792,8 @@ signatures on data.
 Reset the ---force-v3-sigs option.
 
 @item ---force-v4-certs
-Always use v4 key signatures even on v3 version keys. This make the
-signature unusable for PGP 2.
+Always use v4 key signatures even on v3 keys. This option does also
+change the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
 
 @item ---no-force-v3-certs
 Reset the ---force-v4-certs option.

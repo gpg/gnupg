@@ -7,6 +7,7 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 
  1. Field:  Type of record
 	    pub = public key
+            crt = X.509 certificate
 	    sub = subkey (secondary key)
 	    sec = secret key
 	    ssb = secret subkey (secondary key)
@@ -14,6 +15,8 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
             sig = signature
 	    fpr = fingerprint: (fingerprint is in field 10)
 	    pkd = public key data (special field format, see below)
+            grp = reserved for gpgsm
+        
 
  2. Field:  A letter describing the calculated trust. This is a single
 	    letter, but be prepared that additional information may follow
@@ -38,12 +41,14 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
  5. Field:  KeyID
  6. Field:  Creation Date (in UTC)
  7. Field:  Key expiration date or empty if none.
- 8. Field:  reserved (used to be the Local-ID)
+ 8. Field:  Used for serial number in crt records (used to be the Local-ID)
  9. Field:  Ownertrust (primary public keys only)
 	    This is a single letter, but be prepared that additional
 	    information may follow in some future versions.
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
+            This is not used with --fixed-list-mode in gpg. 
+            In gpgsm the issuer name does here
 11. Field:  Signature class.  This is a 2 digit hexnumber followed by
             either the letter 'x' for an exportable signature or the
             letter 'l' for a local-only signature.
