@@ -1,3 +1,12 @@
+2003-08-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (check_sig_and_print): Get the uid validity before
+	printing any sig results to avoid munging the output with trustdb
+	warnings.
+
+	* g10.c (main): Don't include --show-keyring in --help as it is
+	deprecated.
+
 2003-08-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgv.c: Remove extra semicolon (typo).

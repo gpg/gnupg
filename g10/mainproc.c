@@ -1329,6 +1329,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
         /* find and print the primary user ID */
 	for( un=keyblock; un; un = un->next ) {
+	    int valid;
 	    if(un->pkt->pkttype==PKT_PUBLIC_KEY)
 	      {
 	        pk=un->pkt->pkt.public_key;
@@ -1350,6 +1351,11 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	    assert(pk);
 
+	    /* Get it before we print anything to avoid interrupting
+	       the output with the "please do a --check-trustdb"
+	       line. */
+	    valid=get_validity(pk,un->pkt->pkt.user_id);
+
             keyid_str[17] = 0; /* cut off the "[uncertain]" part */
             write_status_text_and_buffer (statno, keyid_str,
                                           un->pkt->pkt.user_id->name,
@@ -1362,9 +1368,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	    print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
 					     un->pkt->pkt.user_id->len );
 	    if(opt.verify_options&VERIFY_SHOW_VALIDITY)
-	      fprintf(log_stream(),"\" [%s]\n",
-		      trust_value_to_string(get_validity(pk,
-						       un->pkt->pkt.user_id)));
+	      fprintf(log_stream(),"\" [%s]\n",trust_value_to_string(valid));
 	    else
 	      fputs("\"\n", log_stream() );
             count++;

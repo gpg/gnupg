@@ -432,7 +432,7 @@ static ARGPARSE_OPTS opts[] = {
     { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
     { oPrimaryKeyring, "primary-keyring",2, "@" },
     { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
-    { oShowKeyring, "show-keyring", 0, N_("show which keyring a listed key is on")},
+    { oShowKeyring, "show-keyring", 0, "@"},
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
     { oKeyServer, "keyserver",2, N_("|HOST|use this keyserver to lookup keys")},
     { oKeyServerOptions, "keyserver-options",2,"@"},
