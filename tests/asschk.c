@@ -267,7 +267,6 @@ read_assuan (int fd)
   size_t nleft = sizeof recv_line;
   char *buf = recv_line;
   char *p;
-  int nread = 0;
 
   while (nleft > 0)
     {
@@ -294,7 +293,6 @@ read_assuan (int fd)
       p = buf;
       nleft -= n;
       buf += n;
-      nread += n;
       
       for (; n && *p != '\n'; n--, p++)
         ;
@@ -303,16 +301,15 @@ read_assuan (int fd)
           if (n>1)
             {
               n--;
-              memcpy (pending, p+1, n);
+              memcpy (pending, p + 1, n);
               pending_len = n;
             }
+	  *p = '\0';
           break;
         }
     }
   if (!nleft)
     die ("received line too large");
-  assert (nread>0);
-  recv_line[nread-1] = 0;
 
   p = recv_line;
   if (p[0] == 'O' && p[1] == 'K' && (p[2] == ' ' || !p[2]))
@@ -420,6 +417,8 @@ start_server (const char *pgmname)
 	  close (fd);
         }
 
+      close (wp[1]);
+      close (rp[0]);
       execl (pgmname, arg0, "--server", NULL); 
       die ("exec failed for `%s': %s", pgmname, strerror (errno));
     }
