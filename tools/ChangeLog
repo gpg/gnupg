@@ -1,3 +1,9 @@
+2004-01-31  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c: Some bug fixes, parse only defaults from the
+	program, and read the current values from the configuration file
+	directly.
+
 2004-01-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgconf-comp.c (gc_error): New function, use it instead of

@@ -1,5 +1,5 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
-   Copyright (C) 2003 g10 Code GmbH
+   Copyright (C) 2004 g10 Code GmbH
 
    This file is part of GnuPG.
  
@@ -143,10 +143,10 @@ static struct
 } gc_backend[GC_BACKEND_NR] =
   {
     { NULL, NULL, NULL },		/* GC_BACKEND_ANY dummy entry.  */
-    { "GnuPG", "gpg", "gpgconf-config-file" },
-    { "GPGSM", "gpgsm", "gpgconf-config-file" },
-    { "GPG Agent", "gpg-agent", "gpgconf-config-file" },
-    { "DirMngr", "dirmngr", "gpgconf-config-file" },
+    { "GnuPG", "gpg", "gpgconf-gpg.conf" },
+    { "GPGSM", "gpgsm", "gpgconf-gpgsm.conf" },
+    { "GPG Agent", "gpg-agent", "gpgconf-gpg-agent.conf" },
+    { "DirMngr", "dirmngr", "gpgconf-dirmngr.conf" },
     { "DirMngr LDAP Server List", NULL, "ldapserverlist-file", "LDAP Server" },
   };
 
@@ -341,6 +341,10 @@ struct gc_option
      of the list so that they can be omitted from the option
      declarations.  */
 
+  /* This is true if the option is supported by this version of the
+     backend.  */
+  int active;
+
   /* The default value for this option.  This is NULL if the option is
      not present in the backend, the empty string if no default is
      available, and otherwise a quoted string.  */
@@ -369,13 +373,13 @@ static gc_option_t gc_options_gpg_agent[] =
 static gc_option_t gc_options_dirmngr[] =
  {
    /* The configuration file to which we write the changes.  */
-   { "gpgconf-config-file", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+   { "gpgconf-dirmngr.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
      NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_DIRMNGR },
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
      NULL, "Options controlling the diagnostic output" },
-   { "verbose", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+   { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
      "dirmngr", "verbose",
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
    { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
@@ -616,7 +620,7 @@ gc_component_list_options (int component, FILE *out)
       char *arg_name = NULL;
 
       /* Do not output unknown or internal options.  */
-      if (!option->default_value || option->level == GC_LEVEL_INTERNAL)
+      if (!option->active || option->level == GC_LEVEL_INTERNAL)
 	{
 	  option++;
 	  continue;
@@ -740,26 +744,29 @@ find_option (gc_component_t component, const char *name,
 static char *
 get_config_pathname (gc_component_t component, gc_backend_t backend)
 {
-  char *pathname;
+  char *pathname = NULL;
   gc_option_t *option = find_option
     (component, gc_backend[backend].option_config_filename, GC_BACKEND_ANY);
   assert (option);
+  assert (option->arg_type == GC_ARG_TYPE_PATHNAME);
+  assert (!(option->flags & GC_OPT_FLAG_LIST));
 
-  if (!option->default_value)
-    gc_error (1, 0, "option %s, needed by backend %s, was not initialized",
+  if (!option->active || !option->default_value)
+    gc_error (1, 0, "Option %s, needed by backend %s, was not initialized",
 	      gc_backend[backend].option_config_filename,
 	      gc_backend[backend].name);
-  if (*option->value)
+
+  if (option->value && *option->value)
     pathname = option->value;
   else
     pathname = option->default_value;
 
-  if (*pathname != '/')
-    gc_error (1, 0, "option %s, needed by backend %s, is not absolute",
+  if (pathname[1] != '/')
+    gc_error (1, 0, "Option %s, needed by backend %s, is not absolute",
 	      gc_backend[backend].option_config_filename,
 	      gc_backend[backend].name);
 
-  return pathname;
+  return &pathname[1];
 }
 
 
@@ -772,20 +779,18 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   char *line = NULL;
   size_t line_len = 0;
   ssize_t length;
-  FILE *output;
+  FILE *config;
+  char *config_pathname;
 
-  asprintf (&cmd_line, "%s --gpgconf-list", gc_backend[backend].program);
-  if (!cmd_line)
-    gc_error (1, errno, "can not construct command line");
+  cmd_line = xasprintf ("%s --gpgconf-list", gc_backend[backend].program);
 
-  output = popen (cmd_line, "r");
-  if (!output)
+  config = popen (cmd_line, "r");
+  if (!config)
     gc_error (1, errno, "could not gather active options from %s", cmd_line);
 
-  while ((length = getline (&line, &line_len, output)) > 0)
+  while ((length = getline (&line, &line_len, config)) > 0)
     {
       gc_option_t *option;
-      char *default_value;
       char *value;
 
       /* Strip newline and carriage return, if present.  */
@@ -793,29 +798,19 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	     && (line[length - 1] == '\n' || line[length - 1] == '\r'))
 	line[--length] = '\0';
 
-      /* Extract default value and value, if present.  Default to
-	 empty if not.  */
-      default_value = strchr (line, ':');
-      if (!default_value)
-	{
-	  default_value = "";
-	  value = "";
-	}
+      /* Extract default value, if present.  Default to empty if
+	 not.  */
+      value = strchr (line, ':');
+      if (!value)
+	value = "";
       else
 	{
-	  *(default_value++) = '\0';
-	  value = strchr (default_value, ':');
-	  if (!value)
-	    value = "";
-	  else
-	    {
-	      char *end;
+	  char *end;
 
-	      *(value++) = '\0';
-	      end = strchr (value, ':');
-	      if (end)
-		*end = '\0';
-	    }
+	  *(value++) = '\0';
+	  end = strchr (value, ':');
+	  if (end)
+	    *end = '\0';
 	}
 
       /* Look up the option in the component and install the
@@ -823,20 +818,122 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
       option = find_option (component, line, backend);
       if (option)
 	{
-	  if (option->default_value)
+	  if (option->active)
 	    gc_error (1, errno, "option %s returned twice from %s",
 		      line, cmd_line);
-	  option->default_value = strdup (default_value);
-	  option->value = strdup (value);
-	  if (!option->default_value || !option->value)
-	    gc_error (1, errno, "could not store options");
+	  option->active = 1;
+	  if (*value)
+	    option->default_value = xstrdup (value);
 	}
     }
-  if (ferror (output))
+  if (ferror (config))
     gc_error (1, errno, "error reading from %s", cmd_line);
-  if (fclose (output) && ferror (output))
+  if (fclose (config) && ferror (config))
     gc_error (1, errno, "error closing %s", cmd_line);
-  free (cmd_line);
+  xfree (cmd_line);
+
+  /* At this point, we can parse the configuration file.  */
+  config_pathname = get_config_pathname (component, backend);
+
+  config = fopen (config_pathname, "r");
+  if (!config)
+    gc_error (0, errno, "warning: can not open config file %s",
+	      config_pathname);
+  else
+    {
+      while ((length = getline (&line, &line_len, config)) > 0)
+	{
+	  char *name;
+	  char *value;
+	  gc_option_t *option;
+	  
+	  name = line;
+	  while (*name == ' ' || *name == '\t')
+	    name++;
+	  if (!*name || *name == '#' || *name == '\r' || *name == '\n')
+	    continue;
+
+	  value = name;
+	  while (*value && *value != ' ' && *value != '\t'
+		 && *value != '#' && *value != '\r' && *value != '\n')
+	    value++;
+	  if (*value == ' ' || *value == '\t')
+	    {
+	      char *end;
+
+	      *(value++) = '\0';
+	      while (*value == ' ' || *value == '\t')
+		value++;
+
+	      end = value;
+	      while (*end && *end != '#' && *end != '\r' && *end != '\n')
+		end++;
+	      while (end > value && (end[-1] == ' ' || end[-1] == '\t'))
+		end--;
+	      *end = '\0';
+	    }
+	  else
+	    *value = '\0';
+
+	  /* Look up the option in the component and install the
+	     configuration data.  */
+	  option = find_option (component, line, backend);
+	  if (option)
+	    {
+	      char *opt_value;
+
+	      if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE)
+		{
+		  if (*value)
+		    gc_error (0, 0,
+			      "warning: ignoring argument %s for option %s",
+			      value, name);
+		  opt_value = xstrdup ("Y");
+		}
+	      else if (gc_arg_type[option->arg_type].fallback
+		       == GC_ARG_TYPE_STRING)
+		opt_value = xasprintf ("\"%s", percent_escape (value));
+	      else
+		{
+		  /* FIXME: Verify that the number is sane.  */
+		  opt_value = xstrdup (value);
+		}
+
+	      /* Now enter the option into the table.  */
+	      if (!(option->flags & GC_OPT_FLAG_LIST))
+		{
+		  if (option->value)
+		    free (option->value);
+		  option->value = opt_value;
+		}
+	      else
+		{
+		  if (!option->value)
+		    option->value = opt_value;
+		  else
+		    {
+		      char *opt_val = opt_value;
+
+		      if (gc_arg_type[option->arg_type].fallback
+			  == GC_ARG_TYPE_STRING)
+			opt_val++;
+
+		      option->value = xasprintf ("%s,%s", option->value,
+						 opt_val);
+		      xfree (opt_value);
+		    }
+		}
+	    }
+	}
+
+      if (ferror (config))
+	gc_error (1, errno, "error reading from %s", config_pathname);
+      if (fclose (config) && ferror (config))
+	gc_error (1, errno, "error closing %s", config_pathname);
+    }
+
+  if (line)
+    free (line);
 }
 
 
@@ -851,59 +948,62 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
   char *line = NULL;
   size_t line_len = 0;
   ssize_t length;
-  char *list;
+  char *list = NULL;
 
   list_option = find_option (component,
 			     gc_backend[backend].option_name, GC_BACKEND_ANY);
   assert (list_option);
+  assert (!list_option->active);
 
   list_pathname = get_config_pathname (component, backend);
-
   list_file = fopen (list_pathname, "r");
-  if (ferror (list_file))
-    gc_error (1, errno, "can not open list file %s", list_pathname);
-
-  list = strdup ("\"");
-  if (!list)
-    gc_error (1, errno, "can not allocate initial list string");
-
-  while ((length = getline (&line, &line_len, list_file)) > 0)
+  if (!list_file)
+    gc_error (0, errno, "warning: can not open list file %s", list_pathname);
+  else
     {
-      char *start;
-      char *end;
-      char *new_list;
 
-      start = line;
-      while (*start == ' ' || *start == '\t')
-	start++;
-      if (!*start || *start == '#' || *start == '\r' || *start == '\n')
-	continue;
-
-      end = start;
-      while (*end && *end != '#' && *end != '\r' && *end != '\n')
-	end++;
-      /* Walk back to skip trailing white spaces.  Looks evil, but
-	 works because of the conditions on START and END imposed
-	 at this point (END is at least START + 1, and START is
-	 not a whitespace character).  */
-      while (*(end - 1) == ' ' || *(end - 1) == '\t')
-	end--;
-      *end = '\0';
-      /* FIXME: Oh, no!  This is so lame!  Use realloc and really
-	 append.  */
-      if (list)
+      while ((length = getline (&line, &line_len, list_file)) > 0)
 	{
-	  asprintf (&new_list, "%s,%s", list, percent_escape (start));
-	  free (list);
-	  list = new_list;
+	  char *start;
+	  char *end;
+	  char *new_list;
+
+	  start = line;
+	  while (*start == ' ' || *start == '\t')
+	    start++;
+	  if (!*start || *start == '#' || *start == '\r' || *start == '\n')
+	    continue;
+
+	  end = start;
+	  while (*end && *end != '#' && *end != '\r' && *end != '\n')
+	    end++;
+	  /* Walk back to skip trailing white spaces.  Looks evil, but
+	     works because of the conditions on START and END imposed
+	     at this point (END is at least START + 1, and START is
+	     not a whitespace character).  */
+	  while (*(end - 1) == ' ' || *(end - 1) == '\t')
+	    end--;
+	  *end = '\0';
+	  /* FIXME: Oh, no!  This is so lame!  Use realloc and really
+	     append.  */
+	  if (list)
+	    {
+	      new_list = xasprintf ("%s,%s", list, percent_escape (start));
+	      xfree (list);
+	      list = new_list;
+	    }
+	  else
+	    list = xasprintf ("\"%s", percent_escape (start));
 	}
-      if (!list)
-	gc_error (1, errno, "can not construct list");
+      if (ferror (list_file))
+	gc_error (1, errno, "can not read list file %s", list_pathname);
     }
-  if (ferror (list_file))
-    gc_error (1, errno, "can not read list file %s", list_pathname);
-  list_option->default_value = "";
+
+  list_option->active = 1;
   list_option->value = list;
+
+  if (line)
+    free (line);
 }
 
 
@@ -983,7 +1083,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   /* True if we are within the marker in the config file.  */
   int in_marker = 0;
   gc_option_t *option;
-  char *line;
+  char *line = NULL;
   size_t line_len;
   ssize_t length;
   int res;
@@ -995,22 +1095,16 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   char *orig_filename;
 
   /* FIXME.  Throughout the function, do better error reporting.  */
-  dest_filename = strdup (get_config_pathname (component, backend));
-  if (!dest_filename)
-    return -1;
-  asprintf (&src_filename, "%s.gpgconf.%i.new", dest_filename, getpid ());
-  if (!src_filename)
-    return -1;
-  asprintf (&orig_filename, "%s.gpgconf.%i.bak", dest_filename, getpid ());
-  if (!orig_filename)
-    return -1;
+  dest_filename = xstrdup (get_config_pathname (component, backend));
+  src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, getpid ());
+  orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename, getpid ());
 
   res = link (dest_filename, orig_filename);
   if (res < 0 && errno != ENOENT)
     return -1;
   if (res < 0)
     {
-      free (orig_filename);
+      xfree (orig_filename);
       orig_filename = NULL;
     }
   /* We now initialize the return strings, so the caller can do the
@@ -1163,6 +1257,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
       if (ferror (dest_file))
 	goto change_one_err;
     }
+  if (line)
+    free (line);
   res = fclose (src_file);
   if (res)
     {
@@ -1183,6 +1279,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   return 0;
 
  change_one_err:
+  if (line)
+    free (line);
   res = errno;
   if (src_file)
     {
@@ -1243,7 +1341,7 @@ gc_component_change_options (int component, FILE *in)
 	gc_error (1, 0, "unknown option %s", line);
 
       option_check_validity (option, value);
-      option->new_value = strdup (value);
+      option->new_value = xstrdup (value);
     }
 
   /* Now that we have collected and locally verified the changes,
@@ -1335,4 +1433,6 @@ gc_component_change_options (int component, FILE *in)
 	}
       gc_error (1, saved_errno, "could not commit changes");
     }
+  if (line)
+    free (line);
 }
