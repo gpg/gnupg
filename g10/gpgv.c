@@ -164,11 +164,11 @@ main( int argc, char **argv )
     opt.always_trust = 1;
     opt.batch = 1;
 
-  #if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
     set_homedir (read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" ));
-  #else
+#else
     set_homedir (getenv("GNUPGHOME"));
-  #endif
+#endif
     if( !*opt.homedir ) {
       set_homedir (GNUPG_HOMEDIR);
     }

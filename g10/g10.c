@@ -1102,7 +1102,7 @@ main( int argc, char **argv )
       EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
 #else

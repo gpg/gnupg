@@ -59,7 +59,7 @@ int set_exec_path(const char *path,int method) { return G10ERR_GENERAL; }
 char *mkdtemp(char *template);
 #endif
 
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
 /* This is a nicer system() for windows that waits for programs to
    return before returning control to the caller.  I hate helpful
    computers. */
@@ -136,7 +136,7 @@ static int make_tempdir(struct exec_info *info)
 
   if(tmp==NULL)
     {
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
       tmp=m_alloc(256);
       if(GetTempPath(256,tmp)==0)
 	strcpy(tmp,"c:\\windows\\temp");
@@ -173,7 +173,7 @@ static int make_tempdir(struct exec_info *info)
 
   sprintf(info->tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
 
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
   m_free(tmp);
 #endif
 
@@ -499,7 +499,7 @@ int exec_read(struct exec_info *info)
       if(DBG_EXTPROG)
 	log_debug("system() command is %s\n",info->command);
 
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
       info->progreturn=win_system(info->command);
 #else
       info->progreturn=system(info->command);

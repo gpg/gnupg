@@ -97,7 +97,7 @@ static char *fd_passwd = NULL;
 static char *next_pw = NULL;
 static char *last_pw = NULL;
 
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
 static int read_fd = 0;
 static int write_fd = 0;
 #endif
@@ -176,7 +176,7 @@ read_passphrase_from_fd( int fd )
 static int
 writen ( int fd, const void *buf, size_t nbytes )
 {
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
     DWORD nwritten, nleft = nbytes;
     
     while (nleft > 0) {
@@ -219,7 +219,7 @@ writen ( int fd, const void *buf, size_t nbytes )
 static int
 readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
 {
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
     DWORD nread, nleft = buflen;
     
     while (nleft > 0) {
@@ -313,7 +313,7 @@ readline (int fd, char *buf, size_t buflen)
 
 #if !defined (__riscos__)
 
-#if !defined (__MINGW32__) && !defined (__CYGWIN32__)
+#if !defined (__MINGW32__)
 /* For the new Assuan protocol we may have to send options */
 static int
 agent_send_option (int fd, const char *name, const char *value)
@@ -418,7 +418,7 @@ agent_send_all_options (int fd)
 #endif
   return rc;
 }
-#endif /*!__MINGW32__ && !__CYGWIN32__*/
+#endif /*!__MINGW32__*/
 
 
 /*
@@ -429,7 +429,7 @@ agent_send_all_options (int fd)
 static int
 agent_open (int *ret_prot)
 {
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
     int fd;
     char *infostr, *p;
     HANDLE h;
@@ -574,7 +574,7 @@ agent_open (int *ret_prot)
 static void
 agent_close ( int fd )
 {
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
     HANDLE h = OpenEvent(EVENT_ALL_ACCESS, FALSE, "gpg_agent");
     ResetEvent(h);
 #else

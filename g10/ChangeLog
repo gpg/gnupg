@@ -1,3 +1,13 @@
+2002-10-21  Werner Koch  <wk@gnupg.org>
+
+	* exec.c [__CYGWIN32__]: Keep cygwin separate from Mingw32;
+	we don't need it here as it behaves more like a Posix system.
+	* passphrase.c (agent_get_passphrase): Ditto.
+	* tdbio.c (MY_O_BINARY): Need binary mode with Cygwin.
+
+	* g10.c, gpgv.c (main) [__CYGWIN32__]: Don't get the homedir from
+	the registry. 
+
 2002-10-17  Werner Koch  <wk@gnupg.org>
 
 	* pkclist.c (do_edit_ownertrust): Show all user IDs.  This should

@@ -39,11 +39,11 @@
 #include "trustdb.h"
 #include "tdbio.h"
 
-#if defined(HAVE_DOSISH_SYSTEM) && !defined(__CYGWIN32__)
+#if defined(HAVE_DOSISH_SYSTEM)
 #define ftruncate chsize
 #endif
 
-#ifdef HAVE_DOSISH_SYSTEM
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
 #else
 #define MY_O_BINARY  0
