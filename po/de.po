@@ -3,7 +3,7 @@
 # Walter Koch <koch@hsp.de>, 1998.
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-11-07 10:28+0100\n"
+"POT-Creation-Date: 1999-11-22 11:18+0100\n"
 "PO-Revision-Date: 1999-11-07 10:36+0100\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -778,51 +778,51 @@ msgstr "--delete-secret-key User-ID"
 msgid "--delete-key user-id"
 msgstr "--delete-key User-ID"
 
-#: g10/encode.c:260 g10/g10.c:1194 g10/sign.c:366
+#: g10/encode.c:260 g10/g10.c:1207 g10/sign.c:366
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "'%s' kann nicht geöffnet werden: %s\n"
 
-#: g10/g10.c:1205
+#: g10/g10.c:1222
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [User-ID] [Schlüsselbund]"
 
-#: g10/g10.c:1256
+#: g10/g10.c:1273
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "Entfernen der ASCII-Hülle ist fehlgeschlagen: %s\n"
 
-#: g10/g10.c:1264
+#: g10/g10.c:1281
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "Anbringen der ASCII-Hülle ist fehlgeschlagen: %s\n"
 
-#: g10/g10.c:1332
+#: g10/g10.c:1349
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "Ungültiges Hashverfahren '%s'\n"
 
-#: g10/g10.c:1413
+#: g10/g10.c:1430
 msgid "[filename]"
 msgstr "[Dateiname]"
 
-#: g10/g10.c:1417
+#: g10/g10.c:1434
 msgid "Go ahead and type your message ...\n"
 msgstr "Auf geht's - Botschaft eintippen ...\n"
 
-#: g10/decrypt.c:59 g10/g10.c:1420 g10/verify.c:68 g10/verify.c:113
+#: g10/decrypt.c:59 g10/g10.c:1437 g10/verify.c:68 g10/verify.c:113
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "'%s' kann nicht geöffnet werden\n"
 
-#: g10/g10.c:1589
+#: g10/g10.c:1606
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
 "Das erste Zeichen eines \"notation\"-Namens muß ein Buchstabe oder\n"
 "ein Unterstrich sein\n"
 
-#: g10/g10.c:1595
+#: g10/g10.c:1612
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -830,12 +830,12 @@ msgstr ""
 "Ein \"notation\"-Name darf nur Buchstaben, Zahlen, Punkte oder Unterstriche "
 "enthalten und muß mit einem '=' enden\n"
 
-#: g10/g10.c:1601
+#: g10/g10.c:1618
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr ""
 "Punkte in einem \"notation\"-Namen müssen von anderen Zeichen umgeben sein\n"
 
-#: g10/g10.c:1609
+#: g10/g10.c:1626
 msgid "a notation value must not use any control characters\n"
 msgstr "Ein \"notation\"-Wert darf keine Kontrollzeichen verwenden\n"
 
@@ -844,70 +844,70 @@ msgstr "Ein \"notation\"-Wert darf keine Kontrollzeichen verwenden\n"
 msgid "armor: %s\n"
 msgstr "ASCII-Hülle: %s\n"
 
-#: g10/armor.c:319
+#: g10/armor.c:325
 msgid "invalid armor header: "
 msgstr "Ungültige ASCII-Hülle"
 
-#: g10/armor.c:326
+#: g10/armor.c:332
 msgid "armor header: "
 msgstr "ASCII-Hülle: "
 
-#: g10/armor.c:337
+#: g10/armor.c:343
 msgid "invalid clearsig header\n"
 msgstr "Ungültige Klartextsignatur-Einleitung\n"
 
-#: g10/armor.c:389
+#: g10/armor.c:395
 msgid "nested clear text signatures\n"
 msgstr "verschachtelte Klartextunterschriften\n"
 
-#: g10/armor.c:500
+#: g10/armor.c:506
 msgid "invalid dash escaped line: "
 msgstr "Ungültige mit Bindestrich \"escapte\" Zeile: "
 
-#: g10/armor.c:512
+#: g10/armor.c:518
 msgid "unexpected armor:"
 msgstr "Unerwartete ASCII-Hülle:"
 
-#: g10/armor.c:629
+#: g10/armor.c:635
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Ungültiges \"radix64\" Zeichen %02x ignoriert\n"
 
-#: g10/armor.c:672
+#: g10/armor.c:678
 msgid "premature eof (no CRC)\n"
 msgstr "vorzeitiges Dateiende (keine Prüfsumme)\n"
 
-#: g10/armor.c:706
+#: g10/armor.c:712
 msgid "premature eof (in CRC)\n"
 msgstr "vorzeitiges Dateiende (innerhalb der Prüfsumme)\n"
 
-#: g10/armor.c:710
+#: g10/armor.c:716
 msgid "malformed CRC\n"
 msgstr "Falsch aufgebaute Prüfsumme\n"
 
-#: g10/armor.c:714
+#: g10/armor.c:720
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "Prüfsummenfehler; %06lx - %06lx\n"
 
-#: g10/armor.c:731
+#: g10/armor.c:737
 msgid "premature eof (in Trailer)\n"
 msgstr "vorzeitiges Dateiende (im Nachsatz)\n"
 
-#: g10/armor.c:735
+#: g10/armor.c:741
 msgid "error in trailer line\n"
 msgstr "Fehler in der Nachsatzzeile\n"
 
-#: g10/armor.c:1001
+#: g10/armor.c:1007
 msgid "no valid OpenPGP data found.\n"
 msgstr "Keine gültigen OpenPGP-Daten gefunden.\n"
 
-#: g10/armor.c:1006
+#: g10/armor.c:1012
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "ungültige ASCII-Hülle: Zeile ist länger als %d Zeichen\n"
 
-#: g10/armor.c:1010
+#: g10/armor.c:1016
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1575,19 +1575,19 @@ msgstr "zu viele Einträge im pk-Lager - abgeschaltet\n"
 msgid "too many entries in unk cache - disabled\n"
 msgstr "zu viele Einträge im unk-Lager - abgeschaltet\n"
 
-#: g10/getkey.c:1289 g10/getkey.c:1328
+#: g10/getkey.c:1294 g10/getkey.c:1333
 msgid "RSA key cannot be used in this version\n"
 msgstr "RSA-Schlüssel können in dieser Version nicht verwendet werden\n"
 
-#: g10/getkey.c:1291 g10/getkey.c:1330
+#: g10/getkey.c:1296 g10/getkey.c:1335
 msgid "No key for user ID\n"
 msgstr "Kein Schlüssel für User-ID\n"
 
-#: g10/getkey.c:1369 g10/getkey.c:1409
+#: g10/getkey.c:1374 g10/getkey.c:1414
 msgid "No user ID for key\n"
 msgstr "Keine User-ID für Schlüssel\n"
 
-#: g10/getkey.c:1565 g10/getkey.c:1621
+#: g10/getkey.c:1570 g10/getkey.c:1626
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
@@ -1603,7 +1603,7 @@ msgstr "'%s' kann nicht geöffnet werden: %s\n"
 msgid "skipping block of type %d\n"
 msgstr "überspringe den Block vom Typ %d\n"
 
-#: g10/import.c:185 g10/trustdb.c:1721 g10/trustdb.c:1762
+#: g10/import.c:185 g10/trustdb.c:1727 g10/trustdb.c:1768
 #, c-format
 msgid "%lu keys so far processed\n"
 msgstr "%lu Schlüssel bislang bearbeitet\n"
@@ -1952,7 +1952,7 @@ msgstr ""
 msgid "Really sign? "
 msgstr "Wirklich unterschreiben? "
 
-#: g10/keyedit.c:370 g10/keyedit.c:1832 g10/keyedit.c:1881 g10/sign.c:128
+#: g10/keyedit.c:370 g10/keyedit.c:1835 g10/keyedit.c:1884 g10/sign.c:128
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "Beglaubigung fehlgeschlagen: %s\n"
@@ -2299,79 +2299,79 @@ msgstr "Schlüssel ist nicht geändert worden, also ist kein Speichern nötig.\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ungültiger Befehl (versuchen Sie's mal mit \"help\")\n"
 
-#: g10/keyedit.c:1065
+#: g10/keyedit.c:1068
 msgid "This key has been disabled"
 msgstr "Hinweis: Dieser Schlüssel ist abgeschaltet"
 
-#: g10/keyedit.c:1336
+#: g10/keyedit.c:1339
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Diese korrekte Beglaubigung entfernen? (j/N/q)"
 
-#: g10/keyedit.c:1340
+#: g10/keyedit.c:1343
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Diese ungültige Beglaubigung entfernen= (j/N/q)"
 
-#: g10/keyedit.c:1344
+#: g10/keyedit.c:1347
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Diese unbekannte Beglaubigung entfernen? (j/N/q)"
 
-#: g10/keyedit.c:1350
+#: g10/keyedit.c:1353
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Eigenbeglaubigung wirklich entfernen? (j/N)"
 
-#: g10/keyedit.c:1364
+#: g10/keyedit.c:1367
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "%d Beglaubigungen entfernt.\n"
 
-#: g10/keyedit.c:1365
+#: g10/keyedit.c:1368
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "%d Beglaubigungen entfernt.\n"
 
-#: g10/keyedit.c:1368
+#: g10/keyedit.c:1371
 msgid "Nothing deleted.\n"
 msgstr "Nichts entfernt.\n"
 
-#: g10/keyedit.c:1437
+#: g10/keyedit.c:1440
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Bitte entfernen Sie die Auswahl von den geheimen Schlüsseln.\n"
 
-#: g10/keyedit.c:1443
+#: g10/keyedit.c:1446
 msgid "Please select at most one secondary key.\n"
 msgstr "Bitte wählen Sie höchstens einen Zweitschlüssel aus.\n"
 
-#: g10/keyedit.c:1447
+#: g10/keyedit.c:1450
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "Ändern des Verfallsdatums des Zweitschlüssels.\n"
 
-#: g10/keyedit.c:1449
+#: g10/keyedit.c:1452
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Ändern des Verfallsdatums des Hauptschlüssels.\n"
 
-#: g10/keyedit.c:1490
+#: g10/keyedit.c:1493
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Sie können das Verfallsdatum eines v3-Schlüssels nicht ändern\n"
 
-#: g10/keyedit.c:1506
+#: g10/keyedit.c:1509
 msgid "No corresponding signature in secret ring\n"
 msgstr "Keine entsprechende Signatur im geheimen Schlüsselbund\n"
 
-#: g10/keyedit.c:1566
+#: g10/keyedit.c:1569
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Keine User-ID mit Index %d\n"
 
-#: g10/keyedit.c:1612
+#: g10/keyedit.c:1615
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Kein Zweitschlüssel mit Index %d\n"
 
-#: g10/keyedit.c:1710
+#: g10/keyedit.c:1713
 msgid "user ID: \""
 msgstr "User-ID: \""
 
-#: g10/keyedit.c:1713
+#: g10/keyedit.c:1716
 #, c-format
 msgid ""
 "\"\n"
@@ -2380,34 +2380,34 @@ msgstr ""
 "\"\n"
 "unterschrieben mit Ihrem Schlüssel %08lX um %s\n"
 
-#: g10/keyedit.c:1717
+#: g10/keyedit.c:1720
 msgid "Create a revocation certificate for this signature? (y/N)"
 msgstr "Ein Widerrufszertifikat für diese Unterschrift erzeugen (j/N)"
 
 #. FIXME: detect duplicates here
-#: g10/keyedit.c:1740
+#: g10/keyedit.c:1743
 msgid "You have signed these user IDs:\n"
 msgstr "Sie haben folgende User-IDs beglaubigt:\n"
 
-#: g10/keyedit.c:1754 g10/keyedit.c:1789
+#: g10/keyedit.c:1757 g10/keyedit.c:1792
 #, c-format
 msgid "   signed by %08lX at %s\n"
 msgstr "   beglaubiigt durch %08lX um %s\n"
 
-#: g10/keyedit.c:1759
+#: g10/keyedit.c:1762
 #, c-format
 msgid "   revoked by %08lX at %s\n"
 msgstr "   widerrufen durch %08lX um %s\n"
 
-#: g10/keyedit.c:1779
+#: g10/keyedit.c:1782
 msgid "You are about to revoke these signatures:\n"
 msgstr "Es werden nun folgende Beglaubigungen entfernt:\n"
 
-#: g10/keyedit.c:1797
+#: g10/keyedit.c:1800
 msgid "Really create the revocation certificates? (y/N)"
 msgstr "Wirklich ein Unterschrift-Widerrufszertifikat erzeugen? (j/N) "
 
-#: g10/keyedit.c:1820
+#: g10/keyedit.c:1823
 msgid "no secret key\n"
 msgstr "Kein geheimer Schlüssel\n"
 
@@ -2464,60 +2464,60 @@ msgstr ""
 msgid "original file name='%.*s'\n"
 msgstr "Ursprünglicher Dateiname='%.*s'\n"
 
-#: g10/mainproc.c:511
+#: g10/mainproc.c:513
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 
-#: g10/mainproc.c:594 g10/mainproc.c:603
+#: g10/mainproc.c:596 g10/mainproc.c:605
 msgid "WARNING: invalid notation data found\n"
 msgstr "WARNUNG: Ungültige \"Notation\"-Daten gefunden\n"
 
-#: g10/mainproc.c:606
+#: g10/mainproc.c:608
 msgid "Notation: "
 msgstr "\"Notation\": "
 
-#: g10/mainproc.c:613
+#: g10/mainproc.c:615
 msgid "Policy: "
 msgstr "Richtlinie: "
 
-#: g10/mainproc.c:1032
+#: g10/mainproc.c:1035
 msgid "signature verification suppressed\n"
 msgstr "Unterschriften-Überprüfung unterdrückt\n"
 
 # Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
-#: g10/mainproc.c:1038
+#: g10/mainproc.c:1041
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Unterschrift vom %.*s, %s Schlüssel ID %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1064 g10/mainproc.c:1075
+#: g10/mainproc.c:1067 g10/mainproc.c:1078
 msgid "BAD signature from \""
 msgstr "FALSCHE Unterschrift von \""
 
-#: g10/mainproc.c:1065 g10/mainproc.c:1076
+#: g10/mainproc.c:1068 g10/mainproc.c:1079
 msgid "Good signature from \""
 msgstr "Korrekte Unterschrift von \""
 
-#: g10/mainproc.c:1067
+#: g10/mainproc.c:1070
 msgid "                aka \""
 msgstr "                    alias \""
 
-#: g10/mainproc.c:1123
+#: g10/mainproc.c:1126
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Unterschrift kann nicht geprüft werden: %s\n"
 
-#: g10/mainproc.c:1184
+#: g10/mainproc.c:1187
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "Einzelne Unterschrift der Klasse 0x%02x\n"
 
-#: g10/mainproc.c:1223
+#: g10/mainproc.c:1226
 msgid "old style (PGP 2.x) signature\n"
 msgstr "Unterschrift nach alter (PGP 2.x) Art\n"
 
-#: g10/mainproc.c:1228
+#: g10/mainproc.c:1231
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "ungültiges root-Paket in proc_tree() entdeckt\n"
 
@@ -2548,12 +2548,12 @@ msgstr ""
 "Diese Verschlüsselungsmethode taugt nicht mehr viel; verwenden Sie eine "
 "stärker standardisierte Methode!\n"
 
-#: g10/parse-packet.c:113
+#: g10/parse-packet.c:115
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "dieses Public-Key Verfahren %d kann nicht benutzt werden\n"
 
-#: g10/parse-packet.c:939
+#: g10/parse-packet.c:945
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "Im Unterpaket des Typs %d ist das \"critical bit\" gesetzt\n"
@@ -2933,204 +2933,204 @@ msgstr "Schlüssel %08lX: Akzeptiert als vertrauenswürdiger Schlüssel.\n"
 msgid "enumerate secret keys failed: %s\n"
 msgstr "enum_secret_keys fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:919
+#: g10/trustdb.c:922
 #, c-format
 msgid "key %08lX.%lu: Good subkey binding\n"
 msgstr "Schlüssel %08lX.%lu: Korrekte Unterschlüssel-Anbindung\n"
 
-#: g10/trustdb.c:925 g10/trustdb.c:960
+#: g10/trustdb.c:928 g10/trustdb.c:963
 #, c-format
 msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
 msgstr "Schlüssel %08lX.%lu: Ungültige Unterschlüssel-Anbindung\n"
 
-#: g10/trustdb.c:937
+#: g10/trustdb.c:940
 #, c-format
 msgid "key %08lX.%lu: Valid key revocation\n"
 msgstr "Schlüssel %08lX.%lu: Gültiger Schlüsselwiderruf\n"
 
-#: g10/trustdb.c:943
+#: g10/trustdb.c:946
 #, c-format
 msgid "key %08lX.%lu: Invalid key revocation: %s\n"
 msgstr "Schlüssel %08lX.%lu: Ungültiger Schlüsselwiderruf: %s\n"
 
-#: g10/trustdb.c:954
+#: g10/trustdb.c:957
 #, c-format
 msgid "key %08lX.%lu: Valid subkey revocation\n"
 msgstr "Schlüssel %08lX.%lu: Gültiger Unterschlüsselwiderruf\n"
 
-#: g10/trustdb.c:1065
+#: g10/trustdb.c:1068
 msgid "Good self-signature"
 msgstr "Korrekte Eigenbeglaubigung"
 
-#: g10/trustdb.c:1075
+#: g10/trustdb.c:1078
 msgid "Invalid self-signature"
 msgstr "Ungültige Eigenbeglaubigung"
 
-#: g10/trustdb.c:1102
+#: g10/trustdb.c:1105
 msgid "Valid user ID revocation skipped due to a newer self signature"
 msgstr ""
 "Gültiger User-ID-Widerruf ignoriert, da eine neuere Eigenbeglaubigung "
 "vorliegt"
 
-#: g10/trustdb.c:1108
+#: g10/trustdb.c:1111
 msgid "Valid user ID revocation"
 msgstr "Gültiger User-ID-Widerruf"
 
-#: g10/trustdb.c:1113
+#: g10/trustdb.c:1116
 msgid "Invalid user ID revocation"
 msgstr "Ungültiger User-ID-Widerruf"
 
-#: g10/trustdb.c:1154
+#: g10/trustdb.c:1157
 msgid "Valid certificate revocation"
 msgstr "Gültiger Zerifikat-Widerruf"
 
-#: g10/trustdb.c:1155
+#: g10/trustdb.c:1158
 msgid "Good certificate"
 msgstr "Korrektes Zertifikat"
 
-#: g10/trustdb.c:1176
+#: g10/trustdb.c:1179
 msgid "Invalid certificate revocation"
 msgstr "Ungültiger Zertifikatswiderruf"
 
-#: g10/trustdb.c:1177
+#: g10/trustdb.c:1180
 msgid "Invalid certificate"
 msgstr "Ungültiges Zertifikat"
 
-#: g10/trustdb.c:1194 g10/trustdb.c:1198
+#: g10/trustdb.c:1197 g10/trustdb.c:1201
 #, c-format
 msgid "sig record %lu[%d] points to wrong record.\n"
 msgstr "Signatursatz %lu[%d] zeigt auf falschen Satz.\n"
 
-#: g10/trustdb.c:1251
+#: g10/trustdb.c:1254
 msgid "duplicated certificate - deleted"
 msgstr "Doppelte Zertifikate - entfernt"
 
-#: g10/trustdb.c:1565
+#: g10/trustdb.c:1571
 #, c-format
 msgid "tdbio_search_dir failed: %s\n"
 msgstr "tdbio_search_dir fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:1699
+#: g10/trustdb.c:1705
 #, c-format
 msgid "lid ?: insert failed: %s\n"
 msgstr "lid ?: Einfügen fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:1704
+#: g10/trustdb.c:1710
 #, c-format
 msgid "lid %lu: insert failed: %s\n"
 msgstr "lid %lu: Einfügen fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:1710
+#: g10/trustdb.c:1716
 #, c-format
 msgid "lid %lu: inserted\n"
 msgstr "lid %lu: eingefügt\n"
 
-#: g10/trustdb.c:1715
+#: g10/trustdb.c:1721
 #, c-format
 msgid "error reading dir record: %s\n"
 msgstr "Fehler beim Lesen des Verz.Satzes: %s\n"
 
-#: g10/trustdb.c:1723 g10/trustdb.c:1786
+#: g10/trustdb.c:1729 g10/trustdb.c:1792
 #, c-format
 msgid "%lu keys processed\n"
 msgstr "%lu Schlüssel bearbeitet\n"
 
-#: g10/trustdb.c:1725 g10/trustdb.c:1792
+#: g10/trustdb.c:1731 g10/trustdb.c:1798
 #, c-format
 msgid "\t%lu keys with errors\n"
 msgstr "\t%lu Schlüssel mit Fehlern\n"
 
-#: g10/trustdb.c:1727
+#: g10/trustdb.c:1733
 #, c-format
 msgid "\t%lu keys inserted\n"
 msgstr "\t%lu Schlüssel eingefügt\n"
 
-#: g10/trustdb.c:1730
+#: g10/trustdb.c:1736
 #, c-format
 msgid "enumerate keyblocks failed: %s\n"
 msgstr "enumerate Schlüsselblock fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:1778
+#: g10/trustdb.c:1784
 #, c-format
 msgid "lid %lu: dir record w/o key - skipped\n"
 msgstr "lid %lu: Dir-Satz ohne Schlüssel - übergangen\n"
 
-#: g10/trustdb.c:1788
+#: g10/trustdb.c:1794
 #, c-format
 msgid "\t%lu due to new pubkeys\n"
 msgstr "\t%lu wegen neuer Schlüssel\n"
 
-#: g10/trustdb.c:1790
+#: g10/trustdb.c:1796
 #, c-format
 msgid "\t%lu keys skipped\n"
 msgstr "\t%lu Schlüssel übersprungen\n"
 
-#: g10/trustdb.c:1794
+#: g10/trustdb.c:1800
 #, c-format
 msgid "\t%lu keys updated\n"
 msgstr "\t%lu Schlüssel geändert\n"
 
-#: g10/trustdb.c:2133
+#: g10/trustdb.c:2139
 msgid "Ooops, no keys\n"
 msgstr "Huch, keine Schlüssel\n"
 
-#: g10/trustdb.c:2137
+#: g10/trustdb.c:2143
 msgid "Ooops, no user IDs\n"
 msgstr "Huch, keine User-IDs\n"
 
-#: g10/trustdb.c:2295
+#: g10/trustdb.c:2301
 #, c-format
 msgid "check_trust: search dir record failed: %s\n"
 msgstr "check_trust: Suche nach Dir-Satz fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:2304
+#: g10/trustdb.c:2310
 #, c-format
 msgid "key %08lX: insert trust record failed: %s\n"
 msgstr "Schlüssel %08lX: 'trust record' einfügen fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:2308
+#: g10/trustdb.c:2314
 #, c-format
 msgid "key %08lX.%lu: inserted into trustdb\n"
 msgstr "Schlüssel %08lX.%lu: in \"trustdb\" eingefügt\n"
 
-#: g10/trustdb.c:2316
+#: g10/trustdb.c:2322
 #, c-format
 msgid "key %08lX.%lu: created in future (time warp or clock problem)\n"
 msgstr ""
 "Schlüssel %08lX.%lu: wurde in der Zukunft erzeugt (Zeitreise oder Uhren "
 "stimmen nicht überein)\n"
 
-#: g10/trustdb.c:2330
+#: g10/trustdb.c:2336
 #, c-format
 msgid "key %08lX.%lu: expired at %s\n"
 msgstr "Schlüssel %08lX.%lu: verfallen am %s\n"
 
-#: g10/trustdb.c:2338
+#: g10/trustdb.c:2344
 #, c-format
 msgid "key %08lX.%lu: trust check failed: %s\n"
 msgstr "Schlüssel %08lX.%lu: Vertrauensprüfung fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:2489
+#: g10/trustdb.c:2495
 #, c-format
 msgid "user '%s' not found: %s\n"
 msgstr "Benutzer '%s' nicht gefunden: %s\n"
 
-#: g10/trustdb.c:2491
+#: g10/trustdb.c:2497
 #, c-format
 msgid "problem finding '%s' in trustdb: %s\n"
 msgstr "Problem, '%s' in der Trust-DB zu finden: %s\n"
 
-#: g10/trustdb.c:2494
+#: g10/trustdb.c:2500
 #, c-format
 msgid "user '%s' not in trustdb - inserting\n"
 msgstr "User '%s' ist nicht in der 'Trust'-Datenbank - wird eingefügt\n"
 
-#: g10/trustdb.c:2497
+#: g10/trustdb.c:2503
 #, c-format
 msgid "failed to put '%s' into trustdb: %s\n"
 msgstr "konnte '%s' nicht in die 'Trust'-Datenbank hineintun: %s\n"
 
-#: g10/trustdb.c:2683 g10/trustdb.c:2713
+#: g10/trustdb.c:2689 g10/trustdb.c:2719
 msgid "WARNING: can't yet handle long pref records\n"
 msgstr "WARNUNG: Lange 'Pref'-Records können noch nicht benutzt werden\n"
 
