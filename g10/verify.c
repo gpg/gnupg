@@ -54,7 +54,7 @@
 int
 verify_signatures( int nfiles, char **files )
 {
-    IOBUF fp;
+    iobuf_t fp;
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
     const char *sigfile;
@@ -92,8 +92,10 @@ verify_signatures( int nfiles, char **files )
     /* open the signature file */
     fp = iobuf_open(sigfile);
     if( !fp ) {
-	log_error(_("can't open `%s'\n"), print_fname_stdin(sigfile));
-	return G10ERR_OPEN_FILE;
+        rc = gpg_error_from_errno (errno);
+	log_error(_("can't open `%s': %s\n"),
+                  print_fname_stdin(sigfile), strerror (errno));
+        return rc;
     }
     handle_progress (&pfx, fp, sigfile);
 
@@ -120,17 +122,17 @@ verify_signatures( int nfiles, char **files )
 void
 print_file_status( int status, const char *name, int what )
 {
-    char *p = m_alloc(strlen(name)+10);
+    char *p = xmalloc (strlen(name)+10);
     sprintf(p, "%d %s", what, name );
     write_status_text( status, p );
-    m_free(p);
+    xfree (p);
 }
 
 
 static int
 verify_one_file( const char *name )
 {
-    IOBUF fp;
+    iobuf_t fp;
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
     int rc;
@@ -138,9 +140,11 @@ verify_one_file( const char *name )
     print_file_status( STATUS_FILE_START, name, 1 );
     fp = iobuf_open(name);
     if( !fp ) {
+        rc = gpg_error_from_errno (errno);
+	log_error(_("can't open `%s': %s\n"),
+                  print_fname_stdin(name), strerror (errno));
 	print_file_status( STATUS_FILE_ERROR, name, 1 );
-	log_error(_("can't open `%s'\n"), print_fname_stdin(name));
-	return G10ERR_OPEN_FILE;
+	return rc;
     }
     handle_progress (&pfx, fp, name);
 
@@ -175,7 +179,7 @@ verify_files( int nfiles, char **files )
 	    lno++;
 	    if( !*line || line[strlen(line)-1] != '\n' ) {
 		log_error(_("input line %u too long or missing LF\n"), lno );
-		return G10ERR_GENERAL;
+		return GPG_ERR_GENERAL;
 	    }
 	    /* This code does not work on MSDOS but how cares there are
 	     * also no script languages available.  We don't strip any

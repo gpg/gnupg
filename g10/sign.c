@@ -40,7 +40,7 @@
 #include "trustdb.h"
 #include "status.h"
 #include "i18n.h"
-
+#include "pkglue.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define LF "\r\n"
@@ -103,11 +103,11 @@ mk_notation_and_policy( PKT_signature *sig,
 	  {
 	    log_error(_("WARNING: unable to %%-expand notation "
 			"(too large).  Using unexpanded.\n"));
-	    expanded=m_strdup(s);
+	    expanded=xstrdup (s);
 	  }
 
 	n2 = strlen(expanded);
-	buf = m_alloc( 8 + n1 + n2 );
+	buf = xmalloc ( 8 + n1 + n2 );
 	buf[0] = 0x80; /* human readable */
 	buf[1] = buf[2] = buf[3] = 0;
 	buf[4] = n1 >> 8;
@@ -119,8 +119,8 @@ mk_notation_and_policy( PKT_signature *sig,
 	build_sig_subpkt( sig, SIGSUBPKT_NOTATION
 			  | ((nd->flags & 1)? SIGSUBPKT_FLAG_CRITICAL:0),
 			  buf, 8+n1+n2 );
-	m_free(expanded);
-	m_free(buf);
+	xfree (expanded);
+	xfree (buf);
     }
 
     if(opt.list_options&LIST_SHOW_NOTATION)
@@ -151,14 +151,14 @@ mk_notation_and_policy( PKT_signature *sig,
 	  {
 	    log_error(_("WARNING: unable to %%-expand policy url "
 			"(too large).  Using unexpanded.\n"));
-	    s=m_strdup(string);
+	    s=xstrdup (string);
 	  }
 
 	build_sig_subpkt(sig,SIGSUBPKT_POLICY|
 			 ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0),
 			 s,strlen(s));
 
-	m_free(s);
+	xfree (s);
       }
 
     if(opt.list_options&LIST_SHOW_POLICY)
@@ -189,13 +189,13 @@ hash_uid (MD_HANDLE md, int sigversion, const PKT_user_id *uid)
 	  buf[3] = uid->len >>  8;
 	  buf[4] = uid->len;
 	}
-        md_write( md, buf, 5 );
+        gcry_md_write( md, buf, 5 );
     }
 
     if(uid->attrib_data)
-      md_write (md, uid->attrib_data, uid->attrib_len );
+      gcry_md_write (md, uid->attrib_data, uid->attrib_len );
     else
-      md_write (md, uid->name, uid->len );
+      gcry_md_write (md, uid->name, uid->len );
 }
 
 
@@ -206,31 +206,31 @@ static void
 hash_sigversion_to_magic (MD_HANDLE md, const PKT_signature *sig)
 {
     if (sig->version >= 4) 
-        md_putc (md, sig->version);
-    md_putc (md, sig->sig_class);
+        gcry_md_putc (md, sig->version);
+    gcry_md_putc (md, sig->sig_class);
     if (sig->version < 4) {
         u32 a = sig->timestamp;
-        md_putc (md, (a >> 24) & 0xff );
-        md_putc (md, (a >> 16) & 0xff );
-        md_putc (md, (a >>  8) & 0xff );
-        md_putc (md,  a	       & 0xff );
+        gcry_md_putc (md, (a >> 24) & 0xff );
+        gcry_md_putc (md, (a >> 16) & 0xff );
+        gcry_md_putc (md, (a >>  8) & 0xff );
+        gcry_md_putc (md,  a	       & 0xff );
     }
     else {
         byte buf[6];
         size_t n;
         
-        md_putc (md, sig->pubkey_algo);
-        md_putc (md, sig->digest_algo);
+        gcry_md_putc (md, sig->pubkey_algo);
+        gcry_md_putc (md, sig->digest_algo);
         if (sig->hashed) {
             n = sig->hashed->len;
-            md_putc (md, (n >> 8) );
-            md_putc (md,  n       );
-            md_write (md, sig->hashed->data, n );
+            gcry_md_putc (md, (n >> 8) );
+            gcry_md_putc (md,  n       );
+            gcry_md_write (md, sig->hashed->data, n );
             n += 6;
         }
         else {
-            md_putc (md, 0);  /* always hash the length of the subpacket*/
-            md_putc (md, 0);
+            gcry_md_putc (md, 0);  /* always hash the length of the subpacket*/
+            gcry_md_putc (md, 0);
             n = 6;
         }
         /* add some magic */
@@ -240,7 +240,7 @@ hash_sigversion_to_magic (MD_HANDLE md, const PKT_signature *sig)
         buf[3] = n >> 16;
         buf[4] = n >>  8;
         buf[5] = n;
-        md_write (md, buf, 6);
+        gcry_md_write (md, buf, 6);
     }
 }
 
@@ -249,7 +249,7 @@ static int
 do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	 MD_HANDLE md, int digest_algo )
 {
-    MPI frame;
+    gcry_mpi_t frame;
     byte *dp;
     int rc;
 
@@ -260,61 +260,60 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 		       : _("key has been created %lu seconds "
 			   "in future (time warp or clock problem)\n"), d );
 	if( !opt.ignore_time_conflict )
-	    return G10ERR_TIME_CONFLICT;
+	    return GPG_ERR_TIME_CONFLICT;
     }
 
 
     print_pubkey_algo_note(sk->pubkey_algo);
 
     if( !digest_algo )
-	digest_algo = md_get_algo(md);
+	digest_algo = gcry_md_get_algo(md);
 
     print_digest_algo_note( digest_algo );
-    dp = md_read( md, digest_algo );
+    dp = gcry_md_read ( md, digest_algo );
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
     frame = encode_md_value( sk->pubkey_algo, md,
 			     digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
     if (!frame)
-        return G10ERR_GENERAL;
-    rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
-    mpi_free(frame);
+        return GPG_ERR_GENERAL;
+    rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
+    gcry_mpi_release (frame);
     if (!rc && !opt.no_sig_create_check) {
         /* check that the signature verification worked and nothing is
          * fooling us e.g. by a bug in the signature create
          * code or by deliberately introduced faults. */
-        PKT_public_key *pk = m_alloc_clear (sizeof *pk);
+        PKT_public_key *pk = xcalloc (1,sizeof *pk);
 
         if( get_pubkey( pk, sig->keyid ) )
-            rc = G10ERR_NO_PUBKEY;
+            rc = GPG_ERR_NO_PUBKEY;
         else {
             frame = encode_md_value (pk->pubkey_algo, md,
                                      sig->digest_algo,
                                      mpi_get_nbits(pk->pkey[0]), 0);
             if (!frame)
-                rc = G10ERR_GENERAL;
+                rc = GPG_ERR_GENERAL;
             else
-                rc = pubkey_verify (pk->pubkey_algo, frame,
-                                    sig->data, pk->pkey,
-                                    NULL, NULL );
-            mpi_free (frame);
+                rc = pk_verify (pk->pubkey_algo, frame,
+                                sig->data, pk->pkey);
+            gcry_mpi_release (frame);
         }
         if (rc)
             log_error (_("checking created signature failed: %s\n"),
-                         g10_errstr (rc));
+                         gpg_strerror (rc));
         free_public_key (pk);
     }
     if( rc )
-	log_error(_("signing failed: %s\n"), g10_errstr(rc) );
+	log_error(_("signing failed: %s\n"), gpg_strerror (rc) );
     else {
 	if( opt.verbose ) {
 	    char *ustr = get_user_id_string_printable (sig->keyid);
 	    log_info(_("%s/%s signature from: \"%s\"\n"),
-		     pubkey_algo_to_string(sk->pubkey_algo),
-		     digest_algo_to_string(sig->digest_algo),
+		     gcry_pk_algo_name (sk->pubkey_algo),
+		     gcry_md_algo_name (sig->digest_algo),
 		     ustr );
-	    m_free(ustr);
+	    xfree (ustr);
 	}
     }
     return rc;
@@ -354,7 +353,7 @@ hash_for(int pubkey_algo, int packet_version )
 	  prefitem_t *prefs;
 
 	  for(prefs=opt.personal_digest_prefs;prefs->type;prefs++)
-	    if(md_digest_length(prefs->value)==20)
+	    if(gcry_md_get_algo_dlen (prefs->value) == 20)
 	      return prefs->value;
 	}
 
@@ -415,7 +414,7 @@ print_status_sig_created ( PKT_secret_key *sk, PKT_signature *sig, int what )
  * packet here in reverse order 
  */
 static int
-write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
+write_onepass_sig_packets (SK_LIST sk_list, iobuf_t out, int sigclass )
 {
     int skcount;
     SK_LIST sk_rover;
@@ -435,7 +434,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         }
 
         sk = sk_rover->sk;
-        ops = m_alloc_clear (sizeof *ops);
+        ops = xcalloc (1,sizeof *ops);
         ops->sig_class = sigclass;
         ops->digest_algo = hash_for (sk->pubkey_algo, sk->version);
         ops->pubkey_algo = sk->pubkey_algo;
@@ -449,7 +448,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         free_packet (&pkt);
         if (rc) {
             log_error ("build onepass_sig packet failed: %s\n",
-                       g10_errstr(rc));
+                       gpg_strerror (rc));
             return rc;
         }
     }
@@ -461,7 +460,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
  * Helper to write the plaintext (literal data) packet
  */
 static int
-write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
+write_plaintext_packet (iobuf_t out, iobuf_t inp, const char *fname, int ptmode)
 {
     PKT_plaintext *pt = NULL;
     u32 filesize;
@@ -470,15 +469,15 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     if (!opt.no_literal) {
         if (fname || opt.set_filename) {
             char *s = make_basename (opt.set_filename? opt.set_filename
-                                                     : fname,
-                                     iobuf_get_real_fname(inp));
-            pt = m_alloc (sizeof *pt + strlen(s) - 1);
+                                                     : fname
+                                     /*, iobuf_get_real_fname(inp)*/);
+            pt = xmalloc (sizeof *pt + strlen(s) - 1);
             pt->namelen = strlen (s);
             memcpy (pt->name, s, pt->namelen);
-            m_free (s);
+            xfree (s);
         }
         else { /* no filename */
-            pt = m_alloc (sizeof *pt - 1);
+            pt = xmalloc (sizeof *pt - 1);
             pt->namelen = 0;
         }
     }
@@ -519,7 +518,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
         /*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
         if( (rc = build_packet (out, &pkt)) )
             log_error ("build_packet(PLAINTEXT) failed: %s\n",
-                       g10_errstr(rc) );
+                       gpg_strerror (rc) );
         pt->buf = NULL;
     }
     else {
@@ -527,10 +526,9 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
         int  bytes_copied;
 
         while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-            if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
-                rc = G10ERR_WRITE_FILE;
+            if ( (rc=iobuf_write(out, copy_buffer, bytes_copied) )) {
                 log_error ("copying input to output failed: %s\n",
-                           g10_errstr(rc));
+                           gpg_strerror (rc));
                 break;
             }
         wipememory(copy_buffer,4096); /* burn buffer */
@@ -545,7 +543,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
  * hash which will not be changes here.
  */
 static int
-write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
+write_signature_packets (SK_LIST sk_list, iobuf_t out, MD_HANDLE hash,
                          int sigclass, u32 timestamp, u32 duration,
 			 int status_letter)
 {
@@ -561,7 +559,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	sk = sk_rover->sk;
 
 	/* build the signature packet */
-	sig = m_alloc_clear (sizeof *sig);
+	sig = xcalloc (1,sizeof *sig);
 	if(opt.force_v3_sigs || RFC1991)
 	  sig->version=3;
 	else if(duration || opt.sig_policy_url || opt.sig_notation_data)
@@ -579,17 +577,17 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	  sig->expiredate = sig->timestamp+duration;
 	sig->sig_class = sigclass;
 
-	md = md_copy (hash);
+	gcry_md_copy (&md, hash);
 
 	if (sig->version >= 4)
 	    build_sig_subpkt_from_sig (sig);
 	mk_notation_and_policy (sig, NULL, sk);
 
         hash_sigversion_to_magic (md, sig);
-	md_final (md);
+	gcry_md_final (md);
 
 	rc = do_sign( sk, sig, md, hash_for (sig->pubkey_algo, sk->version) );
-	md_close (md);
+	gcry_md_close (md);
 
 	if( !rc ) { /* and write it */
             PACKET pkt;
@@ -604,7 +602,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	    free_packet (&pkt);
 	    if (rc)
 		log_error ("build signature packet failed: %s\n",
-                           g10_errstr(rc) );
+                           gpg_strerror (rc) );
 	}
 	if( rc )
 	    return rc;;
@@ -636,7 +634,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     text_filter_context_t tfx;
     progress_filter_context_t pfx;
     encrypt_filter_context_t efx;
-    IOBUF inp = NULL, out = NULL;
+    iobuf_t inp = NULL, out = NULL;
     PACKET pkt;
     int rc = 0;
     PK_LIST pk_list = NULL;
@@ -682,9 +680,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	inp = NULL; /* we do it later */
     else {
         if( !(inp = iobuf_open(fname)) ) {
+            rc = gpg_error_from_errno (errno);
 	    log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 		      strerror(errno) );
-	    rc = G10ERR_OPEN_FILE;
 	    goto leave;
 	}
 
@@ -693,8 +691,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( outfile ) {
 	if( !(out = iobuf_create( outfile )) ) {
+            rc = gpg_error_from_errno (errno);
 	    log_error(_("can't create %s: %s\n"), outfile, strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
 	else if( opt.verbose )
@@ -710,7 +708,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( inp, text_filter, &tfx );
       }
 
-    mfx.md = md_open(0, 0);
+    gcry_md_open (&mfx.md, 0, 0);
 
    /* If we're encrypting and signing, it is reasonable to pick the
        hash algorithm to use out of the recepient key prefs. */
@@ -724,7 +722,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 				      NULL)!=opt.def_digest_algo)
 	  log_info(_("forcing digest algorithm %s (%d) "
 		     "violates recipient preferences\n"),
-		   digest_algo_to_string(opt.def_digest_algo),
+		   gcry_md_algo_name (opt.def_digest_algo),
 		   opt.def_digest_algo);
 	  }
 	else
@@ -752,7 +750,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(mfx.md, hash_for(sk->pubkey_algo, sk->version ));
+	gcry_md_enable (mfx.md, hash_for(sk->pubkey_algo, sk->version ));
     }
 
     if( !multifile )
@@ -822,9 +820,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    for( sl = strlist_last(filenames); sl;
 			sl = strlist_prev( filenames, sl ) ) {
 		if( !(inp = iobuf_open(sl->d)) ) {
+                    rc = gpg_error_from_errno (errno);
 		    log_error(_("can't open %s: %s\n"),
 					    sl->d, strerror(errno) );
-		    rc = G10ERR_OPEN_FILE;
 		    goto leave;
 		}
                 handle_progress (&pfx, inp, sl->d);
@@ -875,7 +873,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
             write_status( STATUS_END_ENCRYPTION );
     }
     iobuf_close(inp);
-    md_close( mfx.md );
+    gcry_md_close ( mfx.md );
     release_sk_list( sk_list );
     release_pk_list( pk_list );
     recipient_digest_algo=0;
@@ -893,7 +891,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
     MD_HANDLE textmd = NULL;
-    IOBUF inp = NULL, out = NULL;
+    iobuf_t inp = NULL, out = NULL;
     PACKET pkt;
     int rc = 0;
     SK_LIST sk_list = NULL;
@@ -923,17 +921,17 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(fname)) ) {
+        rc = gpg_error_from_errno (errno);
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
     handle_progress (&pfx, inp, fname);
 
     if( outfile ) {
 	if( !(out = iobuf_create( outfile )) ) {
+            rc = gpg_error_from_errno (errno);
 	    log_error(_("can't create %s: %s\n"), outfile, strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
 	else if( opt.verbose )
@@ -966,7 +964,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    int i = hash_for(sk->pubkey_algo, sk->version);
 
 	    if( !hashs_seen[ i & 0xff ] ) {
-		s = digest_algo_to_string( i );
+		s = gcry_md_algo_name (i);
 		if( s ) {
 		    hashs_seen[ i & 0xff ] = 1;
 		    if( any )
@@ -985,13 +983,13 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 		  "NotDashEscaped: You need GnuPG to verify this message" LF );
     iobuf_writestr(out, LF );
 
-    textmd = md_open(0, 0);
+    gcry_md_open (&textmd, 0, 0);
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(textmd, hash_for(sk->pubkey_algo, sk->version));
+	gcry_md_enable (textmd, hash_for(sk->pubkey_algo, sk->version));
     }
     if ( DBG_HASHING )
-	md_start_debug( textmd, "clearsign" );
+	gcry_md_start_debug ( textmd, "clearsign" );
     copy_clearsig_text( out, inp, textmd, !opt.not_dash_escaped,
 			opt.escape_from, (old_style && only_md5) );
     /* fixme: check for read errors */
@@ -1011,7 +1009,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     else
 	iobuf_close(out);
     iobuf_close(inp);
-    md_close( textmd );
+    gcry_md_close ( textmd );
     release_sk_list( sk_list );
     return rc;
 }
@@ -1029,7 +1027,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     md_filter_context_t mfx;
     text_filter_context_t tfx;
     cipher_filter_context_t cfx;
-    IOBUF inp = NULL, out = NULL;
+    iobuf_t inp = NULL, out = NULL;
     PACKET pkt;
     STRING2KEY *s2k = NULL;
     int rc = 0;
@@ -1055,27 +1053,27 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* prepare iobufs */
     inp = iobuf_open(fname);
     if( !inp ) {
+        rc = gpg_error_from_errno (errno);
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
     handle_progress (&pfx, inp, fname);
 
     /* prepare key */
-    s2k = m_alloc_clear( sizeof *s2k );
+    s2k = xcalloc (1, sizeof *s2k );
     s2k->mode = RFC1991? 0:opt.s2k_mode;
     s2k->hash_algo = opt.s2k_digest_algo;
 
     algo = default_cipher_algo();
     if (!opt.quiet || !opt.batch)
         log_info (_("%s encryption will be used\n"),
-		    cipher_algo_to_string(algo) );
+		    gcry_cipher_algo_name (algo) );
     cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2, NULL, NULL);
 
     if (!cfx.dek || !cfx.dek->keylen) {
-        rc = G10ERR_PASSPHRASE;
-        log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
+        rc = gpg_error (GPG_ERR_INV_PASSPHRASE);
+        log_error(_("error creating passphrase: %s\n"), gpg_strerror (rc) );
         goto leave;
     }
 
@@ -1087,11 +1085,11 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* prepare to calculate the MD over the input */
     if (opt.textmode)
 	iobuf_push_filter (inp, text_filter, &tfx);
-    mfx.md = md_open(0, 0);
+    gcry_md_open (&mfx.md, 0, 0);
 
     for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable (mfx.md, hash_for (sk->pubkey_algo, sk->version ));
+	gcry_md_enable (mfx.md, hash_for (sk->pubkey_algo, sk->version ));
     }
 
     iobuf_push_filter (inp, md_filter, &mfx);
@@ -1103,15 +1101,15 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* Write the symmetric key packet */
     /*(current filters: armor)*/
     if (!RFC1991) {
-	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
+	PKT_symkey_enc *enc = xcalloc (1, sizeof *enc );
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;
 	enc->s2k = *s2k;
 	pkt.pkttype = PKT_SYMKEY_ENC;
 	pkt.pkt.symkey_enc = enc;
 	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
-	m_free(enc);
+	    log_error("build symkey packet failed: %s\n", gpg_strerror (rc) );
+	xfree (enc);
     }
 
     /* Push the encryption filter */
@@ -1157,9 +1155,9 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     }
     iobuf_close(inp);
     release_sk_list( sk_list );
-    md_close( mfx.md );
-    m_free(cfx.dek);
-    m_free(s2k);
+    gcry_md_close ( mfx.md );
+    xfree (cfx.dek);
+    xfree (s2k);
     return rc;
 }
 
@@ -1224,7 +1222,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	  digest_algo = DIGEST_ALGO_SHA1;
       }
 
-    md = md_open( digest_algo, 0 );
+    gcry_md_open (&md, digest_algo, 0 );
 
     /* hash the public key certificate and the user id */
     hash_public_key( md, pk );
@@ -1235,7 +1233,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
         hash_uid (md, sigversion, uid);
     }
     /* and make the signature packet */
-    sig = m_alloc_clear( sizeof *sig );
+    sig = xcalloc (1, sizeof *sig );
     sig->version = sigversion;
     sig->flags.exportable=1;
     sig->flags.revocable=1;
@@ -1261,12 +1259,12 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
     if( !rc ) {
         hash_sigversion_to_magic (md, sig);
-	md_final(md);
+	gcry_md_final (md);
 
 	rc = complete_sig( sig, sk, md );
     }
 
-    md_close( md );
+    gcry_md_close ( md );
     if( rc )
 	free_seckey_enc( sig );
     else
@@ -1299,9 +1297,9 @@ update_keysig_packet( PKT_signature **ret_sig,
     if ((!orig_sig || !pk || !sk)
 	|| (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
 	|| (orig_sig->sig_class == 0x18 && !subpk))
-      return G10ERR_GENERAL;
+      return GPG_ERR_GENERAL;
 
-    md = md_open( orig_sig->digest_algo, 0 );
+    gcry_md_open (&md, orig_sig->digest_algo, 0);
 
     /* hash the public key certificate and the user id */
     hash_public_key( md, pk );
@@ -1344,12 +1342,12 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     if (!rc) {
         hash_sigversion_to_magic (md, sig);
-	md_final(md);
+	gcry_md_final (md);
 
 	rc = complete_sig( sig, sk, md );
     }
 
-    md_close (md);
+    gcry_md_close (md);
     if( rc )
 	free_seckey_enc (sig);
     else

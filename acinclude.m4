@@ -1,5 +1,5 @@
 dnl macros to configure gnupg
-dnl Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
 dnl
@@ -34,6 +34,127 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
         AC_DEFINE($2,1,[Defined if a `]$1[' is typedef'd])
     fi
   ])
+
+
+dnl GNUPG_CHECK_GNUMAKE
+dnl
+AC_DEFUN(GNUPG_CHECK_GNUMAKE,
+  [ 
+    if ${MAKE-make} --version 2>/dev/null | grep '^GNU ' >/dev/null 2>&1; then
+        :
+    else
+        AC_MSG_WARN([[
+***
+*** It seems that you are not using GNU make.  Some make tools have serious
+*** flaws and you may not be able to build this software at all. Before you
+*** complain, please try GNU make:  GNU make is easy to build and available
+*** at all GNU archives.  It is always available from ftp.gnu.org:/gnu/make.
+***]])
+    fi
+  ])
+
+dnl GNUPG_CHECK_FAQPROG
+dnl
+AC_DEFUN(GNUPG_CHECK_FAQPROG,
+  [ AC_MSG_CHECKING(for faqprog.pl)
+    if faqprog.pl -V 2>/dev/null | grep '^faqprog.pl ' >/dev/null 2>&1; then
+        working_faqprog=yes
+        FAQPROG="faqprog.pl"
+    else 
+	working_faqprog=no
+        FAQPROG=": "
+    fi
+    AC_MSG_RESULT($working_faqprog)
+    AC_SUBST(FAQPROG)
+    AM_CONDITIONAL(WORKING_FAQPROG, test "$working_faqprog" = "yes" )
+
+dnl     if test $working_faqprog = no; then
+dnl         AC_MSG_WARN([[
+dnl ***
+dnl *** It seems that the faqprog.pl program is not installed;
+dnl *** however it is only needed if you want to change the FAQ.
+dnl ***  (faqprog.pl should be available at:
+dnl ***    ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl )
+dnl *** No need to worry about this warning.
+dnl ***]])
+dnl     fi
+   ])       
+
+dnl GNUPG_CHECK_DOCBOOK_TO_TEXI
+dnl
+AC_DEFUN(GNUPG_CHECK_DOCBOOK_TO_TEXI,
+  [
+    AC_CHECK_PROG(DOCBOOK_TO_TEXI, docbook2texi, yes, no)
+    AC_MSG_CHECKING(for sgml to texi tools)
+    working_sgmltotexi=no
+    if test "$ac_cv_prog_DOCBOOK_TO_TEXI" = yes; then
+      if sgml2xml -v /dev/null 2>&1 | grep 'SP version' >/dev/null 2>&1 ; then
+            working_sgmltotexi=yes
+      fi
+    fi
+    AC_MSG_RESULT($working_sgmltotexi)
+    AM_CONDITIONAL(HAVE_DOCBOOK_TO_TEXI, test "$working_sgmltotexi" = "yes" )
+   ])       
+
+
+
+dnl GNUPG_CHECK_ENDIAN
+dnl define either LITTLE_ENDIAN_HOST or BIG_ENDIAN_HOST
+dnl
+define(GNUPG_CHECK_ENDIAN,
+  [
+    tmp_assumed_endian=big
+    if test "$cross_compiling" = yes; then
+      case "$host_cpu" in
+         i@<:@345678@:>@* )
+            tmp_assumed_endian=little
+            ;;
+         *)
+            ;;
+      esac
+      AC_MSG_WARN(cross compiling; assuming $tmp_assumed_endian endianess)
+    fi
+    AC_MSG_CHECKING(endianess)
+    AC_CACHE_VAL(gnupg_cv_c_endian,
+      [ gnupg_cv_c_endian=unknown
+        # See if sys/param.h defines the BYTE_ORDER macro.
+        AC_TRY_COMPILE([#include <sys/types.h>
+        #include <sys/param.h>], [
+        #if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
+         bogus endian macros
+        #endif], [# It does; now see whether it defined to BIG_ENDIAN or not.
+        AC_TRY_COMPILE([#include <sys/types.h>
+        #include <sys/param.h>], [
+        #if BYTE_ORDER != BIG_ENDIAN
+         not big endian
+        #endif], gnupg_cv_c_endian=big, gnupg_cv_c_endian=little)])
+        if test "$gnupg_cv_c_endian" = unknown; then
+            AC_TRY_RUN([main () {
+              /* Are we little or big endian?  From Harbison&Steele.  */
+              union
+              {
+                long l;
+                char c[sizeof (long)];
+              } u;
+              u.l = 1;
+              exit (u.c[sizeof (long) - 1] == 1);
+              }],
+              gnupg_cv_c_endian=little,
+              gnupg_cv_c_endian=big,
+              gnupg_cv_c_endian=$tmp_assumed_endian
+            )
+        fi
+      ])
+    AC_MSG_RESULT([$gnupg_cv_c_endian])
+    if test "$gnupg_cv_c_endian" = little; then
+      AC_DEFINE(LITTLE_ENDIAN_HOST,1,
+                [Defined if the host has little endian byte ordering])
+    else
+      AC_DEFINE(BIG_ENDIAN_HOST,1,
+                [Defined if the host has big endian byte ordering])
+    fi
+  ])
+
 
 
 # Check for the getsockopt SO_PEERCRED
@@ -125,12 +246,11 @@ AC_DEFUN(GNUPG_PTH_VERSION_CHECK,
     fi    
   ])
 
-######################################################################
+
 # Check whether mlock is broken (hpux 10.20 raises a SIGBUS if mlock
 # is not called from uid 0 (not tested whether uid 0 works)
 # For DECs Tru64 we have also to check whether mlock is in librt
 # mlock is there a macro using memlk()
-######################################################################
 dnl GNUPG_CHECK_MLOCK
 dnl
 define(GNUPG_CHECK_MLOCK,
@@ -218,6 +338,32 @@ define(GNUPG_CHECK_MLOCK,
          fi
     fi
   ])
+
+
+dnl Stolen from gcc
+dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
+dnl of the usual 2.
+AC_DEFUN(GNUPG_FUNC_MKDIR_TAKES_ONE_ARG,
+[AC_CHECK_HEADERS(sys/stat.h unistd.h direct.h)
+AC_CACHE_CHECK([if mkdir takes one argument], gnupg_cv_mkdir_takes_one_arg,
+[AC_TRY_COMPILE([
+#include <sys/types.h>
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef HAVE_DIRECT_H
+# include <direct.h>
+#endif], [mkdir ("foo", 0);],
+        gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
+if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
+  AC_DEFINE(MKDIR_TAKES_ONE_ARG,1,
+            [Defined if mkdir() does not take permission flags])
+fi
+])
+
 
 
 

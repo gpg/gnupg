@@ -75,7 +75,7 @@ struct keyblock_pos_struct {
     enum resource_type rt;
     off_t offset;    /* position information */
     unsigned count;  /* length of the keyblock in packets */
-    IOBUF  fp;	     /* used by enum_keyblocks */
+    iobuf_t  fp;	     /* used by enum_keyblocks */
     int secret;      /* working on a secret keyring */
     PACKET *pkt;     /* ditto */
     int valid;
@@ -235,6 +235,7 @@ KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
 
 /*-- keyid.c --*/
 int pubkey_letter( int algo );
+u32 v3_keyid (gcry_mpi_t a, u32 *ki);
 u32 keyid_from_sk( PKT_secret_key *sk, u32 *keyid );
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );

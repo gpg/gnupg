@@ -74,10 +74,10 @@ do_show_revocation_reason( PKT_signature *sig )
 
 	log_info( _("reason for revocation: ") );
 	if( text )
-	    fputs( text, log_stream() );
+	    fputs( text, log_get_stream () );
 	else
-	    fprintf( log_stream(), "code=%02x", *p );
-	putc( '\n', log_stream() );
+	    fprintf( log_get_stream (), "code=%02x", *p );
+	putc( '\n', log_get_stream () );
 	n--; p++;
 	pp = NULL;
 	do {
@@ -90,8 +90,8 @@ do_show_revocation_reason( PKT_signature *sig )
 		pp = memchr( p, '\n', n );
 		nn = pp? pp - p : n;
 		log_info( _("revocation comment: ") );
-		print_string( log_stream(), p, nn, 0 );
-		putc( '\n', log_stream() );
+		print_string( log_get_stream(), p, nn, 0 );
+		putc( '\n', log_get_stream() );
 		p += nn; n -= nn;
 	    }
 	} while( pp );
@@ -186,11 +186,11 @@ show_paths (const PKT_public_key *pk, int only_first )
 	    return;
 	}
 
-	pk = m_alloc_clear( sizeof *pk );
+	pk = xcalloc (1, sizeof *pk );
 	rc = get_pubkey( pk, keyid );
 	if( rc ) {
 	    log_error("key %08lX: public key not found: %s\n",
-				    (ulong)keyid[1], g10_errstr(rc) );
+				    (ulong)keyid[1], gpg_strerror (rc) );
 	    return;
 	}
 
@@ -214,7 +214,7 @@ show_paths (const PKT_public_key *pk, int only_first )
 
 	p = get_user_id( keyid, &n );
 	tty_print_utf8_string( p, n ),
-	m_free(p);
+	xfree (p);
 	tty_printf("\"\n");
 	free_public_key( pk );
     }
@@ -276,7 +276,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
                        (ulong)keyid[1], datestr_from_pk( pk ) );
             p = get_user_id( keyid, &n );
             tty_print_utf8_string( p, n ),
-              m_free(p);
+              xfree (p);
             tty_printf("\"\n");
 
             keyblock = get_pubkeyblock (keyid);
@@ -395,9 +395,9 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
         quit = 1;
         break ; /* back to the menu */
       }
-    m_free(p); p = NULL;
+    xfree (p); p = NULL;
   }
-  m_free(p);
+  xfree (p);
   return show? -2: quit? -1 : changed;
 }
 
@@ -558,7 +558,7 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 	    size_t n;
 	    char *p = get_user_id( keyid, &n );
 	    tty_print_utf8_string( p, n );
-	    m_free(p);
+	    xfree (p);
 	  }
 	tty_printf("\"\n");
         print_fingerprint (pk, NULL, 2);
@@ -594,7 +594,7 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 int
 check_signatures_trust( PKT_signature *sig )
 {
-  PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+  PKT_public_key *pk = xcalloc (1, sizeof *pk );
   unsigned int trustlevel;
   int rc=0;
 
@@ -602,7 +602,7 @@ check_signatures_trust( PKT_signature *sig )
   if (rc) 
     { /* this should not happen */
       log_error("Ooops; the key vanished  - can't check the trust\n");
-      rc = G10ERR_NO_PUBKEY;
+      rc = GPG_ERR_NO_PUBKEY;
       goto leave;
     }
 
@@ -662,7 +662,7 @@ check_signatures_trust( PKT_signature *sig )
       log_info(_("         The signature is probably a FORGERY.\n"));
       if (opt.with_fingerprint)
         print_fingerprint (pk, NULL, 1);
-      rc = G10ERR_BAD_SIGN;
+      rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
       break;
 
     case TRUST_MARGINAL:
@@ -701,7 +701,7 @@ release_pk_list( PK_LIST pk_list )
     for( ; pk_list; pk_list = pk_rover ) {
 	pk_rover = pk_list->next;
 	free_public_key( pk_list->pk );
-	m_free( pk_list );
+	xfree ( pk_list );
     }
 }
 
@@ -730,10 +730,10 @@ default_recipient(void)
     int i;
 
     if( opt.def_recipient )
-	return m_strdup( opt.def_recipient );
+	return xstrdup ( opt.def_recipient );
     if( !opt.def_recipient_self )
 	return NULL;
-    sk = m_alloc_clear( sizeof *sk );
+    sk = xcalloc (1, sizeof *sk );
     i = get_seckey_byname( sk, NULL, 0 );
     if( i ) {
 	free_secret_key( sk );
@@ -742,7 +742,7 @@ default_recipient(void)
     n = MAX_FINGERPRINT_LEN;
     fingerprint_from_sk( sk, fpr, &n );
     free_secret_key( sk );
-    p = m_alloc( 2*n+3 );
+    p = xmalloc ( 2*n+3 );
     *p++ = '0';
     *p++ = 'x';
     for(i=0; i < n; i++ )
@@ -829,17 +829,17 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	      }
 	  }
 	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
-	    pk = m_alloc_clear( sizeof *pk );
+	    pk = xcalloc (1, sizeof *pk );
 	    pk->req_usage = use;
 	    /* We can encrypt-to a disabled key */
 	    if( (rc = get_pubkey_byname( pk, rov->d, NULL, NULL, 1 )) ) {
 		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), rov->d, gpg_strerror (rc) );
                 write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
                                               rov->d, strlen (rov->d), -1);
 		goto fail;
             }
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
+	    else if( !(rc=openpgp_pk_test_algo (pk->pubkey_algo, use )) ) {
 		/* Skip the actual key if the key is already present
 		 * in the list */
 		if (key_present_in_pk_list(pk_list, pk) == 0) {
@@ -849,7 +849,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		}
 		else {
 		    PK_LIST r;
-		    r = m_alloc( sizeof *r );
+		    r = xmalloc ( sizeof *r );
 		    r->pk = pk; pk = NULL;
 		    r->next = pk_list;
 		    r->flags = (rov->flags&2)?1:0;
@@ -867,7 +867,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	    }
 	    else {
 		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), rov->d, gpg_strerror (rc) );
                 write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
                                               rov->d, strlen (rov->d), -1);
 		goto fail;
@@ -887,13 +887,13 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		"You did not specify a user ID. (you may use \"-r\")\n"));
 	for(;;) {
 	    rc = 0;
-	    m_free(answer);
+	    xfree (answer);
 	    if( have_def_rec ) {
 		answer = def_rec;
 		def_rec = NULL;
 	    }
-	    else if(backlog) {
-	      answer=pop_strlist(&backlog);
+	    else if (backlog) {
+	      answer = strlist_pop (&backlog);
 	    }
 	    else {
 		answer = cpr_get_utf8("pklist.user_id.enter",
@@ -902,19 +902,19 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		cpr_kill_prompt();
 	    }
 	    if( !answer || !*answer ) {
-	        m_free(answer);
+	        xfree (answer);
 		break;
 	    }
 	    if(expand_id(answer,&backlog,0))
 	      continue;
 	    if( pk )
 		free_public_key( pk );
-	    pk = m_alloc_clear( sizeof *pk );
+	    pk = xcalloc (1, sizeof *pk );
 	    pk->req_usage = use;
 	    rc = get_pubkey_byname( pk, answer, NULL, NULL, 0 );
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
+	    else if( !(rc=openpgp_pk_test_algo (pk->pubkey_algo, use)) ) {
 		if( have_def_rec ) {
 		    if (key_present_in_pk_list(pk_list, pk) == 0) {
 			free_public_key(pk); pk = NULL;
@@ -922,7 +922,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 				   "already set as default recipient\n") );
 		    }
 		    else {
-			PK_LIST r = m_alloc( sizeof *r );
+			PK_LIST r = xmalloc ( sizeof *r );
 			r->pk = pk; pk = NULL;
 			r->next = pk_list;
 			r->flags = 0; /* no throwing default ids */
@@ -963,11 +963,11 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 				size_t n;
 				char *p = get_user_id( keyid, &n );
 				tty_print_utf8_string( p, n );
-				m_free(p);
+				xfree (p);
 			      }
 			    tty_printf("\"\n");
 
-			    r = m_alloc( sizeof *r );
+			    r = xmalloc ( sizeof *r );
 			    r->pk = pk; pk = NULL;
 			    r->next = pk_list;
 			    r->flags = 0; /* no throwing interactive ids */
@@ -978,7 +978,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		    }
 		}
 	    }
-	    m_free(def_rec); def_rec = NULL;
+	    xfree (def_rec); def_rec = NULL;
 	    have_def_rec = 0;
 	}
 	if( pk ) {
@@ -987,13 +987,13 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	}
     }
     else if( !any_recipients && (def_rec = default_recipient()) ) {
-	pk = m_alloc_clear( sizeof *pk );
+	pk = xcalloc (1, sizeof *pk );
 	pk->req_usage = use;
 	/* The default recipient may be disabled */
 	rc = get_pubkey_byname( pk, def_rec, NULL, NULL, 1 );
 	if( rc )
 	    log_error(_("unknown default recipient `%s'\n"), def_rec );
-	else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
+	else if( !(rc=openpgp_pk_test_algo (pk->pubkey_algo, use)) ) {
 	  /* Mark any_recipients here since the default recipient
              would have been used if it wasn't already there.  It
              doesn't really matter if we got this key from the default
@@ -1002,7 +1002,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	  if (key_present_in_pk_list(pk_list, pk) == 0)
 	    log_info(_("skipped: public key already set as default recipient\n"));
 	  else {
-	    PK_LIST r = m_alloc( sizeof *r );
+	    PK_LIST r = xmalloc ( sizeof *r );
 	    r->pk = pk; pk = NULL;
 	    r->next = pk_list;
 	    r->flags = 0; /* no throwing default ids */
@@ -1013,7 +1013,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	    free_public_key( pk );
 	    pk = NULL;
 	}
-	m_free(def_rec); def_rec = NULL;
+	xfree (def_rec); def_rec = NULL;
     }
     else {
 	any_recipients = 0;
@@ -1021,17 +1021,17 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	    if( (remusr->flags & 1) )
 		continue; /* encrypt-to keys are already handled */
 
-	    pk = m_alloc_clear( sizeof *pk );
+	    pk = xcalloc (1, sizeof *pk );
 	    pk->req_usage = use;
 	    if( (rc = get_pubkey_byname( pk, remusr->d, NULL, NULL, 0 )) ) {
 		free_public_key( pk ); pk = NULL;
-		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), remusr->d, gpg_strerror (rc) );
                 write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
                                               remusr->d, strlen (remusr->d),
                                               -1);
 		goto fail;
 	    }
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
+	    else if( !(rc=openpgp_pk_test_algo (pk->pubkey_algo, use )) ) {
 		int trustlevel;
 
 		trustlevel = get_validity (pk, pk->user_id);
@@ -1043,7 +1043,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
                                                   remusr->d,
                                                   strlen (remusr->d),
                                                   -1);
-		    rc=G10ERR_UNU_PUBKEY;
+		    rc = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
 		    goto fail;
 		}
 		else if( do_we_trust_pre( pk, trustlevel ) ) {
@@ -1062,7 +1062,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		    }
 		    else {
 			PK_LIST r;
-			r = m_alloc( sizeof *r );
+			r = xmalloc ( sizeof *r );
 			r->pk = pk; pk = NULL;
 			r->next = pk_list;
 			r->flags = (remusr->flags&2)?1:0;
@@ -1075,7 +1075,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
                                                   remusr->d,
                                                   strlen (remusr->d),
                                                   -1);
-		    rc=G10ERR_UNU_PUBKEY;
+		    rc = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
 		    goto fail;
 		}
 	    }
@@ -1085,7 +1085,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
                                               remusr->d,
                                               strlen (remusr->d),
                                               -1);
-		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
+		log_error(_("%s: skipped: %s\n"), remusr->d, gpg_strerror (rc) );
 		goto fail;
 	    }
 	}
@@ -1094,7 +1094,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
     if( !rc && !any_recipients ) {
 	log_error(_("no valid addressees\n"));
         write_status_text (STATUS_NO_RECP, "0");
-	rc = G10ERR_NO_USER_ID;
+	rc = GPG_ERR_NO_USER_ID;
     }
 
  fail:
@@ -1145,11 +1145,11 @@ algo_available( preftype_t preftype, int algo, void *hint )
 			    && algo != CIPHER_ALGO_TWOFISH))
 	return 0;
 
-      return algo && !check_cipher_algo( algo );
+      return algo && !gcry_cipher_test_algo (algo);
     }
   else if( preftype == PREFTYPE_HASH )
     {
-      if(hint && ((*(int *)hint) != md_digest_length(algo)))
+      if(hint && ((*(int *)hint) != gcry_md_get_algo_dlen (algo)))
 	return 0;
 
       if((PGP6 || PGP7) && (algo != DIGEST_ALGO_MD5
@@ -1168,7 +1168,7 @@ algo_available( preftype_t preftype, int algo, void *hint )
       if( RFC2440 && algo == DIGEST_ALGO_TIGER )
 	return 0;
 
-      return algo && !check_digest_algo( algo );
+      return algo && !gcry_md_test_algo( algo );
     }
   else if( preftype == PREFTYPE_ZIP )
     {

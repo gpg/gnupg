@@ -1,5 +1,5 @@
 /* stringhelp.h
- *	Copyright (C) 1998,1999,2000,2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998,1999,2000,2001,2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,6 +30,9 @@ char *trim_trailing_spaces( char *string );
 unsigned int trim_trailing_chars( unsigned char *line, unsigned len,
 					      const char *trimchars);
 unsigned int trim_trailing_ws( unsigned char *line, unsigned len );
+size_t length_sans_trailing_chars (const unsigned char *line, size_t len,
+                                   const char *trimchars );
+size_t length_sans_trailing_ws (const unsigned char *line, size_t len);
 
 
 char *make_basename(const char *filepath);
@@ -43,6 +46,7 @@ size_t print_sanitized_utf8_buffer (FILE *fp, const void *buffer,
                                     size_t length, int delim);
 size_t print_sanitized_string (FILE *fp, const char *string, int delim);
 size_t print_sanitized_utf8_string (FILE *fp, const char *string, int delim);
+char *sanitize_buffer (const unsigned char *p, size_t n, int delim);
 
 
 const char *ascii_memistr( const char *buf, size_t buflen, const char *sub );
@@ -51,7 +55,9 @@ int ascii_islower (int c);
 int ascii_toupper (int c);
 int ascii_tolower (int c);
 int ascii_strcasecmp( const char *a, const char *b );
+int ascii_strncasecmp (const char *a, const char *b, size_t n);
 int ascii_memcasecmp( const char *a, const char *b, size_t n );
+const char *ascii_memistr ( const char *buf, size_t buflen, const char *sub);
 void *ascii_memcasemem (const void *haystack, size_t nhaystack,
                         const void *needle, size_t nneedle);
 

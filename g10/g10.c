@@ -34,6 +34,7 @@
 #endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
+#include "gpg.h"
 #include "packet.h"
 #include "iobuf.h"
 #include "memory.h"
@@ -48,7 +49,6 @@
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
-#include "g10defs.h"
 #include "keyserver-internal.h"
 #include "exec.h"
 
@@ -644,8 +644,15 @@ static void add_policy_url( const char *string, int which );
 RISCOS_GLOBAL_STATICS("GnuPG Heap")
 #endif /* __riscos__ */
 
-const char *
-strusage( int level )
+static int
+pk_test_algo (int algo)
+{
+  return openpgp_pk_test_algo (algo, 0);
+}
+
+
+static const char *
+my_strusage( int level )
 {
   static char *digests, *pubkeys, *ciphers, *zips;
     const char *p;
@@ -676,20 +683,20 @@ strusage( int level )
       case 33: p = _("\nSupported algorithms:\n"); break;
       case 34:
 	if( !pubkeys )
-	    pubkeys = build_list(_("Pubkey: "), 0, pubkey_algo_to_string,
-							check_pubkey_algo );
+	    pubkeys = build_list(_("Pubkey: "), 0, gcry_pk_algo_name,
+                                 pk_test_algo );
 	p = pubkeys;
 	break;
       case 35:
 	if( !ciphers )
-	    ciphers = build_list(_("Cipher: "), 'S', cipher_algo_to_string,
-							check_cipher_algo );
+	    ciphers = build_list(_("Cipher: "), 'S', gcry_cipher_algo_name,
+                                 openpgp_cipher_test_algo );
 	p = ciphers;
 	break;
       case 36:
 	if( !digests )
-	    digests = build_list(_("Hash: "), 'H', digest_algo_to_string,
-							check_digest_algo );
+	    digests = build_list(_("Hash: "), 'H', gcry_md_algo_name,
+					openpgp_md_test_algo );
 	p = digests;
 	break;
       case 37:
@@ -699,7 +706,7 @@ strusage( int level )
 	p = zips;
 	break;
 
-      default:	p = default_strusage(level);
+      default:	p = NULL;
     }
     return p;
 }
@@ -715,12 +722,12 @@ build_list( const char *text, char letter,
     char *list, *p, *line=NULL;
 
     if( maybe_setuid )
-	secmem_init( 0 );    /* drop setuid */
+        gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* drop setuid */
 
     for(i=0; i <= 110; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
 	    n += strlen(s) + 7 + 2;
-    list = m_alloc( 21 + n ); *list = 0;
+    list = xmalloc ( 21 + n ); *list = 0;
     for(p=NULL, i=0; i <= 110; i++ ) {
 	if( !chkf(i) && (s=mapf(i)) ) {
 	    if( !p ) {
@@ -733,7 +740,7 @@ build_list( const char *text, char letter,
 	    if(strlen(line)>60) {
 	      int spaces=strlen(text);
 
-	      list=m_realloc(list,n+spaces+1);
+	      list = xrealloc(list,n+spaces+1);
 	      /* realloc could move the block, so find the end again */
 	      p=list;
 	      while(*p)
@@ -768,7 +775,7 @@ i18n_init(void)
 #else
 #ifdef ENABLE_NLS
     setlocale( LC_ALL, "" );
-    bindtextdomain( PACKAGE, G10_LOCALEDIR );
+    bindtextdomain( PACKAGE, LOCALEDIR );
     textdomain( PACKAGE );
 #endif
 #endif
@@ -784,32 +791,58 @@ wrong_args( const char *text)
 }
 
 
+static void
+log_set_strict (int yesno)
+{
+  /* FIXME-XXX*/
+}
+
 static char *
 make_username( const char *string )
 {
     char *p;
     if( utf8_strings )
-	p = m_strdup(string);
+	p = xstrdup (string);
     else
 	p = native_to_utf8( string );
     return p;
 }
 
 
+/*
+ * same as add_to_strlist() but if is_utf8 is *not* set a conversion
+ * to UTF8 is done  
+ */
+static STRLIST
+add_to_strlist2 ( STRLIST *list, const char *string, int is_utf8)
+{
+  STRLIST sl;
+  
+  if (is_utf8)
+    sl = add_to_strlist( list, string );
+  else 
+    {
+      char *p = native_to_utf8( string );
+      sl = add_to_strlist( list, p );
+      xfree( p );
+    }
+  return sl;
+}
+
+
 static void
 set_debug(void)
 {
-    if( opt.debug & DBG_MEMORY_VALUE )
-	memory_debug_mode = 1;
-    if( opt.debug & DBG_MEMSTAT_VALUE )
-	memory_stat_debug_mode = 1;
-    if( opt.debug & DBG_MPI_VALUE )
-	mpi_debug_mode = 1;
-    if( opt.debug & DBG_CIPHER_VALUE )
-	g10c_debug_mode = 1;
-    if( opt.debug & DBG_IOBUF_VALUE )
-	iobuf_debug_mode = 1;
-
+  if (opt.debug & DBG_MEMORY_VALUE )
+    memory_debug_mode = 1;
+  if (opt.debug & DBG_MEMSTAT_VALUE )
+    memory_stat_debug_mode = 1;
+  if (opt.debug & DBG_MPI_VALUE)
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
+  if (opt.debug & DBG_CIPHER_VALUE )
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
+  if (opt.debug & DBG_IOBUF_VALUE )
+    iobuf_debug_mode = 1;
 }
 
 
@@ -876,7 +909,7 @@ static void add_group(char *string)
         add_to_strlist2 (&values,value,utf8_strings);
     }
 
-  item=m_alloc(sizeof(struct groupitem));
+  item=xmalloc (sizeof(struct groupitem));
   item->name=name;
   item->values=values;
   item->next=opt.grouplist;
@@ -920,7 +953,7 @@ check_permissions(const char *path,int item)
 	tmppath=make_filename(GNUPG_LIBDIR,path,NULL);
     }
   else
-    tmppath=m_strdup(path);
+    tmppath=xstrdup (path);
 
   /* If the item is located in the homedir, but isn't the homedir,
      don't continue if we already checked the homedir itself.  This is
@@ -953,7 +986,7 @@ check_permissions(const char *path,int item)
       goto end;
     }
 
-  m_free(dir);
+  xfree (dir);
 
   /* Assume failure */
   ret=1;
@@ -1076,7 +1109,7 @@ check_permissions(const char *path,int item)
     }
 
  end:
-  m_free(tmppath);
+  xfree (tmppath);
 
   if(homedir)
     homedir_cache=ret;
@@ -1092,7 +1125,7 @@ int
 main( int argc, char **argv )
 {
     ARGPARSE_ARGS pargs;
-    IOBUF a;
+    iobuf_t a;
     int rc=0;
     int orig_argc;
     char **orig_argv;
@@ -1137,17 +1170,31 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
 
     trap_unaligned();
-    secmem_set_flags( secmem_get_flags() | 2 ); /* suspend warnings */
+    set_strusage (my_strusage);
+    gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
+    /* We don't need any locking in libgcrypt unless we use any kind of
+       threading. */
+    gcry_control (GCRYCTL_DISABLE_INTERNAL_LOCKING);
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
      * when adding any stuff between here and the call to
      * secmem_init()  somewhere after the option parsing
      */
-    log_set_name("gpg");
-    secure_random_alloc(); /* put random number into secure memory */
+    log_set_prefix ("gpg", 1);
+    /* check that the libraries are suitable.  Do it here because the
+       option parse may need services of the library */
+    if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
+      {
+        log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
+                   NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
+      }
+
+    gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
+
     may_coredump = disable_core_dumps();
-    init_signals();
-    create_dotlock(NULL); /* register locking cleanup */
+    init_signals (); /* why not gnupg_init_signals. */
+    create_dotlock (NULL); /* register locking cleanup */
     i18n_init();
+
     opt.command_fd = -1; /* no command fd */
     opt.compress = -1; /* defaults to standard compress level */
     /* note: if you change these lines, look at oOpenPGP */
@@ -1238,7 +1285,7 @@ main( int argc, char **argv )
 
 #ifdef HAVE_DOSISH_SYSTEM
     if ( strchr (opt.homedir,'\\') ) {
-        char *d, *buf = m_alloc (strlen (opt.homedir)+1);
+        char *d, *buf = xmalloc (strlen (opt.homedir)+1);
         const char *s = opt.homedir;
         for (d=buf,s=opt.homedir; *s; s++)
             *d++ = *s == '\\'? '/': *s;
@@ -1251,10 +1298,12 @@ main( int argc, char **argv )
 	init_shm_coprocessing(requested_shm_size, 1 );
     }
 #endif
-    /* initialize the secure memory. */
-    secmem_init( 32768 );
+    /* Initialize the secure memory. */
+    gcry_control (GCRYCTL_INIT_SECMEM, 32768, 0);
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
+
+    /* malloc hooks gohere ... */
 
     set_native_charset (NULL); /* Try to auto set the character set */
 
@@ -1265,7 +1314,7 @@ main( int argc, char **argv )
 				   "gpg" EXTSEP_S "conf-" SAFE_VERSION, NULL );
 	if(access(configname,R_OK))
 	  {
-	    m_free(configname);
+	    xfree (configname);
 	    configname = make_filename(opt.homedir,
 				       "gpg" EXTSEP_S "conf", NULL );
 	  }
@@ -1274,11 +1323,11 @@ main( int argc, char **argv )
             char *p = make_filename(opt.homedir, "options", NULL );
             if (!access (p, R_OK))
               log_info (_("NOTE: old default options file `%s' ignored\n"), p);
-            m_free (p);
+            xfree (p);
           }
         else
           { /* Keep on using the old default one. */
-            m_free (configname);
+            xfree (configname);
             configname = make_filename(opt.homedir, "options", NULL );
           }
       }
@@ -1317,7 +1366,7 @@ main( int argc, char **argv )
 				    configname, strerror(errno) );
 		g10_exit(2);
 	    }
-	    m_free(configname); configname = NULL;
+	    xfree (configname); configname = NULL;
 	}
 	if( parse_debug && configname )
 	    log_info(_("reading options from `%s'\n"), configname );
@@ -1437,8 +1486,7 @@ main( int argc, char **argv )
             break;
 #endif /* __riscos__ */
 	  case oLoggerFD:
-            log_set_logfile( NULL,
-                             iobuf_translate_file_handle (pargs.r.ret_int, 1) );
+            log_set_fd (iobuf_translate_file_handle (pargs.r.ret_int, 1));
             break;
 #ifdef __riscos__
 	  case oLoggerFile:
@@ -1454,8 +1502,8 @@ main( int argc, char **argv )
 	  case oOptions:
 	    /* config files may not be nested (silently ignore them) */
 	    if( !configfp ) {
-		m_free(configname);
-		configname = m_strdup(pargs.r.ret_str);
+		xfree (configname);
+		configname = xstrdup (pargs.r.ret_str);
 		goto next_pass;
 	    }
 	    break;
@@ -1465,7 +1513,8 @@ main( int argc, char **argv )
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
-	  case oQuickRandom: quick_random_gen(1); break;
+      /* disabled for now: 
+          case oQuickRandom: quick_random_gen(1); break; */
 	  case oSKComments: opt.sk_comments=1; break;
 	  case oNoSKComments: opt.sk_comments=0; break;
 	  case oEmitVersion: opt.no_version=0; break;
@@ -1480,11 +1529,11 @@ main( int argc, char **argv )
 			opt.def_recipient = make_username(pargs.r.ret_str);
 		    break;
 	  case oDefRecipientSelf:
-		    m_free(opt.def_recipient); opt.def_recipient = NULL;
+		    xfree (opt.def_recipient); opt.def_recipient = NULL;
 		    opt.def_recipient_self = 1;
 		    break;
 	  case oNoDefRecipient:
-		    m_free(opt.def_recipient); opt.def_recipient = NULL;
+		    xfree (opt.def_recipient); opt.def_recipient = NULL;
 		    opt.def_recipient_self = 0;
 		    break;
 	  case oNoOptions: opt.no_homedir_creation = 1; break; /* no-options */
@@ -1621,8 +1670,8 @@ main( int argc, char **argv )
 	  case oDisableMDC: opt.disable_mdc = 1; break;
 	  case oNoDisableMDC: opt.disable_mdc = 0; break;
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
-	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
-	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;
+	  case oS2KDigest: s2k_digest_string = xstrdup (pargs.r.ret_str); break;
+	  case oS2KCipher: s2k_cipher_string = xstrdup (pargs.r.ret_str); break;
           case oSimpleSKChecksum: opt.simple_sk_checksum = 1; break;
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */
@@ -1671,8 +1720,8 @@ main( int argc, char **argv )
             opt.command_fd = iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 0), 0);
             break;
 #endif /* __riscos__ */
-	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
-	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
+	  case oCipherAlgo: def_cipher_string = xstrdup (pargs.r.ret_str); break;
+	  case oDigestAlgo: def_digest_string = xstrdup (pargs.r.ret_str); break;
 	  case oCompressAlgo:
 	    /* If it is all digits, stick a Z in front of it for
 	       later.  This is for backwards compatibility with
@@ -1689,16 +1738,19 @@ main( int argc, char **argv )
 
 	      if(*pt=='\0')
 		{
-		  def_compress_string=m_alloc(strlen(pargs.r.ret_str)+2);
+		  def_compress_string=xmalloc (strlen(pargs.r.ret_str)+2);
 		  strcpy(def_compress_string,"Z");
 		  strcat(def_compress_string,pargs.r.ret_str);
 		}
 	      else
-		def_compress_string = m_strdup(pargs.r.ret_str);
+		def_compress_string = xstrdup (pargs.r.ret_str);
 	    }
 	    break;
-	  case oCertDigestAlgo: cert_digest_string = m_strdup(pargs.r.ret_str); break;
-	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
+	  case oCertDigestAlgo: cert_digest_string = xstrdup (pargs.r.ret_str); break;
+	  case oNoSecmemWarn:
+#warning add secmem_get_flags
+/*              secmem_set_flags( secmem_get_flags() | 1 ); */
+            break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
 	  case oNoMDCWarn: opt.no_mdc_warn=1; break;
           case oCharset:
@@ -1719,7 +1771,7 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
             break;
 	  case oKeyServer:
-	    opt.keyserver_uri=m_strdup(pargs.r.ret_str);
+	    opt.keyserver_uri=xstrdup (pargs.r.ret_str);
 	    if(parse_keyserver_uri(pargs.r.ret_str,configname,configlineno))
 	      log_error(_("could not parse keyserver URI\n"));
 	    break;
@@ -1813,11 +1865,19 @@ main( int argc, char **argv )
 	  case oUtf8Strings: utf8_strings = 1; break;
 	  case oNoUtf8Strings: utf8_strings = 0; break;
 	  case oDisableCipherAlgo:
-		disable_cipher_algo( string_to_cipher_algo(pargs.r.ret_str) );
-		break;
+            {
+              int algo = gcry_cipher_map_name (pargs.r.ret_str);
+              gcry_cipher_ctl (NULL, GCRYCTL_DISABLE_ALGO,
+                               &algo, sizeof algo);
+            }
+            break;
 	  case oDisablePubkeyAlgo:
-		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
-		break;
+            {
+              int algo = gcry_pk_map_name (pargs.r.ret_str);
+              gcry_pk_ctl (GCRYCTL_DISABLE_ALGO,
+                           &algo, sizeof algo );
+            }
+            break;
           case oNoSigCache: opt.no_sig_cache = 1; break;
           case oNoSigCreateCheck: opt.no_sig_create_check = 1; break;
 	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
@@ -1900,10 +1960,10 @@ main( int argc, char **argv )
     if( configfp ) {
 	fclose( configfp );
 	configfp = NULL;
-	m_free(configname); configname = NULL;
+	xfree (configname); configname = NULL;
 	goto next_pass;
     }
-    m_free( configname ); configname = NULL;
+    xfree ( configname ); configname = NULL;
     if( log_get_errorcount(0) )
 	g10_exit(2);
     if( nogreeting )
@@ -1952,8 +2012,10 @@ main( int argc, char **argv )
     if( opt.batch )
 	tty_batchmode( 1 );
 
+#warning fix that
+#if 0
     secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
-
+#endif
     set_debug();
 
     /* Do these after the switch(), so they can override settings. */
@@ -1986,7 +2048,7 @@ main( int argc, char **argv )
 	       preference, but those have their own error
 	       messages). */
 
-	    if(check_cipher_algo(CIPHER_ALGO_IDEA))
+	    if(openpgp_cipher_test_algo (CIPHER_ALGO_IDEA))
 	      {
 		log_info(_("encrypting a message in --pgp2 mode requires "
 			   "the IDEA cipher\n"));
@@ -1998,8 +2060,8 @@ main( int argc, char **argv )
 		/* This only sets IDEA for symmetric encryption
 		   since it is set via select_algo_from_prefs for
 		   pk encryption. */
-		m_free(def_cipher_string);
-		def_cipher_string = m_strdup("idea");
+		xfree (def_cipher_string);
+		def_cipher_string = xstrdup ("idea");
 	      }
 
 	    /* PGP2 can't handle the output from the textmode
@@ -2024,8 +2086,8 @@ main( int argc, char **argv )
 	    opt.pgp2_workarounds = 1;
 	    opt.ask_sig_expire = 0;
 	    opt.ask_cert_expire = 0;
-	    m_free(def_digest_string);
-	    def_digest_string = m_strdup("md5");
+	    xfree (def_digest_string);
+	    def_digest_string = xstrdup ("md5");
 	    opt.def_compress_algo = 1;
 	  }
       }
@@ -2053,43 +2115,43 @@ main( int argc, char **argv )
     /* must do this after dropping setuid, because string_to...
      * may try to load an module */
     if( def_cipher_string ) {
-	opt.def_cipher_algo = string_to_cipher_algo(def_cipher_string);
+	opt.def_cipher_algo = gcry_cipher_map_name (def_cipher_string);
 	if(opt.def_cipher_algo==0 &&
 	   (ascii_strcasecmp(def_cipher_string,"idea")==0
 	    || ascii_strcasecmp(def_cipher_string,"s1")==0))
 	  idea_cipher_warn(1);
-	m_free(def_cipher_string); def_cipher_string = NULL;
-	if( check_cipher_algo(opt.def_cipher_algo) )
+	xfree (def_cipher_string); def_cipher_string = NULL;
+	if( openpgp_cipher_test_algo (opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( def_digest_string ) {
-	opt.def_digest_algo = string_to_digest_algo(def_digest_string);
-	m_free(def_digest_string); def_digest_string = NULL;
-	if( check_digest_algo(opt.def_digest_algo) )
+	opt.def_digest_algo = gcry_md_map_name (def_digest_string);
+	xfree (def_digest_string); def_digest_string = NULL;
+	if( openpgp_md_test_algo (opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
     if( def_compress_string ) {
 	opt.def_compress_algo = string_to_compress_algo(def_compress_string);
-	m_free(def_compress_string); def_compress_string = NULL;
+	xfree (def_compress_string); def_compress_string = NULL;
 	if( check_compress_algo(opt.def_compress_algo) )
 	    log_error(_("selected compression algorithm is invalid\n"));
     }
     if( cert_digest_string ) {
-	opt.cert_digest_algo = string_to_digest_algo(cert_digest_string);
-	m_free(cert_digest_string); cert_digest_string = NULL;
-	if( check_digest_algo(opt.cert_digest_algo) )
+	opt.cert_digest_algo = gcry_md_map_name (cert_digest_string);
+	xfree (cert_digest_string); cert_digest_string = NULL;
+	if( openpgp_md_test_algo(opt.cert_digest_algo) )
 	    log_error(_("selected certification digest algorithm is invalid\n"));
     }
     if( s2k_cipher_string ) {
-	opt.s2k_cipher_algo = string_to_cipher_algo(s2k_cipher_string);
-	m_free(s2k_cipher_string); s2k_cipher_string = NULL;
-	if( check_cipher_algo(opt.s2k_cipher_algo) )
+	opt.s2k_cipher_algo = gcry_cipher_map_name (s2k_cipher_string);
+	xfree (s2k_cipher_string); s2k_cipher_string = NULL;
+	if( openpgp_cipher_test_algo (opt.s2k_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( s2k_digest_string ) {
-	opt.s2k_digest_algo = string_to_digest_algo(s2k_digest_string);
-	m_free(s2k_digest_string); s2k_digest_string = NULL;
-	if( check_digest_algo(opt.s2k_digest_algo) )
+	opt.s2k_digest_algo = gcry_md_map_name (s2k_digest_string);
+	xfree (s2k_digest_string); s2k_digest_string = NULL;
+	if( openpgp_md_test_algo (opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
     if( opt.completes_needed < 1 )
@@ -2143,32 +2205,32 @@ main( int argc, char **argv )
 	const char *badalg=NULL;
 	preftype_t badtype=PREFTYPE_NONE;
 
-	if(opt.def_cipher_algo
-	   && !algo_available(PREFTYPE_SYM,opt.def_cipher_algo,NULL))
+	if (opt.def_cipher_algo
+            && !algo_available (PREFTYPE_SYM,opt.def_cipher_algo,NULL))
 	  {
-	    badalg=cipher_algo_to_string(opt.def_cipher_algo);
-	    badtype=PREFTYPE_SYM;
+	    badalg = gcry_cipher_algo_name (opt.def_cipher_algo);
+	    badtype = PREFTYPE_SYM;
 	  }
-	else if(opt.def_digest_algo
-		&& !algo_available(PREFTYPE_HASH,opt.def_digest_algo,NULL))
+	else if (opt.def_digest_algo
+		&& !algo_available (PREFTYPE_HASH,opt.def_digest_algo,NULL))
 	  {
-	    badalg=digest_algo_to_string(opt.def_digest_algo);
-	    badtype=PREFTYPE_HASH;
+	    badalg = gcry_md_algo_name (opt.def_digest_algo);
+	    badtype = PREFTYPE_HASH;
 	  }
-	else if(opt.cert_digest_algo
-		&& !algo_available(PREFTYPE_HASH,opt.cert_digest_algo,NULL))
+	else if (opt.cert_digest_algo
+		 && !algo_available (PREFTYPE_HASH,opt.cert_digest_algo,NULL))
 	  {
-	    badalg=digest_algo_to_string(opt.cert_digest_algo);
-	    badtype=PREFTYPE_HASH;
+	    badalg = gcry_md_algo_name (opt.cert_digest_algo);
+	    badtype = PREFTYPE_HASH;
 	  }
-	else if(opt.def_compress_algo!=-1
-		&& !algo_available(PREFTYPE_ZIP,opt.def_compress_algo,NULL))
+	else if (opt.def_compress_algo!=-1
+                 && !algo_available (PREFTYPE_ZIP,opt.def_compress_algo,NULL))
 	  {
-	    badalg=compress_algo_to_string(opt.def_compress_algo);
-	    badtype=PREFTYPE_ZIP;
+	    badalg = compress_algo_to_string (opt.def_compress_algo);
+	    badtype = PREFTYPE_ZIP;
 	  }
 
-	if(badalg)
+	if (badalg)
 	  {
 	    switch(badtype)
 	      {
@@ -2198,8 +2260,11 @@ main( int argc, char **argv )
     /* set the random seed file */
     if( use_random_seed ) {
 	char *p = make_filename(opt.homedir, "random_seed", NULL );
+#warning No random seed file yet
+#if 0
 	set_random_seed_file(p);
-	m_free(p);
+#endif
+	xfree (p);
     }
 
     if( !cmd && opt.fingerprint && !with_fpr ) {
@@ -2276,7 +2341,7 @@ main( int argc, char **argv )
       default: rc = setup_trustdb(1, trustdb_name ); break;
     }
     if( rc )
-	log_error(_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));
+	log_error(_("failed to initialize the TrustDB: %s\n"), gpg_strerror (rc));
 
 
     switch (cmd) {
@@ -2298,22 +2363,23 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("--store [filename]"));
 	if( (rc = encode_store(fname)) )
-	    log_error_f( print_fname_stdin(fname),
-			"store failed: %s\n", g10_errstr(rc) );
+	    log_error ("\b%s: store failed: %s\n",
+                       print_fname_stdin(fname), gpg_strerror (rc) );
 	break;
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
 	    wrong_args(_("--symmetric [filename]"));
 	if( (rc = encode_symmetric(fname)) )
-	    log_error_f(print_fname_stdin(fname),
-			"symmetric encryption failed: %s\n",g10_errstr(rc) );
+	    log_error ("\b%s: symmetric encryption failed: %s\n",
+                       print_fname_stdin(fname), gpg_strerror (rc) );
 	break;
 
       case aEncr: /* encrypt the given file */
 	if( argc > 1 )
 	    wrong_args(_("--encrypt [filename]"));
 	if( (rc = encode_crypt(fname,remusr)) )
-	    log_error("%s: encryption failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	    log_error("%s: encryption failed: %s\n",
+                      print_fname_stdin(fname), gpg_strerror (rc) );
 	break;
 
       case aEncrFiles: /* encrypt the given files */
@@ -2330,12 +2396,12 @@ main( int argc, char **argv )
 	    if( argc > 1 )
 		wrong_args(_("--sign [filename]"));
 	    if( argc ) {
-		sl = m_alloc_clear( sizeof *sl + strlen(fname));
+		sl = xcalloc (1, sizeof *sl + strlen(fname));
 		strcpy(sl->d, fname);
 	    }
 	}
 	if( (rc = sign_file( sl, detached_sig, locusr, 0, NULL, NULL)) )
-	    log_error("signing failed: %s\n", g10_errstr(rc) );
+	    log_error("signing failed: %s\n", gpg_strerror (rc) );
 	free_strlist(sl);
 	break;
 
@@ -2343,13 +2409,13 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("--sign --encrypt [filename]"));
 	if( argc ) {
-	    sl = m_alloc_clear( sizeof *sl + strlen(fname));
+	    sl = xcalloc (1, sizeof *sl + strlen(fname));
 	    strcpy(sl->d, fname);
 	}
 	else
 	    sl = NULL;
 	if( (rc = sign_file(sl, detached_sig, locusr, 1, remusr, NULL)) )
-	    log_error("%s: sign+encrypt failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	    log_error("%s: sign+encrypt failed: %s\n", print_fname_stdin(fname), gpg_strerror (rc) );
 	free_strlist(sl);
 	break;
 
@@ -2359,7 +2425,7 @@ main( int argc, char **argv )
 	rc = sign_symencrypt_file (fname, locusr);
         if (rc)
 	    log_error("%s: sign+symmetric failed: %s\n",
-                      print_fname_stdin(fname), g10_errstr(rc) );
+                      print_fname_stdin(fname), gpg_strerror (rc) );
 	break;
 
       case aClearsign: /* make a clearsig */
@@ -2367,24 +2433,24 @@ main( int argc, char **argv )
 	    wrong_args(_("--clearsign [filename]"));
 	if( (rc = clearsign_file(fname, locusr, NULL)) )
 	    log_error("%s: clearsign failed: %s\n",
-                      print_fname_stdin(fname), g10_errstr(rc) );
+                      print_fname_stdin(fname), gpg_strerror (rc) );
 	break;
 
       case aVerify:
 	if( (rc = verify_signatures( argc, argv ) ))
-	    log_error("verify signatures failed: %s\n", g10_errstr(rc) );
+	    log_error("verify signatures failed: %s\n", gpg_strerror (rc) );
 	break;
 
       case aVerifyFiles:
 	if( (rc = verify_files( argc, argv ) ))
-	    log_error("verify files failed: %s\n", g10_errstr(rc) );
+	    log_error("verify files failed: %s\n", gpg_strerror (rc) );
 	break;
 
       case aDecrypt:
 	if( argc > 1 )
 	    wrong_args(_("--decrypt [filename]"));
 	if( (rc = decrypt_message( fname ) ))
-	    log_error("decrypt_message failed: %s\n", g10_errstr(rc) );
+	    log_error("decrypt_message failed: %s\n", gpg_strerror (rc) );
 	break;
 
       case aDecryptFiles:
@@ -2396,7 +2462,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--sign-key user-id"));
 	username = make_username( fname );
 	keyedit_menu(fname, locusr, NULL, 1 );
-	m_free(username);
+	xfree (username);
 	break;
 
       case aLSignKey:
@@ -2404,7 +2470,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--lsign-key user-id"));
 	username = make_username( fname );
 	keyedit_menu(fname, locusr, NULL, 2 );
-	m_free(username);
+	xfree (username);
 	break;
 
       case aNRSignKey:
@@ -2412,7 +2478,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--nrsign-key user-id"));
 	username = make_username( fname );
 	keyedit_menu(fname, locusr, NULL, 3 );
-        m_free(username);
+        xfree (username);
         break;
 
       case aNRLSignKey:
@@ -2420,7 +2486,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--nrlsign-key user-id"));
 	username = make_username( fname );
 	keyedit_menu(fname, locusr, NULL, 4 );
-        m_free(username);
+        xfree (username);
         break;
 
       case aEditKey: /* Edit a key signature */
@@ -2436,7 +2502,7 @@ main( int argc, char **argv )
 	}
 	else
 	    keyedit_menu(username, locusr, NULL, 0 );
-	m_free(username);
+	xfree (username);
 	break;
 
       case aDeleteKeys:
@@ -2534,11 +2600,11 @@ main( int argc, char **argv )
 	if(rc)
 	  {
 	    if(cmd==aSendKeys)
-	      log_error(_("keyserver send failed: %s\n"),g10_errstr(rc));
+	      log_error(_("keyserver send failed: %s\n"),gpg_strerror (rc));
 	    else if(cmd==aRecvKeys)
-	      log_error(_("keyserver receive failed: %s\n"),g10_errstr(rc));
+	      log_error(_("keyserver receive failed: %s\n"),gpg_strerror (rc));
 	    else
-	      log_error(_("key export failed: %s\n"),g10_errstr(rc));
+	      log_error(_("key export failed: %s\n"),gpg_strerror (rc));
 	  }
 	free_strlist(sl);
 	break;
@@ -2546,11 +2612,20 @@ main( int argc, char **argv )
      case aSearchKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
-	  append_to_strlist2( &sl, *argv, utf8_strings );
+          {
+            if (utf8_strings)
+              sl = append_to_strlist ( &sl, *argv );
+            else
+              {
+                char *p = native_to_utf8 ( *argv );
+                sl = append_to_strlist( &sl, p );
+                xfree( p );
+              }
+          }
 
 	rc=keyserver_search( sl );
 	if(rc)
-	  log_error(_("keyserver search failed: %s\n"),g10_errstr(rc));
+	  log_error(_("keyserver search failed: %s\n"),gpg_strerror (rc));
 	free_strlist(sl);
 	break;
 
@@ -2560,7 +2635,7 @@ main( int argc, char **argv )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
 	rc=keyserver_refresh(sl);
 	if(rc)
-	  log_error(_("keyserver refresh failed: %s\n"),g10_errstr(rc));
+	  log_error(_("keyserver refresh failed: %s\n"),gpg_strerror (rc));
 	free_strlist(sl);
 	break;
 
@@ -2585,7 +2660,7 @@ main( int argc, char **argv )
 	    wrong_args("--gen-revoke user-id");
 	username =  make_username(*argv);
 	gen_revoke( username );
-	m_free( username );
+	xfree ( username );
 	break;
 
       case aDesigRevoke:
@@ -2593,7 +2668,7 @@ main( int argc, char **argv )
 	    wrong_args("--desig-revoke user-id");
 	username =  make_username(*argv);
 	gen_desig_revoke( username );
-	m_free( username );
+	xfree ( username );
 	break;
 
       case aDeArmor:
@@ -2601,7 +2676,7 @@ main( int argc, char **argv )
 	    wrong_args("--dearmor [file]");
 	rc = dearmor_file( argc? *argv: NULL );
 	if( rc )
-	    log_error(_("dearmoring failed: %s\n"), g10_errstr(rc));
+	    log_error(_("dearmoring failed: %s\n"), gpg_strerror (rc));
 	break;
 
       case aEnArmor:
@@ -2609,11 +2684,12 @@ main( int argc, char **argv )
 	    wrong_args("--enarmor [file]");
 	rc = enarmor_file( argc? *argv: NULL );
 	if( rc )
-	    log_error(_("enarmoring failed: %s\n"), g10_errstr(rc));
+	    log_error(_("enarmoring failed: %s\n"), gpg_strerror (rc));
 	break;
 
 
       case aPrimegen:
+#if 0 /*FIXME-XXX*/
 	{   int mode = argc < 2 ? 0 : atoi(*argv);
 
 	    if( mode == 1 && argc == 2 ) {
@@ -2625,7 +2701,7 @@ main( int argc, char **argv )
 					     atoi(argv[2]), NULL,NULL ), 1);
 	    }
 	    else if( mode == 3 && argc == 3 ) {
-		MPI *factors;
+		gcry_mpi_t *factors;
 		mpi_print( stdout, generate_elg_prime(
 					     1, atoi(argv[1]),
 					     atoi(argv[2]), NULL,&factors ), 1);
@@ -2633,7 +2709,7 @@ main( int argc, char **argv )
 		mpi_print( stdout, factors[0], 1 ); /* print q */
 	    }
 	    else if( mode == 4 && argc == 3 ) {
-		MPI g = mpi_alloc(1);
+		gcry_mpi_t g = mpi_alloc(1);
 		mpi_print( stdout, generate_elg_prime(
 						 0, atoi(argv[1]),
 						 atoi(argv[2]), g, NULL ), 1);
@@ -2645,6 +2721,7 @@ main( int argc, char **argv )
 		wrong_args("--gen-prime mode bits [qbits] ");
 	    putchar('\n');
 	}
+#endif
 	break;
 
       case aGenRandom:
@@ -2664,14 +2741,14 @@ main( int argc, char **argv )
                    other tools */
 		size_t n = !endless && count < 99? count : 99;
 
-		p = get_random_bits( n*8, level, 0);
+		p = gcry_random_bytes (n, level);
 #ifdef HAVE_DOSISH_SYSTEM
 		setmode ( fileno(stdout), O_BINARY );
 #endif
                 if (opt.armor) {
                     char *tmp = make_radix64_string (p, n);
                     fputs (tmp, stdout);
-                    m_free (tmp);
+                    xfree (tmp);
                     if (n%3 == 1)
                       putchar ('=');
                     if (n%3)
@@ -2679,7 +2756,7 @@ main( int argc, char **argv )
                 } else {
                     fwrite( p, n, 1, stdout );
                 }
-		m_free(p);
+		xfree (p);
 		if( !endless )
 		    count -= n;
 	    }
@@ -2693,7 +2770,7 @@ main( int argc, char **argv )
 	    wrong_args("--print-md algo [files]");
 	{
 	    int all_algos = (**argv=='*' && !(*argv)[1]);
-	    int algo = all_algos? 0 : string_to_digest_algo(*argv);
+	    int algo = all_algos? 0 : gcry_md_map_name (*argv);
 
 	    if( !algo && !all_algos )
 		log_error(_("invalid hash algorithm `%s'\n"), *argv );
@@ -2750,7 +2827,7 @@ main( int argc, char **argv )
 	for( ; argc; argc--, argv++ ) {
 	    username = make_username( *argv );
 	    list_trust_path( username );
-	    m_free(username);
+	    xfree (username);
 	}
 	break;
 
@@ -2804,7 +2881,7 @@ main( int argc, char **argv )
 	    }
 	    rc = proc_packets(NULL, a );
 	    if( rc )
-		log_error("processing message failed: %s\n", g10_errstr(rc) );
+		log_error("processing message failed: %s\n", gpg_strerror (rc) );
 	    iobuf_close(a);
 	}
 	break;
@@ -2821,14 +2898,14 @@ main( int argc, char **argv )
 void
 g10_exit( int rc )
 {
-    update_random_seed_file();
-    if( opt.debug & DBG_MEMSTAT_VALUE ) {
-	m_print_stats("on exit");
-	random_dump_stats();
-    }
-    if( opt.debug )
-	secmem_dump_stats();
-    secmem_term();
+  /* FIXME-XX update_random_seed_file(); */
+/*      if( opt.debug & DBG_MEMSTAT_VALUE ) { */
+/*          m_print_stats("on exit"); */
+/*  	random_dump_stats(); */
+/*      } */
+/*      if( opt.debug ) */
+/*  	secmem_dump_stats(); */
+    gcry_control (GCRYCTL_TERM_SECMEM );
     rc = rc? rc : log_get_errorcount(0)? 2 :
 			g10_errors_seen? 1 : 0;
     exit(rc );
@@ -2858,14 +2935,14 @@ print_hex( MD_HANDLE md, int algo, const char *fname )
   else if(algo==DIGEST_ALGO_TIGER)
     indent+=printf(" TIGER = ");
   else if(algo>0)
-    indent+=printf("%6s = ",digest_algo_to_string(algo));
+    indent+=printf("%6s = ", gcry_md_algo_name (algo));
   else
     algo=abs(algo);
 
   count=indent;
 
-  p = md_read( md, algo );
-  n = md_digest_length(algo);
+  p = gcry_md_read (md, algo);
+  n = gcry_md_get_algo_dlen (algo);
 
   count+=printf("%02X",*p++);
 
@@ -2936,8 +3013,8 @@ print_hashline( MD_HANDLE md, int algo, const char *fname )
     }
     putchar(':');
     printf("%d:", algo );
-    p = md_read( md, algo );
-    n = md_digest_length(algo);
+    p = gcry_md_read (md, algo );
+    n = gcry_md_get_algo_dlen (algo);
     for(i=0; i < n ; i++, p++ ) 
         printf("%02X", *p );
     putchar(':');
@@ -2966,47 +3043,47 @@ print_mds( const char *fname, int algo )
 	return;
     }
 
-    md = md_open( 0, 0 );
+    gcry_md_open (&md, 0, 0 );
     if( algo )
-	md_enable( md, algo );
+	gcry_md_enable ( md, algo );
     else {
-	md_enable( md, DIGEST_ALGO_MD5 );
-	md_enable( md, DIGEST_ALGO_SHA1 );
-	md_enable( md, DIGEST_ALGO_RMD160 );
+	gcry_md_enable (md, GCRY_MD_MD5 );
+	gcry_md_enable (md, GCRY_MD_SHA1 );
+	gcry_md_enable (md, GCRY_MD_RMD160 );
 #ifdef USE_TIGER192
-	md_enable( md, DIGEST_ALGO_TIGER );
+	gcry_md_enable (md, GCRY_MD_TIGER );
 #endif
 #ifdef USE_SHA256
-	md_enable( md, DIGEST_ALGO_SHA256 );
+	gcry_md_enable (md, GCRY_MD_SHA256 );
 #endif
 #ifdef USE_SHA512
-	md_enable( md, DIGEST_ALGO_SHA384 );
-	md_enable( md, DIGEST_ALGO_SHA512 );
+	gcry_md_enable (md, GCRY_MD_SHA384 );
+	gcry_md_enable (md, GCRY_MD_SHA512 );
 #endif
     }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
-	md_write( md, buf, n );
+	gcry_md_write (md, buf, n);
     if( ferror(fp) )
 	log_error("%s: %s\n", fname?fname:"[stdin]", strerror(errno) );
     else {
-	md_final(md);
+	gcry_md_final (md);
         if ( opt.with_colons ) {
             if ( algo ) 
                 print_hashline( md, algo, fname );
             else {
-                print_hashline( md, DIGEST_ALGO_MD5, fname );
-                print_hashline( md, DIGEST_ALGO_SHA1, fname );
-                print_hashline( md, DIGEST_ALGO_RMD160, fname );
+                print_hashline( md, GCRY_MD_MD5, fname );
+                print_hashline( md, GCRY_MD_SHA1, fname );
+                print_hashline( md, GCRY_MD_RMD160, fname );
 #ifdef USE_TIGER192
-		print_hashline( md, DIGEST_ALGO_TIGER, fname );
+		print_hashline( md, GCRY_MD_TIGER, fname );
 #endif
 #ifdef USE_SHA256
-                print_hashline( md, DIGEST_ALGO_SHA256, fname );
+                print_hashline( md, GCRY_MD_SHA256, fname );
 #endif
 #ifdef USE_SHA512
-		print_hashline( md, DIGEST_ALGO_SHA384, fname );
-		print_hashline( md, DIGEST_ALGO_SHA512, fname );
+		print_hashline( md, GCRY_MD_SHA384, fname );
+		print_hashline( md, GCRY_MD_SHA512, fname );
 #endif
             }
         }
@@ -3014,23 +3091,23 @@ print_mds( const char *fname, int algo )
             if( algo )
 	       print_hex(md,-algo,fname);
             else {
-                print_hex( md, DIGEST_ALGO_MD5, fname );
-                print_hex( md, DIGEST_ALGO_SHA1, fname );
-                print_hex( md, DIGEST_ALGO_RMD160, fname );
+                print_hex( md, GCRY_MD_MD5, fname );
+                print_hex( md, GCRY_MD_SHA1, fname );
+                print_hex( md, GCRY_MD_RMD160, fname );
 #ifdef USE_TIGER192
-		print_hex( md, DIGEST_ALGO_TIGER, fname );
+		print_hex( md, GCRY_MD_TIGER, fname );
 #endif
 #ifdef USE_SHA256
-                print_hex( md, DIGEST_ALGO_SHA256, fname );
+                print_hex( md, GCRY_MD_SHA256, fname );
 #endif
 #ifdef USE_SHA512
-		print_hex( md, DIGEST_ALGO_SHA384, fname );
-		print_hex( md, DIGEST_ALGO_SHA512, fname );
+		print_hex( md, GCRY_MD_SHA384, fname );
+		print_hex( md, GCRY_MD_SHA512, fname );
 #endif
             }
         }
     }
-    md_close(md);
+    gcry_md_close (md);
 
     if( fp != stdin )
 	fclose(fp);

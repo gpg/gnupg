@@ -21,6 +21,7 @@
 #include <config.h>
 #include <stdio.h>
 
+#include "gpg.h"
 #include "iobuf.h"
 #include "filter.h"
 #include "status.h"
@@ -32,7 +33,7 @@
  */
 int
 progress_filter (void *opaque, int control,
-		 IOBUF a, byte *buf, size_t *ret_len)
+		 iobuf_t a, byte *buf, size_t *ret_len)
 {
   int rc = 0;
   progress_filter_context_t *pfx = opaque;
@@ -86,7 +87,7 @@ progress_filter (void *opaque, int control,
       /* Note, that we must always dealloc resources of a filter
          within the filter handler and not anywhere else.  (We set it
          to NULL and check all uses just in case.) */
-      m_free (pfx->what);
+      xfree (pfx->what);
       pfx->what = NULL;
     }
   else if (control == IOBUFCTRL_DESC)
@@ -95,7 +96,7 @@ progress_filter (void *opaque, int control,
 }
 
 void
-handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
+handle_progress (progress_filter_context_t *pfx, iobuf_t inp, const char *name)
 {
   off_t filesize = 0;
 
@@ -111,7 +112,7 @@ handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
     filesize = opt.set_filesize;
 
   /* register the progress filter */
-  pfx->what = m_strdup (name ? name : "stdin");
+  pfx->what = xstrdup (name ? name : "stdin");
   pfx->total = filesize;
   iobuf_push_filter (inp, progress_filter, pfx);
 }

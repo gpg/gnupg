@@ -35,7 +35,7 @@
 #include "i18n.h"
 
 static int do_export( STRLIST users, int secret, unsigned int options );
-static int do_export_stream( IOBUF out, STRLIST users, int secret,
+static int do_export_stream( iobuf_t out, STRLIST users, int secret,
 			     KBNODE *keyblock_out, unsigned int options,
 			     int *any );
 
@@ -71,7 +71,7 @@ export_pubkeys( STRLIST users, unsigned int options )
  * been exported
  */
 int
-export_pubkeys_stream( IOBUF out, STRLIST users,
+export_pubkeys_stream( iobuf_t out, STRLIST users,
 		       KBNODE *keyblock_out, unsigned int options )
 {
     int any, rc;
@@ -97,7 +97,7 @@ export_secsubkeys( STRLIST users )
 static int
 do_export( STRLIST users, int secret, unsigned int options )
 {
-    IOBUF out = NULL;
+    iobuf_t out = NULL;
     int any, rc;
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
@@ -129,7 +129,7 @@ do_export( STRLIST users, int secret, unsigned int options )
    contains a pointer to the first keyblock found and exported.  No
    other keyblocks are exported.  The caller must free it. */
 static int
-do_export_stream( IOBUF out, STRLIST users, int secret,
+do_export_stream( iobuf_t out, STRLIST users, int secret,
 		  KBNODE *keyblock_out, unsigned int options, int *any )
 {
     int rc = 0;
@@ -147,20 +147,20 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
     if (!users) {
         ndesc = 1;
-        desc = m_alloc_clear ( ndesc * sizeof *desc);
+        desc = xcalloc (1, ndesc * sizeof *desc);
         desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
     }
     else {
         for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
             ;
-        desc = m_alloc ( ndesc * sizeof *desc);
+        desc = xmalloc ( ndesc * sizeof *desc);
         
         for (ndesc=0, sl=users; sl; sl = sl->next) {
 	    if (classify_user_id (sl->d, desc+ndesc))
                 ndesc++;
             else
                 log_error (_("key `%s' not found: %s\n"),
-                           sl->d, g10_errstr (G10ERR_INV_USER_ID));
+                           sl->d, gpg_strerror (GPG_ERR_INV_USER_ID));
         }
 
         /* it would be nice to see which of the given users did
@@ -181,7 +181,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
         /* read the keyblock */
         rc = keydb_get_keyblock (kdbhd, &keyblock );
 	if( rc ) {
-            log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+            log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
 	    goto leave;
 	}
 
@@ -370,8 +370,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
 	    if( rc ) {
 		log_error("build_packet(%d) failed: %s\n",
-			    node->pkt->pkttype, g10_errstr(rc) );
-		rc = G10ERR_WRITE_FILE;
+			    node->pkt->pkttype, gpg_strerror (rc) );
 		goto leave;
 	    }
 	}
@@ -386,7 +385,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	rc = 0;
 
   leave:
-    m_free(desc);
+    xfree (desc);
     keydb_release (kdbhd);
     if(rc || keyblock_out==NULL)
       release_kbnode( keyblock );

@@ -36,7 +36,7 @@
 void
 free_symkey_enc( PKT_symkey_enc *enc )
 {
-    m_free(enc);
+    xfree (enc);
 }
 
 void
@@ -45,10 +45,10 @@ free_pubkey_enc( PKT_pubkey_enc *enc )
     int n, i;
     n = pubkey_get_nenc( enc->pubkey_algo );
     if( !n )
-	mpi_free(enc->data[0]);
+	mpi_release (enc->data[0]);
     for(i=0; i < n; i++ )
-	mpi_free( enc->data[i] );
-    m_free(enc);
+	mpi_release ( enc->data[i] );
+    xfree (enc);
 }
 
 void
@@ -58,14 +58,14 @@ free_seckey_enc( PKT_signature *sig )
 
   n = pubkey_get_nsig( sig->pubkey_algo );
   if( !n )
-    mpi_free(sig->data[0]);
+    mpi_release (sig->data[0]);
   for(i=0; i < n; i++ )
-    mpi_free( sig->data[i] );
+    mpi_release ( sig->data[i] );
   
-  m_free(sig->revkey);
-  m_free(sig->hashed);
-  m_free(sig->unhashed);
-  m_free(sig);
+  xfree (sig->revkey);
+  xfree (sig->hashed);
+  xfree (sig->unhashed);
+  xfree (sig);
 }
 
 
@@ -75,13 +75,13 @@ release_public_key_parts( PKT_public_key *pk )
     int n, i;
     n = pubkey_get_npkey( pk->pubkey_algo );
     if( !n )
-	mpi_free(pk->pkey[0]);
+	mpi_release (pk->pkey[0]);
     for(i=0; i < n; i++ ) {
-	mpi_free( pk->pkey[i] );
+	mpi_release ( pk->pkey[i] );
 	pk->pkey[i] = NULL;
     }
     if (pk->prefs) {
-        m_free (pk->prefs);
+        xfree (pk->prefs);
         pk->prefs = NULL;
     }
     if (pk->user_id) {
@@ -89,7 +89,7 @@ release_public_key_parts( PKT_public_key *pk )
         pk->user_id = NULL;
     }
     if (pk->revkey) {
-        m_free(pk->revkey);
+        xfree (pk->revkey);
 	pk->revkey=NULL;
 	pk->numrevkeys=0;
     }
@@ -100,7 +100,7 @@ void
 free_public_key( PKT_public_key *pk )
 {
     release_public_key_parts( pk );
-    m_free(pk);
+    xfree (pk);
 }
 
 
@@ -111,7 +111,7 @@ cp_subpktarea (subpktarea_t *s )
 
     if( !s )
 	return NULL;
-    d = m_alloc (sizeof (*d) + s->size - 1 );
+    d = xmalloc (sizeof (*d) + s->size - 1 );
     d->size = s->size;
     d->len = s->len;
     memcpy (d->data, s->data, s->len);
@@ -132,7 +132,7 @@ copy_prefs (const prefitem_t *prefs)
     
     for (n=0; prefs[n].type; n++)
         ;
-    new = m_alloc ( sizeof (*new) * (n+1));
+    new = xmalloc ( sizeof (*new) * (n+1));
     for (n=0; prefs[n].type; n++) {
         new[n].type = prefs[n].type;
         new[n].value = prefs[n].value;
@@ -150,7 +150,7 @@ copy_public_key ( PKT_public_key *d, PKT_public_key *s)
     int n, i;
 
     if( !d )
-	d = m_alloc(sizeof *d);
+	d = xmalloc (sizeof *d);
     memcpy( d, s, sizeof *d );
     d->user_id = scopy_user_id (s->user_id);
     d->prefs = copy_prefs (s->prefs);
@@ -164,7 +164,7 @@ copy_public_key ( PKT_public_key *d, PKT_public_key *s)
     if( !s->revkey && s->numrevkeys )
         BUG();
     if( s->numrevkeys ) {
-        d->revkey = m_alloc(sizeof(struct revocation_key)*s->numrevkeys);
+        d->revkey = xmalloc (sizeof(struct revocation_key)*s->numrevkeys);
         memcpy(d->revkey,s->revkey,sizeof(struct revocation_key)*s->numrevkeys);
     }
     else
@@ -200,7 +200,7 @@ copy_signature( PKT_signature *d, PKT_signature *s )
     int n, i;
 
     if( !d )
-	d = m_alloc(sizeof *d);
+	d = xmalloc (sizeof *d);
     memcpy( d, s, sizeof *d );
     n = pubkey_get_nsig( s->pubkey_algo );
     if( !n )
@@ -241,9 +241,9 @@ release_secret_key_parts( PKT_secret_key *sk )
 
     n = pubkey_get_nskey( sk->pubkey_algo );
     if( !n )
-	mpi_free(sk->skey[0]);
+	mpi_release (sk->skey[0]);
     for(i=0; i < n; i++ ) {
-	mpi_free( sk->skey[i] );
+	mpi_release ( sk->skey[i] );
 	sk->skey[i] = NULL;
     }
 }
@@ -252,7 +252,7 @@ void
 free_secret_key( PKT_secret_key *sk )
 {
     release_secret_key_parts( sk );
-    m_free(sk);
+    xfree (sk);
 }
 
 PKT_secret_key *
@@ -261,7 +261,7 @@ copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
     int n, i;
 
     if( !d )
-	d = m_alloc(sizeof *d);
+	d = xmalloc (sizeof *d);
     memcpy( d, s, sizeof *d );
     n = pubkey_get_nskey( s->pubkey_algo );
     if( !n )
@@ -276,14 +276,14 @@ copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
 void
 free_comment( PKT_comment *rem )
 {
-    m_free(rem);
+    xfree (rem);
 }
 
 void
 free_attributes(PKT_user_id *uid)
 {
-  m_free(uid->attribs);
-  m_free(uid->attrib_data);
+  xfree (uid->attribs);
+  xfree (uid->attrib_data);
 
   uid->attribs=NULL;
   uid->attrib_data=NULL;
@@ -298,9 +298,9 @@ free_user_id (PKT_user_id *uid)
         return;
 
     free_attributes(uid);
-    m_free (uid->prefs);
-    m_free (uid->namehash);
-    m_free (uid);
+    xfree (uid->prefs);
+    xfree (uid->namehash);
+    xfree (uid);
 }
 
 void
@@ -312,7 +312,7 @@ free_compressed( PKT_compressed *zd )
 	while( iobuf_read( zd->buf, NULL, 1<<30 ) != -1 )
 	    ;
     }
-    m_free(zd);
+    xfree (zd);
 }
 
 void
@@ -333,7 +333,7 @@ free_encrypted( PKT_encrypted *ed )
 	   }
 	}
     }
-    m_free(ed);
+    xfree (ed);
 }
 
 
@@ -355,7 +355,7 @@ free_plaintext( PKT_plaintext *pt )
 	   }
 	}
     }
-    m_free(pt);
+    xfree (pt);
 }
 
 /****************
@@ -405,7 +405,7 @@ free_packet( PACKET *pkt )
 	free_plaintext( pkt->pkt.plaintext );
 	break;
       default:
-	m_free( pkt->pkt.generic );
+	xfree ( pkt->pkt.generic );
 	break;
     }
     pkt->pkt.generic = NULL;

@@ -40,6 +40,7 @@
 #include <langinfo.h>
 #endif
 
+#include "gpg.h"
 #include "util.h"
 #include "memory.h"
 #include "options.h"
@@ -122,10 +123,10 @@ have_static_passphrase()
 void
 set_next_passphrase( const char *s )
 {
-    m_free(next_pw);
+    xfree (next_pw);
     next_pw = NULL;
     if( s ) {
-	next_pw = m_alloc_secure( strlen(s)+1 );
+	next_pw = gcry_xmalloc_secure ( strlen(s)+1 );
 	strcpy(next_pw, s );
     }
 }
@@ -170,7 +171,7 @@ read_passphrase_from_fd( int fd )
         {
           char *pw2 = pw;
           len += 100;
-          pw = m_alloc_secure( len );
+          pw = gcry_xmalloc_secure ( len );
           if( pw2 )
             memcpy(pw, pw2, i );
           else
@@ -183,7 +184,7 @@ read_passphrase_from_fd( int fd )
   if (!opt.batch)
     tty_printf("\b\b\b   \n" );
 
-  m_free( fd_passwd );
+  xfree ( fd_passwd );
   fd_passwd = pw;
 }
 
@@ -337,11 +338,11 @@ agent_send_option (int fd, const char *name, const char *value)
   char *line;
   int i; 
   
-  line = m_alloc (7 + strlen (name) + 1 + strlen (value) + 2);
+  line = xmalloc (7 + strlen (name) + 1 + strlen (value) + 2);
   strcpy (stpcpy (stpcpy (stpcpy (
                      stpcpy (line, "OPTION "), name), "="), value), "\n");
   i = writen (fd, line, strlen (line));
-  m_free (line);
+  xfree (line);
   if (i)
     return -1;
   
@@ -394,7 +395,7 @@ agent_send_all_options (int fd)
 #if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
   old_lc = setlocale (LC_CTYPE, NULL);
   if (old_lc)
-    old_lc = m_strdup (old_lc);
+    old_lc = xstrdup (old_lc);
   dft_lc = setlocale (LC_CTYPE, "");
 #endif
   if (opt.lc_ctype || (dft_ttyname && dft_lc))
@@ -406,7 +407,7 @@ agent_send_all_options (int fd)
   if (old_lc)
     {
       setlocale (LC_CTYPE, old_lc);
-      m_free (old_lc);
+      xfree (old_lc);
     }
 #endif
   if (rc)
@@ -415,7 +416,7 @@ agent_send_all_options (int fd)
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
   old_lc = setlocale (LC_MESSAGES, NULL);
   if (old_lc)
-    old_lc = m_strdup (old_lc);
+    old_lc = xstrdup (old_lc);
   dft_lc = setlocale (LC_MESSAGES, "");
 #endif
   if (opt.lc_messages || (dft_ttyname && dft_lc))
@@ -427,7 +428,7 @@ agent_send_all_options (int fd)
   if (old_lc)
     {
       setlocale (LC_MESSAGES, old_lc);
-      m_free (old_lc);
+      xfree (old_lc);
     }
 #endif
   return rc;
@@ -495,7 +496,7 @@ agent_open (int *ret_prot)
     int prot;
 
     if (opt.gpg_agent_info)
-      infostr = m_strdup (opt.gpg_agent_info);
+      infostr = xstrdup (opt.gpg_agent_info);
     else
       {
         infostr = getenv ( "GPG_AGENT_INFO" );
@@ -504,13 +505,13 @@ agent_open (int *ret_prot)
           opt.use_agent = 0;
           return -1;
         }
-        infostr = m_strdup ( infostr );
+        infostr = xstrdup ( infostr );
       }
 
     if ( !(p = strchr ( infostr, ':')) || p == infostr
          || (p-infostr)+1 >= sizeof client_addr.sun_path ) {
         log_error( _("malformed GPG_AGENT_INFO environment variable\n"));
-        m_free (infostr );
+        xfree (infostr );
         opt.use_agent = 0;
         return -1;
     }
@@ -523,7 +524,7 @@ agent_open (int *ret_prot)
     prot = *p? atoi (p+1) : 0;
     if ( prot < 0 || prot > 1) {
         log_error (_("gpg-agent protocol version %d is not supported\n"),prot);
-        m_free (infostr );
+        xfree (infostr );
         opt.use_agent = 0;
         return -1;
     }
@@ -531,7 +532,7 @@ agent_open (int *ret_prot)
        
     if( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1 ) {
         log_error ("can't create socket: %s\n", strerror(errno) );
-        m_free (infostr );
+        xfree (infostr );
         opt.use_agent = 0;
         return -1;
     }
@@ -545,12 +546,12 @@ agent_open (int *ret_prot)
     if( connect( fd, (struct sockaddr*)&client_addr, len ) == -1 ) {
         log_error ( _("can't connect to `%s': %s\n"), 
                     infostr, strerror (errno) );
-        m_free (infostr );
+        xfree (infostr );
         close (fd );
         opt.use_agent = 0;
         return -1;
     }
-    m_free (infostr);
+    xfree (infostr);
 
     if (!prot) {
         if ( writen ( fd, "GPGA\0\0\0\x01", 8 ) ) {
@@ -623,7 +624,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   int nread;
   u32 reply;
   char *pw = NULL;
-  PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+  PKT_public_key *pk = xcalloc (1, sizeof *pk );
   byte fpr[MAX_FINGERPRINT_LEN];
   int have_fpr = 0;
   int prot;
@@ -652,7 +653,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
 #endif
   if (orig_codeset)
     { /* We only switch when we are able to restore the codeset later. */
-      orig_codeset = m_strdup (orig_codeset);
+      orig_codeset = xstrdup (orig_codeset);
       if (!bind_textdomain_codeset (PACKAGE, "utf-8"))
         orig_codeset = NULL; 
     }
@@ -665,7 +666,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
     { 
       char *uid;
       size_t uidlen;
-      const char *algo_name = pubkey_algo_to_string ( pk->pubkey_algo );
+      const char *algo_name = gcry_pk_algo_name ( pk->pubkey_algo );
       const char *timestr;
       char *maink;
       const char *fmtstr;
@@ -674,7 +675,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
         algo_name = "?";
       
       fmtstr = _(" (main key ID %08lX)");
-      maink = m_alloc ( strlen (fmtstr) + 20 );
+      maink = xmalloc ( strlen (fmtstr) + 20 );
       if( keyid[2] && keyid[3] && keyid[0] != keyid[2] 
           && keyid[1] != keyid[3] )
         sprintf( maink, fmtstr, (ulong)keyid[3] );
@@ -687,15 +688,15 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
                  " secret key for user:\n"
                  "\"%.*s\"\n"
                  "%u-bit %s key, ID %08lX, created %s%s\n" );
-      atext = m_alloc ( 100 + strlen (fmtstr)  
+      atext = xmalloc ( 100 + strlen (fmtstr)  
                         + uidlen + 15 + strlen(algo_name) + 8
                         + strlen (timestr) + strlen (maink) );
       sprintf (atext, fmtstr,
                uidlen, uid,
                nbits_from_pk (pk), algo_name, (ulong)keyid[1], timestr,
                maink  );
-      m_free (uid);
-      m_free (maink);
+      xfree (uid);
+      xfree (maink);
       
       { 
         size_t dummy;
@@ -705,9 +706,9 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
       
     }
   else if (mode == 2 ) 
-    atext = m_strdup ( _("Repeat passphrase\n") );
+    atext = xstrdup ( _("Repeat passphrase\n") );
   else
-    atext = m_strdup ( _("Enter passphrase\n") );
+    atext = xstrdup ( _("Enter passphrase\n") );
                 
   if (!prot)
     { /* old style protocol */
@@ -717,7 +718,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
       memcpy (buf+8, fpr, 20 );
       if ( writen ( fd, buf, 28 ) || writen ( fd, atext, strlen (atext) ) ) 
         goto failure;
-      m_free (atext); atext = NULL;
+      xfree (atext); atext = NULL;
       
       /* get response */
       if ( readn ( fd, buf, 12, &nread ) ) 
@@ -753,7 +754,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
            * on how long the passhrase actually is - this wastes some bytes
            * but because we already have this padding we should not loosen
            * this by issuing 2 read calls */
-          pw = m_alloc_secure ( n+1 );
+          pw = xmalloc_secure ( n+1 );
           if ( readn ( fd, pw, n, &nn ) )
             goto failure;
           if ( n != nn ) 
@@ -768,7 +769,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
           if (orig_codeset)
             bind_textdomain_codeset (PACKAGE, orig_codeset);
 #endif
-          m_free (orig_codeset);
+          xfree (orig_codeset);
           return pw;
         }
       else if ( reply == GPGA_PROT_CANCELED ) 
@@ -794,7 +795,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
 
       /* We allocate 2 time the needed space for atext so that there
          is nenough space for escaping */
-      line = m_alloc (15 + 46 
+      line = xmalloc (15 + 46 
                       +  3*strlen (tryagain_text) + 3*strlen (atext) + 2);
       strcpy (line, "GET_PASSPHRASE ");
       p = line+15;
@@ -836,13 +837,13 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
         }
       *p++ = '\n';
       i = writen (fd, line, p - line);
-      m_free (line);
+      xfree (line);
       if (i)
         goto failure;
-      m_free (atext); atext = NULL;
+      xfree (atext); atext = NULL;
       
       /* get response */
-      pw = m_alloc_secure (500);
+      pw = xmalloc_secure (500);
       nread = readline (fd, pw, 499);
       if (nread < 3)
         goto failure;
@@ -860,7 +861,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
           if (orig_codeset)
             bind_textdomain_codeset (PACKAGE, orig_codeset);
 #endif
-          m_free (orig_codeset);
+          xfree (orig_codeset);
           return pw;
         }
       else if (nread > 7 && !memcmp (pw, "ERR 111", 7)
@@ -883,10 +884,10 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   if (orig_codeset)
     bind_textdomain_codeset (PACKAGE, orig_codeset);
 #endif
-  m_free (atext);
+  xfree (atext);
   if ( fd != -1 )
     agent_close (fd);
-  m_free (pw );
+  xfree (pw );
   free_public_key( pk );
   
   return NULL;
@@ -918,7 +919,7 @@ passphrase_clear_cache ( u32 *keyid, int algo )
   if (!opt.use_agent)
     return;
   
-  pk = m_alloc_clear ( sizeof *pk );
+  pk = xcalloc (1, sizeof *pk );
   memset (fpr, 0, MAX_FINGERPRINT_LEN );
   if( !keyid || get_pubkey( pk, keyid ) )
     {
@@ -964,14 +965,14 @@ passphrase_clear_cache ( u32 *keyid, int algo )
       char *line, *p;
       int i; 
 
-      line = m_alloc (17 + 40 + 2);
+      line = xmalloc (17 + 40 + 2);
       strcpy (line, "CLEAR_PASSPHRASE ");
       p = line+17;
       for (i=0; i < 20; i++, p +=2 )
         sprintf (p, "%02X", fpr[i]);
       *p++ = '\n';
       i = writen (fd, line, p - line);
-      m_free (line);
+      xfree (line);
       if (i)
         goto failure;
       
@@ -1054,7 +1055,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 
             us = get_long_user_id_string( keyid );
             write_status_text( STATUS_USERID_HINT, us );
-            m_free(us);
+            xfree (us);
 
 	    sprintf( buf, "%08lX%08lX %08lX%08lX %d 0",
                      (ulong)keyid[0], (ulong)keyid[1],
@@ -1070,7 +1071,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     }
 
     if( keyid && !opt.batch && !next_pw && mode!=1 ) {
-	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	PKT_public_key *pk = xcalloc (1, sizeof *pk );
 	size_t n;
 	char *p;
 
@@ -1078,11 +1079,11 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 		     "user: \"") );
 	p = get_user_id( keyid, &n );
 	tty_print_utf8_string( p, n );
-	m_free(p);
+	xfree (p);
 	tty_printf("\"\n");
 
 	if( !get_pubkey( pk, keyid ) ) {
-	    const char *s = pubkey_algo_to_string( pk->pubkey_algo );
+	    const char *s = gcry_pk_algo_name ( pk->pubkey_algo );
 	    tty_printf( _("%u-bit %s key, ID %08lX, created %s"),
 		       nbits_from_pk( pk ), s?s:"?", (ulong)keyid[1],
 		       strtimestamp(pk->timestamp) );
@@ -1108,7 +1109,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
           {
             if (!opt.use_agent)
               goto agent_died;
-            pw = m_strdup ("");
+            pw = xstrdup ("");
           }
         if( *pw && mode == 2 ) {
 	    char *pw2 = agent_get_passphrase ( keyid, 2, NULL, canceled );
@@ -1116,27 +1117,27 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
               {
                 if (!opt.use_agent)
                   {
-                    m_free (pw);
+                    xfree (pw);
                     pw = NULL;
                     goto agent_died;
                   }
-                pw2 = m_strdup ("");
+                pw2 = xstrdup ("");
               }
 	    if( strcmp(pw, pw2) ) {
-		m_free(pw2);
-		m_free(pw);
+		xfree (pw2);
+		xfree (pw);
 		return NULL;
 	    }
-	    m_free(pw2);
+	    xfree (pw2);
 	}
     }
     else if( fd_passwd ) {
-	pw = m_alloc_secure( strlen(fd_passwd)+1 );
+	pw = xmalloc_secure ( strlen(fd_passwd)+1 );
 	strcpy( pw, fd_passwd );
     }
     else if( opt.batch ) {
 	log_error(_("can't query password in batchmode\n"));
-	pw = m_strdup( "" ); /* return an empty passphrase */
+	pw = xstrdup ( "" ); /* return an empty passphrase */
     }
     else {
 	pw = cpr_get_hidden("passphrase.enter", _("Enter passphrase: ") );
@@ -1146,24 +1147,24 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 				       _("Repeat passphrase: ") );
 	    tty_kill_prompt();
 	    if( strcmp(pw, pw2) ) {
-		m_free(pw2);
-		m_free(pw);
+		xfree (pw2);
+		xfree (pw);
 		return NULL;
 	    }
-	    m_free(pw2);
+	    xfree (pw2);
 	}
     }
 
     if( !pw || !*pw )
 	write_status( STATUS_MISSING_PASSPHRASE );
 
-    dek = m_alloc_secure_clear ( sizeof *dek );
+    dek = xcalloc_secure (1, sizeof *dek );
     dek->algo = cipher_algo;
     if( !*pw && mode == 2 )
 	dek->keylen = 0;
     else
 	hash_passphrase( dek, pw, s2k, mode==2 );
-    m_free(last_pw);
+    xfree (last_pw);
     last_pw = pw;
     return dek;
 }
@@ -1183,16 +1184,16 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
     int pwlen = strlen(pw);
 
     assert( s2k->hash_algo );
-    dek->keylen = cipher_get_keylen( dek->algo ) / 8;
+    dek->keylen = gcry_cipher_get_algo_keylen (dek->algo);
     if( !(dek->keylen > 0 && dek->keylen <= DIM(dek->key)) )
 	BUG();
 
-    md = md_open( s2k->hash_algo, 1);
+    gcry_md_open (&md, s2k->hash_algo, 1);
     for(pass=0; used < dek->keylen ; pass++ ) {
 	if( pass ) {
-            md_reset(md);
+            gcry_md_reset(md);
 	    for(i=0; i < pass; i++ ) /* preset the hash context */
-		md_putc(md, 0 );
+		gcry_md_putc (md, 0 );
 	}
 
 	if( s2k->mode == 1 || s2k->mode == 3 ) {
@@ -1200,7 +1201,7 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	    ulong count = len2;
 
 	    if( create && !pass ) {
-		randomize_buffer(s2k->salt, 8, 1);
+		gcry_randomize(s2k->salt, 8, GCRY_STRONG_RANDOM );
 		if( s2k->mode == 3 )
 		    s2k->count = 96; /* 65536 iterations */
 	    }
@@ -1212,27 +1213,27 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	    }
 	    /* a little bit complicated because we need a ulong for count */
 	    while( count > len2 ) { /* maybe iterated+salted */
-		md_write( md, s2k->salt, 8 );
-		md_write( md, pw, pwlen );
+		gcry_md_write( md, s2k->salt, 8 );
+		gcry_md_write( md, pw, pwlen );
 		count -= len2;
 	    }
 	    if( count < 8 )
-		md_write( md, s2k->salt, count );
+		gcry_md_write( md, s2k->salt, count );
 	    else {
-		md_write( md, s2k->salt, 8 );
+		gcry_md_write( md, s2k->salt, 8 );
 		count -= 8;
-                md_write( md, pw, count );
+                gcry_md_write( md, pw, count );
 	    }
 	}
 	else
-	    md_write( md, pw, pwlen );
-	md_final( md );
-	i = md_digest_length( s2k->hash_algo );
+	    gcry_md_write( md, pw, pwlen );
+	gcry_md_final ( md );
+	i = gcry_md_get_algo_dlen (s2k->hash_algo);
 	if( i > dek->keylen - used )
 	    i = dek->keylen - used;
-	memcpy( dek->key+used, md_read(md, s2k->hash_algo), i );
+	memcpy( dek->key+used, gcry_md_read (md, s2k->hash_algo), i );
 	used += i;
     }
-    md_close(md);
+    gcry_md_close (md);
 }
 

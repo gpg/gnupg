@@ -56,7 +56,7 @@ add_to_strlist( STRLIST *list, const char *string )
 #if 0
 /****************
  * same as add_to_strlist() but if is_utf8 is *not* set a conversion
- * to UTF8 is done
+ * to UTF8 is done  
  */
 STRLIST
 add_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
@@ -129,5 +129,23 @@ strlist_last( STRLIST node )
     return node;
 }
 
+
+char *
+strlist_pop (STRLIST *list)
+{
+  char *str=NULL;
+  STRLIST sl=*list;
+
+  if(sl)
+    {
+      str=jnlib_xmalloc(strlen(sl->d)+1);
+      strcpy(str,sl->d);
+
+      *list=sl->next;
+      jnlib_free(sl);
+    }
+
+  return str;
+}
 
 

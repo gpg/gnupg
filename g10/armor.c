@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "memory.h"
@@ -192,7 +193,7 @@ is_armored( const byte *buf )
  *	   filter to do further processing.
  */
 int
-use_armor_filter( IOBUF a )
+use_armor_filter( iobuf_t a )
 {
     byte buf[1];
     int n;
@@ -337,7 +338,7 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
     int hashes=0;
     unsigned int len2;
 
-    len2 = check_trailing_ws( line, len );
+    len2 = length_sans_trailing_ws( line, len );
     if( !len2 ) {
         afx->buffer_pos = len2;  /* (it is not the fine way to do it here) */
 	return 0; /* WS only: same as empty line */
@@ -376,7 +377,7 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned int len )
 
 /* figure out whether the data is armored or not */
 static int
-check_input( armor_filter_context_t *afx, IOBUF a )
+check_input( armor_filter_context_t *afx, iobuf_t a )
 {
     int rc = 0;
     int i;
@@ -418,7 +419,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX ) {
 		if( afx->in_cleartext ) {
 		    log_error(_("nested clear text signatures\n"));
-		    rc = G10ERR_INVALID_ARMOR;
+		    rc = GPG_ERR_INV_ARMOR;
 		}
 		afx->in_cleartext = 1;
 	    }
@@ -448,7 +449,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	i = parse_header_line( afx, line, len );
 	if( i <= 0 ) {
 	    if( i )
-		rc = G10ERR_INVALID_ARMOR;
+		rc = GPG_ERR_INV_ARMOR;
 	    break;
 	}
     }
@@ -476,7 +477,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
  *	  not implemented/checked.
  */
 static int
-fake_packet( armor_filter_context_t *afx, IOBUF a,
+fake_packet( armor_filter_context_t *afx, iobuf_t a,
 	     size_t *retn, byte *buf, size_t size  )
 {
     int rc = 0;
@@ -615,12 +616,12 @@ invalid_crc(void)
     if ( opt.ignore_crc_error )
         return 0;
     log_inc_errorcount();
-    return G10ERR_INVALID_ARMOR;
+    return GPG_ERR_INV_ARMOR;
 }
 
 
 static int
-radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
+radix64_read( armor_filter_context_t *afx, iobuf_t a, size_t *retn,
 	      byte *buf, size_t size )
 {
     byte val;
@@ -785,11 +786,11 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    rc = 0;
 		else if( rc == 2 ) {
 		    log_error(_("premature eof (in Trailer)\n"));
-		    rc = G10ERR_INVALID_ARMOR;
+		    rc = GPG_ERR_INV_ARMOR;
 		}
 		else {
 		    log_error(_("error in trailer line\n"));
-		    rc = G10ERR_INVALID_ARMOR;
+		    rc = GPG_ERR_INV_ARMOR;
 		}
 #endif
 	    }
@@ -808,7 +809,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
  */
 int
 armor_filter( void *opaque, int control,
-	     IOBUF a, byte *buf, size_t *ret_len)
+	     iobuf_t a, byte *buf, size_t *ret_len)
 {
     size_t size = *ret_len;
     armor_filter_context_t *afx = opaque;
@@ -1081,7 +1082,7 @@ armor_filter( void *opaque, int control,
 	if( afx->qp_detected )
 	    log_error(_("quoted printable character in armor - "
 			"probably a buggy MTA has been used\n") );
-	m_free( afx->buffer );
+	xfree ( afx->buffer );
 	afx->buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC )
@@ -1098,7 +1099,7 @@ make_radix64_string( const byte *data, size_t len )
 {
     char *buffer, *p;
 
-    buffer = p = m_alloc( (len+2)/3*4 + 1 );
+    buffer = p = xmalloc ( (len+2)/3*4 + 1 );
     for( ; len >= 3 ; len -= 3, data += 3 ) {
 	*p++ = bintoasc[(data[0] >> 2) & 077];
 	*p++ = bintoasc[(((data[0] <<4)&060)|((data[1] >> 4)&017))&077];
@@ -1158,14 +1159,14 @@ unarmor_pump_new (void)
 
     if( !is_initialized )
         initialize();
-    x = m_alloc_clear (sizeof *x);
+    x = xcalloc (1,sizeof *x);
     return x;
 }
 
 void
 unarmor_pump_release (UnarmorPump x)
 {
-    m_free (x);
+    xfree (x);
 }
 
 /* 

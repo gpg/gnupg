@@ -30,6 +30,7 @@
 #endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
+#include "gpg.h"
 #include "packet.h"
 #include "iobuf.h"
 #include "memory.h"
@@ -82,8 +83,8 @@ int g10_errors_seen = 0;
 RISCOS_GLOBAL_STATICS("GnuPG (gpgv) Heap")
 #endif /* __riscos__ */
 
-const char *
-strusage( int level )
+static const char *
+my_strusage( int level )
 {
     const char *p;
     switch( level ) {
@@ -103,7 +104,7 @@ strusage( int level )
 	      "Check signatures against known trusted keys\n");
 	break;
 
-      default:	p = default_strusage(level);
+      default:	p = NULL;
     }
     return p;
 }
@@ -124,7 +125,7 @@ i18n_init(void)
 #else
        setlocale( LC_ALL, "" );
 #endif
-    bindtextdomain( PACKAGE, G10_LOCALEDIR );
+    bindtextdomain( PACKAGE, LOCALEDIR );
     textdomain( PACKAGE );
 #endif
 #endif
@@ -144,7 +145,8 @@ main( int argc, char **argv )
     riscos_global_defaults();
 #endif /* __riscos__ */
 
-    log_set_name("gpgv");
+    set_strusage (my_strusage);
+    log_set_prefix ("gpgv", 1);
     init_signals();
     i18n_init();
     opt.command_fd = -1; /* no command fd */
@@ -177,7 +179,9 @@ main( int argc, char **argv )
 		  opt.verbose++; opt.list_sigs=1; break;
           case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
 	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
-	  case oLoggerFD: log_set_logfile( NULL, pargs.r.ret_int ); break;
+	  case oLoggerFD: 
+            log_set_fd (iobuf_translate_file_handle (pargs.r.ret_int, 1));
+            break;
 	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  default : pargs.err = 2; break;
@@ -200,7 +204,7 @@ main( int argc, char **argv )
     FREE_STRLIST(nrings);
     
     if( (rc = verify_signatures( argc, argv ) ))
-        log_error("verify signatures failed: %s\n", g10_errstr(rc) );
+        log_error("verify signatures failed: %s\n", gpg_strerror (rc) );
 
     /* cleanup */
     g10_exit(0);
@@ -287,19 +291,19 @@ keyserver_import_keyid( u32 *keyid, void *dummy )
 int
 get_session_key( PKT_pubkey_enc *k, DEK *dek )
 {
-    return G10ERR_GENERAL;
+    return GPG_ERR_GENERAL;
 }
 /* Stub: */
 int
 get_override_session_key( DEK *dek, const char *string )
 {
-    return G10ERR_GENERAL;
+    return GPG_ERR_GENERAL;
 }
 /* Stub: */
 int
 decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 {
-    return G10ERR_GENERAL;
+    return GPG_ERR_GENERAL;
 }
 
 
@@ -317,7 +321,7 @@ display_online_help( const char *keyword )
 int
 check_secret_key( PKT_secret_key *sk, int n )
 {
-    return G10ERR_GENERAL;
+    return GPG_ERR_GENERAL;
 }
 
 /* Stub:
@@ -355,26 +359,6 @@ void cipher_decrypt( CIPHER_HANDLE c, byte *outbuf,
                      byte *inbuf, unsigned nbytes ) {}
 void cipher_sync( CIPHER_HANDLE c ) {}
 
-/* Stubs to avoid linking to ../cipher/random.c */
-void random_dump_stats(void) {}
-int quick_random_gen( int onoff ) { return -1;}
-void randomize_buffer( byte *buffer, size_t length, int level ) {}
-int random_is_faked() { return -1;}
-byte *get_random_bits( size_t nbits, int level, int secure ) { return NULL;}
-void set_random_seed_file( const char *name ) {}
-void update_random_seed_file() {}
-void fast_random_poll() {}
-
-/* Stubs to avoid linking of ../cipher/primegen.c */
-void register_primegen_progress ( void (*cb)( void *, int), void *cb_data ) {}
-MPI generate_secret_prime( unsigned  nbits ) { return NULL;}
-MPI generate_public_prime( unsigned  nbits ) { return NULL;}
-MPI generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
-                        MPI g, MPI **ret_factors ) { return NULL;}
-
-/* Do not link to ../cipher/rndlinux.c */
-void rndlinux_constructor(void) {}
-
 
 /* Stubs to avoid linking to ../util/ttyio.c */
 int tty_batchmode( int onoff ) { return 0; }
@@ -393,4 +377,4 @@ void disable_dotlock(void) {}
 DOTLOCK create_dotlock( const char *file_to_lock ) { return NULL; }
 int make_dotlock( DOTLOCK h, long timeout ) { return 0;}
 int release_dotlock( DOTLOCK h ) {return 0;}
-void remove_lockfiles(void) {}
+void dotlock_remove_lockfiles(void) {}

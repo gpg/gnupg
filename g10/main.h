@@ -20,7 +20,8 @@
 #ifndef G10_MAIN_H
 #define G10_MAIN_H
 #include "types.h"
-#include "iobuf.h"
+#include "gpg.h"
+#include "../common/iobuf.h"
 #include "mpi.h"
 #include "cipher.h"
 #include "keydb.h"
@@ -65,13 +66,16 @@ void trap_unaligned(void);
 int disable_core_dumps(void);
 u16 checksum_u16( unsigned n );
 u16 checksum( byte *p, unsigned n );
-u16 checksum_mpi( MPI a );
+u16 checksum_mpi( gcry_mpi_t a );
 u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
 int openpgp_cipher_test_algo( int algo );
 int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
+int openpgp_md_map_name (const char *string);
+int openpgp_cipher_map_name (const char *string);
+int openpgp_pk_map_name (const char *string);
 
 #ifdef USE_IDEA
 void idea_cipher_warn( int show );
@@ -106,6 +110,24 @@ struct parse_options
 
 int parse_options(char *str,unsigned int *options,struct parse_options *opts);
 
+
+/* Temporary helpers. */
+int pubkey_get_npkey( int algo );
+int pubkey_get_nskey( int algo );
+int pubkey_get_nsig( int algo );
+int pubkey_get_nenc( int algo );
+unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
+
+/* MPI helpers. */
+int mpi_write( iobuf_t out, gcry_mpi_t a );
+int mpi_write_opaque( iobuf_t out, gcry_mpi_t a );
+gcry_mpi_t mpi_read(iobuf_t inp, unsigned int *ret_nread, int secure );
+gcry_mpi_t mpi_read_opaque(iobuf_t inp, unsigned int *ret_nread );
+int mpi_print( FILE *fp, gcry_mpi_t a, int mode );
+
+
+
+
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
 
@@ -115,7 +137,7 @@ int encode_store( const char *filename );
 int encode_crypt( const char *filename, STRLIST remusr );
 void encode_crypt_files(int nfiles, char **files, STRLIST remusr);
 int encrypt_filter( void *opaque, int control,
-		    IOBUF a, byte *buf, size_t *ret_len);
+		    iobuf_t a, byte *buf, size_t *ret_len);
 
 
 /*-- sign.c --*/
@@ -155,25 +177,25 @@ int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
 int overwrite_filep( const char *fname );
 char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
-int   open_outfile( const char *iname, int mode, IOBUF *a );
-IOBUF open_sigfile( const char *iname, progress_filter_context_t *pfx );
+int   open_outfile( const char *iname, int mode, iobuf_t *a );
+iobuf_t open_sigfile( const char *iname, progress_filter_context_t *pfx );
 void try_make_homedir( const char *fname );
 
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
-MPI encode_session_key( DEK *dek, unsigned nbits );
-MPI encode_md_value( int pubkey_algo,  MD_HANDLE md,
+gcry_mpi_t encode_session_key( DEK *dek, unsigned nbits );
+gcry_mpi_t encode_md_value( int pubkey_algo,  MD_HANDLE md,
 		     int hash_algo, unsigned nbits, int v3compathack );
 
 /*-- comment.c --*/
 KBNODE make_comment_node( const char *s );
-KBNODE make_mpi_comment_node( const char *s, MPI a );
+KBNODE make_mpi_comment_node( const char *s, gcry_mpi_t a );
 
 /*-- import.c --*/
 int parse_import_options(char *str,unsigned int *options);
 void import_keys( char **fnames, int nnames,
 		  void *stats_hd, unsigned int options );
-int import_keys_stream( IOBUF inp,
+int import_keys_stream( iobuf_t inp,
 			void *stats_hd, unsigned int options );
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
@@ -184,7 +206,7 @@ int collapse_uids( KBNODE *keyblock );
 /*-- export.c --*/
 int parse_export_options(char *str,unsigned int *options);
 int export_pubkeys( STRLIST users, unsigned int options );
-int export_pubkeys_stream( IOBUF out, STRLIST users,
+int export_pubkeys_stream( iobuf_t out, STRLIST users,
 			   KBNODE *keyblock_out, unsigned int options );
 int export_seckeys( STRLIST users );
 int export_secsubkeys( STRLIST users );

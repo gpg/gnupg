@@ -59,15 +59,15 @@ revocation_reason_build_cb( PKT_signature *sig, void *opaque )
 	ud = native_to_utf8( reason->desc );
 	buflen += strlen(ud);
     }
-    buffer = m_alloc( buflen );
+    buffer = xmalloc ( buflen );
     *buffer = reason->code;
     if( ud ) {
 	memcpy(buffer+1, ud, strlen(ud) );
-	m_free( ud );
+	xfree ( ud );
     }
 
     build_sig_subpkt( sig, SIGSUBPKT_REVOC_REASON, buffer, buflen );
-    m_free( buffer );
+    xfree ( buffer );
     return 0;
 }
 
@@ -76,7 +76,7 @@ revocation_reason_build_cb( PKT_signature *sig, void *opaque )
    and pick a user ID that has a uid signature, and include it if
    possible. */
 static int
-export_minimal_pk(IOBUF out,KBNODE keyblock,
+export_minimal_pk(iobuf_t out,KBNODE keyblock,
 		  PKT_signature *revsig,PKT_signature *revkey)
 {
   KBNODE node;
@@ -90,7 +90,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
   if(!node)
     {
       log_error(_("key incomplete\n"));
-      return G10ERR_GENERAL;
+      return GPG_ERR_GENERAL;
     }
 
   keyid_from_pk(node->pkt->pkt.public_key,keyid);
@@ -99,7 +99,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
   rc=build_packet(out,&pkt);
   if(rc)
     {
-      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+      log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
       return rc;
     }
 
@@ -113,7 +113,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
       rc=build_packet(out,&pkt);
       if(rc)
 	{
-	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
 	  return rc;
 	}
     }
@@ -125,7 +125,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
       rc=build_packet(out,&pkt);
       if(rc)
 	{
-	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
 	  return rc;
 	}
     }
@@ -143,7 +143,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
 	  else
 	    {
 	      log_error(_("key %08lX incomplete\n"),(ulong)keyid[1]);
-	      return G10ERR_GENERAL;
+	      return GPG_ERR_GENERAL;
 	    }
 	}
 
@@ -171,7 +171,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
   rc=build_packet(out,&pkt);
   if(rc)
     {
-      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+      log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
       return rc;
     }
 
@@ -183,7 +183,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
       rc=build_packet(out,&pkt);
       if(rc)
 	{
-	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
 	  return rc;
 	}
     }
@@ -202,7 +202,7 @@ gen_desig_revoke( const char *uname )
     PKT_public_key *pk = NULL;
     PKT_secret_key *sk = NULL;
     PKT_signature *sig = NULL;
-    IOBUF out = NULL;
+    iobuf_t out = NULL;
     struct revocation_reason_info *reason = NULL;
     KEYDB_HANDLE kdbhd;
     KEYDB_SEARCH_DESC desc;
@@ -212,22 +212,22 @@ gen_desig_revoke( const char *uname )
 
     if( opt.batch ) {
 	log_error(_("sorry, can't do this in batch mode\n"));
-	return G10ERR_GENERAL;
+	return GPG_ERR_GENERAL;
     }
 
     memset( &afx, 0, sizeof afx);
 
     kdbhd = keydb_new (0);
     classify_user_id (uname, &desc);
-    rc = desc.mode? keydb_search (kdbhd, &desc, 1) : G10ERR_INV_USER_ID;
+    rc = desc.mode? keydb_search (kdbhd, &desc, 1) : GPG_ERR_INV_USER_ID;
     if (rc) {
-	log_error (_("key `%s' not found: %s\n"),uname, g10_errstr (rc));
+	log_error (_("key `%s' not found: %s\n"),uname, gpg_strerror (rc));
 	goto leave;
     }
 
     rc = keydb_get_keyblock (kdbhd, &keyblock );
     if( rc ) {
-	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+	log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
 	goto leave;
     }
 
@@ -253,7 +253,7 @@ gen_desig_revoke( const char *uname )
 	if(sk)
 	  free_secret_key(sk);
 
-	sk=m_alloc_clear(sizeof(*sk));
+	sk=xcalloc (1,sizeof(*sk));
 
 	rc=get_seckey_byfprint(sk,pk->revkey[i].fpr,MAX_FINGERPRINT_LEN);
 
@@ -302,7 +302,7 @@ gen_desig_revoke( const char *uname )
 				     0, 0, 0,
 				     revocation_reason_build_cb, reason );
 	    if( rc ) {
-	      log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
+	      log_error(_("make_keysig_packet failed: %s\n"), gpg_strerror (rc));
 	      goto leave;
 	    }
 
@@ -403,7 +403,7 @@ gen_revoke( const char *uname )
     PKT_public_key *pk = NULL;
     PKT_signature *sig = NULL;
     u32 sk_keyid[2];
-    IOBUF out = NULL;
+    iobuf_t out = NULL;
     KBNODE keyblock = NULL, pub_keyblock = NULL;
     KBNODE node;
     KEYDB_HANDLE kdbhd;
@@ -412,7 +412,7 @@ gen_revoke( const char *uname )
 
     if( opt.batch ) {
 	log_error(_("sorry, can't do this in batch mode\n"));
-	return G10ERR_GENERAL;
+	return GPG_ERR_GENERAL;
     }
 
     memset( &afx, 0, sizeof afx);
@@ -423,16 +423,16 @@ gen_revoke( const char *uname )
      */
     kdbhd = keydb_new (1);
     classify_user_id (uname, &desc);
-    rc = desc.mode? keydb_search (kdbhd, &desc, 1) : G10ERR_INV_USER_ID;
+    rc = desc.mode? keydb_search (kdbhd, &desc, 1) : GPG_ERR_INV_USER_ID;
     if (rc) {
 	log_error (_("secret key `%s' not found: %s\n"),
-                   uname, g10_errstr (rc));
+                   uname, gpg_strerror (rc));
 	goto leave;
     }
 
     rc = keydb_get_keyblock (kdbhd, &keyblock );
     if( rc ) {
-	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+	log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
 	goto leave;
     }
 
@@ -447,14 +447,14 @@ gen_revoke( const char *uname )
     keyid_from_sk( sk, sk_keyid );
     print_seckey_info (sk);
 
-    pk = m_alloc_clear( sizeof *pk );
+    pk = xcalloc (1, sizeof *pk );
 
     /* FIXME: We should get the public key direct from the secret one */
 
     pub_keyblock=get_pubkeyblock(sk_keyid);
     if(!pub_keyblock)
       {
-	log_error(_("no corresponding public key: %s\n"), g10_errstr(rc) );
+	log_error(_("no corresponding public key: %s\n"), gpg_strerror (rc) );
 	goto leave;
       }
 
@@ -466,7 +466,7 @@ gen_revoke( const char *uname )
 
     if( cmp_public_secret_key( pk, sk ) ) {
 	log_error(_("public key does not match secret key!\n") );
-	rc = G10ERR_GENERAL;
+	rc = GPG_ERR_GENERAL;
 	goto leave;
     }
 
@@ -489,7 +489,7 @@ gen_revoke( const char *uname )
     switch( is_secret_key_protected( sk ) ) {
       case -1:
 	log_error(_("unknown protection algorithm\n"));
-	rc = G10ERR_PUBKEY_ALGO;
+	rc = GPG_ERR_PUBKEY_ALGO;
 	break;
       case 0:
 	tty_printf(_("NOTE: This key is not protected!\n"));
@@ -517,7 +517,7 @@ gen_revoke( const char *uname )
 			     opt.force_v4_certs?4:0, 0, 0,
 			     revocation_reason_build_cb, reason );
     if( rc ) {
-	log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
+	log_error(_("make_keysig_packet failed: %s\n"), gpg_strerror (rc));
 	goto leave;
     }
 
@@ -537,7 +537,7 @@ gen_revoke( const char *uname )
 
 	rc = build_packet( out, &pkt );
 	if( rc ) {
-	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
 	  goto leave;
 	}
       }
@@ -581,7 +581,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 
     do {
         code=-1;
-	m_free(description);
+	xfree (description);
 	description = NULL;
 
 	tty_printf(_("Please select the reason for the revocation:\n"));
@@ -612,7 +612,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
  	        n = -1;
 	    else
 		n = atoi(answer);
-	    m_free(answer);
+	    xfree (answer);
 	    if( n == 0 ) {
 	        code = 0x00; /* no particular reason */
 		code_text = text_0;
@@ -644,25 +644,25 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 	    trim_trailing_ws( answer, strlen(answer) );
 	    cpr_kill_prompt();
 	    if( !*answer ) {
-		m_free(answer);
+		xfree (answer);
 		break;
 	    }
 
 	    {
 		char *p = make_printable_string( answer, strlen(answer), 0 );
-		m_free(answer);
+		xfree (answer);
 		answer = p;
 	    }
 
 	    if( !description )
-		description = m_strdup(answer);
+		description = xstrdup (answer);
 	    else {
-		char *p = m_alloc( strlen(description) + strlen(answer) + 2 );
+		char *p = xmalloc ( strlen(description) + strlen(answer) + 2 );
 		strcpy(stpcpy(stpcpy( p, description),"\n"),answer);
-		m_free(description);
+		xfree (description);
 		description = p;
 	    }
-	    m_free(answer);
+	    xfree (answer);
 	}
 
 	tty_printf(_("Reason for revocation: %s\n"), code_text );
@@ -674,7 +674,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
     } while( !cpr_get_answer_is_yes("ask_revocation_reason.okay",
 					    _("Is this okay? "))  );
 
-    reason = m_alloc( sizeof *reason );
+    reason = xmalloc ( sizeof *reason );
     reason->code = code;
     reason->desc = description;
     return reason;
@@ -684,7 +684,7 @@ void
 release_revocation_reason_info( struct revocation_reason_info *reason )
 {
     if( reason ) {
-	m_free( reason->desc );
-	m_free( reason );
+	xfree ( reason->desc );
+	xfree ( reason );
     }
 }

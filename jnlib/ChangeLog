@@ -1,3 +1,36 @@
+2003-06-18  Werner Koch  <wk@gnupg.org>
+
+	* strlist.c (strlist_pop): New.
+
+	* dotlock.c (dotlock_remove_lockfiles): Prefixed with dotlock_ and
+	made global.
+
+2003-06-17  Werner Koch  <wk@gnupg.org>
+
+	* stringhelp.c (length_sans_trailing_chars)
+	(length_sans_trailing_ws): New.
+
+	* logging.c (log_inc_errorcount): New.
+
+	* stringhelp.c (print_sanitized_utf8_buffer): Implement utf8
+	conversion.
+	(sanitize_buffer): New. Based on gnupg 1.3.2 make_printable_string.
+
+	* dotlock.c: Updated to match the version from 1.3.2
+	* utf8conv.c: New.  Code taken from strgutil.c of gnupg 1.3.2.
+	* utf8conv.h: New.
+
+2003-06-16  Werner Koch  <wk@gnupg.org>
+
+	* logging.c (do_logv): Hack to optionally suppress a leading space.
+
+	* stringhelp.c (ascii_strncasecmp): New.  Taken from gnupg 1.3.
+	(ascii_memistr): New. Taken from gnupg 1.3
+
+2003-06-13  Werner Koch  <wk@gnupg.org>
+
+	* mischelp.h (wipememory2,wipememory): New. Taken from GnuPG 1.3.2. 
+
 2002-06-04  Werner Koch  <wk@gnupg.org>
 
 	* stringhelp.c (print_sanitized_utf8_string): New.  No real
@@ -113,7 +146,7 @@ Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
      * You may find it source-copied in other packages.        *
      ***********************************************************	
 	
- Copyright 2000, 2001, 2002 Free Software Foundation, Inc.
+ Copyright 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

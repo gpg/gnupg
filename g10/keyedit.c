@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include "gpg.h"
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
@@ -107,19 +108,20 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
     /* TODO: Make sure a cached sig record here still has the pk that
        issued it.  See also keylist.c:list_keyblock_print */
 
-    switch( (rc = check_key_signature( keyblock, node, is_selfsig)) ) {
+    rc = check_key_signature (keyblock, node, is_selfsig);
+    switch ( gpg_err_code (rc) ) {
       case 0:
 	node->flag &= ~(NODFLG_BADSIG|NODFLG_NOKEY|NODFLG_SIGERR);
 	sigrc = '!';
 	break;
-      case G10ERR_BAD_SIGN:
+      case GPG_ERR_BAD_SIGNATURE:
 	node->flag = NODFLG_BADSIG;
 	sigrc = '-';
 	if( inv_sigs )
 	    ++*inv_sigs;
 	break;
-      case G10ERR_NO_PUBKEY:
-      case G10ERR_UNU_PUBKEY:
+      case GPG_ERR_NO_PUBKEY:
+      case GPG_ERR_UNUSABLE_PUBKEY:
 	node->flag = NODFLG_NOKEY;
 	sigrc = '?';
 	if( no_key )
@@ -146,7 +148,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ',
 		   (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
-	    tty_printf("[%s] ", g10_errstr(rc) );
+	    tty_printf("[%s] ", gpg_strerror (rc) );
 	else if( sigrc == '?' )
 	    ;
 	else if( *is_selfsig ) {
@@ -157,7 +159,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	    size_t n;
 	    char *p = get_user_id( sig->keyid, &n );
 	    tty_print_utf8_string2( p, n, 40 );
-	    m_free(p);
+	    xfree (p);
 	}
 	tty_printf("\n");
 
@@ -313,7 +315,7 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
 	*trust_value=60;
       else if(p[0]=='2' && !p[1])
 	*trust_value=120;
-      m_free(p);
+      xfree (p);
     }
 
   tty_printf("\n");
@@ -330,7 +332,7 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
       trim_spaces(p);
       cpr_kill_prompt();
       *trust_depth=atoi(p);
-      m_free(p);
+      xfree (p);
       if(*trust_depth<1 || *trust_depth>255)
 	*trust_depth=0;
     }
@@ -351,7 +353,7 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
       char *q=p;
       int regexplen=100,ind;
 
-      *regexp=m_alloc(regexplen);
+      *regexp=xmalloc (regexplen);
 
       /* Now mangle the domain the user entered into a regexp.  To do
 	 this, \-escape everything that isn't alphanumeric, and attach
@@ -371,7 +373,7 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
 	  if((regexplen-ind)<3)
 	    {
 	      regexplen+=100;
-	      *regexp=m_realloc(*regexp,regexplen);
+	      *regexp=xrealloc(*regexp,regexplen);
 	    }
 
 	  q++;
@@ -381,7 +383,7 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
       strcat(*regexp,">$");
     }
 
-  m_free(p);
+  xfree (p);
   tty_printf("\n");
 }
 
@@ -504,7 +506,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 				     "self-signed.\n"),user);
 		      }
 
-		    m_free(user);
+		    xfree (user);
 		  }
 	    }
 	    else if( uidnode && node->pkt->pkttype == PKT_SIGNATURE
@@ -534,7 +536,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			    {
 			      force_v4=1;
 			      node->flag|=NODFLG_DELSIG;
-			      m_free(user);
+			      xfree (user);
 			      continue;
 			    }
 		      }
@@ -558,7 +560,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
                                in place. */
 
 			    node->flag|=NODFLG_DELSIG;
-			    m_free(user);
+			    xfree (user);
 			    continue;
 			  }
 		      }
@@ -583,7 +585,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
                                in place. */
 
 			    node->flag|=NODFLG_DELSIG;
-			    m_free(user);
+			    xfree (user);
 			    continue;
 			  }
 		      }
@@ -606,7 +608,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		      {
 			/* Don't delete the old sig here since this is
 			   an --expert thing. */
-			m_free(user);
+			xfree (user);
 			continue;
 		      }
 
@@ -615,7 +617,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
                     write_status_text (STATUS_ALREADY_SIGNED, buf);
 		    uidnode->flag &= ~NODFLG_MARK_A; /* remove mark */
 
-		    m_free(user);
+		    xfree (user);
 		}
 	    }
 	}
@@ -675,7 +677,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		  }
 
 		cpr_kill_prompt();
-		m_free(answer);
+		xfree (answer);
 	      }
 	  }
 
@@ -752,7 +754,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		    else
 		      tty_printf(_("Invalid selection.\n"));
 
-		    m_free(answer);
+		    xfree (answer);
 		  }
 	      }
 
@@ -764,7 +766,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		     "with your key: \""));
 	p = get_user_id( sk_keyid, &n );
 	tty_print_utf8_string( p, n );
-	m_free(p); p = NULL;
+	xfree (p); p = NULL;
 	tty_printf("\" (%08lX)\n",(ulong)sk_keyid[1]);
 
 	if(selfsig)
@@ -856,14 +858,14 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 					   timestamp, duration,
 					   sign_mk_attrib, &attrib );
 		if( rc ) {
-		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
+		    log_error(_("signing failed: %s\n"), gpg_strerror (rc));
 		    goto leave;
 		}
 
 		*ret_modified = 1; /* we changed the keyblock */
 		update_trust = 1;
 
-		pkt = m_alloc_clear( sizeof *pkt );
+		pkt = xcalloc (1, sizeof *pkt );
 		pkt->pkttype = PKT_SIGNATURE;
 		pkt->pkt.signature = sig;
 		insert_kbnode( node, new_kbnode(pkt), PKT_SIGNATURE );
@@ -909,7 +911,7 @@ change_passphrase( KBNODE keyblock )
 
     switch( is_secret_key_protected( sk ) ) {
       case -1:
-	rc = G10ERR_PUBKEY_ALGO;
+	rc = GPG_ERR_PUBKEY_ALGO;
 	break;
       case 0:
 	tty_printf(_("This key is not protected.\n"));
@@ -940,10 +942,10 @@ change_passphrase( KBNODE keyblock )
     }
 
     if( rc )
-	tty_printf(_("Can't edit this key: %s\n"), g10_errstr(rc));
+	tty_printf(_("Can't edit this key: %s\n"), gpg_strerror (rc));
     else {
 	DEK *dek = NULL;
-	STRING2KEY *s2k = m_alloc_secure( sizeof *s2k );
+	STRING2KEY *s2k = xmalloc_secure ( sizeof *s2k );
         const char *errtext = NULL;
 
 	tty_printf(_("Enter the new passphrase for this secret key.\n\n") );
@@ -983,18 +985,18 @@ change_passphrase( KBNODE keyblock )
 		    }
 		}
 		if( rc )
-		    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
+		    log_error("protect_secret_key failed: %s\n", gpg_strerror (rc) );
 		else
 		    changed++;
 		break;
 	    }
 	}
-	m_free(s2k);
-	m_free(dek);
+	xfree (s2k);
+	xfree (dek);
     }
 
   leave:
-    m_free( passphrase );
+    xfree ( passphrase );
     set_next_passphrase( NULL );
     return changed && !rc;
 }
@@ -1172,7 +1174,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    rc = keydb_get_keyblock (sec_kdbhd, &sec_keyblock);
 	    if (rc) {
 		log_error (_("error reading secret keyblock `%s': %s\n"),
-						username, g10_errstr(rc));
+						username, gpg_strerror (rc));
 	    }
             else {
                 merge_keys_and_selfsig( sec_keyblock );
@@ -1207,14 +1209,14 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    redisplay = 0;
 	}
 	do {
-	    m_free(answer);
+	    xfree (answer);
 	    if( have_commands ) {
 		if( commands ) {
-		    answer = m_strdup( commands->d );
+		    answer = xstrdup ( commands->d );
 		    commands = commands->next;
 		}
 		else if( opt.batch ) {
-		    answer = m_strdup("quit");
+		    answer = xstrdup ("quit");
 		}
 		else
 		    have_commands = 0;
@@ -1543,7 +1545,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	      PKT_user_id *temp=keygen_get_std_prefs();
 	      tty_printf(_("Current preference list:\n"));
 	      show_prefs(temp,1);
-	      m_free(temp);
+	      xfree (temp);
             }
             if (cpr_get_answer_is_yes ("keyedit.updpref.okay",
                                         count_selected_uids (keyblock)?
@@ -1601,7 +1603,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		if( modified ) {
 		    rc = keydb_update_keyblock (kdbhd, keyblock);
 		    if( rc ) {
-			log_error(_("update failed: %s\n"), g10_errstr(rc) );
+			log_error(_("update failed: %s\n"), gpg_strerror (rc) );
 			break;
 		    }
 		}
@@ -1609,7 +1611,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		    rc = keydb_update_keyblock (sec_kdbhd, sec_keyblock );
 		    if( rc ) {
 			log_error( _("update secret failed: %s\n"),
-                                   g10_errstr(rc) );
+                                   gpg_strerror (rc) );
 			break;
 		    }
 		}
@@ -1636,7 +1638,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     release_kbnode( keyblock );
     release_kbnode( sec_keyblock );
     keydb_release (kdbhd);
-    m_free(answer);
+    xfree (answer);
 }
 
 
@@ -1666,7 +1668,7 @@ show_prefs (PKT_user_id *uid, int verbose)
 	tty_printf (_("Cipher: "));
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_SYM ) {
-                const char *s = cipher_algo_to_string (prefs[i].value);
+                const char *s = gcry_cipher_algo_name (prefs[i].value);
                 
                 if (any)
                     tty_printf (", ");
@@ -1683,13 +1685,13 @@ show_prefs (PKT_user_id *uid, int verbose)
         if (!des_seen) {
             if (any)
                 tty_printf (", ");
-            tty_printf ("%s",cipher_algo_to_string(CIPHER_ALGO_3DES));
+            tty_printf ("%s", gcry_cipher_algo_name (CIPHER_ALGO_3DES));
         }
         tty_printf ("\n     ");
 	tty_printf (_("Digest: "));
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_HASH ) {
-                const char *s = digest_algo_to_string (prefs[i].value);
+                const char *s = gcry_md_algo_name (prefs[i].value);
                 
                 if (any)
                     tty_printf (", ");
@@ -1706,7 +1708,7 @@ show_prefs (PKT_user_id *uid, int verbose)
         if (!sha1_seen) {
             if (any)
                 tty_printf (", ");
-            tty_printf ("%s",digest_algo_to_string(DIGEST_ALGO_SHA1));
+            tty_printf ("%s", gcry_md_algo_name (DIGEST_ALGO_SHA1));
         }
         tty_printf ("\n     ");
 	tty_printf (_("Compression: "));
@@ -1984,7 +1986,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                         u32 r_keyid[2];
                         char *user;
 			const char *algo=
-			  pubkey_algo_to_string(pk->revkey[i].algid);
+                                  gcry_pk_algo_name (pk->revkey[i].algid);
 
                         keyid_from_fingerprint(pk->revkey[i].fpr,
                                                MAX_FINGERPRINT_LEN,r_keyid);
@@ -1996,7 +1998,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                         if ((pk->revkey[i].class&0x40))
                           tty_printf (_(" (sensitive)"));
                         tty_printf ("\n");
-                        m_free(user);
+                        xfree (user);
                       }
             }
 
@@ -2052,11 +2054,11 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    if( !rc )
 		tty_printf( _("rev! subkey has been revoked: %s\n"),
 			    datestr_from_sig( sig ) );
-	    else if( rc == G10ERR_BAD_SIGN )
+	    else if( gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE )
 		tty_printf( _("rev- faked revocation found\n") );
 	    else if( rc )
 		tty_printf( _("rev? problem checking revocation: %s\n"),
-							 g10_errstr(rc) );
+							 gpg_strerror (rc) );
 	}
     }
     /* the user ids */
@@ -2311,13 +2313,13 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 			     keygen_add_std_prefs, pk );
     free_secret_key( sk );
     if( rc ) {
-	log_error("signing failed: %s\n", g10_errstr(rc) );
+	log_error("signing failed: %s\n", gpg_strerror (rc) );
 	free_user_id(uid);
 	return 0;
     }
 
     /* insert/append to secret keyblock */
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = xcalloc (1, sizeof *pkt );
     pkt->pkttype = PKT_USER_ID;
     pkt->pkt.user_id = scopy_user_id(uid);
     node = new_kbnode(pkt);
@@ -2325,7 +2327,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 	insert_kbnode( sec_where, node, 0 );
     else
 	add_kbnode( sec_keyblock, node );
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = xcalloc (1, sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = copy_signature(NULL, sig);
     if( sec_where )
@@ -2333,7 +2335,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
     else
 	add_kbnode( sec_keyblock, new_kbnode(pkt) );
     /* insert/append to public keyblock */
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = xcalloc (1, sizeof *pkt );
     pkt->pkttype = PKT_USER_ID;
     pkt->pkt.user_id = uid;
     node = new_kbnode(pkt);
@@ -2341,7 +2343,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 	insert_kbnode( pub_where, node, 0 );
     else
 	add_kbnode( pub_keyblock, node );
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = xcalloc (1, sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = copy_signature(NULL, sig);
     if( pub_where )
@@ -2586,7 +2588,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
       if(revoker_pk)
 	free_public_key(revoker_pk);
 
-      revoker_pk=m_alloc_clear(sizeof(*revoker_pk));
+      revoker_pk=xcalloc (1,sizeof(*revoker_pk));
 
       tty_printf("\n");
 
@@ -2599,7 +2601,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 
       if(rc)
 	{
-	  log_error (_("key `%s' not found: %s\n"),answer,g10_errstr(rc));
+	  log_error (_("key `%s' not found: %s\n"),answer,gpg_strerror (rc));
 	  continue;
 	}
 
@@ -2667,7 +2669,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 
       p = get_user_id( keyid, &n );
       tty_print_utf8_string( p, n );
-      m_free(p);
+      xfree (p);
       tty_printf("\n");
       print_fingerprint(revoker_pk,NULL,2);
       tty_printf("\n");
@@ -2693,7 +2695,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 			   keygen_add_revkey,&revkey );
   if( rc )
     {
-      log_error("signing failed: %s\n", g10_errstr(rc) );
+      log_error("signing failed: %s\n", gpg_strerror (rc) );
       goto fail;
     }
 
@@ -2701,13 +2703,13 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
   sk=NULL;
 
   /* insert into secret keyblock */
-  pkt = m_alloc_clear( sizeof *pkt );
+  pkt = xcalloc (1, sizeof *pkt );
   pkt->pkttype = PKT_SIGNATURE;
   pkt->pkt.signature = copy_signature(NULL, sig);
   insert_kbnode( sec_keyblock, new_kbnode(pkt), PKT_SIGNATURE );
 
   /* insert into public keyblock */
-  pkt = m_alloc_clear( sizeof *pkt );
+  pkt = xcalloc (1, sizeof *pkt );
   pkt->pkttype = PKT_SIGNATURE;
   pkt->pkt.signature = sig;
   insert_kbnode( pub_keyblock, new_kbnode(pkt), PKT_SIGNATURE );
@@ -2821,23 +2823,23 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 					    sk, keygen_add_key_expire, sub_pk );
 		if( rc ) {
 		    log_error("make_keysig_packet failed: %s\n",
-						    g10_errstr(rc));
+						    gpg_strerror (rc));
 		    free_secret_key( sk );
 		    return 0;
 		}
 		/* replace the packet */
-		newpkt = m_alloc_clear( sizeof *newpkt );
+		newpkt = xcalloc (1, sizeof *newpkt );
 		newpkt->pkttype = PKT_SIGNATURE;
 		newpkt->pkt.signature = newsig;
 		free_packet( node->pkt );
-		m_free( node->pkt );
+		xfree ( node->pkt );
 		node->pkt = newpkt;
 		if( sn ) {
-		    newpkt = m_alloc_clear( sizeof *newpkt );
+		    newpkt = xcalloc (1, sizeof *newpkt );
 		    newpkt->pkttype = PKT_SIGNATURE;
 		    newpkt->pkt.signature = copy_signature( NULL, newsig );
 		    free_packet( sn->pkt );
-		    m_free( sn->pkt );
+		    xfree ( sn->pkt );
 		    sn->pkt = newpkt;
 		}
 		sub_pk = NULL;
@@ -2930,7 +2932,7 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
 		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
 			 user);
-		m_free(user);
+		xfree (user);
 	      }
 	      else {
 	        /* This is a selfsignature which is to be replaced.
@@ -2969,16 +2971,16 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
                                                action > 0? "x":NULL );
                     if( rc ) {
                         log_error ("update_keysig_packet failed: %s\n",
-                                   g10_errstr(rc));
+                                   gpg_strerror (rc));
                         free_secret_key( sk );
                         return 0;
                     }
                     /* replace the packet */
-                    newpkt = m_alloc_clear( sizeof *newpkt );
+                    newpkt = xcalloc (1, sizeof *newpkt );
                     newpkt->pkttype = PKT_SIGNATURE;
                     newpkt->pkt.signature = newsig;
                     free_packet( node->pkt );
-                    m_free( node->pkt );
+                    xfree ( node->pkt );
                     node->pkt = newpkt;
                     modified = 1;
 		}
@@ -3039,7 +3041,7 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
 
 		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
 			 user);
-		m_free(user);
+		xfree (user);
 	      }
 	      else {
 		/* This is a selfsignature which is to be replaced 
@@ -3056,16 +3058,16 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
                                            NULL );
                 if( rc ) {
                     log_error ("update_keysig_packet failed: %s\n",
-                               g10_errstr(rc));
+                               gpg_strerror (rc));
                     free_secret_key( sk );
                     return 0;
                 }
                 /* replace the packet */
-                newpkt = m_alloc_clear( sizeof *newpkt );
+                newpkt = xcalloc (1, sizeof *newpkt );
                 newpkt->pkttype = PKT_SIGNATURE;
                 newpkt->pkt.signature = newsig;
                 free_packet( node->pkt );
-                m_free( node->pkt );
+                xfree ( node->pkt );
                 node->pkt = newpkt;
                 modified = 1;
 	      }
@@ -3397,7 +3399,7 @@ menu_revsig( KBNODE keyblock )
 	attrib.non_exportable=!node->pkt->pkt.signature->flags.exportable;
 
 	node->flag &= ~NODFLG_MARK_A;
-	sk = m_alloc_secure_clear( sizeof *sk );
+	sk = xcalloc_secure (1, sizeof *sk );
 	if( get_seckey( sk, node->pkt->pkt.signature->keyid ) ) {
 	    log_info(_("no secret key\n"));
 	    continue;
@@ -3411,7 +3413,7 @@ menu_revsig( KBNODE keyblock )
 				       &attrib );
 	free_secret_key(sk);
 	if( rc ) {
-	    log_error(_("signing failed: %s\n"), g10_errstr(rc));
+	    log_error(_("signing failed: %s\n"), gpg_strerror (rc));
 	    release_revocation_reason_info( reason );
 	    return changed;
 	}
@@ -3421,7 +3423,7 @@ menu_revsig( KBNODE keyblock )
 	if(primary_pk->keyid[0]==sig->keyid[0] &&
 	   primary_pk->keyid[1]==sig->keyid[1])
 	  unode->pkt->pkt.user_id->is_revoked=1;
-	pkt = m_alloc_clear( sizeof *pkt );
+	pkt = xcalloc (1, sizeof *pkt );
 	pkt->pkttype = PKT_SIGNATURE;
 	pkt->pkt.signature = sig;
 	insert_kbnode( unode, new_kbnode(pkt), 0 );
@@ -3470,7 +3472,7 @@ menu_revuid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	  {
 	    char *user=utf8_to_native(uid->name,uid->len,0);
 	    log_info(_("user ID \"%s\" is already revoked\n"),user);
-	    m_free(user);
+	    xfree (user);
 	  }
 	else
 	  {
@@ -3502,12 +3504,12 @@ menu_revuid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 				     sign_mk_attrib, &attrib );
 	    if( rc )
 	      {
-		log_error(_("signing failed: %s\n"), g10_errstr(rc));
+		log_error(_("signing failed: %s\n"), gpg_strerror (rc));
 		goto leave;
 	      }
 	    else
 	      {
-		pkt = m_alloc_clear( sizeof *pkt );
+		pkt = xcalloc (1, sizeof *pkt );
 		pkt->pkttype = PKT_SIGNATURE;
 		pkt->pkt.signature = sig;
 		insert_kbnode( node, new_kbnode(pkt), 0 );
@@ -3575,13 +3577,13 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 				     sign_mk_attrib, &attrib );
 	    free_secret_key(sk);
 	    if( rc ) {
-		log_error(_("signing failed: %s\n"), g10_errstr(rc));
+		log_error(_("signing failed: %s\n"), gpg_strerror (rc));
 		release_revocation_reason_info( reason );
 		return changed;
 	    }
 	    changed = 1; /* we changed the keyblock */
 
-	    pkt = m_alloc_clear( sizeof *pkt );
+	    pkt = xcalloc (1, sizeof *pkt );
 	    pkt->pkttype = PKT_SIGNATURE;
 	    pkt->pkt.signature = sig;
 	    insert_kbnode( node, new_kbnode(pkt), 0 );

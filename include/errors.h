@@ -1,4 +1,4 @@
-/* errors.h - erro code
+/* errors.h - error code
  *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -25,6 +25,8 @@
 #error from libgpg-error.  The numerical values are identical, though.
 #endif
 
+
+#if 0 /* Not used anymore. */
 #define G10ERR_GENERAL	       1
 #define G10ERR_UNKNOWN_PACKET  2
 #define G10ERR_UNKNOWN_VERSION 3 /* Unknown version (in packet) */
@@ -80,10 +82,20 @@
 #define G10ERR_UNU_PUBKEY     53
 #define G10ERR_UNU_SECKEY     54
 #define G10ERR_KEYSERVER      55
-
+#endif
 
 #ifndef HAVE_STRERROR
 char *strerror( int n );
 #endif
 
 #endif /*GNUPG_INCLUDE_ERRORS_H*/
+
+
+
+
+
+
+
+
+
+

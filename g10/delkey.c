@@ -68,9 +68,9 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     exactmatch = (desc.mode == KEYDB_SEARCH_MODE_FPR
                   || desc.mode == KEYDB_SEARCH_MODE_FPR16
                   || desc.mode == KEYDB_SEARCH_MODE_FPR20);
-    rc = desc.mode? keydb_search (hd, &desc, 1):G10ERR_INV_USER_ID;
+    rc = desc.mode? keydb_search (hd, &desc, 1):GPG_ERR_INV_USER_ID;
     if (rc) {
-	log_error (_("key `%s' not found: %s\n"), username, g10_errstr (rc));
+	log_error (_("key `%s' not found: %s\n"), username, gpg_strerror (rc));
 	write_status_text( STATUS_DELETE_PROBLEM, "1" );
 	goto leave;
     }
@@ -78,7 +78,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     /* read the keyblock */
     rc = keydb_get_keyblock (hd, &keyblock );
     if (rc) {
-	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+	log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
 	goto leave;
     }
 
@@ -86,7 +86,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY:PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; key not found anymore!\n");
-	rc = G10ERR_GENERAL;
+	rc = GPG_ERR_GENERAL;
 	goto leave;
     }
 
@@ -103,8 +103,8 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
             rc = -1;
             goto leave;
 	}
-	else if( rc != G10ERR_NO_SECKEY ) {
-	    log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
+	else if( rc != GPG_ERR_NO_SECKEY ) {
+	    log_error("%s: get secret key: %s\n", username, gpg_strerror (rc) );
 	}
 	else
 	    rc = 0;
@@ -153,7 +153,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     if( okay ) {
 	rc = keydb_delete_keyblock (hd);
 	if (rc) {
-	    log_error (_("deleting keyblock failed: %s\n"), g10_errstr(rc) );
+	    log_error (_("deleting keyblock failed: %s\n"), gpg_strerror (rc) );
 	    goto leave;
 	}
 
@@ -200,7 +200,7 @@ delete_keys( STRLIST names, int secret, int allow_both )
        }
 
        if(rc) {
-	 log_error("%s: delete key failed: %s\n", names->d, g10_errstr(rc) );
+	 log_error("%s: delete key failed: %s\n", names->d, gpg_strerror (rc) );
 	 return rc;
        }
     }

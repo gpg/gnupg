@@ -1,5 +1,5 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +24,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+
+#include "gpg.h"
 #include "filter.h"
 #include "keydb.h"
 #include "status.h"
@@ -48,7 +50,7 @@ struct keyrec
   time_t createtime,expiretime;
   int size,flags;
   byte type;
-  IOBUF uidbuf;
+  iobuf_t uidbuf;
   int lines;
 };
 
@@ -186,7 +188,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
       /* Get the host */
       opt.keyserver_host=strsep(&uri,":/");
       if(opt.keyserver_host[0]=='\0')
-	return G10ERR_BAD_URI;
+	return GPG_ERR_BAD_URI;
 
       if(uri==NULL || uri[0]=='\0')
 	opt.keyserver_port=NULL;
@@ -202,7 +204,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 	  while(*ch!='\0')
 	    {
 	      if(!isdigit(*ch))
-		return G10ERR_BAD_URI;
+		return GPG_ERR_BAD_URI;
 
 	      ch++;
 	    }
@@ -227,11 +229,11 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
     {
       /* One slash means absolute path.  We don't need to support that
 	 yet. */
-      return G10ERR_BAD_URI;
+      return GPG_ERR_BAD_URI;
     }
 
   if(opt.keyserver_scheme[0]=='\0')
-    return G10ERR_BAD_URI;
+    return GPG_ERR_BAD_URI;
 
   return 0;
 }
@@ -250,7 +252,7 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   if(keyrec->type)
     {
-      const char *str=pubkey_algo_to_string(keyrec->type);
+      const char *str = gcry_pk_algo_name (keyrec->type);
 
       if(str)
 	printf("%s ",str);
@@ -319,7 +321,7 @@ parse_keyrec(char *keystring)
 	return NULL;
       else if(work->desc.mode==KEYDB_SEARCH_MODE_NONE)
 	{
-	  m_free(work);
+	  xfree (work);
 	  return NULL;
 	}
       else
@@ -332,7 +334,7 @@ parse_keyrec(char *keystring)
 
   if(work==NULL)
     {
-      work=m_alloc_clear(sizeof(struct keyrec));
+      work=xcalloc (1,sizeof(struct keyrec));
       work->uidbuf=iobuf_temp();
     }
 
@@ -353,7 +355,7 @@ parse_keyrec(char *keystring)
       if(work->desc.mode)
 	{
 	  ret=work;
-	  work=m_alloc_clear(sizeof(struct keyrec));
+	  work=xcalloc (1,sizeof(struct keyrec));
 	  work->uidbuf=iobuf_temp();
 	}
 
@@ -458,7 +460,7 @@ parse_keyrec(char *keystring)
 
       decoded=utf8_to_native(userid,i,0);
       iobuf_writestr(work->uidbuf,decoded);
-      m_free(decoded);
+      xfree (decoded);
       iobuf_writestr(work->uidbuf,"\n\t");
       work->lines++;
     }
@@ -496,7 +498,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 
   if(answer[0]=='q' || answer[0]=='Q')
     {
-      m_free(answer);
+      xfree (answer);
       return 1;
     }
   else if(atoi(answer)>=1 && atoi(answer)<=numdesc)
@@ -507,7 +509,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 	if(atoi(num)>=1 && atoi(num)<=numdesc)
 	  keyserver_work(GET,NULL,&desc[atoi(num)-1],1);
 
-      m_free(answer);
+      xfree (answer);
       return 1;
     }
 
@@ -518,7 +520,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
    small, it will grow safely.  If negative it disables the "Key x-y
    of z" messages. */
 static void
-keyserver_search_prompt(IOBUF buffer,const char *searchstr)
+keyserver_search_prompt(iobuf_t buffer,const char *searchstr)
 {
   int i=0,validcount=0,started=0,header=0,count=1;
   unsigned int maxlen,buflen;
@@ -527,7 +529,7 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
   /* TODO: Something other than 23?  That's 24-1 (the prompt). */
   int maxlines=23,numlines=0;
 
-  desc=m_alloc(count*sizeof(KEYDB_SEARCH_DESC));
+  desc=xmalloc (count*sizeof(KEYDB_SEARCH_DESC));
 
   for(;;)
     {
@@ -582,7 +584,7 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 	      else
 		validcount=1;
 
-	      desc=m_realloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
+	      desc=xrealloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
 	    }
 
 	  started=1;
@@ -622,7 +624,7 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 	  /* keyserver helper sent more keys than they claimed in the
 	     info: line. */
 	  count+=10;
-	  desc=m_realloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
+	  desc=xrealloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
 	  validcount=0;
 	}
 
@@ -645,15 +647,15 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 
 	  numlines+=keyrec->lines;
 	  iobuf_close(keyrec->uidbuf);
-	  m_free(keyrec);
+	  xfree (keyrec);
 
 	  started=1;
 	  i++;
 	}
     }
 
-  m_free(desc);
-  m_free(line);
+  xfree (desc);
+  xfree (line);
 
  notfound:
   if(count==0)
@@ -694,7 +696,7 @@ keyserver_spawn(int action,STRLIST list,
 #endif
 
   /* Build the filename for the helper to execute */
-  command=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);
+  command=xmalloc (strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);
   strcpy(command,"gpgkeys_");
   strcat(command,opt.keyserver_scheme);
 
@@ -702,13 +704,13 @@ keyserver_spawn(int action,STRLIST list,
     {
       if(opt.keyserver_options.keep_temp_files)
 	{
-	  command=m_realloc(command,strlen(command)+
+	  command=xrealloc(command,strlen(command)+
 			    strlen(KEYSERVER_ARGS_KEEP)+1);
 	  strcat(command,KEYSERVER_ARGS_KEEP);
 	}
       else
 	{
-	  command=m_realloc(command,strlen(command)+
+	  command=xrealloc(command,strlen(command)+
 			    strlen(KEYSERVER_ARGS_NOKEEP)+1);
 	  strcat(command,KEYSERVER_ARGS_NOKEEP);  
 	}
@@ -806,7 +808,7 @@ keyserver_spawn(int action,STRLIST list,
 	for(key=list;key!=NULL;key=key->next)
 	  {
 	    armor_filter_context_t afx;
-	    IOBUF buffer=iobuf_temp();
+	    iobuf_t buffer=iobuf_temp();
 	    KBNODE block;
 
 	    temp=NULL;
@@ -930,13 +932,13 @@ keyserver_spawn(int action,STRLIST list,
 	    fprintf(spawn->tochild,"%s\n",key->d);
 	    if(key!=list)
 	      {
-		searchstr=m_realloc(searchstr,
+		searchstr=xrealloc(searchstr,
 				    strlen(searchstr)+strlen(key->d)+2);
 		strcat(searchstr," ");
 	      }
 	    else
 	      {
-		searchstr=m_alloc(strlen(key->d)+1);
+		searchstr=xmalloc (strlen(key->d)+1);
 		searchstr[0]='\0';
 	      }
 
@@ -968,7 +970,7 @@ keyserver_spawn(int action,STRLIST list,
       maxlen=1024;
       if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	{
-	  ret=G10ERR_READ_FILE;
+	  ret = iobuf_error (spawn->fromchild);
 	  goto fail; /* i.e. EOF */
 	}
 
@@ -1052,7 +1054,7 @@ keyserver_spawn(int action,STRLIST list,
       }
 
  fail:
-  m_free(line);
+  xfree (line);
 
   *prog=exec_finish(spawn);
 
@@ -1067,13 +1069,13 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
   if(opt.keyserver_scheme==NULL)
     {
       log_error(_("no keyserver known (use option --keyserver)\n"));
-      return G10ERR_BAD_URI;
+      return GPG_ERR_BAD_URI;
     }
 
 #ifdef DISABLE_KEYSERVER_HELPERS
 
   log_error(_("external keyserver calls are not supported in this build\n"));
-  return G10ERR_KEYSERVER;
+  return GPG_ERR_KEYSERVER;
 
 #else
   /* Spawn a handler */
@@ -1107,12 +1109,12 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 	  break;
 	}
 
-      return G10ERR_KEYSERVER;
+      return GPG_ERR_KEYSERVER;
     }
 
   if(rc)
     {
-      log_error(_("keyserver communications error: %s\n"),g10_errstr(rc));
+      log_error(_("keyserver communications error: %s\n"),gpg_strerror (rc));
 
       return rc;
     }
@@ -1146,7 +1148,7 @@ keyserver_import(STRLIST users)
   int rc=0;
 
   /* Build a list of key ids */
-  desc=m_alloc(sizeof(KEYDB_SEARCH_DESC)*num);
+  desc=xmalloc (sizeof(KEYDB_SEARCH_DESC)*num);
 
   for(;users;users=users->next)
     {
@@ -1164,14 +1166,14 @@ keyserver_import(STRLIST users)
       if(count==num)
 	{
 	  num+=100;
-	  desc=m_realloc(desc,sizeof(KEYDB_SEARCH_DESC)*num);
+	  desc=xrealloc(desc,sizeof(KEYDB_SEARCH_DESC)*num);
 	}
     }
 
   if(count>0)
     rc=keyserver_work(GET,NULL,desc,count);
 
-  m_free(desc);
+  xfree (desc);
 
   return rc;
 }
@@ -1221,21 +1223,21 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 
   *count=0;
 
-  *klist=m_alloc(sizeof(KEYDB_SEARCH_DESC)*num);
+  *klist=xmalloc (sizeof(KEYDB_SEARCH_DESC)*num);
 
   kdbhd=keydb_new(0);
 
   if(!users)
     {
       ndesc = 1;
-      desc = m_alloc_clear ( ndesc * sizeof *desc);
+      desc = xcalloc (1, ndesc * sizeof *desc);
       desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
     }
   else
     {
       for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
 	;
-      desc = m_alloc ( ndesc * sizeof *desc);
+      desc = xmalloc ( ndesc * sizeof *desc);
         
       for (ndesc=0, sl=users; sl; sl = sl->next)
 	{
@@ -1243,7 +1245,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	    ndesc++;
 	  else
 	    log_error (_("key `%s' not found: %s\n"),
-		       sl->d, g10_errstr (G10ERR_INV_USER_ID));
+		       sl->d, gpg_strerror (GPG_ERR_INV_USER_ID));
 	}
     }
 
@@ -1256,7 +1258,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
       rc = keydb_get_keyblock (kdbhd, &keyblock );
       if( rc )
 	{
-	  log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+	  log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
 	  goto leave;
 	}
 
@@ -1273,14 +1275,14 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	     node->pkt->pkt.public_key->version>=4)
 	    {
 	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
-	      mpi_get_keyid(node->pkt->pkt.public_key->pkey[0],
-			    (*klist)[*count].u.kid);
+	      v3_keyid (node->pkt->pkt.public_key->pkey[0],
+                        (*klist)[*count].u.kid);
 	      (*count)++;
 
 	      if(*count==num)
 		{
 		  num+=100;
-		  *klist=m_realloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
+		  *klist=xrealloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
 		}
 	    }
 
@@ -1308,7 +1310,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	  if(*count==num)
 	    {
 	      num+=100;
-	      *klist=m_realloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
+	      *klist=xrealloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
 	    }
 	}
     }
@@ -1317,7 +1319,7 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
     rc=0;
   
  leave:
-  m_free(desc);
+  xfree (desc);
   keydb_release(kdbhd);
   release_kbnode(keyblock);
 
@@ -1363,7 +1365,7 @@ keyserver_refresh(STRLIST users)
       rc=keyserver_work(GET,NULL,desc,count);
     }
 
-  m_free(desc);
+  xfree (desc);
 
   return rc;
 }

@@ -68,7 +68,7 @@ struct mainproc_context {
     int last_was_session_key;
     KBNODE list;   /* the current list of packets */
     int have_data;
-    IOBUF iobuf;    /* used to get the filename etc. */
+    iobuf_t iobuf;    /* used to get the filename etc. */
     int trustletter; /* temp usage in list_node */
     ulong local_id;    /* ditto */
     struct kidlist_item *pkenc_list;	/* list of encryption packets */
@@ -79,7 +79,7 @@ struct mainproc_context {
 };
 
 
-static int do_proc_packets( CTX c, IOBUF a );
+static int do_proc_packets( CTX c, iobuf_t a );
 
 static void list_node( CTX c, KBNODE node );
 static void proc_tree( CTX c, KBNODE node );
@@ -94,7 +94,7 @@ release_list( CTX c )
     release_kbnode( c->list );
     while( c->pkenc_list ) {
 	struct kidlist_item *tmp = c->pkenc_list->next;
-	m_free( c->pkenc_list );
+	xfree ( c->pkenc_list );
 	c->pkenc_list = tmp;
     }
     c->pkenc_list = NULL;
@@ -103,7 +103,7 @@ release_list( CTX c )
     c->last_was_session_key = 0;
     c->pipemode.op = 0;
     c->pipemode.stop_now = 0;
-    m_free(c->dek); c->dek = NULL;
+    xfree (c->dek); c->dek = NULL;
 }
 
 
@@ -249,25 +249,25 @@ symkey_decrypt_sesskey( DEK *dek, byte *sesskey, size_t slen )
 		    (int)slen);
         return;   
     }
-    hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
-    cipher_setkey( hd, dek->key, dek->keylen );
-    cipher_setiv( hd, NULL, 0 );
-    cipher_decrypt( hd, sesskey, sesskey, slen );
-    cipher_close( hd );
+    gcry_cipher_open ( &hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1 );
+    gcry_cipher_setkey( hd, dek->key, dek->keylen );
+    gcry_cipher_setiv( hd, NULL, 0 );
+    gcry_cipher_decrypt( hd, sesskey, slen, NULL, 0);
+    gcry_cipher_close( hd );
     /* check first byte (the cipher algo) */
     if ( sesskey[0] > 10 ) {
         log_error ( _("invalid symkey algorithm detected (%d)\n"),
                     sesskey[0] );
         return;
     }
-    n = cipher_get_keylen (sesskey[0]) / 8;
+    n = gcry_cipher_get_algo_keylen (sesskey[0]);
     if (n > DIM(dek->key))
          BUG ();
     /* now we replace the dek components with the real session key
        to decrypt the contents of the sequencing packet. */
-    dek->keylen = cipher_get_keylen( sesskey[0] ) / 8;
+    dek->keylen = gcry_cipher_get_algo_keylen (sesskey[0]);
     dek->algo = sesskey[0];
-    memcpy( dek->key, sesskey + 1, dek->keylen );
+    memcpy (dek->key, sesskey + 1, dek->keylen);
     /*log_hexdump( "thekey", dek->key, dek->keylen );*/
 }   
 
@@ -283,8 +283,8 @@ proc_symkey_enc( CTX c, PACKET *pkt )
         int algo = enc->cipher_algo;
 	const char *s;
 
-	s = cipher_algo_to_string (algo);
-	if( s )
+	s = gcry_cipher_algo_name (algo);
+	if (s && *s)
 	    log_info(_("%s encrypted data\n"), s );
 	else
 	    log_info(_("encrypted with unknown algorithm %d\n"), algo );
@@ -328,10 +328,10 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	/* It does not make much sense to store the session key in
 	 * secure memory because it has already been passed on the
 	 * command line and the GCHQ knows about it */
-	c->dek = m_alloc_clear( sizeof *c->dek );
+	c->dek = xcalloc (1, sizeof *c->dek );
 	result = get_override_session_key ( c->dek, opt.override_session_key );
 	if ( result ) {
-	    m_free(c->dek); c->dek = NULL;
+	    xfree (c->dek); c->dek = NULL;
 	}
     }
     else if( is_ELGAMAL(enc->pubkey_algo)
@@ -343,18 +343,18 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	    if( opt.list_only )
 		result = -1;
 	    else {
-		c->dek = m_alloc_secure_clear( sizeof *c->dek );
+		c->dek = xcalloc_secure (1, sizeof *c->dek);
 		if( (result = get_session_key( enc, c->dek )) ) {
 		    /* error: delete the DEK */
-		    m_free(c->dek); c->dek = NULL;
+		    xfree (c->dek); c->dek = NULL;
 		}
 	    }
 	}
 	else
-	    result = G10ERR_NO_SECKEY;
+	    result = GPG_ERR_NO_SECKEY;
     }
     else
-	result = G10ERR_PUBKEY_ALGO;
+	result = GPG_ERR_PUBKEY_ALGO;
 
     if( result == -1 )
 	;
@@ -364,7 +364,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
                 log_info( _("public key encrypted data: good DEK\n") );
             if ( opt.show_session_key ) {
                 int i;
-                char *buf = m_alloc ( c->dek->keylen*2 + 20 );
+                char *buf = xmalloc ( c->dek->keylen*2 + 20 );
                 sprintf ( buf, "%d:", c->dek->algo );
                 for(i=0; i < c->dek->keylen; i++ )
                     sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
@@ -374,7 +374,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
         }
         /* store it for later display */
         {
-            struct kidlist_item *x = m_alloc( sizeof *x );
+            struct kidlist_item *x = xmalloc ( sizeof *x );
             x->kid[0] = enc->keyid[0];
             x->kid[1] = enc->keyid[1];
             x->pubkey_algo = enc->pubkey_algo;
@@ -404,11 +404,11 @@ print_pkenc_list( struct kidlist_item *list, int failed )
         if ( !failed && list->reason )
             continue;
 
-        algstr = pubkey_algo_to_string( list->pubkey_algo );
-        pk = m_alloc_clear( sizeof *pk );
+        algstr = gcry_pk_algo_name (list->pubkey_algo);
+        pk = xcalloc (1, sizeof *pk );
 
-	if( !algstr )
-	    algstr = "[?]";
+	if (!algstr || !*algstr)
+          algstr = "[?]";
 	pk->pubkey_algo = list->pubkey_algo;
 	if( !get_pubkey( pk, list->kid ) ) {
 	    size_t n;
@@ -416,11 +416,11 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 	    log_info( _("encrypted with %u-bit %s key, ID %08lX, created %s\n"),
 		       nbits_from_pk( pk ), algstr, (ulong)list->kid[1],
 		       strtimestamp(pk->timestamp) );
-	    fputs("      \"", log_stream() );
+	    fputs("      \"", log_get_stream() );
 	    p = get_user_id( list->kid, &n );
-	    print_utf8_string2 ( log_stream(), p, n, '"' );
-	    m_free(p);
-	    fputs("\"\n", log_stream() );
+	    print_utf8_string2 ( log_get_stream(), p, n, '"' );
+	    xfree (p);
+	    fputs("\"\n", log_get_stream() );
 	}
 	else {
 	    log_info(_("encrypted with %s key, ID %08lX\n"),
@@ -428,7 +428,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 	}
 	free_public_key( pk );
 
-	if( list->reason == G10ERR_NO_SECKEY ) {
+	if( list->reason == GPG_ERR_NO_SECKEY ) {
 	    if( is_status_enabled() ) {
 		char buf[20];
 		sprintf(buf,"%08lX%08lX", (ulong)list->kid[0],
@@ -438,7 +438,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 	}
 	else if (list->reason)
 	    log_info(_("public key decryption failed: %s\n"),
-						g10_errstr(list->reason));
+						gpg_strerror (list->reason));
     }
 }
 
@@ -465,22 +465,22 @@ proc_encrypted( CTX c, PACKET *pkt )
 	/* assume this is old style conventional encrypted data */
         if ( (algo = opt.def_cipher_algo))
             log_info (_("assuming %s encrypted data\n"),
-                        cipher_algo_to_string(algo));
-        else if ( check_cipher_algo(CIPHER_ALGO_IDEA) ) {
+                        gcry_cipher_algo_name (algo));
+        else if ( gcry_cipher_test_algo(CIPHER_ALGO_IDEA) ) {
             algo = opt.def_cipher_algo;
             if (!algo)
                 algo = opt.s2k_cipher_algo;
 	    idea_cipher_warn(1);
             log_info (_("IDEA cipher unavailable, "
                         "optimistically attempting to use %s instead\n"),
-                       cipher_algo_to_string(algo));
+                       gcry_cipher_algo_name (algo));
         }
         else {
             algo = CIPHER_ALGO_IDEA;
             if (!opt.s2k_digest_algo) {
                 /* If no digest is given we assume MD5 */
                 s2kbuf.mode = 0;
-                s2kbuf.hash_algo = DIGEST_ALGO_MD5;
+                s2kbuf.hash_algo = GCRY_MD_MD5;
                 s2k = &s2kbuf;
             }
             log_info (_("assuming %s encrypted data\n"), "IDEA");
@@ -491,14 +491,15 @@ proc_encrypted( CTX c, PACKET *pkt )
             c->dek->algo_info_printed = 1;
     }
     else if( !c->dek )
-	result = G10ERR_NO_SECKEY;
+	result = GPG_ERR_NO_SECKEY;
     if( !result )
 	result = decrypt_data( c, pkt->pkt.encrypted, c->dek );
 
-    m_free(c->dek); c->dek = NULL;
+    xfree (c->dek); c->dek = NULL;
     if( result == -1 )
 	;
-    else if( !result || (result==G10ERR_BAD_SIGN && opt.ignore_mdc_error)) {
+    else if( !result || (gpg_err_code (result)==GPG_ERR_BAD_SIGNATURE
+                         && opt.ignore_mdc_error)) {
 	write_status( STATUS_DECRYPTION_OKAY );
 	if( opt.verbose > 1 )
 	    log_info(_("decryption okay\n"));
@@ -507,14 +508,14 @@ proc_encrypted( CTX c, PACKET *pkt )
 	else if(!opt.no_mdc_warn)
 	    log_info (_("WARNING: message was not integrity protected\n"));
     }
-    else if( result == G10ERR_BAD_SIGN ) {
+    else if( gpg_err_code (result) == GPG_ERR_BAD_SIGNATURE ) {
 	log_error(_("WARNING: encrypted message has been manipulated!\n"));
 	write_status( STATUS_BADMDC );
 	write_status( STATUS_DECRYPTION_FAILED );
     }
     else {
 	write_status( STATUS_DECRYPTION_FAILED );
-	log_error(_("decryption failed: %s\n"), g10_errstr(result));
+	log_error(_("decryption failed: %s\n"), gpg_strerror (result));
 	/* Hmmm: does this work when we have encrypted using multiple
 	 * ways to specify the session key (symmmetric and PK)*/
     }
@@ -537,7 +538,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     else if( opt.verbose )
 	log_info(_("original file name='%.*s'\n"), pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
-    c->mfx.md = md_open( 0, 0);
+    gcry_md_open (&c->mfx.md, 0, 0);
     /* fixme: we may need to push the textfilter if we have sigclass 1
      * and no armoring - Not yet tested
      * Hmmm, why don't we need it at all if we have sigclass 1
@@ -548,7 +549,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     for(n=c->list; n; n = n->next ) {
 	if( n->pkt->pkttype == PKT_ONEPASS_SIG ) {
 	    if( n->pkt->pkt.onepass_sig->digest_algo ) {
-		md_enable( c->mfx.md, n->pkt->pkt.onepass_sig->digest_algo );
+		gcry_md_enable ( c->mfx.md, n->pkt->pkt.onepass_sig->digest_algo );
 		if( !any && n->pkt->pkt.onepass_sig->digest_algo
 						      == DIGEST_ALGO_MD5 )
 		    only_md5 = 1;
@@ -572,7 +573,7 @@ proc_plaintext( CTX c, PACKET *pkt )
              * documents */
             clearsig = (*data == 0x01);
             for( data++, datalen--; datalen; datalen--, data++ )
-                md_enable( c->mfx.md, *data );
+                gcry_md_enable ( c->mfx.md, *data );
             any = 1;
             break;  /* no pass signature pakets are expected */
         }
@@ -580,9 +581,9 @@ proc_plaintext( CTX c, PACKET *pkt )
 
     if( !any && !opt.skip_verify ) {
 	/* no onepass sig packet: enable all standard algos */
-	md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
-	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
-	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
+	gcry_md_enable ( c->mfx.md, DIGEST_ALGO_RMD160 );
+	gcry_md_enable ( c->mfx.md, DIGEST_ALGO_SHA1 );
+	gcry_md_enable ( c->mfx.md, DIGEST_ALGO_MD5 );
     }
     if( opt.pgp2_workarounds && only_md5 && !opt.skip_verify ) {
 	/* This is a kludge to work around a bug in pgp2.  It does only
@@ -590,25 +591,27 @@ proc_plaintext( CTX c, PACKET *pkt )
 	 * pgp mails we could see whether there is the signature packet
 	 * in front of the plaintext.  If someone needs this, send me a patch.
 	 */
-	c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0);
+	gcry_md_open (&c->mfx.md2, DIGEST_ALGO_MD5, 0);
     }
     if ( DBG_HASHING ) {
-	md_start_debug( c->mfx.md, "verify" );
+	gcry_md_start_debug ( c->mfx.md, "verify" );
 	if ( c->mfx.md2  )
-	    md_start_debug( c->mfx.md2, "verify2" );
+	    gcry_md_start_debug ( c->mfx.md2, "verify2" );
     }
     if ( c->pipemode.op == 'B' )
-        rc = handle_plaintext( pt, &c->mfx, 1, 0 );
+        rc = handle_plaintext( pt, &c->mfx, 1, 0, NULL );
     else {
-        rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
-        if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
+        int failed;
+
+        rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig, &failed);
+        if( rc && failed && !c->sigs_only) {
             /* can't write output but we hash it anyway to
              * check the signature */
-            rc = handle_plaintext( pt, &c->mfx, 1, clearsig );
+            rc = handle_plaintext( pt, &c->mfx, 1, clearsig, NULL );
         }
     }
     if( rc )
-	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
+	log_error( "handle plaintext failed: %s\n", gpg_strerror (rc));
     free_packet(pkt);
     c->last_was_session_key = 0;
 
@@ -624,14 +627,14 @@ proc_plaintext( CTX c, PACKET *pkt )
 
 
 static int
-proc_compressed_cb( IOBUF a, void *info )
+proc_compressed_cb( iobuf_t a, void *info )
 {
     return proc_signature_packets( info, a, ((CTX)info)->signed_data,
 					    ((CTX)info)->sigfilename );
 }
 
 static int
-proc_encrypt_cb( IOBUF a, void *info )
+proc_encrypt_cb( iobuf_t a, void *info )
 {
     return proc_encryption_packets( info, a );
 }
@@ -650,7 +653,7 @@ proc_compressed( CTX c, PACKET *pkt )
     else
 	rc = handle_compressed( c, zd, NULL, NULL );
     if( rc )
-	log_error("uncompressing failed: %s\n", g10_errstr(rc));
+	log_error("uncompressing failed: %s\n", gpg_strerror (rc));
     free_packet(pkt);
     c->last_was_session_key = 0;
 }
@@ -676,27 +679,29 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
     sig = node->pkt->pkt.signature;
 
     algo = sig->digest_algo;
-    if( (rc=check_digest_algo(algo)) )
+    if( (rc = gcry_md_test_algo(algo)) )
 	return rc;
 
     if( sig->sig_class == 0x00 ) {
 	if( c->mfx.md )
-	    md = md_copy( c->mfx.md );
+	    gcry_md_copy (&md,c->mfx.md);
 	else /* detached signature */
-	    md = md_open( 0, 0 ); /* signature_check() will enable the md*/
+	    gcry_md_open (&md, 0, 0 ); /* signature_check() will
+                                          enable the md*/
     }
     else if( sig->sig_class == 0x01 ) {
 	/* how do we know that we have to hash the (already hashed) text
 	 * in canonical mode ??? (calculating both modes???) */
 	if( c->mfx.md ) {
-	    md = md_copy( c->mfx.md );
-	    if( c->mfx.md2 )
-	       md2 = md_copy( c->mfx.md2 );
+	    gcry_md_copy (&md, c->mfx.md);
+	    if (c->mfx.md2)
+	       gcry_md_copy (&md2, c->mfx.md2);
 	}
 	else { /* detached signature */
 	  log_debug("Do we really need this here?");
-	    md = md_open( 0, 0 ); /* signature_check() will enable the md*/
-	    md2 = md_open( 0, 0 );
+	    gcry_md_open (&md, 0, 0 ); /* signature_check() will
+                                          enable the md*/
+	    gcry_md_open (&md2, 0, 0 );
 	}
     }
     else if( (sig->sig_class&~3) == 0x10
@@ -712,21 +717,21 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
 	else if( sig->sig_class == 0x20 ) {
 	    log_info(_("standalone revocation - "
 		       "use \"gpg --import\" to apply\n"));
-	    return G10ERR_NOT_PROCESSED;
+	    return GPG_ERR_NOT_PROCESSED;
 	}
 	else {
 	    log_error("invalid root packet for sigclass %02x\n",
 							sig->sig_class);
-	    return G10ERR_SIG_CLASS;
+	    return GPG_ERR_SIG_CLASS;
 	}
     }
     else
-	return G10ERR_SIG_CLASS;
+	return GPG_ERR_SIG_CLASS;
     rc = signature_check2( sig, md, &dummy, is_expkey );
-    if( rc == G10ERR_BAD_SIGN && md2 )
+    if( gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2 )
 	rc = signature_check2( sig, md2, &dummy, is_expkey );
-    md_close(md);
-    md_close(md2);
+    gcry_md_close (md);
+    gcry_md_close (md2);
 
     return rc;
 }
@@ -947,12 +952,13 @@ list_node( CTX c, KBNODE node )
 	    fputs("sig", stdout);
 	if( opt.check_sigs ) {
 	    fflush(stdout);
-	    switch( (rc2=do_check_sig( c, node, &is_selfsig, NULL )) ) {
-	      case 0:		       sigrc = '!'; break;
-	      case G10ERR_BAD_SIGN:    sigrc = '-'; break;
-	      case G10ERR_NO_PUBKEY: 
-	      case G10ERR_UNU_PUBKEY:  sigrc = '?'; break;
-	      default:		       sigrc = '%'; break;
+	    switch( gpg_err_code (rc2=do_check_sig( c, node,
+                                                    &is_selfsig, NULL )) ) {
+	      case 0:		          sigrc = '!'; break;
+	      case GPG_ERR_BAD_SIGNATURE: sigrc = '-'; break;
+	      case GPG_ERR_NO_PUBKEY: 
+	      case GPG_ERR_UNUSABLE_PUBKEY: sigrc = '?'; break;
+	      default:		          sigrc = '%'; break;
 	    }
 	}
 	else {	/* check whether this is a self signature */
@@ -991,7 +997,7 @@ list_node( CTX c, KBNODE node )
 	    printf("%c       %08lX %s   ",
 		    sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
-	    printf("[%s] ", g10_errstr(rc2) );
+	    printf("[%s] ", gpg_strerror (rc2) );
 	else if( sigrc == '?' )
 	    ;
 	else if( is_selfsig ) {
@@ -1004,7 +1010,7 @@ list_node( CTX c, KBNODE node )
 	else if( !opt.fast_list_mode ) {
 	    p = get_user_id( sig->keyid, &n );
 	    print_string( stdout, p, n, opt.with_colons );
-	    m_free(p);
+	    xfree (p);
 	}
 	if( opt.with_colons )
 	    printf(":%02x%c:", sig->sig_class, sig->flags.exportable?'x':'l');
@@ -1017,24 +1023,24 @@ list_node( CTX c, KBNODE node )
 
 
 int
-proc_packets( void *anchor, IOBUF a )
+proc_packets( void *anchor, iobuf_t a )
 {
     int rc;
-    CTX c = m_alloc_clear( sizeof *c );
+    CTX c = xcalloc (1, sizeof *c );
 
     c->anchor = anchor;
     rc = do_proc_packets( c, a );
-    m_free( c );
+    xfree ( c );
     return rc;
 }
 
 
 
 int
-proc_signature_packets( void *anchor, IOBUF a,
+proc_signature_packets( void *anchor, iobuf_t a,
 			STRLIST signedfiles, const char *sigfilename )
 {
-    CTX c = m_alloc_clear( sizeof *c );
+    CTX c = xcalloc (1, sizeof *c );
     int rc;
 
     c->anchor = anchor;
@@ -1042,28 +1048,28 @@ proc_signature_packets( void *anchor, IOBUF a,
     c->signed_data = signedfiles;
     c->sigfilename = sigfilename;
     rc = do_proc_packets( c, a );
-    m_free( c );
+    xfree ( c );
     return rc;
 }
 
 int
-proc_encryption_packets( void *anchor, IOBUF a )
+proc_encryption_packets( void *anchor, iobuf_t a )
 {
-    CTX c = m_alloc_clear( sizeof *c );
+    CTX c = xcalloc (1, sizeof *c );
     int rc;
 
     c->anchor = anchor;
     c->encrypt_only = 1;
     rc = do_proc_packets( c, a );
-    m_free( c );
+    xfree ( c );
     return rc;
 }
 
 
 int
-do_proc_packets( CTX c, IOBUF a )
+do_proc_packets( CTX c, iobuf_t a )
 {
-    PACKET *pkt = m_alloc( sizeof *pkt );
+    PACKET *pkt = xmalloc ( sizeof *pkt );
     int rc=0;
     int any_data=0;
     int newpkt;
@@ -1076,7 +1082,7 @@ do_proc_packets( CTX c, IOBUF a )
 	    free_packet(pkt);
             /* stop processing when an invalid packet has been encountered
              * but don't do so when we are doing a --list-packet. */
-	    if( rc == G10ERR_INVALID_PACKET && opt.list_packets != 2 )
+	    if( gpg_err_code (rc) == GPG_ERR_INV_PACKET && opt.list_packets != 2 )
 		break;
 	    continue;
 	}
@@ -1101,7 +1107,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_ENCRYPTED:
 	      case PKT_ENCRYPTED_MDC:
                 write_status_text( STATUS_UNEXPECTED, "0" );
-		rc = G10ERR_UNEXPECTED;
+		rc = GPG_ERR_UNEXPECTED;
 		goto leave;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
@@ -1117,7 +1123,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_SECRET_KEY:
 	      case PKT_USER_ID:
                 write_status_text( STATUS_UNEXPECTED, "0" );
-		rc = G10ERR_UNEXPECTED;
+		rc = GPG_ERR_UNEXPECTED;
 		goto leave;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
 	      case PKT_SYMKEY_ENC:  proc_symkey_enc( c, pkt ); break;
@@ -1171,7 +1177,7 @@ do_proc_packets( CTX c, IOBUF a )
 	if( newpkt == -1 )
 	    ;
 	else if( newpkt ) {
-	    pkt = m_alloc( sizeof *pkt );
+	    pkt = xmalloc ( sizeof *pkt );
 	    init_packet(pkt);
 	}
 	else
@@ -1183,7 +1189,7 @@ do_proc_packets( CTX c, IOBUF a )
             break;
         }
     }
-    if( rc == G10ERR_INVALID_PACKET )
+    if( rc == GPG_ERR_INV_PACKET )
 	write_status_text( STATUS_NODATA, "3" );
     if( any_data )
 	rc = 0;
@@ -1193,9 +1199,9 @@ do_proc_packets( CTX c, IOBUF a )
 
   leave:
     release_list( c );
-    m_free(c->dek);
+    xfree (c->dek);
     free_packet( pkt );
-    m_free( pkt );
+    xfree ( pkt );
     free_md_filter_context( &c->mfx );
     return rc;
 }
@@ -1269,16 +1275,16 @@ check_sig_and_print( CTX c, KBNODE node )
     }
 
     tstr = asctimestamp(sig->timestamp);
-    astr = pubkey_algo_to_string( sig->pubkey_algo );
+    astr = gcry_pk_algo_name (sig->pubkey_algo);
     log_info(_("Signature made %.*s using %s key ID %08lX\n"),
 	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
 
     rc = do_check_sig(c, node, NULL, &is_expkey );
-    if( rc == G10ERR_NO_PUBKEY && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
+    if( rc == GPG_ERR_NO_PUBKEY && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
 	if( keyserver_import_keyid ( sig->keyid )==0 )
 	    rc = do_check_sig(c, node, NULL, &is_expkey );
     }
-    if( !rc || rc == G10ERR_BAD_SIGN ) {
+    if( !rc || gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE ) {
 	KBNODE un, keyblock;
 	int count=0, statno;
         char keyid_str[50];
@@ -1322,9 +1328,9 @@ check_sig_and_print( CTX c, KBNODE node )
             log_info(rc? _("BAD signature from \"")
                        : sig->flags.expired ? _("Expired signature from \"")
 		       : _("Good signature from \""));
-	    print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
+	    print_utf8_string( log_get_stream(), un->pkt->pkt.user_id->name,
 					     un->pkt->pkt.user_id->len );
-	    fputs("\"\n", log_stream() );
+	    fputs("\"\n", log_get_stream() );
             count++;
 	}
 	if( !count ) {	/* just in case that we have no valid textual
@@ -1356,13 +1362,13 @@ check_sig_and_print( CTX c, KBNODE node )
                        : sig->flags.expired ? _("Expired signature from \"")
 		       : _("Good signature from \""));
             if (opt.trust_model!=TM_ALWAYS && un) {
-                fputs(_("[uncertain]"), log_stream() );
-                putc(' ', log_stream() );
+                fputs(_("[uncertain]"), log_get_stream() );
+                putc(' ', log_get_stream() );
             }
-            print_utf8_string( log_stream(),
+            print_utf8_string( log_get_stream(),
                                un? un->pkt->pkt.user_id->name:"[?]",
                                un? un->pkt->pkt.user_id->len:3 );
-	    fputs("\"\n", log_stream() );
+	    fputs("\"\n", log_get_stream() );
 	}
 
         /* If we have a good signature and already printed 
@@ -1393,9 +1399,9 @@ check_sig_and_print( CTX c, KBNODE node )
 		  }
 
 		log_info(    _("                aka \""));
-                print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
+                print_utf8_string( log_get_stream(), un->pkt->pkt.user_id->name,
                                                  un->pkt->pkt.user_id->len );
-                fputs("\"\n", log_stream() );
+                fputs("\"\n", log_get_stream() );
             }
 	}
 	release_kbnode( keyblock );
@@ -1408,7 +1414,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if( !rc && is_status_enabled() ) {
 	    /* print a status response with the fingerprint */
-	    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	    PKT_public_key *pk = xcalloc (1, sizeof *pk );
 
 	    if( !get_pubkey( pk, sig->keyid ) ) {
 		byte array[MAX_FINGERPRINT_LEN], *p;
@@ -1436,7 +1442,7 @@ check_sig_and_print( CTX c, KBNODE node )
                    akid[0] = pk->main_keyid[0];
                    akid[1] = pk->main_keyid[1];
                    free_public_key (pk);
-                   pk = m_alloc_clear( sizeof *pk );
+                   pk = xcalloc (1, sizeof *pk );
                    if (get_pubkey (pk, akid)) {
                      /* impossible error, we simply return a zeroed out fpr */
                      n = MAX_FINGERPRINT_LEN < 20? MAX_FINGERPRINT_LEN : 20;
@@ -1460,7 +1466,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	  {
 	    log_info(_("Signature expired %s\n"),
 		     asctimestamp(sig->expiredate));
-	    rc=G10ERR_GENERAL; /* need a better error here? */
+	    rc=GPG_ERR_GENERAL; /* need a better error here? */
 	  }
 	else if(sig->expiredate)
 	  log_info(_("Signature expires %s\n"),asctimestamp(sig->expiredate));
@@ -1469,7 +1475,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	  log_info(_("%s signature, digest algorithm %s\n"),
 		   sig->sig_class==0x00?_("binary"):
 		   sig->sig_class==0x01?_("textmode"):_("unknown"),
-		   digest_algo_to_string(sig->digest_algo));
+		   gcry_md_algo_name (sig->digest_algo));
 
 	if( rc )
 	    g10_errors_seen = 1;
@@ -1483,12 +1489,12 @@ check_sig_and_print( CTX c, KBNODE node )
 		     sig->pubkey_algo, sig->digest_algo,
 		     sig->sig_class, (ulong)sig->timestamp, rc );
 	write_status_text( STATUS_ERRSIG, buf );
-	if( rc == G10ERR_NO_PUBKEY ) {
+	if( rc == GPG_ERR_NO_PUBKEY ) {
 	    buf[16] = 0;
 	    write_status_text( STATUS_NO_PUBKEY, buf );
 	}
-	if( rc != G10ERR_NOT_PROCESSED )
-	    log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
+	if( rc != GPG_ERR_NOT_PROCESSED )
+	    log_error(_("Can't check signature: %s\n"), gpg_strerror (rc) );
     }
     return rc;
 }
@@ -1534,11 +1540,11 @@ proc_tree( CTX c, KBNODE node )
 	if( !c->have_data ) {
 	    free_md_filter_context( &c->mfx );
 	    /* prepare to create all requested message digests */
-	    c->mfx.md = md_open(0, 0);
+	    gcry_md_open (&c->mfx.md, 0, 0);
 
 	    /* fixme: why looking for the signature packet and not 1passpacket*/
 	    for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); ) {
-		md_enable( c->mfx.md, n1->pkt->pkt.signature->digest_algo);
+		gcry_md_enable ( c->mfx.md, n1->pkt->pkt.signature->digest_algo);
 	    }
 	    /* ask for file and hash it */
 	    if( c->sigs_only ) {
@@ -1552,7 +1558,7 @@ proc_tree( CTX c, KBNODE node )
 			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );
 	    }
 	    if( rc ) {
-		log_error("can't hash datafile: %s\n", g10_errstr(rc));
+		log_error("can't hash datafile: %s\n", gpg_strerror (rc));
 		return;
 	    }
 	}
@@ -1613,20 +1619,20 @@ proc_tree( CTX c, KBNODE node )
 	else if( !c->have_data ) {
 	    /* detached signature */
 	    free_md_filter_context( &c->mfx );
-	    c->mfx.md = md_open(sig->digest_algo, 0);
+	    gcry_md_open (&c->mfx.md, sig->digest_algo, 0);
 	    if( !opt.pgp2_workarounds )
 		;
 	    else if( sig->digest_algo == DIGEST_ALGO_MD5
 		     && is_RSA( sig->pubkey_algo ) ) {
 		/* enable a workaround for a pgp2 bug */
-		c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0 );
+		gcry_md_open (&c->mfx.md2, DIGEST_ALGO_MD5, 0 );
 	    }
 	    else if( sig->digest_algo == DIGEST_ALGO_SHA1
 		     && sig->pubkey_algo == PUBKEY_ALGO_DSA
 		     && sig->sig_class == 0x01 ) {
 		/* enable the workaround also for pgp5 when the detached
 		 * signature has been created in textmode */
-		c->mfx.md2 = md_open( sig->digest_algo, 0 );
+		gcry_md_open (&c->mfx.md2, sig->digest_algo, 0 );
 	    }
 #if 0 /* workaround disabled */
 	    /* Here we have another hack to work around a pgp 2 bug
@@ -1639,9 +1645,9 @@ proc_tree( CTX c, KBNODE node )
 		    /*	c->mfx.md2? 0 :(sig->sig_class == 0x01) */
 #endif
             if ( DBG_HASHING ) {
-                md_start_debug( c->mfx.md, "verify" );
+                gcry_md_start_debug ( c->mfx.md, "verify" );
                 if ( c->mfx.md2  )
-                    md_start_debug( c->mfx.md2, "verify2" );
+                    gcry_md_start_debug ( c->mfx.md2, "verify2" );
             }
 	    if( c->sigs_only ) {
 		rc = hash_datafiles( c->mfx.md, c->mfx.md2,
@@ -1654,7 +1660,7 @@ proc_tree( CTX c, KBNODE node )
 						(sig->sig_class == 0x01) );
 	    }
 	    if( rc ) {
-		log_error("can't hash datafile: %s\n", g10_errstr(rc));
+		log_error("can't hash datafile: %s\n", gpg_strerror (rc));
 		return;
 	    }
 	}

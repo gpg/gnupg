@@ -1,5 +1,6 @@
 /* misc.c -  miscellaneous functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <assert.h>
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
 #include <asm/sysinfo.h>
 #include <asm/unistd.h>
@@ -33,27 +35,15 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
+
+#include "gpg.h"
 #include "util.h"
 #include "main.h"
 #include "photoid.h"
 #include "options.h"
 #include "i18n.h"
 
-
-const char *g10m_revision_string(int);
-const char *g10c_revision_string(int);
-const char *g10u_revision_string(int);
-
-#ifdef __GNUC__
-volatile
-#endif
-	 void
-pull_in_libs(void)
-{
-    g10m_revision_string(0);
-    g10c_revision_string(0);
-    g10u_revision_string(0);
-}
+#define MAX_EXTERN_MPI_BITS 16384
 
 
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
@@ -125,19 +115,26 @@ checksum( byte *p, unsigned n )
 }
 
 u16
-checksum_mpi( MPI a )
+checksum_mpi( gcry_mpi_t a )
 {
-    u16 csum;
-    byte *buffer;
-    unsigned nbytes;
-    unsigned nbits;
+  int rc;
+  u16 csum;
+  byte *buffer;
+  size_t nbytes;
 
-    buffer = mpi_get_buffer( a, &nbytes, NULL );
-    nbits = mpi_get_nbits(a);
-    csum = checksum_u16( nbits );
-    csum += checksum( buffer, nbytes );
-    m_free( buffer );
-    return csum;
+  rc = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &nbytes, a );
+  if (rc)
+    BUG ();
+  /* fixme: for numbers not in secure memory we should use a stack
+   * based buffer and only allocate a larger one if mpi_print return
+   * an error */
+  buffer = gcry_is_secure(a)? gcry_xmalloc_secure(nbytes) : gcry_xmalloc(nbytes);
+  rc = gcry_mpi_print( GCRYMPI_FMT_PGP, buffer, &nbytes, a );
+  if (rc)
+    BUG ();
+  csum = checksum (buffer, nbytes );
+  xfree (buffer );
+  return csum;
 }
 
 u32
@@ -238,16 +235,18 @@ int
 openpgp_cipher_test_algo( int algo )
 {
     if( algo < 0 || algo > 110 )
-        return G10ERR_CIPHER_ALGO;
-    return check_cipher_algo(algo);
+        return GPG_ERR_CIPHER_ALGO;
+    return gcry_cipher_test_algo (algo);
 }
 
 int
 openpgp_pk_test_algo( int algo, unsigned int usage_flags )
 {
-    if( algo < 0 || algo > 110 )
-	return G10ERR_PUBKEY_ALGO;
-    return check_pubkey_algo2( algo, usage_flags );
+  size_t value = usage_flags;
+
+  if (algo < 0 || algo > 110)
+    return GPG_ERR_PUBKEY_ALGO;
+  return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO, NULL, &value);
 }
 
 int 
@@ -285,8 +284,29 @@ int
 openpgp_md_test_algo( int algo )
 {
     if( algo < 0 || algo > 110 )
-        return G10ERR_DIGEST_ALGO;
-    return check_digest_algo(algo);
+        return GPG_ERR_DIGEST_ALGO;
+    return gcry_md_test_algo (algo);
+}
+
+int
+openpgp_md_map_name (const char *string)
+{
+  int i = gcry_md_map_name (string);
+  return i < 0 || i > 110? 0 : i;
+}
+
+int
+openpgp_cipher_map_name (const char *string)
+{
+  int i = gcry_cipher_map_name (string);
+  return i < 0 || i > 110? 0 : i;
+}
+
+int
+openpgp_pk_map_name (const char *string)
+{
+  int i = gcry_pk_map_name (string);
+  return i < 0 || i > 110? 0 : i;
 }
 
 #ifdef USE_IDEA
@@ -336,7 +356,7 @@ pct_expando(const char *string,struct expando_args *args)
 	    goto fail;
 
 	  maxlen+=1024;
-	  ret=m_realloc(ret,maxlen);
+	  ret= xrealloc(ret,maxlen);
 	}
 
       done=0;
@@ -467,7 +487,7 @@ pct_expando(const char *string,struct expando_args *args)
   return ret;
 
  fail:
-  m_free(ret);
+  xfree (ret);
   return NULL;
 }
 
@@ -565,7 +585,7 @@ check_compress_algo(int algo)
   if(algo>=0 && algo<=2)
     return 0;
 
-  return G10ERR_COMPR_ALGO;
+  return GPG_ERR_COMPR_ALGO;
 }
 
 int
@@ -676,3 +696,233 @@ parse_options(char *str,unsigned int *options,struct parse_options *opts)
 
   return 1;
 }
+
+
+
+/* Temporary helper. */
+int
+pubkey_get_npkey( int algo )
+{
+    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NPKEY, NULL, 0 );
+    return n > 0? n : 0;
+}
+
+/* Temporary helper. */
+int
+pubkey_get_nskey( int algo )
+{
+    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSKEY, NULL, 0 );
+    return n > 0? n : 0;
+}
+
+/* Temporary helper. */
+int
+pubkey_get_nsig( int algo )
+{
+    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSIGN, NULL, 0 );
+    return n > 0? n : 0;
+}
+
+/* Temporary helper. */
+int
+pubkey_get_nenc( int algo )
+{
+    int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, 0 );
+    return n > 0? n : 0;
+}
+
+
+/* Temporary helper. */
+unsigned int
+pubkey_nbits( int algo, gcry_mpi_t *key )
+{
+    int rc, nbits;
+    gcry_sexp_t sexp;
+
+    if( algo == GCRY_PK_DSA ) {
+	rc = gcry_sexp_build ( &sexp, NULL,
+			      "(public-key(dsa(p%m)(q%m)(g%m)(y%m)))",
+				  key[0], key[1], key[2], key[3] );
+    }
+    else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	rc = gcry_sexp_build ( &sexp, NULL,
+			      "(public-key(elg(p%m)(g%m)(y%m)))",
+				  key[0], key[1], key[2] );
+    }
+    else if( algo == GCRY_PK_RSA ) {
+	rc = gcry_sexp_build ( &sexp, NULL,
+			      "(public-key(rsa(n%m)(e%m)))",
+				  key[0], key[1] );
+    }
+    else
+	return 0;
+
+    if ( rc )
+	BUG ();
+
+    nbits = gcry_pk_get_nbits( sexp );
+    gcry_sexp_release( sexp );
+    return nbits;
+}
+
+
+/* MPI helper functions. */
+
+
+/****************
+ * write an mpi to out.
+ */
+int
+mpi_write( iobuf_t out, gcry_mpi_t a )
+{
+    char buffer[(MAX_EXTERN_MPI_BITS+7)/8];
+    size_t nbytes;
+    int rc;
+
+    nbytes = (MAX_EXTERN_MPI_BITS+7)/8;
+    rc = gcry_mpi_print( GCRYMPI_FMT_PGP, buffer, &nbytes, a );
+    if( !rc )
+	rc = iobuf_write( out, buffer, nbytes );
+
+    return rc;
+}
+
+/****************
+ * Writye a MPI to out, but in this case it is an opaque one,
+ * s used vor v3 protected keys.
+ */
+int
+mpi_write_opaque( iobuf_t out, gcry_mpi_t a )
+{
+    size_t nbytes, nbits;
+    int rc;
+    char *p;
+
+    assert( gcry_mpi_get_flag( a, GCRYMPI_FLAG_OPAQUE ) );
+    p = gcry_mpi_get_opaque( a, &nbits );
+    nbytes = (nbits+7) / 8;
+    iobuf_put( out, nbits >> 8 );
+    iobuf_put( out, nbits );
+    rc = iobuf_write( out, p, nbytes );
+    return rc;
+}
+
+
+/****************
+ * Read an external representation of an mpi and return the MPI
+ * The external format is a 16 bit unsigned value stored in network byte order,
+ * giving the number of bits for the following integer. The integer is stored
+ * with MSB first (left padded with zeroes to align on a byte boundary).
+ */
+gcry_mpi_t
+mpi_read(iobuf_t inp, unsigned int *ret_nread, int secure)
+{
+    int c, c1, c2, i;
+    unsigned int nbits, nbytes, nread=0;
+    gcry_mpi_t a = NULL;
+    byte *buf = NULL;
+    byte *p;
+
+    if( (c = c1 = iobuf_get(inp)) == -1 )
+	goto leave;
+    nbits = c << 8;
+    if( (c = c2 = iobuf_get(inp)) == -1 )
+	goto leave;
+    nbits |= c;
+    if( nbits > MAX_EXTERN_MPI_BITS ) {
+	log_error("mpi too large (%u bits)\n", nbits);
+	goto leave;
+    }
+    nread = 2;
+    nbytes = (nbits+7) / 8;
+    buf = secure? gcry_xmalloc_secure( nbytes+2 ) : gcry_xmalloc( nbytes+2 );
+    p = buf;
+    p[0] = c1;
+    p[1] = c2;
+    for( i=0 ; i < nbytes; i++ ) {
+	p[i+2] = iobuf_get(inp) & 0xff;
+	nread++;
+    }
+    nread += nbytes;
+    if( gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, buf, &nread ) )
+	a = NULL;
+
+  leave:
+    gcry_free(buf);
+    if( nread > *ret_nread )
+	log_bug("mpi larger than packet");
+    else
+	*ret_nread = nread;
+    return a;
+}
+
+/****************
+ * Same as mpi_read but the value is stored as an opaque MPI.
+ * This function is used to read encrypted MPI of v3 packets.
+ */
+gcry_mpi_t
+mpi_read_opaque(iobuf_t inp, unsigned *ret_nread )
+{
+    int c, c1, c2, i;
+    unsigned nbits, nbytes, nread=0;
+    gcry_mpi_t a = NULL;
+    byte *buf = NULL;
+    byte *p;
+
+    if( (c = c1 = iobuf_get(inp)) == -1 )
+	goto leave;
+    nbits = c << 8;
+    if( (c = c2 = iobuf_get(inp)) == -1 )
+	goto leave;
+    nbits |= c;
+    if( nbits > MAX_EXTERN_MPI_BITS ) {
+	log_error("mpi too large (%u bits)\n", nbits);
+	goto leave;
+    }
+    nread = 2;
+    nbytes = (nbits+7) / 8;
+    buf = gcry_xmalloc( nbytes );
+    p = buf;
+    for( i=0 ; i < nbytes; i++ ) {
+	p[i] = iobuf_get(inp) & 0xff;
+    }
+    nread += nbytes;
+    a = gcry_mpi_set_opaque(NULL, buf, nbits );
+    buf = NULL;
+
+  leave:
+    gcry_free(buf);
+    if( nread > *ret_nread )
+	log_bug("mpi larger than packet");
+    else
+	*ret_nread = nread;
+    return a;
+}
+
+
+int
+mpi_print( FILE *fp, gcry_mpi_t a, int mode )
+{
+    int n=0;
+
+    if( !a )
+	return fprintf(fp, "[MPI_NULL]");
+    if( !mode ) {
+	unsigned int n1;
+	n1 = gcry_mpi_get_nbits(a);
+	n += fprintf(fp, "[%u bits]", n1);
+    }
+    else {
+	int rc;
+	char *buffer;
+
+	rc = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void **)&buffer, NULL, a );
+	assert( !rc );
+	fputs( buffer, fp );
+	n += strlen(buffer);
+	gcry_free( buffer );
+    }
+    return n;
+}
+
+

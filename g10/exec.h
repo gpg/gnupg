@@ -1,5 +1,5 @@
 /* exec.h
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,14 +23,14 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include "iobuf.h"
+#include "../common/iobuf.h"
 
 struct exec_info
 {
   int progreturn,binary,writeonly,madedir,use_temp_files,keep_temp_files;
   pid_t child;
   FILE *tochild;
-  IOBUF fromchild;
+  iobuf_t fromchild;
   char *command,*name,*tempdir,*tempfile_in,*tempfile_out;
 };
 

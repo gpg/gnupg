@@ -1,5 +1,6 @@
 /* sig-check.c -  Check a signature
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "gpg.h"
 #include "util.h"
 #include "packet.h"
 #include "memory.h"
@@ -33,6 +36,7 @@
 #include "status.h"
 #include "i18n.h"
 #include "options.h"
+#include "pkglue.h"
 
 struct cmp_help_context_s {
     PKT_signature *sig;
@@ -59,7 +63,7 @@ int
 signature_check2( PKT_signature *sig, MD_HANDLE digest,
 		  u32 *r_expiredate, int *r_expired )
 {
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = xcalloc (1, sizeof *pk );
     int rc=0;
 
     *r_expiredate = 0;
@@ -69,14 +73,14 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
        not match the actual sig, and also if the clearsign "Hash:"
        header is missing or does not match the actual sig. */
 
-    if(!md_algo_present(digest,sig->digest_algo)) {
+    if(!gcry_md_is_enabled (digest,sig->digest_algo)) {
         log_info(_("WARNING: signature digest conflict in message\n"));
-	rc=G10ERR_GENERAL;
+	rc=GPG_ERR_GENERAL;
     }
     else if( get_pubkey( pk, sig->keyid ) )
-	rc = G10ERR_NO_PUBKEY;
+	rc = GPG_ERR_NO_PUBKEY;
     else if(!pk->is_valid && !pk->is_primary)
-        rc=G10ERR_BAD_PUBKEY; /* you cannot have a good sig from an
+        rc=GPG_ERR_BAD_PUBKEY; /* you cannot have a good sig from an
 				 invalid subkey */
     else {
 	*r_expiredate = pk->expiredate;
@@ -93,115 +97,42 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
 	 * not possible to sign more than one identical document within
 	 * one second.	Some remote batch processing applications might
 	 * like this feature here */
-	MD_HANDLE md;
+	gcry_md_hd_t md;
 	u32 a = sig->timestamp;
 	int i, nsig = pubkey_get_nsig( sig->pubkey_algo );
 	byte *p, *buffer;
 
-	md = md_open( DIGEST_ALGO_RMD160, 0);
-	md_putc( digest, sig->pubkey_algo );
-	md_putc( digest, sig->digest_algo );
-	md_putc( digest, (a >> 24) & 0xff );
-	md_putc( digest, (a >> 16) & 0xff );
-	md_putc( digest, (a >>	8) & 0xff );
-	md_putc( digest,  a	   & 0xff );
+	gcry_md_open (&md, GCRY_MD_RMD160, 0);
+	gcry_md_putc( digest, sig->pubkey_algo );
+	gcry_md_putc( digest, sig->digest_algo );
+	gcry_md_putc( digest, (a >> 24) & 0xff );
+	gcry_md_putc( digest, (a >> 16) & 0xff );
+	gcry_md_putc( digest, (a >>  8) & 0xff );
+	gcry_md_putc( digest,  a        & 0xff );
 	for(i=0; i < nsig; i++ ) {
-	    unsigned n = mpi_get_nbits( sig->data[i]);
+	    size_t n;
+            void *tmp;
 
-	    md_putc( md, n>>8);
-	    md_putc( md, n );
-	    p = mpi_get_buffer( sig->data[i], &n, NULL );
-	    md_write( md, p, n );
-	    m_free(p);
+	    if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &tmp, &n, sig->data[i]))
+		BUG();
+            
+	    gcry_md_write (md, tmp, n);
+	    xfree (tmp);
 	}
-	md_final( md );
-	p = make_radix64_string( md_read( md, 0 ), 20 );
-	buffer = m_alloc( strlen(p) + 60 );
+	gcry_md_final( md );
+	p = make_radix64_string( gcry_md_read( md, 0 ), 20 );
+	buffer = xmalloc ( strlen(p) + 60 );
 	sprintf( buffer, "%s %s %lu",
 		 p, strtimestamp( sig->timestamp ), (ulong)sig->timestamp );
 	write_status_text( STATUS_SIG_ID, buffer );
-	m_free(buffer);
-	m_free(p);
-	md_close(md);
+	xfree (buffer);
+	xfree (p);
+	gcry_md_close(md);
     }
 
     return rc;
 }
 
-
-/****************
- * This function gets called by pubkey_verify() if the algorithm needs it.
- */
-static int
-cmp_help( void *opaque, MPI result )
-{
-#if 0 /* we do not use this anymore */
-    int rc=0, i, j, c, old_enc;
-    byte *dp;
-    const byte *asn;
-    size_t mdlen, asnlen;
-    struct cmp_help_context_s *ctx = opaque;
-    PKT_signature *sig = ctx->sig;
-    MD_HANDLE digest = ctx->md;
-
-    old_enc = 0;
-    for(i=j=0; (c=mpi_getbyte(result, i)) != -1; i++ ) {
-	if( !j ) {
-	    if( !i && c != 1 )
-		break;
-	    else if( i && c == 0xff )
-		; /* skip the padding */
-	    else if( i && !c )
-		j++;
-	    else
-		break;
-	}
-	else if( ++j == 18 && c != 1 )
-	    break;
-	else if( j == 19 && c == 0 ) {
-	    old_enc++;
-	    break;
-	}
-    }
-    if( old_enc ) {
-	log_error("old encoding scheme is not supported\n");
-	return G10ERR_GENERAL;
-    }
-
-    if( (rc=check_digest_algo(sig->digest_algo)) )
-	return rc; /* unsupported algo */
-    asn = md_asn_oid( sig->digest_algo, &asnlen, &mdlen );
-
-    for(i=mdlen,j=asnlen-1; (c=mpi_getbyte(result, i)) != -1 && j >= 0;
-							   i++, j-- )
-	if( asn[j] != c )
-	    break;
-    if( j != -1 || mpi_getbyte(result, i) )
-	return G10ERR_BAD_PUBKEY;  /* ASN is wrong */
-    for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
-	if( c != 0xff  )
-	    break;
-    i++;
-    if( c != sig->digest_algo || mpi_getbyte(result, i) ) {
-	/* Padding or leading bytes in signature is wrong */
-	return G10ERR_BAD_PUBKEY;
-    }
-    if( mpi_getbyte(result, mdlen-1) != sig->digest_start[0]
-	|| mpi_getbyte(result, mdlen-2) != sig->digest_start[1] ) {
-	/* Wrong key used to check the signature */
-	return G10ERR_BAD_PUBKEY;
-    }
-
-    dp = md_read( digest, sig->digest_algo );
-    for(i=mdlen-1; i >= 0; i--, dp++ ) {
-	if( mpi_getbyte( result, i ) != *dp )
-	    return G10ERR_BAD_SIGN;
-    }
-    return 0;
-#else
-    return -1;
-#endif
-}
 
 static int
 do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
@@ -213,7 +144,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 	log_info(_("key %08lX: this is a PGP generated "
 		   "ElGamal key which is NOT secure for signatures!\n"),
  		  (ulong)keyid_from_pk(pk,NULL));
-	return G10ERR_PUBKEY_ALGO;
+	return GPG_ERR_PUBKEY_ALGO;
     }
 
     if( pk->timestamp > sig->timestamp ) {
@@ -223,7 +154,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 	     : _("public key %08lX is %lu seconds newer than the signature\n"),
 	        (ulong)keyid_from_pk(pk,NULL),d );
 	if( !opt.ignore_time_conflict )
-	    return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
+	    return GPG_ERR_TIME_CONFLICT; /* pubkey newer than signature */
     }
 
     cur_time = make_timestamp();
@@ -235,7 +166,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 			   "in future (time warp or clock problem)\n"),
 		       (ulong)keyid_from_pk(pk,NULL),d );
 	if( !opt.ignore_time_conflict )
-	    return G10ERR_TIME_CONFLICT;
+	    return GPG_ERR_TIME_CONFLICT;
     }
 
     if( pk->expiredate && pk->expiredate < cur_time ) {
@@ -262,48 +193,49 @@ static int
 do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 						    int *r_expired )
 {
-    MPI result = NULL;
+    gcry_mpi_t result = NULL;
     int rc=0;
     struct cmp_help_context_s ctx;
 
     if( (rc=do_check_messages(pk,sig,r_expired)) )
         return rc;
-    if( (rc=check_digest_algo(sig->digest_algo)) )
+    if( (rc=gcry_md_test_algo(sig->digest_algo)) )
 	return rc;
-    if( (rc=check_pubkey_algo(sig->pubkey_algo)) )
+    if( (rc=gcry_pk_test_algo(sig->pubkey_algo)) )
 	return rc;
 
-    /* make sure the digest algo is enabled (in case of a detached signature)*/
-    md_enable( digest, sig->digest_algo );
+    /* make sure the digest algo is enabled (in case of a detached
+       signature)*/
+    gcry_md_enable( digest, sig->digest_algo );
 
     /* complete the digest */
     if( sig->version >= 4 )
-	md_putc( digest, sig->version );
-    md_putc( digest, sig->sig_class );
+	gcry_md_putc( digest, sig->version );
+    gcry_md_putc( digest, sig->sig_class );
     if( sig->version < 4 ) {
 	u32 a = sig->timestamp;
-	md_putc( digest, (a >> 24) & 0xff );
-	md_putc( digest, (a >> 16) & 0xff );
-	md_putc( digest, (a >>	8) & 0xff );
-	md_putc( digest,  a	   & 0xff );
+	gcry_md_putc( digest, (a >> 24) & 0xff );
+	gcry_md_putc( digest, (a >> 16) & 0xff );
+	gcry_md_putc( digest, (a >>	8) & 0xff );
+	gcry_md_putc( digest,  a	   & 0xff );
     }
     else {
 	byte buf[6];
 	size_t n;
-	md_putc( digest, sig->pubkey_algo );
-	md_putc( digest, sig->digest_algo );
+	gcry_md_putc( digest, sig->pubkey_algo );
+	gcry_md_putc( digest, sig->digest_algo );
 	if( sig->hashed ) {
 	    n = sig->hashed->len;
-            md_putc (digest, (n >> 8) );
-            md_putc (digest,  n       );
-	    md_write (digest, sig->hashed->data, n);
+            gcry_md_putc (digest, (n >> 8) );
+            gcry_md_putc (digest,  n       );
+	    gcry_md_write (digest, sig->hashed->data, n);
 	    n += 6;
 	}
 	else {
 	  /* Two octets for the (empty) length of the hashed
              section. */
-          md_putc (digest, 0);
-	  md_putc (digest, 0);
+          gcry_md_putc (digest, 0);
+	  gcry_md_putc (digest, 0);
 	  n = 6;
 	}
 	/* add some magic */
@@ -313,38 +245,39 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 	buf[3] = n >> 16;
 	buf[4] = n >>  8;
 	buf[5] = n;
-	md_write( digest, buf, 6 );
+	gcry_md_write( digest, buf, 6 );
     }
-    md_final( digest );
+    gcry_md_final (digest);
 
     result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
 			      mpi_get_nbits(pk->pkey[0]), 0 );
     if (!result)
-        return G10ERR_GENERAL;
+        return GPG_ERR_GENERAL;
     ctx.sig = sig;
     ctx.md = digest;
-    rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
-			cmp_help, &ctx );
-    mpi_free( result );
+    rc = pk_verify ( pk->pubkey_algo, result, sig->data, pk->pkey);
+    gcry_mpi_release ( result );
     if( (opt.emulate_bugs & EMUBUG_MDENCODE)
-	&& rc == G10ERR_BAD_SIGN && is_ELGAMAL(pk->pubkey_algo) ) {
+	&& gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE
+        && is_ELGAMAL(pk->pubkey_algo) ) {
 	/* In this case we try again because old GnuPG versions didn't encode
 	 * the hash right. There is no problem with DSA however  */
 	result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
 			      mpi_get_nbits(pk->pkey[0]), (sig->version < 5) );
         if (!result)
-            rc = G10ERR_GENERAL;
+            rc = GPG_ERR_GENERAL;
         else {
             ctx.sig = sig;
             ctx.md = digest;
-            rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
-                                cmp_help, &ctx );
+            rc = pk_verify (pk->pubkey_algo, result, sig->data, pk->pkey);
         }
     }
 
     if( !rc && sig->flags.unknown_critical ) {
-      log_info(_("assuming bad signature from key %08lX due to an unknown critical bit\n"),(ulong)keyid_from_pk(pk,NULL));
-	rc = G10ERR_BAD_SIGN;
+      log_info(_("assuming bad signature from key %08lX "
+                 "due to an unknown critical bit\n"),
+               (ulong)keyid_from_pk(pk,NULL));
+	rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
     }
 
     return rc;
@@ -365,9 +298,9 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
 	    buf[2] = uid->attrib_len >> 16;
 	    buf[3] = uid->attrib_len >>  8;
 	    buf[4] = uid->attrib_len;
-	    md_write( md, buf, 5 );
+	    gcry_md_write( md, buf, 5 );
 	}
-	md_write( md, uid->attrib_data, uid->attrib_len );
+	gcry_md_write( md, uid->attrib_data, uid->attrib_len );
     }
     else {
 	if( sig->version >=4 ) {
@@ -377,9 +310,9 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
 	    buf[2] = uid->len >> 16;
 	    buf[3] = uid->len >>  8;
 	    buf[4] = uid->len;
-	    md_write( md, buf, 5 );
+	    gcry_md_write( md, buf, 5 );
 	}
-	md_write( md, uid->name, uid->len );
+	gcry_md_write( md, uid->name, uid->len );
     }
 }
 
@@ -390,7 +323,7 @@ cache_sig_result ( PKT_signature *sig, int result )
         sig->flags.checked = 1;
         sig->flags.valid = 1;
     }
-    else if ( result == G10ERR_BAD_SIGN ) {
+    else if ( gpg_err_code (result) == GPG_ERR_BAD_SIGNATURE ) {
         sig->flags.checked = 1;
         sig->flags.valid = 0;
     }
@@ -418,7 +351,7 @@ int
 check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
 {
   static int busy=0;
-  int i,rc=G10ERR_GENERAL;
+  int i,rc=GPG_ERR_GENERAL;
 
   assert(IS_KEY_REV(sig));
   assert((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
@@ -450,9 +383,9 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
     
           if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1])
 	    {
-              MD_HANDLE md;
+              gcry_md_hd_t md;
     
-              md=md_open(sig->digest_algo,0);
+              gcry_md_open (&md, sig->digest_algo,0);
               hash_public_key(md,pk);
               rc=signature_check(sig,md);
 	      cache_sig_result(sig,rc);
@@ -513,12 +446,12 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    }
 	    if((rc=do_check_messages(pk,sig,r_expired)))
 	      return rc;
-            return sig->flags.valid? 0 : G10ERR_BAD_SIGN;
+            return sig->flags.valid? 0 : gpg_error (GPG_ERR_BAD_SIGNATURE);
         }
     }
 
-    if( (rc=check_digest_algo(algo)) )
-	return rc;
+    if( (rc=gcry_md_test_algo(algo)) )
+      return rc;
 
     if( sig->sig_class == 0x20 ) { /* key revocation */
         u32 keyid[2];	
@@ -529,30 +462,30 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	  rc=check_revocation_keys(pk,sig);
 	else
 	  {
-	    md = md_open( algo, 0 );
+	    gcry_md_open (&md, algo, 0 );
 	    hash_public_key( md, pk );
 	    rc = do_check( pk, sig, md, r_expired );
 	    cache_sig_result ( sig, rc );
-	    md_close(md);
+	    gcry_md_close(md);
 	  }
     }
     else if( sig->sig_class == 0x28 ) { /* subkey revocation */
 	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBLIC_SUBKEY );
 
 	if( snode ) {
-	    md = md_open( algo, 0 );
+	    gcry_md_open (&md, algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md, r_expired );
             cache_sig_result ( sig, rc );
-	    md_close(md);
+	    gcry_md_close(md);
 	}
 	else {
             if (!opt.quiet)
                 log_info (_("key %08lX: no subkey for subkey "
 			    "revocation signature\n"),
                           (ulong)keyid_from_pk (pk, NULL));
-	    rc = G10ERR_SIG_CLASS;
+	    rc = GPG_ERR_SIG_CLASS;
 	}
     }
     else if( sig->sig_class == 0x18 ) { /* key binding */
@@ -566,27 +499,27 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
 		    *is_selfsig = 1;
 	    }
-	    md = md_open( algo, 0 );
+	    gcry_md_open (&md, algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md, r_expired );
             cache_sig_result ( sig, rc );
-	    md_close(md);
+	    gcry_md_close(md);
 	}
 	else {
             if (opt.verbose)
                 log_info(_("key %08lX: no subkey for subkey "
 			   "binding signature\n"),
 			 (ulong)keyid_from_pk (pk, NULL));
-	    rc = G10ERR_SIG_CLASS;
+	    rc = GPG_ERR_SIG_CLASS;
 	}
     }
     else if( sig->sig_class == 0x1f ) { /* direct key signature */
-	md = md_open( algo, 0 );
+	gcry_md_open (&md, algo, 0 );
 	hash_public_key( md, pk );
 	rc = do_check( pk, sig, md, r_expired );
         cache_sig_result ( sig, rc );
-	md_close(md);
+	gcry_md_close(md);
     }
     else { /* all other classes */
 	KBNODE unode = find_prev_kbnode( root, node, PKT_USER_ID );
@@ -595,7 +528,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    u32 keyid[2];
 
 	    keyid_from_pk( pk, keyid );
-	    md = md_open( algo, 0 );
+	    gcry_md_open (&md, algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
@@ -610,14 +543,14 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	      rc = signature_check2( sig, md, r_expiredate, r_expired );
 
             cache_sig_result ( sig, rc );
-	    md_close(md);
+	    gcry_md_close(md);
 	}
 	else {
             if (!opt.quiet)
                 log_info ("key %08lX: no user ID for key signature packet "
                           "of class %02x\n",
                           (ulong)keyid_from_pk (pk, NULL), sig->sig_class );
-	    rc = G10ERR_SIG_CLASS;
+	    rc = GPG_ERR_SIG_CLASS;
 	}
     }
 

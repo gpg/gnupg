@@ -85,7 +85,7 @@ make_control ( byte *buf, int code, int operation )
 
 static int
 pipemode_filter( void *opaque, int control,
-	         IOBUF a, byte *buf, size_t *ret_len)
+	         iobuf_t a, byte *buf, size_t *ret_len)
 { 
     size_t size = *ret_len;
     struct pipemode_context_s *stx = opaque;
@@ -291,7 +291,7 @@ pipemode_filter( void *opaque, int control,
 void
 run_in_pipemode(void)
 {
-    IOBUF fp;
+    iobuf_t fp;
     armor_filter_context_t afx;
     struct pipemode_context_s stx;
     int rc;

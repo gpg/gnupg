@@ -28,6 +28,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+#include "gpg.h"
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"
@@ -99,19 +101,19 @@ make_outfile_name( const char *iname )
     size_t n;
 
     if( (!iname || (*iname=='-' && !iname[1]) ))
-	return m_strdup("-");
+	return xstrdup ("-");
 
     n = strlen(iname);
     if( n > 4 && (    !CMP_FILENAME(iname+n-4, EXTSEP_S "gpg")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "pgp")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "sig")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "asc") ) ) {
-	char *buf = m_strdup( iname );
+	char *buf = xstrdup ( iname );
 	buf[n-4] = 0;
 	return buf;
     }
     else if( n > 5 && !CMP_FILENAME(iname+n-5, EXTSEP_S "sign") ) {
-	char *buf = m_strdup( iname );
+	char *buf = xstrdup ( iname );
 	buf[n-5] = 0;
 	return buf;
     }
@@ -142,19 +144,19 @@ ask_outfile_name( const char *name, size_t namelen )
 
     n = strlen(s) + namelen + 10;
     defname = name && namelen? make_printable_string( name, namelen, 0): NULL;
-    prompt = m_alloc(n);
+    prompt = xmalloc (n);
     if( defname )
 	sprintf(prompt, "%s [%s]: ", s, defname );
     else
 	sprintf(prompt, "%s: ", s );
     fname = cpr_get("openfile.askoutname", prompt );
     cpr_kill_prompt();
-    m_free(prompt);
+    xfree (prompt);
     if( !*fname ) {
-	m_free( fname ); fname = NULL;
+	xfree ( fname ); fname = NULL;
 	fname = defname; defname = NULL;
     }
-    m_free(defname);
+    xfree (defname);
     if (fname)
         trim_spaces (fname);
     return fname;
@@ -163,21 +165,21 @@ ask_outfile_name( const char *name, size_t namelen )
 
 /****************
  * Make an output filename for the inputfile INAME.
- * Returns an IOBUF and an errorcode
+ * Returns an iobuf_t and an errorcode
  * Mode 0 = use ".gpg"
  *	1 = use ".asc"
  *	2 = use ".sig"
  */
 int
-open_outfile( const char *iname, int mode, IOBUF *a )
+open_outfile( const char *iname, int mode, iobuf_t *a )
 {
   int rc = 0;
 
   *a = NULL;
   if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
     if( !(*a = iobuf_create(NULL)) ) {
+      rc = gpg_error_from_errno (errno);
       log_error(_("%s: can't open: %s\n"), "[stdout]", strerror(errno) );
-      rc = G10ERR_CREATE_FILE;
     }
     else if( opt.verbose )
       log_info(_("writing to stdout\n"));
@@ -205,7 +207,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
           const char *newsfx = mode==1 ? ".asc" :
                                mode==2 ? ".sig" : ".gpg";
           
-          buf = m_alloc(strlen(iname)+4+1);
+          buf = xmalloc (strlen(iname)+4+1);
           strcpy(buf,iname);
           dot = strchr(buf, '.' );
           if ( dot && dot > buf && dot[1] && strlen(dot) <= 4
@@ -221,7 +223,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
       if (!buf)
 #endif /* USE_ONLY_8DOT3 */
         {
-          buf = m_alloc(strlen(iname)+4+1);
+          buf = xmalloc (strlen(iname)+4+1);
           strcpy(stpcpy(buf,iname), mode==1 ? EXTSEP_S "asc" :
 		                   mode==2 ? EXTSEP_S "sig" : EXTSEP_S "gpg");
         }
@@ -234,11 +236,11 @@ open_outfile( const char *iname, int mode, IOBUF *a )
         char *tmp = ask_outfile_name (NULL, 0);
         if ( !tmp || !*tmp )
           {
-            m_free (tmp);
-            rc = G10ERR_FILE_EXISTS;
+            xfree (tmp);
+            rc = GPG_ERR_EEXIST;
             break;
           }
-        m_free (buf);
+        xfree (buf);
         name = buf = tmp;
       }
     
@@ -246,13 +248,13 @@ open_outfile( const char *iname, int mode, IOBUF *a )
       {
         if( !(*a = iobuf_create( name )) )
           {
+            rc = gpg_error_from_errno (errno);
             log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
-            rc = G10ERR_CREATE_FILE;
           }
         else if( opt.verbose )
           log_info(_("writing to `%s'\n"), name );
       }
-    m_free(buf);
+    xfree (buf);
   }
 
   return rc;
@@ -263,10 +265,10 @@ open_outfile( const char *iname, int mode, IOBUF *a )
  * Try to open a file without the extension ".sig" or ".asc"
  * Return NULL if such a file is not available.
  */
-IOBUF
+iobuf_t
 open_sigfile( const char *iname, progress_filter_context_t *pfx )
 {
-    IOBUF a = NULL;
+    iobuf_t a = NULL;
     size_t len;
 
     if( iname && !(*iname == '-' && !iname[1]) ) {
@@ -275,14 +277,14 @@ open_sigfile( const char *iname, progress_filter_context_t *pfx )
                         || ( len > 5 && !strcmp(iname + len - 5, EXTSEP_S "sign") )
                         || !strcmp(iname + len - 4, EXTSEP_S "asc")) ) {
 	    char *buf;
-	    buf = m_strdup(iname);
+	    buf = xstrdup (iname);
 	    buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
 	    a = iobuf_open( buf );
 	    if( a && opt.verbose )
 		log_info(_("assuming signed data in `%s'\n"), buf );
 	    if (a && pfx)
 	      handle_progress (pfx, a, buf);
-            m_free(buf);
+            xfree (buf);
 	}
     }
     return a;
@@ -306,12 +308,12 @@ copy_options_file( const char *destdir )
     if( opt.dry_run )
 	return;
 
-    fname = m_alloc( strlen(datadir) + strlen(destdir) + 15 );
+    fname = xmalloc ( strlen(datadir) + strlen(destdir) + 15 );
     strcpy(stpcpy(fname, datadir), DIRSEP_S "options" SKELEXT );
     src = fopen( fname, "r" );
     if( !src ) {
 	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );
-	m_free(fname);
+	xfree (fname);
 	return;
     }
     strcpy(stpcpy(fname, destdir), DIRSEP_S "gpg" EXTSEP_S "conf" );
@@ -321,7 +323,7 @@ copy_options_file( const char *destdir )
     if( !dst ) {
 	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );
 	fclose( src );
-	m_free(fname);
+	xfree (fname);
 	return;
     }
 
@@ -351,7 +353,7 @@ copy_options_file( const char *destdir )
         log_info (_("WARNING: options in `%s'"
                     " are not yet active during this run\n"),
                   fname);
-    m_free(fname);
+    xfree (fname);
 }
 
 

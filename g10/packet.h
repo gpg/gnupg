@@ -1,6 +1,6 @@
 /* packet.h - packet definitions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 
+ *               2003  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -22,9 +22,12 @@
 #ifndef G10_PACKET_H
 #define G10_PACKET_H
 
+#include "gpg.h"
+#include <gcrypt.h>
+
 #include "types.h"
-#include "iobuf.h"
-#include "mpi.h"
+#include "../common/iobuf.h"
+#include "../jnlib/strlist.h"
 #include "cipher.h"
 #include "filter.h"
 #include "global.h"
@@ -96,7 +99,7 @@ typedef struct {
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    throw_keyid;
-    MPI     data[PUBKEY_MAX_NENC];
+    gcry_mpi_t     data[PUBKEY_MAX_NENC];
 } PKT_pubkey_enc;
 
 
@@ -149,7 +152,7 @@ typedef struct {
     subpktarea_t *hashed;    /* all subpackets with hashed  data (v4 only) */
     subpktarea_t *unhashed;  /* ditto for unhashed data */
     byte digest_start[2];   /* first 2 bytes of the digest */
-    MPI  data[PUBKEY_MAX_NSIG];
+    gcry_mpi_t  data[PUBKEY_MAX_NSIG];
 } PKT_signature;
 
 #define ATTRIB_IMAGE 1
@@ -221,7 +224,7 @@ typedef struct {
     byte    trust_depth;
     byte    trust_value;
     const byte *trust_regexp;
-    MPI     pkey[PUBKEY_MAX_NPKEY];
+    gcry_mpi_t     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_key;
 
 /* Evaluates as true if the pk is disabled, and false if it isn't.  If
@@ -255,7 +258,7 @@ typedef struct {
 	byte ivlen;  /* used length of the iv */
 	byte iv[16]; /* initialization vector for CFB mode */
     } protect;
-    MPI skey[PUBKEY_MAX_NSKEY];
+    gcry_mpi_t skey[PUBKEY_MAX_NSKEY];
     u16 csum;		/* checksum */
 } PKT_secret_key;
 
@@ -269,7 +272,7 @@ typedef struct {
     u32  len;		  /* reserved */
     byte  new_ctb;
     byte  algorithm;
-    IOBUF buf;		  /* IOBUF reference */
+    iobuf_t buf;		  /* iobuf_t reference */
 } PKT_compressed;
 
 typedef struct {
@@ -277,7 +280,7 @@ typedef struct {
     int  extralen;        /* this is (blocksize+2) */
     byte new_ctb;	  /* uses a new CTB */
     byte mdc_method;	  /* > 0: integrity protected encrypted data packet */
-    IOBUF buf;		  /* IOBUF reference */
+    iobuf_t buf;		  /* iobuf_t reference */
 } PKT_encrypted;
 
 typedef struct {
@@ -291,7 +294,7 @@ typedef struct {
 
 typedef struct {
     u32  len;		  /* length of encrypted data */
-    IOBUF buf;		  /* IOBUF reference */
+    iobuf_t buf;		  /* iobuf_t reference */
     byte new_ctb;
     byte is_partial;      /* partial length encoded */
     int mode;
@@ -365,25 +368,25 @@ typedef enum {
 
 
 /*-- mainproc.c --*/
-int proc_packets( void *ctx, IOBUF a );
-int proc_signature_packets( void *ctx, IOBUF a,
+int proc_packets( void *ctx, iobuf_t a );
+int proc_signature_packets( void *ctx, iobuf_t a,
 			    STRLIST signedfiles, const char *sigfile );
-int proc_encryption_packets( void *ctx, IOBUF a );
-int list_packets( IOBUF a );
+int proc_encryption_packets( void *ctx, iobuf_t a );
+int list_packets( iobuf_t a );
 
 /*-- parse-packet.c --*/
 int set_packet_list_mode( int mode );
 
 #if DEBUG_PARSE_PACKET
-int dbg_search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid,
+int dbg_search_packet( iobuf_t inp, PACKET *pkt, off_t *retpos, int with_uid,
                        const char* file, int lineno  );
-int dbg_parse_packet( IOBUF inp, PACKET *ret_pkt,
+int dbg_parse_packet( iobuf_t inp, PACKET *ret_pkt,
                       const char* file, int lineno );
-int dbg_copy_all_packets( IOBUF inp, IOBUF out,
+int dbg_copy_all_packets( iobuf_t inp, iobuf_t out,
                           const char* file, int lineno  );
-int dbg_copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff,
+int dbg_copy_some_packets( iobuf_t inp, iobuf_t out, off_t stopoff,
                            const char* file, int lineno  );
-int dbg_skip_some_packets( IOBUF inp, unsigned n,
+int dbg_skip_some_packets( iobuf_t inp, unsigned n,
                            const char* file, int lineno	);
 #define search_packet( a,b,c,d )   \
              dbg_search_packet( (a), (b), (c), (d), __FILE__, __LINE__ )
@@ -396,11 +399,11 @@ int dbg_skip_some_packets( IOBUF inp, unsigned n,
 #define skip_some_packets( a,b ) \
              dbg_skip_some_packets((a),(b), __FILE__, __LINE__ )
 #else
-int search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid );
-int parse_packet( IOBUF inp, PACKET *ret_pkt);
-int copy_all_packets( IOBUF inp, IOBUF out );
-int copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff );
-int skip_some_packets( IOBUF inp, unsigned n );
+int search_packet( iobuf_t inp, PACKET *pkt, off_t *retpos, int with_uid );
+int parse_packet( iobuf_t inp, PACKET *ret_pkt);
+int copy_all_packets( iobuf_t inp, iobuf_t out );
+int copy_some_packets( iobuf_t inp, iobuf_t out, off_t stopoff );
+int skip_some_packets( iobuf_t inp, unsigned n );
 #endif
 
 const byte *enum_sig_subpkt ( const subpktarea_t *subpkts,
@@ -421,7 +424,7 @@ PACKET *create_gpg_control ( ctrlpkttype_t type,
                              size_t datalen );
 
 /*-- build-packet.c --*/
-int build_packet( IOBUF inp, PACKET *pkt );
+int build_packet( iobuf_t inp, PACKET *pkt );
 u32 calc_packet_length( PACKET *pkt );
 void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
@@ -474,19 +477,19 @@ int get_override_session_key( DEK *dek, const char *string );
 
 /*-- compress.c --*/
 int handle_compressed( void *ctx, PKT_compressed *cd,
-		       int (*callback)(IOBUF, void *), void *passthru );
+		       int (*callback)(iobuf_t, void *), void *passthru );
 
 /*-- encr-data.c --*/
 int decrypt_data( void *ctx, PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
-					int nooutput, int clearsig );
+                      int nooutput, int clearsig, int *create_failed );
 int ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 			       const char *inname, int textmode );
 
 /*-- comment.c --*/
-int write_comment( IOBUF out, const char *s );
+int write_comment( iobuf_t out, const char *s );
 
 /*-- sign.c --*/
 int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,

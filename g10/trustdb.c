@@ -34,6 +34,7 @@
 #endif
 #endif /* !DISABLE_REGEX */
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
@@ -98,7 +99,7 @@ new_key_item (void)
 {
   struct key_item *k;
   
-  k = m_alloc_clear (sizeof *k);
+  k = xcalloc (1,sizeof *k);
   return k;
 }
 
@@ -110,8 +111,8 @@ release_key_items (struct key_item *k)
   for (; k; k = k2)
     {
       k2 = k->next;
-      m_free (k->trust_regexp);
-      m_free (k);
+      xfree (k->trust_regexp);
+      xfree (k);
     }
 }
 
@@ -128,7 +129,7 @@ new_key_hash_table (void)
 {
   struct key_item **tbl;
 
-  tbl = m_alloc_clear (1024 * sizeof *tbl);
+  tbl = xcalloc (1,1024 * sizeof *tbl);
   return tbl;
 }
 
@@ -141,7 +142,7 @@ release_key_hash_table (KeyHashTable tbl)
     return;
   for (i=0; i < 1024; i++)
     release_key_items (tbl[i]);
-  m_free (tbl);
+  xfree (tbl);
 }
 
 /* 
@@ -188,7 +189,7 @@ release_key_array ( struct key_array *keys )
     if (keys) {
         for (k=keys; k->keyblock; k++)
             release_kbnode (k->keyblock);
-        m_free (keys);
+        xfree (keys);
     }
 }
 
@@ -335,7 +336,7 @@ read_record (ulong recno, TRUSTREC *rec, int rectype )
   if (rc)
     {
       log_error(_("trust record %lu, req type %d: read failed: %s\n"),
-                recno, rec->rectype, g10_errstr(rc) );
+                recno, rec->rectype, gpg_strerror (rc) );
       tdbio_invalid();
     }
   if (rectype != rec->rectype)
@@ -356,7 +357,7 @@ write_record (TRUSTREC *rec)
   if (rc)
     {
       log_error(_("trust record %lu, type %d: write failed: %s\n"),
-			    rec->recnum, rec->rectype, g10_errstr(rc) );
+			    rec->recnum, rec->rectype, gpg_strerror (rc) );
       tdbio_invalid();
     }
 }
@@ -370,7 +371,7 @@ do_sync(void)
     int rc = tdbio_sync ();
     if(rc)
       {
-        log_error (_("trustdb: sync failed: %s\n"), g10_errstr(rc) );
+        log_error (_("trustdb: sync failed: %s\n"), gpg_strerror (rc) );
         g10_exit(2);
       }
 }
@@ -399,7 +400,7 @@ setup_trustdb( int level, const char *dbname )
     if( trustdb_args.init )
 	return 0;
     trustdb_args.level = level;
-    trustdb_args.dbname = dbname? m_strdup(dbname): NULL;
+    trustdb_args.dbname = dbname? xstrdup (dbname): NULL;
     return 0;
 }
 
@@ -434,7 +435,7 @@ init_trustdb()
   else
     BUG();
   if( rc )
-    log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
+    log_fatal("can't init trustdb: %s\n", gpg_strerror (rc) );
 
   if(opt.trust_model==TM_AUTO)
     {
@@ -607,7 +608,7 @@ read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
   if (rc) 
     {
       log_error ("trustdb: searching trust record failed: %s\n",
-                 g10_errstr (rc));
+                 gpg_strerror (rc));
       return rc; 
     }
       
@@ -615,7 +616,7 @@ read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
     {
       log_error ("trustdb: record %lu is not a trust record\n",
                  rec->recnum);
-      return G10ERR_TRUSTDB; 
+      return GPG_ERR_TRUSTDB; 
     }      
   
   return 0;
@@ -760,12 +761,12 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
   TRUSTREC rec;
   int rc;
 
-  pk = m_alloc_clear (sizeof *pk);
+  pk = xcalloc (1,sizeof *pk);
   rc = get_pubkey (pk, kid);
   if (rc)
     {
       log_error (_("public key %08lX not found: %s\n"),
-                 (ulong)kid[1], g10_errstr(rc) );
+                 (ulong)kid[1], gpg_strerror (rc) );
       return;
     }
 
@@ -1029,12 +1030,12 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
   keyid_from_pk (pk, kid);
   if (pk->main_keyid[0] != kid[0] || pk->main_keyid[1] != kid[1])
     { /* this is a subkey - get the mainkey */
-      main_pk = m_alloc_clear (sizeof *main_pk);
+      main_pk = xcalloc (1,sizeof *main_pk);
       rc = get_pubkey (main_pk, pk->main_keyid);
       if (rc)
         {
           log_error ("error getting main key %08lX of subkey %08lX: %s\n",
-                     (ulong)pk->main_keyid[1], (ulong)kid[1], g10_errstr(rc));
+                     (ulong)pk->main_keyid[1], (ulong)kid[1], gpg_strerror (rc));
           validity = TRUST_UNKNOWN; 
           goto leave;
 	}
@@ -1223,12 +1224,12 @@ ask_ownertrust (u32 *kid,int minimum)
   int rc;
   int ot;
 
-  pk = m_alloc_clear (sizeof *pk);
+  pk = xcalloc (1,sizeof *pk);
   rc = get_pubkey (pk, kid);
   if (rc)
     {
       log_error (_("public key %08lX not found: %s\n"),
-                 (ulong)kid[1], g10_errstr(rc) );
+                 (ulong)kid[1], gpg_strerror (rc) );
       return TRUST_UNKNOWN;
     }
  
@@ -1712,14 +1713,14 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   KEYDB_SEARCH_DESC desc;
   
   maxkeys = 1000;
-  keys = m_alloc ((maxkeys+1) * sizeof *keys);
+  keys = xmalloc ((maxkeys+1) * sizeof *keys);
   nkeys = 0;
   
   rc = keydb_search_reset (hd);
   if (rc)
     {
-      log_error ("keydb_search_reset failed: %s\n", g10_errstr(rc));
-      m_free (keys);
+      log_error ("keydb_search_reset failed: %s\n", gpg_strerror (rc));
+      xfree (keys);
       return NULL;
     }
 
@@ -1735,8 +1736,8 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
     }
   if (rc)
     {
-      log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
-      m_free (keys);
+      log_error ("keydb_search_first failed: %s\n", gpg_strerror (rc));
+      xfree (keys);
       return NULL;
     }
   
@@ -1748,8 +1749,8 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
       rc = keydb_get_keyblock (hd, &keyblock);
       if (rc) 
         {
-          log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
-          m_free (keys);
+          log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
+          xfree (keys);
           return NULL;
         }
       
@@ -1781,7 +1782,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
 
           if (nkeys == maxkeys) {
             maxkeys += 1000;
-            keys = m_realloc (keys, (maxkeys+1) * sizeof *keys);
+            keys = xrealloc (keys, (maxkeys+1) * sizeof *keys);
           }
           keys[nkeys++].keyblock = keyblock;
 
@@ -1804,8 +1805,8 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   while ( !(rc = keydb_search (hd, &desc, 1)) );
   if (rc && rc != -1) 
     {
-      log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
-      m_free (keys);
+      log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
+      xfree (keys);
       return NULL;
     }
 
@@ -1825,7 +1826,7 @@ reset_trust_records (KEYDB_HANDLE hd, KeyHashTable exclude)
   rc = keydb_search_reset (hd);
   if (rc)
     {
-      log_error ("keydb_search_reset failed: %s\n", g10_errstr(rc));
+      log_error ("keydb_search_reset failed: %s\n", gpg_strerror (rc));
       return;
     }
 
@@ -1838,7 +1839,7 @@ reset_trust_records (KEYDB_HANDLE hd, KeyHashTable exclude)
     }
   rc = keydb_search (hd, &desc, 1);
   if (rc && rc != -1 )
-    log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
+    log_error ("keydb_search_first failed: %s\n", gpg_strerror (rc));
   else if (!rc)
     {
       desc.mode = KEYDB_SEARCH_MODE_NEXT; /* change mode */
@@ -1847,7 +1848,7 @@ reset_trust_records (KEYDB_HANDLE hd, KeyHashTable exclude)
           rc = keydb_get_keyblock (hd, &keyblock);
           if (rc) 
             {
-              log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
+              log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
               break;
             }
           count++;
@@ -1860,7 +1861,7 @@ reset_trust_records (KEYDB_HANDLE hd, KeyHashTable exclude)
         }
       while ( !(rc = keydb_search (hd, &desc, 1)) );
       if (rc && rc != -1) 
-        log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
+        log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
     }
   if (opt.verbose)
     log_info (_("%d keys processed (%d validity counts cleared)\n"),
@@ -2027,7 +2028,7 @@ validate_keys (int interactive)
       if (!keys) 
         {
           log_error ("validate_key_list failed\n");
-          rc = G10ERR_GENERAL;
+          rc = GPG_ERR_GENERAL;
           goto leave;
         }
 
@@ -2081,7 +2082,7 @@ validate_keys (int interactive)
 			kar->keyblock->pkt->pkt.public_key->trust_value;
 		      if(kar->keyblock->pkt->pkt.public_key->trust_regexp)
 			k->trust_regexp=
-			  m_strdup(kar->keyblock->pkt->
+			  xstrdup (kar->keyblock->pkt->
 				   pkt.public_key->trust_regexp);
 		      k->next = klist;
 		      klist = k;
@@ -2117,7 +2118,7 @@ validate_keys (int interactive)
       if(tdbio_update_version_record()!=0)
 	{
 	  log_error(_("unable to update trustdb version record: "
-		      "write failed: %s\n"), g10_errstr(rc));
+		      "write failed: %s\n"), gpg_strerror (rc));
 	  tdbio_invalid();
 	}
 

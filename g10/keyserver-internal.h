@@ -5,7 +5,7 @@
 
 #include <time.h>
 #include "keyserver.h"
-#include "iobuf.h"
+#include "../common/iobuf.h"
 #include "types.h"
 
 void parse_keyserver_options(char *options);

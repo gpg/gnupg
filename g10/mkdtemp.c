@@ -85,7 +85,7 @@ char *mkdtemp(char *template)
       if(remaining>0)
 	sprintf(marker,"%X",randombits[idx]&0xF);
 
-      m_free(randombits);
+      xfree (randombits);
 
       if(mkdir(template,0700)==0)
 	break;

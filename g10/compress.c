@@ -1,5 +1,6 @@
 /* compress.c - compress filter
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,6 +31,7 @@
 # include "zlib-riscos.h"
 #endif
 
+#include "gpg.h"
 #include "util.h"
 #include "memory.h"
 #include "packet.h"
@@ -73,12 +75,13 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->outbufsize = 8192;
-    zfx->outbuf = m_alloc( zfx->outbufsize );
+    zfx->outbuf = xmalloc ( zfx->outbufsize );
 }
 
 static int
-do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
+do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, iobuf_t a )
 {
+    gpg_error_t rc;
     int zrc;
     unsigned n;
 
@@ -108,10 +111,12 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
 		(unsigned)zs->avail_in, (unsigned)zs->avail_out,
 					       (unsigned)n, zrc );
 
-	if( iobuf_write( a, zfx->outbuf, n ) ) {
+	rc = iobuf_write (a, zfx->outbuf, n);
+        if (rc)
+          {
 	    log_debug("deflate: iobuf_write failed\n");
-	    return G10ERR_WRITE_FILE;
-	}
+	    return rc;
+          }
     } while( zs->avail_in || (flush == Z_FINISH && zrc != Z_STREAM_END) );
     return 0;
 }
@@ -140,13 +145,13 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->inbufsize = 2048;
-    zfx->inbuf = m_alloc( zfx->inbufsize );
+    zfx->inbuf = xmalloc ( zfx->inbufsize );
     zs->avail_in = 0;
 }
 
 static int
 do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
-	       IOBUF a, size_t *ret_len )
+	       iobuf_t a, size_t *ret_len )
 {
     int zrc;
     int rc=0;
@@ -210,7 +215,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 
 int
 compress_filter( void *opaque, int control,
-		 IOBUF a, byte *buf, size_t *ret_len)
+		 iobuf_t a, byte *buf, size_t *ret_len)
 {
     size_t size = *ret_len;
     compress_filter_context_t *zfx = opaque;
@@ -219,7 +224,7 @@ compress_filter( void *opaque, int control,
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	if( !zfx->status ) {
-	    zs = zfx->opaque = m_alloc_clear( sizeof *zs );
+	    zs = zfx->opaque = xcalloc (1, sizeof *zs );
 	    init_uncompress( zfx, zs );
 	    zfx->status = 1;
 	}
@@ -250,7 +255,7 @@ compress_filter( void *opaque, int control,
 	    pkt.pkt.compressed = &cd;
 	    if( build_packet( a, &pkt ))
 		log_bug("build_packet(PKT_COMPRESSED) failed\n");
-	    zs = zfx->opaque = m_alloc_clear( sizeof *zs );
+	    zs = zfx->opaque = xcalloc (1, sizeof *zs );
 	    init_compress( zfx, zs );
 	    zfx->status = 2;
 	}
@@ -266,9 +271,9 @@ compress_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FREE ) {
 	if( zfx->status == 1 ) {
 	    inflateEnd(zs);
-	    m_free(zs);
+	    xfree (zs);
 	    zfx->opaque = NULL;
-	    m_free(zfx->outbuf); zfx->outbuf = NULL;
+	    xfree (zfx->outbuf); zfx->outbuf = NULL;
 	}
 	else if( zfx->status == 2 ) {
 #ifndef __riscos__
@@ -279,9 +284,9 @@ compress_filter( void *opaque, int control,
 	    zs->avail_in = 0;
 	    do_compress( zfx, zs, Z_FINISH, a );
 	    deflateEnd(zs);
-	    m_free(zs);
+	    xfree (zs);
 	    zfx->opaque = NULL;
-	    m_free(zfx->outbuf); zfx->outbuf = NULL;
+	    xfree (zfx->outbuf); zfx->outbuf = NULL;
 	}
         if (zfx->release)
           zfx->release (zfx);
@@ -295,7 +300,7 @@ compress_filter( void *opaque, int control,
 static void
 release_context (compress_filter_context_t *ctx)
 {
-  m_free (ctx);
+  xfree (ctx);
 }
 
 /****************
@@ -303,14 +308,14 @@ release_context (compress_filter_context_t *ctx)
  */
 int
 handle_compressed( void *procctx, PKT_compressed *cd,
-		   int (*callback)(IOBUF, void *), void *passthru )
+		   int (*callback)(iobuf_t, void *), void *passthru )
 {
     compress_filter_context_t *cfx;
     int rc;
 
     if( cd->algorithm < 1 || cd->algorithm > 2	)
-	return G10ERR_COMPR_ALGO;
-    cfx = m_alloc_clear (sizeof *cfx);
+	return GPG_ERR_COMPR_ALGO;
+    cfx = xcalloc (1,sizeof *cfx);
     cfx->algo = cd->algorithm;
     cfx->release = release_context;
     iobuf_push_filter( cd->buf, compress_filter, cfx );

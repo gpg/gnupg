@@ -1,5 +1,5 @@
 /* logging.c -	useful logging functions
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -76,6 +76,12 @@ log_get_errorcount (int clear)
     if( clear )
 	errorcount = 0;
     return n;
+}
+
+void
+log_inc_errorcount (void)
+{
+   errorcount++;
 }
 
 void
@@ -194,7 +200,12 @@ do_logv( int level, const char *fmt, va_list arg_ptr )
         fprintf (logstream, "[%u]", (unsigned int)getpid ());
       if (!with_time)
         putc (':', logstream);
-      putc (' ', logstream);
+      /* A leading backspace suppresses the extra space so that we can
+         correclty output, programname, filename and linenumber. */
+      if (fmt && *fmt == '\b')
+        fmt++;
+      else
+        putc (' ', logstream);
     }
 
   switch (level)
@@ -272,7 +283,7 @@ log_fatal( const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     do_logv( JNLIB_LOG_FATAL, fmt, arg_ptr );
     va_end(arg_ptr);
-    abort(); /* never called, bugs it makes the compiler happy */
+    abort(); /* never called, but it makes the compiler happy */
 }
 
 void

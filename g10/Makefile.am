@@ -19,16 +19,17 @@
 
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
+localedir = $(datadir)/locale
+INCLUDES = -I$(top_srcdir)/common -I$(top_srcdir)/include -I$(top_srcdir)/intl -DLOCALEDIR=\"$(localedir)\"
+
 EXTRA_DIST = options.skel
 # it seems that we can't use this with automake 1.5
 #OMIT_DEPENDENCIES = zlib.h zconf.h
 libexecdir = @libexecdir@/@PACKAGE@
-# FIXME: Windows support currently not enabled
-#if ! HAVE_DOSISH_SYSTEM
-#AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
-#endif
-needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
+if ! HAVE_DOSISH_SYSTEM
+AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
+endif
+needed_libs = ../common/libcommon.a ../jnlib/libjnlib.a
 
 #noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg gpgv
@@ -62,6 +63,7 @@ common_source =  \
 	      plaintext.c	\
 	      sig-check.c	\
 	      keylist.c 	\
+	      pkglue.c pkglue.h \
 	      signal.c
 
 gpg_SOURCES  = g10.c		\
@@ -108,8 +110,9 @@ gpgv_SOURCES = gpgv.c           \
 #	       ks-db.h \
 #	       $(common_source)
 
-LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@
-gpg_LDADD = $(LDADD) @DLLIBS@ @EGDLIBS@ -lgpg-error
+LDADD =  $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@ 
+gpg_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
+gpgv_LDADD = $(LIBGCRYPT_LIBS) $(LDADD) -lassuan -lgpg-error
 
 $(PROGRAMS): $(needed_libs)
 

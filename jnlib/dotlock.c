@@ -1,5 +1,5 @@
 /* dotlock.c - dotfile locking
- *	Copyright (C) 1998,2000,2001 Free Software Foundation, Inc.
+ *	Copyright (C) 1998,2000,2001,2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -42,13 +42,20 @@ struct dotlock_handle {
     char *tname;    /* name of lockfile template */
     char *lockname; /* name of the real lockfile */
     int locked;     /* lock status */
+    int disable;    /* locking */
 };
 
 
-static DOTLOCK all_lockfiles;
+static volatile DOTLOCK all_lockfiles;
+static int never_lock;
 
 static int read_lockfile( const char *name );
-static void remove_lockfiles(void);
+
+void
+disable_dotlock(void)
+{
+    never_lock = 1;
+}
 
 /****************
  * Create a lockfile with the given name and return an object of
@@ -81,13 +88,23 @@ create_dotlock( const char *file_to_lock )
     int dirpartlen;
 
     if( !initialized ) {
-	atexit( remove_lockfiles );
+	atexit( dotlock_remove_lockfiles );
 	initialized = 1;
     }
     if( !file_to_lock )
 	return NULL;
 
     h = jnlib_xcalloc( 1, sizeof *h );
+    if( never_lock ) {
+	h->disable = 1;
+#ifdef _REENTRANT
+	/* fixme: aquire mutex on all_lockfiles */
+#endif
+	h->next = all_lockfiles;
+	all_lockfiles = h;
+	return h;
+    }
+
 #ifndef HAVE_DOSISH_SYSTEM
     sprintf( pidstr, "%10d\n", (int)getpid() );
     /* fixme: add the hostname to the second line (FQDN or IP addr?) */
@@ -98,8 +115,17 @@ create_dotlock( const char *file_to_lock )
     else
 	nodename = utsbuf.nodename;
 
-    if( !(dirpart = strrchr( file_to_lock, '/' )) ) {
-	dirpart = ".";
+#ifdef __riscos__
+    {
+        char *iter = (char *) nodename;
+        for (; iter[0]; iter++)
+            if (iter[0] == '.')
+                iter[0] = '/';
+    }
+#endif /* __riscos__ */
+
+    if( !(dirpart = strrchr( file_to_lock, DIRSEP_C )) ) {
+	dirpart = EXTSEP_S;
 	dirpartlen = 1;
     }
     else {
@@ -114,8 +140,13 @@ create_dotlock( const char *file_to_lock )
     all_lockfiles = h;
 
     h->tname = jnlib_xmalloc( dirpartlen + 6+30+ strlen(nodename) + 11 );
-    sprintf( h->tname, "%.*s/.#lk%p.%s.%d",
+#ifndef __riscos__
+     sprintf( h->tname, "%.*s/.#lk%p.%s.%d",
 	     dirpartlen, dirpart, h, nodename, (int)getpid() );
+#else /* __riscos__ */
+    sprintf( h->tname, "%.*s.lk%p/%s/%d",
+	     dirpartlen, dirpart, h, nodename, (int)getpid() );
+#endif /* __riscos__ */
 
     do {
 	errno = 0;
@@ -147,7 +178,8 @@ create_dotlock( const char *file_to_lock )
       #ifdef _REENTRANT
 	/* release mutex */
       #endif
-	log_error( "error closing `%s': %s\n", h->tname, strerror(errno));
+	log_fatal( "error writing to `%s': %s\n", h->tname, strerror(errno) );
+	close(fd);
 	unlink(h->tname);
 	jnlib_free(h->tname);
 	jnlib_free(h);
@@ -159,7 +191,7 @@ create_dotlock( const char *file_to_lock )
   #endif
 #endif /* !HAVE_DOSISH_SYSTEM */
     h->lockname = jnlib_xmalloc( strlen(file_to_lock) + 6 );
-    strcpy(stpcpy(h->lockname, file_to_lock), ".lock");
+    strcpy(stpcpy(h->lockname, file_to_lock), EXTSEP_S "lock");
     return h;
 }
 
@@ -191,12 +223,19 @@ make_dotlock( DOTLOCK h, long timeout )
     const char *maybe_dead="";
     int backoff=0;
 
+    if( h->disable ) {
+	return 0;
+    }
+
     if( h->locked ) {
+#ifndef __riscos__
 	log_debug("oops, `%s' is already locked\n", h->lockname );
+#endif /* !__riscos__ */
 	return 0;
     }
 
     for(;;) {
+#ifndef __riscos__
 	if( !link(h->tname, h->lockname) ) {
 	    /* fixme: better use stat to check the link count */
 	    h->locked = 1;
@@ -206,6 +245,16 @@ make_dotlock( DOTLOCK h, long timeout )
 	    log_error( "lock not made: link() failed: %s\n", strerror(errno) );
 	    return -1;
 	}
+#else /* __riscos__ */
+        if( !renamefile(h->tname, h->lockname) ) {
+            h->locked = 1;
+            return 0; /* okay */
+        }
+        if( errno != EEXIST ) {
+	    log_error( "lock not made: rename() failed: %s\n", strerror(errno) );
+	    return -1;
+        }
+#endif /* __riscos__ */
 	if( (pid = read_lockfile(h->lockname)) == -1 ) {
 	    if( errno != ENOENT ) {
 		log_info("cannot read lockfile\n");
@@ -215,20 +264,27 @@ make_dotlock( DOTLOCK h, long timeout )
 	    continue;
 	}
 	else if( pid == getpid() ) {
-	    log_info( "Oops: lock already hold by us\n");
+	    log_info( "Oops: lock already held by us\n");
 	    h->locked = 1;
 	    return 0; /* okay */
 	}
 	else if( kill(pid, 0) && errno == ESRCH ) {
+#ifndef __riscos__
 	    maybe_dead = " - probably dead";
-	 #if 0 /* we should not do this without checking the permissions */
+#if 0 /* we should not do this without checking the permissions */
 	       /* and the hostname */
 	    log_info( "removing stale lockfile (created by %d)", pid );
-	 #endif
+#endif
+#else /* __riscos__ */
+            /* we are *pretty* sure that the other task is dead and therefore
+               we remove the other lock file */
+            maybe_dead = " - probably dead - removing lock";
+            unlink(h->lockname);
+#endif /* __riscos__ */
 	}
 	if( timeout == -1 ) {
 	    struct timeval tv;
-	    log_info( "waiting for lock (hold by %d%s) %s...\n",
+	    log_info( "waiting for lock (held by %d%s) %s...\n",
 		      pid, maybe_dead, maybe_deadlock(h)? "(deadlock?) ":"");
 
 
@@ -259,6 +315,10 @@ release_dotlock( DOTLOCK h )
 #else
     int pid;
 
+    if( h->disable ) {
+	return 0;
+    }
+
     if( !h->locked ) {
 	log_debug("oops, `%s' is not locked\n", h->lockname );
 	return 0;
@@ -273,11 +333,19 @@ release_dotlock( DOTLOCK h )
 	log_error( "release_dotlock: not our lock (pid=%d)\n", pid);
 	return -1;
     }
+#ifndef __riscos__
     if( unlink( h->lockname ) ) {
 	log_error( "release_dotlock: error removing lockfile `%s'",
 							h->lockname);
 	return -1;
     }
+#else /* __riscos__ */
+    if( renamefile(h->lockname, h->tname) ) {
+	log_error( "release_dotlock: error renaming lockfile `%s' to `%s'",
+							h->lockname, h->tname);
+	return -1;
+    }
+#endif /* __riscos__ */
     /* fixme: check that the link count is now 1 */
     h->locked = 0;
     return 0;
@@ -291,9 +359,9 @@ release_dotlock( DOTLOCK h )
 static int
 read_lockfile( const char *name )
 {
-  #ifdef HAVE_DOSISH_SYSTEM
+#ifdef HAVE_DOSISH_SYSTEM
     return 0;
-  #else
+#else
     int fd, pid;
     char pidstr[16];
 
@@ -312,20 +380,24 @@ read_lockfile( const char *name )
     pidstr[10] = 0;  /* terminate pid string */
     close(fd);
     pid = atoi(pidstr);
+#ifndef __riscos__
     if( !pid || pid == -1 ) {
+#else /* __riscos__ */
+    if( (!pid && riscos_getpid()) || pid == -1 ) {
+#endif /* __riscos__ */
 	log_error("invalid pid %d in lockfile `%s'", pid, name );
 	errno = 0;
 	return -1;
     }
     return pid;
-  #endif
+#endif
 }
 
 
-static void
-remove_lockfiles()
+void
+dotlock_remove_lockfiles()
 {
-  #ifndef HAVE_DOSISH_SYSTEM
+#ifndef HAVE_DOSISH_SYSTEM
     DOTLOCK h, h2;
 
     h = all_lockfiles;
@@ -333,14 +405,16 @@ remove_lockfiles()
 
     while( h ) {
 	h2 = h->next;
-	if( h->locked )
+        if (!h->disable ) {
+          if( h->locked )
 	    unlink( h->lockname );
-	unlink(h->tname);
-	jnlib_free(h->tname);
-	jnlib_free(h->lockname);
+          unlink(h->tname);
+          jnlib_free(h->tname);
+          jnlib_free(h->lockname);
+        }
 	jnlib_free(h);
 	h = h2;
     }
-  #endif
+#endif
 }
 

@@ -1,5 +1,5 @@
 /* dearmor.c - Armor utility
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <assert.h>
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "memory.h"
@@ -42,7 +43,7 @@ int
 dearmor_file( const char *fname )
 {
     armor_filter_context_t afx;
-    IOBUF inp = NULL, out = NULL;
+    iobuf_t inp = NULL, out = NULL;
     int rc = 0;
     int c;
 
@@ -50,9 +51,9 @@ dearmor_file( const char *fname )
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(fname)) ) {
+        rc = gpg_error_from_errno (errno);
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 
@@ -84,7 +85,7 @@ int
 enarmor_file( const char *fname )
 {
     armor_filter_context_t afx;
-    IOBUF inp = NULL, out = NULL;
+    iobuf_t inp = NULL, out = NULL;
     int rc = 0;
     int c;
 
@@ -92,9 +93,9 @@ enarmor_file( const char *fname )
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(fname)) ) {
+        rc = gpg_error_from_errno (errno);
 	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
-	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 

@@ -1,5 +1,5 @@
-/* dotlock.h
- *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+/* pkglue.h - public key operations definitions
+ *	Copyright (C) 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -18,19 +18,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef LIBJNLIB_DOTLOCK_H
-#define LIBJNLIB_DOTLOCK_H
+#ifndef GNUPG_G10_PKGLUE_H
+#define GNUPG_G10_PKGLUE_H
 
-struct dotlock_handle;
-typedef struct dotlock_handle *DOTLOCK;
-
-void disable_dotlock (void);
-DOTLOCK create_dotlock(const char *file_to_lock);
-int make_dotlock (DOTLOCK h, long timeout);
-int release_dotlock (DOTLOCK h);
-void dotlock_remove_lockfiles (void);
-
-#endif /*LIBJNLIB_DOTLOCK_H*/
+int pk_sign (int algo, gcry_mpi_t *data, gcry_mpi_t hash,
+             gcry_mpi_t *skey);
+int pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data,
+               gcry_mpi_t *pkey);
+int pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
+                gcry_mpi_t *pkey);
+int pk_decrypt (int algo, gcry_mpi_t *result, gcry_mpi_t *data,
+                gcry_mpi_t *skey);
 
 
-
+#endif /*GNUPG_G10_PKGLUE_H*/

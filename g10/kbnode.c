@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "gpg.h"
 #include "util.h"
 #include "memory.h"
 #include "packet.h"
@@ -41,7 +43,7 @@ alloc_node(void)
     if( n )
 	unused_nodes = n->next;
     else
-	n = m_alloc( sizeof *n );
+	n = xmalloc ( sizeof *n );
     n->next = NULL;
     n->pkt = NULL;
     n->flag = 0;
@@ -58,7 +60,7 @@ free_node( KBNODE n )
 	n->next = unused_nodes;
 	unused_nodes = n;
 #else
-	m_free( n );
+	xfree ( n );
 #endif
     }
 }
@@ -94,7 +96,7 @@ release_kbnode( KBNODE n )
 	n2 = n->next;
 	if( !is_cloned_kbnode(n) ) {
 	    free_packet( n->pkt );
-	    m_free( n->pkt );
+	    xfree ( n->pkt );
 	}
 	free_node( n );
 	n = n2;
@@ -267,7 +269,7 @@ commit_kbnode( KBNODE *root )
 		nl->next = n->next;
 	    if( !is_cloned_kbnode(n) ) {
 		free_packet( n->pkt );
-		m_free( n->pkt );
+		xfree ( n->pkt );
 	    }
 	    free_node( n );
 	    changed = 1;
@@ -291,7 +293,7 @@ remove_kbnode( KBNODE *root, KBNODE node )
 		nl->next = n->next;
 	    if( !is_cloned_kbnode(n) ) {
 		free_packet( n->pkt );
-		m_free( n->pkt );
+		xfree ( n->pkt );
 	    }
 	    free_node( n );
 	}

@@ -1,5 +1,5 @@
 /* comment.c - write comment stuff
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,7 +37,7 @@
 
 
 int
-write_comment( IOBUF out, const char *s )
+write_comment( iobuf_t out, const char *s )
 {
     PACKET pkt;
     size_t n = strlen(s);
@@ -45,18 +45,18 @@ write_comment( IOBUF out, const char *s )
 
     pkt.pkttype = PKT_COMMENT;
     if( *s != '#' ) {
-       pkt.pkt.comment = m_alloc( sizeof *pkt.pkt.comment + n );
+       pkt.pkt.comment = xmalloc ( sizeof *pkt.pkt.comment + n );
        pkt.pkt.comment->len = n+1;
        *pkt.pkt.comment->data = '#';
        strcpy(pkt.pkt.comment->data+1, s);
     }
     else {
-       pkt.pkt.comment = m_alloc( sizeof *pkt.pkt.comment + n - 1 );
+       pkt.pkt.comment = xmalloc ( sizeof *pkt.pkt.comment + n - 1 );
        pkt.pkt.comment->len = n;
        strcpy(pkt.pkt.comment->data, s);
     }
     if( (rc = build_packet( out, &pkt )) )
-	log_error("build_packet(comment) failed: %s\n", g10_errstr(rc) );
+	log_error("build_packet(comment) failed: %s\n", gpg_strerror (rc) );
     free_packet( &pkt );
     return rc;
 }
@@ -68,9 +68,9 @@ make_comment_node( const char *s )
     PACKET *pkt;
     size_t n = strlen(s);
 
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = xcalloc (1, sizeof *pkt );
     pkt->pkttype = PKT_COMMENT;
-    pkt->pkt.comment = m_alloc( sizeof *pkt->pkt.comment + n - 1 );
+    pkt->pkt.comment = xmalloc ( sizeof *pkt->pkt.comment + n - 1 );
     pkt->pkt.comment->len = n;
     strcpy(pkt->pkt.comment->data, s);
     return new_kbnode( pkt );
@@ -78,25 +78,29 @@ make_comment_node( const char *s )
 
 
 KBNODE
-make_mpi_comment_node( const char *s, MPI a )
+make_mpi_comment_node( const char *s, gcry_mpi_t a )
 {
     PACKET *pkt;
-    byte *buf, *p, *pp;
-    unsigned n1, nb1;
+    byte *buf, *pp;
+    size_t n1, nb1;
     size_t n = strlen(s);
 
     nb1 = mpi_get_nbits( a );
-    p = buf = mpi_get_buffer( a, &n1, NULL );
-    pkt = m_alloc_clear( sizeof *pkt );
+    if (gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, &n1, a))
+      BUG ();
+    /* fixme: allocate it on the stack */
+    buf = xmalloc (n1);
+    if (gcry_mpi_print (GCRYMPI_FMT_PGP, buf, &n1, a))
+      BUG ();
+
+    pkt = xcalloc (1, sizeof *pkt );
     pkt->pkttype = PKT_COMMENT;
-    pkt->pkt.comment = m_alloc( sizeof *pkt->pkt.comment + n + 2 + n1 );
+    pkt->pkt.comment = xmalloc ( sizeof *pkt->pkt.comment + n + 2 + n1 );
     pkt->pkt.comment->len = n+1+2+n1;
     pp = pkt->pkt.comment->data;
     memcpy(pp, s, n+1);
-    pp[n+1] = nb1 >> 8;
-    pp[n+2] = nb1 ;
-    memcpy(pp+n+3, p, n1 );
-    m_free(buf);
+    memcpy(pp+n+1, buf, n1 );
+    xfree (buf);
     return new_kbnode( pkt );
 }
 

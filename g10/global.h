@@ -26,4 +26,6 @@
 typedef struct kbnode_struct *KBNODE;
 typedef struct keydb_search_desc KEYDB_SEARCH_DESC;
 
+#include "gpg.h"
+
 #endif /*GPG_GLOBAL_H*/

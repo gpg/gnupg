@@ -88,7 +88,7 @@ print_seckey_info (PKT_secret_key *sk)
     
     p = get_user_id (sk_keyid, &n);
     tty_print_utf8_string (p, n);
-    m_free (p);
+    xfree (p);
 
     tty_printf ("\n");   
 }
@@ -109,7 +109,7 @@ print_pubkey_info (PKT_public_key *pk)
 
   p = get_user_id (pk_keyid, &n);
   tty_print_utf8_string (p, n);
-  m_free (p);
+  xfree (p);
   
   tty_printf ("\n\n"); 
 }
@@ -126,7 +126,7 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
   const byte *p;
   size_t len;
   int seq=0,crit;
-  FILE *fp=mode?log_stream():stdout;
+  FILE *fp=mode?log_get_stream():stdout;
 
   while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len,&seq,&crit)))
     {
@@ -168,7 +168,7 @@ show_notation(PKT_signature *sig,int indent,int mode)
   const byte *p;
   size_t len;
   int seq=0,crit;
-  FILE *fp=mode?log_stream():stdout;
+  FILE *fp=mode?log_get_stream():stdout;
 
   /* There may be multiple notations in the same sig. */
 
@@ -254,12 +254,12 @@ list_all( int secret )
 
     hd = keydb_new (secret);
     if (!hd)
-        rc = G10ERR_GENERAL;
+        rc = GPG_ERR_GENERAL;
     else
         rc = keydb_search_first (hd);
     if( rc ) {
 	if( rc != -1 )
-	    log_error("keydb_search_first failed: %s\n", g10_errstr(rc) );
+	    log_error("keydb_search_first failed: %s\n", gpg_strerror (rc) );
 	goto leave;
     }
 
@@ -267,7 +267,7 @@ list_all( int secret )
     do {
         rc = keydb_get_keyblock (hd, &keyblock);
         if (rc) {
-            log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
+            log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
             goto leave;
         }
 	if(!opt.with_colons)
@@ -291,7 +291,7 @@ list_all( int secret )
         keyblock = NULL;
     } while (!(rc = keydb_search_next (hd)));
     if( rc && rc != -1 )
-	log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
+	log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
 
     if(opt.check_sigs && !opt.with_colons)
       print_signature_stats(&stats);
@@ -327,7 +327,7 @@ list_one( STRLIST names, int secret )
     if( secret ) {
 	rc = get_seckey_bynames( &ctx, NULL, names, &keyblock );
 	if( rc ) {
-	    log_error("error reading key: %s\n",  g10_errstr(rc) );
+	    log_error("error reading key: %s\n",  gpg_strerror (rc) );
 	    get_seckey_end( ctx );
 	    return;
 	}
@@ -347,7 +347,7 @@ list_one( STRLIST names, int secret )
     else {
 	rc = get_pubkey_bynames( &ctx, NULL, names, &keyblock );
 	if( rc ) {
-	    log_error("error reading key: %s\n", g10_errstr(rc) );
+	    log_error("error reading key: %s\n", gpg_strerror (rc) );
 	    get_pubkey_end( ctx );
 	    return;
 	}
@@ -680,11 +680,11 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    if( stats ) {
                 /*fflush(stdout);*/
 		rc = check_key_signature( keyblock, node, NULL );
-		switch( rc ) {
+		switch( gpg_err_code (rc) ) {
 		 case 0:		 sigrc = '!'; break;
-		 case G10ERR_BAD_SIGN:   stats->inv_sigs++; sigrc = '-'; break;
-		 case G10ERR_NO_PUBKEY: 
-		 case G10ERR_UNU_PUBKEY: stats->no_key++; continue;
+		 case GPG_ERR_BAD_SIGNATURE:   stats->inv_sigs++; sigrc = '-'; break;
+		 case GPG_ERR_NO_PUBKEY: 
+		 case GPG_ERR_UNUSABLE_PUBKEY: stats->no_key++; continue;
 		 default:		 stats->oth_err++; sigrc = '%'; break;
 		}
 
@@ -748,14 +748,14 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	      printf("%08lX",(ulong)sig->keyid[1]);
 	    printf(" %s   ", datestr_from_sig(sig));
 	    if( sigrc == '%' )
-		printf("[%s] ", g10_errstr(rc) );
+		printf("[%s] ", gpg_strerror (rc) );
 	    else if( sigrc == '?' )
 		;
 	    else if ( !opt.fast_list_mode ) {
 		size_t n;
 		char *p = get_user_id( sig->keyid, &n );
                 print_utf8_string( stdout, p, n );
-		m_free(p);
+		xfree (p);
 	    }
 	    putchar('\n');
 
@@ -1024,11 +1024,11 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	    if( opt.check_sigs ) {
 		fflush(stdout);
 		rc = check_key_signature( keyblock, node, NULL );
-		switch( rc ) {
+		switch( gpg_err_code (rc) ) {
 		  case 0:		   sigrc = '!'; break;
-		  case G10ERR_BAD_SIGN:    sigrc = '-'; break;
-		  case G10ERR_NO_PUBKEY: 
-		  case G10ERR_UNU_PUBKEY:  sigrc = '?'; break;
+		  case GPG_ERR_BAD_SIGNATURE:    sigrc = '-'; break;
+		  case GPG_ERR_NO_PUBKEY: 
+		  case GPG_ERR_UNUSABLE_PUBKEY:  sigrc = '?'; break;
 		  default:		   sigrc = '%'; break;
 		}
 	    }
@@ -1055,14 +1055,14 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	    printf(":");
 
 	    if( sigrc == '%' )
-		printf("[%s] ", g10_errstr(rc) );
+		printf("[%s] ", gpg_strerror (rc) );
 	    else if( sigrc == '?' )
 		;
 	    else if ( !opt.fast_list_mode ) {
 		size_t n;
 		char *p = get_user_id( sig->keyid, &n );
                 print_string( stdout, p, n, ':' );
-		m_free(p);
+		xfree (p);
 	    }
             printf(":%02x%c:\n", sig->sig_class,sig->flags.exportable?'x':'l');
 	    /* fixme: check or list other sigs here */
@@ -1170,14 +1170,14 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
       {
 	if(sk)
 	  {
-	    PKT_secret_key *primary_sk=m_alloc_clear(sizeof(*primary_sk));
+	    PKT_secret_key *primary_sk=xcalloc (1,sizeof(*primary_sk));
 	    get_seckey(primary_sk,sk->main_keyid);
 	    print_fingerprint(NULL,primary_sk,mode|0x80);
 	    free_secret_key(primary_sk);
 	  }
 	else
 	  {
-	    PKT_public_key *primary_pk=m_alloc_clear(sizeof(*primary_pk));
+	    PKT_public_key *primary_pk=xcalloc (1,sizeof(*primary_pk));
 	    get_pubkey(primary_pk,pk->main_keyid);
 	    print_fingerprint(primary_pk,NULL,mode|0x80);
 	    free_public_key(primary_pk);
@@ -1185,7 +1185,7 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
       }
 
     if (mode == 1) {
-        fp = log_stream ();
+        fp = log_get_stream ();
 	if(primary)
 	  text = _("Primary key fingerprint:");
 	else

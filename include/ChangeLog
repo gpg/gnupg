@@ -1,3 +1,15 @@
+2003-06-11  Werner Koch  <wk@gnupg.org>
+
+	* cipher.h: Include gcrypt.h and mapped cipher algo names to
+	gcrypt ones.  Removed twofish_old and skipjack.  Removed all
+	handle definitions and other raerely used stuff.  This file will
+	eventually be entirely removed.
+	
+
+2003-06-10  Werner Koch  <wk@gnupg.org>
+
+	* types.h (struct strlist): Removed.
+
 2003-05-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.h, i18n.h, iobuf.h, memory.h, mpi.h, types.h, util.h:

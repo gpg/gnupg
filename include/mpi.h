@@ -30,6 +30,11 @@
 #ifndef G10_MPI_H
 #define G10_MPI_H
 
+#include <gcrypt.h>
+
+#if 0
+
+
 #include <config.h>
 #include <stdio.h>
 #include "iobuf.h"
@@ -192,5 +197,5 @@ void mpi_rshift( MPI x, MPI a, unsigned n );
 
 /*-- mpi-inv.c --*/
 void mpi_invm( MPI x, MPI u, MPI v );
-
+#endif
 #endif /*G10_MPI_H*/

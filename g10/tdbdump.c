@@ -1,5 +1,5 @@
 /* tdbdump.c
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "gpg.h"
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
@@ -57,7 +58,7 @@ write_record( TRUSTREC *rec )
     if( !rc )
 	return;
     log_error(_("trust record %lu, type %d: write failed: %s\n"),
-			    rec->recnum, rec->rectype, g10_errstr(rc) );
+			    rec->recnum, rec->rectype, gpg_strerror (rc) );
     tdbio_invalid();
 }
 
@@ -137,7 +138,7 @@ import_ownertrust( const char *fname )
 	is_stdin = 1;
     }
     else if( !(fp = fopen( fname, "r" )) ) {
-	log_error_f(fname, _("can't open file: %s\n"), strerror(errno) );
+	log_error ( _("can't open `%s': %s\n"), fname, strerror(errno) );
 	return;
     }
 
@@ -148,7 +149,7 @@ import_ownertrust( const char *fname )
 	    continue;
 	n = strlen(line);
 	if( line[n-1] != '\n' ) {
-	    log_error_f(fname, _("line too long\n") );
+	    log_error (_("\b%s: line too long\n"), fname );
 	    /* ... or last line does not have a LF */
 	    break; /* can't continue */
 	}
@@ -156,16 +157,16 @@ import_ownertrust( const char *fname )
 	    if( !isxdigit(*p) )
 		break;
 	if( *p != ':' ) {
-	    log_error_f(fname, _("error: missing colon\n") );
+	    log_error (_("\b%s: error: missing colon\n"), fname );
 	    continue;
 	}
 	fprlen = p - line;
 	if( fprlen != 32 && fprlen != 40 ) {
-	    log_error_f(fname, _("error: invalid fingerprint\n") );
+	    log_error (_("\b%s: error: invalid fingerprint\n"), fname );
 	    continue;
 	}
 	if( sscanf(p, ":%u:", &otrust ) != 1 ) {
-	    log_error_f(fname, _("error: no ownertrust value\n") );
+	    log_error (_("\b%s: error: no ownertrust value\n"), fname );
 	    continue;
 	}
 	if( !otrust )
@@ -201,11 +202,11 @@ import_ownertrust( const char *fname )
             any = 1;
 	}
 	else /* error */
-	    log_error_f(fname, _("error finding trust record: %s\n"),
-						    g10_errstr(rc));
+	    log_error (_("\b%s: error finding trust record: %s\n"),
+		       fname, gpg_strerror (rc));
     }
     if( ferror(fp) )
-	log_error_f(fname, _("read error: %s\n"), strerror(errno) );
+	log_error (_("\b%s: read error: %s\n"), fname, strerror(errno) );
     if( !is_stdin )
 	fclose(fp);
     
@@ -214,7 +215,7 @@ import_ownertrust( const char *fname )
         revalidation_mark ();
         rc = tdbio_sync ();
         if (rc)
-          log_error (_("trustdb: sync failed: %s\n"), g10_errstr(rc) );
+          log_error (_("trustdb: sync failed: %s\n"), gpg_strerror (rc) );
       }
     
 }

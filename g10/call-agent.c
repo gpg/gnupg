@@ -30,14 +30,21 @@
 #include <unistd.h> 
 #include <time.h>
 #include <assert.h>
-#include <gcrypt.h>
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
 #include <assuan.h>
 
 #include "gpg.h"
+#include "util.h"
+#include "membuf.h"
+#include "options.h"
 #include "i18n.h"
+#include "call-agent.h"
+
+#ifndef DBG_ASSUAN
+# define DBG_ASSUAN 1
+#endif
 
 static ASSUAN_CONTEXT agent_ctx = NULL;
 static int force_pipe_server = 0;
@@ -175,7 +182,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION display=%s",
 		    opt.display ? opt.display : dft_display) < 0)
-	return OUT_OF_CORE (errno);
+	return gpg_error_from_errno (errno);
       rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -193,7 +200,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION ttyname=%s",
 		    opt.ttyname ? opt.ttyname : dft_ttyname) < 0)
-	return OUT_OF_CORE (errno);
+	return gpg_error_from_errno (errno);
       rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -206,7 +213,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s",
 		    opt.ttyname ? opt.ttytype : dft_ttytype) < 0)
-	return OUT_OF_CORE (errno);
+	return gpg_error_from_errno (errno);
       rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       free (optstr);
@@ -219,7 +226,8 @@ start_agent (void)
     {
       old_lc = strdup (old_lc);
       if (!old_lc)
-        return OUT_OF_CORE (errno);
+        return gpg_error_from_errno (errno);
+
     }
   dft_lc = setlocale (LC_CTYPE, "");
 #endif
@@ -228,7 +236,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-ctype=%s",
 		    opt.lc_ctype ? opt.lc_ctype : dft_lc) < 0)
-	rc = OUT_OF_CORE (errno);
+	rc = gpg_error_from_errno (errno);
       else
 	{
 	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
@@ -253,7 +261,7 @@ start_agent (void)
     {
       old_lc = strdup (old_lc);
       if (!old_lc)
-        return OUT_OF_CORE (errno);
+        return gpg_error_from_errno (errno);
     }
   dft_lc = setlocale (LC_MESSAGES, "");
 #endif
@@ -262,7 +270,7 @@ start_agent (void)
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-messages=%s",
 		    opt.lc_messages ? opt.lc_messages : dft_lc) < 0)
-	rc = OUT_OF_CORE (errno);
+	rc = gpg_error_from_errno (errno);
       else
 	{
 	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,

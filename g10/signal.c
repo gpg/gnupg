@@ -88,17 +88,17 @@ got_fatal_signal( int sig )
 	raise( sig );
     caught_fatal_sig = 1;
 
-    secmem_term();
+    gcry_control (GCRYCTL_TERM_SECMEM );
     /* better don't transtale these messages */
     write(2, "\n", 1 );
-    s = log_get_name(); if( s ) write(2, s, strlen(s) );
+    s = "?" /* FIXME: log_get_name()*/; if( s ) write(2, s, strlen(s) );
     write(2, ": ", 2 );
     s = get_signal_name(sig); write(2, s, strlen(s) );
     write(2, " caught ... exiting\n", 20 );
 
     /* reset action to default action and raise signal again */
     init_one_signal (sig, SIG_DFL, 0);
-    remove_lockfiles ();
+    dotlock_remove_lockfiles ();
 #ifdef __riscos__
     riscos_close_fds ();
 #endif /* __riscos__ */

@@ -20,6 +20,9 @@
 #ifndef G10_UTIL_H
 #define G10_UTIL_H
 
+#warning oops, using old util.h
+#if 0 /* Dont use it anymore */
+
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
 #include <stdarg.h>
 #endif
@@ -126,9 +129,6 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
 #define log_debug_f g10_log_debug_f
 
 
-/*-- errors.c --*/
-const char * g10_errstr( int no );
-
 /*-- argparse.c --*/
 int arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
 int optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
@@ -177,15 +177,9 @@ int answer_is_yes( const char *s );
 int answer_is_yes_no_quit( const char *s );
 
 /*-- strgutil.c --*/
-void free_strlist( STRLIST sl );
-#define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
-STRLIST add_to_strlist( STRLIST *list, const char *string );
-STRLIST add_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
-STRLIST append_to_strlist( STRLIST *list, const char *string );
-STRLIST append_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
-STRLIST strlist_prev( STRLIST head, STRLIST node );
-STRLIST strlist_last( STRLIST node );
-char *pop_strlist( STRLIST *list );
+
+#include "../jnlib/strlist.h"
+
 const char *memistr( const char *buf, size_t buflen, const char *sub );
 const char *ascii_memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
@@ -300,5 +294,7 @@ void riscos_list_openfiles(void);
 #define access(a,b) riscos_access((a),(b))
 #endif /* !__RISCOS__C__ */
 #endif /* __riscos__ */
+
+#endif
 
 #endif /*G10_UTIL_H*/

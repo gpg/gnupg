@@ -22,6 +22,7 @@
 
 #include "types.h"
 #include "cipher.h"
+#include "iobuf.h"
 
 typedef struct {
     MD_HANDLE md;      /* catch all */
@@ -120,35 +121,35 @@ typedef struct {
 /* encrypt_filter_context_t defined in main.h */
 
 /*-- mdfilter.c --*/
-int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);
+int md_filter( void *opaque, int control, iobuf_t a, byte *buf, size_t *ret_len);
 void free_md_filter_context( md_filter_context_t *mfx );
 
 /*-- armor.c --*/
-int use_armor_filter( IOBUF a );
+int use_armor_filter( iobuf_t a );
 int armor_filter( void *opaque, int control,
-		  IOBUF chain, byte *buf, size_t *ret_len);
+		  iobuf_t chain, byte *buf, size_t *ret_len);
 UnarmorPump unarmor_pump_new (void);
 void        unarmor_pump_release (UnarmorPump x);
 int         unarmor_pump (UnarmorPump x, int c);
 
 /*-- compress.c --*/
 int compress_filter( void *opaque, int control,
-		     IOBUF chain, byte *buf, size_t *ret_len);
+		     iobuf_t chain, byte *buf, size_t *ret_len);
 
 /*-- cipher.c --*/
 int cipher_filter( void *opaque, int control,
-		   IOBUF chain, byte *buf, size_t *ret_len);
+		   iobuf_t chain, byte *buf, size_t *ret_len);
 
 /*-- textfilter.c --*/
 int text_filter( void *opaque, int control,
-		 IOBUF chain, byte *buf, size_t *ret_len);
-int copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
+		 iobuf_t chain, byte *buf, size_t *ret_len);
+int copy_clearsig_text( iobuf_t out, iobuf_t inp, MD_HANDLE md,
 			  int escape_dash, int escape_from, int pgp2mode );
 
 /*-- progress.c --*/
 int progress_filter (void *opaque, int control,
-		     IOBUF a, byte *buf, size_t *ret_len);
+		     iobuf_t a, byte *buf, size_t *ret_len);
 void handle_progress (progress_filter_context_t *pfx,
-		      IOBUF inp, const char *name);
+		      iobuf_t inp, const char *name);
 
 #endif /*G10_FILTER_H*/

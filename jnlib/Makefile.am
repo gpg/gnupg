@@ -31,6 +31,7 @@ libjnlib_a_SOURCES = \
 	libjnlib-config.h \
 	stringhelp.c stringhelp.h \
 	strlist.c strlist.h \
+	utf8conv.c utf8conv.h \
 	argparse.c argparse.h \
 	logging.c logging.h  \
 	dotlock.c dotlock.h  \

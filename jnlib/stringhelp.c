@@ -1,5 +1,5 @@
 /* stringhelp.c -  standard string helper functions
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,6 +25,7 @@
 #include <ctype.h>
 
 #include "libjnlib-config.h"
+#include "utf8conv.h"
 #include "stringhelp.h"
 
 
@@ -43,6 +44,25 @@ memistr( const char *buf, size_t buflen, const char *sub )
 	if( toupper(*t) == toupper(*s) ) {
 	    for( buf=t++, buflen = n--, s++;
 		 n && toupper(*t) == toupper(*s); t++, s++, n-- )
+		;
+	    if( !*s )
+		return buf;
+	    t = buf; n = buflen; s = sub ;
+	}
+
+    return NULL ;
+}
+
+const char *
+ascii_memistr( const char *buf, size_t buflen, const char *sub )
+{
+    const byte *t, *s ;
+    size_t n;
+
+    for( t=buf, n=buflen, s=sub ; n ; t++, n-- )
+	if( ascii_toupper(*t) == ascii_toupper(*s) ) {
+	    for( buf=t++, buflen = n--, s++;
+		 n && ascii_toupper(*t) == ascii_toupper(*s); t++, s++, n-- )
 		;
 	    if( !*s )
 		return buf;
@@ -127,7 +147,6 @@ trim_trailing_spaces( char *string )
 }
 
 
-
 unsigned
 trim_trailing_chars( byte *line, unsigned len, const char *trimchars )
 {
@@ -158,6 +177,39 @@ trim_trailing_ws( byte *line, unsigned len )
 {
     return trim_trailing_chars( line, len, " \t\r\n" );
 }
+
+size_t
+length_sans_trailing_chars (const unsigned char *line, size_t len,
+                            const char *trimchars )
+{
+  const unsigned char *p, *mark;
+  size_t n;
+  
+  for( mark=NULL, p=line, n=0; n < len; n++, p++ )
+    {
+      if (strchr (trimchars, *p ))
+        {
+          if( !mark )
+            mark = p;
+        }
+      else
+        mark = NULL;
+    }
+  
+  if (mark) 
+    return mark - line;
+  return len;
+}
+
+/****************
+ * remove trailing white spaces and return the length of the buffer
+ */
+size_t
+length_sans_trailing_ws (const unsigned char *line, size_t len)
+{
+  return length_sans_trailing_chars (line, len, " \t\r\n");
+}
+
 
 
 /***************
@@ -256,18 +308,19 @@ compare_filenames( const char *a, const char *b )
     /* ? check whether this is an absolute filename and
      * resolve symlinks?
      */
-  #ifdef HAVE_DRIVE_LETTERS
+#ifdef HAVE_DRIVE_LETTERS
     return stricmp(a,b);
-  #else
+#else
     return strcmp(a,b);
-  #endif
+#endif
 }
 
 /* Print a BUFFER to stream FP while replacing all control characters
-   and the character DELIM with standard C eescape sequences.  Returns
+   and the character DELIM with standard C escape sequences.  Returns
    the number of characters printed. */
 size_t 
-print_sanitized_buffer (FILE *fp, const void *buffer, size_t length, int delim)
+print_sanitized_buffer (FILE *fp, const void *buffer, size_t length,
+                        int delim)
 {
   const unsigned char *p = buffer;
   size_t count = 0;
@@ -307,8 +360,26 @@ size_t
 print_sanitized_utf8_buffer (FILE *fp, const void *buffer,
                              size_t length, int delim)
 {
-  /* FIXME: convert to local characterset */
-  return print_sanitized_buffer (fp, buffer, length, delim);
+  const char *p = buffer;
+  size_t i;
+
+  /* We can handle plain ascii simpler, so check for it first. */
+  for (i=0; i < length; i++ ) 
+    {
+      if ( (p[i] & 0x80) )
+        break;
+    }
+  if (i < length)
+    {
+	char *buf = utf8_to_native (p, length, delim);
+	/*(utf8 conversion already does the control character quoting)*/
+        i = strlen (buf);
+	fputs (buf, fp);
+	jnlib_free (buf);
+        return i;
+    }
+  else
+    return print_sanitized_buffer (fp, p, length, delim);
 }
 
 
@@ -323,6 +394,63 @@ print_sanitized_utf8_string (FILE *fp, const char *string, int delim)
 {
   /* FIXME: convert to local characterset */
   return print_sanitized_string (fp, string, delim);
+}
+
+/* Create a string from the buffer P of length N which is suitable for
+   printing.  Caller must release the created string using xfree. */
+char *
+sanitize_buffer (const unsigned char *p, size_t n, int delim)
+{
+  size_t save_n, buflen;
+  const byte *save_p;
+  char *buffer, *d;
+
+  /* first count length */
+  for (save_n = n, save_p = p, buflen=1 ; n; n--, p++ ) 
+    {
+      if ( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim 
+           || (delim && *p=='\\'))
+        {
+          if ( *p=='\n' || *p=='\r' || *p=='\f'
+               || *p=='\v' || *p=='\b' || !*p )
+            buflen += 2;
+          else
+            buflen += 4;
+	}
+      else
+        buflen++;
+    }
+  p = save_p;
+  n = save_n;
+  /* and now make the string */
+  d = buffer = jnlib_xmalloc( buflen );
+  for ( ; n; n--, p++ )
+    {
+      if (*p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim 
+          ||(delim && *p=='\\')) {
+        *d++ = '\\';
+        if( *p == '\n' )
+          *d++ = 'n';
+        else if( *p == '\r' )
+          *d++ = 'r';
+        else if( *p == '\f' )
+          *d++ = 'f';
+        else if( *p == '\v' )
+          *d++ = 'v';
+        else if( *p == '\b' )
+          *d++ = 'b';
+        else if( !*p )
+          *d++ = '0';
+        else {
+          sprintf(d, "x%02x", *p );
+          d += 2;
+        }
+      }
+      else
+        *d++ = *p;
+    }
+  *d = 0;
+  return buffer;
 }
 
 /****************************************************
@@ -370,6 +498,33 @@ ascii_strcasecmp( const char *a, const char *b )
     }
     return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
 }
+
+int 
+ascii_strncasecmp (const char *a, const char *b, size_t n)
+{
+  const unsigned char *p1 = (const unsigned char *)a;
+  const unsigned char *p2 = (const unsigned char *)b;
+  unsigned char c1, c2;
+
+  if (p1 == p2 || !n )
+    return 0;
+
+  do
+    {
+      c1 = ascii_tolower (*p1);
+      c2 = ascii_tolower (*p2);
+
+      if ( !--n || c1 == '\0')
+	break;
+
+      ++p1;
+      ++p2;
+    }
+  while (c1 == c2);
+  
+  return c1 - c2;
+}
+
 
 int
 ascii_memcasecmp( const char *a, const char *b, size_t n )

@@ -31,11 +31,12 @@ typedef struct string_list *STRLIST;
 
 void    free_strlist( STRLIST sl );
 STRLIST add_to_strlist( STRLIST *list, const char *string );
-STRLIST add_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
+/*STRLIST add_to_strlist2( STRLIST *list, const char *string, int is_utf8 );*/
 STRLIST append_to_strlist( STRLIST *list, const char *string );
-STRLIST append_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
+/*STRLIST append_to_strlist2( STRLIST *list, const char *string, int is_utf8 );*/
 STRLIST strlist_prev( STRLIST head, STRLIST node );
 STRLIST strlist_last( STRLIST node );
+char * strlist_pop (STRLIST *list);
 
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 

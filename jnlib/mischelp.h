@@ -1,5 +1,5 @@
 /* mischelp.h
- *	Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,6 +37,17 @@
 # define JNLIB_GCC_A_PRINTF( f, a )
 # define JNLIB_GCC_A_NR_PRINTF( f, a )
 #endif
+
+
+/* To avoid that a compiler optimizes certain memset calls away, these
+   macros may be used instead. */
+#define wipememory2(_ptr,_set,_len) do { \
+              volatile char *_vptr=(volatile char *)(_ptr); \
+              size_t _vlen=(_len); \
+              while(_vlen) { *_vptr=(_set); _vptr++; _vlen--; } \
+                  } while(0)
+#define wipememory(_ptr,_len) wipememory2(_ptr,0,_len)
+
 
 
 

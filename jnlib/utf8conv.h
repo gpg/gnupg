@@ -1,5 +1,5 @@
-/* dotlock.h
- *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+/* utf8conf.h
+ *	Copyright (C) 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -18,19 +18,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef LIBJNLIB_DOTLOCK_H
-#define LIBJNLIB_DOTLOCK_H
+#ifndef LIBJNLIB_UTF8CONF_H
+#define LIBJNLIB_UTF8CONF_H
 
-struct dotlock_handle;
-typedef struct dotlock_handle *DOTLOCK;
+int set_native_charset (const char *newset);
+const char *get_native_charset (void);
 
-void disable_dotlock (void);
-DOTLOCK create_dotlock(const char *file_to_lock);
-int make_dotlock (DOTLOCK h, long timeout);
-int release_dotlock (DOTLOCK h);
-void dotlock_remove_lockfiles (void);
-
-#endif /*LIBJNLIB_DOTLOCK_H*/
+char *native_to_utf8 (const char *string);
+char *utf8_to_native (const char *string, size_t length, int delim);
 
 
-
+#endif /*LIBJNLIB_UTF8CONF_H*/

@@ -49,7 +49,7 @@
 int
 decrypt_message( const char *filename )
 {
-    IOBUF fp;
+    iobuf_t fp;
     armor_filter_context_t afx;
     progress_filter_context_t pfx;
     int rc;
@@ -58,8 +58,9 @@ decrypt_message( const char *filename )
     /* open the message file */
     fp = iobuf_open(filename);
     if( !fp ) {
+        rc = gpg_error_from_errno (errno);
 	log_error(_("can't open `%s'\n"), print_fname_stdin(filename));
-	return G10ERR_OPEN_FILE;
+	return rc;
     }
 
     handle_progress (&pfx, fp, filename);
@@ -85,7 +86,7 @@ decrypt_message( const char *filename )
 void
 decrypt_messages(int nfiles, char **files)
 {
-  IOBUF fp;
+  iobuf_t fp;
   armor_filter_context_t afx;  
   progress_filter_context_t pfx;
   char *p, *output = NULL;
@@ -125,15 +126,15 @@ decrypt_messages(int nfiles, char **files)
       iobuf_close(fp);
       if (rc)
         log_error("%s: decryption failed: %s\n", print_fname_stdin(*files),
-                  g10_errstr(rc));
+                  gpg_strerror (rc));
       p = get_last_passphrase();
       set_next_passphrase(p);
-      m_free (p);
+      xfree (p);
 
     next_file:
       /* Note that we emit file_done even after an error. */
       write_status( STATUS_FILE_DONE );
-      m_free(output);
+      xfree (output);
       files++;
     }
   set_next_passphrase(NULL);  

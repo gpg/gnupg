@@ -1,4 +1,71 @@
-2003-06-04  Werner Koch  <wk@gnupg.org>
+2003-06-18  Werner Koch  <wk@gnupg.org>
+
+        Finished the bulk of changes for gnupg 1.9.  This included
+	switching to libgcrypt functions, using shared error codes from
+	libgpg-error, replacing the old functions we used to have in
+	../util by those in ../jnlib and ../common, renaming the malloc
+	functions and a couple of types.  Note, that not all changes are
+	listed below becuause they are too similar and done at far too
+	many places.  As of today the code builds using the current
+	libgcrypt from CVS but it is very unlikely that it actually works.
+	
+	* sig-check.c (cmp_help): Removed.  Was never used.
+
+	* pkglue.c: New. Most stuff taken from gnupg 1.1.2.
+	* pkglue.h: New.
+
+	* misc.c (pull_in_libs): Removed.
+
+	* keygen.c (count_chr): New.
+	(ask_user_id): Removed faked RNG support.
+
+	* misc.c (openpgp_md_map_name,openpgp_cipher_map_name)
+	(openpgp_pk_map_name): New.
+
+	* skclist.c (build_sk_list): Removed faked RNG support.
+	(is_insecure): Removed.
+
+	* comment.c (make_mpi_comment_node): Use gcry MPI print function.
+
+	* keyid.c (v3_keyid): New.
+
+	* misc.c (mpi_write,mpi_write_opaque,mpi_read,mpi_read_opaque)
+	(mpi_print): New.  Taken from gnupg 1.1.2.
+	(checksum_mpi): Replaced by implementation from 1.1.2.
+
+	* g10.c (my_strusage): Renamed from strusage and return NULL
+	instead calling a default function.
+	(add_to_strlist2): New.  Taken from ../util/strgutil.c of gnupg 1.2.
+
+	* plaintext.c (handle_plaintext): New arg CREATE_FILE to cope with
+	the fact that gpg-error does not have this error code anymore.
+
+	* mainproc.c (symkey_decrypt_sesskey): Ditto.
+
+	* seskey.c (make_session_key): Adjusted for use with libgcrypt.
+	(encode_session_key): Ditto.
+	(do_encode_md): Ditto.
+	(encode_md_value): Ditto.
+
+	* keyring.c: Use libgpg-error instead of READ_ERROR etc.
+
+	* g10.c: Adjusted all algorithm name/id mapping functions.
+	(set_debug): Pass MPI and CRYPTO debug values to libgcrypt.
+
+	* Makefile.am (INCLUDES): Define LOCALEDIR and the default error
+	source.
+
+	* g10.c (i18n_init): s/G10_LOCALEDIR/LOCALEDIR/.
+
+	Renamed m_alloc et al to xmalloc et al.
+	s/g10_errstr/gpg_strerror/
+	s/MPI/gcry_mpi_t/
+	Adjusted all md_open calls to the libgcrypt API.
+	
+	* build-packet.c (do_comment): Return error code from iobuf write
+	function.
+	(do_user_id): Ditto.
+	(do_public_key): Ditto.
 
 	* Makefile.am: Add new files, link gpg with libgpg-error.
 	* g10.c, options.h: New option --agent-program.

@@ -46,12 +46,12 @@ int exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,const char *name,int writeonly,int binary)
 {
   log_error(_("no remote program execution supported\n"));
-  return G10ERR_GENERAL;
+  return GPG_ERR_GENERAL;
 }
 
-int exec_read(struct exec_info *info) { return G10ERR_GENERAL; }
-int exec_finish(struct exec_info *info) { return G10ERR_GENERAL; }
-int set_exec_path(const char *path,int method) { return G10ERR_GENERAL; }
+int exec_read(struct exec_info *info) { return GPG_ERR_GENERAL; }
+int exec_finish(struct exec_info *info) { return GPG_ERR_GENERAL; }
+int set_exec_path(const char *path,int method) { return GPG_ERR_GENERAL; }
 
 #else /* ! NO_EXEC */
 
@@ -71,7 +71,7 @@ static int win_system(const char *command)
 
   /* We must use a copy of the command as CreateProcess modifies this
      argument. */
-  string=m_strdup(command);
+  string=xstrdup (command);
 
   memset(&pi,0,sizeof(pi));
   memset(&si,0,sizeof(si));
@@ -85,7 +85,7 @@ static int win_system(const char *command)
 
   CloseHandle(pi.hProcess);
   CloseHandle(pi.hThread);
-  m_free(string);
+  xfree (string);
 
   return 0;
 }
@@ -101,7 +101,7 @@ int set_exec_path(const char *path,int method)
   if(method==1 && (curpath=getenv("PATH")))
     curlen=strlen(curpath)+1;
 
-  p=m_alloc(5+curlen+strlen(path)+1);
+  p=xmalloc (5+curlen+strlen(path)+1);
   strcpy(p,"PATH=");
 
   if(curpath)
@@ -120,7 +120,7 @@ int set_exec_path(const char *path,int method)
      set_exec_path multiple times. */
 
   if(putenv(p)!=0)
-    return G10ERR_GENERAL;
+    return GPG_ERR_GENERAL;
   else
     return 0;
 }
@@ -140,7 +140,7 @@ static int make_tempdir(struct exec_info *info)
   if(tmp==NULL)
     {
 #if defined (__MINGW32__)
-      tmp=m_alloc(256);
+      tmp=xmalloc (256);
       if(GetTempPath(256,tmp)==0)
 	strcpy(tmp,"c:\\windows\\temp");
       else
@@ -172,12 +172,12 @@ static int make_tempdir(struct exec_info *info)
 #endif
     }
 
-  info->tempdir=m_alloc(strlen(tmp)+strlen(DIRSEP_S)+10+1);
+  info->tempdir=xmalloc (strlen(tmp)+strlen(DIRSEP_S)+10+1);
 
   sprintf(info->tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
 
 #if defined (__MINGW32__)
-  m_free(tmp);
+  xfree (tmp);
 #endif
 
   if(mkdtemp(info->tempdir)==NULL)
@@ -187,19 +187,19 @@ static int make_tempdir(struct exec_info *info)
     {
       info->madedir=1;
 
-      info->tempfile_in=m_alloc(strlen(info->tempdir)+
+      info->tempfile_in=xmalloc (strlen(info->tempdir)+
 				strlen(DIRSEP_S)+strlen(namein)+1);
       sprintf(info->tempfile_in,"%s" DIRSEP_S "%s",info->tempdir,namein);
 
       if(!info->writeonly)
 	{
-	  info->tempfile_out=m_alloc(strlen(info->tempdir)+
+	  info->tempfile_out=xmalloc (strlen(info->tempdir)+
 				     strlen(DIRSEP_S)+strlen(nameout)+1);
 	  sprintf(info->tempfile_out,"%s" DIRSEP_S "%s",info->tempdir,nameout);
 	}
     }
 
-  return info->madedir?0:G10ERR_GENERAL;
+  return info->madedir?0:GPG_ERR_GENERAL;
 }
 
 /* Expands %i and %o in the args to the full temp files within the
@@ -216,7 +216,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
     log_debug("expanding string \"%s\"\n",args_in);
 
   size=100;
-  info->command=m_alloc(size);
+  info->command=xmalloc (size);
   len=0;
   info->command[0]='\0';
 
@@ -273,7 +273,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
 		    applen=100;
 
 		  size+=applen;
-		  info->command=m_realloc(info->command,size);
+		  info->command=xrealloc(info->command,size);
 		}
 
 	      strcat(info->command,append);
@@ -285,7 +285,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
 	  if(len==size-1) /* leave room for the \0 */
 	    {
 	      size+=100;
-	      info->command=m_realloc(info->command,size);
+	      info->command=xrealloc(info->command,size);
 	    }
 
 	  info->command[len++]=*ch;
@@ -303,10 +303,10 @@ static int expand_args(struct exec_info *info,const char *args_in)
 
  fail:
 
-  m_free(info->command);
+  xfree (info->command);
   info->command=NULL;
 
-  return G10ERR_GENERAL;
+  return GPG_ERR_GENERAL;
 }
 
 /* Either handles the tempfile creation, or the fork/exec.  If it
@@ -318,7 +318,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
 int exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,const char *name,int writeonly,int binary)
 {
-  int ret=G10ERR_GENERAL;
+  int ret=GPG_ERR_GENERAL;
 
   if(opt.exec_disable && !opt.no_perm_warn)
     {
@@ -338,10 +338,10 @@ int exec_write(struct exec_info **info,const char *program,
   if(program==NULL && args_in==NULL)
     BUG();
 
-  *info=m_alloc_clear(sizeof(struct exec_info));
+  *info=xcalloc (1,sizeof(struct exec_info));
 
   if(name)
-    (*info)->name=m_strdup(name);
+    (*info)->name=xstrdup (name);
   (*info)->binary=binary;
   (*info)->writeonly=writeonly;
 
@@ -449,8 +449,8 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->tochild=fdopen(to[1],binary?"wb":"w");
       if((*info)->tochild==NULL)
 	{
+          ret = gpg_error_from_errno (errno);
 	  close(to[1]);
-	  ret=G10ERR_WRITE_FILE;
 	  goto fail;
 	}
 
@@ -459,8 +459,8 @@ int exec_write(struct exec_info **info,const char *program,
       (*info)->fromchild=iobuf_fdopen(from[0],"r");
       if((*info)->fromchild==NULL)
 	{
+          ret = gpg_error_from_errno (errno);
 	  close(from[0]);
-	  ret=G10ERR_READ_FILE;
 	  goto fail;
 	}
 
@@ -478,9 +478,9 @@ int exec_write(struct exec_info **info,const char *program,
   (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
+      ret = gpg_error_from_errno (errno);
       log_error(_("can't create `%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
-      ret=G10ERR_WRITE_FILE;
       goto fail;
     }
 
@@ -492,7 +492,7 @@ int exec_write(struct exec_info **info,const char *program,
 
 int exec_read(struct exec_info *info)
 {
-  int ret=G10ERR_GENERAL;
+  int ret=GPG_ERR_GENERAL;
 
   fclose(info->tochild);
   info->tochild=NULL;
@@ -545,9 +545,9 @@ int exec_read(struct exec_info *info)
 	  info->fromchild=iobuf_open(info->tempfile_out);
 	  if(info->fromchild==NULL)
 	    {
+              ret = gpg_error_from_errno (errno);
 	      log_error(_("unable to read external program response: %s\n"),
 			strerror(errno));
-	      ret=G10ERR_READ_FILE;
 	      goto fail;
 	    }
 
@@ -607,12 +607,12 @@ int exec_finish(struct exec_info *info)
 		 info->tempdir,strerror(errno));
     }
 
-  m_free(info->command);
-  m_free(info->name);
-  m_free(info->tempdir);
-  m_free(info->tempfile_in);
-  m_free(info->tempfile_out);
-  m_free(info);
+  xfree (info->command);
+  xfree (info->name);
+  xfree (info->tempdir);
+  xfree (info->tempfile_in);
+  xfree (info->tempfile_out);
+  xfree (info);
 
   return ret;
 }
