@@ -1,5 +1,8 @@
 2002-10-02  David Shaw  <dshaw@jabberwocky.com>
 
+	* configure.ac: Make "new" the default for TIGER.  Still use
+	--enable-new-tiger to select new from autoconf.
+
 	* configure.ac: Use a new option (--enable-new-tiger) to enable
 	TIGER with the correct OID.
 

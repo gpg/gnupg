@@ -144,6 +144,7 @@ AC_MSG_RESULT($use_tiger)
 if test "$use_tiger" = yes ; then
     AC_SUBST(TIGER_O,tiger.o)
     AC_DEFINE(USE_TIGER,1,[Define to include experimental TIGER digest support])
+    AC_DEFINE(USE_OLD_TIGER,1,[Define to use the old fake OID for TIGER digest support])
 else
     AC_MSG_CHECKING([whether to enable new-style experimental TIGER digest support])
     AC_ARG_ENABLE(new-tiger,
@@ -153,7 +154,6 @@ else
     if test "$use_new_tiger" = yes ; then
         AC_SUBST(TIGER_O,tiger.o)
         AC_DEFINE(USE_TIGER,1,[Define to include experimental TIGER digest support])
-        AC_DEFINE(USE_NEW_TIGER,1,[Define to use the newly defined OID for TIGER digest support])
     fi
 fi
 
