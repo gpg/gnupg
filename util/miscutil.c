@@ -167,7 +167,13 @@ asctimestamp( u32 stamp )
        * These locales from glibc don't put the " %Z":
        * fi_FI hr_HR ja_JP lt_LT lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN
        */
-      strftime( buffer, DIM(buffer)-1, "%c %Z", tp );
+      strftime( buffer, DIM(buffer)-1, 
+#ifdef HAVE_W32_SYSTEM                
+                "%c"
+#else
+                "%c %Z"
+#endif
+                , tp );
 #endif
     buffer[DIM(buffer)-1] = 0;
 #else

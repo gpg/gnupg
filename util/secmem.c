@@ -349,7 +349,10 @@ secmem_malloc( size_t size )
 	print_warn();
     }
 
-    /* blocks are always a multiple of 32 */
+    /* Blocks are always a multiple of 32.  Note that we allocate an
+       extra of the size of an entire MEMBLOCK.  This is required
+       becuase we do not only need the SIZE info but also extra space
+       to chain up unused memory blocks.  */
     size += sizeof(MEMBLOCK);
     size = ((size + 31) / 32) * 32;
 
@@ -398,8 +401,12 @@ secmem_realloc( void *p, size_t newsize )
 
     mb = (MEMBLOCK*)((char*)p - ((size_t) &((MEMBLOCK*)0)->u.aligned.c));
     size = mb->size;
-    if( newsize < size )
-	return p; /* it is easier not to shrink the memory */
+    if (size < sizeof(MEMBLOCK))
+      log_bug ("secure memory corrupted at block %p\n", mb);
+    size -= ((size_t) &((MEMBLOCK*)0)->u.aligned.c);
+
+    if( newsize <= size )
+	return p; /* It is easier not to shrink the memory.  */
     a = secmem_malloc( newsize );
     if ( a ) {
         memcpy(a, p, size);

@@ -1,3 +1,12 @@
+2005-03-10  Werner Koch  <wk@g10code.com>
+
+	* secmem.c (secmem_realloc): Take control information into account
+	when checking whether a resize is needed.
+
+2005-03-08  Werner Koch  <wk@g10code.com>
+
+	* miscutil.c (asctimestamp) [W32]: Don't use %Z.
+
 2005-02-03  Werner Koch  <wk@g10code.com>
 
 	* w32reg.c (read_w32_registry_string): Fallback to HKLM also for a
@@ -1468,7 +1477,8 @@ Fri Feb 13 15:14:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+	   2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
