@@ -962,14 +962,16 @@ AC_CONFIG_COMMANDS(g10defs.h,[[
 cat >g10defs.tmp <<G10EOF
 /* Generated automatically by configure */
 #ifdef HAVE_DRIVE_LETTERS
-  #define G10_LOCALEDIR "c:\\\\lib\\\\gnupg\\\\locale"
-  #define GNUPG_LIBDIR  "c:\\\\lib\\\\gnupg"
-  #define GNUPG_DATADIR "c:\\\\lib\\\\gnupg"
-  #define GNUPG_HOMEDIR "c:\\\\gnupg"
+  #define G10_LOCALEDIR     "c:\\\\lib\\\\gnupg\\\\locale"
+  #define GNUPG_LIBDIR      "c:\\\\lib\\\\gnupg"
+  #define GNUPG_LIBEXECDIR  "c:\\\\lib\\\\gnupg"
+  #define GNUPG_DATADIR     "c:\\\\lib\\\\gnupg"
+  #define GNUPG_HOMEDIR     "c:\\\\gnupg"
 #else
-  #define G10_LOCALEDIR "${datadir}/locale"
-  #define GNUPG_LIBDIR  "${libdir}/gnupg"
-  #define GNUPG_DATADIR "${datadir}/gnupg"
+  #define G10_LOCALEDIR     "${datadir}/locale"
+  #define GNUPG_LIBDIR      "${libdir}/gnupg"
+  #define GNUPG_LIBEXECDIR  "${libexecdir}/gnupg"
+  #define GNUPG_DATADIR     "${datadir}/gnupg"
   #ifdef __VMS
     #define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
   #else
@@ -1004,6 +1006,7 @@ fi
 prefix=$prefix
 exec_prefix=$exec_prefix
 libdir=$libdir
+libexecdir=$libexecdir
 datadir=$datadir
 DATADIRNAME=$DATADIRNAME
 ]])
