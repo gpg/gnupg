@@ -813,7 +813,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    any_recipients = 1;
 	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
 	    pk = m_alloc_clear( sizeof *pk );
-	    pk->pubkey_usage = use;
+	    pk->req_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, rov->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
@@ -870,7 +870,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    if( pk )
 		free_public_key( pk );
 	    pk = m_alloc_clear( sizeof *pk );
-	    pk->pubkey_usage = use;
+	    pk->req_usage = use;
 	    rc = get_pubkey_byname( NULL, pk, answer, NULL );
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
@@ -936,7 +936,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
     }
     else if( !any_recipients && (def_rec = default_recipient()) ) {
 	pk = m_alloc_clear( sizeof *pk );
-	pk->pubkey_usage = use;
+	pk->req_usage = use;
 	rc = get_pubkey_byname( NULL, pk, def_rec, NULL );
 	if( rc )
 	    log_error(_("unknown default recipient `%s'\n"), def_rec );
@@ -961,7 +961,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		continue; /* encrypt-to keys are already handled */
 
 	    pk = m_alloc_clear( sizeof *pk );
-	    pk->pubkey_usage = use;
+	    pk->req_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, remusr->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );

@@ -63,10 +63,8 @@ do_check( PKT_secret_key *sk )
 	keyid_from_sk( sk, keyid );
 	keyid[2] = keyid[3] = 0;
 	if( !sk->is_primary ) {
-	    PKT_secret_key *sk2 = m_alloc_clear( sizeof *sk2 );
-	    if( !get_primary_seckey( sk2, keyid ) )
-		keyid_from_sk( sk2, keyid+2 );
-	    free_secret_key( sk2 );
+            keyid[2] = sk->main_keyid[0];
+            keyid[3] = sk->main_keyid[1];
 	}
 	dek = passphrase_to_dek( keyid, sk->pubkey_algo, sk->protect.algo,
 				 &sk->protect.s2k, 0 );

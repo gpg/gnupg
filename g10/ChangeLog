@@ -1,6 +1,32 @@
+2001-02-08  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_encrypted): Fixed listing of pktlen for
+	MDC packets.
+
+	* getkey.c: Backported the version of this file from gpg 1.1. this
+	involved some changes in other files too.
+	* parse-packet.c (parse_key): Clear req_usage.
+	* skclist.c (build_sk_list): Use req_usage to pass the usage
+	information to the lookup function.
+	* pkclist.c (build_pk_list): Ditto.
+	* free-packet.c (copy_public_parts_to_secret_key): New.
+	* keydb.h: Add IS_* macros to check the sig_class.
+	* misc.c (openpgp_cipher_test_algo): New.
+	(openpgp_pk_test_algo): New.
+	(openpgp_pk_algo_usage): New.
+	(openpgp_md_test_algo): New.
+	* packet.h: Add a few fields to PKT_{public,secret}_key and
+	PKT_user_id.
+	* seckey-cert.c (do_check): Use the new main_keyid field.
+
+2001-02-04  Werner Koch  <wk@gnupg.org>
+
+	* encr-data.c (decrypt_data): Catch error when we had problems to
+	parse the encrypted packet. By Timo.
+
 2001-01-29  Werner Koch  <wk@gnupg.org>
 
-	* g10.c (main): --batch dioes now set nogreeting.
+	* g10.c (main): --batch does now set nogreeting.
 
 	* delkey.c (do_delete_key): Fixed delete-both functionality.
 

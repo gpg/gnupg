@@ -122,7 +122,14 @@ typedef struct {
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    pubkey_usage;   /* for now only used to pass it to getkey() */
+    u32     created;        /* according to the self-signature */
+    byte    req_usage;      /* hack to pass a request to getkey() */
+    byte    req_algo;       /* Ditto */
+    u32     has_expired;    /* set to the expiration date if expired */ 
+    int     is_revoked;     /* key has been revoked */
+    int     is_valid;       /* key (especially subkey) is valid */
     ulong   local_id;	    /* internal use, valid if > 0 */
+    u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
     byte    *namehash;	    /* if != NULL: found by this name */
     MPI     pkey[PUBKEY_MAX_NPKEY];
@@ -135,6 +142,14 @@ typedef struct {
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    pubkey_usage;
+    u32     created;        /* according to the self-signature */
+    byte    req_usage;
+    byte    req_algo;
+    u32     has_expired;    /* set to the expiration date if expired */ 
+    int     is_revoked;     /* key has been revoked */
+    int     is_valid;       /* key (especially subkey) is valid */
+    u32     main_keyid[2];  /* keyid of the primary key */
+    u32     keyid[2];   
     byte is_primary;
     byte is_protected;	/* The secret info is protected and must */
 			/* be decrypted before use, the protected */
@@ -160,6 +175,10 @@ typedef struct {
     int  len;		  /* length of the name */
     char *photo;	  /* if this is not NULL, the packet is a photo ID */
     int photolen;	  /* and the length of the photo */
+    int help_key_usage;
+    u32 help_key_expire;
+    int is_primary;
+    u32 created;          /* according to the self-signature */
     char name[1];
 } PKT_user_id;
 
@@ -329,6 +348,7 @@ PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
 PKT_public_key *copy_public_key_new_namehash( PKT_public_key *d,
 					      PKT_public_key *s,
 					      const byte *namehash );
+void copy_public_parts_to_secret_key( PKT_public_key *pk, PKT_secret_key *sk );
 PKT_secret_key *copy_secret_key( PKT_secret_key *d, PKT_secret_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );
 PKT_user_id *copy_user_id( PKT_user_id *d, PKT_user_id *s );

@@ -93,6 +93,10 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	log_error("key setup failed: %s\n", g10_errstr(rc) );
 	goto leave;
     }
+    if (!ed->buf) {
+        log_error(_("problem handling encrypted packet\n"));
+        goto leave;
+    }
 
     cipher_setiv( dfx.cipher_hd, NULL, 0 );
 

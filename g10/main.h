@@ -61,6 +61,10 @@ u16 checksum_mpi( MPI a );
 u16 checksum_mpi_counted_nbits( MPI a );
 u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
+int openpgp_cipher_test_algo( int algo );
+int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
+int openpgp_pk_algo_usage ( int algo );
+int openpgp_md_test_algo( int algo );
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );

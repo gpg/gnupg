@@ -1315,6 +1315,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	sk->version = version;
 	sk->is_primary = pkttype == PKT_SECRET_KEY;
 	sk->pubkey_algo = algorithm;
+	sk->req_usage = 0; 
 	sk->pubkey_usage = 0; /* not yet used */
     }
     else {
@@ -1325,7 +1326,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	pk->hdrbytes	= hdrlen;
 	pk->version	= version;
 	pk->pubkey_algo = algorithm;
+	pk->req_usage = 0; 
 	pk->pubkey_usage = 0; /* not yet used */
+        pk->is_revoked = 0;
 	pk->keyid[0] = 0;
 	pk->keyid[1] = 0;
     }
@@ -1724,6 +1727,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 				       PACKET *pkt, int new_ctb )
 {
     PKT_encrypted *ed;
+    unsigned long orig_pktlen = pktlen;
 
     ed = pkt->pkt.encrypted =  m_alloc(sizeof *pkt->pkt.encrypted );
     ed->len = pktlen;
@@ -1734,8 +1738,9 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 	/* fixme: add some pktlen sanity checks */
 	int version;
 
-#warning decrementing pktlen here is bad as it gives a bad value in the listing
-	version = iobuf_get_noeof(inp); pktlen--;
+	version = iobuf_get_noeof(inp); 
+        if (orig_pktlen)
+            pktlen--;
 	if( version != 1 ) {
 	    log_error("encrypted_mdc packet with unknown version %d\n",
 								version);
@@ -1744,14 +1749,14 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 	ed->mdc_method = DIGEST_ALGO_SHA1;
     }
-    if( pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
+    if( orig_pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
 	log_error("packet(%d) too short\n", pkttype);
 	skip_rest(inp, pktlen);
 	goto leave;
     }
     if( list_mode ) {
-	if( pktlen )
-	    printf(":encrypted data packet:\n\tlength: %lu\n", pktlen);
+	if( orig_pktlen )
+	    printf(":encrypted data packet:\n\tlength: %lu\n", orig_pktlen);
 	else
 	    printf(":encrypted data packet:\n\tlength: unknown\n");
 	if( ed->mdc_method )

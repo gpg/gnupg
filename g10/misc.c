@@ -275,5 +275,78 @@ get_session_marker( size_t *rlen )
     return marker;
 }
 
+/****************
+ * Wrapper around the libgcrypt function with addional checks on
+ * openPGP contraints for the algo ID.
+ */
+int
+openpgp_cipher_test_algo( int algo )
+{
+    if( algo < 0 || algo > 110 )
+        return G10ERR_CIPHER_ALGO;
+    return check_cipher_algo(algo);
+}
+
+int
+openpgp_pk_test_algo( int algo, unsigned int usage_flags )
+{
+    if( algo < 0 || algo > 110 )
+	return G10ERR_PUBKEY_ALGO;
+    return check_pubkey_algo2( algo, usage_flags );
+}
+
+int 
+openpgp_pk_algo_usage ( int algo )
+{
+    int usage = 0; 
+    
+    /* they are hardwired in gpg 1.0 */
+    switch ( algo ) {    
+      case PUBKEY_ALGO_RSA:
+          usage = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC;
+          break;
+      case PUBKEY_ALGO_RSA_E:
+          usage = PUBKEY_USAGE_ENC;
+          break;
+      case PUBKEY_ALGO_RSA_S:
+          usage = PUBKEY_USAGE_SIG;
+          break;
+      case PUBKEY_ALGO_ELGAMAL_E:
+          usage = PUBKEY_USAGE_ENC;
+          break;
+      case PUBKEY_ALGO_DSA:  
+          usage = PUBKEY_USAGE_SIG;
+          break;
+      case PUBKEY_ALGO_ELGAMAL:
+          usage = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC;
+          break;
+      default:
+          break;
+    }
+    return usage;
+
+}
+
+
+
+int
+openpgp_md_test_algo( int algo )
+{
+    if( algo < 0 || algo > 110 )
+        return G10ERR_DIGEST_ALGO;
+    return check_digest_algo(algo);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
