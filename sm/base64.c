@@ -224,8 +224,9 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
           parm->linelen = parm->readpos = 0;
         }
       else if ( parm->have_lf && parm->line_counter == 1
-                && !strncmp (parm->line, "Content-Type:", 13))
-        { /* Might be a S/MIME body */
+                && parm->linelen >= 13
+                && !ascii_memcasecmp (parm->line, "Content-Type:", 13))
+        { /* might be a S/MIME body */
           parm->might_be_smime = 1;
           parm->linelen = parm->readpos = 0;
           goto next;

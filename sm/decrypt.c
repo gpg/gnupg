@@ -79,6 +79,14 @@ prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
       goto leave; 
     }
 
+  /* FIXME: Actually the leading zero is required but due to the way
+     we encode the output in libgcrypt as an MPI we are not able to
+     encode that leading zero.  However, when using a Smartcard we are
+     doing it the rightway and therefore we have skip the zero.  This
+     should be fixed in gpg-agent of course. */
+  if (!seskey[n])
+    n++;
+
   if (seskey[n] != 2 )  /* wrong block type version */
     { 
       rc = seterr (Invalid_Session_Key);

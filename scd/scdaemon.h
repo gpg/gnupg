@@ -92,7 +92,11 @@ int card_create_signature (CARD card,
                            void *pincb_arg,
                            const void *indata, size_t indatalen,
                            void **outdata, size_t *outdatalen );
-
+int card_decipher (CARD card, const char *keyidstr,
+                   int (pincb)(void*, const char *, char **),
+                   void *pincb_arg,
+                   const void *indata, size_t indatalen,
+                   void **outdata, size_t *outdatalen);
 
 
 #endif /*SCDAEMON_H*/

@@ -258,21 +258,65 @@ divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
 }
 
 
-int 
-divert_pkdecrypt (GCRY_SEXP *s_plain, GCRY_SEXP s_cipher,
-                  const char *shadow_info)
+/* Decrypt the the value given asn an S-expression in CIPHER using the
+   key identified by SHADOW_INFO and return the plaintext in an
+   allocated buffer in R_BUF.  */
+int  
+divert_pkdecrypt (const unsigned char *cipher, const char *shadow_info,
+                  char **r_buf, size_t *r_len)
 {
   int rc;
   char *kid;
+  const unsigned char *s;
+  size_t n;
+  const unsigned char *ciphertext;
+  size_t ciphertextlen;
+  char *plaintext;
+  size_t plaintextlen;
+
+  s = cipher;
+  if (*s != '(')
+    return GNUPG_Invalid_Sexp;
+  s++;
+  n = snext (&s);
+  if (!n)
+    return GNUPG_Invalid_Sexp; 
+  if (!smatch (&s, n, "enc-val"))
+    return GNUPG_Unknown_Sexp; 
+  if (*s != '(')
+    return GNUPG_Unknown_Sexp;
+  s++;
+  n = snext (&s);
+  if (!n)
+    return GNUPG_Invalid_Sexp; 
+  if (!smatch (&s, n, "rsa"))
+    return GNUPG_Unsupported_Algorithm; 
+  if (*s != '(')
+    return GNUPG_Unknown_Sexp;
+  s++;
+  n = snext (&s);
+  if (!n)
+    return GNUPG_Invalid_Sexp; 
+  if (!smatch (&s, n, "a"))
+    return GNUPG_Unknown_Sexp;
+  n = snext (&s);
+  if (!n)
+    return GNUPG_Unknown_Sexp; 
+  ciphertext = s;
+  ciphertextlen = n;
 
   rc = ask_for_card (shadow_info, &kid);
   if (rc)
     return rc;
 
- 
+  rc = agent_card_pkdecrypt (kid, getpin_cb, NULL,
+                             ciphertext, ciphertextlen,
+                             &plaintext, &plaintextlen);
+  if (!rc)
+    {
+      *r_buf = plaintext;
+      *r_len = plaintextlen;
+    }
   xfree (kid);
-  return GNUPG_Not_Implemented;
+  return rc;
 }
-
-
-

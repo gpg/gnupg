@@ -153,8 +153,8 @@ int agent_marktrusted (const char *name, const char *fpr, int flag);
 /*-- divert-scd.c --*/
 int divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
                    const char *shadow_info, unsigned char **r_sig);
-int divert_pkdecrypt (GCRY_SEXP *s_plain, GCRY_SEXP s_cipher,
-                      const char *shadow_info);
+int divert_pkdecrypt (const unsigned char *cipher, const char *shadow_info,
+                      char **r_buf, size_t *r_len);
 
 /*-- call-scd.c --*/
 int agent_card_learn (void);
@@ -164,6 +164,11 @@ int agent_card_pksign (const char *keyid,
                        void *getpin_cb_arg,
                        const unsigned char *indata, size_t indatalen,
                        char **r_buf, size_t *r_buflen);
+int agent_card_pkdecrypt (const char *keyid,
+                          int (*getpin_cb)(void *, const char *, char*,size_t),
+                          void *getpin_cb_arg,
+                          const unsigned char *indata, size_t indatalen,
+                          char **r_buf, size_t *r_buflen);
 
 
 #endif /*AGENT_H*/

@@ -400,6 +400,40 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   return map_to_assuan_status (rc);
 }
 
+/* PKDECRYPT <hexified_id>
+
+ */
+static int
+cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  void *outdata;
+  size_t outdatalen;
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  rc = card_decipher (ctrl->card_ctx,
+                      line, 
+                      pin_cb, ctx,
+                      ctrl->in_data.value, ctrl->in_data.valuelen,
+                      &outdata, &outdatalen);
+  if (rc)
+    {
+      log_error ("card_create_signature failed: %s\n", gnupg_strerror (rc));
+    }
+  else
+    {
+      rc = assuan_send_data (ctx, outdata, outdatalen);
+      xfree (outdata);
+      if (rc)
+        return rc; /* that is already an assuan error code */
+    }
+
+  return map_to_assuan_status (rc);
+}
+
 
 
 
@@ -417,6 +451,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "READCERT", 0, cmd_readcert },
     { "SETDATA", 0,  cmd_setdata },
     { "PKSIGN", 0,   cmd_pksign },
+    { "PKDECRYPT", 0,cmd_pkdecrypt },
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { NULL }

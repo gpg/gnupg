@@ -541,3 +541,103 @@ leave:
 }
 
 
+/* Create the signature and return the allocated result in OUTDATA.
+   If a PIN is required the PINCB will be used to ask for the PIN; it
+   should return the PIN in an allocated buffer and put it into PIN.  */
+int 
+card_decipher (CARD card, const char *keyidstr,
+               int (pincb)(void*, const char *, char **),
+               void *pincb_arg,
+               const void *indata, size_t indatalen,
+               void **outdata, size_t *outdatalen )
+{
+  struct sc_pkcs15_id keyid;
+  struct sc_pkcs15_prkey_info *key;
+  struct sc_pkcs15_pin_info *pin;
+  struct sc_pkcs15_object *keyobj, *pinobj;
+  char *pinvalue;
+  int rc;
+  unsigned char *outbuf = NULL;
+  size_t outbuflen;
+
+  if (!card || !card->p15card || !indata || !indatalen
+      || !outdata || !outdatalen || !pincb)
+    return GNUPG_Invalid_Value;
+  
+  rc = idstr_to_id (keyidstr, &keyid);
+  if (rc)
+    return rc;
+
+  rc = sc_pkcs15_find_prkey_by_id (card->p15card, &keyid, &keyobj);
+  if (rc < 0)
+    {
+      log_error ("private key not found: %s\n", sc_strerror(rc));
+      rc = GNUPG_No_Secret_Key;
+      goto leave;
+    }
+  rc = 0;
+  key = keyobj->data;
+
+  rc = sc_pkcs15_find_pin_by_auth_id (card->p15card,
+                                      &keyobj->auth_id, &pinobj);
+  if (rc)
+    {
+      log_error ("failed to find PIN by auth ID: %s\n", sc_strerror (rc));
+      rc = GNUPG_Bad_PIN_Method;
+      goto leave;
+    }
+  pin = pinobj->data;
+
+  /* Fixme: pack this into a verification loop */
+  /* Fixme: we might want to pass pin->min_length and 
+     pin->stored_length */
+  rc = pincb (pincb_arg, pinobj->label, &pinvalue);
+  if (rc)
+    {
+      log_info ("PIN callback returned error: %s\n", gnupg_strerror (rc));
+      goto leave;
+    }
+
+  rc = sc_pkcs15_verify_pin (card->p15card, pin,
+                             pinvalue, strlen (pinvalue));
+  xfree (pinvalue);
+  if (rc)
+    {
+      log_info ("PIN verification failed: %s\n", sc_strerror (rc));
+      rc = GNUPG_Bad_PIN;
+      goto leave;
+    }
+
+  outbuflen = indatalen < 256? 256 : indatalen; 
+  outbuf = xtrymalloc (outbuflen);
+  if (!outbuf)
+    return GNUPG_Out_Of_Core;
+
+  /* OpenSC does not yet support decryption for cryptflex cards */  
+/*    rc = sc_pkcs15_decipher (card->p15card, key, */
+/*                             indata, indatalen, */
+/*                             outbuf, outbuflen); */
+  rc = sc_pkcs15_compute_signature (card->p15card, key,
+                                    0,
+                                    indata, indatalen,
+                                    outbuf, outbuflen );
+  if (rc < 0)
+    {
+      log_error ("failed to decipger the data: %s\n", sc_strerror (rc));
+      rc = GNUPG_Card_Error;
+    }
+  else
+    {
+      *outdatalen = rc;
+      *outdata = outbuf;
+      outbuf = NULL;
+      rc = 0;
+    }
+
+
+leave:
+  xfree (outbuf);
+  return rc;
+}
+
+

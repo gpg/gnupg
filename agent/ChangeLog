@@ -1,12 +1,19 @@
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	* pkdecrypt.c (agent_pkdecrypt): Changed the way the diversion is done.
+	* divert-scd.c (divert_pkdecrypt): Changed interface and
+	implemented it.
+
 2002-03-05  Werner Koch  <wk@gnupg.org>
 
 	* call-scd.c (inq_needpin): New.
 	(agent_card_pksign): Add getpin_cb args.
+	(agent_card_pkdecrypt): New.
 
 2002-03-04  Werner Koch  <wk@gnupg.org>
 
 	* pksign.c (agent_pksign): Changed how the diversion is done.
-	* divert-scd.c (divert_pksign): Change interface and implemented it.
+	* divert-scd.c (divert_pksign): Changed interface and implemented it.
 	(encode_md_for_card): New.
 	* call-scd.c (agent_card_pksign): New.
 

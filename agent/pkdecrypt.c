@@ -71,14 +71,27 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
       rc = seterr (No_Secret_Key);
       goto leave;
     }
+
   if (!s_skey)
     { /* divert operation to the smartcard */
-      rc = divert_pkdecrypt (&s_plain, s_cipher, shadow_info);
+
+      if (!gcry_sexp_canon_len (ciphertext, ciphertextlen, NULL, NULL))
+        {
+          rc = GNUPG_Invalid_Sexp;
+          goto leave;
+        }
+
+      rc = divert_pkdecrypt (ciphertext, shadow_info, &buf, &len );
       if (rc)
         {
           log_error ("smartcard decryption failed: %s\n", gnupg_strerror (rc));
           goto leave;
         }
+      /* FIXME: don't use buffering and change the protocol to return
+         a complete S-expression and not just a part. */
+      fprintf (outfp, "%u:", (unsigned int)len);
+      fwrite (buf, 1, len, outfp);
+      putc (0, outfp);
     }
   else
     { /* no smartcard, but a private key */
@@ -95,23 +108,23 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
           rc = map_gcry_err (rc);
           goto leave;
         }
+
+      if (DBG_CRYPTO)
+        {
+          log_debug ("plain: ");
+          gcry_sexp_dump (s_plain);
+        }
+      len = gcry_sexp_sprint (s_plain, GCRYSEXP_FMT_CANON, NULL, 0);
+      assert (len);
+      buf = xmalloc (len);
+      len = gcry_sexp_sprint (s_plain, GCRYSEXP_FMT_CANON, buf, len);
+      assert (len);
+      /* FIXME: we must make sure that no buffering takes place or we are
+         in full control of the buffer memory (easy to do) - should go
+         into assuan. */
+      fwrite (buf, 1, len, outfp);
     }      
 
-  if (DBG_CRYPTO)
-    {
-      log_debug ("plain: ");
-      gcry_sexp_dump (s_plain);
-    }
-  len = gcry_sexp_sprint (s_plain, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len);
-  buf = xmalloc (len);
-  len = gcry_sexp_sprint (s_plain, GCRYSEXP_FMT_CANON, buf, len);
-  assert (len);
-
-  /* FIXME: we must make sure that no buffering takes place or we are
-     in full control of the buffer memory (easy to do) - should go
-     into assuan. */
-  fwrite (buf, 1, len, outfp);
 
  leave:
   gcry_sexp_release (s_skey);
