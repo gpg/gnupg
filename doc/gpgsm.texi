@@ -411,6 +411,12 @@ Same as @code{--debug=0xffffffff}
 This is actually not a debugging option but only useful as such.  It
 lets gpgsm bypass all certificate chain validation checks.
 
+@item --debug-ignore-expiration
+@opindex debug-ignore-expiration
+This is actually not a debugging option but only useful as such.  It
+lets gpgsm ignore all notAfter dates, this is used by the regresssion
+tests.
+
 @end table
 
 All the long options may also be given in the configuration file after

@@ -1,5 +1,5 @@
 /* certlist.c - build list of certificates
- *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,7 +33,14 @@
 
 #include "keydb.h"
 #include "i18n.h"
- 
+
+
+static const char oid_kp_serverAuth[]     = "1.3.6.1.5.5.7.3.1";
+static const char oid_kp_clientAuth[]     = "1.3.6.1.5.5.7.3.2";
+static const char oid_kp_codeSigning[]    = "1.3.6.1.5.5.7.3.3";
+static const char oid_kp_emailProtection[]= "1.3.6.1.5.5.7.3.4";
+static const char oid_kp_timeStamping[]   = "1.3.6.1.5.5.7.3.8";
+
 /* Return 0 if the cert is usable for encryption.  A MODE of 0 checks
    for signing a MODE of 1 checks for encryption, a MODE of 2 checks
    for verification and a MODE of 3 for decryption (just for
@@ -43,20 +50,78 @@ cert_usage_p (ksba_cert_t cert, int mode)
 {
   gpg_error_t err;
   unsigned int use;
+  char *extkeyusages;
 
-  err = ksba_cert_get_key_usage (cert, &use);
+  err = ksba_cert_get_ext_key_usages (cert, &extkeyusages);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+    err = 0; /* no policy given */
+  if (!err)
     {
-      if (opt.verbose && mode < 2)
-        log_info (mode? 
-                  _("no key usage specified - accepted for encryption\n"):
-                  _("no key usage specified - accepted for signing\n"));
-      return 0;
+      unsigned int extusemask = ~0; /* Allow all. */
+
+      if (extkeyusages)
+        {
+          char *p, *pend;
+          int any_critical = 0;
+
+          extusemask = 0;
+
+          p = extkeyusages;
+          while (p && (pend=strchr (p, ':')))
+            {
+              *pend++ = 0;
+              /* Only care about critical flagged usages. */
+              if ( *pend == 'C' )
+                {
+                  any_critical = 1;
+                  if ( !strcmp (p, oid_kp_serverAuth))
+                    extusemask |= (KSBA_KEYUSAGE_DIGITAL_SIGNATURE
+                                   | KSBA_KEYUSAGE_KEY_ENCIPHERMENT
+                                   | KSBA_KEYUSAGE_KEY_AGREEMENT);
+                  else if ( !strcmp (p, oid_kp_clientAuth))
+                    extusemask |= (KSBA_KEYUSAGE_DIGITAL_SIGNATURE
+                                   | KSBA_KEYUSAGE_KEY_AGREEMENT);
+                  else if ( !strcmp (p, oid_kp_codeSigning))
+                    extusemask |= (KSBA_KEYUSAGE_DIGITAL_SIGNATURE);
+                  else if ( !strcmp (p, oid_kp_emailProtection))
+                    extusemask |= (KSBA_KEYUSAGE_DIGITAL_SIGNATURE
+                                   | KSBA_KEYUSAGE_NON_REPUDIATION
+                                   | KSBA_KEYUSAGE_KEY_ENCIPHERMENT
+                                   | KSBA_KEYUSAGE_KEY_AGREEMENT);
+                  else if ( !strcmp (p, oid_kp_timeStamping))
+                    extusemask |= (KSBA_KEYUSAGE_DIGITAL_SIGNATURE
+                                   | KSBA_KEYUSAGE_NON_REPUDIATION);
+                }
+              
+              if ((p = strchr (pend, '\n')))
+                p++;
+            }
+          xfree (extkeyusages);
+          extkeyusages = NULL;
+          
+          if (!any_critical)
+            extusemask = ~0; /* Reset to the don't care mask. */
+        }
+
+
+      err = ksba_cert_get_key_usage (cert, &use);
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+        {
+          err = 0;
+          if (opt.verbose && mode < 2)
+            log_info (_("no key usage specified - assuming all usages\n"));
+          use = ~0;
+        }
+
+      /* Apply extKeyUsage. */
+      use &= extusemask;
+
     }
   if (err)
     { 
       log_error (_("error getting key usage information: %s\n"),
                  gpg_strerror (err));
+      xfree (extkeyusages);
       return err;
     } 
 
@@ -73,6 +138,7 @@ cert_usage_p (ksba_cert_t cert, int mode)
               (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION)))
       )
     return 0;
+
   log_info (mode==3? _("certificate should have not been used for encryption\n"):
             mode==2? _("certificate should have not been used for signing\n"):
             mode==1? _("certificate is not usable for encryption\n"):

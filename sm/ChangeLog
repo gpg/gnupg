@@ -1,3 +1,10 @@
+2004-02-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): New option --debug-ignore-expiration.
+	* certchain.c (gpgsm_validate_chain): Use it here.
+
+	* certlist.c (cert_usage_p): Apply extKeyUsage.
+
 2004-02-19  Werner Koch  <wk@gnupg.org>
 
 	* export.c (export_p12, popen_protect_tool)

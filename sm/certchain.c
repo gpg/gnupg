@@ -66,7 +66,6 @@ do_list (int is_error, int listmode, FILE *fp, const char *format, ...)
 }
 
 
-
 static int
 unknown_criticals (ksba_cert_t cert, int listmode, FILE *fp)
 {
@@ -74,6 +73,7 @@ unknown_criticals (ksba_cert_t cert, int listmode, FILE *fp)
     "2.5.29.15", /* keyUsage */
     "2.5.29.19", /* basic Constraints */
     "2.5.29.32", /* certificatePolicies */
+    "2.5.29.37", /* extendedKeyUsage - handled by certlist.c */
     NULL
   };
   int rc = 0, i, idx, crit;
@@ -548,16 +548,20 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             rc = gpg_error (GPG_ERR_CERT_TOO_YOUNG);
             goto leave;
           }            
-        if (not_after && strcmp (current_time, not_after) > 0 )
+        if (*not_after && strcmp (current_time, not_after) > 0 )
           {
-            do_list (1, lm, fp, _("certificate has expired"));
+            do_list (opt.ignore_expiration?0:1, lm, fp,
+                     _("certificate has expired"));
             if (!lm)
               {
-                log_error ("(expired at ");
+                log_info ("(expired at ");
                 gpgsm_dump_time (not_after);
                 log_printf (")\n");
               }
-            any_expired = 1;
+            if (opt.ignore_expiration)
+                log_info ("WARNING: ignoring expiration\n");
+            else
+              any_expired = 1;
           }            
       }
 

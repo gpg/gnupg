@@ -46,6 +46,28 @@ struct list_external_parm_s {
 };
 
 
+/* This table is to map Extended Key Usage OIDs to human readable
+   names.  */
+struct {
+  const char *oid;
+  const char *name;
+} key_purpose_map[] = {
+  { "1.3.6.1.5.5.7.3.1",  "serverAuth" },
+  { "1.3.6.1.5.5.7.3.2",  "clientAuth" },          
+  { "1.3.6.1.5.5.7.3.3",  "codeSigning" },      
+  { "1.3.6.1.5.5.7.3.4",  "emailProtection" },     
+  { "1.3.6.1.5.5.7.3.5",  "ipsecEndSystem" }, 
+  { "1.3.6.1.5.5.7.3.6",  "ipsecTunnel" },  
+  { "1.3.6.1.5.5.7.3.7",  "ipsecUser" },     
+  { "1.3.6.1.5.5.7.3.8",  "timeStamping" },       
+  { "1.3.6.1.5.5.7.3.9",  "ocspSigning" },    
+  { "1.3.6.1.5.5.7.3.10", "dvcs" },      
+  { "1.3.6.1.5.5.7.3.11", "sbgpCertAAServerAuth" },
+  { "1.3.6.1.5.5.7.3.13", "eapOverPPP" },
+  { "1.3.6.1.5.5.7.3.14", "wlanSSID" },       
+  { NULL, NULL }
+};
+
 
 static void
 print_key_data (ksba_cert_t cert, FILE *fp)
@@ -292,10 +314,10 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
   ksba_sexp_t sexp;
   char *dn;
   ksba_isotime_t t;
-  int idx;
+  int idx, i;
   int is_ca, chainlen;
   unsigned int kusage;
-  char *string, *p;
+  char *string, *p, *pend;
 
   sexp = ksba_cert_get_serial (cert);
   fputs ("Serial number: ", fp);
@@ -363,6 +385,36 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
             fputs (" encipherOnly", fp);
           if ( (kusage & KSBA_KEYUSAGE_DECIPHER_ONLY))  
             fputs (" decipherOnly", fp);
+        }
+      putc ('\n', fp);
+    }
+
+  err = ksba_cert_get_ext_key_usages (cert, &string);
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
+    { 
+      fputs ("ext key usage: ", fp);
+      if (err)
+        fprintf (fp, "[error: %s]", gpg_strerror (err));
+      else
+        {
+          p = string;
+          while (p && (pend=strchr (p, ':')))
+            {
+              *pend++ = 0;
+              for (i=0; key_purpose_map[i].oid; i++)
+                if ( !strcmp (key_purpose_map[i].oid, p) )
+                  break;
+              fputs (key_purpose_map[i].oid?key_purpose_map[i].name:p, fp);
+              p = pend;
+              if (*p != 'C')
+                fputs (" (suggested)", fp);
+              if ((p = strchr (p, '\n')))
+                {
+                  p++;
+                  fputs (", ", fp);
+                }
+            }
+          xfree (string);
         }
       putc ('\n', fp);
     }

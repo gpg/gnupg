@@ -21,14 +21,6 @@ might want to have an agent context for each service request
 ** When a certificate chain was sucessfully verified, make ephemeral certs used  in this chain permanent.
 ** figure out how to auto retrieve a key by serialno+issuer.
    Dirmngr is currently not able to parse more than the CN.
-** Try all available root certs in case we have several of them in our keybox.
- For example TC TrustCenter Class 1 CA certs are ambiguous becuase
- user certs don't come with a authorityKeyIdentifier.
-** Support extKeyUsage
- The only value which makes sense for us is emailProtection (I have
- not yet found a test cetificate with that).  We might want to allow
- other usages depending on special options (e.g. an option used for code
- signing).
 
 * sm/decrypt.c
 ** replace leading zero in integer hack by a cleaner solution
@@ -49,10 +41,12 @@ might want to have an agent context for each service request
 ** Remove the inter-module dependencies between gpgsm and keybox
 ** Add an source_of_key field
 ** We need an error code GPG_ERR_NOT_LOCKED
+   It is already libgpg-error.
 
 * agent/gpg-agent.c
 ** A SIGHUP should also restart the scdaemon
    But do this only after all connections terminated.
+   As of now we only send a RESET.
 
 * agent/command.c
 ** Make sure that secure memory is used where appropriate
@@ -63,22 +57,12 @@ might want to have an agent context for each service request
 * agent/divert-scd.c
  Remove the agent_reset_scd kludge.
 
-* agent/protect-tool.c
-** Export certificates along with the secret key.
-** BUG? --p12-export seems to work only with unprotected keys
-
 * Move pkcs-1 encoding into libgcrypt.
 
 * Use a MAC to protect some files.
 
 * sm/export.c
 ** Return an error code or a status info per user ID.
-
-* scd/apdu.c
-** We need close_reader functionality
-
-* ALL
-** Return IMPORT_OK status.
 
 * Where is http.c, regcomp.c, srv.c, w32reg.c  ?
 
@@ -90,12 +74,12 @@ might want to have an agent context for each service request
   authentication key.  Old GnuPG versions seem to encode the wrong
   keyID.
 
-* Store the revocation status directly in the Keybox
-
 * tests
 ** Makefile.am
   We use printf(1) to setup the library path, this is not portable.
   Furthermore LD_LIBRARY_PATH is not used on all systems.  It doesn't
   matter for now, because we use some GNU/*BSDish features anyway.
+
+** Add a test to check the extkeyusage.
 
 
