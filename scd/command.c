@@ -923,6 +923,41 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+/* CHECKPIN <hexified_id>
+
+ */
+static int
+cmd_checkpin (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  char *keyidstr;
+
+  if ((rc = open_card (ctrl)))
+    return rc;
+
+  if (!ctrl->app_ctx)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  /* We have to use a copy of the key ID because the function may use
+     the pin_cb which in turn uses the assuan line buffer and thus
+     overwriting the original line with the keyid. */
+  keyidstr = xtrystrdup (line);
+  if (!keyidstr)
+    return ASSUAN_Out_Of_Core;
+  
+  rc = app_check_pin (ctrl->app_ctx,
+                      keyidstr,
+                      pin_cb, ctx);
+  xfree (keyidstr);
+  if (rc)
+    log_error ("app_check_pin failed: %s\n", gpg_strerror (rc));
+
+  return map_to_assuan_status (rc);
+}
+
+
+
 
 
 /* Tell the assuan library about our commands */
@@ -948,6 +983,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "GENKEY",       cmd_genkey },
     { "RANDOM",       cmd_random },
     { "PASSWD",       cmd_passwd },
+    { "CHECKPIN",     cmd_checkpin },
     { NULL }
   };
   int i, rc;

@@ -1,3 +1,20 @@
+2003-10-20  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_checkpin): New.
+	(register_commands): Add command CHECKPIN.
+	* app.c (app_check_pin): New.
+	* app-openpgp.c (check_against_given_fingerprint): New. Factored
+	out that code elsewhere.
+	(do_check_pin): New.
+
+2003-10-10  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (ccid_close_reader): New.
+
+	* apdu.c (close_ccid_reader, close_ct_reader, close_csc_reader)
+	(close_osc_reader, apdu_close_reader): New.  Not all are properly
+	implemented yet.
+
 2003-10-09  Werner Koch  <wk@gnupg.org>
 
 	* ccid-driver.c (ccid_transceive): Add T=1 chaining for sending.

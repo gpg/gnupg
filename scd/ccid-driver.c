@@ -174,6 +174,12 @@ struct ccid_driver_s {
 };
 
 
+static int bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen);
+static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
+                    size_t *nread, int expected_type, int seqno);
+
+
+
 /* Convert a little endian stored 4 byte value into an unsigned
    integer. */
 static unsigned int 
@@ -181,6 +187,16 @@ convert_le_u32 (const unsigned char *buf)
 {
   return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24); 
 }
+
+static void
+set_msg_len (unsigned char *msg, unsigned int length)
+{
+  msg[1] = length;
+  msg[2] = length >> 8;
+  msg[3] = length >> 16;
+  msg[4] = length >> 24;
+}
+
 
 
 
@@ -482,22 +498,47 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
 }
 
 
+/* Close the reader HANDLE. */
+int 
+ccid_close_reader (ccid_driver_t handle)
+{
+  if (!handle || !handle->idev)
+    return 0;
+
+   {
+     int rc;
+     unsigned char msg[100];
+     size_t msglen;
+     unsigned char seqno;
+   
+     msg[0] = PC_to_RDR_IccPowerOff;
+     msg[5] = 0; /* slot */
+     msg[6] = seqno = handle->seqno++;
+     msg[7] = 0; /* RFU */
+     msg[8] = 0; /* RFU */
+     msg[9] = 0; /* RFU */
+     set_msg_len (msg, 0);
+     msglen = 10;
+   
+     rc = bulk_out (handle, msg, msglen);
+     if (!rc)
+        bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus, seqno);
+   }
+   
+  usb_release_interface (handle->idev, 0);
+  usb_close (handle->idev);
+  handle->idev = NULL;
+  free (handle);
+  return 0;
+}
+
+
 /* Return False if a card is present and powered. */
 int
 ccid_check_card_presence (ccid_driver_t handle)
 {
 
   return -1;
-}
-
-
-static void
-set_msg_len (unsigned char *msg, unsigned int length)
-{
-  msg[1] = length;
-  msg[2] = length >> 8;
-  msg[3] = length >> 16;
-  msg[4] = length >> 24;
 }
 
 

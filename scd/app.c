@@ -295,6 +295,29 @@ app_change_pin (APP app, CTRL ctrl, const char *chvnostr, int reset_mode,
 }
 
 
+/* Perform a VERIFY operation without doing anything lese.  This may
+   be used to initialze a the PION cache for long lasting other
+   operations.  Its use is highly application dependent. */
+int 
+app_check_pin (APP app, const char *keyidstr,
+               int (*pincb)(void*, const char *, char **),
+               void *pincb_arg)
+{
+  int rc;
+
+  if (!app || !keyidstr || !*keyidstr || !pincb)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!app->initialized)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if (!app->fnc.check_pin)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+  rc = app->fnc.check_pin (app, keyidstr, pincb, pincb_arg);
+  if (opt.verbose)
+    log_info ("operation check_pin result: %s\n", gpg_strerror (rc));
+  return rc;
+}
+
+
 
 
 
