@@ -818,16 +818,13 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	  {
 	    any_recipients = 1;
 
-	    if((rov->flags&2) && (opt.pgp2 || opt.pgp6 || opt.pgp7))
+	    if((rov->flags&2) && (PGP2 || PGP6 || PGP7 || PGP8))
 	      {
 		log_info(_("you may not use %s while in %s mode\n"),
 			 "--hidden-recipient",
-			 opt.pgp2?"--pgp2":opt.pgp6?"--pgp6":"--pgp7");
+			 compliance_option_string());
 
-		log_info(_("this message may not be usable by %s\n"),
-			 opt.pgp2?"PGP 2.x":opt.pgp6?"PGP 6.x":"PGP 7.x");
-
-		opt.pgp2=opt.pgp6=opt.pgp7=0;
+		compliance_failure();
 	      }
 	  }
 	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
@@ -857,16 +854,13 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 		    r->flags = (rov->flags&2)?1:0;
 		    pk_list = r;
 
-		    if(r->flags&1 && (opt.pgp2 || opt.pgp6 || opt.pgp7))
+		    if(r->flags&1 && (PGP2 || PGP6 || PGP7 || PGP8))
 		      {
 			log_info(_("you may not use %s while in %s mode\n"),
 				 "--hidden-encrypt-to",
-				 opt.pgp2?"--pgp2":opt.pgp6?"--pgp6":"--pgp7");
+				 compliance_option_string());
 
-			log_info(_("this message may not be usable by %s\n"),
-			      opt.pgp2?"PGP 2.x":opt.pgp6?"PGP 6.x":"PGP 7.x");
-
-			opt.pgp2=opt.pgp6=opt.pgp7=0;
+			compliance_failure();
 		      }
 		}
 	    }
@@ -1131,46 +1125,60 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
    intersection"), and PGP has no mechanism to fix such a broken
    preference list, so I'm including it. -dms */
 
-static int
-algo_available( int preftype, int algo, void *hint )
+int
+algo_available( preftype_t preftype, int algo, void *hint )
 {
-    if( preftype == PREFTYPE_SYM ) {
-        if( opt.pgp6 && ( algo != 1 && algo != 2 && algo != 3) )
-	  return 0;
-
-        if( (opt.pgp7 || opt.pgp8)
-	    && (algo != 1 && algo != 2 && algo != 3
-		&& algo != 7 && algo != 8 && algo != 9 && algo != 10) )
-	  return 0;
-
-	return algo && !check_cipher_algo( algo );
-    }
-    else if( preftype == PREFTYPE_HASH ) {
-        int bits=0;
-
-	if(hint)
-	  bits=*(int *)hint;
-
-	if(bits && (bits != md_digest_length(algo)))
-	  return 0;
-
-        if( (opt.pgp6 || opt.pgp7) && (algo != 1 && algo != 2 && algo != 3) )
-	  return 0;
-
-	if( opt.pgp8 && (algo != 1 && algo != 2 && algo != 3 && algo != 8))
-	  return 0;
-
-	return algo && !check_digest_algo( algo );
-    }
-    else if( preftype == PREFTYPE_ZIP ) {
-        if ( ( opt.pgp6 || opt.pgp7 || opt.pgp8 )
-	     && ( algo !=0 && algo != 1) )
-	  return 0;
-
-	return !check_compress_algo( algo );
-    }
-    else
+  if( preftype == PREFTYPE_SYM )
+    {
+      if(PGP6 && (algo != CIPHER_ALGO_IDEA
+		  && algo != CIPHER_ALGO_3DES
+		  && algo != CIPHER_ALGO_CAST5))
 	return 0;
+      
+      if((PGP7 || PGP8) && (algo != CIPHER_ALGO_IDEA
+			    && algo != CIPHER_ALGO_3DES
+			    && algo != CIPHER_ALGO_CAST5
+			    && algo != CIPHER_ALGO_AES
+			    && algo != CIPHER_ALGO_AES192
+			    && algo != CIPHER_ALGO_AES256
+			    && algo != CIPHER_ALGO_TWOFISH))
+	return 0;
+
+      return algo && !check_cipher_algo( algo );
+    }
+  else if( preftype == PREFTYPE_HASH )
+    {
+      if(hint && ((*(int *)hint) != md_digest_length(algo)))
+	return 0;
+
+      if((PGP6 || PGP7) && (algo != DIGEST_ALGO_MD5
+			    && algo != DIGEST_ALGO_SHA1
+			    && algo != DIGEST_ALGO_RMD160))
+	return 0;
+
+
+      if(PGP8 && (algo != DIGEST_ALGO_MD5
+		  && algo != DIGEST_ALGO_SHA1
+		  && algo != DIGEST_ALGO_RMD160
+		  && algo != DIGEST_ALGO_SHA256))
+	return 0;
+
+      /* TIGER is not allowed any longer according to 2440bis. */
+      if( RFC2440 && algo == DIGEST_ALGO_TIGER )
+	return 0;
+
+      return algo && !check_digest_algo( algo );
+    }
+  else if( preftype == PREFTYPE_ZIP )
+    {
+      if((PGP6 || PGP7 || PGP8) && (algo != COMPRESS_ALGO_NONE
+				    && algo != COMPRESS_ALGO_ZIP))
+	return 0;
+
+      return !check_compress_algo( algo );
+    }
+  else
+    return 0;
 }
 
 
@@ -1197,7 +1205,7 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
 
 	memset( mask, 0, 8 * sizeof *mask );
 	if( preftype == PREFTYPE_SYM ) {
-	  if( opt.pgp2 &&
+	  if( PGP2 &&
 	      pkr->pk->version < 4 &&
 	      pkr->pk->selfsigversion < 4 )
 	    mask[0] |= (1<<1); /* IDEA is implicitly there for v3 keys
@@ -1215,7 +1223,7 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
 	     wasn't locked at MD5, we don't support sign+encrypt in
 	     --pgp2 mode, and that's the only time PREFTYPE_HASH is
 	     used anyway. -dms */
-	  if( opt.pgp2 &&
+	  if( PGP2 &&
 	      pkr->pk->version < 4 &&
 	      pkr->pk->selfsigversion < 4 )
 	    mask[0] |= (1<<1); /* MD5 is there for v3 keys with v3

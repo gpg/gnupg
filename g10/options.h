@@ -93,12 +93,10 @@ struct {
        we started storing the trust model inside the trustdb. */
     enum {TM_CLASSIC=0, TM_PGP=1, TM_ALWAYS, TM_AUTO} trust_model;
     unsigned int force_ownertrust;
-    int pgp2;
-    int pgp6;
-    int pgp7;
-    int pgp8;
-    int rfc1991;
-    int rfc2440;
+    enum
+      {
+	CO_GNUPG=0, CO_RFC2440, CO_RFC1991, CO_PGP2, CO_PGP6, CO_PGP7, CO_PGP8
+      } compliance;
     int pgp2_workarounds;
     unsigned int emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
@@ -211,5 +209,12 @@ struct {
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 
+#define GNUPG   (opt.compliance==CO_GNUPG)
+#define RFC1991 (opt.compliance==CO_RFC1991 || opt.compliance==CO_PGP2)
+#define RFC2440 (opt.compliance==CO_RFC2440)
+#define PGP2    (opt.compliance==CO_PGP2)
+#define PGP6    (opt.compliance==CO_PGP6)
+#define PGP7    (opt.compliance==CO_PGP7)
+#define PGP8    (opt.compliance==CO_PGP8)
 
 #endif /*G10_OPTIONS_H*/

@@ -206,6 +206,11 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 
 	      ch++;
 	    }
+
+	  /* It would seem to be reasonable to limit the range of the
+	     ports to values between 1-65535, but RFC 1738 and 1808
+	     imply there is no limit.  Of course, the real world has
+	     limits. */
 	}
 
       /* (any path part of the URI is discarded for now as no keyserver

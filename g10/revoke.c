@@ -521,7 +521,7 @@ gen_revoke( const char *uname )
 	goto leave;
     }
 
-    if(opt.pgp2 || opt.pgp6 || opt.pgp7 | opt.pgp8)
+    if(PGP2 || PGP6 || PGP7 || PGP8)
       {
 	/* Use a minimal pk for PGPx mode, since PGP can't import bare
 	   revocation certificates. */

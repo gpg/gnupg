@@ -298,7 +298,7 @@ is_armor_header( byte *line, unsigned len )
     /* Some mail programs on Windows seem to add spaces to the end of
        the line.  This becomes strict if --openpgp is set. */
 
-    if(!opt.rfc2440)
+    if(!RFC2440)
       while(*p==' ')
 	p++;
 
@@ -1334,5 +1334,3 @@ unarmor_pump (UnarmorPump x, int c)
 
     return rval;
 }
-
-
