@@ -1,3 +1,9 @@
+2004-03-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), compress-bz2.c (init_uncompress):
+	Backport --bzip2-decompress-lowmem since we do handle receiving a
+	bzip2 message on the stable branch.
+
 2004-03-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (no_primary_warning): Cleanup.

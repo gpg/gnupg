@@ -184,6 +184,7 @@ enum cmd_and_opt_values
     oDigestAlgo,
     oCertDigestAlgo,
     oCompressAlgo,
+    oBZ2DecompressLowmem,
     oPasswdFD,
     oPasswdFile, /* only used with risc os */
     oCommandFD,
@@ -395,6 +396,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
     { oCompress,"compress-level",1,N_("|N|set compress level N (0 disables)")},
+    { oBZ2DecompressLowmem, "bzip2-decompress-lowmem", 0, "@" },
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
     { oNoTextmode, "no-textmode",  0, "@"},
@@ -478,7 +480,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
     { oCertDigestAlgo, "cert-digest-algo", 2 , "@" },
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
-    { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
+    { oThrowKeyid, "throw-keyids", 0, N_("throw keyid field of encrypted packets")},
     { oShowPhotos,   "show-photos", 0, N_("Show Photo IDs")},
     { oNoShowPhotos, "no-show-photos", 0, N_("Don't show Photo IDs")},
     { oPhotoViewer,  "photo-viewer", 2, N_("Set command line to view Photo IDs")},
@@ -1765,6 +1767,7 @@ main( int argc, char **argv )
 	    add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
 	    break;
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
+	  case oBZ2DecompressLowmem: opt.bz2_decompress_lowmem=1; break;
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             opt.use_agent = 0;

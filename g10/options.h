@@ -72,6 +72,7 @@ struct
   int def_digest_algo;
   int cert_digest_algo;
   int def_compress_algo;
+  int bz2_decompress_lowmem;
   const char *def_secret_key;
   char *def_recipient;
   int def_recipient_self;

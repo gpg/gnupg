@@ -1,5 +1,5 @@
 /* compress.c - bzip2 compress filter
- * Copyright (C) 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -101,7 +101,7 @@ init_uncompress( compress_filter_context_t *zfx, bz_stream *bzs )
 {
   int rc;
 
-  if((rc=BZ2_bzDecompressInit(bzs,0,0))!=BZ_OK)
+  if((rc=BZ2_bzDecompressInit(bzs,0,opt.bz2_decompress_lowmem))!=BZ_OK)
     log_fatal("bz2lib problem: %d\n",rc);
 
   zfx->inbufsize = 2048;
