@@ -367,7 +367,10 @@ print_keyrec(int number,struct keyrec *keyrec)
     }
 
   if(keyrec->expiretime>0)
-    printf(", %s: %s",_("expires"),strtimestamp(keyrec->expiretime));
+    {
+      printf(", ");
+      printf(_("expires: %s"),strtimestamp(keyrec->expiretime));
+    }
 
   if(keyrec->flags&1)
     printf(" (%s)",_("revoked"));

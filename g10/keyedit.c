@@ -2241,11 +2241,11 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    tty_printf(_("created: %s"),datestr_from_pk(pk));
 	    tty_printf("  ");
 	    if(pk->is_revoked)
-	      tty_printf("%s: %s",_("revoked"),revokestr_from_pk(pk));
+	      tty_printf(_("revoked: %s"),revokestr_from_pk(pk));
 	    else if(pk->has_expired)
-	      tty_printf("%s: %s",_("expired"),expirestr_from_pk(pk));
+	      tty_printf(_("expired: %s"),expirestr_from_pk(pk));
 	    else
-	      tty_printf("%s: %s",_("expires"),expirestr_from_pk(pk));
+	      tty_printf(_("expires: %s"),expirestr_from_pk(pk));
 	    tty_printf("  ");
             tty_printf(_("usage: %s"),usagestr_from_pk(pk));
 	    tty_printf("\n");
@@ -2296,7 +2296,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		       keystr_from_sk(sk));
 	    tty_printf(_("created: %s"),datestr_from_sk(sk));
 	    tty_printf("  ");
-	    tty_printf("%s: %s",_("expires"),expirestr_from_sk(sk));
+	    tty_printf(_("expires: %s"),expirestr_from_sk(sk));
 	    tty_printf("\n");
             if (sk->is_protected && sk->protect.s2k.mode == 1002)
               {
@@ -2331,11 +2331,11 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    ++i;
 	    if( !only_marked || (only_marked && (node->flag & NODFLG_MARK_A))){
 	        if(uid->is_revoked)
-		  tty_printf("[%8.8s] ",_("revoked"));
+		  tty_printf(_("[%8.8s] "),_("revoked"));
 		else if(uid->is_expired)
-		  tty_printf("[%8.8s] ",_("expired"));
+		  tty_printf(_("[%8.8s] "),_("expired"));
 		else if(primary)
-		  tty_printf("[%8.8s] ",
+		  tty_printf(_("[%8.8s] "),
 			     trust_value_to_string(get_validity(primary,uid)));
 		if( only_marked )
 		   tty_printf("     ");
@@ -2409,7 +2409,7 @@ show_basic_key_info ( KBNODE keyblock )
                       keystr_from_pk(pk));
 	  tty_printf(_("created: %s"),datestr_from_pk(pk));
 	  tty_printf("  ");
-	  tty_printf("%s: %s",_("expires"),expirestr_from_pk(pk));
+	  tty_printf(_("expires: %s"),expirestr_from_pk(pk));
           tty_printf("\n");
           print_fingerprint ( pk, NULL, 3 );
           tty_printf("\n");
@@ -2424,7 +2424,7 @@ show_basic_key_info ( KBNODE keyblock )
                      keystr_from_sk(sk));
 	  tty_printf(_("created: %s"),datestr_from_sk(sk));
 	  tty_printf("  ");
-	  tty_printf("%s: %s",_("expires"),expirestr_from_sk(sk));
+	  tty_printf(_("expires: %s"),expirestr_from_sk(sk));
           tty_printf("\n");
           print_fingerprint (NULL, sk, 3 );
           tty_printf("\n");

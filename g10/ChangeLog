@@ -1,3 +1,9 @@
+2004-10-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c, keylist.c, keyserver.c, mainproc.c: The
+	revoked/expired/expires string change of 2004-09-29 was too
+	simple.  Use two styles for each tag.
+
 2004-10-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* passphrase.c (agent_get_passphrase): Use keystrs for agent
