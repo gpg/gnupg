@@ -4,7 +4,7 @@
 
 2002-04-24  Werner Koch  <wk@gnupg.org>
 
-	* tiger.c (tiger_final): Removed superfluous toke pasting operators.
+	* tiger.c (tiger_final): Removed superfluous token pasting operators.
 	* md5.c (md5_final): Ditto.
 
 2002-04-22  Stefan Bellon  <sbellon@sbellon.de>

@@ -1,3 +1,5 @@
+  * Reword the "Not enough entropy" messages.
+
   * Do we need a configure test for putenv?
 
   * Check for consistent spelling of user ID, key ID etc.
