@@ -64,8 +64,6 @@ target_triplet = @target@
 CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
-CIPHER_EXTRA_DIST = @CIPHER_EXTRA_DIST@
-CIPHER_EXTRA_OBJS = @CIPHER_EXTRA_OBJS@
 CPP = @CPP@
 DATADIRNAME = @DATADIRNAME@
 G10_LOCALEDIR = @G10_LOCALEDIR@
@@ -93,11 +91,12 @@ ZLIBS = @ZLIBS@
 l = @l@
 
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
-EXTRA_DIST = @CIPHER_EXTRA_DIST@
 
 noinst_LIBRARIES = libcipher.a
 
 libcipher_a_SOURCES = cipher.c	\
+		 dynload.c	\
+		 dynload.h	\
 		 blowfish.c	\
 		 blowfish.h	\
 		 cast5.c	\
@@ -126,9 +125,6 @@ libcipher_a_SOURCES = cipher.c	\
 		 md.h		\
 		 misc.c 	\
 		 smallprime.c
-
-libcipher_a_DEPENDENCIES = @CIPHER_EXTRA_OBJS@
-libcipher_a_LIBADD = @CIPHER_EXTRA_OBJS@
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -139,8 +135,9 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libcipher_a_OBJECTS =  cipher.o blowfish.o cast5.o elgamal.o md5.o \
-primegen.o random.o rand-unix.o rand-w32.o rand-dummy.o rmd160.o \
+libcipher_a_LIBADD = 
+libcipher_a_OBJECTS =  cipher.o dynload.o blowfish.o cast5.o elgamal.o \
+md5.o primegen.o random.o rand-unix.o rand-w32.o rand-dummy.o rmd160.o \
 tiger.o sha1.o dsa.o md.o misc.o smallprime.o
 AR = ar
 CFLAGS = @CFLAGS@
@@ -154,9 +151,10 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = tar
 GZIP = --best
 DEP_FILES =  .deps/blowfish.P .deps/cast5.P .deps/cipher.P .deps/dsa.P \
-.deps/elgamal.P .deps/md.P .deps/md5.P .deps/misc.P .deps/primegen.P \
-.deps/rand-dummy.P .deps/rand-unix.P .deps/rand-w32.P .deps/random.P \
-.deps/rmd160.P .deps/sha1.P .deps/smallprime.P .deps/tiger.P
+.deps/dynload.P .deps/elgamal.P .deps/md.P .deps/md5.P .deps/misc.P \
+.deps/primegen.P .deps/rand-dummy.P .deps/rand-unix.P .deps/rand-w32.P \
+.deps/random.P .deps/rmd160.P .deps/sha1.P .deps/smallprime.P \
+.deps/tiger.P
 SOURCES = $(libcipher_a_SOURCES)
 OBJECTS = $(libcipher_a_OBJECTS)
 

@@ -615,6 +615,7 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	   : type == SIGSUBPKT_POLICY	   ? "policy URL"
 	   : type == SIGSUBPKT_KEY_FLAGS   ? "key flags"
 	   : type == SIGSUBPKT_SIGNERS_UID ? "signer's user id"
+	   : type == SIGSUBPKT_PRIV_ADD_SIG? "signs additional user id"
 			      : "?");
 	}
 	else if( type == reqtype )
@@ -636,6 +637,13 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	if( n < 8 )
 	    break;
 	return buffer;
+      case SIGSUBPKT_PRIV_ADD_SIG:
+	/* because we use private data, we check the GNUPG marker */
+	if( n < 24 )
+	    break;
+	if( buffer[0] != 'G' || buffer[1] != 'P' || buffer[2] != 'G' )
+	    return NULL;
+	return buffer+3;
       default: BUG(); /* not yet needed */
     }
     log_error("subpacket of type %d too short\n", type);

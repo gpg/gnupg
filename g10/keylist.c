@@ -319,6 +319,7 @@ list_one( const char *name, int secret )
 	    if( opt.with_colons )
 		printf(":%02x:", sig->sig_class );
 	    putchar('\n');
+	    /* FIXME: check or list other sigs here (subpkt PRIV_ADD_SIG)*/
 	}
     }
     if( !any ) {/* oops, no user id */

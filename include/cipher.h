@@ -40,7 +40,7 @@
 #define CIPHER_ALGO_NONE	 0
 #define CIPHER_ALGO_IDEA	 1
 #define CIPHER_ALGO_3DES	 2
-#define CIPHER_ALGO_CAST	 3
+#define CIPHER_ALGO_CAST5	 3
 #define CIPHER_ALGO_BLOWFISH	 4  /* blowfish 128 bit key */
 #define CIPHER_ALGO_SAFER_SK128  5
 #define CIPHER_ALGO_DES_SK	 6

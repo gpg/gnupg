@@ -1,3 +1,7 @@
+Mon Jun  8 22:14:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* cipher.h (CIPHER_ALGO_CAST5): Changed name from .. CAST
+
 Thu May 21 13:25:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* cipher.h: removed ROT 5 and changed one id and add dummy

@@ -22,19 +22,13 @@
 
 #include "types.h"
 
-#define BLOWFISH_BLOCKSIZE 8
-#define BLOWFISH_ROUNDS 16
 
-typedef struct {
-    u32 s0[256];
-    u32 s1[256];
-    u32 s2[256];
-    u32 s3[256];
-    u32 p[BLOWFISH_ROUNDS+2];
-} BLOWFISH_context;
-
-void blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen );
-void blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
-void blowfish_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
+const char *
+blowfish_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   void (**setkey)( void *c, byte *key, unsigned keylen ),
+		   void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
+		 );
 
 #endif /*G10_BLOWFISH_H*/

@@ -33,32 +33,20 @@
 #include "cast5.h"
 #include "des.h"
 
+#include <dlfcn.h>
+
 #define STD_BLOCKSIZE 8
+#define TABLE_SIZE 20
 
-#if BLOWFISH_BLOCKSIZE != STD_BLOCKSIZE
-  #error Invalid BLOWFISH blocksize
-#elif CAST5_BLOCKSIZE != STD_BLOCKSIZE
-  #error Invalid CAST blocksize
-#elif DES_BLOCKSIZE != STD_BLOCKSIZE
-  #error Invalid DES blocksize
-#endif
-
-
-static struct { const char *name; int algo; int keylen; } cipher_names[] = {
-    { "IDEA",        CIPHER_ALGO_IDEA        ,0   },
-    { "3DES",        CIPHER_ALGO_3DES        ,168 },
-    { "CAST",        CIPHER_ALGO_CAST        ,128 },
-    { "BLOWFISH160", CIPHER_ALGO_BLOWFISH160 ,160 },
-    { "SAFER_SK128", CIPHER_ALGO_SAFER_SK128 ,0   },
-    { "DES_SK",      CIPHER_ALGO_DES_SK      ,0   },
-    { "BLOWFISH",    CIPHER_ALGO_BLOWFISH    ,128 },
-    { "DUMMY"   ,    CIPHER_ALGO_DUMMY       ,128 },
-    {NULL} };
-
-
-/* Hmmm, no way for a void arg in function pointer? */
-#define FNCCAST_SETKEY(f)  (void(*)(void*, byte*, unsigned))(f)
-#define FNCCAST_CRYPT(f)   (void(*)(void*, byte*, byte*))(f)
+static struct {
+    const char *name;
+    int algo;
+    int keylen;
+    int contextsize; /* allocate this amount of context */
+    void (*setkey)( void *c, byte *key, unsigned keylen );
+    void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
+    void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
+} cipher_table[TABLE_SIZE];
 
 
 struct cipher_handle_s {
@@ -70,13 +58,9 @@ struct cipher_handle_s {
     void (*setkey)( void *c, byte *key, unsigned keylen );
     void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
     void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
-    void (*sync_cfb)( void *c );
-    union {
-	int		 context;
-	BLOWFISH_context blowfish;
-	CAST5_context cast5;
-    } c;
+    byte context[1];
 };
+
 
 
 static void
@@ -85,6 +69,135 @@ static void
 dummy_encrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
 static void
 dummy_decrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
+
+
+
+/****************
+ * Put the static entries into the table.
+ */
+static void
+setup_cipher_table()
+{
+
+    static int initialized = 0;
+    int i;
+    size_t blocksize;
+
+    if( initialized )
+	return;
+
+    i = 0;
+    cipher_table[i].algo = CIPHER_ALGO_BLOWFISH;
+    cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name || blocksize != STD_BLOCKSIZE )
+	BUG();
+    i++;
+    cipher_table[i].algo = CIPHER_ALGO_CAST5;
+    cipher_table[i].name = cast5_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name || blocksize != STD_BLOCKSIZE )
+	BUG();
+    i++;
+    cipher_table[i].algo = CIPHER_ALGO_BLOWFISH160;
+    cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
+					 &cipher_table[i].keylen,
+					 &blocksize,
+					 &cipher_table[i].contextsize,
+					 &cipher_table[i].setkey,
+					 &cipher_table[i].encrypt,
+					 &cipher_table[i].decrypt     );
+    if( !cipher_table[i].name || blocksize != STD_BLOCKSIZE )
+	BUG();
+    i++;
+    cipher_table[i].algo = CIPHER_ALGO_DUMMY;
+    cipher_table[i].name = "DUMMY";
+    cipher_table[i].keylen = 128;
+    cipher_table[i].contextsize = 0;
+    cipher_table[i].setkey = dummy_setkey;
+    cipher_table[i].encrypt = dummy_encrypt_block;
+    cipher_table[i].decrypt = dummy_decrypt_block;
+    i++;
+
+    for( ; i < TABLE_SIZE; i++ )
+	cipher_table[i].name = NULL;
+    initialized = 1;
+}
+
+
+/****************
+ * Try to load all modules and return true if new modules are available
+ */
+static int
+load_cipher_modules()
+{
+    static int done = 0;
+
+    if( !done ) {
+	void *handle;
+	char **name;
+	void *sym;
+	void * (*enumfunc)(int, int*, int*, int*);
+	const char *err;
+
+	log_debug("load_cipher_modules\n");
+	handle = dlopen("/sahara/proj/psst+g10/non-free-src/rsa+idea.so", RTLD_LAZY);
+	if( !handle )
+	    log_bug("dlopen(rsa+idea) failed: %s\n", dlerror() );
+	name = (char**)dlsym(handle, "gnupgext_version");
+	if( (err=dlerror()) )
+	    log_error("dlsym: gnupgext_version not found: %s\n", err );
+	else {
+	    log_debug("dlsym: gnupgext_version='%s'\n", *name );
+	    sym = dlsym(handle, "gnupgext_enum_func");
+	    if( (err=dlerror()) )
+		log_error("dlsym: gnupgext_enum_func not found: %s\n", err );
+	    else {
+		int seq = 0;
+		int class, vers;
+
+		enumfunc = (void *(*)(int,int*,int*,int*))sym;
+		while( (sym = enumfunc(0, &seq, &class, &vers)) ) {
+		    if( vers != 1 ) {
+			log_debug("ignoring extfunc with version %d\n", vers);
+			continue;
+		    }
+		    switch( class ) {
+		      case 11:
+		      case 21:
+		      case 31:
+			log_info("provides %s algorithm %d\n",
+					class == 11? "md"     :
+					class == 21? "cipher" : "pubkey",
+							       *(int*)sym);
+			break;
+		      default:
+			log_debug("skipping class %d\n", class);
+		    }
+		}
+	    }
+	}
+	dlclose(handle);
+	done = 1;
+    }
+
+    return 0;
+}
+
+
+
+
+
 
 
 /****************
@@ -96,9 +209,12 @@ string_to_cipher_algo( const char *string )
     int i;
     const char *s;
 
-    for(i=0; (s=cipher_names[i].name); i++ )
-	if( !stricmp( s, string ) )
-	    return cipher_names[i].algo;
+    setup_cipher_table();
+    do {
+	for(i=0; (s=cipher_table[i].name); i++ )
+	    if( !stricmp( s, string ) )
+		return cipher_table[i].algo;
+    } while( load_cipher_modules() );
     return 0;
 }
 
@@ -110,9 +226,12 @@ cipher_algo_to_string( int algo )
 {
     int i;
 
-    for(i=0; cipher_names[i].name; i++ )
-	if( cipher_names[i].algo == algo )
-	    return cipher_names[i].name;
+    setup_cipher_table();
+    do {
+	for(i=0; cipher_table[i].name; i++ )
+	    if( cipher_table[i].algo == algo )
+		return cipher_table[i].name;
+    } while( load_cipher_modules() );
     return NULL;
 }
 
@@ -122,16 +241,15 @@ cipher_algo_to_string( int algo )
 int
 check_cipher_algo( int algo )
 {
-    switch( algo ) {
-      case CIPHER_ALGO_BLOWFISH160:
-      case CIPHER_ALGO_BLOWFISH:
-      case CIPHER_ALGO_CAST:
-      case CIPHER_ALGO_3DES:
-      case CIPHER_ALGO_DUMMY:
-	return 0;
-      default:
-	return G10ERR_CIPHER_ALGO;
-    }
+    int i;
+
+    setup_cipher_table();
+    do {
+       for(i=0; cipher_table[i].name; i++ )
+	   if( cipher_table[i].algo == algo )
+	       return 0; /* okay */
+    } while( load_cipher_modules() );
+    return G10ERR_CIPHER_ALGO;
 }
 
 
@@ -141,14 +259,19 @@ cipher_get_keylen( int algo )
     int i;
     unsigned len = 0;
 
-    for(i=0; cipher_names[i].name; i++ )
-	if( cipher_names[i].algo == algo ) {
-	    len = cipher_names[i].keylen;
-	    break;
+    setup_cipher_table();
+    do {
+	for(i=0; cipher_table[i].name; i++ ) {
+	    if( cipher_table[i].algo == algo ) {
+		len = cipher_table[i].keylen;
+		if( !len )
+		    log_bug("cipher %d w/o key length\n", algo );
+		return len;
+	    }
 	}
-    if( !len )
-	log_bug("cipher %d w/o key length\n", algo );
-    return len;
+    } while( load_cipher_modules() );
+    log_bug("cipher %d not found\n", algo );
+    return 0;
 }
 
 
@@ -160,13 +283,29 @@ CIPHER_HANDLE
 cipher_open( int algo, int mode, int secure )
 {
     CIPHER_HANDLE hd;
+    int i;
 
+    setup_cipher_table();
     fast_random_poll();
-    /* performance hint:
-     * It is possible to allocate less memory depending on the cipher */
-    hd = secure ? m_alloc_secure_clear( sizeof *hd )
-		: m_alloc_clear( sizeof *hd );
+    do {
+	for(i=0; cipher_table[i].name; i++ )
+	    if( cipher_table[i].algo == algo )
+		break;
+    } while( !cipher_table[i].name && load_cipher_modules() );
+    if( !cipher_table[i].name ) {
+	log_fatal("cipher_open: algorithm %d not available\n", algo );
+	return NULL;
+    }
+
+    /* ? perform selftest here and mark this with a flag in cipher_table ? */
+
+    hd = secure ? m_alloc_secure_clear( sizeof *hd
+					+ cipher_table[i].contextsize )
+		: m_alloc_clear( sizeof *hd + cipher_table[i].contextsize );
     hd->algo = algo;
+    hd->setkey	= cipher_table[i].setkey;
+    hd->encrypt = cipher_table[i].encrypt;
+    hd->decrypt = cipher_table[i].decrypt;
     if( algo == CIPHER_ALGO_DUMMY )
 	hd->mode = CIPHER_MODE_DUMMY;
     else if( mode == CIPHER_MODE_AUTO_CFB ) {
@@ -177,34 +316,6 @@ cipher_open( int algo, int mode, int secure )
     }
     else
 	hd->mode = mode;
-    switch( algo )  {
-      case CIPHER_ALGO_BLOWFISH:
-      case CIPHER_ALGO_BLOWFISH160:
-	hd->setkey  = FNCCAST_SETKEY(blowfish_setkey);
-	hd->encrypt = FNCCAST_CRYPT(blowfish_encrypt_block);
-	hd->decrypt = FNCCAST_CRYPT(blowfish_decrypt_block);
-	break;
-
-      case CIPHER_ALGO_CAST:
-	hd->setkey  = FNCCAST_SETKEY(cast5_setkey);
-	hd->encrypt = FNCCAST_CRYPT(cast5_encrypt_block);
-	hd->decrypt = FNCCAST_CRYPT(cast5_decrypt_block);
-	break;
-#if 0
-      case CIPHER_ALGO_3DES:
-	hd->setkey  = FNCCAST_SETKEY(des_3des_setkey);
-	hd->encrypt = FNCCAST_CRYPT(des_encrypt_block);
-	hd->decrypt = FNCCAST_CRYPT(des_decrypt_block);
-	break;
-#endif
-      case CIPHER_ALGO_DUMMY:
-	hd->setkey  = FNCCAST_SETKEY(dummy_setkey);
-	hd->encrypt = FNCCAST_CRYPT(dummy_encrypt_block);
-	hd->decrypt = FNCCAST_CRYPT(dummy_decrypt_block);
-	break;
-
-      default: log_fatal("cipher_open: invalid algo %d\n", algo );
-    }
 
     return hd;
 }
@@ -220,7 +331,7 @@ cipher_close( CIPHER_HANDLE c )
 void
 cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen )
 {
-    (*c->setkey)( &c->c.context, key, keylen );
+    (*c->setkey)( &c->context, key, keylen );
 }
 
 
@@ -243,7 +354,7 @@ do_ecb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	(*c->encrypt)( &c->c.context, outbuf, inbuf );
+	(*c->encrypt)( &c->context, outbuf, inbuf );
 	inbuf  += STD_BLOCKSIZE;;
 	outbuf += STD_BLOCKSIZE;
     }
@@ -255,7 +366,7 @@ do_ecb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	(*c->decrypt)( &c->c.context, outbuf, inbuf );
+	(*c->decrypt)( &c->context, outbuf, inbuf );
 	inbuf  += STD_BLOCKSIZE;;
 	outbuf += STD_BLOCKSIZE;
     }
@@ -287,7 +398,7 @@ do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 	int i;
 	/* encrypt the IV (and save the current one) */
 	memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
-	(*c->encrypt)( &c->c.context, c->iv, c->iv );
+	(*c->encrypt)( &c->context, c->iv, c->iv );
 	/* XOR the input with the IV and store input into IV */
 	for(ivp=c->iv,i=0; i < STD_BLOCKSIZE; i++ )
 	    *outbuf++ = (*ivp++ ^= *inbuf++);
@@ -296,7 +407,7 @@ do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
     if( nbytes ) { /* process the remaining bytes */
 	/* encrypt the IV (and save the current one) */
 	memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
-	(*c->encrypt)( &c->c.context, c->iv, c->iv );
+	(*c->encrypt)( &c->context, c->iv, c->iv );
 	c->unused = STD_BLOCKSIZE;
 	/* and apply the xor */
 	c->unused -= nbytes;
@@ -304,7 +415,6 @@ do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 	    *outbuf++ = (*ivp++ ^= *inbuf++);
     }
 }
-
 
 static void
 do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
@@ -340,7 +450,7 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 	while( nbytes >= STD_BLOCKSIZE ) {
 	    /* encrypt the IV (and save the current one) */
 	    memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
-	    (*c->encrypt)( &c->c.context, c->iv, c->iv );
+	    (*c->encrypt)( &c->context, c->iv, c->iv );
 	    ivp = c->iv;
 	    /* XOR the input with the IV and store input into IV */
 	  #if SIZEOF_UNSIGNED_LONG == STD_BLOCKSIZE
@@ -371,6 +481,8 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 	    #error Please disable the align test.
 	  #endif
 	    nbytes -= STD_BLOCKSIZE;
+	    inbuf  += STD_BLOCKSIZE;
+	    outbuf += STD_BLOCKSIZE;
 	}
     }
     else { /* non aligned version */
@@ -379,7 +491,7 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 	    int i;
 	    /* encrypt the IV (and save the current one) */
 	    memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
-	    (*c->encrypt)( &c->c.context, c->iv, c->iv );
+	    (*c->encrypt)( &c->context, c->iv, c->iv );
 	    /* XOR the input with the IV and store input into IV */
 	    for(ivp=c->iv,i=0; i < STD_BLOCKSIZE; i++ ) {
 		temp = *inbuf++;
@@ -394,7 +506,7 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
     if( nbytes ) { /* process the remaining bytes */
 	/* encrypt the IV (and save the current one) */
 	memcpy( c->lastiv, c->iv, STD_BLOCKSIZE );
-	(*c->encrypt)( &c->c.context, c->iv, c->iv );
+	(*c->encrypt)( &c->context, c->iv, c->iv );
 	c->unused = STD_BLOCKSIZE;
 	/* and apply the xor */
 	c->unused -= nbytes;

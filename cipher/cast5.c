@@ -44,6 +44,26 @@
 #include "types.h"
 #include "cast5.h"
 
+
+#define CIPHER_ALGO_CAST5	 3
+
+#define FNCCAST_SETKEY(f)  (void(*)(void*, byte*, unsigned))(f)
+#define FNCCAST_CRYPT(f)   (void(*)(void*, byte*, byte*))(f)
+
+#define CAST5_BLOCKSIZE 8
+
+typedef struct {
+    u32  Km[16];
+    byte Kr[16];
+} CAST5_context;
+
+static void setkey( CAST5_context *c, byte *key, unsigned keylen );
+static void encrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
+static void decrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
+
+
+
+
 static const u32 s1[256] = {
 0x30fb40d4, 0x9fa0ff0b, 0x6beccd2f, 0x3f258c7a, 0x1e213f2f, 0x9c004dd3, 0x6003e540, 0xcf9fc949,
 0xbfd4af27, 0x88bbbdb5, 0xe2034090, 0x98d09675, 0x6e63a0e0, 0x15c361d2, 0xc2e7661d, 0x22d4ff8e,
@@ -338,8 +358,8 @@ rol(int n, u32 x)
 #define F3(D,m,r)  (  (I = ((m) - (D))), (I=rol((r),I)),   \
     (((s1[I >> 24] + s2[(I>>16)&0xff]) ^ s3[(I>>8)&0xff]) - s4[I&0xff]) )
 
-void
-cast5_encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
+static void
+encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
 {
     u32 l, r, t;
     u32 I;   /* used by the Fx macros */
@@ -392,8 +412,8 @@ cast5_encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
     outbuf[7] =  l	  & 0xff;
 }
 
-void
-cast5_decrypt_block(  CAST5_context *c, byte *outbuf, byte *inbuf )
+static void
+decrypt_block(	CAST5_context *c, byte *outbuf, byte *inbuf )
 {
     u32 l, r, t;
     u32 I;
@@ -445,11 +465,11 @@ selftest()
     byte cipher[8]= { 0x23, 0x8B, 0x4F, 0xE5, 0x84, 0x7E, 0x44, 0xB2 };
     byte buffer[8];
 
-    cast5_setkey( &c, key, 16 );
-    cast5_encrypt_block( &c, buffer, plain );
+    setkey( &c, key, 16 );
+    encrypt_block( &c, buffer, plain );
     if( memcmp( buffer, cipher, 8 ) )
 	log_error("wrong cast5-128 encryption\n");
-    cast5_decrypt_block( &c, buffer, buffer );
+    decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain, 8 ) )
 	log_bug("cast5-128 failed\n");
 
@@ -466,12 +486,12 @@ selftest()
 			0x80,0xAC,0x05,0xB8,0xE8,0x3D,0x69,0x6E };
 
 	for(i=0; i < 1000000; i++ ) {
-	    cast5_setkey( &c, b0, 16 );
-	    cast5_encrypt_block( &c, a0, a0 );
-	    cast5_encrypt_block( &c, a0+8, a0+8 );
-	    cast5_setkey( &c, a0, 16 );
-	    cast5_encrypt_block( &c, b0, b0 );
-	    cast5_encrypt_block( &c, b0+8, b0+8 );
+	    setkey( &c, b0, 16 );
+	    encrypt_block( &c, a0, a0 );
+	    encrypt_block( &c, a0+8, a0+8 );
+	    setkey( &c, a0, 16 );
+	    encrypt_block( &c, b0, b0 );
+	    encrypt_block( &c, b0+8, b0+8 );
 	}
 	if( memcmp( a0, a1, 16 ) || memcmp( b0, b1, 16 ) )
 	    log_bug("cast5-128 maintenance test failed\n");
@@ -529,8 +549,8 @@ key_schedule( u32 *x, u32 *z, u32 *k )
 }
 
 
-void
-cast5_setkey( CAST5_context *c, byte *key, unsigned keylen )
+static void
+setkey( CAST5_context *c, byte *key, unsigned keylen )
 {
   static int initialized;
     int i;
@@ -564,4 +584,30 @@ cast5_setkey( CAST5_context *c, byte *key, unsigned keylen )
   #undef zi
 }
 
+
+/****************
+ * Return some information about the algorithm.  We need algo here to
+ * distinguish different flavors of the algorithm.
+ * Returns: A pointer to string describing the algorithm or NULL if
+ *	    the ALGO is invalid.
+ */
+const char *
+cast5_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   void (**setkey)( void *c, byte *key, unsigned keylen ),
+		   void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
+		 )
+{
+    *keylen = 128;
+    *blocksize = CAST5_BLOCKSIZE;
+    *contextsize = sizeof(CAST5_context);
+    *setkey = FNCCAST_SETKEY(setkey);
+    *encrypt= FNCCAST_CRYPT(encrypt_block);
+    *decrypt= FNCCAST_CRYPT(decrypt_block);
+
+    if( algo == CIPHER_ALGO_CAST5 )
+	return "CAST5";
+    return NULL;
+}
 

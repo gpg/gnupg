@@ -71,13 +71,9 @@
 /* defined if we have a /dev/random and /dev/urandom */
 #undef HAVE_DEV_RANDOM
 
-/* RSA is only compiled in if you have these files. You can use
- * RSA without any restrictions, if your not in the U.S. or
- * wait until sep 20, 2000
- */
-#undef HAVE_RSA_CIPHER
-
-
+#undef USE_DYNAMIC_LINKING
+#undef HAVE_DL_DLOPEN
+#undef HAVE_DLD_DLD_LINK
 
 @BOTTOM@
 

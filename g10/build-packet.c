@@ -575,6 +575,7 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 
     switch( type ) {
       case SIGSUBPKT_SIG_CREATED:
+      case SIGSUBPKT_PRIV_ADD_SIG:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }

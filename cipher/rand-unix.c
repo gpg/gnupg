@@ -124,15 +124,22 @@ read_random_source( byte *buffer, size_t length, int level )
     int n;
     int warn=0;
 
-    if( level == 2 ) {
+    if( level >= 2 ) {
 	if( fd_random == -1 )
 	    fd_random = open_device( "/dev/random", 8 );
 	fd = fd_random;
     }
+    else if( level == 1 ) {
+	if( fd_urandom == -1 )
+	    fd_urandom = open_device( "/dev/urandom", 9 );
+	fd = fd_urandom;
+    }
     else {
-	/* fixme: we should use a simpler one for level 0,
-	 * because reading from /dev/urandom removes entropy
-	 * and the next read on /dev/random may have to wait */
+	/* This is level 0, which only yields simple random bytes.
+	 * We do not use /dev/urandom as this would remove entropy
+	 * from the kernel entropy pool */
+       /* FIXME !!!! */
+
 	if( fd_urandom == -1 )
 	    fd_urandom = open_device( "/dev/urandom", 9 );
 	fd = fd_urandom;

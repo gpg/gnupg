@@ -1,4 +1,6 @@
 
+    * add field to PKT_user_id to hold the hash context
+
     * add usage arguments to get_key_byname or return a PKC_LIST with
       all keys and add a selection.
 
@@ -32,11 +34,6 @@
       Put the user-id with a self-signature of class 0x13 always on top
       of the displayed list (needs changes in the user-id-from-keyid
       functions).
-
-    * enhance --sign-key, so that multiple-user-ids can be signed
-      (use the new classes 0x14..17), partly implemented, but I think we
-      should better make use of notation data - for now we allow only one
-      user id.
 
     * add an option to re-create a public key from a secret key. Think about
       a backup system of only the secret part of the secret key.

@@ -1,12 +1,13 @@
 ## Process this file with automake to produce Makefile.in
 
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
-EXTRA_DIST = @CIPHER_EXTRA_DIST@
 
 noinst_LIBRARIES = libcipher.a
 
 
 libcipher_a_SOURCES = cipher.c	\
+		 dynload.c	\
+		 dynload.h	\
 		 blowfish.c	\
 		 blowfish.h	\
 		 cast5.c	\
@@ -35,8 +36,5 @@ libcipher_a_SOURCES = cipher.c	\
 		 md.h		\
 		 misc.c 	\
 		 smallprime.c
-
-libcipher_a_DEPENDENCIES = @CIPHER_EXTRA_OBJS@
-libcipher_a_LIBADD = @CIPHER_EXTRA_OBJS@
 
 

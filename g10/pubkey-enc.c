@@ -127,7 +127,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
 	break;
       case CIPHER_ALGO_BLOWFISH:
-      case CIPHER_ALGO_CAST:
+      case CIPHER_ALGO_CAST5:
 	if( dek->keylen != 16 )
 	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
 	break;

@@ -1,3 +1,16 @@
+Mon Jun  8 22:43:00 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* cipher.c: Major internal chnages to support extensions.
+	* blowfish.c (blowfish_get_info): New and made all internal
+	functions static, changed heder.
+	* cast5.c (cast5_get_info): Likewise.
+
+Mon Jun  8 12:27:52 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* tiger.c (transform): Fix for big endian
+
+	* cipher.c (do_cfb_decrypt): Big endian fix.
+
 Fri May 22 07:30:39 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* md.c (md_get_oid): Add a new one for TIGER.

@@ -1,4 +1,4 @@
-/* cast5.h
+/* dynload.c - load cipher extensions
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -17,17 +17,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_CAST5_H
-#define G10_CAST5_H
 
-#include "types.h"
 
-const char *
-cast5_get_info( int algo, size_t *keylen,
-		   size_t *blocksize, size_t *contextsize,
-		   void (**setkey)( void *c, byte *key, unsigned keylen ),
-		   void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		   void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
-		 );
 
-#endif /*G10_CAST5_H*/
+#include <config.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "dynload.h"
+
+
+

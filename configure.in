@@ -111,6 +111,19 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME")
 
 dnl Checks for libraries.
 
+AC_CHECK_LIB(dl,dlopen)
+if test "$ac_cv_lib_dl_dlopen" = "yes"; then
+  AC_DEFINE(USE_DYNAMIC_LINKING)
+  AC_DEFINE(HAVE_DL_DLOPEN)
+else
+AC_CHECK_LIB(dld,dld_link)
+if test "$ac_cv_lib_dld_dld_link" = "yes"; then
+  AC_DEFINE(USE_DYNAMIC_LINKING)
+  AC_DEFINE(HAVE_DLD_DLD_LINK)
+fi
+fi
+
+
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h)
@@ -213,20 +226,6 @@ fi
 fi
 AC_SUBST(ZLIBS)
 
-
-dnl checking whether we have other cipher source files
-CIPHER_EXTRA_OBJS=""
-CIPHER_EXTRA_DIST=""
-AC_CACHE_CHECK(for extra cipher modules, ac_cv_have_rsa_cipher,
-[if test -f $srcdir/cipher/rsa.c && test -f $srcdir/cipher/rsa.h; then
-  ac_cv_have_rsa_cipher=yes; else ac_cv_have_rsa_cipher=no; fi])
-if test $ac_cv_have_rsa_cipher = yes; then
-    AC_DEFINE(HAVE_RSA_CIPHER)
-    CIPHER_EXTRA_OBJS="rsa.o"
-    CIPHER_EXTRA_DIST="rsa.c rsa.h"
-fi
-AC_SUBST(CIPHER_EXTRA_OBJS)
-AC_SUBST(CIPHER_EXTRA_DIST)
 
 AM_GNU_GETTEXT
 G10_LOCALEDIR="$g10_prefix/$DATADIRNAME/locale"

@@ -1,3 +1,8 @@
+Mon Jun  8 22:23:37 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* seckey-cert.c (do_check): Removed cipher constants
+	(protect_secret_key): Ditto.
+
 Fri May 29 10:00:28 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* trustdb.c (query_trust_info): New.

@@ -38,6 +38,28 @@
 #include "types.h"
 #include "blowfish.h"
 
+#define CIPHER_ALGO_BLOWFISH	 4  /* blowfish 128 bit key */
+#define CIPHER_ALGO_BLOWFISH160 42  /* blowfish 160 bit key (not in OpenPGP)*/
+
+#define FNCCAST_SETKEY(f)  (void(*)(void*, byte*, unsigned))(f)
+#define FNCCAST_CRYPT(f)   (void(*)(void*, byte*, byte*))(f)
+
+#define BLOWFISH_BLOCKSIZE 8
+#define BLOWFISH_ROUNDS 16
+
+typedef struct {
+    u32 s0[256];
+    u32 s1[256];
+    u32 s2[256];
+    u32 s3[256];
+    u32 p[BLOWFISH_ROUNDS+2];
+} BLOWFISH_context;
+
+static void blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen );
+static void blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
+static void blowfish_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
+
+
 /* precomputed S boxes */
 static const u32 ks0[256] = {
     0xD1310BA6,0x98DFB5AC,0x2FFD72DB,0xD01ADFB7,0xB8E1AFED,0x6A267E96,
@@ -391,7 +413,7 @@ decrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 #undef F
 #undef R
 
-void
+static void
 blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
@@ -410,7 +432,7 @@ blowfish_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 }
 
 
-void
+static void
 blowfish_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
@@ -458,7 +480,7 @@ selftest()
 
 
 
-void
+static void
 blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 {
     int i, j;
@@ -523,4 +545,32 @@ blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
     }
 }
 
+
+/****************
+ * Return some information about the algorithm.  We need algo here to
+ * distinguish different flavors of the algorithm.
+ * Returns: A pointer to string describing the algorithm or NULL if
+ *	    the ALGO is invalid.
+ */
+const char *
+blowfish_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   void (**setkey)( void *c, byte *key, unsigned keylen ),
+		   void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
+		 )
+{
+    *keylen = algo == CIPHER_ALGO_BLOWFISH ? 128 : 160;
+    *blocksize = BLOWFISH_BLOCKSIZE;
+    *contextsize = sizeof(BLOWFISH_context);
+    *setkey = FNCCAST_SETKEY(blowfish_setkey);
+    *encrypt= FNCCAST_CRYPT(blowfish_encrypt_block);
+    *decrypt= FNCCAST_CRYPT(blowfish_decrypt_block);
+
+    if( algo == CIPHER_ALGO_BLOWFISH )
+	return "BLOWFISH";
+    if( algo == CIPHER_ALGO_BLOWFISH160 )
+	return "BLOWFISH160";
+    return NULL;
+}
 
