@@ -1,3 +1,10 @@
+2003-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (send_key, get_key, main): Work with new HTTP code
+	that passes the proxy in from the outside.  If the command file
+	sends a proxy, use it.  If it sends "http-proxy" with no
+	arguments, use $http_proxy from the environment.
+
 2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
 
 	* gpgkeys_hkp.c, gpgkeys_ldap.c [__riscos__]: Removal of

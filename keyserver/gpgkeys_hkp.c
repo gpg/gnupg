@@ -1,5 +1,5 @@
 /* gpgkeys_hkp.c - talk to an HKP keyserver
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -43,7 +43,7 @@ extern int optind;
 
 int verbose=0,include_revoked=0,include_disabled=0;
 unsigned int http_flags=0;
-char host[80]={'\0'},port[10]={'\0'};
+char host[80]={'\0'},proxy[80]={'\0'},port[10]={'\0'};
 FILE *input=NULL,*output=NULL,*console=NULL;
 
 #define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
@@ -54,6 +54,12 @@ struct keylist
   char str[MAX_LINE];
   struct keylist *next;
 };
+
+#ifdef __riscos__
+#define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
+#else
+#define HTTP_PROXY_ENV           "http_proxy"
+#endif
 
 int
 urlencode_filter( void *opaque, int control,
@@ -152,7 +158,7 @@ send_key(int *eof)
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
 
-  rc=http_open(&hd,HTTP_REQ_POST,request,http_flags);
+  rc=http_open(&hd,HTTP_REQ_POST,request,http_flags,proxy[0]?proxy:NULL);
   if(rc)
     {
       fprintf(console,"gpgkeys: unable to connect to `%s'\n",host);
@@ -256,7 +262,7 @@ get_key(char *getkey)
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
 
-  rc=http_open_document(&hd,request,http_flags);
+  rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);
   if(rc!=0)
     {
       fprintf(console,"gpgkeys: HKP fetch error: %s\n",
@@ -666,7 +672,7 @@ search_key(char *searchkey)
  if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
 
-  rc=http_open_document(&hd,request,http_flags);
+  rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);
   if(rc)
     {
       fprintf(console,"gpgkeys: can't search keyserver `%s': %s\n",
@@ -795,7 +801,7 @@ main(int argc,char *argv[])
     {
       int version;
       char commandstr[7];
-      char optionstr[30];
+      char optionstr[110];
       char hash;
 
       if(line[0]=='\n')
@@ -841,12 +847,12 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"OPTION %29s\n",optionstr)==1)
+      if(sscanf(line,"OPTION %109s\n",optionstr)==1)
 	{
 	  int no=0;
 	  char *start=&optionstr[0];
 
-	  optionstr[29]='\0';
+	  optionstr[109]='\0';
 
 	  if(strncasecmp(optionstr,"no-",3)==0)
 	    {
@@ -875,13 +881,24 @@ main(int argc,char *argv[])
 	      else
 		include_disabled=1;
 	    }
-	  else if(strcasecmp(start,"honor-http-proxy")==0)
+	  else if(strncasecmp(start,"http-proxy",10)==0)
 	    {
 	      if(no)
-		http_flags&=~HTTP_FLAG_TRY_PROXY;
-	      else
-		http_flags|=HTTP_FLAG_TRY_PROXY;
-
+		proxy[0]='\0';
+	      else if(start[10]=='=')
+		{
+		  strncpy(proxy,&start[11],79);
+		  proxy[79]='\0';
+		}
+	      else if(start[10]=='\0')
+		{
+		  char *http_proxy=getenv(HTTP_PROXY_ENV);
+		  if(http_proxy)
+		    {
+		      strncpy(proxy,http_proxy,79);
+		      proxy[79]='\0';
+		    }
+		}
 	    }
 	  else if(strcasecmp(start,"broken-http-proxy")==0)
 	    {
