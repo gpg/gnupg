@@ -170,6 +170,10 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
       else
         return ASSUAN_Parameter_Error;
     }
+  else if (!strcmp (key, "with-validation"))
+    {
+      ctrl->with_validation = !!*value;
+    }
   else
     return ASSUAN_Invalid_Option;
 
@@ -898,6 +902,7 @@ get_status_string ( int no )
     case STATUS_BADMDC	 : s = "BADMDC"; break;
     case STATUS_ERRMDC	 : s = "ERRMDC"; break;
     case STATUS_IMPORTED	 : s = "IMPORTED"; break;
+    case STATUS_IMPORT_OK        : s = "IMPORT_OK"; break;
     case STATUS_IMPORT_RES	 : s = "IMPORT_RES"; break;
     case STATUS_FILE_START	 : s = "FILE_START"; break;
     case STATUS_FILE_DONE	 : s = "FILE_DONE"; break;

@@ -280,7 +280,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
                     }
                 }
               if (!rc)
-                rc = gpgsm_validate_chain (ctrl, cert, NULL);
+                rc = gpgsm_validate_chain (ctrl, cert, NULL, 0, NULL);
               if (!rc)
                 {
                   CERTLIST cl = xtrycalloc (1, sizeof *cl);

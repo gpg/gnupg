@@ -1,5 +1,6 @@
 /* keylist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,6 +38,7 @@
 #include "i18n.h"
 
 struct list_external_parm_s {
+  ctrl_t ctrl;
   FILE *fp;
   int print_header;
   int with_colons;
@@ -146,28 +148,35 @@ email_kludge (const char *name)
 
 /* List one certificate in colon mode */
 static void
-list_cert_colon (ksba_cert_t cert, unsigned int validity,
+list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
                  FILE *fp, int have_secret)
 {
-  int idx, trustletter = 0;
+  int idx;
+  char truststring[2];
   char *p;
   ksba_sexp_t sexp;
   char *fpr;
   ksba_isotime_t t;
+  gpg_error_t valerr;
+
+  if (ctrl->with_validation)
+    valerr = gpgsm_validate_chain (ctrl, cert, NULL, 1, NULL);
+  else
+    valerr = 0;
 
   fputs (have_secret? "crs:":"crt:", fp);
-  trustletter = 0;
-  if ((validity & VALIDITY_REVOKED))
-    trustletter = 'r';
-#if 0
-  else if (is_not_valid (cert))
-    putc ('i', fp);
-  else if ( has_expired (cert))
-    putcr ('e', fp);
-#endif
-  else
-    trustletter = '?';
-  putc (trustletter, fp);
+  truststring[0] = 0;
+  truststring[1] = 0;
+  if ((validity & VALIDITY_REVOKED)
+      || gpg_err_code (valerr) == GPG_ERR_CERT_REVOKED)
+    *truststring = 'r';
+  else if (gpg_err_code (valerr) == GPG_ERR_CERT_EXPIRED)
+    *truststring = 'e';
+  else if (valerr)
+    *truststring = 'i';
+  
+  if (*truststring)
+    fputs (truststring, fp);
 
   fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
   fprintf (fp, ":%u:%d:%s:",
@@ -247,7 +256,7 @@ list_cert_colon (ksba_cert_t cert, unsigned int validity,
 
   for (idx=0; (p = ksba_cert_get_subject (cert,idx)); idx++)
     {
-      fprintf (fp, "uid:%c::::::::", trustletter);
+      fprintf (fp, "uid:%s::::::::", truststring);
       print_sanitized_string (fp, p, ':');
       putc (':', fp);
       putc (':', fp);
@@ -261,7 +270,7 @@ list_cert_colon (ksba_cert_t cert, unsigned int validity,
           char *pp = email_kludge (p);
           if (pp)
             {
-              fprintf (fp, "uid:%c::::::::", trustletter);
+              fprintf (fp, "uid:%s::::::::", truststring);
               print_sanitized_string (fp, pp, ':');
               putc (':', fp);
               putc (':', fp);
@@ -276,9 +285,10 @@ list_cert_colon (ksba_cert_t cert, unsigned int validity,
 
 /* List one certificate in standard mode */
 static void
-list_cert_std (ksba_cert_t cert, FILE *fp, int have_secret)
+list_cert_std (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
+               int with_validation)
 {
-  gpg_error_t kerr;
+  gpg_error_t err;
   ksba_sexp_t sexp;
   char *dn;
   ksba_isotime_t t;
@@ -327,12 +337,12 @@ list_cert_std (ksba_cert_t cert, FILE *fp, int have_secret)
   gpgsm_print_time (fp, t);
   putc ('\n', fp);
 
-  kerr = ksba_cert_get_key_usage (cert, &kusage);
-  if (gpg_err_code (kerr) != GPG_ERR_NO_DATA)
+  err = ksba_cert_get_key_usage (cert, &kusage);
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {
       fputs ("    key usage:", fp);
-      if (kerr)
-        fprintf (fp, " [error: %s]", gpg_strerror (kerr));
+      if (err)
+        fprintf (fp, " [error: %s]", gpg_strerror (err));
       else
         {
           if ( (kusage & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
@@ -357,12 +367,12 @@ list_cert_std (ksba_cert_t cert, FILE *fp, int have_secret)
       putc ('\n', fp);
     }
 
-  kerr = ksba_cert_get_cert_policies (cert, &string);
-  if (gpg_err_code (kerr) != GPG_ERR_NO_DATA)
+  err = ksba_cert_get_cert_policies (cert, &string);
+  if (gpg_err_code (err) != GPG_ERR_NO_DATA)
     {
       fputs ("     policies: ", fp);
-      if (kerr)
-        fprintf (fp, "[error: %s]", gpg_strerror (kerr));
+      if (err)
+        fprintf (fp, "[error: %s]", gpg_strerror (err));
       else
         {
           for (p=string; *p; p++)
@@ -376,12 +386,12 @@ list_cert_std (ksba_cert_t cert, FILE *fp, int have_secret)
       putc ('\n', fp);
     }
 
-  kerr = ksba_cert_is_ca (cert, &is_ca, &chainlen);
-  if (kerr || is_ca)
+  err = ksba_cert_is_ca (cert, &is_ca, &chainlen);
+  if (err || is_ca)
     {
       fputs (" chain length: ", fp);
-      if (kerr)
-        fprintf (fp, "[error: %s]", gpg_strerror (kerr));
+      if (err)
+        fprintf (fp, "[error: %s]", gpg_strerror (err));
       else if (chainlen == -1)
         fputs ("unlimited", fp);
       else
@@ -389,25 +399,41 @@ list_cert_std (ksba_cert_t cert, FILE *fp, int have_secret)
       putc ('\n', fp);
     }
 
+  if (opt.with_md5_fingerprint)
+    {
+      dn = gpgsm_get_fingerprint_string (cert, GCRY_MD_MD5);
+      fprintf (fp, "      md5 fpr: %s\n", dn?dn:"error");
+      xfree (dn);
+    }
 
   dn = gpgsm_get_fingerprint_string (cert, 0);
   fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
   xfree (dn);
+
+  if (with_validation)
+    {
+      err = gpgsm_validate_chain (ctrl, cert, NULL, 1, fp);
+      if (!err)
+        fprintf (fp, "  [certificate is good]\n");
+      else
+        fprintf (fp, "  [certificate is bad: %s]\n", gpg_strerror (err));
+    }
 }
 
-/* Same as standard mode mode list all certifying certts too */
+
+/* Same as standard mode mode list all certifying certs too. */
 static void
-list_cert_chain (ksba_cert_t cert, FILE *fp)
+list_cert_chain (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int with_validation)
 {
   ksba_cert_t next = NULL;
 
-  list_cert_std (cert, fp, 0);
+  list_cert_std (ctrl, cert, fp, 0, with_validation);
   ksba_cert_ref (cert);
   while (!gpgsm_walk_cert_chain (cert, &next))
     {
       ksba_cert_release (cert);
       fputs ("Certified by\n", fp);
-      list_cert_std (next, fp, 0);
+      list_cert_std (ctrl, next, fp, 0, with_validation);
       cert = next;
     }
   ksba_cert_release (cert);
@@ -471,7 +497,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
       
     }
 
-  /* it would be nice to see which of the given users did actually
+  /* It would be nice to see which of the given users did actually
      match one in the keyring.  To implement this we need to have a
      found flag for each entry in desc and to set this we must check
      all those entries after a match to mark all matched one -
@@ -532,12 +558,13 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
           || ((mode & 2) && have_secret)  )
         {
           if (ctrl->with_colons)
-            list_cert_colon (cert, validity, fp, have_secret);
+            list_cert_colon (ctrl, cert, validity, fp, have_secret);
           else if (ctrl->with_chain)
-            list_cert_chain (cert, fp);
+            list_cert_chain (ctrl, cert, fp, ctrl->with_validation);
           else
             {
-              list_cert_std (cert, fp, have_secret);
+              list_cert_std (ctrl, cert, fp, have_secret,
+                             ctrl->with_validation);
               putc ('\n', fp);
             }
         }
@@ -576,12 +603,12 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
     }
 
   if (parm->with_colons)
-    list_cert_colon (cert, 0, parm->fp, 0);
+    list_cert_colon (parm->ctrl, cert, 0, parm->fp, 0);
   else if (parm->with_chain)
-    list_cert_chain (cert, parm->fp);
+    list_cert_chain (parm->ctrl, cert, parm->fp, 0);
   else
     {
-      list_cert_std (cert, parm->fp, 0);
+      list_cert_std (parm->ctrl, cert, parm->fp, 0, 0);
       putc ('\n', parm->fp);
     }
 }
@@ -597,6 +624,7 @@ list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
   struct list_external_parm_s parm;
 
   parm.fp = fp;
+  parm.ctrl = ctrl,
   parm.print_header = ctrl->no_server;
   parm.with_colons = ctrl->with_colons;
   parm.with_chain = ctrl->with_chain;

@@ -49,7 +49,7 @@ do_encode_md (gcry_md_hd_t md, int algo,  unsigned int nbits,
   asnlen = DIM(asn);
   if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
     {
-      log_error ("No object identifier for algo %d\n", algo);
+      log_error ("no object identifier for algo %d\n", algo);
       return gpg_error (GPG_ERR_INTERNAL);
     }
 

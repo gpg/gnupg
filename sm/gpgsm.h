@@ -58,8 +58,11 @@ struct {
   char *outfile;    /* name of output file */
 
   int with_key_data;/* include raw key in the column delimted output */
-
+  
   int fingerprint;  /* list fingerprints in all key listings */
+
+  int with_md5_fingerprint; /* Also print an MD5 fingerprint for
+                               standard key listings. */
 
   int armor;        /* force base64 armoring (see also ctrl.with_base64) */
   int no_armor;     /* don't try to figure out whether data is base64 armored*/
@@ -117,13 +120,14 @@ struct server_local_s;
 /* Note that the default values for this are set by
    gpgsm_init_default_ctrl() */
 struct server_control_s {
-  int no_server;     /* we are not running under server control */
-  int  status_fd;    /* only for non-server mode */
+  int no_server;      /* We are not running under server control */
+  int  status_fd;     /* Only for non-server mode */
   struct server_local_s *server_local;
-  int with_colons;  /* use column delimited output format */
-  int with_chain;   /* include the certifying certs in a listing */
+  int with_colons;    /* Use column delimited output format */
+  int with_chain;     /* Include the certifying certs in a listing */
+  int with_validation;/* Validate each key while listing. */
 
-  int autodetect_encoding; /* try to detect the input encoding */
+  int autodetect_encoding; /* Try to detect the input encoding */
   int is_pem;         /* Is in PEM format */
   int is_base64;      /* is in plain base-64 format */
 
@@ -216,7 +220,8 @@ int gpgsm_create_cms_signature (ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
 int gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next);
 int gpgsm_is_root_cert (ksba_cert_t cert);
 int gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert,
-                          ksba_isotime_t r_exptime);
+                          ksba_isotime_t r_exptime,
+                          int listmode, FILE *listfp);
 int gpgsm_basic_cert_check (ksba_cert_t cert);
 
 /*-- certlist.c --*/

@@ -57,12 +57,17 @@ static gpg_error_t parse_p12 (ksba_reader_t reader, FILE **retfp);
 
 
 static void
-print_imported_status (CTRL ctrl, ksba_cert_t cert)
+print_imported_status (CTRL ctrl, ksba_cert_t cert, int new_cert)
 {
   char *fpr;
- 
+     
   fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-  gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, "[X.509]", NULL);
+  if (new_cert)
+    gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, "[X.509]", NULL);
+
+  gpgsm_status2 (ctrl, STATUS_IMPORT_OK, 
+                 new_cert? "1":"0",  fpr, NULL);
+
   xfree (fpr);
 }
 
@@ -146,7 +151,7 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
   /* Some basic checks, but don't care about missing certificates;
      this is so that we are able to import entire certificate chains
      w/o requirening a special order (i.e. root-CA first).  This used
-     to be different but becuase gpgsm_verify even imports
+     to be different but because gpgsm_verify even imports
      certificates without any checks, it doesn't matter much and the
      code gets much cleaner.  A housekeeping function to remove
      certificates w/o an anchor would be nice, though. */
@@ -161,11 +166,14 @@ check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
 
           if (!existed)
             {
-              print_imported_status (ctrl, cert);
+              print_imported_status (ctrl, cert, 1);
               stats->imported++;
             }
           else
-            stats->unchanged++;
+            {
+              print_imported_status (ctrl, cert, 0);
+              stats->unchanged++;
+            }
             
           if (opt.verbose > 1 && existed)
             {

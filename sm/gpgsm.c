@@ -1,5 +1,5 @@
 /* gpgsm.c - GnuPG for S/MIME 
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -125,6 +125,7 @@ enum cmd_and_opt_values {
   oTextmode,
   oFingerprint,
   oWithFingerprint,
+  oWithMD5Fingerprint,
   oAnswerYes,
   oAnswerNo,
   oKeyring,
@@ -158,6 +159,7 @@ enum cmd_and_opt_values {
   oHomedir,
   oWithColons,
   oWithKeyData,
+  oWithValidation,
   oSkipVerify,
   oCompressKeys,
   oCompressSigs,
@@ -378,6 +380,8 @@ static ARGPARSE_OPTS opts[] = {
     { oNoBatch, "no-batch", 0, "@" },
     { oWithColons, "with-colons", 0, "@"},
     { oWithKeyData,"with-key-data", 0, "@"},
+    { oWithValidation, "with-validation", 0, "@"},
+    { oWithMD5Fingerprint, "with-md5-fingerprint", 0, "@"},
     { aListKeys, "list-key", 0, "@" }, /* alias */
     { aListSigs, "list-sig", 0, "@" }, /* alias */
     { aListSigs, "check-sig",0, "@" }, /* alias */
@@ -925,6 +929,8 @@ main ( int argc, char **argv)
 
         case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
         case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;
+        case oWithMD5Fingerprint:
+          opt.with_md5_fingerprint=1; /*fall thru*/
         case oWithFingerprint:
           with_fpr=1; /*fall thru*/
         case oFingerprint:
@@ -980,6 +986,7 @@ main ( int argc, char **argv)
 
         case oWithKeyData: opt.with_key_data=1; /* fall thru */
         case oWithColons: ctrl.with_colons = 1; break;
+        case oWithValidation: ctrl.with_validation=1; break;
 
         case oSkipVerify: opt.skip_verify=1; break;
 
@@ -1291,7 +1298,8 @@ main ( int argc, char **argv)
     case aListExternalKeys:
       for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout, (0 | (1<<7)));
+      gpgsm_list_keys (&ctrl, sl, stdout,
+                       (0 | (1<<7)));
       free_strlist(sl);
       break;
 
