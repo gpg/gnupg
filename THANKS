@@ -142,6 +142,7 @@ Michael Tokarev 	   mjt@tls.msk.ru
 Nicolas Graner		   Nicolas.Graner@cri.u-psud.fr
 Mike McEwan		   mike@lotusland.demon.co.uk
 Neal H Walfield            neal@cs.uml.edu
+Nelson H. F. Beebe         beebe@math.utah.edu
 NIIBE Yutaka		   gniibe@chroot.org
 Niklas Hernaeus
 Nimrod Zimerman 	   zimerman@forfree.at
@@ -226,7 +227,7 @@ Ministry for Economics and Technology under grant VIB3-68553.168-001/1999.
 Many thanks to my wife Gerlinde for having so much patience with
 me while hacking late in the evening.
 
- Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
