@@ -32,6 +32,7 @@
 #ifdef HAVE_STAT
 #include <sys/stat.h> /* for stat() */
 #endif
+#include <assuan.h>
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "gpg.h"
@@ -1759,8 +1760,7 @@ main( int argc, char **argv )
 	    break;
 	  case oCertDigestAlgo: cert_digest_string = xstrdup (pargs.r.ret_str); break;
 	  case oNoSecmemWarn:
-#warning add secmem_get_flags
-/*              secmem_set_flags( secmem_get_flags() | 1 ); */
+            gcry_control (GCRYCTL_DISABLE_SECMEM_WARN); 
             break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
 	  case oNoMDCWarn: opt.no_mdc_warn=1; break;
@@ -1993,9 +1993,6 @@ main( int argc, char **argv )
     }
 #endif
 
-#warning locking does not work - disabled
-    disable_dotlock ();
-
     if (opt.verbose > 2)
         log_info ("using character set `%s'\n", get_native_charset ());
 
@@ -2026,10 +2023,7 @@ main( int argc, char **argv )
     if( opt.batch )
 	tty_batchmode( 1 );
 
-#warning fix that
-#if 0
-    secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
-#endif
+    gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
     set_debug();
 
     /* Do these after the switch(), so they can override settings. */
@@ -2274,10 +2268,7 @@ main( int argc, char **argv )
     /* set the random seed file */
     if( use_random_seed ) {
 	char *p = make_filename(opt.homedir, "random_seed", NULL );
-#warning No random seed file yet
-#if 0
-	set_random_seed_file(p);
-#endif
+	gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
 	xfree (p);
     }
 
@@ -2936,17 +2927,18 @@ emergency_cleanup (void)
 void
 g10_exit( int rc )
 {
-  /* FIXME-XX update_random_seed_file(); */
-/*      if( opt.debug & DBG_MEMSTAT_VALUE ) { */
-/*          m_print_stats("on exit"); */
-/*  	random_dump_stats(); */
-/*      } */
-/*      if( opt.debug ) */
-/*  	secmem_dump_stats(); */
-    gcry_control (GCRYCTL_TERM_SECMEM );
-    rc = rc? rc : log_get_errorcount(0)? 2 :
-			g10_errors_seen? 1 : 0;
-    exit(rc );
+  gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
+  if (opt.debug & DBG_MEMSTAT_VALUE)
+    {
+      gcry_control( GCRYCTL_DUMP_MEMORY_STATS );
+      gcry_control( GCRYCTL_DUMP_RANDOM_STATS );
+    }
+  if (opt.debug)
+    gcry_control (GCRYCTL_DUMP_SECMEM_STATS );
+  emergency_cleanup ();
+  rc = rc? rc : log_get_errorcount(0)? 2 :
+       g10_errors_seen? 1 : 0;
+  exit (rc );
 }
 
 

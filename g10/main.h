@@ -188,6 +188,7 @@ gcry_mpi_t encode_md_value( int pubkey_algo,  MD_HANDLE md,
 		     int hash_algo, unsigned nbits, int v3compathack );
 
 /*-- comment.c --*/
+KBNODE make_comment_node_from_buffer (const char *s, size_t n);
 KBNODE make_comment_node( const char *s );
 KBNODE make_mpi_comment_node( const char *s, gcry_mpi_t a );
 

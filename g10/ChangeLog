@@ -1,3 +1,26 @@
+2003-07-29  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): Add secmem features and set the random seed file.
+	(g10_exit): Update the random seed file.
+
+	* parse-packet.c (parse_signature,read_protected_v3_mpi)
+	(parse_key): Fixed use of mpi_set_opaque.
+	* keygen.c (gen_card_key): Ditto.
+
+2003-07-28  Werner Koch  <wk@gnupg.org>
+
+	* status.c (progress_cb): Adjusted for use with Libcgrypt.
+	(set_status_fd): Register that callback.
+
+	* keygen.c (smartcard_change_login_data): New.
+	(smartcard_change_lang): New.
+	(smartcard_change_sex): New.
+	(check_smartcard): Add menu entries to edit the above.
+	(gen_elg,gen_dsa,gen_rsa): Reimplemented in terms of Libgcrypt.
+	(genhelp_protect, genhelp_factors, key_from_sexp): New.
+	* comment.c (make_comment_node_from_buffer): New.
+	(make_comment_node): Reimplemented in terms of above.
+
 2003-07-27  Werner Koch  <wk@gnupg.org>
 
 	Adjusted for gcry_mpi_print and gcry_mpi_scan API change.

@@ -323,7 +323,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	return 0;
 
     if( !sk->is_protected ) { /* okay, apply the protection */
-	CIPHER_HANDLE cipher_hd=NULL;
+	gcry_cipher_hd_t cipher_hd=NULL;
 
 	if( openpgp_cipher_test_algo( sk->protect.algo ) )
           {

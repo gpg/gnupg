@@ -65,15 +65,15 @@ static FILE *statusfp;
 
 
 static void
-progress_cb ( void *ctx, int c )
+progress_cb (void *ctx, const char *what, int printchar, int current, int total)
 {
-    char buf[50];
-
-    if ( c == '\n' )
-	sprintf ( buf, "%.20s X 100 100", (char*)ctx );
-    else
-	sprintf ( buf, "%.20s %c 0 0", (char*)ctx, c );
-    write_status_text ( STATUS_PROGRESS, buf );
+  char buf[150];
+  
+  if (printchar == '\n')
+    printchar = 'X';
+  
+  sprintf (buf, "%.20s %c %d %d", what, printchar, current, total);
+  write_status_text (STATUS_PROGRESS, buf);
 }
 
 static const char *
@@ -181,12 +181,7 @@ set_status_fd ( int fd )
                   fd, strerror(errno));
     }
     last_fd = fd;
-#warning fixme: register progress CBs
-#if 0
-    register_primegen_progress ( progress_cb, "primegen" );
-    register_pk_dsa_progress ( progress_cb, "pk_dsa" );
-    register_pk_elg_progress ( progress_cb, "pk_elg" );
-#endif
+    gcry_set_progress_handler (progress_cb, NULL);
 }
 
 int

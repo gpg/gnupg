@@ -63,17 +63,22 @@ write_comment( iobuf_t out, const char *s )
 
 
 KBNODE
-make_comment_node( const char *s )
+make_comment_node_from_buffer (const char *s, size_t n)
 {
     PACKET *pkt;
-    size_t n = strlen(s);
 
-    pkt = xcalloc (1, sizeof *pkt );
+    pkt = gcry_xcalloc( 1, sizeof *pkt );
     pkt->pkttype = PKT_COMMENT;
-    pkt->pkt.comment = xmalloc ( sizeof *pkt->pkt.comment + n - 1 );
+    pkt->pkt.comment = gcry_xmalloc( sizeof *pkt->pkt.comment + n - 1 );
     pkt->pkt.comment->len = n;
     strcpy(pkt->pkt.comment->data, s);
     return new_kbnode( pkt );
+}
+
+KBNODE
+make_comment_node( const char *s )
+{
+  return make_comment_node_from_buffer (s, strlen (s));
 }
 
 
