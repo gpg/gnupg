@@ -39,6 +39,7 @@ struct {
     int answer_no;  /* answer no on most questions */
     int check_sigs; /* check key signatures */
     int with_colons;
+    int with_key_data;
     int fingerprint; /* list fingerprints */
     int list_sigs;   /* list signatures */
     int no_armor;

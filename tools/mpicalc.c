@@ -131,6 +131,18 @@ do_mul(void)
 }
 
 static void
+do_mulm(void)
+{
+    if( stackidx < 3 ) {
+	fputs("stack underflow\n", stderr);
+	return;
+    }
+    mpi_mulm( stack[stackidx-3], stack[stackidx-3],
+				 stack[stackidx-2], stack[stackidx-1] );
+    stackidx -= 2;
+}
+
+static void
 do_div(void)
 {
     if( stackidx < 2 ) {
@@ -237,7 +249,7 @@ main(int argc, char **argv)
 
     while( (c=getc(stdin)) != EOF ) {
 	if( !state ) {	/* waiting */
-	    if( isdigit(c) || (c >='A' && c <= 'F') ) {
+	    if( isdigit(c) ) {
 		state = 1;
 		ungetc(c, stdin);
 		strbuf[0] = '0';
@@ -274,6 +286,9 @@ main(int argc, char **argv)
 		    break;
 		  case '*':
 		    do_mul();
+		    break;
+		  case 'm':
+		    do_mulm();
 		    break;
 		  case '/':
 		    do_div();
@@ -338,7 +353,7 @@ main(int argc, char **argv)
 	    }
 	}
 	else if( state == 1 ) { /* in a number */
-	    if( !(isdigit(c) || (c >='A' && c <= 'F')) ) { /* store the number */
+	    if( !isxdigit(c) ) { /* store the number */
 		state = 0;
 		ungetc(c, stdin);
 		if( stridx < 1000 )

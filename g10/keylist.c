@@ -152,6 +152,20 @@ list_one( STRLIST names, int secret )
     }
 }
 
+static void
+print_key_data( PKT_public_key *pk, u32 *keyid )
+{
+    int n = pubkey_get_npkey( pk->pubkey_algo );
+    int i;
+
+    for(i=0; i < n; i++ ) {
+	printf("pkd:%d:%u:", i, mpi_get_nbits( pk->pkey[i] ) );
+	mpi_print(stdout, pk->pkey[i], 1 );
+	putchar(':');
+	putchar('\n');
+    }
+}
+
 
 static void
 list_keyblock( KBNODE keyblock, int secret )
@@ -249,6 +263,8 @@ list_keyblock( KBNODE keyblock, int secret )
 	    if( !any ) {
 		if( opt.fingerprint )
 		    fingerprint( pk, sk );
+		if( opt.with_key_data )
+		    print_key_data( pk, keyid );
 		any = 1;
 	    }
 	}
@@ -289,6 +305,8 @@ list_keyblock( KBNODE keyblock, int secret )
 					   datestr_from_pk( pk2 ) );
 	    if( opt.fingerprint > 1 )
 		fingerprint( pk2, NULL );
+	    if( opt.with_key_data )
+		print_key_data( pk2, keyid2 );
 	}
 	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 	    u32 keyid2[2];

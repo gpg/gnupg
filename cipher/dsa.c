@@ -293,7 +293,6 @@ verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
     /* u2 = r * w mod q  */
     mpi_mulm( u2, r, w, pkey->q );
 
-
     /* v =  g^u1 * y^u2 mod p mod q */
     base[0] = pkey->g; exp[0] = u1;
     base[1] = pkey->y; exp[1] = u2;

@@ -12,6 +12,7 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 	    ssb = secret subkey (secondary key)
 	    uid = user id (only field 10 is used).
 	    fpr = fingerprint: (fingerprint is in field 10)
+	    pkd = public key data (special field format, see below)
 
  2. Field:  A letter describing the calculated trust, see doc/FAQ
 	    This is a single letter, but be prepared that additional
@@ -38,6 +39,13 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 	    control characters (the colon is quoted "\x3a").
 
 More fields may be added later.
+
+If field 1 has the tag "pkd", a listing looks like this:
+pkd:0:1024:B665B1435F4C2 .... FF26ABB:
+    !  !   !-- the value
+    !  !------ for infomation number of bits in the value
+    !--------- index (eg. DSA goes from 0 to 3: p,q,g,y)
+
 
 
 Format of the "--status-fd" output

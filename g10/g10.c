@@ -136,6 +136,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoBatch,
     oHomedir,
     oWithColons,
+    oWithKeyData,
     oSkipVerify,
     oCompressKeys,
     oCompressSigs,
@@ -285,6 +286,7 @@ static ARGPARSE_OPTS opts[] = {
     { oHomedir, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
     { oNoBatch, "no-batch", 0, "@" },
     { oWithColons, "with-colons", 0, "@"},
+    { oWithKeyData,"with-key-data", 0, "@"},
     { aListKeys, "list-key", 0, "@" }, /* alias */
     { aListSigs, "list-sig", 0, "@" }, /* alias */
     { aCheckKeys, "check-sig",0, "@" }, /* alias */
@@ -693,6 +695,7 @@ main( int argc, char **argv )
 	  case oNoOptions: break; /* no-options */
 	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
 	  case oNoBatch: opt.batch = 0; break;
+	  case oWithKeyData: opt.with_key_data=1; /* fall thru */
 	  case oWithColons: opt.with_colons=':'; break;
 
 	  case oSkipVerify: opt.skip_verify=1; break;
