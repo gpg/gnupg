@@ -112,7 +112,7 @@ int is_file_compressed (const char *s, int *ret_rc);
 /*-- replacement functions from funcname.c --*/
 #if !HAVE_VASPRINTF
 #include <stdarg.h>
-int vasprintf (char **result, const char *format, va_list *args);
+int vasprintf (char **result, const char *format, va_list args);
 int asprintf (char **result, const char *format, ...);
 #endif
 
