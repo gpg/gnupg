@@ -1,5 +1,13 @@
 2002-06-15  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (show_key_with_all_names), keylist.c
+	(list_keyblock_print): Show "[expired]" before expired uids.
+
+	* keyedit.c (show_key_with_all_names_colon), mainproc.c
+	(list_node), keylist.c (list_keyblock_colon): Use "uat" for user
+	attribute packets instead of "uid".  Also use '<count> <length>'
+	rather than the fake user id string.
+
 	* keygen.c (keygen_add_revkey): Remove unused code.
 
 	* misc.c (check_permissions): Check directory permissions

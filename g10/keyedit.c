@@ -1587,8 +1587,6 @@ show_key_with_all_names_colon (KBNODE keyblock)
 
           keyid_from_pk (pk, keyid);
 
-          
-          
           fputs (node->pkt->pkttype == PKT_PUBLIC_KEY?"pub:":"sub:", stdout);
           if (!pk->is_valid)
             putchar ('i');
@@ -1643,8 +1641,16 @@ show_key_with_all_names_colon (KBNODE keyblock)
             int trustletter = '?';
 
 	    ++i;
-            printf ("uid:%c::::::::", trustletter);
-            print_string (stdout, uid->name, uid->len, ':');
+	    if(uid->attrib_data)
+	      {
+		printf ("uat:%c::::::::%u %lu", trustletter,
+			uid->numattribs,uid->attrib_len);
+	      }
+	    else
+	      {
+		printf ("uid:%c::::::::", trustletter);
+		print_string (stdout, uid->name, uid->len, ':');
+	      }
             putchar (':');
             /* signature class */
             putchar (':');
@@ -1674,6 +1680,8 @@ show_key_with_all_names_colon (KBNODE keyblock)
               putchar ('p');
             if (uid->is_revoked)
               putchar ('r');
+            if (uid->is_expired)
+              putchar ('e');
             if ((node->flag & NODFLG_SELUID))
               putchar ('s');
             if ((node->flag & NODFLG_MARK_A))
@@ -1819,6 +1827,8 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		   tty_printf("(%d)  ", i);
                 if ( uid->is_revoked )
                     tty_printf ("[revoked] ");
+                if ( uid->is_expired )
+                    tty_printf ("[expired] ");
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
 		if( with_prefs )
@@ -2256,6 +2266,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock )
 				"key as a designated revoker? (y/N): "))
 	continue;
 
+      /* todo: handle 0x40 sensitive flag here */
       revkey.class=0x80;
       revkey.algid=revoker_pk->pubkey_algo;
       free_public_key(revoker_pk);

@@ -732,8 +732,15 @@ print_userid( PACKET *pkt )
 	return;
     }
     if( opt.with_colons )
-	print_string( stdout,  pkt->pkt.user_id->name,
-				pkt->pkt.user_id->len, ':');
+      {
+	if(pkt->pkt.user_id->attrib_data)
+	  printf("%u %lu",
+		 pkt->pkt.user_id->numattribs,
+		 pkt->pkt.user_id->attrib_len);
+	else
+	  print_string( stdout,  pkt->pkt.user_id->name,
+			pkt->pkt.user_id->len, ':');
+      }
     else
 	print_utf8_string( stdout,  pkt->pkt.user_id->name,
 				     pkt->pkt.user_id->len );
@@ -857,7 +864,8 @@ list_node( CTX c, KBNODE node )
 		else if( node->pkt->pkttype == PKT_USER_ID ) {
 		    if( any ) {
 			if( opt.with_colons )
-			    printf("uid:::::::::");
+			    printf("%s:::::::::",
+			      node->pkt->pkt.user_id->attrib_data?"uat":"uid");
 			else
 			    printf( "uid%*s", 28, "" );
 		    }
@@ -931,7 +939,8 @@ list_node( CTX c, KBNODE node )
 		else if( node->pkt->pkttype == PKT_USER_ID ) {
 		    if( any ) {
 			if( opt.with_colons )
-			    printf("uid:::::::::");
+			    printf("%s:::::::::",
+			      node->pkt->pkt.user_id->attrib_data?"uat":"uid");
 			else
 			    printf( "uid%*s", 28, "" );
 		    }

@@ -439,6 +439,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
             if ( node->pkt->pkt.user_id->is_revoked )
                 fputs ("[revoked] ", stdout);
+            if ( node->pkt->pkt.user_id->is_expired )
+                fputs ("[expired] ", stdout);
             print_utf8_string( stdout,  node->pkt->pkt.user_id->name,
                                node->pkt->pkt.user_id->len );
 	    putchar('\n');
@@ -676,10 +678,13 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
              * Fixme: We need a is_valid flag here too 
              */
 	    if( any ) {
+	        char *str=node->pkt->pkt.user_id->attrib_data?"uat":"uid";
                 if ( node->pkt->pkt.user_id->is_revoked )
-        	    printf("uid:r::::::::");
+        	    printf("%s:r::::::::",str);
+                else if ( node->pkt->pkt.user_id->is_expired )
+        	    printf("%s:e::::::::",str);
 		else if ( opt.no_expensive_trust_checks ) {
-        	    printf("uid:::::::::");
+        	    printf("%s:::::::::",str);
 	        }
                 else {
 		    byte namehash[20];
@@ -697,11 +702,16 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		    }
 		    else
 			trustletter = 'u';
-		    printf("uid:%c::::::::", trustletter);
+		    printf("%s:%c::::::::",str,trustletter);
                 }
 	    }
-            print_string( stdout,  node->pkt->pkt.user_id->name,
-                          node->pkt->pkt.user_id->len, ':' );
+	    if(node->pkt->pkt.user_id->attrib_data)
+	      printf("%u %lu",
+		     node->pkt->pkt.user_id->numattribs,
+		     node->pkt->pkt.user_id->attrib_len);
+            else
+	      print_string( stdout,  node->pkt->pkt.user_id->name,
+			    node->pkt->pkt.user_id->len, ':' );
             putchar(':');
 	    if (any)
                 putchar('\n');
