@@ -993,6 +993,7 @@ rm_group(char *name)
 
 	  free_strlist(item->values);
 	  m_free(item);
+	  break;
 	}
     }
 }

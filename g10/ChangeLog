@@ -1,3 +1,27 @@
+2004-02-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (keygen_set_std_prefs): Build the default preferences
+	list at runtime as it properly handles algorithms disabled at
+	build or run time.
+
+	* getkey.c (merge_selfsigs_main): Properly handle expired user IDs
+	when the expired self-sig is not the only self-sig.
+
+	* misc.c (compress_algo_to_string): Return NULL on failure like
+	all of the other xxxx_algo_to_string() functions.
+
+	* mainproc.c (list_node): Minor spacing tweak to match --list-keys
+	output.
+
+	* keylist.c (list_keyblock_print), mainproc.c (list_node): Mark
+	revoked subkeys as revoked.  Requested by Matthew Wilcox.  Revoked
+	overrides expiration when both apply.
+
+	* keyedit.c (show_prefs): Use compress algo constants.
+	(show_basic_key_info): Make revoked and expired tags translatable.
+
+	* g10.c (rm_group): Properly ungroup from a list of groups.
+
 2004-01-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main, rm_group): Add --ungroup command to remove a

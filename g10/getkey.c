@@ -1585,19 +1585,21 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                      * the same email address may become valid again (hired,
                      * fired, hired again).
                      */
-		    if(sig->flags.expired) {
-		      /* Expired uids don't get to be primary unless
-                         they are the only uid there is. */
-		      uidnode->pkt->pkt.user_id->is_primary=0;
-		      uidnode->pkt->pkt.user_id->is_expired=1;
-		      uidnode->pkt->pkt.user_id->expiredate=sig->expiredate;
-		    }
-                    else {
-                        sigdate = sig->timestamp;
-                        signode = k;
-			if( sig->version > sigversion )
-			  sigversion = sig->version;
-                    }
+		    if(sig->flags.expired)
+		      {
+			uidnode->pkt->pkt.user_id->is_expired=1;
+			signode = NULL;
+		      }
+                    else
+		      {
+			uidnode->pkt->pkt.user_id->is_expired=0;
+			signode = k;
+		      }
+
+		    sigdate = sig->timestamp;
+		    uidnode->pkt->pkt.user_id->expiredate=sig->expiredate;
+		    if( sig->version > sigversion )
+		      sigversion = sig->version;
                 }
             }
         }

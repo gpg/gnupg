@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                               Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -223,18 +223,6 @@ set_one_pref (int val, int type, const char *item, byte *buf, int *nbuf)
     return 0;
 }
 
-#ifdef USE_AES
-#define AES "S9 S8 S7 "
-#else
-#define AES ""
-#endif
-
-#ifdef USE_CAST5
-#define CAST5 "S3 "
-#else
-#define CAST5 ""
-#endif
-
 /*
  * Parse the supplied string and use it to set the standard
  * preferences.  The string may be in a form like the one printed by
@@ -248,23 +236,43 @@ keygen_set_std_prefs (const char *string,int personal)
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
     int nsym=0, nhash=0, nzip=0, val, rc=0;
     int mdc=1, modify=0; /* mdc defaults on, modify defaults off. */
+    char dummy_string[45]; /* enough for 15 items */
 
-    if (!string || !ascii_strcasecmp (string, "default")) {
-      if (opt.def_preference_list)
-	string=opt.def_preference_list;
-      else if ( !check_cipher_algo(CIPHER_ALGO_IDEA) )
-        string = AES CAST5 "S2 S1 H2 H3 Z2 Z1";
-      else
-        string = AES CAST5 "S2 H2 H3 Z2 Z1";
+    if (!string || !ascii_strcasecmp (string, "default"))
+      {
+	if (opt.def_preference_list)
+	  string=opt.def_preference_list;
+	else
+	  {
+	    dummy_string[0]='\0';
 
-      /* If we have it, IDEA goes *after* 3DES so it won't be used
-         unless we're encrypting along with a V3 key.  Ideally, we
-         would only put the S1 preference in if the key was RSA and
-         <=2048 bits, as that is what won't break PGP2, but that is
-         difficult with the current code, and not really worth
-         checking as a non-RSA <=2048 bit key wouldn't be usable by
-         PGP2 anyway. -dms */
-    }
+	    /* Make sure we do not add more than 15 items here, as we
+	       could overflow the size of dummy_string. */
+	    if(!check_cipher_algo(CIPHER_ALGO_AES256))
+	      strcat(dummy_string,"S9 ");
+	    if(!check_cipher_algo(CIPHER_ALGO_AES192))
+	      strcat(dummy_string,"S8 ");
+	    if(!check_cipher_algo(CIPHER_ALGO_AES))
+	      strcat(dummy_string,"S7 ");
+	    if(!check_cipher_algo(CIPHER_ALGO_CAST5))
+	      strcat(dummy_string,"S3 ");
+	    strcat(dummy_string,"S2 "); /* 3DES */
+	    /* If we have it, IDEA goes *after* 3DES so it won't be
+	       used unless we're encrypting along with a V3 key.
+	       Ideally, we would only put the S1 preference in if the
+	       key was RSA and <=2048 bits, as that is what won't
+	       break PGP2, but that is difficult with the current
+	       code, and not really worth checking as a non-RSA <=2048
+	       bit key wouldn't be usable by PGP2 anyway. -dms */
+	    if(!check_cipher_algo(CIPHER_ALGO_IDEA))
+	      strcat(dummy_string,"S1 ");
+
+	    /* SHA-1, RIPEMD160, ZLIB, ZIP */
+	    strcat(dummy_string,"H2 H3 Z2 Z1");
+
+	    string=dummy_string;
+	  }
+      }
     else if (!ascii_strcasecmp (string, "none"))
         string = "";
 
@@ -402,9 +410,6 @@ keygen_set_std_prefs (const char *string,int personal)
 
     return rc;
 }
-
-#undef CAST5
-#undef AES
 
 /* Return a fake user ID containing the preferences.  Caller must
    free. */
