@@ -115,6 +115,7 @@ struct {
     char *keyserver_scheme;
     char *keyserver_host;
     char *keyserver_port;
+    char *keyserver_opaque;
     struct
     {
       int verbose;

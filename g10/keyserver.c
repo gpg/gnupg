@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <assert.h>
 #include "filter.h"
 #include "keydb.h"
 #include "status.h"
@@ -119,11 +119,21 @@ parse_keyserver_options(char *options)
 int 
 parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 {
+  int assume_hkp=0;
+
+  assert(uri!=NULL);
+
+  opt.keyserver_host=NULL;
+  opt.keyserver_port=NULL;
+  opt.keyserver_opaque=NULL;
+
   /* Get the scheme */
 
   opt.keyserver_scheme=strsep(&uri,":");
   if(uri==NULL)
     {
+      /* Assume HKP if there is no scheme */
+      assume_hkp=1;
       uri=opt.keyserver_scheme;
       opt.keyserver_scheme="hkp";
     }
@@ -142,40 +152,57 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
       opt.keyserver_scheme="hkp";
     }
 
-  /* Skip the "//", if any */
-  if(strlen(uri)>2 && uri[0]=='/' && uri[1]=='/')
-    uri+=2;
-
-  /* Get the host */
-  opt.keyserver_host=strsep(&uri,":/");
-  if(uri==NULL || uri[0]=='\0')
-    opt.keyserver_port="0";
-  else
+  if(assume_hkp || (uri[0]=='/' && uri[1]=='/'))
     {
-      char *ch;
+      /* Two slashes means network path. */
 
-      /* Get the port */
-      opt.keyserver_port=strsep(&uri,"/");
+      /* Skip over the "//", if any */
+      if(!assume_hkp)
+	uri+=2;
 
-      /* Ports are digits only */
-      ch=opt.keyserver_port;
-      while(*ch!='\0')
+      /* Get the host */
+      opt.keyserver_host=strsep(&uri,":/");
+      if(opt.keyserver_host[0]=='\0')
+	return G10ERR_BAD_URI;
+
+      if(uri==NULL || uri[0]=='\0')
+	opt.keyserver_port=NULL;
+      else
 	{
-	  if(!isdigit(*ch))
-	    return G10ERR_BAD_URI;
+	  char *ch;
 
-	  ch++;
+	  /* Get the port */
+	  opt.keyserver_port=strsep(&uri,"/");
+
+	  /* Ports are digits only */
+	  ch=opt.keyserver_port;
+	  while(*ch!='\0')
+	    {
+	      if(!isdigit(*ch))
+		return G10ERR_BAD_URI;
+
+	      ch++;
+	    }
 	}
 
-      if(strlen(opt.keyserver_port)==0 ||
-	 atoi(opt.keyserver_port)<1 || atoi(opt.keyserver_port)>65535)
-	return G10ERR_BAD_URI;
+      /* (any path part of the URI is discarded for now as no keyserver
+	 uses it yet) */
+    }
+  else if(uri[0]!='/')
+    {
+      /* No slash means opaque.  Just record the opaque blob and get
+	 out. */
+      opt.keyserver_opaque=uri;
+      return 0;
+    }
+  else
+    {
+      /* One slash means absolute path.  We don't need to support that
+	 yet. */
+      return G10ERR_BAD_URI;
     }
 
-  /* (any path part of the URI is discarded for now as no keyserver
-     uses it) */
-
-  if(opt.keyserver_scheme[0]=='\0' || opt.keyserver_host[0]=='\0')
+  if(opt.keyserver_scheme[0]=='\0')
     return G10ERR_BAD_URI;
 
   return 0;
@@ -341,10 +368,17 @@ keyserver_spawn(int action,STRLIST list,
   fprintf(spawn->tochild,"# This is a gpg keyserver communications file\n");
   fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(spawn->tochild,"PROGRAM %s\n",VERSION);
-  fprintf(spawn->tochild,"HOST %s\n",opt.keyserver_host);
 
-  if(atoi(opt.keyserver_port)>0)
-    fprintf(spawn->tochild,"PORT %s\n",opt.keyserver_port);
+  if(opt.keyserver_opaque)
+    fprintf(spawn->tochild,"OPAQUE %s\n",opt.keyserver_opaque);
+  else
+    {
+      if(opt.keyserver_host)
+	fprintf(spawn->tochild,"HOST %s\n",opt.keyserver_host);
+
+      if(opt.keyserver_port)
+	fprintf(spawn->tochild,"PORT %s\n",opt.keyserver_port);
+    }
 
   /* Write options */
 
@@ -604,9 +638,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 {
   int rc=0,ret=0;
 
-  if(opt.keyserver_scheme==NULL ||
-     opt.keyserver_host==NULL ||
-     opt.keyserver_port==NULL)
+  if(opt.keyserver_scheme==NULL)
     {
       log_error(_("no keyserver known (use option --keyserver)\n"));
       return G10ERR_BAD_URI;
@@ -616,25 +648,33 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
   /* Use the internal HKP code */
   if(ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0)
     {
-      void *stats_handle = import_new_stats_handle ();
-
-      switch(action)
+      if(opt.keyserver_host==NULL)
 	{
-	case GET:
-	  for(count--;count>=0;count--)
-	    if(hkp_ask_import(&desc[count],stats_handle))
-	      log_inc_errorcount();
-	  break;
-	case SEND:
-	  return hkp_export(list);
-	case SEARCH:
-	  return hkp_search(list);
+	  log_error(_("no keyserver known (use option --keyserver)\n"));
+	  return G10ERR_BAD_URI;
 	}
+      else
+	{
+	  void *stats_handle = import_new_stats_handle ();
 
-      import_print_stats (stats_handle);
-      import_release_stats_handle (stats_handle);
+	  switch(action)
+	    {
+	    case GET:
+	      for(count--;count>=0;count--)
+		if(hkp_ask_import(&desc[count],stats_handle))
+		  log_inc_errorcount();
+	      break;
+	    case SEND:
+	      return hkp_export(list);
+	    case SEARCH:
+	      return hkp_search(list);
+	    }
 
-      return 0;
+	  import_print_stats (stats_handle);
+	  import_release_stats_handle (stats_handle);
+
+	  return 0;
+	}
     }
 #endif
 

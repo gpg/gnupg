@@ -84,8 +84,8 @@ hkp_ask_import( KEYDB_SEARCH_DESC *desc, void *stats_handle)
 
     sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=get&search=0x%08lX",
 	    opt.keyserver_host,
-	    atoi(opt.keyserver_port)>0?":":"",
-	    atoi(opt.keyserver_port)>0?opt.keyserver_port:"",
+	    opt.keyserver_port?":":"",
+	    opt.keyserver_port?opt.keyserver_port:"",
 	    (ulong)key[1] );
 
   if(opt.keyserver_options.verbose>2)
@@ -138,8 +138,8 @@ hkp_export( STRLIST users )
 
     sprintf( request, "x-hkp://%s%s%s/pks/add",
 	     opt.keyserver_host,
-	     atoi(opt.keyserver_port)>0?":":"",
-	     atoi(opt.keyserver_port)>0?opt.keyserver_port:"");
+	     opt.keyserver_port?":":"",
+	     opt.keyserver_port?opt.keyserver_port:"");
 
   if(opt.keyserver_options.verbose>2)
     log_info("request is \"%s\"\n",request);
@@ -532,8 +532,8 @@ int hkp_search(STRLIST tokens)
 
   sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&search=%s",
 	  opt.keyserver_host,
-	  atoi(opt.keyserver_port)>0?":":"",
-	  atoi(opt.keyserver_port)>0?opt.keyserver_port:"",
+	  opt.keyserver_port?":":"",
+	  opt.keyserver_port?opt.keyserver_port:"",
 	  searchurl);
 
   if(opt.keyserver_options.verbose>2)
