@@ -169,6 +169,11 @@ encode_simple( const char *filename, int mode )
     if( filename && !opt.textmode && !mode ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )
 	    log_info(_("%s: WARNING: empty file\n"), filename );
+        /* we can't yet encode the length of very large files,
+         * so we switch to partial lengthn encoding in this case */
+        if ( filesize >= IOBUF_FILELENGTH_LIMIT )
+            filesize = 0;
+
     }
     else
 	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
@@ -317,6 +322,10 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( filename && !opt.textmode ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )
 	    log_info(_("%s: WARNING: empty file\n"), filename );
+        /* we can't yet encode the length of very large files,
+         * so we switch to partial lengthn encoding in this case */
+        if ( filesize >= IOBUF_FILELENGTH_LIMIT )
+            filesize = 0;
     }
     else
 	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */

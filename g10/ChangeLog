@@ -1,3 +1,12 @@
+Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * misc.c (print_pubkey_algo_note): Do not print the RSA notice.
+        * sig-check.c (do_signature_check): Do not emit the RSA status message.
+        * pubkey-enc.c (get_session_key): Ditto.
+
+        * encode.c (encode_simple, encode_crypt): Fix for large files.
+        * sign.c (sign_file): Ditto.
+
 Wed Sep  6 14:59:09 CEST 2000  Werner Koch  <wk@openit.de>
 
         * passphrase.c (hash_passphrase): Removed funny assert.  Reported by

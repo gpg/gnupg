@@ -1,3 +1,10 @@
+Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * rsa.c: Changed the comment about the patent.
+        * Makefile.am: Included rsa.[ch].
+        * pubkey.c: Enabled RSA support.
+        (pubkey_get_npkey): Removed RSA workaround.
+
 Fri Aug 25 16:05:38 CEST 2000  Werner Koch  <wk@openit.de>
 
         * rndlinux.c (open_device): Loose random device checking.

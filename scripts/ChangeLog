@@ -1,3 +1,8 @@
+Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * config.guess, config.sub: Replaced with the latest version from the
+        CVS archive.  Hope that does not break too much.
+
 Fri May 12 14:01:20 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* gnupg.spec.in: New version from Fabio with some updated descriptions.

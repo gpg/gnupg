@@ -1,3 +1,7 @@
+Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * iobuf.c (IOBUF_FILELENGTH_LIMIT): New.
+
 2000-03-14 14:03:43  Werner Koch  (wk@habibti.openit.de)
 
 	* types.h (HAVE_U64_TYPEDEF): Defined depending on configure test.

@@ -66,9 +66,6 @@ do_signature_check( PKT_signature *sig, MD_HANDLE digest,
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
 
-    if( is_RSA(sig->pubkey_algo) )
-	write_status(STATUS_RSA_OR_IDEA);
-
     *r_expiredate = 0;
     if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;

@@ -35,6 +35,12 @@
 #include "util.h"
 #include "iobuf.h"
 
+#if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
+  #define fopen(a,b)  fopen64 ((a),(b))
+  #define fstat(a,b)  fstat64 ((a),(b))
+#endif
+
+
 typedef struct {
     FILE *fp;	   /* open file handle */
     int  print_only_name; /* flags indicating that fname is not a real file*/
@@ -1311,13 +1317,22 @@ iobuf_set_limit( IOBUF a, unsigned long nlimit )
 u32
 iobuf_get_filelength( IOBUF a )
 {
+#if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
+    struct stat64 st;
+#else
     struct stat st;
+#endif
 
     if( a->directfp )  {
 	FILE *fp = a->directfp;
 
-	if( !fstat(fileno(fp), &st) )
-	    return st.st_size;
+	if( !fstat(fileno(fp), &st) ) {
+          #if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
+            if( st.st_size >= IOBUF_FILELENGTH_LIMIT )
+                return IOBUF_FILELENGTH_LIMIT;
+          #endif
+	    return (u32)st.st_size;
+        }
 	log_error("fstat() failed: %s\n", strerror(errno) );
 	return 0;
     }
@@ -1328,8 +1343,13 @@ iobuf_get_filelength( IOBUF a )
 	    file_filter_ctx_t *b = a->filter_ov;
 	    FILE *fp = b->fp;
 
-	    if( !fstat(fileno(fp), &st) )
+	    if( !fstat(fileno(fp), &st) ) {
+              #if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
+                if( st.st_size >= IOBUF_FILELENGTH_LIMIT )
+                    return IOBUF_FILELENGTH_LIMIT;
+              #endif
 		return st.st_size;
+            }
 	    log_error("fstat() failed: %s\n", strerror(errno) );
 	    break;
 	}

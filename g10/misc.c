@@ -211,15 +211,6 @@ print_pubkey_algo_note( int algo )
 {
     if( algo >= 100 && algo <= 110 )
 	no_exp_algo();
-    else if( is_RSA( algo ) ) {
-	static int did_note = 0;
-
-	if( !did_note ) {
-	    did_note = 1;
-	    log_info(_("RSA keys are deprecated; please consider "
-		       "creating a new key and use this key in the future\n"));
-	}
-    }
 }
 
 void
@@ -250,6 +241,8 @@ print_digest_algo_note( int algo )
     if( algo >= 100 && algo <= 110 )
 	no_exp_algo();
 }
+
+
 
 
 

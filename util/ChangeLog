@@ -1,3 +1,9 @@
+Wed Sep  6 17:55:47 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * iobuf.c: Use fopen64 insead of fopen when available.
+        (iobuf_get_filelength): Use fstat64 when available but return
+        2^32-1 if the file is larger than this value.
+
 Wed Sep  6 14:59:09 CEST 2000  Werner Koch  <wk@openit.de>
 
         * secmem.c (secmem_realloc): check for failed secmem_malloc.  By

@@ -415,6 +415,8 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 }
 
 #if 0
+/* we can't enable generation right now, becuase we first need to implement
+ * the keyflags */
 static int
 gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )

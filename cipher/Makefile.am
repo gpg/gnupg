@@ -43,6 +43,7 @@ libcipher_a_SOURCES = cipher.c	\
 		 cast5.h	\
 		 elgamal.c	\
 		 elgamal.h	\
+		 rsa.c rsa.h    \
 		 primegen.c	\
 		 random.h	\
 		 random.c	\

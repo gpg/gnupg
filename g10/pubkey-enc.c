@@ -47,9 +47,6 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     PKT_secret_key *sk = NULL;
     int rc;
 
-    if( is_RSA(k->pubkey_algo) ) /* warn about that */
-	write_status(STATUS_RSA_OR_IDEA);
-
     rc = check_pubkey_algo( k->pubkey_algo );
     if( rc )
 	goto leave;

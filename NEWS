@@ -17,6 +17,9 @@ Noteworthy changes in the current CVS branch STABLE-BRANCH-1-0
 
     * The --trusted-key option is back after it left us with 0.9.5
      
+    * RSA is supported. Key generation does not yet work but will come
+      soon.
+
 
 Noteworthy changes in version 1.0.2 (2000-07-12)
 ----------------------------------------------

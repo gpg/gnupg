@@ -30,9 +30,7 @@
 #include "cipher.h"
 #include "elgamal.h"
 #include "dsa.h"
-#if 0
 #include "rsa.h"
-#endif
 #include "dynload.h"
 
 
@@ -153,7 +151,6 @@ setup_pubkey_table(void)
 	BUG();
     i++;
 
-  #if 0
     pubkey_table[i].algo = PUBKEY_ALGO_RSA;
     pubkey_table[i].name = rsa_get_info( pubkey_table[i].algo,
 					 &pubkey_table[i].npkey,
@@ -205,7 +202,6 @@ setup_pubkey_table(void)
     if( !pubkey_table[i].name )
 	BUG();
     i++;
-  #endif
 
     for( ; i < TABLE_SIZE; i++ )
 	pubkey_table[i].name = NULL;
@@ -388,8 +384,6 @@ pubkey_get_npkey( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].npkey;
     } while( load_pubkey_modules() );
-    if( is_RSA(algo) )	  /* special hack, so that we are able to */
-	return 2;	  /* see the RSA keyids */
     return 0;
 }
 

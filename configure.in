@@ -408,7 +408,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror stpcpy strlwr stricmp tcgetattr rand strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit clock_gettime)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
-AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask)
+AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask fopen64 fstat64)
 
 GNUPG_CHECK_MLOCK
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG

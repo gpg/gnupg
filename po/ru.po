@@ -9,7 +9,7 @@
 # QingLong <qinglong@Bolizm> (couldn't send an email to let you know)
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2000-07-27 17:31+0200\n"
+"POT-Creation-Date: 2000-09-06 17:28+0200\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Gregory Steuck <steuck@iname.com>\n"
@@ -313,7 +313,7 @@ msgstr "Ой-йо ... ошибка в программе (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "Вы нашли ошибку в программе ... (%s:%d)\n"
 
-#: cipher/random.c:311 g10/import.c:128 g10/keygen.c:1249
+#: cipher/random.c:311 g10/import.c:128 g10/keygen.c:1255
 #, fuzzy, c-format
 msgid "can't open `%s': %s\n"
 msgstr "невозможно открыть файл `%s': %s\n"
@@ -384,7 +384,7 @@ msgstr ""
 "НЕ ПОЛЬЗУЙТЕСЬ ДАННЫМИ СОЗДАННЫМИ ЭТОЙ ПРОГРАММОЙ!\n"
 "\n"
 
-#: cipher/rndlinux.c:141
+#: cipher/rndlinux.c:142
 #, c-format
 msgid ""
 "\n"
@@ -395,7 +395,7 @@ msgstr ""
 "Недостаточно случайных данных. Пожалуйста, поделайте что-нибудь, чтобы\n"
 "ОС могла набрать дополнительные случайные числа! (нужно еще %d байт)\n"
 
-#: g10/g10.c:203
+#: g10/g10.c:206
 msgid ""
 "@Commands:\n"
 " "
@@ -403,147 +403,147 @@ msgstr ""
 "@Команды:\n"
 " "
 
-#: g10/g10.c:205
+#: g10/g10.c:208
 #, fuzzy
 msgid "|[file]|make a signature"
 msgstr "|[файл]|создать подпись"
 
-#: g10/g10.c:206
+#: g10/g10.c:209
 #, fuzzy
 msgid "|[file]|make a clear text signature"
 msgstr "|[файл]|создать текстовую подпись"
 
-#: g10/g10.c:207
+#: g10/g10.c:210
 msgid "make a detached signature"
 msgstr "создать отдельную подпись"
 
-#: g10/g10.c:208
+#: g10/g10.c:211
 msgid "encrypt data"
 msgstr "зашифровать данные"
 
-#: g10/g10.c:209
+#: g10/g10.c:212
 msgid "encryption only with symmetric cipher"
 msgstr "зашифровать симметричным алгоритмом"
 
-#: g10/g10.c:210
+#: g10/g10.c:213
 msgid "store only"
 msgstr "только сохранить"
 
-#: g10/g10.c:211
+#: g10/g10.c:214
 msgid "decrypt data (default)"
 msgstr "расшифровать данные (по умолчанию)"
 
-#: g10/g10.c:212
+#: g10/g10.c:215
 msgid "verify a signature"
 msgstr "проверить подпись"
 
-#: g10/g10.c:214
+#: g10/g10.c:217
 msgid "list keys"
 msgstr "список ключей"
 
-#: g10/g10.c:216
+#: g10/g10.c:219
 msgid "list keys and signatures"
 msgstr "список ключей и подписей"
 
-#: g10/g10.c:217
+#: g10/g10.c:220
 msgid "check key signatures"
 msgstr "проверить подпись на ключе"
 
-#: g10/g10.c:218
+#: g10/g10.c:221
 msgid "list keys and fingerprints"
 msgstr "список ключей с их \"отпечатками пальцев\""
 
-#: g10/g10.c:219
+#: g10/g10.c:222
 msgid "list secret keys"
 msgstr "список секретных ключей"
 
-#: g10/g10.c:220
+#: g10/g10.c:223
 msgid "generate a new key pair"
 msgstr "сгенерировать новую пару ключей (открытый и секретный)"
 
-#: g10/g10.c:221
+#: g10/g10.c:224
 msgid "remove key from the public keyring"
 msgstr "удалить ключ со связки"
 
-#: g10/g10.c:223
+#: g10/g10.c:226
 #, fuzzy
 msgid "remove key from the secret keyring"
 msgstr "удалить ключ со связки"
 
-#: g10/g10.c:224
+#: g10/g10.c:227
 #, fuzzy
 msgid "sign a key"
 msgstr "подписать ключ"
 
-#: g10/g10.c:225
+#: g10/g10.c:228
 #, fuzzy
 msgid "sign a key locally"
 msgstr "подписать ключ"
 
-#: g10/g10.c:226
+#: g10/g10.c:229
 msgid "sign or edit a key"
 msgstr "подписать или редактировать ключ"
 
-#: g10/g10.c:227
+#: g10/g10.c:230
 msgid "generate a revocation certificate"
 msgstr "сгенерировать отзывающий сертификат"
 
-#: g10/g10.c:228
+#: g10/g10.c:231
 msgid "export keys"
 msgstr "экспортировать ключи"
 
-#: g10/g10.c:229
+#: g10/g10.c:232
 msgid "export keys to a key server"
 msgstr ""
 
-#: g10/g10.c:230
+#: g10/g10.c:233
 msgid "import keys from a key server"
 msgstr ""
 
-#: g10/g10.c:234
+#: g10/g10.c:237
 msgid "import/merge keys"
 msgstr "импортировать/добавить ключи"
 
-#: g10/g10.c:236
+#: g10/g10.c:239
 msgid "list only the sequence of packets"
 msgstr "напечатать только последовательность пакетов"
 
-#: g10/g10.c:238
+#: g10/g10.c:241
 #, fuzzy
 msgid "export the ownertrust values"
 msgstr "экспортировать параметры доверия\n"
 
-#: g10/g10.c:240
+#: g10/g10.c:243
 #, fuzzy
 msgid "import ownertrust values"
 msgstr "импортировать параметры доверия\n"
 
-#: g10/g10.c:242
+#: g10/g10.c:245
 #, fuzzy
 msgid "update the trust database"
 msgstr "|[ИМЕНА]|проверить базу данных доверия"
 
-#: g10/g10.c:244
+#: g10/g10.c:247
 msgid "|[NAMES]|check the trust database"
 msgstr "|[ИМЕНА]|проверить базу данных доверия"
 
-#: g10/g10.c:245
+#: g10/g10.c:248
 msgid "fix a corrupted trust database"
 msgstr "исправить разрушенную базу данных доверия"
 
-#: g10/g10.c:246
+#: g10/g10.c:249
 msgid "De-Armor a file or stdin"
 msgstr "Декодировать stdin или файл из ASCII-представления"
 
-#: g10/g10.c:248
+#: g10/g10.c:251
 msgid "En-Armor a file or stdin"
 msgstr "Закодировать stdin или файл в ASCII-представление"
 
-#: g10/g10.c:250
+#: g10/g10.c:253
 msgid "|algo [files]|print message digests"
 msgstr "|algo [files]|напечатать дайджест сообщения"
 
-#: g10/g10.c:254
+#: g10/g10.c:257
 msgid ""
 "@\n"
 "Options:\n"
@@ -553,164 +553,168 @@ msgstr ""
 "Параметры:\n"
 " "
 
-#: g10/g10.c:256
+#: g10/g10.c:259
 msgid "create ascii armored output"
 msgstr "вывод в ASCII-представлении"
 
-#: g10/g10.c:258
+#: g10/g10.c:261
 #, fuzzy
 msgid "|NAME|encrypt for NAME"
 msgstr "|ИМЯ|использовать шифровальный алгоритмом ИМЯ"
 
-#: g10/g10.c:261
+#: g10/g10.c:264
 #, fuzzy
 msgid "|NAME|use NAME as default recipient"
 msgstr "|ИМЯ|использовать ИМЯ в качестве секретного ключа по умолчанию"
 
-#: g10/g10.c:263
+#: g10/g10.c:266
 msgid "use the default key as default recipient"
 msgstr ""
 
-#: g10/g10.c:267
+#: g10/g10.c:270
 msgid "use this user-id to sign or decrypt"
 msgstr ""
 "использовать указанный идентификатор пользователя для подписи или расшифровки"
 
-#: g10/g10.c:268
+#: g10/g10.c:271
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|установить уровень сжатия (0 - не сжимать)"
 
-#: g10/g10.c:270
+#: g10/g10.c:273
 msgid "use canonical text mode"
 msgstr "использовать канонический текстовый режим"
 
-#: g10/g10.c:271
+#: g10/g10.c:274
 msgid "use as output file"
 msgstr "использовать в качестве выходного файла"
 
-#: g10/g10.c:272
+#: g10/g10.c:275
 msgid "verbose"
 msgstr "многословный"
 
-#: g10/g10.c:273
+#: g10/g10.c:276
 msgid "be somewhat more quiet"
 msgstr ""
 
-#: g10/g10.c:274
+#: g10/g10.c:277
 msgid "don't use the terminal at all"
 msgstr ""
 
-#: g10/g10.c:275
+#: g10/g10.c:278
 #, fuzzy
 msgid "force v3 signatures"
 msgstr "проверить подпись на ключе"
 
-#: g10/g10.c:276
+#: g10/g10.c:279
 #, fuzzy
 msgid "always use a MDC for encryption"
 msgstr "использовать указанный идентификатор пользователя для шифрования"
 
-#: g10/g10.c:277
+#: g10/g10.c:280
 msgid "do not make any changes"
 msgstr "Keine wirklichen дnderungen durchfЭhren"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-#: g10/g10.c:279
+#: g10/g10.c:282
 msgid "batch mode: never ask"
 msgstr "пакетный режим: ничего не спрашивать"
 
-#: g10/g10.c:280
+#: g10/g10.c:283
 msgid "assume yes on most questions"
 msgstr "отвечать \"да\" на большинство вопросов"
 
-#: g10/g10.c:281
+#: g10/g10.c:284
 msgid "assume no on most questions"
 msgstr "отвечать \"нет\" на большинство вопросов"
 
-#: g10/g10.c:282
+#: g10/g10.c:285
 msgid "add this keyring to the list of keyrings"
 msgstr "добавить эту связку к списку связок ключей"
 
-#: g10/g10.c:283
+#: g10/g10.c:286
 msgid "add this secret keyring to the list"
 msgstr "добавить эту секретную связку к списку связок ключей"
 
-#: g10/g10.c:284
+#: g10/g10.c:287
 msgid "|NAME|use NAME as default secret key"
 msgstr "|ИМЯ|использовать ИМЯ в качестве секретного ключа по умолчанию"
 
-#: g10/g10.c:285
+#: g10/g10.c:288
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr ""
 
-#: g10/g10.c:286
+#: g10/g10.c:289
 #, fuzzy
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|ИМЯ|использовать шифровальный алгоритмом ИМЯ"
 
-#: g10/g10.c:287
+#: g10/g10.c:290
 msgid "read options from file"
 msgstr "читать параметры из файла"
 
-#: g10/g10.c:291
+#: g10/g10.c:294
 msgid "|FD|write status info to this FD"
 msgstr "|FD| записывать информацию о состоянии в дескриптор (FD)"
 
-#: g10/g10.c:296
+#: g10/g10.c:299
+msgid "|KEYID|ulimately trust this key"
+msgstr ""
+
+#: g10/g10.c:300
 #, fuzzy
 msgid "|FILE|load extension module FILE"
 msgstr "|ФАЙЛ|загрузить ФАЙЛ с расширяющими модулями"
 
-#: g10/g10.c:297
+#: g10/g10.c:301
 msgid "emulate the mode described in RFC1991"
 msgstr "эмулировать режим описанный в RFC1991"
 
-#: g10/g10.c:298
+#: g10/g10.c:302
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
 msgstr ""
 
-#: g10/g10.c:299
+#: g10/g10.c:303
 #, fuzzy
 msgid "|N|use passphrase mode N"
 msgstr "|N|использовать ключевую фразу режима N\n"
 
-#: g10/g10.c:301
+#: g10/g10.c:305
 #, fuzzy
 msgid "|NAME|use message digest algorithm NAME for passphrases"
 msgstr "|ИМЯ|использовать хэш-алгоритм ИМЯ для ключевых фраз"
 
-#: g10/g10.c:303
+#: g10/g10.c:307
 #, fuzzy
 msgid "|NAME|use cipher algorithm NAME for passphrases"
 msgstr "|ИМЯ|использовать шифровальный алгоритмом ИМЯ для ключевых фраз"
 
-#: g10/g10.c:304
+#: g10/g10.c:308
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|ИМЯ|использовать шифровальный алгоритмом ИМЯ"
 
-#: g10/g10.c:305
+#: g10/g10.c:309
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|ИМЯ|использовать хэш-алгоритм ИМЯ"
 
-#: g10/g10.c:306
+#: g10/g10.c:310
 msgid "|N|use compress algorithm N"
 msgstr "|N|использовать алгоритм сжатия N"
 
-#: g10/g10.c:307
+#: g10/g10.c:311
 msgid "throw keyid field of encrypted packets"
 msgstr "выбрасывать поле keyid у зашифрованных пакетов"
 
-#: g10/g10.c:308
+#: g10/g10.c:312
 msgid "|NAME=VALUE|use this notation data"
 msgstr ""
 
-#: g10/g10.c:311
+#: g10/g10.c:315
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
 msgstr ""
 
-#: g10/g10.c:314
+#: g10/g10.c:318
 #, fuzzy
 msgid ""
 "@\n"
@@ -731,17 +735,17 @@ msgstr ""
 " --list-keys [names]        показать список ключей\n"
 " --fingerprint [names]      показать \"отпечатки пальцев\" ключей\n"
 
-#: g10/g10.c:412
+#: g10/g10.c:418
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr ""
 "Пожалуйста, отправляйте сообщения об ошибках по адресу "
 "<gnupg-bugs@gnu.org>.\n"
 
-#: g10/g10.c:416
+#: g10/g10.c:422
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Использование: gpg [параметры] [файлы] (-h для помощи)"
 
-#: g10/g10.c:419
+#: g10/g10.c:425
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -751,7 +755,7 @@ msgstr ""
 "подписывает, проверяет подписи, шифрует или расшифровывает\n"
 "режим работы зависит от входных данных\n"
 
-#: g10/g10.c:426
+#: g10/g10.c:432
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -759,198 +763,198 @@ msgstr ""
 "\n"
 "Поддерживаемые алгоритмы:\n"
 
-#: g10/g10.c:505
+#: g10/g10.c:511
 msgid "usage: gpg [options] "
 msgstr "Использование: gpg [параметры] "
 
-#: g10/g10.c:558
+#: g10/g10.c:564
 msgid "conflicting commands\n"
 msgstr "WidersprЭchliche Kommandos\n"
 
-#: g10/g10.c:701
+#: g10/g10.c:703
 #, fuzzy, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "замечание: файл параметров по умолчанию `%s' отсутствует\n"
 
-#: g10/g10.c:705
+#: g10/g10.c:707
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "файл параметров `%s': %s\n"
 
-#: g10/g10.c:712
+#: g10/g10.c:714
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "читаются параметры из `%s'\n"
 
-#: g10/g10.c:902
+#: g10/g10.c:904
 #, fuzzy, c-format
 msgid "%s is not a valid character set\n"
 msgstr "Недопустимый символ в комментарии.\n"
 
-#: g10/g10.c:963 g10/g10.c:972
+#: g10/g10.c:968 g10/g10.c:977
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr ""
 
-#: g10/g10.c:965
+#: g10/g10.c:970
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr ""
 
-#: g10/g10.c:968
+#: g10/g10.c:973
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr ""
 
-#: g10/g10.c:987 g10/g10.c:999
+#: g10/g10.c:992 g10/g10.c:1004
 msgid "selected cipher algorithm is invalid\n"
 msgstr "выбран недопустимый алгоритм шифрования\n"
 
-#: g10/g10.c:993 g10/g10.c:1005
+#: g10/g10.c:998 g10/g10.c:1010
 msgid "selected digest algorithm is invalid\n"
 msgstr "выбран недопустимый дайджест-алгоритм\n"
 
-#: g10/g10.c:1009
+#: g10/g10.c:1014
 msgid "the given policy URL is invalid\n"
 msgstr ""
 
-#: g10/g10.c:1012
+#: g10/g10.c:1017
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "алгоритм упаковки может иметь значения от %d до %d\n"
 
-#: g10/g10.c:1014
+#: g10/g10.c:1019
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed должен быть больше 0\n"
 
-#: g10/g10.c:1016
+#: g10/g10.c:1021
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed должен быть больше 1\n"
 
-#: g10/g10.c:1018
+#: g10/g10.c:1023
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr ""
 
-#: g10/g10.c:1021
+#: g10/g10.c:1026
 #, fuzzy
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "замечание: простой S2K режим (0) очень не рекомендуется\n"
 
-#: g10/g10.c:1025
+#: g10/g10.c:1030
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "недопустимый режим S2K: должен быть 0, 1 или 3\n"
 
-#: g10/g10.c:1110
+#: g10/g10.c:1115
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "Ошибка инициализации базы данных доверия: %s\n"
 
-#: g10/g10.c:1116
+#: g10/g10.c:1121
 msgid "--store [filename]"
 msgstr "--store [имя файла]"
 
-#: g10/g10.c:1123
+#: g10/g10.c:1128
 msgid "--symmetric [filename]"
 msgstr "--symmetric [имя файла]"
 
-#: g10/g10.c:1131
+#: g10/g10.c:1136
 msgid "--encrypt [filename]"
 msgstr "--encrypt [имя файла]"
 
-#: g10/g10.c:1144
+#: g10/g10.c:1149
 msgid "--sign [filename]"
 msgstr "--sign [имя файла]"
 
-#: g10/g10.c:1157
+#: g10/g10.c:1162
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [имя файла]"
 
-#: g10/g10.c:1171
+#: g10/g10.c:1176
 msgid "--clearsign [filename]"
 msgstr "--clearsign [имя файла]"
 
-#: g10/g10.c:1188
+#: g10/g10.c:1193
 msgid "--decrypt [filename]"
 msgstr "--decrypt [имя файла]"
 
-#: g10/g10.c:1196
+#: g10/g10.c:1201
 msgid "--sign-key user-id"
 msgstr ""
 
-#: g10/g10.c:1204
+#: g10/g10.c:1209
 #, fuzzy
 msgid "--lsign-key user-id"
 msgstr "--delete-key имя-пользователя"
 
-#: g10/g10.c:1212
+#: g10/g10.c:1217
 #, fuzzy
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key имя-пользователя"
 
-#: g10/g10.c:1228
+#: g10/g10.c:1233
 #, fuzzy
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key имя-пользователя"
 
-#: g10/g10.c:1231
+#: g10/g10.c:1236
 #, fuzzy
 msgid "--delete-key user-id"
 msgstr "--delete-key имя-пользователя"
 
-#: g10/encode.c:260 g10/g10.c:1268 g10/sign.c:393
+#: g10/encode.c:265 g10/g10.c:1273 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "невозможно открыть файл `%s': %s\n"
 
-#: g10/g10.c:1283
+#: g10/g10.c:1288
 #, fuzzy
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [идентификатор пользователя] [связка ключей]"
 
-#: g10/g10.c:1349
+#: g10/g10.c:1354
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "ошибка декодирования: %s\n"
 
-#: g10/g10.c:1357
+#: g10/g10.c:1362
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "ошибка кодирования: %s\n"
 
-#: g10/g10.c:1428
+#: g10/g10.c:1433
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "недопустимый хэш-алгоритм `%s'\n"
 
-#: g10/g10.c:1509
+#: g10/g10.c:1514
 msgid "[filename]"
 msgstr "[имя файла]"
 
-#: g10/g10.c:1513
+#: g10/g10.c:1518
 msgid "Go ahead and type your message ...\n"
 msgstr ""
 
-#: g10/decrypt.c:59 g10/g10.c:1516 g10/verify.c:68 g10/verify.c:113
+#: g10/decrypt.c:59 g10/g10.c:1521 g10/verify.c:68 g10/verify.c:113
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "невозможно открыть файл `%s'\n"
 
-#: g10/g10.c:1689
+#: g10/g10.c:1694
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
 
-#: g10/g10.c:1695
+#: g10/g10.c:1700
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
 msgstr ""
 
-#: g10/g10.c:1701
+#: g10/g10.c:1706
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr ""
 
-#: g10/g10.c:1709
+#: g10/g10.c:1714
 msgid "a notation value must not use any control characters\n"
 msgstr ""
 
@@ -1333,59 +1337,59 @@ msgstr "пишется само-подпись\n"
 msgid "writing key binding signature\n"
 msgstr "пишется \"key-binding\" подпись\n"
 
-#: g10/keygen.c:261 g10/keygen.c:345 g10/keygen.c:433
+#: g10/keygen.c:261 g10/keygen.c:345 g10/keygen.c:435
 #, fuzzy, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "Запрошенный ключ имеет длину %u бит\n"
 
-#: g10/keygen.c:266 g10/keygen.c:350 g10/keygen.c:438
+#: g10/keygen.c:266 g10/keygen.c:350 g10/keygen.c:440
 #, fuzzy, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "округлено до %u бит\n"
 
-#: g10/keygen.c:537
+#: g10/keygen.c:539
 msgid "Please select what kind of key you want:\n"
 msgstr "Выберите желаемый тип ключа:\n"
 
-#: g10/keygen.c:539
+#: g10/keygen.c:541
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
 msgstr "   (%d) DSA и ElGamal (по умолчанию)\n"
 
-#: g10/keygen.c:540
+#: g10/keygen.c:542
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (только подпись)\n"
 
-#: g10/keygen.c:542
+#: g10/keygen.c:544
 #, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
 msgstr "   (%d) ElGamal (только шифрование)\n"
 
-#: g10/keygen.c:543
+#: g10/keygen.c:545
 #, c-format
 msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (подпись и шифрование)\n"
 
-#: g10/keygen.c:545
+#: g10/keygen.c:547
 #, fuzzy, c-format
 msgid "   (%d) RSA (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (подпись и шифрование)\n"
 
-#: g10/keygen.c:549
+#: g10/keygen.c:551
 msgid "Your selection? "
 msgstr "Ваш выбор? "
 
-#: g10/keygen.c:560 g10/keygen.c:568
+#: g10/keygen.c:562 g10/keygen.c:570
 #, fuzzy
 msgid "Do you really want to create a sign and encrypt key? "
 msgstr "Вы действительно хотите удалить выбранные ключи? "
 
-#: g10/keygen.c:582
+#: g10/keygen.c:584
 msgid "Invalid selection.\n"
 msgstr "Недопустимый выбор.\n"
 
-#: g10/keygen.c:594
+#: g10/keygen.c:596
 #, c-format
 msgid ""
 "About to generate a new %s keypair.\n"
@@ -1398,19 +1402,19 @@ msgstr ""
 "               длина ключа по умолчанию: 1024 бита\n"
 " максимальная рекомендуемая длина ключа: 2048 бит\n"
 
-#: g10/keygen.c:601
+#: g10/keygen.c:603
 msgid "What keysize do you want? (1024) "
 msgstr "Какого размера ключ вы желаете? (1024)"
 
-#: g10/keygen.c:606
+#: g10/keygen.c:608
 msgid "DSA only allows keysizes from 512 to 1024\n"
 msgstr "Допустимый размер DSA ключей - от 512 до 1024 бит\n"
 
-#: g10/keygen.c:608
+#: g10/keygen.c:610
 msgid "keysize too small; 768 is smallest value allowed.\n"
 msgstr "слишком маленькая длина ключа, наименьшее значение - 768.\n"
 
-#: g10/keygen.c:610
+#: g10/keygen.c:612
 #, fuzzy
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
 msgstr "слишком маленькая длина ключа, наименьшее значение - 768.\n"
@@ -1423,12 +1427,12 @@ msgstr "слишком маленькая длина ключа, наименьшее значение - 768.\n"
 #. * So, before you complain about this limitation, I suggest that
 #. * you start a discussion with Marvin about this theme and then
 #. * do whatever you want.
-#: g10/keygen.c:621
+#: g10/keygen.c:623
 #, fuzzy, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
 msgstr "слишком маленькая длина ключа, наименьшее значение - 768.\n"
 
-#: g10/keygen.c:626
+#: g10/keygen.c:628
 #, fuzzy
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
@@ -1437,11 +1441,11 @@ msgstr ""
 "Ключи длиной больше 2048 не рекомендуются, потому что вычислениязанимают "
 "ОЧЕНЬ много времени!\n"
 
-#: g10/keygen.c:629
+#: g10/keygen.c:631
 msgid "Are you sure that you want this keysize? "
 msgstr "Вы действительно хотите ключ такой длины? "
 
-#: g10/keygen.c:630
+#: g10/keygen.c:632
 msgid ""
 "Okay, but keep in mind that your monitor and keyboard radiation is also very "
 "vulnerable to attacks!\n"
@@ -1449,21 +1453,21 @@ msgstr ""
 "Ок, только не забывайте, что излучение ваших клавиатуры и монитора тоже\n"
 "делают вас уязвимым для атак.\n"
 
-#: g10/keygen.c:638
+#: g10/keygen.c:640
 msgid "Do you really need such a large keysize? "
 msgstr "Вам действительно нужен такой длинный ключ? "
 
-#: g10/keygen.c:644
+#: g10/keygen.c:646
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Запрошенный ключ имеет длину %u бит\n"
 
-#: g10/keygen.c:647 g10/keygen.c:651
+#: g10/keygen.c:649 g10/keygen.c:653
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "округлено до %u бит\n"
 
-#: g10/keygen.c:699
+#: g10/keygen.c:701
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -1479,35 +1483,35 @@ msgstr ""
 "      <n>m = срок действия ключа n месяцев\n"
 "      <n>y = срок действия ключа n лет\n"
 
-#: g10/keygen.c:714
+#: g10/keygen.c:716
 msgid "Key is valid for? (0) "
 msgstr "Ключ действителен в течение? (0) "
 
-#: g10/keygen.c:719
+#: g10/keygen.c:721
 msgid "invalid value\n"
 msgstr "недопустимое значение.\n"
 
-#: g10/keygen.c:724
+#: g10/keygen.c:726
 msgid "Key does not expire at all\n"
 msgstr "Бессрочный ключ.\n"
 
 #. print the date when the key expires
-#: g10/keygen.c:730
+#: g10/keygen.c:732
 #, c-format
 msgid "Key expires at %s\n"
 msgstr "Ключ действует до %s\n"
 
-#: g10/keygen.c:733
+#: g10/keygen.c:735
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
 msgstr ""
 
-#: g10/keygen.c:738
+#: g10/keygen.c:740
 msgid "Is this correct (y/n)? "
 msgstr "Это верно? (y/n) "
 
-#: g10/keygen.c:781
+#: g10/keygen.c:783
 msgid ""
 "\n"
 "You need a User-ID to identify your key; the software constructs the user "
@@ -1523,44 +1527,44 @@ msgstr ""
 "    \"Vasya Pupkin (KRUTOI) <vasya@mega-cool.ru>\"\n"
 "\n"
 
-#: g10/keygen.c:793
+#: g10/keygen.c:795
 msgid "Real name: "
 msgstr "Ваше имя (\"Имя Фамилия\"): "
 
-#: g10/keygen.c:797
+#: g10/keygen.c:803
 msgid "Invalid character in name\n"
 msgstr "Недопустимый символ в имени\n"
 
-#: g10/keygen.c:799
+#: g10/keygen.c:805
 msgid "Name may not start with a digit\n"
 msgstr "Полное имя не может начинаться с цифры.\n"
 
-#: g10/keygen.c:801
+#: g10/keygen.c:807
 msgid "Name must be at least 5 characters long\n"
 msgstr "Полное имя должно состоять не менее чем из 5ти символов.\n"
 
-#: g10/keygen.c:809
+#: g10/keygen.c:815
 msgid "Email address: "
 msgstr "E-Mail: "
 
-#: g10/keygen.c:820
+#: g10/keygen.c:826
 msgid "Not a valid email address\n"
 msgstr "Недопустимый E-Mail\n"
 
-#: g10/keygen.c:828
+#: g10/keygen.c:834
 msgid "Comment: "
 msgstr "Комментарий: "
 
-#: g10/keygen.c:834
+#: g10/keygen.c:840
 msgid "Invalid character in comment\n"
 msgstr "Недопустимый символ в комментарии.\n"
 
-#: g10/keygen.c:857
+#: g10/keygen.c:863
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr ""
 
-#: g10/keygen.c:863
+#: g10/keygen.c:869
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -1571,29 +1575,29 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:867
+#: g10/keygen.c:873
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 
-#: g10/keygen.c:872
+#: g10/keygen.c:878
 msgid "NnCcEeOoQq"
 msgstr ""
 
-#: g10/keygen.c:882
+#: g10/keygen.c:888
 #, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Изменить: N=Имя, C=Комментарий, E=E-Mail, O=Okay/Q=Выход? "
 
-#: g10/keygen.c:883
+#: g10/keygen.c:889
 #, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Изменить: N=Имя, C=Комментарий, E=E-Mail, O=Okay/Q=Выход? "
 
-#: g10/keygen.c:902
+#: g10/keygen.c:908
 msgid "Please correct the error first\n"
 msgstr ""
 
-#: g10/keygen.c:940
+#: g10/keygen.c:946
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -1601,11 +1605,11 @@ msgstr ""
 "Для защиты вашего ключа нужна ключевая фраза.\n"
 "\n"
 
-#: g10/keyedit.c:468 g10/keygen.c:948
+#: g10/keyedit.c:468 g10/keygen.c:954
 msgid "passphrase not correctly repeated; try again.\n"
 msgstr "ключевая фраза не была воспроизведена, попробуйте снова.\n"
 
-#: g10/keygen.c:954
+#: g10/keygen.c:960
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -1617,7 +1621,7 @@ msgstr ""
 "время, запустив эту программу с параметром \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:975
+#: g10/keygen.c:981
 #, fuzzy
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
@@ -1630,30 +1634,30 @@ msgstr ""
 "нагрузить сетевую или дисковую подсистему). Это даст генератору случайных\n"
 "чисел возможность набрать достаточно энтропии.\n"
 
-#: g10/keygen.c:1424
+#: g10/keygen.c:1430
 msgid "DSA keypair will have 1024 bits.\n"
 msgstr "Ключевая пара DSA будет иметь длину 1024 бита.\n"
 
-#: g10/keygen.c:1467
+#: g10/keygen.c:1473
 #, fuzzy
 msgid "Key generation canceled.\n"
 msgstr "Генерация ключа отменена: %s\n"
 
-#: g10/keygen.c:1564
+#: g10/keygen.c:1570
 #, fuzzy, c-format
 msgid "writing public key to `%s'\n"
 msgstr "открытый сертификат записывается в `%s'\n"
 
-#: g10/keygen.c:1565
+#: g10/keygen.c:1571
 #, fuzzy, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "секретный сертификат записывается в `%s'\n"
 
-#: g10/keygen.c:1661
+#: g10/keygen.c:1667
 msgid "public and secret key created and signed.\n"
 msgstr "открытый и секретный ключи созданы и подписаны.\n"
 
-#: g10/keygen.c:1666
+#: g10/keygen.c:1672
 #, fuzzy
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
@@ -1664,12 +1668,12 @@ msgstr ""
 "дополнительного\n"
 "ключа для шифрования.\n"
 
-#: g10/keygen.c:1683 g10/keygen.c:1784
+#: g10/keygen.c:1689 g10/keygen.c:1790
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Генерация ключа не удалась: %s\n"
 
-#: g10/keygen.c:1727 g10/sig-check.c:318 g10/sign.c:112
+#: g10/keygen.c:1733 g10/sig-check.c:315 g10/sign.c:112
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1677,7 +1681,7 @@ msgstr ""
 "открытый ключ сгенерирован в будущем (искривление времени или неправильно "
 "установлены часы)\n"
 
-#: g10/keygen.c:1729 g10/sig-check.c:320 g10/sign.c:114
+#: g10/keygen.c:1735 g10/sig-check.c:317 g10/sign.c:114
 #, fuzzy, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1685,12 +1689,12 @@ msgstr ""
 "открытый ключ сгенерирован в будущем (искривление времени или неправильно "
 "установлены часы)\n"
 
-#: g10/keygen.c:1762
+#: g10/keygen.c:1768
 #, fuzzy
 msgid "Really create? "
 msgstr "Действительно создать? "
 
-#: g10/encode.c:91 g10/openfile.c:168 g10/openfile.c:277 g10/tdbio.c:454
+#: g10/encode.c:91 g10/openfile.c:178 g10/openfile.c:288 g10/tdbio.c:454
 #: g10/tdbio.c:515
 #, c-format
 msgid "%s: can't open: %s\n"
@@ -1701,17 +1705,17 @@ msgstr "%s: невозможно открыть: %s\n"
 msgid "error creating passphrase: %s\n"
 msgstr "ошибка при создании ключевой фразы: %s\n"
 
-#: g10/encode.c:171 g10/encode.c:319
+#: g10/encode.c:171 g10/encode.c:324
 #, fuzzy, c-format
 msgid "%s: WARNING: empty file\n"
 msgstr "%s: предупреждение: пустой файл.\n"
 
-#: g10/encode.c:266
+#: g10/encode.c:271
 #, c-format
 msgid "reading from `%s'\n"
 msgstr "Читается из `%s'\n"
 
-#: g10/encode.c:483
+#: g10/encode.c:492
 #, fuzzy, c-format
 msgid "%s/%s encrypted for: %s\n"
 msgstr "%s зашифровано для: %s\n"
@@ -1778,7 +1782,7 @@ msgstr "%s: пользователь не найден\n"
 msgid "skipping block of type %d\n"
 msgstr "пропускаем блок типа %d\n"
 
-#: g10/import.c:189 g10/trustdb.c:1740 g10/trustdb.c:1781
+#: g10/import.c:189 g10/trustdb.c:1806 g10/trustdb.c:1847
 #, c-format
 msgid "%lu keys so far processed\n"
 msgstr ""
@@ -1876,7 +1880,7 @@ msgstr "секретный ключ %08lX: не имеет соответствующего открытого ключа.\n"
 msgid "no default public keyring\n"
 msgstr "нет связки открытых ключей по умолчанию\n"
 
-#: g10/import.c:435 g10/openfile.c:220 g10/sign.c:295 g10/sign.c:611
+#: g10/import.c:435 g10/openfile.c:230 g10/sign.c:295 g10/sign.c:615
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "записывается в `%s'\n"
@@ -2813,15 +2817,7 @@ msgstr ""
 msgid "Experimental algorithms should not be used!\n"
 msgstr ""
 
-#: g10/misc.c:219
-msgid ""
-"RSA keys are deprecated; please consider creating a new key and use this key "
-"in the future\n"
-msgstr ""
-"Пользование RSA ключами не рекомендуется, пожалуйста, подумайте о создании\n"
-"нового ключа для использования в будущем\n"
-
-#: g10/misc.c:241
+#: g10/misc.c:232
 msgid "this cipher algorithm is depreciated; please use a more standard one!\n"
 msgstr ""
 
@@ -2830,7 +2826,7 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr "невозможно заблокировать связку открытых ключей: %s\n"
 
-#: g10/parse-packet.c:965
+#: g10/parse-packet.c:972
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr ""
@@ -2892,32 +2888,32 @@ msgstr ""
 msgid "can't open signed data `%s'\n"
 msgstr "невозможно открыть подписанные данные `%s' .\n"
 
-#: g10/pubkey-enc.c:79
+#: g10/pubkey-enc.c:76
 #, c-format
 msgid "anonymous receiver; trying secret key %08lX ...\n"
 msgstr "анонимный получатель, пробуем секретный ключ %08lX ...\n"
 
-#: g10/pubkey-enc.c:85
+#: g10/pubkey-enc.c:82
 #, fuzzy
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "Ок, мы -- анонимный получатель.\n"
 
-#: g10/pubkey-enc.c:137
+#: g10/pubkey-enc.c:134
 #, fuzzy
 msgid "old encoding of the DEK is not supported\n"
 msgstr "алгоритм защиты %d не поддерживается\n"
 
-#: g10/pubkey-enc.c:156
+#: g10/pubkey-enc.c:153
 #, fuzzy, c-format
 msgid "cipher algorithm %d is unknown or disabled\n"
 msgstr "алгоритм защиты %d не поддерживается\n"
 
-#: g10/pubkey-enc.c:195
+#: g10/pubkey-enc.c:192
 #, fuzzy, c-format
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
 msgstr "замечание: шифровальный алгоритм %d не найден в предпочтениях\n"
 
-#: g10/pubkey-enc.c:201
+#: g10/pubkey-enc.c:198
 #, fuzzy, c-format
 msgid "NOTE: secret key %08lX expired at %s\n"
 msgstr "предупреждение: ключ подписи устарел %s\n"
@@ -2980,31 +2976,31 @@ msgstr "Неправильная ключевая фраза, попробуйте снова ...\n"
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr "Предупреждение: обнаружен слабый ключ - смените ключевую фразу.\n"
 
-#: g10/sig-check.c:202
+#: g10/sig-check.c:199
 msgid "assuming bad MDC due to an unknown critical bit\n"
 msgstr ""
 
-#: g10/sig-check.c:300
+#: g10/sig-check.c:297
 msgid ""
 "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
 msgstr "этот ElGamal ключ, созданный PGP, не надежен для создания подписей!\n"
 
-#: g10/sig-check.c:308
+#: g10/sig-check.c:305
 #, fuzzy, c-format
 msgid "public key is %lu second newer than the signature\n"
 msgstr "ключ %08lX: нет идентификатора пользователя для подписи\n"
 
-#: g10/sig-check.c:309
+#: g10/sig-check.c:306
 #, fuzzy, c-format
 msgid "public key is %lu seconds newer than the signature\n"
 msgstr "ключ %08lX: нет идентификатора пользователя для подписи\n"
 
-#: g10/sig-check.c:327
+#: g10/sig-check.c:324
 #, fuzzy, c-format
 msgid "NOTE: signature key expired %s\n"
 msgstr "предупреждение: ключ подписи устарел %s\n"
 
-#: g10/sig-check.c:396
+#: g10/sig-check.c:393
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 
@@ -3013,7 +3009,7 @@ msgstr ""
 msgid "%s signature from: %s\n"
 msgstr "ПЛОХАЯ подпись от \""
 
-#: g10/sign.c:290 g10/sign.c:606
+#: g10/sign.c:290 g10/sign.c:610
 #, fuzzy, c-format
 msgid "can't create %s: %s\n"
 msgstr "%s: невозможно открыть: %s\n"
@@ -3062,7 +3058,7 @@ msgstr "%s: невозможно открыть: %s\n"
 msgid "%s: directory does not exist!\n"
 msgstr ""
 
-#: g10/openfile.c:216 g10/openfile.c:284 g10/ringedit.c:1363 g10/tdbio.c:444
+#: g10/openfile.c:226 g10/openfile.c:295 g10/ringedit.c:1363 g10/tdbio.c:444
 #, fuzzy, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: невозможно открыть: %s\n"
@@ -3163,296 +3159,306 @@ msgstr ""
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr "База данных доверия разрушена: запустите \"gpgm --fix-trust-db\".\n"
 
-#: g10/trustdb.c:168
+#: g10/trustdb.c:169
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
 msgstr ""
 
-#: g10/trustdb.c:183
+#: g10/trustdb.c:184
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
 msgstr ""
 
-#: g10/trustdb.c:197
+#: g10/trustdb.c:198
 #, fuzzy, c-format
 msgid "trust record %lu: delete failed: %s\n"
 msgstr "обновление секрета не удалось: %s\n"
 
-#: g10/trustdb.c:211
+#: g10/trustdb.c:212
 #, fuzzy, c-format
 msgid "trustdb: sync failed: %s\n"
 msgstr "обновление базы данных доверия не удалось: %s\n"
 
-#: g10/trustdb.c:376
+#: g10/trustdb.c:377
 #, fuzzy, c-format
 msgid "error reading dir record for LID %lu: %s\n"
 msgstr "Fehler beim Erzeugen der \"Passphrase\": %s\n"
 
-#: g10/trustdb.c:383
+#: g10/trustdb.c:384
 #, c-format
 msgid "lid %lu: expected dir record, got type %d\n"
 msgstr ""
 
-#: g10/trustdb.c:388
+#: g10/trustdb.c:389
 #, c-format
 msgid "no primary key for LID %lu\n"
 msgstr ""
 
-#: g10/trustdb.c:393
+#: g10/trustdb.c:394
 #, fuzzy, c-format
 msgid "error reading primary key for LID %lu: %s\n"
 msgstr "Fehler beim Erzeugen der \"Passphrase\": %s\n"
 
-#: g10/trustdb.c:432
+#: g10/trustdb.c:433
 #, fuzzy, c-format
 msgid "get_dir_record: search_record failed: %s\n"
 msgstr "обновление секрета не удалось: %s\n"
 
-#: g10/trustdb.c:487
+#: g10/trustdb.c:474
 #, fuzzy, c-format
-msgid "NOTE: secret key %08lX is NOT protected.\n"
-msgstr "Этот ключ не защищен.\n"
+msgid "'%s' is not a valid long keyID\n"
+msgstr "Недопустимый символ в комментарии.\n"
 
-#: g10/trustdb.c:495
-#, fuzzy, c-format
-msgid "key %08lX: secret key without public key - skipped\n"
-msgstr "секретный ключ %08lX: не имеет соответствующего открытого ключа.\n"
-
-#: g10/trustdb.c:502
-#, c-format
-msgid "key %08lX: secret and public key don't match\n"
-msgstr "ключ %08lX: секретный и открытого ключи не совпадают.\n"
-
-#: g10/trustdb.c:514
+#: g10/trustdb.c:501
 #, fuzzy, c-format
 msgid "key %08lX: can't put it into the trustdb\n"
 msgstr "ключ %08lX.%lu: невозможно положить в базу данных доверия\n"
 
-#: g10/trustdb.c:520
+#: g10/trustdb.c:507
 #, fuzzy, c-format
 msgid "key %08lX: query record failed\n"
 msgstr "ключ %08lX: запрос записи не удался\n"
 
-#: g10/trustdb.c:529
+#: g10/trustdb.c:516
 #, fuzzy, c-format
 msgid "key %08lX: already in trusted key table\n"
 msgstr "ключ %08lX: уже на связке секретных ключей\n"
 
-#: g10/trustdb.c:532
+#: g10/trustdb.c:519
 #, fuzzy, c-format
 msgid "key %08lX: accepted as trusted key.\n"
 msgstr "ключ %08lX: уже на связке секретных ключей\n"
 
-#: g10/trustdb.c:540
+#: g10/trustdb.c:546
+#, fuzzy, c-format
+msgid "key %08lX: no public key for trusted key - skipped\n"
+msgstr "секретный ключ %08lX: не имеет соответствующего открытого ключа.\n"
+
+#: g10/trustdb.c:565
+#, fuzzy, c-format
+msgid "NOTE: secret key %08lX is NOT protected.\n"
+msgstr "Этот ключ не защищен.\n"
+
+#: g10/trustdb.c:577
+#, fuzzy, c-format
+msgid "key %08lX: secret key without public key - skipped\n"
+msgstr "секретный ключ %08lX: не имеет соответствующего открытого ключа.\n"
+
+#: g10/trustdb.c:584
+#, c-format
+msgid "key %08lX: secret and public key don't match\n"
+msgstr "ключ %08lX: секретный и открытого ключи не совпадают.\n"
+
+#: g10/trustdb.c:597
 #, fuzzy, c-format
 msgid "enumerate secret keys failed: %s\n"
 msgstr "обновление секрета не удалось: %s\n"
 
-#: g10/trustdb.c:921
+#: g10/trustdb.c:987
 #, fuzzy, c-format
 msgid "key %08lX.%lu: Good subkey binding\n"
 msgstr "ключ %08lX: нет идентификатора пользователя\n"
 
-#: g10/trustdb.c:927 g10/trustdb.c:962
+#: g10/trustdb.c:993 g10/trustdb.c:1028
 #, fuzzy, c-format
 msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
 msgstr "ключ %08lX: нет допустимых идентификаторов пользователей\n"
 
-#: g10/trustdb.c:939
+#: g10/trustdb.c:1005
 #, fuzzy, c-format
 msgid "key %08lX.%lu: Valid key revocation\n"
 msgstr "ключ %08lX.%lu: срок действия истек %s\n"
 
-#: g10/trustdb.c:945
+#: g10/trustdb.c:1011
 #, fuzzy, c-format
 msgid "key %08lX.%lu: Invalid key revocation: %s\n"
 msgstr "ключ %08lX: открытый ключ не найден: %s\n"
 
-#: g10/trustdb.c:956
+#: g10/trustdb.c:1022
 #, fuzzy, c-format
 msgid "key %08lX.%lu: Valid subkey revocation\n"
 msgstr "ключ %08lX: нет допустимых идентификаторов пользователей\n"
 
-#: g10/trustdb.c:1067
+#: g10/trustdb.c:1133
 #, fuzzy
 msgid "Good self-signature"
 msgstr "[само-подпись]\n"
 
-#: g10/trustdb.c:1077
+#: g10/trustdb.c:1143
 #, fuzzy
 msgid "Invalid self-signature"
 msgstr "ключ %08lX: недопустимая само-подпись\n"
 
-#: g10/trustdb.c:1104
+#: g10/trustdb.c:1170
 msgid "Valid user ID revocation skipped due to a newer self signature"
 msgstr ""
 
-#: g10/trustdb.c:1110
+#: g10/trustdb.c:1176
 #, fuzzy
 msgid "Valid user ID revocation"
 msgstr "Недопустимый выбор.\n"
 
-#: g10/trustdb.c:1115
+#: g10/trustdb.c:1181
 #, fuzzy
 msgid "Invalid user ID revocation"
 msgstr "Недопустимый выбор.\n"
 
-#: g10/trustdb.c:1157
+#: g10/trustdb.c:1223
 #, fuzzy
 msgid "Valid certificate revocation"
 msgstr "Плохой сертификат"
 
-#: g10/trustdb.c:1158
+#: g10/trustdb.c:1224
 #, fuzzy
 msgid "Good certificate"
 msgstr "Плохой сертификат"
 
-#: g10/trustdb.c:1186
+#: g10/trustdb.c:1252
 #, fuzzy
 msgid "Invalid certificate revocation"
 msgstr "Плохой сертификат"
 
-#: g10/trustdb.c:1187
+#: g10/trustdb.c:1253
 #, fuzzy
 msgid "Invalid certificate"
 msgstr "Плохой сертификат"
 
-#: g10/trustdb.c:1204 g10/trustdb.c:1208
+#: g10/trustdb.c:1270 g10/trustdb.c:1274
 #, c-format
 msgid "sig record %lu[%d] points to wrong record.\n"
 msgstr ""
 
-#: g10/trustdb.c:1267
+#: g10/trustdb.c:1333
 #, fuzzy
 msgid "duplicated certificate - deleted"
 msgstr "Плохой сертификат"
 
-#: g10/trustdb.c:1584
+#: g10/trustdb.c:1650
 #, fuzzy, c-format
 msgid "tdbio_search_dir failed: %s\n"
 msgstr "ошибка декодирования: %s\n"
 
-#: g10/trustdb.c:1718
+#: g10/trustdb.c:1784
 #, fuzzy, c-format
 msgid "lid ?: insert failed: %s\n"
 msgstr "обновление секрета не удалось: %s\n"
 
-#: g10/trustdb.c:1723
+#: g10/trustdb.c:1789
 #, fuzzy, c-format
 msgid "lid %lu: insert failed: %s\n"
 msgstr "обновление секрета не удалось: %s\n"
 
-#: g10/trustdb.c:1729
+#: g10/trustdb.c:1795
 #, c-format
 msgid "lid %lu: inserted\n"
 msgstr ""
 
-#: g10/trustdb.c:1734
+#: g10/trustdb.c:1800
 #, fuzzy, c-format
 msgid "error reading dir record: %s\n"
 msgstr "Fehler beim Erzeugen der \"Passphrase\": %s\n"
 
-#: g10/trustdb.c:1742 g10/trustdb.c:1805
+#: g10/trustdb.c:1808 g10/trustdb.c:1871
 #, c-format
 msgid "%lu keys processed\n"
 msgstr ""
 
-#: g10/trustdb.c:1744 g10/trustdb.c:1811
+#: g10/trustdb.c:1810 g10/trustdb.c:1877
 #, fuzzy, c-format
 msgid "\t%lu keys with errors\n"
 msgstr "Ошибка записи файла"
 
-#: g10/trustdb.c:1746
+#: g10/trustdb.c:1812
 #, c-format
 msgid "\t%lu keys inserted\n"
 msgstr ""
 
-#: g10/trustdb.c:1749
+#: g10/trustdb.c:1815
 #, fuzzy, c-format
 msgid "enumerate keyblocks failed: %s\n"
 msgstr "обновление секрета не удалось: %s\n"
 
-#: g10/trustdb.c:1797
+#: g10/trustdb.c:1863
 #, c-format
 msgid "lid %lu: dir record w/o key - skipped\n"
 msgstr ""
 
-#: g10/trustdb.c:1807
+#: g10/trustdb.c:1873
 #, fuzzy, c-format
 msgid "\t%lu due to new pubkeys\n"
 msgstr "ключ %08lX: %d новых под-ключей\n"
 
-#: g10/trustdb.c:1809
+#: g10/trustdb.c:1875
 #, fuzzy, c-format
 msgid "\t%lu keys skipped\n"
 msgstr "%s: пропущен: %s\n"
 
-#: g10/trustdb.c:1813
+#: g10/trustdb.c:1879
 #, c-format
 msgid "\t%lu keys updated\n"
 msgstr ""
 
-#: g10/trustdb.c:2158
+#: g10/trustdb.c:2224
 msgid "Ooops, no keys\n"
 msgstr ""
 
-#: g10/trustdb.c:2162
+#: g10/trustdb.c:2228
 #, fuzzy
 msgid "Ooops, no user IDs\n"
 msgstr "список ключей и идентификаторов пользователей"
 
-#: g10/trustdb.c:2320
+#: g10/trustdb.c:2386
 #, fuzzy, c-format
 msgid "check_trust: search dir record failed: %s\n"
 msgstr "ключ %08lX.%lu: вставка доверительной записи не удалась: %s\n"
 
-#: g10/trustdb.c:2329
+#: g10/trustdb.c:2395
 #, fuzzy, c-format
 msgid "key %08lX: insert trust record failed: %s\n"
 msgstr "ключ %08lX.%lu: вставка доверительной записи не удалась: %s\n"
 
-#: g10/trustdb.c:2333
+#: g10/trustdb.c:2399
 #, c-format
 msgid "key %08lX.%lu: inserted into trustdb\n"
 msgstr "ключ %08lX.%lu: вставлен в базу данных доверия\n"
 
-#: g10/trustdb.c:2341
+#: g10/trustdb.c:2407
 #, c-format
 msgid "key %08lX.%lu: created in future (time warp or clock problem)\n"
 msgstr ""
 "ключ %08lX.%lu: сгенерирован в будущем (неправильно установлены часы)\n"
 
-#: g10/trustdb.c:2356
+#: g10/trustdb.c:2422
 #, c-format
 msgid "key %08lX.%lu: expired at %s\n"
 msgstr "ключ %08lX.%lu: срок действия истек %s\n"
 
-#: g10/trustdb.c:2364
+#: g10/trustdb.c:2430
 #, c-format
 msgid "key %08lX.%lu: trust check failed: %s\n"
 msgstr "ключ %08lX.%lu: проверка доверия не удалась: %s\n"
 
-#: g10/trustdb.c:2515
+#: g10/trustdb.c:2581
 #, fuzzy, c-format
 msgid "user '%s' not found: %s\n"
 msgstr "%s: пользователь не найден\n"
 
-#: g10/trustdb.c:2517
+#: g10/trustdb.c:2583
 #, fuzzy, c-format
 msgid "problem finding '%s' in trustdb: %s\n"
 msgstr "Ошибка инициализации базы данных доверия: %s\n"
 
-#: g10/trustdb.c:2520
+#: g10/trustdb.c:2586
 #, fuzzy, c-format
 msgid "user '%s' not in trustdb - inserting\n"
 msgstr "обновление базы данных доверия не удалось: %s\n"
 
-#: g10/trustdb.c:2523
+#: g10/trustdb.c:2589
 #, fuzzy, c-format
 msgid "failed to put '%s' into trustdb: %s\n"
 msgstr "Ошибка инициализации базы данных доверия: %s\n"
 
-#: g10/trustdb.c:2709 g10/trustdb.c:2739
+#: g10/trustdb.c:2775 g10/trustdb.c:2805
 msgid "WARNING: can't yet handle long pref records\n"
 msgstr ""
 
@@ -3513,51 +3519,51 @@ msgid ""
 msgstr "этот ElGamal ключ, созданный PGP, не надежен для создания подписей!\n"
 
 #. do not overwrite
-#: g10/openfile.c:79
+#: g10/openfile.c:84
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Файл `%s' существует. "
 
-#: g10/openfile.c:81
+#: g10/openfile.c:86
 msgid "Overwrite (y/N)? "
 msgstr "Переписать (y/N)? "
 
-#: g10/openfile.c:109
+#: g10/openfile.c:119
 #, c-format
 msgid "%s: unknown suffix\n"
 msgstr ""
 
-#: g10/openfile.c:131
+#: g10/openfile.c:141
 #, fuzzy
 msgid "Enter new filename"
 msgstr "--store [имя файла]"
 
-#: g10/openfile.c:172
+#: g10/openfile.c:182
 #, fuzzy
 msgid "writing to stdout\n"
 msgstr "записывается в `%s'\n"
 
-#: g10/openfile.c:250
+#: g10/openfile.c:261
 #, fuzzy, c-format
 msgid "assuming signed data in `%s'\n"
 msgstr "невозможно открыть подписанные данные `%s' .\n"
 
-#: g10/openfile.c:300
+#: g10/openfile.c:311
 #, c-format
 msgid "%s: new options file created\n"
 msgstr ""
 
-#: g10/openfile.c:313
+#: g10/openfile.c:338
 #, fuzzy, c-format
 msgid "%s: can't create directory: %s\n"
 msgstr "%s: невозможно открыть: %s\n"
 
-#: g10/openfile.c:316
+#: g10/openfile.c:341
 #, fuzzy, c-format
 msgid "%s: directory created\n"
 msgstr "%s: невозможно открыть: %s\n"
 
-#: g10/openfile.c:318
+#: g10/openfile.c:343
 msgid "you have to start GnuPG again, so it can read the new options file\n"
 msgstr ""
 
@@ -3810,6 +3816,13 @@ msgstr "Помощь отсутствует."
 msgid "No help available for `%s'"
 msgstr "Помощь для `%s' отсутствует."
 
+#~ msgid ""
+#~ "RSA keys are deprecated; please consider creating a new key and use this key "
+#~ "in the future\n"
+#~ msgstr ""
+#~ "Пользование RSA ключами не рекомендуется, пожалуйста, подумайте о создании\n"
+#~ "нового ключа для использования в будущем\n"
+
 #~ msgid "set debugging flags"
 #~ msgstr "установить отладочные флаги"
 
@@ -3953,10 +3966,6 @@ msgstr "Помощь для `%s' отсутствует."
 
 #~ msgid "usage: gpgm [options] "
 #~ msgstr "Использование: gpgm [параметры] "
-
-#, fuzzy
-#~ msgid "key %08lX: no public key for trusted key - skipped\n"
-#~ msgstr "секретный ключ %08lX: не имеет соответствующего открытого ключа.\n"
 
 #, fuzzy
 #~ msgid "lid %lu: read dir record failed: %s\n"
