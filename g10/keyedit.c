@@ -2326,6 +2326,11 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 	  continue;
 	}
 
+      revkey.class=0x80;
+      if(sensitive)
+	revkey.class|=0x40;
+      revkey.algid=revoker_pk->pubkey_algo;
+
       if(cmp_public_keys(revoker_pk,pk)==0)
 	{
 	  /* This actually causes no harm (after all, a key that
@@ -2333,7 +2338,39 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 	     regular key), but it's easy enough to check. */
 	  log_error(_("you cannot appoint a key as its own "
 		      "designated revoker\n"));
+
 	  continue;
+	}
+
+      keyid_from_pk(pk,NULL);
+
+      /* Does this revkey already exist? */
+      if(!pk->revkey && pk->numrevkeys)
+	BUG();
+      else
+	{
+	  int i;
+
+	  for(i=0;i<pk->numrevkeys;i++)
+	    {
+	      if(memcmp(&pk->revkey[i],&revkey,
+			sizeof(struct revocation_key))==0)
+		{
+		  char buf[50];
+
+		  log_error(_("this key has already been designated "
+			      "as a revoker\n"));
+
+		  sprintf(buf,"%08lX%08lX",
+			  (ulong)pk->keyid[0],(ulong)pk->keyid[1]);
+		  write_status_text(STATUS_ALREADY_SIGNED,buf);
+
+		  break;
+		}
+	    }
+
+	  if(i<pk->numrevkeys)
+	    continue;
 	}
 
       keyid_from_pk(revoker_pk,keyid);
@@ -2360,11 +2397,8 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 				"key as a designated revoker? (y/N): "))
 	continue;
 
-      revkey.class=0x80;
-      if(sensitive)
-	revkey.class|=0x40;
-      revkey.algid=revoker_pk->pubkey_algo;
       free_public_key(revoker_pk);
+      revoker_pk=NULL;
       break;
     }
 

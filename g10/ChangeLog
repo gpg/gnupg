@@ -1,3 +1,9 @@
+2002-10-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_addrevoker): Properly back out if the signature
+	fails.  Also, do not allow appointing the same revoker twice, and
+	report ALREADY_SIGNED if the user tries it.
+
 2002-10-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (import_keys_internal): Missed one s/inp/inp2/.
