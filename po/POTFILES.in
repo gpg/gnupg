@@ -10,9 +10,7 @@ util/logger.c
 
 # cipher
 cipher/random.c
-cipher/rand-dummy.c
-cipher/rand-unix.c
-cipher/rand-w32.c
+cipher/rndlinux.c
 
 # main program
 
