@@ -6,7 +6,10 @@
 SENDMAIL=": /usr/sbin/sendmail"
 
 for file in *.po; do
+    addr=$(head -100 $file | awk '/^# ?Designated-Translator:/ { printf "%s", $0; exit 0}' | sed 's/.*\(<.*>\).*/\1/')
+    if [ -z "$addr" ]; then
     addr=$(awk '/Last-Translator:/ { printf "%s", $0; exit 0}' $file | sed 's/.*\(<.*>\).*/\1/')
+    fi
     ll=$(basename $file .po)    
 
     if ! msgfmt -vc $file 2>&1| egrep -q 'fuzzy|untranslated|error'; then
@@ -23,6 +26,7 @@ for file in *.po; do
     ( cat <<EOF
 From: translations@gnupg.org
 To: $addr
+Mail-Followup-To: translations@gnupg.org
 Subject: GnuPG translation ($ll)
 Mime-Version: 1.0
 Content-Type: multipart/mixed; boundary="=-=-="
@@ -31,12 +35,8 @@ Content-Type: multipart/mixed; boundary="=-=-="
 
 Hi!
 
-Please find attached the latest version of the PO file for your GnuPG
-translation ($file).  I would appreciate if you can fix any remaining
-fuzzy or untranslated entries so that we are able to prepare a fine
-and fully translated 1.2.2 release ASAP.  If you need access to the
-code please get the latest release candidate at
-ftp://ftp.gnupg.org/gcrypt/alpha/gnupg/gnupg-1.2.2rc2.tar.gz
+Please find attached the very latest version of the PO file for your
+GnuPG translation ($file). 
 
 IMHO it is important to have a basic understanding of GnuPG's
 functionality to do a correct translation.  A false translation might
@@ -69,3 +69,4 @@ echo ""
     ) | $SENDMAIL -oi "$addr"
 
 done
+
