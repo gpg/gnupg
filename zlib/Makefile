@@ -1,5 +1,5 @@
 # Generated automatically from Makefile.in by configure.
-# Makefile.in generated automatically by automake 1.3 from Makefile.am
+# Makefile.in generated automatically by automake 1.2f from Makefile.am
 
 # Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -37,8 +37,6 @@ mandir = ${prefix}/man
 includedir = ${prefix}/include
 oldincludedir = /usr/include
 
-DISTDIR =
-
 pkgdatadir = $(datadir)/gnupg
 pkglibdir = $(libdir)/gnupg
 pkgincludedir = $(includedir)/gnupg
@@ -68,8 +66,8 @@ host_alias = i586-pc-linux-gnu
 host_triplet = i586-pc-linux-gnu
 target_alias = i586-pc-linux-gnu
 target_triplet = i586-pc-linux-gnu
-CATALOGS = 
-CATOBJEXT = 
+CATALOGS =  en.gmo de.gmo it.gmo fr.gmo
+CATOBJEXT = .gmo
 CC = gcc
 CPP = gcc -E
 DATADIRNAME = share
@@ -77,25 +75,25 @@ DYNLINK_LDFLAGS = -rdynamic
 G10_LOCALEDIR = /usr/local//locale
 GENCAT = 
 GMOFILES =  en.gmo de.gmo it.gmo fr.gmo
-GMSGFMT = 
+GMSGFMT = /usr/local/bin/msgfmt
 GT_NO = 
 GT_YES = #YES#
 INCLUDE_LOCALE_H = #include <locale.h>
-INSTOBJEXT = 
-INTLDEPS = 
-INTLLIBS = 
-INTLOBJS = 
+INSTOBJEXT = .mo
+INTLDEPS = $(top_builddir)/intl/libintl.a
+INTLLIBS = $(top_builddir)/intl/libintl.a
+INTLOBJS = $(GETTOBJS)
 MKINSTALLDIRS = scripts/mkinstalldirs
 MPI_EXTRA_ASM_OBJS = 
-MSGFMT = 
+MSGFMT = /usr/local/bin/msgfmt
 PACKAGE = gnupg
 POFILES =  en.po de.po it.po fr.po
-POSUB = 
+POSUB = po
 RANLIB = ranlib
-USE_INCLUDED_LIBINTL = no
-USE_NLS = no
+USE_INCLUDED_LIBINTL = yes
+USE_NLS = yes
 VERSION = 0.4.0a
-ZLIBS = ../zlib/libzlib.a
+ZLIBS = 
 l = 
 
 CFLAGS = -O -Wall
@@ -105,7 +103,7 @@ EXTRA_DIST = README algorithm.doc ChangeLog  example.c
 # I found no other easy way to use this only if zlib is neede
 # doing this with SUBDIR = @xxx@  in the top Makefile.am does not
 # work because automake doesn't scan this Makefile.am here.
-noinst_LIBRARIES = libzlib.a
+#noinst_LIBRARIES = libzlib.a
 
 libzlib_a_SOURCES = adler32.c compress.c crc32.c gzio.c \
 		    uncompr.c deflate.c trees.c zutil.c \
@@ -124,7 +122,7 @@ LIBRARIES =  $(noinst_LIBRARIES)
 DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
 CPPFLAGS = 
 LDFLAGS = 
-LIBS = -ldl 
+LIBS = -ldl -lz
 libzlib_a_LIBADD = 
 libzlib_a_OBJECTS =  adler32.o compress.o crc32.o gzio.o uncompr.o \
 deflate.o trees.o zutil.o inflate.o infblock.o inftrees.o infcodes.o \
@@ -146,14 +144,14 @@ DEP_FILES =  .deps/adler32.P .deps/compress.P .deps/crc32.P \
 SOURCES = $(libzlib_a_SOURCES)
 OBJECTS = $(libzlib_a_OBJECTS)
 
-all: Makefile $(LIBRARIES)
+default: all
 
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu zlib/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -269,6 +267,8 @@ install: install-exec install-data all
 
 uninstall: 
 
+all: Makefile $(LIBRARIES)
+
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
 installdirs:
@@ -305,7 +305,7 @@ maintainer-clean:  maintainer-clean-noinstLIBRARIES \
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
-.PHONY: mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
+.PHONY: default mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
 clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \

@@ -173,13 +173,13 @@ g10_log_bug( const char *fmt, ... )
 void
 g10_log_bug0( const char *file, int line, const char *func )
 {
-    log_bug("Ohhhh jeeee ... (%s:%d:%s)\n", file, line, func );
+    log_bug("you found a bug ... (%s:%d:%s)\n", file, line, func );
 }
 #else
 void
 g10_log_bug0( const char *file, int line )
 {
-    log_bug("Ohhhh jeeee ... (%s:%d)\n", file, line);
+    log_bug("you found a bug ... (%s:%d)\n", file, line);
 }
 #endif
 

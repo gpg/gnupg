@@ -1879,6 +1879,27 @@ is_algo_in_prefs( ulong lid, int preftype, int algo )
 }
 
 
+static int
+get_dir_record( PKT_public_key *pk, TRUSTREC *rec )
+{
+    int rc=0;
+
+    if( pk->local_id ) {
+	if( tdbio_read_record( pk->local_id, rec, RECTYPE_DIR ) ) {
+	    log_error("get_dir_record: read record failed\n");
+	    rc = G10ERR_TRUSTDB;
+	}
+    }
+    else { /* no local_id: scan the trustdb */
+	if( (rc=tdbio_search_dir_bypk( pk, rec )) && rc != -1 )
+	    log_error("get_dir_record: search_record failed: %s\n",
+							    g10_errstr(rc));
+    }
+    return rc;
+}
+
+
+
 /****************
  * This function simply looks for the key in the trustdb
  * and makes sure that pk->local_id is set to the coreect value.
@@ -1890,22 +1911,7 @@ int
 query_trust_record( PKT_public_key *pk )
 {
     TRUSTREC rec;
-    int rc=0;
-
-    if( pk->local_id ) {
-	if( tdbio_read_record( pk->local_id, &rec, RECTYPE_DIR ) ) {
-	    log_error("query_trust_record: read record failed\n");
-	    return G10ERR_TRUSTDB;
-	}
-    }
-    else { /* no local_id: scan the trustdb */
-	if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 ) {
-	    log_error("query_trust_record: search_record failed: %s\n",
-							    g10_errstr(rc));
-	    return rc;
-	}
-    }
-    return rc;
+    return get_dir_record( pk, &rec );
 }
 
 
@@ -1915,17 +1921,9 @@ clear_trust_checked_flag( PKT_public_key *pk )
     TRUSTREC rec;
     int rc;
 
-    if( !pk->local_id ) {
-	query_trust_record( pk );
-	if( !pk->local_id )
-	    log_bug("clear_trust_checked_flag: Still no LID\n");
-    }
-
-    if( (rc=tdbio_read_record( pk->local_id, &rec, RECTYPE_DIR ))) {
-	log_error("clear_trust_checked_flag: read record failed: %s\n",
-							      g10_errstr(rc));
+    rc = get_dir_record( pk, &rec );
+    if( rc )
 	return rc;
-    }
 
     if( !(rec.r.dir.dirflags & DIRF_CHECKED) )
 	return 0;
@@ -1941,6 +1939,44 @@ clear_trust_checked_flag( PKT_public_key *pk )
     return 0;
 }
 
+
+
+/****************
+ * Update all the info from the public keyblock,  the signatures-checked
+ * flag is reset. The key must already exist in the keydb.
+ * Note: This function clears all keyblock flags.
+ */
+int
+update_trust_record( KBNODE keyblock )
+{
+    PKT_public_key *primary_pk;
+    KBNODE node;
+    TRUSTREC drec;
+    int modified = 0;
+    int rc = 0;
+
+    clear_kbnode_flags( keyblock );
+    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
+    primary_pk = node->pkt->pkt.public_key;
+    rc = get_dir_record( primary_pk, &drec );
+    if( rc )
+	return rc;
+
+
+    if( drec.r.dir.dirflags & DIRF_CHECKED ) /* <<--- FIXME: remove this! */
+	modified = 1;
+
+    if( modified ) {
+	/* reset the checked flag */
+	drec.r.dir.dirflags &= ~DIRF_CHECKED;
+	rc = tdbio_write_record( &drec );
+	if( rc )
+	    log_error("update_trust_record: write dir record failed: %s\n",
+							    g10_errstr(rc));
+    }
+
+    return rc;
+}
 
 /****************
  * helper function for insert_trust_record()

@@ -12,11 +12,12 @@ Noteworthy changes in version 0.4.1
       when changing a passphrase.
 
     * doc/OpenPGP talks about OpenPGP compliance, doc/HACKING gives
-      some hints about the internal structure.
+      a few hints about the internal structure.
 
-    * checked gnupg against the August 1998 draft (07) and I believe
-      it is in compliance with this document (except one point).
+    * Checked gnupg against the August 1998 draft (07) and I believe
+      it is in compliance with this document (except for one point).
 
+    * Fixed some bugs in the import merging code.
 
 Noteworthy changes in version 0.4.0
 -----------------------------------

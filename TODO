@@ -9,7 +9,10 @@
 
     * Why does OpenPGP say: The algorithm byte is included in the
       checksum of an encoded key, but the actual implementaion does
-      not do this but works??
+      not do this but works - According to Hal Finney, this is a bug
+      in the specs.
+
+    * fix armor problems (see mails by Brian Moore).
 
     * write a tool to extract selected keys from a file.
 

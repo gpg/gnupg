@@ -224,6 +224,8 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
 			cmp_help, &ctx );
     mpi_free( result );
+    sig->flags.checked = 1;
+    sig->flags.valid = !rc;
 
     return rc;
 }

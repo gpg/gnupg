@@ -1,3 +1,7 @@
+Wed Sep 30 10:15:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* import.c (import_one): Fixed update of wrong keyblock.
+
 Tue Sep 29 08:32:08 1998  me,,,  (wk@tobold)
 
 	* mainproc.c (proc_plaintext): Display note for special filename.

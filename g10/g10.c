@@ -213,7 +213,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoComment, "no-comment", 0,   N_("do not write comment packets")},
     { oCompletesNeeded, "completes-needed", 1, N_("(default is 1)")},
     { oMarginalsNeeded, "marginals-needed", 1, N_("(default is 3)")},
-    { oLoadExtension, "load-extension" ,2, N_("|file|load extension module")},
+    { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
     { oS2KDigest, "s2k-digest-algo",2,

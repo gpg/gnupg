@@ -360,7 +360,7 @@ import_one( const char *fname, KBNODE keyblock )
 	    if( (rc=lock_keyblock( &kbpos )) )
 		log_error_f(keyblock_resource_name(&kbpos),
 			 _("can't lock public keyring: %s\n"), g10_errstr(rc) );
-	    else if( (rc=update_keyblock( &kbpos, keyblock )) )
+	    else if( (rc=update_keyblock( &kbpos, keyblock_orig )) )
 		log_error_f( keyblock_resource_name(&kbpos),
 			    _("can't write keyblock: %s\n"), g10_errstr(rc) );
 	    unlock_keyblock( &kbpos );
@@ -398,7 +398,7 @@ import_one( const char *fname, KBNODE keyblock )
 					(ulong)keyid[1], g10_errstr(rc) );
 	}
 	else if( mod_key )
-	    rc = update_trustdb( new_key? pk: pk_orig);
+	    rc = update_trust_record( keyblock_orig );
 	else
 	    rc = clear_trust_checked_flag( new_key? pk : pk_orig );
     }
@@ -418,7 +418,6 @@ import_secret_one( const char *fname, KBNODE keyblock )
 {
     PKT_secret_key *sk;
     KBNODE node, uidnode;
-    KBNODE keyblock_orig = NULL;
     KBPOS kbpos;
     u32 keyid[2];
     int rc = 0;
@@ -477,7 +476,6 @@ import_secret_one( const char *fname, KBNODE keyblock )
 	log_error_f(fname, _("key %08lX: secret key not found: %s\n"),
 				(ulong)keyid[1], g10_errstr(rc));
 
-    release_kbnode( keyblock_orig );
     return rc;
 }
 

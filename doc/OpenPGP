@@ -22,7 +22,7 @@
 
   Compatibility Notes
   ===================
-   GNUPG (>0.4) is in compliance with OpenPGP despite these exeptions:
+   GNUPG (>=0.4.1) is in compliance with OpenPGP despite these exeptions:
 
     * (5.1) The critical bit in signature subpackets is currently
       ignored.	This will be fixed soon.
@@ -57,6 +57,8 @@
 
     * multi-part armored messages are not supported.
       MIME should be used instead.
+
+   Most of the OPTIONAL stuff is implemented.
 
 
 

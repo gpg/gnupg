@@ -83,8 +83,13 @@ typedef struct {
 
 
 typedef struct {
-    u32     keyid[2];	    /* 64 bit keyid */
     ulong   local_id;	    /* internal use, valid if > 0 */
+    struct {
+	unsigned checked:1; /* signature has been checked */
+	unsigned valid:1;   /* signature is good (if checked is set) */
+	unsigned unknown_critical:1;
+    } flags;
+    u32     keyid[2];	    /* 64 bit keyid */
     u32     timestamp;	    /* signature made */
     byte    version;
     byte    sig_class;	    /* sig classification, append for MD calculation*/

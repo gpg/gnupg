@@ -811,6 +811,11 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 
     if( is_v4 ) { /*extract required information */
 	const byte *p;
+
+	/* FIXME: set sig->flags.unknown_critical is there is a
+	 * critical bit set for packets which are not understood
+	 * It does only make sense for hashed data.
+	 */
 	p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_SIG_CREATED, NULL );
 	if( !p )
 	    log_error("signature packet without timestamp\n");
