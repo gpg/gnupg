@@ -52,6 +52,14 @@ static char *pgpkeystr="pgpKey";
 static FILE *input=NULL,*output=NULL,*console=NULL;
 static LDAP *ldap=NULL;
 
+#if !HAVE_SETENV
+int setenv(const char *name, const char *value, int overwrite);
+#endif
+
+#if !HAVE_UNSETENV
+int unsetenv(const char *name);
+#endif
+
 struct keylist
 {
   char str[MAX_LINE];
@@ -592,7 +600,7 @@ search_key(char *searchkey)
 
   err=ldap_search_s(ldap,basekeyspacedn,
 		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
-  if(err!=0)
+  if(err!=LDAP_SUCCESS && err!=LDAP_SIZELIMIT_EXCEEDED)
     {
       int errtag=ldap_err_to_gpg_err(err);
 
@@ -626,6 +634,9 @@ search_key(char *searchkey)
 
       each=ldap_next_entry(ldap,each);
     }
+
+  if(err==LDAP_SIZELIMIT_EXCEEDED)
+    fprintf(console,"gpgkeys: search results exceeded server limit.  First %d results shown.\n",count);
 
   free_keylist(dupelist);
   dupelist=NULL;
@@ -825,57 +836,61 @@ find_basekeyspacedn(void)
   if(err==LDAP_SUCCESS)
     {
       context=ldap_get_values(ldap,res,"namingContexts");
-      attr[0]="pgpBaseKeySpaceDN";
-      attr[1]="pgpVersion";
-      attr[2]="pgpSoftware";
-
-      real_ldap=1;
-
-      /* We found some, so try each namingContext as the search base
-	 and look for pgpBaseKeySpaceDN.  Because we found this, we
-	 know we're talking to a regular-ish LDAP server and not a
-	 LDAP keyserver. */
-
-      for(i=0;context[i] && !basekeyspacedn;i++)
+      if(context)
 	{
-	  char **vals;
-	  LDAPMessage *si_res;
-	  err=ldap_search_s(ldap,context[i],LDAP_SCOPE_ONELEVEL,
-			    "(cn=pgpServerInfo)",attr,0,&si_res);
-	  if(err!=LDAP_SUCCESS)
-	    return err;
+	  attr[0]="pgpBaseKeySpaceDN";
+	  attr[1]="pgpVersion";
+	  attr[2]="pgpSoftware";
 
-	  vals=ldap_get_values(ldap,si_res,"pgpBaseKeySpaceDN");
-	  if(vals)
+	  real_ldap=1;
+
+	  /* We found some, so try each namingContext as the search base
+	     and look for pgpBaseKeySpaceDN.  Because we found this, we
+	     know we're talking to a regular-ish LDAP server and not a
+	     LDAP keyserver. */
+
+	  for(i=0;context[i] && !basekeyspacedn;i++)
 	    {
-	      /* This is always "OU=ACTIVE,O=PGP KEYSPACE,C=US", but
-		 it might not be in the future. */
+	      char **vals;
+	      LDAPMessage *si_res;
+	      err=ldap_search_s(ldap,context[i],LDAP_SCOPE_ONELEVEL,
+				"(cn=pgpServerInfo)",attr,0,&si_res);
+	      if(err!=LDAP_SUCCESS)
+		return err;
 
-	      basekeyspacedn=strdup(vals[0]);
-	      ldap_value_free(vals);
-	    }
-
-	  if(verbose>1)
-	    {
-	      vals=ldap_get_values(ldap,si_res,"pgpSoftware");
+	      vals=ldap_get_values(ldap,si_res,"pgpBaseKeySpaceDN");
 	      if(vals)
 		{
-		  fprintf(console,"Server: \t%s\n",vals[0]);
+		  /* This is always "OU=ACTIVE,O=PGP KEYSPACE,C=US", but
+		     it might not be in the future. */
+
+		  basekeyspacedn=strdup(vals[0]);
 		  ldap_value_free(vals);
 		}
 
-	      vals=ldap_get_values(ldap,si_res,"pgpVersion");
-	      if(vals)
+	      if(verbose>1)
 		{
-		  fprintf(console,"Version:\t%s\n",vals[0]);
-		  ldap_value_free(vals);
+		  vals=ldap_get_values(ldap,si_res,"pgpSoftware");
+		  if(vals)
+		    {
+		      fprintf(console,"Server: \t%s\n",vals[0]);
+		      ldap_value_free(vals);
+		    }
+
+		  vals=ldap_get_values(ldap,si_res,"pgpVersion");
+		  if(vals)
+		    {
+		      fprintf(console,"Version:\t%s\n",vals[0]);
+		      ldap_value_free(vals);
+		    }
 		}
+
+	      ldap_msgfree(si_res);
 	    }
 
-	  ldap_msgfree(si_res);
+	  ldap_value_free(context);
 	}
 
-      ldap_value_free(context);
       ldap_msgfree(res);
     }
   else

@@ -1,3 +1,14 @@
+2004-02-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: Replacement prototypes for setenv and unsetenv.
+	(search_key): Catch a SIZELIMIT_EXCEEDED error and show the user
+	whatever the server did give us.
+	(find_basekeyspacedn): There is no guarantee that namingContexts
+	will be readable.
+
+	* Makefile.am: Link gpgkeys_ldap with libutil.a to get the
+	replacement functions (and eventually translations, etc).
+
 2004-02-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (ldap2epochtime): LDAP timestamps are UTC, so do
