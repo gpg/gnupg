@@ -1,3 +1,12 @@
+2001-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_mailto.in: Use the new OUTOFBAND indicator so gpg knows
+	not to try and import anything.  Also turn on perl -w for
+	warnings.
+
+	* gpgkeys_ldap.c (main): If we're using temp files (rather than
+	stdin/stdout), make sure the file is closed when we're done.
+
 2001-12-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* Properly free the LDAP response when we're done with it.

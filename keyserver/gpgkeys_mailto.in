@@ -1,4 +1,4 @@
-#!@PERL@
+#!@PERL@ -w
 
 # gpgkeys_mailto - talk to a email keyserver
 # Copyright (C) 2001 Free Software Foundation, Inc.
@@ -58,8 +58,7 @@ while(<STDIN>)
 	{
 	    $verbose++;
 	}
-
-	if($1=~/^no-verbose$/i)
+	elsif($1=~/^no-verbose$/i)
 	{
 	    $verbose--;
 	}
@@ -75,10 +74,20 @@ while(<STDIN>)
     push(@keys,$_);
 }
 
+# Send response
+
+print "VERSION 0\n";
+print "OPTION OUTOFBAND\n\n";
+
 # Email keyservers get and search the same way
 
 if($command=~/get/i || $command=~/search/i)
 {
+    if($command=~/search/i)
+    {
+	print "COUNT 0\n";
+    }
+
     foreach $key (@keys)
     {
 	open(MAIL,"|$sendmail") || die "ERROR: Can't open $sendmail\n";

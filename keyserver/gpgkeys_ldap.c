@@ -930,6 +930,12 @@ int main(int argc,char *argv[])
 
  fail:
 
+  if(input!=stdin)
+    fclose(input);
+
+  if(output!=stdout)
+    fclose(output);
+
   if(ldap!=NULL)
     ldap_unbind_s(ldap);
 
