@@ -31,7 +31,7 @@
    expanded once and non existing macros expand to the empty string.
    A macro is dereferenced by prefixing its name with a dollar sign;
    the end of the name is currently indicated by a white space.  To
-   use a dollor sign verbatim, double it.
+   use a dollor sign verbatim, double it. 
 
    A macro is assigned by prefixing a statement with the macro name
    and an equal sign.  The value is assigned verbatim if it does not
@@ -40,18 +40,30 @@
    unambigiously and it should be used if the value starts with a
    letter.
 
-   The following commands are available:
+   Conditions are not yes implemented except for a simple evaluation
+   which yields false for an empty string or the string "0".  The
+   result may be negated by prefixing with a '!'.
 
-   [<name> =] let <value>
-      Assign VALUE to the macro named NAME.
+   The general syntax of a command is:
 
-   [<name> =] openfile <filename>
-      Open file FILENAME for read access and store the file descriptor
-      in NAME.
+   [<name> =] <statement> [<args>]
 
-   [<name> =] createfile <filename>
-      Create file FILENAME and open for write access, store the file
-      descriptor in NAME.
+   If NAME is not specifed but the statement returns a value it is
+   assigned to the name "?" so that it can be referenced using "$?".
+   The following commands are implemented:
+
+   let <value>
+      Return VALUE.
+
+   echo <value>
+      Print VALUE.
+
+   openfile <filename>
+      Open file FILENAME for read access and retrun the file descriptor.
+
+   createfile <filename>
+      Create file FILENAME, open for write access and retrun the file
+      descriptor.
 
    pipeserver [<path>]
       Connect to an Assuan server with name PATH.  If PATH is not
@@ -69,8 +81,17 @@
       is ignored.
 
    quit
-      Terminate the program
+      Terminate the process.
 
+   quit-if <condition>
+      Terminate the process if CONDITION evaluates to true.
+
+   fail-if <condition>
+      Terminate the process with an exit code of 1 if CONDITION
+      evaluates to true.
+
+   cmpfiles <first> <second>
+      Returns true when the content of the files FIRST and SECOND match.
 
 */
 
@@ -82,8 +103,6 @@
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>
-
-#define PGMNAME "asschk"
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
 # define ATTR_PRINTF(f,a)  __attribute__ ((format (printf,f,a)))
@@ -104,6 +123,7 @@ typedef enum {
 
 struct variable_s {
   struct variable_s *next;
+  int is_fd;
   char *value;
   char name[1];
 };
@@ -113,6 +133,12 @@ typedef struct variable_s *VARIABLE;
 
 static void die (const char *format, ...)  ATTR_PRINTF(1,2);
 
+
+/* Name of this program to be printed in error messages. */
+static const char *invocation_name;
+
+/* Talk a bit about what is going on. */
+static int opt_verbose;
 
 /* File descriptors used to communicate with the current server. */
 static int server_send_fd = -1;
@@ -135,7 +161,7 @@ die (const char *format, ...)
   va_list arg_ptr;
 
   fflush (stdout);
-  fprintf (stderr, "%s: ", PGMNAME);
+  fprintf (stderr, "%s: ", invocation_name);
 
   va_start (arg_ptr, format);
   vfprintf (stderr, format, arg_ptr);
@@ -143,6 +169,20 @@ die (const char *format, ...)
   putc ('\n', stderr);
 
   exit (1);
+}
+
+static void
+err (const char *format, ...)
+{
+  va_list arg_ptr;
+
+  fflush (stdout);
+  fprintf (stderr, "%s: ", invocation_name);
+
+  va_start (arg_ptr, format);
+  vfprintf (stderr, format, arg_ptr);
+  va_end (arg_ptr);
+  putc ('\n', stderr);
 }
 
 static void *
@@ -318,7 +358,9 @@ start_server (const char *pgmname)
       const char *arg0;
 
       arg0 = strrchr (pgmname, '/');
-      if (!arg0)
+      if (arg0)
+        arg0++;
+      else
         arg0 = pgmname;
 
       if (wp[0] != STDIN_FILENO)
@@ -362,18 +404,30 @@ unset_var (const char *name)
     ;
   if (!var)
     return;
-  fprintf (stderr, "unsetting `%s'\n", name);
+/*    fprintf (stderr, "unsetting `%s'\n", name); */
+
+  if (var->is_fd && var->value)
+    {
+      int fd;
+
+      fd = atoi (var->value);
+      if (fd != -1 && fd != 0 && fd != 1 && fd != 2)
+          close (fd);
+    }
 
   free (var->value);
   var->value = NULL;
+  var->is_fd = 0;
 }
 
 
 static void
-set_var (const char *name, const char *value)
+set_fd_var (const char *name, const char *value, int is_fd)
 {
   VARIABLE var;
 
+  if (!name)
+    name = "?"; 
   for (var=variable_list; var && strcmp (var->name, name); var = var->next)
     ;
   if (!var)
@@ -386,10 +440,27 @@ set_var (const char *name, const char *value)
   else
     free (var->value);
 
+  if (var->is_fd && var->value)
+    {
+      int fd;
+
+      fd = atoi (var->value);
+      if (fd != -1 && fd != 0 && fd != 1 && fd != 2)
+          close (fd);
+    }
+  
+  var->is_fd = is_fd;
   var->value = xstrdup (value);
-  fprintf (stderr, "setting `%s' to `%s'\n", var->name, var->value);
+/*    fprintf (stderr, "setting `%s' to `%s'\n", var->name, var->value); */
 
 }
+
+static void
+set_var (const char *name, const char *value)
+{
+  set_fd_var (name, value, 0);
+}
+
 
 static const char *
 get_var (const char *name)
@@ -469,30 +540,55 @@ expand_line (char *buffer)
   return result;
 }
 
+
+/* Evaluate COND and return the result. */
+static int 
+eval_boolean (const char *cond)
+{
+  int true = 1;
+
+  for ( ; *cond == '!'; cond++)
+    true = !true;
+  if (!*cond || (*cond == '0' && !cond[1]))
+    return !true;
+  return true;
+}
+
+
+
+
+
 static void
 cmd_let (const char *assign_to, char *arg)
 {
-  if (!assign_to)
-    die ("syntax error: \"let\" needs an assignment");
   set_var (assign_to, arg);
 }
 
 
 static void
+cmd_echo (const char *assign_to, char *arg)
+{
+  printf ("%s\n", arg);
+}
+
+static void
 cmd_send (const char *assign_to, char *arg)
 {
-  fprintf (stderr, "sending `%s'\n", arg);
+  if (opt_verbose)
+    fprintf (stderr, "sending `%s'\n", arg);
   write_assuan (server_send_fd, arg); 
 }
 
 static void
 cmd_expect_ok (const char *assign_to, char *arg)
 {
-  fprintf (stderr, "expecting OK\n");
+  if (opt_verbose)
+    fprintf (stderr, "expecting OK\n");
   do
     {
       read_assuan (server_recv_fd);
-      fprintf (stderr, "got line `%s'\n", recv_line);
+      if (opt_verbose)
+        fprintf (stderr, "got line `%s'\n", recv_line);
     }
   while (recv_type != LINE_OK && recv_type != LINE_ERR);
   if (recv_type != LINE_OK)
@@ -502,10 +598,13 @@ cmd_expect_ok (const char *assign_to, char *arg)
 static void
 cmd_expect_err (const char *assign_to, char *arg)
 {
+  if (opt_verbose)
+    fprintf (stderr, "expecting ERR\n");
   do
     {
       read_assuan (server_recv_fd);
-      fprintf (stderr, "got line `%s'\n", recv_line);
+      if (opt_verbose)
+        fprintf (stderr, "got line `%s'\n", recv_line);
     }
   while (recv_type != LINE_OK && recv_type != LINE_ERR);
   if (recv_type != LINE_ERR)
@@ -516,38 +615,32 @@ static void
 cmd_openfile (const char *assign_to, char *arg)
 {
   int fd;
+  char numbuf[20];
 
   do 
     fd = open (arg, O_RDONLY);
   while (fd == -1 && errno == EINTR);
   if (fd == -1)
     die ("error opening `%s': %s", arg, strerror (errno));
-  if (assign_to)
-    {
-      char numbuf[20];
-
-      sprintf (numbuf, "%d", fd);
-      set_var (assign_to, numbuf);
-    }
+  
+  sprintf (numbuf, "%d", fd);
+  set_fd_var (assign_to, numbuf, 1);
 }
 
 static void
 cmd_createfile (const char *assign_to, char *arg)
 {
   int fd;
+  char numbuf[20];
 
   do 
     fd = open (arg, O_WRONLY|O_CREAT|O_TRUNC, 0666);
   while (fd == -1 && errno == EINTR);
   if (fd == -1)
     die ("error creating `%s': %s", arg, strerror (errno));
-  if (assign_to)
-    {
-      char numbuf[20];
 
-      sprintf (numbuf, "%d", fd);
-      set_var (assign_to, numbuf);
-    }
+  sprintf (numbuf, "%d", fd);
+  set_fd_var (assign_to, numbuf, 1);
 }
 
 
@@ -561,6 +654,90 @@ cmd_pipeserver (const char *assign_to, char *arg)
 }
 
 
+static void
+cmd_quit_if(const char *assign_to, char *arg)
+{
+  if (eval_boolean (arg))
+    exit (0);
+}
+
+static void
+cmd_fail_if(const char *assign_to, char *arg)
+{
+  if (eval_boolean (arg))
+    exit (1);
+}
+
+
+static void
+cmd_cmpfiles (const char *assign_to, char *arg)
+{
+  char *p = arg;
+  char *second;
+  FILE *fp1, *fp2;
+  char buffer1[2048]; /* note: both must be of equal size. */
+  char buffer2[2048];
+  size_t nread1, nread2;
+  int rc = 0;
+
+  set_var (assign_to, "0"); 
+  for (p=arg; *p && !spacep (p); p++)
+    ;
+  if (!*p)
+    die ("cmpfiles: syntax error");
+  for (*p++ = 0; spacep (p); p++)
+    ;
+  second = p;
+  for (; *p && !spacep (p); p++)
+    ;
+  if (*p)
+    {
+      for (*p++ = 0; spacep (p); p++)
+        ;
+      if (*p)
+        die ("cmpfiles: syntax error");
+    }
+  
+  fp1 = fopen (arg, "rb");
+  if (!fp1)
+    {
+      err ("can't open `%s': %s", arg, strerror (errno));
+      return;
+    }
+  fp2 = fopen (second, "rb");
+  if (!fp2)
+    {
+      err ("can't open `%s': %s", second, strerror (errno));
+      fclose (fp1);
+      return;
+    }
+  while ( (nread1 = fread (buffer1, 1, sizeof buffer1, fp1)))
+    {
+      if (ferror (fp1))
+        break;
+      nread2 = fread (buffer2, 1, sizeof buffer2, fp2);
+      if (ferror (fp2))
+        break;
+      if (nread1 != nread2 || memcmp (buffer1, buffer2, nread1))
+        {
+          rc = 1;
+          break;
+        }
+    }
+  if (feof (fp1) && feof (fp2) && !rc)
+    {
+      if (opt_verbose)
+        err ("files match");
+      set_var (assign_to, "1"); 
+    }
+  else if (!rc)
+    err ("cmpfiles: read error: %s", strerror (errno));
+  else
+    err ("cmpfiles: mismatch");
+  fclose (fp1);
+  fclose (fp2);
+}
+
 /* Process the current script line LINE. */
 static int
 interpreter (char *line)
@@ -570,6 +747,7 @@ interpreter (char *line)
     void (*fnc)(const char*, char*);
   } cmdtbl[] = {
     { "let"       , cmd_let },
+    { "echo"      , cmd_echo },
     { "send"      , cmd_send },
     { "expect-ok" , cmd_expect_ok },
     { "expect-err", cmd_expect_err },
@@ -577,6 +755,9 @@ interpreter (char *line)
     { "createfile", cmd_createfile },
     { "pipeserver", cmd_pipeserver },
     { "quit"      , NULL },
+    { "quit-if"   , cmd_quit_if },
+    { "fail-if"   , cmd_fail_if },
+    { "cmpfiles"  , cmd_cmpfiles },
     { NULL }
   };
   char *p, *save_p;
@@ -667,14 +848,56 @@ interpreter (char *line)
 int
 main (int argc, char **argv)
 {
-  char buffer[1025];
-  char *p;
+  char buffer[2048];
+  char *p, *pend;
 
+  if (!argc)
+    invocation_name = "asschk";
+  else
+    {
+      invocation_name = *argv++;
+      argc--;
+      p = strrchr (invocation_name, '/');
+      if (p)
+        invocation_name = p+1;
+    }
+
+
+  set_var ("?","1"); /* defaults to true */
+
+  for (; argc; argc--, argv++)
+    {
+      p = *argv;
+      if (*p != '-')
+        break;
+      if (!strcmp (p, "--verbose"))
+        opt_verbose = 1;
+      else if (*p == '-' && p[1] == 'D')
+        {
+          p += 2;
+          pend = strchr (p, '=');
+          if (pend)
+            {
+              int tmp = *pend;
+              *pend = 0;
+              set_var (p, pend+1);
+              *pend = tmp;
+            }
+          else
+            set_var (p, "1");
+        }
+      else if (*p == '-' && p[1] == '-' && !p[2])
+        {
+          argc--; argv++;
+          break;
+        }
+      else
+        break;
+    }
   if (argc)
-    argv++, argc--;
-  if (argc)
-    die ("usage: asschk <script");
-  
+    die ("usage: asschk [--verbose] {-D<name>[=<value>]}");
+
+
   while (fgets (buffer, sizeof buffer, stdin))
     {
       p = strchr (buffer,'\n');
@@ -687,3 +910,4 @@ main (int argc, char **argv)
     }
   return 0;
 }
+

@@ -1,0 +1,58 @@
+# sm-sign+verify 
+#
+# Requirements: a plain file "msg" and standard key setup
+
+echo Creating a signature and verifying it
+
+in  = openfile msg
+out = createfile msg.sig
+in2 = openfile msg.sig
+out2 = createfile msg.unsig
+
+pipeserver /usr/local/bin/gpgsm
+send INPUT FD=$in
+expect-ok
+send OUTPUT FD=$out
+expect-ok
+send SIGN
+expect-ok
+
+send RESET
+expect-ok
+send INPUT FD=$in2
+expect-ok
+send OUTPUT FD=$out2
+expect-ok
+send VERIFY
+expect-ok
+
+send BYE
+expect-ok
+
+# Unset variables so that the files get closed.
+in  =
+out =
+in2 = 
+out2=
+
+cmpfiles msg msg.unsig
+fail-if !$?
+
+# Lets check it again with a new server instance.
+in = openfile msg.sig
+out = createfile msg.unsig
+pipeserver /usr/local/bin/gpgsm
+send INPUT FD=$in
+expect-ok
+send OUTPUT FD=$out
+expect-ok
+send VERIFY
+expect-ok
+
+cmpfiles msg msg.unsig
+fail-if !$?
+
+
+echo fine, it works
+quit
+
