@@ -1511,6 +1511,7 @@ do_generate_keypair( struct para_data_s *para,
     PKT_secret_key *sk = NULL;
     const char *s;
     int rc;
+    int did_sub = 0;
 
     if( outctrl->dryrun ) {
 	log_info("dry-run mode - key generation skipped\n");
@@ -1609,6 +1610,7 @@ do_generate_keypair( struct para_data_s *para,
 	    rc = write_keybinding(pub_root, pub_root, sk);
 	if( !rc )
 	    rc = write_keybinding(sec_root, pub_root, sk);
+        did_sub = 1;
     }
 
 
@@ -1688,6 +1690,9 @@ do_generate_keypair( struct para_data_s *para,
 	    log_error("key generation failed: %s\n", g10_errstr(rc) );
 	else
 	    tty_printf(_("Key generation failed: %s\n"), g10_errstr(rc) );
+    }
+    else {
+        write_status_text (STATUS_KEY_CREATED, did_sub? "B":"P");
     }
     release_kbnode( pub_root );
     release_kbnode( sec_root );
@@ -1783,8 +1788,10 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, sk);
     if( !rc )
 	rc = write_keybinding(sec_keyblock, pub_keyblock, sk);
-    if( !rc )
+    if( !rc ) {
 	okay = 1;
+        write_status_text (STATUS_KEY_CREATED, "S");
+    }
 
   leave:
     if( rc )
