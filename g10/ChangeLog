@@ -1,3 +1,22 @@
+2000-03-08 10:38:38  Werner Koch  (wk@habibti.openit.de)
+
+	* keygen.c (ask_algo): Removed is_v4 return value and the commented
+	code to create Elg keys in a v3 packet. Removed the rounding
+	of key sizes here.
+	(do_create): Likewise removed arg v4_packet.
+	(gen_elg): Likewise removed arg version. Now rounding keysizes here.
+	(gen_dsa): Rounding keysize now here.
+	(release_parameter_list): New
+	(get_parameter*): New.
+	(proc_parameter_file): New.
+	(read_parameter_file): New.
+	(generate_keypair): Splitted. Now uses read_parameter_file when in
+	batch mode.  Additional argument to specify a parameter file.
+	(do_generate_keypair): Main bulk of above fucntion and uses the
+	parameter list.
+	(do_create): Don't print long notice in batch mode.
+	* g10.c (main): Allow batched key generation.
+
 Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* pubkey-enc.c (get_it): Print a note about unknown cipher algos.

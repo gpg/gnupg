@@ -1258,10 +1258,17 @@ main( int argc, char **argv )
 	    wrong_args(_("-k[v][v][v][c] [user-id] [keyring]") );
 	break;
 
-      case aKeygen: /* generate a key (interactive) */
-	if( argc )
-	    wrong_args("--gen-key");
-	generate_keypair();
+      case aKeygen: /* generate a key */
+	if( opt.batch ) {
+	    if( argc > 1 )
+		wrong_args("--gen-key [parameterfile]");
+	    generate_keypair( argc? *argv : NULL );
+	}
+	else {
+	    if( argc )
+		wrong_args("--gen-key");
+	    generate_keypair(NULL);
+	}
 	break;
 
       case aFastImport:
