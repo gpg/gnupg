@@ -1,3 +1,8 @@
+2004-04-26  Werner Koch  <wk@gnupg.org>
+
+	* call-scd.c (start_scd): Do not register an event signal if we
+	are running as a pipe server.
+
 2004-04-21  Werner Koch  <wk@gnupg.org>
 
 	* call-scd.c (start_scd): Send event-signal option. Always check

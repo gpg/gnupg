@@ -270,7 +270,10 @@ start_scd (ctrl_t ctrl)
   if (DBG_ASSUAN)
     log_debug ("connection to SCdaemon established\n");
 
-  /* Tell the scdaemon that we want him to send us an event signal. */
+  /* Tell the scdaemon that we want him to send us an event signal.
+     But only do this if we are running as a regular sever and not
+     simply as a pipe server. */
+  if (ctrl->connection_fd != -1)
   {
     char buf[100];
 
