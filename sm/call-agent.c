@@ -164,7 +164,7 @@ start_agent (void)
         }
 
       if (!opt.agent_program || !*opt.agent_program)
-        opt.agent_program = "../agent/gpg-agent";
+        opt.agent_program = GNUPG_DEFAULT_AGENT;
       if ( !(pgmname = strrchr (opt.agent_program, '/')))
         pgmname = opt.agent_program;
       else

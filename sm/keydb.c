@@ -59,7 +59,7 @@ struct keydb_handle {
   int locked;
   int found;
   int current;
-  int ephemeral;
+  int is_ephemeral;
   int used; /* items in active */
   struct resource_item active[MAX_KEYDB_RESOURCES];
 };
@@ -332,27 +332,34 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
   return s? s: "";
 }
 
+/* Switch the handle into ephemeral mode and return the orginal value. */
 int
 keydb_set_ephemeral (KEYDB_HANDLE hd, int yes)
 {
   int i;
 
   if (!hd)
-    return GNUPG_Invalid_Value;
+    return 0;
 
-  for (i=0; i < hd->used; i++)
+  yes = !!yes;
+  if (hd->is_ephemeral != yes)
     {
-      switch (hd->active[i].type) 
+      for (i=0; i < hd->used; i++)
         {
-        case KEYDB_RESOURCE_TYPE_NONE:
-          break;
-        case KEYDB_RESOURCE_TYPE_KEYBOX:
-          keybox_set_ephemeral (hd->active[i].u.kr, yes);
-          break;
+          switch (hd->active[i].type) 
+            {
+            case KEYDB_RESOURCE_TYPE_NONE:
+              break;
+            case KEYDB_RESOURCE_TYPE_KEYBOX:
+              keybox_set_ephemeral (hd->active[i].u.kr, yes);
+              break;
+            }
         }
     }
-
-  return 0;
+      
+  i = hd->is_ephemeral;
+  hd->is_ephemeral = yes;
+  return i;
 }
 
 

@@ -196,6 +196,15 @@ check_cert_policy (KsbaCert cert)
 }
 
 
+static void
+find_up_store_certs_cb (void *cb_value, KsbaCert cert)
+{
+  if (keydb_store_cert (cert, 1))
+    log_error ("error storing issuer certificate as ephemeral\n");
+  ++*(int*)cb_value;
+}
+
+
 static int
 find_up (KEYDB_HANDLE kh, KsbaCert cert, const char *issuer)
 {
@@ -211,13 +220,82 @@ find_up (KEYDB_HANDLE kh, KsbaCert cert, const char *issuer)
           rc = keydb_search_issuer_sn (kh, s, authidno);
           if (rc)
               keydb_search_reset (kh);
+          if (rc == -1)
+            { /* And try the ephemeral DB. */
+              int old = keydb_set_ephemeral (kh, 1);
+              if (!old)
+                {
+                  rc = keydb_search_issuer_sn (kh, s, authidno);
+                  if (rc)
+                    keydb_search_reset (kh);
+                }
+              keydb_set_ephemeral (kh, old);
+            }
         }
       ksba_name_release (authid);
       xfree (authidno);
+      /* Fixme: don't know how to do dirmngr lookup with serial+issuer. */
     }
   
-  if (rc)
-    rc = keydb_search_subject (kh, issuer);
+  if (rc) /* not found via authorithyKeyIdentifier, try regular issuer name */
+      rc = keydb_search_subject (kh, issuer);
+  if (rc == -1)
+    {
+      /* Not found, lets see whether we have one in the ephemeral key DB. */
+      int old = keydb_set_ephemeral (kh, 1);
+      if (!old)
+        {
+          keydb_search_reset (kh);
+          rc = keydb_search_subject (kh, issuer);
+        }
+      keydb_set_ephemeral (kh, old);
+    }
+
+  if (rc == -1 && opt.auto_issuer_key_retrieve)
+    {
+      STRLIST names = NULL;
+      int count = 0;
+      char *pattern;
+      const char *s;
+      
+      if (opt.verbose)
+        log_info (_("looking up issuer at external location\n"));
+      /* dirmngr is confused about unknown attributes so has a quick
+         and ugly hack we locate the CN and use this and the
+         following.  Fixme: we should have far ebtter parsing in the
+         dirmngr. */
+      s = strstr (issuer, "CN=");
+      if (!s || s == issuer || s[-1] != ',')
+        s = issuer;
+
+      pattern = xtrymalloc (strlen (s)+2);
+      if (!pattern)
+        return GNUPG_Out_Of_Core;
+      strcpy (stpcpy (pattern, "/"), s);
+      add_to_strlist (&names, pattern);
+      xfree (pattern);
+      rc = gpgsm_dirmngr_lookup (NULL, names, find_up_store_certs_cb, &count);
+      free_strlist (names);
+      if (opt.verbose)
+        log_info (_("number of issuers matching: %d\n"), count);
+      if (rc) 
+        {
+          log_error ("external key lookup failed: %s\n", gnupg_strerror (rc));
+          rc = -1;
+        }
+      else if (!count)
+        rc = -1;
+      else
+        {
+          int old;
+          /* The issuers are currently stored in the ephemeral key
+             DB, so we temporary switch to ephemeral mode. */
+          old = keydb_set_ephemeral (kh, 1);
+          keydb_search_reset (kh);
+          rc = keydb_search_subject (kh, issuer);
+          keydb_set_ephemeral (kh, old);
+        }
+    }
   return rc;
 }
 

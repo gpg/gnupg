@@ -156,7 +156,7 @@ start_dirmngr (void)
         }
 
       if (!opt.dirmngr_program || !*opt.dirmngr_program)
-        opt.dirmngr_program = "/usr/sbin/dirmngr";
+        opt.dirmngr_program = GNUPG_DEFAULT_DIRMNGR;
       if ( !(pgmname = strrchr (opt.dirmngr_program, '/')))
         pgmname = opt.dirmngr_program;
       else
@@ -432,9 +432,12 @@ lookup_status_cb (void *opaque, const char *line)
 
   if (!strncmp (line, "TRUNCATED", 9) && (line[9]==' ' || !line[9]))
     {
-      for (line +=9; *line == ' '; line++)
-        ;
-      gpgsm_status (parm->ctrl, STATUS_TRUNCATED, line);
+      if (parm->ctrl)
+        {
+          for (line +=9; *line == ' '; line++)
+            ;
+          gpgsm_status (parm->ctrl, STATUS_TRUNCATED, line);
+        }
     }
   return 0;
 }
@@ -442,7 +445,8 @@ lookup_status_cb (void *opaque, const char *line)
 
 /* Run the Directroy Managers lookup command using the apptern
    compiled from the strings given in NAMES.  The caller must provide
-   the callback CB which will be passed cert by cert. */
+   the callback CB which will be passed cert by cert.  Note that CTRL
+   is optional. */
 int 
 gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
                       void (*cb)(void*, KsbaCert), void *cb_value)

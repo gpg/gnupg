@@ -1,3 +1,19 @@
+2002-06-29  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c: New option --auto-issuer-key-retrieve.
+	* certpath.c (find_up): Try to retrieve an issuer key from an
+	external source and from the ephemeral key DB.
+	(find_up_store_certs_cb): New.
+
+	* keydb.c (keydb_set_ephemeral): Does now return the old
+	state.  Call the backend only when required.
+
+	* call-dirmngr.c (start_dirmngr): Use GNUPG_DEFAULT_DIRMNGR.
+	(lookup_status_cb): Issue status only when CTRL is not NULL.
+	(gpgsm_dirmngr_lookup): Document that CTRL is optional.
+
+	* call-agent.c (start_agent): Use GNUPG_DEFAULT_AGENT.
+
 2002-06-28  Werner Koch  <wk@gnupg.org>
 
 	* server.c (cmd_recipient): Add more reason codes.

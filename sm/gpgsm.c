@@ -112,7 +112,7 @@ enum cmd_and_opt_values {
   oPolicyFile,
   oDisablePolicyChecks,
   oEnablePolicyChecks,
-
+  oAutoIssuerKeyRetrieve,
   
 
   oTextmode,
@@ -258,6 +258,9 @@ static ARGPARSE_OPTS opts[] = {
     { oDisablePolicyChecks, "disable-policy-checks", 0,
                            N_("do not check certificate policies")},
     { oEnablePolicyChecks, "enable-policy-checks", 0, "@"},
+
+    { oAutoIssuerKeyRetrieve, "auto-issuer-key-retrieve", 0, 
+      N_("fetch missing issuer certificates")},
 
 #if 0
     { oDefRecipient, "default-recipient" ,2,
@@ -809,7 +812,10 @@ main ( int argc, char **argv)
         case oEnablePolicyChecks:
           opt.no_policy_check = 0;
           break;
-
+          
+        case oAutoIssuerKeyRetrieve:
+          opt.auto_issuer_key_retrieve = 1;
+          break;
 
         case oOutput: opt.outfile = pargs.r.ret_str; break;
 

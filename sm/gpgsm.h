@@ -79,6 +79,8 @@ struct {
   char *policy_file;        /* full pathname of policy file */
   int no_policy_check;      /* ignore certificate policies */
   int no_path_validation;   /* Bypass all cert path validity tests */
+
+  int auto_issuer_key_retrieve; /* try to retrieve a missing issuer key. */
 } opt;
 
 
