@@ -56,6 +56,7 @@ you could search in the mailing list archive.
 	a new version of GnuPG.
    4.13) How can I used GnuPG in an automated environment?
    4.14) Which email-client can I use with GnuPG?
+   4.15) Can't we have a gpg library?
 
  5. COMPATIBILITY ISSUES 
    5.1) How can I encrypt a message so that PGP 2.x is able to decrypt it?
@@ -80,7 +81,8 @@ you could search in the mailing list archive.
 	in it - why?
    6.9) What is the thing with "can't handle multiple signatures"?
    6.10) If I submit a key to a keyserver, nothing happens ...
-   6.11) I still have a problem. How do I report a bug?
+   6.11) I get "gpg: waiting for lock ..."
+   6.12) I still have a problem. How do I report a bug?
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -213,7 +215,7 @@ you could search in the mailing list archive.
     following disadvantages: the signature is larger, it is hard to
     create such a key useful for signatures which can withstand some
     real world attacks, you don't get any extra security compared to
-    DSA, there might be compatability problems with certain PGP
+    DSA, there might be compatibility problems with certain PGP
     versions. It has only been introduced because at the time it was
     not clear whether there is was patent on DSA.
 
@@ -227,7 +229,7 @@ you could search in the mailing list archive.
     talked to Ted Ts'o and he commented that the best way to fill the
     buffer is to play with your keyboard.  Good security has its price.
     What I do is to hit several times on the shift, control, alternate,
-    and capslock keys, because these keys do not produce output to the
+    and caps lock keys, because these keys do not produce output to the
     screen. This way you get your keys really fast (it's the same thing
     PGP2 does).
 
@@ -409,7 +411,7 @@ messages?
     text encryption, and RFC2015 style (previously PGP/MIME, now
     OpenPGP). The latter has full MIME support. Some MUAs support only
     one of them, so whichever you actually use depends on your needs as
-    well as the capabilities of your adressee.
+    well as the capabilities of your addressee.
 
     The following list is probably not exhaustive:
 
@@ -425,6 +427,13 @@ messages?
     Direct GnuPG support is not mentioned, however, it certain cases it
     may be possible to use a wrapper. 
 
+
+4.15) Can't we have a gpg library?
+
+    This has been frequently requested. However, the current viewpoint
+    of the GnuPG maintainers is that this would lead to several security
+    issues and will therefore not be implemented in the foreseeable
+    future.  
 
 5. COMPATIBILITY ISSUES 
 
@@ -448,7 +457,7 @@ messages?
     may use IDEA even today. In that case, you may refer to Question
     3.3 about how to add IDEA support to GnuPG and read
     http://www.gnupg.org/gph/en/pgp2x.html
-    to perfrom the migration. 
+    to perform the migration. 
 
 
 5.3) How can I conventional encrypt a message, so that PGP can decrypt
@@ -513,7 +522,7 @@ it?
     privileges as soon as locked memory is allocated.
 
     On UnixWare 2.x and 7.x you should install GnuPG with the
-    'plock' priviledge to get the same effect:
+    'plock' privilege to get the same effect:
 	filepriv -f plock /path/to/gpg
 
     If you can't or don't want to install GnuPG setuid(root), you can
@@ -593,7 +602,12 @@ in it - why?
     feature isn't yet implemented, but it's a bug not to say it. Newer
     versions issue a warning. Upgrade to 1.0.4 or newer.
 
-6.11) I still have a problem. How do I report a bug?
+6.11) I get "gpg: waiting for lock ..."
+
+    A previous gpg has most likely exited abnormally and left a lock
+    file. Go to ~/.gnupg and look for .*.lock files and remove them.
+
+6.12) I still have a problem. How do I report a bug?
 
     Are you sure that it's not been mentioned somewhere on the mailing
     lists? Did you have a look at the bug list (You'll find a link to

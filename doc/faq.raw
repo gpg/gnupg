@@ -162,7 +162,7 @@ you could search in the mailing list archive.
     following disadvantages: the signature is larger, it is hard to
     create such a key useful for signatures which can withstand some
     real world attacks, you don't get any extra security compared to
-    DSA, there might be compatability problems with certain PGP
+    DSA, there might be compatibility problems with certain PGP
     versions. It has only been introduced because at the time it was
     not clear whether there is was patent on DSA.
 
@@ -176,7 +176,7 @@ you could search in the mailing list archive.
     talked to Ted Ts'o and he commented that the best way to fill the
     buffer is to play with your keyboard.  Good security has its price.
     What I do is to hit several times on the shift, control, alternate,
-    and capslock keys, because these keys do not produce output to the
+    and caps lock keys, because these keys do not produce output to the
     screen. This way you get your keys really fast (it's the same thing
     PGP2 does).
 
@@ -370,7 +370,7 @@ messages?
     text encryption, and RFC2015 style (previously PGP/MIME, now
     OpenPGP). The latter has full MIME support. Some MUAs support only
     one of them, so whichever you actually use depends on your needs as
-    well as the capabilities of your adressee.
+    well as the capabilities of your addressee.
 
     The following list is probably not exhaustive:
 
@@ -386,6 +386,13 @@ messages?
     Direct GnuPG support is not mentioned, however, it certain cases it
     may be possible to use a wrapper. 
 
+
+<Q> Can't we have a gpg library?
+
+    This has been frequently requested. However, the current viewpoint
+    of the GnuPG maintainers is that this would lead to several security
+    issues and will therefore not be implemented in the foreseeable
+    future.  
 
 <S> COMPATIBILITY ISSUES 
 
@@ -410,7 +417,7 @@ messages?
     may use IDEA even today. In that case, you may refer to Question
     <Ridea> about how to add IDEA support to GnuPG and read
     [H a href=http://www.gnupg.org/gph/en/pgp2x.html]http://www.gnupg.org/gph/en/pgp2x.html[H /a]
-    to perfrom the migration. 
+    to perform the migration. 
     
 
 <Q> How can I conventional encrypt a message, so that PGP can decrypt
@@ -479,7 +486,7 @@ it?
     privileges as soon as locked memory is allocated.
 
     On UnixWare 2.x and 7.x you should install GnuPG with the
-    'plock' priviledge to get the same effect:
+    'plock' privilege to get the same effect:
     [H pre]
 	filepriv -f plock /path/to/gpg
     [H /pre]
@@ -562,6 +569,11 @@ in it - why?
     You are most likely using GnuPG on Windows 1.0.2 or older. That's
     feature isn't yet implemented, but it's a bug not to say it. Newer
     versions issue a warning. Upgrade to 1.0.4 or newer.
+
+<Q> I get "gpg: waiting for lock ..."
+
+    A previous gpg has most likely exited abnormally and left a lock
+    file. Go to ~/.gnupg and look for .*.lock files and remove them.
 
 <Q> I still have a problem. How do I report a bug?
 
