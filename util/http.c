@@ -711,84 +711,93 @@ start_server()
 static int
 connect_server( const char *server, ushort port )
 {
-    int sd;
+  int sock,i=0;
+  struct sockaddr_in addr;
+  struct hostent *host=NULL;
+  unsigned long l;
+
+  memset(&addr,0,sizeof(addr));
+
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(port);
+
 #ifdef __MINGW32__
-    struct hostent *hp;
-    struct sockaddr_in ad;
-    unsigned long l;
-    
-    init_sockets ();
+  init_sockets ();
 
-    memset (&ad, 0, sizeof(ad));
-    ad.sin_family = AF_INET;
-    ad.sin_port = htons(port);
-
-    if( (l = inet_addr (server)) != SOCKET_ERROR ) {
-        memcpy (&ad.sin_addr, &l, sizeof(l));
-    }
-    else if( (hp = gethostbyname (server)) ) {
-        if( hp->h_addrtype != AF_INET ) {
-            log_error ("%s: unknown address family\n", server);
-            return -1;
-        }
-        if ( hp->h_length != 4 ) {
-            log_error ("%s: illegal address length\n", server);
-            return -1;
-        }
-        memcpy (&ad.sin_addr, hp->h_addr, hp->h_length);
-    }
-    else {
-        log_error ("%s: host not found: ec=%d\n",
-                   server, (int)WSAGetLastError ());
-        return -1;
-    }
-
-    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-        log_error ("error creating socket: ex=%d\n", 
-                   (int)WSAGetLastError ());
-        return -1;
-    }
-
-    if( connect (sd, (struct sockaddr *)&ad, sizeof (ad) ) ) {
-        sock_close (sd);
-        return -1;
+  if((sock=socket(AF_INET,SOCK_STREAM,0))==INVALID_SOCKET)
+    {
+      log_error("error creating socket: ec=%d\n",(int)WSAGetLastError());
+      return -1;
     }
 #else
-    struct sockaddr_in addr;
-    struct hostent *host;
-    int i=0;
-
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    host = gethostbyname((char*)server);
-    if( !host )
-	 return -1;
-
-    sd = socket(AF_INET, SOCK_STREAM, 0);
-    if( sd == -1 )
-	return -1;
-
-    /* Try all A records until one responds. TODO: do this on the
-       MINGW32 side as well. */
-
-    while(host->h_addr_list[i])
-      {
-	addr.sin_addr = *(struct in_addr*)host->h_addr_list[i];
-
-	if(connect( sd, (struct sockaddr *)&addr, sizeof addr) == 0)
-	  break;
-
-	i++;
-      }
-
-    if(host->h_addr_list[i]==0)
-      {
-	sock_close(sd);
-	return -1;
-      }
-
+  if((sock=socket(AF_INET,SOCK_STREAM,0))==-1)
+    {
+      log_error("error creating socket\n");
+      return -1;
+    }
 #endif
-    return sd;
+
+#ifdef __MINGW32__
+  /* Win32 gethostbyname doesn't handle IP addresses internally, so we
+     try inet_addr first on that platform only. */
+  if((l=inet_addr(server))==SOCKET_ERROR)
+#endif
+    if((host=gethostbyname(server))==NULL)
+      {
+#ifdef __MINGW32__
+	log_error("%s: host not found: ec=%d\n",server,(int)WSAGetLastError());
+#else
+	log_error("%s: host not found\n",server);
+#endif
+	sock_close(sock);
+	return -1;
+      }
+
+  if(host)
+    {
+      if(host->h_addrtype != AF_INET)
+	{
+	  log_error ("%s: unknown address family\n", server);
+	  sock_close(sock);
+	  return -1;
+        }
+
+      if(host->h_length != 4 )
+	{
+	  log_error ("%s: illegal address length\n", server);
+	  sock_close(sock);
+	  return -1;
+	}
+
+      /* Try all A records until one responds. */
+      while(host->h_addr_list[i])
+	{
+	  memcpy(&addr.sin_addr,host->h_addr_list[i],host->h_length);
+
+	  if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
+	    break;
+
+	  i++;
+	}
+
+      if(host->h_addr_list[i]==0)
+	{
+	  sock_close(sock);
+	  return -1;
+	}
+    }
+  else
+    {
+      memcpy(&addr.sin_addr,&l,sizeof(l));
+
+      if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))!=0)
+	{
+	  sock_close(sock);
+	  return -1;
+	}
+    }
+
+    return sock;
 }
 
 
