@@ -1,3 +1,8 @@
+2002-03-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Change meaning of --allow-non-selfsigned-uid to match
+	change in code, and add --no-allow-non-selfsigned-uid.
+
 2002-03-13  Werner Koch  <wk@gnupg.org>
 
 	* faq.raw: Due to a lack of time Nils can't serve anymore as a

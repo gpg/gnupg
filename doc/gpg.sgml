@@ -1531,21 +1531,22 @@ Reset the --force-v4-certs option.
 Force the use of encryption with appended manipulation
 code.  This is always used with the newer ciphers (those
 with a blocksize greater than 64 bit).
-This option might not be implemented yet.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--allow-non-selfsigned-uid</term>
 <listitem><para>
-Allow the import of keys with user IDs which are not self-signed, but
-have at least one signature.
-This only allows the import - key validation will fail and you
-have to check the validity of the key by other means.  This hack is
-needed for some German keys generated with pgp 2.6.3in. You should really
-avoid using it, because OpenPGP has better mechanics to do separate signing
-and encryption keys.
+Allow the import and use of keys with user IDs which are not
+self-signed.  This is not recommended, as a non self-signed user ID is
+trivial to forge.
 </para></listitem></varlistentry>
 <varlistentry>
+
+<varlistentry>
+<term>--no-allow-non-selfsigned-uid</term>
+<listitem><para>
+Reset the --allow-non-selfsigned-uid option.
+</para></listitem></varlistentry>
 
 <term>--allow-freeform-uid</term>
 <listitem><para>
