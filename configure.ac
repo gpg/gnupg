@@ -158,6 +158,16 @@ else
     fi
 fi
 
+if test x"$use_tiger" = xyes || test x"$use_new_tiger" = xyes ; then
+   AC_MSG_WARN([[
+***
+*** The TIGER digest is in the process of being removed from the
+*** OpenPGP standard.  While it hasn't been removed from GnuPG yet, it
+*** will be removed in a future version.  For the sake of future
+*** compatibility, please do not use this digest.
+***]])
+fi
+
 AC_MSG_CHECKING([whether to enable read-only SHA-384 and SHA-512 digest support])
 AC_ARG_ENABLE(sha512,
     [  --enable-sha512         enable read-only SHA-384 and SHA-512 digest support],
