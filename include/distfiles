@@ -11,5 +11,6 @@ host2net.h
 http.h
 keyserver.h
 _regex.h
+dynload.h
 
 ChangeLog

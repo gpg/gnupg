@@ -24,8 +24,11 @@ const char *tty_get_ttyname (void);
 int tty_batchmode( int onoff );
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
  void tty_printf (const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
+ void tty_fprintf (FILE *fp, const char *fmt, ... )
+                                __attribute__ ((format (printf,2,3)));
 #else
  void tty_printf (const char *fmt, ... );
+ void tty_fprintf (FILE *fp, const char *fmt, ... );
 #endif
 void tty_print_string( byte *p, size_t n );
 void tty_print_utf8_string( byte *p, size_t n );

@@ -96,6 +96,8 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define xcalloc(n,m)      m_alloc_clear ((n)*(m))
 #define xmalloc_secure(n) m_alloc_secure (n)
 #define xcalloc_secure(n) m_alloc_secure_clear ((n)*(m))
+#define xrealloc(a,n)     m_realloc ((a),(n))
+#define xstrdup(a)        m_strdup ((a))
 #define xfree(a)          m_free (a)
 
 

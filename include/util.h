@@ -270,6 +270,14 @@ int vasprintf ( char **result, const char *format, va_list args);
 #define hexdigitp(a) (digitp (a)                     \
                       || (*(a) >= 'A' && *(a) <= 'F')  \
                       || (*(a) >= 'a' && *(a) <= 'f'))
+/* the atoi macros assume that the buffer has only valid digits */
+#define atoi_1(p)   (*(p) - '0' )
+#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
+#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
+#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
+                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
+#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
 /* Note this isn't identical to a C locale isspace() without \f and
    \v, but works for the purposes used here. */
 #define ascii_isspace(a) ((a)==' ' || (a)=='\n' || (a)=='\r' || (a)=='\t')
