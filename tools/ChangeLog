@@ -1,3 +1,10 @@
+2004-01-05  Werner Koch  <wk@gnupg.org>
+
+	* Manifest: New.
+	* gpgconf.c, gpgconf.h, gpgconf-list.c: New. A skeleton for now.
+	* no-libgcrypt.c: New.
+	* Makefile.am: Add above.
+
 2003-12-23  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: New.
