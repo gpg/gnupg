@@ -1,3 +1,14 @@
+2004-02-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (write_header2): If a suggested header length is
+	provided along with a zero length, interpret this as an actual
+	zero length packet and not as an indeterminate length packet.
+	(do_comment, do_user_id): Use it here as these packets might be
+	naturally zero length.
+
+	* parse-packet.c (parse): Show packet type when failing due to an
+	indeterminate length packet.
+
 2004-02-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (import_one): Do the revocation check even in the case

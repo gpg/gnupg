@@ -1,6 +1,6 @@
 /* build-packet.c - assemble packets and write them
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -194,27 +194,32 @@ write_fake_data( IOBUF out, MPI a )
 static int
 do_comment( IOBUF out, int ctb, PKT_comment *rem )
 {
-    if( opt.sk_comments ) {
-	write_header(out, ctb, rem->len);
+    if( opt.sk_comments )
+      {
+	write_header2(out, ctb, rem->len, 1, 1);
 	if( iobuf_write( out, rem->data, rem->len ) )
-	    return G10ERR_WRITE_FILE;
-    }
+	  return G10ERR_WRITE_FILE;
+      }
     return 0;
 }
 
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
-    if( uid->attrib_data ) {
-	write_header(out, ctb, uid->attrib_len);
+    if( uid->attrib_data )
+      {
+	/* Shouldn't be necessary to force a header here since attribs
+	   can't be of zero length, but it doesn't hurt either. */
+	write_header2(out, ctb, uid->attrib_len, 1, 1);
 	if( iobuf_write( out, uid->attrib_data, uid->attrib_len ) )
-	    return G10ERR_WRITE_FILE;
-    }
-    else {
-	write_header(out, ctb, uid->len);
+	  return G10ERR_WRITE_FILE;
+      }
+    else
+      {
+        write_header2( out, ctb, uid->len, 1, 1 );
 	if( iobuf_write( out, uid->name, uid->len ) )
-	    return G10ERR_WRITE_FILE;
-    }
+	  return G10ERR_WRITE_FILE;
+      }
     return 0;
 }
 
@@ -490,8 +495,6 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 }
 
 
-
-
 static int
 do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 {
@@ -522,8 +525,6 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
     iobuf_close(a);
     return rc;
 }
-
-
 
 
 static u32
@@ -1090,8 +1091,11 @@ write_sign_packet_header( IOBUF out, int ctb, u32 len )
 }
 
 /****************
- * if HDRLEN is > 0, try to build a header of this length.
- * we need this, so that we can hash packets without reading them again.
+ * If HDRLEN is > 0, try to build a header of this length.  We need
+ * this so that we can hash packets without reading them again.  If
+ * len is 0, write a partial or indeterminate length header, unless
+ * hdrlen is specified in which case write an actual zero length
+ * (using the specified hdrlen).
  */
 static int
 write_header2( IOBUF out, int ctb, u32 len, int hdrlen, int blkmode )
@@ -1100,9 +1104,7 @@ write_header2( IOBUF out, int ctb, u32 len, int hdrlen, int blkmode )
 	return write_new_header( out, ctb, len, hdrlen );
 
     if( hdrlen ) {
-	if( !len )
-	    ctb |= 3;
-	else if( hdrlen == 2 && len < 256 )
+        if( hdrlen == 2 && len < 256 )
 	    ;
 	else if( hdrlen == 3 && len < 65536 )
 	    ctb |= 1;
@@ -1121,7 +1123,7 @@ write_header2( IOBUF out, int ctb, u32 len, int hdrlen, int blkmode )
     }
     if( iobuf_put(out, ctb ) )
 	return -1;
-    if( !len ) {
+    if( !len && !hdrlen ) {
 	if( blkmode )
 	    iobuf_set_block_mode(out, 8196 );
     }
