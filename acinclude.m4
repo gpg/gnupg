@@ -674,7 +674,8 @@ dnl Stolen from gcc
 dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
 dnl of the usual 2.
 AC_DEFUN(GNUPG_FUNC_MKDIR_TAKES_ONE_ARG,
-[AC_CACHE_CHECK([if mkdir takes one argument], gnupg_cv_mkdir_takes_one_arg,
+[AC_CHECK_HEADERS(sys/stat.h unistd.h direct.h)
+AC_CACHE_CHECK([if mkdir takes one argument], gnupg_cv_mkdir_takes_one_arg,
 [AC_TRY_COMPILE([
 #include <sys/types.h>
 #ifdef HAVE_SYS_STAT_H

@@ -1,3 +1,7 @@
+Wed Jun  7 19:19:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * sig-check.c (do_check): Use EMULATE_MDENCODE also on v4 paclets.
+
 Wed Jun  7 17:25:38 CEST 2000  Werner Koch  <wk@openit.de>
 
   * cipher.c (write_header): Use plain CFB mode for MDC encrypted packets.

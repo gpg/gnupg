@@ -11,17 +11,13 @@ AC_PREREQ(2.13)
 AC_INIT(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
 AM_CONFIG_HEADER(config.h)
+AC_CANONICAL_SYSTEM
+AM_INIT_AUTOMAKE(gnupg,`cat $srcdir/VERSION`)
 
 
-VERSION=`cat $srcdir/VERSION`
-PACKAGE=gnupg
 ALL_LINGUAS="de eo es_ES fr id it ja nl pl pt_BR pt_PT ru sv"
 static_modules="sha1 md5 rmd160"
 static_random_module=""
-AC_SUBST(VERSION)
-AC_SUBST(PACKAGE)
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 
 AC_PROG_AWK
 
@@ -125,7 +121,6 @@ AM_MAINTAINER_MODE
 
 dnl Checks for programs.
 
-AC_CANONICAL_SYSTEM
 dnl
 dnl Setup some stuff depending on host/target.
 dnl

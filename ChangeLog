@@ -1,3 +1,8 @@
+Wed Jun  7 19:19:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * acinclude.m4 (MKDIR_TAKES_ONE_ARG): Check some headers. By Gaël Quéri.
+  * configure.in (AM_INIT_AUTOMAKE): Use this now. By Gaël.
+
 Mon Jun  5 12:37:43 CEST 2000  Werner Koch  <wk@openit.de>
 
   * acnclude.m4 (GNUPG_CHECK_EXPORTDYNAMIC): Replacement for

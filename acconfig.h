@@ -29,8 +29,6 @@
 
 #undef M_DEBUG
 #undef M_GUARD
-#undef VERSION
-#undef PACKAGE
 #undef PRINTABLE_OS_NAME
 #undef IS_DEVELOPMENT_VERSION
 

@@ -374,7 +374,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     md_final( digest );
 
     result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
-			      mpi_get_nbits(pk->pkey[0]), (sig->version < 4) );
+			      mpi_get_nbits(pk->pkey[0]), 0 );
     ctx.sig = sig;
     ctx.md = digest;
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
@@ -383,9 +383,9 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     if( (opt.emulate_bugs & EMUBUG_MDENCODE)
 	&& rc == G10ERR_BAD_SIGN && is_ELGAMAL(pk->pubkey_algo) ) {
 	/* In this case we try again because old GnuPG versions didn't encode
-	 * the hash right. There is no problem with DSA here  */
+	 * the hash right. There is no problem with DSA however  */
 	result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
-				  mpi_get_nbits(pk->pkey[0]), (sig->version < 4) );
+			      mpi_get_nbits(pk->pkey[0]), (sig->version < 5) );
 	ctx.sig = sig;
 	ctx.md = digest;
 	rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
