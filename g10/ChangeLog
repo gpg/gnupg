@@ -1,3 +1,14 @@
+2002-11-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_mk_attrib, trustsig_prompt, sign_uids,
+	keyedit_menu): Prompt for and create a trust signature with
+	"tsign".  This is functional, but needs better UI text.
+
+	* build-packet.c (build_sig_subpkt): Able to build trust and
+	regexp subpackets.
+
+	* pkclist.c (do_edit_ownertrust): Comment.
+
 2002-11-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (set_one_pref, keygen_set_std_prefs): Allow using the

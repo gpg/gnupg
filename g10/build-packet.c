@@ -754,6 +754,15 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	  sig->flags.revocable=0;
 	break;
 
+      case SIGSUBPKT_TRUST:
+	sig->trust_depth=buffer[0];
+	sig->trust_value=buffer[1];
+	break;
+
+      case SIGSUBPKT_REGEXP:
+	sig->trust_regexp=buffer;
+	break;
+
       default:
 	break;
       }
@@ -1164,4 +1173,3 @@ write_version( IOBUF out, int ctb )
 	return -1;
     return 0;
 }
-

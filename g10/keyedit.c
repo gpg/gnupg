@@ -85,6 +85,8 @@ static int update_trust=0;
 struct sign_attrib {
     int non_exportable,non_revocable;
     struct revocation_reason_info *reason;
+    byte trust_depth,trust_value;
+    char *trust_regexp;
 };
 
 /****************
@@ -260,10 +262,126 @@ sign_mk_attrib( PKT_signature *sig, void *opaque )
     if( attrib->reason )
 	revocation_reason_build_cb( sig, attrib->reason );
 
+    if(attrib->trust_depth)
+      {
+	/* Not critical.  If someone doesn't understand trust sigs,
+	   this can still be a valid regular signature. */
+        buf[0] = attrib->trust_depth;
+	buf[1] = attrib->trust_value;
+	build_sig_subpkt(sig,SIGSUBPKT_TRUST,buf,2);
+
+	/* Critical.  If someone doesn't understands regexps, this
+	   whole sig should be invalid.  Note the +1 for the length -
+	   regexps are null terminated. */
+	if(attrib->trust_regexp)
+	  build_sig_subpkt(sig,SIGSUBPKT_FLAG_CRITICAL|SIGSUBPKT_REGEXP,
+			   attrib->trust_regexp,
+			   strlen(attrib->trust_regexp)+1);
+      }
+
     return 0;
 }
 
+static void
+trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
+{
+  char *p;
 
+  *trust_value=0;
+  *trust_depth=0;
+  *regexp=NULL;
+
+  tty_printf("\n");
+  /* Same string as pkclist.c:do_edit_ownertrust */
+  tty_printf(_(
+	       "Please decide how far you trust this user to correctly\n"
+	       "verify other users' keys (by looking at passports,\n"
+	       "checking fingerprints from different sources...)?\n\n"));
+  tty_printf (_("   (%d) I trust marginally\n"), 1);
+  tty_printf (_("   (%d) I trust fully\n"), 2);
+  tty_printf("\n");
+
+  while(*trust_value==0)
+    {
+      p = cpr_get("trustsig_prompt.trust_value",_("Your selection? "));
+      trim_spaces(p);
+      cpr_kill_prompt();
+      /* 60 and 120 are as per RFC2440 */
+      if(p[0]=='1' && !p[1])
+	*trust_value=60;
+      else if(p[0]=='2' && !p[1])
+	*trust_value=120;
+      m_free(p);
+    }
+
+  tty_printf("\n");
+
+  tty_printf(_(
+	      "Please enter the depth of this trust signature.\n"
+	      "A depth greater than 1 allows the key you are signing to make\n"
+	      "trust signatures on your behalf.\n"));
+  tty_printf("\n");
+
+  while(*trust_depth==0)
+    {
+      p = cpr_get("trustsig_prompt.trust_depth",_("Your selection? "));
+      trim_spaces(p);
+      cpr_kill_prompt();
+      *trust_depth=atoi(p);
+      m_free(p);
+      if(*trust_depth<1 || *trust_depth>255)
+	*trust_depth=0;
+    }
+
+  tty_printf("\n");
+
+  tty_printf(_("Please enter a domain to restrict this signature, "
+	       "or enter for none.\n"));
+
+  tty_printf("\n");
+
+  p=cpr_get("trustsig_prompt.trust_regexp",_("Your selection? "));
+  trim_spaces(p);
+  cpr_kill_prompt();
+
+  if(strlen(p)>0)
+    {
+      char *q=p;
+      int regexplen=100,ind;
+
+      *regexp=m_alloc(regexplen);
+
+      /* Now mangle the domain the user entered into a regexp.  To do
+	 this, \-escape everything that isn't alphanumeric, and attach
+	 "<[^>]+[@.]" to the front, and ">$" to the end. */
+
+      strcpy(*regexp,"<[^>]+[@.]");
+      ind=strlen(*regexp);
+
+      while(*q)
+	{
+	  if(!((*q>='A' && *q<='Z')
+	       || (*q>='a' && *q<='z') || (*q>='0' && *q<='9')))
+	    (*regexp)[ind++]='\\';
+
+	  (*regexp)[ind++]=*q;
+
+	  if((regexplen-ind)<3)
+	    {
+	      regexplen+=100;
+	      *regexp=m_realloc(*regexp,regexplen);
+	    }
+
+	  q++;
+	}
+
+      (*regexp)[ind]='\0';
+      strcat(*regexp,">$");
+    }
+
+  m_free(p);
+  tty_printf("\n");
+}
 
 /****************
  * Loop over all locusr and and sign the uids after asking.
@@ -272,7 +390,7 @@ sign_mk_attrib( PKT_signature *sig, void *opaque )
  */
 static int
 sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
-	   int local , int nonrevocable )
+	   int local, int nonrevocable, int trust )
 {
     int rc = 0;
     SK_LIST sk_list = NULL;
@@ -308,11 +426,12 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
         u32 sk_keyid[2],pk_keyid[2];
 	size_t n;
-	char *p;
+	char *p,*trust_regexp=NULL;
 	int force_v4=0,class=0,selfsig=0;
 	u32 duration=0,timestamp=0;
+	byte trust_depth=0,trust_value=0;
 
-	if(local || nonrevocable ||
+	if(local || nonrevocable || trust ||
 	   opt.cert_policy_url || opt.cert_notation_data)
 	  force_v4=1;
 
@@ -553,45 +672,52 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	if(selfsig)
 	  ;
-	else if(opt.batch)
-	  class=0x10+opt.def_cert_check_level;
 	else
 	  {
-	    char *answer;
-
-	    tty_printf(_("How carefully have you verified the key you are "
-			 "about to sign actually belongs\nto the person named "
-			 "above?  If you don't know what to answer, enter \"0\".\n"));
-	    tty_printf("\n");
-	    tty_printf(_("   (0) I will not answer.%s\n"),
-		       opt.def_cert_check_level==0?_(" (default)"):"");
-	    tty_printf(_("   (1) I have not checked at all.%s\n"),
-		       opt.def_cert_check_level==1?_(" (default)"):"");
-	    tty_printf(_("   (2) I have done casual checking.%s\n"),
-		       opt.def_cert_check_level==2?_(" (default)"):"");
-	    tty_printf(_("   (3) I have done very careful checking.%s\n"),
-		       opt.def_cert_check_level==3?_(" (default)"):"");
-	    tty_printf("\n");
-
-	    while(class==0)
+	    if(opt.batch)
+	      class=0x10+opt.def_cert_check_level;
+	    else
 	      {
-		answer = cpr_get("sign_uid.class",_("Your selection? "));
+		char *answer;
 
-		if(answer[0]=='\0')
-		  class=0x10+opt.def_cert_check_level; /* Default */
-		else if(ascii_strcasecmp(answer,"0")==0)
-		  class=0x10; /* Generic */
-		else if(ascii_strcasecmp(answer,"1")==0)
-		  class=0x11; /* Persona */
-		else if(ascii_strcasecmp(answer,"2")==0)
-		  class=0x12; /* Casual */
-		else if(ascii_strcasecmp(answer,"3")==0)
-		  class=0x13; /* Positive */
-		else
-		  tty_printf(_("Invalid selection.\n"));
+		tty_printf(_("How carefully have you verified the key you are "
+			     "about to sign actually belongs\nto the person "
+			     "named above?  If you don't know what to "
+			     "answer, enter \"0\".\n"));
+		tty_printf("\n");
+		tty_printf(_("   (0) I will not answer.%s\n"),
+			   opt.def_cert_check_level==0?" (default)":"");
+		tty_printf(_("   (1) I have not checked at all.%s\n"),
+			   opt.def_cert_check_level==1?" (default)":"");
+		tty_printf(_("   (2) I have done casual checking.%s\n"),
+			   opt.def_cert_check_level==2?" (default)":"");
+		tty_printf(_("   (3) I have done very careful checking.%s\n"),
+			   opt.def_cert_check_level==3?" (default)":"");
+		tty_printf("\n");
 
-		m_free(answer);
+		while(class==0)
+		  {
+		    answer = cpr_get("sign_uid.class",_("Your selection? "));
+
+		    if(answer[0]=='\0')
+		      class=0x10+opt.def_cert_check_level; /* Default */
+		    else if(ascii_strcasecmp(answer,"0")==0)
+		      class=0x10; /* Generic */
+		    else if(ascii_strcasecmp(answer,"1")==0)
+		      class=0x11; /* Persona */
+		    else if(ascii_strcasecmp(answer,"2")==0)
+		      class=0x12; /* Casual */
+		    else if(ascii_strcasecmp(answer,"3")==0)
+		      class=0x13; /* Positive */
+		    else
+		      tty_printf(_("Invalid selection.\n"));
+
+		    m_free(answer);
+		  }
 	      }
+
+	    if(trust)
+	      trustsig_prompt(&trust_value,&trust_depth,&trust_regexp);
 	  }
 
 	tty_printf(_("Are you really sure that you want to sign this key\n"
@@ -664,6 +790,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		memset( &attrib, 0, sizeof attrib );
 		attrib.non_exportable = local;
 		attrib.non_revocable = nonrevocable;
+		attrib.trust_depth = trust_depth;
+		attrib.trust_value = trust_value;
+		attrib.trust_regexp = trust_regexp;
 		node->flag &= ~NODFLG_MARK_A;
 
                 /* we force creation of a v4 signature for local
@@ -887,7 +1016,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-           cmdLSIGN, cmdNRSIGN, cmdNRLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
+           cmdTSIGN, cmdLSIGN, cmdNRSIGN, cmdNRLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
 	   cmdPRIMARY, cmdDEBUG, cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID,
            cmdADDKEY, cmdDELKEY, cmdADDREVOKER, cmdTOGGLE, cmdSELKEY,
 	   cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE, cmdENABLEKEY,
@@ -914,6 +1043,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("c")       , cmdCHECK     , 0,0,1, NULL },
 	{ N_("sign")    , cmdSIGN      , 0,1,1, N_("sign the key") },
 	{ N_("s")       , cmdSIGN      , 0,1,1, NULL },
+	{ N_("tsign")   , cmdTSIGN     , 0,1,1, N_("make a trust signature")},
 	{ N_("lsign")   , cmdLSIGN     , 0,1,1, N_("sign the key locally") },
 	{ N_("nrsign")  , cmdNRSIGN    , 0,1,1, N_("sign the key non-revocably") },
 	{ N_("nrlsign") , cmdNRLSIGN   , 0,1,1, N_("sign the key locally and non-revocably") },
@@ -1131,6 +1261,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  case cmdLSIGN: /* sign (only the public key) */
 	  case cmdNRSIGN: /* sign (only the public key) */
 	  case cmdNRLSIGN: /* sign (only the public key) */
+	  case cmdTSIGN:
 	    if( pk->is_revoked )
 	      {
 		tty_printf(_("Key is revoked."));
@@ -1159,7 +1290,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    }
 	    if( !sign_uids( keyblock, locusr, &modified,
 			    (cmd == cmdLSIGN) || (cmd == cmdNRLSIGN),
-			    (cmd == cmdNRSIGN) || (cmd==cmdNRLSIGN))
+			    (cmd == cmdNRSIGN) || (cmd==cmdNRLSIGN),
+			    (cmd == cmdTSIGN))
 		&& sign_mode )
 	        goto do_cmd_save;
 	    break;

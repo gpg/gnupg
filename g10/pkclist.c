@@ -306,6 +306,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
             print_fingerprint (pk, NULL, 2);
             tty_printf("\n");
           }
+	/* This string also used in keyedit.c:sign_uids */
         tty_printf (_(
                      "Please decide how far you trust this user to correctly\n"
                      "verify other users' keys (by looking at passports,\n"
