@@ -110,13 +110,13 @@ add_secret_cert( CTX c, PACKET *pkt )
 static int
 add_user_id( CTX c, PACKET *pkt )
 {
-    KBNODE node, n1, n2;
+    KBNODE node, n1;
 
     if( !c->cert ) {
 	log_error("orphaned user id\n" );
 	return 0;
     }
-    /* goto the last certificate (currently ther is only one) */
+    /* goto the last certificate */
     for(n1=c->cert; n1->next; n1 = n1->next )
 	;
     assert( n1->pkt );
@@ -127,13 +127,7 @@ add_user_id( CTX c, PACKET *pkt )
     }
     /* add a new user id node at the end */
     node = new_kbnode( pkt );
-    if( !(n2=n1->child) )
-	n1->child = node;
-    else {
-	for( ; n2->next; n2 = n2->next)
-	    ;
-	n2->next = node;
-    }
+    add_kbnode( n1, node );
     return 1;
 }
 
@@ -147,49 +141,36 @@ add_signature( CTX c, PACKET *pkt )
 	/* This is the first signature for a following datafile.
 	 * G10 does not write such packets, instead it always uses
 	 * onepass-sig packets.  The drawback of PGP's method
-	 * of writing prepending the signtaure to the data is,
-	 * that it is not possible to make a signature from data
-	 * read from stdin.  But we are able to read these stuff. */
+	 * of prepending the signtaure to the data is,
+	 * that it is not possible to make a signature from data read
+	 * from stdin.	(Anyway, G10 is are able to read these stuff) */
 	node = new_kbnode( pkt );
-	node->next = c->cert;
 	c->cert = node;
 	return 1;
     }
     else if( !c->cert )
-	return 0;
+	return 0; /* oops */
     else if( !c->cert->pkt )
 	BUG();
     else if( c->cert->pkt->pkttype == PKT_ONEPASS_SIG ) {
-	/* The root is a onepass signature, so we are signing data
-	 * The childs direct under the root are the signatures
-	 * (there is no need to keep the correct sequence of packets) */
+	/* The root is a onepass signature, so we are signing data */
 	node = new_kbnode( pkt );
-	node->next = c->cert->child;
-	c->cert->child = node;
+	add_kbnode( c->cert, node );
 	return 1;
-    }
-    else if( !c->cert->child ) {
-	log_error("orphaned signature (no userid)\n" );
-	return 0;
     }
 
     /* goto the last user id */
-    for(n1=c->cert->child; n1->next; n1 = n1->next )
-	;
-    assert( n1->pkt );
-    if( n1->pkt->pkttype != PKT_USER_ID ) {
-	log_error("invalid parent type %d for sig\n", n1->pkt->pkttype);
+    for(n2=NULL, n1=c->cert; n1->next; n1 = n1->next )
+	if( n1->pkt->pkttype == PKT_USER_ID )
+	    n2 = n1;
+    if( !n2 ) {
+	log_error("no user id for signature packet\n");
 	return 0;
     }
+    n1 = n2;
     /* and add a new signature node id at the end */
     node = new_kbnode( pkt );
-    if( !(n2=n1->child) )
-	n1->child = node;
-    else {
-	for( ; n2->next; n2 = n2->next)
-	    ;
-	n2->next = node;
-    }
+    insert_kbnode( n1, node, PKT_USER_ID );
     return 1;
 }
 
@@ -333,10 +314,9 @@ do_check_sig( CTX c, KBNODE node )
     }
     else if( (sig->sig_class&~3) == 0x10 ) { /* classes 0x10 .. 0x13 */
 	if( c->cert->pkt->pkttype == PKT_PUBLIC_CERT ) {
-	    KBNODE n1 = find_kbparent( c->cert, node );
+	    KBNODE n1 = find_prev_kbnode( c->cert, node, PKT_USER_ID );
 
-	    if( n1 && n1->pkt->pkttype == PKT_USER_ID ) {
-
+	    if( n1 ) {
 		if( c->cert->pkt->pkt.public_cert->mfx.md )
 		    md = md_copy( c->cert->pkt->pkt.public_cert->mfx.md );
 		else
@@ -411,7 +391,7 @@ print_fingerprint( PKT_public_cert *pkc, PKT_secret_cert *skc )
 static void
 list_node( CTX c, KBNODE node )
 {
-    register KBNODE n2;
+    int any=0;
 
     if( !node )
 	;
@@ -422,21 +402,19 @@ list_node( CTX c, KBNODE node )
 				      pubkey_letter( pkc->pubkey_algo ),
 				      (ulong)keyid_from_pkc( pkc, NULL ),
 				      datestr_from_pkc( pkc )	  );
-	n2 = node->child;
-	if( !n2 )
-	    printf("ERROR: no user id!\n");
-	else {
-	    /* and now list all userids with their signatures */
-	    for( ; n2; n2 = n2->next ) {
-		if( n2 != node->child )
-		    printf( "%*s", 31, "" );
-		print_userid( n2->pkt );
-		putchar('\n');
-		if( opt.fingerprint && n2 == node->child )
-		    print_fingerprint( pkc, NULL );
-		list_node(c,  n2 );
-	    }
+	/* and now list all userids with their signatures */
+	while( (node = find_next_kbnode(node, PKT_USER_ID)) ) {
+	    if( any )
+		printf( "%*s", 31, "" );
+	    print_userid( node->pkt );
+	    putchar('\n');
+	    if( opt.fingerprint && !any )
+		print_fingerprint( pkc, NULL );
+	    list_node(c,  node );
+	    any=1;
 	}
+	if( !any )
+	    printf("ERROR: no user id!\n");
     }
     else if( node->pkt->pkttype == PKT_SECRET_CERT ) {
 	PKT_secret_cert *skc = node->pkt->pkt.secret_cert;
@@ -445,20 +423,21 @@ list_node( CTX c, KBNODE node )
 				      pubkey_letter( skc->pubkey_algo ),
 				      (ulong)keyid_from_skc( skc, NULL ),
 				      datestr_from_skc( skc )	  );
-	n2 = node->child;
-	if( !n2 )
-	    printf("ERROR: no user id!\n");
-	else {
-	    print_userid( n2->pkt );
+	/* and now list all userids */
+	while( (node = find_next_kbnode(node, PKT_USER_ID)) ) {
+	    print_userid( node->pkt );
 	    putchar('\n');
-	    if( opt.fingerprint && n2 == node->child )
+	    if( opt.fingerprint && !any )
 		print_fingerprint( NULL, skc );
+	    any=1;
 	}
+	if( !any )
+	    printf("ERROR: no user id!\n");
     }
     else if( node->pkt->pkttype == PKT_USER_ID ) {
 	/* list everything under this user id */
-	for(n2=node->child; n2; n2 = n2->next )
-	    list_node(c,  n2 );
+	while( (node = find_next_kbnode(node, 0 )) )
+	    list_node(c, node );
     }
     else if( node->pkt->pkttype == PKT_SIGNATURE  ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
@@ -467,7 +446,6 @@ list_node( CTX c, KBNODE node )
 	char *p;
 	int sigrc = ' ';
 
-	assert( !node->child );
 	if( !opt.list_sigs )
 	    return;
 
@@ -626,31 +604,26 @@ proc_tree( CTX c, KBNODE node )
     else if( node->pkt->pkttype == PKT_SECRET_CERT )
 	list_node( c, node );
     else if( node->pkt->pkttype == PKT_ONEPASS_SIG ) {
-	if( !node->child )
-	    log_error("proc_tree: onepass_sig without data\n");
-	else if( node->child->pkt->pkttype != PKT_SIGNATURE )
-	    log_error("proc_tree: onepass_sig not followed by signature\n");
-	else {	/* check all signatures */
-	    if( !c->have_data ) {
-		free_md_filter_context( &c->mfx );
-		/* prepare to create all requested message digests */
-		c->mfx.md = md_open(0, 0);
-		for(n1=node->child; n1; n1 = n1->next ) {
-		    md_enable( c->mfx.md,
-			       digest_algo_from_sig(n1->pkt->pkt.signature));
-		}
-		/* ask for file and hash it */
-		rc = ask_for_detached_datafile( &c->mfx,
-						iobuf_get_fname(c->iobuf));
-		if( rc ) {
-		    log_error("can't hash datafile: %s\n", g10_errstr(rc));
-		    return;
-		}
+	/* check all signatures */
+	if( !c->have_data ) {
+	    free_md_filter_context( &c->mfx );
+	    /* prepare to create all requested message digests */
+	    c->mfx.md = md_open(0, 0);
+	    for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); ) {
+		md_enable( c->mfx.md,
+			   digest_algo_from_sig(n1->pkt->pkt.signature));
 	    }
-
-	    for(n1=node->child; n1; n1 = n1->next )
-		check_sig_and_print( c, n1 );
+	    /* ask for file and hash it */
+	    rc = ask_for_detached_datafile( &c->mfx,
+					    iobuf_get_fname(c->iobuf));
+	    if( rc ) {
+		log_error("can't hash datafile: %s\n", g10_errstr(rc));
+		return;
+	    }
 	}
+
+	for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); )
+	    check_sig_and_print( c, n1 );
     }
     else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	PKT_signature *sig = node->pkt->pkt.signature;

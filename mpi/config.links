@@ -10,7 +10,7 @@ test -d ./mpi || mkdir ./mpi
 echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
 case "${target}" in
-    i[345]86*-*-linuxaout* | i[345]86*-*-linuxoldld* | i[345]86*-*-*bsd*)
+    i[34]86*-*-linuxaout* | i[34]86*-*-linuxoldld* | i[34]86*-*-*bsd*)
 	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i386"
@@ -20,14 +20,14 @@ case "${target}" in
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i586 i386"
 	;;
-    i[3456]86*-*-*)
+    i[34]86*-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i386"
 	;;
     i[56]86*-*-* | pentium-*-* | pentiumpro-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
-	cat  $srcdir/mpi/i586/syntax.h	    >>./mpi/asm-syntax.h
+	cat  $srcdir/mpi/i386/syntax.h	    >>./mpi/asm-syntax.h
 	path="i586 i386"
 	;;
     alpha*-*-*)

@@ -527,7 +527,7 @@ check_all_keysigs( KBNODE keyblock )
     int no_key = 0;
     int oth_err = 0;
 
-    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
+    for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_SIGNATURE
 	    && (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
@@ -579,7 +579,7 @@ remove_keysigs( KBNODE keyblock, int all )
     int count;
 
     count = 0;
-    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
+    for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( ((node->flag & 7) || all )
 	    && node->pkt->pkttype == PKT_SIGNATURE
 	    && (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
@@ -625,7 +625,7 @@ remove_keysigs( KBNODE keyblock, int all )
     if( !yes )
 	return 0;
 
-    for( kbctx=NULL; (node=walk_kbtree2( keyblock, &kbctx, 1)) ; ) {
+    for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 1)) ; ) {
 	if( node->flag & 128)
 	    delete_kbnode( keyblock, node );
     }
@@ -677,10 +677,7 @@ sign_key( const char *username, STRLIST locusr )
     }
 
     /* get the keyid from the keyblock */
-    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
-	if( node->pkt->pkttype == PKT_PUBLIC_CERT )
-	    break;
-    }
+    node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
     if( !node ) {
 	log_error("Oops; public key not found anymore!\n");
 	rc = G10ERR_GENERAL;
@@ -719,7 +716,7 @@ sign_key( const char *username, STRLIST locusr )
 	u32 akeyid[2];
 
 	keyid_from_skc( skc_rover->skc, akeyid );
-	for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
+	for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	    if( node->pkt->pkttype == PKT_SIGNATURE
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 		if( akeyid[0] == node->pkt->pkt.signature->keyid[0]
@@ -744,7 +741,7 @@ sign_key( const char *username, STRLIST locusr )
     for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
 	if( skc_rover->mark )
 	    continue;
-	for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
+	for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	    if( node->pkt->pkttype == PKT_USER_ID ) {
 		if( sign_it_p( pkc, node->pkt->pkt.user_id ) ) {
 		    PACKET *pkt;
@@ -763,7 +760,7 @@ sign_key( const char *username, STRLIST locusr )
 		    pkt = m_alloc_clear( sizeof *pkt );
 		    pkt->pkttype = PKT_SIGNATURE;
 		    pkt->pkt.signature = sig;
-		    add_kbnode_as_child( node, new_kbnode( pkt ) );
+		    insert_kbnode( node, new_kbnode(pkt), PKT_USER_ID );
 		}
 	    }
 	}
@@ -789,7 +786,7 @@ edit_keysigs( const char *username )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
-    KBNODE kbctx, node;
+    KBNODE node;
     KBPOS kbpos;
     PKT_public_cert *pkc;
     u32 pkc_keyid[2];
@@ -809,10 +806,7 @@ edit_keysigs( const char *username )
     }
 
     /* get the keyid from the keyblock */
-    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
-	if( node->pkt->pkttype == PKT_PUBLIC_CERT )
-	    break;
-    }
+    node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
     if( !node ) {
 	log_error("Oops; public key not found anymore!\n");
 	rc = G10ERR_GENERAL;
@@ -855,7 +849,7 @@ change_passphrase( const char *username )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
-    KBNODE kbctx, node;
+    KBNODE node;
     KBPOS kbpos;
     PKT_secret_cert *skc;
     u32 skc_keyid[2];
@@ -877,10 +871,7 @@ change_passphrase( const char *username )
     }
 
     /* get the keyid from the keyblock */
-    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
-	if( node->pkt->pkttype == PKT_SECRET_CERT )
-	    break;
-    }
+    node = find_kbnode( keyblock, PKT_SECRET_CERT );
     if( !node ) {
 	log_error("Oops; secret key not found anymore!\n");
 	rc = G10ERR_GENERAL;

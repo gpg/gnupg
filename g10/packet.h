@@ -221,6 +221,9 @@ int list_packets( IOBUF a );
 int set_packet_list_mode( int mode );
 int search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos );
 int parse_packet( IOBUF inp, PACKET *ret_pkt);
+int copy_all_packets( IOBUF inp, IOBUF out );
+int copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff );
+int skip_some_packets( IOBUF inp, unsigned n );
 
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );

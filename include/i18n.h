@@ -21,6 +21,10 @@
 #ifndef G10_I18N_H
 #define G10_I18N_H
 
+#ifdef HAVE_LOCALE_H
+  #include <locale.h>	/* suggested by Ernst Molitor */
+#endif
+
 #ifdef HAVE_LIBINTL
   #include <libintl.h>
   #define _(a) gettext (a)

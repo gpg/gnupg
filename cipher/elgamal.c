@@ -311,25 +311,37 @@ elg_verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
     int rc;
     MPI t1;
     MPI t2;
+    MPI base[4];
+    MPI exp[4];
 
     if( !(mpi_cmp_ui( a, 0 ) > 0 && mpi_cmp( a, pkey->p ) < 0) )
 	return 0; /* assertion	0 < a < p  failed */
 
     t1 = mpi_alloc( mpi_get_nlimbs(a) );
     t2 = mpi_alloc( mpi_get_nlimbs(a) );
-    /* t1 = (y^a mod p) * (a^b mod p) mod p
-     * fixme: should be calculated by a call which evalutes
-     *	  t1 = y^a * a^b mod p
-     * direct.
-     */
-    mpi_powm( t1, pkey->y, a, pkey->p );
-    mpi_powm( t2, a, b, pkey->p );
-    mpi_mulm( t1, t1, t2, pkey->p );
+
+  #if 0
+    /* t1 = (y^a mod p) * (a^b mod p) mod p */
+    base[0] = pkey->y; exp[0] = a;
+    base[1] = a;       exp[1] = b;
+    base[2] = NULL;    exp[2] = NULL;
+    mpi_mulpowm( t1, base, exp, pkey->p );
 
     /* t2 = g ^ input mod p */
     mpi_powm( t2, pkey->g, input, pkey->p );
 
     rc = !mpi_cmp( t1, t2 );
+  #else
+    /* t1 = g ^ - input * y ^ a * a ^ b  mod p */
+    mpi_invm(t2, pkey->g, pkey->p );
+    base[0] = t2     ; exp[0] = input;
+    base[1] = pkey->y; exp[1] = a;
+    base[2] = a;       exp[2] = b;
+    base[3] = NULL;    exp[3] = NULL;
+    mpi_mulpowm( t1, base, exp, pkey->p );
+    rc = !mpi_cmp_ui( t1, 1 );
+
+  #endif
 
     mpi_free(t1);
     mpi_free(t2);

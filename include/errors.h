@@ -55,5 +55,8 @@
 #define G10ERR_TRUSTDB	      33 /* a problem with the trustdb */
 #define G10ERR_BAD_CERT       34 /* bad certicate */
 #define G10ERR_INV_USER_ID    35
+#define G10ERR_CLOSE_FILE     36
+#define G10ERR_RENAME_FILE    37
+#define G10ERR_DELETE_FILE    38
 
 #endif /*G10_ERRORS_H*/

@@ -24,6 +24,7 @@ libmpi_a_SOURCES = longlong.h	  \
 	      mpi-inv.c      \
 	      mpi-mul.c      \
 	      mpi-pow.c      \
+	      mpi-mpow.c     \
 	      mpi-scan.c     \
 	      mpicoder.c     \
 	      mpih-cmp.c     \

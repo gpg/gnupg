@@ -37,9 +37,8 @@
 
 typedef struct kbnode_struct *KBNODE;
 struct kbnode_struct {
+    KBNODE next;
     PACKET *pkt;
-    KBNODE next;   /* used to form a link list */
-    KBNODE child;
     int flag;
     int private_flag;
 };
@@ -49,10 +48,9 @@ struct kbnode_struct {
  * of a keyblock.
  */
 struct keyblock_pos_struct {
-    int   resno;  /* resource number */
-    ulong offset; /* position information */
-    ulong length; /* length of thge keyblock */
-    int last_block;
+    int   resno;     /* resource number */
+    ulong offset;    /* position information */
+    unsigned count;  /* length of the keyblock in packets */
 };
 typedef struct keyblock_pos_struct KBPOS;
 
@@ -130,10 +128,11 @@ KBNODE new_kbnode( PACKET *pkt );
 void release_kbnode( KBNODE n );
 void delete_kbnode( KBNODE root, KBNODE node );
 void add_kbnode( KBNODE root, KBNODE node );
-void add_kbnode_as_child( KBNODE root, KBNODE node );
-KBNODE find_kbparent( KBNODE root, KBNODE node );
-KBNODE walk_kbtree( KBNODE root, KBNODE *context );
-KBNODE walk_kbtree2( KBNODE root, KBNODE *context, int all );
+void insert_kbnode( KBNODE root, KBNODE node, int pkttype );
+KBNODE find_prev_kbnode( KBNODE root, KBNODE node, int pkttype );
+KBNODE find_next_kbnode( KBNODE node, int pkttype );
+KBNODE find_kbnode( KBNODE node, int pkttype );
+KBNODE walk_kbnode( KBNODE root, KBNODE *context, int all );
 void clear_kbnode_flags( KBNODE n );
 
 /*-- ringedit.c --*/

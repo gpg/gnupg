@@ -102,25 +102,19 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
     PKT_signature *sig;
     PKT_user_id *uid;
     int rc=0;
-    KBNODE kbctx, node;
+    KBNODE node;
     PKT_public_cert *pkc;
 
     if( opt.verbose )
 	log_info(_("writing self signature\n"));
 
-    /* get the uid packet from the tree */
-    for( kbctx=NULL; (node=walk_kbtree( root, &kbctx)) ; ) {
-	if( node->pkt->pkttype == PKT_USER_ID )
-	    break;
-    }
+    /* get the uid packet from the list */
+    node = find_kbnode( root, PKT_USER_ID );
     if( !node )
 	BUG(); /* no user id packet in tree */
     uid = node->pkt->pkt.user_id;
     /* get the pkc packet from the pub_tree */
-    for( kbctx=NULL; (node=walk_kbtree( pub_root, &kbctx)) ; ) {
-	if( node->pkt->pkttype == PKT_PUBLIC_CERT )
-	    break;
-    }
+    node = find_kbnode( root, PKT_PUBLIC_CERT );
     if( !node )
 	BUG();
     pkc = node->pkt->pkt.public_cert;

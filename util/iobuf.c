@@ -313,7 +313,7 @@ iobuf_close( IOBUF a )
     size_t dummy_len;
     int rc=0;
 
-    for( ; a; a = a2 ) {
+    for( ; a && !rc ; a = a2 ) {
 	a2 = a->chain;
 	if( a->usage == 2 && (rc=iobuf_flush(a)) )
 	    log_error("iobuf_flush failed on close: %s\n", g10_errstr(rc));
@@ -721,6 +721,26 @@ iobuf_readbyte(IOBUF a)
     a->nbytes++;
     return c;
 }
+
+
+int
+iobuf_read(IOBUF a, byte *buf, unsigned buflen )
+{
+    int c, n;
+
+    for(n=0 ; n < buflen; n++, buf++ ) {
+	if( (c = iobuf_readbyte(a)) == -1 ) {
+	    if( !n )
+		return -1; /* eof */
+	    break;
+	}
+	else
+	    *buf = c;
+    }
+    return n;
+}
+
+
 
 
 int

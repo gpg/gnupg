@@ -36,7 +36,6 @@ new_kbnode( PACKET *pkt )
     KBNODE n = m_alloc( sizeof *n );
     n->next = NULL;
     n->pkt = pkt;
-    n->child = NULL;
     n->flag = 0;
     n->private_flag=0; /* kludge to delete a node */
     return n;
@@ -50,7 +49,6 @@ release_kbnode( KBNODE n )
 
     while( n ) {
 	n2 = n->next;
-	release_kbnode( n->child );
 	free_packet( n->pkt );
 	m_free( n );
 	n = n2;
@@ -60,7 +58,7 @@ release_kbnode( KBNODE n )
 
 /****************
  * Delete NODE from ROOT, ROOT must exist!
- * Note does only work with walk_kbtree!!
+ * Note: This does only work with walk_kbnode!!
  */
 void
 delete_kbnode( KBNODE root, KBNODE node )
@@ -82,56 +80,97 @@ add_kbnode( KBNODE root, KBNODE node )
 }
 
 /****************
- * Append NODE to ROOT as child of ROOT
+ * Insert NODE into the list after root but before a packet with type PKTTYPE
+ * (only if PKTTYPE != 0)
  */
 void
-add_kbnode_as_child( KBNODE root, KBNODE node )
+insert_kbnode( KBNODE root, KBNODE node, int pkttype )
 {
-    KBNODE n1;
-
-    if( !(n1=root->child) )
-	root->child = node;
+    if( !pkttype ) {
+	node->next = root->next;
+	root->next = node;
+    }
     else {
-	for( ; n1->next; n1 = n1->next)
-	    ;
+	KBNODE n1;
+
+	for(n1=root; n1->next;	n1 = n1->next)
+	    if( pkttype == n1->next->pkt->pkttype ) {
+		node->next = n1->next;
+		n1->next = node;
+		return;
+	    }
+	/* no such packet, append */
+	node->next = NULL;
 	n1->next = node;
     }
 }
 
+
 /****************
- * Return the parent node of KBNODE from the tree with ROOT
+ * Find the previous node (if PKTTYPE = 0) or the previous node
+ * with pkttype PKTTYPE in the list starting with ROOT of NODE.
  */
 KBNODE
-find_kbparent( KBNODE root, KBNODE node )
+find_prev_kbnode( KBNODE root, KBNODE node, int pkttype )
 {
-    KBNODE n, n2;
+    KBNODE n1;
 
-    for( ; root; root = root->child) {
-	for( n = root; n; n = n->next) {
-	    for( n2 = n->child; n2; n2 = n2->next ) {
-		if( n2 == node )
-		    return n;
-	    }
-	}
+    for(n1=NULL ; root && root != node; root = root->next )
+	if( !pkttype || root->pkt->pkttype == pkttype )
+	    n1 = root;
+    return n1;
+}
+
+/****************
+ * Ditto, but find the next package.  The behaviour is trivial if
+ * PKTTYPE is 0 but if it is specified, the next node with a packet
+ * of this type is returned.  The function has some knowledge about
+ * the valid ordering of packets: e.g. if the next signature packet
+ * is requested, the function will not return one if it encounters
+ * a user-id.
+ */
+KBNODE
+find_next_kbnode( KBNODE node, int pkttype )
+{
+    for( node=node->next ; node; node = node->next ) {
+	if( !pkttype )
+	    return node;
+	else if( pkttype == PKT_USER_ID
+		 && (	node->pkt->pkttype == PKT_PUBLIC_CERT
+		     || node->pkt->pkttype == PKT_SECRET_CERT ) )
+	    return NULL;
+	else if( pkttype == PKT_SIGNATURE
+		 && (	node->pkt->pkttype == PKT_USER_ID
+		     || node->pkt->pkttype == PKT_PUBLIC_CERT
+		     || node->pkt->pkttype == PKT_SECRET_CERT ) )
+	    return NULL;
+	else if( node->pkt->pkttype == pkttype )
+	    return node;
     }
     return NULL;
 }
 
 
+KBNODE
+find_kbnode( KBNODE node, int pkttype )
+{
+    for( ; node; node = node->next ) {
+	if( node->pkt->pkttype == pkttype )
+	    return node;
+    }
+    return NULL;
+}
+
+
+
 /****************
- * Walk through a tree of kbnodes. This functions returns
+ * Walk through a list of kbnodes. This functions returns
  * the next kbnode for each call; before using the function the first
  * time, the caller must set CONTEXT to NULL (This has simply the effect
  * to start with ROOT).
  */
 KBNODE
-walk_kbtree( KBNODE root, KBNODE *context )
-{
-    return walk_kbtree2( root, context, 0 );
-}
-
-KBNODE
-walk_kbtree2( KBNODE root, KBNODE *context, int all )
+walk_kbnode( KBNODE root, KBNODE *context, int all )
 {
     KBNODE n;
 
@@ -142,15 +181,7 @@ walk_kbtree2( KBNODE root, KBNODE *context, int all )
 	}
 
 	n = *context;
-	if( n->child ) {
-	    n = n->child;
-	    *context = n;
-	}
-	else if( n->next ) {
-	    n = n->next;
-	    *context = n;
-	}
-	else if( (n = find_kbparent( root, n )) ) {
+	if( n->next ) {
 	    n = n->next;
 	    *context = n;
 	}
@@ -163,7 +194,6 @@ void
 clear_kbnode_flags( KBNODE n )
 {
     for( ; n; n = n->next ) {
-	clear_kbnode_flags( n->child );
 	n->flag = 0;
     }
 }

@@ -15,8 +15,6 @@
     * complete cipher/cast.c
     * complete cipher/dsa.c
 
-    * armor has now some problems.
-
     * add g10 stuff to Mutt's pgpinvoke.c
 
     * Burn the buffers used by fopen().
@@ -26,8 +24,5 @@
       and mark them as valid/invalid/nopubkey, and how do we check, that
       we have a self-signature -> put this stuff into a kind of directory
       record, as it does not belong to the pubkey record?
-
-    * Have no prototype for stpcpy() when using glibc 2; must switch on
-      the GNU extensions or see how configure can fix it.
 
 

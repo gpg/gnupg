@@ -478,7 +478,7 @@ main( int argc, char **argv )
 	}
 	break;
 
-      case aTest: do_test( argc? atoi(*argv): 0 ); break;
+      case aTest: do_test( argc? atoi(*argv): 1 ); break;
 
       case aListTrustDB:
 	if( !argc )
@@ -603,27 +603,41 @@ print_mds( const char *fname )
 static void
 do_test(int times)
 {
-  #if 0
-    MPI t = mpi_alloc( 50 );
-    MPI m = mpi_alloc( 50 );
-    MPI a = mpi_alloc( 50 );
-    MPI b = mpi_alloc( 50 );
-    MPI p = mpi_alloc( 50 );
-    MPI x = mpi_alloc( 50 );
+    MPI base[4];
+    MPI exp[4];
+    MPI t1 = mpi_alloc(50);
+    MPI t2 = mpi_alloc(50);
+    MPI t3 = mpi_alloc(50);
+    MPI tmp= mpi_alloc(50);
+    MPI m =   mpi_alloc(50);
+    MPI res = mpi_alloc(50);
 
-    /* output = b/(a^x) mod p */
-    log_debug("invm %d times ", times);
-    for( ; times > 0; times -- ) {
-	mpi_fromstr(a, "0xef45678343589854354a4545545454554545455"
-		       "aaaaaaaaaaaaa44444fffdecb33434343443331" );
-	mpi_fromstr(b, "0x8765765589854354a4545545454554545455"
-		       "aaaaaaa466577778decb36666343443331" );
-	mpi_invm( t, a, b );
-	fputc('.', stderr); fflush(stderr);
-    }
+    mpi_fromstr( m, "0x10000000000000000000000000" );
+    base[0] = mpi_alloc_set_ui( 3 );
+    mpi_fromstr( base[0], "0x145984358945989898495ffdd13" );
+    base[1] = mpi_alloc_set_ui( 5 );
+    mpi_fromstr( base[1], "0x000effff9999000000001100001" );
+    base[2] = mpi_alloc_set_ui( 2 );
+    mpi_fromstr( base[2], "0x499eeeaaaaa0444444545466672" );
+    base[3] = NULL;
+    exp[0]  = mpi_alloc_set_ui( 30 );
+    exp[1]  = mpi_alloc_set_ui( 10 );
+    mpi_fromstr( exp[1], "0x3457878888888888aabbbccccc1" );
+    exp[2]  = mpi_alloc_set_ui( 24 );
+    exp[3] = NULL;
+
+    mpi_powm( t1, base[0], exp[0], m );
+    mpi_powm( t2, base[1], exp[1], m );
+    mpi_powm( t3, base[2], exp[2], m );
+    mpi_mulm( tmp, t1, t2, m );
+    mpi_mulm( t1, tmp, t3, m );
+    log_mpidump("X=", t1 );
+
+
+    mpi_mulpowm( res, base, exp, m );
+    log_mpidump("X=", res );
 
 
     m_check(NULL);
-  #endif
 }
 

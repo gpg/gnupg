@@ -291,7 +291,7 @@ main( int argc, char **argv )
 				    configname, strerror(errno) );
 	    m_free(configname); configname = NULL;
 	}
-	if( parse_verbose > 1 )
+	if( parse_verbose > 1 && configname )
 	    log_info(_("reading options from '%s'\n"), configname );
 	default_config = 0;
     }
@@ -640,7 +640,7 @@ main( int argc, char **argv )
 void
 g10_exit( int rc )
 {
-    if( opt.verbose )
+    if( opt.debug )
 	secmem_dump_stats();
     secmem_term();
     rc = rc? rc : log_get_errorcount(0)? 2:0;

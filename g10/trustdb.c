@@ -1090,7 +1090,7 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
     LOCAL_ID_INFO *dups = NULL;
 
     *selfsig_okay = 0;
-    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
+    for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx,0)) ; ) {
 	if( node->pkt->pkttype == PKT_SIGNATURE
 	    && (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 	    int selfsig;
@@ -1190,7 +1190,7 @@ build_sigrecs( ulong pubkeyid )
     rec.rectype = RECTYPE_SIG;
     i = 0;
     rnum = rnum2 = 0;
-    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
+    for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	/* insert sigs which are not a selfsig nor a duplicate */
 	if( (node->flag & 1) && !(node->flag & 4) ) {
 	    assert( node->pkt->pkttype == PKT_SIGNATURE );

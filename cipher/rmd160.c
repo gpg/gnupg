@@ -151,6 +151,20 @@ rmd160_init( RMD160_CONTEXT *hd )
 }
 
 
+#if defined(__GNUC__) && defined(__i386__)
+static inline u32
+rol(int n, u32 x)
+{
+	__asm__("roll %%cl,%0"
+		:"=r" (x)
+		:"0" (x),"c" (n));
+	return x;
+}
+#else
+  #define rol(n,x) ( ((x) << (n)) | ((x) >> (32-(n))) )
+#endif
+
+
 /****************
  * Transform the message X which consists of 16 32-bit-words
  */
@@ -208,9 +222,6 @@ transform( RMD160_CONTEXT *hd, byte *data )
 		      (a) < 48 ? F2((x),(y),(z)) : \
 		      (a) < 64 ? F3((x),(y),(z)) : \
 				 F4((x),(y),(z)) )
-
-#define rol(n,x) ( ((x) << (n)) | ((x) >> (32-(n))) )
-
 
   #ifdef BIG_ENDIAN_HOST
     { int i;

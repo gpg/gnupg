@@ -93,7 +93,18 @@ static byte PADDING[64] = {
 #define I(x, y, z) ((y) ^ ((x) | (~z)))
 
 /* ROTATE_LEFT rotates x left n bits */
-#define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))
+#if defined(__GNUC__) && defined(__i386__)
+static inline u32
+ROTATE_LEFT(u32 x, int n)
+{
+	__asm__("roll %%cl,%0"
+		:"=r" (x)
+		:"0" (x),"c" (n));
+	return x;
+}
+#else
+  #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))
+#endif
 
 /* FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4 */
 /* Rotation is separate from addition to prevent recomputation */

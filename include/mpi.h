@@ -132,6 +132,9 @@ int mpi_gcd( MPI g, MPI a, MPI b );
 void mpi_pow( MPI w, MPI u, MPI v);
 void mpi_powm( MPI res, MPI base, MPI exp, MPI mod);
 
+/*-- mpi-mpow.c --*/
+void mpi_mulpowm( MPI res, MPI *basearray, MPI *exparray, MPI mod);
+
 /*-- mpi-cmp.c --*/
 int mpi_cmp_ui( MPI u, ulong v );
 int mpi_cmp( MPI u, MPI v );

@@ -228,7 +228,7 @@ static const u32 ps[BLOWFISH_ROUNDS+2] = {
 
 
 
-static u32
+static inline u32
 function_F( BLOWFISH_context *bc, u32 x )
 {
     u16 a, b, c, d;

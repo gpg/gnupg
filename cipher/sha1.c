@@ -99,14 +99,30 @@
 #define K3  0x8F1BBCDCL 				/* Rounds 40-59 */
 #define K4  0xCA62C1D6L 				/* Rounds 60-79 */
 
-#define ROTL(n,X)  ( ( ( X ) << n ) | ( ( X ) >> ( 32 - n ) ) )
+
+#if defined(__GNUC__) && defined(__i386__)
+static inline u32
+rol(int n, u32 x)
+{
+	__asm__("roll %%cl,%0"
+		:"=r" (x)
+		:"0" (x),"c" (n));
+	return x;
+}
+#else
+  #define rol(n,x)  ( ((x) << (n)) | ((x) >> (32-(n))) )
+#endif
+
+
+
+
 
 #define expand(W,i) ( W[ i & 15 ] = \
-		     ROTL( 1, ( W[ i & 15 ] ^ W[ (i - 14) & 15 ] ^ \
+		     rol( 1, ( W[ i & 15 ] ^ W[ (i - 14) & 15 ] ^ \
 				W[ (i - 8) & 15 ] ^ W[ (i - 3) & 15 ] ) ) )
 
 #define subRound(a, b, c, d, e, f, k, data) \
-    ( e += ROTL( 5, a ) + f( b, c, d ) + k + data, b = ROTL( 30, b ) )
+    ( e += rol( 5, a ) + f( b, c, d ) + k + data, b = rol( 30, b ) )
 
 
 void

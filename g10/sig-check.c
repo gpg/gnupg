@@ -248,9 +248,9 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
     if( (rc=check_digest_algo(algo)) )
 	return rc;
 
-    unode = find_kbparent( root, node );
+    unode = find_prev_kbnode( root, node, PKT_USER_ID );
 
-    if( unode && unode->pkt->pkttype == PKT_USER_ID ) {
+    if( unode ) {
 	PKT_user_id *uid = unode->pkt->pkt.user_id;
 
 	if( is_selfsig ) {

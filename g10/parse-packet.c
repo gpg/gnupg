@@ -37,7 +37,9 @@ static mpi_print_mode = 0;
 static list_mode = 0;
 
 static int  parse( IOBUF inp, PACKET *pkt, int reqtype,
-					   ulong *retpos, int *skip );
+		   ulong *retpos, int *skip, IOBUF out, int do_skip );
+static int  copy_packet( IOBUF inp, IOBUF out, int pkttype,
+					       unsigned long pktlen );
 static void skip_packet( IOBUF inp, int pkttype, unsigned long pktlen );
 static void skip_rest( IOBUF inp, unsigned long pktlen );
 static int  parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -51,7 +53,8 @@ static int  parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static void parse_subkey( IOBUF inp, int pkttype, unsigned long pktlen );
-static void parse_comment( IOBUF inp, int pkttype, unsigned long pktlen );
+static int  parse_comment( IOBUF inp, int pkttype, unsigned long pktlen,
+							   PACKET *packet );
 static void parse_trust( IOBUF inp, int pkttype, unsigned long pktlen );
 static int  parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
 								PACKET *pkt );
@@ -116,13 +119,13 @@ parse_packet( IOBUF inp, PACKET *pkt )
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, 0, NULL, &skip );
+	rc = parse( inp, pkt, 0, NULL, &skip, NULL, 0 );
     } while( skip );
     return rc;
 }
 
 /****************
- * Like parse packet, but do only return packet of the given type.
+ * Like parse packet, but do only return packets of the given type.
  */
 int
 search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos )
@@ -130,20 +133,68 @@ search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos )
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, pkttype, retpos, &skip );
+	rc = parse( inp, pkt, pkttype, retpos, &skip, NULL, 0 );
     } while( skip );
     return rc;
 }
 
+/****************
+ * Copy all packets from INP to OUT, thereby removing unused spaces.
+ */
+int
+copy_all_packets( IOBUF inp, IOBUF out )
+{
+    PACKET pkt;
+    int skip, rc=0;
+    do {
+	init_packet(&pkt);
+    } while( !(rc = parse( inp, &pkt, 0, NULL, &skip, out, 0 )));
+    return rc;
+}
+
+/****************
+ * Copy some packets from INP to OUT, thereby removing unused spaces.
+ * Stop after at offset STOPoff (i.e. don't copy the packet at this offset)
+ */
+int
+copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff )
+{
+    PACKET pkt;
+    int skip, rc=0;
+    do {
+	if( iobuf_tell(inp) >= stopoff )
+	    return 0;
+	init_packet(&pkt);
+    } while( !(rc = parse( inp, &pkt, 0, NULL, &skip, out, 0 )) );
+    return rc;
+}
+
+/****************
+ * Skip over N packets
+ */
+int
+skip_some_packets( IOBUF inp, unsigned n )
+{
+    int skip, rc=0;
+    PACKET pkt;
+
+    for( ;n && !rc; n--) {
+	init_packet(&pkt);
+	rc = parse( inp, &pkt, 0, NULL, &skip, NULL, 1 );
+    }
+    return rc;
+}
 
 /****************
  * Parse packet. Set the variable skip points to to 1 if the packet
  * should be skipped; this is the case if either there is a
  * requested packet type and the parsed packet doesn't match or the
  * packet-type is 0, indicating deleted stuff.
+ * if OUT is not NULL, a special copymode is used.
  */
 static int
-parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos, int *skip )
+parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
+       int *skip, IOBUF out, int do_skip )
 {
     int rc, c, ctb, pkttype, lenbytes;
     unsigned long pktlen;
@@ -206,7 +257,15 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos, int *skip )
 	}
     }
 
-    if( !pkttype || (reqtype && pkttype != reqtype) ) {
+    if( out && pkttype	) {
+	if( iobuf_write( out, hdr, hdrlen ) == -1 )
+	    rc = G10ERR_WRITE_FILE;
+	else
+	    rc = copy_packet(inp, out, pkttype, pktlen );
+	return rc;
+    }
+
+    if( do_skip || !pkttype || (reqtype && pkttype != reqtype) ) {
 	skip_packet(inp, pkttype, pktlen);
 	*skip = 1;
 	return 0;
@@ -245,7 +304,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos, int *skip )
 	parse_subkey(inp, pkttype, pktlen);
 	break;
       case PKT_COMMENT:
-	parse_comment(inp, pkttype, pktlen);
+	rc = parse_comment(inp, pkttype, pktlen, pkt);
 	break;
       case PKT_RING_TRUST:
 	parse_trust(inp, pkttype, pktlen);
@@ -281,6 +340,37 @@ dump_hex_line( int c, int *i )
     else
 	printf(" %02x", c );
     ++*i;
+}
+
+
+static int
+copy_packet( IOBUF inp, IOBUF out, int pkttype, unsigned long pktlen )
+{
+    int n;
+    char buf[100];
+
+    if( iobuf_in_block_mode(inp) ) {
+	while( (n = iobuf_read( inp, buf, 100 )) != -1 )
+	    if( iobuf_write(out, buf, n ) )
+		return G10ERR_WRITE_FILE; /* write error */
+    }
+    else if( !pktlen && pkttype == PKT_COMPRESSED ) {
+	/* compressed packet, copy till EOF */
+	while( (n = iobuf_read( inp, buf, 100 )) != -1 )
+	    if( iobuf_write(out, buf, n ) )
+		return G10ERR_WRITE_FILE; /* write error */
+    }
+    else {
+	for( ; pktlen; pktlen -= n ) {
+	    n = pktlen > 100 ? 100 : pktlen;
+	    n = iobuf_read( inp, buf, n );
+	    if( n == -1 )
+		return G10ERR_READ_FILE;
+	    if( iobuf_write(out, buf, n ) )
+		return G10ERR_WRITE_FILE; /* write error */
+	}
+    }
+    return 0;
 }
 
 
@@ -738,22 +828,29 @@ parse_subkey( IOBUF inp, int pkttype, unsigned long pktlen )
 
 
 
-static void
-parse_comment( IOBUF inp, int pkttype, unsigned long pktlen )
+static int
+parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
+    byte *p;
+
+    packet->pkt.comment = m_alloc(sizeof *packet->pkt.comment + pktlen - 1);
+    packet->pkt.comment->len = pktlen;
+    p = packet->pkt.comment->data;
+    for( ; pktlen; pktlen--, p++ )
+	*p = iobuf_get_noeof(inp);
+
     if( list_mode ) {
-	printf(":comment packet: \"" );
-	for( ; pktlen; pktlen-- ) {
-	    int c;
-	    c = iobuf_get_noeof(inp);
-	    if( c >= ' ' && c <= 'z' )
-		putchar(c);
+	int n = packet->pkt.comment->len;
+	printf(":comment packet: \"");
+	for(p=packet->pkt.comment->data; n; p++, n-- ) {
+	    if( *p >= ' ' && *p <= 'z' )
+		putchar(*p);
 	    else
-		printf("\\x%02x", c );
+		printf("\\x%02x", *p );
 	}
 	printf("\"\n");
     }
-    skip_rest(inp, pktlen);
+    return 0;
 }
 
 
@@ -765,33 +862,6 @@ parse_trust( IOBUF inp, int pkttype, unsigned long pktlen )
     c = iobuf_get_noeof(inp);
     if( list_mode )
 	printf(":trust packet: flag=%02x\n", c );
-  #if 0 /* fixme: depending on the context we have different interpretations*/
-    if( prev_packet_is_a_key_packet ) {
-	int ot = c & 7;   /* ownertrust bits (for the key owner) */
-
-	    !ot ? "undefined" :
-	ot == 1 ? "unknown"   : /* we don't know the owner of this key */
-	ot == 2 ? "no"        : /* usually we do not trust this key owner */
-				/* to sign other keys */
-	ot == 5 ? "usually"   : /* usually we trust this key owner to sign */
-	ot == 6 ? "always"    : /* always trust this key owner to sign */
-	ot == 7 ? "ultimate"  : /* also present in the secret keyring */
-	      ""                /* reserved value */
-	if( c & (1<<5) )
-	    "key is disabled"
-	if( c & (1<<7) )
-	    "buckstop"
-    else if( prev_packet_is_user_is_packet ) {
-	    int kl = c & 3; /* keylegit bits */
-	0 = "unknown, undefined, or uninitialized trust"
-	1 = "we do not trust this key's ownership"
-	2 = "we have marginal confidence of this key's ownership"
-	3 = "we completely trust this key's ownership."
-	if( c & 0x80 )
-	    "warnonly"
-    else if( prev_packet_is_a_signature ) {
-    }
-  #endif
 }
 
 

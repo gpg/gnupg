@@ -106,6 +106,7 @@ libmpi_a_SOURCES = longlong.h	  \
 	      mpi-inv.c      \
 	      mpi-mul.c      \
 	      mpi-pow.c      \
+	      mpi-mpow.c     \
 	      mpi-scan.c     \
 	      mpicoder.c     \
 	      mpih-cmp.c     \
@@ -138,13 +139,13 @@ LIBS = @LIBS@
 libmpi_a_DEPENDENCIES =  mpih-mul1.o mpih-mul2.o mpih-mul3.o mpih-add1.o \
 mpih-sub1.o mpih-shift.o
 libmpi_a_OBJECTS =  mpi-add.o mpi-bit.o mpi-cmp.o mpi-div.o mpi-gcd.o \
-mpi-inv.o mpi-mul.o mpi-pow.o mpi-scan.o mpicoder.o mpih-cmp.o \
-mpih-add.o mpih-sub.o mpih-div.o mpih-mul.o mpiutil.o
+mpi-inv.o mpi-mul.o mpi-pow.o mpi-mpow.o mpi-scan.o mpicoder.o \
+mpih-cmp.o mpih-add.o mpih-sub.o mpih-div.o mpih-mul.o mpiutil.o
 AR = ar
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
-DIST_COMMON =  Makefile.am Makefile.in
+DIST_COMMON =  ChangeLog Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -152,10 +153,10 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = tar
 GZIP = --best
 DEP_FILES =  .deps/mpi-add.P .deps/mpi-bit.P .deps/mpi-cmp.P \
-.deps/mpi-div.P .deps/mpi-gcd.P .deps/mpi-inv.P .deps/mpi-mul.P \
-.deps/mpi-pow.P .deps/mpi-scan.P .deps/mpicoder.P .deps/mpih-add.P \
-.deps/mpih-cmp.P .deps/mpih-div.P .deps/mpih-mul.P .deps/mpih-sub.P \
-.deps/mpiutil.P
+.deps/mpi-div.P .deps/mpi-gcd.P .deps/mpi-inv.P .deps/mpi-mpow.P \
+.deps/mpi-mul.P .deps/mpi-pow.P .deps/mpi-scan.P .deps/mpicoder.P \
+.deps/mpih-add.P .deps/mpih-cmp.P .deps/mpih-div.P .deps/mpih-mul.P \
+.deps/mpih-sub.P .deps/mpiutil.P
 SOURCES = $(libmpi_a_SOURCES)
 OBJECTS = $(libmpi_a_OBJECTS)
 
