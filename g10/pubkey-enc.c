@@ -245,7 +245,7 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
             }
         }
 
-        if ( pk->is_revoked ) {
+        if ( pk && pk->is_revoked ) {
             log_info( _("NOTE: key has been revoked") );
             putc( '\n', log_stream() );
             show_revocation_reason( pk, 1 );
