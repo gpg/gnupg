@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-
+#include <time.h>
 
 #define PGM "watchgnupg"
 
@@ -107,6 +107,20 @@ typedef struct client_s *client_t;
 
 
 
+static void
+print_fd_and_time (int fd)
+{
+  struct tm *tp;
+  time_t atime = time (NULL);
+  
+  tp = localtime (&atime);
+  printf ("%3d - %04d-%02d-%02d %02d:%02d:%02d ",
+          fd,
+          1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+          tp->tm_hour, tp->tm_min, tp->tm_sec );
+}
+
+
 /* Print LINE for the client identified by C.  Calling this function
    witgh LINE set to NULL, will flush the internal buffer. */
 static void
@@ -119,7 +133,7 @@ print_line (client_t c, const char *line)
     {
       if (c->buffer && c->len)
         {
-          printf ("%3d - ", c->fd);
+          print_fd_and_time (c->fd);
           fwrite (c->buffer, c->len, 1, stdout); 
           putc ('\n', stdout);
           c->len = 0;
@@ -129,7 +143,7 @@ print_line (client_t c, const char *line)
 
   while ((s = strchr (line, '\n')))
     {
-      printf ("%3d - ", c->fd);
+      print_fd_and_time (c->fd);
       if (c->buffer && c->len)
         {
           fwrite (c->buffer, c->len, 1, stdout); 
