@@ -310,6 +310,16 @@ dehtmlize(char *line)
 	      line+=5;
 	      break;
 	    }
+	  else if((*(line+1)!='\0' && ascii_tolower(*(line+1))=='q') &&
+		  (*(line+2)!='\0' && ascii_tolower(*(line+2))=='u') &&
+		  (*(line+3)!='\0' && ascii_tolower(*(line+3))=='o') &&
+		  (*(line+4)!='\0' && ascii_tolower(*(line+4))=='t') &&
+		  (*(line+5)!='\0' && *(line+5)==';'))
+	    {
+	      parsed[parsedindex++]='"';
+	      line+=6;
+	      break;
+	    }
 
 	default:
 	  parsed[parsedindex++]=*line;

@@ -1,3 +1,13 @@
+2004-08-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (dehtmlize): Understand the quote character
+	(i.e. "&quot;") in HTML responses.
+
+	* keydb.h, getkey.c (get_user_id_printable): Rename to
+	get_user_id_native and remove the printable stuff since we're
+	print-ifying valid utf8 characters.  Change all callers in
+	import.c, sign.c, and encode.c.
+
 2004-08-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* hkp.c (hkp_search): Translate string to search for from utf8 to

@@ -658,7 +658,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 
 	/* we are ready */
 	if( !opt.quiet ) {
-	    char *p=get_user_id_printable (keyid);
+	    char *p=get_user_id_native (keyid);
 	    log_info( _("key %08lX: public key \"%s\" imported\n"),
 		      (ulong)keyid[1],p);
 	    m_free(p);
@@ -734,7 +734,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 
 	    /* we are ready */
 	    if( !opt.quiet ) {
-	        char *p=get_user_id_printable(keyid);
+	        char *p=get_user_id_native(keyid);
 		if( n_uids == 1 )
 		    log_info( _("key %08lX: \"%s\" 1 new user ID\n"),
 					     (ulong)keyid[1], p);
@@ -769,7 +769,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
                   print_import_ok (pk, NULL, 0);
 	
 	    if( !opt.quiet ) {
-	        char *p=get_user_id_printable(keyid);
+	        char *p=get_user_id_native(keyid);
 		log_info( _("key %08lX: \"%s\" not changed\n"),
 			  (ulong)keyid[1],p);
 		m_free(p);
@@ -974,7 +974,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     keydb_release (hd); hd = NULL;
     /* we are ready */
     if( !opt.quiet ) {
-        char *p=get_user_id_printable (keyid);
+        char *p=get_user_id_native (keyid);
 	log_info( _("key %08lX: \"%s\" revocation certificate imported\n"),
 					(ulong)keyid[1],p);
 	m_free(p);
@@ -1502,7 +1502,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
                 ++*n_sigs;
 		if(!opt.quiet)
 		  {
-		    char *p=get_user_id_printable (keyid);
+		    char *p=get_user_id_native (keyid);
 		    log_info(_("key %08lX: \"%s\" revocation "
 			       "certificate added\n"), (ulong)keyid[1],p);
 		    m_free(p);
