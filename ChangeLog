@@ -1,3 +1,8 @@
+2003-12-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note that Elgamal sign+encrypt keys are not part of the
+	web of trust.
+
 2003-11-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* README: Add --with-zlib, --with-bzip2, and --without-bzip2.
