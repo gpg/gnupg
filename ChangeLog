@@ -1,5 +1,10 @@
 2003-05-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* configure.ac: Simpler implementation for the 64-bit question -
+	we don't need to verify compiler support with a test program since
+	we just cast everything to the proper type.  This also means that
+	cross compiling doesn't become a problem.
+
 	* configure.ac: Check for 64-bit types, and how well the compiler
 	supports them (LL) before enabling TIGER/192, SHA-384, or SHA-512.
 
