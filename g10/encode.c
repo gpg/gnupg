@@ -161,7 +161,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
     compress_filter_context_t zfx;
     text_filter_context_t tfx;
     progress_filter_context_t pfx;
-    int do_compress = opt.compress && !RFC1991;
+    int do_compress = !RFC1991 && default_compress_algo();
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
@@ -332,7 +332,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
       {
         if (cfx.dek && cfx.dek->use_mdc)
           zfx.new_ctb = 1;
-	push_compress_filter(out,&zfx,opt.def_compress_algo);
+	push_compress_filter(out,&zfx,default_compress_algo());
       }
 
     /* do the work */

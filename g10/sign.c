@@ -1182,7 +1182,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 
     /* Push the Zip filter */
     if (opt.compress && default_compress_algo())
-      push_compress_filter(out,&zfx,opt.def_compress_algo);
+      push_compress_filter(out,&zfx,default_compress_algo());
 
     /* Write the one-pass signature packets */
     /*(current filters: zip - encrypt - armor)*/

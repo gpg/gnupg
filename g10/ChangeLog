@@ -1,3 +1,10 @@
+2003-11-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* encode.c (encode_simple), sign.c (sign_symencrypt_file):
+	Properly use default_compress_algo (--compress-algo, followed by
+	the highest --personal-compress-preference, followed by ZIP) to
+	get the algorithm.
+
 2003-11-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, trustdb.c (trust_model_string, init_trustdb): Add
