@@ -1,3 +1,8 @@
+2003-01-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* tdbio.c (tdbio_set_dbname): Fix assertion failure with
+	non-fully-qualified trustdb names.
+
 2003-01-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.h, trustdb.c (trust_letter): Make static.
