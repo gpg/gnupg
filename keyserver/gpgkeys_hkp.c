@@ -40,6 +40,9 @@ unsigned int http_flags=0;
 char host[80]={'\0'},port[10]={'\0'};
 FILE *input=NULL,*output=NULL,*console=NULL;
 
+#define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
+#define END   "-----END PGP PUBLIC KEY BLOCK-----"
+
 struct keylist
 {
   char str[MAX_LINE];
@@ -271,11 +274,11 @@ get_key(char *getkey)
 	  if(gotit)
 	    {
 	      fprintf(output,line);
-	      if(strcmp(line,"-----END PGP PUBLIC KEY BLOCK-----\n")==0)
+	      if(strncmp(line,END,strlen(END))==0)
 		break;
 	    }
 	  else
-	    if(strcmp(line,"-----BEGIN PGP PUBLIC KEY BLOCK-----\n")==0)
+	    if(strncmp(line,BEGIN,strlen(BEGIN))==0)
 	      {
 		fprintf(output,line);
 		gotit=1;
@@ -887,10 +890,22 @@ main(int argc,char *argv[])
 	      else
 		http_flags|=HTTP_FLAG_NO_SHUTDOWN;
 	    }
+	  else if(strcasecmp(start,"try-dns-srv")==0)
+	    {
+	      if(no)
+		http_flags&=~HTTP_FLAG_TRY_SRV;
+	      else
+		http_flags|=HTTP_FLAG_TRY_SRV;
+	    }
 
 	  continue;
 	}
     }
+
+  /* By suggested convention, if the user gives a :port, then disable
+     SRV. */
+  if(port[0])
+    http_flags&=~HTTP_FLAG_TRY_SRV;
 
   /* If it's a GET or a SEARCH, the next thing to come in is the
      keyids.  If it's a SEND, then there are no keyids. */

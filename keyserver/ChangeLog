@@ -1,3 +1,13 @@
+2003-03-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (get_key): Properly handle CRLF line endings in
+	the armored key.
+	(main): Accept "try-dns-srv" option.
+
+	* Makefile.am: Use @CAPLIBS@ to link in -lcap if we are using
+	capabilities.  Use @SRVLIBS@ to link in the resolver if we are
+	using DNS SRV.
+
 2003-02-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Use a local copy of libexecdir along with @PACKAGE@
