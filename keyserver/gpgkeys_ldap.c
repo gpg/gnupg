@@ -1522,7 +1522,7 @@ find_basekeyspacedn(void)
 int
 main(int argc,char *argv[])
 {
-  int port=0,arg,err,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
+  int debug=0,port=0,arg,err,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
   int version,failed=0,use_ssl=0,use_tls=0,bound=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
@@ -1577,7 +1577,7 @@ main(int argc,char *argv[])
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
       char commandstr[7];
-      char optionstr[30];
+      char optionstr[256];
       char schemestr[80];
       char hash;
 
@@ -1636,12 +1636,12 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"OPTION %29s\n",optionstr)==1)
+      if(sscanf(line,"OPTION %255[^\n]\n",optionstr)==1)
 	{
 	  int no=0;
 	  char *start=&optionstr[0];
 
-	  optionstr[29]='\0';
+	  optionstr[255]='\0';
 
 	  if(strncasecmp(optionstr,"no-",3)==0)
 	    {
@@ -1697,10 +1697,43 @@ main(int argc,char *argv[])
 	      else if(start[3]=='\0')
 		use_tls=1;
 	    }
+	  else if(strncasecmp(start,"debug",5)==0)
+	    {
+	      if(no)
+		debug=0;
+	      else if(start[5]=='=')
+		debug=atoi(&start[6]);
+	    }
+	  else if(strncasecmp(start,"basedn",6)==0)
+	    {
+	      if(no)
+		{
+		  free(basekeyspacedn);
+		  basekeyspacedn=NULL;
+		}
+	      else if(start[6]=='=')
+		{
+		  free(basekeyspacedn);
+		  basekeyspacedn=strdup(&start[7]);
+		  if(!basekeyspacedn)
+		    {
+		      fprintf(console,"gpgkeys: out of memory while creating "
+			      "base DN\n");
+		      ret=KEYSERVER_NO_MEMORY;
+		      goto fail;
+		    }
+
+		  real_ldap=1;
+		}
+	    }
 
 	  continue;
 	}
     }
+
+  /* SSL trumps TLS */
+  if(use_ssl)
+    use_tls=0;
 
   /* If it's a GET or a SEARCH, the next thing to come in is the
      keyids.  If it's a SEND, then there are no keyids. */
@@ -1767,6 +1800,21 @@ main(int argc,char *argv[])
 	      action==SEND?"SEND":"SEARCH");
     }
 
+  if(debug)
+    {
+#if defined(LDAP_OPT_DEBUG_LEVEL) && defined(HAVE_LDAP_SET_OPTION)
+      err=ldap_set_option(NULL,LDAP_OPT_DEBUG_LEVEL,&debug);
+      if(err!=LDAP_SUCCESS)
+	fprintf(console,"gpgkeys: unable to set debug mode: %s\n",
+		ldap_err2string(err));
+      else
+	fprintf(console,"gpgkeys: debug level %d\n",debug);
+#else
+      fprintf(console,"gpgkeys: not built with debugging support\n");
+#endif
+    }
+
+
   /* Note that this tries all A records on a given host (or at least,
      OpenLDAP does). */
   ldap=ldap_init(host,port);
@@ -1798,13 +1846,14 @@ main(int argc,char *argv[])
 #endif
     }
 
-  if((err=find_basekeyspacedn()) || !basekeyspacedn)
-    {
-      fprintf(console,"gpgkeys: unable to retrieve LDAP base: %s\n",
-	      err?ldap_err2string(err):"not found");
-      fail_all(keylist,action,ldap_err_to_gpg_err(err));
-      goto fail;
-    }
+  if(!basekeyspacedn)
+    if((err=find_basekeyspacedn()) || !basekeyspacedn)
+      {
+	fprintf(console,"gpgkeys: unable to retrieve LDAP base: %s\n",
+		err?ldap_err2string(err):"not found");
+	fail_all(keylist,action,ldap_err_to_gpg_err(err));
+	goto fail;
+      }
 
   /* use_tls: 0=don't use, 1=try silently to use, 2=try loudly to use,
      3=force use. */
