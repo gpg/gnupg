@@ -1,3 +1,8 @@
+2002-10-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (main), gpgkeys_ldap.c (main): Add -V flag to
+	output protocol and program version.
+
 2002-10-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Anything linking with libutil.a needs INTLLIBS as
