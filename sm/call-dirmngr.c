@@ -49,6 +49,7 @@ static int force_pipe_server = 0;
 struct inq_certificate_parm_s {
   ASSUAN_CONTEXT ctx;
   ksba_cert_t cert;
+  ksba_cert_t issuer_cert;
 };
 
 struct lookup_parm_s {
@@ -239,26 +240,44 @@ inq_certificate (void *opaque, const char *line)
   AssuanError rc;
   const unsigned char *der;
   size_t derlen;
+  int issuer_mode = 0;
 
-  if (!(!strncmp (line, "SENDCERT", 8) && (line[8] == ' ' || !line[8])))
+  if (!strncmp (line, "SENDCERT", 8) && (line[8] == ' ' || !line[8]))
+    {
+      line += 8;
+    }
+  else if (!strncmp (line, "SENDISSUERCERT", 14)
+           && (line[14] == ' ' || !line[14]))
+    {
+      line += 14;
+      issuer_mode = 1;
+    }
+  else
     {
       log_error ("unsupported inquiry `%s'\n", line);
       return ASSUAN_Inquire_Unknown;
     }
-  line += 8;
 
   if (!*line)
-    { /* send the current certificate */
-      der = ksba_cert_get_image (parm->cert, &derlen);
+    { /* Send the current certificate. */
+      der = ksba_cert_get_image (issuer_mode? parm->issuer_cert : parm->cert,
+                                 &derlen);
       if (!der)
         rc = ASSUAN_Inquire_Error;
       else
         rc = assuan_send_data (parm->ctx, der, derlen);
     }
+  else if (issuer_mode)
+    {
+      log_error ("sending specific issuer certificate back "
+                 "is not yet implemented\n");
+      rc = ASSUAN_Inquire_Error;
+    }
   else 
-    { /* send the given certificate */
+    { /* Send the given certificate. */
       int err;
       ksba_cert_t cert;
+
 
       err = gpgsm_find_cert (line, &cert);
       if (err)
@@ -293,7 +312,7 @@ inq_certificate (void *opaque, const char *line)
   request first.
  */
 int
-gpgsm_dirmngr_isvalid (ksba_cert_t cert, int use_ocsp)
+gpgsm_dirmngr_isvalid (ksba_cert_t cert, ksba_cert_t issuer_cert, int use_ocsp)
 {
   int rc;
   char *certid;
@@ -328,6 +347,7 @@ gpgsm_dirmngr_isvalid (ksba_cert_t cert, int use_ocsp)
 
   parm.ctx = dirmngr_ctx;
   parm.cert = cert;
+  parm.issuer_cert = issuer_cert;
 
   /* FIXME: If --disable-crl-checks has been set, we should pass an
      option to dirmngr, so that no fallback CRL check is done after an

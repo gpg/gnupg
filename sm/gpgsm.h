@@ -288,7 +288,8 @@ int gpgsm_agent_learn (void);
 int gpgsm_agent_passwd (const char *hexkeygrip, const char *desc);
 
 /*-- call-dirmngr.c --*/
-int gpgsm_dirmngr_isvalid (ksba_cert_t cert, int use_ocsp);
+int gpgsm_dirmngr_isvalid (ksba_cert_t cert, ksba_cert_t issuer_cert,
+                           int use_ocsp);
 int gpgsm_dirmngr_lookup (ctrl_t ctrl, STRLIST names,
                           void (*cb)(void*, ksba_cert_t), void *cb_value);
 int gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,

@@ -24,16 +24,22 @@ min_automake_version="1.7.6"
 
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(gnupg, 1.9.6-cvs, gnupg-devel@gnupg.org)
+AC_INIT(gnupg, 1.9.6, gnupg-devel@gnupg.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
 development_version=yes
 NEED_GPG_ERROR_VERSION=0.6
-NEED_LIBGCRYPT_VERSION=1.1.92
+
+NEED_LIBGCRYPT_API=1
+NEED_LIBGCRYPT_VERSION=1.1.93
+
 NEED_LIBASSUAN_VERSION=0.6.4
+
 NEED_KSBA_VERSION=0.9.4
+
 NEED_OPENSC_VERSION=0.8.0
+
 
 
 PACKAGE=$PACKAGE_NAME
@@ -411,7 +417,7 @@ AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
 #
 # Libgcrypt is our generic crypto library
 #
-AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_VERSION",
+AM_PATH_LIBGCRYPT("$NEED_LIBGCRYPT_API:$NEED_LIBGCRYPT_VERSION",
         have_libgcrypt=yes,have_libgcrypt=no)
 
 
@@ -1022,7 +1028,7 @@ if test "$have_libgcrypt" = "no"; then
 *** You need libgcrypt to build this program.
 **  This library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/alpha/libgcrypt/
-*** (at least version $NEED_LIBGCRYPT_VERSION is required.)
+*** (at least version $NEED_LIBGCRYPT_VERSION using API $NEED_LIBGCRYPT_API) is required.)
 ***]])
 fi
 if test "$have_libassuan" = "no"; then

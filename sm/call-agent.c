@@ -34,6 +34,7 @@
 #include <gcrypt.h>
 #include <assuan.h>
 #include "i18n.h"
+#include "asshelp.h"
 #include "keydb.h" /* fixme: Move this to import.c */
 #include "../common/membuf.h"
 
@@ -68,12 +69,7 @@ start_agent (void)
 {
   int rc = 0;
   char *infostr, *p;
-  ASSUAN_CONTEXT ctx;
-  char *dft_display = NULL;
-  char *dft_ttyname = NULL;
-  char *dft_ttytype = NULL;
-  char *old_lc = NULL;
-  char *dft_lc = NULL;
+  assuan_context_t ctx;
 
   if (agent_ctx)
     return 0; /* fixme: We need a context for each thread or serialize
@@ -170,118 +166,9 @@ start_agent (void)
   if (rc)
     return map_assuan_err (rc);
 
-  dft_display = getenv ("DISPLAY");
-  if (opt.display || dft_display)
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION display=%s",
-		    opt.display ? opt.display : dft_display) < 0)
-	return OUT_OF_CORE (errno);
-      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return map_assuan_err (rc);
-    }
-  if (!opt.ttyname)
-    {
-      dft_ttyname = getenv ("GPG_TTY");
-      if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
-        dft_ttyname = ttyname (0);
-    }
-  if (opt.ttyname || dft_ttyname)
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION ttyname=%s",
-		    opt.ttyname ? opt.ttyname : dft_ttyname) < 0)
-	return OUT_OF_CORE (errno);
-      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return map_assuan_err (rc);
-    }
-  dft_ttytype = getenv ("TERM");
-  if (opt.ttytype || (dft_ttyname && dft_ttytype))
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION ttytype=%s",
-		    opt.ttyname ? opt.ttytype : dft_ttytype) < 0)
-	return OUT_OF_CORE (errno);
-      rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-			    NULL);
-      free (optstr);
-      if (rc)
-	return map_assuan_err (rc);
-    }
-#if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
-  old_lc = setlocale (LC_CTYPE, NULL);
-  if (old_lc)
-    {
-      old_lc = strdup (old_lc);
-      if (!old_lc)
-        return OUT_OF_CORE (errno);
-    }
-  dft_lc = setlocale (LC_CTYPE, "");
-#endif
-  if (opt.lc_ctype || (dft_ttyname && dft_lc))
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION lc-ctype=%s",
-		    opt.lc_ctype ? opt.lc_ctype : dft_lc) < 0)
-	rc = OUT_OF_CORE (errno);
-      else
-	{
-	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-				NULL);
-	  free (optstr);
-	  if (rc)
-	    rc = map_assuan_err (rc);
-	}
-    }
-#if defined(HAVE_SETLOCALE) && defined(LC_CTYPE)
-  if (old_lc)
-    {
-      setlocale (LC_CTYPE, old_lc);
-      free (old_lc);
-    }
-#endif
-  if (rc)
-    return rc;
-#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
-  old_lc = setlocale (LC_MESSAGES, NULL);
-  if (old_lc)
-    {
-      old_lc = strdup (old_lc);
-      if (!old_lc)
-        return OUT_OF_CORE (errno);
-    }
-  dft_lc = setlocale (LC_MESSAGES, "");
-#endif
-  if (opt.lc_messages || (dft_ttyname && dft_lc))
-    {
-      char *optstr;
-      if (asprintf (&optstr, "OPTION lc-messages=%s",
-		    opt.lc_messages ? opt.lc_messages : dft_lc) < 0)
-	rc = OUT_OF_CORE (errno);
-      else
-	{
-	  rc = assuan_transact (agent_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
-				NULL);
-	  free (optstr);
-	  if (rc)
-	    rc = map_assuan_err (rc);
-	}
-    }
-#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)
-  if (old_lc)
-    {
-      setlocale (LC_MESSAGES, old_lc);
-      free (old_lc);
-    }
-#endif
-
-  return rc;
+  return send_pinentry_environment (agent_ctx,
+                                    opt.display, opt.ttyname, opt.ttytype,
+                                    opt.lc_ctype, opt.lc_messages);
 }
 
 

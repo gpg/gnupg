@@ -1,4 +1,19 @@
+2004-03-04  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c (gpgsm_dirmngr_isvalid): New arg ISSUER_CERT.
+
+	* certchain.c (is_cert_still_valid): New.  Code moved from ...
+	(gpgsm_validate_chain): ... here because we now need to check at
+	two places and at a later stage, so that we can pass the issuer
+	cert down to the dirmngr.
+
 2004-03-03  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (start_agent): Replaced pinentry setup code by a
+	call to a new common function.
+
+	* certdump.c (gpgsm_format_keydesc): Make sure the string is
+	returned as utf-8.
 
 	* export.c (gpgsm_export): Make sure that we don't export more
 	than one certificate.

@@ -26,6 +26,12 @@
 #include <unistd.h> 
 #include <time.h>
 #include <assert.h>
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+#ifdef HAVE_LANGINFO_CODESET
+#include <langinfo.h>
+#endif
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -601,12 +607,14 @@ gpgsm_format_name (const char *name)
 char *
 gpgsm_format_keydesc (ksba_cert_t cert)
 {
+  int rc;
   char *name, *subject, *buffer, *p;
   const char *s;
   ksba_isotime_t t;
   char created[20];
   char *sn;
   ksba_sexp_t sexp;
+  char *orig_codeset = NULL;
 
   name = ksba_cert_get_subject (cert, 0);
   subject = name? gpgsm_format_name (name) : NULL;
@@ -622,7 +630,24 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   else
     *created = 0;
 
-  if ( asprintf (&name,
+
+#ifdef ENABLE_NLS
+  /* The Assuan agent protol requires us to transmit utf-8 strings */
+  orig_codeset = bind_textdomain_codeset (PACKAGE, NULL);
+#ifdef HAVE_LANGINFO_CODESET
+  if (!orig_codeset)
+    orig_codeset = nl_langinfo (CODESET);
+#endif
+  if (orig_codeset)
+    { /* We only switch when we are able to restore the codeset later. */
+      orig_codeset = xstrdup (orig_codeset);
+      if (!bind_textdomain_codeset (PACKAGE, "utf-8"))
+        orig_codeset = NULL; 
+    }
+#endif
+
+
+  rc = asprintf (&name,
                  _("Please enter the passphrase to unlock the"
                    " secret key for:\n"
                    "\"%s\"\n"
@@ -630,7 +655,15 @@ gpgsm_format_keydesc (ksba_cert_t cert)
                  subject? subject:"?",
                  sn? sn: "?",
                  gpgsm_get_short_fingerprint (cert),
-                 created) < 0)
+                 created);
+
+#ifdef ENABLE_NLS
+  if (orig_codeset)
+    bind_textdomain_codeset (PACKAGE, orig_codeset);
+#endif
+  xfree (orig_codeset);
+
+  if (rc < 0)
     {
       int save_errno = errno;
       xfree (subject);

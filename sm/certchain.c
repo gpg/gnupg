@@ -347,7 +347,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
       
       if (opt.verbose)
         log_info (_("looking up issuer at external location\n"));
-      /* dirmngr is confused about unknown attributes so has a quick
+      /* dirmngr is confused about unknown attributes so as a quick
          and ugly hack we locate the CN and use this and the
          following.  Fixme: we should have far better parsing in the
          dirmngr. */
@@ -468,6 +468,55 @@ gpgsm_is_root_cert (ksba_cert_t cert)
   xfree (subject);
   return yes;
 }
+
+
+/* This is a helper for gpgsm_validate_chain. */
+static gpg_error_t 
+is_cert_still_valid (ctrl_t ctrl, int lm, FILE *fp,
+                     ksba_cert_t subject_cert, ksba_cert_t issuer_cert,
+                     int *any_revoked, int *any_no_crl, int *any_crl_too_old)
+{
+  if (!opt.no_crl_check || ctrl->use_ocsp)
+    {
+      gpg_error_t err;
+
+      err = gpgsm_dirmngr_isvalid (subject_cert, ctrl->use_ocsp);
+      if (err)
+        {
+          /* Fixme: We should change the wording because we may
+             have used OCSP. */
+          switch (gpg_err_code (err))
+            {
+            case GPG_ERR_CERT_REVOKED:
+              do_list (1, lm, fp, _("certificate has been revoked"));
+              *any_revoked = 1;
+              /* Store that in the keybox so that key listings are
+                 able to return the revoked flag.  We don't care
+                 about error, though. */
+              keydb_set_cert_flags (subject_cert, KEYBOX_FLAG_VALIDITY, 0,
+                                    VALIDITY_REVOKED);
+              break;
+            case GPG_ERR_NO_CRL_KNOWN:
+              do_list (1, lm, fp, _("no CRL found for certificate"));
+              *any_no_crl = 1;
+              break;
+            case GPG_ERR_CRL_TOO_OLD:
+              do_list (1, lm, fp, _("the available CRL is too old"));
+              if (!lm)
+                log_info (_("please make sure that the "
+                            "\"dirmngr\" is properly installed\n"));
+              *any_crl_too_old = 1;
+              break;
+            default:
+              do_list (1, lm, fp, _("checking the CRL failed: %s"),
+                       gpg_strerror (rc));
+              return err;
+            }
+        }
+    }
+  return 0;
+}
+
 
 
 /* Validate a chain and optionally return the nearest expiration time
@@ -597,46 +646,10 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             goto leave;
         }
 
-      if (!opt.no_crl_check || ctrl->use_ocsp)
-        {
-          rc = gpgsm_dirmngr_isvalid (subject_cert, ctrl->use_ocsp);
-          if (rc)
-            {
-              /* Fixme: We should change the wording because we may
-                 have used OCSP. */
-              switch (gpg_err_code (rc))
-                {
-                case GPG_ERR_CERT_REVOKED:
-                  do_list (1, lm, fp, _("certificate has been revoked"));
-                  any_revoked = 1;
-                  /* Store that in the keybox so that key listings are
-                     able to return the revoked flag.  We don't care
-                     about error, though. */
-                  keydb_set_cert_flags (subject_cert, KEYBOX_FLAG_VALIDITY, 0,
-                                        VALIDITY_REVOKED);
-                  break;
-                case GPG_ERR_NO_CRL_KNOWN:
-                  do_list (1, lm, fp, _("no CRL found for certificate"));
-                  any_no_crl = 1;
-                  break;
-                case GPG_ERR_CRL_TOO_OLD:
-                  do_list (1, lm, fp, _("the available CRL is too old"));
-                  if (!lm)
-                    log_info (_("please make sure that the "
-                                "\"dirmngr\" is properly installed\n"));
-                  any_crl_too_old = 1;
-                  break;
-                default:
-                  do_list (1, lm, fp, _("checking the CRL failed: %s"),
-                           gpg_strerror (rc));
-                  goto leave;
-                }
-              rc = 0;
-            }
-        }
 
+      /* Is this a self-signed certificate? */
       if (subject && !strcmp (issuer, subject))
-        {
+        {  /* Yes. */
           if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
             {
               do_list (1, lm, fp,
@@ -684,7 +697,15 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                          gpg_strerror (rc));
             }
           
-          break;  /* okay, a self-signed certicate is an end-point */
+          /* Check for revocations etc. */
+          rc = is_cert_still_valid (ctrl, lm, fp,
+                                    subject_cert, subject_cert,
+                                    &any_revoked, &any_no_crl,
+                                    &any_crl_too_old);
+          if (rc)
+            goto leave;
+
+          break;  /* Okay: a self-signed certicate is an end-point. */
         }
       
       depth++;
@@ -800,6 +821,14 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
               rc = 0;
             }
         }
+
+      /* Check for revocations etc. */
+      rc = is_cert_still_valid (ctrl, lm, fp,
+                                subject_cert, issuer_cert,
+                                &any_revoked, &any_no_crl, &any_crl_too_old);
+      if (rc)
+        goto leave;
+
 
       if (opt.verbose && !listmode)
         log_info ("certificate is good\n");

@@ -39,6 +39,7 @@ libcommon_a_SOURCES = \
 	membuf.c membuf.h \
 	iobuf.c iobuf.h \
 	ttyio.c ttyio.h \
+	asshelp.c asshelp.h \
 	signal.c \
 	dynload.h
 
@@ -46,7 +47,7 @@ libcommon_a_SOURCES = \
 libcommon_a_LIBADD = @LIBOBJS@
 
 libsimple_pwquery_a_SOURCES = \
-	simple-pwquery.c simple-pwquery.h
+	simple-pwquery.c simple-pwquery.h asshelp.c asshelp.h
 
 libsimple_pwquery_a_LIBADD = @LIBOBJS@
 
