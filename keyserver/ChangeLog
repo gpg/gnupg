@@ -1,5 +1,8 @@
 2005-03-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_ldap.c: Include lber.h if configure determines we need
+	it.
+
 	* ksutil.h, ksutil.c (ks_action_to_string): New.
 	(free_ks_options): Only free if options exist.
 

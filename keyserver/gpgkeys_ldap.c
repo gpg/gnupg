@@ -33,6 +33,9 @@
 #include <winsock2.h>
 #include <winldap.h>
 #else
+#ifdef NEED_LBER_H
+#include <lber.h>
+#endif
 #include <ldap.h>
 #endif
 
