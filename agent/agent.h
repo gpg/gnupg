@@ -109,6 +109,10 @@ int agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
 int agent_genkey (CTRL ctrl,
                   const char *keyparam, size_t keyparmlen, FILE *outfp);
 
+/*-- trustlist.c --*/
+int agent_istrusted (const char *fpr);
+int agent_listtrusted (void *assuan_context);
+
 
 
 #endif /*AGENT_H*/

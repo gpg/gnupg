@@ -64,6 +64,62 @@ reset_notify (ASSUAN_CONTEXT ctx)
   ctrl->digest.valuelen = 0;
 }
 
+/* ISTRUSTED <hexstring_with_fingerprint>
+
+   Return OK when we have an entry with this fingerprint in our
+   trustlist */
+static int
+cmd_istrusted (ASSUAN_CONTEXT ctx, char *line)
+{
+  int rc, n, i;
+  char *p;
+  char fpr[41];
+
+  /* parse the fingerprint value */
+  for (p=line,n=0; hexdigitp (p); p++, n++)
+    ;
+  if (*p || !(n == 40 || n == 32))
+    return set_error (Parameter_Error, "invalid fingerprint");
+  i = 0;
+  if (n==32)
+    {
+      strcpy (fpr, "00000000");
+      i += 8;
+    }
+  for (p=line; i < 40; p++, i++)
+    fpr[i] = *p >= 'a'? (*p & 0xdf): *p;
+  fpr[i] = 0;
+  rc = agent_istrusted (fpr);
+  if (!rc)
+    return 0;
+  else if (rc == -1)
+    return ASSUAN_Not_Trusted;
+  else
+    return map_to_assuan_status (rc);
+}
+
+/* LISTTRUSTED 
+
+   List all entries from the trustlist */
+static int
+cmd_listtrusted (ASSUAN_CONTEXT ctx, char *line)
+{
+  return map_to_assuan_status (agent_listtrusted (ctx));
+}
+
+
+/* MARKTRUSTED <hexstring_with_fingerprint> <flag>
+
+   Store a new key in into the trustlist*/
+static int
+cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
+{
+  return ASSUAN_Not_Implemented;
+}
+
+
+
+
 /* SIGKEY <hexstring_with_keygrip>
    SETKEY <hexstring_with_keygrip>
   
@@ -272,6 +328,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     int cmd_id;
     int (*handler)(ASSUAN_CONTEXT, char *line);
   } table[] = {
+    { "ISTRUSTED",  0,  cmd_istrusted },
     { "SIGKEY",     0,  cmd_sigkey },
     { "SETKEY",     0,  cmd_sigkey },
     { "SETHASH",    0,  cmd_sethash },
@@ -280,6 +337,8 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "GENKEY",     0,  cmd_genkey },
     { "GET_PASSPHRASE",0, cmd_get_passphrase },
     { "CLEAR_PASSPHRASE",0, cmd_clear_passphrase },
+    { "LISTTRUSTED",  0,  cmd_listtrusted },
+    { "MARKTRUSTED",  0,  cmd_marktrusted },
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { NULL }

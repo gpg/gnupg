@@ -1,3 +1,8 @@
+2002-01-15  Werner Koch  <wk@gnupg.org>
+
+	* trustlist.c: New.
+	* command.c (cmd_istrusted, cmd_listtrusted, cmd_marktrusted): New.
+
 2002-01-07  Werner Koch  <wk@gnupg.org>
 
 	* genkey.c: Store the secret part and return the public part.
