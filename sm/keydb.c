@@ -1137,10 +1137,31 @@ classify_user_id (const char *name,
           mode = KEYDB_SEARCH_MODE_FPR20;
         }
       else if (!hexprefix)
-        { /* default is substring search */
-          *force_exact = 0;
-          desc->u.name = s;
-          mode = KEYDB_SEARCH_MODE_SUBSTR; 
+        { 
+          /* The fingerprint in an X.509 listing is often delimited by
+             colons, so we try to single this case out. */
+          mode = 0;
+          hexlength = strspn (s, ":0123456789abcdefABCDEF");
+          if (hexlength == 59 && (!s[hexlength] || spacep (s+hexlength))) 
+            {
+              int i;
+
+              for (i=0; i < 20; i++, s += 3) 
+                {
+                  int c = hextobyte(s);
+                  if (c == -1 || (i < 19 && s[2] != ':'))
+                    break;
+                  desc->u.fpr[i] = c;
+                }
+              if (i == 20)
+                mode = KEYDB_SEARCH_MODE_FPR20;
+            }
+          if (!mode) /* default is substring search */
+            { 
+              *force_exact = 0;
+              desc->u.name = s;
+              mode = KEYDB_SEARCH_MODE_SUBSTR; 
+            }
         }
       else
 	{ /* hex number with a prefix but a wrong length */

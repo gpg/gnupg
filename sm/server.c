@@ -239,7 +239,7 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
 
-  rc = gpgsm_add_to_certlist (line, &ctrl->server_local->recplist);
+  rc = gpgsm_add_to_certlist (ctrl, line, &ctrl->server_local->recplist);
   if (rc)
     gpgsm_status2 (ctrl, STATUS_INV_RECP,
                    rc == -1? "1":

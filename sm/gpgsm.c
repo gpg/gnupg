@@ -1054,7 +1054,7 @@ main ( int argc, char **argv)
 
   for (sl = remusr; sl; sl = sl->next)
     {
-      int rc = gpgsm_add_to_certlist (sl->d, &recplist);
+      int rc = gpgsm_add_to_certlist (&ctrl, sl->d, &recplist);
       if (rc)
         {
           log_error (_("can't encrypt to `%s': %s\n"),
@@ -1164,7 +1164,7 @@ main ( int argc, char **argv)
       {
         FILE *fp = NULL;
 
-        if (argc == 2 && *opt.outfile)
+        if (argc == 2 && opt.outfile)
           log_info ("option --output ignored for a detached signature\n");
         else if (opt.outfile)
           fp = open_fwrite (opt.outfile);

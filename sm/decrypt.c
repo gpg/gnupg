@@ -381,7 +381,13 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   /* Just in case there is a problem with the own
                      certificate we print this message - should never
                      happen of course */
-                  gpgsm_cert_use_decrypt_p (cert);
+                  rc = gpgsm_cert_use_decrypt_p (cert);
+                  if (rc)
+                    {
+                      gpgsm_status2 (ctrl, STATUS_ERROR, "decrypt.keyusage",
+                                     gnupg_error_token (rc), NULL);
+                      rc = 0;
+                    }
 
                   hexkeygrip = gpgsm_get_keygrip_hexstring (cert);
 

@@ -60,8 +60,18 @@ cert_usage_p (KsbaCert cert, int mode)
       return map_ksba_err (err);
     } 
 
-  if ((use & ((mode&1)? KSBA_KEYUSAGE_DIGITAL_SIGNATURE
-              : KSBA_KEYUSAGE_KEY_ENCIPHERMENT)))
+  if (mode == 4)
+    {
+      if ((use & (KSBA_KEYUSAGE_KEY_CERT_SIGN)))
+        return 0;
+      log_info ( _("certificate should have not been used certification\n"));
+      return GNUPG_Wrong_Key_Usage;
+    }
+
+  if ((use & ((mode&1)?
+              (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT):
+              (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION)))
+      )
     return 0;
   log_info (mode==3? _("certificate should have not been used for encryption\n"):
             mode==2? _("certificate should have not been used for signing\n"):
@@ -98,10 +108,35 @@ gpgsm_cert_use_decrypt_p (KsbaCert cert)
   return cert_usage_p (cert, 3);
 }
 
+int
+gpgsm_cert_use_cert_p (KsbaCert cert)
+{
+  return cert_usage_p (cert, 4);
+}
+
+
+static int
+same_subject_issuer (const char *subject, const char *issuer, KsbaCert cert)
+{
+  char *subject2 = ksba_cert_get_subject (cert, 0);
+  char *issuer2 = ksba_cert_get_subject (cert, 0);
+  int tmp;
+  
+  tmp = (subject && subject2
+         && !strcmp (subject, subject2)
+         && issuer && issuer2
+         && !strcmp (issuer, issuer2));
+  xfree (subject2);
+  xfree (issuer2);
+  return tmp;
+}
+
+
+
 /* add a certificate to a list of certificate and make sure that it is
    a valid certificate */
 int
-gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
+gpgsm_add_to_certlist (CTRL ctrl, const char *name, CERTLIST *listaddr)
 {
   int rc;
   KEYDB_SEARCH_DESC desc;
@@ -117,6 +152,9 @@ gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
       else
         {
           int wrong_usage = 0;
+          char *subject = NULL;
+          char *issuer = NULL;
+
         get_next:
           rc = keydb_search (kh, &desc, 1);
           if (!rc)
@@ -127,32 +165,61 @@ gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
               if (rc == GNUPG_Wrong_Key_Usage)
                 {
                   /* There might be another certificate with the
-                     correct usage, so we better try again */
-                  wrong_usage = rc;
-                  ksba_cert_release (cert);
-                  cert = NULL;
-                  goto get_next;
+                     correct usage, so we try again */
+                  if (!wrong_usage)
+                    { /* save the first match */
+                      wrong_usage = rc;
+                      subject = ksba_cert_get_subject (cert, 0);
+                      issuer = ksba_cert_get_subject (cert, 0);
+                      ksba_cert_release (cert);
+                      cert = NULL;
+                      goto get_next;
+                    }
+                  else if (same_subject_issuer (subject, issuer, cert))
+                    {
+                      wrong_usage = rc;
+                      ksba_cert_release (cert);
+                      cert = NULL;
+                      goto get_next;
+                    }
+                  else
+                    wrong_usage = rc;
+
                 }
             }
           /* we want the error code from the first match in this case */
-          if (wrong_usage)
+          if (rc && wrong_usage)
             rc = wrong_usage;
-
+          
           if (!rc)
             {
-              /* Fixme: If we ever have two certifciates differing
-                 only in the key usage, we should only bail out here
-                 if the certificate differes just in the key usage.
-                 However we need to find some criteria to match the
-                 identities */
+            next_ambigious:
               rc = keydb_search (kh, &desc, 1);
               if (rc == -1)
                 rc = 0;
               else if (!rc)
-                rc = GNUPG_Ambiguous_Name;
+                {
+                  KsbaCert cert2 = NULL;
+
+                  /* We have to ignore ambigious names as long as
+                     there only fault is a bad key usage */
+                  if (!keydb_get_cert (kh, &cert2))
+                    {
+                      int tmp = (same_subject_issuer (subject, issuer, cert2)
+                                 && (gpgsm_cert_use_encrypt_p (cert2)
+                                     == GNUPG_Wrong_Key_Usage));
+                      ksba_cert_release (cert2);
+                      if (tmp)
+                        goto next_ambigious;
+                    }
+                  rc = GNUPG_Ambiguous_Name;
+                }
             }
+          xfree (subject);
+          xfree (issuer);
+
           if (!rc)
-            rc = gpgsm_validate_path (cert, NULL);
+            rc = gpgsm_validate_path (ctrl, cert, NULL);
           if (!rc)
             {
               CERTLIST cl = xtrycalloc (1, sizeof *cl);

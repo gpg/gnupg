@@ -389,10 +389,17 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           gpgsm_status (ctrl, STATUS_BADSIG, NULL);
           goto next_signer;
         }
-      gpgsm_cert_use_verify_p (cert); /* this displays an info message */
+      rc = gpgsm_cert_use_verify_p (cert); /*(this displays an info message)*/
+      if (rc)
+        {
+          gpgsm_status2 (ctrl, STATUS_ERROR, "verify.keyusage",
+                         gnupg_error_token (rc), NULL);
+          rc = 0;
+        }
+
       if (DBG_X509)
         log_debug ("signature okay - checking certs\n");
-      rc = gpgsm_validate_path (cert, &keyexptime);
+      rc = gpgsm_validate_path (ctrl, cert, &keyexptime);
       if (rc == GNUPG_Certificate_Expired)
         {
           gpgsm_status (ctrl, STATUS_EXPKEYSIG, NULL);

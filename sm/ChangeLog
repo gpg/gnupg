@@ -1,3 +1,26 @@
+2002-06-20  Werner Koch  <wk@gnupg.org>
+
+	* certlist.c (gpgsm_add_to_certlist): Fixed locating of a
+	certificate with the required key usage.
+
+	* gpgsm.c (main): Fixed a segv when using --outfile without an
+	argument.
+
+	* keylist.c (print_capabilities): Also check for non-repudiation
+	and data encipherment.
+	* certlist.c (cert_usage_p): Test for signing and encryption was
+	swapped.  Add a case for certification usage, handle
+	non-repudiation and data encipherment.
+	(gpgsm_cert_use_cert_p): New.
+	(gpgsm_add_to_certlist): Added a CTRL argument and changed all
+	callers to pass it.
+	* certpath.c (gpgsm_validate_path): Use it here to print a status
+	message. Added a CTRL argument and changed all callers to pass it.
+	* decrypt.c (gpgsm_decrypt): Print a status message for wrong key
+	usage.
+	* verify.c (gpgsm_verify): Ditto.
+	* keydb.c (classify_user_id): Allow a colon delimited fingerprint.
+
 2002-06-19  Werner Koch  <wk@gnupg.org>
 
 	* call-agent.c (learn_cb): Use log_info instead of log_error on

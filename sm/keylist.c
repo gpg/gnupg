@@ -84,15 +84,15 @@ print_capabilities (KsbaCert cert, FILE *fp)
       return;
     } 
 
-  if ((use & KSBA_KEYUSAGE_KEY_ENCIPHERMENT))
+  if ((use & (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT)))
     putc ('e', fp);
-  if ((use & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
+  if ((use & (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION)))
     putc ('s', fp);
   if ((use & KSBA_KEYUSAGE_KEY_CERT_SIGN))
     putc ('c', fp);
-  if ((use & KSBA_KEYUSAGE_KEY_ENCIPHERMENT))
+  if ((use & (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT)))
     putc ('E', fp);
-  if ((use & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
+  if ((use & (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION)))
     putc ('S', fp);
   if ((use & KSBA_KEYUSAGE_KEY_CERT_SIGN))
     putc ('C', fp);

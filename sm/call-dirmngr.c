@@ -420,7 +420,6 @@ static AssuanError
 lookup_status_cb (void *opaque, const char *line)
 {
   struct lookup_parm_s *parm = opaque;
-  int i;
 
   if (!strncmp (line, "TRUNCATED", 9) && (line[9]==' ' || !line[9]))
     {

@@ -308,7 +308,7 @@ gpgsm_is_root_cert (KsbaCert cert)
 /* Validate a path and optionally return the nearest expiration time
    in R_EXPTIME */
 int
-gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
+gpgsm_validate_path (CTRL ctrl, KsbaCert cert, time_t *r_exptime)
 {
   int rc = 0, depth = 0, maxdepth;
   char *issuer = NULL;
@@ -550,6 +550,14 @@ gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
             goto leave;
           }
       }
+
+      rc = gpgsm_cert_use_cert_p (issuer_cert);
+      if (rc)
+        {
+          gpgsm_status2 (ctrl, STATUS_ERROR, "certpath.issuer.keyusage",
+                         gnupg_error_token (rc), NULL);
+          rc = 0;
+        }
 
       if (opt.verbose)
         log_info ("certificate is good\n");
