@@ -73,35 +73,43 @@ prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
     log_printhex ("pkcs1 encoded session key:", seskey, seskeylen);
 
   n=0;
-  if (n + 7 > seskeylen )
+  if (seskeylen == 24)
     {
-      rc = seterr (Invalid_Session_Key);
-      goto leave; 
+      /* Smells like a 3-des key.  This might happen because a SC has
+         already done the unpacking. fixme! */
+    }
+  else
+    {
+      if (n + 7 > seskeylen )
+        {
+          rc = seterr (Invalid_Session_Key);
+          goto leave; 
+        }
+      
+      /* FIXME: Actually the leading zero is required but due to the way
+         we encode the output in libgcrypt as an MPI we are not able to
+         encode that leading zero.  However, when using a Smartcard we are
+         doing it the rightway and therefore we have to skip the zero.  This
+         should be fixed in gpg-agent of course. */
+      if (!seskey[n])
+        n++;
+      
+      if (seskey[n] != 2 )  /* wrong block type version */
+        { 
+          rc = seterr (Invalid_Session_Key);
+          goto leave; 
+        }
+      
+      for (n++; n < seskeylen && seskey[n]; n++) /* skip the random bytes */
+        ;
+      n++; /* and the zero byte */
+      if (n >= seskeylen )
+        { 
+          rc = seterr (Invalid_Session_Key);
+          goto leave; 
+        }
     }
 
-  /* FIXME: Actually the leading zero is required but due to the way
-     we encode the output in libgcrypt as an MPI we are not able to
-     encode that leading zero.  However, when using a Smartcard we are
-     doing it the rightway and therefore we have to skip the zero.  This
-     should be fixed in gpg-agent of course. */
-  if (!seskey[n])
-    n++;
-
-  if (seskey[n] != 2 )  /* wrong block type version */
-    { 
-      rc = seterr (Invalid_Session_Key);
-      goto leave; 
-    }
-
-  for (n++; n < seskeylen && seskey[n]; n++) /* skip the random bytes */
-    ;
-  n++; /* and the zero byte */
-  if (n >= seskeylen )
-    { 
-      rc = seterr (Invalid_Session_Key);
-      goto leave; 
-    }
-  
   if (DBG_CRYPTO)
     log_printhex ("session key:", seskey+n, seskeylen-n);
 
