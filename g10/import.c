@@ -207,7 +207,17 @@ import_keys( char **fnames, int nnames, int fast,
         import_print_stats (stats);
         import_release_stats_handle (stats);
     }
-
+    /* If no fast import and we really added new keys or merged new
+       user ids, signatures or revocations, then update/check the
+       trustdb if the user specified by setting interactive or by
+       not setting no-auto-check-trustdb */
+    if (!fast && (stats->imported || stats->n_uids ||
+                  stats->n_sigs || stats->n_revoc)) {
+        if (opt.interactive)
+	    update_trustdb();
+	else if (!opt.no_auto_check_trustdb)
+	    check_trustdb();
+    }
 }
 
 int
