@@ -33,9 +33,12 @@
 #define CIPHER_ALGO_BLOWFISH	 4  /* blowfish 128 bit key */
 #define CIPHER_ALGO_SAFER_SK128  5
 #define CIPHER_ALGO_DES_SK	 6
-#define CIPHER_ALGO_RIJNDAEL     7
-#define CIPHER_ALGO_RIJNDAEL192  8
-#define CIPHER_ALGO_RIJNDAEL256  9
+#define CIPHER_ALGO_AES          7
+#define CIPHER_ALGO_AES192       8
+#define CIPHER_ALGO_AES256       9
+#define CIPHER_ALGO_RIJNDAEL     CIPHER_ALGO_AES
+#define CIPHER_ALGO_RIJNDAEL192  CIPHER_ALGO_AES192
+#define CIPHER_ALGO_RIJNDAEL256  CIPHER_ALGO_AES256
 #define CIPHER_ALGO_TWOFISH	10  /* twofish 256 bit */
 #define CIPHER_ALGO_SKIPJACK   101  /* experimental: skipjack */
 #define CIPHER_ALGO_TWOFISH_OLD 102 /* experimental: twofish 128 bit */
