@@ -58,6 +58,11 @@ default mode is to create a socket and listen for commands there.
 Run the program in the background.  This option is required to prevent
 it from being accidently running in the background.
 
+@item --print-atr
+@opindex print-atr
+This is mainly a debugging command, used to print the ATR
+(Answer-To-Reset) of a card and exit immediately. 
+
 @end table
 
 
@@ -131,6 +136,11 @@ debugging.
 Append all logging output to @var{file}.  This is very helpful in
 seeing what the agent actually does.
 
+@item --reader-port @var{number}
+When the program has been build without OpenSC support, this option must
+be used to specify the port of the card terminal.  A value of 0 refers
+to the first serial device; add 32768 to access USB devices.  The
+default is 32768 (first USB device).
 
 @end table
 
