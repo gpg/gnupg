@@ -499,7 +499,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
 
 /*
  * Locate the default writable key resource, so that the next
- * operation (which is only releavnt for inserts) will be onde on this
+ * operation (which is only relevant for inserts) will be done on this
  * resource.  
  */
 int

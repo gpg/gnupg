@@ -154,6 +154,7 @@ void release_revocation_reason_info( struct revocation_reason_info *reason );
 /*-- keylist.c --*/
 void public_key_list( STRLIST list );
 void secret_key_list( STRLIST list );
+void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
 
 /*-- verify.c --*/
 int verify_signatures( int nfiles, char **files );

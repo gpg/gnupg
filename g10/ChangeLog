@@ -1,4 +1,15 @@
+2001-09-20  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (agent_open): Add missing bracket.  Include windows.h.
+
 2001-09-19  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (print_fingerprint): Renamed from fingerprint, made
+	global available. Added new arg to control the print style.
+	* mainproc.c (print_fingerprint): Removed. 
+	* pkclist.c (print_fpr, fpr_info): Removed and changed callers to
+	use print_fingerprint.
+	* keyedit.c (show_fingerprint): Ditto.
 
 	* passphrase.c (writen, readn)
 	(agent_open, agent_close)

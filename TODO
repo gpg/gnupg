@@ -45,13 +45,9 @@
 
   * g10/trustdb.c (make_sig_records): fix the fixme.
 
-  * Replace Valid/Invalid by Known/Unknown?
-
   * Fix the bug in the mips assembler code
 
   * Add a way to show the fingerprint of an key signator's keys
-
-  * New option --file-remove path-to-wipe-program ?
 
   * Add an is_valid flag to each user ID.
 
@@ -84,10 +80,11 @@
   * --passphrase-fd  can't work with -cs: document this or find a way
     to work around.
 
-Scheduled for 1.1
------------------
   * export by user-IDs does only export the first matching name which leads
-    to a problem in cases where there are 2 keys with identically user-IDs.
+    to a problem in cases where there are 2 keys with identically
+    user-IDs. 
+    --> Check whether this is still true.
+    
 
   * With option -i prompt before adding a key to the keyring and show some
     info what we are about to add.
@@ -95,9 +92,12 @@ Scheduled for 1.1
   * --disable-asm should still assemble _udiv_qrnnd when needed
 
   * Skip RO keyrings when importing a key.
+    [Do an access(2) when registering a keyring and add code to
+    keydb_locate_writable()]
 
   * replace the keyserver stuff either by a call to a specialized
     utility and SOCKSify this utility.
+    [David is working on this]
 
   * Check the beginning of file to detect already compressed files (gzip,
     bzip2, xdelta and some picture formats)
@@ -105,7 +105,7 @@ Scheduled for 1.1
   * Get new assembler stuff from gmp 3.1
 
   * Use new-format headers for compressed packets.
-
+    The advantage is that a garbled zip file can be better detected.
  
 
 Nice to have
@@ -118,11 +118,14 @@ Nice to have
   * add test cases for invalid data (scrambled armor or other random data)
   * add checking of armor trailers
   * the pubkey encrypt functions should do some sanity checks.
-  * dynload: implement the hint stuff.
   * "gpg filename.tar.gz.asc" should work like --verify (-sab).
   * for messages created with "-t", it might make sense to append the
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.
 
 
+Things we won't do
+------------------
+
+  * New option --file-remove path-to-wipe-program ? 
 

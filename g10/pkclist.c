@@ -31,6 +31,7 @@
 #include "keydb.h"
 #include "memory.h"
 #include "util.h"
+#include "main.h"
 #include "trustdb.h"
 #include "ttyio.h"
 #include "status.h"
@@ -38,62 +39,6 @@
 
 
 #define CONTROL_D ('D' - 'A' + 1)
-
-/* fixme: we have nearly the same code in keyedit.c */
-static void
-print_fpr( PKT_public_key *pk )
-{
-    byte array[MAX_FINGERPRINT_LEN], *p;
-    size_t i, n;
-
-    fingerprint_from_pk( pk, array, &n );
-    p = array;
-    /* Translators: this shoud fit into 24 bytes to that the fingerprint
-     * data is properly aligned with the user ID */
-    tty_printf(_("             Fingerprint:"));
-    if( n == 20 ) {
-	for(i=0; i < n ; i++, i++, p += 2 ) {
-	    if( i == 10 )
-		tty_printf(" ");
-	    tty_printf(" %02X%02X", *p, p[1] );
-	}
-    }
-    else {
-	for(i=0; i < n ; i++, p++ ) {
-	    if( i && !(i%8) )
-		tty_printf(" ");
-	    tty_printf(" %02X", *p );
-	}
-    }
-    tty_printf("\n");
-}
-
-static void
-fpr_info( PKT_public_key *pk )
-{
-    byte array[MAX_FINGERPRINT_LEN], *p;
-    size_t i, n;
-    FILE *fp = log_stream();
-
-    fingerprint_from_pk( pk, array, &n );
-    p = array;
-    log_info(_("Fingerprint:"));
-    if( n == 20 ) {
-	for(i=0; i < n ; i++, i++, p += 2 ) {
-	    if( i == 10 )
-		putc(' ', fp);
-	    fprintf(fp, " %02X%02X", *p, p[1] );
-	}
-    }
-    else {
-	for(i=0; i < n ; i++, p++ ) {
-	    if( i && !(i%8) )
-		putc(' ', fp);
-	    fprintf(fp, " %02X", *p );
-	}
-    }
-    putc('\n', fp );
-}
 
 
 /****************
@@ -312,7 +257,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 		tty_print_utf8_string( p, n ),
 		m_free(p);
 		tty_printf("\"\n");
-		print_fpr( pk );
+                print_fingerprint (pk, NULL, 2);
 		tty_printf("\n");
 	    }
 	    tty_printf(_(
@@ -586,7 +531,7 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 	tty_print_utf8_string( p, n ),
 	m_free(p);
 	tty_printf("\"\n");
-	print_fpr( pk );
+        print_fingerprint (pk, NULL, 2);
 	tty_printf("\n");
 
 	tty_printf(_(
@@ -629,7 +574,7 @@ check_signatures_trust( PKT_signature *sig )
 	if( !opt.quiet )
 	    log_info(_("WARNING: Using untrusted key!\n"));
         if (opt.with_fingerprint)
-            fpr_info (pk);
+            print_fingerprint (pk, NULL, 1);
 	rc = 0;
         goto leave;
     }
@@ -680,7 +625,7 @@ check_signatures_trust( PKT_signature *sig )
 
       case TRUST_EXPIRED:
 	log_info(_("Note: This key has expired!\n"));
-	fpr_info( pk );
+        print_fingerprint (pk, NULL, 1);
 	break;
 
       case TRUST_UNDEFINED:
@@ -691,7 +636,7 @@ check_signatures_trust( PKT_signature *sig )
 	    log_info(_(
 	    "         There is no indication that the "
 				    "signature belongs to the owner.\n" ));
-	    fpr_info( pk );
+            print_fingerprint (pk, NULL, 1);
 	}
 	else {
 	    int quit;
@@ -709,7 +654,7 @@ check_signatures_trust( PKT_signature *sig )
 	log_info(_("WARNING: We do NOT trust this key!\n"));
 	log_info(_("         The signature is probably a FORGERY.\n"));
         if (opt.with_fingerprint)
-            fpr_info (pk);
+            print_fingerprint (pk, NULL, 1);
 	rc = G10ERR_BAD_SIGN;
 	break;
 
@@ -721,19 +666,19 @@ check_signatures_trust( PKT_signature *sig )
 	log_info(_(
 	 "         It is not certain that the signature belongs to the owner.\n"
 		 ));
-	fpr_info( pk );
+        print_fingerprint (pk, NULL, 1);
 	break;
 
       case TRUST_FULLY:
 	write_status( STATUS_TRUST_FULLY );
         if (opt.with_fingerprint)
-            fpr_info (pk);
+            print_fingerprint (pk, NULL, 1);
 	break;
 
       case TRUST_ULTIMATE:
 	write_status( STATUS_TRUST_ULTIMATE );
         if (opt.with_fingerprint)
-            fpr_info (pk);
+            print_fingerprint (pk, NULL, 1);
 	break;
 
       default: BUG();

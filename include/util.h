@@ -224,6 +224,9 @@ int strcasecmp( const char *, const char *b);
 /*-- w32reg.c --*/
 char *read_w32_registry_string( const char *root,
 				const char *dir, const char *name );
+int write_w32_registry_string(const char *root, const char *dir,
+                              const char *name, const char *value);
+
 /*-- strgutil.c --*/
 int vasprintf ( char **result, const char *format, va_list args);
 #endif

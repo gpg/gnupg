@@ -29,6 +29,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #endif
+#ifdef __MINGW32__
+# include <windows.h>
+#endif
 #include <errno.h>
 
 #include "util.h"
@@ -303,7 +306,7 @@ agent_open (void)
 
     if ( writen ( fd, "GPGA\0\0\0\x01", 8 ) ) {
         fd = -1;
-
+    }
 #else /* Posix */
 
     int fd;

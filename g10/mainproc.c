@@ -684,43 +684,6 @@ print_userid( PACKET *pkt )
 
 
 static void
-print_fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
-{
-    byte array[MAX_FINGERPRINT_LEN], *p;
-    size_t i, n;
-
-    if( sk )
-	fingerprint_from_sk( sk, array, &n );
-    else
-	fingerprint_from_pk( pk, array, &n );
-    p = array;
-    if( opt.with_colons ) {
-	printf("fpr:::::::::");
-	for(i=0; i < n ; i++, p++ )
-	    printf("%02X", *p );
-	putchar(':');
-    }
-    else {
-	printf("     Key fingerprint =");
-	if( n == 20 ) {
-	    for(i=0; i < n ; i++, i++, p += 2 ) {
-		if( i == 10 )
-		    putchar(' ');
-		printf(" %02X%02X", *p, p[1] );
-	    }
-	}
-	else {
-	    for(i=0; i < n ; i++, p++ ) {
-		if( i && !(i%8) )
-		    putchar(' ');
-		printf(" %02X", *p );
-	    }
-	}
-    }
-    putchar('\n');
-}
-
-static void
 print_notation_data( PKT_signature *sig )
 {
     size_t n, n1, n2;
@@ -805,7 +768,7 @@ list_node( CTX c, KBNODE node )
 	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
 		putchar('\n'); any=1;
 		if( opt.fingerprint )
-		    print_fingerprint( pk, NULL );
+		    print_fingerprint( pk, NULL, 0 );
 		printf("rtv:1:%u:\n",
 			    node->next->pkt->pkt.ring_trust->trustval );
 	    }
@@ -843,7 +806,7 @@ list_node( CTX c, KBNODE node )
 			putchar(':');
 		    putchar('\n');
 		    if( opt.fingerprint && !any )
-			print_fingerprint( pk, NULL );
+			print_fingerprint( pk, NULL, 0 );
 		    if( node->next
 			&& node->next->pkt->pkttype == PKT_RING_TRUST ) {
 			printf("rtv:2:%u:\n",
@@ -867,7 +830,7 @@ list_node( CTX c, KBNODE node )
 	if( !any )
 	    putchar('\n');
 	if( !mainkey && opt.fingerprint > 1 )
-	    print_fingerprint( pk, NULL );
+	    print_fingerprint( pk, NULL, 0 );
     }
     else if( (mainkey = (node->pkt->pkttype == PKT_SECRET_KEY) )
 	     || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
@@ -917,7 +880,7 @@ list_node( CTX c, KBNODE node )
 			putchar(':');
 		    putchar('\n');
 		    if( opt.fingerprint && !any )
-			print_fingerprint( NULL, sk );
+			print_fingerprint( NULL, sk, 0 );
 		    any=1;
 		}
 		else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
@@ -932,7 +895,7 @@ list_node( CTX c, KBNODE node )
 	if( !any )
 	    putchar('\n');
 	if( !mainkey && opt.fingerprint > 1 )
-	    print_fingerprint( NULL, sk );
+	    print_fingerprint( NULL, sk, 0 );
     }
     else if( node->pkt->pkttype == PKT_SIGNATURE  ) {
 	PKT_signature *sig = node->pkt->pkt.signature;

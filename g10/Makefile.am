@@ -54,6 +54,7 @@ common_source =  \
 	      status.h		\
 	      plaintext.c	\
 	      sig-check.c	\
+	      keylist.c 	\
 	      signal.c		
 
 gpg_SOURCES  = g10.c		\
@@ -65,7 +66,6 @@ gpg_SOURCES  = g10.c		\
 	      seckey-cert.c	\
 	      encr-data.c	\
 	      cipher.c		\
-	      keylist.c 	\
 	      encode.c		\
 	      sign.c		\
 	      verify.c		\

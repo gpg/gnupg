@@ -31,6 +31,7 @@
 #include "keydb.h"
 #include "memory.h"
 #include "util.h"
+#include "ttyio.h"
 #include "trustdb.h"
 #include "main.h"
 #include "i18n.h"
@@ -38,7 +39,6 @@
 static void list_all(int);
 static void list_one( STRLIST names, int secret);
 static void list_keyblock( KBNODE keyblock, int secret );
-static void fingerprint( PKT_public_key *pk, PKT_secret_key *sk );
 
 
 /****************
@@ -268,7 +268,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 	    putchar('\n');
 	    if( !any ) {
 		if( opt.fingerprint )
-		    fingerprint( pk, sk );
+		    print_fingerprint( pk, sk, 0 );
 		if( opt.with_key_data )
 		    print_key_data( pk, keyid );
 		any = 1;
@@ -281,7 +281,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 	    if( !any ) {
 		putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pk, sk ); /* of the main key */
+		    print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
 	    }
 
@@ -295,7 +295,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
             }
             putchar('\n');
 	    if( opt.fingerprint > 1 )
-		fingerprint( pk2, NULL );
+		print_fingerprint( pk2, NULL, 0 );
 	    if( opt.with_key_data )
 		print_key_data( pk2, keyid2 );
 	}
@@ -306,7 +306,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 	    if( !any ) {
 		putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pk, sk ); /* of the main key */
+		    print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
 	    }
 
@@ -316,7 +316,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 					   (ulong)keyid2[1],
 					   datestr_from_sk( sk2 ) );
 	    if( opt.fingerprint > 1 )
-		fingerprint( NULL, sk2 );
+		print_fingerprint( NULL, sk2, 0 );
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
@@ -333,7 +333,7 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 		else
 		    putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pk, sk );
+		    print_fingerprint( pk, sk, 0 );
 		any=1;
 	    }
 
@@ -460,7 +460,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
         print_capabilities (pk, sk, keyblock);
         putchar('\n');
         if( opt.fingerprint )
-            fingerprint( pk, sk );
+            print_fingerprint( pk, sk, 0 );
         if( opt.with_key_data )
             print_key_data( pk, keyid );
         any = 1;
@@ -507,7 +507,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 print_capabilities (pk, sk, keyblock);
                 putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pk, sk );
+		    print_fingerprint( pk, sk, 0 );
 		if( opt.with_key_data )
 		    print_key_data( pk, keyid );
 		any = 1;
@@ -523,7 +523,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 print_capabilities (pk, sk, keyblock);
                 putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pk, sk ); /* of the main key */
+		    print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
 	    }
 
@@ -557,7 +557,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
             print_capabilities (pk2, NULL, NULL);
             putchar('\n');
 	    if( opt.fingerprint > 1 )
-		fingerprint( pk2, NULL );
+		print_fingerprint( pk2, NULL, 0 );
 	    if( opt.with_key_data )
 		print_key_data( pk2, keyid2 );
 	}
@@ -571,7 +571,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 print_capabilities (pk, sk, keyblock);
 		putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pk, sk ); /* of the main key */
+		    print_fingerprint( pk, sk, 0 ); /* of the main key */
 		any = 1;
 	    }
 
@@ -586,7 +586,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
             print_capabilities (NULL, sk2, NULL);
             putchar ('\n');
 	    if( opt.fingerprint > 1 )
-		fingerprint( NULL, sk2 );
+		print_fingerprint( NULL, sk2, 0 );
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
@@ -606,7 +606,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 print_capabilities (pk, sk, keyblock);
                 putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pk, sk );
+		    print_fingerprint( pk, sk, 0 );
 		any=1;
 	    }
 
@@ -718,38 +718,86 @@ list_keyblock( KBNODE keyblock, int secret )
         list_keyblock_print (keyblock, secret );
 }
 
-static void
-fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
+/*
+ * standard function to print the finperprint.
+ * mode 0: as used in key listings, opt.with_colons is honored
+ *      1: print using log_info ()
+ *      2: direct use of tty
+ */
+void
+print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
 {
-    byte *array, *p;
+    byte array[MAX_FINGERPRINT_LEN], *p;
     size_t i, n;
+    FILE *fp;
+    const char *text;
 
-    p = array = pk? fingerprint_from_pk( pk, NULL, &n )
-		   : fingerprint_from_sk( sk, NULL, &n );
-    if( opt.with_colons ) {
-	printf("fpr:::::::::");
-	for(i=0; i < n ; i++, p++ )
-	    printf("%02X", *p );
-	putchar(':');
+    if (mode == 1) {
+        fp = log_stream ();
+        text = _("Fingerprint:");
+    }
+    else if (mode == 2) {
+        fp = NULL; /* use tty */
+        /* Translators: this should fit into 24 bytes to that the fingerprint
+         * data is properly aligned with the user ID */
+        text = _("             Fingerprint:");
     }
     else {
-	printf("     Key fingerprint =");
-	if( n == 20 ) {
-	    for(i=0; i < n ; i++, i++, p += 2 ) {
-		if( i == 10 )
-		    putchar(' ');
-		printf(" %02X%02X", *p, p[1] );
+        fp = stdout;
+        text = _("     Key fingerprint =");
+    }
+  
+    if (sk)
+	fingerprint_from_sk (sk, array, &n);
+    else
+	fingerprint_from_pk (pk, array, &n);
+    p = array;
+    if (opt.with_colons && !mode) {
+	fprintf (fp, "fpr:::::::::");
+	for (i=0; i < n ; i++, p++ )
+	    fprintf (fp, "%02X", *p );
+	putc(':', fp);
+    }
+    else {
+        if (fp)
+            fputs (text, fp);
+        else
+            tty_printf ("%s", text);
+	if (n == 20) {
+	    for (i=0; i < n ; i++, i++, p += 2 ) {
+                if (fp) {
+                    if (i == 10 )
+                        putc(' ', fp);
+                    fprintf (fp, " %02X%02X", *p, p[1] );
+                }
+                else {
+                    if (i == 10 )
+                        tty_printf (" ");
+                    tty_printf (" %02X%02X", *p, p[1]);
+                }
 	    }
 	}
 	else {
-	    for(i=0; i < n ; i++, p++ ) {
-		if( i && !(i%8) )
-		    putchar(' ');
-		printf(" %02X", *p );
+	    for (i=0; i < n ; i++, p++ ) {
+                if (fp) {
+                    if (i && !(i%8) )
+                        putc (' ', fp);
+                    fprintf (fp, " %02X", *p );
+                }
+                else {
+                    if (i && !(i%8) )
+                        tty_printf (" ");
+                    tty_printf (" %02X", *p );
+                }
 	    }
 	}
     }
-    putchar('\n');
-    m_free(array);
+    if (fp)
+        putc ('\n', fp);
+    else
+        tty_printf ("\n");
 }
+
+
+
 

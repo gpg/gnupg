@@ -44,7 +44,6 @@ static void show_prefs( PKT_user_id *uid, int verbose );
 static void show_key_with_all_names( KBNODE keyblock,
 	    int only_marked, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
-static void show_fingerprint( PKT_public_key *pk );
 static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int  menu_delsig( KBNODE pub_keyblock );
@@ -1166,7 +1165,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 
 		if( with_fpr  ) {
 		    tty_printf("\n");
-		    show_fingerprint( pk );
+		    print_fingerprint ( pk, NULL, 2 );
 		}
 	    }
 	    tty_printf("\n");
@@ -1248,35 +1247,9 @@ show_key_and_fingerprint( KBNODE keyblock )
     }
     tty_printf("\n");
     if( pk )
-	show_fingerprint( pk );
+	print_fingerprint( pk, NULL, 2 );
 }
 
-
-static void
-show_fingerprint( PKT_public_key *pk )
-{
-    byte array[MAX_FINGERPRINT_LEN], *p;
-    size_t i, n;
-
-    fingerprint_from_pk( pk, array, &n );
-    p = array;
-    tty_printf(_("             Fingerprint:"));
-    if( n == 20 ) {
-	for(i=0; i < n ; i++, i++, p += 2 ) {
-	    if( i == 10 )
-		tty_printf(" ");
-	    tty_printf(" %02X%02X", *p, p[1] );
-	}
-    }
-    else {
-	for(i=0; i < n ; i++, p++ ) {
-	    if( i && !(i%8) )
-		tty_printf(" ");
-	    tty_printf(" %02X", *p );
-	}
-    }
-    tty_printf("\n");
-}
 
 
 /****************
