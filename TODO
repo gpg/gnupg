@@ -9,6 +9,10 @@
     candidates for a keyblock first and the select one from it.
     The current code is too ugly (getkey.c).
 
+  * Fix localtime() in W32.
+
+  * INFO Kommand um z.B. default-recipients herauszufinden.
+
 Scheduled for 1.1
 -----------------
   * With option -i prompt before adding a key to the keyring and show some

@@ -10,6 +10,8 @@ if [ -f ../README ]; then
     srcdir=..
 elif [ -f ../../gnupg-stable/README ]; then
     srcdir=../../gnupg-stable
+elif [ -f ../../../gnupg-stable/README ]; then
+    srcdir=../../../gnupg-stable
 else
     echo "cannot figure out the source dir" >&2
     exit 1

@@ -1,3 +1,7 @@
+Mon Apr 10 13:34:19 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* keyedit.c (show_key_with_all_names): s/sbb/ssb/
+
 Tue Mar 28 14:26:58 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* trustdb.c (verify_own_keys): Do not print warning about unprotected

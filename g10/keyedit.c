@@ -1099,7 +1099,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    || (with_subkeys && node->pkt->pkttype == PKT_SECRET_SUBKEY) ) {
 	    PKT_secret_key *sk = node->pkt->pkt.secret_key;
 	    tty_printf("%s%c %4u%c/%08lX  created: %s expires: %s\n",
-			  node->pkt->pkttype == PKT_SECRET_KEY? "sec":"sbb",
+			  node->pkt->pkttype == PKT_SECRET_KEY? "sec":"ssb",
 			  (node->flag & NODFLG_SELKEY)? '*':' ',
 			  nbits_from_sk( sk ),
 			  pubkey_letter( sk->pubkey_algo ),

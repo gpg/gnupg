@@ -663,6 +663,9 @@ fi
 AC_SUBST(ZLIBS)
 
 
+# Allow users to append something to the version string without
+# flagging it as development version.  The user version parts is
+# considered everything after a dash.
 changequote(,)dnl
 tmp_pat='[a-zA-Z]'
 changequote([,])dnl
