@@ -503,6 +503,7 @@ time_t
 ldap2epochtime(const char *timestr)
 {
   struct tm pgptime;
+  time_t answer;
 
   memset(&pgptime,0,sizeof(pgptime));
 
@@ -520,7 +521,26 @@ ldap2epochtime(const char *timestr)
   pgptime.tm_isdst=-1;
   pgptime.tm_mon--;
 
-  return mktime(&pgptime);
+  /* mktime takes the timezone into account, and we can't have that.
+     I'd use timegm, but it's not portable. */
+
+#ifdef HAVE_TIMEGM
+  answer=timegm(&pgptime);
+#else
+  {
+    char *zone=getenv("TZ");
+    setenv("TZ","UTC",1);
+    tzset();
+    answer=mktime(&pgptime);
+    if(zone)
+      setenv("TZ",zone,1);
+    else
+      unsetenv("TZ");
+    tzset();
+  }
+#endif
+
+  return answer;
 }
 
 void
@@ -1203,11 +1223,19 @@ main(int argc,char *argv[])
 	}
     }
 
+  if((err=find_basekeyspacedn()))
+    {
+      fprintf(console,"gpgkeys: unable to retrieve LDAP base: %s\n",
+	      ldap_err2string(err));
+      fail_all(keylist,action,ldap_err_to_gpg_err(err));
+      goto fail;
+    }
+
   /* use_tls: 0=don't use, 1=try silently to use, 2=try loudly to use,
      3=force use. */
   if(use_tls)
     {
-      if(!real_ldap && use_tls)
+      if(!real_ldap)
       	{
       	  if(use_tls>=2)
 	    fprintf(console,"gpgkeys: unable to start TLS: %s\n",
@@ -1255,18 +1283,14 @@ main(int argc,char *argv[])
 	}
     }
 
+  /* The LDAP keyserver doesn't require this, but it might be useful
+     if someone stores keys on a V2 LDAP server somewhere.  (V3
+     doesn't require a bind). */
+
   err=ldap_simple_bind_s(ldap,NULL,NULL);
   if(err!=0)
     {
       fprintf(console,"gpgkeys: internal LDAP bind error: %s\n",
-	      ldap_err2string(err));
-      fail_all(keylist,action,ldap_err_to_gpg_err(err));
-      goto fail;
-    }
-
-  if((err=find_basekeyspacedn()))
-    {
-      fprintf(console,"gpgkeys: unable to retrieve LDAP base: %s\n",
 	      ldap_err2string(err));
       fail_all(keylist,action,ldap_err_to_gpg_err(err));
       goto fail;

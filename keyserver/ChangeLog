@@ -1,5 +1,11 @@
 2004-02-19  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_ldap.c (ldap2epochtime): LDAP timestamps are UTC, so do
+	not correct for timezones.
+	(main): Find the basekeyspacedn before we try to start TLS, so we
+	can give a better error message when a user tries to use TLS with
+	a LDAP keyserver.
+
 	* Makefile.am: Add automake conditionals to symlink gpgkeys_ldaps
 	to gpgkeys_ldap when needed.
 
