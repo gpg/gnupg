@@ -75,13 +75,7 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
   memcpy ( frame+n, digest, digestlen ); n += digestlen;
   assert ( n == nframe );
   if (DBG_CRYPTO)
-    {
-      int j;
-      log_debug ("encoded hash:");
-      for (j=0; j < nframe; j++)
-        log_printf (" %02X", frame[j]);
-      log_printf ("\n");
-    }
+    log_printhex ("encoded hash:", frame, nframe);
       
   gcry_mpi_scan (r_val, GCRYMPI_FMT_USG, frame, &nframe);
   xfree (frame);
@@ -89,82 +83,26 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
 }
 
 
-static GCRY_SEXP
-key_from_file (const unsigned char *grip)
-{
-  int i, rc;
-  char *fname;
-  FILE *fp;
-  struct stat st;
-  char *buf;
-  size_t buflen, erroff;
-  GCRY_SEXP s_skey;
-  char hexgrip[41];
-  
-  for (i=0; i < 20; i++)
-    sprintf (hexgrip+2*i, "%02X", grip[i]);
-  hexgrip[40] = 0;
-
-  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL );
-  fp = fopen (fname, "rb");
-  if (!fp)
-    {
-      log_error ("can't open `%s': %s\n", fname, strerror (errno));
-      xfree (fname);
-      return NULL;
-    }
-  
-  if (fstat (fileno(fp), &st))
-    {
-      log_error ("can't stat `%s': %s\n", fname, strerror (errno));
-      xfree (fname);
-      fclose (fp);
-      return NULL;
-    }
-
-  buflen = st.st_size;
-  buf = xmalloc (buflen+1);
-  if (fread (buf, buflen, 1, fp) != 1)
-    {
-      log_error ("error reading `%s': %s\n", fname, strerror (errno));
-      xfree (fname);
-      fclose (fp);
-      xfree (buf);
-      return NULL;
-    }
-
-  rc = gcry_sexp_sscan (&s_skey, &erroff, buf, buflen);
-  xfree (fname);
-  fclose (fp);
-  xfree (buf);
-  if (rc)
-    {
-      log_error ("failed to build S-Exp (off=%u): %s\n",
-                 (unsigned int)erroff, gcry_strerror (rc));
-      return NULL;
-    }
-
-  return s_skey;
-}
-
-
-
 /* SIGN whatever information we have accumulated in CTRL and write it
    back to OUTFP. */
 int
 agent_pksign (CTRL ctrl, FILE *outfp) 
 {
-  GCRY_SEXP s_skey, s_hash, s_sig;
-  GCRY_MPI frame;
+  GCRY_SEXP s_skey = NULL, s_hash = NULL, s_sig = NULL;
+  GCRY_MPI frame = NULL;
   int rc;
-  char *buf;
+  char *buf = NULL;
   size_t len;
 
-  s_skey = key_from_file (ctrl->keygrip);
+  if (!ctrl->have_keygrip)
+    return seterr (No_Secret_Key);
+
+  s_skey = agent_key_from_file (ctrl->keygrip);
   if (!s_skey)
     {
       log_error ("failed to read the secret key\n");
-      return seterr (No_Secret_Key);
+      rc = seterr (No_Secret_Key);
+      goto leave;
     }
 
   /* put the hash into a sexp */
@@ -174,12 +112,15 @@ agent_pksign (CTRL ctrl, FILE *outfp)
                      gcry_pk_get_nbits (s_skey),
                      &frame);
   if (rc)
-    {
-      /* fixme: clean up some things */
-      return rc;
-    }
+      goto leave;
   if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
     BUG ();
+
+  if (DBG_CRYPTO)
+    {
+      log_debug ("skey: ");
+      gcry_sexp_dump (s_skey);
+    }
 
 
   /* sign */
@@ -187,8 +128,16 @@ agent_pksign (CTRL ctrl, FILE *outfp)
   if (rc)
     {
       log_error ("signing failed: %s\n", gcry_strerror (rc));
-      return map_gcry_err (rc);
+      rc = map_gcry_err (rc);
+      goto leave;
     }
+
+  if (DBG_CRYPTO)
+    {
+      log_debug ("result: ");
+      gcry_sexp_dump (s_sig);
+    }
+
 
   len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
@@ -199,8 +148,15 @@ agent_pksign (CTRL ctrl, FILE *outfp)
   /* FIXME: we must make sure that no buffering takes place or we are
      in full control of the buffer memory (easy to do) - should go
      into assuan. */
-  fwrite (buf, 1, strlen(buf), outfp);
-  return 0;
+  fwrite (buf, 1, len, outfp);
+
+ leave:
+  gcry_sexp_release (s_skey);
+  gcry_sexp_release (s_hash);
+  gcry_sexp_release (s_sig);
+  gcry_mpi_release (frame);
+  xfree (buf);
+  return rc;
 }
 
 

@@ -26,7 +26,9 @@ LDFLAGS = @LDFLAGS@
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
 	command.c \
-	pksign.c 
+	findkey.c \
+	pksign.c \
+	pkdecrypt.c
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
 		../common/libcommon.a \

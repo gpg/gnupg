@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
@@ -33,6 +34,7 @@
 
 #include <gcrypt.h>
 
+#define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
 #include "../assuan/assuan.h" /* malloc hooks */
 
@@ -177,6 +179,27 @@ cleanup (void)
     }
 }
 
+
+/* Use by gcry for logging */
+static void
+my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
+{
+  /* translate the log levels */
+  switch (level)
+    {
+    case GCRY_LOG_CONT: level = JNLIB_LOG_CONT; break;
+    case GCRY_LOG_INFO: level = JNLIB_LOG_INFO; break;
+    case GCRY_LOG_WARN: level = JNLIB_LOG_WARN; break;
+    case GCRY_LOG_ERROR:level = JNLIB_LOG_ERROR; break;
+    case GCRY_LOG_FATAL:level = JNLIB_LOG_FATAL; break;
+    case GCRY_LOG_BUG:  level = JNLIB_LOG_BUG; break;
+    case GCRY_LOG_DEBUG:level = JNLIB_LOG_DEBUG; break;
+    default:            level = JNLIB_LOG_ERROR; break;  
+    }
+  log_logv (level, fmt, arg_ptr);
+}
+
+
 static RETSIGTYPE
 cleanup_sh (int sig)
 {
@@ -224,13 +247,12 @@ main (int argc, char **argv )
   int csh_style = 0;
   char *logfile = NULL;
 
-  set_strusage( my_strusage );
+  set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to INIT_SECMEM()
      somewhere after the option parsing */
-  /*   log_set_name ("gpg-agent"); */
-  srand (time (NULL)); /* the about dialog uses rand() */
+  log_set_prefix ("gpg-agent", 1|4); 
   i18n_init ();
 
   /* check that the libraries are suitable.  Do it here because
@@ -242,6 +264,7 @@ main (int argc, char **argv )
     }
 
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
+  gcry_set_log_handler (my_gcry_logger, NULL);
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
   may_coredump = 0/* FIXME: disable_core_dumps()*/;
@@ -452,6 +475,19 @@ main (int argc, char **argv )
     }
   else if (server_mode)
     { /* for now this is the simple pipe based server */
+      if (logfile)
+        {
+          log_set_file (logfile);
+          log_set_prefix (NULL, 1|2|4);
+        }
+       
+      if ( atexit( cleanup ) )
+        {
+          log_error ("atexit failed\n");
+          cleanup ();
+          exit (1);
+        }
+
       start_command_handler ();
     }
   else
@@ -518,11 +554,17 @@ main (int argc, char **argv )
         } /* end parent */
 
       if ( (opt.debug & 1) )
-        sleep( 20 ); /* give us some time to attach gdb to the child */
+        {
+          fprintf (stderr, "... 20 seconds to attach the debugger ...");
+          fflush (stderr);
+          sleep( 20 ); /* give us some time to attach gdb to the child */
+          putc ('\n', stderr);
+        }
 
       if (logfile)
         {
-          /* FIXME:log_set_logfile (opt.logfile, -1);*/
+          log_set_file (logfile);
+          log_set_prefix (NULL, 1|2|4);
         }
        
       if ( atexit( cleanup ) )

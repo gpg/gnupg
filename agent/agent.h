@@ -21,6 +21,7 @@
 #ifndef AGENT_H
 #define AGENT_H
 
+#include <gcrypt.h>
 #include "../common/util.h"
 #include "../common/errors.h"
 
@@ -60,6 +61,7 @@ struct server_control_s {
     int valuelen;
   } digest;
   char keygrip[20];
+  int have_keygrip;
 
 };
 typedef struct server_control_s *CTRL;
@@ -71,9 +73,16 @@ void agent_exit (int rc);
 /*-- command.c --*/
 void start_command_handler (void);
 
+/*-- findkey.c --*/
+GCRY_SEXP agent_key_from_file (const unsigned char *grip);
+
+
 /*-- pksign.c --*/
 int agent_pksign (CTRL ctrl, FILE *outfp);
 
+/*-- pkdecrypt.c --*/
+int agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
+                     FILE *outfp);
 
 
 #endif /*AGENT_H*/
