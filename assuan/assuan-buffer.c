@@ -89,27 +89,30 @@ int
 _assuan_read_line (ASSUAN_CONTEXT ctx)
 {
   char *line = ctx->inbound.line;
-  int n, nread;
+  int n, nread, atticlen;
   int rc;
-  
+
   if (ctx->inbound.eof)
     return -1;
 
-  if (ctx->inbound.attic.linelen)
+  atticlen = ctx->inbound.attic.linelen;
+  if (atticlen)
     {
-      memcpy (line, ctx->inbound.attic.line, ctx->inbound.attic.linelen);
-      nread = ctx->inbound.attic.linelen;
+      memcpy (line, ctx->inbound.attic.line, atticlen);
       ctx->inbound.attic.linelen = 0;
-      for (n=0; n < nread && line[n] != '\n'; n++)
+      for (n=0; n < atticlen && line[n] != '\n'; n++)
         ;
-      if (n < nread)
-        rc = 0; /* found another line in the attic */
+      if (n < atticlen)
+	{
+	  rc = 0; /* found another line in the attic */
+	  nread = atticlen;
+	  atticlen = 0;
+	}
       else
         { /* read the rest */
-          n = nread;
-          assert (n < LINELENGTH);
-          rc = readline (ctx->inbound.fd, line + n, LINELENGTH - n,
-                         &nread, &ctx->inbound.eof);
+          assert (atticlen < LINELENGTH);
+          rc = readline (ctx->inbound.fd, line + atticlen,
+			 LINELENGTH - atticlen, &nread, &ctx->inbound.eof);
         }
     }
   else
@@ -124,6 +127,7 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
     }
 
   ctx->inbound.attic.pending = 0;
+  nread += atticlen;
   for (n=0; n < nread; n++)
     {
       if (line[n] == '\n')
