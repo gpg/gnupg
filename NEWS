@@ -17,7 +17,7 @@ Noteworthy changes in the current test release
     * Encryption is now much faster: About 2 times for 1k bit keys
       and 8 times for 4k keys.
 
-    * New encryption keys are generated in way which allows a much
+    * New encryption keys are generated in a way which allows a much
       faster decryption.
 
     * New command --export-secret-subkeys which outputs the

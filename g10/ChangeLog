@@ -1,3 +1,7 @@
+Wed Feb 23 10:07:57 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* helptext.c: typo fix.
+
 Thu Feb 17 13:39:32 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* revoke.c: Removed a bunch of commented code.

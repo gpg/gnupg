@@ -243,7 +243,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 /* revoke.c (ask_revocation_reason) */
 { "ask_revocation_reason.text", N_(
  "If you like, you can enter a text describing why you issue this\n"
- "revocation certificate.  Please keep this text consis.\n"
+ "revocation certificate.  Please keep this text concise.\n"
  "An empty line ends the text.\n"
 )},
 

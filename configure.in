@@ -15,7 +15,7 @@ AM_CONFIG_HEADER(config.h)
 
 VERSION=`cat $srcdir/VERSION`
 PACKAGE=gnupg
-ALL_LINGUAS="de eo es_ES fr id it ja pl pt_BR pt_PT ru sv"
+ALL_LINGUAS="de eo es_ES fr id it ja nl pl pt_BR pt_PT ru sv"
 static_modules="sha1 md5 rmd160"
 static_random_module=""
 AC_SUBST(VERSION)
