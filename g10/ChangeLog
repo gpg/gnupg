@@ -1,3 +1,11 @@
+2004-03-01  Werner Koch  <wk@gnupg.org>
+
+	* options.h (ctrl): New for member IN_AUTO_KEY_RETRIEVE.
+	* mainproc.c (check_sig_and_print): track whether we are
+	retrieving a key.
+	* status.c (status_currently_allowed): New.
+	(write_status_text, write_status_text_and_buffer): Use it here.
+
 2004-02-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_addrevoker): Do not allow appointing a subkey as

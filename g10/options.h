@@ -186,6 +186,16 @@ struct
 } opt;
 
 
+/* CTRL is used to keep some global variables we currently can't
+   avoid.  Future concurrent versions of gpg will put it into a per
+   request structure CTRL. */
+EXTERN_UNLESS_MAIN_MODULE
+struct {
+  int in_auto_key_retrieve; /* True if we are doing an
+                               auto_key_retrieve. */
+
+} ctrl;
+
 #define EMUBUG_MDENCODE   4
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
