@@ -249,10 +249,6 @@ get_key(char *getkey)
 
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
-  if(verbose)
-    fprintf(console,"gpgkeys: requesting key 0x%s from hkp://%s%s%s\n",
-	    getkey,host,port[0]?":":"",port[0]?port:"");
-
   request=malloc(strlen(host)+100);
   if(!request)
     {
@@ -673,9 +669,6 @@ search_key(char *searchkey)
     }    
 
   search[len]='\0';
-
-  fprintf(console,("gpgkeys: searching for \"%s\" from HKP server %s\n"),
-	  searchkey,host);
 
   request=malloc(strlen(host)+100+strlen(search));
   if(!request)

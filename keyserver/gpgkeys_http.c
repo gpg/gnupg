@@ -74,10 +74,6 @@ get_key(char *getkey)
   sprintf(request,"http://%s%s%s%s%s",host,port[0]?":":"",
 	  port[0]?port:"",path[0]?"":"/",path);
 
-  if(verbose)
-    fprintf(console,"gpgkeys: requesting key 0x%s from http://%s%s%s%s%s\n",
-	    getkey,host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
-
   rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);
   if(rc!=0)
     {

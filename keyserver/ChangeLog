@@ -1,5 +1,9 @@
 2004-08-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_ldap.c (get_key, search_key), gpgkeys_hkp.c (get_key,
+	search_key), gpgkeys_http.c (get_key): Do not give informational
+	logs since this is now done inside gpg.
+
 	* gpgkeys_hkp.c (dehtmlize): Understand the quote character
 	(i.e. "&quot;") in HTML responses.
 	(search_key): Search key must be unsigned for url encoder to work

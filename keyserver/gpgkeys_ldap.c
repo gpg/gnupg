@@ -1032,10 +1032,6 @@ get_key(char *getkey)
   if(!verbose)
     attrs[2]=NULL; /* keep only pgpkey(v2) and pgpcertid */
 
-  if(verbose)
-    fprintf(console,"gpgkeys: requesting key 0x%s from ldap://%s%s%s\n",
-	    getkey,host,portstr[0]?":":"",portstr[0]?portstr:"");
-
   err=ldap_search_s(ldap,basekeyspacedn,
 		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
   if(err!=0)
@@ -1170,9 +1166,6 @@ search_key(char *searchkey)
 
   if(verbose>2)
     fprintf(console,"gpgkeys: LDAP search for: %s\n",search);
-
-  fprintf(console,("gpgkeys: searching for \"%s\" from LDAP server %s\n"),
-	  searchkey,host);
 
   err=ldap_search_s(ldap,basekeyspacedn,
 		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
