@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.1.92
 -------------------------------------------------
 
+    * The option --interactive has now the desired effect when
+      importing keys.
+
     * The file permission and ownership checks on files have been
       clarified.  Specifically, the homedir (usually ~/.gnupg) is
       checked to protect everything within it.  If the user specifies
