@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 0.33
-Last-Modified: Nov 16, 2000
+Version: 0.34
+Last-Modified: Nov 30, 2000
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -14,11 +14,13 @@ The index is generated automatically, so there may be errors here.  Not
 all questions may be in the section they belong to. Suggestions about
 how to improve the structure of this FAQ are welcome.
 
-Please send additions and corrections to the maintainer. Please, don't
-send message like "This should be a FAQ - what's the answer?". If it
-hasn't been asked before, it isn't a FAQ. Maybe you should have a look
-at the mailing list archive. Otherwise, please provide the answer to be
-included here. Your help is very much appreciated.
+Please send additions and corrections to the maintainer. It would be
+most convenient if you could provide the answer to be included
+here. Your help is very much appreciated.
+
+Please, don't send message like "This should be a FAQ - what's the
+answer?". If it hasn't been asked before, it isn't a FAQ. In that case,
+you could search in the mailing list archive.
 
 
 
