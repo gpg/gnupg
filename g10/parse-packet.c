@@ -1,6 +1,6 @@
 /* parse-packet.c  - read packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -383,11 +383,11 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
               case PKT_COMPRESSED:
                 break; /* the orginal pgp 2 way. */
 
-              default:
-                log_error ("%s: old style partial length "
-                           "for invalid packet type\n", iobuf_where(inp) );
-                rc = G10ERR_INVALID_PACKET;
-                goto leave;
+	    default:
+              log_error ("%s: old style partial length for invalid"
+			 " packet type %d\n", iobuf_where(inp), pkttype );
+              rc = G10ERR_INVALID_PACKET;
+              goto leave;
             }
 	}
 	else {

@@ -1,5 +1,5 @@
 /* misc.c -  miscellaneous functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -771,11 +771,17 @@ parse_options(char *str,unsigned int *options,
 		}
 
 	      if(rev)
-		*options&=~opts[i].bit;
+		{
+		  *options&=~opts[i].bit;
+		  if(opts[i].value)
+		    *opts[i].value=NULL;
+		}
 	      else
-		*options|=opts[i].bit;
-	      if(opts[i].value)
-		*opts[i].value=arg?m_strdup(arg):NULL;
+		{
+		  *options|=opts[i].bit;
+		  if(opts[i].value)
+		    *opts[i].value=arg?m_strdup(arg):NULL;
+		}
 	      break;
 	    }
 	}

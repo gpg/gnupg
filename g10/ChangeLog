@@ -1,3 +1,17 @@
+2004-02-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (write_header2): If a suggested header length is
+	provided along with a zero length, interpret this as an actual
+	zero length packet and not as an indeterminate length packet.
+	(do_comment, do_user_id): Use it here as these packets might be
+	naturally zero length.
+
+	* parse-packet.c (parse): Show packet type when failing due to an
+	indeterminate length packet.
+
+	* misc.c (parse_options): Only provide args for the true (i.e. not
+	"no-xxx") form of options.
+
 2004-02-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (argsep): Move to misc.c.
