@@ -57,7 +57,7 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
   
   /* We encode the MD in this way:
    *
-   *	   0  A PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
+   *	   0  1 PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
    *
    * PAD consists of FF bytes.
    */

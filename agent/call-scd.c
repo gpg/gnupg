@@ -102,7 +102,7 @@ start_scd (void)
 static AssuanError
 learn_status_cb (void *opaque, const char *line)
 {
-  struct learn_parm_s *parm = opaque;
+  /*  struct learn_parm_s *parm = opaque;*/
   const char *keyword = line;
   int keywordlen;
 
@@ -127,7 +127,7 @@ learn_status_cb (void *opaque, const char *line)
 /* Perform the learn command and return a list of all private keys
    stored on the card. */
 int
-agent_learn_card (void)
+agent_card_learn (void)
 {
   int rc;
   struct learn_parm_s parm;
@@ -150,4 +150,72 @@ agent_learn_card (void)
 
   return 0;
 }
+
+
+
+static AssuanError
+get_serialno_cb (void *opaque, const char *line)
+{
+  char **serialno = opaque;
+  const char *keyword = line;
+  const char *s;
+  int keywordlen, n;
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
+    {
+      if (*serialno)
+        return ASSUAN_Unexpected_Status;
+      for (n=0,s=line; hexdigitp (s); s++, n++)
+        ;
+      if (!n || (n&1)|| !(spacep (s) || !*s) )
+        return ASSUAN_Invalid_Status;
+      *serialno = xtrymalloc (n+1);
+      if (!*serialno)
+        return ASSUAN_Out_Of_Core;
+      memcpy (*serialno, line, n);
+      (*serialno)[n] = 0;
+    }
+  
+  return 0;
+}
+
+/* Return the serial number of the card or an appropriate error.  The
+   serial number is returned as a hext string. */
+int
+agent_card_serialno (char **r_serialno)
+{
+  int rc;
+  char *serialno = NULL;
+
+  rc = start_scd ();
+  if (rc)
+    return rc;
+
+  /* Hmm, do we really need this reset - scddaemon should do this or
+     we can do this if we for some reason figure out that the
+     operation might have failed due to a missing RESET.  Hmmm, I feel
+     this is really SCdaemon's duty */
+  rc = assuan_transact (scd_ctx, "RESET", NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  rc = assuan_transact (scd_ctx, "SERIALNO",
+                        NULL, NULL, NULL, NULL,
+                        get_serialno_cb, &serialno);
+  if (rc)
+    {
+      xfree (serialno);
+      return map_assuan_err (rc);
+    }
+  *r_serialno = serialno;
+  return 0;
+}
+
+
+
 

@@ -30,6 +30,8 @@
 
 #include "agent.h"
 
+#include "sexp-parse.h"
+
 #define PROT_CIPHER        GCRY_CIPHER_AES
 #define PROT_CIPHER_STRING "aes"
 #define PROT_CIPHER_KEYLEN (128/8)
@@ -52,80 +54,6 @@ hash_passphrase (const char *passphrase, int hashalgo,
                  int s2kmode,
                  const unsigned char *s2ksalt, unsigned long s2kcount,
                  unsigned char *key, size_t keylen);
-
-
-
-/* Return the length of the next S-Exp part and update the pointer to
-   the first data byte.  0 is return on error */
-static size_t
-snext (unsigned char const **buf)
-{
-  const unsigned char *s;
-  int n;
-
-  s = *buf;
-  for (n=0; *s && *s != ':' && digitp (s); s++)
-    n = n*10 + atoi_1 (s);
-  if (!n || *s != ':')
-    return 0; /* we don't allow empty lengths */
-  *buf = s+1;
-  return n;
-}
-
-/* Skip over the S-Expression BUF points to and update BUF to point to
-   the chacter right behind.  DEPTH gives the initial number of open
-   lists and may be passed as a positive number to skip over the
-   remainder of an S-Expression if the current position is somewhere
-   in an S-Expression.  The function may return an error code if it
-   encounters an impossible conditions */
-static int
-sskip (unsigned char const **buf, int *depth)
-{
-  const unsigned char *s = *buf;
-  size_t n;
-  int d = *depth;
-  
-  while (d > 0)
-    {
-      if (*s == '(')
-        {
-          d++;
-          s++;
-        }
-      else if (*s == ')')
-        {
-          d--;
-          s++;
-        }
-      else
-        {
-          if (!d)
-            return GNUPG_Invalid_Sexp;
-          n = snext (&s);
-          if (!n)
-            return GNUPG_Invalid_Sexp; 
-          s += n;
-        }
-    }
-  *buf = s;
-  *depth = d;
-  return 0;
-}
-
-
-/* Check whether the the string at the address BUF points to matches
-   the token.  Return true on match and update BUF to point behind the
-   token. */
-static int
-smatch (unsigned char const **buf, size_t buflen, const char *token)
-{
-  size_t toklen = strlen (token);
-
-  if (buflen != toklen || memcmp (*buf, token, toklen))
-    return 0;
-  *buf += toklen;
-  return 1;
-}
 
 
 

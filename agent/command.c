@@ -472,7 +472,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc;
 
-  rc = agent_learn_card ();
+  rc = agent_card_learn ();
   if (rc)
     log_error ("agent_learn_card failed: %s\n", gnupg_strerror (rc));
   return map_to_assuan_status (rc);

@@ -6,6 +6,9 @@
 	* findkey.c (agent_key_from_file): Add optional arg shadow_info
 	and have it return information about a shadowed key.
 	* protect.c (agent_get_shadow_info): New.
+
+	* protect.c (snext,sskip,smatch): Moved to
+	* sexp-parse.h: new file.
 	* divert-scd.c: New.
 	
 2002-02-27  Werner Koch  <wk@gnupg.org>

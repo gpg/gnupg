@@ -29,12 +29,116 @@
 #include <sys/stat.h>
 
 #include "agent.h"
+#include "sexp-parse.h"
+
+
+
+static int
+ask_for_card (const unsigned char *shadow_info, char **r_kid)
+{
+  int rc, i;
+  const unsigned char *s;
+  size_t n;
+  char *serialno;
+  int no_card = 0;
+  char *desc;
+  char *want_sn, *want_kid;
+
+  *r_kid = NULL;
+  s = shadow_info;
+  if (*s != '(')
+    return GNUPG_Invalid_Sexp;
+  s++;
+  n = snext (&s);
+  if (!n)
+    return GNUPG_Invalid_Sexp;
+  want_sn = xtrymalloc (n+1);
+  if (!want_sn)
+    return GNUPG_Out_Of_Core;
+  memcpy (want_sn, s, n);
+  want_sn[n] = 0;
+  s += n;
+
+  n = snext (&s);
+  if (!n)
+    return GNUPG_Invalid_Sexp;
+  want_kid = xtrymalloc (n+1);
+  if (!want_kid)
+    {
+      xfree (want_sn);
+      return GNUPG_Out_Of_Core;
+    }
+  memcpy (want_kid, s, n);
+  want_kid[n] = 0;
+
+  for (;;)
+    {
+      rc = agent_card_serialno (&serialno);
+      if (!rc)
+        {
+          log_debug ("detected card with S/N %s\n", serialno);
+          i = strcmp (serialno, want_sn);
+          xfree (serialno);
+          serialno = NULL;
+          if (!i)
+            {
+              xfree (want_sn);
+              *r_kid = want_kid;
+              return 0; /* yes, we have the correct card */
+            }
+        }
+      else if (rc == GNUPG_Card_Not_Present)
+        {
+          log_debug ("no card present\n");
+          rc = 0;
+          no_card = 1;
+        }
+      else
+        {
+          log_error ("error accesing card: %s\n", gnupg_strerror (rc));
+        }
+
+      if (!rc)
+        {
+          if (asprintf (&desc,
+                    "%s:%%0A%%0A"
+                    "  \"%s\"",
+                    no_card? "Please insert the card with serial number" 
+                    : "Please remove the current card and "
+                    "insert the one with serial number",
+                    want_sn) < 0)
+            {
+              rc = GNUPG_Out_Of_Core;
+            }
+          else
+            {
+              rc = agent_get_confirmation (desc, NULL);
+              free (desc);
+            }
+        }
+      if (rc)
+        {
+          xfree (want_sn);
+          xfree (want_kid);
+          return rc;
+        }
+    }
+}
 
 
 
 int
 divert_pksign (GCRY_SEXP *s_sig, GCRY_SEXP s_hash, const char *shadow_info)
 {
+  int rc;
+  char *kid;
+
+  rc = ask_for_card (shadow_info, &kid);
+  if (rc)
+    return rc;
+
+ 
+  xfree (kid);
   return GNUPG_Not_Implemented;
 }
 
@@ -43,5 +147,17 @@ int
 divert_pkdecrypt (GCRY_SEXP *s_plain, GCRY_SEXP s_cipher,
                   const char *shadow_info)
 {
+  int rc;
+  char *kid;
+
+  rc = ask_for_card (shadow_info, &kid);
+  if (rc)
+    return rc;
+
+ 
+  xfree (kid);
   return GNUPG_Not_Implemented;
 }
+
+
+

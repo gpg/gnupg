@@ -37,7 +37,9 @@ gpg_agent_SOURCES = \
 	protect.c \
 	trustlist.c \
 	divert-scd.c \
-	call-scd.c
+	call-scd.c \
+	sexp-parse.h
+
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
 		../common/libcommon.a $(LIBGCRYPT_LIBS)

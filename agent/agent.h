@@ -157,7 +157,8 @@ int divert_pkdecrypt (GCRY_SEXP *s_plain, GCRY_SEXP s_cipher,
                       const char *shadow_info);
 
 /*-- call-scd.c --*/
-int agent_learn_card (void);
+int agent_card_learn (void);
+int agent_card_serialno (char **r_serialno);
 
 
 #endif /*AGENT_H*/
