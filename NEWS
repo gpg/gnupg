@@ -13,6 +13,9 @@ Noteworthy changes in version 1.2.5 (unreleased)
     * New --list-config command for frontends and other programs that
       call GnuPG.  See doc/DETAILS for the specifics of this.
 
+    * New --gpgconf-list command for internal use by the gpgconf
+      utility from gnupg 1.9.x.
+
     * Some performance improvements with large keyrings.  See
       --enable-key-cache=SIZE in the README file for details.
 
