@@ -1,3 +1,11 @@
+2002-01-26  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: New option --gpg-agent-info
+	* passphrase.c (agent_open): Let it override the environment info.
+	* seckey-cert.c (check_secret_key): Always try 3 times when the
+	agent is enabled.
+	* options.skel: Describe --use-agent.
+
 2002-01-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* pubkey-enc.c (is_algo_in_prefs, get_it): Only check preferences

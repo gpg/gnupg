@@ -133,6 +133,7 @@ struct {
     const char *override_session_key;
     int show_session_key;
     int use_agent;
+    const char *gpg_agent_info;
     int merge_only;
     int try_all_secrets;
     int no_expensive_trust_checks;

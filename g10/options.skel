@@ -180,3 +180,27 @@ lock-once
 #
 # Use your MIME handler to view photos:
 # photo-viewer "metamail -q -d -b -c image/jpeg -s 'KeyID 0x%k' -f GnuPG"
+
+
+# Passphrase agent
+#
+# We support the old experimental passphrase agent protocol as well
+# as the new Assuan based one (currently available in the "newpg" package
+# at ftp.gnupg.org/gcrypt/alpha/aegypten/).  To make use of the agent, you have
+# to run an agent as daemon and use the option
+#
+# use-agent
+# 
+# which tries to use the agent but will fallback to the regular mode
+# if there is a problem connecting to the agent.  The normal way to
+# locate the agent is by looking at the environment variable
+# GPG_AGENT_INFO which should have been set during gpg-agent startup.
+# In certain situations the use of this variable is not possible, thus
+# the option
+# 
+# --gpg-agent-info=<path>:<pid>:1
+#
+# may be used to override it.
+#
+
+

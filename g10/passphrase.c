@@ -368,13 +368,19 @@ agent_open (int *ret_prot)
     size_t len;
     int prot;
 
-    infostr = getenv ( "GPG_AGENT_INFO" );
-    if ( !infostr ) {
-        log_error (_("gpg-agent is not available in this session\n"));
-        opt.use_agent = 0;
-        return -1;
-    }
-    infostr = m_strdup ( infostr );
+    if (opt.gpg_agent_info)
+      infostr = m_strdup (opt.gpg_agent_info);
+    else
+      {
+        infostr = getenv ( "GPG_AGENT_INFO" );
+        if ( !infostr ) {
+          log_error (_("gpg-agent is not available in this session\n"));
+          opt.use_agent = 0;
+          return -1;
+        }
+        infostr = m_strdup ( infostr );
+      }
+
     if ( !(p = strchr ( infostr, ':')) || p == infostr
          || (p-infostr)+1 >= sizeof client_addr.sun_path ) {
         log_error( _("malformed GPG_AGENT_INFO environment variable\n"));
