@@ -1,4 +1,12 @@
 
+    * The logic to handle the web of trust is now implemented. It is
+      has some bugs; but I'm going to change the algorithm anyway.
+      It works by calculating the trustlevel on the fly.  It may ask
+      you to provide trust parameters if the calculated trust probability
+      is too low.  I will write a paper which discusses this new approach.
+
+    * a couple of changes to the configure script.
+
     * New option "--quick-random" which uses a much quicker random
       number generator.  Keys generated while this option is in effect
       are flags with "INSECURE!" in the user-id.  This is a development

@@ -191,6 +191,8 @@ main( int argc, char **argv )
     { 532, "quick-random", 0, "\r"},
     { 533, "list-trust-path",0, "\r"},
     { 534, "no-comment", 0,   "do not write comment packets"},
+    { 535, "completes_needed", 1, "(default is 1)"},
+    { 536, "marginals_needed", 1, "(default is 3)"},
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -219,6 +221,8 @@ main( int argc, char **argv )
     opt.def_cipher_algo = CIPHER_ALGO_BLOWFISH;
     opt.def_pubkey_algo = PUBKEY_ALGO_ELGAMAL;
     opt.def_digest_algo = DIGEST_ALGO_RMD160;
+    opt.completes_needed = 1;
+    opt.marginals_needed = 3;
 
     /* check wether we have a config file on the commandline */
     orig_argc = argc;
@@ -338,6 +342,8 @@ main( int argc, char **argv )
 	  case 532: quick_random_gen(1); break;
 	  case 533: set_cmd( &cmd, aListTrustPath); break;
 	  case 534: opt.no_comment=1; break;
+	  case 535: opt.completes_needed = pargs.r.ret_int; break;
+	  case 536: opt.marginals_needed = pargs.r.ret_int; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -360,8 +366,17 @@ main( int argc, char **argv )
 	log_error("selected digest algorithm is invalid\n");
 	errors++;
     }
+    if( opt.completes_needed < 1 ) {
+	log_error("completes_needed must be greater than 0\n");
+	errors++;
+    }
+    if( opt.marginals_needed < 2 ) {
+	log_error("marginals_needed must be greater than 1\n");
+	errors++;
+    }
     if( errors )
 	exit(2);
+
 
     set_debug();
     if( cmd == aKMode || cmd == aKModeC ) { /* kludge to be compatible to pgp */

@@ -40,8 +40,8 @@ struct {
     int def_pubkey_algo;
     int def_digest_algo;
     int no_comment;
-    int reserved10;
-    int reserved11;
+    int marginals_needed;
+    int completes_needed;
     int reserved12;
     int reserved13;
     int reserved14;

@@ -66,6 +66,7 @@ struct trust_record {
 	    byte reserved;
 	    byte fingerprint[20];
 	    byte ownertrust;
+	    byte no_sigs;
 	    /* fixme: indicate a flag to */
 	} pubkey;
 	struct {	    /* cache record */
@@ -94,7 +95,7 @@ typedef struct trust_record TRUSTREC;
 typedef struct {
     ulong     pubkey_id;   /* localid of the pubkey */
     ulong     sig_id;	   /* returned signature id */
-    unsigned  sig_flag;    /* returned signaure record flag */
+    unsigned  sig_flag;    /* returned signature record flag */
     struct {		   /* internal data */
 	int eof;
 	TRUSTREC rec;
@@ -138,7 +139,7 @@ static int  read_record( ulong recnum, TRUSTREC *rec );
 static int  write_record( ulong recnum, TRUSTREC *rec );
 static ulong new_recnum(void);
 static void dump_record( ulong rnum, TRUSTREC *rec, FILE *fp );
-static int walk_sigrecs( SIGREC_CONTEXT *c );
+static int walk_sigrecs( SIGREC_CONTEXT *c, int create );
 
 static LOCAL_ID_INFO *new_lid_table(void);
 static void release_lid_table( LOCAL_ID_INFO *tbl );
@@ -151,9 +152,11 @@ static int do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 			 LOCAL_ID_INFO *lids, TRUST_SEG_LIST *tslist );
 
 static int list_sigs( ulong pubkey_id );
+static int build_sigrecs( ulong pubkeyid, int kludge );
 static int propagate_trust( TRUST_SEG_LIST tslist );
 static int do_check( ulong pubkeyid, unsigned *trustlevel );
 
+static int update_no_sigs( ulong lid, int no_sigs );
 
 static char *db_name;
 static int  db_fd = -1;
@@ -329,6 +332,7 @@ read_record( ulong recnum, TRUSTREC *rec )
 	rec->r.pubkey.reserved = *p++;
 	memcpy( rec->r.pubkey.fingerprint, p, 20); p += 20;
 	rec->r.pubkey.ownertrust = *p++;
+	rec->r.pubkey.no_sigs = *p++;
 	if( rec->r.pubkey.local_id != recnum ) {
 	    log_error("%s: pubkey local_id != recnum (%lu,%lu)\n",
 					db_name,
@@ -399,6 +403,7 @@ write_record( ulong recnum, TRUSTREC *rec )
 	*p++ = rec->r.pubkey.reserved;
 	memcpy( p, rec->r.pubkey.fingerprint, 20); p += 20;
 	*p++ = rec->r.pubkey.ownertrust;
+	*p++ = rec->r.pubkey.no_sigs;
 	assert( rec->r.pubkey.local_id == recnum );
 	break;
       case 3:
@@ -563,8 +568,9 @@ dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
 	break;
       case 1: fprintf(fp, "version\n");
 	break;
-      case 2: fprintf(fp, "pubkey, keyid=%08lX, ownertrust=%02x\n",
-		   rec->r.pubkey.keyid[1], rec->r.pubkey.ownertrust );
+      case 2: fprintf(fp, "pubkey, keyid=%08lX, ownertrust=%02x%s\n",
+		   rec->r.pubkey.keyid[1], rec->r.pubkey.ownertrust,
+		   rec->r.pubkey.no_sigs?"  (inv sigs)":"");
 	break;
       case 3: fprintf(fp, "cache\n");
       case 4:
@@ -674,9 +680,17 @@ list_trust_path( int max_depth, const char *username )
     else if( (rc=scan_record_by_pkc( pkc, &rec, 2 )) && rc != -1 )
 	log_error("problem finding '%s' in trustdb: %s\n",
 					    username, g10_errstr(rc));
-    else if( rc == -1 )
-	log_error("user '%s' not in trustdb\n", username);
-    else {
+    else if( rc == -1 ) {
+	log_info("user '%s' not in trustdb - inserting\n", username);
+	rc = insert_trust_record( pkc );
+	if( rc )
+	    log_error("failed to put '%s' into trustdb: %s\n", username, g10_errstr(rc));
+	else {
+	    assert( pkc->local_id );
+	}
+    }
+
+    if( !rc ) {
 	TRUST_SEG_LIST tsl, tslist = NULL;
 
 	if( !qry_lid_table_flag( ultikey_table, pkc->local_id, NULL ) ) {
@@ -742,7 +756,7 @@ list_trust_path( int max_depth, const char *username )
  * Returns: 0 - okay, -1 for eof (no more sigs) or any other errorcode
  */
 static int
-walk_sigrecs( SIGREC_CONTEXT *c )
+walk_sigrecs( SIGREC_CONTEXT *c, int create )
 {
     int rc=0;
     TRUSTREC *r;
@@ -753,6 +767,17 @@ walk_sigrecs( SIGREC_CONTEXT *c )
     r = &c->ctl.rec;
     if( !r->rectype ) { /* this is the first call */
 	rc = scan_record( c->pubkey_id, r, 4, &rnum );
+	if( rc == -1 && create ) { /* no signature records */
+	    rc = build_sigrecs( c->pubkey_id, 1 );
+	    if( rc ) {
+		if( rc != -1 )
+		    log_info("%lu: error building sigs on the fly: %s\n",
+			   c->pubkey_id, g10_errstr(rc) );
+		rc = -1;
+	    }
+	    else /* once more */
+		rc = scan_record( c->pubkey_id, r, 4, &rnum );
+	}
 	if( rc == -1 ) { /* no signature records */
 	    c->ctl.eof = 1;
 	    return -1;	/* return eof */
@@ -997,7 +1022,7 @@ do_list_sigs( ulong root, ulong pubkey, int depth,
     memset( &sx, 0, sizeof sx );
     sx.pubkey_id = pubkey;
     for(;;) {
-	rc = walk_sigrecs( &sx );
+	rc = walk_sigrecs( &sx, 0 );
 	if( rc )
 	    break;
 	rc = keyid_from_local_id( sx.sig_id, keyid );
@@ -1090,7 +1115,9 @@ do_list_path( TRUST_INFO *stack, int depth, int max_depth,
     }
     memset( &sx, 0, sizeof sx );
     sx.pubkey_id = stack[depth-1].lid;
-    while( !(rc = walk_sigrecs( &sx )) ) {
+    /* loop over all signatures. If we do not have any, try to
+     * create them */
+    while( !(rc = walk_sigrecs( &sx, 1 )) ) {
 	TRUST_SEG_LIST tsl, t2, tl;
 	int i;
 
@@ -1181,7 +1208,7 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
  * to the trustdb
  */
 static int
-build_sigrecs( ulong pubkeyid )
+build_sigrecs( ulong pubkeyid, int kludge )
 {
     TRUSTREC rec, rec2;
     PUBKEY_FIND_INFO finfo=NULL;
@@ -1199,6 +1226,10 @@ build_sigrecs( ulong pubkeyid )
     /* get the keyblock */
     if( (rc=read_record( pubkeyid, &rec )) ) {
 	log_error("build_sigrecs: can't read pubkey record\n");
+	goto leave;
+    }
+    if( kludge && rec.r.pubkey.no_sigs ) {
+	rc = -1;
 	goto leave;
     }
     finfo = m_alloc_clear( sizeof *finfo );
@@ -1224,10 +1255,12 @@ build_sigrecs( ulong pubkeyid )
     }
     if( !selfsig ) {
 	log_error("build_sigrecs: self-certificate missing\n" );
+	update_no_sigs( pubkeyid, 1 );
 	rc = G10ERR_BAD_CERT;
 	goto leave;
     }
 
+    update_no_sigs( pubkeyid, 0 );
     /* valid key signatures are now marked; we can now build the
      * sigrecs */
     memset( &rec, 0, sizeof rec );
@@ -1241,7 +1274,9 @@ build_sigrecs( ulong pubkeyid )
 		/* the next function should always succeed, because
 		 * we have already checked the signature, and for this
 		 * it was necessary to have the pubkey. The only reason
-		 * this can fail are I/o erros of the trustdb. */
+		 * this can fail are I/o errors of the trustdb or a
+		 * remove operation on the pubkey database - which should
+		 * not disturb us, because we have to chace them anyway. */
 		rc = set_signature_packets_local_id( node->pkt->pkt.signature );
 		if( rc )
 		    log_fatal("set_signature_packets_local_id failed: %s\n",
@@ -1401,8 +1436,11 @@ do_check( ulong pubkeyid, unsigned *trustlevel )
     TRUSTREC rec;
     TRUST_SEG_LIST tsl, tsl2, tslist;
     int marginal, fully;
-    int fully_needed = 4;
-    int marginal_needed = 6;
+    int fully_needed = opt.completes_needed;
+    int marginal_needed = opt.marginals_needed;
+
+    assert( fully_needed > 0 && marginal_needed > 1 );
+
 
     *trustlevel = TRUST_UNDEFINED;
 
@@ -1411,7 +1449,7 @@ do_check( ulong pubkeyid, unsigned *trustlevel )
     /* do we have sigrecs */
     rc = scan_record( pubkeyid, &rec, 4, &rnum );
     if( rc == -1 ) { /* no sigrecs, so build them */
-	rc = build_sigrecs( pubkeyid );
+	rc = build_sigrecs( pubkeyid, 1 );
 	if( !rc ) /* and read again */
 	    rc = scan_record( pubkeyid, &rec, 4, &rnum );
     }
@@ -1575,8 +1613,14 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
 	    return rc;
 	}
 	else if( rc == -1 ) {
-	    log_error("check_trust: pubkey not in TrustDB\n");
-	    goto leave;
+	    rc = insert_trust_record( pkc );
+	    if( rc ) {
+		log_error("failed to insert pubkey into trustdb: %s\n",
+							    g10_errstr(rc));
+		goto leave;
+	    }
+	    log_info("pubkey not in trustdb - inserted as %lu\n",
+				    pkc->local_id );
 	}
     }
     /* fixme: do some additional checks on the pubkey record */
@@ -1735,6 +1779,7 @@ insert_trust_record( PKT_public_cert *pkc )
     rec.r.pubkey.pubkey_algo = pkc->pubkey_algo;
     memcpy(rec.r.pubkey.fingerprint, fingerprint, fingerlen );
     rec.r.pubkey.ownertrust = 0;
+    rec.r.pubkey.no_sigs = 0;
     if( write_record( recnum, &rec ) ) {
 	log_error("insert_trust_record: write failed\n");
 	return G10ERR_TRUSTDB;
@@ -1764,6 +1809,36 @@ update_ownertrust( ulong lid, unsigned new_trust )
     rec.r.pubkey.ownertrust = new_trust;
     if( write_record( lid, &rec ) ) {
 	log_error("update_ownertrust: write failed\n");
+	return G10ERR_TRUSTDB;
+    }
+
+    return 0;
+}
+
+
+
+/****************
+ * Kludge to prevent duplicate build_sigrecs() due to an invalid
+ * certificate (no selfsignature or something like this)
+ */
+static int
+update_no_sigs( ulong lid, int no_sigs )
+{
+    TRUSTREC rec;
+
+    if( read_record( lid, &rec ) ) {
+	log_error("update_no_sigs: read failed\n");
+	return G10ERR_TRUSTDB;
+    }
+    /* check keyid, fingerprint etc ? */
+    if( rec.rectype != 2 ) {
+	log_error("update_no_sigs: invalid record type\n");
+	return G10ERR_TRUSTDB;
+    }
+
+    rec.r.pubkey.no_sigs = !!no_sigs;
+    if( write_record( lid, &rec ) ) {
+	log_error("update_no_sigs: write failed\n");
 	return G10ERR_TRUSTDB;
     }
 

@@ -11,13 +11,10 @@
     * Some features are not yet implemented
 
 
-    I provide this version as a reality check to start discussion.
     Please subscribe to g10@net.lut.ac.uk by sending a mail with
     the word "subscribe" in the body to "g10-request@net.lut.ac.uk".
 
-
     See the file COPYING for copyright and warranty information.
-
 
     Due to the fact that G10 does not use use any patented algorithm,
     it cannot be compatible to old PGP versions, because those use
@@ -210,7 +207,8 @@
     depth.  If depth is negative, duplicate introducers are not listed,
     because those would increase the trust probabilty only minimal.
     (you must use the special option "--" to stop option parsing when
-     using a negative number)
+     using a negative number). This option may create new entries in the
+    trustdb.
 
 	--print-mds  filenames
 

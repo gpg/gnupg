@@ -11,6 +11,8 @@
 
 Layout of the TrustDB
 =====================
+FIXME: use a directory record as top node instead of the pubkey record
+
 The TrustDB is build from fixed length records, where the first bytes
 describes the record type.  All numeric values are stored in network
 byte order. The length of each record is 40 bytes. The first record of
@@ -74,7 +76,9 @@ Record type 2:
 		   we have control over the secret key too.
 	      Bit 3: set if key is revoked; do not use it.
 	      Bit 7-4: reserved
-     3 byte reserved
+     1 byte  No signatures (used to avoid duplicate building).
+	     FIXME: this should be moved to the cahce record
+     2 byte reserved
 
 
 Record type 3:	(cache record)
