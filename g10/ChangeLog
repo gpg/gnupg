@@ -1,3 +1,11 @@
+2002-05-07  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (get_parameter_algo): Never allow generation of the
+	deprecated RSA-E or RSA-S flavors of PGP RSA.
+	(ask_algo): Allow generation of RSA sign and encrypt in expert
+	mode.  Don't allow ElGamal S+E unless in expert mode.
+	* helptext.c: Added entry keygen.algo.rsa_se.
+
 2002-05-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (sign_uids): If --expert it set, allow re-signing a

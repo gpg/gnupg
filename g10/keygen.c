@@ -780,10 +780,13 @@ ask_algo (int addmode, unsigned int *r_usage)
     tty_printf(    _("   (%d) DSA (sign only)\n"), 2 );
     if( addmode )
 	tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
-    tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 4 );
+    if (opt.expert)
+        tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 4 );
     tty_printf(    _("   (%d) RSA (sign only)\n"), 5 );
     if (addmode)
         tty_printf(    _("   (%d) RSA (encrypt only)\n"), 6 );
+    if (opt.expert)
+      tty_printf(    _("   (%d) RSA (sign and encrypt)\n"), 7 );
 
     for(;;) {
 	answer = cpr_get("keygen.algo",_("Your selection? "));
@@ -793,6 +796,14 @@ ask_algo (int addmode, unsigned int *r_usage)
 	if( algo == 1 && !addmode ) {
 	    algo = 0;	/* create both keys */
 	    break;
+	}
+	else if( algo == 7 && opt.expert ) {
+	    if (cpr_get_answer_is_yes ("keygen.algo.rsa_se",_(
+		"The use of this algorithm is deprecated - create anyway? "))){
+              algo = PUBKEY_ALGO_RSA;
+              *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG;
+              break;
+            }
 	}
 	else if( algo == 6 && addmode ) {
 	    algo = PUBKEY_ALGO_RSA;
@@ -804,7 +815,7 @@ ask_algo (int addmode, unsigned int *r_usage)
             *r_usage = PUBKEY_USAGE_SIG;
 	    break;
 	}
-	else if( algo == 4 ) {
+	else if( algo == 4 && opt.expert) {
 	    if( cpr_get_answer_is_yes("keygen.algo.elg_se",_(
 		"The use of this algorithm is deprecated - create anyway? "))){
 		algo = PUBKEY_ALGO_ELGAMAL;
@@ -1329,12 +1340,17 @@ get_parameter_value( struct para_data_s *para, enum para_name key )
 static int
 get_parameter_algo( struct para_data_s *para, enum para_name key )
 {
+    int i;
     struct para_data_s *r = get_parameter( para, key );
     if( !r )
 	return -1;
     if( isdigit( *r->u.value ) )
-	return atoi( r->u.value );
-    return string_to_pubkey_algo( r->u.value );
+	i = atoi( r->u.value );
+    else
+        i = string_to_pubkey_algo( r->u.value );
+    if (i == PUBKEY_ALGO_RSA_E || i == PUBKEY_ALGO_RSA_S)
+      i = 0; /* we don't want to allow generation of these algorithms */
+    return i;
 }
 
 /* 

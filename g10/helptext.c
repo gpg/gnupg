@@ -94,6 +94,12 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 "with them are quite large and very slow to verify."
 )},
 
+{ "keygen.algo.rsa_se", N_(
+"In general it is not a good idea to use the same key for signing and\n"
+"encryption.  This algorithm should only be used in certain domains.\n"
+"Please consult your security expert first."
+)},
+
 
 { "keygen.size", N_(
  "Enter the size of the key"
