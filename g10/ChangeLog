@@ -1,3 +1,13 @@
+2005-01-27  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (generate_subkeypair): Detect primary key on-card and
+	ask for the passphrase.  Return an error if the primary key is a
+	plain stub.
+
+	* keyedit.c (change_passphrase): Don't ever change any stub key.
+	Print a note if a key consists of only stub keys.  Reported by
+	Dany Nativel.  These are bugs #401 and #402.
+
 2005-01-26  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (parse_ccid_descriptor): Need the CSM workaround

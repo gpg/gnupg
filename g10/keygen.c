@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -3002,6 +3002,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     DEK *dek = NULL;
     STRING2KEY *s2k = NULL;
     u32 cur_time;
+    int ask_pass = 0;
 
     /* break out the primary secret key */
     node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
@@ -3032,20 +3033,31 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	goto leave;
     }
 
-    /* unprotect to get the passphrase */
+    if (pri_sk->is_protected && pri_sk->protect.s2k.mode == 1001) {
+        tty_printf(_("Secret parts of primary key are not available.\n"));
+        rc = G10ERR_NO_SECKEY;
+        goto leave;
+    }
+
+
+    /* Unprotect to get the passphrase.  */
     switch( is_secret_key_protected( pri_sk ) ) {
       case -1:
 	rc = G10ERR_PUBKEY_ALGO;
 	break;
       case 0:
-	tty_printf("This key is not protected.\n");
+	tty_printf(_("This key is not protected.\n"));
 	break;
+      case -2:
+        tty_printf(_("Secret parts of primary key are store on-card.\n"));
+        ask_pass = 1;
+        break;
       default:
-	tty_printf("Key is protected.\n");
-	rc = check_secret_key( pri_sk, 0 );
-	if( !rc )
-	    passphrase = get_last_passphrase();
-	break;
+        tty_printf(_("Key is protected.\n"));
+        rc = check_secret_key( pri_sk, 0 );
+        if( !rc )
+            passphrase = get_last_passphrase();
+        break;
     }
     if( rc )
 	goto leave;
@@ -3058,7 +3070,9 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 						  _("Really create? (y/N) ")))
 	goto leave;
 
-    if( passphrase ) {
+    if (ask_pass)
+        dek = do_ask_passphrase (&s2k);
+    else if (passphrase) {
 	s2k = m_alloc_secure( sizeof *s2k );
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = S2K_DIGEST_ALGO;

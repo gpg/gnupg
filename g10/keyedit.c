@@ -1069,6 +1069,7 @@ change_passphrase( KBNODE keyblock )
     PKT_secret_key *sk;
     char *passphrase = NULL;
     int no_primary_secrets = 0;
+    int any;
 
     node = find_kbnode( keyblock, PKT_SECRET_KEY );
     if( !node ) {
@@ -1077,6 +1078,25 @@ change_passphrase( KBNODE keyblock )
     }
     sk = node->pkt->pkt.secret_key;
 
+    for (any = 0, node=keyblock; node; node = node->next) {
+	if (node->pkt->pkttype == PKT_SECRET_KEY 
+            || node->pkt->pkttype == PKT_SECRET_SUBKEY) {
+	    PKT_secret_key *tmpsk = node->pkt->pkt.secret_key;
+            if (!(tmpsk->is_protected
+                  && (tmpsk->protect.s2k.mode == 1001 
+                      || tmpsk->protect.s2k.mode == 1002))) {
+                any = 1;
+                break;
+            }
+        }
+    }
+    if (!any) {
+        tty_printf (_("Key has only stub or on-card key items - "
+                      "no passphrase to change.\n"));
+        goto leave;
+    }
+        
+    /* See how to handle this key.  */
     switch( is_secret_key_protected( sk ) ) {
       case -1:
 	rc = G10ERR_PUBKEY_ALGO;
@@ -1089,6 +1109,10 @@ change_passphrase( KBNODE keyblock )
 	    tty_printf(_("Secret parts of primary key are not available.\n"));
 	    no_primary_secrets = 1;
 	}
+	else if( sk->protect.s2k.mode == 1002 ) {
+	    tty_printf(_("Secret parts of primary key are store on-card.\n"));
+	    no_primary_secrets = 1;
+	}
 	else {
 	    tty_printf(_("Key is protected.\n"));
 	    rc = check_secret_key( sk, 0 );
@@ -1098,14 +1122,18 @@ change_passphrase( KBNODE keyblock )
 	break;
     }
 
-    /* unprotect all subkeys (use the supplied passphrase or ask)*/
+    /* Unprotect all subkeys (use the supplied passphrase or ask)*/
     for(node=keyblock; !rc && node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 	    PKT_secret_key *subsk = node->pkt->pkt.secret_key;
-	    set_next_passphrase( passphrase );
-	    rc = check_secret_key( subsk, 0 );
-	    if( !rc && !passphrase )
-		passphrase = get_last_passphrase();
+            if ( !(subsk->is_protected
+                   && (subsk->protect.s2k.mode == 1001 
+                       || subsk->protect.s2k.mode == 1002))) {
+                set_next_passphrase( passphrase );
+                rc = check_secret_key( subsk, 0 );
+                if( !rc && !passphrase )
+                    passphrase = get_last_passphrase();
+            }
 	}
     }
 
@@ -1149,13 +1177,18 @@ change_passphrase( KBNODE keyblock )
 		for(node=keyblock; !rc && node; node = node->next ) {
 		    if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 			PKT_secret_key *subsk = node->pkt->pkt.secret_key;
-			subsk->protect.algo = dek->algo;
-			subsk->protect.s2k = *s2k;
-			rc = protect_secret_key( subsk, dek );
+                        if ( !(subsk->is_protected
+                               && (subsk->protect.s2k.mode == 1001 
+                                   || subsk->protect.s2k.mode == 1002))) {
+                            subsk->protect.algo = dek->algo;
+                            subsk->protect.s2k = *s2k;
+                            rc = protect_secret_key( subsk, dek );
+                        }
 		    }
 		}
 		if( rc )
-		    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
+		    log_error("protect_secret_key failed: %s\n",
+                              g10_errstr(rc) );
 		else
 		    changed++;
 		break;
