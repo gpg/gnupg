@@ -34,11 +34,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #if 0
-  #ifdef HAVE_LINUX_RANDOM_H
     #include <sys/ioctl.h>
     #include <asm/types.h>
     #include <linux/random.h>
-  #endif
 #endif
 #include "types.h"
 #include "util.h"

@@ -1,3 +1,9 @@
+2002-06-29  Werner Koch  <wk@gnupg.org>
+
+	* rndlinux.c: Removed HAVE_LINUX_RANDOM_H conditional because it
+	was never used and the configure test did set the wrong macro
+	anyway.
+
 2002-05-07  Stefan Bellon  <sbellon@sbellon.de>
 
 	* md.c (md_start_debug): Use EXTSEP_S instead of ".".
