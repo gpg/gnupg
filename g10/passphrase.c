@@ -173,7 +173,10 @@ read_passphrase_from_fd( int fd )
           len += 100;
           pw = m_alloc_secure( len );
           if( pw2 )
-            memcpy(pw, pw2, i );
+            {
+              memcpy(pw, pw2, i );
+              m_free (pw2);
+            }
           else
             i=0;
 	}
