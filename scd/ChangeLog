@@ -1,3 +1,7 @@
+2004-06-18  Werner Koch  <wk@g10code.com>
+
+	* sc-investigate.c (my_read_line): Renamed from read_line.
+
 2004-06-16  Werner Koch  <wk@gnupg.org>
 
 	* apdu.c (osc_get_status): Fixed type in function name. Noted by

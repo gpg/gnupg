@@ -362,7 +362,7 @@ pin_to_buffer (const char *string, size_t *r_length)
 
 
 static char *
-read_line (int use_readline, char *prompt)
+my_read_line (int use_readline, char *prompt)
 {
   static char buf[256];
 
@@ -470,7 +470,7 @@ interactive_shell (int slot)
       printf ("\n");
       do
         {
-          line = read_line (use_readline, "cmd> ");
+          line = my_read_line (use_readline, "cmd> ");
 	}
       while ( line && *line == '#' );
 
