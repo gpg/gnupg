@@ -216,6 +216,7 @@ card_status (FILE *fp)
     {
       log_error (_("OpenPGP card not available: %s\n"),
                   gpg_strerror (rc));
+      xfree (pk);
       return;
     }
   
@@ -226,6 +227,8 @@ card_status (FILE *fp)
     {
       log_info ("not an OpenPGP card\n");
       agent_release_card_info (&info);
+      xfree (pk);
+      return;
     }
   tty_fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n",
                info.serialno[12] == '0'?"":info.serialno+12,
