@@ -66,11 +66,8 @@ char *mkdtemp(char *template)
 
       idx=0;
 
-      /* Using really random bits is probably overkill here.  The
-	 worst thing that can happen with a directory name collision
-	 is that the function will return an error. */
-
-      randombits = gcry_random_bytes (4*remaining, GCRY_WEAK_RANDOM);
+      randombits = gcry_xmalloc (4*remaining);
+      gcry_create_nonce (randombits, 4*remaining);
 
       while(remaining>1)
 	{

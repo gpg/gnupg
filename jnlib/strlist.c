@@ -29,9 +29,9 @@
 
 
 void
-free_strlist( STRLIST sl )
+free_strlist( strlist_t sl )
 {
-    STRLIST sl2;
+    strlist_t sl2;
 
     for(; sl; sl = sl2 ) {
 	sl2 = sl->next;
@@ -40,10 +40,10 @@ free_strlist( STRLIST sl )
 }
 
 
-STRLIST
-add_to_strlist( STRLIST *list, const char *string )
+strlist_t
+add_to_strlist( strlist_t *list, const char *string )
 {
-    STRLIST sl;
+    strlist_t sl;
 
     sl = jnlib_xmalloc( sizeof *sl + strlen(string));
     sl->flags = 0;
@@ -58,10 +58,10 @@ add_to_strlist( STRLIST *list, const char *string )
  * same as add_to_strlist() but if is_utf8 is *not* set a conversion
  * to UTF8 is done  
  */
-STRLIST
-add_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
+strlist_t
+add_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
 {
-    STRLIST sl;
+    strlist_t sl;
 
     if( is_utf8 )
 	sl = add_to_strlist( list, string );
@@ -74,10 +74,10 @@ add_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
 }
 #endif
 
-STRLIST
-append_to_strlist( STRLIST *list, const char *string )
+strlist_t
+append_to_strlist( strlist_t *list, const char *string )
 {
-    STRLIST r, sl;
+    strlist_t r, sl;
 
     sl = jnlib_xmalloc( sizeof *sl + strlen(string));
     sl->flags = 0;
@@ -94,10 +94,10 @@ append_to_strlist( STRLIST *list, const char *string )
 }
 
 #if 0
-STRLIST
-append_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
+strlist_t
+append_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
 {
-    STRLIST sl;
+    strlist_t sl;
 
     if( is_utf8 )
 	sl = append_to_strlist( list, string );
@@ -110,18 +110,40 @@ append_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
 }
 #endif
 
-STRLIST
-strlist_prev( STRLIST head, STRLIST node )
+
+/* Return a copy of LIST. */
+strlist_t
+strlist_copy (strlist_t list)
 {
-    STRLIST n;
+  strlist_t newlist = NULL, sl, *last;
+
+  last = &newlist;
+  for (; list; list = list->next)
+    {
+      sl = jnlib_xmalloc (sizeof *sl + strlen (list->d));
+      sl->flags = list->flags;
+      strcpy(sl->d, list->d);
+      sl->next = NULL;
+      *last = sl;
+      last = &sl;
+    }
+  return newlist;
+}
+
+
+
+strlist_t
+strlist_prev( strlist_t head, strlist_t node )
+{
+    strlist_t n;
 
     for(n=NULL; head && head != node; head = head->next )
 	n = head;
     return n;
 }
 
-STRLIST
-strlist_last( STRLIST node )
+strlist_t
+strlist_last( strlist_t node )
 {
     if( node )
 	for( ; node->next ; node = node->next )
@@ -131,10 +153,10 @@ strlist_last( STRLIST node )
 
 
 char *
-strlist_pop (STRLIST *list)
+strlist_pop (strlist_t *list)
 {
   char *str=NULL;
-  STRLIST sl=*list;
+  strlist_t sl=*list;
 
   if(sl)
     {
@@ -147,5 +169,4 @@ strlist_pop (STRLIST *list)
 
   return str;
 }
-
 

@@ -1,3 +1,9 @@
+2003-11-13  Werner Koch  <wk@gnupg.org>
+
+	* strlist.c (strlist_copy): New.
+
+	* dotlock.c: Define DIRSEP_C et al. if not defined.
+
 2003-11-06  Werner Koch  <wk@gnupg.org>
 
 	* strlist.h (strlist_t): New. STRLIST is now deprecated.

@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.9.2 (unreleased)
+Noteworthy changes in version 1.9.2 (2003-11-17)
 ------------------------------------------------
 
  * On card key generation is no longer done using the --gen-key
@@ -6,6 +6,8 @@ Noteworthy changes in version 1.9.2 (unreleased)
 
  * PINs are now properly cached and there are only 2 PINs visible.
    The 3rd PIN (CHV2) is internally syncronized with the regular PIN.
+
+ * All kind of other internal stuff.
 
 
 Noteworthy changes in version 1.9.1 (2003-09-06)

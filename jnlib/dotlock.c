@@ -37,6 +37,22 @@
 #include "libjnlib-config.h"
 #include "dotlock.h"
 
+#if !defined(DIRSEP_C) && !defined(EXTSEP_C) \
+    && !defined(DIRSEP_S) && !defined(EXTSEP_S)
+#ifdef HAVE_DOSISH_SYSTEM
+#define DIRSEP_C '\\'
+#define EXTSEP_C '.'
+#define DIRSEP_S "\\"
+#define EXTSEP_S "."
+#else
+#define DIRSEP_C '/'
+#define EXTSEP_C '.'
+#define DIRSEP_S "/"
+#define EXTSEP_S "."
+#endif
+#endif
+
+
 struct dotlock_handle {
     struct dotlock_handle *next;
     char *tname;    /* name of lockfile template */

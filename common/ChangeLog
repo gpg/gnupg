@@ -1,5 +1,7 @@
 2003-11-14  Werner Koch  <wk@gnupg.org>
 
+	* mkdtemp.c (mkdtemp): Use gcry_create_nonce.
+
 	* cryptmiss.c: Removed.
 
 2003-11-13  Werner Koch  <wk@gnupg.org>

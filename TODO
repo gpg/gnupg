@@ -70,4 +70,11 @@ might want to have an agent context for each service request
 * scd/sc-investigate
 ** Enhance with card compatibility check
 
+* scd/app-openpgp
+  Do a pre-check to make sure that the minimum length condition of the
+  PINs are satisied - this avoid useless retry counter decrements in
+  case the PIN dialog is accidently hit.
 
+  Must check that the fingerprint used is not the one of the
+  authentication key.  Old GnuPG versions seem to encode the wrong
+  keyID.

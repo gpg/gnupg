@@ -22,14 +22,14 @@
 AC_PREREQ(2.52)
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(gnupg, 1.9.2-cvs, gnupg-devel@gnupg.org)
+AC_INIT(gnupg, 1.9.2, gnupg-devel@gnupg.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
 development_version=yes
-NEED_GPG_ERROR_VERSION=0.4
-NEED_LIBGCRYPT_VERSION=1.1.43
-NEED_LIBASSUAN_VERSION=0.6.0
+NEED_GPG_ERROR_VERSION=0.6
+NEED_LIBGCRYPT_VERSION=1.1.90
+NEED_LIBASSUAN_VERSION=0.6.1
 NEED_KSBA_VERSION=0.9.0
 NEED_OPENSC_VERSION=0.8.0
 
@@ -948,7 +948,7 @@ if test "$have_ksba" = "no"; then
 ***
 *** You need libksba to build this program.
 *** This library is for example available at
-***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/aegypten/
+***   ftp://ftp.gnupg.org/pub/gcrypt/alpha/libksba/
 *** (at least version $NEED_KSBA_VERSION is required).
 ***]])
 fi
