@@ -1,3 +1,8 @@
+2002-04-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Fix minor error in --pgp6 documentation: it does not
+	imply --digest-algo MD5
+
 2002-04-29  Werner Koch  <wk@gnupg.org>
 
 	* samplekeys.asc: Added gnupg distribution key 57548DCD.
@@ -8,8 +13,8 @@
 2002-04-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Add some documentation for
-	--edit/{addphoto|showphoto|nrsign|nrlsign}, and difference between
-	%t and %T in photo viewer command lines.
+	--edit/{addphoto|showphoto|nrsign|nrlsign}, and the difference
+	between %t and %T in photo viewer command lines.
 
 2002-04-23  Stefan Bellon  <sbellon@sbellon.de>
 

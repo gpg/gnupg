@@ -1537,8 +1537,7 @@ signatures with signing subkeys as PGP 6 does not understand
 signatures made by signing subkeys.
 </para><para>
 This option implies `--disable-mdc --no-comment --escape-from
---force-v3-sigs --no-ask-sig-expire --digest-algo MD5 --compress-algo
-1'
+--force-v3-sigs --no-ask-sig-expire --compress-algo 1'
 </para></listitem></varlistentry>
 
 <varlistentry>
