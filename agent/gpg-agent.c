@@ -446,6 +446,9 @@ main (int argc, char **argv )
                  gpg_strerror (err));
     }
 #endif /*USE_GNU_PTH && !HAVE_W32_SYSTEM*/
+#ifdef HAVE_W32_SYSTEM
+  pth_init ();
+#endif
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library. */
@@ -728,7 +731,6 @@ main (int argc, char **argv )
     ; /* NOTREACHED */
   else
     { /* Regular server mode */
-#ifndef HAVE_W32_SYSTEM
       int fd;
       pid_t pid;
       int len;
@@ -739,8 +741,10 @@ main (int argc, char **argv )
          default to a specific display.  There is still a default
          display when gpg-agent weas started using --display or a
          client requested this using an OPTION command. */
+#ifndef HAVE_W32_SYSTEM
       if (!opt.keep_display)
         unsetenv ("DISPLAY");
+#endif
 
       *socket_name = 0;
       snprintf (socket_name, DIM(socket_name)-1,
@@ -750,12 +754,15 @@ main (int argc, char **argv )
       if (!p)
         BUG ();
       *p = 0;;
+
+#ifndef HAVE_W32_SYSTEM
       if (!mkdtemp(socket_name))
         {
           log_error ("can't create directory `%s': %s\n",
 	             socket_name, strerror(errno) );
           exit (1);
         }
+#endif
       *p = '/';
 
       if (strchr (socket_name, ':') )
@@ -769,8 +776,11 @@ main (int argc, char **argv )
           exit (1);
         }
    
-
+#ifdef HAVE_W32_SYSTEM
+      fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
+#else
       fd = socket (AF_UNIX, SOCK_STREAM, 0);
+#endif
       if (fd == -1)
         {
           log_error ("can't create socket: %s\n", strerror(errno) );
@@ -783,7 +793,13 @@ main (int argc, char **argv )
       len = (offsetof (struct sockaddr_un, sun_path)
              + strlen(serv_addr.sun_path) + 1);
 
-      if (bind (fd, (struct sockaddr*)&serv_addr, len) == -1)
+      if (
+#ifdef HAVE_W32_SYSTEM
+          _w32_sock_bind
+#else
+          bind 
+#endif
+          (fd, (struct sockaddr*)&serv_addr, len) == -1)
         {
           log_error ("error binding socket to `%s': %s\n",
                      serv_addr.sun_path, strerror (errno) );
@@ -803,6 +819,7 @@ main (int argc, char **argv )
 
 
       fflush (NULL);
+#ifndef HAVE_W32_SYSTEM
       pid = fork ();
       if (pid == (pid_t)-1) 
         {
@@ -857,7 +874,6 @@ main (int argc, char **argv )
             }
           /*NEVER REACHED*/
         } /* end parent */
-      
 
       /* 
          This is the child
@@ -892,6 +908,8 @@ main (int argc, char **argv )
           log_error ("chdir to / failed: %s\n", strerror (errno));
           exit (1);
         }
+
+#endif /*!HAVE_W32_SYSTEM*/
 
 
 #ifdef USE_GNU_PTH
@@ -931,7 +949,6 @@ main (int argc, char **argv )
           start_command_handler (fd, -1);
         }
       close (fd);
-#endif
     }
   
   return 0;

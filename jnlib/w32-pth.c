@@ -573,8 +573,8 @@ pth_attr_set (pth_attr_t hd, int field, ...)
 }
 
 
-pth_t
-pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
+static pth_t
+do_pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
 {
   SECURITY_ATTRIBUTES sa;
   DWORD tid;
@@ -584,9 +584,6 @@ pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
   if (!hd)
     return NULL;
 
-  implicit_init ();
-  enter_pth (__FUNCTION__);
-
   memset (&sa, 0, sizeof sa);
   sa.bInheritHandle = TRUE;
   sa.lpSecurityDescriptor = NULL;
@@ -594,21 +591,32 @@ pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
 
   ctx = calloc (1, sizeof * ctx);
   if (!ctx)
-    {
-      leave_pth (__FUNCTION__);
-      return NULL;
-    }
+    return NULL;
   ctx->thread = func;
   ctx->arg = arg;
 
   /* XXX: we don't use all thread attributes. */
 
-  fprintf (stderr, "pth_spawn creating thread ...\n");
+  fprintf (stderr, "do_pth_spawn creating thread ...\n");
   th = CreateThread (&sa, hd->stack_size,
                      (LPTHREAD_START_ROUTINE)helper_thread,
                      ctx, 0, &tid);
-  fprintf (stderr, "pth_spawn created thread %p\n", th);
+  fprintf (stderr, "do_pth_spawn created thread %p\n", th);
 
+  return th;
+}
+
+pth_t
+pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
+{
+  HANDLE th;
+
+  if (!hd)
+    return NULL;
+
+  implicit_init ();
+  enter_pth (__FUNCTION__);
+  th = do_pth_spawn (hd, func, arg);
   leave_pth (__FUNCTION__);
   return th;
 }
@@ -895,33 +903,6 @@ helper_thread (void * ctx)
   return NULL;
 }
 
-
-static void *
-wait_fd_thread (void * ctx)
-{
-  pth_event_t ev = ctx;
-
-  wait_for_fd (ev->u.fd, ev->flags & PTH_UNTIL_FD_READABLE, 3600);
-  fprintf (stderr, "wait_fd_thread: exit.\n");
-  SetEvent (ev->hd);
-  ExitThread (0);
-  return NULL;
-}
-
-
-static void *
-wait_timer_thread (void * ctx)
-{
-  pth_event_t ev = ctx;
-  int n = ev->u.tv.tv_sec*1000;
-  Sleep (n);
-  SetEvent (ev->hd);
-  fprintf (stderr, "wait_timer_thread: exit.\n");
-  ExitThread (0);
-  return NULL;
-}
-
-
 /* void */
 /* sigemptyset (struct sigset_s * ss) */
 /* { */
@@ -1079,16 +1060,6 @@ pth_event_isolate (pth_event_t ev)
 }
 
 
-static void 
-free_threads (HANDLE *waitbuf, int *hdidx, int n)
-{
-  int i;
-
-  for (i=0; i < n; i++)
-    CloseHandle (waitbuf[hdidx[i]]);
-}
-
-
 static int
 pth_event_count (pth_event_t ev)
 {
@@ -1100,6 +1071,65 @@ pth_event_count (pth_event_t ev)
   for (p=ev; p; p = p->next)
     cnt++;    
   return cnt;
+}
+
+
+
+static pth_t
+spawn_helper_thread (pth_attr_t hd, void *(*func)(void *), void *arg)
+{
+  SECURITY_ATTRIBUTES sa;
+  DWORD tid;
+  HANDLE th;
+
+  memset (&sa, 0, sizeof sa);
+  sa.bInheritHandle = TRUE;
+  sa.lpSecurityDescriptor = NULL;
+  sa.nLength = sizeof sa;
+
+  fprintf (stderr, "spawn_helper_thread creating thread ...\n");
+  th = CreateThread (&sa, hd->stack_size,
+                     (LPTHREAD_START_ROUTINE)func,
+                     arg, 0, &tid);
+  fprintf (stderr, "spawn_helper_thread created thread %p\n", th);
+
+  return th;
+}
+
+
+static void 
+free_helper_threads (HANDLE *waitbuf, int *hdidx, int n)
+{
+  int i;
+
+  for (i=0; i < n; i++)
+    CloseHandle (waitbuf[hdidx[i]]);
+}
+
+
+static void *
+wait_fd_thread (void * ctx)
+{
+  pth_event_t ev = ctx;
+
+  wait_for_fd (ev->u.fd, ev->flags & PTH_UNTIL_FD_READABLE, 3600);
+  fprintf (stderr, "wait_fd_thread: exit.\n");
+  SetEvent (ev->hd);
+  ExitThread (0);
+  return NULL;
+}
+
+
+static void *
+wait_timer_thread (void * ctx)
+{
+  pth_event_t ev = ctx;
+  int n = ev->u.tv.tv_sec*1000;
+  Sleep (n);
+  SetEvent (ev->hd);
+  fprintf (stderr, "wait_timer_thread: exit.\n");
+  ExitThread (0);
+  return NULL;
 }
 
 
@@ -1125,7 +1155,7 @@ do_pth_wait (pth_event_t ev)
     {
       if (pos+1 > MAXIMUM_WAIT_OBJECTS/2)
         {
-          free_threads (waitbuf, hdidx, i);
+          free_helper_threads (waitbuf, hdidx, i);
           pth_attr_destroy (attr);
           return -1;
         }
@@ -1143,13 +1173,13 @@ do_pth_wait (pth_event_t ev)
         case PTH_EVENT_FD:
           fprintf (stderr, "pth_wait: spawn event wait thread.\n");
           hdidx[i++] = pos;
-          waitbuf[pos++] = pth_spawn (attr, wait_fd_thread, tmp);
+          waitbuf[pos++] = spawn_helper_thread (attr, wait_fd_thread, tmp);
           break;
 
         case PTH_EVENT_TIME:
           fprintf (stderr, "pth_wait: spawn event timer thread.\n");
           hdidx[i++] = pos;
-          waitbuf[pos++] = pth_spawn (attr, wait_timer_thread, tmp);
+          waitbuf[pos++] = spawn_helper_thread (attr, wait_timer_thread, tmp);
           break;
 
         case PTH_EVENT_MUTEX:
@@ -1162,7 +1192,7 @@ do_pth_wait (pth_event_t ev)
     }
   fprintf (stderr, "pth_wait: set %d\n", pos);
   n = WaitForMultipleObjects (pos, waitbuf, FALSE, INFINITE);
-  free_threads (waitbuf, hdidx, i);
+  free_helper_threads (waitbuf, hdidx, i);
   pth_attr_destroy (attr);
   fprintf (stderr, "pth_wait: n %ld\n", n);
 
