@@ -31,6 +31,7 @@
 #include "options.h"
 #include "mpi.h"
 #include "keydb.h"
+#include "i18n.h"
 
 
 int
@@ -309,7 +310,7 @@ expirestr_from_pk( PKT_public_key *pk )
     time_t atime;
 
     if( !pk->expiredate )
-	return "never     ";
+	return _("never     ");
     atime = pk->expiredate;
     tp = gmtime( &atime );
     sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );

@@ -1,3 +1,10 @@
+Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@>
+
+  * keyedit.c, keyid.c: Add some _()
+
+  * argparse.c:  Changed the flag to suppress --version handling to also
+  suppress --help.
+
 Wed Jun 28 11:54:44 CEST 2000  Werner Koch  <wk@>
 
   * armor.c (armor_filter): Set sigclass to 0 in case of non-dash-escaped

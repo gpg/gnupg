@@ -73,7 +73,7 @@
  *     Bit 3 : Do not use -- to stop option processing.
  *     Bit 4 : Do not skip the first arg.
  *     Bit 5 : allow usage of long option with only one dash
- *     Bit 6 : ignore --version
+ *     Bit 6 : ignore --version and --help
  *     all other bits must be set to zero, this value is modified by the
  *     function, so assume this is write only.
  *  Local flags (for each option):
@@ -513,8 +513,11 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	if( argpos )
 	    *argpos = '=';
 
-	if( i < 0 && !strcmp( "help", s+2) )
-	    show_help(opts, arg->flags);
+	if( i < 0 && !strcmp( "help", s+2) ) {
+	    if( !(arg->flags & (1<<6)) ) {
+		show_help(opts, arg->flags);
+	    }
+	}
 	else if( i < 0 && !strcmp( "version", s+2) ) {
 	    if( !(arg->flags & (1<<6)) ) {
 		show_version();
@@ -600,8 +603,11 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 		    break;
 	}
 
-	if( !opts[i].short_opt && ( *s == 'h' || *s == '?' ) )
-	    show_help(opts, arg->flags);
+	if( !opts[i].short_opt && ( *s == 'h' || *s == '?' ) ) {
+	    if( !(arg->flags & (1<<6)) ) {
+		show_help(opts, arg->flags);
+	    }
+	}
 
 	arg->r_opt = opts[i].short_opt;
 	if( !opts[i].short_opt ) {

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.0\n"
-"POT-Creation-Date: 2000-06-27 12:16+0200\n"
+"POT-Creation-Date: 2000-06-28 11:50+0200\n"
 "PO-Revision-Date: 1999-10-02 21:35+02:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -266,7 +266,7 @@ msgstr "... to jest b³±d w programie (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "znalaz³e¶(a¶) b³±d w programie ... (%s:%d)\n"
 
-#: cipher/random.c:311 g10/import.c:127 g10/keygen.c:1150
+#: cipher/random.c:311 g10/import.c:127 g10/keygen.c:1249
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "nie mo¿na otworzyæ %s: %s\n"
@@ -1266,53 +1266,58 @@ msgstr "zapis podpisu klucza nim samym\n"
 msgid "writing key binding signature\n"
 msgstr "zapis podpisu wi±¿±cego klucz\n"
 
-#: g10/keygen.c:261 g10/keygen.c:345
+#: g10/keygen.c:261 g10/keygen.c:345 g10/keygen.c:433
 #, fuzzy, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "¯±dana d³ugo¶æ klucza to %u bity.\n"
 
-#: g10/keygen.c:266 g10/keygen.c:350
+#: g10/keygen.c:266 g10/keygen.c:350 g10/keygen.c:438
 #, fuzzy, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "zaokr±glono do %u bitów\n"
 
-#: g10/keygen.c:456
+#: g10/keygen.c:537
 msgid "Please select what kind of key you want:\n"
 msgstr "Proszê wybraæ rodzaj klucza:\n"
 
-#: g10/keygen.c:458
+#: g10/keygen.c:539
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
 msgstr "   (%d) Para kluczy dla algorytmów DSA i ElGamala (domy¶lne)\n"
 
-#: g10/keygen.c:459
+#: g10/keygen.c:540
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (tylko do podpisywania)\n"
 
-#: g10/keygen.c:461
+#: g10/keygen.c:542
 #, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
 msgstr "   (%d) Klucz dla algorytmu ElGamala (tylko do szyfrowanie)\n"
 
-#: g10/keygen.c:462
+#: g10/keygen.c:543
 #, c-format
 msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgstr "   (%d) Klucz dla algorytmu ElGamala (do szyfrowania i podpisywania)\n"
 
-#: g10/keygen.c:465
+#: g10/keygen.c:545
+#, fuzzy, c-format
+msgid "   (%d) RSA (sign and encrypt)\n"
+msgstr "   (%d) Klucz dla algorytmu ElGamala (do szyfrowania i podpisywania)\n"
+
+#: g10/keygen.c:549
 msgid "Your selection? "
 msgstr "Twój wybór? "
 
-#: g10/keygen.c:475
+#: g10/keygen.c:560 g10/keygen.c:568
 msgid "Do you really want to create a sign and encrypt key? "
 msgstr "Czy na pewno chcesz stworzyæ klucz do szyfrowania i podpisywania? "
 
-#: g10/keygen.c:489
+#: g10/keygen.c:582
 msgid "Invalid selection.\n"
 msgstr "Niew³a¶ciwy wybór.\n"
 
-#: g10/keygen.c:501
+#: g10/keygen.c:594
 #, c-format
 msgid ""
 "About to generate a new %s keypair.\n"
@@ -1325,16 +1330,21 @@ msgstr ""
 "               domy¶lny rozmiar klucza wynosi 1024 bity\n"
 "  najwiêkszy sugerowany rozmiar klucza wynosi 2048 bitów\n"
 
-#: g10/keygen.c:508
+#: g10/keygen.c:601
 msgid "What keysize do you want? (1024) "
 msgstr "Jakiej d³ugo¶ci klucz wygenerowaæ? (1024) "
 
-#: g10/keygen.c:513
+#: g10/keygen.c:606
 msgid "DSA only allows keysizes from 512 to 1024\n"
 msgstr "Klucz dla DSA musi mieæ d³ugo¶æ pomiêdzy 512 i 1024 bitow.\n"
 
-#: g10/keygen.c:515
+#: g10/keygen.c:608
 msgid "keysize too small; 768 is smallest value allowed.\n"
+msgstr "D³ugo¶æ klucza zbyt ma³a; minimalna dopuszczona wynosi 768 bitów.\n"
+
+#: g10/keygen.c:610
+#, fuzzy
+msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
 msgstr "D³ugo¶æ klucza zbyt ma³a; minimalna dopuszczona wynosi 768 bitów.\n"
 
 #. It is ridiculous and an annoyance to use larger key sizes!
@@ -1345,12 +1355,12 @@ msgstr "D³ugo¶æ klucza zbyt ma³a; minimalna dopuszczona wynosi 768 bitów.\n"
 #. * So, before you complain about this limitation, I suggest that
 #. * you start a discussion with Marvin about this theme and then
 #. * do whatever you want.
-#: g10/keygen.c:525
+#: g10/keygen.c:621
 #, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
 msgstr "zbyt du¿y rozmiar klucza, ograniczenie wynosi %d.\n"
 
-#: g10/keygen.c:530
+#: g10/keygen.c:626
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
 "computations take REALLY long!\n"
@@ -1358,11 +1368,11 @@ msgstr ""
 "Klucze d³u¿sze ni¿ 2048 bitów s± odradzane, poniewa¿ obliczenia\n"
 "trwaj± wtedy BARDZO d³ugo!\n"
 
-#: g10/keygen.c:533
+#: g10/keygen.c:629
 msgid "Are you sure that you want this keysize? "
 msgstr "Na pewno wygenerowaæ klucz takiej d³ugo¶ci? "
 
-#: g10/keygen.c:534
+#: g10/keygen.c:630
 msgid ""
 "Okay, but keep in mind that your monitor and keyboard radiation is also very "
 "vulnerable to attacks!\n"
@@ -1370,21 +1380,21 @@ msgstr ""
 "Nale¿y tak¿e pamiêtaæ o tym, ¿e informacje mog± byæ te¿ wykradzione z\n"
 "komputera przez pods³uch emisji elektromagnetycznej klawiatury i monitora!\n"
 
-#: g10/keygen.c:542
+#: g10/keygen.c:638
 msgid "Do you really need such a large keysize? "
 msgstr "Czy naprawdê potrzebujesz takiego d³ugiego klucza? "
 
-#: g10/keygen.c:548
+#: g10/keygen.c:644
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "¯±dana d³ugo¶æ klucza to %u bity.\n"
 
-#: g10/keygen.c:551 g10/keygen.c:555
+#: g10/keygen.c:647 g10/keygen.c:651
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "zaokr±glono do %u bitów\n"
 
-#: g10/keygen.c:603
+#: g10/keygen.c:699
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -1400,35 +1410,35 @@ msgstr ""
 "      <n>m = termin wa¿no¶ci klucza up³ywa za n miesiêcy\n"
 "      <n>y = termin wa¿no¶ci klucza up³ywa za n lat\n"
 
-#: g10/keygen.c:618
+#: g10/keygen.c:714
 msgid "Key is valid for? (0) "
 msgstr "Okres wa¿no¶ci klucza ? (0) "
 
-#: g10/keygen.c:623
+#: g10/keygen.c:719
 msgid "invalid value\n"
 msgstr "niepoprawna warto¶æ\n"
 
-#: g10/keygen.c:628
+#: g10/keygen.c:724
 msgid "Key does not expire at all\n"
 msgstr "Klucz nie ma daty wa¿no¶ci (nie traci wa¿no¶ci z up³ywem czasu).\n"
 
 #. print the date when the key expires
-#: g10/keygen.c:634
+#: g10/keygen.c:730
 #, c-format
 msgid "Key expires at %s\n"
 msgstr "Data wa¿no¶ci klucza: %s\n"
 
-#: g10/keygen.c:637
+#: g10/keygen.c:733
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
 msgstr ""
 
-#: g10/keygen.c:642
+#: g10/keygen.c:738
 msgid "Is this correct (y/n)? "
 msgstr "Dane poprawne (t/n)? "
 
-#: g10/keygen.c:685
+#: g10/keygen.c:781
 msgid ""
 "\n"
 "You need a User-ID to identify your key; the software constructs the user "
@@ -1444,44 +1454,44 @@ msgstr ""
 "    \"Tadeusz ¯eleñski (Boy) <tzb@provider.com.pl>\"\n"
 "\n"
 
-#: g10/keygen.c:697
+#: g10/keygen.c:793
 msgid "Real name: "
 msgstr "Imiê i nazwisko: "
 
-#: g10/keygen.c:701
+#: g10/keygen.c:797
 msgid "Invalid character in name\n"
 msgstr "Niew³a¶ciwy znak w imieniu lub nazwisku\n"
 
-#: g10/keygen.c:703
+#: g10/keygen.c:799
 msgid "Name may not start with a digit\n"
 msgstr "Imiê lub nazwisko nie mo¿e zaczynaæ siê od cyfry\n"
 
-#: g10/keygen.c:705
+#: g10/keygen.c:801
 msgid "Name must be at least 5 characters long\n"
 msgstr "Imiê i nazwisko musz± mieæ conajmniej 5 znaków d³ugo¶ci.\n"
 
-#: g10/keygen.c:713
+#: g10/keygen.c:809
 msgid "Email address: "
 msgstr "Adres poczty elektronicznej: "
 
-#: g10/keygen.c:724
+#: g10/keygen.c:820
 msgid "Not a valid email address\n"
 msgstr "to nie jest poprawny adres poczty elektronicznej\n"
 
-#: g10/keygen.c:732
+#: g10/keygen.c:828
 msgid "Comment: "
 msgstr "Komentarz: "
 
-#: g10/keygen.c:738
+#: g10/keygen.c:834
 msgid "Invalid character in comment\n"
 msgstr "Niew³a¶ciwy znak w komentarzu\n"
 
-#: g10/keygen.c:761
+#: g10/keygen.c:857
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "U¿ywasz zestawu znaków %s.\n"
 
-#: g10/keygen.c:767
+#: g10/keygen.c:863
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -1492,46 +1502,46 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:771
+#: g10/keygen.c:867
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 
-#: g10/keygen.c:776
+#: g10/keygen.c:872
 msgid "NnCcEeOoQq"
 msgstr "IiKkEeDdWw"
 
-#: g10/keygen.c:786
+#: g10/keygen.c:882
 #, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr ""
 "Zmieniæ (I)miê/nazwisko, (K)omentarz, adres (E)mail, \n"
 "przej¶æ (D)alej czy (W)yj¶æ z programu? "
 
-#: g10/keygen.c:787
+#: g10/keygen.c:883
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr ""
 "Zmieniæ (I)miê/nazwisko, (K)omentarz, adres (E)mail, \n"
 "przej¶æ (D)alej czy (W)yj¶æ z programu? "
 
-#: g10/keygen.c:806
+#: g10/keygen.c:902
 msgid "Please correct the error first\n"
 msgstr ""
 
-#: g10/keygen.c:844
+#: g10/keygen.c:940
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
 msgstr ""
 "Musisz podaæ wyra¿enie przej¶ciowe (has³o) aby ochroniæ swój klucz tajny.\n"
 
-#: g10/keyedit.c:468 g10/keygen.c:852
+#: g10/keyedit.c:468 g10/keygen.c:948
 msgid "passphrase not correctly repeated; try again.\n"
 msgstr ""
 "Powtórzone wyra¿enie przej¶ciowe nie zgadza siê z podanym w pierwszej "
 "próbie;\n"
 "spróbuj jeszcze raz.\n"
 
-#: g10/keygen.c:858
+#: g10/keygen.c:954
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -1543,7 +1553,7 @@ msgstr ""
 "i opcji \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:879
+#: g10/keygen.c:975
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -1557,29 +1567,29 @@ msgstr ""
 "generator liczb losowych ma mo¿liwo¶æ zebrania odpowiedniej ilo¶ci entropii. "
 "\n"
 
-#: g10/keygen.c:1325
+#: g10/keygen.c:1424
 msgid "DSA keypair will have 1024 bits.\n"
 msgstr "Para kluczy dla DSA bêdzie mia³a 1024 bity d³ugo¶ci.\n"
 
-#: g10/keygen.c:1368
+#: g10/keygen.c:1467
 msgid "Key generation canceled.\n"
 msgstr "Procedura generacji klucza zosta³a anulowana.\n"
 
-#: g10/keygen.c:1465
+#: g10/keygen.c:1564
 #, fuzzy, c-format
 msgid "writing public key to `%s'\n"
 msgstr "zapis certyfikatu publicznego w '%s'\n"
 
-#: g10/keygen.c:1466
+#: g10/keygen.c:1565
 #, fuzzy, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "zapis certyfikatu prywatnego w '%s'\n"
 
-#: g10/keygen.c:1562
+#: g10/keygen.c:1661
 msgid "public and secret key created and signed.\n"
 msgstr "prywatny i publiczny klucz zosta³ stworzony i podpisany.\n"
 
-#: g10/keygen.c:1567
+#: g10/keygen.c:1666
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
@@ -1587,12 +1597,12 @@ msgstr ""
 "Ten klucz nie mo¿e byæ wykorzystany do szyfrowania. Komend± \"--edit-key\" \n"
 "mo¿na dodaæ do niego podklucz u¿ywany do szyfrowania.\n"
 
-#: g10/keygen.c:1584 g10/keygen.c:1685
+#: g10/keygen.c:1683 g10/keygen.c:1784
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Generacja klucza nie powiod³a siê: %s\n"
 
-#: g10/keygen.c:1628 g10/sig-check.c:318 g10/sign.c:112
+#: g10/keygen.c:1727 g10/sig-check.c:318 g10/sign.c:112
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1600,7 +1610,7 @@ msgstr ""
 "klucz zosta³ stworzony %lu sekund w przysz³o¶ci (zaburzenia\n"
 "czasoprzestrzeni, lub ¼le ustawiony zegar systemowy)\n"
 
-#: g10/keygen.c:1630 g10/sig-check.c:320 g10/sign.c:114
+#: g10/keygen.c:1729 g10/sig-check.c:320 g10/sign.c:114
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -1608,7 +1618,7 @@ msgstr ""
 "klucz zosta³ stworzony %lu sekund w przysz³o¶ci (zaburzenia\n"
 "czasoprzestrzeni, lub ¼le ustawiony zegar systemowy)\n"
 
-#: g10/keygen.c:1663
+#: g10/keygen.c:1762
 msgid "Really create? "
 msgstr "Na pewno generowaæ? "
 

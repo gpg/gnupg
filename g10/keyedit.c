@@ -1077,7 +1077,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 		otrust = get_ownertrust_info( pk->local_id );
 	    }
 
-	    tty_printf("%s%c %4u%c/%08lX  created: %s expires: %s",
+	    tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
 			  node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
 			  (node->flag & NODFLG_SELKEY)? '*':' ',
 			  nbits_from_pk( pk ),
@@ -1086,7 +1086,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 			  datestr_from_pk(pk),
 			  expirestr_from_pk(pk) );
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
-		tty_printf(" trust: %c/%c", otrust, trust );
+		tty_printf(_(" trust: %c/%c"), otrust, trust );
 		if( node->pkt->pkttype == PKT_PUBLIC_KEY
 		    && (get_ownertrust( pk->local_id )&TRUST_FLAG_DISABLED)) {
 		    tty_printf("\n*** ");
@@ -1103,7 +1103,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	else if( node->pkt->pkttype == PKT_SECRET_KEY
 	    || (with_subkeys && node->pkt->pkttype == PKT_SECRET_SUBKEY) ) {
 	    PKT_secret_key *sk = node->pkt->pkt.secret_key;
-	    tty_printf("%s%c %4u%c/%08lX  created: %s expires: %s\n",
+	    tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
 			  node->pkt->pkttype == PKT_SECRET_KEY? "sec":"ssb",
 			  (node->flag & NODFLG_SELKEY)? '*':' ',
 			  nbits_from_sk( sk ),
@@ -1111,6 +1111,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 			  (ulong)keyid_from_sk(sk,NULL),
 			  datestr_from_sk(sk),
 			  expirestr_from_sk(sk) );
+	    tty_printf("\n");
 	}
 	else if( with_subkeys && node->pkt->pkttype == PKT_SIGNATURE
 		 && node->pkt->pkt.signature->sig_class == 0x28       ) {
@@ -1118,12 +1119,12 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 
 	    rc = check_key_signature( keyblock, node, NULL );
 	    if( !rc )
-		tty_printf( "rev! subkey has been revoked: %s\n",
+		tty_printf( _("rev! subkey has been revoked: %s\n"),
 			    datestr_from_sig( sig ) );
 	    else if( rc == G10ERR_BAD_SIGN )
-		tty_printf( "rev- faked revocation found\n" );
+		tty_printf( _("rev- faked revocation found\n") );
 	    else if( rc )
-		tty_printf( "rev? problem checking revocation: %s\n",
+		tty_printf( _("rev? problem checking revocation: %s\n"),
 							 g10_errstr(rc) );
 	}
     }
@@ -1184,7 +1185,7 @@ show_fingerprint( PKT_public_key *pk )
 
     fingerprint_from_pk( pk, array, &n );
     p = array;
-    tty_printf("             Fingerprint:");
+    tty_printf(_("             Fingerprint:"));
     if( n == 20 ) {
 	for(i=0; i < n ; i++, i++, p += 2 ) {
 	    if( i == 10 )
