@@ -605,6 +605,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 /*                  goto found; */
               break;
             case KEYDB_SEARCH_MODE_FPR:
+            case KEYDB_SEARCH_MODE_FPR20:
               if (has_fingerprint (blob, desc[n].u.fpr))
                 goto found;
               break;
