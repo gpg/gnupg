@@ -52,14 +52,12 @@ libcipher_a_SOURCES = cipher.c	\
 		 md5.c     	\
 		 rmd160.c  	\
 		 sha1.c         \
-		 sha256.c       \
-		 sha512.c       \
-                 tiger.c
+		 sha256.c
 
-EXTRA_libcipher_a_SOURCES = idea-stub.c
+EXTRA_libcipher_a_SOURCES = idea-stub.c tiger.c sha512.c
 
-libcipher_a_DEPENDENCIES = @IDEA_O@
-libcipher_a_LIBADD = @IDEA_O@
+libcipher_a_DEPENDENCIES = @IDEA_O@ @TIGER_O@ @SHA512_O@
+libcipher_a_LIBADD = @IDEA_O@ @TIGER_O@ @SHA512_O@
 
 tiger.o: $(srcdir)/tiger.c
 	`echo $(COMPILE) -c $(srcdir)/tiger.c | sed -e 's/-O[2-9s]*/-O1/g' `
