@@ -562,7 +562,7 @@ print_import_check (PKT_public_key * pk, PKT_user_id * id)
     char * buf, * p;
     byte fpr[24];
     u32 keyid[2];
-    int i, pos = 0, n;
+    size_t i, pos = 0, n;
 
     buf = m_alloc (17+41+id->len+32);
     keyid_from_pk (pk, keyid);
