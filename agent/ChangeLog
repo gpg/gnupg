@@ -1,5 +1,9 @@
 2001-12-14  Werner Koch  <wk@gnupg.org>
 
+	* gpg-agent.c (main): New option --batch.  New option --debug-wait
+	n, so that it is possible to attach gdb when used in server mode.
+	* query.c (agent_askpin): Don't ask in batch mode.
+
 	* command.c: Removed the conversion macros as they are now in
 	../common/util.h.
 

@@ -54,6 +54,7 @@ enum cmd_and_opt_values
   oOptions,
   oDebug,
   oDebugAll,
+  oDebugWait,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -64,6 +65,7 @@ enum cmd_and_opt_values
   oFlush,
   oLogFile,
   oServer,
+  oBatch,
   
   oPinentryProgram,
 
@@ -83,12 +85,14 @@ static ARGPARSE_OPTS opts[] = {
   { oOptions, "options"  , 2, N_("read options from file")},
   { oDebug,	"debug"     ,4|16, N_("set debugging flags")},
   { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
+  { oDebugWait,"debug-wait",1, "@"},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
   { oClient, "client"      ,0, N_("run in client mode for testing")},
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
   { oShutdown, "shutdown"  ,0, N_("shutdown the agent")},
   { oFlush   , "flush"     ,0, N_("flush the cache")},
+  { oBatch   , "batch"     ,0, N_("run without asking a user")},
 
   { oPinentryProgram, "pinentry-program", 2 , "Path of PIN Entry program" },
 
@@ -252,6 +256,7 @@ main (int argc, char **argv )
   int grab = 0;
   int csh_style = 0;
   char *logfile = NULL;
+  int debug_wait = 0;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -363,9 +368,11 @@ main (int argc, char **argv )
         {
         case oQuiet: opt.quiet = 1; break;
         case oVerbose: opt.verbose++; break;
+        case oBatch: opt.batch=1; break;
 
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
+        case oDebugWait: debug_wait = pargs.r.ret_int; break;
 
         case oOptions:
           /* config files may not be nested (silently ignore them) */
@@ -496,6 +503,13 @@ main (int argc, char **argv )
           exit (1);
         }
 
+      if (debug_wait)
+        {
+          log_debug ("waiting for debugger - my pid is %u .....\n",
+                     (unsigned int)getpid());
+          sleep (debug_wait);
+          log_debug ("... okay\n");
+         }
       start_command_handler ();
     }
   else

@@ -134,7 +134,7 @@ all_digitsp( const char *s)
 
 
 
-/* Call the Entry and ask for the PIN.  We do chekc for a valid PIN
+/* Call the Entry and ask for the PIN.  We do check for a valid PIN
    number here and repeat it as long as we have invalid formed
    numbers. */
 int
@@ -145,6 +145,9 @@ agent_askpin (const char *desc_text,
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
   const char *errtext = NULL;
+
+  if (opt.batch)
+    return 0; /* fixme: we should return BAD PIN */
 
   if (!pininfo || pininfo->max_length < 1)
     return seterr (Invalid_Value);
