@@ -1,3 +1,7 @@
+2001-12-21  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (DISCLEANFILES): Add construct.c
+
 2001-12-19  Werner Koch  <wk@gnupg.org>
 
 	* rndw32.c [CYGWIN32]: Include winioctl.h.  By Disastry.

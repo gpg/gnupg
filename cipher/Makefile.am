@@ -76,7 +76,7 @@ libcipher_a_SOURCES = cipher.c	\
 
 # configure creates the constructor file
 BUILT_SOURCES = construct.c
-
+DISTCLEANFILES = construct.c
 
 libcipher_a_DEPENDENCIES = @STATIC_CIPHER_OBJS@
 libcipher_a_LIBADD =	   @STATIC_CIPHER_OBJS@
