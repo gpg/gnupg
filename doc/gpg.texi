@@ -104,8 +104,10 @@ List all keys from the public keyrings, or just the
 ones given on the command line.
 
 @item ---list-secret-keys @code{names}
-List all keys from the secret keyrings, or just the
-ones given on the command line.
+List all keys from the secret keyrings, or just the ones given on the
+command line. A '#' after the letters 'sec' means that the secret key
+is not usable (for example, if it was created via
+---export-secret-subkeys).
 
 @item ---list-sigs @code{names}
 Same as ---list-keys, but the signatures are listed too.
@@ -381,6 +383,12 @@ but does only the merging of new signatures, user-IDs and subkeys.
 Import the keys with the given key IDs from a keyserver. Option
 ---keyserver must be used to give the name of this keyserver.
 
+@item ---refresh-keys @code{key IDs}
+Request updates from a keyserver for keys that already exist on the
+local keyring. This is useful for updating a key with the latest
+signatures, user IDs, etc. Option ---keyserver must be used to give
+the name of this keyserver.
+
 @item ---search-keys @code{names}
 Search the keyserver for the given names. Multiple names given here
 will be joined together to create the search string for the keyserver.
@@ -605,7 +613,8 @@ from, send keys to, and search for keys on. The format of the
 the type of keyserver: "hkp" for the Horowitz (or compatible)
 keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
 Horowitz email keyserver. Note that your particular installation of
-GnuPG may have other keyserver types available as well.
+GnuPG may have other keyserver types available as well. Keyserver
+schemes are case-insensitive.
 
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server. Using the command "host -l
@@ -1075,7 +1084,8 @@ available, but the MIT release is a good common baseline.
 This option implies `---rfc1991 --no-openpgp --disable-mdc
 ---no-force-v4-certs --no-comment --escape-from-lines --force-v3-sigs
 ---no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
----digest-algo MD5 --compress-algo 1'
+---digest-algo MD5 --compress-algo 1'. It also disables --textmode
+when encrypting.
 
 @item ---no-pgp2
 Resets the ---pgp2 option.
@@ -1128,9 +1138,15 @@ changes the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
 Reset the ---force-v4-certs option.
 
 @item ---force-mdc
-Force the use of encryption with appended manipulation code. This is
-always used with the newer ciphers (those with a blocksize greater
-than 64 bit).
+Force the use of encryption with a modification detection code. This
+is always used with the newer ciphers (those with a blocksize greater
+than 64 bits), or if the recipient key has one of those ciphers as a
+preference.
+
+@item ---disable-mdc
+Disable the use of the modification detection code. Note that by
+using this option, the encrypted message becomes vulnerable to a
+message modification attack.
 
 @item ---allow-non-selfsigned-uid
 Allow the import and use of keys with user IDs which are not

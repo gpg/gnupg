@@ -1,4 +1,5 @@
-This is a binary version of GnuPG for MS-Windows 95, 98, WNT and W2000.
+This is a binary version of GnuPG for MS-Windows 95, 98, WNT, W2000
+and XP.
 
 A FAQ comes with this package and a probably more recent one can be
 found online at http://www.gnupg.org/faq.html.  See
@@ -9,8 +10,8 @@ questions - but please read the FAQ first.
 Installation instructions:
 --------------------------
  1. Unpack the ZIP archive (alright, you already did this).
- 2. Copy "gpg.exe" and "gpgv.exe" to some place where you
-    usually store your binaries.
+ 2. Copy "gpg.exe", "gpgv.exe" and "gpgkeys_ldap.exe" to a place
+    where you usually store your binaries.
  3. Create a directory "c:\gnupg" (or any other as you like)
  4. If you did not use the default directory "c:\gnupg", you
     should enter a string with the directory into the Registry
@@ -72,7 +73,7 @@ Instructions are at the top of this file.
 
 To build it, you need the MingW32/CPD kit, which is available at
 
-  ftp://ftp.gnupg.org/people/werner/cpd/mingw32-cpd-0.3.0.tar.gz
+  ftp://ftp.gnupg.org/people/werner/cpd/mingw32-cpd-0.3.2.tar.gz
   ftp://ftp.gnupg.org/people/werner/cpd/gcc-core-2.95.2.tar.gz
   ftp://ftp.gnupg.org/people/werner/cpd/binutils-2.9.1.tar.gz
 
@@ -86,8 +87,11 @@ After you have installed this environment you should be able to do this:
  $ mingw32 strip g10/gpg.exe
  $ cp g10/gpg.exe  /some_windows_drive/
 
-And everything hopefully works. 
-
+And everything hopefully works.  If there is a make problem in the
+"po" directory you can eiterignore it or do a "touch po/all".  To
+build the distribtion ZIP file, you have to create a directory
+"dist-w32" and run "scripts/mk-w32-dist" right after a successul make
+run.
 
 Don't forget that MS-Windows ist just a temporary workaround until
 you can switch to a GNU system ;-)
@@ -95,6 +99,3 @@ you can switch to a GNU system ;-)
 Be the source always with you.
 
     Werner
-
-
-
