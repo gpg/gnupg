@@ -1,3 +1,7 @@
+2004-02-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Clarify -u/--local-user and --default-key.
+
 2004-02-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* gnupg.7: Clarify that 'gpgv' doesn't encrypt, and that's not a

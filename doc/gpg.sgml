@@ -798,20 +798,17 @@ non-Windows platforms.
 <varlistentry>
 <term>-u, --local-user &ParmName;</term>
 <listitem><para>
-Use &ParmName; as the user ID to sign with.  This option is silently
-ignored for the list commands, so that it can be used in an options
-file.
+Use &ParmName; as the key to sign with.  Note that this option
+overrides --default-key.
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--default-key &ParmName;</term>
 <listitem><para>
-Use &ParmName; as default user ID for signatures.  If this
-is not used the default user ID is the first user ID
-found in the secret keyring.
+Use &ParmName; as the default key to sign with.  If this option is not
+used, the default key is the first key found in the secret keyring.
+Note that -u or --local-user overrides this option.
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>-r, --recipient &ParmName;</term>
@@ -882,8 +879,8 @@ Try to be as quiet as possible.
 <term>-z &ParmN;, --compress-level &ParmN;</term>
 <listitem><para>
 Set compression level to &ParmN;. A value of 0 for &ParmN; disables
-compression. Default is to use the default compression level of zlib
-(normally 6).
+compression.  The default is to use the default compression level of
+zlib (normally 6).
 </para></listitem></varlistentry>
 
 
@@ -2313,7 +2310,7 @@ option is intended for external programs that call GnuPG to perform
 tasks, and is thus not generally useful.  See the file
 <filename>doc/DETAILS</filename> in the source distribution for the
 details of which configuration items may be listed.  --list-config is
-only useful with --with-colons set.
+only usable with --with-colons set.
 </para></listitem></varlistentry>
 
 </variablelist>
