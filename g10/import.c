@@ -1338,11 +1338,6 @@ append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
     KBNODE n, n_where=NULL;
 
     assert(node->pkt->pkttype == PKT_USER_ID );
-    if( !node->next || node->next->pkt->pkttype == PKT_USER_ID ) {
-	log_error( _("key %08lX: our copy has no self-signature\n"),
-						  (ulong)keyid[1]);
-	return G10ERR_GENERAL;
-    }
 
     /* find the position */
     for( n = keyblock; n; n_where = n, n = n->next ) {
@@ -1391,12 +1386,6 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 
     assert(dst->pkt->pkttype == PKT_USER_ID );
     assert(src->pkt->pkttype == PKT_USER_ID );
-    if( !dst->next || dst->next->pkt->pkttype == PKT_USER_ID ) {
-	log_error( _("key %08lX: our copy has no self-signature\n"),
-						  (ulong)keyid[1]);
-	return 0;
-    }
-
 
     for(n=src->next; n && n->pkt->pkttype != PKT_USER_ID; n = n->next ) {
 	if( n->pkt->pkttype != PKT_SIGNATURE )

@@ -616,11 +616,11 @@ build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
     if( maybe_setuid )
 	secmem_init( 0 );    /* drop setuid */
 
-    for(i=1; i < 110; i++ )
+    for(i=1; i <= 110; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
 	    n += strlen(s) + 2;
     list = m_alloc( 21 + n ); *list = 0;
-    for(p=NULL, i=1; i < 110; i++ ) {
+    for(p=NULL, i=1; i <= 110; i++ ) {
 	if( !chkf(i) && (s=mapf(i)) ) {
 	    if( !p )
 		p = stpcpy( list, text );
@@ -1416,6 +1416,8 @@ main( int argc, char **argv )
 		opt.escape_from = 1;
 		opt.force_v3_sigs = 1;
 		opt.pgp2_workarounds = 1;
+		opt.ask_sig_expire = 0;
+		opt.ask_cert_expire = 0;
 		m_free(def_digest_string);
 		def_digest_string = m_strdup("md5");
 		opt.def_compress_algo = 1;

@@ -176,6 +176,7 @@ get_primary_uid ( KBNODE keyblock, size_t *uidlen )
 
     for (k=keyblock; k; k=k->next ) {
         if ( k->pkt->pkttype == PKT_USER_ID
+             && !k->pkt->pkt.user_id->attrib_data
              && k->pkt->pkt.user_id->is_primary ) {
             *uidlen = k->pkt->pkt.user_id->len;
             return k->pkt->pkt.user_id->name;
@@ -1429,7 +1430,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     uiddate = uiddate2 = 0;
     uidnode = uidnode2 = NULL;
     for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next ) {
-        if ( k->pkt->pkttype == PKT_USER_ID ) {
+        if ( k->pkt->pkttype == PKT_USER_ID &&
+	     !k->pkt->pkt.user_id->attrib_data) {
             PKT_user_id *uid = k->pkt->pkt.user_id;
             if ( uid->is_primary && uid->created > uiddate ) {
                 uiddate = uid->created;
@@ -1444,7 +1446,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     if ( uidnode ) {
         for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
             k = k->next ) {
-            if ( k->pkt->pkttype == PKT_USER_ID ) {
+            if ( k->pkt->pkttype == PKT_USER_ID &&
+		 !k->pkt->pkt.user_id->attrib_data) {
                 PKT_user_id *uid = k->pkt->pkt.user_id;
                 if ( k != uidnode ) 
                     uid->is_primary = 0;
@@ -1464,7 +1467,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 	for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
 	    k = k->next )
 	  {
-	    if(k->pkt->pkttype==PKT_USER_ID)
+	    if(k->pkt->pkttype==PKT_USER_ID &&
+	       !k->pkt->pkt.user_id->attrib_data)
 	      {
 		k->pkt->pkt.user_id->is_primary=1;
 		break;

@@ -1,3 +1,24 @@
+2002-03-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (append_uid, merge_sigs): it is okay to import
+	completely non-signed uids now (with --allow-non-selfsigned-uid).
+
+	* getkey.c (get_primary_uid, merge_selfsigs_main): do not choose
+	an attribute packet (i.e. photo) as primary uid.  This prevents
+	oddities like "Good signature from [image of size 2671]".  This is
+	still not perfect (one can still select an attribute packet as
+	primary in --edit), but is closer to the way the draft is going.
+
+	* g10.c (build_list): algorithms should include 110.
+
+	* g10.c (main): --pgp2 implies --no-ask-sig-expire and
+	--no-ask-cert-expire as those would cause a v4 sig/cert.
+
+	* armor.c (is_armor_header): be more lenient in what constitutes a
+	valid armor header (i.e. -----BEGIN blah blah-----) as some
+	Windows programs seem to add spaces at the end.  --openpgp makes
+	it strict again.
+
 2002-03-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_search_prompt): Properly handle a "no
