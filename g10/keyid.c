@@ -204,37 +204,50 @@ keystr(u32 *keyid)
 u32
 keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
 {
-    u32 lowbits;
-    u32 dummy_keyid[2];
+  u32 lowbits;
+  u32 dummy_keyid[2];
 
-    if( !keyid )
-	keyid = dummy_keyid;
+  if( !keyid )
+    keyid = dummy_keyid;
 
-    if( sk->version < 4 )
-      {
-	if( is_RSA(sk->pubkey_algo) )
+  if( sk->keyid[0] || sk->keyid[1] )
+    {
+      keyid[0] = sk->keyid[0];
+      keyid[1] = sk->keyid[1];
+      lowbits = keyid[1];
+    }
+  else if( sk->version < 4 )
+    {
+      if( is_RSA(sk->pubkey_algo) )
+	{
 	  lowbits = pubkey_get_npkey(sk->pubkey_algo) ?
 	    mpi_get_keyid( sk->skey[0], keyid ) : 0; /* take n */
-	else
-	  keyid[0]=keyid[1]=lowbits=0;
-      }
-    else {
-	const byte *dp;
-	MD_HANDLE md;
-	md = do_fingerprint_md_sk(sk);
-	if(md)
-	  {
-	    dp = md_read( md, 0 );
-	    keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
-	    keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
-	    lowbits = keyid[1];
-	    md_close(md);
-	  }
-	else
-	  keyid[0]=keyid[1]=lowbits=0;
+	  sk->keyid[0]=keyid[0];
+	  sk->keyid[1]=keyid[1];
+	}
+      else
+	sk->keyid[0]=sk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
+    }
+  else
+    {
+      const byte *dp;
+      MD_HANDLE md;
+      md = do_fingerprint_md_sk(sk);
+      if(md)
+	{
+	  dp = md_read( md, 0 );
+	  keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
+	  keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	  lowbits = keyid[1];
+	  md_close(md);
+	  sk->keyid[0] = keyid[0];
+	  sk->keyid[1] = keyid[1];
+	}
+      else
+	sk->keyid[0]=sk->keyid[1]=keyid[0]=keyid[1]=lowbits=0;
     }
 
-    return lowbits;
+  return lowbits;
 }
 
 

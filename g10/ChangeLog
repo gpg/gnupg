@@ -1,5 +1,8 @@
 2004-03-05  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyid.c (keyid_from_sk): Minor performance boost by caching
+	secret key keyids so we don't have to calculate them each time.
+
 	* getkey.c (merge_selfsigs_subkey): Do not mark subkeys valid if
 	we do not support their pk algorithm.  This allows for early
 	(during get_*) rejection of a subkey, and selection of another.
