@@ -220,6 +220,34 @@ epoch2ldaptime(time_t stamp)
   return strdup(buf);
 }
 
+/* Append two onto the end of one.  Two is not freed, but its pointers
+   are now part of one.  Make sure you don't free them both! */
+static int
+join_two_modlists(LDAPMod ***one,LDAPMod **two)
+{
+  int i,one_count=0,two_count=0;
+  LDAPMod **grow;
+
+  for(grow=*one;*grow;grow++)
+    one_count++;
+
+  for(grow=two;*grow;grow++)
+    two_count++;
+
+  grow=realloc(*one,sizeof(LDAPMod *)*(one_count+two_count+1));
+  if(!grow)
+    return 0;
+
+  for(i=0;i<two_count;i++)
+    grow[one_count+i]=two[i];
+
+  grow[one_count+i]=NULL;
+
+  *one=grow;
+
+  return 1;
+}
+
 /* Passing a NULL for value effectively deletes that attribute.  This
    doesn't mean "delete" in the sense of removing something from the
    modlist, but "delete" in the LDAP sense of adding a modlist item
@@ -505,7 +533,7 @@ send_key(int *eof)
   int err,begin=0,end=0,keysize=1,ret=KEYSERVER_INTERNAL_ERROR;
   char *dn=NULL,line[MAX_LINE],*key=NULL;
   char keyid[17];
-  LDAPMod **modlist,**ml;
+  LDAPMod **modlist,**addlist,**ml;
 
   modlist=malloc(sizeof(LDAPMod *));
   if(!modlist)
@@ -517,8 +545,19 @@ send_key(int *eof)
 
   *modlist=NULL;
 
-  /* Going on the assumption that modify operations are more frequent
-     than adds, I'm setting up the modify operations here first. */
+  addlist=malloc(sizeof(LDAPMod *));
+  if(!addlist)
+    {
+      fprintf(console,"gpgkeys: can't allocate memory for keyserver record\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  *addlist=NULL;
+
+  /* Start by nulling out all attributes.  We try and do a modify
+     operation first, so this ensures that we don't leave old
+     attributes lying around. */
   make_one_attr(&modlist,0,"pgpDisabled",NULL);
   make_one_attr(&modlist,0,"pgpKeyID",NULL);
   make_one_attr(&modlist,0,"pgpKeyType",NULL);
@@ -530,8 +569,6 @@ send_key(int *eof)
   make_one_attr(&modlist,0,"pgpKeySize",NULL);
   make_one_attr(&modlist,0,"pgpKeyExpireTime",NULL);
   make_one_attr(&modlist,0,"pgpCertID",NULL);
-  /* Note the count of these deleted attributes.  They're to be used
-     later. */
 
   /* Assemble the INFO stuff into LDAP attributes */
 
@@ -587,7 +624,7 @@ send_key(int *eof)
 	break;
       }
     else
-      build_attrs(&modlist,line);
+      build_attrs(&addlist,line);
 
   if(!end)
     {
@@ -650,23 +687,28 @@ send_key(int *eof)
       goto fail;
     }
 
-  make_one_attr(&modlist,0,"objectClass","pgpKeyInfo");
-  make_one_attr(&modlist,0,"pgpKey",key);
+  make_one_attr(&addlist,0,"objectClass","pgpKeyInfo");
+  make_one_attr(&addlist,0,"pgpKey",key);
 
-  /* If it's not there, we just turn around and send an add command
-     for the same key.  Otherwise, the modify brings the server copy
-     into compliance with our copy.  Note that unlike the LDAP
-     keyserver (and really, any other keyserver) this does NOT merge
-     signatures, but replaces the whole key.  This should make some
-     people very happy. */
+  /* Now append addlist onto modlist */
+  if(!join_two_modlists(&modlist,addlist))
+    {
+      fprintf(console,"gpgkeys: unable to merge LDAP modification lists\n");
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
+    }
+
+  /* Going on the assumption that modify operations are more frequent
+     than adds, we try a modify first.  If it's not there, we just
+     turn around and send an add command for the same key.  Otherwise,
+     the modify brings the server copy into compliance with our copy.
+     Note that unlike the LDAP keyserver (and really, any other
+     keyserver) this does NOT merge signatures, but replaces the whole
+     key.  This should make some people very happy. */
 
   err=ldap_modify_s(ldap,dn,modlist);
   if(err==LDAP_NO_SUCH_OBJECT)
-    {
-      /* This [11] is the deleted count from earlier */
-      LDAPMod **addlist=&modlist[11];
-      err=ldap_add_s(ldap,dn,addlist);
-    }
+    err=ldap_add_s(ldap,dn,addlist);
 
   if(err!=LDAP_SUCCESS)
     {
@@ -687,6 +729,7 @@ send_key(int *eof)
     }
 
   free(modlist);
+  free(addlist);
   free(dn);
 
   if(ret!=0 && begin)

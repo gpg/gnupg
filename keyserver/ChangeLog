@@ -1,3 +1,11 @@
+2004-07-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (join_two_modlists): New.
+	(send_key): Use new function so we can try a modify operation
+	first, and fail over to an add if that fails.  Add cannot cope
+	with the NULLs at the head of the modify request, so we jump into
+	the list in the middle.
+
 2004-07-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (main): Don't try and error out before making a
