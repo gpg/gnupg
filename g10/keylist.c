@@ -911,7 +911,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
  * Reorder the keyblock so that the primary user ID (and not attribute
  * packet) comes first.  Fixme: Replace this by a generic sort
  * function.  */
-static void
+void
 reorder_keyblock (KBNODE keyblock)
 {
     KBNODE primary = NULL, primary0 = NULL, primary2 = NULL;

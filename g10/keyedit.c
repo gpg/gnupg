@@ -980,6 +980,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	modified++;
     if( collapse_uids( &keyblock ) )
 	modified++;
+    reorder_keyblock(keyblock);
 
     if( !sign_mode ) {/* see whether we have a matching secret key */
         PKT_public_key *pk = keyblock->pkt->pkt.public_key;

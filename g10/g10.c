@@ -2723,7 +2723,7 @@ add_notation_data( const char *string, int which )
     for( s=string ; *s != '='; s++ )
       {
 	if( *s=='@')
-	  saw_at=0;
+	  saw_at=1;
 
 	if( !*s || (*s & 0x80) || (!isgraph(*s) && !isspace(*s)) )
 	  {

@@ -427,8 +427,8 @@ create_version_record (void)
   memset( &rec, 0, sizeof rec );
   rec.r.ver.version = 3;
   rec.r.ver.created = make_timestamp();
-  rec.r.ver.marginals =  opt.marginals_needed;
-  rec.r.ver.completes =  opt.completes_needed;
+  rec.r.ver.marginals  = opt.marginals_needed;
+  rec.r.ver.completes  = opt.completes_needed;
   rec.r.ver.cert_depth = opt.max_cert_depth;
   rec.rectype = RECTYPE_VER;
   rec.recnum = 0;
@@ -1158,6 +1158,9 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.ver.marginals = *p++;
 	rec->r.ver.completes = *p++;
 	rec->r.ver.cert_depth = *p++;
+	/* Warning - one byte of this is used in the devel version.
+	   If you change this, make sure to consult the same code in
+	   devel. */
 	p += 4; /* lock flags */
 	rec->r.ver.created  = buftoulong(p); p += 4;
 	rec->r.ver.nextcheck = buftoulong(p); p += 4;
@@ -1241,6 +1244,9 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.ver.marginals;
 	*p++ = rec->r.ver.completes;
 	*p++ = rec->r.ver.cert_depth;
+	/* Warning - one byte of this is used in the devel version.
+	   If you change this, make sure to consult the same code in
+	   devel. */
 	p += 4; /* skip lock flags */
 	ulongtobuf(p, rec->r.ver.created); p += 4;
 	ulongtobuf(p, rec->r.ver.nextcheck); p += 4;
