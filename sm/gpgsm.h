@@ -248,11 +248,14 @@ int gpgsm_agent_istrusted (KsbaCert cert);
 int gpgsm_agent_havekey (const char *hexkeygrip);
 int gpgsm_agent_marktrusted (KsbaCert cert);
 int gpgsm_agent_learn (void);
+int gpgsm_agent_passwd (const char *hexkeygrip);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (KsbaCert cert);
 int gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
                           void (*cb)(void*, KsbaCert), void *cb_value);
+int gpgsm_dirmngr_run_command (CTRL ctrl, const char *command,
+                               int argc, char **argv);
 
 
 

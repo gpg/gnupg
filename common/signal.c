@@ -30,8 +30,8 @@
 #include "util.h"
 
 
-static volatile int caught_fatal_sig = 0;
-static volatile int caught_sigusr1 = 0;
+static volatile int caught_fatal_sig;
+static volatile int caught_sigusr1;
 static void (*cleanup_fnc)(void);
 
 

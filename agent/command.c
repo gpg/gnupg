@@ -77,6 +77,48 @@ has_option (const char *line, const char *name)
   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
 }
 
+/* Parse a hex string.  Return an Assuan error code or 0 on success and the
+   length of the parsed string in LEN. */
+static int
+parse_hexstring (ASSUAN_CONTEXT ctx, const char *string, size_t *len)
+{
+  const char *p;
+  size_t n;
+
+  /* parse the hash value */
+  for (p=string, n=0; hexdigitp (p); p++, n++)
+    ;
+  if (*p)
+    return set_error (Parameter_Error, "invalid hexstring");
+  if ((n&1))
+    return set_error (Parameter_Error, "odd number of digits");
+  *len = n;
+  return 0;
+}
+
+/* Parse the keygrip in STRING into the provided buffer BUF.  BUF must
+   provide space for 20 bytes. BUF is not changed if the fucntions
+   returns an error. */
+static int
+parse_keygrip (ASSUAN_CONTEXT ctx, const char *string, unsigned char *buf)
+{
+  int rc;
+  size_t n;
+  const unsigned char *p;
+
+  rc = parse_hexstring (ctx, string, &n);
+  if (rc)
+    return rc;
+  n /= 2;
+  if (n != 20)
+    return set_error (Parameter_Error, "invalid length of keygrip");
+
+  for (p=string, n=0; n < 20; p += 2, n++)
+    buf[n] = xtoi_2 (p);
+
+  return 0;
+}
+
 
 
 
@@ -136,6 +178,7 @@ cmd_listtrusted (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
 {
+  CTRL ctrl = assuan_get_pointer (ctx);
   int rc, n, i;
   char *p;
   char fpr[41];
@@ -164,7 +207,7 @@ cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
   while (spacep (p))
     p++;
 
-  rc = agent_marktrusted (p, fpr, flag);
+  rc = agent_marktrusted (ctrl, p, fpr, flag);
   if (rc)
     log_error ("command marktrusted failed: %s\n", gnupg_strerror (rc));
   return map_to_assuan_status (rc);
@@ -179,23 +222,12 @@ cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_havekey (ASSUAN_CONTEXT ctx, char *line)
 {
-  int n;
-  char *p;
+  int rc;
   unsigned char buf[20];
 
-  /* parse the hash value */
-  for (p=line,n=0; hexdigitp (p); p++, n++)
-    ;
-  if (*p)
-    return set_error (Parameter_Error, "invalid hexstring");
-  if ((n&1))
-    return set_error (Parameter_Error, "odd number of digits");
-  n /= 2;
-  if (n != 20)
-    return set_error (Parameter_Error, "invalid length of keygrip");
-
-  for (p=line, n=0; n < 20; p += 2, n++)
-    buf[n] = xtoi_2 (p);
+  rc = parse_keygrip (ctx, line, buf);
+  if (rc)
+    return rc;
 
   if (agent_key_available (buf))
     return ASSUAN_No_Secret_Key;
@@ -211,28 +243,16 @@ cmd_havekey (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_sigkey (ASSUAN_CONTEXT ctx, char *line)
 {
-  int n;
-  char *p;
+  int rc;
   CTRL ctrl = assuan_get_pointer (ctx);
-  unsigned char *buf;
 
-  /* parse the hash value */
-  for (p=line,n=0; hexdigitp (p); p++, n++)
-    ;
-  if (*p)
-    return set_error (Parameter_Error, "invalid hexstring");
-  if ((n&1))
-    return set_error (Parameter_Error, "odd number of digits");
-  n /= 2;
-  if (n != 20)
-    return set_error (Parameter_Error, "invalid length of keygrip");
-
-  buf = ctrl->keygrip;
-  for (p=line, n=0; n < 20; p += 2, n++)
-    buf[n] = xtoi_2 (p);
+  rc = parse_keygrip (ctx, line, ctrl->keygrip);
+  if (rc)
+    return rc;
   ctrl->have_keygrip = 1;
   return 0;
 }
+
 
 /* SETHASH <algonumber> <hexstring> 
 
@@ -241,7 +261,8 @@ cmd_sigkey (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
 {
-  int n;
+  int rc;
+  size_t n;
   char *p;
   CTRL ctrl = assuan_get_pointer (ctx);
   unsigned char *buf;
@@ -257,12 +278,9 @@ cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
   ctrl->digest.algo = algo;
 
   /* parse the hash value */
-  for (p=line,n=0; hexdigitp (p); p++, n++)
-    ;
-  if (*p)
-    return set_error (Parameter_Error, "invalid hexstring");
-  if ((n&1))
-    return set_error (Parameter_Error, "odd number of digits");
+  rc = parse_hexstring (ctx, line, &n);
+  if (rc)
+    return rc;
   n /= 2;
   if (n != 16 && n != 20 && n != 24 && n != 32)
     return set_error (Parameter_Error, "unsupported length of hash");
@@ -386,6 +404,7 @@ plus_to_blank (char *s)
 static int
 cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
 {
+  CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   const char *pw;
   char *response;
@@ -459,7 +478,7 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
       if (desc)
         plus_to_blank (desc);
 
-      rc = agent_get_passphrase (&response, desc, prompt, errtext);
+      rc = agent_get_passphrase (ctrl, &response, desc, prompt, errtext);
       if (!rc)
         {
           if (cacheid)
@@ -520,52 +539,92 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 
 
 
+/* PASSWD <hexstring_with_keygrip>
+  
+   Change the passphrase/PID for the key identified by keygrip in LINE. */
+static int
+cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  unsigned char grip[20];
+  GCRY_SEXP s_skey = NULL;
+  unsigned char *shadow_info = NULL;
+
+  rc = parse_keygrip (ctx, line, grip);
+  if (rc)
+    return rc; /* we can't jump to leave because this is already an
+                  Assuan error code. */
+
+  s_skey = agent_key_from_file (ctrl, grip, &shadow_info, 1);
+  if (!s_skey && !shadow_info)
+    rc = seterr (No_Secret_Key);
+  else if (!s_skey)
+    {
+      log_error ("changing a smartcard PIN is not yet supported\n");
+      rc = seterr (Not_Implemented);
+    }
+  else
+    rc = agent_protect_and_store (ctrl, s_skey);
+
+  gcry_sexp_release (s_skey);
+  xfree (shadow_info);
+  if (rc)
+    log_error ("command passwd failed: %s\n", gnupg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
+
+
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
    CTRL ctrl = assuan_get_pointer (ctx);
 
-  /* FIXME: We should not change opt. here.  It is not a problem right
-     now but as soon as we are allowing concurrent connections we mess
-     things up */
   if (!strcmp (key, "display"))
     {
-      if (opt.display)
-        free (opt.display);
-      opt.display = strdup (value);
-      if (!opt.display)
+      if (ctrl->display)
+        free (ctrl->display);
+      ctrl->display = strdup (value);
+      if (!ctrl->display)
         return ASSUAN_Out_Of_Core;
     }
   else if (!strcmp (key, "ttyname"))
     {
-      if (opt.ttyname)
-        free (opt.ttyname);
-      opt.ttyname = strdup (value);
-      if (!opt.ttyname)
-        return ASSUAN_Out_Of_Core;
+      if (!opt.keep_tty)
+        {
+          if (ctrl->ttyname)
+            free (ctrl->ttyname);
+          ctrl->ttyname = strdup (value);
+          if (!ctrl->ttyname)
+            return ASSUAN_Out_Of_Core;
+        }
     }
   else if (!strcmp (key, "ttytype"))
     {
-      if (opt.ttytype)
-        free (opt.ttytype);
-      opt.ttytype = strdup (value);
-      if (!opt.ttytype)
-        return ASSUAN_Out_Of_Core;
+      if (!opt.keep_tty)
+        {
+          if (ctrl->ttytype)
+            free (ctrl->ttytype);
+          ctrl->ttytype = strdup (value);
+          if (!ctrl->ttytype)
+            return ASSUAN_Out_Of_Core;
+        }
     }
   else if (!strcmp (key, "lc-ctype"))
     {
-      if (opt.lc_ctype)
-        free (opt.lc_ctype);
-      opt.lc_ctype = strdup (value);
-      if (!opt.lc_ctype)
+      if (ctrl->lc_ctype)
+        free (ctrl->lc_ctype);
+      ctrl->lc_ctype = strdup (value);
+      if (!ctrl->lc_ctype)
         return ASSUAN_Out_Of_Core;
     }
   else if (!strcmp (key, "lc-messages"))
     {
-      if (opt.lc_messages)
-        free (opt.lc_messages);
-      opt.lc_messages = strdup (value);
-      if (!opt.lc_messages)
+      if (ctrl->lc_messages)
+        free (ctrl->lc_messages);
+      ctrl->lc_messages = strdup (value);
+      if (!ctrl->lc_messages)
         return ASSUAN_Out_Of_Core;
     }
   else if (!strcmp (key, "use-cache-for-signing"))
@@ -599,6 +658,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "LISTTRUSTED",  0,  cmd_listtrusted },
     { "MARKTRUSTED",  0,  cmd_marktrusted },
     { "LEARN",        0,  cmd_learn },
+    { "PASSWD",       0,  cmd_passwd },
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { NULL }
@@ -630,6 +690,7 @@ start_command_handler (int listen_fd, int fd)
   struct server_control_s ctrl;
 
   memset (&ctrl, 0, sizeof ctrl);
+  agent_init_default_ctrl (&ctrl);
   
   if (listen_fd == -1 && fd == -1)
     {
@@ -693,5 +754,15 @@ start_command_handler (int listen_fd, int fd)
 
 
   assuan_deinit_server (ctx);
+  if (ctrl.display)
+    free (ctrl.display);
+  if (ctrl.ttyname)
+    free (ctrl.ttyname);
+  if (ctrl.ttytype)
+    free (ctrl.ttytype);
+  if (ctrl.lc_ctype)
+    free (ctrl.lc_ctype);
+  if (ctrl.lc_messages)
+    free (ctrl.lc_messages);
 }
 

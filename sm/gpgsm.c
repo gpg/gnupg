@@ -77,6 +77,9 @@ enum cmd_and_opt_values {
   aCheckKeys, /* nyi */
   aServer,                        
   aLearnCard,
+  aCallDirmngr,
+  aCallProtectTool,
+  aPasswd,
 
   oOptions,
   oDebug,
@@ -139,7 +142,6 @@ enum cmd_and_opt_values {
   oCipherAlgo,
   oDigestAlgo,
   oCompressAlgo,
-  oPasswdFD,
   oCommandFD,
   oNoVerbose,
   oTrustDBName,
@@ -219,7 +221,6 @@ static ARGPARSE_OPTS opts[] = {
     { aListSigs,   "list-sigs", 256, N_("list certificate chain")}, 
     { aListSigs,   "check-sigs",256, "@"},
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
-    { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
     { aDeleteKey, "delete-key",256, N_("remove key from the public keyring")},
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
@@ -228,7 +229,10 @@ static ARGPARSE_OPTS opts[] = {
     { aExport, "export",      256     , N_("export certificates")},
     { aLearnCard, "learn-card", 256 ,N_("register a smartcard")},
     { aServer, "server",      256, N_("run in server mode")},
-    { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
+    { aCallDirmngr, "call-dirmngr", 256, N_("pass a command to the dirmngr")},
+    { aCallProtectTool, "call-protect-tool", 256,
+                                   N_("invoke gpg-protect-tool")},
+    { aPasswd, "passwd",      256, N_("change a passphrase")},
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -283,6 +287,7 @@ static ARGPARSE_OPTS opts[] = {
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
     { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
+    { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
 #if 0
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
@@ -406,6 +411,7 @@ static void emergency_cleanup (void);
 static int check_special_filename (const char *fname);
 static int open_read (const char *filename);
 static FILE *open_fwrite (const char *filename);
+static void run_protect_tool (int argc, char **argv);
 
 
 static int
@@ -589,6 +595,7 @@ main ( int argc, char **argv)
   char *configname = NULL;
   unsigned configlineno;
   int parse_debug = 0;
+  int no_more_options = 0;
   int default_config =1;
   int default_keyring = 1;
   char *logfile = NULL;
@@ -666,6 +673,9 @@ main ( int argc, char **argv)
         default_config = 0; /* --no-options */
       else if (pargs.r_opt == oHomedir)
         opt.homedir = pargs.r.ret_str;
+      else if (pargs.r_opt == aCallProtectTool)
+        break; /* This break makes sure that --version and --help are
+                  passed to the protect-tool. */
     }
   
   
@@ -724,7 +734,8 @@ main ( int argc, char **argv)
     default_config = 0;
   }
 
-  while (optfile_parse (configfp, configname, &configlineno, &pargs, opts))
+  while (!no_more_options 
+         && optfile_parse (configfp, configname, &configlineno, &pargs, opts))
     {
       switch (pargs.r_opt)
         {
@@ -732,7 +743,17 @@ main ( int argc, char **argv)
           opt.batch = 1;
           set_cmd (&cmd, aServer);
           break;
+        case aCallDirmngr:
+          opt.batch = 1;
+          set_cmd (&cmd, aCallDirmngr);
+          break;
 
+        case aCallProtectTool:
+          opt.batch = 1;
+          set_cmd (&cmd, aCallProtectTool);
+          no_more_options = 1; /* Stop parsing. */
+          break;
+        
         case aCheckKeys: set_cmd (&cmd, aCheckKeys); break;
         case aImport: set_cmd (&cmd, aImport); break;
         case aSendKeys: set_cmd (&cmd, aSendKeys); break;
@@ -744,6 +765,8 @@ main ( int argc, char **argv)
         case aListSigs: set_cmd (&cmd, aListSigs); break;
 
         case aLearnCard: set_cmd (&cmd, aLearnCard); break;
+          
+        case aPasswd: set_cmd (&cmd, aPasswd); break;
 
         case aDeleteKey:
           set_cmd (&cmd, aDeleteKey);
@@ -1128,6 +1151,18 @@ main ( int argc, char **argv)
       gpgsm_server ();
       break;
 
+    case aCallDirmngr:
+      if (!argc)
+        wrong_args (_("--call-dirmngr <command> {args}"));
+      else
+        if (gpgsm_dirmngr_run_command (&ctrl, *argv, argc-1, argv+1))
+          gpgsm_exit (1);
+      break;
+
+    case aCallProtectTool:
+      run_protect_tool (argc, argv);
+      break;
+
     case aEncr: /* encrypt the given file */
       if (!argc)
         gpgsm_encrypt (&ctrl, recplist, 0, stdout); /* from stdin */
@@ -1258,6 +1293,28 @@ main ( int argc, char **argv)
         }
       break;
 
+    case aPasswd:
+      if (argc != 1)
+        wrong_args ("--passwd <key-Id>");
+      else
+        {
+          int rc;
+          KsbaCert cert = NULL;
+          char *grip = NULL;
+
+          rc = gpgsm_find_cert (*argv, &cert);
+          if (rc)
+            ;
+          else if (!(grip = gpgsm_get_keygrip_hexstring (cert)))
+            rc = GNUPG_Bug;
+          else 
+            rc = gpgsm_agent_passwd (grip);
+          if (rc)
+            log_error ("error changing passphrase: %s\n", gnupg_strerror (rc));
+          xfree (grip);
+          ksba_cert_release (cert);
+        }
+      break;
 
     default:
         log_error ("invalid command (there is no implicit command)\n");
@@ -1386,3 +1443,24 @@ open_fwrite (const char *filename)
     }
   return fp;
 }
+
+
+static void
+run_protect_tool (int argc, char **argv)
+{
+  char *pgm = GNUPG_PROTECT_TOOL;
+  char **av;
+  int i;
+
+  av = xcalloc (argc+2, sizeof *av);
+  av[0] = strrchr (pgm, '/');
+  if (!av[0])
+    av[0] = pgm;
+  for (i=1; argc; i++, argc--, argv++)
+    av[i] = *argv;
+  av[i] = NULL;
+  execv (pgm, av); 
+  log_error ("error executing `%s': %s\n", pgm, strerror (errno));
+  gpgsm_exit (2);
+}
+

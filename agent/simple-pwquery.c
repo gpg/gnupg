@@ -177,9 +177,10 @@ agent_send_all_options (int fd)
         return rc;
     }
 
-  if (ttyname (1))
-    dft_ttyname = ttyname (1);
-  if (dft_ttyname)
+  dft_ttyname = getenv ("GPG_TTY");
+  if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
+    dft_ttyname = ttyname (0);
+  if (dft_ttyname && *dft_ttyname)
     {
       if ((rc=agent_send_option (fd, "ttyname", dft_ttyname)))
         return rc;

@@ -1,5 +1,5 @@
 # Keybox Makefile 
-# Copyright (C) 2001 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -23,7 +23,7 @@ localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
 EXTRA_DIST = mkerrors
-AM_CPPFLAGS =   $(KSBA_CFLAGS) $(LIBGCRYPT_CLFAGS)
+AM_CPPFLAGS =   $(KSBA_CFLAGS) $(LIBGCRYPT_CFLAGS)
 BUILT_SOURCES = keybox-errors.c
 
 noinst_LIBRARIES = libkeybox.a

@@ -137,6 +137,18 @@ static int maybe_setuid = 1;
 /* Name of the communication socket */
 static char socket_name[128];
 
+/* Default values for options passed to the pinentry. */
+static char *default_display;
+static char *default_ttyname;
+static char *default_ttytype;
+static char *default_lc_ctype;
+static char *default_lc_messages;
+
+/* Name of a config file, which will be reread on a HUP if it is not NULL. */
+static char *config_filename;
+
+
+/* Local prototypes. */
 static void create_directories (void);
 #ifdef USE_GNU_PTH
 static void handle_connections (int listen_fd);
@@ -248,6 +260,51 @@ cleanup_sh (int sig)
   raise( sig );
 }
 
+
+/* Handle options which are allowed to be reset after program start.
+   Return true when the current option in PARGS could be handled and
+   false if not.  As a special feature, passing a value of NULL for
+   PARGS, resets the options to the default. */
+static int
+parse_rereadable_options (ARGPARSE_ARGS *pargs)
+{
+  if (!pargs)
+    { /* reset mode */
+      opt.quiet = 0;
+      opt.verbose = 0;
+      opt.debug = 0;
+      opt.no_grab = 0;
+      opt.pinentry_program = NULL;
+      opt.scdaemon_program = NULL;
+      opt.def_cache_ttl = 10*60; /* default to 10 minutes */
+      opt.ignore_cache_for_signing = 0;
+      return 1;
+    }
+
+  switch (pargs->r_opt)
+    {
+    case oQuiet: opt.quiet = 1; break;
+    case oVerbose: opt.verbose++; break;
+
+    case oDebug: opt.debug |= pargs->r.ret_ulong; break;
+    case oDebugAll: opt.debug = ~0; break;
+
+    case oNoGrab: opt.no_grab = 1; break;
+      
+    case oPinentryProgram: opt.pinentry_program = pargs->r.ret_str; break;
+    case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
+
+    case oDefCacheTTL: opt.def_cache_ttl = pargs->r.ret_ulong; break;
+      
+    case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
+
+    default:
+      return 0; /* not handled */
+    }
+  return 1; /* handled */
+}
+
+
 int
 main (int argc, char **argv )
 {
@@ -288,14 +345,13 @@ main (int argc, char **argv )
     }
 
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
-#ifdef USE_GNU_PTH
-  assuan_set_io_func (pth_read, pth_write);
-#endif
 
   gcry_set_log_handler (my_gcry_logger, NULL);
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
   may_coredump = disable_core_dumps ();
+
+  parse_rereadable_options (NULL); /* Reset them to default values. */
 
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
@@ -304,7 +360,6 @@ main (int argc, char **argv )
   opt.homedir = getenv("GNUPGHOME");
   if (!opt.homedir || !*opt.homedir)
     opt.homedir = GNUPG_DEFAULT_HOMEDIR;
-  opt.def_cache_ttl = 10*60; /* default to 10 minutes */
 
 
   /* check whether we have a config file on the commandline */
@@ -375,14 +430,12 @@ main (int argc, char **argv )
 
   while (optfile_parse( configfp, configname, &configlineno, &pargs, opts) )
     {
+      if (parse_rereadable_options (&pargs))
+        continue; /* Already handled */
       switch (pargs.r_opt)
         {
-        case oQuiet: opt.quiet = 1; break;
-        case oVerbose: opt.verbose++; break;
         case oBatch: opt.batch=1; break;
 
-        case oDebug: opt.debug |= pargs.r.ret_ulong; break;
-        case oDebugAll: opt.debug = ~0; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
 
         case oOptions:
@@ -399,7 +452,6 @@ main (int argc, char **argv )
         case oNoOptions: break; /* no-options */
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
         case oNoDetach: nodetach = 1; break;
-        case oNoGrab: opt.no_grab = 1; break;
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oCsh: csh_style = 1; break;
         case oSh: csh_style = 0; break;
@@ -407,16 +459,12 @@ main (int argc, char **argv )
         case oDaemon: is_daemon = 1; break;
         case oDisablePth: disable_pth = 1; break;
 
-        case oPinentryProgram: opt.pinentry_program = pargs.r.ret_str; break;
-        case oDisplay: opt.display = xstrdup (pargs.r.ret_str); break;
-        case oTTYname: opt.ttyname = xstrdup (pargs.r.ret_str); break;
-        case oTTYtype: opt.ttytype = xstrdup (pargs.r.ret_str); break;
-        case oLCctype: opt.lc_ctype = xstrdup (pargs.r.ret_str); break;
-        case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
-        case oScdaemonProgram: opt.scdaemon_program = pargs.r.ret_str; break;
-        case oDefCacheTTL: opt.def_cache_ttl = pargs.r.ret_ulong; break;
+        case oDisplay: default_display = xstrdup (pargs.r.ret_str); break;
+        case oTTYname: default_ttyname = xstrdup (pargs.r.ret_str); break;
+        case oTTYtype: default_ttytype = xstrdup (pargs.r.ret_str); break;
+        case oLCctype: default_lc_ctype = xstrdup (pargs.r.ret_str); break;
+        case oLCmessages: default_lc_messages = xstrdup (pargs.r.ret_str); break;
 
-        case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
 
@@ -427,7 +475,8 @@ main (int argc, char **argv )
     {
       fclose( configfp );
       configfp = NULL;
-      xfree(configname);
+      /* Keep a copy of the name so that it can be read on SIGHUP. */
+      config_filename = configname;
       configname = NULL;
       goto next_pass;
     }
@@ -465,7 +514,22 @@ main (int argc, char **argv )
       sleep (debug_wait);
       log_debug ("... okay\n");
     }
+
+  if (!pipe_server && !is_daemon)
+    log_info (_("please use the option `--daemon'"
+                " to run the program in the background\n"));
   
+#ifdef ENABLE_NLS
+  /* gpg-agent usdually does not ooutput any messages becuase it runs
+     in the background.  For log files it is acceptable to have
+     messages always encoded in utf-8.  We switch here to utf-8, so
+     that commands like --help still give native messages.  It is far
+     easier to swicthnonly once instead of for every message and it
+     actually helps when more then one thread is active (avoids
+     required an extra copy step). */
+    bind_textdomain_codeset (PACKAGE, "UTF-8");
+#endif
+
   /* now start with logging to a file if this is desired */
   if (logfile)
     {
@@ -473,16 +537,18 @@ main (int argc, char **argv )
       log_set_prefix (NULL, 1|2|4);
     }
 
+  /* Make sure that we have a default ttyname. */
+  if (!default_ttyname && ttyname (1))
+    default_ttyname = xstrdup (ttyname (1));
+  if (!default_ttytype && getenv ("TERM"))
+    default_ttytype = xstrdup (getenv ("TERM"));
 
   if (pipe_server)
     { /* this is the simple pipe based server */
       start_command_handler (-1, -1);
     }
   else if (!is_daemon)
-    {
-      log_info (_("please use the option `--daemon'"
-                  " to run the program in the background\n"));
-    }
+    ;
   else
     { /* regular server mode */
       int fd;
@@ -490,6 +556,13 @@ main (int argc, char **argv )
       int len;
       struct sockaddr_un serv_addr;
       char *p;
+
+      /* Remove the DISPLAY variable so that a pinentry does not
+         default to a specific display.  There is still a default
+         display when gpg-agent weas started using --display or a
+         client requested this using an OPTION command. */
+      if (!opt.keep_display)
+        unsetenv ("DISPLAY");
 
       *socket_name = 0;
       snprintf (socket_name, DIM(socket_name)-1,
@@ -702,10 +775,76 @@ agent_exit (int rc)
 }
 
 
+void
+agent_init_default_ctrl (struct server_control_s *ctrl)
+{
+  /* Note we ignore malloc errors because we can't do much about it
+     and the request will fail anyway shortly after this
+     initialization. */
+  if (ctrl->display)
+    free (ctrl->display);
+  ctrl->display = default_display? strdup (default_display) : NULL;
+
+  if (ctrl->ttyname)
+    free (ctrl->ttyname);
+  ctrl->ttyname = default_ttyname? strdup (default_ttyname) : NULL;
+
+  if (ctrl->ttytype)
+    free (ctrl->ttytype);
+  ctrl->ttytype = default_ttytype? strdup (default_ttytype) : NULL;
+
+  if (ctrl->lc_ctype)
+    free (ctrl->lc_ctype);
+  ctrl->lc_ctype = default_lc_ctype? strdup (default_lc_ctype) : NULL;
+
+  if (ctrl->lc_messages)
+    free (ctrl->lc_messages);
+  ctrl->lc_messages = default_lc_messages? strdup (default_lc_messages) : NULL;
+}
+
+
+/* Reread parts of the configuration.  Note, that this function is
+   obviously not thread-safe and should only be called from the PTH
+   signal handler. 
+
+   Fixme: Due to the way the argument parsing works, we create a
+   memory leak here for all string type arguments.  There is currently
+   no clean way to tell whether the memory for the argument has been
+   allocated or points into the process' original arguments.  Unless
+   we have a mechanism to tell this, we need to live on with this. */
 static void
 reread_configuration (void)
 {
-  /* FIXME: Move parts of the option parsing to here. */
+  ARGPARSE_ARGS pargs;
+  FILE *fp;
+  unsigned int configlineno = 0;
+  int dummy;
+
+  if (!config_filename)
+    return; /* No config file. */
+
+  fp = fopen (config_filename, "r");
+  if (!fp)
+    {
+      log_error (_("option file `%s': %s\n"),
+                 config_filename, strerror(errno) );
+      return;
+    }
+
+  parse_rereadable_options (NULL); /* Start from the default values. */
+
+  memset (&pargs, 0, sizeof pargs);
+  dummy = 0;
+  pargs.argc = &dummy;
+  pargs.flags = 1;  /* do not remove the args */
+  while (optfile_parse (fp, config_filename, &configlineno, &pargs, opts) )
+    {
+      if (pargs.r_opt < -1)
+        pargs.err = 1; /* Print a warning. */
+      else /* Try to parse this option - ignore unchangeable ones. */
+        parse_rereadable_options (&pargs);
+    }
+  fclose (fp);
 }
 
 

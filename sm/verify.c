@@ -257,6 +257,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       KsbaSexp serial;
       char *msgdigest = NULL;
       size_t msgdigestlen;
+      char *ctattr;
 
       err = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
       if (!signer && err == KSBA_No_Data && data_fd == -1 && is_detached)
@@ -312,6 +313,35 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         }
       else /* real error */
         break;
+
+      err = ksba_cms_get_sigattr_oids (cms, signer,
+                                       "1.2.840.113549.1.9.3",&ctattr);
+      if (!err) 
+        {
+          const char *s;
+
+          if (DBG_X509)
+            log_debug ("signer %d - content-type attribute: %s", signer, ctattr);
+          s = ksba_cms_get_content_oid (cms, 1);
+          if (!s || strcmp (ctattr, s))
+            {
+              log_error ("content-type attribute does not match "
+                         "actual content-type\n");
+              ksba_free (ctattr);
+              ctattr = NULL;
+              goto next_signer;
+            }
+          ksba_free (ctattr);
+          ctattr = NULL;
+        }
+      else if (err != -1)
+        {
+          log_error ("error getting content-type attribute: %s\n",
+                     ksba_strerror (err));
+          goto next_signer;
+        }
+      err = 0;
+
 
       sigval = ksba_cms_get_sig_val (cms, signer);
       if (!sigval)

@@ -1,3 +1,76 @@
+2002-12-04  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c: New variable config_filename.
+	(parse_rereadable_options): New.
+	(main): Use it here.  Add setting of default values, set
+	config_filename.
+	(reread_configuration): Filled with actual code.
+
+2002-12-03  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (read_key): Don't run make_canonical on a NULL buffer.
+
+	* command.c (parse_hexstring): New.
+	(cmd_sethash): Use it.
+	(parse_keygrip): New.
+	(cmd_havekey, cmd_sigkey): Use it.
+	(cmd_passwd): New.
+	* genkey.c (agent_protect_and_store): New.
+	(store_key): Add arg FORCE.
+	(agent_genkey): Pass false to this force of store_key.
+
+2002-11-13  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): Switch all messages to utf-8.
+
+	* simple-pwquery.c (agent_send_all_options): Use $GPG_TTY and
+	stdin with ttyname.
+
+	* cache.c (new_data): Uiih - /sizeof d/sizeof *d/.
+
+2002-11-10  Werner Koch  <wk@gnupg.org>
+
+	* command.c (option_handler): Fix keep_tty check.
+
+2002-11-06  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): Make sure we have a default ttyname.
+	* command.c (option_handler): Check opt.keep_tty here
+	* query.c (start_pinentry): but not anymore here.
+
+2002-11-05  Werner Koch  <wk@gnupg.org>
+
+	* agent.h (opt,server_control_s): Move display and lc_ variables
+	to the control struct so that they are per connection.
+	* gpg-agent.c (agent_init_default_ctrl): New.
+	(main): Assign those command line options to new default_* variables.
+	Reset DISPLAY in server mode so that tehre is no implicit default.
+	* command.c (start_command_handler): Initialize and deinitialize
+	the control values.
+	(option_handler): Work on the ctrl values and not on the opt.
+	* query.c (start_pinentry): New argument CTRL to set the display
+	connection specific.  Changed all callers to pass this value.
+	(agent_askpin,agent_get_passphrase,agent_get_confirmation): Add
+	CTRL arg and pass it ot start_pinentry.
+	* command.c (cmd_get_passphrase): Pass CTRL argument.
+	* trustlist.c (agent_marktrusted):  Add CTRL argument  
+	* command.c (cmd_marktrusted): Pass CTRL argument
+	* divert-scd.c (ask_for_card):  Add CTRL arg. 
+	(divert_pksign,divert_pkdecrypt): Ditto.  Changed caller.
+	(getpin_cb): Use OPAQUE to pass the CTRL variable.  Changed both 
+	users.
+	* findkey.c (unprotect): Add CTRL arg.
+	(agent_key_from_file): Ditto.
+
+	* query.c (unlock_pinentry): Disconnect the pinentry so that we
+	start a new one for each request.  This is required to support
+	clients with different environments (e.g. X magic cookies).
+
+2002-09-05  Neal H. Walfield  <neal@cs.uml.edu>
+
+	* gpg-agent.c (main) [USE_GNU_PTH]: No need to call
+	assuan_set_io_func as assuan is smart.
+
 2002-09-25  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.c (handle_signal): Flush cache on SIGHUP.

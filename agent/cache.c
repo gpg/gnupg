@@ -67,7 +67,7 @@ new_data (const void *data, size_t length)
      secure storage provider*/
   total = length + 32 - (length % 32);
 
-  d = gcry_malloc_secure (sizeof d + total - 1);
+  d = gcry_malloc_secure (sizeof *d + total - 1);
   if (d)
     {
       d->totallen = total;

@@ -228,7 +228,7 @@ agent_listtrusted (void *assuan_context)
    whether this is actual wants he want to do.
 */
 int 
-agent_marktrusted (const char *name, const char *fpr, int flag)
+agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
 {
   int rc;
   static char key[41];
@@ -254,7 +254,7 @@ agent_marktrusted (const char *name, const char *fpr, int flag)
                 "has the fingerprint:%%0A"
                 "  %s", name, fpr) < 0 )
     return GNUPG_Out_Of_Core;
-  rc = agent_get_confirmation (desc, "Correct", "No");
+  rc = agent_get_confirmation (ctrl, desc, "Correct", "No");
   free (desc);
   if (rc)
     return rc;
@@ -265,7 +265,7 @@ agent_marktrusted (const char *name, const char *fpr, int flag)
                 "to correctly certify user certificates?",
                 name) < 0 )
     return GNUPG_Out_Of_Core;
-  rc = agent_get_confirmation (desc, "Yes", "No");
+  rc = agent_get_confirmation (ctrl, desc, "Yes", "No");
   free (desc);
   if (rc)
     return rc;

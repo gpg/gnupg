@@ -34,7 +34,7 @@
 
 
 static int
-ask_for_card (const unsigned char *shadow_info, char **r_kid)
+ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
 {
   int rc, i;
   const unsigned char *s;
@@ -119,7 +119,7 @@ ask_for_card (const unsigned char *shadow_info, char **r_kid)
             }
           else
             {
-              rc = agent_get_confirmation (desc, NULL, NULL);
+              rc = agent_get_confirmation (ctrl, desc, NULL, NULL);
               free (desc);
             }
         }
@@ -174,8 +174,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   struct pin_entry_info_s *pi;
   int rc;
   char *desc;
-
-  assert (!opaque);
+  CTRL ctrl = opaque;
 
   if (maxbuf < 2)
     return GNUPG_Invalid_Value;
@@ -195,7 +194,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
                  info? info:"",
                  info? "')":"") < 0)
     desc = NULL;
-  rc = agent_askpin (desc?desc:info, pi);
+  rc = agent_askpin (ctrl, desc?desc:info, pi);
   free (desc);
   if (!rc)
     {
@@ -210,7 +209,8 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 
 
 int
-divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
+divert_pksign (CTRL ctrl, 
+               const unsigned char *digest, size_t digestlen, int algo,
                const unsigned char *shadow_info, unsigned char **r_sig)
 {
   int rc;
@@ -220,7 +220,7 @@ divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
   unsigned char *data;
   size_t ndata;
 
-  rc = ask_for_card (shadow_info, &kid);
+  rc = ask_for_card (ctrl, shadow_info, &kid);
   if (rc)
     return rc;
 
@@ -229,7 +229,7 @@ divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
   if (rc)
     return rc;
 
-  rc = agent_card_pksign (kid, getpin_cb, NULL,
+  rc = agent_card_pksign (kid, getpin_cb, ctrl,
                           data, ndata, &sigval, &siglen);
   if (!rc)
     *r_sig = sigval;
@@ -244,7 +244,8 @@ divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
    key identified by SHADOW_INFO and return the plaintext in an
    allocated buffer in R_BUF.  */
 int  
-divert_pkdecrypt (const unsigned char *cipher,
+divert_pkdecrypt (CTRL ctrl,
+                  const unsigned char *cipher,
                   const unsigned char *shadow_info,
                   char **r_buf, size_t *r_len)
 {
@@ -288,11 +289,11 @@ divert_pkdecrypt (const unsigned char *cipher,
   ciphertext = s;
   ciphertextlen = n;
 
-  rc = ask_for_card (shadow_info, &kid);
+  rc = ask_for_card (ctrl, shadow_info, &kid);
   if (rc)
     return rc;
 
-  rc = agent_card_pkdecrypt (kid, getpin_cb, NULL,
+  rc = agent_card_pkdecrypt (kid, getpin_cb, ctrl,
                              ciphertext, ciphertextlen,
                              &plaintext, &plaintextlen);
   if (!rc)

@@ -1,3 +1,12 @@
+2002-11-14  Werner Koch  <wk@gnupg.org>
+
+	* keybox-search.c (blob_cmp_name) <compare all names>: Fixed
+	length compare; there is no 0 stored since nearly a year.  
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (AM_CPPFLAGS): Fix ytpo.
+
 2002-08-10  Werner Koch  <wk@gnupg.org>
 
 	* keybox-search.c (blob_cmp_fpr_part): New.
@@ -16,7 +25,7 @@
 2002-06-19  Werner Koch  <wk@gnupg.org>
 
 	* keybox-init.c (keybox_set_ephemeral): New.
-	* keybox-blob.c (create_blob_header): Store epheermal flag.
+	* keybox-blob.c (create_blob_header): Store ephemeral flag.
 	(_keybox_create_x509_blob): Pass epheermal flag on.
 	* keybox-update.c (keybox_insert_cert): Ditto.
 	* keybox-search.c (blob_get_blob_flags): New.

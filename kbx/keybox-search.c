@@ -234,9 +234,8 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
           len = get32 (buffer+mypos+4);
           if (off+len > length)
             return 0; /* error: better stop here out of bounds */
-          if (len < 2)
-            continue; /* empty name or 0 not stored */
-          len--;
+          if (len < 1)
+            continue; /* empty name */
           if (substr)
             {
               if (ascii_memcasemem (buffer+off, len, name, namelen))

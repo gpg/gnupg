@@ -1,3 +1,14 @@
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* isascii.c: New file.
+	* putc_unlocked.c: Likewise.
+
+2002-10-28  Neal H. Walfield  <neal@g10code.de>
+
+	* signal.c (caught_fatal_sig): Remove superfluous zero
+	initializer.
+	(caught_sigusr1): Likewise.
+
 2002-09-04  Neal H. Walfield  <neal@g10code.de>
 
 	* vasprintf.c (vasprintf) [va_copy]: Use va_copy.

@@ -64,7 +64,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
       log_printhex ("keygrip:", ctrl->keygrip, 20);
       log_printhex ("cipher: ", ciphertext, ciphertextlen);
     }
-  s_skey = agent_key_from_file (ctrl->keygrip, &shadow_info, 0);
+  s_skey = agent_key_from_file (ctrl, ctrl->keygrip, &shadow_info, 0);
   if (!s_skey && !shadow_info)
     {
       log_error ("failed to read the secret key\n");
@@ -81,7 +81,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
           goto leave;
         }
 
-      rc = divert_pkdecrypt (ciphertext, shadow_info, &buf, &len );
+      rc = divert_pkdecrypt (ctrl, ciphertext, shadow_info, &buf, &len );
       if (rc)
         {
           log_error ("smartcard decryption failed: %s\n", gnupg_strerror (rc));

@@ -266,13 +266,12 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
     BUG ();
   gcry_mpi_release (frame);
   
-  
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_CRYPTO)
       log_debug ("gcry_pk_verify: %s\n", gcry_strerror (rc));
   gcry_sexp_release (s_sig);
   gcry_sexp_release (s_hash);
-  gcry_sexp_release (s_sig);
+  gcry_sexp_release (s_pkey);
   return map_gcry_err (rc);
 }
 

@@ -248,8 +248,12 @@ start_agent (void)
       if (rc)
 	return map_assuan_err (rc);
     }
-  if (!opt.ttyname && ttyname (1))
-    dft_ttyname = ttyname (1);
+  if (!opt.ttyname)
+    {
+      dft_ttyname = getenv ("GPG_TTY");
+      if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
+        dft_ttyname = ttyname (0);
+    }
   if (opt.ttyname || dft_ttyname)
     {
       char *optstr;
@@ -747,5 +751,27 @@ gpgsm_agent_learn ()
   if (rc)
     return map_assuan_err (rc);
   return learn_parm.error;
+}
+
+
+/* Ask the agent to change the passphrase of the key identified by HEXKEYGRIP. */
+int
+gpgsm_agent_passwd (const char *hexkeygrip)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  if (!hexkeygrip || strlen (hexkeygrip) != 40)
+    return GNUPG_Invalid_Value;
+
+  snprintf (line, DIM(line)-1, "PASSWD %s", hexkeygrip);
+  line[DIM(line)-1] = 0;
+
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  return map_assuan_err (rc);
 }
 

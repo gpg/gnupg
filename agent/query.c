@@ -1,5 +1,5 @@
 /* query.c - fork of the pinentry to query stuff from the user
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -56,9 +56,15 @@ struct entry_parm_s {
 
 
 
+/* Unlock the pinentry so that another thread can start one and
+   disconnect that pinentry - we do this after the unlock so that a
+   stalled pinentry does not block other threads.  Fixme: We should
+   have a timeout in Assuan for the disconnetc operation. */
 static int 
 unlock_pinentry (int rc)
 {
+  ASSUAN_CONTEXT ctx = entry_ctx;
+
 #ifdef USE_GNU_PTH
   if (!pth_mutex_release (&entry_lock))
     {
@@ -67,6 +73,8 @@ unlock_pinentry (int rc)
         rc = GNUPG_Internal_Error;
     }
 #endif
+  entry_ctx = NULL;
+  assuan_disconnect (ctx);
   return rc;
 }
 
@@ -75,7 +83,7 @@ unlock_pinentry (int rc)
    pinentry - we will serialize _all_ pinentry calls.
  */
 static int
-start_pinentry (void)
+start_pinentry (CTRL ctrl)
 {
   int rc;
   const char *pgmname;
@@ -96,7 +104,7 @@ start_pinentry (void)
     return 0; 
 
   if (opt.verbose)
-    log_info ("no running PIN Entry - starting it\n");
+    log_info ("starting a new PIN Entry\n");
       
   if (fflush (NULL))
     {
@@ -111,12 +119,11 @@ start_pinentry (void)
   else
     pgmname++;
 
-  /* FIXME: We must do this thread specific */
   argv[0] = pgmname;
-  if (opt.display && !opt.keep_display)
+  if (ctrl->display && !opt.keep_display)
     {
       argv[1] = "--display";
-      argv[2] = opt.display;
+      argv[2] = ctrl->display;
       argv[3] = NULL;
     }
   else
@@ -150,10 +157,10 @@ start_pinentry (void)
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (map_assuan_err (rc));
-  if (opt.ttyname && !opt.keep_tty)
+  if (ctrl->ttyname)
     {
       char *optstr;
-      if (asprintf (&optstr, "OPTION ttyname=%s", opt.ttyname) < 0 )
+      if (asprintf (&optstr, "OPTION ttyname=%s", ctrl->ttyname) < 0 )
 	return unlock_pinentry (GNUPG_Out_Of_Core);
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
@@ -161,30 +168,30 @@ start_pinentry (void)
       if (rc)
 	return unlock_pinentry (map_assuan_err (rc));
     }
-  if (opt.ttytype && !opt.keep_tty)
+  if (ctrl->ttytype)
     {
       char *optstr;
-      if (asprintf (&optstr, "OPTION ttytype=%s", opt.ttytype) < 0 )
+      if (asprintf (&optstr, "OPTION ttytype=%s", ctrl->ttytype) < 0 )
 	return unlock_pinentry (GNUPG_Out_Of_Core);
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
 	return unlock_pinentry (map_assuan_err (rc));
     }
-  if (opt.lc_ctype)
+  if (ctrl->lc_ctype)
     {
       char *optstr;
-      if (asprintf (&optstr, "OPTION lc-ctype=%s", opt.lc_ctype) < 0 )
+      if (asprintf (&optstr, "OPTION lc-ctype=%s", ctrl->lc_ctype) < 0 )
 	return unlock_pinentry (GNUPG_Out_Of_Core);
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       if (rc)
 	return unlock_pinentry (map_assuan_err (rc));
     }
-  if (opt.lc_messages)
+  if (ctrl->lc_messages)
     {
       char *optstr;
-      if (asprintf (&optstr, "OPTION lc-messages=%s", opt.lc_messages) < 0 )
+      if (asprintf (&optstr, "OPTION lc-messages=%s", ctrl->lc_messages) < 0 )
 	return unlock_pinentry (GNUPG_Out_Of_Core);
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
@@ -230,7 +237,8 @@ all_digitsp( const char *s)
    number here and repeat it as long as we have invalid formed
    numbers. */
 int
-agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
+agent_askpin (CTRL ctrl,
+              const char *desc_text, struct pin_entry_info_s *pininfo)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -252,7 +260,7 @@ agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
 
   is_pin = desc_text && strstr (desc_text, "PIN");
 
-  rc = start_pinentry ();
+  rc = start_pinentry (ctrl);
   if (rc)
     return rc;
 
@@ -335,7 +343,8 @@ agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
    passphrase is returned in RETPASS as an hex encoded string to be
    freed by the caller */
 int 
-agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
+agent_get_passphrase (CTRL ctrl,
+                      char **retpass, const char *desc, const char *prompt,
                       const char *errtext)
 {
 
@@ -349,7 +358,7 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
   if (opt.batch)
     return GNUPG_Bad_Passphrase; 
 
-  rc = start_pinentry ();
+  rc = start_pinentry (ctrl);
   if (rc)
     return rc;
 
@@ -417,12 +426,13 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
    confirmed it, GNUPG_Not_Confirmed for what the text says or an
    other error. */
 int 
-agent_get_confirmation (const char *desc, const char *ok, const char *cancel)
+agent_get_confirmation (CTRL ctrl,
+                        const char *desc, const char *ok, const char *cancel)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
 
-  rc = start_pinentry ();
+  rc = start_pinentry (ctrl);
   if (rc)
     return rc;
 

@@ -1,5 +1,5 @@
 /* pksign.c - public key signing (well, acually using a secret key)
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -98,7 +98,8 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
   if (!ctrl->have_keygrip)
     return seterr (No_Secret_Key);
 
-  s_skey = agent_key_from_file (ctrl->keygrip, &shadow_info, ignore_cache);
+  s_skey = agent_key_from_file (ctrl,
+                                ctrl->keygrip, &shadow_info, ignore_cache);
   if (!s_skey && !shadow_info)
     {
       log_error ("failed to read the secret key\n");
@@ -110,7 +111,8 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
     { /* divert operation to the smartcard */
       unsigned char *sigbuf;
 
-      rc = divert_pksign (ctrl->digest.value, 
+      rc = divert_pksign (ctrl, 
+                          ctrl->digest.value, 
                           ctrl->digest.valuelen,
                           ctrl->digest.algo,
                           shadow_info, &sigbuf);

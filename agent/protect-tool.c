@@ -275,6 +275,8 @@ read_key (const char *fname)
   unsigned char *key;
   
   buf = read_file (fname, &buflen);
+  if (!buf)
+    return NULL;
   key = make_canonical (fname, buf, buflen);
   xfree (buf);
   return key;

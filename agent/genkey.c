@@ -30,7 +30,7 @@
 #include "i18n.h"
 
 static int
-store_key (GCRY_SEXP private, const char *passphrase)
+store_key (GCRY_SEXP private, const char *passphrase, int force)
 {
   int rc;
   char *buf;
@@ -65,13 +65,13 @@ store_key (GCRY_SEXP private, const char *passphrase)
       buf = p;
     }
 
-  rc = agent_write_private_key (grip, buf, len, 0);
+  rc = agent_write_private_key (grip, buf, len, force);
   xfree (buf);
   return rc;
 }
 
 /* Callback function to compare the first entered PIN with the one
-   currently beeing entered. */
+   currently being entered. */
 static int
 reenter_compare_cb (struct pin_entry_info_s *pi)
 {
@@ -119,9 +119,9 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
     pi2->check_cb = reenter_compare_cb;
     pi2->check_cb_arg = pi->pin;
 
-    rc = agent_askpin (text1, pi);
+    rc = agent_askpin (ctrl, text1, pi);
     if (!rc)
-      rc = agent_askpin (text2, pi2);
+      rc = agent_askpin (ctrl, text2, pi2);
     if (rc)
       return rc;
     if (!*pi->pin)
@@ -162,7 +162,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
   
   /* store the secret key */
   log_debug ("storing private key\n");
-  rc = store_key (s_private, pi? pi->pin:NULL);
+  rc = store_key (s_private, pi? pi->pin:NULL, 0);
   xfree (pi); pi = NULL;
   gcry_sexp_release (s_private);
   if (rc)
@@ -198,3 +198,41 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
   return 0;
 }
 
+
+
+/* Apply a new passpahrse to the key S_SKEY and store it. */
+int
+agent_protect_and_store (CTRL ctrl, GCRY_SEXP s_skey) 
+{
+  struct pin_entry_info_s *pi, *pi2;
+  int rc;
+
+  {
+    const char *text1 = _("Please enter the new passphrase");
+    const char *text2 = _("Please re-enter this passphrase");
+
+    pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
+    pi2 = pi + (sizeof *pi + 100);
+    pi->max_length = 100;
+    pi->max_tries = 3;
+    pi2->max_length = 100;
+    pi2->max_tries = 3;
+    pi2->check_cb = reenter_compare_cb;
+    pi2->check_cb_arg = pi->pin;
+
+    rc = agent_askpin (ctrl, text1, pi);
+    if (!rc)
+      rc = agent_askpin (ctrl, text2, pi2);
+    if (rc)
+      return rc;
+    if (!*pi->pin)
+      {
+        xfree (pi);
+        pi = NULL; /* User does not want a passphrase. */
+      }
+  }
+
+  rc = store_key (s_skey, pi? pi->pin:NULL, 1);
+  xfree (pi);
+  return 0;
+}

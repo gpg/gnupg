@@ -131,9 +131,10 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 
 /* Unprotect the canconical encoded S-expression key in KEYBUF.  GRIP
    should be the hex encoded keygrip of that key to be used with the
-   cahing mechanism. */
+   caching mechanism. */
 static int
-unprotect (unsigned char **keybuf, const unsigned char *grip, int ignore_cache)
+unprotect (CTRL ctrl,
+           unsigned char **keybuf, const unsigned char *grip, int ignore_cache)
 {
   struct pin_entry_info_s *pi;
   struct try_unprotect_arg_s arg;
@@ -176,7 +177,7 @@ unprotect (unsigned char **keybuf, const unsigned char *grip, int ignore_cache)
   arg.unprotected_key = NULL;
   pi->check_cb_arg = &arg;
 
-  rc = agent_askpin (NULL, pi);
+  rc = agent_askpin (ctrl, NULL, pi);
   if (!rc)
     {
       assert (arg.unprotected_key);
@@ -197,7 +198,8 @@ unprotect (unsigned char **keybuf, const unsigned char *grip, int ignore_cache)
    With IGNORE_CACHE passed as true the passphrase is not taken from
    the cache.*/
 GCRY_SEXP
-agent_key_from_file (const unsigned char *grip, unsigned char **shadow_info,
+agent_key_from_file (CTRL ctrl,
+                     const unsigned char *grip, unsigned char **shadow_info,
                      int ignore_cache)
 {
   int i, rc;
@@ -271,7 +273,7 @@ agent_key_from_file (const unsigned char *grip, unsigned char **shadow_info,
     case PRIVATE_KEY_CLEAR:
       break; /* no unprotection needed */
     case PRIVATE_KEY_PROTECTED:
-      rc = unprotect (&buf, grip, ignore_cache);
+      rc = unprotect (ctrl, &buf, grip, ignore_cache);
       if (rc)
         log_error ("failed to unprotect the secret key: %s\n",
                    gnupg_strerror (rc));
