@@ -1071,6 +1071,7 @@ main( int argc, char **argv )
 	  case oOpenPGP:
 	    opt.rfc1991 = 0;
 	    opt.rfc2440 = 1;
+	    opt.allow_non_selfsigned_uid = 1;
 	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 0;
 	    opt.force_v3_sigs = 0;

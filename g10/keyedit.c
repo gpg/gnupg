@@ -1419,7 +1419,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                  keyid_from_fingerprint(pk->revkey[i].fpr,
 					MAX_FINGERPRINT_LEN,r_keyid);
  
-                 user=get_user_id_string(r_keyid);
+                 user=get_user_id_string_native(r_keyid);
  
                  tty_printf(_("This key may be revoked by %s key %s%s\n"),
                             pubkey_algo_to_string(pk->revkey[i].algid),

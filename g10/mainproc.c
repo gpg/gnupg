@@ -1276,6 +1276,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	for( un=keyblock; un; un = un->next ) {
 	    if( un->pkt->pkttype != PKT_USER_ID )
 		continue;
+	    if ( !un->pkt->pkt.user_id->created )
+	        continue;
             if ( un->pkt->pkt.user_id->is_revoked )
                 continue;
             if ( !un->pkt->pkt.user_id->is_primary )

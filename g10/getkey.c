@@ -1354,12 +1354,13 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         pk->is_valid = 1;
     }
 
-    /* If the key isn't valid yet, and we have --always-trust set,
-       then force it valid. */
-    if(opt.always_trust && !pk->is_valid)
+    /* If the key isn't valid yet, and we have
+       --allow-non-selfsigned-uid set, then force it valid. */
+    if(!pk->is_valid && opt.allow_non_selfsigned_uid)
       {
 	if(opt.verbose)
-	  log_info(_("Invalid key %08lX made valid by --always-trust\n"),
+	  log_info(_("Invalid key %08lX made valid by "
+		     "--allow-non-selfsigned-uid\n"),
 		   (ulong)keyid_from_pk(pk,NULL));
 
 	pk->is_valid = 1;
@@ -1454,7 +1455,22 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         /* none is flagged primary - use the latest user ID we have */
         uidnode2->pkt->pkt.user_id->is_primary = 1;
     }
+    else
+      {
+	/* None of our uids were self-signed, so pick the first one to
+	   be the primary.  This is the best we can do here since
+	   there are no self sigs to date the uids. */
 
+	for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
+	    k = k->next )
+	  {
+	    if(k->pkt->pkttype==PKT_USER_ID)
+	      {
+		k->pkt->pkt.user_id->is_primary=1;
+		break;
+	      }
+	  }
+      }
 }
 
 
@@ -1611,6 +1627,13 @@ merge_selfsigs( KBNODE keyblock )
         }
     }
 
+    /* If the main key is not valid, then the subkeys aren't either,
+       even if they have binding sigs. */
+    if(!main_pk->is_valid)
+      for(k=keyblock; k; k=k->next)
+	if(k->pkt->pkttype==PKT_PUBLIC_SUBKEY)
+	  k->pkt->pkt.public_key->is_valid=0;
+
     /* set the preference list of all keys to those of the primary
      * user ID.  Note: we use these preferences when we don't know by
      * which user ID the key has been selected.
@@ -1640,7 +1663,6 @@ merge_selfsigs( KBNODE keyblock )
             pk->mdc_feature = mdc_feature;
         }
     }
-
 }
 
 

@@ -1,3 +1,31 @@
+2002-03-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): --openpgp implies --allow-non-selfsigned-uid.
+
+	* getkey.c (merge_selfsigs_main): If none of the uids are primary
+	(because none are valid) then pick the first to be primary (but
+	still invalid).  This is for cosmetics in case some display needs
+	to print a user ID from a non-selfsigned key.  Also use
+	--allow-non-selfsigned-uid to make such a key valid and not
+	--always-trust.  The key is *not* automatically trusted via
+	--allow-non-selfsigned-uid.
+
+	* mainproc.c (check_sig_and_print): Make sure non-selfsigned uids
+	print [uncertain] on verification even though one is primary now.
+
+	* getkey.c (merge_selfsigs): If the main key is not valid, then
+	neither are the subkeys.
+
+	* import.c (import_one): Allow --allow-non-selfsigned-uid to work
+	on completely unsigned keys.  Print the uids in UTF8.  Remove
+	mark_non_selfsigned_uids_valid().
+
+	* keyedit.c (show_key_with_all_names): Show revocation key as
+	UTF8.
+
+	* sign.c (clearsign_file): Allow --not-dash-escaped to work with
+	v3 keys.
+
 2002-03-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (chk_self_sigs): Show which user ID a bad self-sig

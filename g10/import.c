@@ -67,7 +67,6 @@ static int import_revoke_cert( const char *fname, KBNODE node,
                                struct stats_s *stats);
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
 			  PKT_public_key *pk, u32 *keyid );
-static void mark_non_selfsigned_uids_valid( KBNODE keyblock, u32 *kid );
 static int delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid );
 static int merge_blocks( const char *fname, KBNODE keyblock_orig,
 			 KBNODE keyblock, u32 *keyid,
@@ -445,8 +444,18 @@ import_one( const char *fname, KBNODE keyblock, int fast,
     if( rc )
 	return rc== -1? 0:rc;
 
+    /* If we allow such a thing, mark unsigned uids as valid */
     if( opt.allow_non_selfsigned_uid )
-	mark_non_selfsigned_uids_valid( keyblock, keyid );
+      for( node=keyblock; node; node = node->next )
+	if( node->pkt->pkttype == PKT_USER_ID && !(node->flag & 1) )
+	  {
+	    char *user=utf8_to_native(node->pkt->pkt.user_id->name,
+				      node->pkt->pkt.user_id->len,0);
+	    node->flag |= 1;
+	    log_info( _("key %08lX: accepted non self-signed user ID '%s'\n"),
+		      (ulong)keyid[1],user);
+	    m_free(user);
+	  }
 
     if( !delete_inv_parts( fname, keyblock, keyid ) ) {
 	if( !opt.quiet ) {
@@ -864,30 +873,6 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	}
     }
     return 0;
-}
-
-
-
-/****************
- * If a user ID has at least one signature, mark it as valid
- */
-static void
-mark_non_selfsigned_uids_valid( KBNODE keyblock, u32 *kid )
-{
-    KBNODE node;
-    for(node=keyblock->next; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_USER_ID && !(node->flag & 1) ) {
-	    if( (node->next && node->next->pkt->pkttype == PKT_SIGNATURE)
-		|| !node->next ) {
-		node->flag |= 1;
-		log_info( _("key %08lX: accepted non self-signed user ID '"),
-							 (ulong)kid[1]);
-		print_string( log_stream(), node->pkt->pkt.user_id->name,
-					    node->pkt->pkt.user_id->len, 0 );
-		fputs("'\n", log_stream() );
-	    }
-	}
-    }
 }
 
 /****************
