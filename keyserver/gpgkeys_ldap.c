@@ -109,7 +109,7 @@ ldap_to_gpg_err(LDAP *ld)
 int
 send_key(int *eof)
 {
-  int err,gotit=0,keysize=1,ret=KEYSERVER_INTERNAL_ERROR;
+  int err,begin=0,end=0,keysize=1,ret=KEYSERVER_INTERNAL_ERROR;
   char *dn=NULL,line[MAX_LINE],*key[2]={NULL,NULL};
   char keyid[17];
   LDAPMod mod, *attrs[2];
@@ -147,11 +147,11 @@ send_key(int *eof)
   while(fgets(line,MAX_LINE,input)!=NULL)
     if(sscanf(line,"KEY %16s BEGIN\n",keyid)==1)
       {
-	gotit=1;
+	begin=1;
 	break;
       }
 
-  if(!gotit)
+  if(!begin)
     {
       /* i.e. eof before the KEY BEGIN was found.  This isn't an
 	 error. */
@@ -160,14 +160,12 @@ send_key(int *eof)
       goto fail;
     }
 
-  gotit=0;
-
   /* Now slurp up everything until we see the END */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
     if(sscanf(line,"KEY %16s END\n",keyid)==1)
       {
-	gotit=1;
+	end=1;
 	break;
       }
     else
@@ -184,7 +182,7 @@ send_key(int *eof)
 	strcat(key[0],line);
       }
 
-  if(!gotit)
+  if(!end)
     {
       fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
       *eof=1;
@@ -208,7 +206,7 @@ send_key(int *eof)
   free(key[0]);
   free(dn);
 
-  if(ret!=0)
+  if(ret!=0 && begin)
     fprintf(output,"KEY %s FAILED %d\n",keyid,ret);
 
   /* Not a fatal error */
