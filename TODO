@@ -64,6 +64,9 @@
     an even log so that other software can display a key history or
     alike with GnuPG results.  This should be connected to the keyrings.
 
+  * Using --list-only to check for recipients while decrypting may
+    yield an error about an unknown packet.
+
 
 Scheduled for 1.1
 -----------------

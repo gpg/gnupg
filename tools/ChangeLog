@@ -1,3 +1,8 @@
+2001-06-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgsplit.c: New.
+	* Makefile.am (bin_PROGRAMS): Install gpgsplit.
+
 2001-03-27  Werner Koch  <wk@gnupg.org>
 
 	* mail-signed-keys: Add option --dry-run.
