@@ -42,5 +42,9 @@
 #define xstrdup(a)       gcry_xstrdup ((a))
 
 
+#define seterr(a)  (GPGSM_ ## a)
+
+/*-- misc.c --*/
+int map_ksba_err (int err);
 
 #endif /*UTIL_H*/

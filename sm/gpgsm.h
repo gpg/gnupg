@@ -23,6 +23,19 @@
 
 #include "util.h"
 
+/* Error numbers */
+enum {
+  GPGSM_EOF = -1,
+  GPGSM_No_Error = 0,
+  GPGSM_General_Error = 1, 
+  GPGSM_Out_Of_Core = 2,
+  GPGSM_Invalid_Value = 3,
+  GPGSM_IO_Error = 4,
+
+
+};
+
+
 /* A large struct name "opt" to keep global flags */
 struct {
   unsigned int debug; /* debug flags (DBG_foo_VALUE) */
@@ -82,5 +95,8 @@ void gpgsm_exit (int rc);
 /*-- server.c --*/
 void gpgsm_server (void);
 
+
+/*-- import.c --*/
+int gpgsm_import (int in_fd);
 
 #endif /*GPGSM_H*/

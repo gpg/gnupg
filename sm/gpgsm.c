@@ -477,7 +477,7 @@ main ( int argc, char **argv)
   int orig_argc;
   char **orig_argv;
   const char *fname;
-  char *username;
+  /*  char *username;*/
   int may_coredump;
   STRLIST sl, remusr= NULL, locusr=NULL;
   STRLIST nrings=NULL;
