@@ -115,42 +115,46 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
     PACKET pkt;
     KBNODE keyblock = NULL;
     KBNODE kbctx, node;
+    int ndesc;
+    KEYDB_SEARCH_DESC *desc;
     KEYDB_HANDLE kdbhd;
     STRLIST sl;
-    int all = !users;
-    int all_first = 1;
 
     *any = 0;
     init_packet( &pkt );
-
     kdbhd = keydb_new (secret);
 
-    /* use the correct sequence. strlist_last,prev do work correctly with
-     * NULL pointers :-) */
-    for( sl=strlist_last(users); sl || all ; sl=strlist_prev( users, sl )) {
-	if( all ) { /* get the next user */
-	    rc = all_first ? keydb_search_first (kdbhd)
-                           : keydb_search_next (kdbhd);
-            all_first = 0;
-	    if( rc == -1 )  /* EOF */
-		break;
-	    if( rc ) {
-		log_error ("error searching key: %s\n", g10_errstr(rc));
-		break;
-	    }
-	}
-	else {
-            KEYDB_SEARCH_DESC desc;
-
-            classify_user_id (sl->d, &desc);
-            rc = desc.mode? keydb_search (kdbhd, &desc, 1):G10ERR_INV_USER_ID;
-	    if( rc ) {
+    if (!users) {
+        ndesc = 1;
+        desc = m_alloc_clear ( ndesc * sizeof *desc);
+        desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
+    }
+    else {
+        for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
+            ;
+        desc = m_alloc ( ndesc * sizeof *desc);
+        
+        for (ndesc=0, sl=users; sl; sl = sl->next) {
+            classify_user_id (sl->d, desc+ndesc);
+            if (desc->mode) 
+                ndesc++;
+            else
                 log_error (_("key `%s' not found: %s\n"),
-                           sl->d, g10_errstr (rc));
-		rc = 0;
-		continue;
-	    }
-	}
+                           sl->d, g10_errstr (G10ERR_INV_USER_ID));
+        }
+
+        /* it would be nice to see which of the given users did
+           actually match one in the keyring.  To implement this we
+           need to have a found flag for each entry in desc and to set
+           this we must check all those entries after a match to mark
+           all matched one - currently we stop at the first match.  To
+           do this we need an extra flag to enable this feature so */
+    }
+
+
+    while (!(rc = keydb_search (kdbhd, desc, ndesc))) {
+	if (!users) 
+            desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
         /* read the keyblock */
         rc = keydb_get_keyblock (kdbhd, &keyblock );

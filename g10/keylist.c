@@ -122,7 +122,7 @@ list_one( STRLIST names, int secret )
     GETKEY_CTX ctx;
 
     /* fixme: using the bynames function has the disadvantage that we
-     * don't knowether one of the names given was not found.  OTOH,
+     * don't know wether one of the names given was not found.  OTOH,
      * this function has the advantage to list the names in the
      * sequence as defined by the keyDB and does not duplicate
      * outputs.  A solution could be do test whether all given have
