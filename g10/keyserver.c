@@ -1,5 +1,5 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -741,6 +741,7 @@ keyserver_spawn(int action,STRLIST list,
   fprintf(spawn->tochild,"# This is a gpg keyserver communications file\n");
   fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(spawn->tochild,"PROGRAM %s\n",VERSION);
+  fprintf(spawn->tochild,"SCHEME %s\n",opt.keyserver_scheme);
 
   if(opt.keyserver_opaque)
     fprintf(spawn->tochild,"OPAQUE %s\n",opt.keyserver_opaque);
