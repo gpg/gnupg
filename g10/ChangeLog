@@ -1,3 +1,16 @@
+2003-06-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main), keylist.c (show_policy_url, show_notation),
+	mainproc.c (check_sig_and_print): Emulate the old policy and
+	notation behavior (display by default).  Send to status-fd whether
+	it is displayed on the screen or not.
+
+	* g10.c (main): Since we now have some options in devel that won't
+	work in a stable branch gpg.conf file, try for a version-specific
+	gpg.conf-VERSION file before falling back to gpg.conf.
+
+	* main.h, options.h: Move various option flags to options.h.
+
 2003-05-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (check_sig_and_print), main.h, keylist.c

@@ -170,11 +170,6 @@ KBNODE make_comment_node( const char *s );
 KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
-#define IMPORT_ALLOW_LOCAL_SIGS      1
-#define IMPORT_REPAIR_PKS_SUBKEY_BUG 2
-#define IMPORT_FAST_IMPORT           4
-#define IMPORT_SK2PK                 8
-
 int parse_import_options(char *str,unsigned int *options);
 void import_keys( char **fnames, int nnames,
 		  void *stats_hd, unsigned int options );
@@ -187,11 +182,6 @@ void import_print_stats (void *hd);
 int collapse_uids( KBNODE *keyblock );
 
 /*-- export.c --*/
-#define EXPORT_INCLUDE_NON_RFC           1
-#define EXPORT_INCLUDE_LOCAL_SIGS        2
-#define EXPORT_INCLUDE_ATTRIBUTES        4
-#define EXPORT_INCLUDE_SENSITIVE_REVKEYS 8
-
 int parse_export_options(char *str,unsigned int *options);
 int export_pubkeys( STRLIST users, unsigned int options );
 int export_pubkeys_stream( IOBUF out, STRLIST users,
@@ -213,11 +203,6 @@ struct revocation_reason_info *
 void release_revocation_reason_info( struct revocation_reason_info *reason );
 
 /*-- keylist.c --*/
-#define LIST_SHOW_PHOTOS   1
-#define LIST_SHOW_POLICY   2
-#define LIST_SHOW_NOTATION 4
-#define LIST_SHOW_KEYRING  8
-
 void public_key_list( STRLIST list );
 void secret_key_list( STRLIST list );
 void reorder_keyblock (KBNODE keyblock);
@@ -232,10 +217,6 @@ void print_seckey_info (PKT_secret_key *sk);
 void print_pubkey_info (PKT_public_key *pk);
 
 /*-- verify.c --*/
-#define VERIFY_SHOW_PHOTOS   1
-#define VERIFY_SHOW_POLICY   2
-#define VERIFY_SHOW_NOTATION 4
-
 void print_file_status( int status, const char *name, int what );
 int verify_signatures( int nfiles, char **files );
 int verify_files( int nfiles, char **files );

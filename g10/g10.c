@@ -1175,6 +1175,7 @@ main( int argc, char **argv )
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
     opt.keyserver_options.try_dns_srv=1;
+    opt.verify_options=VERIFY_SHOW_POLICY|VERIFY_SHOW_NOTATION;
     opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames = 1;
 
@@ -1257,7 +1258,15 @@ main( int argc, char **argv )
 
     if( default_config )
       {
-	configname = make_filename(opt.homedir, "gpg" EXTSEP_S "conf", NULL );
+       /* Try for a version specific config file first */
+	configname = make_filename(opt.homedir,
+				   "gpg" EXTSEP_S "conf-" VERSION, NULL );
+	if(access(configname,R_OK))
+	  {
+	    m_free(configname);
+	    configname = make_filename(opt.homedir,
+				       "gpg" EXTSEP_S "conf", NULL );
+	  }
         if (!access (configname, R_OK))
           { /* Print a warning when both config files are present. */
             char *p = make_filename(opt.homedir, "options", NULL );

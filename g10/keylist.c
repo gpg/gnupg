@@ -114,6 +114,11 @@ print_pubkey_info (PKT_public_key *pk)
   tty_printf ("\n\n"); 
 }
 
+/*
+  mode=0 for stdout.
+  mode=1 for log_info + status messages
+  mode=2 for status messages only
+*/
 
 void
 show_policy_url(PKT_signature *sig,int indent,int mode)
@@ -125,26 +130,37 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
 
   while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len,&seq,&crit)))
     {
-      int i;
-      char *str;
+      if(mode!=2)
+	{
+	  int i;
+	  char *str;
 
-      for(i=0;i<indent;i++)
-	putchar(' ');
+	  for(i=0;i<indent;i++)
+	    putchar(' ');
 
-      /* This isn't UTF8 as it is a URL(?) */
-      if(crit)
-	str=_("Critical signature policy: ");
-      else
-	str=_("Signature policy: ");
+	  /* This isn't UTF8 as it is a URL(?) */
+	  if(crit)
+	    str=_("Critical signature policy: ");
+	  else
+	    str=_("Signature policy: ");
+	  if(mode)
+	    log_info("%s",str);
+	  else
+	    printf("%s",str);
+	  print_string(fp,p,len,0);
+	  fprintf(fp,"\n");
+	}
+
       if(mode)
-	log_info("%s",str);
-      else
-	printf("%s",str);
-      print_string(fp,p,len,0);
-      fprintf(fp,"\n");
-      write_status_buffer ( STATUS_POLICY_URL, p, len, 0 );
+	write_status_buffer ( STATUS_POLICY_URL, p, len, 0 );
     }
 }
+
+/*
+  mode=0 for stdout.
+  mode=1 for log_info + status messages
+  mode=2 for status messages only
+*/
 
 void
 show_notation(PKT_signature *sig,int indent,int mode)
@@ -159,8 +175,7 @@ show_notation(PKT_signature *sig,int indent,int mode)
   while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq,&crit)))
     if(len>=8)
       {
-	int n1,n2,i;
-	char *str;
+	int n1,n2;
 
 	n1=(p[4]<<8)|p[5];
 	n2=(p[6]<<8)|p[7];
@@ -171,27 +186,33 @@ show_notation(PKT_signature *sig,int indent,int mode)
 	    return;
 	  }
 
-	for(i=0;i<indent;i++)
-	  putchar(' ');
+	if(mode!=2)
+	  {
+	    int i;
+	    char *str;
 
-	/* This is UTF8 */
-	if(crit)
-	  str=_("Critical signature notation: ");
-	else
-	  str=_("Signature notation: ");
-	if(mode)
-	  log_info("%s",str);
-	else
-	  printf("%s",str);
-	print_utf8_string(fp,p+8,n1);
-	fprintf(fp,"=");
+	    for(i=0;i<indent;i++)
+	      putchar(' ');
 
-	if(*p&0x80)
-	  print_utf8_string(fp,p+8+n1,n2);
-	else
-	  fprintf(fp,"[ %s ]",_("not human readable"));
+	    /* This is UTF8 */
+	    if(crit)
+	      str=_("Critical signature notation: ");
+	    else
+	      str=_("Signature notation: ");
+	    if(mode)
+	      log_info("%s",str);
+	    else
+	      printf("%s",str);
+	    print_utf8_string(fp,p+8,n1);
+	    fprintf(fp,"=");
 
-	fprintf(fp,"\n");
+	    if(*p&0x80)
+	      print_utf8_string(fp,p+8+n1,n2);
+	    else
+	      fprintf(fp,"[ %s ]",_("not human readable"));
+
+	    fprintf(fp,"\n");
+	  }
 
 	if(mode)
 	  {

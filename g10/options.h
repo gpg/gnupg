@@ -215,4 +215,25 @@ struct {
 #define PGP7    (opt.compliance==CO_PGP7)
 #define PGP8    (opt.compliance==CO_PGP8)
 
+/* Various option flags */
+
+#define IMPORT_ALLOW_LOCAL_SIGS      1
+#define IMPORT_REPAIR_PKS_SUBKEY_BUG 2
+#define IMPORT_FAST_IMPORT           4
+#define IMPORT_SK2PK                 8
+
+#define EXPORT_INCLUDE_NON_RFC           1
+#define EXPORT_INCLUDE_LOCAL_SIGS        2
+#define EXPORT_INCLUDE_ATTRIBUTES        4
+#define EXPORT_INCLUDE_SENSITIVE_REVKEYS 8
+
+#define LIST_SHOW_PHOTOS   1
+#define LIST_SHOW_POLICY   2
+#define LIST_SHOW_NOTATION 4
+#define LIST_SHOW_KEYRING  8
+
+#define VERIFY_SHOW_PHOTOS   1
+#define VERIFY_SHOW_POLICY   2
+#define VERIFY_SHOW_NOTATION 4
+
 #endif /*G10_OPTIONS_H*/
