@@ -2,9 +2,22 @@
 # this should set $mpi_ln_src and mpi_ln_dst.
 # Note: this is called from the above directory.
 
-echo '# created by config.links - do not edit' >./mpi/asm-syntax.h
+
+mpi_extra_modules=
+
+echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
 case "${target}" in
+    i[345]86*-*-linuxaout* | i[345]86*-*-linuxoldld* | i[345]86*-*-*bsd*)
+	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
+	echo '#include "./i386/syntax.h"' >>./mpi/asm-syntax.h
+	path="i386"
+	;;
+    i[56]86*-*-linuxaout* | i[56]86*-*-linuxoldld* | i[56]86*-*-*bsd*)
+	echo '#define BSD_SYNTAX' >>./mpi/asm-syntax.h
+	echo '#include "./i386/syntax.h"' >>./mpi/asm-syntax.h
+	path="i586 i386"
+	;;
     i[3456]86*-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
 	echo '#include "./i386/syntax.h"' >>./mpi/asm-syntax.h
@@ -13,7 +26,27 @@ case "${target}" in
     i[56]86*-*-* | pentium-*-* | pentiumpro-*-*)
 	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
 	echo '#include "./i586/syntax.h"' >>./mpi/asm-syntax.h
-	path="i586"
+	path="i586 i386"
+	;;
+    alpha*-*-*)
+	echo '/* configured for alpha */' >>./mpi/asm-syntax.h
+	path="alpha"
+	mpi_extra_modules="udiv-qrnnd"
+	;;
+    hppa7000*-*-*)
+	echo '/* configured for HPPA (pa7000) */' >>./mpi/asm-syntax.h
+	path="hppa1_1 hppa"
+	mpi_extra_modules="udiv-qrnnd"
+	;;
+    hppa1.0*-*-*)
+	echo '/* configured for HPPA 1.0 */' >>./mpi/asm-syntax.h
+	path="hppa"
+	mpi_extra_modules="udiv-qrnnd"
+	;;
+    hppa*-*-*)	# assume pa7100
+	echo '/* configured for HPPA (pa7100) */' >>./mpi/asm-syntax.h
+	path="pa7100 hppa1_1 hppa"
+	mpi_extra_modules="udiv-qrnnd"
 	;;
     *)
 	echo '/* No assembler modules configured */' >>./mpi/asm-syntax.h
@@ -21,9 +54,38 @@ case "${target}" in
 	;;
 esac
 
+case "${target}" in
+    *-*-linuxaout* | *-*-linuxoldld*)
+	needs_underscore="y"
+	;;
+    *-*-linux* | *-sysv* | *-solaris*)
+	needs_underscore="n"
+	;;
+    *)
+	needs_underscore="y"
+	;;
+esac
+
+
+# Make sysdep.h
+echo '/* created by config.links - do not edit */' >./mpi/sysdep.h
+if test "$needs_underscore" = "y" ; then
+    cat <<EOF >>./mpi/sysdep.h
+#if __STDC__
+#define C_SYMBOL_NAME(name) _##name
+#else
+#define C_SYMBOL_NAME(name) _/**/name
+#endif
+EOF
+else
+    cat <<EOF >>./mpi/sysdep.h
+#define C_SYMBOL_NAME(name) name
+EOF
+fi
+
 
 # fixme: grep these modules from Makefile.in
-mpi_ln_modules="mpih-add1 mpih-mul1 mpih-mul2 mpih-mul3 \
+mpi_ln_modules="${mpi_extra_modules} mpih-add1 mpih-mul1 mpih-mul2 mpih-mul3 \
 		 mpih-shift mpih-sub1"
 
 mpi_ln_objects=

@@ -51,6 +51,8 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
     mpi_ptr_t mp_marker=NULL, bp_marker=NULL, ep_marker=NULL;
     mpi_ptr_t xp_marker=NULL;
     int assign_rp=0;
+    mpi_ptr_t tspace = NULL;
+    mpi_size_t tsize;
 
     esize = exp->nlimbs;
     msize = mod->nlimbs;
@@ -179,7 +181,23 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 		mpi_ptr_t tp;
 		mpi_size_t xsize;
 
-		mpihelp_mul_n(xp, rp, rp, rsize);
+		/*mpihelp_mul_n(xp, rp, rp, rsize);*/
+		if( rsize < KARATSUBA_THRESHOLD )
+		    mpih_sqr_n_basecase( xp, rp, rsize );
+		else {
+		    if( !tspace ) {
+			tsize = 2 * rsize;
+			tspace = mpi_alloc_limb_space( tsize, 0 );
+		    }
+		    else if( tsize < (2*rsize) ) {
+			mpi_free_limb_space( tspace );
+			tsize = 2 * rsize;
+			tspace = mpi_alloc_limb_space( tsize, 0 );
+
+		    }
+		    mpih_sqr_n( xp, rp, rsize, tspace );
+		}
+
 		xsize = 2 * rsize;
 		if( xsize > msize ) {
 		    mpihelp_divrem(xp + msize, 0, xp, xsize, mp, msize);
@@ -258,5 +276,6 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
     if( bp_marker ) mpi_free_limb_space( bp_marker );
     if( ep_marker ) mpi_free_limb_space( ep_marker );
     if( xp_marker ) mpi_free_limb_space( xp_marker );
+    if( tspace )    mpi_free_limb_space( tspace );
 }
 

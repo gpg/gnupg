@@ -35,6 +35,10 @@ typedef struct {
     byte radbuf[4];
     int  idx, idx2;
     u32 crc;
+    byte helpbuf[100];
+    int  helpidx, helplen;
+    int last_c;
+    int fake;
     int inp_checked;   /* set if inp has been checked */
     int inp_bypass;    /* set if the input is not armored */
     int inp_eof;
@@ -60,6 +64,13 @@ typedef struct {
 } cipher_filter_context_t;
 
 
+typedef struct {
+    size_t linesize;
+    byte *line;
+    size_t linelen;
+    size_t pos;
+    int eof;
+} text_filter_context_t;
 
 /*-- mdfilter.c --*/
 int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);
@@ -76,6 +87,10 @@ int compress_filter( void *opaque, int control,
 /*-- cipher.c --*/
 int cipher_filter( void *opaque, int control,
 		   IOBUF chain, byte *buf, size_t *ret_len);
+
+/*-- textfilter.c --*/
+int text_filter( void *opaque, int control,
+		 IOBUF chain, byte *buf, size_t *ret_len);
 
 
 

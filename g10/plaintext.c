@@ -29,6 +29,7 @@
 #include "packet.h"
 #include "ttyio.h"
 #include "filter.h"
+#include "main.h"
 
 
 /****************
@@ -124,27 +125,42 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 
 /****************
  * Ask for the detached datafile and calculate the digest from it.
+ * INFILE is the name of the input file.
  */
 int
-ask_for_detached_datafile( md_filter_context_t *mfx )
+ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
 {
-    char *answer;
-    FILE *fp;
+    char *answer = NULL;
+    IOBUF fp;
     int rc = 0;
     int c;
 
-    tty_printf("Detached signature.\n");
-    answer = tty_get("Please enter name of data file: ");
-    tty_kill_prompt();
-
-    fp = fopen(answer,"rb");
+    fp = open_sigfile( inname ); /* open default file */
     if( !fp ) {
-	log_error("can't open '%s': %s\n", answer, strerror(errno) );
-	rc = G10ERR_READ_FILE;
-	goto leave;
+	int any=0;
+	tty_printf("Detached signature.\n");
+	do {
+	    m_free(answer);
+	    answer = tty_get("Please enter name of data file: ");
+	    tty_kill_prompt();
+	    if( any && !*answer ) {
+		rc = G10ERR_READ_FILE;
+		goto leave;
+	    }
+	    fp = iobuf_open(answer);
+	    if( !fp && errno == ENOENT ) {
+		tty_printf("No such file, try again or hit enter to quit.\n");
+		any++;
+	    }
+	    else if( !fp ) {
+		log_error("can't open '%s': %s\n", answer, strerror(errno) );
+		rc = G10ERR_READ_FILE;
+		goto leave;
+	    }
+	} while( !fp );
     }
 
-    while( (c = getc(fp)) != EOF ) {
+    while( (c = iobuf_get(fp)) != -1 ) {
 	if( mfx->md )
 	    md_putchar(mfx->md, c );
 	if( mfx->rmd160 )
@@ -152,7 +168,7 @@ ask_for_detached_datafile( md_filter_context_t *mfx )
 	if( mfx->md5 )
 	    md5_putchar(mfx->md5, c );
     }
-    fclose(fp);
+    iobuf_close(fp);
 
   leave:
     m_free(answer);

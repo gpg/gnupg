@@ -7,6 +7,7 @@ AC_INIT(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_HEADER(config.h)
 
+
 VERSION=0.0.0
 PACKAGE=g10
 AC_SUBST(VERSION)
@@ -19,7 +20,26 @@ AC_ARG_ENABLE(m-debug,
 if test "$enableval" = y || test "$enableval" = yes; then
     AC_DEFINE(M_DEBUG)
 fi
-CFLAGS="-g"
+
+dnl some additional macros
+
+dnl WK_CHECK_TYPEDEF(TYPE, HAVE_NAME)
+AC_DEFUN(WK_CHECK_TYPEDEF,
+[AC_MSG_CHECKING(for $1 typedef)
+AC_CACHE_VAL(wk_cv_typedef_$1,
+[AC_TRY_COMPILE([#include <stdlib.h>
+#include <sys/types.h>], [
+#undef $1
+int a = sizeof($1);
+], wk_cv_typedef_$1=yes, wk_cv_typedef_$1=no )])
+AC_MSG_RESULT($wk_cv_typedef_$1)
+if test "$wk_cv_typedef_$1" = yes; then
+    AC_DEFINE($2)
+fi
+])
+
+
+
 
 dnl
 AC_CANONICAL_SYSTEM
@@ -46,7 +66,6 @@ AC_PROG_CPP
 
 AC_ARG_PROGRAM
 
-
 dnl Checks for libraries.
 
 dnl Checks for header files.
@@ -63,10 +82,56 @@ AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 
-AC_C_BIGENDIAN
-AC_CHECK_SIZEOF(unsigned short)
-AC_CHECK_SIZEOF(unsigned int)
-AC_CHECK_SIZEOF(unsigned long)
+
+dnl autoconf doesn't support a default value for AC_C_BIGENDIAN
+dnl so here is the modified version
+if test "$cross_compiling" = yes; then
+    AC_MSG_WARN(cross compiling; assuming little endianess)
+fi
+AC_CACHE_CHECK(for little endianess, ac_cv_c_littleendian,
+[ac_cv_c_littleendian=unknown
+# See if sys/param.h defines the BYTE_ORDER macro.
+AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/param.h>], [
+#if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
+ bogus endian macros
+#endif], [# It does; now see whether it defined to BIG_ENDIAN or not.
+AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/param.h>], [
+#if BYTE_ORDER != BIG_ENDIAN
+ not big endian
+#endif], ac_cv_c_littleendian=no, ac_cv_c_littleendian=yes)])
+if test "$ac_cv_c_littleendian" = unknown; then
+AC_TRY_RUN([main () {
+  /* Are we little or big endian?  From Harbison&Steele.  */
+  union
+  {
+    long l;
+    char c[sizeof (long)];
+  } u;
+  u.l = 1;
+  exit (u.c[sizeof (long) - 1] == 1);
+}], ac_cv_c_littleendian=yes, ac_cv_c_littleendian=no, ac_cv_c_littleendian=yes)
+fi])
+
+if test "$ac_cv_c_littleendian" = yes; then
+  AC_DEFINE(LITTLE_ENDIAN_HOST)
+else
+  AC_DEFINE(BIG_ENDIAN_HOST)
+fi
+
+
+WK_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
+WK_CHECK_TYPEDEF(ushort, HAVE_USHORT_TYPEDEF)
+WK_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
+WK_CHECK_TYPEDEF(u16, HAVE_U16_TYPEDEF)
+WK_CHECK_TYPEDEF(u32, HAVE_U32_TYPEDEF)
+
+AC_CHECK_SIZEOF(unsigned short, 16)
+AC_CHECK_SIZEOF(unsigned int, 32)
+AC_CHECK_SIZEOF(unsigned long, 32)
+
+
 
 
 dnl Checks for library functions.
@@ -86,24 +151,21 @@ fi
 
 
 dnl checking whether we have the RSA source
-dnl fixme: I found no way (aside of using Makefile.am.in)
-dnl	   to add the requeired source int Makefile.am
-dnl I used: add_cipher_SOURCES="rsa.c rsa.h"
-dnl but of cource it can't work
-AC_MSG_CHECKING(whether we have the rsa source)
-if test -f cipher/rsa.c && test -f cipher/rsa.h; then
+dnl Add stuff to insert this into the makefile
+dnl AC_SUBST(add_cipher_SOURCES)
+AC_CACHE_CHECK(for rsa source, ac_cv_have_rsa_cipher,
+[if test -f cipher/rsa.c && test -f cipher/rsa.h; then
+  ac_cv_have_rsa_cipher=yes; else ac_cv_have_rsa_cipher=no; fi])
+if test $ac_cv_have_rsa_cipher = yes; then
     AC_DEFINE(HAVE_RSA_CIPHER)
-    AC_MSG_RESULT(yes)
-else
-    AC_MSG_RESULT(no)
 fi
-AC_SUBST(add_cipher_SOURCES)
 
-AC_OUTPUT([ Makefile scripts/Makefile util/Makefile mpi/Makefile \
-	    mpi/generic/Makefile mpi/i386/Makefile \
+
+AC_OUTPUT([ Makefile	\
+	    util/Makefile    \
+	    mpi/Makefile \
 	    cipher/Makefile \
-	    include/Makefile \
-	    g10/Makefile tools/Makefile ],
-	  [echo timestamp > stamp-h ] )
-
+	    g10/Makefile     \
+	    tools/Makefile   \
+], [echo timestamp > stamp-h ] )
 

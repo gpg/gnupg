@@ -59,6 +59,7 @@ g10_SOURCES = g10.c		\
 	      mainproc.c	\
 	      armor.c		\
 	      mdfilter.c	\
+	      textfilter.c	\
 	      cipher.c		\
 	      options.h 	\
 	      openfile.c	\
@@ -94,9 +95,9 @@ COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(LDFLAGS) -o $@
 g10_OBJECTS = g10.o build-packet.o compress.o encode.o encr-data.o \
 free-packet.o getkey.o ringedit.o kbnode.o keygen.o mainproc.o armor.o \
-mdfilter.o cipher.o openfile.o keyid.o parse-packet.o passphrase.o \
-plaintext.o pubkey-enc.o seckey-cert.o seskey.o sign.o comment.o \
-sig-check.o
+mdfilter.o textfilter.o cipher.o openfile.o keyid.o parse-packet.o \
+passphrase.o plaintext.o pubkey-enc.o seckey-cert.o seskey.o sign.o \
+comment.o sig-check.o
 EXTRA_g10_SOURCES =
 g10_LDADD = $(LDADD)
 DIST_COMMON = Makefile.am Makefile.in
@@ -122,7 +123,8 @@ $(srcdir)/.deps/openfile.P $(srcdir)/.deps/parse-packet.P \
 $(srcdir)/.deps/passphrase.P $(srcdir)/.deps/plaintext.P \
 $(srcdir)/.deps/pubkey-enc.P $(srcdir)/.deps/ringedit.P \
 $(srcdir)/.deps/seckey-cert.P $(srcdir)/.deps/seskey.P \
-$(srcdir)/.deps/sig-check.P $(srcdir)/.deps/sign.P
+$(srcdir)/.deps/sig-check.P $(srcdir)/.deps/sign.P \
+$(srcdir)/.deps/textfilter.P
 SOURCES = $(g10_SOURCES)
 OBJECTS = $(g10_OBJECTS)
 

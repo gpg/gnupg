@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 #include <unistd.h>
 #include "util.h"
 #include "memory.h"
@@ -80,9 +81,12 @@ overwrite_filep( const char *fname )
 /****************
  * Make an output filename for the inputfile INAME.
  * Returns an IOBUF
+ * Mode 0 = use ".g10"
+ *	1 = use ".asc"
+ *	2 = use ".sig"
  */
 IOBUF
-open_outfile( const char *iname )
+open_outfile( const char *iname, int mode )
 {
     IOBUF a = NULL;
     int rc;
@@ -101,7 +105,8 @@ open_outfile( const char *iname )
 	    name = opt.outfile;
 	else {
 	    buf = m_alloc(strlen(iname)+4+1);
-	    strcpy(stpcpy(buf,iname), ".g10");
+	    strcpy(stpcpy(buf,iname), mode==1 ? ".asc" :
+				      mode==2 ? ".sig" : ".g10");
 	    name = buf;
 	}
 	if( !(rc=overwrite_filep( name )) ) {
@@ -113,6 +118,30 @@ open_outfile( const char *iname )
 	else if( rc != -1 )
 	    log_error("oops: overwrite_filep(%s): %s\n", name, g10_errstr(rc) );
 	m_free(buf);
+    }
+    return a;
+}
+
+
+/****************
+ * Try to open a file without the extension ".sig"
+ * Return NULL if such a file is not available.
+ */
+IOBUF
+open_sigfile( const char *iname )
+{
+    IOBUF a = NULL;
+    size_t len;
+
+    if( iname ) {
+	len = strlen(iname);
+	if( len > 4 && !strcmp(iname + len - 4, ".sig") ) {
+	    char *buf;
+	    buf = m_strdup(iname);
+	    buf[len-4] = 0 ;
+	    a = iobuf_open( buf );
+	    m_free(buf);
+	}
     }
     return a;
 }

@@ -24,6 +24,6 @@ cipher_SOURCES = blowfish.c	\
 		 md.c		\
 		 smallprime.c
 
-##cipher_LIBADD = rsa.o
+cipher_LIBADD = rsa.o
 
 

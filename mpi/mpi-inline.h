@@ -123,5 +123,4 @@ mpihelp_sub( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr, mpi_size_t s1_size,
 }
 
 
-
 #endif /*G10_MPI_INLINE_H*/

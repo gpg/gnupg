@@ -116,6 +116,7 @@ main( int argc, char **argv )
     { 508, "check-key" ,0, "check signatures on a key in the keyring" },
     { 509, "keyring"   ,2, "add this keyring to the list of keyrings" },
     { 's', "sign",      0, "make a signature"},
+    { 't', "textmode",  0, "use canonical text mode"},
     { 'b', "detach-sign", 0, "make a detached signature"},
     { 'e', "encrypt",   0, "encrypt data" },
     { 'd', "decrypt",   0, "decrypt data (default)" },
@@ -140,7 +141,7 @@ main( int argc, char **argv )
     IOBUF a;
     int rc;
     enum { aNull, aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
-	   aTest, aPrintMDs, aSignKey,
+	   aTest, aPrintMDs, aSignKey, aClearsig
     } action = aNull;
     int orig_argc;
     char **orig_argv;
@@ -219,6 +220,7 @@ main( int argc, char **argv )
 	  case 'b': detached_sig = 1;
 	       /* fall trough */
 	  case 's': action = action == aEncr? aSignEncr : aSign;  break;
+	  case 't': action = aClearsig;  break;
 	  case 'l': /* store the local users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
 	    strcpy(sl->d, pargs.r.ret_str);
@@ -328,7 +330,6 @@ main( int argc, char **argv )
 	if( (rc = sign_file(fname, detached_sig, locusr)) )
 	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
 	break;
-
 
       case aSignEncr: /* sign and encrypt the given file */
 	log_fatal("signing and encryption is not yet implemented\n");

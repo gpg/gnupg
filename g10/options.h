@@ -26,7 +26,7 @@ struct {
     int armor;
     int compress;
     char *outfile;
-    int reserved0;
+    int textmode;
     int batch;	    /* run in batch mode */
     int answer_yes; /* answer yes on most questions */
     int answer_no;  /* answer no on most questions */

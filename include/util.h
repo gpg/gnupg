@@ -20,6 +20,7 @@
 #ifndef G10_UTIL_H
 #define G10_UTIL_H
 
+#include "types.h"
 #include "errors.h"
 #include "types.h"
 #include "mpi.h"

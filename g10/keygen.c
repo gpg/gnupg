@@ -38,7 +38,9 @@
   #define TEST_UID   "Karl Test"
 #endif
 
-
+#if defined(HAVE_RSA_CIPHER) && 0
+  #define ENABLE_RSA_KEYGEN 1
+#endif
 
 
 static u16
@@ -197,7 +199,7 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
 
 
-#ifdef HAVE_RSA_CIPHER
+#ifdef ENABLE_RSA_KEYGEN
 static int
 gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io, DEK *dek,
 	PKT_public_cert **ret_pkc, PKT_secret_cert **ret_skc )
@@ -271,7 +273,7 @@ gen_rsa(unsigned nbits, IOBUF pub_io, IOBUF sec_io, DEK *dek,
     free_packet(&pkt2);
     return rc;
 }
-#endif /*HAVE_RSA_CIPHER*/
+#endif /*ENABLE_RSA_KEYGEN*/
 
 
 static int
@@ -310,10 +312,10 @@ generate_keypair()
 
     tty_printf("Please select the algorithm to use:\n"
 	       "   (1) ElGamal is the suggested one.\n"
-	   #ifdef HAVE_RSA_CIPHER
-	       "   (2) RSA cannot be used in the U.S.\n"
+	       "   (2) DSA can only be used for signatures.\n"
+	   #ifdef ENABLE_RSA_KEYGEN
+	       "   (3) RSA cannot be used in the U.S.\n"
 	   #endif
-	       "   (3) DSA can only be used for signatures.\n"
 	       );
   #endif
 
@@ -321,11 +323,11 @@ generate_keypair()
       #ifdef TEST_ALGO
 	algo = TEST_ALGO;
       #else
-	answer = tty_get("Your selection? (1"
-					   #ifdef HAVE_RSA_CIPHER
-					     ",2"
+	answer = tty_get("Your selection? (1,2"
+					   #ifdef ENABLE_RSA_KEYGEN
+					     ",3"
 					   #endif
-					       ",3) ");
+					     ") ");
 	tty_kill_prompt();
 	algo = *answer? atoi(answer): 1;
 	m_free(answer);
@@ -335,18 +337,18 @@ generate_keypair()
 	    algo_name = "ElGamal";
 	    break;
 	}
-      #ifdef HAVE_RSA_CIPHER
 	else if( algo == 2 ) {
+	    algo = PUBKEY_ALGO_DSA;
+	    algo_name = "DSA";
+	    tty_printf("Sorry; DSA is not yet supported.\n");
+	}
+      #ifdef ENABLE_RSA_KEYGEN
+	else if( algo == 3 ) {
 	    algo = PUBKEY_ALGO_RSA;
 	    algo_name = "RSA";
 	    break;
 	}
       #endif
-	else if( algo == 3 ) {
-	    algo = PUBKEY_ALGO_DSA;
-	    algo_name = "DSA";
-	    tty_printf("Sorry; DSA is not yet supported.\n");
-	}
     }
 
 
@@ -479,7 +481,7 @@ generate_keypair()
 
     if( algo == PUBKEY_ALGO_ELGAMAL )
 	rc = gen_elg(nbits, pub_root, sec_root, dek, &skc );
-  #ifdef HAVE_RSA_CIPHER
+  #ifdef ENABLE_RSA_KEYGEN
     else if( algo == PUBKEY_ALGO_RSA )
 	rc = gen_rsa(nbits, pub_io, sec_io, dek, &skc );
   #endif

@@ -154,7 +154,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	    log_debug("inflate returned: avail_in=%u, avail_out=%u, zrc=%d\n",
 		   (unsigned)zs->avail_in, (unsigned)zs->avail_out, zrc);
 	if( zrc == Z_STREAM_END )
-	    rc = -1; /* eof */
+	    rc = -1; /* eof FIXME: return remaining bytes until EOF */
 	else if( zrc != Z_OK ) {
 	    if( zs->msg )
 		log_fatal("zlib inflate problem: %s\n", zs->msg );

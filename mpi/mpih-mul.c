@@ -33,17 +33,6 @@
 #include "mpi-internal.h"
 #include "longlong.h"
 
-/* If KARATSUBA_THRESHOLD is not already defined, define it to a
- * value which is good on most machines.  */
-#ifndef KARATSUBA_THRESHOLD
-    #define KARATSUBA_THRESHOLD 32
-#endif
-
-/* The code can't handle KARATSUBA_THRESHOLD smaller than 2.  */
-#if KARATSUBA_THRESHOLD < 2
-    #undef KARATSUBA_THRESHOLD
-    #define KARATSUBA_THRESHOLD 2
-#endif
 
 
 #define MPN_MUL_N_RECURSE(prodp, up, vp, size, tspace) \
@@ -57,9 +46,9 @@
 #define MPN_SQR_N_RECURSE(prodp, up, size, tspace) \
     do {					    \
 	if ((size) < KARATSUBA_THRESHOLD)	    \
-	    sqr_n_basecase (prodp, up, size);	    \
+	    mpih_sqr_n_basecase (prodp, up, size);	 \
 	else					    \
-	    sqr_n (prodp, up, size, tspace);	    \
+	    mpih_sqr_n (prodp, up, size, tspace);	 \
     } while (0);
 
 
@@ -235,8 +224,8 @@ mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp,
 }
 
 
-static void
-sqr_n_basecase( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size )
+void
+mpih_sqr_n_basecase( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size )
 {
     mpi_size_t i;
     mpi_limb_t cy_limb;
@@ -276,8 +265,8 @@ sqr_n_basecase( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size )
 }
 
 
-static void
-sqr_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size, mpi_ptr_t tspace)
+void
+mpih_sqr_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size, mpi_ptr_t tspace)
 {
     if( size & 1 ) {
 	/* The size is odd, the code code below doesn't handle that.
@@ -361,11 +350,11 @@ mpihelp_mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp, mpi_size_t size)
 
     if( up == vp ) {
 	if( size < KARATSUBA_THRESHOLD )
-	    sqr_n_basecase( prodp, up, size );
+	    mpih_sqr_n_basecase( prodp, up, size );
 	else {
 	    mpi_ptr_t tspace;
 	    tspace = mpi_alloc_limb_space( 2 * size, 0 );
-	    sqr_n( prodp, up, size, tspace );
+	    mpih_sqr_n( prodp, up, size, tspace );
 	    mpi_free_limb_space( tspace );
 	}
     }

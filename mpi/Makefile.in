@@ -42,11 +42,10 @@ INCLUDES =  -I$(top_srcdir)/include
 
 SUFFIXES = .S .s
 
-SUBDIRS = generic i386
 EXTRA_DIST = config.links
 
 noinst_LIBRARIES = mpi
-noinst_HEADERS	 = sysdep.h
+# noinst_HEADERS   =
 
 mpi_SOURCES = longlong.h     \
 	      mpi-add.c      \
@@ -99,8 +98,6 @@ EXTRA_mpi_SOURCES =
 LIBFILES =  libmpi.a
 AR = ar
 RANLIB = @RANLIB@
-HEADERS = $(noinst_HEADERS)
-
 DIST_COMMON = Makefile.am Makefile.in
 
 
@@ -161,45 +158,13 @@ libmpi.a: $(mpi_OBJECTS) $(mpi_LIBADD)
 	$(AR) cru libmpi.a $(mpi_OBJECTS) $(mpi_LIBADD)
 	$(RANLIB) libmpi.a
 
-# This directory's subdirectories are mostly independent; you can cd
-# into them and run `make' without going through this Makefile.
-# To change the values of `make' variables: instead of editing Makefiles,
-# (1) if the variable is set in `config.status', edit `config.status'
-#     (which will cause the Makefiles to be regenerated when you run `make');
-# (2) otherwise, pass the desired values on the `make' command line.
-
-@SET_MAKE@
-
-all-recursive install-data-recursive install-exec-recursive \
-installdirs-recursive install-recursive uninstall-recursive \
-check-recursive installcheck-recursive info-recursive dvi-recursive \
-mostlyclean-recursive clean-recursive distclean-recursive \
-maintainer-clean-recursive:
-	for subdir in $(SUBDIRS); do		\
-	  target=`echo $@ | sed s/-recursive//`; \
-	  echo making $$target in $$subdir;	\
-	  (cd $$subdir && $(MAKE) $$target)	\
-	   || case "$(MFLAGS)" in *k*) fail=yes;; *) exit 1;; esac; \
-	done && test -z "$$fail"
+ID: $(HEADERS) $(SOURCES)
+	here=`pwd` && cd $(srcdir) && mkid -f$$here/ID $(SOURCES) $(HEADERS)
 
 tags: TAGS
 
-tags-recursive:
-	list="$(SUBDIRS)"; for subdir in $$list; do \
-	  (cd $$subdir && $(MAKE) tags); \
-	done
-
-TAGS: tags-recursive $(HEADERS) $(SOURCES) $(CONFIG_HEADER) \
-		$(TAGS_DEPENDENCIES)
-	tags=; \
-	here=`pwd`; \
-	for subdir in $(SUBDIRS); do \
-	  test -f $$subdir/TAGS && { \
-	    tags="$$tags -i $$here/$$subdir/TAGS"; \
-	  }; \
-	done; \
-	test -z "$(ETAGS_ARGS)$(CONFIG_HEADER)$(SOURCES)$(HEADERS)$$tags" \
-	  || etags $(ETAGS_ARGS) $$tags $(CONFIG_HEADER) $(SOURCES) $(HEADERS)
+TAGS: $(HEADERS) $(SOURCES) $(TAGS_DEPENDENCIES)
+	here=`pwd` && cd $(srcdir) && etags $(ETAGS_ARGS) $(SOURCES) $(HEADERS) -o $$here/TAGS
 
 mostlyclean-tags:
 
@@ -217,14 +182,6 @@ distdir: $(DEP_DISTFILES)
 	  test -f $(distdir)/$$file \
 	  || ln $(srcdir)/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $(srcdir)/$$file $(distdir)/$$file; \
-	done
-	for subdir in $(SUBDIRS); do		\
-	  test -d $(distdir)/$$subdir		\
-	  || mkdir $(distdir)/$$subdir		\
-	  || exit 1;				\
-	  chmod 777 $(distdir)/$$subdir;	\
-	  (cd $$subdir && $(MAKE) distdir=../$(distdir)/$$subdir distdir) \
-	    || exit 1; \
 	done
 
 # This fragment is probably only useful for maintainers.  It relies on
@@ -253,30 +210,28 @@ $(srcdir)/.deps/%.P: $(srcdir)/%.c
 	fi
 
 # End of maintainer-only section
-info: info-recursive
+info:
 
-dvi: dvi-recursive
+dvi:
 
-check: all check-recursive
+check: all
 
-installcheck: installcheck-recursive
+installcheck:
 
-all-am: $(LIBFILES) $(HEADERS) Makefile
+install-exec: 
 
-install-exec: install-exec-recursive
+install-data: 
 
-install-data: install-data-recursive
-
-install: install-recursive
+install: install-exec install-data all
 	@:
 
-uninstall: uninstall-recursive
+uninstall: 
 
-all: all-recursive all-am
+all: $(LIBFILES) Makefile
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
-installdirs: installdirs-recursive
+installdirs:
 
 
 mostlyclean-generic:
@@ -292,42 +247,29 @@ distclean-generic:
 maintainer-clean-generic:
 	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
-mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
+mostlyclean:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
 		mostlyclean-tags mostlyclean-generic
 
-clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
-		mostlyclean-am 
+clean:  clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
+		mostlyclean 
 
-distclean-am:  distclean-noinstLIBRARIES distclean-compile \
-		distclean-tags distclean-generic clean-am 
-
-maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
-		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-generic distclean-am 
-
-mostlyclean:  mostlyclean-am mostlyclean-recursive
-
-clean:  clean-am clean-recursive
-
-distclean:  distclean-am distclean-recursive
+distclean:  distclean-noinstLIBRARIES distclean-compile distclean-tags \
+		distclean-generic clean 
 	rm -f config.status
 
-maintainer-clean:  maintainer-clean-am maintainer-clean-recursive
+maintainer-clean:  maintainer-clean-noinstLIBRARIES \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean 
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
 .PHONY: default mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
 clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile install-data-recursive \
-uninstall-data-recursive install-exec-recursive \
-uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
-all-recursive check-recursive installcheck-recursive info-recursive \
-dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
-maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir info dvi check \
-installcheck all-am install-exec install-data install uninstall all \
-installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-compile tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info dvi check installcheck \
+install-exec install-data install uninstall all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 CFLAGS += -O2

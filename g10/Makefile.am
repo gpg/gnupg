@@ -21,6 +21,7 @@ g10_SOURCES = g10.c		\
 	      mainproc.c	\
 	      armor.c		\
 	      mdfilter.c	\
+	      textfilter.c	\
 	      cipher.c		\
 	      options.h 	\
 	      openfile.c	\

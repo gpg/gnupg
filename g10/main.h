@@ -45,7 +45,8 @@ void generate_keypair(void);
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );
-IOBUF open_outfile( const char *fname );
+IOBUF open_outfile( const char *fname, int mode );
+IOBUF open_sigfile( const char *iname );
 
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );

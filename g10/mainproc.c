@@ -49,6 +49,7 @@ typedef struct {
     int opt_list;
     KBNODE cert;     /* the current certificate */
     int have_data;
+    IOBUF iobuf;    /* used to get the filename etc. */
 } *CTX;
 
 
@@ -259,8 +260,11 @@ proc_plaintext( CTX c, PACKET *pkt )
 
     printf("txt: plain text data name='%.*s'\n", pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
-    /* fixme: take the digest algo to use from the
-     * onepass_sig packet (if we have these) */
+    /* fixme: take the digest algo(s) to use from the
+     * onepass_sig packet (if we have these)
+     * And look at the sigclass to check wether we should use the
+     * textmode filter (sigclass 0x01)
+     */
     c->mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
     result = handle_plaintext( pt, &c->mfx );
     if( !result )
@@ -463,8 +467,9 @@ list_node( CTX c, KBNODE node )
 	if( !opt.list_sigs )
 	    return;
 
+	fputs("sig", stdout);
 	if( opt.check_sigs ) {
-
+	    fflush(stdout);
 	    switch( (rc2=do_check_sig( c, node )) ) {
 	      case 0:		       sigrc = '!'; break;
 	      case G10ERR_BAD_SIGN:    sigrc = '-'; break;
@@ -472,7 +477,7 @@ list_node( CTX c, KBNODE node )
 	      default:		       sigrc = '%'; break;
 	    }
 	}
-	printf("sig%c       %08lX %s   ",
+	printf("%c       %08lX %s   ",
 		sigrc, sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
 	    printf("[%s] ", g10_errstr(rc2) );
@@ -501,6 +506,7 @@ proc_packets( IOBUF a )
     int newpkt;
 
     c->opt_list = 1;
+    c->iobuf = a;
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	/* cleanup if we have an illegal data structure */
@@ -511,6 +517,8 @@ proc_packets( IOBUF a )
 
 	if( rc ) {
 	    free_packet(pkt);
+	    if( rc == G10ERR_INVALID_PACKET )
+		break;
 	    continue;
 	}
 	newpkt = -1;
@@ -559,7 +567,7 @@ print_keyid( FILE *fp, u32 *keyid )
 }
 
 /****************
- * Preocess the tree which starts at node
+ * Process the tree which starts at node
  */
 static void
 proc_tree( CTX c, KBNODE node )
@@ -582,7 +590,8 @@ proc_tree( CTX c, KBNODE node )
 		/* fixme: take the digest algo to use from the
 		 * onepass_sig packet (if we have these) */
 		c->mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
-		rc = ask_for_detached_datafile( &c->mfx );
+		rc = ask_for_detached_datafile( &c->mfx,
+						iobuf_get_fname(c->iobuf));
 		if( rc ) {
 		    log_error("can't hash datafile: %s\n", g10_errstr(rc));
 		    return;

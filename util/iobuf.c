@@ -579,12 +579,14 @@ underflow(IOBUF a)
 	    size_t dummy_len;
 
 	    /* and tell the filter to free it self */
-	    if( (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE, a->chain,
-			       NULL, &dummy_len)) )
-		log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
-	    a->filter = NULL;
-	    a->desc = NULL;
-	    a->filter_ov = NULL;
+	    if( a->filter != file_filter ) {
+		if( (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE, a->chain,
+				   NULL, &dummy_len)) )
+		    log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
+		a->filter = NULL;
+		a->desc = NULL;
+		a->filter_ov = NULL;
+	    }
 	    a->filter_eof = 1;
 	}
 

@@ -5,12 +5,11 @@ CFLAGS += -O2
 
 SUFFIXES = .S .s
 
-SUBDIRS = generic i386
 EXTRA_DIST = config.links
 
 
 noinst_LIBRARIES = mpi
-noinst_HEADERS	 = sysdep.h
+# noinst_HEADERS   =
 
 mpi_SOURCES = longlong.h     \
 	      mpi-add.c      \

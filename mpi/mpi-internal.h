@@ -32,6 +32,21 @@
 
 #include "mpi.h"
 
+/* If KARATSUBA_THRESHOLD is not already defined, define it to a
+ * value which is good on most machines.  */
+
+/* tested 4, 16, 32 and 64, where 16 gave the best performance when
+ * checking a 768 and a 1024 bit ElGamal signature.
+ * (wk 22.12.97) */
+#ifndef KARATSUBA_THRESHOLD
+    #define KARATSUBA_THRESHOLD 16
+#endif
+
+/* The code can't handle KARATSUBA_THRESHOLD smaller than 2.  */
+#if KARATSUBA_THRESHOLD < 2
+    #undef KARATSUBA_THRESHOLD
+    #define KARATSUBA_THRESHOLD 2
+#endif
 
 
 typedef mpi_limb_t *mpi_ptr_t; /* pointer to a limb */
@@ -174,6 +189,9 @@ void mpihelp_mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp,
 						   mpi_size_t size);
 mpi_limb_t mpihelp_mul( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t usize,
 					 mpi_ptr_t vp, mpi_size_t vsize);
+void mpih_sqr_n_basecase( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size );
+void mpih_sqr_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size,
+						mpi_ptr_t tspace);
 
 /*-- mpihelp-mul_1.c (or xxx/cpu/*.S) --*/
 mpi_limb_t mpihelp_mul_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr,

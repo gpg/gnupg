@@ -26,6 +26,17 @@
 #undef M_DEBUG
 #undef VERSION
 #undef PACKAGE
+
+#undef BIG_ENDIAN_HOST
+#undef LITTLE_ENDIAN_HOST
+
+#undef HAVE_BYTE_TYPEDEF
+#undef HAVE_USHORT_TYPEDEF
+#undef HAVE_ULONG_TYPEDEF
+#undef HAVE_U16_TYPEDEF
+#undef HAVE_U32_TYPEDEF
+
+
 /* RSA is only compiled in if you have these files. You can use
  * RSA without any restrictions, if your not in the U.S. or
  * wait until sep 20, 2000
@@ -34,12 +45,6 @@
 
 
 @BOTTOM@
-
-#ifdef WORDS_BIGENDIAN
-  #define BIG_ENDIAN_HOST
-#else
-  #define LITTLE_ENDIAN_HOST
-#endif
 
 
 #endif /*G10_CONFIG_H*/

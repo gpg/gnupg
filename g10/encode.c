@@ -97,7 +97,7 @@ encode_simple( const char *filename, int mode )
 	}
     }
 
-    if( !(out = open_outfile( filename )) ) {
+    if( !(out = open_outfile( filename, opt.armor? 1:0 )) ) {
 	iobuf_close(inp);
 	m_free(cfx.dek);
 	return G10ERR_CREATE_FILE;  /* or user said: do not overwrite */
@@ -190,7 +190,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     else if( opt.verbose )
 	log_error("reding from '%s'\n", filename? filename: "[stdin]");
 
-    if( !(out = open_outfile( filename )) ) {
+    if( !(out = open_outfile( filename, opt.armor? 1:0 )) ) {
 	iobuf_close(inp);
 	free_strlist(local_remusr);
 	return G10ERR_CREATE_FILE;  /* or user said: do not overwrite */
