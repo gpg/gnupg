@@ -1,3 +1,10 @@
+2004-03-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids, show_key_and_fingerprint, ask_revoke_sig,
+	menu_revsig, menu_showphoto): --keyid-format conversion.
+	(menu_addrevoker): Use print_pubkey_info() rather than duplicating
+	code.
+
 2004-03-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (update_min_ownertrust, validate_keys): Do not use

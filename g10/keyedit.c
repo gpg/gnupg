@@ -636,12 +636,11 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		     * case we should allow to sign it again. */
                     if (!node->pkt->pkt.signature->flags.exportable && local)
                       tty_printf(_(
-                         "\"%s\" was already locally signed by key %08lX\n"),
-				 user,(ulong)sk_keyid[1] );
+			      "\"%s\" was already locally signed by key %s\n"),
+				 user,keystr_from_sk(sk));
                     else
-                      tty_printf(_(
-                         "\"%s\" was already signed by key %08lX\n"),
-                                 user,(ulong)sk_keyid[1] );
+                      tty_printf(_("\"%s\" was already signed by key %s\n"),
+                                 user,keystr_from_sk(sk));
 
 		    if(opt.expert
 		       && cpr_get_answer_is_yes("sign_uid.dupe_okay",
@@ -663,12 +662,14 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		}
 	    }
 	}
+
 	/* check whether any uids are left for signing */
-	if( !count_uids_with_flag(keyblock, NODFLG_MARK_A) ) {
-	    tty_printf(_("Nothing to sign with key %08lX\n"),
-						  (ulong)sk_keyid[1] );
+	if( !count_uids_with_flag(keyblock, NODFLG_MARK_A) )
+	  {
+	    tty_printf(_("Nothing to sign with key %s\n"),keystr_from_sk(sk));
 	    continue;
-	}
+	  }
+
 	/* Ask whether we really should sign these user id(s) */
 	tty_printf("\n");
 	show_key_with_all_names( keyblock, 1, 0, 1, 0, 0 );
@@ -809,7 +810,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	p = get_user_id( sk_keyid, &n );
 	tty_print_utf8_string( p, n );
 	m_free(p); p = NULL;
-	tty_printf("\" (%08lX)\n",(ulong)sk_keyid[1]);
+	tty_printf("\" (%s)\n",keystr_from_sk(sk));
 
 	if(selfsig)
 	  {
@@ -2257,27 +2258,30 @@ show_basic_key_info ( KBNODE keyblock )
 static void
 show_key_and_fingerprint( KBNODE keyblock )
 {
-    KBNODE node;
-    PKT_public_key *pk = NULL;
+  KBNODE node;
+  PKT_public_key *pk = NULL;
 
-    for( node = keyblock; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
-	    pk = node->pkt->pkt.public_key;
-	    tty_printf("pub   %4u%c/%08lX %s ",
-			  nbits_from_pk( pk ),
-			  pubkey_letter( pk->pubkey_algo ),
-			  (ulong)keyid_from_pk(pk,NULL),
-			  datestr_from_pk(pk) );
+  for( node = keyblock; node; node = node->next )
+    {
+      if( node->pkt->pkttype == PKT_PUBLIC_KEY )
+	{
+	  pk = node->pkt->pkt.public_key;
+	  tty_printf("pub   %4u%c/%s %s ",
+		     nbits_from_pk( pk ),
+		     pubkey_letter( pk->pubkey_algo ),
+		     keystr_from_pk(pk),
+		     datestr_from_pk(pk) );
 	}
-	else if( node->pkt->pkttype == PKT_USER_ID ) {
-	    PKT_user_id *uid = node->pkt->pkt.user_id;
-	    tty_print_utf8_string( uid->name, uid->len );
-	    break;
+      else if( node->pkt->pkttype == PKT_USER_ID )
+	{
+	  PKT_user_id *uid = node->pkt->pkt.user_id;
+	  tty_print_utf8_string( uid->name, uid->len );
+	  break;
 	}
     }
-    tty_printf("\n");
-    if( pk )
-	print_fingerprint( pk, NULL, 2 );
+  tty_printf("\n");
+  if( pk )
+    print_fingerprint( pk, NULL, 2 );
 }
 
 
@@ -2666,9 +2670,6 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
   for(;;)
     {
       char *answer;
-      u32 keyid[2];
-      char *p;
-      size_t n;
 
       if(revoker_pk)
 	free_public_key(revoker_pk);
@@ -2753,17 +2754,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 	    continue;
 	}
 
-      keyid_from_pk(revoker_pk,keyid);
-
-      tty_printf("\npub   %4u%c/%08lX %s   ",
-		 nbits_from_pk( revoker_pk ),
-		 pubkey_letter( revoker_pk->pubkey_algo ),
-		 (ulong)keyid[1], datestr_from_pk(revoker_pk) );
-
-      p = get_user_id( keyid, &n );
-      tty_print_utf8_string( p, n );
-      m_free(p);
-      tty_printf("\n");
+      print_pubkey_info(NULL,revoker_pk);
       print_fingerprint(revoker_pk,NULL,2);
       tty_printf("\n");
 
@@ -3452,11 +3443,11 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
 			   unode->pkt->pkt.user_id->len );
 
     if(sig->flags.exportable)
-      tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
-		 (ulong)sig->keyid[1], datestr_from_sig(sig) );
+      tty_printf(_("\"\nsigned with your key %s at %s\n"),
+		 keystr(sig->keyid), datestr_from_sig(sig) );
     else
-      tty_printf(_("\"\nlocally signed with your key %08lX at %s\n"),
-		 (ulong)sig->keyid[1], datestr_from_sig(sig) );
+      tty_printf(_("\"\nlocally signed with your key %s at %s\n"),
+		 keystr(sig->keyid), datestr_from_sig(sig) );
 
     if(sig->flags.expired)
       {
@@ -3510,20 +3501,23 @@ menu_revsig( KBNODE keyblock )
 	}
 	else if( !skip && node->pkt->pkttype == PKT_SIGNATURE
 		&& ((sig = node->pkt->pkt.signature),
-                     !seckey_available(sig->keyid)  ) ) {
-	    if( (sig->sig_class&~3) == 0x10 ) {
-		tty_printf(_("   signed by %08lX at %s%s%s\n"),
-			   (ulong)sig->keyid[1], datestr_from_sig(sig),
+                     !seckey_available(sig->keyid)  ) )
+	  {
+	    if( (sig->sig_class&~3) == 0x10 )
+	      {
+		tty_printf(_("   signed by %s on %s%s%s\n"),
+			   keystr(sig->keyid), datestr_from_sig(sig),
 			   sig->flags.exportable?"":" (non-exportable)",
 			   sig->flags.revocable?"":" (non-revocable)");
 		if(sig->flags.revocable)
 		  node->flag |= NODFLG_SELSIG;
-	    }
-	    else if( sig->sig_class == 0x30 ) {
-		tty_printf(_("   revoked by %08lX at %s\n"),
-			    (ulong)sig->keyid[1], datestr_from_sig(sig) );
-	    }
-	}
+	      }
+	    else if( sig->sig_class == 0x30 )
+	      {
+		tty_printf(_("   revoked by %s on %s\n"),
+			   keystr(sig->keyid), datestr_from_sig(sig) );
+	      }
+	  }
     }
 
     /* ask */
@@ -3550,8 +3544,8 @@ menu_revsig( KBNODE keyblock )
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	    sig = node->pkt->pkt.signature;
-	    tty_printf(_("   signed by %08lX at %s%s\n"),
- 		       (ulong)sig->keyid[1], datestr_from_sig(sig),
+	    tty_printf(_("   signed by %s on %s%s\n"),
+ 		       keystr(sig->keyid), datestr_from_sig(sig),
 		       sig->flags.exportable?"":_(" (non-exportable)") );
 	}
     }
@@ -3818,7 +3812,6 @@ menu_showphoto( KBNODE keyblock )
   int select_all = !count_selected_uids(keyblock);
   int count=0;
   PKT_public_key *pk=NULL;
-  u32 keyid[2];
 
   /* Look for the public key first.  We have to be really, really,
      explicit as to which photo this is, and what key it is a UID on
@@ -3827,10 +3820,7 @@ menu_showphoto( KBNODE keyblock )
   for( node = keyblock; node; node = node->next )
     {
       if( node->pkt->pkttype == PKT_PUBLIC_KEY )
-	{
-	  pk = node->pkt->pkt.public_key;
-	  keyid_from_pk(pk, keyid);
-	}
+	pk = node->pkt->pkt.public_key;
       else if( node->pkt->pkttype == PKT_USER_ID )
 	{
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
@@ -3850,9 +3840,9 @@ menu_showphoto( KBNODE keyblock )
 		     parse_image_header(&uid->attribs[i],&type,&size))
 		    {
 		      tty_printf(_("Displaying %s photo ID of size %ld for "
-				   "key 0x%08lX (uid %d)\n"),
+				   "key %s (uid %d)\n"),
 				 image_type_to_string(type,1),
-				 (ulong)size,(ulong)keyid[1],count);
+				 (ulong)size,keystr_from_pk(pk),count);
 		      show_photos(&uid->attribs[i],1,pk,NULL);
 		    }
 		}
