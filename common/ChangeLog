@@ -1,3 +1,7 @@
+2004-12-03  Werner Koch  <wk@g10code.com>
+
+	* strsep.c: Fixed copyright comments.
+
 2004-11-26  Werner Koch  <wk@g10code.com>
 
 	* simple-gettext.c: New taken from gnupg 1.3.x
