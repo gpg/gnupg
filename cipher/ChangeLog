@@ -1,3 +1,7 @@
+2002-07-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* random.c: "warning" -> "WARNING"
+
 2002-07-02  Werner Koch  <wk@gnupg.org>
 
 	* rndw32.c (slow_gatherer_windowsNT): Use a simple array for the

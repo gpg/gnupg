@@ -337,7 +337,7 @@ read_seed_file(void)
 	return 0;
     }
     if( sb.st_size != POOLSIZE ) {
-	log_info(_("warning: invalid size of random_seed file - not used\n") );
+	log_info(_("WARNING: invalid size of random_seed file - not used\n") );
 	close(fd);
 	return 0;
     }
