@@ -1,3 +1,13 @@
+2003-03-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* status.c (do_get_from_fd): Accept 'y' as well as 'Y' for
+	--command-fd boolean input.
+
+	* g10.c (main): Add deprecated option warning for
+	--list-ownertrust.  Add --compression-algo alias for
+	--compress-algo.  Change --version output strings to match
+	"showpref" strings, and make translatable.
+
 2003-03-10  Werner Koch  <wk@gnupg.org>
 
 	* compress.c (init_uncompress): Use a 15 bit window size so that
