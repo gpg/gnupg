@@ -48,9 +48,7 @@ writen ( int fd, const char *buffer, size_t length )
 {
   while (length)
     {
-      int nwritten = _assuan_write_wrapper?
-        _assuan_write_wrapper (fd, buffer, length):
-        write (fd, buffer, length);
+      ssize_t nwritten = _assuan_write (fd, buffer, length);
       
       if (nwritten < 0)
         {
@@ -75,9 +73,7 @@ readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
   *r_nread = 0;
   while (nleft > 0)
     {
-      int n = _assuan_read_wrapper?
-        _assuan_read_wrapper (fd, buf, nleft):
-        read (fd, buf, nleft);
+      ssize_t n = _assuan_read (fd, buf, nleft);
 
       if (n < 0)
         {
@@ -204,13 +200,12 @@ _assuan_read_line (ASSUAN_CONTEXT ctx)
 
 
 /* Read the next line from the client or server and return a pointer
-   to a buffer with holding that line.  linelen returns the length of
-   the line.  This buffer is valid until another read operation is
-   done on this buffer.  The caller is allowed to modify this buffer.
-   He should only use the buffer if the function returns without an
-   error.
+   in *LINE to a buffer holding the line.  LINELEN is the length of
+   *LINE.  The buffer is valid until the next read operation on it.
+   The caller may modify the buffer.  The buffer is invalid (i.e. must
+   not be used) if an error is returned.
 
-   Returns: 0 on success or an assuan error code
+   Returns 0 on success or an assuan error code.
    See also: assuan_pending_line().
 */
 AssuanError
@@ -228,8 +223,8 @@ assuan_read_line (ASSUAN_CONTEXT ctx, char **line, size_t *linelen)
 }
 
 
-/* Return true when a full line is pending for a read, without the need
-   for actual IO */
+/* Return true if a full line is buffered (i.e. an entire line may be
+   read without any I/O).  */
 int
 assuan_pending_line (ASSUAN_CONTEXT ctx)
 {
@@ -437,7 +432,3 @@ assuan_send_data (ASSUAN_CONTEXT ctx, const void *buffer, size_t length)
 
   return 0;
 }
-
-
-
-

@@ -172,25 +172,23 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
       char errbuf[512];
       int *fdp;
 
-      /* Close all files which will not be duped and are not in the
-         fd_child_list. */
-      n = sysconf (_SC_OPEN_MAX);
-      if (n < 0)
-        n = MAX_OPEN_FDS;
-      for (i=0; i < n; i++)
+      /* Dup handles to stdin/stdout. */
+      if (rp[1] != STDOUT_FILENO)
         {
-	  fdp = fd_child_list;
-	  if (fdp)
-	    {
-	      while (*fdp != -1 && *fdp != i)
-		fdp++;
-	    }
-
-          if (!(fdp && *fdp != -1)
-              && i != rp[1] && i != wp[0])
-            close(i);
+          if (dup2 (rp[1], STDOUT_FILENO) == -1)
+            {
+              LOGERROR1 ("dup2 failed in child: %s\n", strerror (errno));
+              _exit (4);
+            }
         }
-      errno = 0;
+      if (wp[0] != STDIN_FILENO)
+        {
+          if (dup2 (wp[0], STDIN_FILENO) == -1)
+            {
+              LOGERROR1 ("dup2 failed in child: %s\n", strerror (errno));
+              _exit (4);
+            }
+        }
 
       /* Dup stderr to /dev/null unless it is in the list of FDs to be
          passed to the child. */
@@ -213,28 +211,29 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
               LOGERROR1 ("dup2(dev/null, 2) failed: %s\n", strerror (errno));
               _exit (4);
             }
-	  close (fd);
         }
 
-      /* Dup handles and to stdin/stdout and exec. */
-      if (rp[1] != STDOUT_FILENO)
+
+      /* Close all files which will not be duped and are not in the
+         fd_child_list. */
+      n = sysconf (_SC_OPEN_MAX);
+      if (n < 0)
+        n = MAX_OPEN_FDS;
+      for (i=0; i < n; i++)
         {
-          if (dup2 (rp[1], STDOUT_FILENO) == -1)
-            {
-              LOGERROR1 ("dup2 failed in child: %s\n", strerror (errno));
-              _exit (4);
-            }
-          close (rp[1]);
+          if ( i == STDIN_FILENO || i == STDOUT_FILENO || i == STDERR_FILENO)
+            continue;
+	  fdp = fd_child_list;
+	  if (fdp)
+	    {
+	      while (*fdp != -1 && *fdp != i)
+		fdp++;
+	    }
+
+          if (!(fdp && *fdp != -1))
+            close(i);
         }
-      if (wp[0] != STDIN_FILENO)
-        {
-          if (dup2 (wp[0], STDIN_FILENO) == -1)
-            {
-              LOGERROR1 ("dup2 failed in child: %s\n", strerror (errno));
-              _exit (4);
-            }
-          close (wp[0]);
-        }
+      errno = 0;
 
       execv (name, argv); 
       /* oops - use the pipe to tell the parent about it */

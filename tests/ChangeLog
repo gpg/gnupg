@@ -1,3 +1,19 @@
+2002-12-04  Werner Koch  <wk@gnupg.org>
+
+	* inittests (gpgsm.conf): Fake system time.
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (inittests.stamp): Do not set LD_LIBRARY_PATH here.
+	(TESTS_ENVIRONMENT): Do it here.  And also frob $(LIBGCRYPT_LIBS)
+	and $(PTH_LIBS).
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* asschk.c (die): New macro.
+	(read_assuan): If in verbose mode, dump the string that was read.
+	(write_assuan): Be more verbose on failure.
+
 2002-09-04  Neal H. Walfield  <neal@g10code.de>
 
 	* Makefile.am (inittests.stamp): Do not set LD_LIBRARY_PATH, but

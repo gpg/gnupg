@@ -188,6 +188,8 @@ die (const char *format, ...)
   exit (1);
 }
 
+#define die(format, args...) (die) ("%s: " format, __FUNCTION__ , ##args)
+
 static void
 err (const char *format, ...)
 {
@@ -282,6 +284,16 @@ read_assuan (int fd)
         }
       else
         n = read (fd, buf, nleft);
+
+      if (opt_verbose)
+	{
+	  int i;
+	  printf ("%s: read \"", __FUNCTION__);
+	  for (i = 0; i < n; i ++)
+	    putc (buf[i], stdout);
+	  printf ("\"\n");
+	}
+
       if (n < 0)
         {
           if (errno == EINTR)
@@ -359,7 +371,8 @@ write_assuan (int fd, const char *line)
     buffer[n++] = '\n';
 
   if (writen (fd, buffer, n))
-      die ("sending line to %d failed: %s", fd, strerror (errno));
+      die ("sending line (\"%s\") to %d failed: %s", buffer, fd,
+	   strerror (errno));
 }
 
 

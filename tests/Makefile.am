@@ -22,7 +22,27 @@
 GPGSM = ../sm/gpgsm
 
 # We can't unset a variable here so we unset GPG_AGENT_INFO in runtest
-TESTS_ENVIRONMENT = GNUPGHOME=`pwd` LC_ALL=C GPGSM=$(GPGSM) $(srcdir)/runtest
+TESTS_ENVIRONMENT = GNUPGHOME=`pwd` LC_ALL=C GPGSM=$(GPGSM) \
+		    LD_LIBRARY_PATH=$$(seen=0; \
+                           for i in $(LDFLAGS) $(LIBGCRYPT_LIBS) $(PTH_LIBS); \
+                           do \
+                             if echo "$$i" | egrep '^-L' >/dev/null 2>&1; \
+                             then \
+                               if test $$seen = 0; \
+                               then \
+                                 seen=1; \
+                               else \
+                                 printf ":"; \
+                               fi; \
+                               printf "%s" "$${i}" | sed 's/^-L//'; \
+                             fi; \
+                           done; \
+                           if test $$seen != 0 \
+                              && test x$${LD_LIBRARY_PATH} != x; \
+                           then \
+                             printf ":"; \
+                           fi; \
+                           printf "%s" "$${LD_LIBRARY_PATH}") $(srcdir)/runtest
 
 testscripts = sm-sign+verify sm-verify
 
@@ -53,26 +73,6 @@ clean-local:
 	srcdir=$(srcdir) $(TESTS_ENVIRONMENT) $(srcdir)/inittests --clean
 
 inittests.stamp: inittests
-	LD_LIBRARY_PATH=$$(seen=0; \
-                           for i in $(LDFLAGS); \
-                           do \
-                             if echo "$$i" | egrep '^-L' >/dev/null 2>&1; \
-                             then \
-                               if test $$seen = 0; \
-                               then \
-                                 seen=1; \
-                               else \
-                                 printf ":"; \
-                               fi; \
-                               printf "%s" "$${i}" | sed 's/^-L//'; \
-                             fi; \
-                           done; \
-                           if test $$seen != 0 \
-                              && test x$${LD_LIBRARY_PATH} != x; \
-                           then \
-                             printf ":"; \
-                           fi; \
-                           printf "%s" "$${LD_LIBRARY_PATH}") \
-          srcdir=$(srcdir) $(TESTS_ENVIRONMENT) $(srcdir)/inittests
+	srcdir=$(srcdir) $(TESTS_ENVIRONMENT) $(srcdir)/inittests
 	echo timestamp >./inittests.stamp
 

@@ -214,8 +214,6 @@ AssuanError assuan_send_data (ASSUAN_CONTEXT ctx,
 void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
                                void *(*new_realloc_func)(void *p, size_t n),
                                void (*new_free_func)(void*) );
-void assuan_set_io_func (ssize_t (*r)(int,void*,size_t),
-                         ssize_t (*w)(int,const void*,size_t));
 void assuan_set_log_stream (ASSUAN_CONTEXT ctx, FILE *fp);
 int assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text);
 void assuan_set_pointer (ASSUAN_CONTEXT ctx, void *pointer);

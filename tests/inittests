@@ -73,10 +73,13 @@ for i in ${private_keys}; do
 done
 
 # Create the configuration scripts
+# Note, die to an expired test certificate, we need to use
+# the faked system time option.
 cat > gpgsm.conf <<EOF
 no-secmem-warning
 disable-crl-checks
 agent-program ../agent/gpg-agent
+faked-system-time 1038835799
 EOF
 
 cat > gpg-agent.conf <<EOF

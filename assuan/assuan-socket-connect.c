@@ -66,7 +66,7 @@ do_deinit (ASSUAN_CONTEXT ctx)
 
 /* Make a connection to the Unix domain socket NAME and return a new
    Assuan context in CTX.  SERVER_PID is currently not used but may
-   becode handy in future. */
+   become handy in the future. */
 AssuanError
 assuan_socket_connect (ASSUAN_CONTEXT *r_ctx,
                        const char *name, pid_t server_pid)

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "assuan-defs.h"
 
@@ -29,15 +30,9 @@
 #include "../jnlib/logging.h"
 #endif
 
-ssize_t (*_assuan_read_wrapper)(int,void*,size_t) = NULL;
-ssize_t (*_assuan_write_wrapper)(int,const void*,size_t) = NULL;
-
-
 static void *(*alloc_func)(size_t n) = malloc;
 static void *(*realloc_func)(void *p, size_t n) = realloc;
 static void (*free_func)(void*) = free;
-
-
 
 void
 assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
@@ -76,18 +71,6 @@ _assuan_free (void *p)
   if (p)
     free_func (p);
 }
-
-/* For use with Pth it is required to have special read and write
-   functions.  We can't assume an ELF based system so we have to
-   explicitly set them if we are going to use Pth. */
-void
-assuan_set_io_func (ssize_t (*r)(int,void*,size_t),
-                    ssize_t (*w)(int,const void*,size_t))
-{
-  _assuan_read_wrapper = r;
-  _assuan_write_wrapper = w;
-}
-
 
 
 /* Store the error in the context so that the error sending function
@@ -145,6 +128,8 @@ assuan_end_confidential (ASSUAN_CONTEXT ctx)
     }
 }
 
+/* Dump a possibly binary string (used for debugging).  Distinguish
+   ascii text from binary and print it accordingly.  */
 void
 _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
 {
@@ -152,26 +137,31 @@ _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
   int n;
 
   for (n=length,s=buffer; n; n--, s++)
-    {
-      if (*s < ' ' || (*s >= 0x7f && *s <= 0xa0))
-        break;
-    }
+    if  (!isascii (*s) || iscntrl (*s) || !isprint (*s))
+      break;
+
   s = buffer;
   if (!n && *s != '[')
     fwrite (buffer, length, 1, fp);
   else
     {
-      putc ('[', fp);
+#ifdef HAVE_FLOCKFILE
+      flockfile (fp);
+#endif
+      putc_unlocked ('[', fp);
       for (n=0; n < length; n++, s++)
           fprintf (fp, " %02x", *s);
-      putc (' ', fp);
-      putc (']', fp);
+      putc_unlocked (' ', fp);
+      putc_unlocked (']', fp);
+#ifdef HAVE_FUNLOCKFILE
+      funlockfile (fp);
+#endif
     }
 }
 
 
-/* print a user supplied string after filtering out potential bad
-   characters*/
+/* Log a user supplied string.  Escapes non-printable before
+   printing.  */
 void
 _assuan_log_sanitized_string (const char *string)
 {
@@ -182,29 +172,59 @@ _assuan_log_sanitized_string (const char *string)
   FILE *fp = stderr;
 #endif
 
+  if (! *s)
+    return;
+
+#ifdef HAVE_FLOCKFILE
+  flockfile (fp);
+#endif
+
   for (; *s; s++)
     {
-      if (*s < 0x20 || (*s >= 0x7f && *s <= 0xa0))
-        {
-          putc ('\\', fp);
-          if (*s == '\n')
-            putc ('n', fp);
-          else if (*s == '\r')
-            putc ('r', fp);
-          else if (*s == '\f')
-            putc ('f', fp);
-          else if (*s == '\v')
-            putc ('v', fp);
-          else if (*s == '\b')
-            putc ('b', fp);
-          else if (!*s)
-            putc ('0', fp);
-          else
-            fprintf (fp, "x%02x", *s );
+      int c = 0;
+
+      switch (*s)
+	{
+	case '\r':
+	  c = 'r';
+	  break;
+
+	case '\n':
+	  c = 'n';
+	  break;
+
+	case '\f':
+	  c = 'f';
+	  break;
+
+	case '\v':
+	  c = 'v';
+	  break;
+
+	case '\b':
+	  c = 'b';
+	  break;
+
+	default:
+	  if (isascii (*s) && isprint (*s))
+	    putc_unlocked (*s, fp);
+	  else
+	    {
+	      putc_unlocked ('\\', fp);
+	      fprintf (fp, "x%02x", *s);
+	    }
 	}
-      else
-        putc (*s, fp);
+
+      if (c)
+	{
+	  putc_unlocked ('\\', fp);
+	  putc_unlocked (c, fp);
+	}
     }
+
+#ifdef HAVE_FUNLOCKFILE
+  funlockfile (fp);
+#endif
 }
 
 

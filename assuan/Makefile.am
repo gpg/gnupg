@@ -42,7 +42,8 @@ libassuan_a_SOURCES = \
 	assuan-pipe-server.c \
 	assuan-socket-server.c \
 	assuan-pipe-connect.c \
-	assuan-socket-connect.c 
+	assuan-socket-connect.c  \
+	assuan-io.c
 
 
 assuan-errors.c : assuan.h

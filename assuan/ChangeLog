@@ -1,3 +1,36 @@
+2002-11-10  Werner Koch  <wk@gnupg.org>
+
+	* assuan-pipe-connect.c (assuan_pipe_connect): Changed the order
+	of the dups to handle cases where we have already used fd 2 for
+	other things.
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan-util.c: Include <ctype.h>.
+	(_assuan_log_print_buffer): Elide the magic numbers preferring the
+	standard isfoo functions.  Use putc_unlocked where possible.
+	(_assuan_log_sanitized_string): Rewrite to use putc_unlocked and
+	the isfoo functions.
+
+2002-09-05  Neal H. Walfield  <neal@g10code.de>
+
+	* assuan-defs.h (_assuan_read_wrapper): Depreciated.
+	* assuan-util.c (_assuan_read_wrapper): Removed.
+	* assuan-defs.h (_assuan_write_wrapper): Depreciated.
+	* assuan-util.c (_assuan_write_wrapper): Removed.
+	* assuan.h (assuan_set_io_fun): Depreciated.
+	* assuan-util.c (assuan_set_io_fun): Removed.
+
+	* assuan-defs.h (_assuan_read): New function.
+	(_assuan_write): Likewise.
+	* assuan-io.c: New file.
+
+	* assuan-buffer.c (writen): Use _assuan_write rather than doing
+	the work here.
+	(readline): Likewise for _assuan_read.
+
+	* Makefile.am (libassuan_a_SOURCES): Add assuan-io.c.
+
 2002-08-16  Werner Koch  <wk@gnupg.org>
 
 	* assuan.h: Renamed Bad_Certificate_Path to Bad_Certificate_Chain.

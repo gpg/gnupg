@@ -121,9 +121,6 @@ AssuanError _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off);
 
 
 /*-- assuan-util.c --*/
-extern ssize_t (*_assuan_read_wrapper)(int,void*,size_t);
-extern ssize_t (*_assuan_write_wrapper)(int,const void*,size_t);
-
 void *_assuan_malloc (size_t n);
 void *_assuan_calloc (size_t n, size_t m);
 void *_assuan_realloc (void *p, size_t n);
@@ -139,6 +136,12 @@ void  _assuan_free (void *p);
 void _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t  length);
 void _assuan_log_sanitized_string (const char *string);
 
+/*-- assuan-io.c --*/
+
+/* Wraps the standard read and write functions to do the Right
+   Thing depending on our linkage.  */
+ssize_t _assuan_read (int fd, void *buffer, size_t size);
+ssize_t _assuan_write (int fd, const void *buffer, size_t size);
 
 #endif /*ASSUAN_DEFS_H*/
 
