@@ -1,5 +1,8 @@
 2004-01-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* cipher.c (setup_cipher_table): May as well call Rijndael AES at
+	this point.
+
 	* pubkey.c (setup_pubkey_table), elgamal.c (sign, verify,
 	test_keys, elg_sign, elg_verify, elg_get_info): Remove the last
 	bits of Elgamal type 20 support.
@@ -23,7 +26,7 @@
 	* blowfish.c, twofish.c [__riscos__]: Removal of unnecessary
 	#ifdef __riscos__ sections.
 
-2003-12-17  David Shaw  <dshaw@localhost.localdomain>
+2003-12-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* dsa.h, dsa.c (dsa_verify), elgamal.h, elgamal.c (elg_verify),
 	rsa.h, rsa.c (rsa_verify), pubkey.c (dummy_verify, pubkey_verify):

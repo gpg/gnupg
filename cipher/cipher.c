@@ -88,7 +88,7 @@ setup_cipher_table(void)
     int i=0;
 
 #ifdef USE_AES
-    cipher_table[i].algo = CIPHER_ALGO_RIJNDAEL;
+    cipher_table[i].algo = CIPHER_ALGO_AES;
     cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
 					 &cipher_table[i].blocksize,
@@ -99,7 +99,7 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
-    cipher_table[i].algo = CIPHER_ALGO_RIJNDAEL192;
+    cipher_table[i].algo = CIPHER_ALGO_AES192;
     cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
 					 &cipher_table[i].blocksize,
@@ -110,7 +110,7 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
-    cipher_table[i].algo = CIPHER_ALGO_RIJNDAEL256;
+    cipher_table[i].algo = CIPHER_ALGO_AES256;
     cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
 					 &cipher_table[i].blocksize,
