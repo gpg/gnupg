@@ -190,6 +190,8 @@ enum cmd_and_opt_values
     oDigestAlgo,
     oCertDigestAlgo,
     oCompressAlgo,
+    oCompressLevel,
+    oBZ2CompressLevel,
     oPasswdFD,
 #ifdef __riscos__
     oPasswdFile,
@@ -418,7 +420,9 @@ static ARGPARSE_OPTS opts[] = {
     { oHiddenEncryptTo, "hidden-encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
-    { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
+    { oCompress, NULL, 1, N_("|N|set compress level N (0 disables)") },
+    { oCompressLevel, "compress-level", 1, "@" },
+    { oBZ2CompressLevel, "bz2-compress-level", 1, "@" },
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
     { oNoTextmode, "no-textmode",  0, "@"},
@@ -1161,7 +1165,7 @@ main( int argc, char **argv )
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
     char *def_digest_string = NULL;
-    char *def_compress_string = NULL;
+    char *compress_algo_string = NULL;
     char *cert_digest_string = NULL;
     char *s2k_cipher_string = NULL;
     char *s2k_digest_string = NULL;
@@ -1195,12 +1199,12 @@ main( int argc, char **argv )
     create_dotlock(NULL); /* register locking cleanup */
     i18n_init();
     opt.command_fd = -1; /* no command fd */
-    opt.compress = -1; /* defaults to standard compress level */
+    opt.compress_level = -1; /* defaults to standard compress level */
     /* note: if you change these lines, look at oOpenPGP */
     opt.def_cipher_algo = 0;
     opt.def_digest_algo = 0;
     opt.cert_digest_algo = 0;
-    opt.def_compress_algo = -1;
+    opt.compress_algo = -1; /* defaults to DEFAULT_COMPRESS_ALGO */
     opt.s2k_mode = 3; /* iterated+salted */
     opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 #ifdef USE_CAST5
@@ -1657,7 +1661,7 @@ main( int argc, char **argv )
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
 	    opt.cert_digest_algo = 0;
-	    opt.def_compress_algo = -1;
+	    opt.compress_algo = -1;
             opt.s2k_mode = 3; /* iterated+salted */
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
@@ -1780,7 +1784,12 @@ main( int argc, char **argv )
 	  case oUser: /* store the local users */
 	    add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
 	    break;
-	  case oCompress: opt.compress = pargs.r.ret_int; break;
+	  case oCompress:
+	    /* this is the -z command line option */
+	    opt.compress_level = opt.bz2_compress_level = pargs.r.ret_int;
+	    break;
+	  case oCompressLevel: opt.compress_level = pargs.r.ret_int; break;
+	  case oBZ2CompressLevel: opt.bz2_compress_level = pargs.r.ret_int; break;
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             opt.use_agent = 0;
@@ -1816,12 +1825,12 @@ main( int argc, char **argv )
 
 	      if(*pt=='\0')
 		{
-		  def_compress_string=m_alloc(strlen(pargs.r.ret_str)+2);
-		  strcpy(def_compress_string,"Z");
-		  strcat(def_compress_string,pargs.r.ret_str);
+		  compress_algo_string=m_alloc(strlen(pargs.r.ret_str)+2);
+		  strcpy(compress_algo_string,"Z");
+		  strcat(compress_algo_string,pargs.r.ret_str);
 		}
 	      else
-		def_compress_string = m_strdup(pargs.r.ret_str);
+		compress_algo_string = m_strdup(pargs.r.ret_str);
 	    }
 	    break;
 	  case oCertDigestAlgo: cert_digest_string = m_strdup(pargs.r.ret_str); break;
@@ -2173,7 +2182,7 @@ main( int argc, char **argv )
 	    opt.ask_cert_expire = 0;
 	    m_free(def_digest_string);
 	    def_digest_string = m_strdup("md5");
-	    opt.def_compress_algo = 1;
+	    opt.compress_algo = COMPRESS_ALGO_ZIP;
 	  }
       }
     else if(PGP6)
@@ -2213,10 +2222,10 @@ main( int argc, char **argv )
 	if( check_digest_algo(opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
-    if( def_compress_string ) {
-	opt.def_compress_algo = string_to_compress_algo(def_compress_string);
-	m_free(def_compress_string); def_compress_string = NULL;
-	if( check_compress_algo(opt.def_compress_algo) )
+    if( compress_algo_string ) {
+	opt.compress_algo = string_to_compress_algo(compress_algo_string);
+	m_free(compress_algo_string); compress_algo_string = NULL;
+	if( check_compress_algo(opt.compress_algo) )
 	    log_error(_("selected compression algorithm is invalid\n"));
     }
     if( cert_digest_string ) {
@@ -2340,10 +2349,10 @@ main( int argc, char **argv )
 	    badalg=digest_algo_to_string(opt.cert_digest_algo);
 	    badtype=PREFTYPE_HASH;
 	  }
-	else if(opt.def_compress_algo!=-1
-		&& !algo_available(PREFTYPE_ZIP,opt.def_compress_algo,NULL))
+	else if(opt.compress_algo!=-1
+		&& !algo_available(PREFTYPE_ZIP,opt.compress_algo,NULL))
 	  {
-	    badalg=compress_algo_to_string(opt.def_compress_algo);
+	    badalg=compress_algo_to_string(opt.compress_algo);
 	    badtype=PREFTYPE_ZIP;
 	  }
 
@@ -2399,10 +2408,6 @@ main( int argc, char **argv )
 	opt.verbose = opt.verbose > 1;
 	g10_opt_verbose = opt.verbose;
     }
-
-    /* Compression algorithm 0 means no compression at all */
-    if( opt.def_compress_algo == 0)
-        opt.compress = 0;
 
     /* kludge to let -sat generate a clear text signature */
     if( opt.textmode == 2 && !detached_sig && opt.armor && cmd == aSign )

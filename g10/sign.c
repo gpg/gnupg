@@ -836,9 +836,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( out, encrypt_filter, &efx );
     }
 
-    if( opt.compress && !outfile && ( !detached || opt.compress_sigs) )
+    if( opt.compress_algo && !outfile && ( !detached || opt.compress_sigs) )
       {
-        int compr_algo=opt.def_compress_algo;
+        int compr_algo=opt.compress_algo;
 
 	/* If not forced by user */
 	if(compr_algo==-1)
@@ -1180,8 +1180,8 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* Push the encryption filter */
     iobuf_push_filter( out, cipher_filter, &cfx );
 
-    /* Push the Zip filter */
-    if (opt.compress && default_compress_algo())
+    /* Push the compress filter */
+    if (default_compress_algo())
       push_compress_filter(out,&zfx,default_compress_algo());
 
     /* Write the one-pass signature packets */

@@ -575,6 +575,8 @@ string_to_compress_algo(const char *string)
 {
   if(ascii_strcasecmp(string,"uncompressed")==0)
     return 0;
+  else if(ascii_strcasecmp(string,"none")==0)
+    return 0;
   else if(ascii_strcasecmp(string,"zip")==0)
     return 1;
   else if(ascii_strcasecmp(string,"zlib")==0)
@@ -623,13 +625,13 @@ default_cipher_algo(void)
 }
 
 /* There is no default_digest_algo function, but see
-   sign.c:hash_for */
+   sign.c:hash_for() */
 
 int
 default_compress_algo(void)
 {
-  if(opt.def_compress_algo!=-1)
-    return opt.def_compress_algo;
+  if(opt.compress_algo!=-1)
+    return opt.compress_algo;
   else if(opt.personal_compress_prefs)
     return opt.personal_compress_prefs[0].value;
   else

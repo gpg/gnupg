@@ -220,8 +220,8 @@ encode_simple( const char *filename, int mode, int use_seskey )
 	cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
     }
 
-    if (opt.compress == -1 && cfx.dek && cfx.dek->use_mdc &&
-	is_file_compressed(filename, &rc))
+    if (do_compress && cfx.dek && cfx.dek->use_mdc
+	&& is_file_compressed(filename, &rc))
       {
         if (opt.verbose)
           log_info(_("`%s' already compressed\n"), filename);
@@ -438,7 +438,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
     text_filter_context_t tfx;
     progress_filter_context_t pfx;
     PK_LIST pk_list,work_list;
-    int do_compress = opt.compress && !RFC1991;
+    int do_compress = opt.compress_algo && !RFC1991;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
@@ -534,8 +534,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
        not have a MDC to give some protection against chosen
        ciphertext attacks. */
 
-    if (opt.compress == -1 && cfx.dek->use_mdc &&
-	is_file_compressed(filename, &rc2) )
+    if (do_compress && cfx.dek->use_mdc && is_file_compressed(filename, &rc2) )
       {
         if (opt.verbose)
           log_info(_("`%s' already compressed\n"), filename);
@@ -615,7 +614,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 
     /* register the compress filter */
     if( do_compress ) {
-	int compr_algo = opt.def_compress_algo;
+	int compr_algo = opt.compress_algo;
 
 	if(compr_algo==-1)
 	  {

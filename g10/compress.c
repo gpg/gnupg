@@ -20,7 +20,7 @@
  */
 
 /* Note that the code in compress-bz2.c is nearly identical to the
-   code here, so if you fix a bug here, look there to see if the
+   code here, so if you fix a bug here, look there to see if a
    matching bug needs to be fixed.  I tried to have one set of
    functions that could do ZIP, ZLIB, and BZIP2, but it became
    dangerously unreadable with #ifdefs and if(algo) -dshaw */
@@ -60,11 +60,11 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
         zlib_initialized = riscos_load_module("ZLib", zlib_path, 1);
 #endif
 
-    if( opt.compress >= 0 && opt.compress <= 9 )
-	level = opt.compress;
-    else if( opt.compress == -1 )
+    if( opt.compress_level >= 0 && opt.compress_level <= 9 )
+	level = opt.compress_level;
+    else if( opt.compress_level == -1 )
 	level = Z_DEFAULT_COMPRESSION;
-    else if( opt.compress == 10 ) /* remove this ! */
+    else if( opt.compress_level == 10 ) /* remove this ! */
 	level = 0;
     else {
 	log_error("invalid compression level; using default level\n");
@@ -347,6 +347,9 @@ push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
 
   switch(zfx->algo)
     {
+    case COMPRESS_ALGO_NONE:
+      break;
+
     case COMPRESS_ALGO_ZIP:
     case COMPRESS_ALGO_ZLIB:
       iobuf_push_filter2(out,compress_filter,zfx,rel);

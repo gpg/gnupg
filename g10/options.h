@@ -42,7 +42,6 @@ struct {
     int quiet;
     unsigned debug;
     int armor;
-    int compress;
     char *outfile;
     int dry_run;
     int list_only;
@@ -68,7 +67,9 @@ struct {
     int disable_mdc;
     int def_digest_algo;
     int cert_digest_algo;
-    int def_compress_algo;
+    int compress_algo;
+    int compress_level;
+    int bz2_compress_level;
     const char *def_secret_key;
     char *def_recipient;
     int def_recipient_self;

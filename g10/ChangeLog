@@ -1,5 +1,10 @@
 2003-11-15  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main), compress.c (init_compress),
+	compress-bz2.c (init_compress): Add --compress-level and
+	--bzip2-compress-level.  -z sets them both.  Change various
+	callers.
+
 	* encode.c (encode_simple), sign.c (sign_symencrypt_file):
 	Properly use default_compress_algo (--compress-algo, followed by
 	the highest --personal-compress-preference, followed by ZIP) to
