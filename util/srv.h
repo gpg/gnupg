@@ -1,5 +1,5 @@
 /* srv.h
- * Copyright (C) 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -25,9 +25,12 @@
 #include <windows.h>
 #else
 #include <netinet/in.h>
+#ifdef HAVE_ARPA_NAMESER_H
 #include <arpa/nameser.h>
+#endif
 #include <resolv.h>
 #endif
+#include "types.h"
 
 #ifndef MAXDNAME
 #define MAXDNAME 1025

@@ -1,5 +1,8 @@
 2004-12-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* srv.h: Don't include arpa/nameser.h unless we have it.  Include
+	"types.h" for u16.
+
 	* secmem.c (secmem_init): Return a flag to indicate whether we got
 	the lock.
 
