@@ -1,3 +1,13 @@
+2004-03-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): --no-use-embedded-filename.
+
+	* plaintext.c (handle_plaintext): Accept 'u' as a plaintext mode
+	that requires end of line conversion.  This is being considered
+	for a UTF8 text packet.  If this doesn't take place, no major harm
+	done.  If it does take place, we'll get a jump on starting the
+	changeover.
+
 2004-03-29  Werner Koch  <wk@gnupg.org>
 
 	* g10.c: New command --gpgconf-list.

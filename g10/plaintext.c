@@ -56,7 +56,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     static off_t count=0;
     int rc = 0;
     int c;
-    int convert = pt->mode == 't';
+    int convert = (pt->mode == 't' || pt->mode == 'u');
 
     /* create the filename as C string */
     if( nooutput )
