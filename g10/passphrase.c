@@ -867,9 +867,15 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
           m_free (orig_codeset);
           return pw;
         }
-      else if (nread > 7 && !memcmp (pw, "ERR 111", 7)
-               && (pw[7] == ' ' || pw[7] == '\n') ) 
+      else if ((nread > 7 && !memcmp (pw, "ERR 111", 7)
+                && (pw[7] == ' ' || pw[7] == '\n'))
+               || ((nread > 4 && !memcmp (pw, "ERR ", 4)
+                    && (strtoul (pw+4, NULL, 0) & 0xffff) == 99)) ) 
         {
+          /* 111 is the old Assuan code for canceled which might still
+             be in use by old installations. 99 is GPG_ERR_CANCELED as
+             used by modern gpg-agents; 0xfff is used to mask out the
+             error source.  */
           log_info (_("cancelled by user\n") );
           if (canceled)
             *canceled = 1;

@@ -1,3 +1,8 @@
+2004-08-18  Werner Koch  <wk@g10code.de>
+
+	* passphrase.c (agent_get_passphrase): Fixed detection of canceled
+	error state as send by current gpg-agents.
+
 2004-08-16  Werner Koch  <wk@g10code.de>
 
 	* gpgv.c: Removed stray semicolon.
