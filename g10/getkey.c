@@ -2314,25 +2314,25 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
       (ulong)sig->keyid[1]); */
 
   /* is the issuer of the sig one of our revokers? */
-  for(i=0;i<pk->numrevkeys;i++)
-    {
-      u32 keyid[2];
-
-      keyid_from_fingerprint(pk->revkey[i].fpr,MAX_FINGERPRINT_LEN,keyid);
-
-      if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1])
-	{
-	  MD_HANDLE md;
-
-	  md=md_open(sig->digest_algo,0);
-	  hash_public_key(md,pk);
-	  if(signature_check(sig,md)==0)
-	    {
-	      rc=0;
-	      break;
-	    }
-	}
-    }
+  if( !pk->revkey && pk->numrevkeys )
+     BUG();
+  else
+      for(i=0;i<pk->numrevkeys;i++) {
+          u32 keyid[2];
+    
+          keyid_from_fingerprint(pk->revkey[i].fpr,MAX_FINGERPRINT_LEN,keyid);
+    
+          if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1]) {
+              MD_HANDLE md;
+    
+              md=md_open(sig->digest_algo,0);
+              hash_public_key(md,pk);
+              if(signature_check(sig,md)==0) {
+                  rc=0;
+                  break;
+              }
+          }
+      }
 
   busy=0;
 

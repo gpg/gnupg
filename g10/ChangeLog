@@ -1,3 +1,13 @@
+2002-05-04  Stefan Bellon  <sbellon@sbellon.de>
+
+	* free-packet.c (copy_public_key): Don't call m_alloc(0), therefore
+	added consistency check for revkey and numrefkeys.
+
+	* getkey.c (check_revocation_keys): Added consistency check for
+	revkey and numrefkeys.
+
+	* keyedit.c (show_key_with_all_names): Likewise.
+
 2002-05-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* photoid.c: Provide default image viewer for Win32.

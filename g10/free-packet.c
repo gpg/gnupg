@@ -164,8 +164,14 @@ copy_public_key ( PKT_public_key *d, PKT_public_key *s)
 	for(i=0; i < n; i++ )
 	    d->pkey[i] = mpi_copy( s->pkey[i] );
     }
-    d->revkey=m_alloc(sizeof(struct revocation_key)*s->numrevkeys);
-    memcpy(d->revkey,s->revkey,sizeof(struct revocation_key)*s->numrevkeys);
+    if( !s->revkey && s->numrevkeys )
+        BUG();
+    if( s->numrevkeys ) {
+        d->revkey = m_alloc(sizeof(struct revocation_key)*s->numrevkeys);
+        memcpy(d->revkey,s->revkey,sizeof(struct revocation_key)*s->numrevkeys);
+    }
+    else
+        d->revkey = NULL;
     return d;
 }
 

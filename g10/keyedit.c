@@ -1478,24 +1478,27 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                 }
 	    }
 
-	    if(with_revoker)
-             for(i=0;i<pk->numrevkeys;i++)
-               {
-                 u32 r_keyid[2];
-                 char *user;
- 
-                 keyid_from_fingerprint(pk->revkey[i].fpr,
-					MAX_FINGERPRINT_LEN,r_keyid);
- 
-                 user=get_user_id_string_native(r_keyid);
- 
-                 tty_printf(_("This key may be revoked by %s key %s%s\n"),
-                            pubkey_algo_to_string(pk->revkey[i].algid),
-                            user,
-                            pk->revkey[i].class&0x40?_(" (sensitive)"):"");
- 
-                 m_free(user);
-               }
+	    if(with_revoker) {
+	        if( !pk->revkey && pk->numrevkeys )
+	            BUG();
+	        else
+                    for(i=0;i<pk->numrevkeys;i++) {
+                        u32 r_keyid[2];
+                        char *user;
+           
+                        keyid_from_fingerprint(pk->revkey[i].fpr,
+				       	MAX_FINGERPRINT_LEN,r_keyid);
+           
+                        user=get_user_id_string_native(r_keyid);
+           
+                        tty_printf(_("This key may be revoked by %s key %s%s\n"),
+                                   pubkey_algo_to_string(pk->revkey[i].algid),
+                                   user,
+                                   pk->revkey[i].class&0x40?_(" (sensitive)"):"");
+           
+                        m_free(user);
+                      }
+            }
 
 	    tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
 			  node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
