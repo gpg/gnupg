@@ -50,6 +50,17 @@ static ASSUAN_CONTEXT scd_ctx = NULL;
 #ifdef USE_GNU_PTH
 static pth_mutex_t scd_lock = PTH_MUTEX_INIT;
 #endif
+/* We need to keep track of the connection currently using the SCD.
+   For a pipe server this is all a NOP becuase the connection will
+   always have the conenction indicator -1.  agent_reset_scd releases
+   the active connection; i.e. sets it back to -1, so that a new
+   connection can start using the SCD.  If we eventually allow
+   multiple SCD session we will either make scdaemon multi-threaded or
+   fork of a new scdaemon and let it see how it can get access to a
+   reader. 
+*/
+static int active_connection_fd = -1;
+static int active_connection = 0;
 
 /* callback parameter for learn card */
 struct learn_parm_s {
@@ -162,9 +173,10 @@ atfork_cb (void *opaque, int where)
 }
 
 
-/* Fork off the SCdaemon if this has not already been done */
+/* Fork off the SCdaemon if this has not already been done.  Note that
+   this fucntion alos locks the daemon.  */
 static int
-start_scd (void)
+start_scd (ctrl_t ctrl)
 {
   int rc;
   const char *pgmname;
@@ -182,9 +194,20 @@ start_scd (void)
 #endif
 
   if (scd_ctx)
-    return 0; /* No need to serialize things because the agent is
-                 expected to tun as a single-thread (or may be in
-                 future using libpth) */
+    {
+      /* If we are not the connection currently using the SCD, return
+         an error. */
+      if (!active_connection)
+        {
+          active_connection_fd = ctrl->connection_fd;
+          active_connection = 1;
+        }
+      else if (ctrl->connection_fd != active_connection_fd)
+        return unlock_scd (gpg_error (GPG_ERR_CONFLICT));
+      
+      /* Okay, we scdaemon already started and used by us. */
+      return 0; 
+    }
 
   if (opt.verbose)
     log_info ("no running SCdaemon - starting it\n");
@@ -226,11 +249,43 @@ start_scd (void)
       return unlock_scd (gpg_error (GPG_ERR_NO_SCDAEMON));
     }
   scd_ctx = ctx;
-  
+  active_connection_fd = ctrl->connection_fd;
+  active_connection = 1;
+
   if (DBG_ASSUAN)
     log_debug ("connection to SCdaemon established\n");
+
   return 0;
 }
+
+
+
+/* Reset the SCD if it has been used. */
+int
+agent_reset_scd (ctrl_t ctrl)
+{
+  int rc = 0;
+
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_acquire (&scd_lock, 0, NULL))
+    {
+      log_error ("failed to acquire the SCD lock for reset\n");
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
+#endif
+  if (active_connection && active_connection_fd == ctrl->connection_fd)
+    {
+      if (scd_ctx)
+        rc = assuan_transact (scd_ctx, "RESET", NULL, NULL,
+                              NULL, NULL, NULL, NULL);
+      active_connection_fd = -1;
+      active_connection = 0;
+    }
+
+  return unlock_scd (map_assuan_err (rc));
+}
+
+
 
 
 
@@ -264,7 +319,8 @@ learn_status_cb (void *opaque, const char *line)
 /* Perform the learn command and return a list of all private keys
    stored on the card. */
 int
-agent_card_learn (void (*kpinfo_cb)(void*, const char *),
+agent_card_learn (ctrl_t ctrl,
+                  void (*kpinfo_cb)(void*, const char *),
                   void *kpinfo_cb_arg,
                   void (*certinfo_cb)(void*, const char *),
                   void *certinfo_cb_arg,
@@ -274,7 +330,7 @@ agent_card_learn (void (*kpinfo_cb)(void*, const char *),
   int rc;
   struct learn_parm_s parm;
 
-  rc = start_scd ();
+  rc = start_scd (ctrl);
   if (rc)
     return rc;
 
@@ -330,12 +386,12 @@ get_serialno_cb (void *opaque, const char *line)
 /* Return the serial number of the card or an appropriate error.  The
    serial number is returned as a hexstring. */
 int
-agent_card_serialno (char **r_serialno)
+agent_card_serialno (ctrl_t ctrl, char **r_serialno)
 {
   int rc;
   char *serialno = NULL;
 
-  rc = start_scd ();
+  rc = start_scd (ctrl);
   if (rc)
     return rc;
 
@@ -405,7 +461,8 @@ inq_needpin (void *opaque, const char *line)
 
 /* Create a signature using the current card */
 int
-agent_card_pksign (const char *keyid,
+agent_card_pksign (ctrl_t ctrl,
+                   const char *keyid,
                    int (*getpin_cb)(void *, const char *, char*, size_t),
                    void *getpin_cb_arg,
                    const unsigned char *indata, size_t indatalen,
@@ -420,7 +477,7 @@ agent_card_pksign (const char *keyid,
   size_t sigbuflen;
 
   *r_buf = NULL;
-  rc = start_scd ();
+  rc = start_scd (ctrl);
   if (rc)
     return rc;
 
@@ -476,11 +533,12 @@ agent_card_pksign (const char *keyid,
 
 /* Decipher INDATA using the current card. Note that the returned value is */
 int
-agent_card_pkdecrypt (const char *keyid,
-                   int (*getpin_cb)(void *, const char *, char*, size_t),
-                   void *getpin_cb_arg,
-                   const unsigned char *indata, size_t indatalen,
-                   char **r_buf, size_t *r_buflen)
+agent_card_pkdecrypt (ctrl_t ctrl,
+                      const char *keyid,
+                      int (*getpin_cb)(void *, const char *, char*, size_t),
+                      void *getpin_cb_arg,
+                      const unsigned char *indata, size_t indatalen,
+                      char **r_buf, size_t *r_buflen)
 {
   int rc, i;
   char *p, line[ASSUAN_LINELENGTH];
@@ -489,7 +547,7 @@ agent_card_pkdecrypt (const char *keyid,
   size_t len;
 
   *r_buf = NULL;
-  rc = start_scd ();
+  rc = start_scd (ctrl);
   if (rc)
     return rc;
 
@@ -531,7 +589,8 @@ agent_card_pkdecrypt (const char *keyid,
 
 /* Read a certificate with ID into R_BUF and R_BUFLEN. */
 int
-agent_card_readcert (const char *id, char **r_buf, size_t *r_buflen)
+agent_card_readcert (ctrl_t ctrl,
+                     const char *id, char **r_buf, size_t *r_buflen)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -539,7 +598,7 @@ agent_card_readcert (const char *id, char **r_buf, size_t *r_buflen)
   size_t len;
 
   *r_buf = NULL;
-  rc = start_scd ();
+  rc = start_scd (ctrl);
   if (rc)
     return rc;
 
@@ -567,7 +626,7 @@ agent_card_readcert (const char *id, char **r_buf, size_t *r_buflen)
 /* Read a key with ID and return it in an allocate buffer pointed to
    by r_BUF as a valid S-expression. */
 int
-agent_card_readkey (const char *id, unsigned char **r_buf)
+agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -575,7 +634,7 @@ agent_card_readkey (const char *id, unsigned char **r_buf)
   size_t len, buflen;
 
   *r_buf = NULL;
-  rc = start_scd ();
+  rc = start_scd (ctrl);
   if (rc)
     return rc;
 
@@ -642,14 +701,14 @@ pass_data_thru (void *opaque, const void *buffer, size_t length)
    mechanism to pass everything verbatim to SCDAEMOPN.  The PIN
    inquirey is handled inside gpg-agent. */
 int
-agent_card_scd (const char *cmdline,
+agent_card_scd (ctrl_t ctrl, const char *cmdline,
                 int (*getpin_cb)(void *, const char *, char*, size_t),
                 void *getpin_cb_arg, void *assuan_context)
 {
   int rc;
   struct inq_needpin_s inqparm;
 
-  rc = start_scd ();
+  rc = start_scd (ctrl);
   if (rc)
     return rc;
 

@@ -83,6 +83,7 @@ struct server_local_s;
 
 struct server_control_s {
   struct server_local_s *server_local;
+  int   connection_fd; /* -1 or an identifier for the current connection. */
   char *display;
   char *ttyname;
   char *ttytype;
@@ -98,6 +99,7 @@ struct server_control_s {
 
 };
 typedef struct server_control_s *CTRL;
+typedef struct server_control_s *ctrl_t;
 
 
 struct pin_entry_info_s {
@@ -194,33 +196,38 @@ int divert_generic_cmd (CTRL ctrl, const char *cmdline, void *assuan_context);
 
 
 /*-- call-scd.c --*/
-int agent_card_learn (void (*kpinfo_cb)(void*, const char *),
+int agent_reset_scd (ctrl_t ctrl);
+int agent_card_learn (ctrl_t ctrl,
+                      void (*kpinfo_cb)(void*, const char *),
                       void *kpinfo_cb_arg,
                       void (*certinfo_cb)(void*, const char *),
                       void *certinfo_cb_arg,
                       void (*sinfo_cb)(void*, const char *,
                                        size_t, const char *),
                       void *sinfo_cb_arg);
-int agent_card_serialno (char **r_serialno);
-int agent_card_pksign (const char *keyid,
+int agent_card_serialno (ctrl_t ctrl, char **r_serialno);
+int agent_card_pksign (ctrl_t ctrl,
+                       const char *keyid,
                        int (*getpin_cb)(void *, const char *, char*, size_t),
                        void *getpin_cb_arg,
                        const unsigned char *indata, size_t indatalen,
                        char **r_buf, size_t *r_buflen);
-int agent_card_pkdecrypt (const char *keyid,
+int agent_card_pkdecrypt (ctrl_t ctrl,
+                          const char *keyid,
                           int (*getpin_cb)(void *, const char *, char*,size_t),
                           void *getpin_cb_arg,
                           const unsigned char *indata, size_t indatalen,
                           char **r_buf, size_t *r_buflen);
-int agent_card_readcert (const char *id, char **r_buf, size_t *r_buflen);
-int agent_card_readkey (const char *id, unsigned char **r_buf);
-int agent_card_scd (const char *cmdline,
+int agent_card_readcert (ctrl_t ctrl,
+                         const char *id, char **r_buf, size_t *r_buflen);
+int agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf);
+int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *, char*, size_t),
                     void *getpin_cb_arg, void *assuan_context);
 
 
 /*-- learncard.c --*/
-int agent_handle_learn (void *assuan_context);
+int agent_handle_learn (ctrl_t ctrl, void *assuan_context);
 
 
 #endif /*AGENT_H*/

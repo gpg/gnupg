@@ -81,7 +81,7 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
 
   for (;;)
     {
-      rc = agent_card_serialno (&serialno);
+      rc = agent_card_serialno (ctrl, &serialno);
       if (!rc)
         {
           log_debug ("detected card with S/N %s\n", serialno);
@@ -108,6 +108,13 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
 
       if (!rc)
         {
+          /* We better reset the SCD now.  This is kludge requred
+             because the scdaemon is currently not always able to
+             detect the presence of a card.  With a fully working
+             scdaemon this would not be required; i.e. the pkcs#15
+             support does not require it becuase OpenSC correclty
+             detects a present card. */
+          agent_reset_scd (ctrl);
           if (asprintf (&desc,
                     "%s:%%0A%%0A"
                     "  \"%.*s\"",
@@ -230,7 +237,7 @@ divert_pksign (CTRL ctrl,
   if (rc)
     return rc;
 
-  rc = agent_card_pksign (kid, getpin_cb, ctrl,
+  rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl,
                           data, ndata, &sigval, &siglen);
   if (!rc)
     *r_sig = sigval;
@@ -294,7 +301,7 @@ divert_pkdecrypt (CTRL ctrl,
   if (rc)
     return rc;
 
-  rc = agent_card_pkdecrypt (kid, getpin_cb, ctrl,
+  rc = agent_card_pkdecrypt (ctrl, kid, getpin_cb, ctrl,
                              ciphertext, ciphertextlen,
                              &plaintext, &plaintextlen);
   if (!rc)
@@ -310,7 +317,7 @@ divert_pkdecrypt (CTRL ctrl,
 int  
 divert_generic_cmd (CTRL ctrl, const char *cmdline, void *assuan_context)
 {
-  return agent_card_scd (cmdline, getpin_cb, ctrl, assuan_context);
+  return agent_card_scd (ctrl, cmdline, getpin_cb, ctrl, assuan_context);
 }
 
 

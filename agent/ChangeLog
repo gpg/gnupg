@@ -1,3 +1,16 @@
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* agent.h (server_control_s): Add connection_fd field.
+	* command.c (start_command_handler): Init it here.
+	* gpg-agent.c (agent_init_default_ctrl): and here.
+	* call-scd.c: Add the CTRL arg to all functions calling start_scd
+	and pass it to start_scd.  Changed all callers
+	(start_scd): Keep track of the current active connection.
+	(agent_reset_scd): New.
+	* command.c (start_command_handler): Call it here.
+	* learncard.c (agent_handle_learn): Add arg CTRL; changed caller.
+	(send_cert_back): Ditto.
+
 2004-01-28  Werner Koch  <wk@gnupg.org>
 
 	* trustlist.c (agent_marktrusted): Check whether the trustlist is
@@ -18,7 +31,7 @@
 
 	* findkey.c (agent_key_from_file): Now return an error code so
 	that we have more detailed error messages in the upper layers.
-	This fixes the handling pinentry's cancel button. 
+	This fixes the handling of pinentry's cancel button. 
 	* pksign.c (agent_pksign): Changed accordingly.
 	* pkdecrypt.c (agent_pkdecrypt): Ditto.
 	* command.c (cmd_passwd): Ditto.

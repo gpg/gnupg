@@ -579,9 +579,10 @@ cmd_get_confirmation (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 {
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
 
-  rc = agent_handle_learn (has_option (line, "--send")? ctx : NULL);
+  rc = agent_handle_learn (ctrl, has_option (line, "--send")? ctx : NULL);
   if (rc)
     log_error ("command learn failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);
@@ -771,6 +772,7 @@ start_command_handler (int listen_fd, int fd)
   else 
     {
       rc = assuan_init_connected_socket_server (&ctx, fd);
+      ctrl.connection_fd = fd;
     }
   if (rc)
     {
@@ -816,6 +818,8 @@ start_command_handler (int listen_fd, int fd)
         }
     }
 
+  /* Reset the SCD if needed. */
+  agent_reset_scd (&ctrl);
 
   assuan_deinit_server (ctx);
   if (ctrl.display)

@@ -255,13 +255,13 @@ make_shadow_info (const char *serialno, const char *idstring)
 }
 
 static int
-send_cert_back (const char *id, void *assuan_context)
+send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
 {
   int rc;
   char *derbuf;
   size_t derbuflen;
   
-  rc = agent_card_readcert (id, &derbuf, &derbuflen);
+  rc = agent_card_readcert (ctrl, id, &derbuf, &derbuflen);
   if (rc)
     {
       log_error ("error reading certificate: %s\n",
@@ -287,7 +287,7 @@ send_cert_back (const char *id, void *assuan_context)
 /* Perform the learn operation.  If ASSUAN_CONTEXT is not NULL all new
    certificates are send via Assuan */
 int
-agent_handle_learn (void *assuan_context)
+agent_handle_learn (ctrl_t ctrl, void *assuan_context)
 {
   int rc;
   struct kpinfo_cb_parm_s parm;
@@ -313,12 +313,12 @@ agent_handle_learn (void *assuan_context)
   memset (&sparm, 0, sizeof sparm);
 
   /* Check whether a card is present and get the serial number */
-  rc = agent_card_serialno (&serialno);
+  rc = agent_card_serialno (ctrl, &serialno);
   if (rc)
     goto leave;
 
   /* now gather all the available info */
-  rc = agent_card_learn (kpinfo_cb, &parm, certinfo_cb, &cparm,
+  rc = agent_card_learn (ctrl, kpinfo_cb, &parm, certinfo_cb, &cparm,
                          sinfo_cb, &sparm);
   if (!rc && (parm.error || cparm.error || sparm.error))
     rc = parm.error? parm.error : cparm.error? cparm.error : sparm.error;
@@ -354,7 +354,7 @@ agent_handle_learn (void *assuan_context)
           
           if (assuan_context)
             {
-              rc = send_cert_back (citem->id, assuan_context);
+              rc = send_cert_back (ctrl, citem->id, assuan_context);
               if (rc)
                 goto leave;
               citem->done = 1;
@@ -380,7 +380,7 @@ agent_handle_learn (void *assuan_context)
         continue;
       
       /* unknown - store it */
-      rc = agent_card_readkey (item->id, &pubkey);
+      rc = agent_card_readkey (ctrl, item->id, &pubkey);
       if (rc)
         {
           log_debug ("agent_card_readkey failed: %s\n", gpg_strerror (rc));
@@ -430,7 +430,7 @@ agent_handle_learn (void *assuan_context)
             }
           if (!citem)
             {
-              rc = send_cert_back (item->id, assuan_context);
+              rc = send_cert_back (ctrl, item->id, assuan_context);
               if (rc)
                 goto leave;
             }

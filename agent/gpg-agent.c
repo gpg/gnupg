@@ -784,6 +784,8 @@ agent_exit (int rc)
 void
 agent_init_default_ctrl (struct server_control_s *ctrl)
 {
+  ctrl->connection_fd = -1;
+
   /* Note we ignore malloc errors because we can't do much about it
      and the request will fail anyway shortly after this
      initialization. */
