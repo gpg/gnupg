@@ -759,7 +759,8 @@ does not contain a slash, it is assumed to be in the
 home-directory ("~/.gnupg" if --homedir is not used).
 The filename may be prefixed with a scheme:</para>
 <para>"gnupg-ring:" is the default one.</para>
-<para>"gnupg-gdbm:" may be used for a GDBM ring.</para>
+<para>"gnupg-gdbm:" may be used for a GDBM ring. Note that GDBM
+is experimental and likely to be removed in future versions.</para>
 <para>It might make sense to use it together with --no-default-keyring.
 </para></listitem></varlistentry>
 
@@ -1190,7 +1191,7 @@ option may lead to data and key corruption.
 <varlistentry>
 <term>--no-random-seed-file</term>
 <listitem><para>
-&gnupg; uses a file to store it's internal random pool over invocations.
+GnuPG uses a file to store it's internal random pool over invocations.
 This makes random generation faster; however sometimes write operations
 are not desired.  This option can be used to achive that with the cost of
 slower random generation.

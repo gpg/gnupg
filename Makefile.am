@@ -27,20 +27,4 @@ dist-hook:
 	    > $(distdir)/scripts/gnupg.spec
 
 
-if MAINTAINER_MODE
-# This is only useful within my local environment (wk)
-cvs-get:
-	rsync -Cavuzb  --exclude scratch --exclude .deps \
-		      wkoch@sigtrap.guug.de:work/gnupg .
-
-cvs-put:
-	rsync -Cavuzb --exclude .deps --exclude scratch \
-		      . wkoch@sigtrap.guug.de:work/gnupg
-
-cvs-sync: cvs-get cvs-put
-
-endif
-
-
-.PHONY: cvs-get cvs-put cvs-sync
 

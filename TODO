@@ -1,7 +1,4 @@
 
-  * add a check to the make dist target to see whether the man page
-    was build.
-
   * at least an option to prefer DSA keys over RSA when selecting the key to
     use.  Depending on creation time would be nice too.  I think this is
     already done for the subkeys - check it.

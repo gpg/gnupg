@@ -25,3 +25,7 @@ endif
 	-db2html $<
 
 
+dist-hook:
+	@if test `wc -c < gpg.1` -lt 200; then \
+	    echo 'ERROR: dummy man page'; false; fi
+

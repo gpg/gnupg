@@ -1450,7 +1450,7 @@ main( int argc, char **argv )
 	break;
 
       case aFixTrustDB:
-	log_error("this command is not yet implemented.\"\n");
+	log_error("this command is not yet implemented.\n");
 	log_error("A workaround is to use \"--export-ownertrust\", remove\n");
 	log_error("the trustdb file and do an \"--import-ownertrust\".\n" );
 	break;
