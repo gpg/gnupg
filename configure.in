@@ -105,7 +105,6 @@ case "${target}" in
         if test -z "$GCC" ; then
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
         fi
-        AC_DEFINE(USE_RNDUNIX)
         ;;
     *)
        ;;
@@ -156,21 +155,32 @@ AC_CHECK_LIB(gdbm,gdbm_firstkey)
 
 
 if test "$try_dynload" = yes ; then
-AC_CHECK_LIB(dl,dlopen)
-if test "$ac_cv_lib_dl_dlopen" = "yes"; then
-  AC_DEFINE(USE_DYNAMIC_LINKING)
-  AC_DEFINE(HAVE_DL_DLOPEN)
-  DYNLINK_LDFLAGS="-Wl,-export-dynamic"
-  use_gnupg_extensions=yes
-else
-AC_CHECK_LIB(dld,dld_link)
-if test "$ac_cv_lib_dld_dld_link" = "yes"; then
-  AC_DEFINE(USE_DYNAMIC_LINKING)
-  AC_DEFINE(HAVE_DLD_DLD_LINK)
-  DYNLINK_LDFLAGS="-Wl,-export-dynamic"
-  use_gnupg_extensions=yes
-fi
-fi
+  AC_CHECK_LIB(dl,dlopen)
+  if test "$ac_cv_lib_dl_dlopen" = "yes"; then
+    AC_DEFINE(USE_DYNAMIC_LINKING)
+    AC_DEFINE(HAVE_DL_DLOPEN)
+    DYNLINK_LDFLAGS="-Wl,-export-dynamic"
+    use_gnupg_extensions=yes
+  else
+    AC_CHECK_LIB(c,dlopen)
+    if test "$ac_cv_lib_c_dlopen" = "yes"; then
+      AC_DEFINE(USE_DYNAMIC_LINKING)
+      AC_DEFINE(HAVE_DL_DLOPEN)
+      DYNLINK_LDFLAGS="-Wl,-export-dynamic"
+      dnl fixme: this is probably false but it should
+      dnl work for freebsd
+      AC_DEFINE(DLSYM_NEEDS_UNDERSCORE)
+      use_gnupg_extensions=yes
+    else
+      AC_CHECK_LIB(dld,dld_link)
+      if test "$ac_cv_lib_dld_dld_link" = "yes"; then
+        AC_DEFINE(USE_DYNAMIC_LINKING)
+        AC_DEFINE(HAVE_DLD_DLD_LINK)
+        DYNLINK_LDFLAGS="-Wl,-export-dynamic"
+        use_gnupg_extensions=yes
+      fi
+    fi
+  fi
 else
   AC_MSG_CHECKING(for dynamic loading)
   DYNLINK_LDFLAGS=

@@ -12,15 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#ifdef	HAVE_GETHRTIME
-  #include <sys/times.h>
-#endif
-#ifdef HAVE_GETTIMEOFDAY
-  #include <sys/times.h>
-#endif
-#ifdef HAVE_GETRUSAGE
-  #include <sys/resource.h>
-#endif
 
 /* OS-specific includes */
 
@@ -66,11 +57,8 @@
 #include "dynload.h"
 #endif
 
-typedef enum { FALSE=0, TRUE } BOOLEAN;
-typedef unsigned char BYTE;
 
-#define DEBUG_RANDOM  1
-#define DEBUG_RANDOM_VERBOSE  1
+#define GATHER_BUFSIZE		49152	/* Usually about 25K are filled */
 
 /* The structure containing information on random-data sources.  Each
  * record contains the source and a relative estimate of its usefulness
@@ -142,110 +130,110 @@ static struct RI {
     int pipeFD; 		/* Pipe to source as FD */
     pid_t pid;			/* pid of child for waitpid() */
     int length; 		/* Quantity of output produced */
-    const BOOLEAN hasAlternative;	/* Whether source has alt.location */
+    const int hasAlternative;	    /* Whether source has alt.location */
 } dataSources[] = {
 
-    {	"/bin/vmstat", "-s", SC(-3), NULL, 0, 0, 0, TRUE    },
-    {	"/usr/bin/vmstat", "-s", SC(-3), NULL, 0, 0, 0, FALSE},
-    {	"/bin/vmstat", "-c", SC(-3), NULL, 0, 0, 0, TRUE     },
-    {	"/usr/bin/vmstat", "-c", SC(-3), NULL, 0, 0, 0, FALSE},
-    {	"/usr/bin/pfstat", NULL, SC(-2), NULL, 0, 0, 0, FALSE},
-    {	"/bin/vmstat", "-i", SC(-2), NULL, 0, 0, 0, TRUE     },
-    {	"/usr/bin/vmstat", "-i", SC(-2), NULL, 0, 0, 0, FALSE},
-    {	"/usr/ucb/netstat", "-s", SC(2), NULL, 0, 0, 0, TRUE },
-    {	"/usr/bin/netstat", "-s", SC(2), NULL, 0, 0, 0, TRUE },
-    {	"/usr/sbin/netstat", "-s", SC(2), NULL, 0, 0, 0, TRUE},
-    {	"/usr/etc/netstat", "-s", SC(2), NULL, 0, 0, 0, FALSE},
-    {	"/usr/bin/nfsstat", NULL, SC(2), NULL, 0, 0, 0, FALSE},
-    {	"/usr/ucb/netstat", "-m", SC(-1), NULL, 0, 0, 0, TRUE  },
-    {	"/usr/bin/netstat", "-m", SC(-1), NULL, 0, 0, 0, TRUE  },
-    {	"/usr/sbin/netstat", "-m", SC(-1), NULL, 0, 0, 0, TRUE },
-    {	"/usr/etc/netstat", "-m", SC(-1), NULL, 0, 0, 0, FALSE },
-    {	"/bin/netstat",     "-in", SC(-1), NULL, 0, 0, 0, TRUE },
-    {	"/usr/ucb/netstat", "-in", SC(-1), NULL, 0, 0, 0, TRUE },
-    {	"/usr/bin/netstat", "-in", SC(-1), NULL, 0, 0, 0, TRUE },
-    {	"/usr/sbin/netstat", "-in", SC(-1), NULL, 0, 0, 0, TRUE},
-    {	"/usr/etc/netstat", "-in", SC(-1), NULL, 0, 0, 0, FALSE},
+    {	"/bin/vmstat", "-s", SC(-3), NULL, 0, 0, 0, 1    },
+    {	"/usr/bin/vmstat", "-s", SC(-3), NULL, 0, 0, 0, 0},
+    {	"/bin/vmstat", "-c", SC(-3), NULL, 0, 0, 0, 1     },
+    {	"/usr/bin/vmstat", "-c", SC(-3), NULL, 0, 0, 0, 0},
+    {	"/usr/bin/pfstat", NULL, SC(-2), NULL, 0, 0, 0, 0},
+    {	"/bin/vmstat", "-i", SC(-2), NULL, 0, 0, 0, 1     },
+    {	"/usr/bin/vmstat", "-i", SC(-2), NULL, 0, 0, 0, 0},
+    {	"/usr/ucb/netstat", "-s", SC(2), NULL, 0, 0, 0, 1 },
+    {	"/usr/bin/netstat", "-s", SC(2), NULL, 0, 0, 0, 1 },
+    {	"/usr/sbin/netstat", "-s", SC(2), NULL, 0, 0, 0, 1},
+    {	"/usr/etc/netstat", "-s", SC(2), NULL, 0, 0, 0, 0},
+    {	"/usr/bin/nfsstat", NULL, SC(2), NULL, 0, 0, 0, 0},
+    {	"/usr/ucb/netstat", "-m", SC(-1), NULL, 0, 0, 0, 1  },
+    {	"/usr/bin/netstat", "-m", SC(-1), NULL, 0, 0, 0, 1  },
+    {	"/usr/sbin/netstat", "-m", SC(-1), NULL, 0, 0, 0, 1 },
+    {	"/usr/etc/netstat", "-m", SC(-1), NULL, 0, 0, 0, 0 },
+    {	"/bin/netstat",     "-in", SC(-1), NULL, 0, 0, 0, 1 },
+    {	"/usr/ucb/netstat", "-in", SC(-1), NULL, 0, 0, 0, 1 },
+    {	"/usr/bin/netstat", "-in", SC(-1), NULL, 0, 0, 0, 1 },
+    {	"/usr/sbin/netstat", "-in", SC(-1), NULL, 0, 0, 0, 1},
+    {	"/usr/etc/netstat", "-in", SC(-1), NULL, 0, 0, 0, 0},
     {	"/usr/sbin/snmp_request", "localhost public get 1.3.6.1.2.1.7.1.0",
-				    SC(-1), NULL, 0, 0, 0, FALSE }, /* UDP in */
+				    SC(-1), NULL, 0, 0, 0, 0 }, /* UDP in */
     {	"/usr/sbin/snmp_request", "localhost public get 1.3.6.1.2.1.7.4.0",
-				    SC(-1), NULL, 0, 0, 0, FALSE },  /* UDP out */
+				    SC(-1), NULL, 0, 0, 0, 0 },  /* UDP out */
     {	"/usr/sbin/snmp_request", "localhost public get 1.3.6.1.2.1.4.3.0",
-				    SC(-1), NULL, 0, 0, 0, FALSE }, /* IP ? */
+				    SC(-1), NULL, 0, 0, 0, 0 }, /* IP ? */
     {	"/usr/sbin/snmp_request", "localhost public get 1.3.6.1.2.1.6.10.0",
-				    SC(-1), NULL, 0, 0, 0, FALSE }, /* TCP ? */
+				    SC(-1), NULL, 0, 0, 0, 0 }, /* TCP ? */
     {	"/usr/sbin/snmp_request", "localhost public get 1.3.6.1.2.1.6.11.0",
-				    SC(-1), NULL, 0, 0, 0, FALSE }, /* TCP ? */
+				    SC(-1), NULL, 0, 0, 0, 0 }, /* TCP ? */
     {	"/usr/sbin/snmp_request", "localhost public get 1.3.6.1.2.1.6.13.0",
-				    SC(-1), NULL, 0, 0, 0, FALSE }, /* TCP ? */
-    {	"/usr/bin/mpstat", NULL, SC(1), NULL, 0, 0, 0, FALSE     },
-    {	"/usr/bin/w", NULL, SC(1), NULL, 0, 0, 0, TRUE           },
-    {	"/usr/bsd/w", NULL, SC(1), NULL, 0, 0, 0, FALSE          },
-    {	"/usr/bin/df", NULL, SC(1), NULL, 0, 0, 0, TRUE          },
-    {	"/bin/df", NULL, SC(1), NULL, 0, 0, 0, FALSE             },
-    {	"/usr/sbin/portstat", NULL, SC(1), NULL, 0, 0, 0, FALSE  },
-    {	"/usr/bin/iostat", NULL, SC(SC_0), NULL, 0, 0, 0, FALSE  },
-    {	"/usr/bin/uptime", NULL, SC(SC_0), NULL, 0, 0, 0, TRUE   },
-    {	"/usr/bsd/uptime", NULL, SC(SC_0), NULL, 0, 0, 0, FALSE  },
-    {	"/bin/vmstat", "-f", SC(SC_0), NULL, 0, 0, 0, TRUE       },
-    {	"/usr/bin/vmstat", "-f", SC(SC_0), NULL, 0, 0, 0, FALSE  },
-    {	"/bin/vmstat", NULL, SC(SC_0), NULL, 0, 0, 0, TRUE       },
-    {	"/usr/bin/vmstat", NULL, SC(SC_0), NULL, 0, 0, 0, FALSE  },
-    {	"/usr/ucb/netstat", "-n", SC(0.5), NULL, 0, 0, 0, TRUE   },
-    {	"/usr/bin/netstat", "-n", SC(0.5), NULL, 0, 0, 0, TRUE   },
-    {	"/usr/sbin/netstat", "-n", SC(0.5), NULL, 0, 0, 0, TRUE  },
-    {	"/usr/etc/netstat", "-n", SC(0.5), NULL, 0, 0, 0, FALSE  },
+				    SC(-1), NULL, 0, 0, 0, 0 }, /* TCP ? */
+    {	"/usr/bin/mpstat", NULL, SC(1), NULL, 0, 0, 0, 0     },
+    {	"/usr/bin/w", NULL, SC(1), NULL, 0, 0, 0, 1           },
+    {	"/usr/bsd/w", NULL, SC(1), NULL, 0, 0, 0, 0          },
+    {	"/usr/bin/df", NULL, SC(1), NULL, 0, 0, 0, 1          },
+    {	"/bin/df", NULL, SC(1), NULL, 0, 0, 0, 0             },
+    {	"/usr/sbin/portstat", NULL, SC(1), NULL, 0, 0, 0, 0  },
+    {	"/usr/bin/iostat", NULL, SC(SC_0), NULL, 0, 0, 0, 0  },
+    {	"/usr/bin/uptime", NULL, SC(SC_0), NULL, 0, 0, 0, 1   },
+    {	"/usr/bsd/uptime", NULL, SC(SC_0), NULL, 0, 0, 0, 0  },
+    {	"/bin/vmstat", "-f", SC(SC_0), NULL, 0, 0, 0, 1       },
+    {	"/usr/bin/vmstat", "-f", SC(SC_0), NULL, 0, 0, 0, 0  },
+    {	"/bin/vmstat", NULL, SC(SC_0), NULL, 0, 0, 0, 1       },
+    {	"/usr/bin/vmstat", NULL, SC(SC_0), NULL, 0, 0, 0, 0  },
+    {	"/usr/ucb/netstat", "-n", SC(0.5), NULL, 0, 0, 0, 1   },
+    {	"/usr/bin/netstat", "-n", SC(0.5), NULL, 0, 0, 0, 1   },
+    {	"/usr/sbin/netstat", "-n", SC(0.5), NULL, 0, 0, 0, 1  },
+    {	"/usr/etc/netstat", "-n", SC(0.5), NULL, 0, 0, 0, 0  },
 #if defined( __sgi ) || defined( __hpux )
-    {	"/bin/ps", "-el", SC(0.3), NULL, 0, 0, 0, TRUE           },
+    {	"/bin/ps", "-el", SC(0.3), NULL, 0, 0, 0, 1           },
 #endif				/* __sgi || __hpux */
-    {	"/usr/ucb/ps", "aux", SC(0.3), NULL, 0, 0, 0, TRUE       },
-    {	"/usr/bin/ps", "aux", SC(0.3), NULL, 0, 0, 0, TRUE       },
-    {	"/bin/ps", "aux", SC(0.3), NULL, 0, 0, 0, FALSE          },
-    {	"/usr/bin/ipcs", "-a", SC(0.5), NULL, 0, 0, 0, TRUE      },
-    {	"/bin/ipcs", "-a", SC(0.5), NULL, 0, 0, 0, FALSE         },
+    {	"/usr/ucb/ps", "aux", SC(0.3), NULL, 0, 0, 0, 1       },
+    {	"/usr/bin/ps", "aux", SC(0.3), NULL, 0, 0, 0, 1       },
+    {	"/bin/ps", "aux", SC(0.3), NULL, 0, 0, 0, 0          },
+    {	"/usr/bin/ipcs", "-a", SC(0.5), NULL, 0, 0, 0, 1      },
+    {	"/bin/ipcs", "-a", SC(0.5), NULL, 0, 0, 0, 0         },
     /* Unreliable source, depends on system usage */
-    {	"/etc/pstat", "-p", SC(0.5), NULL, 0, 0, 0, TRUE         },
-    {	"/bin/pstat", "-p", SC(0.5), NULL, 0, 0, 0, FALSE        },
-    {	"/etc/pstat", "-S", SC(0.2), NULL, 0, 0, 0, TRUE         },
-    {	"/bin/pstat", "-S", SC(0.2), NULL, 0, 0, 0, FALSE        },
-    {	"/etc/pstat", "-v", SC(0.2), NULL, 0, 0, 0, TRUE         },
-    {	"/bin/pstat", "-v", SC(0.2), NULL, 0, 0, 0, FALSE        },
-    {	"/etc/pstat", "-x", SC(0.2), NULL, 0, 0, 0, TRUE         },
-    {	"/bin/pstat", "-x", SC(0.2), NULL, 0, 0, 0, FALSE        },
-    {	"/etc/pstat", "-t", SC(0.1), NULL, 0, 0, 0, TRUE         },
-    {	"/bin/pstat", "-t", SC(0.1), NULL, 0, 0, 0, FALSE        },
+    {	"/etc/pstat", "-p", SC(0.5), NULL, 0, 0, 0, 1         },
+    {	"/bin/pstat", "-p", SC(0.5), NULL, 0, 0, 0, 0        },
+    {	"/etc/pstat", "-S", SC(0.2), NULL, 0, 0, 0, 1         },
+    {	"/bin/pstat", "-S", SC(0.2), NULL, 0, 0, 0, 0        },
+    {	"/etc/pstat", "-v", SC(0.2), NULL, 0, 0, 0, 1         },
+    {	"/bin/pstat", "-v", SC(0.2), NULL, 0, 0, 0, 0        },
+    {	"/etc/pstat", "-x", SC(0.2), NULL, 0, 0, 0, 1         },
+    {	"/bin/pstat", "-x", SC(0.2), NULL, 0, 0, 0, 0        },
+    {	"/etc/pstat", "-t", SC(0.1), NULL, 0, 0, 0, 1         },
+    {	"/bin/pstat", "-t", SC(0.1), NULL, 0, 0, 0, 0        },
     /* pstat is your friend */
-    {	"/usr/bin/last", "-n 50", SC(0.3), NULL, 0, 0, 0, TRUE   },
+    {	"/usr/bin/last", "-n 50", SC(0.3), NULL, 0, 0, 0, 1   },
 #ifdef __sgi
-    {	"/usr/bsd/last", "-50", SC(0.3), NULL, 0, 0, 0, FALSE    },
+    {	"/usr/bsd/last", "-50", SC(0.3), NULL, 0, 0, 0, 0    },
 #endif				/* __sgi */
 #ifdef __hpux
-    {	"/etc/last", "-50", SC(0.3), NULL, 0, 0, 0, FALSE        },
+    {	"/etc/last", "-50", SC(0.3), NULL, 0, 0, 0, 0        },
 #endif				/* __hpux */
-    {	"/usr/bsd/last", "-n 50", SC(0.3), NULL, 0, 0, 0, FALSE  },
+    {	"/usr/bsd/last", "-n 50", SC(0.3), NULL, 0, 0, 0, 0  },
     {	"/usr/sbin/snmp_request", "localhost public get 1.3.6.1.2.1.5.1.0",
-				SC(0.1), NULL, 0, 0, 0, FALSE }, /* ICMP ? */
+				SC(0.1), NULL, 0, 0, 0, 0 }, /* ICMP ? */
     {	"/usr/sbin/snmp_request", "localhost public get 1.3.6.1.2.1.5.3.0",
-				SC(0.1), NULL, 0, 0, 0, FALSE }, /* ICMP ? */
-    {	"/etc/arp", "-a", SC(0.1), NULL, 0, 0, 0, TRUE  },
-    {	"/usr/etc/arp", "-a", SC(0.1), NULL, 0, 0, 0, TRUE  },
-    {	"/usr/bin/arp", "-a", SC(0.1), NULL, 0, 0, 0, TRUE  },
-    {	"/usr/sbin/arp", "-a", SC(0.1), NULL, 0, 0, 0, FALSE },
+				SC(0.1), NULL, 0, 0, 0, 0 }, /* ICMP ? */
+    {	"/etc/arp", "-a", SC(0.1), NULL, 0, 0, 0, 1  },
+    {	"/usr/etc/arp", "-a", SC(0.1), NULL, 0, 0, 0, 1  },
+    {	"/usr/bin/arp", "-a", SC(0.1), NULL, 0, 0, 0, 1  },
+    {	"/usr/sbin/arp", "-a", SC(0.1), NULL, 0, 0, 0, 0 },
     {	"/usr/sbin/ripquery", "-nw 1 127.0.0.1",
-				SC(0.1), NULL, 0, 0, 0, FALSE },
-    {	"/bin/lpstat", "-t", SC(0.1), NULL, 0, 0, 0, TRUE     },
-    {	"/usr/bin/lpstat", "-t", SC(0.1), NULL, 0, 0, 0, TRUE },
-    {	"/usr/ucb/lpstat", "-t", SC(0.1), NULL, 0, 0, 0, FALSE },
-    {	"/usr/bin/tcpdump", "-c 5 -efvvx", SC(1), NULL, 0, 0, 0, FALSE },
+				SC(0.1), NULL, 0, 0, 0, 0 },
+    {	"/bin/lpstat", "-t", SC(0.1), NULL, 0, 0, 0, 1     },
+    {	"/usr/bin/lpstat", "-t", SC(0.1), NULL, 0, 0, 0, 1 },
+    {	"/usr/ucb/lpstat", "-t", SC(0.1), NULL, 0, 0, 0, 0 },
+    {	"/usr/bin/tcpdump", "-c 5 -efvvx", SC(1), NULL, 0, 0, 0, 0 },
     /* This is very environment-dependant.  If network traffic is low, it'll
      * probably time out before delivering 5 packets, which is OK because
      * it'll probably be fixed stuff like ARP anyway */
     {	"/usr/sbin/advfsstat", "-b usr_domain",
-				SC(SC_0), NULL, 0, 0, 0, FALSE},
+				SC(SC_0), NULL, 0, 0, 0, 0},
     {	"/usr/sbin/advfsstat", "-l 2 usr_domain",
-				SC(0.5), NULL, 0, 0, 0, FALSE},
+				SC(0.5), NULL, 0, 0, 0, 0},
     {	"/usr/sbin/advfsstat", "-p usr_domain",
-				SC(SC_0), NULL, 0, 0, 0, FALSE},
+				SC(SC_0), NULL, 0, 0, 0, 0},
     /* This is a complex and screwball program.  Some systems have things
      * like rX_dmn, x = integer, for RAID systems, but the statistics are
      * pretty dodgy */
@@ -254,30 +242,24 @@ static struct RI {
      * unpredictable, however they give an indication of the sort of sources
      * you can use (for example the finger might be more useful on a
      * firewalled internal network) */
-    {	"/usr/bin/finger", "@ml.media.mit.edu", SC(0.9), NULL, 0, 0, 0, FALSE },
+    {	"/usr/bin/finger", "@ml.media.mit.edu", SC(0.9), NULL, 0, 0, 0, 0 },
     {	"/usr/local/bin/wget", "-O - http://lavarand.sgi.com/block.html",
-				SC(0.9), NULL, 0, 0, 0, FALSE },
-    {	"/bin/cat", "/usr/spool/mqueue/syslog", SC(0.9), NULL, 0, 0, 0, FALSE },
+				SC(0.9), NULL, 0, 0, 0, 0 },
+    {	"/bin/cat", "/usr/spool/mqueue/syslog", SC(0.9), NULL, 0, 0, 0, 0 },
 #endif				/* 0 */
-    {	NULL, NULL, 0, NULL, 0, 0, 0, FALSE }
+    {	NULL, NULL, 0, NULL, 0, 0, 0, 0 }
 };
 
-/* Variables to manage the child process which fills the buffer */
+static byte *gather_buffer;	    /* buffer for gathering random noise */
+static int gather_buffer_size;	    /* size of the memory buffer */
+static uid_t gatherer_uid;
 
-static pid_t gathererProcess = 0;   /* The child process which fills the
-				     * buffer */
-static BYTE *gathererBuffer;	/* Shared buffer for gathering random noise */
-static int gathererMemID;	/* ID for shared memory */
-static int gathererBufSize;	/* Size of the shared memory buffer */
-static uid_t gathererID = (uid_t) - 1;	/* Gatherers user ID */
-
-/* The struct at the start of the shared memory buffer used to communicate
- * information from the child to the parent */
-
+/* The message structure used to communicate with the parent */
 typedef struct {
-    int usefulness;		/* Usefulness of data in buffer */
-    int noBytes;		/* No.of bytes in buffer */
-} GATHERER_INFO;
+    int  usefulness;	/* usefulness of data */
+    int  ndata; 	/* valid bytes in data */
+    char data[500];	/* gathered data */
+} GATHER_MSG;
 
 /* Under SunOS popen() doesn't record the pid of the child process.  When
  * pclose() is called, instead of calling waitpid() for the correct child, it
@@ -327,11 +309,11 @@ my_popen(struct RI *entry)
 	/* Now that everything is set up, give up our permissions to make
 	 * sure we don't read anything sensitive.  If the getpwnam() fails,
 	 * we default to -1, which is usually nobody */
-	if (gathererID == (uid_t) - 1 && \
+	if (gatherer_uid == (uid_t)-1 && \
 	    (passwd = getpwnam("nobody")) != NULL)
-	    gathererID = passwd->pw_uid;
+	    gatherer_uid = passwd->pw_uid;
 
-	setuid(gathererID);
+	setuid(gatherer_uid);
 
 	/* Close the pipe descriptors */
 	close(pipedes[STDIN_FILENO]);
@@ -406,70 +388,23 @@ my_pclose(struct RI *entry)
  * bug since the usefulness should be influenced by the amount of output as
  * well as the source type */
 
-#define DEVRANDOM_BITS		1024
-#define SHARED_BUFSIZE		49152	/* Usually about 25K are filled */
 
-static void
-slowPoll(void)
+static int
+slow_poll(FILE *dbgfp, int dbgall, size_t *nbytes )
 {
-    GATHERER_INFO *gathererInfo;
-    BOOLEAN moreSources;
+    int moreSources;
     struct timeval tv;
     fd_set fds;
-#if defined( __hpux )
+  #if defined( __hpux )
     size_t maxFD = 0;
     int pageSize = 4096;	/* PHUX doesn't have getpagesize() */
-#elif defined( _M_XENIX ) || defined( __aux )
-    int maxFD = 0, pageSize = 4096;	/* Nor do others, but they
-					 * get fd right */
-#else				/*  */
+  #elif defined( _M_XENIX ) || defined( __aux )
+    int maxFD = 0, pageSize = 4096;/* Nor do others, but they get fd right */
+  #else
     int maxFD = 0, pageSize = getpagesize();
-#endif				/* OS-specific brokenness */
+  #endif /* OS-specific brokenness */
     int bufPos, i, usefulness = 0;
 
-    /* Make sure we don't start more than one slow poll at a time */
-    if (gathererProcess) {
-	g10_log_debug( "already in slowPoll\n");
-	return;
-    }
-
-    /* Set up the shared memory */
-    gathererBufSize = (SHARED_BUFSIZE / pageSize) * (pageSize + 1);
-
-    if ((gathererMemID = shmget(IPC_PRIVATE, gathererBufSize,
-				IPC_CREAT | 0600)) == -1) {
-	g10_log_debug("shmget failed: %s\n", strerror(errno) );
-	return; 		/* Something broke */
-    }
-
-    if ((gathererBuffer = (BYTE *) shmat(gathererMemID, NULL, 0)) == (BYTE *) - 1) {
-	g10_log_debug("shmat failed: %s\n", strerror(errno) );
-	return; 		/* Something broke */
-    }
-
-    /* Fork off the gatherer, the parent process returns to the caller */
-    if ((gathererProcess = fork()) || (gathererProcess == -1)) {
-	g10_log_debug("gatherer pid = %d\n", gathererProcess );
-	return; 		/* Error/parent process returns */
-    }
-
-
-    fclose(stderr);		/* Arrghh!!  It's Stuart code!! */
-
-    /* Reset the SIGC(H)LD handler to the system default.  This is necessary
-     * because if the program which cryptlib is a part of installs its own
-     * SIGC(H)LD handler, it will end up reaping the cryptlib children before
-     * cryptlib can.  As a result, my_pclose() will call waitpid() on a
-     * process which has already been reaped by the installed handler and
-     * return an error, so the read data won't be added to the randomness
-     * pool.  There are two types of SIGC(H)LD naming, the SysV SIGCLD and
-     * the BSD/Posix SIGCHLD, so we need to handle either possibility */
-#ifdef SIGCLD
-    signal(SIGCLD, SIG_DFL);
-#else				/*  */
-    signal(SIGCHLD, SIG_DFL);
-
-#endif				/* SIGCLD */
 
     /* Fire up each randomness source */
     FD_ZERO(&fds);
@@ -477,10 +412,10 @@ slowPoll(void)
 	/* Since popen() is a fairly heavy function, we check to see whether
 	 * the executable exists before we try to run it */
 	if (access(dataSources[i].path, X_OK)) {
-#ifdef DEBUG_RANDOM_VERBOSE
-	    printf("%s not present%s\n", dataSources[i].path,
-	      dataSources[i].hasAlternative ? ", has alternatives" : "");
-#endif				/* DEBUG_RANDOM */
+	    if( dbgfp && dbgall )
+		fprintf(dbgfp, "%s not present%s\n", dataSources[i].path,
+			       dataSources[i].hasAlternative ?
+					", has alternatives" : "");
 	    dataSources[i].pipe = NULL;
 	}
 	else
@@ -497,21 +432,18 @@ slowPoll(void)
 	    /* If there are alternatives for this command, don't try and
 	     * execute them */
 	    while (dataSources[i].hasAlternative) {
-#ifdef DEBUG_RANDOM_VERBOSE
-		printf("Skipping %s\n", dataSources[i + 1].path);
-#endif				/* DEBUG_RANDOM */
+		if( dbgfp && dbgall )
+		    fprintf(dbgfp, "Skipping %s\n", dataSources[i + 1].path);
 		i++;
 	    }
 	}
     }
 
-    gathererInfo = (GATHERER_INFO *) gathererBuffer;
-    bufPos = sizeof(GATHERER_INFO);	/* Start of buf.has status
-					 * info */
 
     /* Suck all the data we can get from each of the sources */
-    moreSources = TRUE;
-    while (moreSources && bufPos <= gathererBufSize) {
+    bufPos = 0;
+    moreSources = 1;
+    while (moreSources && bufPos <= gather_buffer_size) {
 	/* Wait for data to become available from any of the sources, with a
 	 * timeout of 10 seconds.  This adds even more randomness since data
 	 * becomes available in a nondeterministic fashion.  Kudos to HP's QA
@@ -520,11 +452,11 @@ slowPoll(void)
 	tv.tv_sec = 10;
 	tv.tv_usec = 0;
 
-#if defined( __hpux ) && ( OS_VERSION == 9 )
+      #if defined( __hpux ) && ( OS_VERSION == 9 )
 	if (select(maxFD + 1, (int *)&fds, NULL, NULL, &tv) == -1)
-#else				/*  */
+      #else  /*  */
 	if (select(maxFD + 1, &fds, NULL, NULL, &tv) == -1)
-#endif				/* __hpux */
+      #endif /* __hpux */
 	    break;
 
 	/* One of the sources has data available, read it into the buffer */
@@ -532,8 +464,8 @@ slowPoll(void)
 	    if( dataSources[i].pipe && FD_ISSET(dataSources[i].pipeFD, &fds)) {
 		size_t noBytes;
 
-		if ((noBytes = fread(gathererBuffer + bufPos, 1,
-				     gathererBufSize - bufPos,
+		if ((noBytes = fread(gather_buffer + bufPos, 1,
+				     gather_buffer_size - bufPos,
 				     dataSources[i].pipe)) == 0) {
 		    if (my_pclose(&dataSources[i]) == 0) {
 			int total = 0;
@@ -547,13 +479,13 @@ slowPoll(void)
 			    else
 				total = dataSources[i].length
 					/ dataSources[i].usefulness;
-#ifdef DEBUG_RANDOM
-		   printf("%s %s contributed %d bytes (compressed), "
+			if( dbgfp )
+			    fprintf(dbgfp,
+			       "%s %s contributed %d bytes, "
 			       "usefulness = %d\n", dataSources[i].path,
 			       (dataSources[i].arg != NULL) ?
 				       dataSources[i].arg : "",
 				      dataSources[i].length, total);
-#endif				/* DEBUG_RANDOM */
 			if( dataSources[i].length )
 			    usefulness += total;
 		    }
@@ -565,11 +497,11 @@ slowPoll(void)
 
 		    /* Run-length compress the input byte sequence */
 		    while (currPos < endPos) {
-			int ch = gathererBuffer[currPos];
+			int ch = gather_buffer[currPos];
 
 			/* If it's a single byte, just copy it over */
-			if (ch != gathererBuffer[currPos + 1]) {
-			    gathererBuffer[bufPos++] = ch;
+			if (ch != gather_buffer[currPos + 1]) {
+			    gather_buffer[bufPos++] = ch;
 			    currPos++;
 			}
 			else {
@@ -577,12 +509,12 @@ slowPoll(void)
 
 			    /* It's a run of repeated bytes, replace them
 			     * with the byte count mod 256 */
-			    while ((ch == gathererBuffer[currPos])
+			    while ((ch == gather_buffer[currPos])
 				    && currPos < endPos) {
 				count++;
 				currPos++;
 			    }
-			    gathererBuffer[bufPos++] = count;
+			    gather_buffer[bufPos++] = count;
 			    noBytes -= count - 1;
 			}
 		    }
@@ -595,61 +527,206 @@ slowPoll(void)
 	}
 
 	/* Check if there is more input available on any of the sources */
-	moreSources = FALSE;
+	moreSources = 0;
 	FD_ZERO(&fds);
 	for (i = 0; dataSources[i].path != NULL; i++) {
 	    if (dataSources[i].pipe != NULL) {
 		FD_SET(dataSources[i].pipeFD, &fds);
-		moreSources = TRUE;
+		moreSources = 1;
 	    }
 	}
     }
 
-    gathererInfo->usefulness = usefulness;
-    gathererInfo->noBytes = bufPos;
+    if( dbgfp ) {
+	fprintf(dbgfp, "Got %d bytes, usefulness = %d\n", bufPos, usefulness);
+	fflush(dbgfp);
+    }
+    *nbytes = bufPos;
+    return usefulness;
+}
 
-#ifdef DEBUG_RANDOM
-    printf("Got %d bytes, usefulness = %d\n", bufPos, usefulness);
-#endif				/* DEBUG_RANDOM */
+/****************
+ * Start the gatherer process which writes messages of
+ * type GATHERER_MSG to pipedes
+ */
+static void
+start_gatherer( int pipefd )
+{
+    FILE *dbgfp = NULL;
+    int dbgall;
 
-    /* Child MUST exit here */
-    exit(0);
+    {
+	const char *s = getenv("GNUPG_RNDUNIX_DBG");
+	if( s ) {
+	    dbgfp = (*s=='-' && !s[1])? stdout : fopen(s, "a");
+	    if( !dbgfp )
+		g10_log_info("can't open debug file '%s': %s\n",
+			     s, strerror(errno) );
+	    else
+		fprintf(dbgfp,"\nSTART RNDUNIX DEBUG pid=%d\n", (int)getpid());
+	}
+	dbgall = !!getenv("GNUPG_RNDUNIX_DBGALL");
+    }
+    /* close all files but the ones we need */
+    {	int nmax, n1, n2, i;
+	if( (nmax=sysconf( _SC_OPEN_MAX )) < 0 ) {
+	  #ifdef _POSIX_OPEN_MAX
+	    nmax = _POSIX_OPEN_MAX;
+	  #else
+	    nmax = 20; /* assume a reasonable value */
+	  #endif
+	}
+	n1 = fileno( stderr );
+	n2 = dbgfp? fileno( dbgfp ) : -1;
+	for(i=0; i < nmax; i++ ) {
+	    if( i != n1 && i != n2 && i != pipefd )
+		close(i);
+	}
+	errno = 0;
+    }
+
+
+
+    /* Set up the buffer */
+    gather_buffer_size = GATHER_BUFSIZE;
+    gather_buffer = malloc( gather_buffer_size );
+    if( !gather_buffer ) {
+	g10_log_error("out of core while allocating the gatherer buffer\n");
+	exit(2);
+    }
+
+    /* Reset the SIGC(H)LD handler to the system default.  This is necessary
+     * because if the program which cryptlib is a part of installs its own
+     * SIGC(H)LD handler, it will end up reaping the cryptlib children before
+     * cryptlib can.  As a result, my_pclose() will call waitpid() on a
+     * process which has already been reaped by the installed handler and
+     * return an error, so the read data won't be added to the randomness
+     * pool.  There are two types of SIGC(H)LD naming, the SysV SIGCLD and
+     * the BSD/Posix SIGCHLD, so we need to handle either possibility */
+  #ifdef SIGCLD
+    signal(SIGCLD, SIG_DFL);
+  #else
+    signal(SIGCHLD, SIG_DFL);
+  #endif
+
+    fclose(stderr);		/* Arrghh!!  It's Stuart code!! */
+
+    for(;;) {
+	GATHER_MSG msg;
+	size_t nbytes;
+	const char *p;
+
+	msg.usefulness = slow_poll( dbgfp, dbgall, &nbytes );
+	p = gather_buffer;
+	while( nbytes ) {
+	    msg.ndata = nbytes > sizeof(msg.data)? sizeof(msg.data) : nbytes;
+	    memcpy( msg.data, p, msg.ndata );
+	    nbytes -= msg.ndata;
+	    p += msg.ndata;
+
+	    while( write( pipefd, &msg, sizeof(msg) ) != sizeof(msg) ) {
+		if( errno == EINTR )
+		    continue;
+		if( errno = EAGAIN ) {
+		    struct timeval tv;
+		    tv.tv_sec = 0;
+		    tv.tv_usec = 50000;
+		    select(0, NULL, NULL, NULL, &tv);
+		    continue;
+		}
+		/* we can't do very much here because stderr is closed */
+		if( dbgfp )
+		    fprintf(dbgfp, "gatherer can't write to pipe: %s\n",
+				    strerror(errno) );
+		/* we start a new poll to give the system some time */
+		nbytes = 0;
+		break;
+	    }
+	}
+    }
+    /* we are killed when the parent dies */
 }
 
 
+static int
+read_a_msg( int fd, GATHER_MSG *msg )
+{
+    char *buffer = (char*)msg;
+    size_t length = sizeof( *msg );
+    int n;
+
+    do {
+	do {
+	    n = read(fd, buffer, length );
+	} while( n == -1 && errno == EINTR );
+	if( n == -1 )
+	    return -1;
+	buffer += n;
+	length -= n;
+    } while( length );
+    return 0;
+}
+
 
 static int
-gather_random( byte *buffer, size_t *r_length, int level )
+gather_random( char *buffer, size_t *r_length, int level )
 {
-    GATHERER_INFO gathererInfo;
-    int status;
+    static pid_t gatherer_pid = 0;
+    static int pipedes[2];
+    GATHER_MSG msg;
     size_t n;
     size_t length = *r_length;
 
-    slowPoll();
-    assert( gathererProcess );
-    /* Wait for the gathering process to finish, add the randomness it's
-     * gathered, and detach the shared memory */
-    waitpid(gathererProcess, &status, 0);   /* Should prob.check status */
+    if( !gatherer_pid ) {
+	/* time to start the gatherer process */
+	if( pipe( pipedes ) ) {
+	    g10_log_error("pipe() failed: %s\n", strerror(errno));
+	    return -1;
+	}
+	gatherer_pid = fork();
+	if( gatherer_pid == -1 ) {
+	    g10_log_error("can't for gatherer process: %s\n", strerror(errno));
+	    return -1;
+	}
+	if( !gatherer_pid ) {
+	    start_gatherer( pipedes[1] );
+	    /* oops, can't happen */
+	    return -1;
+	}
+    }
 
-    gathererInfo = *(GATHERER_INFO *)gathererBuffer;
-    n = gathererInfo.noBytes;
+    /* now read from the gatherer */
+    if( read_a_msg( pipedes[0], &msg ) ) {
+	g10_log_error("reading from gatherer pipe failed: %s\n",
+							strerror(errno));
+	return -1;
+    }
+
+    n = msg.ndata;
     if( n > length )
 	n = length;
-    memcpy( buffer, gathererBuffer, n );
-
-    memset(gathererBuffer, 0, gathererBufSize);
-    shmdt(gathererBuffer);
-    shmctl(gathererMemID, IPC_RMID, NULL);
-    gathererProcess = 0;
+    memcpy( buffer, msg.data, n );
 
     *r_length = n;
-    if( gathererInfo.usefulness > 30 )
-	return 100;
-    else if ( gathererInfo.usefulness )
-	return gathererInfo.usefulness * 100 / 30;
+
+    if( level > 1 ) {
+	if( msg.usefulness > 30 )
+	    return 100;
+	else if ( msg.usefulness )
+	    return msg.usefulness * 100 / 30;
+	else
+	    return 0;
+    }
+    else if( level ) {
+	if( msg.usefulness > 15 )
+	    return 100;
+	else if ( msg.usefulness )
+	    return msg.usefulness * 100 / 15;
+	else
+	    return 0;
+    }
     else
-	return 0;
+	return 100; /* goodness of level 0 is always 100 % */
 }
 
 

@@ -1,3 +1,7 @@
+Sat Dec 12 18:40:32 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* argparse.c (arg_pars): fixed opts[i] with negative index.
+
 Fri Nov 27 21:37:41 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* dotlock.c: Implemented

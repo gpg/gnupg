@@ -516,9 +516,9 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	}
 
 	if( i == -2 ) /* ambiguous option */
-	    arg->r_opt = (opts[i].flags & 256)? -9:-8;
+	    arg->r_opt = -8;
 	else if( i == -1 ) {
-	    arg->r_opt = (opts[i].flags & 256)? -7:-2;
+	    arg->r_opt = -2;
 	    arg->r.ret_str = s+2;
 	}
 	else

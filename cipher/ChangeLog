@@ -1,3 +1,10 @@
+Sat Dec 12 18:40:32 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* dynload.c (SYMBOL_VERSION): New to cope with system which needs
+	underscores.
+
+	* rndunix.c: Rewrote large parts
+
 Thu Dec 10 20:15:36 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* dynload.c (load_extension): increased needed verbosity level.

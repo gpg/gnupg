@@ -32,6 +32,14 @@
 #include "cipher.h"
 #include "dynload.h"
 
+#ifdef DLSYM_NEEDS_UNDERSCORE
+  #define SYMBOL_VERSION "_gnupgext_version"
+  #define SYMBOL_ENUM	 "_gnupgext_enum_func"
+#else
+  #define SYMBOL_VERSION "gnupgext_version"
+  #define SYMBOL_ENUM	 "gnupgext_enum_func"
+#endif
+
 
 #ifndef RTLD_NOW
   #define RTLD_NOW  1
@@ -193,7 +201,7 @@ load_extension( EXTLIST el )
 	log_error("%s: error loading extension: %s\n", el->name, dlerror() );
 	goto failure;
     }
-    name = (char**)dlsym(el->handle, "gnupgext_version");
+    name = (char**)dlsym(el->handle, SYMBOL_VERSION);
     if( (err=dlerror()) ) {
 	log_error("%s: not a gnupg extension: %s\n", el->name, err );
 	goto failure;
@@ -222,7 +230,7 @@ load_extension( EXTLIST el )
 				    el->name, dld_strerror(rc) );
 	goto failure;
     }
-    addr = dld_get_symbol("gnupgext_version");
+    addr = dld_get_symbol(SYMBOL_VERSION);
     if( !addr ) {
 	log_error("%s: not a gnupg extension: %s\n",
 				el->name, dld_strerror(dld_errno) );
@@ -238,20 +246,20 @@ load_extension( EXTLIST el )
 		  el->hintstr? ")":"");
 
   #ifdef HAVE_DL_DLOPEN
-    sym = dlsym(el->handle, "gnupgext_enum_func");
+    sym = dlsym(el->handle, SYMBOL_ENUM);
     if( (err=dlerror()) ) {
 	log_error("%s: invalid gnupg extension: %s\n", el->name, err );
 	goto failure;
     }
     el->enumfunc = (void *(*)(int,int*,int*,int*))sym;
   #else /* dld */
-    addr = dld_get_func("gnupgext_enum_func");
+    addr = dld_get_func(SYMBOL_ENUM);
     if( !addr ) {
 	log_error("%s: invalid gnupg extension: %s\n",
 				el->name, dld_strerror(dld_errno) );
 	goto failure;
     }
-    rc = dld_function_executable_p("gnupgext_enum_func");
+    rc = dld_function_executable_p(SYMBOL_ENUM);
     if( rc ) {
 	log_error("%s: extension function is not executable: %s\n",
 					el->name, dld_strerror(rc) );

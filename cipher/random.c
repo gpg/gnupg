@@ -395,6 +395,8 @@ read_random_source( byte *buffer, size_t length, int level )
     while( length ) {
 	nbytes = length;
 	goodness = (*fnc)( buffer, &nbytes, level );
+	if( goodness < 0 )
+	    log_fatal("No way to gather entropy for the RNG\n");
 	buffer +=nbytes;
 	length -= nbytes;
 	/* FIXME: how can we handle the goodness */

@@ -6,6 +6,11 @@
 
     * Fixed the uncompress bug.
 
+    * Rewrote the rndunix module. There are two environment variables
+    used for debugging now: GNUPG_RNDUNIX_DBG give the file to write
+    debugging information (use "-" for stdout) and if GNUPG_RNDUNIX_DBGALL
+    is set, all programs which are only tried are also printed.
+
 
 Noteworthy changes in version 0.4.5
 -----------------------------------

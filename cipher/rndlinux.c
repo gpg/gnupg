@@ -138,7 +138,7 @@ gather_random( byte *buffer, size_t *r_length, int level )
 	length -= n;
     } while( length );
 
-    return 100; /* 100% useful at the requested level */
+    return 100; /* always 100% useful at the requested level */
 }
 
 
