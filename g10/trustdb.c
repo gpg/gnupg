@@ -1949,6 +1949,10 @@ validate_keys (int interactive)
   stored = new_key_hash_table ();
   used = new_key_hash_table ();
   full_trust = new_key_hash_table ();
+
+  kdb = keydb_new (0);
+  reset_trust_records (kdb,NULL);
+
   /* Fixme: Instead of always building a UTK list, we could just build it
    * here when needed */
   if (!utk_list)
@@ -1956,10 +1960,6 @@ validate_keys (int interactive)
       log_info (_("no ultimately trusted keys found\n"));
       goto leave;
     }
-
-  kdb = keydb_new (0);
-
-  reset_trust_records (kdb,NULL);
 
   /* mark all UTKs as used and fully_trusted and set validity to
      ultimate */

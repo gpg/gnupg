@@ -1,3 +1,17 @@
+2003-11-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (validate_keys): Reset the trustdb before checking if
+	we have any ultimately trusted keys.  This ensures that if we lose
+	all our ultimately trusted keys, we don't leave behind the old
+	validity calculations.  Noted by Peter Palfrader.
+
+	* revoke.c (gen_desig_revoke): Specify in the comment when a
+	designated revocation is generated.
+
+	* getkey.c (merge_selfsigs_main, merge_selfsigs_subkey,
+	get_seckey_byname2): Remove Elgamal check since we are removing
+	type 20 keys altogether.
+
 2003-11-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (build_pk_list): Do not allow an empty PK list in

@@ -294,7 +294,7 @@ gen_desig_revoke( const char *uname )
 	      goto leave;
 
 	    afx.what = 1;
-	    afx.hdrlines = "Comment: A revocation certificate should follow\n";
+	    afx.hdrlines = "Comment: A designated revocation certificate should follow\n";
 	    iobuf_push_filter( out, armor_filter, &afx );
 
 	    /* create it */
