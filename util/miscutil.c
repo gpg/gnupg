@@ -294,10 +294,10 @@ int
 answer_is_yes_no_default( const char *s, int def_answer )
 {
     /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
-    const char *long_yes = _("yes|yes");
+    const char *long_yes = _("yes");
     const char *short_yes = _("yY");
     /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
-    const char *long_no = _("no|no");
+    const char *long_no = _("no");
     const char *short_no = _("nN");
 
     /* Note: we have to use the local dependent strcasecmp here */
@@ -331,11 +331,11 @@ int
 answer_is_yes_no_quit( const char *s )
 {
     /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
-    const char *long_yes = _("yes|yes");
+    const char *long_yes = _("yes");
     /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
-    const char *long_no = _("no|no");
+    const char *long_no = _("no");
     /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
-    const char *long_quit = _("quit|quit");
+    const char *long_quit = _("quit");
     const char *short_yes = _("yY");
     const char *short_no = _("nN");
     const char *short_quit = _("qQ");
