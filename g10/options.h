@@ -125,10 +125,11 @@ struct {
     char *temp_dir;
     int no_encrypt_to;
     int interactive;
-    STRLIST notation_data;
+    STRLIST sig_notation_data;
+    STRLIST cert_notation_data;
     int show_notation;
-    const char *sig_policy_url;
-    const char *cert_policy_url;
+    STRLIST sig_policy_url;
+    STRLIST cert_policy_url;
     int show_policy_url;
     int use_embedded_filename;
     int allow_non_selfsigned_uid;

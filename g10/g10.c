@@ -69,9 +69,11 @@ enum cmd_and_opt_values { aNull = 0,
     oVerbose	  = 'v',
     oCompress	  = 'z',
     oNotation	  = 'N',
+    oBatch	  = 500,
+    oSigNotation,
+    oCertNotation,
     oShowNotation,
     oNoShowNotation,
-    oBatch	  = 500,
     aDecryptFiles,                          
     aClearsign,
     aStore,
@@ -428,7 +430,9 @@ static ARGPARSE_OPTS opts[] = {
     { oShowPhotos,   "show-photos", 0, N_("Show Photo IDs")},
     { oNoShowPhotos, "no-show-photos", 0, N_("Don't show Photo IDs")},
     { oPhotoViewer,  "photo-viewer", 2, N_("Set command line to view Photo IDs")},
-    { oNotation,   "notation-data", 2, N_("|NAME=VALUE|use this notation data")},
+    { oNotation,   "notation-data", 2, "@" },
+    { oSigNotation,   "sig-notation", 2, "@" },
+    { oCertNotation,  "cert-notation", 2, "@" },
 
     { 302, NULL, 0, N_(
   "@\n(See the man page for a complete listing of all commands and options)\n"
@@ -562,8 +566,8 @@ static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 			enum cmd_and_opt_values new_cmd );
 static void print_hex( byte *p, size_t n );
 static void print_mds( const char *fname, int algo );
-static void add_notation_data( const char *string );
-static int  check_policy_url( const char *s );
+static void add_notation_data( const char *string, int which );
+static void add_policy_url( const char *string, int which );
 
 const char *
 strusage( int level )
@@ -1127,9 +1131,12 @@ main( int argc, char **argv )
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
 	  case oForYourEyesOnly: eyes_only = 1; break;
 	  case oNoForYourEyesOnly: eyes_only = 0; break;
-	  case oSetPolicyURL: opt.sig_policy_url = opt.cert_policy_url = pargs.r.ret_str; break;
-	  case oSigPolicyURL: opt.sig_policy_url = pargs.r.ret_str; break;
-	  case oCertPolicyURL: opt.cert_policy_url = pargs.r.ret_str; break;
+	  case oSetPolicyURL:
+	    add_policy_url(pargs.r.ret_str,0);
+	    add_policy_url(pargs.r.ret_str,1);
+	    break;
+	  case oSigPolicyURL: add_policy_url(pargs.r.ret_str,0); break;
+	  case oCertPolicyURL: add_policy_url(pargs.r.ret_str,1); break;
           case oShowPolicyURL: opt.show_policy_url=1; break;
     	  case oNoShowPolicyURL: opt.show_policy_url=0; break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
@@ -1228,7 +1235,12 @@ main( int argc, char **argv )
 		log_error(_("unable to set exec-path to %s\n"),path);
 	    }
 	    break;
-	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
+	  case oNotation:
+	    add_notation_data( pargs.r.ret_str, 0 );
+	    add_notation_data( pargs.r.ret_str, 1 );
+	    break;
+	  case oSigNotation: add_notation_data( pargs.r.ret_str, 0 ); break;
+	  case oCertNotation: add_notation_data( pargs.r.ret_str, 1 ); break;
 	  case oShowNotation: opt.show_notation=1; break;
 	  case oNoShowNotation: opt.show_notation=0; break;
 	  case oUtf8Strings: utf8_strings = 1; break;
@@ -1486,14 +1498,6 @@ main( int argc, char **argv )
 	m_free(s2k_digest_string); s2k_digest_string = NULL;
 	if( check_digest_algo(opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
-    }
-    if( opt.sig_policy_url ) {
-	if( check_policy_url( opt.sig_policy_url ) )
-	    log_error(_("the given signature policy URL is invalid\n"));
-    }
-    if( opt.cert_policy_url ) {
-	if( check_policy_url( opt.cert_policy_url ) )
-	    log_error(_("the given certification policy URL is invalid\n"));
     }
     if( opt.def_compress_algo < 0 || opt.def_compress_algo > 2 )
 	log_error(_("compress algorithm must be in range %d..%d\n"), 0, 2);
@@ -2292,16 +2296,22 @@ print_mds( const char *fname, int algo )
 
 /****************
  * Check the supplied name,value string and add it to the notation
- * data to be used for signatures.
- */
+ * data to be used for signatures.  which==0 for sig notations, and 1
+ * for cert notations.
+*/
 static void
-add_notation_data( const char *string )
+add_notation_data( const char *string, int which )
 {
     const char *s;
     const char *s2;
-    STRLIST sl;
+    STRLIST sl,*notation_data;
     int critical=0;
     int highbit=0;
+
+    if(which)
+      notation_data=&opt.cert_notation_data;
+    else
+      notation_data=&opt.sig_notation_data;
 
     if( *string == '!' ) {
 	critical = 1;
@@ -2339,25 +2349,44 @@ add_notation_data( const char *string )
     }
 
     if( highbit )   /* must use UTF8 encoding */
-	sl = add_to_strlist2( &opt.notation_data, string, utf8_strings );
+	sl = add_to_strlist2( notation_data, string, utf8_strings );
     else
-	sl = add_to_strlist( &opt.notation_data, string );
+	sl = add_to_strlist( notation_data, string );
 
     if( critical )
 	sl->flags |= 1;
 }
 
 
-static int
-check_policy_url( const char *s )
+static void
+add_policy_url( const char *string, int which )
 {
-    if( *s == '!' )
-	s++;
-    if( !*s )
-	return -1;
-    for(; *s ; s++ ) {
-	if( (*s & 0x80) || iscntrl(*s) )
-	    return -1;
+  int i,critical=0;
+  STRLIST sl;
+
+  if(*string=='!')
+    {
+      string++;
+      critical=1;
     }
-    return 0;
+
+  for(i=0;i<strlen(string);i++)
+    if(string[i]&0x80 || iscntrl(string[i]))
+      break;
+
+  if(i==0 || i<strlen(string))
+    {
+      if(which)
+	log_error(_("the given certification policy URL is invalid\n"));
+      else
+	log_error(_("the given signature policy URL is invalid\n"));
+    }
+
+  if(which)
+    sl=add_to_strlist( &opt.cert_policy_url, string );
+  else
+    sl=add_to_strlist( &opt.sig_policy_url, string );
+
+  if(critical)
+    sl->flags |= 1;    
 }

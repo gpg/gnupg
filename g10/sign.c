@@ -61,38 +61,48 @@ mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
     char *s=NULL;
     byte *buf;
     unsigned n1, n2;
+    STRLIST nd=NULL,pu=NULL;
 
     /* notation data */
-    if( opt.notation_data && sig->version < 4 )
-	log_info("can't put notation data into v3 signatures\n");
-    else if( opt.notation_data ) {
-	STRLIST nd = opt.notation_data;
+    if(IS_SIG(sig) && opt.sig_notation_data)
+      {
+	if(sig->version<4)
+	  log_info("can't put notation data into v3 signatures\n");
+	else
+	  nd=opt.sig_notation_data;
+      }
+    else if( IS_CERT(sig) && opt.cert_notation_data )
+      {
+	if(sig->version<4)
+	  log_info("can't put notation data into v3 key signatures\n");
+	else
+	  nd=opt.cert_notation_data;
+      }
 
-	for( ; nd; nd = nd->next )  {
-	    string = nd->d;
-	    s = strchr( string, '=' );
-	    if( !s )
-		BUG(); /* we have already parsed this */
-	    n1 = s - string;
-	    s++;
-	    n2 = strlen(s);
-	    buf = m_alloc( 8 + n1 + n2 );
-	    buf[0] = 0x80; /* human readable */
-	    buf[1] = buf[2] = buf[3] = 0;
-	    buf[4] = n1 >> 8;
-	    buf[5] = n1;
-	    buf[6] = n2 >> 8;
-	    buf[7] = n2;
-	    memcpy(buf+8, string, n1 );
-	    memcpy(buf+8+n1, s, n2 );
-	    build_sig_subpkt( sig, SIGSUBPKT_NOTATION
-			      | ((nd->flags & 1)? SIGSUBPKT_FLAG_CRITICAL:0),
-			      buf, 8+n1+n2 );
-
-	    if(opt.show_notation)
-	      show_notation(sig,0);
-	}
+    for( ; nd; nd = nd->next ) {
+        string = nd->d;
+	s = strchr( string, '=' );
+	if( !s )
+	  BUG(); /* we have already parsed this */
+	n1 = s - string;
+	s++;
+	n2 = strlen(s);
+	buf = m_alloc( 8 + n1 + n2 );
+	buf[0] = 0x80; /* human readable */
+	buf[1] = buf[2] = buf[3] = 0;
+	buf[4] = n1 >> 8;
+	buf[5] = n1;
+	buf[6] = n2 >> 8;
+	buf[7] = n2;
+	memcpy(buf+8, string, n1 );
+	memcpy(buf+8+n1, s, n2 );
+	build_sig_subpkt( sig, SIGSUBPKT_NOTATION
+			  | ((nd->flags & 1)? SIGSUBPKT_FLAG_CRITICAL:0),
+			  buf, 8+n1+n2 );
     }
+
+    if(opt.show_notation)
+      show_notation(sig,0);
 
     /* set policy URL */
     if( IS_SIG(sig) && opt.sig_policy_url )
@@ -100,39 +110,42 @@ mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
 	if(sig->version<4)
 	  log_info("can't put a policy URL into v3 signatures\n");
 	else
-	  s=m_strdup(opt.sig_policy_url);
+	  pu=opt.sig_policy_url;
       }
     else if( IS_CERT(sig) && opt.cert_policy_url )
       {
 	if(sig->version<4)
 	  log_info("can't put a policy URL into v3 key signatures\n");
 	else
-	  if(pk)
-	    {
-	      s=pct_expando(opt.cert_policy_url,pk);
-	      if(!s)
-		{
-		  log_error(_("WARNING: unable to %%-expand policy url "
-			      "(too large).  Using unexpanded.\n"));
-		  s=m_strdup(opt.cert_policy_url);
-		}
-	    }
-	  else
-	    s=m_strdup(opt.cert_policy_url);
+	  pu=opt.cert_policy_url;
       }
 
-    if( s ) {
-	if( *s == '!' )
-	    build_sig_subpkt( sig, SIGSUBPKT_POLICY | SIGSUBPKT_FLAG_CRITICAL,
-			      s+1, strlen(s+1) );
+    for(;pu;pu=pu->next)
+      {
+        string = pu->d;
+
+	if(pk)
+	  {
+	    s=pct_expando(string,pk);
+	    if(!s)
+	      {
+		log_error(_("WARNING: unable to %%-expand policy url "
+			    "(too large).  Using unexpanded.\n"));
+		s=m_strdup(string);
+	      }
+	  }
 	else
-	    build_sig_subpkt( sig, SIGSUBPKT_POLICY, s, strlen(s) );
+	  s=m_strdup(string);
 
-	if(opt.show_policy_url)
-	  show_policy_url(sig,0);
-    }
+	build_sig_subpkt(sig,SIGSUBPKT_POLICY|
+			 ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0),
+			 s,strlen(s));
 
-    m_free(s);
+	m_free(s);
+      }
+
+    if(opt.show_policy_url)
+      show_policy_url(sig,0);
 }
 
 

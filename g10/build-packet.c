@@ -709,6 +709,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
     switch(type)
       {
       case SIGSUBPKT_NOTATION:
+      case SIGSUBPKT_POLICY:
 	/* we do allow multiple subpackets */
 	break;
 
