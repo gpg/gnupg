@@ -1,6 +1,6 @@
 /* miscutil.c -  miscellaneous utilities
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -133,6 +133,29 @@ strtimestamp( u32 stamp )
         tp = gmtime( &atime );
         sprintf(buffer,"%04d-%02d-%02d",
                 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    }
+    return buffer;
+}
+
+
+/****************
+ * Note: this function returns GMT
+ */
+const char *
+isotimestamp (u32 stamp)
+{
+    static char buffer[25+5];
+    struct tm *tp;
+    time_t atime = stamp;
+    
+    if (atime < 0) {
+        strcpy (buffer, "????" "-??" "-??" " " "??" ":" "??" ":" "??");
+    }
+    else {
+        tp = gmtime( &atime );
+        sprintf(buffer,"%04d-%02d-%02d %02d:%02d:%02d",
+                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                tp->tm_hour, tp->tm_min, tp->tm_sec);
     }
     return buffer;
 }

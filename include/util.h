@@ -152,6 +152,7 @@ u32 scan_isodatestr( const char *string );
 u32 add_days_to_timestamp( u32 stamp, u16 days );
 const char *strtimevalue( u32 stamp );
 const char *strtimestamp( u32 stamp ); /* GMT */
+const char *isotimestamp( u32 stamp ); /* GMT with hh:mm:ss */
 const char *asctimestamp( u32 stamp ); /* localized */
 void print_string( FILE *fp, const byte *p, size_t n, int delim );
 void print_string2( FILE *fp, const byte *p, size_t n, int delim, int delim2 );

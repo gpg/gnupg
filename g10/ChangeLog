@@ -1,5 +1,9 @@
 2005-03-14  Werner Koch  <wk@g10code.com>
 
+	* card-util.c (card_status): Use isotimestamp and not the
+	localized asctimestamp to match the timezone used in the key
+	information.
+
 	* cardglue.c (pin_cb): Disable debug output.
 
 2005-03-11  Werner Koch  <wk@g10code.com>

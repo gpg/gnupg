@@ -426,17 +426,17 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
       print_sha1_fpr (fp, info.fpr1valid? info.fpr1:NULL);
       if (info.fpr1valid && info.fpr1time)
         tty_fprintf (fp, "      created ....: %s\n",
-                     asctimestamp (info.fpr1time));
+                     isotimestamp (info.fpr1time));
       tty_fprintf (fp, "Encryption key....:");
       print_sha1_fpr (fp, info.fpr2valid? info.fpr2:NULL);
       if (info.fpr2valid && info.fpr2time)
         tty_fprintf (fp, "      created ....: %s\n",
-                     asctimestamp (info.fpr2time));
+                     isotimestamp (info.fpr2time));
       tty_fprintf (fp, "Authentication key:");
       print_sha1_fpr (fp, info.fpr3valid? info.fpr3:NULL);
       if (info.fpr3valid && info.fpr3time)
         tty_fprintf (fp, "      created ....: %s\n",
-                     asctimestamp (info.fpr3time));
+                     isotimestamp (info.fpr3time));
       tty_fprintf (fp, "General key info..: "); 
 
       thefpr = (info.fpr1valid? info.fpr1 : info.fpr2valid? info.fpr2 : 
