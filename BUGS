@@ -13,15 +13,6 @@ Bugs which are marked with "FIX: yyyy-mm-dd" are fixed in the CVS
 and after about half a day in the rsync snapshots.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[  *] #1
-    pgp263in works fine even with a source file with CR,LF but GnuPG
-    and pgp263in has problems if the clearsign has been created by
-    pgp263ia.  The reason for this problem is that pgp2 sometimes
-    converts CR,LF to CR,CR,LF	and to fix for this it hashes both
-    versions.  I was able to reproduce such a problem, that PGP263in
-    was not able to verify it's own signature.
-    FIX: 1999-05-19  (Most cases are now handled)
-
 [  *] #3
     --list-packets should continue even w/o a passphrase (or in batch
     mode).  Maybe we have to move it to a separate program??
@@ -51,10 +42,6 @@ and after about half a day in the rsync snapshots.
     --> Solaris fixed.
     --> IRIX bug still there
 
-
-[ **] #17 1999-05-18 <Bodo_Moeller@public.uni-hamburg.de> 0.9.6
-    Import does not detect identical user IDs.
-    FIX: 1999-05-22
 
 Next #18
 

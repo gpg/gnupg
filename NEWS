@@ -1,9 +1,10 @@
+Noteworthy changes in version 0.9.7
+-----------------------------------
 
     * Add some work arounds for a bugs in pgp 2 which led to bad signatures
       when used with canoncial texts in some cases.
 
     * Enhanced some status outputs.
-
 
 Noteworthy changes in version 0.9.6
 -----------------------------------

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.9.2\n"
-"POT-Creation-Date: 1999-05-23 09:21+0200\n"
+"POT-Creation-Date: 1999-05-23 15:36+0200\n"
 "PO-Revision-Date: 1999-01-26 01:30+01:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -245,13 +245,13 @@ msgstr "... to jest b³±d w programie (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "znalaz³e¶(a¶) b³±d w programie ... (%s:%d)\n"
 
-#: cipher/random.c:410
+#: cipher/random.c:412
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr ""
 "OSTRZE¯ENIE: u¿ywany generator liczb losowych\n"
 "nie jest kryptograficznie bezpieczny!!\n"
 
-#: cipher/random.c:411
+#: cipher/random.c:413
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 0.9.4a\n"
-"POT-Creation-Date: 1999-05-23 09:21+0200\n"
+"POT-Creation-Date: 1999-05-23 15:36+0200\n"
 "PO-Revision-Date: 1999-03-20 20:09+01:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <fr@li.org>\n"
@@ -238,12 +238,12 @@ msgstr "... c'est un bug (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "vous avez trouvé un bug ... (%s:%d)\n"
 
-#: cipher/random.c:410
+#: cipher/random.c:412
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr ""
 "ATTENTION : utilisation d'un générateur de nombres aléatoires peu sûr !!\n"
 
-#: cipher/random.c:411
+#: cipher/random.c:413
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"

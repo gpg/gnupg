@@ -5,7 +5,7 @@
 # I also got inspiration from it.po by Marco d'Itri <md@linux.it>
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-05-23 09:21+0200\n"
+"POT-Creation-Date: 1999-05-23 15:36+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
 "From: Urko Lusa <ulusa@lacueva.ddns.org>\n"
@@ -246,11 +246,11 @@ msgstr "¡Oh! vaya... esto es un bug (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "Ha encontrado Vd. un bug... (%s:%d)\n"
 
-#: cipher/random.c:410
+#: cipher/random.c:412
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "Aviso: ¡se está usando un generador de números aleatorios inseguro!\n"
 
-#: cipher/random.c:411
+#: cipher/random.c:413
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
