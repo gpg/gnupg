@@ -1,3 +1,8 @@
+2003-08-14  Timo Schulz  <twoaday@freakmail.de>
+
+	* pksign.c: do_encode_md: Due to the fact pkcs#1 padding
+	is now in Libgcrypt, use the new interface.
+	
 2003-07-31  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (gpg_agent_LDADD): Added INTLLIBS.

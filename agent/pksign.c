@@ -32,54 +32,32 @@
 
 
 static int
-do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
-              unsigned int nbits, gcry_mpi_t *r_val)
+do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash)
 {
-  int nframe = (nbits+7) / 8;
-  byte *frame;
-  int i, n;
-  byte asn[100];
-  size_t asnlen;
+  gcry_sexp_t hash;
+  const char * s;
+  char * p, tmp[16];
+  int i, rc;
 
-  asnlen = DIM(asn);
-  if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
+  p = xmalloc (64+mdlen);
+  s = gcry_md_algo_name (algo);
+  if (s && strlen (s) < 16)
     {
-      log_error ("no object identifier for algo %d\n", algo);
-      return gpg_error (GPG_ERR_INTERNAL);
+      for (i=0; i < strlen (s); i++)
+        tmp[i] = tolower (s[i]);
+      tmp[i] = '\0';   
     }
-
-  if (digestlen + asnlen + 4  > nframe )
+  sprintf (p, "(data\n (flags pkcs1)\n (hash %s #", tmp);
+  for (i=0; i < mdlen; i++)
     {
-      log_error ("can't encode a %d bit MD into a %d bits frame\n",
-                 (int)(digestlen*8), (int)nbits);
-      return gpg_error (GPG_ERR_INTERNAL);
+      sprintf (tmp, "%02x", md[i]);
+      strcat (p, tmp);   
     }
-  
-  /* We encode the MD in this way:
-   *
-   *	   0  1 PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
-   *
-   * PAD consists of FF bytes.
-   */
-  frame = xtrymalloc (nframe);
-  if (!frame)
-    return out_of_core ();
-  n = 0;
-  frame[n++] = 0;
-  frame[n++] = 1; /* block type */
-  i = nframe - digestlen - asnlen -3 ;
-  assert ( i > 1 );
-  memset ( frame+n, 0xff, i ); n += i;
-  frame[n++] = 0;
-  memcpy ( frame+n, asn, asnlen ); n += asnlen;
-  memcpy ( frame+n, digest, digestlen ); n += digestlen;
-  assert ( n == nframe );
-  if (DBG_CRYPTO)
-    log_printhex ("encoded hash:", frame, nframe);
-      
-  gcry_mpi_scan (r_val, GCRYMPI_FMT_USG, frame, n, &nframe);
-  xfree (frame);
-  return 0;
+  strcat (p, "#))\n");
+  rc = gcry_sexp_sscan (&hash, NULL, p, strlen (p));
+  xfree (p);
+  *r_hash = hash;
+  return rc;   
 }
 
 
@@ -132,12 +110,9 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
       rc = do_encode_md (ctrl->digest.value,
                          ctrl->digest.valuelen,
                          ctrl->digest.algo,
-                         gcry_pk_get_nbits (s_skey),
-                         &frame);
+                         &s_hash);
       if (rc)
         goto leave;
-      if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
-        BUG ();
 
       if (DBG_CRYPTO)
         {
