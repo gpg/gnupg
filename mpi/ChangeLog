@@ -1,3 +1,9 @@
+2000-10-13  Werner Koch  <wk@gnupg.org>
+
+	* mpi.h: Removed the inclusion of mpi-asm-defs.h because this
+	makes some trouble when doing a VPATH build.  configure now
+	takes care of it.
+	
 2000-10-12  Werner Koch  <wk@gnupg.org>
 
 	* generic/mpi-asm-defs.h: New.

@@ -6,7 +6,8 @@ CFLAGS = @CFLAGS@ @MPI_OPT_FLAGS@
 ASFLAGS = @MPI_SFLAGS@
 
 EXTRA_DIST = config.links
-DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
+DISTCLEANFILES = mpi-asm-defs.h \
+                 mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
 		 mpih-lshift.S mpih-rshift.S mpih-sub1.S asm-syntax.h sysdep.h
 # Note: we only use .S files so we should delete all left over .s
 CLEANFILES = _*.s

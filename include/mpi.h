@@ -34,7 +34,6 @@
 #include "iobuf.h"
 #include "types.h"
 #include "memory.h"
-#include "../mpi/mpi-asm-defs.h"
 
 #if BYTES_PER_MPI_LIMB == SIZEOF_UNSIGNED_INT
   typedef unsigned int mpi_limb_t;

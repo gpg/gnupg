@@ -1,3 +1,7 @@
+2000-10-13  Werner Koch  <wk@gnupg.org>
+
+	* configure.in: Append mpi/mpi-asm-defs.h to g10defs.h
+
 2000-10-09  Werner Koch  <wk@gnupg.org>
 
 	* acinclude.m4: Changed wording of the faqprog.pl warning.

@@ -725,6 +725,7 @@ cat >g10defs.tmp <<G10EOF
   #endif
 #endif
 G10EOF
+cat mpi/mpi-asm-defs.h >>g10defs.tmp 
 if cmp -s g10defs.h g10defs.tmp 2>/dev/null; then
     echo "g10defs.h is unchanged"
     rm -f g10defs.tmp
