@@ -144,7 +144,7 @@ void http_disconnect(void)
 
 int http_get(const char *op,const char *search)
 {
-  fprintf(server,"GET /pks/lookup?op=%s&search=%s HTTP/1.0\n\n",op,search);
+  fprintf(server,"GET /pks/lookup?op=%s&search=%s HTTP/1.0\r\n\r\n",op,search);
 
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP GET /pks/lookup?op=%s&search=%s HTTP/1.0\n",
@@ -159,9 +159,9 @@ int http_post(const char *data)
   int result;
 
   fprintf(server,
-	  "POST /pks/add HTTP/1.0\n"
+	  "POST /pks/add HTTP/1.0\r\n"
 	  "Content-type: application/x-www-form-urlencoded\n"
-	  "Content-Length: %d\n\n%s",strlen(data),data);
+	  "Content-Length: %d\r\n\r\n%s",strlen(data),data);
 
   if(verbose>2)
     fprintf(console,

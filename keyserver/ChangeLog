@@ -1,5 +1,7 @@
 2002-08-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_hkp.c (http_get, http_post): Use CRLF for line endings.
+
 	* gpgkeys_hkp.c: Include util.h on RISC OS as per Stefan.  Include
 	a replacement for hstrerror() for those platforms (such as RISC
 	OS) that don't have it.
