@@ -36,6 +36,7 @@ record.
 	    pkd = public key data (special field format, see below)
             grp = reserved for gpgsm
             rvk = revocation key
+            tru = trust database information
 
  2. Field:  A letter describing the calculated trust. This is a single
 	    letter, but be prepared that additional information may follow
@@ -123,6 +124,21 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     !  !------ for information number of bits in the value
     !--------- index (eg. DSA goes from 0 to 3: p,q,g,y)
 
+
+The "tru" trust database records have the fields:
+
+ 1: Reason for staleness of trust.  If this field is empty, then the
+    trustdb is not stale.  This field may have multiple flags in it:
+
+    o: Trustdb is old
+    t: Trustdb was built with a different trust model than the one we
+       are using now.
+
+ 2: Trust model.  This is always zero (i.e. "Classic") in this version
+    of GnuPG.
+ 3: Date trustdb was created in seconds since 1/1/1970.
+ 4: Date trustdb will expire in seconds since 1/1/1970.
+
  
 
 Format of the "--status-fd" output
@@ -148,6 +164,11 @@ more arguments in future versions.
     EXPKEYSIG	<long keyid>  <username>
 	The signature with the keyid is good, but the signature was
 	made by an expired key. The username is the primary one
+	encoded in UTF-8 and %XX escaped.
+
+    REVKEYSIG	<long keyid>  <username>
+	The signature with the keyid is good, but the signature was
+	made by a revoked key. The username is the primary one
 	encoded in UTF-8 and %XX escaped.
 
     BADSIG	<long keyid>  <username>
@@ -876,33 +897,13 @@ After the hash algorithm the 3 bytes "GNU" are used to make
 clear that these are extensions for GNU, the next bytes gives the
 GNU protection mode - 1000.  Defined modes are:
   1001 - do not store the secret part at all
-
-
-Usage of gdbm files for keyrings
-================================
-    The key to store the keyblock is its fingerprint, other records
-    are used for secondary keys.  Fingerprints are always 20 bytes
-    where 16 bit fingerprints are appended with zero.
-    The first byte of the key gives some information on the type of the
-    key.
-      1 = key is a 20 bit fingerprint (16 bytes fpr are padded with zeroes)
-	  data is the keyblock
-      2 = key is the complete 8 byte keyid
-	  data is a list of 20 byte fingerprints
-      3 = key is the short 4 byte keyid
-	  data is a list of 20 byte fingerprints
-      4 = key is the email address
-	  data is a list of 20 byte fingerprints
-
-    Data is prepended with a type byte:
-      1 = keyblock
-      2 = list of 20 byte padded fingerprints
-      3 = list of list fingerprints (but how to we key them?)
-
+  1002 - a stub to access smartcards (not used in 1.2.x)
 
 
 Pipemode
 ========
+NOTE:  This is deprecated and will be removed in future versions.
+
 This mode can be used to perform multiple operations with one call to
 gpg. It comes handy in cases where you have to verify a lot of
 signatures. Currently we support only detached signatures.  This mode
