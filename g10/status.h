@@ -42,12 +42,26 @@
 #define STATUS_TRUST_FULLY     14
 #define STATUS_TRUST_ULTIMATE  15
 
+#define STATUS_SHM_INFO        16
+#define STATUS_SHM_GET	       17
+#define STATUS_SHM_GET_BOOL    18
+#define STATUS_SHM_GET_HIDDEN  19
 
 
 /*-- status.c --*/
-void set_status_fd( int fd );
-void write_status( int no );
-void write_status_text( int no, const char *text);
+void set_status_fd ( int fd );
+void write_status ( int no );
+void write_status_text ( int no, const char *text );
+
+#ifdef USE_SHM_COPROCESSING
+  void init_shm_coprocessing ( ulong requested_shm_size, int lock_mem );
+#endif /*USE_SHM_COPROCESSING*/
+
+int cpr_enabled(void);
+char *cpr_get( const char *keyword, const char *prompt );
+char *cpr_get_hidden( const char *keyword, const char *prompt );
+void cpr_kill_prompt(void);
+int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );
 
 
 #endif /*G10_STATUS_H*/

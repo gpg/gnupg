@@ -19,6 +19,11 @@ Noteworthy changes in version 0.3.3
 
     * Owner trust values can now be changed with --edit-key (trust)
 
+    * GNUPG can now run as a coprocess; this enables sophisticated
+      frontends.  tools/shmtest.c is a simple sample implemenation.
+      This needs some more work: all tty_xxx() are to be replaced
+      by cpr_xxx() and some changes in the display logics is needed.
+
     * Removed options --gen-prime and --gen-random.
 
     * Removed option --add-key; use --edit-key instead.

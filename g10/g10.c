@@ -172,7 +172,7 @@ static ARGPARSE_OPTS opts[] = {
     { 566, "compress-sigs",0, "@"},
     { 559, "always-trust", 0, "@"},
     { 562, "emulate-checksum-bug", 0, "@"},
-   /*554 is unused */
+    { 554, "run-as-shm-coprocess", 4, "@" },
 {0} };
 
 
@@ -404,6 +404,9 @@ main( int argc, char **argv )
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
     char *def_digest_string = NULL;
+  #ifdef USE_SHM_COPROCESSING
+    ulong requested_shm_size=0;
+  #endif
 
     trap_unaligned();
   #ifdef IS_G10MAINT
@@ -605,6 +608,13 @@ main( int argc, char **argv )
 	  case 565: opt.do_not_export_rsa = 1; break;
 	  case 566: opt.compress_sigs = 1; break;
 	  case 554:
+	  #ifdef USE_SHM_COPROCESSING
+	    opt.shm_coprocess = 1;
+	    requested_shm_size = pargs.r.ret_ulong;
+	  #else
+	    log_error("shared memory coprocessing is not available\n");
+	  #endif
+	    break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -623,6 +633,15 @@ main( int argc, char **argv )
 	tty_printf("%s\n", strusage(15) );
     }
 
+  #ifdef USE_SHM_COPROCESSING
+    if( opt.shm_coprocess ) {
+      #ifdef IS_G10
+	init_shm_coprocessing(requested_shm_size, 1 );
+      #else
+	init_shm_coprocessing(requested_shm_size, 0 );
+      #endif
+    }
+  #endif
   #ifdef IS_G10
     /* initialize the secure memory. */
     secmem_init( 16384 );
@@ -630,7 +649,6 @@ main( int argc, char **argv )
     /* Okay, we are now working under our real uid */
   #endif
 
-    /*write_status( STATUS_ENTER );*/
 
     set_debug();
 

@@ -37,6 +37,7 @@
 #include "trustdb.h"
 #include "filter.h"
 #include "ttyio.h"
+#include "status.h"
 #include "i18n.h"
 
 static void show_key_with_all_names( KBNODE keyblock,
@@ -264,8 +265,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 	tty_print_string( p, n );
 	tty_printf("\"\n\n");
 	m_free(p);
-	p = tty_get(_("Really sign? "));
-	tty_kill_prompt();
+	p = cpr_get("sign_uid.really", _("Really sign? "));
+	cpr_kill_prompt();
 	if( !answer_is_yes(p) ) {
 	    m_free(p);
 	    continue; /* No */
@@ -398,9 +399,10 @@ delete_key( const char *username, int secret )
 	m_free(p);
 	tty_printf("\n\n");
 
-	p = tty_get(_("Delete this key from the keyring? "));
-	tty_kill_prompt();
-	if( secret && answer_is_yes(p)) {
+	p = cpr_get( secret? "delete_key.secret.really":"delete_key.really",
+			_("Delete this key from the keyring? "));
+	cpr_kill_prompt();
+	if( !cpr_enabled() && secret && answer_is_yes(p)) {
 	    /* I think it is not required to check a passphrase; if
 	     * the user is so stupid as to let others access his secret keyring
 	     * (and has no backup) - it is up him to read some very
@@ -493,8 +495,8 @@ change_passphrase( KBNODE keyblock )
 		rc = 0;
 		tty_printf(_( "You don't want a passphrase -"
 			    " this is probably a *bad* idea!\n\n"));
-		if( tty_get_answer_is_yes(_(
-				"Do you really want to do this? ")))
+		if( cpr_get_answer_is_yes("change_passwd.empty",
+			       _("Do you really want to do this? ")))
 		    changed++;
 		break;
 	    }
@@ -628,8 +630,8 @@ keyedit_menu( const char *username, STRLIST locusr )
 	    redisplay = 0;
 	}
 	m_free(answer);
-	answer = tty_get(_("Command> "));
-	tty_kill_prompt();
+	answer = cpr_get("keyedit.cmd", _("Command> "));
+	cpr_kill_prompt();
 	trim_spaces(answer);
 
 	arg_number = 0;
@@ -670,12 +672,9 @@ keyedit_menu( const char *username, STRLIST locusr )
 	  case cmdQUIT:
 	    if( !modified )
 		goto leave;
-	    m_free(answer);
-	    answer = tty_get(_("Save changes? "));
-	    if( !answer_is_yes(answer) )  {
-		m_free(answer);
-		answer = tty_get(_("Quit without saving? "));
-		if( answer_is_yes(answer) )
+	    if( !cpr_get_answer_is_yes("keyedit.save",_("Save changes? ")) ) {
+		if( cpr_enabled()
+		    || tty_get_answer_is_yes(_("Quit without saving? ")) )
 		    goto leave;
 		break;
 	    }

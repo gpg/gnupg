@@ -35,40 +35,83 @@
 #include "ttyio.h"
 
 
-#if 0
-static RETSIGTYPE
-print_and_exit( int sig )
-{
-    const char *p;
+static volatile int caught_fatal_sig = 0;
+static volatile int caught_sigusr1 = 0;
 
-    /* Hmm, use only safe functions (we should do an autoconf test) */
-    write( 2, "\nCaught ", 8 );
+static const char *
+signal_name( int signum )
+{
   #if SYS_SIGLIST_DECLARED
-    p = sys_siglist[sig];
-    write( 2, p, strlen(p) );
+    return sys_siglist[signum];
   #else
-    write( 2, "a signal", 8 );
+    static char buf[20];
+    sprintf( "signal %d", signum );
+    return buf;
   #endif
-    write( 2, "... exiting\n", 12 );
-    secmem_term();
-    exit(2); /* not correct but .. */
 }
-#endif
+
+static RETSIGTYPE
+got_fatal_signal( int sig )
+{
+    if( caught_fatal_sig )
+	raise( sig );
+    caught_fatal_sig = 1;
+
+    fprintf( stderr, "\n%s: %s caught ... exiting\n",
+	      log_get_name(), signal_name(sig) );
+    secmem_term();
+    exit( 2 );
+}
+
+
+static RETSIGTYPE
+got_usr_signal( int sig )
+{
+    caught_sigusr1 = 1;
+}
+
+
+static void
+do_sigaction( int sig, struct sigaction *nact )
+{
+    struct sigaction oact;
+
+    sigaction( sig, NULL, &oact );
+    if( oact.sa_handler != SIG_IGN )
+	sigaction( sig, nact, NULL);
+}
 
 void
 init_signals()
 {
-  #if 0
     struct sigaction nact;
 
-    nact.sa_handler = print_and_exit;
-    sigemptyset (&nact.sa_mask);
+    nact.sa_handler = got_fatal_signal;
+    sigemptyset( &nact.sa_mask );
     nact.sa_flags = 0;
 
-    sigaction( SIGINT, &nact, NULL );
-    sigaction( SIGHUP, &nact, NULL );
-    sigaction( SIGTERM, &nact, NULL );
- #endif
+    do_sigaction( SIGINT, &nact );
+    do_sigaction( SIGHUP, &nact );
+    do_sigaction( SIGTERM, &nact );
+    do_sigaction( SIGQUIT, &nact );
+    nact.sa_handler = got_usr_signal;
+    sigaction( SIGUSR1, &nact, NULL );
 }
 
+
+void
+pause_on_sigusr( int which )
+{
+    sigset_t mask, oldmask;
+
+    assert( which == 1 );
+    sigemptyset( &mask );
+    sigaddset( &mask, SIGUSR1 );
+
+    sigprocmask( SIG_BLOCK, &mask, &oldmask );
+    while( !caught_sigusr1 )
+	sigsuspend( &oldmask );
+    caught_sigusr1 = 0;
+    sigprocmask( SIG_UNBLOCK, &mask, NULL );
+}
 

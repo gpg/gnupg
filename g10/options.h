@@ -51,6 +51,7 @@ struct {
     int always_trust;
     int rfc1991;
     unsigned emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
+    int shm_coprocess;
 } opt;
 
 

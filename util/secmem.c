@@ -271,7 +271,7 @@ secmem_free( void *a )
 int
 m_is_secure( const void *p )
 {
-    return p >= pool && p < ((char*)pool+poolsize);
+    return p >= pool && p < (void*)((char*)pool+poolsize);
 }
 
 void

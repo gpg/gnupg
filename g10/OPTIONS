@@ -46,3 +46,7 @@ compress-sigs
 # Normally, compressing of signatures does not make sense; so this
 # is disabled for detached signatures unless this option is used.
 
+run-as-shm-coprocess [request-locked-shm-size]
+# very special :-)
+# You will have to use "--status-fd" too
+
