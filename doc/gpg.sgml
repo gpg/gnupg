@@ -43,6 +43,7 @@
 <!entity ParmString "<parameter>string</parameter>">
 <!entity ParmValue  "<parameter>value</parameter>">
 <!entity ParmNameValue	"<parameter>name=value</parameter>">
+<!entity ParmNameValues	"<parameter>name=value1 <optional>value2 value3 ...</optional></parameter>">
 ]>
 
 <refentry id="gpg">
@@ -1977,12 +1978,16 @@ Experimental use only.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--group &ParmNameValue;</term>
+<term>--group &ParmNameValues;</term>
 <listitem><para>
-Sets up a name group, which is similar to aliases in email programs.
+Sets up a named group, which is similar to aliases in email programs.
 Any time the group name is a receipient (-r or --recipient), it will
-be expanded to the values specified.  Note there is only one level of
-expansion - you cannot make an group that points to another group.
+be expanded to the values specified.
+
+The values are &ParmKeyIDs; or fingerprints, but any key description
+is accepted.  Note that a value with spaces in it will be treated as
+two different values.  Note also there is only one level of expansion
+- you cannot make an group that points to another group.
 </para></listitem></varlistentry>
 
 <varlistentry>
