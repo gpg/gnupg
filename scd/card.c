@@ -48,9 +48,9 @@ map_sc_err (int rc)
     case SC_ERROR_OUT_OF_MEMORY:         e = GPG_ERR_ENOMEM; break;
     case SC_ERROR_CARD_NOT_PRESENT:      e = GPG_ERR_CARD_NOT_PRESENT; break;
     case SC_ERROR_CARD_REMOVED:          e = GPG_ERR_CARD_REMOVED; break;
-    case SC_ERROR_INVALID_CARD:          e = GPG_ERR_INVALID_CARD; break;
+    case SC_ERROR_INVALID_CARD:          e = GPG_ERR_INV_CARD; break;
 #endif
-    default: e = GPG_ERR_CARD_ERROR; break;
+    default: e = GPG_ERR_CARD; break;
     }
   return gpg_make_error (GPG_ERR_SOURCE_UNKNOWN, e);
 }
@@ -114,7 +114,7 @@ card_open (CARD *rcard)
   if (card->reader >= card->ctx->reader_count)
     {
       log_error ("no card reader available\n");
-      rc = gpg_error (GPG_ERR_CARD_ERROR);
+      rc = gpg_error (GPG_ERR_CARD);
       goto leave;
     }
   card->ctx->error_file = log_get_stream ();
@@ -242,7 +242,7 @@ find_iccsn (const unsigned char *buffer, size_t length, char **serial)
 
   s = find_simple_tlv (buffer, length, 0x5A, &n);
   if (!s)
-    return gpg_error (GPG_ERR_CARD_ERROR);
+    return gpg_error (GPG_ERR_CARD);
   length -= s - buffer;
   if (n > length)
     {
@@ -257,12 +257,11 @@ find_iccsn (const unsigned char *buffer, size_t length, char **serial)
           n--;
         }
       else
-        return gpg_error (GPG_ERR_CARD_ERROR); /* Bad encoding; does
-                                                  not fit into
-                                                  buffer. */
+        return gpg_error (GPG_ERR_CARD); /* Bad encoding; does
+					    not fit into buffer. */
     }
   if (!n)
-    return gpg_error (GPG_ERR_CARD_ERROR); /* Well, that is too short. */
+    return gpg_error (GPG_ERR_CARD); /* Well, that is too short. */
 
   *serial = p = xtrymalloc (2*n+1);
   if (!*serial)
@@ -332,21 +331,21 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
   if (rc)
     {
       log_error ("sc_select_file failed: %s\n", sc_strerror (rc));
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   if (file->type != SC_FILE_TYPE_WORKING_EF
       || file->ef_structure != SC_FILE_EF_TRANSPARENT)
     {
       log_error ("wrong type or structure of GDO file\n");
       sc_file_free (file);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
 
   if (!file->size || file->size >= DIM(buf) )
     { /* FIXME: Use a real parser */
       log_error ("unsupported size of GDO file (%d)\n", file->size);
       sc_file_free (file);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   buflen = file->size;
       
@@ -355,16 +354,16 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
   if (rc < 0) 
     {
       log_error ("error reading GDO file: %s\n", sc_strerror (rc));
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   if (rc != buflen)
     {
       log_error ("short read on GDO file\n");
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
 
   rc = find_iccsn (buf, buflen, serial);
-  if (gpg_err_code (rc) == GPG_ERR_CARD_ERROR)
+  if (gpg_err_code (rc) == GPG_ERR_CARD)
     log_error ("invalid structure of GDO file\n");
   if (!rc && card->p15card && !strcmp (*serial, "D27600000000000000000000"))
     { /* This is a German card with a silly serial number.  Try to get
@@ -436,7 +435,7 @@ card_enum_keypairs (CARD card, int idx,
   if (!card || !keygrip)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (idx < 0)
-    return gpg_error (GPG_ERR_INVALID_INDEX);
+    return gpg_error (GPG_ERR_INV_INDEX);
   if (!card->fnc.initialized)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!card->fnc.enum_keypairs)
@@ -468,7 +467,7 @@ card_enum_certs (CARD card, int idx, char **certid, int *certtype)
   if (!card)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (idx < 0)
-    return gpg_error (GPG_ERR_INVALID_INDEX);
+    return gpg_error (GPG_ERR_INV_INDEX);
   if (!card->fnc.initialized)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!card->fnc.enum_certs)

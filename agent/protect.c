@@ -68,11 +68,11 @@ calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
 
   s = plainkey;
   if (*s != '(')
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "private-key"))
     return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
   if (*s != '(')
@@ -81,7 +81,7 @@ calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   s += n; /* skip over the algorithm name */
 
   while (*s == '(')
@@ -89,18 +89,18 @@ calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
       s++;
       n = snext (&s);
       if (!n)
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       s += n;
       n = snext (&s);
       if (!n)
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       s += n;
       if ( *s != ')' )
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       s++;
     }
   if (*s != ')')
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   s++;
   hash_end = s;
 
@@ -278,12 +278,12 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
 
   s = plainkey;
   if (*s != '(')
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   depth++;
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "private-key"))
     return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
   if (*s != '(')
@@ -293,7 +293,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
 
   for (infidx=0; protect_info[infidx].algo
               && !smatch (&s, n, protect_info[infidx].algo); infidx++)
@@ -307,28 +307,28 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
       if (i == protect_info[infidx].prot_from)
         prot_begin = s;
       if (*s != '(')
-        return gpg_error (GPG_ERR_INVALID_SEXP);
+        return gpg_error (GPG_ERR_INV_SEXP);
       depth++;
       s++;
       n = snext (&s);
       if (!n)
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       if (n != 1 || c != *s)
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       s += n;
       n = snext (&s);
       if (!n)
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       s +=n; /* skip value */
       if (*s != ')')
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       depth--;
       if (i == protect_info[infidx].prot_to)
         prot_end = s;
       s++;
     }
   if (*s != ')' || !prot_begin || !prot_end )
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   depth--;
   hash_end = s;
   s++;
@@ -566,7 +566,7 @@ merge_lists (const unsigned char *protectedkey,
 
  invalid_sexp:
   xfree (newlist);
-  return gpg_error (GPG_ERR_INVALID_SEXP);
+  return gpg_error (GPG_ERR_INV_SEXP);
 }
 
 
@@ -591,11 +591,11 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
 
   s = protectedkey;
   if (*s != '(')
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "protected-private-key"))
     return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
   if (*s != '(')
@@ -603,7 +603,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
 
   for (infidx=0; protect_info[infidx].algo
               && !smatch (&s, n, protect_info[infidx].algo); infidx++)
@@ -620,12 +620,12 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   for (;;)
     {
       if (*s != '(')
-        return gpg_error (GPG_ERR_INVALID_SEXP);
+        return gpg_error (GPG_ERR_INV_SEXP);
       prot_begin = s;
       s++;
       n = snext (&s);
       if (!n)
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       if (smatch (&s, n, "protected"))
         break;
       s += n;
@@ -637,15 +637,15 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   /* found */
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc"))
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
   if (*s != '(' || s[1] != '(')
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   s += 2;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "sha1"))
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
   n = snext (&s);
@@ -660,7 +660,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
      here.  We might want to check that we only have digits - but this
      is nothing we should worry about */
   if (s[n] != ')' )
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   s2kcount = strtoul (s, NULL, 10);
   if (!s2kcount)
     return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
@@ -673,11 +673,11 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   iv = s;
   s += n;
   if (*s != ')' )
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   
   rc = do_decryption (s, n,
                       passphrase, s2ksalt, s2kcount,
@@ -836,15 +836,15 @@ agent_shadow_key (const unsigned char *pubkey,
   size_t shadow_info_len = gcry_sexp_canon_len (shadow_info, 0, NULL,NULL);
 
   if (!pubkey_len || !shadow_info_len)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
   s = pubkey;
   if (*s != '(')
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   depth++;
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "public-key"))
     return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
   if (*s != '(')
@@ -853,25 +853,25 @@ agent_shadow_key (const unsigned char *pubkey,
   s++;
   n = snext (&s); 
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   s += n; /* skip over the algorithm name */
 
   while (*s != ')')
     {
       if (*s != '(')
-        return gpg_error (GPG_ERR_INVALID_SEXP);
+        return gpg_error (GPG_ERR_INV_SEXP);
       depth++;
       s++;
       n = snext (&s);
       if (!n) 
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       s += n;
       n = snext (&s);
       if (!n)
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       s +=n; /* skip value */
       if (*s != ')')
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       depth--;
       s++;
     }
@@ -912,12 +912,12 @@ agent_get_shadow_info (const unsigned char *shadowkey,
 
   s = shadowkey;
   if (*s != '(')
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   depth++;
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "shadowed-private-key"))
     return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
   if (*s != '(')
@@ -926,7 +926,7 @@ agent_get_shadow_info (const unsigned char *shadowkey,
   s++;
   n = snext (&s); 
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   s += n; /* skip over the algorithm name */
 
   for (;;)
@@ -934,32 +934,32 @@ agent_get_shadow_info (const unsigned char *shadowkey,
       if (*s == ')')
         return gpg_error (GPG_ERR_UNKNOWN_SEXP);
       if (*s != '(')
-        return gpg_error (GPG_ERR_INVALID_SEXP);
+        return gpg_error (GPG_ERR_INV_SEXP);
       depth++;
       s++;
       n = snext (&s);
       if (!n) 
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       if (smatch (&s, n, "shadowed"))
         break;
       s += n;
       n = snext (&s);
       if (!n)
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       s +=n; /* skip value */
       if (*s != ')')
-        return gpg_error (GPG_ERR_INVALID_SEXP); 
+        return gpg_error (GPG_ERR_INV_SEXP); 
       depth--;
       s++;
     }
   /* found the shadowed list, s points to the protocol */
   n = snext (&s);
   if (!n) 
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (smatch (&s, n, "t1-v1"))
     {
       if (*s != '(')
-        return gpg_error (GPG_ERR_INVALID_SEXP);
+        return gpg_error (GPG_ERR_INV_SEXP);
       *shadow_info = s;
     }
   else

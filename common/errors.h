@@ -23,11 +23,7 @@
 
 #include "util.h"
 
-#ifdef GPG_ERR_SOURCE_DEFAULT
-# define GPG_ERR_INVALID_VALUE GPG_ERR_INV_VALUE
-# define GPG_ERR_INVALID_DATA  GPG_ERR_INV_DATA
-# define GPG_ERR_INVALID_SEXP  GPG_ERR_INV_SEXP
-#else /*GPG_ERR_SOURCE_DEFAUL*/
+#ifndef GPG_ERR_SOURCE_DEFAULT
 /* Error numbers.  Note, that they are onkly used for old code not yet
    converted to libgpg-error. */
 enum {

@@ -77,7 +77,7 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
 
       if (!gcry_sexp_canon_len (ciphertext, ciphertextlen, NULL, NULL))
         {
-          rc = gpg_error (GPG_ERR_INVALID_SEXP);
+          rc = gpg_error (GPG_ERR_INV_SEXP);
           goto leave;
         }
 

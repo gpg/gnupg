@@ -70,7 +70,7 @@ init_private_data (CARD card)
     {
       log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
       xfree (priv);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   priv->n_prkey_rsa_objs = rc;
 
@@ -82,7 +82,7 @@ init_private_data (CARD card)
     {
       log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
       xfree (priv);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   priv->n_cert_objs = rc;
 
@@ -145,7 +145,7 @@ p15_enum_keypairs (CARD card, int idx,
     {
       log_info ("failed to read certificate for private key %d: %s\n",
                 idx, sc_strerror (rc));
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
 
   cert = ksba_cert_new ();
@@ -162,13 +162,13 @@ p15_enum_keypairs (CARD card, int idx,
       log_error ("failed to parse the certificate for private key %d: %s\n",
                  idx, ksba_strerror (krc));
       ksba_cert_release (cert);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   if (card_help_get_keygrip (cert, keygrip))
     {
       log_error ("failed to calculate the keygrip of private key %d\n", idx);
       ksba_cert_release (cert);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }      
   ksba_cert_release (cert);
 
@@ -252,14 +252,14 @@ idstr_to_id (const char *idstr, struct sc_pkcs15_id *id)
 
   /* For now we only support the standard DF */
   if (strncmp (idstr, "P15-5015.", 9) ) 
-    return gpg_error (GPG_ERR_INVALID_ID);
+    return gpg_error (GPG_ERR_INV_ID);
   for (s=idstr+9, n=0; hexdigitp (s); s++, n++)
     ;
   if (*s || (n&1))
-    return gpg_error (GPG_ERR_INVALID_ID); /*invalid or odd number of digits*/
+    return gpg_error (GPG_ERR_INV_ID); /*invalid or odd number of digits*/
   n /= 2;
   if (!n || n > SC_PKCS15_MAX_ID_SIZE)
-    return gpg_error (GPG_ERR_INVALID_ID); /* empty or too large */
+    return gpg_error (GPG_ERR_INV_ID); /* empty or too large */
   for (s=idstr+9, n=0; *s; s += 2, n++)
     id->value[n] = xtoi_2 (s);
   id->len = n;
@@ -279,7 +279,7 @@ p15_read_cert (CARD card, const char *certidstr,
   int rc;
 
   if (!card || !certidstr || !cert || !ncert)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
   if (!card->p15card)
     return gpg_error (GPG_ERR_NO_PKCS15_APP);
 
@@ -300,7 +300,7 @@ p15_read_cert (CARD card, const char *certidstr,
     {
       log_info ("failed to read certificate '%s': %s\n",
                 certidstr, sc_strerror (rc));
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
 
   *cert = xtrymalloc (certder->data_len);
@@ -411,7 +411,7 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
   if (rc < 0)
     {
       log_error ("failed to create signature: %s\n", sc_strerror (rc));
-      rc = gpg_error (GPG_ERR_CARD_ERROR);
+      rc = gpg_error (GPG_ERR_CARD);
     }
   else
     {
@@ -473,7 +473,7 @@ p15_decipher (CARD card, const char *keyidstr,
   if (rc < 0)
     {
       log_error ("failed to decipher the data: %s\n", sc_strerror (rc));
-      rc = gpg_error (GPG_ERR_CARD_ERROR);
+      rc = gpg_error (GPG_ERR_CARD);
     }
   else
     {

@@ -450,7 +450,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
               if (!npadding || npadding > dfparm.blklen)
                 {
                   log_error ("invalid padding with value %d\n", npadding);
-                  rc = gpg_error (GPG_ERR_INVALID_DATA);
+                  rc = gpg_error (GPG_ERR_INV_DATA);
                   goto leave;
                 }
               rc = ksba_writer_write (writer,
@@ -466,7 +466,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                   if (dfparm.lastblock[i] != npadding)
                     {
                       log_error ("inconsistent padding\n");
-                      rc = gpg_error (GPG_ERR_INVALID_DATA);
+                      rc = gpg_error (GPG_ERR_INV_DATA);
                       goto leave;
                     }
                 }

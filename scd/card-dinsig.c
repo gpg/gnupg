@@ -128,13 +128,13 @@ dinsig_enum_keypairs (CARD card, int idx,
       log_error ("failed to parse the certificate at idx %d: %s\n",
                  idx, ksba_strerror (krc));
       ksba_cert_release (cert);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   if (card_help_get_keygrip (cert, keygrip))
     {
       log_error ("failed to calculate the keygrip at index %d\n", idx);
       ksba_cert_release (cert);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }      
   ksba_cert_release (cert);
 
@@ -171,7 +171,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
   else if (!strcmp (certidstr, "DINSIG-DF01.C200"))
     sc_format_path ("3F00DF01C200", &path);
   else
-    return gpg_error (GPG_ERR_INVALID_ID);
+    return gpg_error (GPG_ERR_INV_ID);
 
   rc = sc_select_file (card->scard, &path, &file);
   if (rc) 
@@ -184,13 +184,13 @@ dinsig_read_cert (CARD card, const char *certidstr,
     {
       log_error ("wrong type or structure of certificate EF\n");
       sc_file_free (file);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   if (file->size < 20) /* check against a somewhat arbitrary length */
     { 
       log_error ("certificate EF too short\n");
       sc_file_free (file);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   buf = xtrymalloc (file->size);
   if (!buf)
@@ -206,7 +206,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
       log_error ("short read on certificate EF\n");
       sc_file_free (file);
       xfree (buf);
-      return gpg_error (GPG_ERR_CARD_ERROR);
+      return gpg_error (GPG_ERR_CARD);
     }
   sc_file_free (file);
   if (rc < 0) 

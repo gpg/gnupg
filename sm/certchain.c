@@ -186,7 +186,7 @@ check_cert_policy (KsbaCert cert)
         {
           fclose (fp);
           xfree (policies);
-          return gpg_error (GPG_ERR_CONFIGURATION_ERROR);
+          return gpg_error (GPG_ERR_CONFIGURATION);
         }
       *p = 0; /* strip the rest of the line */
       /* See whether we find ALLOWED (which is an OID) in POLICIES */

@@ -101,7 +101,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
   if (rc)
     {
       log_error ("failed to convert keyparam: %s\n", gcry_strerror (rc));
-      return gpg_error (GPG_ERR_INVALID_DATA);
+      return gpg_error (GPG_ERR_INV_DATA);
     }
 
   /* Get the passphrase now, cause key generation may take a while. */
@@ -147,7 +147,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
       log_error ("key generation failed: invalid return value\n");
       gcry_sexp_release (s_key);
       xfree (pi);
-      return gpg_error (GPG_ERR_INVALID_DATA);
+      return gpg_error (GPG_ERR_INV_DATA);
     }
   s_public = gcry_sexp_find_token (s_key, "public-key", 0);
   if (!s_public)
@@ -156,7 +156,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
       gcry_sexp_release (s_private);
       gcry_sexp_release (s_key);
       xfree (pi);
-      return gpg_error (GPG_ERR_INVALID_DATA);
+      return gpg_error (GPG_ERR_INV_DATA);
     }
   gcry_sexp_release (s_key); s_key = NULL;
   

@@ -415,7 +415,7 @@ gpgsm_agent_pksign (const char *keygrip,
   if (!gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL))
     {
       xfree (*r_buf); *r_buf = NULL;
-      return gpg_error (GPG_ERR_INVALID_VALUE);
+      return gpg_error (GPG_ERR_INV_VALUE);
     }
 
   return *r_buf? 0 : OUT_OF_CORE (errno);
@@ -455,12 +455,12 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   size_t ciphertextlen;
   
   if (!keygrip || strlen(keygrip) != 40 || !ciphertext || !r_buf || !r_buflen)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
   *r_buf = NULL;
 
   ciphertextlen = gcry_sexp_canon_len (ciphertext, 0, NULL, NULL);
   if (!ciphertextlen)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   rc = start_agent ();
   if (rc)
@@ -499,11 +499,11 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   len--; /* remove the terminating 0 */
   n = strtoul (buf, &endp, 10);
   if (!n || *endp != ':')
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   endp++;
   if (endp-buf+n > len)
-    return gpg_error (GPG_ERR_INVALID_SEXP); /* oops len does not
-                                                match internal len*/
+    return gpg_error (GPG_ERR_INV_SEXP); /* oops len does not
+					    match internal len*/
   memmove (buf, endp, n);
   *r_buflen = n;
   *r_buf = buf;
@@ -552,7 +552,7 @@ gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
   gk_parm.sexp = keyparms;
   gk_parm.sexplen = gcry_sexp_canon_len (keyparms, 0, NULL, NULL);
   if (!gk_parm.sexplen)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
   rc = assuan_transact (agent_ctx, "GENKEY",
                         membuf_data_cb, &data, 
                         inq_genkey_parms, &gk_parm, NULL, NULL);
@@ -567,7 +567,7 @@ gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
   if (!gcry_sexp_canon_len (buf, len, NULL, NULL))
     {
       xfree (buf);
-      return gpg_error (GPG_ERR_INVALID_SEXP);
+      return gpg_error (GPG_ERR_INV_SEXP);
     }
   *r_pubkey = buf;
   return 0;
@@ -651,7 +651,7 @@ gpgsm_agent_havekey (const char *hexkeygrip)
     return rc;
 
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   snprintf (line, DIM(line)-1, "HAVEKEY %s", hexkeygrip);
   line[DIM(line)-1] = 0;
@@ -768,7 +768,7 @@ gpgsm_agent_passwd (const char *hexkeygrip)
     return rc;
 
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   snprintf (line, DIM(line)-1, "PASSWD %s", hexkeygrip);
   line[DIM(line)-1] = 0;

@@ -452,7 +452,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
     {
       /* We require that the returned value is an UTF-8 string */
       xfree (value);
-      return gpg_error (GPG_ERR_INVALID_RESPONSE);
+      return gpg_error (GPG_ERR_INV_RESPONSE);
     }
   *retstr = value;
   return 0;

@@ -562,7 +562,7 @@ keydb_get_cert (KEYDB_HANDLE hd, KsbaCert *r_cert)
   int rc = 0;
 
   if (!hd)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
   
   if ( hd->found < 0 || hd->found >= hd->used) 
     return -1; /* nothing found */
@@ -591,7 +591,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert)
   char digest[20];
   
   if (!hd) 
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (opt.dry_run)
     return 0;
@@ -633,7 +633,7 @@ keydb_update_cert (KEYDB_HANDLE hd, KsbaCert cert)
   char digest[20];
   
   if (!hd)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if ( hd->found < 0 || hd->found >= hd->used) 
     return -1; /* nothing found */
@@ -671,7 +671,7 @@ keydb_delete (KEYDB_HANDLE hd)
   int rc = -1;
   
   if (!hd)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if ( hd->found < 0 || hd->found >= hd->used) 
     return -1; /* nothing found */
@@ -710,7 +710,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
   int rc;
   
   if (!hd)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
   
   rc = keydb_search_reset (hd); /* this does reset hd->current */
   if (rc)
@@ -770,7 +770,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
   int i, rc = 0;
   
   if (!hd)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   hd->current = 0; 
   hd->found = -1;
@@ -800,7 +800,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
   int rc = -1;
   
   if (!hd)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   while (rc == -1 && hd->current >= 0 && hd->current < hd->used) 
     {
@@ -891,12 +891,12 @@ keydb_search_issuer_sn (KEYDB_HANDLE hd,
   desc.mode = KEYDB_SEARCH_MODE_ISSUER_SN;
   s = serial;
   if (*s !='(')
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
   s++;
   for (desc.snlen = 0; digitp (s); s++)
     desc.snlen = 10*desc.snlen + atoi_1 (s);
   if (*s !=':')
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
   desc.sn = s+1;
   desc.u.name = issuer;
   rc = keydb_search (hd, &desc, 1);

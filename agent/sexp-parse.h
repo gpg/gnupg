@@ -68,10 +68,10 @@ sskip (unsigned char const **buf, int *depth)
       else
         {
           if (!d)
-            return gpg_error (GPG_ERR_INVALID_SEXP);
+            return gpg_error (GPG_ERR_INV_SEXP);
           n = snext (&s);
           if (!n)
-            return gpg_error (GPG_ERR_INVALID_SEXP); 
+            return gpg_error (GPG_ERR_INV_SEXP); 
           s += n;
         }
     }

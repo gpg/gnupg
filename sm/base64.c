@@ -607,7 +607,7 @@ gpgsm_finish_writer (Base64Context ctx)
   struct writer_cb_parm_s *parm;
   
   if (!ctx)
-    return gpg_error (GPG_ERR_INVALID_VALUE);
+    return gpg_error (GPG_ERR_INV_VALUE);
   parm = &ctx->u.wparm;
   if (parm->did_finish)
     return 0; /* already done */

@@ -48,11 +48,11 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
   *r_kid = NULL;
   s = shadow_info;
   if (*s != '(')
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   want_sn = xtrymalloc (n*2+1);
   if (!want_sn)
     return out_of_core ();
@@ -68,7 +68,7 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
 
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   want_kid = xtrymalloc (n+1);
   if (!want_kid)
     {
@@ -261,11 +261,11 @@ divert_pkdecrypt (CTRL ctrl,
 
   s = cipher;
   if (*s != '(')
-    return gpg_error (GPG_ERR_INVALID_SEXP);
+    return gpg_error (GPG_ERR_INV_SEXP);
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "enc-val"))
     return gpg_error (GPG_ERR_UNKNOWN_SEXP); 
   if (*s != '(')
@@ -273,7 +273,7 @@ divert_pkdecrypt (CTRL ctrl,
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "rsa"))
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM); 
   if (*s != '(')
@@ -281,7 +281,7 @@ divert_pkdecrypt (CTRL ctrl,
   s++;
   n = snext (&s);
   if (!n)
-    return gpg_error (GPG_ERR_INVALID_SEXP); 
+    return gpg_error (GPG_ERR_INV_SEXP); 
   if (!smatch (&s, n, "a"))
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   n = snext (&s);
