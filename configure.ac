@@ -1092,6 +1092,7 @@ if test "$card_support" = yes; then
 fi
 AC_SUBST(LIBUSB_LIBS)
 AC_CHECK_FUNCS(usb_create_match)
+AC_CHECK_FUNCS(usb_get_busses)
 
 #
 # Check for readline support

@@ -1,3 +1,10 @@
+2004-09-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note HTTP basic auth.
+
+	* configure.ac: Check for usb_get_busses since very old stable
+	libusb doesn't have it.
+
 2004-09-09  Werner Koch  <wk@g10code.com>
 
 	* README: Doc --disable-card-support and --without-readline.

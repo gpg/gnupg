@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.3.6 (2004-05-22)
+Noteworthy changes in version 1.3.7
 ------------------------------------------------
 
     * Readline support at all prompts is now available if the systems
@@ -8,6 +8,13 @@ Noteworthy changes in version 1.3.6 (2004-05-22)
     * Support for the OpenPGP smartcard is now enabled by default.
       Use the option --disable-card-support to build without support
       for smartcards.
+
+    * HTTP Basic authentication is now supported for all HKP and HTTP
+      keyserver functions, either through a proxy or by direct access.
+
+
+Noteworthy changes in version 1.3.6 (2004-05-22)
+------------------------------------------------
 
     * New --keyid-format option that selects short (99242560), long
       (DB698D7199242560), 0xshort (0x99242560), or 0xlong
