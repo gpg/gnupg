@@ -317,12 +317,22 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 
     if ( keyblock ) { /* figure our the usable capabilities */
         KBNODE k;
-        int enc=0, sign=0, cert=0;
+        int enc=0, sign=0, cert=0, disabled=0;
 
         for (k=keyblock; k; k = k->next ) {
             if ( k->pkt->pkttype == PKT_PUBLIC_KEY 
                  || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	        u32 kid[2];
                 pk = k->pkt->pkt.public_key;
+
+		if(k->pkt->pkttype==PKT_PUBLIC_KEY)
+		  {
+		    keyid_from_pk(pk,kid);
+
+		    if(is_disabled(NULL,kid))
+		      disabled=1;
+		  }
+
                 if ( pk->is_valid && !pk->is_revoked && !pk->has_expired ) {
                     if ( pk->pubkey_usage & PUBKEY_USAGE_ENC )
                         enc = 1;
@@ -356,7 +366,10 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
             putchar ('S');
         if (cert)
             putchar ('C');
+        if (disabled)
+            putchar ('D');
     }
+
     putchar(':');
 }
 
