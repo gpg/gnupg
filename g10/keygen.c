@@ -1,5 +1,6 @@
 /* keygen.c - generate a key pair
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *                                               Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,7 +38,6 @@
 #include "i18n.h"
 
 #define MAX_PREFS 30 
-
 
 enum para_name {
   pKEYTYPE,
@@ -212,6 +212,18 @@ set_one_pref (int val, int type, const char *item, byte *buf, int *nbuf)
     return 0;
 }
 
+#ifdef USE_AES
+#define AES "S7 "
+#else
+#define AES ""
+#endif
+
+#ifdef USE_CAST5
+#define CAST5 "S3 "
+#else
+#define CAST5 ""
+#endif
+
 /*
  * Parse the supplied string and use it to set the standard
  * preferences.  The string may be in a form like the one printed by
@@ -230,9 +242,9 @@ keygen_set_std_prefs (const char *string,int personal)
       if (opt.def_preference_list)
 	string=opt.def_preference_list;
       else if ( !check_cipher_algo(CIPHER_ALGO_IDEA) )
-        string = "S7 S3 S2 S1 H2 H3 Z2 Z1";
+        string = AES CAST5 "S2 S1 H2 H3 Z2 Z1";
       else
-        string = "S7 S3 S2 H2 H3 Z2 Z1";
+        string = AES CAST5 "S2 H2 H3 Z2 Z1";
 
       /* If we have it, IDEA goes *after* 3DES so it won't be used
          unless we're encrypting along with a V3 key.  Ideally, we
@@ -374,6 +386,9 @@ keygen_set_std_prefs (const char *string,int personal)
 
     return rc;
 }
+
+#undef CAST5
+#undef AES
 
 /* Return a fake user ID containing the preferences.  Caller must
    free. */

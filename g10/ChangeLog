@@ -1,5 +1,8 @@
 2003-02-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (keygen_set_std_prefs): Don't put AES or CAST5 in
+	default prefs if they are disabled.
+
 	* g10.c (main): Use 3DES instead of CAST5 if we don't have CAST5
 	support.  Use 3DES for the s2k cipher in --openpgp mode.
 	(print_mds): #ifdef all of the optional digest algorithms.
