@@ -7,7 +7,7 @@ DIE=no
 autoconf_vers=2.13
 automake_vers=1.4
 aclocal_vers=1.4
-libtool_vers=1.3
+#libtool_vers=1.3
 
 if (autoconf --version) < /dev/null > /dev/null 2>&1 ; then
     if (autoconf --version | awk 'NR==1 { if( $3 >= '$autoconf_vers') \
@@ -65,20 +65,20 @@ if (gettext --version </dev/null 2>/dev/null | awk 'NR==1 { split($4,A,"\."); \
 fi
 
 
-if (libtool --version) < /dev/null > /dev/null 2>&1 ; then
-    if (libtool --version | awk 'NR==1 { if( $4 >= '$libtool_vers') \
-			       exit 1; exit 0; }');
-    then
-       echo "**Error**: "\`libtool\'" is too old."
-       echo '           (version ' $libtool_vers ' or newer is required)'
-       DIE="yes"
-    fi
-else
-    echo
-    echo "**Error**: You must have "\`libtool\'" installed to compile $PGM."
-    echo '           (version ' $libtool_vers ' or newer is required)'
-    DIE="yes"
-fi
+#if (libtool --version) < /dev/null > /dev/null 2>&1 ; then
+#    if (libtool --version | awk 'NR==1 { if( $4 >= '$libtool_vers') \
+#			       exit 1; exit 0; }');
+#    then
+#       echo "**Error**: "\`libtool\'" is too old."
+#       echo '           (version ' $libtool_vers ' or newer is required)'
+#       DIE="yes"
+#    fi
+#else
+#    echo
+#    echo "**Error**: You must have "\`libtool\'" installed to compile $PGM."
+#    echo '           (version ' $libtool_vers ' or newer is required)'
+#    DIE="yes"
+#fi
 
 
 if test "$DIE" = "yes"; then
@@ -87,8 +87,8 @@ fi
 
 echo "Running gettextize...  Ignore non-fatal messages."
 echo "no" | gettextize --force
-echo "Running libtoolize...  Ignore non-fatal messages."
-echo "no" | libtoolize
+#echo "Running libtoolize...  Ignore non-fatal messages."
+#echo "no" | libtoolize
 
 
 echo "Running aclocal..."

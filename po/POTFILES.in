@@ -10,11 +10,11 @@ util/logger.c
 jnlib/argparse.c
 
 # cipher
-cipher/random.c
-cipher/rndlinux.c
+#cipher/random.c
+#cipher/rndlinux.c
 
 # gcrypt
-gcrypt/secmem.c
+#gcrypt/secmem.c
 
 # main program
 
@@ -52,4 +52,3 @@ g10/encr-data.c
 g10/seskey.c
 g10/delkey.c
 g10/helptext.c
-

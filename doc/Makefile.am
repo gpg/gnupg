@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 
-BUILT_SOURCES = version.sgml gcryptref.html gcryptref.ps
+BUILT_SOURCES = version.sgml
 
 
 #EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP \
@@ -10,9 +10,6 @@ EXTRA_DIST = DETAILS HACKING OpenPGP FAQ
 #man_MANS = gpg.1
 
 ### pkgdata_DATA = gcryptref.html gcryptref.ps
-
-
-CLEANFILES = gcryptref.aux gcryptref.log gcryptref.tex gcryptref.dvi
 
 
 # gcryptref.sgml : version.sgml
