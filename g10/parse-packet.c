@@ -1574,6 +1574,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		}
                 sk->protect.sha1chk = (sk->protect.algo == 254);
 		sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
+		/* Note that a sk->protect.algo > 110 is illegal, but
+		   I'm not erroring on it here as otherwise there
+		   would be no way to delete such a key. */
 		sk->protect.s2k.mode  = iobuf_get_noeof(inp); pktlen--;
 		sk->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
 		/* check for the special GNU extension */
@@ -1647,6 +1650,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 					    (ulong)sk->protect.s2k.count);
 		}
 	    }
+	    /* Note that a sk->protect.algo > 110 is illegal, but I'm
+	       not erroring on it here as otherwise there would be no
+	       way to delete such a key. */
 	    else { /* old version; no S2K, so we set mode to 0, hash MD5 */
 		sk->protect.s2k.mode = 0;
 		sk->protect.s2k.hash_algo = DIGEST_ALGO_MD5;

@@ -409,10 +409,11 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	pk = NULL;
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
-        printf("sec  %4u%c/%08lX %s ", nbits_from_sk( sk ),
-				       pubkey_letter( sk->pubkey_algo ),
-				       (ulong)keyid[1],
-				       datestr_from_sk( sk ) );
+        printf("sec%c %4u%c/%08lX %s ", (sk->protect.s2k.mode==1001)?'#':' ',
+	                                nbits_from_sk( sk ),
+				        pubkey_letter( sk->pubkey_algo ),
+				        (ulong)keyid[1],
+				        datestr_from_sk( sk ) );
     }
     else {
 	pk = node->pkt->pkt.public_key;

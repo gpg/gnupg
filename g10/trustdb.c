@@ -247,7 +247,6 @@ verify_own_keys(void)
   ulong recnum;
   int rc;
   struct key_item *k;
-  int hint_shown = 0;
 
   if (utk_list)
     return;
@@ -296,14 +295,7 @@ verify_own_keys(void)
                                 | TRUST_ULTIMATE ));
             release_public_key_parts (&pk);
           }
-          if (!hint_shown)
-            {
-              log_info ("the --trusted-key option is now obsolete; "
-                        "use the --edit command instead.\n");
-              log_info ("given keys will be marked as trusted\n");
-              hint_shown = 1;
-            }
-          log_info ("key %08lX marked as ultimately trusted\n",
+          log_info (_("key %08lX marked as ultimately trusted\n"),
                     (ulong)k->kid[1]);
         }
     }

@@ -850,6 +850,13 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	return 0;
     }
 
+    if(sk->protect.algo>110)
+      {
+	log_error(_("key %08lX: secret key with invalid cipher %d "
+		    "- skipped\n"),(ulong)keyid[1],sk->protect.algo);
+	return 0;
+      }
+
     clear_kbnode_flags( keyblock );
 
     /* do we have this key already in one of our secrings ? */
