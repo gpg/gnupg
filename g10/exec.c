@@ -64,7 +64,7 @@ static int make_tempdir(struct exec_info *info)
   char *tmp=opt.temp_dir,*name=info->name;
 
   if(!name)
-    name=info->binary?"tempfile.bin":"tempfile.txt";
+    name=info->binary?"tempfile" EXTSEP_S "bin":"tempfile" EXTSEP_S "txt";
 
   /* Make up the temp dir and files in case we need them */
 

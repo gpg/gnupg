@@ -1,3 +1,8 @@
+2002-05-14  Stefan Bellon  <sbellon@sbellon.de>
+
+	* exec.c (make_tempdir): Make use of EXTSEP_S instead of hardcoded
+	dot as extension separator.
+
 2002-05-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* photoid.c (show_photos): Use the long keyid as the filename for
