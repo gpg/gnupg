@@ -54,6 +54,7 @@ struct {
   const char *scdaemon_program; 
   int no_grab;      /* don't let the pinentry grab the keyboard */
   unsigned long def_cache_ttl;
+  unsigned long max_cache_ttl;
 
   int running_detached; /* we are running detached from the tty. */
 
@@ -61,7 +62,7 @@ struct {
   int allow_mark_trusted;
   int keep_tty;  /* don't switch the TTY (for pinentry) on request */
   int keep_display;  /* don't switch the DISPLAY (for pinentry) on request */
-  int ssh_support;  /* enable SSH-Agent emulation.  */
+  int ssh_support;		/* Enable ssh-agent emulation.  */
 } opt;
 
 
@@ -95,6 +96,7 @@ struct server_control_s {
     int algo;
     unsigned char value[MAX_DIGEST_LEN];
     int valuelen;
+    int raw_value: 1;
   } digest;
   char keygrip[20];
   int have_keygrip;

@@ -78,15 +78,17 @@ enum cmd_and_opt_values
   oLCctype,
   oLCmessages,
   oScdaemonProgram,
-  oDefCacheTTL,
   oDisablePth,
+  oDefCacheTTL,
+  oMaxCacheTTL,
 
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
   oKeepTTY,
   oKeepDISPLAY,
-  aTest,
-  oSSHSupport };
+  oSSHSupport,
+
+aTest };
 
 
 
@@ -128,17 +130,18 @@ static ARGPARSE_OPTS opts[] = {
 
   { oDefCacheTTL, "default-cache-ttl", 4,
                                N_("|N|expire cached PINs after N seconds")},
+  { oMaxCacheTTL, "max-cache-ttl", 4, "@" },
   { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
                                N_("do not use the PIN cache when signing")},
   { oAllowMarkTrusted, "allow-mark-trusted", 0,
                              N_("allow clients to mark keys as \"trusted\"")},
   { oSSHSupport, "ssh-support", 0, "Enable SSH-Agent emulation" },
-
   {0}
 };
 
 
-#define DEFAULT_CACHE_TTL (10*60) /* 10 minutes */
+#define DEFAULT_CACHE_TTL (10*60)  /* 10 minutes */
+#define MAX_CACHE_TTL     (120*60) /* 2 hours */
 
 static volatile int caught_fatal_sig = 0;
 
@@ -181,6 +184,7 @@ static void handle_connections (int listen_fd, int listen_fd_ssh);
 GCRY_THREAD_OPTION_PTH_IMPL;
 
 #endif /*USE_GNU_PTH*/
+static void check_for_running_agent (void);
 
 
 
@@ -286,6 +290,7 @@ set_debug (void)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 }
+ 
 
 static void
 cleanup_do (char *name)
@@ -353,6 +358,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.pinentry_program = NULL;
       opt.scdaemon_program = NULL;
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
+      opt.max_cache_ttl = MAX_CACHE_TTL;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 0;
       return 1;
@@ -368,8 +374,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oDebugLevel: debug_level = pargs->r.ret_str; break;
 
     case oLogFile:
-      if (!current_logfile || !pargs->r.ret_str
-          || strcmp (current_logfile, pargs->r.ret_str))
+      if (reread 
+          && (!current_logfile || !pargs->r.ret_str
+              || strcmp (current_logfile, pargs->r.ret_str)))
         {
           log_set_file (pargs->r.ret_str);
           xfree (current_logfile);
@@ -383,6 +390,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
 
     case oDefCacheTTL: opt.def_cache_ttl = pargs->r.ret_ulong; break;
+    case oMaxCacheTTL: opt.max_cache_ttl = pargs->r.ret_ulong; break;
       
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
 
@@ -393,6 +401,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     }
   return 1; /* handled */
 }
+
 
 static void
 server_socket_create (int *sock,
@@ -681,7 +690,9 @@ main (int argc, char **argv )
       fprintf (stderr, "%s\n", strusage(15) );
     }
 #ifdef IS_DEVELOPMENT_VERSION
-  log_info ("NOTE: this is a development version!\n");
+  /* We don't want to print it here because gpg-agent is useful of its
+     own and quite matured.  */
+  /*log_info ("NOTE: this is a development version!\n");*/
 #endif
 
   set_debug ();
@@ -751,9 +762,15 @@ main (int argc, char **argv )
       agent_exit (0);
     }
 
+  /* If this has been called without any options, we merely check
+     whether an agent is already running.  We do this here so that we
+     don't clobber a logfile but print it directly to stderr. */
   if (!pipe_server && !is_daemon)
-    log_info (_("please use the option `--daemon'"
-                " to run the program in the background\n"));
+    {
+      log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX); 
+      check_for_running_agent ();
+      agent_exit (0);
+    }
   
 #ifdef ENABLE_NLS
   /* gpg-agent usually does not output any messages because it runs in
@@ -787,12 +804,11 @@ main (int argc, char **argv )
       start_command_handler (-1, -1);
     }
   else if (!is_daemon)
-    ;
+    ; /* NOTREACHED */
   else
-    { /* regular server mode */ 
+    { /* Regular server mode */
       int fd = -1, fd_ssh = -1;
       pid_t pid;
-      //char *p;
 
       /* Remove the DISPLAY variable so that a pinentry does not
          default to a specific display.  There is still a default
@@ -806,13 +822,13 @@ main (int argc, char **argv )
 	server_socket_create (&fd_ssh, "-ssh",
 			      socket_name_ssh, sizeof (socket_name_ssh));
 
-
       if (opt.verbose)
 	{
 	  log_info ("listening on socket `%s'\n", socket_name);
 	  if (opt.ssh_support)
 	    log_info ("listening on socket `%s'\n", socket_name_ssh);
 	}
+
 
       fflush (NULL);
       pid = fork ();
@@ -826,8 +842,6 @@ main (int argc, char **argv )
           char *infostr, *infostr_ssh_sock, *infostr_ssh_pid;
           
           close (fd);
-	  if (opt.ssh_support)
-	    close (fd_ssh);
           
           /* create the info string: <name>:<pid>:<protocol_version> */
           if (asprintf (&infostr, "GPG_AGENT_INFO=%s:%lu:1",
@@ -858,7 +872,7 @@ main (int argc, char **argv )
           *socket_name = 0; /* don't let cleanup() remove the socket -
                                the child should do this from now on */
 	  *socket_name_ssh = 0;
-
+	  
           if (argc) 
             { /* run the program given on the commandline */
               if (putenv (infostr))
@@ -994,7 +1008,7 @@ main (int argc, char **argv )
         }
       close (fd);
     }
-   
+  
   return 0;
 }
 
@@ -1235,6 +1249,7 @@ start_connection_thread (void *arg)
   return NULL;
 }
 
+
 static void *
 start_connection_thread_ssh (void *arg)
 {
@@ -1268,18 +1283,18 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   int ret = -1;
   int fd;
 
-  sigemptyset (&sigs);
+  tattr = pth_attr_new();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64);
+  pth_attr_set (tattr, PTH_ATTR_NAME, "gpg-agent");
+
+  sigemptyset (&sigs );
   sigaddset (&sigs, SIGHUP);
   sigaddset (&sigs, SIGUSR1);
   sigaddset (&sigs, SIGUSR2);
   sigaddset (&sigs, SIGINT);
   sigaddset (&sigs, SIGTERM);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
-
-  tattr = pth_attr_new();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 32*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "gpg-agent");
 
   FD_ZERO (&fdset);
   FD_SET (listen_fd, &fdset);
@@ -1370,4 +1385,58 @@ handle_connections (int listen_fd, int listen_fd_ssh)
   cleanup ();
   log_info ("%s %s stopped\n", strusage(11), strusage(13));
 }
+
 #endif /*USE_GNU_PTH*/
+
+
+/* Figure out whether an agent is available and running. Prints an
+   error if not.  */
+static void
+check_for_running_agent ()
+{
+  int rc;
+  char *infostr, *p;
+  assuan_context_t ctx;
+  int prot, pid;
+
+  infostr = getenv ("GPG_AGENT_INFO");
+  if (!infostr || !*infostr)
+    {
+      log_error (_("no gpg-agent running in this session\n"));
+      return;
+    }
+
+  infostr = xstrdup (infostr);
+  if ( !(p = strchr (infostr, ':')) || p == infostr)
+    {
+      log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
+      xfree (infostr);
+      return;
+    }
+
+  *p++ = 0;
+  pid = atoi (p);
+  while (*p && *p != ':')
+    p++;
+  prot = *p? atoi (p+1) : 0;
+  if (prot != 1)
+    {
+      log_error (_("gpg-agent protocol version %d is not supported\n"),
+                 prot);
+      xfree (infostr);
+      return;
+    }
+
+  rc = assuan_socket_connect (&ctx, infostr, pid);
+  xfree (infostr);
+  if (rc)
+    {
+      log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
+      return;
+    }
+
+  if (!opt.quiet)
+    log_info ("gpg-agent running and available\n");
+
+  assuan_disconnect (ctx);
+}

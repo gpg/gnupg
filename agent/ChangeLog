@@ -1,72 +1,16 @@
-2004-08-09  Moritz Schulte  <moritz@g10code.com>
+2004-09-27  Moritz Schulte  <moritz@g10code.com>
 
-	* findkey.c (modify_description): Accept description being NULL.
+	**MERGED FROM MAIN BRANCH, RE-PATCHED**
 
-2004-08-07  Moritz Schulte  <moritz@g10code.com>
-
-	* command-ssh.c (ssh_key_to_sexp_buffer): New argument: comment;
-	integrate into S-Exp.
-	(ssh_identity_register): New argument: comment; pass to
-	ssh_key_to_sexp_buffer().
-	(ssh_handler_add_identity): Pass comment to
-	ssh_identity_register().
-	(ssh_identity_register): Allocate description dynamically, insert
-	comment; new variable: description_length; removed variable: i.
-	(data_sign): Do not calculate key grip for integration in
-	description; removed variable: i.
+	* command-ssh.c: New file.
 
 	* findkey.c (modify_description): New function.
 	(agent_key_from_file): New variables: comment, comment_sexp,
 	comment_length, desc_text_modified; extract comment from S-Exp,
 	pass modified version to unprotect().
 	
-2004-07-30  Moritz Schulte  <moritz@g10code.com>
-
-	* command-ssh.c: Updated Libgpg-stream (more support for secure
-	memory), adjusted code for new API.
-
-2004-07-27  Moritz Schulte  <moritz@g10code.com>
-
-	* findkey.c (key_io_lock): New variable.
-
-	* command-ssh.c: Use gcrypt memory allocators, use secure memory
-	where necessary.
-
-2004-07-26  Moritz Schulte  <moritz@g10code.com>
-
-	* command-ssh.c (data_sign): Do not forget to unsigned char when
-	constructing human-readable key grip.
-
-	* Makefile.am (gpg_agent_SOURCES): Removed: buffer.c, buffer.h;
-	updated Libgpg-stream.
-
-2004-07-24  Moritz Schulte  <moritz@g10code.com>
-
-	* gpg-stream-config.h: New file (was missing before).
-
-2004-07-19  Moritz Schulte  <moritz@g10code.com>
-
-	* command-ssh.c: Only log debugging message if asked to do so.
-
-	* command-ssh.c (gpg_stream_copy): Remove function.
-	Update Libgpg-stream.
-
-	* command-ssh.c: Fix handling of iqmp vs. u.
-
-	* command-ssh.c (ssh_identity_register): passphrase must not be freed.
-
-	* Makefile.am (gpg_agent_SOURCES): Adding: gpg-stream.c,
-	gpg-stream.h, buffer.c, buffer.h, command-ssh.c.
-
-	* pksign.c (agent_pksign_do): New function, based on code ripped
-	out from agent_pksign.
-	(agent_pksign): Use agent_pksign_do.
-
-	* query.c (start_pinentry): Accept CTRL being NULL.
-
-	* agent.h (start_command_handler_ssh): Declare function.
-	(agent_pksign_do): Declare function.
-	(opt): New member: ssh_support.
+	* agent.h: Declare: start_command_handler_ssh.
+	(struct opt): New member: ssh_support.
 
 	* gpg-agent.c: Include <sys/select.h>.
 	New configuration option: ssh-support.
@@ -81,9 +25,52 @@
 	(main): ... use it.
 	(main): Generate environment entries for ssh.
 
-	* command-ssh.c: New file, implementing the ssh-agent protocol.
-	* gpg-stream.c, gpg-stream.h, buffer.c, buffer.h: Merged
-	Libgpg-stream.
+	* query.c (start_pinentry): Accept CTRL being NULL.
+
+2004-09-25  Moritz Schulte  <moritz@g10code.com>
+	
+	* agent.h: Declare: agent_pksign_do.
+	(struct server_control_s): New member: raw_value.
+	
+	* pksign.c (do_encode_md): New argument: raw_value; support
+	generation of raw (non-pkcs1) data objects; adjust callers.
+	(agent_pksign_do): New function, based on code ripped
+	out from agent_pksign.
+	(agent_pksign): Use agent_pksign_do.
+
+	* command.c (start_command_handler): Set ctrl.digest.raw_value.
+	
+2004-09-09  Werner Koch  <wk@g10code.de>
+
+	* gpg-agent.c (check_for_running_agent): New.
+	(main): The default action is now to check for an already running
+	agent.
+	(parse_rereadable_options): Set logfile only on reread.
+	(main): Do not print the "is development version" note.
+
+2004-08-20  Werner Koch  <wk@g10code.de>
+
+	* gpg-agent.c: New option --max-cache-ttl.  Suggested by Alexander
+	Belopolsky.
+	* cache.c (housekeeping): Use it here instead of the hardwired
+	default of 1 hour.
+
+	* query.c (start_pinentry): Use a timeout for the pinentry lock.
+
+2004-08-18  Werner Koch  <wk@g10code.de>
+
+	* protect-tool.c (get_passphrase): Make sure that the default
+	prompts passed to gpg-agent are utf-8 encoded. Add new prompt values.
+	(import_p12_file, import_p12_file, export_p12_file): Changed calls
+	to get_passphrase so that better prompts are displayed.
+	(get_new_passphrase): New.
+
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	* trustlist.c (read_list): Allow colons in the fingerprint.
+	(headerblurb): Rephrased.
+
+	* gpg-agent.c (handle_connections): Increase the stack size ot 256k.
 
 2004-06-20  Moritz Schulte  <moritz@g10code.com>
 

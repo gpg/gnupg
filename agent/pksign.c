@@ -32,24 +32,45 @@
 
 
 static int
-do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash)
+do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash,
+	      int raw_value)
 {
   gcry_sexp_t hash;
-  const char *s;
-  char tmp[16+1];
-  int i, rc;
+  int rc;
 
-  s = gcry_md_algo_name (algo);
-  if (s && strlen (s) < 16)
+  if (! raw_value)
     {
-      for (i=0; i < strlen (s); i++)
-        tmp[i] = tolower (s[i]);
-      tmp[i] = '\0';   
+      const char *s;
+      char tmp[16+1];
+      int i;
+      
+      s = gcry_md_algo_name (algo);
+      if (s && strlen (s) < 16)
+	{
+	  for (i=0; i < strlen (s); i++)
+	    tmp[i] = tolower (s[i]);
+	  tmp[i] = '\0';   
+	}
+
+      rc = gcry_sexp_build (&hash, NULL,
+			    "(data (flags pkcs1) (hash %s %b))",
+			    tmp, mdlen, md);
     }
-  rc = gcry_sexp_build (&hash, NULL,
-                        "(data (flags pkcs1) (hash %s %b))",
-                        tmp,
-                        mdlen, md);
+  else
+    {
+      gcry_mpi_t mpi;
+      
+      rc = gcry_mpi_scan (&mpi, GCRYMPI_FMT_USG, md, mdlen, NULL);
+      if (! rc)
+	{
+	  rc = gcry_sexp_build (&hash, NULL,
+				"(data (flags raw) (value %m))",
+				mpi);
+	  gcry_mpi_release (mpi);
+	}
+	  
+    }
+  
   *r_hash = hash;
   return rc;   
 }
@@ -115,7 +136,8 @@ agent_pksign_do (CTRL ctrl, const char *desc_text,
       rc = do_encode_md (ctrl->digest.value,
                          ctrl->digest.valuelen,
                          ctrl->digest.algo,
-                         &s_hash);
+                         &s_hash,
+			 ctrl->digest.raw_value);
       if (rc)
         goto leave;
 
@@ -143,8 +165,7 @@ agent_pksign_do (CTRL ctrl, const char *desc_text,
 
  leave:
 
-  if (! rc)
-    *signature_sexp = s_sig;
+  *signature_sexp = s_sig;
 
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
