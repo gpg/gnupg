@@ -268,14 +268,13 @@ Same as --list-keys, but the signatures are listed too.
 For each signature listed, there are several flags in between the
 "sig" tag and keyid.  These flags give additional information about
 each signature.  From left to right, they are the numbers 1-3 for
-certificate check level (see --default-cert-check-level), "L" for a
-local or non-exportable signature (see --lsign-key), "R" for a
-nonRevocable signature (see --nrsign-key), "P" for a signature that
-contains a policy URL (see --cert-policy-url), "N" for a signature
-that contains a notation (see --cert-notation), "X" for an eXpired
-signature (see --ask-cert-expire), and the numbers 1-9 or "T" for 10
-and above to indicate trust signature levels (see the --edit-key
-command "tsign").
+certificate check level (see --ask-cert-level), "L" for a local or
+non-exportable signature (see --lsign-key), "R" for a nonRevocable
+signature (see --nrsign-key), "P" for a signature that contains a
+policy URL (see --cert-policy-url), "N" for a signature that contains
+a notation (see --cert-notation), "X" for an eXpired signature (see
+--ask-cert-expire), and the numbers 1-9 or "T" for 10 and above to
+indicate trust signature levels (see the --edit-key command "tsign").
 </para></listitem></varlistentry>
 
 
@@ -806,6 +805,19 @@ Write output to &ParmFile;.
 
 
 <varlistentry>
+<term>--max-output &ParmN;</term>
+<listitem><para>
+This option set a limit on the number of bytes that will be generated
+when processing a file.  Since OpenPGP supports various levels of
+compression, it is possible that the plaintext of a given message may
+be significantly larger than the original OpenPGP message.  While
+GnuPG works properly with such messages, there is often a desire to
+set a maximum file size that will be generated before processing is
+forced to stop by the OS limits.  Defaults to 0, which means "no
+limit".
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--mangle-dos-filenames</term>
 <term>--no-mangle-dos-filenames</term>
 <listitem><para>
@@ -1006,11 +1018,24 @@ Assume "yes" on most questions.
 <varlistentry>
 <term>--no</term>
 <listitem><para>
- Assume "no" on most questions.
+Assume "no" on most questions.
 </para></listitem></varlistentry>
 
+
 <varlistentry>
-<term>--default-cert-check-level &ParmN;</term>
+<term>--ask-cert-level</term>
+<term>--no-ask-cert-level</term>
+<listitem><para>
+When making a key signature, prompt for a certification level.  If
+this option is not specified, the certification level used is set via
+--default-cert-level.  See --default-cert-level for information on the
+specific levels and how they are used. --no-ask-cert-level disables
+this option.  This option defaults to yes.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--default-cert-level &ParmN;</term>
 <listitem><para>
 The default to use for the check level when signing a key.
 </para><para>
@@ -1038,9 +1063,8 @@ Note that the examples given above for levels 2 and 3 are just that:
 examples.  In the end, it is up to you to decide just what "casual"
 and "extensive" mean to you.
 </para><para>
-This option defaults to 0.
+This option defaults to 0 (no particular claim).
 </para></listitem></varlistentry>
-
 
 
 <varlistentry>

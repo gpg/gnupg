@@ -1,5 +1,8 @@
 2004-02-25  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpg.sgml: Document --ask-cert-level, --max-output, and
+	--default-cert-level.
+
 	* gpg.sgml: Document keyserver-option http-proxy, import-option
 	merge-only, remove old honor-http-proxy, --merge-only, and
 	--emulate-md-encode-bug.  Document COLUMNS and LINES.
