@@ -1,4 +1,12 @@
 
+    * make --add-key work (to add an ElGamal key to a DSA key).
+
+    * add readline support. Must enhance libreadline - Anyone?
+
+    * Burn the buffers used by fopen(), or use read(2).
+
+    * enable a SIGSEGV handler while using zlib functions
+
     * improve iobuf by reading more than one byte at once,
       this shoud espceially done for the buffer in the chain.
       Change the buffering to a mbuf like scheme? Need it for PSST anyway.
@@ -7,11 +15,6 @@
     * add checking of armor trailers
     * remove all "Fixmes"
 
-    * enable a SIGSEGV handler while using zlib functions
-
-    * key generation for dsa and subpacket support.
-
-    * Burn the buffers used by fopen(), or use read(2).
 
     * bug: g10/trustdb.c#build_sigrecs called to often by do_list_path
       and remove the bad kludge. Maybe we should put all sigs into the trustdb
@@ -38,13 +41,9 @@
       flag that we may have a cached signature for this (and use the address
       of PKC to lookup the hash).
 
-    * change the misleading usage of public key certificate to public key data
-      or something like this.
-
-    * fix the problems with "\v" in gettext.  Add nice formatting stuff to
-      argparse.c
+    * change the misleading usage of "public key certificate" to
+      "public key data" or something like this.
 
     * replace getkey.c#enum_secret_keys
 
-    * add readline support (Must enhance libreadline)
 

@@ -1,16 +1,27 @@
 Noteworthy changes in version 0.2.18
 ------------------------------------
 
-    * splitted cipher/random.c, add new option "--disable-dev-random"
+    * Splitted cipher/random.c, add new option "--disable-dev-random"
       to configure to support the development of a random source for
       other systems. Prepared sourcefiles rand-unix.c, rand-w32.c
       and rand-dummy.c (which is used to allow compilation on systems
       without a random source).
 
-    * fixed a small bug in the key generation (it was possible that 48 bits
+    * Fixed a small bug in the key generation (it was possible that 48 bits
       of a key were not taken from the random pool)
 
-    * Add key generation for DSA (signature only)
+    * Add key generation for DSA and v4 signatures.
+
+    * Add a function trap_unaligned(), so that a SIGBUS is issued on
+      Alphas and not the slow emulation code is used. And success: rmd160
+      raised a SIGBUS.
+
+    * Enhanced the formatting facility of argparse and changed the use of
+      \r,\v to @ because gettext does not like it.
+
+    * New option "--compress-algo 1" to allow the creation of compressed
+      messages which are readable by PGP and "--print-md" (gpgm) to make
+      speed measurement easier.
 
 
 Noteworthy changes in version 0.2.17

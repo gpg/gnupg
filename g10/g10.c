@@ -18,12 +18,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/****************
- * We use cpp to generate the source g10maint.c (IS_G10MAINT) from this
- * source; the main difference is, that g10maint can only work with public
- * keys and does not need to lock memory or run suid.
- */
-
 #include <config.h>
 #include <errno.h>
 #include <stdio.h>
@@ -54,11 +48,11 @@
 
 static ARGPARSE_OPTS opts[] = {
 
-    { 300, NULL, 0, N_("\vCommands:\n ") },
+    { 300, NULL, 0, N_("@Commands:\n ") },
 
   #ifdef IS_G10
-    { 's', "sign",      0, N_("make a signature")},
-    { 539, "clearsign", 0, N_("make a clear text signature") },
+    { 's', "sign",      0, N_("|[file]|make a signature")},
+    { 539, "clearsign", 0, N_("|[file]|make a clear text signature") },
     { 'b', "detach-sign", 0, N_("make a detached signature")},
     { 'e', "encrypt",   0, N_("encrypt data")},
     { 'c', "symmetric", 0, N_("encryption only with symmetric cipher")},
@@ -85,18 +79,19 @@ static ARGPARSE_OPTS opts[] = {
   #ifdef IS_G10MAINT
     { 546, "dearmor", 0, N_("De-Armor a file or stdin") },
     { 547, "enarmor", 0, N_("En-Armor a file or stdin") },
+    { 555, "print-md" , 0, N_("|algo [files]|print message digests")},
     { 516, "print-mds" , 0, N_("print all message digests")},
-    { 513, "gen-prime" , 0, "\r" },
-    { 548, "gen-random" , 0, "\r" },
+    { 513, "gen-prime" , 0, "@" },
+    { 548, "gen-random" , 0, "@" },
   #endif
 
-    { 301, NULL, 0, N_("\v\nOptions:\n ") },
+    { 301, NULL, 0, N_("@\nOptions:\n ") },
 
   #ifdef IS_G10
     { 'a', "armor",     0, N_("create ascii armored output")},
     { 'u', "local-user",2, N_("use this user-id to sign or decrypt")},
     { 'r', "remote-user", 2, N_("use this user-id for encryption")},
-    { 'z', NULL,        1, N_("set compress level (0 disables)") },
+    { 'z', NULL,        1, N_("|N|set compress level N (0 disables)") },
     { 't', "textmode",  0, N_("use canonical text mode")},
   #endif
     { 'o', "output",    2, N_("use as output file")},
@@ -111,22 +106,24 @@ static ARGPARSE_OPTS opts[] = {
 
     { 510, "debug"     ,4|16, N_("set debugging flags")},
     { 511, "debug-all" ,0, N_("enable full debugging")},
-    { 512, "status-fd" ,1, N_("write status info to this fd") },
+    { 512, "status-fd" ,1, N_("|FD|write status info to this FD") },
     { 534, "no-comment", 0,   N_("do not write comment packets")},
     { 535, "completes-needed", 1, N_("(default is 1)")},
     { 536, "marginals-needed", 1, N_("(default is 3)")},
   #ifdef IS_G10
-    { 527, "cipher-algo", 2 , N_("select default cipher algorithm")},
-    { 528, "pubkey-algo", 2 , N_("select default public key algorithm")},
-    { 529, "digest-algo", 2 , N_("select default message digest algorithm")},
+    { 527, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
+    { 528, "pubkey-algo", 2 , N_("|NAME|use public key algorithm NAME")},
+    { 529, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
+    { 556, "compress-algo", 1 , N_("|N|use compress algorithm N")},
   #else /* some dummies */
-    { 527, "cipher-algo", 2 , "\r"},
-    { 528, "pubkey-algo", 2 , "\r"},
-    { 529, "digest-algo", 2 , "\r"},
+    { 527, "cipher-algo", 2 , "@"},
+    { 528, "pubkey-algo", 2 , "@"},
+    { 529, "digest-algo", 2 , "@"},
+    { 556, "compress-algo", 1 , "@"},
   #endif
 
   #ifdef IS_G10
-    { 302, NULL, 0, N_("\v\nExamples:\n\n"
+    { 302, NULL, 0, N_("@\nExamples:\n\n"
     " -se -r Bob [file]          sign and encrypt for user Bob\n"
     " -sat [file]                make a clear text signature\n"
     " -sb  [file]                make a detached signature\n"
@@ -136,32 +133,32 @@ static ARGPARSE_OPTS opts[] = {
 
   /* hidden options */
   #ifdef IS_G10MAINT
-    { 514, "test"      , 0, "\r" },
-    { 531, "list-trustdb",0 , "\r"},
-    { 533, "list-trust-path",0, "\r"},
+    { 514, "test"      , 0, "@" },
+    { 531, "list-trustdb",0 , "@"},
+    { 533, "list-trust-path",0, "@"},
   #endif
   #ifdef IS_G10
-    { 'k', NULL,        0, "\r"},
-    { 504, "delete-secret-key",0, "\r" },
-    { 524, "edit-sig"  ,0, "\r"}, /* alias for edit-key */
-    { 523, "passphrase-fd",1, "\r" },
+    { 'k', NULL,        0, "@"},
+    { 504, "delete-secret-key",0, "@" },
+    { 524, "edit-sig"  ,0, "@"}, /* alias for edit-key */
+    { 523, "passphrase-fd",1, "@" },
   #endif
-    { 532, "quick-random", 0, "\r"},
-    { 526, "no-verbose", 0, "\r"},
-    { 538, "trustdb-name", 2, "\r" },
-    { 540, "no-secmem-warning", 0, "\r" }, /* used only by regression tests */
-    { 519, "no-armor",   0, "\r"},
-    { 520, "no-default-keyring", 0, "\r" },
-    { 522, "no-greeting", 0, "\r" },
-    { 541, "no-operation", 0, "\r" },      /* used by regression tests */
-    { 543, "no-options", 0, "\r" }, /* shortcut for --options /dev/null */
-    { 544, "homedir", 2, "\r" },   /* defaults to "~/.gnupg" */
-    { 545, "no-batch", 0, "\r" },
-    { 549, "with-colons", 0, "\r"},
-    { 551, "list-key", 0, "\r" }, /* alias */
-    { 552, "list-sig", 0, "\r" }, /* alias */
-    { 508, "check-sig",0, "\r" }, /* alias */
-    { 553, "skip-verify",0, "\r" },
+    { 532, "quick-random", 0, "@"},
+    { 526, "no-verbose", 0, "@"},
+    { 538, "trustdb-name", 2, "@" },
+    { 540, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
+    { 519, "no-armor",   0, "@"},
+    { 520, "no-default-keyring", 0, "@" },
+    { 522, "no-greeting", 0, "@" },
+    { 541, "no-operation", 0, "@" },      /* used by regression tests */
+    { 543, "no-options", 0, "@" }, /* shortcut for --options /dev/null */
+    { 544, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
+    { 545, "no-batch", 0, "@" },
+    { 549, "with-colons", 0, "@"},
+    { 551, "list-key", 0, "@" }, /* alias */
+    { 552, "list-sig", 0, "@" }, /* alias */
+    { 508, "check-sig",0, "@" }, /* alias */
+    { 553, "skip-verify",0, "@" },
 
 {0} };
 
@@ -173,7 +170,7 @@ enum cmd_values { aNull = 0,
     aSignKey, aClearsign, aListPackets, aEditSig, aDeleteKey, aDeleteSecretKey,
     aKMode, aKModeC, aChangePass, aImport, aVerify, aDecrypt, aListKeys,
     aListSigs, aKeyadd,
-    aExport, aCheckKeys, aGenRevoke, aPrimegen, aPrintMDs,
+    aExport, aCheckKeys, aGenRevoke, aPrimegen, aPrintMD, aPrintMDs,
     aListTrustDB, aListTrustPath, aDeArmor, aEnArmor, aGenRandom, aTest,
 aNOP };
 
@@ -184,7 +181,7 @@ static void set_cmd( enum cmd_values *ret_cmd,
 			enum cmd_values new_cmd );
 #ifdef IS_G10MAINT
 static void print_hex( byte *p, size_t n );
-static void print_mds( const char *fname );
+static void print_mds( const char *fname, int algo );
 static void do_test(int);
 #endif
 
@@ -354,8 +351,10 @@ check_opts(void)
 	log_error(_("selected cipher algorithm is invalid\n"));
     if( !opt.def_pubkey_algo || check_pubkey_algo(opt.def_pubkey_algo) )
 	log_error(_("selected pubkey algorithm is invalid\n"));
-    if( !opt.def_digest_algo || check_digest_algo(opt.def_digest_algo) )
+    if( opt.def_digest_algo && check_digest_algo(opt.def_digest_algo) )
 	log_error(_("selected digest algorithm is invalid\n"));
+    if( opt.def_compress_algo < 1 || opt.def_compress_algo > 2 )
+	log_error(_("compress algorithm must be in range %d..%d\n"), 1, 2);
     if( opt.completes_needed < 1 )
 	log_error(_("completes-needed must be greater than 0\n"));
     if( opt.marginals_needed < 2 )
@@ -389,6 +388,7 @@ main( int argc, char **argv )
     enum cmd_values cmd = 0;
     const char *trustdb_name = NULL;
 
+    trap_unaligned();
   #ifdef IS_G10MAINT
     secmem_init( 0 );	   /* disable use of secmem */
     log_set_name("gpgm");
@@ -403,9 +403,11 @@ main( int argc, char **argv )
   #endif
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
-    opt.def_cipher_algo = CIPHER_ALGO_BLOWFISH;
-    opt.def_pubkey_algo = PUBKEY_ALGO_ELGAMAL;
-    opt.def_digest_algo = DIGEST_ALGO_RMD160;
+    /* fixme: set the next two to zero and decide where used */
+    opt.def_cipher_algo = DEFAULT_CIPHER_ALGO;
+    opt.def_pubkey_algo = DEFAULT_PUBKEY_ALGO;
+    opt.def_digest_algo = 0;
+    opt.def_compress_algo = 2;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.homedir = getenv("GNUPGHOME");
@@ -531,6 +533,7 @@ main( int argc, char **argv )
 	  case 546: set_cmd( &cmd, aDeArmor); break;
 	  case 547: set_cmd( &cmd, aEnArmor); break;
 	  case 548: set_cmd( &cmd, aGenRandom); break;
+	  case 555: set_cmd( &cmd, aPrintMD); break;
 	#endif /* IS_G10MAINT */
 
 	  case 'o': opt.outfile = pargs.r.ret_str; break;
@@ -576,6 +579,7 @@ main( int argc, char **argv )
 	  case 552: set_cmd( &cmd, aListSigs); break;
 	  case 553: opt.skip_verify=1; break;
 	  case 554: set_cmd( &cmd, aKeyadd); break;
+	  case 556: opt.def_compress_algo = pargs.r.ret_int; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -656,6 +660,7 @@ main( int argc, char **argv )
 
     switch( cmd ) {
       case aPrimegen:
+      case aPrintMD:
       case aPrintMDs:
       case aGenRandom:
       case aDeArmor:
@@ -919,12 +924,32 @@ main( int argc, char **argv )
 	}
 	break;
 
+      case aPrintMD:
+	if( argc < 1)
+	    wrong_args("--print-md algo [file]");
+	else {
+	    int algo = string_to_digest_algo(*argv);
+
+	    if( !algo )
+		log_error(_("invalid hash algorithm '%s'\n"), *argv );
+	    else {
+		argc--; argv++;
+		if( !argc )
+		    print_mds(NULL, algo);
+		else {
+		    for(; argc; argc--, argv++ )
+			print_mds(*argv, algo);
+		}
+	    }
+	}
+	break;
+
       case aPrintMDs:
 	if( !argc )
-	    print_mds(NULL);
+	    print_mds(NULL,0);
 	else {
 	    for(; argc; argc--, argv++ )
-		print_mds(*argv);
+		print_mds(*argv,0);
 	}
 	break;
 
@@ -1002,69 +1027,94 @@ print_hex( byte *p, size_t n )
 
     if( n == 20 ) {
 	for(i=0; i < n ; i++, i++, p += 2 ) {
+	    if( i )
+		putchar(' ');
 	    if( i == 10 )
 		putchar(' ');
-	    printf(" %02X%02X", *p, p[1] );
+	    printf("%02X%02X", *p, p[1] );
 	}
     }
     else if( n == 24 ) {
 	for(i=0; i < n ; i += 4, p += 4 ) {
+	    if( i )
+		putchar(' ');
 	    if( i == 12 )
 		putchar(' ');
-	    printf(" %02X%02X%02X%02X", *p, p[1], p[2], p[3] );
+	    printf("%02X%02X%02X%02X", *p, p[1], p[2], p[3] );
 	}
     }
     else {
 	for(i=0; i < n ; i++, p++ ) {
+	    if( i )
+		putchar(' ');
 	    if( i && !(i%8) )
 		putchar(' ');
-	    printf(" %02X", *p );
+	    printf("%02X", *p );
 	}
     }
 }
 
 static void
-print_mds( const char *fname )
+print_mds( const char *fname, int algo )
 {
     FILE *fp;
     char buf[1024];
     size_t n;
     MD_HANDLE md;
+    char *pname;
 
     if( !fname ) {
 	fp = stdin;
-	fname = "[stdin]";
+	pname = m_strdup("[stdin]: ");
     }
-    else
+    else {
+	pname = m_alloc(strlen(fname)+3);
+	strcpy(stpcpy(pname,fname),": ");
 	fp = fopen( fname, "rb" );
+    }
     if( !fp ) {
-	log_error("%s: %s\n", fname, strerror(errno) );
+	log_error("%s%s\n", pname, strerror(errno) );
+	m_free(pname);
 	return;
     }
 
-    md = md_open( DIGEST_ALGO_MD5, 0 );
-    md_enable( md, DIGEST_ALGO_SHA1 );
-    md_enable( md, DIGEST_ALGO_RMD160 );
-  #ifdef WITH_TIGER_HASH
-    md_enable( md, DIGEST_ALGO_TIGER );
-  #endif
+    md = md_open( 0, 0 );
+    if( algo )
+	md_enable( md, algo );
+    else {
+	md_enable( md, DIGEST_ALGO_MD5 );
+	md_enable( md, DIGEST_ALGO_SHA1 );
+	md_enable( md, DIGEST_ALGO_RMD160 );
+      #ifdef WITH_TIGER_HASH
+	md_enable( md, DIGEST_ALGO_TIGER );
+      #endif
+    }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
 	md_write( md, buf, n );
     if( ferror(fp) )
-	log_error("%s: %s\n", fname, strerror(errno) );
+	log_error("%s%s\n", pname, strerror(errno) );
     else {
 	md_final(md);
-	printf(  "%s:    MD5 =", fname ); print_hex(md_read(md, DIGEST_ALGO_MD5), 16 );
-	printf("\n%s:   SHA1 =", fname ); print_hex(md_read(md, DIGEST_ALGO_SHA1), 20 );
-	printf("\n%s: RMD160 =", fname ); print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
-      #ifdef WITH_TIGER_HASH
-	printf("\n%s:  TIGER =", fname ); print_hex(md_read(md, DIGEST_ALGO_TIGER), 24 );
-      #endif
+	if( algo ) {
+	    if( fname )
+		fputs( pname, stdout );
+	    print_hex(md_read(md, algo), md_digest_length(algo) );
+	}
+	else {
+	    printf(  "%s   MD5 = ", fname?pname:"" );
+			    print_hex(md_read(md, DIGEST_ALGO_MD5), 16 );
+	    printf("\n%s  SHA1 = ", fname?pname:""  );
+			    print_hex(md_read(md, DIGEST_ALGO_SHA1), 20 );
+	    printf("\n%sRMD160 = ", fname?pname:""  );
+			    print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
+	  #ifdef WITH_TIGER_HASH
+	    printf("\n%s TIGER = ", fname?pname:""  );
+			    print_hex(md_read(md, DIGEST_ALGO_TIGER), 24 );
+	  #endif
+	}
 	putchar('\n');
     }
-
-
     md_close(md);
 
     if( fp != stdin )

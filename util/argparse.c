@@ -521,6 +521,35 @@ set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s)
     }
 }
 
+
+static size_t
+long_opt_strlen( ARGPARSE_OPTS *o )
+{
+    size_t n = strlen(o->long_opt);
+
+    if( o->description && *o->description == '|' ) {
+	const char *s;
+
+	s=o->description+1;
+	if( *s != '=' )
+	    n++;
+	for(; *s && *s != '|'; s++ )
+	    n++;
+    }
+    return n;
+}
+
+/****************
+ * Print formatted help. The description string has some special
+ * meanings:
+ *  - A description string which is "@" suppresses help output for
+ *    this option
+ *  - a description,ine which starts with a '@' and is followed by
+ *    any other characters is printed as is; this may be used for examples
+ *    ans such.
+ *  - A description which starts with a '|' outputs the string between this
+ *    bar and the next one as arguments of the long option.
+ */
 static void
 show_help( ARGPARSE_OPTS *opts, unsigned flags )
 {
@@ -535,19 +564,19 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 	/* get max. length of long options */
 	for(i=indent=0; opts[i].short_opt; i++ ) {
 	    if( opts[i].long_opt )
-		if( !opts[i].description || *opts[i].description != '\v' )
-		    if( (j=strlen(opts[i].long_opt)) > indent && j < 35 )
+		if( !opts[i].description || *opts[i].description != '@' )
+		    if( (j=long_opt_strlen(opts+i)) > indent && j < 35 )
 			 indent = j;
 	}
 	/* example: " -v, --verbose   Viele Sachen ausgeben" */
 	indent += 10;
-	if( *opts[0].description != '\v' )
+	if( *opts[0].description != '@' )
 	    puts("Options:");
 	for(i=0; opts[i].short_opt; i++ ) {
 	    s = _( opts[i].description );
-	    if( s && *s== '\r' ) /* hide this line */
+	    if( s && *s== '@' && !s[1] ) /* hide this line */
 		continue;
-	    if( s && *s == '\v' ) { /* unindented comment only line */
+	    if( s && *s == '@' ) { /* unindented comment only line */
 		for(s++; *s; s++ ) {
 		    if( *s == '\n' ) {
 			if( s[1] )
@@ -560,17 +589,45 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 		continue;
 	    }
 
-	    if( opts[i].short_opt < 256 )
+	    j = 3;
+	    if( opts[i].short_opt < 256 ) {
 		printf(" -%c", opts[i].short_opt );
+		if( !opts[i].long_opt ) {
+		    if(s && *s == '|' ) {
+			putchar(' '); j++;
+			for(s++ ; *s && *s != '|'; s++, j++ )
+			    putchar(*s);
+			if( *s )
+			    s++;
+		    }
+		}
+	    }
 	    else
 		fputs("   ", stdout);
-	    j = 3;
-	    if( opts[i].long_opt )
-		j += printf("%c --%s   ", opts[i].short_opt < 256?',':' ',
-					  opts[i].long_opt );
+	    if( opts[i].long_opt ) {
+		j += printf("%c --%s", opts[i].short_opt < 256?',':' ',
+				       opts[i].long_opt );
+		if(s && *s == '|' ) {
+		    if( *++s != '=' ) {
+			putchar(' ');
+			j++;
+		    }
+		    for( ; *s && *s != '|'; s++, j++ )
+			putchar(*s);
+		    if( *s )
+			s++;
+		}
+		fputs("   ", stdout);
+		j += 3;
+	    }
 	    for(;j < indent; j++ )
 		putchar(' ');
 	    if( s ) {
+		if( *s && j > indent ) {
+		    putchar('\n');
+		    for(j=0;j < indent; j++ )
+			putchar(' ');
+		}
 		for(; *s; s++ ) {
 		    if( *s == '\n' ) {
 			if( s[1] ) {

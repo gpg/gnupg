@@ -1,3 +1,24 @@
+Fri May 15 17:57:23 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* sign.c (hash_for): New and used in all places here.
+	* main.h (DEFAULT_): new macros.
+	* g10.c  (opt.def_digest_algo): Now set to 0
+
+	* compress.c (init_compress): Add support for algo 1
+	* options.h (def_compress_algo): New
+	* g10.c (main): New option --compress-algo
+
+Fri May 15 13:23:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (print_mds): New feature to print only one hash,
+	chnaged formatting.
+
+Thu May 14 15:36:24 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* misc.c (trap_unaligned) [__alpha__]: New
+	* g10.c (trap_unaligned): Add call to this to track down SIGBUS
+	on Alphas (to avoid the slow emulation code).
+
 Wed May 13 11:48:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* build-packet.c (do_signature): Support for v4 pakets.

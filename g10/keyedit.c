@@ -706,7 +706,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 	}
     }
     md = md_open( digest_algo, 0 );
-    md_start_debug( md, "make" );
+    /*md_start_debug( md, "make" );*/
 
     /* hash the public key certificate and the user id */
     hash_public_cert( md, pkc );

@@ -22,8 +22,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined(__linux__) && defined(__alpha__)
+  #include <asm/sysinfo.h>
+  #include <asm/unistd.h>
+#endif
 #include "util.h"
 #include "main.h"
+
+
+
+#if defined(__linux__) && defined(__alpha__)
+#warning using trap_unaligned
+static int
+setsysinfo(unsigned long op, void *buffer, unsigned long size,
+		     int *start, void *arg, unsigned long flag)
+{
+    return syscall(__NR_osf_setsysinfo, op, buffer, size, start, arg, flag);
+}
+
+void
+trap_unaligned(void)
+{
+    unsigned int buf[2];
+
+    buf[0] = SSIN_UACPROC;
+    buf[1] = UAC_SIGBUS | UAC_NOPRINT;
+    setsysinfo(SSI_NVPAIRS, buf, 1, 0, 0, 0);
+}
+#else
+void
+trap_unaligned(void)
+{  /* dummy */
+}
+#endif
 
 
 u16

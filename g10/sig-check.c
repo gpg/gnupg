@@ -345,7 +345,7 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 
 	    keyid_from_pkc( pkc, keyid );
 	    md = md_open( algo, 0 );
-	    md_start_debug(md, "check");
+	    /*md_start_debug(md, "check");*/
 	    hash_public_cert( md, pkc );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {

@@ -186,7 +186,19 @@ transform( RMD160_CONTEXT *hd, byte *data )
       }
     }
   #else
-    u32 *x = (u32*)data;
+   #if 0
+    u32 *x =(u32*)data;
+   #else
+    /* this version is better because it is always aligned;
+     * The performance penalty on a 586-100 is about 6% which
+     * is acceptable - because the data is more local it might
+     * also be possible that this is faster on some machines.
+     * This function (when compiled with -02 on gcc 2.7.2)
+     * executes on a 586-100 (39.73 bogomips) at about 1900kb/sec;
+     * [measured with a 4MB data and "gpgm --print-md rmd160"] */
+    u32 x[16];
+    memcpy( x, data, 64 );
+   #endif
   #endif
 
 
@@ -396,7 +408,6 @@ transform( RMD160_CONTEXT *hd, byte *data )
 }
 
 
-
 /* Update the message digest with the contents
  * of INBUF with length INLEN.
  */
@@ -428,7 +439,6 @@ rmd160_write( RMD160_CONTEXT *hd, byte *inbuf, size_t inlen)
     for( ; inlen && hd->count < 64; inlen-- )
 	hd->buf[hd->count++] = *inbuf++;
 }
-
 
 /****************
  * Apply the rmd160 transform function on the buffer which must have

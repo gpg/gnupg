@@ -53,7 +53,7 @@ typedef struct {
     unsigned inbufsize;
     byte *outbuf;
     unsigned outbufsize;
-    int pgpmode;
+    int algo;	 /* compress algo */
 } compress_filter_context_t;
 
 

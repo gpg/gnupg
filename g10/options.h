@@ -39,13 +39,12 @@ struct {
     int def_cipher_algo;
     int def_pubkey_algo;
     int def_digest_algo;
+    int def_compress_algo;
     int no_comment;
     int marginals_needed;
     int completes_needed;
     const char *homedir;
     int skip_verify;
-    int reserved14;
-    int reserved15;
 } opt;
 
 

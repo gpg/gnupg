@@ -94,19 +94,19 @@ msgstr "Widersprechende Kommandos\n"
 
 #: g10/g10.c:57
 msgid ""
-"\\vCommands:\n"
+"@Commands:\n"
 " "
 msgstr ""
-"\\vKommandos:\n"
+"@Kommandos:\n"
 " "
 
 #: g10/g10.c:92
 msgid ""
-"\\v\n"
+"@\n"
 "Options:\n"
 " "
 msgstr ""
-"\\v\n"
+"@\n"
 "Optionen:\n"
 " "
 
@@ -176,12 +176,12 @@ msgid "add this keyring to the list of keyrings"
 msgstr ""
 
 #: g10/g10.c:180
-msgid "make a signature"
-msgstr "Eine Signatur erzeugen"
+msgid "|filename|make a signature"
+msgstr "|dateiname|Eine Signatur erzeugen"
 
 #: g10/g10.c:61
-msgid "make a clear text signature"
-msgstr "Eine Klartext Signatur erzeugen"
+msgid "|filename|make a clear text signature"
+msgstr "|dateiname|Eine Klartext Signatur erzeugen"
 
 #: g10/g10.c:181
 msgid "use canonical text mode"
@@ -357,7 +357,7 @@ msgstr "Status Informationen auf diesen FD schreiben"
 
 #: g10/g10.c:124
 msgid ""
-"\\v\n"
+"@\n"
 "Examples:\n"
 "\n"
 " -se -r Bob [file]          sign and encrypt for user Bob\n"
@@ -366,7 +366,7 @@ msgid ""
 " -k   [userid]              show keys\n"
 " -kc  [userid]              show fingerprint\n"
 msgstr ""
-"\\v\n"
+"@\n"
 "Beispiele:\n"
 "\n"
 " -se -r Bob [file]          Signieren und verschlüsseln für Benutzer Bob\n"

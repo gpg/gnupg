@@ -40,7 +40,6 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
     int rc;
     int level;
 
-
     if( opt.compress >= 0 && opt.compress <= 9 )
 	level = opt.compress;
     else if( opt.compress == -1 )
@@ -52,7 +51,11 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
 	level = Z_DEFAULT_COMPRESSION;
     }
 
-    if( (rc = deflateInit( zs, level )) != Z_OK ) {
+
+    if( (rc = zfx->algo == 1? deflateInit2( zs, level, Z_DEFLATED,
+					    -13, 8, Z_DEFAULT_STRATEGY)
+			    : deflateInit( zs, level )
+			    ) != Z_OK ) {
 	log_fatal("zlib problem: %s\n", zs->msg? zs->msg :
 			       rc == Z_MEM_ERROR ? "out of core" :
 			       rc == Z_VERSION_ERROR ? "invalid lib version" :
@@ -104,8 +107,8 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
      * it forces zlib not to expect a zlib header.  This is a
      * undocumented feature Peter Gutmann told me about.
      */
-    if( (rc = zfx->pgpmode? inflateInit2( zs, -13)
-			  : inflateInit( zs )) != Z_OK ) {
+    if( (rc = zfx->algo == 1? inflateInit2( zs, -13)
+			    : inflateInit( zs )) != Z_OK ) {
 	log_fatal("zlib problem: %s\n", zs->msg? zs->msg :
 			       rc == Z_MEM_ERROR ? "out of core" :
 			       rc == Z_VERSION_ERROR ? "invalid lib version" :
@@ -187,9 +190,11 @@ compress_filter( void *opaque, int control,
 	    PACKET pkt;
 	    PKT_compressed cd;
 
+	    if( !zfx->algo )
+		zfx->algo = opt.def_compress_algo;
 	    memset( &cd, 0, sizeof cd );
 	    cd.len = 0;
-	    cd.algorithm = 2; /* zlib */
+	    cd.algorithm = zfx->algo;
 	    init_packet( &pkt );
 	    pkt.pkttype = PKT_COMPRESSED;
 	    pkt.pkt.compressed = &cd;
@@ -237,10 +242,9 @@ handle_compressed( PKT_compressed *cd,
     int rc;
 
     memset( &cfx, 0, sizeof cfx );
-    if( cd->algorithm == 1 )
-	cfx.pgpmode = 1;
-    else if( cd->algorithm != 2  )
+    if( cd->algorithm < 1 || cd->algorithm > 2	)
 	return G10ERR_COMPR_ALGO;
+    cfx.algo = cd->algorithm;
 
     iobuf_push_filter( cd->buf, compress_filter, &cfx );
     if( callback )

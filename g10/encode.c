@@ -90,7 +90,8 @@ encode_simple( const char *filename, int mode )
     if( mode ) {
 	s2k = m_alloc_clear( sizeof *s2k );
 	s2k->mode = 1;
-	s2k->hash_algo = opt.def_digest_algo;
+	s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
+					     : DEFAULT_DIGEST_ALGO;
 	cfx.dek = passphrase_to_dek( NULL, opt.def_cipher_algo, s2k, 2 );
 	if( !cfx.dek || !cfx.dek->keylen ) {
 	    rc = G10ERR_PASSPHRASE;

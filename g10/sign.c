@@ -61,7 +61,17 @@ complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
     return rc;
 }
 
-
+static int
+hash_for(int pubkey_algo )
+{
+    if( opt.def_digest_algo )
+	return opt.def_digest_algo;
+    if( pubkey_algo == PUBKEY_ALGO_DSA )
+	return DIGEST_ALGO_SHA1;
+    if( pubkey_algo == PUBKEY_ALGO_RSA )
+	return DIGEST_ALGO_MD5;
+    return DEFAULT_DIGEST_ALGO;
+}
 
 
 
@@ -148,7 +158,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* prepare to calculate the MD over the input */
     if( opt.textmode && !outfile )
 	iobuf_push_filter( inp, text_filter, &tfx );
-    mfx.md = md_open(opt.def_digest_algo, 0);
+    mfx.md = md_open(0, 0);
+
+    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
+	PKT_secret_cert *skc = skc_rover->skc;
+	md_enable(mfx.md, hash_for(skc->pubkey_algo));
+    }
+
     if( !multifile )
 	iobuf_push_filter( inp, md_filter, &mfx );
 
@@ -174,7 +190,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    skc = skc_rover->skc;
 	    ops = m_alloc_clear( sizeof *ops );
 	    ops->sig_class = opt.textmode && !outfile ? 0x01 : 0x00;
-	    ops->digest_algo = opt.def_digest_algo;
+	    ops->digest_algo = hash_for(skc->pubkey_algo);
 	    ops->pubkey_algo = skc->pubkey_algo;
 	    keyid_from_skc( skc, ops->keyid );
 	    ops->last = !skc_rover->next;
@@ -270,6 +286,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	sig = m_alloc_clear( sizeof *sig );
 	sig->version = skc->version;
 	keyid_from_skc( skc, sig->keyid );
+	sig->digest_algo = hash_for(skc->pubkey_algo);
 	sig->pubkey_algo = skc->pubkey_algo;
 	sig->timestamp = make_timestamp();
 	sig->sig_class = opt.textmode && !outfile? 0x01 : 0x00;
@@ -314,11 +331,11 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	md_final( md );
 
 	if( is_ELGAMAL(sig->pubkey_algo) )
-	    g10_elg_sign( skc, sig, md, opt.def_digest_algo );
+	    g10_elg_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
-	    g10_dsa_sign( skc, sig, md, opt.def_digest_algo );
+	    g10_dsa_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
 	else if( is_RSA(sig->pubkey_algo) )
-	    g10_rsa_sign( skc, sig, md, opt.def_digest_algo );
+	    g10_rsa_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
 	else
 	    BUG();
 
@@ -432,11 +449,14 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	goto leave;
     }
 
+    /* FIXME: This stuff is not correct if mutliplehash algos are used*/
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n" );
-    if( opt.def_digest_algo == DIGEST_ALGO_MD5 )
+    if( (opt.def_digest_algo?opt.def_digest_algo:DEFAULT_DIGEST_ALGO)
+			      == DIGEST_ALGO_MD5 )
 	iobuf_writestr(out, "\n" );
     else {
-	const char *s = digest_algo_to_string(opt.def_digest_algo);
+	const char *s = digest_algo_to_string(opt.def_digest_algo?
+				    opt.def_digest_algo:DEFAULT_DIGEST_ALGO);
 	assert(s);
 	iobuf_writestr(out, "Hash: " );
 	iobuf_writestr(out, s );
@@ -444,7 +464,12 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     }
 
 
-    textmd = md_open(opt.def_digest_algo, 0);
+    textmd = md_open(0, 0);
+    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
+	PKT_secret_cert *skc = skc_rover->skc;
+	md_enable(textmd, hash_for(skc->pubkey_algo));
+    }
+
     iobuf_push_filter( inp, text_filter, &tfx );
     rc = write_dash_escaped( inp, out, textmd );
     if( rc )
@@ -467,6 +492,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	sig = m_alloc_clear( sizeof *sig );
 	sig->version = skc->version;
 	keyid_from_skc( skc, sig->keyid );
+	sig->digest_algo = hash_for(skc->pubkey_algo);
 	sig->pubkey_algo = skc->pubkey_algo;
 	sig->timestamp = make_timestamp();
 	sig->sig_class = 0x01;
@@ -510,11 +536,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	md_final( md );
 
 	if( is_ELGAMAL(sig->pubkey_algo) )
-	    g10_elg_sign( skc, sig, md, opt.def_digest_algo );
+	    g10_elg_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
-	    g10_dsa_sign( skc, sig, md, opt.def_digest_algo );
+	    g10_dsa_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
 	else if( is_RSA(sig->pubkey_algo) )
-	    g10_rsa_sign( skc, sig, md, opt.def_digest_algo );
+	    g10_rsa_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
 	else
 	    BUG();
 

@@ -743,11 +743,6 @@ iobuf_read(IOBUF a, byte *buf, unsigned buflen )
 	return n;
     }
 
-    if( a->filter_eof ) {
-	if( DBG_IOBUF )
-	    log_debug("iobuf-%d.%d: filter eof in iobuf_read\n", a->no, a->subno );
-	return -1;
-    }
     n = 0;
     do {
 	for( ; n < buflen && a->d.start < a->d.len; n++ )

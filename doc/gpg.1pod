@@ -251,6 +251,13 @@ B<--digest-algo> I<name>
     program with the option B<--verbose> yields a list of
     supported algorithms.
 
+B<--compress-algo> I<number>
+    Use compress algorithm I<number>. Default is I<2> which is
+    RFC1950 compression; you may use I<1> to use the old zlib
+    version which is used by PGP. This is only used for
+    new messages. The default algorithm may give better
+    results because the window size is not limited to 8K.
+
 B<--passphrase-fd> I<n>
     Read the passphrase from file descriptor I<n>. If you use
     0 for I<n>, the passphrase will be read from stdin.  This
@@ -323,7 +330,7 @@ F<~/.gnupg/options>	    May contain options
 
 =head1 SEE ALSO
 
-gpgm(1)  gpgk(1)
+gpgm(1)  gpgd(1)
 
 
 =head1 WARNINGS
@@ -334,4 +341,10 @@ to protect your secret key.
 Keep in mind that, if this program is used over a network (telnet), it
 is B<very> easy to spy out your passphrase!
 
+=head1 BUGS
+
+On many systems this program should be installed as setuid(root); this
+is necessary to lock some pages of memory. If you get no warning message
+about insecure memory you have a nice OS kernel and you don't need to make
+it setuid.
 

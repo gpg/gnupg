@@ -30,6 +30,7 @@
 #include "ttyio.h"
 #include "cipher.h"
 #include "keydb.h"
+#include "main.h"
 
 static int pwfd = -1;
 
@@ -69,10 +70,11 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 	s2k = &help_s2k;
 	s2k->mode = 0;
 	/* this should be MD5 if cipher is IDEA, but because we do
-	 * not have IDEA, we use the default one, the the user
+	 * not have IDEA, we use the default one, the user
 	 * can select it from the commandline
 	 */
-	s2k->hash_algo = opt.def_digest_algo;
+	s2k->hash_algo = opt.def_digest_algo?opt.def_digest_algo
+					    :DEFAULT_DIGEST_ALGO;
     }
 
     if( keyid && !opt.batch ) {

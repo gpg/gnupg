@@ -177,12 +177,12 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
 	/* make a linked list of all packets */
 	switch( pkt->pkttype ) {
 	  case PKT_COMPRESSED:
-	    if( pkt->pkt.compressed->algorithm == 1 )
-		cfx->pgpmode = 1;
-	    else if( pkt->pkt.compressed->algorithm != 2  ){
+	    if( pkt->pkt.compressed->algorithm < 1
+		|| pkt->pkt.compressed->algorithm > 2 ) {
 		rc = G10ERR_COMPR_ALGO;
 		goto ready;
 	    }
+	    cfx->algo = pkt->pkt.compressed->algorithm;
 	    pkt->pkt.compressed->buf = NULL;
 	    iobuf_push_filter( a, compress_filter, cfx );
 	    free_packet( pkt );

@@ -27,6 +27,10 @@ gen-prime
 # With three arguments: same as above, but a third argument indicates
 #			that a generator should also be calculated.
 
+print-md algo
+# print the message digest of algorithm ALGO for stdin or all
+# given filenames
+
 print-mds
 # print all message digests of all give filenames
 
