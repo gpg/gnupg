@@ -466,12 +466,11 @@ in it - why?
     Good mail clients remove those extra dashes when displaying such a 
     message.      
 
-<Q> I have multiple signatures in a file and GnuPG says, the signatures are
-    bad.
+<Q> What is the thing with "can't handle multiple signatures"?
 
-    Due to different message formats GnuPG is not always able to split such a
-    file unambiguously into the it's parts.  The result is that GnuPG claims 
-    the signature(s) is bad.  
+    Due to different message formats GnuPG is not always able to split a
+    file with multiple signatures unambiguously into it's parts.  This 
+    error message informs you that there is something wrong with the input.
 
     The only way to have multiple signatures in a file is by using the 
     OpenPGP format with one-pass-signature packets (which is GnuPG's

@@ -1,3 +1,7 @@
+2000-10-17  Werner Koch  <wk@gnupg.org>
+
+	* configure.in: Disabled fopen64 checks for Solaris and HPUX.
+
 2000-10-13  Werner Koch  <wk@gnupg.org>
 
 	* configure.in: Append mpi/mpi-asm-defs.h to g10defs.h

@@ -4,7 +4,7 @@
   * Option to warn when a non MDC message is decrypted?
 
   * If there is no secure memory, allocate more memory for the secure
-     memory block or do it in all cases.
+    memory block or do it in all cases.
 
   * for detached signatures:  Allow to specify a filedescriptor (maybe
     we can use a generic way to specify filedescriptors - "-" is already

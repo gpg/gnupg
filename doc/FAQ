@@ -69,8 +69,7 @@ to be included here.
    6.4) Old versions of GnuPG can't verify ElGamal signatures
    6.5) When I use --clearsign, the plain text has sometimes extra dashes 
 	in it - why?
-   6.6) I have multiple signatures in a file and GnuPG says, the signatures are
-	bad.
+   6.6) What is the thing with "can't handle multiple signatures"?
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -492,12 +491,11 @@ in it - why?
     Good mail clients remove those extra dashes when displaying such a 
     message.      
 
-6.6) I have multiple signatures in a file and GnuPG says, the signatures are
-    bad.
+6.6) What is the thing with "can't handle multiple signatures"?
 
-    Due to different message formats GnuPG is not always able to split such a
-    file unambiguously into the it's parts.  The result is that GnuPG claims 
-    the signature(s) is bad.  
+    Due to different message formats GnuPG is not always able to split a
+    file with multiple signatures unambiguously into it's parts.  This 
+    error message informs you that there is something wrong with the input.
 
     The only way to have multiple signatures in a file is by using the 
     OpenPGP format with one-pass-signature packets (which is GnuPG's

@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-10-15 01:31+0000\n"
+"POT-Creation-Date: 2000-10-16 19:22+0200\n"
 "PO-Revision-Date: 2000-10-15 14:30+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -18,11 +18,11 @@ msgstr "Warnung: Sensible Daten könnten auf Platte ausgelagert werden.\n"
 
 # "  Um dies zu vermeiden, kann das Programm suid(root) installiert werden.\n"
 # "  Bitte wenden Sie sich hierzu an den Systemadministrator.\n"
-#: util/secmem.c:289
+#: util/secmem.c:295
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "Vorgang ist ohne sicheren Hauptspeicher nicht möglich\n"
 
-#: util/secmem.c:290
+#: util/secmem.c:296
 msgid "(you may have used the wrong program for this task)\n"
 msgstr ""
 "(möglicherweise haben Sie das falsche Programm für diese Aufgabe benutzt)\n"
@@ -870,14 +870,14 @@ msgstr "Auf geht's - Botschaft eintippen ...\n"
 msgid "can't open `%s'\n"
 msgstr "'%s' kann nicht geöffnet werden\n"
 
-#: g10/g10.c:1700
+#: g10/g10.c:1737
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
 "Das erste Zeichen eines \"notation\"-Namens muß ein Buchstabe oder\n"
 "ein Unterstrich sein\n"
 
-#: g10/g10.c:1706
+#: g10/g10.c:1743
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -885,12 +885,12 @@ msgstr ""
 "Ein \"notation\"-Name darf nur Buchstaben, Zahlen, Punkte oder Unterstriche "
 "enthalten und muß mit einem '=' enden\n"
 
-#: g10/g10.c:1712
+#: g10/g10.c:1749
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr ""
 "Punkte in einem \"notation\"-Namen müssen von anderen Zeichen umgeben sein\n"
 
-#: g10/g10.c:1720
+#: g10/g10.c:1757
 msgid "a notation value must not use any control characters\n"
 msgstr "Ein \"notation\"-Wert darf keine Kontrollzeichen verwenden\n"
 
@@ -2652,44 +2652,44 @@ msgstr "\"Notation\": "
 msgid "Policy: "
 msgstr "Richtlinie: "
 
-#: g10/mainproc.c:1113
+#: g10/mainproc.c:1121
 msgid "signature verification suppressed\n"
 msgstr "Unterschriften-Überprüfung unterdrückt\n"
 
 # Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
-#: g10/mainproc.c:1119
+#: g10/mainproc.c:1158
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Unterschrift vom %.*s, %s Schlüssel ID %08lX\n"
 
 #. just in case that we have no userid
-#: g10/mainproc.c:1145 g10/mainproc.c:1156
+#: g10/mainproc.c:1184 g10/mainproc.c:1195
 msgid "BAD signature from \""
 msgstr "FALSCHE Unterschrift von \""
 
-#: g10/mainproc.c:1146 g10/mainproc.c:1157
+#: g10/mainproc.c:1185 g10/mainproc.c:1196
 msgid "Good signature from \""
 msgstr "Korrekte Unterschrift von \""
 
-#: g10/mainproc.c:1148
+#: g10/mainproc.c:1187
 msgid "                aka \""
 msgstr "                    alias \""
 
-#: g10/mainproc.c:1204
+#: g10/mainproc.c:1243
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Unterschrift kann nicht geprüft werden: %s\n"
 
-#: g10/mainproc.c:1279
+#: g10/mainproc.c:1318
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "Einzelne Unterschrift der Klasse 0x%02x\n"
 
-#: g10/mainproc.c:1330
+#: g10/mainproc.c:1369
 msgid "old style (PGP 2.x) signature\n"
 msgstr "Unterschrift nach alter (PGP 2.x) Art\n"
 
-#: g10/mainproc.c:1335
+#: g10/mainproc.c:1374
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "ungültiges root-Paket in proc_tree() entdeckt\n"
 
@@ -3121,8 +3121,9 @@ msgstr "Schlüssel %08lX: Akzeptiert als vertrauenswürdiger Schlüssel.\n"
 #: g10/trustdb.c:546
 #, c-format
 msgid "key %08lX: no public key for trusted key - skipped\n"
-msgstr "Schlüssel %08lX: kein öffentlicher Schlüssel für den vertrauenswürdig
-en Schlüssel - übersprungen\n"
+msgstr ""
+"Schlüssel %08lX: kein öffentlicher Schlüssel für den vertrauenswürdig\ren "
+"Schlüssel - übersprungen\n"
 
 #: g10/trustdb.c:565
 #, c-format

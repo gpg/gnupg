@@ -1,11 +1,14 @@
+Noteworthy changes in version 1.0.4 (2000-10-17)
+------------------------------------------------
 
     * Fixed a serious bug which could lead to false signature verification
-      results when more than one cleartext signature is in the input.
+      results when more than one signature is fed to gpg.  This is the
+      primary reason for releasing this version.
 
     * New utility gpgv which is a stripped down version of gpg to
       be used to verify signatures against a list of trusted keys.
 
-    * Rijndael (AES) is now supported and listed as first preference.
+    * Rijndael (AES) is now supported and listed with top preference.
 
     * --with-colons now works with --print-md[s].
 
