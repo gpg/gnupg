@@ -21,7 +21,9 @@
 #ifndef GNUPG_SCD_APP_COMMON_H
 #define GNUPG_SCD_APP_COMMON_H
 
+#if GNUPG_MAJOR_VERSION != 1
 #include <ksba.h>
+#endif
 
 struct app_local_s;  /* Defined by all app-*.c.  */
 

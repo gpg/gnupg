@@ -172,7 +172,6 @@ get_cached_data (app_t app, int tag,
       if (c)
         {
           memcpy (c->data, p, len);
-          log_debug (" caching tag %04X\n", tag);
           c->length = len;
           c->tag = tag;
           c->next = app->app_local->cache;
