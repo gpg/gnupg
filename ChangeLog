@@ -1,3 +1,8 @@
+2003-02-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Add notes about disabled keys, trustdb tweaks, and
+	"revuid".
+
 2002-12-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Add note about convert-from-106 script.
