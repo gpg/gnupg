@@ -1,3 +1,8 @@
+Wed Oct  4 15:50:18 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * gpgv.sgml: New.
+        * Makefile.am: build it.
+
 Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
 
         * faq.raw: New.

@@ -272,6 +272,12 @@ case "${target}" in
         DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
         ;;
 
+    *-irix*)
+        NAME_OF_DEV_RANDOM="/dev/random"
+        NAME_OF_DEV_URANDOM="/dev/urandom"
+        DYNLINK_MOD_CFLAGS="-shared $CFLAGS_PIC"
+        ;;
+
     *)
         NAME_OF_DEV_RANDOM="/dev/random"
         NAME_OF_DEV_URANDOM="/dev/urandom"

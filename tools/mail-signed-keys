@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# FIXME: Add --dry-run,  use only valid email addreses, extract only given keys
+
 if [ -z "$1" -o -z "$2" ]; then
    echo "usage: mail-signed-keys keyring signedby" >&2
    exit 1
@@ -71,5 +73,18 @@ function myflush()
        uidcount=0
 }
 '
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -1,3 +1,9 @@
+Wed Oct  4 15:50:18 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * configure.in: Set DYNLINK_MOD_CFLAGS for Irix. It seems that Irix
+        needs the -shared flag.  In 1.1 we are going to use libtool, so this
+        module stuff will get redesigned anyway. Suggested by Jeff Long.
+
 Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
 
         * acinclude.m4 (GNUPG_CHECK_FAQPROG): New.

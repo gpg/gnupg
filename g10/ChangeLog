@@ -1,3 +1,12 @@
+Wed Oct  4 15:50:18 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * sign.c (hash_for): New arg to take packet version in account, changed
+        call callers.
+
+        * gpgv.c: New.
+        * Makefile.am: Rearranged source files so that gpgv can be build with
+        at least files as possible.
+
 Mon Sep 18 12:13:52 CEST 2000  Werner Koch  <wk@openit.de>
 
         * hkp.c (not_implemented): Print a notice for W32

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1e\n"
-"POT-Creation-Date: 2000-09-14 17:35+0200\n"
+"POT-Creation-Date: 2000-09-18 12:17+0200\n"
 "PO-Revision-Date: 2000-08-16 23:19+01:00\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <eo@li.org>\n"
@@ -2757,41 +2757,41 @@ msgstr "NOTO: æifrad-metodo %d ne trovita en preferoj\n"
 msgid "NOTE: secret key %08lX expired at %s\n"
 msgstr "NOTO: sekreta þlosilo %08lX eksvalidiøis je %s\n"
 
-#: g10/hkp.c:62
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s ...\n"
 msgstr "petas la þlosilon %08lX de %s ...\n"
 
-#: g10/hkp.c:75
+#: g10/hkp.c:85
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "ne povas akiri þlosilon de þlosilservilo: %s\n"
 
-#: g10/hkp.c:98 g10/hkp.c:136
+#: g10/hkp.c:109 g10/hkp.c:148
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "neniu þlosilservilo konata (uzu la opcion --keyserver)\n"
 
-#: g10/hkp.c:106
+#: g10/hkp.c:117
 #, c-format
 msgid "%s: not a valid key ID\n"
 msgstr "%s: ne valida þlosilidentigilo\n"
 
-#: g10/hkp.c:158
+#: g10/hkp.c:170
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "ne povas konektiøi al '%s': %s\n"
 
-#: g10/hkp.c:182
+#: g10/hkp.c:194
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "eraro dum sendo al '%s': %s\n"
 
-#: g10/hkp.c:194
+#: g10/hkp.c:206
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "sukceso dum sendo al '%s' (statuso=%u)\n"
 
-#: g10/hkp.c:197
+#: g10/hkp.c:209
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "malsukceso dum sendo al '%s': statuso=%u\n"

@@ -7,7 +7,7 @@ LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 #noinst_PROGRAMS = gpgd
-bin_PROGRAMS = gpg
+bin_PROGRAMS = gpg gpgv
 
 common_source =  \
 	      build-packet.c	\
@@ -15,57 +15,64 @@ common_source =  \
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
-	      keydb.h		\
-	      delkey.c		\
-	      pkclist.c 	\
-	      skclist.c 	\
 	      ringedit.c	\
+	      seskey.c		\
+	      keydb.h		\
 	      kbnode.c		\
 	      main.h		\
 	      mainproc.c	\
 	      armor.c		\
 	      mdfilter.c	\
 	      textfilter.c	\
-	      cipher.c		\
 	      misc.c		\
 	      options.h 	\
 	      openfile.c	\
 	      keyid.c		\
+	      packet.h		\
+	      parse-packet.c	\
+	      comment.c 	\
+	      status.c		\
+	      status.h		\
+	      plaintext.c	\
+	      sig-check.c	\
+	      signal.c		
+
+gpg_SOURCES  = g10.c		\
+	      $(common_source)	\
+	      pkclist.c 	\
+	      skclist.c 	\
+	      pubkey-enc.c	\
+	      passphrase.c	\
+	      seckey-cert.c	\
+	      encr-data.c	\
+	      cipher.c		\
+	      keylist.c 	\
+	      encode.c		\
+	      sign.c		\
+	      verify.c		\
+	      revoke.c		\
+	      decrypt.c 	\
+	      keyedit.c 	\
+	      dearmor.c 	\
+	      import.c		\
+	      export.c		\
+	      hkp.h		\
+	      hkp.c		\
 	      trustdb.c 	\
 	      trustdb.h 	\
 	      tdbdump.c 	\
 	      tdbio.c		\
 	      tdbio.h		\
-	      hkp.h		\
-	      hkp.c		\
-	      packet.h		\
-	      parse-packet.c	\
-	      passphrase.c	\
-	      pubkey-enc.c	\
-	      seckey-cert.c	\
-	      seskey.c		\
-	      import.c		\
-	      export.c		\
-	      comment.c 	\
-	      status.c		\
-	      status.h		\
-	      sign.c		\
-	      plaintext.c	\
-	      encr-data.c	\
-	      encode.c		\
-	      revoke.c		\
-	      keylist.c 	\
-	      sig-check.c	\
-	      signal.c		\
+	      delkey.c		\
+	      keygen.c          \
 	      helptext.c
 
-gpg_SOURCES  = g10.c		\
-	      $(common_source)	\
-	      verify.c		\
-	      decrypt.c 	\
-	      keyedit.c 	\
-	      dearmor.c 	\
-	      keygen.c
+gpgv_SOURCES = gpgv.c           \
+	      $(common_source)  \
+	      verify.c          
+
+
+
 
 #gpgd_SOURCES = gpgd.c \
 #	       ks-proto.h \

@@ -1,0 +1,227 @@
+<!-- gpgv.sgml - the man page for GnuPG
+    Copyright (C) 2000 Free Software Foundation, Inc.
+
+    This file is part of GnuPG.
+
+    GnuPG is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    GnuPG is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+-->
+<!-- This file should be processed by docbook-to-man to
+     create a manual page.  This program has currently the bug
+     not to remove leading white space. So this source file does
+     not look very pretty
+
+    FIXME: generated a file with entity (e.g. pathnames) from the
+    configure scripts and include it here
+-->
+
+
+<!DOCTYPE refentry PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!entity ParmDir "<parameter>directory</parameter>">
+<!entity ParmFile "<parameter>file</parameter>">
+<!entity OptParmFile "<optional>&ParmFile;</optional>">
+<!entity ParmFiles "<parameter>files</parameter>">
+<!entity OptParmFiles "<optional>&ParmFiles;</optional>">
+<!entity ParmNames "<parameter>names</parameter>">
+<!entity OptParmNames "<optional>&ParmNames;</optional>">
+<!entity ParmName  "<parameter>name</parameter>">
+<!entity OptParmName  "<optional>&ParmName;</optional>">
+<!entity ParmKeyIDs "<parameter>key IDs</parameter>">
+<!entity ParmN	    "<parameter>n</parameter>">
+<!entity ParmFlags  "<parameter>flags</parameter>">
+<!entity ParmString "<parameter>string</parameter>">
+<!entity ParmValue  "<parameter>value</parameter>">
+<!entity ParmNameValue	"<parameter>name=value</parameter>">
+]>
+
+<refentry id="gpgb">
+<refmeta>
+  <refentrytitle>gpgv</refentrytitle>
+  <manvolnum>1</manvolnum>
+  <refmiscinfo class="gnu">GNU Tools</refmiscinfo>
+</refmeta>
+<refnamediv>
+  <refname/gpg/
+  <refpurpose>signature verification tool</>
+</refnamediv>
+<refsynopsisdiv>
+  <synopsis>
+<command>gpg</>
+ <optional><parameter/options/</optional>
+ <optional><parameter/signed files/</optional>
+  </synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+    <title>DESCRIPTION</title>
+    <para>
+<command/gpgv/ is the OpenPGP signature checking tool.
+    </para>
+    <para>
+This program is a stripped down version of <command/gpg/ which is only
+able
+to check signatures.  It is somewhat smaller than the full blown
+<command/gpg/ and uses a different (and more simple way) to check that
+the public keys used to made the signature are trustworth.  There is
+no options files and only very few options are implemented.
+</para>
+<para>
+<command/gpgv/ assumes that all keys in the keyring are trustworty.
+It uses by default a keyring named <filename/trustedkeys.gpg/ which is
+assumed to be in the home directory as defined by GnuPG or set by an
+option or an environment variable.  An option may be used to specify
+another keyring or even multiple keyrings.
+</para>
+</refsect1>
+
+<refsect1>
+<title>OPTIONS</title>
+<para>
+<command/gpgv/ recognizes these options:
+</para>
+
+<variablelist>
+
+
+<varlistentry>
+<term>-v, --verbose</term>
+<listitem><para>
+Give more information during processing. If used
+twice, the input data is listed in detail.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>-q, --quiet</term>
+<listitem><para>
+Try to be as quiet as possible.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--keyring &ParmFile;</term>
+<listitem><para>
+Add &ParmFile to the list of keyrings.
+If &ParmFile begins with a tilde and a slash, these
+are replaced by the HOME directory. If the filename
+does not contain a slash, it is assumed to be in the
+home-directory ("~/.gnupg" if --homedir is not used).
+The filename may be prefixed with a scheme:</para>
+<para>"gnupg-ring:" is the default one.</para>
+<para>"gnupg-gdbm:" may be used for a GDBM ring. Note that GDBM
+is experimental and likely to be removed in future versions.</para>
+<para>It might make sense to use it together with --no-default-keyring.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--homedir &ParmDir;</term>
+<listitem><para>
+Set the name of the home directory to &ParmDir; If this
+option is not used it defaults to "~/.gnupg". It does
+not make sense to use this in a options file. This
+also overrides the environment variable "GNUPGHOME".
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--status-fd &ParmN;</term>
+<listitem><para>
+Write special status strings to the file descriptor &ParmN;.
+See the file DETAILS in the documentation for a listing of them.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--logger-fd &ParmN;</term>
+<listitem><para>
+Write log output to file descriptor &ParmN; and not to stderr.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--ignore-time-conflict</term>
+<listitem><para>
+GnuPG normally checks that the timestamps associated with keys and
+signatures have plausible values.  However, sometimes a signature seems to
+be older than the key due to clock problems.  This option makes these
+checks just a warning.
+</para></listitem></varlistentry>
+
+
+</variablelist>
+</refsect1>
+
+
+<refsect1>
+    <title>RETURN VALUE</title>
+    <para>
+The program returns 0 if everything was fine, 1 if at least
+one signature was bad, and other error codes for fatal errors.
+    </para>
+</refsect1>
+
+<refsect1>
+    <title>EXAMPLES</title>
+    <variablelist>
+
+<varlistentry>
+<term>gpgv <parameter/pgpfile/</term>
+<term>gpgv <parameter/sigfile/ &OptParmFiles;</term>
+<listitem><para>
+Verify the signature of the file. The second form
+is used for detached signatures, where <parameter/sigfile/ is the detached
+signature (either ASCII armored or binary) and &OptParmFiles are the signed
+data; if this is not given the name of the file holding the signed data is
+constructed by cutting off the extension (".asc", ".sig" or ".sign") from
+<parameter/sigfile/.
+</para></listitem></varlistentry>
+
+    </variablelist>
+</refsect1>
+
+
+<refsect1>
+    <title>ENVIRONMENT</title>
+
+    <variablelist>
+<varlistentry>
+<term>HOME</term>
+<listitem><para>Used to locate the default home directory.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>GNUPGHOME</term>
+<listitem><para>If set directory used instead of "~/.gnupg".</para></listitem>
+</varlistentry>
+
+    </variablelist>
+
+</refsect1>
+
+<refsect1>
+    <title>FILES</title>
+    <variablelist>
+
+<varlistentry>
+<term>~/.gnupg/trustedkeys.gpg</term>
+<listitem><para>The default keyring with the allowed keys</para></listitem>
+</varlistentry>
+
+    </variablelist>
+</refsect1>
+
+<!-- SEE ALSO  not yet needed-->
+
+</refentry>
+

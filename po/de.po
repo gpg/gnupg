@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-09-14 17:35+0200\n"
+"POT-Creation-Date: 2000-09-18 12:17+0200\n"
 "PO-Revision-Date: 2000-06-12  12:50+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -2804,41 +2804,41 @@ msgstr "Hinweis: Verfahren %d ist kein bevorzugtes Verschlüsselungsverfahren\n"
 msgid "NOTE: secret key %08lX expired at %s\n"
 msgstr "Hinweis: geheimer Schlüssel %08lX verfällt am %s\n"
 
-#: g10/hkp.c:62
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s ...\n"
 msgstr "Schlüssel %08lX von %s wird angefordert ...\n"
 
-#: g10/hkp.c:75
+#: g10/hkp.c:85
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "Schlüssel ist beim Schlüsselserver nicht erhältlich: %s\n"
 
-#: g10/hkp.c:98 g10/hkp.c:136
+#: g10/hkp.c:109 g10/hkp.c:148
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "Kein Schlüsselserver bekannt (Option --keyserver verwenden)\n"
 
-#: g10/hkp.c:106
+#: g10/hkp.c:117
 #, c-format
 msgid "%s: not a valid key ID\n"
 msgstr "%s: Dies ist keine gültige Schlüssel-ID\n"
 
-#: g10/hkp.c:158
+#: g10/hkp.c:170
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "Verbindung zu '%s' kann nicht aufgebaut werden: %s\n"
 
-#: g10/hkp.c:182
+#: g10/hkp.c:194
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "Fehler beim Senden an `%s': %s\n"
 
-#: g10/hkp.c:194
+#: g10/hkp.c:206
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "Senden an `%s' erfolgreich (status=%u)\n"
 
-#: g10/hkp.c:197
+#: g10/hkp.c:209
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "Senden an `%s' erfolglos (status=%u)\n"

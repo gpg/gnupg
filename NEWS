@@ -1,5 +1,10 @@
-Noteworthy changes in the current CVS branch STABLE-BRANCH-1-0
---------------------------------------------------------------
+
+    * New utility gpgv which is a stripped down version of gpg to
+      be used to verify signatures against a list of trusted keys.
+
+
+Noteworthy changes in version 1.0.3 (2000-09-18)
+------------------------------------------------
 
     * Fixed problems with piping to/from other MS-Windows software
 
@@ -18,7 +23,7 @@ Noteworthy changes in the current CVS branch STABLE-BRANCH-1-0
     * The --trusted-key option is back after it left us with 0.9.5
      
     * RSA is supported. Key generation does not yet work but will come
-      soon.
+      soon. 
     
     * CAST5 and SHA-1 are now the default algorithms to protect the key
       and for symmetric-only encryption. This should solve a couple
@@ -29,8 +34,6 @@ Noteworthy changes in the current CVS branch STABLE-BRANCH-1-0
       this.  Older versions of GnuPG don't support it, so they should be
       upgraded to at least 1.0.2
       
-      
-    
 
 Noteworthy changes in version 1.0.2 (2000-07-12)
 ----------------------------------------------

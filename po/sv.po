@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1e\n"
-"POT-Creation-Date: 2000-09-14 17:35+0200\n"
+"POT-Creation-Date: 2000-09-18 12:17+0200\n"
 "PO-Revision-Date: 2000-04-23 16:43+02:00\n"
 "Last-Translator: Daniel Resare <daniel@resare.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -2816,41 +2816,41 @@ msgstr "NOTERA: chifferalgoritmen %d finns inte i inställningarna\n"
 msgid "NOTE: secret key %08lX expired at %s\n"
 msgstr "NOTERA: den hemliga nyckeln %08lX gick ut %s\n"
 
-#: g10/hkp.c:62
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s ...\n"
 msgstr "fråga efter nyckeln %08lX från %s ...\n"
 
-#: g10/hkp.c:75
+#: g10/hkp.c:85
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "kan inte hämta nyckeln från en nyckelserver: %s\n"
 
-#: g10/hkp.c:98 g10/hkp.c:136
+#: g10/hkp.c:109 g10/hkp.c:148
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "känner inte till någon nyckelserver (använd flaggan --keyserver)\n"
 
-#: g10/hkp.c:106
+#: g10/hkp.c:117
 #, c-format
 msgid "%s: not a valid key ID\n"
 msgstr "%s: ogiltig nyckelidentitet\n"
 
-#: g10/hkp.c:158
+#: g10/hkp.c:170
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "kan inte ansluta till \"%s\": %s\n"
 
-#: g10/hkp.c:182
+#: g10/hkp.c:194
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "fel vid sändning till \"%s\": %s\n"
 
-#: g10/hkp.c:194
+#: g10/hkp.c:206
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "lyckades sända till \"%s\" (status=%u)\n"
 
-#: g10/hkp.c:197
+#: g10/hkp.c:209
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "misslyckades sända till \"%s\": status=%u\n"

@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1h\n"
-"POT-Creation-Date: 2000-09-14 17:35+0200\n"
+"POT-Creation-Date: 2000-09-18 12:17+0200\n"
 "PO-Revision-Date: 2000-06-28 18:41+02:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -2796,41 +2796,41 @@ msgstr ""
 msgid "NOTE: secret key %08lX expired at %s\n"
 msgstr "NOTE: la clé secrète %08lX a expiré le %s\n"
 
-#: g10/hkp.c:62
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s ...\n"
 msgstr "requête de la clé %08lX de %s...\n"
 
-#: g10/hkp.c:75
+#: g10/hkp.c:85
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "impossible d'obtenir les clés du serveur: %s\n"
 
-#: g10/hkp.c:98 g10/hkp.c:136
+#: g10/hkp.c:109 g10/hkp.c:148
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "aucun serveur de clés n'est connu (utilisez l'option «--keyserver»)\n"
 
-#: g10/hkp.c:106
+#: g10/hkp.c:117
 #, c-format
 msgid "%s: not a valid key ID\n"
 msgstr "%s: l'identification de la clé est invalide\n"
 
-#: g10/hkp.c:158
+#: g10/hkp.c:170
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "impossible de se connecter à `%s': %s\n"
 
-#: g10/hkp.c:182
+#: g10/hkp.c:194
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "erreur pendant l'envoi de `%s': %s\n"
 
-#: g10/hkp.c:194
+#: g10/hkp.c:206
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "l'envoi à `%s' s'est déroulé avec succès (résultat=%u)\n"
 
-#: g10/hkp.c:197
+#: g10/hkp.c:209
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "l'envoi à `%s' a échoué: le résultat est %u\n"

@@ -1,4 +1,13 @@
 
+  * If there is no secure memory, allocate more memory for the secure
+     memory block or do it in all cases.
+
+  * for detached signatures:  Allow to specify a filedescriptor (maybe
+    we can use a generic way to specify filedescriptors - "-" is already
+    used to specify 0/1).
+
+  * List all UserID with GOODSIG?
+
   * add a way to set expiration time for key signatures.
 
   * add some minor things vor VMS.

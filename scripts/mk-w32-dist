@@ -20,7 +20,11 @@ fi
 rm * || true
 ln ../g10/gpg gpg.exe
 i386--mingw32-strip gpg.exe
-man -T latin1 -l ../doc/gpg.1 >gpg.man
+if [ -t ../doc/gpg.man ] ; then
+  cat ../doc/gpg.man >gpg.man
+else
+  man -T latin1 -l ../doc/gpg.1 >gpg.man
+fi
 todos gpg.man
 cp ${srcdir}/README .
 todos README

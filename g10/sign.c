@@ -162,13 +162,13 @@ complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
 }
 
 static int
-hash_for(int pubkey_algo )
+hash_for(int pubkey_algo, int packet_version )
 {
     if( opt.def_digest_algo )
 	return opt.def_digest_algo;
     if( pubkey_algo == PUBKEY_ALGO_DSA )
 	return DIGEST_ALGO_SHA1;
-    if( pubkey_algo == PUBKEY_ALGO_RSA )
+    if( pubkey_algo == PUBKEY_ALGO_RSA && packet_version < 4 )
 	return DIGEST_ALGO_MD5;
     return DEFAULT_DIGEST_ALGO;
 }
@@ -304,7 +304,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(mfx.md, hash_for(sk->pubkey_algo));
+	md_enable(mfx.md, hash_for(sk->pubkey_algo, sk->version ));
     }
 
     if( !multifile )
@@ -361,7 +361,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    sk = sk_rover->sk;
 	    ops = m_alloc_clear( sizeof *ops );
 	    ops->sig_class = opt.textmode && !outfile ? 0x01 : 0x00;
-	    ops->digest_algo = hash_for(sk->pubkey_algo);
+	    ops->digest_algo = hash_for(sk->pubkey_algo, sk->version);
 	    ops->pubkey_algo = sk->pubkey_algo;
 	    keyid_from_sk( sk, ops->keyid );
 	    ops->last = skcount == 1;
@@ -488,7 +488,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	sig = m_alloc_clear( sizeof *sig );
 	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
 	keyid_from_sk( sk, sig->keyid );
-	sig->digest_algo = hash_for(sk->pubkey_algo);
+	sig->digest_algo = hash_for(sk->pubkey_algo, sk->version);
 	sig->pubkey_algo = sk->pubkey_algo;
 	sig->timestamp = make_timestamp();
 	sig->sig_class = opt.textmode && !outfile? 0x01 : 0x00;
@@ -538,7 +538,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
 	md_final( md );
 
-	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo) );
+	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo, sk->version) );
 	md_close( md );
 
 	if( !rc ) { /* and write it */
@@ -621,7 +621,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	if( hash_for(sk->pubkey_algo) == DIGEST_ALGO_MD5 )
+	if( hash_for(sk->pubkey_algo, sk->version) == DIGEST_ALGO_MD5 )
 	    only_md5 = 1;
 	else {
 	    only_md5 = 0;
@@ -640,7 +640,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	iobuf_writestr(out, "Hash: " );
 	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	    PKT_secret_key *sk = sk_rover->sk;
-	    int i = hash_for(sk->pubkey_algo);
+	    int i = hash_for(sk->pubkey_algo, sk->version);
 
 	    if( !hashs_seen[ i & 0xff ] ) {
 		s = digest_algo_to_string( i );
@@ -665,7 +665,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     textmd = md_open(0, 0);
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(textmd, hash_for(sk->pubkey_algo));
+	md_enable(textmd, hash_for(sk->pubkey_algo, sk->version));
     }
     if ( DBG_HASHING )
 	md_start_debug( textmd, "clearsign" );
@@ -690,7 +690,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	sig = m_alloc_clear( sizeof *sig );
 	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
 	keyid_from_sk( sk, sig->keyid );
-	sig->digest_algo = hash_for(sk->pubkey_algo);
+	sig->digest_algo = hash_for(sk->pubkey_algo, sk->version);
 	sig->pubkey_algo = sk->pubkey_algo;
 	sig->timestamp = make_timestamp();
 	sig->sig_class = 0x01;
@@ -739,7 +739,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	}
 	md_final( md );
 
-	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo) );
+	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo, sk->version) );
 	md_close( md );
 
 	if( !rc ) { /* and write it */

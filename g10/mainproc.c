@@ -1262,6 +1262,11 @@ proc_tree( CTX c, KBNODE node )
 	     */
 		    /*	c->mfx.md2? 0 :(sig->sig_class == 0x01) */
 	  #endif
+            if ( DBG_HASHING ) {
+                md_start_debug( c->mfx.md, "verify" );
+                if ( c->mfx.md2  )
+                    md_start_debug( c->mfx.md2, "verify2" );
+            }
 	    if( c->sigs_only ) {
 		rc = hash_datafiles( c->mfx.md, c->mfx.md2,
 				     c->signed_data, c->sigfilename,

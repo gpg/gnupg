@@ -1734,6 +1734,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 	if( version != 1 ) {
 	    log_error("encrypted_mdc packet with unknown version %d\n",
 								version);
+            /*skip_rest(inp, pktlen); should we really do this? */
 	    goto leave;
 	}
 	ed->mdc_method = DIGEST_ALGO_SHA1;

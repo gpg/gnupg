@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Privacy Guard 1.0.1\n"
-"POT-Creation-Date: 2000-09-14 17:35+0200\n"
+"POT-Creation-Date: 2000-09-18 12:17+0200\n"
 "PO-Revision-Date: 2000-02-06 18:04+07:00\n"
 "Last-Translator: Tedi Heriyanto <tedi-h@usa.net>\n"
 "Language-Team: Indonesia <id@li.org>\n"
@@ -2757,41 +2757,41 @@ msgstr "CATATAN: algoritma cipher %d tidak ditemukan dalam preferensi\n"
 msgid "NOTE: secret key %08lX expired at %s\n"
 msgstr "CATATAN: kunci signature berakhir %s\n"
 
-#: g10/hkp.c:62
+#: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s ...\n"
 msgstr ""
 
-#: g10/hkp.c:75
+#: g10/hkp.c:85
 #, fuzzy, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "impor kunci dari key server"
 
-#: g10/hkp.c:98 g10/hkp.c:136
+#: g10/hkp.c:109 g10/hkp.c:148
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
-#: g10/hkp.c:106
+#: g10/hkp.c:117
 #, fuzzy, c-format
 msgid "%s: not a valid key ID\n"
 msgstr "%s bukanlah set karakter yang valid\n"
 
-#: g10/hkp.c:158
+#: g10/hkp.c:170
 #, fuzzy, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "tidak dapat membuka `%s': %s\n"
 
-#: g10/hkp.c:182
+#: g10/hkp.c:194
 #, fuzzy, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
-#: g10/hkp.c:194
+#: g10/hkp.c:206
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr ""
 
-#: g10/hkp.c:197
+#: g10/hkp.c:209
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr ""
