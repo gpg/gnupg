@@ -644,6 +644,7 @@ EOF
 	  sparclinux) echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0 ;;
 	  armlinux)   echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0 ;;
 	  m68klinux)  echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0 ;;
+	  elf_s390)   echo "${UNAME_MACHINE}-ibm-linux-gnu"         ; exit 0 ;;
 	  elf32ppc)
 		# Determine Lib Version
 		cat >$dummy.c <<EOF

@@ -1,3 +1,8 @@
+Fri Mar 17 16:26:05 CET 2000  Werner Koch  <wk@openit.de>
+
+	* config.gues, config.sub: Support for s390-ibm-linux-gnu. Thanks
+	to Holger Smolinski.
+
 Thu Mar  2 15:37:46 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* config.guess: Add support for QNX.  By Sam Roberts.

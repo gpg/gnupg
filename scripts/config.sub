@@ -166,7 +166,7 @@ case $basic_machine in
 		| arme[lb] | pyramid | mn10200 | mn10300 | tron | a29k \
 		| 580 | i960 | h8300 \
 		| hppa | hppa1.0 | hppa1.1 | hppa2.0 | hppa2.0w | hppa2.0n \
-		| alpha | alphaev[4-7] | alphaev56 | alphapca5[67] \
+		| alpha | alphaev[4-7] | alphaev56 | alphapca5[67] | s390 \
 		| we32k | ns16k | clipper | i370 | sh | powerpc | powerpcle \
 		| 1750a | dsp16xx | pdp11 | mips16 | mips64 | mipsel | mips64el \
 		| mips64orion | mips64orionel | mipstx39 | mipstx39el \
@@ -184,6 +184,12 @@ case $basic_machine in
 	# (2) the word "unknown" tends to confuse beginning users.
 	i[34567]86)
 	  basic_machine=$basic_machine-pc
+	  ;;
+	s390 | s390-ibm)
+	  basic_machine=s390-ibm
+	  ;;
+	s390-redhat)
+	  basic_machine=s390-redhat
 	  ;;
 	# Object if more than one company name word.
 	*-*-*)
