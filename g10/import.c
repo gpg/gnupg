@@ -630,7 +630,8 @@ import_one( const char *fname, KBNODE keyblock,
     }
     
     if (opt.interactive) {
-        print_import_check (pk, uidnode->pkt->pkt.user_id);
+        if(is_status_enabled())
+	  print_import_check (pk, uidnode->pkt->pkt.user_id);
         merge_keys_and_selfsig (keyblock);
         tty_printf ("\n");
         show_basic_key_info (keyblock);

@@ -866,6 +866,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
   PKT_user_id *uid = NULL;
   PKT_public_key *pk = NULL;
   PKT_secret_key *sk = NULL;
+  u32 aki[2];
 
   /* figure out what information we need */
   need_uid = need_words = need_keyid = need_fpr = any_skip = 0;
@@ -968,7 +969,6 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
     {
       byte afp[MAX_FINGERPRINT_LEN];
       size_t an;
-      u32 aki[2];
 
       if (pkt.pkttype == PKT_PUBLIC_KEY  || pkt.pkttype == PKT_SECRET_KEY) 
         {

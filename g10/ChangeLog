@@ -1,3 +1,15 @@
+2003-01-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_one): Only do the work to create the status
+	display for interactive import if status is enabled.
+
+	* keyring.c (keyring_search): skipfnc didn't work properly with
+	non-keyid searches.  Noted by Stefan Bellon.
+
+	* getkey.c (merge_selfsigs_main): Remove some unused code and make
+	sure that the pk selfsigversion member accounts for 1F direct
+	sigs.
+
 2003-01-02  Werner Koch  <wk@gnupg.org>
 
 	* keydb.c (keydb_add_resource): Don't assume that try_make_homedir
