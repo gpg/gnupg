@@ -1,3 +1,9 @@
+2003-09-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), keylist.c (list_keyblock_print): Add
+	"show-unusable-uids" list-option to show revoked and/or expired
+	user IDs.
+
 2003-09-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_key_with_all_names): Show names a little neater

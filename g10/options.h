@@ -228,20 +228,21 @@ struct {
 #define EXPORT_INCLUDE_ATTRIBUTES        4
 #define EXPORT_INCLUDE_SENSITIVE_REVKEYS 8
 
-#define LIST_SHOW_PHOTOS        1
-#define LIST_SHOW_POLICY        2
-#define LIST_SHOW_NOTATION      4
-#define LIST_SHOW_KEYSERVER     8
-#define LIST_SHOW_VALIDITY     16
-#define LIST_SHOW_LONG_KEYID   32
-#define LIST_SHOW_KEYRING      64
-#define LIST_SHOW_SIG_EXPIRE  128
+#define LIST_SHOW_PHOTOS        (1<<0)
+#define LIST_SHOW_POLICY        (1<<1)
+#define LIST_SHOW_NOTATION      (1<<2)
+#define LIST_SHOW_KEYSERVER     (1<<3)
+#define LIST_SHOW_VALIDITY      (1<<4)
+#define LIST_SHOW_LONG_KEYID    (1<<5)
+#define LIST_SHOW_UNUSABLE_UIDS (1<<6)
+#define LIST_SHOW_KEYRING       (1<<7)
+#define LIST_SHOW_SIG_EXPIRE    (1<<8)
 
-#define VERIFY_SHOW_PHOTOS      1
-#define VERIFY_SHOW_POLICY      2
-#define VERIFY_SHOW_NOTATION    4
-#define VERIFY_SHOW_KEYSERVER   8
-#define VERIFY_SHOW_VALIDITY   16
-#define VERIFY_SHOW_LONG_KEYID 32
+#define VERIFY_SHOW_PHOTOS     (1<<0)
+#define VERIFY_SHOW_POLICY     (1<<1)
+#define VERIFY_SHOW_NOTATION   (1<<2)
+#define VERIFY_SHOW_KEYSERVER  (1<<3)
+#define VERIFY_SHOW_VALIDITY   (1<<4)
+#define VERIFY_SHOW_LONG_KEYID (1<<5)
 
 #endif /*G10_OPTIONS_H*/

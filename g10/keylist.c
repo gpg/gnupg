@@ -580,8 +580,9 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     u32 keyid[2];
     int any=0;
     struct sig_stats *stats=opaque;
+    int skip_sigs=0;
     int newformat=((opt.list_options&LIST_SHOW_VALIDITY) && !secret)
-      || (opt.list_options&LIST_SHOW_LONG_KEYID);
+      || (opt.list_options & (LIST_SHOW_LONG_KEYID | LIST_SHOW_UNUSABLE_UIDS));
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
@@ -641,24 +642,31 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
 	    int indent;
-            /* don't list revoked or expired UIDS unless we are in
-             * verbose mode and signature listing has not been
-             * requested */
-            if ( !opt.verbose && !opt.list_sigs &&
-                 (node->pkt->pkt.user_id->is_revoked ||
-		  node->pkt->pkt.user_id->is_expired ))
-                continue; 
+	    PKT_user_id *uid=node->pkt->pkt.user_id;
 
-	    if(attrib_fp && node->pkt->pkt.user_id->attrib_data!=NULL)
-	      dump_attribs(node->pkt->pkt.user_id,pk,sk);
+	    if((uid->is_expired || uid->is_revoked)
+	       && !(opt.list_options&LIST_SHOW_UNUSABLE_UIDS))
+	      {
+		skip_sigs=1;
+		continue;
+	      }
+	    else
+	      skip_sigs=0;
+
+	    if(attrib_fp && uid->attrib_data!=NULL)
+	      dump_attribs(uid,pk,sk);
 
 	    if(!any && newformat)
 	      printf("\n");
 
-	    if((opt.list_options&LIST_SHOW_VALIDITY) && pk)
+	    if(uid->is_revoked || uid->is_expired)
+	      printf("uid%*s[%s] ",
+		     (opt.list_options&LIST_SHOW_LONG_KEYID)?16:8,"",
+		     uid->is_revoked?"revoked":"expired");
+	    else if((opt.list_options&LIST_SHOW_VALIDITY) && pk)
 	      {
 		const char *validity=
-		trust_value_to_string(get_validity(pk,node->pkt->pkt.user_id));
+		  trust_value_to_string(get_validity(pk,uid));
 
 		/* Includes the 3 spaces for [, ], and " ". */
 		indent=((opt.list_options&LIST_SHOW_LONG_KEYID)?23:15)
@@ -670,17 +678,12 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		printf("uid%*s[%s] ",indent,"",validity);
 	      }
 	    else if(newformat)
-	      printf("uid%*s",26,"");
+	      printf("uid%*s",
+		     (opt.list_options&LIST_SHOW_LONG_KEYID)?26:18,"");
 	    else if(any)
 	      printf("uid%*s",29,"");
 
-            if ( node->pkt->pkt.user_id->is_revoked )
-                fputs ("[revoked] ", stdout);
-            if ( node->pkt->pkt.user_id->is_expired )
-                fputs ("[expired] ", stdout);
-
-            print_utf8_string( stdout,  node->pkt->pkt.user_id->name,
-                               node->pkt->pkt.user_id->len );
+            print_utf8_string( stdout, uid->name, uid->len );
 	    putchar('\n');
 	    if( !any ) {
 		if( fpr )
@@ -690,10 +693,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		any = 1;
 	    }
 
-	    if((opt.list_options&LIST_SHOW_PHOTOS)
-	       && node->pkt->pkt.user_id->attribs!=NULL)
-	      show_photos(node->pkt->pkt.user_id->attribs,
-			  node->pkt->pkt.user_id->numattribs,pk,sk);
+	    if((opt.list_options&LIST_SHOW_PHOTOS) && uid->attribs!=NULL)
+	      show_photos(uid->attribs,uid->numattribs,pk,sk);
 	}
 	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    u32 keyid2[2];
@@ -747,7 +748,9 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    if( fpr > 1 )
 		print_fingerprint( NULL, sk2, 0 );
 	}
-	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
+	else if( opt.list_sigs
+		 && node->pkt->pkttype == PKT_SIGNATURE
+		 && !skip_sigs ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    int sigrc;
             char *sigstr;

@@ -1398,8 +1398,11 @@ main( int argc, char **argv )
 	  case oNoTTY: tty_no_terminal(1); break;
 	  case oDryRun: opt.dry_run = 1; break;
 	  case oInteractive: opt.interactive = 1; break;
-	  case oVerbose: g10_opt_verbose++;
-		    opt.verbose++; opt.list_sigs=1; break;
+	  case oVerbose:
+	    g10_opt_verbose++;
+	    opt.verbose++;
+	    opt.list_options|=LIST_SHOW_UNUSABLE_UIDS;
+	    break;
 	  case oKOption: set_cmd( &cmd, aKMode ); break;
 
 	  case oBatch: opt.batch = 1; nogreeting = 1; break;
@@ -1767,6 +1770,7 @@ main( int argc, char **argv )
 		  {"show-keyserver-url",LIST_SHOW_KEYSERVER},
 		  {"show-validity",LIST_SHOW_VALIDITY},
 		  {"show-long-keyid",LIST_SHOW_LONG_KEYID},
+		  {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS},
 		  {"show-keyring",LIST_SHOW_KEYRING},
 		  {"show-sig-expire",LIST_SHOW_SIG_EXPIRE},
 		  {NULL,0}
