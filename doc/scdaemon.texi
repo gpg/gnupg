@@ -191,6 +191,12 @@ syncronizing access to a token between sessions.
 * Scdaemon READKEY::      Return a public key.
 * Scdaemon PKSIGN::       Signing data with a Smartcard.
 * Scdaemon PKDECRYPT::    Decrypting data with a Smartcard.
+* Scdaemon GETATTR::      Read an attribute's value.
+* Scdaemon SETATTR::      Update an attribute's value.
+* Scdaemon GENKEY::       Generate a new key on-card.
+* Scdaemon RANDOM::       Return random bytes generate on-card.
+* Scdaemon PASSWD::       Change PINs.
+* Scdaemon CHECKPIN::     Perform a VERIFY operation.
 @end menu
 
 @node Scdaemon SERIALNO 
@@ -308,4 +314,38 @@ hex notation.  The actual decryption is then done using the command
 @end example
 
 where @var{keyid} is the hexified ID of the key to be used.
+
+
+@node Scdaemon GETATTR
+@subsection Read an attribute's value.
+
+TO BE WRITTEN.
+
+@node Scdaemon SETATTR
+@subsection Update an attribute's value.
+
+TO BE WRITTEN.
+
+@node Scdaemon GENKEY
+@subsection Generate a new key on-card.
+
+TO BE WRITTEN.
+
+@node Scdaemon RANDOM
+@subsection Return random bytes generate on-card.
+
+TO BE WRITTEN.
+
+
+@node Scdaemon PASSWD
+@subsection Change PINs.
+
+TO BE WRITTEN.
+
+
+@node Scdaemon CHECKPIN
+@subsection Perform a VERIFY operation.
+
+TO BE WRITTEN.
+
 

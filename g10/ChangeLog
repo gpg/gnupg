@@ -1,3 +1,11 @@
+2003-10-20  Werner Koch  <wk@gnupg.org>
+
+	* card-util.c (card_edit): New command "passwd".  Add logic to
+	check the PIN in advance.
+	(card_status): Add new args to return the serial number.  Changed
+	all callers.
+	* call-agent.c (agent_scd_checkpin): New.
+
 2003-10-08  Werner Koch  <wk@gnupg.org>
 
 	* call-agent.c (agent_scd_getattr): Don't clear the passed info

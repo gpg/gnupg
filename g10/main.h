@@ -260,7 +260,7 @@ void run_in_pipemode (void);
 
 /*-- card-util.c --*/
 void change_pin (int no);
-void card_status (FILE *fp);
+void card_status (FILE *fp, char *serialnobuf, size_t serialnobuflen);
 void card_edit (STRLIST commands);
 
 /*-- signal.c --*/

@@ -869,3 +869,25 @@ agent_scd_change_pin (int chvno)
   return map_assuan_err (rc);
 }
 
+
+/* Perform a CHECKPIN operation.  SERIALNO should be the seriial
+   number of the card - optioanlly followed by the fingerprint;
+   however the fingerprint is ignored here. */
+int
+agent_scd_checkpin  (const char *serialno)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  snprintf (line, DIM(line)-1, "SCD CHECKPIN %s", serialno);
+  line[DIM(line)-1] = 0;
+  return assuan_transact (agent_ctx, line,
+                          NULL, NULL,
+                          NULL, NULL, NULL, NULL);
+}
+
+

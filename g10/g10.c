@@ -2844,7 +2844,7 @@ main( int argc, char **argv )
     case aCardStatus:
       if (argc)
         wrong_args ("--card-status");
-      card_status (stdout);
+      card_status (stdout, NULL, 0);
       break;
 
     case aCardEdit:
