@@ -1,0 +1,46 @@
+#!/bin/sh
+# Copyright (C) 2002 Free Software Foundation, Inc.
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+gpg="../g10/gpg --no-greeting --no-secmem-warning";
+
+echo "This script converts your public keyring and trustdb from GnuPG"
+echo "1.0.6 or earlier to the 1.0.7 and later format."
+
+echo "If you have already done this, there is no harm (but no point)"
+echo "in doing it again."
+
+echo -n "Continue? (y/N)"
+
+read answer
+
+if test "x$answer" != "xy" ; then
+  exit 0
+fi
+
+echo
+echo "Marking your keys as ultimately trusted"
+for key in `$gpg --with-colons --list-secret-keys | grep sec: | cut -d: -f5`
+do
+  $gpg --trusted-key $key --with-colons --list-keys $key > /dev/null 2>&1
+  echo -n "."
+done
+echo
+
+echo
+echo "Adding signature caches"
+$gpg --rebuild-keydb-caches
+
+echo
+echo "Checking trustdb"
+$gpg --check-trustdb
+
+echo
+echo "Done!"
