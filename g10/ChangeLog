@@ -1,3 +1,28 @@
+2001-08-14  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (ask_algo): New arg r_usage.  Allow for RSA keys.
+	(gen_rsa): Enabled the code.
+	(do_create): Enabled RSA branch.
+	(parse_parameter_usage): New.
+	(proc_parameter_file): Handle usage parameter.
+	(read_parameter_file): Ditto.
+	(generate_keypair): Ditto.
+	(generate_subkeypair): Ditto.
+	(do_generate_keypair): Ditto.
+	(do_add_key_flags): New.
+	(keygen_add_std_prefs): Use the new function.
+	(keygen_add_key_flags_and_expire): New.
+	(write_selfsig, write_keybinding): Handle new usage arg.
+	* build-packet.c (build_sig_subpkt): Make sure that key flags go
+	into the hashed area.
+	
+	* keygen.c (write_uid): Initialize the reference cunter.
+
+	* keyedit.c (keyedit_menu): No more need to update the trustdb for
+	preferences.  Added calls to merge keblock.
+
+	* kbnode.c (dump_kbnode): Print some more flags.
+
 2001-08-10  Werner Koch  <wk@gnupg.org>
 
         Revamped the preference handling.

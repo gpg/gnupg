@@ -362,10 +362,14 @@ dump_kbnode( KBNODE node )
 	fprintf(stderr, "node %p %02x/%02x type=%s",
 		node, node->flag, node->private_flag, s);
 	if( node->pkt->pkttype == PKT_USER_ID ) {
+            PKT_user_id *uid = node->pkt->pkt.user_id;
 	    fputs("  \"", stderr);
-	    print_string( stderr, node->pkt->pkt.user_id->name,
-				  node->pkt->pkt.user_id->len, 0 );
-	    fputs("\"\n", stderr);
+	    print_string( stderr, uid->name, uid->len, 0 );
+	    fprintf (stderr, "\" .%c%c%c\n",
+                     /* we don't have a expired flag */
+                     uid->is_revoked? 'r':'.',
+                     uid->created?    'v':'.',
+                     uid->is_primary? 'p':'.' );
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	    fprintf(stderr, "  class=%02x keyid=%08lX ts=%lu\n",
@@ -380,8 +384,13 @@ dump_kbnode( KBNODE node )
 	}
 	else if( node->pkt->pkttype == PKT_PUBLIC_KEY
 		 || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-	    fprintf(stderr, "  keyid=%08lX\n", (ulong)
-		  keyid_from_pk( node->pkt->pkt.public_key, NULL ));
+            PKT_public_key *pk = node->pkt->pkt.public_key;
+	    fprintf(stderr, "  keyid=%08lX a=%d u=%d %c%c%c\n",
+                    (ulong)keyid_from_pk( pk, NULL ),
+                    pk->pubkey_algo, pk->pubkey_usage,
+                    pk->has_expired? 'e':'.',  
+                    pk->is_revoked?  'r':'.',  
+                    pk->is_valid?    'v':'.' );
 	}
 	else
 	    fputs("\n", stderr);

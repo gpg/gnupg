@@ -41,8 +41,10 @@
 enum para_name {
   pKEYTYPE,
   pKEYLENGTH,
+  pKEYUSAGE,
   pSUBKEYTYPE,
   pSUBKEYLENGTH,
+  pSUBKEYUSAGE,
   pNAMEREAL,
   pNAMEEMAIL,
   pNAMECOMMENT,
@@ -60,10 +62,11 @@ struct para_data_s {
     int lnr;
     enum para_name key;
     union {
-       DEK *dek;
-       STRING2KEY *s2k;
-       u32 expire;
-       char value[1];
+        DEK *dek;
+        STRING2KEY *s2k;
+        u32 expire;
+        unsigned int usage; 
+        char value[1];
     } u;
 };
 
@@ -83,6 +86,12 @@ struct output_control_s {
 	IOBUF stream;
 	armor_filter_context_t afx;
     } sec;
+};
+
+
+struct opaque_data_usage_and_pk {
+    unsigned int usage;
+    PKT_public_key *pk;
 };
 
 
@@ -109,10 +118,26 @@ write_uid( KBNODE root, const char *s )
     pkt->pkttype = PKT_USER_ID;
     pkt->pkt.user_id = m_alloc_clear( sizeof *pkt->pkt.user_id + n - 1 );
     pkt->pkt.user_id->len = n;
+    pkt->pkt.user_id->ref = 1;
     strcpy(pkt->pkt.user_id->name, s);
     add_kbnode( root, new_kbnode( pkt ) );
 }
 
+static void
+do_add_key_flags (PKT_signature *sig, unsigned int usage)
+{
+    byte buf[1];
+
+    if (!usage) 
+        return;
+
+    buf[0] = 0;
+    if (usage & PUBKEY_USAGE_SIG)
+        buf[0] |= 0x01 | 0x02;
+    if (usage & PUBKEY_USAGE_ENC)
+        buf[0] |= 0x04 | 0x08;
+    build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, 1);
+}
 
 
 int
@@ -135,7 +160,14 @@ keygen_add_key_expire( PKT_signature *sig, void *opaque )
     return 0;
 }
 
+static int
+keygen_add_key_flags_and_expire (PKT_signature *sig, void *opaque)
+{
+    struct opaque_data_usage_and_pk *oduap = opaque;
 
+    do_add_key_flags (sig, oduap->usage);
+    return keygen_add_key_expire (sig, oduap->pk);
+}
 
 static int
 set_one_pref (ulong val, int type, int (*cf)(int), byte *buf, int *nbuf)
@@ -277,8 +309,10 @@ keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
 int
 keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 {
+    PKT_public_key *pk = opaque;
     byte buf[8];
-    
+
+    do_add_key_flags (sig, pk->pubkey_usage);
     keygen_add_key_expire( sig, opaque );
     keygen_upd_std_prefs (sig, opaque);
 
@@ -294,9 +328,9 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 }
 
 
-
 static int
-write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
+write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
+               unsigned int usage )
 {
     PACKET *pkt;
     PKT_signature *sig;
@@ -318,13 +352,14 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
     if( !node )
 	BUG();
     pk = node->pkt->pkt.public_key;
+    pk->pubkey_usage = usage;
     /* we have to cache the key, so that the verification of the signature
      * creation is able to retrieve the public key */
     cache_public_key (pk);
 
     /* and make the signature */
     rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0,
-			     keygen_add_std_prefs, pk );
+        		     keygen_add_std_prefs, pk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -338,13 +373,15 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 }
 
 static int
-write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
+write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
+                  unsigned int usage )
 {
     PACKET *pkt;
     PKT_signature *sig;
     int rc=0;
     KBNODE node;
     PKT_public_key *pk, *subpk;
+    struct opaque_data_usage_and_pk oduap;
 
     if( opt.verbose )
 	log_info(_("writing key binding signature\n"));
@@ -368,8 +405,10 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 	BUG();
 
     /* and make the signature */
+    oduap.usage = usage;
+    oduap.pk = subpk;
     rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0, 0,
-				    keygen_add_key_expire, subpk );
+        		     keygen_add_key_flags_and_expire, &oduap );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -555,11 +594,10 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     return 0;
 }
 
-#if 0
-/* we can't enable generation right now, becuase we first need to
- * implement the keyflags - the problem is that we need to change all
- * signature editing function to keep the ketflags associated with an
- * RSA key.  */
+
+/* 
+ * Generate an RSA key.
+ */
 static int
 gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
@@ -568,7 +606,7 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PACKET *pkt;
     PKT_secret_key *sk;
     PKT_public_key *pk;
-    MPI skey[4];
+    MPI skey[6];
     MPI *factors;
 
     assert( is_RSA(algo) );
@@ -639,7 +677,6 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
     return 0;
 }
-#endif
 
 
 /****************
@@ -672,13 +709,15 @@ check_valid_days( const char *s )
 
 /****************
  * Returns: 0 to create both a DSA and a ElGamal key.
+ *          and only if key flags are to be written the desired usage.
  */
 static int
-ask_algo( int addmode )
+ask_algo (int addmode, unsigned int *r_usage)
 {
     char *answer;
     int algo;
 
+    *r_usage = 0;
     tty_printf(_("Please select what kind of key you want:\n"));
     if( !addmode )
 	tty_printf(_("   (%d) DSA and ElGamal (default)\n"), 1 );
@@ -686,9 +725,9 @@ ask_algo( int addmode )
     if( addmode )
 	tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
     tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 4 );
-  #if 0
-    tty_printf(    _("   (%d) RSA (sign and encrypt)\n"), 5 );
-  #endif
+    tty_printf(    _("   (%d) RSA (sign only)\n"), 5 );
+    if (addmode)
+        tty_printf(    _("   (%d) RSA (encrypt only)\n"), 6 );
 
     for(;;) {
 	answer = cpr_get("keygen.algo",_("Your selection? "));
@@ -699,15 +738,16 @@ ask_algo( int addmode )
 	    algo = 0;	/* create both keys */
 	    break;
 	}
-      #if 0
-	else if( algo == 5 ) {
-	    if( cpr_get_answer_is_yes("keygen.algo.rsa_se",_(
-		"Do you really want to create a sign and encrypt key? "))) {
-		algo = PUBKEY_ALGO_RSA;
-		break;
-	    }
+	else if( algo == 6 && addmode ) {
+	    algo = PUBKEY_ALGO_RSA;
+            *r_usage = PUBKEY_USAGE_ENC;
+	    break;
 	}
-      #endif
+	else if( algo == 5 ) {
+	    algo = PUBKEY_ALGO_RSA;
+            *r_usage = PUBKEY_USAGE_SIG;
+	    break;
+	}
 	else if( algo == 4 ) {
 	    if( cpr_get_answer_is_yes("keygen.algo.elg_se",_(
 		"The use of this algorithm is deprecated - create anyway? "))){
@@ -1117,7 +1157,7 @@ ask_passphrase( STRING2KEY **ret_s2k )
 
 
 static int
-do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
+do_create( int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
 	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, u32 expiredate )
 {
     int rc=0;
@@ -1133,10 +1173,8 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
     else if( algo == PUBKEY_ALGO_DSA )
 	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
-  #if 0
     else if( algo == PUBKEY_ALGO_RSA )
 	rc = gen_rsa(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
-  #endif
     else
 	BUG();
 
@@ -1219,6 +1257,38 @@ get_parameter_algo( struct para_data_s *para, enum para_name key )
     return string_to_pubkey_algo( r->u.value );
 }
 
+/* 
+ * parse the usage parameter and set the keyflags.  Return true on error.
+ */
+static int
+parse_parameter_usage (const char *fname,
+                       struct para_data_s *para, enum para_name key)
+{
+    struct para_data_s *r = get_parameter( para, key );
+    char *p, *pn;
+    unsigned int usage;
+
+    if( !r )
+	return 0; /* none (this is an optional parameter)*/
+    
+    usage = 0;
+    pn = r->u.value;
+    while ( (p = strsep (&pn, " \t,")) ) {
+        if ( !*p)
+            ;
+        else if ( !ascii_strcasecmp (p, "sign") )
+            usage |= PUBKEY_USAGE_SIG;
+        else if ( !ascii_strcasecmp (p, "encrypt") )
+            usage |= PUBKEY_USAGE_ENC;
+        else {
+            log_error("%s:%d: invalid usage list\n", fname, r->lnr );
+            return -1; /* error */
+        }
+    }
+    r->u.usage = usage;
+    return 0;
+}
+
 
 static u32
 get_parameter_u32( struct para_data_s *para, enum para_name key )
@@ -1229,6 +1299,8 @@ get_parameter_u32( struct para_data_s *para, enum para_name key )
 	return 0;
     if( r->key == pKEYEXPIRE || r->key == pSUBKEYEXPIRE )
 	return r->u.expire;
+    if( r->key == pKEYUSAGE || r->key == pSUBKEYUSAGE )
+	return r->u.usage;
 
     return (unsigned int)strtoul( r->u.value, NULL, 10 );
 }
@@ -1256,7 +1328,7 @@ get_parameter_s2k( struct para_data_s *para, enum para_name key )
 
 static int
 proc_parameter_file( struct para_data_s *para, const char *fname,
-				       struct output_control_s *outctrl )
+                     struct output_control_s *outctrl )
 {
     struct para_data_s *r;
     const char *s1, *s2, *s3;
@@ -1273,12 +1345,18 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	return -1;
     }
 
+    if (parse_parameter_usage (fname, para, pKEYUSAGE))
+        return -1;
+
     i = get_parameter_algo( para, pSUBKEYTYPE );
-    if( i > 1 && check_pubkey_algo( i ) ) {
+    if( i > 0 && check_pubkey_algo( i ) ) {
 	r = get_parameter( para, pSUBKEYTYPE );
 	log_error("%s:%d: invalid algorithm\n", fname, r->lnr );
 	return -1;
     }
+    if (i > 0 && parse_parameter_usage (fname, para, pSUBKEYUSAGE))
+        return -1;
+
 
     if( !get_parameter_value( para, pUSERID ) ) {
 	/* create the formatted user ID */
@@ -1372,8 +1450,10 @@ read_parameter_file( const char *fname )
     } keywords[] = {
 	{ "Key-Type",       pKEYTYPE},
 	{ "Key-Length",     pKEYLENGTH },
+	{ "Key-Usage",      pKEYUSAGE },
 	{ "Subkey-Type",    pSUBKEYTYPE },
 	{ "Subkey-Length",  pSUBKEYLENGTH },
+	{ "Subkey-Usage",   pSUBKEYUSAGE },
 	{ "Name-Real",      pNAMEREAL },
 	{ "Name-Email",     pNAMEEMAIL },
 	{ "Name-Comment",   pNAMECOMMENT },
@@ -1552,6 +1632,7 @@ generate_keypair( const char *fname )
     DEK *dek;
     STRING2KEY *s2k;
     int algo;
+    unsigned int usage;
     int both = 0;
     u32 expire;
     struct para_data_s *para = NULL;
@@ -1565,7 +1646,7 @@ generate_keypair( const char *fname )
 	return;
     }
 
-    algo = ask_algo( 0 );
+    algo = ask_algo( 0, &usage );
     if( !algo ) { /* default: DSA with ElG subkey of the specified size */
 	both = 1;
 	r = m_alloc_clear( sizeof *r + 20 );
@@ -1593,6 +1674,17 @@ generate_keypair( const char *fname )
 	sprintf( r->u.value, "%d", algo );
 	r->next = para;
 	para = r;
+
+        if (usage) {
+            r = m_alloc_clear( sizeof *r + 20 );
+            r->key = pKEYUSAGE;
+            sprintf( r->u.value, "%s%s",
+                     (usage & PUBKEY_USAGE_SIG)? "sign ":"",
+                     (usage & PUBKEY_USAGE_ENC)? "encrypt ":"" );
+            r->next = para;
+            para = r;
+        }
+
     }
 
     nbits = ask_keysize( algo );
@@ -1738,9 +1830,11 @@ do_generate_keypair( struct para_data_s *para,
 	if( !rc )
 	    write_uid(sec_root, s );
 	if( !rc )
-	    rc = write_selfsig(pub_root, pub_root, sk);
+	    rc = write_selfsig(pub_root, pub_root, sk,
+                               get_parameter_uint (para, pKEYUSAGE));
 	if( !rc )
-	    rc = write_selfsig(sec_root, pub_root, sk);
+	    rc = write_selfsig(sec_root, pub_root, sk,
+                               get_parameter_uint (para, pKEYUSAGE));
     }
 
     if( get_parameter( para, pSUBKEYTYPE ) ) {
@@ -1752,9 +1846,11 @@ do_generate_keypair( struct para_data_s *para,
 			NULL,
 			get_parameter_u32( para, pSUBKEYEXPIRE ) );
 	if( !rc )
-	    rc = write_keybinding(pub_root, pub_root, sk);
+	    rc = write_keybinding(pub_root, pub_root, sk,
+               			  get_parameter_uint (para, pSUBKEYUSAGE));
 	if( !rc )
-	    rc = write_keybinding(sec_root, pub_root, sk);
+	    rc = write_keybinding(sec_root, pub_root, sk,
+               			  get_parameter_uint (para, pSUBKEYUSAGE));
         did_sub = 1;
     }
 
@@ -1811,10 +1907,16 @@ do_generate_keypair( struct para_data_s *para,
 	else if( (rc=insert_keyblock( &sec_kbpos, sec_root )) )
 	    log_error("can't write secret key: %s\n", g10_errstr(rc) );
 	else {
+            int no_enc_rsa =
+                get_parameter_algo(para, pKEYTYPE) == PUBKEY_ALGO_RSA
+                && get_parameter_uint( para, pKEYUSAGE )
+                && !(get_parameter_uint( para,pKEYUSAGE) & PUBKEY_USAGE_ENC);
+
 	    if( !opt.batch )
 		 tty_printf(_("public and secret key created and signed.\n") );
 	    if( !opt.batch
-		&& get_parameter_algo( para, pKEYTYPE ) == PUBKEY_ALGO_DSA
+		&& ( get_parameter_algo( para, pKEYTYPE ) == PUBKEY_ALGO_DSA
+                     || no_enc_rsa )
 		&& !get_parameter( para, pSUBKEYTYPE ) )
 	    {
 		tty_printf(_("Note that this key cannot be used for "
@@ -1861,6 +1963,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     KBNODE node;
     PKT_secret_key *sk = NULL; /* this is the primary sk */
     int algo;
+    unsigned int usage;
     u32 expire;
     unsigned nbits;
     char *passphrase = NULL;
@@ -1914,7 +2017,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	goto leave;
 
 
-    algo = ask_algo( 1 );
+    algo = ask_algo( 1, &usage );
     assert(algo);
     nbits = ask_keysize( algo );
     expire = ask_expire_interval();
@@ -1933,9 +2036,9 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
 				      dek, s2k, NULL, expire );
     if( !rc )
-	rc = write_keybinding(pub_keyblock, pub_keyblock, sk);
+	rc = write_keybinding(pub_keyblock, pub_keyblock, sk, usage);
     if( !rc )
-	rc = write_keybinding(sec_keyblock, pub_keyblock, sk);
+	rc = write_keybinding(sec_keyblock, pub_keyblock, sk, usage);
     if( !rc ) {
 	okay = 1;
         write_status_text (STATUS_KEY_CREATED, "S");

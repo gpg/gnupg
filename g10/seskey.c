@@ -183,7 +183,7 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
  * Encode a message digest into an MPI.
  * v3compathack is used to work around a bug in old GnuPG versions
  * which did put the algo identifier inseatd of the block type 1 into
- * the encoded value.  setting this vare force the old behaviour.
+ * the encoded value.  Setting this flag forces the old behaviour.
  */
 MPI
 encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo,

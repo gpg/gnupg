@@ -1,3 +1,7 @@
+2001-08-13  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Test on gettext 0.10.38. By Michael Engels.
+
 2001-08-07  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh: Adjusted --build-w32 for autoconf 2.52 

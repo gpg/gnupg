@@ -19,6 +19,8 @@
     * Fixed the preference handling; since 1.0.5 they were erroneously
       matched against against the latest user ID and not the given one.
 
+    * RSA key generation.
+
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------

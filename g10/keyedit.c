@@ -819,14 +819,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    if( menu_adduid( keyblock, sec_keyblock ) ) {
 		redisplay = 1;
 		sec_modified = modified = 1;
-		/* must update the trustdb already here, so that preferences
-		 * get listed correctly */
-		rc = update_trust_record( keyblock, 0, NULL );
-		if( rc ) {
-		    log_error(_("update of trustdb failed: %s\n"),
-				g10_errstr(rc) );
-		    rc = 0;
-		}
+		merge_keys_and_selfsig( sec_keyblock );
+		merge_keys_and_selfsig( keyblock );
 	    }
 	    break;
 
@@ -868,6 +862,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    if( generate_subkeypair( keyblock, sec_keyblock ) ) {
 		redisplay = 1;
 		sec_modified = modified = 1;
+		merge_keys_and_selfsig( sec_keyblock );
+		merge_keys_and_selfsig( keyblock );
 	    }
 	    break;
 
@@ -1284,7 +1280,7 @@ show_fingerprint( PKT_public_key *pk )
 
 
 /****************
- * Ask for a new user id , do the selfsignature and put it into
+ * Ask for a new user id, do the selfsignature and put it into
  * both keyblocks.
  * Return true if there is a new user id
  */
