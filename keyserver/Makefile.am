@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -21,10 +21,11 @@
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp gpgkeys_http gpgkeys_finger gpgkeys_curl
 EXTRA_SCRIPTS = gpgkeys_mailto
-libexecdir = @libexecdir@/@PACKAGE@
 
-libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_FINGER@ @GPGKEYS_HTTP@ @GPGKEYS_CURL@
-libexec_SCRIPTS = @GPGKEYS_MAILTO@
+gpglibexecdir = $(libexecdir)/@PACKAGE@
+
+gpglibexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_FINGER@ @GPGKEYS_HTTP@ @GPGKEYS_CURL@
+gpglibexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
 gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h

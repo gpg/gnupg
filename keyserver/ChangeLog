@@ -1,5 +1,10 @@
 2005-03-17  David Shaw  <dshaw@jabberwocky.com>
 
+	* ksutil.c (parse_ks_options): Handle verbose=nnn.
+
+	* Makefile.am: Calculate GNUPG_LIBEXECDIR directly.  Do not
+	redefine $libexecdir.
+
 	* gpgkeys_curl.c, gpgkeys_finger.c, gpgkeys_ldap.c: Start using
 	parse_ks_options and remove a lot of common code.
 

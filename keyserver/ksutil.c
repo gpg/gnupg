@@ -92,6 +92,7 @@ free_ks_options(struct ks_options *opt)
       free(opt->scheme);
       free(opt->auth);
       free(opt->path);
+      free(opt->opaque);
       free(opt->ca_cert_file);
       free(opt);
     }
@@ -205,10 +206,12 @@ parse_ks_options(char *line,struct ks_options *opt)
 	  start=&option[3];
 	}
 
-      if(strcasecmp(start,"verbose")==0)
+      if(strncasecmp(start,"verbose",7)==0)
 	{
 	  if(no)
-	    opt->verbose--;
+	    opt->verbose=0;
+	  else if(start[7]=='=')
+	    opt->verbose=atoi(&start[8]);
 	  else
 	    opt->verbose++;
 	}
