@@ -1,3 +1,10 @@
+2004-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_one): Do the revocation check even in the case
+	when a key, a revocation key set in a direct key signature, and a
+	revocation from that revocation key, all arrive piecemeal.
+	Needless to say, this is pretty obscure.
+
 2004-02-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (rm_group): Properly ungroup from a list of groups.
