@@ -1,3 +1,8 @@
+2002-09-04  Neal H. Walfield  <neal@g10code.de>
+
+	* Makefile.am (inittests.stamp): Do not set LD_LIBRARY_PATH, but
+	rather prepend it.  Be more robust and prefer printf over echo -n.
+
 2002-09-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* asschk.c (start_server): Close the parent's file descriptors in
@@ -5,7 +10,7 @@
 	(read_assuan): Variable NREAD removed.  Cut off the received line
 	currectly if more than one line was read.
 
-2002-09-03  Neal H. Walfield  <neal@cs.uml.edu>
+2002-09-03  Neal H. Walfield  <neal@g10code.de>
 
 	* Makefile.am (inittests.stamp): Construct an LD_LIBRARY_PATH from
 	LDFLAGS.

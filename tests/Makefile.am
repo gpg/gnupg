@@ -62,11 +62,17 @@ inittests.stamp: inittests
                                then \
                                  seen=1; \
                                else \
-                                 echo -n ":"; \
+                                 printf ":"; \
                                fi; \
-                               echo -n $${i} | sed 's/^-L//'; \
+                               printf "%s" "$${i}" | sed 's/^-L//'; \
                              fi; \
-                           done) \
+                           done; \
+                           if test $$seen != 0 \
+                              && test x$${LD_LIBRARY_PATH} != x; \
+                           then \
+                             printf ":"; \
+                           fi; \
+                           printf "%s" "$${LD_LIBRARY_PATH}") \
           srcdir=$(srcdir) $(TESTS_ENVIRONMENT) $(srcdir)/inittests
 	echo timestamp >./inittests.stamp
 
