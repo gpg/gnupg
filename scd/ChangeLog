@@ -1,3 +1,8 @@
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): New option --daemon so that the program is
+	not accidently started in the background.
+
 2002-08-16  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.c: Include i18n.h.
