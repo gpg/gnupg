@@ -882,7 +882,7 @@ GNUPG_CHECK_GNUMAKE
 # mysterious reasons - the final link step should bail out. 
 case "${target}" in
     *-*-mingw32*)
-        LIBS="$LIBS -lws2_32"
+        LIBS="$LIBS -lwsock32"
         ;;
     *)
        ;;
