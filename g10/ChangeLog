@@ -1,3 +1,8 @@
+2004-08-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* armor.c (radix64_read): No armor CRC is legal according to the
+	spec (the CRC is a MAY).
+
 2004-07-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* misc.c (argsplit): Properly split quoted args from the keyword

@@ -771,7 +771,11 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    if( c == -1 ) {
 		log_info(_("premature eof (in CRC)\n"));
 		rc = invalid_crc();
-                	    }
+	    }
+	    else if( idx == 0 ) {
+	        /* No CRC at all is legal ("MAY") */
+	        rc=0;
+	    }
 	    else if( idx != 4 ) {
 		log_info(_("malformed CRC\n"));
 		rc = invalid_crc();
