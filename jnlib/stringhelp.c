@@ -392,8 +392,9 @@ print_sanitized_string (FILE *fp, const char *string, int delim)
 size_t 
 print_sanitized_utf8_string (FILE *fp, const char *string, int delim)
 {
-  /* FIXME: convert to local characterset */
-  return print_sanitized_string (fp, string, delim);
+  return string? print_sanitized_utf8_buffer (fp,
+                                              string, strlen (string),
+                                              delim) : 0;
 }
 
 /* Create a string from the buffer P of length N which is suitable for
