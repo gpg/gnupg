@@ -1,3 +1,8 @@
+2005-01-17  David Shaw  <dshaw@grover.jabberwocky.com>
+
+	* libcurl.m4: Use LIBCURL_CPPFLAGS and not LIBCURL_INCLUDES to
+	match automake syntax.
+
 2005-01-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am, libusb.m4: New libusb check macro.

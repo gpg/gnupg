@@ -13,7 +13,7 @@
 # --without-libcurl does run ACTION-IF-NO.
 #
 # This macro defines HAVE_LIBCURL if a working libcurl setup is found,
-# and sets @LIBCURL@ and @LIBCURL_INCLUDES@ to the necessary values.
+# and sets @LIBCURL@ and @LIBCURL_CPPFLAGS@ to the necessary values.
 # Other useful defines are LIBCURL_FEATURE_xxx where xxx are the
 # various features supported by libcurl, and LIBCURL_PROTOCOL_yyy
 # where yyy are the various protocols supported by libcurl.  Both xxx
@@ -82,8 +82,8 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
         fi
 
 	if test $_libcurl_wanted -eq 0 || test x$libcurl_cv_lib_version_ok = xyes ; then
-           if test x"$LIBCURL_INCLUDES" = "x" ; then
-              LIBCURL_INCLUDES=`$_libcurl_config --cflags`
+           if test x"$LIBCURL_CPPFLAGS" = "x" ; then
+              LIBCURL_CPPFLAGS=`$_libcurl_config --cflags`
            fi
            if test x"$LIBCURL" = "x" ; then
               LIBCURL=`$_libcurl_config --libs`
@@ -124,7 +124,7 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
            [libcurl_cv_lib_curl_usable],
            [
            _libcurl_save_cppflags=$CPPFLAGS
-           CPPFLAGS="$CPPFLAGS $LIBCURL_INCLUDES"
+           CPPFLAGS="$CPPFLAGS $LIBCURL_CPPFLAGS"
            _libcurl_save_ldflags=$LDFLAGS
            LDFLAGS="$LDFLAGS $LIBCURL"
 
@@ -150,7 +150,7 @@ x=CURLOPT_VERBOSE;
         if test $libcurl_cv_lib_curl_usable = yes ; then
            AC_DEFINE(HAVE_LIBCURL,1,
              [Define to 1 if you have a functional curl library.])
-           AC_SUBST(LIBCURL_INCLUDES)
+           AC_SUBST(LIBCURL_CPPFLAGS)
            AC_SUBST(LIBCURL)
 
            for _libcurl_feature in $_libcurl_features ; do
