@@ -1,3 +1,7 @@
+2001-12-27  Werner Koch  <wk@gnupg.org>
+
+	* util.h [MINGW32]: Fixed name of include file.
+
 2001-12-22  Timo Schulz <ts@winpt.org>
 
         * util.h (is_file_compressed): New.

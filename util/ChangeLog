@@ -1,3 +1,7 @@
+2001-12-27  Werner Koch  <wk@gnupg.org>
+
+	* simple-gettext.c [MINGW32]: Fixed last changed.
+
 2001-12-22  Stefan Bellon  <sbellon@sbellon.de>
 
 	* memory.c (realloc): Fixed realloc not working when M_GUARD is
