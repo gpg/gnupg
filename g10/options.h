@@ -262,7 +262,6 @@ struct
 #define VERIFY_SHOW_NOTATIONS            (1<<2)
 #define VERIFY_SHOW_KEYSERVER_URLS       (1<<3)
 #define VERIFY_SHOW_VALIDITY             (1<<4)
-#define VERIFY_SHOW_LONG_KEYIDS          (1<<5)
-#define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
+#define VERIFY_SHOW_UNUSABLE_UIDS        (1<<5)
 
 #endif /*G10_OPTIONS_H*/

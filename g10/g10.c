@@ -2144,7 +2144,6 @@ main( int argc, char **argv )
 		  {"show-notations",VERIFY_SHOW_NOTATIONS,NULL},
 		  {"show-keyserver-urls",VERIFY_SHOW_KEYSERVER_URLS,NULL},
 		  {"show-validity",VERIFY_SHOW_VALIDITY,NULL},
-		  {"show-long-keyids",VERIFY_SHOW_LONG_KEYIDS,NULL},
 		  {"show-unusable-uids",VERIFY_SHOW_UNUSABLE_UIDS,NULL},
 		  {NULL,0,NULL}
 		};

@@ -1,5 +1,9 @@
 2004-03-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main), mainproc.c (check_sig_and_print):
+	Remove verify-option show-long-keyids and replace with
+	the more general keyid-format.
+
 	* build-packet.c (write_header2): Remove call to start old gpg
 	partial length mode and change all callers.
 	(do_plaintext): Turn off partial length encoding now that we're

@@ -1272,7 +1272,7 @@ static int
 check_sig_and_print( CTX c, KBNODE node )
 {
     PKT_signature *sig = node->pkt->pkt.signature;
-    const char *astr, *tstr;
+    const char *astr;
     int rc, is_expkey=0, is_revkey=0;
 
     if( opt.skip_verify ) {
@@ -1335,18 +1335,17 @@ check_sig_and_print( CTX c, KBNODE node )
         }
     }
 
-    tstr = asctimestamp(sig->timestamp);
     astr = pubkey_algo_to_string( sig->pubkey_algo );
-    if(opt.verify_options&VERIFY_SHOW_LONG_KEYIDS)
+    if(keystrlen()>8)
       {
-	log_info(_("Signature made %.*s\n"),(int)strlen(tstr), tstr);
-	log_info(_("               using %s key %08lX%08lX\n"),
-		 astr? astr: "?",(ulong)sig->keyid[0],(ulong)sig->keyid[1] );
+	log_info(_("Signature made %s\n"),asctimestamp(sig->timestamp));
+	log_info(_("               using %s key %s\n"),
+		 astr? astr: "?",keystr(sig->keyid));
       }
     else
-      log_info(_("Signature made %.*s using %s key ID %08lX\n"),
-	       (int)strlen(tstr), tstr, astr? astr: "?",
-	       (ulong)sig->keyid[1] );
+      log_info(_("Signature made %s using %s key ID %s\n"),
+	       asctimestamp(sig->timestamp), astr? astr: "?",
+	       keystr(sig->keyid));
 
     rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
