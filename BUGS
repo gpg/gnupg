@@ -52,17 +52,7 @@ an "info standards" to find out why a disclaimer is needed for GNU.)
     PGP decrypts 6416k out of 6424k, then complains with "PGP Warning",
     "The keyring contains a bad (corrupted) PGP packet".  The resulting
     file is missing information from the front.
-    [26.02.99: temporary fix in encrypt_simple()
+    [26.02.99: temporary fix in encrypt_simple()]
 
-[   ] #8 1999-02-25 <kazu@iijlab.net> 0.9.3
-    %gpg --encrypt -r kazu@iijlab.net --batch foo
-    gpg: Warning: using insecure memory!
-    gpg: 11C23F61: no info to calculate a trust probability
-    This creates a symmetrically encrypted message WITHOUT a session key
-    encrypted with public cryptographic(i.e. foo.gpg). This is probably
-    [26.02.99 fixed]
 
-[   ] #9 1999-02-25
-    Misalignment in md5.c#md5_write.
-    [26.02.99 fixed]
 

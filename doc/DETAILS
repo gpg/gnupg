@@ -65,10 +65,12 @@ more arguments in future versions.
 	status lines ere emitted for a good signature.
 
     SIG_ID  <radix64_string>
-	This is emitted only for DSA or ElGamal signatures which
-	have been verified okay.  The strings is a signature id
-	and maybe used in applications to detect replay attacks
-	of signed messages.
+	This is emitted only for signatures which
+	have been verified okay.  The string is a signature id
+	and may be used in applications to detect replay attacks
+	of signed messages.  Note that only DLP algorithms give
+	unique ids - others may yoild duplicated ones when they
+	have been created in the same second.
 
     TRUST_UNDEFINED
     TRUST_NEVER

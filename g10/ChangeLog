@@ -1,3 +1,9 @@
+Tue Mar  2 10:38:42 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* sig-check.c (signature_check): sig-id now works for all algos.
+
+	* armor.c (armor_filter): Fixed armor bypassing.
+
 Sun Feb 28 19:11:00 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* keygen.c (ask_user_id): Don't change the case of email addresses.

@@ -65,17 +65,26 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 
     free_public_key( pk );
 
-    if( !rc && is_status_enabled()
-	&& (   sig->pubkey_algo == PUBKEY_ALGO_DSA
-	    || sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL	) ) {
-	/* If we are using these public key algorithms we can
-	 * calculate an unique signature id, which may be useful
-	 * in an application to prevent replac attacks */
+    if( !rc && is_status_enabled() ) {
+	/* This signature id works best with DLP algorithms because
+	 * they use a random parameter for every signature.  Instead of
+	 * this sig-id we could have also used the hash of the document
+	 * and the timestamp, but the drawback of this is, that it is
+	 * not possible to sign more than one identical document within
+	 * one second.	Some remote bacth processing applications might
+	 * like this feature here */
 	MD_HANDLE md;
+	u32 a = sig->timestamp;
 	int i, nsig = pubkey_get_nsig( sig->pubkey_algo );
 	byte *p;
 
 	md = md_open( DIGEST_ALGO_RMD160, 0);
+	md_putc( digest, sig->pubkey_algo );
+	md_putc( digest, sig->digest_algo );
+	md_putc( digest, (a >> 24) & 0xff );
+	md_putc( digest, (a >> 16) & 0xff );
+	md_putc( digest, (a >>	8) & 0xff );
+	md_putc( digest,  a	   & 0xff );
 	for(i=0; i < nsig; i++ ) {
 	    unsigned n = mpi_get_nbits( sig->data[i]);
 

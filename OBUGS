@@ -10,3 +10,19 @@
     gpg:[stdin]: key A6A59DB9: secret key not found: public key not found
     FIX: 1999-02-22 wk
 
+[  *] #8 1999-02-25 <kazu@iijlab.net> 0.9.3
+    %gpg --encrypt -r kazu@iijlab.net --batch foo
+    gpg: Warning: using insecure memory!
+    gpg: 11C23F61: no info to calculate a trust probability
+    This creates a symmetrically encrypted message WITHOUT a session key
+    encrypted with public cryptographic(i.e. foo.gpg). This is probably
+    FIX: 199-02-26 wk
+
+[ **] #9 1999-02-25
+    Misalignment in md5.c#md5_write.
+    FIX: 1999-02-26 wk
+
+[ **] #10 1999-03-01
+    Armor detection code is broken.  Direct import of keyrings is not possible.
+    FIX: 1999-03-02 wk
+

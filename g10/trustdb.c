@@ -996,6 +996,10 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 typedef struct {
     ulong lid;
     ulong uid;
+    byte uid_flags;
+    byte uid_validity;
+    byte dir_flags;
+    byte ownertrust;
 } CERT_ITEM;
 
 /* structure to hold certification chains. Item[nitems-1] is the
@@ -1033,7 +1037,7 @@ add_cert_items_to_set( CERT_CHAIN *set_head, CERT_ITEM *items, int nitems )
 
 /****************
  * Find all certification paths of a given LID.
- * Limit the search to MAX_DEPTH. stack is a helper variable which
+ * Limit the search to MAX_DEPTH.  stack is a helper variable which
  * should have been allocated with size max_depth, stack[0] should
  * be setup to the key we are investigating, so the minimal depth
  * we should ever see in this function is 1.
@@ -1076,6 +1080,9 @@ find_cert_chain( ulong lid, int depth, int max_depth,
     /* Performance hint: add stuff to ignore this one when the
      *			 assigned validity of the key is bad   */
 
+    stack[depth].dir_flags = dirrec.r.dir.dirflags;
+    stack[depth].ownertrust = dirrec.r.dir.ownertrust;
+
     /* loop over all user ids */
     for( uidrno = dirrec.r.dir.uidlist; uidrno; uidrno = uidrec.r.uid.next ) {
 	TRUSTREC sigrec;
@@ -1083,6 +1090,8 @@ find_cert_chain( ulong lid, int depth, int max_depth,
 
 	stack[depth].uid = uidrno;
 	read_record( uidrno, &uidrec, RECTYPE_UID );
+	stack[depth].uid_flags = uidrec.r.uid.uidflags;
+	stack[depth].uid_validity = uidrec.r.uid.validity;
 
 	if( !(uidrec.r.uid.uidflags & UIDF_CHECKED) )
 	    continue; /* user id has not been checked */
@@ -1562,13 +1571,16 @@ list_trust_path( const char *username )
 	find_cert_chain( lid, 0, opt.max_cert_depth, stack, &chains);
 	m_free( stack );
 	/* dump chains */
+	printf("lid/uid(ownertrust,validity):\n");
 	for(r=chains; r ; r = r->next ) {
 	    printf("chain:" );
 	    for(i=0; i < r->nitems; i++ )
-		printf(" %4lu/%-4lu", r->items[i].lid, r->items[i].uid );
+		printf("  %lu/%lu(%d,%d)", r->items[i].lid, r->items[i].uid,
+			r->items[i].ownertrust,
+			(r->items[i].uid_flags & UIDF_VALVALID )?
+					       r->items[i].uid_validity : 0 );
 	    putchar('\n');
 	}
-
     }
   #endif
 }

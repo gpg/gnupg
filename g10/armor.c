@@ -792,7 +792,7 @@ armor_filter( void *opaque, int control,
 	else if( !afx->inp_checked ) {
 	    rc = check_input( afx, a );
 	    if( afx->inp_bypass ) {
-		for(n=0; n < size && afx->buffer_pos < afx->buffer_len; n++ )
+		for(n=0; n < size && afx->buffer_pos < afx->buffer_len; )
 		    buf[n++] = afx->buffer[afx->buffer_pos++];
 		if( afx->buffer_pos >= afx->buffer_len )
 		    afx->buffer_len = 0;
