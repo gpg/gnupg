@@ -1,3 +1,16 @@
+2005-03-16  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (parse_ccid_descriptor): Make SCM workaround
+	reader type specific.
+	(scan_or_find_devices): Do not check the interface subclass in the
+	SPR532 kludge, as this depends on the firmware version.
+	(ccid_get_atr): Get the Slot status first.  This solves the
+	problem with readers hanging on recent Linux 2.6.x.
+	(bulk_in): Add argument TIMEOUT and changed all callers to pass an
+	appropriate one.  Change the standard timeout from 10 to 5 seconds.
+	(ccid_slot_status): Add a retry code with an initial short timeout.
+	(do_close_reader): Do an usb_reset before closing the reader.
+
 2005-03-14  Werner Koch  <wk@g10code.com>
 
 	* card-util.c (card_status): Use isotimestamp and not the
