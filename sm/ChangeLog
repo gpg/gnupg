@@ -1,5 +1,8 @@
 2002-07-02  Werner Koch  <wk@gnupg.org>
 
+	* certpath.c (check_cert_policy): Don't use log_error to print a
+	warning.
+
 	* keydb.c (keydb_store_cert): Add optional ar EXISTED and changed
 	all callers.
 	* call-agent.c (learn_cb): Print info message only for real imports.

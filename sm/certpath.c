@@ -145,9 +145,14 @@ check_cert_policy (KsbaCert cert)
               if (feof (fp))
                 {
                   fclose (fp);
-                  log_error (_("certificate policy not allowed\n"));
                   /* with no critical policies this is only a warning */
-                  return any_critical? GNUPG_No_Policy_Match : 0;
+                  if (!any_critical)
+                    {
+                      log_info (_("note: certificate policy not allowed\n"));
+                      return 0;
+                    }
+                  log_error (_("certificate policy not allowed\n"));
+                  return GNUPG_No_Policy_Match;
                 }
               fclose (fp);
               return GNUPG_Read_Error;
