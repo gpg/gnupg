@@ -39,6 +39,13 @@
   #define SKELEXT ".skel"
 #endif
 
+#ifdef HAVE_DRIVE_LETTERS
+  #define CMP_FILENAME(a,b) stricmp( (a), (b) )
+#else
+  #define CMP_FILENAME(a,b) strcmp( (a), (b) )
+#endif
+
+
 /* FIXME:  Implement opt.interactive. */
 
 /****************
@@ -82,13 +89,11 @@ make_outfile_name( const char *iname )
     if( (!iname || (*iname=='-' && !iname[1]) ))
 	return m_strdup("-");
 
-  #ifdef HAVE_DRIVE_LETTERS
-    #warning add case insensitive compare
-  #endif
     n = strlen(iname);
-    if( n > 4 && (    !strcmp(iname+n-4,".gpg")
-		   || !strcmp(iname+n-4,".sig")
-		   || !strcmp(iname+n-4,".asc") ) ) {
+    if( n > 4 && (    !CMP_FILENAME(iname+n-4,".gpg")
+		   || !CMP_FILENAME(iname+n-4,".pgp")
+		   || !CMP_FILENAME(iname+n-4,".sig")
+		   || !CMP_FILENAME(iname+n-4,".asc") ) ) {
 	char *buf = m_strdup( iname );
 	buf[n-4] = 0;
 	return buf;
@@ -169,11 +174,33 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    name = opt.outfile;
 	else {
 	  #ifdef USE_ONLY_8DOT3
-	    #warning please implement 8.3 files
-	  #endif
+	    /* It is quite common DOS system to have only one dot in a
+	     * a filename So if we have something like this, we simple
+	     * replace the suffix execpt in cases where the suffix is
+	     * larger than 3 characters and not the same as.
+	     * We should really map the filenames to 8.3 but this tends to
+	     * be more complicated and is probaly a duty of the filesystem
+	     */
+	    char *dot;
+	    const char *newsfx = mode==1 ? ".asc" :
+				 mode==2 ? ".sig" : ".gpg";
+
+	    buf = m_alloc(strlen(iname)+4+1);
+	    strcpy(buf,iname);
+	    dot = strchr(buf, '.' );
+	    if( dot && dot > buf && dot[1] && strlen(dot) <= 4
+					   && CMP_FILENAME(newsfx, dot) ) {
+		strcpy(buf, newsfx );
+	    }
+	    else if( dot && !dot[1] ) /* don't duplicate a dot */
+		strcpy( dot, newsfx );
+	    else
+		strcat( buf, newsfx );
+	  #else
 	    buf = m_alloc(strlen(iname)+4+1);
 	    strcpy(stpcpy(buf,iname), mode==1 ? ".asc" :
 				      mode==2 ? ".sig" : ".gpg");
+	  #endif
 	    name = buf;
 	}
 
@@ -204,9 +231,6 @@ open_sigfile( const char *iname )
     IOBUF a = NULL;
     size_t len;
 
-  #ifdef USE_ONLY_8DOT3
-    #warning please implement 8.3 files
-  #endif
     if( iname && !(*iname == '-' && !iname[1]) ) {
 	len = strlen(iname);
 	if( len > 4 && ( !strcmp(iname + len - 4, ".sig")

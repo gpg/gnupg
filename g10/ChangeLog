@@ -1,3 +1,18 @@
+Wed Sep 22 10:14:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* openfile.c (make_outfile_name): Use case-insenstive compare for
+	DOS systems.  Add ".pgp" to the list of know extensions.
+	(open_outfile): For DOS systems try to replace the suffiy instead of
+	appending it.
+
+	* status.c, status.h: Add STATUS_FILE_{START,DONE}.
+	* verify.c (verify_one_file): Emit these new stati.
+
+	* sign.c (clearsign_file): Avoid duplicated Entries in the "Hash:"
+	line.  Those headers are now only _not_ printed when there are
+	only old-style keys _and_ all hashs are MD5.
+
 Mon Sep 20 12:24:41 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -33,6 +33,7 @@
 #include "memory.h"
 #include "util.h"
 #include "main.h"
+#include "status.h"
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"
@@ -90,6 +91,13 @@ verify_one_file( const char *name )
     armor_filter_context_t afx;
     int rc;
 
+
+    {
+	char *p = m_alloc(strlen(name)+10);
+	sprintf(p, "1 %s", name );
+	write_status_text( STATUS_FILE_START, p );
+	m_free(p);
+    }
     fp = iobuf_open(name);
     if( !fp ) {
 	log_error(_("can't open `%s'\n"), print_fname_stdin(name));
@@ -105,6 +113,7 @@ verify_one_file( const char *name )
 
     rc = proc_signature_packets( NULL, fp, NULL, name );
     iobuf_close(fp);
+    write_status( STATUS_FILE_DONE );
     return rc;
 }
 

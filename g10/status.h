@@ -65,6 +65,8 @@
 #define STATUS_ERRMDC		35
 #define STATUS_IMPORTED 	36
 #define STATUS_IMPORT_RES	37
+#define STATUS_FILE_START	38
+#define STATUS_FILE_DONE	39
 
 
 /*-- status.c --*/
