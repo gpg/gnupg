@@ -1,3 +1,8 @@
+2004-10-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (send_key, get_key, search_key): Use "hkp" instead
+	of "x-hkp" so it can be used as a SRV tag.
+
 2004-10-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_finger.c [_WIN32] (connect_server): Fix typo.

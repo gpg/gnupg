@@ -153,8 +153,7 @@ send_key(int *eof)
 
   iobuf_flush_temp(temp);
 
-  sprintf(request,"x-hkp://%s%s%s/pks/add",
-	  host,port[0]?":":"",port[0]?port:"");
+  sprintf(request,"hkp://%s%s%s/pks/add",host,port[0]?":":"",port[0]?port:"");
 
   if(verbose>2)
     fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
@@ -257,7 +256,7 @@ get_key(char *getkey)
       return KEYSERVER_NO_MEMORY;
     }
 
-  sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=get&options=mr&search=%s",
+  sprintf(request,"hkp://%s%s%s/pks/lookup?op=get&options=mr&search=%s",
 	  host,port[0]?":":"",port[0]?port:"", search);
 
   if(verbose>2)
@@ -679,7 +678,7 @@ search_key(char *searchkey)
       goto fail;
     }
 
-  sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&options=mr&search=%s",
+  sprintf(request,"hkp://%s%s%s/pks/lookup?op=index&options=mr&search=%s",
 	  host,port[0]?":":"",port[0]?port:"",search);
 
   if(verbose>2)
