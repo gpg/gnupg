@@ -758,6 +758,9 @@ import_one( const char *fname, KBNODE keyblock,
 	}
 	if( opt.verbose > 1 )
 	    log_info (_("writing to `%s'\n"), keydb_get_resource_name (hd) );
+
+	collapse_uids(&keyblock);
+
 	rc = keydb_insert_keyblock (hd, keyblock );
         if (rc)
 	   log_error (_("error writing keyring `%s': %s\n"),

@@ -797,8 +797,9 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
   if (!rc)
     {
       if (DBG_TRUST)
-        log_debug ("key %s: update min_ownertrust from %u to %u\n",
-                   keystr(kid),(unsigned int)rec.r.trust.min_ownertrust,
+        log_debug ("key %08lX%08lX: update min_ownertrust from %u to %u\n",
+                   (ulong)kid[0],(ulong)kid[1],
+		   (unsigned int)rec.r.trust.min_ownertrust,
 		   new_trust );
       if (rec.r.trust.min_ownertrust != new_trust)
         {
@@ -1985,9 +1986,9 @@ validate_keys (int interactive)
 	  if(k->ownertrust<min)
 	    {
 	      if(DBG_TRUST)
-		log_debug("key %s:"
+		log_debug("key %08lX%08lX:"
 			  " overriding ownertrust \"%s\" with \"%s\"\n",
-			  keystr(k->kid),
+			  (ulong)k->kid[0],(ulong)k->kid[1],
 			  trust_value_to_string(k->ownertrust),
 			  trust_value_to_string(min));
 

@@ -2685,8 +2685,10 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 	  goto fail;
 	}
 
+      /* Note that I'm requesting SIG here and not CERT.  We're making
+	 a certification, but it is okay to be a subkey. */
+      revoker_pk->req_usage=PUBKEY_USAGE_SIG;
       rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL,1);
-
       if(rc)
 	{
 	  log_error (_("key `%s' not found: %s\n"),answer,g10_errstr(rc));
@@ -2756,7 +2758,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
       tty_printf("\npub   %4u%c/%08lX %s   ",
 		 nbits_from_pk( revoker_pk ),
 		 pubkey_letter( revoker_pk->pubkey_algo ),
-		 (ulong)keyid[1], datestr_from_pk(pk) );
+		 (ulong)keyid[1], datestr_from_pk(revoker_pk) );
 
       p = get_user_id( keyid, &n );
       tty_print_utf8_string( p, n );

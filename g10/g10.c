@@ -1929,7 +1929,7 @@ main( int argc, char **argv )
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
 	  case oComment:
 	    if(pargs.r.ret_str[0])
-	      add_to_strlist(&opt.comments,pargs.r.ret_str);
+	      append_to_strlist(&opt.comments,pargs.r.ret_str);
 	    break;
 	  case oDefaultComment:
 	    deprecated_warning(configname,configlineno,

@@ -1,3 +1,19 @@
+2004-03-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (update_min_ownertrust, validate_keys): Do not use
+	keystr functions in log_debug.
+
+	* import.c (import_one): Try and collapse user IDs when importing
+	a key for the first time.
+
+	* keyedit.c (menu_addrevoker): Allow appointing a subkey as a
+	designated revoker if the user forces it via keyid!, so long as
+	the subkey can certify.  Also use the proper date string when
+	prompting for confirmation.
+
+	* g10.c (main): Maintain ordering of multiple Comment lines.
+	Requested by Peter Hyman.
+
 2004-03-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (proc_pubkey_enc, print_pkenc_list, list_node):
