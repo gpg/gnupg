@@ -1197,11 +1197,17 @@ main ( int argc, char **argv)
 
   set_debug (debug_level);
 
-  /* FIXME: should set filenames of libgcrypt explicitly
-   * gpg_opt_homedir = opt.homedir; */
+  /* Although we alwasy use gpgsm_exit, we better install a regualr
+     exit handler so that at least the secure memory gets wiped
+     out. */
+  if (atexit (emergency_cleanup))
+    {
+      log_error ("atexit failed\n");
+      gpgsm_exit (2);
+    }
 
-  /* must do this after dropping setuid, because the mapping functions
-     may try to load an module and we may have disabled an algorithm */
+  /* Must do this after dropping setuid, because the mapping functions
+     may try to load an module and we may have disabled an algorithm. */
   if ( !gcry_cipher_map_name (opt.def_cipher_algoid)
        || !gcry_cipher_mode_from_oid (opt.def_cipher_algoid))
     log_error (_("selected cipher algorithm is invalid\n"));
@@ -1218,7 +1224,7 @@ main ( int argc, char **argv)
   if (log_get_errorcount(0))
     gpgsm_exit(2);
   
-  /* set the random seed file */
+  /* Set the random seed file. */
   if (use_random_seed) {
     char *p = make_filename (opt.homedir, "random_seed", NULL);
     gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);

@@ -412,7 +412,7 @@ lock_all (KEYDB_HANDLE hd)
   int i, rc = 0;
 
   /* Fixme: This locking scheme may lead to deadlock if the resources
-     are not added in the same order all processes.  We are
+     are not added in the same order by all processes.  We are
      currently only allowing one resource so it is not a problem. */
   for (i=0; i < hd->used; i++) 
     {
@@ -1051,7 +1051,7 @@ classify_user_id (const char *name,
    * we set it to the correct value right at the end of this function */
   memset (desc, 0, sizeof *desc);
   *force_exact = 0;
-  /* skip leading spaces.  Fixme: what about trailing white space? */
+  /* Skip leading spaces.  Fixme: what about trailing white space? */
   for(s = name; *s && spacep (s); s++ )
     ;
 

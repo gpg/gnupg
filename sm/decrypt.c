@@ -77,7 +77,7 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
   if (seskeylen == 24)
     {
       /* Smells like a 3-des key.  This might happen because a SC has
-         already done the unpacking. fixme! */
+         already done the unpacking. */
     }
   else
     {
@@ -90,18 +90,18 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
       /* FIXME: Actually the leading zero is required but due to the way
          we encode the output in libgcrypt as an MPI we are not able to
          encode that leading zero.  However, when using a Smartcard we are
-         doing it the rightway and therefore we have to skip the zero.  This
+         doing it the right way and therefore we have to skip the zero.  This
          should be fixed in gpg-agent of course. */
       if (!seskey[n])
         n++;
       
-      if (seskey[n] != 2 )  /* wrong block type version */
+      if (seskey[n] != 2 )  /* Wrong block type version. */
         { 
           rc = gpg_error (GPG_ERR_INV_SESSION_KEY);
           goto leave; 
         }
       
-      for (n++; n < seskeylen && seskey[n]; n++) /* skip the random bytes */
+      for (n++; n < seskeylen && seskey[n]; n++) /* Skip the random bytes. */
         ;
       n++; /* and the zero byte */
       if (n >= seskeylen )

@@ -5,6 +5,8 @@ Noteworthy changes in version 1.9.9
    allow gpg-agent to add a key to the trustlist.txt after user
    confirmation.
 
+ * Creating PKCS#10 requests does now honor the key usage.
+
 
 Noteworthy changes in version 1.9.8 (2004-04-29)
 ------------------------------------------------

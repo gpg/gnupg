@@ -129,6 +129,9 @@ struct reqgen_ctrl_s {
 };
 
 
+static const char oidstr_keyUsage[] = "2.5.29.15";
+
+
 static int proc_parameters (ctrl_t ctrl,
                             struct para_data_s *para,
                             struct reqgen_ctrl_s *outctrl);
@@ -179,10 +182,10 @@ get_parameter_algo (struct para_data_s *para, enum para_name key)
   return gcry_pk_map_name (r->u.value); 
 }
 
-/* parse the usage parameter.  Returns 0 on success.  Note that we
+/* Parse the usage parameter.  Returns 0 on success.  Note that we
    only care about sign and encrypt and don't (yet) allow all the
    other X.509 usage to be specified; instead we will use a fixed
-   mapping to the X.509 usage flags */
+   mapping to the X.509 usage flags. */
 static int
 parse_parameter_usage (struct para_data_s *para, enum para_name key)
 {
@@ -221,6 +224,9 @@ get_parameter_uint (struct para_data_s *para, enum para_name key)
 
   if (!r)
     return 0;
+
+  if (r->key == pKEYUSAGE)
+    return r->u.usage;
 
   return (unsigned int)strtoul (r->u.value, NULL, 10);
 }
@@ -516,6 +522,7 @@ create_request (ctrl_t ctrl,
   ksba_stop_reason_t stopreason;
   int rc = 0;
   const char *s;
+  unsigned int use;
 
   err = ksba_certreq_new (&cr);
   if (err)
@@ -576,6 +583,35 @@ create_request (ctrl_t ctrl,
       rc = err;
       goto leave;
     }
+
+  
+  use = get_parameter_uint (para, pKEYUSAGE);
+  if (use == GCRY_PK_USAGE_SIGN)
+    {
+      /* For signing only we encode the bits:
+         KSBA_KEYUSAGE_DIGITAL_SIGNATURE
+         KSBA_KEYUSAGE_NON_REPUDIATION */
+      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1, 
+                                        "\x03\x02\x06\xC0", 4);
+    }
+  else if (use == GCRY_PK_USAGE_ENCR)
+    {
+      /* For encrypt only we encode the bits:
+         KSBA_KEYUSAGE_KEY_ENCIPHERMENT
+         KSBA_KEYUSAGE_DATA_ENCIPHERMENT */
+      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1, 
+                                        "\x03\x02\x04\x30", 4);
+    }
+  else
+    err = 0; /* Both or none given: don't request one. */
+  if (err)
+    {
+      log_error ("error setting the key usage: %s\n",
+                 gpg_strerror (err));
+      rc = err;
+      goto leave;
+    }
+
                
   do
     {

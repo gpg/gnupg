@@ -669,7 +669,7 @@ export_p12 (const unsigned char *certimg, size_t certimglen,
          protect tool to figure out better error codes for
          CHILD_ERR. */
       buffer[pos++] = c;
-      if (pos >= 5 /*sizeof buffer - 1*/ || c == '\n')
+      if (pos >= sizeof buffer - 5 || c == '\n')
         {
           buffer[pos - (c == '\n')] = 0;
           if (cont_line)

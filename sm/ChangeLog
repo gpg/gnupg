@@ -1,3 +1,20 @@
+2004-06-06  Werner Koch  <wk@gnupg.org>
+
+	* certreqgen.c (get_parameter_uint, create_request): Create
+	an extension for key usage when requested. 
+
+2004-05-12  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Install emergency_cleanup also as an atexit
+	handler.
+
+	* verify.c (gpgsm_verify): Removed the separate error code
+	handling for KSBA.  We use shared error codes anyway.
+
+	* export.c (export_p12): Removed debugging code.
+
+	* encrypt.c (gpgsm_encrypt): Put the session key in to secure memory.
+
 2004-05-11  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (gpgsm_sign): Include the error source in the final error

@@ -398,8 +398,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
       goto leave;
     }
 
-  /* create a session key */
-  dek = xtrycalloc (1, sizeof *dek); /* hmmm: should we put it into secmem?*/
+  /* Create a session key */
+  dek = xtrycalloc_secure (1, sizeof *dek); 
   if (!dek)
     rc = OUT_OF_CORE (errno);
   else

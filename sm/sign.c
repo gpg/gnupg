@@ -456,8 +456,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
       unsigned char *digest;
       size_t digest_len;
       /* Fixme do this for all signers and get the algo to use from
-         the signer's certificate - does not make mich sense, bu we
-         should do this consistent as we have already done it above */
+         the signer's certificate - does not make mich sense, but we
+         should do this consistent as we have already done it above. */
       algo = GCRY_MD_SHA1; 
       hash_data (data_fd, data_md);
       digest = gcry_md_read (data_md, algo);

@@ -86,7 +86,6 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   int i, rc;
   Base64Context b64reader = NULL;
   Base64Context b64writer = NULL;
-  gpg_error_t err;
   ksba_reader_t reader;
   ksba_writer_t writer = NULL;
   ksba_cms_t cms = NULL;
@@ -135,19 +134,15 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         }
     }
 
-  err = ksba_cms_new (&cms);
-  if (err)
-    {
-      rc = gpg_error (GPG_ERR_ENOMEM);
-      goto leave;
-    }
+  rc = ksba_cms_new (&cms);
+  if (rc)
+    goto leave;
 
-  err = ksba_cms_set_reader_writer (cms, reader, writer);
-  if (err)
+  rc = ksba_cms_set_reader_writer (cms, reader, writer);
+  if (rc)
     {
       log_error ("ksba_cms_set_reader_writer failed: %s\n",
-                 gpg_strerror (err));
-      rc = err;
+                 gpg_strerror (rc));
       goto leave;
     }
 
@@ -163,11 +158,10 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   is_detached = 0;
   do 
     {
-      err = ksba_cms_parse (cms, &stopreason);
-      if (err)
+      rc = ksba_cms_parse (cms, &stopreason);
+      if (rc)
         {
-          log_error ("ksba_cms_parse failed: %s\n", gpg_strerror (err));
-          rc = err;
+          log_error ("ksba_cms_parse failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
 
@@ -238,7 +232,6 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
     }
 
   cert = NULL;
-  err = 0;
   for (signer=0; ; signer++)
     {
       char *issuer = NULL;
@@ -249,18 +242,18 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       size_t msgdigestlen;
       char *ctattr;
 
-      err = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
-      if (!signer && gpg_err_code (err) == GPG_ERR_NO_DATA
+      rc = ksba_cms_get_issuer_serial (cms, signer, &issuer, &serial);
+      if (!signer && gpg_err_code (rc) == GPG_ERR_NO_DATA
           && data_fd == -1 && is_detached)
         {
           log_info ("certs-only message accepted\n");
-          err = 0;
+          rc = 0;
           break;
         }
-      if (err)
+      if (rc)
         {
-          if (signer && err == -1)
-            err = 0;
+          if (signer && rc == -1)
+            rc = 0;
           break;
         }
 
@@ -275,19 +268,18 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           log_printf ("\n");
         }
 
-      err = ksba_cms_get_signing_time (cms, signer, sigtime);
-      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+      rc = ksba_cms_get_signing_time (cms, signer, sigtime);
+      if (gpg_err_code (rc) == GPG_ERR_NO_DATA)
         *sigtime = 0;
-      else if (err)
+      else if (rc)
         {
-          log_error ("error getting signing time: %s\n", gpg_strerror (err));
-          *sigtime = 0; /* FIXME: we can't encode an error in the time
-                           string. */
+          log_error ("error getting signing time: %s\n", gpg_strerror (rc));
+          *sigtime = 0; /* (we can't encode an error in the time string.) */
         }
 
-      err = ksba_cms_get_message_digest (cms, signer,
-                                         &msgdigest, &msgdigestlen);
-      if (!err)
+      rc = ksba_cms_get_message_digest (cms, signer,
+                                        &msgdigest, &msgdigestlen);
+      if (!rc)
         {
           size_t is_enabled;
 
@@ -304,24 +296,26 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
               goto next_signer;
             }
         }
-      else if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+      else if (gpg_err_code (rc) == GPG_ERR_NO_DATA)
         {
           assert (!msgdigest);
-          err = 0;
+          rc = 0;
           algoid = NULL;
           algo = 0; 
         }
       else /* real error */
         break;
 
-      err = ksba_cms_get_sigattr_oids (cms, signer,
-                                       "1.2.840.113549.1.9.3",&ctattr);
-      if (!err) 
+      rc = ksba_cms_get_sigattr_oids (cms, signer,
+                                      "1.2.840.113549.1.9.3", &ctattr);
+      if (!rc) 
         {
           const char *s;
 
           if (DBG_X509)
-            log_debug ("signer %d - content-type attribute: %s", signer, ctattr);
+            log_debug ("signer %d - content-type attribute: %s",
+                       signer, ctattr);
+
           s = ksba_cms_get_content_oid (cms, 1);
           if (!s || strcmp (ctattr, s))
             {
@@ -334,13 +328,13 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           ksba_free (ctattr);
           ctattr = NULL;
         }
-      else if (err != -1)
+      else if (rc != -1)
         {
           log_error ("error getting content-type attribute: %s\n",
-                     gpg_strerror (err));
+                     gpg_strerror (rc));
           goto next_signer;
         }
-      err = 0;
+      rc = 0;
 
 
       sigval = ksba_cms_get_sig_val (cms, signer);
@@ -523,13 +517,6 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       cert = NULL;
     }
   rc = 0;
-  if (err)
-    { /* FIXME: still needed? */
-      log_error ("ksba error: %s\n", gpg_strerror (err));
-      rc = err;
-    }    
-
-
 
  leave:
   ksba_cms_release (cms);
