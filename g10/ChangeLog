@@ -1,5 +1,9 @@
 2002-08-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main), mainproc.c (proc_encrypted):
+	--ignore-mdc-error option to turn a MDC check error into a
+	warning.
+
 	* encode.c (encode_crypt), g10.c (main), sign.c (sign_file,
 	clearsign_file): Use the same --pgpX warning string everywhere to
 	ease translations.

@@ -492,11 +492,11 @@ proc_encrypted( CTX c, PACKET *pkt )
     m_free(c->dek); c->dek = NULL;
     if( result == -1 )
 	;
-    else if( !result ) {
+    else if( !result || (result==G10ERR_BAD_SIGN && opt.ignore_mdc_error)) {
 	write_status( STATUS_DECRYPTION_OKAY );
 	if( opt.verbose > 1 )
 	    log_info(_("decryption okay\n"));
-	if( pkt->pkt.encrypted->mdc_method )
+	if( pkt->pkt.encrypted->mdc_method && !result )
 	    write_status( STATUS_GOODMDC );
 	else if(!opt.no_mdc_warn)
 	    log_info ("WARNING: message was not integrity protected\n");

@@ -266,6 +266,7 @@ enum cmd_and_opt_values { aNull = 0,
     oIgnoreTimeConflict,
     oIgnoreValidFrom,
     oIgnoreCrcError,
+    oIgnoreMDCError,
     oShowSessionKey,
     oOverrideSessionKey,
     oNoRandomSeedFile,
@@ -555,6 +556,7 @@ static ARGPARSE_OPTS opts[] = {
     { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
     { oIgnoreValidFrom,    "ignore-valid-from",    0, "@" },
     { oIgnoreCrcError, "ignore-crc-error", 0,"@" },
+    { oIgnoreMDCError, "ignore-mdc-error", 0,"@" },
     { oShowSessionKey, "show-session-key", 0, "@" },
     { oOverrideSessionKey, "override-session-key", 2, "@" },
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
@@ -1420,6 +1422,7 @@ main( int argc, char **argv )
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oIgnoreValidFrom: opt.ignore_valid_from = 1; break;
 	  case oIgnoreCrcError: opt.ignore_crc_error = 1; break;
+	  case oIgnoreMDCError: opt.ignore_mdc_error = 1; break;
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
 	  case oAutoKeyRetrieve:
 	  case oNoAutoKeyRetrieve:
