@@ -91,7 +91,7 @@ lock-once
 #      mailto:pgp-public-keys@keys.nl.pgp.net
 #
 # Example LDAP keyserver:
-#      ldap://keyserver.pgp.com
+#      ldap://pgp.surfnet.nl:11370
 #
 # Regular URL syntax applies, and you can set an alternate port
 # through the usual method:
@@ -109,7 +109,7 @@ lock-once
 
 #keyserver x-hkp://keyserver.cryptnet.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
-#keyserver ldap://keyserver.pgp.com
+#keyserver ldap://pgp.surfnet.nl:11370
 
 # Options for keyserver functions
 #
@@ -155,9 +155,9 @@ lock-once
 # %% is %, of course.
 #
 # If %i or %I are not present, then the photo is supplied to the
-# viewer on standard input.  Standard input is the best way to do
-# this, as it avoids the time and effort in generating and then
-# cleaning up a secure temp file.
+# viewer on standard input.  If your platform supports it, standard
+# input is the best way to do this as it avoids the time and effort in
+# generating and then cleaning up a secure temp file.
 #
 # The default program is "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
 #

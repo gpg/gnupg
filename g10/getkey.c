@@ -1219,7 +1219,28 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                      */ 
                     *r_revoked = 1;
                 }
-                else if ( IS_KEY_SIG (sig) && sig->timestamp >= sigdate ) {
+                else if ( IS_KEY_SIG (sig) ) {
+		  /* Add any revocation keys onto the pk.  This is
+		     particularly interesting since we normally only
+		     get data from the most recent 1F signature, but
+		     you need multiple 1F sigs to properly handle
+		     revocation keys (PGP does it this way, and a
+		     revocation key could be sensitive and hence in a
+		     different signature). */
+		  if(sig->revkey) {
+		    int i;
+
+		    pk->revkey=
+		      m_realloc(pk->revkey,sizeof(struct revocation_key)*
+				(pk->numrevkeys+sig->numrevkeys));
+
+		    for(i=0;i<sig->numrevkeys;i++)
+		      memcpy(&pk->revkey[pk->numrevkeys++],
+			     sig->revkey[i],
+			     sizeof(struct revocation_key));
+		  }
+
+		  if( sig->timestamp >= sigdate ) {
                     const byte *p;
                     
                     p = parse_sig_subpkt( sig->hashed,
@@ -1231,33 +1252,42 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                         signode = k;
 			sigversion = sig->version;
 
-			/* Add any revocation keys onto the pk.  This
-                           is particularly interesting since we
-                           normally only get data from the most recent
-                           1F signature, but you need multiple 1F sigs
-                           to properly handle revocation keys (PGP
-                           does it this way, and a revocation key
-                           could be sensitive and hence in a different
-                           signature). */
-			if(sig->revkey) {
-			  int i;
-
-			  pk->revkey=
-			    m_realloc(pk->revkey,sizeof(struct revocation_key)*
-				      (pk->numrevkeys+sig->numrevkeys));
-
-			  for(i=0;i<sig->numrevkeys;i++)
-			    memcpy(&pk->revkey[pk->numrevkeys],
-				   sig->revkey[i],
-				   sizeof(struct revocation_key));
-
-			  pk->numrevkeys+=sig->numrevkeys;
-			}
-                    }
+		    }
+		  }
                 }
             }
         }
     }
+
+    /* Remove dupes from the revocation keys */
+
+    if(pk->revkey)
+      {
+	int i,j,x,changed=0;
+
+	for(i=0;i<pk->numrevkeys;i++)
+	  {
+	    for(j=i+1;j<pk->numrevkeys;j++)
+	      {
+		if(memcmp(&pk->revkey[i],&pk->revkey[j],
+			  sizeof(struct revocation_key))==0)
+		  {
+		    /* remove j */
+
+		    for(x=j;x<pk->numrevkeys-1;x++)
+		      pk->revkey[x]=pk->revkey[x+1];
+
+		    pk->numrevkeys--;
+		    j--;
+		    changed=1;
+		  }
+	      }
+	  }
+
+	if(changed)
+	  pk->revkey=m_realloc(pk->revkey,
+			       pk->numrevkeys*sizeof(struct revocation_key));
+      }
 
     if ( signode ) {
         /* some information from a direct key signature take precedence

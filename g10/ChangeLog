@@ -1,3 +1,13 @@
+2002-05-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: keyserver.pgp.com is gone, so list pgp.surfnet.nl
+	as a sample LDAP server instead.
+
+	* getkey.c (merge_selfsigs_main): Properly handle multiple
+	revocation keys in a single packet.  Properly handle revocation
+	keys that are in out-of-order packets.  Remove duplicates in
+	revocation key list.
+
 2002-05-14  Timo Schulz   <ts@winpt.org>
 
 	* exec.c (make_tempdir) [MINGW32]: Added missing '\'.
