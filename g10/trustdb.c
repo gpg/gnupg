@@ -995,7 +995,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
                        u32 curtime, u32 *next_expire)
 {
   KBNODE node;
-  PKT_signature *sig = node->pkt->pkt.signature;
+  PKT_signature *sig;
   
   /* first check all signatures */
   for (node=uidnode->next; node; node = node->next)
@@ -1076,7 +1076,8 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
                     
           p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL );
           expire = p? sig->timestamp + buffer_to_u32(p) : 0;
-          if ( expire < curtime )
+
+          if (expire==0 || expire > curtime )
             {
               signode->flag |= (1<<8); /* yeah, found a good cert */
               if (expire && expire < *next_expire)
