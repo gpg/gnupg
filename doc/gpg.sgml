@@ -989,25 +989,17 @@ For keyserver schemes that use HTTP (such as HKP), try to access the
 keyserver over the proxy set with the environment variable
 "http_proxy".
 </para></listitem></varlistentry>
-</variablelist>
-</para></listitem></varlistentry>
 
 <varlistentry>
-<term>--auto-key-retrieve</term>
+<term>auto-key-retrieve</term>
 <listitem><para>
 This option enables the automatic retrieving of keys from a keyserver
 when verifying signatures made by keys that are not on the local
 keyring.
 </para></listitem></varlistentry>
 
-<varlistentry>
-<term>--no-auto-key-retrieve</term>
-<listitem><para>
-This option disables the automatic retrieving of keys from a keyserver
-while verifying signatures. This may be of use if --auto-key-retrieve
-is enabled from an options file.
+</variablelist>
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--keyring &ParmFile;</term>
@@ -1477,8 +1469,9 @@ a message that PGP 2.x will not be able to handle.  Note that `PGP
 2.x' here means `MIT PGP 2.6.2'.  There are other versions of PGP 2.x
 available, but the MIT release is a good common baseline.
 </para><para>
-This option implies `--rfc1991 --no-openpgp --no-force-v4-certs
---no-comment --escape-from --no-force-v3-sigs --cipher-algo IDEA
+This option implies `--rfc1991 --no-openpgp --disable-mdc
+--no-force-v4-certs --no-comment --escape-from --force-v3-sigs
+--no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
 --digest-algo MD5 --compress-algo 1'
 </para></listitem></varlistentry>
 
