@@ -95,6 +95,7 @@ struct server_control_s {
     int algo;
     unsigned char value[MAX_DIGEST_LEN];
     int valuelen;
+    int raw_value: 1;
   } digest;
   char keygrip[20];
   int have_keygrip;
@@ -159,6 +160,8 @@ void agent_unlock_cache_entry (void **cache_id);
 
 
 /*-- pksign.c --*/
+int agent_pksign_do (CTRL ctrl, const char *desc_text,
+		     gcry_sexp_t *signature_sexp, int ignore_cache);
 int agent_pksign (ctrl_t ctrl, const char *desc_text,
                   FILE *outfp, int ignore_cache);
 

@@ -854,6 +854,7 @@ start_command_handler (int listen_fd, int fd)
   ctrl.server_local->assuan_ctx = ctx;
   ctrl.server_local->message_fd = -1;
   ctrl.server_local->use_cache_for_signing = 1;
+  ctrl.digest.raw_value = 0;
 
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
