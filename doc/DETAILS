@@ -29,6 +29,7 @@ record.
 	    sec = secret key
 	    ssb = secret subkey (secondary key)
 	    uid = user id (only field 10 is used).
+	    uat = user attribute (same as user id except for field 10).
             sig = signature
             rev = revocation signature
 	    fpr = fingerprint: (fingerprint is in field 10)
@@ -65,7 +66,9 @@ record.
 	    information may follow in some future versions.
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
-            This is not used with --fixed-list-mode in gpg. 
+            This is not used with --fixed-list-mode in gpg.
+            A UAT record puts the attribute subpacket count here, a
+	    space, and then the total attribute subpacket size.
             In gpgsm the issuer name comes here
             An FPR record stores the fingerprint here.
             The fingerprint of an revocation key is stored here.

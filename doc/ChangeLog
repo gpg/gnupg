@@ -1,3 +1,11 @@
+2002-06-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS: Document "uat".
+
+	* gpg.sgml: Document
+	--personal-{compress|digest|compress}-preferences, --group, and
+	add comments to --expert.
+
 2002-06-17  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Grammar fix.

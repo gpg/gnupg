@@ -1,5 +1,5 @@
 <!-- gpg.sgml - the man page for GnuPG
-    Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+    Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
     This file is part of GnuPG.
 
@@ -1928,9 +1928,11 @@ Resets the --ask-cert-expire option.
 <listitem><para>
 Allow the user to do certain nonsensical or "silly" things like
 signing an expired or revoked key, or certain potentially incompatible
-things like generating deprecated key types.  In general, this option
-is for experts only.  If you don't fully understand the implications
-of what it allows you to do, leave this off.
+things like generating deprecated key types.  This also disables
+certain warning messages about potentially incompatible actions.  As
+the name implies, this option is for experts only.  If you don't fully
+understand the implications of what it allows you to do, leave this
+off.
 </para></listitem></varlistentry
 
 <varlistentry>
@@ -1975,6 +1977,15 @@ Experimental use only.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--group &ParmNameValue;</term>
+<listitem><para>
+Sets up a name group, which is similar to aliases in email programs.
+Any time the group name is a receipient (-r or --recipient), it will
+be expanded to the values specified.  Note there is only one level of
+expansion - you cannot make an group that points to another group.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--preserve-permissions</term>
 <listitem><para>
 Don't change the permissions of a secret keyring back to user
@@ -1982,16 +1993,35 @@ read/write only.  Use this option only if you really know what you are doing.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--personal-preference-list &ParmString</term>
+<term>--personal-cipher-preferences &ParmString;</term>
 <listitem><para>
-Set the list of personal preferences to &ParmString;, this list should
-be a string similar to the one printed by the command "pref" in the
-edit menu.  This allows the user to factor in their own preferred
+Set the list of personal cipher preferences to &ParmString;, this list
+should be a string similar to the one printed by the command "pref" in
+the edit menu.  This allows the user to factor in their own preferred
 algorithms when algorithms are chosen via recipient key preferences.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--default-preference-list &ParmString</term>
+<term>--personal-digest-preferences &ParmString;</term>
+<listitem><para>
+Set the list of personal digest preferences to &ParmString;, this list
+should be a string similar to the one printed by the command "pref" in
+the edit menu.  This allows the user to factor in their own preferred
+algorithms when algorithms are chosen via recipient key preferences.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--personal-compress-preferences &ParmString;</term>
+<listitem><para>
+Set the list of personal compression preferences to &ParmString;, this
+list should be a string similar to the one printed by the command
+"pref" in the edit menu.  This allows the user to factor in their own
+preferred algorithms when algorithms are chosen via recipient key
+preferences.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--default-preference-list &ParmString;</term>
 <listitem><para>
 Set the list of default preferences to &ParmString;, this list should
 be a string similar to the one printed by the command "pref" in the
