@@ -1,3 +1,12 @@
+2003-12-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Reenable tests now that the Elgamal signature keys
+	are gone.
+
+	* defs.inc, pubring.asc, secring.asc, plain-1.asc, plain-2.asc,
+	plain-3.asc: Remove the old v3 Elgamal keys and replace with
+	RSA+Elgamal and RSA s+e.
+
 2003-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* options: Remove emulate-md-encode-bug.

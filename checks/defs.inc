@@ -9,8 +9,6 @@ usrname1="one"
 usrpass1="def"
 usrname2="two"
 usrpass2=""
-usrname3="three"
-usrpass3="abc"
 
 
 dsa_usrname1="pgp5"
@@ -107,7 +105,7 @@ elif [ -f $srcdir/options ]; then
   cat $srcdir/options >gpg.conf
 fi
 
-GPG="../g10/gpg --homedir . "
+GPG="../g10/gpg --no-permission-warning --homedir . "
 
 exec 2> ${pgmname}.log
 
