@@ -52,6 +52,7 @@ struct stats_s {
     ulong secret_imported;
     ulong secret_dups;
     ulong skipped_new_keys;
+    ulong not_imported;
 };
 
 
@@ -258,6 +259,8 @@ import( IOBUF inp, int fast, const char* fname,
 					    keyblock->pkt->pkttype );
 	}
 	release_kbnode(keyblock);
+        /* fixme: we should increment the not imported counter but this
+           does only make sense if we keep on going despite of errors. */
 	if( rc )
 	    break;
 	if( !(++stats->count % 100) && !opt.quiet )
@@ -306,11 +309,13 @@ import_print_stats (void *hd)
 	    log_info(_("  secret keys imported: %lu\n"), stats->secret_imported );
 	if( stats->secret_dups )
 	    log_info(_(" secret keys unchanged: %lu\n"), stats->secret_dups );
+	if( stats->not_imported )
+	    log_info(_("          not imported: %lu\n"), stats->not_imported );
     }
 
     if( is_status_enabled() ) {
-	char buf[13*20];
-	sprintf(buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+	char buf[14*20];
+	sprintf(buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
 		stats->count,
 		stats->no_user_id,
 		stats->imported,
@@ -323,7 +328,8 @@ import_print_stats (void *hd)
 		stats->secret_read,
 		stats->secret_imported,
 		stats->secret_dups,
-		stats->skipped_new_keys );
+		stats->skipped_new_keys,
+                stats->not_imported );
 	write_status_text( STATUS_IMPORT_RES, buf );
     }
 }
