@@ -1191,6 +1191,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
 	   cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF,
  	   cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
+           cmdADDCARDKEY,
 	   cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
@@ -1223,6 +1224,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 	/* delphoto is really deluid in disguise */
 	{ N_("delphoto"), cmdDELUID    , 0,1, NULL },
 	{ N_("addkey")  , cmdADDKEY    , 1,1, N_("add a secondary key") },
+	{ N_("addcardkey"), cmdADDCARDKEY , 1,1, N_("add a key to a smartcard") },
 	{ N_("delkey")  , cmdDELKEY    , 0,1, N_("delete a secondary key") },
 	{ N_("addrevoker"),cmdADDREVOKER,1,1, N_("add a revocation key") },
 	{ N_("delsig")  , cmdDELSIG    , 0,1, N_("delete signatures") },
@@ -1530,6 +1532,16 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    }
 	    break;
 
+#ifdef ENABLE_CARD_SUPPORT
+	  case cmdADDCARDKEY:
+	    if (card_generate_subkey (keyblock, sec_keyblock)) {
+		redisplay = 1;
+		sec_modified = modified = 1;
+		merge_keys_and_selfsig( sec_keyblock );
+		merge_keys_and_selfsig( keyblock );
+	    }
+	    break;
+#endif /* ENABLE_CARD_SUPPORT */
 
 	  case cmdDELKEY: {
 		int n1;
@@ -2210,6 +2222,27 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    tty_printf("  ");
 	    tty_printf(_("expires: %s"),expirestr_from_sk(sk));
 	    tty_printf("\n");
+            if (sk->is_protected && sk->protect.s2k.mode == 1002)
+              {
+		tty_printf("                     ");
+                tty_printf(_("card-no: ")); 
+                if (sk->protect.ivlen == 16
+                    && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6))
+                  { /* This is an OpenPGP card. */
+                    for (i=8; i < 14; i++)
+                      {
+                        if (i == 10)
+                          tty_printf (" ");
+                        tty_printf ("%02X", sk->protect.iv[i]);
+                      }
+                  }
+                else
+                  { /* Something is wrong: Print all. */
+                    for (i=0; i < sk->protect.ivlen; i++)
+                      tty_printf ("%02X", sk->protect.iv[i]);
+                  }
+                tty_printf ("\n");
+              }
 	  }
 	else if( with_subkeys && node->pkt->pkttype == PKT_SIGNATURE
 		 && node->pkt->pkt.signature->sig_class == 0x28       ) {
@@ -2555,7 +2588,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 
 
 /****************
- * Remove all selceted userids from the keyrings
+ * Remove all selected userids from the keyrings
  */
 static void
 menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock )

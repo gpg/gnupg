@@ -252,7 +252,7 @@ scripts and other programs.
 
 
 <varlistentry>
-<term>--list-secret-keys &OptParmNames;</term>
+<term>-K, --list-secret-keys &OptParmNames;</term>
 <listitem><para>
 List all keys from the secret keyrings, or just the ones given on the
 command line.  A '#' after the letters 'sec' means that the secret key
@@ -409,6 +409,11 @@ Revoke a user id.</para></listitem></varlistentry>
     <term>addkey</term>
     <listitem><para>
 Add a subkey to this key.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>addcardkey</term>
+    <listitem><para>
+Generate a key on a card and add it 
+to this key.</para></listitem></varlistentry>
     <varlistentry>
     <term>delkey</term>
     <listitem><para>

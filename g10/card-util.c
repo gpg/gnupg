@@ -828,6 +828,120 @@ generate_card_keys (const char *serialno)
     }
 }
 
+
+/* This fucntion is used by the key edit menu to generate an arbitrary
+   subkey. */
+int
+card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
+{
+  struct agent_card_info_s info;
+  int okay = 0;
+  int forced_chv1 = 0;
+  int rc;
+  int keyno;
+
+  memset (&info, 0, sizeof info);
+  rc = agent_scd_getattr ("SERIALNO", &info);
+  if (rc || !info.serialno || strncmp (info.serialno, "D27600012401", 12) 
+      || strlen (info.serialno) != 32 )
+    {
+      log_error (_("cannot generate key: %s\n"),
+                 rc ? gpg_strerror (rc) : _("not an OpenPGP card"));
+      goto leave;
+    }
+  rc = agent_scd_getattr ("KEY-FPR", &info);
+  if (!rc)
+    rc = agent_scd_getattr ("CHV-STATUS", &info);
+  if (rc)
+    {
+      log_error ("error getting current key info: %s\n", gpg_strerror (rc));
+      goto leave;
+    }
+  
+  tty_fprintf (NULL, "Signature key ....:");
+  print_sha1_fpr (NULL, info.fpr1valid? info.fpr1:NULL);
+  tty_fprintf (NULL, "Encryption key....:");
+  print_sha1_fpr (NULL, info.fpr2valid? info.fpr2:NULL);
+  tty_fprintf (NULL, "Authentication key:");
+  print_sha1_fpr (NULL, info.fpr3valid? info.fpr3:NULL);
+  tty_printf ("\n");
+
+  tty_printf (_("Please select the type of key to generate:\n"));
+
+  tty_printf (_("   (1) Signature key\n"));
+  tty_printf (_("   (2) Encryption key\n"));
+  tty_printf (_("   (3) Authentication key\n"));
+
+  for (;;) 
+    {
+      char *answer = cpr_get ("cardedit.genkeys.subkeytype",
+                              _("Your selection? "));
+      cpr_kill_prompt();
+      if (*answer == CONTROL_D)
+        {
+          xfree (answer);
+          goto leave;
+        }
+      keyno = *answer? atoi(answer): 0;
+      xfree(answer);
+      if (keyno >= 1 && keyno <= 3)
+        break; /* Okay. */
+      tty_printf(_("Invalid selection.\n"));
+    }
+
+  if ((keyno == 1 && info.fpr1valid)
+      || (keyno == 2 && info.fpr2valid)
+      || (keyno == 3 && info.fpr3valid))
+    {
+      tty_printf ("\n");
+      log_info ("WARNING: such a key has already been stored on the card!\n");
+      tty_printf ("\n");
+      if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_key",
+                                  _("Replace existing key? ")))
+        goto leave;
+    }
+
+  forced_chv1 = !info.chv1_cached;
+  if (forced_chv1)
+    { /* Switch of the forced mode so that during key generation we
+         don't get bothered with PIN queries for each
+         self-signature. */
+      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1);
+      if (rc)
+        {
+          log_error ("error clearing forced signature PIN flag: %s\n",
+                     gpg_strerror (rc));
+          forced_chv1 = 0;
+          goto leave;
+        }
+    }
+
+  /* Check the PIN now, so that we won't get asked later for each
+     binding signature. */
+  rc = agent_scd_checkpin (info.serialno);
+  if (rc)
+    log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
+  else
+    okay = generate_card_subkeypair (pub_keyblock, sec_keyblock,
+                                     keyno, info.serialno);
+
+ leave:
+  agent_release_card_info (&info);
+  if (forced_chv1)
+    { /* Switch back to forced state. */
+      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1);
+      if (rc)
+        {
+          log_error ("error setting forced signature PIN flag: %s\n",
+                     gpg_strerror (rc));
+          return okay;
+        }
+    }
+  return okay;
+}
+
+
+
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
 void

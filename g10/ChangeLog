@@ -1,5 +1,16 @@
 2004-09-20  Werner Koch  <wk@g10code.com>
 
+	* g10.c: Make -K an alias for --list-secret-keys.
+
+	* keylist.c (print_card_serialno): New. Taken from gnupg 1.9.11.
+	(list_keyblock_print): Make use of it.
+	* keyedit.c (show_key_with_all_names): Print the card S/N.
+
+	* keyedit.c (keyedit_menu): New command ADDCARDKEY.
+	* card-util.c (card_generate_subkey): New.
+	* keygen.c (generate_card_subkeypair): New.
+	(gen_card_key): New arg IS_PRIMARY; changed all callers.
+
 	* cardglue.c (open_card): Use shutdown code if possible.
 	(check_card_serialno): Ditto.
 

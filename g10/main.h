@@ -162,6 +162,10 @@ int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_keyserver_url(PKT_signature *sig, void *opaque);
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
 int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
+#ifdef ENABLE_CARD_SUPPORT
+int generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
+                              int keyno, const char *serialno);
+#endif
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );
@@ -257,6 +261,7 @@ void unblock_all_signals(void);
 void change_pin (int no);
 void card_status (FILE *fp, char *serialno, size_t serialnobuflen);
 void card_edit (STRLIST commands);
+int  card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock);
 #endif
 
 #endif /*G10_MAIN_H*/

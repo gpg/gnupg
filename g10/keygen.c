@@ -117,7 +117,8 @@ static int mdc_available,ks_modify;
 static void do_generate_keypair( struct para_data_s *para,
 				 struct output_control_s *outctrl, int card );
 static int  write_keyblock( IOBUF out, KBNODE node );
-static int gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
+static int gen_card_key (int algo, int keyno, int is_primary,
+                         KBNODE pub_root, KBNODE sec_root,
                          u32 expireval, struct para_data_s *para);
 
 static void
@@ -2481,7 +2482,7 @@ do_generate_keypair( struct para_data_s *para,
       }
     else
       {
-        rc = gen_card_key (PUBKEY_ALGO_RSA, 1, pub_root, sec_root,
+        rc = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root, sec_root,
                            get_parameter_u32 (para, pKEYEXPIRE), para);
         if (!rc)
           {
@@ -2523,7 +2524,7 @@ do_generate_keypair( struct para_data_s *para,
           }
         else
           {
-            rc = gen_card_key (PUBKEY_ALGO_RSA, 2, pub_root, sec_root,
+            rc = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, sec_root,
                                get_parameter_u32 (para, pKEYEXPIRE), para);
           }
 
@@ -2538,7 +2539,7 @@ do_generate_keypair( struct para_data_s *para,
 
     if (card && get_parameter (para, pAUTHKEYTYPE))
       {
-        rc = gen_card_key (PUBKEY_ALGO_RSA, 3, pub_root, sec_root,
+        rc = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root, sec_root,
                            get_parameter_u32 (para, pKEYEXPIRE), para);
         
         if (!rc)
@@ -2768,6 +2769,120 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     return okay;
 }
 
+
+#ifdef ENABLE_CARD_SUPPORT
+/* Generate a subkey on a card. */
+int
+generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
+                          int keyno, const char *serialno)
+{
+  int okay=0, rc=0;
+  KBNODE node;
+  PKT_secret_key *pri_sk = NULL;
+  int algo;
+  unsigned int use;
+  u32 expire;
+  char *passphrase = NULL;
+  u32 cur_time;
+  struct para_data_s *para = NULL;
+
+  assert (keyno >= 1 && keyno <= 3);
+
+  para = xcalloc (1, sizeof *para + strlen (serialno) );
+  para->key = pSERIALNO;
+  strcpy (para->u.value, serialno);
+
+  /* Break out the primary secret key */
+  node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
+  if(!node)
+    {
+      log_error("Oops; secret key not found anymore!\n");
+      goto leave;
+    }
+
+  /* Make a copy of the sk to keep the protected one in the keyblock */
+  pri_sk = copy_secret_key (NULL, node->pkt->pkt.secret_key);
+
+  cur_time = make_timestamp();
+  if (pri_sk->timestamp > cur_time)
+    {
+      ulong d = pri_sk->timestamp - cur_time;
+      log_info (d==1 ? _("key has been created %lu second "
+                         "in future (time warp or clock problem)\n")
+                     : _("key has been created %lu seconds "
+                         "in future (time warp or clock problem)\n"), d );
+	if (!opt.ignore_time_conflict)
+          {
+	    rc = G10ERR_TIME_CONFLICT;
+	    goto leave;
+          }
+    }
+
+  if (pri_sk->version < 4)
+    {
+      log_info (_("NOTE: creating subkeys for v3 keys "
+                  "is not OpenPGP compliant\n"));
+      goto leave;
+    }
+
+  /* Unprotect to get the passphrase. */
+  switch( is_secret_key_protected (pri_sk) )
+    {
+    case -1:
+      rc = G10ERR_PUBKEY_ALGO;
+      break;
+    case 0:
+      tty_printf("This key is not protected.\n");
+      break;
+    default:
+      tty_printf("Key is protected.\n");
+      rc = check_secret_key( pri_sk, 0 );
+      if (!rc)
+        passphrase = get_last_passphrase();
+      break;
+    }
+  if (rc)
+    goto leave;
+
+  algo = PUBKEY_ALGO_RSA;
+  expire = ask_expire_interval (0);
+  if (keyno == 1)
+    use = PUBKEY_USAGE_SIG;
+  else if (keyno == 2)
+    use = PUBKEY_USAGE_ENC;
+  else
+    use = PUBKEY_USAGE_AUTH;
+  if (!cpr_enabled() && !cpr_get_answer_is_yes("keygen.cardsub.okay",
+                                               _("Really create? ") ) )
+    goto leave;
+
+  if (passphrase)
+    set_next_passphrase (passphrase);
+  rc = gen_card_key (algo, keyno, 0, pub_keyblock, sec_keyblock, expire, para);
+  if (!rc)
+    rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, NULL, use);
+  if (!rc)
+    rc = write_keybinding (sec_keyblock, pub_keyblock, pri_sk, NULL, use);
+  if (!rc)
+    {
+      okay = 1;
+      write_status_text (STATUS_KEY_CREATED, "S");
+    }
+
+ leave:
+  if (rc)
+    log_error (_("Key generation failed: %s\n"), g10_errstr(rc) );
+  m_free (passphrase);
+  /* Release the copy of the (now unprotected) secret keys. */
+  if (pri_sk)
+    free_secret_key (pri_sk);
+  set_next_passphrase( NULL );
+  release_parameter_list (para);
+  return okay;
+}
+#endif /* !ENABLE_CARD_SUPPORT */
+
+
 /****************
  * Write a keyblock to an output stream
  */
@@ -2787,7 +2902,8 @@ write_keyblock( IOBUF out, KBNODE node )
 
 
 static int
-gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
+gen_card_key (int algo, int keyno, int is_primary,
+              KBNODE pub_root, KBNODE sec_root,
               u32 expireval, struct para_data_s *para)
 {
 #ifdef ENABLE_CARD_SUPPORT
@@ -2848,12 +2964,12 @@ gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
     }
 
   pkt = xcalloc (1,sizeof *pkt);
-  pkt->pkttype = keyno == 1 ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
+  pkt->pkttype = is_primary ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
   pkt->pkt.public_key = pk;
   add_kbnode(pub_root, new_kbnode( pkt ));
 
   pkt = xcalloc (1,sizeof *pkt);
-  pkt->pkttype = keyno == 1 ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
+  pkt->pkttype = is_primary ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
   pkt->pkt.secret_key = sk;
   add_kbnode(sec_root, new_kbnode( pkt ));
 

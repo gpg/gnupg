@@ -812,8 +812,8 @@ agent_scd_change_pin (int chvno)
                               pin_cb, NULL);
 }
 
-/* Perform a CHECKPIN operation.  SERIALNO should be the seriial
-   number of the card - optioanlly followed by the fingerprint;
+/* Perform a CHECKPIN operation.  SERIALNO should be the serial
+   number of the card - optionally followed by the fingerprint;
    however the fingerprint is ignored here. */
 int
 agent_scd_checkpin (const char *serialnobuf)

@@ -113,6 +113,12 @@
 
   * Add the NEWSIG status.
 
+  * When generating a key onh the card we should try to also set the
+    display name or provide the display name as a default in the key
+    generation.  The problem however is that the display name must be
+    given with an indication of the surname and the usable characters
+    are also restricted.
+
 
 Things we won't do
 ------------------
