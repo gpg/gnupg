@@ -1,3 +1,17 @@
+2002-10-29  Stefan Bellon  <sbellon@sbellon.de>
+
+	* build-packet.c (calc_plaintext, do_plaintext): Removed RISC OS
+	specific filetype parts (it's now done in make_basename()).
+
+	* plaintext.c (handle_plaintext): Tidied up RISC OS specific
+	filetype parts.
+
+	* encode.c (encode_simple, encode_crypt): Added argument to
+	make_basename() call.
+
+	* sign.c (write_plaintext_packet): Added argument to
+	make_basename() call.
+
 2002-10-28  Stefan Bellon  <sbellon@sbellon.de>
 
 	* build-packet.c (calc_plaintext, do_plaintext): Added filetype

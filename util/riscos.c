@@ -84,8 +84,8 @@ riscos_get_filetype_from_string(const char *string, int len)
 {
     int result = 0xfff;
 
-    if (string[len - 4] != ',')
-        return 0xfff;
+    if (strlen(string) < 5 || string[len - 4] != ',')
+        return -1;
 
     sscanf(string+len-3, "%3x", &result);
 
@@ -211,6 +211,8 @@ fdopenfile(const char *filename, const int allow_write)
 
     h = fds_list;
     fds_list = (struct fds_item *) m_alloc(sizeof(struct fds_item));
+    if (!fds_list)
+        log_fatal("Can't claim memory for fdopenfile() buffer!\n");
     fds_list->fd = fd;
     fds_list->next = h;
 
@@ -273,6 +275,40 @@ gstrans(const char *old)
         log_fatal("Can't realloc memory after OS_GSTrans!\n");
 
     return tmp;
+}
+
+/***************
+ * Extract from a given path the filename component.
+ * (cloned from util/fileutil.c and then heavily modified)
+ */
+char *
+riscos_make_basename(const char *filepath, const char *realfname)
+{
+    char *p = (char*)filepath-1, *result;
+    int i, filetype;
+
+    if ( !(p=strrchr(filepath, DIRSEP_C)) )
+        if ( !(p=strrchr(filepath, ':')) )
+            ;
+
+    i = strlen(p+1);
+    result = m_alloc(i + 5);
+    if (!result)
+        log_fatal("Can't claim memory for riscos_make_basename() buffer!\n");
+    strcpy(result, p+1);
+    
+    filetype = riscos_get_filetype( realfname );
+    result[i++] = ',';
+    result[i++] = "0123456789abcdef"[(filetype >> 8) & 0xf];
+    result[i++] = "0123456789abcdef"[(filetype >> 4) & 0xf];
+    result[i++] = "0123456789abcdef"[(filetype >> 0) & 0xf];
+    result[i]   = 0;
+
+    for(i=0; i<strlen(result); ++i)
+        if(result[i] == '/')
+            result[i] = '.';
+
+    return result;
 }
 
 #ifdef DEBUG

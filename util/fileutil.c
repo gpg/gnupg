@@ -25,10 +25,6 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
-#ifdef __riscos__
-#include <kernel.h>
-#include <swis.h>
-#endif /* __riscos__ */
 #include "util.h"
 #include "memory.h"
 #include "ttyio.h"
@@ -39,16 +35,18 @@
  *
  */
 char *
-make_basename(const char *filepath)
+make_basename(const char *filepath, const char *inputpath)
 {
+#ifdef __riscos__
+    return riscos_make_basename(filepath, inputpath);
+#endif
+
     char *p;
 
     if ( !(p=strrchr(filepath, DIRSEP_C)) )
 #ifdef HAVE_DRIVE_LETTERS
 	if ( !(p=strrchr(filepath, '\\')) )
 	    if ( !(p=strrchr(filepath, ':')) )
-#elif defined(__riscos__)
-        if ( !(p=strrchr(filepath, ':')) )
 #endif
 	      {
 		return m_strdup(filepath);
@@ -101,11 +99,7 @@ make_filename( const char *first_part, ... )
     va_list arg_ptr ;
     size_t n;
     const char *s;
-#ifndef __riscos__
     char *name, *home, *p;
-#else
-    char *name, *p;
-#endif
 
     va_start( arg_ptr, first_part ) ;
     n = strlen(first_part)+1;
@@ -113,18 +107,15 @@ make_filename( const char *first_part, ... )
 	n += strlen(s) + 1;
     va_end(arg_ptr);
 
-#ifndef __riscos__
     home = NULL;
+#ifndef __riscos__
     if( *first_part == '~' && first_part[1] == DIRSEP_C
 			   && (home = getenv("HOME")) && *home )
 	n += strlen(home);
+#endif
     name = m_alloc(n);
     p = home ? stpcpy(stpcpy(name,home), first_part+1)
 	     : stpcpy(name, first_part);
-#else /* __riscos__ */
-    name = m_alloc(n);
-    p = stpcpy(name, first_part);
-#endif /* __riscos__ */
     va_start( arg_ptr, first_part ) ;
     while( (s=va_arg(arg_ptr, const char *)) )
 	p = stpcpy(stpcpy(p, DIRSEP_S), s);
@@ -159,7 +150,7 @@ compare_filenames( const char *a, const char *b )
     abuf = gstrans(a);
     bbuf = gstrans(b);
 
-    c = strcasecmp (abuf, bbuf);
+    c = ascii_strcasecmp (abuf, bbuf);
 
     m_free(abuf);
     m_free(bbuf);

@@ -443,7 +443,8 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     if (!opt.no_literal) {
         if (fname || opt.set_filename) {
             char *s = make_basename (opt.set_filename? opt.set_filename
-                                                     : fname);
+                                                     : fname,
+                                     iobuf_get_real_fname(inp));
             pt = m_alloc (sizeof *pt + strlen(s) - 1);
             pt->namelen = strlen (s);
             memcpy (pt->name, s, pt->namelen);

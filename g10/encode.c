@@ -267,7 +267,8 @@ encode_simple( const char *filename, int mode, int compat )
 	/* setup the inner packet */
 	if( filename || opt.set_filename ) {
 	    char *s = make_basename( opt.set_filename ? opt.set_filename
-						      : filename );
+						      : filename,
+				     iobuf_get_real_fname( inp ) );
 	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
 	    pt->namelen = strlen(s);
 	    memcpy(pt->name, s, pt->namelen );
@@ -503,7 +504,9 @@ encode_crypt( const char *filename, STRLIST remusr )
     if (!opt.no_literal) {
 	/* setup the inner packet */
 	if( filename || opt.set_filename ) {
-	    char *s = make_basename( opt.set_filename ? opt.set_filename : filename );
+	    char *s = make_basename( opt.set_filename ? opt.set_filename
+						      : filename,
+				     iobuf_get_real_fname( inp ) );
 	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
 	    pt->namelen = strlen(s);
 	    memcpy(pt->name, s, pt->namelen );

@@ -78,29 +78,9 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
-#ifdef __riscos__
-        /* If there's a ,xxx extension in the embedded filename,
-           get filetype from it and use it later on */
-        filetype = riscos_get_filetype_from_string( pt->name, pt->namelen );
-        c = riscos_get_filetype_from_string( fname, strlen(fname) );
-        if( c != 0xfff && filetype == 0xfff)
-            filetype = c;
-#endif
     }
     else {
 	fname = make_printable_string( pt->name, pt->namelen, 0 );
-#ifdef __riscos__
-        /* If there's a ,xxx extension in the embedded filename,
-           get filetype from it and use it later on, remove ,xxx from
-           actual filename */
-        if( fname[strlen(fname) - 4] == ',' ) {
-            filetype = riscos_get_filetype_from_string( pt->name, pt->namelen );
-            fname[strlen(fname) - 4] = 0;
-        }
-        for( c=0; fname[c]; ++c)
-            if( fname[c] == '.' )
-                fname[c] = '/';
-#endif
     }
 
     if( nooutput )
@@ -125,20 +105,39 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
         }
     }
 
+#ifndef __riscos__
     if( fp || nooutput )
 	;
     else if( !(fp = fopen(fname,"wb")) ) {
 	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
 	rc = G10ERR_CREATE_FILE;
-#ifdef __riscos__
-        if (errno == 106)
-            log_info("perhaps the output file has the same name as the input file?\n");
-#endif /* __riscos__ */
 	goto leave;
     }
-#ifdef __riscos__
+#else /* __riscos__ */
+    /* Convert all '.' in fname to '/' -- we don't create directories! */
+    for( c=0; fname[c]; ++c )
+        if( fname[c] == '.' )
+            fname[c] = '/';
+
+    if( fp || nooutput )
+	;
+    else if( !(fp = fopen(fname,"wb")) ) {
+	log_error(_("error creating `%s': %s\n"), fname, strerror(errno) );
+	rc = G10ERR_CREATE_FILE;
+        if (errno == 106)
+            log_info("Do output file and input file have the same name?\n");
+	goto leave;
+    }
+
+    /* If there's a ,xxx extension in the embedded filename,
+       use that, else check whether the user input (in fname)
+       has a ,xxx appended, then use that in preference */
+    if( (c = riscos_get_filetype_from_string( pt->name, pt->namelen )) != -1 )
+        filetype = c;
+    if( (c = riscos_get_filetype_from_string( fname, strlen(fname) )) != -1 )
+        filetype = c;
     riscos_set_filetype_by_number(fname, filetype);
-#endif
+#endif /* __riscos__ */
 
     if( !pt->is_partial ) {
         /* we have an actual length (which might be zero). */

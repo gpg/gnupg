@@ -1,3 +1,13 @@
+2002-10-29  Stefan Bellon  <sbellon@sbellon.de>
+
+	* fileutil.c: Removed unnecessary left-over includes for RISC OS.
+	(make_filename): Tidied up RISC OS stuff.
+	(compare_filenames) [__riscos__]: Compare with ascii_strcasecmp().
+	(make_basename) [__riscos__]: Branch to own RISC OS routine from
+	here.
+
+	* riscos.c (riscos_make_basename): New.
+
 2002-10-28  Stefan Bellon  <sbellon@sbellon.de>
 
 	* fileutil.c (make_basename) [__riscos__]: Cut off RISC OS' filing

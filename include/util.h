@@ -152,7 +152,7 @@ int release_dotlock( DOTLOCK h );
 void remove_lockfiles (void);
 
 /*-- fileutil.c --*/
-char * make_basename(const char *filepath);
+char * make_basename(const char *filepath, const char *inputpath);
 char * make_dirname(const char *filepath);
 char *make_filename( const char *first_part, ... );
 int compare_filenames( const char *a, const char *b );
@@ -283,6 +283,7 @@ int fdopenfile(const char *filename, const int allow_write);
 void close_fds(void);
 int renamefile(const char *old, const char *new);
 char *gstrans(const char *old);
+char *riscos_make_basename(const char *filepath, const char *inputpath);
 void not_implemented(const char *feature);
 #ifdef DEBUG
 void dump_fdlist(void);
