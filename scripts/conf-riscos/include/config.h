@@ -371,6 +371,7 @@
 
 #ifdef IS_DEVELOPMENT_VERSION
   #define M_GUARD
+  #define DEBUG
 #endif
 
 #include "g10defs.h"

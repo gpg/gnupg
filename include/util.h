@@ -257,9 +257,6 @@ int vasprintf ( char **result, const char *format, va_list args);
 #ifdef __riscos__
 pid_t riscos_getpid(void);
 int riscos_kill(pid_t pid, int sig);
-FILE *riscos_fopen(const char *filename, const char *mode);
-int riscos_open(const char *filename, int oflag, ...);
-int riscos_fstat(int fildes, struct stat *buf);
 int riscos_access(const char *path, int amode);
 int fdopenfile(const char *filename, const int allow_write);
 void close_fds(void);
@@ -273,9 +270,6 @@ void list_openfiles(void);
 #ifndef __RISCOS__C__
   #define getpid riscos_getpid
   #define kill(a,b) riscos_kill((a),(b))
-  #define fopen(a,b) riscos_fopen((a),(b))
-  #define fstat(a,b) riscos_fstat((a),(b))
-  #define open riscos_open
   #define access(a,b) riscos_access((a),(b))
 #endif /* !__RISCOS__C__ */
 #endif /* __riscos__ */

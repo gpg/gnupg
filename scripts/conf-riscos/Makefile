@@ -4,11 +4,10 @@ LINK=link
 AS=objasm
 MAKE=amu
 DEPEND=-depend !Depend
-DEBUG=
-CC_FLAGS=-Wp -apcs 3/26bit -throwback -Otime -IUnix:,include.,mpi.,intl.,zlib. -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
+LIBLDAP=^.^.openldap-2/0/18
+CC_FLAGS=-Wp -apcs 3/26bit -throwback -Otime -IUnix:,include,mpi,intl,zlib,$(LIBLDAP).include -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
 AS_FLAGS=-apcs 3/26bit -throwback -predefine "ARMv4 SETA 0"
 LD_FLAGS=Unix:o.unixlib
-LIBLDAP=^.^.openldap-2/0/18.libraries.libldap.libldap
 CIPHER_OBJS=cipher.blowfish.o \
 	cipher.cast5.o \
 	cipher.cipher.o \
@@ -188,7 +187,7 @@ GPGV_OBJS=g10.armor.o \
 .SUFFIXES:	.c .o .s
 
 .c.o:
-	$(CC) $(CC_FLAGS) $(DEPEND) $(DEBUG) -c -o $@ $<
+	$(CC) $(CC_FLAGS) $(DEPEND) -c -o $@ $<
 
 .s.o:
 	$(AS) $(AS_FLAGS) $(DEPEND) $< $@
@@ -215,8 +214,8 @@ tools.gpgsplit: tools.o.gpgsplit util.util intl.gettext zlib.zlib
 	-squeeze tools.gpgsplit
 	-copy tools.gpgsplit ADFS::A5.$.tmp.!GnuPG.gpgsplit ~CF~V
 
-keyserver.gpgkeys_ldap: keyserver.o.gpgkeys_ldap $(LIBLDAP)
-	$(LINK) $(LD_FLAGS) keyserver.o.gpgkeys_ldap $(LIBLDAP) -o keyserver.gpgkeys_ldap
+keyserver.gpgkeys_ldap: keyserver.o.gpgkeys_ldap $(LIBLDAP).libraries.libldap.libldap
+	$(LINK) $(LD_FLAGS) keyserver.o.gpgkeys_ldap $(LIBLDAP).libraries.libldap.libldap -o keyserver.gpgkeys_ldap
 	-squeeze keyserver.gpgkeys_ldap
 	-copy keyserver.gpgkeys_ldap ADFS::A5.$.tmp.!GnuPG.gpgkeys_ldap ~CF~V
 
@@ -372,9 +371,11 @@ clean-g10:
 
 clean-keyserver:
 	-ifthere keyserver.gpgkeys_ldap then wipe keyserver.gpgkeys_ldap ~CFR~V
+	-ifthere keyserver.o.* then wipe keyserver.o.* ~CFR~V
 
 clean-tools:
 	-ifthere tools.gpgsplit then wipe tools.gpgsplit ~CFR~V
+	-ifthere tools.o.* then wipe tools.o.* ~CFR~V
 
 clean-riscos:
 	-ifthere riscos.jpegview.jpegview then wipe riscos.jpegview.jpegview ~CFR~V
@@ -416,8 +417,8 @@ dev: clean-version
 fast-dev: BUILD
 	setver configure/ac AC_INIT(gnupg, , dev
 	wipe distrib.private.!GnuPG.gpg* ~CFR~V
-	$(MAKE) tools.gpgsplit
 	-$(MAKE) keyserver.gpgkeys_ldap
+	$(MAKE) tools.gpgsplit
 	$(MAKE) distrib.gnupgdev/zip
 	ifthere <WebServe$ServeRoot>.private.gnupgdev/zip then wipe <WebServe$ServeRoot>.private.gnupgdev/zip ~CFR~V
 	rename distrib.gnupgdev/zip <WebServe$ServeRoot>.private.gnupgdev/zip

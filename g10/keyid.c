@@ -325,7 +325,7 @@ expirestr_from_sk( PKT_secret_key *sk )
     time_t atime;
 
     if( !sk->expiredate )
-	return "never     ";
+	return _("never     ");
     atime = sk->expiredate;
     return mk_datestr (buffer, atime);
 }
@@ -337,7 +337,7 @@ expirestr_from_sig( PKT_signature *sig )
     time_t atime;
 
     if(!sig->expiredate)
-      return "never     ";
+      return _("never     ");
     atime=sig->expiredate;
     return mk_datestr (buffer, atime);
 }

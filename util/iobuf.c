@@ -208,7 +208,20 @@ direct_open (const char *fname, const char *mode)
     else {
         oflag = O_RDONLY;
     }
+#ifndef __riscos__
     return open (fname, oflag, cflag );
+#else
+    {
+        struct stat buf;
+        int rc = stat( fname, &buf );
+        
+        /* Don't allow iobufs on directories */
+        if( !rc && S_ISDIR(buf.st_mode) && !S_ISREG(buf.st_mode) )
+            return __set_errno( EISDIR );
+        else
+            return open( fname, oflag, cflag );
+    }
+#endif
 #endif
 }
 

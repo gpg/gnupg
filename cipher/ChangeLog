@@ -1,3 +1,8 @@
+2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* rndriscos.c (func_table): Made func a function pointer.
+	(init_device): Improved loading of CryptRandom module.
+
 2002-04-18  Werner Koch  <wk@gnupg.org>
 
 	* rndlinux.c, rndegd.c, rndunix.c (func_table): Made func a

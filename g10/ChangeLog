@@ -1,3 +1,11 @@
+2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* keyid.c (expirestr_from_sk, expirestr_from_sig): Added _() to
+	string constant.
+
+	* exec.c (make_tempdir) [__riscos__]: Better placement of
+	temporary file.
+
 2002-04-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (generate_subkeypair): 2440bis04 adds that creating

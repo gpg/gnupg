@@ -1,3 +1,8 @@
+2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* util.h [__riscos__]: Removed riscos_open, riscos_fopen and
+	riscos_fstat as those special versions aren't needed anymore.
+
 2002-02-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.h: Add KEYSERVER_NOT_SUPPORTED for unsupported actions

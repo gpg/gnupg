@@ -1,3 +1,11 @@
+2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* riscos.c (riscos_open, riscos_fopen, riscos_fstat, set_filetype):
+	Removed as they're not needed anymore.
+
+	* iobuf.c (direct_open) [__riscos__]: Don't allow opening of
+	directories.
+
 2002-04-08  Werner Koch  <wk@gnupg.org>
 
 	Fixed filename of last entry.

@@ -60,7 +60,8 @@ static int make_tempdir(struct exec_info *info)
 	  if(tmp==NULL)
 	    {
 #ifdef __riscos__
-	      tmp="<Wimp$ScrapDir>";
+	      tmp="<Wimp$ScrapDir>.GnuPG";
+	      mkdir(tmp,0700); /* Error checks occur later on */
 #elif defined (__MINGW32__) || defined (__CYGWIN32__)
 	      tmp=m_alloc(256);
 	      if(GetTempPath(256,tmp)==0)

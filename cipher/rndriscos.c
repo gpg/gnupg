@@ -42,15 +42,26 @@ init_device(void)
 {
     _kernel_swi_regs r;
 
+    /* Is CryptRandom already loaded? */
     r.r[0] = 18;
     r.r[1] = (int) "CryptRandom";
-    if (_kernel_swi(OS_Module, &r, &r)) {
-        r.r[0] = 1;
-        r.r[1] = (int) "GnuPG:CryptRand";
-        if (_kernel_swi(OS_Module, &r, &r))
-	   g10_log_fatal("Can't load module CryptRandom.\n");
-    }
-    return 1;
+    if (!_kernel_swi(OS_Module, &r, &r))
+        return 1;
+
+    /* Is it named CryptRand and inside GnuPG$Path? */
+    r.r[0] = 1;
+    r.r[1] = (int) "GnuPG:CryptRand";
+    if (!_kernel_swi(OS_Module, &r, &r))
+        return 1;
+
+    /* Is it named CryptRandom and inside GnuPG$Path? */
+    r.r[0] = 1;
+    r.r[1] = (int) "GnuPG:CryptRandom";
+    if (!_kernel_swi(OS_Module, &r, &r))
+        return 1;
+
+    /* Can't find CryptRandom in the default locations */
+    g10_log_fatal("Can't load module CryptRandom.\n");
 }
 
 
@@ -96,9 +107,9 @@ const char * const gnupgext_version = "RNDRISCOS ($Revision$)";
 static struct {
     int class;
     int version;
-    void *func;
+    int (*func)(void);
 } func_table[] = {
-    { 40, 1, (void *) gather_random },
+    { 40, 1, (int (*)(void))gather_random },
 };
 
 
@@ -117,7 +128,7 @@ gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
 	}
 	*class = func_table[i].class;
 	*vers  = func_table[i].version;
-	ret = func_table[i].func;
+	ret = (void*) func_table[i].func;
 	i++;
     } while ( what && what != *class );
 

@@ -1,3 +1,11 @@
+2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* conf-riscos/include/config.h [__riscos__]: Development
+	versions automatically define DEBUG from now on.
+
+	* conf-riscos/Makefile [__riscos__]: Updated for LDAP keyserver
+	code.
+
 2002-04-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gnupg.spec.in: Removed pubring.asc and OPTIONS.  Added
