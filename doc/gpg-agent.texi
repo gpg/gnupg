@@ -326,6 +326,37 @@ Ignore requests to change change the current @sc{tty} respective the X
 window system's @code{DISPLAY} variable.  This is useful to lock the
 pinentry to pop up at the @sc{tty} or display you started the agent.
 
+@item --ssh-support
+@itemx --ssh-support
+@opindex ssh-support
+@opindex ssh
+
+Enable emulation of the OpenSSH Agent protocol.
+
+In this mode of operation, the agent does not only implement the
+gpg-agent protocol, but also the agent protocol used by OpenSSH
+(through a seperate socket).  Consequently, it should possible to use
+the gpg-agent as a drop-in replacement for the well known ssh-agent.
+
+SSH Keys, which are to be used through the agent, need to be added to
+the gpg-agent initially through the ssh-add utility.  When a key is
+added, ssh-add will ask for the password of the provided key file and
+send the unprotected key material to the agent; this causes the
+gpg-agent to ask for a passphrase, which is to be used for encrypting
+the newly received key and storing it in a gpg-agent specific
+directory.
+
+Once, a key has been added to the gpg-agent this way, the gpg-agent
+will be ready to use the key.
+
+Note: in case the gpg-agent receives a signature request, the user
+might need to be prompted for a passphrased, which is necessary for
+decrypting the stored key.  Since the ssh-agent protocol does not
+contain a mechanism for telling the agent on which display/terminal it
+is running, gpg-agent's --ssh-support switch implies --keep-display
+and --keep-tty.  This strategy causes the gpg-agent to open a pinentry
+on the display or on the terminal, on which it (the gpg-agent) was
+started.
 
 @end table
 
@@ -395,6 +426,9 @@ $ eval `gpg-agent --daemon`
 @c
 @node Agent Protocol
 @section Agent's Assuan Protocol
+
+Note: this section does only document the protocol, which is used by
+GnuPG components; it does not deal with the ssh-agent protocol.
 
 The @command{gpg-agent} should be started by the login shell and set an
 environment variable to tell clients about the socket to be used.
