@@ -1928,7 +1928,7 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
 					PACKET *pkt, int new_ctb )
 {
     int rc = 0;
-    int mode, namelen;
+    int mode, namelen, partial=0;
     PKT_plaintext *pt;
     byte *p;
     int c, i;
@@ -1938,12 +1938,18 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
         rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
+    /* A packet length of zero indicates partial body length.  A zero
+       data length isn't a zero length packet due to the header (mode,
+       name, etc), so this is accurate. */
+    if(pktlen==0)
+      partial=1;
     mode = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     namelen = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     pt = pkt->pkt.plaintext = m_alloc(sizeof *pkt->pkt.plaintext + namelen -1);
     pt->new_ctb = new_ctb;
     pt->mode = mode;
     pt->namelen = namelen;
+    pt->is_partial = partial;
     if( pktlen ) {
 	for( i=0; pktlen > 4 && i < namelen; pktlen--, i++ )
 	    pt->name[i] = iobuf_get_noeof(inp);

@@ -116,7 +116,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
     KBNODE keyblock = NULL;
     KBNODE kbctx, node;
     int ndesc;
-    KEYDB_SEARCH_DESC *desc;
+    KEYDB_SEARCH_DESC *desc = NULL;
     KEYDB_HANDLE kdbhd;
     STRLIST sl;
 
@@ -248,6 +248,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	rc = 0;
 
   leave:
+    m_free(desc);
     keydb_release (kdbhd);
     release_kbnode( keyblock );
     if( !*any )

@@ -467,7 +467,6 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	return 0;
     }
 
-
     /* do we have this key already in one of our pubrings ? */
     pk_orig = m_alloc_clear( sizeof *pk_orig );
     rc = get_pubkey( pk_orig, keyid );
@@ -497,7 +496,10 @@ import_one( const char *fname, KBNODE keyblock, int fast,
         if (rc)
 	   log_error (_("error writing keyring `%s': %s\n"),
 		       keydb_get_resource_name (hd), g10_errstr(rc));
+	else
+	   revalidation_mark ();
         keydb_release (hd);
+
 	/* we are ready */
 	if( !opt.quiet )
 	    log_info( _("key %08lX: public key imported\n"), (ulong)keyid[1]);
@@ -568,6 +570,9 @@ import_one( const char *fname, KBNODE keyblock, int fast,
             if (rc)
 		log_error (_("error writing keyring `%s': %s\n"),
 			     keydb_get_resource_name (hd), g10_errstr(rc) );
+	    else
+	      revalidation_mark ();
+
 	    /* we are ready */
 	    if( !opt.quiet ) {
 		if( n_uids == 1 )
@@ -601,8 +606,6 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	}
         keydb_release (hd); hd = NULL;
     }
-    if (!rc) 
-      revalidation_mark ();
 
   leave:
     release_kbnode( keyblock_orig );

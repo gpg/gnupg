@@ -509,14 +509,22 @@ pct_expando(const char *string,PKT_public_key *pk)
 	      }
 	      break;
 
-	      /* photo type. For now, it's always jpeg so this is
+	      /* photo types. For now, it's always jpeg so this is
                  easy! */
 	    case 't':
-	      if(idx+4>maxlen)
+	      if(idx+3>maxlen)
 		goto fail;
 
-	      strcpy(&ret[idx],"jpeg");
-	      idx+=4;
+	      strcpy(&ret[idx],"jpg");
+	      idx+=3;
+	      break;
+
+	    case 'T':
+	      if(idx+10>maxlen)
+		goto fail;
+
+	      strcpy(&ret[idx],"image/jpeg");
+	      idx+=10;
 	      break;
 
 	    case '%':

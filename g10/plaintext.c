@@ -114,7 +114,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	goto leave;
     }
 
-    if( pt->len ) {
+    if( !pt->is_partial ) {
+        /* we have an actual length (which might be zero). */
 	assert( !clearsig );
 	if( convert ) { /* text mode */
 	    for( ; pt->len; pt->len-- ) {

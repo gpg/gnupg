@@ -275,6 +275,7 @@ typedef struct {
     u32  len;		  /* length of encrypted data */
     IOBUF buf;		  /* IOBUF reference */
     byte new_ctb;
+    byte is_partial;      /* partial length encoded */
     int mode;
     u32 timestamp;
     int  namelen;

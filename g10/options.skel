@@ -160,7 +160,8 @@ lock-once
 # %I is the same as %i, but the file isn't deleted afterwards by GnuPG.
 # %k is expanded to the key ID of the key.
 # %K is expanded to the long OpenPGP key ID of the key.
-# %t is expanded to the type of image (e.g. "jpeg").
+# %t is expanded to the extension of the image (e.g. "jpg").
+# %T is expanded to the MIME type of the image (e.g. "image/jpeg").
 # %f is expanded to the fingerprint of the key.
 # %% is %, of course.
 #
@@ -177,10 +178,10 @@ lock-once
 # photo-viewer "display -title 'KeyID 0x%k'"
 #
 # This one saves a copy of the photo ID in your home directory:
-# photo-viewer "cat > ~/photoid-for-key-%k.jpg"
+# photo-viewer "cat > ~/photoid-for-key-%k.%t"
 #
 # Use your MIME handler to view photos:
-# photo-viewer "metamail -q -d -b -c image/%t -s 'KeyID 0x%k' -f GnuPG"
+# photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
 
 
 # Passphrase agent

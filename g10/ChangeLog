@@ -1,3 +1,18 @@
+2002-04-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_plaintext), packet.h, plaintext.c
+	(handle_plaintext): Fix bug in handling literal packets with
+	zero-length data (no data was being confused with partial body
+	length).
+
+	* misc.c (pct_expando), options.skel: %t means extension ("jpg").
+	%T means MIME type ("image/jpeg").
+
+	* import.c (import_one): Only trigger trust update if the keyring
+	is actually changed.
+
+	* export.c (do_export_stream): Missing a m_free.
+
 2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
 
 	* keyid.c (expirestr_from_sk, expirestr_from_sig): Added _() to
