@@ -85,7 +85,7 @@ Record type 3:	(cache record)
      1 byte   value 3
      1 byte   reserved
      1 u32    Local-Id.
-     8 bytes  keyid of the primary key
+     8 bytes  keyid of the primary key (needed?)
      1 byte   cache-is-valid the following stuff is only
 	      valid if this is set.
      1 byte   reserved
@@ -106,4 +106,27 @@ Record type 3:	(cache record)
 		3 = marginally trusted
 		4 = fully trusted
 		5 = ultimately trusted (have secret key too).
+
+Record type 4  (sigrec)
+-------------
+    Used to keep track of valid key signatures. Self-signatures are not
+    stored.
+
+     1 byte   value 4
+     1 byte   reserved
+     1 u32    Local-Id of owners (pubkey record)
+     1 u32    chain: next sigrec of this owner or 0 to indicate the
+	      last sigrec.
+     6 times
+	1 u32  Local_id of signators pubkey record
+	1 byte reserved
+
+Record type 5  (next-sigrec)
+-------------
+    This is the same as record type 4 but the record type is 5 and the
+    local-id is only used to verify the internal db structure. You can
+    not search for such a record; access is done based on the chain field
+    in segrec or netx-sigrec.  This is, so that we can handle sigrecords
+    more easier - there is no need to handle multiple sigrecs when searching
+    for such a record.
 

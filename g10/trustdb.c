@@ -37,6 +37,7 @@
 
 
 #define TRUST_RECORD_LEN 40
+#define SIGS_PER_RECORD ((TRUST_RECORD_LEN-10)/5)
 
 struct trust_record {
     byte rectype;
@@ -62,10 +63,11 @@ struct trust_record {
 	    byte reserved;
 	    byte fingerprint[20];
 	    byte ownertrust;
+	    /* fixme: indicate a flag to */
 	} pubkey;
 	struct {	    /* cache record */
-	    u32 local_id;
-	    u32 keyid[2];
+	    u32 owner;
+	    u32 keyid[2];	/* needed?? */
 	    byte valid;
 	    byte reserved;
 	    byte blockhash[20];
@@ -74,6 +76,14 @@ struct trust_record {
 	    byte n_fully;
 	    byte trustlevel;
 	} cache;
+	struct {
+	    u32 owner;	/* local_id of record owner (pubkey record) */
+	    u32 chain;	/* offset of next record or NULL for last one */
+	    struct {
+		u32  local_id; /* of pubkey record of signator (0=unused) */
+		byte flag;     /* reserved */
+	    } sig[SIGS_PER_RECORD];
+	} sigrec;
     } r;
 };
 typedef struct trust_record TRUSTREC;
@@ -201,7 +211,7 @@ read_record( u32 recnum, TRUSTREC *rec )
 {
     byte buf[TRUST_RECORD_LEN], *p;
     int rc = 0;
-    int n;
+    int n, i;
 
     if( db_fd == -1 )
 	open_db();
@@ -284,6 +294,15 @@ read_record( u32 recnum, TRUSTREC *rec )
 	rec->r.cache.n_fully = *p++;
 	rec->r.cache.trustlevel = *p++;
 	break;
+      case 4:
+      case 5:
+	rec->r.sigrec.owner   = buftou32(p); p += 4;
+	rec->r.sigrec.chain   = buftou32(p); p += 4;
+	for(i=0; i < SIGS_PER_RECORD; i++ ) {
+	    rec->r.sigrec.sig[i].local_id = buftou32(p); p += 4;
+	    rec->r.sigrec.sig[i].flag = *p++;
+	}
+	break;
       default:
 	log_error("%s: invalid record type %d at recnum %lu\n",
 					db_name, rec->rectype, (ulong)recnum );
@@ -303,7 +322,7 @@ write_record( u32 recnum, TRUSTREC *rec )
 {
     byte buf[TRUST_RECORD_LEN], *p;
     int rc = 0;
-    int n;
+    int i, n;
 
     if( db_fd == -1 )
 	open_db();
@@ -342,6 +361,15 @@ write_record( u32 recnum, TRUSTREC *rec )
 	*p++ = rec->r.cache.n_fully;
 	*p++ = rec->r.cache.trustlevel;
 	break;
+      case 4:
+      case 5:
+	u32tobuf(p, rec->r.sigrec.owner); p += 4;
+	u32tobuf(p, rec->r.sigrec.chain); p += 4;
+	for(i=0; i < SIGS_PER_RECORD; i++ ) {
+	    u32tobuf(p, rec->r.sigrec.sig[i].local_id); p += 4;
+	    *p++ = rec->r.sigrec.sig[i].flag;
+	}
+	break;
       default:
 	log_bug(NULL);
     }
@@ -375,11 +403,11 @@ new_local_id()
 }
 
 /****************
- * Scan the trustdb for a record of type RECTYPE which maches PKC
+ * Scan the trustdb for a record of type RECTYPE which matches PKC
  * The local_id is set to the correct value
  */
 static int
-scan_record( PKT_public_cert *pkc, TRUSTREC *rec, int rectype )
+scan_record_by_pkc( PKT_public_cert *pkc, TRUSTREC *rec, int rectype )
 {
     u32 recnum;
     u32 keyid[2];
@@ -391,7 +419,7 @@ scan_record( PKT_public_cert *pkc, TRUSTREC *rec, int rectype )
     assert( rectype == 2 || rectype == 3 );
 
     if( DBG_TRUST )
-	log_debug("trustdb: scan_record\n");
+	log_debug("trustdb: scan_record_by_pkc\n");
     keyid_from_pkc( pkc, keyid );
     fingerprint = fingerprint_from_pkc( pkc, &fingerlen );
     assert( fingerlen == 20 || fingerlen == 16 );
@@ -421,12 +449,57 @@ scan_record( PKT_public_cert *pkc, TRUSTREC *rec, int rectype )
     }
     no_io_dbg = 0;
     if( DBG_TRUST )
-	log_debug("trustdb: scan_record: eof or error\n");
+	log_debug("trustdb: scan_record_by_pkc: %s\n", rc==-1?"eof": g10_errstr(rc));
+    if( rc != -1 )
+	log_error("%s: scan_record_by_pkc failed: %s\n",db_name, g10_errstr(rc) );
+    return rc;
+}
+
+/****************
+ * scan the DB for a record of type RECTYPE which can be localized
+ * with LOCAL_ID
+ */
+static int
+scan_record( u32 local_id, TRUSTREC *rec, int rectype, u32 *r_recnum )
+{
+    u32 recnum;
+    u32 keyid[2];
+    int dbg = DBG_TRUST;
+    int rc;
+
+    assert( rectype == 3 || rectype == 4 );
+
+    if( DBG_TRUST )
+	log_debug("trustdb: scan_record type %d local_id %lu\n",
+						rectype, (ulong)local_id);
+    no_io_dbg = 1;
+    for(recnum=1; !(rc=read_record( recnum, rec)); recnum++ ) {
+	if( rec->rectype != rectype )
+	    continue;
+	if( rec->rectype == 34 ) {
+	    if( rec->r.cache.owner == local_id ) { /* found */
+		*r_recnum = recnum;
+		no_io_dbg = 0;
+		return 0;
+	    }
+	}
+	else if( rec->rectype == 4 ) {
+	    if( rec->r.sigrec.owner == local_id ) { /* found */
+		*r_recnum = recnum;
+		no_io_dbg = 0;
+		return 0;
+	    }
+	}
+	else
+	    log_bug("not yet implemented\n");
+    }
+    no_io_dbg = 0;
+    if( DBG_TRUST )
+	log_debug("trustdb: scan_record: %s\n", rc==-1?"eof": g10_errstr(rc));
     if( rc != -1 )
 	log_error("%s: scan_record failed: %s\n",db_name, g10_errstr(rc) );
     return rc;
 }
-
 
 
 
@@ -537,6 +610,18 @@ check_sigs( KBNODE keyblock )
 
 
 /****************
+ * If we do not have sigrecs for the given key, build them and write them
+ * to the trustdb
+ */
+static int
+build_sigrecs( KBNODE keyblock )
+{
+}
+
+
+
+
+/****************
  * Recursive check the signatures.
  */
 static int
@@ -564,19 +649,12 @@ walk( KBNODE keyblock, int levels )
 
 /****************
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
  */
 static int
 check_trust()
 {
+    /* check the ca
+
 }
 
 
@@ -637,7 +715,7 @@ check_trustdb( int level )
  *	found:
  *	    Do we have a valid cache record for it?
  *		yes: return trustlevel from cache
- *		no:  make a cache record
+ *		no:  make a cache record and all the other stuff
  *	not found:
  *	    Return with a trustlevel, saying that we do not have
  *	    a trust record for it. The caller may use insert_trust_record()
@@ -666,8 +744,8 @@ check_pkc_trust( PKT_public_cert *pkc, int *r_trustlevel )
 	}
     }
     else { /* no local_id: scan the trustdb */
-	if( (rc=scan_record( pkc, &rec, 2 )) && rc != -1 ) {
-	    log_error("check_pkc_trust: scan_record(2) failed: %s\n",
+	if( (rc=scan_record_by_pkc( pkc, &rec, 2 )) && rc != -1 ) {
+	    log_error("check_pkc_trust: scan_record_by_pkc(2) failed: %s\n",
 							    g10_errstr(rc));
 	    return G10ERR_TRUSTDB;
 	}
@@ -678,6 +756,8 @@ check_pkc_trust( PKT_public_cert *pkc, int *r_trustlevel )
 	}
     }
     /* fixme: do some additional checks on the pubkey record */
+
+    /* see wether we have a cache record */
 
 
   leave:
@@ -751,22 +831,11 @@ update_trust_record( PKT_public_cert *pkc, int new_trust )
     }
     /* check keyid, fingerprint etc ? */
 
-    recnum = new_local_id();
-    /* build record */
-    memset( &rec, 0, sizeof rec );
-    rec.rectype = 2; /* the pubkey record */
-    rec.r.pubkey.local_id = recnum;
-    rec.r.pubkey.keyid[0] = keyid[0];
-    rec.r.pubkey.keyid[1] = keyid[1];
-    rec.r.pubkey.algo = pkc->pubkey_algo;
-    memcpy(rec.r.pubkey.fingerprint, fingerprint, fingerlen );
     rec.r.pubkey.ownertrust = 0;
     if( write_record( recnum, &rec ) ) {
 	log_error("insert_trust_record: write failed\n");
 	return G10ERR_TRUSTDB;
     }
-
-    pkc->local_id = recnum;
 
     return 0;
 }

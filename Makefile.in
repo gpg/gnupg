@@ -45,8 +45,8 @@ CONFIG_HEADER_IN = config.h.in
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ./config.h
 DIST_COMMON = README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
-Makefile.in NEWS README TODO acconfig.h config.h.in configure \
-configure.in stamp-h.in
+Makefile.in NEWS README TODO acconfig.h config.h.in configure.in \
+stamp-h.in
 
 
 PACKAGE = @PACKAGE@
