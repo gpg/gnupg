@@ -150,7 +150,7 @@ main( int argc, char **argv )
     opt.command_fd = -1; /* no command fd */
     opt.pgp2_workarounds = 1;
     opt.keyserver_options.auto_key_retrieve = 1;
-    opt.always_trust = 1;
+    opt.trust_model = TM_ALWAYS;
     opt.batch = 1;
 
   #if defined (__MINGW32__) || defined (__CYGWIN32__)

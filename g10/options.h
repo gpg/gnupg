@@ -88,7 +88,7 @@ struct {
     int skip_verify;
     int compress_keys;
     int compress_sigs;
-    int always_trust;
+    enum {TM_OPENPGP, TM_CLASSIC, TM_ALWAYS} trust_model;
     int pgp2;
     int pgp6;
     int pgp7; /* if we get any more of these, it's time to look at a

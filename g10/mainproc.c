@@ -1382,7 +1382,7 @@ check_sig_and_print( CTX c, KBNODE node )
 		}
 	    }
 
-            if (opt.always_trust || !un)
+            if (opt.trust_model==TM_ALWAYS || !un)
                 keyid_str[17] = 0; /* cut off the "[uncertain]" part */
 
             write_status_text_and_buffer (statno, keyid_str,
@@ -1393,7 +1393,7 @@ check_sig_and_print( CTX c, KBNODE node )
             log_info(rc? _("BAD signature from \"")
                        : sig->flags.expired ? _("Expired signature from \"")
 		       : _("Good signature from \""));
-            if (!opt.always_trust && un) {
+            if (opt.trust_model!=TM_ALWAYS && un) {
                 fputs(_("[uncertain]"), log_stream() );
                 putc(' ', log_stream() );
             }

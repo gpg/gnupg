@@ -1405,11 +1405,11 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
              did not exist.  This is safe for non-trust sigs as well
              since we don't accept a regexp on the sig unless it's a
              trust sig. */
-          if (kr && (kr->trust_regexp==NULL ||
+          if (kr && (kr->trust_regexp==NULL || opt.trust_model==TM_CLASSIC ||
 		     (uidnode && check_regexp(kr->trust_regexp,
 					    uidnode->pkt->pkt.user_id->name))))
             {
-	      if(DBG_TRUST && sig->trust_depth)
+	      if(DBG_TRUST && opt.trust_model!=TM_CLASSIC && sig->trust_depth)
 		log_debug("trust sig on %s, sig depth is %d, kr depth is %d\n",
 			  uidnode->pkt->pkt.user_id->name,sig->trust_depth,
 			  kr->trust_depth);
@@ -1419,10 +1419,10 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
                  lesser trust sig or value.  I could make a decent
                  argument for any of these cases, but this seems to be
                  what PGP does, and I'd like to be compatible. -dms */
-	      if(sig->trust_depth &&
-		 pk->trust_timestamp<=sig->timestamp &&
-		 (sig->trust_depth<=kr->trust_depth ||
-		  kr->ownertrust==TRUST_ULTIMATE))
+	      if(opt.trust_model!=TM_CLASSIC && sig->trust_depth
+		 && pk->trust_timestamp<=sig->timestamp
+		 && (sig->trust_depth<=kr->trust_depth
+		     || kr->ownertrust==TRUST_ULTIMATE))
 		{
 		  /* If we got here, we know that:
 
@@ -1773,7 +1773,8 @@ validate_keys (int interactive)
 
 	  /* This can happen during transition from an old trustdb
 	     before trust sigs.  It can also happen if a user uses two
-	     different versions of GnuPG. */
+	     different versions of GnuPG or changes the --trust-model
+	     setting. */
 	  if(k->ownertrust<min)
 	    {
 	      if(DBG_TRUST)

@@ -475,9 +475,9 @@ do_we_trust( PKT_public_key *pk, unsigned int *trustlevel )
     }
     *trustlevel &= ~trustmask;
 
-    if( opt.always_trust) {
+    if( opt.trust_model==TM_ALWAYS ) {
 	if( opt.verbose )
-	    log_info("No trust check due to --always-trust option\n");
+	    log_info("No trust check due to --trust-model always option\n");
 	return 1;
     }
 
@@ -570,7 +570,7 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 	 *	 his decision the next time he encrypts for this recipient?
 	 */
     }
-    else if( opt.always_trust && !rc ) {
+    else if( opt.trust_model==TM_ALWAYS && !rc ) {
 	if( !opt.quiet )
 	    log_info(_("WARNING: Using untrusted key!\n"));
 	rc = 1;
@@ -591,7 +591,7 @@ check_signatures_trust( PKT_signature *sig )
   unsigned int trustlevel;
   int rc=0;
 
-  if ( opt.always_trust)
+  if ( opt.trust_model==TM_ALWAYS )
     {
       if( !opt.quiet )
         log_info(_("WARNING: Using untrusted key!\n"));

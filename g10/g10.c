@@ -205,6 +205,7 @@ enum cmd_and_opt_values { aNull = 0,
     oCompressKeys,
     oCompressSigs,
     oAlwaysTrust,
+    oTrustModel,
     oEmuChecksumBug,
     oRunAsShmCP,
     oSetFilename,
@@ -522,6 +523,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompressSigs, "compress-sigs",0, "@"},
     { oDefCertCheckLevel, "default-cert-check-level", 1, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
+    { oTrustModel, "trust-model", 2, "@"},
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
@@ -1142,6 +1144,7 @@ main( int argc, char **argv )
       EXPORT_INCLUDE_NON_RFC|EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
+    opt.trust_model=TM_OPENPGP;
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
@@ -1443,7 +1446,20 @@ main( int argc, char **argv )
 	  case oCompressAlgo: opt.def_compress_algo = pargs.r.ret_int; break;
 	  case oCompressKeys: opt.compress_keys = 1; break;
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
-	  case oAlwaysTrust: opt.always_trust = 1; break;
+	    /* There are many programs (like mutt) that call gpg with
+	       --always-trust so keep this option around for a long
+	       time. */
+	  case oAlwaysTrust: opt.trust_model=TM_ALWAYS; break;
+	  case oTrustModel:
+	    if(ascii_strcasecmp(pargs.r.ret_str,"openpgp")==0)
+	      opt.trust_model=TM_OPENPGP;
+	    else if(ascii_strcasecmp(pargs.r.ret_str,"classic")==0)
+	      opt.trust_model=TM_CLASSIC;
+	    else if(ascii_strcasecmp(pargs.r.ret_str,"always")==0)
+	      opt.trust_model=TM_ALWAYS;
+	    else
+	      log_error("unknown trust model \"%s\"\n",pargs.r.ret_str);
+	    break;
 	  case oLoadExtension:
 #ifndef __riscos__
 #if defined(USE_DYNAMIC_LINKING) || defined(__MINGW32__)

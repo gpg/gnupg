@@ -1,5 +1,17 @@
 2002-11-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main): Add --trust-model option.  Current
+	models are "openpgp" which is classic+trustsigs, "classic" which
+	is classic only, and "always" which is the same as the current
+	option --always-trust (which still works).  Default is "openpgp".
+
+	* trustdb.c (validate_one_keyblock): Use "openpgp" trust model to
+	enable trust sigs.
+
+	* gpgv.c (main), mainproc.c (check_sig_and_print), pkclist.c
+	(do_we_trust, do_we_trust_pre, check_signatures_trust): Use new
+	--trust-model option in place of --always-trust.
+
 	* keyedit.c (sign_mk_attrib, trustsig_prompt, sign_uids,
 	keyedit_menu): Prompt for and create a trust signature with
 	"tsign".  This is functional, but needs better UI text.
