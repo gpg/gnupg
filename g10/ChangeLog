@@ -13,6 +13,10 @@
 
 	* trustdb.c (validate_keys): Never schedule a nextcheck into the
 	past.
+	(validate_key_list): New arg curtime use it to set next_expire.
+	(validate_one_keyblock): Take the current time from the caller.
+	(clear_validity, reset_unconnected_keys): New.
+	(validate_keys): Reset all unconnected keys.
 
 	* getkey.c (premerge_public_with_secret): Fixed 0x12345678! syntax
 	for use with secret keys.

@@ -147,7 +147,7 @@ test_key_hash_table (KeyHashTable tbl, u32 *kid)
 }
 
 /*
- * Add a new key to the hash table.  The key is indetified by its key ID.
+ * Add a new key to the hash table.  The key is identified by its key ID.
  */
 static void
 add_key_hash_table (KeyHashTable tbl, u32 *kid)
@@ -557,7 +557,7 @@ get_ownertrust ( PKT_public_key *pk)
 }
 
 /*
- * Same as get_wonertrust byt return a trust letter
+ * Same as get_ownertrust but return a trust letter instead of an value.
  */
 int
 get_ownertrust_info (PKT_public_key *pk)
@@ -621,7 +621,7 @@ update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
 
 /* 
  * Note: Caller has to do a sync 
-*/
+ */
 static void
 update_validity (PKT_public_key *pk, const byte *namehash,
                  int depth, int validity)
@@ -671,6 +671,42 @@ update_validity (PKT_public_key *pk, const byte *namehash,
   trec.r.trust.depth = depth;
   trec.r.trust.validlist = vrec.recnum;
   write_record (&trec);
+}
+
+
+/* reset validity for all user IDs.  Caller must sync. */
+static int
+clear_validity (PKT_public_key *pk)
+{
+  TRUSTREC trec, vrec;
+  int rc;
+  ulong recno;
+  int any = 0;
+  
+  rc = read_trust_record (pk, &trec);
+  if (rc && rc != -1)
+    {
+      tdbio_invalid ();
+      return 0;
+    }
+  if (rc == -1) /* no record yet - no need to clerar it then ;-) */
+    return 0;
+
+  /* reset validity for all user IDs */
+  recno = trec.r.trust.validlist;
+  while (recno)
+    {
+      read_record (recno, &vrec, RECTYPE_VALID);
+      if ((vrec.r.valid.validity & TRUST_MASK))
+        {
+          vrec.r.valid.validity &= ~TRUST_MASK;
+          write_record (&vrec);
+          any = 1;
+        }
+      recno = vrec.r.valid.next;
+    }
+
+  return any;
 }
 
 
@@ -1145,14 +1181,14 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
  * This function assumes that all kbnode flags are cleared on entry.
  */
 static int
-validate_one_keyblock (KBNODE kb, struct key_item *klist, u32 *next_expire)
+validate_one_keyblock (KBNODE kb, struct key_item *klist,
+                       u32 curtime, u32 *next_expire)
 {
   struct key_item *kr;
   KBNODE node, uidnode=NULL;
   PKT_public_key *pk = kb->pkt->pkt.public_key;
   u32 main_kid[2];
   int issigned=0, any_signed = 0, fully_count =0, marginal_count = 0;
-  u32 curtime = make_timestamp();
 
   keyid_from_pk(pk, main_kid);
   for (node=kb; node; node = node->next)
@@ -1215,6 +1251,7 @@ search_skipfnc (void *opaque, u32 *kid)
   return test_key_hash_table ((KeyHashTable)opaque, kid);
 }
 
+
 /*
  * Scan all keys and return a key_array of all suitable keys from
  * kllist.  The caller has to pass keydb handle so that we don't use
@@ -1224,7 +1261,7 @@ search_skipfnc (void *opaque, u32 *kid)
  */
 static struct key_array *
 validate_key_list (KEYDB_HANDLE hd, KeyHashTable visited,
-                   struct key_item *klist, u32 *next_expire)
+                   struct key_item *klist, u32 curtime, u32 *next_expire)
 {
   KBNODE keyblock = NULL;
   struct key_array *keys = NULL;
@@ -1292,9 +1329,10 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable visited,
           /* it does not make sense to look further at those keys */
           mark_keyblock_seen (visited, keyblock);
         }
-      else if (validate_one_keyblock (keyblock, klist, next_expire))
+      else if (validate_one_keyblock (keyblock, klist, curtime, next_expire))
         {
-          if (pk->expiredate && pk->expiredate < *next_expire)
+          if (pk->expiredate && pk->expiredate >= curtime
+              && pk->expiredate < *next_expire)
             *next_expire = pk->expiredate;
 
           if (nkeys == maxkeys) {
@@ -1320,6 +1358,58 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable visited,
 
   keys[nkeys].keyblock = NULL;
   return keys;
+} 
+
+
+static void
+reset_unconnected_keys (KEYDB_HANDLE hd, KeyHashTable visited)
+{
+  int rc;
+  KBNODE keyblock = NULL;
+  KEYDB_SEARCH_DESC desc;
+  int count = 0, nreset = 0;
+  
+  rc = keydb_search_reset (hd);
+  if (rc)
+    {
+      log_error ("keydb_search_reset failed: %s\n", g10_errstr(rc));
+      return;
+    }
+
+  memset (&desc, 0, sizeof desc);
+  desc.mode = KEYDB_SEARCH_MODE_FIRST;
+  desc.skipfnc = search_skipfnc;
+  desc.skipfncvalue = visited;
+  rc = keydb_search (hd, &desc, 1);
+  if (rc && rc != -1 )
+    log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
+  else if (!rc)
+    {
+      desc.mode = KEYDB_SEARCH_MODE_NEXT; /* change mode */
+      do
+        {
+          rc = keydb_get_keyblock (hd, &keyblock);
+          if (rc) 
+            {
+              log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
+              break;
+            }
+          count++;
+
+          if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY) /* paranoid assertion*/
+            {
+              nreset += clear_validity (keyblock->pkt->pkt.public_key);
+              release_kbnode (keyblock);
+            } 
+        }
+      while ( !(rc = keydb_search (hd, &desc, 1)) );
+      if (rc && rc != -1) 
+        log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
+    }
+  if (opt.verbose)
+    log_info ("%d unconnected keys (%d trust records cleared)\n",
+              count, nreset);
+  do_sync ();
 } 
 
 
@@ -1405,7 +1495,8 @@ validate_keys (int interactive)
               update_validity (pk, namehash, 0, TRUST_ULTIMATE);
             }
         }
-      if ( pk->expiredate && pk->expiredate < next_expire)
+      if ( pk->expiredate && pk->expiredate >= start_time
+           && pk->expiredate < next_expire)
         next_expire = pk->expiredate;
       
       release_kbnode (keyblock);
@@ -1418,9 +1509,8 @@ validate_keys (int interactive)
 
   for (depth=0; depth < opt.max_cert_depth; depth++)
     {
-      /* See whether we should assign ownertrust values to the
-       * keys in utk_list.  
-       */
+      /* See whether we should assign ownertrust values to the keys in
+         utk_list.  */
       ot_unknown = ot_undefined = ot_never = 0;
       ot_marginal = ot_full = ot_ultimate = 0;
       for (k=klist; k; k = k->next)
@@ -1447,7 +1537,7 @@ validate_keys (int interactive)
         }
 
       /* Find all keys which are signed by a key in kdlist */
-      keys = validate_key_list (kdb, visited, klist, &next_expire);
+      keys = validate_key_list (kdb, visited, klist, start_time, &next_expire);
       if (!keys) 
         {
           log_error ("validate_key_list failed\n");
@@ -1497,6 +1587,7 @@ validate_keys (int interactive)
         break; /* no need to dive in deeper */
     }
 
+  reset_unconnected_keys (kdb, visited);
 
  leave:
   keydb_release (kdb);
@@ -1505,10 +1596,6 @@ validate_keys (int interactive)
   release_key_hash_table (visited);
   if (!rc && !quit) /* mark trustDB as checked */
     {
-      /* If there was an inconsistency in the trustdb it might happen
-         that the next_expire is set to the past; however at this point
-         we did checked it and thus we can flag the trustdb with no
-         schedule required. */
       if (next_expire == 0xffffffff || next_expire < start_time )
         tdbio_write_nextcheck (0); 
       else
