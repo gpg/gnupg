@@ -1,3 +1,9 @@
+2004-09-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (premerge_public_with_secret): Fix subkey<->binding sig
+	mismatch when some secret subkeys are missing.  Discovered by
+	Michael Roth.
+
 2004-08-31  Werner Koch  <wk@g10code.de>
 
 	* keydb.c (maybe_create_keyring): Try to create the home directory

@@ -2164,7 +2164,7 @@ premerge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
                 assert ( last );
                 /* find the next subkey */
                 for (next=pub->next,ll=pub;
-                     next && pub->pkt->pkttype != PKT_PUBLIC_SUBKEY;
+                     next && next->pkt->pkttype != PKT_PUBLIC_SUBKEY;
                      ll = next, next = next->next ) 
                     ;
                 /* make new link */
