@@ -273,8 +273,8 @@ copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
     else {
 	for(i=0; i < n; i++ )
           {
-            if (d->skey[1])
-              mpi_free (d->skey[1]);
+            if (d->skey[i])
+              mpi_free (d->skey[i]);
 	    d->skey[i] = mpi_copy( s->skey[i] );
           }
     }
