@@ -1,5 +1,5 @@
 /* kbxutil.c - The Keybox utility
- *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,11 +24,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/stat.h>
 #include <unistd.h>
+#include <assert.h>
 
+#define JNLIB_NEED_LOG_LOGV
 #include "../jnlib/logging.h"
 #include "../jnlib/argparse.h"
 #include "../jnlib/stringhelp.h"
+#include "../jnlib/utf8conv.h"
 #include "../common/i18n.h"
 #include "keybox-defs.h"
 
@@ -48,6 +52,7 @@ enum cmd_and_opt_values {
   aFindByKid,
   aFindByUid,
   aStats,
+  aImportOpenPGP,
 
   oDebug,
   oDebugAll,
@@ -66,6 +71,7 @@ static ARGPARSE_OPTS opts[] = {
 /*   { aFindByKid,  "find-by-kid", 0, "|KID| find key using it's keyid" }, */
 /*   { aFindByUid,  "find-by-uid", 0, "|NAME| find key by user name" }, */
   { aStats,      "stats",       0, "show key statistics" }, 
+  { aImportOpenPGP, "import-openpgp", 0, "import OpenPGP keyblocks"},
   
   { 301, NULL, 0, N_("@\nOptions:\n ") },
   
@@ -134,6 +140,26 @@ i18n_init(void)
 #endif
 #endif
 }
+
+/* Used by gcry for logging */
+static void
+my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
+{
+  /* Map the log levels.  */
+  switch (level)
+    {
+    case GCRY_LOG_CONT: level = JNLIB_LOG_CONT; break;
+    case GCRY_LOG_INFO: level = JNLIB_LOG_INFO; break;
+    case GCRY_LOG_WARN: level = JNLIB_LOG_WARN; break;
+    case GCRY_LOG_ERROR:level = JNLIB_LOG_ERROR; break;
+    case GCRY_LOG_FATAL:level = JNLIB_LOG_FATAL; break;
+    case GCRY_LOG_BUG:  level = JNLIB_LOG_BUG; break;
+    case GCRY_LOG_DEBUG:level = JNLIB_LOG_DEBUG; break;
+    default:            level = JNLIB_LOG_ERROR; break;  
+    }
+  log_logv (level, fmt, arg_ptr);
+}
+
 
 
 /*  static void */
@@ -215,6 +241,181 @@ format_keyid ( const char *s, u32 *kid )
 }
 #endif
 
+static char *
+read_file (const char *fname, size_t *r_length)
+{
+  FILE *fp;
+  char *buf;
+  size_t buflen;
+  
+  if (!strcmp (fname, "-"))
+    {
+      size_t nread, bufsize = 0;
+
+      fp = stdin;
+      buf = NULL;
+      buflen = 0;
+#define NCHUNK 8192
+      do 
+        {
+          bufsize += NCHUNK;
+          if (!buf)
+            buf = xtrymalloc (bufsize);
+          else
+            buf = xtryrealloc (buf, bufsize);
+          if (!buf)
+            log_fatal ("can't allocate buffer: %s\n", strerror (errno));
+
+          nread = fread (buf+buflen, 1, NCHUNK, fp);
+          if (nread < NCHUNK && ferror (fp))
+            {
+              log_error ("error reading `[stdin]': %s\n", strerror (errno));
+              xfree (buf);
+              return NULL;
+            }
+          buflen += nread;
+        }
+      while (nread == NCHUNK);
+#undef NCHUNK
+
+    }
+  else
+    {
+      struct stat st;
+
+      fp = fopen (fname, "rb");
+      if (!fp)
+        {
+          log_error ("can't open `%s': %s\n", fname, strerror (errno));
+          return NULL;
+        }
+  
+      if (fstat (fileno(fp), &st))
+        {
+          log_error ("can't stat `%s': %s\n", fname, strerror (errno));
+          fclose (fp);
+          return NULL;
+        }
+      
+      buflen = st.st_size;
+      buf = xtrymalloc (buflen+1);
+      if (!buf)
+        log_fatal ("can't allocate buffer: %s\n", strerror (errno));
+      if (fread (buf, buflen, 1, fp) != 1)
+        {
+          log_error ("error reading `%s': %s\n", fname, strerror (errno));
+          fclose (fp);
+          xfree (buf);
+          return NULL;
+        }
+      fclose (fp);
+    }
+
+  *r_length = buflen;
+  return buf;
+}
+
+
+static void
+dump_fpr (const unsigned char *buffer, size_t len)
+{
+  int i;
+
+  for (i=0; i < len; i++, buffer++)
+    {
+      if (len == 20)
+        {
+          if (i == 10)
+            putchar (' ');
+          printf (" %02X%02X", buffer[0], buffer[1]);
+          i++; buffer++;
+        }
+      else
+        {
+          if (i && !(i % 8))
+            putchar (' ');
+          printf (" %02X", buffer[0]);
+        }
+    }
+}
+
+
+static void
+dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
+{
+  printf ("pub %02X%02X%02X%02X",
+          info->primary.keyid[4], info->primary.keyid[5],
+          info->primary.keyid[6], info->primary.keyid[7] );
+  dump_fpr (info->primary.fpr, info->primary.fprlen);
+  putchar ('\n');
+  if (info->nsubkeys)
+    {
+      struct _keybox_openpgp_key_info *k;
+
+      k = &info->subkeys;
+      do 
+        {
+          printf ("sub %02X%02X%02X%02X",
+                  k->keyid[4], k->keyid[5],
+                  k->keyid[6], k->keyid[7] );
+          dump_fpr (k->fpr, k->fprlen);
+          putchar ('\n');
+          k = k->next;
+        }
+      while (k);
+    }
+  if (info->nuids)
+    {
+      struct _keybox_openpgp_uid_info *u;
+
+      u = &info->uids;
+      do 
+        {
+          printf ("uid\t\t%.*s\n", u->len, image + u->off);
+          u = u->next;
+        }
+      while (u);
+    }
+}
+
+
+static void
+import_openpgp (const char *filename)
+{
+  gpg_error_t err;
+  char *buffer;
+  size_t buflen, nparsed;
+  unsigned char *p;
+  struct _keybox_openpgp_info info;
+
+  buffer = read_file (filename, &buflen);
+  if (!buffer)
+    return;
+  p = buffer;
+  for (;;)
+    {
+      err = _keybox_parse_openpgp (p, buflen, &nparsed, &info);
+      assert (nparsed <= buflen);
+      if (err)
+        {
+          if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+            break;
+          log_info ("%s: failed to parse OpenPGP keyblock: %s\n",
+                    filename, gpg_strerror (err));
+        }
+      else
+        {
+          dump_openpgp_key (&info, p);
+          _keybox_destroy_openpgp_info (&info);
+        }
+      p += nparsed;
+      buflen -= nparsed;
+    }
+  xfree (buffer);
+}
+
+
+
 
 int
 main( int argc, char **argv )
@@ -223,19 +424,22 @@ main( int argc, char **argv )
   enum cmd_and_opt_values cmd = 0;
   
   set_strusage( my_strusage );
-  /*log_set_name("kbxutil"); fixme */
-#if 0
-  /* check that the libraries are suitable.  Do it here because
-   * the option parse may need services of the library */
-  if ( !gcry_check_version ( "1.1.4" ) ) 
+  gcry_control (GCRYCTL_DISABLE_SECMEM);
+  log_set_prefix ("kbxutil", 1); 
+  set_native_charset (NULL); 
+  i18n_init ();
+
+  /* Check that the libraries are suitable.  Do it here because
+     the option parsing may need services of the library.  */
+  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
-      log_fatal(_("libgcrypt is too old (need %s, have %s)\n"),
-                "1.1.4", gcry_check_version(NULL) );
+      log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
+                 NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
     }
-#endif
+
+  gcry_set_log_handler (my_gcry_logger, NULL);
 
   /*create_dotlock(NULL); register locking cleanup */
-  i18n_init();
 
   /* We need to use the gcry malloc function because jnlib does use them */
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
@@ -264,9 +468,10 @@ main( int argc, char **argv )
         case aFindByKid:
         case aFindByUid:
         case aStats:
+        case aImportOpenPGP:
           cmd = pargs.r_opt;
           break;
-          
+
         default:
           pargs.err = 2;
           break;
@@ -276,24 +481,34 @@ main( int argc, char **argv )
     myexit(2);
   
   if (!cmd)
-      { /* default is to list a KBX file */
-	if (!argc) 
-          _keybox_dump_file (NULL, 0, stdout);
-	else
-          {
-	    for (; argc; argc--, argv++) 
-              _keybox_dump_file (*argv, 0, stdout);
-          }
-      }
+    { /* Default is to list a KBX file */
+      if (!argc) 
+        _keybox_dump_file (NULL, 0, stdout);
+      else
+        {
+          for (; argc; argc--, argv++) 
+            _keybox_dump_file (*argv, 0, stdout);
+        }
+    }
   else if (cmd == aStats )
     {
-	if (!argc) 
-          _keybox_dump_file (NULL, 1, stdout);
-	else
-          {
-	    for (; argc; argc--, argv++) 
-              _keybox_dump_file (*argv, 1, stdout);
-          }
+      if (!argc) 
+        _keybox_dump_file (NULL, 1, stdout);
+      else
+        {
+          for (; argc; argc--, argv++) 
+            _keybox_dump_file (*argv, 1, stdout);
+        }
+    }
+  else if (cmd == aImportOpenPGP)
+    {
+      if (!argc)
+        import_openpgp ("-");
+      else
+        {
+          for (; argc; argc--, argv++) 
+            import_openpgp (*argv);
+        }
     }
 #if 0
   else if ( cmd == aFindByFpr ) 

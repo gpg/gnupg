@@ -82,6 +82,40 @@ struct keybox_handle {
 };
 
 
+/* Openpgp helper structures. */
+struct _keybox_openpgp_key_info
+{
+  struct _keybox_openpgp_key_info *next;
+  unsigned char keyid[8];
+  int fprlen;  /* Either 16 or 20 */
+  unsigned char fpr[20];
+};
+
+struct _keybox_openpgp_uid_info
+{
+  struct _keybox_openpgp_uid_info *next;
+  size_t off;
+  size_t len;
+};
+
+struct _keybox_openpgp_info
+{
+  int is_secret;        /* True if this is a secret key. */
+  unsigned int nsubkeys;/* Total number of subkeys.  */
+  unsigned int nuids;   /* Total number of user IDs in the keyblock. */
+  unsigned int nsigs;   /* Total number of signatures in the keyblock. */
+
+  /* Note, we use 2 structs here to better cope with the most common
+     use of having one primary and one subkey - this allows us to
+     statically allocate this structure and only malloc stuff for more
+     than one subkey. */
+  struct _keybox_openpgp_key_info primary;
+  struct _keybox_openpgp_key_info subkeys;
+  struct _keybox_openpgp_uid_info uids;
+};
+typedef struct _keybox_openpgp_info *keybox_openpgp_info_t;
+
+
 /* Don't know whether this is needed: */
 /*  static struct { */
 /*    const char *homedir; */
@@ -107,6 +141,13 @@ void _keybox_release_blob (KEYBOXBLOB blob);
 const char *_keybox_get_blob_image (KEYBOXBLOB blob, size_t *n);
 off_t _keybox_get_blob_fileoffset (KEYBOXBLOB blob);
 void _keybox_update_header_blob (KEYBOXBLOB blob);
+
+/*-- keybox-openpgp.c --*/
+gpg_error_t _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,
+                                   size_t *nparsed,
+                                   keybox_openpgp_info_t info);
+void _keybox_destroy_openpgp_info (keybox_openpgp_info_t info);
+
 
 /*-- keybox-file.c --*/
 int _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp);

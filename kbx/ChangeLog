@@ -1,3 +1,13 @@
+2004-08-24  Werner Koch  <wk@g10code.de>
+
+	* kbxutil.c: New command --import-openpgp.
+	(main): Updated libgcrypt initialization stuff.
+	(my_gcry_logger): New.
+	(read_file): New.  Taken from ../agent/protect-tool.
+	(dump_fpr, dump_openpgp_key, import_openpgp): New.
+
+	* keybox-openpgp.c: New.
+
 2004-06-18  Werner Koch  <wk@gnupg.org>
 
 	* keybox-dump.c (_keybox_dump_file): New arg STATS_ONLY.

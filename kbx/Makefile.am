@@ -37,6 +37,7 @@ common_sources = \
 	keybox-file.c \
 	keybox-search.c \
 	keybox-update.c \
+	keybox-openpgp.c \
 	keybox-dump.c 
 
 
