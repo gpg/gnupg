@@ -29,6 +29,7 @@ exp_files=""
 LANG=
 LANGUAGE=
 LC_ALL=
+LC_MESSAGES=
 
 #--------------------------------
 #------ utility functions -------
