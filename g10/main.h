@@ -184,7 +184,8 @@ int collapse_uids( KBNODE *keyblock );
 
 int parse_export_options(char *str,unsigned int *options);
 int export_pubkeys( STRLIST users, unsigned int options );
-int export_pubkeys_stream( IOBUF out, STRLIST users, unsigned int options );
+int export_pubkeys_stream( IOBUF out, STRLIST users,
+			   KBNODE *keyblock_out, unsigned int options );
 int export_seckeys( STRLIST users );
 int export_secsubkeys( STRLIST users );
 

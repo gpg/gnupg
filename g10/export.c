@@ -35,8 +35,9 @@
 #include "i18n.h"
 
 static int do_export( STRLIST users, int secret, unsigned int options );
-static int do_export_stream( IOBUF out, STRLIST users,
-			     int secret, unsigned int options, int *any );
+static int do_export_stream( IOBUF out, STRLIST users, int secret,
+			     KBNODE *keyblock_out, unsigned int options,
+			     int *any );
 
 int
 parse_export_options(char *str,unsigned int *options)
@@ -103,11 +104,12 @@ export_pubkeys( STRLIST users, unsigned int options )
  * been exported
  */
 int
-export_pubkeys_stream( IOBUF out, STRLIST users, unsigned int options )
+export_pubkeys_stream( IOBUF out, STRLIST users,
+		       KBNODE *keyblock_out, unsigned int options )
 {
     int any, rc;
 
-    rc = do_export_stream( out, users, 0, options, &any );
+    rc = do_export_stream( out, users, 0, keyblock_out, options, &any );
     if( !rc && !any )
 	rc = -1;
     return rc;
@@ -146,7 +148,7 @@ do_export( STRLIST users, int secret, unsigned int options )
     }
     if( opt.compress_keys && opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
-    rc = do_export_stream( out, users, secret, options, &any );
+    rc = do_export_stream( out, users, secret, NULL, options, &any );
 
     if( rc || !any )
 	iobuf_cancel(out);
@@ -156,9 +158,12 @@ do_export( STRLIST users, int secret, unsigned int options )
 }
 
 
+/* If keyblock_out is non-NULL, AND the exit code is zero, then it
+   contains a pointer to the first keyblock found and exported.  No
+   other keyblocks are exported.  The caller must free it. */
 static int
 do_export_stream( IOBUF out, STRLIST users, int secret,
-		  unsigned int options, int *any )
+		  KBNODE *keyblock_out, unsigned int options, int *any )
 {
     int rc = 0;
     PACKET pkt;
@@ -408,6 +413,11 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	    }
 	}
 	++*any;
+	if(keyblock_out)
+	  {
+	    *keyblock_out=keyblock;
+	    break;
+	  }
     }
     if( rc == -1 )
 	rc = 0;
@@ -415,7 +425,8 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
   leave:
     m_free(desc);
     keydb_release (kdbhd);
-    release_kbnode( keyblock );
+    if(rc || keyblock_out==NULL)
+      release_kbnode( keyblock );
     if( !*any )
 	log_info(_("WARNING: nothing exported\n"));
     return rc;

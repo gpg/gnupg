@@ -1,3 +1,16 @@
+2003-02-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_spawn): Include various pieces of
+	information about the key in the data sent to the keyserver
+	helper.  This allows the helper to use it in instructing a remote
+	server which may not have any actual OpenPGP smarts in parsing
+	keys.
+
+	* main.h, export.c (export_pubkeys_stream, do_export_stream): Add
+	ability to return only the first match in an exported keyblock for
+	keyserver usage.  This should be replaced at some point with a
+	more flexible solution where each key can be armored seperately.
+
 2003-02-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (sign_file): Do not push textmode filter onto an unopened

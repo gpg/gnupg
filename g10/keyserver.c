@@ -801,6 +801,7 @@ keyserver_spawn(int action,STRLIST list,
 	  {
 	    armor_filter_context_t afx;
 	    IOBUF buffer=iobuf_temp();
+	    KBNODE block;
 
 	    temp=NULL;
 	    add_to_strlist(&temp,key->d);
@@ -809,12 +810,76 @@ keyserver_spawn(int action,STRLIST list,
 	    afx.what=1;
 	    iobuf_push_filter(buffer,armor_filter,&afx);
 
-	    if(export_pubkeys_stream(buffer,temp,
+	    /* TODO: Don't use the keyblock hack here - instead,
+	       output each key as a different ascii armored blob with
+	       its own INFO section. */
+
+	    if(export_pubkeys_stream(buffer,temp,&block,
 				     opt.keyserver_options.export_options)==-1)
 	      iobuf_close(buffer);
 	    else
 	      {
+		KBNODE node;
+
 		iobuf_flush_temp(buffer);
+
+		merge_keys_and_selfsig(block);
+
+		fprintf(spawn->tochild,"INFO %s BEGIN\n",key->d);
+
+		for(node=block;node;node=node->next)
+		  {
+		    switch(node->pkt->pkttype)
+		      {
+		      default:
+			continue;
+
+		      case PKT_PUBLIC_KEY:
+		      case PKT_PUBLIC_SUBKEY:
+			{
+			  PKT_public_key *pk=node->pkt->pkt.public_key;
+
+			  keyid_from_pk(pk,NULL);
+
+			  fprintf(spawn->tochild,"%sb:%08lX%08lX:%u:%u:%u:%u:",
+				  node->pkt->pkttype==PKT_PUBLIC_KEY?"pu":"su",
+				  (ulong)pk->keyid[0],(ulong)pk->keyid[1],
+				  pk->pubkey_algo,
+				  nbits_from_pk(pk),
+				  pk->timestamp,
+				  pk->expiredate);
+
+			  if(pk->is_revoked)
+			    fprintf(spawn->tochild,"r");
+			  if(pk->has_expired)
+			    fprintf(spawn->tochild,"e");
+
+			  fprintf(spawn->tochild,"\n");
+
+			  break;
+			}
+
+		      case PKT_USER_ID:
+			{
+			  PKT_user_id *uid=node->pkt->pkt.user_id;
+
+			  if(uid->attrib_data)
+			    continue;
+
+			  fprintf(spawn->tochild,"uid:%s:%u:%u:",
+				  uid->name,uid->created,uid->expiredate);
+
+			  if(uid->is_revoked)
+			    fprintf(spawn->tochild,"r");
+			  if(uid->is_expired)
+			    fprintf(spawn->tochild,"e");
+
+			  fprintf(spawn->tochild,"\n");
+			}
+		      }
+		  }
+
+		fprintf(spawn->tochild,"INFO %s END\n",key->d);
 
 		fprintf(spawn->tochild,"KEY %s BEGIN\n",key->d);
 		fwrite(iobuf_get_temp_buffer(buffer),
@@ -822,6 +887,7 @@ keyserver_spawn(int action,STRLIST list,
 		fprintf(spawn->tochild,"KEY %s END\n",key->d);
 
 		iobuf_close(buffer);
+		release_kbnode(block);
 	      }
 
 	    free_strlist(temp);
