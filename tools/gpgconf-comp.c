@@ -771,7 +771,7 @@ typedef enum
     GC_COMPONENT_SCDAEMON,
 
     /* The classic GPG for OpenPGP.  */
-    GC_COMPONENT_GPG
+    GC_COMPONENT_GPG,
 
     /* GPG for S/MIME.  */
     GC_COMPONENT_GPGSM,
