@@ -115,13 +115,13 @@ do_show_revocation_reason( PKT_signature *sig )
 	if( *p == 0 )
 	    text = _("No reason specified");
 	else if( *p == 0x01 )
-	    text = _("Key is superseded");
+	    text = _("Key is superseeded");
 	else if( *p == 0x02 )
 	    text = _("Key has been compromised");
 	else if( *p == 0x03 )
 	    text = _("Key is no longer used");
 	else if( *p == 0x20 )
-	    text = _("User ID is non longer valid");
+	    text = _("User ID is no longer valid");
 	else
 	    text = NULL;
 

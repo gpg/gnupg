@@ -231,11 +231,11 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "  \"Key has been compromised\"\n"
  "      Use this if you have a reason to believe that unauthorized persons\n"
  "      got access to your secret key.\n"
- "  \"Key is superseded\"\n"
+ "  \"Key is superseeded\"\n"
  "      Use this if you have replaced this key with a newer one.\n"
  "  \"Key is no longer used\"\n"
  "      Use this if you have retired this key.\n"
- "  \"User ID is non longer valid\"\n"
+ "  \"User ID is no longer valid\"\n"
  "      Use this to state that the user ID should not longer be used;\n"
  "      this is normally used to mark an email address invalid.\n"
 )},

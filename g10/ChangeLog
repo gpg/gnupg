@@ -1,3 +1,15 @@
+Mon May  1 15:38:04 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* getkey.c (key_byname): Always returned a defined context.  Fixed
+	a segv for invalid user id specifications. Reported by Walter Koch.
+
+	* getkey.c (get_user_id): I18ned "no user id" string. By Walter.
+
+	* pkclist.c (do_show_revocation_reason): Typo fixes.
+	* helptext.c: Ditto.
+
+	* armor.c (armor_filter): Fixed some CRLF issues.  By Mike McEwan.
+
 Fri Apr 14 19:37:08 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* pkclist.c (do_show_revocation_reason): New.

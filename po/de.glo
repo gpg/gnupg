@@ -1,115 +1,173 @@
 # Glossary for GnuPG german translation
+# Zusammenstellung der Liste:
 # Copyright (C) 1998 Free Software Foundation, Inc.
 # Walter Koch <koch@hsp.de>, 1998.
+#
 # This is just a textfile for your information.
-# It will _not_ be read or processed automatically by any program
+# It will _not_ be read or processed automatically by any program 
+#
+# 1. Die Begriffe ohne ein  "<"  oder  ">"  vor dem deutschen Wort 
+#    stammen aus der Wortliste von Walter Koch (Programmübersetzung).
+# 2. Die Änderungsvorschläge dazu mit einem "*" vor dem deutschen Wort 
+#    stammen von Peter Gerwinski.
+# 3. Die Begriffe mit einem  "<" vor dem deutschen Wort sind so in der 
+#    Bearbeitung von Herrn Goretzki verwendet worden
+# 4. Die Begriffe mit einem  ">" vor dem deutschen Wort sind 
+#    alternative Übersetzungsmöglichkeiten, die von H.Martin angegeben 
+#    wurden.
+# 5. (*) Uneinheitlich verwendet
+# 6.  - Gefällt mir (Walter Koch) nicht so toll
+# 7. Die erste genannte Übersetzung ist die in de.po verwendete
 
-........		Authentisierung
+
+
 aka			alias
-algorithm		Verfahren
+algorithm		Verfahren          
 anonymous		ungenannter
-argument
+argument    		> Argument
 armor			ASCII-Hülle
+associate with a person <einer Person zuordnen
+authentication  	Authentisierung
 available		vorhanden [besser?: verfügbar]
-bad [signature] 	falsch[e] Unterschrift
-bad [MPI]		fehlerhafte MPI
+bad [MPI]		fehlerhafte MPI 
+bad [signature]		falsch[e] Unterschrift 
+break (the encryption)  <(Die Verschlüsselung) aufbrechen
 bug			"Bug (Programmfehler)"
-cache			Lager [ ob das ernst gemeint ist? :-) ]
+cache   		Lager  *Zwischenspeicher
+can't read		nicht lesbar
+casual  		>zufällig, >gelegentlich >unregelmäßig
 certificate		Zertifikat
 character set		Zeichensatz
 check (verb)		pr|fen, gepr|ft
 checksum		Prüfsumme
 cipher algorithm	Verschlüsselungsverfahren
-clearsig header 	Klartextsignatur-Einleitung
-command 		Befehl
-compress algorithm	Komprimierverfahren *
+clearsig header		Klartextsignatur-Einleitung
+command			Befehl
+compress algorithm      Komprimierverfahren,*Komprimierungsverfahren ?   
+compromised             nicht mehr sicher
 core dump		core-dump-Datei
+, (Speicherauszug?)
+core function    	<wesentliche Funktion
 corrupted		beschädigter
-critical bit		???
-dash escaped		mit Bindestrich \"escapte\"
+cover   		>behandeln, <erläutern
+creation    		<Erzeugung
+critical bit   		???
+dash escaped            mit Bindestrich \"escapte\", *m.Bindestrichen maskiert?
 decryption		Enschlüsselung
-DEK			???
-delete			entfernen
+default option  	<Standardoption
+DEK 			???
+delete  		entfernen, *>löschen 
+depend on   		>sich verlassen auf,>angewiesen sein auf,>abhängen von
 depreciated		taugt nicht mehr viel
+determined attacker 	>zielbewusster,>entschlossener Angreifer
 digest algorithm	Hashmethode
 disabled		abgeschaltet
 encrypted		verschlüsselte
+eventually  		>schließlich, endlich  Nicht: eventuell
+expiration date 	<Verfalldatum
+expire  		<verfallen
 expire date		Verfallsdatum
 failed			fehlgeschlagen
-faked [RNG]
-fingerprint		Fingerabdruck
+faked [RNG]             - *manipulierter Zufallszahlengenerator
+fingerprint  		Fingerabdruck
 for-your-eyes-only	Vertraulichkeit (\"for-your-eyes-only\")
 generated		erzeugter
 good certificate	Korrektes Zertifikat
 handle			benutzt
 hint			Tip
-init			-
-key-ID			Schlüssel-ID
+ignored			unbeachtet
+include 		<enthalten
+init    		*initialisieren
+invalid ...		falsche ...
+is adequate 		>ist angemessen, manchmal: <reicht völlig aus
+issue
+key-ID                  Schlüssel-ID, *Schlüsselkennung ?
+
 key binding		Schlüsselanbindung
 keyblock		Schlüsselblock
 keyring 		Schlüsselbund
-keyserver		- Schl€sselserver
+keyserver   		Schlüsselserver, -*Schlüssel-Server 
+lifetime    		>Gültigkeitsdauer, >Geltungsdauer
 lookup			- Suche
+machine 		häufig: Computer, Rechner
 main key		Hauptschlüssel
-maintenance utility	Wartungs-Hilfsprogramm
-malformed		ungünstig aufgebaute
+maintenance utility	-Wartungs-Hilfsprogramm
+making signatures       >Unterschreiben <Unterzeichnen, <Leisten von 
+malformed   		ungünstig aufgebaute,  *fehlerhaft aufgebaute
+master key  		>Universalschlüssel
+, Generalschlüssel
 MDC			Manipulation detection code (Siegel ?)
+merge  (to) 		>zusammenführen, >vermischen ??
 message 		Botschaft
-mode			Modus, Methode	 *
-move			schieben
+mode			Modus, Methode   *
+move    		schieben, *verschieben
+NAI
 network error		Netzwerkfehler
 note			Hinweis
 okay			in Ordnung
 Ooops			Huch
+OpenPGP 		
 original		Ursprünglicher
-ownertrust		\"Owner trust\"
+ownertrust  		\"Owner trust\"  *Vertrauenswürdigkeit des Besitzers
 packet			Paket
 packet type		Pakettyp
 passphrase		Mantra
 preference items	????
-preferences		Einstellungen
+preferences 		Einstellungen    *(die gesamten) Einstellungen
 preferred		bevorzugt
 primary keys		Hauptschlüssel
+prompt (to) 		auch: >abfragen, >anfordern, >verlangen
+protected
 protection algorithm	Schutzverfahren
 pubkey algorithm	Public-Key Verfahren	 (*)
 public key		öffentlicher Schüssel
-public key algorithm	Public-Key Verfahren
-quit
-radix64 		radix64
-random			Zufall
+public key algorithm    Public-Key Verfahren *Public-Key-Verfahren
+quit    		*(Programm) verlassen, beenden
+radix64			radix64
+random 			Zufall
 random bytes		Zufallswerte
+regular file		normale Datei
 retry			???? (Wiederholung?, Wiederaufnahme?)
+reveal  		auch: <jemandem zeigen, >anderen zeigen 
+revocation  		Widerruf <*>Rückruf
+revocation certificate  *<Rückrufurkunde *Rückruf-Zertifikat
 revoke			widerrufen
-revocation		Widerruf
 RNG			Zufallsgenerator
 secondary key		Zweitschlüssel
 secret key		geheimer Schlüssel
-self-signature		Eigenbeglaubigung
+secret parts		geheime Teile
+security need(s)	>Sicherheitsbedüfnis(se), >Sicherheitsbedarf
+self-signature		Eigenbeglaubigung     
 sender			Absender
 sign user id		User-ID beglaubigen   *
-signature (files)	Unterschrift	      *
-signature (keys)	Beglaubigung	      *
-simple S2K mode 	????
-skipped 		übergangen, übersprungen, ignoriert
-stdin			- stdin
+signature (files)	Unterschrift          *
+signature (keys)	Beglaubigung          *
+simple S2K mode		????
+skipped			übergangen, übersprungen, ignoriert
+specify 		>spezifizieren, <angeben, ?festlegen
+stdin   		- stdin, *die Standardeingabe 
 subkey			Unterschlüssel
-terminal charset	- Terminalzeichensatz
+superseeded		überholt, veraltet
+terminal charset        - Terminalzeichensatz *Terminal-Zeichensatz(s.o.)
 throw			verwerfe
 Timestamp conflict	Zeitangaben differieren
-Trust-DB		'Trust'-Datenbank
-trusted 		- vertrauenswürdig
-trustvalues		- trustvalues
+Trust-DB    		'Trust'-Datenbank, *Vertrauensdatenbank ?
+trusted			- vertrauenswürdig
+trustvalues		- trustvalues >Vertrauensniveaus?? *Vertrauensmaß? >Vertrauenswerte?
 trying			Versuch
 type [message]		[Botschaft] eintippen
 ulimately [trust]	uneingeschränktes [Vertrauen]
-update			Ändern, Änderung
-User			- User
+untrusted               - nichtvertrauenswürdig, *nicht vertrauenswürdig
+update                  Ändern, Änderung >Aktualisieren, >Aktualisierung *auf den 
+User    		- User, *<Benutzer, *Teilnehmer
 user ID 		User-ID
 user IDs		User-IDs
-username		Username
-untrusted		- nichtvertruenswürdig
-warning 		Warnung
+user interface  	>Benutzer-Schnittstelle
+username    		Username, *<Benutzername,  
+validate    		-- authentifizieren (>besser authentisieren ?? So im 
+Wörterbuch der neuen Rechtschreibung)
+validation  		-- >Authentisierung 
+verify  		< überprüfen
+warning			Warnung
 weak key		unsicherer Schlüssel
-
- (*) Uneinheitlich verwendet
-  -  Gefällt mir nicht so tol
+wisely                  >klug, vernünftig(erweise), >gescheit; möglichst sinnvoll

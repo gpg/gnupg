@@ -701,6 +701,8 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     STRLIST r;
     GETKEY_CTX ctx;
 
+    if( retctx ) /* reset the returned context in case of error */
+	*retctx = NULL;
     assert( !pk ^ !sk );
 
     /* build the search context */
@@ -2001,6 +2003,7 @@ get_user_id( u32 *keyid, size_t *rn )
     user_id_db_t r;
     char *p;
     int pass=0;
+
     /* try it two times; second pass reads from key resources */
     do {
 	for(r=user_id_db; r; r = r->next )
@@ -2011,9 +2014,8 @@ get_user_id( u32 *keyid, size_t *rn )
 		return p;
 	    }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = m_alloc( 19 );
-    memcpy(p, "[User id not found]", 19 );
-    *rn = 19;
+    p = m_strdup( _("[User id not found]") );
+    *rn = strlen(p);
     return p;
 }
 

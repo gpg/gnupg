@@ -902,10 +902,10 @@ armor_filter( void *opaque, int control,
 		log_bug("afx->what=%d", afx->what);
 	    iobuf_writestr(a, "-----");
 	    iobuf_writestr(a, head_strings[afx->what] );
-	    iobuf_writestr(a, "-----\n");
+	    iobuf_writestr(a, "-----" LF );
 	    if( !opt.no_version )
 		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
-					      PRINTABLE_OS_NAME ")\n");
+					      PRINTABLE_OS_NAME ")" LF );
 
 	    /* write the comment string or a default one */
 	    s = opt.comment_string ? opt.comment_string
@@ -922,12 +922,12 @@ armor_filter( void *opaque, int control,
 		    else
 			iobuf_put(a, *s );
 		}
-		iobuf_put(a, '\n' );
+		iobuf_writestr(a, LF );
 	    }
 
 	    if( afx->hdrlines )
 		iobuf_writestr(a, afx->hdrlines);
-	    iobuf_put(a, '\n');
+	    iobuf_writestr(a, LF );
 	    afx->status++;
 	    afx->idx = 0;
 	    afx->idx2 = 0;

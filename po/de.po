@@ -4,8 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-04-19 10:51+0200\n"
-"PO-Revision-Date: 2000-03-07  21:50 +0100\n"
+"POT-Creation-Date: 2000-04-22 01:30+0000\n"
+"PO-Revision-Date: 2000-04-22  21:50+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -977,33 +977,31 @@ msgstr "Fingerabdruck:"
 
 #: g10/pkclist.c:116
 msgid "No reason specified"
-msgstr ""
+msgstr "Kein Grund angegeben"
 
 #: g10/pkclist.c:118
-#, fuzzy
 msgid "Key is superseded"
-msgstr "Schlüssel ist geschützt.\n"
+msgstr "Schlüssel ist überholt"
 
 #: g10/pkclist.c:120
-#, fuzzy
 msgid "Key has been compromised"
-msgstr "Hinweis: Dieser Schlüssel ist abgeschaltet"
+msgstr "Hinweis: Dieser Schlüssel ist nicht mehr sicher"
 
 #: g10/pkclist.c:122
 msgid "Key is no longer used"
-msgstr ""
+msgstr "Schlüssel wird nicht mehr benutzt"
 
 #: g10/pkclist.c:124
 msgid "User ID is non longer valid"
-msgstr ""
+msgstr "User-ID ist nicht mehr gültig"
 
 #: g10/pkclist.c:128
 msgid "Reason for revocation: "
-msgstr ""
+msgstr "Grund für Widerruf: "
 
 #: g10/pkclist.c:145
 msgid "Revocation comment: "
-msgstr ""
+msgstr "Widerruf-Bemerkung: "
 
 # valid user replies (not including 1..4)
 #. a string with valid answers
@@ -1034,7 +1032,7 @@ msgid ""
 msgstr ""
 "Bitte entscheiden Sie, in wieweit Sie diesem User zutrauen,\n"
 "den Schlüssel eines anderen Users korrekt zu prüfen (Vergleich mit\n"
-"Lictbildausweisen, Vergleich der Fingerabdrücke aus unterschiedlichen\n"
+"Lichtbildausweisen, Vergleich der Fingerabdrücke aus unterschiedlichen\n"
 "Quellen ...)?\n"
 "\n"
 " 1 = Weiß nicht so recht\n"
@@ -1276,14 +1274,14 @@ msgid "writing key binding signature\n"
 msgstr "Schreiben der \"key-binding\" Signatur\n"
 
 #: g10/keygen.c:261 g10/keygen.c:345
-#, fuzzy, c-format
+#, c-format
 msgid "keysize invalid; using %u bits\n"
-msgstr "Die verlangte Schlüssellänge beträgt %u Bit\n"
+msgstr "Ungültig Schlüssellänge; %u Bit werden verwendet\n"
 
 #: g10/keygen.c:266 g10/keygen.c:350
-#, fuzzy, c-format
+#, c-format
 msgid "keysize rounded up to %u bits\n"
-msgstr "aufgerundet auf %u Bit\n"
+msgstr "Schlüssellänge auf %u Bit aufgerundet\n"
 
 #: g10/keygen.c:456
 msgid "Please select what kind of key you want:\n"
@@ -1507,16 +1505,15 @@ msgstr ""
 
 #: g10/keygen.c:771
 msgid "Please don't put the email address into the real name or the comment\n"
-msgstr ""
+msgstr "Bitte keine E-Mailadressen als Namen oder Kommentar verwenden\n"
 
 #: g10/keygen.c:776
 msgid "NnCcEeOoQq"
 msgstr "NnKkEeFfBb"
 
 #: g10/keygen.c:786
-#, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
-msgstr "Ändern: (N)ame, (K)ommentar, (E)-Mail oder (F)ertig/(B)eenden? "
+msgstr "Ändern: (N)ame, (K)ommentar, (E)-Mail oder (B)eenden? "
 
 #: g10/keygen.c:787
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
@@ -1524,7 +1521,7 @@ msgstr "Ändern: (N)ame, (K)ommentar, (E)-Mail oder (F)ertig/(B)eenden? "
 
 #: g10/keygen.c:806
 msgid "Please correct the error first\n"
-msgstr ""
+msgstr "Bitte beseitigen Sie zuerst den Fehler\n"
 
 #: g10/keygen.c:844
 msgid ""
@@ -1571,14 +1568,14 @@ msgid "Key generation canceled.\n"
 msgstr "Schlüsselerzeugung abgebrochen.\n"
 
 #: g10/keygen.c:1465
-#, fuzzy, c-format
+#, c-format
 msgid "writing public key to `%s'\n"
-msgstr "schreiben des öffentlichen Zertifikats nach '%s'\n"
+msgstr "schreiben des öffentlichen Schlüssels nach '%s'\n"
 
 #: g10/keygen.c:1466
-#, fuzzy, c-format
+#, c-format
 msgid "writing secret key to `%s'\n"
-msgstr "schreiben des geheimen Zertifikats nach '%s'\n"
+msgstr "schreiben des geheimen Schlüssels nach '%s'\n"
 
 #: g10/keygen.c:1562
 msgid "public and secret key created and signed.\n"
@@ -2327,7 +2324,7 @@ msgstr "Hierzu wird der geheime Schlüssel benötigt.\n"
 
 #: g10/keyedit.c:731
 msgid "Please use the command \"toggle\" first.\n"
-msgstr ""
+msgstr "Bitte verwenden sie zunächst den Befehl \"toggle\"\n"
 
 #: g10/keyedit.c:778
 msgid "Really sign all user IDs? "
@@ -2518,9 +2515,9 @@ msgstr "Kein geheimer Schlüssel\n"
 
 #. of subkey
 #: g10/keylist.c:318 g10/mainproc.c:740
-#, fuzzy, c-format
+#, c-format
 msgid " [expires: %s]"
-msgstr "Der Schlüssel verfällt am %s\n"
+msgstr " [verfällt: %s]"
 
 #: g10/mainproc.c:213
 #, c-format
@@ -2748,9 +2745,9 @@ msgid "NOTE: cipher algorithm %d not found in preferences\n"
 msgstr "Hinweis: Verfahren %d ist kein bevorzugtes Verschlüsselungsverfahren\n"
 
 #: g10/pubkey-enc.c:201
-#, fuzzy, c-format
+#, c-format
 msgid "NOTE: secret key %08lX expired at %s\n"
-msgstr "Hinweis: Schlüssel der Signatur ist verfallen am %s.\n"
+msgstr "Hinweis: geheimer Schlüssel %08lX verfällt am %s\n"
 
 #: g10/hkp.c:62
 #, c-format
@@ -3744,9 +3741,9 @@ msgstr "Keine Hilfe vorhanden."
 msgid "No help available for `%s'"
 msgstr "Keine Hilfe für '%s' vorhanden."
 
-#~ msgid "   (%d) ElGamal in a v3 packet\n"
-#~ msgstr "   (%d) ElGamal in einem v3-Paket\n"
+msgid "   (%d) ElGamal in a v3 packet\n"
+msgstr "   (%d) ElGamal in einem v3-Paket\n"
 
-#~ msgid "Key generation can only be used in interactive mode\n"
-#~ msgstr ""
-#~ "Die Schlüsselerzeugung kann nur im interaktiven Modus benutzt werden.\n"
+msgid "Key generation can only be used in interactive mode\n"
+msgstr ""
+"Die Schlüsselerzeugung kann nur im interaktiven Modus benutzt werden.\n"
