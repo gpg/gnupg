@@ -27,6 +27,9 @@
 
 
 #ifdef MPI_INTERNAL_NEED_CLZ_TAB
+#ifdef __STDC__
+const
+#endif
 unsigned char
 __clz_tab[] =
 {
