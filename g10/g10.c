@@ -168,6 +168,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoPGP7,
     oCipherAlgo,
     oDigestAlgo,
+    oCertDigestAlgo,
     oCompressAlgo,
     oPasswdFD,
 #ifdef __riscos__
@@ -432,6 +433,7 @@ static ARGPARSE_OPTS opts[] = {
     { oSimpleSKChecksum, "simple-sk-checksum", 0, "@"},
     { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
     { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
+    { oCertDigestAlgo, "cert-digest-algo", 2 , "@" },
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
     { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
     { oShowPhotos,   "show-photos", 0, N_("Show Photo IDs")},
@@ -775,6 +777,7 @@ main( int argc, char **argv )
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
     char *def_digest_string = NULL;
+    char *cert_digest_string = NULL;
     char *s2k_cipher_string = NULL;
     char *s2k_digest_string = NULL;
     char *preference_list = NULL;
@@ -808,6 +811,7 @@ main( int argc, char **argv )
     /* note: if you change these lines, look at oOpenPGP */
     opt.def_cipher_algo = 0;
     opt.def_digest_algo = 0;
+    opt.cert_digest_algo = 0;
     opt.def_compress_algo = -1;
     opt.s2k_mode = 3; /* iterated+salted */
     opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
@@ -1112,6 +1116,7 @@ main( int argc, char **argv )
 	    opt.not_dash_escaped = 0;
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
+	    opt.cert_digest_algo = 0;
 	    opt.def_compress_algo = 1;
             opt.s2k_mode = 3; /* iterated+salted */
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
@@ -1207,6 +1212,7 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
+	  case oCertDigestAlgo: cert_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
 	  case oCharset:
@@ -1497,6 +1503,12 @@ main( int argc, char **argv )
 	m_free(def_digest_string); def_digest_string = NULL;
 	if( check_digest_algo(opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
+    }
+    if( cert_digest_string ) {
+	opt.cert_digest_algo = string_to_digest_algo(cert_digest_string);
+	m_free(cert_digest_string); cert_digest_string = NULL;
+	if( check_digest_algo(opt.cert_digest_algo) )
+	    log_error(_("selected certification digest algorithm is invalid\n"));
     }
     if( s2k_cipher_string ) {
 	opt.s2k_cipher_algo = string_to_cipher_algo(s2k_cipher_string);

@@ -1,3 +1,14 @@
+2002-05-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, getkey.c (fixup_uidnode), keyedit.c (show_prefs): Show
+	assumed prefs for hash and compression as well as the cipher pref.
+	Show assumed prefs if there are no prefs at all on a v4
+	self-signed key.
+
+	* options.h, g10.c (main), sign.c (make_keysig_packet): New
+	--cert-digest-algo function to override the default key signing
+	hash algorithm.
+
 2002-05-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs_main): Make sure the revocation key

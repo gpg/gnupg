@@ -1081,7 +1081,8 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
         return; /* has been revoked */
     }
 
-    uid->created = sig->timestamp; /* this one is okay */    
+    uid->created = sig->timestamp; /* this one is okay */
+    uid->selfsigversion = sig->version;
  
     /* store the key flags in the helper variable for later processing */
     uid->help_key_usage = 0;

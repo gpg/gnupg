@@ -64,6 +64,7 @@ struct {
     int force_mdc;
     int disable_mdc;
     int def_digest_algo;
+    int cert_digest_algo;
     int def_compress_algo;
     const char *def_secret_key;
     char *def_recipient;

@@ -171,6 +171,7 @@ typedef struct {
     prefitem_t *prefs;    /* list of preferences (may be NULL)*/
     int mdc_feature;
     u32 created;          /* according to the self-signature */
+    byte selfsigversion;
     char name[1];
 } PKT_user_id;
 

@@ -1114,23 +1114,25 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     if (sigversion < pk->version)
         sigversion = pk->version;
 
-    if( !digest_algo ) {
-	switch( sk->pubkey_algo ) {
-	  case PUBKEY_ALGO_DSA:
-            digest_algo = DIGEST_ALGO_SHA1; 
-            break;
-	  case PUBKEY_ALGO_RSA_S:
-	  case PUBKEY_ALGO_RSA:
-            if (opt.force_v4_certs || sk->version > 3)
-              digest_algo = DIGEST_ALGO_SHA1;
-            else
-              digest_algo = DIGEST_ALGO_MD5;
-            break;
-	  default:
-            digest_algo = DIGEST_ALGO_RMD160;
-            break;
-	}
-    }
+    if( !digest_algo )
+      {
+	/* Basically, this means use SHA1 always unless it's a v3 RSA
+	   key making a v3 cert (use MD5), or the user specified
+	   something (use whatever they said).  They still must use a
+	   160-bit hash with DSA, or the signature will fail.  Note
+	   that this still allows the caller of make_keysig_packet to
+	   override the user setting if it must. */
+
+	if(opt.cert_digest_algo)
+	  digest_algo=opt.cert_digest_algo;
+	else if((sk->pubkey_algo==PUBKEY_ALGO_RSA ||
+		 sk->pubkey_algo==PUBKEY_ALGO_RSA_S) &&
+		pk->version<4 && sigversion < 4)
+	  digest_algo = DIGEST_ALGO_MD5;
+	else
+	  digest_algo = DIGEST_ALGO_SHA1;
+      }
+
     md = md_open( digest_algo, 0 );
 
     /* hash the public key certificate and the user id */

@@ -1415,15 +1415,22 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 static void
 show_prefs (PKT_user_id *uid, int verbose)
 {
+    const prefitem_t fake={0,0};
     const prefitem_t *prefs;
     int i;
 
-    if( !uid || !uid->prefs )
-	return; 
-    prefs = uid->prefs;
-    if (verbose) {
-        int any, des_seen=0;
+    if( !uid )
+        return;
 
+    if( uid->prefs )
+        prefs=uid->prefs;
+    else if(uid->selfsigversion>=4 && verbose)
+        prefs=&fake;
+    else
+      return;
+
+    if (verbose) {
+        int any, des_seen=0, sha1_seen=0, uncomp_seen=0;
         tty_printf ("     Cipher: ");
         for(i=any=0; prefs[i].type; i++ ) {
             if( prefs[i].type == PREFTYPE_SYM ) {
@@ -1444,7 +1451,7 @@ show_prefs (PKT_user_id *uid, int verbose)
         if (!des_seen) {
             if (any)
                 tty_printf (", ");
-            tty_printf ("3DES");
+            tty_printf ("%s",cipher_algo_to_string(CIPHER_ALGO_3DES));
         }
         tty_printf ("\n     Hash: ");
         for(i=any=0; prefs[i].type; i++ ) {
@@ -1459,7 +1466,14 @@ show_prefs (PKT_user_id *uid, int verbose)
                     tty_printf ("%s", s );
                 else
                     tty_printf ("[%d]", prefs[i].value);
-            }    
+                if (prefs[i].value == DIGEST_ALGO_SHA1 )
+                    sha1_seen = 1;
+            }
+        }
+        if (!sha1_seen) {
+            if (any)
+                tty_printf (", ");
+            tty_printf ("%s",digest_algo_to_string(DIGEST_ALGO_SHA1));
         }
         tty_printf ("\n     Compression: ");
         for(i=any=0; prefs[i].type; i++ ) {
@@ -1488,9 +1502,21 @@ show_prefs (PKT_user_id *uid, int verbose)
                     tty_printf ("%s", s );
                 else
                     tty_printf ("[%d]", prefs[i].value);
-            }    
+                if (prefs[i].value == 0 )
+                    uncomp_seen = 1;
+            }
         }
-        tty_printf("\n");
+        if (!uncomp_seen) {
+            if (any)
+                tty_printf (", ");
+	    else
+	        tty_printf ("ZIP, ");
+	    tty_printf ("Uncompressed");
+        }
+        tty_printf ("\n     Features: ");
+	if(uid->mdc_feature)
+	  tty_printf ("MDC");
+	tty_printf("\n");
     }
     else {
         tty_printf("    ");
