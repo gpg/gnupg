@@ -1,10 +1,22 @@
 2004-01-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* g10.c (list_config): New function to dump config options to
+	stdout.  Currently requires --with-colons.
+	(collapse_args): New function to turn argc/argv into a single
+	string.
+	(main): Use it here to pass list_config() more than one argument
+	as a single string.
+	(print_algo_numbers): Helper to print algorithm number for
+	--list-config "pubkey", "cipher", "hash"/"digest", and "compress"
+	config options.
+
 	* packet.h, getkey.c (merge_selfsigs, merge_selfsigs_main),
 	pkclist.c (check_signatures_trust): Indicate who has revoked a key
 	(the owner or a designated revoker).  If a key was revoked by
-	both, prefer the owner.
-
+	both, prefer the owner.  If a subkey is already revoked by the
+	owner, don't allow a designated revokation of the whole key to
+	override this.  We're still revoked either way, of course.
+	
 	* keyedit.c (print_and_check_one_sig, keyedit_menu): Use the
 	COLUMNS environment variable (if any) to hint how wide the
 	terminal is.  Disabled on _WIN32.  Suggested by Janusz

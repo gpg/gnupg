@@ -1,6 +1,6 @@
 /* g10.c - The GnuPG utility (main for gpg)
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -93,6 +93,7 @@ enum cmd_and_opt_values
     aLSignKey,
     aNRSignKey,
     aNRLSignKey,
+    aListConfig,
     aListPackets,
     aEditKey,
     aDeleteKeys,
@@ -388,6 +389,7 @@ static ARGPARSE_OPTS opts[] = {
     { aCardEdit,   "card-edit",  256, N_("change data on a card")},
     { aChangePIN,  "change-pin", 256, N_("change a card's PIN")},
 #endif
+    { aListConfig, "list-config", 256, "@"},
     { aListPackets, "list-packets",256, "@"},
     { aExportOwnerTrust, "export-ownertrust", 256, "@"},
     { aImportOwnerTrust, "import-ownertrust", 256, "@"},
@@ -907,7 +909,8 @@ set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 }
 
 
-static void add_group(char *string)
+static void
+add_group(char *string)
 {
   char *name,*value;
   struct groupitem *item;
@@ -943,11 +946,11 @@ static void add_group(char *string)
    0) The homedir.  It must be x00, a directory, and owned by the
    user.
 
-   1) The options file.  Okay unless it or its containing directory is
-   group or other writable or not owned by us.  disable exec in this
-   case.
+   1) The options/gpg.conf file.  Okay unless it or its containing
+   directory is group or other writable or not owned by us.  Disable
+   exec in this case.
 
-   2) Extensions.  Same as #2.
+   2) Extensions.  Same as #1.
 
    Returns true if the item is unsafe. */
 static int
@@ -1141,6 +1144,133 @@ check_permissions(const char *path,int item)
 
   return 0;
 }
+
+
+static void
+print_algo_numbers(int (*checker)(int))
+{
+  int i,first=1;
+
+  for(i=0;i<=110;i++)
+    {
+      if(!checker(i))
+	{
+	  if(first)
+	    first=0;
+	  else
+	    printf(";");
+	  printf("%d",i);
+	}
+    }
+}
+
+
+/* In the future, we can do all sorts of interesting configuration
+   output here.  For now, just give "group" as the Enigmail folks need
+   it, and pubkey, cipher, hash, and compress as they may be useful
+   for frontends. */
+static void
+list_config(char *items)
+{
+  int show_all=(items==NULL);
+  char *name=NULL;
+
+  if(!opt.with_colons)
+    return;
+
+  while(show_all || (name=strsep(&items," ")))
+    {
+      if(show_all || ascii_strcasecmp(name,"group")==0)
+	{
+	  struct groupitem *iter;
+
+	  for(iter=opt.grouplist;iter;iter=iter->next)
+	    {
+	      STRLIST sl;
+
+	      printf("cfg:group:");
+	      print_string(stdout,iter->name,strlen(iter->name),':');
+	      printf(":");
+
+	      for(sl=iter->values;sl;sl=sl->next)
+		{
+		  print_string2(stdout,sl->d,strlen(sl->d),':',';');
+		  if(sl->next)
+		    printf(";");
+		}
+
+	      printf("\n");
+	    }
+	}
+
+      if(show_all || ascii_strcasecmp(name,"version")==0)
+	{
+	  printf("cfg:version:");
+	  print_string(stdout,VERSION,strlen(VERSION),':');
+	  printf("\n");
+	}
+
+      if(show_all || ascii_strcasecmp(name,"pubkey")==0)
+	{
+	  printf("cfg:pubkey:");
+	  print_algo_numbers(check_pubkey_algo);
+	  printf("\n");
+	}
+
+      if(show_all || ascii_strcasecmp(name,"cipher")==0)
+	{
+	  printf("cfg:cipher:");
+	  print_algo_numbers(check_cipher_algo);
+	  printf("\n");
+	}
+
+      if(show_all
+	 || ascii_strcasecmp(name,"digest")==0
+	 || ascii_strcasecmp(name,"hash")==0)
+	{
+	  printf("cfg:digest:");
+	  print_algo_numbers(check_digest_algo);
+	  printf("\n");
+	}
+
+      if(show_all || ascii_strcasecmp(name,"compress")==0)
+	{
+	  printf("cfg:compress:");
+	  print_algo_numbers(check_compress_algo);
+	  printf("\n");
+	}
+
+      if(show_all)
+	break;
+    }
+}
+
+
+/* Collapses argc/argv into a single string that must be freed */
+static char *
+collapse_args(int argc,char *argv[])
+{
+  char *str=NULL;
+  int i,first=1,len=0;
+
+  for(i=0;i<argc;i++)
+    {
+      len+=strlen(argv[i])+2;
+      str=m_realloc(str,len);
+      if(first)
+	{
+	  str[0]='\0';
+	  first=0;
+	}
+      else
+	strcat(str," ");
+
+      strcat(str,argv[i]);
+    }
+
+  return str;
+}
+
 
 int
 main( int argc, char **argv )
@@ -1413,6 +1543,7 @@ main( int argc, char **argv )
 	switch( pargs.r_opt )
 	  {
 	  case aCheckKeys: set_cmd( &cmd, aCheckKeys); break;
+	  case aListConfig: set_cmd( &cmd, aListConfig); break;
 	  case aListPackets: set_cmd( &cmd, aListPackets); break;
 	  case aImport: set_cmd( &cmd, aImport); break;
 	  case aFastImport: set_cmd( &cmd, aFastImport); break;
@@ -1429,8 +1560,10 @@ main( int argc, char **argv )
 	  case aListSigs: set_cmd( &cmd, aListSigs); break;
 	  case aExportSecret: set_cmd( &cmd, aExportSecret); break;
 	  case aExportSecretSub: set_cmd( &cmd, aExportSecretSub); break;
-	  case aDeleteSecretKeys: set_cmd( &cmd, aDeleteSecretKeys);
-							greeting=1; break;
+	  case aDeleteSecretKeys:
+	    set_cmd( &cmd, aDeleteSecretKeys);
+	    greeting=1;
+	    break;
 	  case aDeleteSecretAndPublicKeys:
             set_cmd( &cmd, aDeleteSecretAndPublicKeys);
             greeting=1; 
@@ -2476,7 +2609,8 @@ main( int argc, char **argv )
 	log_error(_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));
 
 
-    switch (cmd) {
+    switch (cmd)
+      {
       case aStore: 
       case aSym:  
       case aSign: 
@@ -2488,9 +2622,10 @@ main( int argc, char **argv )
 	break;
       default:
         break;
-    }
+      }
 
-    switch( cmd ) {
+    switch( cmd )
+      {
       case aStore: /* only store the file */
 	if( argc > 1 )
 	    wrong_args(_("--store [filename]"));
@@ -3055,6 +3190,13 @@ main( int argc, char **argv )
         break;
 #endif /* ENABLE_CARD_SUPPORT*/
 
+      case aListConfig:
+	{
+	  char *str=collapse_args(argc,argv);
+	  list_config(str);
+	  m_free(str);
+	}
+	break;
 
       case aListPackets:
 	opt.list_packets=2;
@@ -3086,7 +3228,7 @@ main( int argc, char **argv )
 	    iobuf_close(a);
 	}
 	break;
-    }
+      }
 
     /* cleanup */
     FREE_STRLIST(remusr);
