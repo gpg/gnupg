@@ -301,7 +301,7 @@ copy_options_file( const char *destdir )
 	m_free(fname);
 	return;
     }
-    strcpy(stpcpy(fname, destdir), DIRSEP_S "options" );
+    strcpy(stpcpy(fname, destdir), DIRSEP_S "gpg.conf" );
     dst = fopen( fname, "w" );
     if( !dst ) {
 	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );
@@ -320,7 +320,7 @@ copy_options_file( const char *destdir )
     }
     fclose( dst );
     fclose( src );
-    log_info(_("%s: new options file created\n"), fname );
+    log_info(_("new configuration file `%s' created\n"), fname );
     m_free(fname);
 }
 
@@ -353,7 +353,7 @@ try_make_homedir( const char *fname )
 	    log_info( _("%s: directory created\n"), fname );
 	copy_options_file( fname );
 	log_info(_("you have to start GnuPG again, "
-		   "so it can read the new options file\n") );
+		   "so it can read the new configuration file\n") );
 	g10_exit(1);
     }
 }

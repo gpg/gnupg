@@ -979,8 +979,21 @@ main( int argc, char **argv )
     /* Okay, we are now working under our real uid */
 
     if( default_config )
-	configname = make_filename(opt.homedir, "options", NULL );
-
+      {
+	configname = make_filename(opt.homedir, "gpg.conf", NULL );
+        if (!access (configname, R_OK))
+          { /* Print a warning when both config files are present. */
+            char *p = make_filename(opt.homedir, "options", NULL );
+            if (!access (p, R_OK))
+              log_info (_("NOTE: old default options file `%s' ignored\n"), p);
+            m_free (p);
+          }
+        else
+          { /* Keep on using the old default one. */
+            m_free (configname);
+            configname = make_filename(opt.homedir, "options", NULL );
+          }
+      }
     argc = orig_argc;
     argv = orig_argv;
     pargs.argc = &argc;
