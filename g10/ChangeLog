@@ -1,3 +1,15 @@
+2003-07-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, main.h, sig-check.c (signature_check2,
+	check_key_signature2, do_check): If ret_pk is set, fill in the pk
+	used to verify the signature.  Change all callers in getkey.c,
+	mainproc.c, and sig-check.c.
+
+	* keylist.c (list_keyblock_colon): Use the ret_pk from above to
+	put the fingerprint of the signing key in "sig" records during a
+	--with-colons --check-sigs.  This requires --no-sig-cache as well
+	since we don't cache fingerprints.
+
 2003-07-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_signature): No need to reserve 8 bytes for

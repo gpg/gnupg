@@ -1604,7 +1604,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                        ultimate trust flag.  */
 		    if(get_pubkey_fast(ultimate_pk,sig->keyid)==0
 		       && check_key_signature2(keyblock,k,ultimate_pk,
-					       NULL,&dummy,&dum2)==0
+					       NULL,NULL,&dummy,&dum2)==0
 		       && get_ownertrust(ultimate_pk)==TRUST_ULTIMATE)
 		      {
 			free_public_key(ultimate_pk);

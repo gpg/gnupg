@@ -39,8 +39,8 @@ struct cmp_help_context_s {
     MD_HANDLE md;
 };
 
-static int do_check( PKT_public_key *pk, PKT_signature *sig,
-					 MD_HANDLE digest, int *r_expired );
+static int do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
+		     int *r_expired, PKT_public_key *ret_pk);
 
 /****************
  * Check the signature which is contained in SIG.
@@ -52,12 +52,12 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
     u32 dummy;
     int dum2;
-    return signature_check2( sig, digest, &dummy, &dum2 );
+    return signature_check2( sig, digest, &dummy, &dum2, NULL );
 }
 
 int
-signature_check2( PKT_signature *sig, MD_HANDLE digest,
-		  u32 *r_expiredate, int *r_expired )
+signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate, 
+		  int *r_expired, PKT_public_key *ret_pk )
 {
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
@@ -80,7 +80,7 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
 				 invalid subkey */
     else {
 	*r_expiredate = pk->expiredate;
-	rc = do_check( pk, sig, digest, r_expired );
+	rc = do_check( pk, sig, digest, r_expired, ret_pk );
     }
 
     free_public_key( pk );
@@ -260,7 +260,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig, int *r_expired )
 
 static int
 do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
-						    int *r_expired )
+	  int *r_expired, PKT_public_key *ret_pk )
 {
     MPI result = NULL;
     int rc=0;
@@ -346,6 +346,9 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
       log_info(_("assuming bad signature from key %08lX due to an unknown critical bit\n"),(ulong)keyid_from_pk(pk,NULL));
 	rc = G10ERR_BAD_SIGN;
     }
+
+    if(!rc && ret_pk)
+      copy_public_key(ret_pk,pk);
 
     return rc;
 }
@@ -475,14 +478,18 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
     u32 dummy;
     int dum2;
-    return check_key_signature2(root, node, NULL, is_selfsig, &dummy, &dum2 );
+    return check_key_signature2(root, node, NULL, NULL,
+				is_selfsig, &dummy, &dum2 );
 }
 
 /* If check_pk is set, then use it to check the signature in node
-   rather than getting it from root or the keydb. */
+   rather than getting it from root or the keydb.  If ret_pk is set,
+   fill in the public key that was used to verify the signature.
+   ret_pk is only meaningful when the verification was successful. */
 int
 check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
-		      int *is_selfsig, u32 *r_expiredate, int *r_expired )
+		      PKT_public_key *ret_pk, int *is_selfsig,
+		      u32 *r_expiredate, int *r_expired )
 {
     MD_HANDLE md;
     PKT_public_key *pk;
@@ -531,7 +538,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	  {
 	    md = md_open( algo, 0 );
 	    hash_public_key( md, pk );
-	    rc = do_check( pk, sig, md, r_expired );
+	    rc = do_check( pk, sig, md, r_expired, ret_pk );
 	    cache_sig_result ( sig, rc );
 	    md_close(md);
 	  }
@@ -543,7 +550,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    md = md_open( algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md, r_expired );
+	    rc = do_check( pk, sig, md, r_expired, ret_pk );
             cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
@@ -569,7 +576,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    md = md_open( algo, 0 );
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md, r_expired );
+	    rc = do_check( pk, sig, md, r_expired, ret_pk );
             cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
@@ -584,7 +591,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
     else if( sig->sig_class == 0x1f ) { /* direct key signature */
 	md = md_open( algo, 0 );
 	hash_public_key( md, pk );
-	rc = do_check( pk, sig, md, r_expired );
+	rc = do_check( pk, sig, md, r_expired, ret_pk );
         cache_sig_result ( sig, rc );
 	md_close(md);
     }
@@ -602,12 +609,12 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	      {
 		if( is_selfsig )
 		  *is_selfsig = 1;
-		rc = do_check( pk, sig, md, r_expired );
+		rc = do_check( pk, sig, md, r_expired, ret_pk );
 	      }
 	    else if (check_pk)
-	      rc=do_check(check_pk,sig,md,r_expired);
+	      rc=do_check(check_pk,sig,md,r_expired, ret_pk);
 	    else
-	      rc = signature_check2( sig, md, r_expiredate, r_expired );
+	      rc = signature_check2( sig, md, r_expiredate, r_expired, ret_pk);
 
             cache_sig_result ( sig, rc );
 	    md_close(md);

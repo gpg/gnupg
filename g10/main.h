@@ -129,7 +129,8 @@ int sign_symencrypt_file (const char *fname, STRLIST locusr);
 int check_revocation_keys (PKT_public_key *pk, PKT_signature *sig);
 int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
-			  int *is_selfsig, u32 *r_expiredate, int *r_expired );
+			  PKT_public_key *ret_pk, int *is_selfsig,
+			  u32 *r_expiredate, int *r_expired );
 
 /*-- delkey.c --*/
 int delete_keys( STRLIST names, int secret, int allow_both );

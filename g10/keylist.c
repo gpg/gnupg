@@ -1032,8 +1032,10 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
-	    int sigrc;
+	    int sigrc,fprokay=0;
             char *sigstr;
+	    size_t fplen;
+	    byte fparray[MAX_FINGERPRINT_LEN];
 
 	    if( !any ) { /* no user id, (maybe a revocation follows)*/
 		if( sig->sig_class == 0x20 )
@@ -1067,8 +1069,16 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		continue;
 	    }
 	    if( opt.check_sigs ) {
+	        PKT_public_key *signer_pk=NULL;
+	        u32 dummy;
+		int dum2;
+
 		fflush(stdout);
-		rc = check_key_signature( keyblock, node, NULL );
+		if(opt.no_sig_cache)
+		  signer_pk=m_alloc_clear(sizeof(PKT_public_key));
+
+		rc = check_key_signature2( keyblock, node, NULL, signer_pk,
+					   NULL, &dummy, &dum2);
 		switch( rc ) {
 		  case 0:		   sigrc = '!'; break;
 		  case G10ERR_BAD_SIGN:    sigrc = '-'; break;
@@ -1076,6 +1086,16 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		  case G10ERR_UNU_PUBKEY:  sigrc = '?'; break;
 		  default:		   sigrc = '%'; break;
 		}
+
+		if(opt.no_sig_cache)
+		  {
+		    if(rc==0)
+		      {
+			fingerprint_from_pk (signer_pk, fparray, &fplen);
+			fprokay=1;
+		      }
+		    free_public_key(signer_pk);
+		  }
 	    }
 	    else {
 		rc = 0;
@@ -1109,7 +1129,22 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
                 print_string( stdout, p, n, ':' );
 		m_free(p);
 	    }
-            printf(":%02x%c:\n", sig->sig_class,sig->flags.exportable?'x':'l');
+            printf(":%02x%c:", sig->sig_class,sig->flags.exportable?'x':'l');
+
+	    if(opt.no_sig_cache && opt.check_sigs && fprokay)
+	      {
+		size_t i;
+
+		printf(":");
+
+		for (i=0; i < fplen ; i++ )
+		  printf ("%02X", fparray[i] );
+
+		printf(":");
+	      }
+
+	    printf("\n");
+
 	    /* fixme: check or list other sigs here */
 	}
     }
