@@ -1,3 +1,20 @@
+2003-04-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (dehtmlize): Fix bug #121 (memory corruption on some
+	platforms).  Special thanks to Michael C. Toren for his help in
+	lining up a sparc to test this fix on.
+
+	* keyserver.c (keyserver_work): Call out error for keyserver
+	helper with a different version than us.
+
+	* main.h, g10.c (main), import.c (parse_import_options,
+	fix_pks_corruption): It's really PKS corruption, not HKP
+	corruption.  Keep the old repair-hkp-subkey-bug command as an
+	alias.
+
+	* g10.c (main): Rename --no-version to --no-emit-version for
+	consistency.  Keep --no-version as an alias.
+
 2003-04-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (algo_available): PGP 8 can use the SHA-256 hash.

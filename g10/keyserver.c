@@ -728,6 +728,11 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 		    action==SEARCH?"search":"unknown",
 		    opt.keyserver_scheme);
 
+	case KEYSERVER_VERSION_ERROR:
+	  log_error(_("gpgkeys_%s does not support handler version %d\n"),
+		    opt.keyserver_scheme,KEYSERVER_PROTO_VERSION);
+	  break;
+
 	case KEYSERVER_INTERNAL_ERROR:
 	default:
 	  log_error(_("keyserver internal error\n"));
