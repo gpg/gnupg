@@ -88,7 +88,7 @@ The standard KBX Blob looks like this:
 
     Here comes the keyblock
 
-    maybe we put a sigture here later.
+    maybe we put a signature here later.
 
  b16	MD5 checksum  (useful for KS syncronisation)
  *
@@ -136,20 +136,31 @@ struct keyid_list {
     byte kid[8];
 };
 
+struct fixup_list {
+    struct fixup_list *next;
+    u32 off;
+    u32 val;
+};
+
+
 struct kbxblob {
+    byte *blob;
+    size_t bloblen;
+
+    /* stuff used only by kbx_create_blob */
     int nkeys;
     struct kbxblob_key *keys;
     int nuids;
     struct kbxblob_uid *uids;
     int nsigs;
     u32  *sigs;
+    struct fixup_list *fixups;
 
     struct keyid_list *temp_kids;
-    IOBUF buf;	/* the KBX is stored here */
+    IOBUF buf;	/* the KBX is temporarly stored here */
 };
 
-
-
+void kbx_release_blob ( KBXBLOB blob );
 
 /* Note: this functions are only used for temportay iobufs and therefore
  * they can't fail */
@@ -183,28 +194,9 @@ putn ( IOBUF out, const byte *p, size_t n )
     }
 }
 
-/****************
- * special version of put 32, which is used to fixup a value at file offset OFF
- */
-static void
-put32at ( IOBUF out, u32 a, size_t pos )
-{
-    size_t n;
-    byte *p;
-
-    iobuf_flush_temp ( out );
-    p = iobuf_get_temp_buffer( out );
-    n = iobuf_get_temp_length( out );
-    assert( n >= pos+4 );
-    p[0] = a >> 24 ;
-    p[1] = a >> 16 ;
-    p[2] = a >>  8 ;
-    p[3] = a	   ;
-}
-
 
 /****************
- * We must store the keyid at some place becuase we can't calculate the
+ * We must store the keyid at some place because we can't calculate the
  * offset yet.	This is only used for v3 keyIDs.  Function returns an index
  * value for later fixupd; this must be a non-zero value
  */
@@ -269,8 +261,10 @@ create_key_part( KBXBLOB blob, KBNODE keyblock )
 	if ( node->pkt->pkttype == PKT_PUBLIC_KEY
 	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    PKT_public_key *pk = node->pkt->pkt.public_key;
+	    char tmp[20];
 
-	    fingerprint_from_pk( pk, blob->keys[n].fpr, &fprlen );
+	    fingerprint_from_pk( pk, tmp , &fprlen );
+	    memcpy(blob->keys[n].fpr,tmp,20);
 	    if ( fprlen != 20 ) { /*v3 fpr - shift right and fill with zeroes*/
 		assert( fprlen == 16 );
 		memmove( blob->keys[n].fpr+4, blob->keys[n].fpr, 16);
@@ -346,10 +340,10 @@ create_blob_header( KBXBLOB blob )
     put32 ( a, 0 ); /* length of the keyblock, needs fixup */
 
     put16 ( a, blob->nkeys );
-    put16 ( a, 20 + 8 + 2 + 2 );  /* size of key info */
+    put16 ( a, 20 + 4 + 2 + 2 );  /* size of key info */
     for ( i=0; i < blob->nkeys; i++ ) {
 	putn ( a, blob->keys[i].fpr, 20 );
-	blob->keys[i].off_kid_addr = iobuf_tell ( a );
+	blob->keys[i].off_kid_addr = iobuf_get_temp_length (a);
 	put32 ( a, 0 ); /* offset to keyid, fixed up later */
 	put16 ( a, blob->keys[i].flags );
 	put16 ( a, 0 ); /* reserved */
@@ -358,7 +352,7 @@ create_blob_header( KBXBLOB blob )
     put16 ( a, blob->nuids );
     put16 ( a, 4 + 4 + 2 + 1 + 1 );  /* size of uid info */
     for ( i=0; i < blob->nuids; i++ ) {
-	blob->uids[i].off_addr = iobuf_tell ( a );
+	blob->uids[i].off_addr = iobuf_get_temp_length ( a );
 	put32 ( a, 0 ); /* offset to userid, fixed up later */
 	put32 ( a, blob->uids[i].len );
 	put16 ( a, blob->uids[i].flags );
@@ -385,13 +379,17 @@ create_blob_header( KBXBLOB blob )
      * not part of the fingerprint.  While we are doing that, we fixup all
      * the keyID offsets */
     for ( i=0; i < blob->nkeys; i++ ) {
+	struct fixup_list *fl = gcry_xcalloc(1, sizeof *fl );
+	fl->off = blob->keys[i].off_kid_addr;
+	fl->next = blob->fixups;
+	blob->fixups = fl;
+
 	if ( blob->keys[i].off_kid ) { /* this is a v3 one */
-	    put32at ( a, iobuf_tell(a), blob->keys[i].off_kid_addr );
+	    fl->val = iobuf_get_temp_length (a);
 	    put_stored_kid ( blob, blob->keys[i].off_kid );
 	}
 	else { /* the better v4 key IDs - just store an offset 8 bytes back */
-	    put32at ( a, blob->keys[i].off_kid_addr-8,
-				    blob->keys[i].off_kid_addr );
+	    fl->val = blob->keys[i].off_kid_addr-8;
 	}
     }
 
@@ -405,9 +403,17 @@ create_blob_keyblock( KBXBLOB blob, KBNODE keyblock )
     IOBUF a = blob->buf;
     KBNODE node;
     int rc;
-    int nsig;
+    int n;
+    u32 kbstart = iobuf_get_temp_length ( a );
 
-    for ( nsig = 0, node = keyblock; node; node = node->next ) {
+    {
+	    struct fixup_list *fl = gcry_xcalloc(1, sizeof *fl );
+	    fl->off = 8;
+	    fl->val = kbstart;
+	    fl->next = blob->fixups;
+	    blob->fixups = fl;
+    }
+    for ( n = 0, node = keyblock; node; node = node->next ) {
 	rc = build_packet ( a, node->pkt );
 	if ( rc ) {
 	    gpg_log_error("build_packet(%d) for kbxblob failed: %s\n",
@@ -418,11 +424,22 @@ create_blob_keyblock( KBXBLOB blob, KBNODE keyblock )
 	    PKT_user_id *u = node->pkt->pkt.user_id;
 	    /* build_packet has set the offset of the name into u ;
 	     * now we can do the fixup */
-	    put32at ( a, u->stored_at, blob->uids[nsig].off_addr );
-	    nsig++;
+	    struct fixup_list *fl = gcry_xcalloc(1, sizeof *fl );
+	    fl->off = blob->uids[n].off_addr;
+	    fl->val = u->stored_at;
+	    fl->next = blob->fixups;
+	    blob->fixups = fl;
+	    n++;
 	}
     }
-    assert( nsig == blob->nsigs );
+    assert( n == blob->nuids );
+    {
+	    struct fixup_list *fl = gcry_xcalloc(1, sizeof *fl );
+	    fl->off = 12;
+	    fl->val = iobuf_get_temp_length (a) - kbstart;
+	    fl->next = blob->fixups;
+	    blob->fixups = fl;
+    }
     return 0;
 }
 
@@ -438,10 +455,13 @@ create_blob_finish( KBXBLOB blob )
 {
     IOBUF a = blob->buf;
     byte *p;
+    char *pp;
+    int i;
     size_t n;
 
     /* write a placeholder for the checksum */
-    put32( a, 0 ); put32( a, 0 ); put32( a, 0 ); put32( a, 0 );
+    for ( i = 0; i < 16; i++ )
+	put32( a, 0 );
     /* get the memory area */
     iobuf_flush_temp ( a );
     p = iobuf_get_temp_buffer ( a );
@@ -449,23 +469,48 @@ create_blob_finish( KBXBLOB blob )
     assert( n >= 20 );
 
     /* fixup the length */
-    put32at ( a, 0, n );
+    {
+	struct fixup_list *fl = gcry_xcalloc(1, sizeof *fl );
+	fl->off = 0;
+	fl->val = n;
+	fl->next = blob->fixups;
+	blob->fixups = fl;
+    }
+    /* do the fixups */
+    {
+	struct fixup_list *fl;
+	for ( fl = blob->fixups; fl; fl = fl->next ) {
+	    assert( fl->off+4 <= n );
+	    p[fl->off+0] = fl->val >> 24 ;
+	    p[fl->off+1] = fl->val >> 16 ;
+	    p[fl->off+2] = fl->val >>  8 ;
+	    p[fl->off+3] = fl->val	 ;
+	}
+
+    }
 
     /* calculate and store the MD5 checksum */
     gcry_md_hash_buffer( GCRY_MD_MD5, p + n - 16, p, n - 16 );
+
+    pp = gcry_malloc ( n );
+    if ( !pp )
+	return GCRYERR_NO_MEM;
+    memcpy ( pp , p, n );
+    blob->blob = pp;
+    blob->bloblen = n;
 
     return 0;
 }
 
 
 int
-kbx_create_blob ( KBXBLOB *retkbx, KBNODE keyblock )
+kbx_create_blob ( KBXBLOB *r_blob,  KBNODE keyblock )
 {
     int rc = 0;
     KBNODE node;
     KBXBLOB blob;
 
-    *retkbx = NULL;
+    *r_blob = NULL;
     blob = gcry_calloc (1, sizeof *blob );
     if( !blob )
 	return GCRYERR_NO_MEM;
@@ -484,9 +529,9 @@ kbx_create_blob ( KBXBLOB *retkbx, KBNODE keyblock )
 	  default: break;
 	}
     }
-    blob->keys = gcry_calloc ( blob->nkeys, sizeof ( blob->keys ) );
-    blob->uids = gcry_calloc ( blob->nuids, sizeof ( blob->uids ) );
-    blob->sigs = gcry_calloc ( blob->nsigs, sizeof ( blob->sigs ) );
+    blob->keys = gcry_calloc ( blob->nkeys, sizeof ( *blob->keys ) );
+    blob->uids = gcry_calloc ( blob->nuids, sizeof ( *blob->uids ) );
+    blob->sigs = gcry_calloc ( blob->nsigs, sizeof ( *blob->sigs ) );
     if ( !blob->keys || !blob->uids || !blob->sigs ) {
 	rc = GCRYERR_NO_MEM;
 	goto leave;
@@ -516,15 +561,42 @@ kbx_create_blob ( KBXBLOB *retkbx, KBNODE keyblock )
     if( rc )
 	goto leave;
 
-    *retkbx = blob;
 
   leave:
     release_kid_list( blob->temp_kids );
     blob->temp_kids = NULL;
     if ( rc ) {
 	kbx_release_blob ( blob );
+	*r_blob = NULL;
+    }
+    else  {
+	*r_blob = blob;
     }
     return rc;
+}
+
+int
+kbx_new_blob ( KBXBLOB *r_blob,  char *image, size_t imagelen )
+{
+    KBXBLOB blob;
+
+    *r_blob = NULL;
+    blob = gcry_calloc (1, sizeof *blob );
+    if( !blob )
+	return GCRYERR_NO_MEM;
+    blob->blob = image;
+    blob->bloblen = imagelen;
+    *r_blob = blob;
+    return 0;
+}
+
+
+
+const char *
+kbx_get_blob_image ( KBXBLOB blob, size_t *n )
+{
+    *n = blob->bloblen;
+    return blob->blob;
 }
 
 void
@@ -537,6 +609,9 @@ kbx_release_blob ( KBXBLOB blob )
     gcry_free( blob->keys );
     gcry_free( blob->uids );
     gcry_free( blob->sigs );
+
+    gcry_free ( blob->blob );
+
     gcry_free( blob );
 }
 
@@ -556,17 +631,21 @@ get16( const byte *buffer )
 {
     ulong a;
     a =  *buffer << 8;
-    a |= buffer[0];
+    a |= buffer[1];
     return a;
 }
 
 
 int
-kbx_dump_blob ( FILE *fp, const byte* buffer, size_t length  )
+kbx_dump_blob ( FILE *fp, KBXBLOB blob	)
 {
-  #if 0
-    ulong n;
+    const byte *buffer = blob->blob;
+    size_t length = blob->bloblen;
+    ulong n, nkeys, keyinfolen;
+    ulong nuids, uidinfolen;
+    ulong nsigs, siginfolen;
     ulong keyblock_off, keyblock_len;
+    const byte *p;
 
     if( length < 40 )  {
 	fprintf( fp, "blob too short\n");
@@ -579,8 +658,8 @@ kbx_dump_blob ( FILE *fp, const byte* buffer, size_t length  )
     else
 	length = n;  /* ignore the rest */
     fprintf( fp, "Length: %lu\n", n );
-    fprintf( fp, "Type:   %d\n", buffer[4] ),
-    fprintf( fp, "Version: %d\n", buffer[5] ),
+    fprintf( fp, "Type:   %d\n", buffer[4] );
+    fprintf( fp, "Version: %d\n", buffer[5] );
     if( buffer[4] != 2 ) {
 	fprintf( fp, "can't dump this blob type\n" );
 	return 0;
@@ -593,8 +672,224 @@ kbx_dump_blob ( FILE *fp, const byte* buffer, size_t length  )
     fprintf( fp, "Keyblock-Offset: %lu\n", keyblock_off );
     fprintf( fp, "Keyblock-Length: %lu\n", keyblock_len );
 
-  #endif
+    nkeys = get16( buffer + 16 );
+    fprintf( fp, "Key-Count: %lu\n", nkeys );
+    keyinfolen = get16( buffer + 18 );
+    fprintf( fp, "Key-Info-Length: %lu\n", keyinfolen );
+    /* fixme: check bounds */
+    p = buffer + 20;
+    for(n=0; n < nkeys; n++, p += keyinfolen ) {
+	int i;
+	ulong kidoff, kflags;
 
+	fprintf( fp, "Key-%lu-Fpr: ", n );
+	for(i=0; i < 20; i++ )
+	    fprintf( fp, "%02X", p[i] );
+	kidoff = get32( p + 20 );
+	fprintf( fp, "\nKey-%lu-Kid-Off: %lu\n", n, kidoff );
+	fprintf( fp, "Key-%lu-Kid: ", n );
+	/* fixme: check bounds */
+	for(i=0; i < 8; i++ )
+	    fprintf( fp, "%02X", buffer[kidoff+i] );
+	kflags = get16( p + 24 );
+	fprintf( fp, "\nKey-%lu-Flags: %04lX\n", n, kflags );
+    }
+
+
+    nuids = get16( p );
+    fprintf( fp, "Uid-Count: %lu\n", nuids );
+    uidinfolen = get16( p + 2 );
+    fprintf( fp, "Uid-Info-Length: %lu\n", uidinfolen );
+    /* fixme: check bounds */
+    p += 4;
+    for(n=0; n < nuids; n++, p += uidinfolen ) {
+	ulong uidoff, uidlen, uflags;
+
+	uidoff = get32( p );
+	uidlen = get32( p+4 );
+	fprintf( fp, "Uid-%lu-Off: %lu\n", n, uidoff );
+	fprintf( fp, "Uid-%lu-Len: %lu\n", n, uidlen );
+	fprintf( fp, "Uid-%lu: \"", n );
+	print_string( fp, buffer+uidoff, uidlen, '\"' );
+	fputs("\"\n", fp );
+	uflags = get16( p + 8 );
+	fprintf( fp, "Uid-%lu-Flags: %04lX\n", n, uflags );
+	fprintf( fp, "Uid-%lu-Validity: %d\n", n, p[10] );
+    }
+
+    nsigs = get16( p );
+    fprintf( fp, "Sig-Count: %lu\n", nsigs );
+    siginfolen = get16( p + 2 );
+    fprintf( fp, "Sig-Info-Length: %lu\n", siginfolen );
+    /* fixme: check bounds  */
+    p += 4;
+    for(n=0; n < nsigs; n++, p += siginfolen ) {
+	ulong sflags;
+
+	sflags = get32( p );
+	fprintf( fp, "Sig-%lu-Expire: ", n );
+	if( !sflags )
+	    fputs( "[not checked]", fp );
+	else if( sflags == 1 )
+	    fputs( "[missing key]", fp );
+	else if( sflags == 2 )
+	    fputs( "[bad signature]", fp );
+	else if( sflags < 0x10000000 )
+	    fprintf( fp, "[bad flag %0lx]", sflags );
+	else if( sflags == 0xffffffff )
+	    fputs( "0", fp );
+	else
+	    fputs( strtimestamp( sflags ), fp );
+	putc('\n', fp );
+    }
+
+    fprintf( fp, "Ownertrust: %d\n", p[0] );
+    fprintf( fp, "All-Validity: %d\n", p[1] );
+    p += 4;
+    n = get32( p ); p += 4;
+    fprintf( fp, "Recheck-After: %s\n", n? strtimestamp(n) : "0" );
+    n = get32( p ); p += 4;
+    fprintf( fp, "Latest-Timestamp: %s\n", strtimestamp(n) );
+    n = get32( p ); p += 4;
+    fprintf( fp, "Created-At: %s\n", strtimestamp(n) );
+    n = get32( p ); p += 4;
+    fprintf( fp, "Reserved-Space: %lu\n", n );
+
+
+    /* check that the keyblock is at the correct offset and other bounds */
+
+
+    fprintf( fp, "Blob-Checksum: [MD5-hash]\n" );
+    return 0;
+}
+
+/****************
+ * Check whether the given fingerprint (20 bytes) is in the
+ * given keyblob.  fpr is always 20 bytes.
+ * Return: 0 = found
+ *	   -1 = not found
+	  other = error  (fixme: do not always reurn gpgerr_general)
+ */
+int
+kbx_blob_has_fpr ( KBXBLOB blob, const byte *fpr )
+{
+    ulong n, nkeys, keyinfolen;
+    const byte *p, *pend;
+    byte *buffer = blob->blob;
+    size_t buflen = blob->bloblen;
+
+    if ( buflen < 40 )
+	return GPGERR_GENERAL; /* blob too short */
+    n = get32( buffer );
+    if ( n > buflen )
+	return GPGERR_GENERAL; /* blob larger than announced length */
+    buflen = n;  /* ignore trailing stuff */
+    pend = buffer + n - 1;
+
+    if ( buffer[4] != 2 )
+	return GPGERR_GENERAL; /* invalid blob type */
+    if ( buffer[5] != 1 )
+	return GPGERR_GENERAL; /* invalid blob format version */
+
+    nkeys = get16( buffer + 16 );
+    keyinfolen = get16( buffer + 18 );
+    p = buffer + 20;
+    for(n=0; n < nkeys; n++, p += keyinfolen ) {
+	if ( p+20 > pend )
+	    return GPGERR_GENERAL; /* blob shorter than required */
+	if (!memcmp ( p, fpr, 20 ) )
+	    return 0; /* found */
+    }
+    return -1;
+}
+
+/****************
+ * Check whether the given keyID (20 bytes) is in the
+ * given keyblob.
+ * Return: 0 = found
+ *	   -1 = not found
+	  other = error  (fixme: do not always return gpgerr_general)
+ */
+int
+kbx_blob_has_kid ( KBXBLOB blob, const byte *keyidbuf, size_t keyidlen )
+{
+    ulong n, nkeys, keyinfolen, off;
+    const byte *p, *pend;
+    byte *buffer = blob->blob;
+    size_t buflen = blob->bloblen;
+
+    if ( buflen < 40 )
+	return GPGERR_GENERAL; /* blob too short */
+    n = get32( buffer );
+    if ( n > buflen )
+	return GPGERR_GENERAL; /* blob larger than announced length */
+    buflen = n;  /* ignore trailing stuff */
+    pend = buffer + n - 1;
+
+    if ( buffer[4] != 2 )
+	return GPGERR_GENERAL; /* invalid blob type */
+    if ( buffer[5] != 1 )
+	return GPGERR_GENERAL; /* invalid blob format version */
+
+    nkeys = get16( buffer + 16 );
+    keyinfolen = get16( buffer + 18 );
+    p = buffer + 20;
+    for(n=0; n < nkeys; n++, p += keyinfolen ) {
+	if ( p+24 > pend )
+	    return GPGERR_GENERAL; /* blob shorter than required */
+	off = get32 ( p + 20 );
+	if (keyidlen < 8 ) /* actually keyidlen may either be 4 or 8 */
+	    off +=4;
+	if ( off+keyidlen > buflen )
+	    return GPGERR_GENERAL; /* offset out of bounds */
+	if ( !memcmp ( buffer+off, keyidbuf, keyidlen ) )
+	    return 0; /* found */
+    }
+    return -1;
+}
+
+
+
+int
+kbx_blob_has_uid ( KBXBLOB blob,
+		   int (*cmp)(const byte *, size_t, void *), void *opaque )
+{
+    ulong n, nuids, uidinfolen, off, len;
+    const byte *p, *pend;
+    byte *buffer = blob->blob;
+    size_t buflen = blob->bloblen;
+
+    if ( buflen < 40 )
+	return GPGERR_GENERAL; /* blob too short */
+    n = get32( buffer );
+    if ( n > buflen )
+	return GPGERR_GENERAL; /* blob larger than announced length */
+    buflen = n;  /* ignore trailing stuff */
+    pend = buffer + n - 1;
+
+    if ( buffer[4] != 2 )
+	return GPGERR_GENERAL; /* invalid blob type */
+    if ( buffer[5] != 1 )
+	return GPGERR_GENERAL; /* invalid blob format version */
+
+    p = buffer + 20 + get16( buffer + 16 ) * get16( buffer + 18 );
+    if ( p+4 > pend )
+	return GPGERR_GENERAL; /* blob shorter than required */
+
+    nuids = get16( p ); p+= 2;
+    uidinfolen = get16( p ); p+=2;
+    for(n=0; n < nuids; n++, p += uidinfolen ) {
+	if ( p+8 > pend )
+	    return GPGERR_GENERAL; /* blob shorter than required */
+	off = get32 ( p );
+	len = get32 ( p + 4 );
+	if ( off+len > buflen )
+	    return GPGERR_GENERAL; /* offset out of bounds */
+	if ( (*cmp) ( buffer+off, len, opaque ) )
+	    return 0; /* found */
+    }
+
+    return -1;
 }
 
 

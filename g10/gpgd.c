@@ -1,4 +1,4 @@
-/* ggpd.c - The GnuPG daemon (keyserver)
+/* gpg.c - The GnuPG daemon (keyserver)
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

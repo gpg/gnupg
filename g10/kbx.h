@@ -23,10 +23,29 @@
 
 #include "keydb.h"
 
+/*-- kbxblob.c */
+struct kbxblob;
 typedef struct kbxblob *KBXBLOB;
 
-int  kbx_create_blob ( KBXBLOB *retkbx, KBNODE keyblock );
+int kbx_new_blob ( KBXBLOB *r_blob,  char *image, size_t imagelen );
+int kbx_create_blob ( KBXBLOB *r_blob,	KBNODE keyblock );
 void kbx_release_blob ( KBXBLOB blob );
+const char *kbx_get_blob_image ( KBXBLOB blob, size_t *n );
+
+int kbx_dump_blob ( FILE *fp, KBXBLOB blob  );
+int kbx_blob_has_fpr ( KBXBLOB blob, const byte *fpr );
+int kbx_blob_has_kid ( KBXBLOB blob, const byte *keyidbuf, size_t keyidlen );
+int kbx_blob_has_uid ( KBXBLOB blob,
+		       int (*cmp)(const byte *, size_t, void *), void *opaque );
+
+/*-- kbxio.c --*/
+int kbx_read_blob ( KBXBLOB *r_blob, FILE *a );
+
+/*-- kbxfile.c --*/
+int kbxfile_search_by_fpr( const char *filename, const byte *fpr );
+int kbxfile_search_by_kid ( const char *filename, u32 *kid, int mode );
+int kbxfile_search_by_uid ( const char *filename, const char *name );
+void print_kbxfile( const char *filename );
 
 
 #endif /*GPG_KBX_H*/

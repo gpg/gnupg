@@ -1,3 +1,10 @@
+Thu May 25 18:39:11 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * kbxio.c: New.
+
+  * kbxfile.c (print_kbxfile): Add a loop
+  (do_print_kbxfile): Fixed passing to kbx_dump_blob.
+
 Fri Mar 24 11:25:45 CET 2000  Werner Koch  <wk@openit.de>
 
 	* gpg.c (print_mds): Add arg keys as a kludge to print hmacs

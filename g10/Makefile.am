@@ -9,7 +9,7 @@ LDFLAGS = -static @LDFLAGS@ @DYNLINK_LDFLAGS@
 needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la ../jnlib/libjnlib.la ../util/libutil.la
 
 #noinst_PROGRAMS = gpgd
-bin_PROGRAMS = gpg
+bin_PROGRAMS = gpg  kbxutil
 
 common_source =  \
 	      build-packet.c	\
@@ -26,6 +26,7 @@ common_source =  \
 	      kbnode.c		\
 	      kbx.h		\
 	      kbxblob.c 	\
+	      kbxio.c		\
 	      kbxfile.c 	\
 	      main.h		\
 	      mainproc.c	\
@@ -72,6 +73,11 @@ gpg_SOURCES  = gpg.c		\
 	      keyedit.c 	\
 	      dearmor.c 	\
 	      keygen.c
+
+# fixme: remove unused sources from kbxutil
+kbxutil_SOURCES = kbxutil.c   \
+	      $(common_source)
+
 
 #gpgd_SOURCES = gpgd.c \
 #	       ks-proto.h \

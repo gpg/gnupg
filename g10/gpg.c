@@ -1461,9 +1461,11 @@ main( int argc, char **argv )
 	break;
 
       case aFixTrustDB:
-	log_error("this command ist not yet implemented.\"\n");
+	log_error("this command is not yet implemented.\"\n");
 	log_error("A workaround is to use \"--export-ownertrust\", remove\n");
 	log_error("the trustdb file and do an \"--import-ownertrust\".\n" );
+	#warning removed the next line
+	export_as_kbxfile();
 	break;
 
       case aListTrustPath:
