@@ -57,7 +57,7 @@ typedef struct {
     byte Kr[16];
 } CAST5_context;
 
-static void setkey( CAST5_context *c, byte *key, unsigned keylen );
+static void cast_setkey( CAST5_context *c, byte *key, unsigned keylen );
 static void encrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
 static void decrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
 
@@ -465,7 +465,7 @@ selftest()
     byte cipher[8]= { 0x23, 0x8B, 0x4F, 0xE5, 0x84, 0x7E, 0x44, 0xB2 };
     byte buffer[8];
 
-    setkey( &c, key, 16 );
+    cast_setkey( &c, key, 16 );
     encrypt_block( &c, buffer, plain );
     if( memcmp( buffer, cipher, 8 ) )
 	log_error("wrong cast5-128 encryption\n");
@@ -486,10 +486,10 @@ selftest()
 			0x80,0xAC,0x05,0xB8,0xE8,0x3D,0x69,0x6E };
 
 	for(i=0; i < 1000000; i++ ) {
-	    setkey( &c, b0, 16 );
+	    cast_setkey( &c, b0, 16 );
 	    encrypt_block( &c, a0, a0 );
 	    encrypt_block( &c, a0+8, a0+8 );
-	    setkey( &c, a0, 16 );
+	    cast_setkey( &c, a0, 16 );
 	    encrypt_block( &c, b0, b0 );
 	    encrypt_block( &c, b0+8, b0+8 );
 	}
@@ -550,7 +550,7 @@ key_schedule( u32 *x, u32 *z, u32 *k )
 
 
 static void
-setkey( CAST5_context *c, byte *key, unsigned keylen )
+cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
 {
   static int initialized;
     int i;
@@ -602,7 +602,7 @@ cast5_get_info( int algo, size_t *keylen,
     *keylen = 128;
     *blocksize = CAST5_BLOCKSIZE;
     *contextsize = sizeof(CAST5_context);
-    *r_setkey = FNCCAST_SETKEY(setkey);
+    *r_setkey = FNCCAST_SETKEY(cast_setkey);
     *r_encrypt= FNCCAST_CRYPT(encrypt_block);
     *r_decrypt= FNCCAST_CRYPT(decrypt_block);
 

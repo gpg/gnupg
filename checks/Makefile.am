@@ -25,7 +25,7 @@ check: prepared.stamp
 
 prepared.stamp: pubring.gpg secring.gpg gnupg.sig plain-3 \
 		pubring.pkr secring.skr $(DATA_FILES)
-	@echo "def" | ../g10/gpg -v --no-operation; \
+	@echo "def" | ../g10/gpg --homedir . -v --no-operation; \
 	 echo timestamp >./prepared.stamp
 
 pubring.gpg: pubring.asc

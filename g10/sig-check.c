@@ -31,6 +31,7 @@
 #include "cipher.h"
 #include "main.h"
 #include "status.h"
+#include "i18n.h"
 
 struct cmp_help_context_s {
     PKT_signature *sig;
@@ -148,6 +149,7 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
     MPI result = NULL;
     int rc=0;
     struct cmp_help_context_s ctx;
+    u32 cur_time;
 
     if( pkc->version == 4 && pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 	log_info("this is a PGP generated "
@@ -157,6 +159,21 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 
     if( pkc->timestamp > sig->timestamp )
 	return G10ERR_TIME_CONFLICT; /* pubkey newer that signature */
+
+    cur_time = make_timestamp();
+    if( pkc->timestamp > cur_time ) {
+	log_info(_("public key created in future (time warp or clock problem)\n"));
+	return G10ERR_TIME_CONFLICT;
+    }
+
+    if( pkc->valid_days && add_days_to_timestamp(pkc->timestamp,
+						pkc->valid_days) < cur_time ) {
+	log_info(_("warning: signature key expired %s\n"), strtimestamp(
+				    add_days_to_timestamp(pkc->timestamp,
+							  pkc->valid_days)));
+	write_status(STATUS_SIGEXPIRED);
+    }
+
 
     if( (rc=check_digest_algo(sig->digest_algo)) )
 	return rc;

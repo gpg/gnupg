@@ -215,6 +215,11 @@ B<--no-options>
     Shortcut for B<--options> I</dev/null>.  This option is
     detected before an attempt to open an option file.
 
+B<--load-extension> I<modulename>
+    Load an extension module. If I<modulename> does not
+    contain a slash it is searched in B</usr/local/lib/gnupg>
+    See the manual for more information about extensions.
+
 B<--debug> I<flags>
     Set debugging flags. All flags are or-ed and I<flags> may
     be given in C syntax (e.g. 0x0042).
@@ -335,8 +340,11 @@ gpgm(1)  gpgd(1)
 
 =head1 WARNINGS
 
-Use a B<good> password for your user account and a non-simple passphrase
-to protect your secret key.
+Use a B<good> password for your user account and a B<good> passphrase
+to protect your secret key.  This passphrase is the weakest part of the
+whole system.  Programs to do dictionary attacks on your secret keyring
+are very easy to write and so you should protect your B<~/.gnupg/>
+directory very good.
 
 Keep in mind that, if this program is used over a network (telnet), it
 is B<very> easy to spy out your passphrase!

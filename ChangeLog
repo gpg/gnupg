@@ -1,3 +1,7 @@
+Thu Jun 25 11:18:49 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* configure.in (--disable-dynload): New.
+
 Wed Jun 10 07:48:59 1998  Werner Koch,mobil,,,	(wk@tobold)
 
 	* configure.in (GNUPG_LIBDIR): New.

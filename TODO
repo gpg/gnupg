@@ -1,11 +1,12 @@
 
+    * make preferences work
+
+    * rewrite --list-packets or put it into another tool.
+
     * add field to PKT_user_id to hold the hash context
 
     * add usage arguments to get_key_byname or return a PKC_LIST with
       all keys and add a selection.
-
-    * add expiration date and other stuff from v4 sigs to the trust
-      checking.
 
     * add readline support. Must enhance libreadline - Anyone?
 
@@ -21,7 +22,6 @@
     * add checking of armor trailers
     * remove all "Fixmes"
 
-
     * bug: g10/trustdb.c#build_sigrecs called to often by do_list_path
       and remove the bad kludge. Maybe we should put all sigs into the trustdb
       and mark them as valid/invalid/nopubkey, and how do we check, that
@@ -29,11 +29,6 @@
       record, as it does not belong to the pubkey record?
 
     * add an option to create a new user id.
-      Make it possible to change the signature class of the self-signatures,
-      which can then be used to change the displayed order of user-ids:
-      Put the user-id with a self-signature of class 0x13 always on top
-      of the displayed list (needs changes in the user-id-from-keyid
-      functions).
 
     * add an option to re-create a public key from a secret key. Think about
       a backup system of only the secret part of the secret key.

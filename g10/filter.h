@@ -37,6 +37,7 @@ typedef struct {
     byte helpbuf[100];
     int  helpidx, helplen;
     unsigned empty;    /* empty line counter */
+    int hashes;        /* detected hash algorithms */
     int faked;
     int parse_state;
     int inp_checked;   /* set if inp has been checked */

@@ -276,7 +276,7 @@ int decrypt_data( PKT_encrypted *ed, DEK *dek );
 int encrypt_data( PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/
-int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx );
+int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,int nooutput);
 int ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname );
 
 /*-- comment.c --*/
@@ -286,6 +286,8 @@ int write_comment( IOBUF out, const char *s );
 int make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 			PKT_user_id *uid, PKT_public_cert *subpkc,
 			PKT_secret_cert *skc,
-			int sigclass, int digest_algo );
+			int sigclass, int digest_algo,
+			int (*mksubpkt)(PKT_signature *, void *),
+			void *opaque  );
 
 #endif /*G10_PACKET_H*/

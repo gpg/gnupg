@@ -33,7 +33,7 @@
 #define STATUS_BADARMOR  7
 
 #define STATUS_RSA_OR_IDEA 8
-
+#define STATUS_SIGEXPIRED  9
 
 /*-- status.c --*/
 void set_status_fd( int fd );

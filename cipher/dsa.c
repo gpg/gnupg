@@ -150,7 +150,7 @@ generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
      * is the secret part. */
     if( DBG_CIPHER )
 	log_debug("choosing a random x ");
-    assert( qbits >= 16 );
+    assert( qbits >= 160 );
     x = mpi_alloc_secure( mpi_get_nlimbs(q) );
     mpi_sub_ui( h, q, 1 );  /* put q-1 into h */
     rndbuf = NULL;

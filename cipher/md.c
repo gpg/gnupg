@@ -314,8 +314,9 @@ md_final(MD_HANDLE a)
     if( a->bufcount )
 	md_write( a, NULL, 0 );
 
-    for(r=a->list; r; r = r->next )
+    for(r=a->list; r; r = r->next ) {
 	(*r->final)( &r->context );
+    }
 }
 
 

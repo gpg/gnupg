@@ -517,6 +517,11 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
     switch( type ) {
       case SIGSUBPKT_SIG_CREATED:
       case SIGSUBPKT_PRIV_ADD_SIG:
+      case SIGSUBPKT_PREF_SYM:
+      case SIGSUBPKT_PREF_HASH:
+      case SIGSUBPKT_PREF_COMPR:
+      case SIGSUBPKT_KS_FLAGS:
+      case SIGSUBPKT_KEY_EXPIRE:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }
@@ -538,8 +543,8 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 				  : m_alloc( n+2 );
     }
 
-    data[n0+0] = (n >> 8) & 0xff;
-    data[n0+1] = n & 0xff;
+    data[0] = (n >> 8) & 0xff;
+    data[1] = n & 0xff;
     data[n0+2] = buflen+1;
     data[n0+3] = type;
     memcpy(data+n0+4, buffer, buflen );

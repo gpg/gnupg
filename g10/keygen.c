@@ -35,11 +35,6 @@
 #include "i18n.h"
 
 
-#if 0
-  #define ENABLE_RSA_KEYGEN 1
-#endif
-
-
 static void
 write_uid( KBNODE root, const char *s )
 {
@@ -52,6 +47,65 @@ write_uid( KBNODE root, const char *s )
     strcpy(pkt->pkt.user_id->name, s);
     add_kbnode( root, new_kbnode( pkt ) );
 }
+
+
+
+static int
+add_key_expire( PKT_signature *sig, void *opaque )
+{
+    PKT_secret_cert *skc = opaque;
+    byte buf[8];
+    u32  u;
+
+    if( skc->valid_days ) {
+	u = skc->valid_days * 86400L;
+	buf[0] = (u >> 24) & 0xff;
+	buf[1] = (u >> 16) & 0xff;
+	buf[2] = (u >>	8) & 0xff;
+	buf[3] = u & 0xff;
+	build_sig_subpkt( sig, SIGSUBPKT_KEY_EXPIRE, buf, 4 );
+    }
+
+    return 0;
+}
+
+
+/****************
+ * Add preference to the self signature packet.
+ * This is only called for packets with version > 3.
+ */
+static int
+add_prefs( PKT_signature *sig, void *opaque )
+{
+    byte buf[8];
+
+    add_key_expire( sig, opaque );
+
+    buf[0] = CIPHER_ALGO_BLOWFISH;
+    buf[1] = CIPHER_ALGO_CAST5;
+    build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 2 );
+
+    buf[0] = DIGEST_ALGO_RMD160;
+    buf[1] = DIGEST_ALGO_SHA1;
+    buf[2] = DIGEST_ALGO_TIGER;
+    buf[3] = DIGEST_ALGO_MD5;
+    build_sig_subpkt( sig, SIGSUBPKT_PREF_HASH, buf, 4 );
+
+    buf[0] = 2;
+    buf[1] = 1;
+    build_sig_subpkt( sig, SIGSUBPKT_PREF_COMPR, buf, 2 );
+
+    buf[0] = 0x80; /* no modify - It is reasonable that a key holder
+		    * has the possibility to reject signatures from users
+		    * who are known to sign everything without any
+		    * validation - so a signed key should be send
+		    * to the holder who in turn can put it on a keyserver
+		    */
+    build_sig_subpkt( sig, SIGSUBPKT_KS_FLAGS, buf, 1 );
+
+    return 0;
+}
+
 
 
 static int
@@ -79,7 +133,8 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
     pkc = node->pkt->pkt.public_cert;
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pkc, uid, NULL, skc, 0x13, 0 );
+    rc = make_keysig_packet( &sig, pkc, uid, NULL, skc, 0x13, 0,
+			     add_prefs, skc );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -119,7 +174,8 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 	BUG();
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pkc, NULL, subpkc, skc, 0x18, 0 );
+    rc = make_keysig_packet( &sig, pkc, NULL, subpkc, skc, 0x18, 0,
+				    add_key_expire, skc );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -134,7 +190,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 
 
 static int
-gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
+gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	STRING2KEY *s2k, PKT_secret_cert **ret_skc, u16 valid_days,
 							int version )
 {
@@ -146,7 +202,8 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     MPI skey[4];
     MPI *factors;
 
-    rc = pubkey_generate( PUBKEY_ALGO_ELGAMAL, nbits, skey, &factors );
+    assert( is_ELGAMAL(algo) );
+    rc = pubkey_generate( algo, nbits, skey, &factors );
     if( rc ) {
 	log_error("pubkey_generate failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -157,7 +214,7 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->timestamp = pkc->timestamp = make_timestamp();
     skc->version = pkc->version = version;
     skc->valid_days = pkc->valid_days = valid_days;
-    skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_ELGAMAL;
+    skc->pubkey_algo = pkc->pubkey_algo = algo;
 		       pkc->pkey[0] = mpi_copy( skey[0] );
 		       pkc->pkey[1] = mpi_copy( skey[1] );
 		       pkc->pkey[2] = mpi_copy( skey[2] );
@@ -203,73 +260,6 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 }
 
 
-
-#ifdef ENABLE_RSA_KEYGEN
-static int
-gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_cert **ret_skc, u16 valid_days )
-{
-    int rc;
-    PACKET *pkt;
-    PKT_secret_cert *skc;
-    PKT_public_cert *pkc;
-    RSA_public_key pk;
-    RSA_secret_key sk;
-
-    rsa_generate( &pk, &sk, nbits );
-
-    skc = m_alloc_clear( sizeof *skc );
-    pkc = m_alloc_clear( sizeof *pkc );
-    skc->timestamp = pkc->timestamp = make_timestamp();
-    skc->valid_days = pkc->valid_days = valid_days;
-    skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_RSA;
-		       memset(&pkc->mfx, 0, sizeof pkc->mfx);
-		       pkc->d.rsa.rsa_n = pk.n;
-		       pkc->d.rsa.rsa_e = pk.e;
-    skc->d.rsa.rsa_n = sk.n;
-    skc->d.rsa.rsa_e = sk.e;
-    skc->d.rsa.rsa_d = sk.d;
-    skc->d.rsa.rsa_p = sk.p;
-    skc->d.rsa.rsa_q = sk.q;
-    skc->d.rsa.rsa_u = sk.u;
-    skc->d.rsa.csum  = checksum_mpi_counted_nbits( skc->d.rsa.rsa_d );
-    skc->d.rsa.csum += checksum_mpi_counted_nbits( skc->d.rsa.rsa_p );
-    skc->d.rsa.csum += checksum_mpi_counted_nbits( skc->d.rsa.rsa_q );
-    skc->d.rsa.csum += checksum_mpi_counted_nbits( skc->d.rsa.rsa_u );
-
-    if( ret_skc ) /* not a subkey: return an unprotected version of the skc */
-	*ret_skc = copy_secret_cert( NULL, skc );
-
-    if( dek ) {
-	skc->d.rsa.is_protected = 1;
-	skc->d.rsa.protect_algo = CIPHER_ALGO_BLOWFISH;
-	randomize_buffer( skc->d.rsa.protect.blowfish.iv, 8, 1);
-	skc->d.rsa.csum += checksum_counted_nbits(
-					skc->d.rsa.protect.blowfish.iv, 8 );
-	rc = protect_secret_key( skc, dek );
-	if( rc ) {
-	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
-	    free_public_cert(pkc);
-	    free_secret_cert(skc);
-	    return rc;
-	}
-    }
-
-    pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_skc ? PKT_PUBLIC_CERT : PKT_PUBKEY_SUBCERT;
-    pkt->pkt.public_cert = pkc;
-    add_kbnode(pub_root, new_kbnode( pkt ));
-
-    pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_skc ? PKT_SECRET_CERT : PKT_SECKEY_SUBCERT;
-    pkt->pkt.secret_cert = skc;
-    add_kbnode(sec_root, new_kbnode( pkt ));
-
-    return rc;
-}
-#endif /*ENABLE_RSA_KEYGEN*/
-
-
 /****************
  * Generate a DSA key
  */
@@ -298,15 +288,12 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     pkc = m_alloc_clear( sizeof *pkc );
     skc->timestamp = pkc->timestamp = make_timestamp();
     skc->version = pkc->version = 4;
-    /* valid days are not stored in the packet, but it is
-     * used here to put it into the signature.
-     */
     skc->valid_days = pkc->valid_days = valid_days;
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_DSA;
-		       pkc->pkey[0] = skey[0];
-		       pkc->pkey[1] = skey[1];
-		       pkc->pkey[2] = skey[2];
-		       pkc->pkey[3] = skey[3];
+		       pkc->pkey[0] = mpi_copy( skey[0] );
+		       pkc->pkey[1] = mpi_copy( skey[1] );
+		       pkc->pkey[2] = mpi_copy( skey[2] );
+		       pkc->pkey[3] = mpi_copy( skey[3] );
     skc->skey[0] = skey[0];
     skc->skey[1] = skey[1];
     skc->skey[2] = skey[2];
@@ -317,7 +304,7 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
     skc->csum = checksum_mpi_counted_nbits( skc->skey[4] );
     if( ret_skc ) /* not a subkey: return an unprotected version of the skc */
-	 *ret_skc = copy_secret_cert( NULL, skc );
+	*ret_skc = copy_secret_cert( NULL, skc );
 
     if( dek ) {
 	skc->protect.algo = dek->algo;
@@ -383,47 +370,52 @@ check_valid_days( const char *s )
 }
 
 
+/****************
+ * Returns o to create both a DSA and a ElGamal key.
+ */
 static int
-ask_algo( int *ret_v4 )
+ask_algo( int *ret_v4, int addmode )
 {
     char *answer;
     int algo;
 
-    tty_printf(_("Please select the algorithm to use:\n"
-		 "   (1) ElGamal is the suggested one.\n"
-		 "   (2) ElGamal using v4 packets (OpenPGP)\n"
-		 "   (3) DSA can only be used for signatures.\n"));
-  #ifdef ENABLE_RSA_KEYGEN
-    tty_printf(_("   (4) RSA cannot be used in the U.S.\n"));
-  #endif
+    tty_printf(_("Please select what kind of key you want:\n"));
+    if( !addmode )
+	tty_printf(_("   (%d) DSA and ElGamal (default)\n"), 1 );
+    tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 2 );
+    tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
+    tty_printf(    _("   (%d) DSA (sign only)\n"), 4 );
+    tty_printf(    _("   (%d) ElGamal in a v3 packet\n"), 5 );
 
-    *ret_v4 = 0;
+    *ret_v4 = 1;
     for(;;) {
-      #ifdef ENABLE_RSA_KEYGEN
-	answer = tty_get(_("Your selection? (1,2,3,4) "));
-      #else
-	answer = tty_get(_("Your selection? (1,2,3) "));
-      #endif
+	answer = tty_get(_("Your selection? "));
 	tty_kill_prompt();
 	algo = *answer? atoi(answer): 1;
 	m_free(answer);
-	if( algo == 1 || algo == 2 ) {
-	    if( algo == 2 )
-		*ret_v4 = 1;
+	if( algo == 1 && !addmode ) {
+	    algo = 0;	/* create both keys */
+	    break;
+	}
+	else if( algo == 2 ) {
 	    algo = PUBKEY_ALGO_ELGAMAL;
 	    break;
 	}
 	else if( algo == 3 ) {
-	    *ret_v4 = 1;
+	    algo = PUBKEY_ALGO_ELGAMAL_E;
+	    break;
+	}
+	else if( algo == 4 ) {
 	    algo = PUBKEY_ALGO_DSA;
 	    break;
 	}
-      #ifdef ENABLE_RSA_KEYGEN
-	else if( algo == 4 ) {
-	    algo = PUBKEY_ALGO_RSA;
+	else if( algo == 5 ) {
+	    algo = PUBKEY_ALGO_ELGAMAL_E;
+	    *ret_v4 = 0;
 	    break;
 	}
-      #endif
+	else
+	    tty_printf(_("Invalid selection.\n"));
     }
     return algo;
 }
@@ -703,13 +695,9 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 "network and the disks) during the prime generation; this gives the random\n"
 "number generator a better chance to gain enough entropy.\n") );
 
-    if( algo == PUBKEY_ALGO_ELGAMAL )
-	rc = gen_elg(nbits, pub_root, sec_root, dek, s2k,
+    if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )
+	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k,
 			   skc, valid_days, v4_packet? 4:3 );
-  #ifdef ENABLE_RSA_KEYGEN
-    else if( algo == PUBKEY_ALGO_RSA )
-	rc = gen_rsa(nbits, pub_root, sec_root, dek, s2k, skc, valid_days  );
-  #endif
     else if( algo == PUBKEY_ALGO_DSA )
 	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, skc, valid_days);
     else
@@ -745,13 +733,19 @@ generate_keypair()
     int algo;
     int ndays;
     int v4;
+    int both = 0;
 
     if( opt.batch || opt.answer_yes || opt.answer_no ) {
 	log_error(_("Key generation can only be used in interactive mode\n"));
 	return;
     }
 
-    algo = ask_algo( &v4 );
+    algo = ask_algo( &v4, 0 );
+    if( !algo ) {
+	algo = PUBKEY_ALGO_ELGAMAL;
+	both = 1;
+	tty_printf(_("DSA keypair will have 1024 bits.\n"));
+    }
     nbits = ask_keysize( algo );
     ndays = ask_valid_days();
     uid = ask_user_id();
@@ -774,7 +768,12 @@ generate_keypair()
     pub_root = make_comment_node("#"); delete_kbnode(pub_root);
     sec_root = make_comment_node("#"); delete_kbnode(sec_root);
 
-    rc = do_create( algo, nbits, pub_root, sec_root, dek, s2k, &skc, ndays, v4);
+    if( both )
+	rc = do_create( PUBKEY_ALGO_DSA, 1024, pub_root, sec_root,
+					       dek, s2k, &skc, ndays, 1);
+    else
+	rc = do_create( algo,		nbits, pub_root, sec_root,
+					       dek, s2k, &skc, ndays, v4);
     if( !rc )
 	write_uid(pub_root, uid );
     if( !rc )
@@ -783,6 +782,16 @@ generate_keypair()
 	rc = write_selfsig(pub_root, pub_root, skc);
     if( !rc )
 	rc = write_selfsig(sec_root, pub_root, skc);
+
+    if( both ) {
+	rc = do_create( algo, nbits, pub_root, sec_root,
+					  dek, s2k, NULL, ndays, 1 );
+	if( !rc )
+	    rc = write_keybinding(pub_root, pub_root, skc);
+	if( !rc )
+	    rc = write_keybinding(sec_root, pub_root, skc);
+    }
+
 
     if( !rc ) {
 	KBPOS pub_kbpos;
@@ -958,7 +967,8 @@ generate_subkeypair( const char *username )
 	goto leave;
 
 
-    algo = ask_algo( &v4 );
+    algo = ask_algo( &v4, 1 );
+    assert(algo);
     nbits = ask_keysize( algo );
     ndays = ask_valid_days();
 

@@ -211,10 +211,6 @@ read_pool( byte *buffer, size_t length, int level )
 
     if( length >= POOLSIZE )
 	BUG(); /* not allowed */
-    if( !level ) { /* read simple random bytes */
-	read_random_source( buffer, length, level );
-	return;
-    }
 
     /* for level 2 make sure that there is enough random in the pool */
     if( level == 2 && pool_balance < length ) {
@@ -236,33 +232,45 @@ read_pool( byte *buffer, size_t length, int level )
     /* make sure the pool is filled */
     while( !pool_filled )
 	random_poll();
+
     /* do always a fast random poll */
     fast_random_poll();
 
-    /* mix the pool (if add_randomness() didn't it) */
-    if( !just_mixed )
+    if( !level ) { /* no need for cryptographic strong random */
+	/* create a new pool */
+	for(i=0,dp=(ulong*)keypool, sp=(ulong*)rndpool;
+				    i < POOLWORDS; i++, dp++, sp++ )
+	    *dp = *sp + ADD_VALUE;
+	/* must mix both pools */
 	mix_pool(rndpool);
-
-    /* create a new pool */
-    for(i=0,dp=(ulong*)keypool, sp=(ulong*)rndpool;
-				i < POOLWORDS; i++, dp++, sp++ )
-	*dp = *sp + ADD_VALUE;
-    /* and mix both pools */
-    mix_pool(rndpool);
-    mix_pool(keypool);
-    /* read the required data
-     * we use a readpoiter to read from a different postion each
-     * time */
-    while( length-- ) {
-	*buffer++ = keypool[pool_readpos++];
-	if( pool_readpos >= POOLSIZE )
-	    pool_readpos = 0;
-	pool_balance--;
+	mix_pool(keypool);
+	memcpy( buffer, keypool, length );
     }
-    if( pool_balance < 0 )
-	pool_balance = 0;
-    /* and clear the keypool */
-    memset( keypool, 0, POOLSIZE );
+    else {
+	/* mix the pool (if add_randomness() didn't it) */
+	if( !just_mixed )
+	    mix_pool(rndpool);
+	/* create a new pool */
+	for(i=0,dp=(ulong*)keypool, sp=(ulong*)rndpool;
+				    i < POOLWORDS; i++, dp++, sp++ )
+	    *dp = *sp + ADD_VALUE;
+	/* and mix both pools */
+	mix_pool(rndpool);
+	mix_pool(keypool);
+	/* read the required data
+	 * we use a readpoiter to read from a different postion each
+	 * time */
+	while( length-- ) {
+	    *buffer++ = keypool[pool_readpos++];
+	    if( pool_readpos >= POOLSIZE )
+		pool_readpos = 0;
+	    pool_balance--;
+	}
+	if( pool_balance < 0 )
+	    pool_balance = 0;
+	/* and clear the keypool */
+	memset( keypool, 0, POOLSIZE );
+    }
 }
 
 

@@ -1705,7 +1705,7 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
     TRUSTREC rec;
     unsigned trustlevel = TRUST_UNKNOWN;
     int rc=0;
-    int cur_time;
+    u32 cur_time;
 
     if( DBG_TRUST )
 	log_info("check_trust() called.\n");

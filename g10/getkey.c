@@ -30,6 +30,7 @@
 #include "iobuf.h"
 #include "keydb.h"
 #include "options.h"
+#include "main.h"
 
 #define MAX_PKC_CACHE_ENTRIES 500
 
@@ -595,6 +596,58 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
 }
 
 
+
+/****************
+ * Assume that knode points to a public key packet  and keyblock is
+ * the entire keyblock.  This function adds all relevant information from
+ * a selfsignature to the public key.
+ */
+
+static void
+add_stuff_from_selfsig( KBNODE keyblock, KBNODE knode )
+{
+    PKT_public_cert *pkc = knode->pkt->pkt.public_cert;
+    PKT_signature *sig;
+    KBNODE k;
+    u32 kid[2];
+
+    assert(    knode->pkt->pkttype == PKT_PUBLIC_CERT
+	    || knode->pkt->pkttype == PKT_PUBKEY_SUBCERT );
+
+    if( pkc->version < 4 )
+	return; /* this is only needed for version >=4 packets */
+
+    /* find the selfsignature */
+    if( knode->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
+	k = find_kbnode( keyblock, PKT_PUBLIC_CERT );
+	if( !k )
+	   BUG(); /* keyblock without primary key!!! */
+	keyid_from_pkc( knode->pkt->pkt.public_cert, kid );
+    }
+    else
+	keyid_from_pkc( pkc, kid );
+    for(k=keyblock; k; k = k->next ) {
+	if( k->pkt->pkttype == PKT_SIGNATURE
+	    && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
+	    && sig->sig_class <= 0x13
+	    && sig->keyid[0] == kid[0]
+	    && sig->keyid[1] == kid[1]
+	    && sig->version > 3 ) {
+	    /* okay this is (the first) self-signature which can be used
+	     * fixme: Check how to handle subkey bindings
+	     * FIXME: We should only use this if the signature is valid
+	     *	      but this is time consuming - we muts provide another
+	     *	      way to handle this
+	     */
+	    const byte *p;
+	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
+	    pkc->valid_days = p? ((buffer_to_u32(p)+86399L)/86400L):0;
+	    /* fixme: add usage etc. to pkc */
+	    break;
+	}
+    }
+}
+
 /****************
  * Lookup a key by scanning all keyrings
  *   mode 1 = lookup by NAME (exact)
@@ -718,6 +771,7 @@ lookup( PKT_public_cert *pkc, int mode,  u32 *keyid,
 	    assert(    k->pkt->pkttype == PKT_PUBLIC_CERT
 		    || k->pkt->pkttype == PKT_PUBKEY_SUBCERT );
 	    copy_public_cert( pkc, k->pkt->pkt.public_cert );
+	    add_stuff_from_selfsig( keyblock, k );
 	    if( ret_keyblock ) {
 		*ret_keyblock = keyblock;
 		keyblock = NULL;

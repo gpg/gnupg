@@ -25,12 +25,16 @@ Configure options for GNUPG
 		    side-effect, this removes all debugging code and uses
 		    the -O2 flag for all C files.
 
+--disable-dynload   If you have problems with dynamic loading, this option
+		    disables all dynamic loading stuff.
+
+
 
 Problems
 ========
 
-If you have compile problems, try the configure options "--with-included-zlib"
-or "--disable-nls" (See ABOUT-NLS).
+If you have compile problems, try the configure options "--with-included-zlib",
+"--disable-nls" (See ABOUT-NLS) or --disable-dynload.
 
 I can't check all assembler files, so if you have problems assembling them
 (or the program crashes), simply delete the files in the mpi/<cpu> directory.

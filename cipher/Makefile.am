@@ -1,9 +1,15 @@
 ## Process this file with automake to produce Makefile.in
 
+gnupg_extensions = tiger
+
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl -I../intl
 
-EXTRA_DIST = tiger.c
 noinst_LIBRARIES = libcipher.a
+if ENABLE_GNUPG_EXTENSIONS
+pkglib_PROGRAMS  = $(gnupg_extensions)
+else
+pkglib_PROGRAMS  =
+endif
 
 
 libcipher_a_SOURCES = cipher.c	\
@@ -18,6 +24,7 @@ libcipher_a_SOURCES = cipher.c	\
 		 elgamal.c	\
 		 elgamal.h	\
 		 md5.c		\
+		 md5.h		\
 		 primegen.c	\
 		 random.h	\
 		 random.c	\
@@ -34,4 +41,16 @@ libcipher_a_SOURCES = cipher.c	\
 		 g10c.c 	\
 		 smallprime.c
 
+EXTRA_tiger_SOURCES = tiger.c
+
+tiger: tiger.c
+	$(COMPILE) -shared -fPIC -o tiger tiger.c
+
+install-exec-hook:
+	@list='$(pkglib_PROGRAMS)'; for p in $$list; do \
+	  if test -f $(pkglibdir)/$$p; then \
+	    echo "chmod 644 $(pkglibdir)/$$p"; \
+	    chmod 644 $(pkglibdir)/$$p; \
+	  fi; \
+	done
 

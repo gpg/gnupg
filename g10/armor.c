@@ -100,8 +100,10 @@ static char *tail_strings[] = {
 };
 
 
-static fhdr_state_t find_header( fhdr_state_t state, byte *buf,
-		     size_t *r_buflen, IOBUF a, size_t n, unsigned *r_empty);
+static fhdr_state_t find_header( fhdr_state_t state,
+				 byte *buf, size_t *r_buflen,
+				 IOBUF a, size_t n,
+				 unsigned *r_empty, int *r_hashes );
 
 
 static void
@@ -227,7 +229,7 @@ parse_hash_header( const char *line )
 	    found |= 2;
 	else if( !strncmp( s, "MD5", s2-s ) )
 	    found |= 4;
-	else if( !strncmp( s, "MD2", s2-s ) )
+	else if( !strncmp( s, "TIGER", s2-s ) )
 	    found |= 8;
 	else
 	    return 0;
@@ -250,7 +252,7 @@ parse_hash_header( const char *line )
  */
 static fhdr_state_t
 find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
-					IOBUF a, size_t n, unsigned *r_empty)
+	     IOBUF a, size_t n, unsigned *r_empty, int *r_hashes )
 {
     int c=0, i;
     const char *s;
@@ -319,6 +321,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    if( n < buflen || c == '\n' ) {
 		if( n && buf[0] != '\r') { /* maybe a header */
 		    if( strchr( buf, ':') ) { /* yes */
+			int hashes;
 			if( buf[n-1] == '\r' )
 			    buf[--n] = 0;
 			if( opt.verbose ) {
@@ -326,12 +329,15 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 			    print_string( stderr, buf, n, 0 );
 			    putc('\n', stderr);
 			}
-			if( clearsig && !parse_hash_header( buf ) ) {
+			if( clearsig && !(hashes=parse_hash_header( buf )) ) {
 			    log_error("invalid clearsig header\n");
 			    state = fhdrERROR;
 			}
-			else
+			else {
 			    state = fhdrWAITHeader;
+			    if( r_hashes )
+				*r_hashes |= hashes;
+			}
 		    }
 		    else
 			state = fhdrCHECKDashEscaped3;
@@ -602,7 +608,8 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	state = fhdrHASArmor;
 
     n = DIM(afx->helpbuf);
-    state = find_header( state, afx->helpbuf, &n, a, afx->helplen, &emplines);
+    state = find_header( state, afx->helpbuf, &n, a,
+				afx->helplen, &emplines, &afx->hashes);
     switch( state ) {
       case fhdrNOArmor:
 	afx->inp_checked = 1;
@@ -684,7 +691,8 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	/* read a new one */
 	n = DIM(afx->helpbuf);
 	afx->helpidx = 0;
-	state = find_header( state, afx->helpbuf, &n, a, 0, &emplines );
+	state = find_header( state, afx->helpbuf, &n, a, 0,
+						&emplines, &afx->hashes );
 	switch( state) {
 	  case fhdrERROR:
 	    invalid_armor();
@@ -884,7 +892,7 @@ armor_filter( void *opaque, int control,
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_UNDERFLOW ) {
-	if( size < 30 )
+	if( size < 15+(4*15) )	/* need space for up to 4 onepass_sigs */
 	    BUG(); /* supplied buffer too short */
 
 	if( afx->inp_eof ) {
@@ -907,27 +915,53 @@ armor_filter( void *opaque, int control,
 		afx->helplen = 0;
 	    }
 	    else if( afx->faked ) {
-		/* the buffer is at least 30 bytes long, so it
+		unsigned hashes = afx->hashes;
+		/* the buffer is at least 15+n*15 bytes long, so it
 		 * is easy to construct the packets */
 
-		/* first a onepass signature packet */
-		buf[0] = 0x90; /* old packet format, type 4, 1 length byte */
-		buf[1] = 13;   /* length */
-		buf[2] = 3;    /* version */
-		buf[3] = 0x01; /* sigclass 0x01 (data in canonical text mode)*/
-		buf[4] = 0;    /* digest algo (don't know) */
-		buf[5] = 0;    /* public key algo (don't know) */
-		memset(buf+6, 0, 8); /* don't know the keyid */
-		buf[14] = 1;   /* this is the last one */
+		hashes &= 1|2|4|8;
+		if( !hashes )
+		    hashes |= 4;  /* default to MD 5 */
+		n=0;
+		do {
+		    /* first some onepass signature packets */
+		    buf[n++] = 0x90; /* old format, type 4, 1 length byte */
+		    buf[n++] = 13;   /* length */
+		    buf[n++] = 3;    /* version */
+		    buf[n++] = 0x01; /* sigclass 0x01 (canonical text mode)*/
+		    if( hashes & 1 ) {
+			hashes &= ~1;
+			buf[n++] = DIGEST_ALGO_RMD160;
+		    }
+		    else if( hashes & 2 ) {
+			hashes &= ~2;
+			buf[n++] = DIGEST_ALGO_SHA1;
+		    }
+		    else if( hashes & 4 ) {
+			hashes &= ~4;
+			buf[n++] = DIGEST_ALGO_MD5;
+		    }
+		    else if( hashes & 8 ) {
+			hashes &= ~8;
+			buf[n++] = DIGEST_ALGO_TIGER;
+		    }
+		    else
+			buf[n++] = 0;	 /* (don't know) */
+
+		    buf[n++] = 0;    /* public key algo (don't know) */
+		    memset(buf+n, 0, 8); /* don't know the keyid */
+		    n += 8;
+		    buf[n++] = !hashes;   /* last one */
+		} while( hashes );
 
 		/* followed by a plaintext packet */
-		buf[15] = 0xaf; /* old packet format, type 11, var length */
-		buf[16] = 0;	/* set the length header */
-		buf[17] = 6;
-		buf[18] = 't';  /* canonical text mode */
-		buf[19] = 0;	/* namelength */
-		memset(buf+20, 0, 4); /* timestamp */
-		n = 24;
+		buf[n++] = 0xaf; /* old packet format, type 11, var length */
+		buf[n++] = 0;	 /* set the length header */
+		buf[n++] = 6;
+		buf[n++] = 't';  /* canonical text mode */
+		buf[n++] = 0;	 /* namelength */
+		memset(buf+n, 0, 4); /* timestamp */
+		n += 4;
 	    }
 	    else if( !rc )
 		rc = radix64_read( afx, a, &n, buf, size );

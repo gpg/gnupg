@@ -98,7 +98,22 @@ hash_for(int pubkey_algo )
     return DEFAULT_DIGEST_ALGO;
 }
 
+static int
+only_old_style( SKC_LIST skc_list )
+{
+    SKC_LIST skc_rover = NULL;
+    int old_style = 0;
 
+    /* if there are only old style capable key we use the old sytle */
+    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
+	PKT_secret_cert *skc = skc_rover->skc;
+	if( skc->pubkey_algo == PUBKEY_ALGO_RSA && skc->version < 4 )
+	    old_style = 1;
+	else
+	    return 0;
+    }
+    return old_style;
+}
 
 /****************
  * Sign the files whose names are in FILENAME.
@@ -131,6 +146,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     SKC_LIST skc_list = NULL;
     SKC_LIST skc_rover = NULL;
     int multifile = 0;
+    int old_style = opt.rfc1991;
+
 
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -151,6 +168,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( (rc=build_skc_list( locusr, &skc_list, 1, 1 )) )
 	goto leave;
+    if( !old_style )
+	old_style = only_old_style( skc_list );
     if( encrypt ) {
 	if( (rc=build_pkc_list( remusr, &pkc_list, 2 )) )
 	    goto leave;
@@ -204,11 +223,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( out, encrypt_filter, &efx );
     }
 
-    if( opt.compress && !outfile )
+    if( opt.compress && !outfile ) {
+	if( old_style )
+	    zfx.algo = 1;
 	iobuf_push_filter( out, compress_filter, &zfx );
+    }
 
-
-    if( !detached && !opt.rfc1991 ) {
+    if( !detached && !old_style ) {
 	/* loop over the secret certificates and build headers */
 	for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
 	    PKT_secret_cert *skc;
@@ -439,6 +460,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     int rc = 0;
     SKC_LIST skc_list = NULL;
     SKC_LIST skc_rover = NULL;
+    int old_style = opt.rfc1991;
 
     memset( &afx, 0, sizeof afx);
     memset( &tfx, 0, sizeof tfx);
@@ -446,6 +468,8 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
     if( (rc=build_skc_list( locusr, &skc_list, 1, 1 )) )
 	goto leave;
+    if( !old_style )
+	old_style = only_old_style( skc_list );
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(fname)) ) {
@@ -469,9 +493,9 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	goto leave;
     }
 
-    /* FIXME: This stuff is not correct if mutliple hash algos are used*/
+    /* FIXME: This stuff is not correct if multiple hash algos are used*/
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n" );
-    if( opt.rfc1991
+    if( old_style
 	|| (opt.def_digest_algo?opt.def_digest_algo:DEFAULT_DIGEST_ALGO)
 			      == DIGEST_ALGO_MD5 )
 	iobuf_writestr(out, "\n" );

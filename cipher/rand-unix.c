@@ -129,23 +129,11 @@ read_random_source( byte *buffer, size_t length, int level )
 	    fd_random = open_device( "/dev/random", 8 );
 	fd = fd_random;
     }
-    else if( level == 1 ) {
-	if( fd_urandom == -1 )
-	    fd_urandom = open_device( "/dev/urandom", 9 );
-	fd = fd_urandom;
-    }
     else {
-	/* This is level 0, which only yields simple random bytes.
-	 * We do not use /dev/urandom as this would remove entropy
-	 * from the kernel entropy pool */
-       /* FIXME !!!! */
-
 	if( fd_urandom == -1 )
 	    fd_urandom = open_device( "/dev/urandom", 9 );
 	fd = fd_urandom;
     }
-
-
     do {
 	fd_set rfds;
 	struct timeval tv;

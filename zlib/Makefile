@@ -91,7 +91,7 @@ POSUB = po
 RANLIB = ranlib
 USE_INCLUDED_LIBINTL = yes
 USE_NLS = yes
-VERSION = 0.2.19b
+VERSION = 0.2.19c
 ZLIBS = 
 l = 
 
@@ -121,7 +121,7 @@ LIBRARIES =  $(noinst_LIBRARIES)
 DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
 CPPFLAGS = 
 LDFLAGS = 
-LIBS = -ldl -lz
+LIBS = -lz
 libzlib_a_LIBADD = 
 libzlib_a_OBJECTS =  adler32.o compress.o crc32.o gzio.o uncompr.o \
 deflate.o trees.o zutil.o inflate.o infblock.o inftrees.o infcodes.o \

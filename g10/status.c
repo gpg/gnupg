@@ -53,6 +53,7 @@ write_status_text( int no, const char *text)
       case STATUS_LEAVE  : s = "LEAVE\n"; break;
       case STATUS_ABORT  : s = "ABORT\n"; break;
       case STATUS_GOODSIG: s = "GOODSIG\n"; break;
+      case STATUS_SIGEXPIRED: s = "SIGEXPIRED\n"; break;
       case STATUS_BADSIG : s = "BADSIG\n"; break;
       case STATUS_ERRSIG : s = "ERRSIG\n"; break;
       case STATUS_BADARMOR : s = "BADARMOR\n"; break;

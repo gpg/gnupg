@@ -1,11 +1,28 @@
 Noteworthy changes in version 0.3.0
 -----------------------------------
+
     * New option --emulate-checksum-bug.  If your passphrase does not
       work anymore, use this option and --change-passphrase to rewrite
       your passphrase.
 
+    * More complete v4 key support: Preferences and expiration time
+      is set into the self signature.
 
+    * Key generation defaults to DSA/ElGamal keys, so that new keys are
+      interoperable with pgp5
 
+    * DSA key generation is faster and key generation does not anymore
+      remove entropy from the random generator (the primes are public
+      parameters, so there is really no need for a cryptographic secure
+      prime number generator which we had used).
+
+    * A complete new structure for representing the key parameters.
+
+    * Removed most public key knowledge into the cipher libray.
+
+    * Support for dynamic loading of new algorithms.
+
+    * Moved tiger to an extension module.
 
 
 Noteworthy changes in version 0.2.19

@@ -31,6 +31,10 @@ AC_ARG_ENABLE(dev-random,
 [  --disable-dev-random    disable the use of dev random],
     try_dev_random=$enableval, try_dev_random=yes)
 
+AC_ARG_ENABLE(dynload,
+[  --disable-dynload	   disable dynamic loading],
+    try_dynload=$enableval, try_dynload=yes)
+
 AC_MSG_CHECKING([whether memory debugging is requested])
 AC_ARG_ENABLE(m-debug,
 [  --enable-m-debug	   enable debugging of memory allocation],
@@ -114,18 +118,32 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME")
 
 dnl Checks for libraries.
 
+
+if test "$try_dynload" = yes ; then
 AC_CHECK_LIB(dl,dlopen)
 if test "$ac_cv_lib_dl_dlopen" = "yes"; then
   AC_DEFINE(USE_DYNAMIC_LINKING)
   AC_DEFINE(HAVE_DL_DLOPEN)
+  DYNLINK_LDFLAGS=-rdynamic
+  use_gnupg_extensions=yes
 else
 AC_CHECK_LIB(dld,dld_link)
 if test "$ac_cv_lib_dld_dld_link" = "yes"; then
   AC_DEFINE(USE_DYNAMIC_LINKING)
   AC_DEFINE(HAVE_DLD_DLD_LINK)
+  DYNLINK_LDFLAGS=-rdynamic
+  use_gnupg_extensions=yes
 fi
+fi
+else
+  AC_MSG_CHECKING(for dynamic loading)
+  DYNLINK_LDFLAGS=
+  use_gnupg_extensions=no
+  AC_MSG_RESULT(has been disabled)
 fi
 
+AM_CONDITIONAL(ENABLE_GNUPG_EXTENSIONS, test "$use_gnupg_extensions" = yes )
+AC_SUBST(DYNLINK_LDFLAGS)
 
 dnl Checks for header files.
 AC_HEADER_STDC

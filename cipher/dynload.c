@@ -34,6 +34,7 @@ typedef struct ext_list {
     void *handle; /* handle from dlopen() */
     int  failed;  /* already tried but failed */
     void * (*enumfunc)(int, int*, int*, int*);
+    char *hintstr; /* pointer into name */
     char name[1];
 } *EXTLIST;
 
@@ -48,12 +49,19 @@ typedef struct {
 
 /****************
  * Register an extension module.  The last registered module will
- * be loaded first.
+ * be loaded first.  A name may have a list of classes
+ * appended; e.g:
+ *	mymodule.so(1:17,3:20,3:109)
+ * means that this module provides digest algorithm 17 and public key
+ * algorithms 20 and 109.  This is only a hint but if it is there the
+ * loader may decide to only load a module which claims to have a
+ * requested algorithm.
  */
 void
 register_cipher_extension( const char *fname )
 {
     EXTLIST r, el;
+    char *p, *pe;
 
     if( *fname != '/' ) { /* do tilde expansion etc */
 	char *p ;
@@ -70,6 +78,14 @@ register_cipher_extension( const char *fname )
 	el = m_alloc_clear( sizeof *el + strlen(fname) );
 	strcpy(el->name, fname );
     }
+    /* check whether we have a class hint */
+    if( (p=strchr(el->name,'(')) && (pe=strchr(p+1,')')) && !pe[1] ) {
+	*p = *pe = 0;
+	el->hintstr = p+1;
+    }
+    else
+	el->hintstr = NULL;
+
     /* check that it is not already registered */
     for(r = extensions; r; r = r->next )
 	if( !compare_filenames(r->name, el->name) ) {
@@ -77,8 +93,6 @@ register_cipher_extension( const char *fname )
 	    m_free(el);
 	    return;
 	}
-    if( DBG_CIPHER )
-	log_debug("extension '%s' registered\n", el->name );
     /* and register */
     el->next = extensions;
     extensions = el;
@@ -95,6 +109,7 @@ load_extension( EXTLIST el )
     int seq = 0;
     int class, vers;
 
+
     el->handle = dlopen(el->name, RTLD_NOW);
     if( !el->handle ) {
 	log_error("%s: error loading extension: %s\n", el->name, dlerror() );
@@ -107,7 +122,10 @@ load_extension( EXTLIST el )
     }
 
     if( g10_opt_verbose )
-	log_info("%s: version '%s'\n", el->name, *name );
+	log_info("%s: %s%s%s%s\n", el->name, *name,
+		  el->hintstr? " (":"",
+		  el->hintstr? el->hintstr:"",
+		  el->hintstr? ")":"");
 
     sym = dlsym(el->handle, "gnupgext_enum_func");
     if( (err=dlerror()) ) {

@@ -40,16 +40,18 @@
  *	 bytes from the plaintext.
  */
 int
-handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
+handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx, int nooutput )
 {
-    char *fname;
+    char *fname = NULL;
     FILE *fp = NULL;
     int rc = 0;
     int c;
     int convert = pt->mode == 't';
 
     /* create the filename as C string */
-    if( opt.outfile ) {
+    if( nooutput )
+	;
+    else if( opt.outfile ) {
 	fname = m_alloc( strlen( opt.outfile ) + 1);
 	strcpy(fname, opt.outfile );
     }
@@ -59,14 +61,16 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 	fname[pt->namelen] = 0;
     }
 
-    if( !*fname || (*fname=='-' && !fname[1])) {
+    if( nooutput )
+	;
+    else if( !*fname || (*fname=='-' && !fname[1])) {
 	/* no filename or "-" given; write to stdout */
 	fp = stdout;
     }
     else if( overwrite_filep( fname ) )
 	goto leave;
 
-    if( fp )
+    if( fp || nooutput )
 	;
     else if( !(fp = fopen(fname,"wb")) ) {
 	log_error("Error creating '%s': %s\n", fname, strerror(errno) );
@@ -86,10 +90,13 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 		md_putc(mfx->md, c );
 	    if( convert && c == '\r' )
 		continue; /* FIXME: this hack is too simple */
-	    if( putc( c, fp ) == EOF ) {
-		log_error("Error writing to '%s': %s\n", fname, strerror(errno) );
-		rc = G10ERR_WRITE_FILE;
-		goto leave;
+	    if( fp ) {
+		if( putc( c, fp ) == EOF ) {
+		    log_error("Error writing to '%s': %s\n",
+					    fname, strerror(errno) );
+		    rc = G10ERR_WRITE_FILE;
+		    goto leave;
+		}
 	    }
 	}
     }
@@ -99,11 +106,13 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 		md_putc(mfx->md, c );
 	    if( convert && c == '\r' )
 		continue; /* FIXME: this hack is too simple */
-	    if( putc( c, fp ) == EOF ) {
-		log_error("Error writing to '%s': %s\n",
-					    fname, strerror(errno) );
-		rc = G10ERR_WRITE_FILE;
-		goto leave;
+	    if( fp ) {
+		if( putc( c, fp ) == EOF ) {
+		    log_error("Error writing to '%s': %s\n",
+						fname, strerror(errno) );
+		    rc = G10ERR_WRITE_FILE;
+		    goto leave;
+		}
 	    }
 	}
 	iobuf_clear_eof(pt->buf);

@@ -1,6 +1,14 @@
+Thu Jun 25 11:18:25 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* Makefile.am: Support for extensions
+
+Thu Jun 18 12:09:38 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* random.c (mix_pool): simpler handling for level 0
+
 Mon Jun 15 14:40:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
-	* tiger.c: Removed from dis, will reappear as dynload module
+	* tiger.c: Removed from dist, will reappear as dynload module
 
 Sat Jun 13 14:16:57 1998  Werner Koch  (wk@isil.d.shuttle.de)
 

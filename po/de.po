@@ -563,10 +563,6 @@ msgstr ""
 "   (1) ElGamal wird empfohlen.\n"
 "   (2) DSA kann nur für Signaturen verwendet werden.\n"
 
-#: g10/keygen.c:305
-msgid "   (3) RSA cannot be used in the U.S.\n"
-msgstr "   (3) RSA darf in den USA nicht benutzt werden\n"
-
 #: g10/keygen.c:314
 msgid "Your selection? (1,2,3) "
 msgstr "Ihre Auswahl? (1,2,3) "
@@ -574,10 +570,6 @@ msgstr "Ihre Auswahl? (1,2,3) "
 #: g10/keygen.c:316
 msgid "Your selection? (1,2) "
 msgstr "Ihre Auswahl? (1,2) "
-
-#: g10/keygen.c:330
-msgid "Sorry; DSA is not yet supported.\n"
-msgstr "Pardon; DSA wird noch nicht unterstützt.\n"
 
 #: g10/keygen.c:343
 msgid ""

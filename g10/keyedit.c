@@ -347,7 +347,7 @@ sign_key( const char *username, STRLIST locusr )
 						   node->pkt->pkt.user_id,
 						   NULL,
 						   skc_rover->skc,
-						   0x10, 0 );
+						   0x10, 0, NULL, NULL );
 		    if( rc ) {
 			log_error("make_keysig_packet failed: %s\n", g10_errstr(rc));
 			goto leave;
@@ -720,7 +720,9 @@ int
 make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 		    PKT_user_id *uid, PKT_public_cert *subpkc,
 		    PKT_secret_cert *skc,
-		    int sigclass, int digest_algo )
+		    int sigclass, int digest_algo,
+		    int (*mksubpkt)(PKT_signature *, void *), void *opaque
+		   )
 {
     PKT_signature *sig;
     int rc=0;
@@ -763,45 +765,50 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
     sig->digest_algo = digest_algo;
     sig->timestamp = make_timestamp();
     sig->sig_class = sigclass;
-
-    if( sig->version >= 4 ) {
+    if( sig->version >= 4 )
 	build_sig_subpkt_from_sig( sig );
-	md_putc( md, sig->version );
-    }
-    md_putc( md, sig->sig_class );
-    if( sig->version < 4 ) {
-	u32 a = sig->timestamp;
-	md_putc( md, (a >> 24) & 0xff );
-	md_putc( md, (a >> 16) & 0xff );
-	md_putc( md, (a >>  8) & 0xff );
-	md_putc( md,  a        & 0xff );
-    }
-    else {
-	byte buf[6];
-	size_t n;
 
-	md_putc( md, sig->pubkey_algo );
-	md_putc( md, sig->digest_algo );
-	if( sig->hashed_data ) {
-	    n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-	    md_write( md, sig->hashed_data, n+2 );
-	    n += 6;
+    if( sig->version >= 4 && mksubpkt )
+	rc = (*mksubpkt)( sig, opaque );
+
+    if( !rc ) {
+	if( sig->version >= 4 )
+	    md_putc( md, sig->version );
+	md_putc( md, sig->sig_class );
+	if( sig->version < 4 ) {
+	    u32 a = sig->timestamp;
+	    md_putc( md, (a >> 24) & 0xff );
+	    md_putc( md, (a >> 16) & 0xff );
+	    md_putc( md, (a >>	8) & 0xff );
+	    md_putc( md,  a	   & 0xff );
 	}
-	else
-	    n = 6;
-	/* add some magic */
-	buf[0] = sig->version;
-	buf[1] = 0xff;
-	buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
-	buf[3] = n >> 16;
-	buf[4] = n >>  8;
-	buf[5] = n;
-	md_write( md, buf, 6 );
+	else {
+	    byte buf[6];
+	    size_t n;
 
+	    md_putc( md, sig->pubkey_algo );
+	    md_putc( md, sig->digest_algo );
+	    if( sig->hashed_data ) {
+		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
+		md_write( md, sig->hashed_data, n+2 );
+		n += 6;
+	    }
+	    else
+		n = 6;
+	    /* add some magic */
+	    buf[0] = sig->version;
+	    buf[1] = 0xff;
+	    buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
+	    buf[3] = n >> 16;
+	    buf[4] = n >>  8;
+	    buf[5] = n;
+	    md_write( md, buf, 6 );
+
+	}
+	md_final(md);
+
+	rc = complete_sig( sig, skc, md );
     }
-    md_final(md);
-
-    rc = complete_sig( sig, skc, md );
 
     md_close( md );
     if( rc )

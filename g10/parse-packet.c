@@ -32,6 +32,7 @@
 #include "memory.h"
 #include "filter.h"
 #include "options.h"
+#include "main.h"
 
 static int mpi_print_mode = 0;
 static int list_mode = 0;
@@ -85,16 +86,6 @@ read_32(IOBUF inp)
     return a;
 }
 
-static unsigned long
-buffer_to_u32( const byte *buffer )
-{
-    unsigned long a;
-    a =  *buffer << 24;
-    a |= buffer[1] << 16;
-    a |= buffer[2] << 8;
-    a |= buffer[3];
-    return a;
-}
 
 int
 set_packet_list_mode( int mode )
@@ -622,6 +613,8 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	*ret_n = n;
     switch( type ) {
       case SIGSUBPKT_SIG_CREATED:
+      case SIGSUBPKT_SIG_EXPIRE:
+      case SIGSUBPKT_KEY_EXPIRE:
 	if( n < 4 )
 	    break;
 	return buffer;

@@ -232,25 +232,42 @@ static void
 proc_plaintext( CTX c, PACKET *pkt )
 {
     PKT_plaintext *pt = pkt->pkt.plaintext;
-    int rc;
+    int any, rc;
+    KBNODE n;
 
     if( opt.verbose )
 	log_info("original file name='%.*s'\n", pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
-    /* FIXME: take the digest algo(s) to use from the
-     * onepass_sig packet (if we have these)
-     * And look at the sigclass to check whether we should use the
-     * textmode filter (sigclass 0x01)
+    /* fixme: look at the sigclass to check whether we should use the
+     *	      textmode filter (sigclass 0x01)
      */
-    c->mfx.md = md_open( DIGEST_ALGO_RMD160, 0);
-    /*md_start_debug(c->mfx.md, "proc_plaintext");*/
-    md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
-    md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
-    if( !check_digest_algo(DIGEST_ALGO_TIGER) )
-	md_enable( c->mfx.md, DIGEST_ALGO_TIGER );
-    rc = handle_plaintext( pt, &c->mfx );
+    c->mfx.md = md_open( 0, 0);
+    any = 0;
+    for(n=c->list; n; n = n->next ) {
+	if( n->pkt->pkttype == PKT_ONEPASS_SIG
+	    && n->pkt->pkt.onepass_sig->digest_algo ) {
+	    md_enable( c->mfx.md, n->pkt->pkt.onepass_sig->digest_algo );
+	    any = 1;
+	}
+    }
+    if( !any ) { /* no onepass sig packet: enable all algos */
+	md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
+	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
+	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
+    }
+    if( c->mfx.md ) {
+	m_check(c->mfx.md);
+	if( c->mfx.md->list )
+	    m_check( c->mfx.md->list );
+    }
+    rc = handle_plaintext( pt, &c->mfx, c->sigs_only );
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
+    if( c->mfx.md ) {
+	m_check(c->mfx.md);
+	if( c->mfx.md->list )
+	    m_check( c->mfx.md->list );
+    }
     free_packet(pkt);
     c->last_was_session_key = 0;
 }
@@ -311,6 +328,12 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 	return G10ERR_PUBKEY_ALGO;
     if( (rc=check_digest_algo(algo)) )
 	return rc;
+
+    if( c->mfx.md ) {
+	m_check(c->mfx.md);
+	if( c->mfx.md->list )
+	    m_check( c->mfx.md->list );
+    }
 
     if( sig->sig_class == 0x00 ) {
 	if( c->mfx.md )
@@ -792,7 +815,7 @@ check_sig_and_print( CTX c, KBNODE node )
     tstr = asctime(localtime (&stamp));
     astr = pubkey_algo_to_string( sig->pubkey_algo );
     log_info(_("Signature made %.*s using %s key ID %08lX\n"),
-		strlen(tstr)-1, tstr, astr? astr: "?", (ulong)sig->keyid[1] );
+	    (int)strlen(tstr)-1, tstr, astr? astr: "?", (ulong)sig->keyid[1] );
 
     rc = do_check_sig(c, node, NULL );
     if( !rc || rc == G10ERR_BAD_SIGN ) {

@@ -1,3 +1,20 @@
+Wed Jun 24 16:40:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (armor_filter): Now creates valid onepass_sig packets
+	with all detected hash algorithms.
+	* mainproc.c (proc_plaintext): Now uses the hash algos as specified
+	in the onepass_sig packets (if there are any)
+
+Mon Jun 22 11:54:08 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* plaintext.c (handle_plaintext): add arg to disable outout
+	* mainproc.c (proc_plaintext): disable output when in sigs_only mode.
+
+Thu Jun 18 13:17:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keygen.c: Removed all rsa packet stuff, chnaged defaults
+	for key generation.
+
 Sun Jun 14 21:28:31 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* misc.c (checksum_u16): Fixed a stupid bug which caused a

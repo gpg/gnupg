@@ -78,7 +78,9 @@ typedef struct {
     int  bufcount;
     int  secure;
     FILE  *debug;
+    int guard1;
     struct md_digest_list_s *list;
+    int guard2;
 } *MD_HANDLE;
 
 
