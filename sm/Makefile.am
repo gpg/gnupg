@@ -20,8 +20,8 @@
 
 bin_PROGRAMS = gpgsm
 
-INCLUDES = -I$(top_srcdir)/common -I$(top_srcdir)/intl \
-	 $(LIBGCRYPT_CFLAGS) $(LIBKSBA_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl \
+	       $(LIBGCRYPT_CFLAGS) $(LIBKSBA_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
 
 gpgsm_SOURCES = \

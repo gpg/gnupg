@@ -25,6 +25,8 @@ BUILT_SOURCES = errors.c
 
 noinst_LIBRARIES = libcommon.a
 
+AM_CPPFLAGS =  $(LIBGCRYPT_CFLAGS) $(LIBKSBA_CFLAGS)
+
 libcommon_a_SOURCES = \
 	util.h i18n.h \
 	errors.c errors.h \
@@ -33,3 +35,11 @@ libcommon_a_SOURCES = \
 
 errors.c : errors.h mkerrors
 	$(srcdir)/mkerrors < $(srcdir)/errors.h > errors.c
+
+
+
+
+
+
+
+

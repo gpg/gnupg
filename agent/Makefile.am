@@ -20,7 +20,7 @@
 
 bin_PROGRAMS = gpg-agent
 
-INCLUDES = -I$(top_srcdir)/common -I$(top_srcdir)/intl
+AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBGCRYPT_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
 
 gpg_agent_SOURCES = \
@@ -33,8 +33,8 @@ gpg_agent_SOURCES = \
 	pkdecrypt.c
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
-		../common/libcommon.a \
-              ../../libgcrypt/src/.libs/libgcrypt.so.1 
+		../common/libcommon.a $(LIBGCRYPT_LIBS)
+
 
 
 

@@ -20,7 +20,7 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = mkerrors
-INCLUDES = -I.. -I$(top_srcdir)/include
+AM_CPPFLAGS =   $(LIBKSBA_CFLAGS) $(LIBGCRYPT_CLFAGS)
 BUILT_SOURCES = keybox-errors.c
 
 noinst_LIBRARIES = libkeybox.a
@@ -41,9 +41,7 @@ common_sources = \
 libkeybox_a_SOURCES = $(common_sources)
 
 kbxutil_SOURCES = kbxutil.c $(common_sources)
-kbxutil_LDADD   = ../jnlib/libjnlib.a  \
-		  ../../libksba/src/.libs/libksba.a \
-                  ../../libgcrypt/src/.libs/libgcrypt.so.1 
+kbxutil_LDADD   = ../jnlib/libjnlib.a  $(LIBKSBA_LIBS) $(LIBGCRYPT_LIBS)
 
 keybox-errors.c : keybox.h mkerrors
 	$(srcdir)/mkerrors < $(srcdir)/keybox.h > keybox-errors.c

@@ -1,3 +1,7 @@
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Use LIBGCRYPT macros
+
 2001-12-14  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.c (main): New option --batch.  New option --debug-wait

@@ -1,3 +1,7 @@
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (AM_CPPFLAGS): Include flags for gcrypt and ksba
+
 2001-12-14  Werner Koch  <wk@gnupg.org>
 
 	* util.h (digitp, hexdigitp): New ctype like macros.
