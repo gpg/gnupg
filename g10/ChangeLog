@@ -1,3 +1,8 @@
+2004-08-31  Werner Koch  <wk@g10code.de>
+
+	* openfile.c (copy_options_file): Use gpg-conf.skel
+	* Makefile.am: Install options.skel as gpg-conf.skel.
+
 2004-08-18  Marcus Brinkmann  <marcus@g10code.de>
 
 	* passphrase.c (agent_get_passphrase): Fix detection of gpg-agent

@@ -309,7 +309,7 @@ copy_options_file( const char *destdir )
 	return;
 
     fname = xmalloc ( strlen(datadir) + strlen(destdir) + 15 );
-    strcpy(stpcpy(fname, datadir), DIRSEP_S "options" SKELEXT );
+    strcpy(stpcpy(fname, datadir), DIRSEP_S "gpg-conf" SKELEXT );
     src = fopen( fname, "r" );
     if( !src ) {
 	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );

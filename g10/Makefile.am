@@ -117,5 +117,5 @@ $(PROGRAMS): $(needed_libs)
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/options.skel \
-				$(DESTDIR)$(pkgdatadir)/options.skel
+				$(DESTDIR)$(pkgdatadir)/gpg-conf.skel
 
