@@ -1,3 +1,7 @@
+Thu Oct 28 16:17:46 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.am (GPG_DEARMOR): New and use --no-options.
+
 Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

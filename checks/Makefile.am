@@ -1,5 +1,7 @@
 ## Process this file with automake to create Makefile.in
 
+GPG_DEARMOR = --no-options --quiet --yes --dearmor
+
 TESTS = version.test mds.test \
 	decrypt.test decrypt-dsa.test \
 	sigs.test sigs-dsa.test \
@@ -37,25 +39,25 @@ prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 
 
 ./pubring.gpg: $(srcdir)/pubring.asc
-	 ../g10/gpg --yes --dearmor -o ./pubring.gpg $(srcdir)/pubring.asc
+	 $(GPG_DEARMOR) -o ./pubring.gpg $(srcdir)/pubring.asc
 
 ./secring.gpg: $(srcdir)/secring.asc
-	 ../g10/gpg --yes --dearmor -o ./secring.gpg $(srcdir)/secring.asc
+	 $(GPG_DEARMOR) -o ./secring.gpg $(srcdir)/secring.asc
 
 ./pubring.pkr: $(srcdir)/pubring.pkr.asc
-	 ../g10/gpg --yes --dearmor -o ./pubring.pkr $(srcdir)/pubring.pkr.asc
+	 $(GPG_DEARMOR) -o ./pubring.pkr $(srcdir)/pubring.pkr.asc
 
 ./secring.skr: $(srcdir)/secring.skr.asc
-	 ../g10/gpg --yes --dearmor -o ./secring.skr $(srcdir)/secring.skr.asc
+	 $(GPG_DEARMOR) -o ./secring.skr $(srcdir)/secring.skr.asc
 
 ./plain-1: $(srcdir)/plain-1o.asc
-	 ../g10/gpg --yes --dearmor -o ./plain-1 $(srcdir)/plain-1o.asc
+	 $(GPG_DEARMOR) -o ./plain-1 $(srcdir)/plain-1o.asc
 
 ./plain-2: $(srcdir)/plain-2o.asc
-	 ../g10/gpg --yes --dearmor -o ./plain-2 $(srcdir)/plain-2o.asc
+	 $(GPG_DEARMOR) -o ./plain-2 $(srcdir)/plain-2o.asc
 
 ./plain-3: $(srcdir)/plain-3o.asc
-	 ../g10/gpg --yes --dearmor -o ./plain-3 $(srcdir)/plain-3o.asc
+	 $(GPG_DEARMOR) -o ./plain-3 $(srcdir)/plain-3o.asc
 
 
 
