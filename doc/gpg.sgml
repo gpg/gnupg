@@ -475,16 +475,28 @@ This is a shortcut version of the subcommand "nrsign" from --edit.
 The default to use for the check level when signing a key.
 </para><para>
 0 means you make no particular claim as to how carefully you verified
-the key.  1 means you believe the key is owned by the person who
-claims to own it but you could not, or did not verify the key at all.
-This is useful for a "persona" verification, where you sign the key of
-a pseudonymous user.  2 means you did casual verification of the key.
-For example, this could mean that you verified that the key
-fingerprint and checked the user ID on the key against a photo ID.  3
-means you did extensive verification of the key.  For example, this
-could mean that you verified the key fingerprint and checked the user
-ID on the key against a photo ID, and also verified the email address
-on the key belongs to the key owner.
+the key.
+</para><para>
+1 means you believe the key is owned by the person who claims to own
+it but you could not, or did not verify the key at all.  This is
+useful for a "persona" verification, where you sign the key of a
+pseudonymous user.
+</para><para>
+2 means you did casual verification of the key.  For example, this
+could mean that you verified that the key fingerprint and checked the
+user ID on the key against a photo ID.
+</para><para>
+3 means you did extensive verification of the key.  For example, this
+could mean that you verified the key fingerprint with the owner of the
+key in person, and that you checked, by means of a hard to forge
+document with a photo ID (such as a passport) that the name of the key
+owner matches the name in the user ID on the key, and finally that you
+verified (by exchange of email) that the email address on the key
+belongs to the key owner.
+</para><para>
+Note that the examples given above for levels 2 and 3 are just that:
+examples.  In the end, it is up to you to decide just what "casual"
+and "extensive" mean to you.
 </para><para>
 This option defaults to 0.
 </para></listitem></varlistentry>
@@ -1736,12 +1748,39 @@ handing out the secret key.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--ask-sig-expire</term>
+<listitem><para>
+When making a data signature, prompt for an expiration time.  If this
+option is not specified, the expiration time is "never".
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--no-ask-sig-expire</term>
+<listitem><para>
+Resets the --ask-sig-expire option.
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--ask-cert-expire</term>
+<listitem><para>
+When making a key signature, prompt for an expiration time.  If this
+option is not specified, the expiration time is "never".
+</para></listitem></varlistentry
+
+<varlistentry>
+<term>--no-ask-cert-expire</term>
+<listitem><para>
+Resets the --ask-cert-expire option.
+</para></listitem></varlistentry
+
+<varlistentry>
 <term>--expert</term>
 <listitem><para>
-Enable certain options, such as prompting for a signature expiration
-date, that are not frequently used by regular users.  Also permits the
-user to do certain "silly" things like signing an expired or revoked
-key.
+Allow the user to do certain nonsenical or "silly" things like signing
+an expired or revoked key, or certain potentially incompatible things
+like adding more than one photo ID to a single key.  In general, this
+option is for experts only.  If you don't really understand what it is
+doing, leave this off.
 </para></listitem></varlistentry
 
 <varlistentry>
