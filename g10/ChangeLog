@@ -1,5 +1,14 @@
 2002-05-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* photoid.c: Provide default image viewer for Win32.
+
+	* misc.c (pct_expando): %t means extension, not name ("jpg", not
+	"jpeg").
+
+	* keyserver.c (keyserver_spawn), photoid.c (show_photos), exec.h,
+	exec.c: Allow the caller to determine the temp file extension when
+	starting an exec_write and change all callers.
+
 	* keyedit.c (sign_uids): Nonrevocable key signatures cause an
 	automatic promotion to v4.
 

@@ -297,10 +297,10 @@ keyserver_spawn(int action,STRLIST list,
 	  strcat(command,KEYSERVER_ARGS_NOKEEP);  
 	}
 
-      ret=exec_write(&spawn,NULL,command,0,0);
+      ret=exec_write(&spawn,NULL,command,NULL,0,0);
     }
   else
-    ret=exec_write(&spawn,command,NULL,0,0);
+    ret=exec_write(&spawn,command,NULL,NULL,0,0);
 
   if(ret)
     return ret;

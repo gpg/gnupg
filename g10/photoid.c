@@ -35,7 +35,11 @@
 #include "main.h"
 #include "photoid.h"
 
+#ifdef HAVE_DOSISH_SYSTEM
+#define DEFAULT_PHOTO_COMMAND "start /w %i"
+#else
 #define DEFAULT_PHOTO_COMMAND "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
+#endif
 
 /* Generate a new photo id packet, or return NULL if canceled */
 PKT_user_id *generate_photo_id(PKT_public_key *pk)
@@ -240,7 +244,8 @@ void show_photos(const struct user_attribute *attrs,
 	if(!command)
 	  goto fail;
 
-	if(exec_write(&spawn,NULL,command,1,1)!=0)
+	if(exec_write(&spawn,NULL,command,
+		      image_type_to_string(args.imagetype,0),1,1)!=0)
 	  goto fail;
 
 	fwrite(&attrs[i].data[offset],attrs[i].len-offset,1,spawn->tochild);

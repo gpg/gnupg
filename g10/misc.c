@@ -516,7 +516,7 @@ pct_expando(const char *string,struct expando_args *args)
 	      break;
 
 	    case 't': /* e.g. "jpg" */
-	      str=image_type_to_string(args->imagetype,1);
+	      str=image_type_to_string(args->imagetype,0);
 	      /* fall through */
 
 	    case 'T': /* e.g. "image/jpeg" */
