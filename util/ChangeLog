@@ -1,3 +1,8 @@
+2002-09-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (connect_server): Try all A records for names with
+	multiple addresses until one answers (not MINGW32).
+
 2002-09-16  Werner Koch  <wk@gnupg.org>
 
 	* w32reg.c (read_w32_registry_string): Fallback to HLM.

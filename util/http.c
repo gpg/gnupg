@@ -756,6 +756,7 @@ connect_server( const char *server, ushort port )
 #else
     struct sockaddr_in addr;
     struct hostent *host;
+    int i=0;
 
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
@@ -763,16 +764,28 @@ connect_server( const char *server, ushort port )
     if( !host )
 	 return -1;
 
-    addr.sin_addr = *(struct in_addr*)host->h_addr;
-
     sd = socket(AF_INET, SOCK_STREAM, 0);
     if( sd == -1 )
 	return -1;
 
-    if( connect( sd, (struct sockaddr *)&addr, sizeof addr) == -1 ) {
+    /* Try all A records until one responds. TODO: do this on the
+       MINGW32 side as well. */
+    do
+      {
+	addr.sin_addr = *(struct in_addr*)host->h_addr_list[i];
+	if(connect( sd, (struct sockaddr *)&addr, sizeof addr) == 0)
+	  break;
+
+	i++;
+      }
+    while(addr.sin_addr.s_addr!=0);
+
+    if(addr.sin_addr.s_addr==0)
+      {
 	sock_close(sd);
 	return -1;
-    }
+      }
+
 #endif
     return sd;
 }
