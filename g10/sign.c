@@ -39,7 +39,7 @@
 
 
 static int
-do_sign( PKT_secret_cert *skc, PKT_signature *sig,
+do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	 MD_HANDLE md, int digest_algo )
 {
     MPI frame;
@@ -53,9 +53,9 @@ do_sign( PKT_secret_cert *skc, PKT_signature *sig,
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
-    frame = encode_md_value( skc->pubkey_algo, md,
-			     digest_algo, mpi_get_nbits(skc->skey[0]));
-    rc = pubkey_sign( skc->pubkey_algo, sig->data, frame, skc->skey );
+    frame = encode_md_value( sk->pubkey_algo, md,
+			     digest_algo, mpi_get_nbits(sk->skey[0]));
+    rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_free(frame);
     if( rc )
 	log_error("pubkey_sign failed: %s\n", g10_errstr(rc) );
@@ -63,7 +63,7 @@ do_sign( PKT_secret_cert *skc, PKT_signature *sig,
 	if( opt.verbose ) {
 	    char *ustr = get_user_id_string( sig->keyid );
 	    log_info("%s signature from: %s\n",
-		      pubkey_algo_to_string(skc->pubkey_algo), ustr );
+		      pubkey_algo_to_string(sk->pubkey_algo), ustr );
 	    m_free(ustr);
 	}
     }
@@ -73,12 +73,12 @@ do_sign( PKT_secret_cert *skc, PKT_signature *sig,
 
 
 int
-complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
+complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
 {
     int rc=0;
 
-    if( !(rc=check_secret_key( skc )) )
-	rc = do_sign( skc, sig, md, 0 );
+    if( !(rc=check_secret_key( sk )) )
+	rc = do_sign( sk, sig, md, 0 );
 
     /* fixme: should we check whether the signature is okay?
      * maybe by using an option */
@@ -99,15 +99,15 @@ hash_for(int pubkey_algo )
 }
 
 static int
-only_old_style( SKC_LIST skc_list )
+only_old_style( SK_LIST sk_list )
 {
-    SKC_LIST skc_rover = NULL;
+    SK_LIST sk_rover = NULL;
     int old_style = 0;
 
     /* if there are only old style capable key we use the old sytle */
-    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	PKT_secret_cert *skc = skc_rover->skc;
-	if( skc->pubkey_algo == PUBKEY_ALGO_RSA && skc->version < 4 )
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	PKT_secret_key *sk = sk_rover->sk;
+	if( sk->pubkey_algo == PUBKEY_ALGO_RSA && sk->version < 4 )
 	    old_style = 1;
 	else
 	    return 0;
@@ -142,9 +142,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     PKT_plaintext *pt = NULL;
     u32 filesize;
     int rc = 0;
-    PKC_LIST pkc_list = NULL;
-    SKC_LIST skc_list = NULL;
-    SKC_LIST skc_rover = NULL;
+    PK_LIST pk_list = NULL;
+    SK_LIST sk_list = NULL;
+    SK_LIST sk_rover = NULL;
     int multifile = 0;
     int old_style = opt.rfc1991;
 
@@ -166,12 +166,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encrypt) )
 	log_bug("multiple files can only be detached signed");
 
-    if( (rc=build_skc_list( locusr, &skc_list, 1, 1 )) )
+    if( (rc=build_sk_list( locusr, &sk_list, 1, 1 )) )
 	goto leave;
     if( !old_style )
-	old_style = only_old_style( skc_list );
+	old_style = only_old_style( sk_list );
     if( encrypt ) {
-	if( (rc=build_pkc_list( remusr, &pkc_list, 2 )) )
+	if( (rc=build_pk_list( remusr, &pk_list, 2 )) )
 	    goto leave;
     }
 
@@ -204,9 +204,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( inp, text_filter, &tfx );
     mfx.md = md_open(0, 0);
 
-    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	PKT_secret_cert *skc = skc_rover->skc;
-	md_enable(mfx.md, hash_for(skc->pubkey_algo));
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	PKT_secret_key *sk = sk_rover->sk;
+	md_enable(mfx.md, hash_for(sk->pubkey_algo));
     }
 
     if( !multifile )
@@ -218,7 +218,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	write_comment( out, "#created by GNUPG v" VERSION " ("
 					    PRINTABLE_OS_NAME ")");
     if( encrypt ) {
-	efx.pkc_list = pkc_list;
+	efx.pk_list = pk_list;
 	/* fixme: set efx.cfx.datalen if known */
 	iobuf_push_filter( out, encrypt_filter, &efx );
     }
@@ -231,17 +231,17 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( !detached && !old_style ) {
 	/* loop over the secret certificates and build headers */
-	for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	    PKT_secret_cert *skc;
+	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	    PKT_secret_key *sk;
 	    PKT_onepass_sig *ops;
 
-	    skc = skc_rover->skc;
+	    sk = sk_rover->sk;
 	    ops = m_alloc_clear( sizeof *ops );
 	    ops->sig_class = opt.textmode && !outfile ? 0x01 : 0x00;
-	    ops->digest_algo = hash_for(skc->pubkey_algo);
-	    ops->pubkey_algo = skc->pubkey_algo;
-	    keyid_from_skc( skc, ops->keyid );
-	    ops->last = !skc_rover->next;
+	    ops->digest_algo = hash_for(sk->pubkey_algo);
+	    ops->pubkey_algo = sk->pubkey_algo;
+	    keyid_from_sk( sk, ops->keyid );
+	    ops->last = !sk_rover->next;
 
 	    init_packet(&pkt);
 	    pkt.pkttype = PKT_ONEPASS_SIG;
@@ -324,20 +324,20 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     }
 
     /* loop over the secret certificates */
-    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	PKT_secret_cert *skc;
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	PKT_secret_key *sk;
 	PKT_signature *sig;
 	MD_HANDLE md;
 
-	skc = skc_rover->skc;
+	sk = sk_rover->sk;
 
 	/* build the signature packet */
 	/* fixme: this code is partly duplicated in make_keysig_packet */
 	sig = m_alloc_clear( sizeof *sig );
-	sig->version = skc->version;
-	keyid_from_skc( skc, sig->keyid );
-	sig->digest_algo = hash_for(skc->pubkey_algo);
-	sig->pubkey_algo = skc->pubkey_algo;
+	sig->version = sk->version;
+	keyid_from_sk( sk, sig->keyid );
+	sig->digest_algo = hash_for(sk->pubkey_algo);
+	sig->pubkey_algo = sk->pubkey_algo;
 	sig->timestamp = make_timestamp();
 	sig->sig_class = opt.textmode && !outfile? 0x01 : 0x00;
 
@@ -380,7 +380,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
 	md_final( md );
 
-	rc = do_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
+	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo) );
 	md_close( md );
 
 	if( !rc ) { /* and write it */
@@ -404,8 +404,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_close(out);
     iobuf_close(inp);
     md_close( mfx.md );
-    release_skc_list( skc_list );
-    release_pkc_list( pkc_list );
+    release_sk_list( sk_list );
+    release_pk_list( pk_list );
     return rc;
 }
 
@@ -458,18 +458,18 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     int rc = 0;
-    SKC_LIST skc_list = NULL;
-    SKC_LIST skc_rover = NULL;
+    SK_LIST sk_list = NULL;
+    SK_LIST sk_rover = NULL;
     int old_style = opt.rfc1991;
 
     memset( &afx, 0, sizeof afx);
     memset( &tfx, 0, sizeof tfx);
     init_packet( &pkt );
 
-    if( (rc=build_skc_list( locusr, &skc_list, 1, 1 )) )
+    if( (rc=build_sk_list( locusr, &sk_list, 1, 1 )) )
 	goto leave;
     if( !old_style )
-	old_style = only_old_style( skc_list );
+	old_style = only_old_style( sk_list );
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(fname)) ) {
@@ -510,9 +510,9 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
 
     textmd = md_open(0, 0);
-    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	PKT_secret_cert *skc = skc_rover->skc;
-	md_enable(textmd, hash_for(skc->pubkey_algo));
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	PKT_secret_key *sk = sk_rover->sk;
+	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
 
     iobuf_push_filter( inp, text_filter, &tfx );
@@ -525,20 +525,20 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     iobuf_push_filter( out, armor_filter, &afx );
 
     /* loop over the secret certificates */
-    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	PKT_secret_cert *skc;
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	PKT_secret_key *sk;
 	PKT_signature *sig;
 	MD_HANDLE md;
 
-	skc = skc_rover->skc;
+	sk = sk_rover->sk;
 
 	/* build the signature packet */
 	/* fixme: this code is duplicated above */
 	sig = m_alloc_clear( sizeof *sig );
-	sig->version = skc->version;
-	keyid_from_skc( skc, sig->keyid );
-	sig->digest_algo = hash_for(skc->pubkey_algo);
-	sig->pubkey_algo = skc->pubkey_algo;
+	sig->version = sk->version;
+	keyid_from_sk( sk, sig->keyid );
+	sig->digest_algo = hash_for(sk->pubkey_algo);
+	sig->pubkey_algo = sk->pubkey_algo;
 	sig->timestamp = make_timestamp();
 	sig->sig_class = 0x01;
 
@@ -580,7 +580,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	}
 	md_final( md );
 
-	rc = do_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
+	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo) );
 	md_close( md );
 
 	if( !rc ) { /* and write it */
@@ -604,7 +604,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	iobuf_close(out);
     iobuf_close(inp);
     md_close( textmd );
-    release_skc_list( skc_list );
+    release_sk_list( sk_list );
     return rc;
 }
 

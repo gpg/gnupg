@@ -44,8 +44,8 @@
  */
 
 typedef struct {
-    PKT_public_cert *last_pubkey;
-    PKT_secret_cert *last_seckey;
+    PKT_public_key *last_pubkey;
+    PKT_secret_key *last_seckey;
     PKT_user_id     *last_user_id;
     md_filter_context_t mfx;
     int sigs_only;   /* process only signatures and reject all other stuff */
@@ -353,8 +353,8 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 	     || sig->sig_class == 0x18
 	     || sig->sig_class == 0x20
 	     || sig->sig_class == 0x30	) { /* classes 0x10..0x17,0x20,0x30 */
-	if( c->list->pkt->pkttype == PKT_PUBLIC_CERT
-	    || c->list->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
+	if( c->list->pkt->pkttype == PKT_PUBLIC_KEY
+	    || c->list->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    return check_key_signature( c->list, node, is_selfsig );
 	}
 	else {
@@ -388,13 +388,13 @@ print_userid( PACKET *pkt )
 
 
 static void
-print_fingerprint( PKT_public_cert *pkc, PKT_secret_cert *skc )
+print_fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
 {
     byte *array, *p;
     size_t i, n;
 
-    p = array = skc? fingerprint_from_skc( skc, &n )
-		   : fingerprint_from_pkc( pkc, &n );
+    p = array = sk? fingerprint_from_sk( sk, &n )
+		   : fingerprint_from_pk( pk, &n );
     if( opt.with_colons ) {
 	printf("fpr:::::::::");
 	for(i=0; i < n ; i++, p++ )
@@ -435,25 +435,25 @@ list_node( CTX c, KBNODE node )
 
     if( !node )
 	;
-    else if( (mainkey = (node->pkt->pkttype == PKT_PUBLIC_CERT) )
-	     || node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
-	PKT_public_cert *pkc = node->pkt->pkt.public_cert;
+    else if( (mainkey = (node->pkt->pkttype == PKT_PUBLIC_KEY) )
+	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	PKT_public_key *pk = node->pkt->pkt.public_key;
 
 	if( opt.with_colons ) {
 	    u32 keyid[2];
-	    keyid_from_pkc( pkc, keyid );
+	    keyid_from_pk( pk, keyid );
 	    if( mainkey ) {
-		c->local_id = pkc->local_id;
-		c->trustletter = query_trust_info( pkc );
+		c->local_id = pk->local_id;
+		c->trustletter = query_trust_info( pk );
 	    }
 	    printf("%s:%c:%u:%d:%08lX%08lX:%s:%u:",
 		    mainkey? "pub":"sub",
 		    c->trustletter,
-		    nbits_from_pkc( pkc ),
-		    pkc->pubkey_algo,
+		    nbits_from_pk( pk ),
+		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
-		    datestr_from_pkc( pkc ),
-		    (unsigned)pkc->valid_days );
+		    datestr_from_pk( pk ),
+		    (unsigned)pk->valid_days );
 	    if( c->local_id )
 		printf("%lu", c->local_id );
 	    putchar(':');
@@ -463,10 +463,10 @@ list_node( CTX c, KBNODE node )
 	else
 	    printf("%s  %4u%c/%08lX %s ",
 				      mainkey? "pub":"sub",
-				      nbits_from_pkc( pkc ),
-				      pubkey_letter( pkc->pubkey_algo ),
-				      (ulong)keyid_from_pkc( pkc, NULL ),
-				      datestr_from_pkc( pkc )	  );
+				      nbits_from_pk( pk ),
+				      pubkey_letter( pk->pubkey_algo ),
+				      (ulong)keyid_from_pk( pk, NULL ),
+				      datestr_from_pk( pk )	);
 	if( mainkey ) {
 	    /* and now list all userids with their signatures */
 	    for( node = node->next; node; node = node->next ) {
@@ -492,10 +492,10 @@ list_node( CTX c, KBNODE node )
 			putchar(':');
 		    putchar('\n');
 		    if( opt.fingerprint && !any )
-			print_fingerprint( pkc, NULL );
+			print_fingerprint( pk, NULL );
 		    any=1;
 		}
-		else if( node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
+		else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 		    if( !any ) {
 			putchar('\n');
 			any = 1;
@@ -507,29 +507,29 @@ list_node( CTX c, KBNODE node )
 	if( !any )
 	    putchar('\n');
     }
-    else if( (mainkey = (node->pkt->pkttype == PKT_SECRET_CERT) )
-	     || node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
-	PKT_secret_cert *skc = node->pkt->pkt.secret_cert;
+    else if( (mainkey = (node->pkt->pkttype == PKT_SECRET_KEY) )
+	     || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+	PKT_secret_key *sk = node->pkt->pkt.secret_key;
 
 	if( opt.with_colons ) {
 	    u32 keyid[2];
-	    keyid_from_skc( skc, keyid );
+	    keyid_from_sk( sk, keyid );
 	    printf("%s::%u:%d:%08lX%08lX:%s:%u:::",
 		    mainkey? "sec":"ssb",
-		    nbits_from_skc( skc ),
-		    skc->pubkey_algo,
+		    nbits_from_sk( sk ),
+		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
-		    datestr_from_skc( skc ),
-		    (unsigned)skc->valid_days
+		    datestr_from_sk( sk ),
+		    (unsigned)sk->valid_days
 		    /* fixme: add LID */ );
 	}
 	else
 	    printf("%s  %4u%c/%08lX %s ",
 				      mainkey? "sec":"ssb",
-				      nbits_from_skc( skc ),
-				      pubkey_letter( skc->pubkey_algo ),
-				      (ulong)keyid_from_skc( skc, NULL ),
-				      datestr_from_skc( skc )	);
+				      nbits_from_sk( sk ),
+				      pubkey_letter( sk->pubkey_algo ),
+				      (ulong)keyid_from_sk( sk, NULL ),
+				      datestr_from_sk( sk )   );
 	if( mainkey ) {
 	    /* and now list all userids with their signatures */
 	    for( node = node->next; node; node = node->next ) {
@@ -555,10 +555,10 @@ list_node( CTX c, KBNODE node )
 			putchar(':');
 		    putchar('\n');
 		    if( opt.fingerprint && !any )
-			print_fingerprint( NULL, skc );
+			print_fingerprint( NULL, sk );
 		    any=1;
 		}
-		else if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
+		else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 		    if( !any ) {
 			putchar('\n');
 			any = 1;
@@ -597,12 +597,12 @@ list_node( CTX c, KBNODE node )
 	else {	/* check whether this is a self signature */
 	    u32 keyid[2];
 
-	    if( c->list->pkt->pkttype == PKT_PUBLIC_CERT
-		|| c->list->pkt->pkttype == PKT_SECRET_CERT ) {
-		if( c->list->pkt->pkttype == PKT_PUBLIC_CERT )
-		    keyid_from_pkc( c->list->pkt->pkt.public_cert, keyid );
+	    if( c->list->pkt->pkttype == PKT_PUBLIC_KEY
+		|| c->list->pkt->pkttype == PKT_SECRET_KEY ) {
+		if( c->list->pkt->pkttype == PKT_PUBLIC_KEY )
+		    keyid_from_pk( c->list->pkt->pkt.public_key, keyid );
 		else
-		    keyid_from_skc( c->list->pkt->pkt.secret_cert, keyid );
+		    keyid_from_sk( c->list->pkt->pkt.secret_key, keyid );
 
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
 		    is_selfsig = 1;
@@ -709,8 +709,8 @@ do_proc_packets( CTX c, IOBUF a )
 	}
 	else if( c->sigs_only ) {
 	    switch( pkt->pkttype ) {
-	      case PKT_PUBLIC_CERT:
-	      case PKT_SECRET_CERT:
+	      case PKT_PUBLIC_KEY:
+	      case PKT_SECRET_KEY:
 	      case PKT_USER_ID:
 	      case PKT_SYMKEY_ENC:
 	      case PKT_PUBKEY_ENC:
@@ -726,8 +726,8 @@ do_proc_packets( CTX c, IOBUF a )
 	}
 	else if( c->encrypt_only ) {
 	    switch( pkt->pkttype ) {
-	      case PKT_PUBLIC_CERT:
-	      case PKT_SECRET_CERT:
+	      case PKT_PUBLIC_KEY:
+	      case PKT_SECRET_KEY:
 	      case PKT_USER_ID:
 		rc = G10ERR_UNEXPECTED;
 		goto leave;
@@ -743,14 +743,14 @@ do_proc_packets( CTX c, IOBUF a )
 	}
 	else {
 	    switch( pkt->pkttype ) {
-	      case PKT_PUBLIC_CERT:
-	      case PKT_SECRET_CERT:
+	      case PKT_PUBLIC_KEY:
+	      case PKT_SECRET_KEY:
 		release_list( c );
 		c->list = new_kbnode( pkt );
 		newpkt = 1;
 		break;
-	      case PKT_PUBKEY_SUBCERT:
-	      case PKT_SECKEY_SUBCERT:
+	      case PKT_PUBLIC_SUBKEY:
+	      case PKT_SECRET_SUBKEY:
 		newpkt = add_subkey( c, pkt );
 		break;
 	      case PKT_USER_ID:     newpkt = add_user_id( c, pkt ); break;
@@ -850,10 +850,10 @@ proc_tree( CTX c, KBNODE node )
 
     c->local_id = 0;
     c->trustletter = ' ';
-    if( node->pkt->pkttype == PKT_PUBLIC_CERT
-	|| node->pkt->pkttype == PKT_PUBKEY_SUBCERT )
+    if( node->pkt->pkttype == PKT_PUBLIC_KEY
+	|| node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
 	list_node( c, node );
-    else if( node->pkt->pkttype == PKT_SECRET_CERT )
+    else if( node->pkt->pkttype == PKT_SECRET_KEY )
 	list_node( c, node );
     else if( node->pkt->pkttype == PKT_ONEPASS_SIG ) {
 	/* check all signatures */

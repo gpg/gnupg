@@ -45,7 +45,7 @@ query_ownertrust( ulong lid )
     int rc;
     size_t n;
     u32 keyid[2];
-    PKT_public_cert *pkc ;
+    PKT_public_key *pk ;
     int changed=0;
 
     rc = keyid_from_trustdb( lid, keyid );
@@ -54,8 +54,8 @@ query_ownertrust( ulong lid )
 	return 0;
     }
 
-    pkc = m_alloc_clear( sizeof *pkc );
-    rc = get_pubkey( pkc, keyid );
+    pk = m_alloc_clear( sizeof *pk );
+    rc = get_pubkey( pk, keyid );
     if( rc ) {
 	log_error("keyid %08lX: pubkey not found: %s\n",
 				(ulong)keyid[1], g10_errstr(rc) );
@@ -64,8 +64,8 @@ query_ownertrust( ulong lid )
 
     tty_printf(_("No ownertrust defined for %lu:\n"
 	       "%4u%c/%08lX %s \""), lid,
-	      nbits_from_pkc( pkc ), pubkey_letter( pkc->pubkey_algo ),
-	      (ulong)keyid[1], datestr_from_pkc( pkc ) );
+	      nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
+	      (ulong)keyid[1], datestr_from_pk( pk ) );
     p = get_user_id( keyid, &n );
     tty_print_string( p, n ),
     m_free(p);
@@ -110,7 +110,7 @@ query_ownertrust( ulong lid )
 	m_free(p); p = NULL;
     }
     m_free(p);
-    m_free(pkc);
+    m_free(pk);
     return changed;
 }
 
@@ -120,7 +120,7 @@ query_ownertrust( ulong lid )
  * Returns: -1 if no ownertrust were added.
  */
 static int
-add_ownertrust( PKT_public_cert *pkc )
+add_ownertrust( PKT_public_key *pk )
 {
     int rc;
     void *context = NULL;
@@ -132,13 +132,13 @@ add_ownertrust( PKT_public_cert *pkc )
 _("Could not find a valid trust path to the key.  Let's see whether we\n"
   "can assign some missing owner trust values.\n\n"));
 
-    rc = query_trust_record( pkc );
+    rc = query_trust_record( pk );
     if( rc ) {
 	log_error("Ooops: not in trustdb\n");
 	return -1;
     }
 
-    lid = pkc->local_id;
+    lid = pk->local_id;
     while( !(rc=enum_trust_web( &context, &lid )) ) {
 	rc = get_ownertrust( lid, &trust );
 	if( rc )
@@ -160,11 +160,11 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
 }
 
 /****************
- * Check whether we can trust this pkc which has a trustlevel of TRUSTLEVEL
+ * Check whether we can trust this pk which has a trustlevel of TRUSTLEVEL
  * Returns: true if we trust.
  */
 static int
-do_we_trust( PKT_public_cert *pkc, int trustlevel )
+do_we_trust( PKT_public_key *pk, int trustlevel )
 {
     int rc;
 
@@ -187,19 +187,19 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 
     switch( (trustlevel & TRUST_MASK) ) {
       case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
-	rc = insert_trust_record( pkc );
+	rc = insert_trust_record( pk );
 	if( rc ) {
 	    log_error("failed to insert it into the trustdb: %s\n",
 						      g10_errstr(rc) );
 	    return 0; /* no */
 	}
-	rc = check_trust( pkc, &trustlevel );
+	rc = check_trust( pk, &trustlevel );
 	if( rc )
 	    log_fatal("trust check after insert failed: %s\n",
 						      g10_errstr(rc) );
 	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED )
 	    BUG();
-	return do_we_trust( pkc, trustlevel );
+	return do_we_trust( pk, trustlevel );
 
       case TRUST_EXPIRED:
 	log_info("key has expired\n");
@@ -209,14 +209,14 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 	if( opt.batch || opt.answer_no )
 	    log_info("no info to calculate a trust probability\n");
 	else {
-	    rc = add_ownertrust( pkc );
+	    rc = add_ownertrust( pk );
 	    if( !rc ) {
-		rc = check_trust( pkc, &trustlevel );
+		rc = check_trust( pk, &trustlevel );
 		if( rc )
 		    log_fatal("trust check after add_ownertrust failed: %s\n",
 							      g10_errstr(rc) );
 		/* fixme: this is recursive; we should unroll it */
-		return do_we_trust( pkc, trustlevel );
+		return do_we_trust( pk, trustlevel );
 	    }
 	}
 	return 0;
@@ -256,9 +256,9 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
  * key anyway.
  */
 static int
-do_we_trust_pre( PKT_public_cert *pkc, int trustlevel )
+do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 {
-    int rc = do_we_trust( pkc, trustlevel );
+    int rc = do_we_trust( pk, trustlevel );
 
     if( !opt.batch && !rc ) {
 	char *answer;
@@ -283,22 +283,22 @@ do_we_trust_pre( PKT_public_cert *pkc, int trustlevel )
 
 
 void
-release_pkc_list( PKC_LIST pkc_list )
+release_pk_list( PK_LIST pk_list )
 {
-    PKC_LIST pkc_rover;
+    PK_LIST pk_rover;
 
-    for( ; pkc_list; pkc_list = pkc_rover ) {
-	pkc_rover = pkc_list->next;
-	free_public_cert( pkc_list->pkc );
-	m_free( pkc_list );
+    for( ; pk_list; pk_list = pk_rover ) {
+	pk_rover = pk_list->next;
+	free_public_key( pk_list->pk );
+	m_free( pk_list );
     }
 }
 
 int
-build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list, unsigned usage )
+build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 {
-    PKC_LIST pkc_list = NULL;
-    PKT_public_cert *pkc=NULL;
+    PK_LIST pk_list = NULL;
+    PKT_public_key *pk=NULL;
     int rc=0;
 
     if( !remusr && !opt.batch ) { /* ask */
@@ -314,86 +314,86 @@ build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list, unsigned usage )
 	    tty_kill_prompt();
 	    if( !*answer )
 		break;
-	    if( pkc )
-		free_public_cert( pkc );
-	    pkc = m_alloc_clear( sizeof *pkc );
-	    rc = get_pubkey_byname( pkc, answer );
+	    if( pk )
+		free_public_key( pk );
+	    pk = m_alloc_clear( sizeof *pk );
+	    rc = get_pubkey_byname( pk, answer );
 	    if( rc )
 		tty_printf("No such user ID.\n");
-	    else if( !(rc=check_pubkey_algo2(pkc->pubkey_algo, usage)) ) {
+	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, usage)) ) {
 		int trustlevel;
 
-		rc = check_trust( pkc, &trustlevel );
+		rc = check_trust( pk, &trustlevel );
 		if( rc ) {
-		    log_error("error checking pkc of '%s': %s\n",
+		    log_error("error checking pk of '%s': %s\n",
 						      answer, g10_errstr(rc) );
 		}
-		else if( do_we_trust_pre( pkc, trustlevel ) ) {
-		    PKC_LIST r;
+		else if( do_we_trust_pre( pk, trustlevel ) ) {
+		    PK_LIST r;
 
 		    r = m_alloc( sizeof *r );
-		    r->pkc = pkc; pkc = NULL;
-		    r->next = pkc_list;
+		    r->pk = pk; pk = NULL;
+		    r->next = pk_list;
 		    r->mark = 0;
-		    pkc_list = r;
+		    pk_list = r;
 		    break;
 		}
 	    }
 	}
 	m_free(answer);
-	if( pkc ) {
-	    free_public_cert( pkc );
-	    pkc = NULL;
+	if( pk ) {
+	    free_public_key( pk );
+	    pk = NULL;
 	}
     }
     else {
 	for(; remusr; remusr = remusr->next ) {
 
-	    pkc = m_alloc_clear( sizeof *pkc );
-	    if( (rc = get_pubkey_byname( pkc, remusr->d )) ) {
-		free_public_cert( pkc ); pkc = NULL;
+	    pk = m_alloc_clear( sizeof *pk );
+	    if( (rc = get_pubkey_byname( pk, remusr->d )) ) {
+		free_public_key( pk ); pk = NULL;
 		log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );
 	    }
-	    else if( !(rc=check_pubkey_algo2(pkc->pubkey_algo, usage )) ) {
+	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, usage )) ) {
 		int trustlevel;
 
-		rc = check_trust( pkc, &trustlevel );
+		rc = check_trust( pk, &trustlevel );
 		if( rc ) {
-		    free_public_cert( pkc ); pkc = NULL;
-		    log_error("error checking pkc of '%s': %s\n",
+		    free_public_key( pk ); pk = NULL;
+		    log_error("error checking pk of '%s': %s\n",
 						      remusr->d, g10_errstr(rc) );
 		}
-		else if( do_we_trust_pre( pkc, trustlevel ) ) {
+		else if( do_we_trust_pre( pk, trustlevel ) ) {
 		    /* note: do_we_trust may have changed the trustlevel */
-		    PKC_LIST r;
+		    PK_LIST r;
 
 		    r = m_alloc( sizeof *r );
-		    r->pkc = pkc; pkc = NULL;
-		    r->next = pkc_list;
+		    r->pk = pk; pk = NULL;
+		    r->next = pk_list;
 		    r->mark = 0;
-		    pkc_list = r;
+		    pk_list = r;
 		}
-		else { /* we don't trust this pkc */
-		    free_public_cert( pkc ); pkc = NULL;
+		else { /* we don't trust this pk */
+		    free_public_key( pk ); pk = NULL;
 		}
 	    }
 	    else {
-		free_public_cert( pkc ); pkc = NULL;
+		free_public_key( pk ); pk = NULL;
 		log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );
 	    }
 	}
     }
 
 
-    if( !rc && !pkc_list ) {
+    if( !rc && !pk_list ) {
 	log_error("no valid addressees\n");
 	rc = G10ERR_NO_USER_ID;
     }
 
     if( rc )
-	release_pkc_list( pkc_list );
+	release_pk_list( pk_list );
     else
-	*ret_pkc_list = pkc_list;
+	*ret_pk_list = pk_list;
     return rc;
 }
 

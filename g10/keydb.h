@@ -58,18 +58,18 @@ struct keyblock_pos_struct {
 typedef struct keyblock_pos_struct KBPOS;
 
 /* structure to hold a couple of public key certificates */
-typedef struct pkc_list *PKC_LIST;
-struct pkc_list {
-    PKC_LIST next;
-    PKT_public_cert *pkc;
+typedef struct pk_list *PK_LIST;
+struct pk_list {
+    PK_LIST next;
+    PKT_public_key *pk;
     int mark;
 };
 
 /* structure to hold a couple of secret key certificates */
-typedef struct skc_list *SKC_LIST;
-struct skc_list {
-    SKC_LIST next;
-    PKT_secret_cert *skc;
+typedef struct sk_list *SK_LIST;
+struct sk_list {
+    SK_LIST next;
+    PKT_secret_key *sk;
     int mark;
 };
 
@@ -86,12 +86,12 @@ struct pubkey_find_info {
 
 
 /*-- pkclist.c --*/
-void release_pkc_list( PKC_LIST pkc_list );
-int  build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list, unsigned usage );
+void release_pk_list( PK_LIST pk_list );
+int  build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage );
 
 /*-- skclist.c --*/
-void release_skc_list( SKC_LIST skc_list );
-int  build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list,
+void release_sk_list( SK_LIST sk_list );
+int  build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 					    int unlock, unsigned usage );
 
 /*-- passphrase.h --*/
@@ -106,29 +106,29 @@ void add_keyring( const char *name );
 const char *get_keyring( int sequence );
 const char *get_secret_keyring( int sequence );
 void add_secret_keyring( const char *name );
-int get_pubkey( PKT_public_cert *pkc, u32 *keyid );
-int get_pubkey_byname( PKT_public_cert *pkc, const char *name );
-int get_seckey( PKT_secret_cert *skc, u32 *keyid );
+int get_pubkey( PKT_public_key *pk, u32 *keyid );
+int get_pubkey_byname( PKT_public_key *pk, const char *name );
+int get_seckey( PKT_secret_key *sk, u32 *keyid );
 int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 						 size_t fprint_len );
 int seckey_available( u32 *keyid );
-int get_seckey_byname( PKT_secret_cert *skc, const char *name, int unlock );
-int enum_secret_keys( void **context, PKT_secret_cert *skc );
+int get_seckey_byname( PKT_secret_key *sk, const char *name, int unlock );
+int enum_secret_keys( void **context, PKT_secret_key *sk );
 char*get_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
 
 /*-- keyid.c --*/
 int pubkey_letter( int algo );
-u32 keyid_from_skc( PKT_secret_cert *skc, u32 *keyid );
-u32 keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid );
+u32 keyid_from_sk( PKT_secret_key *sk, u32 *keyid );
+u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );
-unsigned nbits_from_pkc( PKT_public_cert *pkc );
-unsigned nbits_from_skc( PKT_secret_cert *skc );
-const char *datestr_from_pkc( PKT_public_cert *pkc );
-const char *datestr_from_skc( PKT_secret_cert *skc );
+unsigned nbits_from_pk( PKT_public_key *pk );
+unsigned nbits_from_sk( PKT_secret_key *sk );
+const char *datestr_from_pk( PKT_public_key *pk );
+const char *datestr_from_sk( PKT_secret_key *sk );
 const char *datestr_from_sig( PKT_signature *sig );
-byte *fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len );
-byte *fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len );
+byte *fingerprint_from_sk( PKT_secret_key *sk, size_t *ret_len );
+byte *fingerprint_from_pk( PKT_public_key *pk, size_t *ret_len );
 
 /*-- kbnode.c --*/
 KBNODE new_kbnode( PACKET *pkt );
@@ -150,7 +150,7 @@ const char *keyblock_resource_name( KBPOS *kbpos );
 int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
 int find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos );
 int find_keyblock_byname( KBPOS *kbpos, const char *username );
-int find_keyblock_bypkc( KBPOS *kbpos, PKT_public_cert *pkc );
+int find_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk );
 int find_secret_keyblock_byname( KBPOS *kbpos, const char *username );
 int lock_keyblock( KBPOS *kbpos );
 void unlock_keyblock( KBPOS *kbpos );

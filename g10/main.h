@@ -32,7 +32,7 @@
 
 typedef struct {
     int header_okay;
-    PKC_LIST pkc_list;
+    PK_LIST pk_list;
     cipher_filter_context_t cfx;
 } encrypt_filter_context_t;
 
@@ -61,7 +61,7 @@ int encrypt_filter( void *opaque, int control,
 
 
 /*-- sign.c --*/
-int complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md );
+int complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md );
 int sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       int encrypt, STRLIST remusr, const char *outfile );
 int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
@@ -95,9 +95,11 @@ KBNODE make_comment_node( const char *s );
 KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
-int import_pubkeys( const char *filename );
+int import_keys( const char *filename );
 /*-- export.c --*/
 int export_pubkeys( STRLIST users );
+int export_seckeys( STRLIST users );
+
 /* dearmor.c --*/
 int dearmor_file( const char *fname );
 int enarmor_file( const char *fname );

@@ -62,26 +62,26 @@ free_seckey_enc( PKT_signature *sig )
 
 
 void
-release_public_cert_parts( PKT_public_cert *cert )
+release_public_key_parts( PKT_public_key *pk )
 {
     int n, i;
-    n = pubkey_get_npkey( cert->pubkey_algo );
+    n = pubkey_get_npkey( pk->pubkey_algo );
     for(i=0; i < n; i++ ) {
-	mpi_free( cert->pkey[i] );
-	cert->pkey[i] = NULL;
+	mpi_free( pk->pkey[i] );
+	pk->pkey[i] = NULL;
     }
 }
 
 
 void
-free_public_cert( PKT_public_cert *cert )
+free_public_key( PKT_public_key *pk )
 {
-    release_public_cert_parts( cert );
-    m_free(cert);
+    release_public_key_parts( pk );
+    m_free(pk);
 }
 
-PKT_public_cert *
-copy_public_cert( PKT_public_cert *d, PKT_public_cert *s )
+PKT_public_key *
+copy_public_key( PKT_public_key *d, PKT_public_key *s )
 {
     int n, i;
 
@@ -95,26 +95,26 @@ copy_public_cert( PKT_public_cert *d, PKT_public_cert *s )
 }
 
 void
-release_secret_cert_parts( PKT_secret_cert *cert )
+release_secret_key_parts( PKT_secret_key *sk )
 {
     int n, i;
 
-    n = pubkey_get_nskey( cert->pubkey_algo );
+    n = pubkey_get_nskey( sk->pubkey_algo );
     for(i=0; i < n; i++ ) {
-	mpi_free( cert->skey[i] );
-	cert->skey[i] = NULL;
+	mpi_free( sk->skey[i] );
+	sk->skey[i] = NULL;
     }
 }
 
 void
-free_secret_cert( PKT_secret_cert *cert )
+free_secret_key( PKT_secret_key *sk )
 {
-    release_secret_cert_parts( cert );
-    m_free(cert);
+    release_secret_key_parts( sk );
+    m_free(sk);
 }
 
-PKT_secret_cert *
-copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s )
+PKT_secret_key *
+copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
 {
     int n, i;
 
@@ -208,11 +208,13 @@ free_packet( PACKET *pkt )
       case PKT_SYMKEY_ENC:
 	free_symkey_enc( pkt->pkt.symkey_enc );
 	break;
-      case PKT_PUBLIC_CERT:
-	free_public_cert( pkt->pkt.public_cert );
+      case PKT_PUBLIC_KEY:
+      case PKT_PUBLIC_SUBKEY:
+	free_public_key( pkt->pkt.public_key );
 	break;
-      case PKT_SECRET_CERT:
-	free_secret_cert( pkt->pkt.secret_cert );
+      case PKT_SECRET_KEY:
+      case PKT_SECRET_SUBKEY:
+	free_secret_key( pkt->pkt.secret_key );
 	break;
       case PKT_COMMENT:
 	free_comment( pkt->pkt.comment );
@@ -240,7 +242,7 @@ free_packet( PACKET *pkt )
  * Returns 0 if they match.
  */
 int
-cmp_public_certs( PKT_public_cert *a, PKT_public_cert *b )
+cmp_public_keys( PKT_public_key *a, PKT_public_key *b )
 {
     int n, i;
 
@@ -264,20 +266,20 @@ cmp_public_certs( PKT_public_cert *a, PKT_public_cert *b )
  * Returns 0 if they match.
  */
 int
-cmp_public_secret_cert( PKT_public_cert *pkc, PKT_secret_cert *skc )
+cmp_public_secret_key( PKT_public_key *pk, PKT_secret_key *sk )
 {
     int n, i;
 
-    if( pkc->timestamp != skc->timestamp )
+    if( pk->timestamp != sk->timestamp )
 	return -1;
-    if( pkc->valid_days != skc->valid_days )
+    if( pk->valid_days != sk->valid_days )
 	return -1;
-    if( pkc->pubkey_algo != skc->pubkey_algo )
+    if( pk->pubkey_algo != sk->pubkey_algo )
 	return -1;
 
-    n = pubkey_get_npkey( pkc->pubkey_algo );
+    n = pubkey_get_npkey( pk->pubkey_algo );
     for(i=0; i < n; i++ ) {
-	if( mpi_cmp( pkc->pkey[i] , skc->skey[i] ) )
+	if( mpi_cmp( pk->pkey[i] , sk->skey[i] ) )
 	    return -1;
     }
     return 0;

@@ -49,7 +49,7 @@ pubkey_letter( int algo )
 
 
 static MD_HANDLE
-do_fingerprint_md( PKT_public_cert *pkc )
+do_fingerprint_md( PKT_public_key *pk )
 {
     MD_HANDLE md;
     unsigned n;
@@ -57,36 +57,36 @@ do_fingerprint_md( PKT_public_cert *pkc )
     unsigned nn[PUBKEY_MAX_NPKEY];
     byte *pp[PUBKEY_MAX_NPKEY];
     int i;
-    int npkey = pubkey_get_npkey( pkc->pubkey_algo );
+    int npkey = pubkey_get_npkey( pk->pubkey_algo );
 
-    md = md_open( pkc->version < 4 ? DIGEST_ALGO_RMD160 : DIGEST_ALGO_SHA1, 0);
-    n = pkc->version < 4 ? 8 : 6;
+    md = md_open( pk->version < 4 ? DIGEST_ALGO_RMD160 : DIGEST_ALGO_SHA1, 0);
+    n = pk->version < 4 ? 8 : 6;
     for(i=0; i < npkey; i++ ) {
-	nb[i] = mpi_get_nbits(pkc->pkey[i]);
-	pp[i] = mpi_get_buffer( pkc->pkey[i], nn+i, NULL );
+	nb[i] = mpi_get_nbits(pk->pkey[i]);
+	pp[i] = mpi_get_buffer( pk->pkey[i], nn+i, NULL );
 	n += 2 + nn[i];
     }
 
     md_putc( md, 0x99 );     /* ctb */
     md_putc( md, n >> 8 );   /* 2 byte length header */
     md_putc( md, n );
-    if( pkc->version < 4 )
+    if( pk->version < 4 )
 	md_putc( md, 3 );
     else
 	md_putc( md, 4 );
 
-    {	u32 a = pkc->timestamp;
+    {	u32 a = pk->timestamp;
 	md_putc( md, a >> 24 );
 	md_putc( md, a >> 16 );
 	md_putc( md, a >>  8 );
 	md_putc( md, a	     );
     }
-    if( pkc->version < 4 ) {
-	u16 a = pkc->valid_days;
+    if( pk->version < 4 ) {
+	u16 a = pk->valid_days;
 	md_putc( md, a >> 8 );
 	md_putc( md, a	    );
     }
-    md_putc( md, pkc->pubkey_algo );
+    md_putc( md, pk->pubkey_algo );
     for(i=0; i < npkey; i++ ) {
 	md_putc( md, nb[i]>>8);
 	md_putc( md, nb[i] );
@@ -99,29 +99,29 @@ do_fingerprint_md( PKT_public_cert *pkc )
 }
 
 static MD_HANDLE
-do_fingerprint_md_skc( PKT_secret_cert *skc )
+do_fingerprint_md_sk( PKT_secret_key *sk )
 {
-    PKT_public_cert pkc;
-    int npkey = pubkey_get_npkey( skc->pubkey_algo ); /* npkey is correct! */
+    PKT_public_key pk;
+    int npkey = pubkey_get_npkey( sk->pubkey_algo ); /* npkey is correct! */
     int i;
 
-    pkc.pubkey_algo = skc->pubkey_algo;
-    pkc.version     = skc->version;
-    pkc.timestamp = skc->timestamp;
-    pkc.valid_days = skc->valid_days;
-    pkc.pubkey_algo = skc->pubkey_algo;
+    pk.pubkey_algo = sk->pubkey_algo;
+    pk.version	   = sk->version;
+    pk.timestamp = sk->timestamp;
+    pk.valid_days = sk->valid_days;
+    pk.pubkey_algo = sk->pubkey_algo;
     for( i=0; i < npkey; i++ )
-	pkc.pkey[i] = skc->skey[i];
-    return do_fingerprint_md( &pkc );
+	pk.pkey[i] = sk->skey[i];
+    return do_fingerprint_md( &pk );
 }
 
 
 /****************
- * Get the keyid from the secret key certificate and put it into keyid
+ * Get the keyid from the secret key and put it into keyid
  * if this is not NULL. Return the 32 low bits of the keyid.
  */
 u32
-keyid_from_skc( PKT_secret_cert *skc, u32 *keyid )
+keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
 {
     u32 lowbits;
     u32 dummy_keyid[2];
@@ -129,13 +129,13 @@ keyid_from_skc( PKT_secret_cert *skc, u32 *keyid )
     if( !keyid )
 	keyid = dummy_keyid;
 
-    if( skc->version < 4 && is_RSA(skc->pubkey_algo) ) {
-	lowbits = mpi_get_keyid( skc->skey[0], keyid ); /* take n */
+    if( sk->version < 4 && is_RSA(sk->pubkey_algo) ) {
+	lowbits = mpi_get_keyid( sk->skey[0], keyid ); /* take n */
     }
     else {
 	const byte *dp;
 	MD_HANDLE md;
-	md = do_fingerprint_md_skc(skc);
+	md = do_fingerprint_md_sk(sk);
 	dp = md_read( md, 0 );
 	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
 	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
@@ -148,11 +148,11 @@ keyid_from_skc( PKT_secret_cert *skc, u32 *keyid )
 
 
 /****************
- * Get the keyid from the public key certificate and put it into keyid
+ * Get the keyid from the public key and put it into keyid
  * if this is not NULL. Return the 32 low bits of the keyid.
  */
 u32
-keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid )
+keyid_from_pk( PKT_public_key *pk, u32 *keyid )
 {
     u32 lowbits;
     u32 dummy_keyid[2];
@@ -160,13 +160,13 @@ keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid )
     if( !keyid )
 	keyid = dummy_keyid;
 
-    if( pkc->version < 4 && is_RSA(pkc->pubkey_algo) ) {
-	lowbits = mpi_get_keyid( pkc->pkey[0], keyid ); /* from n */
+    if( pk->version < 4 && is_RSA(pk->pubkey_algo) ) {
+	lowbits = mpi_get_keyid( pk->pkey[0], keyid ); /* from n */
     }
     else {
 	const byte *dp;
 	MD_HANDLE md;
-	md = do_fingerprint_md(pkc);
+	md = do_fingerprint_md(pk);
 	dp = md_read( md, 0 );
 	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
 	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
@@ -189,34 +189,34 @@ keyid_from_sig( PKT_signature *sig, u32 *keyid )
 }
 
 /****************
- * return the number of bits used in the pkc
+ * return the number of bits used in the pk
  */
 unsigned
-nbits_from_pkc( PKT_public_cert *pkc )
+nbits_from_pk( PKT_public_key *pk )
 {
-    return pubkey_nbits( pkc->pubkey_algo, pkc->pkey );
+    return pubkey_nbits( pk->pubkey_algo, pk->pkey );
 }
 
 /****************
- * return the number of bits used in the skc
+ * return the number of bits used in the sk
  */
 unsigned
-nbits_from_skc( PKT_secret_cert *skc )
+nbits_from_sk( PKT_secret_key *sk )
 {
-    return pubkey_nbits( skc->pubkey_algo, skc->skey );
+    return pubkey_nbits( sk->pubkey_algo, sk->skey );
 }
 
 /****************
- * return a string with the creation date of the pkc
+ * return a string with the creation date of the pk
  * Note: this is alloced in a static buffer.
  *    Format is: yyyy-mm-dd
  */
 const char *
-datestr_from_pkc( PKT_public_cert *pkc )
+datestr_from_pk( PKT_public_key *pk )
 {
     static char buffer[11+5];
     struct tm *tp;
-    time_t atime = pkc->timestamp;
+    time_t atime = pk->timestamp;
 
     tp = gmtime( &atime );
     sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
@@ -224,11 +224,11 @@ datestr_from_pkc( PKT_public_cert *pkc )
 }
 
 const char *
-datestr_from_skc( PKT_secret_cert *skc )
+datestr_from_sk( PKT_secret_key *sk )
 {
     static char buffer[11+5];
     struct tm *tp;
-    time_t atime = skc->timestamp;
+    time_t atime = sk->timestamp;
 
     tp = gmtime( &atime );
     sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
@@ -249,30 +249,28 @@ datestr_from_sig( PKT_signature *sig )
 
 
 /**************** .
- * Return a byte array with the fingerprint for the given PKC/SKC
+ * Return a byte array with the fingerprint for the given PK/SK
  * The length of the array is returned in ret_len. Caller must free
  * the array.
  */
 
-
-
 byte *
-fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
+fingerprint_from_pk( PKT_public_key *pk, size_t *ret_len )
 {
     byte *p, *buf, *array;
     const char *dp;
     size_t len;
     unsigned n;
 
-    if( pkc->version < 4 && is_RSA(pkc->pubkey_algo) ) {
+    if( pk->version < 4 && is_RSA(pk->pubkey_algo) ) {
 	/* RSA in version 3 packets is special */
 	MD_HANDLE md;
 
 	md = md_open( DIGEST_ALGO_MD5, 0);
-	p = buf = mpi_get_buffer( pkc->pkey[0], &n, NULL );
+	p = buf = mpi_get_buffer( pk->pkey[0], &n, NULL );
 	md_write( md, p, n );
 	m_free(buf);
-	p = buf = mpi_get_buffer( pkc->pkey[1], &n, NULL );
+	p = buf = mpi_get_buffer( pk->pkey[1], &n, NULL );
 	md_write( md, p, n );
 	m_free(buf);
 	md_final(md);
@@ -283,7 +281,7 @@ fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
     }
     else {
 	MD_HANDLE md;
-	md = do_fingerprint_md(pkc);
+	md = do_fingerprint_md(pk);
 	dp = md_read( md, 0 );
 	len = md_digest_length( md_get_algo( md ) );
 	array = m_alloc( len );
@@ -296,22 +294,22 @@ fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
 }
 
 byte *
-fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len )
+fingerprint_from_sk( PKT_secret_key *sk, size_t *ret_len )
 {
     byte *p, *buf, *array;
     const char *dp;
     size_t len;
     unsigned n;
 
-    if( skc->version < 4 && is_RSA(skc->pubkey_algo) ) {
+    if( sk->version < 4 && is_RSA(sk->pubkey_algo) ) {
 	/* RSA in version 3 packets is special */
 	MD_HANDLE md;
 
 	md = md_open( DIGEST_ALGO_MD5, 0);
-	p = buf = mpi_get_buffer( skc->skey[1], &n, NULL );
+	p = buf = mpi_get_buffer( sk->skey[1], &n, NULL );
 	md_write( md, p, n );
 	m_free(buf);
-	p = buf = mpi_get_buffer( skc->skey[0], &n, NULL );
+	p = buf = mpi_get_buffer( sk->skey[0], &n, NULL );
 	md_write( md, p, n );
 	m_free(buf);
 	md_final(md);
@@ -322,7 +320,7 @@ fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len )
     }
     else {
 	MD_HANDLE md;
-	md = do_fingerprint_md_skc(skc);
+	md = do_fingerprint_md_sk(sk);
 	dp = md_read( md, 0 );
 	len = md_digest_length( md_get_algo( md ) );
 	array = m_alloc( len );

@@ -37,7 +37,7 @@
 
 static void list_all(int);
 static void list_one(const char *name, int secret);
-static void fingerprint( PKT_public_cert *pkc, PKT_secret_cert *skc );
+static void fingerprint( PKT_public_key *pk, PKT_secret_key *sk );
 
 
 /****************
@@ -99,8 +99,8 @@ list_one( const char *name, int secret )
     KBNODE kbctx;
     KBNODE node;
     KBPOS kbpos;
-    PKT_public_cert *pkc;
-    PKT_secret_cert *skc;
+    PKT_public_key *pk;
+    PKT_secret_key *sk;
     u32 keyid[2];
     int any=0;
     int trustletter = 0;
@@ -122,54 +122,54 @@ list_one( const char *name, int secret )
 
 
     /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, secret? PKT_SECRET_CERT : PKT_PUBLIC_CERT );
+    node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; key lost!\n");
 	goto leave;
     }
 
     if( secret ) {
-	pkc = NULL;
-	skc = node->pkt->pkt.secret_cert;
-	keyid_from_skc( skc, keyid );
+	pk = NULL;
+	sk = node->pkt->pkt.secret_key;
+	keyid_from_sk( sk, keyid );
 	if( opt.with_colons )
 	    printf("sec::%u:%d:%08lX%08lX:%s:%u:::",
-		    nbits_from_skc( skc ),
-		    skc->pubkey_algo,
+		    nbits_from_sk( sk ),
+		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
-		    datestr_from_skc( skc ),
-		    (unsigned)skc->valid_days
+		    datestr_from_sk( sk ),
+		    (unsigned)sk->valid_days
 		    /* fixme: add LID here */ );
 	else
-	    printf("sec  %4u%c/%08lX %s ", nbits_from_skc( skc ),
-				       pubkey_letter( skc->pubkey_algo ),
+	    printf("sec  %4u%c/%08lX %s ", nbits_from_sk( sk ),
+				       pubkey_letter( sk->pubkey_algo ),
 				       (ulong)keyid[1],
-				       datestr_from_skc( skc ) );
+				       datestr_from_sk( sk ) );
     }
     else {
-	pkc = node->pkt->pkt.public_cert;
-	skc = NULL;
-	keyid_from_pkc( pkc, keyid );
+	pk = node->pkt->pkt.public_key;
+	sk = NULL;
+	keyid_from_pk( pk, keyid );
 	if( opt.with_colons ) {
-	    trustletter = query_trust_info( pkc );
+	    trustletter = query_trust_info( pk );
 	    printf("pub:%c:%u:%d:%08lX%08lX:%s:%u:",
 		    trustletter,
-		    nbits_from_pkc( pkc ),
-		    pkc->pubkey_algo,
+		    nbits_from_pk( pk ),
+		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
-		    datestr_from_pkc( pkc ),
-		    (unsigned)pkc->valid_days );
-	    if( pkc->local_id )
-		printf("%lu", pkc->local_id );
+		    datestr_from_pk( pk ),
+		    (unsigned)pk->valid_days );
+	    if( pk->local_id )
+		printf("%lu", pk->local_id );
 	    putchar(':');
 	    /* fixme: add ownertrust here */
 	    putchar(':');
 	}
 	else
-	    printf("pub  %4u%c/%08lX %s ", nbits_from_pkc( pkc ),
-				       pubkey_letter( pkc->pubkey_algo ),
+	    printf("pub  %4u%c/%08lX %s ", nbits_from_pk( pk ),
+				       pubkey_letter( pk->pubkey_algo ),
 				       (ulong)keyid[1],
-				       datestr_from_pkc( pkc ) );
+				       datestr_from_pk( pk ) );
     }
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
@@ -187,70 +187,70 @@ list_one( const char *name, int secret )
 	    putchar('\n');
 	    if( !any ) {
 		if( opt.fingerprint )
-		    fingerprint( pkc, skc );
+		    fingerprint( pk, sk );
 		any = 1;
 	    }
 	}
-	else if( node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
+	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    u32 keyid2[2];
-	    PKT_public_cert *pkc2 = node->pkt->pkt.public_cert;
+	    PKT_public_key *pk2 = node->pkt->pkt.public_key;
 
 	    if( !any ) {
 		putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pkc, skc ); /* of the main key */
+		    fingerprint( pk, sk ); /* of the main key */
 		any = 1;
 	    }
 
-	    keyid_from_pkc( pkc2, keyid2 );
+	    keyid_from_pk( pk2, keyid2 );
 	    if( opt.with_colons ) {
 		printf("sub:%c:%u:%d:%08lX%08lX:%s:%u:",
 			trustletter,
-			nbits_from_pkc( pkc2 ),
-			pkc2->pubkey_algo,
+			nbits_from_pk( pk2 ),
+			pk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
-			datestr_from_pkc( pkc2 ),
-			(unsigned)pkc2->valid_days
+			datestr_from_pk( pk2 ),
+			(unsigned)pk2->valid_days
 			/* fixme: add LID and ownertrust here */
 						);
-		if( pkc->local_id ) /* use the local_id of the main key??? */
-		    printf("%lu", pkc->local_id );
+		if( pk->local_id ) /* use the local_id of the main key??? */
+		    printf("%lu", pk->local_id );
 		putchar(':');
 		putchar(':');
 		putchar('\n');
 	    }
 	    else
-		printf("sub  %4u%c/%08lX %s\n", nbits_from_pkc( pkc2 ),
-					   pubkey_letter( pkc2->pubkey_algo ),
+		printf("sub  %4u%c/%08lX %s\n", nbits_from_pk( pk2 ),
+					   pubkey_letter( pk2->pubkey_algo ),
 					   (ulong)keyid2[1],
-					   datestr_from_pkc( pkc2 ) );
+					   datestr_from_pk( pk2 ) );
 	}
-	else if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
+	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 	    u32 keyid2[2];
-	    PKT_secret_cert *skc2 = node->pkt->pkt.secret_cert;
+	    PKT_secret_key *sk2 = node->pkt->pkt.secret_key;
 
 	    if( !any ) {
 		putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pkc, skc ); /* of the main key */
+		    fingerprint( pk, sk ); /* of the main key */
 		any = 1;
 	    }
 
-	    keyid_from_skc( skc2, keyid2 );
+	    keyid_from_sk( sk2, keyid2 );
 	    if( opt.with_colons )
 		printf("ssb::%u:%d:%08lX%08lX:%s:%u:::\n",
-			nbits_from_skc( skc2 ),
-			skc2->pubkey_algo,
+			nbits_from_sk( sk2 ),
+			sk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
-			datestr_from_skc( skc2 ),
-			(unsigned)skc2->valid_days
+			datestr_from_sk( sk2 ),
+			(unsigned)sk2->valid_days
 			/* fixme: add LID */
 						);
 	    else
-		printf("ssb  %4u%c/%08lX %s\n", nbits_from_skc( skc2 ),
-					   pubkey_letter( skc2->pubkey_algo ),
+		printf("ssb  %4u%c/%08lX %s\n", nbits_from_sk( sk2 ),
+					   pubkey_letter( sk2->pubkey_algo ),
 					   (ulong)keyid2[1],
-					   datestr_from_skc( skc2 ) );
+					   datestr_from_sk( sk2 ) );
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
@@ -264,7 +264,7 @@ list_one( const char *name, int secret )
 		else
 		    putchar('\n');
 		if( opt.fingerprint )
-		    fingerprint( pkc, skc );
+		    fingerprint( pk, sk );
 		any=1;
 	    }
 
@@ -334,13 +334,13 @@ list_one( const char *name, int secret )
 }
 
 static void
-fingerprint( PKT_public_cert *pkc, PKT_secret_cert *skc )
+fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
 {
     byte *array, *p;
     size_t i, n;
 
-    p = array = pkc? fingerprint_from_pkc( pkc, &n )
-		   : fingerprint_from_skc( skc, &n );
+    p = array = pk? fingerprint_from_pk( pk, &n )
+		   : fingerprint_from_sk( sk, &n );
     if( opt.with_colons ) {
 	printf("fpr:::::::::");
 	for(i=0; i < n ; i++, p++ )

@@ -33,6 +33,7 @@
 #include "util.h"
 #include "main.h"
 
+static int do_export( STRLIST users, int secret );
 
 /****************
  * Export the public keys (to standard out or --output).
@@ -41,6 +42,18 @@
  */
 int
 export_pubkeys( STRLIST users )
+{
+    return do_export( users, 0 );
+}
+
+int
+export_seckeys( STRLIST users )
+{
+    return do_export( users, 1 );
+}
+
+static int
+do_export( STRLIST users, int secret )
 {
     int rc = 0;
     armor_filter_context_t afx;
@@ -64,14 +77,14 @@ export_pubkeys( STRLIST users )
     }
 
     if( opt.armor ) {
-	afx.what = 1;
+	afx.what = secret?5:1;
 	iobuf_push_filter( out, armor_filter, &afx );
     }
     if( opt.compress_keys && opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
 
     if( all ) {
-	rc = enum_keyblocks( 0, &kbpos, &keyblock );
+	rc = enum_keyblocks( secret?5:0, &kbpos, &keyblock );
 	if( rc ) {
 	    if( rc != -1 )
 		log_error("enum_keyblocks(open) failed: %s\n", g10_errstr(rc) );
@@ -94,7 +107,8 @@ export_pubkeys( STRLIST users )
 	}
 	else {
 	    /* search the userid */
-	    rc = find_keyblock_byname( &kbpos, sl->d );
+	    rc = secret? find_secret_keyblock_byname( &kbpos, sl->d )
+		       : find_keyblock_byname( &kbpos, sl->d );
 	    if( rc ) {
 		log_error("%s: user not found: %s\n", sl->d, g10_errstr(rc) );
 		rc = 0;

@@ -88,6 +88,7 @@ static char *head_strings[] = {
     "BEGIN PGP SIGNATURE",
     "BEGIN PGP SIGNED MESSAGE",
     "BEGIN PGP ARMORED FILE",
+    "BEGIN PGP SECRET KEY BLOCK",
     NULL
 };
 static char *tail_strings[] = {
@@ -96,6 +97,7 @@ static char *tail_strings[] = {
     "END PGP SIGNATURE",
     "END dummy",
     "END PGP ARMORED FILE",
+    "END PGP SECRET KEY BLOCK",
     NULL
 };
 
@@ -153,8 +155,8 @@ is_armored( byte *buf )
     pkttype =  ctb & 0x40 ? (ctb & 0x3f) : ((ctb>>2)&0xf);
     switch( pkttype ) {
       case PKT_MARKER:
-      case PKT_PUBLIC_CERT:
-      case PKT_SECRET_CERT:
+      case PKT_PUBLIC_KEY:
+      case PKT_SECRET_KEY:
       case PKT_PUBKEY_ENC:
       case PKT_SIGNATURE:
       case PKT_COMMENT:

@@ -1,4 +1,6 @@
 
+    * add options: --default-signature-user, --default-encryption-user
+
     * make preferences work
 
     * rewrite --list-packets or put it into another tool.
@@ -36,9 +38,6 @@
     * add fingerprint/keyid hashing. We need a new field in PKC to
       flag that we may have a cached signature for this (and use the address
       of PKC to lookup the hash).
-
-    * change the misleading usage of "public key certificate" to
-      "public key data" or something like this.
 
     * replace getkey.c#enum_secret_keys
 

@@ -33,16 +33,16 @@ typedef enum {
 	PKT_SIGNATURE	   =2, /* secret key encrypted packet */
 	PKT_SYMKEY_ENC	   =3, /* session key packet (OpenPGP)*/
 	PKT_ONEPASS_SIG    =4, /* one pass sig packet (OpenPGP)*/
-	PKT_SECRET_CERT    =5, /* secret key certificate */
-	PKT_PUBLIC_CERT    =6, /* public key certificate */
-	PKT_SECKEY_SUBCERT =7, /* secret subkey certificate (OpenPGP) */
+	PKT_SECRET_KEY	   =5, /* secret key */
+	PKT_PUBLIC_KEY	   =6, /* public key */
+	PKT_SECRET_SUBKEY  =7, /* secret subkey (OpenPGP) */
 	PKT_COMPRESSED	   =8, /* compressed data packet */
 	PKT_ENCRYPTED	   =9, /* conventional encrypted data */
 	PKT_MARKER	  =10, /* marker packet (OpenPGP) */
 	PKT_PLAINTEXT	  =11, /* plaintext data with filename and mode */
 	PKT_RING_TRUST	  =12, /* keyring trust packet */
 	PKT_USER_ID	  =13, /* user id packet */
-	PKT_PUBKEY_SUBCERT=14, /* subkey certificate (OpenPGP) */
+	PKT_PUBLIC_SUBKEY =14, /* public subkey (OpenPGP) */
 	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
 	PKT_COMMENT	  =61  /* new comment packet (private) */
 } pkttype_t;
@@ -104,17 +104,17 @@ typedef struct {
  * public keys by comparing the first npkey elements of pkey againts skey.
  */
 typedef struct {
-    u32     timestamp;	    /* certificate made */
+    u32     timestamp;	    /* key made */
     u16     valid_days;     /* valid for this number of days */
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     ulong   local_id;	    /* internal use, valid if > 0 */
     MPI     pkey[PUBKEY_MAX_NPKEY];
-} PKT_public_cert;
+} PKT_public_key;
 
 typedef struct {
-    u32     timestamp;	    /* certificate made */
+    u32     timestamp;	    /* key made */
     u16     valid_days;     /* valid for this number of days */
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
@@ -130,7 +130,7 @@ typedef struct {
     } protect;
     MPI skey[PUBKEY_MAX_NSKEY];
     u16 csum;		/* checksum */
-} PKT_secret_cert;
+} PKT_secret_key;
 
 
 typedef struct {
@@ -172,8 +172,8 @@ struct packet_struct {
 	PKT_pubkey_enc	*pubkey_enc;	/* PKT_PUBKEY_ENC */
 	PKT_onepass_sig *onepass_sig;	/* PKT_ONEPASS_SIG */
 	PKT_signature	*signature;	/* PKT_SIGNATURE */
-	PKT_public_cert *public_cert;	/* PKT_PUBLIC_CERT */
-	PKT_secret_cert *secret_cert;	/* PKT_SECRET_CERT */
+	PKT_public_key	*public_key;	/* PKT_PUBLIC_[SUB)KEY */
+	PKT_secret_key	*secret_key;	/* PKT_SECRET_[SUB]KEY */
 	PKT_comment	*comment;	/* PKT_COMMENT */
 	PKT_user_id	*user_id;	/* PKT_USER_ID */
 	PKT_compressed	*compressed;	/* PKT_COMPRESSED */
@@ -224,15 +224,17 @@ int list_packets( IOBUF a );
 int set_packet_list_mode( int mode );
 int search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos );
 int parse_packet( IOBUF inp, PACKET *ret_pkt);
+void parse_pubkey_warning( PACKET *pkt );
 int copy_all_packets( IOBUF inp, IOBUF out );
 int copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff );
 int skip_some_packets( IOBUF inp, unsigned n );
-const byte *parse_sig_subpkt( const byte *buffer, int reqtype, size_t *ret_n );
+const byte *parse_sig_subpkt( const byte *buffer,
+			      sigsubpkttype_t reqtype, size_t *ret_n );
 
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );
 u32 calc_packet_length( PACKET *pkt );
-void hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc );
+void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
 void build_sig_subpkt_from_sig( PKT_signature *sig );
@@ -242,17 +244,17 @@ void free_symkey_enc( PKT_symkey_enc *enc );
 void free_pubkey_enc( PKT_pubkey_enc *enc );
 void free_seckey_enc( PKT_signature *enc );
 int  digest_algo_from_sig( PKT_signature *sig );
-void release_public_cert_parts( PKT_public_cert *cert );
-void free_public_cert( PKT_public_cert *cert );
-void release_secret_cert_parts( PKT_secret_cert *cert );
-void free_secret_cert( PKT_secret_cert *cert );
+void release_public_key_parts( PKT_public_key *pk );
+void free_public_key( PKT_public_key *key );
+void release_secret_key_parts( PKT_secret_key *sk );
+void free_secret_key( PKT_secret_key *sk );
 void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
-PKT_public_cert *copy_public_cert( PKT_public_cert *d, PKT_public_cert *s );
-PKT_secret_cert *copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s );
-int cmp_public_certs( PKT_public_cert *a, PKT_public_cert *b );
-int cmp_public_secret_cert( PKT_public_cert *pkc, PKT_secret_cert *skc );
+PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
+PKT_secret_key *copy_secret_key( PKT_secret_key *d, PKT_secret_key *s );
+int cmp_public_keys( PKT_public_key *a, PKT_public_key *b );
+int cmp_public_secret_key( PKT_public_key *pk, PKT_secret_key *sk );
 int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 
@@ -260,9 +262,9 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 int signature_check( PKT_signature *sig, MD_HANDLE digest );
 
 /*-- seckey-cert.c --*/
-int is_secret_key_protected( PKT_secret_cert *cert );
-int check_secret_key( PKT_secret_cert *cert );
-int protect_secret_key( PKT_secret_cert *cert, DEK *dek );
+int is_secret_key_protected( PKT_secret_key *sk );
+int check_secret_key( PKT_secret_key *sk );
+int protect_secret_key( PKT_secret_key *sk, DEK *dek );
 
 /*-- pubkey-enc.c --*/
 int get_session_key( PKT_pubkey_enc *k, DEK *dek );
@@ -283,9 +285,9 @@ int ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname );
 int write_comment( IOBUF out, const char *s );
 
 /*-- sign.c --*/
-int make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
-			PKT_user_id *uid, PKT_public_cert *subpkc,
-			PKT_secret_cert *skc,
+int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
+			PKT_user_id *uid, PKT_public_key *subpk,
+			PKT_secret_key *sk,
 			int sigclass, int digest_algo,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque  );

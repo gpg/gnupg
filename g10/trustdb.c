@@ -163,7 +163,7 @@ static void dump_record( ulong rnum, TRUSTREC *rec, FILE *fp );
 static int  read_record( ulong recnum, TRUSTREC *rec, int expected );
 static int  write_record( ulong recnum, TRUSTREC *rec );
 static ulong new_recnum(void);
-static int search_record( PKT_public_cert *pkc, TRUSTREC *rec );
+static int search_record( PKT_public_key *pk, TRUSTREC *rec );
 static int walk_sigrecs( SIGREC_CONTEXT *c, int create );
 
 static LOCAL_ID_INFO *new_lid_table(void);
@@ -636,13 +636,13 @@ new_recnum()
 }
 
 /****************
- * Search the trustdb for a key which matches PKC and return the dir record
- * The local_id of PKC is set to the correct value
+ * Search the trustdb for a key which matches PK and return the dir record
+ * The local_id of PK is set to the correct value
  *
  * Note: To increase performance, we could use a index search here.
  */
 static int
-search_record( PKT_public_cert *pkc, TRUSTREC *rec )
+search_record( PKT_public_key *pk, TRUSTREC *rec )
 {
     ulong recnum;
     u32 keyid[2];
@@ -650,8 +650,8 @@ search_record( PKT_public_cert *pkc, TRUSTREC *rec )
     size_t fingerlen;
     int rc;
 
-    keyid_from_pkc( pkc, keyid );
-    fingerprint = fingerprint_from_pkc( pkc, &fingerlen );
+    keyid_from_pk( pk, keyid );
+    fingerprint = fingerprint_from_pk( pk, &fingerlen );
     assert( fingerlen == 20 || fingerlen == 16 );
 
     for(recnum=1; !(rc=read_record( recnum, rec, 0)); recnum++ ) {
@@ -665,13 +665,13 @@ search_record( PKT_public_cert *pkc, TRUSTREC *rec )
 		log_error("%lu: ooops: invalid key record\n", recnum );
 		break;
 	    }
-	    if( keyrec.r.key.pubkey_algo == pkc->pubkey_algo
+	    if( keyrec.r.key.pubkey_algo == pk->pubkey_algo
 		&& !memcmp(keyrec.r.key.fingerprint, fingerprint, fingerlen) ){
-		if( pkc->local_id && pkc->local_id != recnum )
+		if( pk->local_id && pk->local_id != recnum )
 		    log_error("%s: found record, but local_id from mem does "
 			       "not match recnum (%lu,%lu)\n", db_name,
-				     (ulong)pkc->local_id, (ulong)recnum );
-		pkc->local_id = recnum;
+				     (ulong)pk->local_id, (ulong)recnum );
+		pk->local_id = recnum;
 		return 0;
 	    }
 	}
@@ -689,25 +689,25 @@ search_record( PKT_public_cert *pkc, TRUSTREC *rec )
 static int
 set_signature_packets_local_id( PKT_signature *sig )
 {
-    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     TRUSTREC rec;
     int rc;
 
-    rc = get_pubkey( pkc, sig->keyid );
+    rc = get_pubkey( pk, sig->keyid );
     if( rc)
 	goto leave;
-    if( !pkc->local_id ) {
-	rc = search_record( pkc, &rec );
+    if( !pk->local_id ) {
+	rc = search_record( pk, &rec );
 	if( rc == -1 )
-	    rc = insert_trust_record( pkc );
+	    rc = insert_trust_record( pk );
 	if( rc )
 	    goto leave;
-	/* fixme: we should propagate the local_id to all copies of the PKC */
+	/* fixme: we should propagate the local_id to all copies of the PK */
     }
-    sig->local_id = pkc->local_id;
+    sig->local_id = pk->local_id;
 
   leave:
-    free_public_cert( pkc );
+    free_public_key( pk );
     return rc;
 }
 
@@ -833,15 +833,15 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
  * Verify that all our public keys are in the trustDB.
  */
 static int
-verify_own_certs()
+verify_own_keys()
 {
     int rc;
     void *enum_context = NULL;
-    PKT_secret_cert *skc = m_alloc_clear( sizeof *skc );
-    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+    PKT_secret_key *sk = m_alloc_clear( sizeof *sk );
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     u32 keyid[2];
 
-    while( !(rc=enum_secret_keys( &enum_context, skc) ) ) {
+    while( !(rc=enum_secret_keys( &enum_context, sk) ) ) {
 	/* fixed: to be sure that it is a secret key of our own,
 	 *	  we should check it, but this needs a passphrase
 	 *	  for every key and this is boring for the user.
@@ -850,20 +850,20 @@ verify_own_certs()
 	 *		     startup
 	 */
 
-	keyid_from_skc( skc, keyid );
+	keyid_from_sk( sk, keyid );
 
 	if( DBG_TRUST )
 	    log_debug("checking secret key %08lX\n", (ulong)keyid[1] );
 
 	/* see whether we can access the public key of this secret key */
-	memset( pkc, 0, sizeof *pkc );
-	rc = get_pubkey( pkc, keyid );
+	memset( pk, 0, sizeof *pk );
+	rc = get_pubkey( pk, keyid );
 	if( rc ) {
 	    log_error(_("keyid %08lX: secret key without public key\n"),
 							    (ulong)keyid[1] );
 	    goto leave;
 	}
-	if( cmp_public_secret_cert( pkc, skc ) ) {
+	if( cmp_public_secret_key( pk, sk ) ) {
 	    log_error(_("keyid %08lX: secret and public key don't match\n"),
 							    (ulong)keyid[1] );
 	    rc = G10ERR_GENERAL;
@@ -871,9 +871,9 @@ verify_own_certs()
 	}
 
 	/* make sure that the pubkey is in the trustdb */
-	rc = query_trust_record( pkc );
+	rc = query_trust_record( pk );
 	if( rc == -1 ) { /* put it into the trustdb */
-	    rc = insert_trust_record( pkc );
+	    rc = insert_trust_record( pk );
 	    if( rc ) {
 		log_error(_("keyid %08lX: can't put it into the trustdb\n"),
 							    (ulong)keyid[1] );
@@ -888,14 +888,14 @@ verify_own_certs()
 
 	if( DBG_TRUST )
 	    log_debug("putting %08lX(%lu) into ultikey_table\n",
-				    (ulong)keyid[1], pkc->local_id );
-	if( ins_lid_table_item( ultikey_table, pkc->local_id, 0 ) )
+				    (ulong)keyid[1], pk->local_id );
+	if( ins_lid_table_item( ultikey_table, pk->local_id, 0 ) )
 	    log_error(_("keyid %08lX: already in ultikey_table\n"),
 							(ulong)keyid[1]);
 
 
-	release_secret_cert_parts( skc );
-	release_public_cert_parts( pkc );
+	release_secret_key_parts( sk );
+	release_public_key_parts( pk );
     }
     if( rc != -1 )
 	log_error(_("enum_secret_keys failed: %s\n"), g10_errstr(rc) );
@@ -903,8 +903,8 @@ verify_own_certs()
 	rc = 0;
 
   leave:
-    free_secret_cert( skc );
-    free_public_cert( pkc );
+    free_secret_key( sk );
+    free_public_key( pk );
     return rc;
 }
 
@@ -1186,7 +1186,7 @@ build_sigrecs( ulong pubkeyid )
 	goto leave;
     }
     if( !selfsig ) {
-	log_error(_("build_sigrecs: self-certificate missing\n") );
+	log_error(_("build_sigrecs: self-signature missing\n") );
 	update_no_sigs( pubkeyid, 2 );
 	rc = G10ERR_BAD_CERT;
 	goto leave;
@@ -1544,9 +1544,9 @@ init_trustdb( int level, const char *dbname )
 	 * in ~/.gnupg/ here */
 	rc = verify_private_data();
 	if( !rc ) {
-	    /* verify that our own certificates are in the trustDB
+	    /* verify that our own keys are in the trustDB
 	     * or move them to the trustdb. */
-	    rc = verify_own_certs();
+	    rc = verify_own_keys();
 
 	    /* should we check whether there is no other ultimately trusted
 	     * key in the database? */
@@ -1566,19 +1566,19 @@ list_trustdb( const char *username )
     TRUSTREC rec;
 
     if( username ) {
-	PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	int rc;
 
-	if( (rc = get_pubkey_byname( pkc, username )) )
+	if( (rc = get_pubkey_byname( pk, username )) )
 	    log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
-	else if( (rc=search_record( pkc, &rec )) && rc != -1 )
+	else if( (rc=search_record( pk, &rec )) && rc != -1 )
 	    log_error("problem finding '%s' in trustdb: %s\n",
 						username, g10_errstr(rc));
 	else if( rc == -1 )
 	    log_error("user '%s' not in trustdb\n", username);
-	else if( (rc = list_sigs( pkc->local_id )) )
+	else if( (rc = list_sigs( pk->local_id )) )
 	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
-	free_public_cert( pkc );
+	free_public_key( pk );
     }
     else {
 	ulong recnum;
@@ -1600,36 +1600,36 @@ list_trust_path( int max_depth, const char *username )
     int wipe=0;
     int i;
     TRUSTREC rec;
-    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
     if( max_depth < 0 ) {
 	wipe = 1;
 	max_depth = -max_depth;
     }
 
-    if( (rc = get_pubkey_byname( pkc, username )) )
+    if( (rc = get_pubkey_byname( pk, username )) )
 	log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
-    else if( (rc=search_record( pkc, &rec )) && rc != -1 )
+    else if( (rc=search_record( pk, &rec )) && rc != -1 )
 	log_error("problem finding '%s' in trustdb: %s\n",
 					    username, g10_errstr(rc));
     else if( rc == -1 ) {
 	log_info("user '%s' not in trustdb - inserting\n", username);
-	rc = insert_trust_record( pkc );
+	rc = insert_trust_record( pk );
 	if( rc )
 	    log_error("failed to put '%s' into trustdb: %s\n", username, g10_errstr(rc));
 	else {
-	    assert( pkc->local_id );
+	    assert( pk->local_id );
 	}
     }
 
     if( !rc ) {
 	TRUST_SEG_LIST tsl, tslist = NULL;
 
-	if( !qry_lid_table_flag( ultikey_table, pkc->local_id, NULL ) ) {
+	if( !qry_lid_table_flag( ultikey_table, pk->local_id, NULL ) ) {
 	    tslist = m_alloc( sizeof *tslist );
 	    tslist->nseg = 1;
 	    tslist->dup = 0;
-	    tslist->seg[0].lid = pkc->local_id;
+	    tslist->seg[0].lid = pk->local_id;
 	    tslist->seg[0].trust = 0;
 	    tslist->next = NULL;
 	    rc = 0;
@@ -1638,7 +1638,7 @@ list_trust_path( int max_depth, const char *username )
 	    LOCAL_ID_INFO *lids = new_lid_table();
 	    TRUST_INFO stack[MAX_LIST_SIGS_DEPTH];
 
-	    stack[0].lid = pkc->local_id;
+	    stack[0].lid = pk->local_id;
 	    stack[0].trust = 0;
 	    rc = do_list_path( stack, 1, max_depth, lids, &tslist );
 	    if( wipe ) { /* wipe out duplicates */
@@ -1674,17 +1674,17 @@ list_trust_path( int max_depth, const char *username )
 	}
     }
 
-    free_public_cert( pkc );
+    free_public_key( pk );
 }
 
 
 /****************
- * Get the trustlevel for this PKC.
+ * Get the trustlevel for this PK.
  * Note: This does not ask any questions
  * Returns: 0 okay of an errorcode
  *
  * It operates this way:
- *  locate the pkc in the trustdb
+ *  locate the pk in the trustdb
  *	found:
  *	    Do we have a valid cache record for it?
  *		yes: return trustlevel from cache
@@ -1700,7 +1700,7 @@ list_trust_path( int max_depth, const char *username )
  *	     is not necessary to check this if we use a local pubring. Hmmmm.
  */
 int
-check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
+check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
 {
     TRUSTREC rec;
     unsigned trustlevel = TRUST_UNKNOWN;
@@ -1711,44 +1711,44 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
 	log_info("check_trust() called.\n");
 
     /* get the pubkey record */
-    if( pkc->local_id ) {
-	if( read_record( pkc->local_id, &rec, RECTYPE_DIR ) ) {
+    if( pk->local_id ) {
+	if( read_record( pk->local_id, &rec, RECTYPE_DIR ) ) {
 	    log_error(_("check_trust: read record failed\n"));
 	    return G10ERR_TRUSTDB;
 	}
     }
     else { /* no local_id: scan the trustdb */
-	if( (rc=search_record( pkc, &rec )) && rc != -1 ) {
+	if( (rc=search_record( pk, &rec )) && rc != -1 ) {
 	    log_error(_("check_trust: search_record failed: %s\n"),
 							    g10_errstr(rc));
 	    return rc;
 	}
 	else if( rc == -1 ) {
-	    rc = insert_trust_record( pkc );
+	    rc = insert_trust_record( pk );
 	    if( rc ) {
 		log_error(_("failed to insert pubkey into trustdb: %s\n"),
 							    g10_errstr(rc));
 		goto leave;
 	    }
 	    log_info(_("pubkey not in trustdb - inserted as %lu\n"),
-				    pkc->local_id );
+				    pk->local_id );
 	}
     }
     cur_time = make_timestamp();
-    if( pkc->timestamp > cur_time ) {
+    if( pk->timestamp > cur_time ) {
 	log_info(_("public key created in future (time warp or clock problem)\n"));
 	return G10ERR_TIME_CONFLICT;
     }
 
-    if( pkc->valid_days && add_days_to_timestamp(pkc->timestamp,
-						pkc->valid_days) < cur_time ) {
+    if( pk->valid_days && add_days_to_timestamp(pk->timestamp,
+						pk->valid_days) < cur_time ) {
 	log_info(_("key expiration date is %s\n"), strtimestamp(
-				    add_days_to_timestamp(pkc->timestamp,
-							  pkc->valid_days)));
+				    add_days_to_timestamp(pk->timestamp,
+							  pk->valid_days)));
 	 trustlevel = TRUST_EXPIRED;
     }
     else {
-	rc = do_check( pkc->local_id, &rec, &trustlevel );
+	rc = do_check( pk->local_id, &rec, &trustlevel );
 	if( rc ) {
 	    log_error(_("check_trust: do_check failed: %s\n"), g10_errstr(rc));
 	    return rc;
@@ -1765,12 +1765,12 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
 
 
 int
-query_trust_info( PKT_public_cert *pkc )
+query_trust_info( PKT_public_key *pk )
 {
     unsigned trustlevel;
     int c;
 
-    if( check_trust( pkc, &trustlevel ) )
+    if( check_trust( pk, &trustlevel ) )
 	return '?';
     if( trustlevel & TRUST_FLAG_REVOKED )
 	return 'r';
@@ -1875,25 +1875,25 @@ keyid_from_trustdb( ulong lid, u32 *keyid )
 
 /****************
  * This function simply looks for the key in the trustdb
- * and sets PKC->local_id.
+ * and sets PK->local_id.
  * Return: 0 = found
  *	   -1 = not found
  *	  other = error
  */
 int
-query_trust_record( PKT_public_cert *pkc )
+query_trust_record( PKT_public_key *pk )
 {
     TRUSTREC rec;
     int rc=0;
 
-    if( pkc->local_id ) {
-	if( read_record( pkc->local_id, &rec, RECTYPE_DIR ) ) {
+    if( pk->local_id ) {
+	if( read_record( pk->local_id, &rec, RECTYPE_DIR ) ) {
 	    log_error("query_trust_record: read record failed\n");
 	    return G10ERR_TRUSTDB;
 	}
     }
     else { /* no local_id: scan the trustdb */
-	if( (rc=search_record( pkc, &rec )) && rc != -1 ) {
+	if( (rc=search_record( pk, &rec )) && rc != -1 ) {
 	    log_error("query_trust_record: search_record failed: %s\n",
 							    g10_errstr(rc));
 	    return rc;
@@ -1908,7 +1908,7 @@ query_trust_record( PKT_public_cert *pkc )
  * This function fails if this record already exists.
  */
 int
-insert_trust_record( PKT_public_cert *pkc )
+insert_trust_record( PKT_public_key *pk )
 {
     TRUSTREC rec;
     u32 keyid[2];
@@ -1917,11 +1917,11 @@ insert_trust_record( PKT_public_cert *pkc )
     size_t fingerlen;
 
 
-    if( pkc->local_id )
-	log_bug("pkc->local_id=%lu\n", (ulong)pkc->local_id );
+    if( pk->local_id )
+	log_bug("pk->local_id=%lu\n", (ulong)pk->local_id );
 
-    keyid_from_pkc( pkc, keyid );
-    fingerprint = fingerprint_from_pkc( pkc, &fingerlen );
+    keyid_from_pk( pk, keyid );
+    fingerprint = fingerprint_from_pk( pk, &fingerlen );
 
     /* FIXME: check that we do not have this record. */
 
@@ -1945,7 +1945,7 @@ insert_trust_record( PKT_public_cert *pkc )
     rec.r.key.owner    = dnum;
     rec.r.key.keyid[0] = keyid[0];
     rec.r.key.keyid[1] = keyid[1];
-    rec.r.key.pubkey_algo = pkc->pubkey_algo;
+    rec.r.key.pubkey_algo = pk->pubkey_algo;
     rec.r.key.fingerprint_len = fingerlen;
     memcpy(rec.r.key.fingerprint, fingerprint, fingerlen );
     rec.r.key.ownertrust = 0;
@@ -1954,7 +1954,7 @@ insert_trust_record( PKT_public_cert *pkc )
 	return G10ERR_TRUSTDB;
     }
 
-    pkc->local_id = dnum;
+    pk->local_id = dnum;
 
     return 0;
 }

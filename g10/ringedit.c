@@ -69,7 +69,6 @@ typedef struct resource_table_struct RESTBL;
 #define MAX_RESOURCES 10
 static RESTBL resource_table[MAX_RESOURCES];
 
-
 static int search( PACKET *pkt, KBPOS *kbpos, int secret );
 
 
@@ -90,7 +89,6 @@ check_pos( KBPOS *kbpos )
 	return NULL;
     return resource_table + kbpos->resno;
 }
-
 
 
 /****************************************************************
@@ -168,7 +166,7 @@ get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
  * Search a keyblock which starts with the given packet and puts all
  * information into KBPOS, which can be used later to access this key block.
  * This function looks into all registered keyblock sources.
- * PACKET must be a packet with either a secret_cert or a public_cert
+ * PACKET must be a packet with either a secret_key or a public_key
  *
  * This function is intended to check whether a given certificate
  * is already in a keyring or to prepare it for editing.
@@ -210,20 +208,20 @@ int
 find_keyblock_byname( KBPOS *kbpos, const char *username )
 {
     PACKET pkt;
-    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc;
 
-    rc = get_pubkey_byname( pkc, username );
+    rc = get_pubkey_byname( pk, username );
     if( rc ) {
-	free_public_cert(pkc);
+	free_public_key(pk);
 	return rc;
     }
 
     init_packet( &pkt );
-    pkt.pkttype = PKT_PUBLIC_CERT;
-    pkt.pkt.public_cert = pkc;
+    pkt.pkttype = PKT_PUBLIC_KEY;
+    pkt.pkt.public_key = pk;
     rc = search( &pkt, kbpos, 0 );
-    free_public_cert(pkc);
+    free_public_key(pk);
     return rc;
 }
 
@@ -233,14 +231,14 @@ find_keyblock_byname( KBPOS *kbpos, const char *username )
  * of the keyblock.
  */
 int
-find_keyblock_bypkc( KBPOS *kbpos, PKT_public_cert *pkc )
+find_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk )
 {
     PACKET pkt;
     int rc;
 
     init_packet( &pkt );
-    pkt.pkttype = PKT_PUBLIC_CERT;
-    pkt.pkt.public_cert = pkc;
+    pkt.pkttype = PKT_PUBLIC_KEY;
+    pkt.pkt.public_key = pk;
     rc = search( &pkt, kbpos, 0 );
     return rc;
 }
@@ -254,20 +252,20 @@ int
 find_secret_keyblock_byname( KBPOS *kbpos, const char *username )
 {
     PACKET pkt;
-    PKT_secret_cert *skc = m_alloc_clear( sizeof *skc );
+    PKT_secret_key *sk = m_alloc_clear( sizeof *sk );
     int rc;
 
-    rc = get_seckey_byname( skc, username, 0 );
+    rc = get_seckey_byname( sk, username, 0 );
     if( rc ) {
-	free_secret_cert(skc);
+	free_secret_key(sk);
 	return rc;
     }
 
     init_packet( &pkt );
-    pkt.pkttype = PKT_SECRET_CERT;
-    pkt.pkt.secret_cert = skc;
+    pkt.pkttype = PKT_SECRET_KEY;
+    pkt.pkt.secret_key = sk;
     rc = search( &pkt, kbpos, 1 );
-    free_secret_cert(skc);
+    free_secret_key(sk);
     return rc;
 }
 
@@ -449,30 +447,30 @@ update_keyblock( KBPOS *kbpos, KBNODE root )
  ****************************************************************/
 
 static int
-cmp_seckey( PKT_secret_cert *req_skc, PKT_secret_cert *skc )
+cmp_seckey( PKT_secret_key *req_sk, PKT_secret_key *sk )
 {
     int n,i;
 
-    assert( req_skc->pubkey_algo == skc->pubkey_algo );
+    assert( req_sk->pubkey_algo == sk->pubkey_algo );
 
-    n = pubkey_get_nskey( req_skc->pubkey_algo );
+    n = pubkey_get_nskey( req_sk->pubkey_algo );
     for(i=0; i < n; i++ ) {
-	if( mpi_cmp( req_skc->skey[i], skc->skey[i] ) )
+	if( mpi_cmp( req_sk->skey[i], sk->skey[i] ) )
 	    return -1;
     }
     return 0;
 }
 
 static int
-cmp_pubkey( PKT_public_cert *req_pkc, PKT_public_cert *pkc )
+cmp_pubkey( PKT_public_key *req_pk, PKT_public_key *pk )
 {
     int n, i;
 
-    assert( req_pkc->pubkey_algo == pkc->pubkey_algo );
+    assert( req_pk->pubkey_algo == pk->pubkey_algo );
 
-    n = pubkey_get_npkey( req_pkc->pubkey_algo );
+    n = pubkey_get_npkey( req_pk->pubkey_algo );
     for(i=0; i < n; i++ ) {
-	if( mpi_cmp( req_pkc->pkey[i], pkc->pkey[i] )  )
+	if( mpi_cmp( req_pk->pkey[i], pk->pkey[i] )  )
 	    return -1;
     }
     return 0;
@@ -489,8 +487,8 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
     int save_mode;
     ulong offset;
     int pkttype = req->pkttype;
-    PKT_public_cert *req_pkc = req->pkt.public_cert;
-    PKT_secret_cert *req_skc = req->pkt.secret_cert;
+    PKT_public_key *req_pk = req->pkt.public_key;
+    PKT_secret_key *req_sk = req->pkt.secret_key;
 
     init_packet(&pkt);
     save_mode = set_packet_list_mode(0);
@@ -512,22 +510,22 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
   #endif
 
     while( !(rc=search_packet(iobuf, &pkt, pkttype, &offset)) ) {
-	if( pkt.pkttype == PKT_SECRET_CERT ) {
-	    PKT_secret_cert *skc = pkt.pkt.secret_cert;
+	if( pkt.pkttype == PKT_SECRET_KEY ) {
+	    PKT_secret_key *sk = pkt.pkt.secret_key;
 
-	    if(   req_skc->timestamp == skc->timestamp
-	       && req_skc->valid_days == skc->valid_days
-	       && req_skc->pubkey_algo == skc->pubkey_algo
-	       && !cmp_seckey( req_skc, skc) )
+	    if(   req_sk->timestamp == sk->timestamp
+	       && req_sk->valid_days == sk->valid_days
+	       && req_sk->pubkey_algo == sk->pubkey_algo
+	       && !cmp_seckey( req_sk, sk) )
 		break; /* found */
 	}
-	else if( pkt.pkttype == PKT_PUBLIC_CERT ) {
-	    PKT_public_cert *pkc = pkt.pkt.public_cert;
+	else if( pkt.pkttype == PKT_PUBLIC_KEY ) {
+	    PKT_public_key *pk = pkt.pkt.public_key;
 
-	    if(   req_pkc->timestamp == pkc->timestamp
-	       && req_pkc->valid_days == pkc->valid_days
-	       && req_pkc->pubkey_algo == pkc->pubkey_algo
-	       && !cmp_pubkey( req_pkc, pkc ) )
+	    if(   req_pk->timestamp == pk->timestamp
+	       && req_pk->valid_days == pk->valid_days
+	       && req_pk->pubkey_algo == pk->pubkey_algo
+	       && !cmp_pubkey( req_pk, pk ) )
 		break; /* found */
 	}
 	else
@@ -577,12 +575,13 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     kbpos->count=0;
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc != G10ERR_UNKNOWN_PACKET ) {
+	    if( rc == G10ERR_PUBKEY_ALGO )
+		parse_pubkey_warning( pkt );
+	    else if( rc != G10ERR_UNKNOWN_PACKET ) {
 		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
 		rc = G10ERR_INV_KEYRING;
 		goto ready;
 	    }
-		log_info("read_keyblock: read error: %s\n", g10_errstr(rc) );
 	    kbpos->count++;
 	    free_packet( pkt );
 	    init_packet( pkt );
@@ -590,8 +589,8 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	}
 	/* make a linked list of all packets */
 	switch( pkt->pkttype ) {
-	  case PKT_PUBLIC_CERT:
-	  case PKT_SECRET_CERT:
+	  case PKT_PUBLIC_KEY:
+	  case PKT_SECRET_KEY:
 	    if( in_cert )
 		goto ready;
 	    in_cert = 1;
@@ -641,7 +640,9 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
     init_packet(pkt);
     while( (rc=parse_packet(kbpos->fp, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc != G10ERR_UNKNOWN_PACKET ) {
+	    if( rc == G10ERR_PUBKEY_ALGO )
+		parse_pubkey_warning( pkt );
+	    else if( rc != G10ERR_UNKNOWN_PACKET ) {
 		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
 		rc = G10ERR_INV_KEYRING;
 		goto ready;
@@ -652,8 +653,8 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 	}
 	/* make a linked list of all packets */
 	switch( pkt->pkttype ) {
-	  case PKT_PUBLIC_CERT:
-	  case PKT_SECRET_CERT:
+	  case PKT_PUBLIC_KEY:
+	  case PKT_SECRET_KEY:
 	    if( root ) { /* store this packet */
 		kbpos->pkt = pkt;
 		pkt = NULL;

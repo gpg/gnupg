@@ -53,12 +53,12 @@ write_uid( KBNODE root, const char *s )
 static int
 add_key_expire( PKT_signature *sig, void *opaque )
 {
-    PKT_secret_cert *skc = opaque;
+    PKT_secret_key *sk = opaque;
     byte buf[8];
     u32  u;
 
-    if( skc->valid_days ) {
-	u = skc->valid_days * 86400L;
+    if( sk->valid_days ) {
+	u = sk->valid_days * 86400L;
 	buf[0] = (u >> 24) & 0xff;
 	buf[1] = (u >> 16) & 0xff;
 	buf[2] = (u >>	8) & 0xff;
@@ -109,14 +109,14 @@ add_prefs( PKT_signature *sig, void *opaque )
 
 
 static int
-write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
+write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 {
     PACKET *pkt;
     PKT_signature *sig;
     PKT_user_id *uid;
     int rc=0;
     KBNODE node;
-    PKT_public_cert *pkc;
+    PKT_public_key *pk;
 
     if( opt.verbose )
 	log_info(_("writing self signature\n"));
@@ -126,15 +126,15 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
     if( !node )
 	BUG(); /* no user id packet in tree */
     uid = node->pkt->pkt.user_id;
-    /* get the pkc packet from the pub_tree */
-    node = find_kbnode( pub_root, PKT_PUBLIC_CERT );
+    /* get the pk packet from the pub_tree */
+    node = find_kbnode( pub_root, PKT_PUBLIC_KEY );
     if( !node )
 	BUG();
-    pkc = node->pkt->pkt.public_cert;
+    pk = node->pkt->pkt.public_key;
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pkc, uid, NULL, skc, 0x13, 0,
-			     add_prefs, skc );
+    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0,
+			     add_prefs, sk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -148,34 +148,34 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 }
 
 static int
-write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
+write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 {
     PACKET *pkt;
     PKT_signature *sig;
     int rc=0;
     KBNODE node;
-    PKT_public_cert *pkc, *subpkc;
+    PKT_public_key *pk, *subpk;
 
     if( opt.verbose )
 	log_info(_("writing key binding signature\n"));
 
-    /* get the pkc packet from the pub_tree */
-    node = find_kbnode( pub_root, PKT_PUBLIC_CERT );
+    /* get the pk packet from the pub_tree */
+    node = find_kbnode( pub_root, PKT_PUBLIC_KEY );
     if( !node )
 	BUG();
-    pkc = node->pkt->pkt.public_cert;
+    pk = node->pkt->pkt.public_key;
     /* find the last subkey */
-    subpkc = NULL;
+    subpk = NULL;
     for(node=pub_root; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_PUBKEY_SUBCERT )
-	    subpkc = node->pkt->pkt.public_cert;
+	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	    subpk = node->pkt->pkt.public_key;
     }
-    if( !subpkc )
+    if( !subpk )
 	BUG();
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pkc, NULL, subpkc, skc, 0x18, 0,
-				    add_key_expire, skc );
+    rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0,
+				    add_key_expire, sk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
@@ -191,14 +191,14 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_cert *skc )
 
 static int
 gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_cert **ret_skc, u16 valid_days,
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u16 valid_days,
 							int version )
 {
     int rc;
     int i;
     PACKET *pkt;
-    PKT_secret_cert *skc;
-    PKT_public_cert *pkc;
+    PKT_secret_key *sk;
+    PKT_public_key *pk;
     MPI skey[4];
     MPI *factors;
 
@@ -209,48 +209,48 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	return rc;
     }
 
-    skc = m_alloc_clear( sizeof *skc );
-    pkc = m_alloc_clear( sizeof *pkc );
-    skc->timestamp = pkc->timestamp = make_timestamp();
-    skc->version = pkc->version = version;
-    skc->valid_days = pkc->valid_days = valid_days;
-    skc->pubkey_algo = pkc->pubkey_algo = algo;
-		       pkc->pkey[0] = mpi_copy( skey[0] );
-		       pkc->pkey[1] = mpi_copy( skey[1] );
-		       pkc->pkey[2] = mpi_copy( skey[2] );
-    skc->skey[0] = skey[0];
-    skc->skey[1] = skey[1];
-    skc->skey[2] = skey[2];
-    skc->skey[3] = skey[3];
-    skc->is_protected = 0;
-    skc->protect.algo = 0;
+    sk = m_alloc_clear( sizeof *sk );
+    pk = m_alloc_clear( sizeof *pk );
+    sk->timestamp = pk->timestamp = make_timestamp();
+    sk->version = pk->version = version;
+    sk->valid_days = pk->valid_days = valid_days;
+    sk->pubkey_algo = pk->pubkey_algo = algo;
+		       pk->pkey[0] = mpi_copy( skey[0] );
+		       pk->pkey[1] = mpi_copy( skey[1] );
+		       pk->pkey[2] = mpi_copy( skey[2] );
+    sk->skey[0] = skey[0];
+    sk->skey[1] = skey[1];
+    sk->skey[2] = skey[2];
+    sk->skey[3] = skey[3];
+    sk->is_protected = 0;
+    sk->protect.algo = 0;
 
-    skc->csum = checksum_mpi_counted_nbits( skc->skey[3] );
-    if( ret_skc ) /* not a subkey: return an unprotected version of the skc */
-	*ret_skc = copy_secret_cert( NULL, skc );
+    sk->csum = checksum_mpi_counted_nbits( sk->skey[3] );
+    if( ret_sk ) /* not a subkey: return an unprotected version of the sk */
+	*ret_sk = copy_secret_key( NULL, sk );
 
     if( dek ) {
-	skc->protect.algo = dek->algo;
-	skc->protect.s2k = *s2k;
-	rc = protect_secret_key( skc, dek );
+	sk->protect.algo = dek->algo;
+	sk->protect.s2k = *s2k;
+	rc = protect_secret_key( sk, dek );
 	if( rc ) {
 	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
-	    free_public_cert(pkc);
-	    free_secret_cert(skc);
+	    free_public_key(pk);
+	    free_secret_key(sk);
 	    return rc;
 	}
     }
 
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_skc ? PKT_PUBLIC_CERT : PKT_PUBKEY_SUBCERT;
-    pkt->pkt.public_cert = pkc;
+    pkt->pkttype = ret_sk ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
+    pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
     /* don't know whether it makes sense to have the factors, so for now
      * we store them in the secret keyring (but they are not secret) */
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_skc ? PKT_SECRET_CERT : PKT_SECKEY_SUBCERT;
-    pkt->pkt.secret_cert = skc;
+    pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
+    pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
     for(i=0; factors[i]; i++ )
 	add_kbnode( sec_root,
@@ -265,13 +265,13 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  */
 static int
 gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	    STRING2KEY *s2k, PKT_secret_cert **ret_skc, u16 valid_days )
+	    STRING2KEY *s2k, PKT_secret_key **ret_sk, u16 valid_days )
 {
     int rc;
     int i;
     PACKET *pkt;
-    PKT_secret_cert *skc;
-    PKT_public_cert *pkc;
+    PKT_secret_key *sk;
+    PKT_public_key *pk;
     MPI skey[5];
     MPI *factors;
 
@@ -284,43 +284,43 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	return rc;
     }
 
-    skc = m_alloc_clear( sizeof *skc );
-    pkc = m_alloc_clear( sizeof *pkc );
-    skc->timestamp = pkc->timestamp = make_timestamp();
-    skc->version = pkc->version = 4;
-    skc->valid_days = pkc->valid_days = valid_days;
-    skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_DSA;
-		       pkc->pkey[0] = mpi_copy( skey[0] );
-		       pkc->pkey[1] = mpi_copy( skey[1] );
-		       pkc->pkey[2] = mpi_copy( skey[2] );
-		       pkc->pkey[3] = mpi_copy( skey[3] );
-    skc->skey[0] = skey[0];
-    skc->skey[1] = skey[1];
-    skc->skey[2] = skey[2];
-    skc->skey[3] = skey[3];
-    skc->skey[4] = skey[4];
-    skc->is_protected = 0;
-    skc->protect.algo = 0;
+    sk = m_alloc_clear( sizeof *sk );
+    pk = m_alloc_clear( sizeof *pk );
+    sk->timestamp = pk->timestamp = make_timestamp();
+    sk->version = pk->version = 4;
+    sk->valid_days = pk->valid_days = valid_days;
+    sk->pubkey_algo = pk->pubkey_algo = PUBKEY_ALGO_DSA;
+		       pk->pkey[0] = mpi_copy( skey[0] );
+		       pk->pkey[1] = mpi_copy( skey[1] );
+		       pk->pkey[2] = mpi_copy( skey[2] );
+		       pk->pkey[3] = mpi_copy( skey[3] );
+    sk->skey[0] = skey[0];
+    sk->skey[1] = skey[1];
+    sk->skey[2] = skey[2];
+    sk->skey[3] = skey[3];
+    sk->skey[4] = skey[4];
+    sk->is_protected = 0;
+    sk->protect.algo = 0;
 
-    skc->csum = checksum_mpi_counted_nbits( skc->skey[4] );
-    if( ret_skc ) /* not a subkey: return an unprotected version of the skc */
-	*ret_skc = copy_secret_cert( NULL, skc );
+    sk->csum = checksum_mpi_counted_nbits( sk->skey[4] );
+    if( ret_sk ) /* not a subkey: return an unprotected version of the sk */
+	*ret_sk = copy_secret_key( NULL, sk );
 
     if( dek ) {
-	skc->protect.algo = dek->algo;
-	skc->protect.s2k = *s2k;
-	rc = protect_secret_key( skc, dek );
+	sk->protect.algo = dek->algo;
+	sk->protect.s2k = *s2k;
+	rc = protect_secret_key( sk, dek );
 	if( rc ) {
 	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
-	    free_public_cert(pkc);
-	    free_secret_cert(skc);
+	    free_public_key(pk);
+	    free_secret_key(sk);
 	    return rc;
 	}
     }
 
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_skc ? PKT_PUBLIC_CERT : PKT_PUBKEY_SUBCERT;
-    pkt->pkt.public_cert = pkc;
+    pkt->pkttype = ret_sk ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
+    pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
     /* don't know whether it makes sense to have the factors, so for now
@@ -330,8 +330,8 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
      * are known.
      */
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_skc ? PKT_SECRET_CERT : PKT_SECKEY_SUBCERT;
-    pkt->pkt.secret_cert = skc;
+    pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
+    pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
     for(i=1; factors[i]; i++ )	/* the first one is q */
 	add_kbnode( sec_root,
@@ -698,7 +698,7 @@ ask_passphrase( STRING2KEY **ret_s2k )
 
 static int
 do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
-	   DEK *dek, STRING2KEY *s2k, PKT_secret_cert **skc, int valid_days,
+	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, int valid_days,
 							     int v4_packet )
 {
     int rc=0;
@@ -711,9 +711,9 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 
     if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )
 	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k,
-			   skc, valid_days, v4_packet? 4:3 );
+			   sk, valid_days, v4_packet? 4:3 );
     else if( algo == PUBKEY_ALGO_DSA )
-	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, skc, valid_days);
+	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, valid_days);
     else
 	BUG();
     if( !rc ) {
@@ -740,7 +740,7 @@ generate_keypair()
     char *uid = NULL;
     KBNODE pub_root = NULL;
     KBNODE sec_root = NULL;
-    PKT_secret_cert *skc = NULL;
+    PKT_secret_key *sk = NULL;
     DEK *dek;
     STRING2KEY *s2k;
     int rc;
@@ -777,33 +777,33 @@ generate_keypair()
     /* we create the packets as a tree of kbnodes. Because the structure
      * we create is known in advance we simply generate a linked list
      * The first packet is a dummy comment packet which we flag
-     * as deleted.  The very first packet must always be a CERT packet.
+     * as deleted.  The very first packet must always be a KEY packet.
      */
     pub_root = make_comment_node("#"); delete_kbnode(pub_root);
     sec_root = make_comment_node("#"); delete_kbnode(sec_root);
 
     if( both )
 	rc = do_create( PUBKEY_ALGO_DSA, 1024, pub_root, sec_root,
-					       dek, s2k, &skc, ndays, 1);
+					       dek, s2k, &sk, ndays, 1);
     else
 	rc = do_create( algo,		nbits, pub_root, sec_root,
-					       dek, s2k, &skc, ndays, v4);
+					       dek, s2k, &sk, ndays, v4);
     if( !rc )
 	write_uid(pub_root, uid );
     if( !rc )
 	write_uid(sec_root, uid );
     if( !rc )
-	rc = write_selfsig(pub_root, pub_root, skc);
+	rc = write_selfsig(pub_root, pub_root, sk);
     if( !rc )
-	rc = write_selfsig(sec_root, pub_root, skc);
+	rc = write_selfsig(sec_root, pub_root, sk);
 
     if( both ) {
 	rc = do_create( algo, nbits, pub_root, sec_root,
 					  dek, s2k, NULL, ndays, 1 );
 	if( !rc )
-	    rc = write_keybinding(pub_root, pub_root, skc);
+	    rc = write_keybinding(pub_root, pub_root, sk);
 	if( !rc )
-	    rc = write_keybinding(sec_root, pub_root, skc);
+	    rc = write_keybinding(sec_root, pub_root, sk);
     }
 
 
@@ -814,7 +814,6 @@ generate_keypair()
 	int rc2 = -1;
 
 	/* we can now write the certificates */
-
 	if( get_keyblock_handle( pub_fname, 0, &pub_kbpos ) ) {
 	    if( add_keyblock_resource( pub_fname, 1, 0 ) ) {
 		log_error("can add keyblock file '%s'\n", pub_fname );
@@ -868,8 +867,8 @@ generate_keypair()
 	tty_printf(_("Key generation failed: %s\n"), g10_errstr(rc) );
     release_kbnode( pub_root );
     release_kbnode( sec_root );
-    if( skc ) /* the unprotected  secret certificate */
-	free_secret_cert(skc);
+    if( sk ) /* the unprotected  secret key */
+	free_secret_key(sk);
     m_free(uid);
     m_free(dek);
     m_free(s2k);
@@ -889,7 +888,7 @@ generate_subkeypair( const char *username )
     KBNODE pub_keyblock = NULL;
     KBNODE sec_keyblock = NULL;
     KBNODE node;
-    PKT_secret_cert *skc = NULL; /* this is the primary skc */
+    PKT_secret_key *sk = NULL; /* this is the primary sk */
     u32 keyid[2];
     int v4, algo, ndays;
     unsigned nbits;
@@ -926,21 +925,21 @@ generate_subkeypair( const char *username )
     }
 
     /* break out the primary key */
-    node = find_kbnode( sec_keyblock, PKT_SECRET_CERT );
+    node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
     if( !node ) {
 	log_error("Oops; secret key not found anymore!\n");
 	rc = G10ERR_GENERAL;
 	goto leave;
     }
 
-    /* make a copy of the skc to keep the protected one in the keyblock */
-    skc = copy_secret_cert( NULL, node->pkt->pkt.secret_cert );
-    keyid_from_skc( skc, keyid );
+    /* make a copy of the sk to keep the protected one in the keyblock */
+    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key );
+    keyid_from_sk( sk, keyid );
     /* display primary and all secondary keys */
     tty_printf("sec  %4u%c/%08lX %s   ",
-	      nbits_from_skc( skc ),
-	      pubkey_letter( skc->pubkey_algo ),
-	      keyid[1], datestr_from_skc(skc) );
+	      nbits_from_sk( sk ),
+	      pubkey_letter( sk->pubkey_algo ),
+	      keyid[1], datestr_from_sk(sk) );
     {
 	size_t n;
 	char *p = get_user_id( keyid, &n );
@@ -949,13 +948,13 @@ generate_subkeypair( const char *username )
 	tty_printf("\n");
     }
     for(node=sec_keyblock; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
-	    PKT_secret_cert *subskc = node->pkt->pkt.secret_cert;
-	    keyid_from_skc( subskc, keyid );
+	if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+	    PKT_secret_key *subsk = node->pkt->pkt.secret_key;
+	    keyid_from_sk( subsk, keyid );
 	    tty_printf("sub  %4u%c/%08lX %s\n",
-		      nbits_from_skc( subskc ),
-		      pubkey_letter( subskc->pubkey_algo ),
-		      keyid[1], datestr_from_skc(subskc) );
+		      nbits_from_sk( subsk ),
+		      pubkey_letter( subsk->pubkey_algo ),
+		      keyid[1], datestr_from_sk(subsk) );
 	}
     }
     tty_printf("\n");
@@ -963,7 +962,7 @@ generate_subkeypair( const char *username )
 
 
     /* unprotect to get the passphrase */
-    switch( is_secret_key_protected( skc ) ) {
+    switch( is_secret_key_protected( sk ) ) {
       case -1:
 	rc = G10ERR_PUBKEY_ALGO;
 	break;
@@ -972,7 +971,7 @@ generate_subkeypair( const char *username )
 	break;
       default:
 	tty_printf("Key is protected.\n");
-	rc = check_secret_key( skc );
+	rc = check_secret_key( sk );
 	if( !rc )
 	    passphrase = get_last_passphrase();
 	break;
@@ -997,9 +996,9 @@ generate_subkeypair( const char *username )
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
 				      dek, s2k, NULL, ndays, v4 );
     if( !rc )
-	rc = write_keybinding(pub_keyblock, pub_keyblock, skc);
+	rc = write_keybinding(pub_keyblock, pub_keyblock, sk);
     if( !rc )
-	rc = write_keybinding(sec_keyblock, pub_keyblock, skc);
+	rc = write_keybinding(sec_keyblock, pub_keyblock, sk);
     /* write back */
     if( !rc ) {
 	rc = update_keyblock( &pub_kbpos, pub_keyblock );
@@ -1021,8 +1020,8 @@ generate_subkeypair( const char *username )
     m_free( passphrase );
     m_free( dek );
     m_free( s2k );
-    if( skc ) /* release the copy of the (now unprotected) secret key */
-	free_secret_cert(skc);
+    if( sk ) /* release the copy of the (now unprotected) secret key */
+	free_secret_key(sk);
     release_kbnode( sec_keyblock );
     release_kbnode( pub_keyblock );
     set_next_passphrase( NULL );

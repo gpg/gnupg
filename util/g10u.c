@@ -34,6 +34,6 @@ void *g10_calloc( size_t n )	     { return m_alloc_clear( n ); }
 void *g10_malloc_secure( size_t n )  { return m_alloc_secure( n ); }
 void *g10_calloc_secure( size_t n )  { return m_alloc_secure_clear( n ); }
 void *g10_realloc( void *a, size_t n ) { return m_realloc( a, n ); }
-void  g10_free( void *p )	     { return m_free( p ); }
+void  g10_free( void *p )	     { m_free( p ); }
 char *g10_strdup( const char * a)    { return m_strdup( a ); }
 

@@ -75,6 +75,7 @@ static ARGPARSE_OPTS opts[] = {
     { 542, "gen-revoke",0, N_("generate a revocation certificate")},
   #endif
     { 537, "export"          , 0, N_("export keys") },
+    { 563, "export-secret-keys" , 0, "@" },
     { 530, "import",      0     , N_("import/merge keys")},
     { 521, "list-packets",0,N_("list only the sequence of packets")},
   #ifdef IS_G10MAINT
@@ -176,7 +177,8 @@ enum cmd_values { aNull = 0,
     aSignKey, aClearsign, aListPackets, aEditSig, aDeleteKey, aDeleteSecretKey,
     aKMode, aKModeC, aChangePass, aImport, aVerify, aDecrypt, aListKeys,
     aListSigs, aKeyadd, aListSecretKeys,
-    aExport, aCheckKeys, aGenRevoke, aPrimegen, aPrintMD, aPrintMDs,
+    aExport, aExportSecret,
+    aCheckKeys, aGenRevoke, aPrimegen, aPrintMD, aPrintMDs,
     aListTrustDB, aListTrustPath, aDeArmor, aEnArmor, aGenRandom, aTest,
 aNOP };
 
@@ -595,6 +597,7 @@ main( int argc, char **argv )
 	  case 560: register_cipher_extension(pargs.r.ret_str); break;
 	  case 561: opt.rfc1991 = 1; break;
 	  case 562: opt.emulate_bugs |= 1; break;
+	  case 563: set_cmd( &cmd, aExportSecret); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -855,12 +858,12 @@ main( int argc, char **argv )
 
       case aImport:
 	if( !argc  ) {
-	    rc = import_pubkeys( NULL );
+	    rc = import_keys( NULL );
 	    if( rc )
 		log_error("import failed: %s\n", g10_errstr(rc) );
 	}
 	for( ; argc; argc--, argv++ ) {
-	    rc = import_pubkeys( *argv );
+	    rc = import_keys( *argv );
 	    if( rc )
 		log_error("import from '%s' failed: %s\n",
 						*argv, g10_errstr(rc) );
@@ -872,6 +875,14 @@ main( int argc, char **argv )
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist( &sl, *argv );
 	export_pubkeys( sl );
+	free_strlist(sl);
+	break;
+
+      case aExportSecret:
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	    add_to_strlist( &sl, *argv );
+	export_seckeys( sl );
 	free_strlist(sl);
 	break;
 

@@ -4,8 +4,7 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-03-07 12:16:14+0100\n"
 "From: Marco d'Itri <md@linux.it>\n"
-"Xgettext-Options: --default-domain=gnupg --directory=.. --add-comments "
-"--keyword=_ --keyword=N_ --files-from=./POTFILES.in\n"
+"Xgettext-Options: --default-domain=gnupg --directory=.. --add-comments --keyword=_ --keyword=N_ --files-from=./POTFILES.in\n"
 "Files: util/secmem.c cipher/random.c g10/g10.c g10/pkclist.c g10/keygen.c\n"
 
 #: util/secmem.c:180
@@ -176,7 +175,7 @@ msgstr "modo batch: non fare domande"
 
 #: g10/g10.c:102
 msgid "assume yes on most questions"
-msgstr "assumi \"sì\" a quasi tutte le domande"
+msgstr "assumi \"s\354\" a quasi tutte le domande"
 
 #: g10/g10.c:103
 msgid "assume no on most questions"
@@ -212,11 +211,11 @@ msgstr "non scrivere pacchetti di commento"
 
 #: g10/g10.c:112
 msgid "(default is 1)"
-msgstr "(predefinito è 1)"
+msgstr "(predefinito \350 1)"
 
 #: g10/g10.c:113
 msgid "(default is 3)"
-msgstr "(predefinito è 3)"
+msgstr "(predefinito \350 3)"
 
 #: g10/g10.c:114
 msgid "|file|load extension module"
@@ -306,18 +305,18 @@ msgstr "comandi in conflitto\n"
 
 #: g10/g10.c:358
 msgid "selected cipher algorithm is invalid\n"
-msgstr "l'algoritmo di cifratura selezionato non è valido\n"
+msgstr "l'algoritmo di cifratura selezionato non \350 valido\n"
 
 #: g10/g10.c:360
 msgid "selected pubkey algorithm is invalid\n"
-msgstr "l'algoritmo a chiave pubblica selezionato non è valido\n"
+msgstr "l'algoritmo a chiave pubblica selezionato non \350 valido\n"
 
 #: g10/g10.c:362
 msgid "selected digest algorithm is invalid\n"
-msgstr "l'algoritmo di digest selezionato non è valido\n"
+msgstr "l'algoritmo di digest selezionato non \350 valido\n"
 
+# , c-format
 #: g10/g10.c:364
-#, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "l'algoritmo di compressione deve essere tra %d e %d\n"
 
@@ -329,23 +328,23 @@ msgstr "completes-needed deve essere maggiore di 0\n"
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed deve essere maggiore di 1\n"
 
+# , c-format
 #: g10/g10.c:465
-#, c-format
 msgid "note: no default option file '%s'\n"
 msgstr "nota: nessun file con opzioni predefinite '%s'\n"
 
+# , c-format
 #: g10/g10.c:469
-#, c-format
 msgid "option file '%s': %s\n"
 msgstr "file con opzioni predefinite '%s': %s\n"
 
+# , c-format
 #: g10/g10.c:476
-#, c-format
 msgid "reading options from '%s'\n"
 msgstr "lettura delle opzioni da '%s'\n"
 
+# , c-format
 #: g10/g10.c:696
-#, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "inizializzazione del TrustDB fallita: %s\n"
 
@@ -365,6 +364,7 @@ msgstr "--encrypt [nomefile]"
 msgid "--sign [filename]"
 msgstr "--sign [nomefile]"
 
+#. sign and encrypt the given file
 #: g10/g10.c:744
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [nomefile]"
@@ -381,6 +381,7 @@ msgstr "--decrypt [nomefile]"
 msgid "--sign-key username"
 msgstr ""
 
+#. Edit a key signature
 #: g10/g10.c:786
 msgid "--edit-sig username"
 msgstr ""
@@ -393,14 +394,13 @@ msgstr ""
 msgid "--delete-key username"
 msgstr ""
 
-#. Change the passphrase
-#. no arg: use default, 1 arg use this one
 #: g10/g10.c:805
 msgid "--change-passphrase [username]"
 msgstr ""
 
+# , c-format
+#. -kv userid keyring
 #: g10/g10.c:829
-#, c-format
 msgid "can't open %s: %s\n"
 msgstr "impossibile aprire '%s': %s\n"
 
@@ -408,18 +408,18 @@ msgstr "impossibile aprire '%s': %s\n"
 msgid "-k[v][v][v][c] [userid] [keyring]"
 msgstr "-k[v][v][v][c] [userid] [portachiavi]"
 
+# , c-format
 #: g10/g10.c:892
-#, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "rimozione dell'armatura fallita: %s\n"
 
+# , c-format
 #: g10/g10.c:900
-#, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "creazione dell'armatura fallita: %s\n"
 
+# , c-format
 #: g10/g10.c:956
-#, c-format
 msgid "invalid hash algorithm '%s'\n"
 msgstr ""
 
@@ -427,14 +427,14 @@ msgstr ""
 msgid "[filename]"
 msgstr "[nomefile]"
 
+# , c-format
 #: g10/g10.c:1008
-#, c-format
 msgid "can't open '%s'\n"
 msgstr "impossibile aprire '%s'\n"
 
 # #### Md ???
+# , c-format
 #: g10/pkclist.c:65
-#, c-format
 msgid ""
 "No ownertrust defined for %lu:\n"
 "%4u%c/%08lX %s \""
@@ -459,7 +459,7 @@ msgid ""
 msgstr ""
 "\"\n"
 "\n"
-"Per favore decidi quanto hai fiducia di questo utente perchè firmi\n"
+"Per favore decidi quanto hai fiducia di questo utente perch\350 firmi\n"
 "correttamente le chiavi di altri utenti (guardando il suo passaporto,\n"
 "controllando le impronte digitali da diverse fonti ...)?\n"
 "\n"
@@ -480,11 +480,9 @@ msgid ""
 "to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
 "to do with the (implicitly created) web-of-certificates.\n"
 msgstr ""
-"È compito tuo assegnare qui un valore; questo valore non sarà mai esportato\n"
-"ad alcuna terza persona. Serve per implementare la ragnatela-di-fiducia; "
-"non\n"
-"ha nulla a che fare con la ragnatela-di-certificati (creata "
-"implicitamente).\n"
+"\310 compito tuo assegnare qui un valore; questo valore non sar\340 mai esportato\n"
+"ad alcuna terza persona. Serve per implementare la ragnatela-di-fiducia; non\n"
+"ha nulla a che fare con la ragnatela-di-certificati (creata implicitamente).\n"
 
 #: g10/pkclist.c:108
 msgid "You will see a list of signators etc. here\n"
@@ -515,8 +513,8 @@ msgid ""
 "the next question with yes\n"
 "\n"
 msgstr ""
-"NON è sicuro che la chiave appartenga al suo proprietario.\n"
-"Se *veramente* sai cosa stai facendo, puoi rispondere sì alla\n"
+"NON \350 sicuro che la chiave appartenga al suo proprietario.\n"
+"Se *veramente* sai cosa stai facendo, puoi rispondere s\354 alla\n"
 "prossima domanda.\n"
 "\n"
 
@@ -548,28 +546,28 @@ msgstr "scrittura della autofirma\n"
 msgid "Please select what kind of key you want:\n"
 msgstr "Per favore scegli che tipo di chiave vuoi:\n"
 
+# , c-format
 #: g10/keygen.c:384
-#, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
 msgstr "   (%d) DSA e ElGamal (default)\n"
 
+# , c-format
 #: g10/keygen.c:385
-#, c-format
 msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (firma e crittografa)\n"
 
+# , c-format
 #: g10/keygen.c:386
-#, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
 msgstr "   (%d) ElGamal (crittografa solo)\n"
 
+# , c-format
 #: g10/keygen.c:387
-#, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (firma solo)\n"
 
+# , c-format
 #: g10/keygen.c:388
-#, c-format
 msgid "   (%d) ElGamal in a v3 packet\n"
 msgstr "   (%d) ElGamal in un pacchetto v3\n"
 
@@ -581,8 +579,8 @@ msgstr "Cosa scegli? "
 msgid "Invalid selection.\n"
 msgstr "Scelta non valida.\n"
 
+# , c-format
 #: g10/keygen.c:430
-#, c-format
 msgid ""
 "About to generate a new %s keypair.\n"
 "              minimum keysize is  768 bits\n"
@@ -590,9 +588,9 @@ msgid ""
 "    highest suggested keysize is 2048 bits\n"
 msgstr ""
 "Sto per generare una nuova coppia di chiavi %s.\n"
-"               la dimensione minima è  768 bit\n"
-"          la dimensione predefinita è 1024 bit\n"
-"    la dimensione massima suggerita è 2048 bit\n"
+"               la dimensione minima \350  768 bit\n"
+"          la dimensione predefinita \350 1024 bit\n"
+"    la dimensione massima suggerita \350 2048 bit\n"
 
 #: g10/keygen.c:436
 msgid "What keysize do you want? (1024) "
@@ -604,39 +602,31 @@ msgstr "DSA permette solo chiavi di dimensioni da 512 a 1024\n"
 
 #: g10/keygen.c:443
 msgid "keysize too small; 768 is smallest value allowed.\n"
-msgstr "la chiave è troppo corta; 768 è il minimo valore permesso.\n"
+msgstr "la chiave \350 troppo corta; 768 \350 il minimo valore permesso.\n"
 
 #: g10/keygen.c:445
-msgid ""
-"Keysizes larger than 2048 are not suggested, because computations take "
-"REALLY long!\n"
-msgstr ""
-"Chiavi più lunghe di 2048 non sono consigliate, perchè i calcoli sono "
-"VERAMENTE lunghi!\n"
+msgid "Keysizes larger than 2048 are not suggested, because computations take REALLY long!\n"
+msgstr "Chiavi pi\371 lunghe di 2048 non sono consigliate, perch\350 i calcoli sono VERAMENTE lunghi!\n"
 
 #: g10/keygen.c:447
 msgid "Are you sure, that you want this keysize? "
 msgstr "Sei sicuro che vuoi una chiave di queste dimensioni? "
 
 #: g10/keygen.c:451
-msgid ""
-"Okay, but keep in mind that your monitor and keyboard radiation is also very "
-"vulnerable to attacks!\n"
-msgstr ""
-"Va bene, ma ricordati che anche le radiazioni emesse dal tuo monitor e dalla "
-"tua tastiera sono molto vulnerabili ad attacchi!\n"
+msgid "Okay, but keep in mind that your monitor and keyboard radiation is also very vulnerable to attacks!\n"
+msgstr "Va bene, ma ricordati che anche le radiazioni emesse dal tuo monitor e dalla tua tastiera sono molto vulnerabili ad attacchi!\n"
 
 #: g10/keygen.c:459
 msgid "Do you really need such a large keysize? "
-msgstr "Ti serve davvero una chiave così lunga? "
+msgstr "Ti serve davvero una chiave cos\354 lunga? "
 
+# , c-format
 #: g10/keygen.c:470
-#, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Le dimensioni della chiave richieste sono %u bit\n"
 
+# , c-format
 #: g10/keygen.c:473 g10/keygen.c:477
-#, c-format
 msgid "rounded up to %u bits\n"
 msgstr "arrotondate a %u bit\n"
 
@@ -648,11 +638,12 @@ msgid ""
 "      <n>w = key expires in n weeks\n"
 "      <n>m = key expires in n months\n"
 "      <n>y = key expires in n years\n"
-msgstr "Per favore specifica per quanto la chiave sarà valida.\n"
-"         0 = la chiave non scadrà\n"
-"      <n>w = la chiave scadrà dopo n giorni\n"
-"      <n>m = la chiave scadrà dopo n mesi\n"
-"      <n>y = la chiave scadrà dopo n anni\n"
+msgstr ""
+"Per favore specifica per quanto la chiave sar\340 valida.\n"
+"         0 = la chiave non scadr\340\n"
+"      <n>w = la chiave scadr\340 dopo n giorni\n"
+"      <n>m = la chiave scadr\340 dopo n mesi\n"
+"      <n>y = la chiave scadr\340 dopo n anni\n"
 
 #: g10/keygen.c:504
 msgid "Key is valid for? (0) "
@@ -666,65 +657,64 @@ msgstr "valore non valido\n"
 msgid "Key does not expire at all\n"
 msgstr "La chiave non scade\n"
 
-#: g10/keygen.c:522
-#, c-format
+# , c-format
+#. print the date when the key expires
+#: g10/keygen.c:523
 msgid "Key expires at %s\n"
-msgstr "La chiave scadrà il %s\n"
+msgstr "La chiave scadr\340 il %s\n"
 
-#: g10/keygen.c:527
+#: g10/keygen.c:528
 msgid "Is this correct (y/n)? "
-msgstr "È giusto (y/n)? "
+msgstr "\310 giusto (y/n)? "
 
-#: g10/keygen.c:543
+#: g10/keygen.c:557
 msgid ""
 "\n"
-"You need a User-ID to identify your key; the software constructs the user "
-"id\n"
+"You need a User-ID to identify your key; the software constructs the user id\n"
 "from Real Name, Comment and Email Address in this form:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 msgstr ""
 "\n"
-"Ti serve un User ID per identificare la tua chiave; il software costruisce "
-"l'user id a partire da Nome e Cognome, Commento e Indirizzo di Email "
-"indicati in questa forma:\n"
+"Ti serve un User ID per identificare la tua chiave; il software costruisce l'user id a partire da Nome e Cognome, Commento e Indirizzo di Email indicati in questa forma:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
-#: g10/keygen.c:554
+#: g10/keygen.c:568
 msgid "Real name: "
 msgstr "Nome e Cognome: "
 
-#: g10/keygen.c:558
+#: g10/keygen.c:572
 msgid "Invalid character in name\n"
 msgstr "Carattere non valido nel nome\n"
 
-#: g10/keygen.c:560
+#: g10/keygen.c:574
 msgid "Name may not start with a digit\n"
-msgstr "Il nome non può iniziare con una cifra\n"
+msgstr "Il nome non pu\362 iniziare con una cifra\n"
 
-#: g10/keygen.c:562
+#: g10/keygen.c:576
 msgid "Name must be at least 5 characters long\n"
 msgstr "Il nome deve essere lungo almeno 5 caratteri\n"
 
-#: g10/keygen.c:570
+#: g10/keygen.c:584
 msgid "Email address: "
 msgstr "Indirizzo di Email: "
 
-#: g10/keygen.c:582
+#: g10/keygen.c:596
 msgid "Not a valid email address\n"
-msgstr "L'indirizzo di email non è valido\n"
+msgstr "L'indirizzo di email non \350 valido\n"
 
-#: g10/keygen.c:590
+#: g10/keygen.c:604
 msgid "Comment: "
 msgstr "Commento: "
 
-#: g10/keygen.c:596
+#. no comment is okay
+#: g10/keygen.c:610
 msgid "Invalid character in comment\n"
 msgstr "Carattere non valido nel commento\n"
 
-#: g10/keygen.c:616
-#, c-format
+# , c-format
+#: g10/keygen.c:630
 msgid ""
 "You selected this USER-ID:\n"
 "    \"%s\"\n"
@@ -734,11 +724,11 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:619
+#: g10/keygen.c:633
 msgid "Edit (N)ame, (C)omment, (E)mail or (O)kay? "
 msgstr "Modifica (N)ome, (C)ommento, (E)mail oppure (O)kay? "
 
-#: g10/keygen.c:658
+#: g10/keygen.c:672
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -746,73 +736,71 @@ msgstr ""
 "Ti serve una passphrase per proteggere la tua chiave segreta.\n"
 "\n"
 
-#: g10/keygen.c:666
+#: g10/keygen.c:680
 msgid "passphrase not correctly repeated; try again.\n"
 msgstr "passphrase non ripetuta correttamente; riprova.\n"
 
-#: g10/keygen.c:672
+#: g10/keygen.c:686
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
 "using this program with the option \"--change-passphrase\"\n"
 "\n"
 msgstr ""
-"Non hai specificato una passphrase - questa è probabilmente una *cattiva*\n"
-"idea! Lo farò io comunque. Puoi cambiarla in ogni momento, usando questo\n"
+"Non hai specificato una passphrase - questa \350 probabilmente una *cattiva*\n"
+"idea! Lo far\362 io comunque. Puoi cambiarla in ogni momento, usando questo\n"
 "programma con l'opzione \"--change-passphrase\"\n"
 "\n"
 
-#: g10/keygen.c:693
+#: g10/keygen.c:707
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (work in another window, move the mouse, utilize the\n"
 "network and the disks) during the prime generation; this gives the random\n"
 "number generator a better chance to gain enough entropy.\n"
 msgstr ""
-"Dobbiamo generare un mucchio di byte casuali. È una buona idea eseguire\n"
-"qualche altra azione (lavorare in un'altra finestra, muovere il mouse, "
-"usare\n"
-"la rete e i dischi) durante la generazione dei numeri primi; questo dà al\n"
-"generatore di numeri casuali la possibilità di raccogliere abbastanza\n"
+"Dobbiamo generare un mucchio di byte casuali. \310 una buona idea eseguire\n"
+"qualche altra azione (lavorare in un'altra finestra, muovere il mouse, usare\n"
+"la rete e i dischi) durante la generazione dei numeri primi; questo d\340 al\n"
+"generatore di numeri casuali la possibilit\340 di raccogliere abbastanza\n"
 "entropia.\n"
 
-#: g10/keygen.c:739 g10/keygen.c:887
+#: g10/keygen.c:753 g10/keygen.c:901
 msgid "Key generation can only be used in interactive mode\n"
-msgstr "Una chiave può essere generata solo in modo interattivo\n"
+msgstr "Una chiave pu\362 essere generata solo in modo interattivo\n"
 
-#: g10/keygen.c:747
+#: g10/keygen.c:761
 msgid "DSA keypair will have 1024 bits.\n"
-msgstr "La coppia DSA avrà 1024 bit.\n"
+msgstr "La coppia DSA avr\340 1024 bit.\n"
 
-#: g10/keygen.c:759
-#, c-format
+# , c-format
+#: g10/keygen.c:773
 msgid "writing public certificate to '%s'\n"
 msgstr "scrittura del certificato pubblico in '%s'\n"
 
-#: g10/keygen.c:760
-#, c-format
+# , c-format
+#: g10/keygen.c:774
 msgid "writing secret certificate to '%s'\n"
 msgstr "scrittura del certificato privato in '%s'\n"
 
-#: g10/keygen.c:838
+#: g10/keygen.c:852
 msgid "public and secret key created and signed.\n"
 msgstr "chiavi pubbliche e segrete create e firmate.\n"
 
-#: g10/keygen.c:840
+#: g10/keygen.c:854
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--add-key\" to generate a secondary key for this purpose.\n"
 msgstr ""
-"Nota che questa chiave non può essere usata per la crittografia. Forse\n"
+"Nota che questa chiave non pu\362 essere usata per la crittografia. Forse\n"
 "vorrai usare il comando \"--add-key\" per generare una chiave secondaria\n"
 "per questo scopo.\n"
 
-#: g10/keygen.c:854 g10/keygen.c:1006
-#, c-format
+# , c-format
+#: g10/keygen.c:868 g10/keygen.c:1020
 msgid "Key generation failed: %s\n"
 msgstr "Generazione della chiave fallita: %s\n"
 
-#: g10/keygen.c:1001
+#: g10/keygen.c:1015
 msgid "public and secret subkey created.\n"
 msgstr "sottochiavi pubbliche e segrete create.\n"
-

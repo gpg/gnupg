@@ -38,9 +38,10 @@
 static int read_block( IOBUF a, compress_filter_context_t *cfx,
 			     PACKET **pending_pkt, KBNODE *ret_root );
 static int import_one( const char *fname, KBNODE keyblock );
+static int import_secret_one( const char *fname, KBNODE keyblock );
 static int import_revoke_cert( const char *fname, KBNODE node );
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
-			  PKT_public_cert *pkc, u32 *keyid );
+			  PKT_public_key *pk, u32 *keyid );
 static int delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid );
 static int merge_blocks( const char *fname, KBNODE keyblock_orig,
 			 KBNODE keyblock, u32 *keyid,
@@ -83,7 +84,7 @@ static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
  *
  */
 int
-import_pubkeys( const char *fname )
+import_keys( const char *fname )
 {
     armor_filter_context_t afx;
     compress_filter_context_t cfx;
@@ -108,8 +109,10 @@ import_pubkeys( const char *fname )
 	iobuf_push_filter( inp, armor_filter, &afx );
 
     while( !(rc = read_block( inp, &cfx, &pending_pkt, &keyblock) )) {
-	if( keyblock->pkt->pkttype == PKT_PUBLIC_CERT )
+	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
 	    rc = import_one( fname, keyblock );
+	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY )
+	    rc = import_secret_one( fname, keyblock );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
 	    rc = import_revoke_cert( fname, keyblock );
@@ -156,7 +159,9 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
-	    if( rc != G10ERR_UNKNOWN_PACKET ) {
+	    if( rc == G10ERR_PUBKEY_ALGO )
+		parse_pubkey_warning( pkt );
+	    else if( rc != G10ERR_UNKNOWN_PACKET ) {
 		log_error("read_block: read error: %s\n", g10_errstr(rc) );
 		rc = G10ERR_INV_KEYRING;
 		goto ready;
@@ -191,8 +196,8 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
 	    break;
 
 
-	  case PKT_PUBLIC_CERT:
-	  case PKT_SECRET_CERT:
+	  case PKT_PUBLIC_KEY:
+	  case PKT_SECRET_KEY:
 	    if( in_cert ) { /* store this packet */
 		*pending_pkt = pkt;
 		pkt = NULL;
@@ -234,8 +239,8 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
 static int
 import_one( const char *fname, KBNODE keyblock )
 {
-    PKT_public_cert *pkc;
-    PKT_public_cert *pkc_orig;
+    PKT_public_key *pk;
+    PKT_public_key *pk_orig;
     KBNODE node, uidnode;
     KBNODE keyblock_orig = NULL;
     KBPOS kbpos;
@@ -243,21 +248,19 @@ import_one( const char *fname, KBNODE keyblock )
     int rc = 0;
 
     /* get the key and print some info about it */
-    node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
-    if( !node ) {
-	log_error("%s: Oops; public key not found anymore!\n", fname);
-	return G10ERR_GENERAL; /* really serious */
-    }
+    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
+    if( !node )
+	BUG();
 
-    pkc = node->pkt->pkt.public_cert;
-    keyid_from_pkc( pkc, keyid );
+    pk = node->pkt->pkt.public_key;
+    keyid_from_pk( pk, keyid );
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
     if( opt.verbose ) {
 	log_info("%s: pub  %4u%c/%08lX %s   ", fname,
-		  nbits_from_pkc( pkc ),
-		  pubkey_letter( pkc->pubkey_algo ),
-		  (ulong)keyid[1], datestr_from_pkc(pkc) );
+		  nbits_from_pk( pk ),
+		  pubkey_letter( pk->pubkey_algo ),
+		  (ulong)keyid[1], datestr_from_pk(pk) );
 	if( uidnode )
 	    print_string( stderr, uidnode->pkt->pkt.user_id->name,
 				  uidnode->pkt->pkt.user_id->len, 0 );
@@ -269,7 +272,7 @@ import_one( const char *fname, KBNODE keyblock )
     }
 
     clear_kbnode_flags( keyblock );
-    rc = chk_self_sigs( fname, keyblock , pkc, keyid );
+    rc = chk_self_sigs( fname, keyblock , pk, keyid );
     if( rc )
 	return rc== -1? 0:rc;
 
@@ -280,8 +283,8 @@ import_one( const char *fname, KBNODE keyblock )
     }
 
     /* do we have this key already in one of our pubrings ? */
-    pkc_orig = m_alloc_clear( sizeof *pkc_orig );
-    rc = get_pubkey( pkc_orig, keyid );
+    pk_orig = m_alloc_clear( sizeof *pk_orig );
+    rc = get_pubkey( pk_orig, keyid );
     if( rc && rc != G10ERR_NO_PUBKEY ) {
 	log_error("%s: key %08lX, public key not found: %s\n",
 				fname, (ulong)keyid[1], g10_errstr(rc));
@@ -310,7 +313,7 @@ import_one( const char *fname, KBNODE keyblock )
 
 	/* Compare the original against the new key; just to be sure nothing
 	 * weird is going on */
-	if( cmp_public_certs( pkc_orig, pkc ) ) {
+	if( cmp_public_keys( pk_orig, pk ) ) {
 	    log_error("%s: key %08lX, doesn't match our copy\n",
 						    fname, (ulong)keyid[1]);
 	    rc = G10ERR_GENERAL;
@@ -321,7 +324,7 @@ import_one( const char *fname, KBNODE keyblock )
 	 * ask the user what to do. <--- fixme */
 
 	/* now read the original keyblock */
-	rc = find_keyblock_bypkc( &kbpos, pkc_orig );
+	rc = find_keyblock_bypk( &kbpos, pk_orig );
 	if( rc ) {
 	    log_error("%s: key %08lX, can't locate original keyblock: %s\n",
 				     fname, (ulong)keyid[1], g10_errstr(rc));
@@ -379,7 +382,80 @@ import_one( const char *fname, KBNODE keyblock )
 
   leave:
     release_kbnode( keyblock_orig );
-    free_public_cert( pkc_orig );
+    free_public_key( pk_orig );
+    return rc;
+}
+
+
+/****************
+ * Ditto for secret keys.  Handling is simpler than for public keys.
+ */
+static int
+import_secret_one( const char *fname, KBNODE keyblock )
+{
+    PKT_secret_key *sk;
+    KBNODE node, uidnode;
+    KBNODE keyblock_orig = NULL;
+    KBPOS kbpos;
+    u32 keyid[2];
+    int rc = 0;
+
+    /* get the key and print some info about it */
+    node = find_kbnode( keyblock, PKT_SECRET_KEY );
+    if( !node )
+	BUG();
+
+    sk = node->pkt->pkt.secret_key;
+    keyid_from_sk( sk, keyid );
+    uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
+
+    if( opt.verbose ) {
+	log_info("%s: sec  %4u%c/%08lX %s   ", fname,
+		  nbits_from_sk( sk ),
+		  pubkey_letter( sk->pubkey_algo ),
+		  (ulong)keyid[1], datestr_from_sk(sk) );
+	if( uidnode )
+	    print_string( stderr, uidnode->pkt->pkt.user_id->name,
+				  uidnode->pkt->pkt.user_id->len, 0 );
+	putc('\n', stderr);
+    }
+    if( !uidnode ) {
+	log_error("%s: No user id for key %08lX\n", fname, (ulong)keyid[1]);
+	return 0;
+    }
+
+    clear_kbnode_flags( keyblock );
+
+    /* do we have this key already in one of our secrings ? */
+    rc = seckey_available( keyid );
+    if( rc == G10ERR_NO_SECKEY ) { /* simply insert this key */
+	/* get default resource */
+	if( get_keyblock_handle( NULL, 1, &kbpos ) ) {
+	    log_error("no default secret keyring\n");
+	    return G10ERR_GENERAL;
+	}
+	if( opt.verbose > 1 )
+	    log_info("%s: writing to '%s'\n",
+				fname, keyblock_resource_name(&kbpos) );
+	if( (rc=lock_keyblock( &kbpos )) )
+	    log_error("can't lock secret keyring '%s': %s\n",
+			     keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
+	    log_error("%s: can't write to '%s': %s\n", fname,
+			     keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	unlock_keyblock( &kbpos );
+	/* we are ready */
+	log_info("%s: key %08lX imported\n", fname, (ulong)keyid[1]);
+    }
+    else if( !rc ) { /* we can't merge secret keys */
+	log_error("%s: key %08lX already in secret keyring\n",
+						fname, (ulong)keyid[1]);
+    }
+    else
+	log_error("%s: key %08lX, secret key not found: %s\n",
+				fname, (ulong)keyid[1], g10_errstr(rc));
+
+    release_kbnode( keyblock_orig );
     return rc;
 }
 
@@ -390,7 +466,7 @@ import_one( const char *fname, KBNODE keyblock )
 static int
 import_revoke_cert( const char *fname, KBNODE node )
 {
-    PKT_public_cert *pkc=NULL;
+    PKT_public_key *pk=NULL;
     KBNODE onode, keyblock = NULL;
     KBPOS kbpos;
     u32 keyid[2];
@@ -403,8 +479,8 @@ import_revoke_cert( const char *fname, KBNODE node )
     keyid[0] = node->pkt->pkt.signature->keyid[0];
     keyid[1] = node->pkt->pkt.signature->keyid[1];
 
-    pkc = m_alloc_clear( sizeof *pkc );
-    rc = get_pubkey( pkc, keyid );
+    pk = m_alloc_clear( sizeof *pk );
+    rc = get_pubkey( pk, keyid );
     if( rc == G10ERR_NO_PUBKEY ) {
 	log_info("%s: key %08lX, no public key - "
 		 "can't apply revocation certificate\n",
@@ -419,7 +495,7 @@ import_revoke_cert( const char *fname, KBNODE node )
     }
 
     /* read the original keyblock */
-    rc = find_keyblock_bypkc( &kbpos, pkc );
+    rc = find_keyblock_bypk( &kbpos, pk );
     if( rc ) {
 	log_error("%s: key %08lX, can't locate original keyblock: %s\n",
 				 fname, (ulong)keyid[1], g10_errstr(rc));
@@ -478,7 +554,7 @@ import_revoke_cert( const char *fname, KBNODE node )
 
   leave:
     release_kbnode( keyblock );
-    free_public_cert( pkc );
+    free_public_key( pk );
     return rc;
 }
 
@@ -490,7 +566,7 @@ import_revoke_cert( const char *fname, KBNODE node )
  */
 static int
 chk_self_sigs( const char *fname, KBNODE keyblock,
-	       PKT_public_cert *pkc, u32 *keyid )
+	       PKT_public_key *pk, u32 *keyid )
 {
     KBNODE n, unode;
     PKT_signature *sig;

@@ -36,8 +36,8 @@
 
 static int do_comment( IOBUF out, int ctb, PKT_comment *rem );
 static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
-static int do_public_cert( IOBUF out, int ctb, PKT_public_cert *pk );
-static int do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *pk );
+static int do_public_key( IOBUF out, int ctb, PKT_public_key *pk );
+static int do_secret_key( IOBUF out, int ctb, PKT_secret_key *pk );
 static int do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc );
 static int do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc );
 static u32 calc_plaintext( PKT_plaintext *pt );
@@ -82,13 +82,13 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_COMMENT:
 	rc = do_comment( out, ctb, pkt->pkt.comment );
 	break;
-      case PKT_PUBKEY_SUBCERT:
-      case PKT_PUBLIC_CERT:
-	rc = do_public_cert( out, ctb, pkt->pkt.public_cert );
+      case PKT_PUBLIC_SUBKEY:
+      case PKT_PUBLIC_KEY:
+	rc = do_public_key( out, ctb, pkt->pkt.public_key );
 	break;
-      case PKT_SECKEY_SUBCERT:
-      case PKT_SECRET_CERT:
-	rc = do_secret_cert( out, ctb, pkt->pkt.secret_cert );
+      case PKT_SECRET_SUBKEY:
+      case PKT_SECRET_KEY:
+	rc = do_secret_key( out, ctb, pkt->pkt.secret_key );
 	break;
       case PKT_SYMKEY_ENC:
 	rc = do_symkey_enc( out, ctb, pkt->pkt.symkey_enc );
@@ -135,8 +135,8 @@ calc_packet_length( PACKET *pkt )
 	break;
       case PKT_USER_ID:
       case PKT_COMMENT:
-      case PKT_PUBLIC_CERT:
-      case PKT_SECRET_CERT:
+      case PKT_PUBLIC_KEY:
+      case PKT_SECRET_KEY:
       case PKT_SYMKEY_ENC:
       case PKT_PUBKEY_ENC:
       case PKT_ENCRYPTED:
@@ -174,25 +174,25 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 }
 
 static int
-do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
+do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
 {
     int rc = 0;
     int n, i;
     IOBUF a = iobuf_temp();
 
-    if( !pkc->version )
+    if( !pk->version )
 	iobuf_put( a, 3 );
     else
-	iobuf_put( a, pkc->version );
-    write_32(a, pkc->timestamp );
-    if( pkc->version < 4 )
-	write_16(a, pkc->valid_days );
-    iobuf_put(a, pkc->pubkey_algo );
-    n = pubkey_get_npkey( pkc->pubkey_algo );
+	iobuf_put( a, pk->version );
+    write_32(a, pk->timestamp );
+    if( pk->version < 4 )
+	write_16(a, pk->valid_days );
+    iobuf_put(a, pk->pubkey_algo );
+    n = pubkey_get_npkey( pk->pubkey_algo );
     for(i=0; i < n; i++ )
-	mpi_write(a, pkc->pkey[i] );
+	mpi_write(a, pk->pkey[i] );
 
-    write_header2(out, ctb, iobuf_get_temp_length(a), pkc->hdrbytes, 1 );
+    write_header2(out, ctb, iobuf_get_temp_length(a), pk->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
@@ -205,25 +205,25 @@ do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
  * Make a hash value from the public key certificate
  */
 void
-hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
+hash_public_key( MD_HANDLE md, PKT_public_key *pk )
 {
     PACKET pkt;
     int rc = 0;
     int c;
     IOBUF a = iobuf_temp();
   #if 0
-    FILE *fp = fopen("dump.pkc", "a");
+    FILE *fp = fopen("dump.pk", "a");
     int i=0;
 
-    fprintf(fp, "\nHashing PKC (v%d):\n", pkc->version);
+    fprintf(fp, "\nHashing PK (v%d):\n", pk->version);
   #endif
 
     /* build the packet */
     init_packet(&pkt);
-    pkt.pkttype = PKT_PUBLIC_CERT;
-    pkt.pkt.public_cert = pkc;
+    pkt.pkttype = PKT_PUBLIC_KEY;
+    pkt.pkt.public_key = pk;
     if( (rc = build_packet( a, &pkt )) )
-	log_fatal("build public_cert for hashing failed: %s\n", g10_errstr(rc));
+	log_fatal("build public_key for hashing failed: %s\n", g10_errstr(rc));
     while( (c=iobuf_get(a)) != -1 ) {
       #if 0
 	fprintf( fp," %02x", c );
@@ -243,51 +243,51 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
 
 
 static int
-do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
+do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 {
     int rc = 0;
     int i, nskey, npkey;
     IOBUF a = iobuf_temp();
 
-    if( !skc->version )
+    if( !sk->version )
 	iobuf_put( a, 3 );
     else
-	iobuf_put( a, skc->version );
-    write_32(a, skc->timestamp );
-    if( skc->version < 4 )
-	write_16(a, skc->valid_days );
-    iobuf_put(a, skc->pubkey_algo );
-    nskey = pubkey_get_nskey( skc->pubkey_algo );
-    npkey = pubkey_get_npkey( skc->pubkey_algo );
+	iobuf_put( a, sk->version );
+    write_32(a, sk->timestamp );
+    if( sk->version < 4 )
+	write_16(a, sk->valid_days );
+    iobuf_put(a, sk->pubkey_algo );
+    nskey = pubkey_get_nskey( sk->pubkey_algo );
+    npkey = pubkey_get_npkey( sk->pubkey_algo );
     assert( npkey < nskey );
 
     for(i=0; i < npkey; i++ )
-	mpi_write(a, skc->skey[i] );
-    if( skc->is_protected ) {
-	if( is_RSA(skc->pubkey_algo) && skc->version < 4 ) {
-	    iobuf_put(a, skc->protect.algo );
-	    iobuf_write(a, skc->protect.iv, 8 );
+	mpi_write(a, sk->skey[i] );
+    if( sk->is_protected ) {
+	if( is_RSA(sk->pubkey_algo) && sk->version < 4 ) {
+	    iobuf_put(a, sk->protect.algo );
+	    iobuf_write(a, sk->protect.iv, 8 );
 	}
 	else {
 	    iobuf_put(a, 0xff );
-	    iobuf_put(a, skc->protect.algo );
-	    iobuf_put(a, skc->protect.s2k.mode );
-	    iobuf_put(a, skc->protect.s2k.hash_algo );
-	    if( skc->protect.s2k.mode == 1
-		|| skc->protect.s2k.mode == 4 )
-		iobuf_write(a, skc->protect.s2k.salt, 8 );
-	    if( skc->protect.s2k.mode == 4 )
-		write_32(a, skc->protect.s2k.count );
-	    iobuf_write(a, skc->protect.iv, 8 );
+	    iobuf_put(a, sk->protect.algo );
+	    iobuf_put(a, sk->protect.s2k.mode );
+	    iobuf_put(a, sk->protect.s2k.hash_algo );
+	    if( sk->protect.s2k.mode == 1
+		|| sk->protect.s2k.mode == 4 )
+		iobuf_write(a, sk->protect.s2k.salt, 8 );
+	    if( sk->protect.s2k.mode == 4 )
+		write_32(a, sk->protect.s2k.count );
+	    iobuf_write(a, sk->protect.iv, 8 );
 	}
     }
     else
 	iobuf_put(a, 0 );
     for(   ; i < nskey; i++ )
-	mpi_write(a, skc->skey[i] );
-    write_16(a, skc->csum );
+	mpi_write(a, sk->skey[i] );
+    write_16(a, sk->csum );
 
-    write_header2(out, ctb, iobuf_get_temp_length(a), skc->hdrbytes, 1 );
+    write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 

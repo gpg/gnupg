@@ -150,13 +150,13 @@ find_next_kbnode( KBNODE node, int pkttype )
 	if( !pkttype )
 	    return node;
 	else if( pkttype == PKT_USER_ID
-		 && (	node->pkt->pkttype == PKT_PUBLIC_CERT
-		     || node->pkt->pkttype == PKT_SECRET_CERT ) )
+		 && (	node->pkt->pkttype == PKT_PUBLIC_KEY
+		     || node->pkt->pkttype == PKT_SECRET_KEY ) )
 	    return NULL;
 	else if( pkttype == PKT_SIGNATURE
 		 && (	node->pkt->pkttype == PKT_USER_ID
-		     || node->pkt->pkttype == PKT_PUBLIC_CERT
-		     || node->pkt->pkttype == PKT_SECRET_CERT ) )
+		     || node->pkt->pkttype == PKT_PUBLIC_KEY
+		     || node->pkt->pkttype == PKT_SECRET_KEY ) )
 	    return NULL;
 	else if( node->pkt->pkttype == pkttype )
 	    return node;
@@ -248,14 +248,14 @@ dump_kbnode( KBNODE node )
 	const char *s;
 	switch( node->pkt->pkttype ) {
 	  case 0:		s="empty"; break;
-	  case PKT_PUBLIC_CERT: s="public-key"; break;
-	  case PKT_SECRET_CERT: s="secret-key"; break;
-	  case PKT_SECKEY_SUBCERT:  s= "secret-subkey"; break;
+	  case PKT_PUBLIC_KEY:	s="public-key"; break;
+	  case PKT_SECRET_KEY:	s="secret-key"; break;
+	  case PKT_SECRET_SUBKEY: s= "secret-subkey"; break;
 	  case PKT_PUBKEY_ENC:	s="public-enc"; break;
 	  case PKT_SIGNATURE:	s="signature"; break;
 	  case PKT_ONEPASS_SIG: s="onepass-sig"; break;
 	  case PKT_USER_ID:	s="user-id"; break;
-	  case PKT_PUBKEY_SUBCERT: s="public-subkey"; break;
+	  case PKT_PUBLIC_SUBKEY: s="public-subkey"; break;
 	  case PKT_COMMENT:	s="comment"; break;
 	  case PKT_RING_TRUST:	s="trust"; break;
 	  case PKT_PLAINTEXT:	s="plaintext"; break;
@@ -275,10 +275,10 @@ dump_kbnode( KBNODE node )
 	    fprintf(stderr, "  keyid=%08lX\n",
 		   (ulong)node->pkt->pkt.signature->keyid[1] );
 	}
-	else if( node->pkt->pkttype == PKT_PUBLIC_CERT
-		 || node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
+	else if( node->pkt->pkttype == PKT_PUBLIC_KEY
+		 || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    fprintf(stderr, "  keyid=%08lX\n", (ulong)
-		  keyid_from_pkc( node->pkt->pkt.public_cert, NULL ));
+		  keyid_from_pk( node->pkt->pkt.public_key, NULL ));
 	}
 	else
 	    fputs("\n", stderr);

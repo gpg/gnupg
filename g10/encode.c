@@ -37,7 +37,7 @@
 
 
 static int encode_simple( const char *filename, int mode );
-static int write_pubkey_enc_from_list( PKC_LIST pkc_list, DEK *dek, IOBUF out );
+static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 
 
 
@@ -185,13 +185,13 @@ encode_crypt( const char *filename, STRLIST remusr )
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
-    PKC_LIST pkc_list;
+    PK_LIST pk_list;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
 
-    if( (rc=build_pkc_list( remusr, &pkc_list, 2)) )
+    if( (rc=build_pk_list( remusr, &pk_list, 2)) )
 	return rc;
 
     /* prepare iobufs */
@@ -222,7 +222,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( DBG_CIPHER )
 	log_hexdump("DEK is: ", cfx.dek->key, cfx.dek->keylen );
 
-    rc = write_pubkey_enc_from_list( pkc_list, cfx.dek, out );
+    rc = write_pubkey_enc_from_list( pk_list, cfx.dek, out );
     if( rc  )
 	goto leave;
 
@@ -269,7 +269,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	pt->buf = NULL;
     free_packet(&pkt);
     m_free(cfx.dek);
-    release_pkc_list( pkc_list );
+    release_pk_list( pk_list );
     return rc;
 }
 
@@ -297,7 +297,7 @@ encrypt_filter( void *opaque, int control,
 		log_hexdump("DEK is: ",
 			     efx->cfx.dek->key, efx->cfx.dek->keylen );
 
-	    rc = write_pubkey_enc_from_list( efx->pkc_list, efx->cfx.dek, a );
+	    rc = write_pubkey_enc_from_list( efx->pk_list, efx->cfx.dek, a );
 	    if( rc )
 		return rc;
 
@@ -318,26 +318,26 @@ encrypt_filter( void *opaque, int control,
 
 
 /****************
- * Write pubkey-enc packets from the list of PKCs to OUT.
+ * Write pubkey-enc packets from the list of PKs to OUT.
  */
 static int
-write_pubkey_enc_from_list( PKC_LIST pkc_list, DEK *dek, IOBUF out )
+write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 {
     PACKET pkt;
-    PKT_public_cert *pkc;
+    PKT_public_key *pk;
     PKT_pubkey_enc  *enc;
     int rc;
 
-    for( ; pkc_list; pkc_list = pkc_list->next ) {
+    for( ; pk_list; pk_list = pk_list->next ) {
 	MPI frame;
 
-	pkc = pkc_list->pkc;
+	pk = pk_list->pk;
 	enc = m_alloc_clear( sizeof *enc );
-	enc->pubkey_algo = pkc->pubkey_algo;
-	keyid_from_pkc( pkc, enc->keyid );
-	frame = encode_session_key( dek, pubkey_nbits( pkc->pubkey_algo,
-							  pkc->pkey ) );
-	rc = pubkey_encrypt( pkc->pubkey_algo, enc->data, frame, pkc->pkey );
+	enc->pubkey_algo = pk->pubkey_algo;
+	keyid_from_pk( pk, enc->keyid );
+	frame = encode_session_key( dek, pubkey_nbits( pk->pubkey_algo,
+							  pk->pkey ) );
+	rc = pubkey_encrypt( pk->pubkey_algo, enc->data, frame, pk->pkey );
 	mpi_free( frame );
 	if( rc )
 	    log_error("pubkey_encrypt failed: %s\n", g10_errstr(rc) );

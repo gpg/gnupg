@@ -45,10 +45,10 @@ gen_revoke( const char *uname )
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
     PACKET pkt;
-    PKT_secret_cert *skc; /* used as pointer into a kbnode */
-    PKT_public_cert *pkc = NULL;
+    PKT_secret_key *sk; /* used as pointer into a kbnode */
+    PKT_public_key *pk = NULL;
     PKT_signature *sig = NULL;
-    u32 skc_keyid[2];
+    u32 sk_keyid[2];
     IOBUF out = NULL;
     KBNODE keyblock = NULL;
     KBNODE node;
@@ -82,7 +82,7 @@ gen_revoke( const char *uname )
     }
 
     /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, PKT_SECRET_CERT );
+    node = find_kbnode( keyblock, PKT_SECRET_KEY );
     if( !node ) { /* maybe better to use log_bug ? */
 	log_error("Oops; secret key not found anymore!\n");
 	rc = G10ERR_GENERAL;
@@ -91,27 +91,26 @@ gen_revoke( const char *uname )
 
     /* fixme: should make a function out of this stuff,
      * it's used all over the source */
-    skc = node->pkt->pkt.secret_cert;
-    keyid_from_skc( skc, skc_keyid );
+    sk = node->pkt->pkt.secret_key;
+    keyid_from_sk( sk, sk_keyid );
     tty_printf("\nsec  %4u%c/%08lX %s   ",
-	      nbits_from_skc( skc ),
-	      pubkey_letter( skc->pubkey_algo ),
-	      skc_keyid[1], datestr_from_skc(skc) );
+	      nbits_from_sk( sk ),
+	      pubkey_letter( sk->pubkey_algo ),
+	      sk_keyid[1], datestr_from_sk(sk) );
     {
 	size_t n;
-	char *p = get_user_id( skc_keyid, &n );
+	char *p = get_user_id( sk_keyid, &n );
 	tty_print_string( p, n );
 	m_free(p);
 	tty_printf("\n");
     }
-    /* the the pkc */
-    pkc = m_alloc_clear( sizeof *pkc );
-    rc = get_pubkey( pkc, skc_keyid );
+    pk = m_alloc_clear( sizeof *pk );
+    rc = get_pubkey( pk, sk_keyid );
     if( rc ) {
 	log_error("no corresponding public key: %s\n", g10_errstr(rc) );
 	goto leave;
     }
-    if( cmp_public_secret_cert( pkc, skc ) ) {
+    if( cmp_public_secret_key( pk, sk ) ) {
 	log_error("public key does not match secret key!\n" );
 	rc = G10ERR_GENERAL;
 	goto leave;
@@ -127,7 +126,7 @@ gen_revoke( const char *uname )
 	goto leave;
     }
 
-    switch( is_secret_key_protected( skc ) ) {
+    switch( is_secret_key_protected( sk ) ) {
       case -1:
 	log_error("unknown protection algorithm\n");
 	rc = G10ERR_PUBKEY_ALGO;
@@ -136,7 +135,7 @@ gen_revoke( const char *uname )
 	tty_printf("Warning: This key is not protected!\n");
 	break;
       default:
-	rc = check_secret_key( skc );
+	rc = check_secret_key( sk );
 	break;
     }
     if( rc )
@@ -159,7 +158,7 @@ gen_revoke( const char *uname )
 
 
     /* create it */
-    rc = make_keysig_packet( &sig, pkc, NULL, NULL, skc, 0x20, 0, NULL, NULL);
+    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0, NULL, NULL);
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc));
 	goto leave;
@@ -185,8 +184,8 @@ gen_revoke( const char *uname )
 
 
   leave:
-    if( pkc )
-	free_public_cert( pkc );
+    if( pk )
+	free_public_key( pk );
     if( sig )
 	free_seckey_enc( sig );
     release_kbnode( keyblock );

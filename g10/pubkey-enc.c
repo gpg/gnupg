@@ -44,7 +44,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     byte *frame = NULL;
     unsigned n, nframe;
     u16 csum, csum2;
-    PKT_secret_cert *skc = m_alloc_clear( sizeof *skc );
+    PKT_secret_key *sk = m_alloc_clear( sizeof *sk );
 
     if( is_RSA(k->pubkey_algo) ) /* warn about that */
 	write_status(STATUS_RSA_OR_IDEA);
@@ -52,14 +52,14 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     if( rc )
 	goto leave;
 
-    skc->pubkey_algo = k->pubkey_algo;	 /* we want a pubkey with this algo*/
-    if( (rc = get_seckey( skc, k->keyid )) )
+    sk->pubkey_algo = k->pubkey_algo;	/* we want a pubkey with this algo*/
+    if( (rc = get_seckey( sk, k->keyid )) )
 	goto leave;
 
-    rc = pubkey_decrypt(k->pubkey_algo, &plain_dek, k->data, skc->skey );
+    rc = pubkey_decrypt(k->pubkey_algo, &plain_dek, k->data, sk->skey );
     if( rc )
 	goto leave;
-    free_secret_cert( skc ); skc = NULL;
+    free_secret_key( sk ); sk = NULL;
     frame = mpi_get_buffer( plain_dek, &nframe, NULL );
     mpi_free( plain_dek ); plain_dek = NULL;
 
@@ -128,8 +128,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
   leave:
     mpi_free(plain_dek);
     m_free(frame);
-    if( skc )
-	free_secret_cert( skc );
+    if( sk )
+	free_secret_key( sk );
     return rc;
 }
 

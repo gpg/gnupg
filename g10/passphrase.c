@@ -109,7 +109,7 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
     }
 
     if( keyid && !opt.batch && !next_pw ) {
-	PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	size_t n;
 	char *p;
 
@@ -120,14 +120,14 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 	m_free(p);
 	tty_printf("\"\n");
 
-	if( !get_pubkey( pkc, keyid ) ) {
-	    const char *s = pubkey_algo_to_string( pkc->pubkey_algo );
+	if( !get_pubkey( pk, keyid ) ) {
+	    const char *s = pubkey_algo_to_string( pk->pubkey_algo );
 	    tty_printf( _("(%u-bit %s key, ID %08lX, created %s)\n"),
-		       nbits_from_pkc( pkc ), s?s:"?", (ulong)keyid[1],
-		       strtimestamp(pkc->timestamp) );
+		       nbits_from_pk( pk ), s?s:"?", (ulong)keyid[1],
+		       strtimestamp(pk->timestamp) );
 	}
 	tty_printf("\n");
-	free_public_cert( pkc );
+	free_public_key( pk );
     }
     if( next_pw ) {
 	pw = next_pw;

@@ -40,12 +40,12 @@
 
 
 static void
-show_fingerprint( PKT_public_cert *pkc )
+show_fingerprint( PKT_public_key *pk )
 {
     byte *array, *p;
     size_t i, n;
 
-    p = array = fingerprint_from_pkc( pkc, &n );
+    p = array = fingerprint_from_pk( pk, &n );
     tty_printf("             Fingerprint:");
     if( n == 20 ) {
 	for(i=0; i < n ; i++, i++, p += 2 ) {
@@ -70,20 +70,20 @@ show_fingerprint( PKT_public_cert *pkc )
  * Ask whether the user is willing to sign the key. Return true if so.
  */
 static int
-sign_it_p( PKT_public_cert *pkc, PKT_user_id *uid )
+sign_it_p( PKT_public_key *pk, PKT_user_id *uid )
 {
     char *answer;
     int yes;
 
     tty_printf("\nAre you really sure that you want to sign this key:\n\n"
 	       "%4u%c/%08lX %s ",
-	      nbits_from_pkc( pkc ),
-	      pubkey_letter( pkc->pubkey_algo ),
-	      (ulong)keyid_from_pkc( pkc, NULL ),
-	      datestr_from_pkc( pkc )		    );
+	      nbits_from_pk( pk ),
+	      pubkey_letter( pk->pubkey_algo ),
+	      (ulong)keyid_from_pk( pk, NULL ),
+	      datestr_from_pk( pk )		  );
     tty_print_string( uid->name, uid->len );
     tty_printf("\n");
-    show_fingerprint(pkc);
+    show_fingerprint(pk);
     tty_printf("\n");
     answer = tty_get("Sign this key? ");
     tty_kill_prompt();
@@ -231,13 +231,13 @@ sign_key( const char *username, STRLIST locusr )
 {
     md_filter_context_t mfx;
     int rc = 0;
-    SKC_LIST skc_list = NULL;
-    SKC_LIST skc_rover = NULL;
+    SK_LIST sk_list = NULL;
+    SK_LIST sk_rover = NULL;
     KBNODE keyblock = NULL;
     KBNODE kbctx, node;
     KBPOS kbpos;
-    PKT_public_cert *pkc;
-    u32 pkc_keyid[2];
+    PKT_public_key *pk;
+    u32 pk_keyid[2];
     char *answer;
 
     memset( &mfx, 0, sizeof mfx);
@@ -250,7 +250,7 @@ sign_key( const char *username, STRLIST locusr )
     }
 
     /* build a list of all signators */
-    rc=build_skc_list( locusr, &skc_list, 0, 1 );
+    rc=build_sk_list( locusr, &sk_list, 0, 1 );
     if( rc )
 	goto leave;
 
@@ -263,23 +263,23 @@ sign_key( const char *username, STRLIST locusr )
     }
 
     /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
+    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; public key not found anymore!\n");
 	rc = G10ERR_GENERAL;
 	goto leave;
     }
 
-    pkc = node->pkt->pkt.public_cert;
-    keyid_from_pkc( pkc, pkc_keyid );
+    pk = node->pkt->pkt.public_key;
+    keyid_from_pk( pk, pk_keyid );
     log_info("Checking signatures of this public key certificate:\n");
     tty_printf("pub  %4u%c/%08lX %s   ",
-	      nbits_from_pkc( pkc ),
-	      pubkey_letter( pkc->pubkey_algo ),
-	      pkc_keyid[1], datestr_from_pkc(pkc) );
+	      nbits_from_pk( pk ),
+	      pubkey_letter( pk->pubkey_algo ),
+	      pk_keyid[1], datestr_from_pk(pk) );
     {
 	size_t n;
-	char *p = get_user_id( pkc_keyid, &n );
+	char *p = get_user_id( pk_keyid, &n );
 	tty_print_string( p, n > 40? 40 : n );
 	m_free(p);
 	tty_printf("\n");
@@ -292,35 +292,35 @@ sign_key( const char *username, STRLIST locusr )
 	    answer = tty_get("To you want to remove some of the invalid sigs? ");
 	    tty_kill_prompt();
 	    if( answer_is_yes(answer) )
-		remove_keysigs( keyblock, pkc_keyid, 0 );
+		remove_keysigs( keyblock, pk_keyid, 0 );
 	    m_free(answer);
 	}
     }
 
     /* check whether we it is possible to sign this key */
-    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	u32 akeyid[2];
 
-	keyid_from_skc( skc_rover->skc, akeyid );
+	keyid_from_sk( sk_rover->sk, akeyid );
 	for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	    if( node->pkt->pkttype == PKT_USER_ID )
-		skc_rover->mark = 1;
+		sk_rover->mark = 1;
 	    else if( node->pkt->pkttype == PKT_SIGNATURE
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 		if( akeyid[0] == node->pkt->pkt.signature->keyid[0]
 		    && akeyid[1] == node->pkt->pkt.signature->keyid[1] ) {
 		    log_info("Already signed by keyid %08lX\n",
 							(ulong)akeyid[1] );
-		    skc_rover->mark = 0;
+		    sk_rover->mark = 0;
 		}
 	    }
 	}
     }
-    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	if( skc_rover->mark )
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	if( sk_rover->mark )
 	    break;
     }
-    if( !skc_rover ) {
+    if( !sk_rover ) {
 	log_info("Nothing to sign\n");
 	goto leave;
     }
@@ -334,19 +334,19 @@ sign_key( const char *username, STRLIST locusr )
      * no, present each user-id in turn and ask which one should be signed
      * (only one) - if there is already a single-user-sig, do nothing.
      * (this is propably already out in the world) */
-    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	if( !skc_rover->mark )
+    for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
+	if( !sk_rover->mark )
 	    continue;
 	for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	    if( node->pkt->pkttype == PKT_USER_ID ) {
-		if( sign_it_p( pkc, node->pkt->pkt.user_id ) ) {
+		if( sign_it_p( pk, node->pkt->pkt.user_id ) ) {
 		    PACKET *pkt;
 		    PKT_signature *sig;
 
-		    rc = make_keysig_packet( &sig, pkc,
+		    rc = make_keysig_packet( &sig, pk,
 						   node->pkt->pkt.user_id,
 						   NULL,
-						   skc_rover->skc,
+						   sk_rover->sk,
 						   0x10, 0, NULL, NULL );
 		    if( rc ) {
 			log_error("make_keysig_packet failed: %s\n", g10_errstr(rc));
@@ -370,7 +370,7 @@ sign_key( const char *username, STRLIST locusr )
 
   leave:
     release_kbnode( keyblock );
-    release_skc_list( skc_list );
+    release_sk_list( sk_list );
     md_close( mfx.md );
     return rc;
 }
@@ -384,8 +384,8 @@ edit_keysigs( const char *username )
     KBNODE keyblock = NULL;
     KBNODE node;
     KBPOS kbpos;
-    PKT_public_cert *pkc;
-    u32 pkc_keyid[2];
+    PKT_public_key *pk;
+    u32 pk_keyid[2];
 
     /* search the userid */
     rc = find_keyblock_byname( &kbpos, username );
@@ -402,23 +402,23 @@ edit_keysigs( const char *username )
     }
 
     /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
+    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; public key not found anymore!\n");
 	rc = G10ERR_GENERAL;
 	goto leave;
     }
 
-    pkc = node->pkt->pkt.public_cert;
-    keyid_from_pkc( pkc, pkc_keyid );
+    pk = node->pkt->pkt.public_key;
+    keyid_from_pk( pk, pk_keyid );
     log_info("Checking signatures of this public key certificate:\n");
     tty_printf("pub  %4u%c/%08lX %s   ",
-	      nbits_from_pkc( pkc ),
-	      pubkey_letter( pkc->pubkey_algo ),
-	      pkc_keyid[1], datestr_from_pkc(pkc) );
+	      nbits_from_pk( pk ),
+	      pubkey_letter( pk->pubkey_algo ),
+	      pk_keyid[1], datestr_from_pk(pk) );
     {
 	size_t n;
-	char *p = get_user_id( pkc_keyid, &n );
+	char *p = get_user_id( pk_keyid, &n );
 	tty_print_string( p, n > 40? 40 : n );
 	m_free(p);
 	tty_printf("\n");
@@ -426,7 +426,7 @@ edit_keysigs( const char *username )
 
     clear_kbnode_flags( keyblock );
     check_all_keysigs( keyblock );
-    if( remove_keysigs( keyblock, pkc_keyid, 1 ) ) {
+    if( remove_keysigs( keyblock, pk_keyid, 1 ) ) {
 	rc = update_keyblock( &kbpos, keyblock );
 	if( rc ) {
 	    log_error("update_keyblock failed: %s\n", g10_errstr(rc) );
@@ -450,8 +450,8 @@ delete_key( const char *username, int secret )
     KBNODE keyblock = NULL;
     KBNODE node;
     KBPOS kbpos;
-    PKT_public_cert *pkc = NULL;
-    PKT_secret_cert *skc = NULL;
+    PKT_public_key *pk = NULL;
+    PKT_secret_key *sk = NULL;
     u32 keyid[2];
     int okay=0;
 
@@ -471,7 +471,7 @@ delete_key( const char *username, int secret )
     }
 
     /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, secret? PKT_SECRET_CERT:PKT_PUBLIC_CERT );
+    node = find_kbnode( keyblock, secret? PKT_SECRET_KEY:PKT_PUBLIC_KEY );
     if( !node ) {
 	log_error("Oops; key not found anymore!\n");
 	rc = G10ERR_GENERAL;
@@ -479,12 +479,12 @@ delete_key( const char *username, int secret )
     }
 
     if( secret ) {
-	skc = node->pkt->pkt.secret_cert;
-	keyid_from_skc( skc, keyid );
+	sk = node->pkt->pkt.secret_key;
+	keyid_from_sk( sk, keyid );
     }
     else {
-	pkc = node->pkt->pkt.public_cert;
-	keyid_from_pkc( pkc, keyid );
+	pk = node->pkt->pkt.public_key;
+	keyid_from_pk( pk, keyid );
 	rc = seckey_available( keyid );
 	if( !rc ) {
 	    log_error(_(
@@ -513,14 +513,14 @@ delete_key( const char *username, int secret )
 
 	if( secret )
 	    tty_printf("sec  %4u%c/%08lX %s   ",
-		      nbits_from_skc( skc ),
-		      pubkey_letter( skc->pubkey_algo ),
-		      keyid[1], datestr_from_skc(skc) );
+		      nbits_from_sk( sk ),
+		      pubkey_letter( sk->pubkey_algo ),
+		      keyid[1], datestr_from_sk(sk) );
 	else
 	    tty_printf("pub  %4u%c/%08lX %s   ",
-		      nbits_from_pkc( pkc ),
-		      pubkey_letter( pkc->pubkey_algo ),
-		      keyid[1], datestr_from_pkc(pkc) );
+		      nbits_from_pk( pk ),
+		      pubkey_letter( pk->pubkey_algo ),
+		      keyid[1], datestr_from_pk(pk) );
 	p = get_user_id( keyid, &n );
 	tty_print_string( p, n );
 	m_free(p);
@@ -564,7 +564,7 @@ change_passphrase( const char *username )
     KBNODE keyblock = NULL;
     KBNODE node;
     KBPOS kbpos;
-    PKT_secret_cert *skc;
+    PKT_secret_key *sk;
     u32 keyid[2];
     char *answer;
     int changed=0;
@@ -585,19 +585,19 @@ change_passphrase( const char *username )
     }
 
     /* get the keyid from the keyblock */
-    node = find_kbnode( keyblock, PKT_SECRET_CERT );
+    node = find_kbnode( keyblock, PKT_SECRET_KEY );
     if( !node ) {
 	log_error("Oops; secret key not found anymore!\n");
 	rc = G10ERR_GENERAL;
 	goto leave;
     }
 
-    skc = node->pkt->pkt.secret_cert;
-    keyid_from_skc( skc, keyid );
+    sk = node->pkt->pkt.secret_key;
+    keyid_from_sk( sk, keyid );
     tty_printf("sec  %4u%c/%08lX %s   ",
-	      nbits_from_skc( skc ),
-	      pubkey_letter( skc->pubkey_algo ),
-	      keyid[1], datestr_from_skc(skc) );
+	      nbits_from_sk( sk ),
+	      pubkey_letter( sk->pubkey_algo ),
+	      keyid[1], datestr_from_sk(sk) );
     {
 	size_t n;
 	char *p = get_user_id( keyid, &n );
@@ -606,18 +606,18 @@ change_passphrase( const char *username )
 	tty_printf("\n");
     }
     for(node=keyblock; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
-	    PKT_secret_cert *subskc = node->pkt->pkt.secret_cert;
-	    keyid_from_skc( subskc, keyid );
+	if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+	    PKT_secret_key *subsk = node->pkt->pkt.secret_key;
+	    keyid_from_sk( subsk, keyid );
 	    tty_printf("sub  %4u%c/%08lX %s\n",
-		      nbits_from_skc( subskc ),
-		      pubkey_letter( subskc->pubkey_algo ),
-		      keyid[1], datestr_from_skc(subskc) );
+		      nbits_from_sk( subsk ),
+		      pubkey_letter( subsk->pubkey_algo ),
+		      keyid[1], datestr_from_sk(subsk) );
 	}
     }
 
     clear_kbnode_flags( keyblock );
-    switch( is_secret_key_protected( skc ) ) {
+    switch( is_secret_key_protected( sk ) ) {
       case -1:
 	rc = G10ERR_PUBKEY_ALGO;
 	break;
@@ -626,7 +626,7 @@ change_passphrase( const char *username )
 	break;
       default:
 	tty_printf("Key is protected.\n");
-	rc = check_secret_key( skc );
+	rc = check_secret_key( sk );
 	if( !rc )
 	    passphrase = get_last_passphrase();
 	break;
@@ -634,10 +634,10 @@ change_passphrase( const char *username )
 
     /* unprotect all subkeys (use the supplied passphrase or ask)*/
     for(node=keyblock; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
-	    PKT_secret_cert *subskc = node->pkt->pkt.secret_cert;
+	if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+	    PKT_secret_key *subsk = node->pkt->pkt.secret_key;
 	    set_next_passphrase( passphrase );
-	    rc = check_secret_key( subskc );
+	    rc = check_secret_key( subsk );
 	    if( rc )
 		break;
 	}
@@ -671,15 +671,15 @@ change_passphrase( const char *username )
 		break;
 	    }
 	    else { /* okay */
-		skc->protect.algo = dek->algo;
-		skc->protect.s2k = *s2k;
-		rc = protect_secret_key( skc, dek );
+		sk->protect.algo = dek->algo;
+		sk->protect.s2k = *s2k;
+		rc = protect_secret_key( sk, dek );
 		for(node=keyblock; !rc && node; node = node->next ) {
-		    if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
-			PKT_secret_cert *subskc = node->pkt->pkt.secret_cert;
-			subskc->protect.algo = dek->algo;
-			subskc->protect.s2k = *s2k;
-			rc = protect_secret_key( subskc, dek );
+		    if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+			PKT_secret_key *subsk = node->pkt->pkt.secret_key;
+			subsk->protect.algo = dek->algo;
+			subsk->protect.s2k = *s2k;
+			rc = protect_secret_key( subsk, dek );
 		    }
 		}
 		if( rc )
@@ -717,9 +717,9 @@ change_passphrase( const char *username )
  * If digest_algo is 0 the function selects an appropriate one.
  */
 int
-make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
-		    PKT_user_id *uid, PKT_public_cert *subpkc,
-		    PKT_secret_cert *skc,
+make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
+		    PKT_user_id *uid, PKT_public_key *subpk,
+		    PKT_secret_key *sk,
 		    int sigclass, int digest_algo,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque
 		   )
@@ -731,7 +731,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
     assert( (sigclass >= 0x10 && sigclass <= 0x13)
 	    || sigclass == 0x20 || sigclass == 0x18 );
     if( !digest_algo ) {
-	switch( skc->pubkey_algo ) {
+	switch( sk->pubkey_algo ) {
 	  case PUBKEY_ALGO_DSA: digest_algo = DIGEST_ALGO_SHA1; break;
 	  case PUBKEY_ALGO_RSA_S:
 	  case PUBKEY_ALGO_RSA: digest_algo = DIGEST_ALGO_MD5; break;
@@ -741,12 +741,12 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
     md = md_open( digest_algo, 0 );
 
     /* hash the public key certificate and the user id */
-    hash_public_cert( md, pkc );
+    hash_public_key( md, pk );
     if( sigclass == 0x18 ) { /* subkey binding */
-	hash_public_cert( md, subpkc );
+	hash_public_key( md, subpk );
     }
     else if( sigclass != 0x20 ) {
-	if( skc->version >=4 ) {
+	if( sk->version >=4 ) {
 	    byte buf[5];
 	    buf[0] = 0xb4;	      /* indicates a userid packet */
 	    buf[1] = uid->len >> 24;  /* always use 4 length bytes */
@@ -759,9 +759,9 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
     }
     /* and make the signature packet */
     sig = m_alloc_clear( sizeof *sig );
-    sig->version = skc->version;
-    keyid_from_skc( skc, sig->keyid );
-    sig->pubkey_algo = skc->pubkey_algo;
+    sig->version = sk->version;
+    keyid_from_sk( sk, sig->keyid );
+    sig->pubkey_algo = sk->pubkey_algo;
     sig->digest_algo = digest_algo;
     sig->timestamp = make_timestamp();
     sig->sig_class = sigclass;
@@ -807,7 +807,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 	}
 	md_final(md);
 
-	rc = complete_sig( sig, skc, md );
+	rc = complete_sig( sig, sk, md );
     }
 
     md_close( md );

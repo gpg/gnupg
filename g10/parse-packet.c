@@ -51,7 +51,7 @@ static int  parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 							 PKT_signature *sig );
 static int  parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 							PKT_onepass_sig *ops );
-static int  parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
+static int  parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 				      byte *hdr, int hdrlen, PACKET *packet );
 static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
@@ -176,6 +176,38 @@ skip_some_packets( IOBUF inp, unsigned n )
     return rc;
 }
 
+
+void
+parse_pubkey_warning( PACKET *pkt )
+{
+    static byte unknown_pubkey_algos[256];
+    int unk=0, uns=0;
+
+    if( pkt->pkttype == PKT_PUBLIC_KEY
+	|| pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	unk = pkt->pkt.public_key->pubkey_algo & 0xff;
+    else if( pkt->pkttype == PKT_SECRET_KEY
+	     || pkt->pkttype == PKT_SECRET_SUBKEY )
+	unk = pkt->pkt.secret_key->pubkey_algo & 0xff;
+    else if( pkt->pkttype == PKT_SIGNATURE )
+	uns = pkt->pkt.signature->pubkey_algo & 0xff;
+
+    if( unk ) {
+	if( !(unknown_pubkey_algos[unk]&1) ) {
+	    log_info("can't handle key "
+		      "with public key algorithm %d\n", unk );
+	    unknown_pubkey_algos[unk] |= 1;
+	}
+    }
+    else if( uns ) {
+	if( !(unknown_pubkey_algos[unk]&2) ) {
+	    log_info("can't handle signature "
+		      "with public key algorithm %d\n", uns );
+	    unknown_pubkey_algos[unk] |= 2;
+	}
+    }
+}
+
 /****************
  * Parse packet. Set the variable skip points to to 1 if the packet
  * should be skipped; this is the case if either there is a
@@ -277,15 +309,15 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     pkt->pkttype = pkttype;
     rc = G10ERR_UNKNOWN_PACKET; /* default error */
     switch( pkttype ) {
-      case PKT_PUBLIC_CERT:
-      case PKT_PUBKEY_SUBCERT:
-	pkt->pkt.public_cert = m_alloc_clear(sizeof *pkt->pkt.public_cert );
-	rc = parse_certificate(inp, pkttype, pktlen, hdr, hdrlen, pkt );
+      case PKT_PUBLIC_KEY:
+      case PKT_PUBLIC_SUBKEY:
+	pkt->pkt.public_key = m_alloc_clear(sizeof *pkt->pkt.public_key );
+	rc = parse_key(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
-      case PKT_SECRET_CERT:
-      case PKT_SECKEY_SUBCERT:
-	pkt->pkt.secret_cert = m_alloc_clear(sizeof *pkt->pkt.secret_cert );
-	rc = parse_certificate(inp, pkttype, pktlen, hdr, hdrlen, pkt );
+      case PKT_SECRET_KEY:
+      case PKT_SECRET_SUBKEY:
+	pkt->pkt.secret_key = m_alloc_clear(sizeof *pkt->pkt.secret_key );
+	rc = parse_key(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
       case PKT_SYMKEY_ENC:
 	rc = parse_symkeyenc( inp, pkttype, pktlen, pkt );
@@ -310,7 +342,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	break;
       case PKT_RING_TRUST:
 	parse_trust(inp, pkttype, pktlen);
-	rc = 0;
+	rc = G10ERR_UNKNOWN_PACKET;
 	break;
       case PKT_PLAINTEXT:
 	rc = parse_plaintext(inp, pkttype, pktlen, pkt );
@@ -810,18 +842,19 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 
 
 static int
-parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
+parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 			      byte *hdr, int hdrlen, PACKET *pkt )
 {
     int i, version, algorithm;
     unsigned n;
     unsigned long timestamp;
     unsigned short valid_period;
+    int npkey, nskey;
     int is_v4=0;
     int rc=0;
 
     version = iobuf_get_noeof(inp); pktlen--;
-    if( pkttype == PKT_PUBKEY_SUBCERT && version == '#' ) {
+    if( pkttype == PKT_PUBLIC_SUBKEY && version == '#' ) {
 	/* early versions of G10 use old PGP comments packets;
 	 * luckily all those comments are started by a hash */
 	if( list_mode ) {
@@ -861,343 +894,174 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     if( list_mode )
 	printf(":%s key packet:\n"
 	       "\tversion %d, algo %d, created %lu, valid for %hu days\n",
-		pkttype == PKT_PUBLIC_CERT? "public" :
-		pkttype == PKT_SECRET_CERT? "secret" :
-		pkttype == PKT_PUBKEY_SUBCERT? "public sub" :
-		pkttype == PKT_SECKEY_SUBCERT? "secret sub" : "??",
+		pkttype == PKT_PUBLIC_KEY? "public" :
+		pkttype == PKT_SECRET_KEY? "secret" :
+		pkttype == PKT_PUBLIC_SUBKEY? "public sub" :
+		pkttype == PKT_SECRET_SUBKEY? "secret sub" : "??",
 		version, algorithm, timestamp, valid_period );
-    if( pkttype == PKT_SECRET_CERT || pkttype == PKT_SECKEY_SUBCERT )  {
-	pkt->pkt.secret_cert->timestamp = timestamp;
-	pkt->pkt.secret_cert->valid_days = valid_period;
-	pkt->pkt.secret_cert->hdrbytes = hdrlen;
-	pkt->pkt.secret_cert->version = version;
-	pkt->pkt.secret_cert->pubkey_algo = algorithm;
+
+    if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY )  {
+	PKT_secret_key *sk = pkt->pkt.secret_key;
+
+	sk->timestamp = timestamp;
+	sk->valid_days = valid_period;
+	sk->hdrbytes = hdrlen;
+	sk->version = version;
+	sk->pubkey_algo = algorithm;
     }
     else {
-	pkt->pkt.public_cert->timestamp = timestamp;
-	pkt->pkt.public_cert->valid_days = valid_period;
-	pkt->pkt.public_cert->hdrbytes	  = hdrlen;
-	pkt->pkt.public_cert->version	  = version;
-	pkt->pkt.public_cert->pubkey_algo = algorithm;
+	PKT_public_key *pk = pkt->pkt.public_key;
+
+	pk->timestamp = timestamp;
+	pk->valid_days = valid_period;
+	pk->hdrbytes	= hdrlen;
+	pk->version	= version;
+	pk->pubkey_algo = algorithm;
+    }
+    nskey = pubkey_get_nskey( algorithm );
+    npkey = pubkey_get_npkey( algorithm );
+    if( !npkey ) {
+	if( list_mode )
+	    printf("\tunknown algorithm %d\n", algorithm );
+	rc = G10ERR_PUBKEY_ALGO;
+	goto leave;
     }
 
-    if( is_ELGAMAL(algorithm) ) {
-	MPI elg_p, elg_g, elg_y;
-	n = pktlen; elg_p = mpi_read(inp, &n, 0 ); pktlen -=n;
-	n = pktlen; elg_g = mpi_read(inp, &n, 0 ); pktlen -=n;
-	n = pktlen; elg_y = mpi_read(inp, &n, 0 ); pktlen -=n;
-	if( list_mode ) {
-	    printf(  "\telg p: ");
-	    mpi_print(stdout, elg_p, mpi_print_mode  );
-	    printf("\n\telg g: ");
-	    mpi_print(stdout, elg_g, mpi_print_mode  );
-	    printf("\n\telg y: ");
-	    mpi_print(stdout, elg_y, mpi_print_mode  );
-	    putchar('\n');
+
+    if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY )  {
+	PKT_secret_key *sk = pkt->pkt.secret_key;
+	byte temp[8];
+
+	for(i=0; i < npkey; i++ ) {
+	    n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    if( list_mode ) {
+		printf(  "\tskey[%d]: ", i);
+		mpi_print(stdout, sk->skey[i], mpi_print_mode  );
+		putchar('\n');
+	    }
 	}
-	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
-	    pkt->pkt.public_cert->pkey[0] = elg_p;
-	    pkt->pkt.public_cert->pkey[1] = elg_g;
-	    pkt->pkt.public_cert->pkey[2] = elg_y;
-	}
-	else {
-	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
-	    byte temp[8];
-
-	    pkt->pkt.secret_cert->skey[0] = elg_p;
-	    pkt->pkt.secret_cert->skey[1] = elg_g;
-	    pkt->pkt.secret_cert->skey[2] = elg_y;
-	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
-	    if( cert->protect.algo ) {
-		cert->is_protected = 1;
-		cert->protect.s2k.count = 0;
-		if( cert->protect.algo == 255 ) {
-		    if( pktlen < 3 ) {
-			rc = G10ERR_INVALID_PACKET;
-			goto leave;
-		    }
-		    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
-		    cert->protect.s2k.mode  = iobuf_get_noeof(inp); pktlen--;
-		    cert->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
-		    switch( cert->protect.s2k.mode ) {
-		      case 1:
-		      case 4:
-			for(i=0; i < 8 && pktlen; i++, pktlen-- )
-			    temp[i] = iobuf_get_noeof(inp);
-			memcpy(cert->protect.s2k.salt, temp, 8 );
-			break;
-		    }
-		    switch( cert->protect.s2k.mode ) {
-		      case 0: if( list_mode ) printf(  "\tsimple S2K" );
-			break;
-		      case 1: if( list_mode ) printf(  "\tsalted S2K" );
-			break;
-		      case 4: if( list_mode ) printf(  "\titer+salt S2K" );
-			break;
-		      default:
-			if( list_mode )
-			    printf(  "\tunknown S2K %d\n",
-						cert->protect.s2k.mode );
-			rc = G10ERR_INVALID_PACKET;
-			goto leave;
-		    }
-
-		    if( list_mode ) {
-			printf(", algo: %d, hash: %d",
-					 cert->protect.algo,
-					 cert->protect.s2k.hash_algo );
-			if( cert->protect.s2k.mode == 1
-			    || cert->protect.s2k.mode == 4 ) {
-			    printf(", salt: ");
-			    for(i=0; i < 8; i++ )
-				printf("%02x", cert->protect.s2k.salt[i]);
-			}
-			putchar('\n');
-		    }
-
-		    if( cert->protect.s2k.mode == 4 ) {
-			if( pktlen < 4 ) {
-			    rc = G10ERR_INVALID_PACKET;
-			    goto leave;
-			}
-			cert->protect.s2k.count = read_32(inp);
-			pktlen -= 4;
-		    }
-
-		}
-		else {
-		    /* old version, we don't have a S2K, so we fake one */
-		    cert->protect.s2k.mode = 0;
-		    /* We need this kludge to cope with old GNUPG versions */
-		    cert->protect.s2k.hash_algo =
-			 cert->protect.algo == CIPHER_ALGO_BLOWFISH160?
-				      DIGEST_ALGO_RMD160 : DIGEST_ALGO_MD5;
-		    if( list_mode )
-			printf(  "\tprotect algo: %d  (hash algo: %d)\n",
-			     cert->protect.algo, cert->protect.s2k.hash_algo );
-		}
-		if( pktlen < 8 ) {
+	sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
+	if( sk->protect.algo ) {
+	    sk->is_protected = 1;
+	    sk->protect.s2k.count = 0;
+	    if( sk->protect.algo == 255 ) {
+		if( pktlen < 3 ) {
 		    rc = G10ERR_INVALID_PACKET;
 		    goto leave;
 		}
-		for(i=0; i < 8 && pktlen; i++, pktlen-- )
-		    temp[i] = iobuf_get_noeof(inp);
-		if( list_mode ) {
-		    printf(  "\tprotect IV: ");
-		    for(i=0; i < 8; i++ )
-			printf(" %02x", temp[i] );
-		    putchar('\n');
+		sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
+		sk->protect.s2k.mode  = iobuf_get_noeof(inp); pktlen--;
+		sk->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
+		switch( sk->protect.s2k.mode ) {
+		  case 1:
+		  case 4:
+		    for(i=0; i < 8 && pktlen; i++, pktlen-- )
+			temp[i] = iobuf_get_noeof(inp);
+		    memcpy(sk->protect.s2k.salt, temp, 8 );
+		    break;
 		}
-		memcpy(cert->protect.iv, temp, 8 );
-	    }
-	    else
-		cert->is_protected = 0;
-	    /* It does not make sense to read it into secure memory.
-	     * If the user is so careless, not to protect his secret key,
-	     * we can assume, that he operates an open system :=(.
-	     * So we put the key into secure memory when we unprotect it. */
-	    n = pktlen; cert->skey[3] = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    if( cert->is_protected )
-		mpi_set_protect_flag(cert->skey[3]);
-
-	    cert->csum = read_16(inp); pktlen -= 2;
-	    if( list_mode ) {
-		printf("\t[secret value x is not shown]\n"
-		       "\tchecksum: %04hx\n", cert->csum);
-	    }
-	}
-    }
-    else if( algorithm == PUBKEY_ALGO_DSA ) {
-	MPI dsa_p, dsa_q, dsa_g, dsa_y;
-	n = pktlen; dsa_p = mpi_read(inp, &n, 0 ); pktlen -=n;
-	n = pktlen; dsa_q = mpi_read(inp, &n, 0 ); pktlen -=n;
-	n = pktlen; dsa_g = mpi_read(inp, &n, 0 ); pktlen -=n;
-	n = pktlen; dsa_y = mpi_read(inp, &n, 0 ); pktlen -=n;
-	if( list_mode ) {
-	    printf(  "\tdsa p: ");
-	    mpi_print(stdout, dsa_p, mpi_print_mode  );
-	    printf("\n\tdsa q: ");
-	    mpi_print(stdout, dsa_q, mpi_print_mode  );
-	    printf("\n\tdsa g: ");
-	    mpi_print(stdout, dsa_g, mpi_print_mode  );
-	    printf("\n\tdsa y: ");
-	    mpi_print(stdout, dsa_y, mpi_print_mode  );
-	    putchar('\n');
-	}
-	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
-	    pkt->pkt.public_cert->pkey[0] = dsa_p;
-	    pkt->pkt.public_cert->pkey[1] = dsa_q;
-	    pkt->pkt.public_cert->pkey[2] = dsa_g;
-	    pkt->pkt.public_cert->pkey[3] = dsa_y;
-	}
-	else {
-	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
-	    byte temp[8];
-
-	    pkt->pkt.secret_cert->skey[0] = dsa_p;
-	    pkt->pkt.secret_cert->skey[1] = dsa_q;
-	    pkt->pkt.secret_cert->skey[2] = dsa_g;
-	    pkt->pkt.secret_cert->skey[3] = dsa_y;
-	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
-	    if( cert->protect.algo ) {
-		cert->is_protected = 1;
-		cert->protect.s2k.count = 0;
-		if( cert->protect.algo == 255 ) {
-		    if( pktlen < 3 ) {
-			rc = G10ERR_INVALID_PACKET;
-			goto leave;
-		    }
-		    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
-		    cert->protect.s2k.mode  = iobuf_get_noeof(inp); pktlen--;
-		    cert->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
-		    switch( cert->protect.s2k.mode ) {
-		      case 1:
-		      case 4:
-			for(i=0; i < 8 && pktlen; i++, pktlen-- )
-			    temp[i] = iobuf_get_noeof(inp);
-			memcpy(cert->protect.s2k.salt, temp, 8 );
-			break;
-		    }
-		    switch( cert->protect.s2k.mode ) {
-		      case 0: if( list_mode ) printf(  "\tsimple S2K" );
-			break;
-		      case 1: if( list_mode ) printf(  "\tsalted S2K" );
-			break;
-		      case 4: if( list_mode ) printf(  "\titer+salt S2K" );
-			break;
-		      default:
-			if( list_mode )
-			    printf(  "\tunknown S2K %d\n",
-						    cert->protect.s2k.mode );
-			rc = G10ERR_INVALID_PACKET;
-			goto leave;
-		    }
-
-		    if( list_mode ) {
-			printf(", algo: %d, hash: %d",
-					 cert->protect.algo,
-					 cert->protect.s2k.hash_algo );
-			if( cert->protect.s2k.mode == 1
-			    || cert->protect.s2k.mode == 4 ){
-			    printf(", salt: ");
-			    for(i=0; i < 8; i++ )
-				printf("%02x", cert->protect.s2k.salt[i]);
-			}
-			putchar('\n');
-		    }
-
-		    if( cert->protect.s2k.mode == 4 ) {
-			if( pktlen < 4 ) {
-			    rc = G10ERR_INVALID_PACKET;
-			    goto leave;
-			}
-			cert->protect.s2k.count = read_32(inp);
-			pktlen -= 4;
-		    }
-
-		}
-		else {
+		switch( sk->protect.s2k.mode ) {
+		  case 0: if( list_mode ) printf(  "\tsimple S2K" );
+		    break;
+		  case 1: if( list_mode ) printf(  "\tsalted S2K" );
+		    break;
+		  case 4: if( list_mode ) printf(  "\titer+salt S2K" );
+		    break;
+		  default:
 		    if( list_mode )
-			printf(  "\tprotect algo: %d\n", cert->protect.algo);
-		    /* old version, we don't have a S2K, so we fake one */
-		    cert->protect.s2k.mode = 0;
-		    cert->protect.s2k.hash_algo = DIGEST_ALGO_MD5;
-		}
-		if( pktlen < 8 ) {
+			printf(  "\tunknown S2K %d\n",
+					    sk->protect.s2k.mode );
 		    rc = G10ERR_INVALID_PACKET;
 		    goto leave;
 		}
-		for(i=0; i < 8 && pktlen; i++, pktlen-- )
-		    temp[i] = iobuf_get_noeof(inp);
+
 		if( list_mode ) {
-		    printf(  "\tprotect IV: ");
-		    for(i=0; i < 8; i++ )
-			printf(" %02x", temp[i] );
+		    printf(", algo: %d, hash: %d",
+				     sk->protect.algo,
+				     sk->protect.s2k.hash_algo );
+		    if( sk->protect.s2k.mode == 1
+			|| sk->protect.s2k.mode == 4 ) {
+			printf(", salt: ");
+			for(i=0; i < 8; i++ )
+			    printf("%02x", sk->protect.s2k.salt[i]);
+		    }
 		    putchar('\n');
 		}
-		memcpy(cert->protect.iv, temp, 8 );
-	    }
-	    else
-		cert->is_protected = 0;
-	    /* It does not make sense to read it into secure memory.
-	     * If the user is so careless, not to protect his secret key,
-	     * we can assume, that he operates an open system :=(.
-	     * So we put the key into secure memory when we unprotect it. */
-	    n = pktlen; cert->skey[4] = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    if( cert->is_protected )
-		mpi_set_protect_flag(cert->skey[4]);
 
-	    cert->csum = read_16(inp); pktlen -= 2;
+		if( sk->protect.s2k.mode == 4 ) {
+		    if( pktlen < 4 ) {
+			rc = G10ERR_INVALID_PACKET;
+			goto leave;
+		    }
+		    sk->protect.s2k.count = read_32(inp);
+		    pktlen -= 4;
+		}
+
+	    }
+	    else { /* old version; no S2K, so we set mode to 0, hash MD5 */
+		sk->protect.s2k.mode = 0;
+		/* We need a kludge to cope with old GNUPG versions */
+		sk->protect.s2k.hash_algo =
+			 ( sk->protect.algo == CIPHER_ALGO_BLOWFISH160
+			   && algorithm == PUBKEY_ALGO_ELGAMAL_E ) ?
+				  DIGEST_ALGO_RMD160 : DIGEST_ALGO_MD5;
+		if( list_mode )
+		    printf(  "\tprotect algo: %d  (hash algo: %d)\n",
+			 sk->protect.algo, sk->protect.s2k.hash_algo );
+	    }
+	    if( pktlen < 8 ) {
+		rc = G10ERR_INVALID_PACKET;
+		goto leave;
+	    }
+	    for(i=0; i < 8 && pktlen; i++, pktlen-- )
+		temp[i] = iobuf_get_noeof(inp);
 	    if( list_mode ) {
-		printf("\t[secret value x is not shown]\n"
-		       "\tchecksum: %04hx\n", cert->csum);
+		printf(  "\tprotect IV: ");
+		for(i=0; i < 8; i++ )
+		    printf(" %02x", temp[i] );
+		putchar('\n');
+	    }
+	    memcpy(sk->protect.iv, temp, 8 );
+	}
+	else
+	    sk->is_protected = 0;
+	/* It does not make sense to read it into secure memory.
+	 * If the user is so careless, not to protect his secret key,
+	 * we can assume, that he operates an open system :=(.
+	 * So we put the key into secure memory when we unprotect it. */
+
+	for(i=npkey; i < nskey; i++ ) {
+	    n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    if( sk->is_protected )
+		mpi_set_protect_flag(sk->skey[i]);
+	    if( list_mode ) {
+		printf(  "\tskey[%d]: ", i);
+		if( sk->is_protected )
+		    printf(  "[encrypted]\n");
+		else {
+		    mpi_print(stdout, sk->skey[i], mpi_print_mode  );
+		    putchar('\n');
+		}
 	    }
 	}
-    }
-    else if( is_RSA(algorithm) ) {
-	MPI rsa_pub_mod, rsa_pub_exp;
 
-	n = pktlen; rsa_pub_mod = mpi_read(inp, &n, 0); pktlen -=n;
-	n = pktlen; rsa_pub_exp = mpi_read(inp, &n, 0 ); pktlen -=n;
+	sk->csum = read_16(inp); pktlen -= 2;
 	if( list_mode ) {
-	    printf(  "\tpublic modulus  n:  ");
-	    mpi_print(stdout, rsa_pub_mod, mpi_print_mode  );
-	    printf("\n\tpublic exponent e: ");
-	    mpi_print(stdout, rsa_pub_exp, mpi_print_mode  );
-	    putchar('\n');
+	    printf("\tchecksum: %04hx\n", sk->csum);
 	}
-	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
-	    pkt->pkt.public_cert->pkey[0] = rsa_pub_mod;
-	    pkt->pkt.public_cert->pkey[1] = rsa_pub_exp;
-	}
-	else {
-	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
-	    byte temp[8];
+    }
+    else {
+	PKT_public_key *pk = pkt->pkt.public_key;
 
-	    pkt->pkt.secret_cert->skey[0] = rsa_pub_mod;
-	    pkt->pkt.secret_cert->skey[1] = rsa_pub_exp;
-	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
-	    if( list_mode )
-		printf(  "\tprotect algo: %d\n", cert->protect.algo);
-	    if( cert->protect.algo ) {
-		cert->is_protected = 1;
-		for(i=0; i < 8 && pktlen; i++, pktlen-- )
-		    temp[i] = iobuf_get_noeof(inp);
-		if( list_mode ) {
-		    printf(  "\tprotect IV: ");
-		    for(i=0; i < 8; i++ )
-			printf(" %02x", temp[i] );
-		    putchar('\n');
-		}
-		memcpy(cert->protect.iv, temp, 8 );
-		/* old version, we don't have a S2K, so we fake one */
-		cert->protect.s2k.mode = 0;
-		cert->protect.s2k.hash_algo = DIGEST_ALGO_MD5;
-	    }
-	    else
-		cert->is_protected = 0;
-	    /* (See comments at the code for elg keys) */
-	    n = pktlen; cert->skey[2] = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    n = pktlen; cert->skey[3] = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    n = pktlen; cert->skey[4] = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    n = pktlen; cert->skey[5] = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    if( cert->is_protected ) {
-		mpi_set_protect_flag(cert->skey[2]);
-		mpi_set_protect_flag(cert->skey[3]);
-		mpi_set_protect_flag(cert->skey[4]);
-		mpi_set_protect_flag(cert->skey[5]);
-	    }
-
-	    cert->csum = read_16(inp); pktlen -= 2;
+	for(i=0; i < npkey; i++ ) {
+	    n = pktlen; pk->pkey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
 	    if( list_mode ) {
-		printf("\t[secret values d,p,q,u are not shown]\n"
-		       "\tchecksum: %04hx\n", cert->csum);
+		printf(  "\tpkey[%d]: ", i);
+		mpi_print(stdout, pk->pkey[i], mpi_print_mode  );
+		putchar('\n');
 	    }
 	}
     }
-    else if( list_mode )
-	printf("\tunknown algorithm %d\n", algorithm );
-
 
   leave:
     skip_rest(inp, pktlen);

@@ -1,3 +1,22 @@
+Mon Jun 29 12:54:45 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* packet.h: changed all "_cert" to "_key", "subcert" to "subkey".
+
+	* free-packet.c (free_packet): Removed memory leak for subkeys.
+
+Sun Jun 28 18:32:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* import.c (import_keys): Renamed from import_pubkeys.
+	(import_secret_one): New.
+
+	* g10.c (aExportSecret): New.
+
+	* export.c (export_seckeys): New.
+
+	* parse-packet.c (parse_certificate): Cleaned up.
+	(parse_packet): Trust packets are now considered as unknown.
+	(parse_pubkey_warning): New.
+
 Fri Jun 26 10:37:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* keygen.c (has_invalid_email_chars): New.

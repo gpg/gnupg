@@ -35,76 +35,76 @@
 
 
 static int
-do_check( PKT_secret_cert *cert )
+do_check( PKT_secret_key *sk )
 {
     byte *buffer;
     u16 csum=0;
     int i, res;
     unsigned nbytes;
 
-    if( cert->is_protected ) { /* remove the protection */
+    if( sk->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
 	u32 keyid[2];
 	CIPHER_HANDLE cipher_hd=NULL;
-	PKT_secret_cert *save_cert;
+	PKT_secret_key *save_sk;
 	char save_iv[8];
 
-	if( cert->protect.algo == CIPHER_ALGO_NONE )
+	if( sk->protect.algo == CIPHER_ALGO_NONE )
 	    BUG();
-	if( check_cipher_algo( cert->protect.algo ) )
+	if( check_cipher_algo( sk->protect.algo ) )
 	    return G10ERR_CIPHER_ALGO; /* unsupported protection algorithm */
-	keyid_from_skc( cert, keyid );
-	dek = passphrase_to_dek( keyid, cert->protect.algo,
-				 &cert->protect.s2k, 0 );
-	cipher_hd = cipher_open( cert->protect.algo,
+	keyid_from_sk( sk, keyid );
+	dek = passphrase_to_dek( keyid, sk->protect.algo,
+				 &sk->protect.s2k, 0 );
+	cipher_hd = cipher_open( sk->protect.algo,
 				 CIPHER_MODE_AUTO_CFB, 1);
 	cipher_setkey( cipher_hd, dek->key, dek->keylen );
 	cipher_setiv( cipher_hd, NULL );
 	m_free(dek);
-	save_cert = copy_secret_cert( NULL, cert );
-	memcpy(save_iv, cert->protect.iv, 8 );
-	cipher_decrypt( cipher_hd, cert->protect.iv, cert->protect.iv, 8 );
+	save_sk = copy_secret_key( NULL, sk );
+	memcpy(save_iv, sk->protect.iv, 8 );
+	cipher_decrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
 	csum = 0;
-	for(i=pubkey_get_npkey(cert->pubkey_algo);
-		i < pubkey_get_nskey(cert->pubkey_algo); i++ ) {
-	    buffer = mpi_get_secure_buffer( cert->skey[i], &nbytes, NULL );
+	for(i=pubkey_get_npkey(sk->pubkey_algo);
+		i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
+	    buffer = mpi_get_secure_buffer( sk->skey[i], &nbytes, NULL );
 	    cipher_sync( cipher_hd );
-	    assert( mpi_is_protected(cert->skey[i]) );
+	    assert( mpi_is_protected(sk->skey[i]) );
 	    cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
-	    mpi_set_buffer( cert->skey[i], buffer, nbytes, 0 );
-	    mpi_clear_protect_flag( cert->skey[i] );
-	    csum += checksum_mpi( cert->skey[i] );
+	    mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
+	    mpi_clear_protect_flag( sk->skey[i] );
+	    csum += checksum_mpi( sk->skey[i] );
 	    m_free( buffer );
 	}
 	if( opt.emulate_bugs & 1 ) {
-	   csum = cert->csum;
+	   csum = sk->csum;
 	}
 	cipher_close( cipher_hd );
 	/* now let's see whether we have used the right passphrase */
-	if( csum != cert->csum ) {
-	    copy_secret_cert( cert, save_cert );
-	    free_secret_cert( save_cert );
-	    memcpy( cert->protect.iv, save_iv, 8 );
+	if( csum != sk->csum ) {
+	    copy_secret_key( sk, save_sk );
+	    free_secret_key( save_sk );
+	    memcpy( sk->protect.iv, save_iv, 8 );
 	    return G10ERR_BAD_PASS;
 	}
 	/* the checksum may fail, so we also check the key itself */
-	res = pubkey_check_secret_key( cert->pubkey_algo, cert->skey );
+	res = pubkey_check_secret_key( sk->pubkey_algo, sk->skey );
 	if( res ) {
-	    copy_secret_cert( cert, save_cert );
-	    free_secret_cert( save_cert );
-	    memcpy( cert->protect.iv, save_iv, 8 );
+	    copy_secret_key( sk, save_sk );
+	    free_secret_key( save_sk );
+	    memcpy( sk->protect.iv, save_iv, 8 );
 	    return G10ERR_BAD_PASS;
 	}
-	free_secret_cert( save_cert );
-	cert->is_protected = 0;
+	free_secret_key( save_sk );
+	sk->is_protected = 0;
     }
     else { /* not protected, assume it is okay if the checksum is okay */
 	csum = 0;
-	for(i=pubkey_get_npkey(cert->pubkey_algo);
-		i < pubkey_get_nskey(cert->pubkey_algo); i++ ) {
-	    csum += checksum_mpi( cert->skey[i] );
+	for(i=pubkey_get_npkey(sk->pubkey_algo);
+		i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
+	    csum += checksum_mpi( sk->skey[i] );
 	}
-	if( csum != cert->csum )
+	if( csum != sk->csum )
 	    return G10ERR_CHECKSUM;
     }
 
@@ -114,11 +114,11 @@ do_check( PKT_secret_cert *cert )
 
 
 /****************
- * Check the secret key certificate
+ * Check the secret key
  * Ask up to 3 times for a correct passphrase
  */
 int
-check_secret_key( PKT_secret_cert *cert )
+check_secret_key( PKT_secret_key *sk )
 {
     int rc = G10ERR_BAD_PASS;
     int i;
@@ -126,20 +126,20 @@ check_secret_key( PKT_secret_cert *cert )
     for(i=0; i < 3 && rc == G10ERR_BAD_PASS; i++ ) {
 	if( i )
 	    log_error(_("Invalid passphrase; please try again ...\n"));
-	rc = do_check( cert );
+	rc = do_check( sk );
       #if 0 /* set to 1 to enable the workaround */
-	if( rc == G10ERR_BAD_PASS && cert->is_protected
-	    && cert->protect.algo == CIPHER_ALGO_BLOWFISH
-	    && cert->pubkey_algo != PUBKEY_ALGO_ELGAMAL ) {
+	if( rc == G10ERR_BAD_PASS && sk->is_protected
+	    && sk->protect.algo == CIPHER_ALGO_BLOWFISH
+	    && sk->pubkey_algo != PUBKEY_ALGO_ELGAMAL ) {
 	    /* Workaround for a bug in 0.2.16 which still used
 	     * a 160 bit key for BLOWFISH. */
 	    log_info("trying workaround for 0.2.16 passphrase bug ...\n");
 	    log_info("If you don't need this, uncomment it in g10/seckey-cert.c\n\n");
-	    cert->protect.algo = CIPHER_ALGO_BLOWFISH160;
-	    rc = do_check( cert );
+	    sk->protect.algo = CIPHER_ALGO_BLOWFISH160;
+	    rc = do_check( sk );
 	    if( rc )
 		rc = G10ERR_BAD_PASS;
-	    cert->protect.algo = CIPHER_ALGO_BLOWFISH;
+	    sk->protect.algo = CIPHER_ALGO_BLOWFISH;
 	}
       #endif
 	if( get_passphrase_fd() != -1 )
@@ -154,18 +154,18 @@ check_secret_key( PKT_secret_cert *cert )
  * Returns: 0 not protected, -1 on error or the protection algorithm
  */
 int
-is_secret_key_protected( PKT_secret_cert *cert )
+is_secret_key_protected( PKT_secret_key *sk )
 {
-    return cert->is_protected? cert->protect.algo : 0;
+    return sk->is_protected? sk->protect.algo : 0;
 }
 
 
 
 /****************
- * Protect the secret key certificate with the passphrase from DEK
+ * Protect the secret key with the passphrase from DEK
  */
 int
-protect_secret_key( PKT_secret_cert *cert, DEK *dek )
+protect_secret_key( PKT_secret_key *sk, DEK *dek )
 {
     int i, rc = 0;
     byte *buffer;
@@ -175,33 +175,33 @@ protect_secret_key( PKT_secret_cert *cert, DEK *dek )
     if( !dek )
 	return 0;
 
-    if( !cert->is_protected ) { /* okay, apply the protection */
+    if( !sk->is_protected ) { /* okay, apply the protection */
 	CIPHER_HANDLE cipher_hd=NULL;
 
-	if( check_cipher_algo( cert->protect.algo ) )
+	if( check_cipher_algo( sk->protect.algo ) )
 	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
 	else {
-	    cipher_hd = cipher_open( cert->protect.algo,
+	    cipher_hd = cipher_open( sk->protect.algo,
 				     CIPHER_MODE_AUTO_CFB, 1 );
 	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
 	    cipher_setiv( cipher_hd, NULL );
-	    cipher_encrypt( cipher_hd, cert->protect.iv, cert->protect.iv, 8 );
+	    cipher_encrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
 	    /* NOTE: we always recalculate the checksum because there are some
 	     * test releases which calculated it wrong */
 	    csum = 0;
-	    for(i=pubkey_get_npkey(cert->pubkey_algo);
-		    i < pubkey_get_nskey(cert->pubkey_algo); i++ ) {
-		csum += checksum_mpi_counted_nbits( cert->skey[i] );
-		buffer = mpi_get_buffer( cert->skey[i], &nbytes, NULL );
+	    for(i=pubkey_get_npkey(sk->pubkey_algo);
+		    i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
+		csum += checksum_mpi_counted_nbits( sk->skey[i] );
+		buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
 		cipher_sync( cipher_hd );
-		assert( !mpi_is_protected(cert->skey[i]) );
+		assert( !mpi_is_protected(sk->skey[i]) );
 		cipher_encrypt( cipher_hd, buffer, buffer, nbytes );
-		mpi_set_buffer( cert->skey[i], buffer, nbytes, 0 );
-		mpi_set_protect_flag( cert->skey[i] );
+		mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
+		mpi_set_protect_flag( sk->skey[i] );
 		m_free( buffer );
 	    }
-	    cert->csum = csum;
-	    cert->is_protected = 1;
+	    sk->csum = csum;
+	    sk->is_protected = 1;
 	    cipher_close( cipher_hd );
 	}
     }

@@ -39,7 +39,7 @@ struct cmp_help_context_s {
 };
 
 
-static int do_check( PKT_public_cert *pkc, PKT_signature *sig,
+static int do_check( PKT_public_key *pk, PKT_signature *sig,
 						MD_HANDLE digest );
 
 
@@ -51,19 +51,19 @@ static int do_check( PKT_public_cert *pkc, PKT_signature *sig,
 int
 signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
-    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
 
 
     if( is_RSA(sig->pubkey_algo) )
 	write_status(STATUS_RSA_OR_IDEA);
 
-    if( get_pubkey( pkc, sig->keyid ) )
+    if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
     else
-	rc = do_check( pkc, sig, digest );
+	rc = do_check( pk, sig, digest );
 
-    free_public_cert( pkc );
+    free_public_key( pk );
     return rc;
 }
 
@@ -144,33 +144,33 @@ cmp_help( void *opaque, MPI result )
 
 
 static int
-do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
+do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 {
     MPI result = NULL;
     int rc=0;
     struct cmp_help_context_s ctx;
     u32 cur_time;
 
-    if( pkc->version == 4 && pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
+    if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 	log_info("this is a PGP generated "
 		 "ElGamal key which is NOT secure for signatures!\n");
 	return G10ERR_PUBKEY_ALGO;
     }
 
-    if( pkc->timestamp > sig->timestamp )
+    if( pk->timestamp > sig->timestamp )
 	return G10ERR_TIME_CONFLICT; /* pubkey newer that signature */
 
     cur_time = make_timestamp();
-    if( pkc->timestamp > cur_time ) {
+    if( pk->timestamp > cur_time ) {
 	log_info(_("public key created in future (time warp or clock problem)\n"));
 	return G10ERR_TIME_CONFLICT;
     }
 
-    if( pkc->valid_days && add_days_to_timestamp(pkc->timestamp,
-						pkc->valid_days) < cur_time ) {
+    if( pk->valid_days && add_days_to_timestamp(pk->timestamp,
+						pk->valid_days) < cur_time ) {
 	log_info(_("warning: signature key expired %s\n"), strtimestamp(
-				    add_days_to_timestamp(pkc->timestamp,
-							  pkc->valid_days)));
+				    add_days_to_timestamp(pk->timestamp,
+							  pk->valid_days)));
 	write_status(STATUS_SIGEXPIRED);
     }
 
@@ -217,11 +217,11 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
     }
     md_final( digest );
 
-    result = encode_md_value( pkc->pubkey_algo, digest, sig->digest_algo,
-				      mpi_get_nbits(pkc->pkey[0]));
+    result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
+				      mpi_get_nbits(pk->pkey[0]));
     ctx.sig = sig;
     ctx.md = digest;
-    rc = pubkey_verify( pkc->pubkey_algo, result, sig->data, pkc->pkey,
+    rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
 			cmp_help, &ctx );
     mpi_free( result );
 
@@ -249,14 +249,14 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
 
 /****************
  * check the signature pointed to by NODE. This is a key signature.
- * If the function detects a self-signature, it uses the PKC from
+ * If the function detects a self-signature, it uses the PK from
  * NODE and does not read any public key.
  */
 int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 {
     MD_HANDLE md;
-    PKT_public_cert *pkc;
+    PKT_public_key *pk;
     PKT_signature *sig;
     int algo;
     int rc;
@@ -264,9 +264,9 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
     if( is_selfsig )
 	*is_selfsig = 0;
     assert( node->pkt->pkttype == PKT_SIGNATURE );
-    assert( root->pkt->pkttype == PKT_PUBLIC_CERT );
+    assert( root->pkt->pkttype == PKT_PUBLIC_KEY );
 
-    pkc = root->pkt->pkt.public_cert;
+    pk = root->pkt->pkt.public_key;
     sig = node->pkt->pkt.signature;
     algo = sig->digest_algo;
     if( (rc=check_digest_algo(algo)) )
@@ -274,25 +274,25 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 
     if( sig->sig_class == 0x20 ) {
 	md = md_open( algo, 0 );
-	hash_public_cert( md, pkc );
-	rc = do_check( pkc, sig, md );
+	hash_public_key( md, pk );
+	rc = do_check( pk, sig, md );
 	md_close(md);
     }
     else if( sig->sig_class == 0x18 ) {
-	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBKEY_SUBCERT );
+	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBLIC_SUBKEY );
 
 	if( snode ) {
 	    if( is_selfsig ) {
 		u32 keyid[2];
 
-		keyid_from_pkc( pkc, keyid );
+		keyid_from_pk( pk, keyid );
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
 		    *is_selfsig = 1;
 	    }
 	    md = md_open( algo, 0 );
-	    hash_public_cert( md, pkc );
-	    hash_public_cert( md, snode->pkt->pkt.public_cert );
-	    rc = do_check( pkc, sig, md );
+	    hash_public_key( md, pk );
+	    hash_public_key( md, snode->pkt->pkt.public_key );
+	    rc = do_check( pk, sig, md );
 	    md_close(md);
 	}
 	else {
@@ -306,15 +306,15 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 	if( unode ) {
 	    u32 keyid[2];
 
-	    keyid_from_pkc( pkc, keyid );
+	    keyid_from_pk( pk, keyid );
 	    md = md_open( algo, 0 );
 	    /*md_start_debug(md, "check");*/
-	    hash_public_cert( md, pkc );
+	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 		if( is_selfsig )
 		    *is_selfsig = 1;
-		rc = do_check( pkc, sig, md );
+		rc = do_check( pk, sig, md );
 	    }
 	    else
 		rc = signature_check( sig, md );
