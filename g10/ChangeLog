@@ -6,6 +6,8 @@
 	* apdu.c (open_ccid_reader): New arg PORTSTR.  Pass it to
 	ccid_open_reader.
 	(apdu_open_reader): Pass portstr to open_ccid_reader.
+	(apdu_open_reader): No fallback if a full CCID reader id has been
+	given.
 
 	* ccid-driver.c (ccid_get_reader_list): New.
 	(ccid_open_reader): Changed API to take a string for the reader.

@@ -1540,233 +1540,6 @@ ccid_transceive (ccid_driver_t handle,
 
 
 
-int
-ccid_secure_transceive (ccid_driver_t handle,
-                        unsigned char *resp, size_t maxresplen, size_t *nresp)
-{
-  int rc;
-  unsigned char send_buffer[10+259], recv_buffer[10+259];
-  unsigned char *msg, *tpdu, *p;
-  size_t msglen, tpdulen, last_tpdulen, n;
-  unsigned char seqno;
-  int i;
-  unsigned int edc;
-  size_t dummy_nresp;
-  int next_chunk = 1;
-  int sending = 1;
-  int retries = 0;
-
-  if (!nresp)
-    nresp = &dummy_nresp;
-  *nresp = 0;
-
-  tpdulen = 0; /* Avoid compiler warning about no initialization. */
-  msg = send_buffer;
-  for (;;)
-    {
-      msg[0] = PC_to_RDR_Secure;
-      msg[5] = 0; /* slot */
-      msg[6] = seqno = handle->seqno++;
-      msg[7] = 4; /* bBWI */
-      msg[8] = 0; /* RFU */
-      msg[9] = 0; /* RFU */
-      msg[10] = 0; /* Perform PIN verification. */
-      msg[11] = 0; /* Timeout in seconds. */
-      msg[12] = 0x8A; /* bmFormatString: Byte, pos=1, Ascii. */
-      msg[13] = 0x80; /* bmPINBlockString:
-                         8 bits of pin length to insert. 
-                         0 bytes of PIN block size.  */
-      msg[14] = 0x00; /* bmPINLengthFormat:
-                         Units are bits, position is 0. */
-      msg[15] = 6;    /* wPINMaxExtraDigit-Minimum.  */
-      msg[16] = 8;    /* wPINMaxExtraDigit-Maximum.  */
-      msg[17] = 0x02; /* bEntryValidationCondition:
-                         Validation key pressed
-                       */
-      msg[18] = 0xff; /* bNumberMessage: Default. */
-      msg[19] = 0x04; /* wLangId-High. */
-      msg[20] = 0x09; /* wLangId-Low:  English FIXME: use the first entry. */
-      msg[21] = 0;    /* bMsgIndex. */
-      /* bTeoProlog follows: */
-      msg[22] = handle->nonnull_nad? ((1 << 4) | 0): 0;
-      msg[23] = ((handle->t1_ns & 1) << 6); /* I-block */
-      msg[24] = 4;   /* apdulen. */
-      /* APDU follows:  */
-      msg[25] = 0;    /* CLA */
-      msg[26] = 0x20; /* INS Verify */
-      msg[27] = 0;    /* P1 */
-      msg[28] = 0x81; /* P2: OpenPGP CHV1 */
-      msg[29] = 0;    /* L_c */
-      msg[30] = '0';
-      msg[31] = '0';
-      msg[32] = '0';
-      msg[33] = '0';
-      msg[34] = '0';
-      msg[35] = '0';
-      msg[36] = '0';
-      msg[37] = '0';
-      msglen = 29;
-      set_msg_len (msg, msglen - 10);
-      last_tpdulen = tpdulen;
-
-      DEBUGOUT ("sending");
-      for (i=0; i < msglen; i++)
-        DEBUGOUT_CONT_1 (" %02X", msg[i]);
-      DEBUGOUT_LF ();
-
-#ifdef DEBUG_T1      
-      fprintf (stderr, "T1: put %c-block seq=%d\n",
-               ((msg[11] & 0xc0) == 0x80)? 'R' :
-               (msg[11] & 0x80)? 'S' : 'I',
-        ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)));
-#endif  
-
-      rc = bulk_out (handle, msg, msglen);
-      if (rc)
-        return rc;
-
-      msg = recv_buffer;
-      rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
-                    RDR_to_PC_DataBlock, seqno);
-      if (rc)
-        return rc;
-      
-      tpdu = msg + 10;
-      tpdulen = msglen - 10;
-      
-      if (tpdulen < 4) 
-        {
-          usb_clear_halt (handle->idev, 0x82);
-          return CCID_DRIVER_ERR_ABORTED; 
-        }
-#ifdef DEBUG_T1
-      fprintf (stderr, "T1: got %c-block seq=%d err=%d\n",
-               ((msg[11] & 0xc0) == 0x80)? 'R' :
-               (msg[11] & 0x80)? 'S' : 'I',
-        ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)),
-               ((msg[11] & 0xc0) == 0x80)? (msg[11] & 0x0f) : 0
-               );
-#endif
-
-      if (!(tpdu[1] & 0x80))
-        { /* This is an I-block. */
-          retries = 0;
-          if (sending)
-            { /* last block sent was successful. */
-              handle->t1_ns ^= 1;
-              sending = 0;
-            }
-
-          if (!!(tpdu[1] & 0x40) != handle->t1_nr)
-            { /* Reponse does not match our sequence number. */
-              msg = send_buffer;
-              tpdu = msg+10;
-              /* NAD: DAD=1, SAD=0 */
-              tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
-              tpdu[1] = (0x80 | (handle->t1_nr & 1) << 4 | 2); /* R-block */
-              tpdu[2] = 0;
-              tpdulen = 3;
-              edc = compute_edc (tpdu, tpdulen, 0);
-              tpdu[tpdulen++] = edc;
-
-              continue;
-            }
-
-          handle->t1_nr ^= 1;
-
-          p = tpdu + 3; /* Skip the prologue field. */
-          n = tpdulen - 3 - 1; /* Strip the epilogue field. */
-          /* fixme: verify the checksum. */
-          if (resp)
-            {
-              if (n > maxresplen)
-                {
-                  DEBUGOUT_2 ("provided buffer too short for received data "
-                              "(%u/%u)\n",
-                              (unsigned int)n, (unsigned int)maxresplen);
-                  return CCID_DRIVER_ERR_INV_VALUE;
-                }
-              
-              memcpy (resp, p, n); 
-              resp += n;
-              *nresp += n;
-              maxresplen -= n;
-            }
-          
-          if (!(tpdu[1] & 0x20))
-            return 0; /* No chaining requested - ready. */
-          
-          msg = send_buffer;
-          tpdu = msg+10;
-          /* NAD: DAD=1, SAD=0 */
-          tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
-          tpdu[1] = (0x80 | (handle->t1_nr & 1) << 4); /* R-block */
-          tpdu[2] = 0;
-          tpdulen = 3;
-          edc = compute_edc (tpdu, tpdulen, 0);
-          tpdu[tpdulen++] = edc;
-        }
-      else if ((tpdu[1] & 0xc0) == 0x80)
-        { /* This is a R-block. */
-          if ( (tpdu[1] & 0x0f)) 
-            { /* Error: repeat last block */
-              if (++retries > 3)
-                {
-                  DEBUGOUT ("3 failed retries\n");
-                  return CCID_DRIVER_ERR_CARD_IO_ERROR;
-                }
-              msg = send_buffer;
-              tpdulen = last_tpdulen;
-            }
-          else if (sending && !!(tpdu[1] & 0x40) == handle->t1_ns)
-            { /* Reponse does not match our sequence number. */
-              DEBUGOUT ("R-block with wrong seqno received on more bit\n");
-              return CCID_DRIVER_ERR_CARD_IO_ERROR;
-            }
-          else if (sending)
-            { /* Send next chunk. */
-              retries = 0;
-              msg = send_buffer;
-              next_chunk = 1;
-              handle->t1_ns ^= 1;
-            }
-          else
-            {
-              DEBUGOUT ("unexpected ACK R-block received\n");
-              return CCID_DRIVER_ERR_CARD_IO_ERROR;
-            }
-        }
-      else 
-        { /* This is a S-block. */
-          retries = 0;
-          DEBUGOUT_2 ("T1 S-block %s received cmd=%d\n",
-                      (tpdu[1] & 0x20)? "response": "request",
-                      (tpdu[1] & 0x1f));
-          if ( !(tpdu[1] & 0x20) && (tpdu[1] & 0x1f) == 3 && tpdu[2])
-            { /* Wait time extension request. */
-              unsigned char bwi = tpdu[3];
-              msg = send_buffer;
-              tpdu = msg+10;
-              /* NAD: DAD=1, SAD=0 */
-              tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
-              tpdu[1] = (0xc0 | 0x20 | 3); /* S-block response */
-              tpdu[2] = 1;
-              tpdu[3] = bwi;
-              tpdulen = 4;
-              edc = compute_edc (tpdu, tpdulen, 0);
-              tpdu[tpdulen++] = edc;
-              DEBUGOUT_1 ("T1 waittime extension of bwi=%d\n", bwi);
-            }
-          else
-            return CCID_DRIVER_ERR_CARD_IO_ERROR;
-        }
-    } /* end T=1 protocol loop. */
-
-  return 0;
-}
-
-
-
 
 #ifdef TEST
 
@@ -1906,7 +1679,7 @@ main (int argc, char **argv)
 
   ccid_poll (ccid);
 
-  if (!ccid->has_pinpad)
+/*   if (!ccid->has_pinpad) */
     {
       fputs ("verifying that CHV1 is 123456....\n", stderr);
       {
@@ -1917,15 +1690,15 @@ main (int argc, char **argv)
         print_result (rc, result, resultlen);
       }
     }
-  else
-    {
-      fputs ("verifying CHV1 using the PINPad ....\n", stderr);
-      {
-        rc = ccid_secure_transceive (ccid,
-                                     result, sizeof result, &resultlen);
-        print_result (rc, result, resultlen);
-      }
-    }
+/*   else */
+/*     { */
+/*       fputs ("verifying CHV1 using the PINPad ....\n", stderr); */
+/*       { */
+/*         rc = ccid_secure_transceive (ccid, */
+/*                                      result, sizeof result, &resultlen); */
+/*         print_result (rc, result, resultlen); */
+/*       } */
+/*     } */
 
   ccid_close_reader (ccid);
 

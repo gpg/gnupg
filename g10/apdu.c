@@ -1879,11 +1879,19 @@ apdu_open_reader (const char *portstr)
 #ifdef HAVE_LIBUSB
   if (!opt.disable_ccid)
     {
-      int slot;
+      int slot, i;
+      const char *s;
 
       slot = open_ccid_reader (portstr);
       if (slot != -1)
         return slot; /* got one */
+
+      /* If a CCID reader specification has been given, the user does
+         not want a fallback to other drivers. */
+      if (portstr)
+        for (s=portstr, i=0; *s; s++)
+          if (*s == ':' && (++i == 3))
+            return -1;
     }
 
 #endif /* HAVE_LIBUSB */
