@@ -52,8 +52,8 @@
 #endif
 
 #ifdef _WIN32
-#define HAVE_DL_DLOPEN
-#define USE_DYNAMIC_LINKING
+#define HAVE_DL_DLOPEN 1
+#define USE_DYNAMIC_LINKING 1
 
 static int last_error = 0;
     
