@@ -214,9 +214,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
         }
 
         if ( use_seskey ) {            
-            seskeylen = cipher_get_keylen( opt.s2k_cipher_algo ?
-                                           opt.s2k_cipher_algo:
-                                           opt.def_cipher_algo ) / 8;
+            seskeylen = cipher_get_keylen( opt.s2k_cipher_algo ) / 8;
             encode_sesskey( cfx.dek, &dek, enckey );
             m_free( cfx.dek ); cfx.dek = dek;
         }

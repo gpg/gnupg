@@ -1,3 +1,8 @@
+2003-10-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Fix --export-all do actually do something
+	different than --export.
+
 2003-10-03  Werner Koch  <wk@gnupg.org>
 
 	* mainproc.c (check_sig_and_print): Prefix the key ID printed with
