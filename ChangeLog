@@ -1,5 +1,8 @@
 2002-10-31  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Put gnupg.spec in the root directory so rpm -ta
+	works.
+
 	* configure.ac: Add a check for volatile.
 
 2002-10-29  David Shaw  <dshaw@jabberwocky.com>
