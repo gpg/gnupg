@@ -147,7 +147,7 @@ void assuan_deinit_pipe_server (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-connect.c --*/
 AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
-                                 char *const argv[]);
+                                 char *const argv[], int *fd_child_list);
 void assuan_pipe_disconnect (ASSUAN_CONTEXT ctx);
 pid_t assuan_get_pid (ASSUAN_CONTEXT ctx);
 
@@ -191,5 +191,3 @@ const char *assuan_strerror (AssuanError err);
 }
 #endif
 #endif /*ASSUAN_H*/
-
-
