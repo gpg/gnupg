@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-02-15 14:44+0100\n"
+"POT-Creation-Date: 2005-02-16 21:13+0100\n"
 "PO-Revision-Date: 2004-11-08 21:30+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
@@ -29,7 +29,7 @@ msgstr "少于 %d 位时不能生成质数\n"
 msgid "no entropy gathering module detected\n"
 msgstr "检测不到熵数搜集模块\n"
 
-#: cipher/random.c:387 g10/card-util.c:640 g10/card-util.c:709
+#: cipher/random.c:387 g10/card-util.c:645 g10/card-util.c:714
 #: g10/dearmor.c:60 g10/dearmor.c:109 g10/encode.c:181 g10/encode.c:488
 #: g10/g10.c:966 g10/g10.c:3223 g10/import.c:178 g10/keygen.c:2255
 #: g10/keyring.c:1524 g10/openfile.c:180 g10/openfile.c:333
@@ -348,12 +348,12 @@ msgstr "OpenPGP 卡不可用：%s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "检测到 OpenPGP 卡号 %s\n"
 
-#: g10/card-util.c:70 g10/card-util.c:1313 g10/delkey.c:120 g10/keyedit.c:1430
+#: g10/card-util.c:70 g10/card-util.c:1318 g10/delkey.c:120 g10/keyedit.c:1430
 #: g10/keygen.c:2439 g10/revoke.c:216 g10/revoke.c:417
 msgid "can't do this in batch mode\n"
 msgstr "在批处理模式中无法完成此操作\n"
 
-#: g10/card-util.c:94 g10/card-util.c:1092 g10/card-util.c:1175
+#: g10/card-util.c:94 g10/card-util.c:1097 g10/card-util.c:1180
 #: g10/keyedit.c:413 g10/keyedit.c:434 g10/keyedit.c:448 g10/keygen.c:1300
 #: g10/keygen.c:1365
 msgid "Your selection? "
@@ -417,84 +417,84 @@ msgstr "获取公钥的 URL："
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "错误：URL 太长(至多 %d 个字符)\n"
 
-#: g10/card-util.c:649 g10/card-util.c:718 g10/import.c:261
+#: g10/card-util.c:654 g10/card-util.c:723 g10/import.c:261
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "读取‘%s’时出错：%s\n"
 
-#: g10/card-util.c:657
+#: g10/card-util.c:662
 msgid "Login data (account name): "
 msgstr "登录数据(帐号名)："
 
-#: g10/card-util.c:667
+#: g10/card-util.c:672
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr "错误：登录数据太长(至多 %d 个字符)。\n"
 
-#: g10/card-util.c:726
+#: g10/card-util.c:731
 msgid "Private DO data: "
 msgstr ""
 
-#: g10/card-util.c:736
+#: g10/card-util.c:741
 #, fuzzy, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr "错误：URL 太长(至多 %d 个字符)\n"
 
-#: g10/card-util.c:756
+#: g10/card-util.c:761
 msgid "Language preferences: "
 msgstr "首选语言："
 
-#: g10/card-util.c:764
+#: g10/card-util.c:769
 msgid "Error: invalid length of preference string.\n"
 msgstr "错误：首选项字符串长度无效。\n"
 
-#: g10/card-util.c:773
+#: g10/card-util.c:778
 msgid "Error: invalid characters in preference string.\n"
 msgstr "错误：首选项字符串里有无效字符。\n"
 
-#: g10/card-util.c:794
+#: g10/card-util.c:799
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr "性别(男性输入 M，女性输入 F，不指定输入空格)："
 
-#: g10/card-util.c:808
+#: g10/card-util.c:813
 msgid "Error: invalid response.\n"
 msgstr "错误：无效的响应。\n"
 
-#: g10/card-util.c:829
+#: g10/card-util.c:834
 msgid "CA fingerprint: "
 msgstr "CA 指纹："
 
-#: g10/card-util.c:852
+#: g10/card-util.c:857
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "错误：指纹格式无效。\n"
 
-#: g10/card-util.c:900
+#: g10/card-util.c:905
 #, c-format
 msgid "key operation not possible: %s\n"
 msgstr "针对密钥的操作无法实现：%s\n"
 
-#: g10/card-util.c:901
+#: g10/card-util.c:906
 msgid "not an OpenPGP card"
 msgstr "不是一个 OpenPGP 卡"
 
-#: g10/card-util.c:910
+#: g10/card-util.c:915
 #, c-format
 msgid "error getting current key info: %s\n"
 msgstr "取得当前密钥信息时出错：%s\n"
 
-#: g10/card-util.c:993
+#: g10/card-util.c:998
 msgid "Replace existing key? (y/N) "
 msgstr "替换已有的密钥？(y/N)"
 
-#: g10/card-util.c:1014 g10/card-util.c:1023
+#: g10/card-util.c:1019 g10/card-util.c:1028
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "是否为加密密钥创建卡外的备份？(Y/n)"
 
-#: g10/card-util.c:1035
+#: g10/card-util.c:1040
 msgid "Replace existing keys? (y/N) "
 msgstr "替换已有的密钥？(y/N)"
 
-#: g10/card-util.c:1044
+#: g10/card-util.c:1049
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -505,116 +505,116 @@ msgstr ""
 "  PIN = ‘%s’    管理员 PIN = ‘%s’\n"
 "您应当使用 --change-pin 命令来更改它们\n"
 
-#: g10/card-util.c:1083
+#: g10/card-util.c:1088
 msgid "Please select the type of key to generate:\n"
 msgstr "请选择您要使用的密钥种类：\n"
 
-#: g10/card-util.c:1085 g10/card-util.c:1166
+#: g10/card-util.c:1090 g10/card-util.c:1171
 msgid "   (1) Signature key\n"
 msgstr "  (1) 签字密钥\n"
 
-#: g10/card-util.c:1086 g10/card-util.c:1168
+#: g10/card-util.c:1091 g10/card-util.c:1173
 msgid "   (2) Encryption key\n"
 msgstr "  (1) 加密密钥\n"
 
-#: g10/card-util.c:1087 g10/card-util.c:1170
+#: g10/card-util.c:1092 g10/card-util.c:1175
 msgid "   (3) Authentication key\n"
 msgstr "  (1) 认证密钥\n"
 
-#: g10/card-util.c:1103 g10/card-util.c:1186 g10/keyedit.c:908
+#: g10/card-util.c:1108 g10/card-util.c:1191 g10/keyedit.c:908
 #: g10/keygen.c:1404 g10/revoke.c:642
 msgid "Invalid selection.\n"
 msgstr "无效的选择。\n"
 
-#: g10/card-util.c:1163
+#: g10/card-util.c:1168
 msgid "Please select where to store the key:\n"
 msgstr "请选择在哪里存储密钥：\n"
 
-#: g10/card-util.c:1198
+#: g10/card-util.c:1203
 msgid "unknown key protection algorithm\n"
 msgstr "不支持的密钥保护算法\n"
 
-#: g10/card-util.c:1203
+#: g10/card-util.c:1208
 msgid "secret parts of key are not available\n"
 msgstr "私钥部分不可用\n"
 
-#: g10/card-util.c:1208
+#: g10/card-util.c:1213
 msgid "secret key already stored on a card\n"
 msgstr "私钥已存储在卡上\n"
 
-#: g10/card-util.c:1278 g10/keyedit.c:1317
+#: g10/card-util.c:1283 g10/keyedit.c:1317
 msgid "quit this menu"
 msgstr "离开这个菜单"
 
-#: g10/card-util.c:1280
+#: g10/card-util.c:1285
 msgid "show admin commands"
 msgstr "显示管理员命令"
 
-#: g10/card-util.c:1281 g10/keyedit.c:1320
+#: g10/card-util.c:1286 g10/keyedit.c:1320
 msgid "show this help"
 msgstr "显示这份在线说明"
 
-#: g10/card-util.c:1283
+#: g10/card-util.c:1288
 msgid "list all available data"
 msgstr "列出所有可用数据"
 
-#: g10/card-util.c:1286
+#: g10/card-util.c:1291
 msgid "change card holder's name"
 msgstr "更改卡持有人的姓名"
 
-#: g10/card-util.c:1287
+#: g10/card-util.c:1292
 msgid "change URL to retrieve key"
 msgstr "更改获取密钥的 URL"
 
-#: g10/card-util.c:1288
+#: g10/card-util.c:1293
 msgid "fetch the key specified in the card URL"
 msgstr "根据卡中指定的 URL 获取密钥"
 
-#: g10/card-util.c:1289
+#: g10/card-util.c:1294
 msgid "change the login name"
 msgstr "更改登录名"
 
-#: g10/card-util.c:1290
+#: g10/card-util.c:1295
 msgid "change the language preferences"
 msgstr "更改首选语言首选"
 
-#: g10/card-util.c:1291
+#: g10/card-util.c:1296
 msgid "change card holder's sex"
 msgstr "更改卡持有人的性别"
 
-#: g10/card-util.c:1292
+#: g10/card-util.c:1297
 msgid "change a CA fingerprint"
 msgstr "更改一个 CA 指纹"
 
-#: g10/card-util.c:1293
+#: g10/card-util.c:1298
 msgid "toggle the signature force PIN flag"
 msgstr "设定 PIN 签字是否必须"
 
-#: g10/card-util.c:1294
+#: g10/card-util.c:1299
 msgid "generate new keys"
 msgstr "生成新的密钥"
 
-#: g10/card-util.c:1295
+#: g10/card-util.c:1300
 msgid "menu to change or unblock the PIN"
 msgstr "更改或解锁 PIN 的菜单"
 
-#: g10/card-util.c:1361 g10/keyedit.c:1513
+#: g10/card-util.c:1366 g10/keyedit.c:1513
 msgid "Command> "
 msgstr "命令> "
 
-#: g10/card-util.c:1396
+#: g10/card-util.c:1401
 msgid "Admin-only command\n"
 msgstr "仅供管理员使用的命令\n"
 
-#: g10/card-util.c:1412
+#: g10/card-util.c:1417
 msgid "Admin commands are allowed\n"
 msgstr "允许使用管理员命令\n"
 
-#: g10/card-util.c:1414
+#: g10/card-util.c:1419
 msgid "Admin commands are not allowed\n"
 msgstr "不允许使用管理员命令\n"
 
-#: g10/card-util.c:1483 g10/keyedit.c:2090
+#: g10/card-util.c:1488 g10/keyedit.c:2090
 msgid "Invalid command  (try \"help\")\n"
 msgstr "无效的指令(尝试“help”)\n"
 

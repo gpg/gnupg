@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2005-02-15 14:44+0100\n"
+"POT-Creation-Date: 2005-02-16 21:13+0100\n"
 "PO-Revision-Date: 2003-12-03 16:11+0100\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -30,7 +30,7 @@ msgstr ""
 msgid "no entropy gathering module detected\n"
 msgstr ""
 
-#: cipher/random.c:387 g10/card-util.c:640 g10/card-util.c:709
+#: cipher/random.c:387 g10/card-util.c:645 g10/card-util.c:714
 #: g10/dearmor.c:60 g10/dearmor.c:109 g10/encode.c:181 g10/encode.c:488
 #: g10/g10.c:966 g10/g10.c:3223 g10/import.c:178 g10/keygen.c:2255
 #: g10/keyring.c:1524 g10/openfile.c:180 g10/openfile.c:333
@@ -355,12 +355,12 @@ msgstr "hemmelig nøgle ikke tilgængelig"
 msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
-#: g10/card-util.c:70 g10/card-util.c:1313 g10/delkey.c:120 g10/keyedit.c:1430
+#: g10/card-util.c:70 g10/card-util.c:1318 g10/delkey.c:120 g10/keyedit.c:1430
 #: g10/keygen.c:2439 g10/revoke.c:216 g10/revoke.c:417
 msgid "can't do this in batch mode\n"
 msgstr ""
 
-#: g10/card-util.c:94 g10/card-util.c:1092 g10/card-util.c:1175
+#: g10/card-util.c:94 g10/card-util.c:1097 g10/card-util.c:1180
 #: g10/keyedit.c:413 g10/keyedit.c:434 g10/keyedit.c:448 g10/keygen.c:1300
 #: g10/keygen.c:1365
 msgid "Your selection? "
@@ -428,93 +428,93 @@ msgstr "skriver offentligt certifikat til '%s'\n"
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:649 g10/card-util.c:718 g10/import.c:261
+#: g10/card-util.c:654 g10/card-util.c:723 g10/import.c:261
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: g10/card-util.c:657
+#: g10/card-util.c:662
 msgid "Login data (account name): "
 msgstr ""
 
-#: g10/card-util.c:667
+#: g10/card-util.c:672
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:726
+#: g10/card-util.c:731
 msgid "Private DO data: "
 msgstr ""
 
-#: g10/card-util.c:736
+#: g10/card-util.c:741
 #, c-format
 msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:756
+#: g10/card-util.c:761
 #, fuzzy
 msgid "Language preferences: "
 msgstr "vis præferencer"
 
-#: g10/card-util.c:764
+#: g10/card-util.c:769
 #, fuzzy
 msgid "Error: invalid length of preference string.\n"
 msgstr "Ugyldige bogstaver i navn\n"
 
-#: g10/card-util.c:773
+#: g10/card-util.c:778
 #, fuzzy
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Ugyldige bogstaver i navn\n"
 
-#: g10/card-util.c:794
+#: g10/card-util.c:799
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr ""
 
-#: g10/card-util.c:808
+#: g10/card-util.c:813
 #, fuzzy
 msgid "Error: invalid response.\n"
 msgstr "fejl i trailerlinie\n"
 
-#: g10/card-util.c:829
+#: g10/card-util.c:834
 #, fuzzy
 msgid "CA fingerprint: "
 msgstr "Fingeraftryk:"
 
-#: g10/card-util.c:852
+#: g10/card-util.c:857
 #, fuzzy
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "fejl i trailerlinie\n"
 
-#: g10/card-util.c:900
+#: g10/card-util.c:905
 #, fuzzy, c-format
 msgid "key operation not possible: %s\n"
 msgstr "påklædning af beskyttelse fejlede: %s\n"
 
-#: g10/card-util.c:901
+#: g10/card-util.c:906
 #, fuzzy
 msgid "not an OpenPGP card"
 msgstr "ingen gyldig OpenPGP data fundet.\n"
 
-#: g10/card-util.c:910
+#: g10/card-util.c:915
 #, fuzzy, c-format
 msgid "error getting current key info: %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-#: g10/card-util.c:993
+#: g10/card-util.c:998
 #, fuzzy
 msgid "Replace existing key? (y/N) "
 msgstr "Vil du gerne signere? "
 
-#: g10/card-util.c:1014 g10/card-util.c:1023
+#: g10/card-util.c:1019 g10/card-util.c:1028
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#: g10/card-util.c:1035
+#: g10/card-util.c:1040
 #, fuzzy
 msgid "Replace existing keys? (y/N) "
 msgstr "Vil du gerne signere? "
 
-#: g10/card-util.c:1044
+#: g10/card-util.c:1049
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -522,132 +522,132 @@ msgid ""
 "You should change them using the command --change-pin\n"
 msgstr ""
 
-#: g10/card-util.c:1083
+#: g10/card-util.c:1088
 #, fuzzy
 msgid "Please select the type of key to generate:\n"
 msgstr "Vælg venligst hvilken slags nøgle du vil have:\n"
 
-#: g10/card-util.c:1085 g10/card-util.c:1166
+#: g10/card-util.c:1090 g10/card-util.c:1171
 #, fuzzy
 msgid "   (1) Signature key\n"
 msgstr "Denne nøgle er ikke beskyttet.\n"
 
-#: g10/card-util.c:1086 g10/card-util.c:1168
+#: g10/card-util.c:1091 g10/card-util.c:1173
 #, fuzzy
 msgid "   (2) Encryption key\n"
 msgstr "   (%d) ElGamal (kryptér kun)\n"
 
-#: g10/card-util.c:1087 g10/card-util.c:1170
+#: g10/card-util.c:1092 g10/card-util.c:1175
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-#: g10/card-util.c:1103 g10/card-util.c:1186 g10/keyedit.c:908
+#: g10/card-util.c:1108 g10/card-util.c:1191 g10/keyedit.c:908
 #: g10/keygen.c:1404 g10/revoke.c:642
 msgid "Invalid selection.\n"
 msgstr "Ugyldigt valg.\n"
 
-#: g10/card-util.c:1163
+#: g10/card-util.c:1168
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "rev- forkert nøgletilbagekald\n"
 
-#: g10/card-util.c:1198
+#: g10/card-util.c:1203
 #, fuzzy
 msgid "unknown key protection algorithm\n"
 msgstr "ukendt kompressionsalgoritme"
 
-#: g10/card-util.c:1203
+#: g10/card-util.c:1208
 #, fuzzy
 msgid "secret parts of key are not available\n"
 msgstr "hemmelig nøgle ikke tilgængelig"
 
-#: g10/card-util.c:1208
+#: g10/card-util.c:1213
 #, fuzzy
 msgid "secret key already stored on a card\n"
 msgstr "udelod: hemmelig nøgle er allerede tilstede\n"
 
-#: g10/card-util.c:1278 g10/keyedit.c:1317
+#: g10/card-util.c:1283 g10/keyedit.c:1317
 msgid "quit this menu"
 msgstr "afslut denne menu"
 
-#: g10/card-util.c:1280
+#: g10/card-util.c:1285
 #, fuzzy
 msgid "show admin commands"
 msgstr "konfliktende kommandoer\n"
 
-#: g10/card-util.c:1281 g10/keyedit.c:1320
+#: g10/card-util.c:1286 g10/keyedit.c:1320
 msgid "show this help"
 msgstr "vis denne hjælp"
 
-#: g10/card-util.c:1283
+#: g10/card-util.c:1288
 #, fuzzy
 msgid "list all available data"
 msgstr "Ingen hjælp tilgængelig"
 
-#: g10/card-util.c:1286
+#: g10/card-util.c:1291
 msgid "change card holder's name"
 msgstr ""
 
-#: g10/card-util.c:1287
+#: g10/card-util.c:1292
 msgid "change URL to retrieve key"
 msgstr ""
 
-#: g10/card-util.c:1288
-msgid "fetch the key specified in the card URL"
-msgstr ""
-
-#: g10/card-util.c:1289
-#, fuzzy
-msgid "change the login name"
-msgstr "ændr udløbsdatoen"
-
-#: g10/card-util.c:1290
-#, fuzzy
-msgid "change the language preferences"
-msgstr "vis præferencer"
-
-#: g10/card-util.c:1291
-msgid "change card holder's sex"
-msgstr ""
-
-#: g10/card-util.c:1292
-#, fuzzy
-msgid "change a CA fingerprint"
-msgstr "vis fingeraftryk"
-
 #: g10/card-util.c:1293
-msgid "toggle the signature force PIN flag"
+msgid "fetch the key specified in the card URL"
 msgstr ""
 
 #: g10/card-util.c:1294
 #, fuzzy
+msgid "change the login name"
+msgstr "ændr udløbsdatoen"
+
+#: g10/card-util.c:1295
+#, fuzzy
+msgid "change the language preferences"
+msgstr "vis præferencer"
+
+#: g10/card-util.c:1296
+msgid "change card holder's sex"
+msgstr ""
+
+#: g10/card-util.c:1297
+#, fuzzy
+msgid "change a CA fingerprint"
+msgstr "vis fingeraftryk"
+
+#: g10/card-util.c:1298
+msgid "toggle the signature force PIN flag"
+msgstr ""
+
+#: g10/card-util.c:1299
+#, fuzzy
 msgid "generate new keys"
 msgstr "generér et nyt nøglepar"
 
-#: g10/card-util.c:1295
+#: g10/card-util.c:1300
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1361 g10/keyedit.c:1513
+#: g10/card-util.c:1366 g10/keyedit.c:1513
 msgid "Command> "
 msgstr ""
 
-#: g10/card-util.c:1396
+#: g10/card-util.c:1401
 #, fuzzy
 msgid "Admin-only command\n"
 msgstr "konfliktende kommandoer\n"
 
-#: g10/card-util.c:1412
+#: g10/card-util.c:1417
 #, fuzzy
 msgid "Admin commands are allowed\n"
 msgstr "konfliktende kommandoer\n"
 
-#: g10/card-util.c:1414
+#: g10/card-util.c:1419
 #, fuzzy
 msgid "Admin commands are not allowed\n"
 msgstr "skriver hemmeligt certifikat til '%s'\n"
 
-#: g10/card-util.c:1483 g10/keyedit.c:2090
+#: g10/card-util.c:1488 g10/keyedit.c:2090
 msgid "Invalid command  (try \"help\")\n"
 msgstr ""
 
