@@ -1,5 +1,6 @@
 # config.links - helper for ../configure
-# Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002,
+#               2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -28,6 +29,7 @@ mpi_sflags=
 test -d ./mpi || mkdir ./mpi
 
 echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
+echo "/* Target: ${target} */" >>./mpi/asm-syntax.h
 
 if test "$try_asm_modules" = "yes" ; then
 case "${target}" in
@@ -38,7 +40,8 @@ case "${target}" in
     i[3467]86*-*-freebsd*-elf  | \
     i[3467]86*-*-freebsd[3-9]* | \
     i[3467]86*-*-freebsdelf*   | \
-    i[3467]86*-*-netbsd* )
+    i[3467]86*-*-netbsd*       | \
+    i[3467]86*-*-k*bsd*)
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
        cat  $srcdir/mpi/i386/syntax.h	   >>./mpi/asm-syntax.h
        path="i386"
@@ -47,6 +50,7 @@ case "${target}" in
     i586*-*-freebsd[3-9]* | \
     i586*-*-freebsdelf*   | \
     i586*-*-netbsd*	     | \
+    i586*-*-k*bsd*	     | \
     pentium-*-netbsd*	     | \
     pentiumpro-*-netbsd*)
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
