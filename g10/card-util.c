@@ -1,5 +1,5 @@
 /* card-util.c - Utility functions for the OpenPGP card.
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -270,6 +270,7 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
   PKT_public_key *pk = xcalloc (1, sizeof *pk);
   int rc;
   unsigned int uval;
+  const unsigned char *thefpr;
 
   if (serialno && serialnobuflen)
     *serialno = 0;
@@ -425,8 +426,34 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
         tty_fprintf (fp, "      created ....: %s\n",
                      asctimestamp (info.fpr3time));
       tty_fprintf (fp, "General key info..: "); 
-      if (info.fpr1valid && !get_pubkey_byfprint (pk, info.fpr1, 20))
-        print_pubkey_info (fp, pk);
+
+      thefpr = (info.fpr1valid? info.fpr1 : info.fpr2valid? info.fpr2 : 
+                info.fpr3valid? info.fpr3 : NULL);
+      if ( thefpr && !get_pubkey_byfprint (pk, thefpr, 20))
+        {
+          KBNODE keyblock = NULL;
+
+          print_pubkey_info (fp, pk);
+
+          if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
+            print_card_key_info (fp, keyblock);
+          else if ( !get_keyblock_byfprint (&keyblock, thefpr, 20) )
+            {
+              release_kbnode (keyblock);
+              keyblock = NULL;
+              
+              if (!auto_create_card_key_stub (info.serialno,
+                                              info.fpr1valid? info.fpr1:NULL,
+                                              info.fpr2valid? info.fpr2:NULL,
+                                              info.fpr3valid? info.fpr3:NULL))
+                {
+                  if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
+                    print_card_key_info (fp, keyblock);
+                }
+            }
+
+          release_kbnode (keyblock);
+        }
       else
         tty_fprintf (fp, "[none]\n");
     }
@@ -1037,7 +1064,7 @@ generate_card_keys (const char *serialno)
 }
 
 
-/* This fucntion is used by the key edit menu to generate an arbitrary
+/* This function is used by the key edit menu to generate an arbitrary
    subkey. */
 int
 card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)

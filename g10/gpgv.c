@@ -380,6 +380,7 @@ void rndlinux_constructor(void) {}
 /* Stubs to avoid linking to ../util/ttyio.c */
 int tty_batchmode( int onoff ) { return 0; }
 void tty_printf( const char *fmt, ... ) { }
+void tty_fprintf (FILE *fp, const char *fmt, ... ) { }
 void tty_print_string( const byte *p, size_t n ) { }
 void tty_print_utf8_string( const byte *p, size_t n ) {}
 void tty_print_utf8_string2( const byte *p, size_t n, size_t max_n ) {}

@@ -1,6 +1,6 @@
 /* getkey.c -  Get a key from the database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1139,12 +1139,40 @@ get_seckey_byfprint( PKT_secret_key *sk,
         if (!rc && sk )
             sk_from_block ( &ctx, sk, kb );
         release_kbnode ( kb );
-	get_pubkey_end( &ctx );
+	get_seckey_end( &ctx );
     }
     else
 	rc = G10ERR_GENERAL; /* Oops */
     return rc;
 }
+
+
+/* Search for a secret key with the given fingerprint and return the
+   complete keyblock which may have more than only this key. */
+int
+get_seckeyblock_byfprint (KBNODE *ret_keyblock, const byte *fprint,
+                          size_t fprint_len )
+{
+  int rc;
+  struct getkey_ctx_s ctx;
+  
+  if (fprint_len != 20 && fprint_len == 16)
+    return G10ERR_GENERAL; /* Oops */
+    
+  memset (&ctx, 0, sizeof ctx);
+  ctx.not_allocated = 1;
+  ctx.kr_handle = keydb_new (1);
+  ctx.nitems = 1;
+  ctx.items[0].mode = (fprint_len==16
+                       ? KEYDB_SEARCH_MODE_FPR16
+                       : KEYDB_SEARCH_MODE_FPR20);
+  memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
+  rc = lookup (&ctx, ret_keyblock, 1);
+  get_seckey_end (&ctx);
+  
+  return rc;
+}
+
 
 
 /************************************************

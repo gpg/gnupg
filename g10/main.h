@@ -211,6 +211,11 @@ void import_print_stats (void *hd);
 
 int collapse_uids( KBNODE *keyblock );
 
+int auto_create_card_key_stub ( const char *serialnostr, 
+                                const unsigned char *fpr1,
+                                const unsigned char *fpr2,
+                                const unsigned char *fpr3);
+
 /*-- export.c --*/
 int parse_export_options(char *str,unsigned int *options,int noisy);
 int export_pubkeys( STRLIST users, unsigned int options );
@@ -247,6 +252,7 @@ void dump_attribs(const PKT_user_id *uid,
 void set_attrib_fd(int fd);
 void print_seckey_info (PKT_secret_key *sk);
 void print_pubkey_info (FILE *fp, PKT_public_key *pk);
+void print_card_key_info (FILE *fp, KBNODE keyblock);
 
 /*-- verify.c --*/
 void print_file_status( int status, const char *name, int what );

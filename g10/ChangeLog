@@ -1,5 +1,13 @@
 2005-01-20  Werner Koch  <wk@g10code.com>
 
+	* gpgv.c (tty_fprintf): New stub.
+
+	* card-util.c (card_status): Create asecret key stub on the fly
+	and print more information about a card key.
+	* import.c (pub_to_sec_keyblock, auto_create_card_key_stub): New.
+	* getkey.c (get_seckeyblock_byfprint): New.
+	* keylist.c (print_card_key_info): New.
+
 	* g10.c (i18n_init) [W32]: Pass registry key to gettext
 	initialization.
 	* gpgv.c (i18n_init) [W32]: Ditto.

@@ -1,15 +1,6 @@
 Noteworthy changes in version 1.4.1
 -------------------------------------------------
 
-    * [W32] The algorithm for the default home directory changed:
-      First we look at the environment variable GNUPGHOME, if this one
-      is not set, we check whether the registry entry
-      HKCU\Software\GNU\GnuPG:HomeDir has been set and if this fails
-      we use a GnuPG directory below the standard application data
-      directory (APPDATA) of the current user. Only in the case that
-      this directory cannot be determined, the old default of c:\gnupg
-      will be used.  The option --homedir still overrides all of them.
-
     * New --rfc2440-text option which controls how text is handled in
       signatures.  This is in response to some problems seen with
       certain PGP/MIME mail clients and GnuPG version 1.4.0.  More
@@ -26,6 +17,28 @@ Noteworthy changes in version 1.4.1
       is disabled by default, but may be enabled with the configure
       option --with-libcurl.  Without this option, the existing HTTP
       code is used for HTTP, and HTTPS and FTP are not supported.
+
+    * When running a --card-status or --card-edit and a public key is
+      available, missing secret key stubs will be created on the fly.
+      Details of the key are listed too.
+
+    * [W32] The algorithm for the default home directory changed:
+      First we look at the environment variable GNUPGHOME, if this one
+      is not set, we check whether the registry entry
+      {HKCU,HKLM}\Software\GNU\GnuPG:HomeDir has been set. If this
+      fails we use a GnuPG directory below the standard application
+      data directory (APPDATA) of the current user. Only in the case
+      that this directory cannot be determined, the old default of
+      c:\gnupg will be used.  The option --homedir still overrides all
+      of them.
+
+    * [W32] The locale selection under Windows changed. You need to
+      enter the locale in the registry at HKCU\Software\GNU\GnuPG:Lang. 
+      For German you would use "de".  If it is not set, GnupG falls
+      back to HKLM.  The languages files "*.mo" are expected in a
+      directory named "gnupg.nls" below the installation directory;
+      that directory must be stored in the registry at the same key as
+      above with the name "Install Directory".
 
 
 Noteworthy changes in version 1.4.0 (2004-12-16)

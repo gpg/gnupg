@@ -30,18 +30,10 @@ Installation instructions:
 
 Internationalization support:
 -----------------------------
-  1. Decide where to store the translation files for your language.
-     Here we assume the directory "c:/gnu/locale/fr"
+ 1
 
-  2. Set the directory with the translations into the Registry under
-     the key:
-	HKEY_CURRENT_USER -> Control Panel -> Mingw32 -> NLS
-     (you probably need to create the keys Mingw32 and NLS) using a string
-     entry with the name "MoDir".
-  3. Select which language to use and copy the currect translation file
-     under the name "gnupg.mo" into the directory set in step 2
-     (Example:	"copy fr.mo c:\gnu\locale\fr\gnupg.mo")
-  4. Done.
+Store the locale id (like "de") into the registry under the key
+HKEY_CURRENT_USER\Software\GNU\GnuPG with the name "Lang".
 
 
 How to build it from the source:

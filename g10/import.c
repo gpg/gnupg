@@ -1,6 +1,6 @@
-/* import.c
+/* import.c - import a key into our key storage.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -2118,3 +2118,232 @@ append_key( KBNODE keyblock, KBNODE node, int *n_sigs,
 
     return 0;
 }
+
+
+
+/* Walk a public keyblock and produce a secret keyblock out of it.
+   Instead of inserting the secret key parameters (which we don't
+   have), we insert a stub.  */
+static KBNODE
+pub_to_sec_keyblock (KBNODE pub_keyblock)
+{
+  KBNODE pubnode, secnode;
+  KBNODE sec_keyblock = NULL;
+  KBNODE walkctx = NULL;
+
+  while((pubnode = walk_kbnode (pub_keyblock,&walkctx,0)))
+    {
+      if (pubnode->pkt->pkttype == PKT_PUBLIC_KEY
+          || pubnode->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+	{
+	  /* Make a secret key.  We only need to convert enough to
+	     write the keyblock out. */
+	  PKT_public_key *pk = pubnode->pkt->pkt.public_key;
+	  PACKET *pkt = m_alloc_clear (sizeof *pkt);
+	  PKT_secret_key *sk = m_alloc_clear (sizeof *sk);
+          int i, n;
+          
+          if (pubnode->pkt->pkttype == PKT_PUBLIC_KEY)
+	    pkt->pkttype = PKT_SECRET_KEY;
+	  else
+	    pkt->pkttype = PKT_SECRET_SUBKEY;
+          
+	  pkt->pkt.secret_key = sk;
+
+          copy_public_parts_to_secret_key ( pk, sk );
+	  sk->version     = pk->version;
+	  sk->timestamp   = pk->timestamp;
+        
+          n = pubkey_get_npkey (pk->pubkey_algo);
+          if (!n)
+            n = 1; /* Unknown number of parameters, however the data
+                      is stored in the first mpi. */
+          for (i=0; i < n; i++ )
+            sk->skey[i] = mpi_copy (pk->pkey[i]);
+  
+          sk->is_protected = 1;
+          sk->protect.s2k.mode = 1001;
+  
+  	  secnode = new_kbnode (pkt);
+        }
+      else
+	{
+	  secnode = clone_kbnode (pubnode);
+	}
+      
+      if(!sec_keyblock)
+	sec_keyblock = secnode;
+      else
+	add_kbnode (sec_keyblock, secnode);
+    }
+
+  return sec_keyblock;
+}
+
+
+/* Walk over the secret keyring SEC_KEYBLOCK and update any simple
+   stub keys with the serial number SNNUM of the card if one of the
+   fingerprints FPR1, FPR2 or FPR3 match.  Print a note if the key is
+   a duplicate (may happen in case of backed uped keys). 
+   
+   Returns: True if anything changed.
+*/
+static int
+update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock, 
+                                   const unsigned char *fpr1,
+                                   const unsigned char *fpr2,
+                                   const unsigned char *fpr3,
+                                   const char *serialnostr)
+{
+  KBNODE node;
+  KBNODE walkctx = NULL;
+  PKT_secret_key *sk;
+  byte array[MAX_FINGERPRINT_LEN];
+  size_t n;
+  int result = 0;
+  const char *s;
+
+  while((node = walk_kbnode (sec_keyblock, &walkctx, 0)))
+    {
+      if (node->pkt->pkttype != PKT_SECRET_KEY
+          && node->pkt->pkttype != PKT_SECRET_SUBKEY)
+        continue;
+      sk = node->pkt->pkt.secret_key;
+      
+      fingerprint_from_sk (sk, array, &n);
+      if (n != 20)
+        continue; /* Can't be a card key.  */
+      if ( !((fpr1 && !memcmp (array, fpr1, 20))
+             || (fpr2 && !memcmp (array, fpr2, 20))
+             || (fpr3 && !memcmp (array, fpr3, 20))) )
+        continue;  /* No match.  */
+
+      if (sk->is_protected == 1 && sk->protect.s2k.mode == 1001)
+        {
+          /* Standard case: migrate that stub to a key stub.  */
+          sk->protect.s2k.mode = 1002;
+          s = serialnostr;
+          for (sk->protect.ivlen=0; sk->protect.ivlen < 16 && *s && s[1];
+               sk->protect.ivlen++, s += 2)
+            sk->protect.iv[sk->protect.ivlen] = xtoi_2 (s);
+          result = 1;
+        }
+      else if (sk->is_protected == 1 && sk->protect.s2k.mode == 1002)
+        {
+          s = serialnostr;
+          for (sk->protect.ivlen=0; sk->protect.ivlen < 16 && *s && s[1];
+               sk->protect.ivlen++, s += 2)
+            if (sk->protect.iv[sk->protect.ivlen] != xtoi_2 (s))
+              {
+                log_info (_("NOTE: a key's S/N does not "
+                            "match the card's one\n"));
+                break;
+              }
+        }
+      else
+        {
+          if (node->pkt->pkttype != PKT_SECRET_KEY)
+            log_info (_("NOTE: primary key is online and stored on card\n"));
+          else
+            log_info (_("NOTE: secondary key is online and stored on card\n"));
+        }
+    }
+
+  return result;
+}
+
+
+
+/* Check whether a secret key stub exists for the public key PK.  If
+   not create such a stub key and store it into the secring.  If it
+   exists, add appropriate subkey stubs and update the secring.
+   Return 0 if the key could be created. */
+int
+auto_create_card_key_stub ( const char *serialnostr, 
+                            const unsigned char *fpr1,
+                            const unsigned char *fpr2,
+                            const unsigned char *fpr3)
+{
+  KBNODE pub_keyblock;
+  KBNODE sec_keyblock;
+  KEYDB_HANDLE hd;
+  int rc;
+
+  /* We only want to do this for an OpenPGP card.  */
+  if (!serialnostr || strncmp (serialnostr, "D27600012401", 12) 
+      || strlen (serialnostr) != 32 )
+    return G10ERR_GENERAL;
+
+  /* First get the public keyring from any of the provided fingerprints. */
+  if ( (fpr1 && !get_keyblock_byfprint (&pub_keyblock, fpr1, 20))
+       || (fpr2 && !get_keyblock_byfprint (&pub_keyblock, fpr2, 20))
+       || (fpr3 && !get_keyblock_byfprint (&pub_keyblock, fpr3, 20)))
+    ;
+  else
+    return G10ERR_GENERAL;
+ 
+  hd = keydb_new (1);
+
+  /* Now check whether there is a secret keyring.  */
+  {
+    PKT_public_key *pk = pub_keyblock->pkt->pkt.public_key;
+    byte afp[MAX_FINGERPRINT_LEN];
+    size_t an;
+
+    fingerprint_from_pk (pk, afp, &an);
+    memset (afp, 0, MAX_FINGERPRINT_LEN);
+    rc = keydb_search_fpr (hd, afp);
+  }
+
+  if (!rc)
+    {
+      rc = keydb_get_keyblock (hd, &sec_keyblock);
+      if (rc)
+        {
+          log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+          rc = G10ERR_GENERAL;
+        }
+      else
+        {
+          merge_keys_and_selfsig (sec_keyblock);
+          
+          /* FIXME: We need to add new subkeys first.  */
+          if (update_sec_keyblock_with_cardinfo (sec_keyblock,
+                                                 fpr1, fpr2, fpr3,
+                                                 serialnostr))
+            {
+              rc = keydb_update_keyblock (hd, sec_keyblock );
+              if (rc)
+                log_error (_("error writing keyring `%s': %s\n"),
+                           keydb_get_resource_name (hd), g10_errstr(rc) );
+            }
+        }
+    }
+  else  /* A secret key does not exists - create it.  */
+    {
+      sec_keyblock = pub_to_sec_keyblock (pub_keyblock);
+      update_sec_keyblock_with_cardinfo (sec_keyblock,
+                                         fpr1, fpr2, fpr3,
+                                         serialnostr);
+
+      rc = keydb_locate_writable (hd, NULL);
+      if (rc)
+        {
+          log_error (_("no default secret keyring: %s\n"), g10_errstr (rc));
+          rc = G10ERR_GENERAL;
+        }
+      else
+        {
+          rc = keydb_insert_keyblock (hd, sec_keyblock );
+          if (rc)
+            log_error (_("error writing keyring `%s': %s\n"),
+                       keydb_get_resource_name (hd), g10_errstr(rc) );
+        }
+    }
+    
+  release_kbnode (sec_keyblock);
+  release_kbnode (pub_keyblock);
+  keydb_release (hd);
+  return rc;
+}
+

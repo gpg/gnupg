@@ -1,6 +1,6 @@
 /* keylist.c
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ *               2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -166,6 +166,60 @@ print_pubkey_info (FILE *fp, PKT_public_key *pk)
 
   m_free (p);
 }
+
+
+/* Print basic information of a secret key including the card serial
+   number information. */
+void
+print_card_key_info (FILE *fp, KBNODE keyblock)
+{
+  KBNODE node;
+  int i;
+
+  for (node = keyblock; node; node = node->next ) 
+    {
+      if (node->pkt->pkttype == PKT_SECRET_KEY
+          || (node->pkt->pkttype == PKT_SECRET_SUBKEY) )
+        {
+          PKT_secret_key *sk = node->pkt->pkt.secret_key;
+          
+          tty_fprintf (fp, "%s%c  %4u%c/%s  ",
+		       node->pkt->pkttype == PKT_SECRET_KEY? "sec":"ssb",
+                       (sk->protect.s2k.mode==1001)?'#':
+                       (sk->protect.s2k.mode==1002)?'>':' ',
+		       nbits_from_sk (sk),
+		       pubkey_letter (sk->pubkey_algo),
+		       keystr_from_sk(sk));
+          tty_fprintf (fp, _("created: %s"), datestr_from_sk (sk));
+          tty_fprintf (fp, "  ");
+          tty_fprintf (fp, _("expires: %s"), expirestr_from_sk (sk));
+          if (sk->is_protected && sk->protect.s2k.mode == 1002)
+            {
+              tty_fprintf (fp, "\n                      ");
+              tty_fprintf (fp, _("card-no: ")); 
+              if (sk->protect.ivlen == 16
+                  && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6))
+                { 
+                  /* This is an OpenPGP card. */
+                  for (i=8; i < 14; i++)
+                    {
+                      if (i == 10)
+                        tty_fprintf (fp, " ");
+                      tty_fprintf (fp, "%02X", sk->protect.iv[i]);
+                    }
+                }
+              else
+                { /* Something is wrong: Print all. */
+                  for (i=0; i < sk->protect.ivlen; i++)
+                    tty_fprintf (fp, "%02X", sk->protect.iv[i]);
+                }
+            }
+          tty_fprintf (fp, "\n");
+        }
+    }
+}
+
+
 
 /* Flags = 0x01 hashed 0x02 critical */
 static void
@@ -1437,9 +1491,9 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
     }
     else if (mode == 2) {
         fp = NULL; /* use tty */
-        /* Translators: this should fit into 24 bytes to that the fingerprint
-         * data is properly aligned with the user ID */
 	if(primary)
+          /* TRANSLATORS: this should fit into 24 bytes to that the
+           * fingerprint data is properly aligned with the user ID */
 	  text = _(" Primary key fingerprint:");
 	else
 	  text = _("      Subkey fingerprint:");
