@@ -1,5 +1,5 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -123,9 +123,10 @@ parse_keyserver_options(char *options)
 #endif
 	  else
 	    if(!parse_import_options(tok,
-				     &opt.keyserver_options.import_options) &&
+				     &opt.keyserver_options.import_options,0)
+	       &&
 	       !parse_export_options(tok,
-				     &opt.keyserver_options.export_options))
+				     &opt.keyserver_options.export_options,0))
 	      add_to_strlist(&opt.keyserver_options.other,tok);
 	}
     }

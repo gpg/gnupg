@@ -1,3 +1,12 @@
+2003-12-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, misc.c (parse_options): Add a "noisy" flag to enable and
+	disable the messages about which option didn't match or matched
+	ambiguously.  Change all callers (g10.c, keyserver.c).
+
+	* main.h, import.c (import_options), export.c (export_options):
+	Pass the noisy flag through.
+
 2003-12-17  David Shaw  <dshaw@localhost.localdomain>
 
 	* build-packet.c (write_fake_data, do_secret_key), seckey-cert.c

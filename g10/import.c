@@ -1,6 +1,6 @@
 /* import.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *               Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -84,7 +84,7 @@ static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
 			     const char *fname, u32 *keyid );
 
 int
-parse_import_options(char *str,unsigned int *options)
+parse_import_options(char *str,unsigned int *options,int noisy)
 {
   struct parse_options import_opts[]=
     {
@@ -96,7 +96,7 @@ parse_import_options(char *str,unsigned int *options)
       {NULL,0}
     };
 
-  return parse_options(str,options,import_opts);
+  return parse_options(str,options,import_opts,noisy);
 }
 
 void *

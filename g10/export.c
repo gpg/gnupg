@@ -1,5 +1,6 @@
 /* export.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -40,7 +41,7 @@ static int do_export_stream( IOBUF out, STRLIST users, int secret,
 			     int *any );
 
 int
-parse_export_options(char *str,unsigned int *options)
+parse_export_options(char *str,unsigned int *options,int noisy)
 {
   struct parse_options export_opts[]=
     {
@@ -52,7 +53,7 @@ parse_export_options(char *str,unsigned int *options)
       /* add tags for include revoked and disabled? */
     };
 
-  return parse_options(str,options,export_opts);
+  return parse_options(str,options,export_opts,noisy);
 }
 
 /****************

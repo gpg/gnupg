@@ -108,7 +108,8 @@ struct parse_options
   unsigned int bit;
 };
 
-int parse_options(char *str,unsigned int *options,struct parse_options *opts);
+int parse_options(char *str,unsigned int *options,
+		  struct parse_options *opts,int noisy);
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
@@ -177,7 +178,7 @@ KBNODE make_comment_node( const char *s );
 KBNODE make_mpi_comment_node( const char *s, MPI a );
 
 /*-- import.c --*/
-int parse_import_options(char *str,unsigned int *options);
+int parse_import_options(char *str,unsigned int *options,int noisy);
 void import_keys( char **fnames, int nnames,
 		  void *stats_hd, unsigned int options );
 int import_keys_stream( IOBUF inp,
@@ -189,7 +190,7 @@ void import_print_stats (void *hd);
 int collapse_uids( KBNODE *keyblock );
 
 /*-- export.c --*/
-int parse_export_options(char *str,unsigned int *options);
+int parse_export_options(char *str,unsigned int *options,int noisy);
 int export_pubkeys( STRLIST users, unsigned int options );
 int export_pubkeys_stream( IOBUF out, STRLIST users,
 			   KBNODE *keyblock_out, unsigned int options );

@@ -1873,7 +1873,7 @@ main( int argc, char **argv )
 	    parse_keyserver_options(pargs.r.ret_str);
 	    break;
 	  case oImportOptions:
-	    if(!parse_import_options(pargs.r.ret_str,&opt.import_options))
+	    if(!parse_import_options(pargs.r.ret_str,&opt.import_options,1))
 	      {
 		if(configname)
 		  log_error(_("%s:%d: invalid import options\n"),
@@ -1883,7 +1883,7 @@ main( int argc, char **argv )
 	      }
 	    break;
 	  case oExportOptions:
-	    if(!parse_export_options(pargs.r.ret_str,&opt.export_options))
+	    if(!parse_export_options(pargs.r.ret_str,&opt.export_options,1))
 	      {
 		if(configname)
 		  log_error(_("%s:%d: invalid export options\n"),
@@ -1908,7 +1908,7 @@ main( int argc, char **argv )
 		  {NULL,0}
 		};
 
-	      if(!parse_options(pargs.r.ret_str,&opt.list_options,lopts))
+	      if(!parse_options(pargs.r.ret_str,&opt.list_options,lopts,1))
 		{
 		  if(configname)
 		    log_error(_("%s:%d: invalid list options\n"),
@@ -1932,7 +1932,7 @@ main( int argc, char **argv )
 		  {NULL,0}
 		};
 
-	      if(!parse_options(pargs.r.ret_str,&opt.verify_options,vopts))
+	      if(!parse_options(pargs.r.ret_str,&opt.verify_options,vopts,1))
 		{
 		  if(configname)
 		    log_error(_("%s:%d: invalid verify options\n"),

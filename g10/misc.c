@@ -689,7 +689,8 @@ compliance_failure(void)
 }
 
 int
-parse_options(char *str,unsigned int *options,struct parse_options *opts)
+parse_options(char *str,unsigned int *options,
+	      struct parse_options *opts,int noisy)
 {
   char *tok;
 
@@ -722,7 +723,8 @@ parse_options(char *str,unsigned int *options,struct parse_options *opts)
 		    {
 		      if(ascii_strncasecmp(opts[j].name,tok,toklen)==0)
 			{
-			  log_info(_("ambiguous option `%s'\n"),otok);
+			  if(noisy)
+			    log_info(_("ambiguous option `%s'\n"),otok);
 			  return 0;
 			}
 		    }
@@ -738,7 +740,8 @@ parse_options(char *str,unsigned int *options,struct parse_options *opts)
 
       if(!opts[i].name)
 	{
-	  log_info(_("unknown option `%s'\n"),otok);
+	  if(noisy)
+	    log_info(_("unknown option `%s'\n"),otok);
 	  return 0;
 	}
     }
