@@ -39,6 +39,11 @@
 #include "keydb.h"
 #include "sysutils.h"
 
+
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 enum cmd_and_opt_values {
   aNull = 0,
   oArmor        = 'a',
@@ -562,6 +567,17 @@ build_list (const char *text, const char * (*mapf)(int), int (*chkf)(int))
 }
 
 
+/* Set the file pointer into binary mode if required.  */
+static void
+set_binary (FILE *fp)
+{
+#ifdef HAVE_DOSISH_SYSTEM
+  setmode (fileno (fp), O_BINARY);
+#endif
+}
+
+
+
 static void
 i18n_init(void)
 {
@@ -758,7 +774,7 @@ main ( int argc, char **argv)
 
   opt.homedir = default_homedir ();
 #ifdef HAVE_W32_SYSTEM
-  opt.no_crl_checks = 1;
+  opt.no_crl_check = 1;
 #endif
 
   /* First check whether we have a config file on the commandline */
@@ -1374,6 +1390,8 @@ main ( int argc, char **argv)
       break;
 
     case aEncr: /* encrypt the given file */
+      set_binary (stdin);
+      set_binary (stdout);
       if (!argc)
         gpgsm_encrypt (&ctrl, recplist, 0, stdout); /* from stdin */
       else if (argc == 1)
@@ -1386,6 +1404,8 @@ main ( int argc, char **argv)
       /* FIXME: We don't handle --output yet. We should also allow
          to concatenate multiple files for signing because that is
          what gpg does.*/
+      set_binary (stdin);
+      set_binary (stdout);
       if (!argc)
         gpgsm_sign (&ctrl, signerlist,
                     0, detached_sig, stdout); /* create from stdin */
@@ -1408,6 +1428,7 @@ main ( int argc, char **argv)
       {
         FILE *fp = NULL;
 
+        set_binary (stdin);
         if (argc == 2 && opt.outfile)
           log_info ("option --output ignored for a detached signature\n");
         else if (opt.outfile)
@@ -1432,6 +1453,8 @@ main ( int argc, char **argv)
       break;
 
     case aDecrypt:
+      set_binary (stdin);
+      set_binary (stdout);
       if (!argc)
         gpgsm_decrypt (&ctrl, 0, stdout); /* from stdin */
       else if (argc == 1)
@@ -1502,6 +1525,7 @@ main ( int argc, char **argv)
       break;
 
     case aExport:
+      set_binary (stdout);
       for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
       gpgsm_export (&ctrl, sl, stdout);
@@ -1509,6 +1533,7 @@ main ( int argc, char **argv)
       break;
 
     case aExportSecretKeyP12:
+      set_binary (stdout);
       if (argc == 1)
         gpgsm_p12_export (&ctrl, *argv, stdout);
       else
@@ -1644,11 +1669,14 @@ open_read (const char *filename)
   int fd;
 
   if (filename[0] == '-' && !filename[1])
-    return 0; /* stdin */
+    {
+      set_binary (stdin);
+      return 0; /* stdin */
+    }
   fd = check_special_filename (filename);
   if (fd != -1)
     return fd;
-  fd = open (filename, O_RDONLY);
+  fd = open (filename, O_RDONLY | O_BINARY);
   if (fd == -1)
     {
       log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
@@ -1668,7 +1696,10 @@ open_fwrite (const char *filename)
   FILE *fp;
 
   if (filename[0] == '-' && !filename[1])
-    return stdout;
+    {
+      set_binary (stdout);
+      return stdout;
+    }
 
   fd = check_special_filename (filename);
   if (fd != -1)
@@ -1679,6 +1710,7 @@ open_fwrite (const char *filename)
           log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
           gpgsm_exit (2);
         }
+      set_binary (fp);
       return fp;
     }
   fp = fopen (filename, "wb");

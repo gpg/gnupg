@@ -1,3 +1,8 @@
+2004-12-22  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (set_binary): New.
+	(main, open_read, open_fwrite): Use it.
+
 2004-12-21  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (main): Use default_homedir().
