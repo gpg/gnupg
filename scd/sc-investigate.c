@@ -145,6 +145,9 @@ main (int argc, char **argv )
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   log_set_prefix ("sc-investigate", 1); 
 
+  /* Try to auto set the character set.  */
+  set_native_charset (NULL); 
+
   /* check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
@@ -152,6 +155,7 @@ main (int argc, char **argv )
       log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
                  NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
     }
+
 
   gcry_set_log_handler (my_gcry_logger, NULL);
   /* FIXME? gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);*/

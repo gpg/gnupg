@@ -1,3 +1,11 @@
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* sc-investigate.c (main): Setup the used character set.
+	* scdaemon.c (main): Ditto.
+
+	* scdaemon.c (set_debug): New.  Add option --debug-level.
+	(main): Add option --gpgconf-list.
+
 2004-02-12  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Include cmacros.am for common flags.

@@ -1,5 +1,5 @@
 /* scdaemon.c  -  The GnuPG Smartcard Daemon
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -54,9 +54,11 @@ enum cmd_and_opt_values
   oVerbose	  = 'v',
   
   oNoVerbose = 500,
+  aGPGConfList,
   oOptions,
   oDebug,
   oDebugAll,
+  oDebugLevel,
   oDebugWait,
   oDebugSC,
   oNoGreeting,
@@ -81,6 +83,8 @@ aTest };
 
 
 static ARGPARSE_OPTS opts[] = {
+
+  { aGPGConfList, "gpgconf-list", 256, "@" },
   
   { 301, NULL, 0, N_("@Options:\n ") },
 
@@ -91,8 +95,9 @@ static ARGPARSE_OPTS opts[] = {
   { oSh,	"sh",        0, N_("sh-style command output") },
   { oCsh,	"csh",       0, N_("csh-style command output") },
   { oOptions, "options"  , 2, N_("read options from file")},
-  { oDebug,	"debug"     ,4|16, N_("set debugging flags")},
-  { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
+  { oDebug,	"debug"     ,4|16, "@"},
+  { oDebugAll, "debug-all"     ,0, "@"},
+  { oDebugLevel, "debug-level" ,2, "@"},
   { oDebugWait,"debug-wait",1, "@"},
   { oDebugSC,  "debug-sc",  1, N_("|N|set OpenSC debug level to N")},
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
@@ -191,6 +196,47 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
 }
 
 
+/* Setup the debugging.  With a LEVEL of NULL only the active debug
+   flags are propagated to the subsystems.  With LEVEL set, a specific
+   set of debug flags is set; thus overriding all flags already
+   set. */
+static void
+set_debug (const char *level)
+{
+  if (!level)
+    ;
+  else if (!strcmp (level, "none"))
+    opt.debug = 0;
+  else if (!strcmp (level, "basic"))
+    opt.debug = DBG_ASSUAN_VALUE;
+  else if (!strcmp (level, "advanced"))
+    opt.debug = DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE;
+  else if (!strcmp (level, "expert"))
+    opt.debug = (DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE
+                 |DBG_CACHE_VALUE|DBG_CARD_IO_VALUE);
+  else if (!strcmp (level, "guru"))
+    opt.debug = ~0;
+  else
+    {
+      log_error (_("invalid debug-level `%s' given\n"), level);
+      scd_exit(2);
+    }
+
+
+  if (opt.debug && !opt.verbose)
+    opt.verbose = 1;
+  if (opt.debug && opt.quiet)
+    opt.quiet = 0;
+
+  if (opt.debug & DBG_MPI_VALUE)
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
+  if (opt.debug & DBG_CRYPTO_VALUE )
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
+  gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+}
+ 
+
+
 static void
 cleanup (void)
 {
@@ -245,6 +291,7 @@ main (int argc, char **argv )
   const char *shell;
   unsigned configlineno;
   int parse_debug = 0;
+  const char *debug_level = NULL;
   int default_config =1;
   int greeting = 0;
   int nogreeting = 0;
@@ -254,6 +301,7 @@ main (int argc, char **argv )
   int csh_style = 0;
   char *logfile = NULL;
   int debug_wait = 0;
+  int gpgconf_list = 0;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -261,6 +309,9 @@ main (int argc, char **argv )
      when adding any stuff between here and the call to INIT_SECMEM()
      somewhere after the option parsing */
   log_set_prefix ("scdaemon", 1|4); 
+  /* Try to auto set the character set.  */
+  set_native_charset (NULL); 
+
   i18n_init ();
 
   /* check that the libraries are suitable.  Do it here because
@@ -368,12 +419,14 @@ main (int argc, char **argv )
     {
       switch (pargs.r_opt)
         {
+        case aGPGConfList: gpgconf_list = 1; break;
         case oQuiet: opt.quiet = 1; break;
         case oVerbose: opt.verbose++; break;
         case oBatch: opt.batch=1; break;
 
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
+        case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
         case oDebugSC: opt.debug_sc = pargs.r.ret_int; break;
 
@@ -434,7 +487,7 @@ main (int argc, char **argv )
   log_info ("NOTE: this is a development version!\n");
 #endif
 
-  
+ 
   if (atexit (cleanup))
     {
       log_error ("atexit failed\n");
@@ -442,7 +495,8 @@ main (int argc, char **argv )
       exit (1);
     }
 
-  
+  set_debug (debug_level);
+
   if (debug_wait && pipe_server)
     {
       log_debug ("waiting for debugger - my pid is %u .....\n",
@@ -451,6 +505,25 @@ main (int argc, char **argv )
       log_debug ("... okay\n");
     }
   
+  if (gpgconf_list)
+    { /* List options and default values in the GPG Conf format.  */
+      char *filename;
+
+      filename = make_filename (opt.homedir, "scdaemon.conf", NULL);
+      printf ("gpgconf-scdaemon.conf:\"%s\n", filename);
+      xfree (filename);
+      
+      printf ("verbose:\n"
+              "quiet:\n"
+              "debug-level:none\n"
+              "log-file:\n"
+              "force:\n"
+              "faked-system-time:\n"
+              "no-greeting:\n");
+
+      scd_exit (0);
+    }
+
   /* now start with logging to a file if this is desired */
   if (logfile)
     {
@@ -649,10 +722,10 @@ main (int argc, char **argv )
 void
 scd_exit (int rc)
 {
-  #if 0
+#if 0
 #warning no update_random_seed_file
   update_random_seed_file();
-  #endif
+#endif
 #if 0
   /* at this time a bit annoying */
   if (opt.debug & DBG_MEMSTAT_VALUE)
