@@ -60,10 +60,13 @@
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
+#ifndef S_IRGRP
+# define S_IRGRP 0
+# define S_IWGRP 0
+#endif
 #else
 #define MY_O_BINARY  0
 #endif
-
 
 
 enum cmd_and_opt_values

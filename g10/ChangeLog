@@ -1,3 +1,7 @@
+2004-11-18  Werner Koch  <wk@g10code.com>
+
+	* g10.c (S_IRGRP) [HAVE_DOSISH_SYSTEM]: Define to 0.
+
 2004-11-17  Werner Koch  <wk@g10code.com>
 
 	* g10.c (open_info_file): New.
