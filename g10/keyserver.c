@@ -30,7 +30,6 @@
 #include "exec.h"
 #include "main.h"
 #include "i18n.h"
-#include "hkp.h"
 #include "iobuf.h"
 #include "memory.h"
 #include "options.h"
@@ -663,46 +662,13 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
       return G10ERR_BAD_URI;
     }
 
-#ifndef USE_EXTERNAL_HKP
-  /* Use the internal HKP code */
-  if(ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0)
-    {
-      if(opt.keyserver_host==NULL)
-	{
-	  log_error(_("no keyserver known (use option --keyserver)\n"));
-	  return G10ERR_BAD_URI;
-	}
-      else
-	{
-	  void *stats_handle = import_new_stats_handle ();
-
-	  switch(action)
-	    {
-	    case GET:
-	      for(count--;count>=0;count--)
-		if(hkp_ask_import(&desc[count],stats_handle))
-		  log_inc_errorcount();
-	      break;
-	    case SEND:
-	      return hkp_export(list);
-	    case SEARCH:
-	      return hkp_search(list);
-	    }
-
-	  import_print_stats (stats_handle);
-	  import_release_stats_handle (stats_handle);
-
-	  return 0;
-	}
-    }
-#endif
-
 #ifdef DISABLE_KEYSERVER_HELPERS
+
   log_error(_("external keyserver calls are not supported in this build\n"));
   return G10ERR_KEYSERVER;
-#else
 
-  /* It's not the internal HKP code, so try and spawn a handler for it */
+#else
+  /* Spawn a handler */
 
   rc=keyserver_spawn(action,list,desc,count,&ret);
   if(ret)

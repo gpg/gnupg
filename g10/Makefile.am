@@ -76,8 +76,6 @@ gpg_SOURCES  = g10.c		\
 	      dearmor.c 	\
 	      import.c		\
 	      export.c		\
-	      hkp.h		\
-	      hkp.c		\
 	      trustdb.c 	\
 	      trustdb.h 	\
 	      tdbdump.c 	\

@@ -1,5 +1,8 @@
 2002-09-12  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am, hkp.c, hkp.h, keyserver.c (keyserver_work): Remove
+	internal HKP support.
+
 	* keyserver.c (keyserver_spawn): Remove whitespace after keyserver
 	commands.
 
