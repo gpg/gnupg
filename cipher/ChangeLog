@@ -1,3 +1,8 @@
+2004-05-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* dsa.c (verify): s/exp/exponent/ to fix a compiler warning.  From
+	Werner on stable branch.
+
 2004-01-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.c (setup_cipher_table): May as well call Rijndael AES at

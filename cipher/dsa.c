@@ -320,7 +320,7 @@ verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
     int rc;
     MPI w, u1, u2, v;
     MPI base[3];
-    MPI exp[3];
+    MPI exponent[3];
 
 
     if( !(mpi_cmp_ui( r, 0 ) > 0 && mpi_cmp( r, pkey->q ) < 0) )
@@ -343,10 +343,10 @@ verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
     mpi_mulm( u2, r, w, pkey->q );
 
     /* v =  g^u1 * y^u2 mod p mod q */
-    base[0] = pkey->g; exp[0] = u1;
-    base[1] = pkey->y; exp[1] = u2;
-    base[2] = NULL;    exp[2] = NULL;
-    mpi_mulpowm( v, base, exp, pkey->p );
+    base[0] = pkey->g; exponent[0] = u1;
+    base[1] = pkey->y; exponent[1] = u2;
+    base[2] = NULL;    exponent[2] = NULL;
+    mpi_mulpowm( v, base, exponent, pkey->p );
     mpi_fdiv_r( v, v, pkey->q );
 
     rc = !mpi_cmp( v, r );
