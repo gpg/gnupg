@@ -199,7 +199,7 @@ check_cert_policy (KsbaCert cert)
 static void
 find_up_store_certs_cb (void *cb_value, KsbaCert cert)
 {
-  if (keydb_store_cert (cert, 1))
+  if (keydb_store_cert (cert, 1, NULL))
     log_error ("error storing issuer certificate as ephemeral\n");
   ++*(int*)cb_value;
 }

@@ -702,8 +702,15 @@ learn_cb (void *opaque, const void *buffer, size_t length)
     log_error ("invalid certificate: %s\n", gnupg_strerror (rc));
   else
     {
-      if (!keydb_store_cert (cert, 0))
-        log_info ("certificate imported\n");
+      int existed;
+
+      if (!keydb_store_cert (cert, 0, &existed))
+        {
+          if (opt.verbose > 1 && existed)
+            log_info ("certificate already in DB\n");
+          else if (opt.verbose && !existed)
+            log_info ("certificate imported\n");
+        }
     }
 
   ksba_cert_release (cert);

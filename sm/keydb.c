@@ -1196,14 +1196,19 @@ keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc)
 }
 
 
-/* Store the certificate in the key Db but make sure that it does not
-   already exists.  We do this simply by comparing the fingerprint */
+/* Store the certificate in the key DB but make sure that it does not
+   already exists.  We do this simply by comparing the fingerprint.
+   If EXISTED is not NULL it will be set to true if the certificate
+   was already in the DB. */
 int
-keydb_store_cert (KsbaCert cert, int ephemeral)
+keydb_store_cert (KsbaCert cert, int ephemeral, int *existed)
 {
   KEYDB_HANDLE kh;
   int rc;
   unsigned char fpr[20];
+
+  if (existed)
+    *existed = 0;
 
   if (!gpgsm_get_fingerprint (cert, 0, fpr, NULL))
     {
@@ -1226,7 +1231,11 @@ keydb_store_cert (KsbaCert cert, int ephemeral)
     {
       keydb_release (kh);
       if (!rc)
-        return 0; /* okay */
+        {
+          if (existed)
+            *existed = 1;
+          return 0; /* okay */
+        }
       log_error (_("problem looking for existing certificate: %s\n"),
                  gnupg_strerror (rc));
       return rc;
@@ -1250,5 +1259,6 @@ keydb_store_cert (KsbaCert cert, int ephemeral)
   keydb_release (kh);               
   return 0;
 }
+
 
 

@@ -1,5 +1,15 @@
 2002-07-02  Werner Koch  <wk@gnupg.org>
 
+	* keydb.c (keydb_store_cert): Add optional ar EXISTED and changed
+	all callers.
+	* call-agent.c (learn_cb): Print info message only for real imports.
+
+	* import.c (gpgsm_import): Moved duplicated code to ...
+	(check_and_store): new function.  Added magic to import the entire
+	chain. Print status only for real imports and moved printing code
+	to ..
+	(print_imported_status): New.
+
 	* call-dirmngr.c (gpgsm_dirmngr_isvalid): print status of dirmngr
 	call in very verbose mode.
 

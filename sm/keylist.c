@@ -548,7 +548,7 @@ list_external_cb (void *cb_value, KsbaCert cert)
 {
   struct list_external_parm_s *parm = cb_value;
 
-  if (keydb_store_cert (cert, 1))
+  if (keydb_store_cert (cert, 1, NULL))
     log_error ("error storing certificate as ephemeral\n");
 
   if (parm->print_header)

@@ -35,6 +35,61 @@
 #include "i18n.h"
 
 
+static void
+print_imported_status (CTRL ctrl, KsbaCert cert)
+{
+  char *fpr;
+ 
+  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+  gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, " [X.509]", NULL);
+  xfree (fpr);
+}
+
+static void
+check_and_store (CTRL ctrl, KsbaCert cert, int depth)
+{
+  if ( !gpgsm_basic_cert_check (cert) )
+    {
+      int existed;
+
+      if (!keydb_store_cert (cert, 0, &existed))
+        {
+          KsbaCert next = NULL;
+
+          if (!existed)
+            print_imported_status (ctrl, cert);
+          if (opt.verbose > 1 && existed)
+            {
+              if (depth)
+                log_info ("issuer certificate already in DB\n");
+              else
+                log_info ("certificate already in DB\n");
+            }
+          else if (opt.verbose && !existed)
+            {
+              if (depth)
+                log_info ("issuer certificate imported\n");
+              else
+                log_info ("certificate imported\n");
+            }
+          /* Now lets walk up the chain and import all certificates up
+             the chain.*/
+          if ( depth >= 50 )
+            log_error (_("certificate path too long\n"));
+          else if (!gpgsm_walk_cert_chain (cert, &next))
+            {
+              check_and_store (ctrl, next, depth+1);
+              ksba_cert_release (next);
+            }
+        }
+      else
+        log_error (_("error storing certificate\n"));
+    }
+  else
+    log_error (_("basic certificate checks failed - not imported\n"));
+}
+
+
 
 int
 gpgsm_import (CTRL ctrl, int in_fd)
@@ -102,22 +157,7 @@ gpgsm_import (CTRL ctrl, int in_fd)
       
       for (i=0; (cert=ksba_cms_get_cert (cms, i)); i++)
         {
-          if ( !gpgsm_basic_cert_check (cert) )
-            {
-              if (!keydb_store_cert (cert, 0))
-                {
-                  char *fpr;
-                  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-                  gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, " [X.509]", NULL);
-                  xfree (fpr);
-                  if (opt.verbose)
-                    log_info ("certificate imported\n");
-                }
-              else
-                log_error (_("error storing certificate\n"));
-            }
-          else
-            log_error (_("basic certificate checks failed - not imported\n"));
+          check_and_store (ctrl, cert, 0);
           ksba_cert_release (cert); 
           cert = NULL;
         }
@@ -140,23 +180,8 @@ gpgsm_import (CTRL ctrl, int in_fd)
           rc = map_ksba_err (rc);
           goto leave;
         }
-      
-      if ( !gpgsm_basic_cert_check (cert) )
-        {
-          if (!keydb_store_cert (cert, 0))
-            {
-              char *fpr;
-              fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-              gpgsm_status2 (ctrl, STATUS_IMPORTED, fpr, " [X.509]", NULL);
-              xfree (fpr);
-              if (opt.verbose)
-                log_info ("certificate imported\n");
-            }
-          else
-            log_error (_("error storing certificate\n"));
-        }
-      else
-        log_error (_("basic certificate checks failed - not imported\n"));
+
+      check_and_store (ctrl, cert, 0);
     }
   else
     {
