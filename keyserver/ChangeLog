@@ -1,3 +1,7 @@
+2002-02-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c: Be much more robust with mangled input files.
+
 2001-12-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_mailto.in: Use the new OUTOFBAND indicator so gpg knows
@@ -35,7 +39,7 @@
 	gpgkeys_mailto (email keyserver helper)
 
 	
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

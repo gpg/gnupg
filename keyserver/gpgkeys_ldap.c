@@ -1,5 +1,5 @@
 /* gpgkeys_ldap.c - talk to a LDAP keyserver
- * Copyright (C) 2001 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -44,7 +44,7 @@ FILE *input=NULL,*output=NULL,*console=NULL;
 
 struct keylist
 {
-  char *keystr;
+  char str[MAX_LINE];
   struct keylist *next;
 };
 
@@ -146,6 +146,7 @@ int send_key(LDAP *ldap,char *keyid)
  fail:
 
   free(key[0]);
+  free(dn);
 
   return ret;
 }
@@ -220,7 +221,7 @@ int get_key(LDAP *ldap,char *getkey)
 	{
 	  while(keyptr!=NULL)
 	    {
-	      if(strcasecmp(keyptr->keystr,vals[0])==0)
+	      if(strcasecmp(keyptr->str,vals[0])==0)
 		break;
 
 	      keyptr=keyptr->next;
@@ -238,13 +239,8 @@ int get_key(LDAP *ldap,char *getkey)
 		  goto fail;
 		}
 
-	      keyptr->keystr=strdup(vals[0]);
-	      if(keyptr->keystr==NULL)
-		{
-		  fprintf(console,"gpgkeys: out of memory when deduping "
-			  "key list\n");
-		  goto fail;
-		}
+	      strncpy(keyptr->str,vals[0],MAX_LINE);
+	      keyptr->str[MAX_LINE-1]='\0';
 
 	      keyptr->next=dupelist;
 	      dupelist=keyptr;
@@ -360,7 +356,6 @@ int get_key(LDAP *ldap,char *getkey)
       struct keylist *keyptr=dupelist;
 
       dupelist=keyptr->next;
-      free(keyptr->keystr);
       free(keyptr);
     }
 
@@ -705,55 +700,40 @@ int main(int argc,char *argv[])
     while(fgets(line,MAX_LINE,input)!=NULL && line[0]!='\n');
   else if(action==GET || action==SEARCH)
     {
-      keylist=malloc(sizeof(struct keylist));
-      if(keylist==NULL)
+      for(;;)
 	{
-	  fprintf(console,"gpgkeys: out of memory when building key list\n");
-	  goto fail;
-	}
+	  struct keylist *work;
 
-      keyptr=keylist;
-
-      keyptr->keystr=malloc(MAX_LINE);
-      if(keyptr->keystr==NULL)
-	{
-	  fprintf(console,"gpgkeys: out of memory when building key list\n");
-	  goto fail;
-	}
-
-      while(fgets(keyptr->keystr,MAX_LINE,input)!=NULL)
-	{
-	  int len;
-
-	  if(keyptr->keystr[0]=='\n')
+	  if(fgets(line,MAX_LINE,input)==NULL)
+	    break;
+	  else
 	    {
-	      free(keyptr->keystr);
-	      keyptr->keystr=NULL;
-	      break;
-	    }
+	      if(line[0]=='\n')
+		break;
 
-	  /* Trim the trailing \n */
-	  len=strlen(keyptr->keystr);
-	  if(len>1)
-	    keyptr->keystr[len-1]='\0';
+	      work=malloc(sizeof(struct keylist));
+	      if(work==NULL)
+		{
+		  fprintf(console,"gpgkeys: out of memory while "
+			  "building key list\n");
+		  goto fail;
+		}
 
-	  keyptr->next=malloc(sizeof(struct keylist));
-	  if(keyptr->next==NULL)
-	    {
-	      fprintf(console,"gpgkeys: out of memory when "
-		      "building key list\n");
-	      goto fail;
-	    }
+	      strcpy(work->str,line);
 
-	  keyptr=keyptr->next;
-	  keyptr->next=NULL;
+	      /* Trim the trailing \n */
+	      work->str[strlen(line)-1]='\0';
 
-	  keyptr->keystr=malloc(MAX_LINE);
-	  if(keyptr->keystr==NULL)
-	    {
-	      fprintf(console,"gpgkeys: out of memory when "
-		      "building key list\n");
-	      goto fail;
+	      work->next=NULL;
+
+	      /* Always attach at the end to keep the list in proper
+                 order for searching */
+	      if(keylist==NULL)
+		keylist=work;
+	      else
+		keyptr->next=work;
+
+	      keyptr=work;
 	    }
 	}
     }
@@ -850,16 +830,15 @@ int main(int argc,char *argv[])
     case GET:
       keyptr=keylist;
 
-      while(keyptr->keystr!=NULL)
+      while(keyptr!=NULL)
 	{
 	  struct keylist *current=keyptr;
 
-	  get_key(ldap,current->keystr);
+	  get_key(ldap,current->str);
 
 	  keyptr=current->next;
 
 	  /* Free it as we go */
-	  free(current->keystr);
 	  free(current);
 	}
       break;
@@ -888,9 +867,9 @@ int main(int argc,char *argv[])
 	   "enters words" */
 
 	keyptr=keylist;
-	while(keyptr->keystr!=NULL)
+	while(keyptr!=NULL)
 	  {
-	    len+=strlen(keyptr->keystr)+1;
+	    len+=strlen(keyptr->str)+1;
 	    keyptr=keyptr->next;
 	  }
 
@@ -901,16 +880,15 @@ int main(int argc,char *argv[])
 	searchkey[0]='\0';
 
 	keyptr=keylist;
-	while(keyptr->keystr!=NULL)
+	while(keyptr!=NULL)
 	  {
 	    struct keylist *current=keyptr;
 
-	    strcat(searchkey,current->keystr);
+	    strcat(searchkey,current->str);
 	    strcat(searchkey,"*");
 	    keyptr=current->next;
 
 	    /* Free it as we go */
-	    free(current->keystr);
 	    free(current);
 	  }
 
