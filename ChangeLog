@@ -1,6 +1,8 @@
 2002-07-04  David Shaw  <dshaw@jabberwocky.com>
 
-	* README: 
+	* README: Document --disable-exec, --disable-photo-viewers,
+	--disable-keyserver-helpers, --enable-exec-path, and
+	--with-photo-viewer.
 
 	* configure.ac: Add --with-photo-viewer to lock the viewer at
 	compile time and --disable-keyserver-helpers and
