@@ -658,7 +658,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
 
 static int
 gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
 {
     int rc;
     int i;
@@ -705,7 +705,7 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     sk->protect.algo = 0;
 
     sk->csum = checksum_mpi( sk->skey[3] );
-    if( ret_sk ) /* not a subkey: return an unprotected version of the sk */
+    if( ret_sk ) /* return an unprotected version of the sk */
 	*ret_sk = copy_secret_key( NULL, sk );
 
     if( dek ) {
@@ -721,14 +721,14 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     }
 
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_sk ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
+    pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
     /* don't know whether it makes sense to have the factors, so for now
      * we store them in the secret keyring (but they are not secret) */
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
+    pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
     for(i=0; factors[i]; i++ )
@@ -744,7 +744,7 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  */
 static int
 gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	    STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
 {
     int rc;
     int i;
@@ -791,7 +791,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     sk->protect.algo = 0;
 
     sk->csum = checksum_mpi ( sk->skey[4] );
-    if( ret_sk ) /* not a subkey: return an unprotected version of the sk */
+    if( ret_sk ) /* return an unprotected version of the sk */
 	*ret_sk = copy_secret_key( NULL, sk );
 
     if( dek ) {
@@ -807,7 +807,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     }
 
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_sk ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
+    pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
@@ -818,7 +818,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
      * are known.
      */
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
+    pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
     for(i=1; factors[i]; i++ )	/* the first one is q */
@@ -834,7 +834,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
  */
 static int
 gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval )
+	STRING2KEY *s2k, PKT_secret_key **ret_sk, u32 expireval, int is_subkey)
 {
     int rc;
     PACKET *pkt;
@@ -884,7 +884,7 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     sk->csum += checksum_mpi (sk->skey[3] );
     sk->csum += checksum_mpi (sk->skey[4] );
     sk->csum += checksum_mpi (sk->skey[5] );
-    if( ret_sk ) /* not a subkey: return an unprotected version of the sk */
+    if( ret_sk ) /* return an unprotected version of the sk */
 	*ret_sk = copy_secret_key( NULL, sk );
 
     if( dek ) {
@@ -900,12 +900,12 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     }
 
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_sk ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
+    pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
     pkt = m_alloc_clear(sizeof *pkt);
-    pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
+    pkt->pkttype = is_subkey ? PKT_SECRET_SUBKEY : PKT_SECRET_KEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
 
@@ -1419,7 +1419,8 @@ ask_passphrase( STRING2KEY **ret_s2k )
 
 static int
 do_create( int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
-	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, u32 expiredate )
+	   DEK *dek, STRING2KEY *s2k, PKT_secret_key **sk, u32 expiredate,
+	   int is_subkey )
 {
     int rc=0;
 
@@ -1431,11 +1432,14 @@ do_create( int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
 "generator a better chance to gain enough entropy.\n") );
 
     if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )
-	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
+	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate,
+		     is_subkey);
     else if( algo == PUBKEY_ALGO_DSA )
-	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
+	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate,
+		     is_subkey);
     else if( algo == PUBKEY_ALGO_RSA )
-	rc = gen_rsa(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
+        rc = gen_rsa(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate,
+		     is_subkey);
     else
 	BUG();
 
@@ -2181,7 +2185,7 @@ do_generate_keypair( struct para_data_s *para,
 		    get_parameter_dek( para, pPASSPHRASE_DEK ),
 		    get_parameter_s2k( para, pPASSPHRASE_S2K ),
 		    &sk,
-		    get_parameter_u32( para, pKEYEXPIRE ) );
+		    get_parameter_u32( para, pKEYEXPIRE ), 0 );
 
     if(!rc && (revkey=get_parameter_revkey(para,pREVOKER)))
       {
@@ -2209,7 +2213,7 @@ do_generate_keypair( struct para_data_s *para,
 			get_parameter_dek( para, pPASSPHRASE_DEK ),
 			get_parameter_s2k( para, pPASSPHRASE_S2K ),
 			NULL,
-			get_parameter_u32( para, pSUBKEYEXPIRE ) );
+			get_parameter_u32( para, pSUBKEYEXPIRE ), 1 );
 	if( !rc )
 	    rc = write_keybinding(pub_root, pub_root, sk,
                			  get_parameter_uint (para, pSUBKEYUSAGE));
@@ -2408,7 +2412,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
-				      dek, s2k, NULL, expire );
+				      dek, s2k, NULL, expire, 1 );
     if( !rc )
 	rc = write_keybinding(pub_keyblock, pub_keyblock, sk, use);
     if( !rc )
