@@ -1,15 +1,19 @@
+Noteworthy changes in version 0.4.5
+-----------------------------------
 
     * The keyrings and the trustdb is now locked, so that
-      other GnuPG processes won't damage these files. You
+      other GnuPG processes won't damage these files.  You
       may want to put the option --lock-once into your options file.
 
     * The latest self-signatures are now used; this enables --import
       to see updated preferences etc.
 
-    * import of subkeys should now work.
+    * Import of subkeys should now work.
 
     * Random gathering modules may now be loaded as extensions. Add
       such a module for most Unices but it is very experimental!
+
+    * Brazilian language support.
 
 
 Noteworthy changes in version 0.4.4

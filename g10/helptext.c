@@ -78,39 +78,39 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 },
 
 { N_("keygen.size"),
- ""
+ "Enter the size of the key"
 },
 
 { N_("keygen.size.huge.okay"),
- ""
+ "Answer \"yes\" or \"no\""
 },
 
 
 { N_("keygen.size.large.okay"),
- ""
+ "Answer \"yes\" or \"no\""
 },
 
 
 { N_("keygen.valid"),
- ""
+ "Enter the required value"
 },
 
 { N_("keygen.valid.okay"),
- ""
+ "Answer \"yes\" or \"no\""
 },
 
 
 { N_("keygen.name"),
- ""
+ "Enter the name of the key holder"
 },
 
 
 { N_("keygen.email"),
- ""
+ "please enter an optional but highly suggested email address"
 },
 
 { N_("keygen.comment"),
- ""
+ "Please enter an optional comment"
 },
 
 
@@ -128,12 +128,12 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 },
 
 { N_("sign_uid.okay"),
- ""
+ "Answer \"yes\" or \"no\""
 },
 
 
 { N_("change_passwd.empty.okay"),
- ""
+ "Answer \"yes\" or \"no\""
 },
 
 
@@ -142,24 +142,25 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 },
 
 { N_("keyedit.save.okay"),
- ""
+ "Answer \"yes\" or \"no\""
 },
 
 
 { N_("keyedit.cancel.okay"),
- ""
+ "Answer \"yes\" or \"no\""
 },
 
 { N_("keyedit.sign_all.okay"),
- ""
+ "Answer \"yes\" is you want to sign ALL the user IDs"
 },
 
 { N_("keyedit.remove.uid.okay"),
- ""
+ "Answer \"yes\" if you really want to delete this user ID.\n"
+ "All ceritifcates are then also lost!"
 },
 
 { N_("keyedit.remove.subkey.okay"),
- ""
+ "Answer \"yes\" if it is okay to delete the subkey"
 },
 
 { N_("passphrase.enter"),
@@ -174,11 +175,11 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 },
 
 { N_("detached_signature.filename"),
- ""
+ "Give the name fo the file to which the signature applies"
 },
 
 { N_("openfile.overwrite.okay"),
- ""
+ "Answer \"yes\" if it is okay to overwrite the file"
 },
 
 /* end of list */

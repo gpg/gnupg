@@ -844,7 +844,7 @@ main( int argc, char **argv )
     {	const char *p = strusage(13);
 	for( ; *p && (isdigit(*p) || *p=='.'); p++ )
 	    ;
-	if( p )
+	if( *p )
 	    log_info("NOTE: This is a development version!\n");
     }
 
