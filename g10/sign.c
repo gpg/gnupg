@@ -1064,6 +1064,13 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
         goto leave;
     }
 
+    /* We have no way to tell if the recipient can handle messages
+       with an MDC, so this defaults to no.  Perhaps in a few years,
+       this can be defaulted to yes.  Note that like regular
+       encrypting, --force-mdc overrides --disable-mdc. */
+    if(opt.force_mdc)
+      cfx.dek->use_mdc=1;
+
     /* now create the outfile */
     rc = open_outfile (fname, opt.armor? 1:0, &out);
     if (rc)

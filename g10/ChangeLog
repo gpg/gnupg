@@ -1,5 +1,8 @@
 2004-06-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* sign.c (sign_symencrypt_file): Allow using --force-mdc in --sign
+	--symmetric messages.
+
 	* mainproc.c (proc_symkey_enc), seckey-cert.c (do_check): Check
 	the S2K hash algorithm before we try to generate a passphrase
 	using it.  This prevents hitting BUG() when generating a
