@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 0.35[H p]
-Last-Modified: Dec 14, 2000[H p]
+Version: 0.36[H p]
+Last-Modified: Dec 19, 2000[H p]
 Maintained-by: [$maintainer]
 
 
@@ -606,6 +606,14 @@ in it - why?
     installation in a recent state anyway. As a workaround, you can
     force gpg to use a previous default cipher algo by putting 
     [H pre]cipher-algo cast5[H /pre] into your options file.
+
+<Q> With 1.0.4, I get "this cipher algorithm is deprecated ..."
+
+    If you just generated a new key and get this message while
+    encrypting, you've witnessed a bug in 1.0.4. It uses the new AES
+    cipher Rijndael that is incorrectly being referred as
+    "deprecated". Ignore this warning, more recent versions of gpg are
+    corrected.
 
 <Q> I still have a problem. How do I report a bug?
 

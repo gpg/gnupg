@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 0.35
-Last-Modified: Dec 14, 2000
+Version: 0.36
+Last-Modified: Dec 19, 2000
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -83,7 +83,8 @@ you could search in the mailing list archive.
    6.10) If I submit a key to a keyserver, nothing happens ...
    6.11) I get "gpg: waiting for lock ..."
    6.12) Older gpg's (e.g., 1.0) have problems with keys from newer gpgs ...
-   6.13) I still have a problem. How do I report a bug?
+   6.13) With 1.0.4, I get "this cipher algorithm is deprecated ..."
+   6.14) I still have a problem. How do I report a bug?
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -638,7 +639,15 @@ in it - why?
     force gpg to use a previous default cipher algo by putting 
     cipher-algo cast5 into your options file.
 
-6.13) I still have a problem. How do I report a bug?
+6.13) With 1.0.4, I get "this cipher algorithm is deprecated ..."
+
+    If you just generated a new key and get this message while
+    encrypting, you've witnessed a bug in 1.0.4. It uses the new AES
+    cipher Rijndael that is incorrectly being referred as
+    "deprecated". Ignore this warning, more recent versions of gpg are
+    corrected.
+
+6.14) I still have a problem. How do I report a bug?
 
     Are you sure that it's not been mentioned somewhere on the mailing
     lists? Did you have a look at the bug list (You'll find a link to
