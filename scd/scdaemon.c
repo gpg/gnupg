@@ -70,6 +70,7 @@ enum cmd_and_opt_values
   oBatch,
   oReaderPort,
   octapiDriver,
+  opcscDriver,
   oDisableOpenSC,
 
 aTest };
@@ -94,7 +95,8 @@ static ARGPARSE_OPTS opts[] = {
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oLogFile,  "log-file"   ,2, N_("use a log file for the server")},
   { oReaderPort, "reader-port", 2, N_("|N|connect to reader at port N")},
-  { octapiDriver, "ctapi-driver", 2, N_("NAME|use NAME as ctAPI driver")},
+  { octapiDriver, "ctapi-driver", 2, N_("NAME|use NAME as ct-API driver")},
+  { opcscDriver, "pcsc-driver", 2, N_("NAME|use NAME as PC/SC driver")},
   { oDisableOpenSC, "disable-opensc", 0,
 #ifdef HAVE_OPENSC
                                          N_("Do not use the OpenSC layer")
@@ -266,6 +268,11 @@ main (int argc, char **argv )
 
   may_coredump = disable_core_dumps ();
 
+  /* Set default options. */
+  opt.pcsc_driver = NULL; /* We can't use libpcsclite due to license
+                             conflicts. */
+
+
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
@@ -379,6 +386,7 @@ main (int argc, char **argv )
 
         case oReaderPort: app_set_default_reader_port (pargs.r.ret_str); break;
         case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
+        case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
         case oDisableOpenSC: opt.disable_opensc = 1; break;
 
         default : pargs.err = configfp? 1:2; break;

@@ -54,6 +54,7 @@ struct {
   int batch;        /* batch mode */
   const char *homedir; /* configuration directory name */
   const char *ctapi_driver; /* Library to access the ctAPI. */
+  const char *pcsc_driver;  /* Library to access the PC/SC system. */
   int disable_opensc;  /* Disable the sue of the OpenSC framework. */
 } opt;
 

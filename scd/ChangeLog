@@ -1,3 +1,9 @@
+2003-08-19  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c, scdaemon.h: New option --pcsc-driver.
+	* apdu.c (apdu_open_reader): Use that option here instead of a
+	hardcoded one.
+
 2003-08-18  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Add OPENSC_LIBS to all programs. 

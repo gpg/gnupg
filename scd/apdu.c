@@ -798,6 +798,12 @@ apdu_open_reader (const char *portstr)
     {
       void *handle;
 
+      if (!opt.pcsc_driver || !*opt.pcsc_driver)
+        {
+          log_error ("no PC/SC driver has been specified\n");
+          return -1;
+        }
+
       handle = dlopen ("libpcsclite.so", RTLD_LAZY);
       if (!handle)
         {
