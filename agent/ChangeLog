@@ -1,3 +1,7 @@
+2004-12-17  Moritz Schulte  <moritz@g10code.com>
+
+	* query.c: Undo change from 2004-12-05.
+
 2004-12-15  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c [W32]: Various hacks to make it work.
