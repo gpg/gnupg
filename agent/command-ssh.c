@@ -159,27 +159,6 @@ static uint32_t lifetime_default;
 /* Primitive I/O functions.  */
 
 static gpg_err_code_t
-gpg_stream_copy (gpg_stream_t dest, gpg_stream_t src)
-{
-  gpg_err_code_t err = GPG_ERR_NO_ERROR;
-  unsigned char buffer[STREAM_BLOCK_SIZE];
-  size_t bytes_read = 0;
-
-  while (1)
-    {
-      err = gpg_stream_read (src, buffer, sizeof (buffer), &bytes_read);
-      if (err || (! bytes_read))
-	break;
-
-      err = gpg_stream_write (dest, buffer, bytes_read, NULL);
-      if (err)
-	break;
-    }
-
-  return err;
-}
-
-static gpg_err_code_t
 gpg_stream_read_byte (gpg_stream_t stream, byte_t *b)
 {
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
@@ -648,10 +627,6 @@ ssh_extract_key_public_from_blob (unsigned char *blob, size_t blob_size,
   if (err)
     goto out;
 
-  err = gpg_stream_flush (blob_stream);
-  if (err)
-    goto out;
-
   err = gpg_stream_seek (blob_stream, 0, SEEK_SET);
   if (err)
     goto out;
@@ -684,10 +659,6 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
     goto out;
 
   err = ssh_send_key_public (blob_stream, key_public);
-  if (err)
-    goto out;
-
-  err = gpg_stream_flush (blob_stream);
   if (err)
     goto out;
 
@@ -959,9 +930,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
 	break;
     }
 
-  err = gpg_stream_flush (key_blobs);
-  if (err)
-    goto out;
   err = gpg_stream_seek (key_blobs, 0, SEEK_SET);
   if (err)
     goto out;
@@ -1063,10 +1031,6 @@ data_sign (CTRL ctrl, unsigned char **sig, size_t *sig_n)
   if (err)
     goto out;
 
-  err = gpg_stream_flush (stream);
-  if (err)
-    goto out;
-
   err = gpg_stream_seek (stream, 0, SEEK_SET);
   if (err)
     goto out;
@@ -1126,7 +1090,8 @@ ssh_handler_sign_request (ctrl_t ctrl,
   size_t sig_n = 0;
   uint32_t flags = 0;
 
-  log_debug ("[ssh-agent] sign request\n");
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] sign request\n");
 
   /* Receive key.  */
   
@@ -1295,7 +1260,8 @@ ssh_identity_register (ssh_key_secret_t *key, int ttl)
   char passphrase[100] = { 0 };
   int ret = 0;
 
-  log_debug ("[ssh-agent] registering identity `%s'\n", key_grip);
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] registering identity `%s'\n", key_grip);
 
   err = ssh_key_grip (NULL, key, key_grip);
   if (err)
@@ -1340,7 +1306,8 @@ ssh_identity_drop (ssh_key_public_t *key)
 
   /* FIXME */
 
-  log_debug ("[ssh-agent] dropping identity `%s'\n", key_grip);
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] dropping identity `%s'\n", key_grip);
 
  out:
 
@@ -1358,7 +1325,8 @@ ssh_handler_add_identity (ctrl_t ctrl,
   int confirm = 0;
   int death = 0;
 
-  log_debug ("[ssh-agent] add identity\n");
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] add identity\n");
 
   err = ssh_receive_key_secret (request, &key);
   if (err)
@@ -1434,7 +1402,8 @@ ssh_handler_remove_identity (ctrl_t ctrl,
 
   /* Receive key.  */
 
-  log_debug ("[ssh-agent] remove identity\n");
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] remove identity\n");
   
   err = gpg_stream_read_string (request, &key_blob, NULL);
   if (err)
@@ -1463,7 +1432,8 @@ ssh_identities_remove_all (void)
 {
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
 
-  log_debug ("[ssh-agent] remove all identities\n");
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] remove all identities\n");
 
   /* FIXME: shall we remove _all_ cache entries or only those
      registered through the ssh emulation?  */
@@ -1489,8 +1459,9 @@ static gpg_err_code_t
 ssh_lock (void)
 {
   gpg_err_code_t err = GPG_ERR_NOT_IMPLEMENTED;
-  
-  log_debug ("[ssh-agent] lock\n");
+
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] lock\n");
 
   return err;
 }
@@ -1500,7 +1471,8 @@ ssh_unlock (void)
 {
   gpg_err_code_t err = GPG_ERR_NOT_IMPLEMENTED;
 
-  log_debug ("[ssh-agent] unlock\n");
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] unlock\n");
 
   return err;
 }
@@ -1563,7 +1535,8 @@ ssh_request_process (ctrl_t ctrl, gpg_stream_t request, gpg_stream_t response)
   if (err)
     goto out;
 
-  log_debug ("[ssh-agent] request: %u\n", request_type);
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] request: %u\n", request_type);
 
   for (i = 0; i < DIM (request_specs); i++)
     if (request_specs[i].type == request_type)
@@ -1609,7 +1582,8 @@ start_command_handler_ssh (int sock_client)
 
   /* Setup control structure.  */
 
-  log_debug ("[ssh-agent] Starting command handler\n");
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] Starting command handler\n");
 
   ctrl.connection_fd = sock_client;
 
@@ -1645,14 +1619,12 @@ start_command_handler_ssh (int sock_client)
       if (err)
 	break;
 
-      log_debug ("[ssh-agent] Received request of length: %u\n", request_size);
+      if (DBG_COMMAND)
+	log_debug ("[ssh-agent] Received request of length: %u\n",
+		   request_size);
 
       /* Write request data to request stream.  */
       err = gpg_stream_write (stream_request, request, request_size, NULL);
-      if (err)
-	break;
-
-      err = gpg_stream_flush (stream_request);
       if (err)
 	break;
 
@@ -1664,15 +1636,12 @@ start_command_handler_ssh (int sock_client)
       err = ssh_request_process (&ctrl, stream_request, stream_response);
       if (err)
 	break;
-      err = gpg_stream_flush (stream_response);
-      if (err)
-	break;
-      
+ 
       /* Figure out size of response data.  */
       err = gpg_stream_seek (stream_response, 0, SEEK_SET);
       if (err)
 	break;
-      err = gpg_stream_peek (stream_response, NULL, &size);
+      err = gpg_stream_stat (stream_response, &size);
       if (err)
 	break;
 
@@ -1687,7 +1656,6 @@ start_command_handler_ssh (int sock_client)
       err = gpg_stream_flush (stream_sock);
       if (err)
 	break;
-
     };
   if (err)
     goto out;
@@ -1700,7 +1668,8 @@ start_command_handler_ssh (int sock_client)
   gpg_stream_destroy (stream_response);
   free (request);
 
-  log_debug ("[ssh-agent] Leaving ssh command handler: %s\n", gpg_strerror (err));
+  if (DBG_COMMAND)
+    log_debug ("[ssh-agent] Leaving ssh command handler: %s\n", gpg_strerror (err));
 
   /* fixme: make sure that stream_destroy closes client socket.  */
 }

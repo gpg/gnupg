@@ -121,6 +121,9 @@ gpg_error_t gpg_stream_seek (gpg_stream_t stream,
 gpg_error_t gpg_stream_stat (gpg_stream_t stream,
 			     size_t *size);
 
+gpg_error_t gpg_stream_copy (gpg_stream_t dst,
+			     gpg_stream_t src);
+
 typedef struct gpg_stream_spec_mem
 {
   char *memory;

@@ -1,5 +1,10 @@
 2004-07-19  Moritz Schulte  <moritz@g10code.com>
 
+	* command-ssh.c: Only log debugging message if asked to do so.
+
+	* command-ssh.c (gpg_stream_copy): Remove function.
+	Update Libgpg-stream.
+
 	* command-ssh.c: Fix handling of iqmp vs. u.
 
 	* command-ssh.c (ssh_identity_register): passphrase must not be freed.

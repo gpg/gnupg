@@ -157,6 +157,9 @@ buffer_read (buffer_t buffer,
   size_t data_read = 0;
   size_t data_to_copy = 0;
 
+  if (! (buffer->flags & BUFFER_FLAG_DIRTY))
+    err = buffer_flush_do (buffer);
+
   while ((bytes_to_read - data_read) && (! err))
     {
       if (buffer->buffer_in.data_offset == buffer->buffer_in.data_size)

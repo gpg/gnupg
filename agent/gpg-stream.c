@@ -912,3 +912,37 @@ gpg_stream_stat (gpg_stream_t stream,
 
   return err;
 }
+
+
+static gpg_error_t
+gpg_stream_copy_do (gpg_stream_t dst,
+		    gpg_stream_t src)
+{
+  gpg_error_t err = GPG_ERR_NO_ERROR;
+  unsigned char buffer[STREAM_BLOCK_SIZE];
+  size_t bytes_read = 0;
+
+  while (1)
+    {
+      err = gpg_stream_read (src, buffer, sizeof (buffer), &bytes_read);
+      if (err || (! bytes_read))
+	break;
+
+      err = gpg_stream_write (dst, buffer, bytes_read, NULL);
+      if (err)
+	break;
+    }
+
+  return err;
+}
+
+gpg_error_t
+gpg_stream_copy (gpg_stream_t dst,
+		 gpg_stream_t src)
+{
+  gpg_error_t err = GPG_ERR_NO_ERROR;
+
+  err = gpg_stream_copy_do (dst, src);
+
+  return err;
+}
