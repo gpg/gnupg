@@ -20,6 +20,7 @@
 
 #include <config.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <ctype.h>
 #include "types.h"
@@ -50,5 +51,17 @@ print_string( FILE *fp, byte *p, size_t n )
 	}
 	else
 	    putc(*p, fp);
+}
+
+int
+answer_is_yes( const char *s )
+{
+    if( !stricmp(s, "yes") )
+	return 1;
+    if( *s == 'y' && !s[1] )
+	return 1;
+    if( *s == 'Y' && !s[1] )
+	return 1;
+    return 0;
 }
 

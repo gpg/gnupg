@@ -52,7 +52,7 @@ generate_public_prime( unsigned  nbits )
 {
     MPI prime;
 
-    prime = gen_prime( nbits, 0, 1 ); /* fixme: change to 2 */
+    prime = gen_prime( nbits, 0, 2 );
     fputc('\n', stderr);
     return prime;
 }
@@ -70,6 +70,8 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
     MPI prime;	/* prime test value */
     byte *perms = NULL;
     int i, j;
+    int count1, count2;
+    unsigned nprime;
 
     /* find number of needed prime factors */
     for(n=1; (pbits - qbits - 1) / n  >= qbits; n++ )
@@ -80,33 +82,32 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
     fbits = (pbits - qbits -1) / n;
     while( qbits + n*fbits < pbits )
 	qbits++;
-    qbits++; /* one mpre to increase tzhe chance to get a weel formed prime*/
-    log_debug("gen prime: pbits=%u qbits=%u fbits=%u n=%d\n",
+    if( DBG_CIPHER )
+	log_debug("gen prime: pbits=%u qbits=%u fbits=%u n=%d\n",
 		    pbits, qbits, fbits, n  );
 
     prime = mpi_alloc( (pbits + BITS_PER_MPI_LIMB - 1) /  BITS_PER_MPI_LIMB );
-    q = gen_prime( qbits, 0, 0 ); /* fixme: should be 2 */
-    fputc('\n', stderr);
+    q = gen_prime( qbits, 0, 2 );
 
     /* allocate an array to hold the factors + 2 for later usage */
     factors = m_alloc_clear( (n+2) * sizeof *factors );
 
-    /* make a pool of 2n+5 primes (this is an arbitrary value) */
-    m = n*2+5;
-    if( m < 20 )
-	m = 20;
+    /* make a pool of 3n+5 primes (this is an arbitrary value) */
+    m = n*3+5;
+    if( m < 25 )
+	m = 25;
     pool = m_alloc_clear( m * sizeof *pool );
 
     /* permutate over the pool of primes */
+    count1=count2=0;
     do {
       next_try:
 	if( !perms ) {
 	    /* allocate new primes */
 	    for(i=0; i < m; i++ ) {
 		mpi_free(pool[i]);
-		pool[i] = gen_prime( fbits, 0, 0 ); /* fixme: should be 2 */
+		pool[i] = gen_prime( fbits, 0, 2 );
 	    }
-	    fputc('\n', stderr);
 	    /* init m_out_of_n() */
 	    perms = m_alloc_clear( m );
 	    for(i=0; i < n; i++ ) {
@@ -131,18 +132,43 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 	for(i=0; i < n; i++ )
 	    mpi_mul( prime, prime, factors[i] );
 	mpi_add_ui( prime, prime, 1 );
-    } while( !( mpi_get_nbits( prime ) == pbits && check_prime( prime )) );
-    putc('\n', stderr);
+	nprime = mpi_get_nbits(prime);
+	if( nprime < pbits ) {
+	    if( ++count1 > 20 ) {
+		count1 = 0;
+		qbits++;
+		fputc('>', stderr);
+		q = gen_prime( qbits, 0, 2 );
+		goto next_try;
+	    }
+	}
+	else
+	    count1 = 0;
+	if( nprime > pbits ) {
+	    if( ++count2 > 20 ) {
+		count2 = 0;
+		qbits--;
+		fputc('<', stderr);
+		q = gen_prime( qbits, 0, 2 );
+		goto next_try;
+	    }
+	}
+	else
+	    count2 = 0;
+    } while( !(nprime == pbits && check_prime( prime )) );
 
 
-    log_mpidump( "prime    : ", prime );
-    log_mpidump( "factor  q: ", q );
-    for(i=0; i < n; i++ )
-	log_mpidump( "factor pi: ", factors[i] );
-    log_debug("bit sizes: prime=%u, q=%u",mpi_get_nbits(prime), mpi_get_nbits(q) );
-    for(i=0; i < n; i++ )
-	fprintf(stderr, ", p%d=%u", i, mpi_get_nbits(factors[i]) );
-    putc('\n', stderr);
+    if( DBG_CIPHER ) {
+	putc('\n', stderr);
+	log_mpidump( "prime    : ", prime );
+	log_mpidump( "factor  q: ", q );
+	for(i=0; i < n; i++ )
+	    log_mpidump( "factor pi: ", factors[i] );
+	log_debug("bit sizes: prime=%u, q=%u", mpi_get_nbits(prime), mpi_get_nbits(q) );
+	for(i=0; i < n; i++ )
+	    fprintf(stderr, ", p%d=%u", i, mpi_get_nbits(factors[i]) );
+	putc('\n', stderr);
+    }
 
     if( g ) { /* create a generator (start with 3)*/
 	MPI tmp   = mpi_alloc( mpi_get_nlimbs(prime) );
@@ -155,22 +181,30 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 	mpi_set_ui(g,2);
 	do {
 	    mpi_add_ui(g, g, 1);
-	    log_mpidump("checking g: ", g );
+	    if( DBG_CIPHER ) {
+		log_debug("checking g: ");
+		mpi_print( stderr, g, 1 );
+	    }
+	    else
+		fputc('^', stderr);
 	    for(i=0; i < n+2; i++ ) {
-		log_mpidump("   against: ", factors[i] );
+		fputc('~', stderr);
 		mpi_fdiv_q(tmp, pmin1, factors[i] );
 		/* (no mpi_pow(), but it is okay to use this with mod prime) */
 		mpi_powm(b, g, tmp, prime );
 		if( !mpi_cmp_ui(b, 1) )
 		    break;
 	    }
-	} while( i < n );
+	    if( DBG_CIPHER )
+		fputc('\n', stderr);
+	} while( i < n+2 );
 	mpi_free(factors[n+1]);
 	mpi_free(tmp);
 	mpi_free(b);
 	mpi_free(pmin1);
-	log_mpidump("found    g: ", g );
     }
+    if( !DBG_CIPHER )
+	putc('\n', stderr);
 
     m_free( factors );	/* (factors are shallow copies) */
     for(i=0; i < m; i++ )
@@ -232,7 +266,6 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 	    }
 	    if( x )
 		continue;   /* found a multiple of a already known prime */
-	    fputc('.', stderr);
 
 	    mpi_add_ui( prime, prime, step );
 
@@ -267,6 +300,7 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 		m_free(mods);
 		return prime;
 	    }
+	    fputc('.', stderr);
 	}
 	fputc(':', stderr); /* restart with a new random value */
     }
@@ -289,7 +323,6 @@ check_prime( MPI prime )
 	if( mpi_divisible_ui( prime, x ) )
 	    return 0;
     }
-    fputc('.', stderr);
 
   #if 0
     result = mpi_alloc( mpi_get_nlimbs(prime) );
@@ -308,6 +341,7 @@ check_prime( MPI prime )
     /* perform stronger tests */
     if( is_prime(prime, 5, &count ) )
 	return 1; /* is probably a prime */
+    fputc('.', stderr);
     return 0;
 }
 

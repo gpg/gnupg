@@ -39,17 +39,6 @@
 #endif
 
 
-static int
-answer_is_yes( const char *s )
-{
-    if( !stricmp(s, "yes") )
-	return 1;
-    if( *s == 'y' && !s[1] )
-	return 1;
-    if( *s == 'Y' && !s[1] )
-	return 1;
-    return 0;
-}
 
 
 static u16
@@ -356,7 +345,7 @@ generate_keypair()
 	else if( algo == 3 ) {
 	    algo = PUBKEY_ALGO_DSA;
 	    algo_name = "DSA";
-	    break;
+	    tty_printf("Sorry; DSA is not yet supported.\n");
 	}
     }
 
@@ -380,8 +369,8 @@ generate_keypair()
       #endif
 	if( algo == PUBKEY_ALGO_DSA && (nbits < 512 || nbits > 1024) )
 	    tty_printf("DSA does only allow keysizes from 512 to 1024\n");
-	else if( nbits < 128 ) /* FIXME: change this to 768 */
-	    tty_printf("keysize too small; please select a larger one\n");
+	else if( nbits < 768 )
+	    tty_printf("keysize too small; 768 is smallest value allowed.\n");
 	else if( nbits > 2048 ) {
 	    tty_printf("Keysizes larger than 2048 are not suggested, because "
 		       "computations take REALLY long!\n");
@@ -441,20 +430,28 @@ generate_keypair()
     tty_printf( "You need a Passphrase to protect your secret key.\n\n" );
 
     dek = m_alloc_secure( sizeof *dek );
-    dek->algo = CIPHER_ALGO_BLOWFISH;
-    rc = make_dek_from_passphrase( dek , 2 );
-    if( rc == -1 ) {
-	m_free(dek); dek = NULL;
-	tty_printf(
+    for(;;) {
+	dek->algo = CIPHER_ALGO_BLOWFISH;
+	rc = make_dek_from_passphrase( dek , 2 );
+	if( rc == -1 ) {
+	    m_free(dek); dek = NULL;
+	    tty_printf(
 	    "You don't what a passphrase - this is probably a *bad* idea!\n"
 	    "I will do it anyway.  You can change your passphrase at anytime,\n"
 	    "using this program with the option \"--change-passphrase\"\n\n" );
-    }
-    else if( rc ) {
-	m_free(dek); dek = NULL;
-	m_free(uid);
-	log_error("Error getting the passphrase: %s\n", g10_errstr(rc) );
-	return;
+	    break;
+	}
+	else if( rc == G10ERR_PASSPHRASE ) {
+	    tty_printf("passphrase not correctly repeated; try again.\n");
+	}
+	else if( rc ) {
+	    m_free(dek); dek = NULL;
+	    m_free(uid);
+	    log_error("Error getting the passphrase: %s\n", g10_errstr(rc) );
+	    return;
+	}
+	else
+	    break; /* okay */
     }
 
 
@@ -473,6 +470,12 @@ generate_keypair()
      */
     pub_root = make_comment_node("#created by G10 pre-release " VERSION );
     sec_root = make_comment_node("#created by G10 pre-release " VERSION );
+
+    tty_printf(
+"We need to generate a lot of random bytes. It is a good idea to perform\n"
+"some other action (work in another window, move the mouse, utilize the\n"
+"network and the disks) during the prime generation; this gives the random\n"
+"number generator a better chance to gain enough entropy.\n" );
 
     if( algo == PUBKEY_ALGO_ELGAMAL )
 	rc = gen_elg(nbits, pub_root, sec_root, dek, &skc );

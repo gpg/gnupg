@@ -84,6 +84,7 @@ char *make_filename( const char *first_part, ... );
 /*-- miscutil.c --*/
 u32 make_timestamp(void);
 void print_string( FILE *fp, byte *p, size_t n );
+int answer_is_yes( const char *s );
 
 /*-- strgutil.c --*/
 void free_strlist( STRLIST sl );

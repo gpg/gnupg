@@ -558,7 +558,7 @@ keyring_delete( KBPOS *kbpos )
     }
 
     len = kbpos->length;
-    log_debug("writing a dummy packet of length %lu\n", (ulong)len);
+    /*log_debug("writing a dummy packet of length %lu\n", (ulong)len);*/
 
     if( len < 2 )
 	log_bug(NULL);

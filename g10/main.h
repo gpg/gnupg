@@ -37,6 +37,9 @@ int encode_crypt( const char *filename, STRLIST remusr );
 int sign_file( const char *filename, int detached, STRLIST locusr );
 int sign_key( const char *username, STRLIST locusr );
 
+/*-- sig-check.c --*/
+int check_key_signature( KBNODE root, KBNODE node );
+
 /*-- keygen.c --*/
 void generate_keypair(void);
 

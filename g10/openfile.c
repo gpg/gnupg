@@ -87,7 +87,7 @@ open_outfile( const char *iname )
     IOBUF a = NULL;
     int rc;
 
-    if( (!iname && !opt.outfile) || opt.outfile_is_stdout ) {
+    if( !iname && !opt.outfile ) {
 	if( !(a = iobuf_create(NULL)) )
 	    log_error("can't open [stdout]: %s\n", strerror(errno) );
 	else if( opt.verbose )

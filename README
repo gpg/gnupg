@@ -1,20 +1,20 @@
 
-	     G10 - The GNU Enryption and Signing Tool
+	     G10 - The GNU Encryption and Signing Tool
 	    ------------------------------------------
 
 
-    THIS IS VERSION IS ONLY a TEST VERSION !  YOU SHOULD NOT
+    THIS IS VERSION IS ONLY A TEST VERSION !  YOU SHOULD NOT
     USE IT FOR OTHER PURPOSES THAN EVALUATING THE CURRENT CODE.
+
+    * Only some parts work.
 
     * The data format may change in the next version!
 
-    * The code to generate keys is not secure!
-
-    * Some features are not implemented
+    * Some features are not yet implemented
 
 
     I provide this version as a reality check to start discussion.
-    Please subscribe to g10@net.lut.ac.uk be sending a mail with
+    Please subscribe to g10@net.lut.ac.uk by sending a mail with
     the word "subscribe" in the body to "g10-request@net.lut.ac.uk".
 
 
@@ -25,26 +25,139 @@
     it cannot be compatible to old PGP versions, because those use
     IDEA (which is worldwide patented) and RSA (which is patented in
     the United States until Sep 20, 2000).  I'm sorry about this, but
-    this is the world we have created (e.g. by using propiertary software).
+    this is the world we have created (e.g. by using proprietary software).
 
 
     Because the OpenPGP standard is still a draft, G10 is not yet
     compatible to it (or PGP 5) - but it will.	The data structures
     used are compatible with PGP 2.x, so it can parse an list such files
     and PGP should be able to parse data created by G10 and complain
-    about unsupported alogorithms.
+    about unsupported algorithms.
 
     The default algorithms used by G10 are ElGamal for public-key
     encryption and signing; Blowfish with a 160 bit key for protecting
     the secret-key components, conventional and session encryption;
     RIPE MD-160 to create message digest.  DSA, SHA-1 and CAST are
     also implemented, but not used on default.	I decided not
-    to use DSA as default signing algorithm, cecause it allows only for
+    to use DSA as default signing algorithm, because it allows only for
     1024 bit keys and this may be not enough in a couple of years.
 
-    Key generation takes a long time and should be improved!
+
+    Resources
+    ---------
+    G10 needs a directory "~/.g10" to store the default keyrings
+    and other files.
+
+
+    Key Generation
+    --------------
+    Create a key pair with this command:
+
+	g10 --gen-key
+
+    This asks some questions and then starts key generation. To create
+    good random numbers for prime number generation, it uses a /dev/random
+    which will emit only bytes if the kernel can gather enough entropy.
+    If you see no progress, you should start some other activities such
+    as a mouse moves or a "find /".  Because we have no hardware device
+    to generate random we have to use this method.
+
+    Key generation shows progress by printing different characters to
+    stderr:
+	     "."  Miller-Rabin test failed.
+	     "+"  Miller-Rabin test succeeded.
+	     "!"  Reloading the pool with fresh prime numbers
+	     "^"  Checking a new value for the generator
+	     "~"  Issued during generator checks
+	     "<"  Size of one factor decreased
+	     ">"  Size of one factor increased
+
+    The prime number for ElGamal is generated this way:
+
+    1) Make a prime number q of 160, 200, 240 bits (depending on the keysize).
+    2) Select the length of the other prime factors to be at least the size
+       of q and calculate the number of prime factors needed
+    3) Make a pool of prime number, each of the length determined in step 2
+    4) Get a new permutation out of the pool or continue with step 3
+       if we have tested all permutations.
+    5) Calculate a candidate prime p = 2 * q * p[1] * ... * p[n] + 1
+    6) Check that this prime has the correct length (this may change q if
+       it seems not to be possible to make a prime of the desired length)
+    7) Check whether this is a prime using trial divisions and the
+       Miller-Rabin test.
+    8) Continue with step 4 if we did not find a prime in step 7.
+    9) Find a generator for that prime.
+
+
+    Signatures
+    ----------
+    To create a signature, use this:
+
+	g10 -s file
+
+    This creates a file file.g10 which is compressed and has a signature
+    attached.
+
+	g10 -sa file
+
+    Same as above, but file.g10 is ascii armored.
+
+	g10 -s -o out file
+
+    Creates a signature of file, but writes the output to the file "out".
+
+    Encryption
+    ----------
+    To encrypt data use this:
+
+	g10 -e -r heine file
+
+    This encrypts files with the public key of "heine" and writes it
+    to "file.g10"
+
+	echo "hallo" | g10 -ea -r heine | mail heine
+
+    Ditto, but encrypts "hallo\n" and mails it as ascii armored message.
+
+
+    Debug Flags
+    -----------
+    Use the option "--debug n" to output debug informations. This option
+    can be used multiple times, all values are ORed; n maybe prefixed with
+    0x to use hex-values.
+
+	 value	used for
+	 -----	----------------------------------------------
+	  1	packet reading/writing
+	  2	MPI details
+	  4	ciphers and primes (may reveal sensitive data)
+	  8	iobuf filter functions
+	  16	iobuf stuff
+	  32	memory allocation stuff
+	  64	caching
+	  128	show memory statistics at exit
 
 
 
+    Other Notes
+    -----------
+    This is work in progress, so you may find duplicated code fragments,
+    ugly data structures, weird usage of filenames and other thinks.
+    I will run "indent" over the source when making a real distribution,
+    but for now I stick to my own formatting rules.
 
+    Compression does not work always; this is the reason that "-z 0"
+    is the default.
+
+    This will be cleaned up of course.
+
+    The primary FTP site is "ftp://ftp.guug.de/pub/gcrypt/"
+    The primary WWW page is "http://www.d.shuttle.de/isil/g10.html"
+
+    Please direct bug reports to <g10-bugs@isil.d.shuttle.de> or better
+    post them to the mailing list <g10@net.lut.ac.uk>.
+
+    Have fun
+
+	Werner
 

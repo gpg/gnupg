@@ -131,8 +131,9 @@ main( int argc, char **argv )
     { 515, "fingerprint", 0, "show the fingerprints"},
     { 516, "print-mds" , 0, "print all message digests"},
     { 517, "secret-keyring" ,2, "add this secret keyring to the list" },
-    { 518, "config"    , 2, "use this config file" },
+    { 518, "options"   , 2, "read options from file" },
     { 519, "no-armor",   0, "\r"},
+    { 520, "no-default-keyring", 0, "\r" },
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -155,9 +156,10 @@ main( int argc, char **argv )
     int parse_verbose = 0;
     int default_config =1;
     int errors=0;
+    int default_keyring = 1;
 
 
-    opt.compress = -1; /* defaults to default compression level */
+    opt.compress = 0; /* defaults to no compression level */
 
     /* check wether we have a config file on the commandline */
     orig_argc = argc;
@@ -212,10 +214,7 @@ main( int argc, char **argv )
 	  case 'z': opt.compress = pargs.r.ret_int; break;
 	  case 'a': opt.armor = 1; opt.no_armor=0; break;
 	  case 'c': action = aSym; break;
-	  case 'o': opt.outfile = pargs.r.ret_str;
-		    if( opt.outfile[0] == '-' && !opt.outfile[1] )
-			opt.outfile_is_stdout = 1;
-		    break;
+	  case 'o': opt.outfile = pargs.r.ret_str; break;
 	  case 'e': action = action == aSign? aSignEncr : aEncr; break;
 	  case 'b': detached_sig = 1;
 	       /* fall trough */
@@ -257,6 +256,7 @@ main( int argc, char **argv )
 	    }
 	    break;
 	  case 519: opt.no_armor=1; opt.armor=0; break;
+	  case 520: default_keyring = 0; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -280,12 +280,12 @@ main( int argc, char **argv )
 	    fputs(s, stderr);
     }
 
-    if( !sec_nrings ) { /* add default secret rings */
+    if( !sec_nrings || default_keyring ) { /* add default secret rings */
 	char *p = make_filename("~/.g10", "secring.g10", NULL );
 	add_secret_keyring(p);
 	m_free(p);
     }
-    if( !nrings ) { /* add default ring */
+    if( !nrings || default_keyring ) { /* add default ring */
 	char *p = make_filename("~/.g10", "pubring.g10", NULL );
 	add_keyring(p);
 	m_free(p);
@@ -331,6 +331,7 @@ main( int argc, char **argv )
 
 
       case aSignEncr: /* sign and encrypt the given file */
+	log_fatal("signing and encryption is not yet implemented\n");
 	usage(1);  /* FIXME */
 	break;
 

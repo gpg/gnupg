@@ -27,6 +27,7 @@
 #include "memory.h"
 #include "ttyio.h"
 #include "cipher.h"
+#include "keydb.h"
 
 
 static int hash_passphrase( DEK *dek, char *pw );
@@ -44,8 +45,14 @@ get_passphrase_hash( u32 *keyid, char *text )
     DEK *dek;
 
     if( keyid ) {
+	char *ustr;
 	tty_printf("\nNeed a pass phrase to unlock the secret key!\n");
-	tty_printf("KeyID: %08lX\n\n",  keyid[1] );
+	tty_printf("KeyID: " );
+	ustr = get_user_id_string( keyid );
+	tty_print_string( ustr, strlen(ustr) );
+	m_free(ustr);
+	tty_printf("\n\n");
+
     }
     if( keyid && (p=getenv("G10PASSPHRASE")) ) {
 	pw = m_alloc_secure(strlen(p)+1);

@@ -39,6 +39,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 transform = @program_transform_name@
 
 INCLUDES = -I$(top_srcdir)/include
+EXTRA_DIST = OPTIONS
 
 bin_PROGRAMS = g10
 

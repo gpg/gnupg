@@ -7,7 +7,7 @@
 
 	 ./configure --enable-m-debug
 
-       to ebanle the integrated malloc debugging stuff.
+       to enable the integrated malloc debugging stuff.
 
 
     2) Run make:

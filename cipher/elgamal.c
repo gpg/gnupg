@@ -149,7 +149,7 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
     do {
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
-	mpi_set_bytes( x, nbits, get_random_byte, 1 ); /* fixme: should be 2 */
+	mpi_set_bytes( x, nbits, get_random_byte, 2 );
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
 
     y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);

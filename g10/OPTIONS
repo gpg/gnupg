@@ -1,0 +1,135 @@
+# This is a sample option file
+#
+# Unless you you specify which option file to use with the
+# commandline option "--options filename", g10 uses per
+# default the file ~/.g10/options.
+#
+# An option file can contain all long options which are
+# available in G10. If the first non white space character of
+# a line is a '#', this line is ignored.  Empty lines are also
+# ignored.
+#
+# Here is a list of all possible options. Not of all them make
+# sense in an option file; consider this as a complete option
+# reference
+
+add-key
+# add key to the public keyring
+
+armor
+# create ascii armored output
+
+
+batch
+# batch mode: never ask
+
+cache-all
+# hold everything in memory
+
+change-passphrase
+# change the passphrase of your secret keyring
+
+check
+# check a signature
+
+check-key
+# check signatures on a key in the keyring
+
+debug  value|hexvalue
+#  set debugging flags,
+
+debug-all
+# enable full debugging
+
+decrypt
+# decrypt data (default)
+
+delete-key
+# remove key from public keyring,
+
+detach-sign
+# make a detached signature,
+
+dry-run
+# don't make any changes
+
+encrypt
+# encrypt data
+
+fingerprint
+# show the fingerprints,
+
+gen-key
+# generate a new key pair,
+
+gen-prime
+# Generate a prime.
+# With one argument:  take it as the bitsize and make a simple prime of
+#		      this size
+# With two arguments: Generate a prime, usable for DL algorithms.
+# With three arguments: same as above, but a third argument indicates
+#			taht a generator should also be calculated.
+
+keyring  filename
+# add this filename to the list of keyrings
+
+local-user user-string
+#  use this user-string to sign or decrypt
+
+no
+# assume no on most questions
+
+no-armor
+# Assume the input data is not in ascii armored format.
+
+no-default-keyring
+# Do not add the default keyrings to the list of keyrings
+
+options filename
+#  Ignored in option files.
+
+output filename
+# use filename for output
+
+print-mds
+# print all message digests of all give filenames
+
+remote-user
+# use this user-id for encryption"
+
+
+secret-keyring filename
+# add filename to the list of secret keyrings
+
+sign
+# make a signature
+
+sign-key
+# make a signature on a key in the keyring
+# Argument is the userid of the key to sign.
+# This looks for the key, displays the key and checks all
+# existing signatures of this key. If the key is not yet signed
+# by the default user (or the users given with "-l"), the programm
+# displays the information of the key again, together with
+# it's fingerprint and asked wehter it should be signed. This question
+# is repeated for all users specified with "-l".  The key is then signed
+# and the keyring which contains the key is updated.
+
+store
+# simply packs the input data into a rfc1991 packet format
+
+symmetric
+# encrypt the input only with the symmetric (conventional) cipher.
+# This asks for a passphrase.
+
+test
+# Used for testing some parts of the program
+
+verbose
+# Give more informations suring processing. If used 2 times, the input data
+# is listed in detail.
+
+yes
+# assume yes on most questions
+
+

@@ -198,8 +198,8 @@ signature_check( PKT_signature *sig, MD_HANDLE *digest )
     }
   #endif/*HAVE_RSA_CIPHER*/
     else {
-	log_debug("signature_check: unsupported pubkey algo %d\n",
-			pkc->pubkey_algo );
+	/*log_debug("signature_check: unsupported pubkey algo %d\n",
+			pkc->pubkey_algo );*/
 	rc = G10ERR_PUBKEY_ALGO;
 	goto leave;
     }
@@ -219,13 +219,46 @@ signature_check( PKT_signature *sig, MD_HANDLE *digest )
 int
 check_key_signature( KBNODE root, KBNODE node )
 {
+    KBNODE unode;
+    MD_HANDLE *md;
+    PKT_public_cert *pkc;
+    PKT_signature *sig;
+    int algo;
+    int rc;
+
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     assert( (node->pkt->pkt.signature->sig_class&~3) == 0x10 );
     assert( root->pkt->pkttype == PKT_PUBLIC_CERT );
 
-    /*FIXME!!!!!!*/
+    pkc = root->pkt->pkt.public_cert;
+    sig = node->pkt->pkt.signature;
 
-    return 0;
+    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	algo = sig->d.elg.digest_algo;
+    else if(sig->pubkey_algo == PUBKEY_ALGO_RSA )
+	algo = sig->d.rsa.digest_algo;
+    else
+	return G10ERR_PUBKEY_ALGO;
+    if( (rc=md_okay(algo)) )
+	return rc;
+
+    unode = find_kbparent( root, node );
+
+    if( unode && unode->pkt->pkttype == PKT_USER_ID ) {
+	PKT_user_id *uid = unode->pkt->pkt.user_id;
+
+	md = md_open( algo, 0 );
+	hash_public_cert( md, pkc );
+	md_write( md, uid->name, uid->len );
+	rc = signature_check( sig, md );
+	md_close(md);
+    }
+    else {
+	log_error("no user id for key signature packet\n");
+	rc = G10ERR_SIG_CLASS;
+    }
+
+    return rc;
 }
 
 

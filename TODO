@@ -5,7 +5,6 @@
     * add a way to difference between errors and eof in the underflow/flush
       function of iobuf.
     * check that all output is filtered when displayed.
-    * keyring editing
     * add trust stuff
     * make ttyio.c work (hide passwords etc..)
     * use correct ASN values for DEK encoding

@@ -1,6 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 INCLUDES = -I$(top_srcdir)/include
+EXTRA_DIST = OPTIONS
 
 bin_PROGRAMS = g10
 

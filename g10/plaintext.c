@@ -56,13 +56,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx )
 	fname[pt->namelen] = 0;
     }
 
-    if( !*fname ) { /* no filename given */
-	if( opt.outfile_is_stdout )
-	    fp = stdout;
-	else {
-	    log_error("no outputfile given\n");
-	    goto leave;
-	}
+    if( !*fname ) { /* no filename given; write to stdout */
+	fp = stdout;
     }
     else if( overwrite_filep( fname ) )
 	goto leave;

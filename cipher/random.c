@@ -30,7 +30,7 @@
 
 struct cache {
     int len;
-    byte buffer[100]; /* fixme: should be allocalted with m_alloc_secure()*/
+    byte buffer[100]; /* fixme: should be allocated with m_alloc_secure()*/
 };
 
 static struct cache cache[3];
