@@ -1542,22 +1542,20 @@ conventional encryption if --cipher-algo is not given.
 <varlistentry>
 <term>--s2k-digest-algo &ParmName;</term>
 <listitem><para>
-Use  &ParmName; as the digest algorithm used to mangle the
-passphrases.  The default algorithm is RIPE-MD-160.
-This digest algorithm is also used for conventional
-encryption if --digest-algo is not given.
+Use &ParmName; as the digest algorithm used to mangle the passphrases.
+The default algorithm is SHA-1.  This digest algorithm is also used
+for conventional encryption if --digest-algo is not given.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--s2k-mode &ParmN;</term>
 <listitem><para>
-Selects how passphrases are mangled. If &ParmN; is 0
-a plain passphrase (which is not recommended) will be used,
-a 1 (default) adds a salt to the passphrase and
-a 3 iterates the whole process a couple of times.
-Unless --rfc1991 is used, this mode is also used
-for conventional encryption.
+Selects how passphrases are mangled. If &ParmN; is 0 a plain
+passphrase (which is not recommended) will be used, a 1 adds a salt to
+the passphrase and a 3 (the default) iterates the whole process a
+couple of times.  Unless --rfc1991 is used, this mode is also used for
+conventional encryption.
 </para></listitem></varlistentry>
 
 
