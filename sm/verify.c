@@ -344,8 +344,12 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
         }
 
       sigval = ksba_cms_get_sig_val (cms, signer);
-      log_debug ("signer %d - signature: `%s'\n",
-                 signer, sigval? sigval: "[ERROR]");
+      if (!sigval)
+        {
+          log_error ("no signature value available\n");
+          goto next_signer;
+        }
+      log_debug ("signer %d - signature: `%s'\n", signer, sigval);
 
       /* Find the certificate of the signer */
       keydb_search_reset (kh);

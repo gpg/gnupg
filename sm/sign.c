@@ -34,16 +34,12 @@
 #include "keydb.h"
 #include "i18n.h"
 
+
+
+
 struct reader_cb_parm_s {
   FILE *fp;
 };
-
-
-static int
-do_sign(KsbaCert cert, GCRY_MD_HD md, int algo, char **r_sigval)
-{
-  return 0;
-}
 
 
 
@@ -329,15 +325,22 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
               }
 
             sigval = NULL;
-            rc = do_sign (cert, md, algo, &sigval);
+            rc = gpgsm_create_cms_signature (cert, md, algo, &sigval);
             if (rc)
               {
                 ksba_cert_release (cert);
                 goto leave;
               }
 
-            log_debug ("sigval=`%s'\n", sigval);
+            err = ksba_cms_set_sig_val (cms, signer, sigval);
             xfree (sigval);
+            if (err)
+              {
+                log_error ("failed to store the signature: %s\n",
+                           ksba_strerror (err));
+                rc = map_ksba_err (err);
+                goto leave;
+              }
           }
         }
     }

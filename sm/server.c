@@ -128,15 +128,34 @@ cmd_verify (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-/* SIGN
+/* SIGN [--detached]
 
-   FIXME */
+  Sign the data set with the INPUT command and write it to the sink
+  set by OUTPUT.  with "--detached" specified, a detached signature is
+  created (surprise).  */
 static int 
 cmd_sign (ASSUAN_CONTEXT ctx, char *line)
 {
-  
+  int inp_fd, out_fd;
+  FILE *out_fp;
+  int detached;
 
-  return set_error (Not_Implemented, "fixme");
+  inp_fd = assuan_get_input_fd (ctx);
+  if (inp_fd == -1)
+    return set_error (No_Input, NULL);
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == -1)
+    return set_error (No_Output, NULL);
+
+  detached = !!strstr (line, "--detached");  /* fixme: this is ambiguous */
+
+  out_fp = fdopen ( dup(out_fd), "w");
+  if (!out_fp)
+    return set_error (General_Error, "fdopen() failed");
+  gpgsm_sign (assuan_get_pointer (ctx), inp_fd, detached, out_fp);
+  fclose (out_fp);
+
+  return 0;
 }
 
 

@@ -49,6 +49,7 @@ typedef enum {
   ASSUAN_Line_Not_Terminated = 108,
   ASSUAN_No_Input = 109,
   ASSUAN_No_Output = 110,
+  ASSUAN_Canceled = 111,
 
   ASSUAN_Cert_Revoked = 301,
   ASSUAN_No_CRL_For_Cert = 302,

@@ -200,6 +200,9 @@ void gpgsm_dump_cert (const char *text, KsbaCert cert);
 int gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert);
 int gpgsm_check_cms_signature (KsbaCert cert, const char *sigval,
                                GCRY_MD_HD md, int hash_algo);
+/* fixme: move create functions to another file */
+int gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
+                                char **r_sigval);
 
 
 /*-- certpath.c --*/
