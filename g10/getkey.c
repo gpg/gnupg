@@ -1506,9 +1506,9 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     /* pass 1.5: look for key revocation signatures that were not made
        by the key (i.e. did a revocation key issue a revocation for
        us?).  Only bother to do this if there is a revocation key in
-       the first place. */
+       the first place and we're not revoked already. */
 
-    if(pk->revkey)
+    if(!*r_revoked && pk->revkey)
       for(k=keyblock; k && k->pkt->pkttype != PKT_USER_ID; k = k->next )
 	{
 	  if ( k->pkt->pkttype == PKT_SIGNATURE )
@@ -1518,15 +1518,25 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 	      if(IS_KEY_REV(sig) &&
 		 (sig->keyid[0]!=kid[0] || sig->keyid[1]!=kid[1]))
 		{ 
-		  /* Failure here means the sig did not verify, is was
+		  int rc=check_revocation_keys(pk,sig);
+		  if(rc==0)
+		    {
+		      *r_revoked=1;
+		      /* don't continue checking since we can't be any
+			 more revoked than this */
+		      break;
+		    }
+		  else if(rc==G10ERR_NO_PUBKEY)
+		    pk->maybe_revoked=1;
+
+		  /* A failure here means the sig did not verify, was
 		     not issued by a revocation key, or a revocation
-		     key loop was broken. */
+		     key loop was broken.  If a revocation key isn't
+		     findable, however, the key might be revoked and
+		     we don't know it. */
 
-		  if(check_revocation_keys(pk,sig)==0)
-		    *r_revoked=1;
-
-		  /* In the future handle subkey and cert revocations?
-                     PGP doesn't, but it's in 2440. */
+		  /* TODO: In the future handle subkey and cert
+                     revocations?  PGP doesn't, but it's in 2440. */
 		}
 	    }
 	}

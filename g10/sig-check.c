@@ -1,6 +1,6 @@
 /* sig-check.c -  Check a signature
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *               Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               200 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -406,20 +406,22 @@ cache_sig_result ( PKT_signature *sig, int result )
     }
 }
 
-
 /* Check the revocation keys to see if any of them have revoked our
    pk.  sig is the revocation sig.  pk is the key it is on.  This code
    will need to be modified if gpg ever becomes multi-threaded.  Note
    that this guarantees that a designated revocation sig will never be
    considered valid unless it is actually valid, as well as being
-   issued by a revocation key in a valid direct signature.  Note that
-   this is written so that a revoked revoker can still issue
+   issued by a revocation key in a valid direct signature.  Note also
+   that this is written so that a revoked revoker can still issue
    revocations: i.e. If A revokes B, but A is revoked, B is still
    revoked.  I'm not completely convinced this is the proper behavior,
    but it matches how PGP does it. -dms */
 
 /* Returns 0 if sig is valid (i.e. pk is revoked), non-0 if not
-   revoked */
+   revoked.  It is important that G10ERR_NO_PUBKEY is only returned
+   when a revocation signature is from a valid revocation key
+   designated in a revkey subpacket, but the revocation key itself
+   isn't present. */
 int
 check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
 {
@@ -431,9 +433,9 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
 
   if(busy)
     {
-      /* return -1 (i.e. not revoked), but mark the pk as uncacheable
-         as we don't really know its revocation status until it is
-         checked directly. */
+      /* return an error (i.e. not revoked), but mark the pk as
+         uncacheable as we don't really know its revocation status
+         until it is checked directly. */
 
       pk->dont_cache=1;
       return rc;
