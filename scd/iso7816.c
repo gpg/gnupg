@@ -1,5 +1,5 @@
 /* iso7816.c - ISO 7816 commands
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -47,6 +47,7 @@
 #define CMD_RESET_RETRY_COUNTER   0x2C
 #define CMD_GET_DATA    0xCA
 #define CMD_PUT_DATA    0xDA
+#define CMD_MSE         0x22
 #define CMD_PSO         0x2A
 #define CMD_INTERNAL_AUTHENTICATE 0x88
 #define CMD_GENERATE_KEYPAIR      0x47
@@ -270,6 +271,23 @@ iso7816_put_data (int slot, int tag,
   return map_sw (sw);
 }
 
+/* Manage Security Environment.  This is a weird operation and there
+   is no easy abstraction for it.  Furthermore, some card seem to have
+   a different interpreation of 7816-8 and thus we resort to let the
+   caller decide what to do. */
+gpg_error_t
+iso7816_manage_security_env (int slot, int p1, int p2,
+                             const unsigned char *data, size_t datalen)
+{
+  int sw;
+
+  if (p1 < 0 || p1 > 255 || p2 < 0 || p2 > 255 || !data || !datalen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  sw = apdu_send_simple (slot, 0x00, CMD_MSE, p1, p2, datalen, data);
+  return map_sw (sw);
+}
+
 
 /* Perform the security operation COMPUTE DIGITAL SIGANTURE.  On
    success 0 is returned and the data is availavle in a newly
@@ -301,13 +319,14 @@ iso7816_compute_ds (int slot, const unsigned char *data, size_t datalen,
 }
 
 
-/* Perform the security operation DECIPHER.  On
-   success 0 is returned and the plaintext is available in a newly
-   allocated buffer stored at RESULT with its length stored at
-   RESULTLEN. */
+/* Perform the security operation DECIPHER.  PADIND is the padding
+   indicator to be used.  It should be 0 if no padding is required, a
+   value of -1 suppresses the padding byte.  On success 0 is returned
+   and the plaintext is available in a newly allocated buffer stored
+   at RESULT with its length stored at RESULTLEN. */
 gpg_error_t
 iso7816_decipher (int slot, const unsigned char *data, size_t datalen,
-                  unsigned char **result, size_t *resultlen)
+                  int padind, unsigned char **result, size_t *resultlen)
 {
   int sw;
   unsigned char *buf;
@@ -317,15 +336,23 @@ iso7816_decipher (int slot, const unsigned char *data, size_t datalen,
   *result = NULL;
   *resultlen = 0;
 
-  /* We need to prepend the padding indicator. */
-  buf = xtrymalloc (datalen + 1);
-  if (!buf)
-    return out_of_core ();
-  *buf = 0; /* Padding indicator. */
-  memcpy (buf+1, data, datalen);
-  sw = apdu_send (slot, 0x00, CMD_PSO, 0x80, 0x86, datalen+1, buf,
-                  result, resultlen);
-  xfree (buf);
+  if (padind >= 0)
+    {
+      /* We need to prepend the padding indicator. */
+      buf = xtrymalloc (datalen + 1);
+      if (!buf)
+        return out_of_core ();
+      *buf = padind; /* Padding indicator. */
+      memcpy (buf+1, data, datalen);
+      sw = apdu_send (slot, 0x00, CMD_PSO, 0x80, 0x86, datalen+1, buf,
+                      result, resultlen);
+      xfree (buf);
+    }
+  else
+    {
+      sw = apdu_send (slot, 0x00, CMD_PSO, 0x80, 0x86, datalen, data,
+                      result, resultlen);
+    }
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */

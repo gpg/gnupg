@@ -1,3 +1,8 @@
+2004-01-28  Werner Koch  <wk@gnupg.org>
+
+	* iso7816.c (iso7816_manage_security_env): New.
+	(iso7816_decipher): Add PADIND argument.
+
 2004-01-27  Werner Koch  <wk@gnupg.org>
 
 	* command.c (cmd_readcert, cmd_readkey): Work on a copy of LINE.

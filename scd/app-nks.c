@@ -33,16 +33,18 @@
 #include "tlv.h"
 
 static struct {
-  int fid;      /* File ID. */
-  int certtype; /* Type of certificate or 0 if it is not a certificate. */
+  int fid;       /* File ID. */
+  int certtype;  /* Type of certificate or 0 if it is not a certificate. */
   int iskeypair; /* If true has the FID of the correspoding certificate. */
+  int issignkey; /* True if file is a key usable for signing. */
+  int isenckey;  /* True if file is a key usable for decryption. */
 } filelist[] = {
-  { 0x4531, 0,  0xC000 }, 
+  { 0x4531, 0,  0xC000, 1, 0 }, 
   { 0xC000, 101 },
   { 0x4331, 100 },
   { 0x4332, 100 },
   { 0xB000, 110 },
-  { 0x45B1, 0,  0xC200 },
+  { 0x45B1, 0,  0xC200, 0, 1 },
   { 0xC200, 101 },
   { 0x43B1, 100 },
   { 0x43B2, 100 },
@@ -356,6 +358,191 @@ do_readcert (app_t app, const char *certid,
 }
 
 
+/* Verify the PIN if required.  */
+static int
+verify_pin (app_t app,
+            int (pincb)(void*, const char *, char **),
+            void *pincb_arg)
+{
+  /* Note that force_chv1 is never set but we do it here anyway so
+     that other applications may euse this function.  For example it
+     makes sense to set force_chv1 for German signature law cards.
+     NKS is very similar to the DINSIG draft standard. */
+  if (!app->did_chv1 || app->force_chv1 ) 
+    {
+      char *pinvalue;
+      int rc;
+
+      rc = pincb (pincb_arg, "PIN", &pinvalue); 
+      if (rc)
+        {
+          log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+
+      /* The follwoing limits are due to TCOS but also defined in the
+         NKS specs. */
+      if (strlen (pinvalue) < 6)
+        {
+          log_error ("PIN is too short; minimum length is 6\n");
+          xfree (pinvalue);
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+      else if (strlen (pinvalue) > 16)
+        {
+          log_error ("PIN is too large; maximum length is 16\n");
+          xfree (pinvalue);
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+
+      /* Also it is possible to use a local PIN, we use the gloabl
+         PIN for this application.  */
+      rc = iso7816_verify (app->slot, 0, pinvalue, strlen (pinvalue));
+      if (rc)
+        {
+          log_error ("verify PIN failed\n");
+          xfree (pinvalue);
+          return rc;
+        }
+      app->did_chv1 = 1;
+      xfree (pinvalue);
+    }
+
+  return 0;
+}
+
+
+
+/* Create the signature and return the allocated result in OUTDATA.
+   If a PIN is required the PINCB will be used to ask for the PIN;
+   that callback should return the PIN in an allocated buffer and
+   store that in the 3rd argument.  */
+static int 
+do_sign (app_t app, const char *keyidstr, int hashalgo,
+         int (pincb)(void*, const char *, char **),
+           void *pincb_arg,
+           const void *indata, size_t indatalen,
+           unsigned char **outdata, size_t *outdatalen )
+{
+  static unsigned char sha1_prefix[15] = /* Object ID is 1.3.14.3.2.26 */
+    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
+      0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
+  static unsigned char rmd160_prefix[15] = /* Object ID is 1.3.36.3.2.1 */
+    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
+      0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
+  int rc, i;
+  int fid;
+  unsigned char data[35];   /* Must be large enough for a SHA-1 digest
+                               + the largest OID _prefix above. */
+
+  if (!keyidstr || !*keyidstr)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (indatalen != 20 && indatalen != 16 && indatalen != 35)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Check that the provided ID is vaid.  This is not really needed
+     but we do it to to enforce correct usage by the caller. */
+  if (strncmp (keyidstr, "NKS-DF01.", 9) ) 
+    return gpg_error (GPG_ERR_INV_ID);
+  keyidstr += 9;
+  if (!hexdigitp (keyidstr) || !hexdigitp (keyidstr+1)
+      || !hexdigitp (keyidstr+2) || !hexdigitp (keyidstr+3) 
+      || keyidstr[4])
+    return gpg_error (GPG_ERR_INV_ID);
+  fid = xtoi_4 (keyidstr);
+  for (i=0; filelist[i].fid; i++)
+    if (filelist[i].iskeypair && filelist[i].fid == fid)
+      break;
+  if (!filelist[i].fid)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+  if (!filelist[i].issignkey)
+    return gpg_error (GPG_ERR_INV_ID);
+
+  /* Prepare the DER object from INDATA. */
+  if (indatalen == 35)
+    {
+      /* Alright, the caller was so kind to send us an already
+         prepared DER object.  Check that it is waht we want and that
+         it matches the hash algorithm. */
+      if (hashalgo == GCRY_MD_SHA1 && !memcmp (indata, sha1_prefix, 15))
+        ;
+      else if (hashalgo == GCRY_MD_RMD160 && !memcmp (indata, rmd160_prefix,15))
+        ;
+      else 
+        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+      memcpy (data, indata, indatalen);
+    }
+  else
+    {
+      if (hashalgo == GCRY_MD_SHA1)
+        memcpy (data, sha1_prefix, 15);
+      else if (hashalgo == GCRY_MD_RMD160)
+        memcpy (data, rmd160_prefix, 15);
+      else 
+        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+      memcpy (data+15, indata, indatalen);
+    }
+
+  rc = verify_pin (app, pincb, pincb_arg);
+  if (!rc)
+    rc = iso7816_compute_ds (app->slot, data, 35, outdata, outdatalen);
+  return rc;
+}
+
+
+
+
+/* Decrypt the data in INDATA and return the allocated result in OUTDATA.
+   If a PIN is required the PINCB will be used to ask for the PIN; it
+   should return the PIN in an allocated buffer and put it into PIN.  */
+static int 
+do_decipher (app_t app, const char *keyidstr,
+             int (pincb)(void*, const char *, char **),
+             void *pincb_arg,
+             const void *indata, size_t indatalen,
+             unsigned char **outdata, size_t *outdatalen )
+{
+  static const unsigned char mse_parm[] = {
+    0x80, 1, 0x10, /* Select algorithm RSA. */
+    0x84, 1, 0x81  /* Select locak secret key 1 for descryption. */
+  };
+  int rc, i;
+  int fid;
+
+  if (!keyidstr || !*keyidstr || !indatalen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Check that the provided ID is vaid.  This is not really needed
+     but we do it to to enforce correct usage by the caller. */
+  if (strncmp (keyidstr, "NKS-DF01.", 9) ) 
+    return gpg_error (GPG_ERR_INV_ID);
+  keyidstr += 9;
+  if (!hexdigitp (keyidstr) || !hexdigitp (keyidstr+1)
+      || !hexdigitp (keyidstr+2) || !hexdigitp (keyidstr+3) 
+      || keyidstr[4])
+    return gpg_error (GPG_ERR_INV_ID);
+  fid = xtoi_4 (keyidstr);
+  for (i=0; filelist[i].fid; i++)
+    if (filelist[i].iskeypair && filelist[i].fid == fid)
+      break;
+  if (!filelist[i].fid)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+  if (!filelist[i].isenckey)
+    return gpg_error (GPG_ERR_INV_ID);
+
+  /* Do the TCOS specific MSE. */
+  rc = iso7816_manage_security_env (app->slot, 
+                                    0xC1, 0xB8,
+                                    mse_parm, sizeof mse_parm);
+  if (!rc)
+    rc = verify_pin (app, pincb, pincb_arg);
+  if (!rc)
+    rc = iso7816_decipher (app->slot, indata, indatalen, 0x81,
+                           outdata, outdatalen);
+  return rc;
+}
+
+
 
 /* Select the NKS 2.0 application on the card in SLOT.  */
 int
@@ -375,9 +562,9 @@ app_select_nks (APP app)
       app->fnc.getattr = NULL;
       app->fnc.setattr = NULL;
       app->fnc.genkey = NULL;
-      app->fnc.sign = NULL;
+      app->fnc.sign = do_sign;
       app->fnc.auth = NULL;
-      app->fnc.decipher = NULL;
+      app->fnc.decipher = do_decipher;
       app->fnc.change_pin = NULL;
       app->fnc.check_pin = NULL;
    }

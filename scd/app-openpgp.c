@@ -1121,7 +1121,8 @@ do_decipher (APP app, const char *keyidstr,
 
   rc = verify_chv2 (app, pincb, pincb_arg);
   if (!rc)
-    rc = iso7816_decipher (app->slot, indata, indatalen, outdata, outdatalen);
+    rc = iso7816_decipher (app->slot, indata, indatalen, 0,
+                           outdata, outdatalen);
   return rc;
 }
 

@@ -42,11 +42,15 @@ gpg_error_t iso7816_get_data (int slot, int tag,
                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_put_data (int slot, int tag,
                               const unsigned char *data, size_t datalen);
+gpg_error_t iso7816_manage_security_env (int slot, int p1, int p2,
+                                         const unsigned char *data,
+                                         size_t datalen);
 gpg_error_t iso7816_compute_ds (int slot,
                                 const unsigned char *data, size_t datalen,
                                 unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_decipher (int slot,
                               const unsigned char *data, size_t datalen,
+                              int padind,
                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_internal_authenticate (int slot,
                                    const unsigned char *data, size_t datalen,
