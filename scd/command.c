@@ -577,7 +577,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   /* We have to use a copy of the key ID because the function may use
      the pin_cb which in turn uses the assuan line buffer and thus
      overwriting the original line with the keyid */
-  keyidstr = strdup (line);
+  keyidstr = xtrystrdup (line);
   if (!keyidstr)
     return ASSUAN_Out_Of_Core;
   
@@ -593,7 +593,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
                     pin_cb, ctx,
                     ctrl->in_data.value, ctrl->in_data.valuelen,
                     &outdata, &outdatalen);
-  free (keyidstr);
+  xfree (keyidstr);
   if (rc)
     {
       log_error ("card_sign failed: %s\n", gpg_strerror (rc));
@@ -630,7 +630,7 @@ cmd_pkauth (ASSUAN_CONTEXT ctx, char *line)
   /* We have to use a copy of the key ID because the function may use
      the pin_cb which in turn uses the assuan line buffer and thus
      overwriting the original line with the keyid */
-  keyidstr = strdup (line);
+  keyidstr = xtrystrdup (line);
   if (!keyidstr)
     return ASSUAN_Out_Of_Core;
   
@@ -639,7 +639,7 @@ cmd_pkauth (ASSUAN_CONTEXT ctx, char *line)
                  pin_cb, ctx,
                  ctrl->in_data.value, ctrl->in_data.valuelen,
                  &outdata, &outdatalen);
-  free (keyidstr);
+  xfree (keyidstr);
   if (rc)
     {
       log_error ("app_auth_sign failed: %s\n", gpg_strerror (rc));
@@ -670,7 +670,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
   if ((rc = open_card (ctrl)))
     return rc;
 
-  keyidstr = strdup (line);
+  keyidstr = xtrystrdup (line);
   if (!keyidstr)
     return ASSUAN_Out_Of_Core;
   if (ctrl->app_ctx)
@@ -685,7 +685,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
                         pin_cb, ctx,
                         ctrl->in_data.value, ctrl->in_data.valuelen,
                         &outdata, &outdatalen);
-  free (keyidstr);
+  xfree (keyidstr);
   if (rc)
     {
       log_error ("card_create_signature failed: %s\n", gpg_strerror (rc));
@@ -715,16 +715,23 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
    setattr function of the actually used application (app-*.c) for
    details.  */
 static int
-cmd_setattr (ASSUAN_CONTEXT ctx, char *line)
+cmd_setattr (ASSUAN_CONTEXT ctx, char *orig_line)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   int rc;
   char *keyword;
   int keywordlen;
   size_t nbytes;
+  char *line, *linebuf;
 
   if ((rc = open_card (ctrl)))
     return rc;
+
+  /* We need to use a copy of LINE, because PIN_CB uses the same
+     context and thus reuses the Assuan provided LINE. */
+  line = linebuf = xtrystrdup (orig_line);
+  if (!line)
+    return ASSUAN_Out_Of_Core;
 
   keyword = line;
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
@@ -736,6 +743,7 @@ cmd_setattr (ASSUAN_CONTEXT ctx, char *line)
   nbytes = percent_plus_unescape (line);
 
   rc = app_setattr (ctrl->app_ctx, keyword, pin_cb, ctx, line, nbytes);
+  xfree (linebuf);
 
   return map_to_assuan_status (rc);
 }
@@ -788,8 +796,11 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
   if (!ctrl->app_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
+  keyno = xtrystrdup (keyno);
+  if (!keyno)
+    return ASSUAN_Out_Of_Core;
   rc = app_genkey (ctrl->app_ctx, ctrl, keyno, force? 1:0, pin_cb, ctx);
-
+  xfree (keyno);
   return map_to_assuan_status (rc);
 }
 
@@ -865,11 +876,14 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
 
   if (!ctrl->app_ctx)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-
-  rc = app_change_pin (ctrl->app_ctx, ctrl, chvnostr, reset_mode, pin_cb, ctx
-);
+  
+  chvnostr = xtrystrdup (chvnostr);
+  if (!chvnostr)
+    return ASSUAN_Out_Of_Core;
+  rc = app_change_pin (ctrl->app_ctx, ctrl, chvnostr, reset_mode, pin_cb, ctx);
   if (rc)
     log_error ("command passwd failed: %s\n", gpg_strerror (rc));
+  xfree (chvnostr);
   return map_to_assuan_status (rc);
 }
 
