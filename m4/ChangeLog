@@ -1,3 +1,7 @@
+2005-01-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am, libusb.m4: New libusb check macro.
+
 2004-12-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* libcurl.m4: Rewrite this to use the new --protocols flag I gave
