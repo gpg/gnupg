@@ -1,3 +1,13 @@
+2005-03-17  Werner Koch  <wk@g10code.com>
+
+	* certcheck.c: Fixed use of DBG_CRYPTO and DBG_X509.
+
+	* certchain.c (gpgsm_basic_cert_check): Dump certificates after a
+	failed gcry_pk_verify.
+	(find_up): Do an external lookup also for an authorityKeyIdentifier
+	lookup. Factored external lookup code out to ..
+	(find_up_external): .. new.
+
 2005-03-03  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (gpgsm_LDADD): Added PTH_LIBS.  Noted by Kazu Yamamoto.
@@ -1407,7 +1417,7 @@
 	* server.c (rc_to_assuan_status): New.  Use it for all commands.
 
 	
- Copyright 2001, 2002, 2003 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

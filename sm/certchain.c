@@ -1,5 +1,5 @@
 /* certchain.c - certificate chain validation
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -275,6 +275,69 @@ find_up_store_certs_cb (void *cb_value, ksba_cert_t cert)
 }
 
 
+
+/* Helper for find_up().  Locate the certificate for ISSUER using an
+   external lookup.  KH is the keydb context we are currently using.
+   On success 0 is returned and the certificate may be retrieved from
+   the keydb using keydb_get_cert().*/
+static int
+find_up_external (KEYDB_HANDLE kh, const char *issuer)
+{
+  int rc;
+  strlist_t names = NULL;
+  int count = 0;
+  char *pattern;
+  const char *s;
+      
+  if (opt.verbose)
+    log_info (_("looking up issuer at external location\n"));
+  /* The DIRMNGR process is confused about unknown attributes.  As a
+     quick and ugly hack we locate the CN and use the issuer string
+     starting at this attribite.  Fixme: we should have far better
+     parsing in the dirmngr. */
+  s = strstr (issuer, "CN=");
+  if (!s || s == issuer || s[-1] != ',')
+    s = issuer;
+
+  pattern = xtrymalloc (strlen (s)+2);
+  if (!pattern)
+    return gpg_error_from_errno (errno);
+  strcpy (stpcpy (pattern, "/"), s);
+  add_to_strlist (&names, pattern);
+  xfree (pattern);
+
+  rc = gpgsm_dirmngr_lookup (NULL, names, find_up_store_certs_cb, &count);
+  free_strlist (names);
+
+  if (opt.verbose)
+    log_info (_("number of issuers matching: %d\n"), count);
+  if (rc) 
+    {
+      log_error ("external key lookup failed: %s\n", gpg_strerror (rc));
+      rc = -1;
+    }
+  else if (!count)
+    rc = -1;
+  else
+    {
+      int old;
+      /* The issuers are currently stored in the ephemeral key DB, so
+         we temporary switch to ephemeral mode. */
+      old = keydb_set_ephemeral (kh, 1);
+      keydb_search_reset (kh);
+      rc = keydb_search_subject (kh, issuer);
+      keydb_set_ephemeral (kh, old);
+    }
+  return rc;
+}
+
+
+/* Locate issuing certificate for CERT. ISSUER is the name of the
+   issuer used as a fallback if the other methods don't work.  If
+   FIND_NEXT is true, the function shall return the next possible
+   issuer.  The certificate itself is not directly returned but a
+   keydb_get_cert on the keyDb context KH will return it.  Returns 0
+   on success, -1 if not found or an error code.  */
 static int
 find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
 {
@@ -292,7 +355,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
               keydb_search_reset (kh);
           
           /* In case of an error try the ephemeral DB.  We can't do
-             that in find-next mode because we can't keep the search
+             that in find_next mode because we can't keep the search
              state then. */
           if (rc == -1 && !find_next)
             { 
@@ -305,7 +368,12 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
                 }
               keydb_set_ephemeral (kh, old);
             }
+
+          /* If we didn't found it, try an external lookup.  */
+          if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
+            rc = find_up_external (kh, issuer);
         }
+
       /* Print a note so that the user does not feel too helpless when
          an issuer certificate was found and gpgsm prints BAD
          signature because it is not the correct one. */
@@ -315,16 +383,17 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
           gpgsm_dump_serial (authidno);
           log_printf ("/");
           gpgsm_dump_string (s);
-          log_printf (") not found\n");
+          log_printf (") not found using authorityKeyIdentifier\n");
         }
       else if (rc)
         log_error ("failed to find authorityKeyIdentifier: rc=%d\n", rc);
       ksba_name_release (authid);
       xfree (authidno);
-      /* Fixme: don't know how to do dirmngr lookup with serial+issuer. */
+      /* Fixme: There is no way to do an external lookup with
+         serial+issuer. */
     }
   
-  if (rc) /* not found via authorithyKeyIdentifier, try regular issuer name */
+  if (rc) /* Not found via authorithyKeyIdentifier, try regular issuer name. */
     rc = keydb_search_subject (kh, issuer);
   if (rc == -1 && !find_next)
     {
@@ -338,51 +407,10 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
       keydb_set_ephemeral (kh, old);
     }
 
+  /* Still not found.  If enabled, try an external lookup.  */
   if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
-    {
-      STRLIST names = NULL;
-      int count = 0;
-      char *pattern;
-      const char *s;
-      
-      if (opt.verbose)
-        log_info (_("looking up issuer at external location\n"));
-      /* dirmngr is confused about unknown attributes so as a quick
-         and ugly hack we locate the CN and use this and the
-         following.  Fixme: we should have far better parsing in the
-         dirmngr. */
-      s = strstr (issuer, "CN=");
-      if (!s || s == issuer || s[-1] != ',')
-        s = issuer;
+    rc = find_up_external (kh, issuer);
 
-      pattern = xtrymalloc (strlen (s)+2);
-      if (!pattern)
-        return OUT_OF_CORE (errno);
-      strcpy (stpcpy (pattern, "/"), s);
-      add_to_strlist (&names, pattern);
-      xfree (pattern);
-      rc = gpgsm_dirmngr_lookup (NULL, names, find_up_store_certs_cb, &count);
-      free_strlist (names);
-      if (opt.verbose)
-        log_info (_("number of issuers matching: %d\n"), count);
-      if (rc) 
-        {
-          log_error ("external key lookup failed: %s\n", gpg_strerror (rc));
-          rc = -1;
-        }
-      else if (!count)
-        rc = -1;
-      else
-        {
-          int old;
-          /* The issuers are currently stored in the ephemeral key
-             DB, so we temporary switch to ephemeral mode. */
-          old = keydb_set_ephemeral (kh, 1);
-          keydb_search_reset (kh);
-          rc = keydb_search_subject (kh, issuer);
-          keydb_set_ephemeral (kh, old);
-        }
-    }
   return rc;
 }
 
@@ -959,7 +987,7 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
     }
   else
     {
-      /* find the next cert up the tree */
+      /* Find the next cert up the tree. */
       keydb_search_reset (kh);
       rc = find_up (kh, cert, issuer, 0);
       if (rc)
@@ -990,6 +1018,11 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
         {
           log_error ("certificate has a BAD signature: %s\n",
                      gpg_strerror (rc));
+          if (DBG_X509)
+            {
+              gpgsm_dump_cert ("signing issuer", issuer_cert);
+              gpgsm_dump_cert ("signed subject", cert);
+            }
           rc = gpg_error (GPG_ERR_BAD_CERT);
           goto leave;
         }

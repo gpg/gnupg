@@ -101,7 +101,7 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
       memcpy ( frame+n, gcry_md_read(md, algo), len ); n += len;
       assert ( n == nframe );
     }
-  if (DBG_X509)
+  if (DBG_CRYPTO)
     {
       int j;
       log_debug ("encoded hash:");
@@ -196,7 +196,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       ksba_free (p);
       return gpg_error (GPG_ERR_BUG);
     }
-  if (DBG_X509)
+  if (DBG_CRYPTO)
     {
       int j;
       log_debug ("signature value:");
@@ -251,7 +251,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 
   
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
-  if (DBG_CRYPTO)
+  if (DBG_X509)
       log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
   gcry_md_close (md);
   gcry_sexp_release (s_sig);
@@ -294,7 +294,7 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
       gcry_sexp_release (s_sig);
       return gpg_error (GPG_ERR_BUG);
     }
-  if (DBG_X509)
+  if (DBG_CRYPTO)
     log_printhex ("public key: ", p, n);
 
   rc = gcry_sexp_sscan ( &s_pkey, NULL, p, n);
@@ -321,7 +321,7 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
   gcry_mpi_release (frame);
   
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
-  if (DBG_CRYPTO)
+  if (DBG_X509)
       log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
   gcry_sexp_release (s_sig);
   gcry_sexp_release (s_hash);
