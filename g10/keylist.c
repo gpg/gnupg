@@ -489,8 +489,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
                 printf("uid%*s", 28, "");
 
             if ( node->pkt->pkt.user_id->is_revoked )
-                fputs ("[revoked] ", stdout);
-            if ( node->pkt->pkt.user_id->is_expired )
+                fputs (_("[revoked] "), stdout);
+            else if ( node->pkt->pkt.user_id->is_expired )
                 fputs ("[expired] ", stdout);
             print_utf8_string( stdout,  node->pkt->pkt.user_id->name,
                                node->pkt->pkt.user_id->len );
@@ -523,9 +523,15 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
                    pubkey_letter( pk2->pubkey_algo ),
                    (ulong)keyid2[1],
                    datestr_from_pk( pk2 ) );
-            if( pk2->expiredate ) {
+	    /* Yes, this is an odd way to print the revoked string,
+	       but we already have translations for "[revoked] " (with
+	       the trailing space) and this is a simple way to take
+	       advantage of it.  In devel, this will be done rather
+	       more elegantly. */
+	    if( pk2->is_revoked )
+	        printf(" %s",_("[revoked] "));
+            else if( pk2->expiredate )
                 printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
-            }
             putchar('\n');
 	    if( fpr > 1 )
 		print_fingerprint( pk2, NULL, 0 );

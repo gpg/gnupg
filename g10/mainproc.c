@@ -1,6 +1,6 @@
 /* mainproc.c - handle packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -881,12 +881,13 @@ list_node( CTX c, KBNODE node )
 	    }
 	}
 	else
-	    printf("%s  %4u%c/%08lX %s ",
+	    printf("%s  %4u%c/%08lX %s%s",
 				      mainkey? "pub":"sub",
 				      nbits_from_pk( pk ),
 				      pubkey_letter( pk->pubkey_algo ),
 				      (ulong)keyid_from_pk( pk, NULL ),
-				      datestr_from_pk( pk )	);
+				      datestr_from_pk( pk ),
+		                      mainkey?" ":"");
 
 	if( mainkey ) {
 	    /* and now list all userids with their signatures */
@@ -931,9 +932,14 @@ list_node( CTX c, KBNODE node )
 		}
 	    }
 	}
-	else if( pk->expiredate ) { /* of subkey */
-	    printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
-	}
+	else
+	  {
+	    /* of subkey */
+	    if( pk->is_revoked )
+	      printf(" %s",_("[revoked] "));
+	    else if( pk->expiredate )
+	      printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
+	  }
 
 	if( !any )
 	    putchar('\n');

@@ -1,3 +1,21 @@
+2004-02-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (compress_algo_to_string): Return NULL on failure like
+	all of the other xxxx_algo_to_string() functions.
+
+	* mainproc.c (list_node): Minor spacing tweak to match --list-keys
+	output.
+
+	* keylist.c (list_keyblock_print), mainproc.c (list_node): Mark
+	revoked subkeys as revoked.  Requested by Matthew Wilcox.  Make
+	revoked and expired tags translatable (they are already translated
+	elsewhere).  Revoked overrides expiration when both apply.
+
+	* keyedit.c (show_prefs): Use compress algo constants.
+	(show_basic_key_info): Make revoked and expired tags translatable
+	(show_key_with_all_names): Revoked overrides expired when both
+	apply.
+
 2004-02-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs_main): Properly handle expired user IDs

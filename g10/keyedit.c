@@ -1,6 +1,6 @@
 /* keyedit.c - keyedit stuff
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1626,7 +1626,7 @@ show_prefs (PKT_user_id *uid, int verbose)
                     tty_printf ("%s", s );
                 else
                     tty_printf ("[%d]", prefs[i].value);
-                if (prefs[i].value == 0 )
+                if (prefs[i].value == COMPRESS_ALGO_NONE )
                     uncomp_seen = 1;
             }
         }
@@ -1634,10 +1634,10 @@ show_prefs (PKT_user_id *uid, int verbose)
             if (any)
                 tty_printf (", ");
 	    else {
-	      tty_printf ("%s",compress_algo_to_string(1));
+	      tty_printf ("%s",compress_algo_to_string(COMPRESS_ALGO_ZIP));
 	      tty_printf (", ");
 	    }
-	    tty_printf ("%s",compress_algo_to_string(0));
+	    tty_printf ("%s",compress_algo_to_string(COMPRESS_ALGO_NONE));
         }
 	if(uid->mdc_feature)
 	  {
@@ -1954,7 +1954,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		   tty_printf("(%d)  ", i);
                 if ( uid->is_revoked )
                     tty_printf (_("[revoked] "));
-                if ( uid->is_expired )
+		else if ( uid->is_expired )
                     tty_printf (_("[expired] "));
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
@@ -2036,9 +2036,9 @@ show_basic_key_info ( KBNODE keyblock )
      
           tty_printf ("     ");
           if (uid->is_revoked)
-            tty_printf ("[revoked] ");
-          if ( uid->is_expired )
-            tty_printf ("[expired] ");
+            tty_printf (_("[revoked] "));
+          else if ( uid->is_expired )
+            tty_printf (_("[expired] "));
           tty_print_utf8_string (uid->name, uid->len);
           tty_printf ("\n");
         }
