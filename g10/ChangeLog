@@ -1,3 +1,13 @@
+2005-01-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, import.c (parse_import_options, delete_inv_parts):
+	Add import-unusable-sigs flag to enable importing unusable
+	(currently: expired) sigs.
+
+	* options.h, export.c (parse_export_options, do_export_stream):
+	Add export-unusable-sigs flag to enable exporting unusable
+	(currently: expired) sigs.
+
 2004-12-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, getkey.c (merge_selfsigs_main, sig_to_revoke_info),

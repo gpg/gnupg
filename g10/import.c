@@ -93,6 +93,7 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"fast-import",IMPORT_FAST,NULL},
       {"convert-sk-to-pk",IMPORT_SK2PK,NULL},
       {"merge-only",IMPORT_MERGE_ONLY,NULL},
+      {"import-unusable-sigs",IMPORT_UNUSABLE_SIGS,NULL},
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
@@ -1557,8 +1558,26 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 		       node->pkt->pkt.signature->sig_class);
 	    delete_kbnode(node);
 	  }
+	else if(node->pkt->pkttype==PKT_SIGNATURE
+		&& IS_UID_SIG(node->pkt->pkt.signature)
+		&& node->pkt->pkt.signature->flags.expired
+		&& (node->pkt->pkt.signature->keyid[0]!=keyid[0]
+		    || node->pkt->pkt.signature->keyid[1]!=keyid[1])
+		&& !(options&IMPORT_UNUSABLE_SIGS))
+	  {
+	    if(opt.verbose)
+	      {
+		char *kid=m_strdup(keystr(keyid));
+		log_info(_("key %s: expired signature from key %s -"
+			   " skipped\n"),kid,
+			 keystr(node->pkt->pkt.signature->keyid));
+		m_free(kid);
+	      }
+
+	    delete_kbnode(node);
+	  }
 	else if( (node->flag & 4) ) /* marked for deletion */
-	    delete_kbnode( node );
+	  delete_kbnode( node );
     }
 
     /* note: because keyblock is the public key, it is never marked

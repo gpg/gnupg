@@ -49,6 +49,7 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"export-attributes",EXPORT_ATTRIBUTES,NULL},
       {"export-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL},
       {"export-minimal",EXPORT_MINIMAL,NULL},
+      {"export-unusable-sigs",EXPORT_UNUSABLE_SIGS,NULL},
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL},
@@ -314,12 +315,22 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 
 	    if( node->pkt->pkttype == PKT_SIGNATURE )
 	      {
-		/* If we have minimal-export turned on, do not include
+		/* If we have export-minimal turned on, do not include
 		   any signature that isn't a selfsig.  Note that this
 		   only applies to uid sigs (0x10, 0x11, 0x12, and
 		   0x13).  A designated revocation is not stripped. */
 		if((options&EXPORT_MINIMAL)
 		   && IS_UID_SIG(node->pkt->pkt.signature)
+		   && (node->pkt->pkt.signature->keyid[0]!=keyid[0]
+		       || node->pkt->pkt.signature->keyid[1]!=keyid[1]))
+		  continue;
+
+		/* We do basically the same thing for
+		   export-unusable-sigs.  It only applies to expired
+		   uid sigs that aren't selfsigs. */
+		if(!(options&EXPORT_UNUSABLE_SIGS)
+		   && IS_UID_SIG(node->pkt->pkt.signature)
+		   && node->pkt->pkt.signature->flags.expired
 		   && (node->pkt->pkt.signature->keyid[0]!=keyid[0]
 		       || node->pkt->pkt.signature->keyid[1]!=keyid[1]))
 		  continue;

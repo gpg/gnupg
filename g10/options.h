@@ -252,11 +252,13 @@ struct {
 #define IMPORT_FAST                      (1<<2)
 #define IMPORT_SK2PK                     (1<<3)
 #define IMPORT_MERGE_ONLY                (1<<4)
+#define IMPORT_UNUSABLE_SIGS             (1<<5)
 
 #define EXPORT_LOCAL_SIGS                (1<<0)
 #define EXPORT_ATTRIBUTES                (1<<1)
 #define EXPORT_SENSITIVE_REVKEYS         (1<<2)
 #define EXPORT_MINIMAL                   (1<<3)
+#define EXPORT_UNUSABLE_SIGS             (1<<4)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)
