@@ -301,7 +301,7 @@ copy_options_file( const char *destdir )
 	m_free(fname);
 	return;
     }
-    strcpy(stpcpy(fname, destdir), DIRSEP_S "gpg.conf" );
+    strcpy(stpcpy(fname, destdir), DIRSEP_S "gpg" EXTSEP_S "conf" );
     dst = fopen( fname, "w" );
     if( !dst ) {
 	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );

@@ -982,7 +982,7 @@ main( int argc, char **argv )
 
     if( default_config )
       {
-	configname = make_filename(opt.homedir, "gpg.conf", NULL );
+	configname = make_filename(opt.homedir, "gpg" EXTSEP_S "conf", NULL );
         if (!access (configname, R_OK))
           { /* Print a warning when both config files are present. */
             char *p = make_filename(opt.homedir, "options", NULL );
