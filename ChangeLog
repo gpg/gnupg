@@ -1,3 +1,8 @@
+2004-02-25  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: New option --disable-threads to inhibit
+	unintentional builds without Pth.
+
 2004-02-21  Werner Koch  <wk@gnupg.org>
 
 	Released 1.9.5.

@@ -484,6 +484,11 @@ fi
 AC_SUBST(PTH_CFLAGS)
 AC_SUBST(PTH_LIBS)
 
+AC_ARG_ENABLE(threads,
+    AC_HELP_STRING([--disable-threads],[allow building without Pth support]);
+    
+)
+
 
 dnl Must check for network library requirements before doing link tests
 dnl for ldap, for example. If ldap libs are static (or dynamic and without
@@ -954,6 +959,46 @@ AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
 
 
 
+#
+# Decide what to build
+#
+missing_pth=no
+if test $have_ksba = no; then
+  build_gpgsm=no
+  build_scdaemon=no
+fi
+
+build_agent_threaded=""
+if test "$build_agent" = "yes"; then
+  if test $have_pth = no; then
+     build_agent_threaded="(not multi-threaded)"
+     missing_pth=yes
+  fi
+fi
+
+build_scdaemon_extra=""
+if test "$build_scdaemon" = "yes"; then
+  tmp=""
+  if test $have_pth = no; then
+     build_scdaemon_extra="not multi-threaded"
+     tmp=", "
+     missing_pth=yes
+  fi
+  if test $have_opensc = no; then
+     build_scdaemon_extra="${build_scdaemon_extra}${tmp}no pkcs#15"
+     tmp=", "
+  fi      
+  if test -n "$build_scdaemon_extra"; then
+     build_scdaemon_extra="(${build_scdaemon_extra})"
+  fi
+fi
+
+AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")
+AM_CONDITIONAL(BUILD_GPGSM, test "$build_gpgsm" = "yes")
+AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
+AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
+
+
 
 #
 # Print errors here so that they are visible all
@@ -1000,6 +1045,21 @@ if test "$have_ksba" = "no"; then
 *** (at least version $NEED_KSBA_VERSION is required).
 ***]])
 fi
+if test "$missing_pth" = "yes"; then
+    AC_MSG_NOTICE([[
+***
+*** It is strongly suggested to build with support for the
+*** GNU Portable Threads Library (Pth). Please install this
+*** library first or use --disable-threads to allow building
+*** anyway.  The library is for example available at
+***   ftp://ftp.gnu.org/gnu/pth/
+*** On a Debian GNU/Linux system you can install it using 
+***   apt-get install libpth-dev
+***]])
+  if test "$enable_threads" != "no"; then
+     die=yes
+  fi
+fi
 
 if test "$die" = "yes"; then
     AC_MSG_ERROR([[
@@ -1009,43 +1069,6 @@ if test "$die" = "yes"; then
 ***]])
 fi
 
-
-#
-# Decide what to build
-#
-if test $have_ksba = no; then
-  build_gpgsm=no
-  build_scdaemon=no
-fi
-
-build_agent_threaded=""
-if test "$build_agent" = "yes"; then
-  if test $have_pth = no; then
-     build_agent_threaded="(not multi-threaded)"
-  fi
-fi
-
-build_scdaemon_extra=""
-if test "$build_scdaemon" = "yes"; then
-  tmp=""
-  if test $have_pth = no; then
-     build_scdaemon_extra="not multi-threaded"
-     tmp=", "
-  fi
-  if test $have_opensc = no; then
-     build_scdaemon_extra="${build_scdaemon_extra}${tmp}no pkcs#15"
-     tmp=", "
-  fi      
-  if test -n "$build_scdaemon_extra"; then
-     build_scdaemon_extra="(${build_scdaemon_extra})"
-  fi
-fi
-
-
-AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")
-AM_CONDITIONAL(BUILD_GPGSM, test "$build_gpgsm" = "yes")
-AM_CONDITIONAL(BUILD_AGENT, test "$build_agent" = "yes")
-AM_CONDITIONAL(BUILD_SCDAEMON, test "$build_scdaemon" = "yes")
 
 
 AC_CONFIG_FILES([ m4/Makefile 
