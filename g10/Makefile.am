@@ -23,7 +23,7 @@ EXTRA_DIST = options.skel
 # it seems that we can't use this with automake 1.5
 #OMIT_DEPENDENCIES = zlib.h zconf.h
 LDFLAGS = @LDFLAGS@
-libexecdir = @libexecdir@/gnupg
+libexecdir = @libexecdir@/@PACKAGE@
 CFLAGS = @CFLAGS@ -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 

@@ -1,3 +1,12 @@
+2003-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (print_mds): Check that SHA384 and 512 are available
+	before using them as they are no longer always available.
+
+	* exec.c (set_exec_path): Add debugging line.
+
+	* Makefile.am: Use the more correct @PACKAGE@ rather than "gnupg".
+
 2003-02-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Pass GNUPG_LIBEXECDIR as part of CFLAGS so it can

@@ -2709,8 +2709,10 @@ print_mds( const char *fname, int algo )
 	if( !check_digest_algo(DIGEST_ALGO_TIGER) )
 	    md_enable( md, DIGEST_ALGO_TIGER );
 	md_enable( md, DIGEST_ALGO_SHA256 );
-	md_enable( md, DIGEST_ALGO_SHA384 );
-	md_enable( md, DIGEST_ALGO_SHA512 );
+	if( !check_digest_algo(DIGEST_ALGO_SHA384) )
+	  md_enable( md, DIGEST_ALGO_SHA384 );
+	if( !check_digest_algo(DIGEST_ALGO_SHA512) )
+	  md_enable( md, DIGEST_ALGO_SHA512 );
     }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
@@ -2729,8 +2731,10 @@ print_mds( const char *fname, int algo )
                 if( !check_digest_algo(DIGEST_ALGO_TIGER) ) 
                     print_hashline( md, DIGEST_ALGO_TIGER, fname );
                 print_hashline( md, DIGEST_ALGO_SHA256, fname );
-                print_hashline( md, DIGEST_ALGO_SHA384, fname );
-                print_hashline( md, DIGEST_ALGO_SHA512, fname );
+                if( !check_digest_algo(DIGEST_ALGO_SHA384) ) 
+		  print_hashline( md, DIGEST_ALGO_SHA384, fname );
+                if( !check_digest_algo(DIGEST_ALGO_SHA512) ) 
+		  print_hashline( md, DIGEST_ALGO_SHA512, fname );
             }
         }
         else {
@@ -2743,8 +2747,10 @@ print_mds( const char *fname, int algo )
                 if( !check_digest_algo(DIGEST_ALGO_TIGER) )
 		  print_hex( md, DIGEST_ALGO_TIGER, fname );
                 print_hex( md, DIGEST_ALGO_SHA256, fname );
-                print_hex( md, DIGEST_ALGO_SHA384, fname );
-                print_hex( md, DIGEST_ALGO_SHA512, fname );
+                if( !check_digest_algo(DIGEST_ALGO_SHA384) )
+		  print_hex( md, DIGEST_ALGO_SHA384, fname );
+                if( !check_digest_algo(DIGEST_ALGO_SHA512) )
+		  print_hex( md, DIGEST_ALGO_SHA512, fname );
             }
         }
     }
