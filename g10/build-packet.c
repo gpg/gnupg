@@ -800,11 +800,12 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
     }
     else if (oldarea) {
         newarea = m_realloc (oldarea, sizeof (*newarea) + n - 1);
-        newarea->size = sizeof (*newarea) + n - 1;
+        newarea->size = n;
         /*log_debug ("reallocating area for type %d\n", type );*/
     }
     else {
         newarea = m_alloc (sizeof (*newarea) + n - 1);
+        newarea->size = n;
         /*log_debug ("allocating area for type %d\n", type );*/
     }
     newarea->len = n;

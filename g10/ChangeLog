@@ -1,5 +1,8 @@
 2001-08-09  Werner Koch  <wk@gnupg.org>
 
+	* build-packet.c (build_sig_subpkt): Fixed calculation of
+	newarea->size.
+
 	* g10.c (main): New option "--preference-list"
 	* keyedit.c (keyedit_menu): New commands "setpref" and "updpref".
 	(menu_set_preferences): New.
@@ -11,7 +14,7 @@
 	(keygen_add_std_prefs): Move the pref setting code into the above fnc.
 	* build-packet.c (build_sig_subpkt): Updated the list of allowed
 	to update subpackets.
-	
+
 2001-08-08  Werner Koch  <wk@gnupg.org>
 
 	* packet.h (subpktarea_t): New.
