@@ -120,6 +120,7 @@ int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
 int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
+char *build_personal_digest_list(void);
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );

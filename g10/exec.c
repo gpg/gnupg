@@ -485,7 +485,7 @@ int exec_read(struct exec_info *info)
 	}
 #else
       /* If we don't have the macros, do the best we can. */
-      info->progreturn/=256;
+      info->progreturn = (info->progreturn & 0xff00) >> 8;
 #endif
 
       /* 127 is the magic value returned from system() to indicate

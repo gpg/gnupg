@@ -271,43 +271,92 @@ keygen_set_std_prefs (const char *string,int personal)
         }
     }
 
-    if (!rc) {
-      if(personal) {
-	m_free(opt.personal_prefs);
+    if (!rc)
+      {
+	if(personal)
+	  {
+	    if(personal==PREFTYPE_SYM)
+	      {
+		m_free(opt.personal_cipher_prefs);
 
-	if((nsym+nhash+nzip)==0)
-	  opt.personal_prefs=NULL;
-	else {
-	  int i,n=0;
+		if(nsym==0)
+		  opt.personal_cipher_prefs=NULL;
+		else
+		  {
+		    int i;
 
-	  opt.personal_prefs=m_alloc(sizeof(prefitem_t *)*(nsym+nhash+nzip+1));
+		    opt.personal_cipher_prefs=
+		      m_alloc(sizeof(prefitem_t *)*(nsym+1));
 
-	  for (i=0; i<nsym; i++, n++) {
-            opt.personal_prefs[n].type = PREFTYPE_SYM;
-            opt.personal_prefs[n].value = sym[i];
+		    for (i=0; i<nsym; i++)
+		      {
+			opt.personal_cipher_prefs[i].type = PREFTYPE_SYM;
+			opt.personal_cipher_prefs[i].value = sym[i];
+		      }
+
+		    opt.personal_cipher_prefs[i].type = PREFTYPE_NONE;
+		    opt.personal_cipher_prefs[i].value = 0;
+		  }
+	      }
+	    else if(personal==PREFTYPE_HASH)
+	      {
+		m_free(opt.personal_digest_prefs);
+
+		if(nhash==0)
+		  opt.personal_digest_prefs=NULL;
+		else
+		  {
+		    int i;
+
+		    opt.personal_digest_prefs=
+		      m_alloc(sizeof(prefitem_t *)*(nhash+1));
+
+		    for (i=0; i<nhash; i++)
+		      {
+			opt.personal_digest_prefs[i].type = PREFTYPE_HASH;
+			opt.personal_digest_prefs[i].value = hash[i];
+		      }
+
+		    opt.personal_digest_prefs[i].type = PREFTYPE_NONE;
+		    opt.personal_digest_prefs[i].value = 0;
+		  }
+	      }
+	    else if(personal==PREFTYPE_ZIP)
+	      {
+		m_free(opt.personal_compress_prefs);
+
+		if(nzip==0)
+		  opt.personal_compress_prefs=NULL;
+		else
+		  {
+		    int i;
+
+		    opt.personal_compress_prefs=
+		      m_alloc(sizeof(prefitem_t *)*(nzip+1));
+
+		    for (i=0; i<nzip; i++)
+		      {
+			opt.personal_compress_prefs[i].type = PREFTYPE_ZIP;
+			opt.personal_compress_prefs[i].value = zip[i];
+		      }
+
+		    opt.personal_compress_prefs[i].type = PREFTYPE_NONE;
+		    opt.personal_compress_prefs[i].value = 0;
+		  }
+	      }
+
+	    opt.personal_mdc = mdc;
 	  }
-	  for (i=0; i<nhash; i++, n++) {
-            opt.personal_prefs[n].type = PREFTYPE_HASH;
-            opt.personal_prefs[n].value = hash[i];
+	else
+	  {
+	    memcpy (sym_prefs,  sym,  (nsym_prefs=nsym));
+	    memcpy (hash_prefs, hash, (nhash_prefs=nhash));
+	    memcpy (zip_prefs,  zip,  (nzip_prefs=nzip));
+	    mdc_available = mdc;
+	    prefs_initialized = 1;
 	  }
-	  for (i=0; i<nzip; i++, n++) {
-            opt.personal_prefs[n].type = PREFTYPE_ZIP;
-            opt.personal_prefs[n].value = zip[i];
-	  }
-	  opt.personal_prefs[n].type = PREFTYPE_NONE; /* end of list marker */
-	  opt.personal_prefs[n].value = 0;
-	}
-
-	opt.personal_mdc = mdc;
       }
-      else {
-        memcpy (sym_prefs,  sym,  (nsym_prefs=nsym));
-        memcpy (hash_prefs, hash, (nhash_prefs=nhash));
-        memcpy (zip_prefs,  zip,  (nzip_prefs=nzip));
-	mdc_available = mdc;
-        prefs_initialized = 1;
-      }
-    }
+
     return rc;
 }
 
@@ -2367,4 +2416,26 @@ write_keyblock( IOBUF out, KBNODE node )
 	}
     }
     return 0;
+}
+
+char *
+build_personal_digest_list(void)
+{
+  int i,n=0;
+  static char pers_digest_list[(MAX_PREFS*5)+1];
+
+  /* The end result of this is to favor SHA-1 over everything, and put
+     MD5 at the very end of the list. */
+
+  /* Don't put in 100-110 automatically */
+  for(i=2;i<100 && n<MAX_PREFS;i++)
+    {
+      if(check_digest_algo(i)==0)
+	{
+	  sprintf(pers_digest_list+strlen(pers_digest_list),"H%d ",i);
+	  n++;
+	}
+    }
+
+  return pers_digest_list;
 }

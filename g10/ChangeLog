@@ -1,3 +1,21 @@
+2002-06-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, g10.c (main), keygen.c (build_personal_digest_list): Put
+	in a default digest preference list consisting of SHA-1, followed
+	by every other installed digest except MD5.  Note this is the same
+	as having no digest preference at all except for SHA-1 being
+	favored.
+
+	* options.h, g10.c (main), keygen.c (keygen_set_std_prefs),
+	pkclist.c (select_algo_from_prefs): Split
+	--personal-preference-list into three:
+	--personal-{cipher|digest|compress}-preferences.  This allows a
+	user to set one without affecting another (i.e. setting only a
+	digest pref doesn't imply an empty cipher pref).
+
+	* exec.c (exec_read): This is a safer way of guessing the return
+	value of system().  Noted by Stefan Bellon.
+
 2002-06-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* hkp.c (parse_hkp_index): Be more robust with keyservers

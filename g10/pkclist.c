@@ -1102,8 +1102,12 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype, void *hint )
     any = 0;
 
     /* If we have personal prefs set, use them instead of the last key */
-    if(opt.personal_prefs)
-      prefs=opt.personal_prefs;
+    if(preftype==PREFTYPE_SYM && opt.personal_cipher_prefs)
+      prefs=opt.personal_cipher_prefs;
+    else if(preftype==PREFTYPE_HASH && opt.personal_digest_prefs)
+      prefs=opt.personal_digest_prefs;
+    else if(preftype==PREFTYPE_ZIP && opt.personal_compress_prefs)
+      prefs=opt.personal_compress_prefs;
 
     if( prefs ) {
 	for(j=0; prefs[j].type; j++ ) {
@@ -1151,10 +1155,10 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype, void *hint )
       {
 	i=DIGEST_ALGO_SHA1;
 
-	if(opt.personal_prefs)
+	if(opt.personal_digest_prefs)
 	  for(j=0; prefs[j].type; j++ )
-	    if(opt.personal_prefs[j].type==PREFTYPE_HASH &&
-	       opt.personal_prefs[j].value==DIGEST_ALGO_MD5)
+	    if(opt.personal_digest_prefs[j].type==PREFTYPE_HASH &&
+	       opt.personal_digest_prefs[j].value==DIGEST_ALGO_MD5)
 	      {
 		i=DIGEST_ALGO_MD5;
 		break;
