@@ -369,7 +369,9 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 {
     int rc = do_we_trust( pk, trustlevel );
 
-    if( !opt.batch && !rc ) {
+    if( (trustlevel & TRUST_FLAG_REVOKED) && !rc )
+	return 0;
+    else if( !opt.batch && !rc ) {
 	tty_printf(_(
 "It is NOT certain that the key belongs to its owner.\n"
 "If you *really* know what you are doing, you may answer\n"

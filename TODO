@@ -20,6 +20,8 @@ Important
 
     * See why we always get this "Hmmm public key lost"
 
+    * print a warning when a revoked/expired secret is used.
+
 Needed
 ------
     * remove more "Fixmes"

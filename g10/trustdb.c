@@ -2939,9 +2939,18 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     /* delete keyrecords from the trustdb which are not anymore used */
     /* should we really do this, or is it better to keep them and */
     /* mark as unused? */
+    /* And set the revocation flag into the dir record */
+    drec.r.dir.dirflags &= ~DIRF_REVOKED;
     lastrecno = 0;
     for( recno=drec.r.dir.keylist; recno; recno = krec.r.key.next ) {
 	read_record( recno, &krec, RECTYPE_KEY );
+	if( recno == drec.r.dir.keylist ) { /* this is the primary key */
+	    if( (krec.r.key.keyflags & KEYF_REVOKED) ) {
+		drec.r.dir.dirflags |= DIRF_REVOKED;
+		drec.dirty = 1;
+	    }
+	}
+
 	if( !qry_recno_list( recno_list, recno, RECTYPE_KEY ) ) {
 	    /* delete this one */
 	    if( !lastrecno ) {
@@ -2994,11 +3003,11 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
     if( rc )
 	rc = tdbio_cancel_transaction();
     else {
+	if( modified && tdbio_is_dirty() )
+	    *modified = 1;
 	drec.r.dir.dirflags |= DIRF_CHECKED;
 	drec.r.dir.dirflags &= ~DIRF_VALVALID;
 	write_record( &drec );
-	if( modified && tdbio_is_dirty() )
-	    *modified = 1;
 	rc = tdbio_end_transaction();
     }
     rel_recno_list( &recno_list );

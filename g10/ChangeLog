@@ -1,3 +1,11 @@
+Tue Dec 29 19:55:38 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* revoke.c (gen_revoke): Removed compression.
+
+	* pkclist.c (do_we_trust_pre): special check for revoked keys
+
+	* trustdb.c (update_trust_record): Fixed revoke flag.
+
 Tue Dec 29 14:41:47 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* misc.c (disable_core_dumps): Check for EINVAL (Atari)

@@ -148,9 +148,6 @@ gen_revoke( const char *uname )
     afx.what = 1;
     afx.hdrlines = "Comment: A revocation certificate should follow\n";
     iobuf_push_filter( out, armor_filter, &afx );
-    if( opt.compress )
-	iobuf_push_filter( out, compress_filter, &zfx );
-
 
     /* create it */
     rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0, NULL, NULL);
