@@ -85,15 +85,20 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     dfx.cipher_hd = cipher_open( dek->algo,
 				 ed->mdc_method? CIPHER_MODE_CFB
 					       : CIPHER_MODE_AUTO_CFB, 1 );
-/* log_hexdump( "thekey", dek->key, dek->keylen );*/
+    /* log_hexdump( "thekey", dek->key, dek->keylen );*/
     rc = cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen );
     if( rc == G10ERR_WEAK_KEY )
-	log_info(_("WARNING: message was encrypted with "
-		    "a weak key in the symmetric cipher.\n"));
-    else if( rc ) {
+      {
+	log_info(_("WARNING: message was encrypted with"
+		   " a weak key in the symmetric cipher.\n"));
+	rc=0;
+      }
+    else if( rc )
+      {
 	log_error("key setup failed: %s\n", g10_errstr(rc) );
 	goto leave;
-    }
+      
+}
     if (!ed->buf) {
         log_error(_("problem handling encrypted packet\n"));
         goto leave;
