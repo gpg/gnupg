@@ -164,7 +164,7 @@ main( int argc, char **argv )
     opt.always_trust = 1;
     opt.batch = 1;
 
-#if defined (__MINGW32__)
+#if defined (_WIN32)
     set_homedir (read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" ));
 #else
     set_homedir (getenv("GNUPGHOME"));
