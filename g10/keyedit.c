@@ -228,9 +228,9 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
     else if( oth_err )
 	tty_printf(_("%d signatures not checked due to errors\n"), oth_err );
     if( mis_selfsig == 1 )
-	tty_printf(_("1 user id without valid self-signature detected\n"));
+	tty_printf(_("1 user ID without valid self-signature detected\n"));
     else if( mis_selfsig  )
-	tty_printf(_("%d user ids without valid self-signatures detected\n"),
+	tty_printf(_("%d user IDs without valid self-signatures detected\n"),
 								    mis_selfsig);
 
     return inv_sigs || no_key || oth_err || mis_selfsig;
@@ -567,9 +567,9 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("help")    , cmdHELP      , 0,1, N_("show this help") },
 	{    "?"        , cmdHELP      , 0,1, NULL   },
 	{ N_("fpr")     , cmdFPR       , 0,1, N_("show fingerprint") },
-	{ N_("list")    , cmdLIST      , 0,1, N_("list key and user ids") },
+	{ N_("list")    , cmdLIST      , 0,1, N_("list key and user IDs") },
 	{ N_("l")       , cmdLIST      , 0,1, NULL   },
-	{ N_("uid")     , cmdSELUID    , 0,1, N_("select user id N") },
+	{ N_("uid")     , cmdSELUID    , 0,1, N_("select user ID N") },
 	{ N_("key")     , cmdSELKEY    , 0,0, N_("select secondary key N") },
 	{ N_("check")   , cmdCHECK     , 0,1, N_("list signatures") },
 	{ N_("c")       , cmdCHECK     , 0,1, NULL },
@@ -577,8 +577,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("s")       , cmdSIGN      , 0,1, NULL },
 	{ N_("lsign")   , cmdLSIGN     , 0,1, N_("sign the key locally") },
 	{ N_("debug")   , cmdDEBUG     , 0,0, NULL },
-	{ N_("adduid")  , cmdADDUID    , 1,0, N_("add a user id") },
-	{ N_("deluid")  , cmdDELUID    , 0,0, N_("delete user id") },
+	{ N_("adduid")  , cmdADDUID    , 1,0, N_("add a user ID") },
+	{ N_("deluid")  , cmdDELUID    , 0,0, N_("delete user ID") },
 	{ N_("addkey")  , cmdADDKEY    , 1,0, N_("add a secondary key") },
 	{ N_("delkey")  , cmdDELKEY    , 0,0, N_("delete a secondary key") },
 	{ N_("delsig")  , cmdDELSIG    , 0,0, N_("delete signatures") },
@@ -755,8 +755,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  case cmdLSIGN: /* sign (only the public key) */
 	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) ) {
 		if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
-					   _("Really sign all user ids? ")) ) {
-		    tty_printf(_("Hint: Select the user ids to sign\n"));
+					   _("Really sign all user IDs? ")) ) {
+		    tty_printf(_("Hint: Select the user IDs to sign\n"));
 		    break;
 		}
 	    }
@@ -794,13 +794,13 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		int n1;
 
 		if( !(n1=count_selected_uids(keyblock)) )
-		    tty_printf(_("You must select at least one user id.\n"));
+		    tty_printf(_("You must select at least one user ID.\n"));
 		else if( count_uids(keyblock) - n1 < 1 )
-		    tty_printf(_("You can't delete the last user id!\n"));
+		    tty_printf(_("You can't delete the last user ID!\n"));
 		else if( cpr_get_answer_is_yes(
 			    "keyedit.remove.uid.okay",
-			n1 > 1? _("Really remove all selected user ids? ")
-			      : _("Really remove this user id? ")
+			n1 > 1? _("Really remove all selected user IDs? ")
+			      : _("Really remove this user ID? ")
 		       ) ) {
 		    menu_deluid( keyblock, sec_keyblock );
 		    redisplay = 1;
@@ -815,7 +815,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		int n1;
 
 		if( !(n1=count_selected_uids(keyblock)) )
-		    tty_printf(_("You must select at least one user id.\n"));
+		    tty_printf(_("You must select at least one user ID.\n"));
 		else if( menu_delsig( keyblock ) ) {
 		    /* no redisplay here, because it may scroll away some
 		     * status output of delsig */
@@ -1563,7 +1563,7 @@ menu_select_uid( KBNODE keyblock, int idx )
 	    }
 	}
 	if( !node ) {
-	    tty_printf(_("No user id with index %d\n"), idx );
+	    tty_printf(_("No user ID with index %d\n"), idx );
 	    return 0;
 	}
     }

@@ -505,7 +505,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    md_close(md);
 	}
 	else {
-	    log_error("no user id for key signature packet\n");
+	    log_error("no user ID for key signature packet\n");
 	    rc = G10ERR_SIG_CLASS;
 	}
     }

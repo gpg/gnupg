@@ -2058,7 +2058,7 @@ do_check( TRUSTREC *dr, unsigned *validity,
 	return G10ERR_TRUSTDB;
     }
     if( !dr->r.dir.uidlist ) {
-	log_error(_("Ooops, no user ids\n"));
+	log_error(_("Ooops, no user IDs\n"));
 	return G10ERR_TRUSTDB;
     }
 

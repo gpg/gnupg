@@ -184,9 +184,9 @@ o  the KS should verify signatures and only accept those
 o  Keep a blacklist of known bad signatures to minimize
    the time needed to check them
 
-o  Should be fast - I currently designing a new storage
+o  Should be fast - I'm currently designing a new storage
    system called keybox which takes advantage of the fact
-   that the keyID is highly random and can be directly be
+   that the keyID is highly random and can directly be
    used as a hash value and this keyID is (for v4 keys)
    part of the fingerprint: So it is possible to use the
    fingerprint as key but do an lookup by the keyID.
@@ -233,5 +233,9 @@ Suggested things which I will not do:
 =====================================
   * Let take --help an option to select some topics.
     Using grep is much easier
+  * Check if an object (a message, detached sign, public key, or whatever)
+    is signed by definite user, i.e. define user
+    (userid, or any other unique identification) on command line.
+    --> Use a script and --status-fd
 
 

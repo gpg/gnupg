@@ -4,29 +4,35 @@ Please read the Basic Installation section somewhere below.
 Configure options for GNUPG
 ===========================
 
+--enable-static-rnd=<name>  Force the use of the random byte gathering
+		     module <name>.  Default is either to use /dev/random
+		     or the standard Uix module.  Value for name:
+		       egd - Use the module which accesses the
+			     Entropy Gathering Daemon. See the webpages
+			     for more information about it.
+		      unix - Use the standard Unix module which does not
+			     have a very good performance.
+		     linux - Use the module which accesses /dev/random.
+			     This is the first choice and the default one
+			     for GNU/Linux or *BSD.
+		      none - Do not linkl any module in but rely on
+			     a dynmically loaded modules.
+
 --with-included-zlib Forces usage of the local zlib sources. Default is
 		     to use the (shared) library of the system.
 
 --with-included-gettext Forces usage of the local gettext sources instead of
 		    the one provided by your system.
 
---disable-nls	    Disable NLS support (See ABOUT-NLS)
+--disable-nls	    Disable NLS support (See the file ABOUT-NLS)
 
---enable-m-debug    Compile with the integrated malloc debugging stuff.
-		    This makes the program slower but it checks every
-		    free operation and can be used to create statistics
-		    of memory usage. If this option is used the program
-		    option "--debug 32" displays every call to a malloc
-		    function (this makes the program *really* slow), the
-		    option "--debug 128" displays a memory statistic after
-		    the program run.
-
---enable-m-guard    Enable the integrated malloc checking code. 
+--enable-m-guard    Enable the integrated malloc checking code.
 
 --disable-dynload   If you have problems with dynamic loading, this option
 		    disables all dynamic loading stuff.
 
---disable-asm	    Do not use assembler modules.
+--disable-asm	    Do not use assembler modules.  It is not possible to
+		    use this on some CPU types.
 
 
 
@@ -106,8 +112,8 @@ Or use the -t (--tarbuild) option of rpm:
     1. rpm -ta gnupg-x.x.x.tar.gz
 
 The binary rpm file can now be found in /usr/src/redhat/RPMS, source
-rpm in  /usr/src/redhat/SRPMS
- 
+rpm in	/usr/src/redhat/SRPMS
+
 Please note that to install gnupg binary rpm you must be root, as
 gnupg needs to be suid root, at least on Linux machines
 

@@ -58,7 +58,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 )},
 
 { "pklist.user_id.enter", N_(
-"Enter the user id of the addressee to whom you want to send the message."
+"Enter the user ID of the addressee to whom you want to send the message."
 )},
 
 { "keygen.algo", N_(

@@ -1288,7 +1288,7 @@ find_by_name( KBNODE keyblock, PKT_public_key *pk, const char *name,
 	    else if( is_RSA(pk->pubkey_algo) )
 		log_error(_("RSA key cannot be used in this version\n"));
 	    else
-		log_error(_("No key for user-id\n"));
+		log_error(_("No key for user ID\n"));
 	}
     }
     return NULL;
@@ -1327,7 +1327,7 @@ find_by_name_sk( KBNODE keyblock, PKT_secret_key *sk, const char *name,
 	    else if( is_RSA(sk->pubkey_algo) )
 		log_error(_("RSA key cannot be used in this version\n"));
 	    else
-		log_error(_("No key for user-id\n"));
+		log_error(_("No key for user ID\n"));
 	}
     }
     return NULL;
@@ -1366,7 +1366,7 @@ find_by_keyid( KBNODE keyblock, PKT_public_key *pk, u32 *keyid, int mode )
 		if( kk )
 		    cache_user_id( kk->pkt->pkt.user_id, aki );
 		else
-		    log_error(_("No user-id for key\n"));
+		    log_error(_("No user ID for key\n"));
 		return k; /* found */
 	    }
 	}
@@ -1406,7 +1406,7 @@ find_by_keyid_sk( KBNODE keyblock, PKT_secret_key *sk, u32 *keyid, int mode )
 		if( kk )
 		    cache_user_id( kk->pkt->pkt.user_id, aki );
 		else
-		    log_error(_("No user-id for key\n"));
+		    log_error(_("No user ID for key\n"));
 		return k; /* found */
 	    }
 	}

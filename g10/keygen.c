@@ -559,9 +559,8 @@ ask_expire_interval(void)
 			asctimestamp(curtime + interval ) );
 	}
 
-	if( !cpr_enabled()
-	     && cpr_get_answer_is_yes("keygen.valid.okay",
-				       _("Is this correct (y/n)? ")) )
+	if( cpr_enabled() || cpr_get_answer_is_yes("keygen.valid.okay",
+					    _("Is this correct (y/n)? ")) )
 	    break;
     }
     m_free(answer);

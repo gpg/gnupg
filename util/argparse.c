@@ -526,9 +526,11 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	    exit(0);
 	}
 	else if( i < 0 && !strcmp( "dump-options", s+2) ) {
-	    for(i=0; opts[i].short_opt; i++ )
+	    for(i=0; opts[i].short_opt; i++ ) {
 		if( opts[i].long_opt )
 		    printf( "--%s\n", opts[i].long_opt );
+	    }
+	    fputs("--dump-options\n--help\n--version\n--warranty\n", stdout );
 	    exit(0);
 	}
 

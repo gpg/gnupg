@@ -124,7 +124,7 @@ static int
 add_user_id( CTX c, PACKET *pkt )
 {
     if( !c->list ) {
-	log_error("orphaned user id\n" );
+	log_error("orphaned user ID\n" );
 	return 0;
     }
     add_kbnode( c->list, new_kbnode( pkt ) );

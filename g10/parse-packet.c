@@ -793,7 +793,7 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	p = "preferred key server";
 	break;
       case SIGSUBPKT_PRIMARY_UID:
-	p = "primary user id";
+	p = "primary user ID";
 	break;
       case SIGSUBPKT_POLICY:
 	fputs("policy: ", stdout );
@@ -803,10 +803,10 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	p = "key flags";
 	break;
       case SIGSUBPKT_SIGNERS_UID:
-	p = "signer's user id";
+	p = "signer's user ID";
 	break;
       case SIGSUBPKT_PRIV_ADD_SIG:
-	p = "signs additional user id";
+	p = "signs additional user ID";
 	break;
       default: p = "?"; break;
     }
@@ -1482,7 +1482,7 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
     if( list_mode ) {
 	int n = packet->pkt.user_id->len;
-	printf(":user id packet: \"");
+	printf(":user ID packet: \"");
 	/* fixme: Hey why don't we replace this wioth print_string?? */
 	for(p=packet->pkt.user_id->name; n; p++, n-- ) {
 	    if( *p >= ' ' && *p <= 'z' )

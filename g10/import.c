@@ -359,7 +359,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	putc('\n', stderr);
     }
     if( !uidnode ) {
-	log_error( _("key %08lX: no user id\n"), (ulong)keyid[1]);
+	log_error( _("key %08lX: no user ID\n"), (ulong)keyid[1]);
 	return 0;
     }
 
@@ -373,7 +373,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 
     if( !delete_inv_parts( fname, keyblock, keyid ) ) {
 	if( !opt.quiet ) {
-	    log_info( _("key %08lX: no valid user ids\n"),
+	    log_info( _("key %08lX: no valid user IDs\n"),
 							(ulong)keyid[1]);
 	    log_info(_("this may be caused by a missing self-signature\n"));
 	}
@@ -466,10 +466,10 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    /* we are ready */
 	    if( !opt.quiet ) {
 		if( n_uids == 1 )
-		    log_info( _("key %08lX: 1 new user-id\n"),
+		    log_info( _("key %08lX: 1 new user ID\n"),
 					     (ulong)keyid[1]);
 		else if( n_uids )
-		    log_info( _("key %08lX: %d new user-ids\n"),
+		    log_info( _("key %08lX: %d new user IDs\n"),
 					     (ulong)keyid[1], n_uids );
 		if( n_sigs == 1 )
 		    log_info( _("key %08lX: 1 new signature\n"),
@@ -551,7 +551,7 @@ import_secret_one( const char *fname, KBNODE keyblock )
     }
     stats.secret_read++;
     if( !uidnode ) {
-	log_error( _("key %08lX: no user id\n"), (ulong)keyid[1]);
+	log_error( _("key %08lX: no user ID\n"), (ulong)keyid[1]);
 	return 0;
     }
 
@@ -708,7 +708,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	    if( (sig->sig_class&~3) == 0x10 ) {
 		KBNODE unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
 		if( !unode )  {
-		    log_error( _("key %08lX: no user-id for signature\n"),
+		    log_error( _("key %08lX: no user ID for signature\n"),
 					    (ulong)keyid[1]);
 		    return -1;	/* the complete keyblock is invalid */
 		}
@@ -766,7 +766,7 @@ mark_non_selfsigned_uids_valid( KBNODE keyblock, u32 *kid )
 	if( node->pkt->pkttype == PKT_USER_ID && !(node->flag & 1) ) {
 	    if( node->next && node->next->pkt->pkttype == PKT_SIGNATURE ) {
 		node->flag |= 1;
-		log_info( _("key %08lX: accepted non self-signed user-id '"),
+		log_info( _("key %08lX: accepted non self-signed user ID '"),
 							 (ulong)kid[1]);
 		print_string( log_stream(), node->pkt->pkt.user_id->name,
 					    node->pkt->pkt.user_id->len, 0 );
@@ -795,7 +795,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	    uid_seen = 1;
 	    if( (node->flag & 2) || !(node->flag & 1) ) {
 		if( opt.verbose ) {
-		    log_info( _("key %08lX: skipped user-id '"),
+		    log_info( _("key %08lX: skipped user ID '"),
 							 (ulong)keyid[1]);
 		    print_string( stderr, node->pkt->pkt.user_id->name,
 				      node->pkt->pkt.user_id->len, 0 );
@@ -1176,7 +1176,7 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 
     assert(dst->pkt->pkttype == PKT_USER_ID );
     assert(src->pkt->pkttype == PKT_USER_ID );
-    /* at least a self signature comes next to the user-ids */
+    /* at least a self signature comes next to the user IDs */
     assert(src->next->pkt->pkttype != PKT_USER_ID );
     if( dst->next->pkt->pkttype == PKT_USER_ID ) {
 	log_error( _("key %08lX: our copy has no self-signature\n"),
