@@ -1,6 +1,10 @@
-Authors of GNU Privacy Guard (GnuPG).
+Authors of GNU Privacy Guard (GnuPG)
+====================================
 
-Werner Koch.  Designed and implemented GnuPG.
+GNUPG	Werner Koch		  1998-02-23
+Assigns GNU Privacy Guard and future changes.
+werner.koch@guug.de
+Designed and implemented GnuPG.
 
 
 GNUPG	Matthew Skala		   1998-08-10

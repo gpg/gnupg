@@ -637,7 +637,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	PKT_secret_key *sk = sk_rover->sk;
 	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
-    md_start_debug( textmd, "create" );
+    /*md_start_debug( textmd, "create" );*/
     if( !opt.not_dash_escaped )
 	iobuf_push_filter( inp, text_filter, &tfx );
     rc = write_dash_escaped( inp, out, textmd );

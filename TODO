@@ -30,6 +30,9 @@ Needed
       encrypt this all) - We need an identifier for Twofish to put this
       one into the cipher preferences.
 
+Minor Bugs
+----------
+
 Nice to have
 ------------
     * preferences of hash algorithms are not yet used.
@@ -41,8 +44,4 @@ Nice to have
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
     * change the fake_data stuff to mpi_set_opaque
-
-Minor Bugs
-----------
-    * md_start_debug used to crash at pgm termination.
 

@@ -454,6 +454,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    /* found the begin line */
 	    hdr_line = i;
 	    state = fhdrWAITHeader;
+	    *not_dashed = 0;
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX )
 		clearsig = 1;
 	    if( opt.verbose > 1 )

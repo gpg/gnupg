@@ -256,6 +256,7 @@ md_copy( MD_HANDLE a )
 		  : m_alloc( sizeof *b );
     memcpy( b, a, sizeof *a );
     b->list = NULL;
+    b->debug = NULL;
     /* and now copy the complete list of algorithms */
     /* I know that the copied list is reversed, but that doesn't matter */
     for( ar=a->list; ar; ar = ar->next ) {
@@ -270,7 +271,7 @@ md_copy( MD_HANDLE a )
 
 
 /****************
- * Reset all contexts and discard any buffered stuuf.  This may be used
+ * Reset all contexts and discard any buffered stuff.  This may be used
  * instead of a md_close(); md_open().
  */
 void

@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1998-12-17 18:30+0100\n"
+"POT-Creation-Date: 1998-12-23 15:55+0100\n"
 "PO-Revision-Date: 1998-12-13 22:34+0100\n"
 "Last-Translator: Walter Koch <walterk@mail.dip.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -776,7 +776,8 @@ msgid "error in trailer line\n"
 msgstr "Fehler in der Nachsatzzeile\n"
 
 #: g10/armor.c:1182
-msgid "no valid RFC1991 or OpenPGP data found.\n"
+#, fuzzy
+msgid "no valid OpenPGP data found.\n"
 msgstr "Keine gültigen RFC1991- oder OpenPGP-Daten gefunden.\n"
 
 #: g10/pkclist.c:138
@@ -834,7 +835,7 @@ msgstr "Ihre Auswahl? "
 msgid "Certificates leading to an ultimately trusted key:\n"
 msgstr "Zertifikate führen zu einem letztlich vertrauenswürdigen Schlüssel:\n"
 
-#: g10/pkclist.c:221
+#: g10/pkclist.c:223
 msgid ""
 "Could not find a valid trust path to the key.  Let's see whether we\n"
 "can assign some missing owner trust values.\n"
@@ -845,7 +846,7 @@ msgstr ""
 "ermitteln können.\n"
 "\n"
 
-#: g10/pkclist.c:251
+#: g10/pkclist.c:261
 msgid ""
 "No path leading to one of our keys found.\n"
 "\n"
@@ -853,7 +854,7 @@ msgstr ""
 "Kein Pfad führt zu einen unserer Schlüsseln.\n"
 "\n"
 
-#: g10/pkclist.c:253
+#: g10/pkclist.c:263
 msgid ""
 "No certificates with undefined trust found.\n"
 "\n"
@@ -861,7 +862,7 @@ msgstr ""
 "Keine Zertifikate mit undefinierten Vertrauen gefunden.\n"
 "\n"
 
-#: g10/pkclist.c:255
+#: g10/pkclist.c:265
 msgid ""
 "No trust values changed.\n"
 "\n"
@@ -869,33 +870,33 @@ msgstr ""
 "Keine \"trust\" Werte geändert.\n"
 "\n"
 
-#: g10/pkclist.c:270
+#: g10/pkclist.c:280
 #, c-format
 msgid "key %08lX: key has been revoked!\n"
 msgstr "Schlüssel %08lX: Schlüssel wurde widerrufen\n"
 
-#: g10/pkclist.c:276 g10/pkclist.c:369
+#: g10/pkclist.c:286 g10/pkclist.c:379
 msgid "Use this key anyway? "
 msgstr "Diesen Schlüssel trotzdem benutzen?"
 
-#: g10/pkclist.c:298
+#: g10/pkclist.c:308
 #, c-format
 msgid "%08lX: key has expired\n"
 msgstr "%08lX: Schlüssel ist verfallen!\n"
 
-#: g10/pkclist.c:304
+#: g10/pkclist.c:314
 #, c-format
 msgid "%08lX: no info to calculate a trust probability\n"
 msgstr ""
 "%08lX: Keine Infos zur Berechnung der Vertrauenswahrscheinlichkeit "
 "vorgefunden\n"
 
-#: g10/pkclist.c:322
+#: g10/pkclist.c:332
 #, c-format
 msgid "%08lX: We do NOT trust this key\n"
 msgstr "%08lX: Wir haben KEIN Vertrauen zu diesem Schlüssel!\n"
 
-#: g10/pkclist.c:328
+#: g10/pkclist.c:338
 #, c-format
 msgid ""
 "%08lX: It is not sure that this key really belongs to the owner\n"
@@ -904,19 +905,19 @@ msgstr ""
 "%08lX: Es ist nicht sicher, daß dieser Schlüssel wirklich dem vorgeblichen\n"
 "Besitzer gehört, aber er wird trotzdem akzeptiert\n"
 
-#: g10/pkclist.c:334
+#: g10/pkclist.c:344
 msgid "This key probably belongs to the owner\n"
 msgstr ""
 "Dieser Schlüssel gehört uns (alldieweil wir den geheimen Schlüssel dazu "
 "haben)\n"
 
-#: g10/pkclist.c:339
+#: g10/pkclist.c:349
 msgid "This key belongs to us\n"
 msgstr ""
 "Dieser Schlüssel gehört uns (alldieweil wir den geheimen Schlüssel dazu "
 "haben)\n"
 
-#: g10/pkclist.c:364
+#: g10/pkclist.c:374
 msgid ""
 "It is NOT certain that the key belongs to its owner.\n"
 "If you *really* know what you are doing, you may answer\n"
@@ -927,55 +928,55 @@ msgstr ""
 "Wenn Sie *wirklich* wissen, was Sie tun, können Sie die nächste\n"
 "Frage mit ja beantworten\n"
 
-#: g10/pkclist.c:373
+#: g10/pkclist.c:383
 msgid "WARNING: Using untrusted key!\n"
 msgstr "WARNUNG: Ein Schlüssel ohne gesichertes Vertrauen wird benutzt!\n"
 
-#: g10/pkclist.c:409
+#: g10/pkclist.c:419
 msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "WARNUNG: Dieser Schlüssel wurde von seinem Besitzer widerrufen!\n"
 
-#: g10/pkclist.c:410
+#: g10/pkclist.c:420
 msgid "         This could mean that the signature is forgery.\n"
 msgstr "         Das könnte bedeuten, daß die Signatur gefälscht ist.\n"
 
-#: g10/pkclist.c:431
+#: g10/pkclist.c:441
 msgid "Note: This key has expired!\n"
 msgstr "Hinweis: Dieser Schlüssel ist verfallen!\n"
 
-#: g10/pkclist.c:438
+#: g10/pkclist.c:448
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr "WARNUNG: Dieser Schlüssel trägt keine vertrauenswürdige Signatur!\n"
 
-#: g10/pkclist.c:440
+#: g10/pkclist.c:450
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
 msgstr ""
 "         Es gibt keinen Hinweis, daß die Signatur wirklich dem vorgeblichen "
 "Besitzer gehört.\n"
 
-#: g10/pkclist.c:456
+#: g10/pkclist.c:466
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "WARNUNG: Wir haben KEIN Vertrauen zu diesem Schlüssel!\n"
 
-#: g10/pkclist.c:457
+#: g10/pkclist.c:467
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         Die Signatur ist wahrscheinlich eine FÄLSCHUNG.\n"
 
-#: g10/pkclist.c:464
+#: g10/pkclist.c:474
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
 "WARNUNG: Dieser Schlüssel ist nicht durch hinreichend vertrauenswürdige "
 "Signaturen zertifiziert!\n"
 
-#: g10/pkclist.c:467
+#: g10/pkclist.c:477
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr ""
 "         Es ist nicht sicher, daß die Signatur wirklich dem vorgeblichen "
 "Besitzer gehört.\n"
 
-#: g10/pkclist.c:512
+#: g10/pkclist.c:522
 msgid ""
 "You did not specify a user ID. (you may use \"-r\")\n"
 "\n"
@@ -983,25 +984,25 @@ msgstr ""
 "Sie gaben keine User-ID angegeben (Benutzen Sie die Option \"-r\").\n"
 "\n"
 
-#: g10/pkclist.c:517
+#: g10/pkclist.c:527
 msgid "Enter the user ID: "
 msgstr "Geben Sie die User-ID ein: "
 
-#: g10/pkclist.c:528
+#: g10/pkclist.c:538
 msgid "No such user ID.\n"
 msgstr "Keine solche User-ID vorhanden.\n"
 
-#: g10/pkclist.c:562 g10/pkclist.c:589
+#: g10/pkclist.c:572 g10/pkclist.c:599
 #, c-format
 msgid "%s: skipped: %s\n"
 msgstr "%s: übersprungen: %s\n"
 
-#: g10/pkclist.c:570
+#: g10/pkclist.c:580
 #, c-format
 msgid "%s: error checking key: %s\n"
 msgstr "%s: Fehler beim Prüfen des Schlüssels: %s\n"
 
-#: g10/pkclist.c:596
+#: g10/pkclist.c:606
 msgid "no valid addressees\n"
 msgstr "Keine gültigen Adressaten\n"
 
@@ -1351,11 +1352,11 @@ msgstr "WARNUNG: Nichts exportiert\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "zu viele Einträge im pk-Lager - abgeschaltet\n"
 
-#: g10/getkey.c:263
+#: g10/getkey.c:295
 msgid "too many entries in unk cache - disabled\n"
 msgstr "zu viele Einträge im unk-Lager - abgeschaltet\n"
 
-#: g10/getkey.c:989
+#: g10/getkey.c:1021
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
@@ -1366,261 +1367,261 @@ msgstr ""
 msgid "can't open file: %s\n"
 msgstr "Kann die Datei nicht öffnen: %s\n"
 
-#: g10/import.c:145
+#: g10/import.c:148
 #, c-format
 msgid "skipping block of type %d\n"
 msgstr "überspringe den Block vom Typ %d\n"
 
-#: g10/import.c:152 g10/trustdb.c:1474 g10/trustdb.c:1543
+#: g10/import.c:155 g10/trustdb.c:1474 g10/trustdb.c:1543
 #, c-format
 msgid "%lu keys so far processed\n"
 msgstr "%lu Schlüssel bislang bearbeitet\n"
 
-#: g10/import.c:157 g10/trustdb.c:1256
+#: g10/import.c:160 g10/trustdb.c:1256
 #, c-format
 msgid "read error: %s\n"
 msgstr "Lesefehler: %s\n"
 
-#: g10/import.c:159
+#: g10/import.c:162
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Anzahl insgesamt bearbeiteter Schlüssel: %lu\n"
 
-#: g10/import.c:161
+#: g10/import.c:164
 #, c-format
 msgid "          w/o user IDs: %lu\n"
 msgstr "         ohne User-ID: %lu\n"
 
-#: g10/import.c:163
+#: g10/import.c:166
 #, c-format
 msgid "              imported: %lu"
 msgstr "           importiert: %lu"
 
-#: g10/import.c:169
+#: g10/import.c:172
 #, c-format
 msgid "             unchanged: %lu\n"
 msgstr "          unverändert: %lu\n"
 
-#: g10/import.c:171
+#: g10/import.c:174
 #, c-format
 msgid "          new user IDs: %lu\n"
 msgstr "        neue User-IDs: %lu\n"
 
-#: g10/import.c:173
+#: g10/import.c:176
 #, c-format
 msgid "           new subkeys: %lu\n"
 msgstr "  neue Unterschlüssel: %lu\n"
 
-#: g10/import.c:175
+#: g10/import.c:178
 #, c-format
 msgid "        new signatures: %lu\n"
 msgstr "        neue Signaturen: %lu\n"
 
-#: g10/import.c:177
+#: g10/import.c:180
 #, c-format
 msgid "   new key revocations: %lu\n"
 msgstr "neue Schlüsselwiderrufe: %lu\n"
 
-#: g10/import.c:179
+#: g10/import.c:182
 #, c-format
 msgid "      secret keys read: %lu\n"
 msgstr " gelesene geheime Schl.: %lu\n"
 
-#: g10/import.c:181
+#: g10/import.c:184
 #, c-format
 msgid "  secret keys imported: %lu\n"
 msgstr "geheime Schlüssel importiert: %lu\n"
 
-#: g10/import.c:183
+#: g10/import.c:186
 #, c-format
 msgid " secret keys unchanged: %lu\n"
 msgstr " unveränderte geh.Schl.: %lu\n"
 
-#: g10/import.c:325 g10/import.c:517
+#: g10/import.c:328 g10/import.c:520
 #, c-format
 msgid "key %08lX: no user id\n"
 msgstr "Schlüssel %08lX: Keine User-ID\n"
 
-#: g10/import.c:336
+#: g10/import.c:339
 #, c-format
 msgid "key %08lX: no valid user ids\n"
 msgstr "Schlüssel %08lX: Keine gültigen User-IDs\n"
 
-#: g10/import.c:338
+#: g10/import.c:341
 msgid "this may be caused by a missing self-signature\n"
 msgstr "dies könnte durch fehlende Eigenbeglaubigung verursacht worden sein\n"
 
-#: g10/import.c:349 g10/import.c:585
+#: g10/import.c:352 g10/import.c:588
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
 msgstr "Schlüssel %08lX: Öffentlicher Schlüssel nicht gefunden: %s\n"
 
-#: g10/import.c:355
+#: g10/import.c:358
 msgid "no default public keyring\n"
 msgstr "Kein voreingestellter öffentlicher Schlüsselbund\n"
 
-#: g10/import.c:359 g10/openfile.c:105 g10/sign.c:205 g10/sign.c:592
+#: g10/import.c:362 g10/openfile.c:105 g10/sign.c:205 g10/sign.c:592
 #, c-format
 msgid "writing to '%s'\n"
 msgstr "Schreiben nach '%s'\n"
 
-#: g10/import.c:363 g10/import.c:423 g10/import.c:639
+#: g10/import.c:366 g10/import.c:426 g10/import.c:642
 #, c-format
 msgid "can't lock public keyring: %s\n"
 msgstr "kann öffentlichen Schlüsselbund nicht sperren: %s\n"
 
-#: g10/import.c:366
+#: g10/import.c:369
 #, c-format
 msgid "can't write to keyring: %s\n"
 msgstr "kann Schlüsselbund nicht schreiben: %s\n"
 
-#: g10/import.c:370
+#: g10/import.c:373
 #, c-format
 msgid "key %08lX: public key imported\n"
 msgstr "Schlüssel %08lX: Öffentlicher Schlüssel importiert\n"
 
-#: g10/import.c:383
+#: g10/import.c:386
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
 msgstr "Schlüssel %08lX: Stimmt nicht mit unserer Kopie überein\n"
 
-#: g10/import.c:396 g10/import.c:594
+#: g10/import.c:399 g10/import.c:597
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
 msgstr ""
 "Schlüssel %08lX: der lokale originale Schlüsselblocks wurde nicht gefunden: "
 "%s\n"
 
-#: g10/import.c:403 g10/import.c:601
+#: g10/import.c:406 g10/import.c:604
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
 msgstr ""
 "Schlüssel %08lX: Lesefehler im lokalen originalen Schlüsselblocks: %s\n"
 
-#: g10/import.c:420 g10/import.c:532 g10/import.c:636
+#: g10/import.c:423 g10/import.c:535 g10/import.c:639
 msgid "writing keyblock\n"
 msgstr "Schreiben des Schlüsselblocks\n"
 
-#: g10/import.c:426 g10/import.c:642
+#: g10/import.c:429 g10/import.c:645
 #, c-format
 msgid "can't write keyblock: %s\n"
 msgstr "Der Schlüsselblock kann nicht geschrieben werden: %s\n"
 
-#: g10/import.c:431
+#: g10/import.c:434
 #, c-format
 msgid "key %08lX: 1 new user-id\n"
 msgstr "Schlüssel %08lX: 1 neue User-ID\n"
 
-#: g10/import.c:434
+#: g10/import.c:437
 #, c-format
 msgid "key %08lX: %d new user-ids\n"
 msgstr "Schlüssel %08lX: %d neue User-IDs\n"
 
-#: g10/import.c:437
+#: g10/import.c:440
 #, c-format
 msgid "key %08lX: 1 new signature\n"
 msgstr "Schlüssel %08lX: 1 neue Signatur\n"
 
-#: g10/import.c:440
+#: g10/import.c:443
 #, c-format
 msgid "key %08lX: %d new signatures\n"
 msgstr "Schlüssel %08lX: %d neue Signaturen\n"
 
-#: g10/import.c:443
+#: g10/import.c:446
 #, c-format
 msgid "key %08lX: 1 new subkey\n"
 msgstr "Schlüssel %08lX: 1 neuer Unterschlüssel\n"
 
-#: g10/import.c:446
+#: g10/import.c:449
 #, c-format
 msgid "key %08lX: %d new subkeys\n"
 msgstr "Schlüssel %08lX: %d neue Unterschlüssel\n"
 
-#: g10/import.c:456
+#: g10/import.c:459
 #, c-format
 msgid "key %08lX: not changed\n"
 msgstr "Schlüssel %08lX: Nicht geändert\n"
 
-#: g10/import.c:535
+#: g10/import.c:538
 #, c-format
 msgid "can't lock secret keyring: %s\n"
 msgstr "kann geheimen Schlüsselbund nicht sperren: %s\n"
 
-#: g10/import.c:538
+#: g10/import.c:541
 #, c-format
 msgid "can't write keyring: %s\n"
 msgstr "kann Schlüsselbund nicht schreiben: %s\n"
 
 #. we are ready
-#: g10/import.c:541
+#: g10/import.c:544
 #, c-format
 msgid "key %08lX: secret key imported\n"
 msgstr "Schlüssel %08lX: Geheimer Schlüssel importiert\n"
 
 #. we can't merge secret keys
-#: g10/import.c:545
+#: g10/import.c:548
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
 msgstr "Schlüssel %08lX: Ist bereits im geheimen Schlüsselbund\n"
 
-#: g10/import.c:550
+#: g10/import.c:553
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
 msgstr "Schlüssel %08lX: geheimer Schlüssel nicht gefunden: %s\n"
 
-#: g10/import.c:579
+#: g10/import.c:582
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
 msgstr ""
 "Schlüssel %08lX: Kein öffentlicher Schlüssel - der Schlüsselwiderruf kann "
 "nicht angebracht werden\n"
 
-#: g10/import.c:612
+#: g10/import.c:615
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
 msgstr "Schlüssel %08lX: Ungültiges Widerrufzertifikat: %s - zurückgewiesen\n"
 
-#: g10/import.c:646
+#: g10/import.c:649
 #, c-format
 msgid "key %08lX: revocation certificate imported\n"
 msgstr "Schlüssel %08lX: Widerrufzertifikat importiert\n"
 
-#: g10/import.c:677
+#: g10/import.c:680
 #, c-format
 msgid "key %08lX: no user-id for signature\n"
 msgstr "Schlüssel %08lX: Keine User-ID für Signatur\n"
 
-#: g10/import.c:684
+#: g10/import.c:687
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
 msgstr "Schlüssel %08lX: Nicht unterstützetes Public-Key-Verfahren\n"
 
-#: g10/import.c:685
+#: g10/import.c:688
 #, c-format
 msgid "key %08lX: invalid self-signature\n"
 msgstr "Schlüssel %08lX: Ungültige Eigenbeglaubigung\n"
 
-#: g10/import.c:714
+#: g10/import.c:717
 #, c-format
 msgid "key %08lX: skipped userid '"
 msgstr "Schlüssel %08lX: übergehe User-ID '"
 
-#: g10/import.c:737
+#: g10/import.c:740
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
 msgstr "Schlüssel %08lX: Widerrufzertifikat an falschem Platz - übergangen\n"
 
-#: g10/import.c:745
+#: g10/import.c:748
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
 msgstr "Schlüssel %08lX: Ungültiges Widerrufzertifikat: %s - übergangen\n"
 
-#: g10/import.c:804
+#: g10/import.c:807
 #, c-format
 msgid "key %08lX: revocation certificate added\n"
 msgstr "Schlüssel %08lX: Widerrufzertifikat hinzugefügt\n"
 
-#: g10/import.c:918 g10/import.c:973
+#: g10/import.c:921 g10/import.c:976
 #, c-format
 msgid "key %08lX: our copy has no self-signature\n"
 msgstr "Schlüssel %08lX: Unsere Kopie hat keine Eigenbeglaubigung\n"
@@ -2104,12 +2105,12 @@ msgstr ""
 msgid "This cipher algorithm is depreciated; please use a more standard one!\n"
 msgstr ""
 
-#: g10/parse-packet.c:109
+#: g10/parse-packet.c:113
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "dieses Public-Key Verfahren %d kann nicht benutzt werden\n"
 
-#: g10/parse-packet.c:801
+#: g10/parse-packet.c:892
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr ""
@@ -2263,7 +2264,7 @@ msgstr "%s: Verzeichnis erzeugt\n"
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Verzeichnis existiert nicht!\n"
 
-#: g10/openfile.c:101 g10/openfile.c:165 g10/ringedit.c:1256 g10/tdbio.c:435
+#: g10/openfile.c:101 g10/openfile.c:165 g10/ringedit.c:1275 g10/tdbio.c:435
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: kann nicht erzeugt werden: %s\n"
@@ -2719,173 +2720,173 @@ msgstr "Schlüssel %08lX.%lu: verfallen am %s\n"
 msgid "key %08lX.%lu: trust check failed: %s\n"
 msgstr "Schlüssel %08lX.%lu: Vertrauensprüfung fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:1820 g10/trustdb.c:1849 g10/trustdb.c:2588
+#: g10/trustdb.c:1842 g10/trustdb.c:1871 g10/trustdb.c:2610
 msgid "WARNING: can't yet handle long pref records\n"
 msgstr "WARNUNG: Lange 'Pref'-Records können noch nicht benutzt werden\n"
 
-#: g10/trustdb.c:1871
+#: g10/trustdb.c:1893
 #, c-format
 msgid "get_dir_record: search_record failed: %s\n"
 msgstr "get_dir_record: search_record fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:1934
+#: g10/trustdb.c:1956
 #, c-format
 msgid "NOTE: sig rec %lu[%d] in hintlist of %lu but marked as checked\n"
 msgstr "Hinweis: sig rec %lu[%d] in hintlist of %lu but marked as checked\n"
 
-#: g10/trustdb.c:1938
+#: g10/trustdb.c:1960
 #, c-format
 msgid "NOTE: sig rec %lu[%d] in hintlist of %lu but not marked\n"
 msgstr "Hinweis: sig rec %lu[%d] in hintlist of %lu but not marked\n"
 
 #. we need the dir record
-#: g10/trustdb.c:1945
+#: g10/trustdb.c:1967
 #, c-format
 msgid "sig rec %lu[%d] in hintlist of %lu does not point to a dir record\n"
 msgstr "sig rec %lu[%d] in hintlist of %lu does not point to a dir record\n"
 
-#: g10/trustdb.c:1951
+#: g10/trustdb.c:1973
 #, c-format
 msgid "lid %lu: no primary key\n"
 msgstr "lid %lu: kein Hauptschlüssel\n"
 
-#: g10/trustdb.c:1984
+#: g10/trustdb.c:2006
 #, c-format
 msgid "lid %lu: user id not found in keyblock\n"
 msgstr "lid %lu: User-ID im Schlüsselblock nicht gefunden\n"
 
-#: g10/trustdb.c:1988
+#: g10/trustdb.c:2010
 #, c-format
 msgid "lid %lu: user id without signature\n"
 msgstr "lid %lu: User-ID ohne Signatur\n"
 
-#: g10/trustdb.c:1995
+#: g10/trustdb.c:2017
 #, c-format
 msgid "lid %lu: self-signature in hintlist\n"
 msgstr "lid %lu: Eigenbeglaubigung in 'hintlist'\n"
 
-#: g10/trustdb.c:2006 g10/trustdb.c:2725 g10/trustdb.c:2809
+#: g10/trustdb.c:2028 g10/trustdb.c:2747 g10/trustdb.c:2831
 msgid "Valid certificate revocation"
 msgstr "Gültiger Zerifikat-Widerruf"
 
-#: g10/trustdb.c:2007 g10/trustdb.c:2726 g10/trustdb.c:2810
+#: g10/trustdb.c:2029 g10/trustdb.c:2748 g10/trustdb.c:2832
 msgid "Good certificate"
 msgstr "Korrektes Zertifikat"
 
-#: g10/trustdb.c:2016
+#: g10/trustdb.c:2038
 msgid "very strange: no public key\n"
 msgstr "sehr seltsam: kein öffentlicher Schlüssel\n"
 
-#: g10/trustdb.c:2064
+#: g10/trustdb.c:2086
 #, c-format
 msgid "hintlist %lu[%d] of %lu does not point to a dir record\n"
 msgstr "hintlist %lu[%d] of %lu zeigt nicht auf einen 'dir record'\n"
 
-#: g10/trustdb.c:2070
+#: g10/trustdb.c:2092
 #, c-format
 msgid "lid %lu does not have a key\n"
 msgstr "lid %lu hat keinen Schlüssel\n"
 
-#: g10/trustdb.c:2080
+#: g10/trustdb.c:2102
 #, c-format
 msgid "lid %lu: can't get keyblock: %s\n"
 msgstr "lid %lu: Schlüsselblock nicht verfügbar: %s\n"
 
-#: g10/trustdb.c:2137 g10/trustdb.c:3051
+#: g10/trustdb.c:2159 g10/trustdb.c:3073
 #, c-format
 msgid "tdbio_search_dir failed: %s\n"
 msgstr "tdbio_search_dir fehlgeschlagen: %s\n"
 
-#: g10/trustdb.c:2290
+#: g10/trustdb.c:2312
 #, c-format
 msgid "key %08lX.%lu: Good subkey binding\n"
 msgstr "Schlüssel %08lX.%lu: Korrekte Unterschlüssel-Anbindung\n"
 
-#: g10/trustdb.c:2296 g10/trustdb.c:2338
+#: g10/trustdb.c:2318 g10/trustdb.c:2360
 #, c-format
 msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
 msgstr "Schlüssel %08lX.%lu: Ungültige Unterschlüssel-Anbindung\n"
 
-#: g10/trustdb.c:2311
+#: g10/trustdb.c:2333
 #, c-format
 msgid "key %08lX.%lu: Valid key revocation\n"
 msgstr "Schlüssel %08lX.%lu: Gültiger Schlüsselwiderruf\n"
 
-#: g10/trustdb.c:2317
+#: g10/trustdb.c:2339
 #, c-format
 msgid "key %08lX.%lu: Invalid key revocation: %s\n"
 msgstr "Schlüssel %08lX.%lu: Ungültiger Schlüsselwiderruf: %s\n"
 
-#: g10/trustdb.c:2332
+#: g10/trustdb.c:2354
 #, c-format
 msgid "key %08lX.%lu: Valid subkey revocation\n"
 msgstr "Schlüssel %08lX.%lu: Gültiger Unterschlüsselwiderruf\n"
 
-#: g10/trustdb.c:2432
+#: g10/trustdb.c:2454
 msgid "Good self-signature"
 msgstr "Korrekte Eigenbeglaubigung"
 
-#: g10/trustdb.c:2443
+#: g10/trustdb.c:2465
 msgid "Invalid self-signature"
 msgstr "Ungültige Eigenbeglaubigung"
 
-#: g10/trustdb.c:2453
+#: g10/trustdb.c:2475
 msgid "Valid user ID revocation skipped due to a newer self signature\n"
 msgstr ""
 "Gültiger User-ID-Widerruf ignoriert, da eine neuere Eigenbeglaubigung "
 "vorliegt\n"
 
-#: g10/trustdb.c:2460
+#: g10/trustdb.c:2482
 msgid "Valid user ID revocation\n"
 msgstr "Gültiger User-ID-Widerruf\n"
 
-#: g10/trustdb.c:2467
+#: g10/trustdb.c:2489
 msgid "Invalid user ID revocation"
 msgstr "Ungültiger User-ID-Widerruf"
 
-#: g10/trustdb.c:2551
+#: g10/trustdb.c:2573
 msgid "Too many preferences"
 msgstr "Zu viele Einstellungen"
 
-#: g10/trustdb.c:2565
+#: g10/trustdb.c:2587
 msgid "Too many preference items"
 msgstr "Zu viele Angaben zur Bevorzugung"
 
-#: g10/trustdb.c:2704
+#: g10/trustdb.c:2726
 msgid "Duplicated certificate - deleted"
 msgstr "Doppelte Zertifikate - entfernt"
 
-#: g10/trustdb.c:2737
+#: g10/trustdb.c:2759
 msgid "Hmmm, public key lost?"
 msgstr "Hmmm, öffentlicher Schüssel verloren?"
 
-#: g10/trustdb.c:2747 g10/trustdb.c:2830
+#: g10/trustdb.c:2769 g10/trustdb.c:2852
 msgid "Invalid certificate revocation"
 msgstr "Ungültiger Zertifikatswiderruf"
 
-#: g10/trustdb.c:2748 g10/trustdb.c:2831
+#: g10/trustdb.c:2770 g10/trustdb.c:2853
 msgid "Invalid certificate"
 msgstr "Ungültiges Zertifikat"
 
-#: g10/trustdb.c:2763
+#: g10/trustdb.c:2785
 #, c-format
 msgid "uid %08lX.%lu/%02X%02X: has shadow dir %lu but is not yet marked.\n"
 msgstr ""
 "uid %08lX.%lu/%02X%02X: hat \"shadow-dir\" %lu, aber ist noch nicht "
 "markiert.\n"
 
-#: g10/trustdb.c:2777
+#: g10/trustdb.c:2799
 #, c-format
 msgid "sig record %lu[%d] points to wrong record.\n"
 msgstr "Signatursatz %lu[%d] zeigt auf falschen Satz.\n"
 
 #. that should never happen
-#: g10/trustdb.c:3021
+#: g10/trustdb.c:3043
 #, c-format
 msgid "insert_trust_record: keyblock not found: %s\n"
 msgstr "insert_trust_record: Schlüsselblock nicht gefunden: %s\n"
 
-#: g10/trustdb.c:3039
+#: g10/trustdb.c:3061
 msgid "did not use primary key for insert_trust_record()\n"
 msgstr "Für insert_trust_record() wurde nicht der Hauptschlüssel benutzt\n"
 
@@ -2894,26 +2895,26 @@ msgstr "Für insert_trust_record() wurde nicht der Hauptschlüssel benutzt\n"
 msgid "%s: can't create keyring: %s\n"
 msgstr "%s: Schlüsselbund kann nicht erzeugt werden: %s\n"
 
-#: g10/ringedit.c:299 g10/ringedit.c:1264
+#: g10/ringedit.c:299 g10/ringedit.c:1283
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: Schlüsselbund erstellt\n"
 
-#: g10/ringedit.c:1449
+#: g10/ringedit.c:1469
 msgid "WARNING: 2 files with confidential information exists.\n"
 msgstr "Warnung: Zwei Dateien mit vertraulichem Inhalt vorhanden.\n"
 
-#: g10/ringedit.c:1450
+#: g10/ringedit.c:1470
 #, c-format
 msgid "%s is the unchanged one\n"
 msgstr "%s ist der Unveränderte\n"
 
-#: g10/ringedit.c:1451
+#: g10/ringedit.c:1471
 #, c-format
 msgid "%s is the new one\n"
 msgstr "%s ist der Neue\n"
 
-#: g10/ringedit.c:1452
+#: g10/ringedit.c:1472
 msgid "Please fix this possible security flaw\n"
 msgstr "Bitte diesen potentiellen Sicherheitsmangel beseitigen\n"
 

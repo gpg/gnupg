@@ -1,3 +1,5 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
 			    Version 0.9
@@ -422,3 +424,12 @@
 
     Have fun and remember: Echelon is looking at you kid.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v0.4.5 (GNU/Linux)
+Comment: For info finger gcrypt@ftp.guug.de
+
+iQB1AwUBNoD99h0Z9MEMmFelAQEuQwMAgfNPPUByoNlp0qGimiHADZE+8E15rmwq
+RhVhH63pEgMsPvazd01cMM9EwJyD80jjOrdZo1fyE2270NU4AjSlNsEkQ0pNZYg+
+N4GL70jrOtIvclVhcsQye8J53a/fzJe7
+=5+Dt
+-----END PGP SIGNATURE-----

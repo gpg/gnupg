@@ -1,3 +1,7 @@
+Wed Dec 23 17:12:24 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* md.c (md_copy): Reset debug.
+
 Mon Dec 14 21:18:49 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* random.c (read_random_source): Changed the interface to the

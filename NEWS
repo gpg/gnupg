@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.x.x
+Noteworthy changes in version 0.9.0
 -----------------------------------
 
     * --export does now only exports rfc2440 compatible keys; the
@@ -17,6 +17,7 @@ Noteworthy changes in version 0.x.x
       prevent mailers to change them to ">From ".  This is not enabled by
       default because it is not in compliance with rfc2440 - however, you
       should turn it on.
+
 
 Noteworthy changes in version 0.4.5
 -----------------------------------
