@@ -99,8 +99,12 @@
                                   log_debug (DRVNAME t,(a),(b)); } while (0)
 # define DEBUGOUT_3(t,a,b,c) do { if (DBG_CARD_IO) \
                                   log_debug (DRVNAME t,(a),(b),(c));} while (0)
+# define DEBUGOUT_CONT(t)    do { if (DBG_CARD_IO) \
+                                  log_printf (t); } while (0)
 # define DEBUGOUT_CONT_1(t,a)  do { if (DBG_CARD_IO) \
                                   log_printf (t,(a)); } while (0)
+# define DEBUGOUT_CONT_2(t,a,b)   do { if (DBG_CARD_IO) \
+                                  log_printf (t,(a),(b)); } while (0)
 # define DEBUGOUT_CONT_3(t,a,b,c) do { if (DBG_CARD_IO) \
                                   log_printf (t,(a),(b),(c)); } while (0)
 # define DEBUGOUT_LF()       do { if (DBG_CARD_IO) \
@@ -112,7 +116,9 @@
 # define DEBUGOUT_1(t,a)      fprintf (stderr, DRVNAME t, (a))
 # define DEBUGOUT_2(t,a,b)    fprintf (stderr, DRVNAME t, (a), (b))
 # define DEBUGOUT_3(t,a,b,c)  fprintf (stderr, DRVNAME t, (a), (b), (c))
+# define DEBUGOUT_CONT(t)     fprintf (stderr, t)
 # define DEBUGOUT_CONT_1(t,a)      fprintf (stderr, t, (a))
+# define DEBUGOUT_CONT_2(t,a,b)    fprintf (stderr, t, (a), (b))
 # define DEBUGOUT_CONT_3(t,a,b,c)  fprintf (stderr, t, (a), (b), (c))
 # define DEBUGOUT_LF()        putc ('\n', stderr)
 
@@ -156,6 +162,227 @@ struct ccid_driver_s {
 };
 
 
+/* Convert a little endian stored 4 byte value into an unsigned
+   integer. */
+static unsigned int 
+convert_le_u32 (const unsigned char *buf)
+{
+  return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24); 
+}
+
+
+
+/* Parse a CCID descriptor, optionally print all available features
+   and test whether this reader is usable by this driver.  Returns 0
+   if it is usable.
+
+   Note, that this code is based on the one in lsusb.c of the
+   usb-utils package, I wrote on 2003-09-01. -wk. */
+static int
+parse_ccid_descriptor (const unsigned char *buf, size_t buflen)
+{
+  unsigned int i;
+  unsigned int us;
+  int have_t1 = 0, have_tpdu=0, have_auto_conf = 0;
+
+
+  if (buflen < 54 || buf[0] < 54)
+    {
+      DEBUGOUT ("CCID device descriptor is too short\n");
+      return -1;
+    }
+
+  DEBUGOUT   ("ChipCard Interface Descriptor:\n");
+  DEBUGOUT_1 ("  bLength             %5u\n", buf[0]);
+  DEBUGOUT_1 ("  bDescriptorType     %5u\n", buf[1]);
+  DEBUGOUT_2 ("  bcdCCID             %2x.%02x", buf[3], buf[2]);
+    if (buf[3] != 1 || buf[2] != 0) 
+      DEBUGOUT_CONT("  (Warning: Only accurate for version 1.0)");
+  DEBUGOUT_LF ();
+
+  DEBUGOUT_1 ("  nMaxSlotIndex       %5u\n", buf[4]);
+  DEBUGOUT_2 ("  bVoltageSupport     %5u  %s\n",
+              buf[5], (buf[5] == 1? "5.0V" : buf[5] == 2? "3.0V"
+                       : buf[5] == 3? "1.8V":"?"));
+
+  us = convert_le_u32 (buf+6);
+  DEBUGOUT_1 ("  dwProtocols         %5u ", us);
+  if ((us & 1))
+    DEBUGOUT_CONT (" T=0");
+  if ((us & 2))
+    {
+      DEBUGOUT_CONT (" T=1");
+      have_t1 = 1;
+    }
+  if ((us & ~3))
+    DEBUGOUT_CONT (" (Invalid values detected)");
+  DEBUGOUT_LF ();
+
+  us = convert_le_u32(buf+10);
+  DEBUGOUT_1 ("  dwDefaultClock      %5u\n", us);
+  us = convert_le_u32(buf+14);
+  DEBUGOUT_1 ("  dwMaxiumumClock     %5u\n", us);
+  DEBUGOUT_1 ("  bNumClockSupported  %5u\n", buf[18]);
+  us = convert_le_u32(buf+19);
+  DEBUGOUT_1 ("  dwDataRate        %7u bps\n", us);
+  us = convert_le_u32(buf+23);
+  DEBUGOUT_1 ("  dwMaxDataRate     %7u bps\n", us);
+  DEBUGOUT_1 ("  bNumDataRatesSupp.  %5u\n", buf[27]);
+        
+  us = convert_le_u32(buf+28);
+  DEBUGOUT_1 ("  dwMaxIFSD           %5u\n", us);
+
+  us = convert_le_u32(buf+32);
+  DEBUGOUT_1 ("  dwSyncProtocols  %08X ", us);
+  if ((us&1))
+    DEBUGOUT_CONT ( " 2-wire");
+  if ((us&2))
+    DEBUGOUT_CONT ( " 3-wire");
+  if ((us&4))
+    DEBUGOUT_CONT ( " I2C");
+  DEBUGOUT_LF ();
+
+  us = convert_le_u32(buf+36);
+  DEBUGOUT_1 ("  dwMechanical     %08X ", us);
+  if ((us & 1))
+    DEBUGOUT_CONT (" accept");
+  if ((us & 2))
+    DEBUGOUT_CONT (" eject");
+  if ((us & 4))
+    DEBUGOUT_CONT (" capture");
+  if ((us & 8))
+    DEBUGOUT_CONT (" lock");
+  DEBUGOUT_LF ();
+
+  us = convert_le_u32(buf+40);
+  DEBUGOUT_1 ("  dwFeatures       %08X\n", us);
+  if ((us & 0x0002))
+    {
+      DEBUGOUT ("    Auto configuration based on ATR\n");
+      have_auto_conf = 1;
+    }
+  if ((us & 0x0004))
+    DEBUGOUT ("    Auto activation on insert\n");
+  if ((us & 0x0008))
+    DEBUGOUT ("    Auto voltage selection\n");
+  if ((us & 0x0010))
+    DEBUGOUT ("    Auto clock change\n");
+  if ((us & 0x0020))
+    DEBUGOUT ("    Auto baud rate change\n");
+  if ((us & 0x0040))
+    DEBUGOUT ("    Auto parameter negotation made by CCID\n");
+  else if ((us & 0x0080))
+    DEBUGOUT ("    Auto PPS made by CCID\n");
+  else if ((us & (0x0040 | 0x0080)))
+    DEBUGOUT ("    WARNING: conflicting negotation features\n");
+
+  if ((us & 0x0100))
+    DEBUGOUT ("    CCID can set ICC in clock stop mode\n");
+  if ((us & 0x0200))
+    DEBUGOUT ("    NAD value other than 0x00 accpeted\n");
+  if ((us & 0x0400))
+    DEBUGOUT ("    Auto IFSD exchange\n");
+
+  if ((us & 0x00010000))
+    {
+      DEBUGOUT ("    TPDU level exchange\n");
+      have_tpdu = 1;
+    } 
+  else if ((us & 0x00020000))
+    DEBUGOUT ("    Short APDU level exchange\n");
+  else if ((us & 0x00040000))
+    DEBUGOUT ("    Short and extended APDU level exchange\n");
+  else if ((us & 0x00070000))
+    DEBUGOUT ("    WARNING: conflicting exchange levels\n");
+
+  us = convert_le_u32(buf+44);
+  DEBUGOUT_1 ("  dwMaxCCIDMsgLen     %5u\n", us);
+
+  DEBUGOUT (  "  bClassGetResponse    ");
+  if (buf[48] == 0xff)
+    DEBUGOUT_CONT ("echo\n");
+  else
+    DEBUGOUT_CONT_1 ("  %02X\n", buf[48]);
+
+  DEBUGOUT (  "  bClassEnvelope       ");
+  if (buf[49] == 0xff)
+    DEBUGOUT_CONT ("echo\n");
+  else
+    DEBUGOUT_1 ("  %02X\n", buf[48]);
+
+  DEBUGOUT (  "  wlcdLayout           ");
+  if (!buf[50] && !buf[51])
+    DEBUGOUT_CONT ("none\n");
+  else
+    DEBUGOUT_CONT_2 ("%u cols %u lines\n", buf[50], buf[51]);
+        
+  DEBUGOUT_1 ("  bPINSupport         %5u ", buf[52]);
+  if ((buf[52] & 1))
+    DEBUGOUT_CONT ( " verification");
+  if ((buf[52] & 2))
+    DEBUGOUT_CONT ( " modification");
+  DEBUGOUT_LF ();
+        
+  DEBUGOUT_1 ("  bMaxCCIDBusySlots   %5u\n", buf[53]);
+
+  if (buf[0] > 54) {
+    DEBUGOUT ("  junk             ");
+    for (i=54; i < buf[0]-54; i++)
+      DEBUGOUT_CONT_1 (" %02X", buf[i]);
+    DEBUGOUT_LF ();
+  }
+
+  if (!have_t1 || !have_tpdu || !have_auto_conf)
+    {
+      DEBUGOUT ("this drivers requires that the reader supports T=1, "
+                "TPDU level exchange and auto configuration - "
+                "this is not available\n");
+      return -1;
+    }
+  else
+    return 0;
+}
+
+
+/* Read the device information, return all required data and check
+   that the device is usable for us.  Returns 0 on success or an error
+   code. */
+static int
+read_device_info (struct usb_device *dev)
+{
+  int cfg_no;
+
+  for (cfg_no=0; cfg_no < dev->descriptor->bNumConfigurations; cfg_no++)
+    {
+      struct usb_config_descriptor *config = dev->config + cfg_no;
+      int ifc_no;
+
+      for (ifc_no=0; ifc_no < config->bNumInterfaces; ifc_no++)
+        {
+          struct usb_interface *interface = config->interface + ifc_no;
+          int set_no;
+
+          for (set_no=0; set_no < interface->num_altsetting; set_no++)
+            {
+              struct usb_interface_descriptor *ifcdesc
+                = interface->altsetting + set_no;
+              
+              if (ifcdesc->bInterfaceClass == 11
+                  && ifcdesc->bInterfaceSubClass == 0
+                  && ifcdesc->bInterfaceProtocol == 0)
+                {
+                  if (ifcdesc->extra)
+                    {
+                      if (!parse_ccid_descriptor (ifcdesc->extra,
+                                                 ifcdesc->extralen))
+                        return 0; /* okay. we can use it. */
+                    }
+                }
+            }
+        }
+    }
+  return -1; /* No suitable device found. */
+}
 
 
 /* Open the reader with the internal number READERNO and return a a
@@ -190,6 +417,13 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
                   dev->descriptor->idVendor, dev->descriptor->idProduct);
       if (!readerno)
         {
+          rc = read_device_info (dev);
+          if (rc)
+            {
+              DEBUGOUT ("device not supported\n");
+              goto leave;
+            }
+
           rc = usb_open (dev, &idev);
           if (rc)
             {
@@ -197,6 +431,9 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
               goto leave;
             }
 
+
+          /* fixme: Do we need to claim and set the interface as
+             determined by read_device_info ()? */
           rc = usb_claim_interface (idev, 0);
           if (rc)
             {
@@ -213,6 +450,9 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
             }
           (*handle)->idev = idev;
           idev = NULL;
+          /* FIXME: Do we need to get the endpoint addresses from the
+             structure and store them with the handle? */
+
           break;
         }
       readerno--;

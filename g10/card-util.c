@@ -477,13 +477,13 @@ card_edit (STRLIST commands)
     { N_("login") , cmdLOGIN , N_("change the login name") },
     { N_("lang")  , cmdLANG  , N_("change the language preferences") },
     { N_("sex")   , cmdSEX   , N_("change card holder's sex") },
-    { NULL, cmdNOP } 
+    { NULL, cmdINVCMD } 
   };
 
   enum cmdids cmd = cmdNOP;
   int have_commands = !!commands;
   int redisplay = 1;
-  char *answer = NULL;;
+  char *answer = NULL;
 
   if (opt.command_fd != -1)
     ;

@@ -1,3 +1,9 @@
+2003-09-19  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (parse_ccid_descriptor): New.
+	(read_device_info): New.
+	(ccid_open_reader): Check that the device has all required features.
+
 2003-09-06  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.c (main): --pcsc-driver again defaults to pcsclite.
