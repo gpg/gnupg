@@ -1,3 +1,16 @@
+2004-12-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (uid_trust_string_fixed): Show uids as revoked if the
+	key is revoked.
+	
+	* keyedit.c (show_key_with_all_names): Don't show validity for
+	secret key UIDs.
+
+	* keyedit.c (parse_sign_type): New.  Figure out the flags (local,
+	nonrevoke, trust) for a signature.
+	(keyedit_menu): Call it here so we can mix and match flags, and
+	don't need "nrltsign", "ltsign", "tnrsign", etc, etc, etc.
+
 2004-12-14  Werner Koch  <wk@g10code.com>
 
 	* passphrase.c (agent_get_passphrase): Removed debug output

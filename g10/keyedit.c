@@ -1214,6 +1214,35 @@ fix_keyblock( KBNODE keyblock )
     return fixed;
 }
 
+static int
+parse_sign_type(const char *str,int *localsig,int *nonrevokesig,int *trustsig)
+{
+  const char *p=str;
+
+  while(*p)
+    {
+      if(ascii_strncasecmp(p,"l",1)==0)
+	{
+	  *localsig=1;
+	  p++;
+	}
+      else if(ascii_strncasecmp(p,"nr",2)==0)
+	{
+	  *nonrevokesig=1;
+	  p+=2;
+	}
+      else if(ascii_strncasecmp(p,"t",1)==0)
+	{
+	  *trustsig=1;
+	  p++;
+	}
+      else
+	return 0;
+    }
+
+  return 1;
+}
+
 /****************
  * Menu driven key editor.  If seckey_check is true, then a secret key
  * that matches username will be looked for.  If it is false, not all
@@ -1222,78 +1251,87 @@ fix_keyblock( KBNODE keyblock )
  * Note: to keep track of some selection we use node->mark MARKBIT_xxxx.
  */
 
+/* Need an SK for this command */
+#define KEYEDIT_NEED_SK 1
+/* Cannot be viewing the SK for this command */
+#define KEYEDIT_NOT_SK  2
+/* Must be viewing the SK for this command */
+#define KEYEDIT_ONLY_SK 4
+/* Match the tail of the string */
+#define KEYEDIT_TAIL_MATCH 8
+
 void
 keyedit_menu( const char *username, STRLIST locusr,
 	      STRLIST commands, int quiet, int seckey_check )
 {
-    enum cmdids { cmdNONE = 0,
-	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-           cmdTSIGN, cmdLSIGN, cmdNRSIGN, cmdNRLSIGN, cmdREVSIG, cmdREVKEY,
-	   cmdREVUID, cmdDELSIG, cmdPRIMARY, cmdDEBUG, cmdSAVE, cmdADDUID,
-	   cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY, cmdADDREVOKER,
-	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
-	   cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF,
- 	   cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
-           cmdADDCARDKEY, cmdKEYTOCARD,
-   cmdNOP };
-    static struct { const char *name;
-		    enum cmdids id;
-		    int need_sk;
-                    int not_with_sk;  /* but 2 == must use SK */
-		    const char *desc;
-		  } cmds[] = { 
-	{ "quit"     , cmdQUIT      , 0,0, N_("quit this menu") },
-	{ "q"        , cmdQUIT      , 0,0, NULL   },
-	{ "save"     , cmdSAVE      , 0,0, N_("save and quit") },
-	{ "help"     , cmdHELP      , 0,0, N_("show this help") },
-	{ "?"        , cmdHELP      , 0,0, NULL   },
-	{ "fpr"      , cmdFPR       , 0,0, N_("show fingerprint") },
-	{ "list"     , cmdLIST      , 0,0, N_("list key and user IDs") },
-	{ "l"        , cmdLIST      , 0,0, NULL   },
-	{ "uid"      , cmdSELUID    , 0,0, N_("select user ID N") },
-	{ "key"      , cmdSELKEY    , 0,0, N_("select secondary key N") },
-	{ "check"    , cmdCHECK     , 0,0, N_("list signatures") },
-	{ "c"        , cmdCHECK     , 0,0, NULL },
-	{ "sign"     , cmdSIGN      , 0,1, N_("sign the key") },
-	{ "s"        , cmdSIGN      , 0,1, NULL },
-	{ "tsign"    , cmdTSIGN     , 0,1, N_("make a trust signature")},
-	{ "lsign"    , cmdLSIGN     , 0,1, N_("sign the key locally") },
-	{ "nrsign"   , cmdNRSIGN    , 0,1, N_("sign the key non-revocably") },
-	{ "nrlsign"  , cmdNRLSIGN   , 0,1, N_("sign the key locally "
-                                              "and non-revocably") },
-	{ "debug"    , cmdDEBUG     , 0,0, NULL },
-	{ "adduid"   , cmdADDUID    , 1,1, N_("add a user ID") },
-	{ "addphoto" , cmdADDPHOTO  , 1,1, N_("add a photo ID") },
-	{ "deluid"   , cmdDELUID    , 0,1, N_("delete user ID") },
-	/* delphoto is really deluid in disguise */
-	{ "delphoto" , cmdDELUID    , 0,1, NULL },
-	{ "addkey"   , cmdADDKEY    , 1,1, N_("add a secondary key") },
+  enum cmdids
+    { cmdNONE = 0,
+      cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
+      cmdREVSIG, cmdREVKEY, cmdREVUID, cmdDELSIG, cmdPRIMARY, cmdDEBUG,
+      cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
+      cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
+      cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF,
+      cmdUPDPREF, cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
+      cmdCHKTRUST, cmdADDCARDKEY, cmdKEYTOCARD,
+      cmdNOP };
+  static struct
+  {
+    const char *name;
+    enum cmdids id;
+    int flags;
+    const char *desc;
+  } cmds[] =
+    { 
+      {	N_("quit")    , cmdQUIT      , 0, N_("quit this menu") },
+      { N_("q")       , cmdQUIT      , 0, NULL   },
+      { N_("save")    , cmdSAVE      , 0, N_("save and quit") },
+      { N_("help")    , cmdHELP      , 0, N_("show this help") },
+      {    "?"        , cmdHELP      , 0, NULL   },
+      { N_("fpr")     , cmdFPR       , 0, N_("show fingerprint") },
+      { N_("list")    , cmdLIST      , 0, N_("list key and user IDs") },
+      { N_("l")       , cmdLIST      , 0, NULL   },
+      { N_("uid")     , cmdSELUID    , 0, N_("select user ID N") },
+      { N_("key")     , cmdSELKEY    , 0, N_("select secondary key N") },
+      { N_("check")   , cmdCHECK     , 0, N_("list signatures") },
+      { N_("c")       , cmdCHECK     , 0, NULL },
+      { N_("sign")    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH, N_("sign the key") },
+      { N_("s")       , cmdSIGN      , KEYEDIT_NOT_SK, NULL },
+      /* "lsign" will never match since "sign" comes first and it is a
+	 tail match.  It is here so it shows up in the help menu. */
+      { N_("lsign")   , cmdNOP       , 0, N_("sign the key locally") },
+      { N_("debug")   , cmdDEBUG     , 0, NULL },
+      { N_("adduid")  , cmdADDUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a user ID") },
+      { N_("addphoto"), cmdADDPHOTO  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a photo ID") },
+      { N_("deluid")  , cmdDELUID    , KEYEDIT_NOT_SK, N_("delete user ID") },
+      /* delphoto is really deluid in disguise */
+      { N_("delphoto"), cmdDELUID    , KEYEDIT_NOT_SK, NULL },
+      { N_("addkey")  , cmdADDKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a secondary key") },
 #ifdef ENABLE_CARD_SUPPORT
-	{ "addcardkey", cmdADDCARDKEY , 1,1, N_("add a key to a smartcard") },
-	{ "keytocard", cmdKEYTOCARD , 1,2, N_("move a key to a smartcard")},
+      { N_("addcardkey"), cmdADDCARDKEY , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a key to a smartcard") },
+      { N_("keytocard"), cmdKEYTOCARD , KEYEDIT_NEED_SK|KEYEDIT_ONLY_SK, N_("move a key to a smartcard")},
 #endif /*ENABLE_CARD_SUPPORT*/
-	{ "delkey"   , cmdDELKEY    , 0,1, N_("delete a secondary key") },
-	{ "addrevoker",cmdADDREVOKER,1,1, N_("add a revocation key") },
-	{ "delsig"   , cmdDELSIG    , 0,1, N_("delete signatures") },
-	{ "expire"   , cmdEXPIRE    , 1,1, N_("change the expire date") },
-        { "primary"  , cmdPRIMARY   , 1,1, N_("flag user ID as primary")},
-	{ "toggle"   , cmdTOGGLE    , 1,0, N_("toggle between secret "
-	     		                      "and public key listing") },
-	{ "t"        , cmdTOGGLE    , 1,0, NULL },
-	{ "pref"     , cmdPREF      , 0,1, N_("list preferences (expert)")},
-	{ "showpref" , cmdSHOWPREF  , 0,1, N_("list preferences (verbose)") },
-	{ "setpref"  , cmdSETPREF   , 1,1, N_("set preference list") },
-	{ "updpref"  , cmdUPDPREF   , 1,1, N_("updated preferences") },
-	{ "keyserver",cmdPREFKS     , 1,1, N_("set preferred keyserver URL")},
-	{ "passwd"   , cmdPASSWD    , 1,1, N_("change the passphrase") },
-	{ "trust"    , cmdTRUST     , 0,1, N_("change the ownertrust") },
-	{ "revsig"   , cmdREVSIG    , 0,1, N_("revoke signatures") },
-	{ "revuid"   , cmdREVUID    , 1,1, N_("revoke a user ID") },
-	{ "revkey"   , cmdREVKEY    , 1,1, N_("revoke a secondary key") },
-	{ "disable"  , cmdDISABLEKEY, 0,1, N_("disable a key") },
-	{ "enable"   , cmdENABLEKEY , 0,1, N_("enable a key") },
-	{ "showphoto",cmdSHOWPHOTO  , 0,0, N_("show photo ID") },
-	{ NULL, cmdNONE, 0, 0, NULL } };
+      { N_("delkey")  , cmdDELKEY    , KEYEDIT_NOT_SK, N_("delete a secondary key") },
+      { N_("addrevoker"),cmdADDREVOKER,KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a revocation key") },
+      { N_("delsig")  , cmdDELSIG    , KEYEDIT_NOT_SK, N_("delete signatures") },
+      { N_("expire")  , cmdEXPIRE    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the expire date") },
+      { N_("primary") , cmdPRIMARY   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("flag user ID as primary")},
+      { N_("toggle")  , cmdTOGGLE    , KEYEDIT_NEED_SK, N_("toggle between secret and public key listing") },
+      { N_("t"     )  , cmdTOGGLE    , KEYEDIT_NEED_SK, NULL },
+      { N_("pref")    , cmdPREF      , KEYEDIT_NOT_SK, N_("list preferences (expert)")},
+      { N_("showpref"), cmdSHOWPREF  , KEYEDIT_NOT_SK, N_("list preferences (verbose)") },
+      { N_("setpref") , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preference list") },
+      { N_("updpref") , cmdUPDPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("updated preferences") },
+      { N_("keyserver"),cmdPREFKS    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preferred keyserver URL")},
+      { N_("passwd")  , cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the passphrase") },
+      { N_("trust")   , cmdTRUST     , KEYEDIT_NOT_SK, N_("change the ownertrust") },
+      { N_("revsig")  , cmdREVSIG    , KEYEDIT_NOT_SK, N_("revoke signatures") },
+      { N_("revuid")  , cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke a user ID") },
+      { N_("revkey")  , cmdREVKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke a secondary key") },
+      { N_("disable") , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable a key") },
+      { N_("enable")  , cmdENABLEKEY , KEYEDIT_NOT_SK, N_("enable a key") },
+      { N_("showphoto"),cmdSHOWPHOTO , 0, N_("show photo ID") },
+      { NULL, cmdNONE, 0, NULL }
+    };
     enum cmdids cmd = 0;
     int rc = 0;
     KBNODE keyblock = NULL;
@@ -1420,30 +1458,49 @@ keyedit_menu( const char *username, STRLIST locusr,
                 arg_string = p;
 	    }
 
-	    for(i=0; cmds[i].name; i++ ) {
-		if( !ascii_strcasecmp( answer, cmds[i].name ) )
-		    break;
-	    }
-	    if( cmds[i].need_sk && !sec_keyblock ) {
+	    for(i=0; cmds[i].name; i++ )
+	      {
+		if(cmds[i].flags & KEYEDIT_TAIL_MATCH)
+		  {
+		    size_t l=strlen(cmds[i].name);
+		    size_t a=strlen(answer);
+		    if(a>=l)
+		      {
+			if(ascii_strcasecmp(&answer[a-l],cmds[i].name)==0)
+			  {
+			    answer[a-l]='\0';
+			    break;
+			  }
+		      }
+		  }
+		else if( !ascii_strcasecmp( answer, cmds[i].name ) )
+		  break;
+	      }
+	    if((cmds[i].flags & KEYEDIT_NEED_SK) && !sec_keyblock )
+	      {
 		tty_printf(_("Need the secret key to do this.\n"));
 		cmd = cmdNOP;
-	    }
-	    else if(  (cmds[i].not_with_sk == 1 && sec_keyblock && toggle)
-                    ||(cmds[i].not_with_sk == 2 && sec_keyblock && !toggle)) {
+	      }
+	    else if(((cmds[i].flags & KEYEDIT_NOT_SK) && sec_keyblock
+		     && toggle)
+                    ||((cmds[i].flags & KEYEDIT_ONLY_SK) && sec_keyblock
+		       && !toggle))
+	      {
 		tty_printf(_("Please use the command \"toggle\" first.\n"));
 		cmd = cmdNOP;
-	    }
+	      }
 	    else
-		cmd = cmds[i].id;
+	      cmd = cmds[i].id;
 	}
 	switch( cmd )  {
 	  case cmdHELP:
-	    for(i=0; cmds[i].name; i++ ) {
-	      if( cmds[i].need_sk && !sec_keyblock )
-		; /* skip if we do not have the secret key */
-	      else if( cmds[i].desc )
-		tty_printf("%-10s %s\n", cmds[i].name, _(cmds[i].desc) );
-	    }
+	    for(i=0; cmds[i].name; i++ )
+	      {
+		if((cmds[i].flags & KEYEDIT_NEED_SK) && !sec_keyblock )
+		  ; /* skip if we do not have the secret key */
+		else if( cmds[i].desc )
+		  tty_printf("%-10s %s\n", cmds[i].name, _(cmds[i].desc) );
+	      }
 	    break;
 
 	  case cmdLIST:
@@ -1472,43 +1529,49 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    break;
 
 	  case cmdSIGN: /* sign (only the public key) */
-	  case cmdLSIGN: /* sign (only the public key) */
-	  case cmdNRSIGN: /* sign (only the public key) */
-	  case cmdNRLSIGN: /* sign (only the public key) */
-	  case cmdTSIGN:
-	    if( pk->is_revoked )
-	      {
-		tty_printf(_("Key is revoked."));
+	    {
+	      int localsig=0,nonrevokesig=0,trustsig=0;
 
-		if(opt.expert)
-		  {
-		    tty_printf("  ");
-		    if(!cpr_get_answer_is_yes("keyedit.sign_revoked.okay",
-					      _("Are you sure you still want "
-						"to sign it? (y/N) ")))
+	      if( pk->is_revoked )
+		{
+		  tty_printf(_("Key is revoked."));
+
+		  if(opt.expert)
+		    {
+		      tty_printf("  ");
+		      if(!cpr_get_answer_is_yes("keyedit.sign_revoked.okay",
+						_("Are you sure you still want"
+						  " to sign it? (y/N) ")))
+			break;
+		    }
+		  else
+		    {
+		      tty_printf(_("  Unable to sign.\n"));
 		      break;
-		  }
-		else
-		  {
-		    tty_printf(_("  Unable to sign.\n"));
-		    break;
-		  }
-	      }
+		    }
+		}
 
-	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) )
-	      {
-		if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
-					_("Really sign all user IDs? (y/N) ")))
-		  {
-		    tty_printf(_("Hint: Select the user IDs to sign\n"));
-		    break;
-		  }
-	      }
+	      if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) )
+		{
+		  if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
+					     _("Really sign all user IDs?"
+					       " (y/N) ")))
+		    {
+		      tty_printf(_("Hint: Select the user IDs to sign\n"));
+		      break;
+		    }
+		}
 
-	    sign_uids( keyblock, locusr, &modified,
-		       (cmd == cmdLSIGN) || (cmd == cmdNRLSIGN),
-		       (cmd == cmdNRSIGN) || (cmd==cmdNRLSIGN),
-		       (cmd == cmdTSIGN));
+	      /* What sort of signing are we doing? */
+	      if(!parse_sign_type(answer,&localsig,&nonrevokesig,&trustsig))
+		{
+		  tty_printf(_("Unknown signature type `%s'\n"),answer);
+		  break;
+		}
+
+	      sign_uids(keyblock, locusr, &modified,
+			localsig, nonrevokesig, trustsig);
+	    }
 	    break;
 
 	  case cmdDEBUG:
@@ -2360,7 +2423,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    ++i;
 	    if( !only_marked || (only_marked && (node->flag & NODFLG_MARK_A)))
 	      {
-		if(!only_marked)
+		if(!only_marked && primary)
 		  tty_printf("%s ",uid_trust_string_fixed(primary,uid));
 
 		if( only_marked )
