@@ -369,10 +369,12 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
     fprintf(fp, "rec %5lu, ", rnum );
 
     switch( rec->rectype ) {
-      case 0: fprintf(fp, "free\n");
+      case 0: fprintf(fp, "blank\n");
 	break;
-      case RECTYPE_VER: fprintf(fp, "version, keyhashtbl=%lu\n",
-	    rec->r.ver.keyhashtbl );
+      case RECTYPE_VER: fprintf(fp, "version, keyhashtbl=%lu, firstfree=%lu\n",
+	    rec->r.ver.keyhashtbl, rec->r.ver.firstfree );
+	break;
+      case RECTYPE_FREE: fprintf(fp, "free, next=%lu\n", rec->r.free.next );
 	break;
       case RECTYPE_DIR:
 	fprintf(fp, "dir %lu, keys=%lu, uids=%lu, cach=%lu, ot=%02x",
@@ -505,6 +507,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.ver.modified = buftoulong(p); p += 4;
 	rec->r.ver.validated= buftoulong(p); p += 4;
 	rec->r.ver.keyhashtbl=buftoulong(p); p += 4;
+	rec->r.ver.firstfree =buftoulong(p); p += 4;
 	if( recnum ) {
 	    log_error_f( db_name, "version record with recnum %lu\n",
 							     (ulong)recnum );
@@ -515,6 +518,9 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 							rec->r.ver.version );
 	    rc = G10ERR_TRUSTDB;
 	}
+	break;
+      case RECTYPE_FREE:
+	rec->r.free.next  = buftoulong(p); p += 4;
 	break;
       case RECTYPE_DIR:   /*directory record */
 	rec->r.dir.lid	    = buftoulong(p); p += 4;
@@ -619,6 +625,11 @@ tdbio_write_record( TRUSTREC *rec )
 	ulongtobuf(p, rec->r.ver.modified); p += 4;
 	ulongtobuf(p, rec->r.ver.validated); p += 4;
 	ulongtobuf(p, rec->r.ver.keyhashtbl); p += 4;
+	ulongtobuf(p, rec->r.ver.firstfree ); p += 4;
+	break;
+
+      case RECTYPE_FREE:
+	ulongtobuf(p, rec->r.free.next); p += 4;
 	break;
 
       case RECTYPE_DIR:   /*directory record */
@@ -707,11 +718,22 @@ tdbio_write_record( TRUSTREC *rec )
 int
 tdbio_delete_record( ulong recnum )
 {
-    TRUSTREC rec;
+    TRUSTREC vr, rec;
+    int rc;
+
+    rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+    if( rc )
+	log_fatal_f( db_name, _("error reading version record: %s\n"),
+							g10_errstr(rc) );
 
     rec.recnum = recnum;
-    rec.rectype = 0;
-    return tdbio_write_record( &rec );
+    rec.rectype = RECTYPE_FREE;
+    rec.r.free.next = vr.r.ver.firstfree;
+    vr.r.ver.firstfree = recnum;
+    rc = tdbio_write_record( &rec );
+    if( !rc )
+	rc = tdbio_write_record( &vr );
+    return rc;
 }
 
 /****************
@@ -722,25 +744,55 @@ tdbio_new_recnum()
 {
     off_t offset;
     ulong recnum;
-    TRUSTREC rec;
+    TRUSTREC vr, rec;
     int rc;
 
-    /* fixme: look for unused records */
-    offset = lseek( db_fd, 0, SEEK_END );
-    if( offset == -1 )
-	log_fatal("trustdb: lseek to end failed: %s\n", strerror(errno) );
-    recnum = offset / TRUST_RECORD_LEN;
-    assert(recnum); /* this is will never be the first record */
-
-    /* we must write a record, so that the next call to this function
-     * returns another recnum */
-    memset( &rec, 0, sizeof rec );
-    rec.rectype = 0; /* free record */
-    rec.recnum = recnum;
-    rc = tdbio_write_record( &rec );
+    /* look for unused records */
+    rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
-	log_fatal_f(db_name,_("failed to append a record: %s\n"),
-					    g10_errstr(rc));
+	log_fatal_f( db_name, _("error reading version record: %s\n"),
+							g10_errstr(rc) );
+    if( vr.r.ver.firstfree ) {
+	recnum = vr.r.ver.firstfree;
+	rc = tdbio_read_record( recnum, &rec, RECTYPE_FREE );
+	if( rc ) {
+	    log_error_f( db_name, _("error reading free record: %s\n"),
+							    g10_errstr(rc) );
+	    return rc;
+	}
+	/* update dir record */
+	vr.r.ver.firstfree = rec.r.free.next;
+	rc = tdbio_write_record( &vr );
+	if( rc ) {
+	    log_error_f( db_name, _("error writing dir record: %s\n"),
+							    g10_errstr(rc) );
+	    return rc;
+	}
+	/*zero out the new record */
+	memset( &rec, 0, sizeof rec );
+	rec.rectype = 0; /* unused record */
+	rec.recnum = recnum;
+	rc = tdbio_write_record( &rec );
+	if( rc )
+	    log_fatal_f(db_name,_("failed to zero a record: %s\n"),
+						g10_errstr(rc));
+    }
+    else { /* not found, append a new record */
+	offset = lseek( db_fd, 0, SEEK_END );
+	if( offset == -1 )
+	    log_fatal("trustdb: lseek to end failed: %s\n", strerror(errno) );
+	recnum = offset / TRUST_RECORD_LEN;
+	assert(recnum); /* this is will never be the first record */
+	/* we must write a record, so that the next call to this function
+	 * returns another recnum */
+	memset( &rec, 0, sizeof rec );
+	rec.rectype = 0; /* unused record */
+	rec.recnum = recnum;
+	rc = tdbio_write_record( &rec );
+	if( rc )
+	    log_fatal_f(db_name,_("failed to append a record: %s\n"),
+						g10_errstr(rc));
+    }
     return recnum ;
 }
 

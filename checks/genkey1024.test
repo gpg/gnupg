@@ -21,7 +21,6 @@ expect {
     -exact "Please select what kind of key you want:\r
    (1) DSA and ElGamal (default)\r
    (2) ElGamal (sign and encrypt)\r
-   (3) ElGamal (encrypt only)\r
    (4) DSA (sign only)\r
    (5) ElGamal in a v3 packet\r
 Your selection? "  { send -- "1\r" }

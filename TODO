@@ -1,11 +1,8 @@
 
-    * check for working mmap()
-
-    * after creating a new uid, the preferences in the trustdb are not updated.
-      We should always sync the trustdb in such cases.
-
     * The critical bit of signature subpackets is not yet supported; i.e.
       it is ignored.
+
+    * Read more records at once in tdbio.c and provide a lazy write cache.
 
     * Exportable Certification Flag is ignored
 
@@ -59,7 +56,7 @@
 
     * change the fake_data stuff to mpi_set_opaque
 
-    * Is it okay to use gettext for the help system???
+    * Is it okay to use gettext for the help system?
 
     * Add some stuff for DU cc
 

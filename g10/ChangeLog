@@ -1,3 +1,20 @@
+Wed Oct  7 11:15:36 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keyedit.c (sign_uids): Fixed a problem with SK which could caused
+	a save of an unprotected key.
+	(menu_adduid): Ditto.
+
+	* keyedit.c (keyedit_menu): Prefs are now correctly listed for
+	new user ids.
+
+	* trustdb.c (update_trust_record): New.
+	(insert_trust_record): Now makes use of update_trust_record.
+
+Tue Oct  6 16:18:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (read_record): replaces most of the tdbio_read_records.
+	(write_record): Ditto.
+
 Sat Oct  3 11:01:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* keygen.c (ask_alogo): enable ElGamal enc-only only for addmode.

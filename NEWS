@@ -17,7 +17,9 @@ Noteworthy changes in version 0.4.1
     * Checked gnupg against the August 1998 draft (07) and I believe
       it is in compliance with this document (except for one point).
 
-    * Fixed some bugs in the import merging code.
+    * Fixed some bugs in the import merging code and rewrote some
+      code for the trustdb.
+
 
 Noteworthy changes in version 0.4.0
 -----------------------------------

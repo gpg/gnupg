@@ -42,6 +42,7 @@
 #define RECTYPE_CACH 9
 #define RECTYPE_HTBL 10
 #define RECTYPE_HLST 11
+#define RECTYPE_FREE 254
 
 
 #define DIRF_CHECKED  1 /* everything has been checked, the other bits are
@@ -58,9 +59,8 @@
 
 struct trust_record {
     int  rectype;
-    struct trust_record *next;	/* help pointer to build lists in memory */
-    struct trust_record *help_pref;
     int  mark;
+    struct trust_record *next;	/* help pointer to build lists in memory */
     ulong recnum;
     union {
 	struct {	     /* version record: */
@@ -69,7 +69,11 @@ struct trust_record {
 	    ulong modified;  /* timestamp of last modification */
 	    ulong validated; /* timestamp of last validation   */
 	    ulong keyhashtbl;
+	    ulong firstfree;
 	} ver;
+	struct {	    /* free record */
+	    ulong next;
+	} free;
 	struct {	    /* directory record */
 	    ulong lid;
 	    ulong keylist;  /* List of keys (the first is the primary key)*/

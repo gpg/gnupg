@@ -153,9 +153,7 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
 
     lid = pk->local_id;
     while( !(rc=enum_trust_web( &context, &lid )) ) {
-	rc = get_ownertrust( lid, &trust );
-	if( rc )
-	    log_fatal("Ooops: couldn't get owner trust for %lu\n", lid);
+	trust = get_ownertrust( lid );
 	if( trust == TRUST_UNDEFINED || trust == TRUST_EXPIRED ||
 	    trust == TRUST_UNKNOWN ) {
 	    if( edit_ownertrust( lid, 0 ) )

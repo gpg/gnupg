@@ -212,6 +212,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
     int rc = 0;
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
+    PKT_secret_key *sk = NULL;
     KBNODE node, uidnode;
     PKT_public_key *primary_pk;
     int select_all = !count_selected_uids(keyblock);
@@ -228,7 +229,14 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 	size_t n;
 	char *p;
 
-	keyid_from_sk( sk_rover->sk, sk_keyid );
+	/* we have to use a copy of the sk, because make_keysig_packet
+	 * may remove the protection from sk and if we did other
+	 * changes to the secret key, we would save the unprotected
+	 * version */
+	if( sk )
+	    free_secret_key(sk);
+	sk = copy_secret_key( NULL, sk_rover->sk );
+	keyid_from_sk( sk, sk_keyid );
 	/* set mark A for all selected user ids */
 	for( node=keyblock; node; node = node->next ) {
 	    if( select_all || (node->flag & NODFLG_SELUID) )
@@ -261,6 +269,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 	/* Ask whether we really should sign these user id(s) */
 	tty_printf("\n");
 	show_key_with_all_names( keyblock, 1, 1, 0, 0 );
+	tty_printf("\n");
 	tty_printf(_(
 	     "Are you really sure that you want to sign this key\n"
 	     "with your key: \""));
@@ -287,7 +296,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 		rc = make_keysig_packet( &sig, primary_pk,
 					       node->pkt->pkt.user_id,
 					       NULL,
-					       sk_rover->sk,
+					       sk,
 					       0x10, 0, NULL, NULL );
 		if( rc ) {
 		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
@@ -311,6 +320,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 
   leave:
     release_sk_list( sk_list );
+    if( sk )
+	free_secret_key(sk);
     return rc;
 }
 
@@ -587,10 +598,13 @@ keyedit_menu( const char *username, STRLIST locusr )
 			break;
 		    }
 		}
-		/* FIXME: UPDATE/INVALIDATE trustdb !! */
 	    }
 	    else
 		tty_printf(_("Key not changed so no update needed.\n"));
+	    rc = update_trust_record( keyblock );
+	    if( rc )
+		log_error(_("update of trust db failed: %s\n"),
+			    g10_errstr(rc) );
 	    goto leave;
 
 	  case cmdLIST:
@@ -643,6 +657,14 @@ keyedit_menu( const char *username, STRLIST locusr )
 	    if( menu_adduid( keyblock, sec_keyblock ) ) {
 		redisplay = 1;
 		sec_modified = modified = 1;
+		/* must update the trustdb already here, so that preferences
+		 * get listed correctly */
+		rc = update_trust_record( keyblock );
+		if( rc ) {
+		    log_error(_("update of trust db failed: %s\n"),
+				g10_errstr(rc) );
+		    rc = 0;
+		}
 	    }
 	    break;
 
@@ -808,8 +830,10 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 			  expirestr_from_pk(pk) );
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 		tty_printf(" trust: %c/%c", otrust, trust );
-		if( with_fpr  )
+		if( with_fpr  ) {
+		    tty_printf("\n");
 		    show_fingerprint( pk );
+		}
 	    }
 	    tty_printf("\n");
 	}
@@ -933,7 +957,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	pub_where = NULL;
     for( node = sec_keyblock; node; sec_where = node, node = node->next ) {
 	if( node->pkt->pkttype == PKT_SECRET_KEY )
-	    sk = node->pkt->pkt.secret_key;
+	    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
 	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY )
 	    break;
     }
@@ -943,6 +967,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
     rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0,
 			     keygen_add_std_prefs, sk );
+    free_secret_key( sk );
     if( rc ) {
 	log_error("signing failed: %s\n", g10_errstr(rc) );
 	free_user_id(uid);

@@ -87,6 +87,7 @@ enum cmd_and_opt_values { aNull = 0,
     aPrintMD,
     aPrintMDs,
     aCheckTrustDB,
+    aFixTrustDB,
     aListTrustDB,
     aListTrustPath,
     aExportOwnerTrust,
@@ -177,6 +178,7 @@ static ARGPARSE_OPTS opts[] = {
     { aExportOwnerTrust, "export-ownertrust", 256, N_("export the ownertrust values")},
     { aImportOwnerTrust, "import-ownertrust", 256 , N_("import ownertrust values")},
     { aCheckTrustDB, "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
+    { aFixTrustDB, "fix-trustdb",0 , N_("fix a corrupted trust database")},
     { aDeArmor, "dearmor", 256, N_("De-Armor a file or stdin") },
     { aEnArmor, "enarmor", 256, N_("En-Armor a file or stdin") },
     { aPrintMD,  "print-md" , 256, N_("|algo [files]|print message digests")},
@@ -636,6 +638,7 @@ main( int argc, char **argv )
 	  case aPrintMDs: set_cmd( &cmd, aPrintMDs); break;
 	  case aListTrustDB: set_cmd( &cmd, aListTrustDB); break;
 	  case aCheckTrustDB: set_cmd( &cmd, aCheckTrustDB); break;
+	  case aFixTrustDB: set_cmd( &cmd, aFixTrustDB); break;
 	  case aListTrustPath: set_cmd( &cmd, aListTrustPath); break;
 	  case aDeArmor: set_cmd( &cmd, aDeArmor); break;
 	  case aEnArmor: set_cmd( &cmd, aEnArmor); break;
@@ -856,6 +859,7 @@ main( int argc, char **argv )
       case aGenRandom:
       case aDeArmor:
       case aEnArmor:
+      case aFixTrustDB:
 	break;
       case aKMode:
       case aListKeys:
@@ -1163,6 +1167,12 @@ main( int argc, char **argv )
 	    for( ; argc; argc--, argv++ )
 		check_trustdb( *argv );
 	}
+	break;
+
+      case aFixTrustDB:
+	log_error("this command ist not yet implemented.\"\n");
+	log_error("A workaround is to use \"--export-ownertrust\", remove\n");
+	log_error("the trustdb file and do an \"--import-ownertrust\".\n" );
 	break;
 
       case aListTrustPath:

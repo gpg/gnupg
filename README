@@ -1,3 +1,5 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+
 		  GNUPG - The GNU Privacy Guard
 		 -------------------------------
 			  Version 0.4
@@ -55,7 +57,7 @@
     Installation
     ------------
 
-    Please read the file INSTALL.
+    Please read the file INSTALL!
 
     Here is a quick summary:
 
@@ -328,5 +330,14 @@
 
     Please direct bug reports to <gnupg-bugs@gnu.org> or better
     post them to the mailing list <g10@net.lut.ac.uk> (this is a closed list,
-    please subscribe before posting).
+    please subscribe before posting, see above (~line 33)).
 
+-----BEGIN PGP SIGNATURE-----
+Version: GNUPG v0.4.0a (GNU/Linux)
+Comment: For info finger gcrypt@ftp.guug.de
+
+iQB1AwUBNhtSpB0Z9MEMmFelAQHWNQMAuPaj71rzjjtVNlYDV0MYljPFZqAK7tvmbH3i9Lti
+UuvGPCpx1/ej7jwZ2LSQ61O8c/xRwV07chHa5MGmSGT4KZg5g5MejUOliMQJIJwjY5PoZAVb
+6F7+hZf5Bt5Jl2J7
+=6Mbb
+-----END PGP SIGNATURE-----

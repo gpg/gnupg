@@ -1,3 +1,7 @@
+Wed Oct  7 13:12:00 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* Makefile.in.in: Fixed mkinstalldirs problems
+
 Mon Sep 21 15:03:44 1998  Werner Koch  (wk@(none))
 
 	* it.po: New version from Marco d'Itri

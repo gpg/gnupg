@@ -50,7 +50,7 @@ int init_trustdb( int level, const char *dbname );
 int check_trust( PKT_public_key *pk, unsigned *r_trustlevel );
 int query_trust_info( PKT_public_key *pk );
 int enum_trust_web( void **context, ulong *lid );
-int get_ownertrust( ulong lid, unsigned *r_otrust );
+unsigned get_ownertrust( ulong lid );
 int get_ownertrust_info( ulong lid );
 byte *get_pref_data( ulong lid, const byte *namehash, size_t *ret_n );
 int is_algo_in_prefs( ulong lid, int preftype, int algo );

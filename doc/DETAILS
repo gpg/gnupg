@@ -65,7 +65,8 @@ Record type 1:
 	    (Used to keep track of the time, when this TrustDB was checked
 	     against the pubring)
      1 u32  record number of keyhashtable
-     12 bytes reserved
+     1 u32  first free record
+     8 bytes reserved
 
 
 Record type 2: (directory record)
@@ -221,6 +222,11 @@ Record type 11 (hash list)
 	1 u32  recnum
 
     For the current record length of 40, n is 7
+
+Record type 254: (free record)
+     1 byte  value 254
+     1 byte  reserved (0)
+     1 u32   next_free
 
 
 

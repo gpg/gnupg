@@ -10,6 +10,6 @@ else
     rm err.tmp.$$
     exit 1
 fi
-fgrep -v -f run-gpg.patterns err.tmp.$$
+fgrep -v -f $srcdir/run-gpg.patterns err.tmp.$$
 rm err.tmp.$$
 

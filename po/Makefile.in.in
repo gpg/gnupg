@@ -26,7 +26,8 @@ subdir = po
 
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
-MKINSTALLDIRS = $(top_srcdir)/@MKINSTALLDIRS@
+### This doe not work: MKINSTALLDIRS = $(top_srcdir)/@MKINSTALLDIRS@
+MKINSTALLDIRS = $(top_srcdir)/scripts/mkinstalldirs
 
 CC = @CC@
 GENCAT = @GENCAT@
@@ -120,7 +121,7 @@ install-data-yes: all
 	  cat=`basename $$cat`; \
 	  case "$$cat" in \
 	    *.gmo) destdir=$(gnulocaledir);; \
-	    *)     destdir=$(localedir);; \
+	    *)	   destdir=$(localedir);; \
 	  esac; \
 	  lang=`echo $$cat | sed 's/\$(CATOBJEXT)$$//'`; \
 	  dir=$$destdir/$$lang/LC_MESSAGES; \
@@ -232,8 +233,8 @@ POTFILES: POTFILES.in
 	    posrcprefix="../"; \
 	  fi; \
 	  rm -f $@-t $@ \
-	    && (sed -e '/^#/d' -e '/^[ 	]*$$/d' \
-		    -e "s@.*@	$$posrcprefix& \\\\@" < $(srcdir)/$@.in \
+	    && (sed -e '/^#/d' -e '/^[  ]*$$/d' \
+		    -e "s@.*@   $$posrcprefix& \\\\@" < $(srcdir)/$@.in \
 		| sed -e '$$s/\\$$//') > $@-t \
 	    && chmod a-w $@-t \
 	    && mv $@-t $@ )
