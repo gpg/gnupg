@@ -1,51 +1,35 @@
-Bugs
-----
-    * clearsig: keep lineendings as they are. Remember that trailings
-      blanks are not hashed.  Funny: pgp263in works fine even with
-      a source file with CR,LF but GnuPG and pgp263in has problems
-      if the clearsign has been created by pgp263ia.
-      Needs more investigation - anyone?
 
-    * replace my type 20 subkeys by type 16 ones.
+  * Implement 256 bit key Twofish.
 
-Important
-----------
-    * Check revocation and expire stuff.  [I'm currently working on this.]
+  * clearsig: keep lineendings as they are. Remember that trailings
+    blanks are not hashed.
 
-    * Check calculation of key validity. [I'm currently working on this.]
+  * Check revocation and expire stuff.	[I'm currently working on this.]
 
-    * See why we always get this "Hmmm public key lost"
+  * Check calculation of key validity. [I'm currently working on this.]
 
-    * print a warning when a revoked/expired secret key is used.
+  * See why we always get this "Hmmm public key lost"
 
-Needed
-------
-    * remove more "Fixmes"
+  * print a warning when a revoked/expired secret key is used.
 
-    * Implement 256 bit key Twofish.
+  * remove more "Fixmes"
 
-    * Use capabilities if available.  glibc2 does not support it yet?
-      What about 2.2 or should we use the system calls directly?
+  * Use capabilities if available.  glibc2 does not support it yet?
+    What about 2.2 or should we use the system calls directly?
 
-Minor Bugs
-----------
-
-    * --list-packets should continue even w/o a passphrase (or in batch
-      mode).
 
 Nice to have
 ------------
-    * preferences of hash algorithms are not yet used.
-    * new menu to delete signatures and list signature in menu
-    * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
-      or use POSIX.4 realtime signals.
-    * add test cases for invalid data (scrambled armor or other random data)
-    * add checking of armor trailers
-    * Burn the buffers used by fopen(), or use read(2). Does this
-      really make sense?
-    * change the fake_data stuff to mpi_set_opaque
-    * How about letting something like 'gpg --version -v', list the
-      effective options. [Too much work.]
-    * Stats about used random numbers.
-
+  * preferences of hash algorithms are not yet used.
+  * new menu to delete signatures and list signature in menu
+  * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
+    or use POSIX.4 realtime signals.
+  * add test cases for invalid data (scrambled armor or other random data)
+  * add checking of armor trailers
+  * Burn the buffers used by fopen(), or use read(2). Does this
+    really make sense?
+  * change the fake_data stuff to mpi_set_opaque
+  * How about letting something like 'gpg --version -v', list the
+    effective options. [Too much work.]
+  * Stats about used random numbers.
 

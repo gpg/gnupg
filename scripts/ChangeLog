@@ -1,3 +1,9 @@
+Mon Feb 22 20:04:00 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* autogen.sh: Enhanced the version testing code (Philippe Laliberte)
+
+	* mkwebpage: Edits the buglist.
+
 Sat Feb 13 12:04:43 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* autogen.sh: Now uses gettextize

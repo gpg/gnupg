@@ -195,10 +195,12 @@ o  Allow more that one file for key storage.
 o  Use the HKS protocol and enhance it in a way that binary
    keyrings can be transmitted.  (I already wrote some
    http server and client code which can be used for this)
+   And extend it to allow reuse of a connection.
 
 o  Keep a checksum (hash) of the entire keyblock so that a
    client can easy check whether this keyblock has changed.
    (keyblock = the entire key with all certificates etc.)
+   Transmitted in the HEAD info.
 
 o  Allow efficient propagation of new keys and revocation
    certificates.

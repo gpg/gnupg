@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 SUBDIRS = intl zlib util mpi cipher tools g10 po doc checks
-EXTRA_DIST = VERSION  PROJECTS
+EXTRA_DIST = VERSION  PROJECTS BUGS
 
 all-am: g10defs.h
 all-recursive-am: g10defs.h

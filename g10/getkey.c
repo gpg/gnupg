@@ -1753,7 +1753,7 @@ lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
 	}
     }
     else if( rc == -1 )
-	rc = G10ERR_NO_PUBKEY;
+	rc = G10ERR_NO_SECKEY;
 
     release_kbnode( ctx->keyblock );
     ctx->keyblock = NULL;

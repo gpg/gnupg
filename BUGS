@@ -1,0 +1,44 @@
+		   List of some known bugs
+		  -------------------------
+
+This following list contains those bugs which we are aware of.	Please
+make sure that bugs you report are not listed here.  If you can fix one
+of these bugs/limitations we will certainly be glad to receive a patch.
+(Please note that we need a disclaimer if a patch is longer than about
+10 lines; but it may help anyway to show us where we have to fix it. Do
+an "info standards" to find out why a disclaimer is needed for GNU.)
+
+(format: severity: [  *] to [***], no, first reported, by, version)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[  *] #1
+    pgp263in works fine even with a source file with CR,LF but GnuPG
+    and pgp263in has problems if the clearsign has been created by
+    pgp263ia.
+
+[  *] #3
+    --list-packets should continue even w/o a passphrase (or in batch
+    mode).  Maybe we have to move it to a separate program??
+
+[  *] #4  1999-01-13 <ralf.stephan@fitug.de> 0.9.1
+    v3 key 'expiration date' problem:
+       1. generate a key, set expiration date
+       2. <do other things, deleting etc.>
+       3. edit a v3 secret key, try to set expiration date
+       - output: "You can't change...
+       4. save
+       5. key has expiration date from 1. and gpg reports that pubkey
+	  and seckey differ.
+     The for loop the exp.date is set before v3 detection?
+     [is this bug still there?]
+
+[  *] #5
+    /home/jam/.gnupg/pubring.gpg: can't open gdbm file: Can't be writer
+    keyblock resource `/home/jam/.gnupg/pubring.gpg': file open error
+    OOPS in close enum_keyblocks - ignored
+    [gdbm is experimental and will be replaced by the new keybox code]
+
+
+
+
+

@@ -1,3 +1,7 @@
+Mon Feb 22 20:04:00 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* rndegd.c: New.
+
 Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* Makefile.am: Modules are now figured out by configure
