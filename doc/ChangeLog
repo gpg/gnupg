@@ -1,3 +1,9 @@
+2002-11-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Point out that if the user absolutely must, it's
+	better to use --pgpX than forcing an algorithm manually.  Better
+	still not to use anything, of course.
+
 2002-11-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document --sig-policy-url, --cert-policy-url,

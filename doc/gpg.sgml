@@ -2509,6 +2509,15 @@ compression algorithm.  By default, GnuPG will do the right thing and
 create messages that are usable by any OpenPGP program.  Only override
 this safe default if you know what you are doing.
 </para>
+
+<para>
+If you absolutely must override the safe default, you are far better
+off using the --pgp2, --pgp6, or --pgp7 options.  These options are
+safe as they do not force any particular algorithms in violation of
+OpenPGP, but rather reduce the available algorithms to a "PGP-safe"
+list.
+</para>
+
 </refsect1>
 
 
