@@ -269,7 +269,7 @@ static ARGPARSE_OPTS opts[] = {
     { aClearsign, "clearsign", 256, N_("|[file]|make a clear text signature") },
     { aDetachedSign, "detach-sign", 256, N_("make a detached signature")},
     { aEncr, "encrypt",   256, N_("encrypt data")},
-    { aEncrFiles, "encrypt-files", 256, N_("encrypt files")},
+    { aEncrFiles, "encrypt-files", 256, N_("|[files]|encrypt files")},
     { aSym, "symmetric", 256, N_("encryption only with symmetric cipher")},
     { aStore, "store",     256, N_("store only")},
     { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
