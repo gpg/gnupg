@@ -1,3 +1,13 @@
+2005-01-22  David Shaw  <dshaw@grover.jabberwocky.com>
+
+	* configure.ac: Define FTPS flag if we're using curl, and FTPS is
+	available.
+
+	* README: Fix some typos (noted by Norihiko Murase), update to
+	1.4.1, and tweak some descriptions.
+
+	* NEWS: Note FTPS.
+
 2005-01-18  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (HAVE_W32_SYSTEM): Define it.

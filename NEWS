@@ -1,5 +1,5 @@
 Noteworthy changes in version 1.4.1
--------------------------------------------------
+------------------------------------------------
 
     * New --rfc2440-text option which controls how text is handled in
       signatures.  This is in response to some problems seen with
@@ -12,11 +12,12 @@ Noteworthy changes in version 1.4.1
       default, and cause GnuPG to not import or export key signatures
       that are not usable (e.g. expired signatures).
 
-    * New experimental HTTP, HTTPS, and FTP keyserver helper that uses
-      the cURL library (http://curl.haxx.se) to retrieve keys.  This
-      is disabled by default, but may be enabled with the configure
-      option --with-libcurl.  Without this option, the existing HTTP
-      code is used for HTTP, and HTTPS and FTP are not supported.
+    * New experimental HTTP, HTTPS, FTP, and FTPS keyserver helper
+      that uses the cURL library <http://curl.haxx.se> to retrieve
+      keys.  This is disabled by default, but may be enabled with the
+      configure option --with-libcurl.  Without this option, the
+      existing HTTP code is used for HTTP, and HTTPS, FTP, and FTPS
+      are not supported.
 
     * When running a --card-status or --card-edit and a public key is
       available, missing secret key stubs will be created on the fly.
@@ -42,7 +43,7 @@ Noteworthy changes in version 1.4.1
 
 
 Noteworthy changes in version 1.4.0 (2004-12-16)
--------------------------------------------------
+------------------------------------------------
 
     * See the file doc/highlights-1.4.txt for an overview of all
       changes in respect to the 1.2 series.
@@ -1729,8 +1730,8 @@ Noteworthy changes in version 0.2.3
       is generated on a system without a good random number generator.
 
 
-Copyright 1998, 1999, 2000, 2001, 2002, 2003,
-          2004  Free Software Foundation, Inc.
+Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+          2005 Free Software Foundation, Inc.
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without

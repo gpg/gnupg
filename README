@@ -1,10 +1,10 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			    Version 1.4.0
+			    Version 1.4.1
 
-	    Copyright 1998, 1999, 2000, 2001, 2002, 2003,
-		 2004 Free Software Foundation, Inc.
+	 Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+		 2005 Free Software Foundation, Inc.
 
     This file is free software; as a special exception the author
     gives unlimited permission to copy and/or distribute it, with or
@@ -488,9 +488,9 @@
                      GnuPG home directory which is "~/.gnupg" by default.
  
      --without-readline
-                     Do not include support for the readline libary
+                     Do not include support for the readline library
                      even if it is available.  The default is to check
-                     whether the readline libarry is a availbale and
+                     whether the readline library is a available and
                      use it to allow fancy command line editing.
   
      --with-included-zlib
@@ -561,7 +561,7 @@
      --disable-twofish
      --disable-sha256
      --disable-sha512
-		    Removes support for the selected symmetric
+		    Removes support for the selected symmetric or hash
 		    algorithm.  This can give a smaller gpg binary for
 		    places where space is tight.
 
@@ -574,21 +574,22 @@
 		    The public key preference list can be updated to
 		    match the list of available algorithms by using
 		    "gpg --edit-key (thekey)", and running the
-		    "updpref" command.
+		    "setpref" command.
 
      --enable-minimal
-		    Build the smallest gpg possible (disables all
-		    optional algorithms, disables keyserver access,
-		    and disables photo IDs).  Specifically, this means
-		    --disable-rsa --disable-idea, --disable-cast5,
-		    --disable-blowfish, --disable-aes,
-		    --disable-twofish, --disable-sha256,
-		    --disable-sha512, --without-bzip2, and
-		    --disable-exec.  Configure command lines are read
-		    from left to right, so if you want to have an
-		    "almost minimal" configuration, you can do (for
-		    example) "--enable-minimal --enable-rsa" to have
-		    RSA added to the minimal build.
+		    Build the smallest gpg binary possible (disables
+		    all optional algorithms, disables keyserver
+		    access, and disables photo IDs).  Specifically,
+		    this means --disable-rsa --disable-idea,
+		    --disable-cast5, --disable-blowfish,
+		    --disable-aes, --disable-twofish,
+		    --disable-sha256, --disable-sha512,
+		    --without-bzip2, and --disable-exec.  Configure
+		    command lines are read from left to right, so if
+		    you want to have an "almost minimal"
+		    configuration, you can do (for example)
+		    "--enable-minimal --enable-rsa" to have RSA added
+		    to the minimal build.
 
      --enable-key-cache=SIZE
                     Set the internal key and UID cache size.  This has
@@ -614,7 +615,7 @@
                     give different output than with the limited old
                     support.  This option allows to explicity disable
                     the use of iconv.  Note, that iconv is also
-                    disabled if getext has been disabled.
+                    disabled if gettext has been disabled.
 
      --enable-backsigs
                     Enables "backsigs" support.  This is a currently

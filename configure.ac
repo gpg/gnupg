@@ -669,8 +669,11 @@ fi
 # Are we doing FTP?  We only do FTP if we have libcurl.
 
 if test x"$try_ftp" = xyes && test x$libcurl_protocol_FTP = xyes ; then
-   AC_DEFINE(FTP_VIA_LIBCURL,1,[Define if FTP is handled via libcurl])
    AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
+   AC_DEFINE(FTP_VIA_LIBCURL,1,[Define if FTP is handled via libcurl])
+   if test x$libcurl_protocol_FTPS = xyes ; then
+      AC_DEFINE(FTPS_VIA_LIBCURL,1,[Define if FTPS is handled via libcurl])
+   fi
 fi
 
 dnl This isn't necessarily sendmail itself, but anything that gives a
