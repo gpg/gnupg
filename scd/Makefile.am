@@ -23,8 +23,8 @@ INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
 bin_PROGRAMS = scdaemon
 
-AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBOPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
-	      $(LIBKSBA_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/common $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
+	      $(KSBA_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
 
 scdaemon_SOURCES = \
@@ -33,12 +33,9 @@ scdaemon_SOURCES = \
 	card-common.h \
 	card-p15.c card-dinsig.c
 
-# fixme: We added -lpcslite because the opensc config script can't cope with 
-# a static only libopensc.
 scdaemon_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
 		../common/libcommon.a \
-		$(LIBOPENSC_LIBS) $(LIBGCRYPT_LIBS) $(LIBKSBA_LIBS) \
-	        -lpcsclite -lpthread
+		$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) 
 
 
 

@@ -32,6 +32,61 @@
 #include "card-common.h"
 
 
+struct p15private_s {
+  int n_prkey_rsa_objs;
+  struct sc_pkcs15_object *prkey_rsa_objs[32];
+};
+
+
+/* Allocate private data. */
+static int 
+init_private_data (CARD card)
+{
+  struct p15private_s *priv;
+  int rc;
+
+  if (card->p15priv)
+    return 0; /* already done. */
+
+  priv = xtrycalloc (1, sizeof *priv);
+  if (!priv)
+    return GNUPG_Out_Of_Core;
+
+  /* OpenSC (0.7.0) is a bit strange in that the get_objects functions
+     tries to be a bit too clever and implicitly does an enumeration
+     which eventually leads to the fact that every call to this
+     fucntion returns one more macthing object.  The old code in
+     p15_enum_keypairs assume that it would alwyas return the same
+     numer of objects and used this to figure out what the last object
+     enumerated is.  We now do an enum_objects just once and keep it
+     in the private data. */
+  rc = sc_pkcs15_get_objects (card->p15card, SC_PKCS15_TYPE_PRKEY_RSA, 
+                              priv->prkey_rsa_objs,
+                              DIM (priv->prkey_rsa_objs));
+  if (rc < 0) 
+    {
+      log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
+      xfree (priv);
+      return GNUPG_Card_Error;
+    }
+  priv->n_prkey_rsa_objs = rc;
+  card->p15priv = priv;
+  return 0;
+}
+
+
+/* Release private data used in this module. */
+void
+p15_release_private_data (CARD card)
+{
+  if (!card->p15priv)
+    return;
+  xfree (card->p15priv);
+  card->p15priv = NULL;
+}
+
+
+
 /* See card.c for interface description */
 static int
 p15_enum_keypairs (CARD card, int idx,
@@ -39,25 +94,23 @@ p15_enum_keypairs (CARD card, int idx,
 {
   int rc;
   KsbaError krc;
-  struct sc_pkcs15_object *objs[32], *tmpobj;
+  struct p15private_s *priv;
+  struct sc_pkcs15_object *tmpobj;
   int nobjs;
   struct sc_pkcs15_prkey_info *pinfo;
   struct sc_pkcs15_cert_info *certinfo;
   struct sc_pkcs15_cert      *certder;
   KsbaCert cert;
 
-  rc = sc_pkcs15_get_objects (card->p15card, SC_PKCS15_TYPE_PRKEY_RSA, 
-                              objs, DIM (objs));
-  if (rc < 0) 
-    {
-      log_error ("private keys enumeration failed: %s\n", sc_strerror (rc));
-      return GNUPG_Card_Error;
-    }
-  nobjs = rc;
+  rc = init_private_data (card);
+  if (rc) 
+      return rc;
+  priv = card->p15priv;
+  nobjs = priv->n_prkey_rsa_objs;
   rc = 0;
   if (idx >= nobjs)
     return -1;
-  pinfo = objs[idx]->data;
+  pinfo = priv->prkey_rsa_objs[idx]->data;
   
   /* now we need to read the certificate so that we can calculate the
      keygrip */

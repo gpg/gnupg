@@ -162,6 +162,8 @@ card_close (CARD card)
           sc_pkcs15_unbind (card->p15card);
           card->p15card = NULL;
         }
+      if (card->p15priv)
+        p15_release_private_data (card);
       if (card->scard)
         {
           sc_unlock (card->scard);

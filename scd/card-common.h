@@ -21,12 +21,16 @@
 #ifndef CARD_COMMON_H
 #define CARD_COMMON_H
 
+/* Declaration of private data structure used by card-p15.c */
+struct p15private_s;
+
 
 struct card_ctx_s {
   int reader;   /* used reader */
   struct sc_context *ctx;
   struct sc_card *scard;
   struct sc_pkcs15_card *p15card; /* only if there is a pkcs15 application */
+  struct p15private_s *p15priv;   /* private data used by card-p15.c */
 
   struct {
     int initialized;  /* the card has been initialied and the function
@@ -57,7 +61,8 @@ struct card_ctx_s {
 int map_sc_err (int rc);
 int card_help_get_keygrip (KsbaCert cert, unsigned char *array);
 
-
+/*-- card-15.c --*/
+void p15_release_private_data (CARD card);
 
 /* constructors */
 void card_p15_bind (CARD card);
