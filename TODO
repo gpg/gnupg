@@ -1,4 +1,5 @@
 
+  * need a BAD_PASSPHRASE status for -c
 
   * add listing of notation data
 
@@ -8,11 +9,6 @@
     file;  write the registry stuff in regedit format.
 
   * Show more info does not work from edit->trust
-
-  * keyedit_menu: We first look for a secret key and then for a public
-  key. This is bad we must match the keys. Better check all places
-  were we match keys.  build_sig_packet: implement update for
-  sig-creation.
 
   * set default charset from nl_langinfo.
 
@@ -79,9 +75,17 @@
     preferences is okay and make AES the default.
 
   * Concatenated encryption messages don't work corectly - only the
-    first one is processes.
+    first one is processed.
 
   * Add status message for reasons why a key was not selected.
+
+  * Add option to put the list of recipients (from the encryption
+    layer) into the signatures notation data.
+
+  * v3 RSA keys do work but the user IDs are shown as [?] which
+    cheking the signatures.  Reported by Dave Dykstra.  Print
+    "[uncertain]" + user ID
+
 
 Scheduled for 1.1
 -----------------

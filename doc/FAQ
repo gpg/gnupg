@@ -45,21 +45,22 @@ you could search in the mailing list archive.
    4.4) What is the difference between options and commands?
    4.5) I can't delete an user id because it is already deleted on my public
 	keyring?
-   4.6) What are trust, validity and ownertrust?
-   4.7) How do I sign a patch file?
-   4.8) Where is the "encrypt-to-self" option?
-   4.9) How can I get rid of the Version and Comment headers in armored
+   4.6) I can't delete the secret key because my public key disappeared?
+   4.7) What are trust, validity and ownertrust?
+   4.8) How do I sign a patch file?
+   4.9) Where is the "encrypt-to-self" option?
+   4.10) How can I get rid of the Version and Comment headers in armored
 	messages?
-   4.10) What does the "You are using the xxxx character set." mean?
-   4.11) How can a get list of key IDs used to encrypt a message?
-   4.12) I can't decrypt my symmetrical only (-c) encrypted message with
+   4.11) What does the "You are using the xxxx character set." mean?
+   4.12) How can a get list of key IDs used to encrypt a message?
+   4.13) I can't decrypt my symmetrical only (-c) encrypted message with
 	a new version of GnuPG.
-   4.13) How can I used GnuPG in an automated environment?
-   4.14) Which email-client can I use with GnuPG?
-   4.15) Can't we have a gpg library?
-   4.16) I have successfully generated a revocation certificate, but I don't
+   4.14) How can I used GnuPG in an automated environment?
+   4.15) Which email-client can I use with GnuPG?
+   4.16) Can't we have a gpg library?
+   4.17) I have successfully generated a revocation certificate, but I don't
 	understand how to send it to the key servers.
-   4.17) How do I put my keyring in a different directory?
+   4.18) How do I put my keyring in a different directory?
 
  5. COMPATIBILITY ISSUES 
    5.1) How can I encrypt a message with GnuPG so that PGP is able to decrypt it?
@@ -330,7 +331,18 @@ keyring?
     ring.  Now select this user id and delete it.  Both user ids will be
     removed from the secret ring.
 
-4.6) What are trust, validity and ownertrust?
+4.6) I can't delete the secret key because my public key disappeared?
+
+    To select a key a search is always done on the public keyring,
+    therefore it is not possible to select an secret key without
+    having the public key.  Normally it shoud never happen that the
+    public key got lost but the secret key is still available.  The
+    reality is different, so we GnuPG implements a special way to do
+    deal with it: Simply use the long keyid which you can figure out
+    by using the --with-colons options (it is the fifth field in the
+    lines beginning with "sec").
+
+4.7) What are trust, validity and ownertrust?
 
     "ownertrust" is used instead of "trust" to make clear that this is
     the value you have assigned to a key to express how much you trust
@@ -340,7 +352,7 @@ keyring?
     who claims to be the owner of the key).  For more see the chapter
     "The Web of Trust" in the Manual.
 
-4.7) How do I sign a patch file?
+4.8) How do I sign a patch file?
 
     Use "gpg --clearsign --not-dash-escaped ...".  The problem with
     --clearsign is that all lines starting with a dash are quoted with
@@ -353,19 +365,19 @@ keyring?
     mailer may not preserve these.  If you want to mail a file you can
     simply sign it using your MUA.
 
-4.8) Where is the "encrypt-to-self" option?
+4.9) Where is the "encrypt-to-self" option?
 
     Use "--encrypt-to your_keyid".  You can use more than one of these
     options. To temporary override the use of this additional keys, you
     can use the option "--no-encrypt-to".
 
-4.9) How can I get rid of the Version and Comment headers in armored
+4.10) How can I get rid of the Version and Comment headers in armored
 messages?
 
     Use "--no-version --comment ''".  Note that the left over blank line
     is required by the protocol.
 
-4.10) What does the "You are using the xxxx character set." mean?
+4.11) What does the "You are using the xxxx character set." mean?
 
     This note is printed when UTF8 mapping has to be done.  Make sure
     that the displayed charset is the one you have activated on your
@@ -375,12 +387,12 @@ messages?
     if not, restrict yourself to plain 7 bit ASCII and no mapping has to
     be done.
 
-4.11) How can a get list of key IDs used to encrypt a message?
+4.12) How can a get list of key IDs used to encrypt a message?
 
      gpg --batch --decrypt --list-only --status-fd 1 2>/dev/null | \
     awk '/^\[GNUPG:\] ENC_TO / { print $3 }' 
 
-4.12) I can't decrypt my symmetrical only (-c) encrypted message with
+4.13) I can't decrypt my symmetrical only (-c) encrypted message with
     a new version of GnuPG.
 
     There used to be a bug in GnuPG < 1.0.1 which happens only if 3DES
@@ -391,7 +403,7 @@ messages?
     without this option.  The option will be removed in 1.1, so better
     re-encrypt your message now.
 
-4.13) How can I used GnuPG in an automated environment?
+4.14) How can I used GnuPG in an automated environment?
 
     You should use the option --batch and don't use pass phrases as
     there is usually no way to store it more secure than the secret
@@ -415,7 +427,7 @@ messages?
     turn can revoke all the subkeys installed on that machine and
     install new subkeys.  
 
-4.14) Which email-client can I use with GnuPG?
+4.15) Which email-client can I use with GnuPG?
 
     Using GnuPG to encrypt email is one of the most popular
     uses. Several mail clients or mail user-agents (MUA) support GnuPG
@@ -441,7 +453,7 @@ messages?
     may be possible to use a wrapper. 
 
 
-4.15) Can't we have a gpg library?
+4.16) Can't we have a gpg library?
 
     This has been frequently requested. However, the current viewpoint
     of the GnuPG maintainers is that this would lead to several security
@@ -451,7 +463,7 @@ messages?
     ftp://ftp.guug.de/pub/gcrypt/alpha/gpgme
 
 
-4.16) I have successfully generated a revocation certificate, but I don't
+4.17) I have successfully generated a revocation certificate, but I don't
     understand how to send it to the key servers.
 
     Most keyservers don't accept a 'bare' revocation certificate. You
@@ -462,7 +474,7 @@ messages?
     (or use a keyserver web interface for this).
 
 
-4.17) How do I put my keyring in a different directory?
+4.18) How do I put my keyring in a different directory?
 
     GnuPG keeps several files in a special homedir directory.  These
     include the options file, pubring.gpg, secring.gpg, the trustdb, and
@@ -915,25 +927,15 @@ material?
 
 7.8) How do I change the list of preferred algorithms?
 
-    Currently the default is hard-wired into the GnuPG source code.
-    You'll have to change g10/keygen.c and recompile. The
-    function you'll have to change is keygen_add_std_prefs.  
-    The code is pretty self-explanatory. The constants used to
-    denote the algorithms are defined in include/cipher.h.
-
-    After having done that, generate a new key pair (or a new encryption
-    subkey) with the modified executable. This new key will have the
-    modified preferences and can then be used with unmodified executables.
-
-    To modify the preferences of an existing key, use a modified
-    executable (see above) to change the expiry date and then save the
-    key. The use your original expiry date and save the key again. Now
-    you've got the prefs changed and can use the key again with your
-    unmodified executable.
-
-    Changing the list of preferences with an unmodified GnuPG
-    executable (possibly in the edit-key menu) is on the TODO list and
-    planned for future releases.
+    Use the edit menu and set the new list of preference using the
+    command "setpref"; the format of this command resembles the output
+    of the command "pref".  The preference are not changes immediately
+    but the set preference will be used when a new user ID is
+    created.  If you want to update the preferences for existing user
+    IDs, select those user IDs (or select none to update all) and
+    enter the command "updpref".  Note that the timestamp of the
+    self-signaures is increaded by one second when running this
+    command.
 
 
 8. ACKNOWLEDGEMENTS

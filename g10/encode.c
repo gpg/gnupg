@@ -299,6 +299,8 @@ encode_crypt( const char *filename, STRLIST remusr )
     }
     else
 	cfx.dek->algo = opt.def_cipher_algo;
+    cfx.dek->use_mdc = select_mdc_from_pklist (pk_list);
+
     make_session_key( cfx.dek );
     if( DBG_CIPHER )
 	log_hexdump("DEK is: ", cfx.dek->key, cfx.dek->keylen );
@@ -428,6 +430,9 @@ encrypt_filter( void *opaque, int control,
 	    }
 	    else
 		efx->cfx.dek->algo = opt.def_cipher_algo;
+
+            efx->cfx.dek->use_mdc = select_mdc_from_pklist (efx->pk_list);
+
 	    make_session_key( efx->cfx.dek );
 	    if( DBG_CIPHER )
 		log_hexdump("DEK is: ",

@@ -1,3 +1,8 @@
+2001-08-29  Werner Koch  <wk@gnupg.org>
+
+	* faq.raw: Described how to delete a secret key w/o a public key
+	and changed the entry on updating the preferences.
+
 2001-08-08  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Documented --print-mds and marked the --print-md * as

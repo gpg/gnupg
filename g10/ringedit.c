@@ -84,11 +84,12 @@ static RESTBL resource_table[MAX_RESOURCES];
 static int default_public_resource;
 static int default_secret_resource;
 
-static int search( PACKET *pkt, KBPOS *kbpos, int secret );
+static int search (PKT_public_key *req_pk, u32 *req_keyid,
+                   KBPOS *kbpos, int secret);
 
 
-static int keyring_search( PACKET *pkt, KBPOS *kbpos, IOBUF iobuf,
-						const char *fname );
+static int keyring_search (PKT_public_key *req_pk, u32 *req_keyid,
+                           KBPOS *kbpos, IOBUF iobuf, const char *fname );
 static int keyring_read( KBPOS *kbpos, KBNODE *ret_root );
 static int keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs );
 static int keyring_copy( KBPOS *kbpos, int mode, KBNODE root );
@@ -97,7 +98,7 @@ static int keyring_copy( KBPOS *kbpos, int mode, KBNODE root );
 static int do_gdbm_store( KBPOS *kbpos, KBNODE root, int update );
 static int do_gdbm_locate( GDBM_FILE dbf, KBPOS *kbpos,
 					  const byte *fpr, int fprlen );
-static int do_gdbm_locate_by_keyid( GDBM_FILE dbf, KBPOS *kbpos, u32 *keyid );
+/*static int do_gdbm_locate_by_keyid( GDBM_FILE dbf, KBPOS *kbpos, u32 *keyid );*/
 static int do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root );
 static int do_gdbm_enum( KBPOS *kbpos, KBNODE *ret_root );
 #endif
@@ -464,26 +465,31 @@ get_writable_keyblock_file( int secret )
  * Returns: 0 if found, -1 if not found or an errorcode.
  */
 static int
-search( PACKET *pkt, KBPOS *kbpos, int secret )
+search (PKT_public_key *req_pk, u32 *req_keyid, KBPOS *kbpos, int secret)
 {
     int i, rc, last_rc=-1;
 
     for(i=0; i < MAX_RESOURCES; i++ ) {
 	if( resource_table[i].used && !resource_table[i].secret == !secret ) {
 	    switch( resource_table[i].rt ) {
-	      case rt_RING:
-		rc = keyring_search( pkt, kbpos, resource_table[i].iobuf,
-						 resource_table[i].fname );
-		break;
-	     #ifdef HAVE_LIBGDBM
+	      case rt_RING: 
+                rc = keyring_search (req_pk, req_keyid,
+                                     kbpos, resource_table[i].iobuf,
+                                     resource_table[i].fname );
+                
+                break;
+            #ifdef HAVE_LIBGDBM
 	      case rt_GDBM: {
-		    PKT_public_key *req_pk = pkt->pkt.public_key;
 		    byte fpr[20];
 		    size_t fprlen;
-
-		    fingerprint_from_pk( req_pk, fpr, &fprlen );
-		    rc = do_gdbm_locate( resource_table[i].dbf,
-					 kbpos, fpr, fprlen );
+                    
+                    if (!req_pk)
+                        rc = G10ERR_UNSUPPORTED;
+                    else {
+                        fingerprint_from_pk( req_pk, fpr, &fprlen );
+                        rc = do_gdbm_locate( resource_table[i].dbf,
+                                             kbpos, fpr, fprlen );
+                    }
 		}
 		break;
 	     #endif
@@ -514,20 +520,12 @@ search( PACKET *pkt, KBPOS *kbpos, int secret )
 int
 find_keyblock_byname( KBPOS *kbpos, const char *username )
 {
-    PACKET pkt;
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc;
 
     rc = get_pubkey_byname( NULL, pk, username, NULL );
-    if( rc ) {
-	free_public_key(pk);
-	return rc;
-    }
-
-    init_packet( &pkt );
-    pkt.pkttype = PKT_PUBLIC_KEY;
-    pkt.pkt.public_key = pk;
-    rc = search( &pkt, kbpos, 0 );
+    if (!rc)
+        rc = search( pk, NULL, kbpos, 0 );
     free_public_key(pk);
     return rc;
 }
@@ -540,30 +538,22 @@ find_keyblock_byname( KBPOS *kbpos, const char *username )
 int
 find_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk )
 {
-    PACKET pkt;
     int rc;
 
-    init_packet( &pkt );
-    pkt.pkttype = PKT_PUBLIC_KEY;
-    pkt.pkt.public_key = pk;
-    rc = search( &pkt, kbpos, 0 );
+    rc = search( pk, NULL, kbpos, 0 );
     return rc;
 }
 
 /****************
- * Combined function to search for a key and get the position
- * of the keyblock.
+ * Combined function to search for a secret key and get the position
+ * of the keyblock. 
  */
 int
-find_keyblock_bysk( KBPOS *kbpos, PKT_secret_key *sk )
+find_secret_keyblock_bypk (KBPOS *kbpos, PKT_public_key *pk)
 {
-    PACKET pkt;
     int rc;
 
-    init_packet( &pkt );
-    pkt.pkttype = PKT_SECRET_KEY;
-    pkt.pkt.secret_key = sk;
-    rc = search( &pkt, kbpos, 0 );
+    rc = search (pk, NULL, kbpos, 1);
     return rc;
 }
 
@@ -575,113 +565,27 @@ find_keyblock_bysk( KBPOS *kbpos, PKT_secret_key *sk )
 int
 find_secret_keyblock_byname( KBPOS *kbpos, const char *username )
 {
-    PACKET pkt;
-    PKT_secret_key *sk = m_alloc_clear( sizeof *sk );
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc;
 
-    rc = get_seckey_byname( sk, username, 0 );
-    if( rc ) {
-	free_secret_key(sk);
-	return rc;
-    }
-
-    init_packet( &pkt );
-    pkt.pkttype = PKT_SECRET_KEY;
-    pkt.pkt.secret_key = sk;
-    rc = search( &pkt, kbpos, 1 );
-    free_secret_key(sk);
+    rc = get_pubkey_byname( NULL, pk, username, NULL );
+    if (!rc) 
+        rc = search (pk, NULL, kbpos, 1);
+    free_public_key (pk);
     return rc;
 }
 
-
-/****************
- * Locate a keyblock in a database which is capable of direct access
- * Put all information into KBPOS, which can be later be to access this
- * key block.
- * This function looks into all registered keyblock sources.
- *
- * Returns: 0 if found,
- *	    -1 if not found
- *	    G10ERR_UNSUPPORTED if no resource is able to handle this
- *	    or another errorcode.
+/*
+ * This function locates the secret keyblock without doing a public
+ * keyring check fist.  It is useful in certain situations and much
+ * faster than the generic solution. 
  */
 int
-locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr, int fprlen, int secret )
+find_secret_keyblock_direct (KBPOS *kbpos, u32 *keyid)
 {
-    RESTBL *rentry;
-    int i, rc, any=0, last_rc=-1;
-
-
-    for(i=0, rentry = resource_table; i < MAX_RESOURCES; i++, rentry++ ) {
-	if( rentry->used && !rentry->secret == !secret ) {
-	    kbpos->rt = rentry->rt;
-	    switch( rentry->rt ) {
-	     #ifdef HAVE_LIBGDBM
-	      case rt_GDBM:
-		any = 1;
-		rc = do_gdbm_locate( rentry->dbf, kbpos, fpr, fprlen );
-		break;
-	     #endif
-	      default:
-		rc = G10ERR_UNSUPPORTED;
-		break;
-	    }
-
-	    if( !rc ) {
-		kbpos->resno = i;
-		kbpos->fp = NULL;
-		return 0;
-	    }
-	    else if( rc != -1 && rc != G10ERR_UNSUPPORTED ) {
-		log_error("error searching resource %d: %s\n",
-						  i, g10_errstr(rc));
-		last_rc = rc;
-	    }
-	}
-    }
-
-    return (last_rc == -1 && !any)? G10ERR_UNSUPPORTED : last_rc;
-}
-
-
-int
-locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid, int shortkid, int secret )
-{
-    RESTBL *rentry;
-    int i, rc, any=0, last_rc=-1;
-
-    if( shortkid )
-	return G10ERR_UNSUPPORTED;
-
-    for(i=0, rentry = resource_table; i < MAX_RESOURCES; i++, rentry++ ) {
-	if( rentry->used && !rentry->secret == !secret ) {
-	    kbpos->rt = rentry->rt;
-	    switch( rentry->rt ) {
-	     #ifdef HAVE_LIBGDBM
-	      case rt_GDBM:
-		any = 1;
-		rc = do_gdbm_locate_by_keyid( rentry->dbf, kbpos, keyid );
-		break;
-	     #endif
-	      default:
-		rc = G10ERR_UNSUPPORTED;
-		break;
-	    }
-
-	    if( !rc ) {
-		kbpos->resno = i;
-		kbpos->fp = NULL;
-		return 0;
-	    }
-	    else if( rc != -1 && rc != G10ERR_UNSUPPORTED ) {
-		log_error("error searching resource %d: %s\n",
-						  i, g10_errstr(rc));
-		last_rc = rc;
-	    }
-	}
-    }
-
-    return (last_rc == -1 && !any)? G10ERR_UNSUPPORTED : last_rc;
+    int rc;
+    rc = search (NULL, keyid, kbpos, 1);
+    return rc;
 }
 
 
@@ -1065,21 +969,16 @@ scan_user_file_read( SCAN_USER_HANDLE hd, byte *fpr )
  ****************************************************************/
 
 static int
-cmp_seckey( PKT_secret_key *req_sk, PKT_secret_key *sk )
+cmp_seckey( PKT_public_key *req_pk, PKT_secret_key *sk )
 {
     int n,i;
 
-    assert( req_sk->pubkey_algo == sk->pubkey_algo );
+    if (req_pk->pubkey_algo != sk->pubkey_algo)
+        return -1;
 
-    n = pubkey_get_nskey( req_sk->pubkey_algo );
-    for(i=0; i < n; i++ ) {
-        /* Note: becuase v4 protected keys have nothing in the
-         * mpis except for the first one, we skip all NULL MPIs.
-         * This might not be always correct in cases where the both
-         * keys do not match in their secret parts but we can ignore that
-         * because the need for this function is quite ugly. */
-	if( req_sk->skey[1] && sk->skey[i]
-             && mpi_cmp( req_sk->skey[i], sk->skey[i] ) )
+    n = pubkey_get_npkey (req_pk->pubkey_algo);
+    for (i=0; i < n; i++ ) {
+	if( mpi_cmp (req_pk->pkey[i], sk->skey[i]) )
 	    return -1;
     }
     return 0;
@@ -1104,16 +1003,15 @@ cmp_pubkey( PKT_public_key *req_pk, PKT_public_key *pk )
  * search one keyring, return 0 if found, -1 if not found or an errorcode.
  */
 static int
-keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
+keyring_search( PKT_public_key *req_pk, u32 *req_keyid, 
+                KBPOS *kbpos, IOBUF iobuf, const char *fname )
 {
     int rc;
     PACKET pkt;
     int save_mode;
-    off_t offset;
-    int pkttype = req->pkttype;
-    PKT_public_key *req_pk = req->pkt.public_key;
-    PKT_secret_key *req_sk = req->pkt.secret_key;
+    off_t offset, main_offset;
 
+    assert (!!req_pk ^ !!req_keyid); /* exactly one must be specified */
     init_packet(&pkt);
     save_mode = set_packet_list_mode(0);
     kbpos->rt = rt_RING;
@@ -1135,29 +1033,57 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
     }
   #endif
 
-    while( !(rc=search_packet(iobuf, &pkt, pkttype, &offset)) ) {
-	if( pkt.pkttype == PKT_SECRET_KEY ) {
+    main_offset = 0;
+    while ( !(rc=search_packet(iobuf, &pkt, &offset)) ) {
+	if (pkt.pkttype == PKT_PUBLIC_KEY || pkt.pkttype == PKT_SECRET_KEY) {
+            main_offset = offset;
+        }
+
+	if (pkt.pkttype == PKT_SECRET_KEY || pkt.pkttype == PKT_SECRET_SUBKEY) {
 	    PKT_secret_key *sk = pkt.pkt.secret_key;
 
-	    if(   req_sk->timestamp == sk->timestamp
-	       && req_sk->pubkey_algo == sk->pubkey_algo
-	       && !cmp_seckey( req_sk, sk) )
-		break; /* found */
+            if (req_keyid) {
+                u32 aki[2];
+
+                keyid_from_sk (sk, aki);
+                if (aki[0] == req_keyid[0] && aki[1] == req_keyid[1])
+                    break; /* found */
+            }
+            else {
+                /* We can't compare the timestamps here because they
+                   might differ */
+                if( !cmp_seckey (req_pk, sk) )
+                    break; /* found */
+            }
 	}
-	else if( pkt.pkttype == PKT_PUBLIC_KEY ) {
+	else if (pkt.pkttype == PKT_PUBLIC_KEY
+                 || pkt.pkttype == PKT_PUBLIC_SUBKEY) {
 	    PKT_public_key *pk = pkt.pkt.public_key;
 
-	    if(   req_pk->timestamp == pk->timestamp
-	       && req_pk->pubkey_algo == pk->pubkey_algo
-	       && !cmp_pubkey( req_pk, pk ) )
-		break; /* found */
+            if (req_keyid) {
+                u32 aki[2];
+
+                keyid_from_pk (pk, aki);
+                if (aki[0] == req_keyid[0] && aki[1] == req_keyid[1])
+                    break; /* found */
+            }
+            else {
+                if(   req_pk->timestamp == pk->timestamp
+                      && req_pk->pubkey_algo == pk->pubkey_algo
+                      && !cmp_pubkey( req_pk, pk ) )
+                    break; /* found */
+            }
 	}
 	else
 	    BUG();
 	free_packet(&pkt);
     }
     if( !rc ) {
-	kbpos->offset = offset;
+	if (pkt.pkttype == PKT_SECRET_SUBKEY
+            || pkt.pkttype == PKT_PUBLIC_SUBKEY) 
+            kbpos->offset = main_offset;
+        else
+            kbpos->offset = offset;
 	kbpos->valid = 1;
     }
 
@@ -1710,6 +1636,7 @@ do_gdbm_locate( GDBM_FILE dbf, KBPOS *kbpos, const byte *fpr, int fprlen )
  * locate by keyid.
  * FIXME: we must have a way to enumerate thru the list opf fingerprints
  */
+#if 0 /* not used */
 static int
 do_gdbm_locate_by_keyid( GDBM_FILE dbf, KBPOS *kbpos, u32 *keyid )
 {
@@ -1752,7 +1679,7 @@ do_gdbm_locate_by_keyid( GDBM_FILE dbf, KBPOS *kbpos, u32 *keyid )
     free( content.dptr ); /* can't use m_free() here */
     return rc;
 }
-
+#endif /* not used */
 
 
 static int

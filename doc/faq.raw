@@ -279,6 +279,17 @@ keyring?
     ring.  Now select this user id and delete it.  Both user ids will be
     removed from the secret ring.
 
+<Q> I can't delete the secret key because my public key disappeared?
+
+    To select a key a search is always done on the public keyring,
+    therefore it is not possible to select an secret key without
+    having the public key.  Normally it shoud never happen that the
+    public key got lost but the secret key is still available.  The
+    reality is different, so we GnuPG implements a special way to do
+    deal with it: Simply use the long keyid which you can figure out
+    by using the --with-colons options (it is the fifth field in the
+    lines beginning with "sec").
+
 <Q> What are trust, validity and ownertrust?
 
     "ownertrust" is used instead of "trust" to make clear that this is
@@ -887,25 +898,15 @@ material?
 
 <Q> How do I change the list of preferred algorithms?
 
-    Currently the default is hard-wired into the GnuPG source code.
-    You'll have to change [H pre]g10/keygen.c[H/pre] and recompile. The
-    function you'll have to change is [H pre]keygen_add_std_prefs[H /pre].  
-    The code is pretty self-explanatory. The constants used to
-    denote the algorithms are defined in [H pre]include/cipher.h[H /pre].
-
-    After having done that, generate a new key pair (or a new encryption
-    subkey) with the modified executable. This new key will have the
-    modified preferences and can then be used with unmodified executables.
-
-    To modify the preferences of an existing key, use a modified
-    executable (see above) to change the expiry date and then save the
-    key. The use your original expiry date and save the key again. Now
-    you've got the prefs changed and can use the key again with your
-    unmodified executable.
-
-    Changing the list of preferences with an unmodified GnuPG
-    executable (possibly in the edit-key menu) is on the TODO list and
-    planned for future releases.
+    Use the edit menu and set the new list of preference using the
+    command "setpref"; the format of this command resembles the output
+    of the command "pref".  The preference are not changes immediately
+    but the set preference will be used when a new user ID is
+    created.  If you want to update the preferences for existing user
+    IDs, select those user IDs (or select none to update all) and
+    enter the command "updpref".  Note that the timestamp of the
+    self-signaures is increaded by one second when running this
+    command.
 
 
 <S> ACKNOWLEDGEMENTS

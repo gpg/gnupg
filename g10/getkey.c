@@ -542,55 +542,8 @@ get_seckey( PKT_secret_key *sk, u32 *keyid )
 int
 seckey_available( u32 *keyid )
 {
-#if 0
-    int rc;
-    struct getkey_ctx_s ctx;
-    KBNODE kb = NULL;
-
-    memset( &ctx, 0, sizeof ctx );
-    ctx.exact = 1; /* use the key ID exactly as given */
-    ctx.not_allocated = 1;
-    ctx.nitems = 1;
-    ctx.items[0].mode = 11;
-    ctx.items[0].keyid[0] = keyid[0];
-    ctx.items[0].keyid[1] = keyid[1];
-    rc = lookup( &ctx, &kb, 1 );
-    get_seckey_end( &ctx );
-    release_kbnode ( kb );
-    return rc;
-#endif
-    int rc;
-    int found = 0;
-    int oldmode = set_packet_list_mode (0);
-    KBNODE keyblock = NULL; 
-    KBPOS  kbpos;
-
-    rc = enum_keyblocks ( 5, &kbpos, NULL );
-    if ( !rc ) {
-	while ( !(rc = enum_keyblocks (1, &kbpos, &keyblock)) ) {
-            KBNODE k;
-
-            for (k=keyblock; k; k = k->next ) {
-                if ( k->pkt->pkttype == PKT_SECRET_KEY
-                     || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-                    u32 aki[2];
-                    keyid_from_sk (k->pkt->pkt.secret_key, aki );
-                    if( aki[1] == keyid[1] && aki[0] == keyid[0] ) {
-                        found = 1;
-                        goto leave;
-                    }
-                }
-            }
-            release_kbnode (keyblock); keyblock = NULL;
-	}
-    }
-    if( rc && rc != -1 )
-	log_error ("enum_keyblocks failed: %s\n", g10_errstr(rc));
- leave:
-    release_kbnode (keyblock); 
-    enum_keyblocks ( 2, &kbpos, NULL );
-    set_packet_list_mode (oldmode);
-    return found? 0 : G10ERR_NO_SECKEY;
+    KBPOS dummy_kbpos;
+    return find_secret_keyblock_direct (&dummy_kbpos, keyid)? G10ERR_NO_SECKEY:0;
 }
 
 
@@ -1458,7 +1411,7 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
      * from the hashed list but if there are no such preferences, we
      * try to get them from the unhashed list.  There is no risk with
      * that, because our implementation comes only with strong
-     * algorithms and it woulkd be fruitless for an attacker to insert
+     * algorithms and it would be fruitless for an attacker to insert
      * an weak algorithm.  */
     p = parse_sig_subpkt2 ( sig, SIGSUBPKT_PREF_SYM, &n );
     sym = p; nsym = p?n:0;
@@ -1490,6 +1443,18 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
         uid->prefs[n].value = 0;
     }
 
+    /* see whether we have the MDC feature */
+    uid->mdc_feature = 0;
+    p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n);
+    if (!p)
+        n=0;
+    for (; n; n--, p++) {
+        if (*p == 1) {
+            uid->mdc_feature = 1;
+            break;
+        }
+    }
+            
 }
 
 static void
@@ -1846,6 +1811,7 @@ merge_selfsigs( KBNODE keyblock )
     int revoked;
     PKT_public_key *main_pk;
     prefitem_t *prefs;
+    int mdc_feature;
 
     if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY ) {
         if (keyblock->pkt->pkttype == PKT_SECRET_KEY ) {
@@ -1890,12 +1856,15 @@ merge_selfsigs( KBNODE keyblock )
      * use reference counting to optimize the preference lists storage.
      * FIXME: it might be better to use the intersection of 
      * all preferences.
+     * Do a similar thing for the MDC feature flag.
      */
     prefs = NULL;
+    mdc_feature = 0;
     for (k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next) {
         if (k->pkt->pkttype == PKT_USER_ID
             && k->pkt->pkt.user_id->is_primary) {
             prefs = k->pkt->pkt.user_id->prefs;
+            mdc_feature = k->pkt->pkt.user_id->mdc_feature;
             break;
         }
     }    
@@ -1906,6 +1875,7 @@ merge_selfsigs( KBNODE keyblock )
             if (pk->prefs)
                 m_free (pk->prefs);
             pk->prefs = copy_prefs (prefs);
+            pk->mdc_feature = mdc_feature;
         }
     }
 

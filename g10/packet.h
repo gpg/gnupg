@@ -145,6 +145,7 @@ typedef struct {
     int is_primary;
     int is_revoked;  
     prefitem_t *prefs;    /* list of preferences (may be NULL)*/
+    int mdc_feature;
     u32 created;          /* according to the self-signature */
     char name[1];
 } PKT_user_id;
@@ -172,6 +173,7 @@ typedef struct {
     u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
     prefitem_t *prefs;      /* list of preferences (may be NULL) */
+    int    mdc_feature;    /* mdc feature set */
     byte    *namehash;	    /* if != NULL: found by this name */
     PKT_user_id *user_id;   /* if != NULL: found by that uid */
     MPI     pkey[PUBKEY_MAX_NPKEY];
@@ -303,6 +305,7 @@ typedef enum {
     SIGSUBPKT_KEY_FLAGS    =27, /* key flags */
     SIGSUBPKT_SIGNERS_UID  =28, /* signer's user id */
     SIGSUBPKT_REVOC_REASON =29, /* reason for revocation */
+    SIGSUBPKT_FEATURES     =30, /* feature flags */
     SIGSUBPKT_PRIV_VERIFY_CACHE =101, /* cache verification result */
 
     SIGSUBPKT_FLAG_CRITICAL=128
@@ -320,7 +323,7 @@ int list_packets( IOBUF a );
 int set_packet_list_mode( int mode );
 
 #if DEBUG_PARSE_PACKET
-int dbg_search_packet( IOBUF inp, PACKET *pkt, int pkttype, off_t *retpos,
+int dbg_search_packet( IOBUF inp, PACKET *pkt, off_t *retpos,
                        const char* file, int lineno  );
 int dbg_parse_packet( IOBUF inp, PACKET *ret_pkt,
                       const char* file, int lineno );
@@ -330,8 +333,8 @@ int dbg_copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff,
                            const char* file, int lineno  );
 int dbg_skip_some_packets( IOBUF inp, unsigned n,
                            const char* file, int lineno	);
-#define search_packet( a,b,c,d )   \
-             dbg_search_packet( (a), (b), (c), (d), __FILE__, __LINE__ )
+#define search_packet( a,b,c )   \
+             dbg_search_packet( (a), (b), (c), __FILE__, __LINE__ )
 #define parse_packet( a, b )  \
 	     dbg_parse_packet( (a), (b), __FILE__, __LINE__ )
 #define copy_all_packets( a,b )  \
@@ -341,7 +344,7 @@ int dbg_skip_some_packets( IOBUF inp, unsigned n,
 #define skip_some_packets( a,b ) \
              dbg_skip_some_packets((a),(b), __FILE__, __LINE__ )
 #else
-int search_packet( IOBUF inp, PACKET *pkt, int pkttype, off_t *retpos );
+int search_packet( IOBUF inp, PACKET *pkt, off_t *retpos );
 int parse_packet( IOBUF inp, PACKET *ret_pkt);
 int copy_all_packets( IOBUF inp, IOBUF out );
 int copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff );

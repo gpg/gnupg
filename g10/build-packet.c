@@ -747,6 +747,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
           case SIGSUBPKT_PREF_SYM:
           case SIGSUBPKT_PREF_HASH:
           case SIGSUBPKT_PREF_COMPR:
+          case SIGSUBPKT_FEATURES:
             delete_sig_subpkt (sig->hashed, type);
             break;
           default:
@@ -783,6 +784,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_REVOC_REASON:
       case SIGSUBPKT_PRIMARY_UID:
       case SIGSUBPKT_KEY_FLAGS:
+      case SIGSUBPKT_FEATURES:
 	       hashed = 1; break;
       default: hashed = 0; break;
     }

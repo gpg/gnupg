@@ -61,8 +61,18 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 
     *r_sec_avail = 0;
     /* search the userid */
-    rc = secret? find_secret_keyblock_byname( &kbpos, username )
-	       : find_keyblock_byname( &kbpos, username );
+    if (secret
+        && classify_user_id (username, keyid, NULL, NULL, NULL) == 11) {
+        /* if the user supplied a long keyID we use the direct search
+           methods which allows us to delete a key if the
+           corresponding secret key is missing */
+        rc = find_secret_keyblock_direct (&kbpos, keyid);
+    }
+    else if (secret)
+        rc = find_secret_keyblock_byname (&kbpos, username);
+    else 
+	rc = find_keyblock_byname (&kbpos, username);
+
     if( rc ) {
 	log_error(_("%s: user not found\n"), username );
 	write_status_text( STATUS_DELETE_PROBLEM, "1" );

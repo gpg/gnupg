@@ -1,3 +1,45 @@
+2001-08-30  Werner Koch  <wk@gnupg.org>
+
+	* packet.h (sigsubpkttype_t): Add SIGSUBPKT_FEATURES.
+	(PKT_public_key, PKT_user_id): Add a flag for it.
+	* parse-packet.c, build-packet.c: Add support for them.
+	* getkey.c (fixup_uidnode, merge_selfsigs): Set the MDC flags.
+	* keygen.c (add_feature_mdc): New.
+	(keygen_upd_std_prefs): Always set the MDC feature.
+	* keyedit.c (show_prefs): List the MDC flag
+	* pkclist.c (select_mdc_from_pklist): New.
+	* encode.c (encode_crypt, encrypt_filter): Test whether MDC
+	should be used.
+	* cipher.c (write_header): Set MDC use depending on the above test.
+	Print more status info.
+
+	* delkey.c (do_delete_key): Kludge to delete a secret key with no
+	public key available.
+
+	* ringedit.c (find_secret_keyblock_direct): New.
+	* getkey.c (seckey_available): Simplified.
+
+	* ringedit.c (cmp_seckey): Now compares the secret key against the
+	public key while ignoring all secret parts.
+	(keyring_search): Use a public key packet as arg.  Allow to search
+	for subnkeys
+	(search): Likewise. Changed all callers.
+	(find_secret_keyblock_bypk): New.
+	(find_secret_keyblock_byname): First locate the pubkey and then
+	find the correponding secret key.
+	* parse-packet.c (parse): Renamed pkttype arg to onlykeypkts and
+	changed code accordingly.  Changed all callers.
+	(search_packet): Removed pkttype arg.
+	* keyedit.c (keyedit_menu): First locate the public key and then
+	try to locate a secret key.
+
+	* ringedit.c (locate_keyblock_by_fpr): Removed.
+	(locate_keyblock_by_keyid): Removed.
+	(find_keyblock_bysk): Removed.
+
+	* sig-check.c (check_key_signature2): Print the keyid along with
+	the wrong sig class errors.
+
 2001-08-24  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (sign_file): Stripped the disabled comment packet code.

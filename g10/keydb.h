@@ -124,6 +124,7 @@ int  check_signatures_trust( PKT_signature *sig );
 void release_pk_list( PK_LIST pk_list );
 int  build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use );
 int  select_algo_from_prefs( PK_LIST pk_list, int preftype );
+int  select_mdc_from_pklist (PK_LIST pk_list);
 
 /*-- skclist.c --*/
 void release_sk_list( SK_LIST sk_list );
@@ -218,15 +219,12 @@ int add_keyblock_resource( const char *resname, int force, int secret );
 const char *keyblock_resource_name( KBPOS *kbpos );
 int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
 char *get_writable_keyblock_file( int secret );
-int locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr,
-					    int fprlen, int secret );
-int locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid,
-					    int shortkid, int secret );
 int find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos );
 int find_keyblock_byname( KBPOS *kbpos, const char *username );
 int find_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk );
-int find_keyblock_bysk( KBPOS *kbpos, PKT_secret_key *sk );
+int find_secret_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk );
 int find_secret_keyblock_byname( KBPOS *kbpos, const char *username );
+int find_secret_keyblock_direct (KBPOS *kbpos, u32 *keyid);
 int lock_keyblock( KBPOS *kbpos );
 void unlock_keyblock( KBPOS *kbpos );
 int read_keyblock( KBPOS *kbpos, KBNODE *ret_root );

@@ -227,7 +227,7 @@ more arguments in future versions.
 	Mark the start and end of the actual decryption process.  These
 	are also emitted when in --list-only mode.
 
-    BEGIN_ENCRYPTION
+    BEGIN_ENCRYPTION  <mdc_method> <sym_algo>
     END_ENCRYPTION
 	Mark the start and end of the actual encryption process.
 

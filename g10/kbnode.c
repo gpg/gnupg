@@ -385,12 +385,13 @@ dump_kbnode( KBNODE node )
 	else if( node->pkt->pkttype == PKT_PUBLIC_KEY
 		 || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
             PKT_public_key *pk = node->pkt->pkt.public_key;
-	    fprintf(stderr, "  keyid=%08lX a=%d u=%d %c%c%c\n",
+	    fprintf(stderr, "  keyid=%08lX a=%d u=%d %c%c%c%c\n",
                     (ulong)keyid_from_pk( pk, NULL ),
                     pk->pubkey_algo, pk->pubkey_usage,
                     pk->has_expired? 'e':'.',  
                     pk->is_revoked?  'r':'.',  
-                    pk->is_valid?    'v':'.' );
+                    pk->is_valid?    'v':'.',
+                    pk->mdc_feature? 'm':'.');
 	}
 	else
 	    fputs("\n", stderr);

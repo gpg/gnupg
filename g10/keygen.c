@@ -280,6 +280,30 @@ keygen_get_std_prefs ()
 }
 
 
+static void
+add_feature_mdc (PKT_signature *sig)
+{
+    const byte *s;
+    size_t i, n;
+    char *buf;
+
+    s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n );
+    if (!s)
+        n = 0;
+
+    for (i=0; i < n; i++ ) {
+        if (s[i] == 1)
+            return; /* already set */
+    }
+
+    buf = m_alloc (n+1);
+    buf[0] = 1; /* MDC feature */
+    memcpy (buf+1, s, n);
+    build_sig_subpkt (sig, SIGSUBPKT_FEATURES, buf, n+1);
+    m_free (buf);
+}
+
+
 int
 keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
 {
@@ -298,6 +322,10 @@ keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
         build_sig_subpkt (sig, SIGSUBPKT_PREF_COMPR, zip_prefs, nzip_prefs);
     else
         delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_COMPR);
+
+    /* Make sure that the MDC feature flag is set */
+    add_feature_mdc (sig);
+
     return 0;
 }
 

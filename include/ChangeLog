@@ -1,3 +1,7 @@
+2001-08-30  Werner Koch  <wk@gnupg.org>
+
+	* cipher.h (DEK): Added use_mdc.
+
 2001-08-24  Werner Koch  <wk@gnupg.org>
 
 	* cipher.h (md_write): Made buf arg const. 

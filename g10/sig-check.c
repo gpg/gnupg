@@ -551,7 +551,8 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	}
 	else {
             if (!opt.quiet)
-                log_info ("no subkey for subkey revocation packet\n");
+                log_info ("key %08lX: no subkey for subkey revocation packet\n",
+                          (ulong)keyid_from_pk (pk, NULL));
 	    rc = G10ERR_SIG_CLASS;
 	}
     }
@@ -574,7 +575,9 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    md_close(md);
 	}
 	else {
-	    log_info ("no subkey for key signature packet\n");
+            if (!opt.quiet)
+                log_info ("key %08lX: no subkey for subkey binding packet\n",
+                          (ulong)keyid_from_pk (pk, NULL));
 	    rc = G10ERR_SIG_CLASS;
 	}
     }
@@ -607,8 +610,10 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	    md_close(md);
 	}
 	else {
-	    log_info ("no user ID for key signature packet of class %02x\n",
-                      sig->sig_class );
+            if (!opt.quiet)
+                log_info ("key %08lX: no user ID for key signature packet "
+                          "of class %02x\n",
+                          (ulong)keyid_from_pk (pk, NULL), sig->sig_class );
 	    rc = G10ERR_SIG_CLASS;
 	}
     }

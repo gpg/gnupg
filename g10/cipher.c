@@ -47,15 +47,26 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     byte temp[18];
     unsigned blocksize;
     unsigned nprefix;
-    int use_mdc = opt.force_mdc;
+    int use_mdc;
 
     blocksize = cipher_get_blocksize( cfx->dek->algo );
     if( blocksize < 8 || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
+
+    use_mdc = cfx->dek->use_mdc;
+
     if( blocksize != 8 )
-	use_mdc = 1;  /* enable it for all modern ciphers */
+	use_mdc = 1;  /* Hack: enable it for all modern ciphers */
+    /* Note: We should remove this hack as soon as a reasonable number of keys
+       are carrying the MDC flag.  But always keep the hack for conventional
+       encryption */
+
+    if (opt.force_mdc)
+        use_mdc = 1;
+        
     if( opt.rfc2440 || opt.rfc1991 )
 	use_mdc = 0;  /* override - rfc2440 does not know about MDC */
+
 
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;
@@ -67,6 +78,14 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
 	if ( DBG_HASHING )
 	    md_start_debug( cfx->mdc_hash, "creatmdc" );
     }
+
+    {
+        char buf[20];
+        
+        sprintf (buf, "%d %d", ed.mdc_method, cfx->dek->algo);
+        write_status_text (STATUS_BEGIN_ENCRYPTION, buf);
+    }
+
     init_packet( &pkt );
     pkt.pkttype = use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;
     pkt.pkt.encrypted = &ed;
@@ -111,7 +130,6 @@ cipher_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	assert(a);
 	if( !cfx->header ) {
-	    write_status( STATUS_BEGIN_ENCRYPTION );
 	    write_header( cfx, a );
 	}
 	if( cfx->mdc_hash )

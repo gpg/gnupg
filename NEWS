@@ -24,7 +24,11 @@
     * Merged Stefan's patches for RISC OS in.  See comments in
       scripts/build-riscos. 
 
-    * It is now possible to sign an convenional encrypt a message (-cs).
+    * It is now possible to sign and convenional encrypt a message (-cs).
+
+    * The MDC feature flag is supported and can be set by using
+      the "updpref" edit command.
+ 
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------

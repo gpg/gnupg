@@ -38,7 +38,7 @@
 static int mpi_print_mode = 0;
 static int list_mode = 0;
 
-static int  parse( IOBUF inp, PACKET *pkt, int reqtype,
+static int  parse( IOBUF inp, PACKET *pkt, int onlykeypkts,
                   off_t *retpos, int *skip, IOBUF out, int do_skip
 	    #ifdef DEBUG_PARSE_PACKET
 		   ,const char *dbg_w, const char *dbg_f, int dbg_l
@@ -154,28 +154,28 @@ parse_packet( IOBUF inp, PACKET *pkt )
 #endif
 
 /****************
- * Like parse packet, but only return packets of the given type.
+ * Like parse packet, but only return secret or public (sub)key packets.
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_search_packet( IOBUF inp, PACKET *pkt, int pkttype, off_t *retpos,
+dbg_search_packet( IOBUF inp, PACKET *pkt, off_t *retpos,
 		   const char *dbg_f, int dbg_l )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, pkttype, retpos, &skip, NULL, 0, "search", dbg_f, dbg_l );
+	rc = parse( inp, pkt, 1, retpos, &skip, NULL, 0, "search", dbg_f, dbg_l );
     } while( skip );
     return rc;
 }
 #else
 int
-search_packet( IOBUF inp, PACKET *pkt, int pkttype, off_t *retpos )
+search_packet( IOBUF inp, PACKET *pkt, off_t *retpos )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, pkttype, retpos, &skip, NULL, 0 );
+	rc = parse( inp, pkt, 1, retpos, &skip, NULL, 0 );
     } while( skip );
     return rc;
 }
@@ -277,14 +277,14 @@ skip_some_packets( IOBUF inp, unsigned n )
 
 
 /****************
- * Parse packet. Set the variable skip points to to 1 if the packet
- * should be skipped; this is the case if either there is a
- * requested packet type and the parsed packet doesn't match or the
+ * Parse packet. Set the variable skip points to 1 if the packet
+ * should be skipped; this is the case if either ONLYKEYPKTS is set
+ * and the parsed packet isn't one or the
  * packet-type is 0, indicating deleted stuff.
  * if OUT is not NULL, a special copymode is used.
  */
 static int
-parse( IOBUF inp, PACKET *pkt, int reqtype, off_t *retpos,
+parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
        int *skip, IOBUF out, int do_skip
 #ifdef DEBUG_PARSE_PACKET
        ,const char *dbg_w, const char *dbg_f, int dbg_l
@@ -375,7 +375,12 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, off_t *retpos,
 	goto leave;
     }
 
-    if( do_skip || !pkttype || (reqtype && pkttype != reqtype) ) {
+    if( do_skip 
+        || !pkttype
+        || (onlykeypkts && pkttype != PKT_PUBLIC_SUBKEY
+                        && pkttype != PKT_PUBLIC_KEY
+                        && pkttype != PKT_SECRET_SUBKEY
+                        && pkttype != PKT_SECRET_KEY    ) ) {
 	skip_rest(inp, pktlen);
 	*skip = 1;
 	rc = 0;
@@ -856,6 +861,11 @@ dump_sig_subpkt( int hashed, int type, int critical,
 		printf("%02X", buffer[i] );
 	}
         break;
+      case SIGSUBPKT_FEATURES:
+        fputs ( "features:", stdout );
+        for( i=0; i < length; i++ )
+            printf(" %d", buffer[i] );
+	break;
       case SIGSUBPKT_PRIV_VERIFY_CACHE:
 	p = "verification cache";
 	break;
@@ -903,6 +913,7 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_HASH:
       case SIGSUBPKT_PREF_COMPR:
       case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_FEATURES:
 	return 0;
       case SIGSUBPKT_PRIMARY_UID:
           if ( n != 1 )
@@ -944,6 +955,7 @@ can_handle_critical( const byte *buffer, size_t n, int type )
       case SIGSUBPKT_PREF_COMPR:
       case SIGSUBPKT_KEY_FLAGS:
       case SIGSUBPKT_PRIMARY_UID:
+      case SIGSUBPKT_FEATURES:
 	return 1;
 
       case SIGSUBPKT_POLICY: /* Is it enough to show the policy? */

@@ -1146,4 +1146,29 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
     return i;
 }
 
+/*
+ * Select the MDC flag from the pk_list.  We can only use MDC if all recipients
+ * support this feature 
+ */
+int
+select_mdc_from_pklist (PK_LIST pk_list)
+{
+    PK_LIST pkr;
+
+    if( !pk_list )
+	return 0;
+
+    for (pkr = pk_list; pkr; pkr = pkr->next) {
+        int mdc;
+
+        if (pkr->pk->user_id) /* selected by user ID */
+            mdc = pkr->pk->user_id->mdc_feature;
+        else
+            mdc = pkr->pk->mdc_feature;
+        if (!mdc)
+            return 0; /* at least on recipeint does not support it */
+    }
+    return 1; /* can be used */
+}
+
 

@@ -650,10 +650,19 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	have_commands = 1;
     }
 
+    /* get the public key */
+    rc = get_keyblock_byname( &keyblock, &keyblockpos, username );
+    if( rc )
+	goto leave;
+    if( fix_keyblock( keyblock ) )
+	modified++;
+    if( collapse_uids( &keyblock ) )
+	modified++;
 
-    if( !sign_mode ) {
-	/* first try to locate it as secret key */
-	rc = find_secret_keyblock_byname( &sec_keyblockpos, username );
+    if( !sign_mode ) {/* see whether we have a matching secret key */
+        PKT_public_key *pk = keyblock->pkt->pkt.public_key;
+
+        rc = find_secret_keyblock_bypk( &sec_keyblockpos, pk );
 	if( !rc ) {
 	    rc = read_keyblock( &sec_keyblockpos, &sec_keyblock );
 	    if( rc ) {
@@ -667,17 +676,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	}
     }
 
-    /* and now get the public key */
-    rc = get_keyblock_byname( &keyblock, &keyblockpos, username );
-    if( rc )
-	goto leave;
-    if( fix_keyblock( keyblock ) )
-	modified++;
-    if( collapse_uids( &keyblock ) )
-	modified++;
-
-    if( sec_keyblock ) { /* check that they match */
-	/* fixme: check that they both match */
+    if( sec_keyblock ) { 
 	tty_printf(_("Secret key is available.\n"));
     }
 
@@ -1118,6 +1117,8 @@ show_prefs (PKT_user_id *uid, int verbose)
                                  prefs[i].type == PREFTYPE_ZIP ? 'Z':'?',
                                  prefs[i].value);
         }
+        if (uid->mdc_feature)
+            tty_printf (" [mdc]");
         tty_printf("\n");
     }
 }
