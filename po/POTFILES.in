@@ -5,6 +5,8 @@
 util/secmem.c
 util/argparse.c
 util/miscutil.c
+util/errors.c
+util/logger.c
 
 # cipher
 cipher/random.c

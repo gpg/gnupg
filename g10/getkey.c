@@ -1078,6 +1078,8 @@ enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
     }
 
     if( !sk ) { /* free the context */
+	if( c->iobuf )
+	    iobuf_close(c->iobuf);
 	m_free( c );
 	*context = NULL;
 	return 0;

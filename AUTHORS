@@ -10,11 +10,14 @@ mskala@ansuz.sooke.bc.ca
 GNUPG	Natural Resources Canada    1998-08-11
 Disclaims changes by Matthew Skala.
 
-GNUPG	Niklas Hernaeus 	    ??????????
-(Weak key patches)
+GNUPG	Michael Roth	Germany     1998-09-17
+Assigns changes (wrote cipher/des.c).
+mroth@nessie.de
 
-GNUPG	Michael Roth		    ??????????
-(DES code)
+GNUPG	Niklas Hernaeus 1998-09-18
+Disclaims changes (Weak key patches).
+nh@df.lth.se
+
 
 TRANSLATIONS	Marco d'Itri        1997-02-22
 Disclaim

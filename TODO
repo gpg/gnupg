@@ -1,4 +1,6 @@
 
+    * check for working mmap()
+
     * after creating a new uid, the preferences in the trustdb are not updated.
       We should always sync the trustdb in such cases.
 

@@ -160,7 +160,7 @@ init_pool( size_t n)
     }
     #endif
     if( pool == (void*)-1 )
-	log_error("can't mmap pool of %u bytes: %s - using malloc\n",
+	log_info("can't mmap pool of %u bytes: %s - using malloc\n",
 			    (unsigned)poolsize, strerror(errno));
     else {
 	pool_is_mmapped = 1;
@@ -217,6 +217,7 @@ void
 secmem_init( size_t n )
 {
     if( !n ) {
+      #ifndef __MINGW32__
 	uid_t uid;
 
 	disable_secmem=1;
@@ -225,6 +226,7 @@ secmem_init( size_t n )
 	    if( setuid( uid ) )
 		log_fatal("failed to drop setuid\n" );
 	}
+      #endif
     }
     else {
 	if( n < DEFAULT_POOLSIZE )

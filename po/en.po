@@ -725,7 +725,22 @@ msgstr ""
 
 #: g10/keygen.c:393
 msgid "keygen.algo"
-msgstr "Select the algorithm to use:Needs more explanation here."
+msgstr ""
+"Select the algorithm to use.\n"
+"DSA (aka DSS) is the digital signature algorithm which can only be used\n"
+"for signatures.  This is the suggested algorithm because verification of\n"
+"DSA signatures are much faster than those of ElGamal\n"
+"ElGamal is a algorithm which can be used for signatures and encryption.\n"
+"OpenPGP distunguishs between two flavors of this algorithms: a encrypt only\n"
+"and a sign+encrypt; actually it is the same, but some parameters must be\n"
+"selected in a special way to create a safe key for signatures: this program\n"
+"does this but other OpenPGP implemenations are not required to understand\n"
+"the signature+encryption flavor.\n"
+"The first (primary) key must always be a key which is capable of signing;\n"
+"this is the reason why the ecrytion only ElGamal key is disabled in this.\n"
+"You should not select the \"ElGamal in a v3 packet\", because that key is\n"
+"not compatible to other OpenPGP implementations."
+
 
 #: g10/keygen.c:393
 msgid "Your selection? "

@@ -30,7 +30,7 @@
 #ifdef	HAVE_GETHRTIME
   #include <sys/times.h>
 #endif
-#ifndef HAVE_GETTIMEOFTIME
+#ifdef HAVE_GETTIMEOFDAY
   #include <sys/times.h>
 #endif
 #ifdef HAVE_GETRUSAGE
@@ -38,6 +38,9 @@
 #endif
 #include <string.h>
 #include <unistd.h>
+#ifdef __MINGW32__
+  #include <process.h>
+#endif
 #include <fcntl.h>
 #include "util.h"
 #include "ttyio.h"
@@ -72,7 +75,7 @@ fast_random_poll()
 	tv = gethrtime();
 	add_randomness( &tv, sizeof(tv), 1 );
     }
-  #elif HAVE_GETTIMEOFTIME
+  #elif HAVE_GETTIMEOFDAY
     {	struct timeval tv;
 	if( gettimeofday( &tv, NULL ) )
 	    BUG();
@@ -80,9 +83,12 @@ fast_random_poll()
 	add_randomness( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
     }
   #else /* use times */
-    {	struct tms buf;
+    {
+      #ifndef __MINGW32__
+	struct tms buf;
 	times( &buf );
 	add_randomness( &buf, sizeof buf, 1 );
+      #endif
     }
   #endif
   #ifdef HAVE_GETRUSAGE

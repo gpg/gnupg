@@ -30,7 +30,7 @@
 #ifdef	HAVE_GETHRTIME
   #include <sys/times.h>
 #endif
-#ifndef HAVE_GETTIMEOFTIME
+#ifdef HAVE_GETTIMEOFDAY
   #include <sys/times.h>
 #endif
 #ifdef HAVE_GETRUSAGE
@@ -65,7 +65,7 @@ fast_random_poll()
 	tv = gethrtime();
 	add_randomness( &tv, sizeof(tv), 1 );
     }
-  #elif HAVE_GETTIMEOFTIME
+  #elif HAVE_GETTIMEOFDAY
     {	struct timeval tv;
 	if( gettimeofday( &tv, NULL ) )
 	    BUG();

@@ -848,7 +848,9 @@ check_sig_and_print( CTX c, KBNODE node )
 
     rc = do_check_sig(c, node, NULL );
     if( !rc || rc == G10ERR_BAD_SIGN ) {
-	write_status( rc? STATUS_BADSIG : STATUS_GOODSIG );
+	char *us = get_user_id_string( sig->keyid );
+	write_status_text( rc? STATUS_BADSIG : STATUS_GOODSIG, us );
+	m_free(us);
 	log_info(rc? _("BAD signature from \"")
 		   : _("Good signature from \""));
 	print_keyid( stderr, sig->keyid );

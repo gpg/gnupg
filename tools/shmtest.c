@@ -19,6 +19,13 @@
 #include "ttyio.h"
 #include "i18n.h"
 
+#ifdef __MINGW32__
+int main( int argc, char **argv )
+{
+    fprintf(stderr, "Sorry, not yet available for Windoze\n");
+    exit(1);
+}
+#else
 
 static int serverpid = -1;
 
@@ -186,4 +193,4 @@ main(int argc, char **argv)
 }
 
 
-
+#endif /* !__MINGW32__ */

@@ -1,3 +1,7 @@
+Tue Oct  6 09:53:56 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* strgutil.c (memicmp): Add HAVE_MEMICMP.
+
 Mon Sep 21 19:45:01 1998  Werner Koch  (wk@(none))
 
 	* secmem.c: New flags to allow suspend/resume of warnings.

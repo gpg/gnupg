@@ -384,7 +384,8 @@ ask_algo( int *ret_v4, int addmode )
     if( !addmode )
 	tty_printf(_("   (%d) DSA and ElGamal (default)\n"), 1 );
     tty_printf(    _("   (%d) ElGamal (sign and encrypt)\n"), 2 );
-    tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
+    if( addmode )
+	tty_printf(    _("   (%d) ElGamal (encrypt only)\n"), 3 );
     tty_printf(    _("   (%d) DSA (sign only)\n"), 4 );
     tty_printf(    _("   (%d) ElGamal in a v3 packet\n"), 5 );
 
@@ -402,7 +403,7 @@ ask_algo( int *ret_v4, int addmode )
 	    algo = PUBKEY_ALGO_ELGAMAL;
 	    break;
 	}
-	else if( algo == 3 ) {
+	else if( algo == 3 && addmode ) {
 	    algo = PUBKEY_ALGO_ELGAMAL_E;
 	    break;
 	}

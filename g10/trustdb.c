@@ -410,6 +410,7 @@ verify_own_keys()
 	rc = 0;
 
   leave:
+    enum_secret_keys( &enum_context, NULL, 0 ); /* free context */
     free_secret_key( sk );
     free_public_key( pk );
     return rc;
@@ -1945,6 +1946,8 @@ clear_trust_checked_flag( PKT_public_key *pk )
  * Update all the info from the public keyblock,  the signatures-checked
  * flag is reset. The key must already exist in the keydb.
  * Note: This function clears all keyblock flags.
+ *
+ * Implementation of this function needs a cache for tdbio record updates
  */
 int
 update_trust_record( KBNODE keyblock )
@@ -1954,6 +1957,7 @@ update_trust_record( KBNODE keyblock )
     TRUSTREC drec;
     int modified = 0;
     int rc = 0;
+    ulong recno, newrecno;
 
     clear_kbnode_flags( keyblock );
     node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -1961,20 +1965,172 @@ update_trust_record( KBNODE keyblock )
     rc = get_dir_record( primary_pk, &drec );
     if( rc )
 	return rc;
+#if 0
+    /* fixme: start a transaction */
+    /* now upate keys and user ids */
+    for( node=keyblock; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_PUBLIC_KEY
+	    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	    PKT_public_key *pk = node->pkt->pkt.public_key;
+	    byte fpr[MAX_FINGERPRINT_LEN];
+	    size_t fprlen;
+	    TRUSTREC krec;
 
+	    fingerprint_from_pk( pk, fpr, &fprlen );
+	    /* do we already have this key? */
+	    for( recno=drec.r.dir.keylist; recno; recno = krec.r.key.next ) {
+		rc = tdbio_read_record( recno, &krec, RECTYPE_KEY );
+		if( rc ) {
+		    log_error("lid %lu: read key record failed: %s\n",
+					primary_pk->local_id, g10_errstr(rc));
+		    goto leave;
+		}
+		if( krec.r.key.fingerprint_len == fprlen
+		    && !memcmp( krec.r.key.fingerprint_len, fpr, fprlen ) )
+		    break;
+	    }
+	    if( recno ) { /* yes */
+		/* here we would compare/update the keyflags */
+	    }
+	    else { /* no: insert this new key */
+		memset( krec, 0, sizeof(krec) );
+		krec.rectype = RECTYPE_KEY;
+		krec.r.key.pubkey_algo = pk->pubkey_algo;
+		krec.r.key.fingerprint_len = fprlen;
+		memcpy(krec.r.key.fingerprint, fpr, fprlen );
+		krec.recnum = newrecno = tdbio_new_recnum();
+		if( tdbio_write_record( krec ) ) {
+		    log_error("writing key record failed\n");
+		    rc = G10ERR_TRUSTDB;
+		    goto leave;
+		}
+		/* and put this new record at the end of the keylist */
+		if( !(recno=drec.r.dir.keylist) ) {
+		    /* this is the first key */
+		    drec.r.dir.keylist = newrecno;
+		    modified = 1;
+		}
+		else { /* we already have key, append it to the list */
+		    for( ; recno; recno = krec.r.key.next ) {
+			rc = tdbio_read_record( recno, &krec, RECTYPE_KEY );
+			if( rc ) {
+			    log_error("lid %lu: read key record failed: %s\n",
+					 primary_pk->local_id, g10_errstr(rc));
+			    goto leave;
+			}
+		    }
+		    krec.r.key.next = newrecno;
+		    if( tdbio_write_record( krec ) ) {
+			log_error("writing key record failed\n");
+			rc = G10ERR_TRUSTDB;
+			goto leave;
+		    }
+		}
+	    } /* end insert new key */
+	} /* end packet type public key packet */
+	else if( node->pkt->pkttype == PKT_USER_ID ) {
+	    PKT_user_id *uid = node->pkt->pkt.user_id;
+	    TRUSTREC urec;
+	    byte nhash[20];
+
+	    rmd160_hash_buffer( nhash, uid->name, uid->len );
+	    for( recno=dir->r.dir.uidlist; recno; recno = urec->r.uid.next ) {
+		rc = tdbio_read_record( recno, urec, RECTYPE_UID );
+		if( rc ) {
+		    if( rc == -1 )
+			rc = G10ERR_READ_FILE
+		    log_error("lid %lu, uid %02X%02X: read error\n"
+			       primary_pk->local_id, nhash[18], nhash[19] );
+		    goto leave;
+		}
+		if( !memcmp( nhash, urec->r.uid.namehash, 20 ) )
+		    break;
+	    }
+	    if( !recno ) { /* new user id */
+
+	    }
+
+	}
+	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
+
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
+		/* must verify this selfsignature here, so that we can
+		 * build the preference record and validate the uid record
+		 */
+		if( !uidlist ) {
+		    log_error("key %08lX: self-signature without user id\n",
+			      (ulong)keyid[1] );
+		}
+		else if( (rc = check_key_signature( keyblock, node, NULL ))) {
+		    log_error("key %08lX, uid %02X%02X: "
+			      "invalid self-signature: %s\n",
+			      (ulong)keyid[1], uidlist->r.uid.namehash[18],
+			      uidlist->r.uid.namehash[19], g10_errstr(rc) );
+		    rc = 0;
+		}
+		else { /* build the prefrecord */
+		    static struct {
+			sigsubpkttype_t subpkttype;
+			int preftype;
+		    } prefs[] = {
+			{ SIGSUBPKT_PREF_SYM,	PREFTYPE_SYM	},
+			{ SIGSUBPKT_PREF_HASH,	PREFTYPE_HASH	},
+			{ SIGSUBPKT_PREF_COMPR, PREFTYPE_COMPR	},
+			{ 0, 0 }
+		    };
+		    const byte *s;
+		    size_t n;
+		    int k, i;
+		    assert(uidlist);
+		    assert(!uidlist->help_pref);
+		    uidlist->mark |= 1; /* mark valid */
+
+		    i = 0;
+		    for(k=0; prefs[k].subpkttype; k++ ) {
+			s = parse_sig_subpkt2( sig, prefs[k].subpkttype, &n );
+			if( s ) {
+			    while( n ) {
+				if( !i || i >= ITEMS_PER_PREF_RECORD ) {
+				    rec = m_alloc_clear( sizeof *rec );
+				    rec->rectype = RECTYPE_PREF;
+				    rec->next = uidlist->help_pref;
+				    uidlist->help_pref = rec;
+				    i = 0;
+				}
+				rec->r.pref.data[i++] = prefs[k].preftype;
+				rec->r.pref.data[i++] = *s++;
+				n--;
+			    }
+			}
+		    }
+		}
+	    }
+	    else if( 0 /* is revocation sig etc */ ) {
+		/* handle it here */
+	    }
+	    else { /* not a selfsignature */
+	    }
+	}
+    } /* end loop over all nodes */
 
     if( drec.r.dir.dirflags & DIRF_CHECKED ) /* <<--- FIXME: remove this! */
 	modified = 1;
 
-    if( modified ) {
+  leave:
+    if( rc )
+	; /* fixme: cancel transaction */
+    else if( modified ) {
 	/* reset the checked flag */
 	drec.r.dir.dirflags &= ~DIRF_CHECKED;
 	rc = tdbio_write_record( &drec );
 	if( rc )
 	    log_error("update_trust_record: write dir record failed: %s\n",
 							    g10_errstr(rc));
+	/* fixme: commit_transaction */
     }
-
+#endif
     return rc;
 }
 
@@ -2004,6 +2160,11 @@ rel_mem_uidnode( u32 *keyid, int err, TRUSTREC *rec )
  *
  * We build everything we can do at this point. We cannot build
  * the sig records, because their LIDs are needed and we may not have them.
+ *
+ *
+ * FIXME: This is too complicated: Most of the stuff is duplicated in
+ * update_trustdb and it will be easier to use a trust record cache instead
+ * of the complicated lists.
  */
 int
 insert_trust_record( PKT_public_key *orig_pk )

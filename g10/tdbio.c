@@ -86,13 +86,17 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    }
 	    *p = '/';
 
-	    fp =fopen( fname, "w" );
+	    fp =fopen( fname, "wb" );
 	    if( !fp )
 		log_fatal_f( fname, _("can't create: %s\n"), strerror(errno) );
 	    fclose(fp);
 	    m_free(db_name);
 	    db_name = fname;
+	  #ifdef __MINGW32__
+	    db_fd = open( db_name, O_RDWR | O_BINARY );
+	  #else
 	    db_fd = open( db_name, O_RDWR );
+	  #endif
 	    if( db_fd == -1 )
 		log_fatal_f( db_name, _("can't open: %s\n"), strerror(errno) );
 
@@ -131,7 +135,11 @@ open_db()
     TRUSTREC rec;
     assert( db_fd == -1 );
 
+  #ifdef __MINGW32__
+    db_fd = open( db_name, O_RDWR | O_BINARY );
+  #else
     db_fd = open( db_name, O_RDWR );
+  #endif
     if( db_fd == -1 )
 	log_fatal_f( db_name, _("can't open: %s\n"), strerror(errno) );
     if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )

@@ -27,6 +27,192 @@ msgstr "ja"
 msgid "yY"
 msgstr "jJ"
 
+
+#: util/errors.c:54
+msgid "General error"
+msgstr "Allgemeiner Fehler"
+
+#: util/errors.c:55
+msgid "Unknown packet type"
+msgstr "Unbekannter Packet Typ"
+
+#: util/errors.c:56
+msgid "Unknown version"
+msgstr "Unbekannte Version"
+
+#: util/errors.c:57
+msgid "Unknown pubkey algorithm"
+msgstr "Unbekanntes Public-Key Verfahren"
+
+#: util/errors.c:58
+msgid "Unknown digest algorithm"
+msgstr "Unbekannte Hashmethode"
+
+#: util/errors.c:59
+msgid "Bad public key"
+msgstr "Falscher öffentlicher Schüssel"
+
+#: util/errors.c:60
+msgid "Bad secret key"
+msgstr "Falcher geheimer Schlüssel"
+
+#: util/errors.c:61
+msgid "Bad signature"
+msgstr "Falsche Signatur"
+
+#: util/errors.c:62
+msgid "Checksum error"
+msgstr "Prüfsummen Fehler"
+
+#: util/errors.c:63
+msgid "Bad passphrase"
+msgstr "Falsche \"Passphrase\""
+
+#: util/errors.c:64
+msgid "Public key not found"
+msgstr "Öffentlicher Schlüssel nicht gefunden"
+
+#: util/errors.c:65
+msgid "Unknown cipher algorithm"
+msgstr "Unbekanntes Verschlüsselungsverfahren"
+
+#: util/errors.c:66
+msgid "Can't open the keyring"
+msgstr "Der Schlüsselring kann nicht geöffnet werden"
+
+#: util/errors.c:67
+msgid "Invalid packet"
+msgstr "Ungültiges Packet"
+
+#: util/errors.c:68
+msgid "Invalid armor"
+msgstr "Ungültige ASCII-Hülle"
+
+#: util/errors.c:69
+msgid "No such user id"
+msgstr "Keine User-ID"
+
+#: util/errors.c:70
+msgid "Secret key not available"
+msgstr "Geheimer Schlüssel ist nicht vorhanden"
+
+#: util/errors.c:71
+msgid "Wrong secret key used"
+msgstr "Falscher geheimer Schlüssel benutzt"
+
+#: util/errors.c:72
+msgid "Not supported"
+msgstr "Wird nicht unterstützt"
+
+#: util/errors.c:73
+msgid "Bad key"
+msgstr "Falscher Schlüssel"
+
+#: util/errors.c:74
+msgid "File read error"
+msgstr "Dateilesefehler"
+
+#: util/errors.c:75
+msgid "File write error"
+msgstr "Dateischreibfehler"
+
+#: util/errors.c:76
+msgid "Unknown compress algorithm"
+msgstr "Unbekanntes Komprimierverfahren"
+
+#: util/errors.c:77
+msgid "File open error"
+msgstr "Fehler beim öffnen der Datei"
+
+#: util/errors.c:78
+msgid "File create error"
+msgstr "Fehler beim erzeugen der Datei"
+
+#: util/errors.c:79
+msgid "Invalid passphrase"
+msgstr "Ungültige \"Passphrase\""
+
+#: util/errors.c:80
+msgid "Unimplemented pubkey algorithm"
+msgstr "Öffentliches Schlüsselverfahren ist nicht implementiert."
+
+#: util/errors.c:81
+msgid "Unimplemented cipher algorithm"
+msgstr "Verschlüsselungsverfahren ist nicht implementiert"
+
+#: util/errors.c:82
+msgid "Unknown signature class"
+msgstr "Unbekannte Signatur-Klasse"
+
+#: util/errors.c:83
+msgid "Trust database error"
+msgstr "Fehler in der Trust-DB"
+
+#: util/errors.c:84
+msgid "Bad MPI"
+msgstr "Falsche MPI"
+
+#: util/errors.c:85
+msgid "Resource limit"
+msgstr "Zu wenig Resourcen"
+
+#: util/errors.c:86
+msgid "Invalid keyring"
+msgstr "Ungültiger Schlüsselring"
+
+#: util/errors.c:87
+msgid "Bad certificate"
+msgstr "Falsches Zertifikat"
+
+#: util/errors.c:88
+msgid "Malformed user id"
+msgstr "Falsch geformte User-ID"
+
+#: util/errors.c:89
+msgid "File close error"
+msgstr "Fehler beim schließen der Datei"
+
+#: util/errors.c:90
+msgid "File rename error"
+msgstr "Fehler beim umbennen einer Datei"
+
+#: util/errors.c:91
+msgid "File delete error"
+msgstr "Fehler beim löchen einer Datei"
+
+#: util/errors.c:92
+msgid "Unexpected data"
+msgstr "Unerwartete Daten"
+
+#: util/errors.c:93
+msgid "Timestamp conflict"
+msgstr "Zeitstempel Konflikt"
+
+#: util/errors.c:94
+msgid "Unusable pubkey algorithm"
+msgstr "Unbenutzbares öffentliches Schlüsselverfahren"
+
+#: util/errors.c:95
+msgid "File exists"
+msgstr "Date existier bereits"
+
+#: util/errors.c:96
+msgid "Weak key"
+msgstr "Schwacher Schlüssel"
+
+#: util/logger.c:177
+#, c-format
+msgid "Ohhhh jeeee ... this is a bug (%s:%d:%s)\n"
+msgstr "Ohhh jeeee ... dies ist eine Wanze (Programmfehler) (%s:%d:%s)\n"
+
+#: util/logger.c:183
+#, c-format
+msgid "you found a bug ... (%s:%d)\n"
+msgstr "Sie haben eine Wanze (Programmfehler) gefunden ... (%s:%d)\n"
+
+
+
+
 #: cipher/rand-dummy.c:106
 msgid "warning: using insecure random number generator!!\n"
 msgstr "Der Zufallszahlengenerator erzeugt keine echten Zufallszahlen!\n"

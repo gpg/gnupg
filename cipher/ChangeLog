@@ -1,3 +1,8 @@
+Tue Oct  6 10:06:32 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* rand-unix.c (HAVE_GETTIMEOFDAY): Fixed (was ..GETTIMEOFTIME :-)
+	* rand-dummy.c (HAVE_GETTIMEOFDAY): Ditto.
+
 Mon Sep 28 13:23:09 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* md.c (md_digest): New.

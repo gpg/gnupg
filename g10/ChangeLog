@@ -1,3 +1,7 @@
+Sat Oct  3 11:01:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keygen.c (ask_alogo): enable ElGamal enc-only only for addmode.
+
 Wed Sep 30 10:15:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* import.c (import_one): Fixed update of wrong keyblock.

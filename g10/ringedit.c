@@ -111,13 +111,9 @@ add_keyblock_resource( const char *filename, int force, int secret )
     if( i == MAX_RESOURCES )
 	return G10ERR_RESOURCE_LIMIT;
 
-  #if __MINGW32__
-    iobuf = NULL;
-  #else
     iobuf = iobuf_open( filename );
     if( !iobuf && !force )
 	return G10ERR_OPEN_FILE;
-  #endif
 
     if( !iobuf ) {
 	iobuf = iobuf_create( filename );
@@ -128,6 +124,12 @@ add_keyblock_resource( const char *filename, int force, int secret )
 	else
 	    log_info("%s: keyring created\n", filename );
     }
+
+  #ifdef __MINGW32__
+    /* must close it again */
+    iobuf_close( iobuf );
+    iobuf = NULL;
+  #endif
 
     resource_table[i].used = 1;
     resource_table[i].secret = !!secret;
@@ -329,7 +331,7 @@ read_keyblock( KBPOS *kbpos, KBNODE *ret_root )
  *	    all others are reserved!
  * Note that you do not need a search prior to this function,
  * only a handle is needed.
- * NOTE: It is not allowed to do an insert/update/delte with this
+ * NOTE: It is not allowed to do an insert/update/delete with this
  *	 keyblock, if you want to do this, use search/read!
  */
 int
@@ -706,7 +708,6 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 }
 
 
-
 /****************
  * Perform insert/delete/update operation.
  * mode 1 = insert
@@ -768,10 +769,33 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     }
 
     /* create the new file */
+  #ifdef __MINGW32__
+    /* Here is another Windoze bug?:
+     * you cant rename("pubring.gpg.tmp", "pubring.gpg");
+     * but	rename("pubring.gpg.tmp", "pubring.aaa");
+     * works.  So we replace .gpg by .bak or .tmp
+     */
+    if( strlen(rentry->fname) > 4
+	&& !strcmp(rentry->fname+strlen(rentry->fname)-4, ".gpg") ) {
+	bakfname = m_alloc( strlen( rentry->fname ) + 1 );
+	strcpy(bakfname,rentry->fname);
+	strcpy(bakfname+strlen(rentry->fname)-4, ".bak");
+	tmpfname = m_alloc( strlen( rentry->fname ) + 1 );
+	strcpy(tmpfname,rentry->fname);
+	strcpy(tmpfname+strlen(rentry->fname)-4, ".tmp");
+    }
+    else { /* file does not end with gpg; hmmm */
+	bakfname = m_alloc( strlen( rentry->fname ) + 5 );
+	strcpy(stpcpy(bakfname,rentry->fname),".bak");
+	tmpfname = m_alloc( strlen( rentry->fname ) + 5 );
+	strcpy(stpcpy(tmpfname,rentry->fname),".tmp");
+    }
+  #else
     bakfname = m_alloc( strlen( rentry->fname ) + 2 );
     strcpy(stpcpy(bakfname,rentry->fname),"~");
     tmpfname = m_alloc( strlen( rentry->fname ) + 5 );
     strcpy(stpcpy(tmpfname,rentry->fname),".tmp");
+  #endif
     newfp = iobuf_create( tmpfname );
     if( !newfp ) {
 	log_error("%s: can't create: %s\n", tmpfname, strerror(errno) );
@@ -857,6 +881,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	goto leave;
     }
     /* if the new file is a secring, restrict the permissions */
+  #ifndef __MINGW32__
     if( rentry->secret ) {
 	if( chmod( tmpfname, S_IRUSR | S_IWUSR ) ) {
 	    log_error("%s: chmod failed: %s\n",
@@ -865,9 +890,11 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	    goto leave;
 	}
     }
+  #endif
+
     /* rename and make backup file */
     if( !rentry->secret ) {  /* but not for secret keyrings */
-      #if __MINGW32__
+      #ifdef __MINGW32__
 	remove( bakfname );
       #endif
 	if( rename( rentry->fname, bakfname ) ) {
@@ -877,7 +904,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	    goto leave;
 	}
     }
-  #if __MINGW32__
+  #ifdef __MINGW32__
     remove( rentry->fname );
   #endif
     if( rename( tmpfname, rentry->fname ) ) {

@@ -146,13 +146,16 @@ STRLIST add_to_strlist( STRLIST *list, const char *string );
 STRLIST append_to_strlist( STRLIST *list, const char *string );
 STRLIST strlist_prev( STRLIST head, STRLIST node );
 STRLIST strlist_last( STRLIST node );
-int memicmp( const char *a, const char *b, size_t n );
 const char *memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
 int string_count_chr( const char *string, int c );
 
 #define stricmp(a,b) strcasecmp((a),(b))
+
+#ifndef HAVE_MEMICMP
+int memicmp( const char *a, const char *b, size_t n );
+#endif
 #ifndef HAVE_STPCPY
 char *stpcpy(char *a,const char *b);
 #endif
