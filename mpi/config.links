@@ -58,7 +58,7 @@ case "${target}" in
     *-*-linuxaout* | *-*-linuxoldld*)
 	needs_underscore="y"
 	;;
-    *-*-linux* | *-sysv* | *-solaris*)
+    *-*-linux* | *-sysv* | *-solaris* | *-gnu*)
 	needs_underscore="n"
 	;;
     *)

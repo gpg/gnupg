@@ -238,6 +238,7 @@ PKT_secret_cert *copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s );
 int signature_check( PKT_signature *sig, MD_HANDLE *digest );
 
 /*-- seckey-cert.c --*/
+int is_secret_key_protected( PKT_secret_cert *cert );
 int check_secret_key( PKT_secret_cert *cert );
 int protect_secret_key( PKT_secret_cert *cert, DEK *dek );
 

@@ -58,6 +58,7 @@
 
 struct resource_table_struct {
     int used;
+    int secret; /* this is a secret keyring */
     char *fname;
     IOBUF iobuf;
 };
@@ -94,7 +95,7 @@ check_pos( KBPOS *kbpos )
  * Register a resource (which currently may ionly be a keyring file).
  */
 int
-add_keyblock_resource( const char *filename, int force )
+add_keyblock_resource( const char *filename, int force, int secret )
 {
     IOBUF iobuf;
     int i;
@@ -109,6 +110,7 @@ add_keyblock_resource( const char *filename, int force )
     if( !iobuf && !force )
 	return G10ERR_OPEN_FILE;
     resource_table[i].used = 1;
+    resource_table[i].secret = !!secret;
     resource_table[i].fname = m_strdup(filename);
     resource_table[i].iobuf = iobuf;
     return 0;
@@ -120,12 +122,12 @@ add_keyblock_resource( const char *filename, int force )
  * to get a handle for insert_keyblock for a new keyblock.
  */
 int
-get_keyblock_handle( const char *filename, KBPOS *kbpos )
+get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
 {
     int i;
 
     for(i=0; i < MAX_RESOURCES; i++ )
-	if( resource_table[i].used ) {
+	if( resource_table[i].used && !resource_table[i].secret == !secret ) {
 	    /* fixme: dos needs case insensitive file compare */
 	    if( !strcmp( resource_table[i].fname, filename ) ) {
 		memset( kbpos, 0, sizeof *kbpos );
@@ -148,12 +150,12 @@ get_keyblock_handle( const char *filename, KBPOS *kbpos )
  * Returns: 0 if found, -1 if not found or an errorcode.
  */
 int
-search_keyblock( PACKET *pkt, KBPOS *kbpos )
+search_keyblock( PACKET *pkt, KBPOS *kbpos, int secret )
 {
     int i, rc, last_rc=-1;
 
     for(i=0; i < MAX_RESOURCES; i++ ) {
-	if( resource_table[i].used ) {
+	if( resource_table[i].used && !resource_table[i].secret == !secret ) {
 	    /* note: here we have to add different search functions,
 	     * depending on the type of the resource */
 	    rc = keyring_search( pkt, kbpos, resource_table[i].iobuf );
@@ -192,8 +194,33 @@ search_keyblock_byname( KBPOS *kbpos, const char *username )
     init_packet( &pkt );
     pkt.pkttype = PKT_PUBLIC_CERT;
     pkt.pkt.public_cert = pkc;
-    rc = search_keyblock( &pkt, kbpos );
+    rc = search_keyblock( &pkt, kbpos, 0 );
     free_public_cert(pkc);
+    return rc;
+}
+
+/****************
+ * Combined function to search for a username and get the position
+ * of the keyblock. This function does not unprotect the secret key.
+ */
+int
+search_secret_keyblock_byname( KBPOS *kbpos, const char *username )
+{
+    PACKET pkt;
+    PKT_secret_cert *skc = m_alloc_clear( sizeof *skc );
+    int rc;
+
+    rc = get_seckey_byname( skc, username, 0 );
+    if( rc ) {
+	free_secret_cert(skc);
+	return rc;
+    }
+
+    init_packet( &pkt );
+    pkt.pkttype = PKT_SECRET_CERT;
+    pkt.pkt.secret_cert = skc;
+    rc = search_keyblock( &pkt, kbpos, 1 );
+    free_secret_cert(skc);
     return rc;
 }
 

@@ -38,7 +38,7 @@
 enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
     aPrintMDs, aSignKey, aClearsig, aListPackets, aEditSig,
-    aKMode, aKModeC,
+    aKMode, aKModeC, aChangePass,
 aTest };
 
 
@@ -158,7 +158,6 @@ main( int argc, char **argv )
     { 512, "cache-all" ,0, "hold everything in memory"},
     { 513, "gen-prime" , 0, "\r" },
     { 514, "test"      , 0, "\r" },
-    { 515, "change-passphrase", 0, "change the passphrase of your secret keyring"},
     { 515, "fingerprint", 0, "show the fingerprints"},
     { 516, "print-mds" , 0, "print all message digests"},
     { 517, "secret-keyring" ,2, "add this secret keyring to the list" },
@@ -169,6 +168,7 @@ main( int argc, char **argv )
     { 522, "no-greeting", 0, "\r" },
     { 523, "passphrase-fd",1, "\r" },
     { 524, "edit-sig"  ,0, "edit a key signature" },
+    { 525, "change-passphrase", 0, "change the passphrase of your secret keyring"},
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -297,6 +297,7 @@ main( int argc, char **argv )
 	  case 522: greeting = 0; break;
 	  case 523: set_passphrase_fd( pargs.r.ret_int ); break;
 	  case 524: set_cmd( &cmd, aEditSig); break;
+	  case 525: set_cmd( &cmd, aChangePass); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -404,6 +405,15 @@ main( int argc, char **argv )
 	/* note: fname is the user id! */
 	if( (rc = edit_keysigs(fname)) )
 	    log_error("edit_keysig('%s'): %s\n", fname_print, g10_errstr(rc) );
+	break;
+
+      case aChangePass: /* Chnage the passphrase */
+	if( argc > 1 ) /* no arg: use default, 1 arg use this one */
+	    usage(1);
+	/* note: fname is the user id! */
+	if( (rc = change_passphrase(fname)) )
+	    log_error("change_passphrase('%s'): %s\n", fname_print,
+						       g10_errstr(rc) );
 	break;
 
       case aKMode: /* list keyring */

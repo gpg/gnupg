@@ -22,6 +22,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+/* Test values:
+ * key	  "abcdefghijklmnopqrstuvwxyz";
+ * plain  "BLOWFISH"
+ * cipher 32 4E D0 FE F4 13 A2 03
+ */
+
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -224,25 +230,26 @@ static const u32 ps[BLOWFISH_ROUNDS+2] = {
 static u32
 function_F( BLOWFISH_context *bc, u32 x )
 {
-    u16 a, b, c, d, y;
+    u16 a, b, c, d;
 
-    d = x & 0x00ff;
-    x >>= 8;
-    c = x & 0x00ff;
-    x >>= 8;
-    b = x & 0x00ff;
-    x >>= 8;
-    a = x & 0x00ff;
-    y = bc->s0[a] + bc->s1[b];
-    y ^= bc->s2[c];
-    y += bc->s3[d];
+  #ifdef BIG_ENDIAN_HOST
+    a = ((byte*)&x)[0];
+    b = ((byte*)&x)[1];
+    c = ((byte*)&x)[2];
+    d = ((byte*)&x)[3];
+  #else
+    a = ((byte*)&x)[3];
+    b = ((byte*)&x)[2];
+    c = ((byte*)&x)[1];
+    d = ((byte*)&x)[0];
+  #endif
 
-    return y;
+    return ((bc->s0[a] + bc->s1[b]) ^ bc->s2[c] ) + bc->s3[d];
 }
 
 
 static void
-encrypted(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
+encrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 {
     u32 xl, xr, temp;
     int i;
@@ -269,8 +276,9 @@ encrypted(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
     *ret_xr = xr;
 }
 
+
 static void
-decrypted(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
+decrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 {
     u32 xl, xr, temp;
     int i;
@@ -298,28 +306,95 @@ decrypted(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 }
 
 static void
-encrypted_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
-    d1 = ((u32*)inbuf)[0];
+  #ifdef BIG_ENDIAN_HOST
+    d1 = ((u32*)inbuf)[0]; /* fixme: this may not be aligned */
     d2 = ((u32*)inbuf)[1];
-    encrypted( bc, &d1, &d2 );
+  #else
+    ((byte*)&d1)[3] = inbuf[0];
+    ((byte*)&d1)[2] = inbuf[1];
+    ((byte*)&d1)[1] = inbuf[2];
+    ((byte*)&d1)[0] = inbuf[3];
+    ((byte*)&d2)[3] = inbuf[4];
+    ((byte*)&d2)[2] = inbuf[5];
+    ((byte*)&d2)[1] = inbuf[6];
+    ((byte*)&d2)[0] = inbuf[7];
+  #endif
+
+    encrypt( bc, &d1, &d2 );
+
+  #ifdef BIG_ENDIAN_HOST
     ((u32*)outbuf)[0] = d1;
     ((u32*)outbuf)[1] = d2;
+  #else
+    outbuf[0] = ((byte*)&d1)[3];
+    outbuf[1] = ((byte*)&d1)[2];
+    outbuf[2] = ((byte*)&d1)[1];
+    outbuf[3] = ((byte*)&d1)[0];
+    outbuf[4] = ((byte*)&d2)[3];
+    outbuf[5] = ((byte*)&d2)[2];
+    outbuf[6] = ((byte*)&d2)[1];
+    outbuf[7] = ((byte*)&d2)[0];
+  #endif
 }
+
 
 static void
-decrypted_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 {
     u32 d1, d2;
 
-    d1 = ((u32*)inbuf)[0];
+  #ifdef BIG_ENDIAN_HOST
+    d1 = ((u32*)inbuf)[0]; /* fixme: this may not be aligned */
     d2 = ((u32*)inbuf)[1];
-    decrypted( bc, &d1, &d2 );
+  #else
+    ((byte*)&d1)[3] = inbuf[0];
+    ((byte*)&d1)[2] = inbuf[1];
+    ((byte*)&d1)[1] = inbuf[2];
+    ((byte*)&d1)[0] = inbuf[3];
+    ((byte*)&d2)[3] = inbuf[4];
+    ((byte*)&d2)[2] = inbuf[5];
+    ((byte*)&d2)[1] = inbuf[6];
+    ((byte*)&d2)[0] = inbuf[7];
+  #endif
+
+    decrypt( bc, &d1, &d2 );
+
+  #ifdef BIG_ENDIAN_HOST
     ((u32*)outbuf)[0] = d1;
     ((u32*)outbuf)[1] = d2;
+  #else
+    outbuf[0] = ((byte*)&d1)[3];
+    outbuf[1] = ((byte*)&d1)[2];
+    outbuf[2] = ((byte*)&d1)[1];
+    outbuf[3] = ((byte*)&d1)[0];
+    outbuf[4] = ((byte*)&d2)[3];
+    outbuf[5] = ((byte*)&d2)[2];
+    outbuf[6] = ((byte*)&d2)[1];
+    outbuf[7] = ((byte*)&d2)[0];
+  #endif
 }
+
+
+static void
+selftest()
+{
+    BLOWFISH_context c;
+    byte plain[] = "BLOWFISH";
+    byte buffer[8];
+
+    blowfish_setkey( &c, "abcdefghijklmnopqrstuvwxyz", 26 );
+    encrypt_block( &c, buffer, plain );
+    if( memcmp( buffer, "\x32\x4E\xD0\xFE\xF4\x13\xA2\x03", 8 ) )
+	log_error("wrong blowfish encryption\n");
+    decrypt_block( &c, buffer, buffer );
+    if( memcmp( buffer, plain, 8 ) )
+	log_bug("blowfish failed\n");
+}
+
 
 
 void
@@ -327,6 +402,12 @@ blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 {
     int i, j, k;
     u32 data, datal, datar;
+    static int initialized;
+
+    if( !initialized ) {
+	initialized = 1;
+	selftest();
+    }
 
     for(i=0; i < BLOWFISH_ROUNDS+2; i++ )
 	c->p[i] = ps[i];
@@ -338,38 +419,44 @@ blowfish_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
     }
 
     for(i=j=0; i < BLOWFISH_ROUNDS+2; i++ ) {
-	data = 0;
-	for(k=0; k < 4; k++) {
-	    data = (data << 8) | key[j];
-	    if( ++j >= keylen )
-		j = 0;
-	}
+      #ifdef BIG_ENDIAN_HOST
+	((byte*)&data)[0] = key[j];
+	((byte*)&data)[1] = key[(j+1)%keylen];
+	((byte*)&data)[2] = key[(j+2)%keylen];
+	((byte*)&data)[3] = key[(j+3)%keylen];
+      #else
+	((byte*)&data)[3] = key[j];
+	((byte*)&data)[2] = key[(j+1)%keylen];
+	((byte*)&data)[1] = key[(j+2)%keylen];
+	((byte*)&data)[0] = key[(j+3)%keylen];
+      #endif
 	c->p[i] ^= data;
+	j = (j+4) % keylen;
     }
 
     datal = datar = 0;
     for(i=0; i < BLOWFISH_ROUNDS+2; i += 2 ) {
-	encrypted( c, &datal, &datar );
+	encrypt( c, &datal, &datar );
 	c->p[i]   = datal;
 	c->p[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encrypted( c, &datal, &datar );
+	encrypt( c, &datal, &datar );
 	c->s0[i]   = datal;
 	c->s0[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encrypted( c, &datal, &datar );
+	encrypt( c, &datal, &datar );
 	c->s1[i]   = datal;
 	c->s1[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encrypted( c, &datal, &datar );
+	encrypt( c, &datal, &datar );
 	c->s2[i]   = datal;
 	c->s2[i+1] = datar;
     }
     for(i=0; i < 256; i += 2 )	{
-	encrypted( c, &datal, &datar );
+	encrypt( c, &datal, &datar );
 	c->s3[i]   = datal;
 	c->s3[i+1] = datar;
     }
@@ -384,7 +471,7 @@ blowfish_setiv( BLOWFISH_context *c, byte *iv )
     else
 	memset( c->iv, 0, BLOWFISH_BLOCKSIZE );
     c->count = 0;
-    encrypted_block( c, c->eniv, c->iv );
+    encrypt_block( c, c->eniv, c->iv );
 }
 
 
@@ -395,7 +482,7 @@ blowfish_encode( BLOWFISH_context *c, byte *outbuf, byte *inbuf,
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	encrypted_block( c, outbuf, inbuf );
+	encrypt_block( c, outbuf, inbuf );
 	inbuf  += BLOWFISH_BLOCKSIZE;;
 	outbuf += BLOWFISH_BLOCKSIZE;
     }
@@ -408,7 +495,7 @@ blowfish_decode( BLOWFISH_context *c, byte *outbuf, byte *inbuf,
     unsigned n;
 
     for(n=0; n < nblocks; n++ ) {
-	decrypted_block( c, outbuf, inbuf );
+	decrypt_block( c, outbuf, inbuf );
 	inbuf  += BLOWFISH_BLOCKSIZE;;
 	outbuf += BLOWFISH_BLOCKSIZE;
     }
@@ -451,7 +538,7 @@ blowfish_encode_cfb( BLOWFISH_context *c, byte *outbuf,
 	outbuf += n;
 	assert( c->count <= BLOWFISH_BLOCKSIZE);
 	if( c->count == BLOWFISH_BLOCKSIZE ) {
-	    encrypted_block( c, c->eniv, c->iv );
+	    encrypt_block( c, c->eniv, c->iv );
 	    c->count = 0;
 	}
 	else
@@ -461,7 +548,7 @@ blowfish_encode_cfb( BLOWFISH_context *c, byte *outbuf,
     while( nbytes >= BLOWFISH_BLOCKSIZE ) {
 	xorblock( outbuf, c->eniv, inbuf, BLOWFISH_BLOCKSIZE);
 	memcpy( c->iv, outbuf, BLOWFISH_BLOCKSIZE);
-	encrypted_block( c, c->eniv, c->iv );
+	encrypt_block( c, c->eniv, c->iv );
 	nbytes -= BLOWFISH_BLOCKSIZE;
 	inbuf += BLOWFISH_BLOCKSIZE;
 	outbuf += BLOWFISH_BLOCKSIZE;
@@ -495,7 +582,7 @@ blowfish_decode_cfb( BLOWFISH_context *c, byte *outbuf,
 	outbuf += n;
 	assert( c->count <= BLOWFISH_BLOCKSIZE);
 	if( c->count == BLOWFISH_BLOCKSIZE ) {
-	    encrypted_block( c, c->eniv, c->iv );
+	    encrypt_block( c, c->eniv, c->iv );
 	    c->count = 0;
 	}
 	else
@@ -506,7 +593,7 @@ blowfish_decode_cfb( BLOWFISH_context *c, byte *outbuf,
     while( nbytes >= BLOWFISH_BLOCKSIZE ) {
 	memcpy( c->iv, inbuf, BLOWFISH_BLOCKSIZE);
 	xorblock( outbuf, c->eniv, inbuf, BLOWFISH_BLOCKSIZE);
-	encrypted_block( c, c->eniv, c->iv );
+	encrypt_block( c, c->eniv, c->iv );
 	nbytes -= BLOWFISH_BLOCKSIZE;
 	inbuf += BLOWFISH_BLOCKSIZE;
 	outbuf += BLOWFISH_BLOCKSIZE;

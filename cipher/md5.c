@@ -47,6 +47,12 @@
  *		with RFC1113 !
  */
 
+/* Test values:
+ * ""                  D4 1D 8C D9 8F 00 B2 04  E9 80 09 98 EC F8 42 7E
+ * "a"                 0C C1 75 B9 C0 F1 B6 A8  31 C3 99 E2 69 77 26 61
+ * "abc                90 01 50 98 3C D2 4F B0  D6 96 3F 7D 28 E1 7F 72
+ * "message digest"    F9 6B 69 7D 7C B7 93 8D  52 5A 2F 31 AA F1 61 D0
+ */
 
 #include <config.h>
 #include <stdio.h>

@@ -507,24 +507,24 @@ generate_keypair()
 	/* we can now write the certificates */
 	/* FIXME: should we check wether the user-id already exists? */
 
-	if( get_keyblock_handle( pub_fname, &pub_kbpos ) ) {
-	    if( add_keyblock_resource( pub_fname, 1 ) ) {
+	if( get_keyblock_handle( pub_fname, 0, &pub_kbpos ) ) {
+	    if( add_keyblock_resource( pub_fname, 1, 0 ) ) {
 		log_error("can add keyblock file '%s'\n", pub_fname );
 		rc = G10ERR_CREATE_FILE;
 	    }
-	    else if( get_keyblock_handle( pub_fname, &pub_kbpos ) ) {
+	    else if( get_keyblock_handle( pub_fname, 0, &pub_kbpos ) ) {
 		log_error("can get keyblock handle for '%s'\n", pub_fname );
 		rc = G10ERR_CREATE_FILE;
 	    }
 	}
 	if( rc )
 	    ;
-	else if( get_keyblock_handle( sec_fname, &sec_kbpos ) ) {
-	    if( add_keyblock_resource( sec_fname, 1 ) ) {
+	else if( get_keyblock_handle( sec_fname, 1, &sec_kbpos ) ) {
+	    if( add_keyblock_resource( sec_fname, 1, 1 ) ) {
 		log_error("can add keyblock file '%s'\n", sec_fname );
 		rc = G10ERR_CREATE_FILE;
 	    }
-	    else if( get_keyblock_handle( sec_fname, &sec_kbpos ) ) {
+	    else if( get_keyblock_handle( sec_fname, 1, &sec_kbpos ) ) {
 		log_error("can get keyblock handle for '%s'\n", sec_fname );
 		rc = G10ERR_CREATE_FILE;
 	    }

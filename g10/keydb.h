@@ -125,10 +125,11 @@ KBNODE walk_kbtree2( KBNODE root, KBNODE *context, int all );
 void clear_kbnode_flags( KBNODE n );
 
 /*-- ringedit.c --*/
-int add_keyblock_resource( const char *filename, int force );
-int get_keyblock_handle( const char *filename, KBPOS *kbpos );
-int search_keyblock( PACKET *pkt, KBPOS *kbpos );
+int add_keyblock_resource( const char *filename, int force, int secret );
+int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
+int search_keyblock( PACKET *pkt, KBPOS *kbpos, int secret );
 int search_keyblock_byname( KBPOS *kbpos, const char *username );
+int search_secret_keyblock_byname( KBPOS *kbpos, const char *username );
 int lock_keyblock( KBPOS *kbpos );
 void unlock_keyblock( KBPOS *kbpos );
 int read_keyblock( KBPOS *kbpos, KBNODE *ret_root );

@@ -83,7 +83,7 @@ add_keyring( const char *name )
      * combine it with the keyblock stuff from ringedit.c
      * For now we will simple add the filename as keyblock resource
      */
-    rc = add_keyblock_resource( name, 0 );
+    rc = add_keyblock_resource( name, 0, 0 );
     if( rc )
 	log_error("keyblock resource '%s': %s\n", name, g10_errstr(rc) );
 }
@@ -115,6 +115,14 @@ add_secret_keyring( const char *name )
     strcpy(sl->d, name );
     sl->next = secret_keyrings;
     secret_keyrings = sl;
+
+    /* FIXME: We should remove much out of this mpdule and
+     * combine it with the keyblock stuff from ringedit.c
+     * For now we will simple add the filename as keyblock resource
+     */
+    rc = add_keyblock_resource( name, 0, 1 );
+    if( rc )
+	log_error("secret keyblock resource '%s': %s\n", name, g10_errstr(rc) );
 }
 
 

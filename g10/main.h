@@ -49,6 +49,7 @@ int sign_file( const char *filename, int detached, STRLIST locusr,
 	       int encrypt, STRLIST remusr );
 int sign_key( const char *username, STRLIST locusr );
 int edit_keysigs( const char *username );
+int change_passphrase( const char *username );
 
 /*-- sig-check.c --*/
 int check_key_signature( KBNODE root, KBNODE node );

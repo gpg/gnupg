@@ -695,6 +695,129 @@ edit_keysigs( const char *username )
 }
 
 
+int
+change_passphrase( const char *username )
+{
+    int rc = 0;
+    KBNODE keyblock = NULL;
+    KBNODE kbctx, node;
+    KBPOS kbpos;
+    PKT_secret_cert *skc;
+    int any;
+    u32 skc_keyid[2];
+    char *answer;
+    int changed=0;
+
+    /* search the userid */
+    rc = search_secret_keyblock_byname( &kbpos, username );
+    if( rc ) {
+	log_error("secret key for user '%s' not found\n", username );
+	goto leave;
+    }
+
+    /* read the keyblock */
+    rc = read_keyblock( &kbpos, &keyblock );
+    if( rc ) {
+	log_error("error reading the certificate: %s\n", g10_errstr(rc) );
+	goto leave;
+    }
+
+    /* get the keyid from the keyblock */
+    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
+	if( node->pkt->pkttype == PKT_SECRET_CERT )
+	    break;
+    }
+    if( !node ) {
+	log_error("Oops; secret key not found anymore!\n");
+	rc = G10ERR_GENERAL;
+	goto leave;
+    }
+
+    skc = node->pkt->pkt.secret_cert;
+    keyid_from_skc( skc, skc_keyid );
+    tty_printf("sec  %4u%c/%08lX %s   ",
+	      nbits_from_skc( skc ),
+	      pubkey_letter( skc->pubkey_algo ),
+	      skc_keyid[1], datestr_from_skc(skc) );
+    {
+	size_t n;
+	char *p = get_user_id( skc_keyid, &n );
+	tty_print_string( p, n );
+	m_free(p);
+	tty_printf("\n");
+    }
+
+    clear_kbnode_flags( keyblock );
+    switch( is_secret_key_protected( skc ) ) {
+      case -1:
+	rc = G10ERR_PUBKEY_ALGO;
+	break;
+      case 0:
+	tty_printf("This key is not protected.\n");
+	break;
+      default:
+	tty_printf("Key is protected.\n");
+	rc = check_secret_key( skc );
+	break;
+    }
+
+    if( rc )
+	tty_printf("Can't edit this key: %s\n", g10_errstr(rc));
+    else {
+	DEK *dek = m_alloc_secure( sizeof *dek );
+
+	tty_printf( "Enter the new passphrase for this secret key.\n\n" );
+
+	for(;;) {
+	    dek->algo = CIPHER_ALGO_BLOWFISH;
+	    rc = make_dek_from_passphrase( dek , 2 );
+	    if( rc == -1 ) {
+		rc = 0;
+		tty_printf( "You don't want a passphrase -"
+			    " this is probably a *bad* idea!\n\n");
+		answer = tty_get("Do you really want to do this? ");
+		tty_kill_prompt();
+		if( answer_is_yes(answer) )
+		    changed++;
+		m_free(answer);
+		break;
+	    }
+	    else if( rc == G10ERR_PASSPHRASE ) {
+		tty_printf("passphrase not correctly repeated; try again.\n");
+	    }
+	    else if( rc ) {
+		m_free(dek); dek = NULL;
+		log_error("Error getting the passphrase: %s\n", g10_errstr(rc));
+		break;
+	    }
+	    else { /* okay */
+		skc->d.elg.protect_algo = CIPHER_ALGO_BLOWFISH;
+		randomize_buffer(skc->d.elg.protect.blowfish.iv, 8, 1);
+		rc = protect_secret_key( skc, dek );
+		if( rc )
+		    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
+		else
+		    changed++;
+		break;
+	    }
+	}
+	m_free(dek);
+    }
+
+
+    if( changed ) {
+	rc = update_keyblock( &kbpos, keyblock );
+	if( rc ) {
+	    log_error("update_keyblock failed: %s\n", g10_errstr(rc) );
+	    goto leave;
+	}
+    }
+
+  leave:
+    release_kbnode( keyblock );
+    return rc;
+}
+
 
 /****************
  * Create a signature packet for the given public key certificate

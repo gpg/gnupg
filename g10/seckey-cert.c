@@ -284,6 +284,23 @@ check_secret_key( PKT_secret_cert *cert )
     return rc;
 }
 
+/****************
+ * check wether the secret key is protected.
+ * Returns: 0 not protected, -1 on error or the protection algorithm
+ */
+int
+is_secret_key_protected( PKT_secret_cert *cert )
+{
+    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	return cert->d.elg.is_protected? cert->d.elg.protect_algo : 0;
+  #ifdef HAVE_RSA_CIPHER
+    else if( cert->pubkey_algo == PUBKEY_ALGO_RSA )
+	return cert->d.rsa.is_protected? cert->d.rsa.protect_algo : 0;
+  #endif
+    else
+	return -1; /* unsupported */
+}
+
 
 /****************
  * Protect the secret key certificate with the passphrase from DEK
