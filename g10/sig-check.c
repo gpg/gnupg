@@ -564,7 +564,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    md_close(md);
 	}
 	else {
-            if (!opt.quiet)
+            if (opt.verbose)
                 log_info (_("key %08lX: no subkey for subkey "
 			    "revocation signature\n"),
                           (ulong)keyid_from_pk (pk, NULL));

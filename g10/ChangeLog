@@ -1,3 +1,24 @@
+2003-08-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgv.c: Remove extra semicolon (typo).
+
+	* options.skel: Note that keyserver.pgp.com isn't synchronized,
+	and explain the roundrobin a bit better.
+
+	* sig-check.c (check_key_signature2), import.c (import_one,
+	import_revoke_cert, chk_self_sigs, delete_inv_parts,
+	collapse_uids, merge_blocks): Make much quieter during import of
+	slightly munged, but recoverable, keys. Use log_error for
+	unrecoverable import failures.
+
+	* keyring.c (keyring_rebuild_cache): Comment.
+
+	* sign.c (mk_notation_and_policy): Making a v3 signature with
+	notations or policy urls is an error, not an info (i.e. increment
+	the errorcount). Don't print the notation or policy url to stdout
+	since it can be mixed into the output stream when piping and munge
+	the stream.
+
 2003-08-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, sig-check.c (signature_check2, do_check,

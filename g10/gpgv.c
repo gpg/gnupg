@@ -229,7 +229,7 @@ check_signatures_trust( PKT_signature *sig )
 
 void
 read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
-		   byte *marginals,byte *completes,byte *cert_depth) {};
+		   byte *marginals,byte *completes,byte *cert_depth) {}
 
 /* Stub: 
  * We don't have the trustdb , so we have to provide some stub functions
