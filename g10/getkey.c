@@ -1319,7 +1319,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     PKT_public_key *pk = NULL;
     KBNODE k;
     u32 kid[2];
-    u32 sigdate = 0, uiddate=0, uiddate2;
+    u32 sigdate, uiddate, uiddate2;
     KBNODE signode, uidnode, uidnode2;
     u32 curtime = make_timestamp ();
     unsigned int key_usage = 0;
@@ -1402,7 +1402,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                     else {
                         sigdate = sig->timestamp;
                         signode = k;
-			sigversion = sig->version;
+			if( sig->version > sigversion )
+			  sigversion = sig->version;
 
 		    }
 		  }
@@ -1500,7 +1501,6 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     /* second pass: look at the self-signature of all user IDs */
     signode = uidnode = NULL;
     sigdate = 0; /* helper to find the latest signature in one user ID */
-    uiddate = 0; /* and over of all user IDs */
     for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next ) {
 	if ( k->pkt->pkttype == PKT_USER_ID ) {
             if ( uidnode && signode ) 
@@ -1510,8 +1510,6 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 	      }
             uidnode = k;
             signode = NULL;
-            if ( sigdate > uiddate )
-                uiddate = sigdate;
             sigdate = 0;
       	}
         else if ( k->pkt->pkttype == PKT_SIGNATURE && uidnode ) {
@@ -1601,9 +1599,15 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 	  }
       }
 
-    /* Record the highest selfsigversion so we know if this is a v3
-       key through and through, or a v3 key with a v4 selfsig, which
-       means we can trust the preferences (if any). */
+    /* Record the highest selfsig version so we know if this is a v3
+       key through and through, or a v3 key with a v4 selfsig
+       somewhere.  This is useful in a few places to know if the key
+       must be treated as PGP2-style or OpenPGP-style.  Note that a
+       selfsig revocation with a higher version number will also raise
+       this value.  This is okay since such a revocation must be
+       issued by the user (i.e. it cannot be issued by someone else to
+       modify the key behavior.) */
+
     pk->selfsigversion=sigversion;
 
     /* Now that we had a look at all user IDs we can now get some information

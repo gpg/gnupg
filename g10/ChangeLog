@@ -1,3 +1,12 @@
+2003-01-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs_main): Remove some unused code and make
+	sure that the pk selfsigversion member accounts for 1F direct
+	sigs.
+
+	* keyring.c (keyring_search): skipfnc didn't work properly with
+	non-keyid searches.  Noted by Stefan Bellon.
+
 2003-01-02  Werner Koch  <wk@gnupg.org>
 
 	* keydb.c (keydb_add_resource): Don't assume that try_make_homedir
