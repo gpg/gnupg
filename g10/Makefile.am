@@ -19,16 +19,15 @@
 
 ## Process this file with automake to produce Makefile.in
 
-localedir = $(datadir)/locale
-INCLUDES = -I$(top_srcdir)/common -I$(top_srcdir)/include -I$(top_srcdir)/intl -DLOCALEDIR=\"$(localedir)\" @LIBGCRYPT_CFLAGS@
-
 EXTRA_DIST = options.skel
-# it seems that we can't use this with automake 1.5
-#OMIT_DEPENDENCIES = zlib.h zconf.h
-libexecdir = @libexecdir@/@PACKAGE@
-if ! HAVE_DOSISH_SYSTEM
-AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
-endif
+
+AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/include \
+              -I$(top_srcdir)/intl 
+
+include $(top_srcdir)/am/cmacros.am
+
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
+
 needed_libs = ../common/libcommon.a ../jnlib/libjnlib.a
 
 bin_PROGRAMS = gpg2 gpgv2

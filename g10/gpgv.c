@@ -46,7 +46,6 @@
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
-#include "g10defs.h"
 
 
 enum cmd_and_opt_values { aNull = 0,
@@ -163,7 +162,7 @@ main( int argc, char **argv )
     opt.homedir = getenv("GNUPGHOME");
 #endif
     if( !opt.homedir || !*opt.homedir ) {
-	opt.homedir = GNUPG_HOMEDIR;
+	opt.homedir = GNUPG_DEFAULT_HOMEDIR;
     }
     tty_no_terminal(1);
     tty_batchmode(1);

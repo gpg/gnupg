@@ -360,7 +360,7 @@ copy_options_file( const char *destdir )
 void
 try_make_homedir( const char *fname )
 {
-    const char *defhome = GNUPG_HOMEDIR;
+    const char *defhome = GNUPG_DEFAULT_HOMEDIR;
 
     /* Create the directory only if the supplied directory name
      * is the same as the default one.  This way we avoid to create

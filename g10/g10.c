@@ -1238,7 +1238,7 @@ main( int argc, char **argv )
     set_homedir ( getenv("GNUPGHOME") );
 #endif
     if( !*opt.homedir )
-	set_homedir ( GNUPG_HOMEDIR );
+	set_homedir ( GNUPG_DEFAULT_HOMEDIR );
 
     /* check whether we have a config file on the commandline */
     orig_argc = argc;

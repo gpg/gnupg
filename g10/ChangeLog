@@ -1,3 +1,15 @@
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* gpgv.c: Removed g10defs.h.
+
+	* Makefile.am: Include cmacros.am for common flags.
+
+2004-02-11  Werner Koch  <wk@gnupg.org>
+
+	* openfile.c (try_make_homedir): Use GNUPG_DEFAULT_HOMEDIR.
+	* gpgv.c (main): Ditto.
+	* g10.c (main): Ditto.
+
 2004-01-19  Moritz Schulte  <mo@g10code.com>
 
 	* keygen.c (do_generate_keypair): Print member fname, instead of
