@@ -22,8 +22,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include "keybox-defs.h"
+
+#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
+                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
+#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+
 
 static ulong
 get32 (const byte *buffer)
@@ -206,6 +212,16 @@ has_issuer_sn (KEYBOXBLOB blob, const char *name, const unsigned char *sn)
 }
 
 static int
+has_sn (KEYBOXBLOB blob, const unsigned char *sn)
+{
+  return_val_if_fail (sn, 0);
+
+  if (blob_get_type (blob) != BLOBTYPE_X509)
+    return 0;
+  return blob_cmp_sn (blob, sn);
+}
+
+static int
 has_subject (KEYBOXBLOB blob, const char *name)
 {
   size_t namelen;
@@ -219,6 +235,16 @@ has_subject (KEYBOXBLOB blob, const char *name)
   return blob_cmp_name (blob, 1 /* subject */, name, namelen);
 }
 
+
+static void
+release_sn_array (unsigned char **array, size_t size)
+{
+  size_t n;
+
+  for (n=0; n < size; n++)
+    xfree (array[n]);
+  xfree (array);
+}
 
 
 /*
@@ -256,6 +282,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
   size_t n;
   int need_words, any_skip;
   KEYBOXBLOB blob = NULL;
+  unsigned char **sn_array = NULL;
 
   if (!hd)
     return KEYBOX_Invalid_Value;
@@ -290,13 +317,84 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 	}
       if (desc[n].skipfnc) 
         any_skip = 1;
+      if (desc[n].sn_is_string && !sn_array)
+        {
+          sn_array = xtrycalloc (ndesc, sizeof *sn_array);
+          if (!sn_array)
+            return (hd->error = KEYBOX_Out_Of_Core);
+        }
     }
 
   if (!hd->fp)
     {
       hd->fp = fopen (hd->kb->fname, "rb");
       if (!hd->fp)
+        {
+          xfree (sn_array);
           return (hd->error = KEYBOX_File_Open_Error);
+        }
+    }
+
+  /* kludge: we need to convert an SN given as hexstring to it's
+     binary representation - in some cases we are not able to store it
+     in the search descriptor, because due to its usgae it is not
+     possible to free allocated memory */
+  if (sn_array)
+    {
+      const unsigned char *s;
+      int i, odd;
+      size_t snlen;
+
+      for (n=0; n < ndesc; n++) 
+        {
+          if (!desc[n].sn)
+            ;
+          else if (desc[n].sn_is_string)
+            {
+              unsigned char *sn;
+
+              s = desc[n].sn;
+              for (i=0; *s && *s != '/'; s++, i++)
+                ;
+              odd = (i & 1);
+              snlen = (i+1)/2;
+              sn_array[n] = xtrymalloc (4+snlen);
+              if (!sn_array[n])
+                {
+                  release_sn_array (sn_array, n);
+                  return (hd->error = KEYBOX_Out_Of_Core);
+                }
+              sn = sn_array[n] + 4;
+              s = desc[n].sn;
+              if (odd)
+                {
+                  *sn++ = xtoi_1 (s);
+                  s++;
+                }
+              for (; *s && *s != '/';  s += 2)
+                *sn++ = xtoi_2 (s);
+              assert (sn - sn_array[n] == 4+snlen);
+              sn = sn_array[n];
+              sn[0] = snlen >> 24;
+              sn[1] = snlen >> 16;
+              sn[2] = snlen >> 8;
+              sn[3] = snlen;
+            }
+          else
+            {
+              const unsigned char *sn;
+
+              sn = desc[n].sn;
+              snlen = (sn[0] << 24) | (sn[1] << 16) | (sn[2] << 8) | sn[3];
+              sn_array[n] = xtrymalloc (4+snlen);
+              if (!sn_array[n])
+                {
+                  release_sn_array (sn_array, n);
+                  return (hd->error = KEYBOX_Out_Of_Core);
+                }
+              memcpy (sn_array[n], sn, 4+snlen);
+            }
+        }
     }
 
 
@@ -327,7 +425,12 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_ISSUER_SN:
-              if (has_issuer_sn (blob, desc[n].u.name, desc[n].sn))
+              if (has_issuer_sn (blob, desc[n].u.name,
+                                 sn_array? sn_array[n] : desc[n].sn))
+                goto found;
+              break;
+            case KEYDB_SEARCH_MODE_SN:
+              if (has_sn (blob, sn_array? sn_array[n] : desc[n].sn))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SUBJECT:
@@ -383,6 +486,9 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       _keybox_release_blob (blob);
       hd->error = rc;
     }
+
+  if (sn_array)
+    release_sn_array (sn_array, ndesc);
 
   return rc;
 }

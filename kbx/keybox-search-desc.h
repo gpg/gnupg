@@ -42,6 +42,7 @@ typedef enum {
   KEYDB_SEARCH_MODE_FPR,
   KEYDB_SEARCH_MODE_ISSUER,
   KEYDB_SEARCH_MODE_ISSUER_SN,
+  KEYDB_SEARCH_MODE_SN,
   KEYDB_SEARCH_MODE_SUBJECT,
   KEYDB_SEARCH_MODE_FIRST,
   KEYDB_SEARCH_MODE_NEXT
@@ -51,11 +52,12 @@ struct keydb_search_desc {
   KeydbSearchMode mode;
   int (*skipfnc)(void *,void*); /* used to be: void*, u32* */
   void *skipfncvalue;
-  const unsigned char *sn; /* used only with _MODE_ISSUER_SN */
+  const unsigned char *sn; 
+  int sn_is_string;  /* very ugly */
   union {
     const char *name;
-    char fpr[24];
-    /*fixme: u32  kid[2];*/
+    unsigned char fpr[24];
+    unsigned char kid[8]; 
   } u;
 };
 
