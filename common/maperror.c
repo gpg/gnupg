@@ -202,6 +202,12 @@ map_to_assuan_status (int rc)
     case 0: break;
     case GNUPG_Bad_CA_Certificate: 
     case GNUPG_Bad_Certificate:  
+    case GNUPG_Wrong_Key_Usage:
+    case GNUPG_Certificate_Revoked:
+    case GNUPG_No_CRL_Known:
+    case GNUPG_CRL_Too_Old:
+    case GNUPG_No_Policy_Match:
+    case GNUPG_Certificate_Expired:
       rc = ASSUAN_Bad_Certificate; 
       break;
     case GNUPG_Bad_Certificate_Path: rc = ASSUAN_Bad_Certificate_Path; break;

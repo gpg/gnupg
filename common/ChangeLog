@@ -1,3 +1,8 @@
+2002-06-28  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_to_assuan_status): Map more errorcodes to Bad
+	Certificate.
+
 2002-06-26  Werner Koch  <wk@gnupg.org>
 
 	* maperror.c (map_to_assuan_status): Map EOF to No_Data_Available.
