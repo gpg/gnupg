@@ -1,3 +1,8 @@
+2005-03-10  Werner Koch  <wk@g10code.com>
+
+	* secmem.c (secmem_realloc): Take control information into account
+	when testing for a resize.
+
 2004-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (send_request): Include the port if non-80 in the Host:

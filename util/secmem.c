@@ -393,6 +393,10 @@ secmem_realloc( void *p, size_t newsize )
 
     mb = (MEMBLOCK*)((char*)p - ((size_t) &((MEMBLOCK*)0)->u.aligned.c));
     size = mb->size;
+    if (size < sizeof(MEMBLOCK))
+      log_bug ("secure memory corrupted at block %p\n", mb);
+    size -= ((size_t) &((MEMBLOCK*)0)->u.aligned.c);
+
     if( newsize < size )
 	return p; /* it is easier not to shrink the memory */
     a = secmem_malloc( newsize );
