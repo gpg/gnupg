@@ -1,5 +1,7 @@
 2003-11-20  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Include TRANSLATE in distributed files.
+
 	* TRANSLATE: New, note to translators about the yes|yes multiple
 	match syntax.
 
