@@ -1338,8 +1338,9 @@ validate_keys (int interactive)
   int key_count;
   int ot_unknown, ot_undefined, ot_never, ot_marginal, ot_full, ot_ultimate;
   KeyHashTable visited;
-  u32 next_expire;
+  u32 start_time, next_expire;
 
+  start_time = make_timestamp ();
   next_expire = 0xffffffff; /* set next expire to the year 2106 */
   visited = new_key_hash_table ();
   /* Fixme: Instead of always building a UTK list, we could just build it
@@ -1480,7 +1481,11 @@ validate_keys (int interactive)
   release_key_hash_table (visited);
   if (!rc && !quit) /* mark trustDB as checked */
     {
-      if (next_expire == 0xffffffff)
+      /* If there was an inconsistency in the trustdb it might happen
+         that the next_expire is set to the past; however at this point
+         we did checked it and thus we can flag the trustdb with no
+         schedule required. */
+      if (next_expire == 0xffffffff || next_expire < start_time )
         tdbio_write_nextcheck (0); 
       else
         {
@@ -1492,3 +1497,5 @@ validate_keys (int interactive)
     }
   return rc;
 }
+
+

@@ -1,5 +1,8 @@
 2002-04-18  Werner Koch  <wk@gnupg.org>
 
+	* trustdb.c (validate_keys): Never schedule a nextcheck into the
+	past.
+
 	* getkey.c (premerge_public_with_secret): Fixed 0x12345678! syntax
 	for use with secret keys.
 	(lookup): Advance the searchmode after a search FIRST.
