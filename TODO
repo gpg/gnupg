@@ -51,3 +51,5 @@
 
     * Is it okay to use gettext for the help system???
 
+    * There are still problems with old v3 keys after passphrase change.
+

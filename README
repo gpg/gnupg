@@ -1,3 +1,5 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+
 		  GNUPG - The GNU Privacy Guard
 		 -------------------------------
 			  Version 0.3
@@ -333,3 +335,12 @@
     post them to the mailing list <g10@net.lut.ac.uk> (this is a closed list,
     please subscribe before posting).
 
+-----BEGIN PGP SIGNATURE-----
+Version: GNUPG v0.3.2b (GNU/Linux)
+Comment: Get GNUPG from ftp://ftp.guug.de/pub/gcrypt/
+
+iQB1AwUBNcy3yh0Z9MEMmFelAQEUXwMAg8h8GaecR1jWVwCqaWO4oGCyWgaxvi0yfQR1Y1GC
+j6Hpo5Hwa3d2UAYETL3M42/M32uxe0Wh8PMgLTWTfhV9XjwxCNg3BBDm2Zb5Enpr9UEIFOdN
+OCV3J4gED4jXDOtO
+=oPV/
+-----END PGP SIGNATURE-----
