@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * $Id$
  */
 
 #ifndef ISO7816_H
@@ -24,6 +26,8 @@
 #if GNUPG_MAJOR_VERSION == 1
 #include "cardglue.h"
 #endif
+
+gpg_error_t iso7816_map_sw (int sw);
 
 gpg_error_t iso7816_select_application (int slot,
                                         const char *aid, size_t aidlen);

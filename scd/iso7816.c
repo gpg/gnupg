@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * $Id$
  */
 
 #include <config.h>
@@ -102,6 +104,17 @@ map_sw (int sw)
     }
   return gpg_error (ec);
 }
+
+/* Map a status word from the APDU layer to a gpg-error code.  */
+gpg_error_t
+iso7816_map_sw (int sw)
+{
+  /* All APDU functions should return 0x9000 on success but for
+     historical reasons of the implementation some return 0 to
+     indicate success.  We allow for that here. */
+  return sw? map_sw (sw) : 0;
+}
+
 
 /* This function is specialized version of the SELECT FILE command.
    SLOT is the card and reader as created for example by
