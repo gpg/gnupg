@@ -36,6 +36,7 @@
 
 struct decrypt_filter_parm_s {
   int algo;
+  int mode;
   int blklen;
   GCRY_CIPHER_HD hd;
   char iv[16];
@@ -110,7 +111,7 @@ prepare_decryption (const char *hexkeygrip, const char *enc_val,
   if (DBG_CRYPTO)
     log_printhex ("session key:", seskey+n, seskeylen-n);
 
-  parm->hd = gcry_cipher_open (parm->algo, GCRY_CIPHER_MODE_CBC, 0);
+  parm->hd = gcry_cipher_open (parm->algo, parm->mode, 0);
   if (!parm->hd)
     {
       rc = gcry_errno ();
@@ -311,23 +312,24 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
           rc = map_ksba_err (err);
           goto leave;
         }
-      log_debug ("ksba_cms_parse - stop reason %d\n", stopreason);
 
       if (stopreason == KSBA_SR_BEGIN_DATA
           || stopreason == KSBA_SR_DETACHED_DATA)
         {
-          int algo;
+          int algo, mode;
           const char *algoid;
           
           algoid = ksba_cms_get_content_oid (cms, 2/* encryption algo*/);
           algo = gcry_cipher_map_name (algoid);
-          if (!algo)
+          mode = gcry_cipher_mode_from_oid (algoid);
+          if (!algo || !mode)
             {
               log_error ("unsupported algorithm `%s'\n", algoid? algoid:"?");
               rc = GNUPG_Unsupported_Algorithm;
               goto leave;
             }
           dfparm.algo = algo;
+          dfparm.mode = mode;
           dfparm.blklen = gcry_cipher_get_algo_blklen (algo);
           if (dfparm.blklen > sizeof (dfparm.helpblock))
             return GNUPG_Bug;

@@ -227,7 +227,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
           rc = map_ksba_err (err);
           goto leave;
         }
-      log_debug ("ksba_cms_parse - stop reason %d\n", stopreason);
+
       if (stopreason == KSBA_SR_NEED_HASH)
         {
           is_detached = 1;

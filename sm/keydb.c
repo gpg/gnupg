@@ -35,6 +35,8 @@
 
 #define DIRSEP_C '/'
 
+#define spacep(a) ((a) == ' ' || (a) == '\t')
+
 static int active_handles;
 
 typedef enum {
@@ -859,4 +861,277 @@ keydb_search_subject (KEYDB_HANDLE hd, const char *name)
 }
 
 
+static int
+hextobyte (const unsigned char *s)
+{
+  int c;
+
+  if( *s >= '0' && *s <= '9' )
+    c = 16 * (*s - '0');
+  else if ( *s >= 'A' && *s <= 'F' )
+    c = 16 * (10 + *s - 'A');
+  else if ( *s >= 'a' && *s <= 'f' )
+    c = 16 * (10 + *s - 'a');
+  else
+    return -1;
+  s++;
+  if ( *s >= '0' && *s <= '9' )
+    c += *s - '0';
+  else if ( *s >= 'A' && *s <= 'F' )
+    c += 10 + *s - 'A';
+  else if ( *s >= 'a' && *s <= 'f' )
+    c += 10 + *s - 'a';
+  else
+    return -1;
+  return c;
+}
+
+
+static int
+classify_user_id (const char *name, 
+                  KEYDB_SEARCH_DESC *desc,
+                  int *force_exact )
+{
+  const char *s;
+  int hexprefix = 0;
+  int hexlength;
+  int mode = 0;   
+    
+  /* clear the structure so that the mode field is set to zero unless
+   * we set it to the correct value right at the end of this function */
+  memset (desc, 0, sizeof *desc);
+  *force_exact = 0;
+  /* skip leading spaces.  Fixme: what about trailing white space? */
+  for(s = name; *s && spacep(*s); s++ )
+    ;
+
+  switch (*s) 
+    {
+    case 0:  /* empty string is an error */
+      return 0;
+
+    case '.': /* an email address, compare from end */
+      mode = KEYDB_SEARCH_MODE_MAILEND;
+      s++;
+      desc->u.name = s;
+      break;
+
+    case '<': /* an email address */
+      mode = KEYDB_SEARCH_MODE_MAIL;
+      desc->u.name = s;
+      break;
+
+    case '@':  /* part of an email address */
+      mode = KEYDB_SEARCH_MODE_MAILSUB;
+      s++;
+      desc->u.name = s;
+      break;
+
+    case '=':  /* exact compare */
+      mode = KEYDB_SEARCH_MODE_EXACT;
+      s++;
+      desc->u.name = s;
+      break;
+
+    case '*':  /* case insensitive substring search */
+      mode = KEYDB_SEARCH_MODE_SUBSTR;
+      s++;
+      desc->u.name = s;
+      break;
+
+    case '+':  /* compare individual words */
+      mode = KEYDB_SEARCH_MODE_WORDS;
+      s++;
+      desc->u.name = s;
+      break;
+
+    case '/': /* subject's DN */
+      s++;
+      if (!*s || spacep (*s))
+        return 0; /* no DN or prefixed with a space */
+      desc->u.name = s;
+      mode = KEYDB_SEARCH_MODE_SUBJECT;
+      break;
+
+    case '#':
+      { 
+        const char *si;
+        
+        s++;
+        if ( *s == '/')
+          { /* "#/" indicates an issuer's DN */
+            s++;
+            if (!*s || spacep (*s))
+              return 0; /* no DN or prefixed with a space */
+            desc->u.name = s;
+            mode = KEYDB_SEARCH_MODE_ISSUER;
+          }
+        else 
+          { /* serialnumber + optional issuer ID */
+            for (si=s; *si && *si != '/'; si++)
+              {
+                if (!strchr("01234567890abcdefABCDEF", *si))
+                  return 0; /* invalid digit in serial number*/
+              }
+            desc->sn = s;
+            desc->sn_is_string = 1;
+            if (!*si)
+              mode = KEYDB_SEARCH_MODE_SN;
+            else
+              {
+                s = si+1;
+                if (!*s || spacep (*s))
+                  return 0; /* no DN or prefixed with a space */
+                desc->u.name = s;
+                mode = KEYDB_SEARCH_MODE_ISSUER_SN;
+              }
+          }
+      }
+      break;
+
+    case ':': /*Unified fingerprint */
+      {  
+        const char *se, *si;
+        int i;
+        
+        se = strchr (++s,':');
+        if (!se)
+          return 0;
+        for (i=0,si=s; si < se; si++, i++ )
+          {
+            if (!strchr("01234567890abcdefABCDEF", *si))
+              return 0; /* invalid digit */
+          }
+        if (i != 32 && i != 40)
+          return 0; /* invalid length of fpr*/
+        for (i=0,si=s; si < se; i++, si +=2) 
+          desc->u.fpr[i] = hextobyte(si);
+        for (; i < 20; i++)
+          desc->u.fpr[i]= 0;
+        s = se + 1;
+        mode = KEYDB_SEARCH_MODE_FPR;
+      } 
+      break;
+           
+    default:
+      if (s[0] == '0' && s[1] == 'x')
+        {
+          hexprefix = 1;
+          s += 2;
+        }
+
+      hexlength = strspn(s, "0123456789abcdefABCDEF");
+      if (hexlength >= 8 && s[hexlength] =='!')
+        {
+          *force_exact = 1;
+          hexlength++; /* just for the following check */
+        }
+      
+      /* check if a hexadecimal number is terminated by EOS or blank */
+      if (hexlength && s[hexlength] && !spacep(s[hexlength])) 
+        {
+          if (hexprefix) /* a "0x" prefix without correct */
+            return 0;	 /* termination is an error */
+          /* The first chars looked like a hex number, but really is
+             not */
+          hexlength = 0;  
+        }
+      
+      if (*force_exact)
+        hexlength--; /* remove the bang */
+
+      if (hexlength == 8
+          || (!hexprefix && hexlength == 9 && *s == '0'))
+        { /* short keyid */
+          unsigned long kid;
+          if (hexlength == 9)
+            s++;
+          kid = strtoul( s, NULL, 16 );
+          desc->u.kid[4] = kid >> 24; 
+          desc->u.kid[5] = kid >> 16; 
+          desc->u.kid[6] = kid >>  8; 
+          desc->u.kid[7] = kid; 
+          mode = KEYDB_SEARCH_MODE_SHORT_KID;
+        }
+      else if (hexlength == 16
+               || (!hexprefix && hexlength == 17 && *s == '0'))
+        { /* complete keyid */
+          unsigned long kid0, kid1;
+          char buf[9];
+          if (hexlength == 17)
+            s++;
+          mem2str(buf, s, 9 );
+          kid0 = strtoul (buf, NULL, 16);
+          kid1 = strtoul (s+8, NULL, 16);
+          desc->u.kid[0] = kid0 >> 24; 
+          desc->u.kid[1] = kid0 >> 16; 
+          desc->u.kid[2] = kid0 >>  8; 
+          desc->u.kid[3] = kid0; 
+          desc->u.kid[4] = kid1 >> 24; 
+          desc->u.kid[5] = kid1 >> 16; 
+          desc->u.kid[6] = kid1 >>  8; 
+          desc->u.kid[7] = kid1; 
+          mode = KEYDB_SEARCH_MODE_LONG_KID;
+        }
+      else if (hexlength == 32
+               || (!hexprefix && hexlength == 33 && *s == '0'))
+        { /* md5 fingerprint */
+          int i;
+          if (hexlength == 33)
+            s++;
+          memset(desc->u.fpr+16, 0, 4); 
+          for (i=0; i < 16; i++, s+=2) 
+            {
+              int c = hextobyte(s);
+              if (c == -1)
+                return 0;
+              desc->u.fpr[i] = c;
+            }
+          mode = KEYDB_SEARCH_MODE_FPR16;
+        }
+      else if (hexlength == 40
+               || (!hexprefix && hexlength == 41 && *s == '0'))
+        { /* sha1/rmd160 fingerprint */
+          int i;
+          if (hexlength == 41)
+            s++;
+          for (i=0; i < 20; i++, s+=2) 
+            {
+              int c = hextobyte(s);
+              if (c == -1)
+                return 0;
+              desc->u.fpr[i] = c;
+            }
+          mode = KEYDB_SEARCH_MODE_FPR20;
+        }
+      else if (!hexprefix)
+        { /* default is substring search */
+          *force_exact = 0;
+          desc->u.name = s;
+          mode = KEYDB_SEARCH_MODE_SUBSTR; 
+        }
+      else
+	{ /* hex number with a prefix but a wrong length */
+          return 0;
+        }
+    }
+  
+  desc->mode = mode;
+  return mode;
+}
+
+
+int
+keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc)
+{
+  int dummy;
+  KEYDB_SEARCH_DESC dummy_desc;
+
+  if (!desc)
+    desc = &dummy_desc;
+
+  if (!classify_user_id (name, desc, &dummy))
+    return GNUPG_Invalid_Name;
+  return 0;
+}
 

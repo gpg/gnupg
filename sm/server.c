@@ -40,6 +40,7 @@ static FILE *statusfp;
 struct server_local_s {
   ASSUAN_CONTEXT assuan_ctx;
   int message_fd;
+  CERTLIST recplist;
 };
 
 /* Map GNUPG_xxx error codes to Assuan status codes */
@@ -60,6 +61,7 @@ rc_to_assuan_status (int rc)
     case GNUPG_No_Public_Key:     rc = ASSUAN_No_Public_Key; break;
     case GNUPG_No_Secret_Key:     rc = ASSUAN_No_Secret_Key; break;
     case GNUPG_Invalid_Data:      rc = ASSUAN_Invalid_Data; break;
+    case GNUPG_Invalid_Name:      rc = ASSUAN_Invalid_Name; break;
 
     case GNUPG_Read_Error: 
     case GNUPG_Write_Error:
@@ -81,10 +83,13 @@ rc_to_assuan_status (int rc)
   return rc;
 }
 
-
 static void
 reset_notify (ASSUAN_CONTEXT ctx)
 {
+  CTRL ctrl = assuan_get_pointer (ctx);
+
+  gpgsm_release_certlist (ctrl->server_local->recplist);
+  ctrl->server_local->recplist = NULL;
 }
 
 
@@ -131,13 +136,16 @@ output_notify (ASSUAN_CONTEXT ctx, const char *line)
   the encryption will then not be done for this recipient.  IF the
   policy is not to encrypt at all if not all recipients are valid, the
   client has to take care of this.  All RECIPIENT commands are
-  cumulative until a RESET or ENCRYPT command.  */
+  cumulative until a RESET or an successful ENCRYPT command.  */
 static int 
 cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
 {
-  
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
 
-  return set_error (Not_Implemented, "fixme");
+  rc = gpgsm_add_to_certlist (line, &ctrl->server_local->recplist);
+
+  return rc_to_assuan_status (rc);
 }
 
 
@@ -157,6 +165,7 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
 static int 
 cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
 {
+  CTRL ctrl = assuan_get_pointer (ctx);
   int inp_fd, out_fd;
   FILE *out_fp;
   int rc;
@@ -171,9 +180,16 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
   out_fp = fdopen ( dup(out_fd), "w");
   if (!out_fp)
     return set_error (General_Error, "fdopen() failed");
-  rc = gpgsm_encrypt (assuan_get_pointer (ctx), inp_fd, out_fp);
+  rc = gpgsm_encrypt (assuan_get_pointer (ctx),
+                      ctrl->server_local->recplist,
+                      inp_fd, out_fp);
   fclose (out_fp);
 
+  if (!rc)
+    {
+      gpgsm_release_certlist (ctrl->server_local->recplist);
+      ctrl->server_local->recplist = NULL;
+    }
   return rc_to_assuan_status (rc);
 }
 
@@ -181,9 +197,9 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
 
   This performs the decrypt operation after doing some check on the
   internal state. (e.g. that only needed data has been set).  Because
-  it utilises the GPG-Agent for the session key decryption, there is
+  it utilizes the GPG-Agent for the session key decryption, there is
   no need to ask the client for a protecting passphrase - GpgAgent
-  does take care of this but requesting this from the user. */
+  does take care of this by requesting this from the user. */
 static int 
 cmd_decrypt (ASSUAN_CONTEXT ctx, char *line)
 {
@@ -412,6 +428,8 @@ gpgsm_server (void)
         }
     }
 
+  gpgsm_release_certlist (ctrl.server_local->recplist);
+  ctrl.server_local->recplist = NULL;
 
   assuan_deinit_pipe_server (ctx);
 }

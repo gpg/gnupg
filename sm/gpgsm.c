@@ -512,10 +512,10 @@ main ( int argc, char **argv)
   int nogreeting = 0;
   int use_random_seed = 1;
   int with_fpr = 0;
-  char *def_cipher_string = NULL;
   char *def_digest_string = NULL;
   enum cmd_and_opt_values cmd = 0;
   struct server_control_s ctrl;
+  CERTLIST recplist = NULL;
 
   /* FIXME: trap_unaligned ();*/
   set_strusage (my_strusage);
@@ -541,6 +541,7 @@ main ( int argc, char **argv)
   create_dotlock (NULL); /* register locking cleanup */
   i18n_init();
 
+  opt.def_cipher_algoid = "1.2.840.113549.3.7";  /*des-EDE3-CBC*/
 #ifdef __MINGW32__
   opt.homedir = read_w32_registry_string ( NULL,
                                            "Software\\GNU\\GnuPG", "HomeDir" );
@@ -762,6 +763,10 @@ main ( int argc, char **argv)
           gcry_control (GCRYCTL_DISABLE_SECMEM_WARN); 
           break;
 
+        case oCipherAlgo:
+          opt.def_cipher_algoid = pargs.r.ret_str;
+          break;
+
         case oDisableCipherAlgo: 
           {
             int algo = gcry_cipher_map_name (pargs.r.ret_str);
@@ -780,6 +785,8 @@ main ( int argc, char **argv)
 
         case oEnableSpecialFilenames: allow_special_filenames =1; break;
           
+
+
         default: 
           pargs.err = configfp? 1:2; 
           break;
@@ -832,16 +839,12 @@ main ( int argc, char **argv)
   /* FIXME: should set filenames of libgcrypt explicitly
    * gpg_opt_homedir = opt.homedir; */
 
-  /* must do this after dropping setuid, because string_to...
-   * may try to load an module */
-  if (def_cipher_string) 
-    {
-      opt.def_cipher_algo = gcry_cipher_map_name (def_cipher_string);
-      xfree (def_cipher_string);
-      def_cipher_string = NULL;
-      if ( our_cipher_test_algo (opt.def_cipher_algo) )
-        log_error (_("selected cipher algorithm is invalid\n"));
-    }
+  /* must do this after dropping setuid, because the mapping functions
+     may try to load an module and we may have disabled an algorithm */
+  if ( !gcry_cipher_map_name (opt.def_cipher_algoid)
+       || !gcry_cipher_mode_from_oid (opt.def_cipher_algoid))
+    log_error (_("selected cipher algorithm is invalid\n"));
+
   if (def_digest_string)
     {
       opt.def_digest_algo = gcry_md_map_name (def_digest_string);
@@ -875,6 +878,18 @@ main ( int argc, char **argv)
   for (sl = nrings; sl; sl = sl->next)
     keydb_add_resource (sl->d, 0, 0);
   FREE_STRLIST(nrings);
+
+  for (sl = remusr; sl; sl = sl->next)
+    {
+      int rc = gpgsm_add_to_certlist (sl->d, &recplist);
+      if (rc)
+        log_error (_("can't encrypt to `%s': %s\n"),
+                   sl->d, gnupg_strerror (rc));
+    }
+  if (log_get_errorcount(0))
+    gpgsm_exit(1); /* must stop for invalid recipients */
+  
+
   
   fname = argc? *argv : NULL;
   
@@ -886,9 +901,9 @@ main ( int argc, char **argv)
 
     case aEncr: /* encrypt the given file */
       if (!argc)
-        gpgsm_encrypt (&ctrl, 0, stdout); /* from stdin */
+        gpgsm_encrypt (&ctrl, recplist, 0, stdout); /* from stdin */
       else if (argc == 1)
-        gpgsm_encrypt (&ctrl, open_read (*argv), stdout); /* from file */
+        gpgsm_encrypt (&ctrl, recplist, open_read (*argv), stdout); /* from file */
       else
         wrong_args (_("--encrypt [datafile]"));
       break;
@@ -1066,6 +1081,7 @@ main ( int argc, char **argv)
     }
   
   /* cleanup */
+  gpgsm_release_certlist (recplist);
   FREE_STRLIST(remusr);
   FREE_STRLIST(locusr);
   gpgsm_exit(0);

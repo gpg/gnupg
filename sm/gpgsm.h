@@ -48,7 +48,9 @@ struct {
   int armor;        /* force base64 armoring (see also ctrl.with_base64) */
   int no_armor;     /* don't try to figure out whether data is base64 armored*/
 
-  int def_cipher_algo;    /* cipher algorithm to use if nothing else is know */
+  const char *def_cipher_algoid;  /* cipher algorithm to use if
+                                     nothing else is specified */
+
   int def_digest_algo;    /* Ditto for hash algorithm */
   int def_compress_algo;  /* Ditto for compress algorithm */
 
@@ -100,9 +102,15 @@ struct server_control_s {
 };
 typedef struct server_control_s *CTRL;
 
-/* data structure osed in base64.c */
+/* data structure used in base64.c */
 typedef struct base64_context_s *Base64Context;
 
+
+struct certlist_s {
+  struct certlist_s *next;
+  KsbaCert cert;
+};
+typedef struct certlist_s *CERTLIST;
 
 /*-- gpgsm.c --*/
 void gpgsm_exit (int rc);
@@ -143,6 +151,10 @@ int gpgsm_create_cms_signature (KsbaCert cert, GCRY_MD_HD md, int mdalgo,
 /*-- certpath.c --*/
 int gpgsm_validate_path (KsbaCert cert);
 
+/*-- cetlist.c --*/
+int gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr);
+void gpgsm_release_certlist (CERTLIST list);
+
 /*-- keylist.c --*/
 void gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp);
 
@@ -156,7 +168,7 @@ int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd);
 int gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp);
 
 /*-- encrypt.c --*/
-int gpgsm_encrypt (CTRL ctrl, int in_fd, FILE *out_fp);
+int gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int in_fd, FILE *out_fp);
 
 /*-- decrypt.c --*/
 int gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp);
@@ -173,4 +185,6 @@ int gpgsm_agent_pkdecrypt (const char *keygrip,
 
 
 #endif /*GPGSM_H*/
+
+
 

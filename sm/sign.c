@@ -186,7 +186,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       rc = map_ksba_err (err);
       goto leave;
     }
-  cert = NULL; /* cms does now own the certificate */
+  ksba_cert_release (cert); cert = NULL;
 
   /* fixme: We might want to include a list of certificate which are
      put as info into the signed data object - maybe we should add a
@@ -270,7 +270,6 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
           rc = map_ksba_err (err);
           goto leave;
         }
-      log_debug ("ksba_cms_build - stop reason %d\n", stopreason);
 
       if (stopreason == KSBA_SR_BEGIN_DATA)
         { /* hash the data and store the message digest */

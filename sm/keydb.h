@@ -60,6 +60,8 @@ int keydb_search_issuer_sn (KEYDB_HANDLE hd,
                             const char *issuer, const unsigned char *serial);
 int keydb_search_subject (KEYDB_HANDLE hd, const char *issuer);
 
+int keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc);
+
 
 #endif /*GNUPG_KEYDB_H*/
 

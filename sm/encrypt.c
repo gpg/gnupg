@@ -62,17 +62,25 @@ static KsbaCert
 get_default_recipient (void)
 {
   const char key[] =
-    "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=#44FC7373656C646F7266#,C=DE";
+    "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=#44FC7373656C646F7266#,C=DE";
 
+  KEYDB_SEARCH_DESC desc;
   KsbaCert cert = NULL;
   KEYDB_HANDLE kh = NULL;
   int rc;
+
+  rc = keydb_classify_name (key, &desc);
+  if (rc)
+    {
+      log_error ("failed to find recipient: %s\n", gnupg_strerror (rc));
+      return NULL;
+    }
 
   kh = keydb_new (0);
   if (!kh)
     return NULL;
 
-  rc = keydb_search_subject (kh, key);
+  rc = keydb_search (kh, &desc, 1);
   if (rc)
     {
       log_debug ("failed to find default certificate: rc=%d\n", rc);
@@ -96,10 +104,11 @@ get_default_recipient (void)
 static int
 init_dek (DEK dek)
 {
-  int rc=0, i;
+  int rc=0, mode, i;
 
   dek->algo = gcry_cipher_map_name (dek->algoid);
-  if (!dek->algo)
+  mode = gcry_cipher_mode_from_oid (dek->algoid);
+  if (!dek->algo || !mode)
     {
       log_error ("unsupported algorithm `%s'\n", dek->algoid);
       return GNUPG_Unsupported_Algorithm;
@@ -119,10 +128,7 @@ init_dek (DEK dek)
       return GNUPG_Unsupported_Algorithm;
     }
   
-
-  dek->chd = gcry_cipher_open (dek->algo,
-                               GCRY_CIPHER_MODE_CBC,
-                               GCRY_CIPHER_SECURE);
+  dek->chd = gcry_cipher_open (dek->algo, mode, GCRY_CIPHER_SECURE);
   if (!dek->chd)
     {
       log_error ("failed to create cipher context: %s\n", gcry_strerror (-1));
@@ -369,9 +375,10 @@ encrypt_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 /* Perform an encrypt operation.  
 
    Encrypt the data received on DATA-FD and write it to OUT_FP.  The
-   recipients are hardwired for now. */
+   recipients are take from the certificate given in recplist; if this
+   is NULL it will be encrypted for a default recipient */
 int
-gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
+gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
 {
   int rc = 0;
   Base64Context b64writer = NULL;
@@ -385,15 +392,31 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
   DEK dek = NULL;
   int recpno;
   FILE *data_fp = NULL;
-
+  struct certlist_s help_recplist;
+  CERTLIST cl;
 
   memset (&encparm, 0, sizeof encparm);
+  help_recplist.next = NULL;
+  help_recplist.cert = NULL;
   kh = keydb_new (0);
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
       rc = GNUPG_General_Error;
       goto leave;
+    }
+
+  /* If no recipient list is given, use a default one */
+  if (!recplist)
+    {
+      help_recplist.cert = get_default_recipient ();
+      if (!help_recplist.cert)
+        {
+          log_error ("no default recipient found\n");
+          rc = seterr (General_Error);
+          goto leave;
+        }
+      recplist = &help_recplist;
     }
 
   data_fp = fdopen ( dup (data_fd), "rb");
@@ -458,7 +481,7 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
     rc = GNUPG_Out_Of_Core;
   else
   {
-    dek->algoid = "1.2.840.113549.3.7";  /*des-EDE3-CBC*/
+    dek->algoid = opt.def_cipher_algoid;
     rc = init_dek (dek);
   }
   if (rc)
@@ -490,40 +513,27 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
 
   /* gather certificates of recipients, encrypt the session key for
      each and store them in the CMS object */
-  for (recpno = 0; recpno < 1; recpno++)
+  for (recpno = 0, cl = recplist; cl; recpno++, cl = cl->next)
     {
-      KsbaCert cert;
       char *encval;
       
-      /* fixme: get the recipients out of the arguments passed to us */
-      cert = get_default_recipient ();
-      if (!cert)
-        {
-          log_error ("no default recipient found\n");
-          rc = seterr (General_Error);
-          goto leave;
-        }
-      
-      rc = encrypt_dek (dek, cert, &encval);
+      rc = encrypt_dek (dek, cl->cert, &encval);
       if (rc)
         {
           log_error ("encryption failed for recipient no. %d: %s\n",
                      recpno, gnupg_strerror (rc));
-          ksba_cert_release (cert);
           goto leave;
         }
       
-      err = ksba_cms_add_recipient (cms, cert);
+      err = ksba_cms_add_recipient (cms, cl->cert);
       if (err)
         {
           log_error ("ksba_cms_add_recipient failed: %s\n",
                      ksba_strerror (err));
           rc = map_ksba_err (err);
           xfree (encval);
-          ksba_cert_release (cert);
           goto leave;
         }
-      cert = NULL; /* cms does now own the certificate */
       
       err = ksba_cms_set_enc_val (cms, recpno, encval);
       xfree (encval);
@@ -547,7 +557,6 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
           rc = map_ksba_err (err);
           goto leave;
         }
-      log_debug ("ksba_cms_build - stop reason %d\n", stopreason);
     }
   while (stopreason != KSBA_SR_READY);   
 
@@ -576,5 +585,7 @@ gpgsm_encrypt (CTRL ctrl, int data_fd, FILE *out_fp)
   if (data_fp)
     fclose (data_fp);
   xfree (encparm.buffer);
+  if (help_recplist.cert)
+    ksba_cert_release (help_recplist.cert);
   return rc;
 }
