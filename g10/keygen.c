@@ -114,10 +114,8 @@ static int mdc_available,ks_modify;
 static void do_generate_keypair( struct para_data_s *para,
 				 struct output_control_s *outctrl, int card );
 static int  write_keyblock( IOBUF out, KBNODE node );
-#ifdef ENABLE_CARD_SUPPORT
 static int gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
                          u32 expireval, struct para_data_s *para);
-#endif
 
 static void
 write_uid( KBNODE root, const char *s )
