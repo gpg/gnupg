@@ -28,7 +28,9 @@
 # include <opensc/opensc.h>
 #endif
 
-#if GNUPG_MAJOR_VERSION == 1
+#if defined(GNUPG_SCD_MAIN_HEADER)
+#include GNUPG_SCD_MAIN_HEADER
+#elif GNUPG_MAJOR_VERSION == 1
 /* This is used with GnuPG version < 1.9.  The code has been source
    copied from the current GnuPG >= 1.9  and is maintained over
    there. */

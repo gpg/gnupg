@@ -141,7 +141,7 @@ dinsig_enum_keypairs (CARD card, int idx,
     {
       *keyid = xtrymalloc (17);
       if (!*keyid)
-        return out_of_core ();
+        return gpg_error (gpg_err_code_from_errno (errno));
       if (!idx)
         strcpy (*keyid, "DINSIG-DF01.C000");
       else
@@ -193,7 +193,7 @@ dinsig_read_cert (CARD card, const char *certidstr,
   buf = xtrymalloc (file->size);
   if (!buf)
     {
-      gpg_error_t tmperr = out_of_core ();
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       sc_file_free (file);
       return tmperr;
     }

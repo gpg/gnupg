@@ -87,16 +87,24 @@
 #define DRVNAME "ccid-driver: "
 
 
-#ifdef GNUPG_MAJOR_VERSION  /* This source is used within GnuPG. */
+/* Depending on how this source is used we either define our error
+   output to go to stderr or to the jnlib based logging functions.  We
+   use the latter when GNUPG_MAJOR_VERSION is defines or when both,
+   GNUPG_SCD_MAIN_HEADER and HAVE_JNLIB_LOGGING are defined.
+*/
+#if defined(GNUPG_MAJOR_VERSION) \
+    || (defined(GNUPG_SCD_MAIN_HEADER) && defined(HAVE_JNLIB_LOGGING))
 
-# if GNUPG_MAJOR_VERSION == 1 /* GnuPG Version is < 1.9. */
+#if defined(GNUPG_SCD_MAIN_HEADER)
+#  include GNUPG_SCD_MAIN_HEADER
+#elif GNUPG_MAJOR_VERSION == 1 /* GnuPG Version is < 1.9. */
 #  include "options.h"
 #  include "util.h"
 #  include "memory.h"
 #  include "cardglue.h"
 # else /* This is the modularized GnuPG 1.9 or later. */
 #  include "scdaemon.h"
-# endif
+#endif
 
 /* Disable all debugging output for now. */
 #undef DBG_CARD_IO

@@ -1,3 +1,17 @@
+2004-03-11  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.h (out_of_core): Removed.  Replaced callers by standard
+	gpg_error function.
+
+	* apdu.c, iso7816.c, ccid-driver.c [GNUPG_SCD_MAIN_HEADER]: Allow
+	to include a header defined by the compiler.  This helps us to
+	reuse the source in other software.
+
+2004-03-10  Werner Koch  <wk@gnupg.org>
+
+	* iso7816.c (iso7816_read_record): New arg SHORT_EF.  Changed all
+	callers.
+
 2004-02-18  Werner Koch  <wk@gnupg.org>
 
 	* sc-investigate.c (main): Setup the used character set.

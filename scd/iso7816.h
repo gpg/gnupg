@@ -67,6 +67,7 @@ gpg_error_t iso7816_get_challenge (int slot,
 gpg_error_t iso7816_read_binary (int slot, size_t offset, size_t nmax,
                                  unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_read_record (int slot, int recno, int reccount,
+                                 int short_ef,
                                  unsigned char **result, size_t *resultlen);
 
 #endif /*ISO7816_H*/

@@ -50,8 +50,10 @@ enum cmd_and_opt_values
 { 
   oInteractive    = 'i',
   oVerbose	  = 'v',
+  oQuiet          = 'q',
   oReaderPort     = 500,
   octapiDriver,
+
   oDebug,
   oDebugAll,
 
@@ -68,6 +70,7 @@ static ARGPARSE_OPTS opts[] = {
   { 301, NULL, 0, "@Options:\n " },
 
   { oInteractive, "interactive", 0, "start in interactive explorer mode"},
+  { oQuiet,       "quiet", 0, "quiet" },
   { oVerbose, "verbose",   0, "verbose" },
   { oReaderPort, "reader-port", 2, "|N|connect to reader at port N"},
   { octapiDriver, "ctapi-driver", 2, "NAME|use NAME as ctAPI driver"},
@@ -86,7 +89,7 @@ static ARGPARSE_OPTS opts[] = {
 
 
 static void interactive_shell (int slot);
-
+static void dump_other_cards (int slot);
 
 static const char *
 my_strusage (int level)
@@ -168,6 +171,7 @@ main (int argc, char **argv )
       switch (pargs.r_opt)
         {
         case oVerbose: opt.verbose++; break;
+        case oQuiet: opt.quiet++; break;
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
         case oReaderPort: reader_port = pargs.r.ret_str; break;
@@ -191,7 +195,7 @@ main (int argc, char **argv )
   if (slot == -1)
     exit (1);
   
-  if (!gen_random)
+  if (!gen_random && !opt.quiet)
     {
       rc = atr_dump (slot, stdout); 
       if (rc)
@@ -210,12 +214,17 @@ main (int argc, char **argv )
       rc = app_select_openpgp (&appbuf);
       if (rc)
         {
-          log_info ("selecting openpgp failed: %s\n", gpg_strerror (rc));
+          if (!opt.quiet)
+            log_info ("selecting openpgp failed: %s\n", gpg_strerror (rc));
           memset (&appbuf, 0, sizeof appbuf);
           appbuf.slot = slot;
           rc = app_select_dinsig (&appbuf);
           if (rc)
-            log_info ("selecting dinsig failed: %s\n", gpg_strerror (rc));
+            {
+              if (!opt.quiet)
+                log_info ("selecting dinsig failed: %s\n", gpg_strerror (rc));
+              dump_other_cards (slot);
+            }
           else
             {
               appbuf.initialized = 1;
@@ -398,6 +407,7 @@ interactive_shell (int slot)
       cmdAPP,
       cmdREAD,
       cmdREADREC,
+      cmdREADSHORTREC,
       cmdDEBUG,
       cmdVERIFY,
       cmdCHANGEREF,
@@ -425,6 +435,7 @@ interactive_shell (int slot)
     { "rb"     , cmdREAD,  NULL },
     { "readrec", cmdREADREC,  "read record(s)" },
     { "rr"     , cmdREADREC,  NULL },
+    { "rsr"    , cmdREADSHORTREC,  "readshortrec RECNO SHORT_EF" },
     { "verify" , cmdVERIFY, "verify CHVNO PIN" },
     { "ver"    , cmdVERIFY, NULL },
     { "changeref", cmdCHANGEREF, "change reference data" },
@@ -559,7 +570,8 @@ interactive_shell (int slot)
               for (i=1, err=0; !err; i++)
                 {
                   xfree (result); result = NULL;
-                  err = iso7816_read_record (slot, i, 1, &result, &resultlen);
+                  err = iso7816_read_record (slot, i, 1, 0,
+                                             &result, &resultlen);
                   if (!err)
                     dump_buffer (result, resultlen);
                 }
@@ -568,11 +580,29 @@ interactive_shell (int slot)
             }
           else
             {
-              err = iso7816_read_record (slot, arg_number, 1,
+              err = iso7816_read_record (slot, arg_number, 1, 0,
                                          &result, &resultlen);
               if (!err)
                 dump_or_store_buffer (arg_string, result, resultlen);
             }
+          break;
+
+        case cmdREADSHORTREC:
+          {
+            int short_ef;
+
+            short_ef = strtol (arg_next, NULL, 0);
+            
+            if (short_ef < 1 || short_ef > 254)
+              printf ("error: short EF must be between 1 and 254\n");
+            else
+              {
+                err = iso7816_read_record (slot, arg_number, 1, short_ef,
+                                           &result, &resultlen);
+                if (!err)
+                  dump_or_store_buffer (arg_string, result, resultlen);
+              }
+          }
           break;
 
         case cmdVERIFY:
@@ -636,4 +666,105 @@ interactive_shell (int slot)
  leave:
   ;
 }
+
+
+
+/* Figure out whether the current card is a German Geldkarte and print
+   what we know about it. */
+static int
+dump_geldkarte (int slot)
+{
+  unsigned char *r = NULL;
+  size_t rlen;
+  const char *t;
+
+  if (iso7816_read_record (slot, 1, 1, 0xbc, &r, &rlen))
+    return -1;
+  /* We require that the record is at least 24 bytes, the first byte
+     is 0x67 and the filler byte is correct. */
+  if (rlen < 24 || *r != 0x67 || r[22])
+    return -1;
+  
+  /* The short Bankleitzahl consists of 3 bytes at offset 1.  */
+  switch (r[1])
+    {
+    case 0x21: t = "Oeffentlich-rechtliche oder private Bank"; break;
+    case 0x22: t = "Privat- oder Geschäftsbank"; break;
+    case 0x25: t = "Sparkasse"; break;
+    case 0x26:
+    case 0x29: t = "Genossenschaftsbank"; break;
+    default: 
+      xfree (r);
+      return -1;  /* Probably not a Geldkarte. */
+    }
+
+  printf ("KBLZ .....: %02X-%02X%02X (%s)\n", r[1], r[2], r[3], t);
+  printf ("Card-No ..: %02X%02X%02X%02X%02X\n", r[4], r[5], r[6], r[7], r[8]);
+   
+/*   Byte 10 enthält im linken Halbbyte eine Prüfziffer, die nach dem */
+/*   Verfahren 'Luhn formula for computing modulus 10' über die Ziffern der */
+/*   ersten 9 Byte berechnet ist. */
+  
+/*   Das rechte Halbbyte wird zu 'D' gesetzt.  */
+  
+/*   Für die Berechnung der Luhn-Prüfziffer sind die folgenden Schritte */
+/*   durchzuführen: */
+  
+/*   Schritt 1:	Mit der rechtesten Ziffer beginnend ist einschließlich dieser */
+/*   Ziffer jede übernächste Ziffer zu verdoppeln (mit 2 multiplizieren). */
+  
+/*   Schritt 2:	Die einzelnen Ziffern der Produkte aus Schritt 1 und die bei */
+/*   diesen Multiplikationen unberührt gebliebenen Ziffern sind zu addieren. */
+  
+/*   Schritt 3:	Das Ergebnis der Addition aus Schritt 2 ist von dem auf die */
+/*   nächst höhere Zahl mit der Einerstelle 0 aufgerundeten Ergebnis der */
+/*   Addition aus Schritt 2 abzuziehen. Wenn das Ergebnis der Addition aus */
+/*   Schritt 2 bereits eine Zahl mit der Einerstelle 0 ergibt (z.B. 30, 40, */
+/*   usw.), ist die Prüfziffer 0. */
+  
+/*   Beispiel:	Kartennummer ohne Prüfziffer: 992 839 871 */
+  
+/*    9   9   2   8   3   9   8   7   1 */
+  
+/*   x 2     x 2     x 2     x 2     x 2       Schritt 1 */
+  
+/*   18       4       6      16       2 */
+  
+/*   1+8 +9  +4  +8  +6  +9 +1+6 +7  +2 = 61   Schritt 2 */
+  
+/*   70-61 = 9                                 Schritt 3 */
+  
+/*   Prüfziffer zu 992 839 871 = 9 */
+
+
+  printf ("Expires at: %02X/%02X\n", r[11], r[10] );
+  printf ("Valid from: %02X.%02X.%02X\n", r[14], r[13], r[12]);
+  printf ("Country ..: %02X%02X\n", r[15], r[16]);
+  printf ("Currency .: %c%c%c\n", isascii (r[17])? r[17]:' ',
+          isascii (r[18])? r[18]:' ', isascii (r[19])? r[19]:' ');
+  printf ("Cur.-Mult : %s\n", 
+          r[20] == 0x01? "0.01":
+          r[20] == 0x02? "0.1":
+          r[20] == 0x04? "1":
+          r[20] == 0x08? "10":
+          r[20] == 0x10? "100":
+          r[20] == 0x20? "1000": "?");
+  printf ("ZKA ChipID: %02X\n", r[21]);
+  printf ("OS version: %02X\n", r[23]);
+
+  xfree (r);
+  return 0;
+} 
+
+
+
+/* Try to figure out the type of teh card and dump its contents. */
+static void
+dump_other_cards (int slot)
+{
+
+  if (!dump_geldkarte (slot))
+    return; 
+
+} 
 

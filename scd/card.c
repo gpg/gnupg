@@ -108,7 +108,7 @@ card_open (CARD *rcard)
 
   card = xtrycalloc (1, sizeof *card);
   if (!card)
-    return out_of_core ();
+    return gpg_error (gpg_err_code_from_errno (errno));
   card->reader = 0;
   
   rc = sc_establish_context (&card->ctx, "scdaemon");
@@ -275,7 +275,7 @@ find_iccsn (const unsigned char *buffer, size_t length, char **serial)
 
   *serial = p = xtrymalloc (2*n+1);
   if (!*serial)
-    return out_of_core ();
+    return gpg_error (gpg_err_code_from_errno (errno));
   for (; n; n--, p += 2, s++)
     sprintf (p, "%02X", *s);
   *p = 0;
@@ -389,7 +389,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
       *serial = NULL;
       p = xtrymalloc (strlen (efser) + 7);
       if (!p)
-          rc = out_of_core ();
+          rc = gpg_error (gpg_err_code_from_errno (errno));
       else
         {
           strcpy (p, "FF0100");
@@ -405,7 +405,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
         {
           xfree (*serial);
           *serial = NULL;
-          rc = out_of_core ();
+          rc = gpg_error (gpg_err_code_from_errno (errno));
         }
       else
         {

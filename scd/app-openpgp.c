@@ -245,7 +245,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   n = 6 + 2 + mlen + 2 + elen;
   p = buffer = xtrymalloc (3 + n);
   if (!buffer)
-    return out_of_core ();
+    return gpg_error (gpg_err_code_from_errno (errno));
   
   *p++ = 0x99;     /* ctb */
   *p++ = n >> 8;   /* 2 byte length header */

@@ -130,10 +130,10 @@ keygripstr_from_pk_file (int slot, int fid, char *r_gripstr)
   err = iso7816_select_file (slot, fid, 0, NULL, NULL);
   if (err)
     return err;
-  err = iso7816_read_record (slot, 1, 1, &buffer[0], &buflen[0]);
+  err = iso7816_read_record (slot, 1, 1, 0, &buffer[0], &buflen[0]);
   if (err)
     return err;
-  err = iso7816_read_record (slot, 2, 1, &buffer[1], &buflen[1]);
+  err = iso7816_read_record (slot, 2, 1, 0, &buffer[1], &buflen[1]);
   if (err)
     {
       xfree (buffer[0]);

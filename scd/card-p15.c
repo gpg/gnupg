@@ -53,7 +53,7 @@ init_private_data (CARD card)
 
   priv = xtrycalloc (1, sizeof *priv);
   if (!priv)
-    return out_of_core ();
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   /* OpenSC (0.7.0) is a bit strange in that the get_objects functions
      tries to be a bit too clever and implicitly does an enumeration
@@ -179,7 +179,7 @@ p15_enum_keypairs (CARD card, int idx,
 
       *keyid = p = xtrymalloc (9+pinfo->id.len*2+1);
       if (!*keyid)
-        return out_of_core ();
+        return gpg_error (gpg_err_code_from_errno (errno));
       p = stpcpy (p, "P15-5015.");
       for (i=0; i < pinfo->id.len; i++, p += 2)
         sprintf (p, "%02X", pinfo->id.value[i]);
@@ -217,7 +217,7 @@ p15_enum_certs (CARD card, int idx, char **certid, int *type)
 
       *certid = p = xtrymalloc (9+cinfo->id.len*2+1);
       if (!*certid)
-        return out_of_core ();
+        return gpg_error (gpg_err_code_from_errno (errno));
       p = stpcpy (p, "P15-5015.");
       for (i=0; i < cinfo->id.len; i++, p += 2)
         sprintf (p, "%02X", cinfo->id.value[i]);
@@ -304,7 +304,7 @@ p15_read_cert (CARD card, const char *certidstr,
   *cert = xtrymalloc (certder->data_len);
   if (!*cert)
     {
-      gpg_error_t tmperr = out_of_core ();
+      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       sc_pkcs15_free_certificate (certder);
       return tmperr;
     }
@@ -400,7 +400,7 @@ p15_sign (CARD card, const char *keyidstr, int hashalgo,
   outbuflen = 1024; 
   outbuf = xtrymalloc (outbuflen);
   if (!outbuf)
-    return out_of_core ();
+    return gpg_error (gpg_err_code_from_errno (errno));
   
   rc = sc_pkcs15_compute_signature (card->p15card, keyobj,
                                     cryptflags,
@@ -462,7 +462,7 @@ p15_decipher (CARD card, const char *keyidstr,
   outbuflen = indatalen < 256? 256 : indatalen; 
   outbuf = xtrymalloc (outbuflen);
   if (!outbuf)
-    return out_of_core ();
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   rc = sc_pkcs15_decipher (card->p15card, keyobj, 
                            0,

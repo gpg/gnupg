@@ -47,7 +47,7 @@ select_application (ctrl_t ctrl, int slot, const char *name)
   app = xtrycalloc (1, sizeof *app);
   if (!app)
     {
-      rc = out_of_core ();
+      rc = gpg_error (gpg_err_code_from_errno (errno));
       log_info ("error allocating context: %s\n", gpg_strerror (rc));
       return NULL;
     }

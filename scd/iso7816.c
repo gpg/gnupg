@@ -24,7 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if GNUPG_MAJOR_VERSION == 1
+#if defined(GNUPG_SCD_MAIN_HEADER)
+#include GNUPG_SCD_MAIN_HEADER
+#elif GNUPG_MAJOR_VERSION == 1
 /* This is used with GnuPG version < 1.9.  The code has been source
    copied from the current GnuPG >= 1.9  and is maintained over
    there. */
@@ -200,7 +202,7 @@ iso7816_change_reference_data (int slot, int chvno,
 
   buf = xtrymalloc (oldchvlen + newchvlen);
   if (!buf)
-    return out_of_core ();
+    return gpg_error (gpg_err_code_from_errno (errno));
   if (oldchvlen)
     memcpy (buf, oldchv, oldchvlen);
   memcpy (buf+oldchvlen, newchv, newchvlen);
@@ -341,7 +343,8 @@ iso7816_decipher (int slot, const unsigned char *data, size_t datalen,
       /* We need to prepend the padding indicator. */
       buf = xtrymalloc (datalen + 1);
       if (!buf)
-        return out_of_core ();
+        return gpg_error (gpg_err_code_from_errno (errno));
+
       *buf = padind; /* Padding indicator. */
       memcpy (buf+1, data, datalen);
       sw = apdu_send (slot, 0x00, CMD_PSO, 0x80, 0x86, datalen+1, buf,
@@ -550,11 +553,13 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
 
 /* Perform a READ RECORD command. RECNO gives the record number to
    read with 0 indicating the current record.  RECCOUNT must be 1 (not
-   all cards support reading of more than one record).  The result is
-   stored in a newly allocated buffer at the address passed by RESULT.
-   Returns the length of this data at the address of RESULTLEN. */
+   all cards support reading of more than one record).  SHORT_EF
+   should be 0 to read the current EF or contain a short EF. The
+   result is stored in a newly allocated buffer at the address passed
+   by RESULT.  Returns the length of this data at the address of
+   RESULTLEN. */
 gpg_error_t
-iso7816_read_record (int slot, int recno, int reccount,
+iso7816_read_record (int slot, int recno, int reccount, int short_ef,
                      unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -568,7 +573,8 @@ iso7816_read_record (int slot, int recno, int reccount,
 
   /* We can only encode 15 bits in p0,p1 to indicate an offset. Thus
      we check for this limit. */
-  if (recno < 0 || recno > 255 || reccount != 1)
+  if (recno < 0 || recno > 255 || reccount != 1
+      || short_ef < 0 || short_ef > 254 )
     return gpg_error (GPG_ERR_INV_VALUE);
 
   buffer = NULL;
@@ -577,7 +583,7 @@ iso7816_read_record (int slot, int recno, int reccount,
      with an Le of 0. */
   sw = apdu_send_le (slot, 0x00, CMD_READ_RECORD,
                      recno, 
-                     0x04,
+                     short_ef? short_ef : 0x04,
                      -1, NULL,
                      254, &buffer, &bufferlen);
 

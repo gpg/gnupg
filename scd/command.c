@@ -351,7 +351,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 
           buf = xtrymalloc (40 + 1 + strlen (certid) + 1);
           if (!buf)
-            rc = out_of_core ();
+            rc = gpg_error (gpg_err_code_from_errno (errno));
           else
             {
               sprintf (buf, "%d %s", certtype, certid);
@@ -389,7 +389,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 
           buf = p = xtrymalloc (40 + 1 + strlen (keyid) + 1);
           if (!buf)
-            rc = out_of_core ();
+            rc = gpg_error (gpg_err_code_from_errno (errno));
           else
             {
               int i;
@@ -577,7 +577,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
 
   rc = asprintf (&command, "NEEDPIN %s", info);
   if (rc < 0)
-    return out_of_core ();
+    return gpg_error (gpg_err_code_from_errno (errno));
 
   /* FIXME: Write an inquire function which returns the result in
      secure memory */

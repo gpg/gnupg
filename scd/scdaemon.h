@@ -33,14 +33,6 @@
 #include "../common/util.h"
 #include "../common/errors.h"
 
-/* Convenience funcion to be used instead of returning the old
-   GNUPG_Out_Of_Core. */
-static __inline__ gpg_error_t
-out_of_core (void)
-{
-  return gpg_error (gpg_err_code_from_errno (errno));
-}
-
 
 #define MAX_DIGEST_LEN 24 
 
