@@ -264,7 +264,9 @@ inq_ciphertext_cb (void *opaque, const char *keyword)
   struct cipher_parm_s *parm = opaque; 
   AssuanError rc;
 
+  assuan_begin_confidential (parm->ctx);
   rc = assuan_send_data (parm->ctx, parm->ciphertext, parm->ciphertextlen);
+  assuan_end_confidential (parm->ctx);
   return rc; 
 }
 

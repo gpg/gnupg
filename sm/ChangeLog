@@ -1,3 +1,12 @@
+2002-01-19  Werner Koch  <wk@gnupg.org>
+
+	* server.c (gpgsm_server): Use assuan_deinit_server and setup
+	assuan logging if enabled.
+	* call-agent.c (inq_ciphertext_cb): Don't show the session key in
+	an Assuan log file.
+
+	* gpgsm.c (my_strusage): Take bugreport address from configure.ac
+
 2002-01-15  Werner Koch  <wk@gnupg.org>
 
 	* import.c (gpgsm_import): Just do a basic cert check before

@@ -478,6 +478,9 @@ gpgsm_server (void)
   ctrl.server_local->assuan_ctx = ctx;
   ctrl.server_local->message_fd = -1;
 
+  if (DBG_AGENT)
+    assuan_set_log_stream (ctx, log_get_stream ());
+
   for (;;)
     {
       rc = assuan_accept (ctx);
@@ -502,7 +505,7 @@ gpgsm_server (void)
   gpgsm_release_certlist (ctrl.server_local->recplist);
   ctrl.server_local->recplist = NULL;
 
-  assuan_deinit_pipe_server (ctx);
+  assuan_deinit_server (ctx);
 }
 
 
