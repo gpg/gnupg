@@ -1,3 +1,7 @@
+2004-08-09  Moritz Schulte  <moritz@g10code.com>
+
+	* gpgsm-gencert.sh: New file.
+
 2004-06-16  Werner Koch  <wk@gnupg.org>
 
 	* rfc822parse.c (rfc822parse_get_field): Add arg VALUEOFF.
