@@ -194,7 +194,10 @@ Add a subkey to this key.
 Remove a subkey.
 
 @item addrevoker
-Add a designated revoker.
+Add a designated revoker. This takes one optional argument:
+"sensitive". If a designated revoker is marked as sensitive, it will
+not be exported by default (see
+export-options).
 
 @item revkey
 Revoke a subkey.
@@ -232,23 +235,31 @@ Display the selected photographic user
 id.
 
 @item pref
-List preferences.
+List preferences from the selected user ID. This shows the actual
+preferences, without including any implied preferences.
 
 @item showpref
-More verbose preferences listing.
+More verbose preferences listing for the selected user ID. This shows
+the preferences in effect by including the implied preferences of
+3DES (cipher), SHA-1 (digest), and Uncompressed (compression) if they
+are not already included in the preference list.
 
 @item setpref @code{string}
-Set the list of user ID preferences to @code{string}, this should be 
-a string similar to the one printed by "pref". Using an empty string
-will set the default preference string, using "none" will set the 
-preferences to nil. Only available algorithms are allowed. This
-command just initializes an internal list and does not change anything
-unless another command which changes the self-signatures is used.
+Set the list of user ID preferences to @code{string}, this should be a
+string similar to the one printed by "pref". Using an empty string
+will set the default preference string, using "none" will set the
+preferences to nil. Use "gpg -v ---version" to get a list of available
+algorithms. This command just initializes an internal list and does
+not change anything unless another command (such as "updpref") which
+changes the self-signatures is used.
 
 @item updpref
 Change the preferences of all user IDs (or just of the selected ones
 to the current list of preferences. The timestamp of all affected
-self-signatures fill be advanced by one second.
+self-signatures will be advanced by one second. Note that while you
+can change the preferences on an attribute user ID (aka "photo ID"),
+GnuPG does not select keys via attribute user IDs so these preferences
+will not be used by GnuPG.
 
 @item toggle
 Toggle between public and secret key listing.
@@ -308,13 +319,17 @@ Signs a public key with your secret key but marks it as non-revocable.
 This is a shortcut version of the subcommand "nrsign" from ---edit.
 
 @item ---delete-key @code{name}
-Remove key from the public keyring
+Remove key from the public keyring. In batch mode either ---yes is
+required or the key must be specified by fingerprint. This is a
+safeguard against accidental deletion of multiple keys.
 
 @item ---delete-secret-key @code{name}
-Remove key from the secret and public keyring
+Remove key from the secret and public keyring. In batch mode the key
+must be specified by fingerprint.
 
 @item ---delete-secret-and-public-key @code{name}
-Same as ---delete-key, but if a secret key exists, it will be removed first.
+Same as ---delete-key, but if a secret key exists, it will be removed 
+first. In batch mode the key must be specified by fingerprint.
 
 @item ---gen-revoke
 Generate a revocation certificate for the complete key. To revoke
@@ -434,11 +449,13 @@ all options.
 @end table
 
 @majorheading OPTIONS
-Long options can be put in an options file (default "~/.gnupg/options").
-Do not write the 2 dashes, but simply the name of the option and any
-required arguments. Lines with a hash as the first non-white-space
-character are ignored. Commands may be put in this file too, but that
-does not make sense.
+Long options can be put in an options file (default
+"~/.gnupg/gpg.conf"). Short option names will not work - for example,
+"armor" is a valid option for the options file, while "a" is not. Do
+not write the 2 dashes, but simply the name of the option and any
+required arguments. Lines with a hash ('#') as the first
+non-white-space character are ignored. Commands may be put in this
+file too, but that does not make sense.
 
 @code{gpg} recognizes these options:
 
@@ -597,20 +614,29 @@ each time.
 @item ---keyserver-options @code{parameters}
 This is a space or comma delimited string that gives options for the
 keyserver. Options can be prepended with a `no-' to give the opposite
-meaning. While not all options are available for all keyserver types,
-some common options are:
+meaning. Valid import-options or export-options may be used here as
+well to apply to importing (---recv-key) or exporting (--send-key) a
+key from a keyserver. While not all options are available for all
+keyserver types, some common options are:
 
 @table @asis
 @item include-revoked
-When receiving or searching for a key, include keys that are marked on
-the keyserver as revoked. Note that this option is always set when
-using the NAI HKP keyserver, as this keyserver does not differentiate
-between revoked and unrevoked keys.
+When searching for a key, include keys that are marked on the
+keyserver as revoked. Note that this option is always set when using
+the NAI HKP keyserver, as this keyserver does not differentiate
+between revoked and unrevoked keys. When using the LDAP keyserver,
+this applies to both searching (---search-keys) and receiving
+(---recv-keys).
 
 @item include-disabled
 When receiving or searching for a key, include keys that are marked on
 the keyserver as disabled. Note that this option is not used with HKP
 keyservers, as they do not support disabling keys.
+
+@item include-subkeys
+When receiving a key, include subkeys in the search. Note that this
+option is not used with HKP keyservers, as they do not support
+retrieving keys by subkey id.
 
 @item use-temp-files
 On most Unix-like platforms, GnuPG communicates with the keyserver
@@ -639,10 +665,55 @@ keyring.
 
 @end table
 
+@item ---import-options @code{parameters}
+This is a space or comma delimited string that gives options for
+importing keys. Options can be prepended with a `no-' to give the
+opposite meaning. The options are:
+
+@table @asis
+@item allow-local-sigs
+Allow importing key signatures marked as "local". This is not
+generally useful unless a shared keyring scheme is being used.
+Defaults to no.
+
+@item repair-hkp-subkey-bug
+During import, attempt to repair the HKP keyserver mangling multiple
+subkeys bug. Note that this cannot completely repair the damaged key
+as some crucial data is removed by the keyserver, but it does at least
+give you back one subkey. Defaults to no for regular ---import and to
+yes for keyserver ---recv-keys.
+
+@end table
+
+@item ---export-options @code{parameters}
+This is a space or comma delimited string that gives options for
+exporting keys. Options can be prepended with a `no-' to give the
+opposite meaning. The options are:
+
+@table @asis
+@item include-non-rfc
+Include non-RFC compliant keys in the export. Defaults to yes.
+
+@item include-local-sigs
+Allow exporting key signatures marked as "local". This is not
+generally useful unless a shared keyring scheme is being used.
+Defaults to no.
+
+@item include-attributes
+Include attribute user IDs (photo IDs) while exporting. This is
+useful to export keys if they are going to be used by an OpenPGP
+program that does not accept attribute user IDs. Defaults to yes.
+
+@item include-sensitive-revkeys
+Include designated revoker information that was marked as
+"sensitive". Defaults to no.
+
+@end table
+
 @item ---show-photos
-Causes ---list-keys, --list-sigs, --list-public-keys, and
----list-secret-keys to also display the photo ID attached to a key, if
-any.
+Causes ---list-keys, --list-sigs, --list-public-keys,
+---list-secret-keys, and verifying a signature to also display the
+photo ID attached to the key, if any.
 See also ---photo-viewer.
 
 @item ---no-show-photos
@@ -660,6 +731,12 @@ then the photo will be supplied to the viewer on standard input.
 
 The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
 stdin"
+
+@item ---exec-path @code{string}
+Sets a list of directories to search for photo viewers and keyserver
+helpers. If not provided, keyserver helpers use the compiled-in
+default directory, and photo viewers use the $PATH environment
+variable.
 
 @item ---show-keyring
 Causes ---list-keys, --list-public-keys, and --list-secret-keys to
@@ -690,15 +767,20 @@ also overrides the environment variable "GNUPGHOME".
 
 @item ---charset @code{name}
 Set the name of the native character set. This is used
-to convert some strings to proper UTF-8 encoding.
+to convert some strings to proper UTF-8 encoding. If this option is not used, the default character set is determined
+from the current locale. A verbosity level of 3 shows the used one.
 Valid values for @code{name} are:
 
 @table @asis
 @item iso-8859-1
-This is the default Latin 1 set.
+This is the Latin 1 set.
 
 @item iso-8859-2
 The Latin 2 set.
+
+@item iso-8859-15
+This is currently an alias for
+the Latin 1 set.
 
 @item koi8-r
 The usual Russian set (rfc1489).
@@ -732,7 +814,8 @@ Using this option will also prevent the creation of a
 @item ---load-extension @code{name}
 Load an extension module. If @code{name} does not
 contain a slash it is searched in "/usr/local/lib/gnupg"
-See the manual for more information about extensions.
+Extension are in gernal not useful anymore; the use of this 
+option is deprecated.
 
 @item ---debug @code{flags}
 Set debugging flags. All flags are or-ed and @code{flags} may
@@ -884,7 +967,10 @@ method will be part of an enhanced OpenPGP specification but GnuPG
 already uses it as a countermeasure against certain attacks. Old
 applications don't understand this new format, so this option may be
 used to switch back to the old behaviour. Using this this option
-bears a security risk.
+bears a security risk. Note that using this option only takes effect
+when the secret key is encrypted - the simplest way to make this
+happen is to change the passphrase on the key (even changing it to the
+same value is acceptable).
 
 @item ---compress-algo @code{n}
 Use compression algorithm @code{n}. Default is 2 which is RFC1950
@@ -1007,8 +1093,9 @@ Resets the ---pgp6 option.
 
 @item ---pgp7
 Set up all options to be as PGP 7 compliant as possible. This is
-identical to ---pgp6 except that the list of allowable ciphers is
-expanded to add AES128, AES192, AES256, and TWOFISH.
+identical to ---pgp6 except that MDCs are not disabled, and the list of
+allowable ciphers is expanded to add AES128, AES192, AES256, and
+TWOFISH.
 
 @item ---no-pgp7
 Resets the ---pgp7 option.
@@ -1068,12 +1155,18 @@ behaviour. You should not use this option unless you there is some
 clock problem.
 
 @item ---ignore-crc-error
-The ASCII armor used by OpenPG is protected by a CRC checksum against
+The ASCII armor used by OpenPGP is protected by a CRC checksum against
 transmission errors. Sometimes it happens that the CRC gets mangled
-somewhere on the transmission channel 
-but the actual content (which is anyway protected by
-the OpenPGP protocol) is still okay. This option will let gpg ignore
-CRC errors.
+somewhere on the transmission channel but the actual content (which is
+protected by the OpenPGP protocol anyway) is still okay. This option
+will let gpg ignore CRC errors.
+
+@item ---ignore-mdc-error
+This option changes a MDC integrity protection failure into a warning.
+This can be useful if a message is partially corrupt, but it is
+necessary to get as much data as possible out of the corrupt message.
+However, be aware that a MDC protection failure may also mean that the
+message was tampered with intentionally by an attacker.
 
 @item ---lock-once
 Lock the databases the first time a lock is requested
@@ -1110,6 +1203,9 @@ Suppress the warning about "using insecure memory".
 
 @item ---no-permission-warning
 Suppress the warning about unsafe file permissions.
+
+@item ---no-mdc-warning
+Suppress the warning about missing MDC integrity protection.
 
 @item ---no-armor
 Assume the input data is not in ASCII armored format.
@@ -1225,11 +1321,14 @@ refer to the file descriptor n and not to a file with that name.
 @item ---no-expensive-trust-checks
 Experimental use only.
 
-@item ---group @code{name=value}
-Sets up a name group, which is similar to aliases in email programs.
+@item ---group @code{name=value1 value2 value3 ...}
+Sets up a named group, which is similar to aliases in email programs.
 Any time the group name is a receipient (-r or ---recipient), it will
-be expanded to the values specified. Note there is only one level of
-expansion - you cannot make an group that points to another group.
+be expanded to the values specified.
+The values are @code{key IDs} or fingerprints, but any key description
+is accepted. Note that a value with spaces in it will be treated as
+two different values. Note also there is only one level of expansion
+- you cannot make an group that points to another group.
 
 @item ---preserve-permissions
 Don't change the permissions of a secret keyring back to user
@@ -1364,7 +1463,8 @@ variable is set to the correct value. The option ---gpg-agent-info can
 be used to overide it.
 
 @item http_proxy
-Only honored when the option ---honor-http-proxy is set.
+Only honored when the keyserver-option
+honor-http-proxy is set.
 
 @end table
 
@@ -1391,8 +1491,12 @@ and the lock file
 @item ~/.gnupg/random_seed
 used to preserve the internal random pool
 
+@item ~/.gnupg/gpg.conf
+Default configuration file
+
 @item ~/.gnupg/options
-May contain options
+Old style configuration file; only used when gpg.conf
+is not found
 
 @item /usr[/local]/share/gnupg/options.skel
 Skeleton options file
