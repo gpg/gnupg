@@ -1,3 +1,10 @@
+Mon Nov 15 21:36:02 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* elgamal.c (gen_k): Use the new random API.
+	(generate): Ditto.
+	* dsa.c (gen_k): Ditto.
+	(generate): Ditto.
+
 Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* pubkey.c (disable_pubkey_algo): Made static.

@@ -122,7 +122,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
     q_factor = mode==1? gen_prime( req_qbits, 0, 1 ) : NULL;
 
     /* allocate an array to hold the factors + 2 for later usage */
-    factors = g10_xcalloc_clear( n+2, sizeof *factors );
+    factors = g10_xcalloc( n+2, sizeof *factors );
 
     /* make a pool of 3n+5 primes (this is an arbitrary value) */
     m = n*3+5;

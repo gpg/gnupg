@@ -670,7 +670,7 @@ sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
     elems1 = algo_info_table[i].common_elements;
     elems2 = want_private? algo_info_table[i].secret_elements
 			 : algo_info_table[i].public_elements;
-    array = g10_calloc( (strlen(elems1)+strlen(elems2)+1, sizeof *array );
+    array = g10_calloc( strlen(elems1)+strlen(elems2)+1, sizeof *array );
     if( !array )
 	return GCRYERR_NO_MEM;
 
@@ -825,7 +825,7 @@ gcry_pk_sign( GCRY_SEXP *r_sig, GCRY_SEXP s_hash, GCRY_SEXP s_skey )
 	release_mpi_array( skey );
 	return -1; /* fixme: get a real errorcode for this */
     }
-    result = g10_xcalloc_clear( (strlen(algo_elems)+1) , sizeof *result );
+    result = g10_xcalloc( (strlen(algo_elems)+1) , sizeof *result );
     rc = pubkey_sign( algo, result, hash, skey );
     release_mpi_array( skey );
     mpi_free( hash );

@@ -52,7 +52,7 @@ pk_sign( int algo, MPI *data, MPI hash, MPI *skey )
 
     /* make a sexp from skey */
     if( algo == GCRY_PK_DSA ) {
-	s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
+	 s_skey = SEXP_CONS( SEXP_NEW( "private-key", 0 ),
 			  gcry_sexp_vlist( SEXP_NEW( "dsa", 3 ),
 			  gcry_sexp_new_name_mpi( "p", skey[0] ),
 			  gcry_sexp_new_name_mpi( "q", skey[1] ),

@@ -37,12 +37,6 @@
 #include "dynload.h"
 #include "cipher.h"
 
-#ifdef IS_MODULE
-  #define _(a) (a)
-#else
-  #include "i18n.h"
-#endif
-
 #ifndef offsetof
 #define offsetof(type, member) ((size_t) &((type *)0)->member)
 #endif

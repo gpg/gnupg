@@ -326,7 +326,7 @@ md_enable( GCRY_MD_HD hd, int algo )
 					       - sizeof(r->context) )
 		  : g10_malloc( sizeof *ac + r->contextsize
 					       - sizeof(r->context) );
-    if( !rc )
+    if( !ac )
 	return set_lasterr( GCRYERR_NO_MEM );
 
     *ac = *r;

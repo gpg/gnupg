@@ -1,3 +1,7 @@
+Mon Nov 15 21:36:02 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* misc.c (pull_in_libs): Removed.
+
 Sat Nov 13 17:44:23 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* mainproc.c (list_node): Print the PK algo in the --with-colon mode.

@@ -49,7 +49,6 @@
 #include "util.h"
 #include "rmd.h"
 #include "ttyio.h"
-#include "i18n.h"
 #include "random.h"
 #include "rand-internal.h"
 #include "dynload.h"

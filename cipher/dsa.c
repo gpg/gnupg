@@ -79,13 +79,14 @@ gen_k( MPI q )
 
 	if( !rndbuf || nbits < 32 ) {
 	    g10_free(rndbuf);
-	    rndbuf = get_random_bits( nbits, 1, 1 );
+	    rndbuf = gcry_random_bytes_secure( (nbits+7)/8,
+					       GCRY_STRONG_RANDOM );
 	}
 	else { /* change only some of the higher bits */
 	    /* we could imporove this by directly requesting more memory
-	     * at the first call to get_random_bits() and use this the here
+	     * at the first call to get_random_bytes() and use this the here
 	     * maybe it is easier to do this directly in random.c */
-	    char *pp = get_random_bits( 32, 1, 1 );
+	    char *pp = gcry_random_bytes_secure( 4, GCRY_STRONG_RANDOM );
 	    memcpy( rndbuf,pp, 4 );
 	    g10_free(pp);
 	}
@@ -129,8 +130,7 @@ test_keys( DSA_secret_key *sk, unsigned qbits )
     pk.q = sk->q;
     pk.g = sk->g;
     pk.y = sk->y;
-    /*mpi_set_bytes( test, qbits, get_random_byte, 0 );*/
-    {	char *p = get_random_bits( qbits, 0, 0 );
+    {	char *p = gcry_random_bytes( (qbits+7)/8, GCRY_WEAK_RANDOM );
 	mpi_set_buffer( test, p, (qbits+7)/8, 0 );
 	g10_free(p);
     }
@@ -199,10 +199,12 @@ generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
 	if( DBG_CIPHER )
 	    progress('.');
 	if( !rndbuf )
-	    rndbuf = get_random_bits( qbits, 2, 1 );
+	    rndbuf = gcry_random_bytes_secure( (qbits+7)/8,
+					       GCRY_VERY_STRONG_RANDOM );
 	else { /* change only some of the higher bits (= 2 bytes)*/
-	    char *r = get_random_bits( 16, 2, 1 );
-	    memcpy(rndbuf, r, 16/8 );
+	    char *r = gcry_random_bytes_secure( 2,
+						GCRY_VERY_STRONG_RANDOM );
+	    memcpy(rndbuf, r, 2 );
 	    g10_free(r);
 	}
 	mpi_set_buffer( x, rndbuf, (qbits+7)/8, 0 );
@@ -454,7 +456,7 @@ dsa_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
     *nsig = 2;
 
     switch( algo ) {
-      case PUBKEY_ALGO_DSA:   *use = PUBKEY_USAGE_SIG; return "DSA";
+      case PUBKEY_ALGO_DSA:   *use = GCRY_PK_USAGE_SIGN; return "DSA";
       default: *use = 0; return NULL;
     }
 }

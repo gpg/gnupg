@@ -44,8 +44,8 @@
   code base to be maintained */
 
 
-  /* Fixme: We use plain mallocs here beucase it may be used as a module
-   * should be changed. *
+/* Fixme: We use plain mallocs here beucase it may be used as a module
+ * should be changed. */
 
 /* General includes */
 

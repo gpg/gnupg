@@ -78,10 +78,11 @@ test_keys( ELG_secret_key *sk, unsigned nbits )
     pk.y = sk->y;
 
     /*mpi_set_bytes( test, nbits, get_random_byte, 0 );*/
-    {	char *p = get_random_bits( nbits, 0, 0 );
+    {	char *p = gcry_random_bytes( (nbits+7)/8, GCRY_WEAK_RANDOM );
 	mpi_set_buffer( test, p, (nbits+7)/8, 0 );
 	g10_free(p);
     }
+
 
     encrypt( out1_a, out1_b, test, &pk );
     decrypt( out2, out1_a, out1_b, sk );
@@ -121,14 +122,14 @@ gen_k( MPI p )
 	    progress('.');
 	if( !rndbuf || nbits < 32 ) {
 	    g10_free(rndbuf);
-	    rndbuf = get_random_bits( nbits, 1, 1 );
+	    rndbuf = gcry_random_bytes_secure( nbytes, GCRY_STRONG_RANDOM );
 	}
 	else { /* change only some of the higher bits */
 	    /* we could imporove this by directly requesting more memory
-	     * at the first call to get_random_bits() and use this the here
+	     * at the first call to get_random_bytes() and use this the here
 	     * maybe it is easier to do this directly in random.c */
-	    char *pp = get_random_bits( 32, 1, 1 );
-	    memcpy( rndbuf,pp, 4 );
+	    char *pp = gcry_random_bytes_secure( 4, GCRY_STRONG_RANDOM );
+	    memcpy( rndbuf, pp, 4 );
 	    g10_free(pp);
 	}
 	mpi_set_buffer( k, rndbuf, nbytes, 0 );
@@ -214,16 +215,20 @@ generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
 	if( rndbuf ) { /* change only some of the higher bits */
 	    if( nbits < 16 ) {/* should never happen ... */
 		g10_free(rndbuf);
-		rndbuf = get_random_bits( nbits, 2, 1 );
+		rndbuf = gcry_random_bytes_secure( (nbits+7)/8,
+						   GCRY_VERY_STRONG_RANDOM );
 	    }
 	    else {
-		char *r = get_random_bits( 16, 2, 1 );
-		memcpy(rndbuf, r, 16/8 );
+		char *r = gcry_random_bytes_secure( 2,
+						   GCRY_VERY_STRONG_RANDOM );
+		memcpy(rndbuf, r, 2 );
 		g10_free(r);
 	    }
 	}
-	else
-	    rndbuf = get_random_bits( nbits, 2, 1 );
+	else {
+	    rndbuf = gcry_random_bytes_secure( (nbits+7)/8,
+					       GCRY_VERY_STRONG_RANDOM );
+	}
 	mpi_set_buffer( x, rndbuf, (nbits+7)/8, 0 );
 	mpi_clear_highbit( x, nbits+1 );
     } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
@@ -589,10 +594,10 @@ elg_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
 
     switch( algo ) {
       case PUBKEY_ALGO_ELGAMAL:
-	*use = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
+	*use = GCRY_PK_USAGE_SIGN|GCRY_PK_USAGE_ENCR;
 	return "ELG";
       case PUBKEY_ALGO_ELGAMAL_E:
-	*use = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
+	*use = GCRY_PK_USAGE_SIGN|GCRY_PK_USAGE_ENCR;
 	return "ELG-E";
       default: *use = 0; return NULL;
     }

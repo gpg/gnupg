@@ -15,6 +15,14 @@ Some other reported cpu-vendor-os strings:
     i386-pc-sysv4.2   (USL Unixware v1.1.2)
 
 
+
+
+Simos Hadjiyiannis <hadjiyia@cs.colostate.edu>
+
+runs successfully on HP-UX v11.00 as well. (using gcc)
+
 Johan Wevers <johanw@vulcan.xs4all.nl> is working on a NL translation.
+
+
 
 

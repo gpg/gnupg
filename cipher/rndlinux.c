@@ -41,15 +41,10 @@
   #endif
 #endif
 #include "types.h"
+#include "g10lib.h"  /* need this for i18n */
 #include "util.h"
 #include "ttyio.h"
 #include "dynload.h"
-
-#ifdef IS_MODULE
-  #define _(a) (a)
-#else
-  #include "i18n.h"
-#endif
 
 static int open_device( const char *name, int minor );
 static int gather_random( void (*add)(const void*, size_t, int), int requester,

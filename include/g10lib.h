@@ -41,7 +41,6 @@
 /*-- gcrypt/global.c --*/
 int set_lasterr( int ec );
 
-
 void *g10_malloc( size_t n );
 void *g10_calloc( size_t n, size_t m );
 void *g10_malloc_secure( size_t n );
@@ -59,7 +58,16 @@ void  g10_free( void *p );
 
 /*-- gcrypt/misc.c --*/
 const char *g10_gettext( const char *key );
-int fatal_invalid_arg(const char *text);
+void g10_fatal_error(int rc, const char *text );
+
+
+/*-- util/memory.c --*/
+
+#define g10_private_malloc(n)	     m_alloc((n))
+#define g10_private_malloc_secure(n) m_alloc_secure((n))
+#define g10_private_is_secure(n)     m_is_secure((n))
+#define g10_private_realloc(a,n)     m_realloc((a),(n))
+#define g10_private_free(p)	     m_free((p))
 
 
 /*-- cipher/pubkey.c --*/
