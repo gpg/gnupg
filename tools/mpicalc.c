@@ -65,15 +65,15 @@ strusage( int level )
 static void
 i18n_init(void)
 {
-  #ifdef ENABLE_NLS
-    #ifdef HAVE_LC_MESSAGES
-       setlocale( LC_MESSAGES, "" );
-    #else
-       setlocale( LC_ALL, "" );
-    #endif
-    bindtextdomain( PACKAGE, G10_LOCALEDIR );
-    textdomain( PACKAGE );
-  #endif
+#ifdef ENABLE_NLS
+#ifdef HAVE_LC_MESSAGES
+  setlocale( LC_MESSAGES, "" );
+#else
+  setlocale( LC_ALL, "" );
+#endif
+  bindtextdomain( PACKAGE, G10_LOCALEDIR );
+  textdomain( PACKAGE );
+#endif
 }
 
 
@@ -386,5 +386,3 @@ main(int argc, char **argv)
 	mpi_free(stack[i]);
     return 0;
 }
-
-

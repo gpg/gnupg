@@ -19,11 +19,11 @@
 #include <signal.h>
 #include <unistd.h>
 #ifdef HAVE_SYS_IPC_H
-  #include <sys/types.h>
-  #include <sys/ipc.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
 #endif
 #ifdef HAVE_SYS_SHM_H
-  #include <sys/shm.h>
+#include <sys/shm.h>
 #endif
 #include "util.h"
 #include "ttyio.h"
@@ -55,15 +55,15 @@ strusage( int level )
 static void
 i18n_init(void)
 {
-  #ifdef ENABLE_NLS
-    #ifdef HAVE_LC_MESSAGES
+#ifdef ENABLE_NLS
+#ifdef HAVE_LC_MESSAGES
        setlocale( LC_MESSAGES, "" );
-    #else
+#else
        setlocale( LC_ALL, "" );
-    #endif
+#endif
     bindtextdomain( PACKAGE, G10_LOCALEDIR );
     textdomain( PACKAGE );
-  #endif
+#endif
 }
 
 
@@ -114,9 +114,9 @@ main(int argc, char **argv)
 
     log_set_name("shmtest");
     i18n_init();
-  #ifndef USE_SHM_COPROCESSING
+#ifndef USE_SHM_COPROCESSING
     log_info("SHM_COPRPOCESSING is not available\n");
-  #else
+#else
     if( argc < 1 )
 	my_usage();
 
@@ -199,8 +199,7 @@ main(int argc, char **argv)
 	log_error("pclose failed\n");
 
     return 0;
-  #endif
+#endif
 }
-
 
 #endif

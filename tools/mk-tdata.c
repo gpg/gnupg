@@ -17,7 +17,7 @@
 
 
 #ifndef RAND_MAX   /* for SunOS */
-  #define RAND_MAX 32767
+#define RAND_MAX 32767
 #endif
 
 int
@@ -31,13 +31,12 @@ main(int argc, char **argv)
     srand(getpid());
 
     for(i=0; !limit || i < limit; i++ ) {
-      #ifdef HAVE_RAND
+#ifdef HAVE_RAND
 	c = ((unsigned)(1 + (int) (256.0*rand()/(RAND_MAX+1.0)))-1);
-      #else
+#else
 	c = ((unsigned)(1 + (int) (256.0*random()/(RAND_MAX+1.0)))-1);
-      #endif
+#endif
 	putchar(c);
     }
     return 0;
 }
-
