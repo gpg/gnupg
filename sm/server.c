@@ -499,6 +499,49 @@ cmd_export (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+static int 
+cmd_delkeys (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  char *p;
+  STRLIST list, sl;
+  int rc;
+
+  /* break the line down into an STRLIST */
+  list = NULL;
+  for (p=line; *p; line = p)
+    {
+      while (*p && *p != ' ')
+        p++;
+      if (*p)
+        *p++ = 0;
+      if (*line)
+        {
+          sl = xtrymalloc (sizeof *sl + strlen (line));
+          if (!sl)
+            {
+              free_strlist (list);
+              return ASSUAN_Out_Of_Core;
+            }
+          sl->flags = 0;
+          strcpy_escaped_plus (sl->d, line);
+          sl->next = list;
+          list = sl;
+        }
+    }
+
+  rc = gpgsm_delete (ctrl, list);
+  free_strlist (list);
+
+  /* close and reset the fd */
+  close_message_fd (ctrl);
+  assuan_close_input_fd (ctx);
+  assuan_close_output_fd (ctx);
+
+  return map_to_assuan_status (rc);
+}
+
+
 
 /* MESSAGE FD=<n>
 
@@ -645,6 +688,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "LISTKEYS",   0,  cmd_listkeys },
     { "LISTSECRETKEYS",  0,  cmd_listsecretkeys },
     { "GENKEY",     0,  cmd_genkey },
+    { "DELKEYS",    0,  cmd_delkeys },
     { NULL }
   };
   int i, j, rc;

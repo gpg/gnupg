@@ -44,6 +44,7 @@ gpgsm_SOURCES = \
 	decrypt.c \
 	import.c \
 	export.c \
+	delete.c \
 	certreqgen.c 
 
 

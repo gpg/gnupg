@@ -1,3 +1,13 @@
+2002-07-22  Werner Koch  <wk@gnupg.org>
+
+	* delete.c: New.
+	* gpgsm.c: Made --delete-key work.
+	* server.c (cmd_delkeys): New.
+	(register_commands): New command DELKEYS.
+
+	* decrypt.c (gpgsm_decrypt): Print a convenience note when RC2 is
+	used and a STATUS_ERROR with the algorithm oid.
+
 2002-07-03  Werner Koch  <wk@gnupg.org>
 
 	* server.c (gpgsm_status2): Insert a blank between all optional

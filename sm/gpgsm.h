@@ -210,6 +210,9 @@ int gpgsm_import (CTRL ctrl, int in_fd);
 /*-- export.c --*/
 void gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp);
 
+/*-- delete.c --*/
+int gpgsm_delete (CTRL ctrl, STRLIST names);
+
 /*-- verify.c --*/
 int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp);
 

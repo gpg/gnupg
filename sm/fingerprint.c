@@ -36,7 +36,7 @@
    libksba because we need libgcrypt support).  The caller must
    provide an array of sufficient length or NULL so that the function
    allocates the array.  If r_len is not NULL, the length of the
-   digest is return, well, this can also be done by using
+   digest is returned; well, this can also be done by using
    gcry_md_get_algo_dlen().  If algo is 0, a SHA-1 will be used.
    
    If there is a problem , the function does never return NULL but a

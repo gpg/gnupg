@@ -320,6 +320,10 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
           if (!algo || !mode)
             {
               log_error ("unsupported algorithm `%s'\n", algoid? algoid:"?");
+              if (algoid && !strcmp (algoid, "1.2.840.113549.3.2"))
+                log_info (_("(this is the RC2 algorithm)\n"));
+              gpgsm_status2 (ctrl, STATUS_ERROR, "decrypt.algorithm",
+                             gnupg_error_token (rc), algoid, NULL);
               rc = GNUPG_Unsupported_Algorithm;
               goto leave;
             }

@@ -742,7 +742,7 @@ main ( int argc, char **argv)
 
         case aDeleteKey:
           set_cmd (&cmd, aDeleteKey);
-          greeting=1;
+          /*greeting=1;*/
           break;
 
         case aDetachedSign:
@@ -1213,13 +1213,10 @@ main ( int argc, char **argv)
       break;
 
     case aDeleteKey:
-      if (argc != 1)
-        wrong_args(_("--delete-key user-id"));
-      log_error ("this command has not yet been implemented\n");
-/*        username = make_username (fname); */
-/*        if( (rc = delete_key(username)) ) */
-/*          log_error ("%s: delete key failed: %s\n", username, gpg_errstr(rc) ); */
-/*        xfree(username); */
+      for (sl=NULL; argc; argc--, argv++)
+        add_to_strlist (&sl, *argv);
+      gpgsm_delete (&ctrl, sl);
+      free_strlist(sl);
       break;
 
     case aListSigs:
