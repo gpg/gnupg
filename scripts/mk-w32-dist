@@ -40,6 +40,8 @@ cp ${bindir}/g10/gpg.exe gpg.exe
 mingw32 strip gpg.exe
 cp ${bindir}/g10/gpgv.exe gpgv.exe
 mingw32 strip gpgv.exe
+cp ${bindir}/keyserver/gpgkeys_ldap.exe gpgkeys_ldap.exe
+mingw32 strip gpgkeys_ldap.exe
 cp ${bindir}/tools/gpgsplit.exe gpgsplit.exe
 mingw32 strip gpgsplit.exe
 

@@ -1,3 +1,7 @@
+2002-10-24  Werner Koch  <wk@gnupg.org>
+
+	* mk-w32-dist: Include gpgkeys_ldap.
+
 2002-09-20  Werner Koch  <wk@gnupg.org>
 
 	* mk-w32-dist: Don't use iconv for pl.po.
