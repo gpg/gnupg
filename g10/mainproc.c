@@ -1005,7 +1005,7 @@ list_node( CTX c, KBNODE node )
 	char *p;
 	int sigrc = ' ';
 
-	if( !opt.list_sigs )
+	if( !opt.verbose )
 	    return;
 
 	if( sig->sig_class == 0x20 || sig->sig_class == 0x30 )

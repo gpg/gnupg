@@ -532,6 +532,8 @@ parse_keyrec(char *keystring)
 	 does this for us. */
 
       decoded=utf8_to_native(userid,i,0);
+      if(strlen(decoded)>opt.screen_columns-10)
+	decoded[opt.screen_columns-10]='\0';
       iobuf_writestr(work->uidbuf,decoded);
       m_free(decoded);
       iobuf_writestr(work->uidbuf,"\n\t");
@@ -595,12 +597,10 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 static void
 keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 {
-  int i=0,validcount=0,started=0,header=0,count=1;
+  int i=0,validcount=0,started=0,header=0,count=1,numlines=0;
   unsigned int maxlen,buflen;
   KEYDB_SEARCH_DESC *desc;
   byte *line=NULL;
-  /* TODO: Something other than 23?  That's 24-1 (the prompt). */
-  int maxlines=23,numlines=0;
 
   desc=m_alloc(count*sizeof(KEYDB_SEARCH_DESC));
 
@@ -707,7 +707,8 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 
 	  if(!opt.with_colons)
 	    {
-	      if(numlines+keyrec->lines>maxlines)
+	      /* screen_lines - 1 for the prompt. */
+	      if(numlines+keyrec->lines>opt.screen_lines-1)
 		{
 		  if(show_prompt(desc,i,validcount?count:0,searchstr))
 		    break;

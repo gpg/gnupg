@@ -1,3 +1,13 @@
+2004-01-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (list_node): Show sigs with --verbose.
+
+	* options.h, g10.c (set_screen_dimensions): New function to look
+	at COLUMNS and LINES.
+
+	* keyserver.c (parse_keyrec, keyserver_search_prompt), keyedit.c
+	(print_and_check_one_sig): Use new screen dimension variables.
+
 2004-01-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (list_config): New function to dump config options to

@@ -183,6 +183,8 @@ struct {
     int strict;
     int mangle_dos_filenames; 
     int enable_progress_filter;
+    int screen_columns;
+    int screen_lines;
 
 #ifdef ENABLE_CARD_SUPPORT
     const char *ctapi_driver; /* Library to access the ctAPI. */

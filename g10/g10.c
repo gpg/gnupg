@@ -870,6 +870,31 @@ set_homedir (char *dir)
 }
 
 
+/* We set the screen dimensions for UI purposes.  Do not allow screens
+   smaller than 80x24 for the sake of simplicity. */
+static void
+set_screen_dimensions(void)
+{
+#ifndef _WIN32
+  char *str;
+
+  str=getenv("COLUMNS");
+  if(str)
+    opt.screen_columns=atoi(str);
+
+  str=getenv("LINES");
+  if(str)
+    opt.screen_lines=atoi(str);
+#endif
+
+  if(opt.screen_columns<80 || opt.screen_columns>255)
+    opt.screen_columns=80;
+
+  if(opt.screen_lines<24 || opt.screen_lines>255)
+    opt.screen_lines=24;
+}
+
+
 static void
 set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 {
@@ -1366,6 +1391,7 @@ main( int argc, char **argv )
       VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
     opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames = 0;
+    set_screen_dimensions();
 #if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
