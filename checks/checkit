@@ -9,7 +9,7 @@
 usrname1="one"
 usrpass1="def"
 usrname2="two"
-usrpass2="abc"
+usrpass2=""
 plain_files="plain-1 plain-2"
 data_files=""
 exp_files=""
@@ -138,13 +138,12 @@ done
 info Checking armored encryption
 for i in $plain_files $data_files ; do
     run_g10 -ea -o x --yes -r "$usrname2" $i
-    echo "$usrpass2" | run_g10 -o y --yes x
+    run_g10 -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
 
 info Checking armored encryption with a pipe
 for i in $plain_files $data_files ; do
-    info "file $i"
     run_g10 -ea --yes -r "$usrname2" < $i | tee x \
     | run_g10 -o y --yes
     cmp $i y || error "$i: mismatch"
