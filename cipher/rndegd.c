@@ -20,7 +20,7 @@
 
 #include <config.h>
 
-#ifdef USE_RNDEG
+#ifdef USE_RNDEGD
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,6 +45,8 @@
 #define offsetof(type, member) ((size_t) &((type *)0)->member)
 #endif
 
+static int egd_socket = -1;
+
 static int
 do_write( int fd, void *buf, size_t nbytes )
 {
@@ -67,24 +69,81 @@ do_write( int fd, void *buf, size_t nbytes )
 static int
 do_read( int fd, void *buf, size_t nbytes )
 {
-    int n, nread = 0;
-
-    do {
-	do {
-	    n = read(fd, (char*)buf + nread, nbytes );
-	} while( n == -1 && errno == EINTR );
-	if( n == -1 )
-	    return -1;
-	else if( n == 0 ) {
-            /* EGD probably died. */
-	    errno = ECONNRESET;
-	    return -1;
-	}
-	nread += n;
-    } while( nread < nbytes );
-    return nbytes;
+  int n, nread = 0;
+  
+  while (nbytes)
+    {
+      do {
+        n = read(fd, (char*)buf + nread, nbytes );
+      } while( n == -1 && errno == EINTR );
+      if( n == -1 )
+        return nread? nread:-1;
+      else if( n == 0 ) {
+        /* EGD probably died. */
+        errno = ECONNRESET;
+        return -1;
+      }
+      nread += n;
+      nbytes -= n;
+    } 
+  return nread;
 }
 
+/* Connect to the EGD and return the file descriptor.  Return -1 on
+   error.  With NOFAIL set to true, silently fail and return the
+   error, otherwise print an error message and die. */
+int
+rndegd_connect_socket (int nofail)
+{
+  int fd;
+  const char *bname = NULL;
+  char *name;
+  struct sockaddr_un addr;
+  int addr_len;
+
+  if (egd_socket != -1)
+    {
+      close (egd_socket);
+      egd_socket = -1;
+    }
+
+#ifdef EGD_SOCKET_NAME
+  bname = EGD_SOCKET_NAME;
+#endif
+  if ( !bname || !*bname )
+    bname = "=entropy";
+  
+  if ( *bname == '=' && bname[1] )
+    name = make_filename( g10_opt_homedir, bname+1 , NULL );
+  else
+    name = make_filename( bname , NULL );
+  
+  if ( strlen(name)+1 >= sizeof addr.sun_path ) 
+    g10_log_fatal ("EGD socketname is too long\n");
+  
+  memset( &addr, 0, sizeof addr );
+  addr.sun_family = AF_UNIX;
+  strcpy( addr.sun_path, name );	  
+  addr_len = (offsetof( struct sockaddr_un, sun_path )
+              + strlen( addr.sun_path ));
+  
+  fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (fd == -1 && !nofail)
+    g10_log_fatal("can't create unix domain socket: %s\n",
+                  strerror(errno) );
+  else if (connect (fd, (struct sockaddr*)&addr, addr_len) == -1)
+    {
+      if (!nofail)
+        g10_log_fatal("can't connect to `%s': %s\n",
+                      name, strerror(errno) );
+      close (fd);
+      fd = -1;
+    }
+  m_free(name);
+  if (fd != -1)
+    egd_socket = fd;
+  return fd;
+}
 
 
 /****************
@@ -99,7 +158,7 @@ int
 rndegd_gather_random( void (*add)(const void*, size_t, int), int requester,
 					  size_t length, int level )
 {
-    static int fd = -1;
+    int fd = egd_socket;
     int n;
     byte buffer[256+2];
     int nbytes;
@@ -111,47 +170,9 @@ rndegd_gather_random( void (*add)(const void*, size_t, int), int requester,
 	return 0;
 
   restart:
-    if( do_restart ) {
-	if( fd != -1 ) {
-	    close( fd );
-	    fd = -1;
-	}
-    }
-    if( fd == -1 ) {
-        const char *bname = NULL;
-	char *name;
-	struct sockaddr_un addr;
-	int addr_len;
-      
-      #ifdef EGD_SOCKET_NAME
-        bname = EGD_SOCKET_NAME;
-      #endif
-        if ( !bname || !*bname )
-            bname = "=entropy";
+    if (fd == -1 || do_restart)
+      fd = rndegd_connect_socket (0);
 
-        if ( *bname == '=' && bname[1] )
-            name = make_filename( g10_opt_homedir, bname+1 , NULL );
-        else
-            name = make_filename( bname , NULL );
-
-        if ( strlen(name)+1 >= sizeof addr.sun_path ) 
-            g10_log_fatal ("EGD socketname is too long\n");
-
-	memset( &addr, 0, sizeof addr );
-	addr.sun_family = AF_UNIX;
-	strcpy( addr.sun_path, name );	  
-	addr_len = offsetof( struct sockaddr_un, sun_path )
-		   + strlen( addr.sun_path );
-
-	fd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if( fd == -1 )
-	    g10_log_fatal("can't create unix domain socket: %s\n",
-							    strerror(errno) );
-	if( connect( fd, (struct sockaddr*)&addr, addr_len) == -1 )
-	    g10_log_fatal("can't connect to `%s': %s\n",
-						    name, strerror(errno) );
-	m_free(name);
-    }
     do_restart = 0;
 
     nbytes = length < 255? length : 255;

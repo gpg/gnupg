@@ -32,7 +32,7 @@
 /* We have support for a DUMMY encryption cipher which comes handy to
    debug MDCs and similar things.  Because this is a bit dangerous it
    is not enabled. */
-/*#define ALLOW_DUMMY 1 */ 
+#define ALLOW_DUMMY 1 
 
 #define MAX_BLOCKSIZE 16
 #define TABLE_SIZE 14
