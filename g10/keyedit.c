@@ -1573,7 +1573,7 @@ show_key_with_all_names_colon (KBNODE keyblock)
           || (node->pkt->pkttype == PKT_PUBLIC_SUBKEY) )
         {
           PKT_public_key *pk = node->pkt->pkt.public_key;
-          int otrust=0, trust=0;
+          int otrust='-', trust='-';
           u32 keyid[2];
 
           if (node->pkt->pkttype == PKT_PUBLIC_KEY)
