@@ -33,6 +33,7 @@
 #ifdef HAVE_STAT
 #include <sys/stat.h> /* for stat() */
 #endif
+#include <fcntl.h>
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "packet.h"
@@ -55,6 +56,12 @@
 #include "cardglue.h"
 #ifdef ENABLE_CARD_SUPPORT
 #include "ccid-driver.h"
+#endif
+
+#if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
+#define MY_O_BINARY  O_BINARY
+#else
+#define MY_O_BINARY  0
 #endif
 
 
@@ -174,13 +181,9 @@ enum cmd_and_opt_values
     oDebugAll,
     oDebugCCIDDriver,
     oStatusFD,
-#ifdef __riscos__
     oStatusFile,
-#endif /* __riscos__ */
     oAttributeFD,
-#ifdef __riscos__
     oAttributeFile,
-#endif /* __riscos__ */
     oSKComments,
     oNoSKComments,
     oEmitVersion,
@@ -205,13 +208,9 @@ enum cmd_and_opt_values
     oBZ2CompressLevel,
     oBZ2DecompressLowmem,
     oPasswdFD,
-#ifdef __riscos__
     oPasswdFile,
-#endif /* __riscos__ */
     oCommandFD,
-#ifdef __riscos__
     oCommandFile,
-#endif /* __riscos__ */
     oQuickRandom,
     oNoVerbose,
     oTrustDBName,
@@ -284,9 +283,7 @@ enum cmd_and_opt_values
     oHiddenEncryptTo,
     oNoEncryptTo,
     oLoggerFD,
-#ifdef __riscos__
     oLoggerFile,
-#endif /* __riscos__ */
     oUtf8Strings,
     oNoUtf8Strings,
     oDisableCipherAlgo,
@@ -487,13 +484,9 @@ static ARGPARSE_OPTS opts[] = {
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oStatusFD, "status-fd" ,1, "@"},
-#ifdef __riscos__
     { oStatusFile, "status-file" ,2, "@"},
-#endif /* __riscos__ */
     { oAttributeFD, "attribute-fd" ,1, "@" },
-#ifdef __riscos__
     { oAttributeFile, "attribute-file" ,2, "@" },
-#endif /* __riscos__ */
     { oNoSKComments, "no-sk-comments", 0,   "@"},
     { oSKComments, "sk-comments", 0,   "@"},
     { oCompletesNeeded, "completes-needed", 1, "@"},
@@ -554,17 +547,13 @@ static ARGPARSE_OPTS opts[] = {
     { aPipeMode,  "pipemode", 0, "@" },
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
-#ifdef __riscos__
     { oPasswdFile, "passphrase-file",2, "@" },
-#endif /* __riscos__ */
     { oCommandFD, "command-fd",1, "@" },
-#ifdef __riscos__
     { oCommandFile, "command-file",2, "@" },
-#endif /* __riscos__ */
     { oQuickRandom, "quick-random", 0, "@"},
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
-    { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
+    { oNoSecmemWarn, "no-secmem-warning", 0, "@" },
     { oNoPermissionWarn, "no-permission-warning", 0, "@" },
     { oNoMDCWarn, "no-mdc-warning", 0, "@" },
     { oNoArmor, "no-armor",   0, "@"},
@@ -613,9 +602,7 @@ static ARGPARSE_OPTS opts[] = {
     { oLockMultiple, "lock-multiple", 0, "@" },
     { oLockNever, "lock-never", 0, "@" },
     { oLoggerFD, "logger-fd",1, "@" },
-#ifdef __riscos__
     { oLoggerFile, "logger-file",2, "@" },
-#endif /* __riscos__ */
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
     { oNoUseEmbeddedFilename, "no-use-embedded-filename", 0, "@" },
     { oUtf8Strings, "utf8-strings", 0, "@" },
@@ -929,6 +916,51 @@ set_screen_dimensions(void)
     opt.screen_lines=24;
 }
 
+
+/* Helper to open a file FNAME either for reading or writing to be
+   used with --status-file etc functions.  Not generally useful but it
+   avoids the riscos specific functions and well some Windows people
+   might like it too.  Prints an error message and returns -1 on
+   error. On success the file descriptor is returned.  */
+static int
+open_info_file (const char *fname, int for_write)
+{
+#ifdef __riscos__
+  return riscos_fdopenfile (fname, for_write);
+#elif defined (ENABLE_SELINUX_HACKS)
+  /* We can't allow these even when testing for a secured filename
+     because files to be secured might not yet been secured.  This is
+     similar to the option file but in that case it is unlikely that
+     sensitive information may be retrieved by means of error
+     messages.  */
+  return -1;
+#else 
+  int fd;
+
+/*   if (is_secured_filename (fname)) */
+/*     { */
+/*       fd = -1; */
+/*       errno = EPERM; */
+/*     } */
+/*   else */
+/*     { */
+      do
+        {
+          if (for_write)
+            fd = open (fname, O_CREAT | O_TRUNC | O_WRONLY,
+                        S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+          else
+            fd = open (fname, O_RDONLY | MY_O_BINARY);
+        }
+      while (fd == -1 && errno == EINTR);
+/*     } */
+  if ( fd == -1)
+    log_error ( for_write? _("can't create `%s': %s\n")
+                         : _("can't open `%s': %s\n"), fname, strerror(errno));
+  
+  return fd;
+#endif
+}
 
 static void
 set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
@@ -1950,34 +1982,30 @@ main( int argc, char **argv )
 	  case oStatusFD:
             set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
             break;
-#ifdef __riscos__
 	  case oStatusFile:
-            set_status_fd( iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 1), 1) );
+            set_status_fd ( open_info_file (pargs.r.ret_str, 1) );
             break;
-#endif /* __riscos__ */
 	  case oAttributeFD:
             set_attrib_fd(iobuf_translate_file_handle (pargs.r.ret_int, 1));
             break;
-#ifdef __riscos__
 	  case oAttributeFile:
-            set_attrib_fd(iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 1), 1) );
+            set_attrib_fd ( open_info_file (pargs.r.ret_str, 1) );
             break;
-#endif /* __riscos__ */
 	  case oLoggerFD:
             log_set_logfile( NULL,
-                             iobuf_translate_file_handle (pargs.r.ret_int, 1) );
+                             iobuf_translate_file_handle (pargs.r.ret_int, 1));
             break;
-#ifdef __riscos__
 	  case oLoggerFile:
-            log_set_logfile( NULL,
-                             iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 1), 1) );
+            log_set_logfile( NULL, open_info_file (pargs.r.ret_str, 1) );
             break;
-#endif /* __riscos__ */
+
 	  case oWithFingerprint:
             opt.with_fingerprint = 1;
             with_fpr=1; /*fall thru*/
 	  case oFingerprint: opt.fingerprint++; break;
-	  case oSecretKeyring: append_to_strlist( &sec_nrings, pargs.r.ret_str); break;
+	  case oSecretKeyring:
+            append_to_strlist( &sec_nrings, pargs.r.ret_str);
+            break;
 	  case oOptions:
 	    /* config files may not be nested (silently ignore them) */
 	    if( !configfp ) {
@@ -2212,21 +2240,21 @@ main( int argc, char **argv )
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             opt.use_agent = 0;
             break;
-#ifdef __riscos__
 	  case oPasswdFile:
-            pwfd = iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 0), 0);
+            pwfd = open_info_file (pargs.r.ret_str, 0);
             break;
-#endif /* __riscos__ */
 	  case oCommandFD:
             opt.command_fd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             break;
-#ifdef __riscos__
 	  case oCommandFile:
-            opt.command_fd = iobuf_translate_file_handle ( riscos_fdopenfile (pargs.r.ret_str, 0), 0);
+            opt.command_fd = open_info_file (pargs.r.ret_str, 0);
             break;
-#endif /* __riscos__ */
-	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
-	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
+	  case oCipherAlgo: 
+            def_cipher_string = m_strdup(pargs.r.ret_str);
+            break;
+	  case oDigestAlgo:
+            def_digest_string = m_strdup(pargs.r.ret_str);
+            break;
 	  case oCompressAlgo:
 	    /* If it is all digits, stick a Z in front of it for
 	       later.  This is for backwards compatibility with

@@ -603,7 +603,7 @@
 
      --enable-selinux-support
                     This prevents access to certain files and won't
-                    allow import or export of secret keys.
+                    allow import or export of secret keys. 
 
      --disable-gnupg-iconv
                     If iconv is available it is used to convert

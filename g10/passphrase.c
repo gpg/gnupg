@@ -267,19 +267,20 @@ readn (int fd, void *buf, size_t buflen, size_t *ret_nread)
   size_t nleft = buflen;
   int nread;
   char *p;
-
+  
   p = buf;
-  while (nleft > 0)
+  while( nleft > 0 )
     {
-      nread = read (fd, buf, nleft);
-      if (nread < 0)
+      nread = read ( fd, buf, nleft );
+      if( nread < 0 ) 
         {
-          if (nread == EINTR)
+          if (errno == EINTR)
             nread = 0;
-          else {
-            log_error ("read() error: %s\n", strerror (errno));
-            return -1;
-          }
+          else 
+            {
+              log_error ( "read() error: %s\n", strerror (errno) );
+              return -1;
+            }
         }
       else if (!nread)
         break; /* EOF */
@@ -1030,6 +1031,7 @@ passphrase_clear_cache ( u32 *keyid, int algo )
  */
 char *
 ask_passphrase (const char *description,
+                const char *tryagain_text,
                 const char *promptid,
                 const char *prompt, int *canceled)
 {
@@ -1044,7 +1046,9 @@ ask_passphrase (const char *description,
  agent_died:
   if ( opt.use_agent ) 
     {
-      pw = agent_get_passphrase (NULL, 0,  description, canceled );
+      pw = agent_get_passphrase (NULL, 0,
+                                 tryagain_text? tryagain_text :description,
+                                 canceled );
       if (!pw)
         {
           if (!opt.use_agent)
@@ -1063,6 +1067,8 @@ ask_passphrase (const char *description,
       pw = NULL;
     }
   else {
+    if (tryagain_text)
+      tty_printf(_("%s.\n"), tryagain_text);
     pw = cpr_get_hidden(promptid? promptid : "passphrase.ask",
                         prompt?prompt : _("Enter passphrase: ") );
     tty_kill_prompt();
@@ -1177,7 +1183,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 
  agent_died:
     if( next_pw ) {
-        /* Simply return the passpharse we already have in NEXT_PW. */
+        /* Simply return the passphrase we already have in NEXT_PW. */
 	pw = next_pw;
 	next_pw = NULL;
     }

@@ -187,7 +187,9 @@ int  build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
 int  have_static_passphrase(void);
 void read_passphrase_from_fd( int fd );
 void passphrase_clear_cache ( u32 *keyid, int algo );
-char *ask_passphrase (const char *description, const char *promptid,
+char *ask_passphrase (const char *description,
+                      const char *tryagain_text,
+                      const char *promptid,
                       const char *prompt, int *canceled);
 DEK *passphrase_to_dek( u32 *keyid, int pubkey_algo,
 			int cipher_algo, STRING2KEY *s2k, int mode,

@@ -815,7 +815,10 @@ verify_chv3 (app_t app,
                  " is permanently locked\n"), value[6]);
       xfree (relptr);
 
-      rc = pincb (pincb_arg, _("Admin PIN"), &pinvalue); 
+      /* Note to translators: Do not translate the "|A|" prefix but
+         keep it at the start of the string.  We need this elsewhere
+         to get some infos on the string. */
+      rc = pincb (pincb_arg, _("|A|Admin PIN"), &pinvalue); 
       if (rc)
         {
           log_info (_("PIN callback returned error: %s\n"), gpg_strerror (rc));
@@ -953,10 +956,14 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
   else
     app->did_chv1 = app->did_chv2 = 0;
 
-  rc = pincb (pincb_arg, chvno == 3? "New Admin PIN" : "New PIN", &pinvalue); 
+  /* Note to translators: Do not translate the "|A|" prefix but
+     keep it at the start of the string.  We need this elsewhere
+     to get some infos on the string. */
+  rc = pincb (pincb_arg, chvno == 3? _("|A|New Admin PIN") : _("New PIN"), 
+              &pinvalue); 
   if (rc)
     {
-      log_error ("error getting new PIN: %s\n", gpg_strerror (rc));
+      log_error (_("error getting new PIN: %s\n"), gpg_strerror (rc));
       goto leave;
     }
 
@@ -1022,14 +1029,14 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   rc = iso7816_get_data (app->slot, 0x006E, &buffer, &buflen);
   if (rc)
     {
-      log_error ("error reading application data\n");
+      log_error (_("error reading application data\n"));
       return gpg_error (GPG_ERR_GENERAL);
     }
   fpr = find_tlv (buffer, buflen, 0x00C5, &n);
   if (!fpr || n != 60)
     {
       rc = gpg_error (GPG_ERR_GENERAL);
-      log_error ("error reading fingerprint DO\n");
+      log_error (_("error reading fingerprint DO\n"));
       goto leave;
     }
   fpr += 20*keyno;
@@ -1038,13 +1045,13 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (i!=20 && !force)
     {
       rc = gpg_error (GPG_ERR_EEXIST);
-      log_error ("key already exists\n");
+      log_error (_("key already exists\n"));
       goto leave;
     }
   else if (i!=20)
-    log_info ("existing key will be replaced\n");
+    log_info (_("existing key will be replaced\n"));
   else
-    log_info ("generating new key\n");
+    log_info (_("generating new key\n"));
 
 
   rc = verify_chv3 (app, pincb, pincb_arg);
@@ -1054,7 +1061,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   xfree (buffer); buffer = NULL;
 
 #if 1
-  log_info ("please wait while key is being generated ...\n");
+  log_info (_("please wait while key is being generated ...\n"));
   start_at = time (NULL);
   rc = iso7816_generate_keypair 
 #else
@@ -1069,16 +1076,16 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (rc)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("generating key failed\n");
+      log_error (_("generating key failed\n"));
       goto leave;
     }
-  log_info ("key generation completed (%d seconds)\n",
+  log_info (_("key generation completed (%d seconds)\n"),
             (int)(time (NULL) - start_at));
   keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("response does not contain the public key data\n");
+      log_error (_("response does not contain the public key data\n"));
       goto leave;
     }
  
@@ -1086,7 +1093,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (!m)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("response does not contain the RSA modulus\n");
+      log_error (_("response does not contain the RSA modulus\n"));
       goto leave;
     }
 /*    log_printhex ("RSA n:", m, mlen); */
@@ -1096,7 +1103,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   if (!e)
     {
       rc = gpg_error (GPG_ERR_CARD);
-      log_error ("response does not contain the RSA public exponent\n");
+      log_error (_("response does not contain the RSA public exponent\n"));
       goto leave;
     }
 /*    log_printhex ("RSA e:", e, elen); */
@@ -1129,7 +1136,7 @@ convert_sig_counter_value (const unsigned char *value, size_t valuelen)
     ul = (value[0] << 16) | (value[1] << 8) | value[2];
   else
     {
-      log_error ("invalid structure of OpenPGP card (DO 0x93)\n");
+      log_error (_("invalid structure of OpenPGP card (DO 0x93)\n"));
       ul = 0;
     }
   return ul;
@@ -1164,14 +1171,14 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
   rc = get_cached_data (app, 0x006E, &buffer, &buflen);
   if (rc)
     {
-      log_error ("error reading application data\n");
+      log_error (_("error reading application data\n"));
       return gpg_error (GPG_ERR_GENERAL);
     }
   fpr = find_tlv (buffer, buflen, 0x00C5, &n);
   if (!fpr || n != 60)
     {
       xfree (buffer);
-      log_error ("error reading fingerprint DO\n");
+      log_error (_("error reading fingerprint DO\n"));
       return gpg_error (GPG_ERR_GENERAL);
     }
   fpr += (keyno-1)*20;
@@ -1290,7 +1297,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   memcpy (data+15, indata, indatalen);
 
   sigcount = get_sig_counter (app);
-  log_info ("signatures created so far: %lu\n", sigcount);
+  log_info (_("signatures created so far: %lu\n"), sigcount);
 
   if (!app->did_chv1 || app->force_chv1 ) 
     {

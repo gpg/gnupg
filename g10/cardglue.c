@@ -49,6 +49,12 @@ struct ctrl_ctx_s {
 };
 
 
+struct pin_cb_info_s 
+{
+  int repeat;
+};
+
+
 static char *default_reader_port;
 static APP current_app;
 
@@ -620,27 +626,68 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 static int 
 pin_cb (void *opaque, const char *info, char **retstr)
 {
+  struct pin_cb_info_s *parm = opaque;
   char *value;
   int canceled;
-  int isadmin = (info && strstr (info, "dmin"));
-
+  int isadmin = 0;
+  const char *again_text = NULL;
 
   *retstr = NULL;
   log_debug ("asking for PIN '%s'\n", info);
 
+  /* We use a special prefix to check whether the Admin PIN has been
+     requested. */
+  if (info && !strncmp (info, "|A|", 3))
+    {
+      isadmin = 1;
+      info += 3;
+    }
+
+ again:
   if (is_status_enabled())
     write_status_text (STATUS_NEED_PASSPHRASE_PIN,
                        isadmin? "OPENPGP 3" : "OPENPGP 1");
 
-  value = ask_passphrase (info, 
+  value = ask_passphrase (info, again_text,
                           isadmin? "passphrase.adminpin.ask"
                                  : "passphrase.pin.ask", 
-                          isadmin?  _("Enter Admin PIN: ") : _("Enter PIN: "),
+                          isadmin? _("Enter Admin PIN: ")
+                                 : _("Enter PIN: "),
                           &canceled);
+  again_text = NULL;
   if (!value && canceled)
     return -1;
   else if (!value)
     return G10ERR_GENERAL;
+
+  if (parm->repeat)
+    {
+      char *value2;
+
+      value2 = ask_passphrase (info, NULL,
+                               "passphrase.pin.repeat", 
+                               _("Repeat this PIN: "),
+                              &canceled);
+      if (!value && canceled)
+        {
+          xfree (value);
+          return -1;
+        }
+      else if (!value)
+        {
+          xfree (value);
+          return G10ERR_GENERAL;
+        }
+      if (strcmp (value, value2))
+        {
+          again_text = N_("PIN not correctly repeated; try again");
+          xfree (value2);
+          xfree (value);
+          value = NULL;
+          goto again;
+        }
+      xfree (value2);
+    }
 
   *retstr = value;
   return 0;
@@ -654,12 +701,15 @@ agent_scd_setattr (const char *name,
                    const unsigned char *value, size_t valuelen)
 {
   APP app;
+  struct pin_cb_info_s parm;
+
+  memset (&parm, 0, sizeof parm);
 
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  return app->fnc.setattr (app, name, pin_cb, NULL, value, valuelen);
+  return app->fnc.setattr (app, name, pin_cb, &parm, value, valuelen);
 }
 
 
@@ -670,7 +720,7 @@ genkey_status_cb (void *opaque, const char *line)
   const char *keyword = line;
   int keywordlen;
 
-  log_debug ("got status line `%s'\n", line);
+/*   log_debug ("got status line `%s'\n", line); */
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
   while (spacep (line))
@@ -722,6 +772,9 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
   APP app;
   char keynostr[20];
   struct ctrl_ctx_s ctrl;
+  struct pin_cb_info_s parm;
+
+  memset (&parm, 0, sizeof parm);
 
   app = current_app? current_app : open_card ();
   if (!app)
@@ -734,7 +787,7 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
 
   return app->fnc.genkey (app, &ctrl, keynostr,
                            force? 1:0,
-                           pin_cb, NULL);
+                           pin_cb, &parm);
 }
 
 /* Send a PKSIGN command to the SCdaemon. */
@@ -745,6 +798,9 @@ agent_scd_pksign (const char *serialno, int hashalgo,
 {
   APP app;
   int rc;
+  struct pin_cb_info_s parm;
+
+  memset (&parm, 0, sizeof parm);
 
   *r_buf = NULL;
   *r_buflen = 0;
@@ -761,7 +817,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
     return rc;
 
   return app->fnc.sign (app, serialno, hashalgo,
-                        pin_cb, NULL,
+                        pin_cb, &parm,
                         indata, indatalen,
                         r_buf, r_buflen);
 }
@@ -775,6 +831,9 @@ agent_scd_pkdecrypt (const char *serialno,
 {
   APP app;
   int rc;
+  struct pin_cb_info_s parm;
+
+  memset (&parm, 0, sizeof parm);
 
   *r_buf = NULL;
   *r_buflen = 0;
@@ -791,7 +850,7 @@ agent_scd_pkdecrypt (const char *serialno,
     return rc;
 
   return app->fnc.decipher (app, serialno, 
-                            pin_cb, NULL,
+                            pin_cb, &parm,
                             indata, indatalen,
                             r_buf, r_buflen);
 }
@@ -803,6 +862,10 @@ agent_scd_change_pin (int chvno)
   APP app;
   char chvnostr[20];
   int reset = 0;
+  struct pin_cb_info_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  parm.repeat = 1;
 
   reset = (chvno >= 100);
   chvno %= 100;
@@ -813,7 +876,7 @@ agent_scd_change_pin (int chvno)
 
   sprintf (chvnostr, "%d", chvno);
   return app->fnc.change_pin (app, NULL, chvnostr, reset,
-                              pin_cb, NULL);
+                              pin_cb, &parm);
 }
 
 /* Perform a CHECKPIN operation.  SERIALNO should be the serial
@@ -823,12 +886,15 @@ int
 agent_scd_checkpin (const char *serialnobuf)
 {
   APP app;
+  struct pin_cb_info_s parm;
+
+  memset (&parm, 0, sizeof parm);
 
   app = current_app? current_app : open_card ();
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
-  return app->fnc.check_pin (app, serialnobuf, pin_cb, NULL);
+  return app->fnc.check_pin (app, serialnobuf, pin_cb, &parm);
 }
 
 
@@ -841,6 +907,9 @@ agent_openpgp_storekey (int keyno,
                         const unsigned char *e, size_t elen)
 {
   APP app;
+  struct pin_cb_info_s parm;
+
+  memset (&parm, 0, sizeof parm);
 
   app = current_app? current_app : open_card ();
   if (!app)
@@ -848,5 +917,5 @@ agent_openpgp_storekey (int keyno,
 
   return app_openpgp_storekey (app, keyno, template, template_len,
                                created_at, m, mlen, e, elen,
-                               pin_cb, NULL);
+                               pin_cb, &parm);
 }

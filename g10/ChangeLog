@@ -1,3 +1,27 @@
+2004-11-17  Werner Koch  <wk@g10code.com>
+
+	* g10.c (open_info_file): New.
+	(main): Unconditionally implement --status-file, --logger-file,
+	--attribute-file, --passphrase-file, --command-file.  This is not
+	generally useful but easy to support and might make scripting
+	under Windows easier.
+
+2004-11-11  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (readn): Fixed test against EINTR.
+
+2004-11-05  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c: Made more strings translatable.
+	(verify_chv3, do_change_pin): Add a special prefix to the prompt
+	of the Admin PIN prompts.
+	* passphrase.c (ask_passphrase): Add arg TRYAGAIN_TEXT.  Changed
+	call callers.
+	* cardglue.c (pin_cb): Make use of the OPAQUE arg to pass
+	arguments to the PIN callback.  Use this to implement a way to
+	check for correct PIN repetition.  Changed all callers to pass an
+	opaque argument. Improved detection of Admin PIN prompts.
+
 2004-11-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* plaintext.c (handle_plaintext): Don't try and create a
@@ -20,9 +44,9 @@
 
 2004-11-03  Timo Schulz  <twoaday@g10code.com>
 
-        * passphrase.c (readn, writen): Use w32_strerror instead
+	* passphrase.c (readn, writen): Use w32_strerror instead
         of just showing the error number.
-        * misc.c [_WIN32]: Fix warning about missing prototypes.
+	* misc.c [_WIN32]: Fix warning about missing prototypes.
 	
 2004-10-28  David Shaw  <dshaw@jabberwocky.com>
 
