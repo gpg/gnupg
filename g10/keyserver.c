@@ -899,7 +899,8 @@ keyserver_spawn(int action,STRLIST list,
 			    {
 			      if(uid->name[r]==':' || uid->name[r]=='%'
 				 || uid->name[r]&0x80)
-				fprintf(spawn->tochild,"%%%02X",uid->name[r]);
+				fprintf(spawn->tochild,"%%%02X",
+					(byte)uid->name[r]);
 			      else
 				fprintf(spawn->tochild,"%c",uid->name[r]);
 			    }
@@ -1142,18 +1143,33 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 int 
 keyserver_export(STRLIST users)
 {
-  /* We better ask for confirmation when the user entered --send-keys
-     without arguments.  Sending all keys might not be the thing he
-     intended to do */
-  if (users || opt.batch || opt.answer_yes)
-    ;
-  else if ( !cpr_get_answer_is_yes
-            ("keyserver_export.send_all",
-             _("Do you really want to send all your "
-               "public keys to the keyserver? (y/N) ")))
-    return -1;
+  STRLIST sl=NULL;
+  KEYDB_SEARCH_DESC desc;
+  int rc=0;
 
-  return keyserver_work(SEND,users,NULL,0);
+  /* Weed out descriptors that we don't support sending */
+  for(;users;users=users->next)
+    {
+      classify_user_id (users->d, &desc);
+      if(desc.mode!=KEYDB_SEARCH_MODE_SHORT_KID &&
+	 desc.mode!=KEYDB_SEARCH_MODE_LONG_KID &&
+	 desc.mode!=KEYDB_SEARCH_MODE_FPR16 &&
+	 desc.mode!=KEYDB_SEARCH_MODE_FPR20)
+	{
+	  log_error(_("\"%s\" not a key ID: skipping\n"),users->d);
+	  continue;
+	}
+      else
+	append_to_strlist(&sl,users->d);
+    }
+
+  if(sl)
+    {
+      rc=keyserver_work(SEND,sl,NULL,0);
+      free_strlist(sl);
+    }
+
+  return rc;
 }
 
 int 
@@ -1174,7 +1190,7 @@ keyserver_import(STRLIST users)
 	 desc[count].mode!=KEYDB_SEARCH_MODE_FPR16 &&
 	 desc[count].mode!=KEYDB_SEARCH_MODE_FPR20)
 	{
-	  log_error(_("skipping invalid key ID \"%s\"\n"),users->d);
+	  log_error(_("\"%s\" not a key ID: skipping\n"),users->d);
 	  continue;
 	}
 

@@ -1,5 +1,11 @@
 2004-02-20  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (keyserver_export): Disallow user strings that
+	aren't key IDs.
+	(keyserver_import): Clarify error message.
+	(keyserver_spawn): Properly handle 8 bit characters in user IDs in
+	the info lines during SEND.
+
 	* mkdtemp.c: Removed.
 
 	* Makefile.am: We get mkdtemp.c from libutil.a now, so don't link
