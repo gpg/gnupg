@@ -673,7 +673,7 @@ fi
 
 dnl Temp workarounds:
 GNUPG_LINK_FILES(gcrypt/gcrypt.h, gcrypt.h )
-GNUPG_LINK_FILES(include/typtes.h, gcrypt/types.h )
+GNUPG_LINK_FILES(include/types.h, gcrypt/types.h )
 
 AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 

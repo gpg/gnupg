@@ -1,3 +1,7 @@
+Mon Jan 31 17:46:35 CET 2000  Werner Koch  <wk@>
+
+	* Makefile.am: Re-added tools. By Rémi.
+
 Mon Jan 31 16:37:34 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* configure.in: Create a symlink for types.h in gcrypt/.

@@ -28,9 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <gcrypt.h>
 
 #include "util.h"
-#include "mpi.h"
 #include "i18n.h"
 
 #define STACKSIZE  100
@@ -38,8 +38,8 @@ static MPI stack[STACKSIZE];
 static int stackidx;
 
 
-const char *
-strusage( int level )
+static const char *
+my_strusage( int level )
 {
     const char *p;
     switch( level ) {
@@ -56,7 +56,7 @@ strusage( int level )
     "\nSyntax: mpicalc [options] [files]\n"
     "MPI RPN calculator\n";
 	break;
-      default:	p = default_strusage(level);
+      default:	p = NULL;
     }
     return p;
 }
@@ -71,9 +71,33 @@ i18n_init(void)
     #else
        setlocale( LC_ALL, "" );
     #endif
-    bindtextdomain( PACKAGE, G10_LOCALEDIR );
+    bindtextdomain( PACKAGE, GNUPG_LOCALEDIR );
     textdomain( PACKAGE );
   #endif
+}
+
+int
+mpi_print( FILE *fp, MPI a, int mode )
+{
+    int n=0;
+
+    if( !a )
+	return fprintf(fp, "[MPI_NULL]");
+    if( !mode ) {
+	unsigned int n1;
+	n1 = gcry_mpi_get_nbits(a);
+	n += fprintf(fp, "[%u bits]", n1);
+    }
+    else {
+	int rc;
+	char *buffer;
+
+	rc = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void **)&buffer, NULL, a );
+	fputs( buffer, fp );
+	n += strlen(buffer);
+	gcry_free( buffer );
+    }
+    return n;
 }
 
 
@@ -233,6 +257,7 @@ main(int argc, char **argv)
     pargs.argv = &argv;
     pargs.flags = 0;
 
+    set_strusage( my_strusage );
     i18n_init();
     while( arg_parse( &pargs, opts) ) {
 	switch( pargs.r_opt ) {

@@ -76,7 +76,7 @@ expect {
 expect {
    -exact "a test\r
 \r               \rYou selected this USER-ID:\r
-    \"Harry H. (a test) <hh@ddorf.de> (INSECURE!)\"\r
+    \"Harry H. (a test) <hh@ddorf.de>\"\r
 \r
 Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? " { send -- "o\r" }
     timeout { exit 1 } }

@@ -17,7 +17,7 @@ else
 checks = checks
 endif
 
-SUBDIRS = intl zlib jnlib util mpi cipher ${gcrypt} g10 po doc ${checks}
+SUBDIRS = intl zlib jnlib util mpi cipher ${gcrypt} g10 po tools doc ${checks}
 EXTRA_DIST = README-alpha VERSION  PROJECTS BUGS
 # gettext never gets it right, so we take here care of deleting the
 # symlink.  my_clean_gcrypt is just a kludge until we can include

@@ -38,11 +38,6 @@ my_usage(void)
     exit(1);
 }
 
-const char *
-strusage( int level )
-{
-    return default_strusage(level);
-}
 
 static void
 i18n_init(void)
@@ -53,7 +48,7 @@ i18n_init(void)
     #else
        setlocale( LC_ALL, "" );
     #endif
-    bindtextdomain( PACKAGE, G10_LOCALEDIR );
+    bindtextdomain( PACKAGE, GNUPG_LOCALEDIR );
     textdomain( PACKAGE );
   #endif
 }
