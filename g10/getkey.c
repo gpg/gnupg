@@ -34,8 +34,6 @@
 #include "trustdb.h"
 #include "i18n.h"
 
-#define MAX_UNK_CACHE_ENTRIES 1000   /* we use a linked list - so I guess
-				      * this is a reasonable limit */
 #define MAX_PK_CACHE_ENTRIES   200
 #define MAX_UID_CACHE_ENTRIES  200
 
@@ -72,12 +70,6 @@ typedef struct keyid_list {
     u32 keyid[2];
 } *keyid_list_t;
 
-
-#if MAX_UNK_CACHE_ENTRIES
-  static keyid_list_t unknown_keyids;
-  static int unk_cache_entries;   /* number of entries in unknown keys cache */
-  static int unk_cache_disabled;
-#endif
 
 #if MAX_PK_CACHE_ENTRIES
   typedef struct pk_cache_entry {
@@ -270,17 +262,6 @@ cache_user_id( KBNODE keyblock )
 void
 getkey_disable_caches()
 {
-  #if MAX_UNK_CACHE_ENTRIES
-    {
-	keyid_list_t kl, kl2;
-	for( kl = unknown_keyids; kl; kl = kl2 ) {
-	    kl2 = kl->next;
-	    m_free(kl);
-	}
-	unknown_keyids = NULL;
-	unk_cache_disabled = 1;
-    }
-  #endif
   #if MAX_PK_CACHE_ENTRIES
     {
 	pk_cache_entry_t ce, ce2;
@@ -334,15 +315,6 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
     int internal = 0;
     int rc = 0;
 
-  #if MAX_UNK_CACHE_ENTRIES
-    {	/* let's see whether we checked the keyid already */
-	keyid_list_t kl;
-	for( kl = unknown_keyids; kl; kl = kl->next )
-	    if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
-		return G10ERR_NO_PUBKEY; /* already checked and not found */
-    }
-  #endif
-
   #if MAX_PK_CACHE_ENTRIES
     {	/* Try to get it from the cache */
 	pk_cache_entry_t ce;
@@ -385,25 +357,6 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
     if( !rc )
 	goto leave;
 
-  #if MAX_UNK_CACHE_ENTRIES
-    /* not found: store it for future reference */
-    if( unk_cache_disabled )
-	;
-    else if( ++unk_cache_entries > MAX_UNK_CACHE_ENTRIES ) {
-	unk_cache_disabled = 1;
-	if( opt.verbose > 1 )
-	    log_info(_("too many entries in unk cache - disabled\n"));
-    }
-    else {
-	keyid_list_t kl;
-
-	kl = m_alloc( sizeof *kl );
-	kl->keyid[0] = keyid[0];
-	kl->keyid[1] = keyid[1];
-	kl->next = unknown_keyids;
-	unknown_keyids = kl;
-    }
-  #endif
     rc = G10ERR_NO_PUBKEY;
 
   leave:

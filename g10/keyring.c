@@ -35,45 +35,153 @@
 #include "main.h" /*for check_key_signature()*/
 #include "i18n.h"
 
+struct off_item {
+  struct off_item *next;
+  u32 kid[2];
+  off_t off;
+};
+
+typedef struct off_item **OffsetHashTable; 
+
+
 typedef struct keyring_name *KR_NAME;
 struct keyring_name {
-    struct keyring_name *next;
-    int secret;
-    DOTLOCK lockhd;
-    int is_locked;
-    char fname[1];
+  struct keyring_name *next;
+  int secret;
+  OffsetHashTable offtbl;
+  int offtbl_ready;
+  DOTLOCK lockhd;
+  int is_locked;
+  char fname[1];
 };
 typedef struct keyring_name const * CONST_KR_NAME;
 
 static KR_NAME kr_names;
 static int active_handles;
 
+
 struct keyring_handle {
-    int secret; /* this is for a secret keyring */
-    struct {
-        CONST_KR_NAME kr;
-        IOBUF iobuf;
-        int eof;
-        int error;
-    } current;
-    struct {
-        CONST_KR_NAME kr; 
-        off_t offset;
-        size_t pk_no;
-        size_t uid_no;
-        unsigned int n_packets; /*used for delete and update*/
-    } found;
-    struct {
-        char *name;
-        char *pattern;
-    } word_match;
+  int secret; /* this is for a secret keyring */
+  struct {
+    CONST_KR_NAME kr;
+    IOBUF iobuf;
+    int eof;
+    int error;
+  } current;
+  struct {
+    CONST_KR_NAME kr; 
+    off_t offset;
+    size_t pk_no;
+    size_t uid_no;
+    unsigned int n_packets; /*used for delete and update*/
+  } found;
+  struct {
+    char *name;
+    char *pattern;
+  } word_match;
 };
+
+
 
 static int do_copy (int mode, const char *fname, KBNODE root, int secret,
                     off_t start_offset, unsigned int n_packets );
 
 
+
+static struct off_item *
+new_offset_item (void)
+{
+  struct off_item *k;
+  
+  k = m_alloc_clear (sizeof *k);
+  return k;
+}
 
+static void
+release_offset_items (struct off_item *k)
+{
+  struct off_item *k2;
+
+  for (; k; k = k2)
+    {
+      k2 = k->next;
+      m_free (k);
+    }
+}
+
+
+static OffsetHashTable 
+new_offset_hash_table (void)
+{
+  struct off_item **tbl;
+
+  tbl = m_alloc_clear (2048 * sizeof *tbl);
+  return tbl;
+}
+
+static void
+release_offset_hash_table (OffsetHashTable tbl)
+{
+  int i;
+
+  if (!tbl)
+    return;
+  for (i=0; i < 2048; i++)
+    release_offset_items (tbl[i]);
+  m_free (tbl);
+}
+
+static struct off_item *
+lookup_offset_hash_table (OffsetHashTable tbl, u32 *kid)
+{
+  struct off_item *k;
+
+  for (k = tbl[(kid[1] & 0x07ff)]; k; k = k->next)
+    if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
+      return k;
+  return NULL;
+}
+
+static void
+update_offset_hash_table (OffsetHashTable tbl, u32 *kid, off_t off)
+{
+  struct off_item *k;
+
+  for (k = tbl[(kid[1] & 0x07ff)]; k; k = k->next)
+    {
+      if (k->kid[0] == kid[0] && k->kid[1] == kid[1]) 
+        {
+          k->off = off;
+          return;
+        }
+    }
+
+  k = new_offset_item ();
+  k->kid[0] = kid[0];
+  k->kid[1] = kid[1];
+  k->off = off;
+  k->next = tbl[(kid[1] & 0x07ff)];
+  tbl[(kid[1] & 0x07ff)] = k;
+}
+
+static void
+update_offset_hash_table_from_kb (OffsetHashTable tbl, KBNODE node, off_t off)
+{
+  for (; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY
+          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          u32 aki[2];
+          keyid_from_pk (node->pkt->pkt.public_key, aki);
+          update_offset_hash_table (tbl, aki, off);
+        }
+    }
+}
+
+
+
+
 /* 
  * Register a filename for plain keyring files
  */
@@ -93,6 +201,8 @@ keyring_register_filename (const char *fname, int secret)
     kr = m_alloc (sizeof *kr + strlen (fname));
     strcpy (kr->fname, fname);
     kr->secret = !!secret;
+    kr->offtbl = new_offset_hash_table ();
+    kr->offtbl_ready = 0;
     kr->lockhd = NULL;
     kr->is_locked = 0;
     kr->next = kr_names;
@@ -369,9 +479,15 @@ keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     rc = do_copy (3, hd->found.kr->fname, kb, hd->secret,
                   hd->found.offset, hd->found.n_packets );
     if (!rc) {
-        /* better reset the found info */
-        hd->found.kr = NULL;
-        hd->found.offset = 0;
+      if (hd->current.kr->offtbl)
+        {
+          /* we do not have the offset but as it is not use it does not
+           * matter*/
+          update_offset_hash_table_from_kb (hd->current.kr->offtbl, kb, 0);
+        }
+      /* better reset the found info */
+      hd->found.kr = NULL;
+      hd->found.offset = 0;
     }
     return rc;
 }
@@ -405,6 +521,12 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
 
     /* do the insert */
     rc = do_copy (1, fname, kb, hd->secret, 0, 0 );
+    if (!rc && hd->current.kr->offtbl)
+      {
+        /* we do not have the offset but as it is not use it does not matter*/
+        update_offset_hash_table_from_kb (hd->current.kr->offtbl, kb, 0);
+      }
+      
     return rc;
 }
 
@@ -441,6 +563,8 @@ keyring_delete_keyblock (KEYRING_HANDLE hd)
         /* better reset the found info */
         hd->found.kr = NULL;
         hd->found.offset = 0;
+        /* Delete is a rare operations, so we don't remove the keys
+         * from the offset table */
     }
     return rc;
 }
@@ -714,6 +838,8 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
     PKT_user_id *uid = NULL;
     PKT_public_key *pk = NULL;
     PKT_secret_key *sk = NULL;
+    OffsetHashTable offtbl;
+    int offtbl_ready;
 
     /* figure out what information we need */
     need_uid = need_words = need_keyid = need_fpr = any_skip = 0;
@@ -754,6 +880,30 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
     rc = prepare_search (hd);
     if (rc)
         return rc;
+
+    offtbl = hd->current.kr->offtbl;
+    offtbl_ready = hd->current.kr->offtbl_ready;
+    if (!offtbl)
+      ;
+    else if (!offtbl_ready)
+      need_keyid = 1;
+    else if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID)
+      {
+        struct off_item *oi;
+            
+        oi = lookup_offset_hash_table (offtbl, desc[0].u.kid);
+        if (!oi)
+          { /* We know that we don't have this key */
+            hd->found.kr = NULL;
+            hd->current.eof = 1;
+            return -1;
+          }
+        /* We could now create a positive search status and return.
+         * However the problem is that another instance of gpg may 
+         * have changed the keyring so that the offsets are not valid
+         * anymore - therefore we don't do it 
+         */
+      }
 
 #if 0
     if (need_words) {
@@ -807,6 +957,9 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
             }
             if (need_keyid)
                 keyid_from_pk (pk, aki);
+
+            if (offtbl && !offtbl_ready)
+              update_offset_hash_table (offtbl, aki, main_offset);
         }
 	else if (pkt.pkttype == PKT_USER_ID) {
             uid = pkt.pkt.user_id;
@@ -824,6 +977,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
             }
             if (need_keyid)
                 keyid_from_sk (sk, aki);
+            
         }
 
         for (n=0; n < ndesc; n++) {
@@ -894,9 +1048,16 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
         hd->found.uid_no = uid? uid_no : 0;
     }
     else if (rc == -1)
+      {
         hd->current.eof = 1;
+        /* if we scanned the entire keyring, we are sure that
+         * all known key IDs are in our offtbl, mark that. */
+        hd->current.kr->offtbl_ready = 1;
+      }
     else 
         hd->current.error = rc;
+
+
 
     free_packet(&pkt);
     set_packet_list_mode(save_mode);

@@ -1,5 +1,15 @@
 2001-09-25  Werner Koch  <wk@gnupg.org>
 
+	* keyring.c (new_offset_item,release_offset_items)
+	(new_offset_hash_table, lookup_offset_hash_table)
+	(update_offset_hash_table, update_offset_hash_table_from_kb): New.
+	(keyring_search): Use a offset table to optimize search for
+	unknown keys.
+	(keyring_update_keyblock, keyring_insert_keyblock): Insert new
+	offsets.
+	* getkey.c (MAX_UNK_CACHE_ENTRIES): Removed the unknown keys
+	caching code.
+
 	* g10.c, options.h, import.c: Removed the entire
 	allow-secret-key-import stuff because the validity is now
 	controlled by other means.
