@@ -24,7 +24,13 @@ Noteworthy changes in the current CVS branch STABLE-BRANCH-1-0
       and for symmetric-only encryption. This should solve a couple
       of compatibility problems because the old algorithms are optional
       according to RFC2440
-   
+
+    * Twofish and MDC enhanced encryption is now used.  PGP 7 supports 
+      this.  Older versions of GnuPG don't support it, so they should be
+      upgraded to at least 1.0.2
+      
+      
+    
 
 Noteworthy changes in version 1.0.2 (2000-07-12)
 ----------------------------------------------

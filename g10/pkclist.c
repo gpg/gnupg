@@ -1032,8 +1032,6 @@ static int
 algo_available( int preftype, int algo )
 {
     if( preftype == PREFTYPE_SYM ) {
-	if( algo == CIPHER_ALGO_TWOFISH )
-	    return 0;  /* we don't want to generate Twofish messages for now*/
 	return algo && !check_cipher_algo( algo );
     }
     else if( preftype == PREFTYPE_HASH ) {

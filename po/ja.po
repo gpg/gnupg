@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-09-14 13:26+0200\n"
+"POT-Creation-Date: 2000-09-14 17:35+0200\n"
 "PO-Revision-Date: 2000-02-16 20:10+09:00\n"
 "Last-Translator: IIDA Yosiaki <iida@secom.ne.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -1664,12 +1664,12 @@ msgstr "ユーザ ID の鍵がありません\n"
 msgid "No user ID for key\n"
 msgstr "鍵のユーザ ID がありません\n"
 
-#: g10/getkey.c:1642 g10/getkey.c:1698
+#: g10/getkey.c:1628 g10/getkey.c:1675 g10/getkey.c:1731
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "副鍵 %08lX を使用します - 主鍵 %08lX の代用\n"
 
-#: g10/getkey.c:2017
+#: g10/getkey.c:2050
 #, fuzzy
 msgid "[User id not found]"
 msgstr "%s: ユーザが見つかりません\n"
@@ -2664,7 +2664,7 @@ msgstr "この暗号アルゴリズムは反対されています。一般的な方法を用いて下さい!\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "公開鍵のアルゴリズム %d は使用できません\n"
 
-#: g10/parse-packet.c:972
+#: g10/parse-packet.c:986
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "subpacket of type %d has critical bit set\n"

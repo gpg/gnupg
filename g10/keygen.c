@@ -136,8 +136,8 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
     keygen_add_key_expire( sig, opaque );
 
     buf[0] = CIPHER_ALGO_TWOFISH;
-    buf[1] = CIPHER_ALGO_BLOWFISH;
-    buf[2] = CIPHER_ALGO_CAST5;
+    buf[1] = CIPHER_ALGO_CAST5;
+    buf[2] = CIPHER_ALGO_BLOWFISH;
     build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 3 );
 
     buf[0] = DIGEST_ALGO_RMD160;

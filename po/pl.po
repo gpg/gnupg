@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-09-14 13:26+0200\n"
+"POT-Creation-Date: 2000-09-14 17:35+0200\n"
 "PO-Revision-Date: 1999-12-05 21:29+01:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -1700,12 +1700,12 @@ msgstr "Brak klucza z takim identyfikatorem u¿ytkownika.\n"
 msgid "No user ID for key\n"
 msgstr "Brak identyfikatora u¿ytkownika dla klucza.\n"
 
-#: g10/getkey.c:1642 g10/getkey.c:1698
+#: g10/getkey.c:1628 g10/getkey.c:1675 g10/getkey.c:1731
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "u¿ywany jest podklucz %08lX zamiast klucza g³ównego %08lX\n"
 
-#: g10/getkey.c:2017
+#: g10/getkey.c:2050
 #, fuzzy
 msgid "[User id not found]"
 msgstr "%s: nie znaleziono u¿ytkownika\n"
@@ -2716,7 +2716,7 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr "algorytm klucza publicznego niemo¿liwy do obs³u¿enia: %d\n"
 
-#: g10/parse-packet.c:972
+#: g10/parse-packet.c:986
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "podpakiet typu %d ma ustawiony krytyczny bit\n"

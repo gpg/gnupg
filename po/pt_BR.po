@@ -5,7 +5,7 @@
 #
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2000-09-14 13:26+0200\n"
+"POT-Creation-Date: 2000-09-14 17:35+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-20 23:46:36-0200\n"
 "From: Thiago Jung Bauermann <jungmann@usa.net>\n"
@@ -1707,12 +1707,12 @@ msgstr "Nenhuma chave para identificador de usuário\n"
 msgid "No user ID for key\n"
 msgstr "Nenhum identificador de usuário para chave\n"
 
-#: g10/getkey.c:1642 g10/getkey.c:1698
+#: g10/getkey.c:1628 g10/getkey.c:1675 g10/getkey.c:1731
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "usando chave secundária %08lX ao invés de chave primária %08lX\n"
 
-#: g10/getkey.c:2017
+#: g10/getkey.c:2050
 #, fuzzy
 msgid "[User id not found]"
 msgstr "%s: usuário não encontrado\n"
@@ -2714,7 +2714,7 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr "impossível manipular algoritmo de chave pública %d\n"
 
-#: g10/parse-packet.c:972
+#: g10/parse-packet.c:986
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "subpacote do tipo %d tem bit crítico ligado\n"

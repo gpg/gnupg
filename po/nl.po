@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-09-14 13:26+0200\n"
+"POT-Creation-Date: 2000-09-14 17:35+0200\n"
 "PO-Revision-Date: 2000-02-20 21:30+01:00\n"
 "Last-Translator: Ivo Timmermans <itimmermans@bigfoot.com>\n"
 "Language-Team: Dutch <nl@li.org>\n"
@@ -1693,12 +1693,12 @@ msgstr "Geen sleutel voor gebruikersidentificatie\n"
 msgid "No user ID for key\n"
 msgstr "Geen gebruikersidentificatie voor sleutel\n"
 
-#: g10/getkey.c:1642 g10/getkey.c:1698
+#: g10/getkey.c:1628 g10/getkey.c:1675 g10/getkey.c:1731
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "gebruik secundaire sleutel %08lx in plaats van de primaire %08lx\n"
 
-#: g10/getkey.c:2017
+#: g10/getkey.c:2050
 #, fuzzy
 msgid "[User id not found]"
 msgstr "%s: gebruiker niet gevonden\n"
@@ -2706,7 +2706,7 @@ msgstr "dit versleutelalgoritme is verouderd; gebruik een meer algemene!\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "kan openbare sleutel-algoritme %d niet behandelen\n"
 
-#: g10/parse-packet.c:972
+#: g10/parse-packet.c:986
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "subpakket type %d heeft kritische bit gezet\n"

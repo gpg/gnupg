@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.1h\n"
-"POT-Creation-Date: 2000-09-14 13:26+0200\n"
+"POT-Creation-Date: 2000-09-14 17:35+0200\n"
 "PO-Revision-Date: 2000-06-28 18:41+02:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -1700,14 +1700,14 @@ msgstr "Pas de clé pour l'utilisateur\n"
 msgid "No user ID for key\n"
 msgstr "Pas d'utilisateur pour la clé\n"
 
-#: g10/getkey.c:1642 g10/getkey.c:1698
+#: g10/getkey.c:1628 g10/getkey.c:1675 g10/getkey.c:1731
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
 "utilisation de la clé secondaire %08lX à la place de la clé\n"
 "principale %08lX\n"
 
-#: g10/getkey.c:2017
+#: g10/getkey.c:2050
 msgid "[User id not found]"
 msgstr "[Nom utilisateur introuvable]"
 
@@ -2706,7 +2706,7 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr "impossible de gérer l'algorithme à clé publique %d\n"
 
-#: g10/parse-packet.c:972
+#: g10/parse-packet.c:986
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "un sous-paquet de type %d possède un bit critique\n"

@@ -1,3 +1,10 @@
+Fri Sep 15 18:40:36 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * keygen.c (keygen_add_std_prefs): Changed order of preferences to
+        twofish, cast5, blowfish.
+
+        * pkclist.c (algo_available): Removed hack to disable Twofish.
+
 Thu Sep 14 17:45:11 CEST 2000  Werner Koch  <wk@openit.de>
 
         * parse-packet.c (dump_sig_subpkt): Dump key flags. Print special
