@@ -54,12 +54,11 @@ struct keyrec
 };
 
 /* Tell remote processes about these options */
-#define REMOTE_TELL (KEYSERVER_INCLUDE_REVOKED|KEYSERVER_INCLUDE_DISABLED|KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_TRY_DNS_SRV)
+#define REMOTE_TELL (KEYSERVER_INCLUDE_REVOKED|KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_TRY_DNS_SRV)
 
 static struct parse_options keyserver_opts[]=
   {
     {"include-revoked",KEYSERVER_INCLUDE_REVOKED,NULL},      
-    {"include-disabled",KEYSERVER_INCLUDE_DISABLED,NULL},
     {"include-subkeys",KEYSERVER_INCLUDE_SUBKEYS,NULL},
     {"keep-temp-files",KEYSERVER_KEEP_TEMP_FILES,NULL},
     {"refresh-add-fake-v3-keyids",KEYSERVER_ADD_FAKE_V3,NULL},
@@ -97,17 +96,13 @@ parse_keyserver_options(char *options)
 	 that you must use strncasecmp here as there might be an
 	 =argument attached which will foil the use of strcasecmp. */
 
-      if(ascii_strncasecmp(tok,"verbose",7)==0)
-	opt.keyserver_options.verbose++;
-      else if(ascii_strncasecmp(tok,"no-verbose",10)==0)
-	opt.keyserver_options.verbose--;
 #ifdef EXEC_TEMPFILE_ONLY
-      else if(ascii_strncasecmp(tok,"use-temp-files",14)==0 ||
+      if(ascii_strncasecmp(tok,"use-temp-files",14)==0 ||
 	      ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
 	log_info(_("WARNING: keyserver option `%s' is not used"
 		   " on this platform\n"),tok);
 #else
-      else if(ascii_strncasecmp(tok,"use-temp-files",14)==0)
+      if(ascii_strncasecmp(tok,"use-temp-files",14)==0)
 	opt.keyserver_options.options|=KEYSERVER_USE_TEMP_FILES;
       else if(ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
 	opt.keyserver_options.options&=~KEYSERVER_USE_TEMP_FILES;
@@ -930,9 +925,6 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   for(i=0,kopts=keyserver_opts;kopts[i].name;i++)
     if(opt.keyserver_options.options & kopts[i].bit & REMOTE_TELL)
       fprintf(spawn->tochild,"OPTION %s\n",kopts[i].name);
-
-  for(i=0;i<opt.keyserver_options.verbose;i++)
-    fprintf(spawn->tochild,"OPTION verbose\n");
 
   for(temp=opt.keyserver_options.other;temp;temp=temp->next)
     fprintf(spawn->tochild,"OPTION %s\n",temp->d);

@@ -1,6 +1,6 @@
 /* options.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -137,7 +137,6 @@ struct
   } *keyserver;
   struct
   {
-    int verbose;
     unsigned int options;
     unsigned int import_options;
     unsigned int export_options;
@@ -283,13 +282,12 @@ struct {
 #define VERIFY_SHOW_UNUSABLE_UIDS        (1<<6)
 
 #define KEYSERVER_INCLUDE_REVOKED        (1<<0)
-#define KEYSERVER_INCLUDE_DISABLED       (1<<1)
-#define KEYSERVER_INCLUDE_SUBKEYS        (1<<2)
-#define KEYSERVER_USE_TEMP_FILES         (1<<3)
-#define KEYSERVER_KEEP_TEMP_FILES        (1<<4)
-#define KEYSERVER_ADD_FAKE_V3            (1<<5)
-#define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<6)
-#define KEYSERVER_TRY_DNS_SRV            (1<<7)
-#define KEYSERVER_HONOR_KEYSERVER_URL    (1<<8)
+#define KEYSERVER_INCLUDE_SUBKEYS        (1<<1)
+#define KEYSERVER_USE_TEMP_FILES         (1<<2)
+#define KEYSERVER_KEEP_TEMP_FILES        (1<<3)
+#define KEYSERVER_ADD_FAKE_V3            (1<<4)
+#define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<5)
+#define KEYSERVER_TRY_DNS_SRV            (1<<6)
+#define KEYSERVER_HONOR_KEYSERVER_URL    (1<<7)
 
 #endif /*G10_OPTIONS_H*/

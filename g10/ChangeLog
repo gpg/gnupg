@@ -1,3 +1,9 @@
+2005-03-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, keyserver.c (parse_keyserver_options,
+	keyserver_spawn): Don't treat 'verbose' and 'include-disabled' as
+	special.  Just pass them through silently to the keyserver helper.
+
 2005-03-16  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (parse_ccid_descriptor): Make SCM workaround
