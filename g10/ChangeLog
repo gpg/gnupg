@@ -1,3 +1,10 @@
+2003-09-06  Werner Koch  <wk@gnupg.org>
+
+	* misc.c (openpgp_pk_algo_usage): Allow AUTH where SIGN is allowed.
+
+	* keygen.c (ask_passphrase): No need to allocated S2K in secure
+	memory.
+
 2003-09-04  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (do_add_key_flags, parse_parameter_usage) 

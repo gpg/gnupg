@@ -22,16 +22,16 @@
 AC_PREREQ(2.52)
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(gnupg, 1.9.1-cvs, gnupg-devel@gnupg.org)
+AC_INIT(gnupg, 1.9.1, gnupg-devel@gnupg.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
 development_version=yes
-NEED_GPG_ERROR_VERSION=0.2
-NEED_LIBGCRYPT_VERSION=1.1.42
+NEED_GPG_ERROR_VERSION=0.4
+NEED_LIBGCRYPT_VERSION=1.1.43
 NEED_LIBASSUAN_VERSION=0.6.0
 NEED_KSBA_VERSION=0.4.6
-NEED_OPENSC_VERSION=0.7.0
+NEED_OPENSC_VERSION=0.8.0
 
 
 PACKAGE=$PACKAGE_NAME
@@ -378,10 +378,10 @@ AM_PATH_KSBA("$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
 
 #
 # libusb allows us to use the integrated CCID smartcard reader driver.
-
+#
 # Note, that we need the CVS version.  FIXME: libusb should have a
 # regular check as the other libraries do.
-
+#
 AC_CHECK_LIB(usb, usb_find_device,
               [ LIBUSB_LIBS="$LIBUSB_LIBS -lusb"
                 AC_DEFINE(HAVE_LIBUSB,1,

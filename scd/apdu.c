@@ -823,8 +823,8 @@ osc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 
 /* Open the reader and return an internal slot number or -1 on
    error. If PORTSTR is NULL we default to a suitable port (for ctAPI:
-   the first USB reader.  For PC/SC the first listed reader).  IF
-   OpenSC support is cmpiled in, we first try to use OpenSC. */
+   the first USB reader.  For PC/SC the first listed reader).  If
+   OpenSC support is compiled in, we first try to use OpenSC. */
 int
 apdu_open_reader (const char *portstr)
 {
@@ -839,7 +839,7 @@ apdu_open_reader (const char *portstr)
       if (slot != -1)
         return slot; /* got one */
     }
-#endif
+#endif /* HAVE_LIBUSB */
 
 #ifdef HAVE_OPENSC
   if (!opt.disable_opensc)
@@ -886,17 +886,11 @@ apdu_open_reader (const char *portstr)
     {
       void *handle;
 
-      if (!opt.pcsc_driver || !*opt.pcsc_driver)
-        {
-          log_error ("no PC/SC driver has been specified\n");
-          return -1;
-        }
-
-      handle = dlopen ("libpcsclite.so", RTLD_LAZY);
+      handle = dlopen (opt.pcsc_driver, RTLD_LAZY);
       if (!handle)
         {
-          log_error ("apdu_open_reader: failed to open driver: %s",
-                     dlerror ());
+          log_error ("apdu_open_reader: failed to open driver `%s': %s",
+                     opt.pcsc_driver, dlerror ());
           return -1;
         }
 

@@ -1,3 +1,10 @@
+2003-09-06  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): --pcsc-driver again defaults to pcsclite.
+	David Corcoran was so kind to remove the GPL incompatible
+	advertisng clause from pcsclite.
+	* apdu.c (apdu_open_reader): Actually make pcsc-driver option work.
+
 2003-09-05  Werner Koch  <wk@gnupg.org>
 
 	* ccid-driver.c: More work, data can now actually be retrieved.

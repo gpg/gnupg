@@ -286,7 +286,9 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   rc = usb_bulk_read (handle->idev, 
                       0x82,
                       buffer, length,
-                      1000 /* ms timeout */ );
+                      10000 /* ms timeout */ );
+  /* Fixme: instead of using a 10 second timeout we should better
+     handle the timeout here and retry if appropriate.  */
   if (rc < 0)
     {
       DEBUGOUT_1 ("usb_bulk_read error: %s\n", strerror (errno));
@@ -556,10 +558,10 @@ ccid_transceive (ccid_driver_t handle,
         DEBUGOUT_CONT_1 (" %02X", msg[i]);
       DEBUGOUT_LF ();
       
-      fprintf (stderr, "T1: put %c-block seq=%d\n",
-               ((msg[11] & 0xc0) == 0x80)? 'R' :
-               (msg[11] & 0x80)? 'S' : 'I',
-        ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)));
+/*       fprintf (stderr, "T1: put %c-block seq=%d\n", */
+/*                ((msg[11] & 0xc0) == 0x80)? 'R' : */
+/*                (msg[11] & 0x80)? 'S' : 'I', */
+/*         ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40))); */
   
       rc = bulk_out (handle, msg, msglen);
       if (rc)
@@ -576,16 +578,16 @@ ccid_transceive (ccid_driver_t handle,
       
       if (tpdulen < 4) 
         {
-          DEBUGOUT ("cannot yet handle short block!!\n");
+          DEBUGOUT ("cannot yet handle short blocks!\n");
           return -1; 
         }
 
-      fprintf (stderr, "T1: got %c-block seq=%d err=%d\n",
-               ((msg[11] & 0xc0) == 0x80)? 'R' :
-               (msg[11] & 0x80)? 'S' : 'I',
-        ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)),
-               ((msg[11] & 0xc0) == 0x80)? (msg[11] & 0x0f) : 0
-               );
+/*       fprintf (stderr, "T1: got %c-block seq=%d err=%d\n", */
+/*                ((msg[11] & 0xc0) == 0x80)? 'R' : */
+/*                (msg[11] & 0x80)? 'S' : 'I', */
+/*         ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)), */
+/*                ((msg[11] & 0xc0) == 0x80)? (msg[11] & 0x0f) : 0 */
+/*                ); */
 
       if (!(tpdu[1] & 0x80))
         { /* This is an I-block. */

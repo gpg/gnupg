@@ -277,8 +277,7 @@ main (int argc, char **argv )
   may_coredump = disable_core_dumps ();
 
   /* Set default options. */
-  opt.pcsc_driver = NULL; /* We can't use libpcsclite due to license
-                             conflicts. */
+  opt.pcsc_driver = "libpcsclite.so"; 
 
 
   shell = getenv ("SHELL");

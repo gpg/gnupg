@@ -1,3 +1,9 @@
+2003-09-06  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.1.
+	
+	* configure.ac: Required newer versions of some libraries.
+
 2003-09-02  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (HAVE_LIBUSB): Added a simple test for libusb.

@@ -1629,7 +1629,7 @@ ask_passphrase( STRING2KEY **ret_s2k )
 
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
 
-    s2k = xmalloc_secure ( sizeof *s2k );
+    s2k = xmalloc ( sizeof *s2k );
     for(;;) {
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;

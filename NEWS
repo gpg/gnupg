@@ -1,9 +1,14 @@
-Noteworthy changes in version 1.9.1 (unreleased)
+Noteworthy changes in version 1.9.1 (2003-09-06)
 ------------------------------------------------
 
- * Support for OpenSC is back. scdaemon support a --disable-opensc to
+ * Support for OpenSC is back. scdaemon supports a --disable-opensc to
    disable OpenSC use at runtime, so that PC/SC or ct-API can still be
    used directly.
+
+ * Rudimentary support for the SCR335 smartcard reader using an
+   internal driver.  Requires current libusb from CVS.
+
+ * Bug fixes.
 
 
 Noteworthy changes in version 1.9.0 (2003-08-05)
