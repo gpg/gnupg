@@ -37,6 +37,8 @@
 struct dn_array_s {
   char *key;
   char *value;
+  int   multivalued;
+  int   done;
 };
 
 
@@ -213,7 +215,10 @@ parse_dn_part (struct dn_array_s *array, const unsigned char *string)
   p[n] = 0;
   trim_trailing_spaces (p);
   if ( !strcmp (p, "1.2.840.113549.1.9.1") )
-    strcpy (p, "EMail");
+    strcpy (p,     "EMail");
+  else if ( !strcmp (p, "0.2.262.1.10.7.20") )
+    strcpy (p,          "NameDistinguisher");
+
   string = s + 1;
 
   if (*string == '#')
@@ -319,11 +324,13 @@ parse_dn (const unsigned char *string)
       array[arrayidx].key = NULL;
       array[arrayidx].value = NULL;
       string = parse_dn_part (array+arrayidx, string);
-      arrayidx++;
       if (!string)
         goto failure;
       while (*string == ' ')
         string++;
+      array[arrayidx].multivalued = (*string == '+');
+      array[arrayidx].done = 0;
+      arrayidx++;
       if (*string && *string != ',' && *string != ';' && *string != '+')
         goto failure; /* invalid delimiter */
       if (*string)
@@ -347,19 +354,31 @@ parse_dn (const unsigned char *string)
 static void
 print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key)
 {
-  int any = 0;
+  struct dn_array_s *first_dn = dn;
 
   for (; dn->key; dn++)
     {
-      if (!strcmp (dn->key, key) && dn->value && *dn->value)
+      if (!dn->done && !strcmp (dn->key, key))
         {
-          putc ('/', fp);
-          if (any)
-            fputs (" + ", fp);
-          else
-            fprintf (fp, "%s=", key);
-          print_sanitized_utf8_string (fp, dn->value, '/');
-          any = 1;
+          /* Forward to the last multi-valued RDN, so that we can
+             print them all in reverse in the correct order.  Note
+             that this overrides the the standard sequence but that
+             seems to a reasonable thing to do with multi-valued
+             RDNs. */
+          while (dn->multivalued && dn[1].key)
+            dn++;
+        next:
+          if (!dn->done && dn->value && *dn->value)
+            {
+              fprintf (fp, "/%s=", dn->key);
+              print_sanitized_utf8_string (fp, dn->value, '/');
+            }
+          dn->done = 1;
+          if (dn > first_dn && dn[-1].multivalued)
+            {
+              dn--;
+              goto next;
+            }
         }
     }
 }
@@ -375,19 +394,11 @@ print_dn_parts (FILE *fp, struct dn_array_s *dn)
   int i;
   
   for (i=0; stdpart[i]; i++)
-    print_dn_part (fp, dn, stdpart[i]);
+      print_dn_part (fp, dn, stdpart[i]);
 
-  /* now print the rest without any specific ordering */
+  /* Now print the rest without any specific ordering */
   for (; dn->key; dn++)
-    {
-      for (i=0; stdpart[i]; i++)
-        {
-          if (!strcmp (dn->key, stdpart[i]))
-            break;
-        }
-      if (!stdpart[i])
-        print_dn_part (fp, dn, dn->key);
-    }
+    print_dn_part (fp, dn, dn->key);
 }
 
 

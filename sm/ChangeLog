@@ -1,3 +1,11 @@
+2004-01-27  Werner Koch  <wk@gnupg.org>
+
+	* certdump.c (parse_dn_part): Pretty print the nameDistinguisher OID.
+	(print_dn_part): Do not delimit multiple RDN by " + ".  Handle
+	multi-valued RDNs in a special way, i.e. in the order specified by
+	the certificate.
+	(print_dn_parts): Simplified. 
+
 2004-01-16  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (gpgsm_sign): Print an error message on all failures.
