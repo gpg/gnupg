@@ -272,7 +272,10 @@ get_key(char *getkey)
   int ret=KEYSERVER_INTERNAL_ERROR,err,count;
   struct keylist *dupelist=NULL;
   char search[62];
-  char *attrs[]={"replaceme","pgpuserid","pgpkeyid","pgpcertid","pgprevoked",
+  /* This ordering is significant - specifically, "pgpcertid" needs to
+     be the second item in the list, since everything after it may be
+     discarded if the user isn't in verbose mode. */
+  char *attrs[]={"replaceme","pgpcertid","pgpuserid","pgpkeyid","pgprevoked",
 		 "pgpdisabled","pgpkeycreatetime","modifytimestamp",
 		 "pgpkeysize","pgpkeytype",NULL};
   attrs[0]=pgpkeystr; /* Some compilers don't like using variables as
@@ -331,7 +334,7 @@ get_key(char *getkey)
     fprintf(console,"gpgkeys: LDAP fetch for: %s\n",search);
 
   if(!verbose)
-    attrs[1]=NULL;
+    attrs[2]=NULL; /* keep only pgpkey(v2) and pgpcertid */
 
   if(verbose)
     fprintf(console,"gpgkeys: requesting key 0x%s from ldap://%s%s%s\n",
