@@ -480,7 +480,7 @@ is_cert_still_valid (ctrl_t ctrl, int lm, FILE *fp,
     {
       gpg_error_t err;
 
-      err = gpgsm_dirmngr_isvalid (subject_cert, ctrl->use_ocsp);
+      err = gpgsm_dirmngr_isvalid (subject_cert, issuer_cert, ctrl->use_ocsp);
       if (err)
         {
           /* Fixme: We should change the wording because we may
@@ -509,7 +509,7 @@ is_cert_still_valid (ctrl_t ctrl, int lm, FILE *fp,
               break;
             default:
               do_list (1, lm, fp, _("checking the CRL failed: %s"),
-                       gpg_strerror (rc));
+                       gpg_strerror (err));
               return err;
             }
         }
