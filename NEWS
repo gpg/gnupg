@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.2.7
 ------------------------------------------------
 
+    * New "pgpgroup-to-gpggroup" script (in the tools directory) to
+      convert from PGP 6 group syntax to GnuPG group syntax.
+
 
 Noteworthy changes in version 1.2.6 (2004-08-25)
 ------------------------------------------------
