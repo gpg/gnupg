@@ -57,7 +57,7 @@
 </refnamediv>
 <refsynopsisdiv>
   <synopsis>
-<command>gpgv</>
+<command>gpgv</command>
  <optional><parameter/options/</optional>
  <optional><parameter/signed files/</optional>
   </synopsis>

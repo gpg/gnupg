@@ -1,3 +1,12 @@
+2003-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml, gpgv.sgml: Small SGML fixes. (From wk on stable
+	branch)
+
+	* gnupg-w32.reg: Use HLM for the program and make sure the entries
+	are created.  Suggested by danielc@analysisandsolutions.com. (From
+	wk on stable branch)
+
 2003-05-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document --trustdb-name.  Document --gnupg in a new
