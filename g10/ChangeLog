@@ -1,3 +1,8 @@
+2004-07-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (algo_available): --pgp8 now allows blowfish, zlib,
+	and bzip2.
+
 2004-07-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* status.c (do_get_from_fd): Flush stdout if status isn't flushing
