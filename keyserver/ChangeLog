@@ -1,5 +1,13 @@
 2004-02-19  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Add automake conditionals to symlink gpgkeys_ldaps
+	to gpgkeys_ldap when needed.
+
+	* gpgkeys_ldap.c (main): Add support for LDAPS and TLS
+	connections.  These are only useful and usable when talking to
+	real LDAP keyservers.  Add new "tls" option to tune TLS use from
+	off, to try quietly, to try loudly, or to require TLS.
+
 	* gpgkeys_ldap.c (find_basekeyspacedn): New function to figure out
 	what kind of LDAP server we're talking to (either real LDAP or the
 	LDAP keyserver), and return the baseKeySpaceDN to find keys under.

@@ -28,9 +28,6 @@
 #endif
 #include <stdlib.h>
 #include <errno.h>
-#ifdef NEED_LBER_H
-#include <lber.h>
-#endif
 #include <ldap.h>
 #include "keyserver.h"
 
@@ -46,13 +43,14 @@ extern int optind;
 #define SEARCH 2
 #define MAX_LINE 80
 
-int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=0;
-char *basekeyspacedn=NULL;
-char host[80]={'\0'};
-char portstr[10]={'\0'};
-char *pgpkeystr="pgpKey";
-FILE *input=NULL,*output=NULL,*console=NULL;
-LDAP *ldap=NULL;
+static int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=0;
+static int real_ldap=0;
+static char *basekeyspacedn=NULL;
+static char host[80]={'\0'};
+static char portstr[10]={'\0'};
+static char *pgpkeystr="pgpKey";
+static FILE *input=NULL,*output=NULL,*console=NULL;
+static LDAP *ldap=NULL;
 
 struct keylist
 {
@@ -811,6 +809,8 @@ find_basekeyspacedn(void)
       attr[1]="pgpVersion";
       attr[2]="pgpSoftware";
 
+      real_ldap=1;
+
       /* We found some, so try each namingContext as the search base
 	 and look for pgpBaseKeySpaceDN.  Because we found this, we
 	 know we're talking to a regular-ish LDAP server and not a
@@ -919,7 +919,7 @@ main(int argc,char *argv[])
 {
   int port=0,arg,err,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
-  int version,failed=0;
+  int version,failed=0,use_ssl=0,use_tls=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
 
   console=stderr;
@@ -973,6 +973,7 @@ main(int argc,char *argv[])
     {
       char commandstr[7];
       char optionstr[30];
+      char schemestr[80];
       char hash;
 
       if(line[0]=='\n')
@@ -1005,6 +1006,17 @@ main(int argc,char *argv[])
 	{
 	  portstr[9]='\0';
 	  port=atoi(portstr);
+	  continue;
+	}
+
+      if(sscanf(line,"SCHEME %79s\n",schemestr)==1)
+	{
+	  schemestr[79]='\0';
+	  if(strcasecmp(schemestr,"ldaps")==0)
+	    {
+	      port=636;
+	      use_ssl=1;
+	    }
 	  continue;
 	}
 
@@ -1059,6 +1071,26 @@ main(int argc,char *argv[])
 		include_subkeys=0;
 	      else
 		include_subkeys=1;
+	    }
+	  else if(strncasecmp(start,"tls",3)==0)
+	    {
+	      if(no)
+		use_tls=0;
+	      else if(start[3]=='=')
+		{
+		  if(strcasecmp(&start[4],"no")==0)
+		    use_tls=0;
+		  else if(strcasecmp(&start[4],"try")==0)
+		    use_tls=1;
+		  else if(strcasecmp(&start[4],"warn")==0)
+		    use_tls=2;
+		  else if(strcasecmp(&start[4],"require")==0)
+		    use_tls=3;
+		  else
+		    use_tls=1;
+		}
+	      else if(start[3]=='\0')
+		use_tls=1;
 	    }
 
 	  continue;
@@ -1139,6 +1171,88 @@ main(int argc,char *argv[])
 	      strerror(errno));
       fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
       goto fail;
+    }
+
+  if(use_ssl)
+    {
+      if(!real_ldap)
+      	{
+      	  fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
+      		  "not supported by the NAI LDAP keyserver");
+      	  fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+      	  goto fail;
+      	}
+      else
+      	{
+#if defined(LDAP_OPT_X_TLS_HARD) && defined(HAVE_LDAP_SET_OPTION)
+	  int ssl=LDAP_OPT_X_TLS_HARD;
+	  err=ldap_set_option(ldap,LDAP_OPT_X_TLS,&ssl);
+	  if(err!=LDAP_SUCCESS)
+	    {
+	      fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
+		      ldap_err2string(err));
+	      fail_all(keylist,action,ldap_err_to_gpg_err(err));
+	      goto fail;
+	    }
+#else
+	  fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
+		  "not built with LDAPS support");
+	  fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+	  goto fail;
+#endif
+	}
+    }
+
+  /* use_tls: 0=don't use, 1=try silently to use, 2=try loudly to use,
+     3=force use. */
+  if(use_tls)
+    {
+      if(!real_ldap && use_tls)
+      	{
+      	  if(use_tls>=2)
+	    fprintf(console,"gpgkeys: unable to start TLS: %s\n",
+		    "not supported by the NAI LDAP keyserver");
+	  if(use_tls==3)
+	    {
+	      fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+	      goto fail;
+	    }
+      	}
+      else
+	{
+#if defined(HAVE_LDAP_START_TLS_S) && defined(HAVE_LDAP_SET_OPTION)
+	  int ver=LDAP_VERSION3;
+
+	  err=LDAP_SUCCESS;
+
+	  err=ldap_set_option(ldap,LDAP_OPT_PROTOCOL_VERSION,&ver);
+	  if(err==LDAP_SUCCESS)
+	    err=ldap_start_tls_s(ldap,NULL,NULL);
+
+	  if(err!=LDAP_SUCCESS && use_tls>=2)
+	    {
+	      fprintf(console,"gpgkeys: unable to start TLS: %s\n",
+		      ldap_err2string(err));
+	      /* Are we forcing it? */
+	      if(use_tls==3)
+		{
+		  fail_all(keylist,action,ldap_err_to_gpg_err(err));
+		  goto fail;
+		}
+	    }
+	  else if(verbose>1)
+	    fprintf(console,"gpgkeys: TLS started successfully.\n");
+#else
+	  if(use_tls>=2)
+	    fprintf(console,"gpgkeys: unable to start TLS: %s\n",
+		    "not built with TLS support");
+	  if(use_tls==3)
+	    {
+	      fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+	      goto fail;
+	    }
+#endif
+	}
     }
 
   err=ldap_simple_bind_s(ldap,NULL,NULL);

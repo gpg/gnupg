@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -30,3 +30,13 @@ noinst_SCRIPTS = gpgkeys_test
 gpgkeys_ldap_LDADD = @LDAPLIBS@ @NETLIBS@ @GETOPT@ @W32LIBS@
 gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ @LIBINTL@ \
                     @CAPLIBS@ @GETOPT@ @W32LIBS@
+
+install-exec-hook:
+if GPGKEYS_LDAP
+	-(cd $(libexecdir) && $(LN_S) gpgkeys_ldap$(EXEEXT) gpgkeys_ldaps$(EXEEXT))
+endif
+
+uninstall-hook:
+if GPGKEYS_LDAP
+	rm -f $(libexecdir)/gpgkeys_ldaps$(EXEEXT)
+endif
