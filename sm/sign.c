@@ -119,12 +119,13 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
   KsbaWriter writer;
   KsbaCMS cms = NULL;
   KsbaStopReason stopreason;
-  KsbaCert cert;
+  KsbaCert cert = NULL;
   KEYDB_HANDLE kh = NULL;
   GCRY_MD_HD data_md = NULL;
   int signer;
   const char *algoid;
   int algo;
+  time_t signed_at;
 
   if (!detached)
     {
@@ -262,8 +263,9 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
           goto leave;
         }
     }
-#if 0
-  err = ksba_cms_set_signing_time (cms, signer, 0 /*now*/);
+
+  signed_at = time (NULL);
+  err = ksba_cms_set_signing_time (cms, signer, signed_at);
   if (err)
     {
       log_error ("ksba_cms_set_signing_time failed: %s\n",
@@ -271,7 +273,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       rc = map_ksba_err (err);
       goto leave;
     }
-#endif
+
   do 
     {
       err = ksba_cms_build (cms, &stopreason);
@@ -313,7 +315,8 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
           
           { /* This is all an temporary hack */
             char *sigval;
-
+            
+            ksba_cert_release (cert); 
             cert = get_default_signer ();
             if (!cert)
               {
@@ -339,6 +342,34 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
                 rc = map_ksba_err (err);
                 goto leave;
               }
+
+            /* And write a status message */
+            {
+              char *buf, *fpr;
+              
+              fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+              if (!fpr)
+                {
+                  rc = seterr (Out_Of_Core);
+                  goto leave;
+                }
+              rc = asprintf (&buf, "%c %d %d 00 %lu %s",
+                        detached? 'D':'S',
+                        GCRY_PK_RSA,  /* FIXME: get pk algo from cert */
+                        algo, 
+                        (ulong)signed_at,
+                        fpr);
+              xfree (fpr);
+              if (rc < 0)
+                {
+                  rc = seterr (Out_Of_Core);
+                  goto leave;
+                }
+              rc = 0;
+              gpgsm_status (ctrl, STATUS_SIG_CREATED, buf );
+              free (buf); /* yes, we must use the regular free() here */
+            }
+
           }
         }
     }
@@ -350,9 +381,12 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       log_error ("write failed: %s\n", gnupg_strerror (rc));
       goto leave;
     }
+
   log_info ("signature created\n");
 
+
  leave:
+  ksba_cert_release (cert); 
   ksba_cms_release (cms);
   gpgsm_destroy_writer (b64writer);
   keydb_release (kh); 

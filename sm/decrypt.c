@@ -453,9 +453,12 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
       log_error ("write failed: %s\n", gnupg_strerror (rc));
       goto leave;
     }
+  gpgsm_status (ctrl, STATUS_DECRYPTION_OKAY, NULL);
 
 
  leave:
+  if (rc)
+    gpgsm_status (ctrl, STATUS_DECRYPTION_FAILED, NULL);
   ksba_cms_release (cms);
   gpgsm_destroy_reader (b64reader);
   gpgsm_destroy_writer (b64writer);

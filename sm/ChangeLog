@@ -1,3 +1,8 @@
+2001-12-15  Werner Koch  <wk@gnupg.org>
+
+	* decrypt.c (gpgsm_decrypt): Write STATUS_DECRYPTION_*.
+	* sign.c (gpgsm_sign): Write a STATUS_SIG_CREATED.
+
 2001-12-14  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (list_cert_colon): Kludge to show an email address

@@ -81,7 +81,7 @@ gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len)
 }
 
 
-/* Return an allocated buffer with the formatted fungerprint */
+/* Return an allocated buffer with the formatted fingerprint */
 char *
 gpgsm_get_fingerprint_string (KsbaCert cert, int algo)
 {

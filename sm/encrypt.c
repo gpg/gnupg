@@ -407,6 +407,8 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
     }
 
   /* If no recipient list is given, use a default one */
+  /* FIXME: we shoudl not do this but return an error and a
+     STATUS_NO_RECP */
   if (!recplist)
     {
       help_recplist.cert = get_default_recipient ();
