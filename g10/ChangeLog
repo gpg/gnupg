@@ -1,3 +1,8 @@
+2004-05-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c: New command --gpgconf-list.
+	(gpgconf_list): New.  From Werner on stable branch.
+
 2004-05-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* pubkey-enc.c (get_session_key, get_it), keyedit.c
