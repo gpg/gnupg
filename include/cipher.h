@@ -1,5 +1,6 @@
 /* cipher.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -76,6 +77,7 @@ typedef struct {
     int keylen;
     int algo_info_printed;
     int use_mdc;
+    int symmetric;
     byte key[32]; /* this is the largest used keylen (256 bit) */
 } DEK;
 

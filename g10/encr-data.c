@@ -1,5 +1,5 @@
 /* encr-data.c -  process an encrypted data packet
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -120,10 +120,12 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     cipher_sync( dfx.cipher_hd );
     p = temp;
 /* log_hexdump( "prefix", temp, nprefix+2 ); */
-    if( p[nprefix-2] != p[nprefix] || p[nprefix-1] != p[nprefix+1] ) {
+    if( dek->symmetric
+	&& (p[nprefix-2] != p[nprefix] || p[nprefix-1] != p[nprefix+1]) )
+      {
 	rc = G10ERR_BAD_KEY;
 	goto leave;
-    }
+      }
 
     if( dfx.mdc_hash )
 	md_write( dfx.mdc_hash, temp, nprefix+2 );
