@@ -137,6 +137,7 @@ struct {
     int no_auto_check_trustdb;
     int preserve_permissions;
     int no_homedir_creation;
+    int show_keyring;
 } opt;
 
 

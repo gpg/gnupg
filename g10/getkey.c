@@ -2194,4 +2194,8 @@ get_user_id( u32 *keyid, size_t *rn )
     return p;
 }
 
-
+const char*
+get_ctx_handle(GETKEY_CTX ctx)
+{
+  return ctx->kr_handle;
+}

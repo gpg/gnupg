@@ -173,6 +173,9 @@ list_one( STRLIST names, int secret )
     int rc = 0;
     KBNODE keyblock = NULL;
     GETKEY_CTX ctx;
+    char *resname;
+    char *keyring_str = N_("Keyring");
+    int i;
 
     /* fixme: using the bynames function has the disadvantage that we
      * don't know wether one of the names given was not found.  OTOH,
@@ -191,6 +194,13 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
+	    if (opt.show_keyring) {
+		resname = keydb_get_resource_name (get_ctx_handle(ctx));
+		printf("%s: %s\n", keyring_str, resname);
+		for(i = strlen(resname) + strlen(keyring_str) + 2; i; i-- )
+		    putchar('-');
+		putchar('\n');
+	    }
 	    list_keyblock( keyblock, 1 );
 	    release_kbnode( keyblock );
 	} while( !get_seckey_next( ctx, NULL, &keyblock ) );
@@ -204,6 +214,13 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
+	    if (opt.show_keyring) {
+		resname = keydb_get_resource_name (get_ctx_handle(ctx));
+		printf("%s: %s\n", keyring_str, resname);
+		for(i = strlen(resname) + strlen(keyring_str) + 2; i; i-- )
+		    putchar('-');
+		putchar('\n');
+	    }
 	    list_keyblock( keyblock, 0 );
 	    release_kbnode( keyblock );
 	} while( !get_pubkey_next( ctx, NULL, &keyblock ) );

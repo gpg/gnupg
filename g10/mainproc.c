@@ -217,11 +217,11 @@ add_signature( CTX c, PACKET *pkt )
 
     if( pkt->pkttype == PKT_SIGNATURE && !c->list ) {
 	/* This is the first signature for the following datafile.
-	 * G10 does not write such packets; instead it always uses
+	 * GPG does not write such packets; instead it always uses
 	 * onepass-sig packets.  The drawback of PGP's method
 	 * of prepending the signature to the data is
 	 * that it is not possible to make a signature from data read
-	 * from stdin.	(G10 is able to read PGP stuff anyway.) */
+	 * from stdin.	(GPG is able to read PGP stuff anyway.) */
 	node = new_kbnode( pkt );
 	c->list = node;
 	return 1;

@@ -129,6 +129,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoDefCheckLevel,
     oKeyring,
     oSecretKeyring,
+    oShowKeyring,
     oDefaultKey,
     oDefRecipient,
     oDefRecipientSelf,
@@ -346,6 +347,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAnswerNo,  "no",        0, N_("assume no on most questions")},
     { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
     { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
+    { oShowKeyring, "show-keyring", 0, N_("show which keyring a listed key is on")},
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
     { oKeyServer, "keyserver",2, N_("|HOST|use this keyserver to lookup keys")},
     { oKeyServerOptions, "keyserver-options",2,"@"},
@@ -931,6 +933,7 @@ main( int argc, char **argv )
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
 	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
+	  case oShowKeyring: opt.show_keyring = 1; break;
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
 	  case oStatusFD:
