@@ -1834,10 +1834,10 @@ finish_lookup (GETKEY_CTX ctx)
   #define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC)
     unsigned int req_usage = ( ctx->req_usage & USAGE_MASK );
     /* Request the primary if we're certifying another key, and also
-       if signing data while --pgp6 is on (since pgp 6 (and 7) do not
-       understand signatures made by a signing subkey. */
+       if signing data while --pgp6 or --pgp7 is on since pgp 6 and 7
+       do not understand signatures made by a signing subkey. */
     int req_prim = (ctx->req_usage & PUBKEY_USAGE_CERT) ||
-      (opt.pgp6 && (ctx->req_usage & PUBKEY_USAGE_SIG));
+      ((opt.pgp6 || opt.pgp7) && (ctx->req_usage & PUBKEY_USAGE_SIG));
     u32 latest_date;
     KBNODE latest_key;
     u32 curtime = make_timestamp ();

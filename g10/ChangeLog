@@ -1,5 +1,11 @@
 2002-05-07  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main), getkey.c (finish_lookup), pkclist.c
+	(algo_available): --pgp7, identical to --pgp6 except that it
+	permits a few algorithms that PGP 7 added: AES128, AES192, AES256,
+	and TWOFISH.  Any more of these --pgpX flags, and it'll be time to
+	start looking at a generic --emulate-pgp X option.
+
 	* export.c (do_export_stream): Warn the user when exporting a
 	secret key if it or any of its secret subkeys are protected with
 	SHA1 while simple_sk_checksum is set.

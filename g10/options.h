@@ -88,6 +88,8 @@ struct {
     int always_trust;
     int pgp2;
     int pgp6;
+    int pgp7; /* if we get any more of these, it's time to look at a
+		 special emulate_pgp variable... */
     int rfc1991;
     int rfc2440;
     int pgp2_workarounds;

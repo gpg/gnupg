@@ -164,6 +164,8 @@ enum cmd_and_opt_values { aNull = 0,
     oNoPGP2,
     oPGP6,
     oNoPGP6,
+    oPGP7,
+    oNoPGP7,
     oCipherAlgo,
     oDigestAlgo,
     oCompressAlgo,
@@ -420,6 +422,8 @@ static ARGPARSE_OPTS opts[] = {
     { oNoPGP2, "no-pgp2", 0, "@"},
     { oPGP6, "pgp6", 0, "@"},
     { oNoPGP6, "no-pgp6", 0, "@"},
+    { oPGP7, "pgp7", 0, "@"},
+    { oNoPGP7, "no-pgp7", 0, "@"},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
     { oS2KDigest, "s2k-digest-algo",2,
 		N_("|NAME|use message digest algorithm NAME for passphrases")},
@@ -1117,6 +1121,8 @@ main( int argc, char **argv )
 	  case oNoPGP2: opt.pgp2 = 0; break;
 	  case oPGP6: opt.pgp6 = 1; break;
 	  case oNoPGP6: opt.pgp6 = 0; break;
+	  case oPGP7: opt.pgp7 = 1; break;
+	  case oNoPGP7: opt.pgp7 = 0; break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oEmu3DESS2KBug:	opt.emulate_bugs |= EMUBUG_3DESS2K; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
@@ -1392,8 +1398,9 @@ main( int argc, char **argv )
     g10_opt_homedir = opt.homedir;
 
     /* Do these after the switch(), so they can override settings. */
-    if(opt.pgp2 && opt.pgp6)
-      log_error(_("%s not allowed with %s!\n"),"--pgp2","--pgp6");
+    if(opt.pgp2 && (opt.pgp6 || opt.pgp7))
+      log_error(_("%s not allowed with %s!\n"),
+		"--pgp2",opt.pgp6?"--pgp6":"--pgp7");
     else
       {
 	if(opt.pgp2)
@@ -1463,7 +1470,7 @@ main( int argc, char **argv )
 	      }
 	  }
 
-	if(opt.pgp6)
+	if(opt.pgp6 || opt.pgp7)
 	  {
 	    opt.force_mdc=0;
 	    opt.disable_mdc=1;
