@@ -1,3 +1,19 @@
+2002-08-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_revsig): Properly show a uid is revoked without
+	restarting gpg.  This is Debian bug 124219, though their supplied
+	patch will not do the right thing.
+
+	* main.h, tdbio.c (tdbio_set_dbname), misc.c (removed
+	check_permissions), keydb.c (keydb_add_resource), g10.c (main,
+	check_permissions): Significant reworking of the permission check
+	mechanism.  The new behavior is to check everything in the homedir
+	by checking the homedir itself.  If the user wants to put
+	(possibly shared) keyrings outside the homedir, they are not
+	checked.  The options file and any extension files are checked
+	wherever they are, as well as their enclosing directories.  This
+	is Debian bug 147760.
+	
 2002-08-06  Stefan Bellon  <sbellon@sbellon.de>
 
 	* g10.c (main): Use of EXTSEP_S in new gpg.conf string.

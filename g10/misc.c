@@ -24,9 +24,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#ifdef HAVE_STAT
-#include <sys/stat.h>
-#endif
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
   #include <asm/sysinfo.h>
   #include <asm/unistd.h>
@@ -336,100 +333,6 @@ openpgp_md_test_algo( int algo )
     if( algo < 0 || algo > 110 )
         return G10ERR_DIGEST_ALGO;
     return check_digest_algo(algo);
-}
-
-int
-check_permissions(const char *path,int extension,int checkonly)
-{
-#if defined(HAVE_STAT) && !defined(HAVE_DOSISH_SYSTEM)
-  char *tmppath;
-  struct stat statbuf;
-  int ret=1;
-  int isdir=0;
-
-  if(opt.no_perm_warn)
-    return 0;
-
-  if(extension && path[0]!=DIRSEP_C)
-    {
-      if(strchr(path,DIRSEP_C))
-	tmppath=make_filename(path,NULL);
-      else
-	tmppath=make_filename(GNUPG_LIBDIR,path,NULL);
-    }
-  else
-    tmppath=m_strdup(path);
-
-  /* It's okay if the file doesn't exist */
-  if(stat(tmppath,&statbuf)!=0)
-    {
-      ret=0;
-      goto end;
-    }
-
-  isdir=S_ISDIR(statbuf.st_mode);
-
-  /* We may have to revisit this if we start piping keyrings to gpg
-     over a named pipe or keyserver character device :) */
-  if(!isdir && !S_ISREG(statbuf.st_mode))
-    {
-      ret=0;
-      goto end;
-    }
-
-  /* Per-user files must be owned by the user.  Extensions must be
-     owned by the user or root. */
-  if((!extension && statbuf.st_uid != getuid()) ||
-     (extension && statbuf.st_uid!=0 && statbuf.st_uid!=getuid()))
-    {
-      if(!checkonly)
-	log_info(_("WARNING: unsafe ownership on %s \"%s\"\n"),
-		 isdir?"directory":extension?"extension":"file",path);
-      goto end;
-    }
-
-  /* This works for both directories and files - basically, we don't
-     care what the owner permissions are, so long as the group and
-     other permissions are 0 for per-user files, and non-writable for
-     extensions. */
-  if((extension && (statbuf.st_mode & (S_IWGRP|S_IWOTH)) !=0) ||
-     (!extension && (statbuf.st_mode & (S_IRWXG|S_IRWXO)) != 0))
-    {
-      char *dir;
-
-      /* However, if the directory the directory/file is in is owned
-         by the user and is 700, then this is not a problem.
-         Theoretically, we could walk this test up to the root
-         directory /, but for the sake of sanity, I'm stopping at one
-         level down. */
-
-      dir=make_dirname(tmppath);
-      if(stat(dir,&statbuf)==0 && statbuf.st_uid==getuid() &&
-	 S_ISDIR(statbuf.st_mode) && (statbuf.st_mode & (S_IRWXG|S_IRWXO))==0)
-	{
-	  m_free(dir);
-	  ret=0;
-	  goto end;
-	}
-
-      m_free(dir);
-
-      if(!checkonly)
-	log_info(_("WARNING: unsafe permissions on %s \"%s\"\n"),
-		 isdir?"directory":extension?"extension":"file",path);
-      goto end;
-    }
-
-  ret=0;
-
- end:
-  m_free(tmppath);
-
-  return ret;
-
-#endif /* HAVE_STAT && !HAVE_DOSISH_SYSTEM */
-
-  return 0;
 }
 
 /* Special warning for the IDEA cipher */

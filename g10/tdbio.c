@@ -447,8 +447,6 @@ tdbio_set_dbname( const char *new_dbname, int create )
 		      : make_filename(opt.homedir,
 		                      "trustdb" EXTSEP_S "gpg", NULL );
 
-    check_permissions(fname,0,0);
-
     if( access( fname, R_OK ) ) {
 	if( errno != ENOENT ) {
 	    log_error( _("%s: can't access: %s\n"), fname, strerror(errno) );

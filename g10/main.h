@@ -71,7 +71,6 @@ int openpgp_cipher_test_algo( int algo );
 int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
-int check_permissions(const char *path,int extension,int checkonly);
 void idea_cipher_warn( int show );
 
 struct expando_args

@@ -114,8 +114,6 @@ keydb_add_resource (const char *url, int force, int secret)
     else
 	filename = m_strdup (resname);
 
-    check_permissions(filename,0,0);
-
     if (!force)
 	force = secret? !any_secret : !any_public;
 

@@ -2996,7 +2996,10 @@ menu_revsig( KBNODE keyblock )
 	}
 	changed = 1; /* we changed the keyblock */
 	update_trust = 1;
-
+	/* Are we revoking our own uid? */
+	if(primary_pk->keyid[0]==sig->keyid[0] &&
+	   primary_pk->keyid[1]==sig->keyid[1])
+	  unode->pkt->pkt.user_id->is_revoked=1;
 	pkt = m_alloc_clear( sizeof *pkt );
 	pkt->pkttype = PKT_SIGNATURE;
 	pkt->pkt.signature = sig;

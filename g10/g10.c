@@ -28,6 +28,9 @@
 #ifdef HAVE_DOSISH_SYSTEM
   #include <fcntl.h> /* for setmode() */
 #endif
+#ifdef HAVE_STAT
+#include <sys/stat.h> /* for stat() */
+#endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "packet.h"
@@ -832,6 +835,180 @@ static void add_group(char *string)
   opt.grouplist=item;
 }
 
+/* We need to check three things.
+
+   0) The homedir.  It must be x00, a directory, and owned by the
+   user.
+
+   1) The options file.  Okay unless it or its containing directory is
+   group or other writable or not owned by us.  disable exec in this
+   case.
+
+   2) Extensions.  Same as #2.
+
+   Returns true if the item is unsafe. */
+static int
+check_permissions(const char *path,int item)
+{
+#if defined(HAVE_STAT) && !defined(HAVE_DOSISH_SYSTEM)
+  static int homedir_cache=-1;
+  char *tmppath,*isa,*dir;
+  struct stat statbuf,dirbuf;
+  int homedir=0,ret=0,checkonly=0;
+  int perm=0,own=0,enc_dir_perm=0,enc_dir_own=0;
+
+  if(opt.no_perm_warn)
+    return 0;
+
+  /* extensions may attach a path */
+  if(item==2 && path[0]!=DIRSEP_C)
+    {
+      if(strchr(path,DIRSEP_C))
+	tmppath=make_filename(path,NULL);
+      else
+	tmppath=make_filename(GNUPG_LIBDIR,path,NULL);
+    }
+  else
+    tmppath=m_strdup(path);
+
+  /* If the item is located in the homedir, but isn't the homedir,
+     don't continue if we already checked the homedir itself.  This is
+     to avoid user confusion with an extra options file warning which
+     could be rectified if the homedir itself had proper
+     permissions. */
+  if(item!=0 && homedir_cache>-1 &&
+     ascii_memcasecmp(opt.homedir,tmppath,strlen(opt.homedir))==0)
+    {
+      ret=homedir_cache;
+      goto end;
+    }
+
+  /* It's okay if the file or directory doesn't exist */
+  if(stat(tmppath,&statbuf)!=0)
+    {
+      ret=0;
+      goto end;
+    }
+
+  /* Now check the enclosing directory.  Theoretically, we could walk
+     this test up to the root directory /, but for the sake of sanity,
+     I'm stopping at one level down. */
+  dir=make_dirname(tmppath);
+
+  if(stat(dir,&dirbuf)!=0 || !S_ISDIR(dirbuf.st_mode))
+    {
+      /* Weird error */
+      ret=1;
+      goto end;
+    }
+
+  m_free(dir);
+
+  /* Assume failure */
+  ret=1;
+
+  if(item==0)
+    {
+      isa="homedir";
+
+      /* The homedir must be x00, a directory, and owned by the user. */
+
+      if(S_ISDIR(statbuf.st_mode))
+	{
+	  if(statbuf.st_uid==getuid())
+	    {
+	      if((statbuf.st_mode & (S_IRWXG|S_IRWXO))==0)
+		ret=0;
+	      else
+		perm=1;
+	    }
+	  else
+	    own=1;
+
+	  homedir_cache=ret;
+	}
+    }
+  else if(item==1 || item==2)
+    {
+      if(item==1)
+	isa="configuration file";
+      else
+	isa="extension";
+
+      /* The options or extension file.  Okay unless it or its
+	 containing directory is group or other writable or not owned
+	 by us or root. */
+
+      if(S_ISREG(statbuf.st_mode))
+	{
+	  if(statbuf.st_uid==getuid() || statbuf.st_uid==0)
+	    {
+	      if((statbuf.st_mode & (S_IWGRP|S_IWOTH))==0)
+		{
+		  /* it's not writable, so make sure the enclosing
+                     directory is also not writable */
+		  if(dirbuf.st_uid==getuid() || dirbuf.st_uid==0)
+		    {
+		      if((dirbuf.st_mode & (S_IWGRP|S_IWOTH))==0)
+			ret=0;
+		      else
+			enc_dir_perm=1;
+		    }
+		  else
+		    enc_dir_own=1;
+		}
+	      else
+		{
+		  /* it's writable, so the enclosing directory had
+                     better not let people get to it. */
+		  if(dirbuf.st_uid==getuid() || dirbuf.st_uid==0)
+		    {
+		      if((dirbuf.st_mode & (S_IRWXG|S_IRWXO))==0)
+			ret=0;
+		      else
+			perm=enc_dir_perm=1; /* unclear which one to fix! */
+		    }
+		  else
+		    enc_dir_own=1;
+		}
+	    }
+	  else
+	    own=1;
+	}
+    }
+  else
+    BUG();
+
+  if(!checkonly)
+    {
+      if(own)
+	log_info(_("WARNING: unsafe ownership on %s \"%s\"\n"),
+		 isa,tmppath);
+      if(perm)
+	log_info(_("WARNING: unsafe permissions on %s \"%s\"\n"),
+		 isa,tmppath);
+      if(enc_dir_own)
+	log_info(_("WARNING: unsafe enclosing directory "
+		   "ownership on %s \"%s\"\n"),
+		 isa,tmppath);
+      if(enc_dir_perm)
+	log_info(_("WARNING: unsafe enclosing directory "
+		   "permissions on %s \"%s\"\n"),
+		 isa,tmppath);
+    }
+
+ end:
+  m_free(tmppath);
+
+  if(homedir)
+    homedir_cache=ret;
+
+  return ret;
+
+#endif /* HAVE_STAT && !HAVE_DOSISH_SYSTEM */
+
+  return 0;
+}
 
 int
 main( int argc, char **argv )
@@ -843,8 +1020,6 @@ main( int argc, char **argv )
     char **orig_argv;
     const char *fname;
     char *username;
-    STRLIST unsafe_files=NULL;
-    STRLIST extensions=NULL;
     int may_coredump;
     STRLIST sl, remusr= NULL, locusr=NULL;
     STRLIST nrings=NULL, sec_nrings=NULL;
@@ -945,6 +1120,8 @@ main( int argc, char **argv )
 	    default_config = 0; /* --no-options */
 	else if( pargs.r_opt == oHomedir )
 	    opt.homedir = pargs.r.ret_str;
+	else if( pargs.r_opt == oNoPermissionWarn )
+	    opt.no_perm_warn=1;
       #ifdef USE_SHM_COPROCESSING
 	else if( pargs.r_opt == oRunAsShmCP ) {
 	    /* does not make sense in a options file, we do it here,
@@ -1001,13 +1178,14 @@ main( int argc, char **argv )
     pargs.argc = &argc;
     pargs.argv = &argv;
     pargs.flags=  1;  /* do not remove the args */
+
+    /* By this point we have a homedir, and cannot change it. */
+    check_permissions(opt.homedir,0);
+
   next_pass:
     if( configname ) {
-
-      if(check_permissions(configname,0,1))
+      if(check_permissions(configname,1))
 	{
-	  add_to_strlist(&unsafe_files,configname);
-
 	  /* If any options file is unsafe, then disable any external
 	     programs for keyserver calls or photo IDs.  Since the
 	     external program to call is set in the options file, a
@@ -1206,9 +1384,14 @@ main( int argc, char **argv )
 	  case oAlwaysTrust: opt.always_trust = 1; break;
 	  case oLoadExtension:
 #ifndef __riscos__
-	    add_to_strlist(&extensions,pargs.r.ret_str);
-	    register_cipher_extension(orig_argc? *orig_argv:NULL,
-				      pargs.r.ret_str);
+#ifdef USE_DYNAMIC_LINKING
+	    if(check_permissions(pargs.r.ret_str,2))
+	      log_info(_("cipher extension \"%s\" not loaded due to "
+			 "unsafe permissions\n"),pargs.r.ret_str);
+	    else
+	      register_cipher_extension(orig_argc? *orig_argv:NULL,
+					pargs.r.ret_str);
+#endif
 #else /* __riscos__ */
             not_implemented("load-extension");
 #endif /* __riscos__ */
@@ -1496,28 +1679,6 @@ main( int argc, char **argv )
     }
   #endif
 
-    check_permissions(opt.homedir,0,0);
-
-    if(unsafe_files)
-      {
-	STRLIST tmp;
-
-	for(tmp=unsafe_files;tmp;tmp=tmp->next)
-	  check_permissions(tmp->d,0,0);
-
-	free_strlist(unsafe_files);
-      }
-
-    if(extensions)
-      {
-	STRLIST tmp;
-
-	for(tmp=extensions;tmp;tmp=tmp->next)
-	  check_permissions(tmp->d,1,0);
-
-	free_strlist(extensions);
-      }
-
     if( may_coredump && !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));
 
@@ -1723,7 +1884,6 @@ main( int argc, char **argv )
     /* set the random seed file */
     if( use_random_seed ) {
 	char *p = make_filename(opt.homedir, "random_seed", NULL );
-	check_permissions(p,0,0);
 	set_random_seed_file(p);
 	m_free(p);
     }
