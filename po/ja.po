@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.7\n"
-"POT-Creation-Date: 2002-10-17 16:39+0200\n"
+"POT-Creation-Date: 2002-10-25 11:00+0200\n"
 "PO-Revision-Date: 2002-09-20 08:02+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"

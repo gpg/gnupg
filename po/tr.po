@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.0\n"
-"POT-Creation-Date: 2002-10-17 16:39+0200\n"
+"POT-Creation-Date: 2002-10-25 11:00+0200\n"
 "PO-Revision-Date: 2002-09-11 22:09+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"

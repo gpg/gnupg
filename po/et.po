@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.1.92\n"
-"POT-Creation-Date: 2002-10-17 16:39+0200\n"
-"PO-Revision-Date: 2002-10-09 11:12+03:00\n"
+"Project-Id-Version: gnupg 1.2.0\n"
+"POT-Creation-Date: 2002-10-25 11:00+0200\n"
+"PO-Revision-Date: 2002-10-21 09:39+03:00\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -2477,9 +2477,8 @@ msgid "   (0) I will not answer.%s\n"
 msgstr "   (0) Ma ei vasta.%s\n"
 
 #: g10/keyedit.c:565 g10/keyedit.c:567 g10/keyedit.c:569 g10/keyedit.c:571
-#, fuzzy
 msgid " (default)"
-msgstr "dekrüpteeri andmed (vaikimisi)"
+msgstr " (vaikimisi)"
 
 #: g10/keyedit.c:566
 #, c-format
@@ -3118,19 +3117,17 @@ msgid "Nothing deleted.\n"
 msgstr "Midagi ei kustutatud.\n"
 
 #: g10/keyedit.c:2275
-#, fuzzy
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
 "         some versions of PGP to reject this key.\n"
 msgstr ""
-"HOIATUS: See on PGP2-stiilis võti. Foto ID lisamine võib sundida mõningaid\n"
-"         PGP versioone seda võtit tagasi lükkama.\n"
+"HOIATUS: See on PGP2-stiilis võti. Määratud tühistaja lisamine võib\n"
+"         põhjustada mõningaid PGP versioone seda võtit tagasi lükkama.\n"
 
 #: g10/keyedit.c:2286
-#, fuzzy
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
-msgstr "Foto IDd ei saa PGP2 võtmele lisada.\n"
+msgstr "PGP 2.x-stiili võtmele ei saa määratud tühistajat lisada.\n"
 
 #: g10/keyedit.c:2309
 msgid "Enter the user ID of the designated revoker: "
@@ -3791,9 +3788,9 @@ msgid "assuming bad signature from key %08lX due to an unknown critical bit\n"
 msgstr "eeldan tundmatu kriitilise biti tõttu võtmel %08lX vigast allkirja\n"
 
 #: g10/sig-check.c:550
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no subkey for subkey revocation packet\n"
-msgstr "võti %08lX: võtme tühistamiseks puudub alamvõti\n"
+msgstr "võti %08lX: alamvõtme tühistamise paketile puudub alamvõti\n"
 
 #: g10/sign.c:103
 #, c-format
@@ -4622,3 +4619,37 @@ msgstr "kontrollitud %lu võtit (%lu allkirja)\n"
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: võtmehoidla on loodud\n"
+
+#~ msgid "|NAME=VALUE|use this notation data"
+#~ msgstr "|NIMI=VÄÄRTUS|kasuta neid noteerimise andmeid"
+
+#~ msgid ""
+#~ "the first character of a notation name must be a letter or an underscore\n"
+#~ msgstr "esimene sümbol noteerimise nimes peab olema täht või alakriips\n"
+
+#~ msgid "dots in a notation name must be surrounded by other characters\n"
+#~ msgstr ""
+#~ "punktid noteerimise nimes peavad olema ümbritsetud muude sümbolitega\n"
+
+#~ msgid ""
+#~ "WARNING: This key already has a photo ID.\n"
+#~ "         Adding another photo ID may confuse some versions of PGP.\n"
+#~ msgstr ""
+#~ "HOIATUS: Sellel võtmel on juba foto ID. Veel ühe foto ID lisamine\n"
+#~ "         võib tekitada mõnedes PGP versioonides segadust.\n"
+
+#~ msgid "You may only have one photo ID on a key.\n"
+#~ msgstr "Võtmel võib olla ainult üks foto ID.\n"
+
+#~ msgid "Fingerprint:"
+#~ msgstr "Sõrmejälg:"
+
+#~ msgid "             Fingerprint:"
+#~ msgstr "               Sõrmejälg:"
+
+#~ msgid "you have to start GnuPG again, so it can read the new options file\n"
+#~ msgstr ""
+#~ "te peate GnuPG uuesti käivitama, siis võetakse uued võtmed arvesse\n"
+
+#~ msgid "changing permission of  `%s' failed: %s\n"
+#~ msgstr "`%s' õiguste muutmine ebaõnnestus: %s\n"

@@ -10,9 +10,9 @@
 # autofirma vs. autosignatura vs. auto-signatura
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.1.92\n"
-"POT-Creation-Date: 2002-10-17 16:39+0200\n"
-"PO-Revision-Date: 2002-09-20 21:12+0200\n"
+"Project-Id-Version: gnupg 1.2.0\n"
+"POT-Creation-Date: 2002-10-25 11:00+0200\n"
+"PO-Revision-Date: 2002-10-21 00:46+0200\n"
 "Last-Translator: Jordi Mallach <jordi@sindominio.net>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
 "MIME-Version: 1.0\n"
@@ -2202,9 +2202,9 @@ msgid "key %08lX: \"%s\" not changed\n"
 msgstr "clau %08lX: «%s» no modificada\n"
 
 #: g10/import.c:844
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: secret key with invalid cipher %d - skipped\n"
-msgstr "clau %08lX: clau secreta sense clau pública - ignorada\n"
+msgstr "clau %08lX: clau secreta amb xifrat %d no vàlid - descartada\n"
 
 #: g10/import.c:859
 #, c-format
@@ -4077,9 +4077,9 @@ msgstr ""
 "clau %08lX: no hi ha una clau pública per a la clau fiable - ignorada\n"
 
 #: g10/trustdb.c:298
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX marked as ultimately trusted\n"
-msgstr "clau marcada com confiada absolutament.\n"
+msgstr "s'ha marcat la clau %08lX com confiada absolutament\n"
 
 #: g10/trustdb.c:324
 #, c-format

@@ -13,7 +13,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6\n"
-"POT-Creation-Date: 2002-10-17 16:39+0200\n"
+"POT-Creation-Date: 2002-10-25 11:00+0200\n"
 "PO-Revision-Date: 2001-08-23 10:32+02:00\n"
 "Last-Translator: Daniel Resare <daniel@resare.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.1.92\n"
-"POT-Creation-Date: 2002-10-17 16:39+0200\n"
+"POT-Creation-Date: 2002-10-25 11:00+0200\n"
 "PO-Revision-Date: 2002-09-12 03:24+0200\n"
 "Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
