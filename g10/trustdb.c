@@ -950,23 +950,17 @@ clear_validity (PKT_public_key *pk)
 
 /* Return true if key is disabled */
 int
-is_disabled(void *dummy,u32 *keyid)
+cache_disabled_value(PKT_public_key *pk)
 {
   int rc;
   TRUSTREC trec;
-  int disabled=0; /* default to not disabled */
-  PKT_public_key *pk=m_alloc_clear(sizeof(PKT_public_key));
+  int disabled=0;
 
-  init_trustdb ();
+  if(pk->is_disabled)
+    return (pk->is_disabled==2);
 
-  rc = get_pubkey(pk, keyid);
-  if(rc)
-    {
-      log_error("error checking disabled status of %08lX: %s\n",
- 		(ulong)keyid[1],g10_errstr(rc));
-      goto leave;
-    }
- 
+  init_trustdb();
+
   rc = read_trust_record (pk, &trec);
   if (rc && rc != -1)
     {
@@ -979,9 +973,15 @@ is_disabled(void *dummy,u32 *keyid)
   if(trec.r.trust.ownertrust & TRUST_FLAG_DISABLED)
     disabled=1;
  
+  /* Cache it for later so we don't need to look at the trustdb every
+     time */
+  if(disabled)
+    pk->is_disabled=2;
+  else
+    pk->is_disabled=1;
+
  leave:
-  free_public_key(pk);
-  return disabled;
+   return disabled;
 }
 
 /*
@@ -1085,7 +1085,12 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
     }
   
   if ( (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED) )
-    validity |= TRUST_FLAG_DISABLED;
+    {
+      validity |= TRUST_FLAG_DISABLED;
+      pk->is_disabled=2;
+    }
+  else
+    pk->is_disabled=1;
 
  leave:
   /* set some flags direct from the key */

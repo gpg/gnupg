@@ -765,7 +765,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	p = get_user_id( sk_keyid, &n );
 	tty_print_utf8_string( p, n );
 	m_free(p); p = NULL;
-	tty_printf("\"\n");
+	tty_printf("\" (%08lX)\n",(ulong)sk_keyid[1]);
 
 	if(selfsig)
 	  {

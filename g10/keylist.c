@@ -358,23 +358,17 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 	}
     }
 
-    if ( keyblock ) { /* figure our the usable capabilities */
+    if ( keyblock ) { /* figure out the usable capabilities */
         KBNODE k;
         int enc=0, sign=0, cert=0, disabled=0;
 
         for (k=keyblock; k; k = k->next ) {
             if ( k->pkt->pkttype == PKT_PUBLIC_KEY 
                  || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-	        u32 kid[2];
                 pk = k->pkt->pkt.public_key;
 
-		if(k->pkt->pkttype==PKT_PUBLIC_KEY)
-		  {
-		    keyid_from_pk(pk,kid);
-
-		    if(is_disabled(NULL,kid))
-		      disabled=1;
-		  }
+		if(pk->is_primary)
+		  disabled=pk_is_disabled(pk);
 
                 if ( pk->is_valid && !pk->is_revoked && !pk->has_expired ) {
                     if ( pk->pubkey_usage & PUBKEY_USAGE_ENC )
@@ -416,13 +410,13 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
     putchar(':');
 }
 
-static void dump_attribs(const PKT_user_id *uid,
-			 PKT_public_key *pk,PKT_secret_key *sk)
+void
+dump_attribs(const PKT_user_id *uid,PKT_public_key *pk,PKT_secret_key *sk)
 {
   int i;
 
   if(!attrib_fp)
-    BUG();
+    return;
 
   for(i=0;i<uid->numattribs;i++)
     {
@@ -498,8 +492,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
-	    if(attrib_fp && node->pkt->pkt.user_id->attrib_data!=NULL)
-	      dump_attribs(node->pkt->pkt.user_id,pk,sk);
             /* don't list revoked or expired UIDS unless we are in
              * verbose mode and signature listing has not been
              * requested */
@@ -507,6 +499,9 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
                  (node->pkt->pkt.user_id->is_revoked ||
 		  node->pkt->pkt.user_id->is_expired ))
                 continue; 
+
+	    if(attrib_fp && node->pkt->pkt.user_id->attrib_data!=NULL)
+	      dump_attribs(node->pkt->pkt.user_id,pk,sk);
 
 	    if( any ) 
                 printf("uid%*s", 29, "");

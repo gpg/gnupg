@@ -169,16 +169,13 @@ enum cmd_and_opt_values { aNull = 0,
     oMarginalsNeeded,
     oMaxCertDepth,
     oLoadExtension,
+    oGnuPG,
     oRFC1991,
     oOpenPGP,
     oPGP2,
-    oNoPGP2,
     oPGP6,
-    oNoPGP6,
     oPGP7,
-    oNoPGP7,
     oPGP8,
-    oNoPGP8,
     oCipherAlgo,
     oDigestAlgo,
     oCertDigestAlgo,
@@ -458,16 +455,17 @@ static ARGPARSE_OPTS opts[] = {
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
     { oTrustedKey, "trusted-key", 2, N_("|KEYID|ultimately trust this key")},
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
+    { oGnuPG, "gnupg",   0, "@"},
+    { oGnuPG, "no-pgp2", 0, "@"},
+    { oGnuPG, "no-pgp6", 0, "@"},
+    { oGnuPG, "no-pgp7", 0, "@"},
+    { oGnuPG, "no-pgp8", 0, "@"},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
     { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},
     { oPGP2, "pgp2", 0, N_("set all packet, cipher and digest options to PGP 2.x behavior")},
-    { oNoPGP2, "no-pgp2", 0, "@"},
     { oPGP6, "pgp6", 0, "@"},
-    { oNoPGP6, "no-pgp6", 0, "@"},
     { oPGP7, "pgp7", 0, "@"},
-    { oNoPGP7, "no-pgp7", 0, "@"},
     { oPGP8, "pgp8", 0, "@"},
-    { oNoPGP8, "no-pgp8", 0, "@"},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
     { oS2KDigest, "s2k-digest-algo",2,
 		N_("|NAME|use message digest algorithm NAME for passphrases")},
@@ -1551,16 +1549,11 @@ main( int argc, char **argv )
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
 	    break;
-	  case oPGP2: opt.compliance = CO_PGP2; break;
-	  case oPGP6: opt.compliance = CO_PGP6; break;
-	  case oPGP7: opt.compliance = CO_PGP7; break;
-	  case oPGP8: opt.compliance = CO_PGP8; break;
-	  case oNoPGP2:
-	  case oNoPGP6:
-	  case oNoPGP7:
-	  case oNoPGP8:
-	    opt.compliance = CO_GNUPG;
-	    break;
+	  case oPGP2:  opt.compliance = CO_PGP2;  break;
+	  case oPGP6:  opt.compliance = CO_PGP6;  break;
+	  case oPGP7:  opt.compliance = CO_PGP7;  break;
+	  case oPGP8:  opt.compliance = CO_PGP8;  break;
+	  case oGnuPG: opt.compliance = CO_GNUPG; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:

@@ -234,7 +234,7 @@ check_signatures_trust( PKT_signature *sig )
  */
 
 int
-is_disabled(void *dummy,u32 *keyid)
+cache_disabled_value(PKT_public_key *pk)
 {
   return 0;
 }

@@ -1,5 +1,6 @@
 /* getkey.c -  Get a key from the database
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -724,6 +725,27 @@ classify_user_id( const char *name, KEYDB_SEARCH_DESC *desc )
 }
 
 
+static int
+skip_disabled(void *dummy,u32 *keyid)
+{
+  int rc,disabled=0;
+  PKT_public_key *pk=m_alloc_clear(sizeof(PKT_public_key));
+
+  rc = get_pubkey(pk, keyid);
+  if(rc)
+    {
+      log_error("error checking disabled status of %08lX: %s\n",
+ 		(ulong)keyid[1],g10_errstr(rc));
+      goto leave;
+    }
+ 
+  disabled=pk_is_disabled(pk);
+
+ leave:
+  free_public_key(pk);
+  return disabled;
+}
+
 /****************
  * Try to get the pubkey by the userid. This function looks for the
  * first pubkey certificate which has the given name in a user_id.
@@ -774,7 +796,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
  	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR16
 	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR20
 	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR)
- 	  ctx->items[n].skipfnc=is_disabled;
+ 	  ctx->items[n].skipfnc=skip_disabled;
     }
 
     ctx->kr_handle = keydb_new (secmode);
@@ -1296,12 +1318,12 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n);
     if (p && n && (p[0] & 0x01))
         uid->mdc_feature = 1;
+
     /* and the keyserver modify flag */
     uid->ks_modify = 1;
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KS_FLAGS, &n);
     if (p && n && (p[0] & 0x80))
         uid->ks_modify = 0;
-            
 }
 
 static void
@@ -1670,14 +1692,38 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         if ( k->pkt->pkttype == PKT_USER_ID &&
 	     !k->pkt->pkt.user_id->attrib_data) {
             PKT_user_id *uid = k->pkt->pkt.user_id;
-            if ( uid->is_primary && uid->created > uiddate ) {
-                uiddate = uid->created;
-                uidnode = k;
-            }
-            if ( !uid->is_primary && uid->created > uiddate2 ) {
-                uiddate2 = uid->created;
-                uidnode2 = k;
-            }
+            if (uid->is_primary)
+	      {
+		if(uid->created > uiddate)
+		  {
+		    uiddate = uid->created;
+		    uidnode = k;
+		  }
+		else if(uid->created==uiddate && uidnode)
+		  {
+		    /* The dates are equal, so we need to do a
+		       different (and arbitrary) comparison.  This
+		       should rarely, if ever, happen.  It's good to
+		       try and guarantee that two different GnuPG
+		       users with two different keyrings at least pick
+		       the same primary. */
+		    if(cmp_user_ids(uid,uidnode->pkt->pkt.user_id)>0)
+		      uidnode=k;
+		  }
+	      }
+	    else
+	      {
+		if(uid->created > uiddate2)
+		  {
+		    uiddate2 = uid->created;
+		    uidnode2 = k;
+		  }
+		else if(uid->created==uiddate2 && uidnode2)
+		  {
+		    if(cmp_user_ids(uid,uidnode2->pkt->pkt.user_id)>0)
+		      uidnode2=k;
+		  }
+	      }
         }
     }
     if ( uidnode ) {
@@ -1692,23 +1738,43 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         }
     }
     else if( uidnode2 ) {
-        /* none is flagged primary - use the latest user ID we have */
+        /* none is flagged primary - use the latest user ID we have,
+	   and disambiguate with the arbitrary packet comparison. */
         uidnode2->pkt->pkt.user_id->is_primary = 1;
     }
     else
       {
-	/* None of our uids were self-signed, so pick the first one to
-	   be the primary.  This is the best we can do here since
-	   there are no self sigs to date the uids. */
+	/* None of our uids were self-signed, so pick the one that
+	   sorts first to be the primary.  This is the best we can do
+	   here since there are no self sigs to date the uids. */
+
+	uidnode = NULL;
 
 	for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
 	    k = k->next )
 	  {
-	    if(k->pkt->pkttype==PKT_USER_ID &&
-	       !k->pkt->pkt.user_id->attrib_data)
+	    if(k->pkt->pkttype==PKT_USER_ID
+	       && !k->pkt->pkt.user_id->attrib_data)
 	      {
-		k->pkt->pkt.user_id->is_primary=1;
-		break;
+		if(!uidnode)
+		  {
+		    uidnode=k;
+		    uidnode->pkt->pkt.user_id->is_primary=1;
+		    continue;
+		  }
+		else
+		  {
+		    if(cmp_user_ids(k->pkt->pkt.user_id,
+				    uidnode->pkt->pkt.user_id)>0)
+		      {
+			uidnode->pkt->pkt.user_id->is_primary=0;
+			uidnode=k;
+			uidnode->pkt->pkt.user_id->is_primary=1;
+		      }
+		    else
+		      k->pkt->pkt.user_id->is_primary=0; /* just to be
+							    safe */
+		  }
 	      }
 	  }
       }

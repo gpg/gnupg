@@ -580,6 +580,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
     const char *code_text = NULL;
 
     do {
+        code=-1;
 	m_free(description);
 	description = NULL;
 

@@ -211,6 +211,7 @@ typedef struct {
     u32     main_keyid[2];  /* keyid of the primary key */
     u32     keyid[2];	    /* calculated by keyid_from_pk() */
     byte    is_primary;
+    byte    is_disabled;    /* 0 for unset, 1 for enabled, 2 for disabled. */
     prefitem_t *prefs;      /* list of preferences (may be NULL) */
     int     mdc_feature;    /* mdc feature set */
     PKT_user_id *user_id;   /* if != NULL: found by that uid */
@@ -222,6 +223,10 @@ typedef struct {
     const byte *trust_regexp;
     MPI     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_key;
+
+/* Evaluates as true if the pk is disabled, and false if it isn't.  If
+   there is no disable value cached, fill one in. */
+#define pk_is_disabled(a) (((a)->is_disabled)?((a)->is_disabled==2):(cache_disabled_value((a))))
 
 typedef struct {
     u32     timestamp;	    /* key made */

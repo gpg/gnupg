@@ -1,3 +1,52 @@
+2003-05-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.h, trustdb.c (is_disabled), gpgv.c (is_disabled): Rename
+	is_disabled to cache_disabled_value, which now takes a pk and not
+	just the keyid. This is for speed since there is no need to
+	re-fetch a key when we already have that key handy.  Cache the
+	result of the check so we don't need to hit the trustdb more than
+	once.
+	
+	* getkey.c (skip_disabled): New function to get a pk and call
+	is_disabled on it. (key_byname): Use it here.
+	
+	* packet.h, getkey.c (skip_disabled), keylist.c
+	(print_capabilities): New "pk_is_disabled" macro to retrieve the
+	cached disabled value if available, and fill it in via
+	cache_disabled_value if not available.
+
+	* trustdb.c (get_validity): Cache the disabled value since we have
+	it handy and it might be useful later.
+
+	* parse-packet.c (parse_key): Clear disabled flag when parsing a
+	new key.  Just in case someone forgets to clear the whole key.
+
+	* getkey.c (merge_selfsigs_main): Add an "if all else fails" path
+	for setting a single user ID primary when there are multiple set
+	primaries all at the same second, or no primaries set and the most
+	recent user IDs are at the same second, or no signed user IDs at
+	all. This is arbitrary, but deterministic.
+
+	* exec.h, photoid.h: Add copyright message.
+
+	* keylist.c (list_keyblock_print): Don't dump attribs for
+	revoked/expired/etc uids for non-colon key listings.  This is for
+	consistency with --show-photos.
+
+	* main.h, keylist.c (dump_attribs), mainproc.c
+	(check_sig_and_print): Dump attribs if --attrib-fd is set when
+	verifying signatures.
+	
+	* g10.c (main): New --gnupg option to disable the various
+	--openpgp, --pgpX, etc. options.  This is the same as --no-XXXX
+	for those options.
+
+	* revoke.c (ask_revocation_reason): Clear old reason if user
+	elects to repeat question.  This is bug 153.
+
+	* keyedit.c (sign_uids): Show keyid of the key making the
+	signature.
+
 2003-05-21  Werner Koch  <wk@gnupg.org>
 
 	* progress.c (handle_progress)
