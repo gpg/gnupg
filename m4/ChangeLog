@@ -1,3 +1,9 @@
+2005-03-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* readline.m4: Check for completion functionality.
+
+	* ldap.m4: Comments.
+
 2005-03-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* ldap.m4: New.  Moved from configure.ac.
