@@ -27,7 +27,7 @@ EOF
     ln -sf gnupg.html index.html
     sed -n '1,/@BEGIN_BUGLIST@/ p' buglist.html       >buglist.tmp
     sed    '1,/^~~~~~~~~~~~/ d'  BUGS                >>buglist.tmp
-    echo "(List generated from CVS: " `date -R` ")"  >>buglist.tmp
+    echo "(List generated from CVS: " $(date +%Y-%m-%d) ")"  >>buglist.tmp
     sed -n '/@END_BUGLIST@/,$ p'   buglist.html      >>buglist.tmp
     mv	buglist.tmp buglist.html
     cd $here
