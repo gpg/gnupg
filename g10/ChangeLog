@@ -1,3 +1,11 @@
+2003-03-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h: Err on the side of making an unknown signature a SIG
+	rather than a CERT.
+
+	* import.c (delete_inv_parts): Discard any key signatures that
+	aren't key types (i.e. 0x00, 0x01, etc.)
+
 2003-03-24  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Make use of AM_CFLAGS and AM_LDFLAGS.
