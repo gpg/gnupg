@@ -1,3 +1,7 @@
+2004-10-12  Werner Koch  <wk@g10code.com>
+
+	* es.po: s/intgridad/integridad/. This is bug 275.
+
 2004-07-27  Werner Koch  <wk@g10code.de>
 
 	* LINGUAS: Added all languages we supported in 1.2.5.

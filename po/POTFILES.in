@@ -55,3 +55,4 @@ g10/exec.c
 g10/keyid.c
 g10/revoke.c
 g10/tdbdump.c
+g10/dearmor.c
