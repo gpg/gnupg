@@ -93,7 +93,7 @@ POSUB = po
 RANLIB = ranlib
 USE_INCLUDED_LIBINTL = yes
 USE_NLS = yes
-VERSION = 0.2.16a
+VERSION = 0.2.17
 ZLIBS = 
 l = 
 

@@ -39,7 +39,7 @@ g10_elg_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek )
 {
     MPI frame;
 
-    assert( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL );
+    assert( is_ELGAMAL(enc->pubkey_algo) );
 
     enc->d.elg.a = mpi_alloc( mpi_get_nlimbs(pkc->d.elg.p) );
     enc->d.elg.b = mpi_alloc( mpi_get_nlimbs(pkc->d.elg.p) );
@@ -68,7 +68,7 @@ g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig,
     MPI frame;
     byte *dp;
 
-    assert( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL );
+    assert( is_ELGAMAL(sig->pubkey_algo) );
     if( !digest_algo )
 	digest_algo = md_get_algo(md);
 
@@ -79,7 +79,9 @@ g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig,
     sig->digest_start[1] = dp[1];
     sig->d.elg.a = mpi_alloc( mpi_get_nlimbs(skc->d.elg.p) );
     sig->d.elg.b = mpi_alloc( mpi_get_nlimbs(skc->d.elg.p) );
-    frame = encode_md_value( md, mpi_get_nbits(skc->d.elg.p));
+    frame = encode_md_value( md, digest_algo,  mpi_get_nbits(skc->d.elg.p));
+    if( DBG_CIPHER )
+	log_mpidump("calc sig frame (elg): ", frame);
     elg_sign( sig->d.elg.a, sig->d.elg.b, frame, &skc->d.elg );
     mpi_free(frame);
     if( opt.verbose ) {

@@ -97,8 +97,7 @@ int  build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list,
 /*-- passphrase.h --*/
 void set_passphrase_fd( int fd );
 int  get_passphrase_fd(void);
-DEK *get_passphrase_hash( u32 *keyid, int cipher_algo, STRING2KEY *s2k );
-int make_dek_from_passphrase( DEK *dek, int mode, STRING2KEY *s2k );
+DEK *passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode);
 
 /*-- getkey.c --*/
 void add_keyring( const char *name );

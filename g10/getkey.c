@@ -164,9 +164,9 @@ cache_public_cert( PKT_public_cert *pkc )
     pkc_cache_entry_t ce;
     u32 keyid[2];
 
-    if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+    if( is_ELGAMAL(pkc->pubkey_algo)
 	|| pkc->pubkey_algo == PUBKEY_ALGO_DSA
-	|| pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	|| is_RSA(pkc->pubkey_algo) ) {
 	keyid_from_pkc( pkc, keyid );
     }
     else

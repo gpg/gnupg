@@ -1,14 +1,17 @@
-Noteworthy changes in version 0.2.??
+Noteworthy changes in version 0.2.17
 ------------------------------------
 
     * Comment packets are now of private type 61.
 
-    * passphrase code still used a 160 bit blowfish key, add a
+    * Passphrase code still used a 160 bit blowfish key, added a
       silly workaround. Please change your passphrase again - sorry.
 
     * Conventional encryption now uses a type 3 packet to describe the
       used algorithms.
 
+    * The new algorithm number for Blowfish is 20, 16 is still used for
+      encryption only; for signing it is only used when it is in a v3 packet,
+      so that GNUPG keys are still valid.
 
 
 Noteworthy changes in version 0.2.16

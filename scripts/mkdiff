@@ -16,7 +16,9 @@ echo "Removing old directories"
 
 echo "Unpacking previous and current tar"
 tar xzf "gnupg-$curr_ver.tar.gz"
+rm -f gnupg-${curr_ver}/po/*.gmo
 tar xzf "gnupg-$prev_ver.tar.gz"
+rm -f gnupg-${prev_ver}/po/*.gmo
 
 
 echo "Diffing"

@@ -49,7 +49,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     if( (rc = get_seckey( skc, k->keyid )) )
 	goto leave;
 
-    if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(k->pubkey_algo) ) {
 	if( DBG_CIPHER ) {
 	    log_mpidump("Encr DEK a:", k->d.elg.a );
 	    log_mpidump("     DEK b:", k->d.elg.b );
@@ -58,7 +58,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	elg_decrypt( plain_dek, k->d.elg.a, k->d.elg.b, &skc->d.elg );
     }
   #ifdef HAVE_RSA_CIPHER
-    else if( k->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( is_ELGAMAL(k->pubkey_algo) ) {
 	if( DBG_CIPHER )
 	    log_mpidump("Encr DEK frame:", k->d.rsa.rsa_integer );
 

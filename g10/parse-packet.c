@@ -423,7 +423,7 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	goto leave;
     }
     version = iobuf_get_noeof(inp); pktlen--;
-    if( k->version != 4 ) {
+    if( version != 4 ) {
 	log_error("packet(%d) with unknown version %d\n", pkttype, version);
 	goto leave;
     }
@@ -480,6 +480,7 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 		printf("%02x", k->s2k.salt[i]);
 	    if( s2kmode == 4 )
 		printf(", count %lu\n", (ulong)k->s2k.count );
+	    printf("\n");
 	}
     }
 
@@ -508,9 +509,9 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     k->keyid[1] = read_32(inp); pktlen -= 4;
     k->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
-	printf(":pubkey enc packet: version %d, keyid %08lX%08lX\n",
-			    k->version, (ulong)k->keyid[0], (ulong)k->keyid[1]);
-    if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	printf(":pubkey enc packet: version %d, algo %d, keyid %08lX%08lX\n",
+	  k->version, k->pubkey_algo, (ulong)k->keyid[0], (ulong)k->keyid[1]);
+    if( is_ELGAMAL(k->pubkey_algo) ) {
 	n = pktlen;
 	k->d.elg.a = mpi_read(inp, &n, 0); pktlen -=n;
 	n = pktlen;
@@ -523,7 +524,7 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	    putchar('\n');
 	}
     }
-    else if( k->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( is_RSA(k->pubkey_algo) ) {
 	n = pktlen;
 	k->d.rsa.rsa_integer = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
@@ -732,9 +733,10 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
     if( list_mode ) {
-	printf(":signature packet: keyid %08lX%08lX\n"
+	printf(":signature packet: algo %d, keyid %08lX%08lX\n"
 	       "\tversion %d, created %lu, md5len %d, sigclass %02x\n"
 	       "\tdigest algo %d, begin of digest %02x %02x\n",
+		sig->pubkey_algo,
 		(ulong)sig->keyid[0], (ulong)sig->keyid[1],
 		sig->version, (ulong)sig->timestamp, md5_len, sig->sig_class,
 		sig->digest_algo,
@@ -744,7 +746,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    parse_subpkt( sig->unhashed_data, -2 );
 	}
     }
-    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(sig->pubkey_algo) ) {
 	n = pktlen;
 	sig->d.elg.a = mpi_read(inp, &n, 0 ); pktlen -=n;
 	n = pktlen;
@@ -770,7 +772,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    putchar('\n');
 	}
     }
-    else if( sig->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( is_RSA(sig->pubkey_algo) ) {
 	n = pktlen;
 	sig->d.rsa.rsa_integer = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
@@ -877,12 +879,12 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
     algorithm = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
 	printf(":%s key packet:\n"
-	       "\tversion %d, created %lu, valid for %hu days\n",
+	       "\tversion %d, algo %d, created %lu, valid for %hu days\n",
 		pkttype == PKT_PUBLIC_CERT? "public" :
 		pkttype == PKT_SECRET_CERT? "secret" :
 		pkttype == PKT_PUBKEY_SUBCERT? "public sub" :
 		pkttype == PKT_SECKEY_SUBCERT? "secret sub" : "??",
-		version, timestamp, valid_period );
+		version, algorithm, timestamp, valid_period );
     if( pkttype == PKT_SECRET_CERT || pkttype == PKT_SECKEY_SUBCERT )  {
 	pkt->pkt.secret_cert->timestamp = timestamp;
 	pkt->pkt.secret_cert->valid_days = valid_period;
@@ -898,7 +900,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	pkt->pkt.public_cert->pubkey_algo = algorithm;
     }
 
-    if( algorithm == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(algorithm) ) {
 	MPI elg_p, elg_g, elg_y;
 	n = pktlen; elg_p = mpi_read(inp, &n, 0 ); pktlen -=n;
 	n = pktlen; elg_g = mpi_read(inp, &n, 0 ); pktlen -=n;
@@ -1159,7 +1161,7 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    log_mpidump("dsa x=", cert->d.dsa.x ); */
 	}
     }
-    else if( algorithm == PUBKEY_ALGO_RSA ) {
+    else if( is_RSA(algorithm) ) {
 	MPI rsa_pub_mod, rsa_pub_exp;
 
 	n = pktlen; rsa_pub_mod = mpi_read(inp, &n, 0); pktlen -=n;

@@ -1,3 +1,20 @@
+Mon May  4 19:01:25 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* compress.c: doubled buffer sizes
+	* parse-packet.c (do_plaintext): now uses iobuf_read/write.
+
+Mon May  4 09:35:53 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* seskey.c (encode_md_value): Add optional argument hash_algo,
+	changed all callers.
+
+	* passphrase.c (make_dek_from_passphrase): Removed
+	* (get_passhrase_hash): Changed name to passphrase_to_dek, add arg,
+	changed all callers.
+
+	* all: Introduced the new ELG identifier and added support for the
+	encryption only one (which is okay to use by GNUPG for signatures).
+
 Sun May  3 17:50:26 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* packet.h (PKT_OLD_COMMENT): New name for type 16.

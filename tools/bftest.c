@@ -63,8 +63,8 @@ main(int argc, char **argv)
 {
     int encode=0;
     CIPHER_HANDLE hd;
-    char buf[100];
-    int n, size=8;
+    char buf[4096];
+    int n, size=4096;
     int algo;
 
   #ifdef __MINGW32__

@@ -8,7 +8,8 @@ TESTS = version.test \
 	armsigs.test armencrypt.test armencryptp.test \
 	signencrypt.test signencrypt-dsa.test \
 	armsignencrypt.test armdetach.test \
-	armdetachm.test detachm.test genkey1024.test
+	armdetachm.test detachm.test genkey1024.test \
+	conventional.test
 
 
 TEST_FILES = pubring.asc secring.asc gnupg.asc plain-1 plain-2 plain-3o.asc \

@@ -47,5 +47,3 @@
 
     * add readline support (but how can we allcoate it in secure memory?)
 
-    * add multi-user-id-sigs handling to import.c
-

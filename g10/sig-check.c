@@ -63,14 +63,16 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
     MPI result = NULL;
     int rc=0;
 
-    if( pkc->version == 4 && pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	log_info("WARNING: This is probably a PGP generated "
+    if( pkc->version == 4 && pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
+	log_info("this is a PGP generated "
 		 "ElGamal key which is NOT secure for signatures!\n");
+	return G10ERR_PUBKEY_ALGO;
+    }
 
     if( pkc->timestamp > sig->timestamp )
 	return G10ERR_TIME_CONFLICT; /* pubkey newer that signature */
 
-    if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(pkc->pubkey_algo) ) {
 	if( (rc=check_digest_algo(sig->digest_algo)) )
 	    goto leave;
 	/* make sure the digest algo is enabled (in case of a detached
@@ -85,7 +87,10 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    md_putc( digest,  a        & 0xff );
 	}
 	md_final( digest );
-	result = encode_md_value( digest, mpi_get_nbits(pkc->d.elg.p));
+	result = encode_md_value( digest, sig->digest_algo,
+					  mpi_get_nbits(pkc->d.elg.p));
+	if( DBG_CIPHER )
+	    log_mpidump("calc sig frame (elg): ", result);
 	if( !elg_verify( sig->d.elg.a, sig->d.elg.b, result, &pkc->d.elg ) )
 	    rc = G10ERR_BAD_SIGN;
     }
@@ -139,7 +144,8 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	    rc = G10ERR_BAD_SIGN;
     }
  #ifdef HAVE_RSA_CIPHER
-    else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA
+	     || pkc->pubkey_algo == PUBKEY_ALGO_RSA_S ) {
 	int i, j, c, old_enc;
 	byte *dp;
 	const byte *asn;

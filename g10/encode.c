@@ -68,6 +68,7 @@ encode_simple( const char *filename, int mode )
     IOBUF inp, out;
     PACKET pkt;
     PKT_plaintext *pt;
+    STRING2KEY *s2k = NULL;
     int rc = 0;
     u32 filesize;
     cipher_filter_context_t cfx;
@@ -87,10 +88,14 @@ encode_simple( const char *filename, int mode )
 
     cfx.dek = NULL;
     if( mode ) {
-	cfx.dek = m_alloc_secure( sizeof *cfx.dek );
-	cfx.dek->algo = opt.def_cipher_algo;
-	if( (rc = make_dek_from_passphrase( cfx.dek , 2, NULL )) ) {
+	s2k = m_alloc_clear( sizeof *s2k );
+	s2k->mode = 1;
+	s2k->hash_algo = opt.def_digest_algo;
+	cfx.dek = passphrase_to_dek( NULL, opt.def_cipher_algo, s2k, 2 );
+	if( !cfx.dek || !cfx.dek->keylen ) {
+	    rc = G10ERR_PASSPHRASE;
 	    m_free(cfx.dek);
+	    m_free(s2k);
 	    iobuf_close(inp);
 	    log_error("error creating passphrase: %s\n", g10_errstr(rc) );
 	    return rc;
@@ -100,6 +105,7 @@ encode_simple( const char *filename, int mode )
     if( !(out = open_outfile( filename, opt.armor? 1:0 )) ) {
 	iobuf_close(inp);
 	m_free(cfx.dek);
+	m_free(s2k);
 	return G10ERR_CREATE_FILE;  /* or user said: do not overwrite */
     }
 
@@ -112,6 +118,17 @@ encode_simple( const char *filename, int mode )
     if( opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
 
+    if( s2k ) {
+	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
+	enc->version = 4;
+	enc->cipher_algo = cfx.dek->algo;
+	enc->s2k = *s2k;
+	pkt.pkttype = PKT_SYMKEY_ENC;
+	pkt.pkt.symkey_enc = enc;
+	if( (rc = build_packet( out, &pkt )) )
+	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
+	m_free(enc);
+    }
 
     /* setup the inner packet */
     if( filename ) {
@@ -148,6 +165,7 @@ encode_simple( const char *filename, int mode )
     pt->buf = NULL;
     free_packet(&pkt);
     m_free(cfx.dek);
+    m_free(s2k);
     return rc;
 }
 
@@ -314,9 +332,9 @@ write_pubkey_enc_from_list( PKC_LIST pkc_list, DEK *dek, IOBUF out )
 	pkc = pkc_list->pkc;
 	enc = m_alloc_clear( sizeof *enc );
 	enc->pubkey_algo = pkc->pubkey_algo;
-	if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	if( is_ELGAMAL(enc->pubkey_algo) )
 	    g10_elg_encrypt( pkc, enc, dek );
-	else if( enc->pubkey_algo == PUBKEY_ALGO_RSA )
+	else if( is_RSA(enc->pubkey_algo) )
 	    g10_rsa_encrypt( pkc, enc, dek );
 	else
 	    BUG();

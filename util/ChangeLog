@@ -1,3 +1,8 @@
+Mon May  4 19:48:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* iobuf.c (iobuf_read): Code is now faster.
+	* (iobuf_write): ditto.
+
 Mon Apr 27 11:01:32 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* strgutil.c (memicmp): New.

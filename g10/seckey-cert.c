@@ -54,8 +54,8 @@ do_check( PKT_secret_cert *cert )
 	  case CIPHER_ALGO_BLOWFISH:
 	  case CIPHER_ALGO_CAST:
 	    keyid_from_skc( cert, keyid );
-	    dek = get_passphrase_hash( keyid, cert->protect.algo,
-					      &cert->protect.s2k );
+	    dek = passphrase_to_dek( keyid, cert->protect.algo,
+					      &cert->protect.s2k, 0 );
 	    cipher_hd = cipher_open( cert->protect.algo,
 				     CIPHER_MODE_AUTO_CFB, 1);
 	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
@@ -66,6 +66,7 @@ do_check( PKT_secret_cert *cert )
 	    cipher_decrypt( cipher_hd, cert->protect.iv, cert->protect.iv, 8 );
 	    switch( cert->pubkey_algo ) {
 	      case PUBKEY_ALGO_ELGAMAL:
+	      case PUBKEY_ALGO_ELGAMAL_E:
 		buffer = mpi_get_secure_buffer( cert->d.elg.x, &nbytes, NULL );
 		cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
 		mpi_set_buffer( cert->d.elg.x, buffer, nbytes, 0 );
@@ -81,6 +82,8 @@ do_check( PKT_secret_cert *cert )
 		break;
 	    #ifdef HAVE_RSA_CIPHER
 	      case PUBKEY_ALGO_RSA:
+	      case PUBKEY_ALGO_RSA_E:
+	      case PUBKEY_ALGO_RSA_S:
 		csum = 0;
 		#define X(a) do { \
 		    buffer = mpi_get_secure_buffer( cert->d.rsa.##a,	 \
@@ -104,7 +107,7 @@ do_check( PKT_secret_cert *cert )
 	    cipher_close( cipher_hd );
 	    /* now let's see whether we have used the right passphrase */
 	    if( csum != cert->csum ) {
-		if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+		if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 		    /* very bad kludge to work around an early bug */
 		    csum -= checksum_u16( mpi_get_nbits(cert->d.elg.x) );
 		    nbytes = mpi_get_nlimbs(cert->d.elg.x) * 4;
@@ -122,6 +125,7 @@ do_check( PKT_secret_cert *cert )
 	    }
 
 	    switch( cert->pubkey_algo ) {
+	      case PUBKEY_ALGO_ELGAMAL_E:
 	      case PUBKEY_ALGO_ELGAMAL:
 		res = elg_check_secret_key( &cert->d.elg );
 		break;
@@ -130,6 +134,8 @@ do_check( PKT_secret_cert *cert )
 		break;
 	    #ifdef HAVE_RSA_CIPHER
 	      case PUBKEY_ALGO_RSA:
+	      case PUBKEY_ALGO_RSA_E:
+	      case PUBKEY_ALGO_RSA_S:
 		res = rsa_check_secret_key( &cert->d.rsa );
 		break;
 	    #endif
@@ -151,6 +157,7 @@ do_check( PKT_secret_cert *cert )
     }
     else { /* not protected */
 	switch( cert->pubkey_algo ) {
+	  case PUBKEY_ALGO_ELGAMAL_E:
 	  case PUBKEY_ALGO_ELGAMAL:
 	    csum = checksum_mpi( cert->d.elg.x );
 	    break;
@@ -158,6 +165,8 @@ do_check( PKT_secret_cert *cert )
 	    csum = checksum_mpi( cert->d.dsa.x );
 	    break;
 	#ifdef HAVE_RSA_CIPHER
+	  case PUBKEY_ALGO_RSA_E:
+	  case PUBKEY_ALGO_RSA_S:
 	  case PUBKEY_ALGO_RSA:
 	    csum =0;
 	    buffer = mpi_get_buffer( cert->d.rsa.rsa_d, &nbytes, NULL );
@@ -181,7 +190,7 @@ do_check( PKT_secret_cert *cert )
 	  default: BUG();
 	}
 	if( csum != cert->csum ) {
-	    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
 		/* very bad kludge to work around an early bug */
 		csum -= checksum_u16( mpi_get_nbits(cert->d.elg.x) );
 		nbytes = mpi_get_nlimbs(cert->d.elg.x) * 4;
@@ -214,20 +223,25 @@ check_secret_key( PKT_secret_cert *cert )
 	if( i )
 	    log_error("Invalid passphrase; please try again ...\n\n");
 	switch( cert->pubkey_algo ) {
+	  case PUBKEY_ALGO_ELGAMAL_E:
 	  case PUBKEY_ALGO_ELGAMAL:
 	  case PUBKEY_ALGO_DSA:
 	    rc = do_check( cert );
+	  #if 1 /* set to 0 to disable the workaround */
 	    if( rc == G10ERR_BAD_PASS && cert->is_protected
-		&& cert->protect.algo == CIPHER_ALGO_BLOWFISH ) {
+		&& cert->protect.algo == CIPHER_ALGO_BLOWFISH
+		&& cert->pubkey_algo != PUBKEY_ALGO_ELGAMAL ) {
 		/* Workaround for a bug in 0.2.16 which still used
 		 * a 160 bit key for BLOWFISH. */
-		log_info("trying workaround for 0.2.16 passphrase bug ...\n");
+     log_info("trying workaround for 0.2.16 passphrase bug ...\n");
+     log_info("If you don't need this, uncomment it in g10/seckey-cert.c\n\n");
 		cert->protect.algo = CIPHER_ALGO_BLOWFISH160;
 		rc = do_check( cert );
 		if( rc )
 		    rc = G10ERR_BAD_PASS;
 		cert->protect.algo = CIPHER_ALGO_BLOWFISH;
 	    }
+	  #endif
 	    break;
 	  default: rc = G10ERR_PUBKEY_ALGO;
 	}
@@ -256,13 +270,14 @@ do_protect( void (*fnc)(CIPHER_HANDLE, byte *, byte *, unsigned),
     unsigned nbytes;
 
     switch( cert->pubkey_algo ) {
-      case PUBKEY_ALGO_ELGAMAL:
+      case PUBKEY_ALGO_ELGAMAL_E:
 	/* recalculate the checksum, so that --change-passphrase
 	 * can be used to convert from the faulty to the correct one
 	 * wk 06.04.98:
 	 * fixme: remove this some time in the future.
 	 */
 	cert->csum = checksum_mpi( cert->d.elg.x );
+      case PUBKEY_ALGO_ELGAMAL:
 	buffer = mpi_get_buffer( cert->d.elg.x, &nbytes, NULL );
 	(*fnc)( fnc_hd, buffer, buffer, nbytes );
 	mpi_set_buffer( cert->d.elg.x, buffer, nbytes, 0 );

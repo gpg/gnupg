@@ -148,36 +148,16 @@ add_signature( CTX c, PACKET *pkt )
 static void
 proc_symkey_enc( CTX c, PACKET *pkt )
 {
-   /* FIXME:   NOT READY */
-   #if 0
     PKT_symkey_enc *enc;
-    int result = 0;
 
-    c->last_was_session_key = 1;
     enc = pkt->pkt.symkey_enc;
-    if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
-	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
-	|| enc->pubkey_algo == PUBKEY_ALGO_RSA	) {
-	m_free(c->dek ); /* paranoid: delete a pending DEK */
-	c->dek = m_alloc_secure( sizeof *c->dek );
-	if( (result = get_session_key( enc, c->dek )) ) {
-	    /* error: delete the DEK */
-	    m_free(c->dek); c->dek = NULL;
-	}
+    if( enc->seskeylen )
+	log_error( "symkey_enc packet with session keys are not supported!\n");
+    else {
+	c->last_was_session_key = 2;
+	c->dek = passphrase_to_dek( NULL, enc->cipher_algo, &enc->s2k, 0 );
     }
-    else
-	result = G10ERR_PUBKEY_ALGO;
-
-    if( result == -1 )
-	;
-    else if( !result ) {
-	if( opt.verbose > 1 )
-	    log_info( "pubkey_enc packet: Good DEK\n" );
-    }
-    else
-	log_error( "pubkey_enc packet: %s\n", g10_errstr(result));
     free_packet(pkt);
-  #endif
 }
 
 static void
@@ -189,9 +169,9 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     c->last_was_session_key = 1;
     enc = pkt->pkt.pubkey_enc;
     /*printf("enc: encrypted by a pubkey with keyid %08lX\n", enc->keyid[1] );*/
-    if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+    if( is_ELGAMAL(enc->pubkey_algo)
 	|| enc->pubkey_algo == PUBKEY_ALGO_DSA
-	|| enc->pubkey_algo == PUBKEY_ALGO_RSA	) {
+	|| is_RSA(enc->pubkey_algo)  ) {
 	m_free(c->dek ); /* paranoid: delete a pending DEK */
 	c->dek = m_alloc_secure( sizeof *c->dek );
 	if( (result = get_session_key( enc, c->dek )) ) {
@@ -222,9 +202,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     /*printf("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
     if( !c->dek && !c->last_was_session_key ) {
 	/* assume this is old conventional encrypted data */
-	c->dek = m_alloc_secure( sizeof *c->dek );
-	c->dek->algo = opt.def_cipher_algo;
-	result = make_dek_from_passphrase( c->dek, 0, NULL );
+	c->dek = passphrase_to_dek( NULL, opt.def_cipher_algo, NULL, 0 );
     }
     else if( !c->dek )
 	result = G10ERR_NO_SECKEY;
@@ -254,7 +232,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     if( opt.verbose )
 	log_info("original file name='%.*s'\n", pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
-    /* fixme: take the digest algo(s) to use from the
+    /* FIXME: take the digest algo(s) to use from the
      * onepass_sig packet (if we have these)
      * And look at the sigclass to check whether we should use the
      * textmode filter (sigclass 0x01)
@@ -262,6 +240,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     c->mfx.md = md_open( DIGEST_ALGO_RMD160, 0);
     md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
     md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
+    md_enable( c->mfx.md, DIGEST_ALGO_TIGER );
     rc = handle_plaintext( pt, &c->mfx );
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
@@ -318,7 +297,7 @@ do_check_sig( CTX c, KBNODE node )
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     sig = node->pkt->pkt.signature;
 
-    algo = digest_algo_from_sig( sig );
+    algo = sig->digest_algo;
     if( !algo )
 	return G10ERR_PUBKEY_ALGO;
     if( (rc=check_digest_algo(algo)) )
@@ -790,8 +769,7 @@ proc_tree( CTX c, KBNODE node )
 	    c->mfx.md = md_open(0, 0);
 	    /* fixme: why looking for the signature packet and not 1passpacket*/
 	    for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); ) {
-		md_enable( c->mfx.md,
-			   digest_algo_from_sig(n1->pkt->pkt.signature));
+		md_enable( c->mfx.md, n1->pkt->pkt.signature->digest_algo);
 	    }
 	    /* ask for file and hash it */
 	    if( c->sigs_only )
@@ -814,7 +792,7 @@ proc_tree( CTX c, KBNODE node )
 
 	if( !c->have_data ) {
 	    free_md_filter_context( &c->mfx );
-	    c->mfx.md = md_open(digest_algo_from_sig(sig), 0);
+	    c->mfx.md = md_open(sig->digest_algo, 0);
 	    if( c->sigs_only )
 		rc = hash_datafiles( c->mfx.md, c->signed_data,
 				     sig->sig_class == 0x01 );

@@ -489,7 +489,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 	    if(   req_skc->timestamp == skc->timestamp
 	       && req_skc->valid_days == skc->valid_days
 	       && req_skc->pubkey_algo == skc->pubkey_algo
-	       && (   ( skc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+	       && (   ( is_ELGAMAL(skc->pubkey_algo)
 			&& !mpi_cmp( req_skc->d.elg.p, skc->d.elg.p )
 			&& !mpi_cmp( req_skc->d.elg.g, skc->d.elg.g )
 			&& !mpi_cmp( req_skc->d.elg.y, skc->d.elg.y )
@@ -502,7 +502,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 			&& !mpi_cmp( req_skc->d.dsa.y, skc->d.dsa.y )
 			&& !mpi_cmp( req_skc->d.dsa.x, skc->d.dsa.x )
 		      )
-		   || ( skc->pubkey_algo == PUBKEY_ALGO_RSA
+		   || ( is_RSA(skc->pubkey_algo)
 			&& !mpi_cmp( req_skc->d.rsa.n, skc->d.rsa.n )
 			&& !mpi_cmp( req_skc->d.rsa.e, skc->d.rsa.e )
 			&& !mpi_cmp( req_skc->d.rsa.d, skc->d.rsa.d )
@@ -517,7 +517,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 	    if(   req_pkc->timestamp == pkc->timestamp
 	       && req_pkc->valid_days == pkc->valid_days
 	       && req_pkc->pubkey_algo == pkc->pubkey_algo
-	       && (   ( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+	       && (   ( is_ELGAMAL(pkc->pubkey_algo)
 			&& !mpi_cmp( req_pkc->d.elg.p, pkc->d.elg.p )
 			&& !mpi_cmp( req_pkc->d.elg.g, pkc->d.elg.g )
 			&& !mpi_cmp( req_pkc->d.elg.y, pkc->d.elg.y )
@@ -528,7 +528,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 			&& !mpi_cmp( req_pkc->d.dsa.g, pkc->d.dsa.g )
 			&& !mpi_cmp( req_pkc->d.dsa.y, pkc->d.dsa.y )
 		      )
-		   || ( pkc->pubkey_algo == PUBKEY_ALGO_RSA
+		   || ( is_RSA(pkc->pubkey_algo)
 			&& !mpi_cmp( req_pkc->d.rsa.n, pkc->d.rsa.n )
 			&& !mpi_cmp( req_pkc->d.rsa.e, pkc->d.rsa.e )
 		      )

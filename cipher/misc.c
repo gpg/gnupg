@@ -136,6 +136,7 @@ check_pubkey_algo2( int algo, unsigned usage )
 	return 0;
 
       case PUBKEY_ALGO_ELGAMAL:
+      case PUBKEY_ALGO_ELGAMAL_E:
 	return 0;
 
     #ifdef HAVE_RSA_CIPHER

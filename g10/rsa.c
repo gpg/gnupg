@@ -38,7 +38,7 @@ void
 g10_rsa_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek )
 {
   #ifdef HAVE_RSA_CIPHER
-    assert( enc->pubkey_algo == PUBKEY_ALGO_RSA );
+    assert( is_RSA(enc->pubkey_algo) );
 
     keyid_from_pkc( pkc, enc->keyid );
     enc->d.rsa.rsa_integer = encode_session_key( dek,
@@ -66,7 +66,7 @@ g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
  #ifdef HAVE_RSA_CIPHER
     byte *dp;
 
-    assert( sig->pubkey_algo == PUBKEY_ALGO_RSA );
+    assert( is_RSA(sig->pubkey_algo) );
     if( !digest_algo )
 	digest_algo = md_get_algo(md);
 
@@ -76,7 +76,7 @@ g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
     sig->d.rsa.rsa_integer =
-		   encode_md_value( md, mpi_get_nbits(skc->d.rsa.rsa_n));
+	   encode_md_value( md, digest_algo, mpi_get_nbits(skc->d.rsa.rsa_n));
     rsa_secret( sig->d.rsa.rsa_integer, sig->d.rsa.rsa_integer, &skc->d.rsa );
     if( opt.verbose ) {
 	char *ustr = get_user_id_string( sig->keyid );

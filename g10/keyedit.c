@@ -624,33 +624,27 @@ change_passphrase( const char *username )
     if( rc )
 	tty_printf("Can't edit this key: %s\n", g10_errstr(rc));
     else {
-	DEK *dek = m_alloc_secure( sizeof *dek );
+	DEK *dek = NULL;
 	STRING2KEY *s2k = m_alloc_secure( sizeof *s2k );
 
-	tty_printf( "Enter the new passphrase for this secret key.\n\n" );
+	tty_printf(_("Enter the new passphrase for this secret key.\n\n") );
 
 	for(;;) {
-	    dek->algo = CIPHER_ALGO_BLOWFISH;
 	    s2k->mode = 1;
 	    s2k->hash_algo = DIGEST_ALGO_RMD160;
-	    rc = make_dek_from_passphrase( dek , 2, s2k );
-	    if( rc == -1 ) {
+	    dek = passphrase_to_dek( NULL, CIPHER_ALGO_BLOWFISH, s2k, 2 );
+	    if( !dek ) {
+		tty_printf(_("passphrase not correctly repeated; try again.\n"));
+	    }
+	    else if( !dek->keylen ) {
 		rc = 0;
-		tty_printf( "You don't want a passphrase -"
-			    " this is probably a *bad* idea!\n\n");
-		answer = tty_get("Do you really want to do this? ");
+		tty_printf(_( "You don't want a passphrase -"
+			    " this is probably a *bad* idea!\n\n"));
+		answer = tty_get(_("Do you really want to do this? "));
 		tty_kill_prompt();
 		if( answer_is_yes(answer) )
 		    changed++;
 		m_free(answer);
-		break;
-	    }
-	    else if( rc == G10ERR_PASSPHRASE ) {
-		tty_printf("passphrase not correctly repeated; try again.\n");
-	    }
-	    else if( rc ) {
-		m_free(dek); dek = NULL;
-		log_error("Error getting the passphrase: %s\n", g10_errstr(rc));
 		break;
 	    }
 	    else { /* okay */

@@ -59,7 +59,7 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
 						       "unknown error" );
     }
 
-    zfx->outbufsize = 4096;
+    zfx->outbufsize = 8192;
     zfx->outbuf = m_alloc( zfx->outbufsize );
 }
 
@@ -112,7 +112,7 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
 						       "unknown error" );
     }
 
-    zfx->inbufsize = 1024;
+    zfx->inbufsize = 2048;
     zfx->inbuf = m_alloc( zfx->inbufsize );
     zs->avail_in = 0;
 }

@@ -40,6 +40,7 @@ pubkey_letter( int algo )
       case PUBKEY_ALGO_RSA:	return 'R' ;
       case PUBKEY_ALGO_RSA_E:	return 'r' ;
       case PUBKEY_ALGO_RSA_S:	return 's' ;
+      case PUBKEY_ALGO_ELGAMAL_E:
       case PUBKEY_ALGO_ELGAMAL: return 'G' ;
       case PUBKEY_ALGO_DSA:	return 'D' ;
       default: return '?';
@@ -238,7 +239,7 @@ keyid_from_skc( PKT_secret_cert *skc, u32 *keyid )
     if( !keyid )
 	keyid = dummy_keyid;
 
-    if( skc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(skc->pubkey_algo) ) {
 	const byte *dp;
 	MD_HANDLE md;
 	md = elg_fingerprint_md_skc(skc);
@@ -261,7 +262,7 @@ keyid_from_skc( PKT_secret_cert *skc, u32 *keyid )
 	lowbits = keyid[1];
 	md_close(md);
     }
-    else if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( is_RSA(skc->pubkey_algo) ) {
 	lowbits = mpi_get_keyid( skc->d.rsa.n, keyid );
     }
     else {
@@ -284,7 +285,7 @@ keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid )
     if( !keyid )
 	keyid = dummy_keyid;
 
-    if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(pkc->pubkey_algo) ) {
 	const byte *dp;
 	MD_HANDLE md;
 	if( pkc->version < 4 ) {
@@ -310,7 +311,7 @@ keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid )
 	lowbits = keyid[1];
 	md_close(md);
     }
-    else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( is_RSA(pkc->pubkey_algo) ) {
 	lowbits = mpi_get_keyid( pkc->d.rsa.n, keyid );
     }
     else {
@@ -337,13 +338,13 @@ keyid_from_sig( PKT_signature *sig, u32 *keyid )
 unsigned
 nbits_from_pkc( PKT_public_cert *pkc )
 {
-    if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(pkc->pubkey_algo) ) {
 	return mpi_get_nbits( pkc->d.elg.p );
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
 	return mpi_get_nbits( pkc->d.dsa.p );
     }
-    else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( is_RSA(pkc->pubkey_algo) ) {
 	return mpi_get_nbits( pkc->d.rsa.n );
     }
     else
@@ -356,13 +357,13 @@ nbits_from_pkc( PKT_public_cert *pkc )
 unsigned
 nbits_from_skc( PKT_secret_cert *skc )
 {
-    if( skc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(skc->pubkey_algo) ) {
 	return mpi_get_nbits( skc->d.elg.p );
     }
     else if( skc->pubkey_algo == PUBKEY_ALGO_DSA ) {
 	return mpi_get_nbits( skc->d.dsa.p );
     }
-    else if( skc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( is_RSA(skc->pubkey_algo) ) {
 	return mpi_get_nbits( skc->d.rsa.n );
     }
     else
@@ -424,7 +425,7 @@ fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len )
 
     pkc.pubkey_algo = skc->pubkey_algo;
     pkc.version     = skc->version;
-    if( pkc.pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(pkc.pubkey_algo) ) {
 	pkc.timestamp = skc->timestamp;
 	pkc.valid_days = skc->valid_days;
 	pkc.pubkey_algo = skc->pubkey_algo;
@@ -441,7 +442,7 @@ fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len )
 	pkc.d.dsa.g = skc->d.dsa.g;
 	pkc.d.dsa.y = skc->d.dsa.y;
     }
-    else if( pkc.pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( is_RSA(pkc.pubkey_algo) ) {
 	pkc.d.rsa.n = skc->d.rsa.n;
 	pkc.d.rsa.e = skc->d.rsa.e;
     }
@@ -461,7 +462,7 @@ fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
     size_t len;
     unsigned n;
 
-    if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+    if( is_ELGAMAL(pkc->pubkey_algo) ) {
 	MD_HANDLE md;
 	if( pkc->version < 4 ) {
 	    md = v3_elg_fingerprint_md(pkc);
@@ -485,7 +486,7 @@ fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len )
 	memcpy(array, dp, 20 );
 	md_close(md);
     }
-    else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+    else if( is_RSA(pkc->pubkey_algo) ) {
 	MD_HANDLE md;
 
 	md = md_open( DIGEST_ALGO_MD5, 0);

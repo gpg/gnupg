@@ -51,13 +51,29 @@ get_passphrase_fd()
 /****************
  * Get a passphrase for the secret key with KEYID, display TEXT
  * if the user needs to enter the passphrase.
- * Returns: m_alloced md5 passphrase hash; caller must free
+ * mode 0 = standard, 2 = create new passphrase
+ * Returns: a DEK with a session key; caller must free
+ *	    or NULL if the passphrase was not correctly repeated.
+ *	    (only for mode 2)
+ *	    a dek->keylen of 0 means: no passphrase entered.
+ *	    (only for mode 2)
  */
 DEK *
-get_passphrase_hash( u32 *keyid, int cipher_algo, STRING2KEY *s2k )
+passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 {
     char *pw;
     DEK *dek;
+    STRING2KEY help_s2k;
+
+    if( !s2k ) {
+	s2k = &help_s2k;
+	s2k->mode = 0;
+	/* this should be MD5 if cipher is IDEA, but because we do
+	 * not have IDEA, we use the default one, the the user
+	 * can select it from the commandline
+	 */
+	s2k->hash_algo = opt.def_digest_algo;
+    }
 
     if( keyid && !opt.batch ) {
 	char *ustr;
@@ -95,44 +111,25 @@ get_passphrase_hash( u32 *keyid, int cipher_algo, STRING2KEY *s2k )
     else {
 	pw = tty_get_hidden("Enter pass phrase: " );
 	tty_kill_prompt();
+	if( mode == 2 ) {
+	    char *pw2 = tty_get_hidden("Repeat pass phrase: " );
+	    tty_kill_prompt();
+	    if( strcmp(pw, pw2) ) {
+		m_free(pw2);
+		m_free(pw);
+		return NULL;
+	    }
+	    m_free(pw2);
+	}
     }
     dek = m_alloc_secure( sizeof *dek );
     dek->algo = cipher_algo;
-    hash_passphrase( dek, pw, s2k, 0 );
-    m_free(pw); /* is allocated in secure memory, so it will be burned */
-    return dek;
-}
-
-
-/****************
- * This function is used to construct a DEK from a user input.
- * It uses the default CIPHER.
- * Returns: 0 = okay, -1 No passphrase entered, > 0 error
- */
-int
-make_dek_from_passphrase( DEK *dek, int mode, STRING2KEY *s2k )
-{
-    char *pw, *pw2;
-    int rc=0;
-
-    pw = tty_get_hidden("Enter pass phrase: " );
-    tty_kill_prompt();
-    if( mode == 2 ) {
-	pw2 = tty_get_hidden("Repeat pass phrase: " );
-	tty_kill_prompt();
-	if( strcmp(pw, pw2) ) {
-	    m_free(pw2);
-	    m_free(pw);
-	    return G10ERR_PASSPHRASE;
-	}
-	m_free(pw2);
-    }
-    if( !*pw )
-	rc = -1;
+    if( !*pw && mode == 2 )
+	dek->keylen = 0;
     else
 	hash_passphrase( dek, pw, s2k, mode==2 );
-    m_free(pw);
-    return rc;
+    m_free(pw); /* is allocated in secure memory, so it will be burned */
+    return dek;
 }
 
 

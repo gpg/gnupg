@@ -46,11 +46,11 @@ complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
 
     if( (rc=check_secret_key( skc )) )
 	;
-    else if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+    else if( is_ELGAMAL(sig->pubkey_algo) )
 	g10_elg_sign( skc, sig, md, 0 );
     else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
 	g10_dsa_sign( skc, sig, md, 0 );
-    else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
+    else if( is_RSA(sig->pubkey_algo) )
 	g10_rsa_sign( skc, sig, md, 0 );
     else
 	BUG();
@@ -281,11 +281,11 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
 	md_final( md );
 
-	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	if( is_ELGAMAL(sig->pubkey_algo) )
 	    g10_elg_sign( skc, sig, md, opt.def_digest_algo );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
 	    g10_dsa_sign( skc, sig, md, opt.def_digest_algo );
-	else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
+	else if( is_RSA(sig->pubkey_algo) )
 	    g10_rsa_sign( skc, sig, md, opt.def_digest_algo );
 	else
 	    BUG();
@@ -446,11 +446,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	}
 	md_final( md );
 
-	if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	if( is_ELGAMAL(sig->pubkey_algo) )
 	    g10_elg_sign( skc, sig, md, opt.def_digest_algo );
 	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
 	    g10_dsa_sign( skc, sig, md, opt.def_digest_algo );
-	else if( sig->pubkey_algo == PUBKEY_ALGO_RSA )
+	else if( is_RSA(sig->pubkey_algo) )
 	    g10_rsa_sign( skc, sig, md, opt.def_digest_algo );
 	else
 	    BUG();

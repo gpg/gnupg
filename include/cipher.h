@@ -50,9 +50,9 @@
 #define PUBKEY_ALGO_RSA        1
 #define PUBKEY_ALGO_RSA_E      2     /* RSA encrypt only */
 #define PUBKEY_ALGO_RSA_S      3     /* RSA sign only */
-#define PUBKEY_ALGO_ELGAMAL   16
+#define PUBKEY_ALGO_ELGAMAL_E 16     /* encrypt only ElGamal (but not vor v3)*/
 #define PUBKEY_ALGO_DSA       17
-/*#define PUBKEY_ALGO_ELGAMAL	20  sign and encrypt elgamal */
+#define PUBKEY_ALGO_ELGAMAL   20     /* sign and encrypt elgamal */
 
 #define DIGEST_ALGO_MD5       1
 #define DIGEST_ALGO_SHA1      2
@@ -60,6 +60,10 @@
 #ifdef WITH_TIGER_HASH
 #define DIGEST_ALGO_TIGER     101
 #endif
+
+#define is_RSA(a)     ((a)==PUBKEY_ALGO_RSA || (a)==PUBKEY_ALGO_RSA_E \
+		       || (a)==PUBKEY_ALGO_RSA_S )
+#define is_ELGAMAL(a) ((a)==PUBKEY_ALGO_ELGAMAL || (a)==PUBKEY_ALGO_ELGAMAL_E)
 
 typedef struct {
     int algo;

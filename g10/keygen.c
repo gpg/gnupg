@@ -527,14 +527,15 @@ generate_keypair()
 
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
 
-    dek = m_alloc_secure( sizeof *dek );
     s2k = m_alloc_secure( sizeof *s2k );
     for(;;) {
-	dek->algo = CIPHER_ALGO_BLOWFISH;
 	s2k->mode = 1;
 	s2k->hash_algo = DIGEST_ALGO_RMD160;
-	rc = make_dek_from_passphrase( dek , 2, s2k );
-	if( rc == -1 ) {
+	dek = passphrase_to_dek( NULL, CIPHER_ALGO_BLOWFISH, s2k, 2 );
+	if( !dek ) {
+	    tty_printf(_("passphrase not correctly repeated; try again.\n"));
+	}
+	else if( !dek->keylen ) {
 	    m_free(dek); dek = NULL;
 	    m_free(s2k); s2k = NULL;
 	    tty_printf(_(
@@ -542,16 +543,6 @@ generate_keypair()
 	    "I will do it anyway.  You can change your passphrase at any time,\n"
 	    "using this program with the option \"--change-passphrase\"\n\n"));
 	    break;
-	}
-	else if( rc == G10ERR_PASSPHRASE ) {
-	    tty_printf(_("passphrase not correctly repeated; try again.\n"));
-	}
-	else if( rc ) {
-	    m_free(dek); dek = NULL;
-	    m_free(s2k); s2k = NULL;
-	    m_free(uid);
-	    log_error("Error getting the passphrase: %s\n", g10_errstr(rc) );
-	    return;
 	}
 	else
 	    break; /* okay */

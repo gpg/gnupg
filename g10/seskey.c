@@ -144,9 +144,9 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
 
 
 MPI
-encode_md_value( MD_HANDLE md, unsigned nbits )
+encode_md_value( MD_HANDLE md, int hash_algo, unsigned nbits )
 {
-    int algo = md_get_algo(md);
+    int algo = hash_algo? hash_algo : md_get_algo(md);
     const byte *asn;
     size_t asnlen, mdlen;
 

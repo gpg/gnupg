@@ -728,15 +728,38 @@ iobuf_read(IOBUF a, byte *buf, unsigned buflen )
 {
     int c, n;
 
-    for(n=0 ; n < buflen; n++, buf++ ) {
-	if( (c = iobuf_readbyte(a)) == -1 ) {
-	    if( !n )
-		return -1; /* eof */
-	    break;
+    if( a->unget.buf || a->nlimit ) {
+	/* handle special cases */
+	for(n=0 ; n < buflen; n++, buf++ ) {
+	    if( (c = iobuf_readbyte(a)) == -1 ) {
+		if( !n )
+		    return -1; /* eof */
+		break;
+	    }
+	    else
+		*buf = c;
 	}
-	else
-	    *buf = c;
+	return n;
     }
+
+    if( a->filter_eof ) {
+	if( DBG_IOBUF )
+	    log_debug("iobuf-%d.%d: filter eof in iobuf_read\n", a->no, a->subno );
+	return -1;
+    }
+    n = 0;
+    do {
+	for( ; n < buflen && a->d.start < a->d.len; n++ )
+	    *buf++ = a->d.buf[a->d.start++];
+	if( n < buflen ) {
+	    if( (c=underflow(a)) == -1 ) {
+		a->nbytes += n;
+		return n? n : -1/*EOF*/;
+	    }
+	    *buf++ = c; n++;
+	}
+    } while( n < buflen );
+    a->nbytes += n;
     return n;
 }
 
@@ -782,11 +805,17 @@ iobuf_writebyte(IOBUF a, unsigned c)
 int
 iobuf_write(IOBUF a, byte *buf, unsigned buflen )
 {
-    for( ; buflen; buflen--, buf++ )
-	if( iobuf_writebyte(a, *buf) )
-	    return -1;
+    do {
+	for( ; buflen && a->d.len < a->d.size; buflen--, buf++ )
+	    a->d.buf[a->d.len++] = *buf;
+	if( buflen ) {
+	    if( iobuf_flush(a) )
+		return -1;
+	}
+    } while( buflen );
     return 0;
 }
+
 
 int
 iobuf_writestr(IOBUF a, const char *buf )
