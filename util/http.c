@@ -150,8 +150,7 @@ void
 http_start_data( HTTP_HD hd )
 {
     if( !hd->in_data ) {
-	iobuf_put( hd->fp_write, '\r' );
-	iobuf_put( hd->fp_write, '\n' );
+        write_server (hd->sock, "\r\n", 2);
 	hd->in_data = 1;
     }
 }
@@ -173,7 +172,8 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
     iobuf_ioctl (hd->fp_write, 1, 1, NULL); /* keep the socket open */
     iobuf_close (hd->fp_write);
     hd->fp_write = NULL;
-    shutdown( hd->sock, 1 );
+    if ( !(hd->flags & HTTP_FLAG_NO_SHUTDOWN) )
+        shutdown( hd->sock, 1 );
     hd->in_data = 0;
 
     hd->fp_read = iobuf_sockopen( hd->sock , "r" );

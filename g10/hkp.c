@@ -65,8 +65,19 @@ hkp_ask_import( u32 *keyid )
      * down to the import function.  Marc told that there is such a
      * binary mode ... how?
      */
-    sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX",
+    if ( !strncmp (opt.keyserver_name, "x-broken-hkp://", 15) ) {
+        sprintf( request, "x-hkp://%s/pks/lookup?op=get&search=0x%08lX",
+			opt.keyserver_name+15, (ulong)keyid[1] );
+        hflags |= HTTP_FLAG_NO_SHUTDOWN;
+    }
+    else if ( !strncmp (opt.keyserver_name, "x-hkp://", 8) ) {
+        sprintf( request, "%s/pks/lookup?op=get&search=0x%08lX",
 			opt.keyserver_name, (ulong)keyid[1] );
+    }
+    else {
+        sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX",
+			opt.keyserver_name, (ulong)keyid[1] );
+    }
     rc = http_open_document( &hd, request, hflags );
     if( rc ) {
 	log_info(_("can't get key from keyserver: %s\n"),
@@ -141,7 +152,16 @@ hkp_export( STRLIST users )
     iobuf_flush_temp( temp );
 
     request = m_alloc( strlen( opt.keyserver_name ) + 100 );
-    sprintf( request, "x-hkp://%s:11371/pks/add", opt.keyserver_name );
+    if ( !strncmp (opt.keyserver_name, "x-broken-hkp://", 15) ) {
+        sprintf( request, "x-hkp://%s/pks/add", opt.keyserver_name+15 );
+        hflags |= HTTP_FLAG_NO_SHUTDOWN;
+    }
+    else if ( !strncmp (opt.keyserver_name, "x-hkp://", 8) ) {
+        sprintf( request, "%s/pks/add", opt.keyserver_name );
+    }
+    else {
+        sprintf( request, "x-hkp://%s:11371/pks/add", opt.keyserver_name );
+    }
     rc = http_open( &hd, HTTP_REQ_POST, request , hflags );
     if( rc ) {
 	log_error(_("can't connect to `%s': %s\n"),

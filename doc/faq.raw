@@ -147,9 +147,6 @@ you could search in the mailing list archive.
     load-extension idea 
     [H /pre]
 
-    The extension is not available for the Windows version of GnuPG.
-
-
 <S> USAGE
 
 <Q> What is the recommended key size?

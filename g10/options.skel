@@ -98,9 +98,22 @@ lock-once
 # import the key from that server (server do syncronize with each
 # other and DNS Round-Robin may give you a random server each time).
 # Use "host -l pgp.net | grep www" to figure out a keyserver.
+#
+# If you do not want to use the default port 11371, you can give the
+# name of the keyserver like this: 
+#   x-hkp://keyserver.example.net:22742
+# If you have problems connecting through a buggy proxy, you can use this:
+#   x-broken-hkp://keyserver.example.net:11371
+# But first you should make sure that you have read the man page regarding
+# proxies (--honor-http-proxy)
+# Most users just set the name of the preferred keyserver.
 #keyserver wwwkeys.nl.pgp.net
 
 # The environment variable http_proxy is only used when the
 # this option is set.
 
 honor-http-proxy
+
+
+
+

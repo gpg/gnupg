@@ -32,3 +32,15 @@ rndw32 tested on:
 
 
   
+tried to compile GnuPG on AIX 4.3 on a power CPU based machine. It
+doesn't work out of the box but i found a way to do so:
+
+ PowerPC based machines:
+ CFLAGS="-g -O2 -mcpu=powerpc" ./configure --disable-asm --disable-dynload
++--enable-static-rnd=egd
+
+ Power1 and Power2 machines:
+ CFLAGS="-g -O2 -mcpu=power" ./configure --disable-asm --disable-dynload
++--enable-static-rnd=egd
+
+

@@ -483,8 +483,8 @@ do_we_trust( PKT_public_key *pk, int *trustlevel )
 	if( opt.verbose )
 	    log_info("No trust check due to --always-trust option\n");
 	/* The problem with this, is that EXPIRE can't be checked as
-	 * this needs to insert a ne key into the trustdb first and
-	 * we don't want that */
+	 * this needs to insert a new key into the trustdb first and
+	 * we don't want that - IS this still true? */
 	return 1;
     }
 

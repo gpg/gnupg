@@ -1,5 +1,8 @@
 2001-04-20  Werner Koch  <wk@gnupg.org>
 
+	* faq.raw (Maintained-by): Removed note that load-extension is not
+	available under Windoze.
+
 	* gpg.sgml: Add new --charset UTF-8.
 
 2001-04-19  Werner Koch  <wk@gnupg.org>

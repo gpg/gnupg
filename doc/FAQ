@@ -205,9 +205,6 @@ you could search in the mailing list archive.
     the following line to your ~/.gnupg/options: 
     load-extension idea 
 
-    The extension is not available for the Windows version of GnuPG.
-
-
 4. USAGE
 
 4.1) What is the recommended key size?

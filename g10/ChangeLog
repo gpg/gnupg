@@ -1,3 +1,10 @@
+2001-04-23  Werner Koch  <wk@gnupg.org>
+
+	* hkp.c (hkp_ask_import): Allow to specify a port number for the 
+	keyserver.  Add a kudge to set the no_shutdown flag.
+	(hkp_export): Ditto.
+	* options.skel: Document the changes 
+
 2001-04-20  Werner Koch  <wk@gnupg.org>
 
 	* options.skel: Add some more comments.

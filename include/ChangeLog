@@ -1,3 +1,7 @@
+2001-04-23  Werner Koch  <wk@gnupg.org>
+
+	* http.h: New flag HTTP_FLAG_NO_SHUTDOWN.
+
 2001-04-13  Werner Koch  <wk@gnupg.org>
 
 	* iobuf.h: Removed iobuf_fopen.

@@ -2693,7 +2693,7 @@ msgstr "Deneyimsel algoritmalar kullanýlmayacaktý!\n"
 
 #: g10/misc.c:238
 #, fuzzy
-msgid "this cipher algorithm is deprecated; please use a more standard one!x\n"
+msgid "this cipher algorithm is deprecated; please use a more standard one!\n"
 msgstr ""
 "bu cipher algoritmasýnýn deðeri düþük; lütfem daha standard birini kullan!\n"
 

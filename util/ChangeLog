@@ -1,4 +1,13 @@
+2001-04-23  Werner Koch  <wk@gnupg.org>
+
+	* http.c (http_wait_response): Implement new flag to inhibit the
+	TCP shutdown.
+
 2001-04-20  Werner Koch  <wk@gnupg.org>
+
+	* http.c (http_start_data): Use write_server and not the iobuf
+	stuff.  I wonder why we are at all using write_server - shouldn't
+	it be handled by iobuf?
 
 	* strgutil.c (set_native_charset): Allow utf-8 by introducing the
 	new no_translation variable.

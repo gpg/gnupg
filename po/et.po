@@ -2678,7 +2678,7 @@ msgstr "Eksperimentaalseid algoritme ei peaks kasutama!\n"
 
 #: g10/misc.c:238
 #, fuzzy
-msgid "this cipher algorithm is deprecated; please use a more standard one!x\n"
+msgid "this cipher algorithm is deprecated; please use a more standard one!\n"
 msgstr ""
 "see ¨iffri algoritm ei ole soovitatav; kasutage palun mõnd standardsemat!\n"
 

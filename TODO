@@ -2,15 +2,14 @@
   * Check that no secret temporary results are stored in the result parameter
     of the mpi functions.  We have already done this for mpi-mul.c 
 
-  * Dlopen does not yet work under W32.
-
   * check whether we can remove all the expire stuff in trustdb because this
     is now done in getkey.  
 
   * Can we output things like the preferences?      
 
   * We need another special packet at the end of a clearsign message to mark
-    it's end and allow for multiple signature for one message.
+    it's end and allow for multiple signature for one message.  And
+    add a real grammar to the code in mainproc.c
 
   * option to set the signature expiration time for key sigs.
 
@@ -43,6 +42,8 @@
 
   * Add an is_valid flag to each user ID.
 
+  * Do notcreate a secring.pgpif it is not needed; I have fixed this
+    sometime ago but it has later reappeared.
 
 Scheduled for 1.1
 -----------------
