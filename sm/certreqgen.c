@@ -667,6 +667,7 @@ gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
+  gpgsm_status (ctrl, STATUS_KEY_CREATED, "P");
   log_info ("certificate request created\n");
 
  leave:
