@@ -335,7 +335,8 @@ Create an alternate user id.</para></listitem></varlistentry>
     <varlistentry>
     <term>addphoto</term>
     <listitem><para>
-Create a photographic user id.</para></listitem></varlistentry>
+Create a photographic user id.  This will prompt for a JPEG file that
+will be embedded into the user ID.</para></listitem></varlistentry>
     <varlistentry>
     <term>deluid</term>
     <listitem><para>
@@ -890,10 +891,12 @@ Prompt before overwriting any files.
 
 <varlistentry>
 <term>--batch</term>
+<term>--no-batch</term>
 <listitem><para>
-Use batch mode.  Never ask, do not allow interactive
-commands.
+Use batch mode.  Never ask, do not allow interactive commands.
+--no-batch disables this option.
 </para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--no-tty</term>
@@ -901,14 +904,6 @@ commands.
 Make sure that the TTY (terminal) is never used for any output.
 This option is needed in some cases because GnuPG sometimes prints
 warnings to the TTY if --batch is used.
-</para></listitem></varlistentry>
-
-
-<varlistentry>
-<term>--no-batch</term>
-<listitem><para>
-Disable batch mode.  This may be of use if --batch
-is enabled from an options file.
 </para></listitem></varlistentry>
 
 
@@ -1169,17 +1164,12 @@ Include designated revoker information that was marked as
 
 <varlistentry>
 <term>--show-photos</term>
+<term>--no-show-photos</term>
 <listitem><para>
 Causes --list-keys, --list-sigs, --list-public-keys,
 --list-secret-keys, and verifying a signature to also display the
-photo ID attached to the key, if any.
-See also --photo-viewer.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-show-photos</term>
-<listitem><para>
-Resets the --show-photos flag.
+photo ID attached to the key, if any.  See also --photo-viewer.
+--no-show-photos disables this option.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1360,18 +1350,15 @@ delivered to the file descriptor.
 
 <varlistentry>
 <term>--sk-comments</term>
+<term>--no-sk-comments</term>
 <listitem><para>
 Include secret key comment packets when exporting secret keys.  This
 is a GnuPG extension to the OpenPGP standard, and is off by default.
 Please note that this has nothing to do with the comments in clear
-text signatures or armor headers.
+text signatures or armor headers.  --no-sk-comments disables this
+option.
 </para></listitem></varlistentry>
 
-<varlistentry>
-<term>--no-sk-comments</term>
-<listitem><para>
-Resets the --sk-comments option.
-</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--no-comment</term>
@@ -1399,18 +1386,11 @@ default comment string anymore.
 
 
 <varlistentry>
-<term>--no-version</term>
-<listitem><para>
-Omit the version string in clear text signatures.
-</para></listitem></varlistentry>
-
-
-<varlistentry>
 <term>--emit-version</term>
+<term>--no-emit-version</term>
 <listitem><para>
-Force to write the version string in clear text
-signatures.  Use this to overwrite a previous
---no-version from a config file.
+Force inclusion of the version string in ASCII armored output.
+--no-emit-version disables this option.
 </para></listitem></varlistentry>
 
 
@@ -1446,16 +1426,13 @@ making a key signature (certification).
 
 <varlistentry>
 <term>--show-notation</term>
+<term>--no-show-notation</term>
 <listitem><para>
 Show signature notations in the --list-sigs or --check-sigs listings
 as well as when verifying a signature with a notation in it.
+--no-show-notation disables this option.
 </para></listitem></varlistentry>
 
-<varlistentry>
-<term>--no-show-notation</term>
-<listitem><para>
-Do not show signature notations.
-</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--sig-policy-url &ParmString;</term>
@@ -1475,15 +1452,11 @@ The same %-expandos used for notation data are available here as well.
 
 <varlistentry>
 <term>--show-policy-url</term>
+<term>--no-show-policy-url</term>
 <listitem><para>
 Show policy URLs in the --list-sigs or --check-sigs listings as well
 as when verifying a signature with a policy URL in it.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-show-policy-url</term>
-<listitem><para>
-Do not show policy URLs.
+--no-show-policy-url disables this option.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1495,18 +1468,14 @@ messages.
 
 <varlistentry>
 <term>--for-your-eyes-only</term>
+<term>--no-for-your-eyes-only</term>
 <listitem><para>
 Set the `for your eyes only' flag in the message.  This causes GnuPG
 to refuse to save the file unless the --output option is given, and
 PGP to use the "secure viewer" with a Tempest-resistant font to
 display the message.  This option overrides --set-filename.
-</para></listitem></varlistentry
-
-<varlistentry>
-<term>--no-for-your-eyes-only</term>
-<listitem><para>
-Resets the --for-your-eyes-only flag.
-</para></listitem></varlistentry
+--no-for-your-eyes-only disables this option.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--use-embedded-filename</term>
@@ -1667,16 +1636,12 @@ interaction, this performance penalty does not matter in most settings.
 
 <varlistentry>
 <term>--auto-check-trustdb</term>
-<listitem><para>
-If GnuPG feels that its information about the Web-of-Trust has to be
-updated, it automatically runs the --check-trustdb command 
-internally.  This may be a time consuming process.
-</para></listitem></varlistentry>
-
-<varlistentry>
 <term>--no-auto-check-trustdb</term>
 <listitem><para>
-Resets the --auto-check-trustdb option.
+If GnuPG feels that its information about the Web-of-Trust has to be
+updated, it automatically runs the --check-trustdb command internally.
+This may be a time consuming process.  --no-auto-check-trustdb
+disables this option.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1757,6 +1722,7 @@ Try to be more RFC1991 (PGP 2.x) compliant.
 
 <varlistentry>
 <term>--pgp2</term>
+<term>--no-pgp2</term>
 <listitem><para>
 Set up all options to be as PGP 2.x compliant as possible, and warn if
 an action is taken (e.g. encrypting to a non-RSA key) that will create
@@ -1768,17 +1734,12 @@ This option implies `--rfc1991 --no-openpgp --disable-mdc
 --no-force-v4-certs --no-comment --escape-from-lines --force-v3-sigs
 --no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
 --digest-algo MD5 --compress-algo 1'.  It also disables --textmode
-when encrypting.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-pgp2</term>
-<listitem><para>
-Resets the --pgp2 option.
+when encrypting.  --no-pgp2 disables this option.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--pgp6</term>
+<term>--no-pgp6</term>
 <listitem><para>
 Set up all options to be as PGP 6 compliant as possible.  This
 restricts you to the ciphers IDEA (if the IDEA plugin is installed),
@@ -1788,43 +1749,30 @@ compression algorithms none and ZIP.  This also disables
 does not understand signatures made by signing subkeys.
 </para><para>
 This option implies `--disable-mdc --no-comment --escape-from-lines
---force-v3-sigs --no-ask-sig-expire --compress-algo 1'
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-pgp6</term>
-<listitem><para>
-Resets the --pgp6 option.
+--force-v3-sigs --no-ask-sig-expire --compress-algo 1' --no-pgp6
+disables this option.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--pgp7</term>
+<term>--no-pgp7</term>
 <listitem><para>
 Set up all options to be as PGP 7 compliant as possible.  This is
 identical to --pgp6 except that MDCs are not disabled, and the list of
 allowable ciphers is expanded to add AES128, AES192, AES256, and
-TWOFISH.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-pgp7</term>
-<listitem><para>
-Resets the --pgp7 option.
+TWOFISH.  --no-pgp7 disables this option.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--pgp8</term>
+<term>--no-pgp8</term>
 <listitem><para>
 Set up all options to be as PGP 8 compliant as possible.  PGP 8 is a
 lot closer to the OpenPGP standard than previous versions of PGP, so
 all this does is disable --throw-keyid and set --escape-from-lines and
---compress-algo 1.  The allowed algorithms list is the same as --pgp7.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-pgp8</term>
-<listitem><para>
-Resets the --pgp8 option.
+--compress-algo 1.  The allowed algorithms list is the same as --pgp7
+with the addition of the SHA-256 digest algorithm.  --no-pgp8 disables
+this option.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1839,31 +1787,23 @@ this option to reset all previous options like --rfc1991,
 
 <varlistentry>
 <term>--force-v3-sigs</term>
+<term>--no-force-v3-sigs</term>
 <listitem><para>
 OpenPGP states that an implementation should generate v4 signatures
 but PGP versions 5 and higher only recognize v4 signatures on key
 material.  This option forces v3 signatures for signatures on data.
 Note that this option overrides --ask-sig-expire, as v3 signatures
-cannot have expiration dates.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-force-v3-sigs</term>
-<listitem><para>
-Reset the --force-v3-sigs option.
+cannot have expiration dates.  --no-force-v3-sigs disables this
+option.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--force-v4-certs</term>
+<term>--no-force-v4-certs</term>
 <listitem><para>
 Always use v4 key signatures even on v3 keys.  This option also
 changes the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-force-v4-certs</term>
-<listitem><para>
-Reset the --force-v4-certs option.
+--no-force-v4-certs disables this option.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1871,8 +1811,8 @@ Reset the --force-v4-certs option.
 <listitem><para>
 Force the use of encryption with a modification detection code.  This
 is always used with the newer ciphers (those with a blocksize greater
-than 64 bits), or if the recipient key has one of those ciphers as a
-preference.
+than 64 bits), or if all of the recipient keys indicate MDC support in
+their feature flags.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1885,16 +1825,11 @@ message modification attack.
 
 <varlistentry>
 <term>--allow-non-selfsigned-uid</term>
+<term>--no-allow-non-selfsigned-uid</term>
 <listitem><para>
 Allow the import and use of keys with user IDs which are not
 self-signed.  This is not recommended, as a non self-signed user ID is
-trivial to forge.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-allow-non-selfsigned-uid</term>
-<listitem><para>
-Reset the --allow-non-selfsigned-uid option.
+trivial to forge.  --no-allow-non-selfsigned-uid disables.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1904,7 +1839,6 @@ Disable all checks on the form of the user ID while generating a new
 one.  This option should only be used in very special environments as
 it does not ensure the de-facto standard format of user IDs.
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--ignore-time-conflict</term>
@@ -1952,7 +1886,6 @@ and do not release the lock until the process
 terminates.
 </para></listitem></varlistentry>
 
-
 <varlistentry>
 <term>--lock-multiple</term>
 <listitem><para>
@@ -1980,19 +1913,16 @@ are not desired.  This option can be used to achieve that with the cost of
 slower random generation.
 </para></listitem></varlistentry>
 
-
 <varlistentry>
 <term>--no-verbose</term>
 <listitem><para>
 Reset verbose level to 0.
 </para></listitem></varlistentry>
 
-
 <varlistentry>
 <term>--no-greeting</term>
 <listitem><para>
-Suppress the initial copyright message but do not
-enter batch mode.
+Suppress the initial copyright message.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2135,32 +2065,25 @@ handing out the secret key.
 
 <varlistentry>
 <term>--ask-sig-expire</term>
+<term>--no-ask-sig-expire</term>
 <listitem><para>
 When making a data signature, prompt for an expiration time.  If this
 option is not specified, the expiration time is "never".
-</para></listitem></varlistentry
-
-<varlistentry>
-<term>--no-ask-sig-expire</term>
-<listitem><para>
-Resets the --ask-sig-expire option.
-</para></listitem></varlistentry
+--no-ask-sig-expire disables this option.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--ask-cert-expire</term>
+<term>--no-ask-cert-expire</term>
 <listitem><para>
 When making a key signature, prompt for an expiration time.  If this
 option is not specified, the expiration time is "never".
-</para></listitem></varlistentry
-
-<varlistentry>
-<term>--no-ask-cert-expire</term>
-<listitem><para>
-Resets the --ask-cert-expire option.
-</para></listitem></varlistentry
+--no-ask-cert-expire disables this option.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--expert</term>
+<term>--no-expert</term>
 <listitem><para>
 Allow the user to do certain nonsensical or "silly" things like
 signing an expired or revoked key, or certain potentially incompatible
@@ -2168,14 +2091,8 @@ things like generating deprecated key types.  This also disables
 certain warning messages about potentially incompatible actions.  As
 the name implies, this option is for experts only.  If you don't fully
 understand the implications of what it allows you to do, leave this
-off.
-</para></listitem></varlistentry
-
-<varlistentry>
-<term>--no-expert</term>
-<listitem><para>
-Resets the --expert option.
-</para></listitem></varlistentry
+off.  --no-expert disables this option.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--merge-only</term>

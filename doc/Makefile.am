@@ -67,16 +67,24 @@ else
 	echo "No man page due to missing docbook-to-man" >>$@
 endif
 
-
 FAQ : faq.raw
+if WORKING_FAQPROG
 	$(FAQPROG) -f $<  $@ || $(FAQPROG) -f $< $@
+else
+	: Warning: missing faqprog.pl, cannot make $@
+	echo "No $@ due to missing faqprog.pl" > $@
+	echo "See ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl" >> $@
+endif
 
 faq.html : faq.raw
+if WORKING_FAQPROG
 	$(FAQPROG) -h -f $< $@ 2>&1 || $(FAQPROG) -h -f $< $@
+else
+	: Warning: missing faqprog.pl, cannot make $@
+	echo "No $@ due to missing faqprog.pl" > $@
+	echo "See ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl" >> $@
+endif
 
 dist-hook:
 	@if test "`wc -c < gpg.1`" -lt 200; then \
 	    echo 'ERROR: dummy man page'; false; fi
-
-
-
