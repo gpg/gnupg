@@ -75,12 +75,17 @@
 
 
 
-/* Basic types.  */
+/*
+ * Basic types.
+ */
 
+/* Type for a request handler.  */
 typedef gpg_error_t (*ssh_request_handler_t) (ctrl_t ctrl,
 					      estream_t request,
 					      estream_t response);
 
+/* Type, which is used for associating request handlers with the
+   appropriate request IDs.  */
 typedef struct ssh_request_spec
 {
   unsigned char type;
@@ -88,22 +93,51 @@ typedef struct ssh_request_spec
   const char *identifier;
 } ssh_request_spec_t;
 
+/* Type for "key modifier functions", which are necessary since
+   OpenSSH and GnuPG treat key material slightly different.  A key
+   modifier is called right after a new key identity has been received
+   in order to "sanitize" the material.  */
 typedef gpg_error_t (*ssh_key_modifier_t) (const char *elems,
                                            gcry_mpi_t *mpis);
+
+/* The encoding of a generated signature is dependent on the
+   algorithm; therefore algorithm specific signature encoding
+   functions are necessary.  */
 typedef gpg_error_t (*ssh_signature_encoder_t) (estream_t signature_blob,
 						gcry_mpi_t *mpis);
 
+/* Type, which is used for boundling all the algorithm specific
+   information together in a single object.  */
 typedef struct ssh_key_type_spec
 {
+  /* Algorithm identifier as used by OpenSSH.  */
   const char *ssh_identifier;
+
+  /* Algorithm identifier as used by GnuPG.  */
   const char *identifier;
+
+  /* List of MPI names for secret keys; order matches the one of the
+     agent protocol.  */
   const char *elems_key_secret;
+
+  /* List of MPI names for public keys; order matches the one of the
+     agent protocol.  */
   const char *elems_key_public;
-  const char *elems_secret;
+
+  /* List of MPI names for signature data.  */
   const char *elems_signature;
+
+  /* List of MPI names for secret keys; order matches the one, which
+     is required by gpg-agent's key access layer.  */
   const char *elems_sexp_order;
+
+  /* Key modifier function.  */
   ssh_key_modifier_t key_modifier;
+
+  /* Signature encoder function.  */
   ssh_signature_encoder_t signature_encoder;
+
+  /* Misc flags.  */
   unsigned int flags;
 } ssh_key_type_spec_t;
 
@@ -166,12 +200,12 @@ static ssh_request_spec_t request_specs[] =
 static ssh_key_type_spec_t ssh_key_types[] =
   {
     {
-      "ssh-rsa", "rsa", "nedupq", "en",   "dupq", "s",  "nedpqu",
+      "ssh-rsa", "rsa", "nedupq", "en",   "s",  "nedpqu",
       ssh_key_modifier_rsa, ssh_signature_encoder_rsa,
       SPEC_FLAG_USE_PKCS1V2
     },
     {
-      "ssh-dss", "dsa", "pqgyx",  "pqgy", "x",    "rs", "pqgyx",
+      "ssh-dss", "dsa", "pqgyx",  "pqgy", "rs", "pqgyx",
       NULL,                 ssh_signature_encoder_dsa,
       0
     },
@@ -206,7 +240,8 @@ realloc_secure (void *a, size_t n)
 }
 
 
-
+/* Create and return a new C-string from DATA/DATA_N (i.e.: add
+   NUL-termination); return NULL on OOM.  */
 static char *
 make_cstring (const char *data, size_t data_n)
 {
@@ -604,6 +639,7 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
 
  */
 
+/* Free the list of MPIs MPI_LIST.  */
 static void
 mpint_list_free (gcry_mpi_t *mpi_list)
 {
@@ -622,28 +658,26 @@ static gpg_error_t
 ssh_receive_mpint_list (estream_t stream, int secret,
 			ssh_key_type_spec_t key_spec, gcry_mpi_t **mpi_list)
 {
-  const char *elems_secret;
-  const char *elems;
+  unsigned int elems_public_n;
+  const char *elems_public;
   unsigned int elems_n;
-  gcry_mpi_t *mpis;
-  unsigned int i;
-  gpg_error_t err;
+  const char *elems;
   int elem_is_secret;
+  gcry_mpi_t *mpis;
+  gpg_error_t err;
+  unsigned int i;
 
   mpis = NULL;
   err = 0;
   
   if (secret)
-    {
-      elems = key_spec.elems_key_secret;
-      elems_secret = key_spec.elems_secret;
-    }
+    elems = key_spec.elems_key_secret;
   else
-    {
-      elems = key_spec.elems_key_public;
-      elems_secret = "";
-    }
+    elems = key_spec.elems_key_public;
   elems_n = strlen (elems);
+
+  elems_public = key_spec.elems_key_public;
+  elems_public_n = strlen (elems_public);
 
   mpis = xtrymalloc (sizeof (*mpis) * (elems_n + 1));
   if (! mpis)
@@ -653,10 +687,12 @@ ssh_receive_mpint_list (estream_t stream, int secret,
     }
   
   memset (mpis, 0, sizeof (*mpis) * (elems_n + 1));
-  
+
+  elem_is_secret = 0;
   for (i = 0; i < elems_n; i++)
     {
-      elem_is_secret = strchr (elems_secret, elems[i]) ? 1 : 0;
+      if (secret)
+	elem_is_secret = ! strchr (elems_public, elems[i]);
       err = stream_read_mpi (stream, elem_is_secret, &mpis[i]);
       if (err)
 	break;
@@ -676,6 +712,7 @@ ssh_receive_mpint_list (estream_t stream, int secret,
 
 
 
+/* Key modifier function for RSA.  */
 static gpg_error_t
 ssh_key_modifier_rsa (const char *elems, gcry_mpi_t *mpis)
 {
@@ -709,6 +746,7 @@ ssh_key_modifier_rsa (const char *elems, gcry_mpi_t *mpis)
   return 0;
 }
 
+/* Signature encoder function for RSA.  */
 static gpg_error_t
 ssh_signature_encoder_rsa (estream_t signature_blob, gcry_mpi_t *mpis)
 {
@@ -732,7 +770,7 @@ ssh_signature_encoder_rsa (estream_t signature_blob, gcry_mpi_t *mpis)
 }
 
 
-
+/* Signature encoder function for DSA.  */
 static gpg_error_t
 ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
 {
@@ -781,9 +819,9 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
  */
 
 
-
+/*  */
 static gpg_error_t
-ssh_sexp_construct (gcry_sexp_t *sexp,
+sexp_key_construct (gcry_sexp_t *sexp,
 		    ssh_key_type_spec_t key_spec, int secret,
 		    gcry_mpi_t *mpis, const char *comment)
 {
@@ -871,8 +909,9 @@ ssh_sexp_construct (gcry_sexp_t *sexp,
   return err;
 }
 
+
 static gpg_error_t
-ssh_sexp_extract (gcry_sexp_t sexp,
+sexp_key_extract (gcry_sexp_t sexp,
 		  ssh_key_type_spec_t key_spec, int *secret,
 		  gcry_mpi_t **mpis, const char **comment)
 {
@@ -1002,17 +1041,19 @@ ssh_sexp_extract (gcry_sexp_t sexp,
   return err;
 }
 
+/* Extract the car from SEXP, and create a newly created C-string it,
+   which is to be stored in IDENTIFIER.  */
 static gpg_error_t
-ssh_sexp_extract_key_type (gcry_sexp_t sexp, const char **key_type)
+sexp_extract_identifier (gcry_sexp_t sexp, const char **identifier)
 {
+  char *identifier_new;
   gcry_sexp_t sublist;
-  char *key_type_new;
   const char *data;
   size_t data_n;
   gpg_error_t err;
 
+  identifier_new = NULL;
   err = 0;
-  key_type_new = NULL;
   
   sublist = gcry_sexp_nth (sexp, 1);
   if (! sublist)
@@ -1028,16 +1069,14 @@ ssh_sexp_extract_key_type (gcry_sexp_t sexp, const char **key_type)
       goto out;
     }
 
-  key_type_new = xtrymalloc (data_n + 1);
-  if (! key_type_new)
+  identifier_new = make_cstring (data, data_n);
+  if (! identifier_new)
     {
-      err = gpg_error_from_errno (errno);
+      err = gpg_err_code_from_errno (errno);
       goto out;
     }
 
-  strncpy (key_type_new, data, data_n);
-  key_type_new[data_n] = 0;
-  *key_type = key_type_new;
+  *identifier = identifier_new;
 
  out:
 
@@ -1121,7 +1160,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
 	goto out;
     }
 
-  err = ssh_sexp_construct (&key, spec, secret, mpi_list, comment);
+  err = sexp_key_construct (&key, spec, secret, mpi_list, comment);
   if (err)
     goto out;
 
@@ -1221,7 +1260,7 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public)
   comment = NULL;
   blob = NULL;
 
-  err = ssh_sexp_extract_key_type (key_public, &key_type);
+  err = sexp_extract_identifier (key_public, &key_type);
   if (err)
     goto out;
 
@@ -1229,7 +1268,7 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public)
   if (err)
     goto out;
 
-  err = ssh_sexp_extract (key_public, spec, NULL, &mpi_list, &comment);
+  err = sexp_key_extract (key_public, spec, NULL, &mpi_list, &comment);
   if (err)
     goto out;
 
@@ -1303,11 +1342,11 @@ key_secret_to_public (gcry_sexp_t *key_public,
   comment = NULL;
   mpis = NULL;
 
-  err = ssh_sexp_extract (key_secret, spec, &is_secret, &mpis, &comment);
+  err = sexp_key_extract (key_secret, spec, &is_secret, &mpis, &comment);
   if (err)
     goto out;
 
-  err = ssh_sexp_construct (key_public, spec, 0, mpis, comment);
+  err = sexp_key_construct (key_public, spec, 0, mpis, comment);
 
  out:
 
@@ -1415,7 +1454,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
 	      xfree (buffer);
 	      buffer = NULL;
 
-	      err = ssh_sexp_extract_key_type (key_secret, &key_type);
+	      err = sexp_extract_identifier (key_secret, &key_type);
 	      if (err)
 		break;
 

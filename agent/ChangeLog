@@ -1,3 +1,18 @@
+2005-02-19  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_receive_mpint_list): Slightly rewritten, do
+	not use elems_secret member of key_spec.
+	(ssh_key_type_spec): Removed member: elems_secret.
+	(ssh_key_types): Removed elems_secret data.
+	(ssh_sexp_construct): Renamed to ...
+	(sexp_key_construct): ... this; changed callers.
+	(ssh_sexp_extract): Renamed to ...
+	(sexp_key_extract): ... this; changed callers.
+	(ssh_sexp_extract_key_type): Renamed to ...
+	(sexp_extract_identifier): ... this; changed callers; use
+	make_cstring().
+	Added more comments.
+
 2005-02-18  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_sexp_construct): Rewritten generation of sexp
