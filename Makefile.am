@@ -24,7 +24,7 @@ else
 checks = checks
 endif
 
-SUBDIRS = intl zlib util mpi cipher tools g10 po doc ${checks}
+SUBDIRS = intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
 EXTRA_DIST = VERSION  PROJECTS BUGS config.h.in
 DISTCLEANFILES = g10defs.h 
 

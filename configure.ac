@@ -116,6 +116,17 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
+AC_MSG_CHECKING([whether the LDAP keyserver interface is requested])
+AC_ARG_ENABLE(ldap,
+[  --disable-ldap          disable LDAP keyserver interface],
+    try_ldap=$enableval, try_ldap=yes)
+AC_MSG_RESULT($try_ldap)
+
+AC_MSG_CHECKING([whether the email keyserver interface is requested])
+AC_ARG_ENABLE(mailto,
+[  --disable-mailto        disable email keyserver interface],
+    try_mailto=$enableval, try_mailto=yes)
+AC_MSG_RESULT($try_mailto)
 
 AC_MSG_CHECKING([whether included zlib is requested])
 AC_ARG_WITH(included-zlib,
@@ -174,6 +185,7 @@ AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
 AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
 AC_PROG_CC
 AC_PROG_CPP
+AC_PATH_PROG(PERL,"perl")
 AC_ISC_POSIX
 AC_SYS_LARGEFILE
 AC_PROG_INSTALL
@@ -262,6 +274,21 @@ if test "$NO_PIC" = yes; then
     try_dynload=no
 fi
 
+if test "$try_ldap" = yes ; then
+  AC_CHECK_LIB(ldap,ldap_init,
+	[GPGKEYS_LDAP="gpgkeys_ldap"],,-llber -lresolv)
+  fi
+AC_SUBST(GPGKEYS_LDAP)
+
+if test "$try_mailto" = yes ; then
+  AC_PATH_PROG(SENDMAIL,sendmail,/usr/sbin/sendmail,
+	$PATH:/usr/libexec:/usr/sbin)
+
+  if test "$ac_cv_path_SENDMAIL" ; then
+    GPGKEYS_MAILTO="gpgkeys_mailto"
+    fi
+  fi
+AC_SUBST(GPGKEYS_MAILTO)
 
 case "${target}" in
     *-*-mingw32*)
@@ -453,10 +480,11 @@ fi
 dnl Checks for library functions.
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
+AC_FUNC_FORK
 AC_CHECK_FUNCS(strerror stpcpy strsep strlwr stricmp tcgetattr strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
-AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand)
+AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe)
 
 #
 # check for gethrtime and run a testprogram to see whether
@@ -855,6 +883,9 @@ util/Makefile
 mpi/Makefile
 cipher/Makefile
 g10/Makefile
+keyserver/Makefile
+keyserver/gpgkeys_mailto
+keyserver/gpgkeys_test
 doc/Makefile
 tools/Makefile
 zlib/Makefile
