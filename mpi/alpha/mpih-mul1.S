@@ -1,7 +1,8 @@
 /* Alpha 21064 mpih-mul1.S -- Multiply a limb vector with a limb and store
  *			      the result in a second limb vector.
  *
- * Copyright (C) 1992, 1994, 1995, 1998 Free Software Foundation, Inc.
+ *      Copyright (C) 1992, 1994, 1995, 1998, 1999,
+ *                    2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *

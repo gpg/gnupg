@@ -1,6 +1,6 @@
 /* rsa.c  -  RSA function
  *	Copyright (C) 1997, 1998, 1999 by Werner Koch (dd9jn)
- *	Copyright (C) 2000 Free Software Foundation, Inc.
+ *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

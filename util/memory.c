@@ -1,14 +1,5 @@
 /* memory.c  -	memory allocation
- *	Copyright (C) 1998 Free Software Foundation, Inc.
- *
- * We use our own memory allocation functions instead of plain malloc(),
- * so that we can provide some special enhancements:
- *  a) functions to provide memory from a secure memory.
- *  b) by looking at the requested allocation size we
- *     can reuse memory very quickly (e.g. MPI storage)
- *     (really needed?)
- *  c) memory usage reporting if compiled with M_DEBUG
- *  d) memory checking if compiled with M_GUARD
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,6 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ *
+ * We use our own memory allocation functions instead of plain malloc(),
+ * so that we can provide some special enhancements:
+ *  a) functions to provide memory from a secure memory.
+ *  b) by looking at the requested allocation size we
+ *     can reuse memory very quickly (e.g. MPI storage)
+ *     (really needed?)
+ *  c) memory usage reporting if compiled with M_DEBUG
+ *  d) memory checking if compiled with M_GUARD
  */
 
 #include <config.h>

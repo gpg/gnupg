@@ -1,5 +1,5 @@
-/* dsa.h  -  DSA signature scheme
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+/* dsa.h  -  DSA signature algorithm
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

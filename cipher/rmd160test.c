@@ -1,5 +1,5 @@
-/* rmd160test.c - ripe md 160 test program
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+/* rmd160test.c - ripe md160 test program
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

@@ -1,5 +1,5 @@
 /* mpitest.c - test the mpi functions
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This is an RPN calculator; values must be given in hex.
  * Operation is like dc(1) except that the input/output radix is

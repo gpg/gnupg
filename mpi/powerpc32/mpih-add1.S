@@ -1,6 +1,7 @@
 /* PowerPC-32 add_n -- Add two limb vectors of equal, non-zero length.
  *
- * Copyright (C) 1992, 1994, 1995, 1998 Free Software Foundation, Inc.
+ *      Copyright (C) 1992, 1994, 1995, 1998, 1999,
+ *                    2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

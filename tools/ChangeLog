@@ -17,7 +17,7 @@ Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
 
 Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@>
 
-  * mail-signed-keys: New.
+        * mail-signed-keys: New.
 
 Tue May 23 09:19:00 CEST 2000  Werner Koch  <wk@openit.de>
 
@@ -25,11 +25,9 @@ Tue May 23 09:19:00 CEST 2000  Werner Koch  <wk@openit.de>
 
 Thu Jul  8 16:21:27 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* lspgpot: New
 
 Wed Jul  7 13:08:40 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* Makefile.am: Support for libtool.
 

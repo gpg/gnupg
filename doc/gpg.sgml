@@ -1,5 +1,5 @@
 <!-- gpg.sgml - the man page for GnuPG
-    Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+    Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
     This file is part of GnuPG.
 
@@ -1190,6 +1190,14 @@ together with --status-fd. See the file doc/DETAILS in the source
 distribution for details on how to use it.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--use-agent</term>
+<listitem><para>
+Try to use the GnuPG-Agent. Please note that this agent is still under
+development.  With this option, GnuPG first tries to connect to the
+agent before it asks for a passphrase.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--rfc1991</term>
@@ -1470,10 +1478,15 @@ handy in case where an encrypted message contains a bogus key ID.
 <term>--enable-special-filenames</term>
 <listitem><para>
 This options enables a mode in which filenames of the form
-<filename>-&amp;n</>, where n is a non-negative decimal number,
+<filename>-&#38;n</>, where n is a non-negative decimal number,
 refer to the file descriptor n and not to a file with that name.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-expensive-trust-checks</term>
+<listitem><para>
+Experimental use only.
+</para></listitem></varlistentry>
 
 </variablelist>
 </refsect1>
@@ -1525,14 +1538,14 @@ key IDs (which are really rare for the long key IDs).
 </varlistentry>
 
 <varlistentry>
-<term>=Heinrich Heine &lt;heinrichh@uni-duesseldorf.de&gt;</term>
+<term>=Heinrich Heine &#60;heinrichh@uni-duesseldorf.de&#62;</term>
 <listitem><para>
 Using an exact to match string.  The equal sign indicates this.
 </para></listitem>
 </varlistentry>
 
 <varlistentry>
-<term>&lt;heinrichh@uni-duesseldorf.de&gt;</term>
+<term>&#60;heinrichh@uni-duesseldorf.de&#62;</term>
 <listitem><para>
 Using the email address part which must match exactly.	The left angle bracket
 indicates this email address mode.

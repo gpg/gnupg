@@ -1,5 +1,6 @@
 /* simple-gettext.c  - a simplified version of gettext.
- * Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+ * Copyright (C) 1995, 1996, 1997, 1998, 1999,
+ *               2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -19,7 +20,7 @@
  */
 
 /* This is a simplified version of gettext written by Ulrich Drepper.
- * It is used for the Win32 version of GnuPG becuase all the overhead
+ * It is used for the Win32 version of GnuPG beucase all the overhead
  * of gettext is not needed and we have to do some special Win32 stuff.
  * I decided that this is far easier than to tweak gettext for the special
  * cases (I tried it but it is a lot of code).	wk 15.09.99

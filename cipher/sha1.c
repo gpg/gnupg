@@ -1,5 +1,5 @@
 /* sha1.c - SHA1 hash function
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * Please see below for more legal information!
  *

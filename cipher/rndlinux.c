@@ -1,5 +1,5 @@
 /* rndlinux.c  -  raw random number for OSes with /dev/random
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

@@ -1,9 +1,5 @@
 /* blowfish.c  -  Blowfish encryption
- *	Copyright (C) 1998 Free Software Foundation, Inc.
- *
- * For a description of the algorithm, see:
- *   Bruce Schneier: Applied Cryptography. John Wiley & Sons, 1996.
- *   ISBN 0-471-11709-9. Pages 336 ff.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -20,6 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * For a description of the algorithm, see:
+ *   Bruce Schneier: Applied Cryptography. John Wiley & Sons, 1996.
+ *   ISBN 0-471-11709-9. Pages 336 ff.
  */
 
 /* Test values:

@@ -188,7 +188,7 @@
 
 2001-03-13  Werner Koch  <wk@gnupg.org>
 
-	* main.c, options.h: New option fixed_list_mode.
+	* main.c, options.h: New option --fixed_list_mode.
 	* keylist.c (list_keyblock_colon): use it here.
 
 	* getkey.c (merge_keys_and_selfsig): Divert merging of public keys

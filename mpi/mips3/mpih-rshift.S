@@ -1,5 +1,7 @@
 /* mips3    rshift
- *	Copyright (C) 1995, 1998 Free Software Foundation, Inc.
+ *
+ *      Copyright (C) 1995, 1998, 1999,
+ *                    2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *

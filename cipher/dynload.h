@@ -1,5 +1,5 @@
-/* dynload.5
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+/* dynload.h
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

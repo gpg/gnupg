@@ -153,6 +153,10 @@ We will use capabilities in the future.
 The ~/.gnupg directory will be created if it does not exist.  Your first
 action should be to create a key pair: "gpg --gen-key".
 
+Due to limitations in the automake system, the Info format versions of
+the man pages are not installed.  You have to convert the Texinfo
+files by hand (use makeinfo) and copy them to the appropriate place.
+
 
 
 Creating a RPM package

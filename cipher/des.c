@@ -1,12 +1,5 @@
 /* des.c - DES and Triple-DES encryption/decryption Algorithm
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
- *
- * Please see below for more legal information!
- *
- * According to the definition of DES in FIPS PUB 46-2 from December 1993.
- * For a description of triple encryption, see:
- *   Bruce Schneier: Applied Cryptography. Second Edition.
- *   John Wiley & Sons, 1996. ISBN 0-471-12845-7. Pages 358 ff.
+ *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,6 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ *
+ * According to the definition of DES in FIPS PUB 46-2 from December 1993.
+ * For a description of triple encryption, see:
+ *   Bruce Schneier: Applied Cryptography. Second Edition.
+ *   John Wiley & Sons, 1996. ISBN 0-471-12845-7. Pages 358 ff.
  */
 
 

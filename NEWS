@@ -1,48 +1,55 @@
-        
-    * WARNING: The semantics of --verify have changed to address a problem
-      with detached signature detection. --verify now ignores signed material
-      given on stdin unless this is requested by using a "-" as the name for
-      the file with the signed material.  
-        
-      !  Please check all your detached signature handling applications   !
-      !  and make sure that they don't pipe the signed material to stdin  !
-      !  without using a filename and "-" on the the command line.        !
+Noteworthy changes in version 1.0.5 (2001-04-??)
+------------------------------------------------
 
-    * Corrected hash calculation for some inputs greater than 512M - it
-      was just wrong, so you might notice bad signature in some very
-      big files.  It may be wise to keep an old copy of GnuPG around.
+    * WARNING: The semantics of --verify have changed to address a
+      problem with detached signature detection. --verify now ignores
+      signed material given on stdin unless this is requested by using
+      a "-" as the name for the file with the signed material.  Please
+      check all your detached signature handling applications and make
+      sure that they don't pipe the signed material to stdin without
+      using a filename together with "-" on the the command line.
+
+    * WARNING: Corrected hash calculation for input data larger than
+      512M - it was just wrong, so you might notice bad signature in
+      some very big files.  It may be wise to keep an old copy of
+      GnuPG around.
 
     * Secret keys are no longer imported unless you use the new option
       --allow-secret-key-import.  This is a kludge and future versions will
       handle it in another way.
 
-    * There is now the notation of a primary user ID.  For example, it is 
-      printed with a signature verifaction as the first user ID; revoked user
-      IDs are not printed there anymore.  In general the primary user ID is 
-      the one with the latest self-signature.
+    * New command "showpref" in the --edit-key menu to show an easier
+      to understand preference listing.
 
-    * The verification status of self-signatures are now cached. To increase
-      the speed of key list operations for existing keys you can do the
-      following in your GnuPG homedir (~/.gnupg): 
-        $ cp pubring.gpg pubring.gpg.save
-        $ gpg --export-all >x
-        $ rm pubring.gpg
-        $ gpg --import x
-      Only v4 keys (i.e not the old RSA keys) benefit from this caching.
+    * There is now the notation of a primary user ID.  For example, it
+      is printed with a signature verification as the first user ID;
+      revoked user IDs are not printed there anymore.  In general the
+      primary user ID is the one with the latest self-signature.
 
-    * Support for the gpg-agent from gpg 1.1 and other changes needed by
-      gpgme.
+    * New --charset=utf-8 to bypass all internal conversions.
 
-    * Better LFS support.
+    * Large File Support (LFS) is now working.
 
-    * New option --ignore-crc-error
+    * New options: --ignore-crc-error, --no-sig-create-check, 
+      --no-sig-cache, --fixed_list_mode, --no-expensive-trust-checks,
+      --enable-special-filenames and --use-agent.  See man page.
+
+    * New command --pipemode, which can be used to run gpg as a
+      co-process.  Currently only the verification of detached
+      signatures are working.  See doc/DETAILS.
 
     * Keyserver support for the W32 version.
 
-    * New --charset=utf-8 to bypass all internal translations.
+    * A lot of bug fixes, rewritten key selection code so that GnuPG
+      can better cope with multiple sub keys, expire dates and so.
+      The drawback is that it is slower.
 
-    * New command "showpref" in the --edit-key menu to show an easier
-      to understand preference listing.
+    * The verification status of self-signatures are now cached. To
+      increase the speed of key list operations for existing keys you
+      can do the following in your GnuPG homedir (~/.gnupg):
+         $ cp pubring.gpg pubring.gpg.save && $ gpg --export-all >x && \
+          rm pubring.gpg && gpg --import x
+      Only v4 keys (i.e not the old RSA keys) benefit from this caching.
 
     * New translations: Estonian, Turkish.
 
