@@ -149,6 +149,8 @@ enum cmd_and_opt_values { aNull = 0,
     oLoadExtension,
     oRFC1991,
     oOpenPGP,
+    oPGP2,
+    oNoPGP2,
     oCipherAlgo,
     oDigestAlgo,
     oCompressAlgo,
@@ -363,6 +365,8 @@ static ARGPARSE_OPTS opts[] = {
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
     { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},
+    { oPGP2, "pgp2", 0, N_("set all packet, cipher and digest options to PGP 2.x behavior")},
+    { oNoPGP2, "no-pgp2", 0, "@"},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
     { oS2KDigest, "s2k-digest-algo",2,
 		N_("|NAME|use message digest algorithm NAME for passphrases")},
@@ -1013,6 +1017,8 @@ main( int argc, char **argv )
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
 	    break;
+	  case oPGP2: opt.pgp2 = 1; break;
+	  case oNoPGP2: opt.pgp2 = 0; break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oEmu3DESS2KBug:	opt.emulate_bugs |= EMUBUG_3DESS2K; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
@@ -1267,6 +1273,28 @@ main( int argc, char **argv )
     if (preference_list && keygen_set_std_prefs (preference_list))
         log_error(_("invalid preferences\n"));
 
+    /* Do this after the switch(), so it can override these
+       settings. */
+    if(opt.pgp2)
+      {
+	opt.rfc1991 = 1;
+	opt.rfc2440 = 0;
+	opt.force_v4_certs = 0;
+	opt.no_comment = 1;
+	opt.escape_from = 1;
+	opt.force_v3_sigs = 1;
+	opt.pgp2_workarounds = 1;
+	opt.def_cipher_algo = CIPHER_ALGO_IDEA;
+	if( cmd==aEncr && check_cipher_algo(CIPHER_ALGO_IDEA) ) {
+	  log_info(_("Encrypting a message to a PGP 2.x user requires "
+		     "the IDEA cipher module.\n"));
+	  log_error(_("Please see http://www.gnupg.org/why-not-idea.html"
+		      " for more information.\n"));
+	}
+	opt.def_digest_algo = DIGEST_ALGO_MD5;
+	opt.def_compress_algo = 1;
+      }
+
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
@@ -1385,6 +1413,12 @@ main( int argc, char **argv )
 	break;
 
       case aEncr: /* encrypt the given file */
+	if( argc == 0 && opt.pgp2 ) {
+	  log_info(_("You must use files (and not a pipe) when "
+		     "encrypting with --pgp2 enabled.\n"));
+	  log_info(_("This message will not be usable by PGP 2.x\n"));
+	}
+
 	if( argc > 1 )
 	    wrong_args(_("--encrypt [filename]"));
 	if( (rc = encode_crypt(fname,remusr)) )
@@ -1413,6 +1447,10 @@ main( int argc, char **argv )
       case aSignEncr: /* sign and encrypt the given file */
 	if( argc > 1 )
 	    wrong_args(_("--sign --encrypt [filename]"));
+        if(opt.pgp2) {
+	  log_info(_("You can't sign and encrypt at the same time while in --pgp2 mode\n"));
+	  log_info(_("This message will not be usable by PGP 2.x\n"));
+	}
 	if( argc ) {
 	    sl = m_alloc_clear( sizeof *sl + strlen(fname));
 	    strcpy(sl->d, fname);

@@ -1,3 +1,17 @@
+2001-12-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c, options.h: New option --pgp2.  This is identical to
+	"--rfc1991 --cipher-algo idea --compress-algo 1 --digest-algo md5
+	--force_v3_sigs" with the addition of an warning to advise the
+	user not to use a pipe (which would break pgp2 compatibility).
+
+	* encode.c (encode_crypt): warn if the user tries to encrypt to
+	any key that is not RSA and <= 2048 bits when the --pgp2 option is
+	used.
+
+	* sign.c (sign_file, clearsign_file): When using --pgp2, make a v3
+	sig, and warn if the signature is made with a non-v3 key.
+
 2001-12-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (sign_file, clearsign_file, sign_symencrypt_file): Prompt

@@ -250,7 +250,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
     text_filter_context_t tfx;
-    PK_LIST pk_list;
+    PK_LIST pk_list,work_list;
     int do_compress = opt.compress && !opt.rfc1991;
 
 
@@ -262,6 +262,17 @@ encode_crypt( const char *filename, STRLIST remusr )
 
     if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
 	return rc;
+
+    if(opt.pgp2)
+      for(work_list=pk_list;work_list->next!=NULL;work_list=work_list->next)
+	if(!(is_RSA(work_list->pk->pubkey_algo) &&
+	     nbits_from_pk(work_list->pk)<=2048))
+	  {
+	    log_info(_("You can only encrypt to RSA keys of 2048 bits or "
+		       "less in --pgp2 mode\n"));
+	    log_info(_("This message will not be usable by PGP 2.x\n"));
+	    break;
+	  }
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {

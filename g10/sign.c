@@ -550,13 +550,21 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encryptflag) )
 	log_bug("multiple files can only be detached signed");
 
-    if(opt.expert && !opt.batch && !opt.force_v3_sigs && !old_style)
+    if(opt.expert && !opt.pgp2 && !opt.batch &&
+       !opt.force_v3_sigs && !old_style)
       duration=ask_expire_interval(1);
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
-    if( !old_style && !duration )
+    if( (!old_style && !duration) || opt.pgp2 )
 	old_style = only_old_style( sk_list );
+
+    if(!old_style && opt.pgp2)
+      {
+	log_info(_("You can only sign with PGP 2.x style keys "
+		    "while in --pgp2 mode\n"));
+	log_info(_("This message will not be usable by PGP 2.x\n"));
+      }
 
     if( encryptflag ) {
 	if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )) )
@@ -719,13 +727,21 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
 
-    if(opt.expert && !opt.batch && !opt.force_v3_sigs && !old_style)
+    if(opt.expert && !opt.pgp2 && !opt.batch &&
+       !opt.force_v3_sigs && !old_style)
       duration=ask_expire_interval(1);
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
-    if( !old_style && !duration )
+    if( (!old_style && !duration) || opt.pgp2 )
 	old_style = only_old_style( sk_list );
+
+    if(!old_style && opt.pgp2)
+      {
+	log_info(_("You can only clearsign with PGP 2.x style keys "
+		   "while in --pgp2 mode\n"));
+	log_info(_("This message will not be usable by PGP 2.x\n"));
+      }
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(fname)) ) {

@@ -1,4 +1,3 @@
-
 /* options.h
  * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
@@ -77,6 +76,7 @@ struct {
     int compress_keys;
     int compress_sigs;
     int always_trust;
+    int pgp2;
     int rfc1991;
     int rfc2440;
     int pgp2_workarounds;
