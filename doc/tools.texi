@@ -600,498 +600,66 @@ whicl will be printed to stdout.
 @node gpg-preset-passphrase
 @section Put a passphrase into the cache.
 
-XXXX
-The @command{gpgconf} is a utility to automatically and reasonable
-safely query and modify configuration files in the @file{.gnupg} home
-directory.  It is designed not to be invoked manually by the user, but
-automatically by graphical user interfaces (GUI).@footnote{Please note
-that currently no locking is done, so concurrent access should be
-avoided.  There are some precautions to avoid corruption with
-concurrent usage, but results may be inconsistent and some changes may
-get lost.  The stateless design makes it difficult to provide more
-guarantees.}
+The @command{gpg-preset-passphrase} is a utility to seed the internal
+cache of a running @command{gpg-agent} with passphrases.  This is mainly
+useful for unatteneded machines, where a pinentry may not be used and
+the passphrases for the to be used keys should be given at machine
+startup.
 
-@command{gpgconf} provides access to the configuration of one or more
-components of the GnuPG system.  These components correspond more or
-less to the programs that exist in the GnuPG framework, like GnuPG,
-GPGSM, DirMngr, etc.  But this is not a strict one-to-one
-relationship.  Not all configuration options are available through
-@command{gpgconf}.  @command{gpgconf} provides a generic and abstract
-method to access the most important configuration options that can
-feasibly be controlled via such a mechanism.
-
-@command{gpgconf} can be used to gather and change the options
-available in each component, and can also provide their default
-values.  @command{gpgconf} will give detailed type information that
-can be used to restrict the user's input without making an attempt to
-commit the changes.
-
-@command{gpgconf} provides the backend of a configuration editor.  The
-configuration editor would usually be a graphical user interface
-program, that allows to display the current options, their default
-values, and allows the user to make changes to the options.  These
-changes can then be made active with @command{gpgconf} again.  Such a
-program that uses @command{gpgconf} in this way will be called GUI
-throughout this section.
+Passphrases set with this utility don't expire unless the
+@option{--forget} option is used to explicitly clear them from the cache
+--- or @command{gpg-agent} is either restarted or reloaded (by sending a
+SIGHUP to it).  It is necessary to allow this passphrase presetting by
+starting @command{gpg-agent} with the
+@option{--allow-preset-passphrase}.
 
 @menu
-* Invoking gpgconf::      List of all commands and options.
-* Format conventions::    Formatting conventions relevant for all commands.
-* Listing components::    List all gpgconf components.
-* Listing options::       List all options of a component.
-* Changing options::      Changing options of a component.
+* Invoking gpg-preset-passphrase::   List of all commands and options.
 @end menu
 
 
-@node Invoking gpgconf
-@subsection Invoking gpgconf
+@node Invoking gpg-preset-passphrase
+@subsection List of all commands and options.
 
-One of the following commands must be given:
+@noindent
+@command{gpg-preset-passphrase} is invoked this way:
+
+@example
+gpg-preset-passphrase [options] [command] @var{keygrip}
+@end example
+
+@var{keygrip} is a 40 character string of hexadecimal characters
+identifying the key for which the passphrase should be set or cleared.
+This @emph{keygrip} is listed along with the key when running the
+command: @code{gpgsm --dump-secret-keys}. One of the following commands
+must be given:
 
 @table @gnupgtabopt
-@item --list-components
-List all components.  This is the default command used if none is
-specified.
+@item --preset
+Preset a passphrase. This is what you usually will
+use. @command{gpg-preset-passphrase} will then read the passphrase form
+@code{stdin}.
 
-@item --list-options @var{component}
-List all options of the component @var{component}.
+@item --forget
+Clear the passphrase for the given keygrip from the cache.
 
-@item --change-options @var{component}
-Change the options of the component @var{component}.
 @end table
 
 The following options may be used:
 
 @table @gnupgtabopt
-@c FIXME: Not yet supported.
-@c @item -o @var{file}
-@c @itemx --output @var{file}
-@c Use @var{file} as output file.
-
 @item -v
 @itemx --verbose
-Outputs additional information while running.  Specifically, this
-extends numerical field values by human-readable descriptions.
+@opindex verbose
+Outputs additional information while running.  
 
-@c FIXME: Not yet supported.
-@c @item -n
-@c @itemx --dry-run
-@c Do not actually change anything.  Useful together with
-@c @code{--change-options} for testing purposes.
-
-@item -r
-@itemx --runtime
-Only used together with @code{--change-options}.  If one of the
-modified options can be changed in a running daemon process, signal
-the running daemon to ask it to reparse its configuration file after
-changing.
-
-This means that the changes will take effect at run-time, as far as
-this is possible.  Otherwise, they will take effect at the next start
-of the respective backend programs.
+@item -P @var{string}
+@itemx --passphrase @var{string}
+@opindex passphrase
+Instead of reading the passphrase from @code{stdin}, use the supplied
+@var{string} as passphrase.  Note that this makes the passphrase visible
+for other users.
 @end table
-
-
-@node Format conventions
-@subsection Format conventions
-
-Some lines in the output of @command{gpgconf} contain a list of
-colon-separated fields.  The following conventions apply:
-
-@itemize @bullet
-@item
-The GUI program is required to strip off trailing newline and/or
-carriage return characters from the output.
-
-@item
-@command{gpgconf} will never leave out fields.  If a certain version
-provides a certain field, this field will always be present in all
-@command{gpgconf} versions from that time on.
-
-@item
-Future versions of @command{gpgconf} might append fields to the list.
-New fields will always be separated from the previously last field by
-a colon separator.  The GUI should be prepared to parse the last field
-it knows about up until a colon or end of line.
-
-@item
-Not all fields are defined under all conditions.  You are required to
-ignore the content of undefined fields.
-@end itemize
-
-There are several standard types for the content of a field:
-
-@table @asis
-@item verbatim
-Some fields contain strings that are not escaped in any way.  Such
-fields are described to be used @emph{verbatim}.  These fields will
-never contain a colon character (for obvious reasons).  No de-escaping
-or other formatting is required to use the field content.  This is for
-easy parsing of the output, when it is known that the content can
-never contain any special characters.
-
-@item percent-escaped
-Some fields contain strings that are described to be
-@emph{percent-escaped}.  Such strings need to be de-escaped before
-their content can be presented to the user.  A percent-escaped string
-is de-escaped by replacing all occurences of @code{%XY} by the byte
-that has the hexadecimal value @code{XY}.  @code{X} and @code{Y} are
-from the set @code{0-9a-f}.
-
-@item localised
-Some fields contain strings that are described to be @emph{localised}.
-Such strings are translated to the active language and formatted in
-the active character set.
-
-@item @w{unsigned number}
-Some fields contain an @emph{unsigned number}.  This number will
-always fit into a 32-bit unsigned integer variable.  The number may be
-followed by a space, followed by a human readable description of that
-value (if the verbose option is used).  You should ignore everything
-in the field that follows the number.
-
-@item @w{signed number}
-Some fields contain a @emph{signed number}.  This number will always
-fit into a 32-bit signed integer variable.  The number may be followed
-by a space, followed by a human readable description of that value (if
-the verbose option is used).  You should ignore everything in the
-field that follows the number.
-
-@item option
-Some fields contain an @emph{option} argument.  The format of an
-option argument depends on the type of the option and on some flags:
-
-@table @asis
-@item no argument
-The simplest case is that the option does not take an argument at all
-(@var{type} @code{0}).  Then the option argument is an unsigned number
-that specifies how often the option occurs.  If the @code{list} flag
-is not set, then the only valid number is @code{1}.  Options that do
-not take an argument never have the @code{default} or @code{optional
-arg} flag set.
-
-@item number
-If the option takes a number argument (@var{alt-type} is @code{2} or
-@code{3}), and it can only occur once (@code{list} flag is not set),
-then the option argument is either empty (only allowed if the argument
-is optional), or it is a number.  A number is a string that begins
-with an optional minus character, followed by one or more digits.  The
-number must fit into an integer variable (unsigned or signed,
-depending on @var{alt-type}).
-
-@item number list
-If the option takes a number argument and it can occur more than once,
-then the option argument is either empty, or it is a comma-separated
-list of numbers as described above.
-
-@item string
-If the option takes a string argument (@var{alt-type} is 1), and it
-can only occur once (@code{list} flag is not set) then the option
-argument is either empty (only allowed if the argument is optional),
-or it starts with a double quote character (@code{"}) followed by a
-percent-escaped string that is the argument value.  Note that there is
-only a leading double quote character, no trailing one.  The double
-quote character is only needed to be able to differentiate between no
-value and the empty string as value.
-
-@item string list
-If the option takes a number argument and it can occur more than once,
-then the option argument is either empty, or it is a comma-separated
-list of string arguments as described above.
-@end table
-@end table
-
-The active language and character set are currently determined from
-the locale environment of the @command{gpgconf} program.
-
-@c FIXME: Document the active language and active character set.  Allow
-@c to change it via the command line?
-
-
-@node Listing components
-@subsection Listing components
-
-The command @code{--list-components} will list all components that can
-be configured with @command{gpgconf}.  Usually, one component will
-correspond to one GnuPG-related program and contain the options of
-that programs configuration file that can be modified using
-@command{gpgconf}.  However, this is not necessarily the case.  A
-component might also be a group of selected options from several
-programs, or contain entirely virtual options that have a special
-effect rather than changing exactly one option in one configuration
-file.
-
-A component is a set of configuration options that semantically belong
-together.  Furthermore, several changes to a component can be made in
-an atomic way with a single operation.  The GUI could for example
-provide a menu with one entry for each component, or a window with one
-tabulator sheet per component.
-
-The command argument @code{--list-components} lists all available
-components, one per line.  The format of each line is:
-
-@code{@var{name}:@var{description}}
-
-@table @var
-@item name
-This field contains a name tag of the component.  The name tag is used
-to specify the component in all communication with @command{gpgconf}.
-The name tag is to be used @emph{verbatim}.  It is thus not in any
-escaped format.
-
-@item description
-The @emph{string} in this field contains a human-readable description
-of the component.  It can be displayed to the user of the GUI for
-informational purposes.  It is @emph{percent-escaped} and
-@emph{localized}.
-@end table
-
-Example:
-@example
-$ gpgconf --list-components
-gpg:GPG for OpenPGP
-gpg-agent:GPG Agent
-scdaemon:Smartcard Daemon
-gpgsm:GPG for S/MIME
-dirmngr:Directory Manager
-@end example
-
-
-@node Listing options
-@subsection Listing options
-
-Every component contains one or more options.  Options may be gathered
-into option groups to allow the GUI to give visual hints to the user
-about which options are related.
-
-The command argument @code{@w{--list-options @var{component}}} lists
-all options (and the groups they belong to) in the component
-@var{component}, one per line.  @var{component} must be the string in
-the field @var{name} in the output of the @code{--list-components}
-command.
-
-There is one line for each option and each group.  First come all
-options that are not in any group.  Then comes a line describing a
-group.  Then come all options that belong into each group.  Then comes
-the next group and so on.  There does not need to be any group (and in
-this case the output will stop after the last non-grouped option).
-
-The format of each line is:
-
-@code{@var{name}:@var{flags}:@var{level}:@var{description}:@var{type}:@var{alt-type}:@var{argname}:@var{default}:@var{argdef}:@var{value}}
-
-@table @var
-@item name
-This field contains a name tag for the group or option.  The name tag
-is used to specify the group or option in all communication with
-@command{gpgconf}.  The name tag is to be used @emph{verbatim}.  It is
-thus not in any escaped format.
-
-@item flags
-The flags field contains an @emph{unsigned number}.  Its value is the
-OR-wise combination of the following flag values:
-
-@table @code
-@item group (1)
-If this flag is set, this is a line describing a group and not an
-option.
-@end table
-
-The following flag values are only defined for options (that is, if
-the @code{group} flag is not used).
-
-@table @code
-@item optional arg (2)
-If this flag is set, the argument is optional.  This is never set for
-@var{type} @code{0} (none) options.
-
-@item list (4)
-If this flag is set, the option can be given multiple times.
-
-@item runtime (8)
-If this flag is set, the option can be changed at runtime.
-
-@item default (16)
-If this flag is set, a default value is available.
-
-@item default desc (32)
-If this flag is set, a (runtime) default is available.  This and the
-@code{default} flag are mutually exclusive.
-
-@item no arg desc (64)
-If this flag is set, and the @code{optional arg} flag is set, then the
-option has a special meaning if no argument is given.
-@end table
-
-@item level
-This field is defined for options and for groups.  It contains an
-@emph{unsigned number} that specifies the expert level under which
-this group or option should be displayed.  The following expert levels
-are defined for options (they have analogous meaning for groups):
-
-@table @code
-@item basic (0)
-This option should always be offered to the user.
-
-@item advanced (1)
-This option may be offered to advanced users.
-
-@item expert (2)
-This option should only be offered to expert users.
-
-@item invisible (3)
-This option should normally never be displayed, not even to expert
-users.
-
-@item internal (4)
-This option is for internal use only.  Ignore it.
-@end table
-
-The level of a group will always be the lowest level of all options it
-contains.
-
-@item description
-This field is defined for options and groups.  The @emph{string} in
-this field contains a human-readable description of the option or
-group.  It can be displayed to the user of the GUI for informational
-purposes.  It is @emph{percent-escaped} and @emph{localized}.
-
-@item type
-This field is only defined for options.  It contains an @emph{unsigned
-number} that specifies the type of the option's argument, if any.  The
-following types are defined:
-
-Basic types:
-
-@table @code
-@item none (0)
-No argument allowed.
-
-@item string (1)
-An @emph{unformatted string}.
-
-@item int32 (2)
-A @emph{signed number}.
-
-@item uint32 (3)
-An @emph{unsigned number}.
-@end table
-
-Complex types:
-
-@table @code
-@item pathname (32)
-A @emph{string} that describes the pathname of a file.  The file does
-not necessarily need to exist.
-
-@item ldap server (33)
-A @emph{string} that describes an LDAP server in the format:
-
-@code{@var{hostname}:@var{port}:@var{username}:@var{password}:@var{base_dn}}
-@end table
-
-More types will be added in the future.  Please see the @var{alt-type}
-field for information on how to cope with unknown types.
-
-@item alt-type
-This field is identical to @var{type}, except that only the types
-@code{0} to @code{31} are allowed.  The GUI is expected to present the
-user the option in the format specified by @var{type}.  But if the
-argument type @var{type} is not supported by the GUI, it can still
-display the option in the more generic basic type @var{alt-type}.  The
-GUI must support all the defined basic types to be able to display all
-options.  More basic types may be added in future versions.  If the
-GUI encounters a basic type it doesn't support, it should report an
-error and abort the operation.
-
-@item argname
-This field is only defined for options with an argument type
-@var{type} that is not @code{0}.  In this case it may contain a
-@emph{percent-escaped} and @emph{localised string} that gives a short
-name for the argument.  The field may also be empty, though, in which
-case a short name is not known.
-
-@item default
-This field is defined only for options.  Its format is that of an
-@emph{option argument} (@xref{Format conventions}, for details).  If
-the default value is empty, then no default is known.  Otherwise, the
-value specifies the default value for this option.  Note that this
-field is also meaningful if the option itself does not take a real
-argument.
-
-@item argdef
-This field is defined only for options for which the @code{optional
-arg} flag is set.  If the @code{no arg desc} flag is not set, its
-format is that of an @emph{option argument} (@xref{Format
-conventions}, for details).  If the default value is empty, then no
-default is known.  Otherwise, the value specifies the default value
-for this option.  If the @code{no arg desc} flag is set, the field is
-either empty or contains a description of the effect of this option if
-no argument is given.  Note that this field is also meaningful if the
-option itself does not take a real argument.
-
-@item value
-This field is defined only for options.  Its format is that of an
-@emph{option argument}.  If it is empty, then the option is not
-explicitely set in the current configuration, and the default applies
-(if any).  Otherwise, it contains the current value of the option.
-Note that this field is also meaningful if the option itself does not
-take a real argument.
-@end table
-
-
-@node Changing options
-@subsection Changing options
-
-The command @w{@code{--change-options @var{component}}} will attempt
-to change the options of the component @var{component} to the
-specified values.  @var{component} must be the string in the field
-@var{name} in the output of the @code{--list-components} command.  You
-have to provide the options that shall be changed in the following
-format on standard input:
-
-@code{@var{name}:@var{flags}:@var{new-value}}
-
-@table @var
-@item name
-This is the name of the option to change.  @var{name} must be the
-string in the field @var{name} in the output of the
-@code{--list-options} command.
-
-@item flags
-The flags field contains an @emph{unsigned number}.  Its value is the
-OR-wise combination of the following flag values:
-
-@table @code
-@item default (16)
-If this flag is set, the option is deleted and the default value is
-used instead (if applicable).
-@end table
-
-@item new-value
-The new value for the option.  This field is only defined if the
-@code{default} flag is not set.  The format is that of an @emph{option
-argument}.  If it is empty (or the field is omitted), the default
-argument is used (only allowed if the argument is optional for this
-option).  Otherwise, the option will be set to the specified value.
-@end table
-
-Examples:
-
-To set the force option, which is of basic type @code{none (0)}:
-
-@example
-$ echo 'force:0:1' | gpgconf --change-options dirmngr
-@end example
-
-To delete the force option:
-
-@example
-$ echo 'force:16:' | gpgconf --change-options dirmngr
-@end example
-
-The @code{--runtime} option can influence when the changes take
-effect.
 
 
 

@@ -1,5 +1,7 @@
 2004-12-21  Werner Koch  <wk@g10code.com>
 
+	* tools.texi (gpg-preset-passphrase): New section.
+
 	* gnupg-badge-openpgp.eps, gnupg-badge-openpgp.jpg: New
 	* gnupg.texi: Add a logo.
 	* sysnotes.texi: New.
