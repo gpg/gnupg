@@ -126,7 +126,7 @@ i18n_init(void)
     #else
        setlocale( LC_ALL, "" );
     #endif
-    bindtextdomain( PACKAGE, GNUPG_LOCALEDIR );
+    bindtextdomain( PACKAGE, LOCALEDIR );
     textdomain( PACKAGE );
   #endif
   #endif

@@ -18,6 +18,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
+localedir = $(datadir)/locale
+INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
+
 bin_PROGRAMS = gpg-agent
 pkglib_PROGRAMS = protect-tool
 

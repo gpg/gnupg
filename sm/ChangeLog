@@ -1,5 +1,7 @@
 2002-08-10  Werner Koch  <wk@gnupg.org>
 
+	* Makefile.am (INCLUDES): Add definition for localedir.
+
 	* keylist.c (list_cert_colon): Print the short fingerprint in the
 	key ID field.
 	* fingerprint.c (gpgsm_get_short_fingerprint): New.

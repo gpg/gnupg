@@ -19,6 +19,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
+localedir = $(datadir)/locale
+INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
+
 EXTRA_DIST = mkerrors
 AM_CPPFLAGS =   $(LIBKSBA_CFLAGS) $(LIBGCRYPT_CLFAGS)
 BUILT_SOURCES = keybox-errors.c
