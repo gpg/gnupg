@@ -1,3 +1,8 @@
+2003-03-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Define @CAPLIBS@ to link in -lcap if we are using
+	capabilities.
+
 2003-02-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add --disable-idea for IDEA.  Note that disabling
