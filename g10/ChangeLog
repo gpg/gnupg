@@ -1,3 +1,11 @@
+2003-11-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (ask_algo): Remove ability to generate Elgamal
+	sign+encrypt keys.
+
+	* getkey.c (merge_selfsigs_main, merge_selfsigs_subkey): Disallow
+	use of sign+encrypt Elgamal keys.
+
 2003-11-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* seskey.c (do_encode_md): Comment about earlier (pre-PGP 2.3)

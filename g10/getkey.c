@@ -1677,6 +1677,11 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
         if ( x ) /* mask it down to the actual allowed usage */
             key_usage &= x; 
     }
+
+    /* Type 20 Elgamal keys are not usable. */
+    if(pk->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+      key_usage=0;
+
     pk->pubkey_usage = key_usage;
 
     if ( !key_expire_seen ) {
@@ -1893,6 +1898,13 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
         if ( x ) /* mask it down to the actual allowed usage */
             key_usage &= x; 
     }
+
+    /* Type 20 Elgamal subkeys or any subkey on a type 20 primary are
+       not usable. */
+    if(mainpk->pubkey_algo==PUBKEY_ALGO_ELGAMAL
+       || subpk->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+      key_usage=0;
+
     subpk->pubkey_usage = key_usage;
     
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
