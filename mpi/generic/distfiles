@@ -5,4 +5,5 @@ mpih-mul3.c
 mpih-lshift.c
 mpih-rshift.c
 mpih-sub1.c
+udiv-w-sdiv.c
 

@@ -4,6 +4,7 @@
 
 
 mpi_extra_modules=
+mpi_sflags=
 
 test -d ./mpi || mkdir ./mpi
 
@@ -92,35 +93,59 @@ case "${target}" in
     # Motorola 68k configurations.  Let m68k mean 68020-68040.
     # mc68000 or mc68060 configurations need to be specified explicitly
     m680[234]0*-*-linuxaout* | m68k*-*-linuxaout*)
-	echo '#define MIT_SYNTAX'            >./mpi/asm-syntax.h
+	echo '#define MIT_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k/mc68020 m68k"
 	;;
     m68060*-*-linuxaout*)
-	echo '#define MIT_SYNTAX'            >./mpi/asm-syntax.h
+	echo '#define MIT_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k"
 	;;
     m680[234]0*-*-linux* | m68k*-*-linux*)
-	echo '#define ELF_SYNTAX'            >./mpi/asm-syntax.h
+	echo '#define ELF_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k/mc68020 m68k"
 	;;
     m68060*-*-linux*)
-	echo '#define ELF_SYNTAX'            >./mpi/asm-syntax.h
+	echo '#define ELF_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k"
 	;;
     m68000*-*-* | m68060*-*-*)
-	echo '#define MIT_SYNTAX'            >./mpi/asm-syntax.h
+	echo '#define MIT_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k/mc68000"
 	;;
     m680[234]0*-*-* | m68k*-*-*)
-	echo '#define MIT_SYNTAX'            >./mpi/asm-syntax.h
+	echo '#define MIT_SYNTAX'           >>./mpi/asm-syntax.h
 	cat  $srcdir/mpi/m68k/syntax.h	    >>./mpi/asm-syntax.h
 	path="m68k/mc68020 m68k"
 	;;
+
+    rs6000-*-aix[456789]* | rs6000-*-aix3.2.[456789])
+	mpi_sflags="-Wa,-mpwr"
+	path="power"
+	mpi_extra_modules="udiv-w-sdiv"
+	;;
+    rs6000-*-* | power-*-* | power2-*-*)
+	mpi_sflags="-Wa,-mppc"
+	path="power"
+	mpi_extra_modules="udiv-w-sdiv"
+	;;
+    ppc601-*-*)
+	mpi_sflags="-Wa,-mppc"
+	path="power powerpc32"
+	;;
+    ppc60[234]*-*-* | powerpc*-*-*)
+	mpi_sflags="-Wa,-mppc"
+	path="powerpc32"
+	;;
+    ppc620-*-* | powerpc64*-*-*)
+	mpi_sflags="-Wa,-mppc"
+	path="powerpc64"
+	;;
+
     *)
 	echo '/* No assembler modules configured */' >>./mpi/asm-syntax.h
 	path=""

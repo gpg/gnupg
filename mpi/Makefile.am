@@ -2,6 +2,7 @@
 
 INCLUDES =  -I$(top_srcdir)/include
 CFLAGS += -O2
+SFLAGS = @MPI_SFLAGS@
 
 SUFFIXES = .S .s
 

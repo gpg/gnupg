@@ -231,6 +231,7 @@ if test -f $srcdir/mpi/config.links ; then
     . $srcdir/mpi/config.links
     WK_LINK_FILES($mpi_ln_src, $mpi_ln_dst)
     ac_cv_mpi_extra_asm_modules="$mpi_extra_modules"
+    ac_cv_mpi_sflags="$mpi_sflags"
     ac_cv_mpi_config_done="yes"
     AC_MSG_RESULT(done)
 else
@@ -247,6 +248,8 @@ done
 AC_MSG_RESULT()
 fi
 AC_SUBST(MPI_EXTRA_ASM_OBJS)
+MPI_SFLAGS="$ac_cv_mpi_sflags"
+AC_SUBST(MPI_SFLAGS)
 
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
