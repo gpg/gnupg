@@ -31,6 +31,7 @@
 #include "scdaemon.h"
 #include "apdu.h"
 #include "dynload.h"
+#include "ccid-driver.h"
 
 #define MAX_READER 4 /* Number of readers we support concurrently. */
 #define CARD_CONNECT_TIMEOUT 1 /* Number of seconds to wait for
@@ -42,6 +43,10 @@
 struct reader_table_s {
   int used;            /* True if slot is used. */
   unsigned short port; /* Port number:  0 = unused, 1 - dev/tty */
+  int is_ccid;         /* Uses the internal CCID driver. */
+  struct {
+    ccid_driver_t handle;
+  } ccid;
   int is_ctapi;        /* This is a ctAPI driver. */
   struct {
     unsigned long context;
@@ -155,6 +160,7 @@ new_reader_slot (void)
       return -1;
     }
   reader_table[reader].used = 1;
+  reader_table[reader].is_ccid = 0;
   reader_table[reader].is_ctapi = 0;
 #ifdef HAVE_OPENSC
   reader_table[reader].is_osc = 0;
@@ -166,7 +172,9 @@ new_reader_slot (void)
 static void
 dump_reader_status (int reader)
 {
-  if (reader_table[reader].is_ctapi)
+  if (reader_table[reader].is_ccid)
+    log_info ("reader slot %d: using ccid driver\n", reader);
+  else if (reader_table[reader].is_ctapi)
     {
       log_info ("reader slot %d: %s\n", reader,
                 reader_table[reader].status == 1? "Processor ICC present" :
@@ -549,7 +557,74 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   return err? -1:0; /* FIXME: Return appropriate error code. */
 }
 
+
+#ifdef HAVE_LIBUSB
+/* 
+     Internal CCID driver interface.
+ */
 
+static int
+open_ccid_reader (void)
+{
+  int err;
+  int slot;
+  reader_table_t slotp;
+
+  slot = new_reader_slot ();
+  if (slot == -1)
+    return -1;
+  slotp = reader_table + slot;
+
+  err = ccid_open_reader (&slotp->ccid.handle, 0);
+  if (err)
+    {
+      slotp->used = 0;
+      return -1;
+    }
+
+  err = ccid_get_atr (slotp->ccid.handle,
+                      slotp->atr, sizeof slotp->atr, &slotp->atrlen);
+  if (err)
+    {
+      slotp->used = 0;
+      return -1;
+    }
+
+  slotp->is_ccid = 1;
+
+  dump_reader_status (slot); 
+  return slot;
+}
+
+
+/* Actually send the APDU of length APDULEN to SLOT and return a
+   maximum of *BUFLEN data in BUFFER, the actual returned size will be
+   set to BUFLEN.  Returns: Internal CCID driver error code. */
+static int
+send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
+                unsigned char *buffer, size_t *buflen)
+{
+  long err;
+  size_t maxbuflen;
+
+  if (DBG_CARD_IO)
+    log_printhex ("  APDU_data:", apdu, apdulen);
+
+  maxbuflen = *buflen;
+  err = ccid_transceive (reader_table[slot].ccid.handle,
+                         apdu, apdulen,
+                         buffer, maxbuflen, buflen);
+  if (err)
+    log_error ("ccid_transceive failed: (0x%lx)\n",
+               err);
+  
+  return err? -1:0; /* FIXME: Return appropriate error code. */
+}
+
+#endif /* HAVE_LIBUSB */
+
+
+
 #ifdef HAVE_OPENSC
 /* 
      OpenSC Interface.
@@ -755,6 +830,17 @@ apdu_open_reader (const char *portstr)
 {
   static int pcsc_api_loaded, ct_api_loaded;
 
+#ifdef HAVE_LIBUSB
+  if (!opt.disable_ccid)
+    {
+      int slot;
+
+      slot = open_ccid_reader ();
+      if (slot != -1)
+        return slot; /* got one */
+    }
+#endif
+
 #ifdef HAVE_OPENSC
   if (!opt.disable_opensc)
     {
@@ -871,6 +957,10 @@ error_string (int slot, long rc)
     return "[invalid slot]";
   if (reader_table[slot].is_ctapi)
     return ct_error_string (rc);
+#ifdef HAVE_LIBUSB
+  else if (reader_table[slot].is_ccid)
+    return "no CCID driver error strings yet";
+#endif
 #ifdef HAVE_OPENSC
   else if (reader_table[slot].is_osc)
     return sc_strerror (rc);
@@ -889,6 +979,10 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
     return SW_HOST_NO_DRIVER;
   if (reader_table[slot].is_ctapi)
     return ct_send_apdu (slot, apdu, apdulen, buffer, buflen);
+#ifdef HAVE_LIBUSB
+  else if (reader_table[slot].is_ccid)
+    return send_apdu_ccid (slot, apdu, apdulen, buffer, buflen);
+#endif
 #ifdef HAVE_OPENSC
   else if (reader_table[slot].is_osc)
     return osc_send_apdu (slot, apdu, apdulen, buffer, buflen);

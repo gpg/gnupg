@@ -2655,6 +2655,15 @@ do_generate_keypair (struct para_data_s *para,
 			    "the command \"--edit-key\" to generate a "
 			    "secondary key for this purpose.\n"));
 	    }
+
+          if (!opt.batch && card)
+            {
+              tty_printf(_(
+"Please create a revocation certificate now, so that you are able\n"
+"to revoke the key if it ever happens that you lose your card or\n"
+"the card gets damaged.  Use the command \"--gen-revoke\".\n"
+                         ));
+            }
 	}
     }
 

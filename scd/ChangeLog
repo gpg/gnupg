@@ -1,3 +1,10 @@
+2003-09-02  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c, scdaemon.h: New option --pcsc-ccid.
+	* ccid-driver.c, ccid-driver.h: New but far from being useful.
+	* Makefile.am: Add above.
+	* apdu.c: Add support for that ccid driver.
+	
 2003-08-26  Timo Schulz  <twoaday@freakmail.de>
 
 	* apdu.c (new_reader_slot): Only set 'is_osc' when OpenSC

@@ -32,17 +32,19 @@ scdaemon_SOURCES = \
 	card-common.h \
 	card-p15.c card-dinsig.c \
 	apdu.c apdu.h \
+	ccid-driver.c ccid-driver.h \
 	iso7816.c iso7816.h \
 	app.c app-common.h \
 	app-openpgp.c
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
 	  $(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-	 -lgpg-error @INTLLIBS@ -ldl
+	  $(LIBUSB_LIBS) -lgpg-error @INTLLIBS@ -ldl
 
 sc_investigate_SOURCES = \
 	sc-investigate.c scdaemon.h \
 	apdu.c apdu.h \
+	ccid-driver.c ccid-driver.h \
 	iso7816.c iso7816.h \
 	app.c app-common.h \
 	app-openpgp.c \
@@ -50,12 +52,14 @@ sc_investigate_SOURCES = \
 
 sc_investigate_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
-	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) @INTLLIBS@ -lgpg-error -ldl
+	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(LIBUSB_LIBS) @INTLLIBS@ \
+        -lgpg-error -ldl
 
 
 sc_copykeys_SOURCES = \
 	sc-copykeys.c scdaemon.h \
 	apdu.c apdu.h \
+	ccid-driver.c ccid-driver.h \
 	iso7816.c iso7816.h \
 	app.c app-common.h \
 	app-openpgp.c \
@@ -64,7 +68,8 @@ sc_copykeys_SOURCES = \
 sc_copykeys_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
 	../common/libsimple-pwquery.a \
-	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) -lgpg-error @INTLLIBS@ -ldl
+	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(LIBUSB_LIBS) \
+        -lgpg-error @INTLLIBS@ -ldl
 
 
 

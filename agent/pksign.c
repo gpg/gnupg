@@ -39,6 +39,10 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash)
   char * p, tmp[16];
   int i, rc;
 
+#warning I do do like that stuff - libgcrypt provides easier interfaces. -wk
+  /* FIXME: Either use the build function or create canonical encoded
+     S-expressions. */
+
   p = xmalloc (64 + 2 * mdlen);
   s = gcry_md_algo_name (algo);
   if (s && strlen (s) < 16)

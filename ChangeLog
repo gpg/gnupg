@@ -1,3 +1,7 @@
+2003-09-02  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (HAVE_LIBUSB): Added a simple test for libusb.
+
 2003-08-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac (AM_PATH_GPG_ERROR): Add missing comma in

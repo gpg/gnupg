@@ -3,6 +3,10 @@
 	* pkglue.c (mpi_from_sexp): New. Used to factor out
 	some common code.
 	
+2003-08-24  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (do_generate_keypair): Print a reminder to use --gen-revoke.
+
 2003-08-18  Timo Schulz  <twoaday@freakmail.de>
 
 	* encode.c (encode_sesskey): Checked the code and removed

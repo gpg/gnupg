@@ -71,6 +71,7 @@ enum cmd_and_opt_values
   oReaderPort,
   octapiDriver,
   opcscDriver,
+  oDisableCCID,
   oDisableOpenSC,
 
 aTest };
@@ -97,11 +98,18 @@ static ARGPARSE_OPTS opts[] = {
   { oReaderPort, "reader-port", 2, N_("|N|connect to reader at port N")},
   { octapiDriver, "ctapi-driver", 2, N_("NAME|use NAME as ct-API driver")},
   { opcscDriver, "pcsc-driver", 2, N_("NAME|use NAME as PC/SC driver")},
+  { oDisableCCID, "disable-ccidc", 0,
+#ifdef HAVE_LIBUSB
+                                    N_("do not use the internal CCID driver")
+#else
+                                    "@"
+#endif
+                                         /* end --disable-ccid */},
   { oDisableOpenSC, "disable-opensc", 0,
 #ifdef HAVE_OPENSC
-                                         N_("Do not use the OpenSC layer")
+                                    N_("do not use the OpenSC layer")
 #else
-                                         "@"
+                                    "@"
 #endif
                                          /* end --disable-opensc */},
 
@@ -387,6 +395,7 @@ main (int argc, char **argv )
         case oReaderPort: app_set_default_reader_port (pargs.r.ret_str); break;
         case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
         case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
+        case oDisableCCID: opt.disable_ccid = 1; break;
         case oDisableOpenSC: opt.disable_opensc = 1; break;
 
         default : pargs.err = configfp? 1:2; break;

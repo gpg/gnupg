@@ -20,6 +20,9 @@ might want to have an agent context for each service request
 ** When a certificate chain was sucessfully verified, make ephemeral certs used  in this chain permanent.
 ** figure out how to auto retrieve a key by serialno+issuer.
    Dirmngr is currently not able to parse more than the CN.
+** Try all available root certs in case we have several of them in our keybox.
+ For example TC TrustCenter Class 1 CA certs are ambiguous becuase
+ user certs don't come with a authorityKeyIdentifier.
 
 * sm/decrypt.c
 ** replace leading zero in integer hack by a cleaner solution
