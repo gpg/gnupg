@@ -356,7 +356,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 	    afx.what=1;
 	    iobuf_push_filter(buffer,armor_filter,&afx);
 
-	    if(export_pubkeys_stream(buffer,key,1)==-1)
+	    if(export_pubkeys_stream(buffer,temp,1)==-1)
 	      iobuf_close(buffer);
 	    else
 	      {
