@@ -1,3 +1,12 @@
+2000-10-14  Werner Koch  <wk@gnupg.org>
+
+	* mainproc.c (add_onepass_sig): There is an easier solution to the
+	error fixed yesterday; just check that we only have onepass
+	packets.  However, the other solution provides an cleaner
+	interface and opens the path to get access to other information
+	from the armore headers.
+	(release_list): Reset some more variables.
+
 2000-10-13  Werner Koch  <wk@gnupg.org>
 
 	* mainproc.c (add_gpg_control): New.

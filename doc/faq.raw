@@ -14,7 +14,7 @@ The most recent version of the FAQ is available from
 
 [H pre]
 Version: 0.2
-Last-Modified: Oct 01, 2000
+Last-Modified: Oct 14, 2000
 Maintained-by: [$maintainer]
 [H/pre]
 
@@ -466,6 +466,16 @@ in it - why?
     Good mail clients remove those extra dashes when displaying such a 
     message.      
 
+<Q> I have multiple signatures in a file and GnuPG says, the signatures are
+    bad.
+
+    Due to different message formats GnuPG is not always able to split such a
+    file unambiguously into the it's parts.  The result is that GnuPG claims 
+    the signature(s) is bad.  
+
+    The only way to have multiple signatures in a file is by using the 
+    OpenPGP format with one-pass-signature packets (which is GnuPG's
+    default) or the cleartext signed format.
 
 
 <S> ADVANCED TOPICS

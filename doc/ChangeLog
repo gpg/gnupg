@@ -1,3 +1,7 @@
+2000-10-14  Werner Koch  <wk@gnupg.org>
+
+	* faq.raw: Add an answer to the problem of multiple signatures.
+
 Wed Oct  4 15:50:18 CEST 2000  Werner Koch  <wk@openit.de>
 
         * gpgv.sgml: New.
@@ -10,11 +14,11 @@ Thu Sep 14 14:20:38 CEST 2000  Werner Koch  <wk@openit.de>
 
 Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
 
-  * gpg.sgml: Add a note about the availability of the GPH.
+        * gpg.sgml: Add a note about the availability of the GPH.
 
 2000-07-03 13:59:24  Werner Koch  (wk@habibti.openit.de)
 
-  * DETAILS, FAQ: Typo fixes by Yosiaki IIDA.
+        * DETAILS, FAQ: Typo fixes by Yosiaki IIDA.
 
 2000-05-12 10:57:21  Werner Koch  (wk@habibti.openit.de)
 

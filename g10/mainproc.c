@@ -95,6 +95,9 @@ release_list( CTX c )
     }
     c->failed_pkenc = NULL;
     c->list = NULL;
+    c->have_data = 0;
+    c->last_was_session_key = 0;
+    m_free(c->dek); c->dek = NULL;
 }
 
 
@@ -104,8 +107,14 @@ add_onepass_sig( CTX c, PACKET *pkt )
     KBNODE node;
 
     if( c->list ) { /* add another packet */
-	if( c->list->pkt->pkttype != PKT_ONEPASS_SIG ) {
-	   log_error("add_onepass_sig: another packet is in the way\n");
+        /* We can only append another onepass packet if the list
+         * does contain only onepass packets */
+        for( node=c->list; node && node->pkt->pkttype == PKT_ONEPASS_SIG;
+             node = node->next )
+            ;
+	if( node ) {
+            /* this is not the case, so we flush the current thing and 
+             * allow this packet to start a new verification thing */
 	   release_list( c );
 	   c->list = new_kbnode( pkt );
 	}
