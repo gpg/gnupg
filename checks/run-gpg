@@ -6,6 +6,7 @@ if ! ../g10/gpg --homedir . $* 2>err.tmp.$$ ; then
     rm err.tmp.$$
     exit 1
 fi
-grep -v 'gpg: Good signature from' err.tmp.$$ || true
+grep -v 'gpg: Good signature from' err.tmp.$$ \
+ | grep -v 'gpg: Signature made ' || true
 rm err.tmp.$$
 

@@ -448,6 +448,35 @@ update_keyblock( KBPOS *kbpos, KBNODE root )
  ********** Functions which operates on regular keyrings ********
  ****************************************************************/
 
+static int
+cmp_seckey( PKT_secret_cert *req_skc, PKT_secret_cert *skc )
+{
+    int n,i;
+
+    assert( req_skc->pubkey_algo == skc->pubkey_algo );
+
+    n = pubkey_get_nskey( req_skc->pubkey_algo );
+    for(i=0; i < n; i++ ) {
+	if( mpi_cmp( req_skc->skey[i], skc->skey[i] ) )
+	    return -1;
+    }
+    return 0;
+}
+
+static int
+cmp_pubkey( PKT_public_cert *req_pkc, PKT_public_cert *pkc )
+{
+    int n, i;
+
+    assert( req_pkc->pubkey_algo == pkc->pubkey_algo );
+
+    n = pubkey_get_npkey( req_pkc->pubkey_algo );
+    for(i=0; i < n; i++ ) {
+	if( mpi_cmp( req_pkc->pkey[i], pkc->pkey[i] )  )
+	    return -1;
+    }
+    return 0;
+}
 
 /****************
  * search one keyring, return 0 if found, -1 if not found or an errorcode.
@@ -489,26 +518,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 	    if(   req_skc->timestamp == skc->timestamp
 	       && req_skc->valid_days == skc->valid_days
 	       && req_skc->pubkey_algo == skc->pubkey_algo
-	       && (   ( is_ELGAMAL(skc->pubkey_algo)
-			&& !mpi_cmp( req_skc->d.elg.p, skc->d.elg.p )
-			&& !mpi_cmp( req_skc->d.elg.g, skc->d.elg.g )
-			&& !mpi_cmp( req_skc->d.elg.y, skc->d.elg.y )
-			&& !mpi_cmp( req_skc->d.elg.x, skc->d.elg.x )
-		      )
-		   || ( skc->pubkey_algo == PUBKEY_ALGO_DSA
-			&& !mpi_cmp( req_skc->d.dsa.p, skc->d.dsa.p )
-			&& !mpi_cmp( req_skc->d.dsa.q, skc->d.dsa.q )
-			&& !mpi_cmp( req_skc->d.dsa.g, skc->d.dsa.g )
-			&& !mpi_cmp( req_skc->d.dsa.y, skc->d.dsa.y )
-			&& !mpi_cmp( req_skc->d.dsa.x, skc->d.dsa.x )
-		      )
-		   || ( is_RSA(skc->pubkey_algo)
-			&& !mpi_cmp( req_skc->d.rsa.n, skc->d.rsa.n )
-			&& !mpi_cmp( req_skc->d.rsa.e, skc->d.rsa.e )
-			&& !mpi_cmp( req_skc->d.rsa.d, skc->d.rsa.d )
-		      )
-		  )
-	      )
+	       && !cmp_seckey( req_skc, skc) )
 		break; /* found */
 	}
 	else if( pkt.pkttype == PKT_PUBLIC_CERT ) {
@@ -517,23 +527,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 	    if(   req_pkc->timestamp == pkc->timestamp
 	       && req_pkc->valid_days == pkc->valid_days
 	       && req_pkc->pubkey_algo == pkc->pubkey_algo
-	       && (   ( is_ELGAMAL(pkc->pubkey_algo)
-			&& !mpi_cmp( req_pkc->d.elg.p, pkc->d.elg.p )
-			&& !mpi_cmp( req_pkc->d.elg.g, pkc->d.elg.g )
-			&& !mpi_cmp( req_pkc->d.elg.y, pkc->d.elg.y )
-		      )
-		   || ( pkc->pubkey_algo == PUBKEY_ALGO_DSA
-			&& !mpi_cmp( req_pkc->d.dsa.p, pkc->d.dsa.p )
-			&& !mpi_cmp( req_pkc->d.dsa.q, pkc->d.dsa.q )
-			&& !mpi_cmp( req_pkc->d.dsa.g, pkc->d.dsa.g )
-			&& !mpi_cmp( req_pkc->d.dsa.y, pkc->d.dsa.y )
-		      )
-		   || ( is_RSA(pkc->pubkey_algo)
-			&& !mpi_cmp( req_pkc->d.rsa.n, pkc->d.rsa.n )
-			&& !mpi_cmp( req_pkc->d.rsa.e, pkc->d.rsa.e )
-		      )
-		  )
-	      )
+	       && !cmp_pubkey( req_pkc, pkc ) )
 		break; /* found */
 	}
 	else

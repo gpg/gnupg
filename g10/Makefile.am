@@ -26,9 +26,6 @@ common_source =  \
 	      mdfilter.c	\
 	      textfilter.c	\
 	      cipher.c		\
-	      elg.c		\
-	      dsa.c		\
-	      rsa.c		\
 	      misc.c		\
 	      options.h 	\
 	      openfile.c	\

@@ -68,8 +68,7 @@ typedef struct {
     u32     keyid[2];	    /* 64 bit keyid */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
-    int     mpi_count;	    /* 1 for rsa, 2 for ELG */
-    MPI     material[2];    /* (ELG needs 2)
+    MPI     data[PUBKEY_MAX_NENC];
 } PKT_pubkey_enc;
 
 
@@ -94,20 +93,16 @@ typedef struct {
     byte *hashed_data;	    /* all subpackets with hashed  data (v4 only) */
     byte *unhashed_data;    /* ditto for unhashed data */
     byte digest_start[2];   /* first 2 bytes of the digest */
-    union {
-      struct {
-	MPI  a, b;	      /* integers with the digest */
-      } elg;
-      struct {
-	MPI  r, s;	      /* integers with the digest */
-      } dsa;
-      struct {
-	MPI  rsa_integer;     /* the encrypted digest */
-      } rsa;
-    } d;
+    MPI  data[PUBKEY_MAX_NSIG];
 } PKT_signature;
 
 
+/****************
+ * Note about the pkey/skey elements:  We assume that the secret keys
+ * has the same elemts as the public key at the begin of the array, so
+ * that npkey < nskey and it is possible to compare the secret and
+ * public keys by comparing the first npkey elements of pkey againts skey.
+ */
 typedef struct {
     u32     timestamp;	    /* certificate made */
     u16     valid_days;     /* valid for this number of days */
@@ -115,11 +110,7 @@ typedef struct {
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     ulong   local_id;	    /* internal use, valid if > 0 */
-    union {
-	ELG_public_key elg;
-	DSA_public_key dsa;
-	RSA_public_key rsa;
-    } d;
+    MPI     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_cert;
 
 typedef struct {
@@ -137,11 +128,7 @@ typedef struct {
 	STRING2KEY s2k;
 	byte iv[8]; /* initialization vector for CFB mode */
     } protect;
-    union {
-	ELG_secret_key elg;
-	DSA_secret_key dsa;
-	RSA_secret_key rsa;
-    } d;
+    MPI skey[PUBKEY_MAX_NSKEY];
     u16 csum;		/* checksum */
 } PKT_secret_cert;
 

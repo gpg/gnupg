@@ -1,3 +1,13 @@
+Thu Jun 11 13:26:44 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* packet.h: Mjor chnages to the structure of public key material
+	which is now stored in an array and not anaymore in a union of
+	algorithm specific structures.	These is needed to make the system
+	more extendable and makes a lot of stuff much simpler. Changed
+	all over the system.
+
+	* dsa.c, rsa.c, elg.c: Removed.
+
 Wed Jun 10 07:22:02 1998  Werner Koch,mobil,,,	(wk@tobold)
 
 	* g10.c ("load-extension"): New option.

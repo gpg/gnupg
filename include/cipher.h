@@ -84,6 +84,8 @@ struct cipher_handle_s { char does_not_matter[1]; };
 #define CIPHER_MODE_DUMMY     5  /* used with algo DUMMY for no encryption */
 
 
+
+
 int cipher_debug_mode;
 
 /*-- dynload.c --*/
@@ -101,6 +103,23 @@ void cipher_setiv( CIPHER_HANDLE c, const byte *iv );
 void cipher_encrypt( CIPHER_HANDLE c, byte *out, byte *in, unsigned nbytes );
 void cipher_decrypt( CIPHER_HANDLE c, byte *out, byte *in, unsigned nbytes );
 void cipher_sync( CIPHER_HANDLE c );
+
+/*-- pubkey.c --*/
+#define PUBKEY_MAX_NPKEY  4
+#define PUBKEY_MAX_NSKEY  6
+#define PUBKEY_MAX_NSIG   2
+#define PUBKEY_MAX_NENC   2
+
+int pubkey_get_npkey( int algo );
+int pubkey_get_nskey( int algo );
+int pubkey_get_nsig( int algo );
+int pubkey_get_nenc( int algo );
+unsigned pubkey_nbits( int algo, MPI *pkey );
+int pubkey_check_secret_key( int algo, MPI *skey );
+int pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey );
+int pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey );
+int pubkey_sign( int algo, MPI *resarr, MPI hash, MPI *skey );
+int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey );
 
 
 /*-- misc.c --*/

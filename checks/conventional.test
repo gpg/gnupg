@@ -10,7 +10,7 @@ for i in plain-2 data-32000 ; do
 done
 for i in plain-1 data-80000 ; do
     echo "Hier spricht HAL" | ./run-gpg --passphrase-fd 0 \
-					--cipher-algo cast -c -o x --yes $i
+					--cipher-algo cast5 -c -o x --yes $i
     echo "Hier spricht HAL" | ./run-gpg --passphrase-fd 0    -o y --yes x
     cmp $i y || error "$i: mismatch"
 done

@@ -318,6 +318,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	break;
       case PKT_RING_TRUST:
 	parse_trust(inp, pkttype, pktlen);
+	rc = 0;
 	break;
       case PKT_PLAINTEXT:
 	rc = parse_plaintext(inp, pkttype, pktlen, pkt );
@@ -502,6 +503,7 @@ static int
 parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     unsigned n;
+    int i, ndata;
     PKT_pubkey_enc *k;
 
     k = packet->pkt.pubkey_enc = m_alloc(sizeof *packet->pkt.pubkey_enc );
@@ -520,31 +522,20 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     if( list_mode )
 	printf(":pubkey enc packet: version %d, algo %d, keyid %08lX%08lX\n",
 	  k->version, k->pubkey_algo, (ulong)k->keyid[0], (ulong)k->keyid[1]);
-    if( is_ELGAMAL(k->pubkey_algo) ) {
-	n = pktlen;
-	k->d.elg.a = mpi_read(inp, &n, 0); pktlen -=n;
-	n = pktlen;
-	k->d.elg.b = mpi_read(inp, &n, 0 ); pktlen -=n;
-	if( list_mode ) {
-	    printf("\telg a: ");
-	    mpi_print(stdout, k->d.elg.a, mpi_print_mode );
-	    printf("\n\telg b: ");
-	    mpi_print(stdout, k->d.elg.b, mpi_print_mode );
-	    putchar('\n');
-	}
-    }
-    else if( is_RSA(k->pubkey_algo) ) {
-	n = pktlen;
-	k->d.rsa.rsa_integer = mpi_read(inp, &n, 0 ); pktlen -=n;
-	if( list_mode ) {
-	    printf("\trsa integer: ");
-	    mpi_print(stdout, k->d.rsa.rsa_integer, mpi_print_mode );
-	    putchar('\n');
-	}
-    }
-    else if( list_mode )
-	printf("\tunknown algorithm %d\n", k->pubkey_algo );
 
+    ndata = pubkey_get_nenc(k->pubkey_algo);
+    if( !ndata && list_mode )
+	printf("\tunsupported algorithm %d\n", k->pubkey_algo );
+
+    for( i=0; i < ndata; i++ ) {
+	n = pktlen;
+	k->data[i] = mpi_read(inp, &n, 0); pktlen -=n;
+	if( list_mode ) {
+	    printf("\tdata: ");
+	    mpi_print(stdout, k->data[i], mpi_print_mode );
+	    putchar('\n');
+	}
+    }
 
   leave:
     skip_rest(inp, pktlen);
@@ -663,6 +654,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     unsigned n;
     int is_v4=0;
     int rc=0;
+    int i, ndata;
 
     if( pktlen < 16 ) {
 	log_error("packet(%d) too short\n", pkttype);
@@ -763,43 +755,21 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    parse_sig_subpkt( sig->unhashed_data,SIGSUBPKT_LIST_UNHASHED, NULL);
 	}
     }
-    if( is_ELGAMAL(sig->pubkey_algo) ) {
-	n = pktlen;
-	sig->d.elg.a = mpi_read(inp, &n, 0 ); pktlen -=n;
-	n = pktlen;
-	sig->d.elg.b = mpi_read(inp, &n, 0 ); pktlen -=n;
-	if( list_mode ) {
-	    printf("\telg a: ");
-	    mpi_print(stdout, sig->d.elg.a, mpi_print_mode );
-	    printf("\n\telg b: ");
-	    mpi_print(stdout, sig->d.elg.b, mpi_print_mode );
-	    putchar('\n');
-	}
-    }
-    else if( sig->pubkey_algo == PUBKEY_ALGO_DSA ) {
-	n = pktlen;
-	sig->d.dsa.r = mpi_read(inp, &n, 0 ); pktlen -=n;
-	n = pktlen;
-	sig->d.dsa.s = mpi_read(inp, &n, 0 ); pktlen -=n;
-	if( list_mode ) {
-	    printf("\tdsa r: ");
-	    mpi_print(stdout, sig->d.elg.a, mpi_print_mode );
-	    printf("\n\tdsa s: ");
-	    mpi_print(stdout, sig->d.elg.b, mpi_print_mode );
-	    putchar('\n');
-	}
-    }
-    else if( is_RSA(sig->pubkey_algo) ) {
-	n = pktlen;
-	sig->d.rsa.rsa_integer = mpi_read(inp, &n, 0 ); pktlen -=n;
-	if( list_mode ) {
-	    printf("\trsa integer: ");
-	    mpi_print(stdout, sig->d.rsa.rsa_integer, mpi_print_mode );
-	    putchar('\n');
-	}
-    }
-    else if( list_mode )
+
+    ndata = pubkey_get_nsig(sig->pubkey_algo);
+    if( !ndata && list_mode )
 	printf("\tunknown algorithm %d\n", sig->pubkey_algo );
+
+    for( i=0; i < ndata; i++ ) {
+	n = pktlen;
+	sig->data[i] = mpi_read(inp, &n, 0 );
+	pktlen -=n;
+	if( list_mode ) {
+	    printf("\tdata: ");
+	    mpi_print(stdout, sig->data[i], mpi_print_mode );
+	    putchar('\n');
+	}
+    }
 
 
   leave:
@@ -932,17 +902,17 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    putchar('\n');
 	}
 	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
-	    pkt->pkt.public_cert->d.elg.p = elg_p;
-	    pkt->pkt.public_cert->d.elg.g = elg_g;
-	    pkt->pkt.public_cert->d.elg.y = elg_y;
+	    pkt->pkt.public_cert->pkey[0] = elg_p;
+	    pkt->pkt.public_cert->pkey[1] = elg_g;
+	    pkt->pkt.public_cert->pkey[2] = elg_y;
 	}
 	else {
 	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
 	    byte temp[8];
 
-	    pkt->pkt.secret_cert->d.elg.p = elg_p;
-	    pkt->pkt.secret_cert->d.elg.g = elg_g;
-	    pkt->pkt.secret_cert->d.elg.y = elg_y;
+	    pkt->pkt.secret_cert->skey[0] = elg_p;
+	    pkt->pkt.secret_cert->skey[1] = elg_g;
+	    pkt->pkt.secret_cert->skey[2] = elg_y;
 	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
 	    if( cert->protect.algo ) {
 		cert->is_protected = 1;
@@ -1032,20 +1002,16 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	     * If the user is so careless, not to protect his secret key,
 	     * we can assume, that he operates an open system :=(.
 	     * So we put the key into secure memory when we unprotect it. */
-	    n = pktlen; cert->d.elg.x = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->skey[3] = mpi_read(inp, &n, 0 ); pktlen -=n;
 
 	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
 	    printf("\telg x: ");
-	    mpi_print(stdout, cert->d.elg.x, mpi_print_mode  );
+	    mpi_print(stdout, cert->skey[3], mpi_print_mode  );
 	    putchar('\n');
 		printf("\t[secret value x is not shown]\n"
 		       "\tchecksum: %04hx\n", cert->csum);
 	    }
-	  /*log_mpidump("elg p=", cert->d.elg.p );
-	    log_mpidump("elg g=", cert->d.elg.g );
-	    log_mpidump("elg y=", cert->d.elg.y );
-	    log_mpidump("elg x=", cert->d.elg.x ); */
 	}
     }
     else if( algorithm == PUBKEY_ALGO_DSA ) {
@@ -1066,19 +1032,19 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    putchar('\n');
 	}
 	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
-	    pkt->pkt.public_cert->d.dsa.p = dsa_p;
-	    pkt->pkt.public_cert->d.dsa.q = dsa_q;
-	    pkt->pkt.public_cert->d.dsa.g = dsa_g;
-	    pkt->pkt.public_cert->d.dsa.y = dsa_y;
+	    pkt->pkt.public_cert->pkey[0] = dsa_p;
+	    pkt->pkt.public_cert->pkey[1] = dsa_q;
+	    pkt->pkt.public_cert->pkey[2] = dsa_g;
+	    pkt->pkt.public_cert->pkey[3] = dsa_y;
 	}
 	else {
 	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
 	    byte temp[8];
 
-	    pkt->pkt.secret_cert->d.dsa.p = dsa_p;
-	    pkt->pkt.secret_cert->d.dsa.q = dsa_q;
-	    pkt->pkt.secret_cert->d.dsa.g = dsa_g;
-	    pkt->pkt.secret_cert->d.dsa.y = dsa_y;
+	    pkt->pkt.secret_cert->skey[0] = dsa_p;
+	    pkt->pkt.secret_cert->skey[1] = dsa_q;
+	    pkt->pkt.secret_cert->skey[2] = dsa_g;
+	    pkt->pkt.secret_cert->skey[3] = dsa_y;
 	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
 	    if( cert->protect.algo ) {
 		cert->is_protected = 1;
@@ -1164,18 +1130,13 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	     * If the user is so careless, not to protect his secret key,
 	     * we can assume, that he operates an open system :=(.
 	     * So we put the key into secure memory when we unprotect it. */
-	    n = pktlen; cert->d.dsa.x = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->skey[4] = mpi_read(inp, &n, 0 ); pktlen -=n;
 
 	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
 		printf("\t[secret value x is not shown]\n"
 		       "\tchecksum: %04hx\n", cert->csum);
 	    }
-	  /*log_mpidump("dsa p=", cert->d.dsa.p );
-	    log_mpidump("dsa q=", cert->d.dsa.q );
-	    log_mpidump("dsa g=", cert->d.dsa.g );
-	    log_mpidump("dsa y=", cert->d.dsa.y );
-	    log_mpidump("dsa x=", cert->d.dsa.x ); */
 	}
     }
     else if( is_RSA(algorithm) ) {
@@ -1191,15 +1152,15 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    putchar('\n');
 	}
 	if( pkttype == PKT_PUBLIC_CERT || pkttype == PKT_PUBKEY_SUBCERT ) {
-	    pkt->pkt.public_cert->d.rsa.n = rsa_pub_mod;
-	    pkt->pkt.public_cert->d.rsa.e = rsa_pub_exp;
+	    pkt->pkt.public_cert->pkey[0] = rsa_pub_mod;
+	    pkt->pkt.public_cert->pkey[1] = rsa_pub_exp;
 	}
 	else {
 	    PKT_secret_cert *cert = pkt->pkt.secret_cert;
 	    byte temp[8];
 
-	    pkt->pkt.secret_cert->d.rsa.n = rsa_pub_mod;
-	    pkt->pkt.secret_cert->d.rsa.e = rsa_pub_exp;
+	    pkt->pkt.secret_cert->skey[0] = rsa_pub_mod;
+	    pkt->pkt.secret_cert->skey[1] = rsa_pub_exp;
 	    cert->protect.algo = iobuf_get_noeof(inp); pktlen--;
 	    if( list_mode )
 		printf(  "\tprotect algo: %d\n", cert->protect.algo);
@@ -1219,22 +1180,16 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 	    else
 		cert->is_protected = 0;
 	    /* (See comments at the code for elg keys) */
-	    n = pktlen; cert->d.rsa.d = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    n = pktlen; cert->d.rsa.p = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    n = pktlen; cert->d.rsa.q = mpi_read(inp, &n, 0 ); pktlen -=n;
-	    n = pktlen; cert->d.rsa.u = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->skey[2] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->skey[3] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->skey[4] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen; cert->skey[5] = mpi_read(inp, &n, 0 ); pktlen -=n;
 
 	    cert->csum = read_16(inp); pktlen -= 2;
 	    if( list_mode ) {
 		printf("\t[secret values d,p,q,u are not shown]\n"
 		       "\tchecksum: %04hx\n", cert->csum);
 	    }
-	 /* log_mpidump("rsa n=", cert->d.rsa.n );
-	    log_mpidump("rsa e=", cert->d.rsa.e );
-	    log_mpidump("rsa d=", cert->d.rsa.d );
-	    log_mpidump("rsa p=", cert->d.rsa.p );
-	    log_mpidump("rsa q=", cert->d.rsa.q );
-	    log_mpidump("rsa u=", cert->d.rsa.u ); */
 	}
     }
     else if( list_mode )

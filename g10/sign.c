@@ -38,22 +38,53 @@
 #include "i18n.h"
 
 
+static int
+do_sign( PKT_secret_cert *skc, PKT_signature *sig,
+	 MD_HANDLE md, int digest_algo )
+{
+    MPI frame;
+    byte *dp;
+    int rc;
+
+    if( !digest_algo )
+	digest_algo = md_get_algo(md);
+
+    dp = md_read( md, digest_algo );
+    sig->digest_algo = digest_algo;
+    sig->digest_start[0] = dp[0];
+    sig->digest_start[1] = dp[1];
+    if( skc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	frame = mpi_alloc( (md_digest_length(digest_algo)+BYTES_PER_MPI_LIMB-1)
+			   / BYTES_PER_MPI_LIMB );
+	mpi_set_buffer( frame, md_read(md, digest_algo),
+			       md_digest_length(digest_algo), 0 );
+    }
+    else
+	frame = encode_md_value( md, digest_algo, mpi_get_nbits(skc->skey[0]));
+    rc = pubkey_sign( skc->pubkey_algo, sig->data, frame, skc->skey );
+    mpi_free(frame);
+    if( rc )
+	log_error("pubkey_sign failed: %s\n", g10_errstr(rc) );
+    else {
+	if( opt.verbose ) {
+	    char *ustr = get_user_id_string( sig->keyid );
+	    log_info("%s signature from: %s\n",
+		      pubkey_algo_to_string(skc->pubkey_algo), ustr );
+	    m_free(ustr);
+	}
+    }
+    return rc;
+}
+
+
 
 int
 complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
 {
     int rc=0;
 
-    if( (rc=check_secret_key( skc )) )
-	;
-    else if( is_ELGAMAL(sig->pubkey_algo) )
-	g10_elg_sign( skc, sig, md, 0 );
-    else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
-	g10_dsa_sign( skc, sig, md, 0 );
-    else if( is_RSA(sig->pubkey_algo) )
-	g10_rsa_sign( skc, sig, md, 0 );
-    else
-	BUG();
+    if( !(rc=check_secret_key( skc )) )
+	rc = do_sign( skc, sig, md, 0 );
 
     /* fixme: should we check whether the signature is okay?
      * maybe by using an option */
@@ -334,27 +365,20 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
 	md_final( md );
 
-	if( is_ELGAMAL(sig->pubkey_algo) )
-	    g10_elg_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
-	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
-	    g10_dsa_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
-	else if( is_RSA(sig->pubkey_algo) )
-	    g10_rsa_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
-	else
-	    BUG();
-
+	rc = do_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
 	md_close( md );
 
-	/* and write it */
-	init_packet(&pkt);
-	pkt.pkttype = PKT_SIGNATURE;
-	pkt.pkt.signature = sig;
-	rc = build_packet( out, &pkt );
-	free_packet( &pkt );
-	if( rc ) {
-	    log_error("build signature packet failed: %s\n", g10_errstr(rc) );
-	    goto leave;
+	if( !rc ) { /* and write it */
+	    init_packet(&pkt);
+	    pkt.pkttype = PKT_SIGNATURE;
+	    pkt.pkt.signature = sig;
+	    rc = build_packet( out, &pkt );
+	    free_packet( &pkt );
+	    if( rc )
+		log_error("build signature packet failed: %s\n", g10_errstr(rc) );
 	}
+	if( rc )
+	    goto leave;
     }
 
 
@@ -538,27 +562,20 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	}
 	md_final( md );
 
-	if( is_ELGAMAL(sig->pubkey_algo) )
-	    g10_elg_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
-	else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
-	    g10_dsa_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
-	else if( is_RSA(sig->pubkey_algo) )
-	    g10_rsa_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
-	else
-	    BUG();
-
+	rc = do_sign( skc, sig, md, hash_for(sig->pubkey_algo) );
 	md_close( md );
 
-	/* and write it */
-	init_packet(&pkt);
-	pkt.pkttype = PKT_SIGNATURE;
-	pkt.pkt.signature = sig;
-	rc = build_packet( out, &pkt );
-	free_packet( &pkt );
-	if( rc ) {
-	    log_error("build signature packet failed: %s\n", g10_errstr(rc) );
-	    goto leave;
+	if( !rc ) { /* and write it */
+	    init_packet(&pkt);
+	    pkt.pkttype = PKT_SIGNATURE;
+	    pkt.pkt.signature = sig;
+	    rc = build_packet( out, &pkt );
+	    free_packet( &pkt );
+	    if( rc )
+		log_error("build signature packet failed: %s\n", g10_errstr(rc) );
 	}
+	if( rc )
+	    goto leave;
     }
 
 

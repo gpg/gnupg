@@ -91,20 +91,6 @@ MPI encode_md_value( MD_HANDLE md, int hash_algo, unsigned nbits );
 KBNODE make_comment_node( const char *s );
 KBNODE make_mpi_comment_node( const char *s, MPI a );
 
-/*-- elg.c --*/
-void g10_elg_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );
-void g10_elg_sign( PKT_secret_cert *skc, PKT_signature *sig,
-					 MD_HANDLE md, int digest_algo );
-
-/*-- dsa.c --*/
-void g10_dsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
-					 MD_HANDLE md, int digest_algo );
-
-/*-- rsa.c --*/
-void g10_rsa_encrypt( PKT_public_cert *pkc, PKT_pubkey_enc *enc, DEK *dek );
-void g10_rsa_sign( PKT_secret_cert *skc, PKT_signature *sig,
-					 MD_HANDLE md, int digest_algo );
-
 /*-- import.c --*/
 int import_pubkeys( const char *filename );
 /*-- export.c --*/

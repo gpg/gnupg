@@ -329,26 +329,36 @@ write_pubkey_enc_from_list( PKC_LIST pkc_list, DEK *dek, IOBUF out )
     int rc;
 
     for( ; pkc_list; pkc_list = pkc_list->next ) {
+	MPI frame;
 
 	pkc = pkc_list->pkc;
 	enc = m_alloc_clear( sizeof *enc );
 	enc->pubkey_algo = pkc->pubkey_algo;
-	if( is_ELGAMAL(enc->pubkey_algo) )
-	    g10_elg_encrypt( pkc, enc, dek );
-	else if( is_RSA(enc->pubkey_algo) )
-	    g10_rsa_encrypt( pkc, enc, dek );
-	else
-	    BUG();
-	/* and write it */
-	init_packet(&pkt);
-	pkt.pkttype = PKT_PUBKEY_ENC;
-	pkt.pkt.pubkey_enc = enc;
-	rc = build_packet( out, &pkt );
-	free_pubkey_enc(enc);
-	if( rc ) {
-	    log_error("build pubkey_enc packet failed: %s\n", g10_errstr(rc) );
-	    return rc;
+	keyid_from_pkc( pkc, enc->keyid );
+	frame = encode_session_key( dek, pubkey_nbits( pkc->pubkey_algo,
+							  pkc->pkey ) );
+	rc = pubkey_encrypt( pkc->pubkey_algo, enc->data, frame, pkc->pkey );
+	mpi_free( frame );
+	if( rc )
+	    log_error("pubkey_encrypt failed: %s\n", g10_errstr(rc) );
+	else {
+	    if( opt.verbose ) {
+		char *ustr = get_user_id_string( enc->keyid );
+		log_info("%s encrypted for: %s\n",
+		    pubkey_algo_to_string(enc->pubkey_algo), ustr );
+		m_free(ustr);
+	    }
+	    /* and write it */
+	    init_packet(&pkt);
+	    pkt.pkttype = PKT_PUBKEY_ENC;
+	    pkt.pkt.pubkey_enc = enc;
+	    rc = build_packet( out, &pkt );
+	    if( rc )
+	       log_error("build_packet(pubkey_enc) failed: %s\n", g10_errstr(rc));
 	}
+	free_pubkey_enc(enc);
+	if( rc )
+	    return rc;
     }
     return 0;
 }

@@ -177,6 +177,7 @@ static int
 do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
 {
     int rc = 0;
+    int n, i;
     IOBUF a = iobuf_temp();
 
     if( !pkc->version )
@@ -187,31 +188,14 @@ do_public_cert( IOBUF out, int ctb, PKT_public_cert *pkc )
     if( pkc->version < 4 )
 	write_16(a, pkc->valid_days );
     iobuf_put(a, pkc->pubkey_algo );
-    if( is_ELGAMAL(pkc->pubkey_algo) ) {
-	mpi_write(a, pkc->d.elg.p );
-	mpi_write(a, pkc->d.elg.g );
-	mpi_write(a, pkc->d.elg.y );
-    }
-    else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
-	mpi_write(a, pkc->d.dsa.p );
-	mpi_write(a, pkc->d.dsa.q );
-	mpi_write(a, pkc->d.dsa.g );
-	mpi_write(a, pkc->d.dsa.y );
-    }
-    else if( is_RSA(pkc->pubkey_algo) ) {
-	mpi_write(a, pkc->d.rsa.n );
-	mpi_write(a, pkc->d.rsa.e );
-    }
-    else {
-	rc = G10ERR_PUBKEY_ALGO;
-	goto leave;
-    }
+    n = pubkey_get_npkey( pkc->pubkey_algo );
+    for(i=0; i < n; i++ )
+	mpi_write(a, pkc->pkey[i] );
 
     write_header2(out, ctb, iobuf_get_temp_length(a), pkc->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
-  leave:
     iobuf_close(a);
     return rc;
 }
@@ -227,7 +211,7 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     int rc = 0;
     int c;
     IOBUF a = iobuf_temp();
-  #if 1
+  #if 0
     FILE *fp = fopen("dump.pkc", "a");
     int i=0;
 
@@ -241,7 +225,7 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     if( (rc = build_packet( a, &pkt )) )
 	log_fatal("build public_cert for hashing failed: %s\n", g10_errstr(rc));
     while( (c=iobuf_get(a)) != -1 ) {
-      #if 1
+      #if 0
 	fprintf( fp," %02x", c );
 	if( (++i == 24) ) {
 	    putc('\n', fp);
@@ -250,7 +234,7 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
       #endif
 	md_putc( md, c );
     }
-  #if 1
+  #if 0
     putc('\n', fp);
     fclose(fp);
   #endif
@@ -262,6 +246,7 @@ static int
 do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 {
     int rc = 0;
+    int i, nskey, npkey;
     IOBUF a = iobuf_temp();
 
     if( !skc->version )
@@ -272,11 +257,18 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
     if( skc->version < 4 )
 	write_16(a, skc->valid_days );
     iobuf_put(a, skc->pubkey_algo );
-    if( is_ELGAMAL(skc->pubkey_algo) ) {
-	mpi_write(a, skc->d.elg.p );
-	mpi_write(a, skc->d.elg.g );
-	mpi_write(a, skc->d.elg.y );
-	if( skc->is_protected ) {
+    nskey = pubkey_get_nskey( skc->pubkey_algo );
+    npkey = pubkey_get_npkey( skc->pubkey_algo );
+    assert( npkey < nskey );
+
+    for(i=0; i < npkey; i++ )
+	mpi_write(a, skc->skey[i] );
+    if( skc->is_protected ) {
+	if( is_RSA(skc->pubkey_algo) && skc->version < 4 ) {
+	    iobuf_put(a, skc->protect.algo );
+	    iobuf_write(a, skc->protect.iv, 8 );
+	}
+	else {
 	    iobuf_put(a, 0xff );
 	    iobuf_put(a, skc->protect.algo );
 	    iobuf_put(a, skc->protect.s2k.mode );
@@ -288,60 +280,17 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 		write_32(a, skc->protect.s2k.count );
 	    iobuf_write(a, skc->protect.iv, 8 );
 	}
-	else
-	    iobuf_put(a, 0 );
-
-	mpi_write(a, skc->d.elg.x );
-	write_16(a, skc->csum );
     }
-    else if( skc->pubkey_algo == PUBKEY_ALGO_DSA ) {
-	mpi_write(a, skc->d.dsa.p );
-	mpi_write(a, skc->d.dsa.q );
-	mpi_write(a, skc->d.dsa.g );
-	mpi_write(a, skc->d.dsa.y );
-	if( skc->is_protected ) {
-	    iobuf_put(a, 0xff );
-	    iobuf_put(a, skc->protect.algo );
-	    iobuf_put(a, skc->protect.s2k.mode );
-	    iobuf_put(a, skc->protect.s2k.hash_algo );
-	    if( skc->protect.s2k.mode == 1
-		|| skc->protect.s2k.mode == 4 )
-		iobuf_write(a, skc->protect.s2k.salt, 8 );
-	    if( skc->protect.s2k.mode == 4 )
-		write_32(a, skc->protect.s2k.count );
-	    iobuf_write(a, skc->protect.iv, 8 );
-	}
-	else
-	    iobuf_put(a, 0 );
-
-	mpi_write(a, skc->d.dsa.x );
-	write_16(a, skc->csum );
-    }
-    else if( is_RSA(skc->pubkey_algo) ) {
-	mpi_write(a, skc->d.rsa.n );
-	mpi_write(a, skc->d.rsa.e );
-	if( skc->is_protected ) {
-	    iobuf_put(a, skc->protect.algo );
-	    iobuf_write(a, skc->protect.iv, 8 );
-	}
-	else
-	    iobuf_put(a, 0 );
-	mpi_write(a, skc->d.rsa.d );
-	mpi_write(a, skc->d.rsa.p );
-	mpi_write(a, skc->d.rsa.q );
-	mpi_write(a, skc->d.rsa.u );
-	write_16(a, skc->csum );
-    }
-    else {
-	rc = G10ERR_PUBKEY_ALGO;
-	goto leave;
-    }
+    else
+	iobuf_put(a, 0 );
+    for(   ; i < nskey; i++ )
+	mpi_write(a, skc->skey[i] );
+    write_16(a, skc->csum );
 
     write_header2(out, ctb, iobuf_get_temp_length(a), skc->hdrbytes, 1 );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
-  leave:
     iobuf_close(a);
     return rc;
 }
@@ -381,29 +330,21 @@ static int
 do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 {
     int rc = 0;
+    int n, i;
     IOBUF a = iobuf_temp();
 
     write_version( a, ctb );
     write_32(a, enc->keyid[0] );
     write_32(a, enc->keyid[1] );
     iobuf_put(a,enc->pubkey_algo );
-    if( is_ELGAMAL(enc->pubkey_algo) ) {
-	mpi_write(a, enc->d.elg.a );
-	mpi_write(a, enc->d.elg.b );
-    }
-    else if( is_RSA(enc->pubkey_algo) ) {
-	mpi_write(a, enc->d.rsa.rsa_integer );
-    }
-    else {
-	rc = G10ERR_PUBKEY_ALGO;
-	goto leave;
-    }
+    n = pubkey_get_nenc( enc->pubkey_algo );
+    for(i=0; i < n; i++ )
+	mpi_write(a, enc->data[i] );
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
-  leave:
     iobuf_close(a);
     return rc;
 }
@@ -650,6 +591,7 @@ static int
 do_signature( IOBUF out, int ctb, PKT_signature *sig )
 {
     int rc = 0;
+    int n, i;
     IOBUF a = iobuf_temp();
 
     if( !sig->version )
@@ -684,27 +626,14 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     }
     iobuf_put(a, sig->digest_start[0] );
     iobuf_put(a, sig->digest_start[1] );
-    if( is_ELGAMAL(sig->pubkey_algo) ) {
-	mpi_write(a, sig->d.elg.a );
-	mpi_write(a, sig->d.elg.b );
-    }
-    else if( sig->pubkey_algo == PUBKEY_ALGO_DSA ) {
-	mpi_write(a, sig->d.dsa.r );
-	mpi_write(a, sig->d.dsa.s );
-    }
-    else if( is_RSA(sig->pubkey_algo) ) {
-	mpi_write(a, sig->d.rsa.rsa_integer );
-    }
-    else {
-	rc = G10ERR_PUBKEY_ALGO;
-	goto leave;
-    }
+    n = pubkey_get_nsig( sig->pubkey_algo );
+    for(i=0; i < n; i++ )
+	mpi_write(a, sig->data[i] );
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
-  leave:
     iobuf_close(a);
     return rc;
 }

@@ -95,11 +95,10 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 	}
 	md_final( digest );
 	result = encode_md_value( digest, sig->digest_algo,
-					  mpi_get_nbits(pkc->d.elg.p));
+					  mpi_get_nbits(pkc->pkey[0]));
 	if( DBG_CIPHER )
 	    log_mpidump("calc sig frame (elg): ", result);
-	if( !elg_verify( sig->d.elg.a, sig->d.elg.b, result, &pkc->d.elg ) )
-	    rc = G10ERR_BAD_SIGN;
+	rc = pubkey_verify( pkc->pubkey_algo, result, sig->data, pkc->pkey );
     }
     else if( pkc->pubkey_algo == PUBKEY_ALGO_DSA ) {
 	if( (rc=check_digest_algo(sig->digest_algo)) )
@@ -148,8 +147,7 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 				md_digest_length(sig->digest_algo), 0 );
 	if( DBG_CIPHER )
 	    log_mpidump("calc sig frame: ", result);
-	if( !dsa_verify( sig->d.dsa.r, sig->d.dsa.s, result, &pkc->d.dsa ) )
-	    rc = G10ERR_BAD_SIGN;
+	rc = pubkey_verify( pkc->pubkey_algo, result, sig->data, pkc->pkey );
     }
  #ifdef HAVE_RSA_CIPHER
     else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA

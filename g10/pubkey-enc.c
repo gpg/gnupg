@@ -56,26 +56,9 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     if( (rc = get_seckey( skc, k->keyid )) )
 	goto leave;
 
-    if( is_ELGAMAL(k->pubkey_algo) ) {
-	if( DBG_CIPHER ) {
-	    log_mpidump("Encr DEK a:", k->d.elg.a );
-	    log_mpidump("     DEK b:", k->d.elg.b );
-	}
-	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skc->d.elg.p) );
-	elg_decrypt( plain_dek, k->d.elg.a, k->d.elg.b, &skc->d.elg );
-    }
-    else if( is_RSA(k->pubkey_algo) ) {
-	if( DBG_CIPHER )
-	    log_mpidump("Encr DEK frame:", k->d.rsa.rsa_integer );
-
-	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skc->d.rsa.n) );
-	rsa_secret( plain_dek, k->d.rsa.rsa_integer, &skc->d.rsa );
-    }
-    else {
-	log_info("need some glue code for pubkey algo %d\n", k->pubkey_algo);
-	rc = G10ERR_PUBKEY_ALGO; /* unsupported algorithm */
+    rc = pubkey_decrypt(k->pubkey_algo, &plain_dek, k->data, skc->skey );
+    if( rc )
 	goto leave;
-    }
     free_secret_cert( skc ); skc = NULL;
     frame = mpi_get_buffer( plain_dek, &nframe, NULL );
     mpi_free( plain_dek ); plain_dek = NULL;
@@ -117,25 +100,18 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 
     dek->keylen = nframe - (n+1) - 2;
     dek->algo = frame[n++];
-    switch( dek->algo ) {
-      case CIPHER_ALGO_IDEA:
+    if( dek->algo ==  CIPHER_ALGO_IDEA )
 	write_status(STATUS_RSA_OR_IDEA);
-	rc = G10ERR_NI_CIPHER;
-	goto leave;
-      case CIPHER_ALGO_BLOWFISH160:
-	if( dek->keylen != 20 )
-	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
-	break;
-      case CIPHER_ALGO_BLOWFISH:
-      case CIPHER_ALGO_CAST5:
-	if( dek->keylen != 16 )
-	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
-	break;
-      default:
+    rc = check_cipher_algo( dek->algo );
+    if( rc ) {
 	dek->algo = 0;
-	rc = G10ERR_CIPHER_ALGO;
 	goto leave;
     }
+    if( (dek->keylen*8) != cipher_get_keylen( dek->algo ) ) {
+	rc = G10ERR_WRONG_SECKEY;
+	goto leave;
+    }
+
     /* copy the key to DEK and compare the checksum */
     csum  = frame[nframe-2] << 8;
     csum |= frame[nframe-1];

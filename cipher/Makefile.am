@@ -6,6 +6,9 @@ noinst_LIBRARIES = libcipher.a
 
 
 libcipher_a_SOURCES = cipher.c	\
+		 pubkey.c	\
+		 md.c		\
+		 md.h		\
 		 dynload.c	\
 		 dynload.h	\
 		 blowfish.c	\
@@ -32,8 +35,6 @@ libcipher_a_SOURCES = cipher.c	\
 		 sha1.c 	\
 		 dsa.h		\
 		 dsa.c		\
-		 md.c		\
-		 md.h		\
 		 misc.c 	\
 		 smallprime.c
 

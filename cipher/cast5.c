@@ -594,17 +594,17 @@ setkey( CAST5_context *c, byte *key, unsigned keylen )
 const char *
 cast5_get_info( int algo, size_t *keylen,
 		   size_t *blocksize, size_t *contextsize,
-		   void (**setkey)( void *c, byte *key, unsigned keylen ),
-		   void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		   void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
+		   void (**r_setkey)( void *c, byte *key, unsigned keylen ),
+		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
 		 )
 {
     *keylen = 128;
     *blocksize = CAST5_BLOCKSIZE;
     *contextsize = sizeof(CAST5_context);
-    *setkey = FNCCAST_SETKEY(setkey);
-    *encrypt= FNCCAST_CRYPT(encrypt_block);
-    *decrypt= FNCCAST_CRYPT(decrypt_block);
+    *r_setkey = FNCCAST_SETKEY(setkey);
+    *r_encrypt= FNCCAST_CRYPT(encrypt_block);
+    *r_decrypt= FNCCAST_CRYPT(decrypt_block);
 
     if( algo == CIPHER_ALGO_CAST5 )
 	return "CAST5";

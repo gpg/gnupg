@@ -155,17 +155,17 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->version = pkc->version = version;
     skc->valid_days = pkc->valid_days = valid_days;
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_ELGAMAL;
-		       pkc->d.elg.p = pk.p;
-		       pkc->d.elg.g = pk.g;
-		       pkc->d.elg.y = pk.y;
-    skc->d.elg.p = sk.p;
-    skc->d.elg.g = sk.g;
-    skc->d.elg.y = sk.y;
-    skc->d.elg.x = sk.x;
+		       pkc->pkey[0] = pk.p;
+		       pkc->pkey[1] = pk.g;
+		       pkc->pkey[2] = pk.y;
+    skc->skey[0] = sk.p;
+    skc->skey[1] = sk.g;
+    skc->skey[2] = sk.y;
+    skc->skey[3] = sk.x;
     skc->is_protected = 0;
     skc->protect.algo = 0;
 
-    skc->csum = checksum_mpi( skc->d.elg.x );
+    skc->csum = checksum_mpi( skc->skey[3] );
     if( ret_skc ) /* not a subkey: return an unprotected version of the skc */
 	*ret_skc = copy_secret_cert( NULL, skc );
 
@@ -296,19 +296,19 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
      */
     skc->valid_days = pkc->valid_days = valid_days;
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_DSA;
-		       pkc->d.dsa.p = pk.p;
-		       pkc->d.dsa.q = pk.q;
-		       pkc->d.dsa.g = pk.g;
-		       pkc->d.dsa.y = pk.y;
-    skc->d.dsa.p = sk.p;
-    skc->d.dsa.q = sk.q;
-    skc->d.dsa.g = sk.g;
-    skc->d.dsa.y = sk.y;
-    skc->d.dsa.x = sk.x;
+		       pkc->pkey[0] = pk.p;
+		       pkc->pkey[1] = pk.q;
+		       pkc->pkey[2] = pk.g;
+		       pkc->pkey[3] = pk.y;
+    skc->skey[0] = sk.p;
+    skc->skey[1] = sk.q;
+    skc->skey[2] = sk.g;
+    skc->skey[3] = sk.y;
+    skc->skey[4] = sk.x;
     skc->is_protected = 0;
     skc->protect.algo = 0;
 
-    skc->csum = checksum_mpi( skc->d.dsa.x );
+    skc->csum = checksum_mpi( skc->skey[4] );
     if( ret_skc ) /* not a subkey: return an unprotected version of the skc */
 	 *ret_skc = copy_secret_cert( NULL, skc );
 

@@ -67,17 +67,18 @@ do_check( PKT_secret_cert *cert )
 	switch( cert->pubkey_algo ) {
 	  case PUBKEY_ALGO_ELGAMAL:
 	  case PUBKEY_ALGO_ELGAMAL_E:
-	    buffer = mpi_get_secure_buffer( cert->d.elg.x, &nbytes, NULL );
+	    /* FIXME: removed ELG knowledge from this function */
+	    buffer = mpi_get_secure_buffer( cert->skey[3], &nbytes, NULL );
 	    cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
-	    mpi_set_buffer( cert->d.elg.x, buffer, nbytes, 0 );
-	    csum = checksum_mpi( cert->d.elg.x );
+	    mpi_set_buffer( cert->skey[3], buffer, nbytes, 0 );
+	    csum = checksum_mpi( cert->skey[3] );
 	    m_free( buffer );
 	    break;
 	  case PUBKEY_ALGO_DSA:
-	    buffer = mpi_get_secure_buffer( cert->d.dsa.x, &nbytes, NULL );
+	    buffer = mpi_get_secure_buffer( cert->skey[4], &nbytes, NULL );
 	    cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
-	    mpi_set_buffer( cert->d.dsa.x, buffer, nbytes, 0 );
-	    csum = checksum_mpi( cert->d.dsa.x );
+	    mpi_set_buffer( cert->skey[4], buffer, nbytes, 0 );
+	    csum = checksum_mpi( cert->skey[4] );
 	    m_free( buffer );
 	    break;
 	#ifdef HAVE_RSA_CIPHER
@@ -107,15 +108,6 @@ do_check( PKT_secret_cert *cert )
 	cipher_close( cipher_hd );
 	/* now let's see whether we have used the right passphrase */
 	if( csum != cert->csum ) {
-	    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
-		/* very bad kludge to work around an early bug */
-		csum -= checksum_u16( mpi_get_nbits(cert->d.elg.x) );
-		nbytes = mpi_get_nlimbs(cert->d.elg.x) * 4;
-		csum += checksum_u16( nbytes*8 );
-		if( !opt.batch && csum == cert->csum )
-		    log_info("Probably you have an old key - use "
-			 "\"--change-passphrase\" to convert.\n");
-	    }
 	    if( csum != cert->csum ) {
 		copy_secret_cert( cert, save_cert );
 		free_secret_cert( save_cert );
@@ -124,24 +116,8 @@ do_check( PKT_secret_cert *cert )
 	    }
 	}
 
-	switch( cert->pubkey_algo ) {
-	  case PUBKEY_ALGO_ELGAMAL_E:
-	  case PUBKEY_ALGO_ELGAMAL:
-	    res = elg_check_secret_key( &cert->d.elg );
-	    break;
-	  case PUBKEY_ALGO_DSA:
-	    res = dsa_check_secret_key( &cert->d.dsa );
-	    break;
-	#ifdef HAVE_RSA_CIPHER
-	  case PUBKEY_ALGO_RSA:
-	  case PUBKEY_ALGO_RSA_E:
-	  case PUBKEY_ALGO_RSA_S:
-	    res = rsa_check_secret_key( &cert->d.rsa );
-	    break;
-	#endif
-	  default: BUG();
-	}
-	if( !res ) {
+	res = pubkey_check_secret_key( cert->pubkey_algo, cert->skey );
+	if( res ) {
 	    copy_secret_cert( cert, save_cert );
 	    free_secret_cert( save_cert );
 	    memcpy( cert->protect.iv, save_iv, 8 );
@@ -154,10 +130,10 @@ do_check( PKT_secret_cert *cert )
 	switch( cert->pubkey_algo ) {
 	  case PUBKEY_ALGO_ELGAMAL_E:
 	  case PUBKEY_ALGO_ELGAMAL:
-	    csum = checksum_mpi( cert->d.elg.x );
+	    csum = checksum_mpi( cert->skey[3] );
 	    break;
 	  case PUBKEY_ALGO_DSA:
-	    csum = checksum_mpi( cert->d.dsa.x );
+	    csum = checksum_mpi( cert->skey[4] );
 	    break;
 	#ifdef HAVE_RSA_CIPHER
 	  case PUBKEY_ALGO_RSA_E:
@@ -184,19 +160,8 @@ do_check( PKT_secret_cert *cert )
 	#endif
 	  default: BUG();
 	}
-	if( csum != cert->csum ) {
-	    if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
-		/* very bad kludge to work around an early bug */
-		csum -= checksum_u16( mpi_get_nbits(cert->d.elg.x) );
-		nbytes = mpi_get_nlimbs(cert->d.elg.x) * 4;
-		csum += checksum_u16( nbytes*8 );
-		if( !opt.batch && csum == cert->csum )
-		    log_info("Probably you have an old key - use "
-			 "\"--change-passphrase\" to convert.\n");
-	    }
-	    if( csum != cert->csum )
-		return G10ERR_CHECKSUM;
-	}
+	if( csum != cert->csum )
+	    return G10ERR_CHECKSUM;
     }
 
     return 0;
@@ -274,23 +239,17 @@ do_protect( void (*fnc)(CIPHER_HANDLE, byte *, byte *, unsigned),
 
     switch( cert->pubkey_algo ) {
       case PUBKEY_ALGO_ELGAMAL_E:
-	/* recalculate the checksum, so that --change-passphrase
-	 * can be used to convert from the faulty to the correct one
-	 * wk 06.04.98:
-	 * fixme: remove this some time in the future.
-	 */
-	cert->csum = checksum_mpi( cert->d.elg.x );
       case PUBKEY_ALGO_ELGAMAL:
-	buffer = mpi_get_buffer( cert->d.elg.x, &nbytes, NULL );
+	buffer = mpi_get_buffer( cert->skey[3], &nbytes, NULL );
 	(*fnc)( fnc_hd, buffer, buffer, nbytes );
-	mpi_set_buffer( cert->d.elg.x, buffer, nbytes, 0 );
+	mpi_set_buffer( cert->skey[3], buffer, nbytes, 0 );
 	m_free( buffer );
 	break;
 
       case PUBKEY_ALGO_DSA:
-	buffer = mpi_get_buffer( cert->d.dsa.x, &nbytes, NULL );
+	buffer = mpi_get_buffer( cert->skey[4], &nbytes, NULL );
 	(*fnc)( fnc_hd, buffer, buffer, nbytes );
-	mpi_set_buffer( cert->d.dsa.x, buffer, nbytes, 0 );
+	mpi_set_buffer( cert->skey[4], buffer, nbytes, 0 );
 	m_free( buffer );
 	break;
 
