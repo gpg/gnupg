@@ -1,3 +1,7 @@
+2002-10-12  Werner Koch  <wk@gnupg.org>
+
+	* DETAILS (KEY_CREATED): Enhanced by fingerprint.
+
 2002-10-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Note that '#' means secret-key-unavailable, and that
