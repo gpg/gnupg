@@ -33,7 +33,7 @@ gpg --dry-run --with-fingerprint --with-colons $keyring \
     | gawk -v "KEYRING=$hdrline" '
 BEGIN { FS=":"
 	algos[1] = "RSA";
-	algos[16] = "ElGamal";
+	algos[16] = "Elgamal";
 	algos[17] = "DSA";
 	any = 0;
 	lines = -1;
@@ -112,7 +112,3 @@ function printfpr20( s )
 }
 
 ' | tee a.pub | gpg --print-mds
-
-
-
-
