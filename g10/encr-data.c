@@ -66,10 +66,7 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     blocksize = cipher_get_blocksize(dek->algo);
     if( !blocksize || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
-    /* FIXME: remove the kludge for the experimental twofish128 mode:
-     * we always use the 10 byte prefix and not one depending on the blocksize
-     */
-    nprefix = dek->algo == CIPHER_ALGO_TWOFISH_OLD? blocksize : 8;
+    nprefix = blocksize;
     if( ed->len && ed->len < (nprefix+2) )
 	BUG();
 

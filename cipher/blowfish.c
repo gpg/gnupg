@@ -42,7 +42,6 @@
 
 
 #define CIPHER_ALGO_BLOWFISH	 4  /* blowfish 128 bit key */
-#define CIPHER_ALGO_BLOWFISH160 42  /* blowfish 160 bit key (not in OpenPGP)*/
 
 #define FNCCAST_SETKEY(f)  (int(*)(void*, byte*, unsigned))(f)
 #define FNCCAST_CRYPT(f)   (void(*)(void*, byte*, byte*))(f)
@@ -582,7 +581,7 @@ blowfish_get_info( int algo, size_t *keylen,
 		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
 		 )
 {
-    *keylen = algo == CIPHER_ALGO_BLOWFISH ? 128 : 160;
+    *keylen = 128;
     *blocksize = BLOWFISH_BLOCKSIZE;
     *contextsize = sizeof(BLOWFISH_context);
     *r_setkey = FNCCAST_SETKEY(bf_setkey);
@@ -591,8 +590,6 @@ blowfish_get_info( int algo, size_t *keylen,
 
     if( algo == CIPHER_ALGO_BLOWFISH )
 	return "BLOWFISH";
-    if( algo == CIPHER_ALGO_BLOWFISH160 )
-	return "BLOWFISH160";
     return NULL;
 }
 

@@ -988,6 +988,10 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 /****************
  * append the userid starting with NODE and all signatures to KEYBLOCK.
  * Mark all new and copied packets by setting flag bit 0.
+ * FIXME: It may happen that two identical user ID gets imported; should we
+ *	  add another check and how can we handle the signature?  Maybe
+ *	  we have to collapse both UIDs into one and then remove duplicated
+ *	  signatures.
  */
 static int
 append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,

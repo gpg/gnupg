@@ -34,7 +34,6 @@
 #define CIPHER_ALGO_SAFER_SK128  5
 #define CIPHER_ALGO_DES_SK	 6
 #define CIPHER_ALGO_TWOFISH	10  /* twofish 256 bit */
-#define CIPHER_ALGO_BLOWFISH160 42  /* blowfish 160 bit key (not in OpenPGP)*/
 #define CIPHER_ALGO_SKIPJACK   101  /* experimental: skipjack */
 #define CIPHER_ALGO_TWOFISH_OLD 102 /* experimental: twofish 128 bit */
 #define CIPHER_ALGO_DUMMY      110  /* no encryption at all */

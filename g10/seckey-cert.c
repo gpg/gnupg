@@ -187,6 +187,9 @@ check_secret_key( PKT_secret_key *sk, int n )
 	    break;
     }
 
+    if( !rc )
+	write_status( STATUS_GOOD_PASSPHRASE );
+
     return rc;
 }
 

@@ -58,10 +58,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     blocksize = cipher_get_blocksize( cfx->dek->algo );
     if( blocksize < 8 || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
-    /* FIXME: remove the kludge for the experimental twofish128 mode:
-     * we always use the 10 byte prefix and not one depending on the blocksize
-     */
-    nprefix = cfx->dek->algo == CIPHER_ALGO_TWOFISH_OLD? blocksize : 8;
+    nprefix = blocksize;
     randomize_buffer( temp, nprefix, 1 );
     temp[nprefix] = temp[nprefix-2];
     temp[nprefix+1] = temp[nprefix-1];

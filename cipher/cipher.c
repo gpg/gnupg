@@ -127,28 +127,6 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
-    cipher_table[i].algo = CIPHER_ALGO_BLOWFISH160;
-    cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
-					 &cipher_table[i].keylen,
-					 &cipher_table[i].blocksize,
-					 &cipher_table[i].contextsize,
-					 &cipher_table[i].setkey,
-					 &cipher_table[i].encrypt,
-					 &cipher_table[i].decrypt     );
-    if( !cipher_table[i].name )
-	BUG();
-    i++;
-    cipher_table[i].algo = CIPHER_ALGO_TWOFISH_OLD;
-    cipher_table[i].name = twofish_get_info( cipher_table[i].algo,
-					 &cipher_table[i].keylen,
-					 &cipher_table[i].blocksize,
-					 &cipher_table[i].contextsize,
-					 &cipher_table[i].setkey,
-					 &cipher_table[i].encrypt,
-					 &cipher_table[i].decrypt     );
-    if( !cipher_table[i].name )
-	BUG();
-    i++;
     cipher_table[i].algo = CIPHER_ALGO_DUMMY;
     cipher_table[i].name = "DUMMY";
     cipher_table[i].blocksize = 8;
@@ -362,8 +340,7 @@ cipher_open( int algo, int mode, int secure )
     if( algo == CIPHER_ALGO_DUMMY )
 	hd->mode = CIPHER_MODE_DUMMY;
     else if( mode == CIPHER_MODE_AUTO_CFB ) {
-	if( hd->blocksize > 8
-	    || algo == CIPHER_ALGO_BLOWFISH160 || algo >= 100 )
+	if( algo >= 100 )
 	    hd->mode = CIPHER_MODE_CFB;
 	else
 	    hd->mode = CIPHER_MODE_PHILS_CFB;

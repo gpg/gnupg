@@ -1,3 +1,14 @@
+Fri Apr  9 12:26:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* status.c (write_status_text): Some more status codes.
+	* passphrase_to_dek (passphrase_to_dek): add a status code.
+	* seckey_cert.c (check_secret_key): Likewise.
+
+	* encr-data.c (decrypt_data): Reverse the last changes
+	* cipher.c (write_header): Ditto.
+
+	* parse-packet.c (parse_key): Dropped kludge for ancient blowfish mode.
+
 Thu Apr  8 09:35:53 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* mainproc.c (proc_encrypted): Add a new status output

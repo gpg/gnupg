@@ -241,6 +241,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     if( result == -1 )
 	;
     else if( !result ) {
+	write_status( STATUS_DECRYPTION_OKAY );
 	if( opt.verbose > 1 )
 	    log_info(_("decryption okay\n"));
     }

@@ -1,3 +1,7 @@
+Fri Apr  9 12:26:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* cipher.h (BLOWFISH160): Removed.
+
 Tue Apr  6 19:58:12 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* cipher.h (DEK): increased max. key length to 32 bytes

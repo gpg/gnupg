@@ -106,6 +106,9 @@ write_status_text ( int no, const char *text)
       case STATUS_NO_SECKEY	 : s = "NO_SECKEY\n"; break;
       case STATUS_NEED_PASSPHRASE_SYM: s = "NEED_PASSPHRASE_SYM\n"; break;
       case STATUS_DECRYPTION_FAILED: s = "DECRYPTION_FAILED\n"; break;
+      case STATUS_DECRYPTION_OKAY: s = "DECRYPTION_OKAY\n"; break;
+      case STATUS_MISSING_PASSPHRASE: s = "MISSING_PASSPHRASE\n"; break;
+      case STATUS_GOOD_PASSPHRASE : s = "GOOD_PASSPHRASE\n"; break;
       default: s = "?\n"; break;
     }
 

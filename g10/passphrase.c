@@ -201,6 +201,10 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 	    m_free(pw2);
 	}
     }
+
+    if( !pw || !*pw )
+	write_status( STATUS_MISSING_PASSPHRASE );
+
     dek = m_alloc_secure( sizeof *dek );
     dek->algo = cipher_algo;
     if( !*pw && mode == 2 )

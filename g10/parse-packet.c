@@ -1305,11 +1305,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	    else { /* old version; no S2K, so we set mode to 0, hash MD5 */
 		sk->protect.s2k.mode = 0;
-		/* We need a kludge to cope with old GNUPG versions */
-		sk->protect.s2k.hash_algo =
-			     ( sk->protect.algo == CIPHER_ALGO_BLOWFISH160
-			       && algorithm == PUBKEY_ALGO_ELGAMAL_E ) ?
-				      DIGEST_ALGO_RMD160 : DIGEST_ALGO_MD5;
+		sk->protect.s2k.hash_algo = DIGEST_ALGO_MD5;
 		if( list_mode )
 		    printf(  "\tprotect algo: %d  (hash algo: %d)\n",
 			 sk->protect.algo, sk->protect.s2k.hash_algo );

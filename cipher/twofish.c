@@ -2,6 +2,9 @@
  * By Matthew Skala <mskala@ansuz.sooke.bc.ca>, July 26, 1998
  * 256-bit key length added March 20, 1999
  *
+ * The original author has disclaimed all copyright interest in this
+ * code and thus putting it in the public domain.
+ *
  * This code is a "clean room" implementation, written from the paper
  * _Twofish: A 128-Bit Block Cipher_ by Bruce Schneier, John Kelsey,
  * Doug Whiting, David Wagner, Chris Hall, and Niels Ferguson, available

@@ -21,18 +21,15 @@
   * Add NO_PUBKEY and NO_SECKEY status lines.
   * Add more NODATA status lines
 
-  * Solaris make as problems with the generated POTFILES - seems to be a
+  * Solaris make has problems with the generated POTFILES - seems to be a
     gettext bug.
 
-  * Need suffix rules for .S to produce .s for some systems
-
-  * do a chmod as soon as the secring is created.  Print a warning if
-    the directory mode is wrong.
 
 
 Nice to have
 ------------
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
+  * Print a warning if the directory mode is wrong.
   * replace the keyserver stuff either by a call to a specialized
     utility or SOCKSify the stuff.
   * Do a real fix for bug #7 or document that it is a PGP 5 error.
