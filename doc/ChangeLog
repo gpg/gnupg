@@ -1,3 +1,17 @@
+2002-04-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Add "%t" flag for photo IDs, a note about primary
+	having different meanings for photo and regular IDs, rename
+	--default-check-level to --default-cert-check-level, add
+	--auto-check-trustdb, and --pgp6.
+
+	* DETAILS: Add EXPSIG, EXPKEYSIG, and KEYEXPIRED.  Add notes to
+	SIGEXPIRED (deprecated), and VALIDSIG (added expiration date).
+	Add "Preferences" command to unattended key generation
+	instructions.  Also fixed a few typos.
+ 
+	* samplekeys.asc: new
+
 2002-01-31  Marcus Brinkmann  <marcus@g10code.de>
 
 	* DETAILS: Fix a spelling error, correct IMPORTED_RES to IMPORT_RES,

@@ -101,6 +101,16 @@ more arguments in future versions.
         The username is the primary one encoded in UTF-8 and %XX
         escaped.
 
+    EXPSIG	<long keyid>  <username>
+	The signature with the keyid is good, but the signature is
+	expired. The username is the primary one encoded in UTF-8 and
+	%XX escaped.
+
+    EXPKEYSIG	<long keyid>  <username>
+	The signature with the keyid is good, but the signature was
+	made by an expired key. The username is the primary one
+	encoded in UTF-8 and %XX escaped.
+
     BADSIG	<long keyid>  <username>
 	The signature with the keyid has not been verified okay.
         The username is the primary one encoded in UTF-8 and %XX
@@ -115,11 +125,14 @@ more arguments in future versions.
 	this signature.  sig_class is a 2 byte hex-value.
 
     VALIDSIG	<fingerprint in hex> <sig_creation_date> <sig-timestamp>
+		<expire-timestamp>
+
 	The signature with the keyid is good. This is the same
 	as GOODSIG but has the fingerprint as the argument. Both
 	status lines are emitted for a good signature.
 	sig-timestamp is the signature creation time in seconds after
-	the epoch.
+	the epoch. expire-timestamp is the signature expiration time
+	in seconds after the epoch (zero means "does not expire").
 
     SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
 	This is emitted only for signatures of class 0 or 1 which
@@ -156,7 +169,11 @@ more arguments in future versions.
 	to indicate how trustworthy the signature is.  No arguments yet.
 
     SIGEXPIRED
-	The signature key has expired.	No arguments yet.
+	This is deprecated in favor of KEYEXPIRED.
+
+    KEYEXPIRED <expire-timestamp>
+	The key has expired.  expire-timestamp is the expiration time
+	in seconds after the epoch.
 
     KEYREVOKED
 	The used key has been revoked by its owner.  No arguments yet.
@@ -275,7 +292,6 @@ more arguments in future versions.
                   'P' = primary
                   'S' = subkey
 
-
     SESSION_KEY  <algo>:<hexdigits>
 	The session key used to decrypt the message.  This message will
 	only be emmited when the special option --show-session-key
@@ -308,7 +324,7 @@ more arguments in future versions.
         Issued when no recipients are usable.
 
     ALREADY_SIGNED <long-keyid>
-        Warning: This is eperimental and might be removed at any time.
+        Warning: This is experimental and might be removed at any time.
 
 
 Key generation
@@ -363,7 +379,7 @@ The format of this file is as follows:
     may be placed anywhere.
   o Key generation takes place when either the end of the parameter file
     is reached, the next "Key-Type" parameter is encountered or at the
-    controlstatement "%commit"
+    control statement "%commit"
   o Control statements:
     %echo <text>
 	Print <text>.
@@ -417,6 +433,10 @@ The format of this file is as follows:
 	may either be entered in ISO date format (2000-08-15) or as
 	number of days, weeks, month or years. Without a letter days
 	are assumed.
+     Preferences: <string>
+        Set the cipher, hash, and compression preference values for
+	this key.  This expects the same type of string as "setpref"
+	in the --edit menu.
 
 Here is an example:
 $ cat >foo <<EOF

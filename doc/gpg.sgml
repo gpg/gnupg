@@ -231,9 +231,9 @@ This is the command line that should be run to view a photo ID.  "%i"
 will be expanded to a filename containing the photo.  "%I" does the
 same, except the file will not be deleted once the viewer exits.
 Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
-for the key fingerprint, and "%%" for an actual percent sign.  If
-neither %i or %I are present, then the photo will be supplied to the
-viewer on standard input.
+for the key fingerprint, "%t" for the type of image (e.g. jpeg), and
+"%%" for an actual percent sign.  If neither %i or %I are present,
+then the photo will be supplied to the viewer on standard input.
 </para><para>
 The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
 stdin"
@@ -372,9 +372,13 @@ Change the passphrase of the secret key.</para></listitem></varlistentry>
     <varlistentry>
     <term>primary</term>
     <listitem><para>
-    Flag the current user id as the primary one, removes the primary user
-    id flag from all other user ids and sets the timestamp of all
-    affected self-signatures one second ahead.</para></listitem></varlistentry>
+Flag the current user id as the primary one, removes the primary user
+id flag from all other user ids and sets the timestamp of all affected
+self-signatures one second ahead.  Note that setting a photo user ID
+as primary makes it primary over other photo user IDs, and setting a
+regular user ID as primary makes it primary over other regular user
+IDs.
+</para></listitem></varlistentry>
     <varlistentry>
     <term>uid &ParmN;</term>
     <listitem><para>
@@ -470,7 +474,7 @@ This is a shortcut version of the subcommand "nrsign" from --edit.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--default-check-level &ParmN;</term>
+<term>--default-cert-check-level &ParmN;</term>
 <listitem><para>
 The default to use for the check level when signing a key.
 </para><para>
@@ -633,7 +637,7 @@ value can be changed at any time later.
 <listitem><para>
 Do trust DB maintenance without user interaction.  Form time to time
 the trust database must be updated so that expired keys and resulting
-changes in the Web-of_trust can be tracked.  GnuPG tries to figure
+changes in the Web-of-Trust can be tracked.  GnuPG tries to figure
 when this is required and then does it implicitly; this command can be
 used to force such a check.  The processing is identically to that of
 --update-trustdb but it skips keys with a not yet defined "ownertrust".
@@ -1391,12 +1395,17 @@ interaction, this performance penalty does not matter in most settings.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--no-auto-check-trustdb</term>
+<term>--auto-check-trustdb</term>
 <listitem><para>
 If GnuPG feels that its information about the Web-of-Trust has to be
 updated, it automatically runs the --check-trustdb command 
-internally.  As this is a time consuming process, this option allow to
-disable the automatic invocation.
+internally.  This may be a time consuming process.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-auto-check-trustdb</term>
+<listitem><para>
+Resets the --auto-check-trustdb option.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1494,6 +1503,27 @@ This option implies `--rfc1991 --no-openpgp --disable-mdc
 <term>--no-pgp2</term>
 <listitem><para>
 Resets the --pgp2 option.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--pgp6</term>
+<listitem><para>
+Set up all options to be as PGP 6 compliant as possible.  This
+restricts you to the ciphers IDEA (if the IDEA plugin is installed),
+3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
+compression algorithms none and ZIP.  This also disables making
+signatures with signing subkeys as PGP 6 does not understand
+signatures made by signing subkeys.
+</para><para>
+This option implies `--disable-mdc --no-comment --escape-from
+--force-v3-sigs --no-ask-sig-expire --digest-algo MD5 --compress-algo
+1'
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-pgp6</term>
+<listitem><para>
+Resets the --pgp6 option.
 </para></listitem></varlistentry>
 
 <varlistentry>
