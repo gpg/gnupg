@@ -33,7 +33,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <zlib.h>
-#ifdef __riscos__
+#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
 # include "zlib-riscos.h"
 #endif
 
@@ -53,7 +53,7 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
     int rc;
     int level;
 
-#ifdef __riscos__
+#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
     static int zlib_initialized = 0;
 
     if (!zlib_initialized)
