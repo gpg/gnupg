@@ -299,7 +299,7 @@ readn (int fd, void *buf, size_t buflen, size_t *ret_nread)
 
 /* read an entire line */
 static int
-readline (int fd, char *buf, size_t buflen)
+readaline (int fd, char *buf, size_t buflen)
 {
   size_t nleft = buflen;
   char *p;
@@ -360,7 +360,7 @@ agent_send_option (int fd, const char *name, const char *value)
     return -1;
   
   /* get response */
-  nread = readline (fd, buf, DIM(buf)-1);
+  nread = readaline (fd, buf, DIM(buf)-1);
   if (nread < 3)
     return -1;
   
@@ -584,7 +584,7 @@ agent_open (int *ret_prot)
       char line[200];
       int nread;
 
-      nread = readline (fd, line, DIM(line));
+      nread = readaline (fd, line, DIM(line));
       if (nread < 3 || !(line[0] == 'O' && line[1] == 'K'
                          && (line[2] == '\n' || line[2] == ' ')) ) {
         log_error ( _("communication problem with gpg-agent\n"));
@@ -900,7 +900,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
       
       /* get response */
       pw = m_alloc_secure (500);
-      nread = readline (fd, pw, 499);
+      nread = readaline (fd, pw, 499);
       if (nread < 3)
         goto failure;
       
@@ -1035,7 +1035,7 @@ passphrase_clear_cache ( u32 *keyid, int algo )
         goto failure;
       
       /* get response */
-      nread = readline (fd, buf, DIM(buf)-1);
+      nread = readaline (fd, buf, DIM(buf)-1);
       if (nread < 3)
         goto failure;
       
@@ -1054,8 +1054,6 @@ passphrase_clear_cache ( u32 *keyid, int algo )
   free_public_key( pk );
 #endif /* Posix or W32 */
 }
-
-
 
 
 /****************

@@ -1,3 +1,9 @@
+2005-01-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* passphrase.c (readline, agent_send_option, agent_open,
+	agent_get_passphrase, passphrase_clear_cache): Rename readline()
+	to readaline() to keep readline library namespace clear.
+
 2005-01-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* filter.h, armor.c (armor_filter): Use the eol string from the
