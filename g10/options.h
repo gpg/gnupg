@@ -141,6 +141,7 @@ struct {
                *personal_digest_prefs,
                *personal_compress_prefs;
     int no_perm_warn;
+    int no_mdc_warn;
     char *temp_dir;
     int no_encrypt_to;
     int interactive;

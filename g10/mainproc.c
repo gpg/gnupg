@@ -498,10 +498,13 @@ proc_encrypted( CTX c, PACKET *pkt )
 	    log_info(_("decryption okay\n"));
 	if( pkt->pkt.encrypted->mdc_method )
 	    write_status( STATUS_GOODMDC );
+	else if(!opt.no_mdc_warn)
+	    log_info ("WARNING: message was not integrity protected\n");
     }
     else if( result == G10ERR_BAD_SIGN ) {
 	log_error(_("WARNING: encrypted message has been manipulated!\n"));
 	write_status( STATUS_BADMDC );
+	write_status( STATUS_DECRYPTION_FAILED );
     }
     else {
 	write_status( STATUS_DECRYPTION_FAILED );

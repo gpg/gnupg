@@ -186,6 +186,7 @@ enum cmd_and_opt_values { aNull = 0,
     oTrustDBName,
     oNoSecmemWarn,
     oNoPermissionWarn,
+    oNoMDCWarn,
     oNoArmor,
     oNoDefKeyring,
     oNoGreeting,
@@ -491,6 +492,7 @@ static ARGPARSE_OPTS opts[] = {
     { oTrustDBName, "trustdb-name", 2, "@" },
     { oNoSecmemWarn, "no-secmem-warning", 0, "@" }, /* used only by regression tests */
     { oNoPermissionWarn, "no-permission-warning", 0, "@" },
+    { oNoMDCWarn, "no-mdc-warning", 0, "@" },
     { oNoArmor, "no-armor",   0, "@"},
     { oNoArmor, "no-armour",   0, "@"},
     { oNoDefKeyring, "no-default-keyring", 0, "@" },
@@ -1315,6 +1317,7 @@ main( int argc, char **argv )
 	  case oCertDigestAlgo: cert_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
+	  case oNoMDCWarn: opt.no_mdc_warn=1; break;
 	  case oCharset:
 	    if( set_native_charset( pargs.r.ret_str ) )
 		log_error(_("%s is not a valid character set\n"),
@@ -1362,12 +1365,10 @@ main( int argc, char **argv )
 	    break;
 	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
 	  case oExecPath:
-#ifndef FIXED_EXEC_PATH
 	    if(set_exec_path(pargs.r.ret_str,0))
 	      log_error(_("unable to set exec-path to %s\n"),pargs.r.ret_str);
 	    else
 	      opt.exec_path_set=1;
-#endif
 	    break;
 	  case oNotation:
 	    add_notation_data( pargs.r.ret_str, 0 );

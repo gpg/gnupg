@@ -1,3 +1,13 @@
+2002-07-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), mainproc.c (proc_encrypted): Return a
+	decryption failed error if a MDC does not verify.  Warn if a MDC
+	is not present (can disable via --no-mdc-warning).
+
+	* exec.c (exec_write), g10.c (main), keyserver.c
+	(keyserver_spawn): Use new DISABLE_KEYSERVER_PATH rather than
+	FIXED_EXEC_PATH.
+
 2002-07-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* sig-check.c (do_check): Properly validate v4 sigs with no hashed
