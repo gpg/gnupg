@@ -23,7 +23,7 @@ localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
 EXTRA_DIST = mkerrors
-AM_CPPFLAGS =   $(LIBKSBA_CFLAGS) $(LIBGCRYPT_CLFAGS)
+AM_CPPFLAGS =   $(KSBA_CFLAGS) $(LIBGCRYPT_CLFAGS)
 BUILT_SOURCES = keybox-errors.c
 
 noinst_LIBRARIES = libkeybox.a
@@ -44,7 +44,7 @@ common_sources = \
 libkeybox_a_SOURCES = $(common_sources)
 
 kbxutil_SOURCES = kbxutil.c $(common_sources)
-kbxutil_LDADD   = ../jnlib/libjnlib.a  $(LIBKSBA_LIBS) $(LIBGCRYPT_LIBS)
+kbxutil_LDADD   = ../jnlib/libjnlib.a  $(KSBA_LIBS) $(LIBGCRYPT_LIBS)
 
 keybox-errors.c : keybox.h mkerrors
 	$(srcdir)/mkerrors < $(srcdir)/keybox.h > keybox-errors.c
