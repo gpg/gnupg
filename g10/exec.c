@@ -56,6 +56,9 @@ static int make_tempdir(struct exec_info *info)
 	    {
 #ifdef __riscos__
 	      tmp="<Wimp$ScrapDir>";
+#elsif HAVE_DOSISH_SYSTEM
+	      tmp=m_alloc(1024);
+	      GetTempPath(1023,tmp);
 #else
 	      tmp="/tmp";
 #endif
@@ -66,6 +69,10 @@ static int make_tempdir(struct exec_info *info)
   info->tempdir=m_alloc(strlen(tmp)+1+10+1);
 
   sprintf(info->tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
+
+#ifdef HAVE_DOSISH_SYSTEM
+  m_free(tmp);
+#endif
 
   if(mkdtemp(info->tempdir)==NULL)
     log_error(_("%s: can't create directory: %s\n"),
@@ -189,7 +196,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
 
 /* The rules are: if there are no args, then it's a fork/exec/pipe.
    If there are args, but no tempfiles, then it's a fork/exec/pipe via
-   bash -c.  If there are tempfiles, then it's a system. */
+   shell -c.  If there are tempfiles, then it's a system. */
 
 int exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,int writeonly,int binary)

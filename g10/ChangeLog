@@ -1,3 +1,14 @@
+2001-12-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* mkdtemp.c (mkdtemp): catch the empty ("") string case in case
+	someone repurposes mkdtemp at some point.
+
+	* photoid.c (generate_photo_id, show_photo): some type changes
+	from Stefan Bellon.
+
+	* exec.c (make_tempdir): handle Win32 systems, suggested by Timo
+	Schulz.
+
 2001-12-22  Werner Koch  <wk@gnupg.org>
 
 	* encode.c (encode_simple, encode_crypt): i18n 2 strings.

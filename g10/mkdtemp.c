@@ -13,14 +13,21 @@
 
 char *mkdtemp(char *template)
 {
-  int attempts,index,count=0;
+  int attempts,idx,count=0;
   byte *ch;
 
-  index=strlen(template);
-  ch=&template[index-1];
+  idx=strlen(template);
+
+  if(idx==0)
+    {
+      errno=EINVAL;
+      return NULL;
+    }
+
+  ch=&template[idx-1];
 
   /* Walk backwards to count all the Xes */
-  while(*ch=='X' && count<index)
+  while(*ch=='X' && count<idx)
     {
       count++;
       ch--;
@@ -37,9 +44,11 @@ char *mkdtemp(char *template)
   /* Try 4 times to make the temp directory */
   for(attempts=0;attempts<4;attempts++)
     {
-      int index=0,remaining=count;
+      int remaining=count;
       char *marker=ch;
       byte *randombits;
+
+      idx=0;
 
       /* Using really random bits is probably overkill here.  The
 	 worst thing that can happen with a directory name collision
@@ -49,7 +58,7 @@ char *mkdtemp(char *template)
 
       while(remaining>1)
 	{
-	  sprintf(marker,"%02X",randombits[index++]);
+	  sprintf(marker,"%02X",randombits[idx++]);
 	  marker+=2;
 	  remaining-=2;
 	}
@@ -57,7 +66,7 @@ char *mkdtemp(char *template)
       /* Any leftover Xes?  get_random_bits rounds up to full bytes,
          so this is safe. */
       if(remaining>0)
-	sprintf(marker,"%X",randombits[index]&0xF);
+	sprintf(marker,"%X",randombits[idx]&0xF);
 
       m_free(randombits);
 

@@ -46,9 +46,10 @@
 PKT_user_id *generate_photo_id(PKT_public_key *pk)
 {
   PKT_user_id *uid;
-  int error=1,i,len;
+  int error=1,i;
+  unsigned int len;
   char *filename=NULL;
-  unsigned char *photo=NULL;
+  byte *photo=NULL;
   byte header[16];
   IOBUF file;
 
@@ -194,7 +195,8 @@ void show_photo(const struct user_attribute *attr,PKT_public_key *pk)
 	    case 'f': /* fingerprint */
 	      {
 		byte array[MAX_FINGERPRINT_LEN];
-		int len,i;
+		size_t len;
+		int i;
 
 		fingerprint_from_pk(pk,array,&len);
 
