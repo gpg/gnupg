@@ -67,6 +67,11 @@ if test "$1" = "--build-w32"; then
 
     $tsdir/configure --build=${build} --host=${host} \
                 ${disable_foo_tests} $*
+
+    # Ugly hack to overcome a gettext problem.  Someone should look into
+    # gettext to figure out why the po directory is not ignored as it used
+    # to be.
+    [ $? = 0 ] && touch $tsdir/po/all
     exit $?
 fi
 
