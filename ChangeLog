@@ -1,3 +1,7 @@
+2004-07-20  Werner Koch  <wk@g10code.de>
+
+	* Makefile.am (sm): Build kbx only if gpgsm is to be build.
+
 2004-07-20  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: New option --enable-agent-only.

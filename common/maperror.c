@@ -26,7 +26,6 @@
 #include <ctype.h>
 #include <unistd.h>
 
-#include <ksba.h>
 #include <assuan.h>
 
 #include "util.h"

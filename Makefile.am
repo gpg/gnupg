@@ -24,6 +24,13 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = scripts/config.rpath autogen.sh README.CVS
 DISTCLEANFILES = g10defs.h 
 
+if BUILD_GPGSM
+kbx = kbx
+else
+kbx =
+endif
+
+
 if BUILD_GPG
 gpg = g10
 else
@@ -45,7 +52,7 @@ else
 scd =
 endif
 
-SUBDIRS = m4 intl jnlib common kbx \
+SUBDIRS = m4 intl jnlib common ${kbx} \
  ${gpg} ${sm} ${agent} ${scd} tools po doc tests
 
 dist-hook:

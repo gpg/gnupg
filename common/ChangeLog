@@ -1,3 +1,7 @@
+2004-07-20  Werner Koch  <wk@g10code.de>
+
+	* maperror.c: Removed header ksba.h.  Not required anymore.
+
 2004-06-14  Werner Koch  <wk@gnupg.org>
 
 	* xreadline.c: New.  Based on the iobuf_read_line function.
