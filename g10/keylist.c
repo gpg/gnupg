@@ -36,6 +36,7 @@
 #include "trustdb.h"
 #include "main.h"
 #include "i18n.h"
+#include "status.h"
 
 static void list_all(int);
 static void list_one( STRLIST names, int secret);
@@ -46,6 +47,8 @@ struct sig_stats
   int no_key;
   int oth_err;
 };
+
+static FILE *attrib_fp=NULL;
 
 /****************
  * List the keys
@@ -336,6 +339,46 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
     putchar(':');
 }
 
+static void dump_attribs(const PKT_user_id *uid,
+			 PKT_public_key *pk,PKT_secret_key *sk)
+{
+  int i;
+
+  if(!attrib_fp)
+    BUG();
+
+  for(i=0;i<uid->numattribs;i++)
+    {
+      if(is_status_enabled())
+	{
+	  byte array[MAX_FINGERPRINT_LEN], *p;
+	  char buf[(MAX_FINGERPRINT_LEN*2)+90];
+	  size_t j,n;
+
+	  if(pk)
+	    fingerprint_from_pk( pk, array, &n );
+	  else if(sk)
+	    fingerprint_from_sk( sk, array, &n );
+	  else
+	    BUG();
+
+	  p = array;
+	  for(j=0; j < n ; j++, p++ )
+	    sprintf(buf+2*j, "%02X", *p );
+
+	  sprintf(buf+strlen(buf)," %lu %u %u %u %lu %lu %u",
+		  uid->attribs[i].len,uid->attribs[i].type,i+1,
+		  uid->numattribs,(ulong)uid->created,(ulong)uid->expiredate,
+		  ((uid->is_primary?0x01:0)|
+		   (uid->is_revoked?0x02:0)|
+		   (uid->is_expired?0x04:0)));
+	  write_status_text(STATUS_ATTRIBUTE,buf);
+	}
+
+      fwrite(uid->attribs[i].data,uid->attribs[i].len,1,attrib_fp);
+    }
+}
+
 static void
 list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 {
@@ -377,6 +420,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
+	    if(attrib_fp && node->pkt->pkt.user_id->attrib_data!=NULL)
+	      dump_attribs(node->pkt->pkt.user_id,pk,sk);
             /* don't list revoked UIDS unless we are in verbose mode and 
              * signature listing has not been requested */
             if ( !opt.verbose && !opt.list_sigs
@@ -619,6 +664,8 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
+	    if(attrib_fp && node->pkt->pkt.user_id->attrib_data!=NULL)
+	      dump_attribs(node->pkt->pkt.user_id,pk,sk);
             /*
              * Fixme: We need a is_valid flag here too 
              */
@@ -950,6 +997,28 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
         tty_printf ("\n");
 }
 
+void set_attrib_fd(int fd)
+{
+  static int last_fd=-1;
 
+  if ( fd != -1 && last_fd == fd )
+    return;
 
+  if ( attrib_fp && attrib_fp != stdout && attrib_fp != stderr )
+    fclose (attrib_fp);
+  attrib_fp = NULL;
+  if ( fd == -1 ) 
+    return;
 
+  if( fd == 1 )
+    attrib_fp = stdout;
+  else if( fd == 2 )
+    attrib_fp = stderr;
+  else
+    attrib_fp = fdopen( fd, "w" );
+  if( !attrib_fp ) {
+    log_fatal("can't open fd %d for attribute output: %s\n",
+	      fd, strerror(errno));
+  }
+  last_fd = fd;
+}

@@ -146,6 +146,7 @@ get_status_string ( int no )
       case STATUS_SIGEXPIRED     : s = "SIGEXPIRED deprecated-use-keyexpired-instead"; break;
       case STATUS_EXPSIG         : s = "EXPSIG"; break;
       case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
+      case STATUS_ATTRIBUTE      : s = "ATTRIBUTE"; break;
       default: s = "?"; break;
     }
     return s;

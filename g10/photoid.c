@@ -120,17 +120,22 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
       parse_attribute_subpkts(uid);
       make_attribute_uidname(uid);
 
-      show_photos(uid->attribs,uid->numattribs,pk,NULL);
-      switch(cpr_get_answer_yes_no_quit("photoid.jpeg.okay",
-					_("Is this photo correct (y/N/q)? ")))
+      /* Showing the photo is not safe when noninteractive since the
+         "user" may not be able to dismiss a viewer window! */
+      if(opt.command_fd==-1)
 	{
-	case -1:
-	  goto scram;
-	case 0:
-	  free_attributes(uid);
-	  m_free(photo);
-	  photo=NULL;
-	  continue;
+	  show_photos(uid->attribs,uid->numattribs,pk,NULL);
+	  switch(cpr_get_answer_yes_no_quit("photoid.jpeg.okay",
+					 _("Is this photo correct (y/N/q)? ")))
+	    {
+	    case -1:
+	      goto scram;
+	    case 0:
+	      free_attributes(uid);
+	      m_free(photo);
+	      photo=NULL;
+	      continue;
+	    }
 	}
     }
 

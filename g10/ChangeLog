@@ -1,5 +1,25 @@
 2002-06-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* main.h, g10.c (main), keylist.c (dump_attribs, set_attrib_fd,
+	list_keyblock_print, list_keyblock_colon), status.h, status.c
+	(get_status_string): New --attribute-fd feature to dump the
+	contents of attribute subpackets for frontends.  If --status-fd is
+	also used, then a new status tag ATTRIBUTE is provided for each
+	subpacket.
+
+	* packet.h, getkey.c (fixup_uidnode, merge_selfsigs_main,
+	merge_selfsigs_subkey), parse-packet.c (setup_user_id): Keep track
+	of the expiration time of a user ID, and while we're at it, use
+	the expired flag from the selfsig rather than reparsing the
+	SIG_EXPIRE subpacket.
+
+	* photoid.c (generate_photo_id): When adding a new photo ID,
+	showing the photo for confirmation is not safe when noninteractive
+	since the "user" may not be able to dismiss a viewer window.
+	Noted by Timo Schulz.
+	
+2002-06-03  David Shaw  <dshaw@jabberwocky.com>
+
 	* options.skel: Sample photo viewers for Win32.
 
 	* misc.c (pct_expando): Use the seckey for %k/%K if the pubkey is

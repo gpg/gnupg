@@ -162,12 +162,14 @@ typedef struct {
     int len;		  /* length of the name */
     struct user_attribute *attribs;
     int numattribs;
-    byte *attrib_data; /* if this is not NULL, the packet is an attribute */
+    byte *attrib_data;    /* if this is not NULL, the packet is an attribute */
     unsigned long attrib_len;
     int help_key_usage;
     u32 help_key_expire;
     int is_primary;
-    int is_revoked;  
+    int is_revoked;
+    int is_expired;
+    u32 expiredate;       /* expires at this date or 0 if not at all */
     prefitem_t *prefs;    /* list of preferences (may be NULL)*/
     int mdc_feature;
     u32 created;          /* according to the self-signature */

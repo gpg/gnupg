@@ -96,6 +96,7 @@
 #define STATUS_SIGEXPIRED       64
 #define STATUS_EXPSIG           65
 #define STATUS_EXPKEYSIG        66
+#define STATUS_ATTRIBUTE        67
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

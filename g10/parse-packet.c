@@ -1779,6 +1779,8 @@ static void setup_user_id(PACKET *packet)
   packet->pkt.user_id->attrib_len = 0;
   packet->pkt.user_id->is_primary = 0;
   packet->pkt.user_id->is_revoked = 0;
+  packet->pkt.user_id->is_expired = 0;
+  packet->pkt.user_id->expiredate = 0;
   packet->pkt.user_id->created = 0;
   packet->pkt.user_id->help_key_usage = 0;
   packet->pkt.user_id->help_key_expire = 0;

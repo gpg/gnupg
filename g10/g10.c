@@ -148,6 +148,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDebug,
     oDebugAll,
     oStatusFD,
+    oAttributeFD,
 #ifdef __riscos__
     oStatusFile,
 #endif /* __riscos__ */
@@ -410,6 +411,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
+    { oAttributeFD, "attribute-fd" ,1, "@" },
 #ifdef __riscos__
     { oStatusFile, "status-file" ,2, N_("|[file]|write status info to file") },
 #endif /* __riscos__ */
@@ -1058,6 +1060,9 @@ main( int argc, char **argv )
 	  case oDebugAll: opt.debug = ~0; break;
 	  case oStatusFD:
             set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
+            break;
+	  case oAttributeFD:
+            set_attrib_fd(iobuf_translate_file_handle (pargs.r.ret_int, 1));
             break;
 #ifdef __riscos__
 	  case oStatusFile:

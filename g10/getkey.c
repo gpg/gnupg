@@ -1118,7 +1118,10 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
 
     uid->created = sig->timestamp; /* this one is okay */
     uid->selfsigversion = sig->version;
- 
+    /* If we got this far, it's not expired :) */
+    uid->is_expired = 0;
+    uid->expiredate = sig->expiredate;
+
     /* store the key flags in the helper variable for later processing */
     uid->help_key_usage = 0;
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_FLAGS, &n );
@@ -1276,11 +1279,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 		  }
 
 		  if( sig->timestamp >= sigdate ) {
-                    const byte *p;
-                    
-                    p = parse_sig_subpkt( sig->hashed,
-                                          SIGSUBPKT_SIG_EXPIRE, NULL );
-                    if ( p && (sig->timestamp + buffer_to_u32(p)) <= curtime )
+		    if(sig->flags.expired)
                         ; /* signature has expired - ignore it */
                     else {
                         sigdate = sig->timestamp;
@@ -1406,13 +1405,14 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                      * one time an email address may become invalid but later
                      * the same email address may become valid again (hired,
                      * fired, hired again).
-                     */                    
-                    const byte *p;
-                    
-                    p = parse_sig_subpkt (sig->hashed,
-                                          SIGSUBPKT_SIG_EXPIRE, NULL );
-                    if ( p && (sig->timestamp + buffer_to_u32(p)) <= curtime )
-                        ; /* signature/revocation has expired - ignore it */
+                     */
+		    if(sig->flags.expired) {
+		      /* Expired uids don't get to be primary unless
+                         they are the only uid there is. */
+		      uidnode->pkt->pkt.user_id->is_primary=0;
+		      uidnode->pkt->pkt.user_id->is_expired=1;
+		      uidnode->pkt->pkt.user_id->expiredate=sig->expiredate;
+		    }
                     else {
                         sigdate = sig->timestamp;
                         signode = k;
@@ -1633,9 +1633,7 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
                      * time */
                 }
                 else if ( IS_SUBKEY_SIG (sig) && sig->timestamp >= sigdate ) {
-                    p = parse_sig_subpkt (sig->hashed,
-                                          SIGSUBPKT_SIG_EXPIRE, NULL );
-                    if ( p && (sig->timestamp + buffer_to_u32(p)) >= curtime )
+		    if(sig->flags.expired)
                         ; /* signature has expired - ignore it */
                     else {
                         sigdate = sig->timestamp;
