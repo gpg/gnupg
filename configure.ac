@@ -344,7 +344,7 @@ MPI_OPT_FLAGS=""
 
 try_gettext=yes
 have_dosish_system=no
-no_need_for_dlopen=no
+need_dlopen=yes
 case "${target}" in
     *-*-mingw32*)
         # special stuff for Windoze NT
@@ -358,7 +358,7 @@ case "${target}" in
                    MingW32 systems and these systems lack Posix functions,
                    we use a simplified version of gettext])
         have_dosish_system=yes
-        no_need_for_dlopen=yes
+        need_dlopen=no
         try_gettext="no"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
@@ -632,21 +632,18 @@ else
 fi
 
 if test "$try_extensions" = yes || test x"$card_support" = xyes ; then
-  if test "$no_need_for_dlopen" = yes; then
-    AC_SUBST(DLLIBS,"")
-  else
-    AC_CHECK_FUNC(dlopen,,AC_CHECK_LIB(dl,dlopen,found_dlopen=yes))
+  if test "$need_dlopen" = yes; then
+    _dl_save_libs=$LIBS
+    LIBS=""
+    AC_SEARCH_LIBS(dlopen,dl,found_dlopen=yes)
     if test x"$found_dlopen" = "xyes" ; then
       AC_DEFINE(HAVE_DL_DLOPEN,1,
                 [Defined when the dlopen function family is available])
-      AC_SUBST(DLLIBS,"-ldl")
-      if test "$try_extensions" = yes ; then
-         AC_DEFINE(USE_DYNAMIC_LINKING,1,
-  		 [define to enable the use of extensions])
-      fi
+      DLLIBS=$LIBS
     else
       if test "$try_extensions" = yes ; then
          AC_MSG_WARN([dlopen not found.  Disabling extensions.])
+	 try_extensions=no
       fi
   
       if test "$card_support" = yes ; then
@@ -654,11 +651,18 @@ if test "$try_extensions" = yes || test x"$card_support" = xyes ; then
          card_support=no
       fi
     fi
+    LIBS=$_dl_save_libs
   fi
 fi
+
+AC_SUBST(DLLIBS)
+
 if test "$card_support" = yes ; then
-  AC_DEFINE(ENABLE_CARD_SUPPORT,1,
-	    [Define to include the OpenPGP card support])
+  AC_DEFINE(ENABLE_CARD_SUPPORT,1,[Define to include OpenPGP card support])
+fi
+
+if test "$try_extensions" = yes ; then
+  AC_DEFINE(USE_DYNAMIC_LINKING,1,[Define to enable the use of extensions])
 fi
 
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
