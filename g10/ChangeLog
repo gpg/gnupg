@@ -1,3 +1,12 @@
+2003-12-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyid.c (do_fingerprint_md): Properly handle hashing of keys
+	that we don't know the structure of by using the opaque MPI.
+	(do_fingerprint_md_sk): We cannot calculate the fingerprint from a
+	secret key unless we know the structure (since we can't leave off
+	the secret key parts), so fail early.....
+	(keyid_from_sk, fingerprint_from_sk): .... and return all zeroes.
+
 2003-12-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (strusage, main): Show development version warning in

@@ -1,5 +1,5 @@
 /* keyid.c - key ID and fingerprint handling
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -61,11 +61,18 @@ do_fingerprint_md( PKT_public_key *pk )
 
     md = md_open( pk->version < 4 ? DIGEST_ALGO_RMD160 : DIGEST_ALGO_SHA1, 0);
     n = pk->version < 4 ? 8 : 6;
-    for(i=0; i < npkey; i++ ) {
-	nb[i] = mpi_get_nbits(pk->pkey[i]);
-	pp[i] = mpi_get_buffer( pk->pkey[i], nn+i, NULL );
-	n += 2 + nn[i];
-    }
+    if(npkey==0 && pk->pkey[0] && mpi_is_opaque(pk->pkey[0]))
+      {
+	pp[0]=mpi_get_opaque(pk->pkey[0],&nn[0]);
+	n+=nn[0];
+      }
+    else
+      for(i=0; i < npkey; i++ )
+	{
+	  nb[i] = mpi_get_nbits(pk->pkey[i]);
+	  pp[i] = mpi_get_buffer( pk->pkey[i], nn+i, NULL );
+	  n += 2 + nn[i];
+	}
 
     md_putc( md, 0x99 );     /* ctb */
     md_putc( md, n >> 8 );   /* 2 byte length header */
@@ -92,12 +99,17 @@ do_fingerprint_md( PKT_public_key *pk )
 	md_putc( md, a	    );
     }
     md_putc( md, pk->pubkey_algo );
-    for(i=0; i < npkey; i++ ) {
-	md_putc( md, nb[i]>>8);
-	md_putc( md, nb[i] );
-	md_write( md, pp[i], nn[i] );
-	m_free(pp[i]);
-    }
+
+    if(npkey==0 && pk->pkey[0] && mpi_is_opaque(pk->pkey[0]))
+      md_write(md,pp[0],nn[0]);
+    else
+      for(i=0; i < npkey; i++ )
+	{
+	  md_putc( md, nb[i]>>8);
+	  md_putc( md, nb[i] );
+	  md_write( md, pp[i], nn[i] );
+	  m_free(pp[i]);
+	}
     md_final( md );
 
     return md;
@@ -110,13 +122,16 @@ do_fingerprint_md_sk( PKT_secret_key *sk )
     int npkey = pubkey_get_npkey( sk->pubkey_algo ); /* npkey is correct! */
     int i;
 
+    if(npkey==0)
+      return NULL;
+
     pk.pubkey_algo = sk->pubkey_algo;
     pk.version	   = sk->version;
     pk.timestamp = sk->timestamp;
     pk.expiredate = sk->expiredate;
     pk.pubkey_algo = sk->pubkey_algo;
     for( i=0; i < npkey; i++ )
-	pk.pkey[i] = sk->skey[i];
+      pk.pkey[i] = sk->skey[i];
     return do_fingerprint_md( &pk );
 }
 
@@ -142,11 +157,16 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
 	const byte *dp;
 	MD_HANDLE md;
 	md = do_fingerprint_md_sk(sk);
-	dp = md_read( md, 0 );
-	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
-	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
-	lowbits = keyid[1];
-	md_close(md);
+	if(md)
+	  {
+	    dp = md_read( md, 0 );
+	    keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
+	    keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	    lowbits = keyid[1];
+	    md_close(md);
+	  }
+	else
+	  keyid[0]=keyid[1]=0;
     }
 
     return lowbits;
@@ -501,18 +521,25 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
     else {
 	MD_HANDLE md;
 	md = do_fingerprint_md_sk(sk);
-	dp = md_read( md, 0 );
-	len = md_digest_length( md_get_algo( md ) );
-	assert( len <= MAX_FINGERPRINT_LEN );
-	if( !array )
-	    array = m_alloc( len );
-	memcpy(array, dp, len );
-	md_close(md);
+	if(md)
+	  {
+	    dp = md_read( md, 0 );
+	    len = md_digest_length( md_get_algo( md ) );
+	    assert( len <= MAX_FINGERPRINT_LEN );
+	    if( !array )
+	      array = m_alloc( len );
+	    memcpy(array, dp, len );
+	    md_close(md);
+	  }
+	else
+	  {
+	    len=MAX_FINGERPRINT_LEN;
+	    if(!array)
+	      array=m_alloc(len);
+	    memset(array,0,len);
+	  }
     }
 
     *ret_len = len;
     return array;
 }
-
-
-
