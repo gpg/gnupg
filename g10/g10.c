@@ -120,7 +120,7 @@ static ARGPARSE_OPTS opts[] = {
 
 enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
-    aSignKey, aClearsign, aListPackets, aEditSig,
+    aSignKey, aClearsign, aListPackets, aEditSig, aDeleteKey,
     aKMode, aKModeC, aChangePass, aImport,
     aExport, aCheckKeys, aGenRevoke,
 aNOP };
@@ -416,6 +416,7 @@ main( int argc, char **argv )
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
 	  case 503: set_cmd( &cmd, aKeygen); break;
+	  case 505: set_cmd( &cmd, aDeleteKey); break;
 	  case 506: set_cmd( &cmd, aSignKey); break;
 	  case 507: set_cmd( &cmd, aStore); break;
 	  case 508: set_cmd( &cmd, aCheckKeys);
@@ -610,6 +611,14 @@ main( int argc, char **argv )
 	/* note: fname is the user id! */
 	if( (rc = edit_keysigs(fname)) )
 	    log_error("%s: edit signature failed: %s\n", fname_print, g10_errstr(rc) );
+	break;
+
+      case aDeleteKey:
+	if( argc != 1 )
+	    wrong_args(_("--delete-key username"));
+	/* note: fname is the user id! */
+	if( (rc = delete_key(fname)) )
+	    log_error("%s: delete key failed: %s\n", fname_print, g10_errstr(rc) );
 	break;
 
       case aChangePass: /* Chnage the passphrase */

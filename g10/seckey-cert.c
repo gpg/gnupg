@@ -195,7 +195,7 @@ check_rsa( PKT_secret_cert *cert )
 	  case CIPHER_ALGO_NONE: BUG(); break;
 	  case CIPHER_ALGO_BLOWFISH:
 	    keyid_from_skc( cert, keyid );
-	    dek = get_passphrase_hash( keyid, NULL );
+	    dek = get_passphrase_hash( keyid, NULL, NULL );
 	    blowfish_ctx = m_alloc_secure( sizeof *blowfish_ctx );
 	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */

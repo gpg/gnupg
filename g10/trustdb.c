@@ -1421,12 +1421,9 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 
     if( !rc && !dr->r.dir.sigrec ) {
 	/* See wether this is our own key */
-	if( !qry_lid_table_flag( ultikey_table, pubkeyid, NULL ) ) {
+	if( !qry_lid_table_flag( ultikey_table, pubkeyid, NULL ) )
 	    *trustlevel = tflags | TRUST_ULTIMATE;
-	    return 0;
-	}
-	else
-	    rc = -1;
+	return 0;
     }
     if( rc )
 	return rc;  /* error while looking for sigrec or building sigrecs */
@@ -1774,8 +1771,8 @@ enum_trust_web( void **context, ulong *lid )
     if( !c ) { /* make a new context */
 	c = m_alloc_clear( sizeof *c );
 	*context = c;
-	if( *lid != last_trust_web_key )
-	    log_bug("enum_trust_web: nyi\n");
+	if( *lid != last_trust_web_key && last_trust_web_key )
+	    log_bug("enum_trust_web: nyi\n"); /* <--- FIXME */
 	c->tsl = last_trust_web_tslist;
 	c->index = 1;
     }

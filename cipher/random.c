@@ -157,7 +157,7 @@ fill_buffer( byte *buffer, size_t length, int level )
 	assert( length < 200 );
 	do {
 	    n = read(fd, buffer, length );
-	    if( n > length ) {
+	    if( n >= 0 && n > length ) {
 		log_error("bogus read from random device (n=%d)\n", n );
 		n = length;
 	    }

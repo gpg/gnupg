@@ -53,6 +53,7 @@ int sign_file( STRLIST filenames, int detached, STRLIST locusr,
 int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
 int sign_key( const char *username, STRLIST locusr );
 int edit_keysigs( const char *username );
+int delete_key( const char *username );
 int change_passphrase( const char *username );
 
 /*-- sig-check.c --*/

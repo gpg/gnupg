@@ -33,7 +33,6 @@
   #include "../cipher/rsa.h"
 #endif
 #include "../cipher/blowfish.h"
-#include "../cipher/gost.h"
 #include "../cipher/elgamal.h"
 
 
@@ -46,7 +45,6 @@
 #define CIPHER_ALGO_SAFER_SK128  6
 #define CIPHER_ALGO_DES_SK	 7
 #define CIPHER_ALGO_BLOWFISH	42  /* blowfish 160 bit key (not in OpenPGP)*/
-#define CIPHER_ALGO_GOST	43  /* (Not in OpenPGP) */
 
 #define PUBKEY_ALGO_RSA        1
 #define PUBKEY_ALGO_RSA_E      2     /* RSA encrypt only */

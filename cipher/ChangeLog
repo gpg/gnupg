@@ -1,3 +1,11 @@
+Mon Mar  2 19:21:46 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* gost.c, gost.h: Removed because they did only conatin trash.
+
+Sun Mar  1 16:42:29 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* random.c (fill_buffer): removed error message if n == -1.
+
 Fri Feb 27 16:39:34 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* md.c (md_enable): No init if called twice.

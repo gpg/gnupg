@@ -10,8 +10,6 @@ libcipher_a_SOURCES = blowfish.c     \
 		 blowfish.h	\
 		 elgamal.c	\
 		 elgamal.h	\
-		 gost.c 	\
-		 gost.h 	\
 		 md5.c		\
 		 md5.h		\
 		 primegen.c	\

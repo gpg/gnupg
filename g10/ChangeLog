@@ -1,3 +1,23 @@
+Mon Mar  2 21:23:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* pkc_list.c (build_pkc_list): Add interactive input of user ID.
+
+Mon Mar  2 20:54:05 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* pkclist.c (do_we_trust_pre): New.
+	(add_ownertrust): Add message.
+	* trustdb.c (enum_trust_web): Quick fix.
+
+Mon Mar  2 13:50:53 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): New action aDeleteKey
+	* sign.c (delete_key): New.
+
+Sun Mar  1 16:38:58 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (do_check): No returns TRUST_UNDEFINED instead of
+	eof error.
+
 Fri Feb 27 18:14:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* armor.c (find_header): Removed trailing CR on headers.

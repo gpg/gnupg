@@ -1,3 +1,15 @@
+Noteworthy changes in version 0.2.11
+------------------------------------
+
+    * GPG now asks for a recipient's name if option "-r" is not used.
+
+    * If there is no good trust path, the program asks whether to use
+      the public keys anyway.
+
+    * "--delete-key" works for public keys. What semantics shall I use
+      when there is a secret key too? Delete the secret key or leave him
+      and auto-regenerate the public key, netxt time the secret key is used?
+
 Noteworthy changes in version 0.2.10
 ------------------------------------
 

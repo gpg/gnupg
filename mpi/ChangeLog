@@ -1,3 +1,7 @@
+Mon Mar  2 19:29:00 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* Makefile.am (DISTCLEANFILES): New
+
 Thu Feb 26 06:48:54 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* config.links (X86_BROKEN_ALIGN): Added for some systems.

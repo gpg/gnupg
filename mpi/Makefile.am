@@ -6,6 +6,8 @@ CFLAGS += -O2
 SUFFIXES = .S .s
 
 EXTRA_DIST = config.links
+DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
+		 mpih-shift.S mpih-sub1.S asm-syntax.h sysdep.h
 
 
 noinst_LIBRARIES = libmpi.a

@@ -101,8 +101,6 @@ libcipher_a_SOURCES = blowfish.c     \
 		 blowfish.h	\
 		 elgamal.c	\
 		 elgamal.h	\
-		 gost.c 	\
-		 gost.h 	\
 		 md5.c		\
 		 md5.h		\
 		 primegen.c	\
@@ -130,8 +128,8 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libcipher_a_OBJECTS =  blowfish.o elgamal.o gost.o md5.o primegen.o \
-random.o rmd160.o sha1.o dsa.o md.o misc.o smallprime.o
+libcipher_a_OBJECTS =  blowfish.o elgamal.o md5.o primegen.o random.o \
+rmd160.o sha1.o dsa.o md.o misc.o smallprime.o
 AR = ar
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
@@ -143,9 +141,9 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/blowfish.P .deps/dsa.P .deps/elgamal.P .deps/gost.P \
-.deps/md.P .deps/md5.P .deps/misc.P .deps/primegen.P .deps/random.P \
-.deps/rmd160.P .deps/sha1.P .deps/smallprime.P
+DEP_FILES =  .deps/blowfish.P .deps/dsa.P .deps/elgamal.P .deps/md.P \
+.deps/md5.P .deps/misc.P .deps/primegen.P .deps/random.P .deps/rmd160.P \
+.deps/sha1.P .deps/smallprime.P
 SOURCES = $(libcipher_a_SOURCES)
 OBJECTS = $(libcipher_a_OBJECTS)
 

@@ -153,10 +153,11 @@ _("Could not find a valid trust path to the key.  Lets see, wether we\n"
 	rc = 0;
     enum_trust_web( &context, NULL ); /* close */
 
+    if( !any )
+	tty_printf(_("No ownertrust values changed.\n\n") );
 
     return rc? rc : any? 0:-1;
 }
-
 
 /****************
  * Check wether we can trust this pkc which has a trustlevel of TRUSTLEVEL
@@ -218,7 +219,7 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 		return do_we_trust( pkc, trustlevel );
 	    }
 	}
-	return 0; /* no */
+	return 0; /* no FIXME: add "Proceed anyway?" */
 
       case TRUST_NEVER:
 	log_info("We do NOT trust this key\n");
@@ -250,6 +251,32 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 }
 
 
+/****************
+ * wrapper arounf do_we_trust, so we can ask wether to use the
+ * key anyway.
+ */
+static int
+do_we_trust_pre( PKT_public_cert *pkc, int trustlevel )
+{
+    int rc = do_we_trust( pkc, trustlevel );
+
+    if( !opt.batch && !rc ) {
+	char *answer;
+
+	tty_printf(_(
+"It is NOT certain, that the key belongs to his owner.\n"
+"If you *really* know what you are doing, you may answer\n"
+"the next question with yes\n\n") );
+
+	answer = tty_get("Use this key anyway? ");
+	tty_kill_prompt();
+	if( answer_is_yes(answer) )
+	    rc = 1;
+	m_free(answer);
+    }
+    return rc;
+}
+
 
 void
 release_pkc_list( PKC_LIST pkc_list )
@@ -267,14 +294,56 @@ int
 build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list )
 {
     PKC_LIST pkc_list = NULL;
-    int rc;
+    PKT_public_cert *pkc=NULL;
+    int rc=0;
 
-    if( !remusr ) { /* ask!!! */
-	log_bug("ask for public key nyi\n");
+    if( !remusr && !opt.batch ) { /* ask */
+	char *answer=NULL;
+
+	tty_printf(_(
+		"You did not specify a user ID. (you may use \"-r\")\n\n"));
+	for(;;) {
+	    rc = 0;
+	    m_free(answer);
+	    answer = tty_get(_("Enter the user ID: "));
+	    trim_spaces(answer);
+	    tty_kill_prompt();
+	    if( !*answer )
+		break;
+	    if( pkc )
+		free_public_cert( pkc );
+	    pkc = m_alloc_clear( sizeof *pkc );
+	    rc = get_pubkey_byname( pkc, answer );
+	    if( rc )
+		tty_printf("No such user ID.\n");
+	    else if( !(rc=check_pubkey_algo(pkc->pubkey_algo)) ) {
+		int trustlevel;
+
+		rc = check_trust( pkc, &trustlevel );
+		if( rc ) {
+		    log_error("error checking pkc of '%s': %s\n",
+						      answer, g10_errstr(rc) );
+		}
+		else if( do_we_trust_pre( pkc, trustlevel ) ) {
+		    PKC_LIST r;
+
+		    r = m_alloc( sizeof *r );
+		    r->pkc = pkc; pkc = NULL;
+		    r->next = pkc_list;
+		    r->mark = 0;
+		    pkc_list = r;
+		    break;
+		}
+	    }
+	}
+	m_free(answer);
+	if( pkc ) {
+	    free_public_cert( pkc );
+	    pkc = NULL;
+	}
     }
     else {
 	for(; remusr; remusr = remusr->next ) {
-	    PKT_public_cert *pkc;
 
 	    pkc = m_alloc_clear( sizeof *pkc );
 	    if( (rc = get_pubkey_byname( pkc, remusr->d )) ) {
@@ -290,7 +359,7 @@ build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list )
 		    log_error("error checking pkc of '%s': %s\n",
 						      remusr->d, g10_errstr(rc) );
 		}
-		else if( do_we_trust( pkc, trustlevel ) ) {
+		else if( do_we_trust_pre( pkc, trustlevel ) ) {
 		    /* note: do_we_trust may have changed the trustlevel */
 		    PKC_LIST r;
 

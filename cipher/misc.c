@@ -36,7 +36,6 @@ static struct { const char *name; int algo;} cipher_names[] = {
     { "SAFER_SK128", CIPHER_ALGO_SAFER_SK128 },
     { "DES_SK",      CIPHER_ALGO_DES_SK      },
     { "BLOWFISH",    CIPHER_ALGO_BLOWFISH    },
-    { "GOST",        CIPHER_ALGO_GOST        },
     {NULL} };
 
 static struct { const char *name; int algo;} pubkey_names[] = {

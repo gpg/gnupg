@@ -854,6 +854,84 @@ edit_keysigs( const char *username )
 }
 
 
+/****************
+ * Eine public key aus dem keyring entfernen.
+ */
+int
+delete_key( const char *username )
+{
+    int rc = 0;
+    KBNODE keyblock = NULL;
+    KBNODE node;
+    KBPOS kbpos;
+    PKT_public_cert *pkc;
+    u32 pkc_keyid[2];
+    int okay=0;
+
+    /* search the userid */
+    rc = find_keyblock_byname( &kbpos, username );
+    if( rc ) {
+	log_error("%s: user not found\n", username );
+	goto leave;
+    }
+
+    /* read the keyblock */
+    rc = read_keyblock( &kbpos, &keyblock );
+    if( rc ) {
+	log_error("%s: certificate read problem: %s\n", username, g10_errstr(rc) );
+	goto leave;
+    }
+
+    /* get the keyid from the keyblock */
+    node = find_kbnode( keyblock, PKT_PUBLIC_CERT );
+    if( !node ) {
+	log_error("Oops; public key not found anymore!\n");
+	rc = G10ERR_GENERAL;
+	goto leave;
+    }
+
+    pkc = node->pkt->pkt.public_cert;
+    keyid_from_pkc( pkc, pkc_keyid );
+
+    if( opt.batch && opt.answer_yes )
+	okay++;
+    else if( opt.batch )
+	log_error("can't do that in batch-mode without \"--yes\"\n");
+    else {
+	char *p;
+	size_t n;
+
+	tty_printf("pub  %4u%c/%08lX %s   ",
+		  nbits_from_pkc( pkc ),
+		  pubkey_letter( pkc->pubkey_algo ),
+		  pkc_keyid[1], datestr_from_pkc(pkc) );
+	p = get_user_id( pkc_keyid, &n );
+	tty_print_string( p, n );
+	m_free(p);
+	tty_printf("\n\n");
+
+	p = tty_get("Delete this key from the keyring? ");
+	tty_kill_prompt();
+	if( answer_is_yes(p) )
+	    okay++;
+	m_free(p);
+    }
+
+
+    if( okay ) {
+	rc = delete_keyblock( &kbpos );
+	if( rc ) {
+	    log_error("delete_keyblock failed: %s\n", g10_errstr(rc) );
+	    goto leave;
+	}
+    }
+
+  leave:
+    release_kbnode( keyblock );
+    return rc;
+}
+
+
 int
 change_passphrase( const char *username )
 {
