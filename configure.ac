@@ -769,35 +769,47 @@ AC_SUBST(MPI_SFLAGS)
 
 # Sanity check regex.  Tests adapted from mutt.
 
-AC_MSG_CHECKING([whether the included regex lib is requested])
-AC_ARG_WITH(included-regex,
-    [  --with-included-regex   use the included GNU regex library],
-    [gnupg_cv_regex=yes],[gnupg_cv_regex=no])
-AC_MSG_RESULT($gnupg_cv_regex)
+AC_MSG_CHECKING([whether regular expression support is requested])
+AC_ARG_ENABLE(regex,
+[  --disable-regex         do not handle regular expressions in trust sigs],
+     use_regex=$enableval, use_regex=yes)
+AC_MSG_RESULT($use_regex)
 
-if test $gnupg_cv_regex = no ; then
-   # Does the system have regex functions at all?
-   AC_CHECK_FUNC(regcomp,gnupg_cv_regex=no,gnupg_cv_regex=yes)
-fi
+if test "$use_regex" = yes ; then
+  AC_MSG_CHECKING([whether the included regex lib is requested])
+  AC_ARG_WITH(included-regex,
+      [  --with-included-regex   use the included GNU regex library],
+      [gnupg_cv_included_regex=yes],[gnupg_cv_included_regex=no])
+  AC_MSG_RESULT($gnupg_cv_included_regex)
 
-if test $gnupg_cv_regex = no ; then
-   AC_CACHE_CHECK([whether your system's regexp library is broken],
-     [gnupg_cv_regex_broken],
-     AC_TRY_RUN([
+  if test $gnupg_cv_included_regex = no ; then
+     # Does the system have regex functions at all?
+     AC_CHECK_FUNC(regcomp,gnupg_cv_included_regex=no,
+			   gnupg_cv_included_regex=yes)
+  fi
+
+  if test $gnupg_cv_included_regex = no ; then
+     AC_CACHE_CHECK([whether your system's regexp library is broken],
+       [gnupg_cv_regex_broken],
+       AC_TRY_RUN([
 #include <unistd.h>
 #include <regex.h>
 main() { regex_t blah ; regmatch_t p; p.rm_eo = p.rm_eo; return regcomp(&blah, "foo.*bar", REG_NOSUB) || regexec (&blah, "foobar", 0, NULL, 0); }],
-     gnupg_cv_regex_broken=no, gnupg_cv_regex_broken=yes, gnupg_cv_regex_broken=yes))
+       gnupg_cv_regex_broken=no, gnupg_cv_regex_broken=yes, gnupg_cv_regex_broken=yes))
 
      if test $gnupg_cv_regex_broken = yes ; then
       AC_MSG_WARN(your regex is broken - using the included GNU regex instead.)
-      gnupg_cv_regex=yes
+      gnupg_cv_included_regex=yes
      fi
-fi
+  fi
 
-if test $gnupg_cv_regex = yes; then
-   AC_DEFINE(USE_GNU_REGEX,1,[ Define if you want to use the included regex lib ])
-   AC_SUBST(REGEX_O,regex.o)
+  if test $gnupg_cv_included_regex = yes; then
+     AC_DEFINE(USE_GNU_REGEX,1,[ Define if you want to use the included regex lib ])
+     AC_SUBST(REGEX_O,regex.o)
+  fi
+else
+
+  AC_DEFINE(DISABLE_REGEX,1,[ Define to disable regular expression support ])
 fi
 
 dnl Do we have zlib? Must do it here because Solaris failed

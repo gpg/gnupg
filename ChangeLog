@@ -1,3 +1,9 @@
+2002-10-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add --disable-regex in case some platform just
+	can't handle the regex stuff.  This means they can't fully handle
+	trust sigs with an attached regex either.
+
 2002-10-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Regex tests adapted from mutt to decide whether to
