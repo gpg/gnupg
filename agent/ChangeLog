@@ -1,4 +1,11 @@
+2004-07-30  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c: Updated Libgpg-stream (more support for secure
+	memory), adjusted code for new API.
+
 2004-07-27  Moritz Schulte  <moritz@g10code.com>
+
+	* findkey.c (key_io_lock): New variable.
 
 	* command-ssh.c: Use gcrypt memory allocators, use secure memory
 	where necessary.

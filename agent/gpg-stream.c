@@ -36,6 +36,13 @@
 
 
 
+/* Generally used types.  */
+
+typedef void *(*func_realloc_t) (void *mem, size_t size);
+typedef void (*func_free_t) (void *mem);
+
+
+
 /* Buffer management layer.  */
 
 #define BUFFER_BLOCK_SIZE 1024
@@ -68,10 +75,18 @@ typedef struct buffer_functions
   buffer_func_stat_t  func_stat;  /* Stat callback.   */
 } buffer_functions_t;
 
+typedef struct buffer_conspec
+{
+  size_t block_size;
+  func_realloc_t func_realloc;
+  func_free_t func_free;
+} buffer_conspec_t;
+
 /* Buffer context.  */
 struct buffer
 {
   void *handle;			/* Handle, passed to callbacks.     */
+  buffer_conspec_t conspec;	/* Container spec.                  */
   buffer_functions_t functions;	/* Callback functions.              */
   unsigned int flags;		/* General flags.                   */
   struct buffer_in
@@ -95,6 +110,9 @@ struct buffer
 
 /* Buffer contains unflushed data.  */
 #define BUFFER_FLAG_DIRTY (1 << 0)
+
+/* Buffer is secure.  */
+#define BUFFER_FLAG_SECURE (1 << 1)
 
 
 
@@ -356,16 +374,27 @@ buffer_skip (buffer_t buffer,
 /* Create a new buffer.  */
 gpg_error_t
 buffer_create (buffer_t *buffer,
+	       buffer_conspec_t *conspec,
 	       void *handle,
 	       buffer_functions_t functions)
 {
+  func_realloc_t func_realloc = realloc;
+  func_free_t func_free = free;
+  size_t block_size = BUFFER_BLOCK_SIZE;
   gpg_error_t err = GPG_ERR_NO_ERROR;
-
-  /* Allocate memory, initialize.  */
-      
   buffer_t buffer_new = NULL;
   char *container_in_new = NULL;
   char *container_out_new = NULL;
+
+  if (conspec)
+    {
+      if (conspec->func_realloc)
+	func_realloc = conspec->func_realloc;
+      if (conspec->func_free)
+	func_free = conspec->func_free;
+      if (conspec->block_size)
+	block_size = conspec->block_size;
+    }
 
   buffer_new = malloc (sizeof (*buffer_new));
   if (! buffer_new)
@@ -373,13 +402,13 @@ buffer_create (buffer_t *buffer,
 
   if (! err)
     {
-      container_in_new = malloc (BUFFER_BLOCK_SIZE);
+      container_in_new = (*func_realloc) (NULL, block_size);
       if (! container_in_new)
 	err = gpg_error_from_errno (errno);
     }
   if (! err)
     {
-      container_out_new = malloc (BUFFER_BLOCK_SIZE);
+      container_out_new = (*func_realloc) (NULL, block_size);
       if (! container_out_new)
 	err = gpg_error_from_errno (errno);
     }
@@ -387,14 +416,17 @@ buffer_create (buffer_t *buffer,
   if (! err)
     {
       buffer_new->handle = handle;
+      buffer_new->conspec.func_realloc = func_realloc;
+      buffer_new->conspec.func_free = func_free; 
+      buffer_new->conspec.block_size = block_size;
       buffer_new->flags = 0;
       buffer_new->functions = functions;
       buffer_new->buffer_in.container = container_in_new;
-      buffer_new->buffer_in.container_size = BUFFER_BLOCK_SIZE;
+      buffer_new->buffer_in.container_size = block_size;
       buffer_new->buffer_in.data_size = 0;
       buffer_new->buffer_in.data_offset = 0;
       buffer_new->buffer_out.container = container_out_new;
-      buffer_new->buffer_out.container_size = BUFFER_BLOCK_SIZE;
+      buffer_new->buffer_out.container_size = block_size;
       buffer_new->buffer_out.data_size = 0;
       buffer_new->buffer_out.data_offset = 0;
       buffer_new->buffer_out.data_flushed = 0;
@@ -422,8 +454,8 @@ buffer_destroy (buffer_t buffer)
   if (buffer)
     {
       err = buffer_flush_do (buffer);
-      free (buffer->buffer_in.container);
-      free (buffer->buffer_out.container);
+      (*buffer->conspec.func_free) (buffer->buffer_in.container);
+      (*buffer->conspec.func_free) (buffer->buffer_out.container);
       free (buffer);
     }
 
@@ -449,6 +481,19 @@ buffer_stat (buffer_t buffer,
   gpg_error_t err = GPG_ERR_NO_ERROR;
 
   err = buffer_stat_do (buffer, size);
+
+  return err;
+}
+
+gpg_error_t
+buffer_conspec_get (buffer_t buffer,
+		    buffer_conspec_t *buffer_conspec)
+{
+  gpg_error_t err = GPG_ERR_NO_ERROR;
+
+  buffer_conspec->block_size = buffer->conspec.block_size;
+  buffer_conspec->func_realloc = buffer->conspec.func_realloc;
+  buffer_conspec->func_free = buffer->conspec.func_free;
 
   return err;
 }
@@ -486,18 +531,16 @@ struct gpg_stream
 
 /* Implementation of Memory I/O.  */
 
-typedef void *(*mem_func_realloc_t) (void *mem, size_t size);
-typedef void (*mem_func_free_t) (void *mem);
-
 typedef struct gpg_stream_handle_mem
 {
   char *memory;			/* Data.                       */
   size_t memory_size;		/* Size of MEMORY.             */
   size_t data_size;		/* Size of data in MEMORY.     */
+  size_t block_size;		/* Block size.                 */
   unsigned int grow: 1;		/* MEMORY is allowed to grow.  */
   size_t offset;		/* Current offset in MEMORY.   */
-  mem_func_realloc_t func_realloc;
-  mem_func_free_t func_free;
+  func_realloc_t func_realloc;
+  func_free_t func_free;
 } *gpg_stream_handle_mem_t;
 
 static gpg_error_t
@@ -517,6 +560,8 @@ gpg_stream_func_mem_create (void **handle,
       mem_handle->memory = mem_spec ? mem_spec->memory : 0;
       mem_handle->memory_size = mem_spec ? mem_spec->memory_size : 0;
       mem_handle->data_size = 0;
+      mem_handle->block_size = ((mem_spec && mem_spec->block_size)
+				? mem_spec->block_size : BUFFER_BLOCK_SIZE);
       mem_handle->grow = mem_spec ? mem_spec->grow : 1;
       mem_handle->offset = 0;
       mem_handle->func_realloc = ((mem_spec && mem_spec->func_realloc)
@@ -567,14 +612,17 @@ gpg_stream_func_mem_write (void *handle,
     {
       memory_new = (*mem_handle->func_realloc)
 	(mem_handle->memory,
-	 mem_handle->memory_size + BUFFER_BLOCK_SIZE);
+	 mem_handle->memory_size + mem_handle->block_size);
       if (! memory_new)
-	err = gpg_error_from_errno (errno);
+	{
+	  err = gpg_error_from_errno (errno);
+	  break;
+	}
       else
 	{
 	  if (mem_handle->memory != memory_new)
 	    mem_handle->memory = memory_new;
-	  mem_handle->memory_size += BUFFER_BLOCK_SIZE;
+	  mem_handle->memory_size += mem_handle->block_size;
 	}
     }
 
@@ -882,11 +930,20 @@ gpg_stream_functions_t gpg_stream_functions_file =
 
 static gpg_error_t
 gpg_stream_create_do (gpg_stream_t *stream,
+		      gpg_stream_buffer_spec_t *buffer_spec,
 		      void *spec,
 		      unsigned int flags,
 		      gpg_stream_functions_t functions)
 {
+  buffer_conspec_t conspec = { NULL };
   gpg_error_t err = GPG_ERR_NO_ERROR;
+
+  if (buffer_spec)
+    {
+      conspec.func_realloc = buffer_spec->func_realloc;
+      conspec.func_free = buffer_spec->func_free;
+      conspec.block_size = buffer_spec->block_size;
+    }
 
   if (! (1
 	 && (0
@@ -912,7 +969,8 @@ gpg_stream_create_do (gpg_stream_t *stream,
 	  err = (*functions.func_create) (&handle, spec, flags);
       
       if (! err)
-	err = buffer_create (&buffer, handle, buffer_fncs);
+	err = buffer_create (&buffer, buffer_spec ? &conspec : NULL,
+			     handle, buffer_fncs);
 
       if (! err)
 	{
@@ -936,13 +994,14 @@ gpg_stream_create_do (gpg_stream_t *stream,
 
 gpg_error_t
 gpg_stream_create (gpg_stream_t *stream,
+		   gpg_stream_buffer_spec_t *buffer_spec,
 		   void *spec,
 		   unsigned int flags,
 		   gpg_stream_functions_t functions)
 {
   gpg_error_t err = GPG_ERR_NO_ERROR;
 
-  err = gpg_stream_create_do (stream, spec, flags, functions);
+  err = gpg_stream_create_do (stream, buffer_spec, spec, flags, functions);
 
   return err;
 }
@@ -955,7 +1014,7 @@ gpg_stream_create_file (gpg_stream_t *stream,
   gpg_stream_spec_file_t spec = { filename, GPG_STREAM_FILE_PERMISSIONS };
   gpg_error_t err = GPG_ERR_NO_ERROR;
 
-  err = gpg_stream_create_do (stream, &spec, flags, gpg_stream_functions_file);
+  err = gpg_stream_create_do (stream, NULL, &spec, flags, gpg_stream_functions_file);
 
   return err;
 }
@@ -968,7 +1027,7 @@ gpg_stream_create_fd (gpg_stream_t *stream,
   gpg_stream_spec_fd_t spec = { fd };
   gpg_error_t err = GPG_ERR_NO_ERROR;
 
-  err = gpg_stream_create_do (stream, &spec, flags, gpg_stream_functions_fd);
+  err = gpg_stream_create_do (stream, NULL, &spec, flags, gpg_stream_functions_fd);
 
   return err;
 }
@@ -1065,6 +1124,7 @@ gpg_stream_read_line_do (gpg_stream_t stream,
       buffer_functions_t buffer_fncs_mem = { gpg_stream_func_mem_read,
 					     gpg_stream_func_mem_write,
 					     gpg_stream_func_mem_seek };
+      buffer_conspec_t buffer_conspec = { NULL };
       void *handle = NULL;
       char *line_new = NULL;
       buffer_t line_buffer = NULL;
@@ -1073,9 +1133,11 @@ gpg_stream_read_line_do (gpg_stream_t stream,
       char *data = NULL;
       size_t line_size = 0;
 
+      buffer_conspec_get (stream->buffer, &buffer_conspec);
+
       err = gpg_stream_func_mem_create (&handle, NULL, 0);
       if (! err)
-	err = buffer_create (&line_buffer, handle, buffer_fncs_mem);
+	err = buffer_create (&line_buffer, &buffer_conspec, handle, buffer_fncs_mem);
       if (! err)
 	do
 	  {

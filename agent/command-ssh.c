@@ -627,7 +627,7 @@ ssh_extract_key_public_from_blob (unsigned char *blob, size_t blob_size,
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
   gpg_stream_t blob_stream = NULL;
 
-  err = gpg_stream_create (&blob_stream, NULL,
+  err = gpg_stream_create (&blob_stream, NULL, NULL,
 			   GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE,
 			   gpg_stream_functions_mem);
   if (err)
@@ -662,7 +662,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   size_t blob_new_size = 0;
   size_t bytes_read = 0;
 
-  err = gpg_stream_create (&blob_stream, NULL,
+  err = gpg_stream_create (&blob_stream, NULL, NULL,
 			   GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE,
 			   gpg_stream_functions_mem);
   if (err)
@@ -859,7 +859,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   /* Prepare buffer stream.  */
 
-  err = gpg_stream_create (&key_blobs, NULL,
+  err = gpg_stream_create (&key_blobs, NULL, NULL,
 			   GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE,
 			   gpg_stream_functions_mem);
   if (err)
@@ -998,7 +998,7 @@ data_sign (CTRL ctrl, unsigned char **sig, size_t *sig_n)
   if (err)
     goto out;
 
-  err = gpg_stream_create (&stream, NULL,
+  err = gpg_stream_create (&stream, NULL, NULL,
 			   GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE,
 			   gpg_stream_functions_mem);
   if (err)
@@ -1609,12 +1609,19 @@ gcry_realloc_secure (void *mem, size_t size)
 void
 start_command_handler_ssh (int sock_client)
 {
-  gpg_stream_spec_mem_t stream_spec_secure = { NULL, 0, 1,
-					       gcry_realloc_secure,
-					       gcry_free };
-  gpg_stream_spec_mem_t stream_spec = { NULL, 0, 1,
-					gcry_realloc,
-					gcry_free };
+  gpg_stream_spec_mem_t stream_spec_mem_secure = { NULL, 0, 1, 256,
+						   gcry_realloc_secure,
+						   gcry_free };
+  gpg_stream_spec_mem_t stream_spec_mem = { NULL, 0, 1, STREAM_BLOCK_SIZE,
+					    gcry_realloc,
+					    gcry_free };
+  gpg_stream_spec_fd_t stream_spec_fd = { sock_client };
+  gpg_stream_buffer_spec_t buffer_spec_secure = { 256,
+						  gcry_realloc_secure,
+						  gcry_free };
+  gpg_stream_buffer_spec_t buffer_spec = { 0,
+					   gcry_realloc,
+					   gcry_free };
   struct server_control_s ctrl =  { NULL };
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
   gpg_stream_t stream_sock = NULL;
@@ -1632,8 +1639,10 @@ start_command_handler_ssh (int sock_client)
 
   ctrl.connection_fd = sock_client;
 
-  err = gpg_stream_create_fd (&stream_sock, sock_client,
-			      GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE);
+  err = gpg_stream_create (&stream_sock, &buffer_spec_secure,
+			   &stream_spec_fd,
+			   GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE,
+			   gpg_stream_functions_fd);
   if (err)
     goto out;
   
@@ -1648,14 +1657,17 @@ start_command_handler_ssh (int sock_client)
 	 contain secret key material.  The response does not have to
 	 be stored in secure memory, since we never give out secret
 	 keys.  */
+      gpg_stream_destroy (stream_request);
       stream_request = NULL;
-      err = gpg_stream_create (&stream_request, &stream_spec_secure,
+      err = gpg_stream_create (&stream_request, &buffer_spec_secure,
+			       &stream_spec_mem_secure,
 			       GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE,
 			       gpg_stream_functions_mem);
       if (err)
 	break;
+      gpg_stream_destroy (stream_response);
       stream_response = NULL;
-      err = gpg_stream_create (&stream_response, &stream_spec,
+      err = gpg_stream_create (&stream_response, &buffer_spec, &stream_spec_mem,
 			       GPG_STREAM_FLAG_READ | GPG_STREAM_FLAG_WRITE,
 			       gpg_stream_functions_mem);
       if (err)

@@ -62,6 +62,17 @@ typedef struct gpg_stream_functions
   gpg_stream_func_destroy_t func_destroy;
 } gpg_stream_functions_t;
 
+typedef void *(*gpg_stream_func_realloc_t) (void *mem, size_t size);
+typedef void (*gpg_stream_func_free_t) (void *mem);
+
+typedef struct gpg_stream_buffer_spec
+{
+  size_t block_size;
+  gpg_stream_func_realloc_t func_realloc;
+  gpg_stream_func_free_t func_free;
+} gpg_stream_buffer_spec_t;
+  
+
 #define GPG_STREAM_FLAG_READ      (1 << 0)
 #define GPG_STREAM_FLAG_WRITE     (1 << 1)
 #define GPG_STREAM_FLAG_EXCLUSIVE (1 << 2)
@@ -72,6 +83,7 @@ typedef struct gpg_stream_functions
 #define GPG_STREAM_FLAG_BINARY    (1 << 7)
 
 gpg_error_t gpg_stream_create (gpg_stream_t *stream,
+			       gpg_stream_buffer_spec_t *buffer_spec,
 			       void *spec,
 			       unsigned int flags,
 			       gpg_stream_functions_t functions);
@@ -129,6 +141,7 @@ typedef struct gpg_stream_spec_mem
   char *memory;
   size_t memory_size;
   unsigned int grow: 1;
+  size_t block_size;
   void *(*func_realloc) (void *mem, size_t size);
   void (*func_free) (void *mem);
 } gpg_stream_spec_mem_t;
