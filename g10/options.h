@@ -192,6 +192,7 @@ struct
   unsigned int screen_columns;
   unsigned int screen_lines;
   byte *show_subpackets;
+  int strict_2440_line_endings;
 
 #ifdef ENABLE_CARD_SUPPORT
   const char *ctapi_driver; /* Library to access the ctAPI. */

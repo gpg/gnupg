@@ -1,5 +1,5 @@
 /* textfilter.c
- * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -61,15 +61,6 @@ len_without_trailing_chars( byte *line, unsigned len, const char *trimchars )
     return mark? (mark - line) : len;
 }
 
-unsigned
-len_without_trailing_ws( byte *line, unsigned len )
-{
-    return len_without_trailing_chars( line, len, " \t\r\n" );
-}
-
-
-
-
 static int
 standard( text_filter_context_t *tfx, IOBUF a,
 	  byte *buf, size_t size, size_t *ret_len)
@@ -101,7 +92,25 @@ standard( text_filter_context_t *tfx, IOBUF a,
 	    break;
 	}
 	lf_seen = tfx->buffer[tfx->buffer_len-1] == '\n';
-	tfx->buffer_len = trim_trailing_ws( tfx->buffer, tfx->buffer_len );
+
+	/* The story behind this is that 2440 says that textmode
+	   hashes should canonicalize line endings to CRLF and remove
+	   spaces and tabs.  2440bis-12 says to just canonicalize to
+	   CRLF.  So, we default to the 2440bis-12 behavior, but
+	   revert to the strict 2440 behavior if the user specifies
+	   --rfc2440. In practical terms this makes no difference to
+	   any signatures in the real world except for a textmode
+	   detached signature.  PGP always used the 2440bis-12 (1991)
+	   behavior (ignoring 2440 itself), so this actually makes us
+	   compatible with PGP textmode detached signatures for the
+	   first time. */
+	if(opt.strict_2440_line_endings)
+	  tfx->buffer_len=trim_trailing_chars(tfx->buffer,tfx->buffer_len,
+					      " \t\r\n");
+	else
+	  tfx->buffer_len=trim_trailing_chars(tfx->buffer,tfx->buffer_len,
+					      "\r\n");
+
 	if( lf_seen ) {
 	    tfx->buffer[tfx->buffer_len++] = '\r';
 	    tfx->buffer[tfx->buffer_len++] = '\n';

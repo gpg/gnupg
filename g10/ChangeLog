@@ -1,3 +1,15 @@
+2004-12-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), textfilter.c (len_without_trailing_ws):
+	Removed (not used).
+	(standard): 2440 says that textmode hashes should canonicalize
+	line endings to CRLF and remove spaces and tabs.  2440bis-12 says
+	to just canonicalize to CRLF.  So, we default to the 2440bis-12
+	behavior, but revert to the strict 2440 behavior if the user
+	specifies --rfc2440.  In practical terms this makes no difference
+	to any signatures in the real world except for a textmode detached
+	signature.
+
 2004-12-09  Werner Koch  <wk@g10code.com>
 
 	* passphrase.c (agent_get_passphrase): New args CUSTOM_PROMPT and

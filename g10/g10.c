@@ -2092,6 +2092,8 @@ main( int argc, char **argv )
 	    opt.escape_from = 1;
 	    break;
 	  case oRFC2440:
+	    opt.strict_2440_line_endings=1;
+	    /* fall through */
 	  case oOpenPGP:
 	    /* TODO: When 2440bis becomes a RFC, these may need
                changing. */
