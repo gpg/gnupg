@@ -1,3 +1,14 @@
+2004-01-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main), keydb.h, keydb.c (keydb_rebuild_caches),
+	keyring.h, keyring.c (keyring_rebuild_cache): Add "noisy" flag so
+	cache rebuilds can remain noisy when called for itself, and quiet
+	when called as part of the trustdb rebuild.
+
+	* trustdb.c (validate_keys): Rebuild the sig caches before
+	building the trustdb.  Note that this is going to require some
+	architectual re-thinking, as it is agonizingly slow.
+
 2004-01-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* sig-check.c (check_key_signature2): Comments.

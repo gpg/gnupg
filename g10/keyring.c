@@ -1310,7 +1310,7 @@ write_keyblock (IOBUF fp, KBNODE keyblock)
  * This is only done for the public keyrings.
  */
 int
-keyring_rebuild_cache (void *token)
+keyring_rebuild_cache (void *token,int noisy)
 {
   KEYRING_HANDLE hd;
   KEYDB_SEARCH_DESC desc;
@@ -1356,8 +1356,8 @@ keyring_rebuild_cache (void *token)
           if (rc)
             goto leave;
           lastresname = resname;
-          if (!opt.quiet)
-            log_info (_("checking keyring `%s'\n"), resname);
+          if (noisy && !opt.quiet)
+            log_info (_("caching keyring `%s'\n"), resname);
           rc = create_tmp_file (resname, &bakfilename, &tmpfilename, &tmpfp);
           if (rc)
             goto leave;
@@ -1402,8 +1402,8 @@ keyring_rebuild_cache (void *token)
       if (rc)
         goto leave;
 
-      if ( !(++count % 50) && !opt.quiet)
-        log_info(_("%lu keys checked so far (%lu signatures)\n"),
+      if ( !(++count % 50) && noisy && !opt.quiet)
+        log_info(_("%lu keys cached so far (%lu signatures)\n"),
                  count, sigcount );
 
     } /* end main loop */ 
@@ -1414,7 +1414,8 @@ keyring_rebuild_cache (void *token)
       log_error ("keyring_search failed: %s\n", g10_errstr(rc));
       goto leave;
     }
-  log_info(_("%lu keys checked (%lu signatures)\n"), count, sigcount );
+  if(noisy || opt.verbose)
+    log_info(_("%lu keys cached (%lu signatures)\n"), count, sigcount );
   if (tmpfp)
     {
       if (iobuf_close (tmpfp))

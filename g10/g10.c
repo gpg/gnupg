@@ -3023,7 +3023,7 @@ main( int argc, char **argv )
       case aRebuildKeydbCaches:
         if (argc)
             wrong_args ("--rebuild-keydb-caches");
-        keydb_rebuild_caches ();
+        keydb_rebuild_caches (1);
         break;
 
 #ifdef ENABLE_CARD_SUPPORT

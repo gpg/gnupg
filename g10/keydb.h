@@ -156,7 +156,7 @@ int keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb);
 int keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb);
 int keydb_delete_keyblock (KEYDB_HANDLE hd);
 int keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
-void keydb_rebuild_caches (void);
+void keydb_rebuild_caches (int noisy);
 int keydb_search_reset (KEYDB_HANDLE hd);
 #define keydb_search(a,b,c) keydb_search2((a),(b),(c),NULL)
 int keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
