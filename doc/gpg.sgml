@@ -1251,7 +1251,7 @@ Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-preferred-keyserver</term>
+<term>show-keyserver-url</term>
 <listitem><para>
 Show any preferred keyserver URL in the --list-sigs or --check-sigs
 listings.  Defaults to no.
@@ -1317,7 +1317,7 @@ no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-preferred-keyserver</term>
+<term>show-keyserver-url</term>
 <listitem><para>
 Show any preferred keyserver URL in the signature being verified.
 Defaults to no.
