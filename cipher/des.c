@@ -41,7 +41,7 @@
  * bits are parity bits and they will _not_ checked in this implementation, but
  * simply ignored.
  *
- * For Tripple-DES you could use either two 64bit keys or three 64bit keys.
+ * For Triple-DES you could use either two 64bit keys or three 64bit keys.
  * The parity bits will _not_ checked, too.
  *
  * After initializing a context with a key you could use this context to
@@ -948,7 +948,7 @@ selftest (void)
 
 
 static int
-do_tripledes_setkey ( struct _tripledes_ctx *ctx, byte *key, unsigned keylen )
+do_tripledes_setkey ( void *ctx, const byte *key, unsigned keylen )
 {
     if( selftest_failed )
 	return G10ERR_SELFTEST_FAILED;
@@ -968,14 +968,14 @@ do_tripledes_setkey ( struct _tripledes_ctx *ctx, byte *key, unsigned keylen )
 
 
 static void
-do_tripledes_encrypt( struct _tripledes_ctx *ctx, byte *outbuf, byte *inbuf )
+do_tripledes_encrypt( void *ctx, byte *outbuf, const byte *inbuf )
 {
     tripledes_ecb_encrypt ( ctx, inbuf, outbuf );
     burn_stack (32);
 }
 
 static void
-do_tripledes_decrypt( struct _tripledes_ctx *ctx, byte *outbuf, byte *inbuf )
+do_tripledes_decrypt( void *ctx, byte *outbuf, const byte *inbuf )
 {
     tripledes_ecb_decrypt ( ctx, inbuf, outbuf );
     burn_stack (32);
@@ -990,11 +990,11 @@ do_tripledes_decrypt( struct _tripledes_ctx *ctx, byte *outbuf, byte *inbuf )
  */
 const char *
 des_get_info( int algo, size_t *keylen,
-		   size_t *blocksize, size_t *contextsize,
-		   int	(**r_setkey)( void *c, byte *key, unsigned keylen ),
-		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
-		 )
+	      size_t *blocksize, size_t *contextsize,
+	      int (**r_setkey)( void *c, const byte *key, unsigned keylen ),
+	      void (**r_encrypt)( void *c, byte *outbuf, const byte *inbuf ),
+	      void (**r_decrypt)( void *c, byte *outbuf, const byte *inbuf )
+	      )
 {
     static int did_selftest = 0;
 
@@ -1012,12 +1012,9 @@ des_get_info( int algo, size_t *keylen,
 	*keylen = 192;
 	*blocksize = 8;
 	*contextsize = sizeof(struct _tripledes_ctx);
-	*(int  (**)(struct _tripledes_ctx*, byte*, unsigned))r_setkey
-							= do_tripledes_setkey;
-	*(void (**)(struct _tripledes_ctx*, byte*, byte*))r_encrypt
-							= do_tripledes_encrypt;
-	*(void (**)(struct _tripledes_ctx*, byte*, byte*))r_decrypt
-							= do_tripledes_decrypt;
+	*r_setkey = do_tripledes_setkey;
+	*r_encrypt = do_tripledes_encrypt;
+	*r_decrypt = do_tripledes_decrypt;
 	return "3DES";
     }
     return NULL;

@@ -109,9 +109,9 @@ dlsym ( void *handle, const char *name )
 
 typedef
 const char *(*INFO_FNC)(int, size_t*, size_t*, size_t*,
-                        int  (**)( void *, byte *, unsigned),
-                        void (**)( void *, byte *, byte *),
-                        void (**)( void *, byte *, byte *));
+                        int  (**)( void *, const byte *, unsigned),
+                        void (**)( void *, byte *, const byte *),
+                        void (**)( void *, byte *, const byte *));
 
 static INFO_FNC
 load_module (const char *name)
@@ -152,11 +152,11 @@ load_module (const char *name)
 
 const char *
 idea_get_info( int algo, size_t *keylen,
-		   size_t *blocksize, size_t *contextsize,
-		   int	(**r_setkey)( void *c, byte *key, unsigned keylen ),
-		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
-		 )
+	       size_t *blocksize, size_t *contextsize,
+	       int (**r_setkey)( void *c, const byte *key, unsigned keylen ),
+	       void (**r_encrypt)( void *c, byte *outbuf, const byte *inbuf ),
+	       void (**r_decrypt)( void *c, byte *outbuf, const byte *inbuf )
+	       )
 {
   static int initialized;
   static INFO_FNC info_fnc;

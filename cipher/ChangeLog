@@ -1,3 +1,9 @@
+2004-10-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* algorithms.h, cast5.c, cipher.c, idea-stub.c, twofish.c,
+	blowfish.c, des.c, rijndael.c: Consistently use const for input
+	buffers.
+
 2004-09-23  Werner Koch  <wk@g10code.com>
 
 	* rsa.c (rsa_generate): Return the dummy list of factors only if

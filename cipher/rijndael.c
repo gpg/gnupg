@@ -1824,7 +1824,7 @@ do_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
 }
 
 static int
-rijndael_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
+rijndael_setkey (void *ctx, const byte *key, const unsigned keylen)
 {
     int rc = do_setkey (ctx, key, keylen);
     burn_stack ( 100 + 16*sizeof(int));
@@ -1948,7 +1948,7 @@ do_encrypt (const RIJNDAEL_context *ctx, byte *b, const byte *a)
 }
 
 static void
-rijndael_encrypt (const RIJNDAEL_context *ctx, byte *b, const byte *a)
+rijndael_encrypt (void *ctx, byte *b, const byte *a)
 {
     do_encrypt (ctx, b, a);
     burn_stack (16 + 2*sizeof(int));
@@ -2042,7 +2042,7 @@ do_decrypt (RIJNDAEL_context *ctx, byte *b, const byte *a)
 }
 
 static void
-rijndael_decrypt (RIJNDAEL_context *ctx, byte *b, const byte *a)
+rijndael_decrypt (void *ctx, byte *b, const byte *a)
 {
     do_decrypt (ctx, b, a);
     burn_stack (16+2*sizeof(int));
@@ -2127,25 +2127,22 @@ selftest (void)
     
     return NULL;
 }
-
+
 const char *
-rijndael_get_info (int algo, size_t *keylen,
+rijndael_get_info(int algo, size_t *keylen,
 		  size_t *blocksize, size_t *contextsize,
-		  int  (**r_setkey) (void *c, byte *key, unsigned keylen),
-		  void (**r_encrypt) (void *c, byte *outbuf, byte *inbuf),
-		  void (**r_decrypt) (void *c, byte *outbuf, byte *inbuf)
-		 )
+		  int (**r_setkey)(void *c, const byte *key, unsigned keylen),
+		  void (**r_encrypt)(void *c, byte *outbuf, const byte *inbuf),
+		  void (**r_decrypt)(void *c, byte *outbuf, const byte *inbuf)
+		  )
 {
     *keylen = algo==7? 128 :  algo==8? 192 : 256;
     *blocksize = 16;
     *contextsize = sizeof (RIJNDAEL_context);
 
-    *(int  (**)(RIJNDAEL_context*, const byte*, const unsigned))r_setkey
-							= rijndael_setkey;
-    *(void (**)(const RIJNDAEL_context*, byte*, const byte*))r_encrypt
-							= rijndael_encrypt;
-    *(void (**)(RIJNDAEL_context*, byte*, const byte*))r_decrypt
-							= rijndael_decrypt;
+    *r_setkey = rijndael_setkey;
+    *r_encrypt = rijndael_encrypt;
+    *r_decrypt = rijndael_decrypt;
 
     if( algo == 7 )
 	return "AES";

@@ -696,7 +696,7 @@ do_twofish_setkey (TWOFISH_context *ctx, const byte *key, unsigned int keylen)
 }
 
 static int
-twofish_setkey (TWOFISH_context *ctx, const byte *key, unsigned int keylen)
+twofish_setkey (void *ctx, const byte *key, unsigned int keylen)
 {
     int rc = do_twofish_setkey (ctx, key, keylen);
     burn_stack (23+6*sizeof(void*));
@@ -798,7 +798,7 @@ do_twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
 }
 
 static void
-twofish_encrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
+twofish_encrypt (void *ctx, byte *out, const byte *in)
 {
     do_twofish_encrypt (ctx, out, in);
     burn_stack (24+3*sizeof (void*));
@@ -839,7 +839,7 @@ do_twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
 }
 
 static void
-twofish_decrypt (const TWOFISH_context *ctx, byte *out, const byte *in)
+twofish_decrypt (void *ctx, byte *out, const byte *in)
 {
     do_twofish_decrypt (ctx, out, in);
     burn_stack (24+3*sizeof (void*));
@@ -1008,25 +1008,22 @@ main()
 }
 
 #endif /* TEST */
-
+
 const char *
-twofish_get_info (int algo, size_t *keylen,
-		  size_t *blocksize, size_t *contextsize,
-		  int  (**r_setkey) (void *c, byte *key, unsigned keylen),
-		  void (**r_encrypt) (void *c, byte *outbuf, byte *inbuf),
-		  void (**r_decrypt) (void *c, byte *outbuf, byte *inbuf)
+twofish_get_info(int algo, size_t *keylen,
+		 size_t *blocksize, size_t *contextsize,
+		 int (**r_setkey) (void *c, const byte *key, unsigned keylen),
+		 void (**r_encrypt) (void *c, byte *outbuf, const byte *inbuf),
+		 void (**r_decrypt) (void *c, byte *outbuf, const byte *inbuf)
 		 )
 {
     *keylen = algo==10? 256 : 128;
     *blocksize = 16;
     *contextsize = sizeof (TWOFISH_context);
 
-    *(int  (**)(TWOFISH_context*, const byte*, const unsigned))r_setkey
-							= twofish_setkey;
-    *(void (**)(const TWOFISH_context*, byte*, const byte*))r_encrypt
-							= twofish_encrypt;
-    *(void (**)(const TWOFISH_context*, byte*, const byte*))r_decrypt
-							= twofish_decrypt;
+    *r_setkey = twofish_setkey;
+    *r_encrypt = twofish_encrypt;
+    *r_decrypt = twofish_decrypt;
 
     if( algo == 10 )
 	return "TWOFISH";

@@ -54,10 +54,7 @@ typedef struct {
     u32 p[BLOWFISH_ROUNDS+2];
 } BLOWFISH_context;
 
-static int  bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen );
-static void encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
-static void decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
-
+static int bf_setkey( void *c, const byte *key, unsigned keylen );
 
 /* precomputed S boxes */
 static const u32 ks0[256] = {
@@ -424,7 +421,7 @@ decrypt(  BLOWFISH_context *bc, u32 *ret_xl, u32 *ret_xr )
 #undef R
 
 static void
-do_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+do_encrypt_block( BLOWFISH_context *bc, byte *outbuf, const byte *inbuf )
 {
     u32 d1, d2;
 
@@ -442,14 +439,14 @@ do_encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 }
 
 static void
-encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+encrypt_block( void *bc, byte *outbuf, const byte *inbuf )
 {
     do_encrypt_block (bc, outbuf, inbuf);
     burn_stack (64);
 }
 
 static void
-do_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+do_decrypt_block( BLOWFISH_context *bc, byte *outbuf, const byte *inbuf )
 {
     u32 d1, d2;
 
@@ -467,7 +464,7 @@ do_decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 }
 
 static void
-decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
+decrypt_block( void *bc, byte *outbuf, const byte *inbuf )
 {
     do_decrypt_block (bc, outbuf, inbuf);
     burn_stack (64);
@@ -504,7 +501,7 @@ selftest(void)
 
 
 static int
-do_bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
+do_bf_setkey( BLOWFISH_context *c, const byte *key, unsigned keylen )
 {
     int i, j;
     u32 data, datal, datar;
@@ -587,7 +584,7 @@ do_bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 }
 
 static int
-bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
+bf_setkey( void *c, const byte *key, unsigned keylen )
 {
     int rc = do_bf_setkey (c, key, keylen);
     burn_stack (64);
@@ -601,22 +598,19 @@ bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
  *	    the ALGO is invalid.
  */
 const char *
-blowfish_get_info( int algo, size_t *keylen,
-		   size_t *blocksize, size_t *contextsize,
-		   int	(**r_setkey)( void *c, byte *key, unsigned keylen ),
-		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
-		 )
+blowfish_get_info(int algo, size_t *keylen,
+		  size_t *blocksize, size_t *contextsize,
+		  int (**r_setkey)(void *c, const byte *key, unsigned keylen),
+		  void (**r_encrypt)(void *c, byte *outbuf, const byte *inbuf),
+		  void (**r_decrypt)( void *c, byte *outbuf, const byte *inbuf)
+		  )
 {
     *keylen = 128;
     *blocksize = BLOWFISH_BLOCKSIZE;
     *contextsize = sizeof(BLOWFISH_context);
-    *(int  (**)(BLOWFISH_context*, byte*, unsigned))r_setkey
-							= bf_setkey;
-    *(void (**)(BLOWFISH_context*, byte*, byte*))r_encrypt
-							= encrypt_block;
-    *(void (**)(BLOWFISH_context*, byte*, byte*))r_decrypt
-							= decrypt_block;
+    *r_setkey = bf_setkey;
+    *r_encrypt = encrypt_block;
+    *r_decrypt = decrypt_block;
 
     if( algo == CIPHER_ALGO_BLOWFISH )
 	return "BLOWFISH";

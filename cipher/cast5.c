@@ -54,12 +54,7 @@ typedef struct {
     byte Kr[16];
 } CAST5_context;
 
-static int  cast_setkey( CAST5_context *c, byte *key, unsigned keylen );
-static void encrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
-static void decrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
-
-
-
+static int  cast_setkey( void *c, const byte *key, unsigned keylen );
 
 static const u32 s1[256] = {
 0x30fb40d4, 0x9fa0ff0b, 0x6beccd2f, 0x3f258c7a, 0x1e213f2f, 0x9c004dd3, 0x6003e540, 0xcf9fc949,
@@ -368,7 +363,7 @@ burn_stack (int bytes)
 
 
 static void
-do_encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
+do_encrypt_block( CAST5_context *c, byte *outbuf, const byte *inbuf )
 {
     u32 l, r, t;
     u32 I;   /* used by the Fx macros */
@@ -422,14 +417,14 @@ do_encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
 }
 
 static void
-encrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
+encrypt_block( void *c, byte *outbuf, const byte *inbuf )
 {
     do_encrypt_block (c, outbuf, inbuf);
     burn_stack (20+4*sizeof(void*));
 }
 
 static void
-do_decrypt_block (CAST5_context *c, byte *outbuf, byte *inbuf )
+do_decrypt_block (CAST5_context *c, byte *outbuf, const byte *inbuf )
 {
     u32 l, r, t;
     u32 I;
@@ -470,7 +465,7 @@ do_decrypt_block (CAST5_context *c, byte *outbuf, byte *inbuf )
 }
 
 static void
-decrypt_block( CAST5_context *c, byte *outbuf, byte *inbuf )
+decrypt_block( void *c, byte *outbuf, const byte *inbuf )
 {
     do_decrypt_block (c, outbuf, inbuf);
     burn_stack (20+4*sizeof(void*));
@@ -573,7 +568,7 @@ key_schedule( u32 *x, u32 *z, u32 *k )
 
 
 static int
-do_cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
+do_cast_setkey( CAST5_context *c, const byte *key, unsigned keylen )
 {
   static int initialized;
   static const char* selftest_failed;
@@ -616,7 +611,7 @@ do_cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
 }
 
 static int
-cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
+cast_setkey( void *c, const byte *key, unsigned keylen )
 {
     int rc = do_cast_setkey (c, key, keylen);
     burn_stack (96+7*sizeof(void*));
@@ -631,22 +626,18 @@ cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
  */
 const char *
 cast5_get_info( int algo, size_t *keylen,
-		   size_t *blocksize, size_t *contextsize,
-		   int	(**r_setkey)( void *c, byte *key, unsigned keylen ),
-		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
-		 )
+		size_t *blocksize, size_t *contextsize,
+		int (**r_setkey)( void *c, const byte *key, unsigned keylen ),
+		void (**r_encrypt)( void *c, byte *outbuf, const byte *inbuf ),
+		void (**r_decrypt)( void *c, byte *outbuf, const byte *inbuf )
+		)
 {
     *keylen = 128;
     *blocksize = CAST5_BLOCKSIZE;
     *contextsize = sizeof(CAST5_context);
-    *(int  (**)(CAST5_context*, byte*, unsigned))r_setkey
-							= cast_setkey;
-    *(void (**)(CAST5_context*, byte*, byte*))r_encrypt
-							= encrypt_block;
-    *(void (**)(CAST5_context*, byte*, byte*))r_decrypt
-							= decrypt_block;
-
+    *r_setkey = cast_setkey;
+    *r_encrypt = encrypt_block;
+    *r_decrypt = decrypt_block;
 
     if( algo == CIPHER_ALGO_CAST5 )
 	return "CAST5";

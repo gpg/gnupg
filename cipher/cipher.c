@@ -43,9 +43,9 @@ struct cipher_table_s {
     size_t blocksize;
     size_t keylen;
     size_t contextsize; /* allocate this amount of context */
-    int  (*setkey)( void *c, byte *key, unsigned keylen );
-    void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
-    void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
+    int  (*setkey)( void *c, const byte *key, unsigned keylen );
+    void (*encrypt)( void *c, byte *outbuf, const byte *inbuf );
+    void (*decrypt)( void *c, byte *outbuf, const byte *inbuf );
 };
 
 static struct cipher_table_s cipher_table[TABLE_SIZE];
@@ -59,9 +59,9 @@ struct cipher_handle_s {
     byte iv[MAX_BLOCKSIZE];	/* (this should be ulong aligned) */
     byte lastiv[MAX_BLOCKSIZE];
     int  unused;  /* in IV */
-    int  (*setkey)( void *c, byte *key, unsigned keylen );
-    void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
-    void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
+    int  (*setkey)( void *c, const byte *key, unsigned keylen );
+    void (*encrypt)( void *c, byte *outbuf, const byte *inbuf );
+    void (*decrypt)( void *c, byte *outbuf, const byte *inbuf );
     PROPERLY_ALIGNED_TYPE context;
 };
 
@@ -431,7 +431,6 @@ cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen )
 }
 
 
-
 void
 cipher_setiv( CIPHER_HANDLE c, const byte *iv, unsigned ivlen )
 {
@@ -446,8 +445,6 @@ cipher_setiv( CIPHER_HANDLE c, const byte *iv, unsigned ivlen )
     }
     c->unused = 0;
 }
-
-
 
 static void
 do_ecb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nblocks )
