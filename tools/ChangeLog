@@ -1,5 +1,7 @@
 2004-09-30  Werner Koch  <wk@g10code.com>
 
+	* gpgconf.c (i18n_init): Always use LC_ALL.
+
 	* Makefile.am: Adjusted for gettext 0.14.
 
 2004-09-29  Werner Koch  <wk@g10code.com>

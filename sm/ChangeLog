@@ -1,5 +1,17 @@
 2004-09-30  Werner Koch  <wk@g10code.com>
 
+	* gpgsm.c (i18n_init): Always use LC_ALL.
+
+	* certdump.c (gpgsm_format_name): Factored code out to ..
+	(gpgsm_format_name2): .. new.
+	(gpgsm_print_name): Factored code out to ..
+	(gpgsm_print_name2): .. new.
+	(print_dn_part): New arg TRANSLATE.  Changed all callers.
+	(print_dn_parts): Ditto.
+	(gpgsm_format_keydesc): Do not translate the SUBJECT; we require
+	it to stay UTF-8 but we still want to filter out bad control
+	characters.
+
 	* Makefile.am: Adjusted for gettext 0.14.
 
 	* keylist.c (list_cert_colon): Make sure that the expired flag has

@@ -106,12 +106,7 @@ i18n_init(void)
   set_gettext_file (PACKAGE_GT);
 #else
 # ifdef ENABLE_NLS
-#  ifdef HAVE_LC_MESSAGES
-  setlocale (LC_TIME, "");
-  setlocale (LC_MESSAGES, "");
-#  else
   setlocale (LC_ALL, "" );
-#  endif
   bindtextdomain (PACKAGE_GT, LOCALEDIR);
   textdomain (PACKAGE_GT);
 # endif

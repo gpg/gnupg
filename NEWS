@@ -10,6 +10,8 @@ Noteworthy changes in version 1.9.11
  * [gpg-agent] When used without --daemon or --server, gpg-agent now
    check whether a agent is already running and usable.
 
+ * Fixed some i18n problems.
+
 
 Noteworthy changes in version 1.9.10 (2004-07-22)
 -------------------------------------------------

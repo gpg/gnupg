@@ -427,7 +427,7 @@ parse_dn (const unsigned char *string)
 
 
 static void
-print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key)
+print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key, int translate)
 {
   struct dn_array_s *first_dn = dn;
 
@@ -446,7 +446,10 @@ print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key)
           if (!dn->done && dn->value && *dn->value)
             {
               fprintf (fp, "/%s=", dn->key);
-              print_sanitized_utf8_string (fp, dn->value, '/');
+              if (translate)
+                print_sanitized_utf8_string (fp, dn->value, '/');
+              else
+                print_sanitized_string (fp, dn->value, '/');
             }
           dn->done = 1;
           if (dn > first_dn && dn[-1].multivalued)
@@ -461,7 +464,7 @@ print_dn_part (FILE *fp, struct dn_array_s *dn, const char *key)
 /* Print all parts of a DN in a "standard" sequence.  We first print
    all the known parts, followed by the uncommon ones */
 static void
-print_dn_parts (FILE *fp, struct dn_array_s *dn)
+print_dn_parts (FILE *fp, struct dn_array_s *dn, int translate)
 {
   const char *stdpart[] = {
     "CN", "OU", "O", "STREET", "L", "ST", "C", "EMail", NULL 
@@ -469,17 +472,17 @@ print_dn_parts (FILE *fp, struct dn_array_s *dn)
   int i;
   
   for (i=0; stdpart[i]; i++)
-      print_dn_part (fp, dn, stdpart[i]);
+      print_dn_part (fp, dn, stdpart[i], translate);
 
   /* Now print the rest without any specific ordering */
   for (; dn->key; dn++)
-    print_dn_part (fp, dn, dn->key);
+    print_dn_part (fp, dn, dn->key, translate);
 }
 
 
 
 void
-gpgsm_print_name (FILE *fp, const char *name)
+gpgsm_print_name2 (FILE *fp, const char *name, int translate)
 {
   const unsigned char *s;
   int i;
@@ -493,7 +496,12 @@ gpgsm_print_name (FILE *fp, const char *name)
     {
       const unsigned char *s2 = strchr (s+1, '>');
       if (s2)
-        print_sanitized_utf8_buffer (fp, s + 1, s2 - s - 1, 0);
+        {
+          if (translate)
+            print_sanitized_utf8_buffer (fp, s + 1, s2 - s - 1, 0);
+          else
+            print_sanitized_buffer (fp, s + 1, s2 - s - 1, 0);
+        }
     }
   else if (*s == '(')
     fputs (_("[Error - unknown encoding]"), fp);
@@ -508,7 +516,7 @@ gpgsm_print_name (FILE *fp, const char *name)
         fputs (_("[Error - invalid DN]"), fp);
       else 
         {
-          print_dn_parts (fp, dn);          
+          print_dn_parts (fp, dn, translate);          
           for (i=0; dn[i].key; i++)
             {
               xfree (dn[i].key);
@@ -519,6 +527,12 @@ gpgsm_print_name (FILE *fp, const char *name)
     }
 }
 
+
+void
+gpgsm_print_name (FILE *fp, const char *name)
+{
+  gpgsm_print_name2 (fp, name, 1);
+}
 
 
 /* A cookie structure used for the memory stream. */
@@ -558,9 +572,11 @@ format_name_writer (void *cookie, const char *buffer, size_t size)
 
 /* Format NAME which is expected to be in rfc2253 format into a better
    human readable format. Caller must free the returned string.  NULL
-   is returned in case of an error. */
+   is returned in case of an error.  With TRANSLATE set to true the
+   name will be translated to the native encodig.  Note that NAME is
+   internally always UTF-8 encoded. */
 char *
-gpgsm_format_name (const char *name)
+gpgsm_format_name2 (const char *name, int translate)
 {
 #if defined (HAVE_FOPENCOOKIE) || defined (HAVE_FUNOPEN)
   FILE *fp;
@@ -587,7 +603,7 @@ gpgsm_format_name (const char *name)
       errno = save_errno;
       return NULL;
     }
-  gpgsm_print_name (fp, name);
+  gpgsm_print_name2 (fp, name, translate);
   fclose (fp);
   if (cookie.error || !cookie.buffer)
     {
@@ -599,6 +615,12 @@ gpgsm_format_name (const char *name)
 #else /* No fun - use the name verbatim. */
   return xtrystrdup (name);
 #endif /* No fun. */
+}
+
+char *
+gpgsm_format_name (const char *name)
+{
+  return gpgsm_format_name2 (name, 1);
 }
 
 
@@ -618,7 +640,7 @@ gpgsm_format_keydesc (ksba_cert_t cert)
   char *orig_codeset = NULL;
 
   name = ksba_cert_get_subject (cert, 0);
-  subject = name? gpgsm_format_name (name) : NULL;
+  subject = name? gpgsm_format_name2 (name, 0) : NULL;
   ksba_free (name); name = NULL;
 
   sexp = ksba_cert_get_serial (cert);

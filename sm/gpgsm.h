@@ -202,6 +202,7 @@ void gpgsm_destroy_writer (Base64Context ctx);
 /*-- certdump.c --*/
 void gpgsm_print_serial (FILE *fp, ksba_const_sexp_t p);
 void gpgsm_print_time (FILE *fp, ksba_isotime_t t);
+void gpgsm_print_name2 (FILE *fp, const char *string, int translate);
 void gpgsm_print_name (FILE *fp, const char *string);
 
 void gpgsm_dump_cert (const char *text, ksba_cert_t cert);
@@ -210,6 +211,7 @@ void gpgsm_dump_time (ksba_isotime_t t);
 void gpgsm_dump_string (const char *string);
 
 char *gpgsm_format_serial (ksba_const_sexp_t p);
+char *gpgsm_format_name2 (const char *name, int translate);
 char *gpgsm_format_name (const char *name);
 
 char *gpgsm_format_keydesc (ksba_cert_t cert);
