@@ -43,6 +43,7 @@ record.
 		o = Unknown (this key is new to the system)
                 i = The key is invalid (e.g. due to a missing self-signature)
 		d = The key has been disabled
+		    (deprecated - use the 'D' in field 12 instead)
 		r = The key has been revoked
 		e = The key has expired
 		- = Unknown trust (i.e. no value assigned)
@@ -85,9 +86,11 @@ record.
                 e = encrypt
                 s = sign
                 c = certify
-            A key may have any combination of them.  The primary key has in
-            addition to these letters, uppercase version of the letter to
-            denote the _usable_ capabilities of the entire key.  
+	    A key may have any combination of them in any order.  In
+	    addition to these letters, the primary key has uppercase
+	    versions of the letters to denote the _usable_
+	    capabilities of the entire key, and a potential letter 'D'
+	    to indicate a disabled key.
 13. Field:  Used in FPR records for S/MIME keys to store the fingerprint of
             the issuer certificate.  This is useful to build the
             certificate path based on certificates stored in the local
