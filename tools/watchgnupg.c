@@ -139,19 +139,14 @@ print_line (client_t c, const char *line)
       line = s + 1;
     }
   n = strlen (line);
-  if (!c->buffer)
+  if (n)
     {
-      c->size = 256 - (n + 256) % 256;
-      c->buffer = xmalloc (c->size);
-      memcpy (c->buffer, line, n);
-      c->len = n;
-    }
-  else 
-    {
-      if (c->len + n > c->size)
+      if (c->len + n >= c->size)
         {
-          c->size += 256 - (n + 256) % 256;
-          c->buffer = xrealloc (c->buffer, c->size);
+          c->size += ((n + 255) & ~255);
+          c->buffer = (c->buffer
+                       ? xrealloc (c->buffer, c->size)
+                       : xmalloc (c->size));
         }
       memcpy (c->buffer + c->len, line, n);
       c->len += n;
