@@ -29,6 +29,10 @@
 #include "cipher.h"
 #include "algorithms.h"
 
+/* We have support for a DUMMY encryption cipher which comes handy to
+   debug MDCs and similar things.  Because this is a bit dangerous it
+   is not enabled. */
+/*#define ALLOW_DUMMY 1 */ 
 
 #define MAX_BLOCKSIZE 16
 #define TABLE_SIZE 14
@@ -62,13 +66,16 @@ struct cipher_handle_s {
 };
 
 
-#ifdef IS_DEVELOPMENT_VERSION
+#ifdef ALLOW_DUMMY
 static int
 dummy_setkey( void *c, byte *key, unsigned keylen ) { return 0; }
 static void
 dummy_encrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
 static void
 dummy_decrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
+#ifdef __GNUC__
+# warning DUMMY cipher module is enabled
+#endif
 #endif
 
 
@@ -170,7 +177,7 @@ setup_cipher_table(void)
     if (cipher_table[i].name)
       i++;  /* Note that IDEA is usually no available. */
 
-#ifdef IS_DEVELOPMENT_VERSION
+#ifdef ALLOW_DUMMY
     cipher_table[i].algo = CIPHER_ALGO_DUMMY;
     cipher_table[i].name = "DUMMY";
     cipher_table[i].blocksize = 8;
@@ -379,7 +386,7 @@ cipher_open( int algo, int mode, int secure )
     else
 	hd->mode = mode;
 
-#ifdef IS_DEVELOPMENT_VERSION
+#ifdef ALLOW_DUMMY
     if( algo == CIPHER_ALGO_DUMMY )
 	hd->mode = CIPHER_MODE_DUMMY;
 #endif
@@ -611,7 +618,7 @@ cipher_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
       case CIPHER_MODE_PHILS_CFB:
 	do_cfb_encrypt(c, outbuf, inbuf, nbytes );
 	break;
-#ifdef IS_DEVELOPMENT_VERSION
+#ifdef ALLOW_DUMMY
       case CIPHER_MODE_DUMMY:
 	if( inbuf != outbuf )
 	    memmove( outbuf, inbuf, nbytes );
@@ -643,7 +650,7 @@ cipher_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
       case CIPHER_MODE_PHILS_CFB:
 	do_cfb_decrypt(c, outbuf, inbuf, nbytes );
 	break;
-#ifdef IS_DEVELOPMENT_VERSION
+#ifdef ALLOW_DUMMY
       case CIPHER_MODE_DUMMY:
 	if( inbuf != outbuf )
 	    memmove( outbuf, inbuf, nbytes );

@@ -1,3 +1,8 @@
+2002-08-12  Werner Koch  <wk@gnupg.org>
+
+	* cipher.c: Include the DUMMY cipher only when the new ALLOW_DUMMY
+	is defined. It should only be defined for hard core debugging.
+
 2002-08-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am, md.c (load_digest_module): Allow switching TIGER on
