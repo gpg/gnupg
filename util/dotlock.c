@@ -1,5 +1,5 @@
 /* dotlock.c - dotfile locking
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -196,6 +196,28 @@ create_dotlock( const char *file_to_lock )
     strcpy(stpcpy(h->lockname, file_to_lock), EXTSEP_S "lock");
     return h;
 }
+
+
+void
+destroy_dotlock ( DOTLOCK h )
+{
+#if !defined (HAVE_DOSISH_SYSTEM)
+    if ( h )
+      {
+	if (!h->disable)
+          {
+	    if (h->locked)
+              unlink (h->lockname);
+	    unlink (h->tname);
+	    m_free (h->tname);
+	    m_free (h->lockname);
+          }
+	m_free(h);
+      }
+#endif
+}
+
+
 
 static int
 maybe_deadlock( DOTLOCK h )
@@ -407,14 +429,7 @@ remove_lockfiles()
 
     while( h ) {
 	h2 = h->next;
-	if( !h->disable ) {
-	    if( h->locked )
-		unlink( h->lockname );
-	    unlink(h->tname);
-	    m_free(h->tname);
-	    m_free(h->lockname);
-	}
-	m_free(h);
+        destroy_dotlock (h);
 	h = h2;
     }
 #endif

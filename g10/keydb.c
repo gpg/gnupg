@@ -1,5 +1,5 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -69,6 +69,111 @@ static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
 
 
+/* Handle the creation of a keyring if it does not yet exist.  Take
+   into acount that other processes might have the keyring alread
+   locked.  This lock check does not work if the directory itself is
+   not yet available. */
+static int
+maybe_create_keyring (char *filename, int force)
+{
+  DOTLOCK lockhd;
+  IOBUF iobuf;
+  int rc;
+  mode_t oldmask;
+  char *last_slash_in_filename;
+
+  /* A quick test whether the filename already exists. */
+  if (!access (filename, F_OK))
+    return 0;
+
+  /* If we don't want to create a new file at all, there is no need to
+     go any further - bail out right here.  */
+  if (!force) 
+    return G10ERR_OPEN_FILE;
+
+  /* To avoid races with other instances of gpg trying to create or
+     update the keyring (it is removed during an update for a short
+     time), we do the next stuff in a locked state. */
+  lockhd = create_dotlock (filename);
+  if (!lockhd)
+    {
+      /* A reason for this to fail is that the directory is not
+         writable. However, this whole locking stuff does not make
+         sense if this is the case. An empty non-writable directory
+         with no keyring is not really useful at all. */
+      if (opt.verbose)
+        log_info ("can't allocate lock for `%s'\n", filename );
+
+      if (!force) 
+        return G10ERR_OPEN_FILE; 
+      else
+        return G10ERR_GENERAL;
+    }
+
+  if ( make_dotlock (lockhd, -1) )
+    {
+      /* This is something bad.  Probably a stale lockfile.  */
+      log_info ("can't lock `%s'\n", filename );
+      rc = G10ERR_GENERAL;
+      goto leave;
+    }
+
+  /* Now the real test while we are locked. */
+  if (!access(filename, F_OK))
+    {
+      rc = 0;  /* Okay, we may access the file now.  */
+      goto leave;
+    }
+
+  /* The file does not yet exist, create it now. */
+
+  last_slash_in_filename = strrchr (filename, DIRSEP_C);
+  *last_slash_in_filename = 0;
+  if (access(filename, F_OK))
+    { /* On the first time we try to create the default
+         homedir and check again. */
+      static int tried;
+      
+      if (!tried)
+        {
+          tried = 1;
+          try_make_homedir (filename);
+        }
+      if (access (filename, F_OK))
+        {
+          rc = G10ERR_OPEN_FILE;
+          *last_slash_in_filename = DIRSEP_C;
+          goto leave;
+        }
+    }
+  *last_slash_in_filename = DIRSEP_C;
+
+  oldmask = umask (077);
+  iobuf = iobuf_create (filename);
+  umask (oldmask);
+  if (!iobuf) 
+    {
+      log_error ( _("error creating keyring `%s': %s\n"),
+                  filename, strerror(errno));
+      rc = G10ERR_OPEN_FILE;
+      goto leave;
+    }
+
+  if (!opt.quiet)
+    log_info (_("keyring `%s' created\n"), filename);
+
+  iobuf_close (iobuf);
+  /* Must invalidate that ugly cache */
+  iobuf_ioctl (NULL, 2, 0, filename);
+  rc = 0;
+
+ leave:
+  release_dotlock (lockhd);
+  destroy_dotlock (lockhd);
+  return rc;
+}
+
+
 /*
  * Register a resource (which currently may only be a keyring file).
  * The first keyring which is added by this function is
@@ -81,7 +186,6 @@ keydb_add_resource (const char *url, int force, int secret)
 {
     static int any_secret, any_public;
     const char *resname = url;
-    IOBUF iobuf = NULL;
     char *filename = NULL;
     int rc = 0;
     KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
@@ -145,56 +249,9 @@ keydb_add_resource (const char *url, int force, int secret)
 	goto leave;
 
       case KEYDB_RESOURCE_TYPE_KEYRING:
-        if (access(filename, F_OK))
-          { /* file does not exist */
-	    mode_t oldmask;
-	    char *last_slash_in_filename;
-
-            if (!force) 
-              {
-                rc = G10ERR_OPEN_FILE;
-                goto leave;
-              }
-
-	    last_slash_in_filename = strrchr (filename, DIRSEP_C);
-	    *last_slash_in_filename = 0;
-	    if (access(filename, F_OK))
-              { /* On the first time we try to create the default
-		   homedir and check again. */
-                static int tried;
-                
-                if (!tried)
-                  {
-                    tried = 1;
-                    try_make_homedir (filename);
-                  }
-         	if (access (filename, F_OK))
-                  {
-                    rc = G10ERR_OPEN_FILE;
-                    *last_slash_in_filename = DIRSEP_C;
-                    goto leave;
-                  }
-              }
-	    *last_slash_in_filename = DIRSEP_C;
-
-	    oldmask=umask(077);
-	    iobuf = iobuf_create (filename);
-	    umask(oldmask);
-	    if (!iobuf) 
-              {
-		log_error ( _("error creating keyring `%s': %s\n"),
-                            filename, strerror(errno));
-		rc = G10ERR_OPEN_FILE;
-		goto leave;
-              }
-
-            if (!opt.quiet)
-              log_info (_("keyring `%s' created\n"), filename);
-            iobuf_close (iobuf);
-            iobuf = NULL;
-            /* must invalidate that ugly cache */
-            iobuf_ioctl (NULL, 2, 0, (char*)filename);
-          } /* end file creation */
+        rc = maybe_create_keyring (filename, force);
+        if (rc)
+          goto leave;
 
         token = keyring_register_filename (filename, secret);
         if (!token)

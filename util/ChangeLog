@@ -1,3 +1,8 @@
+2004-08-11  Werner Koch  <wk@g10code.de>
+
+	* dotlock.c (destroy_dotlock): New.
+	(remove_lockfiles): Implement in terms of destroy_dotlock.
+
 2004-08-09  Werner Koch  <wk@g10code.de>
 
 	* Makefile.am (http-test): Replaced INTLLIBS by LIBINTL.
@@ -1105,7 +1110,7 @@ Fri Feb 13 15:14:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 
 
- Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ Copyright 1998,1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
