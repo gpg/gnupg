@@ -1,6 +1,5 @@
 /* mpihelp-mul_1.c  -  MPI helper functions
- * Copyright (C) 1994, 1996, 1997, 1998, 1999
- *               2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1994, 1996, 1997, 1998, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

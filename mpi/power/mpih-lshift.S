@@ -1,7 +1,6 @@
 /* IBM POWER lshift
  *
- *      Copyright (C) 1992, 1994, 1999,
- *                    2000, 2001 Free Software Foundation, Inc.
+ *      Copyright (C) 1992, 1994, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

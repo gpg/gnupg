@@ -1,8 +1,8 @@
 /* SPARC v7 __udiv_qrnnd division support, used from longlong.h.
  *           This is for v7 CPUs without a floating-point unit.
  *
- *      Copyright (C) 1993, 1994, 1996, 1998, 1999,
- *                    2000, 2001 Free Software Foundation, Inc.
+ *      Copyright (C) 1993, 1994, 1996, 1998,
+ *                    2001 Free Software Foundation, Inc.
  *       
  * This file is part of GnuPG.
  *

@@ -1,8 +1,7 @@
 /* HP-PA  __udiv_qrnnd division support, used from longlong.h.
  *	  This version runs fast on pre-PA7000 CPUs.
  *
- *      Copyright (C) 1993, 1994, 1998, 1999,
- *                    2000, 2001 Free Software Foundation, Inc.
+ *      Copyright (C) 1993, 1994, 1998, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

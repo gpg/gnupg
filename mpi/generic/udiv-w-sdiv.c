@@ -1,7 +1,6 @@
 /* mpihelp_udiv_w_sdiv -- implement udiv_qrnnd on machines with only signed
  *			  division.
- * Copyright (C) 1992, 1994, 1996, 1998, 1999,
- *               2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1992, 1994, 1996, 1998 Free Software Foundation, Inc.
  * Contributed by Peter L. Montgomery.
  *
  * This file is part of GnuPG.

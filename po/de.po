@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.0.4\n"
-"POT-Creation-Date: 2001-04-28 19:57+0200\n"
+"POT-Creation-Date: 2001-04-28 21:26+0200\n"
 "PO-Revision-Date: 2001-04-16 14:20+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"

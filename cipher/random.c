@@ -604,9 +604,11 @@ fast_random_poll()
     #else
     {	struct rusage buf;
         /* QNX/Neutrino does return ENOSYS - so we just ignore it and
-         * add whatever is in buf */
-        if( getrusage( RUSAGE_SELF, &buf ) && errno != ENOSYS )
-	    BUG();
+         * add whatever is in buf.  In a chroot environment it might not
+         * work at all (i.e. because /proc/ is not accessible), so we better 
+         * ognore all error codes and hope for the best
+         */
+        getrusage( RUSAGE_SELF, &buf );
         
 	add_randomness( &buf, sizeof buf, 1 );
 	memset( &buf, 0, sizeof buf );

@@ -1,3 +1,8 @@
+2001-04-28  Werner Koch  <wk@gnupg.org>
+
+	* run-gpg.patterns: a v3 test key expired yesterday, suppress the
+	messages.
+
 2001-03-27  Werner Koch  <wk@gnupg.org>
 
 	* defs.inc: Removed creation of options file.

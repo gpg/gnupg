@@ -1,7 +1,6 @@
 /* mc68020 rshift -- Shift right a low-level natural-number integer.
  *
- *      Copyright (C) 1996, 1998, 1999,
- *                    2000, 2001 Free Software Foundation, Inc.
+ *      Copyright (C) 1996, 1998, 2001 Free Software Foundation, Inc.
  *       
  * This file is part of GnuPG.
  *

@@ -1,7 +1,7 @@
 /* Alpha 21064 __udiv_qrnnd
  *
- *      Copyright (C) 1992, 1994, 1995, 1998, 1999,
- *                    2000, 2001 Free Software Foundation, Inc.
+ *      Copyright (C) 1992, 1994, 1995, 1998,
+ *                    2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

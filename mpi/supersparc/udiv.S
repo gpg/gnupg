@@ -2,8 +2,8 @@
  *            This is for SuperSPARC only, to compensate for its
  *            semi-functional udiv instruction.
  *
- *      Copyright (C) 1993, 1994, 1996, 1998, 1999,
- *                    2000, 2001 Free Software Foundation, Inc.
+ *      Copyright (C) 1993, 1994, 1996, 1998,
+ *                    2001 Free Software Foundation, Inc.
  *       
  * This file is part of GnuPG.
  *

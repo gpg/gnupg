@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4\n"
-"POT-Creation-Date: 2001-04-28 19:57+0200\n"
+"POT-Creation-Date: 2001-04-28 21:26+0200\n"
 "PO-Revision-Date: 2001-04-23 20:55+01:00\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <eo@li.org>\n"

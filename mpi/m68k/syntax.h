@@ -1,7 +1,7 @@
 /* asm.h -- Definitions for 68k syntax variations.
  *
- *      Copyright (C) 1992, 1994, 1996, 1998, 1999,
- *                    2000, 2001 Free Software Foundation, Inc.
+ *      Copyright (C) 1992, 1994, 1996, 1998,
+ *                    2001 Free Software Foundation, Inc.
  *       
  * This file is part of GnuPG.
  *

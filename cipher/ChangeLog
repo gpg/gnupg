@@ -1,3 +1,8 @@
+2001-04-29  Werner Koch  <wk@gnupg.org>
+
+	* random.c (fast_random_poll): Do not check the return code of
+	getrusage.
+
 2001-04-17  Werner Koch  <wk@gnupg.org>
 
 	* rndunix.c: Add a signal.h header to avoid warnings on SOlaris 7

@@ -1,17 +1,17 @@
 /* i80586 submul_1 -- Multiply a limb vector with a limb and add
  *		      the result to a second limb vector.
  *
- *      Copyright (C) 1992, 1994, 1998, 1999,
- *                    2000, 2001 Free Software Foundation, Inc.
+ *      Copyright (C) 1992, 1994, 1998,
+ *                    2001 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
