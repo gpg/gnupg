@@ -1,3 +1,9 @@
+2004-04-26  Werner Koch  <wk@gnupg.org>
+
+	* card-util.c (change_name): Check that the NAME is not too long.
+	(change_url): Likewise.
+	(change_login): Likewise.
+
 2004-03-23  Werner Koch  <wk@gnupg.org>
 
 	* g10.c: New options --gpgconf-list, --debug-level and --log-file

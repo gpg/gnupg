@@ -445,6 +445,14 @@ change_name (void)
     if (*p == ' ')
       *p = '<';
 
+  if (strlen (isoname) > 39 )
+    {
+      tty_printf (_("Error: Combined name too long "
+                    "(limit is %d characters).\n"), 39);    
+      xfree (isoname);
+      return -1;
+    }
+
   log_debug ("setting Name to `%s'\n", isoname);
   rc = agent_scd_setattr ("DISP-NAME", isoname, strlen (isoname) );
   if (rc)
@@ -467,6 +475,14 @@ change_url (void)
   trim_spaces (url);
   cpr_kill_prompt ();
 
+  if (strlen (url) > 254 )
+    {
+      tty_printf (_("Error: URL too long "
+                    "(limit is %d characters).\n"), 254);    
+      xfree (url);
+      return -1;
+    }
+
   rc = agent_scd_setattr ("PUBKEY-URL", url, strlen (url) );
   if (rc)
     log_error ("error setting URL: %s\n", gpg_strerror (rc));
@@ -486,6 +502,14 @@ change_login (void)
     return -1;
   trim_spaces (data);
   cpr_kill_prompt ();
+
+  if (strlen (data) > 254 )
+    {
+      tty_printf (_("Error: Login data too long "
+                    "(limit is %d characters).\n"), 254);    
+      xfree (data);
+      return -1;
+    }
 
   rc = agent_scd_setattr ("LOGIN-DATA", data, strlen (data) );
   if (rc)
