@@ -1,5 +1,9 @@
 2004-10-01  Werner Koch  <wk@g10code.com>
 
+	* gpgconf-comp.c: Made all strings for --log-file read the same.
+	
+2004-10-01  Werner Koch  <wk@g10code.com>
+
 	* gpgconf-comp.c (my_dgettext): Also switch codeset and directory
 	for the other used domains (i.e. dirmngr).
 

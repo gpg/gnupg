@@ -534,7 +534,7 @@ static gc_option_t gc_options_scdaemon[] =
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
    { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
-     "gnupg", "|FILE|write logs to FILE",
+     "gnupg", N_("|FILE|write server mode logs to FILE"),
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
 
    { "Security",
@@ -583,7 +583,7 @@ static gc_option_t gc_options_gpg[] =
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
    { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
-     "gnupg", "|FILE|write logs to FILE",
+     "gnupg", N_("|FILE|write server mode logs to FILE"),
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG },
 /*    { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE, */
 /*      NULL, NULL, */
@@ -636,7 +636,7 @@ static gc_option_t gc_options_gpgsm[] =
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
    { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
-     "gnupg", "|FILE|write logs to FILE",
+     "gnupg", N_("|FILE|write server mode logs to FILE"),
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPGSM },
    { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      NULL, NULL,
@@ -712,7 +712,7 @@ static gc_option_t gc_options_dirmngr[] =
      "dirmngr", "do not detach from the console",
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
    { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
-     "dirmngr", "|FILE|write logs to FILE",
+     "dirmngr", N_("|FILE|write server mode logs to FILE"),
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_DIRMNGR },
    { "debug-wait", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      NULL, NULL,
