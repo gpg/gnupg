@@ -150,7 +150,7 @@ send_pinentry_environment (assuan_context_t ctx,
 #endif
   if (opt_lc_messages || (dft_ttyname && dft_lc))
     {
-      err = send_one_option (ctx, errsource, "display", 
+      err = send_one_option (ctx, errsource, "lc-messages", 
                              opt_lc_messages ? opt_lc_messages : dft_lc);
     }
 #if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)

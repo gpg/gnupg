@@ -1,3 +1,8 @@
+2005-01-03  Werner Koch  <wk@g10code.com>
+
+	* asshelp.c (send_pinentry_environment): Fixed changed from
+	2004-12-18; cut+paste error for lc-messages.
+
 2004-12-21  Werner Koch  <wk@g10code.com>
 
 	* simple-pwquery.c (agent_open) [W32]: Implement for W32.
