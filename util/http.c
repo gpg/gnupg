@@ -25,6 +25,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+
+#ifndef HAVE_DOSISH_SYSTEM
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -685,6 +688,7 @@ write_server( int sock, const char *data, size_t length )
     return 0;
 }
 
+#endif /* HAVE_DOSISH_SYSTEM */
 
 /**** Test code ****/
 #ifdef TEST

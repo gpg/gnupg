@@ -1,3 +1,15 @@
+Sun May 23 14:20:22 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* pkclist.c (check_signatures_trust): Print a warning and return
+	immediateley if opt.always_trust is true.
+
+	* g10.c (main): Corrected handling of no-default-keyring
+
+	* pkclist.c (algo_available): Disable Twofish until we have settled
+	how to do the MDC.
+
+	* hkp.c: Disable everything for mingw32
+
 Sat May 22 22:47:26 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* mainproc.c (check_sig_and_print): Add sig creation time to the

@@ -428,6 +428,13 @@ check_signatures_trust( PKT_signature *sig )
     int did_add = 0;
     int rc=0;
 
+
+    if( opt.always_trust ) {
+	log_info(_("WARNING: Using untrusted key!\n"));
+	return 0;
+    }
+
+
     rc = get_pubkey( pk, sig->keyid );
     if( rc ) { /* this should not happen */
 	log_error("Ooops; the key vanished  - can't check the trust\n");
@@ -686,6 +693,8 @@ static int
 algo_available( int preftype, int algo )
 {
     if( preftype == PREFTYPE_SYM ) {
+	if( algo == CIPHER_ALGO_TWOFISH )
+	    return 0;  /* we don't want to generate Twofish messages for now*/
 	return algo && !check_cipher_algo( algo );
     }
     else if( preftype == PREFTYPE_HASH ) {

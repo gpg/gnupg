@@ -83,7 +83,6 @@ setup_cipher_table(void)
     int i;
 
     i = 0;
-  if( getenv("GNUPG_ENABLE_TWOFISH") ) {
     cipher_table[i].algo = CIPHER_ALGO_TWOFISH;
     cipher_table[i].name = twofish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
@@ -95,7 +94,6 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
-  }
     cipher_table[i].algo = CIPHER_ALGO_BLOWFISH;
     cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,

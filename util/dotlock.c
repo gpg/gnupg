@@ -25,7 +25,9 @@
 #include <ctype.h>
 #include <errno.h>
 #include <unistd.h>
+#ifndef  HAVE_DOSISH_SYSTEM
 #include <sys/utsname.h>
+#endif
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -71,7 +73,9 @@ create_dotlock( const char *file_to_lock )
     DOTLOCK h;
     int  fd = -1;
     char pidstr[16];
+  #ifndef  HAVE_DOSISH_SYSTEM
     struct utsname uts;
+  #endif
     const char *nodename;
     const char *dirpart;
     int dirpartlen;

@@ -101,7 +101,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    name = opt.outfile;
 	else {
 	  #ifdef USE_ONLY_8DOT3
-	    #error please implement this
+	    #warning please implement 8.3 files
 	  #endif
 	    buf = m_alloc(strlen(iname)+4+1);
 	    strcpy(stpcpy(buf,iname), mode==1 ? ".asc" :
@@ -135,7 +135,7 @@ open_sigfile( const char *iname )
     size_t len;
 
   #ifdef USE_ONLY_8DOT3
-    #error please implement this
+    #warning please implement 8.3 files
   #endif
     if( iname && !(*iname == '-' && !iname[1]) ) {
 	len = strlen(iname);

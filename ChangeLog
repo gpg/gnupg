@@ -1,3 +1,8 @@
+Sun May 23 14:20:22 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): assume yes when
+	cross-compiling.
+
 Mon May 17 21:54:43 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in (socket): Fix for Unisys by Katsuhiro Kondou.

@@ -49,6 +49,9 @@ static int urlencode_filter( void *opaque, int control,
 int
 hkp_ask_import( u32 *keyid )
 {
+  #ifdef HAVE_DOSISH_SYSTEM
+    return -1;
+  #else
     struct http_context hd;
     char *request;
     int rc;
@@ -75,6 +78,7 @@ hkp_ask_import( u32 *keyid )
 
     m_free( request );
     return rc;
+  #endif
 }
 
 
@@ -82,6 +86,9 @@ hkp_ask_import( u32 *keyid )
 int
 hkp_import( STRLIST users )
 {
+  #ifdef HAVE_DOSISH_SYSTEM
+    return -1;
+  #else
     if( !opt.keyserver_name ) {
 	log_error("no keyserver known (use option --keyserver)\n");
 	return -1;
@@ -97,12 +104,16 @@ hkp_import( STRLIST users )
 	hkp_ask_import( kid );
     }
     return 0;
+  #endif
 }
 
 
 int
 hkp_export( STRLIST users )
 {
+  #ifdef HAVE_DOSISH_SYSTEM
+    return -1;
+  #else
     int rc;
     armor_filter_context_t afx;
     IOBUF temp = iobuf_temp();
@@ -177,6 +188,7 @@ hkp_export( STRLIST users )
     }
     http_close( &hd );
     return rc;
+  #endif
 }
 
 static int

@@ -217,6 +217,11 @@ dnl Checks for libraries.
 
 if test "$try_gettext" = yes; then
 AM_GNU_GETTEXT
+else
+USE_NLS=no
+USE_INCLUDED_LIBINTL=no
+AC_SUBST(USE_NLS)
+AC_SUBST(USE_INCLUDED_LIBINTL)
 fi
 
 if test "$try_gdbm" = yes; then

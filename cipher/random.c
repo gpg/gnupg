@@ -360,10 +360,12 @@ fast_random_poll()
 	add_randomness( &tv.tv_usec, sizeof(tv.tv_usec), 1 );
     }
   #else /* use times */
+    #ifndef HAVE_DOSISH_SYSTEM
     {	struct tms buf;
 	times( &buf );
 	add_randomness( &buf, sizeof buf, 1 );
     }
+    #endif
   #endif
   #ifdef HAVE_GETRUSAGE
     {	struct rusage buf;
