@@ -1,3 +1,11 @@
+2003-04-23  Werner Koch  <wk@gnupg.org>
+
+	Reverted recent changes in the copyright notices.  We can't use a
+	range of years but must list each year we have prepared a release
+	and applied a textual change to a file.  It is common that some
+	files are not changed in a couple of years and a range would not
+	allow to express this.
+
 2003-04-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (sign_uids): Allow replacing expired signatures.
