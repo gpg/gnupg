@@ -31,14 +31,6 @@ cvs-put:
 cvs-sync: cvs-get cvs-put
 
 
-tobold-get:
-	rsync -Cavuzb --exclude scratch --exclude .deps \
-		      tobold:gnupg/ .
-
-tobold-put:
-	rsync -Cavuzb --exclude scratch --exclude .deps \
-		      . tobold:gnupg/
-
 
 .PHONY: cvs-get cvs-put cvs-sync
 

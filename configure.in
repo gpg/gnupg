@@ -224,9 +224,17 @@ AC_SUBST(USE_NLS)
 AC_SUBST(USE_INCLUDED_LIBINTL)
 fi
 
+dnl
+dnl There are lot of misconfigured systems.  We include
+dnl gdbm support only if the lib and the header is installed.
+dnl
 if test "$try_gdbm" = yes; then
-AC_CHECK_LIB(gdbm,gdbm_firstkey)
+AC_CHECK_HEADERS(gdbm.h)
+if test "$ac_cv_header_gdbm_h" = yes ; then
+  AC_CHECK_LIB(gdbm,gdbm_firstkey)
 fi
+fi
+
 
 dnl Solaris needs -lsocket and -lnsl. Unisys system includes
 dnl gethostbyname in libsocket but needs libnsl for socket.
@@ -494,25 +502,28 @@ AC_SUBST(MPI_SFLAGS)
 
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
+use_local_zlib=yes
 if test "$g10_force_zlib" = "yes"; then
-    ZLIBS="../zlib/libzlib.a"
-    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
-    GNUPG_LINK_FILES(zlib/zlib.h, zlib.h )
-    GNUPG_LINK_FILES(zlib/zconf.h, zconf.h )
+  :
 else
-AC_CHECK_HEADERS(zlib.h)
-if test "$ac_cv_header_zlib_h" = yes ; then
-    LIBS="$LIBS -lz"
-    ZLIBS=
-    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
-else
-    ZLIBS="../zlib/libzlib.a"
-    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
-    GNUPG_LINK_FILES(zlib/zlib.h, zlib.h )
-    GNUPG_LINK_FILES(zlib/zconf.h, zconf.h )
+  AC_CHECK_HEADERS(zlib.h)
+  if test "$ac_cv_header_zlib_h" = yes ; then
+      AC_CHECK_LIB(z,deflateInit2_,use_local_zlib=no,:)
+  fi
 fi
+
+if test "use_local_zlib" = yes ; then
+    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
+    GNUPG_LINK_FILES(zlib/zlib.h, zlib.h )
+    GNUPG_LINK_FILES(zlib/zconf.h, zconf.h )
+    ZLIBS="../zlib/libzlib.a"
+else
+    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
+    ZLIBS=
+    LIBS="-lz $LIBS"
 fi
 AC_SUBST(ZLIBS)
+
 
 changequote(,)dnl
 tmp_pat='[a-zA-Z]'

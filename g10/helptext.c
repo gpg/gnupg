@@ -178,10 +178,15 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "to delete this signature may be important to establish a trust\n"
  "connection to the key or another key certified by this key."
 },
+{ N_("keyedit.delsig.unknown"),
+ "This signature can't be checked because you don't have the\n"
+ "corresponding key.  You should postpone its deletion until you\n"
+ "know which key was used because this signing key might establish"
+ "a trust connection through another already certified key."
+},
 { N_("keyedit.delsig.invalid"),
  "The signature is not valid.  It does make sense to remove it from\n"
- "your keyring if it is really invalid and not just unchecked due to\n"
- "a missing public key (marked by \"sig?\")."
+ "your keyring."
 },
 { N_("keyedit.delsig.selfsig"),
  "This is a signature which binds the user ID to the key. It is\n"

@@ -244,8 +244,13 @@ free_encrypted( PKT_encrypted *ed )
 		;
 	}
 	else {
-	    while( ed->len ) /* skip the packet */
-		ed->len -= iobuf_read( ed->buf, NULL, ed->len );
+	   while( ed->len ) { /* skip the packet */
+	       int n = iobuf_read( ed->buf, NULL, ed->len );
+	       if( n == -1 )
+		   ed->len = 0;
+	       else
+		   ed->len -= n;
+	   }
 	}
     }
     m_free(ed);
@@ -261,8 +266,13 @@ free_plaintext( PKT_plaintext *pt )
 		;
 	}
 	else {
-	    while( pt->len ) /* skip the packet */
-		pt->len -= iobuf_read( pt->buf, NULL, pt->len );
+	   while( pt->len ) { /* skip the packet */
+	       int n = iobuf_read( pt->buf, NULL, pt->len );
+	       if( n == -1 )
+		   pt->len = 0;
+	       else
+		   pt->len -= n;
+	   }
 	}
     }
     m_free(pt);

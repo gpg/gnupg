@@ -12,6 +12,8 @@
 
     * latin-2 character set works (--charset=iso-8859-2).
 
+    * New option --with-key-data to list the public key parameters
+
 
 Noteworthy changes in version 0.9.7
 -----------------------------------

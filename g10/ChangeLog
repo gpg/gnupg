@@ -1,3 +1,13 @@
+Thu Jun 10 14:18:23 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* free-packet.c (free_encrypted): Fixed EOF case (Remi).
+	(free_plaintext): Ditto.
+
+	* helptext.c (keyedit.delsig.unknown): New (Remi).
+	* keyedit.c (print_and_check_one_sig): Add arg print_without_key and
+	changed all callers to make use of it (Remi):
+
 Tue Jun  8 13:36:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* keylist.c (print_key_data): New and called elsewhere.
