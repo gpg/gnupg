@@ -42,8 +42,6 @@
 static int encode_simple( const char *filename, int mode, int use_seskey );
 static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 
-
-
 /****************
  * Encode FILENAME with only the symmetric cipher.  Take input from
  * stdin if FILENAME is NULL.
@@ -65,32 +63,32 @@ encode_store( const char *filename )
 }
 
 static void
-encode_sesskey( DEK *dek, DEK **ret_dek, byte *enckey )
+encode_seskey( DEK *dek, DEK **seskey, byte *enckey )
 {
     CIPHER_HANDLE hd;
-    DEK *c;
     byte buf[33];
 
     assert ( dek->keylen <= 32 );
-    
-    c = m_alloc_clear( sizeof *c );
-    c->keylen = dek->keylen;
-    c->algo = dek->algo;
-    make_session_key( c );
-    /*log_hexdump( "thekey", c->key, c->keylen );*/
+    if(!*seskey)
+      {
+	*seskey=m_alloc_clear(sizeof(DEK));
+	(*seskey)->keylen=dek->keylen;
+	(*seskey)->algo=dek->algo;
+	make_session_key(*seskey);
+	/*log_hexdump( "thekey", c->key, c->keylen );*/
+      }
 
-    buf[0] = c->algo;
-    memcpy( buf + 1, c->key, c->keylen );
+    buf[0] = (*seskey)->algo;
+    memcpy( buf + 1, (*seskey)->key, (*seskey)->keylen );
     
     hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
     cipher_setkey( hd, dek->key, dek->keylen );
     cipher_setiv( hd, NULL, 0 );
-    cipher_encrypt( hd, buf, buf, c->keylen + 1 );
+    cipher_encrypt( hd, buf, buf, (*seskey)->keylen + 1 );
     cipher_close( hd );
 
-    memcpy( enckey, buf, c->keylen + 1 );
+    memcpy( enckey, buf, (*seskey)->keylen + 1 );
     wipememory( buf, sizeof buf ); /* burn key */
-    *ret_dek = c;
 }
 
 /* We try very hard to use a MDC */
@@ -152,7 +150,6 @@ encode_simple( const char *filename, int mode, int use_seskey )
 {
     IOBUF inp, out;
     PACKET pkt;
-    DEK *dek = NULL;
     PKT_plaintext *pt = NULL;
     STRING2KEY *s2k = NULL;
     byte enckey[33];
@@ -212,11 +209,13 @@ encode_simple( const char *filename, int mode, int use_seskey )
                         "due to the S2K mode\n"));
         }
 
-        if ( use_seskey ) {            
-            seskeylen = cipher_get_keylen( opt.s2k_cipher_algo ) / 8;
-            encode_sesskey( cfx.dek, &dek, enckey );
+        if ( use_seskey )
+	  {
+	    DEK *dek = NULL;
+            seskeylen = cipher_get_keylen( default_cipher_algo() ) / 8;
+            encode_seskey( cfx.dek, &dek, enckey );
             m_free( cfx.dek ); cfx.dek = dek;
-        }
+	  }
 
 	cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
     }
@@ -378,11 +377,13 @@ encode_simple( const char *filename, int mode, int use_seskey )
  * is supplied).
  */
 int
-encode_crypt( const char *filename, STRLIST remusr )
+encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 {
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     PKT_plaintext *pt = NULL;
+    DEK *symkey_dek = NULL;
+    STRING2KEY *symkey_s2k = NULL;
     int rc = 0, rc2 = 0;
     u32 filesize;
     cipher_filter_context_t cfx;
@@ -393,7 +394,6 @@ encode_crypt( const char *filename, STRLIST remusr )
     PK_LIST pk_list,work_list;
     int do_compress = opt.compress && !RFC1991;
 
-
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -402,6 +402,22 @@ encode_crypt( const char *filename, STRLIST remusr )
 
     if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC)) )
 	return rc;
+
+    if(use_symkey)
+      {
+	symkey_s2k=m_alloc_clear(sizeof(STRING2KEY));
+	symkey_s2k->mode = opt.s2k_mode;
+	symkey_s2k->hash_algo = opt.s2k_digest_algo;
+
+	symkey_dek=passphrase_to_dek(NULL,0,opt.s2k_cipher_algo,
+				     symkey_s2k,2,NULL,NULL);
+	if(!symkey_dek || !symkey_dek->keylen)
+	  {
+	    m_free(symkey_dek);
+	    m_free(symkey_s2k);
+	    return G10ERR_PASSPHRASE;
+	  }
+      }
 
     if(PGP2) {
       for(work_list=pk_list; work_list; work_list=work_list->next)
@@ -504,6 +520,37 @@ encode_crypt( const char *filename, STRLIST remusr )
     rc = write_pubkey_enc_from_list( pk_list, cfx.dek, out );
     if( rc  )
 	goto leave;
+
+    /* We put the passphrase (if any) after any public keys as this
+       seems to be the most useful on the recipient side - there is no
+       point in prompting a user for a passphrase if they have the
+       secret key needed to decrypt. */
+    if(use_symkey)
+      {
+	int seskeylen=cipher_get_keylen(cfx.dek->algo)/8;
+	PKT_symkey_enc *enc;
+	byte enckey[33];
+
+	enc=m_alloc_clear(sizeof(PKT_symkey_enc)+seskeylen+1);
+	encode_seskey(symkey_dek,&cfx.dek,enckey);
+
+	enc->version = 4;
+	enc->cipher_algo = opt.s2k_cipher_algo;
+	enc->s2k = *symkey_s2k;
+	enc->seskeylen = seskeylen + 1; /* algo id */
+	memcpy( enc->seskey, enckey, seskeylen + 1 );
+
+	pkt.pkttype = PKT_SYMKEY_ENC;
+	pkt.pkt.symkey_enc = enc;
+	if( (rc = build_packet( out, &pkt )) )
+	  {
+	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
+	    m_free(enc);
+	    goto leave;
+	  }
+
+	m_free(enc);
+      }
 
     if (!opt.no_literal) {
 	/* setup the inner packet */
@@ -618,6 +665,8 @@ encode_crypt( const char *filename, STRLIST remusr )
 	pt->buf = NULL;
     free_packet(&pkt);
     m_free(cfx.dek);
+    m_free(symkey_dek);
+    m_free(symkey_s2k);
     release_pk_list( pk_list );
     return rc;
 }
@@ -788,7 +837,7 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
             }
           line[strlen(line)-1] = '\0';
           print_file_status(STATUS_FILE_START, line, 2);
-          if ( (rc = encode_crypt(line, remusr)) )
+          if ( (rc = encode_crypt(line, remusr, 0)) )
             log_error("%s: encryption failed: %s\n",
                       print_fname_stdin(line), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
@@ -799,7 +848,7 @@ encode_crypt_files(int nfiles, char **files, STRLIST remusr)
       while (nfiles--)
         {
           print_file_status(STATUS_FILE_START, *files, 2);
-          if ( (rc = encode_crypt(*files, remusr)) )
+          if ( (rc = encode_crypt(*files, remusr, 0)) )
             log_error("%s: encryption failed: %s\n",
                       print_fname_stdin(*files), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );

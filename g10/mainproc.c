@@ -1,5 +1,6 @@
 /* mainproc.c - handle packets
- * Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -238,8 +239,8 @@ add_signature( CTX c, PACKET *pkt )
     return 1;
 }
 
-static void
-symkey_decrypt_sesskey( DEK *dek, byte *sesskey, size_t slen )
+static int
+symkey_decrypt_seskey( DEK *dek, byte *seskey, size_t slen )
 {
     CIPHER_HANDLE hd;
     int n;
@@ -247,28 +248,35 @@ symkey_decrypt_sesskey( DEK *dek, byte *sesskey, size_t slen )
     if ( slen < 17 || slen > 33 ) {
         log_error ( _("weird size for an encrypted session key (%d)\n"),
 		    (int)slen);
-        return;   
+        return G10ERR_BAD_KEY;
     }
     hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
     cipher_setkey( hd, dek->key, dek->keylen );
     cipher_setiv( hd, NULL, 0 );
-    cipher_decrypt( hd, sesskey, sesskey, slen );
+    cipher_decrypt( hd, seskey, seskey, slen );
     cipher_close( hd );
     /* check first byte (the cipher algo) */
-    if ( sesskey[0] > 10 ) {
-        log_error ( _("invalid symkey algorithm detected (%d)\n"),
-                    sesskey[0] );
-        return;
-    }
-    n = cipher_get_keylen (sesskey[0]) / 8;
+    if(check_cipher_algo(seskey[0]))
+      {
+	/* There is no way to tell the difference here between a bad
+	   passphrase and a cipher algorithm that we don't have. */
+	log_error(_("bad passphrase or unknown cipher algorithm (%d)\n"),
+		  seskey[0]);
+	if(seskey[0]==CIPHER_ALGO_IDEA)
+	  idea_cipher_warn(0);
+	return G10ERR_PASSPHRASE;
+      }
+    n = cipher_get_keylen (seskey[0]) / 8;
     if (n > DIM(dek->key))
          BUG ();
     /* now we replace the dek components with the real session key
        to decrypt the contents of the sequencing packet. */
-    dek->keylen = cipher_get_keylen( sesskey[0] ) / 8;
-    dek->algo = sesskey[0];
-    memcpy( dek->key, sesskey + 1, dek->keylen );
+    dek->keylen = cipher_get_keylen( seskey[0] ) / 8;
+    dek->algo = seskey[0];
+    memcpy( dek->key, seskey + 1, dek->keylen );
     /*log_hexdump( "thekey", dek->key, dek->keylen );*/
+
+    return 0;
 }   
 
 static void
@@ -279,26 +287,47 @@ proc_symkey_enc( CTX c, PACKET *pkt )
     enc = pkt->pkt.symkey_enc;
     if (!enc)
         log_error ("invalid symkey encrypted packet\n");
-    else {
+    else if(!c->dek)
+      {
         int algo = enc->cipher_algo;
-	const char *s;
+	const char *s = cipher_algo_to_string (algo);
 
-	s = cipher_algo_to_string (algo);
 	if( s )
-	    log_info(_("%s encrypted data\n"), s );
+	  {
+	    if(enc->seskeylen)
+	      log_info(_("%s encrypted session key\n"), s );
+	    else
+	      log_info(_("%s encrypted data\n"), s );
+	  }
 	else
-	    log_info(_("encrypted with unknown algorithm %d\n"), algo );
+	  log_info(_("encrypted with unknown algorithm %d\n"), algo );
 
 	c->last_was_session_key = 2;
 	if ( opt.list_only )
     	    goto leave;
 	c->dek = passphrase_to_dek( NULL, 0, algo, &enc->s2k, 0, NULL, NULL );
-        if (c->dek)
-            c->dek->algo_info_printed = 1;
-        if ( c->dek && enc->seskeylen )
-            symkey_decrypt_sesskey( c->dek, enc->seskey, enc->seskeylen );
-    }
-leave:
+	if(c->dek)
+	  {
+	    /* FIXME: This doesn't work perfectly if a symmetric key
+	       comes before a public key in the message - if the user
+	       doesn't know the passphrase, then there is a chance
+	       that the "decrypted" algorithm will happen to be a
+	       valid one, which will make the returned dek appear
+	       valid, so we won't try any public keys that come
+	       later. */
+	    if(enc->seskeylen)
+	      {
+		if(symkey_decrypt_seskey(c->dek, enc->seskey, enc->seskeylen))
+		  {
+		    m_free(c->dek);
+		    c->dek=NULL;
+		  }
+	      }
+	    else
+	      c->dek->algo_info_printed = 1;
+	  }
+      }
+ leave:
     free_packet(pkt);
 }
 

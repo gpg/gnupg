@@ -80,7 +80,8 @@ enum cmd_and_opt_values
     oShowNotation,
     oNoShowNotation,
     aEncrFiles,
-    aDecryptFiles,                          
+    aEncrSym,
+    aDecryptFiles,
     aClearsign,
     aStore,
     aKeygen,
@@ -866,6 +867,10 @@ set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 	cmd = aSignSym;
     else if( cmd == aSym && new_cmd == aSign )
 	cmd = aSignSym;
+    else if( cmd == aSym && new_cmd == aEncr )
+	cmd = aEncrSym;
+    else if( cmd == aEncr && new_cmd == aSym )
+	cmd = aEncrSym;
     else if( cmd == aKMode && new_cmd == aSym )
 	cmd = aKModeC;
     else if(	( cmd == aSign	   && new_cmd == aClearsign )
@@ -2255,6 +2260,9 @@ main( int argc, char **argv )
 	  case aSym:
 	    cmdname="--symmetric";
 	    break;
+	  case aEncrSym:
+	    cmdname="--symmetric --encrypt";
+	    break;
 	  case aStore:
 	    cmdname="--store";
 	    break;
@@ -2450,12 +2458,32 @@ main( int argc, char **argv )
 	  {
 	    if( argc > 1 )
 	      wrong_args(_("--encrypt [filename]"));
-	    if( (rc = encode_crypt(fname,remusr)) )
+	    if( (rc = encode_crypt(fname,remusr,0)) )
 	      log_error("%s: encryption failed: %s\n",
 			print_fname_stdin(fname), g10_errstr(rc) );
 	  }
 	break;
-          
+
+      case aEncrSym:
+	/* This works with PGP 8.  It doesn't work with 2 or 6.  It
+	   might work with 7, but alas, I don't have a copy to test
+	   with right now. */
+	if( argc > 1 )
+	  wrong_args(_("--symmetric --encrypt [filename]"));
+	else if(opt.s2k_mode==0)
+	  log_error(_("you cannot use --symmetric --encrypt"
+		      " with --s2k-mode 0\n"));
+	else if(PGP2 || PGP6 || PGP7 || RFC1991)
+	  log_error(_("you cannot use --symmetric --encrypt"
+		      " while in %s mode\n"),compliance_option_string());
+	else
+	  {
+	    if( (rc = encode_crypt(fname,remusr,1)) )
+	      log_error("%s: encryption failed: %s\n",
+			print_fname_stdin(fname), g10_errstr(rc) );
+	  }
+	break;
+
       case aSign: /* sign the given file */
 	sl = NULL;
 	if( detached_sig ) { /* sign all files */

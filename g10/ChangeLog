@@ -1,3 +1,29 @@
+2003-10-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Add --symmetric --encrypt command.  This generates
+	a message that can be decrypted via a passphrase or public key
+	system.
+
+	* main.h, encode.c (encode_seskey): Allow passing in an
+	already-created session key dek.
+	(encode_simple): Use the actual symmetric cipher when encrypting a
+	session key for a symmetric message.
+	(encode_crypt): Add a flag to trigger a hybrid mode that can be
+	decrypted via a passphrase or a pk.  Change all callers.
+
+	* mainproc.c (symkey_decrypt_sesskey): There is no way to tell the
+	difference here between a bad passphrase and a cipher algorithm
+	that we don't have, so use a error message that makes that clear.
+	Use the actual list of ciphers when checking whether a cipher is
+	invalid.  Return error if the decrypted cipher algorithm is
+	invalid.
+	(proc_symkey_enc): In a mixed passphrase/pk message, if a valid
+	dek already exists from decrypting via pk, do not try to process
+	the passphrase.
+	(proc_symkey_enc): Indicate when we're decrypting a session key as
+	opposed to decrypting data.  If a passphrase is invalid, discard
+	the dek so we'll keep trying.
+
 2003-10-25  Werner Koch  <wk@gnupg.org>
 
 	* ccid-driver.c (ccid_open_reader): Return an error if no USB
