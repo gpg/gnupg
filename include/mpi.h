@@ -49,16 +49,16 @@
   typedef unsigned short int mpi_limb_t;
   typedef   signed short int mpi_limb_signed_t;
 #else
-  #error BYTES_PER_MPI_LIMB does not match any C type
+#error BYTES_PER_MPI_LIMB does not match any C type
 #endif
 #define BITS_PER_MPI_LIMB    (8*BYTES_PER_MPI_LIMB)
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
- #if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
-  #define EXTERN_UNLESS_MAIN_MODULE extern
- #else
-  #define EXTERN_UNLESS_MAIN_MODULE 
- #endif
+#if defined (__riscos__) && !defined (INCLUDED_BY_MAIN_MODULE)
+#define EXTERN_UNLESS_MAIN_MODULE extern
+#else
+#define EXTERN_UNLESS_MAIN_MODULE 
+#endif
 #endif
 
 #define DBG_MPI     mpi_debug_mode
@@ -86,25 +86,25 @@ typedef struct gcry_mpi *MPI;
 /*-- mpiutil.c --*/
 
 #ifdef M_DEBUG
-  #define mpi_alloc(n)	      mpi_debug_alloc((n), M_DBGINFO( __LINE__ ) )
-  #define mpi_alloc_secure(n) mpi_debug_alloc_secure((n), M_DBGINFO( __LINE__ ) )
-  #define mpi_alloc_like(n)   mpi_debug_alloc_like((n), M_DBGINFO( __LINE__ ) )
-  #define mpi_free(a)	      mpi_debug_free((a), M_DBGINFO(__LINE__) )
-  #define mpi_resize(a,b)     mpi_debug_resize((a),(b), M_DBGINFO(__LINE__) )
-  #define mpi_copy(a)	      mpi_debug_copy((a), M_DBGINFO(__LINE__) )
-  MPI mpi_debug_alloc( unsigned nlimbs, const char *info );
-  MPI mpi_debug_alloc_secure( unsigned nlimbs, const char *info );
-  MPI mpi_debug_alloc_like( MPI a, const char *info );
-  void mpi_debug_free( MPI a, const char *info );
-  void mpi_debug_resize( MPI a, unsigned nlimbs, const char *info );
-  MPI  mpi_debug_copy( MPI a, const char *info	);
+#define mpi_alloc(n)	      mpi_debug_alloc((n), M_DBGINFO( __LINE__ ) )
+#define mpi_alloc_secure(n) mpi_debug_alloc_secure((n), M_DBGINFO( __LINE__ ) )
+#define mpi_alloc_like(n)   mpi_debug_alloc_like((n), M_DBGINFO( __LINE__ ) )
+#define mpi_free(a)	      mpi_debug_free((a), M_DBGINFO(__LINE__) )
+#define mpi_resize(a,b)     mpi_debug_resize((a),(b), M_DBGINFO(__LINE__) )
+#define mpi_copy(a)	      mpi_debug_copy((a), M_DBGINFO(__LINE__) )
+MPI mpi_debug_alloc( unsigned nlimbs, const char *info );
+MPI mpi_debug_alloc_secure( unsigned nlimbs, const char *info );
+MPI mpi_debug_alloc_like( MPI a, const char *info );
+void mpi_debug_free( MPI a, const char *info );
+void mpi_debug_resize( MPI a, unsigned nlimbs, const char *info );
+MPI  mpi_debug_copy( MPI a, const char *info	);
 #else
-  MPI mpi_alloc( unsigned nlimbs );
-  MPI mpi_alloc_secure( unsigned nlimbs );
-  MPI mpi_alloc_like( MPI a );
-  void mpi_free( MPI a );
-  void mpi_resize( MPI a, unsigned nlimbs );
-  MPI  mpi_copy( MPI a );
+MPI mpi_alloc( unsigned nlimbs );
+MPI mpi_alloc_secure( unsigned nlimbs );
+MPI mpi_alloc_like( MPI a );
+void mpi_free( MPI a );
+void mpi_resize( MPI a, unsigned nlimbs );
+MPI  mpi_copy( MPI a );
 #endif
 #define mpi_is_opaque(a) ((a) && ((a)->flags&4))
 MPI mpi_set_opaque( MPI a, void *p, int len );
@@ -121,10 +121,10 @@ void mpi_swap( MPI a, MPI b);
 /*-- mpicoder.c --*/
 int mpi_write( IOBUF out, MPI a );
 #ifdef M_DEBUG
-  #define mpi_read(a,b,c)   mpi_debug_read((a),(b),(c),  M_DBGINFO( __LINE__ ) )
-  MPI mpi_debug_read(IOBUF inp, unsigned *nread, int secure, const char *info);
+#define mpi_read(a,b,c)   mpi_debug_read((a),(b),(c),  M_DBGINFO( __LINE__ ) )
+MPI mpi_debug_read(IOBUF inp, unsigned *nread, int secure, const char *info);
 #else
-  MPI mpi_read(IOBUF inp, unsigned *nread, int secure);
+MPI mpi_read(IOBUF inp, unsigned *nread, int secure);
 #endif
 MPI mpi_read_from_buffer(byte *buffer, unsigned *ret_nread, int secure);
 int mpi_fromstr(MPI val, const char *str);
@@ -192,6 +192,5 @@ void mpi_rshift( MPI x, MPI a, unsigned n );
 
 /*-- mpi-inv.c --*/
 void mpi_invm( MPI x, MPI u, MPI v );
-
 
 #endif /*G10_MPI_H*/

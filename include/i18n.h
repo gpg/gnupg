@@ -22,32 +22,32 @@
 #define G10_I18N_H
 
 #ifdef USE_SIMPLE_GETTEXT
-  int set_gettext_file( const char *filename );
-  const char *gettext( const char *msgid );
+int set_gettext_file( const char *filename );
+const char *gettext( const char *msgid );
 
-  #define _(a) gettext (a)
-  #define N_(a) (a)
+#define _(a) gettext (a)
+#define N_(a) (a)
 
 #else
 #ifdef HAVE_LOCALE_H
-  #include <locale.h>	/* suggested by Ernst Molitor */
+#include <locale.h>	/* suggested by Ernst Molitor */
 #endif
 
 #ifdef ENABLE_NLS
 #ifndef __riscos__
-  #include <libintl.h>
+#include <libintl.h>
 #else
-  #include "libgettext.h"
+#include "libgettext.h"
 #endif /* __riscos__ */
-  #define _(a) gettext (a)
-  #ifdef gettext_noop
-    #define N_(a) gettext_noop (a)
-  #else
-    #define N_(a) (a)
-  #endif
+#define _(a) gettext (a)
+#ifdef gettext_noop
+#define N_(a) gettext_noop (a)
 #else
-  #define _(a) (a)
-  #define N_(a) (a)
+#define N_(a) (a)
+#endif
+#else
+#define _(a) (a)
+#define N_(a) (a)
 #endif
 #endif /* !USE_SIMPLE_GETTEXT */
 
