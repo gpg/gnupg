@@ -40,9 +40,9 @@ typedef struct iobuf_struct *IOBUF;
 /* fixme: we should hide most of this stuff */
 struct iobuf_struct {
     int use;	       /* 1 input , 2 output, 3 temp */
-    unsigned long nlimit;
-    unsigned long nbytes; /* used together with nlimit */
-    unsigned long ntotal; /* total bytes read (position of stream) */
+    off_t nlimit;
+    off_t nbytes;      /* used together with nlimit */
+    off_t ntotal;      /* total bytes read (position of stream) */
     int nofast; 	/* used by the iobuf_get() */
     void *directfp;
     struct {
@@ -73,6 +73,7 @@ struct iobuf_struct {
 
 int iobuf_debug_mode;
 
+void  iobuf_enable_special_filenames ( int yes );
 IOBUF iobuf_alloc(int use, size_t bufsize);
 IOBUF iobuf_temp(void);
 IOBUF iobuf_temp_with_content( const char *buffer, size_t length );
@@ -96,10 +97,10 @@ void iobuf_clear_eof(IOBUF a);
 #define iobuf_set_error(a)    do { (a)->error = 1; } while(0)
 #define iobuf_error(a)	      ((a)->error)
 
-void iobuf_set_limit( IOBUF a, unsigned long nlimit );
+void iobuf_set_limit( IOBUF a, off_t nlimit );
 
-ulong iobuf_tell( IOBUF a );
-int   iobuf_seek( IOBUF a, ulong newpos );
+off_t iobuf_tell( IOBUF a );
+int   iobuf_seek( IOBUF a, off_t newpos );
 
 int  iobuf_readbyte(IOBUF a);
 int  iobuf_read(IOBUF a, byte *buf, unsigned buflen );
@@ -115,7 +116,7 @@ int  iobuf_write_temp( IOBUF a, IOBUF temp );
 size_t iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen );
 void iobuf_unget_and_close_temp( IOBUF a, IOBUF temp );
 
-u32 iobuf_get_filelength( IOBUF a );
+off_t iobuf_get_filelength( IOBUF a );
 #define IOBUF_FILELENGTH_LIMIT 0xffffffff
 const char *iobuf_get_real_fname( IOBUF a );
 const char *iobuf_get_fname( IOBUF a );

@@ -1,4 +1,16 @@
 
+  * Add Dave's UTS patches
+
+  * Don't display the "no secret for decryption available"
+
+  ** Check whether the use of -u and --clearsign created 2 signatures.
+     removed dups from the skclist.
+
+  * Replace mkinstalldir etc. with nnewer copies.
+
+  * We need another special packet at the end of a clearsign message to mark
+    it's end and allow for multiple signature for one message.
+
   * option to set the signature expiration time for key sigs.
 
   * Option to warn when a non MDC message is decrypted?
@@ -39,6 +51,10 @@
 
 Scheduled for 1.1
 -----------------
+  * David C Niemi pointed out that the code for --no-default-keyring does not
+    work as expected, because in g10/g10.c sec_nring will be set in the option
+    switch but later checked to see whether there are any keyrings.
+
   * export by user-IDs does only export the first matching name which leads
     to a problem in cases where there are 2 keys with identically user-IDs.
 

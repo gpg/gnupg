@@ -1,15 +1,15 @@
 # Japanese messages for GnuPG
-# Copyright (C) 1999 Free Software Foundation, Inc.
-# IIDA Yosiaki <iida@secom.ne.jp>, 1999-2000.
+# Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+# IIDA Yosiaki <y-iida@secom.co.jp>, 1999-2000.
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Special thanks to "Takashi P.KATOH".
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.0.0h\n"
+"Project-Id-Version: gnupg 1.0.4\n"
 "POT-Creation-Date: 2000-10-16 19:22+0200\n"
-"PO-Revision-Date: 2000-02-16 20:10+09:00\n"
-"Last-Translator: IIDA Yosiaki <iida@secom.ne.jp>\n"
+"PO-Revision-Date: 2000-10-19 23:08+09:00\n"
+"Last-Translator: IIDA Yosiaki <y-iida@secom.co.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=EUC-JP\n"
@@ -17,15 +17,15 @@ msgstr ""
 
 #: util/secmem.c:79
 msgid "Warning: using insecure memory!\n"
-msgstr "·Ù¹ð: °ÂÁ´¤Ç¤Ê¤¤¥á¥â¥ê¡¼¤ò»ÈÍÑ¤·¤Æ¤¤¤Þ¤¹!\n"
+msgstr "·Ù¹ð: ¤ä¤Ð¤¤¥á¥â¥ê¡¼¤ò»ÈÍÑ¤·¤Æ¤¤¤Þ¤¹!\n"
 
 #: util/secmem.c:295
 msgid "operation is not possible without initialized secure memory\n"
-msgstr "½é´ü²½¤µ¤ì¤¿°ÂÁ´¤Ê¥á¥â¥ê¡¼¤¬Ìµ¤¤¾ì¹ç¤Ë¤Ï¼Â¹Ô¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "½é´ü²½ºÑ¤ß¤Î°ÂÁ´¤Ê¥á¥â¥ê¡¼¤¬¤Ê¤¤¾ì¹ç¤Ë¤Ï¼Â¹Ô¤Ç¤­¤Þ¤»¤ó\n"
 
 #: util/secmem.c:296
 msgid "(you may have used the wrong program for this task)\n"
-msgstr "(¤³¤ÎÌÜÅª¤Ë¤ÏÉÔÅ¬ÀÚ¤Ê¥×¥í¥°¥é¥à¤òÍÑ¤¤¤¿¤Î¤Ç¤·¤ç¤¦)\n"
+msgstr "(¤³¤ÎÌÜÅª¤Ë¤Ï¸í¤Ã¤¿¥×¥í¥°¥é¥à¤òÍÑ¤¤¤¿¤Î¤Ç¤·¤ç¤¦)\n"
 
 #: util/miscutil.c:277 util/miscutil.c:306
 msgid "yes"
@@ -57,19 +57,19 @@ msgstr "°ìÈÌÅª¤Ê¥¨¥é¡¼"
 
 #: util/errors.c:55
 msgid "unknown packet type"
-msgstr "¥Ñ¥±¥Ã¥È¥¿¥¤¥×¤¬ÉÔÌÀ¤Ç¤¹"
+msgstr "Ì¤ÃÎ¤Î¥Ñ¥±¥Ã¥È¡¦¥¿¥¤¥×¤Ç¤¹"
 
 #: util/errors.c:56
 msgid "unknown version"
-msgstr "¥Ð¡¼¥¸¥ç¥ó¤¬ÉÔÌÀ¤Ç¤¹"
+msgstr "Ì¤ÃÎ¤Î¥Ð¡¼¥¸¥ç¥ó¤Ç¤¹"
 
 #: util/errors.c:57
 msgid "unknown pubkey algorithm"
-msgstr "¸ø³«¸°¤Î¥¢¥ë¥´¥ê¥º¥à¤¬ÉÔÌÀ¤Ç¤¹"
+msgstr "Ì¤ÃÎ¤Î¸ø³«¸°¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹"
 
 #: util/errors.c:58
 msgid "unknown digest algorithm"
-msgstr "Í×Ìó¤Î¥¢¥ë¥´¥ê¥º¥à¤¬ÉÔÌÀ¤Ç¤¹"
+msgstr "Ì¤ÃÎ¤ÎÍ×Ìó¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹"
 
 #: util/errors.c:59
 msgid "bad public key"
@@ -85,23 +85,23 @@ msgstr "½ðÌ¾¤¬ÉÔÀµ¤Ç¤¹"
 
 #: util/errors.c:62
 msgid "checksum error"
-msgstr "¥Á¥§¥Ã¥¯¥µ¥à¥¨¥é¡¼"
+msgstr "¥Á¥§¥Ã¥¯¥µ¥à¡¦¥¨¥é¡¼"
 
 #: util/errors.c:63
 msgid "bad passphrase"
-msgstr "¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬Àµ¤·¤¯¤¢¤ê¤Þ¤»¤ó"
+msgstr "¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬ÉÔÀµ¤Ç¤¹"
 
 #: util/errors.c:64
 msgid "public key not found"
-msgstr "¸ø³«¸°¤¬¤ß¤Ä¤«¤ê¤Þ¤»¤ó"
+msgstr "¸ø³«¸°¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó"
 
 #: util/errors.c:65
 msgid "unknown cipher algorithm"
-msgstr "°Å¹æ¥¢¥ë¥´¥ê¥º¥à¤¬ÉÔÌÀ¤Ç¤¹"
+msgstr "Ì¤ÃÎ¤Î°Å¹æ¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹"
 
 #: util/errors.c:66
 msgid "can't open the keyring"
-msgstr "¸°¥ê¥ó¥°¤¬³«¤±¤Þ¤»¤ó"
+msgstr "¸°ÎØ¤¬³«¤±¤Þ¤»¤ó"
 
 #: util/errors.c:67
 msgid "invalid packet"
@@ -109,19 +109,19 @@ msgstr "Ìµ¸ú¤Ê¥Ñ¥±¥Ã¥È¤Ç¤¹"
 
 #: util/errors.c:68
 msgid "invalid armor"
-msgstr "Ìµ¸ú¤ÊÁõ¹Ã¤Ç¤¹"
+msgstr "Ìµ¸ú¤ÊÊñÁõ¤Ç¤¹"
 
 #: util/errors.c:69
 msgid "no such user id"
-msgstr "¤½¤Î¥æ¡¼¥¶ ID ¤Ï¤¢¤ê¤Þ¤»¤ó"
+msgstr "¤½¤Î¥æ¡¼¥¶¡¼ID¤Ï¤¢¤ê¤Þ¤»¤ó"
 
 #: util/errors.c:70
 msgid "secret key not available"
-msgstr "ÈëÌ©¸°¤¬¤¢¤ê¤Þ¤»¤ó"
+msgstr "ÈëÌ©¸°¤¬ÆÀ¤é¤ì¤Þ¤»¤ó"
 
 #: util/errors.c:71
 msgid "wrong secret key used"
-msgstr "ÉÔÀµ¤ÊÈëÌ©¸°¤¬ÍÑ¤¤¤é¤ì¤Æ¤¤¤Þ¤¹"
+msgstr "¸í¤Ã¤¿ÈëÌ©¸°¤¬ÍÑ¤¤¤é¤ì¤Æ¤¤¤Þ¤¹"
 
 #: util/errors.c:72
 msgid "not supported"
@@ -133,15 +133,15 @@ msgstr "¸°¤¬ÉÔÀµ¤Ç¤¹"
 
 #: util/errors.c:74
 msgid "file read error"
-msgstr "¥Õ¥¡¥¤¥ë¤ÎÆÉ¤ß½Ð¤·¥¨¥é¡¼"
+msgstr "¥Õ¥¡¥¤¥ë¤ÎÆÉ½Ð¤·¥¨¥é¡¼"
 
 #: util/errors.c:75
 msgid "file write error"
-msgstr "¥Õ¥¡¥¤¥ë¤Ø¤Î½ñ¤­¹þ¤ß¥¨¥é¡¼"
+msgstr "¥Õ¥¡¥¤¥ë¤Î½ñ¹þ¤ß¥¨¥é¡¼"
 
 #: util/errors.c:76
 msgid "unknown compress algorithm"
-msgstr "°µ½Ì¥¢¥ë¥´¥ê¥º¥à¤¬ÉÔÌÀ¤Ç¤¹"
+msgstr "Ì¤ÃÎ¤Î°µ½Ì¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹"
 
 #: util/errors.c:77
 msgid "file open error"
@@ -149,23 +149,23 @@ msgstr "¥Õ¥¡¥¤¥ë¤¬³«¤±¤Þ¤»¤ó"
 
 #: util/errors.c:78
 msgid "file create error"
-msgstr "¥Õ¥¡¥¤¥ë¤¬ºîÀ®¤Ç¤­¤Þ¤»¤ó"
+msgstr "¥Õ¥¡¥¤¥ë¤ÎºîÀ®¥¨¥é¡¼"
 
 #: util/errors.c:79
 msgid "invalid passphrase"
-msgstr "¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬´Ö°ã¤Ã¤Æ¤¤¤Þ¤¹"
+msgstr "¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬Ìµ¸ú¤Ç¤¹"
 
 #: util/errors.c:80
 msgid "unimplemented pubkey algorithm"
-msgstr "¸ø³«¸°¤Î¥¢¥ë¥´¥ê¥º¥à¤¬¼ÂÁõ¤µ¤ì¤Æ¤¤¤Þ¤»¤ó"
+msgstr "Ì¤¼ÂÁõ¤Î¸ø³«¸°¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹"
 
 #: util/errors.c:81
 msgid "unimplemented cipher algorithm"
-msgstr "°Å¹æ¥¢¥ë¥´¥ê¥º¥à¤¬¼ÂÁõ¤µ¤ì¤Æ¤¤¤Þ¤»¤ó"
+msgstr "Ì¤¼ÂÁõ¤Î°Å¹æ¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹"
 
 #: util/errors.c:82
 msgid "unknown signature class"
-msgstr "½ðÌ¾¤Î¥¯¥é¥¹¤¬ÉÔÌÀ¤Ç¤¹"
+msgstr "Ì¤ÃÎ¤Î½ðÌ¾¥¯¥é¥¹¤Ç¤¹"
 
 #: util/errors.c:83
 msgid "trust database error"
@@ -173,7 +173,7 @@ msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Î¥¨¥é¡¼¤Ç¤¹"
 
 #: util/errors.c:84
 msgid "bad MPI"
-msgstr "MPI ¤¬ÉÔÀµ¤Ç¤¹"
+msgstr "ÉÔÀµ¤ÊMPI¤Ç¤¹"
 
 #: util/errors.c:85
 msgid "resource limit"
@@ -181,7 +181,7 @@ msgstr "¥ê¥½¡¼¥¹¤¬¸Â³¦¤Ç¤¹"
 
 #: util/errors.c:86
 msgid "invalid keyring"
-msgstr "¸°¥ê¥ó¥°¤¬Ìµ¸ú¤Ç¤¹"
+msgstr "¸°ÎØ¤¬Ìµ¸ú¤Ç¤¹"
 
 #: util/errors.c:87
 msgid "bad certificate"
@@ -189,7 +189,7 @@ msgstr "¾ÚÌÀ½ñ¤¬ÉÔÀµ¤Ç¤¹"
 
 #: util/errors.c:88
 msgid "malformed user id"
-msgstr "¥æ¡¼¥¶ ID ¤Î½ñ¼°¤¬Àµ¤·¤¯¤¢¤ê¤Þ¤»¤ó"
+msgstr "¥æ¡¼¥¶¡¼ID¤Î½ñ¼°¤¬Àµ¤·¤¯¤¢¤ê¤Þ¤»¤ó"
 
 #: util/errors.c:89
 msgid "file close error"
@@ -197,15 +197,15 @@ msgstr "¥Õ¥¡¥¤¥ë¤¬ÊÄ¤¸¤é¤ì¤Þ¤»¤ó"
 
 #: util/errors.c:90
 msgid "file rename error"
-msgstr "¥Õ¥¡¥¤¥ëÌ¾¤ÎÊÑ¹¹¤¬¤Ç¤­¤Þ¤»¤ó"
+msgstr "¥Õ¥¡¥¤¥ëÌ¾¤ÎÊÑ¹¹¥¨¥é¡¼"
 
 #: util/errors.c:91
 msgid "file delete error"
-msgstr "¥Õ¥¡¥¤¥ë¤Îºï½ü¤¬¤Ç¤­¤Þ¤»¤ó"
+msgstr "¥Õ¥¡¥¤¥ë¤Îºï½ü¥¨¥é¡¼"
 
 #: util/errors.c:92
 msgid "unexpected data"
-msgstr "Í½´ü¤µ¤ì¤Æ¤¤¤Ê¤¤¥Ç¡¼¥¿¤Ç¤¹"
+msgstr "Í½´ü¤»¤Ì¥Ç¡¼¥¿¤Ç¤¹"
 
 #: util/errors.c:93
 msgid "timestamp conflict"
@@ -229,15 +229,15 @@ msgstr "Ìµ¸ú¤Ê»ØÄê¤Ç¤¹"
 
 #: util/errors.c:98
 msgid "bad URI"
-msgstr "URI ¤¬´Ö°ã¤Ã¤Æ¤¤¤Þ¤¹"
+msgstr "URI¤¬ÉÔÀµ¤Ç¤¹"
 
 #: util/errors.c:99
 msgid "unsupported URI"
-msgstr "¤½¤Î URI ¤Ï¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Þ¤»¤ó"
+msgstr "¤½¤ÎURI¤Ï¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Þ¤»¤ó"
 
 #: util/errors.c:100
 msgid "network error"
-msgstr "¥Í¥Ã¥È¥ï¡¼¥¯¥¨¥é¡¼"
+msgstr "¥Í¥Ã¥È¥ï¡¼¥¯¡¦¥¨¥é¡¼"
 
 #: util/errors.c:102
 msgid "not encrypted"
@@ -260,58 +260,58 @@ msgstr "¥Ð¥°¤ò¸«¤Ä¤±¤¿¤è¤¦¤Ç¤¹ ... (%s:%d)\n"
 #: cipher/random.c:311 g10/import.c:128 g10/keygen.c:1256
 #, c-format
 msgid "can't open `%s': %s\n"
-msgstr "`%s' ¤¬³«¤±¤Þ¤»¤ó: %s\n"
+msgstr "`%s'¤¬³«¤±¤Þ¤»¤ó: %s\n"
 
 #: cipher/random.c:315
-#, fuzzy, c-format
+#, c-format
 msgid "can't stat `%s': %s\n"
-msgstr "`%s' ¤¬³«¤±¤Þ¤»¤ó: %s\n"
+msgstr "`%s'¤òÄ´¤Ù¤ë¤³¤È¤¬¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: cipher/random.c:320
 #, c-format
 msgid "`%s' is not a regular file - ignored\n"
-msgstr ""
+msgstr "`%s' ¤ÏÉáÄÌ¤Î¥Õ¥¡¥¤¥ë¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó - Ìµ»ë\n"
 
 #: cipher/random.c:325
 msgid "note: random_seed file is empty\n"
-msgstr ""
+msgstr "Ãí°Õ: random_seed ¥Õ¥¡¥¤¥ë¤Ï¶õ¤Ç¤¹\n"
 
 #: cipher/random.c:331
 msgid "warning: invalid size of random_seed file - not used\n"
-msgstr ""
+msgstr "·Ù¹ð: Ìµ¸ú¤Ê¥µ¥¤¥º¤Î random_seed ¥Õ¥¡¥¤¥ë - »È¤¤¤Þ¤»¤ó\n"
 
 #: cipher/random.c:339
-#, fuzzy, c-format
+#, c-format
 msgid "can't read `%s': %s\n"
-msgstr "`%s' ¤¬³«¤±¤Þ¤»¤ó: %s\n"
+msgstr "`%s'¤òÆÉ¤á¤Þ¤»¤ó: %s\n"
 
 #: cipher/random.c:377
 msgid "note: random_seed file not updated\n"
-msgstr ""
+msgstr "Ãí°Õ: random_seed ¥Õ¥¡¥¤¥ë¤Î¹¹¿·¤ò¤·¤Þ¤»¤ó\n"
 
 #: cipher/random.c:397
-#, fuzzy, c-format
+#, c-format
 msgid "can't create `%s': %s\n"
-msgstr "%s ¤¬ºîÀ®¤Ç¤­¤Þ¤»¤ó: %s\n"
+msgstr "`%s'¤¬¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: cipher/random.c:404
-#, fuzzy, c-format
+#, c-format
 msgid "can't write `%s': %s\n"
-msgstr "`%s' ¤¬³«¤±¤Þ¤»¤ó: %s\n"
+msgstr "`%s'¤Ë½ñ¤±¤Þ¤»¤ó: %s\n"
 
 #: cipher/random.c:407
-#, fuzzy, c-format
+#, c-format
 msgid "can't close `%s': %s\n"
-msgstr "`%s' ¤¬³«¤±¤Þ¤»¤ó: %s\n"
+msgstr "`%s'¤òÊÄ¤¸¤é¤ì¤Þ¤»¤ó: %s\n"
 
 #: cipher/random.c:418
 #, c-format
 msgid "too many random bits requested; the limit is %d\n"
-msgstr ""
+msgstr "¥é¥ó¥À¥à¡¦¥Ó¥Ã¥È¤ò¤¿¤¯¤µ¤óÍ×µá¤·²á¤®¤Ç¤¹¡£¸Â³¦¤Ï %d\n"
 
 #: cipher/random.c:650
 msgid "WARNING: using insecure random number generator!!\n"
-msgstr "·Ù¹ð: °ÂÁ´¤Ç¤Ê¤¤Íð¿ôÀ¸À®ÁõÃÖ¤¬»È¤ï¤ì¤Æ¤¤¤Þ¤¹!!\n"
+msgstr "·Ù¹ð: ¤ä¤Ð¤¤Íð¿ôÀ¸À®»Ò¤¬»È¤ï¤ì¤Æ¤¤¤Þ¤¹!!\n"
 
 #: cipher/random.c:651
 msgid ""
@@ -321,10 +321,10 @@ msgid ""
 "DON'T USE ANY DATA GENERATED BY THIS PROGRAM!!\n"
 "\n"
 msgstr ""
-"¤³¤Î OS ¤ËÅëºÜ¤µ¤ì¤Æ¤¤¤ëµ¿»÷Íð¿ôÀ¸À®¥¢¥ë¥´¥ê¥º¥à¤Ï¡¢\n"
-"°Å¹æÍÑ¤È¤·¤Æ¤ÏÉÔÅ¬Åö¤Ç¤¹¡£¶¯¸Ç¤ÊÍð¿ô¤òÀ¸À®¤Ç¤­¤Þ¤»¤ó¡£\n"
+"ÅëºÜ¤µ¤ì¤Æ¤¤¤ëÍð¿ôÀ¸À®»Ò¤Ï¡¢°Å¹æÍÑ¤È¤·¤Æ¤Ï¤ª¤½¤Þ¤Ä¤Ç¡¢\n"
+"¶¯¤¤Íð¿ô¤¬¤Ç¤­¤Þ¤»¤ó!\n"
 "\n"
-"¤³¤Î¥×¥í¥°¥é¥à¤Ë¤è¤êÀ¸À®¤µ¤ì¤¿¥Ç¡¼¥¿¤Ï°ìÀÚ»ÈÍÑ¤·¤Æ¤Ï¤¤¤±¤Þ¤»¤ó!!\n"
+"¤³¤Î¥×¥í¥°¥é¥à¤ÎÀ¸À®¤·¤¿¥Ç¡¼¥¿¤ò°ìÀÚ»ÈÍÑ¤·¤Æ¤Ï¤¤¤±¤Þ¤»¤ó!!\n"
 "\n"
 
 #: cipher/rndlinux.c:142
@@ -335,8 +335,8 @@ msgid ""
 "the OS a chance to collect more entropy! (Need %d more bytes)\n"
 msgstr ""
 "\n"
-"½½Ê¬¤ÊÄ¹¤µ¤ÎÍð¿ô¤¬ÆÀ¤é¤ì¤Þ¤»¤ó¡£¥¨¥ó¥È¥í¥Ô¡¼¤òÁý²Ã¤µ¤»¤ë¤è¤¦¤Ë\n"
-"OS ¤ÎÀßÄê¤òÊÑ¹¹¤·¤Æ¤¯¤À¤µ¤¤¡£(%d bytes °Ê¾å¤Î¼þ´ü¤¬É¬Í×¤Ç¤¹)\n"
+"½½Ê¬¤ÊÄ¹¤µ¤ÎÍð¿ô¤¬ÆÀ¤é¤ì¤Þ¤»¤ó¡£OS¤¬¤â¤Ã¤ÈÍð»¨¤µ¤ò¼ý½¸\n"
+"¤Ç¤­¤ë¤è¤¦¡¢²¿¤«¤·¤Æ¤¯¤À¤µ¤¤! (¤¢¤È%d¥Ð¥¤¥È¤¤¤ê¤Þ¤¹)\n"
 
 #: g10/g10.c:206
 msgid ""
@@ -348,11 +348,11 @@ msgstr ""
 
 #: g10/g10.c:208
 msgid "|[file]|make a signature"
-msgstr "|[file]|½ðÌ¾¤òºîÀ®"
+msgstr "|[¥Õ¥¡¥¤¥ë]|½ðÌ¾¤òºîÀ®"
 
 #: g10/g10.c:209
 msgid "|[file]|make a clear text signature"
-msgstr "|[file]|¥¯¥ê¥¢½ðÌ¾¤òºîÀ®"
+msgstr "|[¥Õ¥¡¥¤¥ë]|¥¯¥ê¥¢½ðÌ¾¤òºîÀ®"
 
 #: g10/g10.c:210
 msgid "make a detached signature"
@@ -372,7 +372,7 @@ msgstr "ÊÝÂ¸¤Î¤ß"
 
 #: g10/g10.c:214
 msgid "decrypt data (default)"
-msgstr "¥Ç¡¼¥¿¤òÉü¹æ (¥Ç¥Õ¥©¥ë¥È)"
+msgstr "¥Ç¡¼¥¿¤òÉü¹æ (´ûÄê)"
 
 #: g10/g10.c:215
 msgid "verify a signature"
@@ -400,15 +400,15 @@ msgstr "ÈëÌ©¸°¤Î°ìÍ÷"
 
 #: g10/g10.c:223
 msgid "generate a new key pair"
-msgstr "¿·¤·¤¤¸°¥Ú¥¢¤òºîÀ®"
+msgstr "¿·¤·¤¤¸°ÂÐ¤òÀ¸À®"
 
 #: g10/g10.c:224
 msgid "remove key from the public keyring"
-msgstr "¸ø³«¸°¥ê¥ó¥°¤«¤é¸°¤òºï½ü"
+msgstr "¸ø³«¸°ÎØ¤«¤é¸°¤òºï½ü"
 
 #: g10/g10.c:226
 msgid "remove key from the secret keyring"
-msgstr "ÈëÌ©¸°¥ê¥ó¥°¤«¤é¸°¤òºï½ü"
+msgstr "ÈëÌ©¸°ÎØ¤«¤é¸°¤òºï½ü"
 
 #: g10/g10.c:227
 msgid "sign a key"
@@ -416,15 +416,15 @@ msgstr "¸°¤Ë½ðÌ¾"
 
 #: g10/g10.c:228
 msgid "sign a key locally"
-msgstr "¥í¡¼¥«¥ë¤Ë¤Æ¸°¤Ë½ðÌ¾"
+msgstr "¸°¤ØÆâÉôÅª¤Ë½ðÌ¾"
 
 #: g10/g10.c:229
 msgid "sign or edit a key"
-msgstr "¸°¤Ø¤Î½ðÌ¾¤Þ¤¿¤ÏÊÔ½¸"
+msgstr "¸°¤Ø¤Î½ðÌ¾¤äÊÔ½¸"
 
 #: g10/g10.c:230
 msgid "generate a revocation certificate"
-msgstr "ÇË´þ¾ÚÌÀ½ñ¤òºîÀ®"
+msgstr "ÇË´þ¾ÚÌÀ½ñ¤òÀ¸À®"
 
 #: g10/g10.c:231
 msgid "export keys"
@@ -432,7 +432,7 @@ msgstr "¸°¤ò½ñ¤­½Ð¤¹"
 
 #: g10/g10.c:232
 msgid "export keys to a key server"
-msgstr "¸°¥µ¡¼¥Ð¤Ë¸°¤òÅÐÏ¿"
+msgstr "¸°¥µ¡¼¥Ð¡¼¤Ë¸°¤ò½ñ¤­½Ð¤¹"
 
 #: g10/g10.c:233
 msgid "import keys from a key server"
@@ -440,7 +440,7 @@ msgstr "¸°¥µ¡¼¥Ð¡¼¤«¤é¸°¤òÆÉ¤ß¹þ¤à"
 
 #: g10/g10.c:237
 msgid "import/merge keys"
-msgstr "¸°¤ÎÆÉ¤ß¹þ¤ß/¥Þ¡¼¥¸"
+msgstr "¸°¤ÎÆÉ¹þ¤ß/Ê»¹ç"
 
 #: g10/g10.c:239
 msgid "list only the sequence of packets"
@@ -460,7 +460,7 @@ msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤ò¹¹¿·"
 
 #: g10/g10.c:247
 msgid "|[NAMES]|check the trust database"
-msgstr "|[NAMES]|¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤ò¥Á¥§¥Ã¥¯"
+msgstr "|[Ì¾Á°]|¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤ò¥Á¥§¥Ã¥¯"
 
 #: g10/g10.c:248
 msgid "fix a corrupted trust database"
@@ -468,15 +468,17 @@ msgstr "²õ¤ì¤¿¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤ò½¤Éü"
 
 #: g10/g10.c:249
 msgid "De-Armor a file or stdin"
-msgstr "¥Õ¥¡¥¤¥ë¤Þ¤¿¤ÏÉ¸½àÆþÎÏ¤ÎÁõ¹Ã½üµî"
+msgstr ""
+"¥Õ¥¡¥¤¥ë¤Þ¤¿¤ÏÉ¸½àÆþÎÏ¤Î\n"
+"ÊñÁõ½üµî"
 
 #: g10/g10.c:251
 msgid "En-Armor a file or stdin"
-msgstr "¥Õ¥¡¥¤¥ë¤Þ¤¿¤ÏÉ¸½àÆþÎÏ¤ÎÁõ¹Ã²½"
+msgstr "¥Õ¥¡¥¤¥ë¤Þ¤¿¤ÏÉ¸½àÆþÎÏ¤ÎÊñÁõ²½"
 
 #: g10/g10.c:253
 msgid "|algo [files]|print message digests"
-msgstr "|algo [files]|¥á¥Ã¥»¡¼¥¸Í×Ìó¤ò½ÐÎÏ"
+msgstr "|¥¢¥ë¥´¥ê¥º¥à [¥Õ¥¡¥¤¥ë]|¥á¥Ã¥»¡¼¥¸Í×Ìó¤ò½ÐÎÏ"
 
 #: g10/g10.c:257
 msgid ""
@@ -490,35 +492,41 @@ msgstr ""
 
 #: g10/g10.c:259
 msgid "create ascii armored output"
-msgstr "¥¢¥¹¥­¡¼·Á¼°¤ÎÁõ¹Ã¤òÀ¸À®"
+msgstr "ASCII·Á¼°¤ÎÊñÁõ¤òºîÀ®"
 
 #: g10/g10.c:261
 msgid "|NAME|encrypt for NAME"
-msgstr "|NAME|NAME ÍÑ¤Ë°Å¹æ²½"
+msgstr "|Ì¾Á°|¡ÖÌ¾Á°¡×ÍÑ¤Ë°Å¹æ²½"
 
 #: g10/g10.c:264
 msgid "|NAME|use NAME as default recipient"
-msgstr "|NAME|¥Ç¥Õ¥©¥ë¥È¤Î¼õ¿®¼Ô¤È¤·¤Æ NAME ¤òÍÑ¤¤¤ë"
+msgstr ""
+"|Ì¾Á°|´ûÄê¤Î¼õ¿®¼Ô¤È¤·¤Æ\n"
+"¡ÖÌ¾Á°¡×¤ò»ÈÍÑ"
 
 #: g10/g10.c:266
 msgid "use the default key as default recipient"
-msgstr "¥Ç¥Õ¥©¥ë¥È¤Î¼õ¿®¼Ô¤È¤·¤Æ¥Ç¥Õ¥©¥ë¥È¤Î¸°¤òÍÑ¤¤¤ë"
+msgstr "´ûÄê¤Î¼õ¿®¼Ô¤Ë´ûÄê¤Î¸°¤ò»ÈÍÑ"
 
 #: g10/g10.c:270
 msgid "use this user-id to sign or decrypt"
-msgstr "½ðÌ¾¤äÉü¹æ¤Ë ¤³¤Î user-id ¤òÍÑ¤¤¤ë"
+msgstr ""
+"½ðÌ¾¤äÉü¹æ¤Ë¤³¤Î¥æ¡¼¥¶¡¼id\n"
+"¤ò»ÈÍÑ"
 
 #: g10/g10.c:271
 msgid "|N|set compress level N (0 disables)"
-msgstr "|N|°µ½Ì¥ì¥Ù¥ë¤ò N ¤ËÀßÄê¤¹¤ë (0 ¤ÏÈó°µ½Ì)"
+msgstr ""
+"|N|°µ½Ì¥ì¥Ù¥ë¤òN¤ËÀßÄê\n"
+"(0¤ÏÈó°µ½Ì)"
 
 #: g10/g10.c:273
 msgid "use canonical text mode"
-msgstr "É¸½à¥Æ¥­¥¹¥È¥â¡¼¥É¤òÍÑ¤¤¤ë"
+msgstr "Àµ½à¥Æ¥­¥¹¥È¡¦¥â¡¼¥É¤ò»ÈÍÑ"
 
 #: g10/g10.c:274
 msgid "use as output file"
-msgstr "½ÐÎÏ¥Õ¥¡¥¤¥ë¤È¤·¤ÆÍÑ¤¤¤ë"
+msgstr "½ÐÎÏ¥Õ¥¡¥¤¥ë¤È¤·¤Æ»ÈÍÑ"
 
 #: g10/g10.c:275
 msgid "verbose"
@@ -530,114 +538,147 @@ msgstr "¤ä¤äÀÅ¤«"
 
 #: g10/g10.c:277
 msgid "don't use the terminal at all"
-msgstr "Ã¼Ëö¤ò»ÈÍÑ¤·¤Ê¤¤"
+msgstr "Ã¼Ëö¤òÉÔ»ÈÍÑ"
 
 #: g10/g10.c:278
 msgid "force v3 signatures"
-msgstr "¶¯À©Åª¤Ë v3 ½ðÌ¾¤¹¤ë"
+msgstr "¶¯À©Åª¤Ëv3½ðÌ¾"
 
 #: g10/g10.c:279
 msgid "always use a MDC for encryption"
-msgstr "°Å¹æ²½¤Ë¤Ï¾ï¤Ë MDC ¤ò»ÈÍÑ"
+msgstr "°Å¹æ²½¤Ë¤Ï¾ï¤ËMDC¤ò»ÈÍÑ"
 
 #: g10/g10.c:280
 msgid "do not make any changes"
-msgstr "Á´¤Æ¤ÎÊÑ¹¹¤òÍÑ¤¤¤Ê¤¤"
+msgstr "ÌµÊÑ¹¹"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
 #: g10/g10.c:282
 msgid "batch mode: never ask"
-msgstr "¥Ð¥Ã¥Á¥â¡¼¥É: Ìä¤¤¹ç¤ï¤»¤ò¹Ô¤ï¤Ê¤¤"
+msgstr "¥Ð¥Ã¥Á¡¦¥â¡¼¥É: ³ÎÇ§¾ÊÎ¬"
 
 #: g10/g10.c:283
 msgid "assume yes on most questions"
-msgstr "Á´¤Æ¤Î¼ÁÌä¤Ë yes ¤È¸«¤Ê¤¹"
+msgstr ""
+"¤¿¤¤¤Æ¤¤¤Î¼ÁÌä¤ÎÅú¤¨¤Ïyes\n"
+"¤È¤ß¤Ê¤¹"
 
 #: g10/g10.c:284
 msgid "assume no on most questions"
-msgstr "Á´¤Æ¤Î¼ÁÌä¤Ë no ¤È¸«¤Ê¤¹"
+msgstr ""
+"¤¿¤¤¤Æ¤¤¤Î¼ÁÌä¤ÎÅú¤¨¤Ïno\n"
+"¤È¤ß¤Ê¤¹"
 
 #: g10/g10.c:285
 msgid "add this keyring to the list of keyrings"
-msgstr "¸°¥ê¥ó¥°¤Î°ìÍ÷¤Ë ¤³¤Î¸°¤ò²Ã¤¨¤ë"
+msgstr "¸°ÎØ¤Î°ìÍ÷¤Ë¤³¤Î¸°ÎØ¤òÄÉ²Ã"
 
 #: g10/g10.c:286
 msgid "add this secret keyring to the list"
-msgstr "°ìÍ÷¤Ë ¤³¤ÎÈëÌ©¸°¥ê¥ó¥°¤ò²Ã¤¨¤ë"
+msgstr "°ìÍ÷¤Ë¤³¤ÎÈëÌ©¸°ÎØ¤òÄÉ²Ã"
 
 #: g10/g10.c:287
 msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|¥Ç¥Õ¥©¥ë¥È¤ÎÈëÌ©¸°¤È¤·¤Æ NAME ¤òÍÑ¤¤¤ë"
+msgstr ""
+"|Ì¾Á°|´ûÄê¤ÎÈëÌ©¸°¤È¤·¤Æ\n"
+"¡ÖÌ¾Á°¡×¤ò»ÈÍÑ"
 
 #: g10/g10.c:288
 msgid "|HOST|use this keyserver to lookup keys"
-msgstr "|HOST|¸°¤Î¸¡º÷¤Ë ¤³¤Î¸°¥µ¡¼¥Ð¤òÍÑ¤¤¤ë"
+msgstr "|¥Û¥¹¥È|¸°¤Î¸¡º÷¤Ë¤³¤Î¸°¥µ¡¼¥Ð¡¼¤ò»ÈÍÑ"
 
 #: g10/g10.c:289
 msgid "|NAME|set terminal charset to NAME"
-msgstr "|NAME|Ã¼Ëö¤ÎÊ¸»ú¥³¡¼¥É¤ò NAME ¤ËÀßÄê¤¹¤ë"
+msgstr ""
+"|CHARSETÌ¾|Ã¼Ëö¤Îcharset¤ò¡ÖCHARSETÌ¾¡×\n"
+"¤ËÀßÄê"
 
 #: g10/g10.c:290
 msgid "read options from file"
-msgstr "¥Õ¥¡¥¤¥ë¤«¤é¥ª¥×¥·¥ç¥ó¤òÆÉ¤ß¹þ¤à"
+msgstr ""
+"¥Õ¥¡¥¤¥ë¤«¤é¥ª¥×¥·¥ç¥ó¤ò\n"
+"ÆÉ¤ß¹þ¤à"
 
 #: g10/g10.c:294
 msgid "|FD|write status info to this FD"
-msgstr "|FD|¤³¤Î FD ¤Ë¾õÂÖ¤ò½ñ¤­½Ð¤¹"
+msgstr ""
+"|¥Õ¥¡¥¤¥ëµ­½Ò»Ò|¤³¤Î¥Õ¥¡¥¤¥ëµ­½Ò»Ò¤Ë¾õÂÖ¤ò\n"
+"½ñ¤­½Ð¤¹"
 
 #: g10/g10.c:299
 msgid "|KEYID|ulimately trust this key"
-msgstr ""
+msgstr "|¸°ID|¤³¤Î¡Ö¸°¡×¤òµæ¶ËÅª¤Ë¿®ÍÑ¤¹¤ë"
 
 #: g10/g10.c:300
 msgid "|FILE|load extension module FILE"
-msgstr "|FILE|³ÈÄ¥¥â¥¸¥å¡¼¥ë FILE ¤òÆÉ¤ß¤³¤à"
+msgstr ""
+"|¥Õ¥¡¥¤¥ë|³ÈÄ¥¥â¥¸¥å¡¼¥ë¤Î¥Õ¥¡¥¤¥ë¤ò\n"
+"ÆÉ¤ß¹þ¤à"
 
 #: g10/g10.c:301
 msgid "emulate the mode described in RFC1991"
-msgstr "RFC1991 ¤Ëµ­½Ò¤µ¤ì¤¿¥â¡¼¥É¤òÍÑ¤¤¤ë"
+msgstr ""
+"RFC1991¤Ëµ­½Ò¤µ¤ì¤¿¥â¡¼¥É¤ò\n"
+"»ÈÍÑ"
 
 #: g10/g10.c:302
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
-msgstr "Á´¤Æ¤Î¥Ñ¥±¥Ã¥È¤È°Å¹æ¤È½ðÌ¾¤Î¥ª¥×¥·¥ç¥ó¤ò OpenPGP ¤Î¿¶Éñ¤ËÀßÄê"
+msgstr ""
+"¥Ñ¥±¥Ã¥È¤È°Å¹æ¤È½ðÌ¾¤Î¥ª¥×¥·¥ç\n"
+"¥ó¤òÁ´¤ÆOpenPGP¤Î¿¶Éñ¤ËÀßÄê"
 
 #: g10/g10.c:303
 msgid "|N|use passphrase mode N"
-msgstr "|N|¥Ñ¥¹¥Õ¥ì¡¼¥º¥â¡¼¥É N ¤òÍÑ¤¤¤ë"
+msgstr "|N|¥Ñ¥¹¥Õ¥ì¡¼¥º¡¦¥â¡¼¥ÉN¤ò»ÈÍÑ"
 
 #: g10/g10.c:305
 msgid "|NAME|use message digest algorithm NAME for passphrases"
-msgstr "|NAME|¥Ñ¥¹¥Õ¥ì¡¼¥º¤Ë¥á¥Ã¥»¡¼¥¸Í×Ìó¥¢¥ë¥´¥ê¥º¥à NAME ¤òÍÑ¤¤¤ë"
+msgstr ""
+"|Ì¾Á°|¥Ñ¥¹¥Õ¥ì¡¼¥º¤Ë¡ÖÌ¾Á°¡×¤Î¥á¥Ã\n"
+"¥»¡¼¥¸Í×Ìó¥¢¥ë¥´¥ê¥º¥à¤ò»ÈÍÑ"
 
 #: g10/g10.c:307
 msgid "|NAME|use cipher algorithm NAME for passphrases"
-msgstr "|NAME|¥Ñ¥¹¥Õ¥ì¡¼¥º¤Ë°Å¹æ¥¢¥ë¥´¥ê¥º¥à NAME ¤òÍÑ¤¤¤ë"
+msgstr ""
+"|Ì¾Á°|¥Ñ¥¹¥Õ¥ì¡¼¥º¤Ë¡ÖÌ¾Á°¡×¤Î°Å¹æ\n"
+"¥¢¥ë¥´¥ê¥º¥à¤ò»ÈÍÑ"
 
 #: g10/g10.c:308
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|°Å¹æ¥¢¥ë¥´¥ê¥º¥à NAME ¤òÍÑ¤¤¤ë"
+msgstr ""
+"|Ì¾Á°|¡ÖÌ¾Á°¡×¤Î°Å¹æ¥¢¥ë¥´¥ê¥º¥à¤ò\n"
+"»ÈÍÑ"
 
 #: g10/g10.c:309
 msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAME|¥á¥Ã¥»¡¼¥¸Í×Ìó¥¢¥ë¥´¥ê¥º¥à NAME ¤òÍÑ¤¤¤ë"
+msgstr ""
+"|Ì¾Á°|¡ÖÌ¾Á°¡×¤Î¥á¥Ã¥»¡¼¥¸Í×Ìó\n"
+"¥¢¥ë¥´¥ê¥º¥à¤ò»ÈÍÑ"
 
 #: g10/g10.c:310
 msgid "|N|use compress algorithm N"
-msgstr "|NAME|°µ½Ì¥¢¥ë¥´¥ê¥º¥à NAME ¤òÍÑ¤¤¤ë"
+msgstr ""
+"|Ì¾Á°|¡ÖÌ¾Á°¡×¤Î°µ½Ì¥¢¥ë¥´¥ê¥º¥à¤ò\n"
+"»ÈÍÑ"
 
 #: g10/g10.c:311
 msgid "throw keyid field of encrypted packets"
-msgstr "°Å¹æ¥Ñ¥±¥Ã¥È¤Î¸° ID ¥Õ¥£¡¼¥ë¥É¤òÁ÷½Ð¤¹¤ë"
+msgstr ""
+"°Å¹æ¥Ñ¥±¥Ã¥È¤Î¸°ID¥Õ¥£¡¼¥ë¥É\n"
+"¤òÁ÷½Ð"
 
 #: g10/g10.c:312
 msgid "|NAME=VALUE|use this notation data"
-msgstr "|NAME=VALUE|¤³¤ÎÃí¼á¥Ç¡¼¥¿¤òÍÑ¤¤¤ë"
+msgstr "|Ì¾Á°=ÃÍ|¤³¤ÎÃí¼á¥Ç¡¼¥¿¤ò»ÈÍÑ"
 
 #: g10/g10.c:315
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
 msgstr ""
+"@\n"
+"(¥³¥Þ¥ó¥É¤È¥ª¥×¥·¥ç¥óÁ´Éô¤Î°ìÍ÷¤Ï¡¢\n"
+"¥Þ¥Ë¥å¥¢¥ë¡¦¥Ú¡¼¥¸¤ò¤´Í÷¤¯¤À¤µ¤¤)\n"
 
 #: g10/g10.c:318
 msgid ""
@@ -653,15 +694,15 @@ msgstr ""
 "@\n"
 "Îã:\n"
 "\n"
-" -se -r Bob [file]          ¥æ¡¼¥¶ Bob ¤Ø¤Î½ðÌ¾¤È°Å¹æ²½\n"
-" --clearsign [file]         ¥¯¥ê¥¢½ðÌ¾¤òÀ¸À®\n"
-" --detach-sign [file]       Ê¬Î¥½ðÌ¾¤òÀ¸À®\n"
-" --list-keys [names]        ¸°¤òÉ½¼¨\n"
-" --fingerprint [names]      »ØÌæ¤òÉ½¼¨\n"
+" -se -r Bob [¥Õ¥¡¥¤¥ë]      ¥æ¡¼¥¶¡¼Bob¤Ø¤Î½ðÌ¾¤È°Å¹æ²½\n"
+" --clearsign [¥Õ¥¡¥¤¥ë]     ¥¯¥ê¥¢½ðÌ¾¤òÀ¸À®\n"
+" --detach-sign [¥Õ¥¡¥¤¥ë]   Ê¬Î¥½ðÌ¾¤òÀ¸À®\n"
+" --list-keys [Ì¾Á°]         ¸°¤òÉ½¼¨\n"
+" --fingerprint [Ì¾Á°]       »ØÌæ¤òÉ½¼¨\n"
 
 #: g10/g10.c:418
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
-msgstr "¥Ð¥°¤ò¸«¤Ä¤±¤¿¤é <gnupg-bugs@gnu.org> ¤Þ¤Ç¥ì¥Ý¡¼¥È¤òÁ÷¤Ã¤Æ²¼¤µ¤¤¡£\n"
+msgstr "¥Ð¥°¤ò¸«¤Ä¤±¤¿¤é <gnupg-bugs@gnu.org> ¤Þ¤Ç¤´Êó¹ð¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/g10.c:422
 msgid "Usage: gpg [options] [files] (-h for help)"
@@ -673,9 +714,9 @@ msgid ""
 "sign, check, encrypt or decrypt\n"
 "default operation depends on the input data\n"
 msgstr ""
-"½ñ¼°: gpg [options] [files]\n"
-"½ðÌ¾¡¢¸¡¾Ú¡¢°Å¹æ²½¡¢¤Þ¤¿¤Ï Éü¹æ\n"
-"¥Ç¥Õ¥©¥ë¥È¤ÎÆ°ºî¤ÏÆþÎÏ¥Ç¡¼¥¿¤Ë°ÍÂ¸\n"
+"½ñ¼°: gpg [¥ª¥×¥·¥ç¥ó] [¥Õ¥¡¥¤¥ë]\n"
+"½ðÌ¾¡¢¸¡¾Ú¡¢°Å¹æ²½¤äÉü¹æ\n"
+"´ûÄê¤ÎÆ°ºî¤Ï¡¢ÆþÎÏ¥Ç¡¼¥¿¤Ë°ÍÂ¸\n"
 
 #: g10/g10.c:432
 msgid ""
@@ -687,7 +728,7 @@ msgstr ""
 
 #: g10/g10.c:511
 msgid "usage: gpg [options] "
-msgstr "»È¤¤Êý: gpg [options] "
+msgstr "»È¤¤Êý: gpg [¥ª¥×¥·¥ç¥ó] "
 
 #: g10/g10.c:564
 msgid "conflicting commands\n"
@@ -696,41 +737,41 @@ msgstr "¥³¥Þ¥ó¥É¤Î¾×ÆÍ\n"
 #: g10/g10.c:704
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
-msgstr "Ãí°Õ: ¥Ç¥Õ¥©¥ë¥È¥ª¥×¥·¥ç¥ó¥Õ¥¡¥¤¥ë `%s' ¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "Ãí°Õ: ´ûÄê¤Î¥ª¥×¥·¥ç¥ó¡¦¥Õ¥¡¥¤¥ë`%s'¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/g10.c:708
 #, c-format
 msgid "option file `%s': %s\n"
-msgstr "¥ª¥×¥·¥ç¥ó¥Õ¥¡¥¤¥ë `%s': %s\n"
+msgstr "¥ª¥×¥·¥ç¥ó¡¦¥Õ¥¡¥¤¥ë`%s': %s\n"
 
 #: g10/g10.c:715
 #, c-format
 msgid "reading options from `%s'\n"
-msgstr "`%s' ¤«¤é¥ª¥×¥·¥ç¥ó¤òÆÉ¤ß¹þ¤ß¤Þ¤¹\n"
+msgstr "`%s'¤«¤é¥ª¥×¥·¥ç¥ó¤òÆÉ¤ß¹þ¤ß¤Þ¤¹\n"
 
 #: g10/g10.c:905
 #, c-format
 msgid "%s is not a valid character set\n"
-msgstr "%s ¤ÏÀµ¤·¤¤Ê¸»ú¥³¡¼¥É¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "%s¤ÏÀµ¤·¤¤Ê¸»ú½¸¹ç¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/g10.c:970
 msgid "WARNING: program may create a core file!\n"
-msgstr "·Ù¹ð: ¥×¥í¥°¥é¥à¤Ï¥³¥¢¥Õ¥¡¥¤¥ë¤òºîÀ®¤·¤Þ¤¹!\n"
+msgstr "·Ù¹ð: ¥×¥í¥°¥é¥à¤Î¥³¥¢¡¦¥Õ¥¡¥¤¥ë¤¬¤Ç¤­¤ë¤³¤È¤¬¤¢¤ê¤Þ¤¹!\n"
 
 #: g10/g10.c:974 g10/g10.c:983
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
-msgstr "Ãí°Õ: %s ¤ÏÄÌ¾ï¤ÏÍÑ¤¤¤Þ¤»¤ó!\n"
+msgstr "Ãí°Õ: ÉáÄÌ%s¤ÏÍÑ¤¤¤Þ¤»¤ó!\n"
 
 #: g10/g10.c:976
 #, c-format
 msgid "%s not allowed with %s!\n"
-msgstr "%s ¤Ï %s ¤È¶¦¤ËÍÑ¤¤¤ë¤³¤È¤Ï¤Ç¤­¤Þ¤»¤ó!\n"
+msgstr "%s¤Ï%s¤È¤È¤â¤ËÍÑ¤¤¤ë¤³¤È¤Ï¤Ç¤­¤Þ¤»¤ó!\n"
 
 #: g10/g10.c:979
 #, c-format
 msgid "%s makes no sense with %s!\n"
-msgstr "%s ¤Ï %s ¤È¶¦¤ËÍÑ¤¤¤Æ¤â°ÕÌ£¤¬¤¢¤ê¤Þ¤»¤ó!\n"
+msgstr "%s¤Ï%s¤È¤È¤â¤ËÍÑ¤¤¤Æ¤âÌµ°ÕÌ£¤Ç¤¹!\n"
 
 #: g10/g10.c:998 g10/g10.c:1010
 msgid "selected cipher algorithm is invalid\n"
@@ -742,32 +783,32 @@ msgstr "ÁªÂò¤µ¤ì¤¿Í×Ìó¥¢¥ë¥´¥ê¥º¥à¤ÏÌµ¸ú¤Ç¤¹\n"
 
 #: g10/g10.c:1020
 msgid "the given policy URL is invalid\n"
-msgstr "Í¿¤¨¤é¤ì¤¿¥Ý¥ê¥·¡¼ URL ¤ÏÌµ¸ú¤Ç¤¹\n"
+msgstr "¤¢¤¿¤¨¤é¤ì¤¿¥Ý¥ê¥·¡¼URL¤ÏÌµ¸ú¤Ç¤¹\n"
 
 #: g10/g10.c:1023
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
-msgstr "°µ½Ì¥¢¥ë¥´¥ê¥º¥à¤Ï %d..%d ¤ÎÈÏ°Ï¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
+msgstr "°µ½Ì¥¢¥ë¥´¥ê¥º¥à¤Ï%d..%d¤ÎÈÏ°Ï¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
 
 #: g10/g10.c:1025
 msgid "completes-needed must be greater than 0\n"
-msgstr "completes-needed ¤Ï 0 ¤è¤êÂç¤­¤ÊÃÍ¤¬É¬Í×¤Ç¤¹\n"
+msgstr "completes-needed¤ÏÀµ¤ÎÃÍ¤¬É¬Í×¤Ç¤¹\n"
 
 #: g10/g10.c:1027
 msgid "marginals-needed must be greater than 1\n"
-msgstr "marginals-needed ¤Ï 1 ¤è¤êÂç¤­¤ÊÃÍ¤¬É¬Í×¤Ç¤¹\n"
+msgstr "marginals-needed¤Ï1¤è¤êÂç¤­¤ÊÃÍ¤¬É¬Í×¤Ç¤¹\n"
 
 #: g10/g10.c:1029
 msgid "max-cert-depth must be in range 1 to 255\n"
-msgstr "max-cert-depth ¤Ï 1 ¤«¤é 255 ¤ÎÈÏ°Ï¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
+msgstr "max-cert-depth¤Ï1¤«¤é255¤ÎÈÏ°Ï¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
 
 #: g10/g10.c:1032
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
-msgstr "Ãí°Õ: Ã±½ã¤Ê S2K ¥â¡¼¥É (0) ¤Î»ÈÍÑ¤Ë¤Ï¶¯¤¯È¿ÂÐ¤·¤Þ¤¹\n"
+msgstr "Ãí°Õ: Ã±½ã¤ÊS2K¥â¡¼¥É(0)¤Î»ÈÍÑ¤Ë¤Ï¶¯¤¯È¿ÂÐ¤·¤Þ¤¹\n"
 
 #: g10/g10.c:1036
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
-msgstr "Ìµ¸ú¤Ê S2K ¥â¡¼¥É¡£0, 1 ¤Þ¤¿¤Ï 3 ¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
+msgstr "Ìµ¸ú¤ÊS2K¥â¡¼¥É¡£0¤«1¤«3¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
 
 #: g10/g10.c:1121
 #, c-format
@@ -804,47 +845,47 @@ msgstr "--decrypt [¥Õ¥¡¥¤¥ëÌ¾]"
 
 #: g10/g10.c:1207
 msgid "--sign-key user-id"
-msgstr "--sign-key user-id"
+msgstr "--sign-key ¥æ¡¼¥¶¡¼id"
 
 #: g10/g10.c:1215
 msgid "--lsign-key user-id"
-msgstr "--lsign-key user-id"
+msgstr "--lsign-key ¥æ¡¼¥¶¡¼id"
 
 #: g10/g10.c:1223
 msgid "--edit-key user-id [commands]"
-msgstr "--edit-key user-id [¥³¥Þ¥ó¥É]"
+msgstr "--edit-key ¥æ¡¼¥¶¡¼id [¥³¥Þ¥ó¥É]"
 
 #: g10/g10.c:1239
 msgid "--delete-secret-key user-id"
-msgstr "--delete-secret-key user-id"
+msgstr "--delete-secret-key ¥æ¡¼¥¶¡¼id"
 
 #: g10/g10.c:1242
 msgid "--delete-key user-id"
-msgstr "--delete-key user-id"
+msgstr "--delete-key ¥æ¡¼¥¶¡¼id"
 
 #: g10/encode.c:265 g10/g10.c:1279 g10/sign.c:393
 #, c-format
 msgid "can't open %s: %s\n"
-msgstr "%s ¤¬³«¤±¤Þ¤»¤ó: %s\n"
+msgstr "%s¤¬³«¤±¤Þ¤»¤ó: %s\n"
 
 #: g10/g10.c:1294
 msgid "-k[v][v][v][c] [user-id] [keyring]"
-msgstr "-k[v][v][v][c] [user-id] [¸°¥ê¥ó¥°]"
+msgstr "-k[v][v][v][c] [¥æ¡¼¥¶¡¼id] [¸°ÎØ]"
 
 #: g10/g10.c:1360
 #, c-format
 msgid "dearmoring failed: %s\n"
-msgstr "Áõ¹Ã½üµî¤Ë¼ºÇÔ: %s\n"
+msgstr "ÊñÁõ½üµî¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/g10.c:1368
 #, c-format
 msgid "enarmoring failed: %s\n"
-msgstr "Áõ¹Ã²½¤Ë¼ºÇÔ: %s\n"
+msgstr "ÊñÁõ¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/g10.c:1439
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
-msgstr "¥Ï¥Ã¥·¥å¥¢¥ë¥´¥ê¥º¥à `%s' ¤ÏÌµ¸ú¤Ç¤¹\n"
+msgstr "Ìµ¸ú¤Ê¥Ï¥Ã¥·¥å¡¦¥¢¥ë¥´¥ê¥º¥à`%s'¤Ç¤¹\n"
 
 #: g10/g10.c:1520
 msgid "[filename]"
@@ -852,12 +893,12 @@ msgstr "[¥Õ¥¡¥¤¥ëÌ¾]"
 
 #: g10/g10.c:1524
 msgid "Go ahead and type your message ...\n"
-msgstr "³«»Ï¤·¤Þ¤¹¡£¥á¥Ã¥»¡¼¥¸¤ò¥¿¥¤¥×¤·¤Æ²¼¤µ¤¤ ...\n"
+msgstr "³«»Ï¤·¤Þ¤¹¡£¥á¥Ã¥»¡¼¥¸¤ò¥¿¥¤¥×¤·¤Æ¤¯¤À¤µ¤¤ ...\n"
 
 #: g10/decrypt.c:59 g10/g10.c:1527 g10/verify.c:68 g10/verify.c:113
 #, c-format
 msgid "can't open `%s'\n"
-msgstr "`%s' ¤¬³«¤±¤Þ¤»¤ó\n"
+msgstr "`%s'¤¬³«¤±¤Þ¤»¤ó\n"
 
 #: g10/g10.c:1737
 msgid ""
@@ -869,12 +910,12 @@ msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
 msgstr ""
-"Ãí¼áÌ¾¤Ë¤ÏÊ¸»ú¡¢¿ô»ú¡¢¥É¥Ã¥È¡¢¥¢¥ó¥À¡¼¥¹¥³¥¢(_)¤Î¤ß¤òÍÑ¤¤¡¢'=' "
-"¤òÈ¼¤ï¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
+"Ãí¼áÌ¾¤Ë¤ÏÊ¸»ú¡¢¿ô»ú¡¢¥É¥Ã¥È¡¢¥¢¥ó¥À¡¼¥¹¥³¥¢¤Î¤ß¤òÍÑ¤¤¡¢\n"
+"'='¤Ç½ª¤ï¤é¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
 
 #: g10/g10.c:1749
 msgid "dots in a notation name must be surrounded by other characters\n"
-msgstr "Ãí¼áÌ¾¤Î¥É¥Ã¥È¤ÏÂ¾¤ÎÊ¸»ú¤Ç°Ï¤Þ¤ì¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
+msgstr "Ãí¼áÌ¾¤Î¥É¥Ã¥È¤ÏÂ¾¤ÎÊ¸»ú¤Ç°Ï¤Þ¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
 
 #: g10/g10.c:1757
 msgid "a notation value must not use any control characters\n"
@@ -883,23 +924,23 @@ msgstr "Ãí¼áÌ¾¤ÎÃÍ¤ËÀ©¸æÊ¸»ú¤òÍÑ¤¤¤Æ¤Ï¤¤¤±¤Þ¤»¤ó\n"
 #: g10/armor.c:302
 #, c-format
 msgid "armor: %s\n"
-msgstr "Áõ¹Ã: %s\n"
+msgstr "ÊñÁõ: %s\n"
 
 #: g10/armor.c:331
 msgid "invalid armor header: "
-msgstr "Ìµ¸ú¤ÊÁõ¹Ã¥Ø¥Ã¥À: "
+msgstr "Ìµ¸ú¤ÊÊñÁõ¥Ø¥Ã¥À¡¼: "
 
 #: g10/armor.c:338
 msgid "armor header: "
-msgstr "Áõ¹Ã¥Ø¥Ã¥À: "
+msgstr "ÊñÁõ¥Ø¥Ã¥À¡¼: "
 
 #: g10/armor.c:349
 msgid "invalid clearsig header\n"
-msgstr "Ìµ¸ú¤Ê¥¯¥ê¥¢½ðÌ¾¥Ø¥Ã¥À\n"
+msgstr "Ìµ¸ú¤Ê¥¯¥ê¥¢½ðÌ¾¥Ø¥Ã¥À¡¼\n"
 
 #: g10/armor.c:401
 msgid "nested clear text signatures\n"
-msgstr "¥Í¥¹¥È¤µ¤ì¤¿¥¯¥ê¥¢½ðÌ¾\n"
+msgstr "Æþ¤ì»Ò¤Î¥¯¥ê¥¢½ðÌ¾\n"
 
 #: g10/armor.c:525
 msgid "invalid dash escaped line: "
@@ -907,63 +948,63 @@ msgstr "Ìµ¸ú¤Ê¥À¥Ã¥·¥å¤Ç¥¨¥¹¥±¡¼¥×¤µ¤ì¤¿¹Ô: "
 
 #: g10/armor.c:537
 msgid "unexpected armor:"
-msgstr "Í½´ü¤·¤Ê¤¤Áõ¹Ã:"
+msgstr "Í½´ü¤»¤ÌÊñÁõ:"
 
 #: g10/armor.c:654
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
-msgstr "Ìµ¸ú¤Ê radix64 Ê¸»ú %02x ¤ò¥¹¥­¥Ã¥×¤·¤Þ¤¹\n"
+msgstr "Ìµ¸ú¤Ê64¿ÊÊ¸»ú%02x¤ò¤È¤Ð¤·¤Þ¤¹\n"
 
 #: g10/armor.c:697
 msgid "premature eof (no CRC)\n"
-msgstr "eof ¤¬Áá¤¹¤®¤Þ¤¹ (CRC ¤¬¤¢¤ê¤Þ¤»¤ó)\n"
+msgstr "¥Õ¥¡¥¤¥ëËöÈø¤¬Áá¤¹¤®¤Þ¤¹ (CRC¤¬¤¢¤ê¤Þ¤»¤ó)\n"
 
 #: g10/armor.c:731
 msgid "premature eof (in CRC)\n"
-msgstr "eof ¤¬Áá¤¹¤®¤Þ¤¹ (CRC ¤ÎÃæ¤Ë¤¢¤ê¤Þ¤¹)\n"
+msgstr "¥Õ¥¡¥¤¥ëËöÈø¤¬Áá¤¹¤®¤Þ¤¹ (CRC¤ÎÃæ¤Ë¤¢¤ê¤Þ¤¹)\n"
 
 #: g10/armor.c:735
 msgid "malformed CRC\n"
-msgstr "CRC ¤Î½ñ¼°¤¬Àµ¤·¤¯¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "CRC¤Î½ñ¼°¤¬Àµ¤·¤¯¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/armor.c:739
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
-msgstr "CRC ¥¨¥é¡¼; %06lx - %06lx\n"
+msgstr "CRC¥¨¥é¡¼¡£%06lx - %06lx\n"
 
 #: g10/armor.c:756
 msgid "premature eof (in Trailer)\n"
-msgstr "eof ¤¬Áá¤¹¤®¤Þ¤¹ (Trailer ¤ÎÃæ¤Ë¤¢¤ê¤Þ¤¹)\n"
+msgstr "¥Õ¥¡¥¤¥ëËöÈø¤¬Áá¤¹¤®¤Þ¤¹ (¸åÈøÉô¤ÎÃæ¤Ë¤¢¤ê¤Þ¤¹)\n"
 
 #: g10/armor.c:760
 msgid "error in trailer line\n"
-msgstr "Trailer ¹Ô¤Ë¥¨¥é¡¼¤¬¤¢¤ê¤Þ¤¹\n"
+msgstr "¸åÈø¤Î¹Ô¤Ë¥¨¥é¡¼¤¬¤¢¤ê¤Þ¤¹\n"
 
 #: g10/armor.c:906
 msgid "For info see http://www.gnupg.org"
-msgstr ""
+msgstr "KUHASIKU WA http://www.gnupg.org/ WO GORANKUDASAI"
 
 #: g10/armor.c:1027
 msgid "no valid OpenPGP data found.\n"
-msgstr "Í­¸ú¤Ê OpenPGP ¥Ç¡¼¥¿¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó\n"
+msgstr "Í­¸ú¤ÊOpenPGP¥Ç¡¼¥¿¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó¡£\n"
 
 #: g10/armor.c:1032
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
-msgstr "Ìµ¸ú¤ÊÁõ¹Ã: ¹Ô¤ÎÄ¹¤µ¤¬ %d Ê¸»ú¤ò±Û¤¨¤Æ¤¤¤Þ¤¹\n"
+msgstr "Ìµ¸ú¤ÊÊñÁõ: ¹Ô¤ÎÄ¹¤µ¤¬%dÊ¸»ú¤òÄ¶¤¨¤Æ¤¤¤Þ¤¹\n"
 
 #: g10/armor.c:1036
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
-"Áõ¹Ã¤ÎÃæ¤Ë quoted printable Ê¸»ú¤¬¤¢¤ê¤Þ¤¹¡£¤ª¤½¤é¤¯¥Ð¥°¤Î¤¢¤ë MTA "
-"¤¬»ÈÍÑ¤µ¤ì¤¿¤Î¤Ç¤·¤ç¤¦\n"
+"ÊñÁõ¤ÎÃæ¤Ë quoted printable Ê¸»ú¤¬¤¢¤ê¤Þ¤¹¡£¤ª¤½¤é¤¯¥Ð¥°¤Î¤¢¤ë\n"
+"MTA¤ò»ÈÍÑ¤·¤¿¤Î¤Ç¤·¤ç¤¦\n"
 
 #. Translators: this shoud fit into 24 bytes to that the fingerprint
 #. * data is properly aligned with the user ID
 #: g10/keyedit.c:1189 g10/pkclist.c:53
 msgid "             Fingerprint:"
-msgstr "             »ØÌæ:"
+msgstr "                    »ØÌæ:"
 
 #: g10/pkclist.c:80
 msgid "Fingerprint:"
@@ -971,33 +1012,31 @@ msgstr "»ØÌæ:"
 
 #: g10/pkclist.c:116
 msgid "No reason specified"
-msgstr ""
+msgstr "ÍýÍ³¤Ï»ØÄê¤µ¤ì¤Æ¤¤¤Þ¤»¤ó"
 
 #: g10/pkclist.c:118
-#, fuzzy
 msgid "Key is superseded"
-msgstr "¸°¤ÏÊÝ¸î¤µ¤ì¤Æ¤¤¤Þ¤¹¡£\n"
+msgstr "¸°¤¬¤È¤ê¤«¤ï¤Ã¤Æ¤¤¤Þ¤¹"
 
 #: g10/pkclist.c:120
-#, fuzzy
 msgid "Key has been compromised"
-msgstr "¤³¤Î¸°¤Ï»ÈÍÑÉÔ²Ä¤ËÀßÄê¤µ¤ì¤Æ¤¤¤Þ¤¹"
+msgstr "¸°¤¬¥Ñ¥¯¤é¤ì¤Þ¤·¤¿"
 
 #: g10/pkclist.c:122
 msgid "Key is no longer used"
-msgstr ""
+msgstr "¸°¤Ï¤â¤¦»È¤ï¤ì¤Æ¤¤¤Þ¤»¤ó"
 
 #: g10/pkclist.c:124
 msgid "User ID is no longer valid"
-msgstr ""
+msgstr "¥æ¡¼¥¶¡¼ID¤¬¤â¤¦Í­¸ú¤Ç¤¢¤ê¤Þ¤»¤ó"
 
 #: g10/pkclist.c:128
 msgid "Reason for revocation: "
-msgstr ""
+msgstr "ÇË´þÍýÍ³: "
 
 #: g10/pkclist.c:145
 msgid "Revocation comment: "
-msgstr ""
+msgstr "Å¬ÍÑ: "
 
 #. a string with valid answers
 #: g10/pkclist.c:303
@@ -1010,7 +1049,7 @@ msgid ""
 "No trust value assigned to %lu:\n"
 "%4u%c/%08lX %s \""
 msgstr ""
-"%lu ¤Ë¿®ÍÑÅÙ¤¬»ØÄê¤µ¤ì¤Æ¤¤¤Þ¤»¤ó:\n"
+"%lu¤Ë¿®ÍÑÅÙ¤¬»ØÄê¤µ¤ì¤Æ¤¤¤Þ¤»¤ó:\n"
 "%4u%c/%08lX %s \""
 
 #: g10/pkclist.c:319
@@ -1025,18 +1064,18 @@ msgid ""
 " 4 = I trust fully\n"
 " s = please show me more information\n"
 msgstr ""
-"Â¾¤Î¥æ¡¼¥¶¤Î¸°¤òÀµ¤·¤¯¸¡¾Ú¤¹¤ë¤¿¤á¤Ë¡¢¤³¤Î¥æ¡¼¥¶¤Î¿®ÍÑÅÙ¤ò·è¤á¤Æ²¼¤µ¤¤\n"
-"(¥Ñ¥¹¥Ý¡¼¥È¤ò¸«¤»¤Æ¤â¤é¤Ã¤¿¤ê¡¢Â¾¤«¤éÆÀ¤¿»ØÌæ¤È¾È¹ç¤·¤¿¤ê...)?\n"
+"Â¾¤Î¥æ¡¼¥¶¡¼¤Î¸°¤òÀµ¤·¤¯¸¡¾Ú¤¹¤ë¤¿¤á¤Ë¡¢¤³¤Î¥æ¡¼¥¶¡¼¤Î¿®ÍÑÅÙ¤ò·è¤á¤Æ\n"
+"¤¯¤À¤µ¤¤(¥Ñ¥¹¥Ý¡¼¥È¤ò¸«¤»¤Æ¤â¤é¤Ã¤¿¤ê¡¢Â¾¤«¤éÆÀ¤¿»ØÌæ¤È¾È¹ç¤·¤¿¤ê...)?\n"
 "\n"
 " 1 = Ì¤ÃÎ\n"
-" 2 = ¿®ÍÑ¤·¤Ê¤¤\n"
+" 2 = ¿®ÍÑ¤· ¤Ê¤¤\n"
 " 3 = ¤¢¤ëÄøÅÙ¿®ÍÑ¤¹¤ë\n"
 " 4 = ´°Á´¤Ë¿®ÍÑ¤¹¤ë\n"
 " s = ¤è¤ê¾Ü¤·¤¤¾ðÊó¤ò¸«¤ë\n"
 
 #: g10/pkclist.c:328
 msgid " m = back to the main menu\n"
-msgstr " m = ¥á¥¤¥ó¥á¥Ë¥å¡¼¤ËÌá¤ë\n"
+msgstr " m = ¥á¡¼¥ó¡¦¥á¥Ë¥å¡¼¤ËÌá¤ë\n"
 
 #: g10/pkclist.c:330
 msgid " q = quit\n"
@@ -1056,8 +1095,8 @@ msgid ""
 "can assign some missing owner trust values.\n"
 "\n"
 msgstr ""
-"¸°¤Ø¤ÎÍ­¸ú¤Ê¿®ÍÑ¤Î¥Ñ¥¹¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó¡£·ç¤±¤Æ¤¤¤ë¿Í¤Î¿®ÍÑÅÙ¤ò\n"
-"ÀßÄê¤Ç¤­¤Ê¤¤¤«¤É¤¦¤«¡¢Ä´¤Ù¤Þ¤·¤ç¤¦¡£\n"
+"¸°¤Ø¤ÎÍ­¸ú¤Ê¿®ÍÑ¤Î·ÐÏ©¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó¡£\n"
+"¤¤¤Ê¤¤¿Í¤Î¿®ÍÑÅÙ¤¬ÀßÄê¤Ç¤­¤Ê¤¤¤«¤É¤¦¤«¡¢Ä´¤Ù¤Þ¤·¤ç¤¦¡£\n"
 "\n"
 
 #: g10/pkclist.c:435
@@ -1065,7 +1104,7 @@ msgid ""
 "No path leading to one of our keys found.\n"
 "\n"
 msgstr ""
-"²æ¡¹¤Î¸°¤Ø»ê¤ë¥Ñ¥¹¤¬¤¢¤ê¤Þ¤»¤ó¡£\n"
+"¤³¤Á¤é¤Î¸°¤Ø»ê¤ë·ÐÏ©¤¬¤¢¤ê¤Þ¤»¤ó¡£\n"
 "\n"
 
 #: g10/pkclist.c:437
@@ -1087,21 +1126,21 @@ msgstr ""
 #: g10/pkclist.c:457
 #, c-format
 msgid "key %08lX: key has been revoked!\n"
-msgstr "¸° %08lX: ¸°¤ÏÇË´þºÑ¤ß¤Ç¤¹!\n"
+msgstr "¸°%08lX: ¸°¤ÏÇË´þºÑ¤ß¤Ç¤¹!\n"
 
 #: g10/pkclist.c:464 g10/pkclist.c:476 g10/pkclist.c:598
 msgid "Use this key anyway? "
-msgstr "¤½¤ì¤Ç¤â ¤³¤Î¸°¤ò»È¤¤¤Þ¤¹¤«? "
+msgstr "¤½¤ì¤Ç¤â¤³¤Î¸°¤ò»È¤¤¤Þ¤¹¤«? "
 
 #: g10/pkclist.c:469
 #, c-format
 msgid "key %08lX: subkey has been revoked!\n"
-msgstr "¸° %08lX: Éû¸°¤ÏÇË´þºÑ¤ß¤Ç¤¹!\n"
+msgstr "¸°%08lX: Éû¸°¤ÏÇË´þºÑ¤ß¤Ç¤¹!\n"
 
 #: g10/pkclist.c:512
 #, c-format
 msgid "%08lX: key has expired\n"
-msgstr "¸° %08lX: ¸°¤Ï´ü¸ÂÀÚ¤ì¤Ç¤¹!\n"
+msgstr "¸°%08lX: ¸°¤Ï´ü¸ÂÀÚ¤ì¤Ç¤¹\n"
 
 #: g10/pkclist.c:518
 #, c-format
@@ -1111,14 +1150,16 @@ msgstr "%08lX: ¿®ÍÑÅÙ¤ò·×»»¤¹¤ë¾ðÊó¤¬¤¢¤ê¤Þ¤»¤ó\n"
 #: g10/pkclist.c:533
 #, c-format
 msgid "%08lX: We do NOT trust this key\n"
-msgstr "%08lX: ¤³¤Î¸°¤Ï¿®ÍÑ¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "%08lX: ¤³¤Î¸°¤Ï¿®ÍÑ¤Ç¤­¤Þ ¤»¤ó\n"
 
 #: g10/pkclist.c:539
 #, c-format
 msgid ""
 "%08lX: It is not sure that this key really belongs to the owner\n"
 "but it is accepted anyway\n"
-msgstr "%08lX: ¤³¤Î¸°¤Ï¼ÂºÝ¤ËËÜ¿Í¤Î¤â¤Î¤«¤ÏÉÔÌÀ¤Ç¤¹¤¬¡¢¤½¤ì¤Ç¤â¼õ¤±Æþ¤ì¤Þ¤¹\n"
+msgstr ""
+"%08lX: ¤³¤Î¸°¤Ï¼ÂºÝ¤ËËÜ¿Í¤Î¤â¤Î¤«¤ÏÉÔÌÀ¤Ç¤¹¤¬¡¢\n"
+"¤¤¤Á¤ª¤¦¼õÍý¤·¤Þ¤¹\n"
 
 #: g10/pkclist.c:545
 msgid "This key probably belongs to the owner\n"
@@ -1135,9 +1176,9 @@ msgid ""
 "the next question with yes\n"
 "\n"
 msgstr ""
-"¤³¤Î¸°¤ÏËÜ¿Í¤Î¤â¤Î¤«¤É¤¦¤«³Î¿®¤Ç¤­¤Þ¤»¤ó¡£\n"
+"¤³¤Î¸°¤ÏËÜ¿Í¤Î¤â¤Î¤«¤É¤¦¤«³Î¿®¤Ç¤­¤Þ ¤»¤ó¡£\n"
 "º£¤«¤é¹Ô¤¦¤³¤È¤ò *³Î¼Â¤Ë* Íý²ò¤·¤Æ¤¤¤Ê¤¤¾ì¹ç¤Ë¤Ï¡¢\n"
-"¼¡¤Î¼ÁÌä¤Ë¤Ï no ¤ÈÅú¤¨¤Æ¤¯¤À¤µ¤¤¡£\n"
+"¼¡¤Î¼ÁÌä¤Ë¤Ïno¤ÈÅú¤¨¤Æ¤¯¤À¤µ¤¤¡£\n"
 "\n"
 
 #: g10/pkclist.c:607 g10/pkclist.c:630
@@ -1150,7 +1191,7 @@ msgstr "·Ù¹ð: ¤³¤Î¸°¤ÏËÜ¿Í¤Ë¤è¤Ã¤ÆÇË´þ¤µ¤ì¤Æ¤¤¤Þ¤¹!\n"
 
 #: g10/pkclist.c:652
 msgid "         This could mean that the signature is forgery.\n"
-msgstr "         ½ðÌ¾¤Ïµ¶Êª¤À¤È»×¤ï¤ì¤Þ¤¹¡£\n"
+msgstr "      ½ðÌ¾¤¬µ¶Êª¤Ê¤³¤È¤â¤¢¤ë¡¢¤È¤¤¤¦¤³¤È¤Ç¤¹¡£\n"
 
 #: g10/pkclist.c:657
 msgid "WARNING: This subkey has been revoked by its owner!\n"
@@ -1162,29 +1203,29 @@ msgstr "Ãí°Õ: ¤³¤Î¸°¤Ï´ü¸ÂÀÚ¤ì¤Ç¤¹!\n"
 
 #: g10/pkclist.c:687
 msgid "WARNING: This key is not certified with a trusted signature!\n"
-msgstr "·Ù¹ð: ¤³¤Î¸°¤Ï¿®ÍÑ¤Ç¤­¤ë½ðÌ¾¤Ë¤è¤Ã¤Æ¾ÚÌÀ¤µ¤ì¤Æ¤¤¤Þ¤»¤ó!\n"
+msgstr "·Ù¹ð: ¤³¤Î¸°¤Ï¿®ÍÑ¤Ç¤­¤ë½ðÌ¾¤Ç¾ÚÌÀ¤µ¤ì¤Æ¤¤¤Þ¤»¤ó!\n"
 
 #: g10/pkclist.c:689
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
-msgstr "         ¤³¤Î½ðÌ¾¤¬ËÜ¿Í¤Î¤â¤Î¤«¤É¤¦¤«¤Î¸¡¾Ú¼êÃÊ¤¬¤¢¤ê¤Þ¤»¤ó¡£\n"
+msgstr "      ¤³¤Î½ðÌ¾¤¬ËÜ¿Í¤Î¤â¤Î¤«¤É¤¦¤«¤Î¸¡¾Ú¼êÃÊ¤¬¤¢¤ê¤Þ¤»¤ó¡£\n"
 
 #: g10/pkclist.c:706
 msgid "WARNING: We do NOT trust this key!\n"
-msgstr "·Ù¹ð: ¤³¤Î¸°¤Ï¿®ÍÑ¤Ç¤­¤Þ¤»¤ó!\n"
+msgstr "·Ù¹ð: ¤³¤Î¸°¤Ï¿®ÍÑ¤Ç¤­¤Þ ¤»¤ó!\n"
 
 #: g10/pkclist.c:707
 msgid "         The signature is probably a FORGERY.\n"
-msgstr "         ¤³¤Î½ðÌ¾¤Ï¤ª¤½¤é¤¯ µ¶Êª ¤Ç¤¹¡£\n"
+msgstr "      ¤³¤Î½ðÌ¾¤Ï¤ª¤½¤é¤¯ µ¶Êª ¤Ç¤¹¡£\n"
 
 #: g10/pkclist.c:714
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
-msgstr "·Ù¹ð: ¤³¤Î¸°¤Ï½½Ê¬¤Ë¿®ÍÑ¤Ç¤­¤ë½ðÌ¾¤Ë¤è¤Ã¤Æ¾ÚÌÀ¤µ¤ì¤Æ¤¤¤Þ¤»¤ó!\n"
+msgstr "·Ù¹ð: ¤³¤Î¸°¤Ï½½Ê¬¤Ë¿®ÍÑ¤Ç¤­¤ë½ðÌ¾¤Ç¾ÚÌÀ¤µ¤ì¤Æ¤¤¤Þ¤»¤ó!\n"
 
 #: g10/pkclist.c:717
 msgid "         It is not certain that the signature belongs to the owner.\n"
-msgstr "         ¤³¤Î½ðÌ¾¤¬ËÜ¿Í¤Î¤â¤Î¤«¤É¤¦¤«³Î¿®¤Ç¤­¤Þ¤»¤ó¡£\n"
+msgstr "      ¤³¤Î½ðÌ¾¤¬ËÜ¿Í¤Î¤â¤Î¤«¤É¤¦¤«³Î¿®¤Ç¤­¤Þ¤»¤ó¡£\n"
 
 #: g10/pkclist.c:819 g10/pkclist.c:841 g10/pkclist.c:967 g10/pkclist.c:1012
 #, c-format
@@ -1200,42 +1241,44 @@ msgstr "%s: ¥¹¥­¥Ã¥×: ¸ø³«¸°¤Ï´û¤Ë¤¢¤ê¤Þ¤¹\n"
 msgid ""
 "You did not specify a user ID. (you may use \"-r\")\n"
 "\n"
-msgstr "¥æ¡¼¥¶ ID ¤¬»ØÄê¤µ¤ì¤Æ¤¤¤Þ¤»¤ó(\"-r\" ¤òÍÑ¤¤¤¿¤Ç¤·¤ç¤¦)¡£\n"
+msgstr ""
+"¥æ¡¼¥¶¡¼ID¤¬»ØÄê¤µ¤ì¤Æ¤¤¤Þ¤»¤ó (¡Ö-r¡×¤òÍÑ¤¤¤Þ¤·¤ç¤¦) ¡£\n"
+"\n"
 
 #: g10/pkclist.c:864
 msgid "Enter the user ID: "
-msgstr "¥æ¡¼¥¶ ID ¤òÆþÎÏ: "
+msgstr "¥æ¡¼¥¶¡¼ID¤òÆþÎÏ: "
 
 #: g10/pkclist.c:876
 msgid "No such user ID.\n"
-msgstr "¤½¤Î¥æ¡¼¥¶ ID ¤Ï¤¢¤ê¤Þ¤»¤ó¡£\n"
+msgstr "¤½¤Î¥æ¡¼¥¶¡¼ID¤Ï¤¢¤ê¤Þ¤»¤ó¡£\n"
 
 #: g10/pkclist.c:881
 msgid "skipped: public key already set as default recipient\n"
-msgstr "¥¹¥­¥Ã¥×: ¸ø³«¸°¤Ï¥Ç¥Õ¥©¥ë¥È¤Î¼õ¿®¼Ô¤ËÀßÄê¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
+msgstr "¥¹¥­¥Ã¥×: ¸ø³«¸°¤Ï´ûÄê¤Î¼õ¿®¼Ô¤È¤·¤ÆÀßÄêºÑ¤ß¤Ç¤¹\n"
 
 #: g10/pkclist.c:904
 msgid "Public key is disabled.\n"
-msgstr "¸ø³«¸°¤òÌµ»ë¤·¤Þ¤·¤¿¡£\n"
+msgstr "¸ø³«¸°¤Ï»ÈÍÑ¶Ø»ß¤Ç¤¹¡£\n"
 
 #: g10/pkclist.c:911
 msgid "skipped: public key already set with --encrypt-to\n"
-msgstr "¥¹¥­¥Ã¥×: ¸ø³«¸°¤Ï´û¤Ë --encrypt-to ¤Ë¤ÆÀßÄê¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
+msgstr "¥¹¥­¥Ã¥×: ¸ø³«¸°¤Ï´û¤Ë --encrypt-to ¤ÇÀßÄêºÑ¤ß¤Ç¤¹\n"
 
 #: g10/pkclist.c:942
 #, c-format
 msgid "unknown default recipient `%s'\n"
-msgstr "¥Ç¥Õ¥©¥ë¥È¤Î¼õ¿®¼Ô `%s' ¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó\n"
+msgstr "´ûÄê¤Î¼õ¿®¼Ô`%s'¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó\n"
 
 #: g10/pkclist.c:975
 #, c-format
 msgid "%s: error checking key: %s\n"
-msgstr "%s: ¸°¤Î¥¨¥é¡¼: %s\n"
+msgstr "%s: ¸°¤Î¸¡¾Ú¥¨¥é¡¼: %s\n"
 
 #: g10/pkclist.c:980
 #, c-format
 msgid "%s: skipped: public key is disabled\n"
-msgstr "%s: ¥¹¥­¥Ã¥×: ¸ø³«¸°¤òÌµ»ë¤·¤Þ¤·¤¿\n"
+msgstr "%s: ¥¹¥­¥Ã¥×: ¸ø³«¸°¤Ï»ÈÍÑ¶Ø»ß\n"
 
 #: g10/pkclist.c:1018
 msgid "no valid addressees\n"
@@ -1250,23 +1293,23 @@ msgid "writing key binding signature\n"
 msgstr "½ðÌ¾¤ËÂÐ±þ¤¹¤ë¸°¤ò½ñ¤­¹þ¤ß¤Þ¤¹\n"
 
 #: g10/keygen.c:262 g10/keygen.c:346 g10/keygen.c:436
-#, fuzzy, c-format
+#, c-format
 msgid "keysize invalid; using %u bits\n"
-msgstr "Í×µá¤µ¤ì¤¿¸°¥µ¥¤¥º¤Ï %u ¥Ó¥Ã¥È\n"
+msgstr "Ìµ¸ú¤Ê¸°¥µ¥¤¥º¡£%u¥Ó¥Ã¥È¤Ë¤·¤Þ¤¹\n"
 
 #: g10/keygen.c:267 g10/keygen.c:351 g10/keygen.c:441
-#, fuzzy, c-format
+#, c-format
 msgid "keysize rounded up to %u bits\n"
-msgstr "%u ¥Ó¥Ã¥È¤Ë´Ý¤á¤Þ¤¹\n"
+msgstr "¸°¥µ¥¤¥º¤ò%u¥Ó¥Ã¥È¤Ë´Ý¤á¤Þ¤¹\n"
 
 #: g10/keygen.c:540
 msgid "Please select what kind of key you want:\n"
-msgstr "¸°¤Î¼ïÎà¤òÁªÂò¤·¤Æ²¼¤µ¤¤:\n"
+msgstr "¤¹¤­¤Ê¸°¤Î¼ïÎà¤òÁªÂò¤·¤Æ¤¯¤À¤µ¤¤:\n"
 
 #: g10/keygen.c:542
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
-msgstr "   (%d) DSA ¤È ElGamal (¥Ç¥Õ¥©¥ë¥È)\n"
+msgstr "   (%d) DSA¤ÈElGamal (´ûÄê)\n"
 
 #: g10/keygen.c:543
 #, c-format
@@ -1284,13 +1327,13 @@ msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (½ðÌ¾¤È°Å¹æ²½)\n"
 
 #: g10/keygen.c:548
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) RSA (sign and encrypt)\n"
-msgstr "   (%d) ElGamal (½ðÌ¾¤È°Å¹æ²½)\n"
+msgstr "   (%d) RSA (½ðÌ¾¤È°Å¹æ²½)\n"
 
 #: g10/keygen.c:552
 msgid "Your selection? "
-msgstr "¤É¤ì¤òÁª¤Ó¤Þ¤¹¤«? "
+msgstr "¤É¤ì¤Ë¤·¤Þ¤¹¤«? "
 
 #: g10/keygen.c:563 g10/keygen.c:571
 msgid "Do you really want to create a sign and encrypt key? "
@@ -1308,27 +1351,26 @@ msgid ""
 "              default keysize is 1024 bits\n"
 "    highest suggested keysize is 2048 bits\n"
 msgstr ""
-"¿·¤·¤¤ %s ¸°¥Ú¥¢¤ÎÀ¸À®¤Ë¤Ä¤¤¤Æ\n"
-"             ºÇ¾®¤Î¸°¥µ¥¤¥º¤Ï is  768 ¥Ó¥Ã¥È\n"
-"          ¥Ç¥Õ¥©¥ë¥È¤Î¸°¥µ¥¤¥º¤Ï 1024 ¥Ó¥Ã¥È\n"
-"                ºÇÂç¤Î¸°¥µ¥¤¥º¤Ï 2048 ¥Ó¥Ã¥È\n"
+"¿·¤·¤¤%s¸°ÂÐ¤òÀ¸À®¤·¤Þ¤¹¡£\n"
+"             ºÇ¾®¤Î¸°Ä¹¤Ï  768 ¥Ó¥Ã¥È\n"
+"             ´ûÄê¤Î¸°Ä¹¤Ï 1024 ¥Ó¥Ã¥È\n"
+"         ºÇÂç¤Î¿ä¾©¸°Ä¹¤Ï 2048 ¥Ó¥Ã¥È\n"
 
 #: g10/keygen.c:604
 msgid "What keysize do you want? (1024) "
-msgstr "¤É¤Î¸°¥µ¥¤¥º¤òÁªÂò¤·¤Þ¤¹¤«? (1024) "
+msgstr "¤É¤Î¸°Ä¹¤Ë¤·¤Þ¤¹¤«? (1024) "
 
 #: g10/keygen.c:609
 msgid "DSA only allows keysizes from 512 to 1024\n"
-msgstr "DSA ¤Î¸°¥µ¥¤¥º¤Ï 512 ¤«¤é 1024 ¤Þ¤Ç¤Ç¤¹\n"
+msgstr "DSA¤Î¸°Ä¹¤Ï512¤«¤é1024¤Þ¤Ç¤Ç¤¹\n"
 
 #: g10/keygen.c:611
 msgid "keysize too small; 768 is smallest value allowed.\n"
-msgstr "¸°¥µ¥¤¥º¤¬¾®¤µ¤¹¤®¤Þ¤¹; 768 ¤¬ºÇ¾®¤Ç¤¹¡£\n"
+msgstr "¸°Ä¹¤¬¾®¤µ¤¹¤®¤Þ¤¹¡£ºÇ¾®¤Ç¤â768¤Ç¤¹¡£\n"
 
 #: g10/keygen.c:613
-#, fuzzy
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
-msgstr "¸°¥µ¥¤¥º¤¬¾®¤µ¤¹¤®¤Þ¤¹; 768 ¤¬ºÇ¾®¤Ç¤¹¡£\n"
+msgstr "¸°Ä¹¤¬¾®¤µ¤¹¤®¤Þ¤¹¡£RSA¤ÏºÇ¾®¤Ç¤â1024¤Ç¤¹¡£\n"
 
 #. It is ridiculous and an annoyance to use larger key sizes!
 #. * GnuPG can handle much larger sizes; but it takes an eternity
@@ -1341,41 +1383,41 @@ msgstr "¸°¥µ¥¤¥º¤¬¾®¤µ¤¹¤®¤Þ¤¹; 768 ¤¬ºÇ¾®¤Ç¤¹¡£\n"
 #: g10/keygen.c:624
 #, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
-msgstr "¸°¥µ¥¤¥º¤¬Âç¤­¤¹¤®¤Þ¤¹; %d ¤¬ºÇÂç¤Ç¤¹¡£\n"
+msgstr "¸°Ä¹¤¬Âç¤­¤¹¤®¤Þ¤¹¡£%d¤¬ºÇÂç¤Ç¤¹¡£\n"
 
 #: g10/keygen.c:629
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
 "computations take REALLY long!\n"
 msgstr ""
-"2048 °Ê¾å¤Î¸°¥µ¥¤¥º¤Ï¡¢·×»»»þ´Ö¤¬ Èó¾ï¤Ë Ä¹¤¯¤Ê¤ë¤Î¤Ç\n"
+"2048¤è¤êÂç¤­¤Ê¸°Ä¹¤Ï¡¢·×»»»þ´Ö¤¬ Èó¾ï¤Ë Ä¹¤¯¤Ê¤ë¤Î¤Ç\n"
 "¿ä¾©¤·¤Þ¤»¤ó!\n"
 
 #: g10/keygen.c:632
 msgid "Are you sure that you want this keysize? "
-msgstr "¤³¤Î¸°¥µ¥¤¥º¤ÇËÜÅö¤ËÎÉ¤¤¤Ç¤¹¤«? "
+msgstr "¤³¤Î¸°Ä¹¤ÇËÜÅö¤Ë¤¤¤¤¤Ç¤¹¤«? "
 
 #: g10/keygen.c:633
 msgid ""
 "Okay, but keep in mind that your monitor and keyboard radiation is also very "
 "vulnerable to attacks!\n"
 msgstr ""
-"¤ï¤«¤ê¤Þ¤·¤¿¡£¤·¤«¤·¡¢¤¢¤Ê¤¿¤Î¥â¥Ë¥¿¡¼¤ä¥­¡¼¥Ü¡¼¥ÉÆþÎÏ¤Ï¡¢¹¶·â¤ËÂÐ¤·¤Æ "
-"¤¹¤­¤À¤é¤±¤Ç¤¢¤ë¤³¤È¤ò¿´¤ËÎ±¤á¤Æ¤ª¤¤¤Æ²¼¤µ¤¤!\n"
+"¤ï¤«¤ê¤Þ¤·¤¿¡£¤·¤«¤·¡¢¤¢¤Ê¤¿¤Î¥â¥Ë¥¿¡¼¤ä¥­¡¼¥Ü¡¼¥ÉÆþÎÏ¤Ï¡¢\n"
+"¹¶·â¤Ë¤¿¤¤¤·¤ÆÀÈ¼å¤Ç¤¢¤ë¤³¤È¤ò¿´¤ËÎ±¤á¤Æ¤ª¤¤¤Æ¤¯¤À¤µ¤¤!\n"
 
 #: g10/keygen.c:641
 msgid "Do you really need such a large keysize? "
-msgstr "¤¢¤Ê¤¿¤ÏËÜÅö¤Ë¤³¤Î¤è¤¦¤ÊÄ¹¤¤¸°¤¬É¬Í×¤Ç¤¹¤«? "
+msgstr "¤³¤ó¤Ê¤ËÄ¹¤¤¸°¤¬ËÜÅö¤Ë¤¤¤ê¤Þ¤¹¤«? "
 
 #: g10/keygen.c:647
 #, c-format
 msgid "Requested keysize is %u bits\n"
-msgstr "Í×µá¤µ¤ì¤¿¸°¥µ¥¤¥º¤Ï %u ¥Ó¥Ã¥È\n"
+msgstr "Í×µá¤µ¤ì¤¿¸°Ä¹¤Ï%u¥Ó¥Ã¥È\n"
 
 #: g10/keygen.c:650 g10/keygen.c:654
 #, c-format
 msgid "rounded up to %u bits\n"
-msgstr "%u ¥Ó¥Ã¥È¤Ë´Ý¤á¤Þ¤¹\n"
+msgstr "%u¥Ó¥Ã¥È¤Ë´Ý¤á¤Þ¤¹\n"
 
 #: g10/keygen.c:702
 msgid ""
@@ -1386,16 +1428,16 @@ msgid ""
 "      <n>m = key expires in n months\n"
 "      <n>y = key expires in n years\n"
 msgstr ""
-"¸°¤Î´ü¸Â¤ò·è¤á¤Æ²¼¤µ¤¤\n"
+"¸°¤Î´ü¸Â¤ò·è¤á¤Æ¤¯¤À¤µ¤¤¡£\n"
 "         0 = Ìµ´ü¸Â\n"
-"      <n>  = Í­¸ú´ü¸Â n Æü\n"
+"      <n>  = Í­¸ú´ü¸Â n Æü´Ö\n"
 "      <n>w = Í­¸ú´ü¸Â n ½µ´Ö\n"
-"      <n>m = Í­¸ú´ü¸Â n ·î\n"
-"      <n>y = Í­¸ú´ü¸Â n Ç¯\n"
+"      <n>m = Í­¸ú´ü¸Â n ¤«·î´Ö\n"
+"      <n>y = Í­¸ú´ü¸Â n Ç¯´Ö\n"
 
 #: g10/keygen.c:717
 msgid "Key is valid for? (0) "
-msgstr "¸°¤ÎÍ­¸úÀ­¤Ï? (0)"
+msgstr "¸°¤ÎÍ­¸ú´ü´Ö¤Ï? (0)"
 
 #: g10/keygen.c:722
 msgid "invalid value\n"
@@ -1409,7 +1451,7 @@ msgstr "¸°¤ÏÌµ´ü¸Â¤Ç¤¹\n"
 #: g10/keygen.c:733
 #, c-format
 msgid "Key expires at %s\n"
-msgstr "¸°¤Ï %s ¤Ë¤Æ´ü¸ÂÀÚ¤ì¤Ë¤Ê¤ê¤Þ¤¹\n"
+msgstr "¸°¤Ï%s¤Ë¤Æ´ü¸ÂÀÚ¤ì¤Ë¤Ê¤ê¤Þ¤¹\n"
 
 #: g10/keygen.c:736
 msgid ""
@@ -1421,7 +1463,7 @@ msgstr ""
 
 #: g10/keygen.c:741
 msgid "Is this correct (y/n)? "
-msgstr "¤³¤ì¤ÇÎÉ¤¤¤Ç¤¹¤« (y/n)? "
+msgstr "¤³¤ì¤Ç¤¤¤¤¤Ç¤¹¤« (y/n)? "
 
 #: g10/keygen.c:784
 msgid ""
@@ -1433,9 +1475,9 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"¤¢¤Ê¤¿¤Î¸°¤ò¼±ÊÌ¤¹¤ë¤¿¤á¤Ë ¥æ¡¼¥¶ ID ¤¬É¬Í×¤Ç¤¹¡£\n"
-"¤³¤Î¥½¥Õ¥È¤ÏËÜÌ¾¡¢Ãí¼á¡¢ÅÅ»Ò¥á¡¼¥ë¥¢¥É¥ì¥¹¤«¤é¡¢¼¡¤Î½ñ¼°¤Ç¥æ¡¼¥¶ ID "
-"¤òºîÀ®¤·¤Þ¤¹:\n"
+"¤¢¤Ê¤¿¤Î¸°¤òÆ±Äê¤¹¤ë¤¿¤á¤Ë¥æ¡¼¥¶¡¼ID¤¬É¬Í×¤Ç¤¹¡£\n"
+"¤³¤Î¥½¥Õ¥È¤ÏËÜÌ¾¡¢¥³¥á¥ó¥È¡¢ÅÅ»Ò¥á¡¼¥ë¡¦¥¢¥É¥ì¥¹¤«¤é\n"
+"¼¡¤Î½ñ¼°¤Ç¥æ¡¼¥¶¡¼ID¤ò¹½À®¤·¤Þ¤¹:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
 
@@ -1449,32 +1491,32 @@ msgstr "Ì¾Á°¤ËÌµ¸ú¤ÊÊ¸»ú¤¬¤¢¤ê¤Þ¤¹\n"
 
 #: g10/keygen.c:806
 msgid "Name may not start with a digit\n"
-msgstr "Ì¾Á°¤Ï¿ô»ú¤Ç»Ï¤Þ¤Ã¤Æ¤Ï¤¤¤±¤Þ¤»¤ó\n"
+msgstr "Ì¾Á°¤ò¿ô»ú¤Ç»Ï¤á¤Æ¤Ï¤¤¤±¤Þ¤»¤ó\n"
 
 #: g10/keygen.c:808
 msgid "Name must be at least 5 characters long\n"
-msgstr "Ì¾Á°¤Ï 5 Ê¸»ú°Ê¾å¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
+msgstr "Ì¾Á°¤Ï5Ê¸»ú°Ê¾å¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó\n"
 
 #: g10/keygen.c:816
 msgid "Email address: "
-msgstr "ÅÅ»Ò¥á¡¼¥ë¥¢¥É¥ì¥¹: "
+msgstr "ÅÅ»Ò¥á¡¼¥ë¡¦¥¢¥É¥ì¥¹: "
 
 #: g10/keygen.c:827
 msgid "Not a valid email address\n"
-msgstr "Í­¸ú¤ÊÅÅ»Ò¥á¡¼¥ë¥¢¥É¥ì¥¹¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "Í­¸ú¤ÊÅÅ»Ò¥á¡¼¥ë¡¦¥¢¥É¥ì¥¹¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/keygen.c:835
 msgid "Comment: "
-msgstr "Ãí¼á: "
+msgstr "¥³¥á¥ó¥È: "
 
 #: g10/keygen.c:841
 msgid "Invalid character in comment\n"
-msgstr "Ãí¼á¤ËÌµ¸ú¤ÊÊ¸»ú¤¬¤¢¤ê¤Þ¤¹\n"
+msgstr "¥³¥á¥ó¥È¤ËÌµ¸ú¤ÊÊ¸»ú¤¬¤¢¤ê¤Þ¤¹\n"
 
 #: g10/keygen.c:864
 #, c-format
 msgid "You are using the `%s' character set.\n"
-msgstr "¤¢¤Ê¤¿¤ÏÊ¸»ú¥³¡¼¥É `%s' ¤ò»È¤Ã¤Æ¤¤¤Þ¤¹¡£\n"
+msgstr "¤¢¤Ê¤¿¤ÏÊ¸»ú½¸¹ç`%s'¤ò»È¤Ã¤Æ¤¤¤Þ¤¹¡£\n"
 
 #: g10/keygen.c:870
 #, c-format
@@ -1483,42 +1525,41 @@ msgid ""
 "    \"%s\"\n"
 "\n"
 msgstr ""
-"¼¡¤Î¥æ¡¼¥¶ ID ¤òÀßÄê¤·¤Þ¤·¤¿:\n"
+"¼¡¤Î¥æ¡¼¥¶¡¼ID¤òÀßÄê¤·¤Þ¤·¤¿:\n"
 "    \"%s\"\n"
 "\n"
 
 #: g10/keygen.c:874
 msgid "Please don't put the email address into the real name or the comment\n"
-msgstr ""
+msgstr "ÅÅ»Ò¥á¡¼¥ë¤Î¥¢¥É¥ì¥¹¤òËÜÌ¾¤ä¥³¥á¥ó¥È¤ËÆþ¤ì¤Ê¤¤¤è¤¦¤Ë\n"
 
 #: g10/keygen.c:879
 msgid "NnCcEeOoQq"
 msgstr "NnCcEeOoQq"
 
 #: g10/keygen.c:889
-#, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
-msgstr "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
+msgstr "Ì¾Á°(N)¡¢¥³¥á¥ó¥È(C)¡¢ÅÅ»Ò¥á¡¼¥ë(E)¤ÎÊÑ¹¹¡¢¤Þ¤¿¤Ï½ªÎ»(Q)? "
 
 #: g10/keygen.c:890
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
-msgstr "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
+msgstr "Ì¾Á°(N)¡¢¥³¥á¥ó¥È(C)¡¢ÅÅ»Ò¥á¡¼¥ë(E)¤ÎÊÑ¹¹¡¢¤Þ¤¿¤ÏOK(O)¤«½ªÎ»(Q)? "
 
 #: g10/keygen.c:909
 msgid "Please correct the error first\n"
-msgstr ""
+msgstr "¤Þ¤º¥¨¥é¡¼¤ò½¤Àµ¤·¤Æ¤¯¤À¤µ¤¤\n"
 
 #: g10/keygen.c:947
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
 msgstr ""
-"ÈëÌ©¸°¤òÊÝ¸î¤¹¤ë¤¿¤á¤Ë¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬É¬Í×¤Ç¤¹¡£\n"
+"ÈëÌ©¸°¤òÊÝ¸î¤¹¤ë¤¿¤á¤Ë¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬¤¤¤ê¤Þ¤¹¡£\n"
 "\n"
 
 #: g10/keyedit.c:468 g10/keygen.c:955
 msgid "passphrase not correctly repeated; try again.\n"
-msgstr "¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬°Û¤Ê¤ê¤Þ¤¹¡£¤â¤¦°ìÅÙÀßÄê¤·¤Æ²¼¤µ¤¤¡£\n"
+msgstr "¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬°Û¤Ê¤ê¤Þ¤¹¡£¤â¤¦°ìÅÙÀßÄê¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/keygen.c:961
 msgid ""
@@ -1527,9 +1568,9 @@ msgid ""
 "using this program with the option \"--edit-key\".\n"
 "\n"
 msgstr ""
-"¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬ÉÔÉ¬Í×¤Ê¤è¤¦¤Ç¤¹¤¬¡¢¤½¤ì¤Ï°­¤¤¹Í¤¨¤Ç¤¹!\n"
-"Â³¹Ô¤·¤Þ¤¹¡£¥Ñ¥¹¥Õ¥ì¡¼¥º¤Ï¡¢¤³¤Î¥×¥í¥°¥é¥à¤Î \"--edit-key\" \n"
-"¥ª¥×¥·¥ç¥ó¤Ë¤è¤Ã¤Æ¡¢¤¤¤Ä¤Ç¤âÊÑ¹¹¤Ç¤­¤Þ¤¹¡£\n"
+"¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬ÉÔÉ¬Í×¤Ê¤è¤¦¤Ç¤¹¤¬¡¢¤ª¤½¤é¤¯¤½¤ì¤Ï¤í¤¯¤Ê¹Í¤¨¤Ç¤Ï\n"
+"¤¢¤ê¤Þ¤»¤ó! ¤¤¤Á¤ª¤¦Â³¹Ô¤·¤Þ¤¹¡£¥Ñ¥¹¥Õ¥ì¡¼¥º¤Ï¡¢¤³¤Î¥×¥í¥°¥é¥à\n"
+"¤Î¡Ö--edit-key¡×¥ª¥×¥·¥ç¥ó¤Ç¤¤¤Ä¤Ç¤âÊÑ¹¹¤Ç¤­¤Þ¤¹¡£\n"
 "\n"
 
 #: g10/keygen.c:982
@@ -1539,31 +1580,31 @@ msgid ""
 "disks) during the prime generation; this gives the random number\n"
 "generator a better chance to gain enough entropy.\n"
 msgstr ""
-"º£¤«¤éÄ¹¤¤Íð¿ô¤òÀ¸À®¤·¤Þ¤¹¡£¥­¡¼¥Ü¡¼¥É¤òÂÇ¤Ä¤È¤«¡¢¥Þ¥¦¥¹¤òÆ°¤«¤¹¤È¤«¡¢\n"
-"¥Ç¥£¥¹¥¯¤Ë¥¢¥¯¥»¥¹¤¹¤ë¤Ê¤É¤ÎÂ¾¤Î¹ÔÆ°¤òÆ±»þ¤Ë¹Ô¤¦¤È¡¢Íð¿ôÀ¸À®ÁõÃÖ¤Ë¤Æ\n"
-"Íð»¨¤µ¤ÎÂç¤­¤ÊÎÉ¤¤Íð¿ô¤òÀ¸À®¤·¤ä¤¹¤¯¤Ê¤ê¤Þ¤¹¤Î¤Ç¡¢¤ª´«¤á¤·¤Þ¤¹¡£\n"
+"º£¤«¤éÄ¹¤¤Íð¿ô¤òÀ¸À®¤·¤Þ¤¹¡£¥­¡¼¥Ü¡¼¥É¤òÂÇ¤Ä¤È¤«¡¢¥Þ¥¦¥¹¤òÆ°¤«¤¹\n"
+"¤È¤«¡¢¥Ç¥£¥¹¥¯¤Ë¥¢¥¯¥»¥¹¤¹¤ë¤È¤«¤ÎÂ¾¤Î¤³¤È¤ò¤¹¤ë¤È¡¢Íð¿ôÀ¸À®»Ò¤Ç\n"
+"Íð»¨¤µ¤ÎÂç¤­¤Ê¤¤¤¤Íð¿ô¤òÀ¸À®¤·¤ä¤¹¤¯¤Ê¤ë¤Î¤Ç¡¢¤ª´«¤á¤·¤Þ¤¹¡£\n"
 
 #: g10/keygen.c:1431
 msgid "DSA keypair will have 1024 bits.\n"
-msgstr "DSA ¸°¥Ú¥¢¤Ï 1024 ¥Ó¥Ã¥È¤Ë¤Ê¤ê¤Þ¤¹\n"
+msgstr "DSA¸°ÂÐ¤Ï1024¥Ó¥Ã¥È¤Ë¤Ê¤ê¤Þ¤¹¡£\n"
 
 #: g10/keygen.c:1474
 msgid "Key generation canceled.\n"
 msgstr "¸°¤ÎÀ¸À®¤¬Ãæ»ß¤µ¤ì¤Þ¤·¤¿¡£\n"
 
 #: g10/keygen.c:1571
-#, fuzzy, c-format
+#, c-format
 msgid "writing public key to `%s'\n"
-msgstr "`%s' ¤Ø¤Î¸ø³«¾ÚÌÀ½ñ¤ò½ñ¤­¹þ¤ß¤Þ¤¹\n"
+msgstr "`%s'¤Ø¸ø³«¸°¤ò½ñ¤­¹þ¤ß¤Þ¤¹\n"
 
 #: g10/keygen.c:1572
-#, fuzzy, c-format
+#, c-format
 msgid "writing secret key to `%s'\n"
-msgstr "`%s' ¤Ø¤ÎÈëÌ©¾ÚÌÀ½ñ¤ò½ñ¤­¹þ¤ß¤Þ¤¹\n"
+msgstr "`%s'¤ØÈëÌ©¸°¤ò½ñ¤­¹þ¤ß¤Þ¤¹\n"
 
 #: g10/keygen.c:1668
 msgid "public and secret key created and signed.\n"
-msgstr "¸ø³«¸°¤ÈÈëÌ©¸°¤¬ºîÀ®¤µ¤ì¡¢½ðÌ¾¤µ¤ì¤Þ¤·¤¿¡£\n"
+msgstr "¸ø³«¸°¤ÈÈëÌ©¸°¤òºî¤ê¡¢½ðÌ¾¤·¤Þ¤·¤¿¡£\n"
 
 #: g10/keygen.c:1673
 msgid ""
@@ -1571,28 +1612,28 @@ msgid ""
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
 msgstr ""
 "¤³¤Î¸°¤Ï°Å¹æ²½¤Ë¤Ï»ÈÍÑ¤Ç¤­¤Ê¤¤¤³¤È¤ËÃí°Õ¤·¤Æ¤¯¤À¤µ¤¤¡£°Å¹æ²½¤ò¹Ô¤¦¤Ë¤Ï¡¢\n"
-"\"--edit-key\" ¥³¥Þ¥ó¥É¤òÍÑ¤¤¤ÆÉû¸°¤òºîÀ®¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
+"¡Ö--edit-key¡×¥³¥Þ¥ó¥É¤òÍÑ¤¤¤ÆÉû¸°¤òÀ¸À®¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/keygen.c:1690 g10/keygen.c:1791
 #, c-format
 msgid "Key generation failed: %s\n"
-msgstr "¸°¤ÎºîÀ®¤Ë¼ºÇÔ: %s\n"
+msgstr "¸°¤ÎÀ¸À®¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/keygen.c:1734 g10/sig-check.c:315 g10/sign.c:112
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
-msgstr "¸°¤Ï %lu ÉÃÌ¤Íè¤ËºîÀ®¤µ¤ì¤Þ¤·¤¿ (»þ´ÖÎ¹¹Ô¤«»þ·×¤Î¤¯¤ë¤¤¤Ç¤·¤ç¤¦)\n"
+msgstr "¸°¤Ï%luÉÃÌ¤Íè¤Ë¤Ç¤­¤Þ¤·¤¿ (»þ´ÖÎ¹¹Ô¤«»þ·×¤Î¤¯¤ë¤¤¤Ç¤·¤ç¤¦)\n"
 
 #: g10/keygen.c:1736 g10/sig-check.c:317 g10/sign.c:114
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
-msgstr "¸°¤Ï %lu ÉÃÌ¤Íè¤ËºîÀ®¤µ¤ì¤Þ¤·¤¿ (»þ´ÖÎ¹¹Ô¤«»þ·×¤Î¤¯¤ë¤¤¤Ç¤·¤ç¤¦)\n"
+msgstr "¸°¤Ï%luÉÃÌ¤Íè¤Ë¤Ç¤­¤Þ¤·¤¿ (»þ´ÖÎ¹¹Ô¤«»þ·×¤Î¤¯¤ë¤¤¤Ç¤·¤ç¤¦)\n"
 
 #: g10/keygen.c:1769
 msgid "Really create? "
-msgstr "ËÜÅö¤ËºîÀ®¤·¤Þ¤¹¤«? "
+msgstr "ËÜÅö¤Ëºî¤ê¤Þ¤¹¤«? "
 
 #: g10/encode.c:91 g10/openfile.c:178 g10/openfile.c:288 g10/tdbio.c:454
 #: g10/tdbio.c:515
@@ -1603,7 +1644,7 @@ msgstr "%s: ³«¤±¤Þ¤»¤ó: %s\n"
 #: g10/encode.c:113
 #, c-format
 msgid "error creating passphrase: %s\n"
-msgstr "¥Ñ¥¹¥Õ¥ì¡¼¥º¤ÎÀ¸À®¤Ë¼ºÇÔ: %s\n"
+msgstr "¥Ñ¥¹¥Õ¥ì¡¼¥º¤ÎºîÀ®¥¨¥é¡¼: %s\n"
 
 #: g10/encode.c:171 g10/encode.c:324
 #, c-format
@@ -1613,32 +1654,32 @@ msgstr "%s: ·Ù¹ð: ¶õ¤Î¥Õ¥¡¥¤¥ë¤Ç¤¹\n"
 #: g10/encode.c:271
 #, c-format
 msgid "reading from `%s'\n"
-msgstr "`%s' ¤«¤éÆÉ¤ß¹þ¤ß¤Þ¤¹\n"
+msgstr "`%s'¤«¤éÆÉ¤ß¹þ¤ß¤Þ¤¹\n"
 
 #: g10/encode.c:492
 #, c-format
 msgid "%s/%s encrypted for: %s\n"
-msgstr "%s/%s °Å¹æ²½ ¼õ¿®¼Ô: %s\n"
+msgstr "%s/%s°Å¹æ²½ ¼õ¿®¼Ô: %s\n"
 
 #: g10/export.c:153
 #, c-format
 msgid "%s: user not found: %s\n"
-msgstr "%s: ¥æ¡¼¥¶¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó: %s\n"
+msgstr "%s: ¥æ¡¼¥¶¡¼¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó: %s\n"
 
 #: g10/export.c:162
 #, c-format
 msgid "certificate read problem: %s\n"
-msgstr "¾ÚÌÀ½ñ¤ÎÆÉ¤ß¹þ¤ß¤Ë¼ºÇÔ: %s\n"
+msgstr "¾ÚÌÀ½ñ¤ÎÆÉ¹þ¤ß¾ã³²: %s\n"
 
 #: g10/export.c:171
 #, c-format
 msgid "key %08lX: not a rfc2440 key - skipped\n"
-msgstr "¸° %08lX: rfc2440 ¤Î¸°¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó - ¥¹¥­¥Ã¥×¤·¤Þ¤¹\n"
+msgstr "¸° %08lX: rfc2440¤Î¸°¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó - ¥¹¥­¥Ã¥×\n"
 
 #: g10/export.c:182
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: not protected - skipped\n"
-msgstr "¸° %08lX: rfc2440 ¤Î¸°¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó - ¥¹¥­¥Ã¥×¤·¤Þ¤¹\n"
+msgstr "¸° %08lX: ÊÝ¸î¤µ¤ì¤Æ¤¤¤Þ¤»¤ó - ¥¹¥­¥Ã¥×\n"
 
 #: g10/export.c:232
 msgid "WARNING: nothing exported\n"
@@ -1646,277 +1687,276 @@ msgstr "·Ù¹ð: ²¿¤â½ñ¤­½Ð¤·¤Æ¤¤¤Þ¤»¤ó\n"
 
 #: g10/getkey.c:211
 msgid "too many entries in pk cache - disabled\n"
-msgstr "pk ¥­¥ã¥Ã¥·¥å¤Î¥¨¥ó¥È¥ê¡¼¤¬Â¿¤¹¤®¤Þ¤¹ - Ìµ»ë\n"
+msgstr "pk¥­¥ã¥Ã¥·¥å¤Î¥¨¥ó¥È¥ê¡¼¤¬Â¿¤¹¤®¤Þ¤¹ - »ÈÍÑ¶Ø»ß\n"
 
 #: g10/getkey.c:350
 msgid "too many entries in unk cache - disabled\n"
-msgstr "unk ¥­¥ã¥Ã¥·¥å¤Î¥¨¥ó¥È¥ê¡¼¤¬Â¿¤¹¤®¤Þ¤¹ - Ìµ»ë\n"
+msgstr "unk¥­¥ã¥Ã¥·¥å¤Î¥¨¥ó¥È¥ê¡¼¤¬Â¿¤¹¤®¤Þ¤¹ - »ÈÍÑ¶Ø»ß\n"
 
 #: g10/getkey.c:1308 g10/getkey.c:1347
 msgid "RSA key cannot be used in this version\n"
-msgstr "¤³¤Î¥Ð¡¼¥¸¥ç¥ó¤Ç¤Ï RSA ¥­¡¼¤Ï»È¤¨¤Þ¤»¤ó\n"
+msgstr "¤³¤Î¥Ð¡¼¥¸¥ç¥ó¤Ç¤ÏRSA¸°¤Ï»È¤¨¤Þ¤»¤ó\n"
 
 #: g10/getkey.c:1310 g10/getkey.c:1349
 msgid "No key for user ID\n"
-msgstr "¥æ¡¼¥¶ ID ¤Î¸°¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "¥æ¡¼¥¶¡¼ID¤Î¸°¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/getkey.c:1388 g10/getkey.c:1428
 msgid "No user ID for key\n"
-msgstr "¸°¤Î¥æ¡¼¥¶ ID ¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "¸°¤Î¥æ¡¼¥¶¡¼ID¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/getkey.c:1628 g10/getkey.c:1675 g10/getkey.c:1731
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
-msgstr "Éû¸° %08lX ¤ò»ÈÍÑ¤·¤Þ¤¹ - ¼ç¸° %08lX ¤ÎÂåÍÑ\n"
+msgstr "Éû¸°%08lX¤ò¼ç¸°%08lX¤ËÂåÍÑ¤·¤Þ¤¹\n"
 
 #: g10/getkey.c:2050
-#, fuzzy
 msgid "[User id not found]"
-msgstr "%s: ¥æ¡¼¥¶¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó\n"
+msgstr "[¥æ¡¼¥¶¡¼id¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó]"
 
 #: g10/import.c:182
 #, c-format
 msgid "skipping block of type %d\n"
-msgstr "¥¿¥¤¥× %d ¤Î¥Ö¥í¥Ã¥¯¤ò¥¹¥­¥Ã¥×¤·¤Þ¤¹\n"
+msgstr "¥¿¥¤¥×%d¤Î¥Ö¥í¥Ã¥¯¤ò¥¹¥­¥Ã¥×¤·¤Þ¤¹\n"
 
 #: g10/import.c:189 g10/trustdb.c:1806 g10/trustdb.c:1847
 #, c-format
 msgid "%lu keys so far processed\n"
-msgstr "%lu ¸°¤Þ¤Ç½èÍý\n"
+msgstr "%lu¸°¤Þ¤Ç½èÍý\n"
 
 #: g10/import.c:194
 #, c-format
 msgid "error reading `%s': %s\n"
-msgstr "`%s' ¤ÎÆÉ¤ß¹þ¤ß¤Ë¼ºÇÔ: %s\n"
+msgstr "`%s'¤ÎÆÉ¹þ¤ß¥¨¥é¡¼: %s\n"
 
 #: g10/import.c:204
 #, c-format
 msgid "Total number processed: %lu\n"
-msgstr "½èÍý¿ô¤Î¹ç·×: %lu\n"
+msgstr "         ½èÍý¿ô¤Î¹ç·×: %lu\n"
 
 #: g10/import.c:206
-#, fuzzy, c-format
+#, c-format
 msgid "      skipped new keys: %lu\n"
-msgstr "            ¿·¤¿¤ÊÉû¸°: %lu\n"
+msgstr " ¥¹¥­¥Ã¥×¤·¤¿¿·¤·¤¤¸°: %lu\n"
 
 #: g10/import.c:209
 #, c-format
 msgid "          w/o user IDs: %lu\n"
-msgstr "         ¥æ¡¼¥¶ ID ¤Ê¤·: %lu\n"
+msgstr "       ¥æ¡¼¥¶¡¼ID¤Ê¤·: %lu\n"
 
 #: g10/import.c:211
 #, c-format
 msgid "              imported: %lu"
-msgstr "              ÆÉ¤ß¹þ¤ß: %lu"
+msgstr "               ÆÉ¹þ¤ß: %lu"
 
 #: g10/import.c:217
 #, c-format
 msgid "             unchanged: %lu\n"
-msgstr "              ÊÑ¹¹¤Ê¤·: %lu\n"
+msgstr "             ÊÑ¹¹¤Ê¤·: %lu\n"
 
 #: g10/import.c:219
 #, c-format
 msgid "          new user IDs: %lu\n"
-msgstr "       ¿·¤¿¤Ê¥æ¡¼¥¶ ID: %lu\n"
+msgstr "     ¿·¤·¤¤¥æ¡¼¥¶¡¼ID: %lu\n"
 
 #: g10/import.c:221
 #, c-format
 msgid "           new subkeys: %lu\n"
-msgstr "            ¿·¤¿¤ÊÉû¸°: %lu\n"
+msgstr "           ¿·¤·¤¤Éû¸°: %lu\n"
 
 #: g10/import.c:223
 #, c-format
 msgid "        new signatures: %lu\n"
-msgstr "            ¿·¤¿¤Ê½ðÌ¾: %lu\n"
+msgstr "           ¿·¤·¤¤½ðÌ¾: %lu\n"
 
 #: g10/import.c:225
 #, c-format
 msgid "   new key revocations: %lu\n"
-msgstr "        ¿·¤¿¤Ê¸°¤ÎÇË´þ: %lu\n"
+msgstr "       ¿·¤·¤¤¸°¤ÎÇË´þ: %lu\n"
 
 #: g10/import.c:227
 #, c-format
 msgid "      secret keys read: %lu\n"
-msgstr "      ÈëÌ©¸°¤ÎÆÉ¤ß½Ð¤·: %lu\n"
+msgstr "       ÈëÌ©¸°¤ÎÆÉ½Ð¤·: %lu\n"
 
 #: g10/import.c:229
 #, c-format
 msgid "  secret keys imported: %lu\n"
-msgstr "      ÈëÌ©¸°¤ÎÆÉ¤ß¹þ¤ß: %lu\n"
+msgstr "       ÈëÌ©¸°¤ÎÆÉ¹þ¤ß: %lu\n"
 
 #: g10/import.c:231
 #, c-format
 msgid " secret keys unchanged: %lu\n"
-msgstr "      ÊÑ¹¹¤ÎÌµ¤¤ÈëÌ©¸°: %lu\n"
+msgstr "       ÌµÊÑ¹¹¤ÎÈëÌ©¸°: %lu\n"
 
 #: g10/import.c:391 g10/import.c:590
 #, c-format
 msgid "key %08lX: no user ID\n"
-msgstr "¸° %08lX: ¥æ¡¼¥¶ ID ¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "¸°%08lX: ¥æ¡¼¥¶¡¼ID¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/import.c:405
 #, c-format
 msgid "key %08lX: no valid user IDs\n"
-msgstr "¸° %08lX: ¿®ÍÑ¤Ç¤­¤ë¥æ¡¼¥¶ ID ¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "¸°%08lX: ¿®ÍÑ¤Ç¤­¤ë¥æ¡¼¥¶¡¼ID¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/import.c:407
 msgid "this may be caused by a missing self-signature\n"
-msgstr "¼«¸Ê½ðÌ¾¤¬¤µ¤ì¤Æ¤¤¤Ê¤¤¤¿¤á¤Ç¤·¤ç¤¦\n"
+msgstr "¼«¸Ê½ðÌ¾¤Î¤Ê¤¤¤»¤¤¤Ç¤·¤ç¤¦\n"
 
 #: g10/import.c:418 g10/import.c:657
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
-msgstr "¸° %08lX: ¸ø³«¸°¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó: %s\n"
+msgstr "¸°%08lX: ¸ø³«¸°¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó: %s\n"
 
 #: g10/import.c:423
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: new key - skipped\n"
-msgstr "¸° %08lX: rfc2440 ¤Î¸°¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó - ¥¹¥­¥Ã¥×¤·¤Þ¤¹\n"
+msgstr "¸° %08lX: ¿·¤·¤¤¸°¤Ç¤¹ - ¥¹¥­¥Ã¥×\n"
 
 #: g10/import.c:431
 msgid "no default public keyring\n"
-msgstr "¥Ç¥Õ¥©¥ë¥È¤Î¸ø³«¸°¥ê¥ó¥°¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "´ûÄê¤Î¸ø³«¸°ÎØ¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/import.c:435 g10/openfile.c:230 g10/sign.c:295 g10/sign.c:615
 #, c-format
 msgid "writing to `%s'\n"
-msgstr "`%s' ¤Ø¤Î½ñ¤­½Ð¤·\n"
+msgstr "`%s'¤Ø¤Î½ñ½Ð¤·\n"
 
 #: g10/import.c:438 g10/import.c:496 g10/import.c:605 g10/import.c:706
 #, c-format
 msgid "can't lock keyring `%s': %s\n"
-msgstr "¸°¥ê¥ó¥° `%s' ¤Î¥í¥Ã¥¯¤¬¤Ç¤­¤Þ¤»¤ó: %s\n"
+msgstr "¸°ÎØ`%s'¤ò¥í¥Ã¥¯¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: g10/import.c:441 g10/import.c:499 g10/import.c:608 g10/import.c:709
 #, c-format
 msgid "error writing keyring `%s': %s\n"
-msgstr "¸°¥ê¥ó¥° `%s' ¤Î½ñ¤­¹þ¤ß¤Ë¼ºÇÔ: %s\n"
+msgstr "¸°ÎØ`%s'¤Î½ñ¹þ¤ß¥¨¥é¡¼: %s\n"
 
 #: g10/import.c:446
 #, c-format
 msgid "key %08lX: public key imported\n"
-msgstr "¸° %08lX: ¸ø³«¸°¤òÆÉ¤ß¹þ¤ß¤Þ¤·¤¿\n"
+msgstr "¸°%08lX: ¸ø³«¸°¤òÆÉ¤ß¹þ¤ß¤Þ¤·¤¿\n"
 
 #: g10/import.c:463
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
-msgstr "¸° %08lX: ²æ¡¹¤ÎÊÝÍ­¤¹¤ë¸°¤È°Û¤Ê¤ê¤Þ¤¹\n"
+msgstr "¸°%08lX: ¤³¤Á¤é¤ÎÊ£À½¤È¹ç¤¤¤Þ¤»¤ó\n"
 
 #: g10/import.c:472 g10/import.c:665
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
-msgstr "¸° %08lX: ¥ª¥ê¥¸¥Ê¥ë¤Î¸°¥Ö¥í¥Ã¥¯¤Ë°ÌÃÖ¤Ç¤­¤Þ¤»¤ó: %s\n"
+msgstr "¸°%08lX: ¸µ¤Î¸°¥Ö¥í¥Ã¥¯¤Ë°ÌÃÖ¤Å¤±¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: g10/import.c:478 g10/import.c:671
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
-msgstr "¸° %08lX: ¥ª¥ê¥¸¥Ê¥ë¤Î¸°¥Ö¥í¥Ã¥¯¤òÆÉ¤á¤Þ¤»¤ó: %s\n"
+msgstr "¸°%08lX: ¸µ¤Î¸°¥Ö¥í¥Ã¥¯¤òÆÉ¤ß¹þ¤á¤Þ¤»¤ó: %s\n"
 
 #: g10/import.c:505
 #, c-format
 msgid "key %08lX: 1 new user ID\n"
-msgstr "¸° %08lX: ¿·¤¿¤Ê¥æ¡¼¥¶ ID ¤ò 1 ¸Ä\n"
+msgstr "¸°%08lX: ¿·¤·¤¤¥æ¡¼¥¶¡¼ID¤ò1¸Ä\n"
 
 #: g10/import.c:508
 #, c-format
 msgid "key %08lX: %d new user IDs\n"
-msgstr "¸° %08lX: ¿·¤¿¤Ê¥æ¡¼¥¶ ID ¤ò %d ¸Ä\n"
+msgstr "¸°%08lX: ¿·¤·¤¤¥æ¡¼¥¶¡¼ID¤ò%d¸Ä\n"
 
 #: g10/import.c:511
 #, c-format
 msgid "key %08lX: 1 new signature\n"
-msgstr "¸° %08lX: ¿·¤¿¤Ê½ðÌ¾¤ò 1 ¸Ä\n"
+msgstr "¸°%08lX: ¿·¤·¤¤½ðÌ¾¤ò1¸Ä\n"
 
 #: g10/import.c:514
 #, c-format
 msgid "key %08lX: %d new signatures\n"
-msgstr "¸° %08lX: ¿·¤¿¤Ê½ðÌ¾¤ò %d ¸Ä\n"
+msgstr "¸°%08lX: ¿·¤·¤¤½ðÌ¾¤ò%d¸Ä\n"
 
 #: g10/import.c:517
 #, c-format
 msgid "key %08lX: 1 new subkey\n"
-msgstr "¸° %08lX: ¿·¤¿¤ÊÉû¸°¤ò 1 ¸Ä\n"
+msgstr "¸°%08lX: ¿·¤·¤¤Éû¸°¤ò1¸Ä\n"
 
 #: g10/import.c:520
 #, c-format
 msgid "key %08lX: %d new subkeys\n"
-msgstr "¸° %08lX: ¿·¤¿¤ÊÉû¸°¤ò %d ¸Ä\n"
+msgstr "¸°%08lX: ¿·¤·¤¤Éû¸°¤ò%d¸Ä\n"
 
 #: g10/import.c:530
 #, c-format
 msgid "key %08lX: not changed\n"
-msgstr "¸° %08lX: ÊÑ¹¹¤Ê¤·\n"
+msgstr "¸°%08lX: ÊÑ¹¹¤Ê¤·\n"
 
 #: g10/import.c:613
 #, c-format
 msgid "key %08lX: secret key imported\n"
-msgstr "¸° %08lX: ÈëÌ©¸°¤òÆÉ¤ß¹þ¤ß¤Þ¤·¤¿\n"
+msgstr "¸°%08lX: ÈëÌ©¸°¤òÆÉ¤ß¹þ¤ß¤Þ¤·¤¿\n"
 
 #. we can't merge secret keys
 #: g10/import.c:617
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
-msgstr "¸° %08lX: ´û¤ËÈëÌ©¸°¥ê¥ó¥°¤Ë¤¢¤ê¤Þ¤¹\n"
+msgstr "¸°%08lX: ´û¤ËÈëÌ©¸°ÎØ¤Ë¤¢¤ê¤Þ¤¹\n"
 
 #: g10/import.c:622
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
-msgstr "¸° %08lX: ÈëÌ©¸°¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó: %s\n"
+msgstr "¸°%08lX: ÈëÌ©¸°¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó: %s\n"
 
 #: g10/import.c:651
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
-msgstr "¸° %08lX: ¸ø³«¸°¤¬¤¢¤ê¤Þ¤»¤ó - ÇË´þ¾ÚÌÀ½ñ¤ÎÅ¬ÍÑ¤¬¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "¸°%08lX: ¸ø³«¸°¤¬¤¢¤ê¤Þ¤»¤ó - ÇË´þ¾ÚÌÀ½ñ¤òÅ¬ÍÑ¤Ç¤­¤Þ¤»¤ó\n"
 
 #: g10/import.c:682
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
-msgstr "¸° %08lX: Ìµ¸ú¤ÊÇË´þ¾ÚÌÀ½ñ: %s - µñÈÝ¤·¤Þ¤·¤¿\n"
+msgstr "¸°%08lX: Ìµ¸ú¤ÊÇË´þ¾ÚÌÀ½ñ: %s - µñÈÝ\n"
 
 #: g10/import.c:714
 #, c-format
 msgid "key %08lX: revocation certificate imported\n"
-msgstr "¸° %08lX: ÇË´þ¾ÚÌÀ½ñ¤òÆÉ¤ß¹þ¤ß¤Þ¤·¤¿\n"
+msgstr "¸°%08lX: ÇË´þ¾ÚÌÀ½ñ¤òÆÉ¤ß¹þ¤ß¤Þ¤·¤¿\n"
 
 #: g10/import.c:756
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
-msgstr "¸° %08lX: ½ðÌ¾¤ËÂÐ±þ¤¹¤ë¥æ¡¼¥¶ ID ¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "¸°%08lX: ½ðÌ¾¤ËÂÐ±þ¤¹¤ë¥æ¡¼¥¶¡¼ID¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/import.c:763 g10/import.c:787
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
-msgstr "¸° %08lX: ¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Ê¤¤¸ø³«¸°¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹\n"
+msgstr "¸°%08lX: ¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Ê¤¤¸ø³«¸°¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹\n"
 
 #: g10/import.c:764
 #, c-format
 msgid "key %08lX: invalid self-signature\n"
-msgstr "¸° %08lX: ¼«¸Ê½ðÌ¾¤¬Ìµ¸ú¤Ç¤¹\n"
+msgstr "¸°%08lX: Ìµ¸ú¤Ê¼«¸Ê½ðÌ¾¤Ç¤¹\n"
 
 #: g10/import.c:779
 #, c-format
 msgid "key %08lX: no subkey for key binding\n"
-msgstr "¸° %08lX: ¸°¤ËÂÐ±þ¤¹¤ëÉû¸°¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "¸°%08lX: ¸°¤ËÂÐ±þ¤¹¤ëÉû¸°¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/import.c:788
 #, c-format
 msgid "key %08lX: invalid subkey binding\n"
-msgstr "¸° %08lX: Ìµ¸ú¤ÊÉû¸°¤ÎÂÐ±þ¤Ç¤¹\n"
+msgstr "¸°%08lX: Ìµ¸ú¤ÊÉû¸°¤ÎÂÐ±þ¤Ç¤¹\n"
 
 #: g10/import.c:815
 #, c-format
 msgid "key %08lX: accepted non self-signed user ID '"
-msgstr "¸° %08lX: ¼õ¤±Æþ¤ì¤¿¼«¸Ê½ðÌ¾¤µ¤ì¤Æ¤¤¤Ê¤¤¥æ¡¼¥¶ ID '"
+msgstr "¸°%08lX: ¼õÍý¤·¤¿Ì¤¼«¸Ê½ðÌ¾¤Î¥æ¡¼¥¶¡¼ID '"
 
 #: g10/import.c:844
 #, c-format
 msgid "key %08lX: skipped user ID '"
-msgstr "¸° %08lX: ¥¹¥­¥Ã¥×¤·¤¿¥æ¡¼¥¶ ID '"
+msgstr "¸°%08lX: ¥¹¥­¥Ã¥×¤·¤¿¥æ¡¼¥¶¡¼ID '"
 
 #: g10/import.c:867
 #, c-format
 msgid "key %08lX: skipped subkey\n"
-msgstr "¸° %08lX: ¥¹¥­¥Ã¥×¤·¤¿Éû¸°\n"
+msgstr "¸°%08lX: ¥¹¥­¥Ã¥×¤·¤¿Éû¸°\n"
 
 #. here we violate the rfc a bit by still allowing
 #. * to import non-exportable signature when we have the
@@ -1925,37 +1965,37 @@ msgstr "¸° %08lX: ¥¹¥­¥Ã¥×¤·¤¿Éû¸°\n"
 #: g10/import.c:892
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
-msgstr "¸° %08lX: ½ñ¤­½Ð¤·ÉÔ²Ä¤Ê½ðÌ¾ (class %02x) - ¥¹¥­¥Ã¥×\n"
+msgstr "¸°%08lX: ½ñ½Ð¤·ÉÔ²Ä¤Ê½ðÌ¾ (¥¯¥é¥¹%02x) - ¥¹¥­¥Ã¥×\n"
 
 #: g10/import.c:901
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
-msgstr "¸° %08lX: ÇË´þ¾ÚÌÀ½ñ¤¬´Ö°ã¤Ã¤ÆÀßÄê¤µ¤ì¤Æ¤¤¤Þ¤¹ - ¥¹¥­¥Ã¥×\n"
+msgstr "¸°%08lX: ÇË´þ¾ÚÌÀ½ñ¤¬¸í¤Ã¤ÆÀßÄê¤µ¤ì¤Æ¤¤¤Þ¤¹ - ¥¹¥­¥Ã¥×\n"
 
 #: g10/import.c:909
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
-msgstr "¸° %08lX: Ìµ¸ú¤ÊÇË´þ¾ÚÌÀ½ñ: %s - ¥¹¥­¥Ã¥×\n"
+msgstr "¸°%08lX: Ìµ¸ú¤ÊÇË´þ¾ÚÌÀ½ñ: %s - ¥¹¥­¥Ã¥×\n"
 
 #: g10/import.c:1009
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
-msgstr "¸° %08lX: ½ÅÊ£¤·¤¿¥æ¡¼¥¶ ID ¤Î¸¡½Ð - ÄÉ²Ã\n"
+msgstr "¸°%08lX: ½ÅÊ£¤·¤¿¥æ¡¼¥¶¡¼ID¤Î¸¡½Ð - Ê»¹ç\n"
 
 #: g10/import.c:1060
 #, c-format
 msgid "key %08lX: revocation certificate added\n"
-msgstr "¸° %08lX: ÇË´þ¾ÚÌÀ½ñ¤ÎÄÉ²Ã\n"
+msgstr "¸°%08lX: ÇË´þ¾ÚÌÀ½ñ¤ÎÄÉ²Ã\n"
 
 #: g10/import.c:1174 g10/import.c:1227
 #, c-format
 msgid "key %08lX: our copy has no self-signature\n"
-msgstr "¸° %08lX: ²æ¡¹¤Î¥³¥Ô¡¼¤Ë¤Ï¼«¸Ê½ðÌ¾¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "¸°%08lX: ¤³¤Á¤é¤ÎÊ£À½¤Ë¤Ï¼«¸Ê½ðÌ¾¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/delkey.c:64 g10/keyedit.c:94
 #, c-format
 msgid "%s: user not found\n"
-msgstr "%s: ¥æ¡¼¥¶¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó\n"
+msgstr "%s: ¥æ¡¼¥¶¡¼¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:155
 msgid "[revocation]"
@@ -1967,64 +2007,64 @@ msgstr "[¼«¸Ê½ðÌ¾]"
 
 #: g10/keyedit.c:220
 msgid "1 bad signature\n"
-msgstr "Ìµ¸ú¤Ê½ðÌ¾ 1 ¸Ä\n"
+msgstr "Ìµ¸ú¤Ê½ðÌ¾1¸Ä\n"
 
 #: g10/keyedit.c:222
 #, c-format
 msgid "%d bad signatures\n"
-msgstr "Ìµ¸ú¤Ê½ðÌ¾ %d ¸Ä\n"
+msgstr "Ìµ¸ú¤Ê½ðÌ¾%d¸Ä\n"
 
 #: g10/keyedit.c:224
 msgid "1 signature not checked due to a missing key\n"
-msgstr "¸°¤¬Ìµ¤¤¤Î¤Ç 1 ¸Ä¤Î½ðÌ¾¤Ï¸¡¾Ú¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "¸°¤¬¤Ê¤¤¤¿¤á1¸Ä¤Î½ðÌ¾¤ò¸¡¾Ú¤·¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:226
 #, c-format
 msgid "%d signatures not checked due to missing keys\n"
-msgstr "¸°¤¬Ìµ¤¤¤Î¤Ç %d ¸Ä¤Î½ðÌ¾¤Ï¸¡¾Ú¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "¸°¤¬¤Ê¤¤¤¿¤á%d¸Ä¤Î½ðÌ¾¤ò¸¡¾Ú¤·¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:228
 msgid "1 signature not checked due to an error\n"
-msgstr "¸°¤¬Ìµ¤¤¤Î¤Ç 1 ¸Ä¤Î½ðÌ¾¤Ï¸¡¾Ú¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "¥¨¥é¡¼¤Î¤¿¤á1¸Ä¤Î½ðÌ¾¤ò¸¡¾Ú¤·¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:230
 #, c-format
 msgid "%d signatures not checked due to errors\n"
-msgstr "%d ¸Ä¤Î½ðÌ¾¤Ï¥¨¥é¡¼¤Ë¤è¤ê¸¡¾Ú¤µ¤ì¤Þ¤»¤ó\n"
+msgstr "¥¨¥é¡¼¤Î¤¿¤á%d¸Ä¤Î½ðÌ¾¤ò¸¡¾Ú¤·¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:232
 msgid "1 user ID without valid self-signature detected\n"
-msgstr "Í­¸ú¤Ê¼«¸Ê½ðÌ¾¤ÎÌµ¤¤¥æ¡¼¥¶ ID ¤¬ 1 ¸Ä¤¢¤ê¤Þ¤¹\n"
+msgstr "Í­¸ú¤Ê¼«¸Ê½ðÌ¾¤Î¤Ê¤¤¥æ¡¼¥¶¡¼ID¤ò1¸Ä¸¡½Ð\n"
 
 #: g10/keyedit.c:234
 #, c-format
 msgid "%d user IDs without valid self-signatures detected\n"
-msgstr "Í­¸ú¤Ê¼«¸Ê½ðÌ¾¤ÎÌµ¤¤¥æ¡¼¥¶ ID ¤¬ %d ¸Ä¤¢¤ê¤Þ¤¹\n"
+msgstr "Í­¸ú¤Ê¼«¸Ê½ðÌ¾¤Î¤Ê¤¤¥æ¡¼¥¶¡¼ID¤ò%d¸Ä¸¡½Ð\n"
 
 #. Fixme: see whether there is a revocation in which
 #. * case we should allow to sign it again.
 #: g10/keyedit.c:316
 #, c-format
 msgid "Already signed by key %08lX\n"
-msgstr "¸° %08lX ¤Ë¤è¤Ã¤Æ´û¤Ë½ðÌ¾¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
+msgstr "¸°%08lX¤Ç¤â¤¦½ðÌ¾¤·¤Æ¤¢¤ê¤Þ¤¹\n"
 
 #: g10/keyedit.c:324
 #, c-format
 msgid "Nothing to sign with key %08lX\n"
-msgstr "¸° %08lX ¤Ë¤è¤Ã¤Æ½ðÌ¾¤¹¤ë¤â¤Î¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "¸°%08lX¤Ç½ðÌ¾¤¹¤ë¤â¤Î¤Ï¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:333
 msgid ""
 "Are you really sure that you want to sign this key\n"
 "with your key: \""
-msgstr "ËÜÅö¤Ë ¤³¤Î¸°¤Ë¤¢¤Ê¤¿¤Î¸°¤Ç½ðÌ¾¤·¤ÆÎÉ¤¤¤Ç¤¹¤«: \""
+msgstr "ËÜÅö¤Ë¤³¤Î¸°¤Ë¤¢¤Ê¤¿¤Î¸°¤Ç½ðÌ¾¤·¤Æ¤è¤¤¤Ç¤¹¤«: \""
 
 #: g10/keyedit.c:342
 msgid ""
 "The signature will be marked as non-exportable.\n"
 "\n"
 msgstr ""
-"½ðÌ¾¤Ï½ñ¤­½Ð¤·ÉÔ²Ä¤ËÀßÄê¤µ¤ì¤Þ¤¹¡£\n"
+"½ðÌ¾¤Ï½ñ½Ð¤·ÉÔ²Ä¤ËÀßÄê¤µ¤ì¤Þ¤¹¡£\n"
 "\n"
 
 #: g10/keyedit.c:347
@@ -2041,9 +2081,8 @@ msgid "This key is not protected.\n"
 msgstr "¤³¤Î¸°¤ÏÊÝ¸î¤µ¤ì¤Æ¤¤¤Þ¤»¤ó¡£\n"
 
 #: g10/keyedit.c:431
-#, fuzzy
 msgid "Secret parts of primary key are not available.\n"
-msgstr "ÈëÌ©¸°¤¬¤¢¤ê¤Þ¤»¤ó"
+msgstr "¼ç¸°¤ÎÈëÌ©ÉôÊ¬¤¬ÆÀ¤é¤ì¤Þ¤»¤ó¡£\n"
 
 #: g10/keyedit.c:435
 msgid "Key is protected.\n"
@@ -2052,14 +2091,14 @@ msgstr "¸°¤ÏÊÝ¸î¤µ¤ì¤Æ¤¤¤Þ¤¹¡£\n"
 #: g10/keyedit.c:455
 #, c-format
 msgid "Can't edit this key: %s\n"
-msgstr "¤³¤Î¸°¤òÊÔ½¸¤¹¤ë¤³¤È¤Ï¤Ç¤­¤Þ¤»¤ó: %s\n"
+msgstr "¤³¤Î¸°¤ÏÊÔ½¸¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: g10/keyedit.c:460
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
 msgstr ""
-"¤³¤ÎÈëÌ©¸°¤ËÂÐ¤¹¤ë¿·¤·¤¤¥Ñ¥¹¥Õ¥ì¡¼¥º¤òÆþÎÏ¤·¤Æ²¼¤µ¤¤¡£\n"
+"¤³¤ÎÈëÌ©¸°¤Î¿·¤·¤¤¥Ñ¥¹¥Õ¥ì¡¼¥º¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 "\n"
 
 #: g10/keyedit.c:472
@@ -2067,7 +2106,8 @@ msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
 msgstr ""
-"¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬ÉÔÉ¬Í×¤Ê¤è¤¦¤Ç¤¹¤¬¡¢¤½¤ì¤Ï°­¤¤¹Í¤¨¤Ç¤¹!\n"
+"¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬ÉÔÉ¬Í×¤Ê¤è¤¦¤Ç¤¹¤¬¡¢\n"
+"¤ª¤½¤é¤¯¤½¤ì¤Ï¤í¤¯¤Ê¹Í¤¨¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó!\n"
 "\n"
 
 #: g10/keyedit.c:475
@@ -2116,7 +2156,7 @@ msgstr "list"
 
 #: g10/keyedit.c:586
 msgid "list key and user IDs"
-msgstr "¸°¤È¥æ¡¼¥¶ ID ¤Î°ìÍ÷"
+msgstr "¸°¤È¥æ¡¼¥¶¡¼ID¤Î°ìÍ÷"
 
 #: g10/keyedit.c:587
 msgid "l"
@@ -2128,7 +2168,7 @@ msgstr "uid"
 
 #: g10/keyedit.c:588
 msgid "select user ID N"
-msgstr "¥æ¡¼¥¶ ID N ¤ÎÁªÂò"
+msgstr "¥æ¡¼¥¶¡¼ID N¤ÎÁªÂò"
 
 #: g10/keyedit.c:589
 msgid "key"
@@ -2136,7 +2176,7 @@ msgstr "key"
 
 #: g10/keyedit.c:589
 msgid "select secondary key N"
-msgstr "Éû¸° N ¤ÎÁªÂò"
+msgstr "Éû¸°N¤ÎÁªÂò"
 
 #: g10/keyedit.c:590
 msgid "check"
@@ -2168,7 +2208,7 @@ msgstr "lsign"
 
 #: g10/keyedit.c:594
 msgid "sign the key locally"
-msgstr "¸°¤Ë½ñ¤­½Ð¤·ÉÔ²Ä¤Ê½ðÌ¾"
+msgstr "¸°¤ØÆâÉôÅª¤Ë½ðÌ¾"
 
 #: g10/keyedit.c:595
 msgid "debug"
@@ -2180,7 +2220,7 @@ msgstr "adduid"
 
 #: g10/keyedit.c:596
 msgid "add a user ID"
-msgstr "¥æ¡¼¥¶ ID ¤ÎÄÉ²Ã"
+msgstr "¥æ¡¼¥¶¡¼ID¤ÎÄÉ²Ã"
 
 #: g10/keyedit.c:597
 msgid "deluid"
@@ -2188,7 +2228,7 @@ msgstr "deluid"
 
 #: g10/keyedit.c:597
 msgid "delete user ID"
-msgstr "¥æ¡¼¥¶ ID ¤Î¾Ãµî"
+msgstr "¥æ¡¼¥¶¡¼ID¤Îºï½ü"
 
 #: g10/keyedit.c:598
 msgid "addkey"
@@ -2228,7 +2268,7 @@ msgstr "toggle"
 
 #: g10/keyedit.c:602
 msgid "toggle between secret and public key listing"
-msgstr "ÈëÌ©¸°¤È¸ø³«¸°°ìÍ÷¤ÎÀÚ¤êÂØ¤¨"
+msgstr "ÈëÌ©¸°¤È¸ø³«¸°¤Î°ìÍ÷¤ÎÀÚÂØ¤¨"
 
 #: g10/keyedit.c:604
 msgid "t"
@@ -2256,7 +2296,7 @@ msgstr "trust"
 
 #: g10/keyedit.c:607
 msgid "change the ownertrust"
-msgstr "¼«¸Ê½ðÌ¾¤ÎÊÑ¹¹"
+msgstr "½êÍ­¼Ô¿®ÍÑ¤ÎÊÑ¹¹"
 
 #: g10/keyedit.c:608
 msgid "revsig"
@@ -2280,7 +2320,7 @@ msgstr "disable"
 
 #: g10/keyedit.c:610
 msgid "disable a key"
-msgstr "¸°¤ò»ÈÍÑÉÔ²Ä¤Ë¤¹¤ë"
+msgstr "¸°¤Î»ÈÍÑ¤ò¶Ø»ß¤¹¤ë"
 
 #: g10/keyedit.c:611
 msgid "enable"
@@ -2288,17 +2328,17 @@ msgstr "enable"
 
 #: g10/keyedit.c:611
 msgid "enable a key"
-msgstr "¸°¤ò»ÈÍÑ²Ä¤Ë¤¹¤ë"
+msgstr "¸°¤Î»ÈÍÑ¤òµö²Ä¤¹¤ë"
 
 #: g10/delkey.c:110 g10/keyedit.c:631
 msgid "can't do that in batchmode\n"
-msgstr "¤½¤ì¤Ï¥Ð¥Ã¥Á¥â¡¼¥É¤Ç¤Ï¼Â¹Ô¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "¤½¤ì¤Ï¥Ð¥Ã¥Á¥â¡¼¥É¤Ç¤Ï¤Ç¤­¤Þ¤»¤ó\n"
 
 #. check that they match
 #. fixme: check that they both match
 #: g10/keyedit.c:669
 msgid "Secret key is available.\n"
-msgstr "ÈëÌ©¸°¤¬»ÈÍÑ¤Ç¤­¤Þ¤¹\n"
+msgstr "ÈëÌ©¸°¤¬»ÈÍÑ¤Ç¤­¤Þ¤¹¡£\n"
 
 #: g10/keyedit.c:698
 msgid "Command> "
@@ -2306,19 +2346,19 @@ msgstr "¥³¥Þ¥ó¥É> "
 
 #: g10/keyedit.c:728
 msgid "Need the secret key to do this.\n"
-msgstr "¤³¤ì¤ò¼Â¹Ô¤¹¤ë¤Ë¤ÏÈëÌ©¸°¤¬É¬Í×¤Ç¤¹¡£\n"
+msgstr "¤³¤Î¼Â¹Ô¤Ë¤ÏÈëÌ©¸°¤¬¤¤¤ê¤Þ¤¹¡£\n"
 
 #: g10/keyedit.c:732
 msgid "Please use the command \"toggle\" first.\n"
-msgstr ""
+msgstr "¤Þ¤º¡Ötoggle¡×¥³¥Þ¥ó¥É¤ò»È¤Ã¤Æ¤¯¤À¤µ¤¤\n"
 
 #: g10/keyedit.c:779
 msgid "Really sign all user IDs? "
-msgstr "Á´¤Æ¤Î¥æ¡¼¥¶ ID ¤Ë ËÜÅö¤Ë ½ðÌ¾¤·¤Þ¤¹¤«? "
+msgstr "ËÜÅö¤ËÁ´¥æ¡¼¥¶¡¼ID¤Ë½ðÌ¾¤·¤Þ¤¹¤«? "
 
 #: g10/keyedit.c:780
 msgid "Hint: Select the user IDs to sign\n"
-msgstr "¥Ò¥ó¥È: ½ðÌ¾¤¹¤ë¥æ¡¼¥¶ ID  ¤òÁªÂò\n"
+msgstr "¥³¥Ä: ¤Þ¤º½ðÌ¾¤¹¤ë¥æ¡¼¥¶¡¼ID¤òÁªÂò¤·¤Þ¤¹\n"
 
 #: g10/keyedit.c:812 g10/keyedit.c:994
 #, c-format
@@ -2327,39 +2367,39 @@ msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Î¹¹¿·¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/keyedit.c:823 g10/keyedit.c:844
 msgid "You must select at least one user ID.\n"
-msgstr "¾¯¤Ê¤¯¤È¤â 1 ¸Ä¤Î¥æ¡¼¥¶ ID ¤òÁªÂò¤·¤Æ²¼¤µ¤¤¡£\n"
+msgstr "¥æ¡¼¥¶¡¼ID¤ò¾¯¤Ê¤¯¤È¤â¤Ò¤È¤ÄÁªÂò¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/keyedit.c:825
 msgid "You can't delete the last user ID!\n"
-msgstr "ºÇ¸å¥æ¡¼¥¶ ID ¤Î½ðÌ¾¤Ïºï½ü¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "ºÇ¸å¤Î¥æ¡¼¥¶¡¼ID¤Ïºï½ü¤Ç¤­¤Þ¤»¤ó!\n"
 
 #: g10/keyedit.c:828
 msgid "Really remove all selected user IDs? "
-msgstr "ÁªÂò¤·¤¿¥æ¡¼¥¶ ID ¤ò ËÜÅö¤Ë ºï½ü¤·¤Þ¤¹¤«? "
+msgstr "ÁªÂò¤·¤¿Á´¥æ¡¼¥¶¡¼ID¤òËÜÅö¤Ëºï½ü¤·¤Þ¤¹¤«? "
 
 #: g10/keyedit.c:829
 msgid "Really remove this user ID? "
-msgstr "¤³¤Î¥æ¡¼¥¶ ID ¤ò ËÜÅö¤Ë ºï½ü¤·¤Þ¤¹¤«? "
+msgstr "¤³¤Î¥æ¡¼¥¶¡¼ID¤òËÜÅö¤Ëºï½ü¤·¤Þ¤¹¤«? "
 
 #: g10/keyedit.c:865 g10/keyedit.c:887
 msgid "You must select at least one key.\n"
-msgstr "¾¯¤Ê¤¯¤È¤â 1 ¸Ä¤Î¸°¤òÁªÂò¤·¤Æ²¼¤µ¤¤¡£\n"
+msgstr "¸°¤ò¾¯¤Ê¤¯¤È¤â¤Ò¤È¤ÄÁªÂò¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/keyedit.c:869
 msgid "Do you really want to delete the selected keys? "
-msgstr "ÁªÂò¤·¤¿¸°¤ò ËÜÅö¤Ë ºï½ü¤·¤Þ¤¹¤«? "
+msgstr "ÁªÂò¤·¤¿¸°¤òËÜÅö¤Ëºï½ü¤·¤Þ¤¹¤«? "
 
 #: g10/keyedit.c:870
 msgid "Do you really want to delete this key? "
-msgstr "¤³¤Î¸°¤ò ËÜÅö¤Ë ºï½ü¤·¤Þ¤¹¤«? "
+msgstr "¤³¤Î¸°¤òËÜÅö¤Ëºï½ü¤·¤Þ¤¹¤«? "
 
 #: g10/keyedit.c:891
 msgid "Do you really want to revoke the selected keys? "
-msgstr "ÁªÂò¤·¤¿¸°¤ò ËÜÅö¤Ë ÇË´þ¤·¤Þ¤¹¤«? "
+msgstr "ÁªÂò¤·¤¿¸°¤òËÜÅö¤ËÇË´þ¤·¤Þ¤¹¤«? "
 
 #: g10/keyedit.c:892
 msgid "Do you really want to revoke this key? "
-msgstr "¤³¤Î¸°¤ò ËÜÅö¤Ë ÇË´þ¤·¤Þ¤¹¤«? "
+msgstr "¤³¤Î¸°¤òËÜÅö¤ËÇË´þ¤·¤Þ¤¹¤«? "
 
 #: g10/keyedit.c:958
 msgid "Save changes? "
@@ -2372,49 +2412,48 @@ msgstr "ÊÝÂ¸¤»¤º¤Ë½ªÎ»¤·¤Þ¤¹¤«? "
 #: g10/keyedit.c:972
 #, c-format
 msgid "update failed: %s\n"
-msgstr "¹¹¿·¤Ë¼ºÇÔ: %s\n"
+msgstr "¹¹¿·¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/keyedit.c:979
 #, c-format
 msgid "update secret failed: %s\n"
-msgstr "ÈëÌ©¸°¤Î¹¹¿·¤Ë¼ºÇÔ: %s\n"
+msgstr "ÈëÌ©¸°¤Î¹¹¿·¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/keyedit.c:986
 msgid "Key not changed so no update needed.\n"
-msgstr "¸°¤ÏÊÑ¹¹¤µ¤ì¤Æ¤¤¤Þ¤»¤ó¤Î¤Ç¹¹¿·¤¹¤ëÉ¬Í×¤Ï¤¢¤ê¤Þ¤»¤ó¡£\n"
+msgstr "¸°¤ÏÌµÊÑ¹¹¤Ê¤Î¤Ç¹¹¿·¤Ï¤¤¤ê¤Þ¤»¤ó¡£\n"
 
 #: g10/keyedit.c:1001
 msgid "Invalid command  (try \"help\")\n"
-msgstr "Ìµ¸ú¤Ê¥³¥Þ¥ó¥É (\"help\" ¤ò¸«¤è)\n"
+msgstr "Ìµ¸ú¤Ê¥³¥Þ¥ó¥É (¡Öhelp¡×¤ò»²¾È)\n"
 
 #: g10/keyedit.c:1081 g10/keyedit.c:1107
 #, c-format
 msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
-msgstr ""
+msgstr "%s%c %4u%c/%08lX  ºîÀ®: %s ´ü¸Â: %s"
 
 #: g10/keyedit.c:1090
 #, c-format
 msgid " trust: %c/%c"
-msgstr ""
+msgstr " trust: %c/%c"
 
 #: g10/keyedit.c:1094
 msgid "This key has been disabled"
-msgstr "¤³¤Î¸°¤Ï»ÈÍÑÉÔ²Ä¤ËÀßÄê¤µ¤ì¤Æ¤¤¤Þ¤¹"
+msgstr "¤³¤Î¸°¤Ï»ÈÍÑ¶Ø»ß¤ËÀßÄê¤µ¤ì¤Æ¤¤¤Þ¤¹"
 
 #: g10/keyedit.c:1123
-#, fuzzy, c-format
+#, c-format
 msgid "rev! subkey has been revoked: %s\n"
-msgstr "¸° %08lX: Éû¸°¤ÏÇË´þºÑ¤ß¤Ç¤¹!\n"
+msgstr "rev! Éû¸°¤ÏÇË´þºÑ¤ß¤Ç¤¹: %s\n"
 
 #: g10/keyedit.c:1126
-#, fuzzy
 msgid "rev- faked revocation found\n"
-msgstr "        ¿·¤¿¤Ê¸°¤ÎÇË´þ: %lu\n"
+msgstr "rev- ¤Ç¤Ã¤Á¤¢¤²¤ÎÇË´þ¤òÈ¯¸«\n"
 
 #: g10/keyedit.c:1128
 #, c-format
 msgid "rev? problem checking revocation: %s\n"
-msgstr ""
+msgstr "rev? ÇË´þ³ÎÇ§¾ã³²: %s\n"
 
 #: g10/keyedit.c:1366
 msgid "Delete this good signature? (y/N/q)"
@@ -2426,21 +2465,21 @@ msgstr "¤³¤ÎÌµ¸ú¤Ê½ðÌ¾¤òºï½ü¤·¤Þ¤¹¤«? (y/N/q)"
 
 #: g10/keyedit.c:1374
 msgid "Delete this unknown signature? (y/N/q)"
-msgstr "¤³¤ÎÉÔÌÀ¤Ê½ðÌ¾¤òºï½ü¤·¤Þ¤¹¤«? (y/N/q)"
+msgstr "¤³¤ÎÌ¤ÃÎ¤Î½ðÌ¾¤òºï½ü¤·¤Þ¤¹¤«? (y/N/q)"
 
 #: g10/keyedit.c:1380
 msgid "Really delete this self-signature? (y/N)"
-msgstr "¤³¤Î¼«¸Ê½ðÌ¾¤ò ËÜÅö¤Ë ºï½ü¤·¤Þ¤¹¤«? (y/N)"
+msgstr "¤³¤Î¼«¸Ê½ðÌ¾¤òËÜÅö¤Ëºï½ü¤·¤Þ¤¹¤«? (y/N)"
 
 #: g10/keyedit.c:1394
 #, c-format
 msgid "Deleted %d signature.\n"
-msgstr "%d ¸Ä¤Î½ðÌ¾¤òºï½ü¤·¤Þ¤·¤¿¡£\n"
+msgstr "%d¸Ä¤Î½ðÌ¾¤òºï½ü¤·¤Þ¤·¤¿¡£\n"
 
 #: g10/keyedit.c:1395
 #, c-format
 msgid "Deleted %d signatures.\n"
-msgstr "%d ¸Ä¤Î½ðÌ¾¤òºï½ü¤·¤Þ¤·¤¿¡£\n"
+msgstr "%d¸Ä¤Î½ðÌ¾¤òºï½ü¤·¤Þ¤·¤¿¡£\n"
 
 #: g10/keyedit.c:1398
 msgid "Nothing deleted.\n"
@@ -2448,11 +2487,11 @@ msgstr "²¿¤âºï½ü¤·¤Æ¤¤¤Þ¤»¤ó¡£\n"
 
 #: g10/keyedit.c:1467
 msgid "Please remove selections from the secret keys.\n"
-msgstr "ÈëÌ©¸°¤ÎÁªÂò¤òºï½ü¤·¤Æ²¼¤µ¤¤¡£\n"
+msgstr "ÈëÌ©¸°¤ÎÁªÂò¤ò¤È¤¤¤Æ¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/keyedit.c:1473
 msgid "Please select at most one secondary key.\n"
-msgstr "Â¿¤¯¤Æ¤â 1 ¸Ä¤ÎÉû¸°¤òÁªÂò¤·¤Æ²¼¤µ¤¤¡£\n"
+msgstr "¹â¡¹1¸Ä¤ÎÉû¸°¤òÁªÂò¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/keyedit.c:1477
 msgid "Changing expiration time for a secondary key.\n"
@@ -2464,25 +2503,25 @@ msgstr "¼ç¸°¤ÎÍ­¸ú´ü¸Â¤òÊÑ¹¹¤·¤Þ¤¹¡£\n"
 
 #: g10/keyedit.c:1521
 msgid "You can't change the expiration date of a v3 key\n"
-msgstr "v3 ¸°¤ÎÍ­¸ú´ü¸Â¤òÊÑ¹¹¤¹¤ë¤³¤È¤¬¤Ç¤­¤Þ¤¹\n"
+msgstr "v3¸°¤ÎÍ­¸ú´ü¸Â¤ÏÊÑ¹¹¤Ç¤­¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:1537
 msgid "No corresponding signature in secret ring\n"
-msgstr "ÈëÌ©¸°¥ê¥ó¥°¤ËÂÐ±þ¤¹¤ë½ðÌ¾¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "ÈëÌ©¸°ÎØ¤ËÂÐ±þ¤¹¤ë½ðÌ¾¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:1598
 #, c-format
 msgid "No user ID with index %d\n"
-msgstr "%d ÈÖ¤Î¥æ¡¼¥¶ ID ¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "%dÈÖ¤Î¥æ¡¼¥¶¡¼ID¤Ï¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:1644
 #, c-format
 msgid "No secondary key with index %d\n"
-msgstr "%d ÈÖ¤ÎÉû¸°¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "%dÈÖ¤ÎÉû¸°¤Ï¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/keyedit.c:1742
 msgid "user ID: \""
-msgstr "¥æ¡¼¥¶ ID: \""
+msgstr "¥æ¡¼¥¶¡¼ID: \""
 
 #: g10/keyedit.c:1745
 #, c-format
@@ -2491,82 +2530,80 @@ msgid ""
 "signed with your key %08lX at %s\n"
 msgstr ""
 "\"\n"
-"¤¢¤Ê¤¿¤Î¸° %08lX ¤Ç %s ¤Ë½ðÌ¾¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
+"¤¢¤Ê¤¿¤Î¸°%08lX¤Ç%s¤Ë½ðÌ¾¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
 
 #: g10/keyedit.c:1749
 msgid "Create a revocation certificate for this signature? (y/N)"
-msgstr "¤³¤Î½ðÌ¾¤ËÂÐ¤¹¤ëÇË´þ¾ÚÌÀ½ñ¤òºîÀ®¤·¤Þ¤¹¤«? (y/N)"
+msgstr "¤³¤Î½ðÌ¾¤Ë¤¿¤¤¤¹¤ëÇË´þ¾ÚÌÀ½ñ¤òºî¤ê¤Þ¤¹¤«? (y/N)"
 
 #. FIXME: detect duplicates here
 #: g10/keyedit.c:1773
 msgid "You have signed these user IDs:\n"
-msgstr "¤³¤ì¤é¤Î¥æ¡¼¥¶ ID ¤Ë½ðÌ¾¤·¤Þ¤·¤¿:\n"
+msgstr "¤³¤ì¤é¤Î¥æ¡¼¥¶¡¼ID¤Ë½ðÌ¾¤·¤Þ¤·¤¿:\n"
 
 #: g10/keyedit.c:1787 g10/keyedit.c:1822
 #, c-format
 msgid "   signed by %08lX at %s\n"
-msgstr "   %08lX ¤Ë¤è¤Ã¤Æ %s ¤Ë½ðÌ¾¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
+msgstr "   %08lX¤Ç%s¤Ë½ðÌ¾¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
 
 #: g10/keyedit.c:1792
 #, c-format
 msgid "   revoked by %08lX at %s\n"
-msgstr "   %08lX ¤Ë¤è¤Ã¤Æ %s ¤ËÇË´þ¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
+msgstr "   %08lX¤Ç%s¤ËÇË´þ¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
 
 #: g10/keyedit.c:1812
 msgid "You are about to revoke these signatures:\n"
-msgstr "¤¢¤Ê¤¿¤Ï¤³¤ì¤é¤Î½ðÌ¾¤òÇË´þ¤¹¤ë¤«ÌÂ¤Ã¤Æ¤¤¤Þ¤¹:\n"
+msgstr "¤³¤ì¤é¤Î½ðÌ¾¤òÇË´þ¤·¤è¤¦¤È¤·¤Æ¤¤¤Þ¤¹:\n"
 
 #: g10/keyedit.c:1830
 msgid "Really create the revocation certificates? (y/N)"
-msgstr "ÇË´þ¾ÚÌÀ½ñ¤ò ËÜÅö¤Ë ºîÀ®¤·¤Þ¤¹¤«? (y/N)"
+msgstr "ÇË´þ¾ÚÌÀ½ñ¤òËÜÅö¤Ëºî¤ê¤Þ¤¹¤«? (y/N)"
 
 #: g10/keyedit.c:1859
 msgid "no secret key\n"
 msgstr "ÈëÌ©¸°¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/keylist.c:158
-#, fuzzy
 msgid "invalid"
-msgstr "Ìµ¸ú¤ÊÁõ¹Ã¤Ç¤¹"
+msgstr "Ìµ¸ú"
 
 #: g10/keylist.c:178
-#, fuzzy
 msgid "revoked"
-msgstr "revkey"
+msgstr "ÇË´þºÑ¤ß"
 
 #. of subkey
 #: g10/keylist.c:400 g10/mainproc.c:790
-#, fuzzy, c-format
+#, c-format
 msgid " [expires: %s]"
-msgstr "¸°¤Ï %s ¤Ë¤Æ´ü¸ÂÀÚ¤ì¤Ë¤Ê¤ê¤Þ¤¹\n"
+msgstr " [Í­¸ú´ü¸Â: %s]"
 
 #: g10/mainproc.c:240
 #, c-format
 msgid "public key is %08lX\n"
-msgstr "¸ø³«¸°¤Ï %08lX ¤Ç¤¹\n"
+msgstr "¸ø³«¸°¤Ï%08lX¤Ç¤¹\n"
 
 #: g10/mainproc.c:284
 msgid "public key encrypted data: good DEK\n"
-msgstr "¸ø³«¸°¤Ç°Å¹æ²½¤µ¤ì¤¿¥Ç¡¼¥¿: Àµ¤·¤¤ DEK ¤Ç¤¹\n"
+msgstr "¸ø³«¸°¤Ç°Å¹æ²½¤µ¤ì¤¿¥Ç¡¼¥¿: Àµ¤·¤¤DEK¤Ç¤¹\n"
 
 #: g10/mainproc.c:326
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
-msgstr "%u ¥Ó¥Ã¥È %s ¸°, ID %08lX ¤Ë¤è¤Ã¤Æ°Å¹æ²½¤µ¤ì¤Þ¤·¤¿ %s\n"
+msgstr "%u-¥Ó¥Ã¥È%s¸°, ID %08lX¤Ç°Å¹æ²½%s¤Ë¤Ç¤­¤Þ¤·¤¿\n"
 
 #: g10/mainproc.c:336
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
-msgstr "%s ¸°, ID %08lX ¤Ë¤è¤Ã¤Æ°Å¹æ²½¤µ¤ì¤Þ¤·¤¿\n"
+msgstr "%s¸°, ID %08lX¤Ç°Å¹æ²½¤µ¤ì¤Þ¤·¤¿\n"
 
 #: g10/mainproc.c:342
 msgid "no secret key for decryption available\n"
-msgstr "Éü¹æ¤ËÉ¬Í×¤ÊÈëÌ©¸°¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "Éü¹æ¤ËÉ¬Í×¤ÊÈëÌ©¸°¤¬ÆÀ¤é¤ì¤Þ¤»¤ó\n"
 
 #: g10/mainproc.c:351
 #, c-format
 msgid "public key decryption failed: %s\n"
-msgstr "¸ø³«¸°¤ÎÉü¹æ¤Ë¼ºÇÔ: %s\n"
+msgstr "¸ø³«¸°¤ÎÉü¹æ¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/mainproc.c:388
 msgid "decryption okay\n"
@@ -2579,11 +2616,11 @@ msgstr "·Ù¹ð: °Å¹æ²½¤µ¤ì¤¿¥á¥Ã¥»¡¼¥¸¤Ï²þãâ¤µ¤ì¤Æ¤¤¤Þ¤¹!\n"
 #: g10/mainproc.c:398
 #, c-format
 msgid "decryption failed: %s\n"
-msgstr "Éü¹æ¤Ë¼ºÇÔ: %s\n"
+msgstr "Éü¹æ¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/mainproc.c:417
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
-msgstr "Ãí°Õ: Á÷¿®¼Ô¤Ï¡ÖÆÉ¤ß½ª¤¨¤¿¤éºï½ü¤¹¤ë¡×¤è¤¦¤Ëµá¤á¤Æ¤¤¤Þ¤¹\n"
+msgstr "Ãí°Õ: Á÷¿®¼Ô¤Ï¡ÖÆâ½ï¤Ë¤¹¤ë¡×¤è¤¦¤Ëµá¤á¤Æ¤¤¤Þ¤¹\n"
 
 #: g10/mainproc.c:419
 #, c-format
@@ -2608,17 +2645,17 @@ msgstr "¥Ý¥ê¥·¡¼: "
 
 #: g10/mainproc.c:1121
 msgid "signature verification suppressed\n"
-msgstr "½ðÌ¾¤Î¸¡¾Ú¤¬¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "½ðÌ¾¤Î¸¡¾Ú¤ò¾ÊÎ¬\n"
 
 #: g10/mainproc.c:1158
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
-msgstr "%.*s ¤Î %s ¸° ID %08lX ¤Ë¤è¤ë½ðÌ¾\n"
+msgstr "%.*s ¤Î%s¸°ID %08lX¤Ë¤è¤ë½ðÌ¾\n"
 
 #. just in case that we have no userid
 #: g10/mainproc.c:1184 g10/mainproc.c:1195
 msgid "BAD signature from \""
-msgstr "ÉÔÀµ¤Ê½ðÌ¾: \""
+msgstr "ÉÔÀµ¤Ê ½ðÌ¾: \""
 
 #: g10/mainproc.c:1185 g10/mainproc.c:1196
 msgid "Good signature from \""
@@ -2626,12 +2663,12 @@ msgstr "Àµ¤·¤¤½ðÌ¾: \""
 
 #: g10/mainproc.c:1187
 msgid "                aka \""
-msgstr "                ÊÌÌ¾ \""
+msgstr "               ÊÌÌ¾ \""
 
 #: g10/mainproc.c:1243
 #, c-format
 msgid "Can't check signature: %s\n"
-msgstr "½ðÌ¾¤Î¸¡¾Ú¤¬¤Ç¤­¤Þ¤»¤ó: %s\n"
+msgstr "½ðÌ¾¤ò¸¡¾Ú¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: g10/mainproc.c:1318
 #, c-format
@@ -2640,16 +2677,16 @@ msgstr "¥¯¥é¥¹0x%02x¤ÎÆÈÎ©½ðÌ¾\n"
 
 #: g10/mainproc.c:1369
 msgid "old style (PGP 2.x) signature\n"
-msgstr "¸Å¤¤·Á¼° (PGP 2.x) ¤Ë¤è¤ë½ðÌ¾\n"
+msgstr "¸Å¤¤·Á¼° (PGP 2.x) ¤Î½ðÌ¾\n"
 
 #: g10/mainproc.c:1374
 msgid "invalid root packet detected in proc_tree()\n"
-msgstr "proc_tree() ¤ÎÃæ¤ËÌµ¸ú¤Ê¥Ñ¥±¥Ã¥È¤¬¸¡½Ð¤µ¤ì¤Þ¤·¤¿\n"
+msgstr "proc_tree() ¤ÎÃæ¤ËÌµ¸ú¤Ê¥Ñ¥±¥Ã¥È¤ò¸¡½Ð¤·¤Þ¤·¤¿\n"
 
 #: g10/misc.c:97
 #, c-format
 msgid "can't disable core dumps: %s\n"
-msgstr "¥³¥¢¥À¥ó¥×¤òÌµ¸ú¤Ë¤Ç¤­¤Þ¤»¤ó: %s\n"
+msgstr "¥³¥¢¡¦¥À¥ó¥×¤òÌµ¸ú¤Ë¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: g10/misc.c:207
 msgid "Experimental algorithms should not be used!\n"
@@ -2657,17 +2694,19 @@ msgstr "¼Â¸³Ãæ¤Î¥¢¥ë¥´¥ê¥º¥à¤Ï»ÈÍÑ¤¹¤Ù¤­¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó!\n"
 
 #: g10/misc.c:234
 msgid "this cipher algorithm is deprecated; please use a more standard one!\n"
-msgstr "¤³¤Î°Å¹æ¥¢¥ë¥´¥ê¥º¥à¤ÏÈ¿ÂÐ¤µ¤ì¤Æ¤¤¤Þ¤¹¡£°ìÈÌÅª¤ÊÊýË¡¤òÍÑ¤¤¤Æ²¼¤µ¤¤!\n"
+msgstr ""
+"¤³¤Î°Å¹æ¥¢¥ë¥´¥ê¥º¥à¤ÏÈ¿ÂÐ¤µ¤ì¤Æ¤¤¤Þ¤¹¡£\n"
+"¤â¤Ã¤ÈÉ¸½àÅª¤Ê¥¢¥ë¥´¥ê¥º¥à¤òÍÑ¤¤¤Æ¤¯¤À¤µ¤¤!\n"
 
 #: g10/parse-packet.c:119
 #, c-format
 msgid "can't handle public key algorithm %d\n"
-msgstr "¸ø³«¸°¤Î¥¢¥ë¥´¥ê¥º¥à %d ¤Ï»ÈÍÑ¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "¸ø³«¸°¤Î¥¢¥ë¥´¥ê¥º¥à%d¤Ï»ÈÍÑ¤Ç¤­¤Þ¤»¤ó\n"
 
 #: g10/parse-packet.c:991
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
-msgstr "subpacket of type %d has critical bit set\n"
+msgstr "¥¿¥¤¥×%d¤Î²¼°Ì¥Ñ¥±¥Ã¥È¤Ë¥¯¥ê¥Æ¥£¥«¥ë¡¦¥Ó¥Ã¥È¤òÈ¯¸«\n"
 
 #: g10/passphrase.c:159
 msgid ""
@@ -2676,22 +2715,22 @@ msgid ""
 "user: \""
 msgstr ""
 "\n"
-"¼¡¤Î¥æ¡¼¥¶¤Î¥í¥Ã¥¯¤ò²ò½ü¤¹¤ë¤Ë¤Ï¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬É¬Í×¤Ç¤¹\n"
-"¥æ¡¼¥¶: \""
+"¼¡¤Î¥æ¡¼¥¶¡¼¤ÎÈëÌ©¸°¤Î¥í¥Ã¥¯¤ò²ò½ü¤¹¤ë¤Ë¤Ï\n"
+"¥Ñ¥¹¥Õ¥ì¡¼¥º¤¬¤¤¤ê¤Þ¤¹: \""
 
 #: g10/passphrase.c:168
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
-msgstr "%u ¥Ó¥Ã¥È %s ¸°, ID %08lX ¤¬ºîÀ®¤µ¤ì¤Þ¤·¤¿ %s"
+msgstr "%u¥Ó¥Ã¥È%s¸°, ID %08lXºîÀ®ÆüÉÕ¤Ï%s"
 
 #: g10/passphrase.c:173
 #, c-format
 msgid " (main key ID %08lX)"
-msgstr " (¼ç¸° ID %08lX)"
+msgstr " (¼ç¸°ID %08lX)"
 
 #: g10/passphrase.c:190
 msgid "can't query password in batchmode\n"
-msgstr "¥Ð¥Ã¥Á¥â¡¼¥É¤Ç¤Ï¥Ñ¥¹¥ï¡¼¥É¤ÎÌä¤¤¹ç¤ï¤»¤¬¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "¥Ð¥Ã¥Á¥â¡¼¥É¤Ç¤Ï¥Ñ¥¹¥ï¡¼¥É¤ÎÌä¹ç¤»¤¬¤Ç¤­¤Þ¤»¤ó\n"
 
 #: g10/passphrase.c:194
 msgid "Enter passphrase: "
@@ -2704,8 +2743,8 @@ msgstr "¥Ñ¥¹¥Õ¥ì¡¼¥º¤òºÆÆþÎÏ: "
 #: g10/plaintext.c:67
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
-"¥Ç¡¼¥¿¤ÏÊÝÂ¸¤µ¤ì¤Æ¤¤¤Þ¤»¤ó¡£ÊÝÂ¸¤¹¤ë¤Ë¤Ï \"--output\" "
-"¥ª¥×¥·¥ç¥ó¤ò»ÈÍÑ¤·¤Æ²¼¤µ¤¤¡£\n"
+"¥Ç¡¼¥¿¤ÏÊÝÂ¸¤µ¤ì¤Æ¤¤¤Þ¤»¤ó¡£\n"
+"ÊÝÂ¸¤¹¤ë¤Ë¤Ï¡Ö--output¡×¥ª¥×¥·¥ç¥ó¤ò»ÈÍÑ¤·¤Æ¤¯¤À¤µ¤¤\n"
 
 #: g10/plaintext.c:324
 msgid "Detached signature.\n"
@@ -2713,141 +2752,140 @@ msgstr "Ê¬Î¥½ðÌ¾¡£\n"
 
 #: g10/plaintext.c:328
 msgid "Please enter name of data file: "
-msgstr "¥Ç¡¼¥¿¥Õ¥¡¥¤¥ë¤ÎÌ¾Á°¤òÆþÎÏ: "
+msgstr "¥Ç¡¼¥¿¡¦¥Õ¥¡¥¤¥ë¤ÎÌ¾Á°¤òÆþÎÏ: "
 
 #: g10/plaintext.c:349
 msgid "reading stdin ...\n"
-msgstr "É¸½àÆþÎÏ¤è¤êÆÉ¤ß¹þ¤ßÃæ ...\n"
+msgstr "É¸½àÆþÎÏ¤è¤êÆÉ¹þ¤ßÃæ ...\n"
 
 #: g10/plaintext.c:392
 #, c-format
 msgid "can't open signed data `%s'\n"
-msgstr "½ðÌ¾¤µ¤ì¤¿¥Ç¡¼¥¿ `%s' ¤¬³«¤±¤Þ¤»¤ó\n"
+msgstr "½ðÌ¾¤µ¤ì¤¿¥Ç¡¼¥¿`%s'¤¬³«¤±¤Þ¤»¤ó\n"
 
 #: g10/pubkey-enc.c:76
 #, c-format
 msgid "anonymous receiver; trying secret key %08lX ...\n"
-msgstr "ÉÔÆÃÄê¤Î¼õ¿®¼ÔÍÑ¤Ç¤¹¡£ÈëÌ©¸° %08lX ¤òÍÑ¤¤¤Þ¤¹ ...\n"
+msgstr "Æ¿Ì¾¤Î¼õ¿®¼ÔÍÑ¤Ç¤¹¡£ÈëÌ©¸°%08lX¤òÍÑ¤¤¤Þ¤¹ ...\n"
 
 #: g10/pubkey-enc.c:82
 msgid "okay, we are the anonymous recipient.\n"
-msgstr "½ªÎ»¡£ÉÔÆÃÄê¤Î¼õ¿®¼ÔÍÑ¤Ç¤¹¡£\n"
+msgstr "½ªÎ»¡£Æ¿Ì¾¤Î¼õ¿®¼ÔÍÑ¤Ç¤¹¡£\n"
 
 #: g10/pubkey-enc.c:134
 msgid "old encoding of the DEK is not supported\n"
-msgstr "DEK ¤Ë¤è¤ëµì¼°¤Î°Å¹æ¤Ï¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Þ¤»¤ó\n"
+msgstr "DEK¤Ë¤è¤ëµì¼°¤Î°Å¹æ¤Ï¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Þ¤»¤ó\n"
 
 #: g10/pubkey-enc.c:153
-#, fuzzy, c-format
+#, c-format
 msgid "cipher algorithm %d is unknown or disabled\n"
-msgstr "ÊÝ¸î¥¢¥ë¥´¥ê¥º¥à %d ¤Ï¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Þ¤»¤ó\n"
+msgstr "ÊÝ¸î¥¢¥ë¥´¥ê¥º¥à%d¤ÏÌ¤ÃÎ¤«»ÈÍÑÉÔ²Ä¤Ç¤¹\n"
 
 #: g10/pubkey-enc.c:192
 #, c-format
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
-msgstr "Ãí°Õ: °Å¹æ¥¢¥ë¥´¥ê¥º¥à %d ¤ÏÍ¥Àè½ç¤ËÆþ¤Ã¤Æ¤¤¤Þ¤»¤ó\n"
+msgstr "Ãí°Õ: °Å¹æ¥¢¥ë¥´¥ê¥º¥à%d¤ÏÍ¥Àè½ç¤ËÆþ¤Ã¤Æ¤¤¤Þ¤»¤ó\n"
 
 #: g10/pubkey-enc.c:198
-#, fuzzy, c-format
+#, c-format
 msgid "NOTE: secret key %08lX expired at %s\n"
-msgstr "Ãí°Õ: ½ðÌ¾¤Î¸°¤Ï´ü¸ÂÀÚ¤ì¤Ç¤¹ %s\n"
+msgstr "Ãí°Õ: ÈëÌ©¸°%08lX¤Ï%s¤Ç´ü¸ÂÀÚ¤ì¤Ç¤¹\n"
 
 #: g10/hkp.c:72
 #, c-format
 msgid "requesting key %08lX from %s ...\n"
-msgstr ""
+msgstr "¸°%08lX¤ò%s¤ËÍ×µá ...\n"
 
 #: g10/hkp.c:85
-#, fuzzy, c-format
+#, c-format
 msgid "can't get key from keyserver: %s\n"
-msgstr "¸°¥µ¡¼¥Ð¡¼¤«¤é¸°¤òÆÉ¤ß¹þ¤à"
+msgstr "¸°¥µ¡¼¥Ð¡¼¤«¤é¸°¤òÆÉ¤ß¹þ¤á¤Þ¤»¤ó: %s\n"
 
 #: g10/hkp.c:109 g10/hkp.c:148
 msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
+msgstr "´ûÃÎ¤Î¸°¥µ¡¼¥Ð¡¼¤Ï¤¢¤ê¤Þ¤»¤ó (--keyserver¥ª¥×¥·¥ç¥ó¤ò»È¤¤¤Þ¤·¤ç¤¦)\n"
 
 #: g10/hkp.c:117
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not a valid key ID\n"
-msgstr "%s ¤ÏÀµ¤·¤¤Ê¸»ú¥³¡¼¥É¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "%s: Àµ¤·¤¤¸°ID¤Ç¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/hkp.c:170
-#, fuzzy, c-format
+#, c-format
 msgid "can't connect to `%s': %s\n"
-msgstr "`%s' ¤¬³«¤±¤Þ¤»¤ó: %s\n"
+msgstr "`%s'¤ØÀÜÂ³¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: g10/hkp.c:194
-#, fuzzy, c-format
+#, c-format
 msgid "error sending to `%s': %s\n"
-msgstr "`%s' ¤ÎÆÉ¤ß¹þ¤ß¤Ë¼ºÇÔ: %s\n"
+msgstr "`%s'¤Ø¤ÎÁ÷¿®¥¨¥é¡¼: %s\n"
 
 #: g10/hkp.c:206
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
-msgstr ""
+msgstr "`%s'¤Ø¤ÎÁ÷¿®¤ËÀ®¸ù (¾õÂÖ=%u)\n"
 
 #: g10/hkp.c:209
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
-msgstr ""
+msgstr "`%s'¤Ø¤ÎÁ÷¿®¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: ¾õÂÖ=%u\n"
 
 #: g10/seckey-cert.c:53
-#, fuzzy
 msgid "secret key parts are not available\n"
-msgstr "ÈëÌ©¸°¤¬¤¢¤ê¤Þ¤»¤ó"
+msgstr "ÈëÌ©ÉôÊ¬¤¬ÆÀ¤é¤ì¤Þ¤»¤ó\n"
 
 #: g10/seckey-cert.c:59
 #, c-format
 msgid "protection algorithm %d is not supported\n"
-msgstr "ÊÝ¸î¥¢¥ë¥´¥ê¥º¥à %d ¤Ï¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Þ¤»¤ó\n"
+msgstr "ÊÝ¸î¥¢¥ë¥´¥ê¥º¥à%d¤Ï¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Þ¤»¤ó\n"
 
 #: g10/seckey-cert.c:184
 msgid "Invalid passphrase; please try again ...\n"
-msgstr "Ìµ¸ú¤Ê¥Ñ¥¹¥Õ¥ì¡¼¥º¤Ç¤¹¡£ºÆÆþÎÏ¤·¤Æ²¼¤µ¤¤ ...\n"
+msgstr "Ìµ¸ú¤Ê¥Ñ¥¹¥Õ¥ì¡¼¥º¤Ç¤¹¡£ºÆÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤ ...\n"
 
 #: g10/seckey-cert.c:240
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
-msgstr "·Ù¹ð: ¼å¤¤¸°¤¬¸¡½Ð¤µ¤ì¤Þ¤·¤¿¡£¥Ñ¥¹¥Õ¥ì¡¼¥º¤òÊÑ¹¹¤·¤Æ²¼¤µ¤¤¡£\n"
+msgstr "·Ù¹ð: ¼å¤¤¸°¤ò¸¡½Ð¤·¤Þ¤·¤¿¡£¥Ñ¥¹¥Õ¥ì¡¼¥º¤òÊÑ¹¹¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/sig-check.c:199
 msgid "assuming bad MDC due to an unknown critical bit\n"
-msgstr "ÉÔÌÀ¤Ê¥¯¥ê¥Æ¥£¥«¥ë¥Ó¥Ã¥È¤¬¤¢¤Ã¤¿¤Î¤Ç¡¢MDC ¤ÏÉÔÀµ¤À¤È¸«¤Ê¤·¤Þ¤¹\n"
+msgstr "Ì¤ÃÎ¤Î¥¯¥ê¥Æ¥£¥«¥ë¡¦¥Ó¥Ã¥È¤¬¤¢¤Ã¤¿¤Î¤Ç¡¢ÉÔÀµ¤ÊMDC¤È¤ß¤Ê¤·¤Þ¤¹\n"
 
 #: g10/sig-check.c:297
 msgid ""
 "this is a PGP generated ElGamal key which is NOT secure for signatures!\n"
 msgstr ""
-"¤³¤ì¤Ï PGP ¤Ë¤è¤Ã¤ÆºîÀ®¤µ¤ì¤¿ ElGamal "
-"¸°¤Ç¤¹¡£¤³¤Î¸°¤Ï½ðÌ¾¤ËÍÑ¤¤¤ë¤Ë¤Ï°ÂÁ´¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó!\n"
+"¤³¤ì¤ÏPGP¤ÎÀ¸À®¤·¤¿ElGamal¸°¤Ç¤¹¡£\n"
+"½ðÌ¾¤ËÍÑ¤¤¤ë¤Ë¤Ï¡¢¤³¤Î¸°¤Ï°ÂÁ´¤Ç¤Ï ¤Ê¤¤ ¤Ç¤¹!\n"
 
 #: g10/sig-check.c:305
 #, c-format
 msgid "public key is %lu second newer than the signature\n"
-msgstr "¸ø³«¸°¤Ï½ðÌ¾¤è¤ê¤â %lu ÉÃ¸å¤ËºîÀ®¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
+msgstr "¸ø³«¸°¤Ï½ðÌ¾¤è¤ê¤â%luÉÃ¸å¤ËºîÀ®¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
 
 #: g10/sig-check.c:306
 #, c-format
 msgid "public key is %lu seconds newer than the signature\n"
-msgstr "¸ø³«¸°¤Ï½ðÌ¾¤è¤ê¤â %lu ÉÃ¸å¤ËºîÀ®¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
+msgstr "¸ø³«¸°¤Ï½ðÌ¾¤è¤ê¤â%luÉÃ¸å¤ËºîÀ®¤µ¤ì¤Æ¤¤¤Þ¤¹\n"
 
 #: g10/sig-check.c:324
 #, c-format
 msgid "NOTE: signature key expired %s\n"
-msgstr "Ãí°Õ: ½ðÌ¾¤Î¸°¤Ï´ü¸ÂÀÚ¤ì¤Ç¤¹ %s\n"
+msgstr "Ãí°Õ: ½ðÌ¾¤Î¸°¤Ï´ü¸ÂÀÚ¤ì¤Ç¤¹%s\n"
 
 #: g10/sig-check.c:393
 msgid "assuming bad signature due to an unknown critical bit\n"
-msgstr "ÉÔÌÀ¤Ê¥¯¥ê¥Æ¥£¥«¥ë¥Ó¥Ã¥È¤¬¤¢¤Ã¤¿¤Î¤Ç¡¢½ðÌ¾¤ÏÉÔÀµ¤À¤È¸«¤Ê¤·¤Þ¤¹\n"
+msgstr "Ì¤ÃÎ¤Î¥¯¥ê¥Æ¥£¥«¥ë¡¦¥Ó¥Ã¥È¤¬¤¢¤Ã¤¿¤Î¤Ç¡¢½ðÌ¾¤ÏÉÔÀµ¤À¤È¤ß¤Ê¤·¤Þ¤¹\n"
 
 #: g10/sign.c:140
 #, c-format
 msgid "%s signature from: %s\n"
-msgstr "%s ½ðÌ¾¡£½ðÌ¾¼Ô: %s\n"
+msgstr "%s½ðÌ¾¡£½ðÌ¾¼Ô: %s\n"
 
 #: g10/sign.c:290 g10/sign.c:610
 #, c-format
 msgid "can't create %s: %s\n"
-msgstr "%s ¤¬ºîÀ®¤Ç¤­¤Þ¤»¤ó: %s\n"
+msgstr "%s¤¬¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: g10/sign.c:388
 msgid "signing:"
@@ -2856,31 +2894,31 @@ msgstr "½ðÌ¾:"
 #: g10/sign.c:431
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
-msgstr "·Ù¹ð: `%s' ¤Ï¶õ¤Î¥Õ¥¡¥¤¥ë¤Ç¤¹\n"
+msgstr "·Ù¹ð: `%s'¤Ï¶õ¤Î¥Õ¥¡¥¤¥ë¤Ç¤¹\n"
 
 #: g10/textfilter.c:134
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
-msgstr "%d Ê¸»ú°Ê¾å¤ÎÄ¹¤µ¤Î¥Æ¥­¥¹¥È¹Ô¤Ï»ÈÍÑ¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "%dÊ¸»ú°Ê¾å¤ÎÄ¹¤µ¤Î¥Æ¥­¥¹¥È¹Ô¤Ï»ÈÍÑ¤Ç¤­¤Þ¤»¤ó\n"
 
 #: g10/textfilter.c:231
 #, c-format
 msgid "input line longer than %d characters\n"
-msgstr "ÆþÎÏ¹Ô¤ÎÄ¹¤µ¤¬ %d Ê¸»ú¤ò±Û¤¨¤Æ¤¤¤Þ¤¹\n"
+msgstr "ÆþÎÏ¹Ô¤ÎÄ¹¤µ¤¬%dÊ¸»ú¤òÄ¶¤¨¤Æ¤¤¤Þ¤¹\n"
 
 #: g10/tdbio.c:116 g10/tdbio.c:1623
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
-msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹ ¥ì¥³¡¼¥É %lu: ¥·¡¼¥¯¤Ë¼ºÇÔ: %s\n"
+msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹ ¥ì¥³¡¼¥É%lu: ¥·¡¼¥¯¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/tdbio.c:122 g10/tdbio.c:1630
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
-msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹ ¥ì¥³¡¼¥É %lu: ½ñ¤­¹þ¤ß¤Ë¼ºÇÔ (n=%d): %s\n"
+msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹ ¥ì¥³¡¼¥É%lu: ½ñ¹þ¤ß¤Ë¼ºÇÔ (n=%d): %s\n"
 
 #: g10/tdbio.c:232
 msgid "trustdb transaction too large\n"
-msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹ ¥È¥é¥ó¥¶¥¯¥·¥ç¥ó¤¬Âç¤­¤¹¤®¤Þ¤¹\n"
+msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Î¥È¥é¥ó¥¶¥¯¥·¥ç¥ó¤¬Âç¤­¤¹¤®¤Þ¤¹\n"
 
 #: g10/tdbio.c:424
 #, c-format
@@ -2900,12 +2938,12 @@ msgstr "%s: ºîÀ®¤Ç¤­¤Þ¤»¤ó: %s\n"
 #: g10/tdbio.c:459 g10/tdbio.c:508
 #, c-format
 msgid "%s: can't create lock\n"
-msgstr "%s: ¥í¥Ã¥¯¤¬ºîÀ®¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "%s: ¥í¥Ã¥¯¤¬¤Ç¤­¤Þ¤»¤ó\n"
 
 #: g10/tdbio.c:473
 #, c-format
 msgid "%s: failed to create version record: %s"
-msgstr "%s: ¥Ð¡¼¥¸¥ç¥ó¥ì¥³¡¼¥É¤ÎºîÀ®¤Ë¼ºÇÔ: %s"
+msgstr "%s: ¥Ð¡¼¥¸¥ç¥ó¡¦¥ì¥³¡¼¥É¤ÎºîÀ®¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s"
 
 #: g10/tdbio.c:477
 #, c-format
@@ -2915,7 +2953,7 @@ msgstr "%s: Ìµ¸ú¤Ê¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤òºîÀ®\n"
 #: g10/tdbio.c:480
 #, c-format
 msgid "%s: trustdb created\n"
-msgstr "%s: ¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤òºîÀ®¤·¤Þ¤·¤¿\n"
+msgstr "%s: ¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤¬¤Ç¤­¤Þ¤·¤¿\n"
 
 #: g10/tdbio.c:517
 #, c-format
@@ -2925,193 +2963,193 @@ msgstr "%s: Ìµ¸ú¤Ê¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹\n"
 #: g10/tdbio.c:550
 #, c-format
 msgid "%s: failed to create hashtable: %s\n"
-msgstr "%s: ¥Ï¥Ã¥·¥åÉ½¤ÎºîÀ®¤Ë¼ºÇÔ: %s\n"
+msgstr "%s: ¥Ï¥Ã¥·¥åÉ½¤ÎºîÀ®¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/tdbio.c:558
 #, c-format
 msgid "%s: error updating version record: %s\n"
-msgstr "%s: ¥Ð¡¼¥¸¥ç¥ó¥ì¥³¡¼¥É¤Î¹¹¿·¥¨¥é¡¼: %s\n"
+msgstr "%s: ¥Ð¡¼¥¸¥ç¥ó¡¦¥ì¥³¡¼¥É¤Î¹¹¿·¥¨¥é¡¼: %s\n"
 
 #: g10/tdbio.c:574 g10/tdbio.c:613 g10/tdbio.c:635 g10/tdbio.c:665
 #: g10/tdbio.c:690 g10/tdbio.c:1556 g10/tdbio.c:1583
 #, c-format
 msgid "%s: error reading version record: %s\n"
-msgstr "%s: ¥Ð¡¼¥¸¥ç¥ó¥ì¥³¡¼¥É¤ÎÆÉ¤ß½Ð¤·¥¨¥é¡¼: %s\n"
+msgstr "%s: ¥Ð¡¼¥¸¥ç¥ó¡¦¥ì¥³¡¼¥É¤ÎÆÉ½Ð¤·¥¨¥é¡¼: %s\n"
 
 #: g10/tdbio.c:587 g10/tdbio.c:646
 #, c-format
 msgid "%s: error writing version record: %s\n"
-msgstr "%s: ¥Ð¡¼¥¸¥ç¥ó¥ì¥³¡¼¥É¤Î½ñ¤­¹þ¤ß¥¨¥é¡¼: %s\n"
+msgstr "%s: ¥Ð¡¼¥¸¥ç¥ó¡¦¥ì¥³¡¼¥É¤Î½ñ¹þ¤ß¥¨¥é¡¼: %s\n"
 
 #: g10/tdbio.c:1235
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
-msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹: ¥·¡¼¥¯¤Ë¼ºÇÔ: %s\n"
+msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹: ¥·¡¼¥¯¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/tdbio.c:1243
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
-msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹: ÆÉ¤ß½Ð¤·¤Ë¼ºÇÔ (n=%d): %s\n"
+msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹: ÆÉ½Ð¤·¤Ë¼ºÇÔ (n=%d): %s\n"
 
 #: g10/tdbio.c:1264
 #, c-format
 msgid "%s: not a trustdb file\n"
-msgstr "%s: ¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¥Õ¥¡¥¤¥ë¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "%s: ¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¡¦¥Õ¥¡¥¤¥ë¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/tdbio.c:1280
 #, c-format
 msgid "%s: version record with recnum %lu\n"
-msgstr "%s: ¥ì¥³¡¼¥ÉÈÖ¹æ %lu ÈÖ¤Î¥Ð¡¼¥¸¥ç¥ó¥ì¥³¡¼¥É\n"
+msgstr "%s: ¥ì¥³¡¼¥ÉÈÖ¹æ%luÈÖ¤Î¥Ð¡¼¥¸¥ç¥ó¡¦¥ì¥³¡¼¥É\n"
 
 #: g10/tdbio.c:1285
 #, c-format
 msgid "%s: invalid file version %d\n"
-msgstr "%s: Ìµ¸ú¤Ê¥Õ¥¡¥¤¥ë¥Ð¡¼¥¸¥ç¥ó %d\n"
+msgstr "%s: Ìµ¸ú¤Ê¥Õ¥¡¥¤¥ë¡¦¥Ð¡¼¥¸¥ç¥ó%d\n"
 
 #: g10/tdbio.c:1589
 #, c-format
 msgid "%s: error reading free record: %s\n"
-msgstr "%s: ¶õ¤­¥ì¥³¡¼¥É¤ÎÆÉ¤ß½Ð¤·¥¨¥é¡¼: %s\n"
+msgstr "%s: ¶õ¤­¥ì¥³¡¼¥É¤ÎÆÉ½Ð¤·¥¨¥é¡¼: %s\n"
 
 #: g10/tdbio.c:1597
 #, c-format
 msgid "%s: error writing dir record: %s\n"
-msgstr "%s: ¶õ¤­¥ì¥³¡¼¥É¤Î½ñ¤­¹þ¤ß¥¨¥é¡¼: %s\n"
+msgstr "%s: ¥Ç¥£¥ì¥¯¥È¥ê¡¼¡¦¥ì¥³¡¼¥É¤Î½ñ¹þ¤ß¥¨¥é¡¼: %s\n"
 
 #: g10/tdbio.c:1607
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
-msgstr "%s: ¥ì¥³¡¼¥É¤Î½é´ü²½¤Ë¼ºÇÔ: %s\n"
+msgstr "%s: ¥ì¥³¡¼¥É¤Î½é´ü²½¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/tdbio.c:1637
 #, c-format
 msgid "%s: failed to append a record: %s\n"
-msgstr "%s: ¥ì¥³¡¼¥É¤Î½é´ü²½¤Ë¼ºÇÔ: %s\n"
+msgstr "%s: ¥ì¥³¡¼¥É¤ÎÄÉ²Ã¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/tdbio.c:1748
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
-"¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤¬²õ¤ì¤Æ¤¤¤Þ¤¹¡£\"gpg --fix-trustdb\" ¤ò¼Â¹Ô¤·¤Æ²¼¤µ¤¤¡£\n"
+"¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤¬²õ¤ì¤Æ¤¤¤Þ¤¹¡£¡Ögpg --fix-trustdb¡×¤ò¼Â¹Ô¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/trustdb.c:169
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
-msgstr "¿®ÍÑ¥ì¥³¡¼¥É %lu, ¥ê¥¯¥¨¥¹¥È¥¿¥¤¥× %d: ÆÉ¤ß½Ð¤·¤Ë¼ºÇÔ: %s\n"
+msgstr "¿®ÍÑ¥ì¥³¡¼¥É%lu, ¥ê¥¯¥¨¥¹¥È¡¦¥¿¥¤¥×%d: ÆÉ½Ð¤·¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:184
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
-msgstr "¿®ÍÑ¥ì¥³¡¼¥É %lu, ¥¿¥¤¥× %d: ½ñ¤­¹þ¤ß¤Ë¼ºÇÔ: %s\n"
+msgstr "¿®ÍÑ¥ì¥³¡¼¥É%lu, ¥¿¥¤¥×%d: ½ñ¹þ¤ß¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:198
 #, c-format
 msgid "trust record %lu: delete failed: %s\n"
-msgstr "¿®ÍÑ¥ì¥³¡¼¥É %lu: ºï½ü¤Ë¼ºÇÔ: %s\n"
+msgstr "¿®ÍÑ¥ì¥³¡¼¥É%lu: ºï½ü¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:212
 #, c-format
 msgid "trustdb: sync failed: %s\n"
-msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹: Æ±´ü¤Ë¼ºÇÔ: %s\n"
+msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹: Æ±´ü¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:377
 #, c-format
 msgid "error reading dir record for LID %lu: %s\n"
-msgstr "LID %lu ¤Î¥Ç¥£¥ì¥¯¥È¥ê¥ì¥³¡¼¥É¤ÎÆÉ¤ß½Ð¤·¥¨¥é¡¼: %s\n"
+msgstr "LID %lu¤Î¥Ç¥£¥ì¥¯¥È¥ê¡¼¡¦¥ì¥³¡¼¥É¤ÎÆÉ½Ð¤·¥¨¥é¡¼: %s\n"
 
 #: g10/trustdb.c:384
 #, c-format
 msgid "lid %lu: expected dir record, got type %d\n"
-msgstr "lid %lu: ´üÂÔ¤µ¤ì¤¿¥Ç¥£¥ì¥¯¥È¥ê¥ì¥³¡¼¥É¡¢¥¿¥¤¥× %d\n"
+msgstr "lid %lu: ´üÂÔ¤µ¤ì¤¿¥Ç¥£¥ì¥¯¥È¥ê¡¼¡¦¥ì¥³¡¼¥É¡¢¥¿¥¤¥×%d\n"
 
 #: g10/trustdb.c:389
 #, c-format
 msgid "no primary key for LID %lu\n"
-msgstr "LID %lu ¤Î¼ç¸°¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "LID %lu¤Î¼ç¸°¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/trustdb.c:394
 #, c-format
 msgid "error reading primary key for LID %lu: %s\n"
-msgstr "LID %lu ¤Î¼ç¸°¤ÎÆÉ¤ß½Ð¤·¥¨¥é¡¼: %s\n"
+msgstr "LID %lu¤Î¼ç¸°¤ÎÆÉ½Ð¤·¥¨¥é¡¼: %s\n"
 
 #: g10/trustdb.c:433
 #, c-format
 msgid "get_dir_record: search_record failed: %s\n"
-msgstr "get_dir_record: search_record ¤Ë¼ºÇÔ: %s\n"
+msgstr "get_dir_record: search_record ¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:474
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' is not a valid long keyID\n"
-msgstr "%s ¤ÏÀµ¤·¤¤Ê¸»ú¥³¡¼¥É¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "'%s' ¤ÏÀµ¤·¤¤Âç·¿¸°ID¤Ç¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/trustdb.c:501
 #, c-format
 msgid "key %08lX: can't put it into the trustdb\n"
-msgstr "¸° %08lX: ¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤ËÅÐÏ¿¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "¸°%08lX: ¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤ËÅÐÏ¿¤Ç¤­¤Þ¤»¤ó\n"
 
 #: g10/trustdb.c:507
 #, c-format
 msgid "key %08lX: query record failed\n"
-msgstr "¸° %08lX: ¥¯¥¨¥ê¡¼¥ì¥³¡¼¥É¤Ë¼ºÇÔ\n"
+msgstr "¸°%08lX: ¥ì¥³¡¼¥É¤ÎÌä¹ç¤»¤Ë¼ºÇÔ\n"
 
 #: g10/trustdb.c:516
 #, c-format
 msgid "key %08lX: already in trusted key table\n"
-msgstr "¸° %08lX: ´û¤Ë¿®ÍÑ¤¹¤ë¸°¤ÎÉ½¤Ë¤¢¤ê¤Þ¤¹\n"
+msgstr "¸°%08lX: ´û¤Ë¿®ÍÑ¤¹¤ë¸°¤ÎÉ½¤Ë¤¢¤ê¤Þ¤¹\n"
 
 #: g10/trustdb.c:519
 #, c-format
 msgid "key %08lX: accepted as trusted key.\n"
-msgstr "¸° %08lX: ¿®ÍÑ¤¹¤ë¸°¤È¤·¤Æ¼õÍý¤µ¤ì¤Þ¤·¤¿¡£\n"
+msgstr "¸°%08lX: ¿®ÍÑ¤¹¤ë¸°¤È¤·¤Æ¼õÍý¤·¤Þ¤·¤¿¡£\n"
 
 #: g10/trustdb.c:546
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no public key for trusted key - skipped\n"
-msgstr "¸° %08lX: rfc2440 ¤Î¸°¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó - ¥¹¥­¥Ã¥×¤·¤Þ¤¹\n"
+msgstr "¸° %08lX: ¿®ÍÑ¤¹¤ë¸°¤Î¸ø³«¸°¤¬¤¢¤ê¤Þ¤»¤ó - ¥¹¥­¥Ã¥×\n"
 
 #: g10/trustdb.c:565
 #, c-format
 msgid "NOTE: secret key %08lX is NOT protected.\n"
-msgstr "Ãí°Õ: ÈëÌ©¸° %08lX ¤ÏÊÝ¸î¤µ¤ì¤Æ¤¤¤Þ¤»¤ó¡£\n"
+msgstr "Ãí°Õ: ÈëÌ©¸°%08lX¤ÏÊÝ¸î¤µ¤ì¤Æ¤¤¤Þ ¤»¤ó¡£\n"
 
 #: g10/trustdb.c:577
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
-msgstr "¸° %08lX: ¸ø³«¸°¤Î¤Ê¤¤ÈëÌ©¸°¤Ç¤¹¡£¥¹¥­¥Ã¥×\n"
+msgstr "¸°%08lX: ¸ø³«¸°¤Î¤Ê¤¤ÈëÌ©¸°¤Ç¤¹¡£¥¹¥­¥Ã¥×\n"
 
 #: g10/trustdb.c:584
 #, c-format
 msgid "key %08lX: secret and public key don't match\n"
-msgstr "¸° %08lX: ÈëÌ©¸°¤È¸ø³«¸°¤¬ÂÐ±þ¤·¤Æ¤¤¤Þ¤»¤ó\n"
+msgstr "¸°%08lX: ÈëÌ©¸°¤È¸ø³«¸°¤¬ÂÐ±þ¤·¤Æ¤¤¤Þ¤»¤ó\n"
 
 #: g10/trustdb.c:597
 #, c-format
 msgid "enumerate secret keys failed: %s\n"
-msgstr "ÈëÌ©¸°¤Î°ìÍ÷¤Ë¼ºÇÔ: %s\n"
+msgstr "ÈëÌ©¸°¤ÎÎóµó¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:987
 #, c-format
 msgid "key %08lX.%lu: Good subkey binding\n"
-msgstr "¸° %08lX.%lu: Éû¸°¤ÎÂÐ±þ¤ÏÍ­¸ú¤Ç¤¹\n"
+msgstr "¸°%08lX.%lu: Éû¸°¤ÎÂÐ±þ¤ÏÍ­¸ú¤Ç¤¹\n"
 
 #: g10/trustdb.c:993 g10/trustdb.c:1028
 #, c-format
 msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
-msgstr "¸° %08lX.%lu: Éû¸°¤ÎÂÐ±þ¤¬Ìµ¸ú¤Ç¤¹: %s\n"
+msgstr "¸°%08lX.%lu: Éû¸°¤ÎÂÐ±þ¤¬Ìµ¸ú¤Ç¤¹: %s\n"
 
 #: g10/trustdb.c:1005
 #, c-format
 msgid "key %08lX.%lu: Valid key revocation\n"
-msgstr "¸° %08lX.%lu: Í­¸ú¤Ê¸°¤ÎÇÑ»ß\n"
+msgstr "¸°%08lX.%lu: Í­¸ú¤Ê¸°¤ÎÇË´þ\n"
 
 #: g10/trustdb.c:1011
 #, c-format
 msgid "key %08lX.%lu: Invalid key revocation: %s\n"
-msgstr "¸° %08lX.%lu: Ìµ¸ú¤Ê¸°¤ÎÇË´þ: %s\n"
+msgstr "¸°%08lX.%lu: Ìµ¸ú¤Ê¸°¤ÎÇË´þ: %s\n"
 
 #: g10/trustdb.c:1022
 #, c-format
 msgid "key %08lX.%lu: Valid subkey revocation\n"
-msgstr "¸° %08lX.%lu: Í­¸ú¤ÊÉû¸°¤ÎÇË´þ\n"
+msgstr "¸°%08lX.%lu: Í­¸ú¤ÊÉû¸°¤ÎÇË´þ\n"
 
 #: g10/trustdb.c:1133
 msgid "Good self-signature"
@@ -3123,15 +3161,15 @@ msgstr "Ìµ¸ú¤Ê¼«¸Ê½ðÌ¾"
 
 #: g10/trustdb.c:1170
 msgid "Valid user ID revocation skipped due to a newer self signature"
-msgstr "¿·¤·¤¯¼«¸Ê½ðÌ¾¤µ¤ì¤Æ¤¤¤ë¤Î¤Ç¡¢Í­¸ú¤Ê¥æ¡¼¥¶ ID ¤ÎÇË´þ¤Ï¹Ô¤¤¤Þ¤»¤ó"
+msgstr "¿·¤·¤¯¼«¸Ê½ðÌ¾¤µ¤ì¤Æ¤¤¤ë¤Î¤Ç¡¢Í­¸ú¤Ê¥æ¡¼¥¶¡¼ID¤ÎÇË´þ¤Ï¹Ô¤¤¤Þ¤»¤ó"
 
 #: g10/trustdb.c:1176
 msgid "Valid user ID revocation"
-msgstr "Í­¸ú¤Ê¥æ¡¼¥¶ ID ¤ÎÇË´þ"
+msgstr "Í­¸ú¤Ê¥æ¡¼¥¶¡¼ID¤ÎÇË´þ"
 
 #: g10/trustdb.c:1181
 msgid "Invalid user ID revocation"
-msgstr "Ìµ¸ú¤Ê¥æ¡¼¥¶ ID ¤ÎÇË´þ"
+msgstr "Ìµ¸ú¤Ê¥æ¡¼¥¶¡¼ID¤ÎÇË´þ"
 
 #: g10/trustdb.c:1223
 msgid "Valid certificate revocation"
@@ -3152,26 +3190,26 @@ msgstr "Ìµ¸ú¤Ê¾ÚÌÀ½ñ"
 #: g10/trustdb.c:1270 g10/trustdb.c:1274
 #, c-format
 msgid "sig record %lu[%d] points to wrong record.\n"
-msgstr "½ðÌ¾¥ì¥³¡¼¥É %lu[%d] ¤Ï¸í¤Ã¤¿¥ì¥³¡¼¥É¤ò»Ø¤·¤Æ¤¤¤Þ¤¹¡£\n"
+msgstr "½ðÌ¾¥ì¥³¡¼¥É%lu[%d] ¤Ï¸í¤Ã¤¿¥ì¥³¡¼¥É¤ò»Ø¤·¤Æ¤¤¤Þ¤¹¡£\n"
 
 #: g10/trustdb.c:1333
 msgid "duplicated certificate - deleted"
-msgstr "½ÅÊ£¤·¤¿¾ÚÌÀ½ñ - ºï½ü¤·¤Þ¤·¤¿"
+msgstr "½ÅÊ£¤·¤¿¾ÚÌÀ½ñ - ºï½ü"
 
 #: g10/trustdb.c:1650
 #, c-format
 msgid "tdbio_search_dir failed: %s\n"
-msgstr "tdbio_search_dir ¤Ë¼ºÇÔ: %s\n"
+msgstr "tdbio_search_dir ¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:1784
 #, c-format
 msgid "lid ?: insert failed: %s\n"
-msgstr "lid ?: ÁÞÆþ¤Ë¼ºÇÔ: %s\n"
+msgstr "lid ?: ÁÞÆþ¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:1789
 #, c-format
 msgid "lid %lu: insert failed: %s\n"
-msgstr "lid %lu: ÁÞÆþ¤Ë¼ºÇÔ: %s\n"
+msgstr "lid %lu: ÁÞÆþ¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:1795
 #, c-format
@@ -3181,47 +3219,47 @@ msgstr "lid %lu: ÁÞÆþ¤·¤Þ¤·¤¿\n"
 #: g10/trustdb.c:1800
 #, c-format
 msgid "error reading dir record: %s\n"
-msgstr "¥Ç¥£¥ì¥¯¥È¥ê¥ì¥³¡¼¥É¤ÎÆÉ¤ß½Ð¤·¥¨¥é¡¼: %s\n"
+msgstr "¥Ç¥£¥ì¥¯¥È¥ê¡¼¡¦¥ì¥³¡¼¥É¤ÎÆÉ½Ð¤·¥¨¥é¡¼: %s\n"
 
 #: g10/trustdb.c:1808 g10/trustdb.c:1871
 #, c-format
 msgid "%lu keys processed\n"
-msgstr "%lu ¸°¤ò½èÍý¤·¤Þ¤·¤¿\n"
+msgstr "%lu¸°¤ò½èÍý¤·¤Þ¤·¤¿\n"
 
 #: g10/trustdb.c:1810 g10/trustdb.c:1877
 #, c-format
 msgid "\t%lu keys with errors\n"
-msgstr "\t%lu ¸°¤Ë¤Ï¥¨¥é¡¼¤¬¤¢¤ê¤Þ¤¹\n"
+msgstr "\t%lu¸°¤Ë¤Ï¥¨¥é¡¼¤¬¤¢¤ê¤Þ¤¹\n"
 
 #: g10/trustdb.c:1812
 #, c-format
 msgid "\t%lu keys inserted\n"
-msgstr "\t%lu ¸°¤òÁÞÆþ¤·¤Þ¤·¤¿\n"
+msgstr "\t%lu¸°¤òÁÞÆþ¤·¤Þ¤·¤¿\n"
 
 #: g10/trustdb.c:1815
 #, c-format
 msgid "enumerate keyblocks failed: %s\n"
-msgstr "¸°¥Ö¥í¥Ã¥¯¤Î°ìÍ÷¤Ë¼ºÇÔ: %s\n"
+msgstr "¸°¥Ö¥í¥Ã¥¯¤Î°ìÍ÷¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:1863
 #, c-format
 msgid "lid %lu: dir record w/o key - skipped\n"
-msgstr "lid %lu: ¸°¤Ê¤·¤Î¥Ç¥£¥ì¥¯¥È¥ê¥ì¥³¡¼¥É - ¥¹¥­¥Ã¥×\n"
+msgstr "lid %lu: ¸°¤Ê¤·¤Î¥Ç¥£¥ì¥¯¥È¥ê¡¼¡¦¥ì¥³¡¼¥É - ¥¹¥­¥Ã¥×\n"
 
 #: g10/trustdb.c:1873
 #, c-format
 msgid "\t%lu due to new pubkeys\n"
-msgstr "\t%lu ¿·¤¿¤Ê¸ø³«¸°\n"
+msgstr "\t%lu¿·¤·¤¤¸ø³«¸°\n"
 
 #: g10/trustdb.c:1875
 #, c-format
 msgid "\t%lu keys skipped\n"
-msgstr "\t%lu ¸°¤ò¥¹¥­¥Ã¥×¤·¤Þ¤·¤¿\n"
+msgstr "\t%lu¸°¤ò¥¹¥­¥Ã¥×¤·¤Þ¤·¤¿\n"
 
 #: g10/trustdb.c:1879
 #, c-format
 msgid "\t%lu keys updated\n"
-msgstr "\t%lu ¸°¤ò¹¹¿·¤·¤Þ¤·¤¿\n"
+msgstr "\t%lu¸°¤ò¹¹¿·¤·¤Þ¤·¤¿\n"
 
 #: g10/trustdb.c:2224
 msgid "Ooops, no keys\n"
@@ -3229,58 +3267,57 @@ msgstr "¤ª¤Ã¤È¡¢¸°¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/trustdb.c:2228
 msgid "Ooops, no user IDs\n"
-msgstr "¤ª¤Ã¤È¡¢¥æ¡¼¥¶ ID ¤¬¤¢¤ê¤Þ¤»¤ó\n"
+msgstr "¤ª¤Ã¤È¡¢¥æ¡¼¥¶¡¼ID¤¬¤¢¤ê¤Þ¤»¤ó\n"
 
 #: g10/trustdb.c:2386
 #, c-format
 msgid "check_trust: search dir record failed: %s\n"
-msgstr "check_trust: ¥Ç¥£¥ì¥¯¥È¥ê¥ì¥³¡¼¥É¤Î¸¡º÷¤Ë¼ºÇÔ: %s\n"
+msgstr "check_trust: ¥Ç¥£¥ì¥¯¥È¥ê¡¼¡¦¥ì¥³¡¼¥É¤Î¸¡º÷¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:2395
 #, c-format
 msgid "key %08lX: insert trust record failed: %s\n"
-msgstr "¸° %08lX: ¿®ÍÑ¥ì¥³¡¼¥É¤ÎÁÞÆþ¤Ë¼ºÇÔ: %s\n"
+msgstr "¸°%08lX: ¿®ÍÑ¥ì¥³¡¼¥É¤ÎÁÞÆþ¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:2399
 #, c-format
 msgid "key %08lX.%lu: inserted into trustdb\n"
-msgstr "¸° %08lX.%lu: ¿®ÍÑ¥ì¥³¡¼¥É¤ËÁÞÆþ¤·¤Þ¤·¤¿\n"
+msgstr "¸°%08lX.%lu: ¿®ÍÑ¥ì¥³¡¼¥É¤ËÁÞÆþ¤·¤Þ¤·¤¿\n"
 
 #: g10/trustdb.c:2407
 #, c-format
 msgid "key %08lX.%lu: created in future (time warp or clock problem)\n"
-msgstr ""
-"¸° %08lX.%lu: Ì¤Íè¤ËºîÀ®¤µ¤ì¤Æ¤¤¤Þ¤¹ (»þ´ÖÎ¹¹Ô¤«»þ·×¤Î¤¯¤ë¤¤¤Ç¤·¤ç¤¦)\n"
+msgstr "¸°%08lX.%lu: Ì¤Íè¤Ë¤Ç¤­¤Æ¤¤¤Þ¤¹ (»þ´ÖÎ¹¹Ô¤«»þ·×¤Î¤¯¤ë¤¤¤Ç¤·¤ç¤¦)\n"
 
 #: g10/trustdb.c:2422
 #, c-format
 msgid "key %08lX.%lu: expired at %s\n"
-msgstr "¸° %08lX.%lu: %s ¤Ç´ü¸ÂÀÚ¤ì¤Ç¤¹\n"
+msgstr "¸°%08lX.%lu: %s¤Ç´ü¸ÂÀÚ¤ì¤Ç¤¹\n"
 
 #: g10/trustdb.c:2430
 #, c-format
 msgid "key %08lX.%lu: trust check failed: %s\n"
-msgstr "¸° %08lX.%lu: ¿®ÍÑ¤Î¸¡¾Ú¤Ë¼ºÇÔ: %s\n"
+msgstr "¸°%08lX.%lu: ¿®ÍÑ¤Î¸¡¾Ú¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:2581
 #, c-format
 msgid "user '%s' not found: %s\n"
-msgstr "¥æ¡¼¥¶ '%s' ¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó: %s\n"
+msgstr "¥æ¡¼¥¶¡¼'%s'¤¬¸«¤Ä¤«¤ê¤Þ¤»¤ó: %s\n"
 
 #: g10/trustdb.c:2583
 #, c-format
 msgid "problem finding '%s' in trustdb: %s\n"
-msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤«¤é '%s' ¤Î¸¡º÷¤Ë¾ã³²: %s\n"
+msgstr "¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤«¤é'%s'¤Î¸¡º÷¤Ë¾ã³²: %s\n"
 
 #: g10/trustdb.c:2586
 #, c-format
 msgid "user '%s' not in trustdb - inserting\n"
-msgstr "¥æ¡¼¥¶ '%s' ¤Ï¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤ËÅÐÏ¿¤µ¤ì¤Æ¤¤¤Þ¤»¤ó - ÁÞÆþ¤·¤Þ¤·¤¿\n"
+msgstr "¥æ¡¼¥¶¡¼'%s'¤Ï¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤ËÅÐÏ¿¤µ¤ì¤Æ¤¤¤Þ¤»¤ó - ÁÞÆþ\n"
 
 #: g10/trustdb.c:2589
 #, c-format
 msgid "failed to put '%s' into trustdb: %s\n"
-msgstr "'%s' ¤Î¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Ø¤ÎÅÐÏ¿¤Ë¼ºÇÔ: %s\n"
+msgstr "'%s'¤Î¿®ÍÑ¥Ç¡¼¥¿¥Ù¡¼¥¹¤Ø¤ÎÅÐÏ¿¤Ë¼ºÇÔ¤·¤Þ¤·¤¿: %s\n"
 
 #: g10/trustdb.c:2775 g10/trustdb.c:2805
 msgid "WARNING: can't yet handle long pref records\n"
@@ -3299,46 +3336,46 @@ msgstr ""
 #: g10/verify.c:147
 #, c-format
 msgid "input line %u too long or missing LF\n"
-msgstr "ÆþÎÏ¤Î%u¹ÔÌÜ¤¬Ä¹²á¤®¤ë¤«¡¢LF¤¬¤Ê¤¤¤è¤¦¤Ç¤¹\n"
+msgstr "ÆþÎÏ¤Î%u¹ÔÌÜ¤¬Ä¹¤¹¤®¤ë¤«¡¢LF¤¬¤Ê¤¤¤è¤¦¤Ç¤¹\n"
 
 #: g10/ringedit.c:302
 #, c-format
 msgid "%s: can't create keyring: %s\n"
-msgstr "%s: ¸°¥ê¥ó¥°¤òºîÀ®¤Ç¤­¤Þ¤»¤ó: %s\n"
+msgstr "%s: ¸°ÎØ¤¬¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: g10/ringedit.c:319 g10/ringedit.c:1374
 #, c-format
 msgid "%s: keyring created\n"
-msgstr "%s: ¸°¥ê¥ó¥°¤òºîÀ®¤·¤Þ¤·¤¿\n"
+msgstr "%s: ¸°ÎØ¤¬¤Ç¤­¤Þ¤·¤¿\n"
 
 #: g10/ringedit.c:1551
 msgid "WARNING: 2 files with confidential information exists.\n"
-msgstr "·Ù¹ð: ¿®ÍÑ¾ðÊó¤ò»ý¤Ã¤¿ 2 ¤Ä¤Î¥Õ¥¡¥¤¥ë¤¬Â¸ºß¤·¤Þ¤¹¡£\n"
+msgstr "·Ù¹ð: ¿®ÍÑ¾ðÊó¤ò¤â¤Ã¤¿2¤Ä¤Î¥Õ¥¡¥¤¥ë¤¬Â¸ºß¤·¤Þ¤¹¡£\n"
 
 #: g10/ringedit.c:1552
 #, c-format
 msgid "%s is the unchanged one\n"
-msgstr "%s ¤ÏÊÑ¹¹¤µ¤ì¤Æ¤¤¤Ê¤¤Êý¤Ç¤¹\n"
+msgstr "%s¤ÏÊÑ¹¹¤Î¤Ê¤¤Êý¤Ç¤¹\n"
 
 #: g10/ringedit.c:1553
 #, c-format
 msgid "%s is the new one\n"
-msgstr "%s ¤Ï¿·¤·¤¤Êý¤Ç¤¹\n"
+msgstr "%s¤Ï¿·¤·¤¤Êý¤Ç¤¹\n"
 
 #: g10/ringedit.c:1554
 msgid "Please fix this possible security flaw\n"
-msgstr "¤³¤Î°ÂÁ´¾å¤Î·ç´Ù¤ò½¤Àµ¤·¤Æ²¼¤µ¤¤\n"
+msgstr "¤³¤Î°ÂÁ´¾å¤Î·ç´Ù¤ò½¤Àµ¤·¤Æ¤¯¤À¤µ¤¤\n"
 
 #: g10/skclist.c:88 g10/skclist.c:125
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr ""
-"¸°¤Ë¤Ï°ÂÁ´¤Ç¤Ê¤¤¥Õ¥é¥°¤¬ÀßÄê¤µ¤ì¤Æ¤¤¤Þ¤»¤ó - "
-"µ¶ÊªÍð¿ôÀ¸À®ÁõÃÖ¤Ë¤ÏÄÉ²Ã¤Ç¤­¤Þ¤»¤ó!\n"
+"¤ä¤Ð¤¯¤Æ¤â¤¤¤¤¥Õ¥é¥°¤¬¸°¤Ë¤ÏÀßÄê¤µ¤ì¤Æ¤¤¤Þ¤»¤ó¡£\n"
+"µ¶ÊªÍð¿ôÀ¸À®»Ò¤È¤Ï¤¤¤Ã¤·¤ç¤Ë»È¤¨¤Þ¤»¤ó!\n"
 
 #: g10/skclist.c:113
 #, c-format
 msgid "skipped `%s': %s\n"
-msgstr "`%s' ¤ò¥¹¥­¥Ã¥×: %s\n"
+msgstr "`%s'¤ò¥¹¥­¥Ã¥×: %s\n"
 
 #: g10/skclist.c:119
 #, c-format
@@ -3346,14 +3383,14 @@ msgid ""
 "skipped `%s': this is a PGP generated ElGamal key which is not secure for "
 "signatures!\n"
 msgstr ""
-"`%s' ¤ò¥¹¥­¥Ã¥×: ¤³¤ì¤Ï PGP ¤¬À¸À®¤·¤¿ ElGamal "
-"¸°¤Ç¤¹¡£¤³¤Î¸°¤Ï½ðÌ¾¤ËÍÑ¤¤¤ë¤Ë¤Ï°ÂÁ´¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó!\n"
+"`%s'¤ò¥¹¥­¥Ã¥×: ¤³¤ì¤ÏPGP¤ÎÀ¸À®¤·¤¿ElGamal¸°¤Ç¤¹¡£\n"
+"½ðÌ¾¤ËÍÑ¤¤¤ë¤Ë¤Ï¡¢°ÂÁ´¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó!\n"
 
 #. do not overwrite
 #: g10/openfile.c:84
 #, c-format
 msgid "File `%s' exists. "
-msgstr "¥Õ¥¡¥¤¥ë `%s' ¤Ï´û¤ËÂ¸ºß¤·¤Þ¤¹¡£"
+msgstr "¥Õ¥¡¥¤¥ë`%s'¤Ï´û¤ËÂ¸ºß¤·¤Þ¤¹¡£"
 
 #: g10/openfile.c:86
 msgid "Overwrite (y/N)? "
@@ -3362,11 +3399,11 @@ msgstr "¾å½ñ¤­¤·¤Þ¤¹¤« (y/N)? "
 #: g10/openfile.c:119
 #, c-format
 msgid "%s: unknown suffix\n"
-msgstr "%s: ÉÔÌÀ¤Ê³ÈÄ¥»Ò\n"
+msgstr "%s: Ì¤ÃÎ¤Î³ÈÄ¥»Ò\n"
 
 #: g10/openfile.c:141
 msgid "Enter new filename"
-msgstr "¿·¤·¤¤¥Õ¥¡¥¤¥ëÌ¾¤òÆþÎÏ¤·¤Æ²¼¤µ¤¤"
+msgstr "¿·¤·¤¤¥Õ¥¡¥¤¥ëÌ¾¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤"
 
 #: g10/openfile.c:182
 msgid "writing to stdout\n"
@@ -3375,22 +3412,22 @@ msgstr "É¸½à½ÐÎÏ¤Ë½ñ¤­½Ð¤·¤Þ¤¹\n"
 #: g10/openfile.c:261
 #, c-format
 msgid "assuming signed data in `%s'\n"
-msgstr "½ðÌ¾¤µ¤ì¤¿¥Ç¡¼¥¿¤¬ `%s' ¤Ë¤¢¤ë¤ÈÁÛÄê¤·¤Þ¤¹\n"
+msgstr "½ðÌ¾¤µ¤ì¤¿¥Ç¡¼¥¿¤¬`%s'¤Ë¤¢¤ë¤ÈÁÛÄê¤·¤Þ¤¹\n"
 
 #: g10/openfile.c:311
 #, c-format
 msgid "%s: new options file created\n"
-msgstr "%s: ¿·¤·¤¤¥ª¥×¥·¥ç¥ó¥Õ¥¡¥¤¥ë¤òºîÀ®¤·¤Þ¤·¤¿\n"
+msgstr "%s: ¿·¤·¤¤¥ª¥×¥·¥ç¥ó¡¦¥Õ¥¡¥¤¥ë¤¬¤Ç¤­¤Þ¤·¤¿\n"
 
 #: g10/openfile.c:338
 #, c-format
 msgid "%s: can't create directory: %s\n"
-msgstr "%s: ¼­½ñ¤¬ºîÀ®¤Ç¤­¤Þ¤»¤ó: %s\n"
+msgstr "%s: ¼­½ñ¤¬¤Ç¤­¤Þ¤»¤ó: %s\n"
 
 #: g10/openfile.c:341
 #, c-format
 msgid "%s: directory created\n"
-msgstr "%s: ¼­½ñ¤òºîÀ®¤·¤Þ¤·¤¿\n"
+msgstr "%s: ¼­½ñ¤¬¤Ç¤­¤Þ¤·¤¿\n"
 
 #: g10/openfile.c:343
 msgid "you have to start GnuPG again, so it can read the new options file\n"
@@ -3399,47 +3436,46 @@ msgstr "¥ª¥×¥·¥ç¥ó¡¦¥Õ¥¡¥¤¥ë¤òÆÉ¤ßÄ¾¤¹¤è¤¦¡¢GnuPG¤òºÆµ¯Æ°¤·¤Æ¤¯¤À¤µ¤¤\n"
 #: g10/encr-data.c:66
 #, c-format
 msgid "%s encrypted data\n"
-msgstr "%s °Å¹æ²½¤µ¤ì¤¿¥Ç¡¼¥¿\n"
+msgstr "%s°Å¹æ²½¤µ¤ì¤¿¥Ç¡¼¥¿\n"
 
 #: g10/encr-data.c:68
 #, c-format
 msgid "encrypted with unknown algorithm %d\n"
-msgstr "ÉÔÌÀ¤Ê¥¢¥ë¥´¥ê¥º¥à¤Ë¤è¤ë°Å¹æ %d\n"
+msgstr "Ì¤ÃÎ¤Î¥¢¥ë¥´¥ê¥º¥à¤Ë¤è¤ë°Å¹æ %d\n"
 
 #: g10/encr-data.c:90
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
-msgstr "·Ù¹ð: ¥á¥Ã¥»¡¼¥¸¤ÏÂÐ¾Î°Å¹æË¡¤Î¼å¤¤¸°¤Ë¤è¤ê°Å¹æ²½¤µ¤ì¤Æ¤¤¤Þ¤¹¡£\n"
+msgstr "·Ù¹ð: ¥á¥Ã¥»¡¼¥¸¤ÏÂÐ¾Î°Å¹æË¡¤Î¼å¤¤¸°¤Ç°Å¹æ²½¤µ¤ì¤Æ¤¤¤Þ¤¹¡£\n"
 
 #: g10/seskey.c:52
 msgid "weak key created - retrying\n"
-msgstr "¼å¤¤¸°¤¬ºîÀ®¤µ¤ì¤Þ¤·¤¿ - ºÆ¼Â¹Ô¤·¤Þ¤¹\n"
+msgstr "¼å¤¤¸°¤¬¤Ç¤­¤Þ¤·¤¿ - ºÆ¼Â¹Ô\n"
 
 #: g10/seskey.c:57
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
-msgstr "ÂÐ¾Î°Å¹æË¡¤Î¼å¤¤¸°¤ò²óÈò¤¹¤ë¤³¤È¤¬¤Ç¤­¤Þ¤»¤ó¡£%d ²ó»î¤ß¤Þ¤·¤¿!\n"
+msgstr "ÂÐ¾Î°Å¹æË¡¤Î¼å¤¤¸°¤ò²óÈò¤¹¤ë¤³¤È¤¬¤Ç¤­¤Þ¤»¤ó¡£%d²ó»î¤ß¤Þ¤·¤¿!\n"
 
 #: g10/delkey.c:94
 msgid "there is a secret key for this public key!\n"
-msgstr "¤³¤Î¸ø³«¸°¤Î°Ù¤ÎÈëÌ©¸°¤¬¤¢¤ê¤Þ¤¹!\n"
+msgstr "¤³¤Î¸ø³«¸°¤Ë¤¿¤¤¤¹¤ëÈëÌ©¸°¤¬¤¢¤ê¤Þ¤¹!\n"
 
 #: g10/delkey.c:96
 msgid "use option \"--delete-secret-key\" to delete it first.\n"
-msgstr ""
-"¤Þ¤º¤³¤ì¤òºï½ü¤¹¤ë¤Ë¤Ï \"--delete-secret-key\" ¥ª¥×¥·¥ç¥ó ¤òÍÑ¤¤¤Æ²¼¤µ¤¤¡£\n"
+msgstr "¤Þ¤º¡Ö--delete-secret-key¡×¥ª¥×¥·¥ç¥ó¤Ç¤³¤ì¤òºï½ü¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 
 #: g10/delkey.c:114
 msgid "can't do that in batchmode without \"--yes\"\n"
-msgstr "\"--yes\" ¤òÈ¼¤ï¤Ê¤¤¥Ð¥Ã¥Á¥â¡¼¥É¤Ç¤Ï¼Â¹Ô¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "¡Ö--yes¡×¤Î¤Ê¤¤¥Ð¥Ã¥Á¥â¡¼¥É¤Ç¤Ï¤Ç¤­¤Þ¤»¤ó\n"
 
 #: g10/delkey.c:136
 msgid "Delete this key from the keyring? "
-msgstr "¤³¤Î¸°¤ò¸°¥ê¥ó¥°¤«¤éºï½ü¤·¤Þ¤¹¤«? "
+msgstr "¤³¤Î¸°¤ò¸°ÎØ¤«¤éºï½ü¤·¤Þ¤¹¤«? "
 
 #: g10/delkey.c:144
 msgid "This is a secret key! - really delete? "
-msgstr "ÈëÌ©¸°¤¬¤¢¤ê¤Þ¤¹! - ËÜÅö¤Ë ºï½ü¤·¤Þ¤¹¤«? "
+msgstr "¤³¤ì¤ÏÈëÌ©¸°¤Ç¤¹! ËÜÅö¤Ëºï½ü¤·¤Þ¤¹¤«? "
 
 #: g10/helptext.c:47
 msgid ""
@@ -3447,22 +3483,22 @@ msgid ""
 "to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
 "to do with the (implicitly created) web-of-certificates."
 msgstr ""
-"¤³¤³¤ÇÀßÄê¤·¤¿ÃÍ¤Ï¡¢Âç¤­¤¹¤®¤Þ¤¹¡£¤³¤ÎÃÍ¤Ï·è¤·¤ÆÂè»°¼Ô¤Ë¤ÏÄó¶¡¤µ¤ì¤Þ¤»¤ó¡£\n"
-"¤½¤ì¤ò¹Ô¤¦¤Ë¤Ï¡¢²æ¡¹¤¬ web-of-trust ¤ò¼ÂÁõ¤¹¤ëÉ¬Í×¤¬¤¢¤ê¤Þ¤¹¤¬¡¢\n"
-"(°ÅÌÛÅª¤ËºîÀ®¤µ¤ì¤¿) web-of-certificates ¤¬Ìµ¤¯¤Æ¤Ï²¿¤â¤Ç¤­¤Þ¤»¤ó¡£"
+"¤³¤ÎÃÍ¤ÎÀßÄê¤Ï¡¢¤¢¤Ê¤¿¼¡Âè¤Ç¤¹¡£¤³¤ÎÃÍ¤Ï¡¢Âè»°¼Ô¤Ë·è¤·\n"
+"¤ÆÄó¶¡¤µ¤ì¤Þ¤»¤ó¡£¤³¤ì¤Ï¡¢web-of-trust ¤Î¼ÂÁõ¤ËÉ¬Í×¤Ç¡¢\n"
+"(°ÅÌÛÅª¤Ë¤Ç¤­¤¿) web-of-certificates ¤È¤ÏÌµ´Ø·¸¤Ç¤¹¡£"
 
 #: g10/helptext.c:53
 msgid "If you want to use this revoked key anyway, answer \"yes\"."
-msgstr "¤³¤ÎÇË´þ¤µ¤ì¤¿¸°¤ò»È¤¤¤¿¤¯¤Ê¤±¤ì¤Ð¡¢\"no\" ¤ÈÅú¤¨¤Æ²¼¤µ¤¤¡£"
+msgstr "¤³¤ÎÇË´þ¤µ¤ì¤¿¸°¤ò»È¤¤¤¿¤¯¤Ê¤±¤ì¤Ð¡¢¡Öno¡×¤ÈÅú¤¨¤Æ¤¯¤À¤µ¤¤¡£"
 
 #: g10/helptext.c:57
 msgid "If you want to use this untrusted key anyway, answer \"yes\"."
-msgstr "¤³¤Î¿®ÍÑ¤Ç¤­¤Ê¤¤¸°¤ò»È¤¤¤¿¤¯¤Ê¤±¤ì¤Ð¡¢\"no\" ¤ÈÅú¤¨¤Æ²¼¤µ¤¤¡£"
+msgstr "¤³¤Î¿®ÍÑ¤Ç¤­¤Ê¤¤¸°¤ò»È¤¤¤¿¤¯¤Ê¤±¤ì¤Ð¡¢¡Öno¡×¤ÈÅú¤¨¤Æ¤¯¤À¤µ¤¤¡£"
 
 #: g10/helptext.c:61
 msgid ""
 "Enter the user ID of the addressee to whom you want to send the message."
-msgstr "¥á¥Ã¥»¡¼¥¸¤òÁ÷¤ëÁê¼ê¥¢¥É¥ì¥¹¤Î¥æ¡¼¥¶ ID ¤òÆþÎÏ¤·¤Æ²¼¤µ¤¤¡£"
+msgstr "¥á¥Ã¥»¡¼¥¸¤òÁ÷¤ëÁê¼ê¥¢¥É¥ì¥¹¤Î¥æ¡¼¥¶¡¼ID¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£"
 
 #: g10/helptext.c:65
 msgid ""
@@ -3484,22 +3520,21 @@ msgid ""
 "this is the reason why the encryption only ElGamal key is not available in\n"
 "this menu."
 msgstr ""
-"»ÈÍÑ¤¹¤ë¥¢¥ë¥´¥ê¥º¥à¤ÎÁªÂò\n"
+"»ÈÍÑ¤¹¤ë¥¢¥ë¥´¥ê¥º¥à¤òÁªÂò¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
 "\n"
-"DSA (ÊÌÌ¾ DSS) ¤Ï¡¢½ðÌ¾¤Ë¤Î¤ßÍÑ¤¤¤ë¤³¤È¤¬¤Ç¤­¤ëÅÅ»Ò½ðÌ¾¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹¡£\n"
-"DSA ½ðÌ¾¤Ï ElGamal Ë¡¤è¤ê¤â¹âÂ®¤Ë¸¡¾Ú¤Ç¤­¤ë¤Î¤Ç¡¢¤³¤ì¤Ï¿ä¾©¤¹¤ë¥¢¥ë¥´¥ê¥º¥à\n"
-"¤Ç¤¹¡£\n"
+"DSA (ÊÌÌ¾DSS) ¤Ï¡¢½ðÌ¾¤Ë¤Î¤ßÍÑ¤¤¤ë¤³¤È¤¬¤Ç¤­¤ëÅÅ»Ò½ðÌ¾¥¢¥ë¥´¥ê\n"
+"¥º¥à¤Ç¤¹¡£DSA½ðÌ¾¤ÏElGamalË¡¤è¤ê¤â¹âÂ®¤Ë¸¡¾Ú¤Ç¤­¤ë¤Î¤Ç¡¢¤³¤ì¤Ï\n"
+"¿ä¾©¤¹¤ë¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹¡£\n"
 "\n"
-"ElGamal ¤Ï¡¢½ðÌ¾¤È°Å¹æ²½¤ËÍÑ¤¤¤ë¤³¤È¤¬¤Ç¤­¤ë¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹¡£\n"
-"OpenPGP "
-"¤Ç¤Ï¡¢¤³¤Î¥¢¥ë¥´¥ê¥º¥à¤Î¡Ö°Å¹æ²½¤Î¤ß¡×¤È¡Ö½ðÌ¾+°Å¹æ²½¡×¤Î£²¤Ä¤ÎÍÑË¡¤ò\n"
-"¶èÊÌ¤·¤Æ¤¤¤Þ¤¹¤¬¡¢¼ÂºÝ¤Ë¤ÏÆ±¤¸¤Ç¤¹¡£¤·¤«¤·¡¢½ðÌ¾ÍÑ¤Î°ÂÁ´¤Ê¸°¤òÀ¸À®¤¹¤ë¤Ë¤Ï\n"
-"¤¤¤¯¤Ä¤«¤ÎÊÑ¿ô¤òÆÃÊÌ¤ÊÊýË¡¤ÇÁªÂò¤·¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó¡£¤³¤Î¥×¥í¥°¥é¥à¤Ç¤Ï¡¢\n"
-"¤½¤ì¤Ï²ÄÇ½¤Ç¤¹¤¬¡¢OpenPGP "
-"¤ÎÂ¾¤Î¼ÂÁõ¤Ç¤Ï¡Ö½ðÌ¾+°Å¹æ²½¡×¤ÎÍÑË¡¤ò²ò¼á¤·¤Þ¤»¤ó¡£\n"
+"ElGamal¤Ï¡¢½ðÌ¾¤È°Å¹æ²½¤ËÍÑ¤¤¤ë¤³¤È¤¬¤Ç¤­¤ë¥¢¥ë¥´¥ê¥º¥à¤Ç¤¹¡£\n"
+"OpenPGP¤Ç¤Ï¡¢¤³¤Î¥¢¥ë¥´¥ê¥º¥à¤Î¡Ö°Å¹æ²½¤Î¤ß¡×¤È¡Ö½ðÌ¾+°Å¹æ²½¡×\n"
+"¤Î2¤Ä¤ÎÍÑË¡¤ò¶èÊÌ¤·¤Æ¤¤¤Þ¤¹¤¬¡¢¼ÂºÝ¤Ë¤ÏÆ±¤¸¤Ç¤¹¡£¤·¤«¤·¡¢½ðÌ¾ÍÑ\n"
+"¤Î°ÂÁ´¤Ê¸°¤òºî¤ë¤Ë¤Ï°ìÉô¤ÎÊÑ¿ô¤òÆÃÊÌ¤ÊÊýË¡¤ÇÁªÂò¤·¤Ê¤±¤ì¤Ð¤Ê¤ê\n"
+"¤Þ¤»¤ó¡£¤³¤Î¥×¥í¥°¥é¥à¤Ç¤Ï¤½¤ì¤¬²ÄÇ½¤Ç¤¹¤¬¡¢Â¾¤ÎOpenPGP¤Î¼ÂÁõ¤Ç\n"
+"¤Ï¡¢¡Ö½ðÌ¾+°Å¹æ²½¡×¤ÎÍÑË¡¤ò²ò¼á¤·¤Ê¤¤¤«¤â¤·¤ì¤Þ¤»¤ó¡£\n"
 "\n"
-"ºÇ½é¤Î¸°(¼ç¸°)¤Ï½ðÌ¾¤Ë»ÈÍÑ¤Ç¤­¤ë¸°¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó¡£\n"
-"¤³¤Î¤³¤È¤¬¡Ö°Å¹æ²½¤Î¤ß¡×¤Î ElGamal ¸°¤¬¡¢¤³¤Î¥á¥Ë¥å¡¼¤ËÌµ¤¤¤³¤È¤ÎÍýÍ³¤Ç¤¹¡£"
+"ºÇ½é¤Î¸°(¼ç¸°)¤Ï¡¢½ðÌ¾¤Ë»ÈÍÑ¤Ç¤­¤ë¸°¤Ç¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó¡£¤³¤ì¤¬\n"
+"¤³¤Î¥á¥Ë¥å¡¼¤Ë¡Ö°Å¹æ²½¤Î¤ß¡×¤ÎElGamal¸°¤Î¤Ê¤¤ÍýÍ³¤Ç¤¹¡£"
 
 #: g10/helptext.c:85
 msgid ""
@@ -3507,18 +3542,18 @@ msgid ""
 "because they are not supported by all programs and signatures created\n"
 "with them are quite large and very slow to verify."
 msgstr ""
-"¤³¤ì¤é¤Î¸°¤Ï RFC2440 ¤ËÄêµÁ¤µ¤ì¤Æ¤¤¤Þ¤¹¤¬¡¢¿ä¾©¤·¤Þ¤»¤ó¡£\n"
-"²¿¸Î¤Ê¤é¡¢¤³¤ì¤é¤ÏÁ´¤Æ¤Î¥×¥í¥°¥é¥à¤Ë¤è¤Ã¤Æ¥µ¥Ý¡¼¥È¤µ¤ì¤Æ¤¤¤Ê¤¯¡¢\n"
-"À¸À®¤µ¤ì¤ë½ðÌ¾¤ÏÈó¾ï¤ËÄ¹¤¯¤Æ¡¢¸¡¾Ú¤Ë¤â»þ´Ö¤¬¤«¤«¤ë¤¿¤á¤Ç¤¹¡£"
+"¤³¤ì¤é¤Î¸°¤ÏRFC2440¤ËÄêµÁ¤µ¤ì¤Æ¤¤¤Þ¤¹¤¬¡¢¿ä¾©¤·¤Þ¤»¤ó¡£\n"
+"¤Ê¤¼¤Ê¤é¡¢¤³¤ì¤é¤ò¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Ê¤¤¥×¥í¥°¥é¥à¤¬¤¢¤ê¡¢\n"
+"ºîÀ®¤µ¤ì¤ë½ðÌ¾¤ÏÈó¾ï¤ËÄ¹¤¯¤Æ¡¢¸¡¾Ú¤Ë¤â»þ´Ö¤¬¤«¤«¤ë¤¿¤á¤Ç¤¹¡£"
 
 #: g10/helptext.c:92
 msgid "Enter the size of the key"
-msgstr "¸°¤ÎÄ¹¤µ¤òÆþÎÏ¤·¤Æ²¼¤µ¤¤"
+msgstr "¸°¤ÎÄ¹¤µ¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤"
 
 #: g10/helptext.c:96 g10/helptext.c:101 g10/helptext.c:113 g10/helptext.c:145
 #: g10/helptext.c:150 g10/helptext.c:155 g10/helptext.c:160
 msgid "Answer \"yes\" or \"no\""
-msgstr "\"yes\" ¤Þ¤¿¤Ï \"no\" ¤ÇÅú¤¨¤Æ²¼¤µ¤¤"
+msgstr "¡Öyes¡×¤«¡Öno¡×¤ÇÅú¤¨¤Æ¤¯¤À¤µ¤¤"
 
 #: g10/helptext.c:106
 msgid ""
@@ -3527,22 +3562,22 @@ msgid ""
 "get a good error response - instead the system tries to interpret\n"
 "the given value as an interval."
 msgstr ""
-"¥×¥í¥ó¥×¥È¤Ë¼¨¤µ¤ì¤ë½ñ¼°¤ÇÃÍ¤òÆþÎÏ¤·¤Æ²¼¤µ¤¤¡£\n"
-"ISO ¤ÎÆüÉÕ¤Î½ñ¼° (YYYY-MM-DD) ¤Ç¤âÆþÎÏ¤Ç¤­¤Þ¤¹¤¬¡¢Àµ¤·¤¤¥¨¥é¡¼¤Ï\n"
-"É½¼¨¤µ¤ì¤Ê¤¤¤Ç¤·¤ç¤¦ - ¤½¤ÎÂå¤ï¤ê¤Ë¡¢¥·¥¹¥Æ¥à¤ÏÆþÎÏÃÍ¤ò´Ö³Ö¤ËÊÑ´¹¤¹¤ë\n"
+"¥×¥í¥ó¥×¥È¤Ë¼¨¤¹½ñ¼°¤ÇÃÍ¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
+"ISO¤ÎÆüÉÕ¤Î½ñ¼° (YYYY-MM-DD) ¤Ç¤âÆþÎÏ¤Ç¤­¤Þ¤¹¤¬¡¢Àµ¤·¤¤¥¨¥é¡¼¤Ï\n"
+"É½¼¨¤µ¤ì¤Ê¤¤¤Ç¤·¤ç¤¦¡£¤½¤ÎÂå¤ê¡¢¥·¥¹¥Æ¥à¤ÏÆþÎÏÃÍ¤ò´ü´Ö¤ØÊÑ´¹¤¹¤ë\n"
 "¤è¤¦¤Ë»î¤ß¤Þ¤¹¡£"
 
 #: g10/helptext.c:118
 msgid "Enter the name of the key holder"
-msgstr "¸°¥Û¥ë¥À¤ÎÌ¾Á°¤òÆþÎÏ¤·¤Æ²¼¤µ¤¤"
+msgstr "¸°¥Û¥ë¥À¤ÎÌ¾Á°¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤"
 
 #: g10/helptext.c:123
 msgid "please enter an optional but highly suggested email address"
-msgstr "¥ª¥×¥·¥ç¥ó¤Ç¤¹¤¬¡¢ÅÅ»Ò¥á¡¼¥ë¥¢¥É¥ì¥¹¤òÆþÎÏ¤¹¤ë¤³¤È¤ò¶¯¤¯¿ä¾©¤·¤Þ¤¹"
+msgstr "¥ª¥×¥·¥ç¥ó¤Ç¤¹¤¬¡¢ÅÅ»Ò¥á¡¼¥ë¤Î¥¢¥É¥ì¥¹¤òÆþÎÏ¤¹¤ë¤³¤È¤ò¶¯¤¯¿ä¾©¤·¤Þ¤¹"
 
 #: g10/helptext.c:127
 msgid "Please enter an optional comment"
-msgstr "¥ª¥×¥·¥ç¥ó¤Î¥³¥á¥ó¥È¤òÆþÎÏ¤·¤Æ²¼¤µ¤¤"
+msgstr "¥ª¥×¥·¥ç¥ó¤Î¥³¥á¥ó¥È¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤"
 
 #: g10/helptext.c:132
 msgid ""
@@ -3552,31 +3587,31 @@ msgid ""
 "O  to continue with key generation.\n"
 "Q  to to quit the key generation."
 msgstr ""
-"N  Ì¾Á°¤ÎÊÑ¹¹\n"
-"C  ¥³¥á¥ó¥È¤ÎÊÑ¹¹\n"
-"E  ÅÅ»Ò¥á¡¼¥ë¥¢¥É¥ì¥¹¤ÎÊÑ¹¹\n"
-"O  ¸°¤ÎÀ¸À®¤ÎÂ³¹Ô\n"
-"Q  ¸°¤ÎÀ¸À®¤ÎÃæ»ß"
+"N  Ì¾Á°¤ÎÊÑ¹¹¡£\n"
+"C  ¥³¥á¥ó¥È¤ÎÊÑ¹¹¡£\n"
+"E  ÅÅ»Ò¥á¡¼¥ë¤Î¥¢¥É¥ì¥¹¤ÎÊÑ¹¹¡£\n"
+"O  ¸°¤ÎÀ¸À®¤ÎÂ³¹Ô¡£\n"
+"Q  ¸°¤ÎÀ¸À®¤ÎÃæ»ß¡£"
 
 #: g10/helptext.c:141
 msgid "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
-msgstr "Éû¸°¤òÀ¸À®¤¹¤ë¾ì¹ç¡¢\"yes\" (¤Þ¤¿¤Ï¡¢Ã±¤Ë \"y\") ¤ÈÅú¤¨¤Æ²¼¤µ¤¤¡£"
+msgstr "Éû¸°¤òÀ¸À®¤¹¤ë¾ì¹ç¡¢¡Öyes¡×(¤Þ¤¿¤Ï¡¢Ã±¤Ë¡Öy¡×) ¤ÈÅú¤¨¤Æ¤¯¤À¤µ¤¤¡£"
 
 #: g10/helptext.c:164
 msgid "Answer \"yes\" is you want to sign ALL the user IDs"
-msgstr "Á´¤Æ¤Î ¥æ¡¼¥¶ ID ¤Ë½ðÌ¾¤·¤¿¤±¤ì¤Ð¡¢\"yes\" ¤ÈÅú¤¨¤Æ²¼¤µ¤¤"
+msgstr "Á´¤Æ¤Î ¥æ¡¼¥¶¡¼ID¤Ë½ðÌ¾¤·¤¿¤±¤ì¤Ð¡¢¡Öyes¡×¤ÈÅú¤¨¤Æ¤¯¤À¤µ¤¤"
 
 #: g10/helptext.c:168
 msgid ""
 "Answer \"yes\" if you really want to delete this user ID.\n"
 "All certificates are then also lost!"
 msgstr ""
-"¤³¤ì¤é¤Î¥æ¡¼¥¶ ID ¤ò ËÜÅö¤Ë ºï½ü¤·¤¿¤±¤ì¤Ð¡¢\"yes\" "
-"¤ÈÅú¤¨¤Æ²¼¤µ¤¤Á´¤Æ¤Î¾ÚÌÀ½ñ¤âÆ±»þ¤Ëºï½ü¤µ¤ì¤Þ¤¹!"
+"¤³¤ì¤é¤Î¥æ¡¼¥¶¡¼ID¤òËÜÅö¤Ëºï½ü¤·¤¿¤±¤ì¤Ð¡¢¡Öyes¡×¤ÈÅú¤¨¤Æ¤¯¤À¤µ¤¤¡£\n"
+"¾ÚÌÀ½ñ¤âÁ´ÉôÆ±»þ¤Ëºï½ü¤·¤Þ¤¹!"
 
 #: g10/helptext.c:173
 msgid "Answer \"yes\" if it is okay to delete the subkey"
-msgstr "¤³¤ÎÉû¸°¤òºï½ü¤¹¤ë¾ì¹ç¡¢\"yes\" ¤ÈÅú¤¨¤Æ²¼¤µ¤¤"
+msgstr "¤³¤ÎÉû¸°¤òºï½ü¤¹¤ë¾ì¹ç¡¢¡Öyes¡×¤ÈÅú¤¨¤Æ¤¯¤À¤µ¤¤"
 
 #: g10/helptext.c:178
 msgid ""
@@ -3584,9 +3619,9 @@ msgid ""
 "to delete this signature because it may be important to establish a\n"
 "trust connection to the key or another key certified by this key."
 msgstr ""
-"¤³¤ì¤Ï¸°¤ËÂÐ¤¹¤ëÍ­¸ú¤Ê½ðÌ¾¤Ç¤¹¡£ÄÌ¾ï¤Ï¤³¤Î½ðÌ¾¤Ïºï½ü¤·¤¿¤¯¤Ê¤¤¤Ç¤·¤ç¤¦¡£\n"
-"²¿¸Î¤Ê¤é¡¢¤³¤Î½ðÌ¾¤Ï¡¢¸°¤Ø¤Î¿®ÍÑ¤ÎÎØ¤ÎºîÀ®¤ä¡¢¤³¤Î¸°¤Ë¤è¤ë¾ÚÌÀ¤Ë¤È¤Ã¤Æ\n"
-"½ÅÍ×¤À¤«¤é¤Ç¤¹¡£"
+"¤³¤ì¤Ï¸°¤Ë¤¿¤¤¤¹¤ëÍ­¸ú¤Ê½ðÌ¾¤Ç¤¹¡£ÉáÄÌ¤³¤Î½ðÌ¾¤òºï½ü¤¹¤ë¤Ù¤­¤Ç\n"
+"¤Ï¤Ê¤¤¤Ç¤·¤ç¤¦¡£¤Ê¤¼¤Ê¤é¡¢¤³¤Î½ðÌ¾¤Ï¡¢¸°¤Ø¤Î¿®ÍÑ¤ÎÎØ¤ÎºîÀ®¤ä¡¢\n"
+"¤³¤Î¸°¤Ë¤è¤ë¾ÚÌÀ¤Ë¤È¤Ã¤Æ½ÅÍ×¤À¤«¤é¤Ç¤¹¡£"
 
 #: g10/helptext.c:183
 msgid ""
@@ -3596,17 +3631,17 @@ msgid ""
 "a trust connection through another already certified key."
 msgstr ""
 "¤³¤Î½ðÌ¾¤È°ìÃ×¤¹¤ë¸°¤òÊÝÍ­¤·¤Æ¤¤¤Ê¤¤¤Î¤Ç¡¢¤³¤Î½ðÌ¾¤Ï¸¡¾Ú¤Ç¤­¤Þ¤»¤ó¡£\n"
-"¤¢¤Ê¤¿¤Ï¤½¤Î¸°¤¬»ÈÍÑ¤µ¤ì¤ë¤Þ¤Ç¤Ï¡¢¤³¤Î½ðÌ¾¤Îºï½ü¤òÊÝÎ±¤¹¤ë¤Ù¤­¤Ç¤¹¡£\n"
-"²¿¸Î¤Ê¤é¡¢¤³¤Î½ðÌ¾¤Î¸°¤Ï¡¢Â¾¤Î¾ÚÌÀ¤µ¤ì¤¿¸°¤Ë¤è¤Ã¤Æ¿®ÍÑ¤ÎÎØ¤ò·ÁÀ®¤¹¤ë¤«¤â\n"
-"ÃÎ¤ì¤Ê¤¤¤«¤é¤Ç¤¹¡£"
+"¤½¤Î¸°¤¬»ÈÍÑ¤µ¤ì¤ë¤Þ¤Ç¤Ï¡¢¤¢¤Ê¤¿¤Ï¤³¤Î½ðÌ¾¤Îºï½ü¤òÊÝÎ±¤¹¤ë¤Ù¤­¤Ç¤¹¡£\n"
+"¤Ê¤¼¤Ê¤é¡¢¤³¤Î½ðÌ¾¤Î¸°¤Ï¡¢Â¾¤Î¾ÚÌÀ¤µ¤ì¤¿¸°¤Ç¿®ÍÑ¤ÎÎØ¤ò·ÁÀ®¤¹¤ë¤«¤â\n"
+"¤·¤ì¤Ê¤¤¤«¤é¤Ç¤¹¡£"
 
 #: g10/helptext.c:189
 msgid ""
 "The signature is not valid.  It does make sense to remove it from\n"
 "your keyring."
 msgstr ""
-"¤³¤Î½ðÌ¾¤ÏÍ­¸ú¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó¡£¤³¤Î¤³¤È¤Ï¡¢¤¢¤Ê¤¿¤Î¸°¥ê¥ó¥°¤«¤éºï½ü¤¹¤Ù¤­¤À\n"
-"¤È¤¤¤¦¤³¤È¤ò°ÕÌ£¤·¤Æ¤¤¤Þ¤¹¡£"
+"¤³¤Î½ðÌ¾¤ÏÍ­¸ú¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó¡£¤³¤Î¤³¤È¤Ï¡¢¤¢¤Ê¤¿¤Î¸°ÎØ¤«¤éºï½ü¤¹¤Ù¤­¤À\n"
+"¤È¤¤¤¦°ÕÌ£¤Ç¤¹¡£"
 
 #: g10/helptext.c:193
 msgid ""
@@ -3616,38 +3651,38 @@ msgid ""
 "only if this self-signature is for some reason not valid and\n"
 "a second one is available."
 msgstr ""
-"¤³¤ì¤Ï¡¢¸°¤Î¥æ¡¼¥¶ ID ¤ËÂÐ±þ¤·¤¿½ðÌ¾¤Ç¤¹¡£ÄÌ¾ï¡¢¤³¤Î½ðÌ¾¤òºï½ü¤¹¤ë¤Î¤Ï\n"
-"ÎÉ¤¤¹Í¤¨¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó¡£¼ÂºÝ¤Ë¤Ï¡¢GnuPG ¤Ï¤â¤Ï¤ä¤³¤Î¸°¤ò»È¤¨¤Ê¤¤¤Î¤«¤â\n"
-"ÃÎ¤ì¤Þ¤»¤ó¡£¤è¤Ã¤Æ¡¢¤³¤Î¼«¸Ê½ðÌ¾¤¬²¿¤é¤«¤ÎÍýÍ³¤Ë¤è¤êÌµ¸ú¤Ç¤¢¤Ã¤Æ¡¢\n"
-"ÂåÂØ¤È¤Ê¤ë¸°¤¬¤¢¤ë¾ì¹ç¤Ë¤Î¤ß¡¢ºï½ü¤ò¼Â¹Ô¤·¤Æ²¼¤µ¤¤¡£"
+"¤³¤ì¤Ï¡¢¸°¤Î¥æ¡¼¥¶¡¼ID¤ËÂÐ±þ¤·¤¿½ðÌ¾¤Ç¤¹¡£ÄÌ¾ï¡¢¤³¤Î½ðÌ¾¤òºï½ü¤¹¤ë¤Î¤Ï\n"
+"¤¤¤¤¹Í¤¨¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó¡£¼ÂºÝ¤Ë¤Ï¡¢GnuPG¤Ï¤â¤Ï¤ä¤³¤Î¸°¤ò»È¤¨¤Ê¤¤¤Î¤«¤â\n"
+"¤·¤ì¤Þ¤»¤ó¡£¤è¤Ã¤Æ¡¢¤³¤Î¼«¸Ê½ðÌ¾¤¬²¿¤é¤«¤ÎÍýÍ³¤Ë¤è¤êÌµ¸ú¤Ç¤¢¤Ã¤Æ¡¢\n"
+"ÂåÂØ¤È¤Ê¤ë¸°¤¬¤¢¤ë¾ì¹ç¤Ë¤Î¤ß¡¢ºï½ü¤ò¼Â¹Ô¤·¤Æ¤¯¤À¤µ¤¤¡£"
 
 #: g10/helptext.c:202
 msgid ""
 "Please enter the passhrase; this is a secret sentence \n"
 "  Blurb, blurb,.... "
 msgstr ""
-"¥Ñ¥¹¥Õ¥ì¡¼¥º¤òÆþÎÏ¤·¤Æ²¼¤µ¤¤¡£¤³¤ì¤ÏÈëÌ©¤ÎÊ¸¾Ï¤Î¤³¤È¤Ç¤¹¡£\n"
-"  ¥Û¥²¥Û¥².... "
+"¥Ñ¥¹¥Õ¥ì¡¼¥º¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£¤³¤ì¤ÏÈëÌ©¤ÎÊ¸¾Ï¤Î¤³¤È¤Ç¤¹¡£\n"
+"  ¤«¤¯¤«¤¯¤·¤«¤¸¤«¡¢¤¢¤ì¤³¤ì¡Ä "
 
 #: g10/helptext.c:209
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
-msgstr "ÆþÎÏ¤·¤¿¥Õ¥ì¡¼¥º¤ò³ÎÇ§¤¹¤ë¤¿¤á¤Ë¡¢¥Ñ¥¹¥Õ¥ì¡¼¥º¤òºÆÆþÎÏ¤·¤Æ²¼¤µ¤¤¡£"
+msgstr "ÆþÎÏ¤·¤¿¥Ñ¥¹¥Õ¥ì¡¼¥º¤Î³ÎÇ§¤Î¤¿¤á¡¢ºÆÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£"
 
 #: g10/helptext.c:213
 msgid "Give the name of the file to which the signature applies"
-msgstr "½ðÌ¾¤ò¹Ô¤¦¥Õ¥¡¥¤¥ë¤ÎÌ¾Á°¤òµ­½Ò¤·¤Æ²¼¤µ¤¤"
+msgstr "½ðÌ¾¤ò¹Ô¤¦¥Õ¥¡¥¤¥ë¤ÎÌ¾Á°¤ò»ØÄê¤·¤Æ¤¯¤À¤µ¤¤"
 
 #: g10/helptext.c:218
 msgid "Answer \"yes\" if it is okay to overwrite the file"
-msgstr "¾å½ñ¤­¤·¤Æ¤âÎÉ¤±¤ì¤Ð¡¢\"yes\" ¤ÈÅú¤¨¤Æ²¼¤µ¤¤"
+msgstr "¾å½ñ¤­¤·¤Æ¤è¤±¤ì¤Ð¡¢¡Öyes¡×¤ÈÅú¤¨¤Æ¤¯¤À¤µ¤¤"
 
 #: g10/helptext.c:223
 msgid ""
 "Please enter a new filename. If you just hit RETURN the default\n"
 "file (which is shown in brackets) will be used."
 msgstr ""
-"¿·¤·¤¤¥Õ¥¡¥¤¥ëÌ¾¤òÆþÎÏ¤·¤Æ²¼¤µ¤¤¡£Ã±¤Ë¥ê¥¿¡¼¥ó¥­¡¼¤ò²¡¤¹¤È¡¢\n"
-"¥Ç¥Õ¥©¥ë¥È¤Î¥Õ¥¡¥¤¥ëÌ¾ (³ç¸Ì¤Ç°Ï¤Þ¤ì¤¿¤â¤Î) ¤¬»ÈÍÑ¤µ¤ì¤Þ¤¹"
+"¿·¤·¤¤¥Õ¥¡¥¤¥ëÌ¾¤òÆþÎÏ¤·¤Æ¤¯¤À¤µ¤¤¡£Ã±¤Ë¥ê¥¿¡¼¥ó¡¦¥­¡¼¤ò²¡¤¹¤È¡¢\n"
+"(³ç¸Ì¤Ç°Ï¤ó¤À) ´ûÄê¤Î¥Õ¥¡¥¤¥ëÌ¾¤ò»ÈÍÑ¤·¤Þ¤¹¡£"
 
 #: g10/helptext.c:229
 msgid ""
@@ -3664,6 +3699,19 @@ msgid ""
 "      Use this to state that the user ID should not longer be used;\n"
 "      this is normally used to mark an email address invalid.\n"
 msgstr ""
+"¾ÚÌÀ½ñ¤ËÍýÍ³¤ò»ØÄê¤¹¤ëÉ¬Í×¤¬¤¢¤ê¤Þ¤¹¡£Á°¸å´Ø·¸¤Ë¤â¤è¤ê¤Þ¤¹¤¬¡¢\n"
+"°Ê²¼¤«¤éÁª¤Ö¤³¤È¤¬¤Ç¤­¤Þ¤¹¡£\n"
+"  ¡Ö¸°¤¬¥Ñ¥¯¤é¤ì¤Þ¤·¤¿¡×\n"
+"      Ç§¾Ú¤µ¤ì¤Æ¤¤¤Ê¤¤¿Í¤¬ÈëÌ©¸°¤Ø¤Î¥¢¥¯¥»¥¹¤òÆÀ¤¿¡¢¤È¿®¤º¤ë\n"
+"      ¤ËÂ­¤ëÍýÍ³¤Î¤¢¤ë¤È¤­¤Ë¡¢¤³¤ì¤ò»È¤¤¤Þ¤¹¡£\n"
+"  ¡Ö¸°¤¬¤È¤ê¤«¤ï¤Ã¤Æ¤¤¤Þ¤¹¡×\n"
+"      ¤³¤Î¸°¤ò¼«Ê¬¤Ç¿·¤·¤¤¸°¤È¤È¤ê¤«¤¨¤¿¤È¤­¤Ë»È¤¤¤Þ¤¹¡£\n"
+"  ¡Ö¸°¤Ï¤â¤¦»È¤ï¤ì¤Æ¤¤¤Þ¤»¤ó¡×\n"
+"      ¤³¤Î¸°¤ò»È¤¦¤Î¤ò¤ä¤á¤¿¤È¤­¤Ë»È¤¤¤Þ¤¹¡£\n"
+"  ¡Ö¥æ¡¼¥¶¡¼ID¤¬¤â¤¦Í­¸ú¤Ç¤¢¤ê¤Þ¤»¤ó¡×\n"
+"      ¤â¤¦¤½¤Î¥æ¡¼¥¶¡¼ID¤Ï»È¤¦¤Ù¤­¤Ç¤Ê¤¤¡¢¤È¤¤¤¦¤È¤­¤Ë»È¤¤\n"
+"      ¤Þ¤¹¡£¤³¤ì¤ÏÉáÄÌ¡¢ÅÅ»Ò¥á¡¼¥ë¤Î¥¢¥É¥ì¥¹¤¬Ìµ¸ú¤Ë¤Ê¤Ã¤¿¤È\n"
+"      ¤­¤Ë»È¤¤¤Þ¤¹¡£\n"
 
 #: g10/helptext.c:245
 msgid ""
@@ -3671,6 +3719,9 @@ msgid ""
 "revocation certificate.  Please keep this text concise.\n"
 "An empty line ends the text.\n"
 msgstr ""
+"¤â¤·¤½¤¦¤·¤¿¤±¤ì¤Ð¡¢¤Ê¤¼ÇË´þ¾ÚÌÀ½ñ¤òÈ¯¹Ô¤¹¤ë¤Î¤«¤òÀâÌÀ¤¹¤ë¥Æ\n"
+"¥­¥¹¥È¤òÆþÎÏ¤¹¤ë¤³¤È¤¬¤Ç¤­¤Þ¤¹¡£¥Æ¥­¥¹¥È¤Ï´Ê·é¤Ë¤·¤Æ¤¯¤À¤µ¤¤¡£\n"
+"¶õ¹Ô¤Ç½ª¤ï¤ê¤Ë¤Ê¤ê¤Þ¤¹¡£\n"
 
 #: g10/helptext.c:260
 msgid "No help available"
@@ -3679,33 +3730,4 @@ msgstr "¥Ø¥ë¥×¤Ï¤¢¤ê¤Þ¤»¤ó"
 #: g10/helptext.c:268
 #, c-format
 msgid "No help available for `%s'"
-msgstr "`%s' ¤Ø¤Î¥Ø¥ë¥×¤Ï¤¢¤ê¤Þ¤»¤ó"
-
-#~ msgid ""
-#~ "RSA keys are deprecated; please consider creating a new key and use this key "
-#~ "in the future\n"
-#~ msgstr ""
-#~ "RSA "
-#~ "¸°¤ÏÈ¿ÂÐ¤µ¤ì¤Æ¤¤¤Þ¤¹¡£¿·¤·¤¤¸°¤òºîÀ®¤·¤Æº£¸å¤Ï¤½¤Î¸°¤òÍÑ¤¤¤ë¤³¤È¤ò¸¡Æ¤¤·¤Æ¤¯¤"
-#~ "À¤µ¤¤\n"
-
-#~ msgid "set debugging flags"
-#~ msgstr "¥Ç¥Ð¥Ã¥°¥Õ¥é¥°¤ò¥»¥Ã¥È¤¹¤ë"
-
-#~ msgid "enable full debugging"
-#~ msgstr "Á´¤Æ¤Î¥Ç¥Ð¥Ã¥°¤òÍ­¸ú¤Ë¤¹¤ë"
-
-#~ msgid "do not write comment packets"
-#~ msgstr "¥³¥á¥ó¥È¥Ñ¥±¥Ã¥È¤ò½ñ¤­½Ð¤µ¤Ê¤¤"
-
-#~ msgid "(default is 1)"
-#~ msgstr "(¥Ç¥Õ¥©¥ë¥È¤Ï 1)"
-
-#~ msgid "(default is 3)"
-#~ msgstr "(¥Ç¥Õ¥©¥ë¥È¤Ï 3)"
-
-#~ msgid "   (%d) ElGamal in a v3 packet\n"
-#~ msgstr "   (%d) ElGamal in a v3 packet\n"
-
-#~ msgid "Key generation can only be used in interactive mode\n"
-#~ msgstr "¸°¤ÎºîÀ®¤ÏÂÐÏÃ¥â¡¼¥É¤Ç¤·¤«¼Â¹Ô¤Ç¤­¤Þ¤»¤ó\n"
+msgstr "`%s'¤Î¥Ø¥ë¥×¤Ï¤¢¤ê¤Þ¤»¤ó"

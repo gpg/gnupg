@@ -928,8 +928,15 @@ armor_filter( void *opaque, int control,
 		iobuf_writestr(a, LF );
 	    }
 
-	    if( afx->hdrlines )
-		iobuf_writestr(a, afx->hdrlines);
+	    if ( afx->hdrlines ) {
+                for ( s = afx->hdrlines; *s; s++ ) {
+                  #ifdef HAVE_DOSISH_SYSTEM
+                    if ( *s == '\n' )
+                        iobuf_put( a, '\r');
+                  #endif
+                    iobuf_put(a, *s );
+                }
+            }
 	    iobuf_writestr(a, LF );
 	    afx->status++;
 	    afx->idx = 0;

@@ -33,6 +33,9 @@ Niklas Hernaeus <nh@df.lth.se> Disclaimer
 Nils Ellmenreich  <nils 'at' infosun.fmi.uni-passau.de> Assignment
     (configure.in, cipher/rndlinux.c, FAQ)
 
+Paul Eggert <eggert@twinsun.com> 
+    (configuration macros for LFS)
+
 Pedro Morais <morais@poli.org> Translations [pt_BR]
 
 Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assignment
@@ -50,7 +53,7 @@ Walter Koch <koch@hsp.de>  Translations [de]
 Werner Koch  <wk@gnupg.org>  Assignment
     (started the whole thing)
 
-Yosiaki IIDA <iida@secom.ne.jp> Translations [ja]
+Yosiaki IIDA <iida@ring.gr.jp> Translations [ja]
 
 
 

@@ -1106,7 +1106,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
     int rc;
     PACKET pkt;
     int save_mode;
-    ulong offset;
+    off_t offset;
     int pkttype = req->pkttype;
     PKT_public_key *req_pk = req->pkt.public_key;
     PKT_secret_key *req_sk = req->pkt.secret_key;
@@ -1188,9 +1188,9 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     }
 
     if( !kbpos->valid )
-	log_debug("kbpos not valid in keyring_read, want %d\n", (int)kbpos->offset );
+       log_debug("kbpos not valid in keyring_read\n" );
     if( iobuf_seek( a, kbpos->offset ) ) {
-	log_error("can't seek to %lu\n", kbpos->offset);
+       log_error("can't seek\n");
 	iobuf_close(a);
 	return G10ERR_KEYRING_OPEN;
     }

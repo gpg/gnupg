@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -34,11 +35,6 @@
 #include "memory.h"
 #include "util.h"
 #include "iobuf.h"
-
-#if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
-  #define fopen(a,b)  fopen64 ((a),(b))
-  #define fstat(a,b)  fstat64 ((a),(b))
-#endif
 
 
 typedef struct {
@@ -65,6 +61,7 @@ typedef struct {
     int eof;
 } block_filter_ctx_t;
 
+static int special_names_enabled;
 
 static int underflow(IOBUF a);
 
@@ -573,6 +570,32 @@ iobuf_temp_with_content( const char *buffer, size_t length )
     return a;
 }
 
+void
+iobuf_enable_special_filenames ( int yes )
+{
+    special_names_enabled = yes;
+}
+
+/*
+ * see whether the filename has the for "-&nnnn", where n is a
+ * non-zero number.
+ * Returns this number or -1 if it is not the case.
+ */
+static int
+check_special_filename ( const char *fname )
+{
+    if ( special_names_enabled
+         && fname && *fname == '-' && fname[1] == '&' ) {
+        int i;
+
+        fname += 2;
+        for (i=0; isdigit (fname[i]); i++ )
+            ;
+        if ( !fname[i] ) 
+            return atoi (fname);
+    }
+    return -1;
+}
 
 /****************
  * Create a head iobuf for reading from a file
@@ -586,6 +609,7 @@ iobuf_open( const char *fname )
     file_filter_ctx_t *fcx;
     size_t len;
     int print_only = 0;
+    int fd;
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
 	fp = stdin;
@@ -595,6 +619,8 @@ iobuf_open( const char *fname )
 	fname = "[stdin]";
 	print_only = 1;
     }
+    else if ( (fd = check_special_filename ( fname )) != -1 )
+        return iobuf_fdopen ( fd, "rb" );
     else if( !(fp = fopen(fname, "rb")) )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
@@ -655,6 +681,7 @@ iobuf_create( const char *fname )
     file_filter_ctx_t *fcx;
     size_t len;
     int print_only = 0;
+    int fd;
 
     if( !fname || (*fname=='-' && !fname[1]) ) {
 	fp = stdout;
@@ -664,6 +691,8 @@ iobuf_create( const char *fname )
 	fname = "[stdout]";
 	print_only = 1;
     }
+    else if ( (fd = check_special_filename ( fname )) != -1 )
+        return iobuf_fdopen ( fd, "wb" );
     else if( !(fp = fopen(fname, "wb")) )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
@@ -686,6 +715,7 @@ iobuf_create( const char *fname )
 /****************
  * append to an iobuf; if the file does not exist, create it.
  * cannot be used for stdout.
+ * Note: This is not used.
  */
 IOBUF
 iobuf_append( const char *fname )
@@ -1298,7 +1328,7 @@ iobuf_flush_temp( IOBUF temp )
  * Setting the limit to 0 disables this feature.
  */
 void
-iobuf_set_limit( IOBUF a, unsigned long nlimit )
+iobuf_set_limit( IOBUF a, off_t nlimit )
 {
     if( nlimit )
 	a->nofast |= 1;
@@ -1314,25 +1344,16 @@ iobuf_set_limit( IOBUF a, unsigned long nlimit )
 /****************
  * Return the length of an open file
  */
-u32
+off_t
 iobuf_get_filelength( IOBUF a )
 {
-#if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
-    struct stat64 st;
-#else
     struct stat st;
-#endif
 
     if( a->directfp )  {
 	FILE *fp = a->directfp;
 
-	if( !fstat(fileno(fp), &st) ) {
-          #if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
-            if( st.st_size >= IOBUF_FILELENGTH_LIMIT )
-                return IOBUF_FILELENGTH_LIMIT;
-          #endif
-	    return (u32)st.st_size;
-        }
+       if( !fstat(fileno(fp), &st) )
+           return st.st_size;
 	log_error("fstat() failed: %s\n", strerror(errno) );
 	return 0;
     }
@@ -1343,13 +1364,8 @@ iobuf_get_filelength( IOBUF a )
 	    file_filter_ctx_t *b = a->filter_ov;
 	    FILE *fp = b->fp;
 
-	    if( !fstat(fileno(fp), &st) ) {
-              #if defined (HAVE_FOPEN64) && defined (HAVE_FSTAT64)
-                if( st.st_size >= IOBUF_FILELENGTH_LIMIT )
-                    return IOBUF_FILELENGTH_LIMIT;
-              #endif
+           if( !fstat(fileno(fp), &st) )
 		return st.st_size;
-            }
 	    log_error("fstat() failed: %s\n", strerror(errno) );
 	    break;
 	}
@@ -1360,27 +1376,55 @@ iobuf_get_filelength( IOBUF a )
 /****************
  * Tell the file position, where the next read will take place
  */
-ulong
+off_t
 iobuf_tell( IOBUF a )
 {
     return a->ntotal + a->nbytes;
 }
 
 
+#if !defined(HAVE_FSEEKO) && !defined(fseeko)
+
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
+#ifndef LONG_MAX
+# define LONG_MAX ((long) ((unsigned long) -1 >> 1))
+#endif
+#ifndef LONG_MIN
+# define LONG_MIN (-1 - LONG_MAX)
+#endif
+
+/****************
+ * A substitute for fseeko, for hosts that don't have it.
+ */
+static int
+fseeko( FILE *stream, off_t newpos, int whence )
+{
+    while( newpos != (long) newpos ) {
+       long pos = newpos < 0 ? LONG_MIN : LONG_MAX;
+       if( fseek( stream, pos, whence ) != 0 )
+           return -1;
+       newpos -= pos;
+       whence = SEEK_CUR;
+    }
+    return fseek( stream, (long)newpos, whence );
+}
+#endif
 
 /****************
  * This is a very limited implementation. It simply discards all internal
  * buffering and removes all filters but the first one.
  */
 int
-iobuf_seek( IOBUF a, ulong newpos )
+iobuf_seek( IOBUF a, off_t newpos )
 {
     file_filter_ctx_t *b = NULL;
 
     if( a->directfp ) {
 	FILE *fp = a->directfp;
-	if( fseek( fp, newpos, SEEK_SET ) ) {
-	    log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
+       if( fseeko( fp, newpos, SEEK_SET ) ) {
+           log_error("can't seek: %s\n", strerror(errno) );
 	    return -1;
 	}
 	clearerr(fp);
@@ -1394,8 +1438,8 @@ iobuf_seek( IOBUF a, ulong newpos )
 	}
 	if( !a )
 	    return -1;
-	if( fseek( b->fp, newpos, SEEK_SET ) ) {
-	    log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
+       if( fseeko( b->fp, newpos, SEEK_SET ) ) {
+           log_error("can't seek: %s\n", strerror(errno) );
 	    return -1;
 	}
     }

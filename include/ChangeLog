@@ -1,3 +1,9 @@
+2000-11-11  Paul Eggert  <eggert@twinsun.com>
+
+        * iobuf.h (iobuf_get_filelength): Now returns off_t, not u32.
+        (struct iobuf_struct, iobuf_set_limit,
+        iobuf_tell, iobuf_seek): Use off_t, not ulong, for file offsets.
+
 2000-10-12  Werner Koch  <wk@gnupg.org>
 
 	* mpi.h: Changed the way mpi_limb_t is defined.

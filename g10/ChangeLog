@@ -1,4 +1,35 @@
+2000-11-11  Paul Eggert  <eggert@twinsun.com>
+
+	Clean up the places in the code that incorrectly use "long" or
+        "unsigned long" for file offsets.  The correct type to use is
+        "off_t".  The difference is important on large-file hosts,
+        where "off_t" is longer than "long".
+
+        * keydb.h (struct keyblock_pos_struct.offset):
+        Use off_t, not ulong, for file offsets.
+        * packet.h (dbg_search_packet, dbg_copy_some_packets,
+        search_packet, copy_some_packets): Likewise.
+        * parse-packet.c (parse, dbg_search_packet, search_packet,
+        dbg_copy_some_packets, copy_some_packets): Likewise.
+        * ringedit.c (keyring_search): Likewise.
+
+        * parse-packet.c (parse): Do not use %lu to report file
+        offsets in error diagnostics; it's not portable.
+        * ringedit.c (keyring_search): Likewise.
+
+2000-11-09  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): New option --enable-special-filenames.
+
+2000-11-07  Werner Koch  <wk@gnupg.org>
+ 
+	* g10.c (main): New command --pipemode.
+	* pipemode.c: New.
+
 2000-10-23  Werner Koch  <wk@gnupg.org>
+
+	* armor.c (armor_filter): Changed output of hdrlines, so that a CR
+	is emitted for DOS systems.
 
 	* keygen.c (read_parameter_file): Add a cast for isspace().
 

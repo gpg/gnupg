@@ -161,4 +161,3 @@ verify_files( int nfiles, char **files )
     }
     return 0;
 }
-

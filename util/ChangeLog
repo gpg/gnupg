@@ -1,6 +1,29 @@
+2000-11-11  Paul Eggert  <eggert@twinsun.com>
+
+        * iobuf.c (iobuf_get_filelength): Now returns off_t, not u32.
+        Remove kludges to worry about large files; the callers check
+        for files that are too large, and they should already be doing
+        the right thing in an implementation-independent way.
+        (fopen, fstat): Remove macros.
+
+        * iobuf.c (iobuf_set_limit, iobuf_tell, iobuf_seek): 
+        Use off_t, not ulong, for file offsets.
+        (<limits.h>): Include if needed.
+        (LONG_MAX, LONG_MIN): Define a substitute if needed.
+        (fseeko): Define a substitute if needed.
+
+        * iobuf.c (iobuf_seek):  Do not use %lu to report file
+
+2000-11-09  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (iobuf_enable_special_filenames): New.
+	(check_special_filename): New.
+	(iobuf_open): check for special filenames.
+	(iobuf_create): Ditto.
+
 2000-10-23  Werner Koch  <wk@gnupg.org>
 
-	* secmem.c (lock_pool): Don't print warnbing for Windows.
+	* secmem.c (lock_pool): Don't print warning for Windows.
 
 2000-10-16  Werner Koch  <wk@gnupg.org>
 

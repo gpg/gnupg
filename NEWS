@@ -1,4 +1,6 @@
 
+    * Better LFS support.
+
     * New option --ignore-crc-error
 
 Noteworthy changes in version 1.0.4 (2000-10-17)

@@ -154,6 +154,9 @@ int decrypt_message( const char *filename );
 int hash_datafiles( MD_HANDLE md, MD_HANDLE md2,
 		    STRLIST files, const char *sigfilename, int textmode );
 
+/*-- pipemode.c --*/
+void run_in_pipemode (void);
+
 /*-- signal.c --*/
 void init_signals(void);
 void pause_on_sigusr( int which );

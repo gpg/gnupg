@@ -1412,6 +1412,14 @@ used by anonymous recipients (created by using --throw-keyid) and might come
 handy in case where an encrypted message contains a bogus key ID.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--enable-special-filenames</term>
+<listitem><para>
+This options enables a mode in which filenames of the form
+<filename>-&amp;n</>, where n is a non-negative decimal number,
+refer to the file descriptor n and not to a file with that name.
+</para></listitem></varlistentry>
+
 
 </variablelist>
 </refsect1>

@@ -65,6 +65,7 @@ gpg_SOURCES  = g10.c		\
 	      tdbio.h		\
 	      delkey.c		\
 	      keygen.c          \
+	      pipemode.c        \
 	      helptext.c
 
 gpgv_SOURCES = gpgv.c           \

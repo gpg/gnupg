@@ -107,6 +107,7 @@ enum cmd_and_opt_values { aNull = 0,
     aDeArmor,
     aEnArmor,
     aGenRandom,
+    aPipeMode,
 
     oTextmode,
     oFingerprint,
@@ -183,6 +184,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDisablePubkeyAlgo,
     oAllowNonSelfsignedUID,
     oAllowFreeformUID,
+    oEnableSpecialFilenames,
     oNoLiteral,
     oSetFilesize,
     oHonorHttpProxy,
@@ -328,6 +330,7 @@ static ARGPARSE_OPTS opts[] = {
     { aPrintMDs, "print-mds" , 256, "@"}, /* old */
     { aListTrustDB, "list-trustdb",0 , "@"},
     { aListTrustPath, "list-trust-path",0, "@"},
+    { aPipeMode,  "pipemode", 0, "@" },
     { oKOption, NULL,	 0, "@"},
     { oPasswdFD, "passphrase-fd",1, "@" },
     { oCommandFD, "command-fd",1, "@" },
@@ -386,6 +389,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
     { oMergeOnly,	  "merge-only", 0, "@" },
     { oTryAllSecrets,  "try-all-secrets", 0, "@" },
+    { oEnableSpecialFilenames, "enable-special-filenames", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
 {0} };
@@ -766,6 +770,7 @@ main( int argc, char **argv )
 	  case aEnArmor: set_cmd( &cmd, aEnArmor); break;
 	  case aExportOwnerTrust: set_cmd( &cmd, aExportOwnerTrust); break;
 	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
+          case aPipeMode: set_cmd( &cmd, aPipeMode); break;
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
@@ -940,7 +945,9 @@ main( int argc, char **argv )
 	  case oMergeOnly: opt.merge_only = 1; break;
 	  case oTryAllSecrets: opt.try_all_secrets = 1; break;
           case oTrustedKey: register_trusted_key( pargs.r.ret_str ); break;
-
+          case oEnableSpecialFilenames:
+            iobuf_enable_special_filenames (1);
+            break;
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }
@@ -1515,6 +1522,12 @@ main( int argc, char **argv )
 	    wrong_args("--import-ownertrust [file]");
 	import_ownertrust( argc? *argv:NULL );
 	break;
+      
+      case aPipeMode:
+        if ( argc )
+            wrong_args ("--pipemode");
+        run_in_pipemode ();
+        break;
 
       case aListPackets:
 	opt.list_packets=1;

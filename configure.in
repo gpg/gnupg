@@ -155,6 +155,7 @@ dnl AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
 AC_PROG_CC
 AC_PROG_CPP
 AC_ISC_POSIX
+AC_SYS_LARGEFILE
 AC_PROG_INSTALL
 AC_PROG_AWK
 AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
@@ -166,7 +167,6 @@ MPI_OPT_FLAGS=""
 
 try_gettext=yes
 try_gdbm=yes
-try_large_file=yes
 case "${target}" in
     *-*-mingw32*)
         # special stuff for Windoze NT
@@ -206,7 +206,6 @@ case "${target}" in
         if test -z "$GCC" ; then
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
         fi
-        try_large_file="no"
         ;;
     *-dec-osf4*)
         if test -z "$GCC" ; then
@@ -216,9 +215,6 @@ case "${target}" in
         fi
         ;;
     m68k-atari-mint)
-        ;;
-    *-solaris*)
-        try_large_file="no"
         ;;
     *)
        ;;
@@ -424,11 +420,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror stpcpy strlwr stricmp tcgetattr rand strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit clock_gettime)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
-AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask)
-
-if test $try_large_file = "yes"; then
-AC_CHECK_FUNCS(fopen64 fstat64)
-fi
+AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask fseeko)
 
 GNUPG_CHECK_MLOCK
 GNUPG_FUNC_MKDIR_TAKES_ONE_ARG

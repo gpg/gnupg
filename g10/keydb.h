@@ -69,7 +69,7 @@ enum resource_type {
 struct keyblock_pos_struct {
     int   resno;     /* resource number */
     enum resource_type rt;
-    ulong offset;    /* position information */
+    off_t offset;    /* position information */
     unsigned count;  /* length of the keyblock in packets */
     IOBUF  fp;	     /* used by enum_keyblocks */
     int secret;      /* working on a secret keyring */

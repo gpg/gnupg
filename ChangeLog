@@ -1,3 +1,18 @@
+2000-11-11  Paul Eggert  <eggert@twinsun.com>
+
+        Actually Paul's patches are dated 2000-20-17; I applied them today
+	and merged some ChangeLog entries (wk@gnupg.org).
+	
+        * configure.in (AC_SYS_LARGEFILE): Add.
+        (try_large_file): Remove.  All uses removed.
+        (AC_CHECK_FUNCS): Remove fopen64 and fstat64.
+
+        * acinclude.m4 (AC_SYS_LARGEFILE_TEST_INCLUDES,
+        AC_SYS_LARGEFILE_MACRO_VALUE, AC_SYS_LARGEFILE): New macros,
+        taken from GNU tar.
+
+        * configure.in (AC_CHECK_FUNCS): Add fseeko.
+
 2000-10-17  Werner Koch  <wk@gnupg.org>
 
 	* configure.in: Disabled fopen64 checks for Solaris and HPUX.

@@ -39,7 +39,7 @@ static int mpi_print_mode = 0;
 static int list_mode = 0;
 
 static int  parse( IOBUF inp, PACKET *pkt, int reqtype,
-		   ulong *retpos, int *skip, IOBUF out, int do_skip
+                  off_t *retpos, int *skip, IOBUF out, int do_skip
 	    #ifdef DEBUG_PARSE_PACKET
 		   ,const char *dbg_w, const char *dbg_f, int dbg_l
 	    #endif
@@ -158,7 +158,7 @@ parse_packet( IOBUF inp, PACKET *pkt )
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos,
+dbg_search_packet( IOBUF inp, PACKET *pkt, int pkttype, off_t *retpos,
 		   const char *dbg_f, int dbg_l )
 {
     int skip, rc;
@@ -170,7 +170,7 @@ dbg_search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos,
 }
 #else
 int
-search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos )
+search_packet( IOBUF inp, PACKET *pkt, int pkttype, off_t *retpos )
 {
     int skip, rc;
 
@@ -215,7 +215,7 @@ copy_all_packets( IOBUF inp, IOBUF out )
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff,
+dbg_copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff,
 		   const char *dbg_f, int dbg_l )
 {
     PACKET pkt;
@@ -230,7 +230,7 @@ dbg_copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff,
 }
 #else
 int
-copy_some_packets( IOBUF inp, IOBUF out, ulong stopoff )
+copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff )
 {
     PACKET pkt;
     int skip, rc=0;
@@ -284,7 +284,7 @@ skip_some_packets( IOBUF inp, unsigned n )
  * if OUT is not NULL, a special copymode is used.
  */
 static int
-parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
+parse( IOBUF inp, PACKET *pkt, int reqtype, off_t *retpos,
        int *skip, IOBUF out, int do_skip
 #ifdef DEBUG_PARSE_PACKET
        ,const char *dbg_w, const char *dbg_f, int dbg_l
@@ -309,8 +309,7 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     hdrlen=0;
     hdr[hdrlen++] = ctb;
     if( !(ctb & 0x80) ) {
-	log_error("%s: invalid packet (ctb=%02x) near %lu\n",
-			    iobuf_where(inp), ctb, iobuf_tell(inp) );
+       log_error("%s: invalid packet (ctb=%02x)\n", iobuf_where(inp), ctb );
 	rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
