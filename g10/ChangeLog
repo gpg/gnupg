@@ -1,5 +1,14 @@
-2002-04-17  Werner Koch  <wk@gnupg.org>
+2002-04-18  Werner Koch  <wk@gnupg.org>
 
+	* getkey.c (premerge_public_with_secret): Fixed 0x12345678! syntax
+	for use with secret keys.
+
+	* seckey-cert.c (do_check): Always calculate the old checksum for
+	use after unprotection.
+
+	* g10.c, options.skel: New option --no-escape-from.  Made
+	--escape-from and --force-v3-sigs the default and removed them
+	from the options skeleton.
 
 2002-04-16  Werner Koch  <wk@gnupg.org>
 

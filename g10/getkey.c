@@ -1721,7 +1721,7 @@ merge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
 }
 
 /* This function checks that for every public subkey a corresponding
- * secret subkey is avalable and deletes the public subkey otherwise.
+ * secret subkey is available and deletes the public subkey otherwise.
  * We need this function because we can't delete it later when we
  * actually merge the secret parts into the pubring.
  * The function also plays some games with the node flags.
@@ -1779,6 +1779,10 @@ premerge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
             }
         }
     }
+    /* We need to copy the found bits (0 and 1) from the secret key to
+       the public key.  This has already been done for the subkeys but
+       got lost on the primary key - fix it here *. */
+    pubblock->flag |= (secblock->flag & 3);
 }
 
 

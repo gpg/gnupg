@@ -222,6 +222,7 @@ enum cmd_and_opt_values { aNull = 0,
     oCharset,
     oNotDashEscaped,
     oEscapeFrom,
+    oNoEscapeFrom,
     oLockOnce,
     oLockMultiple,
     oLockNever,
@@ -489,6 +490,7 @@ static ARGPARSE_OPTS opts[] = {
     { oEmitVersion, "emit-version", 0, "@"},
     { oNotDashEscaped, "not-dash-escaped", 0, "@" },
     { oEscapeFrom, "escape-from-lines", 0, "@" },
+    { oNoEscapeFrom, "no-escape-from-lines", 0, "@" },
     { oLockOnce, "lock-once", 0, "@" },
     { oLockMultiple, "lock-multiple", 0, "@" },
     { oLockNever, "lock-never", 0, "@" },
@@ -791,6 +793,8 @@ main( int argc, char **argv )
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
     opt.pgp2_workarounds = 1;
+    opt.force_v3_sigs = 1;
+    opt.escape_from = 1;
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
 #else
@@ -1183,6 +1187,7 @@ main( int argc, char **argv )
 	    break;
 	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
 	  case oEscapeFrom: opt.escape_from = 1; break;
+	  case oNoEscapeFrom: opt.escape_from = 0; break;
 	  case oLockOnce: opt.lock_once = 1; break;
 	  case oLockNever: disable_dotlock(); break;
 	  case oLockMultiple:

@@ -105,8 +105,14 @@ do_check( PKT_secret_key *sk, const char *tryagain_text )
                     md_write (h, data, ndata - 20);
                     md_final (h);
                     if (!memcmp (md_read (h, DIGEST_ALGO_SHA1),
-                                 data + ndata - 20, 20) )
-                        csum = 0; /* digest does match */
+                                 data + ndata - 20, 20) ) {
+                        /* digest does match.  We have to keep the old
+                           style checksum in sk->csum, so that the
+                           test used for unprotected keys does work.
+                           This test gets used when we are adding new
+                           keys. */
+                        sk->csum = csum = checksum (data, ndata-20);
+                    }
                     md_close (h);
                 }
             }

@@ -51,23 +51,23 @@ $Id$
 #default-recipient some-user-id
 #default-recipient-self
 
-
-# The next option is enabled because this one is needed for interoperation
-# with PGP 5 users.  To enable full OpenPGP compliance you have to remove
-# this option.
-
-force-v3-sigs
+# By default GnuPG creates version 3 signatures for data files.  This
+# is not OpenPGP compliant but PGP 6 requires them.  To disable it,
+# you may use this option or --openpgp.
+#no-force-v3-sigs
 
 # Because some mailers change lines starting with "From " to ">From "
 # it is good to handle such lines in a special way when creating
 # cleartext signatures; all other PGP versions do it this way too.
-# To enable full OpenPGP compliance you have to remove this option.
+# To enable full OpenPGP compliance you may want to use this option.
+#no-escape-from-lines
 
-escape-from-lines
-
-# If you do not use the Latin-1 (ISO-8859-1) charset, you should
-# tell GnuPG which is the native character set.  Please check
-# the man page for supported character sets. 
+# If you do not use the Latin-1 (ISO-8859-1) charset, you should tell
+# GnuPG which is the native character set.  Please check the man page
+# for supported character sets.  This character set is only used for
+# Meta data and not for the actual message which does not undergo any
+# translation.  Note that future version of GnuPG will change to UTF-8
+# as default character set.
 #charset utf-8
 
 
