@@ -1318,7 +1318,8 @@ keyserver_import(STRLIST users)
 }
 
 int
-keyserver_import_fprint(const byte *fprint,size_t fprint_len)
+keyserver_import_fprint(const byte *fprint,size_t fprint_len,
+			struct keyserver_spec *keyserver)
 {
   KEYDB_SEARCH_DESC desc;
 
@@ -1333,7 +1334,7 @@ keyserver_import_fprint(const byte *fprint,size_t fprint_len)
 
   memcpy(desc.u.fpr,fprint,fprint_len);
 
-  return keyserver_work(GET,NULL,&desc,1,opt.keyserver);
+  return keyserver_work(GET,NULL,&desc,1,keyserver);
 }
 
 int 

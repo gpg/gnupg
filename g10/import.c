@@ -1699,7 +1699,8 @@ revocation_present(KBNODE keyblock)
 					 " fetching revocation key %s\n"),
 				       tempkeystr,keystr(keyid));
 			      keyserver_import_fprint(sig->revkey[idx]->fpr,
-						      MAX_FINGERPRINT_LEN);
+						      MAX_FINGERPRINT_LEN,
+						      opt.keyserver);
 
 			      /* Do we have it now? */
 			      rc=get_pubkey_byfprint_fast (NULL,

@@ -34,7 +34,8 @@ struct keyserver_spec *parse_keyserver_uri(const char *uri,int require_scheme,
 struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig);
 int keyserver_export(STRLIST users);
 int keyserver_import(STRLIST users);
-int keyserver_import_fprint(const byte *fprint,size_t fprint_len);
+int keyserver_import_fprint(const byte *fprint,size_t fprint_len,
+			    struct keyserver_spec *keyserver);
 int keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver);
 int keyserver_refresh(STRLIST users);
 int keyserver_search(STRLIST tokens);

@@ -34,6 +34,7 @@
 #include "status.h"
 #include "options.h"
 #include "main.h"
+#include "keyserver-internal.h"
 #if GNUPG_MAJOR_VERSION == 1
 #include "cardglue.h"
 #else
@@ -511,6 +512,49 @@ change_url (void)
 }
 
 static int
+fetch_url(void)
+{
+  int rc;
+  struct agent_card_info_s info;
+
+  memset(&info,0,sizeof(info));
+
+  rc=agent_scd_getattr("PUBKEY-URL",&info);
+  if(rc)
+    log_error("error retrieving URL from card: %s\n",gpg_strerror(rc));
+  else if(info.pubkey_url)
+    {
+      struct keyserver_spec *spec=NULL;
+
+      rc=agent_scd_getattr("KEY-FPR",&info);
+      if(rc)
+	log_error("error retrieving key fingerprint from card: %s\n",
+		  gpg_strerror(rc));
+      else
+	{
+	  spec=parse_keyserver_uri(info.pubkey_url,0,NULL,0);
+	  if(spec && info.fpr1valid)
+	    {
+	      /* This is not perfectly right.  Currently, all card
+		 fingerprints are 20 digits, but what about
+		 fingerprints for a future v5 key?  We should get the
+		 length from somewhere lower in the code.  In any
+		 event, the fpr/keyid is not meaningful for straight
+		 HTTP fetches, but using it allows the card to point
+		 to HKP and LDAP servers as well. */
+	      rc=keyserver_import_fprint(info.fpr1,20,spec);
+	      free_keyserver_spec(spec);
+	    }
+	}
+    }
+  else
+    log_error("no URL set on card\n");
+
+  return rc;
+}
+
+
+static int
 change_login (const char *args)
 {
   char *data;
@@ -792,7 +836,7 @@ card_edit (STRLIST commands)
   enum cmdids {
     cmdNOP = 0,
     cmdQUIT, cmdHELP, cmdLIST, cmdDEBUG,
-    cmdNAME, cmdURL, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
+    cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD,
     cmdINVCMD
   };
@@ -811,6 +855,7 @@ card_edit (STRLIST commands)
     { N_("debug") , cmdDEBUG , NULL },
     { N_("name")  , cmdNAME  , N_("change card holder's name") },
     { N_("url")   , cmdURL   , N_("change URL to retrieve key") },
+    { N_("fetch") , cmdFETCH , N_("fetch the key specified in the card URL") },
     { N_("login") , cmdLOGIN , N_("change the login name") },
     { N_("lang")  , cmdLANG  , N_("change the language preferences") },
     { N_("sex")   , cmdSEX   , N_("change card holder's sex") },
@@ -931,6 +976,10 @@ card_edit (STRLIST commands)
         case cmdURL:
           change_url ();
           break;
+
+	case cmdFETCH:
+	  fetch_url();
+	  break;
 
         case cmdLOGIN:
           change_login (arg_string);

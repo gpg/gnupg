@@ -1,3 +1,13 @@
+2004-09-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* card-util.c (fetch_url, card_edit): Use the pubkey URL stored on
+	the card to fetch an updated copy.  Works with either straight
+	URLs or HKP or LDAP keyservers.
+
+	* keyserver-internal.h, keyserver.c (keyserver_import_fprint),
+	import.c (revocation_present): Use a keyserver_spec so the caller
+	can pass in whatever keyserver they like.
+
 2004-09-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* app-openpgp.c (get_cached_data): Avoid mallocing zero since it
