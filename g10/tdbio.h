@@ -42,7 +42,11 @@
 
 struct trust_record {
     int  rectype;
-    struct trust_record *next;
+    struct trust_record *next;	/* help pointer to build lists in memory */
+    struct trust_record *help_pref;
+    struct trust_record *help_sig;
+    int  mark;
+    ulong recnum;
     union {
 	struct {	    /* version record: */
 	    byte version;   /* should be 1 */
@@ -72,7 +76,7 @@ struct trust_record {
 	struct {	    /* user id reord */
 	    ulong lid;	    /* point back to the directory record */
 	    ulong next;    /* points to next user id record */
-	    ulong prefrec;   /* recno of reference record */
+	    ulong prefrec;   /* recno of preference record */
 	    ulong siglist;   /* list of valid signatures (w/o self-sig)*/
 	    byte namehash[20]; /* ripemd hash of the username */
 	} uid;
@@ -127,7 +131,7 @@ int tdbio_set_dbname( const char *new_dbname, int create );
 const char *tdbio_get_dbname(void);
 void tdbio_dump_record( ulong rnum, TRUSTREC *rec, FILE *fp );
 int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
-int tdbio_write_record( ulong recnum, TRUSTREC *rec );
+int tdbio_write_record( TRUSTREC *rec );
 ulong tdbio_new_recnum(void);
 int tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec );
 int tdbio_update_sigflag( ulong lid, int sigflag );

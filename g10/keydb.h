@@ -130,7 +130,7 @@ unsigned nbits_from_sk( PKT_secret_key *sk );
 const char *datestr_from_pk( PKT_public_key *pk );
 const char *datestr_from_sk( PKT_secret_key *sk );
 const char *datestr_from_sig( PKT_signature *sig );
-byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf. size_t *ret_len );
+byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf; size_t *ret_len );
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
 
 /*-- kbnode.c --*/

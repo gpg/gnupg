@@ -287,6 +287,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	log_error(_("trustdb: read failed (n=%d): %s\n"), n, strerror(errno) );
 	return G10ERR_READ_FILE;
     }
+    rec->recnum = recnum;
     p = buf;
     rec->rectype = *p++;
     if( expected && rec->rectype != expected ) {
@@ -383,13 +384,15 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 
 /****************
  * Write the record at RECNUM
+ * FIXME: create/update keyhash record.
  */
 int
-tdbio_write_record( ulong recnum, TRUSTREC *rec )
+tdbio_write_record( TRUSTREC *rec )
 {
     byte buf[TRUST_RECORD_LEN], *p;
     int rc = 0;
     int i, n;
+    ulong recnum = rec->recnum;
 
     if( db_fd == -1 )
 	open_db();
@@ -506,6 +509,7 @@ tdbio_new_recnum()
  * The local_id of PK is set to the correct value
  *
  * Note: To increase performance, we could use a index search here.
+ *	 tdbio_write_record shoudl create this index automagically
  */
 int
 tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )

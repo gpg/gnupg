@@ -4,6 +4,9 @@
 
     * invalid packets (Marco)
 
+    * add some sanity checks to read_keyblock, so that we are sure that
+    the minimal requirements are met (?)
+
     * what about the CR,LF in cleartext singatures?
 
     * add option --restore-ownertrust

@@ -259,7 +259,7 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
 		rc = build_sigrecs( c->local_id );
 		if( rc ) {
 		    if( rc == G10ERR_BAD_CERT )
-			rc = -1;  /* maybe no selcficnature */
+			rc = -1;  /* maybe no selfsignature */
 		    if( rc != -1 )
 			log_info(_("%lu: error building sigs on the fly: %s\n"),
 			       c->local_id, g10_errstr(rc) );
@@ -1441,6 +1441,31 @@ query_trust_record( PKT_public_key *pk )
 }
 
 
+
+/****************
+ * helper function for insert_trust_record()
+ */
+static void
+rel_mem_uidnode( u32 *keyid, int err, TRUSTREC *rec )
+{
+    TRUSTREC *r, *r2;
+
+    if( err )
+	log_error("key %08lX, uid %02X%02X: invalid user id - removed\n",
+	    (ulong)keyid[1], rec->r.uid.namehash[18], rec->r.uid.namehash[19] );
+    for(r=rec->help_pref; r; r = r2 ) {
+	r2 = r->next;
+	m_free(r);
+    }
+    for(r=rec->help_sig; r; r = r2 ) {
+	r2 = r->next;
+	m_free(r);
+    }
+
+    m_free(rec);
+}
+
+
 /****************
  * Insert a trust record into the TrustDB
  * This function fails if this record already exists.
@@ -1448,17 +1473,20 @@ query_trust_record( PKT_public_key *pk )
 int
 insert_trust_record( PKT_public_key *orig_pk )
 {
-    TRUSTREC dirrec, *rec;
-    TRUSTREC **keylist_tail, *keylist;
-    TRUSTREC **uidlist_tail, *uidlist;
+    TRUSTREC dirrec, *rec, *rec2;
+    TRUSTREC *keylist_head, **keylist_tail;
+    TRUSTREC *uidlist_head, **uidlist_tail, uidlist;
     KBNODE keyblock = NULL;
     KBNODE node;
-    u32 keyid[2];
+    u32 keyid[2]; /* of primary key */
     ulong knum, dnum;
     byte *fingerprint;
     size_t fingerlen;
     int rc = 0;
 
+    /* prepare dir record */
+    memset( &dirrec, 0, sizeof dirrec );
+    dirrec.rectype = RECTYPE_DIR;
 
     if( orig_pk->local_id )
 	log_bug("pk->local_id=%lu\n", (ulong)pk->local_id );
@@ -1474,124 +1502,190 @@ insert_trust_record( PKT_public_key *orig_pk )
     if( rc ) { /* that should never happen */
 	log_error( "insert_trust_record: keyblock not found: %s\n",
 							  g10_errstr(rc) );
-	return rc;
+	goto leave;
     }
 
-    /* prepare dir record */
-    memset( &dirrec, 0, sizeof dirrec );
-    dirrec.rectype = RECTYPE_DIR;
-    dirrec.r.dir.lid = tdbio_new_recnum();
-
-    keylist = NULL;
-    keylist_tail = &dirrec.r.dir.keylist;
+    /* build data structure as linked lists in memory */
+    keylist_head = NULL; keylist_tail = &keylist_head;
+    uidlist_head = NULL; uidlist_tail = &uidlist_head;
     uidlist = NULL;
-    uidlist_tail = &dirrec.r.dir.uidlist;
-    /* loop over the keyblock */
+    keyid[0] = keyid[1] = 0;
     for( node=keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY
 	    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    PKT_public_key *pk = node->pkt->pkt.public_key;
 
-	    if( keylist && node->pkt->pkttype == PKT_PUBLIC_KEY )
-		BUG();	/* more than one primary key */
+	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+		if( keylist_head )
+		    BUG();  /* more than one primary key */
+		keyid_from_pk( pk, keyid );
+	    }
 	    fingerprint = fingerprint_from_pk( orig_pk, &fingerlen );
 	    rec = m_alloc_clear( sizeof *rec );
+	    rec->rectype = RECTYPE_KEY;
 	    rec->r.key.pubkey_algo = pk->pubkey_algo;
 	    rec->r.key.fingerprint_len = fingerlen;
 	    memcpy(rec->r.key.fingerprint, fingerprint, fingerlen );
 
-	    if( keylist )
-		keylist_tail = &keylist->next;
-	    *keylist_tail = keylist = rec;
+	    *keylist_tail = rec; keylist_tail = &rec->next;
 	}
 	else if( node->pkt->pkttype == PKT_USER_ID ) {
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 
 	    rec = m_alloc_clear( sizeof *rec );
+	    rec->rectype = RECTYPE_UID;
 	    rmd160_hash_buffer( rec->r.uid.namehash, uid->name, uid->len );
 
-	    if( uidlist )
-		uidlist_tail = &uidlist->next;
-	    *uidlist_tail = uidlist = rec;
+	    uidlist = rec;
+	    *uidlist_tail = rec; uidlist_tail = &rec->next;
 	}
-	if( node->pkt->pkttype == PKT_SIGNATURE
-	    && ( (node->pkt->pkt.signature->sig_class&~3) == 0x10
-		  || node->pkt->pkt.signature->sig_class == 0x20
-		  || node->pkt->pkt.signature->sig_class == 0x30) ) {
-	    int selfsig;
-	    rc = check_key_signature( keyblock, node, &selfsig );
-	    if( !rc ) {
-		rc = set_signature_packets_local_id( node->pkt->pkt.signature );
-		if( rc )
-		    log_fatal("set_signature_packets_local_id failed: %s\n",
-							      g10_errstr(rc));
-		if( selfsig ) {
-		    node->flag |= 2; /* mark signature valid */
-		    *selfsig_okay = 1;
-		}
-		else if( node->pkt->pkt.signature->sig_class == 0x20 )
-		    *revoked = 1;
-		else
-		    node->flag |= 1; /* mark signature valid */
+	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
 
-		if( node->pkt->pkt.signature->sig_class != 0x20 ) {
-		    if( !dups )
-			dups = new_lid_table();
-		    if( ins_lid_table_item( dups,
-					node->pkt->pkt.signature->local_id, 0) )
-			node->flag |= 4; /* mark as duplicate */
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
+		/* must verify this selfsignature here, so that we can
+		 * build the preference record and validate the uid record
+		 */
+		if( !uidlist ) {
+		    log_error("key %08lX: self-signature without user id\n",
+			      (ulong)keyid[1] );
+		}
+		else if( (rc = check_key_signature( keyblock, node, NULL ))) {
+		    log_error("key %08lX, uid %02X%02X: "
+			      "invalid self-signature: %s\n",
+			      (ulong)keyid[1], uidlist->namehash[18],
+			      uidlist->namehash[19], g10_errstr(rc) );
+		    rc = 0;
+		}
+		else { /* build the prefrecord */
+		    assert(uidlist);
+		    uidlist->mark |= 1; /* mark valid */
 		}
 	    }
-	    if( DBG_TRUST )
-		log_debug("trustdb: sig from %08lX.%lu: %s%s\n",
-				(ulong)node->pkt->pkt.signature->keyid[1],
-				node->pkt->pkt.signature->local_id,
-				g10_errstr(rc), (node->flag&4)?"  (dup)":"" );
+	    else if( 0 /* is revocation sig etc */ ) {
+		/* handle it here */
+	    }
+	    else { /* not a selfsignature */
+		/* put all this sigs into a list and mark them as unchecked
+		 * we can't check here because we probably have not
+		 * all keys of other signators - we do it on deman
+		 */
+	    }
 	}
     }
 
-
-
-
-
-
-
-
-
-
-    knum = tdbio_new_recnum();
-    /* build dir record */
-    memset( &rec, 0, sizeof rec );
-    rec.rectype = RECTYPE_DIR;
-    rec.r.dir.local_id = dnum;
-    rec.r.dir.keyid[0] = keyid[0];
-    rec.r.dir.keyid[1] = keyid[1];
-    rec.r.dir.keyrec   = knum;
-    rec.r.dir.no_sigs = 0;
-    /* and the key record */
-    memset( &rec, 0, sizeof rec );
-    rec.rectype = RECTYPE_KEY;
-    rec.r.key.owner    = dnum;
-    rec.r.key.keyid[0] = keyid[0];
-    rec.r.key.keyid[1] = keyid[1];
-    rec.r.key.pubkey_algo = pk->pubkey_algo;
-    rec.r.key.fingerprint_len = fingerlen;
-    memcpy(rec.r.key.fingerprint, fingerprint, fingerlen );
-    rec.r.key.ownertrust = 0;
-    if( tdbio_write_record( knum, &rec ) ) {
-	log_error("wrinting key record failed\n");
-	return G10ERR_TRUSTDB;
+    /* delete all invalid marked userids and their preferences and sigs */
+    /* (ugly code - I know) */
+    while( (rec=uidlist_head) && !(rec->mark & 1) ) {
+	uidlist_head = rec->next;
+	rel_mem_uidnode(keyid, 1, rec);
+    }
+    for( ; rec; rec = rec->next ) {
+	if( rec->next && !(rec->next->mark & 1) ) {
+	    TRUSTREC *r = rec->next;
+	    rec->next = r->next;
+	    rel_mem_uidnode(keyid, 1, r);
+	}
     }
 
+    /* check that we have at least one userid */
+    if( !uidlist_head ) {
+	log_error("key %08lX: no user ids - rejected\n", (ulong)keyid[1] );
+	rc = G10ERR_BAD_CERT,
+	goto leave;
+    }
+
+    /* insert the record numbers to build the real (on disk) list */
+    /* fixme: should start a transaction here */
+    dirrec.recnum = tdbio_new_recnum();
+    dirrec.r.dir.lid = dirrec.recnum;
+    /* fixme: how do we set sigflag???*/
+    /* (list of keys) */
+    for(rec=keylist_head; rec; rec = rec->next ) {
+	rec->r.key.lid = dirrec.recnum;
+	rec->recnum = tdbio_new_recnum();
+    }
+    for(rec=keylist_head; rec; rec = rec->next )
+	rec->r.key.next = rec->next? rec->next->recnum : 0;
+    dirrec.r.dir.keylist = keylist_head->recnum;
+    /* (list of user ids) */
+    for(rec=uidlist_head; rec; rec = rec->next ) {
+	rec->r.uid.lid = dirrec.recnum;
+	rec->recnum = tdbio_new_recnum();
+	/* (preference records) */
+	for( rec2 = rec->help_pref; rec2; rec2 = rec2->next ) {
+	    rec2->r.pref.lid = dirrec.recnum;
+	    rec2->recnum = tdbio_new_recnum();
+	}
+	for( rec2 = rec->help_pref; rec2; rec2 = rec2->next )
+	    rec2->r.pref.next = rec2->next? rec2->next->recnum : 0;
+	rec->r.uid.prefrec = rec->help_pref->recnum;
+	/* (signature list) */
+	for( rec2 = rec->help_sig; rec2; rec2 = rec2->next ) {
+	    rec2->r.sig.lid = dirrec.recnum;
+	    rec2->recnum = tdbio_new_recnum();
+	}
+	for( rec2 = rec->help_sig; rec2; rec2 = rec2->next )
+	    rec2->r.sig.next = rec2->next? rec2->next->recnum : 0;
+	rec->r.uid.siglist = rec->help_sig->recnum;
+    }
+    for(rec=uidlist_head; rec; rec = rec->next )
+	rec->r.uid.next = rec->next? rec->next->recnum : 0;
+    dirrec.r.dir.uidlist = uidlist_head->recnum;
+
+    /* write all records */
+    for(rec=keylist_head; rec; rec = rec->next ) {
+	assert( rec->rectype == RECTYPE_KEY );
+	if( tdbio_write_record( rec ) ) {
+	    log_error("writing key record failed\n");
+	    rc = G10ERR_TRUSTDB;
+	    goto leave;
+	}
+    }
+    for(rec=uidlist_head; rec; rec = rec->next ) {
+	assert( rec->rectype == RECTYPE_UID );
+	if( tdbio_write_record( rec ) ) {
+	    log_error("writing uid record failed\n");
+	    rc = G10ERR_TRUSTDB;
+	    goto leave;
+	}
+	for( rec2=rec->help_pref; rec2; rec2 = rec2->next ); {
+	    assert( rec2->rectype == RECTYPE_PREF );
+	    if( tdbio_write_record( rec2 ) ) {
+		log_error("writing pref record failed\n");
+		rc = G10ERR_TRUSTDB;
+		goto leave;
+	    }
+	}
+	for( rec2=rec->help_sig; rec2; rec2 = rec2->next ); {
+	    assert( rec2->rectype == RECTYPE_SIG );
+	    if( tdbio_write_record( rec2 ) ) {
+		log_error("writing sig record failed\n");
+		rc = G10ERR_TRUSTDB;
+		goto leave;
+	    }
+	}
+    }
     if( tdbio_write_record( dirrec.r.dir.lid, &dirrec ) ) {
 	log_error("writing dir record failed\n");
 	return G10ERR_TRUSTDB;
     }
 
     /* and store the LID */
-    orig_pk->local_id = dnum;
+    orig_pk->local_id = dirrec.r.dir.lid;
 
-    return 0;
+  leave:
+    for( rec=dirrec.r.dir.uidlist; rec; rec = rec2 ) {
+	rec2 = rec->next;
+	rel_mem_uidnode(rec);
+    }
+    for( rec=dirrec.r.dir.keylist; rec; rec = rec2 ) {
+	rec2 = rec->next;
+	m_free(rec);
+    }
+
+    return rc;
 }
 
 

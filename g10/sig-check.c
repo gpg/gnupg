@@ -250,7 +250,7 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
 /****************
  * check the signature pointed to by NODE. This is a key signature.
  * If the function detects a self-signature, it uses the PK from
- * NODE and does not read any public key.
+ * ROOT and does not read any public key.
  */
 int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
