@@ -1,5 +1,11 @@
 2002-07-01  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.skel: Fix a few typos, clarify "group", and remove
+	sample photo viewers for Win32 since they are the defaults now.
+
+	* parse-packet.c (make_attribute_uidname), keylist.c
+	(dump_attribs): Fix two typecast warnings.
+
 	* packet.h, build-packet.c (build_attribute_subpkt), exec.c
 	(expand_args), mkdtemp.c (mkdtemp), photoid.c
 	(parse_image_header): Fix some signedness compiler warnings.

@@ -2,7 +2,7 @@ These first three lines are not copied to the options file in
 the users home directory.
 $Id$
 # Options for GnuPG
-# Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 # 
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -13,7 +13,7 @@ $Id$
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 # Unless you you specify which option file to use (with the
-# commandline option "--options filename"), GnuPG uses the
+# command line option "--options filename"), GnuPG uses the
 # file ~/.gnupg/options by default.
 #
 # An option file can contain all long options which are
@@ -27,7 +27,7 @@ $Id$
 #no-greeting
 
 # If you have more than 1 secret key in your keyring, you may want
-# to uncomment the following option and set your preffered keyid
+# to uncomment the following option and set your preferred keyid
 
 #default-key 621CC013
 
@@ -62,10 +62,12 @@ $Id$
 # Group names may be defined like this:
 #   group mynames paige 0x12345678 joe patti
 #
-# Any time "mynames" is a receipient (-r or --recipient), it will be
+# Any time "mynames" is a recipient (-r or --recipient), it will be
 # expanded to the names "paige", "joe", and "patti", and the key ID
 # "0x12345678".  Note there is only one level of expansion - you
-# cannot make an group that points to another group.
+# cannot make an group that points to another group.  Note if there
+# are spaces in the recipient name, this will appear as two
+# recipients.  In this case, it is better to use the key ID.
 
 # lock the file only once for the lifetime of a process.
 # if you do not define this, the lock will be obtained and released
@@ -162,6 +164,7 @@ lock-once
 # generating and then cleaning up a secure temp file.
 #
 # The default program is "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
+# On Mac OS X and Windows, the default is to use your regular image viewer.
 #
 # Some other viewers:
 # photo-viewer "qiv %i"
@@ -173,12 +176,6 @@ lock-once
 #
 # Use your MIME handler to view photos:
 # photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
-#
-# Use the Win32 registry to pick a viewer for you:
-#    On Win95/98/Me (also the default on Win32):
-# photo-viewer "start /w"
-#    On NT/2k/XP:
-# photo-viewer "cmd /c start /w"
 
 
 # Passphrase agent

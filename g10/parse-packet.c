@@ -1844,7 +1844,8 @@ make_attribute_uidname(PKT_user_id *uid)
 	    sprintf(uid->name,"[invalid image]");
 	}
       else
-	sprintf(uid->name,"[unknown attribute of size %lu]",uid->attribs->len);
+	sprintf(uid->name,"[unknown attribute of size %lu]",
+		(ulong)uid->attribs->len);
     }
 
   uid->len = strlen(uid->name);

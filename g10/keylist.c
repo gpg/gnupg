@@ -373,7 +373,7 @@ static void dump_attribs(const PKT_user_id *uid,
 	    sprintf(buf+2*j, "%02X", *p );
 
 	  sprintf(buf+strlen(buf)," %lu %u %u %u %lu %lu %u",
-		  uid->attribs[i].len,uid->attribs[i].type,i+1,
+		  (ulong)uid->attribs[i].len,uid->attribs[i].type,i+1,
 		  uid->numattribs,(ulong)uid->created,(ulong)uid->expiredate,
 		  ((uid->is_primary?0x01:0)|
 		   (uid->is_revoked?0x02:0)|
