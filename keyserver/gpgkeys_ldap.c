@@ -40,12 +40,13 @@
 int verbose=0,include_disabled=0,include_revoked=0;
 char *basekeyspacedn=NULL;
 char host[80];
+FILE *input=NULL,*output=NULL,*console=NULL;
+
 struct keylist
 {
   char *keystr;
   struct keylist *next;
 };
-FILE *input=NULL,*output=NULL,*console=NULL;
 
 /* Returns 0 on success, -1 on failure, and 1 on eof */
 int send_key(LDAP *ldap,char *keyid)
@@ -152,8 +153,9 @@ int send_key(LDAP *ldap,char *keyid)
 int get_key(LDAP *ldap,char *getkey)
 {
   char **vals;
-  LDAPMessage *res;
-  int err,count,i;
+  LDAPMessage *res,*each;
+  int ret=-1,err,count;
+  struct keylist *dupelist=NULL;
   char search[29];
   char *attrs[]={"pgpKeyV2","pgpuserid","pgpkeyid","pgpcertid","pgprevoked",
 		 "pgpdisabled","pgpkeycreatetime","modifytimestamp",
@@ -180,8 +182,7 @@ int get_key(LDAP *ldap,char *getkey)
   if(!verbose)
     attrs[1]=NULL;
 
-  fprintf(console,
-	  "gpgkeys: requesting key %s from LDAP keyserver %s\n",
+  fprintf(console,"gpgkeys: requesting key %s from LDAP keyserver %s\n",
 	  getkey,host);
 
   err=ldap_search_s(ldap,basekeyspacedn,
@@ -198,104 +199,172 @@ int get_key(LDAP *ldap,char *getkey)
     {
       fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
       fprintf(output,"KEY 0x%s FAILED\n",getkey);
-      return -1;
+      goto fail;
     }
 
-  /* There may be more than one result for a given keyID, so we should
-     fetch them all. */
-  for(i=0;i<count;i++)
+  /* There may be more than one unique result for a given keyID, so we
+     should fetch them all (test this by fetching short key id
+     0xDEADBEEF). */
+
+  each=ldap_first_entry(ldap,res);
+  while(each!=NULL)
     {
-      if(verbose)
+      struct keylist *keyptr=dupelist;
+
+      /* Use the long keyid to remove duplicates.  The LDAP server
+	 returns the same keyid more than once if there are multiple
+	 user IDs on the key. */
+
+      vals=ldap_get_values(ldap,each,"pgpcertid");
+      if(vals!=NULL)
 	{
-	  vals=ldap_get_values(ldap,res,"pgpuserid");
-	  if(vals!=NULL)
+	  while(keyptr!=NULL)
 	    {
-	      /* This is wrong, as the user ID is UTF8.  A better way to
-		 handle this would be to send it over to gpg and display
-		 it on that side of the pipe. */
-	      fprintf(console,"\nUser ID:\t%s\n",vals[0]);
-	      ldap_value_free(vals);
+	      if(strcasecmp(keyptr->keystr,vals[0])==0)
+		break;
+
+	      keyptr=keyptr->next;
 	    }
 
-	  vals=ldap_get_values(ldap,res,"pgprevoked");
-	  if(vals!=NULL)
+	  if(!keyptr)
 	    {
-	      if(atoi(vals[0])==1)
-		fprintf(console,"\t\t** KEY REVOKED **\n");
-	      ldap_value_free(vals);
+	      /* it's not a duplicate, so add it */
+
+	      keyptr=malloc(sizeof(struct keylist));
+	      if(keyptr==NULL)
+		{
+		  fprintf(console,"gpgkeys: out of memory when deduping "
+			  "key list\n");
+		  goto fail;
+		}
+
+	      keyptr->keystr=strdup(vals[0]);
+	      if(keyptr->keystr==NULL)
+		{
+		  fprintf(console,"gpgkeys: out of memory when deduping "
+			  "key list\n");
+		  goto fail;
+		}
+
+	      keyptr->next=dupelist;
+	      dupelist=keyptr;
+	      keyptr=NULL;
 	    }
-
-	  vals=ldap_get_values(ldap,res,"pgpdisabled");
-	  if(vals!=NULL)
-	    {
-	      if(atoi(vals[0])==1)
-		fprintf(console,"\t\t** KEY DISABLED **\n");
-	      ldap_value_free(vals);
-	    }
-
-	  vals=ldap_get_values(ldap,res,"pgpkeyid");
-	  if(vals!=NULL)
-	    {
-	      fprintf(console,"Short key ID:\t%s\n",vals[0]);
-	      ldap_value_free(vals);
-	    }
-
-	  vals=ldap_get_values(ldap,res,"pgpcertid");
-	  if(vals!=NULL)
-	    {
-	      fprintf(console,"Long key ID:\t%s\n",vals[0]);
-	      ldap_value_free(vals);
-	    }
-
-	  /* YYYYMMDDHHmmssZ */
-
-	  vals=ldap_get_values(ldap,res,"pgpkeycreatetime");
-	  if(vals!=NULL && strlen(vals[0])==15)
-	    {
-	      fprintf(console,"Key created:\t%.2s/%.2s/%.4s\n",
-		      &vals[0][4],&vals[0][6],vals[0]);
-	      ldap_value_free(vals);
-	    }
-
-	  vals=ldap_get_values(ldap,res,"modifytimestamp");
-	  if(vals!=NULL && strlen(vals[0])==15)
-	    {
-	      fprintf(console,"Key modified:\t%.2s/%.2s/%.4s\n",
-		      &vals[0][4],&vals[0][6],vals[0]);
-	      ldap_value_free(vals);
-	    }
-
-	  vals=ldap_get_values(ldap,res,"pgpkeysize");
-	  if(vals!=NULL)
-	    {
-	      fprintf(console,"Key size:\t%d\n",atoi(vals[0]));
-	      ldap_value_free(vals);
-	    }
-
-	  vals=ldap_get_values(ldap,res,"pgpkeytype");
-	  if(vals!=NULL)
-	    {
-	      fprintf(console,"Key type:\t%s\n",vals[0]);
-	      ldap_value_free(vals);
-	    }
-	}
-
-      vals=ldap_get_values(ldap,res,"pgpKeyV2");
-      if(vals==NULL)
-	{
-	  fprintf(console,
-		  "gpgkeys: unable to retrieve key %s from keyserver\n",getkey);
-	  fprintf(output,"KEY 0x%s FAILED\n",getkey);
-	}
-      else
-	{
-	  fprintf(output,"%sKEY 0x%s END\n",vals[0],getkey);
 
 	  ldap_value_free(vals);
 	}
+
+      if(!keyptr) /* it's not a duplicate */
+	{
+	  if(verbose)
+	    {
+	      vals=ldap_get_values(ldap,each,"pgpuserid");
+	      if(vals!=NULL)
+		{
+		  /* This is wrong, as the user ID is UTF8.  A better way to
+		     handle this would be to send it over to gpg and display
+		     it on that side of the pipe. */
+		  fprintf(console,"\nUser ID:\t%s\n",vals[0]);
+		  ldap_value_free(vals);
+		}
+
+	      vals=ldap_get_values(ldap,each,"pgprevoked");
+	      if(vals!=NULL)
+		{
+		  if(atoi(vals[0])==1)
+		    fprintf(console,"\t\t** KEY REVOKED **\n");
+		  ldap_value_free(vals);
+		}
+
+	      vals=ldap_get_values(ldap,each,"pgpdisabled");
+	      if(vals!=NULL)
+		{
+		  if(atoi(vals[0])==1)
+		    fprintf(console,"\t\t** KEY DISABLED **\n");
+		  ldap_value_free(vals);
+		}
+
+	      vals=ldap_get_values(ldap,each,"pgpkeyid");
+	      if(vals!=NULL)
+		{
+		  fprintf(console,"Short key ID:\t%s\n",vals[0]);
+		  ldap_value_free(vals);
+		}
+
+	      vals=ldap_get_values(ldap,each,"pgpcertid");
+	      if(vals!=NULL)
+		{
+		  fprintf(console,"Long key ID:\t%s\n",vals[0]);
+		  ldap_value_free(vals);
+		}
+
+	      /* YYYYMMDDHHmmssZ */
+
+	      vals=ldap_get_values(ldap,each,"pgpkeycreatetime");
+	      if(vals!=NULL && strlen(vals[0])==15)
+		{
+		  fprintf(console,"Key created:\t%.2s/%.2s/%.4s\n",
+			  &vals[0][4],&vals[0][6],vals[0]);
+		  ldap_value_free(vals);
+		}
+
+	      vals=ldap_get_values(ldap,each,"modifytimestamp");
+	      if(vals!=NULL && strlen(vals[0])==15)
+		{
+		  fprintf(console,"Key modified:\t%.2s/%.2s/%.4s\n",
+			  &vals[0][4],&vals[0][6],vals[0]);
+		  ldap_value_free(vals);
+		}
+
+	      vals=ldap_get_values(ldap,each,"pgpkeysize");
+	      if(vals!=NULL)
+		{
+		  fprintf(console,"Key size:\t%d\n",atoi(vals[0]));
+		  ldap_value_free(vals);
+		}
+
+	      vals=ldap_get_values(ldap,each,"pgpkeytype");
+	      if(vals!=NULL)
+		{
+		  fprintf(console,"Key type:\t%s\n",vals[0]);
+		  ldap_value_free(vals);
+		}
+	    }
+
+	  vals=ldap_get_values(ldap,each,"pgpKeyV2");
+	  if(vals==NULL)
+	    {
+	      fprintf(console,"gpgkeys: unable to retrieve key %s "
+		      "from keyserver\n",getkey);
+	      fprintf(output,"KEY 0x%s FAILED\n",getkey);
+	    }
+	  else
+	    {
+	      fprintf(output,"%sKEY 0x%s END\n",vals[0],getkey);
+
+	      ldap_value_free(vals);
+	    }
+	}
+
+      each=ldap_next_entry(ldap,each);
     }
 
-  return 0;
+  ret=0;
+
+ fail:
+  ldap_msgfree(res);
+
+  /* free up the dupe checker */
+  while(dupelist!=NULL)
+    {
+      struct keylist *keyptr=dupelist;
+
+      dupelist=keyptr->next;
+      free(keyptr->keystr);
+      free(keyptr);
+    }
+
+  return ret;
 }
 
 time_t ldap2epochtime(const char *timestr)
@@ -475,6 +544,8 @@ int search_key(LDAP *ldap,char *searchkey)
 	  each=ldap_next_entry(ldap,each);
 	}
     }
+
+  ldap_msgfree(res);
 
   fprintf(output,"SEARCH %s END\n",searchkey);
 
@@ -669,7 +740,8 @@ int main(int argc,char *argv[])
 	  keyptr->next=malloc(sizeof(struct keylist));
 	  if(keyptr->next==NULL)
 	    {
-	      fprintf(console,"gpgkeys: out of memory when building key list\n");
+	      fprintf(console,"gpgkeys: out of memory when "
+		      "building key list\n");
 	      goto fail;
 	    }
 
@@ -679,7 +751,8 @@ int main(int argc,char *argv[])
 	  keyptr->keystr=malloc(MAX_LINE);
 	  if(keyptr->keystr==NULL)
 	    {
-	      fprintf(console,"gpgkeys: out of memory when building key list\n");
+	      fprintf(console,"gpgkeys: out of memory when "
+		      "building key list\n");
 	      goto fail;
 	    }
 	}
@@ -699,7 +772,7 @@ int main(int argc,char *argv[])
     {
       fprintf(console,"Host:\t\t%s\n",host);
       if(port)
-	fprintf(console,"Port:\t%d\n",port);
+	fprintf(console,"Port:\t\t%d\n",port);
       fprintf(console,"Command:\t%s\n",action==GET?"GET":
 	      action==SEND?"SEND":"SEARCH");
     }
@@ -762,12 +835,15 @@ int main(int argc,char *argv[])
       basekeyspacedn=strdup(vals[0]);
       if(basekeyspacedn==NULL)
 	{
-	  fprintf(console,"gpgkeys: can't allocate string space for LDAP base\n");
+	  fprintf(console,"gpgkeys: can't allocate string space "
+		  "for LDAP base\n");
 	  goto fail;
 	}
 
       ldap_value_free(vals);
     }
+
+  ldap_msgfree(res);
 
   switch(action)
     {

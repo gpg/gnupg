@@ -1,3 +1,14 @@
+2001-12-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* Properly free the LDAP response when we're done with it.
+
+	* Now that we handle multiple keys, we must remove duplicates as
+	the LDAP keyserver returns keys with multiple user IDs multiple
+	times.
+
+	* Properly handle multiple keys with the same key ID (it's really
+	rare, so fetch "0xDEADBEEF" to test this).
+
 2001-12-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c, gpgkeys_mailto.in: Fix GNU capitalization
