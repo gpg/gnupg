@@ -1,3 +1,13 @@
+2004-02-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (delete_one_attr): New function to replace
+	attributes with NULL (a "delete" that works even for nonexistant
+	attributes).
+	(send_key): Use it here to remove attributes so a modify operation
+	starts with a clean playing field.  Bias sends to modify before
+	add, since (I suspect) people update their existing keys more
+	often than they make and send new keys to the server.
+
 2004-02-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (epoch2ldaptime): New.  Converse of

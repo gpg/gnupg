@@ -305,6 +305,36 @@ make_one_attr(LDAPMod ***modlist,char *attr,const char *value)
   return 1;
 }
 
+/* This doesn't mean "delete" in the sense of removing something from
+   the modlist, but "delete" in the LDAP sense of adding a modlist
+   item that specifies LDAP_MOD_REPLACE and a null attribute for the
+   given attribute.  LDAP_MOD_DELETE doesn't work here as we don't
+   know if the attribute in question exists or not. */
+static int
+delete_one_attr(LDAPMod ***modlist,char *attr)
+{
+  LDAPMod **grow;
+  int nummods=0;
+
+  for(grow=*modlist;*grow;grow++)
+    nummods++;
+
+  grow=realloc(*modlist,sizeof(LDAPMod *)*(nummods+2));
+  if(!grow)
+    return 0;
+
+  *modlist=grow;
+  grow[nummods]=malloc(sizeof(LDAPMod));
+  if(!grow[nummods])
+    return 0;
+  grow[nummods]->mod_op=LDAP_MOD_REPLACE;
+  grow[nummods]->mod_type=attr;
+  grow[nummods]->mod_values=NULL;
+  grow[nummods+1]=NULL;
+
+  return 1;
+}
+
 static void
 build_attrs(LDAPMod ***modlist,char *line)
 {
@@ -499,6 +529,19 @@ send_key(int *eof)
 
   *modlist=NULL;
 
+  /* Going on the assumption that modify operations are more frequent
+     than adds, I'm setting up the modify operations here first. */
+  delete_one_attr(&modlist,"pgpDisabled");
+  delete_one_attr(&modlist,"pgpKeyID");
+  delete_one_attr(&modlist,"pgpKeyType");
+  delete_one_attr(&modlist,"pgpUserID");
+  delete_one_attr(&modlist,"pgpKeyCreateTime");
+  delete_one_attr(&modlist,"pgpSignerID");
+  delete_one_attr(&modlist,"pgpRevoked");
+  delete_one_attr(&modlist,"pgpSubKeyID");
+  delete_one_attr(&modlist,"pgpKeySize");
+  delete_one_attr(&modlist,"pgpKeyExpireTime");
+
   /* Assemble the INFO stuff into LDAP attributes */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
@@ -623,16 +666,19 @@ send_key(int *eof)
   make_one_attr(&modlist,"objectClass","pgpKeyInfo");
   make_one_attr(&modlist,"pgpKey",key);
 
-  err=ldap_add_s(ldap,dn,modlist);
+  /* If it's not there, we just turn around and send an add command
+     for the same key.  Otherwise, the modify brings the server copy
+     into compliance with our copy.  Note that unlike the LDAP
+     keyserver (and really, any other keyserver) this does NOT merge
+     signatures, but replaces the whole key.  This should make some
+     people very happy. */
 
-  /* If it's there already, we just turn around and send a modify
-     command for the same key to bring it into compliance with our
-     copy.  Note that unlike the LDAP keyserver (and really, any other
-     keyserver) this does NOT merge signatures, but replaces the whole
-     key.  This should make some people very happy. */
-
-  if(err==LDAP_ALREADY_EXISTS)
-    err=ldap_modify_s(ldap,dn,modlist);
+  err=ldap_modify_s(ldap,dn,modlist);
+  if(err==LDAP_NO_SUCH_OBJECT)
+    {
+      LDAPMod **addlist=&modlist[10];
+      err=ldap_add_s(ldap,dn,addlist);
+    }
 
   if(err!=LDAP_SUCCESS)
     {
