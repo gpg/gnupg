@@ -51,6 +51,13 @@
                                   insertion of the card (1 = don't wait). */
 
 
+#ifdef _WIN32
+#define DLSTDCALL __stdcall
+#else
+#define DLSTDCALL
+#endif
+
+
 /* A structure to collect information pertaining to one reader
    slot. */
 struct reader_table_s {
@@ -84,12 +91,12 @@ static struct reader_table_s reader_table[MAX_READER];
 
 
 /* ct API function pointer. */
-static char (*CT_init) (unsigned short ctn, unsigned short Pn);
-static char (*CT_data) (unsigned short ctn, unsigned char *dad,
-                        unsigned char *sad, unsigned short lc,
-                        unsigned char *cmd, unsigned short *lr,
-                        unsigned char *rsp);
-static char (*CT_close) (unsigned short ctn);
+static char (* DLSTDCALL CT_init) (unsigned short ctn, unsigned short Pn);
+static char (* DLSTDCALL CT_data) (unsigned short ctn, unsigned char *dad,
+                                   unsigned char *sad, unsigned short lc,
+                                   unsigned char *cmd, unsigned short *lr,
+                                   unsigned char *rsp);
+static char (* DLSTDCALL CT_close) (unsigned short ctn);
 
 /* PC/SC constants and function pointer. */
 #define PCSC_SCOPE_USER      0 
@@ -117,34 +124,38 @@ struct pcsc_io_request_s {
 
 typedef struct pcsc_io_request_s *pcsc_io_request_t;
 
-long (*pcsc_establish_context) (unsigned long scope,
-                                const void *reserved1,
-                                const void *reserved2,
-                                unsigned long *r_context);
-long (*pcsc_release_context) (unsigned long context);
-long (*pcsc_list_readers) (unsigned long context, const char *groups,
-                        char *readers, unsigned long *readerslen);
-long (*pcsc_connect) (unsigned long context,
-                      const char *reader,
-                      unsigned long share_mode,
-                      unsigned long preferred_protocols,
-                      unsigned long *r_card,
-                      unsigned long *r_active_protocol);
-long (*pcsc_disconnect) (unsigned long card, unsigned long disposition);
-long (*pcsc_status) (unsigned long card,
-                     char *reader, unsigned long *readerlen,
-                     unsigned long *r_state, unsigned long *r_protocol,
-                     unsigned char *atr, unsigned long *atrlen);
-long (*pcsc_begin_transaction) (unsigned long card);
-long (*pcsc_end_transaction) (unsigned long card);
-long (*pcsc_transmit) (unsigned long card,
-                       const pcsc_io_request_t send_pci,
-                       const unsigned char *send_buffer,
-                       unsigned long send_len,
-                       pcsc_io_request_t recv_pci,
-                       unsigned char *recv_buffer,
-                       unsigned long *recv_len);
-long (*pcsc_set_timeout) (unsigned long context, unsigned long timeout);
+long (* DLSTDCALL pcsc_establish_context) (unsigned long scope,
+                                           const void *reserved1,
+                                           const void *reserved2,
+                                           unsigned long *r_context);
+long (* DLSTDCALL pcsc_release_context) (unsigned long context);
+long (* DLSTDCALL pcsc_list_readers) (unsigned long context,
+                                      const char *groups,
+                                      char *readers, unsigned long*readerslen);
+long (* DLSTDCALL pcsc_connect) (unsigned long context,
+                                 const char *reader,
+                                 unsigned long share_mode,
+                                 unsigned long preferred_protocols,
+                                 unsigned long *r_card,
+                                 unsigned long *r_active_protocol);
+long (* DLSTDCALL pcsc_disconnect) (unsigned long card,
+                                    unsigned long disposition);
+long (* DLSTDCALL pcsc_status) (unsigned long card,
+                                char *reader, unsigned long *readerlen,
+                                unsigned long *r_state,
+                                unsigned long *r_protocol,
+                                unsigned char *atr, unsigned long *atrlen);
+long (* DLSTDCALL pcsc_begin_transaction) (unsigned long card);
+long (* DLSTDCALL pcsc_end_transaction) (unsigned long card);
+long (* DLSTDCALL pcsc_transmit) (unsigned long card,
+                                  const pcsc_io_request_t send_pci,
+                                  const unsigned char *send_buffer,
+                                  unsigned long send_len,
+                                  pcsc_io_request_t recv_pci,
+                                  unsigned char *recv_buffer,
+                                  unsigned long *recv_len);
+long (* DLSTDCALL pcsc_set_timeout) (unsigned long context,
+                                     unsigned long timeout);
 
 
 

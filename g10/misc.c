@@ -258,7 +258,7 @@ openpgp_pk_algo_usage ( int algo )
     /* they are hardwired in gpg 1.0 */
     switch ( algo ) {    
       case PUBKEY_ALGO_RSA:
-          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
           break;
       case PUBKEY_ALGO_RSA_E:
           use = PUBKEY_USAGE_ENC;
@@ -270,10 +270,10 @@ openpgp_pk_algo_usage ( int algo )
           use = PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_DSA:  
-          use = PUBKEY_USAGE_SIG;
+          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
           break;
       case PUBKEY_ALGO_ELGAMAL:
-          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
           break;
       default:
           break;

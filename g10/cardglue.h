@@ -158,6 +158,10 @@ int agent_scd_pkdecrypt (const char *serialno,
 /* Change the PIN of an OpenPGP card or reset the retry counter. */
 int agent_scd_change_pin (int chvno);
 
+/* Send a CHECKPIN command. */
+int agent_scd_checkpin (const char *serialnobuf);
+
+
 #endif /*ENABLE_CARD_SUPPORT*/
 #endif /*GNUPG_G10_CARDGLUE_H*/
 

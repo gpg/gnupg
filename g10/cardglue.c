@@ -508,13 +508,16 @@ pin_cb (void *opaque, const char *info, char **retstr)
 {
   char *value;
   int canceled;
+  int isadmin = (info && strstr (info, "dmin"));
+
 
   *retstr = NULL;
   log_debug ("asking for PIN '%s'\n", info);
 
   value = ask_passphrase (info, 
-                          info && strstr (info, "dmin")?
-                           _("Enter Admin PIN: ") : _("Enter PIN: "),
+                          isadmin? "passphrase.adminpin.ask"
+                                 : "passphrase.pin.ask", 
+                          isadmin?  _("Enter Admin PIN: ") : _("Enter PIN: "),
                           &canceled);
   if (!value && canceled)
     return -1;
@@ -645,7 +648,6 @@ agent_scd_pkdecrypt (const char *serialno,
                      const unsigned char *indata, size_t indatalen,
                      unsigned char **r_buf, size_t *r_buflen)
 {
-
   APP app;
 
   *r_buf = NULL;
@@ -678,5 +680,20 @@ agent_scd_change_pin (int chvno)
   sprintf (chvnostr, "%d", chvno);
   return app->fnc.change_pin (app, NULL, chvnostr, reset,
                               pin_cb, NULL);
+}
+
+/* Perform a CHECKPIN operation.  SERIALNO should be the seriial
+   number of the card - optioanlly followed by the fingerprint;
+   however the fingerprint is ignored here. */
+int
+agent_scd_checkpin (const char *serialnobuf)
+{
+  APP app;
+
+  app = current_app? current_app : open_card ();
+  if (!app)
+    return gpg_error (GPG_ERR_CARD);
+
+  return app->fnc.check_pin (app, serialnobuf, pin_cb, NULL);
 }
 

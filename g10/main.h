@@ -244,7 +244,7 @@ void unblock_all_signals(void);
 #ifdef ENABLE_CARD_SUPPORT
 /*-- card-util.c --*/
 void change_pin (int no);
-void card_status (FILE *fp);
+void card_status (FILE *fp, char *serialno, size_t serialnobuflen);
 void card_edit (STRLIST commands);
 #endif
 

@@ -255,12 +255,15 @@ fpr_is_zero (const char *fpr)
 
 /* Print all available information about the current card. */
 void
-card_status (FILE *fp)
+card_status (FILE *fp, char *serialno, size_t serialnobuflen)
 {
   struct agent_card_info_s info;
   PKT_public_key *pk = xcalloc (1, sizeof *pk);
   int rc;
   unsigned int uval;
+
+  if (serialno && serialnobuflen)
+    *serialno = 0;
 
   rc = agent_learn (&info);
   if (rc)
@@ -288,6 +291,13 @@ card_status (FILE *fp)
       xfree (pk);
       return;
     }
+
+  if (!serialno)
+    ;
+  else if (strlen (serialno)+1 > serialnobuflen)
+    log_error ("serial number longer than expected\n");
+  else 
+    strcpy (serialno, info.serialno);
 
   if (opt.with_colons)
     fputs ("openpgp-card:\n", fp);
@@ -660,29 +670,33 @@ card_edit (STRLIST commands)
     cmdNOP = 0,
     cmdQUIT, cmdHELP, cmdLIST, cmdDEBUG,
     cmdNAME, cmdURL, cmdLOGIN, cmdLANG, cmdSEX,
-    cmdFORCESIG, cmdGENERATE,
+    cmdFORCESIG, cmdGENERATE, cmdPASSWD,
     cmdINVCMD
   };
 
   static struct {
     const char *name;
     enum cmdids id;
+    int requires_pin;
     const char *desc;
   } cmds[] = {
-    { N_("quit")  , cmdQUIT  , N_("quit this menu") },
-    { N_("q")     , cmdQUIT  , NULL   },
-    { N_("help")  , cmdHELP  , N_("show this help") },
-    {    "?"      , cmdHELP  , NULL   },
-    { N_("list")  , cmdLIST  , N_("list all available data") },
-    { N_("l")     , cmdLIST  , NULL   },
-    { N_("debug") , cmdDEBUG , NULL },
-    { N_("name")  , cmdNAME  , N_("change card holder's name") },
-    { N_("url")   , cmdURL   , N_("change URL to retrieve key") },
-    { N_("login") , cmdLOGIN , N_("change the login name") },
-    { N_("lang")  , cmdLANG  , N_("change the language preferences") },
-    { N_("sex")   , cmdSEX   , N_("change card holder's sex") },
-    { N_("forcesig"), cmdFORCESIG, N_("toggle the signature force PIN flag") },
-    { N_("generate"), cmdGENERATE, N_("generate new keys") },
+    { N_("quit")  , cmdQUIT  , 0, N_("quit this menu") },
+    { N_("q")     , cmdQUIT  , 0, NULL   },
+    { N_("help")  , cmdHELP  , 0, N_("show this help") },
+    {    "?"      , cmdHELP  , 0, NULL   },
+    { N_("list")  , cmdLIST  , 0, N_("list all available data") },
+    { N_("l")     , cmdLIST  , 0, NULL   },
+    { N_("debug") , cmdDEBUG , 0, NULL },
+    { N_("name")  , cmdNAME  , 1, N_("change card holder's name") },
+    { N_("url")   , cmdURL   , 1, N_("change URL to retrieve key") },
+    { N_("login") , cmdLOGIN , 1, N_("change the login name") },
+    { N_("lang")  , cmdLANG  , 1, N_("change the language preferences") },
+    { N_("sex")   , cmdSEX   , 1, N_("change card holder's sex") },
+    { N_("forcesig"),
+                  cmdFORCESIG, 1, N_("toggle the signature force PIN flag") },
+    { N_("generate"),
+                  cmdGENERATE, 1, N_("generate new keys") },
+    { N_("passwd"), cmdPASSWD, 0, N_("menu to change or unblock the PIN") },
     { NULL, cmdINVCMD } 
   };
  
@@ -690,6 +704,9 @@ card_edit (STRLIST commands)
   int have_commands = !!commands;
   int redisplay = 1;
   char *answer = NULL;
+  int did_checkpin = 0;
+  char serialnobuf[50];
+
 
   if (opt.command_fd != -1)
     ;
@@ -705,18 +722,19 @@ card_edit (STRLIST commands)
       const char *arg_string = "";
       char *p;
       int i;
-
+      int requires_pin;
+      
       tty_printf("\n");
       if (redisplay )
         {
           if (opt.with_colons)
             {
-              card_status (stdout);
+              card_status (stdout, serialnobuf, DIM (serialnobuf));
               fflush (stdout);
             }
           else
             {
-              card_status (NULL);
+              card_status (NULL, serialnobuf, DIM (serialnobuf));
               tty_printf("\n");
             }
           redisplay = 0;
@@ -750,6 +768,7 @@ card_edit (STRLIST commands)
       while( *answer == '#' );
 
       arg_number = 0; /* Yes, here is the init which egcc complains about */
+      requires_pin = 0;
       if (!*answer)
         cmd = cmdLIST; /* Default to the list command */
       else if (*answer == CONTROL_D)
@@ -769,7 +788,19 @@ card_edit (STRLIST commands)
             break;
 
         cmd = cmds[i].id;
+        requires_pin = cmds[i].requires_pin;
       }
+      
+      if (requires_pin && !did_checkpin)
+        {
+          int rc = agent_scd_checkpin (serialnobuf);
+          if (rc)
+            {
+              log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
+              continue;
+            }
+          did_checkpin = 1;
+        }
 
       switch (cmd)
         {
@@ -809,6 +840,11 @@ card_edit (STRLIST commands)
 
         case cmdGENERATE:
           generate_card_keys ();
+          break;
+
+        case cmdPASSWD:
+          change_pin (0);
+          did_checkpin = 0; /* Need to reset it of course. */
           break;
 
         case cmdQUIT:

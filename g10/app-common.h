@@ -65,6 +65,9 @@ struct app_ctx_s {
                        const char *chvnostr, int reset_mode,
                        int (*pincb)(void*, const char *, char **),
                        void *pincb_arg);
+    int (*check_pin) (APP app, const char *keyidstr,
+                      int (pincb)(void*, const char *, char **),
+                      void *pincb_arg);
   } fnc;
 
 
@@ -106,6 +109,9 @@ int app_get_challenge (APP app, size_t nbytes, unsigned char *buffer);
 int app_change_pin (APP app, CTRL ctrl, const char *chvnostr, int reset_mode,
                     int (*pincb)(void*, const char *, char **),
                     void *pincb_arg);
+int app_check_pin (APP app, const char *keyidstr,
+                   int (*pincb)(void*, const char *, char **),
+                   void *pincb_arg);
 
 
 /*-- app-openpgp.c --*/

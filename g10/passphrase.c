@@ -1007,7 +1007,9 @@ passphrase_clear_cache ( u32 *keyid, int algo )
  * Ask for a passphrase and return that string.
  */
 char *
-ask_passphrase (const char *description, const char *prompt, int *canceled)
+ask_passphrase (const char *description,
+                const char *promptid,
+                const char *prompt, int *canceled)
 {
   char *pw = NULL;
   
@@ -1042,7 +1044,7 @@ ask_passphrase (const char *description, const char *prompt, int *canceled)
       pw = NULL;
     }
   else {
-    pw = cpr_get_hidden("passphrase.ask",
+    pw = cpr_get_hidden(promptid? promptid : "passphrase.ask",
                         prompt?prompt : _("Enter passphrase: ") );
     tty_kill_prompt();
   }

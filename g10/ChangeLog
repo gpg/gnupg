@@ -1,3 +1,22 @@
+2003-10-21  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (ask_passphrase): Add optional promptid arg.
+	Changed all callers.
+	* cardglue.c (pin_cb): Use it here, so the machine interface can
+	tell whether the Admin PIN is requested.
+
+	* cardglue.c (agent_scd_checkpin): New.
+
+	* misc.c (openpgp_pk_algo_usage): Added AUTH usage.
+
+	* app-openpgp.c (check_against_given_fingerprint): New. Factored
+	out that code elsewhere.
+	(do_check_pin): New.
+	* card-util.c (card_edit): New command "passwd".  Add logic to
+	check the PIN in advance.
+	(card_status): Add new args to return the serial number.  Changed
+	all callers.
+
 2003-10-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (import_one): Show the keyid when giving the Elgamal

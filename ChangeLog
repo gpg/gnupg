@@ -1,3 +1,9 @@
+2003-10-21  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (PRINTABLE_OS_NAME): Remove special case for The
+	Hurd; Robert Millan reported that the uname test is now
+	sufficient.
+
 2003-10-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Include -ldl when card support is used.
