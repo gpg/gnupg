@@ -30,9 +30,9 @@ AC_INIT(gnupg, 1.9.3-cvs, gnupg-devel@gnupg.org)
 # sufficient.
 development_version=yes
 NEED_GPG_ERROR_VERSION=0.6
-NEED_LIBGCRYPT_VERSION=1.1.90
+NEED_LIBGCRYPT_VERSION=1.1.91
 NEED_LIBASSUAN_VERSION=0.6.2
-NEED_KSBA_VERSION=0.9.0
+NEED_KSBA_VERSION=0.9.1
 NEED_OPENSC_VERSION=0.8.0
 
 
@@ -1074,9 +1074,9 @@ sm/Makefile
 agent/Makefile
 scd/Makefile
 doc/Makefile
+tests/Makefile
 ])
 AC_OUTPUT
-#tests/Makefile
 
 
 echo "

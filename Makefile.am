@@ -46,11 +46,7 @@ scd =
 endif
 
 SUBDIRS = m4 intl jnlib common kbx \
- ${gpg} ${sm} ${agent} ${scd} po doc 
-
-#tests
-
-
+ ${gpg} ${sm} ${agent} ${scd} po doc tests
 
 dist-hook:
 	@set -e; \
