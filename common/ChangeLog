@@ -1,3 +1,15 @@
+2002-06-10  Werner Koch  <wk@gnupg.org>
+
+	* errors.h (gnupg_error_token): Add new prototype.
+	(STATUS_ERROR): New.
+
+	* mkerrtok: New.
+	* Makefile.am: Use it to create the new error token function.
+
+2002-06-04  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_to_assuan_status): Map Bad_CA_Certificate.
+
 2002-05-23  Werner Koch  <wk@gnupg.org>
 
 	* no-pth.c, Makefile.am: Removed.

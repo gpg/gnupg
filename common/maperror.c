@@ -197,7 +197,10 @@ map_to_assuan_status (int rc)
   switch (rc)
     {
     case 0: break;
-    case GNUPG_Bad_Certificate:   rc = ASSUAN_Bad_Certificate; break;
+    case GNUPG_Bad_CA_Certificate: 
+    case GNUPG_Bad_Certificate:  
+      rc = ASSUAN_Bad_Certificate; 
+      break;
     case GNUPG_Bad_Certificate_Path: rc = ASSUAN_Bad_Certificate_Path; break;
     case GNUPG_Missing_Certificate: rc = ASSUAN_Missing_Certificate; break;
     case GNUPG_No_Data:           rc = ASSUAN_No_Data_Available; break;

@@ -19,9 +19,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = mkerrors
+EXTRA_DIST = mkerrors mkerrtok
 #INCLUDES = 
-BUILT_SOURCES = errors.c
+BUILT_SOURCES = errors.c 
 
 noinst_LIBRARIES = libcommon.a
 
@@ -37,8 +37,9 @@ libcommon_a_SOURCES = \
 
 libcommon_a_LIBADD = @LIBOBJS@
 
-errors.c : errors.h mkerrors
+errors.c : errors.h mkerrors mkerrtok
 	$(srcdir)/mkerrors < $(srcdir)/errors.h > errors.c
+	$(srcdir)/mkerrtok < $(srcdir)/errors.h >> errors.c
 
 
 

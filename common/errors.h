@@ -178,12 +178,14 @@ enum {
   STATUS_EXPSIG,
   STATUS_EXPKEYSIG,
 
-  STATUS_TRUNCATED
+  STATUS_TRUNCATED,
+  STATUS_ERROR
 };
 
 
-/*-- errors.c (built) --*/
+/*-- errors.c (build by mkerror and mkerrtok) --*/
 const char *gnupg_strerror (int err);
+const char *gnupg_error_token (int err);
 
 
 #endif /*GNUPG_COMMON_ERRORS_H*/
