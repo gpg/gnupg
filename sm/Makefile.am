@@ -34,6 +34,7 @@ gpgsm_SOURCES = \
 	certdump.c \
 	certcheck.c \
 	certpath.c \
+	keylist.c \
 	verify.c \
 	import.c 
 

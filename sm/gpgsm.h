@@ -130,7 +130,6 @@ struct {
   const char *homedir; /* configuration directory name */
   char *outfile;    /* name of output file */
 
-  int with_colons;  /* use column delimited output format */
   int with_key_data;/* include raw key in the column delimted output */
 
   int fingerprint;  /* list fingerprints in all key listings */
@@ -176,6 +175,7 @@ struct server_control_s {
   int no_server;     /* we are not running under server control */
   int  status_fd;    /* only for non-server mode */
   struct server_local_s *server_local;
+  int with_colons;  /* use column delimited output format */
 };
 typedef struct server_control_s *CTRL;
 
@@ -204,7 +204,8 @@ int gpgsm_check_cms_signature (KsbaCert cert, const char *sigval,
 /*-- certpath.c --*/
 int gpgsm_validate_path (KsbaCert cert);
 
-
+/*-- keylist.c --*/
+void gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp);
 
 
 /*-- import.c --*/

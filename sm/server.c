@@ -185,6 +185,19 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
   return 0;
 }
 
+static int 
+cmd_listkeys (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+
+  ctrl->with_colons = 1;
+  /* fixme: check that the returned data_fp is not NULL */
+  gpgsm_list_keys (assuan_get_pointer (ctx), NULL, assuan_get_data_fp (ctx));
+
+  return 0;
+}
+
+
 
 
 
@@ -206,6 +219,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { "MESSAGE",    0,  cmd_message },
+    { "LISTKEYS",   0,  cmd_listkeys },
     { NULL }
   };
   int i, j, rc;

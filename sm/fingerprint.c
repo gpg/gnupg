@@ -33,7 +33,7 @@
 #include "gpgsm.h"
 
 /* Return the fingerprint of the certificate (we can't put this into
-   libksba becuase we need libgcrypt support).  The caller must
+   libksba because we need libgcrypt support).  The caller must
    provide an array of sufficient length or NULL so that the function
    allocates the array.  If r_len is not NULL, the length of the
    digest is return, well, this can also be done by using
