@@ -1,5 +1,8 @@
 2002-09-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_ldap.c (get_key): Some compilers (RISC OS, HPUX c89)
+	don't like using variables as array initializers.
+
 	* gpgkeys_hkp.c (send_key): Use CRLF in headers.
 
 2002-08-28  David Shaw  <dshaw@jabberwocky.com>

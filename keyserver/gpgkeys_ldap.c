@@ -174,16 +174,11 @@ int get_key(char *getkey)
   int ret=-1,err,count;
   struct keylist *dupelist=NULL;
   char search[62];
-#ifndef __riscos__
-  char *attrs[]={pgpkeystr,"pgpuserid","pgpkeyid","pgpcertid","pgprevoked",
+  char *attrs[]={"replaceme","pgpuserid","pgpkeyid","pgpcertid","pgprevoked",
 		 "pgpdisabled","pgpkeycreatetime","modifytimestamp",
 		 "pgpkeysize","pgpkeytype",NULL};
-#else
-  char *attrs[]={"foobar","pgpuserid","pgpkeyid","pgpcertid","pgprevoked",
-		 "pgpdisabled","pgpkeycreatetime","modifytimestamp",
-		 "pgpkeysize","pgpkeytype",NULL};
-  attrs[0]=pgpkeystr;
-#endif
+  attrs[0]=pgpkeystr; /* Some compilers don't like using variables as
+                         array initializers. */
 
   /* Build the search string */
 
