@@ -29,7 +29,7 @@
 #include "iobuf.h"
 #include "util.h"
 #include "dummy-cipher.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "options.h"
 #include "main.h"
 
@@ -667,16 +667,16 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 				    | sig->hashed_data[1]) : 0;
 	n = n0 + nlen + 1 + buflen; /* length, type, buffer */
 	realloced = !!sig->hashed_data;
-	data = sig->hashed_data ? m_realloc( sig->hashed_data, n+2 )
-				: m_alloc( n+2 );
+	data = sig->hashed_data ? gcry_xrealloc( sig->hashed_data, n+2 )
+				: gcry_xmalloc( n+2 );
     }
     else {
 	n0 = sig->unhashed_data ? ((*sig->unhashed_data << 8)
 				      | sig->unhashed_data[1]) : 0;
 	n = n0 + nlen + 1 + buflen; /* length, type, buffer */
 	realloced = !!sig->unhashed_data;
-	data = sig->unhashed_data ? m_realloc( sig->unhashed_data, n+2 )
-				  : m_alloc( n+2 );
+	data = sig->unhashed_data ? gcry_xrealloc( sig->unhashed_data, n+2 )
+				  : gcry_xmalloc( n+2 );
     }
 
     if( critical )
@@ -707,12 +707,12 @@ build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 
     if( hashed ) {
 	if( !realloced )
-	    m_free(sig->hashed_data);
+	    gcry_free(sig->hashed_data);
 	sig->hashed_data = data;
     }
     else {
 	if( !realloced )
-	    m_free(sig->unhashed_data);
+	    gcry_free(sig->unhashed_data);
 	sig->unhashed_data = data;
     }
 }

@@ -53,7 +53,7 @@
 #endif
 #include "util.h"
 #include "packet.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "iobuf.h"
 #include "keydb.h"
 #include "host2net.h"
@@ -234,7 +234,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    filename = make_filename(opt.homedir, resname, NULL);
     }
     else
-	filename = m_strdup( resname );
+	filename = gcry_xstrdup( resname );
 
     if( !force )
 	force = secret? !any_secret : !any_public;
@@ -373,7 +373,7 @@ add_keyblock_resource( const char *url, int force, int secret )
     /* fixme: avoid duplicate resources */
     resource_table[i].used = 1;
     resource_table[i].secret = !!secret;
-    resource_table[i].fname = m_strdup(filename);
+    resource_table[i].fname = gcry_xstrdup(filename);
     resource_table[i].iobuf = iobuf;
     resource_table[i].rt    = rt;
     if( secret )
@@ -388,7 +388,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	any_secret = 1;
     else
 	any_public = 1;
-    m_free( filename );
+    gcry_free( filename );
     return rc;
 }
 
@@ -498,7 +498,7 @@ int
 find_keyblock_byname( KBPOS *kbpos, const char *username )
 {
     PACKET pkt;
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     int rc;
 
     rc = get_pubkey_byname( NULL, pk, username, NULL );
@@ -559,7 +559,7 @@ int
 find_secret_keyblock_byname( KBPOS *kbpos, const char *username )
 {
     PACKET pkt;
-    PKT_secret_key *sk = m_alloc_clear( sizeof *sk );
+    PKT_secret_key *sk = gcry_xcalloc( 1, sizeof *sk );
     int rc;
 
     rc = get_seckey_byname( sk, username, 0 );
@@ -828,7 +828,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	}
 	/* release pending packet */
 	free_packet( kbpos->pkt );
-	m_free( kbpos->pkt );
+	gcry_free( kbpos->pkt );
     }
     return rc;
 }
@@ -954,7 +954,7 @@ compile_bm_table( const byte *pattern, size_t len )
     ushort *dist;
     int i;
 
-    dist = m_alloc_clear( 256 * sizeof *dist );
+    dist = gcry_xcalloc( 1, 256 * sizeof *dist );
     for(i=0; i < 256; i++ )
 	dist[i] = len;
     for(i=0; i < len-1; i++ )
@@ -1012,7 +1012,7 @@ scan_user_file_open( const byte *name )
     size_t *dist;
     int i;
 
-    hd = m_alloc_clear( sizeof *hd );
+    hd = gcry_xcalloc( 1, sizeof *hd );
     dist = hd->dist;
     /* compile the distance table */
     for(i=0; i < 256; i++ )
@@ -1027,7 +1027,7 @@ scan_user_file_open( const byte *name )
 static int
 scan_user_file_close( SCAN_USER_HANDLE hd )
 {
-    m_free( hd );
+    gcry_free( hd );
 }
 
 static int
@@ -1175,7 +1175,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	return G10ERR_KEYRING_OPEN;
     }
 
-    pkt = m_alloc( sizeof *pkt );
+    pkt = gcry_xmalloc( sizeof *pkt );
     init_packet(pkt);
     kbpos->count=0;
     while( (rc=parse_packet(a, pkt)) != -1 ) {
@@ -1209,7 +1209,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 		root = new_kbnode( pkt );
 	    else
 		add_kbnode( root, new_kbnode( pkt ) );
-	    pkt = m_alloc( sizeof *pkt );
+	    pkt = gcry_xmalloc( sizeof *pkt );
 	    init_packet(pkt);
 	    break;
 	}
@@ -1224,7 +1224,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     else
 	*ret_root = root;
     free_packet( pkt );
-    m_free( pkt );
+    gcry_free( pkt );
     iobuf_close(a);
     return rc;
 }
@@ -1246,7 +1246,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 	kbpos->pkt = NULL;
     }
 
-    pkt = m_alloc( sizeof *pkt );
+    pkt = gcry_xmalloc( sizeof *pkt );
     init_packet(pkt);
     while( (rc=parse_packet(kbpos->fp, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
@@ -1275,7 +1275,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 		goto ready;
 	    }
 	    root = new_kbnode( pkt );
-	    pkt = m_alloc( sizeof *pkt );
+	    pkt = gcry_xmalloc( sizeof *pkt );
 	    init_packet(pkt);
 	    break;
 
@@ -1293,7 +1293,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 		break;
 	    }
 	    add_kbnode( root, new_kbnode( pkt ) );
-	    pkt = m_alloc( sizeof *pkt );
+	    pkt = gcry_xmalloc( sizeof *pkt );
 	    init_packet(pkt);
 	    break;
 	}
@@ -1307,7 +1307,7 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
     else
 	*ret_root = root;
     free_packet( pkt );
-    m_free( pkt );
+    gcry_free( pkt );
 
     return rc;
 }
@@ -1391,23 +1391,23 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
      */
     if( strlen(rentry->fname) > 4
 	&& !strcmp(rentry->fname+strlen(rentry->fname)-4, ".gpg") ) {
-	bakfname = m_alloc( strlen( rentry->fname ) + 1 );
+	bakfname = gcry_xmalloc( strlen( rentry->fname ) + 1 );
 	strcpy(bakfname,rentry->fname);
 	strcpy(bakfname+strlen(rentry->fname)-4, ".bak");
-	tmpfname = m_alloc( strlen( rentry->fname ) + 1 );
+	tmpfname = gcry_xmalloc( strlen( rentry->fname ) + 1 );
 	strcpy(tmpfname,rentry->fname);
 	strcpy(tmpfname+strlen(rentry->fname)-4, ".tmp");
     }
     else { /* file does not end with gpg; hmmm */
-	bakfname = m_alloc( strlen( rentry->fname ) + 5 );
+	bakfname = gcry_xmalloc( strlen( rentry->fname ) + 5 );
 	strcpy(stpcpy(bakfname,rentry->fname),".bak");
-	tmpfname = m_alloc( strlen( rentry->fname ) + 5 );
+	tmpfname = gcry_xmalloc( strlen( rentry->fname ) + 5 );
 	strcpy(stpcpy(tmpfname,rentry->fname),".tmp");
     }
   #else
-    bakfname = m_alloc( strlen( rentry->fname ) + 2 );
+    bakfname = gcry_xmalloc( strlen( rentry->fname ) + 2 );
     strcpy(stpcpy(bakfname,rentry->fname),"~");
-    tmpfname = m_alloc( strlen( rentry->fname ) + 5 );
+    tmpfname = gcry_xmalloc( strlen( rentry->fname ) + 5 );
     strcpy(stpcpy(tmpfname,rentry->fname),".tmp");
   #endif
     newfp = iobuf_create( tmpfname );
@@ -1538,8 +1538,8 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 
   leave:
     unlock_rentry( rentry );
-    m_free(bakfname);
-    m_free(tmpfname);
+    gcry_free(bakfname);
+    gcry_free(tmpfname);
     return rc;
 }
 
@@ -1704,25 +1704,25 @@ do_gdbm_locate_by_keyid( GDBM_FILE dbf, KBPOS *kbpos, u32 *keyid )
 
     if( content.dsize < 2 ) {
 	log_error("gdbm_fetch did not return enough data\n" );
-	free( content.dptr ); /* can't use m_free() here */
+	free( content.dptr ); /* can't use gcry_free() here */
 	return G10ERR_INV_KEYRING;
     }
     if( *content.dptr != 2 ) {
 	log_error("gdbm_fetch returned unexpected type %d\n",
 		    *(byte*)content.dptr );
-	free( content.dptr ); /* can't use m_free() here */
+	free( content.dptr ); /* can't use gcry_free() here */
 	return G10ERR_INV_KEYRING;
     }
     if( content.dsize < 21 ) {
 	log_error("gdbm_fetch did not return a complete fingerprint\n" );
-	free( content.dptr ); /* can't use m_free() here */
+	free( content.dptr ); /* can't use gcry_free() here */
 	return G10ERR_INV_KEYRING;
     }
     if( content.dsize > 21 )
 	log_info("gdbm_fetch: WARNING: more than one fingerprint\n" );
 
     rc = do_gdbm_locate( dbf, kbpos, content.dptr+1, 20 );
-    free( content.dptr ); /* can't use m_free() here */
+    free( content.dptr ); /* can't use gcry_free() here */
     return rc;
 }
 
@@ -1750,20 +1750,20 @@ do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root )
     }
     if( content.dsize < 2 ) {
 	log_error("gdbm_fetch did not return enough data\n" );
-	free( content.dptr ); /* can't use m_free() here */
+	free( content.dptr ); /* can't use gcry_free() here */
 	return G10ERR_INV_KEYRING;
     }
     if( *content.dptr != 1 ) {
 	log_error("gdbm_fetch returned unexpected type %d\n",
 		    *(byte*)content.dptr );
-	free( content.dptr ); /* can't use m_free() here */
+	free( content.dptr ); /* can't use gcry_free() here */
 	return G10ERR_INV_KEYRING;
     }
 
     a = iobuf_temp_with_content( content.dptr+1, content.dsize-1 );
-    free( content.dptr ); /* can't use m_free() here */
+    free( content.dptr ); /* can't use gcry_free() here */
 
-    pkt = m_alloc( sizeof *pkt );
+    pkt = gcry_xmalloc( sizeof *pkt );
     init_packet(pkt);
     kbpos->count=0;
     while( (rc=parse_packet(a, pkt)) != -1 ) {
@@ -1784,7 +1784,7 @@ do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root )
 	    root = new_kbnode( pkt );
 	else
 	    add_kbnode( root, new_kbnode( pkt ) );
-	pkt = m_alloc( sizeof *pkt );
+	pkt = gcry_xmalloc( sizeof *pkt );
 	init_packet(pkt);
     }
     if( rc == -1 && root )
@@ -1794,7 +1794,7 @@ do_gdbm_read( KBPOS *kbpos, KBNODE *ret_root )
     else
 	*ret_root = root;
     free_packet( pkt );
-    m_free( pkt );
+    gcry_free( pkt );
     iobuf_close(a);
     return rc;
 }
@@ -1824,18 +1824,18 @@ do_gdbm_enum( KBPOS *kbpos, KBNODE *ret_root )
     while( key.dptr && (!key.dsize || *key.dptr != 1) ) {
 	helpkey = key;
 	key = gdbm_nextkey( rentry->dbf, helpkey );
-	free( helpkey.dptr ); /* free and not m_free() ! */
+	free( helpkey.dptr ); /* free and not gcry_free() ! */
     }
     if( !key.dptr )
 	return -1; /* eof */
 
     if( key.dsize < 21 ) {
-	free( key.dptr ); /* free and not m_free() ! */
+	free( key.dptr ); /* free and not gcry_free() ! */
 	log_error("do_gdm_enum: key is too short\n" );
 	return G10ERR_INV_KEYRING;
     }
     memcpy( kbpos->keybuf, key.dptr, 21 );
-    free( key.dptr ); /* free and not m_free() ! */
+    free( key.dptr ); /* free and not gcry_free() ! */
     return do_gdbm_read( kbpos, ret_root );
 }
 

@@ -1,0 +1,9 @@
+The 1.1 series are the current development branch of GnuPG.
+
+       DO NOT USE IN A PRODUCTION ENVIRONMENT!
+
+The source may change quite often and may have serious
+problems; it may even not compile on some machines.
+
+Use GnuPG from the stable 1.0.x series for real work.
+

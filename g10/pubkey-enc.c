@@ -24,7 +24,7 @@
 #include <string.h>
 #include <assert.h>
 #include "util.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "packet.h"
 #include "main.h"
 #include "keydb.h"
@@ -55,7 +55,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	goto leave;
 
     if( k->keyid[0] || k->keyid[1] ) {
-	sk = m_alloc_clear( sizeof *sk );
+	sk = gcry_xcalloc( 1, sizeof *sk );
 	sk->pubkey_algo = k->pubkey_algo; /* we want a pubkey with this algo*/
 	if( !(rc = get_seckey( sk, k->keyid )) )
 	    rc = get_it( k, dek, sk, k->keyid );
@@ -67,7 +67,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	for(;;) {
 	    if( sk )
 		free_secret_key( sk );
-	    sk = m_alloc_clear( sizeof *sk );
+	    sk = gcry_xcalloc( 1, sizeof *sk );
 	    rc=enum_secret_keys( &enum_context, sk, 1);
 	    if( rc ) {
 		rc = G10ERR_NO_SECKEY;
@@ -102,13 +102,16 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     int rc;
     MPI plain_dek  = NULL;
     byte *frame = NULL;
-    unsigned n, nframe;
+    unsigned n;
+    size_t nframe;
     u16 csum, csum2;
 
     rc = pubkey_decrypt(sk->pubkey_algo, &plain_dek, k->data, sk->skey );
     if( rc )
 	goto leave;
-    frame = mpi_get_buffer( plain_dek, &nframe, NULL );
+    if( gcry_mpi_aprint( GCRYMPI_FMT_USG, &frame, &nframe, plain_dek ) )
+	BUG();
+
     mpi_release( plain_dek ); plain_dek = NULL;
 
     /* Now get the DEK (data encryption key) from the frame
@@ -121,7 +124,8 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
      *
      *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
      *
-     * (mpi_get_buffer already removed the leading zero).
+     * (mpi_get_buffer already removed the leading zero - still true
+     *	for gcry_mpi_aprint(0 which is used now?)
      *
      * RND are non-zero randow bytes.
      * A   is the cipher algorithm
@@ -174,7 +178,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	log_hexdump("DEK is:", dek->key, dek->keylen );
     /* check that the algo is in the preferences */
     {
-	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 	if( (rc = get_pubkey( pk, keyid )) )
 	    log_error("public key problem: %s\n", g10_errstr(rc) );
 	else if( !pk->local_id && query_trust_record(pk) )
@@ -197,7 +201,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 
   leave:
     mpi_release(plain_dek);
-    m_free(frame);
+    gcry_free(frame);
     return rc;
 }
 

@@ -36,6 +36,7 @@ and after about half a day in the rsync snapshots.
     --> Solaris fixed.
     --> IRIX bug still there but someone should test this again!
 	(<mack@sgi.com> reports that it is still alive in 1.0.0)
+	(seems to be fixed now. wk 2000-01-14)
 
 [  *] #18 1999-05-27 <Steffen.Zahn@icn.siemens.de> 0.9.7
     rndunix hangs on hp/ux.  The problem is related to my_plcose which is

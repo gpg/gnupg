@@ -175,7 +175,7 @@ http_close( HTTP_HD hd )
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write );
     release_parsed_uri( hd->uri );
-    m_free( hd->buffer );
+    gcry_free( hd->buffer );
     hd->initialized = 0;
 }
 
@@ -189,7 +189,7 @@ http_close( HTTP_HD hd )
 static int
 parse_uri( PARSED_URI *ret_uri, const char *uri )
 {
-   *ret_uri = m_alloc_clear( sizeof(**ret_uri) + strlen(uri) );
+   *ret_uri = gcry_xcalloc( 1, sizeof(**ret_uri) + strlen(uri) );
    strcpy( (*ret_uri)->buffer, uri );
    return do_parse_uri( *ret_uri, 0 );
 }
@@ -203,9 +203,9 @@ release_parsed_uri( PARSED_URI uri )
 
 	for( r = uri->query; r; r = r2 ) {
 	    r2 = r->next;
-	    m_free( r );
+	    gcry_free( r );
 	}
-	m_free( uri );
+	gcry_free( uri );
     }
 }
 
@@ -397,7 +397,7 @@ parse_tuple( byte *string )
 	return NULL; /* bad URI */
     if( n != strlen( p ) )
        return NULL; /* name with a Nul in it */
-    tuple = m_alloc_clear( sizeof *tuple );
+    tuple = gcry_xcalloc( 1, sizeof *tuple );
     tuple->name = p;
     if( !p2 )  {
 	/* we have only the name, so we assume an empty value string */
@@ -406,7 +406,7 @@ parse_tuple( byte *string )
     }
     else { /* name and value */
 	if( (n = remove_escapes( p2 )) < 0 ) {
-	    m_free( tuple );
+	    gcry_free( tuple );
 	    return NULL; /* bad URI */
 	}
 	tuple->value = p2;
@@ -436,16 +436,16 @@ send_request( HTTP_HD hd )
 	return G10ERR_NETWORK;
 
     p = build_rel_path( hd->uri );
-    request = m_alloc( strlen(p) + 20 );
+    request = gcry_xmalloc( strlen(p) + 20 );
     sprintf( request, "%s %s%s HTTP/1.0\r\n",
 			  hd->req_type == HTTP_REQ_GET ? "GET" :
 			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
 			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
 						  *p == '/'? "":"/", p );
-    m_free(p);
+    gcry_free(p);
 
     rc = write_server( hd->sock, request, strlen(request) );
-    m_free( request );
+    gcry_free( request );
 
     return rc;
 }
@@ -476,7 +476,7 @@ build_rel_path( PARSED_URI uri )
     n++;
 
     /* now  allocate and copy */
-    p = rel_path = m_alloc( n );
+    p = rel_path = gcry_xmalloc( n );
     n = insert_escapes( p, uri->path, "%;?&" );
     p += n;
     /* todo: add params */

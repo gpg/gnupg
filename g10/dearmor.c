@@ -27,7 +27,7 @@
 
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "filter.h"
 #include "packet.h"

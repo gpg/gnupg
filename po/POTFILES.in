@@ -2,8 +2,8 @@
 # Copyright (c) 1998 by Werner Koch (dd9jn)
 
 # utility
-util/secmem.c
-util/argparse.c
+gcrypt/secmem.c
+jnlib/argparse.c
 util/miscutil.c
 util/errors.c
 util/logger.c

@@ -27,9 +27,10 @@
 #include <stdio.h>
 #include "types.h"
 #include "errors.h"
-#include "../util/mischelp.h"
-#include "../util/stringhelp.h"
-#include "../util/argparse.h"
+#include "../jnlib/mischelp.h"
+#include "../jnlib/stringhelp.h"
+#include "../jnlib/argparse.h"
+#include "../jnlib/dotlock.h"
 
 
 /*-- logger.c --*/
@@ -90,14 +91,6 @@ void g10_log_hexdump( const char *text, const char *buf, size_t len );
 /*-- errors.c --*/
 const char * g10_errstr( int no );
 
-
-/*-- dotlock.c --*/
-struct dotlock_handle;
-typedef struct dotlock_handle *DOTLOCK;
-
-DOTLOCK create_dotlock( const char *file_to_lock );
-int make_dotlock( DOTLOCK h, long timeout );
-int release_dotlock( DOTLOCK h );
 
 
 /*-- fileutil.c --*/

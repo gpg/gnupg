@@ -30,7 +30,6 @@
 
 #include "packet.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "options.h"
@@ -422,13 +421,14 @@ build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
     size_t n=strlen(text)+2;
     char *list, *p;
 
-    if( maybe_setuid )
-	secmem_init( 0 );    /* drop setuid */
+    if( maybe_setuid ) {
+	gcry_control( GCRYCTL_DROP_PRIVS ); /* drop setuid */
+    }
 
     for(i=1; i < 110; i++ )
 	if( !chkf(i) )
 	    n += strlen(mapf(i)) + 2;
-    list = m_alloc( 21 + n ); *list = 0;
+    list = gcry_xmalloc( 21 + n ); *list = 0;
     for(p=NULL, i=1; i < 110; i++ ) {
 	if( !chkf(i) ) {
 	    if( !p )
@@ -480,7 +480,7 @@ make_username( const char *string )
     if( utf8_strings )
 	p = native_to_utf8( string );
     else
-	p = m_strdup(string);
+	p = gcry_xstrdup(string);
     return p;
 }
 
@@ -498,7 +498,7 @@ register_extension( const char *mainpgm, const char *fname )
 	else
 	    tmp = make_filename(GNUPG_LIBDIR, fname, NULL);
 	register_cipher_extension( mainpgm, tmp );
-	m_free(tmp);
+	gcry_free(tmp);
     }
     else
 	register_cipher_extension( mainpgm, fname );
@@ -510,10 +510,13 @@ register_extension( const char *mainpgm, const char *fname )
 static void
 set_debug(void)
 {
+   #if 0
+     #warning memory debuggig not enabled
     if( opt.debug & DBG_MEMORY_VALUE )
 	memory_debug_mode = 1;
     if( opt.debug & DBG_MEMSTAT_VALUE )
 	memory_stat_debug_mode = 1;
+   #endif
 
     if( opt.debug & DBG_MPI_VALUE )
 	gcry_control( GCRYCTL_SET_DEBUG_FLAGS, 2 );
@@ -588,7 +591,7 @@ main( int argc, char **argv )
 
     trap_unaligned();
     set_strusage( my_strusage );
-    secmem_set_flags( secmem_get_flags() | 2 ); /* suspend warnings */
+    gcry_control( GCRYCTL_SUSPEND_SECMEM_WARN );
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
      * when adding any stuff between here and the call to
      * secmem_init()  somewhere after the option parsing
@@ -667,7 +670,7 @@ main( int argc, char **argv )
     }
   #endif
     /* initialize the secure memory. */
-    secmem_init( 16384 );
+    gcry_control( GCRYCTL_INIT_SECMEM, 16384, 0 );
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
 
@@ -695,7 +698,7 @@ main( int argc, char **argv )
 				    configname, strerror(errno) );
 		g10_exit(2);
 	    }
-	    m_free(configname); configname = NULL;
+	    gcry_free(configname); configname = NULL;
 	}
 	if( parse_debug && configname )
 	    log_info(_("reading options from `%s'\n"), configname );
@@ -774,8 +777,8 @@ main( int argc, char **argv )
 	  case oOptions:
 	    /* config files may not be nested (silently ignore them) */
 	    if( !configfp ) {
-		m_free(configname);
-		configname = m_strdup(pargs.r.ret_str);
+		gcry_free(configname);
+		configname = gcry_xstrdup(pargs.r.ret_str);
 		goto next_pass;
 	    }
 	    break;
@@ -799,11 +802,11 @@ main( int argc, char **argv )
 			opt.def_recipient = make_username(pargs.r.ret_str);
 		    break;
 	  case oDefRecipientSelf:
-		    m_free(opt.def_recipient); opt.def_recipient = NULL;
+		    gcry_free(opt.def_recipient); opt.def_recipient = NULL;
 		    opt.def_recipient_self = 1;
 		    break;
 	  case oNoDefRecipient:
-		    m_free(opt.def_recipient); opt.def_recipient = NULL;
+		    gcry_free(opt.def_recipient); opt.def_recipient = NULL;
 		    opt.def_recipient_self = 0;
 		    break;
 	  case oNoOptions: break; /* no-options */
@@ -856,8 +859,8 @@ main( int argc, char **argv )
 	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
 	  case oForceMDC: opt.force_mdc = 1; break;
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
-	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
-	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;
+	  case oS2KDigest: s2k_digest_string = gcry_xstrdup(pargs.r.ret_str); break;
+	  case oS2KCipher: s2k_cipher_string = gcry_xstrdup(pargs.r.ret_str); break;
 
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */
@@ -874,9 +877,9 @@ main( int argc, char **argv )
 	    break;
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
 	  case oPasswdFD: pwfd = pargs.r.ret_int; break;
-	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
-	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
-	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
+	  case oCipherAlgo: def_cipher_string = gcry_xstrdup(pargs.r.ret_str); break;
+	  case oDigestAlgo: def_digest_string = gcry_xstrdup(pargs.r.ret_str); break;
+	  case oNoSecmemWarn: gcry_control( GCRYCTL_DISABLE_SECMEM_WARN ); break;
 	  case oCharset:
 	    if( set_native_charset( pargs.r.ret_str ) )
 		log_error(_("%s is not a valid character set\n"),
@@ -925,10 +928,10 @@ main( int argc, char **argv )
     if( configfp ) {
 	fclose( configfp );
 	configfp = NULL;
-	m_free(configname); configname = NULL;
+	gcry_free(configname); configname = NULL;
 	goto next_pass;
     }
-    m_free( configname ); configname = NULL;
+    gcry_free( configname ); configname = NULL;
     if( log_get_errorcount(0) )
 	g10_exit(2);
     if( nogreeting )
@@ -962,7 +965,7 @@ main( int argc, char **argv )
     if( opt.batch )
 	tty_batchmode( 1 );
 
-    secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
+    gcry_control( GCRYCTL_RESUME_SECMEM_WARN );
 
     set_debug();
     /* FIXME: should set filenames of libgcrypt explicitly
@@ -972,25 +975,25 @@ main( int argc, char **argv )
      * may try to load a module */
     if( def_cipher_string ) {
 	opt.def_cipher_algo = gcry_cipher_map_name(def_cipher_string);
-	m_free(def_cipher_string); def_cipher_string = NULL;
+	gcry_free(def_cipher_string); def_cipher_string = NULL;
 	if( openpgp_cipher_test_algo(opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( def_digest_string ) {
 	opt.def_digest_algo = gcry_md_map_name(def_digest_string);
-	m_free(def_digest_string); def_digest_string = NULL;
+	gcry_free(def_digest_string); def_digest_string = NULL;
 	if( openpgp_md_test_algo(opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
     if( s2k_cipher_string ) {
 	opt.s2k_cipher_algo = gcry_cipher_map_name(s2k_cipher_string);
-	m_free(s2k_cipher_string); s2k_cipher_string = NULL;
+	gcry_free(s2k_cipher_string); s2k_cipher_string = NULL;
 	if( openpgp_cipher_test_algo(opt.s2k_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( s2k_digest_string ) {
 	opt.s2k_digest_algo = gcry_md_map_name(s2k_digest_string);
-	m_free(s2k_digest_string); s2k_digest_string = NULL;
+	gcry_free(s2k_digest_string); s2k_digest_string = NULL;
 	if( openpgp_md_test_algo(opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
@@ -1125,7 +1128,7 @@ main( int argc, char **argv )
 	    if( argc > 1 )
 		wrong_args(_("--sign [filename]"));
 	    if( argc ) {
-		sl = m_alloc_clear( sizeof *sl + strlen(fname));
+		sl = gcry_xcalloc( 1, sizeof *sl + strlen(fname));
 		strcpy(sl->d, fname);
 	    }
 	}
@@ -1138,7 +1141,7 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("--sign --encrypt [filename]"));
 	if( argc ) {
-	    sl = m_alloc_clear( sizeof *sl + strlen(fname));
+	    sl = gcry_xcalloc( 1, sizeof *sl + strlen(fname));
 	    strcpy(sl->d, fname);
 	}
 	else
@@ -1173,7 +1176,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--sign-key user-id"));
 	username = make_username( fname );
 	keyedit_menu(fname, locusr, NULL, 1 );
-	m_free(username);
+	gcry_free(username);
 	break;
 
       case aLSignKey:
@@ -1181,7 +1184,7 @@ main( int argc, char **argv )
 	    wrong_args(_("--lsign-key user-id"));
 	username = make_username( fname );
 	keyedit_menu(fname, locusr, NULL, 2 );
-	m_free(username);
+	gcry_free(username);
 	break;
 
       case aEditKey: /* Edit a key signature */
@@ -1197,7 +1200,7 @@ main( int argc, char **argv )
 	}
 	else
 	    keyedit_menu(username, locusr, NULL, 0 );
-	m_free(username);
+	gcry_free(username);
 	break;
 
       case aDeleteSecretKey:
@@ -1209,7 +1212,7 @@ main( int argc, char **argv )
 	username = make_username( fname );
 	if( (rc = delete_key(username, cmd==aDeleteSecretKey)) )
 	    log_error("%s: delete key failed: %s\n", username, g10_errstr(rc) );
-	m_free(username);
+	gcry_free(username);
 	break;
 
 
@@ -1294,7 +1297,7 @@ main( int argc, char **argv )
 	    wrong_args("--gen-revoke user-id");
 	username =  make_username(*argv);
 	gen_revoke( username );
-	m_free( username );
+	gcry_free( username );
 	break;
 
       case aDeArmor:
@@ -1365,7 +1368,7 @@ main( int argc, char **argv )
 
 		p = gcry_random_bytes( n, level );
 		fwrite( p, n, 1, stdout );
-		m_free(p);
+		gcry_free(p);
 		if( !endless )
 		    count -= n;
 	    }
@@ -1424,7 +1427,7 @@ main( int argc, char **argv )
 	    for( ; argc; argc--, argv++ ) {
 		username = make_username( *argv );
 		check_trustdb( username );
-		m_free(username);
+		gcry_free(username);
 	    }
 	}
 	break;
@@ -1441,7 +1444,7 @@ main( int argc, char **argv )
 	for( ; argc; argc--, argv++ ) {
 	    username = make_username( *argv );
 	    list_trust_path( username );
-	    m_free(username);
+	    gcry_free(username);
 	}
 	break;
 
@@ -1501,12 +1504,12 @@ void
 g10_exit( int rc )
 {
     if( opt.debug & DBG_MEMSTAT_VALUE ) {
-	m_print_stats("on exit");
+	gcry_control( GCRYCTL_DUMP_MEMORY_STATS );
 	gcry_control( GCRYCTL_DUMP_RANDOM_STATS );
     }
     if( opt.debug )
 	gcry_control( GCRYCTL_DUMP_SECMEM_STATS );
-    secmem_term();
+    gcry_control( GCRYCTL_TERM_SECMEM );
     rc = rc? rc : log_get_errorcount(0)? 2 :
 			g10_errors_seen? 1 : 0;
     /*write_status( STATUS_LEAVE );*/
@@ -1562,16 +1565,16 @@ print_mds( const char *fname, int algo )
 
     if( !fname ) {
 	fp = stdin;
-	pname = m_strdup("[stdin]: ");
+	pname = gcry_xstrdup("[stdin]: ");
     }
     else {
-	pname = m_alloc(strlen(fname)+3);
+	pname = gcry_xmalloc(strlen(fname)+3);
 	strcpy(stpcpy(pname,fname),": ");
 	fp = fopen( fname, "rb" );
     }
     if( !fp ) {
 	log_error("%s%s\n", pname, strerror(errno) );
-	m_free(pname);
+	gcry_free(pname);
 	return;
     }
 

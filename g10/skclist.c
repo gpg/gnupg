@@ -30,7 +30,6 @@
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "i18n.h"
 #include "dummy-cipher.h"
@@ -45,7 +44,7 @@ release_sk_list( SK_LIST sk_list )
     for( ; sk_list; sk_list = sk_rover ) {
 	sk_rover = sk_list->next;
 	free_secret_key( sk_list->sk );
-	m_free( sk_list );
+	gcry_free( sk_list );
     }
 }
 
@@ -60,7 +59,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
     if( !locusr ) { /* use the default one */
 	PKT_secret_key *sk;
 
-	sk = m_alloc_clear( sizeof *sk );
+	sk = gcry_xcalloc( 1, sizeof *sk );
 	sk->pubkey_usage = use;
 	if( (rc = get_seckey_byname( sk, NULL, unlock )) ) {
 	    free_secret_key( sk ); sk = NULL;
@@ -75,7 +74,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 		free_secret_key( sk ); sk = NULL;
 	    }
 	    else {
-		r = m_alloc( sizeof *r );
+		r = gcry_xmalloc( sizeof *r );
 		r->sk = sk; sk = NULL;
 		r->next = sk_list;
 		r->mark = 0;
@@ -91,7 +90,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	for(; locusr; locusr = locusr->next ) {
 	    PKT_secret_key *sk;
 
-	    sk = m_alloc_clear( sizeof *sk );
+	    sk = gcry_xcalloc( 1, sizeof *sk );
 	    sk->pubkey_usage = use;
 	    if( (rc = get_seckey_byname( sk, locusr->d, unlock )) ) {
 		free_secret_key( sk ); sk = NULL;
@@ -107,7 +106,7 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 		    free_secret_key( sk ); sk = NULL;
 		}
 		else {
-		    r = m_alloc( sizeof *r );
+		    r = gcry_xmalloc( sizeof *r );
 		    r->sk = sk; sk = NULL;
 		    r->next = sk_list;
 		    r->mark = 0;

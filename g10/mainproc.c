@@ -28,7 +28,6 @@
 #include <gcrypt.h>
 #include "packet.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "options.h"
 #include "util.h"
 #include "keydb.h"
@@ -90,7 +89,7 @@ release_list( CTX c )
     release_kbnode( c->list );
     while( c->failed_pkenc ) {
 	struct kidlist_item *tmp = c->failed_pkenc->next;
-	m_free( c->failed_pkenc );
+	gcry_free( c->failed_pkenc );
 	c->failed_pkenc = tmp;
     }
     c->failed_pkenc = NULL;
@@ -225,10 +224,10 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	|| is_RSA(enc->pubkey_algo)  ) {
 	if ( !c->dek && ((!enc->keyid[0] && !enc->keyid[1])
 			  || !seckey_available( enc->keyid )) ) {
-	    c->dek = m_alloc_secure( sizeof *c->dek );
+	    c->dek = gcry_xmalloc_secure( sizeof *c->dek );
 	    if( (result = get_session_key( enc, c->dek )) ) {
 		/* error: delete the DEK */
-		m_free(c->dek); c->dek = NULL;
+		gcry_free(c->dek); c->dek = NULL;
 	    }
 	}
 	else
@@ -244,7 +243,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	    log_info( _("public key encrypted data: good DEK\n") );
     }
     else { /* store it for later display */
-	struct kidlist_item *x = m_alloc( sizeof *x );
+	struct kidlist_item *x = gcry_xmalloc( sizeof *x );
 	x->kid[0] = enc->keyid[0];
 	x->kid[1] = enc->keyid[1];
 	x->pubkey_algo = enc->pubkey_algo;
@@ -265,7 +264,7 @@ static void
 print_failed_pkenc( struct kidlist_item *list )
 {
     for( ; list; list = list->next ) {
-	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 	const char *algstr = gcry_pk_algo_name( list->pubkey_algo );
 
 	pk->pubkey_algo = list->pubkey_algo;
@@ -278,7 +277,7 @@ print_failed_pkenc( struct kidlist_item *list )
 	    fputs("      \"", log_stream() );
 	    p = get_user_id( list->kid, &n );
 	    print_string( log_stream(), p, n, '"' );
-	    m_free(p);
+	    gcry_free(p);
 	    fputs("\"\n", log_stream() );
 	}
 	else {
@@ -323,7 +322,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	result = G10ERR_NO_SECKEY;
     if( !result )
 	result = decrypt_data( c, pkt->pkt.encrypted, c->dek );
-    m_free(c->dek); c->dek = NULL;
+    gcry_free(c->dek); c->dek = NULL;
     if( result == -1 )
 	;
     else if( !result ) {
@@ -851,7 +850,7 @@ list_node( CTX c, KBNODE node )
 	else {
 	    p = get_user_id( sig->keyid, &n );
 	    print_string( stdout, p, n, opt.with_colons );
-	    m_free(p);
+	    gcry_free(p);
 	}
 	if( opt.with_colons )
 	    printf(":%02x:", sig->sig_class );
@@ -866,11 +865,11 @@ int
 proc_packets( void *anchor, IOBUF a )
 {
     int rc;
-    CTX c = m_alloc_clear( sizeof *c );
+    CTX c = gcry_xcalloc( 1, sizeof *c );
 
     c->anchor = anchor;
     rc = do_proc_packets( c, a );
-    m_free( c );
+    gcry_free( c );
     return rc;
 }
 
@@ -878,7 +877,7 @@ int
 proc_signature_packets( void *anchor, IOBUF a,
 			STRLIST signedfiles, const char *sigfilename )
 {
-    CTX c = m_alloc_clear( sizeof *c );
+    CTX c = gcry_xcalloc( 1, sizeof *c );
     int rc;
 
     c->anchor = anchor;
@@ -886,20 +885,20 @@ proc_signature_packets( void *anchor, IOBUF a,
     c->signed_data = signedfiles;
     c->sigfilename = sigfilename;
     rc = do_proc_packets( c, a );
-    m_free( c );
+    gcry_free( c );
     return rc;
 }
 
 int
 proc_encryption_packets( void *anchor, IOBUF a )
 {
-    CTX c = m_alloc_clear( sizeof *c );
+    CTX c = gcry_xcalloc( 1, sizeof *c );
     int rc;
 
     c->anchor = anchor;
     c->encrypt_only = 1;
     rc = do_proc_packets( c, a );
-    m_free( c );
+    gcry_free( c );
     return rc;
 }
 
@@ -907,7 +906,7 @@ proc_encryption_packets( void *anchor, IOBUF a )
 int
 do_proc_packets( CTX c, IOBUF a )
 {
-    PACKET *pkt = m_alloc( sizeof *pkt );
+    PACKET *pkt = gcry_xmalloc( sizeof *pkt );
     int rc=0;
     int any_data=0;
     int newpkt;
@@ -1000,7 +999,7 @@ do_proc_packets( CTX c, IOBUF a )
 	if( newpkt == -1 )
 	    ;
 	else if( newpkt ) {
-	    pkt = m_alloc( sizeof *pkt );
+	    pkt = gcry_xmalloc( sizeof *pkt );
 	    init_packet(pkt);
 	}
 	else
@@ -1016,9 +1015,9 @@ do_proc_packets( CTX c, IOBUF a )
 
   leave:
     release_list( c );
-    m_free(c->dek);
+    gcry_free(c->dek);
     free_packet( pkt );
-    m_free( pkt );
+    gcry_free( pkt );
     free_md_filter_context( &c->mfx );
     return rc;
 }
@@ -1055,7 +1054,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	us = get_long_user_id_string( sig->keyid );
 	write_status_text( rc? STATUS_BADSIG : STATUS_GOODSIG, us );
-	m_free(us);
+	gcry_free(us);
 
 	/* fixme: list only user ids which are valid and add information
 	 *	  about the trustworthiness of each user id, sort them.
@@ -1085,7 +1084,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	if( !rc && is_status_enabled() ) {
 	    /* print a status response with the fingerprint */
-	    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 
 	    if( !get_pubkey( pk, sig->keyid ) ) {
 		byte array[MAX_FINGERPRINT_LEN], *p;

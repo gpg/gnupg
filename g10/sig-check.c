@@ -27,7 +27,6 @@
 #include <gcrypt.h>
 #include "util.h"
 #include "packet.h"
-#include "memory.h"
 #include "keydb.h"
 #include "main.h"
 #include "status.h"
@@ -138,7 +137,7 @@ signature_check( PKT_signature *sig, GCRY_MD_HD digest )
 static int
 do_signature_check( PKT_signature *sig, GCRY_MD_HD digest, u32 *r_expire )
 {
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     int rc=0;
 
     if( is_RSA(sig->pubkey_algo) )
@@ -176,22 +175,23 @@ do_signature_check( PKT_signature *sig, GCRY_MD_HD digest, u32 *r_expire )
 	gcry_md_putc( digest, (a >>  8) & 0xff );
 	gcry_md_putc( digest,  a	& 0xff );
 	for(i=0; i < nsig; i++ ) {
-	    unsigned n = mpi_get_nbits( sig->data[i]);
+	    size_t n = gcry_mpi_get_nbits( sig->data[i]);
 
 	    gcry_md_putc( md, n>>8);
 	    gcry_md_putc( md, n );
-	    p = mpi_get_buffer( sig->data[i], &n, NULL );
+	    if( gcry_mpi_aprint( GCRYMPI_FMT_USG, &p, &n, sig->data[i] ) )
+		BUG();
 	    gcry_md_write( md, p, n );
-	    m_free(p);
+	    gcry_free(p);
 	}
 	gcry_md_final( md );
 	p = make_radix64_string( gcry_md_read( md, 0 ), 20 );
-	buffer = m_alloc( strlen(p) + 60 );
+	buffer = gcry_xmalloc( strlen(p) + 60 );
 	sprintf( buffer, "%s %s %lu",
 		 p, strtimestamp( sig->timestamp ), (ulong)sig->timestamp );
 	write_status_text( STATUS_SIG_ID, buffer );
-	m_free(buffer);
-	m_free(p);
+	gcry_free(buffer);
+	gcry_free(p);
 	gcry_md_close(md);
     }
 
@@ -260,8 +260,11 @@ mdc_kludge_check( PKT_signature *sig, GCRY_MD_HD digest )
 	    log_debug("sig_data[0] is NULL\n");
 	else {
 	    unsigned s2len;
-	    byte *s2;
-	    s2 = mpi_get_buffer( sig->data[0], &s2len, NULL );
+	    char *s2;
+
+	    if( gcry_mpi_print( GCRYMPI_FMT_USG, &s2, &s2len, sig->data[0] ))
+		BUG();
+
 	    log_hexdump( "MDC stored    ", s2, s2len );
 
 	    if( s2len != s1len )
@@ -270,7 +273,7 @@ mdc_kludge_check( PKT_signature *sig, GCRY_MD_HD digest )
 		log_debug("MDC check: hashs differ\n");
 	    else
 		rc = 0;
-	    m_free(s2);
+	    gcry_free(s2);
 	}
     }
 
@@ -445,7 +448,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
     gcry_md_final( digest );
 
     result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
-				      mpi_get_nbits(pk->pkey[0]));
+				      gcry_mpi_get_nbits(pk->pkey[0]));
 
     ctx.sig = sig;
     ctx.md = digest;

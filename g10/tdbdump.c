@@ -33,7 +33,7 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "trustdb.h"
 #include "options.h"
@@ -349,7 +349,7 @@ list_trustdb( const char *username )
 					    username, g10_errstr(rc));
     }
     else if( username ) {
-	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 	int rc;
 
 	if( (rc = get_pubkey_byname( NULL, pk, username, NULL )) )
@@ -492,7 +492,7 @@ import_ownertrust( const char *fname )
 	    write_record( &rec );
 	}
 	else if( rc == -1 ) { /* not found; get the key from the ring */
-	    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 
 	    log_info_f(fname, _("key not in trustdb, searching ring.\n"));
 	    rc = get_pubkey_byfprint( pk, line, fprlen );

@@ -196,6 +196,14 @@ setup_pubkey_table(void)
 	pubkey_table[i].name = NULL;
 }
 
+static void
+release_mpi_array( MPI *array )
+{
+    for( ; *array; array++ ) {
+	mpi_free(*array);
+	*array = NULL;
+    }
+}
 
 /****************
  * Try to load all modules and return true if new modules are available
@@ -423,27 +431,6 @@ pubkey_get_nenc( int algo )
     return 0;
 }
 
-/****************
- * Get the number of nbits from the public key
- * FIXME: This should also take a S-Expt but must be optimized in
- * some way becuase it is used in keylistsings ans such (store it with the
- * S-Exp as some private data?)
- */
-unsigned
-pubkey_nbits( int algo, MPI *pkey )
-{
-    int i;
-
-    do {
-	for(i=0; pubkey_table[i].name; i++ )
-	    if( pubkey_table[i].algo == algo )
-		return (*pubkey_table[i].get_nbits)( algo, pkey );
-    } while( load_pubkey_modules() );
-    if( is_RSA(algo) )	/* we always wanna see the length of a key :-) */
-	return mpi_get_nbits( pkey[0] );
-    return 0;
-}
-
 
 int
 pubkey_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors )
@@ -605,14 +592,6 @@ pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 }
 
 
-static void
-release_mpi_array( MPI *array )
-{
-    for( ; *array; array++ ) {
-	mpi_free(*array);
-	*array = NULL;
-    }
-}
 
 /****************
  * Convert a S-Exp with either a private or a public key to our
@@ -908,6 +887,41 @@ gcry_pk_verify( GCRY_SEXP s_sig, GCRY_SEXP s_hash, GCRY_SEXP s_pkey )
 
     return rc;
 }
+
+
+/****************
+ * Get the number of nbits from the public key
+ * Hmmm: Should we have really this function or is it
+ * better to have a more general function to retrieve
+ * different propoerties of the key?
+ */
+unsigned int
+gcry_pk_get_nbits( GCRY_SEXP key )
+{
+    int rc, i, algo;
+    MPI *keyarr;
+    unsigned int nbits = 0;
+
+    rc = sexp_to_key( key, 0, &keyarr, &algo );
+    if( rc == GCRYERR_INV_OBJ )
+	rc = sexp_to_key( key, 0, &keyarr, &algo );
+    if( rc )
+	return 0;
+
+    do {
+	for(i=0; pubkey_table[i].name; i++ )
+	    if( pubkey_table[i].algo == algo ) {
+		nbits = (*pubkey_table[i].get_nbits)( algo, keyarr );
+		goto leave;
+	    }
+    } while( load_pubkey_modules() );
+    if( is_RSA(algo) )	/* we always wanna see the length of a key :-) */
+	nbits = mpi_get_nbits( keyarr[0] );
+  leave:
+    release_mpi_array( keyarr );
+    return nbits;
+}
+
 
 
 int

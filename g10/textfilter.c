@@ -28,7 +28,6 @@
 #include <gcrypt.h>
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "i18n.h"
@@ -128,7 +127,7 @@ text_filter( void *opaque, int control,
 	if( tfx->truncated )
 	    log_error(_("can't handle text lines longer than %d characters\n"),
 			MAX_LINELEN );
-	m_free( tfx->buffer );
+	gcry_free( tfx->buffer );
 	tfx->buffer = NULL;
     }
     else if( control == IOBUFCTRL_DESC )

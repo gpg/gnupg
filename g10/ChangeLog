@@ -1,3 +1,16 @@
+Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* misc.c (mpi_print): Use gcry_mpi_aprint.
+	(pubkey_nbits): Kludge to use the gcry_pk_ API.
+
+	* seskey.c (encode_session_key): Replaced mpi_set_buffer by *_scan.
+	(do_encode_md): Ditto.
+	(encode_md_value): Ditto.
+	* seckey-cert.c (protect_secret_key): Ditto.
+	* comment.c (make_mpi_comment_node): Replaced mpi_get_buffer by _print.
+	* pubkey-enc.c (get_it): Ditto.
+	* sig-check.c (do_signature_check): Ditto.
+
 Fri Dec 31 12:48:31 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* keyid.c (do_fingerprint_md): Replaced mpi_get_buffer by gcry_mpi_print.

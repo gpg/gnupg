@@ -17,6 +17,8 @@ else
 endif
 
 
+gcryptref.dvi : gcryptref.sgml
+
 %.dvi: %.sgml
 	db2dvi $<
 

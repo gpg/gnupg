@@ -31,7 +31,7 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "trustdb.h"
@@ -158,7 +158,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	    size_t n;
 	    char *p = get_user_id( sig->keyid, &n );
 	    tty_print_utf8_string( p, n > 40? 40 : n );
-	    m_free(p);
+	    gcry_free(p);
 	}
 	tty_printf("\n");
     }
@@ -331,7 +331,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	     "with your key: \""));
 	p = get_user_id( sk_keyid, &n );
 	tty_print_utf8_string( p, n );
-	m_free(p); p = NULL;
+	gcry_free(p); p = NULL;
 	tty_printf("\"\n\n");
 
 	if( local )
@@ -373,7 +373,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		*ret_modified = 1; /* we changed the keyblock */
 		upd_trust = 1;
 
-		pkt = m_alloc_clear( sizeof *pkt );
+		pkt = gcry_xcalloc( 1, sizeof *pkt );
 		pkt->pkttype = PKT_SIGNATURE;
 		pkt->pkt.signature = sig;
 		insert_kbnode( node, new_kbnode(pkt), PKT_SIGNATURE );
@@ -443,7 +443,7 @@ change_passphrase( KBNODE keyblock )
 	tty_printf(_("Can't edit this key: %s\n"), g10_errstr(rc));
     else {
 	DEK *dek = NULL;
-	STRING2KEY *s2k = m_alloc_secure( sizeof *s2k );
+	STRING2KEY *s2k = gcry_xmalloc_secure( sizeof *s2k );
 
 	tty_printf(_("Enter the new passphrase for this secret key.\n\n") );
 
@@ -483,12 +483,12 @@ change_passphrase( KBNODE keyblock )
 		break;
 	    }
 	}
-	m_free(s2k);
-	m_free(dek);
+	gcry_free(s2k);
+	gcry_free(dek);
     }
 
   leave:
-    m_free( passphrase );
+    gcry_free( passphrase );
     set_next_passphrase( NULL );
     return changed && !rc;
 }
@@ -665,14 +665,14 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    redisplay = 0;
 	}
 	do {
-	    m_free(answer);
+	    gcry_free(answer);
 	    if( have_commands ) {
 		if( commands ) {
-		    answer = m_strdup( commands->d );
+		    answer = gcry_xstrdup( commands->d );
 		    commands = commands->next;
 		}
 		else if( opt.batch ) {
-		    answer = m_strdup("quit");
+		    answer = gcry_xstrdup("quit");
 		}
 		else
 		    have_commands = 0;
@@ -980,7 +980,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
   leave:
     release_kbnode( keyblock );
     release_kbnode( sec_keyblock );
-    m_free(answer);
+    gcry_free(answer);
 }
 
 
@@ -1020,7 +1020,7 @@ show_prefs( KBNODE keyblock, PKT_user_id *uid )
     }
     tty_printf("\n");
 
-    m_free(p);
+    gcry_free(p);
 }
 
 
@@ -1224,7 +1224,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     /* insert/append to secret keyblock */
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = gcry_xcalloc( 1, sizeof *pkt );
     pkt->pkttype = PKT_USER_ID;
     pkt->pkt.user_id = copy_user_id(NULL, uid);
     node = new_kbnode(pkt);
@@ -1232,7 +1232,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	insert_kbnode( sec_where, node, 0 );
     else
 	add_kbnode( sec_keyblock, node );
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = gcry_xcalloc( 1, sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = copy_signature(NULL, sig);
     if( sec_where )
@@ -1240,7 +1240,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
     else
 	add_kbnode( sec_keyblock, new_kbnode(pkt) );
     /* insert/append to public keyblock */
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = gcry_xcalloc( 1, sizeof *pkt );
     pkt->pkttype = PKT_USER_ID;
     pkt->pkt.user_id = uid;
     node = new_kbnode(pkt);
@@ -1248,7 +1248,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	insert_kbnode( pub_where, node, 0 );
     else
 	add_kbnode( pub_keyblock, node );
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = gcry_xcalloc( 1, sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = copy_signature(NULL, sig);
     if( pub_where )
@@ -1521,18 +1521,18 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		    return 0;
 		}
 		/* replace the packet */
-		newpkt = m_alloc_clear( sizeof *newpkt );
+		newpkt = gcry_xcalloc( 1, sizeof *newpkt );
 		newpkt->pkttype = PKT_SIGNATURE;
 		newpkt->pkt.signature = newsig;
 		free_packet( node->pkt );
-		m_free( node->pkt );
+		gcry_free( node->pkt );
 		node->pkt = newpkt;
 		if( sn ) {
-		    newpkt = m_alloc_clear( sizeof *newpkt );
+		    newpkt = gcry_xcalloc( 1, sizeof *newpkt );
 		    newpkt->pkttype = PKT_SIGNATURE;
 		    newpkt->pkt.signature = copy_signature( NULL, newsig );
 		    free_packet( sn->pkt );
-		    m_free( sn->pkt );
+		    gcry_free( sn->pkt );
 		    sn->pkt = newpkt;
 		}
 	    }
@@ -1815,7 +1815,7 @@ menu_revsig( KBNODE keyblock )
 
 	memset( &attrib, 0, sizeof attrib );
 	node->flag &= ~NODFLG_MARK_A;
-	sk = m_alloc_secure_clear( sizeof *sk );
+	sk = gcry_xcalloc_secure( 1,  sizeof *sk );
 	if( get_seckey( sk, node->pkt->pkt.signature->keyid ) ) {
 	    log_info(_("no secret key\n"));
 	    continue;
@@ -1835,7 +1835,7 @@ menu_revsig( KBNODE keyblock )
 	changed = 1; /* we changed the keyblock */
 	upd_trust = 1;
 
-	pkt = m_alloc_clear( sizeof *pkt );
+	pkt = gcry_xcalloc( 1, sizeof *pkt );
 	pkt->pkttype = PKT_SIGNATURE;
 	pkt->pkt.signature = sig;
 	insert_kbnode( unode, new_kbnode(pkt), 0 );
@@ -1884,7 +1884,7 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    changed = 1; /* we changed the keyblock */
 	    upd_trust = 1;
 
-	    pkt = m_alloc_clear( sizeof *pkt );
+	    pkt = gcry_xcalloc( 1, sizeof *pkt );
 	    pkt->pkttype = PKT_SIGNATURE;
 	    pkt->pkt.signature = sig;
 	    insert_kbnode( node, new_kbnode(pkt), 0 );

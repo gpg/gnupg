@@ -28,7 +28,6 @@
 #include <gcrypt.h>
 #include "util.h"
 #include "main.h"
-#include "memory.h"
 #include "packet.h"
 #include "options.h"
 #include "keydb.h"
@@ -70,8 +69,8 @@ do_fingerprint_md( PKT_public_key *pk )
 	rc = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &nbytes, pk->pkey[i] );
 	assert( !rc );
 	/* fixme: we should try to allocate a buffer on the stack */
-	pp[i] = m_alloc(nbytes);
-	rc = gcry_mpi_print( GCRYMPI_FMT_PGP, pp[1], &nbytes, pk->pkey[i] );
+	pp[i] = gcry_xmalloc(nbytes);
+	rc = gcry_mpi_print( GCRYMPI_FMT_PGP, pp[i], &nbytes, pk->pkey[i] );
 	assert( !rc );
 	nn[i] = nbytes;
 	n += nn[i];
@@ -104,7 +103,7 @@ do_fingerprint_md( PKT_public_key *pk )
     gcry_md_putc( md, pk->pubkey_algo );
     for(i=0; i < npkey; i++ ) {
 	gcry_md_write( md, pp[i], nn[i] );
-	m_free(pp[i]);
+	gcry_free(pp[i]);
     }
     gcry_md_final( md );
 
@@ -139,7 +138,7 @@ v3_keyid( MPI a, u32 *ki )
     rc = gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, a );
     assert( !rc );
     /* fixme: allocate it on the stack */
-    buffer = m_alloc(nbytes);
+    buffer = gcry_xmalloc(nbytes);
     rc = gcry_mpi_print( GCRYMPI_FMT_USG, buffer, &nbytes, a );
     assert( !rc );
     if( nbytes < 8 ) { /* oops */
@@ -149,7 +148,7 @@ v3_keyid( MPI a, u32 *ki )
 	memcpy( ki+0, buffer+nbytes-8, 4);
 	memcpy( ki+1, buffer+nbytes-4, 4);
     }
-    m_free( buffer );
+    gcry_free( buffer );
 }
 
 
@@ -372,10 +371,9 @@ expirestr_from_sk( PKT_secret_key *sk )
 byte *
 fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 {
-    byte *p, *buf;
+    byte *buf;
     const char *dp;
     size_t len;
-    unsigned n;
 
     if( pk->version < 4 && is_RSA(pk->pubkey_algo) ) {
 	/* RSA in version 3 packets is special */
@@ -391,23 +389,23 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	    rc = gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, pk->pkey[0] );
 	    assert( !rc );
 	    /* fixme: allocate it on the stack */
-	    buf = m_alloc(nbytes);
+	    buf = gcry_xmalloc(nbytes);
 	    rc = gcry_mpi_print( GCRYMPI_FMT_USG, buf, &nbytes, pk->pkey[0] );
 	    assert( !rc );
 	    gcry_md_write( md, buf, nbytes );
-	    m_free(buf);
+	    gcry_free(buf);
 	    rc = gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, pk->pkey[1] );
 	    assert( !rc );
 	    /* fixme: allocate it on the stack */
-	    buf = m_alloc(nbytes);
+	    buf = gcry_xmalloc(nbytes);
 	    rc = gcry_mpi_print( GCRYMPI_FMT_USG, buf, &nbytes, pk->pkey[1] );
 	    assert( !rc );
 	    gcry_md_write( md, buf, nbytes );
-	    m_free(buf);
+	    gcry_free(buf);
 	}
 	gcry_md_final(md);
 	if( !array )
-	    array = m_alloc( 16 );
+	    array = gcry_xmalloc( 16 );
 	len = 16;
 	memcpy(array, gcry_md_read(md, GCRY_MD_MD5), 16 );
 	gcry_md_close(md);
@@ -419,7 +417,7 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	len = gcry_md_get_algo_dlen( gcry_md_get_algo( md ) );
 	assert( len <= MAX_FINGERPRINT_LEN );
 	if( !array )
-	    array = m_alloc( len );
+	    array = gcry_xmalloc( len );
 	memcpy(array, dp, len );
 	gcry_md_close(md);
     }
@@ -431,10 +429,9 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 byte *
 fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 {
-    byte *p, *buf;
+    byte *buf;
     const char *dp;
     size_t len;
-    unsigned n;
 
     if( sk->version < 4 && is_RSA(sk->pubkey_algo) ) {
 	/* RSA in version 3 packets is special */
@@ -451,23 +448,23 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 	    rc = gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, sk->skey[1] );
 	    assert( !rc );
 	    /* fixme: allocate it on the stack */
-	    buf = m_alloc(nbytes);
+	    buf = gcry_xmalloc(nbytes);
 	    rc = gcry_mpi_print( GCRYMPI_FMT_USG, buf, &nbytes, sk->skey[1] );
 	    assert( !rc );
 	    gcry_md_write( md, buf, nbytes );
-	    m_free(buf);
+	    gcry_free(buf);
 	    rc = gcry_mpi_print( GCRYMPI_FMT_USG, NULL, &nbytes, sk->skey[0] );
 	    assert( !rc );
 	    /* fixme: allocate it on the stack */
-	    buf = m_alloc(nbytes);
+	    buf = gcry_xmalloc(nbytes);
 	    rc = gcry_mpi_print( GCRYMPI_FMT_USG, buf, &nbytes, sk->skey[0] );
 	    assert( !rc );
 	    gcry_md_write( md, buf, nbytes );
-	    m_free(buf);
+	    gcry_free(buf);
 	}
 	gcry_md_final(md);
 	if( !array )
-	    array = m_alloc( 16 );
+	    array = gcry_xmalloc( 16 );
 	len = 16;
 	memcpy(array, gcry_md_read(md, GCRY_MD_MD5), 16 );
 	gcry_md_close(md);
@@ -479,7 +476,7 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 	len = gcry_md_get_algo_dlen( gcry_md_get_algo( md ) );
 	assert( len <= MAX_FINGERPRINT_LEN );
 	if( !array )
-	    array = m_alloc( len );
+	    array = gcry_xmalloc( len );
 	memcpy(array, dp, len );
 	gcry_md_close(md);
     }

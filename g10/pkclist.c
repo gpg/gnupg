@@ -31,7 +31,6 @@
 #include "main.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "trustdb.h"
 #include "ttyio.h"
@@ -124,7 +123,7 @@ show_paths( ulong lid, int only_first )
 	    return;
 	}
 
-	pk = m_alloc_clear( sizeof *pk );
+	pk = gcry_xcalloc( 1, sizeof *pk );
 	rc = get_pubkey( pk, keyid );
 	if( rc ) {
 	    log_error("key %08lX: public key not found: %s\n",
@@ -152,7 +151,7 @@ show_paths( ulong lid, int only_first )
 
 	p = get_user_id( keyid, &n );
 	tty_print_utf8_string( p, n ),
-	m_free(p);
+	gcry_free(p);
 	tty_printf("\"\n");
 	free_public_key( pk );
     }
@@ -185,7 +184,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 	return 0;
     }
 
-    pk = m_alloc_clear( sizeof *pk );
+    pk = gcry_xcalloc( 1, sizeof *pk );
     rc = get_pubkey( pk, keyid );
     if( rc ) {
 	log_error("key %08lX: public key not found: %s\n",
@@ -206,7 +205,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 			  (ulong)keyid[1], datestr_from_pk( pk ) );
 		p = get_user_id( keyid, &n );
 		tty_print_utf8_string( p, n ),
-		m_free(p);
+		gcry_free(p);
 		tty_printf("\"\n");
 		print_fpr( pk );
 		tty_printf("\n");
@@ -262,10 +261,10 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 	    quit = 1;
 	    break ; /* back to the menu */
 	}
-	m_free(p); p = NULL;
+	gcry_free(p); p = NULL;
     }
-    m_free(p);
-    m_free(pk);
+    gcry_free(p);
+    gcry_free(pk);
     return show? -2: quit? -1 : changed;
 }
 
@@ -463,7 +462,7 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 		  (ulong)keyid[1], datestr_from_pk( pk ) );
 	p = get_user_id( keyid, &n );
 	tty_print_utf8_string( p, n ),
-	m_free(p);
+	gcry_free(p);
 	tty_printf("\"\n");
 	print_fpr( pk );
 	tty_printf("\n");
@@ -498,7 +497,7 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 int
 check_signatures_trust( PKT_signature *sig )
 {
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     int trustlevel;
     int did_add = 0;
     int rc=0;
@@ -622,7 +621,7 @@ release_pk_list( PK_LIST pk_list )
     for( ; pk_list; pk_list = pk_rover ) {
 	pk_rover = pk_list->next;
 	free_public_key( pk_list->pk );
-	m_free( pk_list );
+	gcry_free( pk_list );
     }
 }
 
@@ -651,10 +650,10 @@ default_recipient(void)
     int i;
 
     if( opt.def_recipient )
-	return m_strdup( opt.def_recipient );
+	return gcry_xstrdup( opt.def_recipient );
     if( !opt.def_recipient_self )
 	return NULL;
-    sk = m_alloc_clear( sizeof *sk );
+    sk = gcry_xcalloc( 1, sizeof *sk );
     i = get_seckey_byname( sk, NULL, 0 );
     if( i ) {
 	free_secret_key( sk );
@@ -663,7 +662,7 @@ default_recipient(void)
     n = MAX_FINGERPRINT_LEN;
     fingerprint_from_sk( sk, fpr, &n );
     free_secret_key( sk );
-    p = m_alloc( 2*n+3 );
+    p = gcry_xmalloc( 2*n+3 );
     *p++ = '0';
     *p++ = 'x';
     for(i=0; i < n; i++ )
@@ -689,7 +688,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	if( !(rov->flags & 1) )
 	    any_recipients = 1;
 	else if( (use & GCRY_PK_USAGE_ENCR) && !opt.no_encrypt_to ) {
-	    pk = m_alloc_clear( sizeof *pk );
+	    pk = gcry_xcalloc( 1, sizeof *pk );
 	    pk->pubkey_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, rov->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
@@ -706,7 +705,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		}
 		else {
 		    PK_LIST r;
-		    r = m_alloc( sizeof *r );
+		    r = gcry_xmalloc( sizeof *r );
 		    r->pk = pk; pk = NULL;
 		    r->next = pk_list;
 		    r->mark = 0;
@@ -731,7 +730,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		"You did not specify a user ID. (you may use \"-r\")\n\n"));
 	for(;;) {
 	    rc = 0;
-	    m_free(answer);
+	    gcry_free(answer);
 	    if( have_def_rec ) {
 		answer = def_rec;
 		def_rec = NULL;
@@ -746,7 +745,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		break;
 	    if( pk )
 		free_public_key( pk );
-	    pk = m_alloc_clear( sizeof *pk );
+	    pk = gcry_xcalloc( 1, sizeof *pk );
 	    pk->pubkey_usage = use;
 	    rc = get_pubkey_byname( NULL, pk, answer, NULL );
 	    if( rc )
@@ -759,7 +758,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 				   "already set as default recipient\n") );
 		    }
 		    else {
-			PK_LIST r = m_alloc( sizeof *r );
+			PK_LIST r = gcry_xmalloc( sizeof *r );
 			r->pk = pk; pk = NULL;
 			r->next = pk_list;
 			r->mark = 0;
@@ -790,7 +789,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 			else {
 			    PK_LIST r;
 
-			    r = m_alloc( sizeof *r );
+			    r = gcry_xmalloc( sizeof *r );
 			    r->pk = pk; pk = NULL;
 			    r->next = pk_list;
 			    r->mark = 0;
@@ -801,23 +800,23 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		    }
 		}
 	    }
-	    m_free(def_rec); def_rec = NULL;
+	    gcry_free(def_rec); def_rec = NULL;
 	    have_def_rec = 0;
 	}
-	m_free(answer);
+	gcry_free(answer);
 	if( pk ) {
 	    free_public_key( pk );
 	    pk = NULL;
 	}
     }
     else if( !any_recipients && (def_rec = default_recipient()) ) {
-	pk = m_alloc_clear( sizeof *pk );
+	pk = gcry_xcalloc( 1, sizeof *pk );
 	pk->pubkey_usage = use;
 	rc = get_pubkey_byname( NULL, pk, def_rec, NULL );
 	if( rc )
 	    log_error(_("unknown default recipient `%s'\n"), def_rec );
 	else if( !(rc=openpgp_pk_test_algo(pk->pubkey_algo, use)) ) {
-	    PK_LIST r = m_alloc( sizeof *r );
+	    PK_LIST r = gcry_xmalloc( sizeof *r );
 	    r->pk = pk; pk = NULL;
 	    r->next = pk_list;
 	    r->mark = 0;
@@ -828,7 +827,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    free_public_key( pk );
 	    pk = NULL;
 	}
-	m_free(def_rec); def_rec = NULL;
+	gcry_free(def_rec); def_rec = NULL;
     }
     else {
 	any_recipients = 0;
@@ -836,7 +835,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    if( (remusr->flags & 1) )
 		continue; /* encrypt-to keys are already handled */
 
-	    pk = m_alloc_clear( sizeof *pk );
+	    pk = gcry_xcalloc( 1, sizeof *pk );
 	    pk->pubkey_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, remusr->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
@@ -872,7 +871,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		    }
 		    else {
 			PK_LIST r;
-			r = m_alloc( sizeof *r );
+			r = gcry_xmalloc( sizeof *r );
 			r->pk = pk; pk = NULL;
 			r->next = pk_list;
 			r->mark = 0;
@@ -953,7 +952,7 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	}
 	if( preftype == PREFTYPE_SYM )
 	    mask[0] |= (1<<2); /* 3DES is implicitly there */
-	m_free(pref);
+	gcry_free(pref);
 	pref = get_pref_data( pkr->pk->local_id, pkr->pk->namehash, &npref);
 	any = 0;
 	if( pref ) {
@@ -1026,7 +1025,7 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	    i = 1;  /* yep; we can use compression algo 1 */
     }
 
-    m_free(pref);
+    gcry_free(pref);
     return i;
 }
 

@@ -96,7 +96,7 @@ free_strlist( STRLIST sl )
 
     for(; sl; sl = sl2 ) {
 	sl2 = sl->next;
-	m_free(sl);
+	gcry_free(sl);
     }
 }
 
@@ -106,7 +106,7 @@ add_to_strlist( STRLIST *list, const char *string )
 {
     STRLIST sl;
 
-    sl = m_alloc( sizeof *sl + strlen(string));
+    sl = gcry_xmalloc( sizeof *sl + strlen(string));
     sl->flags = 0;
     strcpy(sl->d, string);
     sl->next = *list;
@@ -128,7 +128,7 @@ add_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
     else {
 	char *p = native_to_utf8( string );
 	sl = add_to_strlist( list, p );
-	m_free( p );
+	gcry_free( p );
     }
     return sl;
 }
@@ -138,7 +138,7 @@ append_to_strlist( STRLIST *list, const char *string )
 {
     STRLIST r, sl;
 
-    sl = m_alloc( sizeof *sl + strlen(string));
+    sl = gcry_xmalloc( sizeof *sl + strlen(string));
     sl->flags = 0;
     strcpy(sl->d, string);
     sl->next = NULL;
@@ -162,7 +162,7 @@ append_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
     else {
 	char *p = native_to_utf8( string );
 	sl = append_to_strlist( list, p );
-	m_free( p );
+	gcry_free( p );
     }
     return sl;
 }
@@ -299,7 +299,7 @@ native_to_utf8( const char *string )
 	    if( *s & 0x80 )
 		length += 2; /* we may need 3 bytes */
 	}
-	buffer = m_alloc( length + 1 );
+	buffer = gcry_xmalloc( length + 1 );
 	for(p=buffer, s=string; *s; s++ ) {
 	    if( *s & 0x80 ) {
 		ushort val = active_charset[ *s & 0x7f ];
@@ -324,7 +324,7 @@ native_to_utf8( const char *string )
 	    if( *s & 0x80 )
 		length++;
 	}
-	buffer = m_alloc( length + 1 );
+	buffer = gcry_xmalloc( length + 1 );
 	for(p=buffer, s=string; *s; s++ ) {
 	    if( *s & 0x80 ) {
 		*p++ = 0xc0 | ((*s >> 6) & 3);
@@ -485,7 +485,7 @@ utf8_to_native( const char *string, size_t length )
 	    }
 	}
 	if( !buffer ) { /* allocate the buffer after the first pass */
-	    buffer = p = m_alloc( n + 1 );
+	    buffer = p = gcry_xmalloc( n + 1 );
 	}
 	else {
 	    *p = 0; /* make a string */

@@ -1,5 +1,5 @@
 /* mpiutil.ac  -  Utility functions for MPI
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -41,8 +41,6 @@ mpi_alloc( unsigned nlimbs )
 {
     MPI a;
 
-    if( DBG_MEMORY )
-	log_debug("mpi_alloc(%u)\n", nlimbs*BITS_PER_MPI_LIMB );
     a = g10_xmalloc( sizeof *a );
     a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 0 ) : NULL;
     a->alloced = nlimbs;
@@ -64,8 +62,6 @@ mpi_alloc_secure( unsigned nlimbs )
 {
     MPI a;
 
-    if( DBG_MEMORY )
-	log_debug("mpi_alloc_secure(%u)\n", nlimbs*BITS_PER_MPI_LIMB );
     a = g10_xmalloc( sizeof *a );
     a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 1 ) : NULL;
     a->alloced = nlimbs;
@@ -83,9 +79,6 @@ mpi_alloc_limb_space( unsigned nlimbs, int secure )
     size_t len = nlimbs * sizeof(mpi_limb_t);
     mpi_ptr_t p;
 
-    if( DBG_MEMORY )
-	log_debug("mpi_alloc_limb_space(%u)\n", (unsigned)len*8 );
-
     p = secure? g10_xmalloc_secure( len ) : g10_xmalloc( len );
 
     return p;
@@ -96,9 +89,6 @@ mpi_free_limb_space( mpi_ptr_t a )
 {
     if( !a )
 	return;
-    if( DBG_MEMORY )
-	log_debug("mpi_free_limb_space\n" );
-
     g10_free(a);
 }
 
@@ -147,8 +137,6 @@ mpi_free( MPI a )
 {
     if( !a )
 	return;
-    if( DBG_MEMORY )
-	log_debug("mpi_free\n" );
     if( a->flags & 4 )
 	g10_free( a->d );
     else {
@@ -385,7 +373,7 @@ gcry_mpi_randomize( GCRY_MPI w,
     char *p = mpi_is_secure(w) ? gcry_random_bytes( (nbits+7)/8, level )
 			       : gcry_random_bytes_secure( (nbits+7)/8, level );
     mpi_set_buffer( w, p, (nbits+7)/8, 0 );
-    m_free(p);
+    g10_free(p);
 }
 
 

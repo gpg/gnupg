@@ -28,7 +28,6 @@
 #include <gcrypt.h>
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
 #include "util.h"
 #include "filter.h"
 #include "packet.h"

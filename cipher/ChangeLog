@@ -1,3 +1,8 @@
+Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* pubkey.c (pubkey_nbits): Removed and replaced by ...
+	(gcry_pk_get_nbits): this new one.
+
 Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* dsa.c: s/mpi_powm/gcry_mpi_powm/g

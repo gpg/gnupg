@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <assert.h>
 #include "util.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "main.h"
 #include "packet.h"
 #include "dummy-cipher.h"
@@ -40,11 +40,11 @@
 static void
 write_uid( KBNODE root, const char *s )
 {
-    PACKET *pkt = m_alloc_clear(sizeof *pkt );
+    PACKET *pkt = gcry_xcalloc( 1,sizeof *pkt );
     size_t n = strlen(s);
 
     pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = m_alloc( sizeof *pkt->pkt.user_id + n - 1 );
+    pkt->pkt.user_id = gcry_xmalloc( sizeof *pkt->pkt.user_id + n - 1 );
     pkt->pkt.user_id->len = n;
     strcpy(pkt->pkt.user_id->name, s);
     add_kbnode( root, new_kbnode( pkt ) );
@@ -141,7 +141,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 	return rc;
     }
 
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = gcry_xcalloc( 1, sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = sig;
     add_kbnode( root, new_kbnode( pkt ) );
@@ -182,7 +182,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 	return rc;
     }
 
-    pkt = m_alloc_clear( sizeof *pkt );
+    pkt = gcry_xcalloc( 1, sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;
     pkt->pkt.signature = sig;
     add_kbnode( root, new_kbnode( pkt ) );
@@ -210,8 +210,8 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	return rc;
     }
 
-    sk = m_alloc_clear( sizeof *sk );
-    pk = m_alloc_clear( sizeof *pk );
+    sk = gcry_xcalloc( 1, sizeof *sk );
+    pk = gcry_xcalloc( 1, sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = version;
     if( expireval ) {
@@ -244,14 +244,14 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	}
     }
 
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = gcry_xcalloc( 1,sizeof *pkt);
     pkt->pkttype = ret_sk ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
 
     /* don't know whether it makes sense to have the factors, so for now
      * we store them in the secret keyring (but they are not secret) */
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = gcry_xcalloc( 1,sizeof *pkt);
     pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
@@ -287,8 +287,8 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	return rc;
     }
 
-    sk = m_alloc_clear( sizeof *sk );
-    pk = m_alloc_clear( sizeof *pk );
+    sk = gcry_xcalloc( 1, sizeof *sk );
+    pk = gcry_xcalloc( 1, sizeof *pk );
     sk->timestamp = pk->timestamp = make_timestamp();
     sk->version = pk->version = 4;
     if( expireval ) {
@@ -323,7 +323,7 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	}
     }
 
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = gcry_xcalloc( 1,sizeof *pkt);
     pkt->pkttype = ret_sk ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
     pkt->pkt.public_key = pk;
     add_kbnode(pub_root, new_kbnode( pkt ));
@@ -334,7 +334,7 @@ gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
      * We store only f1 to f_n-1;  fn can be calculated because p and q
      * are known.
      */
-    pkt = m_alloc_clear(sizeof *pkt);
+    pkt = gcry_xcalloc( 1,sizeof *pkt);
     pkt->pkttype = ret_sk ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
     pkt->pkt.secret_key = sk;
     add_kbnode(sec_root, new_kbnode( pkt ));
@@ -400,7 +400,7 @@ ask_algo( int *ret_v4, int addmode )
 	answer = cpr_get("keygen.algo",_("Your selection? "));
 	cpr_kill_prompt();
 	algo = *answer? atoi(answer): 1;
-	m_free(answer);
+	gcry_free(answer);
 	if( algo == 1 && !addmode ) {
 	    algo = 0;	/* create both keys */
 	    break;
@@ -450,7 +450,7 @@ ask_keysize( int algo )
 			  _("What keysize do you want? (1024) "));
 	cpr_kill_prompt();
 	nbits = *answer? atoi(answer): 1024;
-	m_free(answer);
+	gcry_free(answer);
 	if( algo == GCRY_PK_DSA && (nbits < 512 || nbits > 1024) )
 	    tty_printf(_("DSA only allows keysizes from 512 to 1024\n"));
 	else if( nbits < 768 )
@@ -523,7 +523,7 @@ ask_expire_interval(void)
 	u32 abs_date=0;
 	u32 curtime=0;;
 
-	m_free(answer);
+	gcry_free(answer);
 	answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
 	cpr_kill_prompt();
 	trim_spaces(answer);
@@ -564,7 +564,7 @@ ask_expire_interval(void)
 					    _("Is this correct (y/n)? ")) )
 	    break;
     }
-    m_free(answer);
+    gcry_free(answer);
     return interval;
 }
 
@@ -614,7 +614,7 @@ ask_user_id( int mode )
 
 	if( !aname ) {
 	    for(;;) {
-		m_free(aname);
+		gcry_free(aname);
 		aname = cpr_get("keygen.name",_("Real name: "));
 		trim_spaces(aname);
 		cpr_kill_prompt();
@@ -630,7 +630,7 @@ ask_user_id( int mode )
 	}
 	if( !amail ) {
 	    for(;;) {
-		m_free(amail);
+		gcry_free(amail);
 		amail = cpr_get("keygen.email",_("Email address: "));
 		trim_spaces(amail);
 		cpr_kill_prompt();
@@ -649,7 +649,7 @@ ask_user_id( int mode )
 	}
 	if( !acomment ) {
 	    for(;;) {
-		m_free(acomment);
+		gcry_free(acomment);
 		acomment = cpr_get("keygen.comment",_("Comment: "));
 		trim_spaces(acomment);
 		cpr_kill_prompt();
@@ -662,8 +662,8 @@ ask_user_id( int mode )
 	    }
 	}
 
-	m_free(uid);
-	uid = p = m_alloc(strlen(aname)+strlen(amail)+strlen(acomment)+12+10);
+	gcry_free(uid);
+	uid = p = gcry_xmalloc(strlen(aname)+strlen(amail)+strlen(acomment)+12+10);
 	p = stpcpy(p, aname );
 	if( *acomment )
 	    p = stpcpy(stpcpy(stpcpy(p," ("), acomment),")");
@@ -672,8 +672,11 @@ ask_user_id( int mode )
 
 	/* append a warning if we do not have dev/random
 	 * or it is switched into  quick testmode */
+	#warning quick_random_gen() not available
+      #if 0
 	if( quick_random_gen(-1) )
 	    strcpy(p, " (INSECURE!)" );
+      #endif
 
 	/* print a note in case that UTF8 mapping has to be done */
 	for(p=uid; *p; p++ ) {
@@ -692,7 +695,7 @@ ask_user_id( int mode )
 	    if( strlen(ansstr) != 10 )
 		BUG();
 	    if( cpr_enabled() ) {
-		answer = m_strdup(ansstr+6);
+		answer = gcry_xstrdup(ansstr+6);
 		answer[1] = 0;
 	    }
 	    else {
@@ -703,40 +706,40 @@ ask_user_id( int mode )
 	    if( strlen(answer) > 1 )
 		;
 	    else if( *answer == ansstr[0] || *answer == ansstr[1] ) {
-		m_free(aname); aname = NULL;
+		gcry_free(aname); aname = NULL;
 		break;
 	    }
 	    else if( *answer == ansstr[2] || *answer == ansstr[3] ) {
-		m_free(acomment); acomment = NULL;
+		gcry_free(acomment); acomment = NULL;
 		break;
 	    }
 	    else if( *answer == ansstr[4] || *answer == ansstr[5] ) {
-		m_free(amail); amail = NULL;
+		gcry_free(amail); amail = NULL;
 		break;
 	    }
 	    else if( *answer == ansstr[6] || *answer == ansstr[7] ) {
-		m_free(aname); aname = NULL;
-		m_free(acomment); acomment = NULL;
-		m_free(amail); amail = NULL;
+		gcry_free(aname); aname = NULL;
+		gcry_free(acomment); acomment = NULL;
+		gcry_free(amail); amail = NULL;
 		break;
 	    }
 	    else if( *answer == ansstr[8] || *answer == ansstr[9] ) {
-		m_free(aname); aname = NULL;
-		m_free(acomment); acomment = NULL;
-		m_free(amail); amail = NULL;
-		m_free(uid); uid = NULL;
+		gcry_free(aname); aname = NULL;
+		gcry_free(acomment); acomment = NULL;
+		gcry_free(amail); amail = NULL;
+		gcry_free(uid); uid = NULL;
 		break;
 	    }
-	    m_free(answer);
+	    gcry_free(answer);
 	}
-	m_free(answer);
+	gcry_free(answer);
 	if( !amail && !acomment && !amail )
 	    break;
-	m_free(uid); uid = NULL;
+	gcry_free(uid); uid = NULL;
     }
     if( uid ) {
 	char *p = native_to_utf8( uid );
-	m_free( uid );
+	gcry_free( uid );
 	uid = p;
     }
     return uid;
@@ -751,7 +754,7 @@ ask_passphrase( STRING2KEY **ret_s2k )
 
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
 
-    s2k = m_alloc_secure( sizeof *s2k );
+    s2k = gcry_xmalloc_secure( sizeof *s2k );
     for(;;) {
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;
@@ -760,8 +763,8 @@ ask_passphrase( STRING2KEY **ret_s2k )
 	    tty_printf(_("passphrase not correctly repeated; try again.\n"));
 	}
 	else if( !dek->keylen ) {
-	    m_free(dek); dek = NULL;
-	    m_free(s2k); s2k = NULL;
+	    gcry_free(dek); dek = NULL;
+	    gcry_free(s2k); s2k = NULL;
 	    tty_printf(_(
 	    "You don't want a passphrase - this is probably a *bad* idea!\n"
 	    "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -825,7 +828,7 @@ generate_user_id()
     if( !p )
 	return NULL;
     n = strlen(p);
-    uid = m_alloc( sizeof *uid + n - 1 );
+    uid = gcry_xmalloc( sizeof *uid + n - 1 );
     uid->len = n;
     strcpy(uid->name, p);
     return uid;
@@ -977,11 +980,11 @@ generate_keypair()
     release_kbnode( sec_root );
     if( sk ) /* the unprotected  secret key */
 	free_secret_key(sk);
-    m_free(uid);
-    m_free(dek);
-    m_free(s2k);
-    m_free(pub_fname);
-    m_free(sec_fname);
+    gcry_free(uid);
+    gcry_free(dek);
+    gcry_free(s2k);
+    gcry_free(pub_fname);
+    gcry_free(sec_fname);
 }
 
 
@@ -1053,7 +1056,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	goto leave;
 
     if( passphrase ) {
-	s2k = m_alloc_secure( sizeof *s2k );
+	s2k = gcry_xmalloc_secure( sizeof *s2k );
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;
 	set_next_passphrase( passphrase );
@@ -1072,9 +1075,9 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
   leave:
     if( rc )
 	log_error(_("Key generation failed: %s\n"), g10_errstr(rc) );
-    m_free( passphrase );
-    m_free( dek );
-    m_free( s2k );
+    gcry_free( passphrase );
+    gcry_free( dek );
+    gcry_free( s2k );
     if( sk ) /* release the copy of the (now unprotected) secret key */
 	free_secret_key(sk);
     set_next_passphrase( NULL );

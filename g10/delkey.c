@@ -31,7 +31,7 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "trustdb.h"
@@ -125,7 +125,7 @@ delete_key( const char *username, int secret )
 		      keyid[1], datestr_from_pk(pk) );
 	p = get_user_id( keyid, &n );
 	tty_print_utf8_string( p, n );
-	m_free(p);
+	gcry_free(p);
 	tty_printf("\n\n");
 
 	yes = cpr_get_answer_is_yes( secret? "delete_key.secret.okay"

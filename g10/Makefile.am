@@ -4,7 +4,7 @@ INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = OPTIONS  pubring.asc  options.skel
 OMIT_DEPENDENCIES = zlib.h zconf.h
 LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@
-needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la
+needed_libs = ../util/libutil.la ../gcrypt/libgcrypt.la ../jnlib/libjnlib.la
 
 #noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg

@@ -29,7 +29,7 @@
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "i18n.h"

@@ -29,7 +29,6 @@
 #include "dummy-cipher.h"
 #include "main.h"
 #include "i18n.h"
-#include "memory.h"
 
 
 /****************
@@ -110,7 +109,7 @@ encode_session_key( DEK *dek, unsigned nbits )
     for( p = dek->key, i=0; i < dek->keylen; i++ )
 	csum += *p++;
 
-    frame = m_alloc_secure( nframe );
+    frame = gcry_xmalloc_secure( nframe );
     n = 0;
     frame[n++] = 0;
     frame[n++] = 2;
@@ -133,10 +132,10 @@ encode_session_key( DEK *dek, unsigned nbits )
 	for(j=0; j < i && k ; j++ )
 	    if( !p[j] )
 		p[j] = pp[--k];
-	m_free(pp);
+	gcry_free(pp);
     }
     memcpy( frame+n, p, i );
-    m_free(p);
+    gcry_free(p);
     n += i;
     frame[n++] = 0;
     frame[n++] = dek->algo;
@@ -144,9 +143,10 @@ encode_session_key( DEK *dek, unsigned nbits )
     frame[n++] = csum >>8;
     frame[n++] = csum;
     assert( n == nframe );
-    a = mpi_secure_new( nframe );
-    mpi_set_buffer( a, frame, nframe, 0 );
-    m_free(frame);
+    if( gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, &nframe ) )
+	BUG();
+    gcry_free(frame);
+
     return a;
 }
 
@@ -170,8 +170,8 @@ do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
      *
      * PAD consists of FF bytes.
      */
-    frame = gcry_md_is_secure(md)? m_alloc_secure( nframe )
-				 : m_alloc( nframe );
+    frame = gcry_md_is_secure(md)? gcry_xmalloc_secure( nframe )
+				 : gcry_xmalloc( nframe );
     n = 0;
     frame[n++] = 0;
     frame[n++] = algo;
@@ -182,9 +182,9 @@ do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
     memcpy( frame+n, asn, asnlen ); n += asnlen;
     memcpy( frame+n, gcry_md_read(md, algo), len ); n += len;
     assert( n == nframe );
-    a = gcry_md_is_secure(md)? mpi_secure_new( nframe ) : mpi_new( nframe );
-    mpi_set_buffer( a, frame, nframe, 0 );
-    m_free(frame);
+    if( gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, &nframe ) )
+	BUG();
+    gcry_free(frame);
     return a;
 }
 
@@ -196,11 +196,10 @@ encode_md_value( int pubkey_algo, GCRY_MD_HD md, int hash_algo, unsigned nbits )
     MPI frame;
 
     if( pubkey_algo == GCRY_PK_DSA ) {
-	frame = gcry_md_is_secure(md)?
-			mpi_secure_new( gcry_md_get_algo_dlen(hash_algo) )
-		      : mpi_new(	gcry_md_get_algo_dlen(hash_algo) );
-	mpi_set_buffer( frame, gcry_md_read(md, hash_algo),
-			       gcry_md_get_algo_dlen(hash_algo), 0 );
+	size_t n = gcry_md_get_algo_dlen(hash_algo);
+	if( gcry_mpi_scan( &frame, GCRYMPI_FMT_USG,
+				   gcry_md_read(md, hash_algo), &n ) )
+	    BUG();
     }
     else {
 	byte *asn;
@@ -209,12 +208,12 @@ encode_md_value( int pubkey_algo, GCRY_MD_HD md, int hash_algo, unsigned nbits )
 	if( gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, NULL, &asnlen ) )
 	    log_fatal("can't get OID of algo %d: %s\n",
 					    algo, gcry_strerror(-1));
-	asn = m_alloc( asnlen );
+	asn = gcry_xmalloc( asnlen );
 	if( gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, asn, &asnlen ) )
 	    BUG();
 	frame = do_encode_md( md, algo, gcry_md_get_algo_dlen( algo ),
 						     nbits, asn, asnlen );
-	m_free( asn );
+	gcry_free( asn );
     }
     return frame;
 }

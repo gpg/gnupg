@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include "util.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "options.h"
 #include "ttyio.h"
 #include "dummy-cipher.h"
@@ -53,10 +53,10 @@ have_static_passphrase()
 void
 set_next_passphrase( const char *s )
 {
-    m_free(next_pw);
+    gcry_free(next_pw);
     next_pw = NULL;
     if( s ) {
-	next_pw = m_alloc_secure( strlen(s)+1 );
+	next_pw = gcry_xmalloc_secure( strlen(s)+1 );
 	strcpy(next_pw, s );
     }
 }
@@ -87,7 +87,7 @@ read_passphrase_from_fd( int fd )
 	if( i >= len-1 ) {
 	    char *pw2 = pw;
 	    len += 100;
-	    pw = m_alloc_secure( len );
+	    pw = gcry_xmalloc_secure( len );
 	    if( pw2 )
 		memcpy(pw, pw2, i );
 	    else
@@ -100,7 +100,7 @@ read_passphrase_from_fd( int fd )
     if( !opt.batch )
 	tty_printf("\b\b\b   \n" );
 
-    m_free( fd_passwd );
+    gcry_free( fd_passwd );
     fd_passwd = pw;
 }
 
@@ -152,7 +152,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     }
 
     if( keyid && !opt.batch && !next_pw ) {
-	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 	size_t n;
 	char *p;
 
@@ -160,7 +160,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 		     "user: \"") );
 	p = get_user_id( keyid, &n );
 	tty_print_utf8_string( p, n );
-	m_free(p);
+	gcry_free(p);
 	tty_printf("\"\n");
 
 	if( !get_pubkey( pk, keyid ) ) {
@@ -183,12 +183,12 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	next_pw = NULL;
     }
     else if( fd_passwd ) {
-	pw = m_alloc_secure( strlen(fd_passwd)+1 );
+	pw = gcry_xmalloc_secure( strlen(fd_passwd)+1 );
 	strcpy( pw, fd_passwd );
     }
     else if( opt.batch ) {
 	log_error(_("can't query password in batchmode\n"));
-	pw = m_strdup( "" ); /* return an empty passphrase */
+	pw = gcry_xstrdup( "" ); /* return an empty passphrase */
     }
     else {
 	pw = cpr_get_hidden("passphrase.enter", _("Enter passphrase: ") );
@@ -198,24 +198,24 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 				       _("Repeat passphrase: ") );
 	    tty_kill_prompt();
 	    if( strcmp(pw, pw2) ) {
-		m_free(pw2);
-		m_free(pw);
+		gcry_free(pw2);
+		gcry_free(pw);
 		return NULL;
 	    }
-	    m_free(pw2);
+	    gcry_free(pw2);
 	}
     }
 
     if( !pw || !*pw )
 	write_status( STATUS_MISSING_PASSPHRASE );
 
-    dek = m_alloc_secure( sizeof *dek );
+    dek = gcry_xmalloc_secure( sizeof *dek );
     dek->algo = cipher_algo;
     if( !*pw && mode == 2 )
 	dek->keylen = 0;
     else
 	hash_passphrase( dek, pw, s2k, mode==2 );
-    m_free(last_pw);
+    gcry_free(last_pw);
     last_pw = pw;
     return dek;
 }

@@ -30,7 +30,7 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "filter.h"
@@ -98,7 +98,7 @@ encode_simple( const char *filename, int mode )
 
     cfx.dek = NULL;
     if( mode ) {
-	s2k = m_alloc_clear( sizeof *s2k );
+	s2k = gcry_xcalloc( 1, sizeof *s2k );
 	s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
 	s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
 					     : opt.s2k_digest_algo;
@@ -107,8 +107,8 @@ encode_simple( const char *filename, int mode )
 					   : opt.s2k_cipher_algo , s2k, 2 );
 	if( !cfx.dek || !cfx.dek->keylen ) {
 	    rc = G10ERR_PASSPHRASE;
-	    m_free(cfx.dek);
-	    m_free(s2k);
+	    gcry_free(cfx.dek);
+	    gcry_free(s2k);
 	    iobuf_close(inp);
 	    log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
 	    return rc;
@@ -117,8 +117,8 @@ encode_simple( const char *filename, int mode )
 
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
 	iobuf_close(inp);
-	m_free(cfx.dek);
-	m_free(s2k);
+	gcry_free(cfx.dek);
+	gcry_free(s2k);
 	return rc;
     }
 
@@ -133,7 +133,7 @@ encode_simple( const char *filename, int mode )
     }
   #endif
     if( s2k && !opt.rfc1991 ) {
-	PKT_symkey_enc *enc = m_alloc_clear( sizeof *enc );
+	PKT_symkey_enc *enc = gcry_xcalloc( 1, sizeof *enc );
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;
 	enc->s2k = *s2k;
@@ -141,7 +141,7 @@ encode_simple( const char *filename, int mode )
 	pkt.pkt.symkey_enc = enc;
 	if( (rc = build_packet( out, &pkt )) )
 	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
-	m_free(enc);
+	gcry_free(enc);
     }
 
     if (!opt.no_literal) {
@@ -149,13 +149,13 @@ encode_simple( const char *filename, int mode )
 	if( filename || opt.set_filename ) {
 	    char *s = make_basename( opt.set_filename ? opt.set_filename
 						      : filename );
-	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+	    pt = gcry_xmalloc( sizeof *pt + strlen(s) - 1 );
 	    pt->namelen = strlen(s);
 	    memcpy(pt->name, s, pt->namelen );
-	    m_free(s);
+	    gcry_free(s);
 	}
 	else { /* no filename */
-	    pt = m_alloc( sizeof *pt - 1 );
+	    pt = gcry_xmalloc( sizeof *pt - 1 );
 	    pt->namelen = 0;
 	}
     }
@@ -221,8 +221,8 @@ encode_simple( const char *filename, int mode )
     if (pt)
 	pt->buf = NULL;
     free_packet(&pkt);
-    m_free(cfx.dek);
-    m_free(s2k);
+    gcry_free(cfx.dek);
+    gcry_free(s2k);
     return rc;
 }
 
@@ -283,7 +283,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     }
   #endif
     /* create a session key */
-    cfx.dek = m_alloc_secure( sizeof *cfx.dek );
+    cfx.dek = gcry_xmalloc_secure( sizeof *cfx.dek );
     if( !opt.def_cipher_algo ) { /* try to get it from the prefs */
 	cfx.dek->algo = select_algo_from_prefs( pk_list, PREFTYPE_SYM );
 	if( cfx.dek->algo == -1 )
@@ -303,13 +303,13 @@ encode_crypt( const char *filename, STRLIST remusr )
 	/* setup the inner packet */
 	if( filename || opt.set_filename ) {
 	    char *s = make_basename( opt.set_filename ? opt.set_filename : filename );
-	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+	    pt = gcry_xmalloc( sizeof *pt + strlen(s) - 1 );
 	    pt->namelen = strlen(s);
 	    memcpy(pt->name, s, pt->namelen );
-	    m_free(s);
+	    gcry_free(s);
 	}
 	else { /* no filename */
-	    pt = m_alloc( sizeof *pt - 1 );
+	    pt = gcry_xmalloc( sizeof *pt - 1 );
 	    pt->namelen = 0;
 	}
     }
@@ -377,7 +377,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( pt )
 	pt->buf = NULL;
     free_packet(&pkt);
-    m_free(cfx.dek);
+    gcry_free(cfx.dek);
     release_pk_list( pk_list );
     return rc;
 }
@@ -401,7 +401,7 @@ encrypt_filter( void *opaque, int control,
     }
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
 	if( !efx->header_okay ) {
-	    efx->cfx.dek = m_alloc_secure( sizeof *efx->cfx.dek );
+	    efx->cfx.dek = gcry_xmalloc_secure( sizeof *efx->cfx.dek );
 
 	    if( !opt.def_cipher_algo  ) { /* try to get it from the prefs */
 		efx->cfx.dek->algo =
@@ -453,7 +453,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	pk = pk_list->pk;
 
 	print_pubkey_algo_note( pk->pubkey_algo );
-	enc = m_alloc_clear( sizeof *enc );
+	enc = gcry_xcalloc( 1, sizeof *enc );
 	enc->pubkey_algo = pk->pubkey_algo;
 	keyid_from_pk( pk, enc->keyid );
 	enc->throw_keyid = opt.throw_keyid;
@@ -483,7 +483,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 		log_info(_("%s/%s encrypted for: %s\n"),
 		    gcry_pk_algo_name(enc->pubkey_algo),
 		    gcry_cipher_algo_name(dek->algo), ustr );
-		m_free(ustr);
+		gcry_free(ustr);
 	    }
 	    /* and write it */
 	    init_packet(&pkt);

@@ -45,16 +45,16 @@ static int
 build_index( MPI *exparray, int k, int i, int t )
 {
     int j, bitno;
-    int index = 0;
+    int idx = 0;
 
     bitno = t-i;
     for(j=k-1; j >= 0; j-- ) {
-	index <<= 1;
+	idx <<= 1;
 	if( mpi_test_bit( exparray[j], bitno ) )
-	    index |= 1;
+	    idx |= 1;
     }
-    /*log_debug("t=%d i=%d index=%d\n", t, i, index );*/
-    return index;
+    /*log_debug("t=%d i=%d idx=%d\n", t, i, idx );*/
+    return idx;
 }
 
 /****************
@@ -87,7 +87,7 @@ mpi_mulpowm( MPI res, MPI *basearray, MPI *exparray, MPI m)
     assert(t);
     assert( k < 10 );
 
-    G = m_alloc_clear( (1<<k) * sizeof *G );
+    G = g10_xcalloc( (1<<k) , sizeof *G );
   #ifdef USE_BARRETT
     barrett_y = init_barrett( m, &barrett_k, &barrett_r1, &barrett_r2 );
   #endif
@@ -128,7 +128,7 @@ mpi_mulpowm( MPI res, MPI *basearray, MPI *exparray, MPI m)
   #endif
     for(i=0; i < (1<<k); i++ )
 	mpi_free(G[i]);
-    m_free(G);
+    g10_free(G);
 }
 
 

@@ -161,19 +161,19 @@ tty_printf( const char *fmt, ... )
 	     * it, so we use a static buffer for now */
 	do {
 	    if( n == -1 || !buf ) {
-		m_free(buf);
+		gcry_free(buf);
 		bufsize += 200;
 		/* better check the new size; (we use M$ functions) */
 		if( bufsize > 50000 )
 		    log_bug("vsnprintf probably failed\n");
-		buf = m_alloc( bufsize );
+		buf = gcry_xmalloc( bufsize );
 	    }
 	    n = _vsnprintf(buf, bufsize-1, fmt, arg_ptr);
 	} while( n == -1 );
       #else
 	if( !buf ) {
 	    bufsize += 1000;
-	    buf = m_alloc( bufsize );
+	    buf = gcry_xmalloc( bufsize );
 	}
 	n = vsprintf(buf, fmt, arg_ptr);
 	if( n == -1 )
@@ -252,7 +252,7 @@ tty_print_utf8_string( byte *p, size_t n )
     if( i < n ) {
 	buf = utf8_to_native( p, n );
 	tty_printf("%s", buf );
-	m_free( buf );
+	gcry_free( buf );
     }
     else
 	tty_print_string( p, n );
@@ -284,7 +284,7 @@ do_get( const char *prompt, int hidden )
 
     last_prompt_len = 0;
     tty_printf( prompt );
-    buf = m_alloc(n=50);
+    buf = gcry_xmalloc(n=50);
     i = 0;
 
   #ifdef __MINGW32__ /* windoze version */
@@ -313,7 +313,7 @@ do_get( const char *prompt, int hidden )
 	    continue;
 	if( !(i < n-1) ) {
 	    n += 50;
-	    buf = m_realloc( buf, n );
+	    buf = gcry_xrealloc( buf, n );
 	}
 	buf[i++] = c;
     }
@@ -353,7 +353,7 @@ do_get( const char *prompt, int hidden )
 	    continue;
 	if( !(i < n-1) ) {
 	    n += 50;
-	    buf = m_realloc( buf, n );
+	    buf = gcry_xrealloc( buf, n );
 	}
 	buf[i++] = c;
     }
@@ -425,7 +425,7 @@ tty_get_answer_is_yes( const char *prompt )
     char *p = tty_get( prompt );
     tty_kill_prompt();
     yes = answer_is_yes(p);
-    m_free(p);
+    gcry_free(p);
     return yes;
 }
 

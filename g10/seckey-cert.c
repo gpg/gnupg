@@ -26,7 +26,6 @@
 
 #include <gcrypt.h>
 #include "util.h"
-#include "memory.h"
 #include "packet.h"
 #include "keydb.h"
 #include "main.h"
@@ -59,7 +58,7 @@ do_check( PKT_secret_key *sk )
 	keyid_from_sk( sk, keyid );
 	keyid[2] = keyid[3] = 0;
 	if( !sk->is_primary ) {
-	    PKT_secret_key *sk2 = m_alloc_clear( sizeof *sk2 );
+	    PKT_secret_key *sk2 = gcry_xcalloc( 1, sizeof *sk2 );
 	    if( !get_primary_seckey( sk2, keyid ) )
 		keyid_from_sk( sk2, keyid+2 );
 	    free_secret_key( sk2 );
@@ -77,7 +76,7 @@ do_check( PKT_secret_key *sk )
 
 	if( gcry_cipher_setkey( cipher_hd, dek->key, dek->keylen ) )
 	    log_fatal("set key failed: %s\n", gcry_strerror(-1) );
-	m_free(dek);
+	gcry_free(dek);
 	save_sk = copy_secret_key( NULL, sk );
 	if( gcry_cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen ))
 	    log_fatal("set IV failed: %s\n", gcry_strerror(-1) );
@@ -91,7 +90,7 @@ do_check( PKT_secret_key *sk )
 	    assert( gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
 	    p = gcry_mpi_get_opaque( sk->skey[i], &ndatabits );
 	    ndata = (ndatabits+7)/8;
-	    data = m_alloc_secure( ndata );
+	    data = gcry_xmalloc_secure( ndata );
 	    gcry_cipher_decrypt( cipher_hd, data, ndata, p, ndata );
 	    mpi_release( sk->skey[i] ); sk->skey[i] = NULL ;
 	    p = data;
@@ -109,7 +108,7 @@ do_check( PKT_secret_key *sk )
 	    if( sk->csum == csum ) {
 		for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
 		    nbytes = ndata;
-		    assert( m_is_secure( p ) );
+		    assert( gcry_is_secure( p ) );
 		    res = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_PGP,
 							     p, &nbytes);
 		    if( res )
@@ -119,7 +118,7 @@ do_check( PKT_secret_key *sk )
 		    p += nbytes;
 		}
 	    }
-	    m_free(data);
+	    gcry_free(data);
 	}
 	else {
 	    for(i=pubkey_get_npkey(sk->pubkey_algo);
@@ -131,7 +130,7 @@ do_check( PKT_secret_key *sk )
 		assert( gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
 		p = gcry_mpi_get_opaque( sk->skey[i], &ndatabits );
 		ndata = (ndatabits+7)/8;
-		data = m_alloc_secure( ndata );
+		data = gcry_xmalloc_secure( ndata );
 		gcry_cipher_sync( cipher_hd );
 		gcry_cipher_decrypt( cipher_hd, data, ndata, p, ndata );
 		mpi_release( sk->skey[i] ); sk->skey[i] = NULL ;
@@ -142,7 +141,7 @@ do_check( PKT_secret_key *sk )
 		    log_bug("gcry_mpi_scan failed in do_check: rc=%d\n", res);
 
 		csum += checksum_mpi( sk->skey[i] );
-		m_free( buffer );
+		gcry_free( buffer );
 	    }
 	}
 	gcry_cipher_close( cipher_hd );
@@ -287,15 +286,19 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		for(j=0, i = pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++, j++ ) {
 		    assert( !gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
-		    bufarr[j] = mpi_get_buffer( sk->skey[i], &narr[j], NULL );
-		    nbits[j]  = mpi_get_nbits( sk->skey[i] );
+
+		    if( gcry_mpi_aprint( GCRYMPI_FMT_USG, (char*)bufarr+j,
+							  narr+j, sk->skey[i]))
+			BUG();
+
+		    nbits[j]  = gcry_mpi_get_nbits( sk->skey[i] );
 		    ndata += narr[j] + 2;
 		}
 		for( ; j < NMPIS; j++ )
 		    bufarr[j] = NULL;
 		ndata += 2; /* for checksum */
 
-		data = m_alloc_secure( ndata );
+		data = gcry_xmalloc_secure( ndata );
 		p = data;
 		for(j=0; j < NMPIS && bufarr[j]; j++ ) {
 		    p[0] = nbits[j] >> 8 ;
@@ -303,7 +306,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    p += 2;
 		    memcpy(p, bufarr[j], narr[j] );
 		    p += narr[j];
-		    m_free(bufarr[j]);
+		    gcry_free(bufarr[j]);
 		}
 	      #undef NMPIS
 		csum = checksum( data, ndata-2);
@@ -328,12 +331,20 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		for(i=pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
 		    csum += checksum_mpi( sk->skey[i] );
-		    buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
+
+		    if( gcry_mpi_aprint( GCRYMPI_FMT_USG,
+					 &buffer, &nbytes, sk->skey[i] ) )
+			BUG();
+
 		    gcry_cipher_sync( cipher_hd );
 		    assert( !gcry_mpi_get_flag( sk->skey[i], GCRYMPI_FLAG_OPAQUE ) );
 		    gcry_cipher_encrypt( cipher_hd, buffer, nbytes, NULL, 0 );
-		    mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
-		    m_free( buffer );
+		    gcry_mpi_release( sk->skey[i] );
+		    if( gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_USG,
+				       buffer,&nbytes ) )
+			BUG();
+
+		    gcry_free( buffer );
 		}
 		sk->csum = csum;
 	    }

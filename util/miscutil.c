@@ -210,7 +210,7 @@ print_utf8_string( FILE *fp, const byte *p, size_t n )
     if( i < n ) {
 	buf = utf8_to_native( p, n );
 	fputs( buf, fp );
-	m_free( buf );
+	gcry_free( buf );
     }
     else
 	print_string( fp, p, n, 0 );
@@ -218,7 +218,7 @@ print_utf8_string( FILE *fp, const byte *p, size_t n )
 
 /****************
  * This function returns a string which is suitable for printing
- * Caller must release it with m_free()
+ * Caller must release it with gcry_free()
  */
 char *
 make_printable_string( const byte *p, size_t n, int delim )
@@ -242,7 +242,7 @@ make_printable_string( const byte *p, size_t n, int delim )
     p = save_p;
     n = save_n;
     /* and now make the string */
-    d = buffer = m_alloc( buflen );
+    d = buffer = gcry_xmalloc( buflen );
     for( ; n; n--, p++ ) {
 	if( iscntrl( *p ) || *p == delim ) {
 	    *d++ = '\\';

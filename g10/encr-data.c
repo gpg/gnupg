@@ -25,7 +25,6 @@
 #include <assert.h>
 #include <gcrypt.h>
 #include "util.h"
-#include "memory.h"
 #include "packet.h"
 #include "dummy-cipher.h"
 #include "options.h"

@@ -45,10 +45,10 @@ make_basename(const char *filepath)
 	    if ( !(p=strrchr(filepath, ':')) )
       #endif
 	      {
-		return m_strdup(filepath);
+		return gcry_xstrdup(filepath);
 	      }
 
-    return m_strdup(p+1);
+    return gcry_xstrdup(p+1);
 }
 
 
@@ -72,11 +72,11 @@ make_dirname(const char *filepath)
 	    if ( !(p=strrchr(filepath, ':')) )
       #endif
 	      {
-		return m_strdup(".");
+		return gcry_xstrdup(".");
 	      }
 
     dirname_length = p-filepath;
-    dirname = m_alloc(dirname_length+1);
+    dirname = gcry_xmalloc(dirname_length+1);
     strncpy(dirname, filepath, dirname_length);
     dirname[dirname_length] = 0;
 
@@ -108,7 +108,7 @@ make_filename( const char *first_part, ... )
 			   && (home = getenv("HOME")) && *home )
 	n += strlen(home);
 
-    name = m_alloc(n);
+    name = gcry_xmalloc(n);
     p = home ? stpcpy(stpcpy(name,home), first_part+1)
 	     : stpcpy(name, first_part);
     va_start( arg_ptr, first_part ) ;

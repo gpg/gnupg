@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include "util.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "ttyio.h"
 #include "options.h"
 #include "main.h"
@@ -89,14 +89,14 @@ make_outfile_name( const char *iname )
     size_t n;
 
     if( (!iname || (*iname=='-' && !iname[1]) ))
-	return m_strdup("-");
+	return gcry_xstrdup("-");
 
     n = strlen(iname);
     if( n > 4 && (    !CMP_FILENAME(iname+n-4,".gpg")
 		   || !CMP_FILENAME(iname+n-4,".pgp")
 		   || !CMP_FILENAME(iname+n-4,".sig")
 		   || !CMP_FILENAME(iname+n-4,".asc") ) ) {
-	char *buf = m_strdup( iname );
+	char *buf = gcry_xstrdup( iname );
 	buf[n-4] = 0;
 	return buf;
     }
@@ -127,19 +127,19 @@ ask_outfile_name( const char *name, size_t namelen )
 
     n = strlen(s) + namelen + 10;
     defname = name && namelen? make_printable_string( name, namelen, 0): NULL;
-    prompt = m_alloc(n);
+    prompt = gcry_xmalloc(n);
     if( defname )
 	sprintf(prompt, "%s [%s]: ", s, defname );
     else
 	sprintf(prompt, "%s: ", s );
     fname = cpr_get("openfile.askoutname", prompt );
     cpr_kill_prompt();
-    m_free(prompt);
+    gcry_free(prompt);
     if( !*fname ) {
-	m_free( fname ); fname = NULL;
+	gcry_free( fname ); fname = NULL;
 	fname = defname; defname = NULL;
     }
-    m_free(defname);
+    gcry_free(defname);
     return fname;
 }
 
@@ -187,7 +187,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    const char *newsfx = mode==1 ? ".asc" :
 				 mode==2 ? ".sig" : ".gpg";
 
-	    buf = m_alloc(strlen(iname)+4+1);
+	    buf = gcry_xmalloc(strlen(iname)+4+1);
 	    strcpy(buf,iname);
 	    dot = strchr(buf, '.' );
 	    if( dot && dot > buf && dot[1] && strlen(dot) <= 4
@@ -199,7 +199,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    else
 		strcat( buf, newsfx );
 	  #else
-	    buf = m_alloc(strlen(iname)+4+1);
+	    buf = gcry_xmalloc(strlen(iname)+4+1);
 	    strcpy(stpcpy(buf,iname), mode==1 ? ".asc" :
 				      mode==2 ? ".sig" : ".gpg");
 	  #endif
@@ -216,7 +216,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	}
 	else
 	    rc = G10ERR_FILE_EXISTS;
-	m_free(buf);
+	gcry_free(buf);
     }
     return rc;
 }
@@ -238,12 +238,12 @@ open_sigfile( const char *iname )
 	if( len > 4 && ( !strcmp(iname + len - 4, ".sig")
 			|| !strcmp(iname + len - 4, ".asc")) ) {
 	    char *buf;
-	    buf = m_strdup(iname);
+	    buf = gcry_xstrdup(iname);
 	    buf[len-4] = 0 ;
 	    a = iobuf_open( buf );
 	    if( opt.verbose )
 		log_info(_("assuming signed data in `%s'\n"), buf );
-	    m_free(buf);
+	    gcry_free(buf);
 	}
     }
     return a;
@@ -265,12 +265,12 @@ copy_options_file( const char *destdir )
     if( opt.dry_run )
 	return;
 
-    fname = m_alloc( strlen(datadir) + strlen(destdir) + 15 );
+    fname = gcry_xmalloc( strlen(datadir) + strlen(destdir) + 15 );
     strcpy(stpcpy(fname, datadir), "/options" SKELEXT );
     src = fopen( fname, "r" );
     if( !src ) {
 	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );
-	m_free(fname);
+	gcry_free(fname);
 	return;
     }
     strcpy(stpcpy(fname, destdir), "/options" );
@@ -278,7 +278,7 @@ copy_options_file( const char *destdir )
     if( !dst ) {
 	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );
 	fclose( src );
-	m_free(fname);
+	gcry_free(fname);
 	return;
     }
 
@@ -293,6 +293,6 @@ copy_options_file( const char *destdir )
     fclose( dst );
     fclose( src );
     log_info(_("%s: new options file created\n"), fname );
-    m_free(fname);
+    gcry_free(fname);
 }
 

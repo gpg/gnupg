@@ -31,7 +31,6 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
 #include "util.h"
 #include "main.h"
 #include "filter.h"
@@ -124,7 +123,7 @@ mk_notation_and_policy( PKT_signature *sig )
 	    n1 = s - string;
 	    s++;
 	    n2 = strlen(s);
-	    buf = m_alloc( 8 + n1 + n2 );
+	    buf = gcry_xmalloc( 8 + n1 + n2 );
 	    buf[0] = 0x80; /* human readable */
 	    buf[1] = buf[2] = buf[3] = 0;
 	    buf[4] = n1 >> 8;
@@ -179,7 +178,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
     frame = encode_md_value( sk->pubkey_algo, md,
-			     digest_algo, mpi_get_nbits(sk->skey[0]));
+			     digest_algo, gcry_mpi_get_nbits(sk->skey[0]));
     rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_release(frame);
     if( rc )
@@ -189,7 +188,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	    char *ustr = get_user_id_string( sig->keyid );
 	    log_info(_("%s signature from: %s\n"),
 		      gcry_pk_algo_name(sk->pubkey_algo), ustr );
-	    m_free(ustr);
+	    gcry_free(ustr);
 	}
     }
     return rc;
@@ -391,7 +390,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		    break;
 
 	    sk = sk_rover->sk;
-	    ops = m_alloc_clear( sizeof *ops );
+	    ops = gcry_xcalloc( 1, sizeof *ops );
 	    ops->sig_class = opt.textmode && !outfile ? 0x01 : 0x00;
 	    ops->digest_algo = hash_for(sk->pubkey_algo);
 	    ops->pubkey_algo = sk->pubkey_algo;
@@ -447,13 +446,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	if (!opt.no_literal) {
 	    if( fname || opt.set_filename ) {
 		char *s = make_basename( opt.set_filename ? opt.set_filename : fname );
-		pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+		pt = gcry_xmalloc( sizeof *pt + strlen(s) - 1 );
 		pt->namelen = strlen(s);
 		memcpy(pt->name, s, pt->namelen );
-		m_free(s);
+		gcry_free(s);
 	    }
 	    else { /* no filename */
-		pt = m_alloc( sizeof *pt - 1 );
+		pt = gcry_xmalloc( sizeof *pt - 1 );
 		pt->namelen = 0;
 	    }
 	}
@@ -513,7 +512,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
 	/* build the signature packet */
 	/* fixme: this code is partly duplicated in make_keysig_packet */
-	sig = m_alloc_clear( sizeof *sig );
+	sig = gcry_xcalloc( 1, sizeof *sig );
 	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
 	keyid_from_sk( sk, sig->keyid );
 	sig->digest_algo = hash_for(sk->pubkey_algo);
@@ -709,7 +708,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
 	/* build the signature packet */
 	/* fixme: this code is duplicated above */
-	sig = m_alloc_clear( sizeof *sig );
+	sig = gcry_xcalloc( 1, sizeof *sig );
 	sig->version = old_style || opt.force_v3_sigs ? 3 : sk->version;
 	keyid_from_sk( sk, sig->keyid );
 	sig->digest_algo = hash_for(sk->pubkey_algo);
@@ -840,7 +839,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	gcry_md_write( md, uid->name, uid->len );
     }
     /* and make the signature packet */
-    sig = m_alloc_clear( sizeof *sig );
+    sig = gcry_xcalloc( 1, sizeof *sig );
     sig->version = sk->version;
     keyid_from_sk( sk, sig->keyid );
     sig->pubkey_algo = sk->pubkey_algo;

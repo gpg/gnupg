@@ -29,7 +29,7 @@
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "trustdb.h"
 #include "main.h"
@@ -159,7 +159,7 @@ print_key_data( PKT_public_key *pk, u32 *keyid )
     int i;
 
     for(i=0; i < n; i++ ) {
-	printf("pkd:%d:%u:", i, mpi_get_nbits( pk->pkey[i] ) );
+	printf("pkd:%d:%u:", i, gcry_mpi_get_nbits( pk->pkey[i] ) );
 	mpi_print(stdout, pk->pkey[i], 1 );
 	putchar(':');
 	putchar('\n');
@@ -412,7 +412,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		    print_string( stdout, p, n, ':' );
 		else
 		    print_utf8_string( stdout, p, n );
-		m_free(p);
+		gcry_free(p);
 	    }
 	    if( opt.with_colons )
 		printf(":%02x:", sig->sig_class );
@@ -463,6 +463,6 @@ fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
 	}
     }
     putchar('\n');
-    m_free(array);
+    gcry_free(array);
 }
 

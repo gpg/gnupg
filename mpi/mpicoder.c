@@ -221,8 +221,8 @@ do_get_buffer( MPI a, unsigned *nbytes, int *sign, int force_secure )
     if( sign )
 	*sign = a->sign;
     *nbytes = a->nlimbs * BYTES_PER_MPI_LIMB;
-    p = buffer = force_secure || mpi_is_secure(a) ? m_alloc_secure( *nbytes)
-						  : m_alloc( *nbytes );
+    p = buffer = force_secure || mpi_is_secure(a) ? g10_xmalloc_secure( *nbytes)
+						  : g10_xmalloc( *nbytes );
 
     for(i=a->nlimbs-1; i >= 0; i-- ) {
 	alimb = a->d[i];
@@ -340,6 +340,7 @@ gcry_mpi_scan( struct gcry_mpi **ret_mpi, enum gcry_mpi_format format,
     /* TODO: add a way to allocate the MPI in secure memory
      * Hmmm: maybe it is better to retrieve this information from
      * the provided buffer. */
+     #warning secure memory is not used here.
     if( format == GCRYMPI_FMT_STD ) {
 	const byte *s = buffer;
 
@@ -458,7 +459,7 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 	}
 
 	if( n > len && buffer ) {
-	    m_free(tmp);
+	    g10_free(tmp);
 	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
 	}
 	if( buffer ) {
@@ -468,7 +469,24 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 
 	    memcpy( s, tmp, n-extra );
 	}
-	m_free(tmp);
+	g10_free(tmp);
+	*nbytes = n;
+	return 0;
+    }
+    else if( format == GCRYMPI_FMT_USG ) {
+	unsigned int n = (nbits + 7)/8;
+
+	/* we ignore the sign for this format */
+	/* FIXME: for performance reasons we should put this into
+	 * mpi_aprint becuase we can then use the buffer directly */
+	if( n > len && buffer )
+	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
+	if( buffer ) {
+	    char *tmp;
+	    tmp = mpi_get_buffer( a, &n, NULL );
+	    memcpy( buffer, tmp, n );
+	    g10_free(tmp);
+	}
 	*nbytes = n;
 	return 0;
     }
@@ -488,7 +506,7 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 
 	    tmp = mpi_get_buffer( a, &n, NULL );
 	    memcpy( s+2, tmp, n );
-	    m_free(tmp);
+	    g10_free(tmp);
 	}
 	*nbytes = n+2;
 	return 0;
@@ -508,7 +526,7 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 	}
 
 	if( n+4 > len && buffer ) {
-	    m_free(tmp);
+	    g10_free(tmp);
 	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
 	}
 	if( buffer ) {
@@ -522,7 +540,7 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 
 	    memcpy( s, tmp, n-extra );
 	}
-	m_free(tmp);
+	g10_free(tmp);
 	*nbytes = 4+n;
 	return 0;
     }
@@ -534,10 +552,10 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 
 	tmp = mpi_get_buffer( a, &n, NULL );
 	if( !n || (*tmp & 0x80) )
-	    extra=1;
+	    extra=2;
 
-	if( 2*n+3+1 > len && buffer ) {
-	    m_free(tmp);
+	if( 2*n + extra + !!a->sign + 1 > len && buffer ) {
+	    g10_free(tmp);
 	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
 	}
 	if( buffer ) {
@@ -559,17 +577,38 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 	    *nbytes = (char*)s - buffer;
 	}
 	else {
-	    *nbytes = n;
-	    if( a->sign )
-		++*nbytes;
-	    if( extra )
-		*nbytes += 2;
-	    ++*nbytes; /* terminating Nul */
+	    *nbytes = 2*n + extra + !!a->sign + 1;
 	}
-	m_free(tmp);
+	g10_free(tmp);
 	return 0;
     }
     else
 	return GCRYERR_INV_ARG;
 }
+
+/****************
+ * Like gcry_mpi_print but this function allocates the buffer itself.
+ * The caller has to supply the address of a pointer. nbytes may be
+ * NULL.
+ */
+int
+gcry_mpi_aprint( enum gcry_mpi_format format, void **buffer, size_t *nbytes,
+		 struct gcry_mpi *a )
+{
+    size_t n;
+    int rc;
+
+    *buffer = NULL;
+    rc = gcry_mpi_print( format, NULL, &n, a );
+    if( rc )
+	return rc;
+    *buffer = mpi_is_secure(a) ? g10_xmalloc_secure( n ) : g10_xmalloc( n );
+    rc = gcry_mpi_print( format, *buffer, &n, a );
+    if( rc ) {
+	g10_free(*buffer);
+	*buffer = NULL;
+    }
+    return rc;
+}
+
 

@@ -28,7 +28,7 @@
 #include <zlib.h>
 
 #include "util.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "packet.h"
 #include "filter.h"
 #include "options.h"
@@ -63,7 +63,7 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->outbufsize = 8192;
-    zfx->outbuf = m_alloc( zfx->outbufsize );
+    zfx->outbuf = gcry_xmalloc( zfx->outbufsize );
 }
 
 static int
@@ -121,7 +121,7 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
     }
 
     zfx->inbufsize = 2048;
-    zfx->inbuf = m_alloc( zfx->inbufsize );
+    zfx->inbuf = gcry_xmalloc( zfx->inbufsize );
     zs->avail_in = 0;
 }
 
@@ -196,7 +196,7 @@ compress_filter( void *opaque, int control,
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	if( !zfx->status ) {
-	    zs = zfx->opaque = m_alloc_clear( sizeof *zs );
+	    zs = zfx->opaque = gcry_xcalloc( 1, sizeof *zs );
 	    init_uncompress( zfx, zs );
 	    zfx->status = 1;
 	}
@@ -221,7 +221,7 @@ compress_filter( void *opaque, int control,
 	    pkt.pkt.compressed = &cd;
 	    if( build_packet( a, &pkt ))
 		log_bug("build_packet(PKT_COMPRESSED) failed\n");
-	    zs = zfx->opaque = m_alloc_clear( sizeof *zs );
+	    zs = zfx->opaque = gcry_xcalloc( 1, sizeof *zs );
 	    init_compress( zfx, zs );
 	    zfx->status = 2;
 	}
@@ -233,18 +233,18 @@ compress_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_FREE ) {
 	if( zfx->status == 1 ) {
 	    inflateEnd(zs);
-	    m_free(zs);
+	    gcry_free(zs);
 	    zfx->opaque = NULL;
-	    m_free(zfx->outbuf); zfx->outbuf = NULL;
+	    gcry_free(zfx->outbuf); zfx->outbuf = NULL;
 	}
 	else if( zfx->status == 2 ) {
 	    zs->next_in = buf;
 	    zs->avail_in = 0;
 	    do_compress( zfx, zs, Z_FINISH, a );
 	    deflateEnd(zs);
-	    m_free(zs);
+	    gcry_free(zs);
 	    zfx->opaque = NULL;
-	    m_free(zfx->outbuf); zfx->outbuf = NULL;
+	    gcry_free(zfx->outbuf); zfx->outbuf = NULL;
 	}
     }
     else if( control == IOBUFCTRL_DESC )

@@ -667,7 +667,7 @@ AC_SUBST(ZLIBS)
 changequote(,)dnl
 tmp_pat='[a-zA-Z]'
 changequote([,])dnl
-if echo "$VERSION" | grep "$tmp_pat" >/dev/null ; then
+if echo "$VERSION" | sed 's/-.*//' | grep "$tmp_pat" >/dev/null ; then
     AC_DEFINE(IS_DEVELOPMENT_VERSION)
 fi
 
@@ -720,6 +720,7 @@ AC_OUTPUT([
 Makefile
 intl/Makefile
 po/Makefile.in
+jnlib/Makefile
 util/Makefile
 mpi/Makefile
 cipher/Makefile

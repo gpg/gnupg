@@ -30,7 +30,7 @@
 #include "util.h"
 #include "ttyio.h"
 #include "i18n.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "options.h"
 #include "filter.h"
 #include "http.h"
@@ -61,7 +61,7 @@ hkp_ask_import( u32 *keyid )
 	return -1;
     log_info("requesting key %08lX from %s ...\n", (ulong)keyid[1],
 						   opt.keyserver_name );
-    request = m_alloc( strlen( opt.keyserver_name ) + 100 );
+    request = gcry_xmalloc( strlen( opt.keyserver_name ) + 100 );
     /* hkp does not accept the long keyid - we should really write a
      * nicer one */
     sprintf( request, "x-hkp://%s:11371/pks/lookup?op=get&search=0x%08lX",
@@ -77,7 +77,7 @@ hkp_ask_import( u32 *keyid )
 	http_close( &hd );
     }
 
-    m_free( request );
+    gcry_free( request );
     return rc;
   #endif
 }
@@ -141,7 +141,7 @@ hkp_export( STRLIST users )
 
     iobuf_flush_temp( temp );
 
-    request = m_alloc( strlen( opt.keyserver_name ) + 100 );
+    request = gcry_xmalloc( strlen( opt.keyserver_name ) + 100 );
     sprintf( request, "x-hkp://%s:11371/pks/add", opt.keyserver_name );
     rc = http_open( &hd, HTTP_REQ_POST, request , 0 );
     if( rc ) {
@@ -150,14 +150,14 @@ hkp_export( STRLIST users )
 			rc == G10ERR_NETWORK? strerror(errno)
 					    : g10_errstr(rc) );
 	iobuf_close(temp);
-	m_free( request );
+	gcry_free( request );
 	return rc;
     }
 
     sprintf( request, "Content-Length: %u\n",
 		      (unsigned)iobuf_get_temp_length(temp) + 9 );
     iobuf_writestr( hd.fp_write, request );
-    m_free( request );
+    gcry_free( request );
     http_start_data( &hd );
 
     iobuf_writestr( hd.fp_write, "keytext=" );

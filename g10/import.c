@@ -29,7 +29,7 @@
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "trustdb.h"
 #include "main.h"
@@ -145,7 +145,7 @@ import( IOBUF inp, int fast, const char* fname )
     getkey_disable_caches();
 
     if( !opt.no_armor ) { /* armored reading is not disabled */
-	armor_filter_context_t *afx = m_alloc_clear( sizeof *afx );
+	armor_filter_context_t *afx = gcry_xcalloc( 1, sizeof *afx );
 	afx->only_keyblocks = 1;
 	iobuf_push_filter2( inp, armor_filter, afx, 1 );
     }
@@ -244,7 +244,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
     }
     else
 	in_cert = 0;
-    pkt = m_alloc( sizeof *pkt );
+    pkt = gcry_xmalloc( sizeof *pkt );
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
 	if( rc ) {  /* ignore errors */
@@ -276,7 +276,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 		goto ready;
 	    }
 	    {
-		compress_filter_context_t *cfx = m_alloc_clear( sizeof *cfx );
+		compress_filter_context_t *cfx = gcry_xcalloc( 1, sizeof *cfx );
 		cfx->algo = pkt->pkt.compressed->algorithm;
 		pkt->pkt.compressed->buf = NULL;
 		iobuf_push_filter2( a, compress_filter, cfx, 1 );
@@ -300,7 +300,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 		    root = new_kbnode( pkt );
 		else
 		    add_kbnode( root, new_kbnode( pkt ) );
-		pkt = m_alloc( sizeof *pkt );
+		pkt = gcry_xmalloc( sizeof *pkt );
 	    }
 	    init_packet(pkt);
 	    break;
@@ -315,7 +315,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
     else
 	*ret_root = root;
     free_packet( pkt );
-    m_free( pkt );
+    gcry_free( pkt );
     return rc;
 }
 
@@ -383,7 +383,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 
 
     /* do we have this key already in one of our pubrings ? */
-    pk_orig = m_alloc_clear( sizeof *pk_orig );
+    pk_orig = gcry_xcalloc( 1, sizeof *pk_orig );
     rc = get_pubkey( pk_orig, keyid );
     if( rc && rc != G10ERR_NO_PUBKEY ) {
 	log_error( _("key %08lX: public key not found: %s\n"),
@@ -411,7 +411,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	if( is_status_enabled() ) {
 	    char *us = get_long_user_id_string( keyid );
 	    write_status_text( STATUS_IMPORTED, us );
-	    m_free(us);
+	    gcry_free(us);
 	}
 	stats.imported++;
 	if( is_RSA( pk->pubkey_algo ) )
@@ -609,7 +609,7 @@ import_revoke_cert( const char *fname, KBNODE node )
     keyid[0] = node->pkt->pkt.signature->keyid[0];
     keyid[1] = node->pkt->pkt.signature->keyid[1];
 
-    pk = m_alloc_clear( sizeof *pk );
+    pk = gcry_xcalloc( 1, sizeof *pk );
     rc = get_pubkey( pk, keyid );
     if( rc == G10ERR_NO_PUBKEY ) {
 	log_info( _("key %08lX: no public key - "

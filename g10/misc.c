@@ -35,7 +35,6 @@
 #include <gcrypt.h>
 #include "util.h"
 #include "main.h"
-#include "memory.h"
 #include "options.h"
 #include "i18n.h"
 
@@ -156,7 +155,7 @@ mpi_read(IOBUF inp, unsigned int *ret_nread, int secure)
     }
     nread = 2;
     nbytes = (nbits+7) / 8;
-    buf = secure? m_alloc_secure( nbytes+2 ) : m_alloc( nbytes+2 );
+    buf = secure? gcry_xmalloc_secure( nbytes+2 ) : gcry_xmalloc( nbytes+2 );
     p = buf;
     p[0] = c1;
     p[1] = c2;
@@ -169,7 +168,7 @@ mpi_read(IOBUF inp, unsigned int *ret_nread, int secure)
 	a = NULL;
 
   leave:
-    m_free(buf);
+    gcry_free(buf);
     if( nread > *ret_nread )
 	log_bug("mpi larger than packet");
     else
@@ -202,7 +201,7 @@ mpi_read_opaque(IOBUF inp, unsigned *ret_nread )
     }
     nread = 2;
     nbytes = (nbits+7) / 8;
-    buf = m_alloc( nbytes );
+    buf = gcry_xmalloc( nbytes );
     p = buf;
     for( i=0 ; i < nbytes; i++ ) {
 	p[i] = iobuf_get(inp) & 0xff;
@@ -213,7 +212,7 @@ mpi_read_opaque(IOBUF inp, unsigned *ret_nread )
     buf = NULL;
 
   leave:
-    m_free(buf);
+    gcry_free(buf);
     if( nread > *ret_nread )
 	log_bug("mpi larger than packet");
     else
@@ -236,17 +235,13 @@ mpi_print( FILE *fp, MPI a, int mode )
     }
     else {
 	int rc;
-	byte *buffer;
-	size_t nbytes;
+	char *buffer;
 
-	rc = gcry_mpi_print( GCRYMPI_FMT_HEX, NULL, &nbytes, a );
-	assert( !rc );
-	buffer = m_is_secure(a)? m_alloc_secure(nbytes) : m_alloc(nbytes);
-	rc = gcry_mpi_print( GCRYMPI_FMT_HEX, buffer, &nbytes, a );
+	rc = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void **)&buffer, NULL, a );
 	assert( !rc );
 	fputs( buffer, fp );
 	n += strlen(buffer);
-	m_free( buffer );
+	gcry_free( buffer );
     }
     return n;
 }
@@ -286,11 +281,11 @@ checksum_mpi( MPI a )
      * should use a stack based buffer and only allocate
      * a larger one when the mpi_print return an error
      */
-    buffer = m_is_secure(a)? m_alloc_secure(nbytes) : m_alloc(nbytes);
+    buffer = gcry_is_secure(a)? gcry_xmalloc_secure(nbytes) : gcry_xmalloc(nbytes);
     rc = gcry_mpi_print( GCRYMPI_FMT_PGP, buffer, &nbytes, a );
     assert( !rc );
     csum = checksum( buffer, nbytes );
-    m_free( buffer );
+    gcry_free( buffer );
     return csum;
 }
 
@@ -425,8 +420,42 @@ pubkey_get_nenc( int algo )
     return n > 0? n : 0;
 }
 
-int
-pubkey_nbits()
+unsigned int
+pubkey_nbits( int algo, MPI *key )
 {
+    int nbits;
+    GCRY_SEXP sexp;
+
+
+    if( algo == GCRY_PK_DSA ) {
+	sexp = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "dsa", 3 ),
+			  gcry_sexp_new_name_mpi( "p", key[0] ),
+			  gcry_sexp_new_name_mpi( "q", key[1] ),
+			  gcry_sexp_new_name_mpi( "g", key[2] ),
+			  gcry_sexp_new_name_mpi( "y", key[3] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E ) {
+	sexp = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "elg", 3 ),
+			  gcry_sexp_new_name_mpi( "p", key[0] ),
+			  gcry_sexp_new_name_mpi( "g", key[1] ),
+			  gcry_sexp_new_name_mpi( "y", key[2] ),
+			  NULL ));
+    }
+    else if( algo == GCRY_PK_RSA ) {
+	sexp = SEXP_CONS( SEXP_NEW( "public-key", 0 ),
+			  gcry_sexp_vlist( SEXP_NEW( "rsa", 3 ),
+			  gcry_sexp_new_name_mpi( "n", key[0] ),
+			  gcry_sexp_new_name_mpi( "e", key[1] ),
+			  NULL ));
+    }
+    else
+	return 0;
+
+    nbits = gcry_pk_get_nbits( sexp );
+    gcry_sexp_release( sexp );
+    return nbits;
 }
 

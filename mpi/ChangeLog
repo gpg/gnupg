@@ -1,3 +1,11 @@
+Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* mpiutil.c: Removed all memory debugging code.
+
+	* mpicoder.c (gcry_mpi_aprint): New.
+
+	* Replaced all m_ memory functions by g10_ ones.
+
 Fri Dec 31 14:06:56 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* mpi-bit.c (gcry_mpi_get_nbits): New.

@@ -27,7 +27,6 @@
 #include <gcrypt.h>
 #include "util.h"
 #include "packet.h"
-#include "memory.h"
 #include "iobuf.h"
 #include "keydb.h"
 #include "options.h"
@@ -208,7 +207,7 @@ cache_public_key( PKT_public_key *pk )
 	return;
     }
     pk_cache_entries++;
-    ce = m_alloc( sizeof *ce );
+    ce = gcry_xmalloc( sizeof *ce );
     ce->next = pk_cache;
     pk_cache = ce;
     ce->pk = copy_public_key( NULL, pk );
@@ -237,10 +236,10 @@ cache_user_id( PKT_user_id *uid, u32 *keyid )
 	/* fixme: use another algorithm to free some cache slots */
 	r = user_id_db;
 	user_id_db = r->next;
-	m_free(r);
+	gcry_free(r);
 	uid_cache_entries--;
     }
-    r = m_alloc( sizeof *r + uid->len-1 );
+    r = gcry_xmalloc( sizeof *r + uid->len-1 );
     r->keyid[0] = keyid[0];
     r->keyid[1] = keyid[1];
     r->len = uid->len;
@@ -259,7 +258,7 @@ getkey_disable_caches()
 	keyid_list_t kl, kl2;
 	for( kl = unknown_keyids; kl; kl = kl2 ) {
 	    kl2 = kl->next;
-	    m_free(kl);
+	    gcry_free(kl);
 	}
 	unknown_keyids = NULL;
 	unk_cache_disabled = 1;
@@ -272,7 +271,7 @@ getkey_disable_caches()
 	for( ce = pk_cache; ce; ce = ce2 ) {
 	    ce2 = ce->next;
 	    free_public_key( ce->pk );
-	    m_free( ce );
+	    gcry_free( ce );
 	}
 	pk_cache_disabled=1;
 	pk_cache_entries = 0;
@@ -317,7 +316,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
   #endif
     /* more init stuff */
     if( !pk ) {
-	pk = m_alloc_clear( sizeof *pk );
+	pk = gcry_xcalloc( 1, sizeof *pk );
 	internal++;
     }
 
@@ -348,7 +347,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
     else {
 	keyid_list_t kl;
 
-	kl = m_alloc( sizeof *kl );
+	kl = gcry_xmalloc( sizeof *kl );
 	kl->keyid[0] = keyid[0];
 	kl->keyid[1] = keyid[1];
 	kl->next = unknown_keyids;
@@ -369,7 +368,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 KBNODE
 get_pubkeyblock( u32 *keyid )
 {
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     struct getkey_ctx_s ctx;
     int rc = 0;
     KBNODE keyblock = NULL;
@@ -454,7 +453,7 @@ seckey_available( u32 *keyid )
     struct getkey_ctx_s ctx;
     PKT_secret_key *sk;
 
-    sk = m_alloc_clear( sizeof *sk );
+    sk = gcry_xcalloc( 1, sizeof *sk );
     memset( &ctx, 0, sizeof ctx );
     ctx.not_allocated = 1;
     ctx.nitems = 1;
@@ -704,7 +703,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     /*			 and we don't have mode 6 */
     for(n=0, r=namelist; r; r = r->next )
 	n++;
-    ctx = m_alloc_clear( sizeof *ctx + (n-1)*sizeof ctx->items );
+    ctx = gcry_xcalloc( 1, sizeof *ctx + (n-1)*sizeof ctx->items );
     ctx->nitems = n;
 
     for(n=0, r=namelist; r; r = r->next, n++ ) {
@@ -714,7 +713,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
 					      &ctx->items[n].name,
 					      NULL );
 	if( !ctx->items[n].mode ) {
-	    m_free( ctx );
+	    gcry_free( ctx );
 	    return G10ERR_INV_USER_ID;
 	}
 	if( ctx->items[n].mode == 6 ) {
@@ -736,8 +735,8 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
 	/* Hmmm, why not get_pubkey-end here?? */
 	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
 	for(n=0; n < ctx->nitems; n++ )
-	    m_free( ctx->items[n].namebuf );
-	m_free( ctx );
+	    gcry_free( ctx->items[n].namebuf );
+	gcry_free( ctx );
     }
 
     return rc;
@@ -754,7 +753,7 @@ get_pubkey_byname( GETKEY_CTX *retctx, PKT_public_key *pk,
 
     if( !pk ) {
 	/* Performance Hint: key_byname should not need a pk here */
-	pk = m_alloc_clear( sizeof *pk );
+	pk = gcry_xcalloc( 1, sizeof *pk );
 	rc = key_byname( retctx, namelist, pk, NULL, ret_keyblock );
 	free_public_key( pk );
     }
@@ -773,7 +772,7 @@ get_pubkey_bynames( GETKEY_CTX *retctx, PKT_public_key *pk,
 
     if( !pk ) {
 	/* Performance Hint: key_byname should not need a pk here */
-	pk = m_alloc_clear( sizeof *pk );
+	pk = gcry_xcalloc( 1, sizeof *pk );
 	rc = key_byname( retctx, names, pk, NULL, ret_keyblock );
 	free_public_key( pk );
     }
@@ -790,7 +789,7 @@ get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
 
     if( !pk ) {
 	/* Performance Hint: lookup_read should not need a pk in this case */
-	pk = m_alloc_clear( sizeof *pk );
+	pk = gcry_xcalloc( 1, sizeof *pk );
 	rc = lookup_pk( ctx, pk, ret_keyblock );
 	free_public_key( pk );
     }
@@ -807,9 +806,9 @@ get_pubkey_end( GETKEY_CTX ctx )
 
 	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
 	for(n=0; n < ctx->nitems; n++ )
-	    m_free( ctx->items[n].namebuf );
+	    gcry_free( ctx->items[n].namebuf );
 	if( !ctx->not_allocated )
-	    m_free( ctx );
+	    gcry_free( ctx );
     }
 }
 
@@ -845,7 +844,7 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 						size_t fprint_len )
 {
     int rc;
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 
     if( fprint_len == 20 || fprint_len == 16 ) {
 	struct getkey_ctx_s ctx;
@@ -873,7 +872,7 @@ int
 get_keyblock_bylid( KBNODE *ret_keyblock, ulong lid )
 {
     int rc;
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     struct getkey_ctx_s ctx;
     u32 kid[2];
 
@@ -942,7 +941,7 @@ get_seckey_bynames( GETKEY_CTX *retctx, PKT_secret_key *sk,
 
     if( !sk ) {
 	/* Performance Hint: key_byname should not need a sk here */
-	sk = m_alloc_secure_clear( sizeof *sk );
+	sk = gcry_xcalloc_secure( 1,  sizeof *sk );
 	rc = key_byname( retctx, names, NULL, sk, ret_keyblock );
 	free_secret_key( sk );
     }
@@ -960,7 +959,7 @@ get_seckey_next( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
 
     if( !sk ) {
 	/* Performance Hint: lookup_read should not need a pk in this case */
-	sk = m_alloc_secure_clear( sizeof *sk );
+	sk = gcry_xcalloc_secure( 1,  sizeof *sk );
 	rc = lookup_sk( ctx, sk, ret_keyblock );
 	free_secret_key( sk );
     }
@@ -977,9 +976,9 @@ get_seckey_end( GETKEY_CTX ctx )
 
 	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
 	for(n=0; n < ctx->nitems; n++ )
-	    m_free( ctx->items[n].namebuf );
+	    gcry_free( ctx->items[n].namebuf );
 	if( !ctx->not_allocated )
-	    m_free( ctx );
+	    gcry_free( ctx );
     }
 }
 
@@ -1051,7 +1050,7 @@ prepare_word_match( const byte *name )
     int c;
 
     /* the original length is always enough for the pattern */
-    p = pattern = m_alloc(strlen(name)+1);
+    p = pattern = gcry_xmalloc(strlen(name)+1);
     do {
 	/* skip leading delimiters */
 	while( *name && !word_match_chars[*name] )
@@ -1817,7 +1816,7 @@ enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
 
 
     if( !c ) { /* make a new context */
-	c = m_alloc_clear( sizeof *c );
+	c = gcry_xcalloc( 1, sizeof *c );
 	*context = c;
 	c->sequence = 0;
 	c->name = enum_keyblock_resources( &c->sequence, 1 );
@@ -1826,7 +1825,7 @@ enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
     if( !sk ) { /* free the context */
 	if( c->iobuf )
 	    iobuf_close(c->iobuf);
-	m_free( c );
+	gcry_free( c );
 	*context = NULL;
 	return 0;
     }
@@ -1878,12 +1877,12 @@ get_user_id_string( u32 *keyid )
     do {
 	for(r=user_id_db; r; r = r->next )
 	    if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] ) {
-		p = m_alloc( r->len + 10 );
+		p = gcry_xmalloc( r->len + 10 );
 		sprintf(p, "%08lX %.*s", (ulong)keyid[1], r->len, r->name );
 		return p;
 	    }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = m_alloc( 15 );
+    p = gcry_xmalloc( 15 );
     sprintf(p, "%08lX [?]", (ulong)keyid[1] );
     return p;
 }
@@ -1898,13 +1897,13 @@ get_long_user_id_string( u32 *keyid )
     do {
 	for(r=user_id_db; r; r = r->next )
 	    if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] ) {
-		p = m_alloc( r->len + 20 );
+		p = gcry_xmalloc( r->len + 20 );
 		sprintf(p, "%08lX%08lX %.*s",
 			  (ulong)keyid[0], (ulong)keyid[1], r->len, r->name );
 		return p;
 	    }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = m_alloc( 25 );
+    p = gcry_xmalloc( 25 );
     sprintf(p, "%08lX%08lX [?]", (ulong)keyid[0], (ulong)keyid[1] );
     return p;
 }
@@ -1919,13 +1918,13 @@ get_user_id( u32 *keyid, size_t *rn )
     do {
 	for(r=user_id_db; r; r = r->next )
 	    if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] ) {
-		p = m_alloc( r->len );
+		p = gcry_xmalloc( r->len );
 		memcpy(p, r->name, r->len );
 		*rn = r->len;
 		return p;
 	    }
     } while( ++pass < 2 && !get_pubkey( NULL, keyid ) );
-    p = m_alloc( 19 );
+    p = gcry_xmalloc( 19 );
     memcpy(p, "[User id not found]", 19 );
     *rn = 19;
     return p;

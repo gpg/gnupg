@@ -29,7 +29,7 @@
 #include "packet.h"
 #include "errors.h"
 #include "keydb.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "ttyio.h"
@@ -114,10 +114,10 @@ gen_revoke( const char *uname )
 	size_t n;
 	char *p = get_user_id( sk_keyid, &n );
 	tty_print_utf8_string( p, n );
-	m_free(p);
+	gcry_free(p);
 	tty_printf("\n");
     }
-    pk = m_alloc_clear( sizeof *pk );
+    pk = gcry_xcalloc( 1, sizeof *pk );
     rc = get_pubkey( pk, sk_keyid );
     if( rc ) {
 	log_error(_("no corresponding public key: %s\n"), g10_errstr(rc) );

@@ -28,7 +28,7 @@
 #include "iobuf.h"
 #include "util.h"
 #include "dummy-cipher.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "filter.h"
 #include "options.h"
 #include "main.h"
@@ -391,12 +391,12 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
     switch( pkttype ) {
       case PKT_PUBLIC_KEY:
       case PKT_PUBLIC_SUBKEY:
-	pkt->pkt.public_key = m_alloc_clear(sizeof *pkt->pkt.public_key );
+	pkt->pkt.public_key = gcry_xcalloc( 1,sizeof *pkt->pkt.public_key );
 	rc = parse_key(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
       case PKT_SECRET_KEY:
       case PKT_SECRET_SUBKEY:
-	pkt->pkt.secret_key = m_alloc_clear(sizeof *pkt->pkt.secret_key );
+	pkt->pkt.secret_key = gcry_xcalloc( 1,sizeof *pkt->pkt.secret_key );
 	rc = parse_key(inp, pkttype, pktlen, hdr, hdrlen, pkt );
 	break;
       case PKT_SYMKEY_ENC:
@@ -406,11 +406,11 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	rc = parse_pubkeyenc(inp, pkttype, pktlen, pkt );
 	break;
       case PKT_SIGNATURE:
-	pkt->pkt.signature = m_alloc_clear(sizeof *pkt->pkt.signature );
+	pkt->pkt.signature = gcry_xcalloc( 1,sizeof *pkt->pkt.signature );
 	rc = parse_signature(inp, pkttype, pktlen, pkt->pkt.signature );
 	break;
       case PKT_ONEPASS_SIG:
-	pkt->pkt.onepass_sig = m_alloc_clear(sizeof *pkt->pkt.onepass_sig );
+	pkt->pkt.onepass_sig = gcry_xcalloc( 1,sizeof *pkt->pkt.onepass_sig );
 	rc = parse_onepass_sig(inp, pkttype, pktlen, pkt->pkt.onepass_sig );
 	break;
       case PKT_USER_ID:
@@ -547,7 +547,7 @@ read_rest( IOBUF inp, size_t pktlen )
 	p = NULL;
     }
     else {
-	p = m_alloc( pktlen );
+	p = gcry_xmalloc( pktlen );
 	for(i=0; pktlen; pktlen--, i++ )
 	    p[i] = iobuf_get(inp);
     }
@@ -597,7 +597,7 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	goto leave;
     }
     seskeylen = pktlen - minlen;
-    k = packet->pkt.symkey_enc = m_alloc_clear( sizeof *packet->pkt.symkey_enc
+    k = packet->pkt.symkey_enc = gcry_xcalloc( 1, sizeof *packet->pkt.symkey_enc
 						+ seskeylen - 1 );
     k->version = version;
     k->cipher_algo = cipher_algo;
@@ -640,7 +640,7 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     int i, ndata;
     PKT_pubkey_enc *k;
 
-    k = packet->pkt.pubkey_enc = m_alloc_clear(sizeof *packet->pkt.pubkey_enc);
+    k = packet->pkt.pubkey_enc = gcry_xcalloc( 1,sizeof *packet->pkt.pubkey_enc);
     if( pktlen < 12 ) {
 	log_error("packet(%d) too short\n", pkttype);
 	goto leave;
@@ -1046,7 +1046,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    goto leave;
 	}
 	if( n ) {
-	    sig->hashed_data = m_alloc( n + 2 );
+	    sig->hashed_data = gcry_xmalloc( n + 2 );
 	    sig->hashed_data[0] = n >> 8;
 	    sig->hashed_data[1] = n;
 	    if( iobuf_read(inp, sig->hashed_data+2, n ) != n ) {
@@ -1063,7 +1063,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	    goto leave;
 	}
 	if( n ) {
-	    sig->unhashed_data = m_alloc( n + 2 );
+	    sig->unhashed_data = gcry_xmalloc( n + 2 );
 	    sig->unhashed_data[0] = n >> 8;
 	    sig->unhashed_data[1] = n;
 	    if( iobuf_read(inp, sig->unhashed_data+2, n ) != n ) {
@@ -1473,7 +1473,7 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + pktlen);
+    packet->pkt.user_id = gcry_xmalloc(sizeof *packet->pkt.user_id  + pktlen);
     packet->pkt.user_id->len = pktlen;
     p = packet->pkt.user_id->name;
     for( ; pktlen; pktlen--, p++ )
@@ -1502,7 +1502,7 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 {
     byte *p;
 
-    packet->pkt.comment = m_alloc(sizeof *packet->pkt.comment + pktlen - 1);
+    packet->pkt.comment = gcry_xmalloc(sizeof *packet->pkt.comment + pktlen - 1);
     packet->pkt.comment->len = pktlen;
     p = packet->pkt.comment->data;
     for( ; pktlen; pktlen--, p++ )
@@ -1530,7 +1530,7 @@ parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
     int c;
 
     c = iobuf_get_noeof(inp);
-    pkt->pkt.ring_trust = m_alloc( sizeof *pkt->pkt.ring_trust );
+    pkt->pkt.ring_trust = gcry_xmalloc( sizeof *pkt->pkt.ring_trust );
     pkt->pkt.ring_trust->trustval = c;
     if( list_mode )
 	printf(":trust packet: flag=%02x\n", c );
@@ -1552,7 +1552,7 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
     }
     mode = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     namelen = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
-    pt = pkt->pkt.plaintext = m_alloc(sizeof *pkt->pkt.plaintext + namelen -1);
+    pt = pkt->pkt.plaintext = gcry_xmalloc(sizeof *pkt->pkt.plaintext + namelen -1);
     pt->new_ctb = new_ctb;
     pt->mode = mode;
     pt->namelen = namelen;
@@ -1601,7 +1601,7 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
      * (this should be the last object in a file or
      *	the compress algorithm should know the length)
      */
-    zd = pkt->pkt.compressed =	m_alloc(sizeof *pkt->pkt.compressed );
+    zd = pkt->pkt.compressed =	gcry_xmalloc(sizeof *pkt->pkt.compressed );
     zd->len = 0; /* not yet used */
     zd->algorithm = iobuf_get_noeof(inp);
     zd->new_ctb = new_ctb;
@@ -1618,7 +1618,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
 {
     PKT_encrypted *ed;
 
-    ed = pkt->pkt.encrypted =  m_alloc(sizeof *pkt->pkt.encrypted );
+    ed = pkt->pkt.encrypted =  gcry_xmalloc(sizeof *pkt->pkt.encrypted );
     ed->len = pktlen;
     ed->buf = NULL;
     ed->new_ctb = new_ctb;

@@ -71,6 +71,7 @@ int pubkey_get_npkey( int algo );
 int pubkey_get_nskey( int algo );
 int pubkey_get_nsig( int algo );
 int pubkey_get_nenc( int algo );
+unsigned int pubkey_nbits( int algo, MPI *pkey );
 
 
 /*-- helptext.c --*/

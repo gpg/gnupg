@@ -132,7 +132,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    fclose(fp);
 	}
 	fp = NULL;
-	m_free(a); /* we can free our context now */
+	gcry_free(a); /* we can free our context now */
     }
 
     return rc;
@@ -267,7 +267,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    if( nbytes < OP_MIN_PARTIAL_CHUNK ) {
 		/* not enough to write a partial block out; so we store it*/
 		if( !a->buffer )
-		    a->buffer = m_alloc( OP_MIN_PARTIAL_CHUNK );
+		    a->buffer = gcry_xmalloc( OP_MIN_PARTIAL_CHUNK );
 		memcpy( a->buffer + a->buflen, buf, size );
 		a->buflen += size;
 	    }
@@ -305,7 +305,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    assert( !a->buflen );
 		    assert( nbytes < OP_MIN_PARTIAL_CHUNK );
 		    if( !a->buffer )
-			a->buffer = m_alloc( OP_MIN_PARTIAL_CHUNK );
+			a->buffer = gcry_xmalloc( OP_MIN_PARTIAL_CHUNK );
 		    memcpy( a->buffer, p, nbytes );
 		    a->buflen = nbytes;
 		}
@@ -393,7 +393,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    log_error("block_filter: write error: %s\n",strerror(errno));
 		    rc = G10ERR_WRITE_FILE;
 		}
-		m_free( a->buffer ); a->buffer = NULL; a->buflen = 0;
+		gcry_free( a->buffer ); a->buffer = NULL; a->buflen = 0;
 	    }
 	    else {
 		iobuf_writebyte(chain, 0);
@@ -405,7 +405,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	}
 	if( DBG_IOBUF )
 	    log_debug("free block_filter %p\n", a );
-	m_free(a); /* we can free our context now */
+	gcry_free(a); /* we can free our context now */
     }
 
     return rc;
@@ -449,9 +449,9 @@ iobuf_alloc(int use, size_t bufsize)
     IOBUF a;
     static int number=0;
 
-    a = m_alloc_clear(sizeof *a);
+    a = gcry_xcalloc( 1,sizeof *a);
     a->use = use;
-    a->d.buf = m_alloc( bufsize );
+    a->d.buf = gcry_xmalloc( bufsize );
     a->d.size = bufsize;
     a->no = ++number;
     a->subno = 0;
@@ -470,7 +470,7 @@ iobuf_close( IOBUF a )
 
     if( a && a->directfp ) {
 	fclose( a->directfp );
-	m_free( a->real_fname );
+	gcry_free( a->real_fname );
 	if( DBG_IOBUF )
 	    log_debug("iobuf_close -> %p\n", a->directfp );
 	return 0;
@@ -486,9 +486,9 @@ iobuf_close( IOBUF a )
 	if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE,
 					 a->chain, NULL, &dummy_len)) )
 	    log_error("IOBUFCTRL_FREE failed on close: %s\n", g10_errstr(rc) );
-	m_free(a->real_fname);
-	m_free(a->d.buf);
-	m_free(a);
+	gcry_free(a->real_fname);
+	gcry_free(a->d.buf);
+	gcry_free(a);
     }
     return rc;
 }
@@ -556,12 +556,12 @@ iobuf_open( const char *fname )
     else if( !(fp = fopen(fname, "rb")) )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
-    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx = gcry_xmalloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
     if( !print_only )
-	a->real_fname = m_strdup( fname );
+	a->real_fname = gcry_xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -588,7 +588,7 @@ iobuf_fdopen( int fd, const char *mode )
     if( !(fp = fdopen(fd, mode)) )
 	return NULL;
     a = iobuf_alloc( strchr( mode, 'w')? 2:1, 8192 );
-    fcx = m_alloc( sizeof *fcx + 20 );
+    fcx = gcry_xmalloc( sizeof *fcx + 20 );
     fcx->fp = fp;
     fcx->print_only_name = 1;
     sprintf(fcx->fname, "[fd %d]", fd );
@@ -622,12 +622,12 @@ iobuf_create( const char *fname )
     else if( !(fp = fopen(fname, "wb")) )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
-    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx = gcry_xmalloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     fcx->print_only_name = print_only;
     strcpy(fcx->fname, fname );
     if( !print_only )
-	a->real_fname = m_strdup( fname );
+	a->real_fname = gcry_xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -655,10 +655,10 @@ iobuf_append( const char *fname )
     else if( !(fp = fopen(fname, "ab")) )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
-    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx = gcry_xmalloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     strcpy(fcx->fname, fname );
-    a->real_fname = m_strdup( fname );
+    a->real_fname = gcry_xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -682,10 +682,10 @@ iobuf_openrw( const char *fname )
     else if( !(fp = fopen(fname, "r+b")) )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
-    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx = gcry_xmalloc( sizeof *fcx + strlen(fname) );
     fcx->fp = fp;
     strcpy(fcx->fname, fname );
-    a->real_fname = m_strdup( fname );
+    a->real_fname = gcry_xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
@@ -719,7 +719,7 @@ iobuf_fopen( const char *fname, const char *mode )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
     a->directfp = fp;
-    a->real_fname = m_strdup( fname );
+    a->real_fname = gcry_xstrdup( fname );
 
     if( DBG_IOBUF )
 	log_debug("iobuf_fopen -> %p\n", a->directfp );
@@ -760,12 +760,12 @@ iobuf_push_filter2( IOBUF a,
      * The contents of the buffers are transferred to the
      * new stream.
      */
-    b = m_alloc(sizeof *b);
+    b = gcry_xmalloc(sizeof *b);
     memcpy(b, a, sizeof *b );
     /* fixme: it is stupid to keep a copy of the name at every level
      * but we need the name somewhere because the name known by file_filter
      * may have been released when we need the name of the file */
-    b->real_fname = a->real_fname? m_strdup(a->real_fname):NULL;
+    b->real_fname = a->real_fname? gcry_xstrdup(a->real_fname):NULL;
     /* remove the filter stuff from the new stream */
     a->filter = NULL;
     a->filter_ov = NULL;
@@ -775,12 +775,12 @@ iobuf_push_filter2( IOBUF a,
 	a->use = 2;  /* make a write stream from a temp stream */
 
     if( a->use == 2 ) { /* allocate a fresh buffer for the original stream */
-	b->d.buf = m_alloc( a->d.size );
+	b->d.buf = gcry_xmalloc( a->d.size );
 	b->d.len = 0;
 	b->d.start = 0;
     }
     else { /* allocate a fresh buffer for the new stream */
-	a->d.buf = m_alloc( a->d.size );
+	a->d.buf = gcry_xmalloc( a->d.size );
 	a->d.len = 0;
 	a->d.start = 0;
     }
@@ -831,10 +831,10 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
     if( !a->filter ) { /* this is simple */
 	b = a->chain;
 	assert(b);
-	m_free(a->d.buf);
-	m_free(a->real_fname);
+	gcry_free(a->d.buf);
+	gcry_free(a->real_fname);
 	memcpy(a,b, sizeof *a);
-	m_free(b);
+	gcry_free(b);
 	return 0;
     }
     for(b=a ; b; b = b->chain )
@@ -855,7 +855,7 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	return rc;
     }
     if( b->filter_ov && b->filter_ov_owner ) {
-	m_free( b->filter_ov );
+	gcry_free( b->filter_ov );
 	b->filter_ov = NULL;
     }
 
@@ -868,10 +868,10 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	 * a flush has been done on the to be removed entry
 	 */
 	b = a->chain;
-	m_free(a->d.buf);
-	m_free(a->real_fname);
+	gcry_free(a->d.buf);
+	gcry_free(a->real_fname);
 	memcpy(a,b, sizeof *a);
-	m_free(b);
+	gcry_free(b);
 	if( DBG_IOBUF )
 	   log_debug("iobuf-%d.%d: popped filter\n", a->no, a->subno );
     }
@@ -906,10 +906,10 @@ underflow(IOBUF a)
 	    if( DBG_IOBUF )
 		log_debug("iobuf-%d.%d: pop `%s' in underflow\n",
 					a->no, a->subno, a->desc );
-	    m_free(a->d.buf);
-	    m_free(a->real_fname);
+	    gcry_free(a->d.buf);
+	    gcry_free(a->real_fname);
 	    memcpy(a, b, sizeof *a);
-	    m_free(b);
+	    gcry_free(b);
 	    print_chain(a);
 	}
 	else
@@ -962,7 +962,7 @@ underflow(IOBUF a)
 			       NULL, &dummy_len)) )
 		log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
 	    if( a->filter_ov && a->filter_ov_owner ) {
-		m_free( a->filter_ov );
+		gcry_free( a->filter_ov );
 		a->filter_ov = NULL;
 	    }
 	    a->filter = NULL;
@@ -975,10 +975,10 @@ underflow(IOBUF a)
 		    log_debug("iobuf-%d.%d: pop `%s' in underflow (!len)\n",
 					       a->no, a->subno, a->desc );
 		print_chain(a);
-		m_free(a->d.buf);
-		m_free(a->real_fname);
+		gcry_free(a->d.buf);
+		gcry_free(a->real_fname);
 		memcpy(a,b, sizeof *a);
-		m_free(b);
+		gcry_free(b);
 		print_chain(a);
 	    }
 	}
@@ -1019,9 +1019,9 @@ iobuf_flush(IOBUF a)
 
 	log_debug("increasing temp iobuf from %lu to %lu\n",
 		    (ulong)a->d.size, (ulong)newsize );
-	newbuf = m_alloc( newsize );
+	newbuf = gcry_xmalloc( newsize );
 	memcpy( newbuf, a->d.buf, a->d.len );
-	m_free(a->d.buf);
+	gcry_free(a->d.buf);
 	a->d.buf = newbuf;
 	a->d.size = newsize;
 	return 0;
@@ -1057,7 +1057,7 @@ iobuf_readbyte(IOBUF a)
     if( a->unget.buf ) {
 	if( a->unget.start < a->unget.len )
 	    return a->unget.buf[a->unget.start++];
-	m_free(a->unget.buf);
+	gcry_free(a->unget.buf);
 	a->unget.buf = NULL;
 	a->nofast &= ~2;
     }
@@ -1401,7 +1401,7 @@ iobuf_get_fname( IOBUF a )
 void
 iobuf_set_block_mode( IOBUF a, size_t n )
 {
-    block_filter_ctx_t *ctx = m_alloc_clear( sizeof *ctx );
+    block_filter_ctx_t *ctx = gcry_xcalloc( 1, sizeof *ctx );
 
     assert( a->use == 1 || a->use == 2 );
     ctx->use = a->use;
@@ -1423,7 +1423,7 @@ iobuf_set_block_mode( IOBUF a, size_t n )
 void
 iobuf_set_partial_block_mode( IOBUF a, size_t len )
 {
-    block_filter_ctx_t *ctx = m_alloc_clear( sizeof *ctx );
+    block_filter_ctx_t *ctx = gcry_xcalloc( 1, sizeof *ctx );
 
     assert( a->use == 1 || a->use == 2 );
     ctx->use = a->use;
@@ -1478,7 +1478,7 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
 
     if( !buffer ) { /* must allocate a new buffer */
 	length = 256;
-	buffer = m_alloc( length );
+	buffer = gcry_xmalloc( length );
 	*addr_of_buffer = buffer;
 	*length_of_buffer = length;
     }
@@ -1498,7 +1498,7 @@ iobuf_read_line( IOBUF a, byte **addr_of_buffer,
 	    }
 	    length += 3; /* correct for the reserved byte */
 	    length += length < 1024? 256 : 1024;
-	    buffer = m_realloc( buffer, length );
+	    buffer = gcry_xrealloc( buffer, length );
 	    *addr_of_buffer = buffer;
 	    *length_of_buffer = length;
 	    length -= 3; /* and reserve again */

@@ -29,7 +29,7 @@
 
 #include "options.h"
 #include "errors.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "ttyio.h"
@@ -58,7 +58,7 @@ got_fatal_signal( int sig )
 	raise( sig );
     caught_fatal_sig = 1;
 
-    secmem_term();
+    gcry_control( GCRYCTL_TERM_SECMEM );
   #ifdef IS_DEVELOPMENT_VERSION
     write(2, "\n", 1 );
     s = log_get_name(); if( s ) write(2, s, strlen(s) );

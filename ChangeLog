@@ -1,3 +1,10 @@
+Mon Jan 24 13:04:28 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* jnlib/ : New.
+
+	* configure.in: Do set development version when the version has
+	a dash in it.  Suggested by Dave Dykstra.
+
 Thu Dec  9 17:22:27 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* acinclude.m4 (GNUPG_FIX_HDR_VERSION): New.

@@ -33,7 +33,7 @@
 #include "errors.h"
 #include "iobuf.h"
 #include "keydb.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "trustdb.h"
 #include "options.h"
@@ -222,7 +222,7 @@ new_lid_table(void)
 	memset( a, 0, sizeof *a );
     }
     else
-	a = m_alloc_clear( sizeof *a );
+	a = gcry_xcalloc( 1, sizeof *a );
     return a;
 }
 
@@ -260,7 +260,7 @@ ins_lid_table_item( LOCAL_ID_TABLE tbl, ulong lid, unsigned flag )
     if( a )
 	unused_lid_items = a->next;
     else
-	a = m_alloc( sizeof *a );
+	a = gcry_xmalloc( sizeof *a );
     a->lid = lid;
     a->flag = flag;
     a->next = tbl->items[lid & 0x0f];
@@ -294,7 +294,7 @@ new_tn(void)
 	memset( t, 0, sizeof *t );
     }
     else
-	t = m_alloc_clear( sizeof *t );
+	t = gcry_xcalloc( 1, sizeof *t );
     if( ++alloced_tns > max_alloced_tns )
 	max_alloced_tns = alloced_tns;
     return t;
@@ -409,7 +409,7 @@ get_dir_record( PKT_public_key *pk, TRUSTREC *rec )
 static ulong
 lid_from_keyid_no_sdir( u32 *keyid )
 {
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     TRUSTREC rec;
     ulong lid = 0;
     int rc;
@@ -442,8 +442,8 @@ verify_own_keys(void)
 {
     int rc;
     void *enum_context = NULL;
-    PKT_secret_key *sk = m_alloc_clear( sizeof *sk );
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_secret_key *sk = gcry_xcalloc( 1, sizeof *sk );
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
     u32 keyid[2];
 
     while( !(rc=enum_secret_keys( &enum_context, sk, 0 ) ) ) {
@@ -531,7 +531,7 @@ setup_trustdb( int level, const char *dbname )
     if( trustdb_args.init )
 	return 0;
     trustdb_args.level = level;
-    trustdb_args.dbname = dbname? m_strdup(dbname): NULL;
+    trustdb_args.dbname = dbname? gcry_xstrdup(dbname): NULL;
     return 0;
 }
 
@@ -595,7 +595,7 @@ print_user_id( FILE *fp, const char *text, u32 *keyid )
 	tty_print_utf8_string( p, n );
 	tty_printf( "\"\n" );
     }
-    m_free(p);
+    gcry_free(p);
 }
 
 
@@ -654,7 +654,7 @@ print_path( int pathlen, TN ME .........., FILE *fp, ulong highlight )
 	putc('\"', fp);
 	print_utf8_string( fp, p, n > 40? 40:n, 0 );
 	putc('\"', fp);
-	m_free(p);
+	gcry_free(p);
 	putc('\n', fp );
     }
 }
@@ -948,7 +948,7 @@ make_key_records( KBNODE keyblock, ulong lid, u32 *keyid, int *mainrev )
 	fingerprint_from_pk( pk, fpr, &fprlen );
 
 	/* create the key record */
-	k = m_alloc_clear( sizeof *k );
+	k = gcry_xcalloc( 1, sizeof *k );
 	k->rectype = RECTYPE_KEY;
 	k->r.key.lid = lid;
 	k->r.key.pubkey_algo = pk->pubkey_algo;
@@ -971,7 +971,7 @@ make_key_records( KBNODE keyblock, ulong lid, u32 *keyid, int *mainrev )
 	    k->r.key.next = k->next->recnum;
 	write_record( k );
 	k2 = k->next;
-	m_free( k );
+	gcry_free( k );
     }
     return keyrecno;
 }
@@ -1212,7 +1212,7 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode,
 
 	/* create the sig record */
 	if( !sigidx ) {
-	    s = m_alloc_clear( sizeof *s );
+	    s = gcry_xcalloc( 1, sizeof *s );
 	    s->rectype = RECTYPE_SIG;
 	    s->r.sig.lid = lid;
 	}
@@ -1245,7 +1245,7 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode,
 	    s->r.sig.next = s->next->recnum;
 	write_record( s );
 	s2 = s->next;
-	m_free( s );
+	gcry_free( s );
     }
     return sigrecno;
 }
@@ -1286,7 +1286,7 @@ make_pref_record( PKT_signature *sig, ulong lid )
 	    continue;
 	for( ; n; n--, s++ ) {
 	    if( !idx ) {
-		p = m_alloc_clear( sizeof *p );
+		p = gcry_xcalloc( 1, sizeof *p );
 		p->rectype = RECTYPE_PREF;
 		p->r.pref.lid = lid;
 	    }
@@ -1313,7 +1313,7 @@ make_pref_record( PKT_signature *sig, ulong lid )
 	    p->r.pref.next = p->next->recnum;
 	write_record( p );
 	p2 = p->next;
-	m_free( p );
+	gcry_free( p );
     }
     return precno;
 }
@@ -1338,7 +1338,7 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
 	gcry_md_hash_buffer( GCRY_MD_RMD160, uidhash, uid->name, uid->len );
 
 	/* create the uid record */
-	u = m_alloc_clear( sizeof *u );
+	u = gcry_xcalloc( 1, sizeof *u );
 	u->rectype = RECTYPE_UID;
 	u->r.uid.lid = lid;
 	memcpy(u->r.uid.namehash, uidhash, 20 );
@@ -1364,7 +1364,7 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
 	    u->r.uid.next = u->next->recnum;
 	write_record( u );
 	u2 = u->next;
-	m_free( u );
+	gcry_free( u );
     }
     return uidrecno;
 }
@@ -1768,7 +1768,7 @@ build_cert_tree( ulong lid, int depth, int max_depth, TN helproot )
 	if( dirrec.rectype != RECTYPE_SDIR )
 	    log_debug("lid %lu, has rectype %d"
 		      " - skipped\n", lid, dirrec.rectype );
-	m_free(keynode);
+	gcry_free(keynode);
 	return NULL;
     }
 
@@ -2356,7 +2356,7 @@ list_trust_path( const char *username )
     ulong lid;
     TRUSTREC rec;
     TN tree;
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    PKT_public_key *pk = gcry_xcalloc( 1, sizeof *pk );
 
     init_trustdb();
     if( (rc = get_pubkey_byname(NULL, pk, username, NULL )) )
@@ -2430,7 +2430,7 @@ enum_cert_paths( void **context, ulong *lid,
 	    ctx = *context;
 	    for(tsl = ctx->tsl_head; tsl; tsl = tsl2 ) {
 		tsl2 = tsl->next;
-		m_free( tsl );
+		gcry_free( tsl );
 	    }
 	    *context = NULL;
 	}
@@ -2444,15 +2444,15 @@ enum_cert_paths( void **context, ulong *lid,
 	if( !*lid )
 	    return -1;
 
-	ctx = m_alloc_clear( sizeof *ctx );
+	ctx = gcry_xcalloc( 1, sizeof *ctx );
 	*context = ctx;
 	/* collect the paths */
       #if 0
 	read_record( *lid, &rec, RECTYPE_DIR );
-	tmppath = m_alloc_clear( (opt.max_cert_depth+1)* sizeof *tmppath );
+	tmppath = gcry_xcalloc( 1, (opt.max_cert_depth+1)* sizeof *tmppath );
 	tsl = NULL;
 	collect_paths( 0, opt.max_cert_depth, 1, &rec, tmppath, &tsl );
-	m_free( tmppath );
+	gcry_free( tmppath );
 	sort_tsl_list( &tsl );
       #endif
 	/* setup the context */
@@ -2555,7 +2555,7 @@ get_pref_data( ulong lid, const byte *namehash, size_t *ret_n )
 	    read_record( rec.r.uid.prefrec, &rec, RECTYPE_PREF );
 	    if( rec.r.pref.next )
 		log_info(_("WARNING: can't yet handle long pref records\n"));
-	    buf = m_alloc( ITEMS_PER_PREF_RECORD );
+	    buf = gcry_xmalloc( ITEMS_PER_PREF_RECORD );
 	    memcpy( buf, rec.r.pref.data, ITEMS_PER_PREF_RECORD );
 	    *ret_n = ITEMS_PER_PREF_RECORD;
 	    return buf;

@@ -31,7 +31,7 @@
 
 #include "errors.h"
 #include "iobuf.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "util.h"
 #include "options.h"
 #include "main.h"
@@ -180,7 +180,7 @@ put_record_into_cache( ulong recno, const char *data )
     }
     /* see whether we reached the limit */
     if( cache_entries < MAX_CACHE_ENTRIES_SOFT ) { /* no */
-	r = m_alloc( sizeof *r );
+	r = gcry_xmalloc( sizeof *r );
 	r->flags.used = 1;
 	r->recno = recno;
 	memcpy( r->data, data, TRUST_RECORD_LEN );
@@ -223,7 +223,7 @@ put_record_into_cache( ulong recno, const char *data )
 	if( cache_entries < MAX_CACHE_ENTRIES_HARD ) { /* no */
 	    if( opt.debug && !(cache_entries % 100) )
 		log_debug("increasing tdbio cache size\n");
-	    r = m_alloc( sizeof *r );
+	    r = gcry_xmalloc( sizeof *r );
 	    r->flags.used = 1;
 	    r->recno = recno;
 	    memcpy( r->data, data, TRUST_RECORD_LEN );
@@ -421,13 +421,13 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	atexit( cleanup );
 	initialized = 1;
     }
-    fname = new_dbname? m_strdup( new_dbname )
+    fname = new_dbname? gcry_xstrdup( new_dbname )
 		      : make_filename(opt.homedir, "trustdb.gpg", NULL );
 
     if( access( fname, R_OK ) ) {
 	if( errno != ENOENT ) {
 	    log_error( _("%s: can't access: %s\n"), fname, strerror(errno) );
-	    m_free(fname);
+	    gcry_free(fname);
 	    return G10ERR_TRUSTDB;
 	}
 	if( create ) {
@@ -457,7 +457,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( !fp )
 		log_fatal( _("%s: can't create: %s\n"), fname, strerror(errno) );
 	    fclose(fp);
-	    m_free(db_name);
+	    gcry_free(db_name);
 	    db_name = fname;
 	  #ifdef HAVE_DOSISH_SYSTEM
 	    db_fd = open( db_name, O_RDWR | O_BINARY );
@@ -496,7 +496,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    return 0;
 	}
     }
-    m_free(db_name);
+    gcry_free(db_name);
     db_name = fname;
     return 0;
 }

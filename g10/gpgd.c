@@ -112,7 +112,7 @@ build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
     for(i=1; i < 100; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
 	    n += strlen(s) + 2;
-    list = m_alloc( 21 + n ); *list = 0;
+    list = gcry_xmalloc( 21 + n ); *list = 0;
     for(p=NULL, i=1; i < 100; i++ ) {
 	if( !chkf(i) && (s=mapf(i)) ) {
 	    if( !p )
@@ -203,7 +203,7 @@ main( int argc, char **argv )
 				    configname, strerror(errno) );
 		g10_exit(1);
 	    }
-	    m_free(configname); configname = NULL;
+	    gcry_free(configname); configname = NULL;
 	}
 	if( parse_debug && configname )
 	    log_info("reading options from `%s'\n", configname );
@@ -216,8 +216,8 @@ main( int argc, char **argv )
 	  case 'v': opt.verbose++; break;
 	  case 501:
 	    if( !configfp ) {
-		m_free(configname);
-		configname = m_strdup(pargs.r.ret_str);
+		gcry_free(configname);
+		configname = gcry_xstrdup(pargs.r.ret_str);
 		goto next_pass;
 	    }
 	    break;
@@ -230,10 +230,10 @@ main( int argc, char **argv )
     if( configfp ) {
 	fclose( configfp );
 	configfp = NULL;
-	m_free(configname); configname = NULL;
+	gcry_free(configname); configname = NULL;
 	goto next_pass;
     }
-    m_free( configname ); configname = NULL;
+    gcry_free( configname ); configname = NULL;
     if( log_get_errorcount(0) )
 	g10_exit(2);
 

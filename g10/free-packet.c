@@ -28,14 +28,14 @@
 #include "iobuf.h"
 #include "util.h"
 #include "dummy-cipher.h"
-#include "memory.h"
+#include <gcrypt.h>
 #include "options.h"
 #include "main.h"
 
 void
 free_symkey_enc( PKT_symkey_enc *enc )
 {
-    m_free(enc);
+    gcry_free(enc);
 }
 
 void
@@ -47,7 +47,7 @@ free_pubkey_enc( PKT_pubkey_enc *enc )
 	mpi_release(enc->data[0]);
     for(i=0; i < n; i++ )
 	mpi_release( enc->data[i] );
-    m_free(enc);
+    gcry_free(enc);
 }
 
 void
@@ -59,9 +59,9 @@ free_seckey_enc( PKT_signature *sig )
 	mpi_release(sig->data[0]);
     for(i=0; i < n; i++ )
 	mpi_release( sig->data[i] );
-    m_free(sig->hashed_data);
-    m_free(sig->unhashed_data);
-    m_free(sig);
+    gcry_free(sig->hashed_data);
+    gcry_free(sig->unhashed_data);
+    gcry_free(sig);
 }
 
 
@@ -78,7 +78,7 @@ release_public_key_parts( PKT_public_key *pk )
 	pk->pkey[i] = NULL;
     }
     if( pk->namehash ) {
-	m_free(pk->namehash);
+	gcry_free(pk->namehash);
 	pk->namehash = NULL;
     }
 }
@@ -88,7 +88,7 @@ void
 free_public_key( PKT_public_key *pk )
 {
     release_public_key_parts( pk );
-    m_free(pk);
+    gcry_free(pk);
 }
 
 
@@ -101,7 +101,7 @@ cp_data_block( byte *s )
     if( !s )
 	return NULL;
     len = (s[0] << 8) | s[1];
-    d = m_alloc( len+2 );
+    d = gcry_xmalloc( len+2 );
     memcpy(d, s, len+2);
     return d;
 }
@@ -114,14 +114,14 @@ copy_public_key_new_namehash( PKT_public_key *d, PKT_public_key *s,
     int n, i;
 
     if( !d )
-	d = m_alloc(sizeof *d);
+	d = gcry_xmalloc(sizeof *d);
     memcpy( d, s, sizeof *d );
     if( namehash ) {
-	d->namehash = m_alloc( 20 );
+	d->namehash = gcry_xmalloc( 20 );
 	memcpy(d->namehash, namehash, 20 );
     }
     else if( s->namehash ) {
-	d->namehash = m_alloc( 20 );
+	d->namehash = gcry_xmalloc( 20 );
 	memcpy(d->namehash, s->namehash, 20 );
     }
     n = pubkey_get_npkey( s->pubkey_algo );
@@ -146,7 +146,7 @@ copy_signature( PKT_signature *d, PKT_signature *s )
     int n, i;
 
     if( !d )
-	d = m_alloc(sizeof *d);
+	d = gcry_xmalloc(sizeof *d);
     memcpy( d, s, sizeof *d );
     n = pubkey_get_nsig( s->pubkey_algo );
     if( !n )
@@ -165,7 +165,7 @@ PKT_user_id *
 copy_user_id( PKT_user_id *d, PKT_user_id *s )
 {
     if( !d )
-	d = m_alloc(sizeof *d + s->len - 1 );
+	d = gcry_xmalloc(sizeof *d + s->len - 1 );
     memcpy( d, s, sizeof *d + s->len - 1 );
     return d;
 }
@@ -190,7 +190,7 @@ void
 free_secret_key( PKT_secret_key *sk )
 {
     release_secret_key_parts( sk );
-    m_free(sk);
+    gcry_free(sk);
 }
 
 PKT_secret_key *
@@ -199,7 +199,7 @@ copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
     int n, i;
 
     if( !d )
-	d = m_alloc(sizeof *d);
+	d = gcry_xmalloc(sizeof *d);
     memcpy( d, s, sizeof *d );
     n = pubkey_get_nskey( s->pubkey_algo );
     if( !n )
@@ -214,13 +214,13 @@ copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
 void
 free_comment( PKT_comment *rem )
 {
-    m_free(rem);
+    gcry_free(rem);
 }
 
 void
 free_user_id( PKT_user_id *uid )
 {
-    m_free(uid);
+    gcry_free(uid);
 }
 
 void
@@ -232,7 +232,7 @@ free_compressed( PKT_compressed *zd )
 	while( iobuf_read( zd->buf, NULL, 1<<30 ) != -1 )
 	    ;
     }
-    m_free(zd);
+    gcry_free(zd);
 }
 
 void
@@ -253,7 +253,7 @@ free_encrypted( PKT_encrypted *ed )
 	   }
 	}
     }
-    m_free(ed);
+    gcry_free(ed);
 }
 
 
@@ -275,7 +275,7 @@ free_plaintext( PKT_plaintext *pt )
 	   }
 	}
     }
-    m_free(pt);
+    gcry_free(pt);
 }
 
 /****************
@@ -324,7 +324,7 @@ free_packet( PACKET *pkt )
 	free_plaintext( pkt->pkt.plaintext );
 	break;
       default:
-	m_free( pkt->pkt.generic );
+	gcry_free( pkt->pkt.generic );
 	break;
     }
     pkt->pkt.generic = NULL;
