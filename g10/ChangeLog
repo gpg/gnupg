@@ -1,3 +1,9 @@
+2002-10-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Disable --textmode when encrypting (symmetric or
+	pk) in --pgp2 mode as PGP 2 can't handle the unknown length
+	literal packet.  Reported by Michael Richardson.
+
 2002-10-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver-internal.h, keyserver.c (print_keyrec, parse_keyrec,

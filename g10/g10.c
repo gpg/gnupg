@@ -1806,9 +1806,20 @@ main( int argc, char **argv )
 		  }
 		else if(cmd==aSym)
 		  {
+		    /* This only sets IDEA for symmetric encryption
+		       since it is set via select_algo_from_prefs for
+		       pk encryption. */
 		    m_free(def_cipher_string);
 		    def_cipher_string = m_strdup("idea");
 		  }
+
+		/* PGP2 can't handle the output from the textmode
+		   filter, so we disable it for anything that could
+		   create a literal packet (only encryption and
+		   symmetric encryption, since we disable signing
+		   above). */
+		if(!unusable)
+		  opt.textmode=0;
 	      }
 
 	    if(unusable)
