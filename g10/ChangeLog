@@ -1,3 +1,7 @@
+Mon Sep 18 12:13:52 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * hkp.c (not_implemented): Print a notice for W32
+
 Fri Sep 15 18:40:36 CEST 2000  Werner Koch  <wk@openit.de>
 
         * keygen.c (keygen_add_std_prefs): Changed order of preferences to

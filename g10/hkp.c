@@ -38,6 +38,15 @@
 static int urlencode_filter( void *opaque, int control,
 			     IOBUF a, byte *buf, size_t *ret_len);
 
+#ifdef HAVE_DOSISH_SYSTEM
+static void
+not_implemented(void)
+{
+    log_error("keyserver access ist not yet available for MS-Windows\n");
+}
+#endif
+
+
 /****************
  * Try to import the key with KEYID from a keyserver but ask the user
  * before doing so.
@@ -50,6 +59,7 @@ int
 hkp_ask_import( u32 *keyid )
 {
   #ifdef HAVE_DOSISH_SYSTEM
+    not_implemented();
     return -1;
   #else
     struct http_context hd;
@@ -92,6 +102,7 @@ int
 hkp_import( STRLIST users )
 {
   #ifdef HAVE_DOSISH_SYSTEM
+    not_implemented();
     return -1;
   #else
     if( !opt.keyserver_name ) {
@@ -122,6 +133,7 @@ int
 hkp_export( STRLIST users )
 {
   #ifdef HAVE_DOSISH_SYSTEM
+    not_implemented();
     return -1;
   #else
     int rc;

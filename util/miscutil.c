@@ -274,10 +274,10 @@ make_printable_string( const byte *p, size_t n, int delim )
 int
 answer_is_yes( const char *s )
 {
-    char *long_yes = _("yes");
-    char *short_yes = _("yY");
-    char *long_no = _("no");
-    char *short_no = _("nN");
+    const char *long_yes = _("yes");
+    const char *short_yes = _("yY");
+    const char *long_no = _("no");
+    const char *short_no = _("nN");
 
     if( !stricmp(s, long_yes ) )
 	return 1;
@@ -303,12 +303,12 @@ answer_is_yes( const char *s )
 int
 answer_is_yes_no_quit( const char *s )
 {
-    char *long_yes = _("yes");
-    char *long_no = _("no");
-    char *long_quit = _("quit");
-    char *short_yes = _("yY");
-    char *short_no = _("nN");
-    char *short_quit = _("qQ");
+    const char *long_yes = _("yes");
+    const char *long_no = _("no");
+    const char *long_quit = _("quit");
+    const char *short_yes = _("yY");
+    const char *short_no = _("nN");
+    const char *short_quit = _("qQ");
 
     if( !stricmp(s, long_no ) )
 	return 0;

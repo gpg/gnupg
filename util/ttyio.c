@@ -193,7 +193,7 @@ tty_printf( const char *fmt, ... )
 	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
 	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
 	if( n != nwritten )
-	    log_fatal("WriteConsole failed: %d != %ld\n", n, nwritten );
+	    log_fatal("WriteConsole failed: %d != %d\n", n, nwritten );
 	last_prompt_len += n;
     }
   #else

@@ -299,16 +299,21 @@ gather_random_fast( void (*add)(const void*, size_t, int), int requester )
  * Definitions which are missing from the current GNU Windows32Api
  */
 
+#ifndef TH32CS_SNAPHEAPLIST
 #define TH32CS_SNAPHEAPLIST 1
 #define TH32CS_SNAPPROCESS  2
 #define TH32CS_SNAPTHREAD   4
 #define TH32CS_SNAPMODULE   8
 #define TH32CS_SNAPALL	    (1|2|4|8)
 #define TH32CS_INHERIT	    0x80000000
+#endif /*TH32CS_SNAPHEAPLIST*/
 
+#ifndef IOCTL_DISK_PERFORMANCE
 #define IOCTL_DISK_PERFORMANCE	0x00070020
-#define VER_PLATFORM_WIN32_WINDOWS 1
-
+#endif
+#ifndef IOCTL_DISK_PERFORMANCE
+#define VER_PLATFORM_WIN32_WINDOWSw 1
+#endif
 
 typedef struct {
     DWORD dwSize;
