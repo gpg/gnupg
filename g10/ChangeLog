@@ -1,5 +1,11 @@
 2004-03-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* keylist.c (print_seckey_info, print_pubkey_info): --keyid-format
+	conversion.
+	(list_keyblock_print): 0xshort should not push us into the new
+	list format since it is not much longer than regular 8-character
+	short keyids.
+
 	* keydb.h, keyid.c (keystr_from_pk, keystr_from_sk): New functions
 	to pull a key string from a key in one step.  This isn't faster
 	than before, but makes for neater code.

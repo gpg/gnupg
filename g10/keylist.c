@@ -112,21 +112,18 @@ secret_key_list( STRLIST list )
 void
 print_seckey_info (PKT_secret_key *sk)
 {
-    u32 sk_keyid[2];
-    size_t n;
-    char *p;
+  u32 keyid[2];
+  char *p;
 
-    keyid_from_sk (sk, sk_keyid);
-    tty_printf ("\nsec  %4u%c/%08lX %s   ",
-                nbits_from_sk (sk),
-                pubkey_letter (sk->pubkey_algo),
-                (ulong)sk_keyid[1], datestr_from_sk (sk));
+  keyid_from_sk (sk, keyid);
+  p=get_user_id_printable(keyid);
+
+  tty_printf ("\nsec  %4u%c/%s %s   %s\n",
+	      nbits_from_sk (sk),
+	      pubkey_letter (sk->pubkey_algo),
+	      keystr(keyid), datestr_from_sk (sk), p);
     
-    p = get_user_id (sk_keyid, &n);
-    tty_print_utf8_string (p, n);
-    m_free (p);
-
-    tty_printf ("\n");   
+  m_free (p);
 }
 
 /* Print information about the public key.  With FP passed as NULL,
@@ -135,33 +132,23 @@ print_seckey_info (PKT_secret_key *sk)
 void
 print_pubkey_info (FILE *fp, PKT_public_key *pk)
 {
-  u32 pk_keyid[2];
-  size_t n;
+  u32 keyid[2];
   char *p;
 
-  keyid_from_pk (pk, pk_keyid);
+  keyid_from_pk (pk, keyid);
+  p=get_user_id_printable(keyid);
+
   if (fp)
-    fprintf (fp, "pub  %4u%c/%08lX %s   ",
+    fprintf (fp, "pub  %4u%c/%s %s   %s\n",
              nbits_from_pk (pk),
              pubkey_letter (pk->pubkey_algo),
-             (ulong)pk_keyid[1], datestr_from_pk (pk));
+             keystr(keyid), datestr_from_pk (pk), p);
   else
-    tty_printf ("\npub  %4u%c/%08lX %s   ",
-                nbits_from_pk (pk),
-                pubkey_letter (pk->pubkey_algo),
-                (ulong)pk_keyid[1], datestr_from_pk (pk));
+    tty_printf ("\npub  %4u%c/%s %s   %s\n",
+                nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
+                keystr(keyid), datestr_from_pk (pk), p);
 
-  p = get_user_id (pk_keyid, &n);
-  if (fp)
-    print_utf8_string2 (fp, p, n, '\n');
-  else
-    tty_print_utf8_string (p, n);
   m_free (p);
-  
-  if (fp)
-    putc ('\n', fp);
-  else
-    tty_printf ("\n\n"); 
 }
 
 /*
@@ -606,7 +593,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     int newformat=((opt.list_options&LIST_SHOW_VALIDITY) && !secret)
       || (opt.list_options & (LIST_SHOW_UNUSABLE_UIDS
 			      | LIST_SHOW_UNUSABLE_SUBKEYS))
-      || (keystrlen()>8);
+      || (keystrlen()>10);
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
@@ -710,7 +697,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    else if(newformat)
 	      printf("uid%*s",keystrlen()+10,"");
 	    else if(any)
-	      printf("uid%*s",29,"");
+	      printf("uid%*s",keystrlen()+21,"");
 
             print_utf8_string( stdout, uid->name, uid->len );
 	    putchar('\n');
