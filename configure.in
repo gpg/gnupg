@@ -150,7 +150,6 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h)
 
 
-
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
@@ -184,6 +183,10 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr rand strtoul mlock mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit)
 
+WK_CHECK_IPC
+if test "$ac_cv_header_sys_shm_h" = "yes"; then
+  AC_DEFINE(USE_SHM_COPROCESSING)
+fi
 
 dnl check whether we have a random device
 if test "$try_dev_random" = yes ; then

@@ -46,9 +46,13 @@ int check_trust( PKT_public_key *pk, unsigned *r_trustlevel );
 int query_trust_info( PKT_public_key *pk );
 int enum_trust_web( void **context, ulong *lid );
 int get_ownertrust( ulong lid, unsigned *r_otrust );
+int get_ownertrust_info( ulong lid );
 int keyid_from_lid( ulong lid, u32 *keyid );
 int query_trust_record( PKT_public_key *pk );
 int insert_trust_record( PKT_public_key *pk );
 int update_ownertrust( ulong lid, unsigned new_trust );
+
+/*-- pkclist.c --*/
+int edit_ownertrust( ulong lid, int mode );
 
 #endif /*G10_TRUSTDB_H*/

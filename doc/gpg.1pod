@@ -54,14 +54,14 @@ B<--verify> [[I<sigfile>] {I<signed-files>}]
     without generating any output.  With no arguments,
     the signature packet is read from stdin (it may be a
     detached signature when not used in batch mode). If
-    only a sigfile is given, it may be a complete signature
-    or a detached signature, in which case the signed stuff
-    is expected in a file without the I<.sig> or I<.asc>
-    extension (if such a file does not exist it is expected
-    at stdin - use B<-> as filename to force a read from
-    stdin). With more than 1 argument, the
-    first should be a detached signature and the remaining
-    files are the signed stuff.
+    only a sigfile is given, it may be a complete
+    signature or a detached signature, in which case
+    the signed stuff is expected in a file without the
+    I<.sig> or I<.asc> extension (if such a file does
+    not exist it is expected at stdin - use B<-> as
+    filename to force a read from stdin). With more than
+    1 argument, the first should be a detached signature
+    and the remaining files are the signed stuff.
 
 B<-k> [I<username>] [I<keyring>]
     Kludge to be somewhat compatible with PGP.
@@ -76,11 +76,16 @@ B<-k> [I<username>] [I<keyring>]
     B<-kvvc>  List fingerprints and signatures
 
 B<--list-keys>	[I<names>]
-    List all keys from the default public keyring, or just the ones
-    given on the command line.
+    List all keys from the public keyrings, or just the
+    ones given on the command line.
+
+B<--list-secret-keys> [I<names>]
+    List all keys from the secret keyrings, or just the
+    ones given on the command line.
 
 B<--list-sigs>	[I<names>]
-    Same as B<--list-keys>, but the signatures are listed too.
+    Same as B<--list-keys>, but the signatures are listed
+    too.
 
 B<--check-sigs> [I<names>]
     Same as B<--list-sigs>, but the signatures are verified.
@@ -112,6 +117,9 @@ B<--edit-key> I<name>
       asks whether it should be signed. This
       question is repeated for all users specified
       with B<-u>.
+    B<trust>
+      Change the owner trust value. This updates the
+      trust-db immediately and no save is required.
     B<adduid>
       Create an alternate user id.
     B<deluid>
@@ -139,6 +147,21 @@ B<--edit-key> I<name>
     B<quit>
        Quit the program without updating the
        key rings.
+    The listing shows you the key with its secondary
+    keys and all user ids. Selected keys or user ids
+    indicated by an asterisk. The trust value is
+    displayed with the primary key: The first one is the
+    assigned owner trust and the second the calculated
+    trust value; letters are used for the values:
+      B<->  No ownertrust assigned.
+      B<o>  Trust not yet calculated.
+      B<e>  Trust calculation failed.
+      B<q>  Not enough information for calculation.
+      B<n>  Never trust this key.
+      B<m>  Marginally trusted.
+      B<f>  Fully trusted.
+      B<u>  Ultimately trusted
+
 
 B<--delete-key>
     Remove key from the public keyring
@@ -157,17 +180,22 @@ B<--export> [I<names>]
     the file given with option "output".  Use together
     with B<-a> to mail those keys.
 
+
+B<--export-secret-keys> [I<names>
+    Same as B<--export>, but does export the secret keys.
+    This is normally not very useful.
+
 B<--import>
     import/merge keys
 
 B<--export-ownertrust>
-    List the assigned ownertrust values in ascii format for
-    backup purposes [B<gpgm> only].
+    List the assigned ownertrust values in ascii format
+    for backup purposes [B<gpgm> only].
 
 B<--import-ownertrust> [I<filename>]
-    Update the trustdb with the ownertrust values stored in
-    I<filename> (or stdin if not given); existing values will be
-    overwritten. [B<gpgm> only].
+    Update the trustdb with the ownertrust values stored
+    in I<filename> (or stdin if not given); existing
+    values will be overwritten. [B<gpgm> only].
 
 =head1 OPTIONS
 
@@ -193,8 +221,8 @@ B<-u> I<name>, B<--local-user> I<name>
 
 B<--default-key>  I<name>
     Use I<name> as default user-id for signatures.  If this
-    is not used the default user-id is the first user-id in
-    the secret keyring.
+    is not used the default user-id is the first user-id
+    from the secret keyring.
 
 B<-r>  I<name>, B<--remote-user>  I<name>
     Use I<name> as the user-id for encryption.
@@ -323,9 +351,9 @@ B<--no-default-keyring>
     keyrings.
 
 B<--skip-verify>
-    Skip the signature verification step.  This may be used to
-    make the encryption faster if the signature verification
-    is not needed.
+    Skip the signature verification step.  This may be
+    used to make the encryption faster if the signature
+    verification is not needed.
 
 B<--version>
     Print version information along with a list
@@ -369,6 +397,8 @@ F<~/.gnupg/trustdb.gpg>     The trust database
 
 F<~/.gnupg/options>	    May contain options
 
+F</usr[/local]/lib/gnupg/>  Default location for extensions
+
 =head1 SEE ALSO
 
 gpgm(1)  gpgd(1)
@@ -389,6 +419,6 @@ is B<very> easy to spy out your passphrase!
 
 On many systems this program should be installed as setuid(root); this
 is necessary to lock some pages of memory. If you get no warning message
-about insecure memory you have a nice OS kernel and you don't need to make
-it setuid.
+about insecure memory your OS kernel supports locking without being root;
+setuid is dropped as soon as this memory is allocated.
 

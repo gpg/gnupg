@@ -39,8 +39,8 @@
 /****************
  * Returns true if an ownertrust has changed.
  */
-static int
-query_ownertrust( ulong lid )
+int
+edit_ownertrust( ulong lid, int mode )
 {
     char *p;
     int rc;
@@ -63,14 +63,17 @@ query_ownertrust( ulong lid )
 	return 0;
     }
 
-    tty_printf(_("No owner trust defined for %lu:\n"
-	       "%4u%c/%08lX %s \""), lid,
-	      nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
-	      (ulong)keyid[1], datestr_from_pk( pk ) );
-    p = get_user_id( keyid, &n );
-    tty_print_string( p, n ),
-    m_free(p);
-    tty_printf(_("\"\n\n"
+    if( !mode ) {
+	tty_printf(_("No owner trust defined for %lu:\n"
+		   "%4u%c/%08lX %s \""), lid,
+		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
+		  (ulong)keyid[1], datestr_from_pk( pk ) );
+	p = get_user_id( keyid, &n );
+	tty_print_string( p, n ),
+	m_free(p);
+	tty_printf("\"\n\n");
+    }
+    tty_printf(_(
 "Please decide how far you trust this user to correctly\n"
 "verify other users' keys (by looking at passports,\n"
 "checking fingerprints from different sources...)?\n\n"
@@ -146,7 +149,7 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
 	    log_fatal("Ooops: couldn't get owner trust for %lu\n", lid);
 	if( trust == TRUST_UNDEFINED || trust == TRUST_EXPIRED ||
 	    trust == TRUST_UNKNOWN ) {
-	    if( query_ownertrust( lid ) )
+	    if( edit_ownertrust( lid, 0 ) )
 		any=1;
 	}
     }

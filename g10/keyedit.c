@@ -34,6 +34,7 @@
 #include "memory.h"
 #include "util.h"
 #include "main.h"
+#include "trustdb.h"
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"
@@ -541,7 +542,7 @@ keyedit_menu( const char *username, STRLIST locusr )
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
-	   cmdTOGGLE, cmdSELKEY, cmdPASSWD,
+	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST,
 	   cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
@@ -571,6 +572,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 					    "and public key listing") },
 	{ N_("t"     )  , cmdTOGGLE , 1, NULL },
 	{ N_("passwd")  , cmdPASSWD , 1, N_("change the passphrase") },
+	{ N_("trust")   , cmdTRUST , 0, N_("change the ownertrust") },
 
     { NULL, cmdNONE } };
     enum cmdids cmd;
@@ -805,6 +807,16 @@ keyedit_menu( const char *username, STRLIST locusr )
 		sec_modified = 1;
 	    break;
 
+	  case cmdTRUST:
+	    show_key_with_all_names( keyblock, 0, 0, 1 );
+	    tty_printf("\n");
+	    if( edit_ownertrust( find_kbnode( keyblock,
+		      PKT_PUBLIC_KEY )->pkt->pkt.public_key->local_id, 1 ) )
+		redisplay = 1;
+	    /* we don't need to set modified here, as the trustvalues
+	     * are updated immediately */
+	    break;
+
 	  case cmdNOP:
 	    break;
 
@@ -839,7 +851,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY
 	    || (with_subkeys && node->pkt->pkttype == PKT_PUBLIC_SUBKEY) ) {
 	    PKT_public_key *pk = node->pkt->pkt.public_key;
-	    tty_printf("%s%c %4u%c/%08lX  created: %s expires: %s\n",
+	    tty_printf("%s%c %4u%c/%08lX  created: %s expires: %s",
 			  node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
 			  (node->flag & NODFLG_SELKEY)? '*':' ',
 			  nbits_from_pk( pk ),
@@ -847,8 +859,15 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 			  (ulong)keyid_from_pk(pk,NULL),
 			  datestr_from_pk(pk),
 			  expirestr_from_pk(pk) );
-	    if( with_fpr && node->pkt->pkttype == PKT_PUBLIC_KEY )
-		show_fingerprint( pk );
+	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
+		int otrust, trust;
+		trust = query_trust_info(pk);
+		otrust = get_ownertrust_info( pk->local_id );
+		tty_printf(" trust: %c/%c", otrust, trust );
+		if( with_fpr  )
+		    show_fingerprint( pk );
+	    }
+	    tty_printf("\n");
 	}
 	else if( node->pkt->pkttype == PKT_SECRET_KEY
 	    || (with_subkeys && node->pkt->pkttype == PKT_SECRET_SUBKEY) ) {

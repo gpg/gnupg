@@ -193,7 +193,7 @@ set_signature_packets_lid( PKT_signature *sig )
     if( rc)
 	goto leave;
     if( !pk->local_id ) {
-	rc = tdbio_search_dir_record( pk, &rec );
+	rc = tdbio_search_dir_bypk( pk, &rec );
 	if( rc == -1 )
 	    rc = insert_trust_record( pk );
 	if( rc )
@@ -935,7 +935,8 @@ update_sigs( TRUSTREC *dir )
 		    rec->r.sig.sig[sigidx].lid = sig->local_id;
 		    rec->r.sig.sig[sigidx].flag = 0;
 		    sigidx++;
-		    log_debug("key %08lX.%lu, uid %02X%02X: "
+		    if( DBG_TRUST )
+			log_debug("key %08lX.%lu, uid %02X%02X: "
 			      "signed by LID %lu\n",
 			      (ulong)keyid[1], lid, urec.r.uid.namehash[18],
 			      urec.r.uid.namehash[19], sig->local_id);
@@ -1263,7 +1264,7 @@ list_trustdb( const char *username )
 
 	if( (rc = get_pubkey_byname( pk, username )) )
 	    log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
-	else if( (rc=tdbio_search_dir_record( pk, &rec )) && rc != -1 )
+	else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
 	    log_error("problem finding '%s' in trustdb: %s\n",
 						username, g10_errstr(rc));
 	else if( rc == -1 )
@@ -1343,6 +1344,9 @@ import_ownertrust( const char *fname )
     }
 
     while( fgets( line, DIM(line)-1, fp ) ) {
+	TRUSTREC rec;
+	int rc;
+
 	if( !*line || *line == '#' )
 	    continue;
 	n = strlen(line);
@@ -1373,7 +1377,44 @@ import_ownertrust( const char *fname )
 	    line[fprlen++] = HEXTOBIN(p[0]) * 16 + HEXTOBIN(p[1]);
 	line[fprlen] = 0;
 
-	log_hexdump("found: ", line, fprlen );
+      repeat:
+	rc = tdbio_search_dir_byfpr( line, fprlen, 0, &rec );
+	if( !rc ) { /* found: update */
+	    if( rec.r.dir.ownertrust )
+		log_info("LID %lu: changing trust from %u to %u\n",
+			  rec.r.dir.lid, rec.r.dir.ownertrust, otrust );
+	    else
+		log_info("LID %lu: setting trust to %u\n",
+				   rec.r.dir.lid, otrust );
+	    rec.r.dir.ownertrust = otrust;
+	    rc = tdbio_write_record( &rec );
+	    if( rc )
+		log_error_f(fname, "error updating otrust: %s\n",
+						    g10_errstr(rc));
+	}
+	else if( rc == -1 ) { /* not found; get the key from the ring */
+	    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+
+	    log_info_f(fname, "key not in trustdb, searching ring.\n");
+	    rc = get_pubkey_byfprint( pk, line, fprlen );
+	    if( rc )
+		log_info_f(fname, "key not in ring: %s\n", g10_errstr(rc));
+	    else {
+		rc = query_trust_record( pk );	/* only as assertion */
+		if( rc != -1 )
+		    log_error_f(fname, "Oops: key is now in trustdb???\n");
+		else {
+		    rc = insert_trust_record( pk );
+		    if( !rc )
+			goto repeat; /* update the ownertrust */
+		    log_error_f(fname, "insert trust record failed: %s\n",
+							   g10_errstr(rc) );
+		}
+	    }
+	}
+	else /* error */
+	    log_error_f(fname, "error finding dir record: %s\n",
+						    g10_errstr(rc));
     }
     if( ferror(fp) )
 	log_error_f(fname, _("read error: %s\n"), strerror(errno) );
@@ -1398,7 +1439,7 @@ list_trust_path( int max_depth, const char *username )
 
     if( (rc = get_pubkey_byname( pk, username )) )
 	log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
-    else if( (rc=tdbio_search_dir_record( pk, &rec )) && rc != -1 )
+    else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
 	log_error("problem finding '%s' in trustdb: %s\n",
 					    username, g10_errstr(rc));
     else if( rc == -1 ) {
@@ -1495,7 +1536,7 @@ check_trustdb( const char *username )
 
 	if( (rc = get_pubkey_byname( pk, username )) )
 	    log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
-	else if( (rc=tdbio_search_dir_record( pk, &rec )) && rc != -1 )
+	else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
 	    log_error("problem finding '%s' in trustdb: %s\n",
 						username, g10_errstr(rc));
 	else if( rc == -1 )
@@ -1564,7 +1605,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
 	}
     }
     else { /* no local_id: scan the trustdb */
-	if( (rc=tdbio_search_dir_record( pk, &rec )) && rc != -1 ) {
+	if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 ) {
 	    log_error("check_trust: search dir record failed: %s\n",
 							    g10_errstr(rc));
 	    return rc;
@@ -1702,6 +1743,25 @@ get_ownertrust( ulong lid, unsigned *r_otrust )
     return 0;
 }
 
+int
+get_ownertrust_info( ulong lid )
+{
+    unsigned otrust;
+    int c;
+
+    if( get_ownertrust( lid, &otrust ) )
+	return '?';
+    switch( (otrust & TRUST_MASK) ) {
+      case TRUST_NEVER:     c = 'n'; break;
+      case TRUST_MARGINAL:  c = 'm'; break;
+      case TRUST_FULLY:     c = 'f'; break;
+      case TRUST_ULTIMATE:  c = 'u'; break;
+      default:		    c = '-'; break;
+    }
+    return c;
+}
+
+
 
 /****************
  * This function simply looks for the key in the trustdb
@@ -1723,7 +1783,7 @@ query_trust_record( PKT_public_key *pk )
 	}
     }
     else { /* no local_id: scan the trustdb */
-	if( (rc=tdbio_search_dir_record( pk, &rec )) && rc != -1 ) {
+	if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 ) {
 	    log_error("query_trust_record: search_record failed: %s\n",
 							    g10_errstr(rc));
 	    return rc;
@@ -1774,6 +1834,9 @@ insert_trust_record( PKT_public_key *orig_pk )
     size_t fingerlen;
     int rc = 0;
 
+    keylist_head = NULL; keylist_tail = &keylist_head; keylist = NULL;
+    uidlist_head = NULL; uidlist_tail = &uidlist_head; uidlist = NULL;
+
     /* prepare dir record */
     memset( &dirrec, 0, sizeof dirrec );
     dirrec.rectype = RECTYPE_DIR;
@@ -1796,8 +1859,6 @@ insert_trust_record( PKT_public_key *orig_pk )
     }
 
     /* build data structure as linked lists in memory */
-    keylist_head = NULL; keylist_tail = &keylist_head; keylist = NULL;
-    uidlist_head = NULL; uidlist_tail = &uidlist_head; uidlist = NULL;
     keyid[0] = keyid[1] = 0;
     for( node=keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY

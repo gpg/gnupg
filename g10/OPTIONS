@@ -26,21 +26,10 @@ print-md algo
 print-mds
 # print all message digests of all give filenames
 
-sign-key
 store
 # simply packs the input data into a rfc1991 packet format
 
-list-secret-keys
-#
-
-export-secret-keys
-# export secret keys (which may be usefuil in some cases)
-
 check-trustdb
-
-
-
-
 
 
 
@@ -56,10 +45,4 @@ compress-keys
 compress-sigs
 # Normally, compressing of signatures does not make sense; so this
 # is disabled for detached signatures unless this option is used.
-
-
-emulate-pgp-sign-bug
-# PGP 2.x can only cope with 2 byte length headers of the
-# signature packets, this option forces.
-
 

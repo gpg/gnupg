@@ -5,7 +5,9 @@ Noteworthy changes in version 0.3.3
       IMPORTANT: Use version 0.3.[12] to save your assigned ownertrusts
       ("gpgm --list-ownertrust >saved-trust"); then build this new version
       and restore the ownertrust with this new version
-      ("gpgm --import-ownertrust saved-trust").
+      ("gpgm --import-ownertrust saved-trust").  Please note that
+      --list-ownertrust has been renamed to --export-ownertrust in this
+      release and it does now only export defined ownertrusts.
 
     * The command --edit-key now provides a commandline driven menu
       which can be used vor vaious tasks.  --sign-key is only an
@@ -14,6 +16,8 @@ Noteworthy changes in version 0.3.3
       you want to sign.
 
     * Alternate user ids can now be created an signed.
+
+    * Owner trust values can now be changed with --edit-key (trust)
 
     * Removed options --gen-prime and --gen-random.
 

@@ -1,7 +1,3 @@
-    * Change the internal represenation of keyid into a struct which
-      can also hold the localid and extend the localid to hold information
-      of the subkey number because two subkeys may have the same keyid.
-
     * Fix Oscaris problems with the trustdb.
 
     * add test cases for invalid data (scrambled armor or other random data)
@@ -19,18 +15,12 @@
 
     * what about the CR,LF in cleartext singatures?
 
-    * add option --import-ownertrust
-
-    * add a way to delete subkeys (in edit-keys?)
-
     * make preferences work
 
     * rewrite --list-packets or put it into another tool.
 
     * add usage arguments to get_key_byname or return a PKC_LIST with
       all keys and add a selection.
-
-    * add readline support. Must enhance libreadline - Anyone?
 
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
@@ -40,6 +30,10 @@
     * Change the buffering to a mbuf like scheme? Need it for PSST anyway.
     * add checking of armor trailers
     * remove all "Fixmes"
+
+    * Change the internal represention of keyid into a struct which
+      can also hold the localid and extend the localid to hold information
+      of the subkey number because two subkeys may have the same keyid.
 
     * add an option to re-create a public key from a secret key. Think about
       a backup system of only the secret part of the secret key.

@@ -143,7 +143,9 @@ int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
 int tdbio_write_record( TRUSTREC *rec );
 int tdbio_delete_record( ulong recnum );
 ulong tdbio_new_recnum(void);
-int tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec );
+int tdbio_search_dir_bypk( PKT_public_key *pk, TRUSTREC *rec );
+int tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
+					int pubkey_algo, TRUSTREC *rec );
 int tdbio_delete_uidrec( ulong dirlid, ulong uidlid );
 
 

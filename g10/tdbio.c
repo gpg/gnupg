@@ -734,19 +734,40 @@ tdbio_new_recnum()
  * The local_id of PK is set to the correct value
  */
 int
-tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )
+tdbio_search_dir_bypk( PKT_public_key *pk, TRUSTREC *rec )
 {
-    ulong recnum;
-    u32 keyid[2];
     byte *fingerprint;
     size_t fingerlen;
+    u32 keyid[2];
+    int rc;
+
+    keyid_from_pk( pk, keyid );
+    fingerprint = fingerprint_from_pk( pk, NULL, &fingerlen );
+    rc = tdbio_search_dir_byfpr( fingerprint, fingerlen,
+				 pk->pubkey_algo, rec );
+
+    if( !rc ) {
+	if( pk->local_id && pk->local_id != rec->recnum )
+	    log_error_f(db_name,
+		       "found record, but LID from memory does "
+		       "not match recnum (%lu,%lu)\n",
+				      pk->local_id, rec->recnum );
+	pk->local_id = rec->recnum;
+    }
+    return rc;
+}
+
+
+int
+tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
+			int pubkey_algo, TRUSTREC *rec )
+{
+    ulong recnum;
     int rc;
     ulong hashrec, item;
     int msb;
     int level=0;
 
-    keyid_from_pk( pk, keyid );
-    fingerprint = fingerprint_from_pk( pk, NULL, &fingerlen );
     assert( fingerlen == 20 || fingerlen == 16 );
 
     /* locate the key using the hash table */
@@ -794,7 +815,7 @@ tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )
 							     g10_errstr(rc) );
 			return rc;
 		    }
-		    if( tmp.r.key.pubkey_algo == pk->pubkey_algo
+		    if( (!pubkey_algo || tmp.r.key.pubkey_algo == pubkey_algo)
 			&& tmp.r.key.fingerprint_len == fingerlen
 			&& !memcmp(tmp.r.key.fingerprint,
 					    fingerprint, fingerlen) ) {
@@ -820,7 +841,7 @@ tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )
     }
     else if( rec->rectype == RECTYPE_KEY ) {
 	/* must check that it is the requested key */
-	if( rec->r.key.pubkey_algo != pk->pubkey_algo
+	if( (pubkey_algo && rec->r.key.pubkey_algo != pubkey_algo)
 	    || rec->r.key.fingerprint_len != fingerlen
 	    || memcmp(rec->r.key.fingerprint, fingerprint, fingerlen) )
 	    return -1; /* no: not found */
@@ -832,14 +853,6 @@ tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )
     }
 
     recnum = rec->r.key.lid;
-
-    if( pk->local_id && pk->local_id != recnum )
-	log_error_f(db_name,
-		   "found record, but LID from memory does "
-		   "not match recnum (%lu,%lu)\n",
-					pk->local_id, recnum );
-    pk->local_id = recnum;
-
     /* Now read the dir record */
     rc = tdbio_read_record( recnum, rec, RECTYPE_DIR);
     if( rc )
