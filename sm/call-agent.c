@@ -355,6 +355,7 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
   buf = get_membuf (&data, &len);
   if (!buf)
     return seterr (Out_Of_Core);
+  /* FIXME: We would better a return a full S-exp and not just a part */
   assert (len);
   len--; /* remove the terminating 0 */
   n = strtoul (buf, &endp, 10);
