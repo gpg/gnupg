@@ -1,3 +1,18 @@
+2004-01-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c: Set MAX_PK_CACHE_ENTRIES and MAX_UID_CACHE_ENTRIES to
+	PK_UID_CACHE_SIZE (set in ./configure).
+
+	* getkey.c (get_pubkey): When reading key data into the cache,
+	properly handle keys that are partially (pk, no UIDs) cached
+	already.  This is Debian bug #176425 and #229549.
+
+	* compress.c (init_compress, push_compress_filter2): Do the right
+	thing (i.e. nothing) with compress algo 0.
+
+	* main.h, decrypt.c (decrypt_messages): Accept filenames to
+	decrypt on stdin.  This is bug #253.
+
 2004-01-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (list_node): Show sigs with --verbose.

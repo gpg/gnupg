@@ -35,13 +35,12 @@
 #include "trustdb.h"
 #include "i18n.h"
 
-#define MAX_PK_CACHE_ENTRIES   200
-#define MAX_UID_CACHE_ENTRIES  200
+#define MAX_PK_CACHE_ENTRIES   PK_UID_CACHE_SIZE
+#define MAX_UID_CACHE_ENTRIES  PK_UID_CACHE_SIZE
 
 #if MAX_PK_CACHE_ENTRIES < 2
 #error We need the cache for key creation
 #endif
-
 
 struct getkey_ctx_s {
     int exact;
@@ -320,16 +319,21 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
     int rc = 0;
 
 #if MAX_PK_CACHE_ENTRIES
-    {	/* Try to get it from the cache */
+    if(pk)
+      {
+	/* Try to get it from the cache.  We don't do this when pk is
+	   NULL as it does not guarantee that the user IDs are
+	   cached. */
 	pk_cache_entry_t ce;
-	for( ce = pk_cache; ce; ce = ce->next ) {
-	    if( ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1] ) {
-		if( pk )
-		    copy_public_key( pk, ce->pk );
+	for( ce = pk_cache; ce; ce = ce->next )
+	  {
+	    if( ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1] )
+	      {
+		copy_public_key( pk, ce->pk );
 		return 0;
-	    }
-	}
-    }
+	      }
+	  }
+      }
 #endif
     /* more init stuff */
     if( !pk ) {

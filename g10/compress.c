@@ -60,7 +60,7 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
         zlib_initialized = riscos_load_module("ZLib", zlib_path, 1);
 #endif
 
-    if( opt.compress_level >= 0 && opt.compress_level <= 9 )
+    if( opt.compress_level >= 1 && opt.compress_level <= 9 )
 	level = opt.compress_level;
     else if( opt.compress_level == -1 )
 	level = Z_DEFAULT_COMPRESSION;
@@ -337,7 +337,7 @@ void
 push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
 		      int algo,int rel)
 {
-  if(algo>0)
+  if(algo>=0)
     zfx->algo=algo;
   else
     zfx->algo=DEFAULT_COMPRESS_ALGO;
