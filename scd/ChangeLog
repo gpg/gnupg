@@ -1,3 +1,7 @@
+2004-04-28  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (do_setattr): Sync FORCE_CHV1.
+
 2004-04-27  Werner Koch  <wk@gnupg.org>
 
 	* app-common.h: Do not include ksba.h for gnupg 1.

@@ -704,13 +704,14 @@ do_setattr (APP app, const char *name,
   static struct {
     const char *name;
     int tag;
+    int special;
   } table[] = {
     { "DISP-NAME",    0x005B },
     { "LOGIN-DATA",   0x005E },
     { "DISP-LANG",    0x5F2D },
     { "DISP-SEX",     0x5F35 },
     { "PUBKEY-URL",   0x5F50 },
-    { "CHV-STATUS-1", 0x00C4 },
+    { "CHV-STATUS-1", 0x00C4, 1 },
     { "CA-FPR-1",     0x00CA },
     { "CA-FPR-2",     0x00CB },
     { "CA-FPR-3",     0x00CC },
@@ -734,6 +735,9 @@ do_setattr (APP app, const char *name,
   rc = iso7816_put_data (app->slot, table[idx].tag, value, valuelen);
   if (rc)
     log_error ("failed to set `%s': %s\n", table[idx].name, gpg_strerror (rc));
+
+  if (table[idx].special == 1)
+    app->force_chv1 = (valuelen && *value == 0);
 
   return rc;
 }
