@@ -224,6 +224,7 @@ enum cmd_and_opt_values { aNull = 0,
     oUseEmbeddedFilename,
     oComment,
     oDefaultComment,
+    oNoComments,
     oThrowKeyid,
     oNoThrowKeyid,
     oShowPhotos,
@@ -448,7 +449,6 @@ static ARGPARSE_OPTS opts[] = {
 #ifdef __riscos__
     { oAttributeFile, "attribute-file" ,2, "@" },
 #endif /* __riscos__ */
-    { oNoSKComments, "no-comment", 0,   "@"},
     { oNoSKComments, "no-sk-comments", 0,   "@"},
     { oSKComments, "sk-comments", 0,   "@"},
     { oCompletesNeeded, "completes-needed", 1, "@"},
@@ -554,6 +554,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoShowNotation, "no-show-notation", 0, "@" },
     { oComment, "comment", 2, "@" },
     { oDefaultComment, "default-comment", 0, "@" },
+    { oNoComments, "no-comments", 0, "@" },
     { oEmitVersion, "emit-version", 0, "@"},
     { oNoEmitVersion, "no-emit-version", 0, "@"},
     { oNoEmitVersion, "no-version", 0, "@"}, /* alias */
@@ -1601,8 +1602,15 @@ main( int argc, char **argv )
 	    break;
 	  case oSigKeyserverURL: add_keyserver_url(pargs.r.ret_str,0); break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
-	  case oComment: opt.comment_string = pargs.r.ret_str; break;
-	  case oDefaultComment: opt.comment_string = NULL; break;
+	  case oComment: add_to_strlist(&opt.comments,pargs.r.ret_str); break;
+	  case oDefaultComment:
+	    deprecated_warning(configname,configlineno,
+			       "--default-comment","--no-comments","");
+	    /* fall through */
+	  case oNoComments:
+	    free_strlist(opt.comments);
+	    opt.comments=NULL;
+	    break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oNoThrowKeyid: opt.throw_keyid = 0; break;
 	  case oShowPhotos: 

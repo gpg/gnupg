@@ -101,7 +101,7 @@ struct {
     unsigned int emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
     const char *set_filename;
-    const char *comment_string;
+    STRLIST comments;
     int throw_keyid;
     const char *photo_viewer;
     int s2k_mode;
