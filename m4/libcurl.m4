@@ -16,7 +16,7 @@ AC_DEFUN([GNUPG_CHECK_LIBCURL],
 [
   AC_ARG_WITH(libcurl,
      AC_HELP_STRING([--with-libcurl=DIR],[look for the curl library in DIR]),
-     [_do_libcurl=$withval],[_do_libcurl=yes])
+     [_do_libcurl=$withval],[_do_libcurl=no])
 
   if test "$_do_libcurl" != "no" ; then
      if test -d "$withval" ; then
@@ -36,6 +36,37 @@ AC_DEFUN([GNUPG_CHECK_LIBCURL],
 
      AC_MSG_RESULT([$have_libcurl])
 
+     AC_MSG_CHECKING([whether libcurl is modern enough])
+
+     _libcurl_save_cppflags=$CPPFLAGS
+     CPPFLAGS="$CPPFLAGS $LIBCURL_INCLUDES"
+     _libcurl_save_ldflags=$LDFLAGS
+     LDFLAGS="$LDFLAGS $LIBCURL"
+
+     AC_LINK_IFELSE(AC_LANG_PROGRAM([#include <curl/curl.h>],[
+int x;
+x=CURL_ERROR_SIZE;
+curl_easy_setopt(NULL,CURLOPT_URL,NULL);
+x=CURLOPT_WRITEFUNCTION;
+x=CURLOPT_FILE;
+/* x=CURLOPT_WRITEDATA; */
+x=CURLOPT_ERRORBUFFER;
+x=CURLOPT_STDERR;
+x=CURLOPT_VERBOSE;
+]),,have_libcurl=no)
+
+     CPPFLAGS=$_libcurl_save_cppflags
+     LDFLAGS=$_libcurl_save_ldflags
+
+     AC_MSG_RESULT([$have_libcurl])
+
+     if test $have_libcurl = yes ; then
+        AC_DEFINE(HAVE_LIBCURL,1,
+          [Define to 1 if you have a fully functional curl library.])
+     fi
+
      unset _do_libcurl
+     unset _libcurl_save_cppflags
+     unset _libcurl_save_ldflags
   fi
 ])dnl
