@@ -1,3 +1,37 @@
+Tue Feb 17 21:24:17 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c : Add header lines "...ARMORED FILE .."
+	* dearmor.c (enarmor_file): New.
+	* g10maint.c (main): New option "--enarmor"
+
+Tue Feb 17 19:03:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* mainproc.c : Changed a lot, because the packets are now stored
+	a simple linlked list and not anymore in a complicatd tree structure.
+
+Tue Feb 17 10:14:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* free_packet.c (cmp_public_certs): New.
+	(cmp_user_ids): New.
+
+	* kbnode.c (clone_kbnode): New.
+	(release_kbnode): Add clone support.
+
+	* ringedit.c (find_keyblock_bypkc): New.
+
+	* sign.c (remove_keysigs): Self signatures are now skipped,
+	changed arguments and all callers.
+
+	* import.c : Add functionality.
+
+Tue Feb 17 09:31:40 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* options.h (homedir): New option.
+	* g10.c, g10maint.c, getkey.c, keygen.c, trustdb.c (opt.homedir): New.
+
+	* trustdb.c (init_trustdb): mkdir for hoem directory
+	(sign_private_data): Renamed "sig" to "g10.sig"
+
 Mon Feb 16 20:02:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* kbnode.c (commit_kbnode): New.

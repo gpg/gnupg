@@ -42,7 +42,7 @@ struct {
     int no_comment;
     int marginals_needed;
     int completes_needed;
-    int reserved12;
+    const char *homedir;
     int reserved13;
     int reserved14;
     int reserved15;

@@ -101,6 +101,7 @@ static unsigned memtbl_size;	/* number of allocated entries */
 static unsigned memtbl_len;	/* number of used entries */
 static struct memtbl_entry *memtbl_unused;/* to keep track of unused entries */
 
+static void dump_table_at_exit(void);
 static void dump_table(void);
 static void check_allmem( const char *info );
 
@@ -135,8 +136,7 @@ add_entry( byte *p, unsigned n, int mode, const char *info, const char *by )
 		    membug("memory debug table malloc failed\n");
 		index = 0;
 		memtbl_len = 1;
-		if( DBG_MEMSTAT )
-		    atexit( dump_table );
+		atexit( dump_table_at_exit );
 	    }
 	    else { /* realloc */
 		unsigned n = memtbl_size / 4; /* enlarge by 25% */
@@ -262,6 +262,14 @@ dump_entry(struct memtbl_entry *e )
 			      e->info->info, e->info->count );
 
 
+}
+
+
+static void
+dump_table_at_exit( void)
+{
+    if( DBG_MEMSTAT )
+	dump_table();
 }
 
 static void

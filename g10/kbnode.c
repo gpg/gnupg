@@ -37,7 +37,19 @@ new_kbnode( PACKET *pkt )
     n->next = NULL;
     n->pkt = pkt;
     n->flag = 0;
-    n->private_flag=0; /* kludge to delete a node */
+    n->private_flag=0;
+    return n;
+}
+
+
+KBNODE
+clone_kbnode( KBNODE node )
+{
+    KBNODE n = m_alloc( sizeof *n );
+    n->next = NULL;
+    n->pkt = node->pkt;
+    n->private_flag |= 2; /* mark cloned */
+    n->flag = 0;
     return n;
 }
 
@@ -49,7 +61,8 @@ release_kbnode( KBNODE n )
 
     while( n ) {
 	n2 = n->next;
-	free_packet( n->pkt );
+	if( !(n->private_flag & 2) )
+	    free_packet( n->pkt );
 	m_free( n );
 	n = n2;
     }
@@ -65,6 +78,7 @@ delete_kbnode( KBNODE node )
 {
     node->private_flag |= 1;
 }
+
 
 /****************
  * Append NODE to ROOT, ROOT must exist!
@@ -206,19 +220,67 @@ clear_kbnode_flags( KBNODE n )
 int
 commit_kbnode( KBNODE *root )
 {
-    KBNODE n, n2;
+    KBNODE n, nl;
     int changed = 0;
 
-    for(n=*root; n; n = n2 ) {
-	n2 = n->next;
+    for( n = *root, nl=NULL; n; n = nl->next ) {
 	if( (n->private_flag & 1) ) {
 	    if( n == *root )
-		*root = n2;
-	    free_packet( n->pkt );
+		*root = nl = n->next;
+	    else
+		nl->next = n->next;
+	    if( !(n->private_flag & 2) )
+		free_packet( n->pkt );
 	    m_free( n );
 	    changed = 1;
 	}
+	else
+	    nl = n;
     }
     return changed;
+}
+
+
+void
+dump_kbnode( KBNODE node )
+{
+    for(; node; node = node->next ) {
+	const char *s;
+	switch( node->pkt->pkttype ) {
+	  case 0:		s="empty"; break;
+	  case PKT_PUBLIC_CERT: s="public-key"; break;
+	  case PKT_SECRET_CERT: s="secret-key"; break;
+	  case PKT_SECKEY_SUBCERT:  s= "secret-subkey"; break;
+	  case PKT_PUBKEY_ENC:	s="public-enc"; break;
+	  case PKT_SIGNATURE:	s="signature"; break;
+	  case PKT_ONEPASS_SIG: s="onepass-sig"; break;
+	  case PKT_USER_ID:	s="user-id"; break;
+	  case PKT_PUBKEY_SUBCERT: s="public-subkey"; break;
+	  case PKT_COMMENT:	s="comment"; break;
+	  case PKT_RING_TRUST:	s="trust"; break;
+	  case PKT_PLAINTEXT:	s="plaintext"; break;
+	  case PKT_COMPRESSED:	s="compressed"; break;
+	  case PKT_ENCRYPTED:	s="encrypted"; break;
+	  default:		s="unknown"; break;
+	}
+	fprintf(stderr, "node %p %02x/%02x type=%s",
+		node, node->flag, node->private_flag, s);
+	if( node->pkt->pkttype == PKT_USER_ID ) {
+	    fputs("  \"", stderr);
+	    print_string( stderr, node->pkt->pkt.user_id->name,
+				  node->pkt->pkt.user_id->len );
+	    fputs("\"\n", stderr);
+	}
+	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
+	    fprintf(stderr, "  keyid=%08lX\n",
+		   (ulong)node->pkt->pkt.signature->keyid[1] );
+	}
+	else if( node->pkt->pkttype == PKT_PUBLIC_CERT ) {
+	    fprintf(stderr, "  keyid=%08lX\n", (ulong)
+		  keyid_from_pkc( node->pkt->pkt.public_cert, NULL ));
+	}
+	else
+	    fputs("\n", stderr);
+    }
 }
 

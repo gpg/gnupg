@@ -41,6 +41,12 @@ static int import_one( const char *fname, KBNODE keyblock );
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
 			  PKT_public_cert *pkc, u32 *keyid );
 static int delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid );
+static int merge_blocks( const char *fname, KBNODE keyblock_orig,
+		       KBNODE keyblock, u32 *keyid, int *n_uids, int *n_sigs );
+static int append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
+			     const char *fname, u32 *keyid );
+static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
+			     const char *fname, u32 *keyid );
 
 
 /****************
@@ -131,12 +137,15 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
     int rc;
     PACKET *pkt;
     KBNODE root = NULL;
-    int in_cert = 0;
+    int in_cert;
 
     if( *pending_pkt ) {
 	root = new_kbnode( *pending_pkt );
 	*pending_pkt = NULL;
+	in_cert = 1;
     }
+    else
+	in_cert = 0;
     pkt = m_alloc( sizeof *pkt );
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
@@ -165,6 +174,7 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
 	    init_packet(pkt);
 	    break;
 
+
 	  case PKT_PUBLIC_CERT:
 	  case PKT_SECRET_CERT:
 	    if( in_cert ) { /* store this packet */
@@ -174,11 +184,13 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
 	    }
 	    in_cert = 1;
 	  default:
-	    if( !root )
-		root = new_kbnode( pkt );
-	    else
-		add_kbnode( root, new_kbnode( pkt ) );
-	    pkt = m_alloc( sizeof *pkt );
+	    if( in_cert ) {
+		if( !root )
+		    root = new_kbnode( pkt );
+		else
+		    add_kbnode( root, new_kbnode( pkt ) );
+		pkt = m_alloc( sizeof *pkt );
+	    }
 	    init_packet(pkt);
 	    break;
 	}
@@ -209,6 +221,7 @@ import_one( const char *fname, KBNODE keyblock )
     PKT_public_cert *pkc;
     PKT_public_cert *pkc_orig;
     KBNODE node, uidnode;
+    KBNODE keyblock_orig = NULL;
     KBPOS kbpos;
     u32 keyid[2];
     int rc = 0;
@@ -243,20 +256,21 @@ import_one( const char *fname, KBNODE keyblock )
     rc = chk_self_sigs( fname, keyblock , pkc, keyid );
     if( rc )
 	return rc== -1? 0:rc;
+
     if( !delete_inv_parts( fname, keyblock, keyid ) ) {
-	log_info("%s: key %08lX, no valid user ids left over\n",
+	log_info("%s: key %08lX, no valid user ids\n",
 						    fname, (ulong)keyid[1]);
 	return 0;
     }
 
     /* do we have this key already in one of our pubrings ? */
-    pkc_orig = m_alloc( sizeof *pkc_orig );
+    pkc_orig = m_alloc_clear( sizeof *pkc_orig );
     rc = get_pubkey( pkc_orig, keyid );
     if( rc && rc != G10ERR_NO_PUBKEY ) {
 	log_error("%s: key %08lX, public key not found: %s\n",
 				fname, (ulong)keyid[1], g10_errstr(rc));
     }
-    else if( rc ) { /* inset this key */
+    else if( rc ) { /* insert this key */
 	/* get default resource */
 	if( get_keyblock_handle( NULL, 0, &kbpos ) ) {
 	    log_error("no default public keyring\n");
@@ -273,30 +287,79 @@ import_one( const char *fname, KBNODE keyblock )
 			     keyblock_resource_name(&kbpos), g10_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
-	if( opt.verbose )
-	    log_info("%s: key %08lX imported\n", fname, (ulong)keyid[1]);
+	log_info("%s: key %08lX imported\n", fname, (ulong)keyid[1]);
     }
-    else {
-       /* merge
-	* o Compare the key and the self-signatures of the new and the one in
-	*   our keyring.  If they are different something weird is going on;
-	*   ask what to do.
-	* o See wether we have only non-self-signature on one user id; if not
-	*   ask the user what to do.
-	* o compare the signatures: If we already have this signature, check
-	*   that they compare okay; if not, issue a warning and ask the user.
-	*   (consider to look at the timestamp and use the newest?)
-	* o Simply add the signature.  Can't verify here because we may not have
-	*   the signatures public key yet; verification is done when putting it
-	*   into the trustdb, which is done automagically as soon as this pubkey
-	*   is used.
-	*/
-	log_error("nyi\n");
+    else { /* merge */
+	int n_uids, n_sigs;
+
+	/* Compare the original against the new key; just to be sure nothing
+	 * weird is going on */
+	if( cmp_public_certs( pkc_orig, pkc ) ) {
+	    log_error("%s: key %08lX, doesn't match our copy\n",
+						    fname, (ulong)keyid[1]);
+	    rc = G10ERR_GENERAL;
+	    goto leave;
+	}
+
+	/* See wether we have only non-self-signature on one user id; if not
+	 * ask the user what to do. <--- fixme */
+
+	/* now read the original keyblock */
+	rc = find_keyblock_bypkc( &kbpos, pkc_orig );
+	if( rc ) {
+	    log_error("%s: key %08lX, can't locate original keyblock: %s\n",
+				     fname, (ulong)keyid[1], g10_errstr(rc));
+	    goto leave;
+	}
+	rc = read_keyblock( &kbpos, &keyblock_orig );
+	if( rc ) {
+	    log_error("%s: key %08lX, can't read original keyblock: %s\n",
+				     fname, (ulong)keyid[1], g10_errstr(rc));
+	    goto leave;
+	}
+	/* and try to merge the block */
+	clear_kbnode_flags( keyblock_orig );
+	clear_kbnode_flags( keyblock );
+	n_uids = n_sigs = 0;
+	rc = merge_blocks( fname, keyblock_orig, keyblock,
+				keyid, &n_uids, &n_sigs );
+	if( rc )
+	    goto leave;
+	if( n_uids || n_sigs ) { /* keyblock_orig has been updated; write */
+	    if( opt.verbose > 1 )
+		log_info("%s: writing to '%s'\n",
+				    fname, keyblock_resource_name(&kbpos) );
+	    if( (rc=lock_keyblock( &kbpos )) )
+		log_error("can't lock public keyring '%s': %s\n",
+				 keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	    else if( (rc=insert_keyblock( &kbpos, keyblock )) )
+		log_error("%s: can't write to '%s': %s\n", fname,
+				 keyblock_resource_name(&kbpos), g10_errstr(rc) );
+	    unlock_keyblock( &kbpos );
+	    /* we are ready */
+	    if( n_uids == 1 )
+		log_info("%s: key %08lX, 1 new user-id\n",
+					 fname, (ulong)keyid[1]);
+	    else if( n_uids )
+		log_info("%s: key %08lX, %d new user-ids\n",
+					 fname, (ulong)keyid[1], n_uids );
+	    if( n_sigs == 1 )
+		log_info("%s: key %08lX, 1 new signature\n",
+					 fname, (ulong)keyid[1]);
+	    else if( n_sigs )
+		log_info("%s: key %08lX, %d new signatures\n",
+					 fname, (ulong)keyid[1], n_sigs );
+	}
+	else
+	    log_info("%s: key %08lX, not changed\n", fname, (ulong)keyid[1] );
     }
 
+  leave:
+    release_kbnode( keyblock_orig );
     free_public_cert( pkc_orig );
     return rc;
 }
+
 
 /****************
  * loop over the keyblock an check all self signatures.
@@ -335,7 +398,10 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 }
 
 /****************
- * delete all parts which are invalid.
+ * delete all parts which are invalidand those signatures whos
+ * public key algorithm is not availabe in this implemenation;
+ * but consider RSA as valid, because parse/build_packets knows
+ * about it.
  * returns: true if at least one valid user-id is left over.
  */
 static int
@@ -347,11 +413,13 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
     for(node=keyblock->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    if( (node->flag & 2) || !(node->flag & 1) ) {
-		log_info("%s: key %08lX, removed userid '",
+		if( opt.verbose ) {
+		    log_info("%s: key %08lX, removed userid '",
 						  fname, (ulong)keyid[1]);
-		print_string( stderr, node->pkt->pkt.user_id->name,
+		    print_string( stderr, node->pkt->pkt.user_id->name,
 				      node->pkt->pkt.user_id->len );
-		fputs("'\n", stderr );
+		    fputs("'\n", stderr );
+		}
 		delete_kbnode( node ); /* the user-id */
 		/* and all following packets up to the next user-id */
 		while( node->next && node->next->pkt->pkttype != PKT_USER_ID ){
@@ -362,10 +430,169 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	    else
 		nvalid++;
 	}
+	else if( node->pkt->pkttype == PKT_SIGNATURE
+		 && check_pubkey_algo( node->pkt->pkt.signature->pubkey_algo)
+		 && node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
+	    delete_kbnode( node ); /* build_packet() can't handle this */
     }
 
-    /* note: because keyblock is the public key, ist is never marked
-     * for deletion and so the keyblock cannot chnage */
+    /* note: because keyblock is the public key, it is never marked
+     * for deletion and so keyblock cannot change */
     commit_kbnode( &keyblock );
     return nvalid;
 }
+
+
+/****************
+ * compare and merge the blocks
+ *
+ * o compare the signatures: If we already have this signature, check
+ *   that they compare okay; if not, issue a warning and ask the user.
+ *   FIXME: add the check, that we don` have duplicate signatures and the
+ *   warning in cases that the old/new signatures don't match.
+ * o Simply add the signature.	Can't verify here because we may not have
+ *   the signatures public key yet; verification is done when putting it
+ *   into the trustdb, which is done automagically as soon as this pubkey
+ *   is used.
+ * Note: We indicate newly inserted packets with flag bit 0
+ */
+static int
+merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
+				   u32 *keyid, int *n_uids, int *n_sigs )
+{
+    KBNODE node_orig, node;
+    int rc;
+
+    /* first, try to merge new ones in */
+    for(node_orig=keyblock_orig->next; node_orig; node_orig=node_orig->next ) {
+	if( !(node_orig->flag & 1) && node_orig->pkt->pkttype == PKT_USER_ID) {
+	    /* find the user id in the imported keyblock */
+	    for(node=keyblock->next; node; node=node->next )
+		if( !(node->flag & 1)
+		    && node->pkt->pkttype == PKT_USER_ID
+		    && !cmp_user_ids( node_orig->pkt->pkt.user_id,
+					  node->pkt->pkt.user_id ) )
+		    break;
+	    if( node ) { /* found: merge */
+		rc = merge_sigs( node_orig, node, n_sigs, fname, keyid );
+		if( rc )
+		    return rc;
+	    }
+	}
+    }
+
+    /* second, add new user-ids */
+    for(node=keyblock->next; node; node=node->next ) {
+	if( !(node->flag & 1) && node->pkt->pkttype == PKT_USER_ID) {
+	    /* do we have this in the original keyblock */
+	    for(node_orig=keyblock_orig->next; node_orig;
+						node_orig=node_orig->next )
+		if( !(node_orig->flag & 1)
+		    && node_orig->pkt->pkttype == PKT_USER_ID
+		    && cmp_user_ids( node_orig->pkt->pkt.user_id,
+				     node->pkt->pkt.user_id ) )
+		    break;
+	    if( !node ) { /* this is a new user id: append */
+		rc = append_uid( keyblock_orig, node, n_sigs, fname, keyid);
+		if( rc )
+		    return rc;
+		++*n_uids;
+	    }
+	}
+    }
+
+    return 0;
+}
+
+
+/****************
+ * append the userid starting with NODE and all signatures to KEYBLOCK.
+ * Mark all new and copied packets by setting flag bit 0.
+ */
+static int
+append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
+					  const char *fname, u32 *keyid )
+{
+    KBNODE n;
+
+    assert(node->pkt->pkttype == PKT_USER_ID );
+    /* at lease a self signature comes next to the user-id */
+    if( node->next->pkt->pkttype == PKT_USER_ID ) {
+	log_error("%s: key %08lX, our copy has no self-signature\n",
+						  fname, (ulong)keyid[1]);
+	return G10ERR_GENERAL;
+    }
+
+    for( ;node && node->pkt->pkttype != PKT_USER_ID; node = node->next ) {
+	/* we add a clone to the original keyblock, because this
+	 * one is released first */
+	n = clone_kbnode(node);
+	add_kbnode( keyblock, n );
+	node->flag |= 1;
+	n->flag |= 1;
+	if( n->pkt->pkttype == PKT_SIGNATURE )
+	    ++*n_sigs;
+    }
+
+    return 0;
+}
+
+
+/****************
+ * Merge the sigs from SRC onto DST. SRC and DST are both a PKT_USER_ID.
+ * (how should we handle comment packets here?)
+ */
+static int
+merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
+				    const char *fname, u32 *keyid )
+{
+    KBNODE n, n2;
+    int found=0;
+
+    assert(dst->pkt->pkttype == PKT_USER_ID );
+    assert(src->pkt->pkttype == PKT_USER_ID );
+    /* at least a self signature comes next to the user-ids */
+    assert(src->next->pkt->pkttype != PKT_USER_ID );
+    if( dst->next->pkt->pkttype == PKT_USER_ID ) {
+	log_error("%s: key %08lX, our copy has no self-signature\n",
+						  fname, (ulong)keyid[1]);
+	return 0;
+    }
+
+
+    for(n=src->next; n && n->pkt->pkttype != PKT_USER_ID; n = n->next ) {
+	if( n->pkt->pkttype != PKT_SIGNATURE )
+	    continue;
+	found = 0;
+	for(n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next)
+	    if( n2->pkt->pkttype == PKT_SIGNATURE
+		&& n->pkt->pkt.signature->keyid[0]
+		   == n2->pkt->pkt.signature->keyid[0]
+		&& n->pkt->pkt.signature->keyid[1]
+		   == n2->pkt->pkt.signature->keyid[1] ) {
+	    found++;
+	    break;
+	}
+
+	if( found ) { /* we already have this signature */
+	    /* Hmmm: should we compare the timestamp etc?
+	     * but then we have first to see wether this signature is valid
+	     * - or - simply add it in such a case and let trustdb logic
+	     * decide wether to remove the old one
+	     */
+	    continue;
+	}
+
+	/* This signature is new, append N to DST it.
+	 * We add a clone to the original keyblock, because this
+	 * one is released first */
+	n2 = clone_kbnode(n);
+	insert_kbnode( dst, n2, PKT_USER_ID );
+	n2->flag |= 1;
+	n->flag |= 1;
+	++*n_sigs;
+    }
+
+    return 0;
+}
+

@@ -109,7 +109,9 @@ static ARGPARSE_OPTS opts[] = {
     { 522, "no-greeting", 0, "\r" },
     { 523, "passphrase-fd",1, "\r" },
     { 541, "no-operation", 0, "\r" },      /* used by regression tests */
-
+    { 543, "no-options", 0, "\r" }, /* shortcut for --options /dev/null */
+    { 544, "homedir", 2, "\r" },   /* defaults to "~/.g10" */
+    { 545, "no-batch", 0, "\r" },
 
 {0} };
 
@@ -324,6 +326,7 @@ main( int argc, char **argv )
     opt.def_digest_algo = DIGEST_ALGO_RMD160;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
+    opt.homedir = "~/.g10";
 
     /* check wether we have a config file on the commandline */
     orig_argc = argc;
@@ -340,10 +343,14 @@ main( int argc, char **argv )
 	     */
 	    default_config = 0;
 	}
+	else if( pargs.r_opt == 543 )
+	    default_config = 0; /* --no-options */
+	else if( pargs.r_opt == 544 )
+	    opt.homedir = pargs.r.ret_str;
     }
 
     if( default_config )
-	configname = make_filename("~/.g10", "options", NULL );
+	configname = make_filename(opt.homedir, "options", NULL );
 
     argc = orig_argc;
     argv = orig_argv;
@@ -357,7 +364,8 @@ main( int argc, char **argv )
 	if( !configfp ) {
 	    if( default_config ) {
 		if( parse_debug )
-		log_info(_("note: no default option file '%s'\n"), configname );
+		    log_info(_("note: no default option file '%s'\n"),
+							    configname );
 	    }
 	    else {
 		log_error(_("option file '%s': %s\n"),
@@ -447,6 +455,9 @@ main( int argc, char **argv )
 	  case 540: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case 541: set_cmd( &cmd, aNOP); break;
 	  case 542: set_cmd( &cmd, aGenRevoke); break;
+	  case 543: break; /* no-options */
+	  case 544: opt.homedir = pargs.r.ret_str; break;
+	  case 545: opt.batch = 0; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -652,8 +663,11 @@ main( int argc, char **argv )
 	break;
 
       case aImport:
-	if( !argc  )
-	    wrong_args(_("nyi"));
+	if( !argc  ) {
+	    rc = import_pubkeys( NULL );
+	    if( rc )
+		log_error("import failed: %s\n", g10_errstr(rc) );
+	}
 	for( ; argc; argc--, argv++ ) {
 	    rc = import_pubkeys( *argv );
 	    if( rc )

@@ -526,8 +526,8 @@ generate_keypair()
 
 
     /* now check wether we a are allowed to write to the keyrings */
-    pub_fname = make_filename("~/.g10", "pubring.g10", NULL );
-    sec_fname = make_filename("~/.g10", "secring.g10", NULL );
+    pub_fname = make_filename(opt.homedir, "pubring.g10", NULL );
+    sec_fname = make_filename(opt.homedir, "secring.g10", NULL );
     if( opt.verbose ) {
 	tty_printf(_("writing public certificate to '%s'\n"), pub_fname );
 	tty_printf(_("writing secret certificate to '%s'\n"), sec_fname );

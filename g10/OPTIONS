@@ -132,6 +132,9 @@ armor
 batch
 # batch mode: never ask
 
+no-batch
+# disables batch
+
 cache-all
 # hold everything in memory
 
@@ -152,6 +155,8 @@ detach-sign
 dry-run
 # don't make any changes
 
+homedir dirname
+# Set the name of the home directory which defaults to "~/.g10".
 
 keyring  filename
 # add this filename to the list of keyrings.
@@ -179,6 +184,10 @@ no-verbose
 
 options filename
 #  Ignored in option files.
+
+no-options
+# same as --options /dev/null.	This option is detected
+# before an attempt to open an option file
 
 output filename
 # use filename for output

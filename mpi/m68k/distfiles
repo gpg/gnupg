@@ -1,1 +1,7 @@
 syntax.h
+mpih-lshift.S
+mpih-add1.S
+mpih-sub1.S
+
+
+

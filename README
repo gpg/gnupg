@@ -109,6 +109,15 @@
     8) Continue with step 4 if we did not find a prime in step 7.
     9) Find a generator for that prime.
 
+    You should make a revocation certificate in cases someone gets
+    knowledge of your secret key or you forgot your passphrase:
+
+	g10 --gen-revoke your_user_id
+
+    Run this command and store it away; output is always ASCII armored,
+    so that you can print it and (hopefully never) re-create it if
+    your electronic media fails.
+
 
     You can sign a key with this command:
 
@@ -125,7 +134,9 @@
     wether you want to sign this key.
 
     You may remove a signature at any time using the option "--edit-sig",
-    which asks for the sigs to remove.
+    which asks for the sigs to remove. Self-signatures are not removable.
+
+
 
 
     Sign
@@ -170,6 +181,26 @@
 	g10 -se -r heine -u Suttner file
 
     Ditto, but sign the file with the user id "Suttner"
+
+
+    Keyring Management
+    ------------------
+    To export your complete keyring(s) do this:
+
+	g10 --export
+
+    To export only some user ids do this:
+
+	g10 --export userids
+
+    Use "-a" or "--armor" to create ASCII armored output.
+
+    Importing keys is done with the option, you guessed it, "--import":
+
+	g10 --import [filenames]
+
+    New keys are appended to the default keyring and already existing
+    keys are merged.  Keys without a self-signature are ignored.
 
 
     How to Specify a UserID

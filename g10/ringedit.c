@@ -176,6 +176,7 @@ find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos )
 	    rc = keyring_search2( info, kbpos, resource_table[i].fname );
 	    if( !rc ) {
 		kbpos->resno = i;
+		kbpos->fp = NULL;
 		return 0;
 	    }
 	    if( rc != -1 ) {
@@ -213,6 +214,7 @@ search( PACKET *pkt, KBPOS *kbpos, int secret )
 	    rc = keyring_search( pkt, kbpos, resource_table[i].iobuf );
 	    if( !rc ) {
 		kbpos->resno = i;
+		kbpos->fp = NULL;
 		return 0;
 	    }
 	    if( rc != -1 ) {
@@ -251,6 +253,25 @@ find_keyblock_byname( KBPOS *kbpos, const char *username )
     return rc;
 }
 
+
+/****************
+ * Combined function to search for a key and get the position
+ * of the keyblock.
+ */
+int
+find_keyblock_bypkc( KBPOS *kbpos, PKT_public_cert *pkc )
+{
+    PACKET pkt;
+    int rc;
+
+    init_packet( &pkt );
+    pkt.pkttype = PKT_PUBLIC_CERT;
+    pkt.pkt.public_cert = pkc;
+    rc = search( &pkt, kbpos, 0 );
+    return rc;
+}
+
+
 /****************
  * Combined function to search for a username and get the position
  * of the keyblock. This function does not unprotect the secret key.
@@ -275,6 +296,7 @@ find_secret_keyblock_byname( KBPOS *kbpos, const char *username )
     free_secret_cert(skc);
     return rc;
 }
+
 
 
 /****************
@@ -461,7 +483,7 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf )
     save_mode = set_packet_list_mode(0);
 
     if( iobuf_seek( iobuf, 0 ) ) {
-	log_error("can't rewind keyring file: %s\n", g10_errstr(rc));
+	log_error("can't rewind keyring file\n");
 	rc = G10ERR_KEYRING_OPEN;
 	goto leave;
     }
@@ -595,7 +617,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     }
 
     if( iobuf_seek( a, kbpos->offset ) ) {
-	log_error("can't seek to %lu: %s\n", kbpos->offset, g10_errstr(rc));
+	log_error("can't seek to %lu\n", kbpos->offset);
 	iobuf_close(a);
 	return G10ERR_KEYRING_OPEN;
     }
@@ -724,7 +746,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 {
     RESTBL *rentry;
     IOBUF fp, newfp;
-    int rc;
+    int rc=0;
     char *bakfname = NULL;
     char *tmpfname = NULL;
 

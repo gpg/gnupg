@@ -22,10 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <errno.h>
 #include <assert.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "errors.h"
 #include "iobuf.h"
@@ -1490,15 +1492,25 @@ init_trustdb( int level, const char *dbname )
 
     if( !level || level==1 ) {
 	char *fname = dbname? m_strdup( dbname )
-			    : make_filename("~/.g10", "trustdb.g10", NULL );
+			    : make_filename(opt.homedir, "trustdb.g10", NULL );
 	if( access( fname, R_OK ) ) {
 	    if( errno != ENOENT ) {
 		log_error("can't access %s: %s\n", fname, strerror(errno) );
 		m_free(fname);
 		return G10ERR_TRUSTDB;
 	    }
-	    if( level )
+	    if( level ) {
+		char *p = strrchr( fname, '/' );
+		assert(p);
+		*p = 0;
+		if( access( fname, F_OK ) ) {
+		    if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
+			log_fatal("can't create directory '%s': %s\n",
+				    fname, strerror(errno) );
+		}
+		*p = '/';
 		create_db( fname );
+	    }
 	}
 	m_free(db_name);
 	db_name = fname;
@@ -1944,7 +1956,7 @@ int
 verify_private_data()
 {
     int rc = 0;
-    char *sigfile = make_filename("~/.g10", "sig", NULL );
+    char *sigfile = make_filename(opt.homedir, "g10.sig", NULL );
 
     if( access( sigfile, R_OK ) ) {
 	if( errno != ENOENT ) {
@@ -1972,8 +1984,8 @@ int
 sign_private_data()
 {
     int rc;
-    char *sigfile = make_filename("~/.g10", "sig", NULL );
-    char *secring = make_filename("~/.g10", "secring.g10", NULL );
+    char *sigfile = make_filename(opt.homedir, "g10.sig", NULL );
+    char *secring = make_filename(opt.homedir, "secring.g10", NULL );
     STRLIST list = NULL;
 
     add_to_strlist( &list, db_name );

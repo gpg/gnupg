@@ -44,10 +44,10 @@ mpi_invm( MPI x, MPI a, MPI n )
     v1 = mpi_alloc_set_ui(0);
     v2 = mpi_alloc_set_ui(1);
     v3 = mpi_copy(v);
-    q  = mpi_alloc( mpi_get_nlimbs(u) );
-    t1 = mpi_alloc( mpi_get_nlimbs(u) );
-    t2 = mpi_alloc( mpi_get_nlimbs(u) );
-    t3 = mpi_alloc( mpi_get_nlimbs(u) );
+    q  = mpi_alloc( mpi_get_nlimbs(u)+1 );
+    t1 = mpi_alloc( mpi_get_nlimbs(u)+1 );
+    t2 = mpi_alloc( mpi_get_nlimbs(u)+1 );
+    t3 = mpi_alloc( mpi_get_nlimbs(u)+1 );
     while( mpi_cmp_ui( v3, 0 ) ) {
 	mpi_fdiv_q( q, u3, v3 );
 	mpi_mul(t1, v1, q); mpi_mul(t2, v2, q); mpi_mul(t3, v3, q);

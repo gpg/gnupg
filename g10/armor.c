@@ -87,12 +87,15 @@ static char *head_strings[] = {
     "BEGIN PGP PUBLIC KEY BLOCK",
     "BEGIN PGP SIGNATURE",
     "BEGIN PGP SIGNED MESSAGE",
+    "BEGIN PGP ARMORED FILE",
     NULL
 };
 static char *tail_strings[] = {
     "END PGP MESSAGE",
     "END PGP PUBLIC KEY BLOCK",
     "END PGP SIGNATURE",
+    "END dummy",
+    "END PGP ARMORED FILE",
     NULL
 };
 
@@ -248,7 +251,7 @@ static fhdr_state_t
 find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 					IOBUF a, size_t n, unsigned *r_empty)
 {
-    int c, i;
+    int c=0, i;
     const char *s;
     byte *p;
     size_t buflen;

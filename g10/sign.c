@@ -573,7 +573,7 @@ check_all_keysigs( KBNODE keyblock )
  * Ask and remove invalid signatures are to be removed.
  */
 static int
-remove_keysigs( KBNODE keyblock, int all )
+remove_keysigs( KBNODE keyblock, u32 *keyid, int all )
 {
     KBNODE kbctx;
     KBNODE node;
@@ -588,7 +588,7 @@ remove_keysigs( KBNODE keyblock, int all )
 	    && (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 
-	    if( all ) {
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 		/* fixme: skip self-sig */
 	    }
 
@@ -609,6 +609,10 @@ remove_keysigs( KBNODE keyblock, int all )
 		tty_printf("Public key not available.\n");
 	    else if( node->flag & 4 )
 		tty_printf("The signature could not be checked!\n");
+
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
+		continue; /* do not remove self-signatures */
+
 	    answer = tty_get("\nRemove this signature? ");
 	    tty_kill_prompt();
 	    if( answer_is_yes(answer) ) {
@@ -709,7 +713,7 @@ sign_key( const char *username, STRLIST locusr )
 	    answer = tty_get("To you want to remove some of the invalid sigs? ");
 	    tty_kill_prompt();
 	    if( answer_is_yes(answer) )
-		remove_keysigs( keyblock, 0 );
+		remove_keysigs( keyblock, pkc_keyid, 0 );
 	    m_free(answer);
 	}
     }
@@ -833,7 +837,7 @@ edit_keysigs( const char *username )
 
     clear_kbnode_flags( keyblock );
     check_all_keysigs( keyblock );
-    if( remove_keysigs( keyblock, 1 ) ) {
+    if( remove_keysigs( keyblock, pkc_keyid, 1 ) ) {
 	rc = update_keyblock( &kbpos, keyblock );
 	if( rc ) {
 	    log_error("update_keyblock failed: %s\n", g10_errstr(rc) );

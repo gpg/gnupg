@@ -89,7 +89,7 @@ add_keyring( const char *name )
 	if( strchr(name, '/') )
 	    p = make_filename(name, NULL);
 	else
-	    p = make_filename("~/.g10", name, NULL);
+	    p = make_filename(opt.homedir, name, NULL);
 	sl = m_alloc( sizeof *sl + strlen(p) );
 	strcpy(sl->d, p );
 	m_free(p);
@@ -139,7 +139,7 @@ add_secret_keyring( const char *name )
 	if( strchr(name, '/') )
 	    p = make_filename(name, NULL);
 	else
-	    p = make_filename("~/.g10", name, NULL);
+	    p = make_filename(opt.homedir, name, NULL);
 	sl = m_alloc( sizeof *sl + strlen(p) );
 	strcpy(sl->d, p );
 	m_free(p);

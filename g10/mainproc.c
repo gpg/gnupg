@@ -47,7 +47,7 @@ typedef struct {
     md_filter_context_t mfx;
     DEK *dek;
     int last_was_pubkey_enc;
-    KBNODE cert;     /* the current certificate / or signature */
+    KBNODE list;   /* the current list of packets */
     int have_data;
     IOBUF iobuf;    /* used to get the filename etc. */
 } *CTX;
@@ -59,13 +59,13 @@ static void proc_tree( CTX c, KBNODE node );
 
 
 static void
-release_cert( CTX c )
+release_list( CTX c )
 {
-    if( !c->cert )
+    if( !c->list )
 	return;
-    proc_tree(c, c->cert );
-    release_kbnode( c->cert );
-    c->cert = NULL;
+    proc_tree(c, c->list );
+    release_kbnode( c->list );
+    c->list = NULL;
 }
 
 
@@ -74,17 +74,15 @@ add_onepass_sig( CTX c, PACKET *pkt )
 {
     KBNODE node;
 
-    if( c->cert ) { /* add another packet */
-	if( c->cert->pkt->pkttype != PKT_ONEPASS_SIG ) {
+    if( c->list ) { /* add another packet */
+	if( c->list->pkt->pkttype != PKT_ONEPASS_SIG ) {
 	   log_error("add_onepass_sig: another packet is in the way\n");
-	   release_cert( c );
+	   release_list( c );
 	}
-	node = new_kbnode( pkt );
-	node->next = c->cert;
-	c->cert = node;
+	add_kbnode( c->list, new_kbnode( pkt ));
     }
     else /* insert the first one */
-	c->cert = node = new_kbnode( pkt );
+	c->list = node = new_kbnode( pkt );
 
     return 1;
 }
@@ -93,16 +91,16 @@ add_onepass_sig( CTX c, PACKET *pkt )
 static int
 add_public_cert( CTX c, PACKET *pkt )
 {
-    release_cert( c );
-    c->cert = new_kbnode( pkt );
+    release_list( c );
+    c->list = new_kbnode( pkt );
     return 1;
 }
 
 static int
 add_secret_cert( CTX c, PACKET *pkt )
 {
-    release_cert( c );
-    c->cert = new_kbnode( pkt );
+    release_list( c );
+    c->list = new_kbnode( pkt );
     return 1;
 }
 
@@ -110,24 +108,11 @@ add_secret_cert( CTX c, PACKET *pkt )
 static int
 add_user_id( CTX c, PACKET *pkt )
 {
-    KBNODE node, n1;
-
-    if( !c->cert ) {
+    if( !c->list ) {
 	log_error("orphaned user id\n" );
 	return 0;
     }
-    /* goto the last certificate */
-    for(n1=c->cert; n1->next; n1 = n1->next )
-	;
-    assert( n1->pkt );
-    if( n1->pkt->pkttype != PKT_PUBLIC_CERT
-	&& n1->pkt->pkttype != PKT_SECRET_CERT ) {
-	log_error("invalid parent type %d for userid\n", n1->pkt->pkttype );
-	return 0;
-    }
-    /* add a new user id node at the end */
-    node = new_kbnode( pkt );
-    add_kbnode( n1, node );
+    add_kbnode( c->list, new_kbnode( pkt ) );
     return 1;
 }
 
@@ -137,7 +122,7 @@ add_signature( CTX c, PACKET *pkt )
 {
     KBNODE node;
 
-    if( pkt->pkttype == PKT_SIGNATURE && !c->cert ) {
+    if( pkt->pkttype == PKT_SIGNATURE && !c->list ) {
 	/* This is the first signature for a following datafile.
 	 * G10 does not write such packets, instead it always uses
 	 * onepass-sig packets.  The drawback of PGP's method
@@ -145,23 +130,17 @@ add_signature( CTX c, PACKET *pkt )
 	 * that it is not possible to make a signature from data read
 	 * from stdin.	(Anyway, G10 is able to read these stuff) */
 	node = new_kbnode( pkt );
-	c->cert = node;
+	c->list = node;
 	return 1;
     }
-    else if( !c->cert )
+    else if( !c->list )
 	return 0; /* oops (invalid packet sequence)*/
-    else if( !c->cert->pkt )
+    else if( !c->list->pkt )
 	BUG();	/* so nicht */
-    else if( c->cert->pkt->pkttype == PKT_ONEPASS_SIG ) {
-	/* The root is a onepass signature: we are signing data */
-	node = new_kbnode( pkt );
-	add_kbnode( c->cert, node );
-	return 1;
-    }
 
     /* add a new signature node id at the end */
     node = new_kbnode( pkt );
-    add_kbnode( c->cert, node );
+    add_kbnode( c->list, node );
     return 1;
 }
 
@@ -304,12 +283,12 @@ do_check_sig( CTX c, KBNODE node )
 	md = md_copy( c->mfx.md );
     }
     else if( (sig->sig_class&~3) == 0x10 ) { /* classes 0x10 .. 0x13 */
-	if( c->cert->pkt->pkttype == PKT_PUBLIC_CERT ) {
-	    KBNODE n1 = find_prev_kbnode( c->cert, node, PKT_USER_ID );
+	if( c->list->pkt->pkttype == PKT_PUBLIC_CERT ) {
+	    KBNODE n1 = find_prev_kbnode( c->list, node, PKT_USER_ID );
 
 	    if( n1 ) {
-		if( c->cert->pkt->pkt.public_cert->mfx.md )
-		    md = md_copy( c->cert->pkt->pkt.public_cert->mfx.md );
+		if( c->list->pkt->pkt.public_cert->mfx.md )
+		    md = md_copy( c->list->pkt->pkt.public_cert->mfx.md );
 		else
 		    BUG();
 		md_write( md, n1->pkt->pkt.user_id->name, n1->pkt->pkt.user_id->len);
@@ -394,15 +373,24 @@ list_node( CTX c, KBNODE node )
 				      (ulong)keyid_from_pkc( pkc, NULL ),
 				      datestr_from_pkc( pkc )	  );
 	/* and now list all userids with their signatures */
-	while( (node = find_next_kbnode(node, PKT_USER_ID)) ) {
-	    if( any )
-		printf( "%*s", 31, "" );
-	    print_userid( node->pkt );
-	    putchar('\n');
-	    if( opt.fingerprint && !any )
-		print_fingerprint( pkc, NULL );
-	    list_node(c,  node );
-	    any=1;
+	for( node = node->next; node; node = node->next ) {
+	    if( node->pkt->pkttype == PKT_USER_ID ) {
+		KBNODE n;
+
+		if( any )
+		    printf( "%*s", 31, "" );
+		print_userid( node->pkt );
+		putchar('\n');
+		if( opt.fingerprint && !any )
+		    print_fingerprint( pkc, NULL );
+		for( n=node->next; n; n = n->next ) {
+		    if( n->pkt->pkttype == PKT_USER_ID )
+			break;
+		    if( n->pkt->pkttype == PKT_SIGNATURE )
+			list_node(c,  n );
+		}
+		any=1;
+	    }
 	}
 	if( !any )
 	    printf("ERROR: no user id!\n");
@@ -425,14 +413,9 @@ list_node( CTX c, KBNODE node )
 	if( !any )
 	    printf("ERROR: no user id!\n");
     }
-    else if( node->pkt->pkttype == PKT_USER_ID ) {
-	/* list everything under this user id */
-	while( (node = find_next_kbnode(node, 0 )) )
-	    list_node(c, node );
-    }
     else if( node->pkt->pkttype == PKT_SIGNATURE  ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
-	int rc2;
+	int rc2=0;
 	size_t n;
 	char *p;
 	int sigrc = ' ';
@@ -527,7 +510,7 @@ proc_packets( IOBUF a )
 	    free_packet(pkt);
     }
 
-    release_cert( c );
+    release_list( c );
     m_free(c->dek);
     free_packet( pkt );
     m_free( pkt );

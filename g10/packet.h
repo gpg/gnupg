@@ -243,7 +243,9 @@ void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
 PKT_public_cert *copy_public_cert( PKT_public_cert *d, PKT_public_cert *s );
 PKT_secret_cert *copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s );
+int cmp_public_certs( PKT_public_cert *a, PKT_public_cert *b );
 int cmp_public_secret_cert( PKT_public_cert *pkc, PKT_secret_cert *skc );
+int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 
 /*-- sig-check.c --*/

@@ -127,6 +127,7 @@ byte *fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len );
 
 /*-- kbnode.c --*/
 KBNODE new_kbnode( PACKET *pkt );
+KBNODE clone_kbnode( KBNODE node );
 void release_kbnode( KBNODE n );
 void delete_kbnode( KBNODE node );
 void add_kbnode( KBNODE root, KBNODE node );
@@ -144,6 +145,7 @@ const char *keyblock_resource_name( KBPOS *kbpos );
 int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
 int find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos );
 int find_keyblock_byname( KBPOS *kbpos, const char *username );
+int find_keyblock_bypkc( KBPOS *kbpos, PKT_public_cert *pkc );
 int find_secret_keyblock_byname( KBPOS *kbpos, const char *username );
 int lock_keyblock( KBPOS *kbpos );
 void unlock_keyblock( KBPOS *kbpos );

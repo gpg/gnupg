@@ -91,6 +91,7 @@ int import_pubkeys( const char *filename );
 int export_pubkeys( STRLIST users );
 /* dearmor.c --*/
 int dearmor_file( const char *fname );
+int enarmor_file( const char *fname );
 
 /*-- revoke.c --*/
 int gen_revoke( const char *uname );

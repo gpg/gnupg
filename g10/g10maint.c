@@ -43,7 +43,7 @@
 
 enum cmd_values { aNull = 0,
     aPrimegen, aPrintMDs, aListPackets, aKMode, aKModeC,
-    aListTrustDB, aListTrustPath, aDeArmor,
+    aListTrustDB, aListTrustPath, aDeArmor, aEnArmor,
 aTest };
 
 
@@ -219,7 +219,12 @@ main( int argc, char **argv )
     { 535, "completes-needed", 1, N_("(default is 1)")},
     { 536, "marginals-needed", 1, N_("(default is 3)")},
     { 538, "trustdb-name", 2, "\r" },
-    { 540, "dearmor", 0, N_("De-Armor a file or stdin") },
+    { 540, "no-secmem-warning", 0, "\r" }, /* dummy */
+    { 543, "no-options", 0, "\r" }, /* shortcut for --options /dev/null */
+    { 544, "homedir", 2, "\r" },   /* defaults to "~/.g10" */
+    { 545, "no-batch", 0, "\r" },
+    { 546, "dearmor", 0, N_("De-Armor a file or stdin") },
+    { 547, "enarmor", 0, N_("En-Armor a file or stdin") },
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -245,6 +250,7 @@ main( int argc, char **argv )
 
     secmem_init( 0 ); /* disable use of secmem */
 
+    log_set_name("g10maint");
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
     opt.def_cipher_algo = CIPHER_ALGO_BLOWFISH;
@@ -252,6 +258,7 @@ main( int argc, char **argv )
     opt.def_digest_algo = DIGEST_ALGO_RMD160;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
+    opt.homedir = "~/.g10";
 
     /* check wether we have a config file on the commandline */
     orig_argc = argc;
@@ -268,10 +275,14 @@ main( int argc, char **argv )
 	     */
 	    default_config = 0;
 	}
+	else if( pargs.r_opt == 543 )
+	    default_config = 0; /* --no-options */
+	else if( pargs.r_opt == 544 )
+	    opt.homedir = pargs.r.ret_str;
     }
 
     if( default_config )
-	configname = make_filename("~/.g10", "options", NULL );
+	configname = make_filename(opt.homedir, "options", NULL );
 
     argc = orig_argc;
     argv = orig_argv;
@@ -349,7 +360,12 @@ main( int argc, char **argv )
 	  case 535: opt.completes_needed = pargs.r.ret_int; break;
 	  case 536: opt.marginals_needed = pargs.r.ret_int; break;
 	  case 538: trustdb_name = pargs.r.ret_str; break;
-	  case 540: set_cmd( &cmd, aDeArmor); break;
+	  case 540: break; /*dummy*/
+	  case 543: break; /* no-options */
+	  case 544: opt.homedir = pargs.r.ret_str; break;
+	  case 545: opt.batch = 0; break;
+	  case 546: set_cmd( &cmd, aDeArmor); break;
+	  case 547: set_cmd( &cmd, aEnArmor); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -407,12 +423,12 @@ main( int argc, char **argv )
     }
 
     if( !sec_nrings || default_keyring ) { /* add default secret rings */
-	char *p = make_filename("~/.g10", "secring.g10", NULL );
+	char *p = make_filename(opt.homedir, "secring.g10", NULL );
 	add_secret_keyring(p);
 	m_free(p);
     }
     if( !nrings || default_keyring ) { /* add default ring */
-	char *p = make_filename("~/.g10", "pubring.g10", NULL );
+	char *p = make_filename(opt.homedir, "pubring.g10", NULL );
 	add_keyring(p);
 	m_free(p);
     }
@@ -435,6 +451,8 @@ main( int argc, char **argv )
     switch( cmd ) {
       case aPrimegen:
       case aPrintMDs:
+      case aDeArmor:
+      case aEnArmor:
 	break;
       case aListTrustDB: rc = init_trustdb( argc? 1:0, trustdb_name ); break;
       default: rc = init_trustdb(1, trustdb_name ); break;
@@ -482,6 +500,14 @@ main( int argc, char **argv )
 	rc = dearmor_file( argc? *argv: NULL );
 	if( rc )
 	    log_error(_("dearmoring failed: %s\n"), g10_errstr(rc));
+	break;
+
+      case aEnArmor:
+	if( argc > 1 )
+	    wrong_args("--enarmor [file]");
+	rc = enarmor_file( argc? *argv: NULL );
+	if( rc )
+	    log_error(_("enarmoring failed: %s\n"), g10_errstr(rc));
 	break;
 
 

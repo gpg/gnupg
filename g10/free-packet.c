@@ -275,6 +275,37 @@ free_packet( PACKET *pkt )
  * Returns 0 if they match.
  */
 int
+cmp_public_certs( PKT_public_cert *a, PKT_public_cert *b )
+{
+    if( a->timestamp != b->timestamp )
+	return -1;
+    if( a->valid_days != b->valid_days )
+	return -1;
+    if( a->pubkey_algo != b->pubkey_algo )
+	return -1;
+
+    if( a->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	if( mpi_cmp( a->d.elg.p , b->d.elg.p ) )
+	    return -1;
+	if( mpi_cmp( a->d.elg.g , b->d.elg.g ) )
+	    return -1;
+	if( mpi_cmp( a->d.elg.y , b->d.elg.y ) )
+	    return -1;
+    }
+    else if( a->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	if( mpi_cmp( a->d.rsa.rsa_n , b->d.rsa.rsa_n ) )
+	    return -1;
+	if( mpi_cmp( a->d.rsa.rsa_e , b->d.rsa.rsa_e ) )
+	    return -1;
+    }
+
+    return 0;
+}
+
+/****************
+ * Returns 0 if they match.
+ */
+int
 cmp_public_secret_cert( PKT_public_cert *pkc, PKT_secret_cert *skc )
 {
     if( pkc->timestamp != skc->timestamp )
@@ -301,4 +332,16 @@ cmp_public_secret_cert( PKT_public_cert *pkc, PKT_secret_cert *skc )
 
     return 0;
 }
+
+int
+cmp_user_ids( PKT_user_id *a, PKT_user_id *b )
+{
+    int res;
+
+    res = a->len - b->len;
+    if( !res )
+	res = memcmp( a->name, b->name, a->len );
+    return res;
+}
+
 
