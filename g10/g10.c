@@ -172,6 +172,8 @@ enum cmd_and_opt_values { aNull = 0,
     oLoggerFD,
     oUtf8Strings,
     oNoUtf8Strings,
+    oDisableCipherAlgo,
+    oDisablePubkeyAlgo,
 aTest };
 
 
@@ -328,6 +330,8 @@ static ARGPARSE_OPTS opts[] = {
     { oUtf8Strings, "utf8-strings", 0, "@" },
     { oNoUtf8Strings, "no-utf8-strings", 0, "@" },
     { oWithFingerprint, "with-fingerprint", 0, "@" },
+    { oDisableCipherAlgo,  "disable-cipher-algo", 2, "@" },
+    { oDisablePubkeyAlgo,  "disable-pubkey-algo", 2, "@" },
 {0} };
 
 
@@ -833,6 +837,12 @@ main( int argc, char **argv )
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
 	  case oUtf8Strings: utf8_strings = 1; break;
 	  case oNoUtf8Strings: utf8_strings = 0; break;
+	  case oDisableCipherAlgo:
+		disable_cipher_algo( string_to_cipher_algo(pargs.r.ret_str) );
+		break;
+	  case oDisablePubkeyAlgo:
+		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
+		break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}

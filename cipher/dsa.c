@@ -300,6 +300,7 @@ verify(MPI r, MPI s, MPI hash, DSA_public_key *pkey )
     MPI base[3];
     MPI exp[3];
 
+
     if( !(mpi_cmp_ui( r, 0 ) > 0 && mpi_cmp( r, pkey->q ) < 0) )
 	return 0; /* assertion	0 < r < q  failed */
     if( !(mpi_cmp_ui( s, 0 ) > 0 && mpi_cmp( s, pkey->q ) < 0) )
@@ -365,6 +366,8 @@ dsa_check_secret_key( int algo, MPI *skey )
 
     if( algo != PUBKEY_ALGO_DSA )
 	return G10ERR_PUBKEY_ALGO;
+    if( !skey[0] || !skey[1] || !skey[2] || !skey[3] || !skey[4] )
+	return G10ERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.q = skey[1];
@@ -386,6 +389,8 @@ dsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 
     if( algo != PUBKEY_ALGO_DSA )
 	return G10ERR_PUBKEY_ALGO;
+    if( !data || !skey[0] || !skey[1] || !skey[2] || !skey[3] || !skey[4] )
+	return G10ERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.q = skey[1];
@@ -406,6 +411,9 @@ dsa_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 
     if( algo != PUBKEY_ALGO_DSA )
 	return G10ERR_PUBKEY_ALGO;
+    if( !data[0] || !data[1] || !hash
+	|| !pkey[0] || !pkey[1] || !pkey[2] || !pkey[3] )
+	return G10ERR_BAD_MPI;
 
     pk.p = pkey[0];
     pk.q = pkey[1];

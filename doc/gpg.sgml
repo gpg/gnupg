@@ -940,6 +940,7 @@ selected from the preferences stored with the key.
 </para></listitem></varlistentry>
 
 
+
 <varlistentry>
 <term>--digest-algo &ParmName;</term>
 <listitem><para>
@@ -996,6 +997,21 @@ preferences; note, that this can't be done if you do
 not encrypt the data.
 </para></listitem></varlistentry>
 
+
+<varlistentry>
+<term>--disable-cipher-algo &ParmName;</term>
+<listitem><para>
+Never allow the use of &ParmName; as cipher algorithm.
+The given name will not be checked so that a later loaded algorithm
+will still get disabled.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--disable-pubkey-algo &ParmName;</term>
+<listitem><para>
+Never allow the use of &ParmName; as public key algorithm.
+The given name will not be checked so that a later loaded algorithm
+will still get disabled.
 
 <varlistentry>
 <term>--throw-keyid</term>

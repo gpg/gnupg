@@ -48,6 +48,7 @@ struct cipher_table_s {
 };
 
 static struct cipher_table_s cipher_table[TABLE_SIZE];
+static int disabled_algos[TABLE_SIZE];
 
 
 struct cipher_handle_s {
@@ -246,6 +247,22 @@ cipher_algo_to_string( int algo )
     return NULL;
 }
 
+
+void
+disable_cipher_algo( int algo )
+{
+    int i;
+
+    for(i=0; i < DIM(disabled_algos); i++ ) {
+	if( !disabled_algos[i] || disabled_algos[i] == algo ) {
+	    disabled_algos[i] = algo;
+	    return;
+	}
+    }
+    /* fixme: we should use a linked list */
+    log_fatal("can't disable cipher algo %d: table full\n");
+}
+
 /****************
  * Return 0 if the cipher algo is available
  */
@@ -256,8 +273,13 @@ check_cipher_algo( int algo )
 
     do {
        for(i=0; cipher_table[i].name; i++ )
-	   if( cipher_table[i].algo == algo )
-	       return 0; /* okay */
+	   if( cipher_table[i].algo == algo ) {
+		for(i=0; i < DIM(disabled_algos); i++ ) {
+		   if( disabled_algos[i] == algo )
+		       return G10ERR_CIPHER_ALGO;
+		}
+		return 0; /* okay */
+	   }
     } while( load_cipher_modules() );
     return G10ERR_CIPHER_ALGO;
 }

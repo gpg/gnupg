@@ -2,7 +2,7 @@
   * add some status output put for signing and encryption.
     replace the putc in primegen with some kind of status-fd outputs.
 
-  * Speed up calculation of key validity.
+  * Speed up calculation of key validation.
 
   * print a warning when a revoked/expired _secret_ key is used.
 

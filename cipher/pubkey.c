@@ -54,7 +54,7 @@ struct pubkey_table_s {
 };
 
 static struct pubkey_table_s pubkey_table[TABLE_SIZE];
-
+static int disabled_algos[TABLE_SIZE];
 
 
 static int
@@ -267,6 +267,20 @@ pubkey_algo_to_string( int algo )
 }
 
 
+void
+disable_pubkey_algo( int algo )
+{
+    int i;
+
+    for(i=0; i < DIM(disabled_algos); i++ ) {
+	if( !disabled_algos[i] || disabled_algos[i] == algo ) {
+	    disabled_algos[i] = algo;
+	    return;
+	}
+    }
+    log_fatal("can't disable pubkey algo %d: table full\n");
+}
+
 
 int
 check_pubkey_algo( int algo )
@@ -291,6 +305,11 @@ check_pubkey_algo2( int algo, unsigned use )
 		if( (use & PUBKEY_USAGE_ENC)
 		    && !(pubkey_table[i].use & PUBKEY_USAGE_ENC) )
 		    return G10ERR_WR_PUBKEY_ALGO;
+
+		for(i=0; i < DIM(disabled_algos); i++ ) {
+		    if( disabled_algos[i] == algo )
+			return G10ERR_PUBKEY_ALGO;
+		}
 		return 0; /* okay */
 	    }
     } while( load_pubkey_modules() );

@@ -459,6 +459,8 @@ elg_check_secret_key( int algo, MPI *skey )
 
     if( !is_ELGAMAL(algo) )
 	return G10ERR_PUBKEY_ALGO;
+    if( !skey[0] || !skey[1] || !skey[2] || !skey[3] )
+	return G10ERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.g = skey[1];
@@ -479,6 +481,8 @@ elg_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey )
 
     if( !is_ELGAMAL(algo) )
 	return G10ERR_PUBKEY_ALGO;
+    if( !data || !pkey[0] || !pkey[1] || !pkey[2] )
+	return G10ERR_BAD_MPI;
 
     pk.p = pkey[0];
     pk.g = pkey[1];
@@ -496,6 +500,9 @@ elg_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 
     if( !is_ELGAMAL(algo) )
 	return G10ERR_PUBKEY_ALGO;
+    if( !data[0] || !data[1]
+	|| !skey[0] || !skey[1] || !skey[2] || !skey[3] )
+	return G10ERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.g = skey[1];
@@ -513,6 +520,8 @@ elg_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 
     if( !is_ELGAMAL(algo) )
 	return G10ERR_PUBKEY_ALGO;
+    if( !data || !skey[0] || !skey[1] || !skey[2] || !skey[3] )
+	return G10ERR_BAD_MPI;
 
     sk.p = skey[0];
     sk.g = skey[1];
@@ -532,6 +541,9 @@ elg_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 
     if( !is_ELGAMAL(algo) )
 	return G10ERR_PUBKEY_ALGO;
+    if( !data[0] || !data[1] || !hash
+	|| !pkey[0] || !pkey[1] || !pkey[2] )
+	return G10ERR_BAD_MPI;
 
     pk.p = pkey[0];
     pk.g = pkey[1];

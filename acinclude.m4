@@ -560,7 +560,7 @@ AC_CHECK_TOOL(AS, as, false)
 # GNUPG_SYS_SYMBOL_UNDERSCORE - does the compiler prefix global symbols
 #                              with an underscore?
 AC_DEFUN(GNUPG_SYS_SYMBOL_UNDERSCORE,
-[ac_cv_sys_symbol_underscore="check"
+[tmp_do_check="no"
 case "${target}" in
     i386-emx-os2 | i[3456]86-pc-os2*emx )
         ac_cv_sys_symbol_underscore=yes
@@ -568,11 +568,13 @@ case "${target}" in
     *)
       if test "$cross_compiling" = yes; then
          ac_cv_sys_symbol_underscore=yes
+      else
+         tmp_do_check="yes"
       fi
        ;;
 esac
 
-if test "$ac_cv_sys_symbol_underscore" = "check"; then
+if test "$tmp_do_check" = "yes"; then
 ac_cv_sys_symbol_underscore=""
 AC_REQUIRE([GNUPG_PROG_NM])dnl
 AC_REQUIRE([GNUPG_SYS_NM_PARSE])dnl

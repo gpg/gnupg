@@ -128,6 +128,7 @@ void rmd160_hash_buffer( char *outbuf, const char *buffer, size_t length );
 /*-- cipher.c --*/
 int string_to_cipher_algo( const char *string );
 const char * cipher_algo_to_string( int algo );
+void disable_cipher_algo( int algo );
 int check_cipher_algo( int algo );
 unsigned cipher_get_keylen( int algo );
 unsigned cipher_get_blocksize( int algo );
@@ -147,6 +148,7 @@ void cipher_sync( CIPHER_HANDLE c );
 
 int string_to_pubkey_algo( const char *string );
 const char * pubkey_algo_to_string( int algo );
+void disable_pubkey_algo( int algo );
 int check_pubkey_algo( int algo );
 int check_pubkey_algo2( int algo, unsigned use );
 int pubkey_get_npkey( int algo );

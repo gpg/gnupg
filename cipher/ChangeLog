@@ -1,3 +1,15 @@
+Thu Jul 15 10:15:35 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* elgamal.c (elg_check_secret_key,elg_encrypt
+	elg_decrypt,elg_sign,elg_verify): Sanity check on the args.
+	* dsa.c (dsa_check_secret_key,dsa_sign,dsa_verify): Ditto.
+
+	* pubkey.c (disable_pubkey_algo): New.
+	(check_pubkey_algo2): Look at disabled algo table.
+	* cipher.c (disable_cipher_algo): New.
+	(check_cipher_algo): Look at disabled algo table.
+
 Wed Jul  7 13:08:40 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* Makefile.am: Support for libtool.
