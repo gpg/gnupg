@@ -30,7 +30,8 @@ AM_CPPFLAGS =  $(LIBGCRYPT_CFLAGS) $(LIBKSBA_CFLAGS)
 libcommon_a_SOURCES = \
 	util.h i18n.h \
 	errors.c errors.h \
-	maperror.c 
+	maperror.c \
+	sysutils.c sysutils.h
 
 
 errors.c : errors.h mkerrors
