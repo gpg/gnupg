@@ -89,33 +89,28 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     FILE *fp = a->fp;
     size_t size = *ret_len;
     size_t nbytes = 0;
-    int c, rc = 0;
-    char *p;
+    int rc = 0;
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert( size ); /* need a buffer */
-	for(; size; size-- ) {
-	    if( (c=getc(fp)) == EOF ) {
-		if( ferror(fp) && errno != EPIPE  ) {
-		    log_error("%s: read error: %s\n",
-					a->fname, strerror(errno));
-		    rc = G10ERR_READ_FILE;
-		}
-		else if( !nbytes )
-		    rc = -1; /* okay: we can return EOF now. */
-		break;
-	    }
-	    buf[nbytes++] = c & 0xff;
+	clearerr( fp );
+	nbytes = fread( buf, 1, size, fp );
+	if( feof(fp) && !nbytes )
+	    rc = -1; /* okay: we can return EOF now. */
+	else if( ferror(fp) && errno != EPIPE  ) {
+	    log_error("%s: read error: %s\n",
+		      a->fname, strerror(errno));
+	    rc = G10ERR_READ_FILE;
 	}
 	*ret_len = nbytes;
     }
     else if( control == IOBUFCTRL_FLUSH ) {
-	for(p=buf; nbytes < size; nbytes++, p++ ) {
-	    if( putc(*p, fp) == EOF ) {
-		log_error("%s: write error: %s\n",
-				    a->fname, strerror(errno));
+	if( size ) {
+	    clearerr( fp );
+	    nbytes = fwrite( buf, 1, size, fp );
+	    if( ferror(fp) ) {
+		log_error("%s: write error: %s\n", a->fname, strerror(errno));
 		rc = G10ERR_WRITE_FILE;
-		break;
 	    }
 	}
 	*ret_len = nbytes;
@@ -149,7 +144,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 {
     block_filter_ctx_t *a = opaque;
     size_t size = *ret_len;
-    int c, rc = 0;
+    int c, needed, rc = 0;
     char *p;
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
@@ -239,15 +234,20 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		}
 	    }
 
-	    for(; !rc && size && a->size; size--, a->size-- ) {
-		if( (c=iobuf_get(chain)) == -1 ) {
+	    while( !rc && size && a->size ) {
+		needed = size < a->size ? size : a->size;
+		c = iobuf_read( chain, p, needed );
+		if( c < needed ) {
+		    if( c == -1 ) c = 0;
 		    log_error("block_filter %p: read error (size=%lu,a->size=%lu)\n",
-				a,  (ulong)size, (ulong)a->size);
+			      a,  (ulong)size+c, (ulong)a->size+c);
 		    rc = G10ERR_READ_FILE;
 		}
 		else {
-		    *p++ = c;
-		    n++;
+		    size -= c;
+		    a->size -= c;
+		    p += c;
+		    n += c;
 		}
 	    }
 	}
@@ -1058,28 +1058,36 @@ iobuf_read(IOBUF a, byte *buf, unsigned buflen )
 
     if( a->unget.buf || a->nlimit ) {
 	/* handle special cases */
-	for(n=0 ; n < buflen; n++, buf++ ) {
+	for(n=0 ; n < buflen; n++ ) {
 	    if( (c = iobuf_readbyte(a)) == -1 ) {
 		if( !n )
 		    return -1; /* eof */
 		break;
 	    }
 	    else
-		*buf = c;
+		if( buf ) *buf = c;
+	    if( buf ) buf++;
 	}
 	return n;
     }
 
     n = 0;
     do {
-	for( ; n < buflen && a->d.start < a->d.len; n++ )
-	    *buf++ = a->d.buf[a->d.start++];
+	if( n < buflen && a->d.start < a->d.len ) {
+	    unsigned size = a->d.len - a->d.start;
+	    if( size > buflen - n ) size = buflen - n;
+	    if( buf ) memcpy( buf, a->d.buf + a->d.start, size );
+	    n += size;
+	    a->d.start += size;
+	    if( buf ) buf += size;
+	}
 	if( n < buflen ) {
 	    if( (c=underflow(a)) == -1 ) {
 		a->nbytes += n;
 		return n? n : -1/*EOF*/;
 	    }
-	    *buf++ = c; n++;
+	    if( buf ) *buf++ = c;
+	    n++;
 	}
     } while( n < buflen );
     a->nbytes += n;
@@ -1140,8 +1148,14 @@ iobuf_write(IOBUF a, byte *buf, unsigned buflen )
 	BUG();
 
     do {
-	for( ; buflen && a->d.len < a->d.size; buflen--, buf++ )
-	    a->d.buf[a->d.len++] = *buf;
+	if( buflen && a->d.len < a->d.size ) {
+	    unsigned size = a->d.size - a->d.len;
+	    if( size > buflen ) size = buflen;
+	    memcpy( a->d.buf + a->d.len, buf, size );
+	    buflen -= size;
+	    buf += size;
+	    a->d.len += size;
+	}
 	if( buflen ) {
 	    if( iobuf_flush(a) )
 		return -1;

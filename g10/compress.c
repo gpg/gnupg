@@ -132,8 +132,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
     int zrc;
     int rc=0;
     size_t n;
-    byte *p;
-    int c;
+    int nread, count;
     int refill = !zs->avail_in;
 
     if( DBG_FILTER )
@@ -145,16 +144,17 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	    n = zs->avail_in;
 	    if( !n )
 		zs->next_in = zfx->inbuf;
-	    for( p=zfx->inbuf+n; n < zfx->inbufsize; n++, p++ ) {
-		if( (c=iobuf_get(a)) == -1 ) {
-		    /* If we use the undocumented feature to suppress
-		     * the zlib header, we have to give inflate an
-		     * extra dummy byte to read */
-		    if( zfx->algo != 1 || zfx->algo1hack )
-			break;
-		    zfx->algo1hack = 1;
-		}
-		*p = c & 0xff;
+	    count = zfx->inbufsize - n;
+	    nread = iobuf_read( a, zfx->inbuf + n, count );
+	    if( nread == -1 ) nread = 0;
+	    n += nread;
+	    /* If we use the undocumented feature to suppress
+	     * the zlib header, we have to give inflate an
+	     * extra dummy byte to read */
+	    if( nread < count && zfx->algo == 1 ) {
+		*(zfx->inbuf + n) = 0xFF; /* is it really needed ? */
+		zfx->algo1hack = 1;
+		n++;
 	    }
 	    zs->avail_in = n;
 	}

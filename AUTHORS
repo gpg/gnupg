@@ -29,6 +29,12 @@ nh@df.lth.se
 Weak key patches.
 
 
+GNUPG	Rémi Guyomarch		????????????
+Assigns changes.
+rguyom@mail.dotcom.fr
+Various speed up patches.
+
+
 TRANSLATIONS	Marco d'Itri    1997-02-22
 Disclaimer.  [it]
 md@linux.it
@@ -61,10 +67,11 @@ jungmann@cwb.matrix.com.br
 
 TRANSLATIONS	Janusz Aleksander Urbanowicz	1999-01-09
 pl.po
+alex@bofh.torun.pl
 
 
 
-Other notes:
+More credits
 ============
 This program uses the zlib compression library written by
 Jean-loup Gailly and Mark Adler.

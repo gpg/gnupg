@@ -42,17 +42,13 @@ md_filter( void *opaque, int control,
 {
     size_t size = *ret_len;
     md_filter_context_t *mfx = opaque;
-    int i, c, rc=0;
+    int i, rc=0;
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	if( mfx->maxbuf_size && size > mfx->maxbuf_size )
 	    size = mfx->maxbuf_size;
-	for(i=0; i < size; i++ ) {
-	    if( (c = iobuf_get(a)) == -1 )
-		break;
-	    buf[i] = c;
-	}
-
+	i = iobuf_read( a, buf, size );
+	if( i == -1 ) i = 0;
 	if( i ) {
 	    md_write(mfx->md, buf, i );
 	    if( mfx->md2 )

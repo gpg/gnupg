@@ -554,6 +554,11 @@ main( int argc, char **argv )
 	    opt.shm_coprocess = 1;
 	    requested_shm_size = pargs.r.ret_ulong;
 	}
+	else if ( pargs.r_opt == oStatusFD ) {
+	    /* this is needed to ensure that the status-fd filedescriptor is
+	     * initialized when init_shm_coprocessing() is called */
+	    set_status_fd( pargs.r.ret_int );
+	}
       #endif
     }
 

@@ -90,41 +90,92 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 
     if( pt->len ) {
 	assert( !clearsig );
-	for( ; pt->len; pt->len-- ) {
-	    if( (c = iobuf_get(pt->buf)) == -1 ) {
-		log_error("Problem reading source (%u bytes remaining)\n",
-							 (unsigned)pt->len);
-		rc = G10ERR_READ_FILE;
-		goto leave;
-	    }
-	    if( mfx->md )
-		md_putc(mfx->md, c );
-	    if( convert && c == '\r' )
-		continue; /* fixme: this hack might be too simple */
-	    if( fp ) {
-		if( putc( c, fp ) == EOF ) {
-		    log_error("Error writing to `%s': %s\n",
-					    fname, strerror(errno) );
-		    rc = G10ERR_WRITE_FILE;
+	if( convert ) { // text mode
+	    for( ; pt->len; pt->len-- ) {
+		if( (c = iobuf_get(pt->buf)) == -1 ) {
+		    log_error("Problem reading source (%u bytes remaining)\n",
+			      (unsigned)pt->len);
+		    rc = G10ERR_READ_FILE;
 		    goto leave;
+		}
+		if( mfx->md )
+		    md_putc(mfx->md, c );
+		if( c == '\r' )
+		    continue; /* fixme: this hack might be too simple */
+		if( fp ) {
+		    if( putc( c, fp ) == EOF ) {
+			log_error("Error writing to `%s': %s\n",
+				  fname, strerror(errno) );
+			rc = G10ERR_WRITE_FILE;
+			goto leave;
+		    }
 		}
 	    }
 	}
-    }
-    else if( !clearsig ) {
-	while( (c = iobuf_get(pt->buf)) != -1 ) {
-	    if( mfx->md )
-		md_putc(mfx->md, c );
-	    if( convert && c == '\r' )
-		continue; /* fixme: this hack might be too simple */
-	    if( fp ) {
-		if( putc( c, fp ) == EOF ) {
-		    log_error("Error writing to `%s': %s\n",
-						fname, strerror(errno) );
-		    rc = G10ERR_WRITE_FILE;
+	else { // binary mode
+	    byte *buffer = m_alloc( 32768 );
+	    while( pt->len ) {
+		int len = pt->len > 32768 ? 32768 : pt->len;
+		len = iobuf_read( pt->buf, buffer, len );
+		if( len == -1 ) {
+		    log_error("Problem reading source (%u bytes remaining)\n",
+			      (unsigned)pt->len);
+		    rc = G10ERR_READ_FILE;
+		    m_free( buffer );
 		    goto leave;
 		}
+		if( mfx->md )
+		    md_write( mfx->md, buffer, len );
+		if( fp ) {
+		    if( fwrite( buffer, 1, len, fp ) != len ) {
+			log_error("Error writing to `%s': %s\n",
+				  fname, strerror(errno) );
+			rc = G10ERR_WRITE_FILE;
+			m_free( buffer );
+			goto leave;
+		    }
+		}
+		pt->len -= len;
 	    }
+	    m_free( buffer );
+	}
+    }
+    else if( !clearsig ) {
+	if( convert ) { // text mode
+	    while( (c = iobuf_get(pt->buf)) != -1 ) {
+		if( mfx->md )
+		    md_putc(mfx->md, c );
+		if( convert && c == '\r' )
+		    continue; /* fixme: this hack might be too simple */
+		if( fp ) {
+		    if( putc( c, fp ) == EOF ) {
+			log_error("Error writing to `%s': %s\n",
+				  fname, strerror(errno) );
+			rc = G10ERR_WRITE_FILE;
+			goto leave;
+		    }
+		}
+	    }
+	}
+	else { // binary mode
+	    byte *buffer = m_alloc( 32768 );
+	    for( ;; ) {
+		int len = iobuf_read( pt->buf, buffer, 32768 );
+		if( len == -1 )
+		    break;
+		if( mfx->md )
+		    md_write( mfx->md, buffer, len );
+		if( fp ) {
+		    if( fwrite( buffer, 1, len, fp ) != len ) {
+			log_error("Error writing to `%s': %s\n",
+				  fname, strerror(errno) );
+			rc = G10ERR_WRITE_FILE;
+			m_free( buffer );
+			goto leave;
+		    }
+		}
+	    }
+	    m_free( buffer );
 	}
 	pt->buf = NULL;
     }

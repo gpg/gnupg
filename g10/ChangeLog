@@ -1,3 +1,10 @@
+Mon May 31 19:41:10 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* g10.c (main): Fix for SHM init (Michael).
+
+	* compress.c, encr-data.c, mdfilter.c,
+	  plaintext.c, free-packet.c: Speed patches (Rémi).
+
 Thu May 27 09:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* status.c (cpr_get_answer_yes_no_quit): New.

@@ -217,16 +217,11 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
     decode_filter_ctx_t *fc = opaque;
     size_t n, size = *ret_len;
     int rc = 0;
-    int c;
 
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert(a);
-	for(n=0; n < size; n++ ) {
-	    if( (c = iobuf_get(a)) == -1 )
-		break;
-	    buf[n] = c;
-	}
-
+	n = iobuf_read( a, buf, size );
+	if( n == -1 ) n = 0;
 	if( n )
 	    cipher_decrypt( fc->cipher_hd, buf, buf, n);
 	else

@@ -566,7 +566,6 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
 	return NULL;
     buflen = (*buffer << 8) | buffer[1];
     buffer += 2;
-  log_debug("find_subpkt: tyoe=%d bufferlength=%d\n", reqtype, buflen );
     for(;;) {
 	if( !buflen )
 	    return NULL; /* end of packets; not found */
@@ -587,7 +586,6 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
 	    buffer++;
 	    buflen--;
 	}
-  log_debug("find_subpkt: this len=%u\n", n );
 	if( buflen < n )
 	    break;
 	type = *buffer & 0x7f;

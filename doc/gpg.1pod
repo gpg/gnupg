@@ -461,12 +461,6 @@ B<--compress-algo> I<number>
     i.e. the compression algorithm is selected from the
     preferences.
 
-B<--digest-algo> I<name>
-    Use I<name> as message digest algorithm. Running the
-    program with the command B<--version> yields a list of
-    supported algorithms.
-
-
 B<--throw-keyid>
     Do not put the keyid into encrypted packets.  This option
     hides the receiver of the message and is a countermeasure
@@ -600,7 +594,9 @@ is B<very> easy to spy out your passphrase!
 =head1 BUGS
 
 On many systems this program should be installed as setuid(root). This
-is necessary to lock memory pages. If you get no warning message about
-insecure memory your OS kernel supports locking without being root.
-The program drops root privileges as soon as locked memory is allocated.
+is necessary to lock memory pages. Locking memory pages prevents the
+operating system from writing memory pages to disk. If you get no 
+warning message about insecure memory your operating system supports 
+locking without being root. The program drops root privileges as soon 
+as locked memory is allocated.
 

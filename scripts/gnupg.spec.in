@@ -16,9 +16,13 @@ Provides: gpg openpgp
 BuildRoot: /tmp/rpmbuild_%{name}
 
 %changelog
+* Sat May 29 1999 Fabio Coatti <cova@ferrara.linux.it>
+- Some corrections in French description, thanks to 
+Gaël Quéri <gqueri@mail.dotcom.fr>  
 
 * Mon May 17 1999 Fabio Coatti <cova@felix.unife.it>
-- Added French description, provided by Christophe Labouisse <labouiss@cybercable.fr>
+- Added French description, provided by 
+Christophe Labouisse <labouiss@cybercable.fr>
 
 * Thu May 06 1999 Fabio Coatti <cova@felix.unife.it> 
 - Upgraded for 0.9.6 (removed gpgm)
@@ -49,9 +53,9 @@ IDEA o RSA può essere utilizzato senza restrizioni. GnuPG è conforme
 alle specifiche OpenPGP (RFC2440).
 
 %description -l fr
-GnuPG est remplacement complet et "libre" de PGP. Comme il n'utilise
+GnuPG est un remplacement complet et « libre » de PGP. Comme il n'utilise
 ni IDEA ni RSA il peut être utilisé sans restriction. GnuPG est conforme
-avec la spécification OpenPGP (RFC2440).                     
+à la spécification OpenPGP (RFC2440).                         
 
 %prep
 rm -rf $RPM_BUILD_ROOT

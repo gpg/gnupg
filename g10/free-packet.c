@@ -229,7 +229,7 @@ free_compressed( PKT_compressed *zd )
     if( zd->buf ) { /* have to skip some bytes */
 	/* don't have any information about the length, so
 	 * we assume this is the last packet */
-	while( iobuf_get(zd->buf) != -1 )
+	while( iobuf_read( zd->buf, NULL, 1<<30 ) != -1 )
 	    ;
     }
     m_free(zd);
@@ -240,12 +240,12 @@ free_encrypted( PKT_encrypted *ed )
 {
     if( ed->buf ) { /* have to skip some bytes */
 	if( iobuf_in_block_mode(ed->buf) ) {
-	    while( iobuf_get(ed->buf) != -1 )
+	    while( iobuf_read( ed->buf, NULL, 1<<30 ) != -1 )
 		;
 	}
 	else {
-	    for( ; ed->len; ed->len-- ) /* skip the packet */
-		iobuf_get(ed->buf);
+	    while( ed->len ) /* skip the packet */
+		ed->len -= iobuf_read( ed->buf, NULL, ed->len );
 	}
     }
     m_free(ed);
@@ -257,12 +257,12 @@ free_plaintext( PKT_plaintext *pt )
 {
     if( pt->buf ) { /* have to skip some bytes */
 	if( iobuf_in_block_mode(pt->buf) ) {
-	    while( iobuf_get(pt->buf) != -1 )
+	    while( iobuf_read( pt->buf, NULL, 1<<30 ) != -1 )
 		;
 	}
 	else {
-	    for( ; pt->len; pt->len-- ) /* skip the packet */
-		iobuf_get(pt->buf);
+	    while( pt->len ) /* skip the packet */
+		pt->len -= iobuf_read( pt->buf, NULL, pt->len );
 	}
     }
     m_free(pt);

@@ -42,6 +42,10 @@ and after about half a day in the rsync snapshots.
     --> Solaris fixed.
     --> IRIX bug still there
 
+[  *] #18 1999-05-27 <Steffen.Zahn@icn.siemens.de> 0.9.7
+    rndunix hangs on hp/ux.  The problme is related to my_plcose which is
+    not always called.	(I suggest to use EGD instead of rndunix.)
 
-Next #18
+
+Next #19
 
