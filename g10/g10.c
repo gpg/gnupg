@@ -816,7 +816,7 @@ main( int argc, char **argv )
         opt.homedir = buf;
     }
   #endif
-
+  #undef USE_SHM_COPROCESSING	
   #ifdef USE_SHM_COPROCESSING
     if( opt.shm_coprocess ) {
 	init_shm_coprocessing(requested_shm_size, 1 );
@@ -1541,9 +1541,8 @@ main( int argc, char **argv )
 	break;
 
       case aEncrFiles: /* encrypt the given files */
-    if (argc)
         encode_crypt_files(argc, argv, remusr);
-    break;
+    	break;
           
       case aSign: /* sign the given file */
 	sl = NULL;

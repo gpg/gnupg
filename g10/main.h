@@ -76,7 +76,7 @@ void display_online_help( const char *keyword );
 int encode_symmetric( const char *filename );
 int encode_store( const char *filename );
 int encode_crypt( const char *filename, STRLIST remusr );
-void encode_crypt_files(int argc, char **argv, STRLIST remusr);
+void encode_crypt_files(int nfiles, char **files, STRLIST remusr);
 int encrypt_filter( void *opaque, int control,
 		    IOBUF a, byte *buf, size_t *ret_len);
 
