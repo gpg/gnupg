@@ -2036,6 +2036,40 @@ show_key_and_fingerprint( KBNODE keyblock )
 }
 
 
+/* Show a warning if no uids on the key have the primary uid flag
+   set. */
+static void
+no_primary_warning(KBNODE keyblock, int uids)
+{
+  KBNODE node;
+  int select_all=1,have_uid=0,uid_count=0;
+
+  if(uids)
+    select_all=!count_selected_uids(keyblock);
+
+  /* TODO: if we ever start behaving differently with a primary or
+     non-primary attribute ID, we will need to check for attributes
+     here as well. */
+
+  for(node=keyblock; node; node = node->next)
+    {
+      if(node->pkt->pkttype==PKT_USER_ID
+	 && node->pkt->pkt.user_id->attrib_data==NULL)
+	{
+	  uid_count++;
+
+	  if((select_all || (node->flag & NODFLG_SELUID))
+	     && node->pkt->pkt.user_id->is_primary==2)
+	    have_uid|=2;
+	  else
+	    have_uid|=1;
+	}
+    }
+
+  if(uid_count>1 && have_uid&1 && !(have_uid&2))
+    log_info(_("WARNING: no user ID has been marked as primary.  This command "
+	       "may\n              cause a different user ID to become the assumed primary.\n"));
+}
 
 /****************
  * Ask for a new user id, do the selfsignature and put it into
@@ -2530,6 +2564,8 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	mainkey=1;
     }
 
+    no_primary_warning(pub_keyblock,0);
+
     expiredate = ask_expiredate();
     node = find_kbnode( sec_keyblock, PKT_SECRET_KEY );
     sk = copy_secret_key( NULL, node->pkt->pkt.secret_key);
@@ -2778,6 +2814,8 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
     u32 keyid[2];
     int selected, select_all;
     int modified = 0;
+
+    no_primary_warning(pub_keyblock,1);
 
     select_all = !count_selected_uids (pub_keyblock);
 

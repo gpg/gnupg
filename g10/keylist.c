@@ -187,16 +187,20 @@ list_all( int secret )
             log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
             goto leave;
         }
-        resname = keydb_get_resource_name (hd);
-	if (lastresname != resname ) {
-	    int i;
+	if(!opt.with_colons)
+	  {
+	    resname = keydb_get_resource_name (hd);
+	    if (lastresname != resname )
+	      {
+		int i;
 
-	    printf("%s\n", resname );
-	    for(i=strlen(resname); i; i-- )
-		putchar('-');
-	    putchar('\n');
-            lastresname = resname;
-	}
+		printf("%s\n", resname );
+		for(i=strlen(resname); i; i-- )
+		  putchar('-');
+		putchar('\n');
+		lastresname = resname;
+	      }
+	  }
         merge_keys_and_selfsig( keyblock );
 	list_keyblock( keyblock, secret, opt.fingerprint,
 		       opt.check_sigs?&stats:NULL);
@@ -222,7 +226,7 @@ list_one( STRLIST names, int secret )
     KBNODE keyblock = NULL;
     GETKEY_CTX ctx;
     const char *resname;
-    char *keyring_str = N_("Keyring");
+    char *keyring_str = _("Keyring");
     int i;
     struct sig_stats stats;
 
@@ -245,7 +249,7 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
-	    if (opt.show_keyring) {
+	    if (opt.show_keyring && !opt.with_colons) {
 		resname = keydb_get_resource_name (get_ctx_handle(ctx));
 		printf("%s: %s\n", keyring_str, resname);
 		for(i = strlen(resname) + strlen(keyring_str) + 2; i; i-- )
@@ -265,7 +269,7 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
-	    if (opt.show_keyring) {
+	  if (opt.show_keyring && !opt.with_colons) {
 		resname = keydb_get_resource_name (get_ctx_handle(ctx));
 		printf("%s: %s\n", keyring_str, resname);
 		for(i = strlen(resname) + strlen(keyring_str) + 2; i; i-- )

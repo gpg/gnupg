@@ -1287,7 +1287,7 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
     uid->is_primary = 0;
     p = parse_sig_subpkt ( sig->hashed, SIGSUBPKT_PRIMARY_UID, NULL );
     if ( p && *p )
-        uid->is_primary = 1;
+        uid->is_primary = 2;
     /* We could also query this from the unhashed area if it is not in
      * the hased area and then later try to decide which is the better
      * there should be no security problem with this.

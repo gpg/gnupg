@@ -575,8 +575,9 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	}
 	else {
             if (opt.verbose)
-                log_info ("key %08lX: no subkey for subkey binding packet\n",
-                          (ulong)keyid_from_pk (pk, NULL));
+                log_info(_("key %08lX: no subkey for subkey "
+			   "binding signature\n"),
+			 (ulong)keyid_from_pk (pk, NULL));
 	    rc = G10ERR_SIG_CLASS;
 	}
     }

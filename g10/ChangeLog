@@ -1,3 +1,27 @@
+2003-05-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (list_one): Don't show the keyring filename when in
+	--with-colons mode.  Actually translate "Keyring" string.
+
+	* mainproc.c (proc_tree): We can't currently handle multiple
+	signatures of different classes or digests (we'd pretty much have
+	to run a different hash context for each), but if they are all the
+	same, make an exception.  This is Debian bug #194292.
+
+	* sig-check.c (check_key_signature2): Make string translatable.
+
+	* packet.h, getkey.c (fixup_uidnode): Mark real primary uids
+	differently than assumed primaries.
+
+	* keyedit.c (no_primary_warning): Use the differently marked
+	primaries here in a new function to warn when an --edit-key
+	command might rearrange the self-sig dates enough to change which
+	uid is primary.
+	(menu_expire, menu_set_preferences): Use no_primary_warning()
+	here.
+
+	* Makefile.am: Use @DLLIBS@ for -ldl.
+
 2003-05-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* armor.c, g10.c, kbnode.c, misc.c, pkclist.c, sign.c,

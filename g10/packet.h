@@ -168,7 +168,7 @@ typedef struct {
     u32 help_key_expire;
     int help_full_count;
     int help_marginal_count;
-    int is_primary;
+    int is_primary;       /* 2 if set via the primary flag, 1 if calculated */
     int is_revoked;
     int is_expired;
     u32 expiredate;       /* expires at this date or 0 if not at all */
