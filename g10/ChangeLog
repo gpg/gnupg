@@ -1,3 +1,10 @@
+Fri Nov 27 12:39:29 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* status.c (display_help): Removed.
+	* helptext.c: New and removed the N_() from all cpr_gets.
+
+
 Fri Nov 20 16:54:52 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* g10.c (main): New option --not-dash-escaped

@@ -39,14 +39,26 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "util.h"
-#include "ttyio.h"
-#include "i18n.h"
-
-/* #define IS_MODULE 1 */
+#include "types.h"
+#ifdef IS_MODULE
+  #include "g10lib.h"
+  #define _(a) (a)
+#else
+  #include "util.h"
+  #include "ttyio.h"
+  #include "i18n.h"
+  #include "dynload.h"
+#endif
 
 static int open_device( const char *name, int minor );
 static int gather_random( byte *buffer, size_t *r_length, int level );
+
+#ifdef IS_MODULE
+static void tty_printf(const char *fmt, ... )
+{
+    g10_log_info("tty_printf not available (%s)\n", fmt );
+}
+#endif
 
 
 static void
@@ -93,14 +105,14 @@ open_device( const char *name, int minor )
 
     fd = open( name, O_RDONLY );
     if( fd == -1 )
-	log_fatal("can't open %s: %s\n", name, strerror(errno) );
+	g10_log_fatal("can't open %s: %s\n", name, strerror(errno) );
     if( fstat( fd, &sb ) )
-	log_fatal("stat() off %s failed: %s\n", name, strerror(errno) );
+	g10_log_fatal("stat() off %s failed: %s\n", name, strerror(errno) );
   #if defined(__sparc__) && defined(__linux__)
     #warning something is wrong with UltraPenguin /dev/random
   #else
     if( !S_ISCHR(sb.st_mode) )
-	log_fatal("invalid random device!\n" );
+	g10_log_fatal("invalid random device!\n" );
   #endif
     return fd;
 }
@@ -153,12 +165,12 @@ gather_random( byte *buffer, size_t *r_length, int level )
 	do {
 	    n = read(fd, buffer, length );
 	    if( n >= 0 && n > length ) {
-		log_error("bogus read from random device (n=%d)\n", n );
+		g10_log_error("bogus read from random device (n=%d)\n", n );
 		n = length;
 	    }
 	} while( n == -1 && errno == EINTR );
 	if( n == -1 )
-	    log_fatal("read error on random device: %s\n", strerror(errno) );
+	    g10_log_fatal("read error on random device: %s\n", strerror(errno));
 	assert( n <= length );
 	buffer += n;
 	length -= n;
@@ -169,7 +181,7 @@ gather_random( byte *buffer, size_t *r_length, int level )
 
 
 
-#ifndef IS_MODULES
+#ifndef IS_MODULE
 static
 #endif
 const char * const gnupgext_version = "RNDLINUX ($Revision$)";

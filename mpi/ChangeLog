@@ -1,3 +1,9 @@
+Thu Nov 26 07:27:52 1998  Werner Koch  <werner.koch@guug.de>
+
+	* config.links: Support for ppc with ELF
+	* powerpc32/syntax.h: New.
+	* powerpc32/*.S: Applied ELF patches (glibc patches)
+
 Tue Nov 10 19:31:37 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* power*/ : Started with stuff for PPC

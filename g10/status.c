@@ -235,31 +235,6 @@ do_shm_get( const char *keyword, int hidden, int bool )
 
 #endif /* USE_SHM_COPROCESSING */
 
-static void
-display_help( const char *keyword )
-{
-    const char *p;
-    int hint = 0;
-
-    tty_kill_prompt();
-    if( !keyword ) {
-	tty_printf(_("No help available") );
-	hint++;
-    }
-    else {
-	p = _(keyword);
-	if( !strcmp( p, keyword ) ) {
-	    tty_printf(_("No help available for '%s'"), keyword );
-	    hint++;
-	}
-	else
-	    tty_printf("%s", p );
-    }
-    tty_printf("\n");
-    if( hint )
-	tty_printf("You should set your LANG variable to a valid value.\n"
-		   "Set LANG to \"en\" to see the English help texts.\n" );
-}
 
 
 int
@@ -285,7 +260,7 @@ cpr_get( const char *keyword, const char *prompt )
 	p = tty_get( prompt );
 	if( *p == '?' && !p[1] ) {
 	    m_free(p);
-	    display_help( keyword );
+	    display_online_help( keyword );
 	}
 	else
 	    return p;
@@ -318,7 +293,7 @@ cpr_get_hidden( const char *keyword, const char *prompt )
 	p = tty_get_hidden( prompt );
 	if( *p == '?' && !p[1] ) {
 	    m_free(p);
-	    display_help( keyword );
+	    display_online_help( keyword );
 	}
 	else
 	    return p;
@@ -350,7 +325,7 @@ cpr_get_answer_is_yes( const char *keyword, const char *prompt )
 	trim_spaces(p); /* it is okay to do this here */
 	if( *p == '?' && !p[1] ) {
 	    m_free(p);
-	    display_help( keyword );
+	    display_online_help( keyword );
 	}
 	else {
 	    tty_kill_prompt();

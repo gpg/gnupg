@@ -5,16 +5,11 @@
 
     * preferences of hash algorithms are not yet used.
 
-    * Hash calculation for cleartext sigs without a "Hash: xxx" line
-      does it work as specified in the RFC? - Hmmm, I think so
-
     * Check Berkeley BD - it is in glibc -any licensing problems?
 
     * I noticed, that we sometimes have only 3 items in a trustrecord, but
       a next pointer ro more records - check wehther the reuse code really
       works. Maybe this is the reason for the "Hmmm public key lost"
-
-    * check support for mpi/powerpc (see Brian's mail)
 
     * use zlib 1.1.13 to avoid a bug with 13 bit windows
       but there are more problems with large files
@@ -55,9 +50,6 @@
 
     * add test cases for invalid data (scrambled armor or other random data)
 
-    * add some sanity checks to read_keyblock, so that we are sure that
-     the minimal requirements are met (?)
-
     * rewrite --list-packets or put it into another tool.
 
     * Burn the buffers used by fopen(), or use read(2). Does this
@@ -70,10 +62,9 @@
 
     * add an option to re-create a public key from a secret key; we
       can do this in trustdb.c:verify_own_keys.
+      (special tool?)
 
     * change the fake_data stuff to mpi_set_opaque
-
-    * Is it okay to use gettext for the help system?
 
     * Add some stuff for DU cc
 

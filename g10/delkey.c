@@ -128,8 +128,8 @@ delete_key( const char *username, int secret )
 	m_free(p);
 	tty_printf("\n\n");
 
-	yes = cpr_get_answer_is_yes( secret? N_("delete_key.secret.okay")
-			   : N_("delete_key.okay"),
+	yes = cpr_get_answer_is_yes( secret? "delete_key.secret.okay"
+					   : "delete_key.okay",
 			      _("Delete this key from the keyring? "));
 	if( !cpr_enabled() && secret && yes ) {
 	    /* I think it is not required to check a passphrase; if
@@ -137,7 +137,7 @@ delete_key( const char *username, int secret )
 	     * (and has no backup) - it is up him to read some very
 	     * basic texts about security.
 	     */
-	    yes = cpr_get_answer_is_yes(N_("delete_key.secret.okay"),
+	    yes = cpr_get_answer_is_yes("delete_key.secret.okay",
 			 _("This is a secret key! - really delete? "));
 	}
 	if( yes )

@@ -117,7 +117,7 @@ gen_revoke( const char *uname )
     }
 
     tty_printf("\n");
-    if( !cpr_get_answer_is_yes(N_("gen_revoke.okay"),
+    if( !cpr_get_answer_is_yes("gen_revoke.okay",
 			_("Create a revocation certificate for this key? ")) ){
 	rc = 0;
 	goto leave;

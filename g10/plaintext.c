@@ -211,8 +211,8 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
 	tty_printf("Detached signature.\n");
 	do {
 	    m_free(answer);
-	    answer = cpr_get(N_("detached_signature.filename"),
-			      _("Please enter name of data file: "));
+	    answer = cpr_get("detached_signature.filename",
+			   _("Please enter name of data file: "));
 	    cpr_kill_prompt();
 	    if( any && !*answer ) {
 		rc = G10ERR_READ_FILE;

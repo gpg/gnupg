@@ -56,6 +56,9 @@ u16 checksum_mpi( MPI a );
 u16 checksum_mpi_counted_nbits( MPI a );
 u32 buffer_to_u32( const byte *buffer );
 
+/*-- helptext.c --*/
+void display_online_help( const char *keyword );
+
 /*-- encode.c --*/
 int encode_symmetric( const char *filename );
 int encode_store( const char *filename );

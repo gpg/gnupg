@@ -59,6 +59,9 @@ twofish: $(srcdir)/twofish.c
 rndunix: $(srcdir)/rndunix.c
 	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndunix $(srcdir)/rndunix.c
 
+rndlinux: $(srcdir)/rndlinux.c
+	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndlinux $(srcdir)/rndlinux.c
+
 
 
 install-exec-hook:

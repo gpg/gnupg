@@ -396,7 +396,7 @@ ask_algo( int *ret_v4, int addmode )
 
     *ret_v4 = 1;
     for(;;) {
-	answer = cpr_get(N_("keygen.algo"),_("Your selection? "));
+	answer = cpr_get("keygen.algo",_("Your selection? "));
 	cpr_kill_prompt();
 	algo = *answer? atoi(answer): 1;
 	m_free(answer);
@@ -440,7 +440,7 @@ ask_keysize( int algo )
 		 "    highest suggested keysize is 2048 bits\n"),
 					pubkey_algo_to_string(algo) );
     for(;;) {
-	answer = cpr_get(N_("keygen.size"),
+	answer = cpr_get("keygen.size",
 			  _("What keysize do you want? (1024) "));
 	cpr_kill_prompt();
 	nbits = *answer? atoi(answer): 1024;
@@ -453,7 +453,7 @@ ask_keysize( int algo )
 	    tty_printf(
 		_("Keysizes larger than 2048 are not suggested because\n"
 		  "computations take REALLY long!\n"));
-	    if( cpr_get_answer_is_yes(N_("keygen.size.huge.okay"),_(
+	    if( cpr_get_answer_is_yes("keygen.size.huge.okay",_(
 			"Are you sure that you want this keysize? ")) ) {
 		tty_printf(_("Okay, but keep in mind that your monitor "
 			     "and keyboard radiation is also very vulnerable "
@@ -462,7 +462,7 @@ ask_keysize( int algo )
 	    }
 	}
 	else if( nbits > 1536 && !cpr_enabled() ) {
-	    if( cpr_get_answer_is_yes(N_("keygen.size.large.okay"),_(
+	    if( cpr_get_answer_is_yes("keygen.size.large.okay",_(
 		    "Do you really need such a large keysize? ")) )
 		break;
 	}
@@ -504,7 +504,7 @@ ask_expire_interval()
 	int mult;
 
 	m_free(answer);
-	answer = cpr_get(N_("keygen.valid"),_("Key is valid for? (0) "));
+	answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
 	cpr_kill_prompt();
 	trim_spaces(answer);
 	if( !*answer )
@@ -531,7 +531,7 @@ ask_expire_interval()
 	}
 
 	if( !cpr_enabled()
-	     && cpr_get_answer_is_yes(N_("keygen.valid.okay"),
+	     && cpr_get_answer_is_yes("keygen.valid.okay",
 				       _("Is this correct (y/n)? ")) )
 	    break;
     }
@@ -585,7 +585,7 @@ ask_user_id( int mode )
 	if( !aname ) {
 	    for(;;) {
 		m_free(aname);
-		aname = cpr_get(N_("keygen.name"),_("Real name: "));
+		aname = cpr_get("keygen.name",_("Real name: "));
 		trim_spaces(aname);
 		cpr_kill_prompt();
 		if( strpbrk( aname, "<([])>" ) )
@@ -601,7 +601,7 @@ ask_user_id( int mode )
 	if( !amail ) {
 	    for(;;) {
 		m_free(amail);
-		amail = cpr_get(N_("keygen.email"),_("Email address: "));
+		amail = cpr_get("keygen.email",_("Email address: "));
 		trim_spaces(amail);
 		strlwr(amail);
 		cpr_kill_prompt();
@@ -621,7 +621,7 @@ ask_user_id( int mode )
 	if( !acomment ) {
 	    for(;;) {
 		m_free(acomment);
-		acomment = cpr_get(N_("keygen.comment"),_("Comment: "));
+		acomment = cpr_get("keygen.comment",_("Comment: "));
 		trim_spaces(acomment);
 		cpr_kill_prompt();
 		if( !*acomment )
@@ -659,7 +659,7 @@ ask_user_id( int mode )
 		answer[1] = 0;
 	    }
 	    else {
-		answer = cpr_get(N_("keygen.userid.cmd"),_(
+		answer = cpr_get("keygen.userid.cmd",_(
 		    "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "));
 		cpr_kill_prompt();
 	    }
@@ -997,7 +997,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     assert(algo);
     nbits = ask_keysize( algo );
     expire = ask_expire_interval();
-    if( !cpr_enabled() && !cpr_get_answer_is_yes(N_("keygen.sub.okay"),
+    if( !cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
 						  _("Really create? ") ) )
 	goto leave;
 

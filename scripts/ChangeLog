@@ -1,6 +1,12 @@
+Fri Nov 27 12:39:29 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* commit: New
+
+
 Fri Nov 20 12:01:57 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
-	* mkdiff: signs the pacth file
+	* mkdiff: signs the patch file
 
 Sat Oct 17 16:10:16 1998  Werner Koch  (wk@isil.d.shuttle.de)
 

@@ -146,7 +146,7 @@ edit_ownertrust( ulong lid, int mode )
 
 	if( strlen(ans) != 4 )
 	    BUG();
-	p = cpr_get(N_("edit_ownertrust.value"),_("Your decision? "));
+	p = cpr_get("edit_ownertrust.value",_("Your decision? "));
 	trim_spaces(p);
 	cpr_kill_prompt();
 	if( *p && p[1] )
@@ -240,7 +240,7 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	if( opt.batch )
 	    return 0;
 
-	if( !cpr_get_answer_is_yes(N_("revoked_key.override"),
+	if( !cpr_get_answer_is_yes("revoked_key.override",
 				    _("Use this key anyway? ")) )
 	    return 0;
     }
@@ -331,8 +331,8 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 "If you *really* know what you are doing, you may answer\n"
 "the next question with yes\n\n") );
 
-	if( cpr_get_answer_is_yes(N_("untrusted_key.override"),
-				   _("Use this key anyway? "))  )
+	if( cpr_get_answer_is_yes("untrusted_key.override",
+				  _("Use this key anyway? "))  )
 	    rc = 1;
     }
     else if( opt.always_trust && !rc ) {
@@ -478,7 +478,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 	for(;;) {
 	    rc = 0;
 	    m_free(answer);
-	    answer = cpr_get_utf8(N_("pklist.user_id.enter"),
+	    answer = cpr_get_utf8("pklist.user_id.enter",
 				   _("Enter the user ID: "));
 	    trim_spaces(answer);
 	    cpr_kill_prompt();

@@ -1,0 +1,28 @@
+#!/bin/bash
+# need a Posix shell, so we simply use bash
+
+set -e
+
+uid=`id -u`
+date=`date`
+name=$(awk -F: "\$3==$uid { print \$5 }" /etc/passwd )
+addr="<`id -un`@`hostname -d`>"
+
+for i in `find . -name Changes -print`; do
+    dir=`dirname $i`
+    if [ -s $dir/Changes ]; then
+	lines=`wc -l <$dir/Changes`
+	echo "$date  $name  $addr" >$dir/ChangeLog.new
+	echo >>$dir/ChangeLog.new
+	cat $dir/Changes   >>$dir/ChangeLog.new
+	echo >>$dir/ChangeLog.new
+	[ -f $dir/ChangeLog ] && cat $dir/ChangeLog >>$dir/ChangeLog.new
+	echo -n > $dir/Changes
+	[ -f $dir/ChangeLog ] && rm $dir/ChangeLog
+	mv $dir/ChangeLog.new $dir/ChangeLog
+	echo "$lines new lines in $dir/ChangeLog"
+    fi
+done
+
+cvs commit -m "See ChangeLog: $date  $name" $*
+

@@ -146,6 +146,12 @@ case "${target}" in
 	mpi_sflags="-Wa,-mppc"
 	path="powerpc64"
 	;;
+    powerpc*-*-linux*)
+	echo '/* configured for powerpc/ELF */' >>./mpi/asm-syntax.h
+	echo '#define ELF_SYNTAX'               >>asm-syntax.h
+	cat   $srcdir/powerpc32/syntax.h	>>./mpi/asm-syntax.h
+	path="powerpc32"
+	;;
 
     *)
 	echo '/* No assembler modules configured */' >>./mpi/asm-syntax.h

@@ -279,7 +279,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 	m_free(p); p = NULL;
 	tty_printf("\"\n\n");
 
-	if( !cpr_get_answer_is_yes(N_("sign_uid.okay"), _("Really sign? ")) )
+	if( !cpr_get_answer_is_yes("sign_uid.okay", _("Really sign? ")) )
 	    continue;;
 	/* now we can sign the user ids */
       reloop: /* (must use this, because we are modifing the list) */
@@ -392,7 +392,7 @@ change_passphrase( KBNODE keyblock )
 		rc = 0;
 		tty_printf(_( "You don't want a passphrase -"
 			    " this is probably a *bad* idea!\n\n"));
-		if( cpr_get_answer_is_yes(N_("change_passwd.empty.okay"),
+		if( cpr_get_answer_is_yes("change_passwd.empty.okay",
 			       _("Do you really want to do this? ")))
 		    changed++;
 		break;
@@ -587,7 +587,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		    have_commands = 0;
 	    }
 	    if( !have_commands ) {
-		answer = cpr_get(N_("keyedit.cmd"), _("Command> "));
+		answer = cpr_get("keyedit.cmd", _("Command> "));
 		cpr_kill_prompt();
 	    }
 	    trim_spaces(answer);
@@ -635,10 +635,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		goto leave;
 	    if( !modified && !sec_modified )
 		goto leave;
-	    if( !cpr_get_answer_is_yes(N_("keyedit.save.okay"),
+	    if( !cpr_get_answer_is_yes("keyedit.save.okay",
 					_("Save changes? ")) ) {
 		if( cpr_enabled()
-		    || cpr_get_answer_is_yes(N_("keyedit.cancel.okay"),
+		    || cpr_get_answer_is_yes("keyedit.cancel.okay",
 					     _("Quit without saving? ")) )
 		    goto leave;
 		break;
@@ -697,7 +697,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 
 	  case cmdSIGN: /* sign (only the public key) */
 	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) ) {
-		if( !cpr_get_answer_is_yes(N_("keyedit.sign_all.okay"),
+		if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
 					   _("Really sign all user ids? ")) ) {
 		    tty_printf(_("Hint: Select the user ids to sign\n"));
 		    break;
@@ -739,7 +739,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		else if( count_uids(keyblock) - n1 < 1 )
 		    tty_printf(_("You can't delete the last user id!\n"));
 		else if( cpr_get_answer_is_yes(
-			    N_("keyedit.remove.uid.okay"),
+			    "keyedit.remove.uid.okay",
 			n1 > 1? _("Really remove all selected user ids? ")
 			      : _("Really remove this user id? ")
 		       ) ) {
@@ -766,7 +766,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		if( !(n1=count_selected_keys( keyblock )) )
 		    tty_printf(_("You must select at least one key.\n"));
 		else if( sec_keyblock && !cpr_get_answer_is_yes(
-			    N_("keyedit.remove.subkey.okay"),
+			    "keyedit.remove.subkey.okay",
 		       n1 > 1?
 			_("Do you really want to delete the selected keys? "):
 			_("Do you really want to delete this key? ")

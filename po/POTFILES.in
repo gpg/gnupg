@@ -45,5 +45,6 @@ g10/pubkey-enc.c
 g10/openfile.c
 g10/encr-data.c
 g10/seskey.c
+g10/helptext.c
 
 #---end--

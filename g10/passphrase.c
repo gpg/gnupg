@@ -171,10 +171,10 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
     else if( opt.batch )
 	log_fatal("Can't query password in batchmode\n");
     else {
-	pw = cpr_get_hidden(N_("passphrase.enter"), _("Enter passphrase: ") );
+	pw = cpr_get_hidden("passphrase.enter", _("Enter passphrase: ") );
 	tty_kill_prompt();
 	if( mode == 2 && !cpr_enabled() ) {
-	    char *pw2 = cpr_get_hidden(N_("passphrase.repeat"),
+	    char *pw2 = cpr_get_hidden("passphrase.repeat",
 				       _("Repeat passphrase: ") );
 	    tty_kill_prompt();
 	    if( strcmp(pw, pw2) ) {
