@@ -375,10 +375,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
             sigval = NULL;
             rc = gpgsm_create_cms_signature (cert, md, algo, &sigval);
             if (rc)
-              {
-                ksba_cert_release (cert);
-                goto leave;
-              }
+	      goto leave;
 
             err = ksba_cms_set_sig_val (cms, signer, sigval);
             xfree (sigval);
