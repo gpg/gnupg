@@ -837,6 +837,8 @@ static void add_group(char *string)
       return;
     }
 
+  trim_trailing_ws(name,strlen(name));
+
   /* Break apart the values */
   while ((value=strsep (&string," \t")))
     {
