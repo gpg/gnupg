@@ -26,8 +26,8 @@ bin_PROGRAMS    = gpgsplit
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest
 
 gpgsplit_LDADD  = $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@
-mpicalc_LDADD   = $(needed_libs) @INTLLIBS@ @CAPLIBS@
-bftest_LDADD    = $(needed_libs) @INTLLIBS@ @CAPLIBS@ @DLLIBS@ @EGDLIBS@
+mpicalc_LDADD   = $(needed_libs) @INTLLIBS@ @CAPLIBS@ @W32LIBS@
+bftest_LDADD    = $(needed_libs) @INTLLIBS@ @CAPLIBS@ @W32LIBS@ @DLLIBS@ @EGDLIBS@
 shmtest_LDADD   = $(needed_libs) @INTLLIBS@ @CAPLIBS@
 
 gpgsplit mpicalc bftest shmtest: $(needed_libs)
