@@ -1,3 +1,8 @@
+2004-04-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document delsig.  Clarify that --refresh-keys
+	arguments are optional.  Document --bzip2-decompress-lowmem.
+
 2004-02-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document --ask-cert-level, --max-output, and
