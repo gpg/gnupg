@@ -1,3 +1,10 @@
+2004-12-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* libcurl.m4: Rewrite this to use the new --protocols flag I gave
+	to the libcurl people.
+
+	* Makefile.am: Add readline.m4 and libcurl.m4.
+
 2004-12-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* libcurl.m4: OSX has a problem with their curl-config script.
