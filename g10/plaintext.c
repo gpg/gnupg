@@ -328,14 +328,11 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 			   const char *inname, int textmode )
 {
     progress_filter_context_t pfx;
-    int dealloc_pfx_name = 1;
     char *answer = NULL;
     IOBUF fp;
     int rc = 0;
 
     fp = open_sigfile( inname, &pfx ); /* open default file */
-    if (!fp)
-      dealloc_pfx_name = 0;
 
     if( !fp && !opt.batch ) {
 	int any=0;
@@ -370,8 +367,6 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
     }
     do_hash( md, md2, fp, textmode );
     iobuf_close(fp);
-    if (dealloc_pfx_name)
-      m_free ((void *)pfx.what);
 
   leave:
     m_free(answer);
@@ -398,7 +393,6 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
 	if( fp ) {
 	    do_hash( md, md2, fp, textmode );
 	    iobuf_close(fp);
-	    m_free ((void *)pfx.what);
 	    return 0;
 	}
         log_error (_("no signed data\n"));

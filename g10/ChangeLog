@@ -1,3 +1,11 @@
+2003-04-28  Werner Koch  <wk@gnupg.org>
+
+	* filter.h: Remove const from WHAT.
+	* progress.c (handle_progress): Store a copy of NAME.
+	(progress_filter): Release WHAT, make sure not to print a NULL WHAT.
+	* openfile.c (open_sigfile): Adjust free for new progress semantics.
+	* plaintext.c (ask_for_detached_datafile): Don't dealloc pfx->WHAT.
+
 2003-04-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (build_sig_subpkt): Comments.

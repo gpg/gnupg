@@ -45,7 +45,9 @@ progress_filter (void *opaque, int control,
       pfx->offset = 0;
       pfx->last_time = make_timestamp ();
 
-      sprintf (buffer, "%.20s ? %lu %lu", pfx->what, pfx->offset,
+      sprintf (buffer, "%.20s ? %lu %lu",
+               pfx->what? pfx->what : "?",
+               pfx->offset,
 	       pfx->total);
       write_status_text (STATUS_PROGRESS, buffer);
     }
@@ -69,13 +71,23 @@ progress_filter (void *opaque, int control,
 	{
 	  char buffer[50];
 	  
-	  sprintf (buffer, "%.20s ? %lu %lu", pfx->what, pfx->offset,
+	  sprintf (buffer, "%.20s ? %lu %lu",
+                   pfx->what? pfx->what : "?", 
+                   pfx->offset,
 		   pfx->total);
 	  write_status_text (STATUS_PROGRESS, buffer);
 
 	  pfx->last = pfx->offset;
 	  pfx->last_time = timestamp;
 	}
+    }
+  else if (control == IOBUFCTRL_FREE)
+    {
+      /* Note, that we must always dealloc resources of a filter
+         within the filter handler and not anywhere else.  (We set it
+         to NULL and check all uses just in case.) */
+      m_free (pfx->what);
+      pfx->what = NULL;
     }
   else if (control == IOBUFCTRL_DESC)
     *(char**)buf = "progress_filter";
@@ -99,7 +111,7 @@ handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
     filesize = opt.set_filesize;
 
   /* register the progress filter */
-  pfx->what = name ? name : "stdin";
+  pfx->what = m_strdup (name ? name : "stdin");
   pfx->total = filesize;
   iobuf_push_filter (inp, progress_filter, pfx);
 }
