@@ -1,3 +1,12 @@
+2003-09-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Add --multifile as an alias to turn --encrypt into
+	--encrypt-files (plus --verify-files, --decrypt-files).
+
+	* encode.c (use_mdc), g10.c (main): Use RFC1991 and RFC2440
+	directly to check for MDC usability.  Do not set the force_mdc or
+	disable_mdc flags since there is no point any longer.
+
 2003-08-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (show_policy_url): Policy URLs might be UTF8.
