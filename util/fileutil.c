@@ -1,5 +1,5 @@
 /* fileutil.c -  file utilities
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -205,7 +205,7 @@ is_file_compressed( const char *s, int *ret_rc )
         { 4, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
     };
     
-    if ( !s || *s == '-' || !ret_rc )
+    if ( !s || (*s == '-' && !s[1]) || !ret_rc )
         return 0; /* We can't check stdin or no file was given */
 
     a = iobuf_open( s );

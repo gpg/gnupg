@@ -1834,13 +1834,14 @@ iobuf_set_limit( IOBUF a, off_t nlimit )
 
 
 
-/****************
- * Return the length of an open file
+/*
+ * Return the length of an open file.
  */
 off_t
 iobuf_get_filelength( IOBUF a )
 {
     struct stat st;
+    const char *s;
 
     if( a->directfp )  {
 	FILE *fp = a->directfp;
@@ -1857,18 +1858,18 @@ iobuf_get_filelength( IOBUF a )
 	    file_filter_ctx_t *b = a->filter_ov;
 	    FILEP_OR_FD fp = b->fp;
 
-          #if defined(HAVE_DOSISH_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
+#if defined(HAVE_DOSISH_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
             ulong size;
 
             if ( (size=GetFileSize (fp, NULL)) != 0xffffffff ) 
                 return size;
             log_error ("GetFileSize for handle %p failed: ec=%d\n",
                        fp, (int)GetLastError () );
-          #else
+#else
             if( !fstat(my_fileno(fp), &st) )
 		return st.st_size;
 	    log_error("fstat() failed: %s\n", strerror(errno) );
-          #endif
+#endif
 	    break;
 	}
 

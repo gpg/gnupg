@@ -1,3 +1,8 @@
+2003-05-21  Werner Koch  <wk@gnupg.org>
+
+	* fileutil.c (is_file_compressed): Fix the check for the "-" file
+	name.
+
 2003-03-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* argparse.c (default_strusage): Change copyright date.
