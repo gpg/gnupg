@@ -1,3 +1,9 @@
+2004-09-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Note that --throw-keyid is --throw-keyids.  Note
+	changes in --pgp8.  Rephrase the "don't play algorithm games"
+	warning now that PGP has blowfish, zlib, and bzip2.
+
 2004-08-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Remove show-long-keyids since it is replaced by
