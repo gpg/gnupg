@@ -1,3 +1,9 @@
+2003-10-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (show_key_with_all_names): Ownertrust is only
+	meaningful for the PGP or classic trust models.  Both validity and
+	ownertrust are not meaningful for the always trust model.
+
 2003-10-11  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c: Always enable the gen_card_key prototype.

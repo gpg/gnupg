@@ -2079,12 +2079,18 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY )
 	      {
-		tty_printf("                     ");
-		if(opt.list_options&LIST_SHOW_LONG_KEYID)
-		  tty_printf("        ");
-		tty_printf(_("trust: %-13s"), otrust);
-		tty_printf(_("validity: %s"), trust );
-		tty_printf("\n");
+		if(opt.trust_model!=TM_ALWAYS)
+		  {
+		    tty_printf("                     ");
+		    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+		      tty_printf("        ");
+		    /* Ownertrust is only meaningful for the PGP or
+		       classic trust models */
+		    if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
+		      tty_printf(_("trust: %-13s"), otrust);
+		    tty_printf(_("validity: %s"), trust );
+		    tty_printf("\n");
+		  }
 		if( node->pkt->pkttype == PKT_PUBLIC_KEY
 		    && (get_ownertrust (pk)&TRUST_FLAG_DISABLED))
 		  {
