@@ -1,3 +1,8 @@
+2002-04-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* util.h: New function answer_is_yes_no_default() to give a
+	default answer.
+
 2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
 
 	* util.h [__riscos__]: Removed riscos_open, riscos_fopen and

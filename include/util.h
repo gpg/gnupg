@@ -164,6 +164,7 @@ void print_string( FILE *fp, const byte *p, size_t n, int delim );
 void  print_utf8_string( FILE *fp, const byte *p, size_t n );
 void  print_utf8_string2( FILE *fp, const byte *p, size_t n, int delim);
 char *make_printable_string( const byte *p, size_t n, int delim );
+int answer_is_yes_no_default( const char *s, int def_answer );
 int answer_is_yes( const char *s );
 int answer_is_yes_no_quit( const char *s );
 
