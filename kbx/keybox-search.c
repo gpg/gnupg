@@ -170,9 +170,8 @@ blob_cmp_name (KEYBOXBLOB blob, int idx, const char *name, size_t namelen)
       len = get32 (buffer+pos+4);
       if (off+len > length)
         return 0; /* out of bounds */
-      if (len < 2)
-        return 0; /* empty name or 0 not stored */
-      len--;
+      if (len < 1)
+        return 0; /* empty name */
       
       return len == namelen && !memcmp (buffer+off, name, len);
     }

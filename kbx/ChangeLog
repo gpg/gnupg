@@ -1,3 +1,8 @@
+2001-12-15  Werner Koch  <wk@gnupg.org>
+
+	* keybox-search.c (blob_cmp_name): There is no terminating 0 stored
+	for the uid; fixed length compare.
+
 2001-12-14  Werner Koch  <wk@gnupg.org>
 
 	* keybox-blob.c (x509_email_kludge): New.
