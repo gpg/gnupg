@@ -643,7 +643,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
       {
 	log_info(_("you can only detach-sign with PGP 2.x style keys "
 		   "while in --pgp2 mode\n"));
-	log_info(_("this message may not be usable by PGP 2.x\n"));
+	log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
 	opt.pgp2=0;
       }
 
@@ -875,7 +875,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
       {
 	log_info(_("you can only clearsign with PGP 2.x style keys "
 		   "while in --pgp2 mode\n"));
-	log_info(_("this message may not be usable by PGP 2.x\n"));
+	log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
 	opt.pgp2=0;
       }
 

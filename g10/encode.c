@@ -345,7 +345,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	  {
 	    log_info(_("you can only encrypt to RSA keys of 2048 bits or "
 		       "less in --pgp2 mode\n"));
-	    log_info(_("this message may not be usable by PGP 2.x\n"));
+	    log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
 	    opt.pgp2=0;
 	    break;
 	  }
@@ -407,7 +407,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    if( opt.pgp2 ) {
 	      log_info(_("unable to use the IDEA cipher for all of the keys "
 			 "you are encrypting to.\n"));
-	      log_info(_("this message may not be usable by PGP 2.x\n"));
+	      log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
 	      opt.pgp2=0;
 	    }
 	}
@@ -626,6 +626,18 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	enc->pubkey_algo = pk->pubkey_algo;
 	keyid_from_pk( pk, enc->keyid );
 	enc->throw_keyid = opt.throw_keyid;
+
+	if(opt.throw_keyid && (opt.pgp2 || opt.pgp6 || opt.pgp7))
+	  {
+	    log_info(_("you may not use %s while in %s mode\n"),
+		     "throw-keyid",
+		     opt.pgp2?"--pgp2":opt.pgp6?"--pgp6":"--pgp7");
+
+	    log_info(_("this message may not be usable by %s\n"),
+		     opt.pgp2?"PGP 2.x":opt.pgp6?"PGP 6.x":"PGP 7.x");
+
+	    opt.pgp2=opt.pgp6=opt.pgp7=0;
+	  }
 
 	/* Okay, what's going on: We have the session key somewhere in
 	 * the structure DEK and want to encode this session key in

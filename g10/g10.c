@@ -264,8 +264,8 @@ enum cmd_and_opt_values { aNull = 0,
     oFastListMode,
     oListOnly,
     oIgnoreTimeConflict,
-    oIgnoreValidFrom,                         
-    oIgnoreCrcError,                          
+    oIgnoreValidFrom,
+    oIgnoreCrcError,
     oShowSessionKey,
     oOverrideSessionKey,
     oNoRandomSeedFile,
@@ -1598,7 +1598,8 @@ main( int argc, char **argv )
 
 	    if(unusable)
 	      {
-		log_info(_("this message may not be usable by PGP 2.x\n"));
+		log_info(_("this message may not be usable by %s\n"),
+			 "PGP 2.x");
 		opt.pgp2=0;
 	      }
 	    else
