@@ -259,7 +259,7 @@ print_keyinfo(int count,char *keystring,u32 *keyid)
 static int 
 keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 {
-  int ret=0,i,gotversion=0;
+  int ret=0,i, gotversion=0;
   STRLIST temp;
   unsigned int maxlen=256,buflen;
   char *command=NULL,*searchstr=NULL;
@@ -327,8 +327,6 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
     {
     case GET:
       {
-	int i;
-
 	fprintf(spawn->tochild,"COMMAND GET\n\n");
 
 	/* Which keys do we want? */
@@ -344,7 +342,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 
     case SEND:
       {
-	STRLIST key,temp;
+	STRLIST key;
 
 	/* Note the extra \n here to send an empty keylist block */
 	fprintf(spawn->tochild,"COMMAND SEND\n\n\n");
@@ -491,10 +489,9 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 
     case SEARCH:
       {
-	byte *line=NULL;
-	unsigned int buflen=0,maxlen=80;
-	int count;
-
+	line=NULL;
+        buflen = 0;
+        maxlen = 80;
 	/* Look for the COUNT line */
 	do
 	  {
@@ -504,9 +501,9 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 		goto fail; /* i.e. EOF */
 	      }
 	  }
-	while(sscanf(line,"COUNT %d\n",&count)!=1);
+	while(sscanf(line,"COUNT %d\n",&i)!=1);
 
-	keyserver_search_prompt(spawn->fromchild,count,searchstr);
+	keyserver_search_prompt(spawn->fromchild,i,searchstr);
 
 	break;
       }

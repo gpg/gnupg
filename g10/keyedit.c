@@ -1029,6 +1029,12 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    break;
 
 	  case cmdADDPHOTO:
+            if (opt.rfc2440)
+              {
+                tty_printf(
+                   _("This command is not allowed while in OpenPGP mode.\n"));
+                break;
+              }
 	    photo=1;
 	    /* fall through */
 

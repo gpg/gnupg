@@ -174,7 +174,7 @@ list_one( STRLIST names, int secret )
     int rc = 0;
     KBNODE keyblock = NULL;
     GETKEY_CTX ctx;
-    char *resname;
+    const char *resname;
     char *keyring_str = N_("Keyring");
     int i;
 

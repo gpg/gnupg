@@ -171,7 +171,7 @@ lock-once
 # The default program is "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
 #
 # Some other viewers:
-# photo-viewer "xv -name \"KeyID 0x%k\" -"
+# photo-viewer "qiv %i"
 # photo-viewer "ee %i"
 # photo-viewer "display -title 'KeyID 0x%k'"
 #

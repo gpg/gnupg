@@ -916,23 +916,23 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
 		       const void *header,int headerlen)
 {
   byte *attrib;
-  int index;
+  int idx;
 
   if(1+headerlen+buflen>8383)
-    index=5;
+    idx=5;
   else if(1+headerlen+buflen>191)
-    index=2;
+    idx=2;
   else
-    index=1;
+    idx=1;
 
   /* realloc uid->attrib_data to the right size */
 
   uid->attrib_data=m_realloc(uid->attrib_data,
-			     uid->attrib_len+index+headerlen+buflen);
+			     uid->attrib_len+idx+headerlen+buflen);
 
   attrib=&uid->attrib_data[uid->attrib_len];
 
-  if(index==5)
+  if(idx==5)
     {
       attrib[0]=255;
       attrib[1]=(1+headerlen+buflen) >> 24;
@@ -940,7 +940,7 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
       attrib[3]=(1+headerlen+buflen) >> 8;
       attrib[4]=1+headerlen+buflen;
     }
-  else if(index==2)
+  else if(idx==2)
     {
       attrib[0]=(1+headerlen+buflen-192) / 256 + 192;
       attrib[1]=(1+headerlen+buflen-192) % 256;
@@ -948,13 +948,13 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
   else
     attrib[0]=1+headerlen+buflen; /* Good luck finding a JPEG this small! */
 
-  attrib[index++]=type;
+  attrib[idx++]=type;
 
   /* Tack on our data at the end */
 
-  memcpy(&attrib[index],header,headerlen);
-  memcpy(&attrib[index+headerlen],buf,buflen);
-  uid->attrib_len+=index+headerlen+buflen;
+  memcpy(&attrib[idx],header,headerlen);
+  memcpy(&attrib[idx+headerlen],buf,buflen);
+  uid->attrib_len+=idx+headerlen+buflen;
 }
 
 static int
