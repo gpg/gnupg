@@ -62,8 +62,8 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 #define EXTRA_UID_NAME_SPACE 71
   uid=m_alloc_clear(sizeof(*uid)+71);
 
-  printf(_("\nPick an image to use for your photo ID.  "
-	   "The image must be a JPEG file.\n"
+  tty_printf(_("\nPick an image to use for your photo ID.  "
+           "The image must be a JPEG file.\n"
 	   "Remember that the image is stored within your public key.  "
 	   "If you use a\n"
 	   "very large picture, your key will become very large as well!\n"
@@ -71,7 +71,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 
   while(photo==NULL)
     {
-      printf("\n");
+      tty_printf("\n");
 
       m_free(filename);
 
@@ -92,7 +92,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
       len=iobuf_get_filelength(file);
       if(len>6144)
 	{
-	  printf("This JPEG is really large (%d bytes) !\n",len);
+	  tty_printf( _("This JPEG is really large (%d bytes) !\n"),len);
 	  if(!cpr_get_answer_is_yes("photoid.jpeg.size",
 			    _("Are you sure you want to use it (y/N)? ")))
 	  {
