@@ -1,6 +1,14 @@
+2003-11-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* pubkey.c (setup_pubkey_table): Only include RSA if USE_RSA is
+	defined.
+	(pubkey_get_npkey): Return 2 for RSA even if it isn't available so
+	we can at least handle RSA keys.
+
 2003-11-27  Werner Koch  <wk@gnupg.org>
 
-	* pubkey.c (pubkey_sign): Return an error if an ElGamal key is used.
+	* pubkey.c (pubkey_sign): Return an error if an ElGamal key is
+	used.
 
 	* elgamal.c (gen_k): New arg SMALL_K.
 	(sign): Use it here with SMALL_K set to false

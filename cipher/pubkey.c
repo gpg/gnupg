@@ -1,5 +1,5 @@
 /* pubkey.c  -	pubkey dispatcher
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -152,6 +152,7 @@ setup_pubkey_table(void)
 	BUG();
     i++;
 
+#ifdef USE_RSA
     pubkey_table[i].algo = PUBKEY_ALGO_RSA;
     pubkey_table[i].name = rsa_get_info( pubkey_table[i].algo,
 					 &pubkey_table[i].npkey,
@@ -203,6 +204,7 @@ setup_pubkey_table(void)
     if( !pubkey_table[i].name )
 	BUG();
     i++;
+#endif /* USE_RSA */
 
     for( ; i < TABLE_SIZE; i++ )
 	pubkey_table[i].name = NULL;
@@ -325,6 +327,8 @@ pubkey_get_npkey( int algo )
 	    if( pubkey_table[i].algo == algo )
 		return pubkey_table[i].npkey;
     } while( load_pubkey_modules() );
+    if( is_RSA(algo) )	  /* special hack, so that we are able to */
+	return 2;	  /* see the RSA keyids */
     return 0;
 }
 
@@ -559,4 +563,3 @@ pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
   ready:
     return rc;
 }
-
