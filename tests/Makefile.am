@@ -53,6 +53,20 @@ clean-local:
 	srcdir=$(srcdir) $(TESTS_ENVIRONMENT) $(srcdir)/inittests --clean
 
 inittests.stamp: inittests
-	srcdir=$(srcdir) $(TESTS_ENVIRONMENT) $(srcdir)/inittests
+	LD_LIBRARY_PATH=$$(seen=0; \
+                           for i in $(LDFLAGS); \
+                           do \
+                             if echo "$$i" | egrep '^-L' >/dev/null 2>&1; \
+                             then \
+                               if test $$seen = 0; \
+                               then \
+                                 seen=1; \
+                               else \
+                                 echo -n ":"; \
+                               fi; \
+                               echo -n $${i} | sed 's/^-L//'; \
+                             fi; \
+                           done) \
+          srcdir=$(srcdir) $(TESTS_ENVIRONMENT) $(srcdir)/inittests
 	echo timestamp >./inittests.stamp
 
