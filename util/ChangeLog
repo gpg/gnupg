@@ -1,3 +1,12 @@
+2003-03-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* argparse.c (default_strusage): Change copyright date.
+
+2003-03-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* srv.h, srv.c (getsrv): Use unsigned char rather than char.
+	Noted by Stefan Bellon.
+
 2003-03-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (connect_server): Use DNS SRV to get a server list.  Fail
