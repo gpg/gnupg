@@ -1,3 +1,9 @@
+2002-10-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* gnupg.spec.in: Use new path for keyserver helpers, /usr/lib is
+	no longer used for cipher/hash plugins, and include gpgv,
+	gpgsplit, and the new gnupg.7 man page.
+
 2002-10-24  Werner Koch  <wk@gnupg.org>
 
 	* mk-w32-dist: Include gpgkeys_ldap.
