@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2001-10-23 09:41+0200\n"
+"POT-Creation-Date: 2001-12-22 14:31+0100\n"
 "PO-Revision-Date: 2000-03-07 22:51+01:00\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -43,7 +43,7 @@ msgstr "n"
 msgid "nN"
 msgstr "nN"
 
-#: g10/keyedit.c:574 util/miscutil.c:326
+#: g10/keyedit.c:765 util/miscutil.c:326
 msgid "quit"
 msgstr "afslut"
 
@@ -268,7 +268,7 @@ msgstr "... dette er en fejl (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "du fandt en fejl ... (%s:%d)\n"
 
-#: cipher/random.c:320 g10/import.c:145 g10/keygen.c:1512
+#: cipher/random.c:320 g10/import.c:145 g10/keygen.c:1537
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "kan ikke åbne '%s': %s\n"
@@ -344,7 +344,7 @@ msgstr ""
 "Ikke nok tilfældige byte tilgængelig.  Please do some other work to give\n"
 "the OS a chance to collect more entropy! (Kræver %d byte mere)\n"
 
-#: g10/g10.c:238
+#: g10/g10.c:262
 msgid ""
 "@Commands:\n"
 " "
@@ -352,145 +352,155 @@ msgstr ""
 "@Kommandoer:\n"
 " "
 
-#: g10/g10.c:240
+#: g10/g10.c:264
 msgid "|[file]|make a signature"
 msgstr "|[filer]|opret en signatur"
 
-#: g10/g10.c:241
+#: g10/g10.c:265
 msgid "|[file]|make a clear text signature"
 msgstr "|[filer]|opret rentekst signatur"
 
-#: g10/g10.c:242
+#: g10/g10.c:266
 msgid "make a detached signature"
 msgstr "opret en separat signatur"
 
-#: g10/g10.c:243
+#: g10/g10.c:267
 msgid "encrypt data"
 msgstr "kryptér data"
 
-#: g10/g10.c:244
+#: g10/g10.c:268
 msgid "encryption only with symmetric cipher"
 msgstr "kryptér kun med symmetriske cifre"
 
-#: g10/g10.c:245
+#: g10/g10.c:269
 msgid "store only"
 msgstr "gem kun"
 
-#: g10/g10.c:246
+#: g10/g10.c:270
 msgid "decrypt data (default)"
 msgstr "afkryptér data (standard)"
 
-#: g10/g10.c:247
+#: g10/g10.c:271
 msgid "verify a signature"
 msgstr "godkend en signatur"
 
-#: g10/g10.c:249
+#: g10/g10.c:273
 msgid "list keys"
 msgstr "vis nøgler"
 
-#: g10/g10.c:251
+#: g10/g10.c:275
 msgid "list keys and signatures"
 msgstr "vis nøgler og signaturer"
 
-#: g10/g10.c:252
+#: g10/g10.c:276
 msgid "check key signatures"
 msgstr "tjek nøglesignaturer"
 
-#: g10/g10.c:253
+#: g10/g10.c:277
 msgid "list keys and fingerprints"
 msgstr "vis nøgle og fingeraftryk"
 
-#: g10/g10.c:254
+#: g10/g10.c:278
 msgid "list secret keys"
 msgstr "vis hemmelige nøgler"
 
-#: g10/g10.c:255
+#: g10/g10.c:279
 msgid "generate a new key pair"
 msgstr "generér et nyt nøglepar"
 
-#: g10/g10.c:256
+#: g10/g10.c:280
 msgid "remove key from the public keyring"
 msgstr "fjern nøgle fra den offentlige nøglering"
 
-#: g10/g10.c:258
+#: g10/g10.c:282
 msgid "remove key from the secret keyring"
 msgstr "fjern nøgle fra den hemmelige nøglering"
 
-#: g10/g10.c:259
+#: g10/g10.c:283
 msgid "sign a key"
 msgstr "signér en nøgle"
 
-#: g10/g10.c:260
+#: g10/g10.c:284
 msgid "sign a key locally"
 msgstr "signér en nøgle lokalt"
 
-#: g10/g10.c:261
+#: g10/g10.c:285
+#, fuzzy
+msgid "sign a key non-revocably"
+msgstr "signér en nøgle lokalt"
+
+#: g10/g10.c:286
 msgid "sign or edit a key"
 msgstr "signér eller redigér en nøgle"
 
-#: g10/g10.c:262
+#: g10/g10.c:287
 msgid "generate a revocation certificate"
 msgstr "Generér en annullérbar certifikat"
 
-#: g10/g10.c:263
+#: g10/g10.c:288
 msgid "export keys"
 msgstr "eksportér nøgler"
 
-#: g10/g10.c:264
+#: g10/g10.c:289
 msgid "export keys to a key server"
 msgstr "eksportér nøgler til en nøgletjener"
 
-#: g10/g10.c:265
+#: g10/g10.c:290
 msgid "import keys from a key server"
 msgstr "importér nøgler fra en nøgleserver"
 
-#: g10/g10.c:267
+#: g10/g10.c:292
+#, fuzzy
+msgid "search for keys on a key server"
+msgstr "eksportér nøgler til en nøgletjener"
+
+#: g10/g10.c:294
 #, fuzzy
 msgid "update all keys from a keyserver"
 msgstr "importér nøgler fra en nøgleserver"
 
-#: g10/g10.c:271
+#: g10/g10.c:298
 msgid "import/merge keys"
 msgstr "importér/fusionér nøgler"
 
-#: g10/g10.c:273
+#: g10/g10.c:300
 msgid "list only the sequence of packets"
 msgstr "vis kun pakkesekvensen"
 
-#: g10/g10.c:275
+#: g10/g10.c:302
 msgid "export the ownertrust values"
 msgstr "eksportér ejertillidsværdierne"
 
-#: g10/g10.c:277
+#: g10/g10.c:304
 msgid "import ownertrust values"
 msgstr "importér ejertillidsværdierne"
 
-#: g10/g10.c:279
+#: g10/g10.c:306
 msgid "update the trust database"
 msgstr "opdatér tillidsdatabasen"
 
-#: g10/g10.c:281
+#: g10/g10.c:308
 #, fuzzy
 msgid "unattended trust database update"
 msgstr "opdatér tillidsdatabasen"
 
-#: g10/g10.c:282
+#: g10/g10.c:309
 msgid "fix a corrupted trust database"
 msgstr "reparér en ødelagt tillidsdatabase"
 
-#: g10/g10.c:283
+#: g10/g10.c:310
 msgid "De-Armor a file or stdin"
 msgstr "De-beskydt en fil el. stdin"
 
-#: g10/g10.c:285
+#: g10/g10.c:312
 msgid "En-Armor a file or stdin"
 msgstr "Beskydt en fil el. stdin"
 
-#: g10/g10.c:287
+#: g10/g10.c:314
 msgid "|algo [files]|print message digests"
 msgstr "|algo [filer]|print meddelelsesresumé"
 
-#: g10/g10.c:291
+#: g10/g10.c:318
 msgid ""
 "@\n"
 "Options:\n"
@@ -500,172 +510,203 @@ msgstr ""
 "Indstillinger:\n"
 " "
 
-#: g10/g10.c:293
+#: g10/g10.c:320
 msgid "create ascii armored output"
 msgstr "opret ascii beskyttet uddata"
 
-#: g10/g10.c:295
+#: g10/g10.c:322
 msgid "|NAME|encrypt for NAME"
 msgstr "|NAME|kryptér for NAME"
 
-#: g10/g10.c:298
+#: g10/g10.c:325
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NAME|brug NAME som standard modtager"
 
-#: g10/g10.c:300
+#: g10/g10.c:327
 msgid "use the default key as default recipient"
 msgstr "brug standard nøglen som standard modtager"
 
-#: g10/g10.c:304
+#: g10/g10.c:332
 msgid "use this user-id to sign or decrypt"
 msgstr "brug denne bruger-id til at signere eller dekryptere"
 
-#: g10/g10.c:305
+#: g10/g10.c:333
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|sæt kompresningsniveau N (0 = slået fra)"
 
-#: g10/g10.c:307
+#: g10/g10.c:335
 msgid "use canonical text mode"
 msgstr "brug kanonisk tekstmodus"
 
-#: g10/g10.c:308
+#: g10/g10.c:338
 msgid "use as output file"
 msgstr "brug som uddatafil"
 
-#: g10/g10.c:309
+#: g10/g10.c:339
 msgid "verbose"
 msgstr "meddelsom"
 
-#: g10/g10.c:310
+#: g10/g10.c:340
 msgid "be somewhat more quiet"
 msgstr "vær mere stille"
 
-#: g10/g10.c:311
+#: g10/g10.c:341
 msgid "don't use the terminal at all"
 msgstr "brug overhovedet ikke terminalen"
 
-#: g10/g10.c:312
+#: g10/g10.c:342
 msgid "force v3 signatures"
 msgstr "tving v3 signaturer"
 
-#: g10/g10.c:313
+#: g10/g10.c:343
 #, fuzzy
 msgid "do not force v3 signatures"
 msgstr "tving v3 signaturer"
 
-#: g10/g10.c:314
+#: g10/g10.c:344
+#, fuzzy
+msgid "force v4 key signatures"
+msgstr "tving v3 signaturer"
+
+#: g10/g10.c:345
+#, fuzzy
+msgid "do not force v4 key signatures"
+msgstr "tving v3 signaturer"
+
+#: g10/g10.c:346
 msgid "always use a MDC for encryption"
 msgstr "brug altid en MDC for kryptering"
 
-#: g10/g10.c:315
+#: g10/g10.c:347
 msgid "do not make any changes"
 msgstr "lav ingen ændringer"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-#: g10/g10.c:317
+#: g10/g10.c:349
 msgid "use the gpg-agent"
 msgstr ""
 
-#: g10/g10.c:318
+#: g10/g10.c:350
 msgid "batch mode: never ask"
 msgstr "kørselsmodus: spørg aldrig"
 
-#: g10/g10.c:319
+#: g10/g10.c:351
 msgid "assume yes on most questions"
 msgstr "forvent ja til de fleste sprøgsmål"
 
-#: g10/g10.c:320
+#: g10/g10.c:352
 msgid "assume no on most questions"
 msgstr "forvent nej til de fleste sprøgsmål"
 
-#: g10/g10.c:321
+#: g10/g10.c:353
 msgid "add this keyring to the list of keyrings"
 msgstr "tilføj denne nøglering til nøgleringslisten"
 
-#: g10/g10.c:322
+#: g10/g10.c:354
 msgid "add this secret keyring to the list"
 msgstr "tilføj denne hemmeligenøglering til listen"
 
-#: g10/g10.c:323
+#: g10/g10.c:355
+msgid "show which keyring a listed key is on"
+msgstr ""
+
+#: g10/g10.c:356
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|brug NAME som standard hemmelignøgle"
 
-#: g10/g10.c:324
+#: g10/g10.c:357
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|HOST|brug denne nøgletjener til at slå nøgler op"
 
-#: g10/g10.c:325
+#: g10/g10.c:359
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NAME|sæt terminal karaktersæt til NAME"
 
-#: g10/g10.c:326
+#: g10/g10.c:360
 msgid "read options from file"
 msgstr "læs indstillinger fra fil"
 
-#: g10/g10.c:330
+#: g10/g10.c:364
 msgid "|FD|write status info to this FD"
 msgstr "|FD|skriv statusinfo til denne FD"
 
-#: g10/g10.c:332
+#: g10/g10.c:366
 #, fuzzy
 msgid "|[file]|write status info to file"
 msgstr "|FD|skriv statusinfo til denne FD"
 
-#: g10/g10.c:338
+#: g10/g10.c:372
 msgid "|KEYID|ultimately trust this key"
 msgstr ""
 
-#: g10/g10.c:339
+#: g10/g10.c:373
 msgid "|FILE|load extension module FILE"
 msgstr "|FILE|indlæs udvidelsesmodul FILE"
 
-#: g10/g10.c:340
+#: g10/g10.c:374
 msgid "emulate the mode described in RFC1991"
 msgstr "emulér modusen beskrevet i RFC1991"
 
-#: g10/g10.c:341
+#: g10/g10.c:375
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
 msgstr "sæt alle pakker, cifre og resumé flag til OpenPGP standard"
 
-#: g10/g10.c:342
+#: g10/g10.c:376
+#, fuzzy
+msgid "set all packet, cipher and digest options to PGP 2.x behavior"
+msgstr "sæt alle pakker, cifre og resumé flag til OpenPGP standard"
+
+#: g10/g10.c:378
 msgid "|N|use passphrase mode N"
 msgstr "|N|brug pasfrasemodus N"
 
-#: g10/g10.c:344
+#: g10/g10.c:380
 msgid "|NAME|use message digest algorithm NAME for passphrases"
 msgstr "|NAME|brug meddelelses resuméalgoritme NAME for pasfrase"
 
-#: g10/g10.c:346
+#: g10/g10.c:382
 msgid "|NAME|use cipher algorithm NAME for passphrases"
 msgstr "|NAME|brug cifrealgoritme NAME for pasfrase"
 
-#: g10/g10.c:347
+#: g10/g10.c:383
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAME|brug cifferalgoritme NAME"
 
-#: g10/g10.c:348
+#: g10/g10.c:384
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAME|brug meddelelsesresumé algoritme NAME"
 
-#: g10/g10.c:349
+#: g10/g10.c:385
 msgid "|N|use compress algorithm N"
 msgstr "|N|brug kompresalgoritme N"
 
-#: g10/g10.c:350
+#: g10/g10.c:386
 msgid "throw keyid field of encrypted packets"
 msgstr ""
 
-#: g10/g10.c:351
+#: g10/g10.c:387
+msgid "Show Photo IDs"
+msgstr ""
+
+#: g10/g10.c:388
+msgid "Don't show Photo IDs"
+msgstr ""
+
+#: g10/g10.c:389
+msgid "Set command line to view Photo IDs"
+msgstr ""
+
+#: g10/g10.c:390
 msgid "|NAME=VALUE|use this notation data"
 msgstr "|NAME=VALUE|brug denne notationsdata"
 
-#: g10/g10.c:354
+#: g10/g10.c:393
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
 msgstr ""
 
-#: g10/g10.c:357
+#: g10/g10.c:396
 msgid ""
 "@\n"
 "Examples:\n"
@@ -685,16 +726,16 @@ msgstr ""
 " --list-keys [navne]        vis nøgler\n"
 " --fingerprint [navne]      vis fingeraftryk\n"
 
-#: g10/g10.c:480
+#: g10/g10.c:529
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr "Rapportér venligst fejl til <gnupg-bugs@gnu.org>.\n"
 
-#: g10/g10.c:484
+#: g10/g10.c:533
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Brug: gpg [flag] [filer] (-h for hjælp)"
 
 # Skal alt dette oversættes eller er det flagene?
-#: g10/g10.c:487
+#: g10/g10.c:536
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -704,7 +745,7 @@ msgstr ""
 "sign, check, encrypt eller decrypt\n"
 "standard operation afhænger af inddata\n"
 
-#: g10/g10.c:498
+#: g10/g10.c:547
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -712,216 +753,262 @@ msgstr ""
 "\n"
 "Understøttede algoritmer:\n"
 
-#: g10/g10.c:572
+#: g10/g10.c:621
 msgid "usage: gpg [options] "
 msgstr "brug: gpg [flag] "
 
-#: g10/g10.c:629
+#: g10/g10.c:678
 msgid "conflicting commands\n"
 msgstr "konfliktende kommandoer\n"
 
-#: g10/g10.c:785
+#: g10/g10.c:850
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "NOTITS: ingen standard alternativfil '%s'\n"
 
-#: g10/g10.c:789
+#: g10/g10.c:854
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "alternativfil`%s': %s\n"
 
-#: g10/g10.c:796
+#: g10/g10.c:861
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "læser indstillinger fra `%s'\n"
 
-#: g10/g10.c:1041
+#: g10/g10.c:1129
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s er ikke et gyldigt tegnsæt\n"
 
-#: g10/g10.c:1125
+#: g10/g10.c:1145
+msgid "could not parse keyserver URI\n"
+msgstr ""
+
+#: g10/g10.c:1239
 msgid "WARNING: program may create a core file!\n"
 msgstr ""
 
-#: g10/g10.c:1129 g10/g10.c:1138
+#: g10/g10.c:1243
+#, c-format
+msgid "WARNING: %s overrides %s\n"
+msgstr ""
+
+#: g10/g10.c:1250 g10/g10.c:1261
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTITS: %s er ikke til normal brug!\n"
 
-#: g10/g10.c:1131
+#: g10/g10.c:1252
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s ikke tilladt med %s!\n"
 
-#: g10/g10.c:1134
+#: g10/g10.c:1255
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s er meningsløs sammen med %s!\n"
 
-#: g10/g10.c:1154 g10/g10.c:1166
+#: g10/g10.c:1281
+msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
+msgstr ""
+
+#: g10/g10.c:1292
+msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
+msgstr ""
+
+#: g10/encode.c:282 g10/g10.c:1306 g10/g10.c:1501 g10/sign.c:580
+#: g10/sign.c:758
+msgid "this message will not be usable by PGP 2.x\n"
+msgstr ""
+
+#: g10/g10.c:1332 g10/g10.c:1344
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valgte cifferalgoritme er ugyldig\n"
 
-#: g10/g10.c:1160 g10/g10.c:1172
+#: g10/g10.c:1338 g10/g10.c:1350
 msgid "selected digest algorithm is invalid\n"
 msgstr "valgte resuméalgoritme er ugyldig\n"
 
-#: g10/g10.c:1176
+#: g10/g10.c:1354
 msgid "the given policy URL is invalid\n"
 msgstr "den givne politik-URL er ugyldig\n"
 
-#: g10/g10.c:1179
+#: g10/g10.c:1357
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr ""
 
-#: g10/g10.c:1181
+#: g10/g10.c:1359
 msgid "completes-needed must be greater than 0\n"
 msgstr ""
 
-#: g10/g10.c:1183
+#: g10/g10.c:1361
 msgid "marginals-needed must be greater than 1\n"
 msgstr ""
 
-#: g10/g10.c:1185
+#: g10/g10.c:1363
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr ""
 
-#: g10/g10.c:1188
+#: g10/g10.c:1366
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTE: simpel S2K modus (0) frarådes på det skarpeste\n"
 
-#: g10/g10.c:1192
+#: g10/g10.c:1370
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "ugyldig S2K modus; skal være 0, 1 el. 3\n"
 
-#: g10/g10.c:1196
+#: g10/g10.c:1374
+#, fuzzy
+msgid "invalid default-check-level; must be 0, 1, 2, or 3\n"
+msgstr "ugyldig S2K modus; skal være 0, 1 el. 3\n"
+
+#: g10/g10.c:1377
 #, fuzzy
 msgid "invalid preferences\n"
 msgstr "vis præferencer"
 
 # er det klogt at oversætte TrustDB?
-#: g10/g10.c:1279
+#: g10/g10.c:1464
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "kunne ikke initialisere TillidsDB: %s\n"
 
-#: g10/g10.c:1285
+#: g10/g10.c:1484
 msgid "--store [filename]"
 msgstr "--store [filnavn (som gemmes)]"
 
-#: g10/g10.c:1292
+#: g10/g10.c:1491
 msgid "--symmetric [filename]"
 msgstr "--symmetric [filnavn]"
 
-#: g10/g10.c:1300
+#: g10/g10.c:1499
+msgid ""
+"you must use files (and not a pipe) when encrypting with --pgp2 enabled.\n"
+msgstr ""
+
+#: g10/g10.c:1506
 msgid "--encrypt [filename]"
 msgstr "--encrypt [filnavn (som krypteres)]"
 
-#: g10/g10.c:1313
+#: g10/g10.c:1519
 msgid "--sign [filename]"
 msgstr "--sign [filnavn (som signeres)]"
 
-#: g10/g10.c:1326
+#: g10/g10.c:1532
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [filnavn]"
 
-#: g10/g10.c:1340
+#: g10/g10.c:1546
 #, fuzzy
 msgid "--sign --symmetric [filename]"
 msgstr "--symmetric [filnavn]"
 
-#: g10/g10.c:1349
+#: g10/g10.c:1555
 msgid "--clearsign [filename]"
 msgstr "--clearsign [filnavn]"
 
-#: g10/g10.c:1367
+#: g10/g10.c:1573
 msgid "--decrypt [filename]"
 msgstr "--decrypt [filnavn (som dekrypteres)]"
 
-#: g10/g10.c:1375
+#: g10/g10.c:1581
 msgid "--sign-key user-id"
 msgstr "--sign-key bruger-id"
 
-#: g10/g10.c:1383
+#: g10/g10.c:1589
 msgid "--lsign-key user-id"
 msgstr "--lsign-key bruger-id"
 
-#: g10/g10.c:1391
+#: g10/g10.c:1597
+#, fuzzy
+msgid "--nrsign-key user-id"
+msgstr "--sign-key bruger-id"
+
+#: g10/g10.c:1605
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key bruger-id [kommandoer]"
 
-#: g10/g10.c:1407
+#: g10/g10.c:1621
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key bruger-id"
 
-#: g10/g10.c:1410
+#: g10/g10.c:1624
 msgid "--delete-key user-id"
 msgstr "--delete-key bruger-id"
 
-#: g10/g10.c:1418
+#: g10/g10.c:1632
 #, fuzzy
 msgid "--delete-secret-and-public-key user-id"
 msgstr "--delete-secret-and-public-key bruger-id"
 
-#: g10/encode.c:268 g10/g10.c:1455 g10/sign.c:632
+#: g10/encode.c:302 g10/g10.c:1669 g10/sign.c:669
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "kan ikke åbne %s: %s\n"
 
-#: g10/g10.c:1470
+#: g10/g10.c:1684
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [bruger-id] [nøglering]"
 
-#: g10/g10.c:1542
+#: g10/g10.c:1767
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "fjernelse af beskyttelse fejlede: %s\n"
 
-#: g10/g10.c:1550
+#: g10/g10.c:1775
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "påklædning af beskyttelse fejlede: %s\n"
 
-#: g10/g10.c:1621
+#: g10/g10.c:1846
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "ugyldig hash-algoritme `%s'\n"
 
-#: g10/g10.c:1707
+#: g10/g10.c:1932
 msgid "[filename]"
 msgstr "[filnavn]"
 
-#: g10/g10.c:1711
+#: g10/g10.c:1936
 msgid "Go ahead and type your message ...\n"
 msgstr "Gå til sagen og skriv meddelelsen ...\n"
 
-#: g10/decrypt.c:59 g10/g10.c:1714 g10/verify.c:94 g10/verify.c:139
+#: g10/decrypt.c:59 g10/g10.c:1939 g10/verify.c:94 g10/verify.c:139
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "kan ikke åbne `%s'\n"
 
-#: g10/g10.c:1923
+#: g10/g10.c:2148
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
 "første bogstav af en notationsnavn skal være et bogstave eller en "
 "understregning\n"
 
-#: g10/g10.c:1929
+#: g10/g10.c:2154
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
 msgstr ""
 
-#: g10/g10.c:1935
+#: g10/g10.c:2160
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr ""
 
-#: g10/g10.c:1943
+#: g10/g10.c:2168
 msgid "a notation value must not use any control characters\n"
 msgstr "en notationsværdi må ikke bruge nogen kontroltegn\n"
+
+#: g10/g10.c:2208
+msgid "the IDEA cipher plugin is not present\n"
+msgstr ""
+
+#: g10/g10.c:2209
+msgid ""
+"please see http://www.gnupg.org/why-not-idea.html for more information\n"
+msgstr ""
 
 #: g10/armor.c:306
 #, c-format
@@ -1027,8 +1114,8 @@ msgstr ""
 
 #. a string with valid answers
 #: g10/pkclist.c:244
-msgid "sSmMqQ"
-msgstr "sSmMqQ"
+msgid "iImMqQsS"
+msgstr ""
 
 #: g10/pkclist.c:250
 #, fuzzy, c-format
@@ -1073,76 +1160,80 @@ msgid " %d = I trust ultimately\n"
 msgstr ""
 
 #: g10/pkclist.c:271
-msgid " s = please show me more information\n"
+msgid " i = please show me more information\n"
 msgstr ""
 
 #: g10/pkclist.c:273
 msgid " m = back to the main menu\n"
 msgstr " m = tilbage til hovedmenu\n"
 
-#: g10/pkclist.c:275
+#: g10/pkclist.c:276
+msgid " s = skip this key\n"
+msgstr ""
+
+#: g10/pkclist.c:277
 msgid " q = quit\n"
 msgstr " q = afslut\n"
 
-#: g10/pkclist.c:281
+#: g10/pkclist.c:284
 msgid "Your decision? "
 msgstr "Dit valg? "
 
-#: g10/pkclist.c:302
+#: g10/pkclist.c:305
 #, fuzzy
 msgid "Do you really want to set this key to ultimate trust? "
 msgstr "Vil du virkelig gerne gøre dette?"
 
-#: g10/pkclist.c:314
+#: g10/pkclist.c:317
 msgid "Certificates leading to an ultimately trusted key:\n"
 msgstr ""
 
-#: g10/pkclist.c:384
+#: g10/pkclist.c:391
 #, c-format
 msgid "key %08lX: key has been revoked!\n"
 msgstr "nøgle %08lX: nøgle er blevet annulleret!\n"
 
-#: g10/pkclist.c:391 g10/pkclist.c:403 g10/pkclist.c:497
+#: g10/pkclist.c:398 g10/pkclist.c:410 g10/pkclist.c:504
 msgid "Use this key anyway? "
 msgstr "Brug denne nøgle alligevel? "
 
-#: g10/pkclist.c:396
+#: g10/pkclist.c:403
 #, c-format
 msgid "key %08lX: subkey has been revoked!\n"
 msgstr "nøgle %08lX: undernøgle er blevet annulleret!\n"
 
-#: g10/pkclist.c:417
+#: g10/pkclist.c:424
 #, c-format
 msgid "%08lX: key has expired\n"
 msgstr "%08lX: nøgle er udløbet\n"
 
-#: g10/pkclist.c:427
+#: g10/pkclist.c:434
 #, fuzzy, c-format
 msgid ""
 "%08lX: There is no indication that this key really belongs to the owner\n"
 msgstr "         Intet tyder på at denne signatur tilhører ejeren.\n"
 
-#: g10/pkclist.c:433
+#: g10/pkclist.c:440
 #, c-format
 msgid "%08lX: We do NOT trust this key\n"
 msgstr "%08lX: Vi stoler IKKE på denne nøgle\n"
 
-#: g10/pkclist.c:439
+#: g10/pkclist.c:446
 #, c-format
 msgid ""
 "%08lX: It is not sure that this key really belongs to the owner\n"
 "but it is accepted anyway\n"
 msgstr ""
 
-#: g10/pkclist.c:445
+#: g10/pkclist.c:452
 msgid "This key probably belongs to the owner\n"
 msgstr "Denne nøgle tilhører sikkert ejeren\n"
 
-#: g10/pkclist.c:450
+#: g10/pkclist.c:457
 msgid "This key belongs to us\n"
 msgstr "Denne nøgle tilhører os\n"
 
-#: g10/pkclist.c:492
+#: g10/pkclist.c:499
 msgid ""
 "It is NOT certain that the key belongs to its owner.\n"
 "If you *really* know what you are doing, you may answer\n"
@@ -1150,68 +1241,68 @@ msgid ""
 "\n"
 msgstr ""
 
-#: g10/pkclist.c:506 g10/pkclist.c:529
+#: g10/pkclist.c:513 g10/pkclist.c:536
 msgid "WARNING: Using untrusted key!\n"
 msgstr "ADVARSEL: Bruger nøgle uden tillid!\n"
 
-#: g10/pkclist.c:548
+#: g10/pkclist.c:555
 msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "ADVARSEL: Denne nøgle er blevet annulleret af dets ejer!\n"
 
-#: g10/pkclist.c:549
+#: g10/pkclist.c:556
 msgid "         This could mean that the signature is forgery.\n"
 msgstr "         Dette kan betyde at signaturen er forfalsket.\n"
 
-#: g10/pkclist.c:555
+#: g10/pkclist.c:562
 msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "ADVARSEL: Denne undernøgle er blevet tilbagekaldt af dens ejer!\n"
 
-#: g10/pkclist.c:560
+#: g10/pkclist.c:567
 #, fuzzy
 msgid "Note: This key has been disabled.\n"
 msgstr "Bemærk: Denne nøgle er forældet!\n"
 
-#: g10/pkclist.c:565
+#: g10/pkclist.c:572
 msgid "Note: This key has expired!\n"
 msgstr "Bemærk: Denne nøgle er forældet!\n"
 
-#: g10/pkclist.c:577
+#: g10/pkclist.c:584
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr ""
 
-#: g10/pkclist.c:579
+#: g10/pkclist.c:586
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
 msgstr "         Intet tyder på at denne signatur tilhører ejeren.\n"
 
-#: g10/pkclist.c:588
+#: g10/pkclist.c:595
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "ADVARSEL: Vi tror IKKE på denne nøgle!\n"
 
-#: g10/pkclist.c:589
+#: g10/pkclist.c:596
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         Signaturen er formentlig FORFALSKET.\n"
 
-#: g10/pkclist.c:597
+#: g10/pkclist.c:604
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
 
-#: g10/pkclist.c:599
+#: g10/pkclist.c:606
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "         Det er ikke sikkert at signaturen tilhører ejeren.\n"
 
-#: g10/pkclist.c:702 g10/pkclist.c:725 g10/pkclist.c:848 g10/pkclist.c:903
+#: g10/pkclist.c:709 g10/pkclist.c:732 g10/pkclist.c:855 g10/pkclist.c:910
 #, c-format
 msgid "%s: skipped: %s\n"
 msgstr "%s: udelod: %s\n"
 
-#: g10/pkclist.c:711 g10/pkclist.c:877
+#: g10/pkclist.c:718 g10/pkclist.c:884
 #, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: udelod: offentlig nøgle er allerede tilstede\n"
 
-#: g10/pkclist.c:740
+#: g10/pkclist.c:747
 msgid ""
 "You did not specify a user ID. (you may use \"-r\")\n"
 "\n"
@@ -1219,37 +1310,37 @@ msgstr ""
 "Du angav ikke en bruger-id. (du kan bruge \"-r\")\n"
 "\n"
 
-#: g10/pkclist.c:750
+#: g10/pkclist.c:757
 msgid "Enter the user ID: "
 msgstr "Indtast bruger-id: "
 
-#: g10/pkclist.c:762
+#: g10/pkclist.c:769
 msgid "No such user ID.\n"
 msgstr "Ingen sådan bruger-id.\n"
 
-#: g10/pkclist.c:767
+#: g10/pkclist.c:774
 msgid "skipped: public key already set as default recipient\n"
 msgstr "udeladt: offentlig nøgle er allerede valgt som standard modtager\n"
 
-#: g10/pkclist.c:785
+#: g10/pkclist.c:792
 msgid "Public key is disabled.\n"
 msgstr "Offentlig nøgle er slået fra.\n"
 
-#: g10/pkclist.c:792
+#: g10/pkclist.c:799
 msgid "skipped: public key already set with --encrypt-to\n"
 msgstr "udeladt: offentlig nøgle er allerede valgt med --encrypt-to\n"
 
-#: g10/pkclist.c:823
+#: g10/pkclist.c:830
 #, c-format
 msgid "unknown default recipient `%s'\n"
 msgstr "ukendt standard modtager '%s'\n"
 
-#: g10/pkclist.c:859
+#: g10/pkclist.c:866
 #, c-format
 msgid "%s: skipped: public key is disabled\n"
 msgstr "%s: udelod: offentlignøgle er slået fra\n"
 
-#: g10/pkclist.c:909
+#: g10/pkclist.c:916
 msgid "no valid addressees\n"
 msgstr "ingen gyldige adresser\n"
 
@@ -1258,86 +1349,86 @@ msgstr "ingen gyldige adresser\n"
 msgid "preference %c%lu is not valid\n"
 msgstr ""
 
-#: g10/keygen.c:184
+#: g10/keygen.c:186
 #, c-format
 msgid "preference %c%lu duplicated\n"
 msgstr ""
 
-#: g10/keygen.c:189
+#: g10/keygen.c:191
 #, fuzzy, c-format
 msgid "too many `%c' preferences\n"
 msgstr "vis præferencer"
 
-#: g10/keygen.c:242
+#: g10/keygen.c:244
 #, fuzzy
 msgid "invalid character in string\n"
 msgstr "Ugyldige bogstaver i navn\n"
 
-#: g10/keygen.c:372
+#: g10/keygen.c:374
 msgid "writing self signature\n"
 msgstr "skriver selvsignatur\n"
 
-#: g10/keygen.c:416
+#: g10/keygen.c:418
 msgid "writing key binding signature\n"
 msgstr ""
 
-#: g10/keygen.c:470 g10/keygen.c:554 g10/keygen.c:645
+#: g10/keygen.c:472 g10/keygen.c:556 g10/keygen.c:647
 #, fuzzy, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "Ønsket nøglestørrelse er %u bit\n"
 
-#: g10/keygen.c:475 g10/keygen.c:559 g10/keygen.c:650
+#: g10/keygen.c:477 g10/keygen.c:561 g10/keygen.c:652
 #, fuzzy, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "rundet op til %u bit\n"
 
-#: g10/keygen.c:750
+#: g10/keygen.c:752
 msgid "Please select what kind of key you want:\n"
 msgstr "Vælg venligst hvilken slags nøgle du vil have:\n"
 
-#: g10/keygen.c:752
+#: g10/keygen.c:754
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
 msgstr "   (%d) DSA og ElGamal (standard)\n"
 
-#: g10/keygen.c:753
+#: g10/keygen.c:755
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (signér kun)\n"
 
-#: g10/keygen.c:755
+#: g10/keygen.c:757
 #, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
 msgstr "   (%d) ElGamal (kryptér kun)\n"
 
-#: g10/keygen.c:756
+#: g10/keygen.c:758
 #, c-format
 msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (signér og kryptér)\n"
 
-#: g10/keygen.c:757
+#: g10/keygen.c:759
 #, fuzzy, c-format
 msgid "   (%d) RSA (sign only)\n"
 msgstr "   (%d) DSA (signér kun)\n"
 
-#: g10/keygen.c:759
+#: g10/keygen.c:761
 #, fuzzy, c-format
 msgid "   (%d) RSA (encrypt only)\n"
 msgstr "   (%d) ElGamal (kryptér kun)\n"
 
-#: g10/keygen.c:762
+#: g10/keyedit.c:466 g10/keygen.c:764
 msgid "Your selection? "
 msgstr "Dit valg? "
 
-#: g10/keygen.c:782
+#: g10/keygen.c:784
 msgid "The use of this algorithm is deprecated - create anyway? "
 msgstr ""
 
-#: g10/keygen.c:796
+#: g10/keyedit.c:479 g10/keygen.c:798
 msgid "Invalid selection.\n"
 msgstr "Ugyldigt valg.\n"
 
-#: g10/keygen.c:809
+#: g10/keygen.c:811
 #, c-format
 msgid ""
 "About to generate a new %s keypair.\n"
@@ -1346,19 +1437,19 @@ msgid ""
 "    highest suggested keysize is 2048 bits\n"
 msgstr ""
 
-#: g10/keygen.c:818
+#: g10/keygen.c:820
 msgid "What keysize do you want? (1024) "
 msgstr "Hvilken nøglestørrelse ønsker du? (1024) "
 
-#: g10/keygen.c:823
+#: g10/keygen.c:825
 msgid "DSA only allows keysizes from 512 to 1024\n"
 msgstr "DSA tillader kun nøglestørrelser fra 512 til 1024\n"
 
-#: g10/keygen.c:825
+#: g10/keygen.c:827
 msgid "keysize too small; 768 is smallest value allowed.\n"
 msgstr ""
 
-#: g10/keygen.c:827
+#: g10/keygen.c:829
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
 msgstr ""
 
@@ -1370,42 +1461,42 @@ msgstr ""
 #. * So, before you complain about this limitation, I suggest that
 #. * you start a discussion with Marvin about this theme and then
 #. * do whatever you want.
-#: g10/keygen.c:838
+#: g10/keygen.c:840
 #, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
 msgstr ""
 
-#: g10/keygen.c:843
+#: g10/keygen.c:845
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
 "computations take REALLY long!\n"
 msgstr ""
 
-#: g10/keygen.c:846
+#: g10/keygen.c:848
 msgid "Are you sure that you want this keysize? "
 msgstr "Er du sikker på at de vil benytte denne nøglestørrelse? "
 
-#: g10/keygen.c:847
+#: g10/keygen.c:849
 msgid ""
 "Okay, but keep in mind that your monitor and keyboard radiation is also very "
 "vulnerable to attacks!\n"
 msgstr ""
 
-#: g10/keygen.c:855
+#: g10/keygen.c:857
 msgid "Do you really need such a large keysize? "
 msgstr ""
 
-#: g10/keygen.c:861
+#: g10/keygen.c:863
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Ønsket nøglestørrelse er %u bit\n"
 
-#: g10/keygen.c:864 g10/keygen.c:868
+#: g10/keygen.c:866 g10/keygen.c:870
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "rundet op til %u bit\n"
 
-#: g10/keygen.c:916
+#: g10/keygen.c:921
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -1415,36 +1506,52 @@ msgid ""
 "      <n>y = key expires in n years\n"
 msgstr ""
 
-#: g10/keygen.c:931
+#: g10/keygen.c:930
+msgid ""
+"Please specify how long the signature should be valid.\n"
+"         0 = signature does not expire\n"
+"      <n>  = signature expires in n days\n"
+"      <n>w = signature expires in n weeks\n"
+"      <n>m = signature expires in n months\n"
+"      <n>y = signature expires in n years\n"
+msgstr ""
+
+#: g10/keygen.c:952
 msgid "Key is valid for? (0) "
 msgstr "Nøgle er gyldig for? (0) "
 
-#: g10/keygen.c:936
+#: g10/keygen.c:954
+#, fuzzy
+msgid "Signature is valid for? (0) "
+msgstr "Nøgle er gyldig for? (0) "
+
+#: g10/keygen.c:959
 msgid "invalid value\n"
 msgstr "ugyldig værdi\n"
 
-#: g10/keygen.c:941
-msgid "Key does not expire at all\n"
+#: g10/keygen.c:964
+#, fuzzy, c-format
+msgid "%s does not expire at all\n"
 msgstr "Nøglen udløber aldrig\n"
 
 #. print the date when the key expires
-#: g10/keygen.c:947
-#, c-format
-msgid "Key expires at %s\n"
+#: g10/keygen.c:971
+#, fuzzy, c-format
+msgid "%s expires at %s\n"
 msgstr "Nøgle udløber d. %s\n"
 
-#: g10/keygen.c:952
+#: g10/keygen.c:977
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
 msgstr ""
 
 # virker j automatisk istedetfor y?
-#: g10/keygen.c:957
+#: g10/keygen.c:982
 msgid "Is this correct (y/n)? "
 msgstr "Er dette korrekt (j/n)? "
 
-#: g10/keygen.c:1000
+#: g10/keygen.c:1025
 msgid ""
 "\n"
 "You need a User-ID to identify your key; the software constructs the user "
@@ -1454,44 +1561,44 @@ msgid ""
 "\n"
 msgstr ""
 
-#: g10/keygen.c:1012
+#: g10/keygen.c:1037
 msgid "Real name: "
 msgstr "Rigtige navn: "
 
-#: g10/keygen.c:1020
+#: g10/keygen.c:1045
 msgid "Invalid character in name\n"
 msgstr "Ugyldige bogstaver i navn\n"
 
-#: g10/keygen.c:1022
+#: g10/keygen.c:1047
 msgid "Name may not start with a digit\n"
 msgstr "Navn må ikke starte med et tal\n"
 
-#: g10/keygen.c:1024
+#: g10/keygen.c:1049
 msgid "Name must be at least 5 characters long\n"
 msgstr "Navn skal være mindst 5 bogstaver langt\n"
 
-#: g10/keygen.c:1032
+#: g10/keygen.c:1057
 msgid "Email address: "
 msgstr "Epostadresse: "
 
-#: g10/keygen.c:1043
+#: g10/keygen.c:1068
 msgid "Not a valid email address\n"
 msgstr "Ikke en gyldig epostadresse\n"
 
-#: g10/keygen.c:1051
+#: g10/keygen.c:1076
 msgid "Comment: "
 msgstr "Kommentar: "
 
-#: g10/keygen.c:1057
+#: g10/keygen.c:1082
 msgid "Invalid character in comment\n"
 msgstr "Ugyldigt tegn i kommentar\n"
 
-#: g10/keygen.c:1080
+#: g10/keygen.c:1105
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Du bruger '%s' tegnsættet.\n"
 
-#: g10/keygen.c:1086
+#: g10/keygen.c:1111
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -1502,28 +1609,28 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:1090
+#: g10/keygen.c:1115
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 
-#: g10/keygen.c:1095
+#: g10/keygen.c:1120
 msgid "NnCcEeOoQq"
 msgstr "NnCcEeOoQq"
 
-#: g10/keygen.c:1105
+#: g10/keygen.c:1130
 #, fuzzy
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Ændr (N)avn, (K)ommentar, (E)post eller (O)kay/(Q)vit? "
 
-#: g10/keygen.c:1106
+#: g10/keygen.c:1131
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Ændr (N)avn, (K)ommentar, (E)post eller (O)kay/(Q)vit? "
 
-#: g10/keygen.c:1125
+#: g10/keygen.c:1150
 msgid "Please correct the error first\n"
 msgstr ""
 
-#: g10/keygen.c:1163
+#: g10/keygen.c:1188
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -1531,11 +1638,11 @@ msgstr ""
 "Du skal bruge en kodesætning til at beskytte din hemmelige nøgle.\n"
 "\n"
 
-#: g10/keyedit.c:462 g10/keygen.c:1171
+#: g10/keyedit.c:653 g10/keygen.c:1196
 msgid "passphrase not correctly repeated; try again.\n"
 msgstr "kodesætningen blev ikke ordentlig gentaget; prøv igen.\n"
 
-#: g10/keygen.c:1177
+#: g10/keygen.c:1202
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -1543,7 +1650,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: g10/keygen.c:1198
+#: g10/keygen.c:1223
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -1551,130 +1658,139 @@ msgid ""
 "generator a better chance to gain enough entropy.\n"
 msgstr ""
 
-#: g10/keygen.c:1688
+#: g10/keygen.c:1713
 msgid "DSA keypair will have 1024 bits.\n"
 msgstr "DSA nøglepar vil have 1024 bit.\n"
 
-#: g10/keygen.c:1742
+#: g10/keygen.c:1767
 msgid "Key generation canceled.\n"
 msgstr "Nøgleoprettelse annulleret.\n"
 
-#: g10/keygen.c:1830 g10/keygen.c:1910
+#: g10/keygen.c:1855 g10/keygen.c:1935
 #, fuzzy, c-format
 msgid "writing public key to `%s'\n"
 msgstr "skriver offentligt certifikat til '%s'\n"
 
-#: g10/keygen.c:1831 g10/keygen.c:1912
+#: g10/keygen.c:1856 g10/keygen.c:1937
 #, fuzzy, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "skriver hemmeligt certifikat til '%s'\n"
 
-#: g10/keygen.c:1899
+#: g10/keygen.c:1924
 #, fuzzy, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "nøgle %08lX: offentlig nøgle ikke fundet: %s\n"
 
-#: g10/keygen.c:1905
+#: g10/keygen.c:1930
 #, fuzzy, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "skriver hemmeligt certifikat til '%s'\n"
 
-#: g10/keygen.c:1919
+#: g10/keygen.c:1944
 #, fuzzy, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-#: g10/keygen.c:1926
+#: g10/keygen.c:1951
 #, fuzzy, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-#: g10/keygen.c:1946
+#: g10/keygen.c:1971
 msgid "public and secret key created and signed.\n"
 msgstr "offentlig og hemmelig nøgle oprettet og signeret.\n"
 
-#: g10/keygen.c:1947
+#: g10/keygen.c:1972
 msgid "key marked as ultimately trusted.\n"
 msgstr ""
 
-#: g10/keygen.c:1956
+#: g10/keygen.c:1981
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
 msgstr ""
 
-#: g10/keygen.c:1968 g10/keygen.c:2074
+#: g10/keygen.c:1993 g10/keygen.c:2099
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr ""
 
-#: g10/keygen.c:2012 g10/sig-check.c:227 g10/sign.c:180
+#: g10/keygen.c:2037 g10/sig-check.c:227 g10/sign.c:194
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
 
-#: g10/keygen.c:2014 g10/sig-check.c:229 g10/sign.c:182
+#: g10/keygen.c:2039 g10/sig-check.c:229 g10/sign.c:196
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr ""
 
-#: g10/keygen.c:2023
+#: g10/keygen.c:2048
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr ""
 
-#: g10/keygen.c:2050
+#: g10/keygen.c:2075
 msgid "Really create? "
 msgstr "Vil du virkelig oprette?"
 
-#: g10/encode.c:91 g10/openfile.c:180 g10/openfile.c:300 g10/tdbio.c:487
-#: g10/tdbio.c:547
+#: g10/encode.c:92 g10/encode.c:291
+#, c-format
+msgid "`%s' already compressed\n"
+msgstr ""
+
+#: g10/encode.c:100 g10/openfile.c:180 g10/openfile.c:300 g10/tdbio.c:489
+#: g10/tdbio.c:549
 #, c-format
 msgid "%s: can't open: %s\n"
 msgstr "%s: kan ikke åbne: %s\n"
 
-#: g10/encode.c:113 g10/sign.c:866
+#: g10/encode.c:122 g10/sign.c:921
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "fejl ved oprettelse af kodesætning: %s\n"
 
-#: g10/encode.c:171 g10/encode.c:329
+#: g10/encode.c:180 g10/encode.c:363
 #, c-format
 msgid "%s: WARNING: empty file\n"
 msgstr "%s: ADVARSEL: tom fil\n"
 
-#: g10/encode.c:274
+#: g10/encode.c:280
+msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
+msgstr ""
+
+#: g10/encode.c:308
 #, c-format
 msgid "reading from `%s'\n"
 msgstr "læser fra '%s'\n"
 
-#: g10/encode.c:505
+#: g10/encode.c:539
 #, c-format
 msgid "%s/%s encrypted for: %s\n"
 msgstr "%s/%s krypteret for: %s\n"
 
-#: g10/delkey.c:69 g10/export.c:148
+#: g10/delkey.c:69 g10/export.c:142
 #, fuzzy, c-format
 msgid "key `%s' not found: %s\n"
 msgstr "%s: bruger ikke fundet: %s\n"
 
-#: g10/delkey.c:77 g10/export.c:158
+#: g10/delkey.c:77 g10/export.c:162
 #, fuzzy, c-format
 msgid "error reading keyblock: %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: g10/export.c:166
+#: g10/export.c:170
 #, c-format
 msgid "key %08lX: not a rfc2440 key - skipped\n"
 msgstr "nøgle %08lX: ikke en rfc2440 nøgle - udeladt\n"
 
-#: g10/export.c:177
+#: g10/export.c:181
 #, fuzzy, c-format
 msgid "key %08lX: not protected - skipped\n"
 msgstr "nøgle %08lX: ikke en rfc2440 nøgle - udeladt\n"
 
-#: g10/export.c:233
+#: g10/export.c:237
 msgid "WARNING: nothing exported\n"
 msgstr "ADVARSEL: intet blev eksporteret\n"
 
@@ -1803,7 +1919,7 @@ msgstr "nøgle %08lX: ikke en rfc2440 nøgle - udeladt\n"
 msgid "no writable keyring found: %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-#: g10/import.c:485 g10/openfile.c:244 g10/sign.c:571 g10/sign.c:726
+#: g10/import.c:485 g10/openfile.c:244 g10/sign.c:608 g10/sign.c:777
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "skriver til `%s'\n"
@@ -1978,633 +2094,805 @@ msgstr ""
 msgid "key %08lX: our copy has no self-signature\n"
 msgstr ""
 
-#: g10/keyedit.c:133
+#: g10/keyedit.c:139
 msgid "[revocation]"
 msgstr ""
 
-#: g10/keyedit.c:134
+#: g10/keyedit.c:140
 msgid "[self-signature]"
 msgstr "[selv-signatur]"
 
-#: g10/keyedit.c:198
+#: g10/keyedit.c:211
 msgid "1 bad signature\n"
 msgstr "1 dårlig signature\n"
 
-#: g10/keyedit.c:200
+#: g10/keyedit.c:213
 #, c-format
 msgid "%d bad signatures\n"
 msgstr "%d dårlige signaturer\n"
 
-#: g10/keyedit.c:202
+#: g10/keyedit.c:215
 msgid "1 signature not checked due to a missing key\n"
 msgstr ""
 
-#: g10/keyedit.c:204
+#: g10/keyedit.c:217
 #, c-format
 msgid "%d signatures not checked due to missing keys\n"
 msgstr ""
 
-#: g10/keyedit.c:206
+#: g10/keyedit.c:219
 msgid "1 signature not checked due to an error\n"
 msgstr ""
 
-#: g10/keyedit.c:208
+#: g10/keyedit.c:221
 #, c-format
 msgid "%d signatures not checked due to errors\n"
 msgstr ""
 
-#: g10/keyedit.c:210
+#: g10/keyedit.c:223
 msgid "1 user ID without valid self-signature detected\n"
 msgstr ""
 
-#: g10/keyedit.c:212
+#: g10/keyedit.c:225
 #, c-format
 msgid "%d user IDs without valid self-signatures detected\n"
 msgstr ""
 
-#. Fixme: see whether there is a revocation in which
-#. * case we should allow to sign it again.
-#: g10/keyedit.c:302
+#: g10/keyedit.c:325
 #, c-format
-msgid "Already signed by key %08lX\n"
+msgid "User ID \"%s\" is revoked.\n"
 msgstr ""
 
-#: g10/keyedit.c:313
+#: g10/keyedit.c:330 g10/keyedit.c:998
+#, fuzzy
+msgid "Are you sure you still want to sign it?\n"
+msgstr "Er du sikker på at de vil benytte denne nøglestørrelse? "
+
+#: g10/keyedit.c:335 g10/keyedit.c:409 g10/keyedit.c:519 g10/keyedit.c:1001
+msgid "Really sign? "
+msgstr "Vil du gerne signere? "
+
+#. It's a local sig, and we want to make a
+#. exportable sig.
+#: g10/keyedit.c:352
+#, c-format
+msgid ""
+"Your current signature on \"%s\"\n"
+"is a local signature.\n"
+"\n"
+"Do you want to promote it to a full exportable signature?\n"
+msgstr ""
+
+#. Fixme: see whether there is a revocation in which
+#. * case we should allow to sign it again.
+#: g10/keyedit.c:374
+#, c-format
+msgid "\"%s\" was already %ssigned by key %08lX\n"
+msgstr ""
+
+#: g10/keyedit.c:387
 #, c-format
 msgid "Nothing to sign with key %08lX\n"
 msgstr ""
 
-#: g10/keyedit.c:322
+#: g10/keyedit.c:402
+#, fuzzy
+msgid "This key has expired!"
+msgstr "Bemærk: Denne nøgle er forældet!\n"
+
+#: g10/keyedit.c:406
+#, fuzzy
+msgid "  Are you sure you still want to sign it?\n"
+msgstr "Er du sikker på at de vil benytte denne nøglestørrelse? "
+
+#: g10/keyedit.c:420
+#, fuzzy, c-format
+msgid "This key is due to expire on %s.\n"
+msgstr "Denne nøgle er ikke beskyttet.\n"
+
+#: g10/keyedit.c:422
+msgid "Do you want your signature to expire at the same time? (y/n) "
+msgstr ""
+
+#: g10/keyedit.c:450
+msgid ""
+"How carefully have you verified the key you are about to sign actually "
+"belongs\n"
+"to the person named above?  If you don't know what to answer, enter \"0\".\n"
+msgstr ""
+
+#: g10/keyedit.c:454
+#, c-format
+msgid "   (0) I will not answer.%s\n"
+msgstr ""
+
+#: g10/keyedit.c:456
+#, c-format
+msgid "   (1) I have not checked at all.%s\n"
+msgstr ""
+
+#: g10/keyedit.c:458
+#, c-format
+msgid "   (2) I have done casual checking.%s\n"
+msgstr ""
+
+#: g10/keyedit.c:460
+#, c-format
+msgid "   (3) I have done very careful checking.%s\n"
+msgstr ""
+
+#: g10/keyedit.c:485
 msgid ""
 "Are you really sure that you want to sign this key\n"
 "with your key: \""
 msgstr ""
 
-#: g10/keyedit.c:331
+#: g10/keyedit.c:494
 msgid ""
-"The signature will be marked as non-exportable.\n"
 "\n"
+"The signature will be marked as non-exportable.\n"
 msgstr ""
 
-#: g10/keyedit.c:336
-msgid "Really sign? "
-msgstr "Vil du gerne signere? "
+#: g10/keyedit.c:498
+msgid ""
+"\n"
+"The signature will be marked as non-revocable.\n"
+msgstr ""
 
-#: g10/keyedit.c:367 g10/keyedit.c:2110 g10/keyedit.c:2172 g10/sign.c:225
+#: g10/keyedit.c:503
+msgid ""
+"\n"
+"I have not checked this key at all.\n"
+msgstr ""
+
+#: g10/keyedit.c:507
+msgid ""
+"\n"
+"I have checked this key casually.\n"
+msgstr ""
+
+#: g10/keyedit.c:511
+msgid ""
+"\n"
+"I have checked this key very carefully.\n"
+msgstr ""
+
+#: g10/keyedit.c:552 g10/keyedit.c:2388 g10/keyedit.c:2450 g10/sign.c:239
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "signering fejlede: %s\n"
 
-#: g10/keyedit.c:421
+#: g10/keyedit.c:612
 msgid "This key is not protected.\n"
 msgstr "Denne nøgle er ikke beskyttet.\n"
 
-#: g10/keyedit.c:425
+#: g10/keyedit.c:616
 #, fuzzy
 msgid "Secret parts of primary key are not available.\n"
 msgstr "hemmelig nøgle ikke tilgængelig"
 
-#: g10/keyedit.c:429
+#: g10/keyedit.c:620
 msgid "Key is protected.\n"
 msgstr "Nøglen er beskyttet.\n"
 
-#: g10/keyedit.c:449
+#: g10/keyedit.c:640
 #, c-format
 msgid "Can't edit this key: %s\n"
 msgstr "Kan ikke redigere denne nøgle: %s\n"
 
-#: g10/keyedit.c:454
+#: g10/keyedit.c:645
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
 msgstr ""
 
-#: g10/keyedit.c:466
+#: g10/keyedit.c:657
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
 msgstr ""
 
-#: g10/keyedit.c:469
+#: g10/keyedit.c:660
 msgid "Do you really want to do this? "
 msgstr "Vil du virkelig gerne gøre dette?"
 
-#: g10/keyedit.c:533
+#: g10/keyedit.c:724
 msgid "moving a key signature to the correct place\n"
 msgstr ""
 
-#: g10/keyedit.c:574
+#: g10/keyedit.c:765
 msgid "quit this menu"
 msgstr "afslut denne menu"
 
-#: g10/keyedit.c:575
+#: g10/keyedit.c:766
 msgid "q"
 msgstr "a"
 
-#: g10/keyedit.c:576
+#: g10/keyedit.c:767
 msgid "save"
 msgstr "gem"
 
-#: g10/keyedit.c:576
+#: g10/keyedit.c:767
 msgid "save and quit"
 msgstr "gem og afslut"
 
-#: g10/keyedit.c:577
+#: g10/keyedit.c:768
 msgid "help"
 msgstr "hjælp"
 
-#: g10/keyedit.c:577
+#: g10/keyedit.c:768
 msgid "show this help"
 msgstr "vis denne hjælp"
 
-#: g10/keyedit.c:579
+#: g10/keyedit.c:770
 msgid "fpr"
 msgstr "fpr"
 
-#: g10/keyedit.c:579
+#: g10/keyedit.c:770
 msgid "show fingerprint"
 msgstr "vis fingeraftryk"
 
-#: g10/keyedit.c:580
+#: g10/keyedit.c:771
 msgid "list"
 msgstr "vis"
 
-#: g10/keyedit.c:580
+#: g10/keyedit.c:771
 msgid "list key and user IDs"
 msgstr "vis nøgler og bruger-id'er"
 
-#: g10/keyedit.c:581
+#: g10/keyedit.c:772
 msgid "l"
 msgstr "l"
 
-#: g10/keyedit.c:582
+#: g10/keyedit.c:773
 msgid "uid"
 msgstr "uid"
 
-#: g10/keyedit.c:582
+#: g10/keyedit.c:773
 msgid "select user ID N"
 msgstr ""
 
-#: g10/keyedit.c:583
+#: g10/keyedit.c:774
 msgid "key"
 msgstr "nøgle"
 
-#: g10/keyedit.c:583
+#: g10/keyedit.c:774
 msgid "select secondary key N"
 msgstr "vælg sekundær nøgle N"
 
-#: g10/keyedit.c:584
+#: g10/keyedit.c:775
 msgid "check"
 msgstr "tjek"
 
-#: g10/keyedit.c:584
+#: g10/keyedit.c:775
 msgid "list signatures"
 msgstr "vis signaturer"
 
-#: g10/keyedit.c:585
+#: g10/keyedit.c:776
 msgid "c"
 msgstr "c"
 
-#: g10/keyedit.c:586
+#: g10/keyedit.c:777
 msgid "sign"
 msgstr "signér"
 
-#: g10/keyedit.c:586
+#: g10/keyedit.c:777
 msgid "sign the key"
 msgstr "signér nøglen"
 
-#: g10/keyedit.c:587
+#: g10/keyedit.c:778
 msgid "s"
 msgstr "s"
 
-#: g10/keyedit.c:588
+#: g10/keyedit.c:779
 msgid "lsign"
 msgstr "lsignér"
 
-#: g10/keyedit.c:588
+#: g10/keyedit.c:779
 msgid "sign the key locally"
 msgstr "signér nøglen lokalt"
 
-#: g10/keyedit.c:589
+#: g10/keyedit.c:780
+#, fuzzy
+msgid "nrsign"
+msgstr "signér"
+
+#: g10/keyedit.c:780
+#, fuzzy
+msgid "sign the key non-revocably"
+msgstr "signér nøglen lokalt"
+
+#: g10/keyedit.c:781
 msgid "debug"
 msgstr "aflus"
 
-#: g10/keyedit.c:590
+#: g10/keyedit.c:782
 msgid "adduid"
 msgstr "tilføj-bid"
 
-#: g10/keyedit.c:590
+#: g10/keyedit.c:782
 msgid "add a user ID"
 msgstr "tilføj bruger-id"
 
-#: g10/keyedit.c:591
+#: g10/keyedit.c:783
+msgid "addphoto"
+msgstr ""
+
+#: g10/keyedit.c:783
+#, fuzzy
+msgid "add a photo ID"
+msgstr "tilføj bruger-id"
+
+#: g10/keyedit.c:784
 msgid "deluid"
 msgstr "sletbid"
 
-#: g10/keyedit.c:591
+#: g10/keyedit.c:784
 msgid "delete user ID"
 msgstr "slet bruger id"
 
-#: g10/keyedit.c:592
+#. delphoto is really deluid in disguise
+#: g10/keyedit.c:786
+msgid "delphoto"
+msgstr ""
+
+#: g10/keyedit.c:787
 msgid "addkey"
 msgstr "tilføj nøgle"
 
-#: g10/keyedit.c:592
+#: g10/keyedit.c:787
 msgid "add a secondary key"
 msgstr "tilføj sekundær nøgle"
 
-#: g10/keyedit.c:593
+#: g10/keyedit.c:788
 msgid "delkey"
 msgstr "sletnøgle"
 
-#: g10/keyedit.c:593
+#: g10/keyedit.c:788
 msgid "delete a secondary key"
 msgstr "slet sekundær nøgle"
 
-#: g10/keyedit.c:594
+#: g10/keyedit.c:789
 msgid "delsig"
 msgstr "sletsig"
 
-#: g10/keyedit.c:594
+#: g10/keyedit.c:789
 msgid "delete signatures"
 msgstr "slet signaturer"
 
-#: g10/keyedit.c:595
+#: g10/keyedit.c:790
 msgid "expire"
 msgstr "udløb"
 
-#: g10/keyedit.c:595
+#: g10/keyedit.c:790
 msgid "change the expire date"
 msgstr "ændr udløbsdatoen"
 
-#: g10/keyedit.c:596
+#: g10/keyedit.c:791
 msgid "primary"
 msgstr ""
 
-#: g10/keyedit.c:596
+#: g10/keyedit.c:791
 msgid "flag user ID as primary"
 msgstr ""
 
-#: g10/keyedit.c:597
+#: g10/keyedit.c:792
 msgid "toggle"
 msgstr "skift"
 
-#: g10/keyedit.c:597
+#: g10/keyedit.c:792
 msgid "toggle between secret and public key listing"
 msgstr "skift imellem hemmelig og offentlig nøgle visning"
 
-#: g10/keyedit.c:599
+#: g10/keyedit.c:794
 msgid "t"
 msgstr "s"
 
-#: g10/keyedit.c:600
+#: g10/keyedit.c:795
 msgid "pref"
 msgstr "præf"
 
-#: g10/keyedit.c:600
+#: g10/keyedit.c:795
 #, fuzzy
 msgid "list preferences (expert)"
 msgstr "vis præferencer"
 
-#: g10/keyedit.c:601
+#: g10/keyedit.c:796
 #, fuzzy
 msgid "showpref"
 msgstr "vispræf"
 
-#: g10/keyedit.c:601
+#: g10/keyedit.c:796
 #, fuzzy
 msgid "list preferences (verbose)"
 msgstr "vis præferencer"
 
-#: g10/keyedit.c:602
+#: g10/keyedit.c:797
 #, fuzzy
 msgid "setpref"
 msgstr "præf"
 
-#: g10/keyedit.c:602
+#: g10/keyedit.c:797
 #, fuzzy
 msgid "set preference list"
 msgstr "vis præferencer"
 
-#: g10/keyedit.c:603
+#: g10/keyedit.c:798
 #, fuzzy
 msgid "updpref"
 msgstr "præf"
 
-#: g10/keyedit.c:603
+#: g10/keyedit.c:798
 #, fuzzy
 msgid "updated preferences"
 msgstr "vis præferencer"
 
-#: g10/keyedit.c:604
+#: g10/keyedit.c:799
 msgid "passwd"
 msgstr "kodeord"
 
-#: g10/keyedit.c:604
+#: g10/keyedit.c:799
 msgid "change the passphrase"
 msgstr "ændr kodesætningen"
 
-#: g10/keyedit.c:605
+#: g10/keyedit.c:800
 msgid "trust"
 msgstr "betro"
 
-#: g10/keyedit.c:605
+#: g10/keyedit.c:800
 msgid "change the ownertrust"
 msgstr ""
 
-#: g10/keyedit.c:606
+#: g10/keyedit.c:801
 msgid "revsig"
 msgstr ""
 
-#: g10/keyedit.c:606
+#: g10/keyedit.c:801
 msgid "revoke signatures"
 msgstr ""
 
-#: g10/keyedit.c:607
+#: g10/keyedit.c:802
 msgid "revkey"
 msgstr ""
 
-#: g10/keyedit.c:607
+#: g10/keyedit.c:802
 msgid "revoke a secondary key"
 msgstr ""
 
-#: g10/keyedit.c:608
+#: g10/keyedit.c:803
 msgid "disable"
 msgstr "slåfra"
 
-#: g10/keyedit.c:608
+#: g10/keyedit.c:803
 msgid "disable a key"
 msgstr "slå nøgle fra"
 
-#: g10/keyedit.c:609
+#: g10/keyedit.c:804
 msgid "enable"
 msgstr "slåtil"
 
-#: g10/keyedit.c:609
+#: g10/keyedit.c:804
 msgid "enable a key"
 msgstr "slå nøgle til"
 
-#: g10/delkey.c:112 g10/keyedit.c:629
+#: g10/keyedit.c:805
+msgid "showphoto"
+msgstr ""
+
+#: g10/keyedit.c:805
+msgid "show photo ID"
+msgstr ""
+
+#: g10/delkey.c:112 g10/keyedit.c:825
 msgid "can't do that in batchmode\n"
 msgstr ""
 
-#: g10/keyedit.c:664
+#: g10/keyedit.c:861
 #, fuzzy, c-format
 msgid "error reading secret keyblock `%s': %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: g10/keyedit.c:682
+#: g10/keyedit.c:879
 msgid "Secret key is available.\n"
 msgstr ""
 
-#: g10/keyedit.c:712
+#: g10/keyedit.c:910
 msgid "Command> "
 msgstr ""
 
-#: g10/keyedit.c:743
+#: g10/keyedit.c:942
 msgid "Need the secret key to do this.\n"
 msgstr ""
 
-#: g10/keyedit.c:747
+#: g10/keyedit.c:946
 msgid "Please use the command \"toggle\" first.\n"
 msgstr ""
 
-#: g10/keyedit.c:794
+#: g10/keyedit.c:994
+#, fuzzy
+msgid "Key is revoked.\n"
+msgstr "Nøglen er beskyttet.\n"
+
+#: g10/keyedit.c:1010
 msgid "Really sign all user IDs? "
 msgstr ""
 
-#: g10/keyedit.c:795
+#: g10/keyedit.c:1011
 msgid "Hint: Select the user IDs to sign\n"
 msgstr ""
 
-#: g10/keyedit.c:827 g10/keyedit.c:848
+#: g10/keyedit.c:1035
+msgid "This command is not allowed while in OpenPGP mode.\n"
+msgstr ""
+
+#: g10/keyedit.c:1054 g10/keyedit.c:1075
 msgid "You must select at least one user ID.\n"
 msgstr ""
 
-#: g10/keyedit.c:829
+#: g10/keyedit.c:1056
 msgid "You can't delete the last user ID!\n"
 msgstr ""
 
-#: g10/keyedit.c:832
+#: g10/keyedit.c:1059
 msgid "Really remove all selected user IDs? "
 msgstr ""
 
-#: g10/keyedit.c:833
+#: g10/keyedit.c:1060
 msgid "Really remove this user ID? "
 msgstr ""
 
-#: g10/keyedit.c:871 g10/keyedit.c:893
+#: g10/keyedit.c:1098 g10/keyedit.c:1120
 msgid "You must select at least one key.\n"
 msgstr ""
 
-#: g10/keyedit.c:875
+#: g10/keyedit.c:1102
 msgid "Do you really want to delete the selected keys? "
 msgstr ""
 
-#: g10/keyedit.c:876
+#: g10/keyedit.c:1103
 msgid "Do you really want to delete this key? "
 msgstr ""
 
-#: g10/keyedit.c:897
+#: g10/keyedit.c:1124
 msgid "Do you really want to revoke the selected keys? "
 msgstr ""
 
-#: g10/keyedit.c:898
+#: g10/keyedit.c:1125
 msgid "Do you really want to revoke this key? "
 msgstr ""
 
-#: g10/keyedit.c:962
+#: g10/keyedit.c:1189
 msgid "Really update the preferences for the selected user IDs? "
 msgstr ""
 
-#: g10/keyedit.c:964
+#: g10/keyedit.c:1191
 msgid "Really update the preferences? "
 msgstr ""
 
-#: g10/keyedit.c:998
+#: g10/keyedit.c:1229
 msgid "Save changes? "
 msgstr "Gem ændringer? "
 
-#: g10/keyedit.c:1001
+#: g10/keyedit.c:1232
 msgid "Quit without saving? "
 msgstr "Afslut uden at gemme? "
 
-#: g10/keyedit.c:1012
+#: g10/keyedit.c:1243
 #, c-format
 msgid "update failed: %s\n"
 msgstr ""
 
-#: g10/keyedit.c:1019
+#: g10/keyedit.c:1250
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr ""
 
-#: g10/keyedit.c:1026
+#: g10/keyedit.c:1257
 msgid "Key not changed so no update needed.\n"
 msgstr ""
 
-#: g10/keyedit.c:1037
+#: g10/keyedit.c:1268
 msgid "Invalid command  (try \"help\")\n"
 msgstr ""
 
-#: g10/keyedit.c:1145 g10/keyedit.c:1171
+#: g10/keyedit.c:1405 g10/keyedit.c:1431
 #, c-format
 msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
 msgstr ""
 
-#: g10/keyedit.c:1154
+#: g10/keyedit.c:1414
 #, c-format
 msgid " trust: %c/%c"
 msgstr ""
 
-#: g10/keyedit.c:1158
+#: g10/keyedit.c:1418
 msgid "This key has been disabled"
 msgstr ""
 
-#: g10/keyedit.c:1187
+#: g10/keyedit.c:1447
 #, fuzzy, c-format
 msgid "rev! subkey has been revoked: %s\n"
 msgstr "rev! undernøgle er blevet annulleret! %s\n"
 
-#: g10/keyedit.c:1190
+#: g10/keyedit.c:1450
 #, fuzzy
 msgid "rev- faked revocation found\n"
 msgstr "rev- forkert nøgletilbagekald\n"
 
-#: g10/keyedit.c:1192
+#: g10/keyedit.c:1452
 #, c-format
 msgid "rev? problem checking revocation: %s\n"
 msgstr ""
 
-#: g10/keyedit.c:1408
+#: g10/keyedit.c:1556
+#, fuzzy
+msgid ""
+"\n"
+"WARNING: This is a PGP2-style key\n"
+msgstr "ADVARSEL: '%s' er en tom fil\n"
+
+#: g10/keyedit.c:1557
+msgid ""
+"         Adding a photo ID may cause some versions of PGP to not accept this "
+"key\n"
+msgstr ""
+
+#: g10/keyedit.c:1686
 msgid "Delete this good signature? (y/N/q)"
 msgstr ""
 
-#: g10/keyedit.c:1412
+#: g10/keyedit.c:1690
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr ""
 
-#: g10/keyedit.c:1416
+#: g10/keyedit.c:1694
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr ""
 
-#: g10/keyedit.c:1422
+#: g10/keyedit.c:1700
 msgid "Really delete this self-signature? (y/N)"
 msgstr ""
 
-#: g10/keyedit.c:1436
+#: g10/keyedit.c:1714
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "Slettede %d signatur.\n"
 
-#: g10/keyedit.c:1437
+#: g10/keyedit.c:1715
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr ""
 
-#: g10/keyedit.c:1440
+#: g10/keyedit.c:1718
 msgid "Nothing deleted.\n"
 msgstr ""
 
-#: g10/keyedit.c:1509
+#: g10/keyedit.c:1787
 msgid "Please remove selections from the secret keys.\n"
 msgstr ""
 
-#: g10/keyedit.c:1515
+#: g10/keyedit.c:1793
 msgid "Please select at most one secondary key.\n"
 msgstr ""
 
-#: g10/keyedit.c:1519
+#: g10/keyedit.c:1797
 msgid "Changing expiration time for a secondary key.\n"
 msgstr ""
 
-#: g10/keyedit.c:1521
+#: g10/keyedit.c:1799
 msgid "Changing expiration time for the primary key.\n"
 msgstr ""
 
-#: g10/keyedit.c:1563
+#: g10/keyedit.c:1841
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr ""
 
-#: g10/keyedit.c:1579
+#: g10/keyedit.c:1857
 msgid "No corresponding signature in secret ring\n"
 msgstr ""
 
-#: g10/keyedit.c:1662
+#: g10/keyedit.c:1938
 #, fuzzy
 msgid "Please select exactly one user ID.\n"
 msgstr "Vælg venligst hvilken slags nøgle du vil have:\n"
 
-#: g10/keyedit.c:1837
+#: g10/keyedit.c:2113
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Ingen bruger-id med indeks %d\n"
 
-#: g10/keyedit.c:1883
+#: g10/keyedit.c:2159
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Ingen sekundær nøgle med indeks %d\n"
 
-#: g10/keyedit.c:1981
+#: g10/keyedit.c:2257
 msgid "user ID: \""
 msgstr "bruger-id: \""
 
-#: g10/keyedit.c:1984
+#: g10/keyedit.c:2260
 #, c-format
 msgid ""
 "\"\n"
 "signed with your key %08lX at %s\n"
 msgstr ""
 
-#: g10/keyedit.c:1988
+#: g10/keyedit.c:2264
 msgid "Create a revocation certificate for this signature? (y/N)"
 msgstr ""
 
 #. FIXME: detect duplicates here
-#: g10/keyedit.c:2012
+#: g10/keyedit.c:2288
 msgid "You have signed these user IDs:\n"
 msgstr ""
 
-#: g10/keyedit.c:2026 g10/keyedit.c:2061
+#: g10/keyedit.c:2302
 #, c-format
-msgid "   signed by %08lX at %s\n"
+msgid "   signed by %08lX at %s%s\n"
 msgstr ""
 
-#: g10/keyedit.c:2031
+#: g10/keyedit.c:2309
 #, c-format
 msgid "   revoked by %08lX at %s\n"
 msgstr ""
 
-#: g10/keyedit.c:2051
+#: g10/keyedit.c:2329
 msgid "You are about to revoke these signatures:\n"
 msgstr ""
 
-#: g10/keyedit.c:2069
+#: g10/keyedit.c:2339
+#, c-format
+msgid "   signed by %08lX at %s\n"
+msgstr ""
+
+#: g10/keyedit.c:2347
 msgid "Really create the revocation certificates? (y/N)"
 msgstr ""
 
-#: g10/keyedit.c:2098
+#: g10/keyedit.c:2376
 msgid "no secret key\n"
 msgstr ""
 
+#. This isn't UTF8 as it is a URL(?)
+#: g10/keylist.c:77
+msgid "Signature policy"
+msgstr ""
+
+#: g10/keylist.c:101 g10/keylist.c:118 g10/mainproc.c:717 g10/mainproc.c:726
+msgid "WARNING: invalid notation data found\n"
+msgstr ""
+
+#. This is UTF8
+#: g10/keylist.c:106
+msgid "Signature notation"
+msgstr ""
+
+#: g10/keylist.c:113
+msgid "not human readable"
+msgstr ""
+
+#: g10/keylist.c:178
+msgid "Keyring"
+msgstr ""
+
 #. of subkey
-#: g10/keylist.c:303 g10/mainproc.c:827
+#: g10/keylist.c:378 g10/mainproc.c:849
 #, fuzzy, c-format
 msgid " [expires: %s]"
 msgstr "Nøgle udløber d. %s\n"
 
-#: g10/keylist.c:746
+#: g10/keylist.c:837
 msgid "Fingerprint:"
 msgstr "Fingeraftryk:"
 
 #. use tty
 #. Translators: this should fit into 24 bytes to that the fingerprint
 #. * data is properly aligned with the user ID
-#: g10/keylist.c:752
+#: g10/keylist.c:843
 msgid "             Fingerprint:"
 msgstr "             Fingeraftryk:"
 
-#: g10/keylist.c:756
+#: g10/keylist.c:847
 #, fuzzy
 msgid "     Key fingerprint ="
 msgstr "             Fingeraftryk:"
@@ -2643,115 +2931,125 @@ msgstr ""
 msgid "public key decryption failed: %s\n"
 msgstr ""
 
-#. assume this is old style conventional encrypted data
-#: g10/mainproc.c:427
+#: g10/mainproc.c:429 g10/mainproc.c:448
 #, fuzzy, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "kryptér data"
 
-#: g10/mainproc.c:444
+#: g10/mainproc.c:436
+#, c-format
+msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
+msgstr ""
+
+#: g10/mainproc.c:466
 msgid "decryption okay\n"
 msgstr ""
 
-#: g10/mainproc.c:449
+#: g10/mainproc.c:471
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr ""
 
-#: g10/mainproc.c:454
+#: g10/mainproc.c:476
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr ""
 
-#: g10/mainproc.c:473
+#: g10/mainproc.c:495
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr ""
 
-#: g10/mainproc.c:475
+#: g10/mainproc.c:497
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr ""
 
-#: g10/mainproc.c:646
+#: g10/mainproc.c:668
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 
-#: g10/mainproc.c:695 g10/mainproc.c:704
-msgid "WARNING: invalid notation data found\n"
-msgstr ""
-
-#: g10/mainproc.c:707
+#: g10/mainproc.c:729
 msgid "Notation: "
 msgstr ""
 
-#: g10/mainproc.c:716
+#: g10/mainproc.c:738
 msgid "Policy: "
 msgstr "Politik: "
 
-#: g10/mainproc.c:1169
+#: g10/mainproc.c:1191
 msgid "signature verification suppressed\n"
 msgstr ""
 
 #. plaintext before signatures but no one-pass packets
-#: g10/mainproc.c:1211 g10/mainproc.c:1221
+#: g10/mainproc.c:1233 g10/mainproc.c:1243
 #, fuzzy
 msgid "can't handle these multiple signatures\n"
 msgstr "opret en separat signatur"
 
-#: g10/mainproc.c:1232
+#: g10/mainproc.c:1254
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr ""
 
-#: g10/mainproc.c:1266 g10/mainproc.c:1288
+#: g10/mainproc.c:1288 g10/mainproc.c:1310
 msgid "BAD signature from \""
 msgstr "DÅRLIG signatur fra \""
 
-#: g10/mainproc.c:1267 g10/mainproc.c:1289
+#: g10/mainproc.c:1289 g10/mainproc.c:1311
 msgid "Good signature from \""
 msgstr "God signatur fra \""
 
-#: g10/mainproc.c:1291
+#: g10/mainproc.c:1313
 msgid "[uncertain]"
 msgstr ""
 
-#: g10/mainproc.c:1311
+#: g10/mainproc.c:1333
 msgid "                aka \""
 msgstr "              alias \""
 
-#: g10/mainproc.c:1361
+#: g10/mainproc.c:1393
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Kan ikke tjekke signatur: %s\n"
 
-#: g10/mainproc.c:1430 g10/mainproc.c:1446 g10/mainproc.c:1508
+#: g10/mainproc.c:1462 g10/mainproc.c:1478 g10/mainproc.c:1540
 #, fuzzy
 msgid "not a detached signature\n"
 msgstr "opret en separat signatur"
 
-#: g10/mainproc.c:1457
+#: g10/mainproc.c:1489
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr ""
 
-#: g10/mainproc.c:1514
+#: g10/mainproc.c:1546
 msgid "old style (PGP 2.x) signature\n"
 msgstr "gammeldags (PGP 2.x) signatur\n"
 
-#: g10/mainproc.c:1521
+#: g10/mainproc.c:1553
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr ""
 
-#: g10/misc.c:98
+#: g10/misc.c:101
 #, c-format
 msgid "can't disable core dumps: %s\n"
 msgstr "kan ikke slå core-dump fra: %s\n"
 
-#: g10/misc.c:208
+#: g10/misc.c:211
 msgid "Experimental algorithms should not be used!\n"
 msgstr ""
 
-#: g10/misc.c:238
+#: g10/misc.c:241
 msgid "this cipher algorithm is deprecated; please use a more standard one!\n"
+msgstr ""
+
+#: g10/misc.c:361
+#, c-format
+msgid "Warning: unsafe ownership on %s \"%s\"\n"
+msgstr ""
+
+#: g10/misc.c:390
+#, c-format
+msgid "Warning: unsafe permissions on %s \"%s\"\n"
 msgstr ""
 
 #: g10/parse-packet.c:119
@@ -2759,7 +3057,7 @@ msgstr ""
 msgid "can't handle public key algorithm %d\n"
 msgstr ""
 
-#: g10/parse-packet.c:1040
+#: g10/parse-packet.c:1042
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr ""
@@ -2784,7 +3082,7 @@ msgstr ""
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr ""
 
-#: g10/hkp.c:174 g10/passphrase.c:345
+#: g10/hkp.c:136 g10/passphrase.c:345
 #, fuzzy, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "kan ikke åbne '%s': %s\n"
@@ -2883,77 +3181,68 @@ msgstr ""
 msgid "can't open signed data `%s'\n"
 msgstr ""
 
-#: g10/pubkey-enc.c:99
+#: g10/pubkey-enc.c:100
 #, c-format
-msgid "anonymous receiver; trying secret key %08lX ...\n"
+msgid "anonymous recipient; trying secret key %08lX ...\n"
 msgstr ""
 
-#: g10/pubkey-enc.c:105
+#: g10/pubkey-enc.c:106
 msgid "okay, we are the anonymous recipient.\n"
 msgstr ""
 
-#: g10/pubkey-enc.c:157
+#: g10/pubkey-enc.c:158
 msgid "old encoding of the DEK is not supported\n"
 msgstr ""
 
-#: g10/pubkey-enc.c:176
+#: g10/pubkey-enc.c:177
 #, fuzzy, c-format
-msgid "cipher algorithm %d is unknown or disabled\n"
+msgid "cipher algorithm %d%s is unknown or disabled\n"
 msgstr "valgte cifferalgoritme %d er ugyldig\n"
 
-#: g10/pubkey-enc.c:216
+#: g10/pubkey-enc.c:219
 #, c-format
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
 msgstr ""
 
-#: g10/pubkey-enc.c:238
+#: g10/pubkey-enc.c:241
 #, c-format
 msgid "NOTE: secret key %08lX expired at %s\n"
 msgstr ""
 
-#: g10/hkp.c:59
-#, c-format
-msgid "requesting key %08lX from %s ...\n"
-msgstr ""
+#: g10/hkp.c:58
+#, fuzzy, c-format
+msgid "requesting key %08lX from HKP keyserver %s\n"
+msgstr "importér nøgler fra en nøgleserver: %s\n"
 
-#: g10/hkp.c:83
+#: g10/hkp.c:82
 #, fuzzy, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "importér nøgler fra en nøgleserver: %s\n"
 
-#: g10/hkp.c:104 g10/hkp.c:143
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
-
-#: g10/hkp.c:115
-#, fuzzy, c-format
-msgid "%s: not a valid key ID\n"
-msgstr "%s er ikke et gyldigt tegnsæt\n"
-
-#: g10/hkp.c:198
+#: g10/hkp.c:160
 #, fuzzy, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "fejl ved læsning af '%s': %s\n"
 
-#: g10/hkp.c:210
+#: g10/hkp.c:175
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr ""
 
-#: g10/hkp.c:213
+#: g10/hkp.c:178
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr ""
 
-#: g10/hkp.c:300
+#: g10/hkp.c:413
 #, c-format
-msgid "duplicate (short) key ID %08lX\n"
+msgid "searching for \"%s\" from HKP server %s\n"
 msgstr ""
 
-#: g10/hkp.c:317
+#: g10/hkp.c:462
 #, fuzzy, c-format
-msgid "%lu key(s) to refresh\n"
-msgstr "%lu nøgler behandlet indtil nu\n"
+msgid "can't search keyserver: %s\n"
+msgstr "importér nøgler fra en nøgleserver: %s\n"
 
 #: g10/seckey-cert.c:53
 #, fuzzy
@@ -2961,15 +3250,15 @@ msgid "secret key parts are not available\n"
 msgstr "hemmelig nøgle ikke tilgængelig"
 
 #: g10/seckey-cert.c:59
-#, c-format
-msgid "protection algorithm %d is not supported\n"
-msgstr ""
+#, fuzzy, c-format
+msgid "protection algorithm %d%s is not supported\n"
+msgstr "valgte cifferalgoritme %d er ugyldig\n"
 
-#: g10/seckey-cert.c:184
+#: g10/seckey-cert.c:185
 msgid "Invalid passphrase; please try again ...\n"
 msgstr ""
 
-#: g10/seckey-cert.c:240
+#: g10/seckey-cert.c:241
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr ""
 
@@ -2997,31 +3286,39 @@ msgstr ""
 msgid "assuming bad signature due to an unknown critical bit\n"
 msgstr ""
 
-#: g10/sign.c:220
+#: g10/sign.c:234
 #, fuzzy, c-format
 msgid "checking created signature failed: %s\n"
 msgstr "Kan ikke tjekke signatur: %s\n"
 
-#: g10/sign.c:229
+#: g10/sign.c:243
 #, c-format
 msgid "%s signature from: %s\n"
 msgstr "%s signatur fra: %s\n"
 
-#: g10/sign.c:376
+#: g10/sign.c:390
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "ADVARSEL: '%s' er en tom fil\n"
 
-#: g10/sign.c:566 g10/sign.c:721
+#: g10/sign.c:578
+msgid "you can only sign with PGP 2.x style keys while in --pgp2 mode\n"
+msgstr ""
+
+#: g10/sign.c:603 g10/sign.c:772
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "kan ikke oprette %s: %s\n"
 
-#: g10/sign.c:627
+#: g10/sign.c:664
 msgid "signing:"
 msgstr "signerer:"
 
-#: g10/sign.c:860
+#: g10/sign.c:756
+msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
+msgstr ""
+
+#: g10/sign.c:915
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr ""
@@ -3036,12 +3333,12 @@ msgstr ""
 msgid "input line longer than %d characters\n"
 msgstr ""
 
-#: g10/tdbio.c:118 g10/tdbio.c:1375
+#: g10/tdbio.c:118 g10/tdbio.c:1377
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:124 g10/tdbio.c:1382
+#: g10/tdbio.c:124 g10/tdbio.c:1384
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr ""
@@ -3050,118 +3347,118 @@ msgstr ""
 msgid "trustdb transaction too large\n"
 msgstr ""
 
-#: g10/tdbio.c:449
+#: g10/tdbio.c:451
 #, c-format
 msgid "%s: can't access: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:463
+#: g10/tdbio.c:465
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr ""
 
-#: g10/tdbio.c:473 g10/tdbio.c:493 g10/tdbio.c:536
+#: g10/tdbio.c:475 g10/tdbio.c:495 g10/tdbio.c:538
 #, c-format
 msgid "%s: can't create lock\n"
 msgstr ""
 
-#: g10/tdbio.c:475 g10/tdbio.c:539
+#: g10/tdbio.c:477 g10/tdbio.c:541
 #, fuzzy, c-format
 msgid "%s: can't make lock\n"
 msgstr "%s: kan ikke åbne: %s\n"
 
-#: g10/keyring.c:1420 g10/openfile.c:240 g10/openfile.c:307 g10/tdbio.c:479
+#: g10/keyring.c:1420 g10/openfile.c:240 g10/openfile.c:307 g10/tdbio.c:481
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:498
+#: g10/tdbio.c:500
 #, c-format
 msgid "%s: failed to create version record: %s"
 msgstr ""
 
-#: g10/tdbio.c:502
+#: g10/tdbio.c:504
 #, c-format
 msgid "%s: invalid trustdb created\n"
 msgstr ""
 
-#: g10/tdbio.c:505
+#: g10/tdbio.c:507
 #, c-format
 msgid "%s: trustdb created\n"
 msgstr ""
 
-#: g10/tdbio.c:560
+#: g10/tdbio.c:562
 #, c-format
 msgid "%s: invalid trustdb\n"
 msgstr ""
 
-#: g10/tdbio.c:592
+#: g10/tdbio.c:594
 #, c-format
 msgid "%s: failed to create hashtable: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:600
+#: g10/tdbio.c:602
 #, c-format
 msgid "%s: error updating version record: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:616 g10/tdbio.c:652 g10/tdbio.c:665 g10/tdbio.c:694
-#: g10/tdbio.c:1308 g10/tdbio.c:1335
+#: g10/tdbio.c:618 g10/tdbio.c:654 g10/tdbio.c:667 g10/tdbio.c:696
+#: g10/tdbio.c:1310 g10/tdbio.c:1337
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:629 g10/tdbio.c:674
+#: g10/tdbio.c:631 g10/tdbio.c:676
 #, c-format
 msgid "%s: error writing version record: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:1112
+#: g10/tdbio.c:1114
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:1120
+#: g10/tdbio.c:1122
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr ""
 
-#: g10/tdbio.c:1141
+#: g10/tdbio.c:1143
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr ""
 
-#: g10/tdbio.c:1158
+#: g10/tdbio.c:1160
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr ""
 
-#: g10/tdbio.c:1163
+#: g10/tdbio.c:1165
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr ""
 
-#: g10/tdbio.c:1341
+#: g10/tdbio.c:1343
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:1349
+#: g10/tdbio.c:1351
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:1359
+#: g10/tdbio.c:1361
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:1389
+#: g10/tdbio.c:1391
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr ""
 
-#: g10/tdbio.c:1434
+#: g10/tdbio.c:1436
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
 
@@ -3209,7 +3506,7 @@ msgstr ""
 msgid "no need for a trustdb check\n"
 msgstr ""
 
-#: g10/trustdb.c:476 g10/trustdb.c:1458
+#: g10/trustdb.c:476 g10/trustdb.c:1488
 #, c-format
 msgid "next trustdb check due at %s\n"
 msgstr ""
@@ -3224,12 +3521,12 @@ msgstr "|[NAMES]|tjek tillidsdatabasen"
 msgid "public key %08lX not found: %s\n"
 msgstr "offentlig nøgle ikke fundet"
 
-#: g10/trustdb.c:1338
+#: g10/trustdb.c:1363
 #, c-format
 msgid "public key of ultimately trusted key %08lX not found\n"
 msgstr ""
 
-#: g10/trustdb.c:1411
+#: g10/trustdb.c:1441
 #, c-format
 msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 msgstr ""
@@ -3423,7 +3720,7 @@ msgid "Enter the size of the key"
 msgstr "Indtast nøglens størrelse"
 
 #: g10/helptext.c:103 g10/helptext.c:108 g10/helptext.c:120 g10/helptext.c:152
-#: g10/helptext.c:157 g10/helptext.c:162 g10/helptext.c:167
+#: g10/helptext.c:175 g10/helptext.c:180 g10/helptext.c:185
 msgid "Answer \"yes\" or \"no\""
 msgstr "Svar \"ja\" eller \"nej\""
 
@@ -3460,28 +3757,60 @@ msgstr ""
 msgid "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
 msgstr ""
 
-#: g10/helptext.c:171
+#: g10/helptext.c:156
+msgid ""
+"When you sign a user ID on a key, you should first verify that the key\n"
+"belongs to the person named in the user ID.  It is useful for others to\n"
+"know how carefully you verified this.\n"
+"\n"
+"\"0\" means you make no particular claim as to how carefully you verified "
+"the\n"
+"    key.\n"
+"\n"
+"\"1\" means you believe the key is owned by the person who claims to own it\n"
+"    but you could not, or did not verify the key at all.  This is useful "
+"for\n"
+"    a \"persona\" verification, where you sign the key of a pseudonymous "
+"user.\n"
+"\n"
+"\"2\" means you did casual verification of the key.  For example, this "
+"could\n"
+"    mean that you verified the key fingerprint and checked the user ID on "
+"the\n"
+"    key against a photo ID.\n"
+"\n"
+"\"3\" means you did extensive verification of the key.  For example, this "
+"could\n"
+"    mean that you verified the key fingerprint and checked the user ID on "
+"the\n"
+"    key against a photo ID, and also verified the email address on the key\n"
+"    belongs to the key owner.\n"
+"\n"
+"If you don't know what the right answer is, answer \"0\"."
+msgstr ""
+
+#: g10/helptext.c:189
 msgid "Answer \"yes\" is you want to sign ALL the user IDs"
 msgstr ""
 
-#: g10/helptext.c:175
+#: g10/helptext.c:193
 msgid ""
 "Answer \"yes\" if you really want to delete this user ID.\n"
 "All certificates are then also lost!"
 msgstr ""
 
-#: g10/helptext.c:180
+#: g10/helptext.c:198
 msgid "Answer \"yes\" if it is okay to delete the subkey"
 msgstr ""
 
-#: g10/helptext.c:185
+#: g10/helptext.c:203
 msgid ""
 "This is a valid signature on the key; you normally don't want\n"
 "to delete this signature because it may be important to establish a\n"
 "trust connection to the key or another key certified by this key."
 msgstr ""
 
-#: g10/helptext.c:190
+#: g10/helptext.c:208
 msgid ""
 "This signature can't be checked because you don't have the\n"
 "corresponding key.  You should postpone its deletion until you\n"
@@ -3489,13 +3818,13 @@ msgid ""
 "a trust connection through another already certified key."
 msgstr ""
 
-#: g10/helptext.c:196
+#: g10/helptext.c:214
 msgid ""
 "The signature is not valid.  It does make sense to remove it from\n"
 "your keyring."
 msgstr ""
 
-#: g10/helptext.c:200
+#: g10/helptext.c:218
 msgid ""
 "This is a signature which binds the user ID to the key. It is\n"
 "usually not a good idea to remove such a signature.  Actually\n"
@@ -3504,30 +3833,30 @@ msgid ""
 "a second one is available."
 msgstr ""
 
-#: g10/helptext.c:208
+#: g10/helptext.c:226
 msgid ""
 "Change the preferences of all user IDs (or just of the selected ones)\n"
 "to the current list of preferences.  The timestamp of all affected\n"
 "self-signatures fill be advanced by one second.\n"
 msgstr ""
 
-#: g10/helptext.c:215
+#: g10/helptext.c:233
 msgid "Please enter the passhrase; this is a secret sentence \n"
 msgstr ""
 
-#: g10/helptext.c:221
+#: g10/helptext.c:239
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
 msgstr ""
 
-#: g10/helptext.c:225
+#: g10/helptext.c:243
 msgid "Give the name of the file to which the signature applies"
 msgstr ""
 
-#: g10/helptext.c:230
+#: g10/helptext.c:248
 msgid "Answer \"yes\" if it is okay to overwrite the file"
 msgstr "Svar \"ja\" hvis det er ok at overskrive filen"
 
-#: g10/helptext.c:235
+#: g10/helptext.c:253
 msgid ""
 "Please enter a new filename. If you just hit RETURN the default\n"
 "file (which is shown in brackets) will be used."
@@ -3535,7 +3864,7 @@ msgstr ""
 "Indtast et nyt filnavn. Hvis du bare trykker RETUR vil det\n"
 "forvalgte navn (som er vist i klammer) blive brugt."
 
-#: g10/helptext.c:241
+#: g10/helptext.c:259
 msgid ""
 "You should specify a reason for the certification.  Depending on the\n"
 "context you have the ability to choose from this list:\n"
@@ -3551,38 +3880,38 @@ msgid ""
 "      this is normally used to mark an email address invalid.\n"
 msgstr ""
 
-#: g10/helptext.c:257
+#: g10/helptext.c:275
 msgid ""
 "If you like, you can enter a text describing why you issue this\n"
 "revocation certificate.  Please keep this text concise.\n"
 "An empty line ends the text.\n"
 msgstr ""
 
-#: g10/helptext.c:272
+#: g10/helptext.c:290
 msgid "No help available"
 msgstr "Ingen hjælp tilgængelig"
 
-#: g10/helptext.c:280
+#: g10/helptext.c:298
 #, c-format
 msgid "No help available for `%s'"
 msgstr "Ingen hjælp tilgængelig for `%s'"
 
-#: g10/keydb.c:175
+#: g10/keydb.c:177
 #, fuzzy, c-format
 msgid "error creating keyring `%s': %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-#: g10/keydb.c:184
+#: g10/keydb.c:186
 #, c-format
 msgid "changing permission of  `%s' failed: %s\n"
 msgstr ""
 
-#: g10/keydb.c:193
+#: g10/keydb.c:195
 #, c-format
 msgid "keyring `%s' created\n"
 msgstr ""
 
-#: g10/keydb.c:586
+#: g10/keydb.c:588
 #, fuzzy, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "ingen standard offentlig nøglering\n"
@@ -3624,6 +3953,17 @@ msgstr "vis nøgler og signaturer"
 #, c-format
 msgid "%s: keyring created\n"
 msgstr ""
+
+#~ msgid "sSmMqQ"
+#~ msgstr "sSmMqQ"
+
+#, fuzzy
+#~ msgid "%s: not a valid key ID\n"
+#~ msgstr "%s er ikke et gyldigt tegnsæt\n"
+
+#, fuzzy
+#~ msgid "%lu key(s) to refresh\n"
+#~ msgstr "%lu nøgler behandlet indtil nu\n"
 
 #~ msgid ""
 #~ "No trust values changed.\n"
