@@ -1,3 +1,12 @@
+2005-01-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Typo.
+
+	* armor.c (is_armor_header): Allow CR and LF (not just actual
+	spaces) in an armor header line (-----BEGIN etc).  This is needed
+	due to CRLF issues on win32.  As before, --openpgp makes it
+	strict.
+
 2005-01-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Use @LIBUSB@ instead of @LIBUSB_LIBS@

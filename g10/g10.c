@@ -2607,8 +2607,8 @@ main( int argc, char **argv )
 
     if(require_secmem && !got_secmem)
       {
-	log_info(_("will not run with insecure memory due to %s"),
-		 "--require-secmem\n");
+	log_info(_("will not run with insecure memory due to %s\n"),
+		 "--require-secmem");
 	g10_exit(2);
       }
 

@@ -291,17 +291,24 @@ is_armor_header( byte *line, unsigned len )
     save_p = p;
     p += 5;
 
-    /* Some mail programs on Windows seem to add spaces to the end of
-       the line.  This becomes strict if --openpgp is set. */
+    /* Some Windows environments seem to add whitespace to the end of
+       the line, so we strip it here.  This becomes strict if
+       --rfc2440 is set since 2440 reads "The header lines, therefore,
+       MUST start at the beginning of a line, and MUST NOT have text
+       following them on the same line."  It is unclear whether "text"
+       refers to all text or just non-whitespace text. */
 
-    if(!RFC2440)
-      while(*p==' ')
+    if(RFC2440)
+      {
+	if( *p == '\r' )
+	  p++;
+	if( *p == '\n' )
+	  p++;
+      }
+    else
+      while(*p==' ' || *p=='\r' || *p=='\n')
 	p++;
 
-    if( *p == '\r' )
-	p++;
-    if( *p == '\n' )
-	p++;
     if( *p )
 	return -1; /* garbage after dashes */
     save_c = *save_p; *save_p = 0;
