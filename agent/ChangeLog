@@ -1,3 +1,7 @@
+2004-12-05  Moritz Schulte  <moritz@g10code.com>
+
+	* query.c (start_pinentry): Allow CTRL be NULL.
+
 2004-10-22  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (parse_rereadable_options): Return "not handled"
