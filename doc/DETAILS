@@ -1,4 +1,4 @@
-
+                                                              -*- text -*-
 Format of colon listings
 ========================
 First an example:
@@ -447,13 +447,19 @@ more arguments in future versions.
         epoch or an ISO 8601 string which can be detected by the
         presence of the letter 'T' inside.
         
-    KEY_CREATED <type> <fingerprint>
+    KEY_CREATED <type> <fingerprint> [<handle>]
         A key has been created
             type: 'B' = primary and subkey
                   'P' = primary
                   'S' = subkey
         The fingerprint is one of the primary key for type B and P and
-        the one of the subkey for S.
+        the one of the subkey for S.  Handle is an arbitrary
+        non-whitespace string used to match key parameters from batch
+        key creation run.
+
+    KEY_NOT_CREATED [<handle>]
+        The key from batch run has not been created due to errors.
+
 
     SESSION_KEY  <algo>:<hexdigits>
 	The session key used to decrypt the message.  This message will
@@ -744,6 +750,13 @@ The format of this file is as follows:
 	revoker.  The optional "sensitive" flag marks the designated
 	revoker as sensitive information.  Only v4 keys may be
 	designated revokers.
+     Handle: <string>
+        This is an optional parameter only used with the status lines
+        KEY_CREATED and KEY_NOT_CREATED.  STRING may be up to 100
+        characters and should not contauin spaces.  It is useful for
+        batch key generation to associate a key parameter block with a
+        status line.
+
 
 Here is an example:
 $ cat >foo <<EOF

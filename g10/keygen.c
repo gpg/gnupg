@@ -64,7 +64,8 @@ enum para_name {
   pPASSPHRASE_DEK,
   pPASSPHRASE_S2K,
   pSERIALNO,
-  pBACKUPENCDIR
+  pBACKUPENCDIR,
+  pHANDLE
 };
 
 struct para_data_s {
@@ -160,6 +161,49 @@ copy_mpi (MPI a, unsigned char *buffer, size_t len, size_t *ncopied)
   return rc;
 }
 #endif /* ENABLE_CARD_SUPPORT */
+
+
+
+static void
+print_status_key_created (int letter, PKT_public_key *pk, const char *handle)
+{
+  unsigned char array[MAX_FINGERPRINT_LEN], *s;
+  char *buf, *p;
+  size_t i, n;
+  
+  if (!handle)
+    handle = "";
+
+  buf = xmalloc (MAX_FINGERPRINT_LEN*2+31 + strlen (handle) + 1);
+
+  p = buf;
+  if (letter || pk)
+    {
+      *p++ = letter;
+      *p++ = ' ';
+      fingerprint_from_pk (pk, array, &n);
+      s = array;
+      for (i=0; i < n ; i++, s++, p += 2)
+        sprintf (p, "%02X", *s);
+    }
+  if (*handle)
+    {
+      *p++ = ' ';
+      for (i=0; handle[i] && i < 100; i++)
+        *p++ = isspace ((unsigned int)handle[i])? '_':handle[i];
+    }
+  *p = 0;
+  write_status_text ((letter || pk)?STATUS_KEY_CREATED:STATUS_KEY_NOT_CREATED,
+                     buf);
+  xfree (buf);
+}
+
+static void
+print_status_key_not_created (const char *handle)
+{
+  print_status_key_created (0, NULL, handle);
+}
+
 
 
 static void
@@ -2019,7 +2063,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
     char *p;
     int i;
 
-    /* check that we have all required parameters */
+    /* Check that we have all required parameters. */
     assert( get_parameter( para, pKEYTYPE ) );
     i = get_parameter_algo( para, pKEYTYPE );
     if( i < 1 || check_pubkey_algo2( i, PUBKEY_USAGE_SIG ) ) {
@@ -2130,7 +2174,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 
 /****************
  * Kludge to allow non interactive key generation controlled
- * by a parameter file (which currently is only stdin)
+ * by a parameter file.
  * Note, that string parameters are expected to be in UTF-8
  */
 static void
@@ -2152,6 +2196,7 @@ read_parameter_file( const char *fname )
 	{ "Passphrase",     pPASSPHRASE },
 	{ "Preferences",    pPREFERENCES },
 	{ "Revoker",        pREVOKER },
+        { "Handle",         pHANDLE },
 	{ NULL, 0 }
     };
     IOBUF fp;
@@ -2209,7 +2254,9 @@ read_parameter_file( const char *fname )
 		outctrl.dryrun = 1;
 	    else if( !ascii_strcasecmp( keyword, "%commit" ) ) {
 		outctrl.lnr = lnr;
-		proc_parameter_file( para, fname, &outctrl, 0 );
+		if (proc_parameter_file( para, fname, &outctrl, 0 ))
+                  print_status_key_not_created 
+                    (get_parameter_value (para, pHANDLE));
 		release_parameter_list( para );
 		para = NULL;
 	    }
@@ -2269,7 +2316,9 @@ read_parameter_file( const char *fname )
 
 	if( keywords[i].key == pKEYTYPE && para ) {
 	    outctrl.lnr = lnr;
-	    proc_parameter_file( para, fname, &outctrl, 0 );
+	    if (proc_parameter_file( para, fname, &outctrl, 0 ))
+              print_status_key_not_created
+                (get_parameter_value (para, pHANDLE));
 	    release_parameter_list( para );
 	    para = NULL;
 	}
@@ -2297,7 +2346,8 @@ read_parameter_file( const char *fname )
     }
     else if( para ) {
 	outctrl.lnr = lnr;
-	proc_parameter_file( para, fname, &outctrl, 0 );
+	if (proc_parameter_file( para, fname, &outctrl, 0 ))
+          print_status_key_not_created (get_parameter_value (para, pHANDLE));
     }
 
     if( outctrl.use_files ) { /* close open streams */
@@ -2600,24 +2650,6 @@ generate_raw_key (int algo, unsigned int nbits, u32 created_at,
 
 
 static void
-print_status_key_created (int letter, PKT_public_key *pk)
-{
-  byte array[MAX_FINGERPRINT_LEN], *s;
-  char buf[MAX_FINGERPRINT_LEN*2+30], *p;
-  size_t i, n;
-  
-  p = buf;
-  *p++ = letter;
-  *p++ = ' ';
-  fingerprint_from_pk (pk, array, &n);
-  s = array;
-  for (i=0; i < n ; i++, s++, p += 2)
-    sprintf (p, "%02X", *s);
-  *p = 0;
-  write_status_text (STATUS_KEY_CREATED, buf);
-}
-
-static void
 do_generate_keypair( struct para_data_s *para,
 		     struct output_control_s *outctrl, int card )
 {
@@ -2889,11 +2921,13 @@ do_generate_keypair( struct para_data_s *para,
 	    log_error("key generation failed: %s\n", g10_errstr(rc) );
 	else
 	    tty_printf(_("Key generation failed: %s\n"), g10_errstr(rc) );
+        print_status_key_not_created ( get_parameter_value (para, pHANDLE) );
     }
     else {
         PKT_public_key *pk = find_kbnode (pub_root, 
                                     PKT_PUBLIC_KEY)->pkt->pkt.public_key;
-        print_status_key_created (did_sub? 'B':'P', pk);
+        print_status_key_created (did_sub? 'B':'P', pk,
+                                  get_parameter_value (para, pHANDLE));
     }
     release_kbnode( pub_root );
     release_kbnode( sec_root );
