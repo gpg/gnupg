@@ -1916,8 +1916,7 @@ TWOFISH.
 Set up all options to be as PGP 8 compliant as possible.  PGP 8 is a
 lot closer to the OpenPGP standard than previous versions of PGP, so
 all this does is disable --throw-keyid and set --escape-from-lines.
-The allowed algorithms list is the same as --pgp7 with the addition of
-the SHA-256 digest algorithm.
+All algorithms are allowed except for the SHA384 and SHA512 digests.
 </para></listitem></varlistentry>
 
 </variablelist></para></listitem></varlistentry>
@@ -2628,8 +2627,8 @@ is *very* easy to spy out your passphrase!
 </para>
 <para>
 If you are going to verify detached signatures, make sure that the
-program knows about it; either be giving both filenames on the
-command line or using <literal>-</literal> to specify stdin.
+program knows about it; either give both filenames on the command line
+or use <literal>-</literal> to specify stdin.
 </para>
 </refsect1>
 
@@ -2637,8 +2636,8 @@ command line or using <literal>-</literal> to specify stdin.
     <title>INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS</title>
 <para>
 GnuPG tries to be a very flexible implementation of the OpenPGP
-standard.  In particular, GnuPG implements many of the "optional"
-parts of the standard, such as the RIPEMD/160 hash, and the ZLIB
+standard.  In particular, GnuPG implements many of the optional parts
+of the standard, such as the SHA-512 hash, and the ZLIB and BZIP2
 compression algorithms.  It is important to be aware that not all
 OpenPGP programs implement these optional algorithms and that by
 forcing their use via the --cipher-algo, --digest-algo,
@@ -2648,14 +2647,15 @@ cannot be read by the intended recipient.
 </para>
 
 <para>
-For example, as of this writing, no (unhacked) version of PGP supports
-the BLOWFISH cipher algorithm.  If you use it, no PGP user will be
-able to decrypt your message.  The same thing applies to the ZLIB
-compression algorithm.  By default, GnuPG uses the standard OpenPGP
-preferences system that will always do the right thing and create
-messages that are usable by all recipients, regardless of which
-OpenPGP program they use.  Only override this safe default if you know
-what you are doing.
+There are dozens of variations of OpenPGP programs available, and each
+supports a slightly different subset of these optional algorithms.
+For example, until recently, no (unhacked) version of PGP supported
+the BLOWFISH cipher algorithm.  A message using BLOWFISH simply could
+not be read by a PGP user.  By default, GnuPG uses the standard
+OpenPGP preferences system that will always do the right thing and
+create messages that are usable by all recipients, regardless of which
+OpenPGP program they use.  Only override this safe default if you
+really know what you are doing.
 </para>
 
 <para>

@@ -1,3 +1,9 @@
+2004-07-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Note changes in --pgp8.  Rephrase the "don't play
+	algorithm games" warning now that PGP has blowfish, zlib, and
+	bzip2.
+
 2004-06-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Document PLAINTEXT and PLAINTEXT_LENGTH.
