@@ -1,5 +1,5 @@
 /* pkclist.c
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998,2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -95,6 +95,112 @@ fpr_info( PKT_public_key *pk )
     putc('\n', fp );
 }
 
+
+/****************
+ * Show the revocation reason as it is stored with the given signature
+ */
+static void
+do_show_revocation_reason( PKT_signature *sig )
+{
+    size_t n, nn;
+    const byte *p, *pp;
+    int seq = 0;
+    const char *text;
+
+    while( (p = enum_sig_subpkt( sig->hashed_data, SIGSUBPKT_REVOC_REASON,
+				 &n, &seq )) ) {
+	if( !n )
+	    continue; /* invalid - just skip it */
+
+	if( *p == 0 )
+	    text = _("No reason specified");
+	else if( *p == 0x01 )
+	    text = _("Key is superseded");
+	else if( *p == 0x02 )
+	    text = _("Key has been compromised");
+	else if( *p == 0x03 )
+	    text = _("Key is no longer used");
+	else if( *p == 0x20 )
+	    text = _("User ID is non longer valid");
+	else
+	    text = NULL;
+
+	log_info( _("Reason for revocation: ") );
+	if( text )
+	    fputs( text, log_stream() );
+	else
+	    fprintf( log_stream(), "code=%02x", *p );
+	putc( '\n', log_stream() );
+	n--; p++;
+	pp = NULL;
+	do {
+	    /* We don't want any empty lines, so skip them */
+	    while( n && *p == '\n' ) {
+		p++;
+		n--;
+	    }
+	    if( n ) {
+		pp = memchr( p, '\n', n );
+		nn = pp? pp - p : n;
+		log_info( _("Revocation comment: ") );
+		print_string( log_stream(), p, nn, 0 );
+		putc( '\n', log_stream() );
+		p += nn; n -= nn;
+	    }
+	} while( pp );
+    }
+}
+
+
+static void
+show_revocation_reason( PKT_public_key *pk )
+{
+    /* Hmmm, this is not so easy becuase we have to duplicate the code
+     * used in the trustbd to calculate the keyflags.  We need to find
+     * a clean way to check revocation certificates on keys and signatures.
+     * And there should be no duplicate code.  Because we enter this function
+     * only when the trustdb toldus, taht we have a revoked key, we could
+     * simplylook for a revocation cert and display this one, when there is
+     * only one. Let's try to do this until we have a better solution.
+     */
+    KBNODE node, keyblock = NULL;
+    byte fingerprint[MAX_FINGERPRINT_LEN];
+    size_t fingerlen;
+    int rc;
+
+    /* get the keyblock */
+    fingerprint_from_pk( pk, fingerprint, &fingerlen );
+    rc = get_keyblock_byfprint( &keyblock, fingerprint, fingerlen );
+    if( rc ) { /* that should never happen */
+	log_debug( "failed to get the keyblock\n");
+	return;
+    }
+
+    for( node=keyblock; node; node = node->next ) {
+	if( ( node->pkt->pkttype == PKT_PUBLIC_KEY
+	      || node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	    && !cmp_public_keys( node->pkt->pkt.public_key, pk ) )
+	    break;
+    }
+    if( !node ) {
+	log_debug("Oops, PK not in keyblock\n");
+	release_kbnode( keyblock );
+	return;
+    }
+    /* now find the revocation certificate */
+    for( node = node->next; node ; node = node->next ) {
+	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	    break;
+	if( node->pkt->pkttype == PKT_SIGNATURE
+	    && (node->pkt->pkt.signature->sig_class == 0x20
+		|| node->pkt->pkt.signature->sig_class == 0x28 ) ) {
+		/* FIXME: we should check the signature here */
+		do_show_revocation_reason ( node->pkt->pkt.signature );
+	}
+    }
+
+    release_kbnode( keyblock );
+}
 
 
 static void
@@ -350,6 +456,7 @@ do_we_trust( PKT_public_key *pk, int *trustlevel )
     if( (*trustlevel & TRUST_FLAG_REVOKED) ) {
 	log_info(_("key %08lX: key has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
+	show_revocation_reason( pk );
 	if( opt.batch )
 	    return 0;
 
@@ -361,6 +468,7 @@ do_we_trust( PKT_public_key *pk, int *trustlevel )
     else if( (*trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
 	log_info(_("key %08lX: subkey has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
+	show_revocation_reason( pk );
 	if( opt.batch )
 	    return 0;
 
@@ -370,6 +478,15 @@ do_we_trust( PKT_public_key *pk, int *trustlevel )
 	trustmask |= TRUST_FLAG_SUB_REVOKED;
     }
     *trustlevel &= ~trustmask;
+
+    if( opt.always_trust) {
+	if( opt.verbose )
+	    log_info("No trust check due to --always-trust option\n");
+	/* The problem with this, is that EXPIRE can't be checked as
+	 * this needs to insert a ne key into the trustdb first and
+	 * we don't want that */
+	return 1;
+    }
 
 
     switch( (*trustlevel & TRUST_MASK) ) {
@@ -533,10 +650,12 @@ check_signatures_trust( PKT_signature *sig )
 	write_status( STATUS_KEYREVOKED );
 	log_info(_("WARNING: This key has been revoked by its owner!\n"));
 	log_info(_("         This could mean that the signature is forgery.\n"));
+	show_revocation_reason( pk );
     }
     else if( (trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
 	write_status( STATUS_KEYREVOKED );
 	log_info(_("WARNING: This subkey has been revoked by its owner!\n"));
+	show_revocation_reason( pk );
     }
 
 

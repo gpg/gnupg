@@ -200,6 +200,7 @@ const char *enum_keyblock_resources( int *sequence, int secret );
 int add_keyblock_resource( const char *resname, int force, int secret );
 const char *keyblock_resource_name( KBPOS *kbpos );
 int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
+char *get_writable_keyblock_file( int secret );
 int locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr,
 					    int fprlen, int secret );
 int locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid,

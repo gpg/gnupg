@@ -1,5 +1,5 @@
 /* ringedit.c -  Function for key ring editing
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -179,7 +179,6 @@ enum_keyblock_resources( int *sequence, int secret )
     *sequence = ++i;
     return name;
 }
-
 
 
 /****************
@@ -419,6 +418,35 @@ get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos )
     return -1; /* not found */
 }
 
+
+/****************
+ * Return the filename of the firstkeyblock resource which is intended
+ * for write access. This will either be the default resource or in
+ * case this is not writable one of the others.  If no writable is found,
+ * the default filename in the homedirectory will be returned.
+ * Caller must free, will never return NULL.
+ */
+char *
+get_writable_keyblock_file( int secret )
+{
+    int i = secret? default_secret_resource : default_public_resource;
+
+    if( resource_table[i].used && !resource_table[i].secret == !secret ) {
+	if( !access( resource_table[i].fname, R_OK|W_OK ) ) {
+	    return m_strdup( resource_table[i].fname );
+	}
+    }
+    for(i=0; i < MAX_RESOURCES; i++ ) {
+	if( resource_table[i].used && !resource_table[i].secret == !secret ) {
+	    if( !access( resource_table[i].fname, R_OK|W_OK ) ) {
+		return m_strdup( resource_table[i].fname );
+	    }
+	}
+    }
+    /* Assume the home dir is always writable */
+    return  make_filename(opt.homedir, secret? "secring.gpg"
+					     : "pubring.gpg", NULL );
+}
 
 
 /****************

@@ -45,7 +45,11 @@
  * that they are all valid.
  * Note: We must use numerical values here in case that this program
  * will be converted to those little blue HAL9000s with their strange
- * EBCDIC character set (user ids are UTF-8). */
+ * EBCDIC character set (user ids are UTF-8).
+ * wk 2000-04-13: Hmmm, does this really make sense, given the fact that
+ * we can run gpg now on a S/390 running GNU/Linux, where the code
+ * translation is done by the device drivers?
+ */
 static const byte word_match_chars[256] = {
   /* 00 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   /* 08 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

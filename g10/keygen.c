@@ -689,6 +689,7 @@ ask_user_id( int mode )
     uid = aname = acomment = amail = NULL;
     for(;;) {
 	char *p;
+	int fail=0;
 
 	if( !aname ) {
 	    for(;;) {
@@ -740,6 +741,7 @@ ask_user_id( int mode )
 	    }
 	}
 
+
 	m_free(uid);
 	uid = p = m_alloc(strlen(aname)+strlen(amail)+strlen(acomment)+12+10);
 	p = stpcpy(p, aname );
@@ -764,6 +766,12 @@ ask_user_id( int mode )
 
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	/* fixme: add a warning if this user-id already exists */
+	if( !*amail && (strchr( aname, '@' ) || strchr( acomment, '@'))) {
+	    fail = 1;
+	    tty_printf(_("Please don't put the email address "
+			  "into the real name or the comment\n") );
+	}
+
 	for(;;) {
 	    char *ansstr = _("NnCcEeOoQq");
 
@@ -774,8 +782,9 @@ ask_user_id( int mode )
 		answer[1] = 0;
 	    }
 	    else {
-		answer = cpr_get("keygen.userid.cmd",_(
-		    "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "));
+		answer = cpr_get("keygen.userid.cmd", fail?
+		  _("Change (N)ame, (C)omment, (E)mail or (Q)uit? ") :
+		  _("Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "));
 		cpr_kill_prompt();
 	    }
 	    if( strlen(answer) > 1 )
@@ -793,10 +802,15 @@ ask_user_id( int mode )
 		break;
 	    }
 	    else if( *answer == ansstr[6] || *answer == ansstr[7] ) {
-		m_free(aname); aname = NULL;
-		m_free(acomment); acomment = NULL;
-		m_free(amail); amail = NULL;
-		break;
+		if( fail ) {
+		    tty_printf(_("Please correct the error first\n"));
+		}
+		else {
+		    m_free(aname); aname = NULL;
+		    m_free(acomment); acomment = NULL;
+		    m_free(amail); amail = NULL;
+		    break;
+		}
 	    }
 	    else if( *answer == ansstr[8] || *answer == ansstr[9] ) {
 		m_free(aname); aname = NULL;
@@ -1443,12 +1457,8 @@ do_generate_keypair( struct para_data_s *para,
 	assert( outctrl->sec.stream );
     }
     else {
-	/* check whether we are allowed to write to the keyrings */
-	/* It is probably wrong to use the default names here
-	 * but becuase I never gpt any complaints, we better leave
-	 * it as it is. */
-	pub_fname = make_filename(opt.homedir, "pubring.gpg", NULL );
-	sec_fname = make_filename(opt.homedir, "secring.gpg", NULL );
+	pub_fname = get_writable_keyblock_file( 0 );
+	sec_fname = get_writable_keyblock_file( 1 );
     }
 
     if( opt.verbose ) {

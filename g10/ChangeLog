@@ -1,3 +1,21 @@
+Fri Apr 14 19:37:08 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* pkclist.c (do_show_revocation_reason): New.
+	(show_revocation_reason): New and called at various places.
+
+	* g10.c (main): Fixed small typo.
+
+	* pkclist.c (do_we_trust): Act on always_trust but not for revoked
+	keys. Suggested by Chip Salzenberg.
+
+	* g10.c: New option --lock-never.
+
+	* ringedit.c (get_writable_keyblock_file): New.
+	* keygen.c (do_generate_keypair): Use this instead of the hardwired one.
+
+	* keygen.c (ask_user_id): Check that the email address is in the
+	correct field.	Suggested by Christian Kurz.
+
 Mon Apr 10 13:34:19 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* keyedit.c (show_key_with_all_names): s/sbb/ssb/

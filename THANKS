@@ -16,6 +16,8 @@ Bryan Fullerton 	   bryanf@samurai.com
 Caskey L. Dickson	   caskey@technocage.com
 Cees van de Griend	   cees-list@griend.xs4all.nl
 Charles Levert		   charles@comm.polymtl.ca
+Chip Salzenberg 	   chip@valinux.com
+Christian Kurz		   shorty@debian.org
 Christian von Roques	   roques@pond.sub.org
 Christopher Oliver	   oliver@fritz.traverse.net
 Christian Recktenwald	   chris@citecs.de
@@ -134,6 +136,9 @@ Yoshihiro Kajiki	   kajiki@ylug.org
 Thanks to the German Unix User Group for providing FTP space,
 Martin Hamilton for hosting the mailing list and HSP for
 hosting gnupg.org.
+
+The development of this software has partly been funded by the German
+Ministry for Economics and Technology under grant VIB3-68553.168-001/1999.
 
 Many thanks to my wife Gerlinde for having so much patience with
 me while hacking late in the evening.

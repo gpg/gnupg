@@ -202,6 +202,13 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 			   (ulong)keyid[1], asctimestamp( pk->expiredate) );
 	}
 
+	/* FIXME: check wheter the key has been revoked and display
+	 * the revocation reason.  Actually the user should know this himself,
+	 * but the sender might not know already and therefor the user
+	 * should get a notice that an revoked key has been used to decode
+	 * the message.  The user can than watch out for snakes send by
+	 * one of those Eves outside his paradise :-)
+	 */
 	free_public_key( pk );
 	rc = 0;
     }

@@ -987,7 +987,8 @@ twofish_get_info (int algo, size_t *keylen,
     *keylen = algo==10? 256 : 128;
     *blocksize = 16;
     *contextsize = sizeof (TWOFISH_context);
-    *(int  (**)(const TWOFISH_context*, const byte*, unsigned))r_setkey
+
+    *(int  (**)(TWOFISH_context*, const byte*, const unsigned))r_setkey
 							= twofish_setkey;
     *(void (**)(const TWOFISH_context*, byte*, const byte*))r_encrypt
 							= twofish_encrypt;

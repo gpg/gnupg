@@ -1,13 +1,10 @@
 
-  * Print the reason for revocation at certain places.
+  * add a check to the make dist target to see whether the man page
+    was build.
 
   * at least an option to prefer DSA keys over RSA when selecting the key to
-    use.  Depending on creation time would be nice too.  I thing this is
-    already done for the subkeys.
-
-  * Rework the whole key selection stuff: Compile a list of valid
-    candidates for a keyblock first and the select one from it.
-    The current code is too ugly (getkey.c).
+    use.  Depending on creation time would be nice too.  I think this is
+    already done for the subkeys - check it.
 
   * Fix localtime() in W32.
 
@@ -15,6 +12,10 @@
 
 Scheduled for 1.1
 -----------------
+  * Rework the whole key selection stuff: Compile a list of valid
+    candidates for a keyblock first and the select one from it.
+    The current code is too ugly (getkey.c).
+
   * With option -i prompt before adding a key to the keyring and show some
     info what we are about to add.
 

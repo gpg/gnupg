@@ -14,7 +14,7 @@ Noteworthy changes in the current test release
       cases were it is really required.
       Use the option --no-random-seed-file to disable this feature.
 
-    * New option --ignore-time-conflict.
+    * New options --ignore-time-conflict and --lock-never.
 
     * Some fixes for the W32 version
 
@@ -31,6 +31,10 @@ Noteworthy changes in the current test release
       thereby protecting the key certificates and allowing to
       create revocations for the subkeys.  See the FAQ for a
       procedure to install such secret keys.
+
+    * Keygeneration now writes to the first writeable keyring or
+      as default to the one in the homedirectory.  Prior versions
+      ignored all --keyring options.
 
 
 Noteworthy changes in version 1.0.1 (1999-12-16)

@@ -1178,6 +1178,16 @@ from a config file.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--lock-never</term>
+<listitem><para>
+Disable locking entirely.  This option should be used only in very
+special environments, where it can be assured that only one process
+is accessing those files.  A bootable floppy with a standalone
+encryption system will probably use this.  Improper usage of this
+option may lead to data and key corruption.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--no-random-seed-file</term>
 <listitem><para>
 &gnupg; uses a file to store it's internal random pool over invocations.

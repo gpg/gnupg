@@ -1,3 +1,7 @@
+Fri Apr 14 19:37:08 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* dotlock.c (disable_dotlock): New.  Implmented this in the module.
+
 2000-03-09 14:04:22  Werner Koch  (wk@habibti.openit.de)
 
 	* argparse.c (default_strusage): Changed year of default copyright.

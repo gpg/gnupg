@@ -168,6 +168,7 @@ enum cmd_and_opt_values { aNull = 0,
     oEscapeFrom,
     oLockOnce,
     oLockMultiple,
+    oLockNever,
     oKeyServer,
     oEncryptTo,
     oNoEncryptTo,
@@ -347,6 +348,7 @@ static ARGPARSE_OPTS opts[] = {
     { oEscapeFrom, "escape-from-lines", 0, "@" },
     { oLockOnce, "lock-once", 0, "@" },
     { oLockMultiple, "lock-multiple", 0, "@" },
+    { oLockNever, "lock-never", 0, "@" },
     { oLoggerFD, "logger-fd",1, "@" },
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
     { oUtf8Strings, "utf8-strings", 0, "@" },
@@ -882,6 +884,7 @@ main( int argc, char **argv )
 	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
 	  case oEscapeFrom: opt.escape_from = 1; break;
 	  case oLockOnce: opt.lock_once = 1; break;
+	  case oLockNever: disable_dotlock(); break;
 	  case oLockMultiple: opt.lock_once = 0; break;
 	  case oKeyServer: opt.keyserver_name = pargs.r.ret_str; break;
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
@@ -1447,7 +1450,7 @@ main( int argc, char **argv )
 	break;
 
       case aFixTrustDB:
-	log_error("this command ist not yet implemented.\"\n");
+	log_error("this command is not yet implemented.\"\n");
 	log_error("A workaround is to use \"--export-ownertrust\", remove\n");
 	log_error("the trustdb file and do an \"--import-ownertrust\".\n" );
 	break;

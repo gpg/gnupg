@@ -1,3 +1,7 @@
+Fri Apr 14 19:37:08 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* twofish.c (twofish_get_info): Fixed warning about cast.
+
 Tue Mar 28 14:26:58 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* random.c [MINGW32]: Include process.h for getpid.
