@@ -61,7 +61,7 @@ struct encrypt_cb_parm_s {
 
 
 
-/* initialize the data encryptionkey (session key) */
+/* Initialize the data encryption key (session key). */
 static int
 init_dek (DEK dek)
 {
@@ -112,7 +112,7 @@ init_dek (DEK dek)
       return rc;
     }
 
-  gcry_randomize (dek->iv, dek->ivlen, GCRY_STRONG_RANDOM);
+  gcry_create_nonce (dek->iv, dek->ivlen);
   rc = gcry_cipher_setiv (dek->chd, dek->iv, dek->ivlen);
   if (rc)
     {

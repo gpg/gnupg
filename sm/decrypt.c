@@ -51,7 +51,7 @@ struct decrypt_filter_parm_s {
 
 
 
-/* decrypt the session key and fill in the parm structure.  The
+/* Decrypt the session key and fill in the parm structure.  The
    algo and the IV is expected to be already in PARM. */
 static int 
 prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,

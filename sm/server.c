@@ -49,7 +49,7 @@ struct server_local_s {
 
 
 
-/* note, that it is sufficient to allocate the target string D as
+/* Note that it is sufficient to allocate the target string D as
    long as the source string S, i.e.: strlen(s)+1; */
 static void
 strcpy_escaped_plus (char *d, const unsigned char *s)

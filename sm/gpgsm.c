@@ -211,8 +211,8 @@ static ARGPARSE_OPTS opts[] = {
 
     { 300, NULL, 0, N_("@Commands:\n ") },
 
-    { aSign, "sign",      256, N_("|[file]|make a signature")},
-    { aClearsign, "clearsign", 256, N_("|[file]|make a clear text signature") },
+    { aSign, "sign",      256, N_("|[FILE]|make a signature")},
+    { aClearsign, "clearsign", 256, N_("|[FILE]|make a clear text signature") },
     { aDetachedSign, "detach-sign", 256, N_("make a detached signature")},
     { aEncr, "encrypt",   256, N_("encrypt data")},
     { aSym, "symmetric", 256, N_("encryption only with symmetric cipher")},
