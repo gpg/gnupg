@@ -1,3 +1,8 @@
+2004-01-28  Werner Koch  <wk@gnupg.org>
+
+	* certchain.c (gpgsm_validate_chain): Changed the message printed
+	for an untrusted root certificate.
+
 2004-01-27  Werner Koch  <wk@gnupg.org>
 
 	* certdump.c (parse_dn_part): Pretty print the nameDistinguisher OID.

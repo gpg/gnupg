@@ -585,8 +585,8 @@ gpgsm_validate_chain (CTRL ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime)
                 {
                   gpgsm_dump_cert ("issuer", subject_cert);
                   log_info ("after checking the fingerprint, you may want "
-                            "to enter it manually into "
-                            "\"~/.gnupg-test/trustlist.txt\"\n");
+                            "to add it manually to the list of trusted "
+                            "certificates.\n");
                 }
             }
           else 
