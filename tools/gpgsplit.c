@@ -158,7 +158,7 @@ pkttype_to_string (int pkttype)
 	case PKT_USER_ID       : s = "user_id"; break;
 	case PKT_PUBLIC_SUBKEY : s = "public_subkey"; break;
 	case PKT_OLD_COMMENT   : s = "old_comment"; break;
-	case PKT_PHOTO_ID      : s = "photo_id"; break;
+	case PKT_ATTRIBUTE     : s = "attribute"; break;
 	case PKT_ENCRYPTED_MDC : s = "encrypted_mdc"; break;
 	case PKT_MDC 	       : s = "mdc"; break;
 	case PKT_COMMENT       : s = "comment"; break;
