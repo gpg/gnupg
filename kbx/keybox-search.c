@@ -219,6 +219,9 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen)
   if (pos + uidinfolen*nuids > length)
     return 0; /* out of bounds */
 
+  if (namelen < 1)
+    return 0;
+
   for (idx=1 ;idx < nuids; idx++)
     {
       size_t mypos = pos;
@@ -230,12 +233,11 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen)
         return 0; /* error: better stop here out of bounds */
       if (len < 2 || buffer[off] != '<')
         continue; /* empty name or trailing 0 not stored */
-      len--; /* remove the null */
-      if ( len < 3 || buffer[off+len-1] != '>')
+      len--; /* one back */
+      if ( len < 3 || buffer[off+len] != '>')
         continue; /* not a prober email address */
-      off++; len--;   /* skip the leading angle bracket */
-      len--;          /* don't compare the trailing one */
-      if (len == namelen && !memcmp (buffer+off, name, len))
+      len--; 
+      if (len == namelen && !memcmp (buffer+off+1, name, len))
         return 1; /* found */
     }
   return 0; /* not found */
@@ -349,6 +351,8 @@ has_mail (KEYBOXBLOB blob, const char *name)
     return 0;
 
   namelen = strlen (name);
+  if (namelen && name[namelen-1] == '>')
+    namelen--;
   return blob_cmp_mail (blob, name, namelen);
 }
 

@@ -1,3 +1,10 @@
+2001-12-14  Werner Koch  <wk@gnupg.org>
+
+	* keybox-blob.c (x509_email_kludge): New.
+	(_keybox_create_x509_blob): Insert an extra email address if the
+	subject's DN has an email part.
+	* keybox-defs.h: Added the xtoi_2 and digitp macros.
+
 2001-12-13  Werner Koch  <wk@gnupg.org>
 
 	* keybox-search.c (blob_cmp_name): Kludge to allow searching for

@@ -773,21 +773,29 @@ _keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock)
 static char *
 x509_email_kludge (const char *name)
 {
-#if 0
-  if (!strncmp (name, "1.2.840.113549.1.9.1=#", 22) 
-      && hexdigitp (name+22) && hexdigitp (name+23))
-    { /* this looks pretty much like an email address in the
-         subjects DN we use this to add an additional user ID
-         entry.  This way, openSSL generated keys get a nicer and
-         usable listing */
-      char *buf = NULL;
-      
-      /* FIXME */
+  const unsigned char *p;
+  unsigned char *buf;
+  int n;
 
-      return buf;
-    }
-#endif
-  return NULL;
+  if (strncmp (name, "1.2.840.113549.1.9.1=#", 22))
+    return NULL;
+  /* This looks pretty much like an email address in the subject's DN
+     we use this to add an additional user ID entry.  This way,
+     openSSL generated keys get a nicer and usable listing */
+  name += 22;    
+  for (n=0, p=name; hexdigitp (p) && hexdigitp (p+1); p +=2, n++)
+    ;
+  if (*p != '#' || !n)
+    return NULL;
+  buf = xtrymalloc (n+3);
+  if (!buf)
+    return NULL; /* oops, out of core */
+  *buf = '<';
+  for (n=1, p=name; *p != '#'; p +=2, n++)
+    buf[n] = xtoi_2 (p);
+  buf[n++] = '>';
+  buf[n] = 0;
+  return buf;
 }
 
 
