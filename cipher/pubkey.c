@@ -518,6 +518,9 @@ pubkey_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 	log_mpidump("  data:", data );
     }
 
+    if (is_ELGAMAL (algo))
+      return G10ERR_UNU_SECKEY;
+
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo ) {
