@@ -485,6 +485,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCertDigestAlgo, "cert-digest-algo", 2 , "@" },
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
     { oThrowKeyid, "throw-keyids", 0, N_("throw keyid field of encrypted packets")},
+    { oThrowKeyid, "throw-keyid", 0, "@" },
     { oShowPhotos,   "show-photos", 0, N_("Show Photo IDs")},
     { oNoShowPhotos, "no-show-photos", 0, N_("Don't show Photo IDs")},
     { oPhotoViewer,  "photo-viewer", 2, N_("Set command line to view Photo IDs")},
