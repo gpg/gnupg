@@ -1285,7 +1285,7 @@ handle_connections (int listen_fd, int listen_fd_ssh)
 
   tattr = pth_attr_new();
   pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
   pth_attr_set (tattr, PTH_ATTR_NAME, "gpg-agent");
 
   sigemptyset (&sigs );
