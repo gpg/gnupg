@@ -630,7 +630,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     }
 
     if( old_style && only_md5 )
-	iobuf_writestr(out, "\n" );
+	iobuf_writestr(out, LF );
     else {
 	const char *s;
 	int any = 0;
@@ -654,11 +654,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    }
 	}
 	assert(any);
-	iobuf_writestr(out, "\n" );
+	iobuf_writestr(out, LF );
 	if( opt.not_dash_escaped )
 	    iobuf_writestr( out,
-		"NotDashEscaped: You need GnuPG to verify this message\n" );
-	iobuf_writestr(out, "\n" );
+		"NotDashEscaped: You need GnuPG to verify this message" LF );
+	iobuf_writestr(out, LF );
     }
 
 

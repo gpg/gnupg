@@ -72,37 +72,10 @@ progress_cb ( void *ctx, int c )
     write_status_text ( STATUS_PROGRESS, buf );
 }
 
-
-void
-set_status_fd ( int newfd )
-{
-    fd = newfd;
-    if ( fd != -1 ) {
-	register_primegen_progress ( progress_cb, "primegen" );
-	register_pk_dsa_progress ( progress_cb, "pk_dsa" );
-	register_pk_elg_progress ( progress_cb, "pk_elg" );
-    }
-}
-
-int
-is_status_enabled()
-{
-    return fd != -1;
-}
-
-void
-write_status ( int no )
-{
-    write_status_text( no, NULL );
-}
-
-void
-write_status_text ( int no, const char *text)
+static const char *
+get_status_string ( int no ) 
 {
     const char *s;
-
-    if( fd == -1 )
-	return;  /* not enabled */
 
     switch( no ) {
       case STATUS_ENTER  : s = "ENTER\n"; break;
@@ -157,18 +130,118 @@ write_status_text ( int no, const char *text)
       case STATUS_PROGRESS	 : s = "PROGRESS\n"; break;
       case STATUS_SIG_CREATED	 : s = "SIG_CREATED\n"; break;
       case STATUS_SESSION_KEY	 : s = "SESSION_KEY\n"; break;
+      case STATUS_NOTATION_NAME  : s = "NOTATION_NAME\n" ; break;
+      case STATUS_NOTATION_DATA  : s = "NOTATION_DATA\n" ; break;
+      case STATUS_POLICY_URL     : s = "POLICY_URL\n" ; break;
       default: s = "?\n"; break;
     }
+    return s;
+}
 
-    write( fd, "[GNUPG:] ", 9 );
+void
+set_status_fd ( int newfd )
+{
+    fd = newfd;
+    if ( fd != -1 ) {
+	register_primegen_progress ( progress_cb, "primegen" );
+	register_pk_dsa_progress ( progress_cb, "pk_dsa" );
+	register_pk_elg_progress ( progress_cb, "pk_elg" );
+    }
+}
+
+int
+is_status_enabled()
+{
+    return fd != -1;
+}
+
+void
+write_status ( int no )
+{
+    write_status_text( no, NULL );
+}
+
+static void
+mywrite ( int fd, const char *buffer, size_t len )
+{
+    int nwritten;
+
+    do {
+        nwritten = write (fd, buffer, len );
+    } while (nwritten == -1 && errno == EINTR );
+}
+
+void
+write_status_text ( int no, const char *text)
+{
+    const char *s;
+
+    if( fd == -1 )
+	return;  /* not enabled */
+
+    s = get_status_string (no);
+
+    mywrite( fd, "[GNUPG:] ", 9 );
     if( text ) {
-	write( fd, s, strlen(s)-1 );
-	write( fd, " ", 1 );
-	write( fd, text, strlen(text) );
-	write( fd, "\n", 1 );
+	mywrite( fd, s, strlen(s)-1 );
+	mywrite( fd, " ", 1 );
+	mywrite( fd, text, strlen(text) );
+	mywrite( fd, "\n", 1 );
     }
     else
-	write( fd, s, strlen(s) );
+	mywrite( fd, s, strlen(s) );
+}
+
+
+/*
+ * Write a status line with a buffer using %XX escapes.  
+ * If WRAP is > 0 wrap the line after this length. 
+ */
+void
+write_status_buffer ( int no, const char *buffer, size_t len, int wrap )
+{
+    const char *s, *text;
+    int esc;
+    size_t n, count, dowrap;
+
+    if( fd == -1 )
+	return;  /* not enabled */
+
+    text = get_status_string (no);
+    count = dowrap = 1;
+    do {
+        if (dowrap) {
+            mywrite( fd, "[GNUPG:] ", 9 );
+            mywrite( fd, text, strlen(text)-1 );
+            mywrite( fd, " ", 1 );
+            count = dowrap = 0;
+        }
+        for (esc=0, s=buffer, n=len; n && !esc; s++, n-- ) {
+            if ( *s == '%' || *(const byte*)s <= ' ' ) 
+                esc = 1;
+            if ( wrap && ++count > wrap ) {
+                dowrap=1;
+                break;
+            }
+        }
+        if (esc) {
+            s--; n++;
+        }
+        if (s != buffer) 
+            mywrite ( fd, buffer, s-buffer );
+        if ( esc ) {
+            char buf[5];
+            sprintf (buf, "%%%02X", *(const byte*)s );
+            mywrite (fd, buf, 3 );
+            s++; n--;
+        }
+        buffer = s;
+        len = n;
+        if ( dowrap && len )
+            mywrite( fd, "\n", 1 );
+    } while ( len );
+
+    mywrite( fd, "\n", 1 );
 }
 
 

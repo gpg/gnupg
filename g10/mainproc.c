@@ -675,11 +675,14 @@ print_notation_data( PKT_signature *sig )
 	putc( '=', log_stream() );
 	print_string( log_stream(), p+n1, n2, 0 );
 	putc( '\n', log_stream() );
+        write_status_buffer ( STATUS_NOTATION_NAME, p   , n1, 0 );
+        write_status_buffer ( STATUS_NOTATION_DATA, p+n1, n2, 20 );
     }
     if( (p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_POLICY, &n ) )) {
 	log_info(_("Policy: ") );
 	print_string( log_stream(), p, n, 0 );
 	putc( '\n', log_stream() );
+        write_status_buffer ( STATUS_POLICY_URL, p, n, 0 );
     }
 
     /* Now check wheter the key of this signature has some

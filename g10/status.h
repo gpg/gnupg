@@ -82,13 +82,17 @@
 #define STATUS_PROGRESS 	50
 #define STATUS_SIG_CREATED	51
 #define STATUS_SESSION_KEY	52
-
+#define STATUS_NOTATION_NAME    53
+#define STATUS_NOTATION_DATA    54
+#define STATUS_POLICY_URL       55
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
 int  is_status_enabled ( void );
 void write_status ( int no );
 void write_status_text ( int no, const char *text );
+void write_status_buffer ( int no,
+                           const char *buffer, size_t len, int wrap );
 
 #ifdef USE_SHM_COPROCESSING
   void init_shm_coprocessing ( ulong requested_shm_size, int lock_mem );

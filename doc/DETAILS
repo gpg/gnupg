@@ -233,6 +233,14 @@ more arguments in future versions.
 	is used.  The format is suitable to be passed to the option
 	--override-session-key
 
+    NOTATION_NAME <name> 
+    NOTATION_DATA <string>
+        name and string are %XX escaped; the data may be spliited
+        among several notation_data lines.
+
+    POLICY_URL <string>
+        string is %XX escaped
+
 
 Key generation
 ==============
