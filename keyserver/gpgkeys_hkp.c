@@ -32,6 +32,10 @@
 #include <stdlib.h>
 #include "keyserver.h"
 
+#ifdef __riscos__
+#include "util.h"
+#endif
+
 #define GET    0
 #define SEND   1
 #define SEARCH 2
@@ -48,6 +52,35 @@ struct keylist
   char str[MAX_LINE];
   struct keylist *next;
 };
+
+#ifndef HAVE_HSTRERROR
+const char *hstrerror(int err)
+{
+  if(err<0)
+    return "Resolver internal error";
+
+  switch(err)
+    {
+    case 0:
+      return "Resolver Error 0 (no error)";
+
+    case HOST_NOT_FOUND:
+      return "Unknown host"; /* 1 HOST_NOT_FOUND */
+
+    case TRY_AGAIN:
+      return "Host name lookup failure"; /* 2 TRY_AGAIN */
+
+    case NO_RECOVERY:
+      return "Unknown server error"; /* 3 NO_RECOVERY */
+
+    case NO_ADDRESS:
+      return "No address associated with name"; /* 4 NO_ADDRESS */
+
+    default:
+      return "Unknown resolver error";
+    }
+}
+#endif /* !HAVE_HSTRERROR */
 
 int http_connect(const char *http_host,unsigned short port)
 {
