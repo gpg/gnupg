@@ -242,8 +242,8 @@ enum cmd_and_opt_values
     oComment,
     oDefaultComment,
     oNoComments,
-    oThrowKeyid,
-    oNoThrowKeyid,
+    oThrowKeyids,
+    oNoThrowKeyids,
     oShowPhotos,
     oNoShowPhotos,
     oPhotoViewer,
@@ -517,8 +517,10 @@ static ARGPARSE_OPTS opts[] = {
     { oDigestAlgo, "digest-algo", 2, "@"},
     { oCertDigestAlgo, "cert-digest-algo", 2 , "@" },
     { oCompressAlgo,"compress-algo", 2, "@"},
-    { oThrowKeyid, "throw-keyids", 0, "@"},
-    { oNoThrowKeyid, "no-throw-keyids", 0, "@" },
+    { oThrowKeyids, "throw-keyid", 0, "@"},
+    { oThrowKeyids, "throw-keyids", 0, "@"},
+    { oNoThrowKeyids, "no-throw-keyid", 0, "@" },
+    { oNoThrowKeyids, "no-throw-keyids", 0, "@" },
     { oShowPhotos,   "show-photos", 0, "@" },
     { oNoShowPhotos, "no-show-photos", 0, "@" },
     { oPhotoViewer,  "photo-viewer", 2, "@" },
@@ -1977,8 +1979,8 @@ main( int argc, char **argv )
 	    free_strlist(opt.comments);
 	    opt.comments=NULL;
 	    break;
-	  case oThrowKeyid: opt.throw_keyid = 1; break;
-	  case oNoThrowKeyid: opt.throw_keyid = 0; break;
+	  case oThrowKeyids: opt.throw_keyid = 1; break;
+	  case oNoThrowKeyids: opt.throw_keyid = 0; break;
 	  case oShowPhotos:
 	    deprecated_warning(configname,configlineno,"--show-photos",
 			       "--list-options ","show-photos");

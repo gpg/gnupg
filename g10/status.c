@@ -540,6 +540,9 @@ do_get_from_fd( const char *keyword, int hidden, int bool )
     int i, len;
     char *string;
 
+    if(statusfp!=stdout)
+      fflush(stdout);
+
     write_status_text( bool? STATUS_GET_BOOL :
 		       hidden? STATUS_GET_HIDDEN : STATUS_GET_LINE, keyword );
 

@@ -1087,14 +1087,16 @@ algo_available( preftype_t preftype, int algo, void *hint )
 		  && algo != CIPHER_ALGO_CAST5))
 	return 0;
       
-      if((PGP7 || PGP8) && (algo != CIPHER_ALGO_IDEA
-			    && algo != CIPHER_ALGO_3DES
-			    && algo != CIPHER_ALGO_CAST5
-			    && algo != CIPHER_ALGO_AES
-			    && algo != CIPHER_ALGO_AES192
-			    && algo != CIPHER_ALGO_AES256
-			    && algo != CIPHER_ALGO_TWOFISH))
+      if(PGP7 && (algo != CIPHER_ALGO_IDEA
+		  && algo != CIPHER_ALGO_3DES
+		  && algo != CIPHER_ALGO_CAST5
+		  && algo != CIPHER_ALGO_AES
+		  && algo != CIPHER_ALGO_AES192
+		  && algo != CIPHER_ALGO_AES256
+		  && algo != CIPHER_ALGO_TWOFISH))
 	return 0;
+
+      /* PGP8 supports all the ciphers we do.. */
 
       return algo && !check_cipher_algo( algo );
     }
@@ -1119,9 +1121,11 @@ algo_available( preftype_t preftype, int algo, void *hint )
     }
   else if( preftype == PREFTYPE_ZIP )
     {
-      if((PGP6 || PGP7 || PGP8) && (algo != COMPRESS_ALGO_NONE
-				    && algo != COMPRESS_ALGO_ZIP))
+      if((PGP6 || PGP7) && (algo != COMPRESS_ALGO_NONE
+			    && algo != COMPRESS_ALGO_ZIP))
 	return 0;
+
+      /* PGP8 supports all the compression algos we do */
 
       return !check_compress_algo( algo );
     }

@@ -1,3 +1,24 @@
+2004-08-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* plaintext.c (handle_plaintext): Bigger buffer for extra safety.
+
+	* g10.c (main): New alias --throw-keyid for --throw-keyids, so
+	that it continues to work in old configuration files.  Noted by
+	Jens Adam.
+
+	* pkclist.c (algo_available): --pgp8 now allows blowfish, zlib,
+	and bzip2.
+
+	* status.c (do_get_from_fd): Flush stdout if status isn't flushing
+	it for us.  This guarantees that any menus that were displayed
+	before the prompt don't get stuck in a buffer.  Noted by Peter
+	Palfrader.  This is Debian bug #254072.
+
+	* sign.c (update_keysig_packet): Revert change of 2004-05-18.  It
+	is not appropriate to strip policy and notations when remaking a
+	sig.  That should only happen when specifically requested by the
+	user.
+
 2004-08-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* armor.c (radix64_read): No armor CRC is legal according to the
