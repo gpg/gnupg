@@ -39,13 +39,13 @@ chdir () {
 
 cleanup () {
     rm $data_files x y z 2>/dev/null
-    echo "#empty" >./.g10/options
+    echo "#empty" >./options
 }
 
 
 run_g10 () {
-    if ! eval HOME=. ../g10/g10 $* ; then
-	echo "(HOME=. ../g10/g10 $*) failed" >&2
+    if ! eval ../g10/g10 --homedir . $* ; then
+	echo "(../g10/g10 --homedir . $*) failed" >&2
 	exit 1
     fi
 }
@@ -60,7 +60,6 @@ trap cleanup SIGHUP SIGINT SIGQUIT
 
 
 # some checks
-[ -d "./.g10" ] || fatal "subdirectory .g10 missing"
 for i in $plain_files; do
     [ -f $i ] || fatal "$i: missing"
 done
@@ -69,7 +68,7 @@ for i in $exp_files; do
 done
 # create the keyrings
 
-cat <<EOF  >./.g10/options
+cat <<EOF  >./options
 no-greeting
 no-secmem-warning
 batch
