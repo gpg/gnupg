@@ -43,6 +43,7 @@ ask_for_card (const unsigned char *shadow_info, char **r_kid)
   int no_card = 0;
   char *desc;
   char *want_sn, *want_kid;
+  int want_sn_displen;
 
   *r_kid = NULL;
   s = shadow_info;
@@ -58,6 +59,12 @@ ask_for_card (const unsigned char *shadow_info, char **r_kid)
   for (i=0; i < n; i++)
     sprintf (want_sn+2*i, "%02X", s[i]);
   s += n;
+  /* We assume that a 20 byte serial number is a standard one which
+     seems to have the property to have a zero in the last nibble.  We
+     don't display this '0' because it may confuse the user */
+  want_sn_displen = strlen (want_sn);
+  if (want_sn_displen == 20 && want_sn[19] == '0')
+    want_sn_displen--;
 
   n = snext (&s);
   if (!n)
@@ -102,11 +109,11 @@ ask_for_card (const unsigned char *shadow_info, char **r_kid)
         {
           if (asprintf (&desc,
                     "%s:%%0A%%0A"
-                    "  \"%s\"",
+                    "  \"%.*s\"",
                     no_card? "Please insert the card with serial number" 
                     : "Please remove the current card and "
                     "insert the one with serial number",
-                    want_sn) < 0)
+                    want_sn_displen, want_sn) < 0)
             {
               rc = GNUPG_Out_Of_Core;
             }
@@ -126,15 +133,12 @@ ask_for_card (const unsigned char *shadow_info, char **r_kid)
 }
 
 
-/* fixme: this should be moved to libgcrypt and only be used if the
-   smartcard does not support pkcs-1 itself */
+/* Put the DIGEST into an DER encoded comtainer and return it in R_VAL. */
 static int
 encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
-                    unsigned int nbits, unsigned char **r_val, size_t *r_len)
+                    unsigned char **r_val, size_t *r_len)
 {
-  int nframe = (nbits+7) / 8;
   byte *frame;
-  int i, n;
   byte asn[100];
   size_t asnlen;
 
@@ -145,37 +149,16 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
       return GNUPG_Internal_Error;
     }
 
-  if (digestlen + asnlen + 4  > nframe )
-    {
-      log_error ("can't encode a %d bit MD into a %d bits frame\n",
-                 (int)(digestlen*8), (int)nbits);
-      return GNUPG_Internal_Error;
-    }
-  
-  /* We encode the MD in this way:
-   *
-   *	   0  1 PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
-   *
-   * PAD consists of FF bytes.
-   */
-  frame = xtrymalloc (nframe);
+  frame = xtrymalloc (asnlen + digestlen);
   if (!frame)
     return GNUPG_Out_Of_Core;
-  n = 0;
-  frame[n++] = 0;
-  frame[n++] = 1; /* block type */
-  i = nframe - digestlen - asnlen -3 ;
-  assert ( i > 1 );
-  memset ( frame+n, 0xff, i ); n += i;
-  frame[n++] = 0;
-  memcpy ( frame+n, asn, asnlen ); n += asnlen;
-  memcpy ( frame+n, digest, digestlen ); n += digestlen;
-  assert ( n == nframe );
+  memcpy (frame, asn, asnlen);
+  memcpy (frame+asnlen, digest, digestlen);
   if (DBG_CRYPTO)
-    log_printhex ("encoded hash:", frame, nframe);
+    log_printhex ("encoded hash:", frame, asnlen+digestlen);
       
   *r_val = frame;
-  *r_len = nframe;
+  *r_len = asnlen+digestlen;
   return 0;
 }
 
@@ -242,7 +225,7 @@ divert_pksign (const unsigned char *digest, size_t digestlen, int algo,
   if (rc)
     return rc;
 
-  rc = encode_md_for_card (digest, digestlen, algo, 1024 /* fixme*/,
+  rc = encode_md_for_card (digest, digestlen, algo, 
                            &data, &ndata);
   if (rc)
     return rc;

@@ -1,3 +1,9 @@
+2002-03-28  Werner Koch  <wk@gnupg.org>
+
+	* divert-scd.c (encode_md_for_card): Don't do the pkcs-1 padding,
+	the scdaemon should take care of it.
+	(ask_for_card): Hack to not display the trailing zero.
+
 2002-03-11  Werner Koch  <wk@gnupg.org>
 
 	* learncard.c (kpinfo_cb): Remove the content restrictions from
