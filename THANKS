@@ -3,106 +3,109 @@ reporting problems, suggesting various improvements or submitting actual
 code.  Here is a list of those people.	Help me keep it complete and free of
 errors.
 
-Allan Clark		allanc@sco.com
-Anand Kumria		wildfire@progsoc.uts.edu.au
-Ariel T Glenn		ariel@columbia.edu
-Bodo Moeller		Bodo_Moeller@public.uni-hamburg.de
-Bryan Fullerton 	bryanf@samurai.com
-Brian Moore		bem@cmc.net
-Brian Warner		warner@lothar.com
-Caskey L. Dickson	caskey@technocage.com
-Cees van de Griend	cees-list@griend.xs4all.nl
-Charles Levert		charles@comm.polymtl.ca
-Christian von Roques	roques@pond.sub.org
-Christopher Oliver	oliver@fritz.traverse.net
-Christian Recktenwald	chris@citecs.de
-Daniel Eisenbud 	eisenbud@cs.swarthmore.edu
-Daniel Koening		dan@mail.isis.de
-David Ellement		ellement@sdd.hp.com
-Detlef Lannert		lannert@lannert.rz.uni-duesseldorf.de
-Dirk Lattermann 	dlatt@t-online.de
-Ed Boraas		ecxjo@esperanto.org
-Enzo Michelangeli	em@MailAndNews.com
-Ernst Molitor		ernst.molitor@uni-bonn.de
-Fabio Coatti		cova@felix.unife.it
-Felix von Leitner	leitner@amdiv.de
-Frank Heckenbach	heckenb@mi.uni-erlangen.de
-Frank Stajano		frank.stajano@cl.cam.ac.uk
-Gaël Quéri		gqueri@mail.dotcom.fr
-Greg Louis		glouis@dynamicro.on.ca
-Greg Troxel		gdt@ir.bbn.com
-Gregory Steuck		steuck@iname.com
-Geoff Keating		geoffk@ozemail.com.au
-Harald Denker		harry@hal.westfalen.de
-Hendrik Buschkamp	buschkamp@rheumanet.org
-Holger Schurig		holger@d.om.org
-Hugh Daniel		hugh@toad.com
-Ian McKellar		imckellar@harvestroad.com.au
-Janusz A. Urbanowicz	alex@bofh.torun.pl
-James Troup		james@nocrew.org
-Jean-loup Gailly	gzip@prep.ai.mit.edu
-Jens Bachem		bachem@rrz.uni-koeln.de
-Joachim Backes		backes@rhrk.uni-kl.de
-John A. Martin		jam@jamux.com
-Johnny Teveßen		j.tevessen@gmx.de
-Jörg Schilling		schilling@fokus.gmd.de
-Jun Kuriyama		kuriyama@sky.rim.or.jp
-Karl Fogel		kfogel@guanabana.onshore.com
-Karsten Thygesen	karthy@kom.auc.dk
-Katsuhiro Kondou	kondou@nec.co.jp
-Kazu Yamamoto		kazu@iijlab.net
-Lars Kellogg-Stedman	lars@bu.edu
-Marco d'Itri            md@linux.it
-Mark Adler		madler@alumni.caltech.edu
-Mark Elbrecht		snowball3@bigfoot.com
-Markus Friedl		Markus.Friedl@informatik.uni-erlangen.de
-Martin Kahlert		martin.kahlert@provi.de
+Allan Clark		   allanc@sco.com
+Anand Kumria		   wildfire@progsoc.uts.edu.au
+Ariel T Glenn		   ariel@columbia.edu
+Bodo Moeller		   Bodo_Moeller@public.uni-hamburg.de
+Brenno de Winter	   brenno@dewinter.com
+Brian Moore		   bem@cmc.net
+Brian Warner		   warner@lothar.com
+Bryan Fullerton 	   bryanf@samurai.com
+Caskey L. Dickson	   caskey@technocage.com
+Cees van de Griend	   cees-list@griend.xs4all.nl
+Charles Levert		   charles@comm.polymtl.ca
+Christian von Roques	   roques@pond.sub.org
+Christopher Oliver	   oliver@fritz.traverse.net
+Christian Recktenwald	   chris@citecs.de
+Daniel Eisenbud 	   eisenbud@cs.swarthmore.edu
+Daniel Koening		   dan@mail.isis.de
+David Ellement		   ellement@sdd.hp.com
+Detlef Lannert		   lannert@lannert.rz.uni-duesseldorf.de
+Dirk Lattermann 	   dlatt@t-online.de
+Ed Boraas		   ecxjo@esperanto.org
+Enzo Michelangeli	   em@MailAndNews.com
+Ernst Molitor		   ernst.molitor@uni-bonn.de
+Fabio Coatti		   cova@felix.unife.it
+Felix von Leitner	   leitner@amdiv.de
+Frank Heckenbach	   heckenb@mi.uni-erlangen.de
+Frank Stajano		   frank.stajano@cl.cam.ac.uk
+Gaël Quéri		   gqueri@mail.dotcom.fr
+Greg Louis		   glouis@dynamicro.on.ca
+Greg Troxel		   gdt@ir.bbn.com
+Gregory Steuck		   steuck@iname.com
+Geoff Keating		   geoffk@ozemail.com.au
+Harald Denker		   harry@hal.westfalen.de
+Hendrik Buschkamp	   buschkamp@rheumanet.org
+Holger Schurig		   holger@d.om.org
+Hugh Daniel		   hugh@toad.com
+Ian McKellar		   imckellar@harvestroad.com.au
+Janusz A. Urbanowicz	   alex@bofh.torun.pl
+James Troup		   james@nocrew.org
+Jean-loup Gailly	   gzip@prep.ai.mit.edu
+Jens Bachem		   bachem@rrz.uni-koeln.de
+J Horacio MG		   homega@ciberia.es
+Joachim Backes		   backes@rhrk.uni-kl.de
+John A. Martin		   jam@jamux.com
+Johnny Teveßen		   j.tevessen@gmx.de
+Jörg Schilling		   schilling@fokus.gmd.de
+Jun Kuriyama		   kuriyama@sky.rim.or.jp
+Karl Fogel		   kfogel@guanabana.onshore.com
+Karsten Thygesen	   karthy@kom.auc.dk
+Katsuhiro Kondou	   kondou@nec.co.jp
+Kazu Yamamoto		   kazu@iijlab.net
+Lars Kellogg-Stedman	   lars@bu.edu
+Marco d'Itri               md@linux.it
+Mark Adler		   madler@alumni.caltech.edu
+Mark Elbrecht		   snowball3@bigfoot.com
+Markus Friedl		   Markus.Friedl@informatik.uni-erlangen.de
+Martin Kahlert		   martin.kahlert@provi.de
 Martin Hamilton
-Martin Schulte		schulte@thp.uni-koeln.de
-Matthew Skala		mskala@ansuz.sooke.bc.ca
-Max Valianskiy		maxcom@maxcom.ml.org
-Michael Roth		mroth@nessie.de
-Michael Sobolev 	mss@despair.transas.com
-Nicolas Graner		Nicolas.Graner@cri.u-psud.fr
-NIIBE Yutaka		gniibe@chroot.org
+Martin Schulte		   schulte@thp.uni-koeln.de
+Matthew Skala		   mskala@ansuz.sooke.bc.ca
+Max Valianskiy		   maxcom@maxcom.ml.org
+Michael Fischer v. Mollard mfvm@gmx.de
+Michael Roth		   mroth@nessie.de
+Michael Sobolev 	   mss@despair.transas.com
+Nicolas Graner		   Nicolas.Graner@cri.u-psud.fr
+NIIBE Yutaka		   gniibe@chroot.org
 Niklas Hernaeus
-Nimrod Zimerman 	zimerman@forfree.at
-N J Doye		nic@niss.ac.uk
-Oliver Haakert		haakert@hsp.de
-Oskari Jääskeläinen	f33003a@cc.hut.fi
-Paul D. Smith		psmith@baynetworks.com
-Philippe Laliberte	arsphl@oeil.qc.ca
-Peter Gutmann		pgut001@cs.auckland.ac.nz
-QingLong		qinglong@bolizm.ihep.su
-Ralph Gillen		gillen@theochem.uni-duesseldorf.de
-Rat			ratinox@peorth.gweep.net
-Reinhard Wobst		R.Wobst@ifw-dresden.de
-Rémi Guyomarch		rguyom@mail.dotcom.fr
-Reuben Sumner		rasumner@wisdom.weizmann.ac.il
-Richard Outerbridge	outer@interlog.com
-Roddy Strachan		roddy@satlink.com.au
-Roland Rosenfeld	roland@spinnaker.rhein.de
-Ross Golder		rossigee@bigfoot.com
-Serge Munhoven		munhoven@mema.ucl.ac.be
-SL Baur 		steve@xemacs.org
-Stefan Karrmann 	S.Karrmann@gmx.net
-Stefan Keller		dres@cs.tu-berlin.de
-Steffen Ullrich 	ccrlphr@xensei.com
-Steffen Zahn		zahn@berlin.snafu.de
-Steven Bakker		steven@icoe.att.com
-Susanne Schultz 	schultz@hsp.de
-Thiago Jung Bauermann	jungmann@cwb.matrix.com.br
-Thomas Roessler 	roessler@guug.de
-Tom Spindler		dogcow@home.merit.edu
-Tom Zerucha		tzeruch@ceddec.com
-Tomas Fasth		tomas.fasth@twinspot.net
-Thomas Mikkelsen	tbm@image.dk
-Ulf Möller		3umoelle@informatik.uni-hamburg.de
-Urko Lusa		ulusa@lacueva.ddns.org
-Walter Koch		koch@hsp.de
-Werner Koch		werner.koch@guug.de
-Wim Vandeputte		bunbun@reptile.rug.ac.be
-			nbecker@hns.com
+Nimrod Zimerman 	   zimerman@forfree.at
+N J Doye		   nic@niss.ac.uk
+Oliver Haakert		   haakert@hsp.de
+Oskari Jääskeläinen	   f33003a@cc.hut.fi
+Paul D. Smith		   psmith@baynetworks.com
+Philippe Laliberte	   arsphl@oeil.qc.ca
+Peter Gutmann		   pgut001@cs.auckland.ac.nz
+QingLong		   qinglong@bolizm.ihep.su
+Ralph Gillen		   gillen@theochem.uni-duesseldorf.de
+Rat			   ratinox@peorth.gweep.net
+Reinhard Wobst		   R.Wobst@ifw-dresden.de
+Rémi Guyomarch		   rguyom@mail.dotcom.fr
+Reuben Sumner		   rasumner@wisdom.weizmann.ac.il
+Richard Outerbridge	   outer@interlog.com
+Roddy Strachan		   roddy@satlink.com.au
+Roland Rosenfeld	   roland@spinnaker.rhein.de
+Ross Golder		   rossigee@bigfoot.com
+Serge Munhoven		   munhoven@mema.ucl.ac.be
+SL Baur 		   steve@xemacs.org
+Stefan Karrmann 	   S.Karrmann@gmx.net
+Stefan Keller		   dres@cs.tu-berlin.de
+Steffen Ullrich 	   ccrlphr@xensei.com
+Steffen Zahn		   zahn@berlin.snafu.de
+Steven Bakker		   steven@icoe.att.com
+Susanne Schultz 	   schultz@hsp.de
+Thiago Jung Bauermann	   jungmann@cwb.matrix.com.br
+Thomas Roessler 	   roessler@guug.de
+Tom Spindler		   dogcow@home.merit.edu
+Tom Zerucha		   tzeruch@ceddec.com
+Tomas Fasth		   tomas.fasth@twinspot.net
+Thomas Mikkelsen	   tbm@image.dk
+Ulf Möller		   3umoelle@informatik.uni-hamburg.de
+Urko Lusa		   ulusa@lacueva.ddns.org
+Walter Koch		   koch@hsp.de
+Werner Koch		   werner.koch@guug.de
+Wim Vandeputte		   bunbun@reptile.rug.ac.be
+			   nbecker@hns.com
 
 Thanks to the German Unix User Group for providing FTP space,
 Martin Hamilton for hosting the mailing list and HSP for

@@ -260,7 +260,7 @@ only in the local environment.</para></listitem></varlistentry>
     <term>revsig</term>
     <listitem><para>
 Revoke a signature.  GnuPG asks for every
-every signature which has been done by one of
+signature which has been done by one of
 the secret keys, whether a revocation
 certificate should be generated.</para></listitem></varlistentry>
     <varlistentry>

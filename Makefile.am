@@ -1,12 +1,15 @@
 ## Process this file with automake to produce Makefile.in
 
-if COMPILE_LIBGCRYPT
+#if COMPILE_LIBGCRYPT
+#gcrypt = gcrypt
+#my_clean_gcrypt =
+#else
+#gcrypt =
+#my_clean_gcrypt = gcrypt/Makefile
+#endif
+
 gcrypt = gcrypt
 my_clean_gcrypt =
-else
-gcrypt =
-my_clean_gcrypt = gcrypt/Makefile
-endif
 
 if CROSS_COMPILING
 checks =
@@ -15,7 +18,7 @@ checks = checks
 endif
 
 SUBDIRS = intl zlib util mpi cipher tools g10 po doc ${checks} ${gcrypt}
-EXTRA_DIST = VERSION  PROJECTS BUGS
+EXTRA_DIST = README-alpha VERSION  PROJECTS BUGS
 # gettext never gets it right, so we take here care of deleting the
 # symlink.  my_clean_gcrypt is just a kludge until we can include
 # libgcrypt.

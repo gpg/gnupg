@@ -443,7 +443,7 @@ ask_keysize( int algo )
 		 "              minimum keysize is  768 bits\n"
 		 "              default keysize is 1024 bits\n"
 		 "    highest suggested keysize is 2048 bits\n"),
-					pubkey_algo_to_string(algo) );
+					gcry_pk_algo_name(algo) );
     for(;;) {
 	answer = cpr_get("keygen.size",
 			  _("What keysize do you want? (1024) "));
@@ -686,7 +686,7 @@ ask_user_id( int mode )
 	tty_printf(_("You selected this USER-ID:\n    \"%s\"\n\n"), uid);
 	/* fixme: add a warning if this user-id already exists */
 	for(;;) {
-	    char *ansstr = _("NnCcEeOoQq");
+	    const char *ansstr = _("NnCcEeOoQq");
 
 	    if( strlen(ansstr) != 10 )
 		BUG();

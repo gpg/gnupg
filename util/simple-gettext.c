@@ -217,6 +217,13 @@ load_domain( const char *filename )
 	free( domain );
 	return NULL;
     }
+    /* Currently we have only a Latin-1 to IBM850 translation, so
+     * we simply mark everything mapped if we don't have this codepage. */
+    {
+	const char *s = get_native_charset();
+	if( !s || strcmp(s, "ibm850")
+	    memset( domain->mapped, 1, domain->nstrings );
+    }
 
     return domain;
 }
@@ -242,7 +249,6 @@ set_gettext_file( const char *filename )
 	   #endif
 	   ) {
 	    /* absolute path - use it as is */
-	    log_info("trying `%s'\n", filename );
 	    domain = load_domain( filename );
 	}
 	else { /* relative path - append ".mo" and get DIR from env */
@@ -280,7 +286,7 @@ get_string( struct loaded_domain *domain, u32 idx )
 	byte *pp;
 
 	domain->mapped[idx] = 1;
-	/* we assume Latin1 -> CP 850 for now */
+	/* currently we only support Latin-1 to CP 850 */
 	for( pp=p; *pp; pp++ ) {
 	    if( (*pp & 0x80) ) {
 		switch( *pp ) {

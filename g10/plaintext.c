@@ -106,7 +106,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    goto leave;
 		}
 		if( mfx->md )
-		    md_putc(mfx->md, c );
+		    gcry_md_putc(mfx->md, c );
 		if( c == '\r' )
 		    continue; /* fixme: this hack might be too simple */
 		if( fp ) {
@@ -132,7 +132,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    goto leave;
 		}
 		if( mfx->md )
-		    md_write( mfx->md, buffer, len );
+		    gcry_md_write( mfx->md, buffer, len );
 		if( fp ) {
 		    if( fwrite( buffer, 1, len, fp ) != len ) {
 			log_error("Error writing to `%s': %s\n",
@@ -151,7 +151,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	if( convert ) { /* text mode */
 	    while( (c = iobuf_get(pt->buf)) != -1 ) {
 		if( mfx->md )
-		    md_putc(mfx->md, c );
+		    gcry_md_putc(mfx->md, c );
 		if( convert && c == '\r' )
 		    continue; /* fixme: this hack might be too simple */
 		if( fp ) {
@@ -180,7 +180,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( len < 32768 )
 		    eof = 1;
 		if( mfx->md )
-		    md_write( mfx->md, buffer, len );
+		    gcry_md_write( mfx->md, buffer, len );
 		if( fp ) {
 		    if( fwrite( buffer, 1, len, fp ) != len ) {
 			log_error("Error writing to `%s': %s\n",
@@ -210,26 +210,26 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    if( !mfx->md )
 		continue;
 	    if( state == 2 ) {
-		md_putc(mfx->md, '\r' );
-		md_putc(mfx->md, '\n' );
+		gcry_md_putc(mfx->md, '\r' );
+		gcry_md_putc(mfx->md, '\n' );
 		state = 0;
 	    }
 	    if( !state ) {
 		if( c == '\r'  )
 		    state = 1;
 		else
-		    md_putc(mfx->md, c );
+		    gcry_md_putc(mfx->md, c );
 	    }
 	    else if( state == 1 ) {
 		if( c == '\n'  )
 		    state = 2;
 		else {
-		    md_putc(mfx->md, '\r' );
+		    gcry_md_putc(mfx->md, '\r' );
 		    if( c == '\r'  )
 			state = 1;
 		    else {
 			state = 0;
-			md_putc(mfx->md, c );
+			gcry_md_putc(mfx->md, c );
 		    }
 		}
 	    }
@@ -253,7 +253,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 }
 
 static void
-do_hash( MD_HANDLE md, MD_HANDLE md2, IOBUF fp, int textmode )
+do_hash( GCRY_MD_HD md, GCRY_MD_HD md2, IOBUF fp, int textmode )
 {
     text_filter_context_t tfx;
     int c;
@@ -267,27 +267,27 @@ do_hash( MD_HANDLE md, MD_HANDLE md2, IOBUF fp, int textmode )
 	int lc = -1;
 	while( (c = iobuf_get(fp)) != -1 ) {
 	    if( c == '\n' && lc == '\r' )
-		md_putc(md2, c);
+		gcry_md_putc(md2, c);
 	    else if( c == '\n' ) {
-		md_putc(md2, '\r');
-		md_putc(md2, c);
+		gcry_md_putc(md2, '\r');
+		gcry_md_putc(md2, c);
 	    }
 	    else if( c != '\n' && lc == '\r' ) {
-		md_putc(md2, '\n');
-		md_putc(md2, c);
+		gcry_md_putc(md2, '\n');
+		gcry_md_putc(md2, c);
 	    }
 	    else
-		md_putc(md2, c);
+		gcry_md_putc(md2, c);
 
 	    if( md )
-		md_putc(md, c );
+		gcry_md_putc(md, c );
 	    lc = c;
 	}
     }
     else {
 	while( (c = iobuf_get(fp)) != -1 ) {
 	    if( md )
-		md_putc(md, c );
+		gcry_md_putc(md, c );
 	}
     }
 }
@@ -298,7 +298,7 @@ do_hash( MD_HANDLE md, MD_HANDLE md2, IOBUF fp, int textmode )
  * INFILE is the name of the input file.
  */
 int
-ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
+ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
 			   const char *inname, int textmode )
 {
     char *answer = NULL;
@@ -308,7 +308,7 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
     fp = open_sigfile( inname ); /* open default file */
     if( !fp && !opt.batch ) {
 	int any=0;
-	tty_printf("Detached signature.\n");
+	tty_printf(_("Detached signature.\n"));
 	do {
 	    m_free(answer);
 	    answer = cpr_get("detached_signature.filename",
@@ -353,7 +353,7 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
  * If FILES is NULL, hash stdin.
  */
 int
-hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
+hash_datafiles( GCRY_MD_HD md, GCRY_MD_HD md2, STRLIST files,
 		const char *sigfilename, int textmode )
 {
     IOBUF fp;

@@ -26,6 +26,7 @@
 #include "util.h"
 #include "memory.h"
 #include "packet.h"
+#include "main.h"
 #include "mpi.h"
 #include "keydb.h"
 #include "trustdb.h"
@@ -150,12 +151,12 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     dek->algo = frame[n++];
     if( dek->algo ==  CIPHER_ALGO_IDEA )
 	write_status(STATUS_RSA_OR_IDEA);
-    rc = check_cipher_algo( dek->algo );
+    rc = openpgp_cipher_test_algo( dek->algo );
     if( rc ) {
 	dek->algo = 0;
 	goto leave;
     }
-    if( (dek->keylen*8) != cipher_get_keylen( dek->algo ) ) {
+    if( dek->keylen != gcry_cipher_get_algo_keylen( dek->algo ) ) {
 	rc = G10ERR_WRONG_SECKEY;
 	goto leave;
     }

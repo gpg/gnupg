@@ -54,7 +54,10 @@ struct gcry_mpi {
     mpi_limb_t *d;  /* array with the limbs */
 };
 
-typedef struct gcry_mpi *MPI;
+#ifndef DID_MPI_TYPEDEF
+  typedef struct gcry_mpi *MPI;
+  #define DID_MPI_TYPEDEF
+#endif
 
 #define MPI_NULL NULL
 

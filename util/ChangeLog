@@ -1,3 +1,11 @@
+Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* simple-gettext.c (set_gettext_file): Check charset and do
+	mapping only for IBM850.
+	* strgutil.c (query_native_charset): New.
+	(get_native_charset): Try to get it from the system on the first call.
+	(ibm850_unicode): New table.
+
 Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#include <gcrypt.h>
 
 #include "packet.h"
 #include "iobuf.h"
@@ -36,7 +37,6 @@
 #include "keydb.h"
 #include "trustdb.h"
 #include "mpi.h"
-#include "cipher.h"
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"
@@ -353,8 +353,8 @@ int g10_errors_seen = 0;
 static int utf8_strings = 0;
 static int maybe_setuid = 1;
 
-static char *build_list( const char *text,
-			 const char *(*mapf)(int), int (*chkf)(int) );
+static char *build_list( const char *text, const char * (*mapf)(int),
+						    int (*chkf)(int) );
 static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 			enum cmd_and_opt_values new_cmd );
 static void print_hex( byte *p, size_t n );
@@ -388,20 +388,20 @@ strusage( int level )
       case 31: p = _("\nSupported algorithms:\n"); break;
       case 32:
 	if( !ciphers )
-	    ciphers = build_list("Cipher: ", cipher_algo_to_string,
-							check_cipher_algo );
+	    ciphers = build_list("Cipher: ", gcry_cipher_algo_name,
+					     openpgp_cipher_test_algo );
 	p = ciphers;
 	break;
       case 33:
 	if( !pubkeys )
-	    pubkeys = build_list("Pubkey: ", pubkey_algo_to_string,
-							check_pubkey_algo );
+	    pubkeys = build_list("Pubkey: ", gcry_pk_algo_name,
+					     openpgp_pk_test_algo );
 	p = pubkeys;
 	break;
       case 34:
 	if( !digests )
-	    digests = build_list("Hash: ", digest_algo_to_string,
-							check_digest_algo );
+	    digests = build_list("Hash: ", gcry_md_algo_name,
+					   openpgp_md_test_algo );
 	p = digests;
 	break;
 
@@ -415,7 +415,6 @@ static char *
 build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
 {
     int i;
-    const char *s;
     size_t n=strlen(text)+2;
     char *list, *p;
 
@@ -423,16 +422,16 @@ build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
 	secmem_init( 0 );    /* drop setuid */
 
     for(i=1; i < 110; i++ )
-	if( !chkf(i) && (s=mapf(i)) )
-	    n += strlen(s) + 2;
+	if( !chkf(i) )
+	    n += strlen(mapf(i)) + 2;
     list = m_alloc( 21 + n ); *list = 0;
     for(p=NULL, i=1; i < 110; i++ ) {
-	if( !chkf(i) && (s=mapf(i)) ) {
+	if( !chkf(i) ) {
 	    if( !p )
 		p = stpcpy( list, text );
 	    else
 		p = stpcpy( p, ", ");
-	    p = stpcpy(p, s );
+	    p = stpcpy(p, mapf(i) );
 	}
     }
     if( p )
@@ -577,8 +576,8 @@ main( int argc, char **argv )
     opt.def_digest_algo = 0;
     opt.def_compress_algo = 2;
     opt.s2k_mode = 3; /* iterated+salted */
-    opt.s2k_digest_algo = DIGEST_ALGO_RMD160;
-    opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
+    opt.s2k_digest_algo = GCRY_MD_RMD160;
+    opt.s2k_cipher_algo = GCRY_CIPHER_BLOWFISH;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
@@ -798,8 +797,8 @@ main( int argc, char **argv )
 	    opt.def_digest_algo = 0;
 	    opt.def_compress_algo = 2;
 	    opt.s2k_mode = 3; /* iterated+salted */
-	    opt.s2k_digest_algo = DIGEST_ALGO_RMD160;
-	    opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
+	    opt.s2k_digest_algo = GCRY_MD_RMD160;
+	    opt.s2k_cipher_algo = GCRY_CIPHER_BLOWFISH;
 	    break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
@@ -853,11 +852,14 @@ main( int argc, char **argv )
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
 	  case oUtf8Strings: utf8_strings = 1; break;
 	  case oNoUtf8Strings: utf8_strings = 0; break;
-	  case oDisableCipherAlgo:
-		disable_cipher_algo( string_to_cipher_algo(pargs.r.ret_str) );
+	  case oDisableCipherAlgo: {
+		    int algo = gcry_cipher_map_name(pargs.r.ret_str);
+		    gcry_cipher_ctl( NULL, GCRYCTL_DISABLE_ALGO,
+					     &algo, sizeof algo );
+		}
 		break;
 	  case oDisablePubkeyAlgo:
-		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
+		disable_pubkey_algo( gcry_pk_map_name(pargs.r.ret_str) );
 		break;
 	  case oAllowNonSelfsignedUID:
 		opt.allow_non_selfsigned_uid = 1;
@@ -927,27 +929,27 @@ main( int argc, char **argv )
     /* must do this after dropping setuid, because string_to...
      * may try to load an module */
     if( def_cipher_string ) {
-	opt.def_cipher_algo = string_to_cipher_algo(def_cipher_string);
+	opt.def_cipher_algo = gcry_cipher_map_name(def_cipher_string);
 	m_free(def_cipher_string); def_cipher_string = NULL;
-	if( check_cipher_algo(opt.def_cipher_algo) )
+	if( openpgp_cipher_test_algo(opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( def_digest_string ) {
-	opt.def_digest_algo = string_to_digest_algo(def_digest_string);
+	opt.def_digest_algo = gcry_md_map_name(def_digest_string);
 	m_free(def_digest_string); def_digest_string = NULL;
-	if( check_digest_algo(opt.def_digest_algo) )
+	if( openpgp_md_test_algo(opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
     if( s2k_cipher_string ) {
-	opt.s2k_cipher_algo = string_to_cipher_algo(s2k_cipher_string);
+	opt.s2k_cipher_algo = gcry_cipher_map_name(s2k_cipher_string);
 	m_free(s2k_cipher_string); s2k_cipher_string = NULL;
-	if( check_cipher_algo(opt.s2k_cipher_algo) )
+	if( openpgp_cipher_test_algo(opt.s2k_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
     if( s2k_digest_string ) {
-	opt.s2k_digest_algo = string_to_digest_algo(s2k_digest_string);
+	opt.s2k_digest_algo = gcry_md_map_name(s2k_digest_string);
 	m_free(s2k_digest_string); s2k_digest_string = NULL;
-	if( check_digest_algo(opt.s2k_digest_algo) )
+	if( openpgp_md_test_algo(opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
     if( opt.set_policy_url ) {
@@ -1330,7 +1332,7 @@ main( int argc, char **argv )
 	    wrong_args("--print-md algo [files]");
 	{
 	    int all_algos = (**argv=='*' && !(*argv)[1]);
-	    int algo = all_algos? 0 : string_to_digest_algo(*argv);
+	    int algo = all_algos? 0 : gcry_md_map_name(*argv);
 
 	    if( !algo && !all_algos )
 		log_error(_("invalid hash algorithm `%s'\n"), *argv );
@@ -1509,8 +1511,9 @@ print_mds( const char *fname, int algo )
     FILE *fp;
     char buf[1024];
     size_t n;
-    MD_HANDLE md;
+    GCRY_MD_HD md;
     char *pname;
+    int have_tiger = 0;
 
     if( !fname ) {
 	fp = stdin;
@@ -1527,43 +1530,41 @@ print_mds( const char *fname, int algo )
 	return;
     }
 
-    md = md_open( 0, 0 );
+    md = gcry_md_open( 0, 0 );
     if( algo )
-	md_enable( md, algo );
+	gcry_md_enable( md, algo );
     else {
-	md_enable( md, DIGEST_ALGO_MD5 );
-	md_enable( md, DIGEST_ALGO_SHA1 );
-	md_enable( md, DIGEST_ALGO_RMD160 );
-	if( !check_digest_algo(DIGEST_ALGO_TIGER) )
-	    md_enable( md, DIGEST_ALGO_TIGER );
+	gcry_md_enable( md, GCRY_MD_MD5 );
+	gcry_md_enable( md, GCRY_MD_SHA1 );
+	gcry_md_enable( md, GCRY_MD_RMD160 );
+	have_tiger = !gcry_md_enable( md, GCRY_MD_TIGER );
     }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
-	md_write( md, buf, n );
+	gcry_md_write( md, buf, n );
     if( ferror(fp) )
 	log_error("%s%s\n", pname, strerror(errno) );
     else {
-	md_final(md);
 	if( algo ) {
 	    if( fname )
 		fputs( pname, stdout );
-	    print_hex(md_read(md, algo), md_digest_length(algo) );
+	    print_hex( gcry_md_read(md, algo), gcry_md_get_algo_dlen(algo) );
 	}
 	else {
 	    printf(  "%s   MD5 = ", fname?pname:"" );
-			    print_hex(md_read(md, DIGEST_ALGO_MD5), 16 );
+			    print_hex(gcry_md_read(md, GCRY_MD_MD5), 16 );
 	    printf("\n%s  SHA1 = ", fname?pname:""  );
-			    print_hex(md_read(md, DIGEST_ALGO_SHA1), 20 );
+			    print_hex(gcry_md_read(md, GCRY_MD_SHA1), 20 );
 	    printf("\n%sRMD160 = ", fname?pname:""  );
-			    print_hex(md_read(md, DIGEST_ALGO_RMD160), 20 );
-	    if( !check_digest_algo(DIGEST_ALGO_TIGER) ) {
+			    print_hex(gcry_md_read(md, GCRY_MD_RMD160), 20 );
+	    if( have_tiger ) {
 		printf("\n%s TIGER = ", fname?pname:""  );
-			    print_hex(md_read(md, DIGEST_ALGO_TIGER), 24 );
+			    print_hex(gcry_md_read(md, GCRY_MD_TIGER), 24 );
 	    }
 	}
 	putchar('\n');
     }
-    md_close(md);
+    gcry_md_close(md);
 
     if( fp != stdin )
 	fclose(fp);

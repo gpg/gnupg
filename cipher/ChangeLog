@@ -1,3 +1,21 @@
+Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* elgamal.c (sign): Hugh found strange code here. Replaced by BUG().
+
+	* cipher.c: Merged with gcrypt/symapi.c.
+
+	* pubkey.c (string_to_pubkey_algo): Renamed function to ...
+	(gcry_pk_map_name): ... this.
+	(pubkey_algo_to_string): Renamed function to ...
+	(gcry_pk_algo_name): ... this.
+	(gcry_pk_algo_info): New.
+	* pubkey.c: Merged with gcrypt/pkapi.c.
+
+	* md.c (md_reset): Clear finalized; thanks to Ulf Moeller for
+	fixing this bug.
+
+	* md.c: Merged with gcrypt/mdapi.c
+
 Wed Sep 15 14:39:59 CEST 1999  Michael Roth <mroth@nessie.de>
 
 	* des.c: Various speed improvements: One bit pre rotation

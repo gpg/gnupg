@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <gcrypt.h>
 #include "errors.h"
 #include "iobuf.h"
 #include "memory.h"
@@ -55,6 +56,8 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     if( use_mdc ) {
 	ed.mdc_method = DIGEST_ALGO_SHA1;
 	cfx->mdc_hash = gcry_md_open( DIGEST_ALGO_SHA1, 0 );
+	/*should we check the function works, or is it better to provide
+	  a flag which makes the function die itself ?? FIXME */
 	/*md_start_debug( cfx->mdc_hash, "mdccreat" );*/
     }
     init_packet( &pkt );
@@ -70,13 +73,12 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     temp[nprefix] = temp[nprefix-2];
     temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );
-    if( gcry_cipher_open( &cfx->cipher_hd,
-			  cfx->dek->algo,
-			  CIPHER_MODE_CFB,
-			  GCRY_CIPHER_SECURE
-			  | (cfy->dek->algo >= 100 ?
-				0 : GCRY_CIPHER_ENABLE_SYNC) )
-			) {
+    if( !(cfx->cipher_hd = gcry_cipher_open( cfx->dek->algo,
+				       GCRY_CIPHER_MODE_CFB,
+				       GCRY_CIPHER_SECURE
+				       | (cfx->dek->algo >= 100 ?
+					     0 : GCRY_CIPHER_ENABLE_SYNC)))
+				     ) {
 	/* we should never get an error here cause we already checked, that
 	 * the algorithm is available. */
 	BUG();
@@ -91,7 +93,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
 /*  log_hexdump( "prefix", temp, nprefix+2 ); */
     if( cfx->mdc_hash )
 	gcry_md_write( cfx->mdc_hash, temp, nprefix+2 );
-    rc = cipher_encrypt( cfx->cipher_hd, temp, nprefix+2, NULL, 0 );
+    rc = gcry_cipher_encrypt( cfx->cipher_hd, temp, nprefix+2, NULL, 0 );
     if( !rc )
 	rc = gcry_cipher_sync( cfx->cipher_hd );
     if( rc )

@@ -1,5 +1,5 @@
 /* pubkey.c  -	pubkey dispatcher
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +24,8 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+
+#include "g10lib.h"
 #include "util.h"
 #include "errors.h"
 #include "mpi.h"
@@ -236,7 +238,7 @@ load_pubkey_modules(void)
  * Map a string to the pubkey algo
  */
 int
-string_to_pubkey_algo( const char *string )
+gcry_pk_map_name( const char *string )
 {
     int i;
     const char *s;
@@ -254,7 +256,7 @@ string_to_pubkey_algo( const char *string )
  * Map a pubkey algo to a string
  */
 const char *
-pubkey_algo_to_string( int algo )
+gcry_pk_algo_name( int algo )
 {
     int i;
 
@@ -564,4 +566,79 @@ pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
   ready:
     return rc;
 }
+
+
+int
+gcry_pk_encrypt( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP pkey )
+{
+	/* ... */
+    return 0;
+}
+
+int
+gcry_pk_decrypt( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP skey )
+{
+	/* ... */
+    return 0;
+}
+
+int
+gcry_pk_sign( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP skey )
+{
+    GCRY_SEXP s;
+    /* get the secret key */
+    s = NULL; /*gcry_sexp_find_token( skey, "private-key", 0 );*/
+    if( !s )
+	return -1; /* no private key */
+	/* ... */
+    return 0;
+}
+
+int
+gcry_pk_verify( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP pkey )
+{
+	/* ... */
+    return 0;
+}
+
+
+
+
+/****************
+ * Return information about the given algorithm
+ * WHAT select the kind of information returned:
+ *  GCRYCTL_TEST_ALGO:
+ *	Returns 0 when the specified algorithm is available for use.
+ *	buffer and nbytes must be zero.
+ *
+ * On error the value -1 is returned and the error reason may be
+ * retrieved by gcry_errno().
+ * Note:  Because this function is in most caes used to return an
+ * integer value, we can make it easier for the caller to just look at
+ * the return value.  The caller will in all cases consult the value
+ * and thereby detecting whether a error occured or not (i.e. while checking
+ * the block size)
+ */
+int
+gcry_pk_algo_info( int algo, int what, void *buffer, size_t *nbytes)
+{
+    switch( what ) {
+      case GCRYCTL_TEST_ALGO:
+	if( buffer || nbytes ) {
+	    set_lasterr( GCRYERR_INV_ARG );
+	    return -1;
+	}
+	if( check_pubkey_algo( algo ) ) {
+	    set_lasterr( GCRYERR_INV_ALGO );
+	    return -1;
+	}
+	break;
+
+      default:
+	set_lasterr( GCRYERR_INV_OP );
+	return -1;
+    }
+    return 0;
+}
+
 

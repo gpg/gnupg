@@ -113,7 +113,7 @@ gen_revoke( const char *uname )
     {
 	size_t n;
 	char *p = get_user_id( sk_keyid, &n );
-	tty_print_string( p, n );
+	tty_print_utf8_string( p, n );
 	m_free(p);
 	tty_printf("\n");
     }
@@ -243,8 +243,8 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node, PKT_signature *sig )							    ) {
     }
 
     tty_printf(_("user ID: \""));
-    tty_print_string( unode->pkt->pkt.user_id->name,
-		      unode->pkt->pkt.user_id->len, 0 );
+    tty_print_utf8_string( unode->pkt->pkt.user_id->name,
+			   unode->pkt->pkt.user_id->len, 0 );
     tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
 		sig->keyid[1], datestr_from_sig(sig) );
 

@@ -27,8 +27,8 @@
   #include <fcntl.h>
 #endif
 
+#include <gcrypt.h>
 #include "util.h"
-#include "cipher.h"
 #include "i18n.h"
 
 static void
@@ -62,7 +62,7 @@ int
 main(int argc, char **argv)
 {
     int encode=0;
-    CIPHER_HANDLE hd;
+    GCRY_CIPHER_HD hd;
     char buf[4096];
     int n, size=4096;
     int algo;
@@ -92,21 +92,21 @@ main(int argc, char **argv)
     if( argc != 3 )
 	my_usage();
     argc--; argv++;
-    algo = string_to_cipher_algo( *argv );
+    algo = gcry_cipher_map_name( *argv );
     argc--; argv++;
 
-    hd = cipher_open( algo, CIPHER_MODE_CFB, 0 );
-    cipher_setkey( hd, *argv, strlen(*argv) );
-    cipher_setiv( hd, NULL, 0 );
+    hd = gcry_cipher_open( algo, GCRY_CIPHER_MODE_CFB, 0 );
+    gcry_cipher_setkey( hd, *argv, strlen(*argv) );
+    gcry_cipher_setiv( hd, NULL, 0 );
     while( (n = fread( buf, 1, size, stdin )) > 0 ) {
 	if( encode )
-	    cipher_encrypt( hd, buf, buf, n );
+	    gcry_cipher_encrypt( hd, buf, n, buf, n );
 	else
-	    cipher_decrypt( hd, buf, buf, n );
+	    gcry_cipher_decrypt( hd, buf, n, buf, n );
 	if( fwrite( buf, 1, n, stdout) != n )
 	    log_fatal("write error\n");
     }
-    cipher_close(hd);
+    gcry_cipher_close(hd);
     return 0;
 }
 

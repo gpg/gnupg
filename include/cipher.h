@@ -57,38 +57,6 @@
 		       || (a)==PUBKEY_ALGO_RSA_S )
 #define is_ELGAMAL(a) ((a)==PUBKEY_ALGO_ELGAMAL || (a)==PUBKEY_ALGO_ELGAMAL_E)
 
-typedef struct {
-    int algo;
-    int keylen;
-    byte key[32]; /* this is the largest used keylen (256 bit) */
-} DEK;
-
-struct cipher_handle_s;
-typedef struct cipher_handle_s *CIPHER_HANDLE;
-
-
-#define CIPHER_MODE_ECB       1
-#define CIPHER_MODE_CFB       2
-#define CIPHER_MODE_PHILS_CFB 3
-#define CIPHER_MODE_AUTO_CFB  4
-#define CIPHER_MODE_DUMMY     5  /* used with algo DUMMY for no encryption */
-#define CIPHER_MODE_CBC       6
-
-struct md_digest_list_s;
-
-struct gcry_md_context {
-    int  secure;
-    FILE  *debug;
-    int finalized;
-    struct md_digest_list_s *list;
-    int  bufcount;
-    int  bufsize;
-    byte buffer[1];
-};
-
-typedef struct gcry_md_context *MD_HANDLE;
-
-
 int g10c_debug_mode;
 int g10_opt_verbose;
 const char *g10_opt_homedir;
@@ -96,82 +64,12 @@ const char *g10_opt_homedir;
 /*-- dynload.c --*/
 void register_cipher_extension( const char *mainpgm, const char *fname );
 
-/*-- md.c --*/
-int string_to_digest_algo( const char *string );
-const char * digest_algo_to_string( int algo );
-int check_digest_algo( int algo );
-MD_HANDLE md_open( int algo, int secure );
-void md_enable( MD_HANDLE hd, int algo );
-MD_HANDLE md_copy( MD_HANDLE a );
-void md_reset( MD_HANDLE a );
-void md_close(MD_HANDLE a);
-void md_write( MD_HANDLE a, byte *inbuf, size_t inlen);
-void md_final(MD_HANDLE a);
-byte *md_read( MD_HANDLE a, int algo );
-int md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen );
-int md_get_algo( MD_HANDLE a );
-int md_digest_length( int algo );
-const byte *md_asn_oid( int algo, size_t *asnlen, size_t *mdlen );
-void md_start_debug( MD_HANDLE a, const char *suffix );
-void md_stop_debug( MD_HANDLE a );
-#define md_is_secure(a) ((a)->secure)
-#define md_putc(h,c)  \
-	    do {					    \
-		if( (h)->bufcount == (h)->bufsize )	    \
-		    md_write( (h), NULL, 0 );		    \
-		(h)->buffer[(h)->bufcount++] = (c) & 0xff;  \
-	    } while(0)
 /*-- rmd160.c --*/
 void rmd160_hash_buffer( char *outbuf, const char *buffer, size_t length );
 
 
-/*-- cipher.c --*/
-int string_to_cipher_algo( const char *string );
-const char * cipher_algo_to_string( int algo );
-void disable_cipher_algo( int algo );
-int check_cipher_algo( int algo );
-unsigned cipher_get_keylen( int algo );
-unsigned cipher_get_blocksize( int algo );
-CIPHER_HANDLE cipher_open( int algo, int mode, int secure );
-void cipher_close( CIPHER_HANDLE c );
-int  cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen );
-void cipher_setiv( CIPHER_HANDLE c, const byte *iv, unsigned ivlen );
-void cipher_encrypt( CIPHER_HANDLE c, byte *out, byte *in, unsigned nbytes );
-void cipher_decrypt( CIPHER_HANDLE c, byte *out, byte *in, unsigned nbytes );
-void cipher_sync( CIPHER_HANDLE c );
-
-/*-- pubkey.c --*/
-#define PUBKEY_MAX_NPKEY  4
-#define PUBKEY_MAX_NSKEY  6
-#define PUBKEY_MAX_NSIG   2
-#define PUBKEY_MAX_NENC   2
-
-int string_to_pubkey_algo( const char *string );
-const char * pubkey_algo_to_string( int algo );
-void disable_pubkey_algo( int algo );
-int check_pubkey_algo( int algo );
-int check_pubkey_algo2( int algo, unsigned use );
-int pubkey_get_npkey( int algo );
-int pubkey_get_nskey( int algo );
-int pubkey_get_nsig( int algo );
-int pubkey_get_nenc( int algo );
-unsigned pubkey_nbits( int algo, MPI *pkey );
-int pubkey_generate( int algo, unsigned nbits, MPI *skey, MPI **retfactors );
-int pubkey_check_secret_key( int algo, MPI *skey );
-int pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey );
-int pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey );
-int pubkey_sign( int algo, MPI *resarr, MPI hash, MPI *skey );
-int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
-		      int (*cmp)(void *, MPI), void *opaque );
-
 /*-- smallprime.c --*/
 extern ushort small_prime_numbers[];
-
-/*-- primegen.c --*/
-MPI generate_secret_prime( unsigned nbits );
-MPI generate_public_prime( unsigned nbits );
-MPI generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
-					   MPI g, MPI **factors );
 
 
 #endif /*G10_CIPHER_H*/

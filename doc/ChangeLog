@@ -1,0 +1,36 @@
+Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* Makefile.am (SUBDIRS): Removed gph from this development series
+
+Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* Makefile.am (SUBDIRS): New subdir gph for the manual.
+
+Thu Jul 22 20:03:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* gpg.sgml (--always-trust): Added.
+
+Wed Jul 14 19:42:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* Makefile.am: Create a dummy man page if docbook-to-man is missing.
+
+Wed Jun 16 20:16:21 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* gpg1.pod: Removed.
+	* gpg.sgml: New. Replaces the pod file
+	* Makefile.am: Add rule to make a man file from sgml
+
+Tue Jun 15 12:21:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* Makefile.in.in: Use DESTDIR.
+
+Mon May 31 19:41:10 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* gpg.1pod: Enhanced the Bugs section (Michael).
+
+Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* gpg.1pod: Spelling and grammar corrections (John A. Martin)
+	* FAQ: Ditto.
+	* DETAILS: Ditto.
+

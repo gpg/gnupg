@@ -1,4 +1,7 @@
 
+gcry_md_open() may return NULL in case of an unknown algorithm
+
+Return GCRYERR_NOMEM instead of using m_alloc in most library functions
 
 SCO UnixWare/7.1.0  reported by Allan Clark <allanc@sco.com> for 0.9.8
 
@@ -10,4 +13,8 @@ Some other reported cpu-vendor-os strings:
     sparc-sun-solaris5.4
     sparc-sun-sunos4.1.2
     i386-pc-sysv4.2   (USL Unixware v1.1.2)
+
+
+Johan Wevers <johanw@vulcan.xs4all.nl> is working on a NL translation.
+
 

@@ -31,6 +31,7 @@
   #include <sys/time.h>
   #include <sys/resource.h>
 #endif
+#include <gcrypt.h>
 #include "util.h"
 #include "main.h"
 #include "options.h"
@@ -263,5 +264,34 @@ map_gcry_rc( int rc )
       case 0: return 0;
       default: return G10ERR_GENERAL;
     }
+}
+
+
+/****************
+ * Wrapper around the libgcrypt function with addional checks on
+ * openPGP contrainst for the algo ID.
+ */
+int
+openpgp_cipher_test_algo( int algo )
+{
+    if( algo < 0 || algo > 110 )
+	return GCRYERR_INV_ALGO;
+    return gcry_cipher_test_algo(algo);
+}
+
+int
+openpgp_pk_test_algo( int algo )
+{
+    if( algo < 0 || algo > 110 )
+	return GCRYERR_INV_ALGO;
+    return gcry_pk_test_algo(algo);
+}
+
+int
+openpgp_md_test_algo( int algo )
+{
+    if( algo < 0 || algo > 110 )
+	return GCRYERR_INV_ALGO;
+    return gcry_md_test_algo(algo);
 }
 

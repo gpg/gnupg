@@ -1,10 +1,10 @@
 
-  * try to do --verify even if the files are swapped on the commandline
-    (requested by Herny Spencer) or change the error message to
-    a more clear one.
+  * Implement the AXP syscall to enable bus traps for GLIB 2
 
-Scheduled for 1.1
------------------
+  * parse a paramter file to do automatic key generation and to set
+    parameters for the keygen menu.  Far easier than to do a dialog for
+    each required parameter.
+
   * With option -i prompt before adding a key to the keyring and show some
     info what we are about to add.
 

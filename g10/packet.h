@@ -281,7 +281,7 @@ const byte *parse_sig_subpkt2( PKT_signature *sig,
 /*-- build-packet.c --*/
 int build_packet( IOBUF inp, PACKET *pkt );
 u32 calc_packet_length( PACKET *pkt );
-void hash_public_key( MD_HANDLE md, PKT_public_key *pk );
+void hash_public_key( GCRY_MD_HD md, PKT_public_key *pk );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
 void build_sig_subpkt_from_sig( PKT_signature *sig );
@@ -313,7 +313,7 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 
 /*-- sig-check.c --*/
-int signature_check( PKT_signature *sig, MD_HANDLE digest );
+int signature_check( PKT_signature *sig, GCRY_MD_HD digest );
 
 /*-- seckey-cert.c --*/
 int is_secret_key_protected( PKT_secret_key *sk );
@@ -334,7 +334,7 @@ int encrypt_data( PKT_encrypted *ed, DEK *dek );
 /*-- plaintext.c --*/
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 					int nooutput, int clearsig );
-int ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
+int ask_for_detached_datafile( GCRY_MD_HD md, GCRY_MD_HD md2,
 			       const char *inname, int textmode );
 
 /*-- comment.c --*/

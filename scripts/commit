@@ -11,15 +11,25 @@ addr="<`id -un`@`hostname -d`>"
 for i in `find . -name Changes -print`; do
     dir=`dirname $i`
     if [ -s $dir/Changes ]; then
-	lines=`wc -l <$dir/Changes`
-	echo "$date  $name  $addr" >$dir/ChangeLog.new
-	echo >>$dir/ChangeLog.new
-	cat $dir/Changes   >>$dir/ChangeLog.new
-	[ -f $dir/ChangeLog ] && cat $dir/ChangeLog >>$dir/ChangeLog.new
-	echo -n > $dir/Changes
-	[ -f $dir/ChangeLog ] && rm $dir/ChangeLog
-	mv $dir/ChangeLog.new $dir/ChangeLog
-	echo "$lines new lines in $dir/ChangeLog"
+	awk '
+	state == 0 && /^[ \t]*$/  { next }
+	state == 0  { state = 1 }
+	/^[ \t]*$/ { empty++; next }
+		   { while ( empty > 0 ) { print ""; empty--; }; print  }
+	' < $dir/Changes > $dir/Changes.tmp
+	if [ -s $dir/Changes.tmp ]; then
+	    lines=`wc -l <$dir/Changes.tmp`
+	    echo "$date  $name  $addr" >$dir/ChangeLog.new
+	    echo >>$dir/ChangeLog.new
+	    cat $dir/Changes.tmp   >>$dir/ChangeLog.new
+	    echo >>$dir/ChangeLog.new
+	    [ -f $dir/ChangeLog ] && cat $dir/ChangeLog >>$dir/ChangeLog.new
+	    echo -n > $dir/Changes
+	    [ -f $dir/ChangeLog ] && rm $dir/ChangeLog
+	    mv $dir/ChangeLog.new $dir/ChangeLog
+	    echo "$lines new lines in $dir/ChangeLog"
+	fi
+	rm $dir/Changes.tmp || true
     fi
 done
 

@@ -23,12 +23,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include <gcrypt.h>
 #include "util.h"
 #include "memory.h"
 #include "packet.h"
 #include "mpi.h"
 #include "keydb.h"
-#include "cipher.h"
 #include "main.h"
 #include "options.h"
 #include "i18n.h"
@@ -46,12 +47,12 @@ do_check( PKT_secret_key *sk )
     if( sk->is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
 	u32 keyid[4]; /* 4! because we need two of them */
-	CIPHER_HANDLE cipher_hd=NULL;
+	GCRY_CIPHER_HD cipher_hd=NULL;
 	PKT_secret_key *save_sk;
 
-	if( sk->protect.algo == CIPHER_ALGO_NONE )
+	if( sk->protect.algo == GCRY_CIPHER_NONE )
 	    BUG();
-	if( check_cipher_algo( sk->protect.algo ) ) {
+	if( openpgp_cipher_test_algo( sk->protect.algo ) ) {
 	    log_info(_("protection algorithm %d is not supported\n"),
 			sk->protect.algo );
 	    return G10ERR_CIPHER_ALGO;
@@ -66,12 +67,21 @@ do_check( PKT_secret_key *sk )
 	}
 	dek = passphrase_to_dek( keyid, sk->pubkey_algo, sk->protect.algo,
 				 &sk->protect.s2k, 0 );
-	cipher_hd = cipher_open( sk->protect.algo,
-				 CIPHER_MODE_AUTO_CFB, 1);
-	cipher_setkey( cipher_hd, dek->key, dek->keylen );
+	if( !(cipher_hd = gcry_cipher_open( sk->protect.algo,
+				      GCRY_CIPHER_MODE_CFB,
+				      GCRY_CIPHER_SECURE
+				      | (sk->protect.algo >= 100 ?
+					   0 : GCRY_CIPHER_ENABLE_SYNC) ) )
+				    ) {
+	    BUG();
+	}
+
+	if( gcry_cipher_setkey( cipher_hd, dek->key, dek->keylen ) )
+	    log_fatal("set key failed: %s\n", gcry_strerror(-1) );
 	m_free(dek);
 	save_sk = copy_secret_key( NULL, sk );
-	cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
+	if( gcry_cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen ))
+	    log_fatal("set IV failed: %s\n", gcry_strerror(-1) );
 	csum = 0;
 	if( sk->version >= 4 ) {
 	    int ndata;
@@ -81,7 +91,7 @@ do_check( PKT_secret_key *sk )
 	    assert( mpi_is_opaque( sk->skey[i] ) );
 	    p = mpi_get_opaque( sk->skey[i], &ndata );
 	    data = m_alloc_secure( ndata );
-	    cipher_decrypt( cipher_hd, data, p, ndata );
+	    gcry_cipher_decrypt( cipher_hd, data, ndata, p, ndata );
 	    mpi_free( sk->skey[i] ); sk->skey[i] = NULL ;
 	    p = data;
 	    if( ndata < 2 ) {
@@ -109,9 +119,9 @@ do_check( PKT_secret_key *sk )
 	    for(i=pubkey_get_npkey(sk->pubkey_algo);
 		    i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
 		buffer = mpi_get_secure_buffer( sk->skey[i], &nbytes, NULL );
-		cipher_sync( cipher_hd );
+		gcry_cipher_sync( cipher_hd );
 		assert( mpi_is_protected(sk->skey[i]) );
-		cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
+		gcry_cipher_decrypt( cipher_hd, buffer, nbytes, NULL, 0 );
 		mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
 		mpi_clear_protect_flag( sk->skey[i] );
 		csum += checksum_mpi( sk->skey[i] );
@@ -121,7 +131,7 @@ do_check( PKT_secret_key *sk )
 	       csum = sk->csum;
 	    }
 	}
-	cipher_close( cipher_hd );
+	gcry_cipher_close( cipher_hd );
 	/* now let's see whether we have used the right passphrase */
 	if( csum != sk->csum ) {
 	    copy_secret_key( sk, save_sk );
@@ -215,23 +225,41 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	return 0;
 
     if( !sk->is_protected ) { /* okay, apply the protection */
-	CIPHER_HANDLE cipher_hd=NULL;
+	GCRY_CIPHER_HD cipher_hd=NULL;
 
-	if( check_cipher_algo( sk->protect.algo ) )
+	if( openpgp_cipher_test_algo( sk->protect.algo ) )
 	    rc = G10ERR_CIPHER_ALGO; /* unsupport protection algorithm */
 	else {
 	    print_cipher_algo_note( sk->protect.algo );
-	    cipher_hd = cipher_open( sk->protect.algo,
-				     CIPHER_MODE_AUTO_CFB, 1 );
-	    if( cipher_setkey( cipher_hd, dek->key, dek->keylen ) )
+	    if( !(cipher_hd = gcry_cipher_open( sk->protect.algo,
+					  GCRY_CIPHER_MODE_CFB,
+					  GCRY_CIPHER_SECURE
+					  | (sk->protect.algo >= 100 ?
+					      0 : GCRY_CIPHER_ENABLE_SYNC) ))
+					 ) {
+		BUG();
+	    }
+
+
+	    rc = gcry_cipher_setkey( cipher_hd, dek->key, dek->keylen );
+	    if( rc == GCRYERR_WEAK_KEY ) {
 		log_info(_("WARNING: Weak key detected"
 			   " - please change passphrase again.\n"));
-	    sk->protect.ivlen = cipher_get_blocksize( sk->protect.algo );
+		rc = 0;
+	    }
+	    else if( rc )
+		BUG();
+
+	    /* set the IV length */
+	    {	int blocksize = gcry_cipher_get_algo_blklen( sk->protect.algo );
+		if( blocksize != 8 && blocksize != 16 )
+		    log_fatal("unsupported blocksize %d\n", blocksize );
+		sk->protect.ivlen = blocksize;
+	    }
+
 	    assert( sk->protect.ivlen <= DIM(sk->protect.iv) );
-	    if( sk->protect.ivlen != 8 && sk->protect.ivlen != 16 )
-		BUG(); /* yes, we are very careful */
 	    randomize_buffer(sk->protect.iv, sk->protect.ivlen, 1);
-	    cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
+	    gcry_cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
 	    if( sk->version >= 4 ) {
 	      #define NMPIS (PUBKEY_MAX_NSKEY - PUBKEY_MAX_NPKEY)
 		byte *bufarr[NMPIS];
@@ -267,7 +295,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		*p++ =	csum >> 8;
 		*p++ =	csum;
 		assert( p == data+ndata );
-		cipher_encrypt( cipher_hd, data, data, ndata );
+		gcry_cipher_encrypt( cipher_hd, data, ndata, NULL, 0 );
 		for(i = pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
 		    mpi_free( sk->skey[i] );
@@ -284,9 +312,9 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
 		    csum += checksum_mpi_counted_nbits( sk->skey[i] );
 		    buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
-		    cipher_sync( cipher_hd );
+		    gcry_cipher_sync( cipher_hd );
 		    assert( !mpi_is_protected(sk->skey[i]) );
-		    cipher_encrypt( cipher_hd, buffer, buffer, nbytes );
+		    gcry_cipher_encrypt( cipher_hd, buffer, nbytes, NULL, 0 );
 		    mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
 		    mpi_set_protect_flag( sk->skey[i] );
 		    m_free( buffer );
@@ -294,7 +322,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		sk->csum = csum;
 	    }
 	    sk->is_protected = 1;
-	    cipher_close( cipher_hd );
+	    gcry_cipher_close( cipher_hd );
 	}
     }
     return rc;

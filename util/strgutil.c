@@ -65,6 +65,26 @@ static ushort latin2_unicode[128] = {
     0x0159,0x016F,0x00FA,0x0171,0x00FC,0x00FD,0x0163,0x02D9
 };
 
+static ushort ibm850_unicode[128] = {
+    0x00c7,0x00fc,0x00e9,0x00e2,0x00e4,0x00e0,0x00e5,0x00e7,
+    0x00ea,0x00eb,0x00e8,0x00ef,0x00ee,0x00ec,0x00c4,0x00c5,
+    0x00c9,0x00e6,0x00c6,0x00f4,0x00f6,0x00f2,0x00fb,0x00f9,
+    0x00ff,0x00d6,0x00dc,0x00f8,0x00a3,0x00d8,0x00d7,0x0192,
+    0x00e1,0x00ed,0x00f3,0x00fa,0x00f1,0x00d1,0x00aa,0x00ba,
+    0x00bf,0x00ae,0x00ac,0x00bd,0x00bc,0x00a1,0x00ab,0x00bb,
+    0x2591,0x2592,0x2593,0x2502,0x2524,0x00c1,0x00c2,0x00c0,
+    0x00a9,0x2563,0x2551,0x2557,0x255d,0x00a2,0x00a5,0x2510,
+    0x2514,0x2534,0x252c,0x251c,0x2500,0x253c,0x00e3,0x00c3,
+    0x255a,0x2554,0x2569,0x2566,0x2560,0x2550,0x256c,0x00a4,
+    0x00f0,0x00d0,0x00ca,0x00cb,0x00c8,0x0131,0x00cd,0x00ce,
+    0x00cf,0x2518,0x250c,0x2588,0x2584,0x00a6,0x00cc,0x2580,
+    0x00d3,0x00df,0x00d4,0x00d2,0x00f5,0x00d5,0x00b5,0x00fe,
+    0x00de,0x00da,0x00db,0x00d9,0x00fd,0x00dd,0x00af,0x00b4,
+    0x00ad,0x00b1,0x2017,0x00be,0x00b6,0x00a7,0x00f7,0x00b8,
+    0x00b0,0x00a8,0x00b7,0x00b9,0x00b3,0x00b2,0x25a0,0x00a0,
+};
+
+static int query_native_charset_done = 0;
 static const char *active_charset_name = "iso-8859-1";
 static ushort *active_charset = NULL;
 
@@ -291,9 +311,65 @@ string_count_chr( const char *string, int c )
 }
 
 
+static const char*
+query_native_charset(void)
+{
+  #ifdef __MINGW32__
+    unsigned int cp;
+
+    cp = GetConsoleOutputCP();
+    if( cp != GetConsoleCP() ) {
+	/* The input cgarset is not equal to the output charset
+	 * our system depends on it and therefore we will set
+	 * same the same (this won't work on Windows 95) */
+	if( !SetConsoleCP( cp ) )
+	    log_info("can't set Input-CP to Output-CP: %d\n",
+						    (int)GetLastError() );
+    }
+    /* we could read the registry, but this seems to be too much work */
+    switch( cp ) {
+      case 850:  return "ibm850";
+      case 437:  return "ibm437";
+      case 1252: return "iso-8859-1";
+      default:
+	log_info("unknown MS-Windows CodePage %u "
+		 "- trying to switch to Latin-1\n", cp );
+	/* try to set latin-1 */
+	if( !SetConsoleOutputCP( 1252 ) ) {
+	    if( !SetConsoleCP( 1252 ) )
+		return "iso-8859-1";
+	    else /* back off */
+		SetConsoleOutputCP( cp );
+	}
+	log_info("no information about MS-Windows CodePage %u\n", cp );
+	return NULL;
+    }
+  #else
+    return NULL; /* unknown */
+  #endif
+}
+
+
+const char*
+get_native_charset()
+{
+    if( !query_native_charset_done ) {
+	const char *s;
+
+	query_native_charset_done = 1;
+	s = query_native_charset();
+	if( s )
+	    set_native_charset(s);
+    }
+
+    return active_charset_name;
+}
+
+
 int
 set_native_charset( const char *newset )
 {
+    query_native_charset_done = 1; /* don't do this when we want to set one*/
     if( !stricmp( newset, "iso-8859-1" ) ) {
 	active_charset_name = "iso-8859-1";
 	active_charset = NULL;
@@ -306,16 +382,15 @@ set_native_charset( const char *newset )
 	active_charset_name = "koi8-r";
 	active_charset = koi8_unicode;
     }
+    else if( !stricmp( newset, "ibm850" ) || !stricmp( newset, "ibm437" ) ) {
+	active_charset_name = "ibm850";
+	active_charset = ibm850_unicode;
+    }
     else
 	return G10ERR_GENERAL;
     return 0;
 }
 
-const char*
-get_native_charset()
-{
-    return active_charset_name;
-}
 
 /****************
  * Convert string, which is in native encoding to UTF8 and return the

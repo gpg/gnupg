@@ -24,6 +24,8 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+
+#include "g10lib.h"
 #include "util.h"
 #include "cipher.h"
 #include "errors.h"
@@ -31,9 +33,38 @@
 #include "rmd.h"
 
 
+struct md_digest_list_s;
+
+/* this structure is put right after the GCRY_MD_HD buffer, so that
+ * only one memory block is needed. */
+struct gcry_md_context {
+    int  magic;
+    int  secure;
+    FILE  *debug;
+    int finalized;
+    struct md_digest_list_s *list;
+};
+#define CTX_MAGIC_NORMAL 0x11071961
+#define CTX_MAGIC_SECURE 0x16917011
+
+static const char * digest_algo_to_string( int algo );
+static int check_digest_algo( int algo );
+static GCRY_MD_HD md_open( int algo, int secure );
+static int  md_enable( GCRY_MD_HD hd, int algo );
+static GCRY_MD_HD md_copy( GCRY_MD_HD a );
+static void md_close(GCRY_MD_HD a);
+static void md_write( GCRY_MD_HD a, byte *inbuf, size_t inlen);
+static void md_final(GCRY_MD_HD a);
+static byte *md_read( GCRY_MD_HD a, int algo );
+static int md_get_algo( GCRY_MD_HD a );
+static int md_digest_length( int algo );
+static const byte *md_asn_oid( int algo, size_t *asnlen, size_t *mdlen );
+static void md_start_debug( GCRY_MD_HD a, const char *suffix );
+static void md_stop_debug( GCRY_MD_HD a );
+
 /****************
  * This structure is used for the list of available algorithms
- * and for the list of algorithms in MD_HANDLE.
+ * and for the list of algorithms in GCRY_MD_HD.
  */
 struct md_digest_list_s {
     struct md_digest_list_s *next;
@@ -146,7 +177,7 @@ load_digest_module( int req_algo )
  * Map a string to the digest algo
  */
 int
-string_to_digest_algo( const char *string )
+gcry_md_map_name( const char *string )
 {
     struct md_digest_list_s *r;
 
@@ -162,7 +193,7 @@ string_to_digest_algo( const char *string )
 /****************
  * Map a digest algo to a string
  */
-const char *
+static const char *
 digest_algo_to_string( int algo )
 {
     struct md_digest_list_s *r;
@@ -175,8 +206,21 @@ digest_algo_to_string( int algo )
     return NULL;
 }
 
+/****************
+ * This function simply returns the name of the algorithm or some constant
+ * string when there is no algo.  It will never return NULL.
+ * Use	the macro gcry_md_test_algo() to check whether the algorithm
+ * is valid.
+ */
+const char *
+gcry_md_algo_name( int algo )
+{
+    const char *s = digest_algo_to_string( algo );
+    return s? s: "?";
+}
 
-int
+
+static int
 check_digest_algo( int algo )
 {
     struct md_digest_list_s *r;
@@ -196,37 +240,73 @@ check_digest_algo( int algo )
  * More algorithms may be added by md_enable(). The initial algorithm
  * may be 0.
  */
-MD_HANDLE
+static GCRY_MD_HD
 md_open( int algo, int secure )
 {
-    MD_HANDLE hd;
-    int bufsize;
+    GCRY_MD_HD hd;
+    struct gcry_md_context *ctx;
+    int bufsize = secure? 512 : 1024;
+    size_t n;
 
-    if( secure ) {
-	bufsize = 512 - sizeof( *hd );
-	hd = m_alloc_secure_clear( sizeof *hd + bufsize );
-    }
-    else {
-	bufsize = 1024 - sizeof( *hd );
-	hd = m_alloc_clear( sizeof *hd + bufsize );
-    }
+    /* Allocate a memory area to hold the caller visible buffer with it's
+     * control information and the data required by this module. Set the
+     * context pointer at the beginning to this area.
+     * We have to use this strange scheme because we want to hide the
+     * internal data but have a variable sized buffer.
+     *
+     *	+---+------+---........------+-------------+
+     *	!ctx! bctl !  buffer	     ! private	   !
+     *	+---+------+---........------+-------------+
+     *	  !			      ^
+     *	  !---------------------------!
+     *
+     * We have to make sture that private is well aligned.
+     */
+    n = sizeof( struct gcry_md_handle ) + bufsize;
+    n = ((n + sizeof(PROPERLY_ALIGNED_TYPE)-1)
+	 / sizeof(PROPERLY_ALIGNED_TYPE) ) * sizeof(PROPERLY_ALIGNED_TYPE);
 
-    hd->bufsize = bufsize+1; /* hd has already one byte allocated */
-    hd->secure = secure;
-    if( algo )
-	md_enable( hd, algo );
-    fast_random_poll();
+    /* allocate and set the Context pointer to the private data */
+    hd = secure ? m_alloc_secure( n + sizeof( struct gcry_md_context ) )
+		: m_alloc(	  n + sizeof( struct gcry_md_context ) );
+    hd->ctx = ctx = (struct gcry_md_context*)( (char*)hd + n );
+    /* setup the globally visible data (bctl in the diagram)*/
+    hd->bufsize = n - sizeof( struct gcry_md_handle ) + 1;
+    hd->bufpos = 0;
+    /* initialize the private data */
+    memset( hd->ctx, 0, sizeof *hd->ctx );
+    ctx->magic = secure ? CTX_MAGIC_SECURE : CTX_MAGIC_NORMAL;
+    ctx->secure = secure;
+    fast_random_poll(); /* FIXME: should we really do that? */
+    if( algo && md_enable( hd, algo ) ) {
+	md_close( hd );
+	return NULL;
+    }
     return hd;
 }
 
-void
-md_enable( MD_HANDLE h, int algo )
+
+GCRY_MD_HD
+gcry_md_open( int algo, unsigned int flags )
 {
+    GCRY_MD_HD hd;
+    /* fixme: check that algo is available and that only valid
+     * flag values are used */
+    hd = md_open( algo, (flags & GCRY_MD_FLAG_SECURE) );
+    return hd;
+}
+
+
+
+static int
+md_enable( GCRY_MD_HD hd, int algo )
+{
+    struct gcry_md_context *h = hd->ctx;
     struct md_digest_list_s *r, *ac;
 
     for( ac=h->list; ac; ac = ac->next )
 	if( ac->algo == algo )
-	    return ; /* already enabled */
+	    return 0; /* already enabled */
     /* find the algorithm */
     do {
 	for(r = digest_list; r; r = r->next )
@@ -234,8 +314,8 @@ md_enable( MD_HANDLE h, int algo )
 		break;
     } while( !r && load_digest_module( algo ) );
     if( !r ) {
-	log_error("md_enable: algorithm %d not available\n", algo );
-	return;
+	log_debug("md_enable: algorithm %d not available\n", algo );
+	return set_lasterr( GCRYERR_INV_ALGO );
     }
     /* and allocate a new list entry */
     ac = h->secure? m_alloc_secure( sizeof *ac + r->contextsize
@@ -247,20 +327,37 @@ md_enable( MD_HANDLE h, int algo )
     h->list = ac;
     /* and init this instance */
     (*ac->init)( &ac->context.c );
+    return 0;
 }
 
 
-MD_HANDLE
-md_copy( MD_HANDLE a )
+int
+gcry_md_enable( GCRY_MD_HD hd, int algo )
 {
-    MD_HANDLE b;
-    struct md_digest_list_s *ar, *br;
+    return md_enable( hd, algo );
+}
 
-    if( a->bufcount )
-	md_write( a, NULL, 0 );
-    b = a->secure ? m_alloc_secure( sizeof *b + a->bufsize - 1 )
-		  : m_alloc( sizeof *b + a->bufsize - 1 );
-    memcpy( b, a, sizeof *a + a->bufsize - 1 );
+static GCRY_MD_HD
+md_copy( GCRY_MD_HD ahd )
+{
+    struct gcry_md_context *a = ahd->ctx;
+    struct gcry_md_context *b;
+    GCRY_MD_HD bhd;
+    struct md_digest_list_s *ar, *br;
+    size_t n;
+
+    if( ahd->bufpos )
+	md_write( ahd, NULL, 0 );
+
+    n = (char*)ahd->ctx - (char*)ahd;
+    bhd = a->secure ? m_alloc_secure( n + sizeof( struct gcry_md_context ) )
+		    : m_alloc(	      n + sizeof( struct gcry_md_context ) );
+    bhd->ctx = b = (struct gcry_md_context*)( (char*)bhd + n );
+    /* no need to copy the buffer due to the write above */
+    assert( ahd->bufsize == (n - sizeof( struct gcry_md_handle ) + 1) );
+    bhd->bufsize = ahd->bufsize;
+    bhd->bufpos = 0;  assert( !ahd->bufpos );
+    memcpy( b, a, sizeof *a );
     b->list = NULL;
     b->debug = NULL;
     /* and now copy the complete list of algorithms */
@@ -277,38 +374,43 @@ md_copy( MD_HANDLE a )
     }
 
     if( a->debug )
-	md_start_debug( b, "unknown" );
-    return b;
+	md_start_debug( bhd, "unknown" );
+    return bhd;
 }
 
+GCRY_MD_HD
+gcry_md_copy( GCRY_MD_HD hd )
+{
+    return md_copy( hd );
+}
 
 /****************
  * Reset all contexts and discard any buffered stuff.  This may be used
  * instead of a md_close(); md_open().
  */
 void
-md_reset( MD_HANDLE a )
+gcry_md_reset( GCRY_MD_HD a )
 {
     struct md_digest_list_s *r;
 
-    a->bufcount = 0;
-    for( r=a->list; r; r = r->next ) {
+    a->bufpos = a->ctx->finalized = 0;
+    for( r=a->ctx->list; r; r = r->next ) {
 	memset( r->context.c, 0, r->contextsize );
 	(*r->init)( &r->context.c );
     }
 }
 
 
-void
-md_close(MD_HANDLE a)
+static void
+md_close(GCRY_MD_HD a)
 {
     struct md_digest_list_s *r, *r2;
 
     if( !a )
 	return;
-    if( a->debug )
+    if( a->ctx->debug )
 	md_stop_debug(a);
-    for(r=a->list; r; r = r2 ) {
+    for(r=a->ctx->list; r; r = r2 ) {
 	r2 = r->next;
 	m_free(r);
     }
@@ -317,65 +419,102 @@ md_close(MD_HANDLE a)
 
 
 void
-md_write( MD_HANDLE a, byte *inbuf, size_t inlen)
+gcry_md_close( GCRY_MD_HD hd )
+{
+    md_close( hd );
+}
+
+
+static void
+md_write( GCRY_MD_HD a, byte *inbuf, size_t inlen)
 {
     struct md_digest_list_s *r;
 
-    if( a->debug ) {
-	if( a->bufcount && fwrite(a->buffer, a->bufcount, 1, a->debug ) != 1 )
+    if( a->ctx->debug ) {
+	if( a->bufpos && fwrite(a->buf, a->bufpos, 1, a->ctx->debug ) != 1 )
 	    BUG();
-	if( inlen && fwrite(inbuf, inlen, 1, a->debug ) != 1 )
+	if( inlen && fwrite(inbuf, inlen, 1, a->ctx->debug ) != 1 )
 	    BUG();
     }
-    for(r=a->list; r; r = r->next ) {
-	(*r->write)( &r->context.c, a->buffer, a->bufcount );
+    for(r=a->ctx->list; r; r = r->next ) {
+	if( a->bufpos )
+	    (*r->write)( &r->context.c, a->buf, a->bufpos );
 	(*r->write)( &r->context.c, inbuf, inlen );
     }
-    a->bufcount = 0;
+    a->bufpos = 0;
+}
+
+
+void
+gcry_md_write( GCRY_MD_HD hd, const byte *inbuf, size_t inlen)
+{
+    md_write( hd, (byte*)inbuf, inlen );
 }
 
 
 
-void
-md_final(MD_HANDLE a)
+static void
+md_final(GCRY_MD_HD a)
 {
     struct md_digest_list_s *r;
 
-    if( a->finalized )
+    if( a->ctx->finalized )
 	return;
 
-    if( a->bufcount )
+    if( a->bufpos )
 	md_write( a, NULL, 0 );
 
-    for(r=a->list; r; r = r->next ) {
+    for(r=a->ctx->list; r; r = r->next ) {
 	(*r->final)( &r->context.c );
     }
-    a->finalized = 1;
+    a->ctx->finalized = 1;
+}
+
+
+int
+gcry_md_ctl( GCRY_MD_HD hd, int cmd, byte *buffer, size_t buflen)
+{
+    if( cmd == GCRYCTL_FINALIZE )
+	md_final( hd );
+    else
+	return GCRYERR_INV_OP;
+    return 0;
 }
 
 
 /****************
  * if ALGO is null get the digest for the used algo (which should be only one)
  */
-byte *
-md_read( MD_HANDLE a, int algo )
+static byte *
+md_read( GCRY_MD_HD a, int algo )
 {
     struct md_digest_list_s *r;
 
     if( !algo ) {  /* return the first algorithm */
-	if( (r=a->list) ) {
+	if( (r=a->ctx->list) ) {
 	    if( r->next )
 		log_debug("more than algorithm in md_read(0)\n");
 	    return (*r->read)( &r->context.c );
 	}
     }
     else {
-	for(r=a->list; r; r = r->next )
+	for(r=a->ctx->list; r; r = r->next )
 	    if( r->algo == algo )
 		return (*r->read)( &r->context.c );
     }
     BUG();
     return NULL;
+}
+
+/****************
+ * Read out the complete digest, this function implictly finalizes
+ * the hash.
+ */
+byte *
+gcry_md_read( GCRY_MD_HD hd, int algo )
+{
+    gcry_md_ctl( hd, GCRYCTL_FINALIZE, NULL, 0 );
+    return md_read( hd, algo);
 }
 
 
@@ -388,22 +527,23 @@ md_read( MD_HANDLE a, int algo )
  * hold the complete digest, the buffer is filled with as many bytes are
  * possible and this value is returned.
  */
-int
-md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen )
+#if 0
+static int
+md_digest( GCRY_MD_HD a, int algo, byte *buffer, int buflen )
 {
     struct md_digest_list_s *r = NULL;
     char *context;
     char *digest;
 
-    if( a->bufcount )
+    if( a->bufpos )
 	md_write( a, NULL, 0 );
 
     if( !algo ) {  /* return digest for the first algorithm */
-	if( (r=a->list) && r->next )
+	if( (r=a->ctx->list) && r->next )
 	    log_debug("more than algorithm in md_digest(0)\n");
     }
     else {
-	for(r=a->list; r; r = r->next )
+	for(r=a->ctx->list; r; r = r->next )
 	    if( r->algo == algo )
 		break;
     }
@@ -414,9 +554,9 @@ md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen )
 	return r->mdlen;
 
     /* I don't want to change the interface, so I simply work on a copy
-     * the context (extra overhead - should be fixed)*/
-    context = a->secure ? m_alloc_secure( r->contextsize )
-			: m_alloc( r->contextsize );
+     * of the context (extra overhead - should be fixed)*/
+    context = a->ctx->secure ? m_alloc_secure( r->contextsize )
+			     : m_alloc( r->contextsize );
     memcpy( context, r->context.c, r->contextsize );
     (*r->final)( context );
     digest = (*r->read)( context );
@@ -428,14 +568,26 @@ md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen )
     m_free(context);
     return buflen;
 }
+#endif
 
-
+/****************
+ * Read out an intermediate digest.
+ */
 int
-md_get_algo( MD_HANDLE a )
+gcry_md_get( GCRY_MD_HD hd, int algo, byte *buffer, int buflen )
+{
+    /*md_digest ... */
+    return GCRYERR_INTERNAL;
+}
+
+
+
+static int
+md_get_algo( GCRY_MD_HD a )
 {
     struct md_digest_list_s *r;
 
-    if( (r=a->list) ) {
+    if( (r=a->ctx->list) ) {
 	if( r->next )
 	    log_error("WARNING: more than algorithm in md_get_algo()\n");
 	return r->algo;
@@ -443,10 +595,18 @@ md_get_algo( MD_HANDLE a )
     return 0;
 }
 
+
+int
+gcry_md_get_algo( GCRY_MD_HD hd )
+{
+    return md_get_algo( hd ); /* fixme: we need error handling */
+}
+
+
 /****************
  * Return the length of the digest
  */
-int
+static int
 md_digest_length( int algo )
 {
     struct md_digest_list_s *r;
@@ -457,14 +617,35 @@ md_digest_length( int algo )
 		return r->mdlen;
 	}
     } while( !r && load_digest_module( algo ) );
-    log_error("WARNING: no length for md algo %d\n", algo);
     return 0;
+}
+
+/****************
+ * Return the length of the digest in bytes.
+ * This function will return 0 in case of errors.
+ */
+unsigned int
+gcry_md_get_algo_dlen( int algo )
+{
+    /* we do some very quick checks here */
+    switch( algo )
+    {
+      case GCRY_MD_MD5: return 16;
+      case GCRY_MD_SHA1:
+      case GCRY_MD_RMD160: return 20;
+      default: {
+	    int len = md_digest_length( algo );
+	    if( !len )
+		set_lasterr( GCRYERR_INV_ALGO );
+	    return 0;
+	}
+    }
 }
 
 
 /* Hmmm: add a mode to enumerate the OIDs
  *	to make g10/sig-check.c more portable */
-const byte *
+static const byte *
 md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 {
     struct md_digest_list_s *r;
@@ -485,31 +666,92 @@ md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 }
 
 
+
+/****************
+ * Return information about the given cipher algorithm
+ * WHAT select the kind of information returned:
+ *  GCRYCTL_TEST_ALGO:
+ *	Returns 0 when the specified algorithm is available for use.
+ *	buffer and nbytes must be zero.
+ *  GCRYCTL_GET_ASNOID:
+ *	Return the ASNOID of the algorithm in buffer. if buffer is NULL, only
+ *	the required length is returned.
+ *
+ * On error the value -1 is returned and the error reason may be
+ * retrieved by gcry_errno().
+ * Note:  Because this function is in most caes used to return an
+ * integer value, we can make it easier for the caller to just look at
+ * the return value.  The caller will in all cases consult the value
+ * and thereby detecting whether a error occured or not (i.e. while checking
+ * the block size)
+ */
+int
+gcry_md_algo_info( int algo, int what, void *buffer, size_t *nbytes)
+{
+    switch( what ) {
+      case GCRYCTL_TEST_ALGO:
+	if( buffer || nbytes ) {
+	    set_lasterr( GCRYERR_INV_ARG );
+	    return -1;
+	}
+	if( check_digest_algo( algo ) ) {
+	    set_lasterr( GCRYERR_INV_ALGO );
+	    return -1;
+	}
+	break;
+
+      case GCRYCTL_GET_ASNOID: {
+	    size_t asnlen;
+	    const char *asn = md_asn_oid( algo, &asnlen, NULL );
+	    if( buffer && *nbytes >= asnlen ) {
+		memcpy( buffer, asn, asnlen );
+		*nbytes = asnlen;
+		return 0;
+	    }
+	    if( !buffer && nbytes ) {
+		*nbytes = asnlen;
+		return 0;
+	    }
+	    set_lasterr( buffer ? GCRYERR_TOO_SHORT : GCRYERR_INV_ARG );
+	    return -1;
+	}
+	break;
+
+      default:
+	set_lasterr( GCRYERR_INV_OP );
+	return -1;
+    }
+    return 0;
+}
+
+
+
+
 void
-md_start_debug( MD_HANDLE md, const char *suffix )
+md_start_debug( GCRY_MD_HD md, const char *suffix )
 {
     static int idx=0;
     char buf[25];
 
-    if( md->debug ) {
+    if( md->ctx->debug ) {
 	log_debug("Oops: md debug already started\n");
 	return;
     }
     idx++;
     sprintf(buf, "dbgmd-%05d.%.10s", idx, suffix );
-    md->debug = fopen(buf, "w");
-    if( !md->debug )
+    md->ctx->debug = fopen(buf, "w");
+    if( !md->ctx->debug )
 	log_debug("md debug: can't open %s\n", buf );
 }
 
 void
-md_stop_debug( MD_HANDLE md )
+md_stop_debug( GCRY_MD_HD md )
 {
-    if( md->debug ) {
-	if( md->bufcount )
+    if( md->ctx->debug ) {
+	if( md->bufpos )
 	    md_write( md, NULL, 0 );
-	fclose(md->debug);
-	md->debug = NULL;
+	fclose(md->ctx->debug);
+	md->ctx->debug = NULL;
     }
   #ifdef HAVE_U64_TYPEDEF
     {  /* a kludge to pull in the __muldi3 for Solaris */
@@ -519,5 +761,27 @@ md_stop_debug( MD_HANDLE md )
        c = a * b;
     }
   #endif
+}
+
+
+
+/****************
+ * Return information about the digest handle.
+ *  GCRYCTL_IS_SECURE:
+ *	Returns 1 when the handle works on secured memory
+ *	otherwise 0 is returned.  There is no error return.
+ */
+int
+gcry_md_info( GCRY_MD_HD h, int cmd, void *buffer, size_t *nbytes)
+{
+    switch( cmd ) {
+      case GCRYCTL_IS_SECURE:
+	return h->ctx->secure;
+
+      default:
+	set_lasterr( GCRYERR_INV_OP );
+	return -1;
+    }
+    return 0;
 }
 

@@ -1,5 +1,55 @@
-Sat Sep 18 12:16:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
 
+	* misc.c (openpgp_cipher_test_algo): New.
+	(openpgp_pk_test_algo): New.
+	(openpgp_md_test_algo): New.
+
+	* g10.c (build_list): Changed to use the new functions from libgcrypt.
+
+	* ringedit.c (enum_keyblocks): Set .rt to 0 on open.
+
+	* encode.c (encode_simple): Use new CTB when we don't have the
+	length of the file.  This is somewhat strange as the comment above
+	indicates that this part is actually fixed for PGP 5 - maybe I simply
+	lost the source line, tsss.
+
+	* sign.c (clearsign_file): Avoid duplicated Entries in the "Hash:"
+	line.  Those headers are now only _not_ printed when there are
+	only old-style keys _and_ all hashs are MD5.
+
+	(clearsign_file): Use gcry_md_test_algo() and gcry_md_algo_name().
+
+	* openfile.c (make_outfile_name): Use case-insenstive compare for
+	DOS systems.  Add ".pgp" to the list of know extensions.
+	(open_outfile): For DOS systems try to replace the suffix instead of
+	appending it.
+
+	* encr-data.c (decrypt_data): Reset error on a weak key.
+
+	* cipher.c: Replaced the cipher and digest functions by the gcry_ ones.
+	* seckey-cert.c: Ditto.
+	* seskey.c: Ditto.
+	* g10.c (print_mds): Replaced digst functions with the new gcry_ ones.
+	* keyid.c: Ditto.
+	* mainproc.c: Ditto.
+	* passphrase.c: Ditto.
+	* sig-check.c: Ditto.
+	* sign.c: Ditto.
+
+	* pkclist.c (do_edit_ownertrust): Made the answer string const.
+
+	* basicdefs.h: New.  Move some defs and decl to this header.
+
+	* openfile.c (open_outfile): Fixed the 8dot3 handling.
+
+	* passphrase.c (passphrase_to_dek): Print uid using utf8 func.
+	* delkey.c (delete_key): Ditto.
+	* pkclist.c (show_paths,do_edit_ownertrust,do_we_trust): Ditto
+	(do_we_trust_pre): Ditto.
+	* trustdb.c (print_user_id,check_uidsigs): Ditto.
+	* revoke.c (gen_revoke,ask_revoke_sig): Ditto.
+
+Sat Sep 18 12:16:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* filter.h: Changed cipher handle types to the the GCRY_xxx ones.
 	replaces include cipher by system header include gcrypt.h.

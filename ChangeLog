@@ -1,3 +1,13 @@
+Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* README-alpha: New
+
+	* configure.in: Fixed quoting in test for development version.
+
+	* THANKS: Add entries for Michael, Brenno and J Horacio who did
+	very nice Howto documents - I apoligize for forgetting to mention them
+	earlier.
+
 Fri Sep 17 12:56:42 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

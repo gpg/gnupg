@@ -1,3 +1,8 @@
+Tue Oct 26 14:10:21 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* commit: Remove leading and trailing empty lines when copying
+	Changes to Changelog
+
 Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

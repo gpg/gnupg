@@ -23,42 +23,43 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include <gcrypt.h>
 #include "util.h"
 #include "packet.h"
 #include "memory.h"
 #include "mpi.h"
 #include "keydb.h"
-#include "cipher.h"
 #include "main.h"
 #include "status.h"
 #include "i18n.h"
 
 struct cmp_help_context_s {
     PKT_signature *sig;
-    MD_HANDLE md;
+    GCRY_MD_HD md;
 };
 
 
-static int do_signature_check( PKT_signature *sig, MD_HANDLE digest,
+static int do_signature_check( PKT_signature *sig, GCRY_MD_HD digest,
 						      u32 *r_expire );
 static int do_check( PKT_public_key *pk, PKT_signature *sig,
-						MD_HANDLE digest );
+						GCRY_MD_HD digest );
 
 
 /****************
  * Check the signature which is contained in SIG.
- * The MD_HANDLE should be currently open, so that this function
+ * The GCRY_MD_HD should be currently open, so that this function
  * is able to append some data, before finalizing the digest.
  */
 int
-signature_check( PKT_signature *sig, MD_HANDLE digest )
+signature_check( PKT_signature *sig, GCRY_MD_HD digest )
 {
     u32 dummy;
     return do_signature_check( sig, digest, &dummy );
 }
 
 static int
-do_signature_check( PKT_signature *sig, MD_HANDLE digest, u32 *r_expire )
+do_signature_check( PKT_signature *sig, GCRY_MD_HD digest, u32 *r_expire )
 {
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
@@ -84,36 +85,37 @@ do_signature_check( PKT_signature *sig, MD_HANDLE digest, u32 *r_expire )
 	 * not possible to sign more than one identical document within
 	 * one second.	Some remote bacth processing applications might
 	 * like this feature here */
-	MD_HANDLE md;
+	GCRY_MD_HD md;
 	u32 a = sig->timestamp;
 	int i, nsig = pubkey_get_nsig( sig->pubkey_algo );
 	byte *p, *buffer;
 
-	md = md_open( DIGEST_ALGO_RMD160, 0);
-	md_putc( digest, sig->pubkey_algo );
-	md_putc( digest, sig->digest_algo );
-	md_putc( digest, (a >> 24) & 0xff );
-	md_putc( digest, (a >> 16) & 0xff );
-	md_putc( digest, (a >>	8) & 0xff );
-	md_putc( digest,  a	   & 0xff );
+	if( !(md = gcry_md_open( DIGEST_ALGO_RMD160, 0)) )
+	    BUG();
+	gcry_md_putc( digest, sig->pubkey_algo );
+	gcry_md_putc( digest, sig->digest_algo );
+	gcry_md_putc( digest, (a >> 24) & 0xff );
+	gcry_md_putc( digest, (a >> 16) & 0xff );
+	gcry_md_putc( digest, (a >>  8) & 0xff );
+	gcry_md_putc( digest,  a	& 0xff );
 	for(i=0; i < nsig; i++ ) {
 	    unsigned n = mpi_get_nbits( sig->data[i]);
 
-	    md_putc( md, n>>8);
-	    md_putc( md, n );
+	    gcry_md_putc( md, n>>8);
+	    gcry_md_putc( md, n );
 	    p = mpi_get_buffer( sig->data[i], &n, NULL );
-	    md_write( md, p, n );
+	    gcry_md_write( md, p, n );
 	    m_free(p);
 	}
-	md_final( md );
-	p = make_radix64_string( md_read( md, 0 ), 20 );
+	gcry_md_final( md );
+	p = make_radix64_string( gcry_md_read( md, 0 ), 20 );
 	buffer = m_alloc( strlen(p) + 60 );
 	sprintf( buffer, "%s %s %lu",
 		 p, strtimestamp( sig->timestamp ), (ulong)sig->timestamp );
 	write_status_text( STATUS_SIG_ID, buffer );
 	m_free(buffer);
 	m_free(p);
-	md_close(md);
+	gcry_md_close(md);
     }
 
     return rc;
@@ -123,11 +125,11 @@ do_signature_check( PKT_signature *sig, MD_HANDLE digest, u32 *r_expire )
 #if 0 /* not anymore used */
 /****************
  * Check the MDC which is contained in SIG.
- * The MD_HANDLE should be currently open, so that this function
+ * The GCRY_MD_HD should be currently open, so that this function
  * is able to append some data, before finalizing the digest.
  */
 int
-mdc_kludge_check( PKT_signature *sig, MD_HANDLE digest )
+mdc_kludge_check( PKT_signature *sig, GCRY_MD_HD digest )
 {
     int rc=0;
 
@@ -139,23 +141,23 @@ mdc_kludge_check( PKT_signature *sig, MD_HANDLE digest )
 
     /* complete the digest */
     if( sig->version >= 4 )
-	md_putc( digest, sig->version );
-    md_putc( digest, sig->sig_class );
+	gcry_md_putc( digest, sig->version );
+    gcry_md_putc( digest, sig->sig_class );
     if( sig->version < 4 ) {
 	u32 a = sig->timestamp;
-	md_putc( digest, (a >> 24) & 0xff );
-	md_putc( digest, (a >> 16) & 0xff );
-	md_putc( digest, (a >>	8) & 0xff );
-	md_putc( digest,  a	   & 0xff );
+	gcry_md_putc( digest, (a >> 24) & 0xff );
+	gcry_md_putc( digest, (a >> 16) & 0xff );
+	gcry_md_putc( digest, (a >>  8) & 0xff );
+	gcry_md_putc( digest,  a	& 0xff );
     }
     else {
 	byte buf[6];
 	size_t n;
-	md_putc( digest, sig->pubkey_algo );
-	md_putc( digest, sig->digest_algo );
+	gcry_md_putc( digest, sig->pubkey_algo );
+	gcry_md_putc( digest, sig->digest_algo );
 	if( sig->hashed_data ) {
 	    n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-	    md_write( digest, sig->hashed_data, n+2 );
+	    gcry_md_write( digest, sig->hashed_data, n+2 );
 	    n += 6;
 	}
 	else
@@ -167,7 +169,7 @@ mdc_kludge_check( PKT_signature *sig, MD_HANDLE digest )
 	buf[3] = n >> 16;
 	buf[4] = n >>  8;
 	buf[5] = n;
-	md_write( digest, buf, 6 );
+	gcry_md_write( digest, buf, 6 );
     }
     md_final( digest );
 
@@ -221,7 +223,7 @@ cmp_help( void *opaque, MPI result )
     size_t mdlen, asnlen;
     struct cmp_help_context_s *ctx = opaque;
     PKT_signature *sig = ctx->sig;
-    MD_HANDLE digest = ctx->md;
+    GCRY_MD_HD digest = ctx->md;
 
     old_enc = 0;
     for(i=j=0; (c=mpi_getbyte(result, i)) != -1; i++ ) {
@@ -284,7 +286,7 @@ cmp_help( void *opaque, MPI result )
 
 
 static int
-do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
+do_check( PKT_public_key *pk, PKT_signature *sig, GCRY_MD_HD digest )
 {
     MPI result = NULL;
     int rc=0;
@@ -323,33 +325,33 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
     }
 
 
-    if( (rc=check_digest_algo(sig->digest_algo)) )
+    if( (rc=openpgp_md_test_algo(sig->digest_algo)) )
 	return rc;
-    if( (rc=check_pubkey_algo(sig->pubkey_algo)) )
+    if( (rc=openpgp_pk_test_algo(sig->pubkey_algo)) )
 	return rc;
 
     /* make sure the digest algo is enabled (in case of a detached signature)*/
-    md_enable( digest, sig->digest_algo );
+    gcry_md_enable( digest, sig->digest_algo );
 
     /* complete the digest */
     if( sig->version >= 4 )
-	md_putc( digest, sig->version );
-    md_putc( digest, sig->sig_class );
+	gcry_md_putc( digest, sig->version );
+    gcry_md_putc( digest, sig->sig_class );
     if( sig->version < 4 ) {
 	u32 a = sig->timestamp;
-	md_putc( digest, (a >> 24) & 0xff );
-	md_putc( digest, (a >> 16) & 0xff );
-	md_putc( digest, (a >>	8) & 0xff );
-	md_putc( digest,  a	   & 0xff );
+	gcry_md_putc( digest, (a >> 24) & 0xff );
+	gcry_md_putc( digest, (a >> 16) & 0xff );
+	gcry_md_putc( digest, (a >>  8) & 0xff );
+	gcry_md_putc( digest,  a	& 0xff );
     }
     else {
 	byte buf[6];
 	size_t n;
-	md_putc( digest, sig->pubkey_algo );
-	md_putc( digest, sig->digest_algo );
+	gcry_md_putc( digest, sig->pubkey_algo );
+	gcry_md_putc( digest, sig->digest_algo );
 	if( sig->hashed_data ) {
 	    n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-	    md_write( digest, sig->hashed_data, n+2 );
+	    gcry_md_write( digest, sig->hashed_data, n+2 );
 	    n += 6;
 	}
 	else
@@ -361,9 +363,9 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 	buf[3] = n >> 16;
 	buf[4] = n >>  8;
 	buf[5] = n;
-	md_write( digest, buf, 6 );
+	gcry_md_write( digest, buf, 6 );
     }
-    md_final( digest );
+    gcry_md_final( digest );
 
     result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
 				      mpi_get_nbits(pk->pkey[0]));
@@ -385,7 +387,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
 
 
 static void
-hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
+hash_uid_node( KBNODE unode, GCRY_MD_HD md, PKT_signature *sig )
 {
     PKT_user_id *uid = unode->pkt->pkt.user_id;
 
@@ -397,9 +399,9 @@ hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
 	buf[2] = uid->len >> 16;
 	buf[3] = uid->len >>  8;
 	buf[4] = uid->len;
-	md_write( md, buf, 5 );
+	gcry_md_write( md, buf, 5 );
     }
-    md_write( md, uid->name, uid->len );
+    gcry_md_write( md, uid->name, uid->len );
 }
 
 /****************
@@ -417,7 +419,7 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 int
 check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 {
-    MD_HANDLE md;
+    GCRY_MD_HD md;
     PKT_public_key *pk;
     PKT_signature *sig;
     int algo;
@@ -439,24 +441,26 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 		      sig->flags.valid? "good":"bad" );
   #endif
 
-    if( (rc=check_digest_algo(algo)) )
+    if( (rc=openpgp_md_test_algo(algo)) )
 	return rc;
 
     if( sig->sig_class == 0x20 ) {
-	md = md_open( algo, 0 );
+	if( !(md = gcry_md_open( algo, 0 )) )
+	    BUG();
 	hash_public_key( md, pk );
 	rc = do_check( pk, sig, md );
-	md_close(md);
+	gcry_md_close(md);
     }
     else if( sig->sig_class == 0x28 ) { /* subkey revocation */
 	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBLIC_SUBKEY );
 
 	if( snode ) {
-	    md = md_open( algo, 0 );
+	    if( !(md = gcry_md_open( algo, 0 )) )
+		BUG();
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md );
-	    md_close(md);
+	    gcry_md_close(md);
 	}
 	else {
 	    log_error("no subkey for subkey revocation packet\n");
@@ -474,11 +478,12 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
 		    *is_selfsig = 1;
 	    }
-	    md = md_open( algo, 0 );
+	    if( !(md = gcry_md_open( algo, 0 )) )
+		BUG();
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
 	    rc = do_check( pk, sig, md );
-	    md_close(md);
+	    gcry_md_close(md);
 	}
 	else {
 	    log_error("no subkey for key signature packet\n");
@@ -492,7 +497,8 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    u32 keyid[2];
 
 	    keyid_from_pk( pk, keyid );
-	    md = md_open( algo, 0 );
+	    if( !(md = gcry_md_open( algo, 0 )) )
+		BUG();
 	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
@@ -502,7 +508,7 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig, u32 *r_expire)
 	    }
 	    else
 		rc = do_signature_check( sig, md, r_expire );
-	    md_close(md);
+	    gcry_md_close(md);
 	}
 	else {
 	    log_error("no user ID for key signature packet\n");

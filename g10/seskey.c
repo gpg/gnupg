@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include <gcrypt.h>
 #include "util.h"
 #include "cipher.h"
 #include "mpi.h"
@@ -36,19 +38,28 @@
 void
 make_session_key( DEK *dek )
 {
-    CIPHER_HANDLE chd;
+    GCRY_CIPHER_HD chd;
     int i, rc;
 
-    dek->keylen = cipher_get_keylen( dek->algo ) / 8;
+    dek->keylen = gcry_cipher_get_algo_keylen( dek->algo );
 
-    chd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+    if( !(chd = gcry_cipher_open( dek->algo, GCRY_CIPHER_MODE_CFB,
+				       GCRY_CIPHER_SECURE
+				       | (dek->algo >= 100 ?
+					   0 : GCRY_CIPHER_ENABLE_SYNC) ))
+			  ) {
+	BUG();
+    }
+
     randomize_buffer( dek->key, dek->keylen, 1 );
     for(i=0; i < 16; i++ ) {
-	rc = cipher_setkey( chd, dek->key, dek->keylen );
+	rc = gcry_cipher_setkey( chd, dek->key, dek->keylen );
 	if( !rc ) {
-	    cipher_close( chd );
+	    gcry_cipher_close( chd );
 	    return;
 	}
+	if( rc != GCRYERR_WEAK_KEY )
+	    BUG();
 	log_info(_("weak key created - retrying\n") );
 	/* Renew the session key until we get a non-weak key. */
 	randomize_buffer( dek->key, dek->keylen, 1 );
@@ -141,8 +152,8 @@ encode_session_key( DEK *dek, unsigned nbits )
 
 
 static MPI
-do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
-				   const byte *asn, size_t asnlen )
+do_encode_md( GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
+				       const byte *asn, size_t asnlen )
 {
     int nframe = (nbits+7) / 8;
     byte *frame;
@@ -159,7 +170,8 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
      *
      * PAD consists of FF bytes.
      */
-    frame = md_is_secure(md)? m_alloc_secure( nframe ) : m_alloc( nframe );
+    frame = gcry_md_is_secure(md)? m_alloc_secure( nframe )
+				 : m_alloc( nframe );
     n = 0;
     frame[n++] = 0;
     frame[n++] = algo;
@@ -168,9 +180,9 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
     memset( frame+n, 0xff, i ); n += i;
     frame[n++] = 0;
     memcpy( frame+n, asn, asnlen ); n += asnlen;
-    memcpy( frame+n, md_read(md, algo), len ); n += len;
+    memcpy( frame+n, gcry_md_read(md, algo), len ); n += len;
     assert( n == nframe );
-    a = md_is_secure(md)?
+    a = gcry_md_is_secure(md)?
 	 mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
 	 : mpi_alloc( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
     mpi_set_buffer( a, frame, nframe, 0 );
@@ -180,24 +192,33 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
 
 
 MPI
-encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo, unsigned nbits )
+encode_md_value( int pubkey_algo, GCRY_MD_HD md, int hash_algo, unsigned nbits )
 {
-    int algo = hash_algo? hash_algo : md_get_algo(md);
-    const byte *asn;
-    size_t asnlen, mdlen;
+    int algo = hash_algo? hash_algo : gcry_md_get_algo(md);
     MPI frame;
 
     if( pubkey_algo == PUBKEY_ALGO_DSA ) {
-	frame = md_is_secure(md)? mpi_alloc_secure((md_digest_length(hash_algo)
+	frame = gcry_md_is_secure(md)? mpi_alloc_secure(
+				(gcry_md_get_algo_dlen(hash_algo)
 				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
-				: mpi_alloc((md_digest_length(hash_algo)
+				: mpi_alloc((gcry_md_get_algo_dlen(hash_algo)
 				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
-	mpi_set_buffer( frame, md_read(md, hash_algo),
-			       md_digest_length(hash_algo), 0 );
+	mpi_set_buffer( frame, gcry_md_read(md, hash_algo),
+			       gcry_md_get_algo_dlen(hash_algo), 0 );
     }
     else {
-       asn = md_asn_oid( algo, &asnlen, &mdlen );
-       frame = do_encode_md( md, algo, mdlen, nbits, asn, asnlen );
+	byte *asn;
+	size_t asnlen;
+
+	if( gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, NULL, &asnlen ) )
+	    log_fatal("can't get OID of algo %d: %s\n",
+					    algo, gcry_strerror(-1));
+	asn = m_alloc( asnlen );
+	if( gcry_md_algo_info( algo, GCRYCTL_GET_ASNOID, asn, &asnlen ) )
+	    BUG();
+	frame = do_encode_md( md, algo, gcry_md_get_algo_dlen( algo ),
+						     nbits, asn, asnlen );
+	m_free( asn );
     }
     return frame;
 }

@@ -25,9 +25,8 @@
   #include <gdbm.h>
 #endif
 
-#include "types.h"
+#include "basicdefs.h"
 #include "packet.h"
-#include "cipher.h"
 
 #define MAX_FINGERPRINT_LEN 20
 
@@ -83,7 +82,6 @@ struct keyblock_pos_struct {
 typedef struct keyblock_pos_struct KBPOS;
 
 /* structure to hold a couple of public key certificates */
-typedef struct pk_list *PK_LIST;
 struct pk_list {
     PK_LIST next;
     PKT_public_key *pk;
@@ -91,7 +89,6 @@ struct pk_list {
 };
 
 /* structure to hold a couple of secret key certificates */
-typedef struct sk_list *SK_LIST;
 struct sk_list {
     SK_LIST next;
     PKT_secret_key *sk;

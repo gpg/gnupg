@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 
-SUBDIRS = gph
+##SUBDIRS = gph
 
 EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP
 

@@ -54,5 +54,11 @@ and after about half a day in the rsync snapshots.
     for the last one.  This happens on some systems when not using the
     GNU ld.  This need to be fixed in libtool.
 
+[ **] #25 1999-10-04  <wk@gnupg.org> 1.0
+    Validity check based on user name is only done when listing a key;
+    the key ID based checking (selecting the user ID with the most
+    validity) is used in all other cases.  The Edit menu does not have
+    a way to disbly user ID based validity.
 
-Next #25
+
+Next #26

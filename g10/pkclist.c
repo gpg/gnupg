@@ -27,6 +27,7 @@
 
 #include "options.h"
 #include "packet.h"
+#include "main.h"
 #include "errors.h"
 #include "keydb.h"
 #include "memory.h"
@@ -149,7 +150,7 @@ show_paths( ulong lid, int only_first )
 	putchar(' ');
 
 	p = get_user_id( keyid, &n );
-	tty_print_string( p, n ),
+	tty_print_utf8_string( p, n ),
 	m_free(p);
 	tty_printf("\"\n");
 	free_public_key( pk );
@@ -194,7 +195,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 
     for(;;) {
 	/* a string with valid answers */
-	char *ans = _("sSmMqQ");
+	const char *ans = _("sSmMqQ");
 
 	if( !did_help ) {
 	    if( !mode ) {
@@ -203,7 +204,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 			  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 			  (ulong)keyid[1], datestr_from_pk( pk ) );
 		p = get_user_id( keyid, &n );
-		tty_print_string( p, n ),
+		tty_print_utf8_string( p, n ),
 		m_free(p);
 		tty_printf("\"\n");
 		print_fpr( pk );
@@ -460,7 +461,7 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], datestr_from_pk( pk ) );
 	p = get_user_id( keyid, &n );
-	tty_print_string( p, n ),
+	tty_print_utf8_string( p, n ),
 	m_free(p);
 	tty_printf("\"\n");
 	print_fpr( pk );
@@ -908,10 +909,10 @@ algo_available( int preftype, int algo )
     if( preftype == PREFTYPE_SYM ) {
 	if( algo == CIPHER_ALGO_TWOFISH )
 	    return 0;  /* we don't want to generate Twofish messages for now*/
-	return algo && !check_cipher_algo( algo );
+	return algo && !openpgp_cipher_test_algo( algo );
     }
     else if( preftype == PREFTYPE_HASH ) {
-	return algo && !check_digest_algo( algo );
+	return algo && !openpgp_md_test_algo( algo );
     }
     else if( preftype == PREFTYPE_COMPR ) {
 	return !algo || algo == 1 || algo == 2;

@@ -22,7 +22,9 @@
 
 #include <gcrypt.h>
 
-#include "types.h"
+#include "basicdefs.h"
+
+
 
 typedef struct {
     GCRY_MD_HD md;	/* catch all */
@@ -81,6 +83,13 @@ typedef struct {
     int header;
     GCRY_MD_HD mdc_hash;
 } cipher_filter_context_t;
+
+
+typedef struct {
+    int header_okay;
+    PK_LIST pk_list;
+    cipher_filter_context_t cfx;
+} encrypt_filter_context_t;
 
 
 

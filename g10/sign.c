@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <gcrypt.h>
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
@@ -94,7 +95,7 @@ mk_notation_and_policy( PKT_signature *sig )
 
 static int
 do_sign( PKT_secret_key *sk, PKT_signature *sig,
-	 MD_HANDLE md, int digest_algo )
+	 GCRY_MD_HD md, int digest_algo )
 {
     MPI frame;
     byte *dp;
@@ -113,10 +114,10 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     print_pubkey_algo_note(sk->pubkey_algo);
 
     if( !digest_algo )
-	digest_algo = md_get_algo(md);
+	digest_algo = gcry_md_get_algo(md);
 
     print_digest_algo_note( digest_algo );
-    dp = md_read( md, digest_algo );
+    dp = gcry_md_read( md, digest_algo );
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
@@ -130,7 +131,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	if( opt.verbose ) {
 	    char *ustr = get_user_id_string( sig->keyid );
 	    log_info(_("%s signature from: %s\n"),
-		      pubkey_algo_to_string(sk->pubkey_algo), ustr );
+		      gcry_pk_algo_name(sk->pubkey_algo), ustr );
 	    m_free(ustr);
 	}
     }
@@ -140,7 +141,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 
 
 int
-complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md )
+complete_sig( PKT_signature *sig, PKT_secret_key *sk, GCRY_MD_HD md )
 {
     int rc=0;
 
@@ -273,11 +274,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* prepare to calculate the MD over the input */
     if( opt.textmode && !outfile )
 	iobuf_push_filter( inp, text_filter, &tfx );
-    mfx.md = md_open(0, 0);
+    if( !(mfx.md = gcry_md_open(0, 0)))
+	BUG();
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(mfx.md, hash_for(sk->pubkey_algo));
+	gcry_md_enable(mfx.md, hash_for(sk->pubkey_algo));
     }
 
     if( !multifile )
@@ -448,7 +450,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk;
 	PKT_signature *sig;
-	MD_HANDLE md;
+	GCRY_MD_HD md;
 
 	sk = sk_rover->sk;
 
@@ -462,37 +464,37 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	sig->timestamp = make_timestamp();
 	sig->sig_class = opt.textmode && !outfile? 0x01 : 0x00;
 
-	md = md_copy( mfx.md );
+	md = gcry_md_copy( mfx.md );
 
 	if( sig->version >= 4 ) {
 	    build_sig_subpkt_from_sig( sig );
-	    md_putc( md, sig->version );
+	    gcry_md_putc( md, sig->version );
 	}
 
 	mk_notation_and_policy( sig );
 
-	md_putc( md, sig->sig_class );
+	gcry_md_putc( md, sig->sig_class );
 	if( sig->version < 4 ) {
 	    u32 a = sig->timestamp;
-	    md_putc( md, (a >> 24) & 0xff );
-	    md_putc( md, (a >> 16) & 0xff );
-	    md_putc( md, (a >>	8) & 0xff );
-	    md_putc( md,  a	   & 0xff );
+	    gcry_md_putc( md, (a >> 24) & 0xff );
+	    gcry_md_putc( md, (a >> 16) & 0xff );
+	    gcry_md_putc( md, (a >>  8) & 0xff );
+	    gcry_md_putc( md,  a	& 0xff );
 	}
 	else {
 	    byte buf[6];
 	    size_t n;
 
-	    md_putc( md, sig->pubkey_algo );
-	    md_putc( md, sig->digest_algo );
+	    gcry_md_putc( md, sig->pubkey_algo );
+	    gcry_md_putc( md, sig->digest_algo );
 	    if( sig->hashed_data ) {
 		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-		md_write( md, sig->hashed_data, n+2 );
+		gcry_md_write( md, sig->hashed_data, n+2 );
 		n += 6;
 	    }
 	    else {
-		md_putc( md, 0 );  /* always hash the length of the subpacket*/
-		md_putc( md, 0 );
+		gcry_md_putc( md, 0 );	/* always hash the length of the subpacket*/
+		gcry_md_putc( md, 0 );
 		n = 6;
 	    }
 	    /* add some magic */
@@ -502,13 +504,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    buf[3] = n >> 16;
 	    buf[4] = n >>  8;
 	    buf[5] = n;
-	    md_write( md, buf, 6 );
+	    gcry_md_write( md, buf, 6 );
 
 	}
-	md_final( md );
+	gcry_md_final( md );
 
 	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo) );
-	md_close( md );
+	gcry_md_close( md );
 
 	if( !rc ) { /* and write it */
 	    init_packet(&pkt);
@@ -530,7 +532,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     else
 	iobuf_close(out);
     iobuf_close(inp);
-    md_close( mfx.md );
+    gcry_md_close( mfx.md );
     release_sk_list( sk_list );
     release_pk_list( pk_list );
     return rc;
@@ -545,7 +547,7 @@ int
 clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 {
     armor_filter_context_t afx;
-    MD_HANDLE textmd = NULL;
+    GCRY_MD_HD textmd = NULL;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     int rc = 0;
@@ -594,21 +596,26 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	}
     }
 
-    if( old_style || only_md5 )
+    if( old_style && only_md5 )
 	iobuf_writestr(out, "\n" );
     else {
-	const char *s;
 	int any = 0;
+	byte hashs_seen[256];
 
+	memset( hashs_seen, 0, sizeof hashs_seen );
 	iobuf_writestr(out, "Hash: " );
 	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	    PKT_secret_key *sk = sk_rover->sk;
-	    s = digest_algo_to_string( hash_for(sk->pubkey_algo) );
-	    if( s ) {
-		if( any )
-		    iobuf_put(out, ',' );
-		iobuf_writestr(out, s );
-		any = 1;
+	    int i = hash_for(sk->pubkey_algo);
+
+	    if( !hashs_seen[ i & 0xff ] ) {
+		if( !openpgp_md_test_algo( i ) ) {
+		    hashs_seen[ i & 0xff ] = 1;
+		    if( any )
+			iobuf_put(out, ',' );
+		    iobuf_writestr(out, gcry_md_algo_name( i ) );
+		    any = 1;
+		}
 	    }
 	}
 	assert(any);
@@ -620,10 +627,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     }
 
 
-    textmd = md_open(0, 0);
+    if( !(textmd = gcry_md_open(0, 0)) )
+	BUG();
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;
-	md_enable(textmd, hash_for(sk->pubkey_algo));
+	gcry_md_enable(textmd, hash_for(sk->pubkey_algo));
     }
     /*md_start_debug( textmd, "sign" );*/
     copy_clearsig_text( out, inp, textmd,
@@ -638,7 +646,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk;
 	PKT_signature *sig;
-	MD_HANDLE md;
+	GCRY_MD_HD md;
 
 	sk = sk_rover->sk;
 
@@ -652,36 +660,36 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	sig->timestamp = make_timestamp();
 	sig->sig_class = 0x01;
 
-	md = md_copy( textmd );
+	md = gcry_md_copy( textmd );
 	if( sig->version >= 4 ) {
 	    build_sig_subpkt_from_sig( sig );
-	    md_putc( md, sig->version );
+	    gcry_md_putc( md, sig->version );
 	}
 
 	mk_notation_and_policy( sig );
 
-	md_putc( md, sig->sig_class );
+	gcry_md_putc( md, sig->sig_class );
 	if( sig->version < 4 ) {
 	    u32 a = sig->timestamp;
-	    md_putc( md, (a >> 24) & 0xff );
-	    md_putc( md, (a >> 16) & 0xff );
-	    md_putc( md, (a >>	8) & 0xff );
-	    md_putc( md,  a	   & 0xff );
+	    gcry_md_putc( md, (a >> 24) & 0xff );
+	    gcry_md_putc( md, (a >> 16) & 0xff );
+	    gcry_md_putc( md, (a >>  8) & 0xff );
+	    gcry_md_putc( md,  a	& 0xff );
 	}
 	else {
 	    byte buf[6];
 	    size_t n;
 
-	    md_putc( md, sig->pubkey_algo );
-	    md_putc( md, sig->digest_algo );
+	    gcry_md_putc( md, sig->pubkey_algo );
+	    gcry_md_putc( md, sig->digest_algo );
 	    if( sig->hashed_data ) {
 		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-		md_write( md, sig->hashed_data, n+2 );
+		gcry_md_write( md, sig->hashed_data, n+2 );
 		n += 6;
 	    }
 	    else {
-		md_putc( md, 0 );  /* always hash the length of the subpacket*/
-		md_putc( md, 0 );
+		gcry_md_putc( md, 0 );	/* always hash the length of the subpacket*/
+		gcry_md_putc( md, 0 );
 		n = 6;
 	    }
 	    /* add some magic */
@@ -691,13 +699,13 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    buf[3] = n >> 16;
 	    buf[4] = n >>  8;
 	    buf[5] = n;
-	    md_write( md, buf, 6 );
+	    gcry_md_write( md, buf, 6 );
 
 	}
-	md_final( md );
+	gcry_md_final( md );
 
 	rc = do_sign( sk, sig, md, hash_for(sig->pubkey_algo) );
-	md_close( md );
+	gcry_md_close( md );
 
 	if( !rc ) { /* and write it */
 	    init_packet(&pkt);
@@ -719,7 +727,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     else
 	iobuf_close(out);
     iobuf_close(inp);
-    md_close( textmd );
+    gcry_md_close( textmd );
     release_sk_list( sk_list );
     return rc;
 }
@@ -741,7 +749,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 {
     PKT_signature *sig;
     int rc=0;
-    MD_HANDLE md;
+    GCRY_MD_HD md;
 
     assert( (sigclass >= 0x10 && sigclass <= 0x13)
 	    || sigclass == 0x20 || sigclass == 0x18
@@ -754,7 +762,8 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	  default:		digest_algo = DIGEST_ALGO_RMD160; break;
 	}
     }
-    md = md_open( digest_algo, 0 );
+    if( !(md = gcry_md_open( digest_algo, 0 )))
+	BUG();
 
     /* hash the public key certificate and the user id */
     hash_public_key( md, pk );
@@ -769,9 +778,9 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	    buf[2] = uid->len >> 16;
 	    buf[3] = uid->len >>  8;
 	    buf[4] = uid->len;
-	    md_write( md, buf, 5 );
+	    gcry_md_write( md, buf, 5 );
 	}
-	md_write( md, uid->name, uid->len );
+	gcry_md_write( md, uid->name, uid->len );
     }
     /* and make the signature packet */
     sig = m_alloc_clear( sizeof *sig );
@@ -790,29 +799,29 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     if( !rc ) {
 	mk_notation_and_policy( sig );
 	if( sig->version >= 4 )
-	    md_putc( md, sig->version );
-	md_putc( md, sig->sig_class );
+	    gcry_md_putc( md, sig->version );
+	gcry_md_putc( md, sig->sig_class );
 	if( sig->version < 4 ) {
 	    u32 a = sig->timestamp;
-	    md_putc( md, (a >> 24) & 0xff );
-	    md_putc( md, (a >> 16) & 0xff );
-	    md_putc( md, (a >>	8) & 0xff );
-	    md_putc( md,  a	   & 0xff );
+	    gcry_md_putc( md, (a >> 24) & 0xff );
+	    gcry_md_putc( md, (a >> 16) & 0xff );
+	    gcry_md_putc( md, (a >>  8) & 0xff );
+	    gcry_md_putc( md,  a	& 0xff );
 	}
 	else {
 	    byte buf[6];
 	    size_t n;
 
-	    md_putc( md, sig->pubkey_algo );
-	    md_putc( md, sig->digest_algo );
+	    gcry_md_putc( md, sig->pubkey_algo );
+	    gcry_md_putc( md, sig->digest_algo );
 	    if( sig->hashed_data ) {
 		n = (sig->hashed_data[0] << 8) | sig->hashed_data[1];
-		md_write( md, sig->hashed_data, n+2 );
+		gcry_md_write( md, sig->hashed_data, n+2 );
 		n += 6;
 	    }
 	    else {
-		md_putc( md, 0 );  /* always hash the length of the subpacket*/
-		md_putc( md, 0 );
+		gcry_md_putc( md, 0 );	/* always hash the length of the subpacket*/
+		gcry_md_putc( md, 0 );
 		n = 6;
 	    }
 	    /* add some magic */
@@ -822,15 +831,15 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	    buf[3] = n >> 16;
 	    buf[4] = n >>  8;
 	    buf[5] = n;
-	    md_write( md, buf, 6 );
+	    gcry_md_write( md, buf, 6 );
 
 	}
-	md_final(md);
+	gcry_md_final(md);
 
 	rc = complete_sig( sig, sk, md );
     }
 
-    md_close( md );
+    gcry_md_close( md );
     if( rc )
 	free_seckey_enc( sig );
     else

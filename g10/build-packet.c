@@ -242,7 +242,7 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
  * Make a hash value from the public key certificate
  */
 void
-hash_public_key( MD_HANDLE md, PKT_public_key *pk )
+hash_public_key( GCRY_MD_HD md, PKT_public_key *pk )
 {
     PACKET pkt;
     int rc = 0;
@@ -293,10 +293,10 @@ hash_public_key( MD_HANDLE md, PKT_public_key *pk )
 	    }
 	}
 	/* hash a header */
-	md_putc( md, 0x99 );
+	gcry_md_putc( md, 0x99 );
 	pktlen &= 0xffff; /* can't handle longer packets */
-	md_putc( md, pktlen >> 8 );
-	md_putc( md, pktlen & 0xff );
+	gcry_md_putc( md, pktlen >> 8 );
+	gcry_md_putc( md, pktlen & 0xff );
     }
     /* hash the packet body */
     while( (c=iobuf_get(a)) != -1 ) {
@@ -307,7 +307,7 @@ hash_public_key( MD_HANDLE md, PKT_public_key *pk )
 	    i=0;
 	}
       #endif
-	md_putc( md, c );
+	gcry_md_putc( md, c );
     }
   #if 0
     putc('\n', fp);

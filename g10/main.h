@@ -19,22 +19,16 @@
  */
 #ifndef G10_MAIN_H
 #define G10_MAIN_H
-#include "types.h"
+
+#include <gcrypt.h>
+#include "basicdefs.h"
 #include "iobuf.h"
 #include "mpi.h"
-#include "cipher.h"
 #include "keydb.h"
 
-#define DEFAULT_CIPHER_ALGO  CIPHER_ALGO_BLOWFISH
-#define DEFAULT_PUBKEY_ALGO  PUBKEY_ALGO_ELGAMAL
-#define DEFAULT_DIGEST_ALGO  DIGEST_ALGO_RMD160
-
-
-typedef struct {
-    int header_okay;
-    PK_LIST pk_list;
-    cipher_filter_context_t cfx;
-} encrypt_filter_context_t;
+#define DEFAULT_CIPHER_ALGO  GCRY_CIPHER_BLOWFISH
+#define DEFAULT_PUBKEY_ALGO  GCRY_PUBKEY_ELGAMAL
+#define DEFAULT_DIGEST_ALGO  GCRY_MD_RMD160
 
 
 /*-- g10.c --*/
@@ -61,6 +55,10 @@ u16 checksum_mpi( MPI a );
 u16 checksum_mpi_counted_nbits( MPI a );
 u32 buffer_to_u32( const byte *buffer );
 
+int openpgp_cipher_test_algo( int algo );
+int openpgp_pk_test_algo( int algo );
+int openpgp_md_test_algo( int algo );
+
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
 
@@ -73,7 +71,7 @@ int encrypt_filter( void *opaque, int control,
 
 
 /*-- sign.c --*/
-int complete_sig( PKT_signature *sig, PKT_secret_key *sk, MD_HANDLE md );
+int complete_sig( PKT_signature *sig, PKT_secret_key *sk, GCRY_MD_HD md );
 int sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       int do_encrypt, STRLIST remusr, const char *outfile );
 int clearsign_file( const char *fname, STRLIST locusr, const char *outfile );
@@ -108,7 +106,7 @@ void copy_options_file( const char *destdir );
 /*-- seskey.c --*/
 void make_session_key( DEK *dek );
 MPI encode_session_key( DEK *dek, unsigned nbits );
-MPI encode_md_value( int pubkey_algo,  MD_HANDLE md,
+MPI encode_md_value( int pubkey_algo,  GCRY_MD_HD md,
 		     int hash_algo, unsigned nbits );
 
 /*-- comment.c --*/
@@ -143,7 +141,7 @@ int verify_signatures( int nfiles, char **files );
 int decrypt_message( const char *filename );
 
 /*-- plaintext.c --*/
-int hash_datafiles( MD_HANDLE md, MD_HANDLE md2,
+int hash_datafiles( GCRY_MD_HD md, GCRY_MD_HD md2,
 		    STRLIST files, const char *sigfilename, int textmode );
 
 /*-- signal.c --*/

@@ -25,12 +25,12 @@
 #include <assert.h>
 #include <time.h>
 
+#include <gcrypt.h>
 #include "packet.h"
 #include "iobuf.h"
 #include "memory.h"
 #include "options.h"
 #include "util.h"
-#include "cipher.h"
 #include "keydb.h"
 #include "filter.h"
 #include "main.h"
@@ -266,7 +266,7 @@ print_failed_pkenc( struct kidlist_item *list )
 {
     for( ; list; list = list->next ) {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
-	const char *algstr = pubkey_algo_to_string( list->pubkey_algo );
+	const char *algstr = gcry_pk_algo_name( list->pubkey_algo );
 
 	pk->pubkey_algo = list->pubkey_algo;
 	if( !get_pubkey( pk, list->kid ) ) {
@@ -361,7 +361,8 @@ proc_plaintext( CTX c, PACKET *pkt )
     else if( opt.verbose )
 	log_info(_("original file name='%.*s'\n"), pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
-    c->mfx.md = md_open( 0, 0);
+    if( !(c->mfx.md = gcry_md_open( 0, 0)) )
+	BUG();
     /* fixme: we may need to push the textfilter if we have sigclass 1
      * and no armoring - Not yet tested
      * Hmmm, why don't we need it at all if we have sigclass 1
@@ -372,7 +373,8 @@ proc_plaintext( CTX c, PACKET *pkt )
     for(n=c->list; n; n = n->next ) {
 	if( n->pkt->pkttype == PKT_ONEPASS_SIG ) {
 	    if( n->pkt->pkt.onepass_sig->digest_algo ) {
-		md_enable( c->mfx.md, n->pkt->pkt.onepass_sig->digest_algo );
+		gcry_md_enable( c->mfx.md,
+				n->pkt->pkt.onepass_sig->digest_algo );
 		if( !any && n->pkt->pkt.onepass_sig->digest_algo
 						      == DIGEST_ALGO_MD5 )
 		    only_md5 = 1;
@@ -398,9 +400,9 @@ proc_plaintext( CTX c, PACKET *pkt )
 	}
     }
     if( !any ) { /* no onepass sig packet: enable all standard algos */
-	md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
-	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
-	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
+	gcry_md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
+	gcry_md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
+	gcry_md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     }
     if( only_md5 ) {
 	/* This is a kludge to work around a bug in pgp2.  It does only
@@ -408,7 +410,8 @@ proc_plaintext( CTX c, PACKET *pkt )
 	 * pgp mails we could see whether there is the signature packet
 	 * in front of the plaintext.  If someone needs this, send me a patch.
 	 */
-	c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0);
+	if( !(c->mfx.md2 = gcry_md_open( DIGEST_ALGO_MD5, 0)) )
+	    BUG();
     }
   #if 0
     #warning md_start_debug is enabled
@@ -467,7 +470,7 @@ static int
 do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 {
     PKT_signature *sig;
-    MD_HANDLE md = NULL, md2 = NULL;
+    GCRY_MD_HD md = NULL, md2 = NULL;
     int algo, rc;
 
     assert( node->pkt->pkttype == PKT_SIGNATURE );
@@ -476,27 +479,31 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
     sig = node->pkt->pkt.signature;
 
     algo = sig->digest_algo;
-    if( (rc=check_digest_algo(algo)) )
+    if( (rc=openpgp_md_test_algo(algo)) )
 	return rc;
 
     if( sig->sig_class == 0x00 ) {
 	if( c->mfx.md )
-	    md = md_copy( c->mfx.md );
+	    md = gcry_md_copy( c->mfx.md );
 	else /* detached signature */
-	    md = md_open( 0, 0 ); /* signature_check() will enable the md*/
+	    md = gcry_md_open( 0, 0 ); /* signature_check() will enable the md*/
+	if( !md )
+	    BUG();
     }
     else if( sig->sig_class == 0x01 ) {
 	/* how do we know that we have to hash the (already hashed) text
 	 * in canonical mode ??? (calculating both modes???) */
 	if( c->mfx.md ) {
-	    md = md_copy( c->mfx.md );
+	    md = gcry_md_copy( c->mfx.md );
 	    if( c->mfx.md2 )
-	       md2 = md_copy( c->mfx.md2 );
+		md2 = gcry_md_copy( c->mfx.md2 );
 	}
 	else { /* detached signature */
 	  log_debug("Do we really need this here?");
-	    md = md_open( 0, 0 ); /* signature_check() will enable the md*/
-	    md2 = md_open( 0, 0 );
+	    md = gcry_md_open( 0, 0 ); /* signature_check() will enable the md*/
+	    md2 = gcry_md_open( 0, 0 );
+	    if( !md || !md2 )
+		BUG();
 	}
     }
     else if( (sig->sig_class&~3) == 0x10
@@ -518,8 +525,8 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
     rc = signature_check( sig, md );
     if( rc == G10ERR_BAD_SIGN && md2 )
 	rc = signature_check( sig, md2 );
-    md_close(md);
-    md_close(md2);
+    gcry_md_close(md);
+    gcry_md_close(md2);
 
     return rc;
 }
@@ -1020,7 +1027,7 @@ static int
 check_sig_and_print( CTX c, KBNODE node )
 {
     PKT_signature *sig = node->pkt->pkt.signature;
-    const char *astr, *tstr;
+    const char *tstr;
     int rc;
 
     if( opt.skip_verify ) {
@@ -1029,9 +1036,9 @@ check_sig_and_print( CTX c, KBNODE node )
     }
 
     tstr = asctimestamp(sig->timestamp);
-    astr = pubkey_algo_to_string( sig->pubkey_algo );
     log_info(_("Signature made %.*s using %s key ID %08lX\n"),
-	    (int)strlen(tstr), tstr, astr? astr: "?", (ulong)sig->keyid[1] );
+	    (int)strlen(tstr), tstr, gcry_pk_algo_name( sig->pubkey_algo ),
+						      (ulong)sig->keyid[1] );
 
     rc = do_check_sig(c, node, NULL );
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver_name ) {
@@ -1148,11 +1155,12 @@ proc_tree( CTX c, KBNODE node )
 	if( !c->have_data ) {
 	    free_md_filter_context( &c->mfx );
 	    /* prepare to create all requested message digests */
-	    c->mfx.md = md_open(0, 0);
+	    if( !(c->mfx.md = gcry_md_open(0, 0)) )
+		BUG();
 
 	    /* fixme: why looking for the signature packet and not 1passpacket*/
 	    for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); ) {
-		md_enable( c->mfx.md, n1->pkt->pkt.signature->digest_algo);
+		gcry_md_enable( c->mfx.md, n1->pkt->pkt.signature->digest_algo);
 	    }
 	    /* ask for file and hash it */
 	    if( c->sigs_only )
@@ -1177,18 +1185,21 @@ proc_tree( CTX c, KBNODE node )
 	if( !c->have_data ) {
 	    /* detached signature */
 	    free_md_filter_context( &c->mfx );
-	    c->mfx.md = md_open(sig->digest_algo, 0);
+	    if( !(c->mfx.md = gcry_md_open(sig->digest_algo, 0)) )
+		BUG();
 	    if( sig->digest_algo == DIGEST_ALGO_MD5
 		&& is_RSA( sig->pubkey_algo ) ) {
 		/* enable a workaround for a pgp2 bug */
-		c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0 );
+		if( !(c->mfx.md2 = gcry_md_open( DIGEST_ALGO_MD5, 0 )) )
+		    BUG();
 	    }
 	    else if( sig->digest_algo == DIGEST_ALGO_SHA1
 		     && sig->pubkey_algo == PUBKEY_ALGO_DSA
 		     && sig->sig_class == 0x01 ) {
 		/* enable the workaround also for pgp5 when the detached
 		 * signature has been created in textmode */
-		c->mfx.md2 = md_open( sig->digest_algo, 0 );
+		if( !(c->mfx.md2 = gcry_md_open( sig->digest_algo, 0 )) )
+		    BUG();
 	    }
 	    /* Here we have another hack to work around a pgp 2 bug
 	     * It works by not using the textmode for detached signatures;

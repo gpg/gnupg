@@ -109,22 +109,9 @@ dnl Check wether we want to compile libgcrypt
 dnl
 AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
 AC_ARG_ENABLE(libgcrypt,
-    [  --enable-libgcrypt      compile the libgcrypt [default=no]],
+    [  --enable-libgcrypt      compile the libgcrypt [default=yes]],
 [compile_libgcrypt="$enableval"],[compile_libgcrypt=no])
 AC_MSG_RESULT($compile_libgcrypt)
-if test x$compile_libgcrypt = xyes ; then
-    if test -f $srcdir/gcrypt/gcrypt.h; then
-        :
-    else
-        compile_libgcrypt=no
-        AC_MSG_WARN([[
-***
-*** LIBGCRYPT is not yet ready for public testing.
-*** Maybe you have more luck with the next release of GnuPG
-*** Watch the gnupg-announce mailing list or the webpage.
-***]])
-    fi
-fi
 AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
 
 
@@ -680,9 +667,12 @@ AC_SUBST(ZLIBS)
 changequote(,)dnl
 tmp_pat='[a-zA-Z]'
 changequote([,])dnl
-if echo "$VERSION" | grep $tmp_pat >/dev/null ; then
+if echo "$VERSION" | grep "$tmp_pat" >/dev/null ; then
     AC_DEFINE(IS_DEVELOPMENT_VERSION)
 fi
+
+dnl Temp workaround:
+GNUPG_LINK_FILES(gcrypt/gcrypt.h, gcrypt.h )
 
 AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 

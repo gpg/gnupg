@@ -181,6 +181,14 @@ more arguments in future versions.
 	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported> <sec_dups>
 	Final statistics on import process (this is one long line)
 
+    FILE_START <what> <filename>
+	Start processing a file <filename>.  <what> indicates the performed
+	operation:
+	    1 - verify
+
+    FILE_DONE
+	Marks the end of a file processing which has been started
+	by FILE_START.
 
 
 Key generation
