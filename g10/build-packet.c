@@ -754,6 +754,15 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	  sig->flags.revocable=0;
 	break;
 
+	/* This should never happen since we don't currently allow
+	   creating such a subpacket, but just in case... */
+      case SIGSUBPKT_SIG_EXPIRE:
+	if(buffer_to_u32(buffer)+sig->timestamp<=make_timestamp())
+	  sig->flags.expired=1;
+	else
+	  sig->flags.expired=0;
+	break;
+
       default:
 	break;
       }
@@ -860,7 +869,11 @@ build_sig_subpkt_from_sig( PKT_signature *sig )
 
     if(sig->expiredate)
       {
-	u = sig->expiredate-sig->timestamp;
+	if(sig->expiredate>sig->timestamp)
+	  u=sig->expiredate-sig->timestamp;
+	else
+	  u=0;
+
 	buf[0] = (u >> 24) & 0xff;
 	buf[1] = (u >> 16) & 0xff;
 	buf[2] = (u >>  8) & 0xff;

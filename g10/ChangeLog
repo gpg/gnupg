@@ -1,5 +1,23 @@
 2002-12-04  David Shaw  <dshaw@jabberwocky.com>
 
+	* main.h, keyedit.c, keygen.c: Back out previous (2002-12-01)
+	change.  Minimal isn't always best.
+
+	* sign.c (update_keysig_packet): Use the current time rather then
+	a modification of the original signature time.  Make sure that
+	this doesn't cause a time warp.
+
+	* keygen.c (keygen_add_key_expire): Properly handle a key
+	expiration date in the past (use a duration of 0).
+
+	* keyedit.c (menu_expire): Use update_keysig_packet so any sig
+	subpackets are maintained during the update.
+
+	* build-packet.c (build_sig_subpkt): Mark sig expired or unexpired
+	when the sig expiration subpacket is added.
+	(build_sig_subpkt_from_sig): Handle making an expiration subpacket
+	from a sig that has already expired (use a duration of 0).
+
 	* packet.h, sign.c (update_keysig_packet), keyedit.c
 	(menu_set_primary_uid, menu_set_preferences): Add ability to issue
 	0x18 subkey binding sigs to update_keysig_packet and change all
