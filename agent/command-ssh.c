@@ -96,6 +96,21 @@ typedef struct ssh_key_type_spec
 
 static uint32_t lifetime_default;
 
+/* General utility functions.  */
+
+static void *
+realloc_secure (void *a, size_t n)
+{
+  void *p;
+  
+  if (a)
+    p = gcry_realloc (a, n);
+  else
+    p = gcry_malloc_secure (n);
+  
+  return p;
+}
+
 /* Primitive I/O functions.  */
 
 static gpg_error_t
@@ -532,14 +547,14 @@ ssh_key_modifier_rsa (const char *elems, gcry_mpi_t *mpis)
     /* Modifying only necessary for secret keys.  */
     goto out;
 
+  u = mpis[3];
   p = mpis[4];
   q = mpis[5];
-  u = mpis[3];
 
-  if (gcry_mpi_cmp (p, q))
+  if (gcry_mpi_cmp (p, q) > 0)
     {
       /* P shall be smaller then Q!  Swap primes.  iqmp becomes u.  */
-      gcry_mpi_t tmp = NULL;
+      gcry_mpi_t tmp;
 
       tmp = mpis[4];
       mpis[4] = mpis[5];
@@ -656,6 +671,7 @@ ssh_sexp_construct (gcry_sexp_t *sexp,
   const char *elems;
   size_t elems_n;
   unsigned int i;
+  unsigned int j;
   void **arg_list;
 
   err = 0;
@@ -687,7 +703,15 @@ ssh_sexp_construct (gcry_sexp_t *sexp,
   for (i = 0; i < elems_n; i++)
     {
       sprintf (strchr (sexp_template, 0), "(%c %%m)", elems[i]);
-      arg_list[i] = &mpis[i];
+      if (secret)
+	{
+	  for (j = 0; j < elems_n; j++)
+	    if (key_spec.elems_key_secret[j] == elems[i])
+	      break;
+	}
+      else
+	j = i;
+      arg_list[i] = &mpis[j];
     }
   arg_list[i] = &comment;
   sprintf (strchr (sexp_template, 0), ") (comment %%s))");
@@ -2230,7 +2254,8 @@ start_command_handler_ssh (int sock_client)
 	log_debug ("[ssh-agent] Received request of length: %u\n",
 		   request_size);
 
-      stream_request = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
+      stream_request = es_mopen (NULL, 0, 0, 1,
+				 realloc_secure, gcry_free, "r+");
       if (! stream_request)
 	{
 	  err = gpg_error_from_errno (errno);
