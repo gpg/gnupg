@@ -1,3 +1,10 @@
+2004-10-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (print_and_check_one_sig_colon): Fix bad keyids in
+	colon delsig output.  Noted by Peter Palfrader.
+	(show_prefs): Do not reference missing selfsig.  Noted by Alex
+	Moroz.
+
 2004-10-01  Werner Koch  <wk@g10code.com>
 
 	* gpgv.c (i18n_init): Always use LC_ALL.

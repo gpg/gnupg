@@ -167,7 +167,7 @@ print_and_check_one_sig_colon( KBNODE keyblock, KBNODE node,
   if( sigrc != '?' || print_without_key )
     {
       printf("sig:%c::%d:%08lX%08lX:%lu:%lu:",
-	     sigrc,sig->pubkey_algo,(ulong)sig->keyid[1],(ulong)sig->keyid[2],
+	     sigrc,sig->pubkey_algo,(ulong)sig->keyid[0],(ulong)sig->keyid[1],
 	     (ulong)sig->timestamp,(ulong)sig->expiredate);
 
       if(sig->trust_depth || sig->trust_value)
@@ -1876,8 +1876,6 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
 
     if (verbose) {
         int any, des_seen=0, sha1_seen=0, uncomp_seen=0;
-	const byte *pref_ks;
-	size_t pref_ks_len;
 
         tty_printf ("     ");
 	tty_printf (_("Cipher: "));
@@ -1971,14 +1969,20 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
 	  }
 	tty_printf("\n");
 
-	pref_ks=parse_sig_subpkt(selfsig->hashed,
-				 SIGSUBPKT_PREF_KS,&pref_ks_len);
-	if(pref_ks && pref_ks_len)
+	if(selfsig)
 	  {
-	    tty_printf ("     ");
-	    tty_printf(_("Preferred keyserver: "));
-	    tty_print_utf8_string(pref_ks,pref_ks_len);
-	    tty_printf("\n");
+	    const byte *pref_ks;
+	    size_t pref_ks_len;
+
+	    pref_ks=parse_sig_subpkt(selfsig->hashed,
+				     SIGSUBPKT_PREF_KS,&pref_ks_len);
+	    if(pref_ks && pref_ks_len)
+	      {
+		tty_printf ("     ");
+		tty_printf(_("Preferred keyserver: "));
+		tty_print_utf8_string(pref_ks,pref_ks_len);
+		tty_printf("\n");
+	      }
 	  }
     }
     else {
