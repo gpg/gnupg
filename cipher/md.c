@@ -28,6 +28,7 @@
 #include "errors.h"
 
 
+
 /*static FILE *dumpfp;*/
 
 /****************
@@ -175,4 +176,40 @@ md_get_algo( MD_HANDLE a )
 	return DIGEST_ALGO_MD5;
     return 0;
 }
+
+
+const byte *
+md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
+{
+    size_t alen, mlen;
+    byte *p;
+
+    if( algo == DIGEST_ALGO_MD5 ) {
+	static byte asn[18] = /* Object ID is 1.2.840.113549.2.5 */
+		    { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
+		      0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10 };
+	mlen = 16; alen = DIM(asn); p = asn;
+    }
+    else if( algo == DIGEST_ALGO_RMD160 ) {
+	static byte asn[15] = /* Object ID is 1.3.36.3.2.1 */
+	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
+	    0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
+	mlen = 20; alen = DIM(asn); p = asn;
+    }
+    else if( algo == DIGEST_ALGO_SHA1 ) {
+	static byte asn[15] = /* Objet ID is 1.3.14.3.2.26 */
+		    { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
+		      0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
+	mlen = 20; alen = DIM(asn); p = asn;
+    }
+    else
+	log_bug("md_asn_oid(%d)", algo );
+
+    if( asnlen )
+	*asnlen = alen;
+    if( mdlen )
+	*mdlen = mlen;
+    return p;
+}
+
 

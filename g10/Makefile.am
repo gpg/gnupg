@@ -55,7 +55,7 @@ g10_SOURCES  = g10.c		\
 g10maint_SOURCES = g10maint.c	\
 	      $(common_source)
 
-LDADD = @INTLLIBS@ $(needed_libs)
+LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
 
 $(PROGRAMS): $(needed_libs)
 

@@ -76,6 +76,8 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	int i, j, c, old_enc;
 	byte *dp;
 	RSA_public_key pkey;
+	const byte *asn;
+	size_t mdlen, asnlen;
 
 	result = mpi_alloc(40);
 	pkey.n = pkc->d.rsa.rsa_n;
@@ -107,97 +109,49 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 	    goto leave;
 	}
 
-	if( sig->d.rsa.digest_algo == DIGEST_ALGO_RMD160 ) {
-	    static byte asn[15] = /* stored reverse */
-		  { 0x14, 0x04, 0x00, 0x05, 0x01, 0x02, 0x03, 0x24, 0x2b,
-		    0x05, 0x06, 0x09, 0x30, 0x21, 0x30 };
+	if( (rc=check_digest_algo(sig->d.rsa.digest_algo)) )
+	    goto leave; /* unsupported algo */
+	asn = md_asn_oid( sig->d.rsa.digest_algo, &asnlen, &mdlen );
 
-	    for(i=20,j=0; (c=mpi_getbyte(result, i)) != -1 && j < 15; i++, j++ )
-		if( asn[j] != c )
-		    break;
-	    if( j != 15 || mpi_getbyte(result, i) ) { /* ASN is wrong */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
-	    for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
-		if( c != 0xff  )
-		    break;
-	    i++;
-	    if( c != DIGEST_ALGO_RMD160 || mpi_getbyte(result, i) ) {
-		/* Padding or leading bytes in signature is wrong */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
-	    if( mpi_getbyte(result, 19) != sig->d.rsa.digest_start[0]
-		|| mpi_getbyte(result, 18) != sig->d.rsa.digest_start[1] ) {
-		/* Wrong key used to check the signature */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
-
-	    /* complete the digest */
-	    md_putc( digest, sig->sig_class );
-	    {	u32 a = sig->timestamp;
-		md_putc( digest, (a >> 24) & 0xff );
-		md_putc( digest, (a >> 16) & 0xff );
-		md_putc( digest, (a >>	8) & 0xff );
-		md_putc( digest,  a	   & 0xff );
-	    }
-	    md_final( digest );
-	    dp = md_read( digest, DIGEST_ALGO_RMD160 );
-	    for(i=19; i >= 0; i--, dp++ )
-		if( mpi_getbyte( result, i ) != *dp ) {
-		    rc = G10ERR_BAD_SIGN;
-		    goto leave;
-		}
-	}
-	else if( sig->d.rsa.digest_algo == DIGEST_ALGO_MD5 ) {
-	    static byte asn[18] = /* stored reverse */
-		  { 0x10, 0x04, 0x00, 0x05, 0x05, 0x02, 0x0d, 0xf7, 0x86,
-		    0x48, 0x86, 0x2a, 0x08, 0x06, 0x0c, 0x30, 0x20, 0x30 };
-
-	    for(i=16,j=0; j < 18 && (c=mpi_getbyte(result, i)) != -1; i++, j++ )
-		if( asn[j] != c )
-		    break;
-	    if( j != 18 || mpi_getbyte(result, i) ) { /* ASN is wrong */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
-	    for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
-		if( c != 0xff  )
-		    break;
-	    i++;
-	    if( c != DIGEST_ALGO_MD5 || mpi_getbyte(result, i) ) {
-		/* Padding or leading bytes in signature is wrong */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
-	    if( mpi_getbyte(result, 15) != sig->d.rsa.digest_start[0]
-		|| mpi_getbyte(result, 14) != sig->d.rsa.digest_start[1] ) {
-		/* Wrong key used to check the signature */
-		rc = G10ERR_BAD_PUBKEY;
-		goto leave;
-	    }
-
-	    /* complete the digest */
-	    md_putc( digest, sig->sig_class );
-	    {	u32 a = sig->timestamp;
-		md_putc( digest, (a >> 24) & 0xff );
-		md_putc( digest, (a >> 16) & 0xff );
-		md_putc( digest, (a >>	8) & 0xff );
-		md_putc( digest,  a	   & 0xff );
-	    }
-	    md_final( digest );
-	    dp = md_read( digest, DIGEST_ALGO_MD5 );
-	    for(i=15; i >= 0; i--, dp++ )
-		if( mpi_getbyte( result, i ) != *dp ) {
-		    rc = G10ERR_BAD_SIGN;
-		    goto leave;
-		}
-	}
-	else {
-	    rc = G10ERR_DIGEST_ALGO;
+	for(i=mdlen,j=asnlen-1; (c=mpi_getbyte(result, i)) != -1 && j >= 0;
+							       i++, j-- )
+	    if( asn[j] != c )
+		break;
+	if( j != -1 || mpi_getbyte(result, i) ) { /* ASN is wrong */
+	    rc = G10ERR_BAD_PUBKEY;
 	    goto leave;
+	}
+	for(i++; (c=mpi_getbyte(result, i)) != -1; i++ )
+	    if( c != 0xff  )
+		break;
+	i++;
+	if( c != sig->d.rsa.digest_algo || mpi_getbyte(result, i) ) {
+	    /* Padding or leading bytes in signature is wrong */
+	    rc = G10ERR_BAD_PUBKEY;
+	    goto leave;
+	}
+	if( mpi_getbyte(result, mdlen-1) != sig->d.rsa.digest_start[0]
+	    || mpi_getbyte(result, mdlen-2) != sig->d.rsa.digest_start[1] ) {
+	    /* Wrong key used to check the signature */
+	    rc = G10ERR_BAD_PUBKEY;
+	    goto leave;
+	}
+
+	/* complete the digest */
+	md_putc( digest, sig->sig_class );
+	{   u32 a = sig->timestamp;
+	    md_putc( digest, (a >> 24) & 0xff );
+	    md_putc( digest, (a >> 16) & 0xff );
+	    md_putc( digest, (a >>  8) & 0xff );
+	    md_putc( digest,  a        & 0xff );
+	}
+	md_final( digest );
+	dp = md_read( digest, sig->d.rsa.digest_algo );
+	for(i=mdlen-1; i >= 0; i--, dp++ ) {
+	    if( mpi_getbyte( result, i ) != *dp ) {
+		rc = G10ERR_BAD_SIGN;
+		goto leave;
+	    }
 	}
     }
   #endif/*HAVE_RSA_CIPHER*/

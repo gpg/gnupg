@@ -29,7 +29,6 @@
 #include "main.h"
 
 
-
 /****************
  * Make a session key and put it into DEK
  */
@@ -61,15 +60,16 @@ encode_session_key( DEK *dek, unsigned nbits )
 {
     int nframe = (nbits+7) / 8;
     byte *p;
-    MPI frame;
+    byte *frame;
     int i,n,c;
     u16 csum;
+    MPI a;
 
     /* the current limitation is, that we can only use a session key
      * which length is a multiple of BITS_PER_MPI_LIMB
      * I think we can live with that.
      */
-    if( dek->keylen + 7 > nframe ||  (nbits % BITS_PER_MPI_LIMB) || !nframe )
+    if( dek->keylen + 7 > nframe || !nframe )
 	log_bug("can't encode a %d bit key in a %d bits frame\n",
 		    dek->keylen*8, nbits );
 
@@ -83,163 +83,80 @@ encode_session_key( DEK *dek, unsigned nbits )
      *	   cipher algorithm (20 is used with blowfish).
      * CSUM is the 16 bit checksum over the DEK
      */
-    frame = mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB );
     csum = 0;
     for( p = dek->key, i=0; i < dek->keylen; i++ )
 	csum += *p++;
-    mpi_putbyte(frame, 0, csum );
-    mpi_putbyte(frame, 1, csum >> 8 );
-    for(n=2,i=dek->keylen-1, p = dek->key; i >= 0; i--, n++ )
-	mpi_putbyte(frame, n, p[i] );
-    mpi_putbyte(frame, n++, dek->algo );
-    mpi_putbyte(frame, n++, 0 );
-    while( n < nframe-2 ) {
+
+    frame = m_alloc_secure( nframe );
+    n = 0;
+    frame[n++] = 0;
+    frame[n++] = 2;
+    i = nframe - 6 - dek->keylen;
+    assert( i > 0 );
+    for( ; i ; i-- ) {
 	while( !(c = get_random_byte(1)) )
 	    ;
-	mpi_putbyte(frame, n++, c );
+	frame[n++] = c;
     }
-    mpi_putbyte(frame, n++, 2 );
-    mpi_putbyte(frame, n++, 0 );
+    frame[n++] = 0;
+    frame[n++] = dek->algo;
+    memcpy( frame+n, dek->key, dek->keylen ); n += dek->keylen;
+    frame[n++] = csum >>8;
+    frame[n++] = csum;
     assert( n == nframe );
-    return frame;
+    a = mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+    mpi_set_buffer( a, frame, nframe, 0 );
+    m_free(frame);
+    return a;
 }
 
-/****************
- * Encode a ripemd160 message digest of LEN bytes into NBITS.
- * returns: A mpi with the session key (caller must free)
- *  RMD160 Object ID is 1.3.36.3.2.1
- */
-static MPI
-encode_rmd160_value( byte *md, unsigned len, unsigned nbits, int secure )
-{
-    static byte asn[15] =
-	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x24, 0x03,
-	    0x02, 0x01, 0x05, 0x00, 0x04, 0x14 };
-    int nframe = (nbits+7) / 8;
-    MPI frame;
-    int i,n;
 
-    if( (nbits % BITS_PER_MPI_LIMB) || nframe < 42 || len != 20 )
+static MPI
+do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
+				   const byte *asn, size_t asnlen )
+{
+    int nframe = (nbits+7) / 8;
+    byte *frame;
+    int i,n;
+    MPI a;
+
+    if( len + asnlen + 4  > nframe )
 	log_bug("can't encode a %d bit MD into a %d bits frame\n",len*8, nbits);
 
     /* We encode the MD in this way:
      *
-     *	   0  A PAD(n bytes)   0  ASN(15 bytes)  MD(20 bytes)
+     *	   0  A PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
      *
      * PAD consists of FF bytes.
      */
-    frame = secure ? mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB )
-		   : mpi_alloc( nframe / BYTES_PER_MPI_LIMB );
+    frame = md_is_secure(md)? m_alloc_secure( nframe ) : m_alloc( nframe );
     n = 0;
-    for(i=20-1; i >= 0; i--, n++ )
-	mpi_putbyte(frame, n, md[i] );
-    for( i=15-1; i >= 0; i--, n++ )
-	mpi_putbyte(frame, n, asn[i] );
-    mpi_putbyte(frame, n++, 0 );
-    while( n < nframe-2 )
-	mpi_putbyte(frame, n++, 0xff );
-    mpi_putbyte(frame, n++, DIGEST_ALGO_RMD160 );
-    mpi_putbyte(frame, n++, 0 );
+    frame[n++] = 0;
+    frame[n++] = algo;
+    i = nframe - len - asnlen -3 ;
+    assert( i > 1 );
+    memset( frame+n, 0xff, i ); n += i;
+    frame[n++] = 0;
+    memcpy( frame+n, asn, asnlen ); n += asnlen;
+    memcpy( frame+n, md_read(md, algo), len ); n += len;
     assert( n == nframe );
-    return frame;
+    a = md_is_secure(md)?
+	 mpi_alloc_secure( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
+	 : mpi_alloc( (nframe+BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB );
+    mpi_set_buffer( a, frame, nframe, 0 );
+    m_free(frame);
+    return a;
 }
 
-/****************
- * Encode a sha-1 message digest of LEN bytes into NBITS.
- * returns: A mpi with the session key (caller must free)
- *  SHA-1 Objet ID is 1.3.14.3.2.26
- */
-static MPI
-encode_sha1_value( byte *md, unsigned len, unsigned nbits, int secure )
-{
-    static byte asn[15] =
-	  { 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03,
-	    0x02, 0x1a, 0x05, 0x00, 0x04, 0x14 };
-    int nframe = (nbits+7) / 8;
-    MPI frame;
-    int i,n;
-
-    if( (nbits % BITS_PER_MPI_LIMB) || nframe < 42 || len != 20 )
-	log_bug("can't encode a %d bit MD into a %d bits frame\n",len*8, nbits);
-
-    /* We encode the MD in this way:
-     *
-     *	   0  A PAD(n bytes)   0  ASN(15 bytes)  MD(20 bytes)
-     *
-     * PAD consists of FF bytes.
-     */
-    frame = secure ? mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB )
-		   : mpi_alloc( nframe / BYTES_PER_MPI_LIMB );
-    n = 0;
-    for(i=20-1; i >= 0; i--, n++ )
-	mpi_putbyte(frame, n, md[i] );
-    for( i=15-1; i >= 0; i--, n++ )
-	mpi_putbyte(frame, n, asn[i] );
-    mpi_putbyte(frame, n++, 0 );
-    while( n < nframe-2 )
-	mpi_putbyte(frame, n++, 0xff );
-    mpi_putbyte(frame, n++, DIGEST_ALGO_RMD160 );
-    mpi_putbyte(frame, n++, 0 );
-    assert( n == nframe );
-    return frame;
-}
-
-
-/****************
- * Encode a md5 message digest of LEN bytes into NBITS.
- * returns: A mpi with the session key (caller must free)
- *  MD5 Object ID is 1.2.840.113549.2.5
- */
-static MPI
-encode_md5_value( byte *md, unsigned len, unsigned nbits, int secure )
-{
-    static byte asn[18] =
-	  { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86,0x48,
-	    0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10 };
-    int nframe = (nbits+7) / 8;
-    MPI frame;
-    int i,n;
-
-    if( (nbits % BITS_PER_MPI_LIMB) || nframe < 38 || len != 16 )
-	log_bug("can't encode a %d bit MD into a %d bits frame\n",len*8, nbits);
-
-    /* We encode the MD in this way:
-     *
-     *	   0  A PAD(n bytes)   0  ASN(18 bytes)  MD(16 bytes)
-     *
-     * PAD consists of FF bytes.
-     */
-    frame = secure ? mpi_alloc_secure( nframe / BYTES_PER_MPI_LIMB )
-		   : mpi_alloc( nframe / BYTES_PER_MPI_LIMB );
-    n = 0;
-    for(i=16-1; i >= 0; i--, n++ )
-	mpi_putbyte(frame, n, md[i] );
-    for( i=18-1; i >= 0; i--, n++ )
-	mpi_putbyte(frame, n, asn[i] );
-    mpi_putbyte(frame, n++, 0 );
-    while( n < nframe-2 )
-	mpi_putbyte(frame, n++, 0xff );
-    mpi_putbyte(frame, n++, DIGEST_ALGO_MD5 );
-    mpi_putbyte(frame, n++, 0 );
-    assert( n == nframe );
-    return frame;
-}
 
 MPI
 encode_md_value( MD_HANDLE md, unsigned nbits )
 {
-    switch( md_get_algo( md ) ) {
-      case DIGEST_ALGO_MD5:
-	return encode_md5_value( md_read(md, DIGEST_ALGO_MD5),
-				 16, nbits, md_is_secure(md) );
-      case DIGEST_ALGO_RMD160:
-	return encode_rmd160_value( md_read(md, DIGEST_ALGO_RMD160),
-				 20, nbits, md_is_secure(md) );
-      case DIGEST_ALGO_SHA1:
-	return encode_sha1_value( md_read(md, DIGEST_ALGO_SHA1),
-				 20, nbits, md_is_secure(md) );
-      default:
-	BUG();
-    }
+    int algo = md_get_algo(md);
+    const byte *asn;
+    size_t asnlen, mdlen;
+
+    asn = md_asn_oid( algo, &asnlen, &mdlen );
+    return do_encode_md( md, algo, mdlen, nbits, asn, asnlen );
 }
 

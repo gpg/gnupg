@@ -6,7 +6,7 @@
 int
 main(int argc, char **argv)
 {
-    int c, c2;
+    int c;
 
     if( argc > 1 ) {
 	fprintf(stderr, "no arguments, please\n");

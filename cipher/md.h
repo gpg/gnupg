@@ -56,6 +56,7 @@ void md_write( MD_HANDLE a, byte *inbuf, size_t inlen);
 void md_final(MD_HANDLE a);
 byte *md_read( MD_HANDLE a, int algo );
 int md_get_algo( MD_HANDLE a );
+const byte *md_asn_oid( int algo, size_t *asnlen, size_t *mdlen );
 #define md_is_secure(a) ((a)->secure)
 
 #endif /*G10_MD_H*/

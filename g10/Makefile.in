@@ -72,7 +72,6 @@ G10_LOCALEDIR = @G10_LOCALEDIR@
 GENCAT = @GENCAT@
 GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
-HAVE_ZLIB_H = @HAVE_ZLIB_H@
 INSTOBJEXT = @INSTOBJEXT@
 INTLDEPS = @INTLDEPS@
 INTLLIBS = @INTLLIBS@
@@ -85,6 +84,8 @@ POFILES = @POFILES@
 POSUB = @POSUB@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
+ZLIBS = @ZLIBS@
+ZLIB_SUBDIR = @ZLIB_SUBDIR@
 
 INCLUDES = -I$(top_srcdir)/include
 EXTRA_DIST = OPTIONS  pubring.g10
@@ -140,7 +141,7 @@ g10_SOURCES  = g10.c		\
 g10maint_SOURCES = g10maint.c	\
 	      $(common_source)
 
-LDADD = @INTLLIBS@ $(needed_libs)
+LDADD = @INTLLIBS@ $(needed_libs) @ZLIBS@
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

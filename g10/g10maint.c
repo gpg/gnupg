@@ -75,17 +75,7 @@ strusage( int level )
 	p = _("Please report bugs to <g10-bugs@isil.d.shuttle.de>.\n");
 	break;
 
-  #if !defined(HAVE_ZLIB_H) && defined(HAVE_RSA_CIPHER)
-      case 30: p = _(
-    "   NOTE: This version is compiled without ZLIB support;\n"
-    "         you are not able to process compresssed data!\n"
-    "WARNING: This version has RSA support! Your are not allowed to\n"
-    "         use it inside the Unites States before Sep 30, 2000!\n" );
-  #elif !defined(HAVE_ZLIB_H)
-      case 30: p = _(
-    "   NOTE: This version is compiled without ZLIB support;\n"
-    "         you are not able to process compresssed data!\n");
-  #elif defined(HAVE_RSA_CIPHER)
+  #if defined(HAVE_RSA_CIPHER)
       case 30: p = _(
     "WARNING: This version has RSA support! Your are not allowed to\n"
     "         use it inside the Unites States before Sep 30, 2000!\n" );

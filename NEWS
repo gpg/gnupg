@@ -1,5 +1,17 @@
-Noteworthy changes in version 0.2.x
-***********************************
+Noteworthy changes in version 0.2.5
+-----------------------------------
+
+    * Added zlib for systems which don't have it.
+      Use "./configure --with-zlib" to link with thi static version
+
+    * Generalized some more functions and rewrote the encoding of
+      message digests into MPIs.
+
+    * Enhanced the checkit script
+
+
+Noteworthy changes in version 0.2.4
+-----------------------------------
 
     * nearly doubled the speed of the ElGamal signature verification.
 
@@ -11,7 +23,7 @@ Noteworthy changes in version 0.2.x
 
 
 Noteworthy changes in version 0.2.3
-***********************************
+-----------------------------------
 
     * Found a bug in the calculation of ELG fingerprints. This is now
       fixed, but all existing fingerprints and keyids for ELG keys

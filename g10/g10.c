@@ -46,7 +46,7 @@ enum cmd_values { aNull = 0,
     aSignKey, aClearsign, aListPackets, aEditSig,
     aKMode, aKModeC, aChangePass, aImport,
     aExport,
-aTest };
+aNOP };
 
 
 static void set_cmd( enum cmd_values *ret_cmd,
@@ -75,17 +75,7 @@ strusage( int level )
 	p = _("Please report bugs to <g10-bugs@isil.d.shuttle.de>.\n");
 	break;
 
-  #if !defined(HAVE_ZLIB_H) && defined(HAVE_RSA_CIPHER)
-      case 30: p = _(
-    "   NOTE: This version is compiled without ZLIB support;\n"
-    "         you are not able to process compresssed data!\n"
-    "WARNING: This version has RSA support! Your are not allowed to\n"
-    "         use it inside the Unites States before Sep 30, 2000!\n" );
-  #elif !defined(HAVE_ZLIB_H)
-      case 30: p = _(
-    "   NOTE: This version is compiled without ZLIB support;\n"
-    "         you are not able to process compresssed data!\n");
-  #elif defined(HAVE_RSA_CIPHER)
+  #if defined(HAVE_RSA_CIPHER)
       case 30: p = _(
     "WARNING: This version has RSA support! Your are not allowed to\n"
     "         use it inside the Unites States before Sep 30, 2000!\n" );
@@ -216,6 +206,7 @@ main( int argc, char **argv )
     { 538, "trustdb-name", 2, "\r" },
     { 539, "clearsign", 0, N_("make a clear text signature") },
     { 540, "no-secmem-warning", 0, "\r" }, /* used only by regression tests */
+    { 541, "no-operation", 0, "\r" },      /* used by regression tests */
 
     {0} };
     ARGPARSE_ARGS pargs;
@@ -372,6 +363,7 @@ main( int argc, char **argv )
 	  case 538: trustdb_name = pargs.r.ret_str; break;
 	  case 539: set_cmd( &cmd, aClearsign); break;
 	  case 540: secmem_set_flags( secmem_get_flags() | 1 ); break;
+	  case 541: set_cmd( &cmd, aNOP); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -604,6 +596,9 @@ main( int argc, char **argv )
 	    add_to_strlist( &sl, *argv );
 	export_pubkeys( sl );
 	free_strlist(sl);
+	break;
+
+      case aNOP:
 	break;
 
       case aListPackets:

@@ -33,15 +33,10 @@ if test "$enableval" = y || test "$enableval" = yes; then
     AC_DEFINE(M_DEBUG)
 fi
 
-dnl Some systems have a broken zlib. "--disable-zlib" avoids it's usage
-enableval=yes
-AC_ARG_ENABLE(zlib,
-[  --disable-zlib	  Avoid usage of zlib])
-if test "$enableval" = y || test "$enableval" = yes; then
-    g10_use_zlib=yes
-else
-    g10_use_zlib=no
-fi
+AC_ARG_WITH(zlib,
+[  --with-zlib		  link against static zlib],
+[g10_force_zlib=yes], [g10_force_zlib=no] )
+
 CFLAGS="-g -Wall"
 
 
@@ -167,13 +162,26 @@ AC_SUBST(MPI_EXTRA_ASM_OBJS)
 
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
-if test "$g10_use_zlib" = "yes"; then
-AC_CHECK_HEADERS(zlib.h,
-		 [LIBS="$LIBS -lz"],
-		 AC_MSG_WARN([zlib missing - creating without ZLIB support!])
-		)
+ZLIBS=
+ZLIB_SUBDIR=
+if test "$g10_force_zlib" = "yes"; then
+    ZLIBS="\${top_srcdir}/zlib/libzlib.a"
+    ZLIB_SUBDIR=zlib
+    WK_LINK_FILES(zlib/zlib.h, zlib.h )
+    WK_LINK_FILES(zlib/zconf.h, zconf.h )
+else
+AC_CHECK_HEADERS(zlib.h)
+if test "$ac_cv_header_zlib_h" = yes ; then
+    LIBS="$LIBS -lz"
+else
+    ZLIBS="\${top_srcdir}/zlib/libzlib.a"
+    ZLIB_SUBDIR=zlib
+    WK_LINK_FILES(zlib/zlib.h, zlib.h )
+    WK_LINK_FILES(zlib/zconf.h, zconf.h )
 fi
-AC_SUBST(HAVE_ZLIB_H)
+fi
+AC_SUBST(ZLIBS)
+AC_SUBST(ZLIB_SUBDIR)
 
 dnl checking whether we have other cipher source files
 CIPHER_EXTRA_OBJS=""
@@ -208,5 +216,6 @@ mpi/Makefile
 cipher/Makefile
 g10/Makefile
 tools/Makefile
+zlib/Makefile
 ],[echo timestamp >stamp-h; sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile])
 
