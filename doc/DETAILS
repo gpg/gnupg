@@ -164,17 +164,21 @@ more arguments in future versions.
 	this signature.  sig_class is a 2 byte hex-value.
 
     VALIDSIG	<fingerprint in hex> <sig_creation_date> <sig-timestamp>
-		<expire-timestamp> <primary-key-fpr>
+		<expire-timestamp> <sig-version> <reserved> <pubkey-algo>
+		<hash-algo> <sig-class> <primary-key-fpr>
 
-	The signature with the keyid is good. This is the same
-	as GOODSIG but has the fingerprint as the argument. Both
-	status lines are emitted for a good signature.
-	sig-timestamp is the signature creation time in seconds after
-	the epoch. expire-timestamp is the signature expiration time
-	in seconds after the epoch (zero means "does not expire").
-        PRIMARY-KEY-FPR is the fingerprint of the primary key or
-        identical to the first argument.  This is useful to get back
-        to the primary key without running gpg again for this purpose.
+	The signature with the keyid is good. This is the same as
+	GOODSIG but has the fingerprint as the argument. Both status
+	lines are emitted for a good signature.  All arguments here
+	are on one long line.  sig-timestamp is the signature creation
+	time in seconds after the epoch. expire-timestamp is the
+	signature expiration time in seconds after the epoch (zero
+	means "does not expire"). sig-version, pubkey-algo, hash-algo,
+	and sig-class (a 2-byte hex value) are all straight from the
+	signature packet.  PRIMARY-KEY-FPR is the fingerprint of the
+	primary key or identical to the first argument.  This is
+	useful to get back to the primary key without running gpg
+	again for this purpose.
 
     SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
 	This is emitted only for signatures of class 0 or 1 which

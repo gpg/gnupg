@@ -1,3 +1,13 @@
+2003-04-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS (VALIDSIG): Add version, pk algo, digest algo, sig
+	class, and a reserved field for flags in a future version.
+
+	* gpg.sgml: Document --no-textmode and --no-use-agent.  Clarify
+	the interoperability section.  Clarify that "hkp corruption"
+	(repair-hkp-subkey-bug) is really "pks corruption"
+	(repair-pks-subkey-bug).
+
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Document --enable-progress-filter.
