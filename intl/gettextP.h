@@ -20,6 +20,12 @@
 #ifndef _GETTEXTP_H
 #define _GETTEXTP_H
 
+/* HP/UX users - if you get errors line "Unexpected symbol: SWAP" when
+   building with HP's C compiler, you will need to uncomment the
+   following line.  This is a GnuPG-specific change. */
+
+/* #define inline */
+
 #include <stddef.h>		/* Get size_t.  */
 
 #ifdef _LIBC
