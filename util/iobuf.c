@@ -1005,6 +1005,16 @@ check_special_filename ( const char *fname )
     return -1;
 }
 
+/* This fucntion returns true if FNAME indicates a PIPE (stdout or
+   stderr) or a special file name if those are enabled. */
+int
+iobuf_is_pipe_filename (const char *fname)
+{
+  if (!fname || (*fname=='-' && !fname[1]) )
+    return 1;
+  return check_special_filename (fname) != -1;
+}
+
 /****************
  * Create a head iobuf for reading from a file
  * returns: NULL if an error occures and sets errno

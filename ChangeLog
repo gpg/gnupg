@@ -1,3 +1,8 @@
+2004-10-13  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Actually name the option --disable-finger and not
+	http.
+
 2004-10-11  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: New option --disable-finger.

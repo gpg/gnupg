@@ -6,18 +6,11 @@
     20% faster and the crc32 code about 50% faster. Some memory leaks were
     also fixed according to the ChangeLog.
     
-    If it can help you, here is what I did to update the distribution is
-    to remove all files in the zlib folder except Makefile.am. To copy all
-    the file in the zlib121.zip archive to the zlib folder with the
-    exception of  configure, example.c, FAQ, INDEX,  Makefile, Makefile.in
-    and zlib.3. I then edited Makefile.am to match the new file list and
-
   * Reword the "Not enough entropy" messages.
 
   * Do we need a configure test for putenv?
 
-  * Check for consistent spelling of user ID, key ID etc.
-    Replace "user id not found" in getkey.c by "no valid user ID found".
+  * Replace "user id not found" in getkey.c by "no valid user ID found"?
  
   * Describe some pitfalls when using EGD.  Check that ~/.gnupg/entropy
     really is the default.  What about needed permission?  
@@ -37,7 +30,9 @@
 
   * Check the changes to the gpg random gatherer on all W32 platforms.
 
-  * Show more info does not work from edit->trust
+  * Show more info does not work from edit->trust. We should give more
+    information on the user ID under question while running
+    --update-trustdb.
 
   * Check that no secret temporary results are stored in the result parameter
     of the mpi functions.  We have already done this for mpi-mul.c 
@@ -109,11 +104,9 @@
 
   * allow the use of option in gpg.conf. 
 
-  * export-secret-subkey where only one of the subkeys gets exported.
-
   * Add the NEWSIG status.
 
-  * When generating a key onh the card we should try to also set the
+  * When generating a key on the card we should try to also set the
     display name or provide the display name as a default in the key
     generation.  The problem however is that the display name must be
     given with an indication of the surname and the usable characters

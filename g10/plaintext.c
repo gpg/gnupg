@@ -105,8 +105,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 
     if( nooutput )
 	;
-    else if( !*fname || (*fname=='-' && !fname[1])) {
-	/* no filename or "-" given; write to stdout */
+    else if ( iobuf_is_pipe_filename (fname) ) {
+	/* No filename or "-" given; write to stdout. */
 	fp = stdout;
 #ifdef HAVE_DOSISH_SYSTEM
 	setmode ( fileno(fp) , O_BINARY );

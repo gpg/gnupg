@@ -1,3 +1,8 @@
+2004-10-13  Werner Koch  <wk@g10code.com>
+
+	* iobuf.c (iobuf_is_pipe_filename): New.
+	* fileutil.c (is_file_compressed): Use it here.
+
 2004-09-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* iobuf.c (pop_filter): Make static.

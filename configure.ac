@@ -304,7 +304,7 @@ if test "$use_exec" = yes ; then
     AC_MSG_RESULT($try_http)
 
     AC_MSG_CHECKING([whether Finger key fetching support is requested])
-    AC_ARG_ENABLE(http,
+    AC_ARG_ENABLE(finger,
       AC_HELP_STRING([--disable-finger],
                      [disable Finger key fetching interface]),
         try_finger=$enableval, try_finger=yes)

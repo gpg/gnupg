@@ -293,8 +293,8 @@ encode_simple( const char *filename, int mode, int use_seskey )
        either partial length or fixed length with the new style
        messages. */
 
-    if (filename && *filename && !(*filename == '-' && !filename[1])
-        && !opt.textmode ) {
+    if ( !iobuf_is_pipe_filename (filename) && filename && *filename 
+         && !opt.textmode ) {
         off_t tmpsize;
 
 	if ( !(tmpsize = iobuf_get_filelength(inp)) )
@@ -582,7 +582,7 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 	}
     }
 
-    if (filename && *filename && !(*filename == '-' && !filename[1])
+    if (!iobuf_is_pipe_filename (filename) && *filename 
         && !opt.textmode ) {
         off_t tmpsize;
 

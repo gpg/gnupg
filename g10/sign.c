@@ -543,7 +543,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     }
 
     /* try to calculate the length of the data */
-    if (fname && *fname && !(*fname=='-' && !fname[1])) {
+    if ( !iobuf_is_pipe_filename (fname) && fname && *fname ) {
         off_t tmpsize;
        
         if( !(tmpsize = iobuf_get_filelength(inp)) )

@@ -200,7 +200,7 @@ is_file_compressed( const char *s, int *ret_rc )
         { 4, { 0x50, 0x4b, 0x03, 0x04 } }, /* (pk)zip */
     };
     
-    if ( !s || (*s == '-' && !s[1]) || !ret_rc )
+    if ( iobuf_is_pipe_filename (s) || !ret_rc )
         return 0; /* We can't check stdin or no file was given */
 
     a = iobuf_open( s );

@@ -64,8 +64,8 @@
 int
 overwrite_filep( const char *fname )
 {
-    if( !fname || (*fname == '-' && !fname[1]) )
-	return 1; /* writing to stdout is always okay */
+    if( iobuf_is_pipe_filename (fname) )
+	return 1; /* Writing to stdout is always okay */
 
     if( access( fname, F_OK ) )
 	return 1; /* does not exist */
@@ -98,7 +98,7 @@ make_outfile_name( const char *iname )
 {
     size_t n;
 
-    if( (!iname || (*iname=='-' && !iname[1]) ))
+    if ( iobuf_is_pipe_filename (iname) )
 	return m_strdup("-");
 
     n = strlen(iname);
@@ -174,7 +174,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
   int rc = 0;
 
   *a = NULL;
-  if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
+  if( iobuf_is_pipe_filename (iname) && !opt.outfile ) {
     if( !(*a = iobuf_create(NULL)) ) {
       log_error(_("%s: can't open: %s\n"), "[stdout]", strerror(errno) );
       rc = G10ERR_CREATE_FILE;
@@ -269,7 +269,7 @@ open_sigfile( const char *iname, progress_filter_context_t *pfx )
     IOBUF a = NULL;
     size_t len;
 
-    if( iname && !(*iname == '-' && !iname[1]) ) {
+    if( !iobuf_is_pipe_filename (iname) ) {
 	len = strlen(iname);
 	if( len > 4 && ( !strcmp(iname + len - 4, EXTSEP_S "sig")
                         || ( len > 5 && !strcmp(iname + len - 5, EXTSEP_S "sign") )

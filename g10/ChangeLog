@@ -1,3 +1,14 @@
+2004-10-13  Werner Koch  <wk@g10code.com>
+
+	* openfile.c (overwrite_filep, make_outfile_name, open_outfile) 
+	(open_sigfile): Use iobuf_is_pipe_filename to check for pipes so
+	that special filesnames are taken into account. This is bug 327.
+	* tdbdump.c (import_ownertrust): Ditto.
+	* sign.c (write_plaintext_packet): Ditto.
+	* progress.c (handle_progress): Ditto.
+	* plaintext.c (handle_plaintext): Ditto.
+	* encode.c (encode_simple, encode_crypt): Ditto. 
+
 2004-10-12  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (read_parameter_file): Changed to use iobuf based file

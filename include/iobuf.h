@@ -80,6 +80,7 @@ struct iobuf_struct {
 EXTERN_UNLESS_MAIN_MODULE int iobuf_debug_mode;
 
 void  iobuf_enable_special_filenames ( int yes );
+int   iobuf_is_pipe_filename (const char *fname);
 IOBUF iobuf_alloc(int use, size_t bufsize);
 IOBUF iobuf_temp(void);
 IOBUF iobuf_temp_with_content( const char *buffer, size_t length );

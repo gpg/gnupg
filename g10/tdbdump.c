@@ -131,7 +131,7 @@ import_ownertrust( const char *fname )
     int rc;
 
     init_trustdb();
-    if( !fname || (*fname == '-' && !fname[1]) ) {
+    if( iobuf_is_pipe_filename (fname) ) {
 	fp = stdin;
 	fname = "[stdin]";
 	is_stdin = 1;
