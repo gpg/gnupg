@@ -117,7 +117,8 @@ int enarmor_file( const char *fname );
 int gen_revoke( const char *uname );
 
 /*-- keylist.c --*/
-void std_key_list( int nnames, char **names );
+void public_key_list( int nnames, char **names );
+void secret_key_list( int nnames, char **names );
 
 /*-- verify.c --*/
 int verify_signatures( int nfiles, char **files );

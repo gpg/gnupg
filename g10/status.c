@@ -56,9 +56,11 @@ write_status_text( int no, const char *text)
       case STATUS_BADSIG : s = "BADSIG\n"; break;
       case STATUS_ERRSIG : s = "ERRSIG\n"; break;
       case STATUS_BADARMOR : s = "BADARMOR\n"; break;
+      case STATUS_RSA_OR_IDEA : s= "RSA_OR_IDEA\n"; break;
       default: s = "?\n"; break;
     }
 
+    write( fd, "[GNUPG:] ", 9 );
     if( text ) {
 	write( fd, s, strlen(s)-1 );
 	write( fd, " ", 1 );

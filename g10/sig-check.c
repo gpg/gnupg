@@ -30,6 +30,7 @@
 #include "keydb.h"
 #include "cipher.h"
 #include "main.h"
+#include "status.h"
 
 
 static int do_check( PKT_public_cert *pkc, PKT_signature *sig,
@@ -46,6 +47,12 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 {
     PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
     int rc=0;
+
+
+  #ifndef HAVE_RSA_CIPHER
+    if( is_RSA(sig->pubkey_algo) )
+	write_status(STATUS_RSA_OR_IDEA);
+  #endif
 
     if( get_pubkey( pkc, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
@@ -294,6 +301,13 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBKEY_SUBCERT );
 
 	if( snode ) {
+	    if( is_selfsig ) {
+		u32 keyid[2];
+
+		keyid_from_pkc( pkc, keyid );
+		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
+		    *is_selfsig = 1;
+	    }
 	    md = md_open( algo, 0 );
 	    hash_public_cert( md, pkc );
 	    hash_public_cert( md, snode->pkt->pkt.public_cert );

@@ -45,6 +45,8 @@ struct {
     int completes_needed;
     const char *homedir;
     int skip_verify;
+    int compress_keys;
+    int always_trust;
 } opt;
 
 

@@ -274,6 +274,10 @@ do_we_trust_pre( PKT_public_cert *pkc, int trustlevel )
 	    rc = 1;
 	m_free(answer);
     }
+    else if( opt.always_trust && !rc ) {
+	log_info(_("WARNING: Using untrusted key!\n"));
+	rc = 1;
+    }
     return rc;
 }
 

@@ -1756,6 +1756,29 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
 }
 
 
+int
+query_trust_info( PKT_public_cert *pkc )
+{
+    unsigned trustlevel;
+    int c;
+
+    if( check_trust( pkc, &trustlevel ) )
+	return '?';
+    if( trustlevel & TRUST_FLAG_REVOKED )
+	return 'r';
+    switch( (trustlevel & TRUST_MASK) ) {
+      case TRUST_UNKNOWN:   c = 'o'; break;
+      case TRUST_EXPIRED:   c = 'e'; break;
+      case TRUST_UNDEFINED: c = 'q'; break;
+      case TRUST_NEVER:     c = 'n'; break;
+      case TRUST_MARGINAL:  c = 'm'; break;
+      case TRUST_FULLY:     c = 'f'; break;
+      case TRUST_ULTIMATE:  c = 'u'; break;
+      default: BUG();
+    }
+    return c;
+}
+
 
 
 /****************

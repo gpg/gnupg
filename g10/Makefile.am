@@ -5,7 +5,8 @@ EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
-bin_PROGRAMS = gpg gpgm gpgd
+noinst_PROGRAMS = gpgd
+bin_PROGRAMS = gpg gpgm
 
 common_source =  \
 	      build-packet.c	\

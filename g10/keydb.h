@@ -104,6 +104,7 @@ char *get_last_passphrase(void);
 /*-- getkey.c --*/
 void add_keyring( const char *name );
 const char *get_keyring( int sequence );
+const char *get_secret_keyring( int sequence );
 void add_secret_keyring( const char *name );
 int get_pubkey( PKT_public_cert *pkc, u32 *keyid );
 int get_pubkey_byname( PKT_public_cert *pkc, const char *name );

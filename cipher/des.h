@@ -1,4 +1,4 @@
-/* status.h
+/* des.h
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -17,28 +17,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_STATUS_H
-#define G10_STATUS_H
+#ifndef G10_DES_H
+#define G10_DES_H
 
+#include "types.h"
 
-#define STATUS_ENTER	 1
-#define STATUS_LEAVE	 2
-#define STATUS_ABORT	 3
+#define DES_BLOCKSIZE 8
+#define DES_ROUNDS 16
 
-#define STATUS_GOODSIG	 4
-#define STATUS_BADSIG	 5
-#define STATUS_ERRSIG	 6
+typedef struct {
+    int tripledes;
+} DES_context;
 
+void des_setkey( DES_context *c, byte *key, unsigned keylen );
+void des_3des_setkey( DES_context *c, byte *key, unsigned keylen );
+void des_encrypt_block( DES_context *bc, byte *outbuf, byte *inbuf );
+void des_decrypt_block( DES_context *bc, byte *outbuf, byte *inbuf );
 
-#define STATUS_BADARMOR  7
-
-#define STATUS_RSA_OR_IDEA 8
-
-
-/*-- status.c --*/
-void set_status_fd( int fd );
-void write_status( int no );
-void write_status_text( int no, const char *text);
-
-
-#endif /*G10_STATUS_H*/
+#endif /*G10_DES_H*/

@@ -31,6 +31,7 @@
 #include "cipher.h"
 #include "keydb.h"
 #include "main.h"
+#include "i18n.h"
 
 static int pwfd = -1;
 static char *next_pw = NULL;
@@ -108,14 +109,25 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
     }
 
     if( keyid && !opt.batch && !next_pw ) {
-	char *ustr;
-	tty_printf("Need a pass phrase to unlock the secret key for:\n");
-	tty_printf("  \"" );
-	ustr = get_user_id_string( keyid );
-	tty_print_string( ustr, strlen(ustr) );
-	m_free(ustr);
-	tty_printf("\"\n\n");
+	PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+	size_t n;
+	char *p;
 
+	tty_printf(_("\nYou need a passphrase to unlock the secret key for\n"
+		     "user: \"") );
+	p = get_user_id( keyid, &n );
+	tty_print_string( p, n );
+	m_free(p);
+	tty_printf("\"\n");
+
+	if( !get_pubkey( pkc, keyid ) ) {
+	    const char *s = pubkey_algo_to_string( pkc->pubkey_algo );
+	    tty_printf( _("(%u-bit %s key, ID %08lX, created %s)\n"),
+		       nbits_from_pkc( pkc ), s?s:"?", (ulong)keyid[1],
+		       strtimestamp(pkc->timestamp) );
+	}
+	tty_printf("\n");
+	free_public_cert( pkc );
     }
     if( next_pw ) {
 	pw = next_pw;

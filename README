@@ -30,11 +30,10 @@
     the United States until Sep 20, 2000).  I'm sorry about this, but
     this is the world we have created (e.g. by using proprietary software).
 
-    Because the OpenPGP standard is still a draft, GNUPG is not yet
-    compatible with it (or PGP 5) - but it will be.  The data structures
-    used are compatible with PGP 2.x, so it can parse and list such files
-    and PGP should be able to parse data created by GNUPG and complain
-    about unsupported algorithms.
+    Because the OpenPGP standard is still a draft, GNUPG now interoperates
+    with it and PGP 5.	The MUA Mutt will soon support GNUPG; it has a
+    mode to fallback to another program if the received message has been
+    created with RSA or IDEA.
 
     The default algorithms used by GNUPG are ElGamal for public-key
     encryption and signing; Blowfish with a 128 bit key for protecting
@@ -76,31 +75,6 @@
     Because we have no hardware device to generate randomness we have to
     use this method.
 
-    Key generation shows progress by printing different characters to
-    stderr:
-	     "."  Last 10 Miller-Rabin tests failed
-	     "+"  Miller-Rabin test succeeded
-	     "!"  Reloading the pool with fresh prime numbers
-	     "^"  Checking a new value for the generator
-	     "<"  Size of one factor decreased
-	     ">"  Size of one factor increased
-
-    The prime number for ElGamal is generated this way:
-
-    1) Make a prime number q of 160, 200, 240 bits (depending on the keysize)
-    2) Select the length of the other prime factors to be at least the size
-       of q and calculate the number of prime factors needed
-    3) Make a pool of prime numbers, each of the length determined in step 2
-    4) Get a new permutation out of the pool or continue with step 3
-       if we have tested all permutations.
-    5) Calculate a candidate prime p = 2 * q * p[1] * ... * p[n] + 1
-    6) Check that this prime has the correct length (this may change q if
-       it seems not to be possible to make a prime of the desired length)
-    7) Check whether this is a prime using trial divisions and the
-       Miller-Rabin test.
-    8) Continue with step 4 if we did not find a prime in step 7.
-    9) Find a generator for that prime.
-
     You should make a revocation certificate in case someone gets
     knowledge of your secret key or you forgot your passphrase:
 
@@ -109,6 +83,13 @@
     Run this command and store it away; output is always ASCII armored,
     so that you can print it and (hopefully never) re-create it if
     your electronic media fails.
+
+    If you decided to create a DSA key, you should add an ElGamal
+    for encryption:
+
+	gpg --add-key user_id_of_your_key
+
+    and follow the displayed instructions (select "ElGamal using v4 packets").
 
 
     You can sign a key with this command:

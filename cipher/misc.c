@@ -31,8 +31,9 @@ static struct { const char *name; int algo;} pubkey_names[] = {
     { "RSA",           PUBKEY_ALGO_RSA     },
     { "RSA-E",         PUBKEY_ALGO_RSA_E   },
     { "RSA-S",         PUBKEY_ALGO_RSA_S   },
-    { "ELGAMAL",       PUBKEY_ALGO_ELGAMAL },
     { "ELG",           PUBKEY_ALGO_ELGAMAL },
+    { "ELG-E",         PUBKEY_ALGO_ELGAMAL_E },
+    { "ELGAMAL",       PUBKEY_ALGO_ELGAMAL },
     { "DSA",           PUBKEY_ALGO_DSA     },
     {NULL} };
 
@@ -75,6 +76,11 @@ const char *
 pubkey_algo_to_string( int algo )
 {
     int i;
+
+    if( is_ELGAMAL(algo) )
+	algo = PUBKEY_ALGO_ELGAMAL;
+    else if( is_RSA(algo) )
+	algo = PUBKEY_ALGO_RSA;
 
     for(i=0; pubkey_names[i].name; i++ )
 	if( pubkey_names[i].algo == algo )

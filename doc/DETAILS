@@ -11,6 +11,32 @@
       to keep them small.
 
 
+    Key generation shows progress by printing different characters to
+    stderr:
+	     "."  Last 10 Miller-Rabin tests failed
+	     "+"  Miller-Rabin test succeeded
+	     "!"  Reloading the pool with fresh prime numbers
+	     "^"  Checking a new value for the generator
+	     "<"  Size of one factor decreased
+	     ">"  Size of one factor increased
+
+    The prime number for ElGamal is generated this way:
+
+    1) Make a prime number q of 160, 200, 240 bits (depending on the keysize)
+    2) Select the length of the other prime factors to be at least the size
+       of q and calculate the number of prime factors needed
+    3) Make a pool of prime numbers, each of the length determined in step 2
+    4) Get a new permutation out of the pool or continue with step 3
+       if we have tested all permutations.
+    5) Calculate a candidate prime p = 2 * q * p[1] * ... * p[n] + 1
+    6) Check that this prime has the correct length (this may change q if
+       it seems not to be possible to make a prime of the desired length)
+    7) Check whether this is a prime using trial divisions and the
+       Miller-Rabin test.
+    8) Continue with step 4 if we did not find a prime in step 7.
+    9) Find a generator for that prime.
+
+
 
 
 Layout of the TrustDB

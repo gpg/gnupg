@@ -24,15 +24,15 @@
 
 /* Trust values must be sorted in ascending order */
 #define TRUST_MASK	 15
-#define TRUST_UNKNOWN	  0  /* not yet calculated */
-#define TRUST_EXPIRED	  1  /* calculation may be invalid */
-#define TRUST_UNDEFINED   2  /* not enough information for calculation */
-#define TRUST_NEVER	  3  /* never trust this pubkey */
-#define TRUST_MARGINAL	  4  /* marginally trusted */
-#define TRUST_FULLY	  5  /* fully trusted	   */
-#define TRUST_ULTIMATE	  6  /* ultimately trusted */
+#define TRUST_UNKNOWN	  0  /* o: not yet calculated */
+#define TRUST_EXPIRED	  1  /* e: calculation may be invalid */
+#define TRUST_UNDEFINED   2  /* q: not enough information for calculation */
+#define TRUST_NEVER	  3  /* n: never trust this pubkey */
+#define TRUST_MARGINAL	  4  /* m: marginally trusted */
+#define TRUST_FULLY	  5  /* f: fully trusted      */
+#define TRUST_ULTIMATE	  6  /* u: ultimately trusted */
 /* trust values not covered by the mask */
-#define TRUST_FLAG_REVOKED 32
+#define TRUST_FLAG_REVOKED 32 /* r: revoked */
 
 
 /*-- trustdb.c --*/
@@ -40,6 +40,7 @@ void list_trustdb(const char *username);
 void list_trust_path( int max_depth, const char *username );
 int init_trustdb( int level, const char *dbname );
 int check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel );
+int query_trust_info( PKT_public_cert *pkc );
 int enum_trust_web( void **context, ulong *lid );
 int get_ownertrust( ulong lid, unsigned *r_otrust );
 int keyid_from_trustdb( ulong lid, u32 *keyid );

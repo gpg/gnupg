@@ -29,6 +29,7 @@
 #include "mpi.h"
 #include "keydb.h"
 #include "cipher.h"
+#include "status.h"
 
 
 /****************
@@ -45,6 +46,11 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     u16 csum, csum2;
     PKT_secret_cert *skc = m_alloc_clear( sizeof *skc );
 
+  #ifndef HAVE_RSA_CIPHER
+    if( is_RSA(k->pubkey_algo) )
+	write_status(STATUS_RSA_OR_IDEA);
+  #endif
+
     skc->pubkey_algo = k->pubkey_algo;	 /* we want a pubkey with this algo*/
     if( (rc = get_seckey( skc, k->keyid )) )
 	goto leave;
@@ -58,7 +64,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	elg_decrypt( plain_dek, k->d.elg.a, k->d.elg.b, &skc->d.elg );
     }
   #ifdef HAVE_RSA_CIPHER
-    else if( is_ELGAMAL(k->pubkey_algo) ) {
+    else if( is_RSA(k->pubkey_algo) ) {
 	if( DBG_CIPHER )
 	    log_mpidump("Encr DEK frame:", k->d.rsa.rsa_integer );
 
@@ -113,6 +119,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     dek->algo = frame[n++];
     switch( dek->algo ) {
       case CIPHER_ALGO_IDEA:
+	write_status(STATUS_RSA_OR_IDEA);
 	rc = G10ERR_NI_CIPHER;
 	goto leave;
       case CIPHER_ALGO_BLOWFISH160:

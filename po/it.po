@@ -427,7 +427,7 @@ msgstr "[nomefile]"
 #: g10/g10.c:936
 #, c-format
 msgid "can't open '%s'\n"
-msgstr "impossibile aprire '%s'"
+msgstr "impossibile aprire '%s'\n"
 
 # #### Md ???
 #: g10/pkclist.c:65
@@ -616,7 +616,7 @@ msgstr "Le dimensioni della chiave richieste sono %u bit\n"
 #: g10/keygen.c:386 g10/keygen.c:390
 #, c-format
 msgid "rounded up to %u bits\n"
-msgstr "arrotondate a %u bit"
+msgstr "arrotondate a %u bit\n"
 
 #: g10/keygen.c:397
 msgid ""

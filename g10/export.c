@@ -67,7 +67,7 @@ export_pubkeys( STRLIST users )
 	afx.what = 1;
 	iobuf_push_filter( out, armor_filter, &afx );
     }
-    if( opt.compress )
+    if( opt.compress_keys && opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
 
     if( all ) {

@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 #include "packet.h"
 #include "iobuf.h"
@@ -35,7 +36,8 @@
 #include "cipher.h"
 #include "main.h"
 #include "status.h"
-
+#include "i18n.h"
+#include "trustdb.h"
 
 /****************
  * Structure to hold the context
@@ -54,6 +56,8 @@ typedef struct {
     KBNODE list;   /* the current list of packets */
     int have_data;
     IOBUF iobuf;    /* used to get the filename etc. */
+    int trustletter; /* temp usage in list_node */
+    ulong local_id;    /* ditto */
 } *CTX;
 
 
@@ -188,8 +192,9 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	if( opt.verbose > 1 )
 	    log_info( "pubkey_enc packet: Good DEK\n" );
     }
-    else
-	log_error( "pubkey_enc packet: %s\n", g10_errstr(result));
+    else {
+	log_error(_("public key decryption failed: %s\n"), g10_errstr(result));
+    }
     free_packet(pkt);
 }
 
@@ -213,10 +218,10 @@ proc_encrypted( CTX c, PACKET *pkt )
 	;
     else if( !result ) {
 	if( opt.verbose > 1 )
-	    log_info("encryption okay\n");
+	    log_info("decryption okay\n");
     }
     else {
-	log_error("encryption failed: %s\n", g10_errstr(result));
+	log_error(_("decryption failed: %s\n"), g10_errstr(result));
     }
     free_packet(pkt);
     c->last_was_session_key = 0;
@@ -238,7 +243,7 @@ proc_plaintext( CTX c, PACKET *pkt )
      * textmode filter (sigclass 0x01)
      */
     c->mfx.md = md_open( DIGEST_ALGO_RMD160, 0);
-    md_start_debug(c->mfx.md, "proc_plaintext");
+    /*md_start_debug(c->mfx.md, "proc_plaintext");*/
     md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
     md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     md_enable( c->mfx.md, DIGEST_ALGO_TIGER );
@@ -289,13 +294,15 @@ proc_compressed( CTX c, PACKET *pkt )
  * Returns: 0 = valid signature or an error code
  */
 static int
-do_check_sig( CTX c, KBNODE node )
+do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 {
     PKT_signature *sig;
     MD_HANDLE md;
     int algo, rc;
 
     assert( node->pkt->pkttype == PKT_SIGNATURE );
+    if( is_selfsig )
+	*is_selfsig = 0;
     sig = node->pkt->pkt.signature;
 
     algo = sig->digest_algo;
@@ -324,7 +331,7 @@ do_check_sig( CTX c, KBNODE node )
 	     || sig->sig_class == 0x30	) { /* classes 0x10..0x17,0x20,0x30 */
 	if( c->list->pkt->pkttype == PKT_PUBLIC_CERT
 	    || c->list->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
-	    return check_key_signature( c->list, node, NULL );
+	    return check_key_signature( c->list, node, is_selfsig );
 	}
 	else {
 	    log_error("invalid root packet for sigclass %02x\n",
@@ -411,16 +418,23 @@ list_node( CTX c, KBNODE node )
 	if( opt.with_colons ) {
 	    u32 keyid[2];
 	    keyid_from_pkc( pkc, keyid );
-	    printf("%s::%u:%d:%08lX%08lX:%s:%u:::",
+	    if( mainkey ) {
+		c->local_id = pkc->local_id;
+		c->trustletter = query_trust_info( pkc );
+	    }
+	    printf("%s:%c:%u:%d:%08lX%08lX:%s:%u:",
 		    mainkey? "pub":"sub",
-		    /* fixme: add trust value here */
+		    c->trustletter,
 		    nbits_from_pkc( pkc ),
 		    pkc->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    datestr_from_pkc( pkc ),
-		    (unsigned)pkc->valid_days
-		    /* fixme: add LID and ownertrust here */
-					    );
+		    (unsigned)pkc->valid_days );
+	    if( c->local_id )
+		printf("%lu", c->local_id );
+	    putchar(':');
+	    /* fixme: add ownertrust here */
+	    putchar(':');
 	}
 	else
 	    printf("%s  %4u%c/%08lX %s ",
@@ -429,79 +443,112 @@ list_node( CTX c, KBNODE node )
 				      pubkey_letter( pkc->pubkey_algo ),
 				      (ulong)keyid_from_pkc( pkc, NULL ),
 				      datestr_from_pkc( pkc )	  );
-	/* and now list all userids with their signatures */
-	for( node = node->next; node; node = node->next ) {
-	    if( any != 2 && node->pkt->pkttype == PKT_SIGNATURE ) {
-		if( !any ) {
-		    if( node->pkt->pkt.signature->sig_class == 0x20 )
-			puts("[revoked]");
-		    else
-			putchar('\n');
+	if( mainkey ) {
+	    /* and now list all userids with their signatures */
+	    for( node = node->next; node; node = node->next ) {
+		if( node->pkt->pkttype == PKT_SIGNATURE ) {
+		    if( !any ) {
+			if( node->pkt->pkt.signature->sig_class == 0x20 )
+			    puts("[revoked]");
+			else
+			    putchar('\n');
+			any = 1;
+		    }
+		    list_node(c,  node );
 		}
-		list_node(c,  node );
-		any = 1;
-	    }
-	    else if( node->pkt->pkttype == PKT_USER_ID ) {
-		KBNODE n;
-
-		if( any ) {
+		else if( node->pkt->pkttype == PKT_USER_ID ) {
+		    if( any ) {
+			if( opt.with_colons )
+			    printf("uid:::::::::");
+			else
+			    printf( "uid%*s", 28, "" );
+		    }
+		    print_userid( node->pkt );
 		    if( opt.with_colons )
-			printf("uid:::::::::");
-		    else
-			printf( "uid%*s", 28, "" );
-		}
-		print_userid( node->pkt );
-		if( opt.with_colons )
-		    putchar(':');
-		putchar('\n');
-		if( opt.fingerprint && !any )
-		    print_fingerprint( pkc, NULL );
-		for( n=node->next; n; n = n->next ) {
-		    if( n->pkt->pkttype == PKT_USER_ID )
-			break;
-		    if( n->pkt->pkttype == PKT_SIGNATURE )
-			list_node(c,  n );
-		}
-		any=2;
-	    }
-	    else if( mainkey && node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
-		if( !any ) {
+			putchar(':');
 		    putchar('\n');
-		    any = 1;
+		    if( opt.fingerprint && !any )
+			print_fingerprint( pkc, NULL );
+		    any=1;
 		}
-		list_node(c,  node );
+		else if( node->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
+		    if( !any ) {
+			putchar('\n');
+			any = 1;
+		    }
+		    list_node(c,  node );
+		}
 	    }
 	}
-	if( any != 2 && mainkey )
-	    printf("ERROR: no user id!\n");
-	else if( any != 2 )
+	if( !any )
 	    putchar('\n');
     }
     else if( (mainkey = (node->pkt->pkttype == PKT_SECRET_CERT) )
 	     || node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
 	PKT_secret_cert *skc = node->pkt->pkt.secret_cert;
 
-	printf("%s  %4u%c/%08lX %s ",
+	if( opt.with_colons ) {
+	    u32 keyid[2];
+	    keyid_from_skc( skc, keyid );
+	    printf("%s::%u:%d:%08lX%08lX:%s:%u:::",
+		    mainkey? "sec":"ssb",
+		    nbits_from_skc( skc ),
+		    skc->pubkey_algo,
+		    (ulong)keyid[0],(ulong)keyid[1],
+		    datestr_from_skc( skc ),
+		    (unsigned)skc->valid_days
+		    /* fixme: add LID */ );
+	}
+	else
+	    printf("%s  %4u%c/%08lX %s ",
 				      mainkey? "sec":"ssb",
-				       nbits_from_skc( skc ),
+				      nbits_from_skc( skc ),
 				      pubkey_letter( skc->pubkey_algo ),
 				      (ulong)keyid_from_skc( skc, NULL ),
 				      datestr_from_skc( skc )	);
-	/* and now list all userids */
-	while( (node = find_next_kbnode(node, PKT_USER_ID)) ) {
-	    print_userid( node->pkt );
-	    putchar('\n');
-	    if( opt.fingerprint && !any )
-		print_fingerprint( NULL, skc );
-	    any=1;
+	if( mainkey ) {
+	    /* and now list all userids with their signatures */
+	    for( node = node->next; node; node = node->next ) {
+		if( node->pkt->pkttype == PKT_SIGNATURE ) {
+		    if( !any ) {
+			if( node->pkt->pkt.signature->sig_class == 0x20 )
+			    puts("[revoked]");
+			else
+			    putchar('\n');
+			any = 1;
+		    }
+		    list_node(c,  node );
+		}
+		else if( node->pkt->pkttype == PKT_USER_ID ) {
+		    if( any ) {
+			if( opt.with_colons )
+			    printf("uid:::::::::");
+			else
+			    printf( "uid%*s", 28, "" );
+		    }
+		    print_userid( node->pkt );
+		    if( opt.with_colons )
+			putchar(':');
+		    putchar('\n');
+		    if( opt.fingerprint && !any )
+			print_fingerprint( NULL, skc );
+		    any=1;
+		}
+		else if( node->pkt->pkttype == PKT_SECKEY_SUBCERT ) {
+		    if( !any ) {
+			putchar('\n');
+			any = 1;
+		    }
+		    list_node(c,  node );
+		}
+	    }
 	}
-	if( !any && mainkey )
-	    printf("ERROR: no user id!\n");
-	else if( !any )
+	if( !any )
 	    putchar('\n');
     }
     else if( node->pkt->pkttype == PKT_SIGNATURE  ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
+	int is_selfsig = 0;
 	int rc2=0;
 	size_t n;
 	char *p;
@@ -516,11 +563,25 @@ list_node( CTX c, KBNODE node )
 	    fputs("sig", stdout);
 	if( opt.check_sigs ) {
 	    fflush(stdout);
-	    switch( (rc2=do_check_sig( c, node )) ) {
+	    switch( (rc2=do_check_sig( c, node, &is_selfsig )) ) {
 	      case 0:		       sigrc = '!'; break;
 	      case G10ERR_BAD_SIGN:    sigrc = '-'; break;
 	      case G10ERR_NO_PUBKEY:   sigrc = '?'; break;
 	      default:		       sigrc = '%'; break;
+	    }
+	}
+	else {	/* check whether this is a self signature */
+	    u32 keyid[2];
+
+	    if( c->list->pkt->pkttype == PKT_PUBLIC_CERT
+		|| c->list->pkt->pkttype == PKT_SECRET_CERT ) {
+		if( c->list->pkt->pkttype == PKT_PUBLIC_CERT )
+		    keyid_from_pkc( c->list->pkt->pkt.public_cert, keyid );
+		else
+		    keyid_from_skc( c->list->pkt->pkt.secret_cert, keyid );
+
+		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
+		    is_selfsig = 1;
 	    }
 	}
 	if( opt.with_colons ) {
@@ -537,6 +598,13 @@ list_node( CTX c, KBNODE node )
 	    printf("[%s] ", g10_errstr(rc2) );
 	else if( sigrc == '?' )
 	    ;
+	else if( is_selfsig ) {
+	    if( opt.with_colons )
+		putchar(':');
+	    fputs( sig->sig_class == 0x18? "[keybind]":"[selfsig]", stdout);
+	    if( opt.with_colons )
+		putchar(':');
+	}
 	else {
 	    p = get_user_id( sig->keyid, &n );
 	    print_string( stdout, p, n, opt.with_colons );
@@ -711,6 +779,8 @@ static int
 check_sig_and_print( CTX c, KBNODE node )
 {
     PKT_signature *sig = node->pkt->pkt.signature;
+    time_t stamp = sig->timestamp;
+    const char *astr, *tstr;
     int rc;
 
     if( opt.skip_verify ) {
@@ -718,28 +788,25 @@ check_sig_and_print( CTX c, KBNODE node )
 	return 0;
     }
 
-    rc = do_check_sig(c, node );
-    if( !rc || rc == G10ERR_BAD_SIGN ) {
-	char *p, *buf;
+    tstr = asctime(localtime (&stamp));
+    astr = pubkey_algo_to_string( sig->pubkey_algo );
+    log_info(_("Signature made %.*s using %s key ID %08lX\n"),
+		strlen(tstr)-1, tstr, astr? astr: "?", (ulong)sig->keyid[1] );
 
-	p = get_user_id_string( sig->keyid );
-	buf = m_alloc( 20 + strlen(p) );
-	sprintf(buf, "%lu %s", (ulong)sig->timestamp, p );
-	m_free(p);
-	if( (p=strchr(buf,'\n')) )
-	    *p = 0; /* just in case ... */
-	write_status_text( rc? STATUS_BADSIG : STATUS_GOODSIG, buf );
-	m_free(buf);
-	log_info("%s signature from ", rc? "BAD":"Good");
+    rc = do_check_sig(c, node, NULL );
+    if( !rc || rc == G10ERR_BAD_SIGN ) {
+	write_status( rc? STATUS_BADSIG : STATUS_GOODSIG );
+	log_info(rc? _("BAD signature from \"")
+		   : _("Good signature from \""));
 	print_keyid( stderr, sig->keyid );
+	putc('\"', stderr);
 	putc('\n', stderr);
 	if( opt.batch && rc )
 	    g10_exit(1);
     }
     else {
 	write_status( STATUS_ERRSIG );
-	log_error("Can't check signature made by %08lX: %s\n",
-		   (ulong)sig->keyid[1], g10_errstr(rc) );
+	log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
     }
     return rc;
 }
@@ -757,6 +824,8 @@ proc_tree( CTX c, KBNODE node )
     if( opt.list_packets )
 	return;
 
+    c->local_id = 0;
+    c->trustletter = ' ';
     if( node->pkt->pkttype == PKT_PUBLIC_CERT
 	|| node->pkt->pkttype == PKT_PUBKEY_SUBCERT )
 	list_node( c, node );

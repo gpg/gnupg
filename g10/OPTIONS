@@ -38,3 +38,17 @@ sign-key
 store
 # simply packs the input data into a rfc1991 packet format
 
+list-secret-keys
+#
+
+
+#-----------------------------------------------
+#--- options
+#-----------------------------------------------
+
+compress-keys
+# compress exported key, compress level is still set with "-z" and
+# algorithm with --compress-algo" - Default is to not compress keys, as
+# this is better for interoperability.
+
+

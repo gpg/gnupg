@@ -64,6 +64,7 @@ static ARGPARSE_OPTS opts[] = {
     { 552, "list-sigs", 0, N_("list keys and signatures")},
     { 508, "check-sigs",0, N_("check key signatures")},
     { 515, "fingerprint", 0, N_("list keys and fingerprints")},
+    { 558, "list-secret-keys", 0, N_("list secret keys")},
   #ifdef IS_G10
     { 503, "gen-key",   0, N_("generate a new key pair")},
     { 554, "add-key",   0, N_("add a subkey to a key pair")},
@@ -87,8 +88,8 @@ static ARGPARSE_OPTS opts[] = {
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
-  #ifdef IS_G10
     { 'a', "armor",     0, N_("create ascii armored output")},
+  #ifdef IS_G10
     { 'u', "local-user",2, N_("use this user-id to sign or decrypt")},
     { 'r', "remote-user", 2, N_("use this user-id for encryption")},
     { 'z', NULL,        1, N_("|N|set compress level N (0 disables)") },
@@ -159,6 +160,8 @@ static ARGPARSE_OPTS opts[] = {
     { 552, "list-sig", 0, "@" }, /* alias */
     { 508, "check-sig",0, "@" }, /* alias */
     { 553, "skip-verify",0, "@" },
+    { 557, "compress-keys",0, "@"},
+    { 559, "always-trust", 0, "@"},
 
 {0} };
 
@@ -169,7 +172,7 @@ enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
     aSignKey, aClearsign, aListPackets, aEditSig, aDeleteKey, aDeleteSecretKey,
     aKMode, aKModeC, aChangePass, aImport, aVerify, aDecrypt, aListKeys,
-    aListSigs, aKeyadd,
+    aListSigs, aKeyadd, aListSecretKeys,
     aExport, aCheckKeys, aGenRevoke, aPrimegen, aPrintMD, aPrintMDs,
     aListTrustDB, aListTrustPath, aDeArmor, aEnArmor, aGenRandom, aTest,
 aNOP };
@@ -474,8 +477,8 @@ main( int argc, char **argv )
 						&pargs, opts) ) {
 	switch( pargs.r_opt ) {
 
-	#ifdef IS_G10
 	  case 'a': opt.armor = 1; opt.no_armor=0; break;
+	#ifdef IS_G10
 	  case 'b': detached_sig = 1; set_cmd( &cmd, aSign ); break;
 	  case 'c': set_cmd( &cmd, aSym); break;
 	  case 'd': set_cmd( &cmd, aDecrypt); break;
@@ -580,6 +583,9 @@ main( int argc, char **argv )
 	  case 553: opt.skip_verify=1; break;
 	  case 554: set_cmd( &cmd, aKeyadd); break;
 	  case 556: opt.def_compress_algo = pargs.r.ret_int; break;
+	  case 557: opt.compress_keys = 1; break;
+	  case 558: set_cmd( &cmd, aListSecretKeys); break;
+	  case 559: opt.always_trust = 1; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -668,7 +674,10 @@ main( int argc, char **argv )
 	break;
       case aKMode:
       case aListKeys:
+      case aListSecretKeys:
       case aCheckKeys:
+	if( opt.with_colons ) /* need this to list the trust */
+	    rc = init_trustdb(1, trustdb_name );
 	break;
       case aListTrustDB: rc = init_trustdb( argc? 1:0, trustdb_name ); break;
       default: rc = init_trustdb(1, trustdb_name ); break;
@@ -796,12 +805,15 @@ main( int argc, char **argv )
       case aListSigs:
 	opt.list_sigs = 1;
       case aListKeys:
-	std_key_list( argc, argv );
+	public_key_list( argc, argv );
+	break;
+      case aListSecretKeys:
+	secret_key_list( argc, argv );
 	break;
 
       case aKMode: /* list keyring */
 	if( argc < 2 )	/* -kv [userid] */
-	    std_key_list( (argc && **argv)? 1:0, argv );
+	    public_key_list( (argc && **argv)? 1:0, argv );
 	else if( argc == 2 ) { /* -kv userid keyring */
 	    if( access( argv[1], R_OK ) ) {
 		log_error(_("can't open %s: %s\n"),
@@ -811,7 +823,7 @@ main( int argc, char **argv )
 		/* add keyring (default keyrings are not registered in this
 		 * special case */
 		add_keyring( argv[1] );
-		std_key_list( **argv?1:0, argv );
+		public_key_list( **argv?1:0, argv );
 	    }
 	}
 	else

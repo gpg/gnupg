@@ -1,3 +1,43 @@
+Fri May 29 10:00:28 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (query_trust_info): New.
+	* keylist.c (list_one): Add output of trust info
+	* mainproc (list_node): ditto.
+	* g10.c (main): full trustdb init if -with-colons and any of the
+	key list modes.
+
+Thu May 28 10:34:42 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* status.c (STATUS_RSA_OR_IDEA): New.
+	* sig-check.c (check_signature): Output special status message.
+	* pubkey-enc.c (get_session_key): Ditto.
+
+	* mainproc.c (check_sig_and_print): Changed format of output.
+	* passpharse.c (passphrase_to_dek): Likewise.
+
+Wed May 27 13:46:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (aListSecretKeys): New option --list-secret-keys
+	* keylist.c (std_key_list): Renamed to public_key_list.
+	(secret_key_list): New
+	(list_one, list_all): Add support for secret keys.
+	* getkey.c (get_secret_keyring): New.
+	* mainproc.c (list_node): Add option --with-colons for secret keys
+
+	* sig-check.c (check_key_signature): detection of selfsigs
+	* mainproc.c (list_node): fixed listing.
+
+	* g10.c (aListSecretKeys): New option --always-trust
+	* pkclist.c (do_we_trust): Override per option added
+
+	* status.c (write_status_text): Add a prefix to every output line.
+
+Wed May 27 07:49:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10 (--compress-keys): New.
+	* options.h (compress_keys): New.
+	* export.c (export_pubkeys): Only compresses with the new option.
+
 Tue May 26 11:24:33 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* passphrase.c (get_last_passphrase): New

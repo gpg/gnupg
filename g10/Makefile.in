@@ -97,7 +97,8 @@ EXTRA_DIST = OPTIONS  pubring.asc
 OMIT_DEPENDENCIES = zlib.h zconf.h
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
-bin_PROGRAMS = gpg gpgm gpgd
+noinst_PROGRAMS = gpgd
+bin_PROGRAMS = gpg gpgm
 
 common_source =  \
 	      build-packet.c	\
@@ -166,7 +167,7 @@ gpgm_LDADD = g10maint.o $(LDADD)
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
-PROGRAMS =  $(bin_PROGRAMS)
+PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
@@ -266,6 +267,15 @@ uninstall-binPROGRAMS:
 	list='$(bin_PROGRAMS)'; for p in $$list; do \
 	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
 	done
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
 
 .s.o:
 	$(COMPILE) -c $<
@@ -398,25 +408,31 @@ distclean-generic:
 maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
-mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-compile \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
+		mostlyclean-compile mostlyclean-tags mostlyclean-depend \
+		mostlyclean-generic
 
-clean:  clean-binPROGRAMS clean-compile clean-tags clean-depend \
-		clean-generic mostlyclean
+clean:  clean-binPROGRAMS clean-noinstPROGRAMS clean-compile clean-tags \
+		clean-depend clean-generic mostlyclean
 
-distclean:  distclean-binPROGRAMS distclean-compile distclean-tags \
-		distclean-depend distclean-generic clean
+distclean:  distclean-binPROGRAMS distclean-noinstPROGRAMS \
+		distclean-compile distclean-tags distclean-depend \
+		distclean-generic clean
 	-rm -f config.status
 
-maintainer-clean:  maintainer-clean-binPROGRAMS maintainer-clean-compile \
-		maintainer-clean-tags maintainer-clean-depend \
-		maintainer-clean-generic distclean
+maintainer-clean:  maintainer-clean-binPROGRAMS \
+		maintainer-clean-noinstPROGRAMS \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
 .PHONY: default mostlyclean-binPROGRAMS distclean-binPROGRAMS \
 clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
-install-binPROGRAMS mostlyclean-compile distclean-compile clean-compile \
+install-binPROGRAMS mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
 clean-tags maintainer-clean-tags distdir mostlyclean-depend \
 distclean-depend clean-depend maintainer-clean-depend info dvi \

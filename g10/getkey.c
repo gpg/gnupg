@@ -123,6 +123,16 @@ get_keyring( int sequence )
     return sl? sl->d : NULL;
 }
 
+const char *
+get_secret_keyring( int sequence )
+{
+    STRLIST sl;
+
+    for(sl = secret_keyrings; sl && sequence; sl = sl->next, sequence-- )
+	;
+    return sl? sl->d : NULL;
+}
+
 
 void
 add_secret_keyring( const char *name )

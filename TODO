@@ -2,6 +2,9 @@
     * add usage arguments to get_key_byname or return a PKC_LIST with
       all keys and add a selection.
 
+    * add expiration date and other stuff from v4 sigs to the trust
+      checking.
+
     * add readline support. Must enhance libreadline - Anyone?
 
     * Burn the buffers used by fopen(), or use read(2).

@@ -31,6 +31,7 @@
 #include "cipher.h"
 #include "main.h"
 #include "options.h"
+#include "i18n.h"
 
 
 static int
@@ -221,7 +222,7 @@ check_secret_key( PKT_secret_cert *cert )
 
     for(i=0; i < 3 && rc == G10ERR_BAD_PASS; i++ ) {
 	if( i )
-	    log_error("Invalid passphrase; please try again ...\n\n");
+	    log_error(_("Invalid passphrase; please try again ...\n"));
 	switch( cert->pubkey_algo ) {
 	  case PUBKEY_ALGO_ELGAMAL_E:
 	  case PUBKEY_ALGO_ELGAMAL:

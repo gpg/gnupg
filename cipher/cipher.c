@@ -31,6 +31,7 @@
 #include "cipher.h"
 #include "blowfish.h"
 #include "cast5.h"
+#include "des.h"
 
 #define STD_BLOCKSIZE 8
 
@@ -38,12 +39,14 @@
   #error Invalid BLOWFISH blocksize
 #elif CAST5_BLOCKSIZE != STD_BLOCKSIZE
   #error Invalid CAST blocksize
+#elif DES_BLOCKSIZE != STD_BLOCKSIZE
+  #error Invalid DES blocksize
 #endif
 
 
 static struct { const char *name; int algo; int keylen; } cipher_names[] = {
     { "IDEA",        CIPHER_ALGO_IDEA        ,0   },
-    { "3DES",        CIPHER_ALGO_3DES        ,0   },
+    { "3DES",        CIPHER_ALGO_3DES        ,168 },
     { "CAST",        CIPHER_ALGO_CAST        ,128 },
     { "BLOWFISH160", CIPHER_ALGO_BLOWFISH160 ,160 },
     { "SAFER_SK128", CIPHER_ALGO_SAFER_SK128 ,0   },
@@ -123,6 +126,7 @@ check_cipher_algo( int algo )
       case CIPHER_ALGO_BLOWFISH160:
       case CIPHER_ALGO_BLOWFISH:
       case CIPHER_ALGO_CAST:
+      case CIPHER_ALGO_3DES:
       case CIPHER_ALGO_DUMMY:
 	return 0;
       default:
@@ -186,7 +190,13 @@ cipher_open( int algo, int mode, int secure )
 	hd->encrypt = FNCCAST_CRYPT(cast5_encrypt_block);
 	hd->decrypt = FNCCAST_CRYPT(cast5_decrypt_block);
 	break;
-
+#if 0
+      case CIPHER_ALGO_3DES:
+	hd->setkey  = FNCCAST_SETKEY(des_3des_setkey);
+	hd->encrypt = FNCCAST_CRYPT(des_encrypt_block);
+	hd->decrypt = FNCCAST_CRYPT(des_decrypt_block);
+	break;
+#endif
       case CIPHER_ALGO_DUMMY:
 	hd->setkey  = FNCCAST_SETKEY(dummy_setkey);
 	hd->encrypt = FNCCAST_CRYPT(dummy_encrypt_block);
