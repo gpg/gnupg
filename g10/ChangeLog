@@ -1,3 +1,8 @@
+2003-08-21  Werner Koch  <wk@gnupg.org>
+
+	* keyserver.c (keyserver_search_prompt): Flush stdout before
+	issuing the prompt.  Requested by Todd Vierling.
+
 2003-08-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.skel: Note that keyserver.pgp.com isn't synchronized,

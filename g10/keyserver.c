@@ -1,5 +1,5 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1088,6 +1088,9 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 
       if(i%10==0 || rl==0)
 	{
+          /* A flush doesn't change anything but might be helpful for 
+             some applications. */
+          fflush (stdout);
 	  answer=cpr_get_no_help("keysearch.prompt",
 				 _("Enter number(s), N)ext, or Q)uit > "));
 	  /* control-d */

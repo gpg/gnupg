@@ -9,15 +9,15 @@ The most recent version of the FAQ is available from
 [$maintainer=David D. Scribner, <faq 'at' gnupg.org>]
 [$hGPGHTTP=http://www.gnupg.org]
 [$hGPGFTP=ftp://ftp.gnupg.org]
-[$hVERSION=1.2.1]
+[$hVERSION=1.2.2]
 
 [H body bgcolor=#ffffff text=#000000 link=#1f00ff alink=#ff0000 vlink=#9900dd]
 [H h1]GnuPG Frequently Asked Questions[H /h1]
 
 
 [H p]
-Version: 1.6.2[H br]
-Last-Modified: Feb 25, 2003[H br]
+Version: 1.6.3[H br]
+Last-Modified: Jul 30, 2003[H br]
 Maintained-by: [$maintainer]
 [H /p]
 
@@ -173,7 +173,7 @@ you could search in the mailing list archive.
     [H /samp]
 
     In addition, there's also the kernel random device by Andi Maier
-    [H a href= http://www.cosy.sbg.ac.at/~andi/]<http://www.cosy.sbg.ac.at/~andi/>[H /a], but it's still beta. Use at your
+    [H a href= http://www.cosy.sbg.ac.at/~andi/SUNrand/]<http://www.cosy.sbg.ac.at/~andi/SUNrand/>[H /a], but it's still beta. Use at your
     own risk!
 
     On other systems, the Entropy Gathering Daemon (EGD) is a good choice.
@@ -298,7 +298,7 @@ you could search in the mailing list archive.
     otherwise gpg doesn't know which option the argument is supposed to
     paired with. As an option, --output and its filename must come before
     the command. The --recipient (-r) option takes a name or keyID to
-    encrypt the message to, which must come right after the -r argument.
+    encrypt the message to, which must come right after the -r option.
     The --encrypt (or -e) command comes after all the options and is
     followed by the file you wish to encrypt. Therefore in this example
     the command-line issued would be:
@@ -362,7 +362,7 @@ you could search in the mailing list archive.
 
     To select a key a search is always done on the public keyring,
     therefore it is not possible to select a secret key without
-    having the public key. Normally it shoud never happen that the
+    having the public key. Normally it should never happen that the
     public key got lost but the secret key is still available. The
     reality is different, so GnuPG implements a special way to deal
     with it: Simply use the long keyID to specify the key to delete,
@@ -427,17 +427,18 @@ you could search in the mailing list archive.
          awk '/^\[GNUPG:\] ENC_TO / { print $3 }'
     [H /samp]
 
-<Q> I can't decrypt my symmetrical-only (-c) encrypted messages with
-    a new version of GnuPG.
+<Q> Why can't I decrypt files encrypted as symmetrical-only (-c) with
+    a version of GnuPG prior to 1.0.1.
 
-    There was a bug in GnuPG versions prior to 1.0.1 which affected
-    messages only if 3DES or Twofish was used for symmetric-only
-    encryption (this has never been the default). The bug has been
-    fixed, but to enable decryption of old messages you should run gpg
-    with the option "--emulate-3des-s2k-bug", decrypt the message and
-    encrypt it again without this option. The option will be removed
-    in version 1.1 when released, so please re-encrypt any affected
-    messages now.
+    There was a bug in GnuPG versions prior to 1.0.1 which affected files
+    only if 3DES or Twofish was used for symmetric-only encryption (this has
+    never been the default). The bug has been fixed, but to enable decryption
+    of old files you should run gpg with the option "--emulate-3des-s2k-bug",
+    decrypt the file and encrypt it again without this option.
+
+    NOTE: This option was removed in GnuPG development version 1.1.0 and later
+    updates, so you will need to use a version between 1.0.1 and 1.0.7 to
+    re-encrypt any affected files.
 
 <Q> How can I use GnuPG in an automated environment?
 
@@ -540,8 +541,7 @@ you could search in the mailing list archive.
     [H /pre]
 
     Good overviews of OpenPGP-support can be found at:[H br]
-    [H a href=http://cryptorights.org/pgp-users/resources/pgp-mail-clients.html]<http://cryptorights.org/pgp-users/resources/pgp-mail-clients.html>[H /a],[H br]
-    [H a href=http://www.geocities.com/openpgp/courrier_en.html]<http://www.geocities.com/openpgp/courrier_en.html>[H /a], and[H br]
+    [H a href=http://www.openpgp.fr.st/courrier_en.html]<http://www.openpgp.fr.st/courrier_en.html>[H /a] and[H br]
     [H a href=http://www.bretschneidernet.de/tips/secmua.html]<http://www.bretschneidernet.de/tips/secmua.html>[H /a].
 
     Users of Win32 MUAs that lack OpenPGP support may look into
@@ -624,9 +624,9 @@ you could search in the mailing list archive.
        $ gpg --verify foobar.tar.gz.sig
     [H /samp]
 
-<Q> How do I export a keyring with only selected signatures?
+<Q> How do I export a keyring with only selected signatures (keys)?
 
-    If you're wanting to create a keyring with only a subset of signatures
+    If you're wanting to create a keyring with only a subset of keys
     selected from a master keyring (for a club, user group, or company
     department for example), simply specify the keys you want to export:
 
@@ -1071,6 +1071,46 @@ you could search in the mailing list archive.
     can be supported. You can use the new --rebuild-keydb-caches migration
     command, which was built into this release and increases the speed of
     many operations for existing keyrings.
+
+<Q> Doesn't a fully trusted user ID on a key prevent warning messages
+    when encrypting to other IDs on the key?
+
+    No. That was actually a key validity bug in GnuPG 1.2.1 and earlier
+    versions. As part of the development of GnuPG 1.2.2, a bug was
+    discovered in the key validation code.  This bug causes keys with
+    more than one user ID to give all user IDs on the key the amount of
+    validity given to the most-valid key. The bug has been fixed in GnuPG
+    release 1.2.2, and upgrading is the recommended fix for this problem.
+    More information and a patch for a some pre-1.2.2 versions of GnuPG
+    can be found at:
+
+    [H a href=http://lists.gnupg.org/pipermail/gnupg-announce/2003q2/000268.html]<http://lists.gnupg.org/pipermail/gnupg-announce/2003q2/000268.html>[H /a]
+
+<Q> I just compiled GnuPG from source on my GNU/Linux RPM-based system
+    and it's not working. Why?
+
+    Many GNU/Linux distributions that are RPM-based will install a
+    version of GnuPG as part of its standard installation, placing the
+    binaries in the /usr/bin directory. Later, compiling and installing
+    GnuPG from source other than from a source RPM won't normally
+    overwrite these files, as the default location for placement of
+    GnuPG binaries is in /usr/local/bin unless the '--prefix' switch
+    is used during compile to specify an alternate location. Since the
+    /usr/bin directory more than likely appears in your path before
+    /usr/local/bin, the older RPM-version binaries will continue to
+    be used when called since they were not replaced.
+
+    To resolve this, uninstall the RPM-based version with 'rpm -e gnupg'
+    before installing the binaries compiled from source. If dependency
+    errors are displayed when attempting to uninstall the RPM (such as
+    when Red Hat's up2date is also installed, which uses GnuPG), uninstall
+    the RPM with 'rpm -e gnupg --nodeps' to force the uninstall. Any
+    dependent files should be automatically replaced during the install
+    of the compiled version. If the default /usr/local/bin directory is
+    used, some packages such as SuSE's Yast Online Update may need to be
+    configured to look for GnuPG binaries in the /usr/local/bin directory,
+    or symlinks can be created in /usr/bin that point to the binaries
+    located in /usr/local/bin.
 
 
 <S> ADVANCED TOPICS

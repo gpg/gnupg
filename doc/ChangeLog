@@ -1,3 +1,22 @@
+2003-08-21  Werner Koch  <wk@gnupg.org>
+
+	* samplekeys.asc: Refreshed the keys.
+
+2003-07-31  David D. Scribner  <dscribner@bigfoot.com>
+
+	* faq.raw: Corrected 3.2 URL per Cri.
+        Updated 4.20 per Cri - reworded text to lessen confusion between keys
+	and signatures.
+        Corrected 4.4 per Noel ("-r argument" should be "-r option")
+        Corrected spelling in 4.6 per Noel ("shoud" should be "should")
+        Updated 4.13 per Noel - reworded text to bring up-to-date.
+        Corrected 4.15 URL per Cri and removed a link.
+        Created FAQ entry (6.21) re: Key Validity bug in gnupg versions
+        prior to 1.2.1
+        Created FAQ entry (6.22) re: compiling source on RPM-based systems
+        that already have GnuPG binaries installed in /usr/bin.
+	Applied by Werner Koch.
+
 2003-07-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Document "tru" trust record.  Document REVKEYSIG status
