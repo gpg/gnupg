@@ -155,6 +155,8 @@ ask_outfile_name( const char *name, size_t namelen )
 	fname = defname; defname = NULL;
     }
     m_free(defname);
+    if (fname)
+        trim_spaces (fname);
     return fname;
 }
 
@@ -221,7 +223,19 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    name = buf;
 	}
 
-	if( overwrite_filep( name ) ) {
+        rc = 0;
+	while( !overwrite_filep (name) ) {
+            char *tmp = ask_outfile_name (NULL, 0);
+            if ( !tmp || !*tmp ) {
+                m_free (tmp);
+                rc = G10ERR_FILE_EXISTS;
+                break;
+            }
+            m_free (buf);
+            name = buf = tmp;
+        }
+
+	if( !rc ) {
 	    if( !(*a = iobuf_create( name )) ) {
 		log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
 		rc = G10ERR_CREATE_FILE;
@@ -229,8 +243,6 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	    else if( opt.verbose )
 		log_info(_("writing to `%s'\n"), name );
 	}
-	else
-	    rc = G10ERR_FILE_EXISTS;
 	m_free(buf);
     }
     return rc;

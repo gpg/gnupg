@@ -89,9 +89,17 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	setmode ( fileno(fp) , O_BINARY );
       #endif
     }
-    else if( !overwrite_filep( fname ) ) {
-	rc = G10ERR_CREATE_FILE;
-	goto leave;
+    else {
+	while( !overwrite_filep (fname) ) {
+            char *tmp = ask_outfile_name (NULL, 0);
+            if ( !tmp || !*tmp ) {
+                m_free (tmp);
+                rc = G10ERR_CREATE_FILE;
+                goto leave;
+            }
+            m_free (fname);
+            fname = tmp;
+        }
     }
 
     if( fp || nooutput )

@@ -1,3 +1,10 @@
+2001-03-29  Werner Koch  <wk@gnupg.org>
+
+	* openfile.c (ask_outfile_name): Trim spaces.
+	(open_outfile): Allow to enter an alternate filename.  Thanks to
+	Stefan Bellon.
+	* plaintext.c (handle_plaintext): Ditto.
+
 2001-03-28  Werner Koch  <wk@gnupg.org>
 
 	* mainproc.c (do_check_sig): Allow direct key and subkey

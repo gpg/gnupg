@@ -1,3 +1,10 @@
+2001-03-29  Werner Koch  <wk@gnupg.org>
+
+	* miscutil.c (answer_is_yes): An empty string does now return no.
+	(answer_is_yes_no_quit): Likewise.
+
+	* iobuf.c (iobuf_close): Burn the buffers.
+
 2001-03-26  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.c: Define TERMDEVICE depending on OS.

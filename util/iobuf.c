@@ -905,7 +905,10 @@ iobuf_close ( IOBUF a )
 					 a->chain, NULL, &dummy_len)) )
 	    log_error("IOBUFCTRL_FREE failed on close: %s\n", g10_errstr(rc) );
 	m_free(a->real_fname);
-	m_free(a->d.buf);
+        if (a->d.buf) {
+            memset (a->d.buf, 0, a->d.size); /* erase the buffer */
+            m_free(a->d.buf);
+        }
 	m_free(a);
     }
     return rc;

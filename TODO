@@ -7,8 +7,6 @@
   * check whether we can remove all the expire stuff in trustdb because this
     is now done in getkey.  
 
-  * ask for alternate filename?
-
   * Can we output things like the preferences?      
 
   * We need another special packet at the end of a clearsign message to mark
@@ -49,10 +47,6 @@
 
 Scheduled for 1.1
 -----------------
-  * David C Niemi pointed out that the code for --no-default-keyring does not
-    work as expected, because in g10/g10.c sec_nring will be set in the option
-    switch but later checked to see whether there are any keyrings.
-
   * export by user-IDs does only export the first matching name which leads
     to a problem in cases where there are 2 keys with identically user-IDs.
 
@@ -60,8 +54,6 @@ Scheduled for 1.1
     info what we are about to add.
 
   * Speed up calculation of key validation.
-
-  * print a warning when a revoked/expired _secret_ key is used.
 
   * --disable-asm should still assemble _udiv_qrnnd when needed
 
@@ -88,9 +80,6 @@ Nice to have
     test program.  Use it with the test suite?
   * add test cases for invalid data (scrambled armor or other random data)
   * add checking of armor trailers
-  * Burn the buffers used by fopen(), or use read(2). Does this
-    really make sense?	And while we are at it:  implement a secure deletion
-    stuff?
   * the pubkey encrypt functions should do some sanity checks.
   * dynload: implement the hint stuff.
   * "gpg filename.tar.gz.asc" should work like --verify (-sab).
@@ -98,8 +87,7 @@ Nice to have
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.
   * configure option where to find zlib
-  * Display more validity information about the user IDs at certain places.
-    We need a more general function to extract such kind of info from the
-    trustdb.
   * Evaluate whether it make sense to replace the namehashs either by
     using the user ID directly or by using pointers into the trustdb.
+
+
