@@ -1,3 +1,13 @@
+2004-03-15  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Hack to set the expired flag.
+
+2004-03-09  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (main): Correctly intitialze USE_OCSP flag.
+
+	* keydb.c (keydb_delete): s/GPG_ERR_CONFLICT/GPG_ERR_NOT_LOCKED/
+
 2004-03-04  Werner Koch  <wk@gnupg.org>
 
 	* call-dirmngr.c (gpgsm_dirmngr_isvalid): New arg ISSUER_CERT.

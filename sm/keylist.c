@@ -196,6 +196,19 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     *truststring = 'e';
   else if (valerr)
     *truststring = 'i';
+  else 
+    {
+      /* Lets also check whether the certificate under question
+         expired.  This is merely a hack until we found a proper way
+         to store the expiration flag in the keybox. */
+      ksba_isotime_t current_time, not_after;
+  
+      gnupg_get_isotime (current_time);
+      if (!opt.ignore_expiration
+          && !ksba_cert_get_validity (cert, 1, not_after)
+          && *not_after && strcmp (current_time, not_after) > 0 )
+        *truststring = 'e';
+    }
   
   if (*truststring)
     fputs (truststring, fp);
@@ -206,14 +219,14 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
            /* pubkey_algo_of_cert (cert)*/1,
            fpr+24);
 
-  /* we assume --fixed-list-mode for gpgsm */
+  /* We assume --fixed-list-mode for gpgsm */
   ksba_cert_get_validity (cert, 0, t);
   print_time (t, fp);
   putc (':', fp);
   ksba_cert_get_validity (cert, 1, t);
   print_time ( t, fp);
   putc (':', fp);
-  /* field 8, serial number: */
+  /* Field 8, serial number: */
   if ((sexp = ksba_cert_get_serial (cert)))
     {
       int len;
@@ -231,7 +244,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
       xfree (sexp);
     }
   putc (':', fp);
-  /* field 9, ownertrust - not used here */
+  /* Field 9, ownertrust - not used here */
   putc (':', fp);
   /* field 10, old user ID - we use it here for the issuer DN */
   if ((p = ksba_cert_get_issuer (cert,0)))
@@ -240,16 +253,16 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
       xfree (p);
     }
   putc (':', fp);
-  /* field 11, signature class - not used */ 
+  /* Field 11, signature class - not used */ 
   putc (':', fp);
-  /* field 12, capabilities: */ 
+  /* Field 12, capabilities: */ 
   print_capabilities (cert, fp);
   putc (':', fp);
   putc ('\n', fp);
 
   /* FPR record */
   fprintf (fp, "fpr:::::::::%s:::", fpr);
-  /* print chaining ID (field 13)*/
+  /* Print chaining ID (field 13)*/
   {
     ksba_cert_t next;
     int rc;

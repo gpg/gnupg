@@ -932,10 +932,10 @@ main ( int argc, char **argv)
           break;
 
         case oDisableOCSP:
-          opt.enable_ocsp = 0;
+          ctrl.use_ocsp = opt.enable_ocsp = 0;
           break;
         case oEnableOCSP:
-          opt.enable_ocsp = 1;
+          ctrl.use_ocsp = opt.enable_ocsp = 1;
           break;
 
         case oIncludeCerts: ctrl.include_certs = pargs.r.ret_int; break;

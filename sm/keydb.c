@@ -630,7 +630,7 @@ keydb_get_flags (KEYDB_HANDLE hd, int which, int idx, unsigned int *value)
 /* Set a flag of the last found object. WHICH is the flag to be set; it
    should be one of the KEYBOX_FLAG_ values.  If the operation is
    successful, the flag value will be stored in the keybox.  Note,
-   that some flag values can't be updated and thus may retrun an
+   that some flag values can't be updated and thus may return an
    error, some other flag values may be masked out before an update.
    Returns 0 on success or an error code. */
 gpg_error_t
@@ -760,7 +760,7 @@ keydb_delete (KEYDB_HANDLE hd)
     return 0;
 
   if (!hd->locked)
-    return gpg_error (GPG_ERR_CONFLICT); /* ...NOT_LOCKED would be better. */
+    return gpg_error (GPG_ERR_NOT_LOCKED); 
 
   switch (hd->active[hd->found].type)
     {
