@@ -814,13 +814,20 @@ gpgsm_server (certlist_t default_recplist)
   if (opt.verbose)
     {
       char *tmp = NULL;
+      const char *s1 = getenv ("GPG_AGENT_INFO");
+      const char *s2 = getenv ("DIRMNGR_INFO");
+
       if (asprintf (&tmp,
-                     "Home: %s\n"
-                     "Config: %s\n"
-                     "%s",
-                     opt.homedir,
-                     opt.config_filename,
-                     hello) > 0)
+                    "Home: %s\n"
+                    "Config: %s\n"
+                    "AgentInfo: %s\n"
+                    "DirmngrInfo: %s\n"
+                    "%s",
+                    opt.homedir,
+                    opt.config_filename,
+                    s1?s1:"[not set]",
+                    s2?s2:"[not set]",
+                    hello) > 0)
         {
           assuan_set_hello_line (ctx, tmp);
           free (tmp);
