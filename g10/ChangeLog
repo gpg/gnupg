@@ -1,3 +1,8 @@
+2003-01-14  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (add_group): Fixed group parsing to allow more than one
+	delimiter in a row and also allow tab as delimiter.
+
 2003-01-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* tdbio.c (tdbio_set_dbname): Fix assertion failure with

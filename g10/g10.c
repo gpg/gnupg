@@ -838,8 +838,11 @@ static void add_group(char *string)
     }
 
   /* Break apart the values */
-  while((value=strsep(&string," ")) && *value!='\0')
-    add_to_strlist2(&values,value,utf8_strings);
+  while ((value=strsep (&string," \t")))
+    {
+      if (*value)
+        add_to_strlist2(&values,value,utf8_strings);
+    }
 
   item=m_alloc(sizeof(struct groupitem));
   item->name=name;
