@@ -1,3 +1,7 @@
+2004-01-24  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Now requires libassuan 0.6.3.
+
 2003-12-23  Werner Koch  <wk@gnupg.org>
 
 	Released 1.9.3.

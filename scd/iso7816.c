@@ -51,6 +51,8 @@
 #define CMD_INTERNAL_AUTHENTICATE 0x88
 #define CMD_GENERATE_KEYPAIR      0x47
 #define CMD_GET_CHALLENGE         0x84
+#define CMD_READ_BINARY 0xB0
+#define CMD_READ_RECORD 0xB2
 
 static gpg_error_t
 map_sw (int sw)
@@ -66,6 +68,8 @@ map_sw (int sw)
     case SW_USE_CONDITIONS: ec = GPG_ERR_USE_CONDITIONS; break;
     case SW_NOT_SUPPORTED:  ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_BAD_PARAMETER:  ec = GPG_ERR_INV_VALUE; break;
+    case SW_FILE_NOT_FOUND: ec = GPG_ERR_ENOENT; break;
+    case SW_RECORD_NOT_FOUND:ec= GPG_ERR_NOT_FOUND; break;
     case SW_REF_NOT_FOUND:  ec = GPG_ERR_NO_OBJ; break;
     case SW_BAD_P0_P1:      ec = GPG_ERR_INV_VALUE; break;
     case SW_INS_NOT_SUP:    ec = GPG_ERR_CARD; break;
@@ -91,16 +95,77 @@ map_sw (int sw)
    apdu_open_reader (), AID is a buffer of size AIDLEN holding the
    requested application ID.  The function can't be used to enumerate
    AIDs and won't return the AID on success.  The return value is 0
-   for okay or GNUPG error code.  Note that ISO error codes are
+   for okay or a GPG error code.  Note that ISO error codes are
    internally mapped. */
 gpg_error_t
 iso7816_select_application (int slot, const char *aid, size_t aidlen)
 {
+  static char const openpgp_aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
   int sw;
+  int p1 = 0x0C; /* No FCI to be returned. */
+  
+  if (aidlen == sizeof openpgp_aid
+      && !memcmp (aid, openpgp_aid, sizeof openpgp_aid))
+    p1 = 0; /* The current openpgp cards don't allow 0x0c. */
 
-  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4, 0, aidlen, aid);
+  sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE, 4, p1, aidlen, aid);
   return map_sw (sw);
 }
+
+
+gpg_error_t
+iso7816_select_file (int slot, int tag, int is_dir,
+                     unsigned char **result, size_t *resultlen)
+{
+  int sw, p0, p1;
+  unsigned char tagbuf[2];
+
+  tagbuf[0] = (tag >> 8) & 0xff;
+  tagbuf[1] = tag & 0xff;
+
+  if (result || resultlen)
+    {
+      *result = NULL;
+      *resultlen = 0;
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+  else
+    {
+      p0 = (tag == 0x3F00)? 0: is_dir? 1:2;
+      p1 = 0x0c; /* No FC return. */
+      sw = apdu_send_simple (slot, 0x00, CMD_SELECT_FILE,
+                             p0, p1, 2, tagbuf );
+      return map_sw (sw);
+    }
+
+  return 0;
+}
+
+
+/* This is a private command currently only working for TCOS cards. */
+gpg_error_t
+iso7816_list_directory (int slot, int list_dirs,
+                        unsigned char **result, size_t *resultlen)
+{
+  int sw;
+
+  if (!result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  sw = apdu_send (slot, 0x80, 0xAA, list_dirs? 1:2, 0, -1, NULL,
+                  result, resultlen);
+  if (sw != SW_SUCCESS)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+    }
+  return map_sw (sw);
+}
+
 
 
 /* Perform a VERIFY command on SLOT using the card holder verification
@@ -381,3 +446,126 @@ iso7816_get_challenge (int slot, int length, unsigned char *buffer)
 
   return 0;
 }
+
+/* Perform a READ BINARY command requesting a maximum of NMAX bytes
+   from OFFSET.  With NMAX = 0 the entire file is read. The result is
+   stored in a newly allocated buffer at the address passed by RESULT.
+   Returns the length of this data at the address of RESULTLEN. */
+gpg_error_t
+iso7816_read_binary (int slot, size_t offset, size_t nmax,
+                     unsigned char **result, size_t *resultlen)
+{
+  int sw;
+  unsigned char *buffer;
+  size_t bufferlen;
+
+  if (!result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  /* We can only encode 15 bits in p0,p1 to indicate an offset. Thus
+     we check for this limit. */
+  if (offset > 32767 || nmax > 254)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  do
+    {
+      buffer = NULL;
+      bufferlen = 0;
+      /* Fixme: Either the ccid driver of the TCOS cards have problems
+         with an Le of 0. */
+      sw = apdu_send_le (slot, 0x00, CMD_READ_BINARY,
+                      ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
+                      nmax? nmax : 254, &buffer, &bufferlen);
+
+      if (sw != SW_SUCCESS && sw != SW_EOF_REACHED)
+        {
+          /* Make sure that pending buffers are released. */
+          xfree (buffer);
+          xfree (*result);
+          *result = NULL;
+          *resultlen = 0;
+          return map_sw (sw);
+        }
+      if (*result) /* Need to extend the buffer. */
+        {
+          unsigned char *p = xtryrealloc (*result, *resultlen + bufferlen);
+          if (!p)
+            {
+              gpg_error_t err = gpg_error_from_errno (errno);
+              xfree (buffer);
+              xfree (*result);
+              *result = NULL;
+              *resultlen = 0;
+              return err;
+            }
+          *result = p;
+          memcpy (*result + *resultlen, buffer, bufferlen);
+          *resultlen += bufferlen;
+          xfree (buffer);
+          buffer = NULL;
+        }
+      else /* Transfer the buffer into our result. */
+        {
+          *result = buffer;
+          *resultlen = bufferlen;
+        }
+      offset += bufferlen;
+      if (offset > 32767)
+        break; /* We simply truncate the result for too large
+                  files. */
+    }
+  while (!nmax && sw != SW_EOF_REACHED);
+  
+  return 0;
+}
+
+/* Perform a READ RECORD command. RECNO gives the record number to
+   read with 0 indicating the current record.  RECCOUNT must be 1 (not
+   all cards support reading of more than one record).  The result is
+   stored in a newly allocated buffer at the address passed by RESULT.
+   Returns the length of this data at the address of RESULTLEN. */
+gpg_error_t
+iso7816_read_record (int slot, int recno, int reccount,
+                     unsigned char **result, size_t *resultlen)
+{
+  int sw;
+  unsigned char *buffer;
+  size_t bufferlen;
+
+  if (!result || !resultlen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  *result = NULL;
+  *resultlen = 0;
+
+  /* We can only encode 15 bits in p0,p1 to indicate an offset. Thus
+     we check for this limit. */
+  if (recno < 0 || recno > 255 || reccount != 1)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  buffer = NULL;
+  bufferlen = 0;
+  /* Fixme: Either the ccid driver of the TCOS cards have problems
+     with an Le of 0. */
+  sw = apdu_send_le (slot, 0x00, CMD_READ_RECORD,
+                     recno, 
+                     0x04,
+                     -1, NULL,
+                     254, &buffer, &bufferlen);
+
+  if (sw != SW_SUCCESS && sw != SW_EOF_REACHED)
+    {
+      /* Make sure that pending buffers are released. */
+      xfree (buffer);
+      xfree (*result);
+      *result = NULL;
+      *resultlen = 0;
+      return map_sw (sw);
+    }
+  *result = buffer;
+  *resultlen = bufferlen;
+  
+  return 0;
+}
+

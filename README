@@ -138,8 +138,8 @@ gpgsm:
 
 --with-key-data
 
-  Displays extra information with the --list-keys commands.  Especiall
-  a line tagged "grp" si printed which tells you the keygrip of a
+  Displays extra information with the --list-keys commands.  Especially
+  a line tagged "grp" is printed which tells you the keygrip of a
   key.  This is string is for example used as the filename of the
   secret key.
 

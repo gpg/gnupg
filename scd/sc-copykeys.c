@@ -165,7 +165,7 @@ main (int argc, char **argv )
 
   /* FIXME: Use select_application. */
   appbuf.slot = slot;
-  rc = app_select_openpgp (&appbuf, &appbuf.serialno, &appbuf.serialnolen);
+  rc = app_select_openpgp (&appbuf);
   if (rc)
     {
       log_error ("selecting openpgp failed: %s\n", gpg_strerror (rc));

@@ -1,5 +1,5 @@
 /* command.c - SCdaemon command handler
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -31,6 +31,7 @@
 #include "scdaemon.h"
 #include <ksba.h>
 #include "app-common.h"
+#include "apdu.h" /* Required for apdu_*_reader (). */
 
 /* maximum length aloowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -90,17 +91,34 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
    function returns an Assuan error, so don't map the error a second
    time */
 static AssuanError
-open_card (CTRL ctrl)
+open_card (CTRL ctrl, const char *apptype)
 {
+  int slot;
+
   if (ctrl->app_ctx)
     return 0; /* Already initialized for one specific application. */
   if (ctrl->card_ctx)
     return 0; /* Already initialized using a card context. */
 
-  ctrl->app_ctx = select_application ();
+  slot = apdu_open_reader (opt.reader_port);
+  if (slot != -1)
+    {
+      ctrl->app_ctx = select_application (ctrl, slot, apptype);
+      if (!ctrl->app_ctx)
+        apdu_close_reader (slot);
+    }
   if (!ctrl->app_ctx)
     { /* No application found - fall back to old mode. */
-      int rc = card_open (&ctrl->card_ctx);
+      /* Note that we should rework the old code to use the
+         application paradigma too. */
+      int rc;
+      
+      /* If an APPTYPE was requested and it is not pkcs#15, we return
+         an error here. */
+      if (apptype && !(!strcmp (apptype, "P15") || !strcmp (apptype, "p15")))
+        rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      else 
+        rc = card_open (&ctrl->card_ctx);
       if (rc)
         return map_to_assuan_status (rc);
     }
@@ -143,10 +161,16 @@ percent_plus_unescape (unsigned char *string)
 
 
 
-/* SERIALNO 
+/* SERIALNO [APPTYPE] 
 
    Return the serial number of the card using a status reponse.  This
    functon should be used to check for the presence of a card.
+
+   If APPTYPE is given, an application of that type is selected and an
+   error is returned if the application is not supported or available.
+   The default is to auto-select the application using a hardwired
+   preference system.  Note, that a future extension to this function
+   may allow to specify a list and order of applications to try.
 
    This function is special in that it can be used to reset the card.
    Most other functions will return an error when a card change has
@@ -165,7 +189,7 @@ cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
   char *serial;
   time_t stamp;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, *line? line:NULL)))
     return rc;
 
   if (ctrl->app_ctx)
@@ -223,6 +247,7 @@ cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
       100 := Regular X.509 cert
       101 := Trusted X.509 cert
       102 := Useful X.509 cert
+      110 := Root CA cert (DINSIG)
 
    For certain cards, more information will be returned:
 
@@ -240,7 +265,7 @@ cmd_serialno (ASSUAN_CONTEXT ctx, char *line)
      S DISP-NAME <name_of_card_holder>
 
    The name of the card holder as stored on the card; percent
-   aescaping takes place, spaces are encoded as '+'
+   escaping takes place, spaces are encoded as '+'
 
      S PUBKEY-URL <url>
 
@@ -254,7 +279,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
   int rc = 0;
   int idx;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   /* Unless the force option is used we try a shortcut by identifying
@@ -305,10 +330,15 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
     free (serial_and_stamp);
   }
 
-  /* Return information about the certificates. */
-  if (ctrl->app_ctx)
-    rc = -1; /* This information is not yet available for applications. */
-  for (idx=0; !rc; idx++)
+  /* If we are using the modern application paradigma, let the
+     application print out its collection of useful status
+     information. */
+  if (!rc && ctrl->app_ctx)
+    rc = app_write_learn_status (ctrl->app_ctx, ctrl);
+
+  /* Return information about the certificates.  FIXME: Move this into
+     an app-p15.c*/
+  for (idx=0; !rc && !ctrl->app_ctx; idx++)
     {
       char *certid;
       int certtype;
@@ -333,11 +363,9 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
   if (rc == -1)
     rc = 0;
 
-
-  /* Return information about the keys. */
-  if (ctrl->app_ctx)
-    rc = -1; /* This information is not yet available for applications. */
-  for (idx=0; !rc; idx++)
+  /* Return information about the keys. FIXME: Move this into an
+     app-p15.c */
+  for (idx=0; !rc && !ctrl->app_ctx; idx++)
     {
       unsigned char keygrip[20];
       char *keyid;
@@ -346,7 +374,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
       rc = card_enum_keypairs (ctrl->card_ctx, idx, keygrip, &keyid);
       if (gpg_err_code (rc) == GPG_ERR_MISSING_CERT && keyid)
         {
-          /* this does happen with an incomplete personalized
+          /* This does happen with an incomplete personalized
              card; i.e. during the time we have stored the key on the
              card but not stored the certificate; probably becuase it
              has not yet been received back from the CA.  Note that we
@@ -383,10 +411,6 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
   if (rc == -1)
     rc = 0;
 
-  if (!rc && ctrl->app_ctx)
-    rc = app_write_learn_status (ctrl->app_ctx, ctrl);
-
-
   return map_to_assuan_status (rc);
 }
 
@@ -403,17 +427,24 @@ cmd_readcert (ASSUAN_CONTEXT ctx, char *line)
   unsigned char *cert;
   size_t ncert;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
+  line = xstrdup (line); /* Need a copy of the line. */
   if (ctrl->app_ctx)
-    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-
-  rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
-  if (rc)
     {
-      log_error ("card_read_cert failed: %s\n", gpg_strerror (rc));
+      rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
+      if (rc)
+        log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
     }
+  else
+    {
+      rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
+      if (rc)
+        log_error ("card_read_cert failed: %s\n", gpg_strerror (rc));
+    }
+  xfree (line);
+  line = NULL;
   if (!rc)
     {
       rc = assuan_send_data (ctx, cert, ncert);
@@ -440,18 +471,26 @@ cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
   ksba_cert_t kc = NULL;
   ksba_sexp_t p;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
+  line = xstrdup (line); /* Need a copy of the line. */
   if (ctrl->app_ctx)
-    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-
-  rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
-  if (rc)
     {
-      log_error ("card_read_cert failed: %s\n", gpg_strerror (rc));
-      goto leave;
+      rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
+      if (rc)
+        log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
     }
+  else
+    {
+      rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
+      if (rc)
+        log_error ("card_read_cert failed: %s\n", gpg_strerror (rc));
+    }
+  xfree (line);
+  line = NULL;
+  if (rc)
+    goto leave;
       
   rc = ksba_cert_new (&kc);
   if (rc)
@@ -569,7 +608,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   size_t outdatalen;
   char *keyidstr;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   /* We have to use a copy of the key ID because the function may use
@@ -619,7 +658,7 @@ cmd_pkauth (ASSUAN_CONTEXT ctx, char *line)
   size_t outdatalen;
   char *keyidstr;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -665,7 +704,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
   size_t outdatalen;
   char *keyidstr;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   keyidstr = xtrystrdup (line);
@@ -718,7 +757,7 @@ cmd_getattr (ASSUAN_CONTEXT ctx, char *line)
   int rc;
   char *keyword;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   keyword = line;
@@ -757,7 +796,7 @@ cmd_setattr (ASSUAN_CONTEXT ctx, char *orig_line)
   size_t nbytes;
   char *line, *linebuf;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   /* We need to use a copy of LINE, because PIN_CB uses the same
@@ -823,7 +862,7 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
     line++;
   *line = 0;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -854,7 +893,7 @@ cmd_random (ASSUAN_CONTEXT ctx, char *line)
     return set_error (Parameter_Error, "number of requested bytes missing");
   nbytes = strtoul (line, NULL, 0);
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -904,7 +943,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
     line++;
   *line = 0;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -931,7 +970,7 @@ cmd_checkpin (ASSUAN_CONTEXT ctx, char *line)
   int rc;
   char *keyidstr;
 
-  if ((rc = open_card (ctrl)))
+  if ((rc = open_card (ctrl, NULL)))
     return rc;
 
   if (!ctrl->app_ctx)

@@ -134,13 +134,14 @@ int asprintf (char **result, const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
      \v, but works for the purposes used here. */
 #define ascii_isspace(a) ((a)==' ' || (a)=='\n' || (a)=='\r' || (a)=='\t')
 
-/* the atoi macros assume that the buffer has only valid digits */
+/* The atoi macros assume that the buffer has only valid digits. */
 #define atoi_1(p)   (*(p) - '0' )
 #define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
 #define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+#define xtoi_4(p)   ((xtoi_2(p) * 256) + xtoi_2((p)+2))
 
 
 

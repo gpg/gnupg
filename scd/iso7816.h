@@ -27,6 +27,10 @@
 
 gpg_error_t iso7816_select_application (int slot,
                                         const char *aid, size_t aidlen);
+gpg_error_t iso7816_select_file (int slot, int tag, int is_dir,
+                                 unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_list_directory (int slot, int list_dirs,
+                                    unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_verify (int slot,
                             int chvno, const char *chv, size_t chvlen);
 gpg_error_t iso7816_change_reference_data (int slot, int chvno,
@@ -56,5 +60,9 @@ gpg_error_t iso7816_read_public_key (int slot,
 gpg_error_t iso7816_get_challenge (int slot,
                                    int length, unsigned char *buffer);
 
+gpg_error_t iso7816_read_binary (int slot, size_t offset, size_t nmax,
+                                 unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_read_record (int slot, int recno, int reccount,
+                                 unsigned char **result, size_t *resultlen);
 
 #endif /*ISO7816_H*/

@@ -29,6 +29,7 @@ AM_CPPFLAGS =  $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 libcommon_a_SOURCES = \
 	util.h i18n.h \
 	errors.h \
+	sexp-parse.h \
 	maperror.c \
 	sysutils.c sysutils.h \
 	gettime.c \

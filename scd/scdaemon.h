@@ -55,6 +55,7 @@ struct {
   const char *homedir; /* configuration directory name */
   const char *ctapi_driver; /* Library to access the ctAPI. */
   const char *pcsc_driver;  /* Library to access the PC/SC system. */
+  const char *reader_port;  /* NULL or reder port to use. */
   int disable_opensc;  /* Disable the use of the OpenSC framework. */
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
   int allow_admin;     /* Allow the use of admin commands for certain
@@ -96,8 +97,10 @@ struct server_control_s {
 };
 
 typedef struct server_control_s *CTRL;
+typedef struct server_control_s *ctrl_t;
 typedef struct card_ctx_s *CARD;
 typedef struct app_ctx_s *APP;
+typedef struct app_ctx_s *app_t;
 
 /*-- scdaemon.c --*/
 void scd_exit (int rc);

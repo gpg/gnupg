@@ -1,5 +1,5 @@
 /* app-openpgp.c - The OpenPGP card application.
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -42,7 +42,7 @@
 
 #include "iso7816.h"
 #include "app-common.h"
-
+#include "tlv.h"
 
 
 static struct {
@@ -80,94 +80,6 @@ static unsigned long convert_sig_counter_value (const unsigned char *value,
 static unsigned long get_sig_counter (APP app);
 
 
-/* Locate a TLV encoded data object in BUFFER of LENGTH and
-   return a pointer to value as well as its length in NBYTES.  Return
-   NULL if it was not found.  Note, that the function does not check
-   whether the value fits into the provided buffer. 
-
-   FIXME: Move this to an extra file, it is mostly duplicated from card.c.
-*/
-static const unsigned char *
-find_tlv (const unsigned char *buffer, size_t length,
-          int tag, size_t *nbytes, int nestlevel)
-{
-  const unsigned char *s = buffer;
-  size_t n = length;
-  size_t len;
-  int this_tag;
-  int composite;
-    
-  for (;;)
-    {
-      buffer = s;
-      if (n < 2)
-        return NULL; /* buffer definitely too short for tag and length. */
-      if (!*s || *s == 0xff)
-        { /* Skip optional filler between TLV objects. */
-          s++;
-          n--;
-          continue;
-        }
-      composite = !!(*s & 0x20);
-      if ((*s & 0x1f) == 0x1f)
-        { /* more tag bytes to follow */
-          s++;
-          n--;
-          if (n < 2)
-            return NULL; /* buffer definitely too short for tag and length. */
-          if ((*s & 0x1f) == 0x1f)
-            return NULL; /* We support only up to 2 bytes. */
-          this_tag = (s[-1] << 8) | (s[0] & 0x7f);
-        }
-      else
-        this_tag = s[0];
-      len = s[1];
-      s += 2; n -= 2;
-      if (len < 0x80)
-        ;
-      else if (len == 0x81)
-        { /* One byte length follows. */
-          if (!n)
-            return NULL; /* we expected 1 more bytes with the length. */
-          len = s[0];
-          s++; n--;
-        }
-      else if (len == 0x82)
-        { /* Two byte length follows. */
-          if (n < 2)
-            return NULL; /* we expected 2 more bytes with the length. */
-          len = (s[0] << 8) | s[1];
-          s += 2; n -= 2;
-        }
-      else
-        return NULL; /* APDU limit is 65535, thus it does not make
-                        sense to assume longer length fields. */
-
-      if (composite && nestlevel < 100)
-        { /* Dive into this composite DO after checking for too deep
-             nesting. */
-          const unsigned char *tmp_s;
-          size_t tmp_len;
-          
-          tmp_s = find_tlv (s, len, tag, &tmp_len, nestlevel+1);
-          if (tmp_s)
-            {
-              *nbytes = tmp_len;
-              return tmp_s;
-            }
-        }
-
-      if (this_tag == tag)
-        {
-          *nbytes = len;
-          return s;
-        }
-      if (len > n)
-        return NULL; /* buffer too short to skip to the next tag. */
-      s += len; n -= len;
-    }
-}
-
 
 /* Get the DO identified by TAG from the card in SLOT and return a
    buffer with its content in RESULT and NBYTES.  The return value is
@@ -197,7 +109,7 @@ get_one_do (int slot, int tag, unsigned char **result, size_t *nbytes)
         {
           const unsigned char *s;
 
-          s = find_tlv (buffer, buflen, tag, &valuelen, 0);
+          s = find_tlv (buffer, buflen, tag, &valuelen);
           if (!s)
             value = NULL; /* not found */
           else if (valuelen > buflen - (s - buffer))
@@ -271,7 +183,7 @@ dump_all_do (int slot)
                   if (j==i || data_objects[i].tag != data_objects[j].get_from)
                     continue;
                   value = find_tlv (buffer, buflen,
-                                    data_objects[j].tag, &valuelen, 0);
+                                    data_objects[j].tag, &valuelen);
                   if (!value)
                     ; /* not found */
                   else if (valuelen > buflen - (value - buffer))
@@ -443,7 +355,7 @@ do_getattr (APP app, CTRL ctrl, const char *name)
     {
       /* The serial number is very special.  We could have used the
          AID DO to retrieve it, but we have it already in the app
-         context and the stanmp argument is required anyway which we
+         context and the stamp argument is required anyway which we
          can't by other means. The AID DO is available anyway but not
          hex formatted. */
       char *serial;
@@ -772,7 +684,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
       log_error ("error reading application data\n");
       return gpg_error (GPG_ERR_GENERAL);
     }
-  fpr = find_tlv (buffer, buflen, 0x00C5, &n, 0);
+  fpr = find_tlv (buffer, buflen, 0x00C5, &n);
   if (!fpr || n != 60)
     {
       rc = gpg_error (GPG_ERR_GENERAL);
@@ -820,7 +732,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
     }
   log_info ("key generation completed (%d seconds)\n",
             (int)(time (NULL) - start_at));
-  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen, 0);
+  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
       rc = gpg_error (GPG_ERR_CARD);
@@ -828,7 +740,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
       goto leave;
     }
  
-  m = find_tlv (keydata, keydatalen, 0x0081, &mlen, 0);
+  m = find_tlv (keydata, keydatalen, 0x0081, &mlen);
   if (!m)
     {
       rc = gpg_error (GPG_ERR_CARD);
@@ -838,7 +750,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
 /*    log_printhex ("RSA n:", m, mlen); */
   send_key_data (ctrl, "n", m, mlen);
 
-  e = find_tlv (keydata, keydatalen, 0x0082, &elen, 0);
+  e = find_tlv (keydata, keydatalen, 0x0082, &elen);
   if (!e)
     {
       rc = gpg_error (GPG_ERR_CARD);
@@ -913,7 +825,7 @@ compare_fingerprint (APP app, int keyno, unsigned char *sha1fpr)
       log_error ("error reading application data\n");
       return gpg_error (GPG_ERR_GENERAL);
     }
-  fpr = find_tlv (buffer, buflen, 0x00C5, &n, 0);
+  fpr = find_tlv (buffer, buflen, 0x00C5, &n);
   if (!fpr || n != 60)
     {
       xfree (buffer);
@@ -1268,7 +1180,7 @@ do_check_pin (APP app, const char *keyidstr,
 /* Select the OpenPGP application on the card in SLOT.  This function
    must be used before any other OpenPGP application functions. */
 int
-app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
+app_select_openpgp (APP app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
   int slot = app->slot;
@@ -1280,10 +1192,17 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
   rc = iso7816_select_application (slot, aid, sizeof aid);
   if (!rc)
     {
+      app->apptype = "OPENPGP";
+
       app->did_chv1 = 0;
       app->did_chv2 = 0;
       app->did_chv3 = 0;
 
+      /* The OpenPGP card returns the serial number as part of the
+         AID; because we prefer to use OpenPGP serial numbers, we
+         repalce a possibly already set one from a EF.GDO with this
+         one.  Note, that for current OpenPGP cards, no EF.GDO exists
+         and thus it won't matter at all. */
       rc = iso7816_get_data (slot, 0x004F, &buffer, &buflen);
       if (rc)
         goto leave;
@@ -1293,15 +1212,12 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
           log_printhex ("", buffer, buflen);
         }
 
-      if (sn)
-        {
-          *sn = buffer;
-          *snlen = buflen;
-          app->card_version = buffer[6] << 8;
-          app->card_version |= buffer[7];
-        }
-      else
-        xfree (buffer);
+      app->card_version = buffer[6] << 8;
+      app->card_version |= buffer[7];
+      xfree (app->serialno);
+      app->serialno = buffer;
+      app->serialnolen = buflen;
+      buffer = NULL;
 
       relptr = get_one_do (app->slot, 0x00C4, &buffer, &buflen);
       if (!relptr)
@@ -1316,6 +1232,7 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
         dump_all_do (slot);
 
       app->fnc.learn_status = do_learn_status;
+      app->fnc.readcert = NULL;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = do_setattr;
       app->fnc.genkey = do_genkey;
@@ -1498,7 +1415,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
       goto leave;
     }
 
-  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen, 0);
+  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
       log_error ("response does not contain the public key data\n");
@@ -1506,7 +1423,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
       goto leave;
     }
  
-  a = find_tlv (keydata, keydatalen, 0x0081, &alen, 0);
+  a = find_tlv (keydata, keydatalen, 0x0081, &alen);
   if (!a)
     {
       log_error ("response does not contain the RSA modulus\n");
@@ -1517,7 +1434,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
   *m = xmalloc (alen);
   memcpy (*m, a, alen);
   
-  a = find_tlv (keydata, keydatalen, 0x0082, &alen, 0);
+  a = find_tlv (keydata, keydatalen, 0x0082, &alen);
   if (!e)
     {
       log_error ("response does not contain the RSA public exponent\n");

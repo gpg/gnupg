@@ -100,7 +100,7 @@ static ARGPARSE_OPTS opts[] = {
   { oReaderPort, "reader-port", 2, N_("|N|connect to reader at port N")},
   { octapiDriver, "ctapi-driver", 2, N_("NAME|use NAME as ct-API driver")},
   { opcscDriver, "pcsc-driver", 2, N_("NAME|use NAME as PC/SC driver")},
-  { oDisableCCID, "disable-ccidc", 0,
+  { oDisableCCID, "disable-ccid", 0,
 #ifdef HAVE_LIBUSB
                                     N_("do not use the internal CCID driver")
 #else
@@ -397,7 +397,7 @@ main (int argc, char **argv )
         case oServer: pipe_server = 1; break;
         case oDaemon: is_daemon = 1; break;
 
-        case oReaderPort: app_set_default_reader_port (pargs.r.ret_str); break;
+        case oReaderPort: opt.reader_port = pargs.r.ret_str; break;
         case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
         case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
         case oDisableCCID: opt.disable_ccid = 1; break;

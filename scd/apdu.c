@@ -1168,7 +1168,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
         log_printhex ("     dump: ", result, resultlen);
     }
 
-  if (sw == SW_SUCCESS)
+  if (sw == SW_SUCCESS || sw == SW_EOF_REACHED)
     {
       if (retbuf)
         {

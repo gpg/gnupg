@@ -41,8 +41,7 @@ gpg_agent_SOURCES = \
 	trustlist.c \
 	divert-scd.c \
 	call-scd.c \
-	learncard.c \
-	sexp-parse.h
+	learncard.c
 
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \

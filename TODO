@@ -52,6 +52,7 @@ might want to have an agent context for each service request
 * agent/protect-tool.c
 ** Export and import certificates along with the secret key.
 ** Make it more comfortable; i.e. copy files to the correct place.
+** BUG? --p12-export seems to work only with unprotected keys
 
 * Move pkcs-1 encoding into libgcrypt.
 

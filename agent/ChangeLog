@@ -1,3 +1,7 @@
+2004-01-27  Werner Koch  <wk@gnupg.org>
+
+	* sexp-parse.h: Moved to ../common.
+
 2004-01-24  Werner Koch  <wk@gnupg.org>
 
 	* call-scd.c (atfork_cb): New.
@@ -437,7 +441,7 @@
 	* protect.c (agent_get_shadow_info): New.
 
 	* protect.c (snext,sskip,smatch): Moved to
-	* sexp-parse.h: new file.
+	* sexp-parse.h: New file.
 	* divert-scd.c: New.
 	
 2002-02-27  Werner Koch  <wk@gnupg.org>

@@ -29,49 +29,78 @@
 #include "app-common.h"
 #include "apdu.h"
 #include "iso7816.h"
-#include "dynload.h"
-
-static char *default_reader_port;
-
-void
-app_set_default_reader_port (const char *portstr)
-{
-  xfree (default_reader_port);
-  default_reader_port = portstr? xstrdup (portstr): NULL;
-}
+#include "tlv.h"
 
 
-/* The select the best fitting application and return a context.
-   Returns NULL if no application was found or no card is present. */
+/* If called with NAME as NULL, select the best fitting application
+   and return a context; otherwise select the application with NAME
+   and return a context.  SLOT identifies the reader device. Returns
+   NULL if no application was found or no card is present. */
 APP
-select_application (void)
+select_application (ctrl_t ctrl, int slot, const char *name)
 {
-  int slot;
   int rc;
   APP app;
-
-  slot = apdu_open_reader (default_reader_port);
-  if (slot == -1)
-    {
-      log_error ("card reader not available\n");
-      return NULL;
-    }
+  unsigned char *result = NULL;
+  size_t resultlen;
 
   app = xtrycalloc (1, sizeof *app);
   if (!app)
     {
       rc = out_of_core ();
       log_info ("error allocating context: %s\n", gpg_strerror (rc));
-      /*apdu_close_reader (slot);*/
       return NULL;
     }
-
   app->slot = slot;
-  rc = app_select_openpgp (app, &app->serialno, &app->serialnolen);
+
+  /* Fixme: We should now first check whether a card is at all
+     present. */
+
+  /* Try to read the GDO file first to get a default serial number. */
+  rc = iso7816_select_file (slot, 0x3F00, 1, NULL, NULL);
+  if (!rc)
+    rc = iso7816_select_file (slot, 0x2F02, 0, NULL, NULL);
+  if (!rc)
+    rc = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
+  if (!rc)
+    {
+      size_t n;
+      const unsigned char *p;
+
+      p = find_tlv (result, resultlen, 0x5A, &n);
+      if (p && n && n >= (resultlen - (p - result)))
+        {
+          /* The GDO file is pretty short, thus we simply reuse it for
+             storing the serial number. */
+          memmove (result, p, n);
+          app->serialno = result;
+          app->serialnolen = n;
+        }
+      else
+        xfree (result);
+      result = NULL;
+    }
+
+
+  rc = gpg_error (GPG_ERR_NOT_FOUND);
+
+  if (!name || !strcmp (name, "openpgp"))
+    rc = app_select_openpgp (app);
+  if (rc && (!name || !strcmp (name, "nks")))
+    rc = app_select_nks (app);
+  if (rc && (!name || !strcmp (name, "dinsig")))
+    rc = app_select_dinsig (app);
+  if (rc && name)
+    rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
+
   if (rc)
     {
-/*        apdu_close_reader (slot); */
-      log_info ("selecting openpgp failed: %s\n", gpg_strerror (rc));
+      if (name)
+        log_info ("can't select application `%s': %s\n",
+                  name, gpg_strerror (rc));
+      else
+        log_info ("no supported card application found: %s\n",
+                  gpg_strerror (rc));
       xfree (app);
       return NULL;
     }
@@ -81,23 +110,36 @@ select_application (void)
 }
 
 
+void
+release_application (app_t app)
+{
+  if (!app)
+    return;
+
+  xfree (app->serialno);
+  xfree (app);
+}
+
+
 
 /* Retrieve the serial number and the time of the last update of the
    card.  The serial number is returned as a malloced string (hex
    encoded) in SERIAL and the time of update is returned in STAMP.  If
    no update time is available the returned value is 0.  Caller must
-   free SERIAL unless the function returns an error. */
+   free SERIAL unless the function returns an error.  If STAMP is not
+   of interest, NULL may be passed. */
 int 
-app_get_serial_and_stamp (APP app, char **serial, time_t *stamp)
+app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
 {
   unsigned char *buf, *p;
   int i;
 
-  if (!app || !serial || !stamp)
+  if (!app || !serial)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   *serial = NULL;
-  *stamp = 0; /* not available */
+  if (stamp)
+    *stamp = 0; /* not available */
 
   buf = xtrymalloc (app->serialnolen * 2 + 1);
   if (!buf)
@@ -121,7 +163,31 @@ app_write_learn_status (APP app, CTRL ctrl)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.learn_status)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  if (app->apptype)
+    send_status_info (ctrl, "APPTYPE",
+                      app->apptype, strlen (app->apptype), NULL, 0);
+
   return app->fnc.learn_status (app, ctrl);
+}
+
+
+/* Read the certificate with id CERTID (as returned by learn_status in
+   the CERTINFO status lines) and return it in the freshly allocated
+   buffer put into CERT and the length of the certificate put into
+   CERTLEN. */
+int
+app_readcert (app_t app, const char *certid,
+              unsigned char **cert, size_t *certlen)
+{
+  if (!app)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!app->initialized)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if (!app->fnc.readcert)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  return app->fnc.readcert (app, certid, cert, certlen);
 }
 
 
@@ -316,9 +382,4 @@ app_check_pin (APP app, const char *keyidstr,
     log_info ("operation check_pin result: %s\n", gpg_strerror (rc));
   return rc;
 }
-
-
-
-
-
 

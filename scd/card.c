@@ -53,7 +53,10 @@ map_sc_err (int rc)
 #endif
     default: e = GPG_ERR_CARD; break;
     }
-  return gpg_err_make (GPG_ERR_SOURCE_UNKNOWN, e);
+  /* It does not make much sense to further distingusih the error
+     source between OpenSC and SCD.  Thus we use SCD as source
+     here. */
+  return gpg_err_make (GPG_ERR_SOURCE_SCD, e);
 }
 
 /* Get the keygrip from CERT, return 0 on success */
@@ -462,6 +465,7 @@ card_enum_keypairs (CARD card, int idx,
       100 := Regular X.509 cert
       101 := Trusted X.509 cert
       102 := Useful X.509 cert
+      110 := Root CA cert (DINSIG)
  */
 int
 card_enum_certs (CARD card, int idx, char **certid, int *certtype)

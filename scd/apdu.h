@@ -27,13 +27,16 @@
 enum {
   SW_MORE_DATA      = 0x6100, /* Note: that the low byte must be
                                  masked of.*/
+  SW_EOF_REACHED    = 0x6282,
   SW_EEPROM_FAILURE = 0x6581,
   SW_WRONG_LENGTH   = 0x6700,
   SW_CHV_WRONG      = 0x6982,
   SW_CHV_BLOCKED    = 0x6983,
   SW_USE_CONDITIONS = 0x6985,
-  SW_NOT_SUPPORTED  = 0x6a81,
   SW_BAD_PARAMETER  = 0x6a80, /* (in the data field) */
+  SW_NOT_SUPPORTED  = 0x6a81,
+  SW_FILE_NOT_FOUND = 0x6a82,
+  SW_RECORD_NOT_FOUND = 0x6a83,
   SW_REF_NOT_FOUND  = 0x6a88,
   SW_BAD_P0_P1      = 0x6b00,
   SW_INS_NOT_SUP    = 0x6d00,

@@ -1,3 +1,68 @@
+2004-01-27  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_readcert, cmd_readkey): Work on a copy of LINE.
+
+	* app-common.h (app_ctx_s): Added readcert field.
+	* app.c (app_readcert): New.
+	* tlv.c (parse_ber_header): Added; taken from libksba.
+
+2004-01-26  Werner Koch  <wk@gnupg.org>
+
+	* card.c (map_sc_err): Use SCD as the error source.
+
+	* command.c (open_card): ADD arg NAME to allow requesting a
+	specific application.  Changed all callers.
+	(cmd_serialno): Allow optional argument to select the desired
+	application.
+
+	* app-nks.c: New. 
+
+	* scdaemon.h (opt): Add READER_PORT.
+	* scdaemon.c (main): Set it here.
+	* app.c (app_set_default_reader_port): Removed.
+	(select_application): Add NAME arg and figure out a
+	default serial number from the GDO. Add SLOT arg and remove all
+	reader management.
+	(release_application): New.
+	(app_write_learn_status): Output an APPTYPE status line.
+	* command.c (open_card): Adapt for select_application change.
+	* app-openpgp.c (app_select_openpgp): Removed SN and SNLEN args
+	and set it directly.  Changed all callers.
+
+2004-01-25  Werner Koch  <wk@gnupg.org>
+
+	* iso7816.c (iso7816_select_application): P1 kludge for OpenPGP
+	card.
+	* app-openpgp.c (find_tlv): Factor out this function to ..
+	* tlv.c, tlv.h: .. new.
+
+	* scdaemon.h: Introduced app_t and ctrl_t as the new types for APP
+	and CTRL.
+
+2004-01-21  Werner Koch  <wk@gnupg.org>
+
+	* apdu.c (apdu_send_le): Treat SW_EOF_REACHED as a warning.
+
+2004-01-20  Werner Koch  <wk@gnupg.org>
+
+	* iso7816.c (iso7816_read_binary): New.
+	(iso7816_select_file): New.
+	(iso7816_list_directory): New.
+
+	* sc-investigate.c: Add option -i.
+	(select_app, read_line, interactive_shell): New.
+
+2004-01-16  Werner Koch  <wk@gnupg.org>
+
+	* apdu.h: Add SW_FILE_NOT_FOUND.
+	* iso7816.c (map_sw): Map it to GPG_ERR_ENOENT.
+	* iso7816.c (iso7816_select_file): New.
+
+	* app-dinsig.c: New file w/o any real code yet.
+	* Makefile.am (scdaemon_SOURCES,sc_investigate_SOURCES): Add file.
+
+	* sc-investigate.c: Add option --disable-ccid.
+
 2003-12-19  Werner Koch  <wk@gnupg.org>
 
 	* apdu.c (apdu_send_le): Send a get_response with the indicated

@@ -98,6 +98,11 @@
 #  include "scdaemon.h"
 # endif
 
+/* Disable all debgging output for now. */
+#undef DBG_CARD_IO
+#define DBG_CARD_IO 0
+
+
 # define DEBUGOUT(t)         do { if (DBG_CARD_IO) \
                                   log_debug (DRVNAME t); } while (0)
 # define DEBUGOUT_1(t,a)     do { if (DBG_CARD_IO) \
@@ -944,7 +949,9 @@ ccid_transceive (ccid_driver_t handle,
             {
               if (n > maxresplen)
                 {
-                  DEBUGOUT ("provided buffer too short for received data\n");
+                  DEBUGOUT_2 ("provided buffer too short for received data "
+                              "(%u/%u)\n",
+                              (unsigned int)n, (unsigned int)maxresplen);
                   return -1;
                 }
               
