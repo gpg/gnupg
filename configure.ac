@@ -1042,6 +1042,10 @@ if test "$use_bzip2" = yes ; then
       fi
       ],withval="")
 
+# Checking alongside stdio.h as an early version of bzip2 (1.0)
+# required stdio.h to be included before bzlib.h, and Solaris 9 is
+# woefully out of date.
+
   if test "$withval" != no ; then
      AC_CHECK_HEADER(bzlib.h,
         AC_CHECK_LIB(bz2,BZ2_bzCompressInit,
@@ -1052,7 +1056,7 @@ if test "$use_bzip2" = yes ; then
 		  [Defined if the bz2 compression library is available])
 	  ],
 	  CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
-	  CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
+	  CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags},[#include <stdio.h>])
   fi
 fi
 
