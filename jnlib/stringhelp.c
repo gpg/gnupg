@@ -327,7 +327,7 @@ print_sanitized_buffer (FILE *fp, const void *buffer, size_t length,
 
   for (; length; length--, p++, count++)
     {
-      if (*p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim)
+      if (*p < 0x20 || *p == 0x7f || *p == delim)
         {
           putc ('\\', fp);
           count++;
@@ -408,8 +408,7 @@ sanitize_buffer (const unsigned char *p, size_t n, int delim)
   /* first count length */
   for (save_n = n, save_p = p, buflen=1 ; n; n--, p++ ) 
     {
-      if ( *p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim 
-           || (delim && *p=='\\'))
+      if ( *p < 0x20 || *p == 0x7f || *p == delim  || (delim && *p=='\\'))
         {
           if ( *p=='\n' || *p=='\r' || *p=='\f'
                || *p=='\v' || *p=='\b' || !*p )
@@ -426,8 +425,7 @@ sanitize_buffer (const unsigned char *p, size_t n, int delim)
   d = buffer = jnlib_xmalloc( buflen );
   for ( ; n; n--, p++ )
     {
-      if (*p < 0x20 || (*p >= 0x7f && *p < 0xa0) || *p == delim 
-          ||(delim && *p=='\\')) {
+      if (*p < 0x20 || *p == 0x7f || *p == delim || (delim && *p=='\\')) {
         *d++ = '\\';
         if( *p == '\n' )
           *d++ = 'n';

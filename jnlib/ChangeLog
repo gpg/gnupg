@@ -1,3 +1,9 @@
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* stringhelp.c (print_sanitized_buffer): Don't care about
+	non-ASCII characaters.
+	(sanitize_buffer): Ditto.
+
 2004-02-12  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Replaced INCLUDES by AM_CPPFLAGS.
