@@ -890,7 +890,7 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
   if(count<0)
     {
       validcount=0;
-      count=1;
+      count=10;
     }
 
   desc=m_alloc(count*sizeof(KEYDB_SEARCH_DESC));
@@ -901,18 +901,9 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
     {
       int rl;
 
-      if(i==count)
+      if(validcount && i%10==0)
 	{
-	  count++;
-	  desc=m_realloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
-	  validcount=0;
-	}
-
-      i++;
-
-      if(validcount && (i-1)%10==0)
-	{
-	  printf("Keys %d-%d of %d",i,(i+9<count)?i+9:count,count);
+	  printf("Keys %d-%d of %d",i+1,(i+10<count)?i+10:count,count);
 	  if(searchstr)
 	    printf(" for \"%s\"",searchstr);
 	  printf("\n");
@@ -922,13 +913,22 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
       rl=iobuf_read_line(buffer,&line,&buflen,&maxlen);
       if(rl>0)
 	{
-	  if(print_keyinfo(i,line,&desc[i-1])==-1)
+	  if(print_keyinfo(i+1,line,&desc[i])==0)
+	    {
+	      i++;
+
+	      if(i==count)
+		{
+		  count+=10;
+		  desc=m_realloc(desc,count*sizeof(KEYDB_SEARCH_DESC));
+		  validcount=0;
+		}
+	    }
+	  else
 	    continue;
 	}
-      else
-	i--;
 
-      if(rl==0 && i==1)
+      if(rl==0 && i==0)
 	{
 	  count=0;
 	  break;

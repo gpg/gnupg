@@ -1,3 +1,12 @@
+2002-03-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_search_prompt): Properly handle a "no
+	keys found" case from the internal HKP code (external HKP is ok).
+	Also, make a COUNT -1 (i.e. streamed) keyserver response a little
+	more efficient.
+
+	* g10.c (main): Add --no-allow-non-selfsigned-uid
+
 2002-03-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): --openpgp implies --allow-non-selfsigned-uid.
