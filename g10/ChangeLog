@@ -1,5 +1,14 @@
 2002-11-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* g10.c (add_notation_data): Disallow notation names that do not
+	contain a '@', unless --expert is set.  This is to help prevent
+	people from polluting the (as yet unused) IETF namespace.
+
+	* main.h: Comments about default algorithms.
+
+	* photoid.c (image_type_to_string): Comments about 3-letter file
+	extensions.
+
 	* encode.c (encode_simple), passphrase.c (passphrase_to_dek),
 	sign.c (sign_symencrypt_file): Use --s2k-digest-algo for
 	passphrase mangling rather than --digest-algo.

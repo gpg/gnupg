@@ -25,8 +25,10 @@
 #include "cipher.h"
 #include "keydb.h"
 
+/* It could be argued that the default cipher should be 3DES rather
+   than CAST5, and the default compression should be 0
+   (i.e. uncompressed) rather than 1 (zip). */
 #define DEFAULT_CIPHER_ALGO   CIPHER_ALGO_CAST5
-#define DEFAULT_PUBKEY_ALGO   PUBKEY_ALGO_ELGAMAL
 #define DEFAULT_DIGEST_ALGO   DIGEST_ALGO_SHA1
 #define DEFAULT_COMPRESS_ALGO 1
 
