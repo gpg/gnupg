@@ -1,6 +1,8 @@
 Noteworthy changes in version 1.9.0 (unreleased)
 ------------------------------------------------
 
+ * gpg does now also use libgcrypt, libgpg-error is required.
+
  * New gpgsm commands --call-dirmngr and --call-protect-tool.
 
  * Changing a passphrase is now possible using "gpgsm --passwd"

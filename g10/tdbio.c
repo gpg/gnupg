@@ -372,10 +372,11 @@ tdbio_end_transaction()
 	else
 	    is_locked = 1;
     }
-    block_all_signals();
+#warning block_all_signals is not yet available in ../common/signals.c
+    /*    block_all_signals(); */
     in_transaction = 0;
     rc = tdbio_sync();
-    unblock_all_signals();
+/*      unblock_all_signals(); */
     if( !opt.lock_once ) {
 	if( !release_dotlock( lockhandle ) )
 	    is_locked = 0;

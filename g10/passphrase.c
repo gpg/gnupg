@@ -794,7 +794,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
         tryagain_text = _(tryagain_text);
 
       /* We allocate 2 time the needed space for atext so that there
-         is nenough space for escaping */
+         is enough space for escaping */
       line = xmalloc (15 + 46 
                       +  3*strlen (tryagain_text) + 3*strlen (atext) + 2);
       strcpy (line, "GET_PASSPHRASE ");

@@ -47,7 +47,7 @@
 #endif
 
 static ASSUAN_CONTEXT agent_ctx = NULL;
-static int force_pipe_server = 0;
+static int force_pipe_server = 1; /* FIXME: set this back to 0. */
 
 struct cipher_parm_s {
   ASSUAN_CONTEXT ctx;
@@ -61,11 +61,6 @@ struct genkey_parm_s {
   size_t sexplen;
 };
 
-struct learn_parm_s {
-  int error;
-  ASSUAN_CONTEXT ctx;
-  struct membuf *data;
-};
 
 
 /* Try to connect to the agent via socket or fork it off and work by
@@ -292,16 +287,59 @@ start_agent (void)
 }
 
 
-static AssuanError
-membuf_data_cb (void *opaque, const void *buffer, size_t length)
+/* Return a new malloced string by unescaping the string S.  Escaping
+   is percent escaping and '+'/space mapping.  A binary nul will
+   silently be replaced by a 0xFF.  Function returns NULL to indicate
+   an out of memory status. */
+static char *
+unescape_status_string (const unsigned char *s)
 {
-  membuf_t *data = opaque;
+  char *buffer, *d;
 
-  if (buffer)
-    put_membuf (data, buffer, length);
-  return 0;
+  buffer = d = xtrymalloc (strlen (s)+1);
+  if (!buffer)
+    return NULL;
+  while (*s)
+    {
+      if (*s == '%' && s[1] && s[2])
+        { 
+          s++;
+          *d = xtoi_2 (s);
+          if (!*d)
+            *d = '\xff';
+          d++;
+          s += 2;
+        }
+      else if (*s == '+')
+        {
+          *d++ = ' ';
+          s++;
+        }
+      else
+        *d++ = *s++;
+    }
+  *d = 0; 
+  return buffer;
 }
-  
+
+/* Take a 20 byte hexencoded string and put it into the the provided
+   20 byte buffer FPR in binary format. */
+static int
+unhexify_fpr (const char *hexstr, unsigned char *fpr)
+{
+  const char *s;
+  int n;
+
+  for (s=hexstr, n=0; hexdigitp (s); s++, n++)
+    ;
+  if (*s || (n != 40))
+    return 0; /* no fingerprint (invalid or wrong length). */
+  n /= 2;
+  for (s=hexstr, n=0; *s; s += 2, n++)
+    fpr[n] = xtoi_2 (s);
+  return 1; /* okay */
+}
+
 
 
 #if 0
@@ -391,10 +429,161 @@ agent_havekey (const char *hexkeygrip)
 }
 
 
-/* Ask the agent to change the passphrase of the key identified by
-   HEXKEYGRIP. */
+static AssuanError
+learn_status_cb (void *opaque, const char *line)
+{
+  struct agent_card_info_s *parm = opaque;
+  const char *keyword = line;
+  int keywordlen;
+
+  log_debug ("got status line `%s'\n", line);
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
+    {
+      parm->disp_name = unescape_status_string (line);
+    }
+  else if (keywordlen == 10 && !memcmp (keyword, "PUBKEY_URL", keywordlen))
+    {
+      parm->pubkey_url = unescape_status_string (line);
+    }
+  else if (keywordlen == 7 && !memcmp (keyword, "KEY-FPR", keywordlen))
+    {
+      int no = atoi (line);
+      while (!spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+      if (no == 1)
+        parm->fpr1valid = unhexify_fpr (line, parm->fpr1);
+      else if (no == 2)
+        parm->fpr2valid = unhexify_fpr (line, parm->fpr2);
+      else if (no == 3)
+        parm->fpr3valid = unhexify_fpr (line, parm->fpr3);
+    }
+  
+  return 0;
+}
+
+/* Call the agent to learn about a smartcard */
 int
-agent_passwd (const char *hexkeygrip)
+agent_learn (struct agent_card_info_s *info)
+{
+  int rc;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  memset (info, 0, sizeof *info);
+  rc = assuan_transact (agent_ctx, "LEARN --send",
+                        NULL, NULL, NULL, NULL,
+                        learn_status_cb, info);
+  
+  return map_assuan_err (rc);
+}
+
+
+
+/* Send an setattr command to the SCdaemon. */
+int
+agent_scd_setattr (const char *name,
+                   const unsigned char *value, size_t valuelen)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  char *p;
+
+  if (!*name || !valuelen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* We assume that NAME does not need escaping. */
+  if (12 + strlen (name) > DIM(line)-1)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+      
+  p = stpcpy (stpcpy (line, "SCD SETATTR "), name); 
+  *p++ = ' ';
+  for (; valuelen; value++, valuelen--)
+    {
+      if (p >= line + DIM(line)-5 )
+        return gpg_error (GPG_ERR_TOO_LARGE);
+      if (*value < ' ' || *value == '+' || *value == '%')
+        {
+          sprintf (p, "%%%02X", *value);
+          p += 3;
+        }
+      else if (*value == ' ')
+        *p++ = '+';
+      else
+        *p++ = *value;
+    }
+  *p = 0;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  return map_assuan_err (rc);
+}
+
+
+/* Status callback for the SCD GENKEY command. */
+static AssuanError
+scd_genkey_cb (void *opaque, const char *line)
+{
+  struct agent_card_genkey_s *parm = opaque;
+  const char *keyword = line;
+  int keywordlen;
+  gpg_error_t rc;
+
+  log_debug ("got status line `%s'\n", line);
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 7 && !memcmp (keyword, "KEY-FPR", keywordlen))
+    {
+      parm->fprvalid = unhexify_fpr (line, parm->fpr);
+    }
+  if (keywordlen == 8 && !memcmp (keyword, "KEY-DATA", keywordlen))
+    {
+      gcry_mpi_t a;
+      const char *name = line;
+
+      while (!spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+
+      rc = gcry_mpi_scan (&a, GCRYMPI_FMT_HEX, line, 0);
+      if (rc)
+        log_error ("error parsing received key data: %s\n", gpg_strerror (rc));
+      else if (*name == 'n' && spacep (name+1))
+        parm->n = a;
+      else if (*name == 'e' && spacep (name+1))
+        parm->e = a;
+      else
+        {
+          log_info ("unknown parameter name in received key data\n");
+          gcry_mpi_release (a);
+        }
+    }
+  else if (keywordlen == 14 && !memcmp (keyword,"KEY-CREATED-AT", keywordlen))
+    {
+      parm->created_at = (u32)strtoul (line, NULL, 10);
+    }
+
+  return 0;
+}
+
+/* Send a GENKEY command to the SCdaemon. */
+int
+agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -403,13 +592,95 @@ agent_passwd (const char *hexkeygrip)
   if (rc)
     return rc;
 
-  if (!hexkeygrip || strlen (hexkeygrip) != 40)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  snprintf (line, DIM(line)-1, "PASSWD %s", hexkeygrip);
+  memset (info, 0, sizeof *info);
+  snprintf (line, DIM(line)-1, "SCD GENKEY %s%d",
+            force? "--force ":"", keyno);
   line[DIM(line)-1] = 0;
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  memset (info, 0, sizeof *info);
+  rc = assuan_transact (agent_ctx, line,
+                        NULL, NULL, NULL, NULL,
+                        scd_genkey_cb, info);
+  
   return map_assuan_err (rc);
 }
+
+
+static AssuanError
+membuf_data_cb (void *opaque, const void *buffer, size_t length)
+{
+  membuf_t *data = opaque;
+
+  if (buffer)
+    put_membuf (data, buffer, length);
+  return 0;
+}
+  
+/* Send a sign command to the scdaemon via gpg-agent's pass thru
+   mechanism. */
+int
+agent_scd_pksign (const char *keyid, int hashalgo,
+                  const unsigned char *indata, size_t indatalen,
+                  char **r_buf, size_t *r_buflen)
+{
+  int rc, i;
+  char *p, line[ASSUAN_LINELENGTH];
+  membuf_t data;
+  size_t len;
+
+  /* Note, hashalgo is not yet used but hardwired to SHA1 in SCdaemon. */
+
+  *r_buf = NULL;
+  *r_buflen = 0;
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  if (indatalen*2 + 50 > DIM(line))
+    return gpg_error (GPG_ERR_GENERAL);
+
+  sprintf (line, "SCD SETDATA ");
+  p = line + strlen (line);
+  for (i=0; i < indatalen ; i++, p += 2 )
+    sprintf (p, "%02X", indata[i]);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return rc;
+
+  init_membuf (&data, 1024);
+  snprintf (line, DIM(line)-1, "SCD PKSIGN %s", keyid);
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (agent_ctx, line, membuf_data_cb, &data,
+                        NULL, NULL, NULL, NULL);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return rc;
+    }
+  *r_buf = get_membuf (&data, r_buflen);
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

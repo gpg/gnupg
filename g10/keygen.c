@@ -38,6 +38,8 @@
 #include "trustdb.h"
 #include "status.h"
 #include "i18n.h"
+#include "call-agent.h"
+
 
 #define MAX_PREFS 30 
 
@@ -111,8 +113,11 @@ static int nzip_prefs;
 static int mdc_available,ks_modify;
 
 static void do_generate_keypair( struct para_data_s *para,
-				 struct output_control_s *outctrl );
-static int  write_keyblock( iobuf_t out, KBNODE node );
+				 struct output_control_s *outctrl, int card);
+static int write_keyblock( iobuf_t out, KBNODE node );
+static int check_smartcard (void);
+static int gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root, u32 expireval);
+
 
 
 static void
@@ -1752,7 +1757,7 @@ get_parameter_revkey( struct para_data_s *para, enum para_name key )
 
 static int
 proc_parameter_file( struct para_data_s *para, const char *fname,
-                     struct output_control_s *outctrl )
+                     struct output_control_s *outctrl, int card )
 {
     struct para_data_s *r;
     const char *s1, *s2, *s3;
@@ -1814,8 +1819,8 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
     r = get_parameter( para, pPASSPHRASE );
     if( r && *r->u.value ) {
 	/* we have a plain text passphrase - create a DEK from it.
-	 * It is a little bit ridiculous to keep it ih secure memory
-	 * but becuase we do this alwasy, why not here */
+	 * It is a little bit ridiculous to keep it in secure memory
+	 * but because we do this always, why not here. */
 	STRING2KEY *s2k;
 	DEK *dek;
 
@@ -1864,7 +1869,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	return -1;
     }
 
-    do_generate_keypair( para, outctrl );
+    do_generate_keypair( para, outctrl, card);
     return 0;
 }
 
@@ -1948,7 +1953,7 @@ read_parameter_file( const char *fname )
 		outctrl.dryrun = 1;
 	    else if( !ascii_strcasecmp( keyword, "%commit" ) ) {
 		outctrl.lnr = lnr;
-		proc_parameter_file( para, fname, &outctrl );
+		proc_parameter_file( para, fname, &outctrl, 0 );
 		release_parameter_list( para );
 		para = NULL;
 	    }
@@ -2008,7 +2013,7 @@ read_parameter_file( const char *fname )
 
 	if( keywords[i].key == pKEYTYPE && para ) {
 	    outctrl.lnr = lnr;
-	    proc_parameter_file( para, fname, &outctrl );
+	    proc_parameter_file( para, fname, &outctrl, 0 );
 	    release_parameter_list( para );
 	    para = NULL;
 	}
@@ -2036,7 +2041,7 @@ read_parameter_file( const char *fname )
     }
     else if( para ) {
 	outctrl.lnr = lnr;
-	proc_parameter_file( para, fname, &outctrl );
+	proc_parameter_file( para, fname, &outctrl, 0 );
     }
 
     if( outctrl.use_files ) { /* close open streams */
@@ -2061,113 +2066,139 @@ read_parameter_file( const char *fname )
 void
 generate_keypair( const char *fname )
 {
-    unsigned int nbits;
-    char *uid = NULL;
-    DEK *dek;
-    STRING2KEY *s2k;
-    int algo;
-    unsigned int use;
-    int both = 0;
-    u32 expire;
-    struct para_data_s *para = NULL;
-    struct para_data_s *r;
-    struct output_control_s outctrl;
+  unsigned int nbits;
+  char *uid = NULL;
+  DEK *dek;
+  STRING2KEY *s2k;
+  int algo;
+  unsigned int use;
+  int both = 0;
+  int card = 0;
+  u32 expire;
+  struct para_data_s *para = NULL;
+  struct para_data_s *r;
+  struct output_control_s outctrl;
 
-    memset( &outctrl, 0, sizeof( outctrl ) );
+  memset (&outctrl, 0, sizeof (outctrl));
 
-    if( opt.batch ) {
-	read_parameter_file( fname );
-	return;
+  if (opt.batch)
+    {
+      read_parameter_file( fname );
+      return;
     }
 
-    algo = ask_algo( 0, &use );
-    if( !algo ) { /* default: DSA with ElG subkey of the specified size */
-	both = 1;
-	r = xcalloc (1, sizeof *r + 20 );
-	r->key = pKEYTYPE;
-	sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
-	r->next = para;
-	para = r;
-	tty_printf(_("DSA keypair will have 1024 bits.\n"));
-	r = xcalloc (1, sizeof *r + 20 );
-	r->key = pKEYLENGTH;
-	strcpy( r->u.value, "1024" );
-	r->next = para;
-	para = r;
-
-	algo = PUBKEY_ALGO_ELGAMAL_E;
-	r = xcalloc (1, sizeof *r + 20 );
-	r->key = pSUBKEYTYPE;
-	sprintf( r->u.value, "%d", algo );
-	r->next = para;
-	para = r;
+  do
+    {
+      card = check_smartcard ();
+      if (card < 0)
+        return;
+      if (card > 1)
+        log_error (_("can't generate subkey here\n"));
     }
-    else {
-	r = xcalloc (1, sizeof *r + 20 );
-	r->key = pKEYTYPE;
-	sprintf( r->u.value, "%d", algo );
-	r->next = para;
-	para = r;
+  while (card > 1);
 
-        if (use) {
-            r = xcalloc (1, sizeof *r + 20 );
-            r->key = pKEYUSAGE;
-            sprintf( r->u.value, "%s%s",
-                     (use & PUBKEY_USAGE_SIG)? "sign ":"",
-                     (use & PUBKEY_USAGE_ENC)? "encrypt ":"" );
-            r->next = para;
-            para = r;
+  if (card)
+    {
+      algo = PUBKEY_ALGO_RSA;
+      use = PUBKEY_USAGE_SIG;
+    }
+  else
+    algo = ask_algo (0, &use);
+
+  if (!algo)
+    { /* default: DSA with ElG subkey of the specified size */
+      both = 1;
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pKEYTYPE;
+      sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
+      r->next = para;
+      para = r;
+      tty_printf(_("DSA keypair will have 1024 bits.\n"));
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pKEYLENGTH;
+      strcpy( r->u.value, "1024" );
+      r->next = para;
+      para = r;
+      
+      algo = PUBKEY_ALGO_ELGAMAL_E;
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pSUBKEYTYPE;
+      sprintf( r->u.value, "%d", algo );
+      r->next = para;
+      para = r;
+    }
+  else 
+    {
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = pKEYTYPE;
+      sprintf( r->u.value, "%d", algo );
+      r->next = para;
+      para = r;
+      
+      if (use)
+        {
+          r = xcalloc (1, sizeof *r + 20 );
+          r->key = pKEYUSAGE;
+          sprintf( r->u.value, "%s%s",
+                   (use & PUBKEY_USAGE_SIG)? "sign ":"",
+                   (use & PUBKEY_USAGE_ENC)? "encrypt ":"" );
+          r->next = para;
+          para = r;
         }
-
     }
 
-    nbits = ask_keysize( algo );
-    r = xcalloc (1, sizeof *r + 20 );
-    r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
-    sprintf( r->u.value, "%u", nbits);
-    r->next = para;
-    para = r;
-
-    expire = ask_expire_interval(0);
-    r = xcalloc (1, sizeof *r + 20 );
-    r->key = pKEYEXPIRE;
-    r->u.expire = expire;
-    r->next = para;
-    para = r;
-    r = xcalloc (1, sizeof *r + 20 );
-    r->key = pSUBKEYEXPIRE;
-    r->u.expire = expire;
-    r->next = para;
-    para = r;
-
-    uid = ask_user_id(0);
-    if( !uid ) {
-	log_error(_("Key generation canceled.\n"));
-	release_parameter_list( para );
-	return;
+  if (!card)
+    {
+      nbits = ask_keysize( algo );
+      r = xcalloc (1, sizeof *r + 20 );
+      r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
+      sprintf( r->u.value, "%u", nbits);
+      r->next = para;
+      para = r;
     }
-    r = xcalloc (1, sizeof *r + strlen(uid) );
-    r->key = pUSERID;
-    strcpy( r->u.value, uid );
-    r->next = para;
-    para = r;
-
-    dek = ask_passphrase( &s2k );
-    if( dek ) {
-	r = xcalloc (1, sizeof *r );
-	r->key = pPASSPHRASE_DEK;
-	r->u.dek = dek;
-	r->next = para;
-	para = r;
-	r = xcalloc (1, sizeof *r );
-	r->key = pPASSPHRASE_S2K;
-	r->u.s2k = s2k;
-	r->next = para;
-	para = r;
+  
+  expire = ask_expire_interval(0);
+  r = xcalloc (1, sizeof *r + 20 );
+  r->key = pKEYEXPIRE;
+  r->u.expire = expire;
+  r->next = para;
+  para = r;
+  r = xcalloc (1, sizeof *r + 20 );
+  r->key = pSUBKEYEXPIRE;
+  r->u.expire = expire;
+  r->next = para;
+  para = r;
+  
+  uid = ask_user_id(0);
+  if (!uid)
+    {
+      log_error(_("Key generation canceled.\n"));
+      release_parameter_list( para );
+      return;
     }
+  r = xcalloc (1, sizeof *r + strlen(uid) );
+  r->key = pUSERID;
+  strcpy( r->u.value, uid );
+  r->next = para;
+  para = r;
 
-    proc_parameter_file( para, "[internal]", &outctrl );
-    release_parameter_list( para );
+  dek = card? NULL : ask_passphrase( &s2k );
+  if (dek)
+    {
+      r = xcalloc (1, sizeof *r );
+      r->key = pPASSPHRASE_DEK;
+      r->u.dek = dek;
+      r->next = para;
+      para = r;
+      r = xcalloc (1, sizeof *r );
+      r->key = pPASSPHRASE_S2K;
+      r->u.s2k = s2k;
+      r->next = para;
+      para = r;
+    }
+  
+  proc_parameter_file (para, "[internal]", &outctrl, card);
+  release_parameter_list (para);
 }
 
 
@@ -2189,225 +2220,271 @@ print_status_key_created (int letter, PKT_public_key *pk)
   write_status_text (STATUS_KEY_CREATED, buf);
 }
 
+
+
 static void
-do_generate_keypair( struct para_data_s *para,
-		     struct output_control_s *outctrl )
+do_generate_keypair (struct para_data_s *para,
+		     struct output_control_s *outctrl, int card)
 {
-    KBNODE pub_root = NULL;
-    KBNODE sec_root = NULL;
-    PKT_secret_key *sk = NULL;
-    const char *s;
-    struct revocation_key *revkey;
-    int rc;
-    int did_sub = 0;
+  KBNODE pub_root = NULL;
+  KBNODE sec_root = NULL;
+  PKT_secret_key *sk = NULL;
+  const char *s;
+  struct revocation_key *revkey;
+  int rc;
+  int did_sub = 0;
 
-    if( outctrl->dryrun ) {
-	log_info("dry-run mode - key generation skipped\n");
-	return;
+  if (outctrl->dryrun)
+    {
+      log_info ("dry-run mode - key generation skipped\n");
+      return;
     }
 
 
-    if( outctrl->use_files ) {
-	if( outctrl->pub.newfname ) {
-	    iobuf_close(outctrl->pub.stream);
-	    outctrl->pub.stream = NULL;
-	    xfree ( outctrl->pub.fname );
-	    outctrl->pub.fname =  outctrl->pub.newfname;
-	    outctrl->pub.newfname = NULL;
+  if (outctrl->use_files)
+    {
+      if (outctrl->pub.newfname)
+	{
+	  iobuf_close (outctrl->pub.stream);
+	  outctrl->pub.stream = NULL;
+	  xfree (outctrl->pub.fname);
+	  outctrl->pub.fname = outctrl->pub.newfname;
+	  outctrl->pub.newfname = NULL;
 
-	    outctrl->pub.stream = iobuf_create( outctrl->pub.fname );
-	    if( !outctrl->pub.stream ) {
-		log_error("can't create `%s': %s\n", outctrl->pub.newfname,
-						     strerror(errno) );
-		return;
-	    }
-	    if( opt.armor ) {
-		outctrl->pub.afx.what = 1;
-		iobuf_push_filter( outctrl->pub.stream, armor_filter,
-						    &outctrl->pub.afx );
-	    }
-	}
-	if( outctrl->sec.newfname ) {
-	    iobuf_close(outctrl->sec.stream);
-	    outctrl->sec.stream = NULL;
-	    xfree ( outctrl->sec.fname );
-	    outctrl->sec.fname =  outctrl->sec.newfname;
-	    outctrl->sec.newfname = NULL;
-
-	    outctrl->sec.stream = iobuf_create( outctrl->sec.fname );
-	    if( !outctrl->sec.stream ) {
-		log_error("can't create `%s': %s\n", outctrl->sec.newfname,
-						     strerror(errno) );
-		return;
-	    }
-	    if( opt.armor ) {
-		outctrl->sec.afx.what = 5;
-		iobuf_push_filter( outctrl->sec.stream, armor_filter,
-						    &outctrl->sec.afx );
-	    }
-	}
-	assert( outctrl->pub.stream );
-	assert( outctrl->sec.stream );
-        if( opt.verbose ) {
-            log_info(_("writing public key to `%s'\n"), outctrl->pub.fname );
-            log_info(_("writing secret key to `%s'\n"), outctrl->sec.fname );
-        }
-    }
-
-
-    /* we create the packets as a tree of kbnodes. Because the structure
-     * we create is known in advance we simply generate a linked list
-     * The first packet is a dummy comment packet which we flag
-     * as deleted.  The very first packet must always be a KEY packet.
-     */
-    pub_root = make_comment_node("#"); delete_kbnode(pub_root);
-    sec_root = make_comment_node("#"); delete_kbnode(sec_root);
-
-    rc = do_create( get_parameter_algo( para, pKEYTYPE ),
-		    get_parameter_uint( para, pKEYLENGTH ),
-		    pub_root, sec_root,
-		    get_parameter_dek( para, pPASSPHRASE_DEK ),
-		    get_parameter_s2k( para, pPASSPHRASE_S2K ),
-		    &sk,
-		    get_parameter_u32( para, pKEYEXPIRE ) );
-
-    if(!rc && (revkey=get_parameter_revkey(para,pREVOKER)))
-      {
-	rc=write_direct_sig(pub_root,pub_root,sk,revkey);
-	if(!rc)
-	  write_direct_sig(sec_root,pub_root,sk,revkey);
-      }
-
-    if( !rc && (s=get_parameter_value(para, pUSERID)) ) {
-	write_uid(pub_root, s );
-	if( !rc )
-	    write_uid(sec_root, s );
-	if( !rc )
-	    rc = write_selfsig(pub_root, pub_root, sk,
-                               get_parameter_uint (para, pKEYUSAGE));
-	if( !rc )
-	    rc = write_selfsig(sec_root, pub_root, sk,
-                               get_parameter_uint (para, pKEYUSAGE));
-    }
-
-    if( get_parameter( para, pSUBKEYTYPE ) ) {
-	rc = do_create( get_parameter_algo( para, pSUBKEYTYPE ),
-			get_parameter_uint( para, pSUBKEYLENGTH ),
-			pub_root, sec_root,
-			get_parameter_dek( para, pPASSPHRASE_DEK ),
-			get_parameter_s2k( para, pPASSPHRASE_S2K ),
-			NULL,
-			get_parameter_u32( para, pSUBKEYEXPIRE ) );
-	if( !rc )
-	    rc = write_keybinding(pub_root, pub_root, sk,
-               			  get_parameter_uint (para, pSUBKEYUSAGE));
-	if( !rc )
-	    rc = write_keybinding(sec_root, pub_root, sk,
-               			  get_parameter_uint (para, pSUBKEYUSAGE));
-        did_sub = 1;
-    }
-
-
-    if( !rc && outctrl->use_files ) { /* direct write to specified files */
-	rc = write_keyblock( outctrl->pub.stream, pub_root );
-	if( rc )
-	    log_error("can't write public key: %s\n", gpg_strerror (rc) );
-	if( !rc ) {
-	    rc = write_keyblock( outctrl->sec.stream, sec_root );
-	    if( rc )
-		log_error("can't write secret key: %s\n", gpg_strerror (rc) );
-	}
-
-    }
-    else if( !rc ) { /* write to the standard keyrings */
-	KEYDB_HANDLE pub_hd = keydb_new (0);
-	KEYDB_HANDLE sec_hd = keydb_new (1);
-
-        /* FIXME: we may have to create the keyring first */
-        rc = keydb_locate_writable (pub_hd, NULL);
-        if (rc) 
-    	    log_error (_("no writable public keyring found: %s\n"),
-                       gpg_strerror (rc));
-
-        if (!rc) {  
-            rc = keydb_locate_writable (sec_hd, NULL);
-            if (rc) 
-                log_error (_("no writable secret keyring found: %s\n"),
-                           gpg_strerror (rc));
-        }
-
-        if (!rc && opt.verbose) {
-            log_info(_("writing public key to `%s'\n"),
-                     keydb_get_resource_name (pub_hd));
-            log_info(_("writing secret key to `%s'\n"),
-                     keydb_get_resource_name (sec_hd));
-        }
-
-        if (!rc) {
-	    rc = keydb_insert_keyblock (pub_hd, pub_root);
-            if (rc)
-                log_error (_("error writing public keyring `%s': %s\n"),
-                           keydb_get_resource_name (pub_hd), gpg_strerror (rc));
-        }
-
-        if (!rc) {
-	    rc = keydb_insert_keyblock (sec_hd, sec_root);
-            if (rc)
-                log_error (_("error writing secret keyring `%s': %s\n"),
-                           keydb_get_resource_name (pub_hd), gpg_strerror (rc));
-        }
-
-        keydb_release (pub_hd);
-        keydb_release (sec_hd);
-
-	if (!rc) {
-            int no_enc_rsa =
-                get_parameter_algo(para, pKEYTYPE) == PUBKEY_ALGO_RSA
-                && get_parameter_uint( para, pKEYUSAGE )
-                && !(get_parameter_uint( para,pKEYUSAGE) & PUBKEY_USAGE_ENC);
-            PKT_public_key *pk = find_kbnode (pub_root, 
-                                    PKT_PUBLIC_KEY)->pkt->pkt.public_key;
-            
-            update_ownertrust (pk,
-                               ((get_ownertrust (pk) & ~TRUST_MASK)
-                                | TRUST_ULTIMATE ));
-
-	    if (!opt.batch) {
-                tty_printf(_("public and secret key created and signed.\n") );
-                tty_printf(_("key marked as ultimately trusted.\n") );
-		tty_printf("\n");
-		list_keyblock(pub_root,0,1,NULL);
-            }
-            
-
-	    if( !opt.batch
-		&& ( get_parameter_algo( para, pKEYTYPE ) == PUBKEY_ALGO_DSA
-                     || no_enc_rsa )
-		&& !get_parameter( para, pSUBKEYTYPE ) )
+	  outctrl->pub.stream = iobuf_create (outctrl->pub.fname);
+	  if (!outctrl->pub.stream)
 	    {
-		tty_printf(_("Note that this key cannot be used for "
-			     "encryption.  You may want to use\n"
-			     "the command \"--edit-key\" to generate a "
-			     "secondary key for this purpose.\n") );
+	      log_error ("can't create `%s': %s\n", outctrl->pub.newfname,
+			 strerror (errno));
+	      return;
+	    }
+	  if (opt.armor)
+	    {
+	      outctrl->pub.afx.what = 1;
+	      iobuf_push_filter (outctrl->pub.stream, armor_filter,
+				 &outctrl->pub.afx);
+	    }
+	}
+      if (outctrl->sec.newfname)
+	{
+	  iobuf_close (outctrl->sec.stream);
+	  outctrl->sec.stream = NULL;
+	  xfree (outctrl->sec.fname);
+	  outctrl->sec.fname = outctrl->sec.newfname;
+	  outctrl->sec.newfname = NULL;
+
+	  outctrl->sec.stream = iobuf_create (outctrl->sec.fname);
+	  if (!outctrl->sec.stream)
+	    {
+	      log_error ("can't create `%s': %s\n", outctrl->sec.newfname,
+			 strerror (errno));
+	      return;
+	    }
+	  if (opt.armor)
+	    {
+	      outctrl->sec.afx.what = 5;
+	      iobuf_push_filter (outctrl->sec.stream, armor_filter,
+				 &outctrl->sec.afx);
+	    }
+	}
+      assert (outctrl->pub.stream);
+      assert (outctrl->sec.stream);
+      if (opt.verbose)
+	{
+	  log_info (_("writing public key to `%s'\n"), outctrl->pub.fname);
+          if (card)
+            log_info (_("writing secret key stub to `%s'\n"),
+                      outctrl->sec.fname);
+          else
+            log_info (_("writing secret key to `%s'\n"), outctrl->sec.fname);
+	}
+    }
+
+
+  /* We create the packets as a tree of kbnodes. Because the structure
+   * we create is known in advance we simply generate a linked list.
+   * The first packet is a dummy comment packet which we flag
+   * as deleted.  The very first packet must always be a KEY packet.
+   */
+  pub_root = make_comment_node ("#");
+  delete_kbnode (pub_root);
+  sec_root = make_comment_node ("#");
+  delete_kbnode (sec_root);
+  if (!card)
+    {
+      rc = do_create (get_parameter_algo (para, pKEYTYPE),
+                      get_parameter_uint (para, pKEYLENGTH),
+                      pub_root, sec_root,
+                      get_parameter_dek (para, pPASSPHRASE_DEK),
+                      get_parameter_s2k (para, pPASSPHRASE_S2K),
+                      &sk, get_parameter_u32 (para, pKEYEXPIRE));
+    }
+  else
+    {
+      rc = gen_card_key (PUBKEY_ALGO_RSA, 1, pub_root, sec_root,
+                         get_parameter_u32 (para, pKEYEXPIRE));
+      if (!rc)
+        {
+          sk = sec_root->next->pkt->pkt.secret_key;
+          assert (sk);
+        }
+      
+    }
+
+  if (!rc && (revkey = get_parameter_revkey (para, pREVOKER)))
+    {
+      rc = write_direct_sig (pub_root, pub_root, sk, revkey);
+      if (!rc)
+	write_direct_sig (sec_root, pub_root, sk, revkey);
+    }
+
+  if (!rc && (s = get_parameter_value (para, pUSERID)))
+    {
+      write_uid (pub_root, s);
+      if (!rc)
+	write_uid (sec_root, s);
+      if (!rc)
+	rc = write_selfsig (pub_root, pub_root, sk,
+			    get_parameter_uint (para, pKEYUSAGE));
+      if (!rc)
+	rc = write_selfsig (sec_root, pub_root, sk,
+			    get_parameter_uint (para, pKEYUSAGE));
+    }
+
+  if (get_parameter (para, pSUBKEYTYPE))
+    {
+      rc = do_create (get_parameter_algo (para, pSUBKEYTYPE),
+		      get_parameter_uint (para, pSUBKEYLENGTH),
+		      pub_root, sec_root,
+		      get_parameter_dek (para, pPASSPHRASE_DEK),
+		      get_parameter_s2k (para, pPASSPHRASE_S2K),
+		      NULL, get_parameter_u32 (para, pSUBKEYEXPIRE));
+      if (!rc)
+	rc = write_keybinding (pub_root, pub_root, sk,
+			       get_parameter_uint (para, pSUBKEYUSAGE));
+      if (!rc)
+	rc = write_keybinding (sec_root, pub_root, sk,
+			       get_parameter_uint (para, pSUBKEYUSAGE));
+      did_sub = 1;
+    }
+
+
+  if (!rc && outctrl->use_files)
+    {				/* direct write to specified files */
+      rc = write_keyblock (outctrl->pub.stream, pub_root);
+      if (rc)
+	log_error ("can't write public key: %s\n", gpg_strerror (rc));
+      if (!rc)
+	{
+	  rc = write_keyblock (outctrl->sec.stream, sec_root);
+	  if (rc)
+	    log_error ("can't write secret key: %s\n", gpg_strerror (rc));
+	}
+
+    }
+  else if (!rc)
+    {				/* write to the standard keyrings */
+      KEYDB_HANDLE pub_hd = keydb_new (0);
+      KEYDB_HANDLE sec_hd = keydb_new (1);
+
+      /* FIXME: we may have to create the keyring first */
+      rc = keydb_locate_writable (pub_hd, NULL);
+      if (rc)
+	log_error (_("no writable public keyring found: %s\n"),
+		   gpg_strerror (rc));
+
+      if (!rc)
+	{
+	  rc = keydb_locate_writable (sec_hd, NULL);
+	  if (rc)
+	    log_error (_("no writable secret keyring found: %s\n"),
+		       gpg_strerror (rc));
+	}
+
+      if (!rc && opt.verbose)
+	{
+	  log_info (_("writing public key to `%s'\n"),
+		    keydb_get_resource_name (pub_hd));
+          if (card)
+            log_info (_("writing secret key stub to `%s'\n"),
+                      keydb_get_resource_name (sec_hd));
+          else
+            log_info (_("writing secret key to `%s'\n"),
+                      keydb_get_resource_name (sec_hd));
+	}
+
+      if (!rc)
+	{
+	  rc = keydb_insert_keyblock (pub_hd, pub_root);
+	  if (rc)
+	    log_error (_("error writing public keyring `%s': %s\n"),
+		       keydb_get_resource_name (pub_hd), gpg_strerror (rc));
+	}
+
+      if (!rc)
+	{
+	  rc = keydb_insert_keyblock (sec_hd, sec_root);
+	  if (rc)
+	    log_error (_("error writing secret keyring `%s': %s\n"),
+		       keydb_get_resource_name (pub_hd), gpg_strerror (rc));
+	}
+
+      keydb_release (pub_hd);
+      keydb_release (sec_hd);
+
+      if (!rc)
+	{
+	  int no_enc_rsa =
+	    get_parameter_algo (para, pKEYTYPE) == PUBKEY_ALGO_RSA
+	    && get_parameter_uint (para, pKEYUSAGE)
+	    && !(get_parameter_uint (para, pKEYUSAGE) & PUBKEY_USAGE_ENC);
+	  PKT_public_key *pk = find_kbnode (pub_root,
+					    PKT_PUBLIC_KEY)->pkt->pkt.
+	    public_key;
+
+	  update_ownertrust (pk,
+			     ((get_ownertrust (pk) & ~TRUST_MASK)
+			      | TRUST_ULTIMATE));
+
+	  if (!opt.batch)
+	    {
+	      tty_printf (_("public and secret key created and signed.\n"));
+	      tty_printf (_("key marked as ultimately trusted.\n"));
+	      tty_printf ("\n");
+	      list_keyblock (pub_root, 0, 1, NULL);
+	    }
+
+
+	  if (!opt.batch
+	      && (get_parameter_algo (para, pKEYTYPE) == PUBKEY_ALGO_DSA
+		  || no_enc_rsa) && !get_parameter (para, pSUBKEYTYPE))
+	    {
+	      tty_printf (_("Note that this key cannot be used for "
+			    "encryption.  You may want to use\n"
+			    "the command \"--edit-key\" to generate a "
+			    "secondary key for this purpose.\n"));
 	    }
 	}
     }
 
-    if( rc ) {
-	if( opt.batch )
-	    log_error("key generation failed: %s\n", gpg_strerror (rc) );
-	else
-	    tty_printf(_("Key generation failed: %s\n"), gpg_strerror (rc) );
+  if (rc)
+    {
+      if (opt.batch)
+	log_error ("key generation failed: %s\n", gpg_strerror (rc));
+      else
+	tty_printf (_("Key generation failed: %s\n"), gpg_strerror (rc));
     }
-    else {
-        PKT_public_key *pk = find_kbnode (pub_root, 
-                                    PKT_PUBLIC_KEY)->pkt->pkt.public_key;
-        print_status_key_created (did_sub? 'B':'P', pk);
+  else
+    {
+      PKT_public_key *pk = find_kbnode (pub_root,
+					PKT_PUBLIC_KEY)->pkt->pkt.public_key;
+      print_status_key_created (did_sub ? 'B' : 'P', pk);
     }
-    release_kbnode( pub_root );
-    release_kbnode( sec_root );
-    if( sk ) /* the unprotected  secret key */
-	free_secret_key(sk);
+
+  release_kbnode (pub_root);
+  release_kbnode (sec_root);
+  if (sk && !card)         /* The unprotected secret key unless we have */
+    free_secret_key (sk);  /* shallow copy in card mode. */
 }
 
 
@@ -2534,3 +2611,268 @@ write_keyblock( iobuf_t out, KBNODE node )
     }
     return 0;
 }
+
+
+static void
+show_sha1_fpr (const unsigned char *fpr)
+{
+  int i;
+
+  if (fpr)
+    {
+      for (i=0; i < 20 ; i+=2, fpr += 2 )
+        {
+          if (i == 10 )
+            tty_printf (" ");
+          tty_printf (" %02X%02X", *fpr, fpr[1]);
+        }
+    }
+  else
+    tty_printf ("[none]");
+  tty_printf ("\n");
+}
+
+static void
+show_smartcard (struct agent_card_info_s *info)
+{
+  /* FIXME: Sanitize what we show. */
+  tty_printf ("Name of cardholder: %s\n",
+              info->disp_name && *info->disp_name? info->disp_name 
+                                                 : "[not set]");
+  tty_printf ("URL of public key : %s\n",
+              info->pubkey_url && *info->pubkey_url? info->pubkey_url 
+                                                 : "[not set]");
+  tty_printf ("Signature key ....: ");
+  show_sha1_fpr (info->fpr1valid? info->fpr1:NULL);
+  tty_printf ("Encryption key....: ");
+  show_sha1_fpr (info->fpr2valid? info->fpr2:NULL);
+  tty_printf ("Authentication key: ");
+  show_sha1_fpr (info->fpr3valid? info->fpr3:NULL);
+}
+
+
+static char *
+smartcard_get_one_name (const char *prompt1, const char *prompt2)
+{
+  char *name;
+  int i;
+
+  for (;;)
+    {
+      name = cpr_get (prompt1, prompt2);
+      if (!name)
+        return NULL;
+      trim_spaces (name);
+      cpr_kill_prompt ();
+      for (i=0; name[i] && name[i] >= ' ' && name[i] <= 126; i++)
+        ;
+
+      /* The name must be in Latin-1 and not UTF-8 - lacking the code
+         to ensure this we restrict it to ASCII. */
+      if (name[i])
+        tty_printf (_("Error: Only plain ASCII is currently allowed.\n"));
+      else if (strchr (name, '<'))
+        tty_printf (_("Error: The \"<\" character may not be used.\n"));
+      else if (strstr (name, "  "))
+        tty_printf (_("Error: Double spaces are not allowed.\n"));    
+      else
+        return name;
+      xfree (name);
+    }
+}
+
+static int
+smartcard_change_name (const char *current_name)
+{
+  char *surname = NULL, *givenname = NULL;
+  char *isoname, *p;
+  int rc;
+
+  surname = smartcard_get_one_name ("keygen.smartcard.surname",
+                                    _("Cardholder's surname: "));
+  givenname = smartcard_get_one_name ("keygen.smartcard.givenname",
+                                       _("Cardholder's given name: "));
+  if (!surname || !givenname || (!*surname && !*givenname))
+    {
+      xfree (surname);
+      xfree (givenname);
+      return -1; /*canceled*/
+    }
+
+  isoname = xmalloc ( strlen (surname) + 2 + strlen (givenname) + 1);
+  strcpy (stpcpy (stpcpy (isoname, surname), "<<"), givenname);
+  xfree (surname);
+  xfree (givenname);
+  for (p=isoname; *p; p++)
+    if (*p == ' ')
+      *p = '<';
+
+  log_debug ("setting Name to `%s'\n", isoname);
+  rc = agent_scd_setattr ("DISP-NAME", isoname, strlen (isoname) );
+  if (rc)
+    log_error ("error setting Name: %s\n", gpg_strerror (rc));
+
+  return rc;
+}
+
+
+/* Check whether a smartcatrd is available and alow to select it as
+   the target for key generation. 
+   
+   Return values: -1 = Quit generation
+                   0 = No smartcard
+                   1 = Generate primary key
+                   2 = generate subkey
+*/
+static int
+check_smartcard (void)
+{
+  struct agent_card_info_s info;
+  int rc;
+
+  rc = agent_learn (&info);
+  if (rc)
+    {
+      tty_printf (_("OpenPGP card not available: %s\n"),
+                  gpg_strerror (rc));
+      return 0;
+    }
+  
+  tty_printf (_("OpenPGP card with serial number %s detected\n"), "xxx");
+
+
+  for (;;)
+    {
+      char *answer;
+      int reread = 0;
+
+      tty_printf ("\n");
+      show_smartcard (&info);
+
+      tty_printf ("\n"
+                  "N - change cardholder name\n"
+                  "U - change public key URL\n"
+                  "1 - generate signature key\n"
+                  "2 - generate encryption key\n"
+                  "3 - generate authentication key\n"
+                  "Q - quit\n"
+                  "\n");
+
+      answer = cpr_get("keygen.smartcard.menu",_("Your selection? "));
+      cpr_kill_prompt();
+      if (strlen (answer) != 1)
+        continue;
+
+      rc = 0;
+      if ( *answer == 'N' || *answer == 'n')
+        {
+          if (!smartcard_change_name (info.disp_name))
+            reread = 1;
+        }
+      else if ( *answer == 'U' || *answer == 'u')
+        {
+        }
+      else if ( *answer == '1' || *answer == '2')
+        {
+          rc = *answer - '0';
+          break;
+        }
+      else if ( *answer == '3' )
+        {
+          tty_printf (_("Generation of authentication key"
+                        " not yet implemented\n"));
+        }
+      else if ( *answer == 'q' || *answer == 'Q')
+        {
+          rc = -1;
+          break;
+        }
+
+      if (reread)
+        {
+          xfree (info.disp_name); info.disp_name = NULL;
+          xfree (info.pubkey_url); info.pubkey_url = NULL;
+          rc = agent_learn (&info);
+          if (rc)
+            {
+              tty_printf (_("OpenPGP card not anymore available: %s\n"),
+                          gpg_strerror (rc));
+              g10_exit (1);
+            }
+          reread = 0;
+        }
+    }
+
+  xfree (info.disp_name); 
+  xfree (info.pubkey_url);
+
+  return rc;
+}
+
+
+
+static int
+gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
+              u32 expireval)
+{
+  int rc;
+  struct agent_card_genkey_s info;
+  PACKET *pkt;
+  PKT_secret_key *sk;
+  PKT_public_key *pk;
+
+  assert (algo == PUBKEY_ALGO_RSA);
+
+  rc = agent_scd_genkey (&info, keyno, 0);
+  if (gpg_err_code (rc) == GPG_ERR_EEXIST)
+    {
+      tty_printf ("\n");
+      log_error ("WARNING: key does already exists!\n");
+      tty_printf ("\n");
+      if ( cpr_get_answer_is_yes( "keygen.card.replace_key",
+                                  _("Replace existing key? ")))
+        rc = agent_scd_genkey (&info, keyno, 1);
+    }
+
+  if (rc)
+    {
+      log_error ("key generation failed: %s\n", gpg_strerror (rc));
+      return rc;
+    }
+  if ( !info.n || !info.e )
+    {
+      log_error ("communication error with SCD\n");
+      gcry_mpi_release (info.n);
+      gcry_mpi_release (info.e);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+  
+
+  pk = xcalloc (1, sizeof *pk );
+  sk = xcalloc (1, sizeof *sk );
+  sk->timestamp = pk->timestamp = make_timestamp();
+  sk->version = pk->version = 4;
+  if (expireval)
+      sk->expiredate = pk->expiredate = pk->timestamp + expireval;
+  sk->pubkey_algo = pk->pubkey_algo = algo;
+  pk->pkey[0] = info.n;
+  pk->pkey[1] = info.e; 
+  sk->skey[0] = mpi_copy (pk->pkey[0]);
+  sk->skey[1] = mpi_copy (pk->pkey[1]);
+  sk->skey[2] = mpi_set_opaque (NULL, xstrdup ("dummydata"), 10);
+  sk->is_protected = 1;
+  sk->protect.s2k.mode = 1002;
+
+  pkt = xcalloc (1,sizeof *pkt);
+  pkt->pkttype = keyno == 1 ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
+  pkt->pkt.public_key = pk;
+  add_kbnode(pub_root, new_kbnode( pkt ));
+
+  pkt = xcalloc (1,sizeof *pkt);
+  pkt->pkttype = keyno == 1 ? PKT_SECRET_KEY : PKT_SECRET_SUBKEY;
+  pkt->pkt.secret_key = sk;
+  add_kbnode(sec_root, new_kbnode( pkt ));
+
+  return 0;
+}
+

@@ -921,6 +921,10 @@ change_passphrase( KBNODE keyblock )
 	    tty_printf(_("Secret parts of primary key are not available.\n"));
 	    no_primary_secrets = 1;
 	}
+	else if( sk->protect.s2k.mode == 1002 ) {
+	    tty_printf(_("Secret key is actually stored on a card.\n"));
+	    no_primary_secrets = 1;
+	}
 	else {
 	    tty_printf(_("Key is protected.\n"));
 	    rc = check_secret_key( sk, 0 );

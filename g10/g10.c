@@ -639,6 +639,7 @@ static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 static void print_mds( const char *fname, int algo );
 static void add_notation_data( const char *string, int which );
 static void add_policy_url( const char *string, int which );
+static void emergency_cleanup (void);
 
 #ifdef __riscos__
 RISCOS_GLOBAL_STATICS("GnuPG Heap")
@@ -1191,7 +1192,7 @@ main( int argc, char **argv )
     gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
     may_coredump = disable_core_dumps();
-    init_signals (); /* why not gnupg_init_signals. */
+    gnupg_init_signals (0, emergency_cleanup);
     create_dotlock (NULL); /* register locking cleanup */
     i18n_init();
 
@@ -1303,7 +1304,8 @@ main( int argc, char **argv )
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
 
-    /* malloc hooks gohere ... */
+    /* malloc hooks go here ... */
+    assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 
     set_native_charset (NULL); /* Try to auto set the character set */
 
@@ -2892,6 +2894,13 @@ main( int argc, char **argv )
     FREE_STRLIST(locusr);
     g10_exit(0);
     return 8; /*NEVER REACHED*/
+}
+
+/* Note: This function is used by signal handlers!. */
+static void
+emergency_cleanup (void)
+{
+  gcry_control (GCRYCTL_TERM_SECMEM );
 }
 
 

@@ -253,6 +253,9 @@ check_secret_key( PKT_secret_key *sk, int n )
     int rc = gpg_error (GPG_ERR_BAD_PASSPHRASE);
     int i,mode;
 
+    if (sk && sk->is_protected && sk->protect.s2k.mode == 1002)
+      return 0; /* Let the scdaemon handle it. */
+
     if(n<0)
       {
 	n=abs(n);

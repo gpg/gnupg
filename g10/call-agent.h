@@ -20,9 +20,45 @@
 #ifndef GNUPG_G10_CALL_AGENT_H
 #define GNUPG_G10_CALL_AGENT_H 
 
+
+struct agent_card_info_s {
+  int error;         /* private. */
+  char *disp_name;   /* malloced. */
+  char *pubkey_url;  /* malloced. */
+  char fpr1valid;
+  char fpr2valid;
+  char fpr3valid;
+  char fpr1[20];
+  char fpr2[20];
+  char fpr3[20];
+};
+
+struct agent_card_genkey_s {
+  char fprvalid;
+  char fpr[20];
+  u32  created_at;
+  gcry_mpi_t n;
+  gcry_mpi_t e;
+};
+
+/* Return card info. */
+int agent_learn (struct agent_card_info_s *info);
+
 /* Check whether the secret key for the key identified by HEXKEYGRIP
    is available.  Return 0 for yes or an error code. */
 int agent_havekey (const char *hexkeygrip);
+
+/* Send a SETATTR command to the SCdaemon. */
+int agent_scd_setattr (const char *name,
+                       const unsigned char *value, size_t valuelen);
+
+/* Send a GENKEY command to the SCdaemon. */
+int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force);
+
+/* Send a PKSIGN command to the SCdaemon. */
+int agent_scd_pksign (const char *keyid, int hashalgo,
+                      const unsigned char *indata, size_t indatalen,
+                      char **r_buf, size_t *r_buflen);
 
 /* Ask the agent to let the user change the passphrase of the secret
    key identified by HEXKEYGRIP. */
@@ -31,4 +67,7 @@ int agent_passwd (const char *hexkeygrip);
 
 
 
+
+
 #endif /*GNUPG_G10_CALL_AGENT_H*/
+

@@ -1,3 +1,25 @@
+2003-06-27  Werner Koch  <wk@gnupg.org>
+
+	* seckey-cert.c (check_secret_key): Bypass the unprotection for
+	mode 1002.
+	* sign.c (do_sign): Handle card case (i.e. mode 1002).
+
+2003-06-26  Werner Koch  <wk@gnupg.org>
+
+	* build-packet.c (do_secret_key): Implement special protection
+	mode 1002.
+	* parse-packet.c (parse_key): Likewise.
+
+	* keygen.c (smartcard_gen_key): New.
+	* call-agent.c (agent_scd_setattr): New.
+
+2003-06-24  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Removed signal.c
+
+	* g10.c (emergency_cleanup): New.
+	(main): Use gnupg_init_signals and register malloc for assuan.
+
 2003-06-23  Werner Koch  <wk@gnupg.org>
 
 	* keyid.c (do_fingerprint_md): Made it work again.

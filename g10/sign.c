@@ -249,74 +249,94 @@ static int
 do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	 MD_HANDLE md, int digest_algo )
 {
-    gcry_mpi_t frame;
-    byte *dp;
-    int rc;
+  gcry_mpi_t frame;
+  byte *dp;
+  int rc;
 
-    if( sk->timestamp > sig->timestamp ) {
-	ulong d = sk->timestamp - sig->timestamp;
-	log_info( d==1 ? _("key has been created %lu second "
-			   "in future (time warp or clock problem)\n")
-		       : _("key has been created %lu seconds "
-			   "in future (time warp or clock problem)\n"), d );
-	if( !opt.ignore_time_conflict )
-	    return GPG_ERR_TIME_CONFLICT;
-    }
+  if( sk->timestamp > sig->timestamp ) {
+    ulong d = sk->timestamp - sig->timestamp;
+    log_info( d==1 ? _("key has been created %lu second "
+                       "in future (time warp or clock problem)\n")
+              : _("key has been created %lu seconds "
+                  "in future (time warp or clock problem)\n"), d );
+    if( !opt.ignore_time_conflict )
+      return GPG_ERR_TIME_CONFLICT;
+  }
 
+  print_pubkey_algo_note(sk->pubkey_algo);
 
-    print_pubkey_algo_note(sk->pubkey_algo);
+  if( !digest_algo )
+    digest_algo = gcry_md_get_algo(md);
 
-    if( !digest_algo )
-	digest_algo = gcry_md_get_algo(md);
+  print_digest_algo_note( digest_algo );
+  dp = gcry_md_read ( md, digest_algo );
+  sig->digest_algo = digest_algo;
+  sig->digest_start[0] = dp[0];
+  sig->digest_start[1] = dp[1];
+  if (sk->is_protected && sk->protect.s2k.mode == 1002)
+    { /* FIXME: Note that we do only support RSA for now. */
+      char *rbuf;
+      size_t rbuflen;
 
-    print_digest_algo_note( digest_algo );
-    dp = gcry_md_read ( md, digest_algo );
-    sig->digest_algo = digest_algo;
-    sig->digest_start[0] = dp[0];
-    sig->digest_start[1] = dp[1];
-    frame = encode_md_value( sk->pubkey_algo, md,
-			     digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
-    if (!frame)
-        return GPG_ERR_GENERAL;
-    rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
-    gcry_mpi_release (frame);
-    if (!rc && !opt.no_sig_create_check) {
-        /* check that the signature verification worked and nothing is
-         * fooling us e.g. by a bug in the signature create
-         * code or by deliberately introduced faults. */
-        PKT_public_key *pk = xcalloc (1,sizeof *pk);
-
-        if( get_pubkey( pk, sig->keyid ) )
-            rc = GPG_ERR_NO_PUBKEY;
-        else {
-            frame = encode_md_value (pk->pubkey_algo, md,
-                                     sig->digest_algo,
-                                     mpi_get_nbits(pk->pkey[0]), 0);
-            if (!frame)
-                rc = GPG_ERR_GENERAL;
-            else
-                rc = pk_verify (pk->pubkey_algo, frame,
-                                sig->data, pk->pkey);
-            gcry_mpi_release (frame);
+      /* FIXME: We need to pass the correct keyid or better the
+         fingerprint to the scdaemon. */
+      rc = agent_scd_pksign ("nokeyid", digest_algo,
+                             gcry_md_read (md, digest_algo),
+                             gcry_md_get_algo_dlen (digest_algo),
+                             &rbuf, &rbuflen);
+      if (!rc)
+        {
+          unsigned int nbytes = rbuflen;
+          if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG, rbuf, &nbytes ))
+            BUG ();
         }
-        if (rc)
-            log_error (_("checking created signature failed: %s\n"),
-                         gpg_strerror (rc));
-        free_public_key (pk);
     }
-    if( rc )
-	log_error(_("signing failed: %s\n"), gpg_strerror (rc) );
+  else
+    {
+      frame = encode_md_value( sk->pubkey_algo, md,
+                               digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
+      if (!frame)
+        return GPG_ERR_GENERAL;
+      rc = pk_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
+      gcry_mpi_release (frame);
+    }
+  if (!rc && !opt.no_sig_create_check) {
+    /* check that the signature verification worked and nothing is
+     * fooling us e.g. by a bug in the signature create
+     * code or by deliberately introduced faults. */
+    PKT_public_key *pk = xcalloc (1,sizeof *pk);
+
+    if( get_pubkey( pk, sig->keyid ) )
+      rc = GPG_ERR_NO_PUBKEY;
     else {
-	if( opt.verbose ) {
-	    char *ustr = get_user_id_string_printable (sig->keyid);
-	    log_info(_("%s/%s signature from: \"%s\"\n"),
-		     gcry_pk_algo_name (sk->pubkey_algo),
-		     gcry_md_algo_name (sig->digest_algo),
-		     ustr );
-	    xfree (ustr);
-	}
+      frame = encode_md_value (pk->pubkey_algo, md,
+                               sig->digest_algo,
+                               mpi_get_nbits(pk->pkey[0]), 0);
+      if (!frame)
+        rc = GPG_ERR_GENERAL;
+      else
+        rc = pk_verify (pk->pubkey_algo, frame,
+                        sig->data, pk->pkey);
+      gcry_mpi_release (frame);
     }
-    return rc;
+    if (rc)
+      log_error (_("checking created signature failed: %s\n"),
+                 gpg_strerror (rc));
+    free_public_key (pk);
+  }
+  if( rc )
+    log_error(_("signing failed: %s\n"), gpg_strerror (rc) );
+  else {
+    if( opt.verbose ) {
+      char *ustr = get_user_id_string_printable (sig->keyid);
+      log_info(_("%s/%s signature from: \"%s\"\n"),
+               gcry_pk_algo_name (sk->pubkey_algo),
+               gcry_md_algo_name (sig->digest_algo),
+               ustr );
+      xfree (ustr);
+    }
+  }
+  return rc;
 }
 
 
@@ -1170,7 +1190,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
  * SIGVERSION gives the minimal required signature packet version;
  * this is needed so that special properties like local sign are not
  * applied (actually: dropped) when a v3 key is used.  TIMESTAMP is
- * the timestamp to use for the signature. 0 means "now" */
+ * the timestamp to use for the signature. 0 means "now". */
 int
 make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_user_id *uid, PKT_public_key *subpk,

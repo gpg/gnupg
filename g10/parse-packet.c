@@ -1634,6 +1634,8 @@ parse_key( iobuf_t inp, int pkttype, unsigned long pktlen,
 		    break;
 		  case 1001: if( list_mode ) printf(  "\tgnu-dummy S2K" );
 		    break;
+		  case 1002: if (list_mode) printf("\tgnu-divert-to-card S2K");
+		    break;
 		  default:
 		    if( list_mode )
 			printf(  "\tunknown %sS2K %d\n",
@@ -1669,6 +1671,31 @@ parse_key( iobuf_t inp, int pkttype, unsigned long pktlen,
 			printf("\tprotect count: %lu\n",
 					    (ulong)sk->protect.s2k.count);
 		}
+		else if( sk->protect.s2k.mode == 1002 ) {
+                    size_t snlen;
+                    /* Read the serial number. */
+                    if (pktlen < 1) {
+			rc = GPG_ERR_INV_PACKET;
+			goto leave;
+		    }
+		    snlen = iobuf_get (inp);
+		    pktlen--;
+                    if (pktlen < snlen || snlen == -1) {
+			rc = GPG_ERR_INV_PACKET;
+			goto leave;
+                    }
+
+		    if( list_mode ) {
+                      printf("\tserial-number: ");
+                      for (;snlen; snlen--)
+                        printf ("%02X", (unsigned int)iobuf_get_noeof (inp));
+                      putchar ('\n');
+                    }
+                    else {
+                      for (;snlen; snlen--)
+                        iobuf_get_noeof (inp);
+                    }
+		}
 	    }
 	    /* Note that a sk->protect.algo > 110 is illegal, but I'm
 	       not erroring on it here as otherwise there would be no
@@ -1698,6 +1725,8 @@ parse_key( iobuf_t inp, int pkttype, unsigned long pktlen,
 	    }
 	    if( sk->protect.s2k.mode == 1001 )
 		sk->protect.ivlen = 0;
+	    else if( sk->protect.s2k.mode == 1002 )
+		sk->protect.ivlen = 0;
 
 	    if( pktlen < sk->protect.ivlen ) {
 		rc = GPG_ERR_INV_PACKET;
@@ -1719,7 +1748,8 @@ parse_key( iobuf_t inp, int pkttype, unsigned long pktlen,
 	 * If the user is so careless, not to protect his secret key,
 	 * we can assume, that he operates an open system :=(.
 	 * So we put the key into secure memory when we unprotect it. */
-	if( sk->protect.s2k.mode == 1001 ) {
+	if( sk->protect.s2k.mode == 1001
+            || sk->protect.s2k.mode == 1002 ) {
 	    /* better set some dummy stuff here */
 	    sk->skey[npkey] = mpi_set_opaque(NULL, xstrdup ("dummydata"), 10);
 	    pktlen = 0;

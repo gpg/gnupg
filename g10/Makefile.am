@@ -63,8 +63,7 @@ common_source =  \
 	      plaintext.c	\
 	      sig-check.c	\
 	      keylist.c 	\
-	      pkglue.c pkglue.h \
-	      signal.c
+	      pkglue.c pkglue.h 
 
 gpg_SOURCES  = g10.c		\
 	      $(common_source)	\
