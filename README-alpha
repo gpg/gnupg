@@ -1,0 +1,14 @@
+       ====== THIS IS WORK IN PROGESS ======
+
+       DO NOT USE IN A PRODUCTION ENVIRONMENT!
+
+         THERE MIGHT BE SECURITY PROBLEMS!
+
+The source may change quite often and may have serious problems; it
+may even not compile on some machines.
+
+It will probably needs GCC and GLIBC to build due to some debugging
+code.  Please don't complain if it does not work on other machines.
+We will make it work again later.
+
+
