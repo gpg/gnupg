@@ -1,3 +1,7 @@
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* membuf.c (put_membuf): Wipe out buffer after a failed realloc.
+
 2004-12-19  Werner Koch  <wk@g10code.com>
 
 	* maperror.c (map_assuan_err_with_source): Oops, args were swapped.

@@ -82,75 +82,6 @@ struct inq_needpin_s {
   void *getpin_cb_arg;
 };
 
-struct membuf {
-  size_t len;
-  size_t size;
-  char *buf;
-  int out_of_core;
-};
-
-
-
-/* A simple implementation of a dynamic buffer.  Use init_membuf() to
-   create a buffer, put_membuf to append bytes and get_membuf to
-   release and return the buffer.  Allocation errors are detected but
-   only returned at the final get_membuf(), this helps not to clutter
-   the code with out of core checks.  */
-
-static void
-init_membuf (struct membuf *mb, int initiallen)
-{
-  mb->len = 0;
-  mb->size = initiallen;
-  mb->out_of_core = 0;
-  mb->buf = xtrymalloc (initiallen);
-  if (!mb->buf)
-      mb->out_of_core = 1;
-}
-
-static void
-put_membuf (struct membuf *mb, const void *buf, size_t len)
-{
-  if (mb->out_of_core)
-    return;
-
-  if (mb->len + len >= mb->size)
-    {
-      char *p;
-      
-      mb->size += len + 1024;
-      p = xtryrealloc (mb->buf, mb->size);
-      if (!p)
-        {
-          mb->out_of_core = 1;
-          return;
-        }
-      mb->buf = p;
-    }
-  memcpy (mb->buf + mb->len, buf, len);
-  mb->len += len;
-}
-
-static void *
-get_membuf (struct membuf *mb, size_t *len)
-{
-  char *p;
-
-  if (mb->out_of_core)
-    {
-      xfree (mb->buf);
-      mb->buf = NULL;
-      return NULL;
-    }
-
-  p = mb->buf;
-  *len = mb->len;
-  mb->buf = NULL;
-  mb->out_of_core = 1; /* don't allow a reuse */
-  return p;
-}
-
-
 
 
 /* This function must be called once to initialize this module.  This
@@ -468,7 +399,7 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno)
 static AssuanError
 membuf_data_cb (void *opaque, const void *buffer, size_t length)
 {
-  struct membuf *data = opaque;
+  membuf_t *data = opaque;
 
   if (buffer)
     put_membuf (data, buffer, length);
@@ -519,7 +450,7 @@ agent_card_pksign (ctrl_t ctrl,
 {
   int rc, i;
   char *p, line[ASSUAN_LINELENGTH];
-  struct membuf data;
+  membuf_t data;
   struct inq_needpin_s inqparm;
   size_t len;
   unsigned char *sigbuf;
@@ -591,7 +522,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
 {
   int rc, i;
   char *p, line[ASSUAN_LINELENGTH];
-  struct membuf data;
+  membuf_t data;
   struct inq_needpin_s inqparm;
   size_t len;
 
@@ -643,7 +574,7 @@ agent_card_readcert (ctrl_t ctrl,
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
-  struct membuf data;
+  membuf_t data;
   size_t len;
 
   *r_buf = NULL;
@@ -679,7 +610,7 @@ agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
-  struct membuf data;
+  membuf_t data;
   size_t len, buflen;
 
   *r_buf = NULL;

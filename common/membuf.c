@@ -60,6 +60,11 @@ put_membuf (membuf_t *mb, const void *buf, size_t len)
       if (!p)
         {
           mb->out_of_core = errno;
+          /* Wipe out what we already accumulated.  This is required
+             in case we are storing sensitive data here.  The membuf
+             API does not provide another way to cleanup after an
+             error. */ 
+          memset (mb->buf, 0, mb->len);
           return;
         }
       mb->buf = p;

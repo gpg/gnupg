@@ -37,7 +37,7 @@
 int
 agent_pkdecrypt (CTRL ctrl, const char *desc_text,
                  const unsigned char *ciphertext, size_t ciphertextlen,
-                 FILE *outfp) 
+                 membuf_t *outbuf) 
 {
   gcry_sexp_t s_skey = NULL, s_cipher = NULL, s_plain = NULL;
   unsigned char *shadow_info = NULL;
@@ -88,11 +88,16 @@ agent_pkdecrypt (CTRL ctrl, const char *desc_text,
           log_error ("smartcard decryption failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
-      /* FIXME: don't use buffering and change the protocol to return
-         a complete S-expression and not just a part. */
-      fprintf (outfp, "%u:", (unsigned int)len);
-      fwrite (buf, 1, len, outfp);
-      putc (0, outfp);
+      /* FIXME: Change the protocol to return a complete S-expression
+         and not just a part. */
+      {
+        char tmpbuf[50];
+
+        sprintf (tmpbuf, "%u:", (unsigned int)len);
+        put_membuf (outbuf, tmpbuf, strlen (tmpbuf));
+        put_membuf (outbuf, buf, len);
+        put_membuf (outbuf, "", 1);
+      }
     }
   else
     { /* No smartcard, but a private key */
@@ -119,10 +124,7 @@ agent_pkdecrypt (CTRL ctrl, const char *desc_text,
       buf = xmalloc (len);
       len = gcry_sexp_sprint (s_plain, GCRYSEXP_FMT_CANON, buf, len);
       assert (len);
-      /* FIXME: we must make sure that no buffering takes place or we are
-         in full control of the buffer memory (easy to do) - should go
-         into assuan. */
-      fwrite (buf, 1, len, outfp);
+      put_membuf (outbuf, buf, len);
     }      
 
 

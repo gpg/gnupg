@@ -1,3 +1,16 @@
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (init_membuf, put_membuf, get_membuf): Removed.  We
+	now use the identical implementation from ../common/membuf.c.
+
+	* pksign.c (agent_pksign): Changed arg OUTFP to OUTBUF and use
+	membuf functions to return the value.
+	* pkdecrypt.c (agent_pkdecrypt): Ditto.
+	* genkey.c (agent_genkey): Ditto.
+	* command.c (cmd_pksign, cmd_pkdecrypt, cmd_genkey): Replaced
+	assuan_get_data_fp() by a the membuf scheme.
+	(clear_outbuf, write_and_clear_outbuf): New.
+
 2004-12-19  Werner Koch  <wk@g10code.com>
 
 	* query.c (initialize_module_query): New.

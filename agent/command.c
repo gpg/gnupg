@@ -50,7 +50,7 @@ struct server_local_s {
   ASSUAN_CONTEXT assuan_ctx;
   int message_fd;
   int use_cache_for_signing;
-  char *keydesc;  /* Allocated description fro the next key
+  char *keydesc;  /* Allocated description for the next key
                      operation. */
 };
 
@@ -58,6 +58,41 @@ struct server_local_s {
 
 
 
+/* Release the memory buffer MB but first wipe out the used memory. */
+static void
+clear_outbuf (membuf_t *mb)
+{
+  void *p;
+  size_t n;
+
+  p = get_membuf (mb, &n);
+  if (p)
+    {
+      memset (p, 0, n);
+      xfree (p);
+    }
+}
+
+
+/* Write the content of memory buffer MB as assuan data to CTX and
+   wipe the buffer out afterwards. */
+static gpg_error_t
+write_and_clear_outbuf (assuan_context_t ctx, membuf_t *mb)
+{
+  assuan_error_t ae;
+  void *p;
+  size_t n;
+
+  p = get_membuf (mb, &n);
+  if (!p)
+    return gpg_error (GPG_ERR_ENOMEM);
+  ae = assuan_send_data (ctx, p, n);
+  memset (p, 0, n);
+  xfree (p);
+  return map_assuan_err (ae);
+}
+
+
 static void
 reset_notify (ASSUAN_CONTEXT ctx)
 {
@@ -369,14 +404,21 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   int rc;
   int ignore_cache = 0;
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  membuf_t outbuf;
 
   if (opt.ignore_cache_for_signing)
     ignore_cache = 1;
   else if (!ctrl->server_local->use_cache_for_signing)
     ignore_cache = 1;
 
+  init_membuf (&outbuf, 512);
+
   rc = agent_pksign (ctrl, ctrl->server_local->keydesc,
-                     assuan_get_data_fp (ctx), ignore_cache);
+                     &outbuf, ignore_cache);
+  if (rc)
+    clear_outbuf (&outbuf);
+  else
+    rc = write_and_clear_outbuf (ctx, &outbuf);
   if (rc)
     log_error ("command pksign failed: %s\n", gpg_strerror (rc));
   xfree (ctrl->server_local->keydesc);
@@ -395,6 +437,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   unsigned char *value;
   size_t valuelen;
+  membuf_t outbuf;
 
   /* First inquire the data to decrypt */
   rc = assuan_inquire (ctx, "CIPHERTEXT",
@@ -402,9 +445,15 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     return rc;
 
+  init_membuf (&outbuf, 512);
+
   rc = agent_pkdecrypt (ctrl, ctrl->server_local->keydesc,
-                        value, valuelen, assuan_get_data_fp (ctx));
+                        value, valuelen, &outbuf);
   xfree (value);
+  if (rc)
+    clear_outbuf (&outbuf);
+  else
+    rc = write_and_clear_outbuf (ctx, &outbuf);
   if (rc)
     log_error ("command pkdecrypt failed: %s\n", gpg_strerror (rc));
   xfree (ctrl->server_local->keydesc);
@@ -434,14 +483,21 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
   int rc;
   unsigned char *value;
   size_t valuelen;
+  membuf_t outbuf;
 
   /* First inquire the parameters */
   rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
   if (rc)
     return rc;
 
-  rc = agent_genkey (ctrl, value, valuelen, assuan_get_data_fp (ctx));
+  init_membuf (&outbuf, 512);
+
+  rc = agent_genkey (ctrl, value, valuelen, &outbuf);
   xfree (value);
+  if (rc)
+    clear_outbuf (&outbuf);
+  else
+    rc = write_and_clear_outbuf (ctx, &outbuf);
   if (rc)
     log_error ("command genkey failed: %s\n", gpg_strerror (rc));
   return map_to_assuan_status (rc);

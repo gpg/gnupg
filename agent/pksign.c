@@ -176,7 +176,8 @@ agent_pksign_do (CTRL ctrl, const char *desc_text,
 /* SIGN whatever information we have accumulated in CTRL and write it
    back to OUTFP. */
 int
-agent_pksign (CTRL ctrl, const char *desc_text, FILE *outfp, int ignore_cache) 
+agent_pksign (CTRL ctrl, const char *desc_text,
+              membuf_t *outbuf, int ignore_cache) 
 {
   gcry_sexp_t s_sig = NULL;
   char *buf = NULL;
@@ -193,10 +194,7 @@ agent_pksign (CTRL ctrl, const char *desc_text, FILE *outfp, int ignore_cache)
   len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
 
-  /* FIXME: we must make sure that no buffering takes place or we are
-     in full control of the buffer memory (easy to do) - should go
-     into assuan. */
-  fwrite (buf, 1, len, outfp);
+  put_membuf (outbuf, buf, len);
 
  leave:
   gcry_sexp_release (s_sig);

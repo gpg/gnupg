@@ -88,7 +88,7 @@ reenter_compare_cb (struct pin_entry_info_s *pi)
    KEYPARAM */
 int
 agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
-              FILE *outfp) 
+              membuf_t *outbuf) 
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
   struct pin_entry_info_s *pi, *pi2;
@@ -171,7 +171,8 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
   gcry_sexp_release (s_key); s_key = NULL;
   
   /* store the secret key */
-  log_debug ("storing private key\n");
+  if (DBG_CRYPTO)
+    log_debug ("storing private key\n");
   rc = store_key (s_private, pi? pi->pin:NULL, 0);
   xfree (pi); pi = NULL;
   gcry_sexp_release (s_private);
@@ -182,7 +183,8 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
     }
 
   /* return the public key */
-  log_debug ("returning public key\n");
+  if (DBG_CRYPTO)
+    log_debug ("returning public key\n");
   len = gcry_sexp_sprint (s_public, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
   buf = xtrymalloc (len);
@@ -195,15 +197,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
     }
   len = gcry_sexp_sprint (s_public, GCRYSEXP_FMT_CANON, buf, len);
   assert (len);
-  if (fwrite (buf, len, 1, outfp) != 1)
-    {
-      gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
-      log_error ("error writing public key: %s\n", strerror (errno));
-      gcry_sexp_release (s_private);
-      gcry_sexp_release (s_public);
-      xfree (buf);
-      return tmperr;
-    }
+  put_membuf (outbuf, buf, len);
   gcry_sexp_release (s_public);
   xfree (buf);
 

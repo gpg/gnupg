@@ -33,6 +33,7 @@
 #include <gcrypt.h>
 #include "../common/util.h"
 #include "../common/errors.h"
+#include "membuf.h"
 
 /* Convenience function to be used instead of returning the old
    GNUPG_Out_Of_Core. */
@@ -166,16 +167,16 @@ void agent_unlock_cache_entry (void **cache_id);
 int agent_pksign_do (CTRL ctrl, const char *desc_text,
 		     gcry_sexp_t *signature_sexp, int ignore_cache);
 int agent_pksign (ctrl_t ctrl, const char *desc_text,
-                  FILE *outfp, int ignore_cache);
+                  membuf_t *outbuf, int ignore_cache);
 
 /*-- pkdecrypt.c --*/
 int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                      const unsigned char *ciphertext, size_t ciphertextlen,
-                     FILE *outfp);
+                     membuf_t *outbuf);
 
 /*-- genkey.c --*/
 int agent_genkey (ctrl_t ctrl, 
-                  const char *keyparam, size_t keyparmlen, FILE *outfp);
+                  const char *keyparam, size_t keyparmlen, membuf_t *outbuf);
 int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);
 
 /*-- protect.c --*/
