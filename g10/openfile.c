@@ -308,7 +308,8 @@ copy_options_file( const char *destdir )
     if( opt.dry_run )
 	return;
 
-    fname = xmalloc ( strlen(datadir) + strlen(destdir) + 15 );
+    fname = xmalloc ( strlen(datadir) + strlen(destdir) 
+                      strlen (SKELEXT) + 15 );
     strcpy(stpcpy(fname, datadir), DIRSEP_S "gpg-conf" SKELEXT );
     src = fopen( fname, "r" );
     if( !src ) {
