@@ -182,7 +182,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 )},
 
 { "keyedit.sign_all.okay", N_(
- "Answer \"yes\" is you want to sign ALL the user IDs"
+ "Answer \"yes\" if you want to sign ALL the user IDs"
 )},
 
 { "keyedit.remove.uid.okay", N_(

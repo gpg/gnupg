@@ -190,7 +190,18 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 
   keyid_from_pk (pk, keyid);
   for(;;) {
-    /* a string with valid answers */
+    /* A string with valid answers.
+
+       Note to translators: These are the allowed answers in lower and
+       uppercase.  Below you will find the matching strings which
+       should be translated accordingly and the letter changed to
+       match the one in the answer string.
+    
+         i = please show me more information
+         m = back to the main menu
+         s = skip this key
+	 q = quit
+    */
     const char *ans = _("iImMqQsS");
 
     if( !did_help ) 

@@ -1713,6 +1713,17 @@ ask_user_id( int mode )
 	}
 
 	for(;;) {
+            /* Note to translators: These are the allowed answers in
+               lower and uppercase.  Below you will find the matching
+               string which should be translated accordingly and the
+               letter changed to match the one in the answer string.
+               
+                 n = Change name
+                 c = Change comment
+                 e = Change email
+                 o = Okay (ready, continue)
+                 q = Quit
+             */
 	    const char *ansstr = _("NnCcEeOoQq");
 
 	    if( strlen(ansstr) != 10 )

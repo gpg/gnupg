@@ -1,3 +1,10 @@
+2004-10-15  Werner Koch  <wk@g10code.com>
+
+	* pkclist.c (do_edit_ownertrust): Add a note to translators.
+	* keygen.c (ask_user_id): Ditto.
+
+	* helptext.c: Typo fix.
+
 2004-10-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (list_keyblock_print): Show the fingerprint after the
