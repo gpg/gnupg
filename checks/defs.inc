@@ -103,5 +103,6 @@ no-greeting
 no-secmem-warning
 load-extension ../cipher/tiger
 batch
+emulate-md-encode-bug
 EOF
 
