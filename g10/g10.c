@@ -646,7 +646,7 @@ static ARGPARSE_OPTS opts[] = {
     { oReaderPort, "reader-port",    2, "@"},
     { octapiDriver, "ctapi-driver",  2, "@"},
     { opcscDriver, "pcsc-driver",    2, "@"},
-    { oDisableCCID, "disable-ccidc", 0, "@"},
+    { oDisableCCID, "disable-ccid", 0, "@"},
 
 
 {0} };

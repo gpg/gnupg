@@ -1,3 +1,7 @@
+2003-10-10  Werner Koch  <wk@gnupg.org>
+
+	* POTFILES.in (cipher/primegen.c): Added.
+
 2003-05-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* POTFILES.in: Added a couple of missing source files.  Noted by

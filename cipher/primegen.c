@@ -31,6 +31,7 @@
 #include "util.h"
 #include "mpi.h"
 #include "cipher.h"
+#include "i18n.h"
 
 static int no_of_small_prime_numbers;
 static MPI gen_prime( unsigned	nbits, int mode, int randomlevel );
@@ -116,7 +117,8 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	;
     n--;
     if( !n || (mode==1 && n < 2) )
-	log_fatal("can't gen prime with pbits=%u qbits=%u\n", pbits, qbits );
+	log_fatal(_("can't gen prime with pbits=%u qbits=%u\n"),
+                  pbits, qbits );
     if( mode == 1 ) {
 	n--;
 	fbits = (pbits - 2*req_qbits -1) / n;
@@ -304,8 +306,11 @@ gen_prime( unsigned int nbits, int secret, int randomlevel )
     if( 0 && DBG_CIPHER )
 	log_debug("generate a prime of %u bits ", nbits );
 
-    if (!nbits)
-      log_fatal ("trying to generate a prime of zero bits\n");
+    if (nbits < 16)
+      {
+        log_error (_("can't generate a prime with less than %d bits\n"), 16);
+        exit (2);
+      }
 
     if( !no_of_small_prime_numbers ) {
 	for(i=0; small_prime_numbers[i]; i++ )

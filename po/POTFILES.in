@@ -13,6 +13,7 @@ cipher/random.c
 cipher/rndlinux.c
 cipher/md.c
 cipher/rndegd.c
+cipher/primegen.c
 
 # main program
 g10/g10.c
