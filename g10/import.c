@@ -1037,6 +1037,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	  rsdate=0;
 	  bsnode=NULL;
 	  rsnode=NULL;
+	  continue;
 	}
       else if( n->pkt->pkttype != PKT_SIGNATURE )
 	    continue;

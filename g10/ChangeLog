@@ -1,3 +1,11 @@
+2002-12-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Include the required '=' sign in the sample
+	'group' option.
+
+	* import.c (chk_self_sigs): Don't try and check a subkey as if it
+	was a signature.
+
 2002-12-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (proc_tree): Handle multiple detached sigs

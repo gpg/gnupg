@@ -63,7 +63,7 @@ $Id$
 #charset utf-8
 
 # Group names may be defined like this:
-#   group mynames paige 0x12345678 joe patti
+#   group mynames = paige 0x12345678 joe patti
 #
 # Any time "mynames" is a recipient (-r or --recipient), it will be
 # expanded to the names "paige", "joe", and "patti", and the key ID
@@ -72,7 +72,7 @@ $Id$
 # if there are spaces in the recipient name, this will appear as two
 # recipients.  In these cases it is better to use the key ID.
 
-#group mynames paige 0x12345678 joe patti
+#group mynames = paige 0x12345678 joe patti
 
 # Lock the file only once for the lifetime of a process.  If you do
 # not define this, the lock will be obtained and released every time
