@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 0.32[H p]
-Last-Modified: Oct 24, 2000[H p]
+Version: 0.33[H p]
+Last-Modified: Nov 16, 2000[H p]
 Maintained-by: [$maintainer]
 
 
@@ -29,7 +29,7 @@ Please send additions and corrections to the maintainer. Please, don't
 send message like "This should be a FAQ - what's the answer?". If it
 hasn't been asked before, it isn't a FAQ. Maybe you should have a look
 at the mailing list archive. Otherwise, please provide the answer to be
-included here.
+included here. Your help is very much appreciated.
 
 
 [H HR]
@@ -152,8 +152,19 @@ included here.
     signatures this is sufficient as the size of the hash
     is probably the weakest link if the key size is larger
     than 1024 bits.  Encryption keys may have greater sizes,
-    but you should than check the fingerprint of this key:
+    but you should then check the fingerprint of this key:
     "gpg --fingerprint --fingerprint <user ID>".
+
+    As for the key algorithms, you should stick with the default (i.e.,
+    DSA signature and ElGamal encryption). A ElGamal signing key has the
+    following disadvantages: the signature is larger, it is hard to
+    create such a key useful for signatures which can withstand some
+    real world attacks, you don't get any extra security compared to
+    DSA, there might be compatability problems with certain PGP
+    versions. It has only been introduced because at the time it was
+    not clear whether there is was patent on DSA.
+
+
 
 <Q> Why does it sometimes take so long to create keys?
 
@@ -362,12 +373,16 @@ messages?
     The following list is probably not exhaustive:
 
     OpenPGP: Mutt (Unix), Emacs/Mew, Becky2 (Windows, with plugin),
-             TkRat (Unix). There is effort for a Mozilla plugin and a
-	     group works on support for Emacs/GNUS.
+             TkRat (Unix). There is effort for a Mozilla plugin and
+	     Emacs/GNUS has support in the current CVS.
     
     ASCII:   Emacs/{VM,GNUS}/MailCrypt, Mutt(Unix), Pine(Unix), and
              probably many more.
 
+    A good overview of PGP-support is present at 
+    [H a href=http://cryptorights.org/pgp-users/pgp-mail-clients.html]http://cryptorights.org/pgp-users/pgp-mail-clients.html[H /a]. 
+    Direct GnuPG support is not mentioned, however, it certain cases it
+    may be possible to use a wrapper. 
 
 
 <S> COMPATIBILITY ISSUES 
@@ -481,6 +496,13 @@ it?
     was thought to be a too serious issue. However, it confused users
     too much so the warning was eventually removed.
 
+<Q> Large File Support doesn't work ..
+
+    LFS is correctly working in post-1.0.4 CVS. If configure doesn't
+    detect it correctly, try a different (i.e., better) compiler. egcs
+    1.1.2 works fine, other gccs sometimes don't. BTW, several
+    compilation problems of GnuPG 1.0.3 and 1.0.4 on HP-UX and Solaris
+    were due to broken LFS support.
 
 <Q> In the edit menu the trust values is not displayed correctly after
 signing uids - why?
@@ -489,6 +511,17 @@ signing uids - why?
     the trustdb, but the actual trust calculation can be done after the
     save command.  This is a not easy to fix design bug which will be
     addressed in some future release.
+
+<Q> What does "skipping pubkey 1: already loaded" mean?
+
+    As of GnuPG 1.0.3, the RSA algorithm is included. If you still have
+    a "load-extension rsa" in your .options files, the above message
+    occurs. Just remove the load command from the .options file.
+
+<Q> GnuPG 1.0.4 doesn't create ~/.gnupg ...
+
+    That's a known bug, already fixed in the CVS (and will be in the
+    next release, of course).
 
 <Q> An ElGamal signature does not verify anymore since version 1.0.2 ...
 

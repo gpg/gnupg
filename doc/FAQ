@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 0.32
-Last-Modified: Oct 24, 2000
+Version: 0.33
+Last-Modified: Nov 16, 2000
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -18,7 +18,7 @@ Please send additions and corrections to the maintainer. Please, don't
 send message like "This should be a FAQ - what's the answer?". If it
 hasn't been asked before, it isn't a FAQ. Maybe you should have a look
 at the mailing list archive. Otherwise, please provide the answer to be
-included here.
+included here. Your help is very much appreciated.
 
 
 
@@ -67,15 +67,18 @@ included here.
 
  6. PROBLEMS and ERROR MESSAGES
    6.1) Why do I get "gpg: Warning: using insecure memory!"
-   6.2) In the edit menu the trust values is not displayed correctly after
+   6.2) Large File Support doesn't work ..
+   6.3) In the edit menu the trust values is not displayed correctly after
 	signing uids - why?
-   6.3) An ElGamal signature does not verify anymore since version 1.0.2 ...
-   6.4) Old versions of GnuPG can't verify ElGamal signatures
-   6.5) When I use --clearsign, the plain text has sometimes extra dashes 
+   6.4) What does "skipping pubkey 1: already loaded" mean?
+   6.5) GnuPG 1.0.4 doesn't create ~/.gnupg ...
+   6.6) An ElGamal signature does not verify anymore since version 1.0.2 ...
+   6.7) Old versions of GnuPG can't verify ElGamal signatures
+   6.8) When I use --clearsign, the plain text has sometimes extra dashes 
 	in it - why?
-   6.6) What is the thing with "can't handle multiple signatures"?
-   6.7) If I submit a key to a keyserver, nothing happens ...
-   6.8) I still have a problem. How do I report a bug?
+   6.9) What is the thing with "can't handle multiple signatures"?
+   6.10) If I submit a key to a keyserver, nothing happens ...
+   6.11) I still have a problem. How do I report a bug?
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -200,8 +203,19 @@ included here.
     signatures this is sufficient as the size of the hash
     is probably the weakest link if the key size is larger
     than 1024 bits.  Encryption keys may have greater sizes,
-    but you should than check the fingerprint of this key:
+    but you should then check the fingerprint of this key:
     "gpg --fingerprint --fingerprint <user ID>".
+
+    As for the key algorithms, you should stick with the default (i.e.,
+    DSA signature and ElGamal encryption). A ElGamal signing key has the
+    following disadvantages: the signature is larger, it is hard to
+    create such a key useful for signatures which can withstand some
+    real world attacks, you don't get any extra security compared to
+    DSA, there might be compatability problems with certain PGP
+    versions. It has only been introduced because at the time it was
+    not clear whether there is was patent on DSA.
+
+
 
 4.2) Why does it sometimes take so long to create keys?
 
@@ -398,12 +412,16 @@ messages?
     The following list is probably not exhaustive:
 
     OpenPGP: Mutt (Unix), Emacs/Mew, Becky2 (Windows, with plugin),
-             TkRat (Unix). There is effort for a Mozilla plugin and a
-	     group works on support for Emacs/GNUS.
+             TkRat (Unix). There is effort for a Mozilla plugin and
+	     Emacs/GNUS has support in the current CVS.
 
     ASCII:   Emacs/{VM,GNUS}/MailCrypt, Mutt(Unix), Pine(Unix), and
              probably many more.
 
+    A good overview of PGP-support is present at 
+    http://cryptorights.org/pgp-users/pgp-mail-clients.html. 
+    Direct GnuPG support is not mentioned, however, it certain cases it
+    may be possible to use a wrapper. 
 
 
 5. COMPATIBILITY ISSUES 
@@ -508,8 +526,15 @@ it?
     was thought to be a too serious issue. However, it confused users
     too much so the warning was eventually removed.
 
+6.2) Large File Support doesn't work ..
 
-6.2) In the edit menu the trust values is not displayed correctly after
+    LFS is correctly working in post-1.0.4 CVS. If configure doesn't
+    detect it correctly, try a different (i.e., better) compiler. egcs
+    1.1.2 works fine, other gccs sometimes don't. BTW, several
+    compilation problems of GnuPG 1.0.3 and 1.0.4 on HP-UX and Solaris
+    were due to broken LFS support.
+
+6.3) In the edit menu the trust values is not displayed correctly after
 signing uids - why?
 
     This happens because the some informations are stored immediately in
@@ -517,16 +542,27 @@ signing uids - why?
     save command.  This is a not easy to fix design bug which will be
     addressed in some future release.
 
-6.3) An ElGamal signature does not verify anymore since version 1.0.2 ...
+6.4) What does "skipping pubkey 1: already loaded" mean?
+
+    As of GnuPG 1.0.3, the RSA algorithm is included. If you still have
+    a "load-extension rsa" in your .options files, the above message
+    occurs. Just remove the load command from the .options file.
+
+6.5) GnuPG 1.0.4 doesn't create ~/.gnupg ...
+
+    That's a known bug, already fixed in the CVS (and will be in the
+    next release, of course).
+
+6.6) An ElGamal signature does not verify anymore since version 1.0.2 ...
 
     Use the option --emulate-md-encode-bug.
 
-6.4) Old versions of GnuPG can't verify ElGamal signatures
+6.7) Old versions of GnuPG can't verify ElGamal signatures
 
     Update to GnuPG 1.0.2 or newer.
 
 
-6.5) When I use --clearsign, the plain text has sometimes extra dashes 
+6.8) When I use --clearsign, the plain text has sometimes extra dashes 
 in it - why?
 
     This is called dash-escaped text and required by OpenPGP.
@@ -539,7 +575,7 @@ in it - why?
     Good mail clients remove those extra dashes when displaying such a 
     message.      
 
-6.6) What is the thing with "can't handle multiple signatures"?
+6.9) What is the thing with "can't handle multiple signatures"?
 
     Due to different message formats GnuPG is not always able to split a
     file with multiple signatures unambiguously into it's parts.  This 
@@ -549,13 +585,13 @@ in it - why?
     OpenPGP format with one-pass-signature packets (which is GnuPG's
     default) or the cleartext signed format.
 
-6.7) If I submit a key to a keyserver, nothing happens ...
+6.10) If I submit a key to a keyserver, nothing happens ...
 
     You are most likely using GnuPG on Windows 1.0.2 or older. That's
     feature isn't yet implemented, but it's a bug not to say it. Newer
     versions issue a warning. Upgrade to 1.0.4 or newer.
 
-6.8) I still have a problem. How do I report a bug?
+6.11) I still have a problem. How do I report a bug?
 
     Are you sure that it's not been mentioned somewhere on the mailing
     lists? Did you have a look at the bug list (You'll find a link to
