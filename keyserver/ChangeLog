@@ -1,3 +1,13 @@
+2004-12-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_curl.c (main): Use new defines for opting out of certain
+	transfer protocols.  Allow setting HTTP proxy via "http-proxy=foo"
+	option (there is natural support in libcurl for the http_proxy
+	environment variable).
+
+	* Makefile.am: Remove the conditional since this is all handled in
+	autoconf now.
+
 2004-12-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_curl.c (main): New "follow-redirects" option.  Takes an

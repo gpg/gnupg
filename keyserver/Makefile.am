@@ -23,15 +23,9 @@ EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp gpgkeys_http gpgkeys_finger gpgkeys_cu
 EXTRA_SCRIPTS = gpgkeys_mailto
 libexecdir = @libexecdir@/@PACKAGE@
 
-libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_FINGER@
+libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@ @GPGKEYS_FINGER@ @GPGKEYS_HTTP@ @GPGKEYS_CURL@
 libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
-
-if HAVE_LIBCURL
-libexec_PROGRAMS += @GPGKEYS_CURL@
-else
-libexec_PROGRAMS += @GPGKEYS_HTTP@
-endif
 
 gpgkeys_ldap_SOURCES = gpgkeys_ldap.c ksutil.c ksutil.h
 gpgkeys_hkp_SOURCES = gpgkeys_hkp.c ksutil.c ksutil.h

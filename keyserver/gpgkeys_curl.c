@@ -34,20 +34,22 @@
 extern char *optarg;
 extern int optind;
 
-#define GET         0
-#define MAX_SCHEME 20
-#define MAX_LINE   80
-#define MAX_PATH 1023
-#define MAX_AUTH  127
-#define MAX_HOST   79
-#define MAX_PORT    9
-#define MAX_URL (MAX_SCHEME+3+MAX_AUTH+1+1+MAX_HOST+1+1+MAX_PORT+1+1+MAX_PATH+1+50)
+#define GET           0
+#define MAX_LINE     80
+
+#define MAX_SCHEME   20
+#define MAX_AUTH    128
+#define MAX_HOST     80
+#define MAX_PORT     10
+#define MAX_PATH   1024
+#define MAX_PROXY   128
+#define MAX_URL (MAX_SCHEME+1+3+MAX_AUTH+1+1+MAX_HOST+1+1+MAX_PORT+1+1+MAX_PATH+1+50)
 
 #define STRINGIFY(x) #x
 #define MKSTRING(x) STRINGIFY(x)
 
 static int verbose=0;
-static char scheme[MAX_SCHEME+1],auth[MAX_AUTH+1],host[MAX_HOST+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'};
+static char scheme[MAX_SCHEME+1],auth[MAX_AUTH+1],host[MAX_HOST+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'},proxy[MAX_PROXY+1]={'\0'};
 static FILE *input=NULL,*output=NULL,*console=NULL;
 static CURL *curl;
 static char request[MAX_URL]={'\0'};
@@ -266,6 +268,16 @@ main(int argc,char *argv[])
 	      else
 		verbose++;
 	    }
+	  else if(strncasecmp(start,"http-proxy",10)==0)
+	    {
+	      if(no)
+		proxy[0]='\0';
+	      else if(start[10]=='=')
+		{
+		  strncpy(proxy,&start[11],MAX_PROXY);
+		  proxy[MAX_PROXY]='\0';
+		}
+	    }
 	  else if(strncasecmp(start,"timeout",7)==0)
 	    {
 	      if(no)
@@ -294,20 +306,20 @@ main(int argc,char *argv[])
       fprintf(console,"gpgkeys: no scheme supplied!\n");
       return KEYSERVER_SCHEME_NOT_FOUND;
     }
-#ifndef HTTP_SUPPORT
+#ifndef HTTP_VIA_LIBCURL
   else if(strcasecmp(scheme,"http")==0)
     {
       fprintf(console,"gpgkeys: scheme `%s' not supported\n",scheme);
       return KEYSERVER_SCHEME_NOT_FOUND;
     }
-#endif /* HTTP_SUPPORT */
-#ifndef FTP_SUPPORT
+#endif /* HTTP_VIA_LIBCURL */
+#ifndef FTP_VIA_LIBCURL
   else if(strcasecmp(scheme,"ftp")==0)
     {
       fprintf(console,"gpgkeys: scheme `%s' not supported\n",scheme);
       return KEYSERVER_SCHEME_NOT_FOUND;
     }
-#endif /* FTP_SUPPORT */
+#endif /* FTP_VIA_LIBCURL */
 
   if(timeout && register_timeout()==-1)
     {
@@ -331,6 +343,8 @@ main(int argc,char *argv[])
 	curl_easy_setopt(curl,CURLOPT_MAXREDIRS,follow_redirects);
     }
 
+  if(proxy[0])
+    curl_easy_setopt(curl,CURLOPT_PROXY,proxy);
 
   /* If it's a GET or a SEARCH, the next thing to come in is the
      keyids.  If it's a SEND, then there are no keyids. */
