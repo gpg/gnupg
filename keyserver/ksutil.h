@@ -59,9 +59,11 @@ struct keylist
 unsigned int set_timeout(unsigned int seconds);
 int register_timeout(void);
 
+enum ks_action {KS_UNKNOWN=0,KS_GET,KS_SEND,KS_SEARCH};
+
 struct ks_options
 {
-  enum {KS_UNKNOWN,KS_GET,KS_SEND,KS_SEARCH} action;
+  enum ks_action action;
   char *host;
   char *port;
   char *scheme;
@@ -83,5 +85,6 @@ struct ks_options
 struct ks_options *init_ks_options(void);
 void free_ks_options(struct ks_options *opt);
 int parse_ks_options(char *line,struct ks_options *opt);
+const char *ks_action_to_string(enum ks_action action);
 
 #endif /* !_KSUTIL_H_ */

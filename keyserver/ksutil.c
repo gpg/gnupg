@@ -85,13 +85,16 @@ init_ks_options(void)
 void
 free_ks_options(struct ks_options *opt)
 {
-  free(opt->host);
-  free(opt->port);
-  free(opt->scheme);
-  free(opt->auth);
-  free(opt->path);
-  free(opt->ca_cert_file);
-  free(opt);
+  if(opt)
+    {
+      free(opt->host);
+      free(opt->port);
+      free(opt->scheme);
+      free(opt->auth);
+      free(opt->path);
+      free(opt->ca_cert_file);
+      free(opt);
+    }
 }
 
 /* Returns 0 if we "ate" the line.  Returns >0, a KEYSERVER_ error
@@ -108,11 +111,6 @@ parse_ks_options(char *line,struct ks_options *opt)
   char auth[MAX_AUTH+1];
   char path[URLMAX_PATH+1];
   char option[MAX_OPTION+1];
-
-#if 0
-  if(sscanf(line,"%c",&hash)==1 && hash=='#')
-    continue;
-#endif
 
   if(line[0]=='#')
     return 0;
@@ -266,4 +264,18 @@ parse_ks_options(char *line,struct ks_options *opt)
     }
 
   return -1;
+}
+
+const char *
+ks_action_to_string(enum ks_action action)
+{
+  switch(action)
+    {
+    case KS_UNKNOWN: return "UNKNOWN";
+    case KS_GET:     return "GET";
+    case KS_SEND:    return "SEND";
+    case KS_SEARCH:  return "SEARCH";
+    }
+
+  return "?";
 }
