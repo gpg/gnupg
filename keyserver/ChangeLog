@@ -1,3 +1,7 @@
+2002-07-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Install keyserver helpers in @GNUPG_LIBEXECDIR@
+
 2002-07-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (send_key, get_key, main): Consult the server

@@ -21,12 +21,13 @@
 INCLUDES = -I$(top_srcdir)/include
 EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp
 EXTRA_SCRIPTS = gpgkeys_mailto
+libexecdir = @GNUPG_LIBEXECDIR@
 
 # We don't need the libs the regular GPG binaries do
 LIBS=
 
-bin_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@
-bin_SCRIPTS = @GPGKEYS_MAILTO@
+libexec_PROGRAMS = @GPGKEYS_LDAP@ @GPGKEYS_HKP@
+libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
 # don't distribute hkp for now
