@@ -1,3 +1,7 @@
+2003-07-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Use W32LIBS where appropriate.
+
 2003-05-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c, gpgkeys_ldap.c: #include <getopt.h> if it is
