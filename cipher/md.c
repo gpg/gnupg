@@ -96,10 +96,6 @@ load_digest_module (void)
 
   /* We load them in reverse order so that the most
      frequently used are the first in the list. */
-#ifdef USE_TIGER192
-  if (!new_list_item (DIGEST_ALGO_TIGER, tiger_get_info))
-    BUG();
-#endif
 #ifdef USE_SHA512
   if (!new_list_item (DIGEST_ALGO_SHA512, sha512_get_info)) 
     BUG ();
@@ -135,20 +131,13 @@ string_to_digest_algo( const char *string )
        understand the hashes before we release one that generates
        them. - dshaw */
 
-    if(!ascii_strcasecmp("sha256",string)
-       || !ascii_strcasecmp("sha384",string)
+    if(!ascii_strcasecmp("sha384",string)
        || !ascii_strcasecmp("sha512",string))
       {
 	log_info(_("digest algorithm `%s' is read-only in this release\n"),
 		 string);
 	return 0;
       }
-
-#ifdef USE_TIGER192
-    if(!ascii_strcasecmp("tiger192",string))
-      log_info(_("WARNING: digest `%s' is not part of OpenPGP.  "
-		 "Use at your own risk!\n"),string);
-#endif
 
     do {
 	for(r = digest_list; r; r = r->next )
