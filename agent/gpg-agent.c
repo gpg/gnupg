@@ -178,6 +178,7 @@ static void handle_connections (int listen_fd);
 GCRY_THREAD_OPTION_PTH_IMPL;
 
 #endif /*USE_GNU_PTH*/
+static void check_for_running_agent (void);
 
 
 
@@ -361,8 +362,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oDebugLevel: debug_level = pargs->r.ret_str; break;
 
     case oLogFile:
-      if (!current_logfile || !pargs->r.ret_str
-          || strcmp (current_logfile, pargs->r.ret_str))
+      if (reread 
+          && (!current_logfile || !pargs->r.ret_str
+              || strcmp (current_logfile, pargs->r.ret_str)))
         {
           log_set_file (pargs->r.ret_str);
           xfree (current_logfile);
@@ -599,7 +601,9 @@ main (int argc, char **argv )
       fprintf (stderr, "%s\n", strusage(15) );
     }
 #ifdef IS_DEVELOPMENT_VERSION
-  log_info ("NOTE: this is a development version!\n");
+  /* We don't want to print it here because gpg-agent is useful of its
+     own and quite matured.  */
+  /*log_info ("NOTE: this is a development version!\n");*/
 #endif
 
   set_debug ();
@@ -669,9 +673,15 @@ main (int argc, char **argv )
       agent_exit (0);
     }
 
+  /* If this has been called without any options, we merely check
+     whether an agent is already running.  We do this here so that we
+     don't clobber a logfile but print it directly to stderr. */
   if (!pipe_server && !is_daemon)
-    log_info (_("please use the option `--daemon'"
-                " to run the program in the background\n"));
+    {
+      log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX); 
+      check_for_running_agent ();
+      agent_exit (0);
+    }
   
 #ifdef ENABLE_NLS
   /* gpg-agent usually does not output any messages because it runs in
@@ -705,9 +715,9 @@ main (int argc, char **argv )
       start_command_handler (-1, -1);
     }
   else if (!is_daemon)
-    ;
+    ; /* NOTREACHED */
   else
-    { /* regular server mode */
+    { /* Regular server mode */
       int fd;
       pid_t pid;
       int len;
@@ -1220,3 +1230,56 @@ handle_connections (int listen_fd)
   log_info ("%s %s stopped\n", strusage(11), strusage(13));
 }
 #endif /*USE_GNU_PTH*/
+
+
+/* Figure out whether an agent is available and running. Prints an
+   error if not.  */
+static void
+check_for_running_agent ()
+{
+  int rc;
+  char *infostr, *p;
+  assuan_context_t ctx;
+  int prot, pid;
+
+  infostr = getenv ("GPG_AGENT_INFO");
+  if (!infostr || !*infostr)
+    {
+      log_error (_("no gpg-agent running in this session\n"));
+      return;
+    }
+
+  infostr = xstrdup (infostr);
+  if ( !(p = strchr (infostr, ':')) || p == infostr)
+    {
+      log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
+      xfree (infostr);
+      return;
+    }
+
+  *p++ = 0;
+  pid = atoi (p);
+  while (*p && *p != ':')
+    p++;
+  prot = *p? atoi (p+1) : 0;
+  if (prot != 1)
+    {
+      log_error (_("gpg-agent protocol version %d is not supported\n"),
+                 prot);
+      xfree (infostr);
+      return;
+    }
+
+  rc = assuan_socket_connect (&ctx, infostr, pid);
+  xfree (infostr);
+  if (rc)
+    {
+      log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));
+      return;
+    }
+
+  if (!opt.quiet)
+    log_info ("gpg-agent running and available\n");
+
+  assuan_disconnect (ctx);
+}

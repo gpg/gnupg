@@ -1,3 +1,11 @@
+2004-09-09  Werner Koch  <wk@g10code.de>
+
+	* gpg-agent.c (check_for_running_agent): New.
+	(main): The default action is now to check for an already running
+	agent.
+	(parse_rereadable_options): Set logfile only on reread.
+	(main): Do not print the "is development version" note.
+
 2004-08-20  Werner Koch  <wk@g10code.de>
 
 	* gpg-agent.c: New option --max-cache-ttl.  Suggested by Alexander

@@ -5,6 +5,12 @@ Noteworthy changes in version 1.9.11
    certificates are validated and only imported if they are fully
    valid.
 
+ * [gpg-agent] New option --max-cache-ttl.
+
+ * [gpg-agent] When used without --daemon or --server, gpg-agent now
+   check whether a agent is already running and usable.
+
+
 Noteworthy changes in version 1.9.10 (2004-07-22)
 -------------------------------------------------
 
