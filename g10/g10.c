@@ -467,7 +467,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
     { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
     { oCertDigestAlgo, "cert-digest-algo", 2 , "@" },
-    { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
+    { oCompressAlgo,"compress-algo",2,N_("|NAME|use compression algorithm NAME")},
     { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
     { oNoThrowKeyid, "no-throw-keyid", 0, "@" },
     { oShowPhotos,   "show-photos", 0, N_("Show Photo IDs")},
@@ -1093,6 +1093,7 @@ main( int argc, char **argv )
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
     char *def_digest_string = NULL;
+    char *def_compress_string = NULL;
     char *cert_digest_string = NULL;
     char *s2k_cipher_string = NULL;
     char *s2k_digest_string = NULL;
@@ -1451,7 +1452,6 @@ main( int argc, char **argv )
 	  case oWithColons: opt.with_colons=':'; break;
 
 	  case oSkipVerify: opt.skip_verify=1; break;
-	  case oCompressAlgo: opt.def_compress_algo = pargs.r.ret_int; break;
 	  case oCompressKeys: opt.compress_keys = 1; break;
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
 	    /* There are many programs (like mutt) that call gpg with
@@ -1618,6 +1618,30 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
+	  case oCompressAlgo:
+	    /* If it is all digits, stick a Z in front of it for
+	       later.  This is for backwards compatibility with
+	       versions that took the compress algorithm number. */
+	    {
+	      char *pt=pargs.r.ret_str;
+	      while(*pt)
+		{
+		  if(!isdigit(*pt))
+		    break;
+
+		  pt++;
+		}
+
+	      if(*pt=='\0')
+		{
+		  def_compress_string=m_alloc(strlen(pargs.r.ret_str)+2);
+		  strcpy(def_compress_string,"Z");
+		  strcat(def_compress_string,pargs.r.ret_str);
+		}
+	      else
+		def_compress_string = m_strdup(pargs.r.ret_str);
+	    }
+	    break;
 	  case oCertDigestAlgo: cert_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
@@ -1939,6 +1963,12 @@ main( int argc, char **argv )
 	if( check_digest_algo(opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
+    if( def_compress_string ) {
+	opt.def_compress_algo = string_to_compress_algo(def_compress_string);
+	m_free(def_compress_string); def_compress_string = NULL;
+	if( check_compress_algo(opt.def_compress_algo) )
+	    log_error(_("selected compression algorithm is invalid\n"));
+    }
     if( cert_digest_string ) {
 	opt.cert_digest_algo = string_to_digest_algo(cert_digest_string);
 	m_free(cert_digest_string); cert_digest_string = NULL;
@@ -1957,8 +1987,6 @@ main( int argc, char **argv )
 	if( check_digest_algo(opt.s2k_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
-    if( opt.def_compress_algo < -1 || opt.def_compress_algo > 2 )
-	log_error(_("compress algorithm must be in range %d..%d\n"), 0, 2);
     if( opt.completes_needed < 1 )
 	log_error(_("completes-needed must be greater than 0\n"));
     if( opt.marginals_needed < 2 )

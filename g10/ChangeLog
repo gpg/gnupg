@@ -1,3 +1,12 @@
+2002-11-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Allow compression algorithm names as the argument
+	to --compress-algo.  The old algorithm names still work for
+	backwards compatibility.
+
+	* misc.c (string_to_compress_algo): Allow "none" as an alias for
+	"uncompressed".
+
 2002-11-13  Stefan Bellon  <sbellon@sbellon.de>
 
 	* getkey.c (get_pubkey_byfprint_fast): Fixed type incompatibility,
