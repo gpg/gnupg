@@ -1,3 +1,7 @@
+2004-10-27  Werner Koch  <wk@g10code.com>
+
+	* LINGUAS: Better don't have comments in this file.
+
 2004-10-15  Werner Koch  <wk@g10code.com>
 
 	* POTFILES.in: Updated.

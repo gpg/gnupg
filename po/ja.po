@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2004-10-15 15:17+0200\n"
+"POT-Creation-Date: 2004-10-26 18:05+0200\n"
 "PO-Revision-Date: 2003-12-06 00:44+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -36,8 +36,8 @@ msgstr "%d ビット未満の素数は生成できません\n"
 msgid "no entropy gathering module detected\n"
 msgstr "エントロピー収集モジュールが、検出されていません\n"
 
-#: cipher/random.c:387 g10/card-util.c:588 g10/dearmor.c:60 g10/dearmor.c:109
-#: g10/encode.c:181 g10/encode.c:488 g10/g10.c:3188 g10/import.c:175
+#: cipher/random.c:387 g10/card-util.c:594 g10/dearmor.c:60 g10/dearmor.c:109
+#: g10/encode.c:181 g10/encode.c:488 g10/g10.c:3194 g10/import.c:175
 #: g10/keygen.c:2236 g10/openfile.c:180 g10/openfile.c:333 g10/sign.c:761
 #: g10/sign.c:1020 g10/sign.c:1165 g10/tdbdump.c:140 g10/tdbdump.c:148
 #: g10/tdbio.c:539 g10/tdbio.c:600
@@ -136,18 +136,18 @@ msgstr "信用データベースの初期化に失敗しました: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "鍵輪キャッシュの再構築に失敗しました: %s\n"
 
-#: g10/app-openpgp.c:732 g10/app-openpgp.c:821 g10/app-openpgp.c:1308
+#: g10/app-openpgp.c:732 g10/app-openpgp.c:821 g10/app-openpgp.c:1313
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
-#: g10/app-openpgp.c:738 g10/app-openpgp.c:1314
+#: g10/app-openpgp.c:738 g10/app-openpgp.c:827 g10/app-openpgp.c:1319
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
 #: g10/app-openpgp.c:747 g10/app-openpgp.c:761 g10/app-openpgp.c:837
-#: g10/app-openpgp.c:1323 g10/app-openpgp.c:1337
+#: g10/app-openpgp.c:1328 g10/app-openpgp.c:1342
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "鍵サーバーへの送信に失敗しました: %s\n"
@@ -173,45 +173,40 @@ msgstr ""
 msgid "Admin PIN"
 msgstr ""
 
-#: g10/app-openpgp.c:827
-#, c-format
-msgid "prassphrase (CHV%d) is too short; minimum length is %d\n"
-msgstr ""
-
 #: g10/app-openpgp.c:1301
 #, c-format
 msgid "PIN [sigs done: %lu]"
 msgstr ""
 
-#: g10/app-openpgp.c:1582 g10/app-openpgp.c:1592
+#: g10/app-openpgp.c:1587 g10/app-openpgp.c:1597
 #, fuzzy, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "有効なOpenPGPデータが見つかりません。\n"
 
-#: g10/app-openpgp.c:1663
+#: g10/app-openpgp.c:1668
 #, fuzzy, c-format
 msgid "error getting serial number: %s\n"
 msgstr "パスフレーズの作成エラー: %s\n"
 
-#: g10/app-openpgp.c:1758
+#: g10/app-openpgp.c:1763
 #, fuzzy, c-format
 msgid "failed to store the key: %s\n"
 msgstr "信用データベースの初期化に失敗しました: %s\n"
 
-#: g10/app-openpgp.c:1800
+#: g10/app-openpgp.c:1805
 #, fuzzy
 msgid "reading the key failed\n"
 msgstr "鍵ブロックの削除に失敗しました: %s\n"
 
-#: g10/app-openpgp.c:1807
+#: g10/app-openpgp.c:1812
 msgid "response does not contain the public key data\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1815
+#: g10/app-openpgp.c:1820
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1826
+#: g10/app-openpgp.c:1831
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
@@ -306,7 +301,7 @@ msgstr ""
 msgid "sorry, can't do this in batch mode\n"
 msgstr "残念ながら、バッチモードではできません\n"
 
-#: g10/card-util.c:94 g10/card-util.c:964 g10/card-util.c:1042
+#: g10/card-util.c:94 g10/card-util.c:977 g10/card-util.c:1059
 #: g10/keyedit.c:412 g10/keyedit.c:433 g10/keyedit.c:447 g10/keygen.c:1298
 #: g10/keygen.c:1361
 msgid "Your selection? "
@@ -375,86 +370,82 @@ msgstr "対応する公開鍵がありません: %s\n"
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:597 g10/import.c:261
+#: g10/card-util.c:603 g10/import.c:261
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "`%s'の読込みエラー: %s\n"
 
-#: g10/card-util.c:605
+#: g10/card-util.c:611
 msgid "Login data (account name): "
 msgstr ""
 
-#: g10/card-util.c:615
+#: g10/card-util.c:621
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:635
+#: g10/card-util.c:641
 #, fuzzy
 msgid "Language preferences: "
 msgstr "選好の一覧を更新"
 
-#: g10/card-util.c:643
+#: g10/card-util.c:649
 #, fuzzy
 msgid "Error: invalid length of preference string.\n"
 msgstr "選好文字列に無効な文字があります\n"
 
-#: g10/card-util.c:652
+#: g10/card-util.c:658
 #, fuzzy
 msgid "Error: invalid characters in preference string.\n"
 msgstr "選好文字列に無効な文字があります\n"
 
-#: g10/card-util.c:673
+#: g10/card-util.c:679
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr ""
 
-#: g10/card-util.c:687
+#: g10/card-util.c:693
 #, fuzzy
 msgid "Error: invalid response.\n"
 msgstr "エラー: 無効な指紋\n"
 
-#: g10/card-util.c:708
+#: g10/card-util.c:714
 #, fuzzy
 msgid "CA fingerprint: "
 msgstr "指紋を表示"
 
-#: g10/card-util.c:731
+#: g10/card-util.c:737
 #, fuzzy
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "エラー: 無効な指紋\n"
 
-#: g10/card-util.c:779
+#: g10/card-util.c:785
 #, fuzzy, c-format
 msgid "key operation not possible: %s\n"
 msgstr "鍵の生成に失敗しました: %s\n"
 
-#: g10/card-util.c:780
+#: g10/card-util.c:786
 #, fuzzy
 msgid "not an OpenPGP card"
 msgstr "有効なOpenPGPデータが見つかりません。\n"
 
-#: g10/card-util.c:789
+#: g10/card-util.c:795
 #, fuzzy, c-format
 msgid "error getting current key info: %s\n"
 msgstr "秘密鍵輪「%s」の書込みエラー: %s\n"
 
-#: g10/card-util.c:870
+#: g10/card-util.c:878
 msgid "Replace existing key? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:891
+#: g10/card-util.c:899 g10/card-util.c:908
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#: g10/card-util.c:901
-msgid "Inhibit off-card backup of encryption key? (y/N) "
-msgstr ""
-
-#: g10/card-util.c:912
+#: g10/card-util.c:920
 msgid "Replace existing keys? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:921
+#: g10/card-util.c:929
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -462,199 +453,199 @@ msgid ""
 "You should change them using the command --change-pin\n"
 msgstr ""
 
-#: g10/card-util.c:955
+#: g10/card-util.c:968
 #, fuzzy
 msgid "Please select the type of key to generate:\n"
 msgstr "すきな鍵の種類を選択してください:\n"
 
-#: g10/card-util.c:957 g10/card-util.c:1033
+#: g10/card-util.c:970 g10/card-util.c:1050
 #, fuzzy
 msgid "   (1) Signature key\n"
 msgstr "期限切れの署名 %s\n"
 
-#: g10/card-util.c:958 g10/card-util.c:1035
+#: g10/card-util.c:971 g10/card-util.c:1052
 #, fuzzy
 msgid "   (2) Encryption key\n"
 msgstr "   (%d) RSA (暗号化のみ)\n"
 
-#: g10/card-util.c:959 g10/card-util.c:1037
+#: g10/card-util.c:972 g10/card-util.c:1054
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-#: g10/card-util.c:975 g10/card-util.c:1053 g10/keyedit.c:907
+#: g10/card-util.c:988 g10/card-util.c:1070 g10/keyedit.c:907
 #: g10/keygen.c:1395 g10/revoke.c:639
 msgid "Invalid selection.\n"
 msgstr "無効な選択です。\n"
 
-#: g10/card-util.c:1030
+#: g10/card-util.c:1047
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "失効の理由を選択してください:\n"
 
-#: g10/card-util.c:1065
+#: g10/card-util.c:1082
 #, fuzzy
 msgid "unknown key protection algorithm\n"
 msgstr "未知の保護アルゴリズムです\n"
 
-#: g10/card-util.c:1070
+#: g10/card-util.c:1087
 #, fuzzy
 msgid "secret parts of key are not available\n"
 msgstr "主鍵の秘密部分が得られません。\n"
 
-#: g10/card-util.c:1075
+#: g10/card-util.c:1092
 #, fuzzy
 msgid "secret key already stored on a card\n"
 msgstr "スキップ: 秘密鍵は既にあります\n"
 
-#: g10/card-util.c:1142 g10/keyedit.c:1245 util/miscutil.c:348
+#: g10/card-util.c:1162 g10/keyedit.c:1245 util/miscutil.c:348
 msgid "quit"
 msgstr "quit"
 
-#: g10/card-util.c:1142 g10/keyedit.c:1245
+#: g10/card-util.c:1162 g10/keyedit.c:1245
 msgid "quit this menu"
 msgstr "このメニューを終了"
 
-#: g10/card-util.c:1143 g10/keyedit.c:1246
+#: g10/card-util.c:1163 g10/keyedit.c:1246
 msgid "q"
 msgstr "q"
 
-#: g10/card-util.c:1144
+#: g10/card-util.c:1164
 msgid "admin"
 msgstr ""
 
-#: g10/card-util.c:1144
+#: g10/card-util.c:1164
 #, fuzzy
 msgid "show admin commands"
 msgstr "対立するコマンド\n"
 
-#: g10/card-util.c:1145 g10/keyedit.c:1248
+#: g10/card-util.c:1165 g10/keyedit.c:1248
 msgid "help"
 msgstr "help"
 
-#: g10/card-util.c:1145 g10/keyedit.c:1248
+#: g10/card-util.c:1165 g10/keyedit.c:1248
 msgid "show this help"
 msgstr "このヘルプを表示"
 
-#: g10/card-util.c:1147 g10/keyedit.c:1251
+#: g10/card-util.c:1167 g10/keyedit.c:1251
 msgid "list"
 msgstr "list"
 
-#: g10/card-util.c:1147
+#: g10/card-util.c:1167
 #, fuzzy
 msgid "list all available data"
 msgstr "以下に鍵があります: "
 
-#: g10/card-util.c:1148 g10/keyedit.c:1252
+#: g10/card-util.c:1168 g10/keyedit.c:1252
 msgid "l"
 msgstr "l"
 
-#: g10/card-util.c:1149 g10/keyedit.c:1263
+#: g10/card-util.c:1169 g10/keyedit.c:1263
 msgid "debug"
 msgstr "debug"
 
-#: g10/card-util.c:1150
+#: g10/card-util.c:1170
 #, fuzzy
 msgid "name"
 msgstr "enable"
 
-#: g10/card-util.c:1150
+#: g10/card-util.c:1170
 msgid "change card holder's name"
 msgstr ""
 
-#: g10/card-util.c:1151
+#: g10/card-util.c:1171
 msgid "url"
 msgstr ""
 
-#: g10/card-util.c:1151
+#: g10/card-util.c:1171
 msgid "change URL to retrieve key"
 msgstr ""
 
-#: g10/card-util.c:1152
+#: g10/card-util.c:1172
 msgid "fetch"
 msgstr ""
 
-#: g10/card-util.c:1153
+#: g10/card-util.c:1173
 msgid "fetch the key specified in the card URL"
 msgstr ""
 
-#: g10/card-util.c:1154
+#: g10/card-util.c:1174
 #, fuzzy
 msgid "login"
 msgstr "lsign"
 
-#: g10/card-util.c:1154
+#: g10/card-util.c:1174
 #, fuzzy
 msgid "change the login name"
 msgstr "有効期限の変更"
 
-#: g10/card-util.c:1155
+#: g10/card-util.c:1175
 msgid "lang"
 msgstr ""
 
-#: g10/card-util.c:1155
+#: g10/card-util.c:1175
 #, fuzzy
 msgid "change the language preferences"
 msgstr "所有者信用の変更"
 
-#: g10/card-util.c:1156
+#: g10/card-util.c:1176
 msgid "sex"
 msgstr ""
 
-#: g10/card-util.c:1156
+#: g10/card-util.c:1176
 msgid "change card holder's sex"
 msgstr ""
 
-#: g10/card-util.c:1157
+#: g10/card-util.c:1177
 #, fuzzy
 msgid "cafpr"
 msgstr "fpr"
 
-#: g10/card-util.c:1157
+#: g10/card-util.c:1177
 #, fuzzy
 msgid "change a CA fingerprint"
 msgstr "指紋を表示"
 
-#: g10/card-util.c:1158
+#: g10/card-util.c:1178
 #, fuzzy
 msgid "forcesig"
 msgstr "revsig"
 
-#: g10/card-util.c:1159
+#: g10/card-util.c:1179
 msgid "toggle the signature force PIN flag"
 msgstr ""
 
-#: g10/card-util.c:1160
+#: g10/card-util.c:1180
 #, fuzzy
 msgid "generate"
 msgstr "一般的なエラー"
 
-#: g10/card-util.c:1161
+#: g10/card-util.c:1181
 #, fuzzy
 msgid "generate new keys"
 msgstr "新しい鍵対を生成"
 
-#: g10/card-util.c:1162 g10/keyedit.c:1287
+#: g10/card-util.c:1182 g10/keyedit.c:1287
 msgid "passwd"
 msgstr "passwd"
 
-#: g10/card-util.c:1162
+#: g10/card-util.c:1182
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1178 g10/delkey.c:120 g10/keyedit.c:1313
+#: g10/card-util.c:1198 g10/delkey.c:120 g10/keyedit.c:1313
 msgid "can't do that in batchmode\n"
 msgstr "それはバッチモードではできません\n"
 
-#: g10/card-util.c:1226 g10/keyedit.c:1393
+#: g10/card-util.c:1246 g10/keyedit.c:1393
 msgid "Command> "
 msgstr "コマンド> "
 
-#: g10/card-util.c:1261
+#: g10/card-util.c:1281
 #, fuzzy
 msgid "Admin-only command\n"
 msgstr "対立するコマンド\n"
 
-#: g10/card-util.c:1336 g10/keyedit.c:1860
+#: g10/card-util.c:1356 g10/keyedit.c:1860
 msgid "Invalid command  (try \"help\")\n"
 msgstr "無効なコマンド (「help」を参照)\n"
 
@@ -681,7 +672,7 @@ msgstr ""
 msgid "Enter PIN: "
 msgstr ""
 
-#: g10/decrypt.c:68 g10/decrypt.c:157 g10/g10.c:3538 g10/verify.c:101
+#: g10/decrypt.c:68 g10/decrypt.c:157 g10/g10.c:3544 g10/verify.c:101
 #: g10/verify.c:154
 #, c-format
 msgid "can't open `%s'\n"
@@ -1250,388 +1241,388 @@ msgstr "警告: %s 「%s」の安全でない上位ディレクトリー許可\n"
 msgid "unknown configuration item `%s'\n"
 msgstr "新しい構成ファイル`%s'ができました\n"
 
-#: g10/g10.c:1756
+#: g10/g10.c:1762
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "注意: 昔、既定だったオプション・ファイル「%s」は、無視されます\n"
 
-#: g10/g10.c:1798
+#: g10/g10.c:1804
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "注意: 既定のオプション・ファイル「%s」がありません\n"
 
-#: g10/g10.c:1802
+#: g10/g10.c:1808
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "オプション・ファイル「%s」: %s\n"
 
-#: g10/g10.c:1809
+#: g10/g10.c:1815
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "「%s」からオプションを読み込みます\n"
 
-#: g10/g10.c:2029 g10/g10.c:2545 g10/g10.c:2556
+#: g10/g10.c:2035 g10/g10.c:2551 g10/g10.c:2562
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "注意: 普通%sは用いません!\n"
 
-#: g10/g10.c:2042
+#: g10/g10.c:2048
 #, fuzzy, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr "安全でない許可のため、暗号拡張「%s」をロードしません\n"
 
-#: g10/g10.c:2254
+#: g10/g10.c:2260
 #, fuzzy, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "%sは、有効な文字集合ではありません\n"
 
-#: g10/g10.c:2273 g10/keyedit.c:3433
+#: g10/g10.c:2279 g10/keyedit.c:3433
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "鍵サーバーのURIを解析不能\n"
 
-#: g10/g10.c:2279
+#: g10/g10.c:2285
 #, fuzzy, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: 無効な書出しオプション\n"
 
-#: g10/g10.c:2282
+#: g10/g10.c:2288
 #, fuzzy
 msgid "invalid keyserver options\n"
 msgstr "無効な書出しオプションです\n"
 
-#: g10/g10.c:2289
+#: g10/g10.c:2295
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: 無効な読込みオプション\n"
 
-#: g10/g10.c:2292
+#: g10/g10.c:2298
 msgid "invalid import options\n"
 msgstr "無効な読込みオプションです\n"
 
-#: g10/g10.c:2299
+#: g10/g10.c:2305
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: 無効な書出しオプション\n"
 
-#: g10/g10.c:2302
+#: g10/g10.c:2308
 msgid "invalid export options\n"
 msgstr "無効な書出しオプションです\n"
 
-#: g10/g10.c:2309
+#: g10/g10.c:2315
 #, fuzzy, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: 無効な読込みオプション\n"
 
-#: g10/g10.c:2312
+#: g10/g10.c:2318
 #, fuzzy
 msgid "invalid list options\n"
 msgstr "無効な読込みオプションです\n"
 
-#: g10/g10.c:2334
+#: g10/g10.c:2340
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: 無効な書出しオプション\n"
 
-#: g10/g10.c:2337
+#: g10/g10.c:2343
 #, fuzzy
 msgid "invalid verify options\n"
 msgstr "無効な書出しオプションです\n"
 
-#: g10/g10.c:2344
+#: g10/g10.c:2350
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "exec-pathを%sに設定不能\n"
 
-#: g10/g10.c:2534
+#: g10/g10.c:2540
 msgid "WARNING: program may create a core file!\n"
 msgstr "警告: プログラムのコア・ファイルができることがあります!\n"
 
-#: g10/g10.c:2538
+#: g10/g10.c:2544
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "警告: %sは%sより優先\n"
 
-#: g10/g10.c:2547
+#: g10/g10.c:2553
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%sは%sとともに用いることはできません!\n"
 
-#: g10/g10.c:2550
+#: g10/g10.c:2556
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%sは%sとともに用いても無意味です!\n"
 
-#: g10/g10.c:2571
+#: g10/g10.c:2577
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr "--pgp2モードでは分離署名かクリア署名だけしかできません\n"
 
-#: g10/g10.c:2577
+#: g10/g10.c:2583
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "--pgp2モードでは署名と暗号を同時にできません\n"
 
-#: g10/g10.c:2583
+#: g10/g10.c:2589
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "--pgp2を指定したら、(パイプでなく) ファイルを指定せねばなりません。\n"
 
-#: g10/g10.c:2596
+#: g10/g10.c:2602
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr "--pgp2モードのメッセージ暗号化では、IDEA暗号が必要です \n"
 
-#: g10/g10.c:2666 g10/g10.c:2690
+#: g10/g10.c:2672 g10/g10.c:2696
 msgid "selected cipher algorithm is invalid\n"
 msgstr "選択された暗号アルゴリズムは無効です\n"
 
-#: g10/g10.c:2672 g10/g10.c:2696
+#: g10/g10.c:2678 g10/g10.c:2702
 msgid "selected digest algorithm is invalid\n"
 msgstr "選択された要約アルゴリズムは、無効です\n"
 
-#: g10/g10.c:2678
+#: g10/g10.c:2684
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "選択された暗号アルゴリズムは無効です\n"
 
-#: g10/g10.c:2684
+#: g10/g10.c:2690
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "選択された証明書要約アルゴリズムは、無効です\n"
 
-#: g10/g10.c:2699
+#: g10/g10.c:2705
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-neededは正の値が必要です\n"
 
-#: g10/g10.c:2701
+#: g10/g10.c:2707
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-neededは1より大きな値が必要です\n"
 
-#: g10/g10.c:2703
+#: g10/g10.c:2709
 #, fuzzy
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depthは1から255の範囲でなければなりません\n"
 
-#: g10/g10.c:2705
+#: g10/g10.c:2711
 #, fuzzy
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "無効なdefault-check-level。0か1か2か3でなければなりません\n"
 
-#: g10/g10.c:2707
+#: g10/g10.c:2713
 #, fuzzy
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "無効なdefault-check-level。0か1か2か3でなければなりません\n"
 
-#: g10/g10.c:2710
+#: g10/g10.c:2716
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "注意: 単純なS2Kモード(0)の使用には強く反対します\n"
 
-#: g10/g10.c:2714
+#: g10/g10.c:2720
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "無効なS2Kモード。0か1か3でなければなりません\n"
 
-#: g10/g10.c:2721
+#: g10/g10.c:2727
 msgid "invalid default preferences\n"
 msgstr "無効な既定の選好\n"
 
-#: g10/g10.c:2730
+#: g10/g10.c:2736
 msgid "invalid personal cipher preferences\n"
 msgstr "無効な個人用暗号の選好\n"
 
-#: g10/g10.c:2734
+#: g10/g10.c:2740
 msgid "invalid personal digest preferences\n"
 msgstr "無効な個人用要約の選好\n"
 
-#: g10/g10.c:2738
+#: g10/g10.c:2744
 msgid "invalid personal compress preferences\n"
 msgstr "無効な個人用圧縮の選好\n"
 
-#: g10/g10.c:2771
+#: g10/g10.c:2777
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%sは%sで機能しません\n"
 
-#: g10/g10.c:2818
+#: g10/g10.c:2824
 #, fuzzy, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "暗号アルゴリズム「%s」を%sモードで用いることはできません\n"
 
-#: g10/g10.c:2823
+#: g10/g10.c:2829
 #, fuzzy, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "要約アルゴリズム「%s」を%sモードで用いることはできません\n"
 
-#: g10/g10.c:2828
+#: g10/g10.c:2834
 #, fuzzy, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "圧縮アルゴリズム「%s」を%sモードで用いることはできません\n"
 
-#: g10/g10.c:2924
+#: g10/g10.c:2930
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "信用データベースの初期化に失敗しました: %s\n"
 
-#: g10/g10.c:2935
+#: g10/g10.c:2941
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr "警告: 公開鍵暗号を使わずに、受取人 (-r) を指定しています\n"
 
-#: g10/g10.c:2946
+#: g10/g10.c:2952
 msgid "--store [filename]"
 msgstr "--store [ファイル名]"
 
-#: g10/g10.c:2953
+#: g10/g10.c:2959
 msgid "--symmetric [filename]"
 msgstr "--symmetric [ファイル名]"
 
-#: g10/g10.c:2955
+#: g10/g10.c:2961
 #, fuzzy, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "復号に失敗しました: %s\n"
 
-#: g10/g10.c:2965
+#: g10/g10.c:2971
 msgid "--encrypt [filename]"
 msgstr "--encrypt [ファイル名]"
 
-#: g10/g10.c:2978
+#: g10/g10.c:2984
 #, fuzzy
 msgid "--symmetric --encrypt [filename]"
 msgstr "--sign --encrypt [ファイル名]"
 
-#: g10/g10.c:2980
+#: g10/g10.c:2986
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/g10.c:2983
+#: g10/g10.c:2989
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "%sを%sモードで用いることはできません\n"
 
-#: g10/g10.c:3001
+#: g10/g10.c:3007
 msgid "--sign [filename]"
 msgstr "--sign [ファイル名]"
 
-#: g10/g10.c:3014
+#: g10/g10.c:3020
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [ファイル名]"
 
-#: g10/g10.c:3029
+#: g10/g10.c:3035
 #, fuzzy
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--sign --encrypt [ファイル名]"
 
-#: g10/g10.c:3031
+#: g10/g10.c:3037
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/g10.c:3034
+#: g10/g10.c:3040
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "%sを%sモードで用いることはできません\n"
 
-#: g10/g10.c:3054
+#: g10/g10.c:3060
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [ファイル名]"
 
-#: g10/g10.c:3063
+#: g10/g10.c:3069
 msgid "--clearsign [filename]"
 msgstr "--clearsign [ファイル名]"
 
-#: g10/g10.c:3088
+#: g10/g10.c:3094
 msgid "--decrypt [filename]"
 msgstr "--decrypt [ファイル名]"
 
-#: g10/g10.c:3096
+#: g10/g10.c:3102
 msgid "--sign-key user-id"
 msgstr "--sign-key ユーザーid"
 
-#: g10/g10.c:3100
+#: g10/g10.c:3106
 msgid "--lsign-key user-id"
 msgstr "--lsign-key ユーザーid"
 
-#: g10/g10.c:3104
+#: g10/g10.c:3110
 msgid "--nrsign-key user-id"
 msgstr "--nrsign-key ユーザーid"
 
-#: g10/g10.c:3108
+#: g10/g10.c:3114
 msgid "--nrlsign-key user-id"
 msgstr "--nrlsign-key ユーザーid"
 
-#: g10/g10.c:3132
+#: g10/g10.c:3138
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key ユーザーid [コマンド]"
 
-#: g10/g10.c:3203
+#: g10/g10.c:3209
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [ユーザーid] [鍵輪]"
 
-#: g10/g10.c:3240
+#: g10/g10.c:3246
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "鍵サーバーへの送信に失敗しました: %s\n"
 
-#: g10/g10.c:3242
+#: g10/g10.c:3248
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "鍵サーバーからの受信に失敗しました: %s\n"
 
-#: g10/g10.c:3244
+#: g10/g10.c:3250
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "鍵の書出しに失敗しました: %s\n"
 
-#: g10/g10.c:3255
+#: g10/g10.c:3261
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "鍵サーバーの検索に失敗しました: %s\n"
 
-#: g10/g10.c:3265
+#: g10/g10.c:3271
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "鍵サーバーの回復に失敗しました: %s\n"
 
-#: g10/g10.c:3306
+#: g10/g10.c:3312
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "包装除去に失敗しました: %s\n"
 
-#: g10/g10.c:3314
+#: g10/g10.c:3320
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "包装に失敗しました: %s\n"
 
-#: g10/g10.c:3401
+#: g10/g10.c:3407
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "無効なハッシュ・アルゴリズム`%s'です\n"
 
-#: g10/g10.c:3524
+#: g10/g10.c:3530
 msgid "[filename]"
 msgstr "[ファイル名]"
 
-#: g10/g10.c:3528
+#: g10/g10.c:3534
 msgid "Go ahead and type your message ...\n"
 msgstr "開始します。メッセージをタイプしてください ...\n"
 
-#: g10/g10.c:3818
+#: g10/g10.c:3824
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
 msgstr ""
 "注釈名には印字可能な文字か空白のみを用い、'='で終わらなければなりません\n"
 
-#: g10/g10.c:3826
+#: g10/g10.c:3832
 msgid "a user notation name must contain the '@' character\n"
 msgstr "ユーザー注釈名は、'@'文字を含まなければなりません\n"
 
-#: g10/g10.c:3836
+#: g10/g10.c:3842
 msgid "a notation value must not use any control characters\n"
 msgstr "注釈名の値に制御文字を用いてはいけません\n"
 
-#: g10/g10.c:3870
+#: g10/g10.c:3876
 msgid "the given certification policy URL is invalid\n"
 msgstr "あたえられた証明書ポリシーURLは無効です\n"
 
-#: g10/g10.c:3872
+#: g10/g10.c:3878
 msgid "the given signature policy URL is invalid\n"
 msgstr "あたえられた署名ポリシーURLは無効です\n"
 
-#: g10/g10.c:3905
+#: g10/g10.c:3911
 #, fuzzy
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "あたえられた署名ポリシーURLは無効です\n"
@@ -4564,55 +4555,55 @@ msgstr "公開鍵のアルゴリズム%dは使用できません\n"
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "警告: 潜在的に剣呑な対称暗号セッション鍵です\n"
 
-#: g10/parse-packet.c:1113
+#: g10/parse-packet.c:1112
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "タイプ%dの下位パケットにクリティカル・ビットを発見\n"
 
-#: g10/passphrase.c:461 g10/passphrase.c:508
+#: g10/passphrase.c:465 g10/passphrase.c:512
 msgid "gpg-agent is not available in this session\n"
 msgstr "このセッションでgpgエージェントは無効です\n"
 
-#: g10/passphrase.c:469
+#: g10/passphrase.c:473
 msgid "can't set client pid for the agent\n"
 msgstr "エージェントのクライアントpidを設定できません\n"
 
-#: g10/passphrase.c:477
+#: g10/passphrase.c:481
 msgid "can't get server read FD for the agent\n"
 msgstr "エージェント用のサーバー読出しFDを取得できません\n"
 
-#: g10/passphrase.c:484
+#: g10/passphrase.c:488
 msgid "can't get server write FD for the agent\n"
 msgstr "エージェント用のサーバー書込みFDを取得できません\n"
 
-#: g10/passphrase.c:517
+#: g10/passphrase.c:521
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "GPG_AGENT_INFO環境変数の書式が正しくありません\n"
 
-#: g10/passphrase.c:530
+#: g10/passphrase.c:534
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "gpg-agentプロトコル・バージョン%dはサポートしていません\n"
 
-#: g10/passphrase.c:551
+#: g10/passphrase.c:555
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "`%s'へ接続できません: %s\n"
 
-#: g10/passphrase.c:573
+#: g10/passphrase.c:577
 msgid "communication problem with gpg-agent\n"
 msgstr "gpg-agentとの通信障害\n"
 
-#: g10/passphrase.c:580 g10/passphrase.c:888 g10/passphrase.c:1000
+#: g10/passphrase.c:584 g10/passphrase.c:892 g10/passphrase.c:1004
 msgid "problem with the agent - disabling agent use\n"
 msgstr "エージェントに障害: エージェント利用禁止\n"
 
-#: g10/passphrase.c:680 g10/passphrase.c:1156
+#: g10/passphrase.c:684 g10/passphrase.c:1160
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (主鍵ID %08lX)"
 
-#: g10/passphrase.c:694
+#: g10/passphrase.c:698
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -4623,40 +4614,40 @@ msgstr ""
 "\"%.*s\"\n"
 "%uビット%s鍵, ID %08lX作成日付は%s%s\n"
 
-#: g10/passphrase.c:719
+#: g10/passphrase.c:723
 msgid "Repeat passphrase\n"
 msgstr "パスフレーズを再入力\n"
 
-#: g10/passphrase.c:721
+#: g10/passphrase.c:725
 msgid "Enter passphrase\n"
 msgstr "パスフレーズを入力\n"
 
-#: g10/passphrase.c:759
+#: g10/passphrase.c:763
 msgid "passphrase too long\n"
 msgstr "パスフレーズが長過ぎます\n"
 
-#: g10/passphrase.c:772
+#: g10/passphrase.c:776
 msgid "invalid response from agent\n"
 msgstr "エージェントからの無効な応答\n"
 
-#: g10/passphrase.c:787 g10/passphrase.c:882
+#: g10/passphrase.c:791 g10/passphrase.c:886
 msgid "cancelled by user\n"
 msgstr "ユーザーによる取消し\n"
 
-#: g10/passphrase.c:792 g10/passphrase.c:971
+#: g10/passphrase.c:796 g10/passphrase.c:975
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "エージェントに障害: エージェントが0x%lxを返却\n"
 
-#: g10/passphrase.c:1049 g10/passphrase.c:1207
+#: g10/passphrase.c:1053 g10/passphrase.c:1211
 msgid "can't query password in batchmode\n"
 msgstr "バッチモードではパスワードの問合せができません\n"
 
-#: g10/passphrase.c:1054 g10/passphrase.c:1212
+#: g10/passphrase.c:1058 g10/passphrase.c:1216
 msgid "Enter passphrase: "
 msgstr "パスフレーズを入力: "
 
-#: g10/passphrase.c:1137
+#: g10/passphrase.c:1141
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -4666,17 +4657,17 @@ msgstr ""
 "次のユーザーの秘密鍵のロックを解除するには\n"
 "パスフレーズがいります: \""
 
-#: g10/passphrase.c:1143
+#: g10/passphrase.c:1147
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%uビット%s鍵, ID %08lX作成日付は%s"
 
-#: g10/passphrase.c:1152
+#: g10/passphrase.c:1156
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
 
-#: g10/passphrase.c:1216
+#: g10/passphrase.c:1220
 msgid "Repeat passphrase: "
 msgstr "パスフレーズを再入力: "
 

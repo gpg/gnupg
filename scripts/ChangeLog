@@ -1,3 +1,7 @@
+2004-10-27  Werner Koch  <wk@g10code.com>
+
+	* mk-w32-dist: Use utf-8 encoding for all MO files.
+
 2004-10-26  Werner Koch  <wk@g10code.com>
 
 	* autogen.sh: Detect the Debian mingw32 package.

@@ -1,5 +1,9 @@
 2004-10-27  Werner Koch  <wk@g10code.com>
 
+	* simple-gettext.c: Removed windows.h.
+	(get_string): On the fly translation from utf-8 to active
+	character set.
+
 	* strgutil.c (load_libiconv) [_WIN32]: new.
 	(set_native_charset) [_WIN32]: Call it here and autodetect the
 	used code page.
@@ -7,7 +11,8 @@
 	iconv_open.
 	(handle_iconv_error): Made this function match iconv_open argumnet
 	ordering.
-	
+	(utf8_to_native): Disable all quoting for DELIM == -1.
+
 2004-10-26  Werner Koch  <wk@g10code.com>
 
 	* strgutil.c (mem2str): Translated comment to English.

@@ -20,7 +20,7 @@
 
 #ifndef GNUPG_DYNLOAD_H
 #define GNUPG_DYNLOAD_H
-#ifdef ENABLE_CARD_SUPPORT
+#if defined (ENABLE_CARD_SUPPORT) || defined(_WIN32)
 #ifndef _WIN32
 #include <dlfcn.h>
 #else
@@ -68,6 +68,6 @@ dlclose (void * hd)
     }
   return -1;
 }  
-#endif /*__MINGW32__*/
-#endif /*ENABLE_CARD_SUPPORT*/
+#endif /*_WIN32*/
+#endif /*ENABLE_CARD_SUPPORT||_WIN32*/
 #endif /*GNUPG_DYNLOAD_H*/

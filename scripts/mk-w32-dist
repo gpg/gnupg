@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -31,21 +31,28 @@ else
     exit 1
 fi
 
-version=$(sed -n 's/^#[ ]*define[ ][ ]*VERSION[ ][ ]*\"\([0-9.]*\)\"/\1/p' $bindir/config.h)
+if i586-mingw32msvc-strip --version >/dev/null 2>&1 ; then
+   STRIP=i586-mingw32msvc-strip
+else
+   STRIP="mingw32 strip"
+fi
+
+
+version=$(sed -n 's/^#[ ]*define[ ][ ]*VERSION[ ][ ]*\"\([0-9.a-z-]*\)\"/\1/p' $bindir/config.h)
 echo "building version $version"
 
-rm * || true
+rm * 2>/dev/null || true
 
 cp ${bindir}/g10/gpg.exe gpg.exe
-mingw32 strip gpg.exe
+$STRIP gpg.exe
 cp ${bindir}/g10/gpgv.exe gpgv.exe
-mingw32 strip gpgv.exe
-cp ${bindir}/keyserver/gpgkeys_ldap.exe gpgkeys_ldap.exe
-mingw32 strip gpgkeys_ldap.exe
-cp ${bindir}/keyserver/gpgkeys_hkp.exe gpgkeys_hkp.exe
-mingw32 strip gpgkeys_hkp.exe
+$STRIP gpgv.exe
+for name in hkp http finger; do 
+  cp ${bindir}/keyserver/gpgkeys_$name.exe gpgkeys_$name.exe
+  $STRIP gpgkeys_$name.exe
+done
 cp ${bindir}/tools/gpgsplit.exe gpgsplit.exe
-mingw32 strip gpgsplit.exe
+$STRIP gpgsplit.exe
 
 for i in FAQ; do
   cp ${bindir}/doc/$i .
@@ -66,31 +73,24 @@ for i in README.W32 gnupg-w32.reg; do
   todos $i
 done
 
-
+# We must distribute the MO files in UTF-8, the conmversion is done by
+# gpg at runtime.
 for i in ${srcdir}/po/*.po; do
    lang=$(basename $i .po)
+   grep -s $lang ${srcdir}/po/LINGUAS >/dev/null || continue
+
    fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
-   # pl,sk are also cp1250 but the current PO file can't be converted.
-   case $lang in 
-     cs|hu|ro) toset="CP852" ;;  
-     tr) toset="CP1254" ;;   # DOS: CP857
-     el) toset="CP1253" ;;   # same as latin-7?
-     ru|be) toset="CP1251" ;;   # same as latin-7?
-     el|eo|et|ja|pl|sk|zh_TW|zh_CN) toset="" ;;
-      *) toset="CP850" ;;
-   esac
-   if [ -n "$toset" ]; then
-       echo "$lang: converting from $fromset to $toset" >&2 
-       iconv --silent --from-code=$fromset --to-code=$toset < $i | \
-         sed "/^\"Content-Type:/ s/charset=[a-zA-Z0-9_-]*/charset=$toset/" | \
-         msgfmt --output-file=$lang.mo -
-   else
+   case "$fromset" in 
+     utf8|utf-8|UTF8|UTF-8) 
        echo "$lang: keeping $fromset" >&2 
        msgfmt --output-file=$lang.mo $i
-   fi
+       ;;
+     *)
+       echo "$lang: converting from $fromset to utf-8" >&2 
+       iconv --silent --from-code=$fromset --to-code=utf-8 < $i | \
+         sed "/^\"Content-Type:/ s/charset=[a-zA-Z0-9_-]*/charset=utf-8/" | \
+         msgfmt --output-file=$lang.mo -
+       ;;
+   esac
 done
 zip -9 "gnupg-w32cli-${version}.zip" *
-
-
-
-

@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.1\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2004-10-15 15:17+0200\n"
+"POT-Creation-Date: 2004-10-26 18:05+0200\n"
 "PO-Revision-Date: 2004-09-20 22:12+0100\n"
 "Last-Translator: Per Tunedal <pt@radvis.nu>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -53,8 +53,8 @@ msgstr "kan inte skapa ett  primtal med mindre än %d bits\n"
 msgid "no entropy gathering module detected\n"
 msgstr "ingen demon för entropisamling hittad\n"
 
-#: cipher/random.c:387 g10/card-util.c:588 g10/dearmor.c:60 g10/dearmor.c:109
-#: g10/encode.c:181 g10/encode.c:488 g10/g10.c:3188 g10/import.c:175
+#: cipher/random.c:387 g10/card-util.c:594 g10/dearmor.c:60 g10/dearmor.c:109
+#: g10/encode.c:181 g10/encode.c:488 g10/g10.c:3194 g10/import.c:175
 #: g10/keygen.c:2236 g10/openfile.c:180 g10/openfile.c:333 g10/sign.c:761
 #: g10/sign.c:1020 g10/sign.c:1165 g10/tdbdump.c:140 g10/tdbdump.c:148
 #: g10/tdbio.c:539 g10/tdbio.c:600
@@ -156,18 +156,18 @@ msgstr "misslyckades med att initialisera tillitsdatabasen: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "misslyckades med att återskapa nyckelringscache: %s\n"
 
-#: g10/app-openpgp.c:732 g10/app-openpgp.c:821 g10/app-openpgp.c:1308
+#: g10/app-openpgp.c:732 g10/app-openpgp.c:821 g10/app-openpgp.c:1313
 #, c-format
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
-#: g10/app-openpgp.c:738 g10/app-openpgp.c:1314
+#: g10/app-openpgp.c:738 g10/app-openpgp.c:827 g10/app-openpgp.c:1319
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
 msgstr ""
 
 #: g10/app-openpgp.c:747 g10/app-openpgp.c:761 g10/app-openpgp.c:837
-#: g10/app-openpgp.c:1323 g10/app-openpgp.c:1337
+#: g10/app-openpgp.c:1328 g10/app-openpgp.c:1342
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "Sändning till nyckelservern misslyckades: %s\n"
@@ -193,45 +193,40 @@ msgstr ""
 msgid "Admin PIN"
 msgstr ""
 
-#: g10/app-openpgp.c:827
-#, c-format
-msgid "prassphrase (CHV%d) is too short; minimum length is %d\n"
-msgstr ""
-
 #: g10/app-openpgp.c:1301
 #, c-format
 msgid "PIN [sigs done: %lu]"
 msgstr ""
 
-#: g10/app-openpgp.c:1582 g10/app-openpgp.c:1592
+#: g10/app-openpgp.c:1587 g10/app-openpgp.c:1597
 #, fuzzy, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "hittade ingen giltig OpenPGP-data.\n"
 
-#: g10/app-openpgp.c:1663
+#: g10/app-openpgp.c:1668
 #, fuzzy, c-format
 msgid "error getting serial number: %s\n"
 msgstr "fel vid skapandet av lösenmening: %s\n"
 
-#: g10/app-openpgp.c:1758
+#: g10/app-openpgp.c:1763
 #, fuzzy, c-format
 msgid "failed to store the key: %s\n"
 msgstr "misslyckades med att initialisera tillitsdatabasen: %s\n"
 
-#: g10/app-openpgp.c:1800
+#: g10/app-openpgp.c:1805
 #, fuzzy
 msgid "reading the key failed\n"
 msgstr "misslyckades med att radera nyckelblock: %s\n"
 
-#: g10/app-openpgp.c:1807
+#: g10/app-openpgp.c:1812
 msgid "response does not contain the public key data\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1815
+#: g10/app-openpgp.c:1820
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
-#: g10/app-openpgp.c:1826
+#: g10/app-openpgp.c:1831
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
@@ -328,7 +323,7 @@ msgstr ""
 msgid "sorry, can't do this in batch mode\n"
 msgstr "kan inte göra detta i batch-läge\n"
 
-#: g10/card-util.c:94 g10/card-util.c:964 g10/card-util.c:1042
+#: g10/card-util.c:94 g10/card-util.c:977 g10/card-util.c:1059
 #: g10/keyedit.c:412 g10/keyedit.c:433 g10/keyedit.c:447 g10/keygen.c:1298
 #: g10/keygen.c:1361
 msgid "Your selection? "
@@ -397,86 +392,82 @@ msgstr "ingen tillhörande öppen nyckel: %s\n"
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:597 g10/import.c:261
+#: g10/card-util.c:603 g10/import.c:261
 #, c-format
 msgid "error reading `%s': %s\n"
 msgstr "fel vid läsning av \"%s\": %s\n"
 
-#: g10/card-util.c:605
+#: g10/card-util.c:611
 msgid "Login data (account name): "
 msgstr ""
 
-#: g10/card-util.c:615
+#: g10/card-util.c:621
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
 msgstr ""
 
-#: g10/card-util.c:635
+#: g10/card-util.c:641
 #, fuzzy
 msgid "Language preferences: "
 msgstr "uppdaterat inställningar"
 
-#: g10/card-util.c:643
+#: g10/card-util.c:649
 #, fuzzy
 msgid "Error: invalid length of preference string.\n"
 msgstr "Ogiltigt tecken i inställningssträngen\n"
 
-#: g10/card-util.c:652
+#: g10/card-util.c:658
 #, fuzzy
 msgid "Error: invalid characters in preference string.\n"
 msgstr "Ogiltigt tecken i inställningssträngen\n"
 
-#: g10/card-util.c:673
+#: g10/card-util.c:679
 msgid "Sex ((M)ale, (F)emale or space): "
 msgstr ""
 
-#: g10/card-util.c:687
+#: g10/card-util.c:693
 #, fuzzy
 msgid "Error: invalid response.\n"
 msgstr "fel: ogiltigt fingeravtryck\n"
 
-#: g10/card-util.c:708
+#: g10/card-util.c:714
 #, fuzzy
 msgid "CA fingerprint: "
 msgstr "visa fingeravtryck"
 
-#: g10/card-util.c:731
+#: g10/card-util.c:737
 #, fuzzy
 msgid "Error: invalid formatted fingerprint.\n"
 msgstr "fel: ogiltigt fingeravtryck\n"
 
-#: g10/card-util.c:779
+#: g10/card-util.c:785
 #, fuzzy, c-format
 msgid "key operation not possible: %s\n"
 msgstr "Nyckelgenereringen misslyckades: %s\n"
 
-#: g10/card-util.c:780
+#: g10/card-util.c:786
 #, fuzzy
 msgid "not an OpenPGP card"
 msgstr "hittade ingen giltig OpenPGP-data.\n"
 
-#: g10/card-util.c:789
+#: g10/card-util.c:795
 #, fuzzy, c-format
 msgid "error getting current key info: %s\n"
 msgstr "fel vid skrivning av hemliga nyckelringen \"%s\": %s\n"
 
-#: g10/card-util.c:870
+#: g10/card-util.c:878
 msgid "Replace existing key? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:891
+#: g10/card-util.c:899 g10/card-util.c:908
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#: g10/card-util.c:901
-msgid "Inhibit off-card backup of encryption key? (y/N) "
-msgstr ""
-
-#: g10/card-util.c:912
+#: g10/card-util.c:920
 msgid "Replace existing keys? (y/N) "
 msgstr ""
 
-#: g10/card-util.c:921
+#: g10/card-util.c:929
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
@@ -484,201 +475,201 @@ msgid ""
 "You should change them using the command --change-pin\n"
 msgstr ""
 
-#: g10/card-util.c:955
+#: g10/card-util.c:968
 #, fuzzy
 msgid "Please select the type of key to generate:\n"
 msgstr "Välj vilken typ av nyckel du vill ha:\n"
 
-#: g10/card-util.c:957 g10/card-util.c:1033
+#: g10/card-util.c:970 g10/card-util.c:1050
 msgid "   (1) Signature key\n"
 msgstr ""
 
-#: g10/card-util.c:958 g10/card-util.c:1035
+#: g10/card-util.c:971 g10/card-util.c:1052
 #, fuzzy
 msgid "   (2) Encryption key\n"
 msgstr "   (%d) RSA (endast kryptering)\n"
 
-#: g10/card-util.c:959 g10/card-util.c:1037
+#: g10/card-util.c:972 g10/card-util.c:1054
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-#: g10/card-util.c:975 g10/card-util.c:1053 g10/keyedit.c:907
+#: g10/card-util.c:988 g10/card-util.c:1070 g10/keyedit.c:907
 #: g10/keygen.c:1395 g10/revoke.c:639
 msgid "Invalid selection.\n"
 msgstr "Felaktigt val.\n"
 
-#: g10/card-util.c:1030
+#: g10/card-util.c:1047
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "Välj anledning till att nyckeln spärras:\n"
 
-#: g10/card-util.c:1065
+#: g10/card-util.c:1082
 #, fuzzy
 msgid "unknown key protection algorithm\n"
 msgstr "okänd krypteringsalgoritm\n"
 
-#: g10/card-util.c:1070
+#: g10/card-util.c:1087
 #, fuzzy
 msgid "secret parts of key are not available\n"
 msgstr "De hemliga delarna av den huvudnyckeln är inte tillgängliga.\n"
 
-#: g10/card-util.c:1075
+#: g10/card-util.c:1092
 #, fuzzy
 msgid "secret key already stored on a card\n"
 msgstr "hoppade över: hemlig nyckel finns redan\n"
 
-#: g10/card-util.c:1142 g10/keyedit.c:1245 util/miscutil.c:348
+#: g10/card-util.c:1162 g10/keyedit.c:1245 util/miscutil.c:348
 msgid "quit"
 msgstr "avsluta"
 
-#: g10/card-util.c:1142 g10/keyedit.c:1245
+#: g10/card-util.c:1162 g10/keyedit.c:1245
 msgid "quit this menu"
 msgstr "avsluta denna meny"
 
-#: g10/card-util.c:1143 g10/keyedit.c:1246
+#: g10/card-util.c:1163 g10/keyedit.c:1246
 msgid "q"
 msgstr "q"
 
-#: g10/card-util.c:1144
+#: g10/card-util.c:1164
 msgid "admin"
 msgstr ""
 
-#: g10/card-util.c:1144
+#: g10/card-util.c:1164
 #, fuzzy
 msgid "show admin commands"
 msgstr "motstridiga kommandon\n"
 
-#: g10/card-util.c:1145 g10/keyedit.c:1248
+#: g10/card-util.c:1165 g10/keyedit.c:1248
 msgid "help"
 msgstr "help"
 
-#: g10/card-util.c:1145 g10/keyedit.c:1248
+#: g10/card-util.c:1165 g10/keyedit.c:1248
 msgid "show this help"
 msgstr "visa denna hjälp"
 
-#: g10/card-util.c:1147 g10/keyedit.c:1251
+#: g10/card-util.c:1167 g10/keyedit.c:1251
 msgid "list"
 msgstr "list"
 
-#: g10/card-util.c:1147
+#: g10/card-util.c:1167
 #, fuzzy
 msgid "list all available data"
 msgstr "Nyckeln tillgänglig hos: "
 
 # ???
-#: g10/card-util.c:1148 g10/keyedit.c:1252
+#: g10/card-util.c:1168 g10/keyedit.c:1252
 msgid "l"
 msgstr "l"
 
-#: g10/card-util.c:1149 g10/keyedit.c:1263
+#: g10/card-util.c:1169 g10/keyedit.c:1263
 msgid "debug"
 msgstr "debug"
 
-#: g10/card-util.c:1150
+#: g10/card-util.c:1170
 #, fuzzy
 msgid "name"
 msgstr "enable"
 
-#: g10/card-util.c:1150
+#: g10/card-util.c:1170
 msgid "change card holder's name"
 msgstr ""
 
-#: g10/card-util.c:1151
+#: g10/card-util.c:1171
 msgid "url"
 msgstr ""
 
-#: g10/card-util.c:1151
+#: g10/card-util.c:1171
 msgid "change URL to retrieve key"
 msgstr ""
 
-#: g10/card-util.c:1152
+#: g10/card-util.c:1172
 msgid "fetch"
 msgstr ""
 
-#: g10/card-util.c:1153
+#: g10/card-util.c:1173
 msgid "fetch the key specified in the card URL"
 msgstr ""
 
-#: g10/card-util.c:1154
+#: g10/card-util.c:1174
 #, fuzzy
 msgid "login"
 msgstr "lsign"
 
-#: g10/card-util.c:1154
+#: g10/card-util.c:1174
 #, fuzzy
 msgid "change the login name"
 msgstr "ändra utgångsdatum"
 
-#: g10/card-util.c:1155
+#: g10/card-util.c:1175
 msgid "lang"
 msgstr ""
 
 # originalet borde ha ett value
-#: g10/card-util.c:1155
+#: g10/card-util.c:1175
 #, fuzzy
 msgid "change the language preferences"
 msgstr "ändra ägartillitsvärdet"
 
-#: g10/card-util.c:1156
+#: g10/card-util.c:1176
 msgid "sex"
 msgstr ""
 
-#: g10/card-util.c:1156
+#: g10/card-util.c:1176
 msgid "change card holder's sex"
 msgstr ""
 
 # skall dessa översättas?
-#: g10/card-util.c:1157
+#: g10/card-util.c:1177
 #, fuzzy
 msgid "cafpr"
 msgstr "fpr"
 
-#: g10/card-util.c:1157
+#: g10/card-util.c:1177
 #, fuzzy
 msgid "change a CA fingerprint"
 msgstr "visa fingeravtryck"
 
-#: g10/card-util.c:1158
+#: g10/card-util.c:1178
 #, fuzzy
 msgid "forcesig"
 msgstr "revsig"
 
-#: g10/card-util.c:1159
+#: g10/card-util.c:1179
 msgid "toggle the signature force PIN flag"
 msgstr ""
 
-#: g10/card-util.c:1160
+#: g10/card-util.c:1180
 #, fuzzy
 msgid "generate"
 msgstr "allmänt fel"
 
-#: g10/card-util.c:1161
+#: g10/card-util.c:1181
 #, fuzzy
 msgid "generate new keys"
 msgstr "generera ett nytt nyckelpar"
 
-#: g10/card-util.c:1162 g10/keyedit.c:1287
+#: g10/card-util.c:1182 g10/keyedit.c:1287
 msgid "passwd"
 msgstr "passwd"
 
-#: g10/card-util.c:1162
+#: g10/card-util.c:1182
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1178 g10/delkey.c:120 g10/keyedit.c:1313
+#: g10/card-util.c:1198 g10/delkey.c:120 g10/keyedit.c:1313
 msgid "can't do that in batchmode\n"
 msgstr "kan inte göra detta i batch-läge\n"
 
-#: g10/card-util.c:1226 g10/keyedit.c:1393
+#: g10/card-util.c:1246 g10/keyedit.c:1393
 msgid "Command> "
 msgstr "Kommando> "
 
-#: g10/card-util.c:1261
+#: g10/card-util.c:1281
 #, fuzzy
 msgid "Admin-only command\n"
 msgstr "motstridiga kommandon\n"
 
-#: g10/card-util.c:1336 g10/keyedit.c:1860
+#: g10/card-util.c:1356 g10/keyedit.c:1860
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ogiltigt kommando (försök med \"help\")\n"
 
@@ -706,7 +697,7 @@ msgid "Enter PIN: "
 msgstr ""
 
 # se förra kommentaren
-#: g10/decrypt.c:68 g10/decrypt.c:157 g10/g10.c:3538 g10/verify.c:101
+#: g10/decrypt.c:68 g10/decrypt.c:157 g10/g10.c:3544 g10/verify.c:101
 #: g10/verify.c:154
 #, c-format
 msgid "can't open `%s'\n"
@@ -1283,152 +1274,152 @@ msgstr "VARNING:  osäkert att infoga katalogägarskap till %s \"%s\"\n"
 msgid "unknown configuration item `%s'\n"
 msgstr "okänt configurationspost \"%s\"\n"
 
-#: g10/g10.c:1756
+#: g10/g10.c:1762
 #, c-format
 msgid "NOTE: old default options file `%s' ignored\n"
 msgstr "OBS: inställningsfilen \"%s\" används inte\n"
 
-#: g10/g10.c:1798
+#: g10/g10.c:1804
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "OBS: inställningsfilen \"%s\" saknas\n"
 
-#: g10/g10.c:1802
+#: g10/g10.c:1808
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "inställningsfil \"%s\": %s\n"
 
-#: g10/g10.c:1809
+#: g10/g10.c:1815
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "läser flaggor från \"%s\"\n"
 
-#: g10/g10.c:2029 g10/g10.c:2545 g10/g10.c:2556
+#: g10/g10.c:2035 g10/g10.c:2551 g10/g10.c:2562
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "OBS: %s är inte för normal användning!\n"
 
-#: g10/g10.c:2042
+#: g10/g10.c:2048
 #, fuzzy, c-format
 msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 msgstr "chiffertillägget \"%s\" laddades inte pga osäkra behörigheter\n"
 
-#: g10/g10.c:2254
+#: g10/g10.c:2260
 #, fuzzy, c-format
 msgid "`%s' is not a valid character set\n"
 msgstr "%s är ingen giltig teckentabell\n"
 
-#: g10/g10.c:2273 g10/keyedit.c:3433
+#: g10/g10.c:2279 g10/keyedit.c:3433
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "kunde inte tolka nyckelserver-URI\n"
 
-#: g10/g10.c:2279
+#: g10/g10.c:2285
 #, fuzzy, c-format
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s: felaktiga exportalternativ %d\n"
 
-#: g10/g10.c:2282
+#: g10/g10.c:2288
 #, fuzzy
 msgid "invalid keyserver options\n"
 msgstr "felaktiga exportalternativ\n"
 
-#: g10/g10.c:2289
+#: g10/g10.c:2295
 #, c-format
 msgid "%s:%d: invalid import options\n"
 msgstr "%s: felaktiga importalternativ %d\n"
 
-#: g10/g10.c:2292
+#: g10/g10.c:2298
 msgid "invalid import options\n"
 msgstr "felaktiga importalternativ\n"
 
-#: g10/g10.c:2299
+#: g10/g10.c:2305
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s: felaktiga exportalternativ %d\n"
 
-#: g10/g10.c:2302
+#: g10/g10.c:2308
 msgid "invalid export options\n"
 msgstr "felaktiga exportalternativ\n"
 
-#: g10/g10.c:2309
+#: g10/g10.c:2315
 #, fuzzy, c-format
 msgid "%s:%d: invalid list options\n"
 msgstr "%s: felaktiga importalternativ %d\n"
 
-#: g10/g10.c:2312
+#: g10/g10.c:2318
 #, fuzzy
 msgid "invalid list options\n"
 msgstr "felaktiga importalternativ\n"
 
-#: g10/g10.c:2334
+#: g10/g10.c:2340
 #, fuzzy, c-format
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s: felaktiga exportalternativ %d\n"
 
-#: g10/g10.c:2337
+#: g10/g10.c:2343
 #, fuzzy
 msgid "invalid verify options\n"
 msgstr "felaktiga exportalternativ\n"
 
-#: g10/g10.c:2344
+#: g10/g10.c:2350
 #, c-format
 msgid "unable to set exec-path to %s\n"
 msgstr "kunde inte sätta exec-sökvägen till %s\n"
 
-#: g10/g10.c:2534
+#: g10/g10.c:2540
 msgid "WARNING: program may create a core file!\n"
 msgstr "VARNING: programmet kan komma att skapa en minnesutskrift!\n"
 
-#: g10/g10.c:2538
+#: g10/g10.c:2544
 #, c-format
 msgid "WARNING: %s overrides %s\n"
 msgstr "VARNING: %s gäller istället för %s\n"
 
-#: g10/g10.c:2547
+#: g10/g10.c:2553
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s är inte tillåten tillsammans med %s!\n"
 
-#: g10/g10.c:2550
+#: g10/g10.c:2556
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "det är ingen poäng att använda %s tillsammans med %s!\n"
 
-#: g10/g10.c:2571
+#: g10/g10.c:2577
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
 msgstr ""
 "du kan bara göra signaturer i en separat fil eller klartextsignaturer\n"
 "i --pgp2-läge\n"
 
-#: g10/g10.c:2577
+#: g10/g10.c:2583
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr ""
 "du kan inte både signera och kryptera samtidigt tillsammans med --pgp2\n"
 
-#: g10/g10.c:2583
+#: g10/g10.c:2589
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
 msgstr "du måste använda filer (och inte rör) tillsammans med --pgp2\n"
 
-#: g10/g10.c:2596
+#: g10/g10.c:2602
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
 msgstr ""
 "för att kryptera meddelanden med --pgp2 krävs IDEA-insticksprogrammet\n"
 
-#: g10/g10.c:2666 g10/g10.c:2690
+#: g10/g10.c:2672 g10/g10.c:2696
 msgid "selected cipher algorithm is invalid\n"
 msgstr "den valda krypteringsalgoritmen är ogiltig\n"
 
-#: g10/g10.c:2672 g10/g10.c:2696
+#: g10/g10.c:2678 g10/g10.c:2702
 msgid "selected digest algorithm is invalid\n"
 msgstr "den valda kontrollsummealgoritmen är ogiltig\n"
 
-#: g10/g10.c:2678
+#: g10/g10.c:2684
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "den valda krypteringsalgoritmen är ogiltig\n"
 
-#: g10/g10.c:2684
+#: g10/g10.c:2690
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "den valda kontrollsummealgoritmen är ogiltig\n"
 
@@ -1438,15 +1429,15 @@ msgstr "den valda kontrollsummealgoritmen är ogiltig\n"
 # är ändå litet. Eventuellt borde meddelandena inte alls
 # översättas för att göra eventuell felsökning lättare
 # för internationella felsökare
-#: g10/g10.c:2699
+#: g10/g10.c:2705
 msgid "completes-needed must be greater than 0\n"
 msgstr "variabeln \"completes-needed\" måste ha ett värde som är större än 0\n"
 
-#: g10/g10.c:2701
+#: g10/g10.c:2707
 msgid "marginals-needed must be greater than 1\n"
 msgstr "variabeln \"marginals-needed\" måste vara större än 1\n"
 
-#: g10/g10.c:2703
+#: g10/g10.c:2709
 #, fuzzy
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "variabeln \"max-cert-depth\" måste ha ett värde mellan 1 och 255\n"
@@ -1454,210 +1445,210 @@ msgstr "variabeln \"max-cert-depth\" måste ha ett värde mellan 1 och 255\n"
 # cert-level? Vad är det?
 # inte testnivå i alla fall!
 # Kanske är det nivån för hur lång förtroendekedjan får vara?
-#: g10/g10.c:2705
+#: g10/g10.c:2711
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr ""
 "ogiltigt standardvärde för certifikatnivån; måste vara 0, 1, 2 eller 3\n"
 
 # testnivå!? Vad är detta???
 # längd på förtroendekedjan?
-#: g10/g10.c:2707
+#: g10/g10.c:2713
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr ""
 "ogiltigt minimivärde för certifieringsnivån; måste vara 0, 1, 2 eller 3\n"
 
-#: g10/g10.c:2710
+#: g10/g10.c:2716
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "OBS: enkelt S2K-läge (0) rekommenderas inte\n"
 
-#: g10/g10.c:2714
+#: g10/g10.c:2720
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "ogiltigt S2K-läge; måste vara 0, 1 eller 3\n"
 
-#: g10/g10.c:2721
+#: g10/g10.c:2727
 msgid "invalid default preferences\n"
 msgstr "ogiltiga standardinställningar\n"
 
-#: g10/g10.c:2730
+#: g10/g10.c:2736
 msgid "invalid personal cipher preferences\n"
 msgstr "felaktiga inställningar av krypteringsalgoritm\n"
 
-#: g10/g10.c:2734
+#: g10/g10.c:2740
 msgid "invalid personal digest preferences\n"
 msgstr "felaktiga inställningar av checksummealgoritm\n"
 
-#: g10/g10.c:2738
+#: g10/g10.c:2744
 msgid "invalid personal compress preferences\n"
 msgstr "felaktiga inställningar av kompressionsalgoritm\n"
 
-#: g10/g10.c:2771
+#: g10/g10.c:2777
 #, c-format
 msgid "%s does not yet work with %s\n"
 msgstr "%s fungerar ännu inte med  %s\n"
 
-#: g10/g10.c:2818
+#: g10/g10.c:2824
 #, fuzzy, c-format
 msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgstr "du kan inte använda chifferalgoritmen \"%s\" när du är i %s läge\n"
 
-#: g10/g10.c:2823
+#: g10/g10.c:2829
 #, fuzzy, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr "du kan inte använda sammandragsalgoritmen \"%s\" när du är i %s läge\n"
 
-#: g10/g10.c:2828
+#: g10/g10.c:2834
 #, fuzzy, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgstr "du kan inte använda sammandragsalgoritmen \"%s\" när du är i %s läge\n"
 
-#: g10/g10.c:2924
+#: g10/g10.c:2930
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "misslyckades med att initialisera tillitsdatabasen: %s\n"
 
-#: g10/g10.c:2935
+#: g10/g10.c:2941
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "VARNING: Du har valt mottagare (-r) trots att symmetrisk kryptering valts\n"
 
-#: g10/g10.c:2946
+#: g10/g10.c:2952
 msgid "--store [filename]"
 msgstr "--store [filnamn]"
 
-#: g10/g10.c:2953
+#: g10/g10.c:2959
 msgid "--symmetric [filename]"
 msgstr "--symmetric [filnamn]"
 
-#: g10/g10.c:2955
+#: g10/g10.c:2961
 #, fuzzy, c-format
 msgid "symmetric encryption of `%s' failed: %s\n"
 msgstr "dekrypteringen misslyckades: %s\n"
 
-#: g10/g10.c:2965
+#: g10/g10.c:2971
 msgid "--encrypt [filename]"
 msgstr "--encrypt [filnamn]"
 
-#: g10/g10.c:2978
+#: g10/g10.c:2984
 #, fuzzy
 msgid "--symmetric --encrypt [filename]"
 msgstr "--sign --encrypt [filnamn]"
 
-#: g10/g10.c:2980
+#: g10/g10.c:2986
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/g10.c:2983
+#: g10/g10.c:2989
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "du kan inte använda %s när du är i %s läge\n"
 
-#: g10/g10.c:3001
+#: g10/g10.c:3007
 msgid "--sign [filename]"
 msgstr "--sign [filnamn]"
 
-#: g10/g10.c:3014
+#: g10/g10.c:3020
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [filnamn]"
 
-#: g10/g10.c:3029
+#: g10/g10.c:3035
 #, fuzzy
 msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--sign --encrypt [filnamn]"
 
-#: g10/g10.c:3031
+#: g10/g10.c:3037
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
-#: g10/g10.c:3034
+#: g10/g10.c:3040
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "du kan inte använda %s när du är i %s läge\n"
 
-#: g10/g10.c:3054
+#: g10/g10.c:3060
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [filnamn]"
 
-#: g10/g10.c:3063
+#: g10/g10.c:3069
 msgid "--clearsign [filename]"
 msgstr "--clearsign [filnamn]"
 
-#: g10/g10.c:3088
+#: g10/g10.c:3094
 msgid "--decrypt [filename]"
 msgstr "--decrypt [filnamn]"
 
-#: g10/g10.c:3096
+#: g10/g10.c:3102
 msgid "--sign-key user-id"
 msgstr "--sign-key användaridentitet"
 
-#: g10/g10.c:3100
+#: g10/g10.c:3106
 msgid "--lsign-key user-id"
 msgstr "--lsign-key användaridentitet"
 
-#: g10/g10.c:3104
+#: g10/g10.c:3110
 msgid "--nrsign-key user-id"
 msgstr "--nrsign-key användaridentitet"
 
-#: g10/g10.c:3108
+#: g10/g10.c:3114
 msgid "--nrlsign-key user-id"
 msgstr "--nrlsign-key användaridentitet"
 
-#: g10/g10.c:3132
+#: g10/g10.c:3138
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key användaridentitet [kommandon]"
 
-#: g10/g10.c:3203
+#: g10/g10.c:3209
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [användaridentitet] [nyckelring]"
 
-#: g10/g10.c:3240
+#: g10/g10.c:3246
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "Sändning till nyckelservern misslyckades: %s\n"
 
-#: g10/g10.c:3242
+#: g10/g10.c:3248
 #, c-format
 msgid "keyserver receive failed: %s\n"
 msgstr "Hämtning från nyckelservern misslyckades: %s\n"
 
-#: g10/g10.c:3244
+#: g10/g10.c:3250
 #, c-format
 msgid "key export failed: %s\n"
 msgstr "Export av nyckeln misslyckades: %s\n"
 
-#: g10/g10.c:3255
+#: g10/g10.c:3261
 #, c-format
 msgid "keyserver search failed: %s\n"
 msgstr "Sökning på nyckelservern misslyckades: %s\n"
 
-#: g10/g10.c:3265
+#: g10/g10.c:3271
 #, c-format
 msgid "keyserver refresh failed: %s\n"
 msgstr "Uppdatering av  nyckeln från en nyckelserver misslyckades: %s\n"
 
-#: g10/g10.c:3306
+#: g10/g10.c:3312
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "misslyckades med att ta bort skalet: %s\n"
 
-#: g10/g10.c:3314
+#: g10/g10.c:3320
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "misslyckades med att skapa skal: %s\n"
 
-#: g10/g10.c:3401
+#: g10/g10.c:3407
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "felaktig kontrollsummealgoritm `%s'\n"
 
-#: g10/g10.c:3524
+#: g10/g10.c:3530
 msgid "[filename]"
 msgstr "[filnamn]"
 
-#: g10/g10.c:3528
+#: g10/g10.c:3534
 msgid "Go ahead and type your message ...\n"
 msgstr "Skriv ditt meddelande här ...\n"
 
-#: g10/g10.c:3818
+#: g10/g10.c:3824
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1666,23 +1657,23 @@ msgstr ""
 "understrykningstecken och sluta med ett likhetstecken\n"
 
 # user notation namme??
-#: g10/g10.c:3826
+#: g10/g10.c:3832
 msgid "a user notation name must contain the '@' character\n"
 msgstr "ett användarnoteringsnamn måste innehålla '@'-tecknetr\n"
 
-#: g10/g10.c:3836
+#: g10/g10.c:3842
 msgid "a notation value must not use any control characters\n"
 msgstr "ett notationsvärde får inte inehålla några kontrolltecken\n"
 
-#: g10/g10.c:3870
+#: g10/g10.c:3876
 msgid "the given certification policy URL is invalid\n"
 msgstr "den angivna URL som beskriver certifikationspolicy är ogiltig\n"
 
-#: g10/g10.c:3872
+#: g10/g10.c:3878
 msgid "the given signature policy URL is invalid\n"
 msgstr "den angivna URL som beskriver signaturpolicy är ogiltig\n"
 
-#: g10/g10.c:3905
+#: g10/g10.c:3911
 #, fuzzy
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "den angivna URL som beskriver signaturpolicy är ogiltig\n"
@@ -4714,57 +4705,57 @@ msgstr "kan inte hantera algoritm %d för öppna nycklar\n"
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "VARNING: potentiellt osäker symmetriskt krypterad sessionsnyckel\n"
 
-#: g10/parse-packet.c:1113
+#: g10/parse-packet.c:1112
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "underpaket av typen %d har den bit satt som markerar den som kritisk\n"
 
-#: g10/passphrase.c:461 g10/passphrase.c:508
+#: g10/passphrase.c:465 g10/passphrase.c:512
 msgid "gpg-agent is not available in this session\n"
 msgstr "kunde inte få tillgång till GPG-Agent i denna session\n"
 
 # vad är detta?
-#: g10/passphrase.c:469
+#: g10/passphrase.c:473
 msgid "can't set client pid for the agent\n"
 msgstr "kan inte ange pid för GPG-Agent\n"
 
 # FD?
-#: g10/passphrase.c:477
+#: g10/passphrase.c:481
 msgid "can't get server read FD for the agent\n"
 msgstr "kan inte få server-läs FD för GPG-Agent\n"
 
-#: g10/passphrase.c:484
+#: g10/passphrase.c:488
 msgid "can't get server write FD for the agent\n"
 msgstr "kan inte få server-skriv FD för GPG-Agent\n"
 
-#: g10/passphrase.c:517
+#: g10/passphrase.c:521
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "miljövariabeln GPG_AGENT_INFO är felformaterad\n"
 
-#: g10/passphrase.c:530
+#: g10/passphrase.c:534
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "GPG-Agent protokoll version %d stöds inte\n"
 
-#: g10/passphrase.c:551
+#: g10/passphrase.c:555
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "kan inte ansluta till \"%s\": %s\n"
 
-#: g10/passphrase.c:573
+#: g10/passphrase.c:577
 msgid "communication problem with gpg-agent\n"
 msgstr "problem vid kommunikation med GPG-Agent\n"
 
-#: g10/passphrase.c:580 g10/passphrase.c:888 g10/passphrase.c:1000
+#: g10/passphrase.c:584 g10/passphrase.c:892 g10/passphrase.c:1004
 msgid "problem with the agent - disabling agent use\n"
 msgstr "problem med GPG-Agent, inaktiverar den\n"
 
-#: g10/passphrase.c:680 g10/passphrase.c:1156
+#: g10/passphrase.c:684 g10/passphrase.c:1160
 #, fuzzy, c-format
 msgid " (main key ID %s)"
 msgstr " (huvudnyckelns identitet %08lX)"
 
-#: g10/passphrase.c:694
+#: g10/passphrase.c:698
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -4775,40 +4766,40 @@ msgstr ""
 "användaren: \"%.*s\"\n"
 "%u-bitars %s-nyckel, ID %08lX, skapad %s%s\n"
 
-#: g10/passphrase.c:719
+#: g10/passphrase.c:723
 msgid "Repeat passphrase\n"
 msgstr "Repetera lösenmeningen\n"
 
-#: g10/passphrase.c:721
+#: g10/passphrase.c:725
 msgid "Enter passphrase\n"
 msgstr "Ange lösenmening\n"
 
-#: g10/passphrase.c:759
+#: g10/passphrase.c:763
 msgid "passphrase too long\n"
 msgstr "lösenmeningen är för lång\n"
 
-#: g10/passphrase.c:772
+#: g10/passphrase.c:776
 msgid "invalid response from agent\n"
 msgstr "felaktigt svar från GPG-Agent\n"
 
-#: g10/passphrase.c:787 g10/passphrase.c:882
+#: g10/passphrase.c:791 g10/passphrase.c:886
 msgid "cancelled by user\n"
 msgstr "avbruten av användaren\n"
 
-#: g10/passphrase.c:792 g10/passphrase.c:971
+#: g10/passphrase.c:796 g10/passphrase.c:975
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "problem med GPG-Agent: programmet svarar 0x%lx\n"
 
-#: g10/passphrase.c:1049 g10/passphrase.c:1207
+#: g10/passphrase.c:1053 g10/passphrase.c:1211
 msgid "can't query password in batchmode\n"
 msgstr "kan inte fråga efter lösenmening i batch-läge\n"
 
-#: g10/passphrase.c:1054 g10/passphrase.c:1212
+#: g10/passphrase.c:1058 g10/passphrase.c:1216
 msgid "Enter passphrase: "
 msgstr "Ange lösenmening: "
 
-#: g10/passphrase.c:1137
+#: g10/passphrase.c:1141
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
@@ -4818,17 +4809,17 @@ msgstr ""
 "Du behöver en lösenmening för att låsa upp den hemliga nyckeln för\n"
 "användaren: \""
 
-#: g10/passphrase.c:1143
+#: g10/passphrase.c:1147
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %s, created %s"
 msgstr "%u-bits  %s-nyckel, ID %08lX, skapad %s"
 
-#: g10/passphrase.c:1152
+#: g10/passphrase.c:1156
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
 
-#: g10/passphrase.c:1216
+#: g10/passphrase.c:1220
 msgid "Repeat passphrase: "
 msgstr "Repetera lösenmeningen: "
 

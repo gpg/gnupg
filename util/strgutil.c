@@ -480,10 +480,17 @@ set_native_charset( const char *newset )
 #ifdef _WIN32
         static char codepage[30];
 
-        sprintf (codepage, "CP%u", (unsigned int)GetACP ());
-
-        /* If it is the Windows name for Latin-1 we use the
-         * standard name instead to avoid loading of iconv.dll.  */
+        /* We are a console program thus we need to use the
+           GetConsoleOutputCP fucntion and not the the GetACP which
+           would give the codepage for a GUI program.  Note this is
+           not a bulletproof detection because GetConsoleCP might
+           retrun a different one for console input.  Not sure how to
+           cope with that.  */
+        sprintf (codepage, "CP%u", (unsigned int)GetConsoleOutputCP ());
+        /* If it is the Windows name for Latin-1 we use the standard
+           name instead to avoid loading of iconv.dll.  Unfortunately
+           it is often CP850 and we don't have a custom translation
+           for it. */
         if (!strcmp (codepage, "CP1252"))
             newset = "iso-8859-1";
         else
@@ -688,8 +695,9 @@ native_to_utf8( const char *string )
  * Convert string, which is in UTF8 to native encoding.  illegal
  * encodings by some "\xnn" and quote all control characters. A
  * character with value DELIM will always be quoted, it must be a
- * vanilla ASCII character.  
-  */
+ * vanilla ASCII character.  A DELIM value of -1 is special: it disables 
+ * all quoting of control characters.
+ */
 char *
 utf8_to_native( const char *string, size_t length, int delim )
 {
@@ -722,8 +730,9 @@ utf8_to_native( const char *string, size_t length, int delim )
 	    }
 	    if( !nleft ) {
 		if( !(*s & 0x80) ) { /* plain ascii */
-		    if( *s < 0x20 || *s == 0x7f || *s == delim ||
-			(delim && *s=='\\')) {
+		    if( delim != -1 
+                        && (*s < 0x20 || *s == 0x7f || *s == delim
+                            || (delim && *s=='\\'))) {
 			n++;
 			if( p )
 			    *p++ = '\\';
