@@ -1,3 +1,9 @@
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* command.c (register_commands): Adjusted for new Assuan semantics.
+
+	* Makefile.am: Don't override LDFLAGS.
+
 2002-12-04  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.c: New variable config_filename.
@@ -8,7 +14,8 @@
 
 2002-12-03  Werner Koch  <wk@gnupg.org>
 
-	* protect-tool.c (read_key): Don't run make_canonical on a NULL buffer.
+	* protect-tool.c (read_key): Don't run make_canonical on a NULL
+	buffer.
 
 	* command.c (parse_hexstring): New.
 	(cmd_sethash): Use it.

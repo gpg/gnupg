@@ -1,5 +1,5 @@
 /* command.c - gpg-agent command handler
- *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -29,8 +29,9 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#include <assuan.h>
+
 #include "agent.h"
-#include "../assuan/assuan.h"
 
 /* maximum allowed size of the inquired ciphertext */
 #define MAXLEN_CIPHERTEXT 4096
@@ -642,35 +643,31 @@ register_commands (ASSUAN_CONTEXT ctx)
 {
   static struct {
     const char *name;
-    int cmd_id;
     int (*handler)(ASSUAN_CONTEXT, char *line);
   } table[] = {
-    { "ISTRUSTED",  0,  cmd_istrusted },
-    { "HAVEKEY",    0,  cmd_havekey },
-    { "SIGKEY",     0,  cmd_sigkey },
-    { "SETKEY",     0,  cmd_sigkey },
-    { "SETHASH",    0,  cmd_sethash },
-    { "PKSIGN",     0,  cmd_pksign },
-    { "PKDECRYPT",  0,  cmd_pkdecrypt },
-    { "GENKEY",     0,  cmd_genkey },
-    { "GET_PASSPHRASE",0, cmd_get_passphrase },
-    { "CLEAR_PASSPHRASE",0, cmd_clear_passphrase },
-    { "LISTTRUSTED",  0,  cmd_listtrusted },
-    { "MARKTRUSTED",  0,  cmd_marktrusted },
-    { "LEARN",        0,  cmd_learn },
-    { "PASSWD",       0,  cmd_passwd },
-    { "",     ASSUAN_CMD_INPUT, NULL }, 
-    { "",     ASSUAN_CMD_OUTPUT, NULL }, 
+    { "ISTRUSTED",      cmd_istrusted },
+    { "HAVEKEY",        cmd_havekey },
+    { "SIGKEY",         cmd_sigkey },
+    { "SETKEY",         cmd_sigkey },
+    { "SETHASH",        cmd_sethash },
+    { "PKSIGN",         cmd_pksign },
+    { "PKDECRYPT",      cmd_pkdecrypt },
+    { "GENKEY",         cmd_genkey },
+    { "GET_PASSPHRASE", cmd_get_passphrase },
+    { "CLEAR_PASSPHRASE", cmd_clear_passphrase },
+    { "LISTTRUSTED",    cmd_listtrusted },
+    { "MARKTRUSTED",    cmd_marktrusted },
+    { "LEARN",          cmd_learn },
+    { "PASSWD",         cmd_passwd },
+    { "INPUT",          NULL }, 
+    { "OUTPUT",         NULL }, 
     { NULL }
   };
-  int i, j, rc;
+  int i, rc;
 
-  for (i=j=0; table[i].name; i++)
+  for (i=0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx,
-                                    table[i].cmd_id? table[i].cmd_id
-                                                   : (ASSUAN_CMD_USER + j++),
-                                    table[i].name, table[i].handler);
+      rc = assuan_register_command (ctx, table[i].name, table[i].handler);
       if (rc)
         return rc;
     } 

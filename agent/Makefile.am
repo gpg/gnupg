@@ -24,8 +24,8 @@ INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 bin_PROGRAMS = gpg-agent
 pkglib_PROGRAMS = gpg-protect-tool
 
-AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBGCRYPT_CFLAGS) $(PTH_CFLAGS)
-LDFLAGS = @LDFLAGS@ 
+AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBGCRYPT_CFLAGS) \
+              $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
@@ -45,8 +45,8 @@ gpg_agent_SOURCES = \
 	sexp-parse.h
 
 
-gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
-		../common/libcommon.a $(LIBGCRYPT_LIBS) $(PTH_LIBS)
+gpg_agent_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
+                $(LIBGCRYPT_LIBS) $(PTH_LIBS) $(LIBASSUAN_LIBS)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
