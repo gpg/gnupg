@@ -1,9 +1,9 @@
 
 GNUPG FREQUENTLY ASKED QUESTIONS
 
-Version: 0.2
-Last-Modified: Oct 14, 2000
-Maintained-by: Nils Ellmenreich <nils 'at' infosun.fmi.uni-passau.de>
+Version: 0.3
+Last-Modified: Oct 19, 2000
+Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 This is the GnuPG FAQ. The latest HTML version is available  
  here.   <http://www.gnupg.org/faq.html>
@@ -14,8 +14,9 @@ how to improve the structure of this FAQ are welcome.
 
 Please send additions and corrections to the maintainer. Don't send
 message like "This should be a FAQ - what's the answer?". If it hasn't
-been asked before, it isn't a FAQ. Otherwise, please provide the answer
-to be included here.
+been asked before, it isn't a FAQ. Maybe you should have a look at the
+mailing list archive. Otherwise, please provide the answer to be
+included here.
 
 
 
@@ -70,6 +71,8 @@ to be included here.
    6.5) When I use --clearsign, the plain text has sometimes extra dashes 
 	in it - why?
    6.6) What is the thing with "can't handle multiple signatures"?
+   6.7) If I submit a key to a keyserver, nothing happens ...
+   6.8) I still have a problem. How do I report a bug?
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -114,7 +117,10 @@ to be included here.
     document about how to convert from PGP 2.x to GnuPG.
 
      On <http://lists.gnupg.org> 
-    you'll find a searchable online archive of the GnuPG mailing lists.
+    you'll find a searchable online archive of the GnuPG mailing
+    lists. Most interesting should be gnupg-users for all user-related
+    issues and gnupg-devel if you want to get in touch with the
+    developers.
 
     *PLEASE:*
     Before posting to a list, read this FAQ and the available
@@ -126,7 +132,8 @@ to be included here.
     You can download the GNU Privacy Guard from it's primary FTP server
     ftp.gnupg.org or from
     one of the mirrors: <http://www.gnupg.org/mirror.html>
-
+    The current version is 1.0.4, please upgrade to this version as it
+    fixes a security bug regarding the verification of multiple signatures.
 
 
 3. INSTALLATION 
@@ -501,6 +508,20 @@ in it - why?
     OpenPGP format with one-pass-signature packets (which is GnuPG's
     default) or the cleartext signed format.
 
+6.7) If I submit a key to a keyserver, nothing happens ...
+
+    You are most likely using GnuPG on Windows 1.0.2 or older. That's
+    feature isn't yet implemented, but it's a bug not to say it. Newer
+    versions issue a warning. Upgrade to 1.0.4 or newer.
+
+6.8) I still have a problem. How do I report a bug?
+
+    Are you sure that it's not been mentioned somewhere on the mailing
+    lists? Did you have a look at the bug list (You'll find a link to
+    the list of reported bugs on the documentation page). If you're not
+    sure about it being a bug, you can send mail to the gnupg-devel
+    list. Otherwise, use the GUUG bug tracking system 
+    http://bugs.guug.de/Reporting.html.   
 
 7. ADVANCED TOPICS
 
