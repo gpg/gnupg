@@ -927,49 +927,6 @@ update_validity (PKT_public_key *pk, PKT_user_id *uid,
 }
 
 
-/* reset validity for all user IDs.  Caller must sync. */
-static int
-clear_validity (PKT_public_key *pk)
-{
-  TRUSTREC trec, vrec;
-  int rc;
-  ulong recno;
-  int any = 0;
-  
-  rc = read_trust_record (pk, &trec);
-  if (rc && rc != -1)
-    {
-      tdbio_invalid ();
-      return 0;
-    }
-  if (rc == -1) /* no record yet - no need to clear it then ;-) */
-    return 0;
-
-  /* Clear minimum ownertrust, if any */
-  if(trec.r.trust.min_ownertrust)
-    {
-      trec.r.trust.min_ownertrust=0;
-      write_record(&trec);
-    }
-
-  recno = trec.r.trust.validlist;
-  while (recno)
-    {
-      read_record (recno, &vrec, RECTYPE_VALID);
-      if ((vrec.r.valid.validity & TRUST_MASK)
-	  || vrec.r.valid.marginal_count || vrec.r.valid.full_count)
-        {
-          vrec.r.valid.validity &= ~TRUST_MASK;
-	  vrec.r.valid.marginal_count = vrec.r.valid.full_count = 0;
-          write_record (&vrec);
-          any = 1;
-        }
-      recno = vrec.r.valid.next;
-    }
-
-  return any;
-}
-
 /***********************************************
  *********  Query trustdb values  **************
  ***********************************************/
@@ -1852,56 +1809,40 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
 
 /* Caller must sync */
 static void
-reset_trust_records (KEYDB_HANDLE hd, KeyHashTable exclude)
+reset_trust_records(void)
 {
-  int rc;
-  KBNODE keyblock = NULL;
-  KEYDB_SEARCH_DESC desc;
+  TRUSTREC rec;
+  ulong recnum;
   int count = 0, nreset = 0;
-  
-  rc = keydb_search_reset (hd);
-  if (rc)
+
+  for (recnum=1; !tdbio_read_record (recnum, &rec, 0); recnum++ ) 
     {
-      log_error ("keydb_search_reset failed: %s\n", g10_errstr(rc));
-      return;
+      if(rec.rectype==RECTYPE_TRUST)
+	{
+	  count++;
+	  if(rec.r.trust.min_ownertrust)
+	    {
+	      rec.r.trust.min_ownertrust=0;
+	      write_record(&rec);
+	    }
+
+	}
+      else if(rec.rectype==RECTYPE_VALID
+	      && ((rec.r.valid.validity&TRUST_MASK)
+		  || rec.r.valid.marginal_count
+		  || rec.r.valid.full_count))
+	{
+	  rec.r.valid.validity &= ~TRUST_MASK;
+	  rec.r.valid.marginal_count=rec.r.valid.full_count=0;
+	  nreset++;
+	  write_record(&rec);
+	}
+
     }
 
-  memset (&desc, 0, sizeof desc);
-  desc.mode = KEYDB_SEARCH_MODE_FIRST;
-  if(exclude)
-    {
-      desc.skipfnc = search_skipfnc;
-      desc.skipfncvalue = exclude;
-    }
-  rc = keydb_search (hd, &desc, 1);
-  if (rc && rc != -1 )
-    log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
-  else if (!rc)
-    {
-      desc.mode = KEYDB_SEARCH_MODE_NEXT; /* change mode */
-      do
-        {
-          rc = keydb_get_keyblock (hd, &keyblock);
-          if (rc) 
-            {
-              log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
-              break;
-            }
-          count++;
-
-          if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY) /* paranoid assertion*/
-            {
-              nreset += clear_validity (keyblock->pkt->pkt.public_key);
-              release_kbnode (keyblock);
-            } 
-        }
-      while ( !(rc = keydb_search (hd, &desc, 1)) );
-      if (rc && rc != -1) 
-        log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
-    }
   if (opt.verbose)
     log_info (_("%d keys processed (%d validity counts cleared)\n"),
-              count, nreset);
+	      count, nreset);
 }
 
 /*
@@ -1958,7 +1899,7 @@ validate_keys (int interactive)
   full_trust = new_key_hash_table ();
 
   kdb = keydb_new (0);
-  reset_trust_records (kdb,NULL);
+  reset_trust_records();
 
   /* Fixme: Instead of always building a UTK list, we could just build it
    * here when needed */
