@@ -1309,7 +1309,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 
     if ( opt.command_fd != -1 )
         ;
-    else if( opt.batch && !have_commands  )
+    else if( opt.batch && !have_commands )
       {
 	log_error(_("can't do this in batch mode\n"));
 	goto leave;
@@ -2226,29 +2226,35 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		primary=pk;
 	    }
 
-	    if(with_revoker) {
+	    if(with_revoker)
+	      {
 	        if( !pk->revkey && pk->numrevkeys )
-	            BUG();
+		  BUG();
 	        else
-                    for(i=0;i<pk->numrevkeys;i++) {
-                        u32 r_keyid[2];
-                        char *user;
-			const char *algo=
-			  pubkey_algo_to_string(pk->revkey[i].algid);
+		  for(i=0;i<pk->numrevkeys;i++)
+		    {
+		      u32 r_keyid[2];
+		      char *user;
+		      const char *algo=
+			pubkey_algo_to_string(pk->revkey[i].algid);
 
-                        keyid_from_fingerprint(pk->revkey[i].fpr,
-                                               MAX_FINGERPRINT_LEN,r_keyid);
-                        
-                        user=get_user_id_string (r_keyid);
-                        tty_printf (_("This key may be revoked by %s key "),
-				    algo?algo:"?");
-                        tty_print_utf8_string (user, strlen (user));
-                        if ((pk->revkey[i].class&0x40))
-                          tty_printf (_(" (sensitive)"));
-                        tty_printf ("\n");
-                        m_free(user);
-                      }
-            }
+		      keyid_from_fingerprint(pk->revkey[i].fpr,
+					     MAX_FINGERPRINT_LEN,r_keyid);
+
+		      user=get_user_id_string_native(r_keyid);
+		      tty_printf(_("This key may be revoked by %s key %s"),
+				 algo?algo:"?",user);
+
+		      if(pk->revkey[i].class&0x40)
+			{
+			  tty_printf(" ");
+			  tty_printf(_("(sensitive)"));
+			}
+
+		      tty_printf ("\n");
+		      m_free(user);
+		    }
+	      }
 
 	    keyid_from_pk(pk,NULL);
 	    tty_printf("%s%c %4u%c/%s  ",

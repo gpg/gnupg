@@ -518,7 +518,7 @@ check_signatures_trust( PKT_signature *sig )
 		   " designated revoker!\n"));
       else
 	log_info(_("WARNING: This key has been revoked by its owner!\n"));
-      log_info(_("         This could mean that the signature is forgery.\n"));
+      log_info(_("         This could mean that the signature is forged.\n"));
       show_revocation_reason( pk, 0 );
     }
   else if ((trustlevel & TRUST_FLAG_SUB_REVOKED) ) 

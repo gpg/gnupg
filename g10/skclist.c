@@ -107,42 +107,41 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
     SK_LIST sk_list = NULL;
     int rc;
 
-    if( !locusr ) { /* use the default one */
+    if( !locusr )
+      { /* use the default one */
 	PKT_secret_key *sk;
 
 	sk = m_alloc_clear( sizeof *sk );
 	sk->req_usage = use;
 	if( (rc = get_seckey_byname( sk, NULL, unlock )) ) {
-	    free_secret_key( sk ); sk = NULL;
-	    log_error("no default secret key: %s\n", g10_errstr(rc) );
+	  free_secret_key( sk ); sk = NULL;
+	  log_error("no default secret key: %s\n", g10_errstr(rc) );
 	}
-	else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) ) {
+	else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, use)) )
+	  {
 	    SK_LIST r;
 
-	    if( sk->version == 4 && (use & PUBKEY_USAGE_SIG)
-		&& sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
-		log_info("this is a PGP generated "
-		    "Elgamal key which is NOT secure for signatures!\n");
-		free_secret_key( sk ); sk = NULL;
-	    }
-	    else if( random_is_faked() && !is_insecure( sk ) ) {
+	    if( random_is_faked() && !is_insecure( sk ) )
+	      {
 		log_info(_("key is not flagged as insecure - "
 			   "can't use it with the faked RNG!\n"));
 		free_secret_key( sk ); sk = NULL;
-	    }
-	    else {
+	      }
+	    else
+	      {
 		r = m_alloc( sizeof *r );
 		r->sk = sk; sk = NULL;
 		r->next = sk_list;
 		r->mark = 0;
 		sk_list = r;
-	    }
-	}
-	else {
+	      }
+	  }
+	else
+	  {
 	    free_secret_key( sk ); sk = NULL;
 	    log_error("invalid default secret key: %s\n", g10_errstr(rc) );
-	}
-    }
+	  }
+      }
     else {
         STRLIST locusr_orig = locusr;
 	for(; locusr; locusr = locusr->next ) {

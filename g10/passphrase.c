@@ -1050,7 +1050,7 @@ ask_passphrase (const char *description,
     }
   else if (opt.batch)
     {
-      log_error(_("can't query password in batch mode\n"));
+      log_error(_("can't query passphrase in batch mode\n"));
       pw = NULL;
     }
   else {
@@ -1207,10 +1207,11 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	pw = m_alloc_secure( strlen(fd_passwd)+1 );
 	strcpy( pw, fd_passwd );
     }
-    else if( opt.batch ) {
-	log_error(_("can't query password in batch mode\n"));
+    else if( opt.batch )
+      {
+	log_error(_("can't query passphrase in batch mode\n"));
 	pw = m_strdup( "" ); /* return an empty passphrase */
-    }
+      }
     else {
         /* Read the passphrase from the tty or the command-fd. */
 	pw = cpr_get_hidden("passphrase.enter", _("Enter passphrase: ") );

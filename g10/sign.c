@@ -774,13 +774,14 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
         }
         else
             out = iobuf_create( outfile );
-	if( !out ) {
+	if( !out )
+	  {
 	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
-	}
+	  }
 	else if( opt.verbose )
-	    log_info(_("writing to file `%s'\n"), outfile );
+	    log_info(_("writing to `%s'\n"), outfile );
     }
     else if( (rc = open_outfile( fname, opt.armor? 1: detached? 2:0, &out )))
 	goto leave;
@@ -910,7 +911,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		if( !inp )
 		  {
 		    log_error(_("can't open `%s': %s\n"),
-			      sl->d, strerror(errno) );
+			      sl->d,strerror(errno));
 		    rc = G10ERR_OPEN_FILE;
 		    goto leave;
 		  }
@@ -1031,13 +1032,14 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
         }
         else 
             out = iobuf_create( outfile );
-	if( !out ) {
+	if( !out )
+	  {
 	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
-	}
+	  }
 	else if( opt.verbose )
-	    log_info(_("writing to file `%s'\n"), outfile );
+	    log_info(_("writing to `%s'\n"), outfile );
     }
     else if( (rc = open_outfile( fname, 1, &out )) )
 	goto leave;

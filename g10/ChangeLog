@@ -1,3 +1,21 @@
+2004-10-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* skclist.c (build_sk_list): Don't need to warn about
+	PGP-generated Elgamal signing keys since we no longer support any
+	Elgamal signing keys.
+
+	* sign.c (sign_file, clearsign_file): Use "writing to" instead of
+	"writing to file" to match other strings.
+
+	* pkclist.c (check_signatures_trust): Fix typo.  Noted by Moray
+	Allan.  This is Debian bug #278708.
+
+	* passphrase.c (ask_passphrase, passphrase_to_dek): "password" ->
+	"passphrase".
+
+	* keyedit.c (show_key_with_all_names): Show designated revoker as
+	part of translatable string.
+
 2004-10-28  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (other_libs): New.  Also include LIBICONV.  Noted by
