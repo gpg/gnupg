@@ -1,3 +1,9 @@
+2001-07-03  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (utf8_to_native): Fixed printing of invalid utf-8
+	characters.  Thomas Roessler reported that the escaping didn't work
+	correct.
+
 2001-06-12  Werner Koch  <wk@gnupg.org>
 
 	* strgutil.c (ascii_memistr,ascii_isupper,ascii_islower,

@@ -447,7 +447,7 @@ utf8_to_native( const char *string, size_t length )
 {
     int nleft;
     int i;
-    byte encbuf[7];
+    byte encbuf[8];
     int encidx;
     const byte *s;
     size_t n;
@@ -509,27 +509,32 @@ utf8_to_native( const char *string, size_t length )
 		else if( (*s & 0xe0) == 0xc0 ) { /* 110x xxxx */
 		    val = *s & 0x1f;
 		    nleft = 1;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else if( (*s & 0xf0) == 0xe0 ) { /* 1110 xxxx */
 		    val = *s & 0x0f;
 		    nleft = 2;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else if( (*s & 0xf8) == 0xf0 ) { /* 1111 0xxx */
 		    val = *s & 0x07;
 		    nleft = 3;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else if( (*s & 0xfc) == 0xf8 ) { /* 1111 10xx */
 		    val = *s & 0x03;
 		    nleft = 4;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else if( (*s & 0xfe) == 0xfc ) { /* 1111 110x */
 		    val = *s & 0x01;
 		    nleft = 5;
-		    encbuf[encidx=0] = *s;
+                    encidx = 0;
+		    encbuf[encidx++] = *s;
 		}
 		else {	/* invalid encoding: print as \xnn */
 		    if( p ) {
@@ -542,15 +547,20 @@ utf8_to_native( const char *string, size_t length )
 	    }
 	    else if( *s < 0x80 || *s >= 0xc0 ) { /* invalid */
 		if( p ) {
+                    for(i=0; i < encidx; i++ ) {
+                        sprintf(p, "\\x%02x", encbuf[i] );
+                        p += 4;
+                    }
 		    sprintf(p, "\\x%02x", *s );
 		    p += 4;
 		}
-		n += 4;
+		n += 4 + 4*encidx;
 		nleft = 0;
+                encidx = 0;
 		resync = 1;
 	    }
 	    else {
-		encbuf[++encidx] = *s;
+		encbuf[encidx++] = *s;
 		val <<= 6;
 		val |= *s & 0x3f;
 		if( !--nleft ) { /* ready */
@@ -571,6 +581,7 @@ utf8_to_native( const char *string, size_t length )
 				}
 			    }
 			    n += encidx*4;
+                            encidx = 0;
 			}
 		    }
 		    else { /* native set */
@@ -586,9 +597,9 @@ utf8_to_native( const char *string, size_t length )
 				}
 			    }
 			    n += encidx*4;
+                            encidx = 0;
 			}
 		    }
-
 		}
 
 	    }
