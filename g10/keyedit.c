@@ -276,7 +276,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
     KBNODE node, uidnode;
     PKT_public_key *primary_pk=NULL;
     int select_all = !count_selected_uids(keyblock);
-    int force_v4=0, all_v3=1;
+    int all_v3=1;
 
     /* Are there any non-v3 sigs on this key already? */
     if(opt.pgp2)
@@ -287,9 +287,6 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	    all_v3=0;
 	    break;
 	  }
-
-    if(local || nonrevocable || opt.cert_policy_url || opt.cert_notation_data)
-      force_v4=1;
 
     /* build a list of all signators.
      *    
@@ -304,11 +301,15 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
     /* loop over all signators */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	u32 sk_keyid[2];
+	u32 sk_keyid[2],pk_keyid[2];
 	size_t n;
 	char *p;
-	int class=0;
+	int force_v4=0,class=0,selfsig=0;
 	u32 duration=0,timestamp=0;
+
+	if(local || nonrevocable ||
+	   opt.cert_policy_url || opt.cert_notation_data)
+	  force_v4=1;
 
 	/* we have to use a copy of the sk, because make_keysig_packet
 	 * may remove the protection from sk and if we did other
@@ -330,6 +331,11 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	for( node=keyblock; node; node = node->next ) {
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
   	        primary_pk=node->pkt->pkt.public_key;
+		keyid_from_pk( primary_pk, pk_keyid );
+
+		/* Is this a self-sig? */
+		if(pk_keyid[0]==sk_keyid[0] && pk_keyid[1]==sk_keyid[1])
+		  selfsig=1;
 	    }
 	    else if( node->pkt->pkttype == PKT_USER_ID ) {
 		uidnode = (node->flag & NODFLG_MARK_A)? node : NULL;
@@ -422,7 +428,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	show_key_with_all_names( keyblock, 1, 0, 1, 0, 0 );
 	tty_printf("\n");
 
-	if(primary_pk->expiredate)
+	if(primary_pk->expiredate && !selfsig)
 	  {
 	    u32 now=make_timestamp();
 
@@ -473,7 +479,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	/* Only ask for duration if we haven't already set it to match
            the expiration of the pk */
-	if(opt.ask_cert_expire && !duration)
+	if(opt.ask_cert_expire && !duration && !selfsig)
 	  duration=ask_expire_interval(1);
 
 	if(duration)
@@ -502,7 +508,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	      continue;
 	  }
 
-	if(opt.batch)
+	if(selfsig)
+	  ;
+	else if(opt.batch)
 	  class=0x10+opt.def_cert_check_level;
 	else
 	  {
@@ -602,13 +610,22 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
                  * signatures, otherwise we would not generate the
                  * subpacket with v3 keys and the signature becomes
                  * exportable */
-		rc = make_keysig_packet( &sig, primary_pk,
-					 node->pkt->pkt.user_id,
-					 NULL,
-					 sk,
-                                         class, 0, force_v4?4:0,
-					 timestamp, duration,
-					 sign_mk_attrib, &attrib );
+
+		if(selfsig)
+		  rc = make_keysig_packet( &sig, primary_pk,
+					   node->pkt->pkt.user_id,
+					   NULL,
+					   sk,
+					   0x13, 0, force_v4?4:0, 0, 0,
+					   keygen_add_std_prefs, primary_pk);
+		else
+		  rc = make_keysig_packet( &sig, primary_pk,
+					   node->pkt->pkt.user_id,
+					   NULL,
+					   sk,
+					   class, 0, force_v4?4:0,
+					   timestamp, duration,
+					   sign_mk_attrib, &attrib );
 		if( rc ) {
 		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
 		    goto leave;
@@ -2223,8 +2240,15 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
                   && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
-		&& (uid && (sig->sig_class&~3) == 0x10)
-                && sig->version >= 4 ) {
+		 && (uid && (sig->sig_class&~3) == 0x10) ) {
+	      if( sig->version < 4 ) {
+		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
+
+		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+			 user);
+		m_free(user);
+	      }
+	      else {
 		/* This is a selfsignature which is to be replaced 
                  * We have to ignore v3 signatures because they are
                  * not able to carry the preferences */
@@ -2251,6 +2275,7 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
                 m_free( node->pkt );
                 node->pkt = newpkt;
                 modified = 1;
+	      }
             }
 	}
     }

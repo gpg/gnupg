@@ -1,5 +1,10 @@
 2002-05-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (sign_uids): When making a self-signature via "sign"
+	don't ask about sig level or expiration, and include the usual
+	preferences and such for v4 self-sigs.  (menu_set_preferences):
+	Convert uids from UTF8 to native before printing.
+
 	* keyedit.c (sign_uids): Convert uids from UTF8 to native before
 	printing.  (menu_set_primary_uid): Show error if the user tries to
 	make a uid with a v3 self-sig primary.
