@@ -1091,13 +1091,43 @@ static void
 list_config(char *items)
 {
   int show_all=(items==NULL);
-  char *name;
+  char *name=NULL;
 
   if(!opt.with_colons)
     return;
 
   while(show_all || (name=strsep(&items," ")))
     {
+      if(show_all || ascii_strcasecmp(name,"group")==0)
+	{
+	  struct groupitem *iter;
+
+	  for(iter=opt.grouplist;iter;iter=iter->next)
+	    {
+	      STRLIST sl;
+
+	      printf("cfg:group:");
+	      print_string(stdout,iter->name,strlen(iter->name),':');
+	      printf(":");
+
+	      for(sl=iter->values;sl;sl=sl->next)
+		{
+		  print_string2(stdout,sl->d,strlen(sl->d),':',';');
+		  if(sl->next)
+		    printf(";");
+		}
+
+	      printf("\n");
+	    }
+	}
+
+      if(show_all || ascii_strcasecmp(name,"version")==0)
+	{
+	  printf("cfg:version:");
+	  print_string(stdout,VERSION,strlen(VERSION),':');
+	  printf("\n");
+	}
+
       if(show_all || ascii_strcasecmp(name,"pubkey")==0)
 	{
 	  printf("cfg:pubkey:");
@@ -1126,29 +1156,6 @@ list_config(char *items)
 	  printf("cfg:compress:");
 	  print_algo_numbers(check_compress_algo);
 	  printf("\n");
-	}
-
-      if(show_all || ascii_strcasecmp(name,"group")==0)
-	{
-	  struct groupitem *iter;
-
-	  for(iter=opt.grouplist;iter;iter=iter->next)
-	    {
-	      STRLIST sl;
-
-	      printf("cfg:group:");
-	      print_string(stdout,iter->name,strlen(iter->name),':');
-	      printf(":");
-
-	      for(sl=iter->values;sl;sl=sl->next)
-		{
-		  print_string2(stdout,sl->d,strlen(sl->d),':',';');
-		  if(sl->next)
-		    printf(";");
-		}
-
-	      printf("\n");
-	    }
 	}
 
       if(show_all)
