@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 1.5.5[H p]
-Last-Modified: Sep 13, 2001[H p]
+Version: 1.5.6[H p]
+Last-Modified: Sep 14, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -395,10 +395,9 @@ messages?
     ASCII:   Emacs/{VM,GNUS}/MailCrypt, Mutt(Unix), Pine(Unix), and
              probably many more.
 
-    A good overview of PGP-support is present at 
+    Good overviews of OpenPGP-support can be found at 
     [H a href=http://cryptorights.org/pgp-users/pgp-mail-clients.html]http://cryptorights.org/pgp-users/pgp-mail-clients.html[H /a]. 
-    Direct GnuPG support is not mentioned, however, it certain cases it
-    may be possible to use a wrapper. 
+    and [H a href=http://www.geocities.com/openpgp/courrier_en.html]http://www.geocities.com/openpgp/courrier_en.html[H /a].
 
 
 <Q> Can't we have a gpg library?

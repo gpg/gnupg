@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 1.5.5
-Last-Modified: Sep 13, 2001
+Version: 1.5.6
+Last-Modified: Sep 14, 2001
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -447,10 +447,9 @@ messages?
     ASCII:   Emacs/{VM,GNUS}/MailCrypt, Mutt(Unix), Pine(Unix), and
              probably many more.
 
-    A good overview of PGP-support is present at 
+    Good overviews of OpenPGP-support can be found at 
     http://cryptorights.org/pgp-users/pgp-mail-clients.html. 
-    Direct GnuPG support is not mentioned, however, it certain cases it
-    may be possible to use a wrapper. 
+    and http://www.geocities.com/openpgp/courrier_en.html.
 
 
 4.16) Can't we have a gpg library?
