@@ -36,6 +36,12 @@ typedef struct {
     cipher_filter_context_t cfx;
 } encrypt_filter_context_t;
 
+struct groupitem
+{
+  char *name;
+  STRLIST values;
+  struct groupitem *next;
+};
 
 /*-- g10.c --*/
 extern int g10_errors_seen;
@@ -120,7 +126,6 @@ int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
 int generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock );
-char *build_personal_digest_list(void);
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );

@@ -2417,25 +2417,3 @@ write_keyblock( IOBUF out, KBNODE node )
     }
     return 0;
 }
-
-char *
-build_personal_digest_list(void)
-{
-  int i,n=0;
-  static char pers_digest_list[(MAX_PREFS*5)+1];
-
-  /* The end result of this is to favor SHA-1 over everything, and put
-     MD5 at the very end of the list. */
-
-  /* Don't put in 100-110 automatically */
-  for(i=2;i<100 && n<MAX_PREFS;i++)
-    {
-      if(check_digest_algo(i)==0)
-	{
-	  sprintf(pers_digest_list+strlen(pers_digest_list),"H%d ",i);
-	  n++;
-	}
-    }
-
-  return pers_digest_list;
-}

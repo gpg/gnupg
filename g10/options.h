@@ -21,6 +21,7 @@
 #define G10_OPTIONS_H
 
 #include <types.h>
+#include "main.h"
 #include "packet.h"
 
 #undef ENABLE_COMMENT_PACKETS  /* don't create comment packets */
@@ -122,6 +123,8 @@ struct {
       int keep_temp_files:1;
       int refresh_add_fake_v3_keyids:1;
       int auto_key_retrieve:1;
+      int honor_http_proxy:1;
+      int broken_http_proxy:1;
       STRLIST other;
     } keyserver_options;
     int exec_disable;
@@ -145,7 +148,6 @@ struct {
     int allow_freeform_uid;
     int no_literal;
     ulong set_filesize;
-    int honor_http_proxy;
     int fast_list_mode;
     int fixed_list_mode;
     int ignore_time_conflict;
@@ -165,6 +167,7 @@ struct {
     int preserve_permissions;
     int no_homedir_creation;
     int show_keyring;
+    struct groupitem *grouplist;
 } opt;
 
 

@@ -294,6 +294,7 @@ enum cmd_and_opt_values { aNull = 0,
     oTTYtype,
     oLCctype,
     oLCmessages,
+    oGroup,
 aTest };
 
 
@@ -578,6 +579,7 @@ static ARGPARSE_OPTS opts[] = {
     { oTTYtype,    "ttytype",     2, "@" },
     { oLCctype,    "lc-ctype",    2, "@" },
     { oLCmessages, "lc-messages", 2, "@" },
+    { oGroup,      "group",       2, "@" },
 {0} };
 
 
@@ -799,6 +801,32 @@ set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
     *ret_cmd = cmd;
 }
 
+
+static void add_group(char *string)
+{
+  char *name,*value;
+  struct groupitem *item;
+  STRLIST values=NULL;
+
+  /* Break off the group name */
+  name=strsep(&string," ");
+  if(string==NULL)
+    {
+      log_error(_("no values for group \"%s\"\n"),name);
+      return;
+    }
+
+  /* Break apart the values */
+  while((value=strsep(&string," ")) && *value!='\0')
+    add_to_strlist2(&values,value,utf8_strings);
+
+  item=m_alloc(sizeof(struct groupitem));
+  item->name=name;
+  item->values=values;
+  item->next=opt.grouplist;
+
+  opt.grouplist=item;
+}
 
 
 int
@@ -1342,7 +1370,7 @@ main( int argc, char **argv )
 	  case oNoLiteral: opt.no_literal = 1; break;
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy:
-                opt.honor_http_proxy = 1;
+                opt.keyserver_options.honor_http_proxy = 1;
 		log_info(_("WARNING: %s is a deprecated option.\n"),
 			 "--honor-http-proxy");
 		log_info(_("please use \"--keyserver-options %s\" instead\n"),
@@ -1398,6 +1426,7 @@ main( int argc, char **argv )
           case oTTYtype: opt.ttytype = pargs.r.ret_str; break;
           case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
           case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
+	  case oGroup: add_group(pargs.r.ret_str); break;
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }
@@ -1629,7 +1658,7 @@ main( int argc, char **argv )
 
     /* We provide defaults for the personal digest list */
     if(!pers_digest_list)
-      pers_digest_list=build_personal_digest_list();
+      pers_digest_list="h2";
 
     if(pers_cipher_list &&
        keygen_set_std_prefs(pers_cipher_list,PREFTYPE_SYM))

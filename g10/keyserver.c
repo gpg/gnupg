@@ -79,9 +79,9 @@ parse_keyserver_options(char *options)
       else if(ascii_strcasecmp(tok,"no-verbose")==0)
 	opt.keyserver_options.verbose--;
       else if(ascii_strcasecmp(tok,"honor-http-proxy")==0)
-	opt.honor_http_proxy=1;
+	opt.keyserver_options.honor_http_proxy=1;
       else if(ascii_strcasecmp(tok,"no-honor-http-proxy")==0)
-	opt.honor_http_proxy=0;
+	opt.keyserver_options.honor_http_proxy=0;
       else if(ascii_strcasecmp(tok,"refresh-add-fake-v3-keyids")==0)
 	opt.keyserver_options.refresh_add_fake_v3_keyids=1;
       else if(ascii_strcasecmp(tok,"no-refresh-add-fake-v3-keyids")==0)
@@ -90,6 +90,10 @@ parse_keyserver_options(char *options)
 	opt.keyserver_options.auto_key_retrieve=1;
       else if(ascii_strcasecmp(tok,"no-auto-key-retrieve")==0)
 	opt.keyserver_options.auto_key_retrieve=0;
+      else if(ascii_strcasecmp(tok,"broken-http-proxy")==0)
+	opt.keyserver_options.broken_http_proxy=1;
+      else if(ascii_strcasecmp(tok,"no-broken-http-proxy")==0)
+	opt.keyserver_options.broken_http_proxy=0;
       else if(strlen(tok)>0)
 	add_to_strlist(&opt.keyserver_options.other,tok);
 
@@ -107,8 +111,24 @@ parse_keyserver_uri(char *uri)
   if(uri==NULL)
     {
       uri=opt.keyserver_scheme;
-      opt.keyserver_scheme="x-hkp";
+      opt.keyserver_scheme="hkp";
     }
+
+  if(ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+    {
+      log_info(_("WARNING: %s is a deprecated option.\n"),
+ 	       "x-broken-hkp");
+      log_info(_("please use \"--keyserver-options %s\" instead\n"),
+ 	       "broken-http-proxy");
+      opt.keyserver_scheme="hkp";
+      opt.keyserver_options.broken_http_proxy=1;
+    }
+  else if(ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0)
+    {
+      /* Canonicalize this to "hkp" so it works with both the internal
+	 and external keyserver interface. */
+      opt.keyserver_scheme="hkp";
+    } 
 
   /* Skip the "//", if any */
   if(strlen(uri)>2 && uri[0]=='/' && uri[1]=='/')
@@ -573,9 +593,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 
 #ifndef USE_EXTERNAL_HKP
   /* Use the internal HKP code */
-  if(ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0 ||
-     ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
-     ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
+  if(ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0)
     {
       void *stats_handle = import_new_stats_handle ();
 
@@ -858,9 +876,7 @@ keyserver_refresh(STRLIST users)
      scheme, then enable fake v3 keyid generation. */
   if(opt.keyserver_options.refresh_add_fake_v3_keyids &&
      opt.keyserver_scheme &&
-     (ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0 ||
-      ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
-      ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0 ||
+     (ascii_strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
       ascii_strcasecmp(opt.keyserver_scheme,"mailto")==0))
     fakev3=1;
 

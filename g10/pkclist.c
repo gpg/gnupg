@@ -690,16 +690,53 @@ default_recipient(void)
     return p;
 }
 
+/* For simplicity, and to avoid potential loops, we only expand once -
+   you can't make an alias that points to an alias. */
+static STRLIST
+expand_groups(STRLIST input)
+{
+  STRLIST output=NULL,rover;
+  struct groupitem *groups;
+
+  for(rover=input;rover;rover=rover->next)
+    {
+      for(groups=opt.grouplist;groups;groups=groups->next)
+	{
+	  /* need strcasecmp() here, as this should be localized */
+	  if(strcasecmp(groups->name,rover->d)==0)
+	    {
+	      STRLIST each;
+
+	      /* maintain current utf8-ness */
+	      for(each=groups->values;each;each=each->next)
+		add_to_strlist(&output,each->d);
+
+	      break;
+	    }
+	}
+
+      /* Didn't find any groups, so use the existing string */
+      if(!groups)
+	add_to_strlist(&output,rover->d);
+    }
+
+  return output;
+}
 
 int
-build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
+build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 {
     PK_LIST pk_list = NULL;
     PKT_public_key *pk=NULL;
     int rc=0;
     int any_recipients=0;
-    STRLIST rov;
+    STRLIST rov,remusr;
     char *def_rec = NULL;
+
+    if(opt.grouplist)
+      remusr=expand_groups(rcpts);
+    else
+      remusr=rcpts;
 
     /* check whether there are any recipients in the list and build the
      * list of the encrypt-to ones (we always trust them) */
@@ -949,6 +986,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	release_pk_list( pk_list );
     else
 	*ret_pk_list = pk_list;
+    if(opt.grouplist)
+      free_strlist(remusr);
     return rc;
 }
 

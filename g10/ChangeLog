@@ -1,3 +1,24 @@
+2002-06-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel, options.h, main.h, keydb.h, pkclist.c
+	(build_pk_list, expand_groups), g10.c (main, add_group): Add new
+	"group" command to allow one name to expand into multiple keys.
+	For simplicity, and to avoid potential loops, we only expand once
+	- you can't make an alias that points to an alias.
+
+	* main.h, g10.c (main), keygen.c (build_personal_digest_list):
+	Simplify the default digest list - there is really no need for the
+	other hashes since they will never be used after SHA-1 in the
+	list.
+
+	* options.skel, options.h, g10.c (main), hkp.c (hkp_ask_import,
+	hkp_export, hkp_search), keyserver.c (parse_keyserver_options,
+	parse_keyserver_uri, keyserver_work, keyserver_refresh): Make the
+	"x-broken-hkp" keyserver scheme into keyserver-option
+	"broken-http-proxy".  Move honor_http_proxy into
+	keyserver_options.  Canonicalize the three variations of "hkp",
+	"x-hkp", and "x-broken-hkp" into "hkp".
+
 2002-06-07  Stefan Bellon  <sbellon@sbellon.de>
 
 	* g10.c [__riscos__]: Added --attribute-file to do the same as

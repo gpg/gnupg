@@ -59,12 +59,13 @@ $Id$
 # as default character set.
 #charset utf-8
 
-
-# You may define aliases like this:
-#   alias mynames  -u 0x12345678 -u 0x456789ab -z 9
-# everytime you use --mynames, it will be expanded to the options
-# in the above defintion.  The name of the alias may not be abbreviated.
-# NOTE: This is not yet implemented
+# Group names may be defined like this:
+#   group mynames paige 0x12345678 joe patti
+#
+# Any time "mynames" is a receipient (-r or --recipient), it will be
+# expanded to the names "paige", "joe", and "patti", and the key ID
+# "0x12345678".  Note there is only one level of expansion - you
+# cannot make an group that points to another group.
 
 # lock the file only once for the lifetime of a process.
 # if you do not define this, the lock will be obtained and released
@@ -97,11 +98,10 @@ lock-once
 # through the usual method:
 #      x-hkp://keyserver.example.net:22742
 #
-# If you have problems connecting to a HKP server through a buggy
-# http proxy, you can use this:
-#      x-broken-hkp://keyserver.example.net
-# But first you should make sure that you have read the man page regarding
-# proxies (honor-http-proxy)
+# If you have problems connecting to a HKP server through a buggy http
+# proxy, you can use keyserver option broken-http-proxy (see below),
+# but first you should make sure that you have read the man page
+# regarding proxies (keyserver option honor-http-proxy)
 #
 # Most users just set the name and type of their preferred keyserver.
 # Most servers do synchronize with each other and DNS round-robin may
@@ -130,8 +130,10 @@ lock-once
 # keep-temp-files = do not delete temporary files after using them
 #                   (really only useful for debugging)
 #
-# honor-http-proxy = if the keyserver uses http, honor the http_proxy
+# honor-http-proxy = if the keyserver uses HTTP, honor the http_proxy
 #                    environment variable
+#
+# broken-http-proxy = try to work around a buggy HTTP proxy
 #
 # auto-key-retrieve = automatically fetch keys as needed from the
 #                     keyserver when verifying signatures or when importing
