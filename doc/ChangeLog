@@ -1,3 +1,8 @@
+2002-06-30  Werner Koch  <wk@gnupg.org>
+
+	* README.W32: Adjusted some descriptions.  Fixed the regsitry
+	entry descriptions.
+
 2002-06-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Document "uat".
