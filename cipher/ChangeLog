@@ -1,3 +1,13 @@
+Mon Dec 14 21:18:49 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* random.c (read_random_source): Changed the interface to the
+	random gathering function.
+	(gather_faked): Use new interface.
+	* dynload.c (dynload_getfnc_fast_random_poll): Ditto.
+	(dynload_getfnc_gather_random): Ditto.
+	* rndlinux.c (gather_random): Ditto.
+	* rndunix.c (gather_random): Ditto.
+
 Sat Dec 12 18:40:32 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* dynload.c (SYMBOL_VERSION): New to cope with system which needs

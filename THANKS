@@ -35,6 +35,7 @@ James Troup		james@nocrew.org
 Jean-loup Gailly	gzip@prep.ai.mit.edu
 Jens Bachem		bachem@rrz.uni-koeln.de
 John A. Martin		jam@jamux.com
+Johnny Teveßen		j.tevessen@gmx.de
 Jörg Schilling		schilling@fokus.gmd.de
 Jun Kuriyama		kuriyama@sky.rim.or.jp
 Karl Fogel		kfogel@guanabana.onshore.com
@@ -66,6 +67,7 @@ SL Baur 		steve@xemacs.org
 Stefan Karrmann 	S.Karrmann@gmx.net
 Steffen Ullrich 	ccrlphr@xensei.com
 Steffen Zahn		zahn@berlin.snafu.de
+Susanne Schultz 	schultz@hsp.de
 Thiago Jung Bauermann	jungmann@usa.net
 Thomas Roessler 	roessler@guug.de
 Tom Spindler		dogcow@home.merit.edu
@@ -79,8 +81,9 @@ Werner Koch		werner.koch@guug.de
 Wim Vandeputte		bunbun@reptile.rug.ac.be
 			nbecker@hns.com
 
-Thanks to the German Unix User Group for providing FTP space and
-Martin Hamilton for hosting the mailing list.
+Thanks to the German Unix User Group for providing FTP space,
+Martin Hamilton for hosting the mailing list and hsp for
+hosting gnupg.org.
 
 Many thanks to my wife Gerlinde for having so much patience with
 me while hacking late in the evening.

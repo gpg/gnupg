@@ -94,8 +94,9 @@ static int faked_rng;
 static void read_pool( byte *buffer, size_t length, int level );
 static void add_randomness( const void *buffer, size_t length, int source );
 static void random_poll(void);
-static void read_random_source( byte *buffer, size_t length, int level );
-static int gather_faked( byte *buffer, size_t *r_length, int level );
+static void read_random_source( int requester, size_t length, int level);
+static int gather_faked( void (*add)(const void*, size_t, int), int requester,
+						    size_t length, int level );
 
 
 static void
@@ -137,7 +138,7 @@ quick_random_gen( int onoff )
 {
     int last;
 
-    read_random_source( NULL, 0, 0 ); /* load module */
+    read_random_source(0,0,0); /* init */
     last = quick_test;
     if( onoff != -1 )
 	quick_test = onoff;
@@ -236,17 +237,13 @@ read_pool( byte *buffer, size_t length, int level )
     /* for level 2 make sure that there is enough random in the pool */
     if( level == 2 && pool_balance < length ) {
 	size_t needed;
-	byte *p;
 
 	if( pool_balance < 0 )
 	    pool_balance = 0;
 	needed = length - pool_balance;
 	if( needed > POOLSIZE )
 	    BUG();
-	p = secure_alloc ? m_alloc_secure( needed ) : m_alloc(needed);
-	read_random_source( p, needed, 2 ); /* read /dev/random */
-	add_randomness( p, needed, 3);
-	m_free(p);
+	read_random_source( 3, needed, 2 );
 	pool_balance += needed;
     }
 
@@ -321,17 +318,14 @@ add_randomness( const void *buffer, size_t length, int source )
 static void
 random_poll()
 {
-    char buf[POOLSIZE/5];
-    read_random_source( buf, POOLSIZE/5, 1 );
-    add_randomness( buf, POOLSIZE/5, 2);
-    memset( buf, 0, POOLSIZE/5);
+    read_random_source( 2, POOLSIZE/5, 1 );
 }
 
 
 void
 fast_random_poll()
 {
-    static void (*fnc)( void (*)(const void*, size_t, int)) = NULL;
+    static void (*fnc)( void (*)(const void*, size_t, int), int) = NULL;
     static int initialized = 0;
 
     if( !initialized ) {
@@ -341,7 +335,7 @@ fast_random_poll()
 	fnc = dynload_getfnc_fast_random_poll();
     }
     if( fnc ) {
-	(*fnc)( add_randomness );
+	(*fnc)( add_randomness, 1 );
 	return;
     }
 
@@ -377,9 +371,10 @@ fast_random_poll()
 
 
 static void
-read_random_source( byte *buffer, size_t length, int level )
+read_random_source( int requester, size_t length, int level )
 {
-    static int (*fnc)(byte*, size_t*, int) = NULL;
+    static int (*fnc)(void (*)(const void*, size_t, int), int,
+						    size_t, int) = NULL;
     int nbytes;
     int goodness;
 
@@ -391,24 +386,21 @@ read_random_source( byte *buffer, size_t length, int level )
 	    faked_rng = 1;
 	    fnc = gather_faked;
 	}
+	if( !requester && !length && !level )
+	    return; /* init only */
     }
-    while( length ) {
-	nbytes = length;
-	goodness = (*fnc)( buffer, &nbytes, level );
-	if( goodness < 0 )
-	    log_fatal("No way to gather entropy for the RNG\n");
-	buffer +=nbytes;
-	length -= nbytes;
-	/* FIXME: how can we handle the goodness */
-    }
+    if( (*fnc)( add_randomness, requester, length, level ) < 0 )
+	log_fatal("No way to gather entropy for the RNG\n");
 }
 
 
 static int
-gather_faked( byte *buffer, size_t *r_length, int level )
+gather_faked( void (*add)(const void*, size_t, int), int requester,
+	      size_t length, int level )
 {
     static int initialized=0;
-    size_t length = *r_length;
+    size_t n;
+    char *buffer, *p;
 
     if( !initialized ) {
 	log_info(_("WARNING: using insecure random number generator!!\n"));
@@ -423,13 +415,17 @@ gather_faked( byte *buffer, size_t *r_length, int level )
       #endif
     }
 
+    p = buffer = m_alloc( length );
+    n = length;
   #ifdef HAVE_RAND
-    while( length-- )
-	*buffer++ = ((unsigned)(1 + (int) (256.0*rand()/(RAND_MAX+1.0)))-1);
+    while( n-- )
+	*p++ = ((unsigned)(1 + (int) (256.0*rand()/(RAND_MAX+1.0)))-1);
   #else
-    while( length-- )
-	*buffer++ = ((unsigned)(1 + (int) (256.0*random()/(RAND_MAX+1.0)))-1);
+    while( n-- )
+	*p++ = ((unsigned)(1 + (int) (256.0*random()/(RAND_MAX+1.0)))-1);
   #endif
-    return 100; /* We really fake it ;-) */
+    add_randomness( buffer, length, requester );
+    m_free(buffer);
+    return 0; /* okay */
 }
 

@@ -28,13 +28,6 @@ $Id$
 
 force-v3-sigs
 
-# Default is to use the newer compress algo 2, but PGP 5 does not
-# like this, so we use the old one
-# Hmm: Do we really need this ... preferences should decide which compress
-# algo to use.
-
-compress-algo 1
-
 # If you do not use the Latin-1 (ISO-8859-1) charset, you should
 # tell GnuPG which is the native character set.  Please check
 # the man page for supported character sets.
@@ -45,10 +38,14 @@ compress-algo 1
 #   alias mynames  -u 0x12345678 -u 0x456789ab -z 9
 # everytime you use --mynames, it will be expanded to the options
 # in the above defintion.  The name of the alias may not be abbreviated.
+# NOTE: This is not yet implemented
 
-# lock tthe file only once for the lifetime of a process.
+# lock the file only once for the lifetime of a process.
 # if you do not define this, the lock will be obtained and released
 # every time it is needed - normally this is not needed.
 lock-once
 
+# If you are not running one of the free operation systems
+# you probably have to uncomment the next line:
+#load-extension rndunix
 

@@ -45,7 +45,8 @@
 #endif
 
 static int open_device( const char *name, int minor );
-static int gather_random( byte *buffer, size_t *r_length, int level );
+static int gather_random( void (*add)(const void*, size_t, int), int requester,
+					  size_t length, int level );
 
 #ifdef IS_MODULE
 static void tty_printf(const char *fmt, ... )
@@ -81,15 +82,15 @@ open_device( const char *name, int minor )
 
 
 static int
-gather_random( byte *buffer, size_t *r_length, int level )
+gather_random( void (*add)(const void*, size_t, int), int requester,
+					  size_t length, int level )
 {
     static int fd_urandom = -1;
     static int fd_random = -1;
     int fd;
     int n;
     int warn=0;
-    size_t length = *r_length;
-    /* note: we will always return the requested length */
+    byte buffer[768];
 
     if( level >= 2 ) {
 	if( fd_random == -1 )
@@ -101,7 +102,8 @@ gather_random( byte *buffer, size_t *r_length, int level )
 	    fd_urandom = open_device( NAME_OF_DEV_URANDOM, 9 );
 	fd = fd_urandom;
     }
-    do {
+
+    while( length ) {
 	fd_set rfds;
 	struct timeval tv;
 	int rc;
@@ -125,20 +127,21 @@ gather_random( byte *buffer, size_t *r_length, int level )
 	}
 
 	do {
-	    n = read(fd, buffer, length );
-	    if( n >= 0 && n > length ) {
+	    int nbytes = length < sizeof(buffer)? length : sizeof(buffer);
+	    n = read(fd, buffer, nbytes );
+	    if( n >= 0 && n > nbytes ) {
 		g10_log_error("bogus read from random device (n=%d)\n", n );
-		n = length;
+		n = nbytes;
 	    }
 	} while( n == -1 && errno == EINTR );
 	if( n == -1 )
 	    g10_log_fatal("read error on random device: %s\n", strerror(errno));
-	assert( n <= length );
-	buffer += n;
+	(*add)( buffer, n, requester );
 	length -= n;
-    } while( length );
+    }
+    memset(buffer, 0, sizeof(buffer) );
 
-    return 100; /* always 100% useful at the requested level */
+    return 0; /* success */
 }
 
 

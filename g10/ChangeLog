@@ -1,3 +1,10 @@
+Mon Dec 14 21:18:49 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* parse-packet.c (parse_signature): Now checks for critical bit
+	(parse_sig_subpkt): Splitted.
+	(parse_one_sig_subpkt): New.
+	* sig-check.c (do_check): handle critical bit.
+
 Sun Dec 13 14:10:56 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pcklist.c (select_algo_from_prefs): Preferences should

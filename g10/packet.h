@@ -200,6 +200,7 @@ struct packet_struct {
 		       } while(0)
 
 typedef enum {
+    SIGSUBPKT_TEST_CRITICAL=-3,
     SIGSUBPKT_LIST_UNHASHED=-2,
     SIGSUBPKT_LIST_HASHED  =-1,
     SIGSUBPKT_NONE	   = 0,

@@ -714,21 +714,60 @@ dump_sig_subpkt( int hashed, int type, int critical,
     printf("%s)\n", p? p: "");
 }
 
+/****************
+ * Returns: >= 0 offset into buffer
+ *	    -1 unknown type
+ *	    -2 unsupported type
+ *	    -3 subpacket too short
+ */
+static int
+parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
+{
+    switch( type ) {
+      case SIGSUBPKT_SIG_CREATED:
+      case SIGSUBPKT_SIG_EXPIRE:
+      case SIGSUBPKT_KEY_EXPIRE:
+	if( n < 4 )
+	    break;
+	return 0;
+      case SIGSUBPKT_EXPORTABLE:
+	if( !n )
+	    break;
+	return 0;
+      case SIGSUBPKT_ISSUER:/* issuer key ID */
+	if( n < 8 )
+	    break;
+	return 0;
+      case SIGSUBPKT_PREF_SYM:
+      case SIGSUBPKT_PREF_HASH:
+      case SIGSUBPKT_PREF_COMPR:
+	return 0;
+      case SIGSUBPKT_PRIV_ADD_SIG:
+	/* because we use private data, we check the GNUPG marker */
+	if( n < 24 )
+	    break;
+	if( buffer[0] != 'G' || buffer[1] != 'P' || buffer[2] != 'G' )
+	    return -2;
+	return 3;
+      default: return -1;
+    }
+    return -3;
+}
+
 const byte *
 parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 {
     int buflen;
     int type;
     int critical;
+    int offset;
     size_t n;
 
     if( !buffer )
 	return NULL;
     buflen = (*buffer << 8) | buffer[1];
     buffer += 2;
-    for(;;) {
-	if( !buflen )
-	    return NULL; /* end of packets; not found */
+    while( buflen ) {
 	n = *buffer++; buflen--;
 	if( n == 255 ) {
 	    if( buflen < 4 )
@@ -754,49 +793,47 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
 	}
 	else
 	    critical = 0;
-	if( reqtype < 0 ) /* list packets */
+	if( reqtype == SIGSUBPKT_TEST_CRITICAL ) {
+	    if( critical ) {
+		if( n-1 > buflen+1 )
+		    goto too_short;
+		if( parse_one_sig_subpkt(buffer+1, n-1, type ) < 0 ) {
+		    log_info(_("subpacket of type %d has critical bit set\n"),
+									type);
+		    return NULL; /* this is an error */
+		}
+	    }
+	}
+	else if( reqtype < 0 ) /* list packets */
 	    dump_sig_subpkt( reqtype == SIGSUBPKT_LIST_HASHED,
 				    type, critical, buffer, buflen, n );
-	else if( type == reqtype )
-	    break; /* found */
+	else if( type == reqtype ) { /* found */
+	    buffer++;
+	    n--;
+	    if( n > buflen )
+		goto too_short;
+	    if( ret_n )
+		*ret_n = n;
+	    offset = parse_one_sig_subpkt(buffer, n, type );
+	    switch( offset ) {
+	      case -3:
+		log_error("subpacket of type %d too short\n", type);
+		return NULL;
+	      case -2:
+		return NULL;
+	      case -1:
+		BUG(); /* not yet needed */
+	      default:
+		break;
+	    }
+	    return buffer+offset;
+	}
 	buffer += n; buflen -=n;
     }
-    buffer++;
-    n--;
-    if( n > buflen )
-	goto too_short;
-    if( ret_n )
-	*ret_n = n;
-    switch( type ) {
-      case SIGSUBPKT_SIG_CREATED:
-      case SIGSUBPKT_SIG_EXPIRE:
-      case SIGSUBPKT_KEY_EXPIRE:
-	if( n < 4 )
-	    break;
-	return buffer;
-      case SIGSUBPKT_EXPORTABLE:
-	if( !n )
-	    break;
-	return buffer;
-      case SIGSUBPKT_ISSUER:/* issuer key ID */
-	if( n < 8 )
-	    break;
-	return buffer;
-      case SIGSUBPKT_PREF_SYM:
-      case SIGSUBPKT_PREF_HASH:
-      case SIGSUBPKT_PREF_COMPR:
-	return buffer;
-      case SIGSUBPKT_PRIV_ADD_SIG:
-	/* because we use private data, we check the GNUPG marker */
-	if( n < 24 )
-	    break;
-	if( buffer[0] != 'G' || buffer[1] != 'P' || buffer[2] != 'G' )
-	    return NULL;
-	return buffer+3;
-      default: BUG(); /* not yet needed */
-    }
-    log_error("subpacket of type %d too short\n", type);
-    return NULL;
+    if( reqtype == SIGSUBPKT_TEST_CRITICAL )
+	return buffer; /* as value true to indicate that there is no
+		       /* critical bit we don't understand */
+    return NULL; /* end of packets; not found */
 
   too_short:
     log_error("buffer shorter than subpacket\n");
@@ -899,10 +936,15 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     if( is_v4 ) { /*extract required information */
 	const byte *p;
 
-	/* FIXME: set sig->flags.unknown_critical is there is a
-	 * critical bit set for packets which are not understood
-	 * It does only make sense for hashed data.
-	 */
+	/* set sig->flags.unknown_critical if there is a
+	 * critical bit set for packets which we do not understand */
+	if( !parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_TEST_CRITICAL, NULL)
+	   || !parse_sig_subpkt( sig->unhashed_data, SIGSUBPKT_TEST_CRITICAL,
+									NULL) )
+	{
+	    sig->flags.unknown_critical = 1;
+	}
+
 	p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_SIG_CREATED, NULL );
 	if( !p )
 	    log_error("signature packet without timestamp\n");

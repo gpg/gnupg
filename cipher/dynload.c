@@ -506,7 +506,8 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
 
 
 int (*
-dynload_getfnc_gather_random())(byte*, size_t*, int)
+dynload_getfnc_gather_random())(void (*)(const void*, size_t, int), int,
+							    size_t, int)
 {
     EXTLIST r;
     void *sym;
@@ -522,7 +523,8 @@ dynload_getfnc_gather_random())(byte*, size_t*, int)
 	while( (sym = (*r->enumfunc)(40, &seq, &class, &vers)) ) {
 	    if( vers != 1 || class != 40 )
 		continue;
-	    return (int (*)(byte*, size_t*, int))sym;
+	    return (int (*)(void (*)(const void*, size_t, int), int,
+							size_t, int))sym;
 	}
     }
     return NULL;
@@ -530,7 +532,7 @@ dynload_getfnc_gather_random())(byte*, size_t*, int)
 
 
 void (*
-dynload_getfnc_fast_random_poll())( void (*)(const void*, size_t, int))
+dynload_getfnc_fast_random_poll())( void (*)(const void*, size_t, int), int)
 {
     EXTLIST r;
     void *sym;
@@ -546,7 +548,7 @@ dynload_getfnc_fast_random_poll())( void (*)(const void*, size_t, int))
 	while( (sym = (*r->enumfunc)(41, &seq, &class, &vers)) ) {
 	    if( vers != 1 || class != 41 )
 		continue;
-	    return (void (*)( void (*)(const void*, size_t, int)))sym;
+	    return (void (*)( void (*)(const void*, size_t, int), int))sym;
 	}
     }
     return NULL;

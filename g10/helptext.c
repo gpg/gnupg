@@ -35,8 +35,11 @@
  * as response to a prompt) we can use a simple search through the list.
  * Translators should use the key as msgid, this is to keep the msgid short
  * and to allow for easy changing of the helptexts.
+ *
+ * Mini gloassary:
+ *
+ * "user ID", "trustdb", "NOTE" and "WARNING".
  */
-
 
 static struct helptexts { const char *key; const char *help; } helptexts[] = {
 

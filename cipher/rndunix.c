@@ -669,13 +669,13 @@ read_a_msg( int fd, GATHER_MSG *msg )
 
 
 static int
-gather_random( char *buffer, size_t *r_length, int level )
+gather_random( void (*add)(const void*, size_t, int), int requester,
+	       size_t length, int level )
 {
     static pid_t gatherer_pid = 0;
     static int pipedes[2];
     GATHER_MSG msg;
     size_t n;
-    size_t length = *r_length;
 
     if( !gatherer_pid ) {
 	/* time to start the gatherer process */
@@ -696,37 +696,45 @@ gather_random( char *buffer, size_t *r_length, int level )
     }
 
     /* now read from the gatherer */
-    if( read_a_msg( pipedes[0], &msg ) ) {
-	g10_log_error("reading from gatherer pipe failed: %s\n",
-							strerror(errno));
-	return -1;
-    }
+    while( length ) {
+	int goodness;
 
-    n = msg.ndata;
-    if( n > length )
-	n = length;
-    memcpy( buffer, msg.data, n );
+	if( read_a_msg( pipedes[0], &msg ) ) {
+	    g10_log_error("reading from gatherer pipe failed: %s\n",
+							    strerror(errno));
+	    return -1;
+	}
 
-    *r_length = n;
 
-    if( level > 1 ) {
-	if( msg.usefulness > 30 )
-	    return 100;
-	else if ( msg.usefulness )
-	    return msg.usefulness * 100 / 30;
+	if( level > 1 ) {
+	    if( msg.usefulness > 30 )
+		goodness = 100;
+	    else if ( msg.usefulness )
+		goodness = msg.usefulness * 100 / 30;
+	    else
+		goodness = 0;
+	}
+	else if( level ) {
+	    if( msg.usefulness > 15 )
+		goodness = 100;
+	    else if ( msg.usefulness )
+		goodness = msg.usefulness * 100 / 15;
+	    else
+		goodness = 0;
+	}
 	else
-	    return 0;
+	    goodness = 100; /* goodness of level 0 is always 100 % */
+
+	n = msg.ndata;
+	if( n > length )
+	    n = length;
+	(*add)( msg.data, n, requester );
+
+	/* this is the trick how e cope with the goodness */
+	length -= (ulong)n * goodness / 100;
     }
-    else if( level ) {
-	if( msg.usefulness > 15 )
-	    return 100;
-	else if ( msg.usefulness )
-	    return msg.usefulness * 100 / 15;
-	else
-	    return 0;
-    }
-    else
-	return 100; /* goodness of level 0 is always 100 % */
+
+    return 0;
 }
 
 

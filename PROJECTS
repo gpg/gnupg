@@ -2,6 +2,7 @@
   * Check if an object (a message, detached sign, public key, or whatever)
     is signed by definite user, i.e. define user
     (userid, or any other unique identification) on command line.
+    --> NO: Use a script and --status-fd
 
     * Change the internal represention of keyid into a struct which
       can also hold the localid and extend the localid to hold information
@@ -26,4 +27,10 @@
     options in a special ELF segment?
 
   * Split key support (n-out-of-m)
+
+    * Check Berkeley BD - it is in glibc - any licensing problems?
+
+    * add an option to re-create a public key from a secret key; we
+      can do this in trustdb.c:verify_own_keys.
+      (special tool?)
 

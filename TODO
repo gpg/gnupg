@@ -6,8 +6,6 @@
 
     * preferences of hash algorithms are not yet used.
 
-    * Check Berkeley BD - it is in glibc - any licensing problems?
-
     * I noticed, that we sometimes have only 3 items in a trustrecord, but
       a next pointer ro more records - check wehther the reuse code really
       works. Maybe this is the reason for the "Hmmm public key lost"
@@ -16,9 +14,6 @@
       blanks are not hashed.
 
     * should we flush the getkey.c caches while doing an import?
-
-    * The critical bit of signature subpackets is not yet supported; i.e.
-      it is ignored.
 
     * We need a maintainence pass over the trustdb which flags
       signatures as expired if the key used to make the signature has
@@ -44,13 +39,9 @@
     * add checking of armor trailers
     * remove all "Fixmes" ;-)
 
-    * add an option to re-create a public key from a secret key; we
-      can do this in trustdb.c:verify_own_keys.
-      (special tool?)
-
     * change the fake_data stuff to mpi_set_opaque
 
-    * Use "user ID", "trustdb", "NOTE" and "WARNING".
-
     * Replace Blowfish by Twofish
+
+    * Work on the library
 

@@ -8,13 +8,9 @@
 
   Compatibility Notes
   ===================
-   GnuPG (>=0.4.1) is in compliance with RFC2440 despite these exeptions:
+   GnuPG (>0.4.5) is in compliance with RFC2440 despite these exceptions:
 
     ===> Please can someone check this <=========
-
-    * (5.1) The critical bit in signature subpackets is currently
-      ignored.	This will be fixed soon.
-
 
     * (5.2) GnuPG generates V4 signatures for all V4 keys.  The option
       --force-v3-sigs allows to override.
@@ -22,13 +18,6 @@
     * (5.3) GnuPG has an option to use simple S2K for "Symmetric-Key
       Encrypted Session-Key Packets"; however a warning message is
       issued if this option is active.
-
-    * (5.5.2) states that an implementaion MUST NOT create a v3 key
-      with an algorithm other than RSA.  GnuPG has an option to
-      create an ElGamal key in a v3 packet; the properties of such
-      a key are as good as a v4 key.  RFC1991 does not specifiy how
-      to create fingerprints for algorithms other than RSA and so it
-      is okay to choose a special format for ElGamal.
 
     * (9.1) states that RSA SHOULD be implemented.  This is not done
       (except with an extension, usable outside the U.S.) due to

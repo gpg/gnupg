@@ -222,6 +222,10 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
 			cmp_help, &ctx );
     mpi_free( result );
+    if( !rc && sig->flags.unknown_critical ) {
+	log_info(_("assuming bad signature due to an unknown critical bit\n"));
+	rc = G10ERR_BAD_SIGN;
+    }
     sig->flags.checked = 1;
     sig->flags.valid = !rc;
 

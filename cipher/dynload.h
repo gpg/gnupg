@@ -54,9 +54,10 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
     unsigned (**get_nbits)( int algo, MPI *pkey ) );
 
 
-int (*dynload_getfnc_gather_random(void))(byte*, size_t*, int);
+int (*dynload_getfnc_gather_random(void))( void (*)(const void*, size_t, int),
+					   int, size_t, int);
 void (*dynload_getfnc_fast_random_poll(void)
-				)( void (*)(const void*, size_t, int));
+				)( void (*)(const void*, size_t, int), int );
 
 
 #endif /*G10_CIPHER_DYNLOAD_H*/

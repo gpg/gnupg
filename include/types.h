@@ -91,7 +91,7 @@
   #elif SIZEOF_UNSIGNED_LONG == 8
     typedef unsigned long u64;
     #define HAVE_U64_TYPEDEF
-  #elif __GNUC__ >= 2
+  #elif __GNUC__ >= 2 || defined(__SUNPRO_C)
     typedef unsigned long long u64;
     #define HAVE_U64_TYPEDEF
   #endif

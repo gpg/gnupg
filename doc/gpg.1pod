@@ -11,7 +11,7 @@ B<gpgm> [--homedir name] [--options file] [options] command [args]
 =head1 DESCRIPTION
 
 B<gpg> is the main program for the GnuPG system. B<gpgm> is a maintenance
-tool which has some commands B<gpgm> does not have; it is there because
+tool which has some commands B<gpg> does not have; it is there because
 it does not handle sensitive data and therefore has no need to allocate
 secure memory.
 
@@ -92,7 +92,7 @@ B<--check-sigs> [I<names>]
 
 B<--fingerprint> [I<names>]
     List all keys with their fingerprints. This is the
-    same output as B<list-keys> but with the additonal output
+    same output as B<list-keys> but with the additional output
     of a line with the fingerprint. May also be combined
     with B<--list-sigs> or B<--check-sigs>.
 
@@ -184,6 +184,9 @@ B<--export> [I<names>]
     the file given with option "output".  Use together
     with B<-a> to mail those keys.
 
+B<--export-all> [I<names>]
+    Same as B<--export> but does also export keys which
+    are not compatible to OpenPGP.
 
 B<--export-secret-keys> [I<names>
     Same as B<--export>, but does export the secret keys.
@@ -452,7 +455,7 @@ B<--no-greeting>
     enter batch mode.
 
 B<--no-armor>
-    Assume the input data is not in ASCCI armored format.
+    Assume the input data is not in ASCII armored format.
 
 B<--no-default-keyring>
     Do not add the default keyrings to the list of
