@@ -188,7 +188,7 @@ modify_description (const char *description,
     }
 
   /* Allocate.  */
-  description_new = malloc (description_new_length + 1);
+  description_new = gcry_malloc (description_new_length + 1);
   if (! description_new)
     {
       err = gpg_error_from_errno (errno);
