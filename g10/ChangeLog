@@ -1,3 +1,14 @@
+2004-01-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* compress.c (init_compress): Remove "-z10" trick to get
+	uncompressed data inside a compressed data packet.  This is
+	possibly dangerous without an MDC.
+	(push_compress_filter2): Do the right thing (i.e. nothing) with
+	compress algo 0.
+
+	* main.h, decrypt.c (decrypt_messages): Accept filenames to
+	decrypt on stdin.  This is bug #253.
+
 2004-01-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs): If a subkey is already revoked by the

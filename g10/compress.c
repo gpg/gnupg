@@ -50,12 +50,10 @@ init_compress( compress_filter_context_t *zfx, z_stream *zs )
     int rc;
     int level;
 
-    if( opt.compress >= 0 && opt.compress <= 9 )
+    if( opt.compress >= 1 && opt.compress <= 9 )
 	level = opt.compress;
     else if( opt.compress == -1 )
 	level = Z_DEFAULT_COMPRESSION;
-    else if( opt.compress == 10 ) /* remove this ! */
-	level = 0;
     else {
 	log_error("invalid compression level; using default level\n");
 	level = Z_DEFAULT_COMPRESSION;
@@ -330,7 +328,7 @@ void
 push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
 		      int algo,int rel)
 {
-  if(algo>0)
+  if(algo>=0)
     zfx->algo=algo;
   else
     zfx->algo=DEFAULT_COMPRESS_ALGO;
