@@ -69,6 +69,7 @@ struct {
     int escape_from;
     int lock_once;
     const char *keyserver_name;
+    int no_encrypt_to;
 } opt;
 
 

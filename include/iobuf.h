@@ -55,6 +55,7 @@ struct iobuf_struct {
     int (*filter)( void *opaque, int control,
 		   IOBUF chain, byte *buf, size_t *len);
     void *filter_ov;	/* value for opaque */
+    int filter_ov_owner;
     IOBUF chain;	/* next iobuf used for i/o if any (passed to filter) */
     int no, subno;
     const char *desc;
@@ -84,8 +85,10 @@ int   iobuf_cancel( IOBUF iobuf );
 
 int iobuf_push_filter( IOBUF a, int (*f)(void *opaque, int control,
 		       IOBUF chain, byte *buf, size_t *len), void *ov );
-int iobuf_pop_filter( IOBUF a, int (*f)(void *opaque, int control,
-		      IOBUF chain, byte *buf, size_t *len), void *ov );
+int iobuf_push_filter2( IOBUF a,
+		    int (*f)(void *opaque, int control,
+		    IOBUF chain, byte *buf, size_t *len),
+		    void *ov, int rel_ov );
 int iobuf_flush(IOBUF a);
 void iobuf_clear_eof(IOBUF a);
 #define iobuf_set_error(a)    do { (a)->error = 1; } while(0)

@@ -364,6 +364,30 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 }
 
 
+KBNODE
+get_pubkeyblock( u32 *keyid )
+{
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    struct getkey_ctx_s ctx;
+    int rc = 0;
+    KBNODE keyblock = NULL;
+
+    memset( &ctx, 0, sizeof ctx );
+    ctx.not_allocated = 1;
+    ctx.nitems = 1;
+    ctx.items[0].mode = 11;
+    ctx.items[0].keyid[0] = keyid[0];
+    ctx.items[0].keyid[1] = keyid[1];
+    rc = lookup_pk( &ctx, pk, &keyblock );
+    free_public_key(pk);
+    get_pubkey_end( &ctx );
+
+    return rc ? NULL : keyblock;
+}
+
+
+
+
 /****************
  * Get a secret key and store it into sk
  */

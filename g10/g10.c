@@ -157,6 +157,7 @@ enum cmd_and_opt_values { aNull = 0,
     oLockOnce,
     oKeyServer,
     oEncryptTo,
+    oNoEncryptTo,
 aTest };
 
 
@@ -220,6 +221,7 @@ static ARGPARSE_OPTS opts[] = {
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
     { oRecipient, "remote-user", 2, "@"},  /* old option name */
     { oEncryptTo, "encrypt-to", 2, "@" },
+    { oNoEncryptTo, "no-encrypt-to", 0, "@" },
   #ifdef IS_G10
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
     { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
@@ -764,27 +766,19 @@ main( int argc, char **argv )
 	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;
 
+	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */
-	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
-	    strcpy(sl->d, pargs.r.ret_str);
+	    sl = add_to_strlist( &remusr, pargs.r.ret_str );
 	    sl->flags = 1;
-	    sl->next = remusr;
-	    remusr = sl;
 	    break;
 	#ifdef IS_G10
 	  case oRecipient: /* store the recipient */
-	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
-	    strcpy(sl->d, pargs.r.ret_str);
-	    sl->next = remusr;
-	    remusr = sl;
+	    add_to_strlist( &remusr, pargs.r.ret_str );
 	    break;
 	  case oTextmodeShort: opt.textmode = 2; break;
 	  case oTextmode: opt.textmode=1;  break;
 	  case oUser: /* store the local users */
-	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
-	    strcpy(sl->d, pargs.r.ret_str);
-	    sl->next = locusr;
-	    locusr = sl;
+	    add_to_strlist( &locusr, pargs.r.ret_str );
 	    break;
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
 	  case oPasswdFD: pwfd = pargs.r.ret_int; break;
@@ -821,8 +815,9 @@ main( int argc, char **argv )
 	g10_exit(2);
 
     if( greeting ) {
-	tty_printf("%s %s; %s\n", strusage(11), strusage(13), strusage(14) );
-	tty_printf("%s\n", strusage(15) );
+	fprintf(stderr, "%s %s; %s\n",
+			strusage(11), strusage(13), strusage(14) );
+	fprintf(stderr, "%s\n", strusage(15) );
       #ifdef IS_DEVELOPMENT_VERSION
 	log_info("NOTE: this is a development version!\n");
       #endif

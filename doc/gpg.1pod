@@ -265,6 +265,9 @@ B<--encrypt-to>  I<name>
     either by use of --recipient or by the asked user id.
     No trust checking is performed for these user ids.
 
+B<--no-encrypt-to>
+    Disable the use of all B<--encrypt-to> keys.
+
 B<-v>, B<--verbose>
     Give more information during processing. If used
     twice, the input data is listed in detail.

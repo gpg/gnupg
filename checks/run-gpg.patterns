@@ -1,5 +1,7 @@
 gpg: Good signature from
+gpg:                 aka "
 gpg: Signature made
+gpg: ./trustdb.gpg: trustdb created
 gpg: NOTE: cipher algorithm 3 not found in preferences
 gpg: NOTE: cipher algorithm 4 not found in preferences
 gpg: NOTE: secret key 2E5FA4F4 is NOT protected.

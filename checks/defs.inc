@@ -23,7 +23,6 @@ dsa_keyrings="--keyring ./pubring.pkr --secret-keyring ./secring.skr"
 
 plain_files="plain-1 plain-2 plain-3"
 data_files="data-500 data-9000 data-32000 data-80000"
-#data_files="data-500 data-9000"
 exp_files=""
 
 

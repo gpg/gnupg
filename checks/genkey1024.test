@@ -3,7 +3,7 @@
 . $srcdir/defs.inc || exit 3
 
 
-if which expect ; then
+if (expect -v) < /dev/null > /dev/null 2>&1 ; then
   :
 else
   echo "\"expect\" needed but not found - test skipped"
@@ -13,7 +13,7 @@ fi
 LANG=
 LANGUAGE=
 
-expect - <<EOF
+expect - <<EOF >/dev/null
 #set timeout -1
 set timeout 8
 match_max 100000

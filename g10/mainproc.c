@@ -283,7 +283,10 @@ proc_plaintext( CTX c, PACKET *pkt )
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     }
-    /*md_start_debug( c->mfx.md, "verify" );*/
+  #if 0
+    #warning md_start_debug is enabled
+    md_start_debug( c->mfx.md, "verify" );
+  #endif
     rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
     if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
 	/* can't write output but we hash it anyway to
@@ -816,16 +819,6 @@ do_proc_packets( CTX c, IOBUF a )
 }
 
 
-static void
-print_keyid( FILE *fp, u32 *keyid )
-{
-    size_t n;
-    char *p = get_user_id( keyid, &n );
-    print_string( fp, p, n, opt.with_colons );
-    m_free(p);
-}
-
-
 
 static int
 check_sig_and_print( CTX c, KBNODE node )
@@ -850,14 +843,41 @@ check_sig_and_print( CTX c, KBNODE node )
 	    rc = do_check_sig(c, node, NULL );
     }
     if( !rc || rc == G10ERR_BAD_SIGN ) {
-	char *us = get_long_user_id_string( sig->keyid );
+	KBNODE un, keyblock;
+	char *us;
+	int count=0;
+
+	keyblock = get_pubkeyblock( sig->keyid );
+
+	us = get_long_user_id_string( sig->keyid );
 	write_status_text( rc? STATUS_BADSIG : STATUS_GOODSIG, us );
 	m_free(us);
-	log_info(rc? _("BAD signature from \"")
-		   : _("Good signature from \""));
-	print_keyid( stderr, sig->keyid );
-	putc('\"', stderr);
-	putc('\n', stderr);
+
+	/* fixme: list only user ids which are valid and add information
+	 *	  about the trustworthiness of each user id, sort them.
+	 *	  Integrate this with check_signatures_trust(). */
+	for( un=keyblock; un; un = un->next ) {
+	    if( un->pkt->pkttype != PKT_USER_ID )
+		continue;
+	    if( !count++ )
+		log_info(rc? _("BAD signature from \"")
+			   : _("Good signature from \""));
+	    else
+		log_info(    _("                aka \""));
+	    print_string( stderr, un->pkt->pkt.user_id->name,
+				  un->pkt->pkt.user_id->len, '\"' );
+	    fputs("\"\n", stderr);
+	    if( rc )
+		break; /* print only one id in this case */
+	}
+	if( !count ) {	/* just in case that we have no userid */
+	    log_info(rc? _("BAD signature from \"")
+		       : _("Good signature from \""));
+	    fputs("[?]\"\n", stderr );
+	}
+	release_kbnode( keyblock );
+
+
 	if( !rc && is_status_enabled() ) {
 	    /* print a status response with the fingerprint */
 	    PKT_public_key *pk = m_alloc_clear( sizeof *pk );

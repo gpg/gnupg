@@ -55,7 +55,7 @@ typedef struct {
 
     int status; 	    /* an internal state flag */
     int any_data;	    /* any valid armored data seen */
-    unsigned empty;	    /* empty line counter USED??? */
+    int pending_lf;	    /* used together with faked */
 } armor_filter_context_t;
 
 

@@ -452,34 +452,19 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 {
     int rc = 0;
     size_t len = 0;
-    unsigned emplines = afx->empty;
     int lastline = 0;
     unsigned maxlen, n;
     byte *p;
 
     len = 2;	/* reserve 2 bytes for the length header */
-    size -= 3;	/* and 1 for empline handling and 2 for the term header */
-		/* or the appended CR,LF */
+    size -= 2;	/* and 2 for the terminating header */
     while( !rc && len < size ) {
-	if( emplines ) {
-	    while( emplines && len < size ) {
-		buf[len++] = '\r';
-		buf[len++] = '\n';
-		emplines--;
-	    }
-	    continue;
-	}
-
+	/* copy what we have in the line buffer */
 	if( afx->faked == 1 )
-	    afx->faked++;  /* skip the first (empty) line */
+	    afx->faked++; /* skip the first (empty) line */
 	else {
 	    while( len < size && afx->buffer_pos < afx->buffer_len )
 		buf[len++] = afx->buffer[afx->buffer_pos++];
-	    if( afx->buffer_pos >= afx->buffer_len
-		&& !afx->not_dash_escaped ) {
-		buf[len++] = '\r';
-		buf[len++] = '\n';
-	    }
 	    if( len >= size )
 		continue;
 	}
@@ -490,13 +475,19 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	afx->buffer_len = iobuf_read_line( a, &afx->buffer,
 					   &afx->buffer_size, &maxlen );
 	if( !afx->buffer_len ) {
-	    rc = -1; /* eof */
+	    rc = -1; /* eof (should not happen) */
 	    continue;
 	}
 	if( !maxlen )
 	    afx->truncated++;
-	if( !afx->not_dash_escaped )
+	if( !afx->not_dash_escaped ) {
 	    afx->buffer_len = trim_trailing_ws( afx->buffer, afx->buffer_len );
+	    /* the buffer is always allocated with enough space to append
+	     * a CR, LF, Nul */
+	    afx->buffer[afx->buffer_len++] = '\r';
+	    afx->buffer[afx->buffer_len++] = '\n';
+	    afx->buffer[afx->buffer_len] = 0;
+	}
 	p = afx->buffer;
 	n = afx->buffer_len;
 
@@ -563,7 +554,6 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	afx->radbuf[0] = 0;
     }
 
-    afx->empty = emplines;
     *retn = len;
     return rc;
 }

@@ -99,7 +99,7 @@
     at least for decryption).  To be more inter-operable, GNUPG
     (starting with version 0.3.3) now also uses type 16 for the
     ElGamal subkey which is created if the default key algorithm
-    is chosen.  You may add an type 16 ElGamal key to your public
+    is chosen.	You may add an type 16 ElGamal key to your public
     key which is easy as your key signatures are still valid.
 
  Q: Why is PGP 5.x not able to verify my messages?
@@ -304,9 +304,21 @@
      dash and these are then quoted and that is not good for patch ;-).  To
      use a patch file without removing the cleartext signature, the special
      option --not-dash-escaped may be used to suppress generation of these
-     escape sequences.  You should not mail such a patch because spaces and
+     escape sequences.	You should not mail such a patch because spaces and
      line endings are also subject to the signature and a mailer may not
      preserve these.  If you want to mail a file you can simply sign it
      using your MUA.
+
+
+  Q: Where is the "encrypt-to-self" option?
+  A: Use "--encrypt-to your_keyid".  You can use more than one
+     of these options. To temporary override the use of this additional
+     keys, you can use the option "--no-encrypt-to".
+
+
+  Q: How can I get rid of the Version and Comment headers in
+     armored messages?
+  A: Use "--no-version --comment ''".  Note that the left over blank line
+     is required by the protocol.
 
 

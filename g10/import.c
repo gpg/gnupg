@@ -52,8 +52,7 @@ static struct {
 
 
 static int import( IOBUF inp, int fast, const char* fname );
-static int read_block( IOBUF a, compress_filter_context_t *cfx,
-			     PACKET **pending_pkt, KBNODE *ret_root );
+static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static int import_one( const char *fname, KBNODE keyblock, int fast );
 static int import_secret_one( const char *fname, KBNODE keyblock );
 static int import_revoke_cert( const char *fname, KBNODE node );
@@ -133,27 +132,23 @@ import_keys_stream( IOBUF inp, int fast )
 static int
 import( IOBUF inp, int fast, const char* fname )
 {
-    armor_filter_context_t afx;
-    compress_filter_context_t cfx;
     PACKET *pending_pkt = NULL;
     KBNODE keyblock;
     int rc = 0;
     ulong count=0;
 
-    memset( &afx, 0, sizeof afx);
-    memset( &cfx, 0, sizeof cfx);
-    afx.only_keyblocks = 1;
-
     /* fixme: don't use static variables */
     memset( &stats, 0, sizeof( stats ) );
 
-
     getkey_disable_caches();
 
-    if( !opt.no_armor ) /* armored reading is not disabled */
-	iobuf_push_filter( inp, armor_filter, &afx );
+    if( !opt.no_armor ) { /* armored reading is not disabled */
+	armor_filter_context_t *afx = m_alloc_clear( sizeof *afx );
+	afx->only_keyblocks = 1;
+	iobuf_push_filter2( inp, armor_filter, afx, 1 );
+    }
 
-    while( !(rc = read_block( inp, &cfx, &pending_pkt, &keyblock) )) {
+    while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
 	    rc = import_one( fname, keyblock, fast );
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY )
@@ -207,14 +202,13 @@ import( IOBUF inp, int fast, const char* fname )
 
 
 /****************
- * Read the next keyblock from stream A, CFX is used to handle
- * compressed keyblocks. PENDING_PKT should be initialzed to NULL
+ * Read the next keyblock from stream A.
+ * PENDING_PKT should be initialzed to NULL
  * and not chnaged form the caller.
  * Retunr: 0 = okay, -1 no more blocks or another errorcode.
  */
 static int
-read_block( IOBUF a, compress_filter_context_t *cfx,
-	    PACKET **pending_pkt, KBNODE *ret_root )
+read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 {
     int rc;
     PACKET *pkt;
@@ -259,9 +253,12 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
 		rc = G10ERR_COMPR_ALGO;
 		goto ready;
 	    }
-	    cfx->algo = pkt->pkt.compressed->algorithm;
-	    pkt->pkt.compressed->buf = NULL;
-	    iobuf_push_filter( a, compress_filter, cfx );
+	    {
+		compress_filter_context_t *cfx = m_alloc_clear( sizeof *cfx );
+		cfx->algo = pkt->pkt.compressed->algorithm;
+		pkt->pkt.compressed->buf = NULL;
+		iobuf_push_filter2( a, compress_filter, cfx, 1 );
+	    }
 	    free_packet( pkt );
 	    init_packet(pkt);
 	    break;
@@ -721,6 +718,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 		    log_error_f(fname,
 			      _("key %08lX: no subkey for key binding\n"),
 					    (ulong)keyid[1]);
+		    n->flag |= 4; /* delete this */
 		}
 		else {
 		    rc = check_key_signature( keyblock, n, NULL);
@@ -732,8 +730,8 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 
 			knode->flag |= 2; /* mark as invalid */
 		    }
+		    knode->flag |= 1; /* mark that signature checked */
 		}
-		knode->flag |= 1; /* mark that signature checked */
 	    }
 	}
     }
@@ -812,6 +810,8 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		}
 	    }
 	}
+	else if( (node->flag & 4) ) /* marked for deletion */
+	    delete_kbnode( node );
     }
 
     /* note: because keyblock is the public key, it is never marked

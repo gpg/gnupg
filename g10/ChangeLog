@@ -1,3 +1,24 @@
+Fri Feb 19 15:49:15 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* pkclist.c (select_algo_from_prefs): retrieve LID if not there.
+
+	* armor.c (fake_packet): Replaced ugly lineending handling.
+
+	* g10.c (oNoEncryptTo): New.
+	* pkclist.c (build_pk_list): Implemented this option.
+
+	* g10.c (main): Greeting is now printed to stderr and not to tty.
+	Use add_to_strlist() instead of direct coding.
+
+	* import.c (import): Use iobuf_push_filter2.
+
+	* mainproc.c (check_sig_and_print): Print all user ids
+	for good signatures.
+	* getkey.c (get_pubkeyblock): New.
+
+	* import.c (chk_self_sigs): Fixed SEGV for unbounded class 0x18 keys.
+	(delete_inv_parts): Delete special marked packets.
+
 Tue Feb 16 14:10:02 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* g10.c (main): New option --encrypt-to

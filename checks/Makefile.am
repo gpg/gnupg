@@ -16,7 +16,7 @@ TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
 	     pubring.pkr.asc secring.skr.asc
 
-DATA_FILES = data-500 data-9000 data-32000 data-80000
+DATA_FILES = data-500 data-9000 data-32000 data-80000 plain-large
 
 EXTRA_DIST = defs.inc run-gpg run-gpgm run-gpg.patterns $(TESTS) $(TEST_FILES)
 CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
@@ -63,5 +63,6 @@ data-32000:
 	../tools/mk-tdata 32000  >data-32000
 data-80000:
 	../tools/mk-tdata 80000  >data-80000
-
+plain-large:
+	cat ../doc/HACKING ../doc/DETAILS ../doc/FAQ >plain-large
 

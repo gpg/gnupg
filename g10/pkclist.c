@@ -524,7 +524,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
     for( rov = remusr; rov; rov = rov->next ) {
 	if( !(rov->flags & 1) )
 	    any_recipients = 1;
-	else if( (use & PUBKEY_USAGE_ENC) ) {
+	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->pubkey_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, rov->d, NULL )) ) {
@@ -597,6 +597,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
     }
     else {
 	for(; remusr; remusr = remusr->next ) {
+	    if( (remusr->flags & 1) )
+		continue; /* encrypt-to keys are already handled */
 
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->pubkey_usage = use;
@@ -670,8 +672,13 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	u32 mask[8];
 
 	memset( mask, 0, 8 * sizeof *mask );
-	if( !pkr->pk->local_id )
-	    BUG(); /* if this occurs, we can use get_ownertrust to set it */
+	if( !pkr->pk->local_id ) { /* try to set the local id */
+	    query_trust_info( pkr->pk );
+	    if( !pkr->pk->local_id ) {
+		log_debug("select_algo_from_prefs: can't get LID\n");
+		continue;
+	    }
+	}
 	if( preftype == PREFTYPE_SYM )
 	    mask[0] |= (1<<2); /* 3DES is implicitly there */
 	m_free(pref);

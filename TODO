@@ -6,17 +6,11 @@ Bugs
       if the clearsign has been created by pgp263ia.
       Needs more investigation - anyone?
 
-    * clearsign bug Greg Troxel Jan 11.
-
-    * README does not verify okay. verify inserts an extra CR,LF
-      just before "Esoteric Command" (after ~8k of text).
-
 Important
 ----------
-    * Check revocation and expire stuff.  PLEASE: THIS MUST BE TESTED!
+    * Check revocation and expire stuff.  [I'm currently working on this.]
 
-    * Check calculation of key validity. PLEASE: IT IS IMPORTED THAT
-      THIS GET TESTED.
+    * Check calculation of key validity. [I'm currently working on this.]
 
     * See why we always get this "Hmmm public key lost"
 
@@ -28,17 +22,12 @@ Needed
 
     * Implement 256 bit key Twofish.
 
-    * Use capabilities if available.
-
+    * Use capabilities if available.  glibc2 does not support it yet?
+      What about 2.2 or should we use the system calls directly?
 
 Minor Bugs
 ----------
 
-    * There is a race condition which leaves lock files after process
-      termination (a signal while in make_dotlock).  Change the dotlock
-      implementaion to a create handle, make and release implemenation
-      and use an atexit to cleanup all pending locks.  This is also
-      faster.
     * --list-packets should continue even w/o a passphrase (or in batch
       mode).
 
@@ -54,7 +43,7 @@ Nice to have
       really make sense?
     * change the fake_data stuff to mpi_set_opaque
     * How about letting something like 'gpg --version -v', list the
-      effective options. Too much work.
+      effective options. [Too much work.]
     * Stats about used random numbers.
 
 

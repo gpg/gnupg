@@ -713,6 +713,15 @@ iobuf_push_filter( IOBUF a,
 		   int (*f)(void *opaque, int control,
 		   IOBUF chain, byte *buf, size_t *len), void *ov )
 {
+    return iobuf_push_filter2( a, f, ov, 0 );
+}
+
+int
+iobuf_push_filter2( IOBUF a,
+		    int (*f)(void *opaque, int control,
+		    IOBUF chain, byte *buf, size_t *len),
+		    void *ov, int rel_ov )
+{
     IOBUF b;
     size_t dummy_len=0;
     int rc=0;
@@ -732,6 +741,7 @@ iobuf_push_filter( IOBUF a,
     /* remove the filter stuff from the new stream */
     a->filter = NULL;
     a->filter_ov = NULL;
+    a->filter_ov_owner = 0;
     a->filter_eof = 0;
     if( a->use == 3 )
 	a->use = 2;  /* make a write stream from a temp stream */
@@ -757,6 +767,7 @@ iobuf_push_filter( IOBUF a,
     /* setup the function on the new stream */
     a->filter = f;
     a->filter_ov = ov;
+    a->filter_ov_owner = rel_ov;
 
     a->subno = b->subno + 1;
     f( ov, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &dummy_len );
@@ -775,7 +786,6 @@ iobuf_push_filter( IOBUF a,
 
 /****************
  * Remove an i/o filter.
- * Only needed for iobuf_seek?
  */
 static int
 pop_filter( IOBUF a, int (*f)(void *opaque, int control,
@@ -802,7 +812,7 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	if( b->filter == f && (!ov || b->filter_ov == ov) )
 	    break;
     if( !b )
-	log_bug("iobuf_pop_filter(): filter function not found\n");
+	log_bug("pop_filter(): filter function not found\n");
 
     /* flush this stream if it is an output stream */
     if( a->use == 2 && (rc=iobuf_flush(b)) ) {
@@ -815,6 +825,11 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
 	return rc;
     }
+    if( b->filter_ov && b->filter_ov_owner ) {
+	m_free( b->filter_ov );
+	b->filter_ov = NULL;
+    }
+
 
     /* and see how to remove it */
     if( a == b && !b->chain )
@@ -916,6 +931,10 @@ underflow(IOBUF a)
 	    if( (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE, a->chain,
 			       NULL, &dummy_len)) )
 		log_error("IOBUFCTRL_FREE failed: %s\n", g10_errstr(rc) );
+	    if( a->filter_ov && a->filter_ov_owner ) {
+		m_free( a->filter_ov );
+		a->filter_ov = NULL;
+	    }
 	    a->filter = NULL;
 	    a->desc = NULL;
 	    a->filter_ov = NULL;
