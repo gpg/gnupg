@@ -1,5 +1,10 @@
 2002-10-14  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_hkp.c (write_quoted): Use %-encoding instead of
+	\-encoding.
+	(parse_hkp_index): Use new keyserver key listing format, and add
+	support for disabled keys via include-disabled.
+
 	* gpgkeys_ldap.c (get_key): Don't print keysize unless it's >0.
 	(printquoted): Use %-encoding instead of \-encoding.
 	(search_key): Use new keyserver key listing format.

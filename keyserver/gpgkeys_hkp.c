@@ -35,7 +35,7 @@
 #define SEARCH 2
 #define MAX_LINE 80
 
-int verbose=0,include_revoked=0;
+int verbose=0,include_revoked=0,include_disabled=0;
 unsigned int http_flags=0;
 char host[80]={'\0'},port[10]={'\0'};
 FILE *input=NULL,*output=NULL,*console=NULL;
@@ -373,7 +373,7 @@ write_quoted(IOBUF a, const char *buf, char delim)
 {
   char quoted[5];
 
-  sprintf(quoted,"\\x%02X",delim);
+  sprintf(quoted,"%%%02X",delim);
 
   while(*buf)
     {
@@ -382,9 +382,9 @@ write_quoted(IOBUF a, const char *buf, char delim)
 	  if(iobuf_writestr(a,quoted))
 	    return -1;
 	}
-      else if(*buf=='\\')
+      else if(*buf=='%')
 	{
-	  if(iobuf_writestr(a,"\\x5c"))
+	  if(iobuf_writestr(a,"%25"))
 	    return -1;
 	}
       else
@@ -408,135 +408,155 @@ write_quoted(IOBUF a, const char *buf, char delim)
 int 
 parse_hkp_index(IOBUF buffer,char *line)
 {
-  static int open=0,revoked=0;
-  static char *key=NULL,*type=NULL,*uid=NULL;
-  static u32 bits,createtime;
   int ret=0;
 
-  /* printf("Open %d, LINE: \"%s\", uid: %s\n",open,line,uid); */
+  /* printf("Open %d, LINE: \"%s\"\n",open,line); */
 
   dehtmlize(line);
 
-  /*  printf("Now open %d, LINE: \"%s\", uid: %s\n",open,line,uid); */
+  /* printf("Now open %d, LINE: \"%s\"\n",open,line); */
 
-  /* Try and catch some bastardization of HKP.  If we don't have
-     certain unchanging landmarks, we can't reliably parse the
-     response.  This only complains about problems within the key
-     section itself.  Headers and footers should not matter. */
-  if(open && line[0]!='\0' &&
-     ascii_strncasecmp(line,"pub ",4)!=0 &&
-     ascii_strncasecmp(line,"    ",4)!=0)
+  if(line[0]=='\0')
+    return 0;
+  else if(ascii_strncasecmp(line,"pub",3)==0)
     {
-      free(key);
-      free(uid);
-      fprintf(console,"gpgkeys: this keyserver does not support searching\n");
-      return -1;
-    }
+      char *tok,*keyid,*uid=NULL,number[15];
+      int bits=0,type=0,disabled=0,revoked=0;
+      u32 createtime=0;
 
-  /* For multiple UIDs */
-  if(open && uid!=NULL)
-    {
-      ret=0;
+      line+=3;
 
-      if(!(revoked && !include_revoked))
+      if(*line=='-')
 	{
-	  char intstr[11];
-
-	  if(key)
-	    write_quoted(buffer,key,':');
-	  iobuf_writestr(buffer,":");
-	  write_quoted(buffer,uid,':');
-	  iobuf_writestr(buffer,":");
-	  iobuf_writestr(buffer,revoked?"1:":":");
-	  sprintf(intstr,"%u",createtime);
-	  write_quoted(buffer,intstr,':');
-	  iobuf_writestr(buffer,":::");
-	  if(type)
-	    write_quoted(buffer,type,':');
-	  iobuf_writestr(buffer,":");
-	  sprintf(intstr,"%u",bits);
-	  write_quoted(buffer,intstr,':');
-	  iobuf_writestr(buffer,"\n");
-
-	  ret=1;
+	  disabled=1;
+	  if(!include_disabled)
+	    return 0;
 	}
 
-      if(strncmp(line,"    ",4)!=0)
-	{
-	  revoked=0;
-	  free(key);
-	  free(uid);
-	  uid=NULL;
-	  open=0;
-	}
-    }
-
-  if(ascii_strncasecmp(line,"pub ",4)==0)
-    {
-      char *tok,*temp;
-
-      open=1;
-
-      line+=4;
+      line++;
 
       tok=strsep(&line,"/");
       if(tok==NULL)
 	return ret;
 
       if(tok[strlen(tok)-1]=='R')
-	type="RSA";
+	type=1;
       else if(tok[strlen(tok)-1]=='D')
-	type="DSA";
-      else
-	type=NULL;
+	type=17;
 
       bits=atoi(tok);
 
-      tok=strsep(&line," ");
-      if(tok==NULL)
-	return ret;
-
-      key=strdup(tok);
+      keyid=strsep(&line," ");
 
       tok=strsep(&line," ");
-      if(tok==NULL)
-	return ret;
-  
-      /* The date parser wants '-' instead of '/', so... */
-      temp=tok;
-      while(*temp!='\0')
-      	{
-	  if(*temp=='/')
-	    *temp='-';
-
-	  temp++;
-	}
-
-      createtime=scan_isodatestr(tok);
-    }
-
-  if(open)
-    {
-      if(line==NULL)
+      if(tok!=NULL)
 	{
-	  uid=strdup("Key index corrupted");
-	  return ret;
+	  char *temp=tok;
+
+	  /* The date parser wants '-' instead of '/', so... */
+	  while(*temp!='\0')
+	    {
+	      if(*temp=='/')
+		*temp='-';
+
+	      temp++;
+	    }
+
+	  createtime=scan_isodatestr(tok);
 	}
 
+      if(line!=NULL)
+	{
+	  while(*line==' ' && *line!='\0')
+	    line++;
+
+	  if(*line!='\0')
+	    {
+	      if(strncmp(line,"*** KEY REVOKED ***",19)==0)
+		{
+		  revoked=1;
+		  if(!include_revoked)
+		    return 0;
+		}
+	      else
+		uid=line;
+	    }
+	}
+
+      if(keyid)
+	{
+	  iobuf_writestr(buffer,"pub:");
+
+	  write_quoted(buffer,keyid,':');
+
+	  iobuf_writestr(buffer,":");
+
+	  if(type)
+	    {
+	      sprintf(number,"%d",type);
+	      write_quoted(buffer,number,':');
+	    }
+
+	  iobuf_writestr(buffer,":");
+
+	  if(bits)
+	    {
+	      sprintf(number,"%d",bits);
+	      write_quoted(buffer,number,':');
+	    }
+
+	  iobuf_writestr(buffer,":");
+
+	  if(createtime)
+	    {
+	      sprintf(number,"%d",createtime);
+	      write_quoted(buffer,number,':');
+	    }
+
+	  iobuf_writestr(buffer,"::");
+
+	  if(revoked)
+	    write_quoted(buffer,"r",':');
+
+	  if(disabled)
+	    write_quoted(buffer,"d",':');
+
+	  if(uid)
+	    {
+	      iobuf_writestr(buffer,"\nuid:");
+	      write_quoted(buffer,uid,':');
+	    }
+		  
+	  iobuf_writestr(buffer,"\n");
+
+	  ret=1;
+	}
+    }
+  else if(ascii_strncasecmp(line,"   ",3)==0)
+    {
       while(*line==' ' && *line!='\0')
 	line++;
 
-      if(*line=='\0')
-	return ret;
-
-      if(strncmp(line,"*** KEY REVOKED ***",19)==0)
+      if(*line!='\0')
 	{
-	  revoked=1;
-	  return ret;
+	  iobuf_writestr(buffer,"uid:");
+	  write_quoted(buffer,line,':');
+	  iobuf_writestr(buffer,"\n");
 	}
-
-      uid=strdup(line);
     }
+
+#if 0
+  else if(open)
+    {
+      /* Try and catch some bastardization of HKP.  If we don't have
+	 certain unchanging landmarks, we can't reliably parse the
+	 response.  This only complains about problems within the key
+	 section itself.  Headers and footers should not matter. */
+
+      fprintf(console,"gpgkeys: this keyserver does not support searching\n");
+      ret=-1;
+    }
+#endif
 
   return ret;
 }
@@ -575,7 +595,7 @@ handle_old_hkp_index(IOBUF inp)
   m_free(line);
 
   if(ret>-1)
-    fprintf(output,"COUNT %d\n%s",count,iobuf_get_temp_buffer(buffer));
+    fprintf(output,"info:1:%d\n%s",count,iobuf_get_temp_buffer(buffer));
 
   iobuf_close(buffer);
 }
@@ -802,7 +822,7 @@ main(int argc,char *argv[])
 
       if(sscanf(line,"VERSION %d\n",&version)==1)
 	{
-	  if(version!=0)
+	  if(version!=KEYSERVER_PROTO_VERSION)
 	    {
 	      ret=KEYSERVER_VERSION_ERROR;
 	      goto fail;
@@ -837,6 +857,13 @@ main(int argc,char *argv[])
 		include_revoked=0;
 	      else
 		include_revoked=1;
+	    }
+	  else if(strcasecmp(start,"include-disabled")==0)
+	    {
+	      if(no)
+		include_disabled=0;
+	      else
+		include_disabled=1;
 	    }
 	  else if(strcasecmp(start,"honor-http-proxy")==0)
 	    {
@@ -911,7 +938,7 @@ main(int argc,char *argv[])
 
   /* Send the response */
 
-  fprintf(output,"VERSION 0\n");
+  fprintf(output,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(output,"PROGRAM %s\n\n",VERSION);
 
   if(verbose>1)
