@@ -392,7 +392,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
     }
       
   keygrip = gpgsm_get_keygrip_hexstring (cert);
-  if (!keygrip || gpgsm_agent_havekey (keygrip))
+  if (!keygrip || gpgsm_agent_havekey (ctrl, keygrip))
     {
       /* Note, that the !keygrip case indicates a bad certificate. */
       rc = gpg_error (GPG_ERR_NO_SECKEY);

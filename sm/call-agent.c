@@ -65,7 +65,7 @@ struct learn_parm_s {
 /* Try to connect to the agent via socket or fork it off and work by
    pipes.  Handle the server's initial greeting */
 static int
-start_agent (void)
+start_agent (ctrl_t ctrl)
 {
   int rc = 0;
   char *infostr, *p;
@@ -86,6 +86,8 @@ start_agent (void)
 
       if (opt.verbose)
         log_info (_("no running gpg-agent - starting one\n"));
+      
+      gpgsm_status (ctrl, STATUS_PROGRESS, "starting_agent ? 0 0");
 
       if (fflush (NULL))
         {
@@ -126,7 +128,7 @@ start_agent (void)
           log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
           xfree (infostr);
           force_pipe_server = 1;
-          return start_agent ();
+          return start_agent (ctrl);
         }
       *p++ = 0;
       pid = atoi (p);
@@ -139,7 +141,7 @@ start_agent (void)
                      prot);
           xfree (infostr);
           force_pipe_server = 1;
-          return start_agent ();
+          return start_agent (ctrl);
         }
 
       rc = assuan_socket_connect (&ctx, infostr, pid);
@@ -148,7 +150,7 @@ start_agent (void)
         {
           log_error (_("can't connect to the agent - trying fall back\n"));
           force_pipe_server = 1;
-          return start_agent ();
+          return start_agent (ctrl);
         }
     }
 
@@ -188,7 +190,7 @@ membuf_data_cb (void *opaque, const void *buffer, size_t length)
 /* Call the agent to do a sign operation using the key identified by
    the hex string KEYGRIP. */
 int
-gpgsm_agent_pksign (const char *keygrip, const char *desc,
+gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
                     unsigned char *digest, size_t digestlen, int digestalgo,
                     char **r_buf, size_t *r_buflen )
 {
@@ -198,7 +200,7 @@ gpgsm_agent_pksign (const char *keygrip, const char *desc,
   size_t len;
 
   *r_buf = NULL;
-  rc = start_agent ();
+  rc = start_agent (ctrl);
   if (rc)
     return rc;
 
@@ -273,7 +275,7 @@ inq_ciphertext_cb (void *opaque, const char *keyword)
 /* Call the agent to do a decrypt operation using the key identified by
    the hex string KEYGRIP. */
 int
-gpgsm_agent_pkdecrypt (const char *keygrip, const char *desc,
+gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                        ksba_const_sexp_t ciphertext, 
                        char **r_buf, size_t *r_buflen )
 {
@@ -293,7 +295,7 @@ gpgsm_agent_pkdecrypt (const char *keygrip, const char *desc,
   if (!ciphertextlen)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  rc = start_agent ();
+  rc = start_agent (ctrl);
   if (rc)
     return rc;
 
@@ -371,7 +373,8 @@ inq_genkey_parms (void *opaque, const char *keyword)
 
 /* Call the agent to generate a newkey */
 int
-gpgsm_agent_genkey (ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey)
+gpgsm_agent_genkey (ctrl_t ctrl,
+                    ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey)
 {
   int rc;
   struct genkey_parm_s gk_parm;
@@ -380,7 +383,7 @@ gpgsm_agent_genkey (ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey)
   char *buf;
 
   *r_pubkey = NULL;
-  rc = start_agent ();
+  rc = start_agent (ctrl);
   if (rc)
     return rc;
 
@@ -418,13 +421,13 @@ gpgsm_agent_genkey (ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey)
 /* Ask the agent whether the certificate is in the list of trusted
    keys */
 int
-gpgsm_agent_istrusted (ksba_cert_t cert)
+gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert)
 {
   int rc;
   char *fpr;
   char line[ASSUAN_LINELENGTH];
 
-  rc = start_agent ();
+  rc = start_agent (ctrl);
   if (rc)
     return rc;
 
@@ -445,13 +448,13 @@ gpgsm_agent_istrusted (ksba_cert_t cert)
 
 /* Ask the agent to mark CERT as a trusted Root-CA one */
 int
-gpgsm_agent_marktrusted (ksba_cert_t cert)
+gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
 {
   int rc;
   char *fpr, *dn;
   char line[ASSUAN_LINELENGTH];
 
-  rc = start_agent ();
+  rc = start_agent (ctrl);
   if (rc)
     return rc;
 
@@ -482,12 +485,12 @@ gpgsm_agent_marktrusted (ksba_cert_t cert)
 /* Ask the agent whether the a corresponding secret key is available
    for the given keygrip */
 int
-gpgsm_agent_havekey (const char *hexkeygrip)
+gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
 
-  rc = start_agent ();
+  rc = start_agent (ctrl);
   if (rc)
     return rc;
 
@@ -572,14 +575,14 @@ learn_cb (void *opaque, const void *buffer, size_t length)
   
 /* Call the agent to learn about a smartcard */
 int
-gpgsm_agent_learn ()
+gpgsm_agent_learn (ctrl_t ctrl)
 {
   int rc;
   struct learn_parm_s learn_parm;
   membuf_t data;
   size_t len;
 
-  rc = start_agent ();
+  rc = start_agent (ctrl);
   if (rc)
     return rc;
 
@@ -601,12 +604,12 @@ gpgsm_agent_learn ()
    HEXKEYGRIP. If DESC is not NULL, display instead of the default
    description message. */
 int
-gpgsm_agent_passwd (const char *hexkeygrip, const char *desc)
+gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
 
-  rc = start_agent ();
+  rc = start_agent (ctrl);
   if (rc)
     return rc;
 

@@ -278,8 +278,8 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
 
 
 int
-gpgsm_create_cms_signature (ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
-                            char **r_sigval)
+gpgsm_create_cms_signature (ctrl_t ctrl, ksba_cert_t cert,
+                            gcry_md_hd_t md, int mdalgo, char **r_sigval)
 {
   int rc;
   char *grip, *desc;
@@ -291,7 +291,7 @@ gpgsm_create_cms_signature (ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
 
   desc = gpgsm_format_keydesc (cert);
 
-  rc = gpgsm_agent_pksign (grip, desc, gcry_md_read(md, mdalgo), 
+  rc = gpgsm_agent_pksign (ctrl, grip, desc, gcry_md_read(md, mdalgo), 
                            gcry_md_get_algo_dlen (mdalgo), mdalgo,
                            r_sigval, &siglen);
   xfree (desc);

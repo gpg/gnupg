@@ -977,7 +977,7 @@ list_cert_chain (ctrl_t ctrl, ksba_cert_t cert, int raw_mode,
    output mode will be used intead of the standard beautified one.
  */
 static gpg_error_t
-list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp,
+list_internal_keys (ctrl_t ctrl, STRLIST names, FILE *fp,
                     unsigned int mode, int raw_mode)
 {
   KEYDB_HANDLE hd;
@@ -1082,7 +1082,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp,
           char *p = gpgsm_get_keygrip_hexstring (cert);
           if (p)
             {
-              rc = gpgsm_agent_havekey (p);
+              rc = gpgsm_agent_havekey (ctrl, p);
               if (!rc)
                 have_secret = 1;
               else if ( gpg_err_code (rc) != GPG_ERR_NO_SECKEY)

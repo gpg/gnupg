@@ -214,7 +214,8 @@ int gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert);
 int gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
                                gcry_md_hd_t md, int hash_algo);
 /* fixme: move create functions to another file */
-int gpgsm_create_cms_signature (ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
+int gpgsm_create_cms_signature (ctrl_t ctrl,
+                                ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
                                 char **r_sigval);
 
 
@@ -260,7 +261,7 @@ int gpgsm_delete (ctrl_t ctrl, STRLIST names);
 int gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, FILE *out_fp);
 
 /*-- sign.c --*/
-int gpgsm_get_default_cert (ksba_cert_t *r_cert);
+int gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert);
 int gpgsm_sign (ctrl_t ctrl, CERTLIST signerlist,
                 int data_fd, int detached, FILE *out_fp);
 
@@ -274,20 +275,21 @@ int gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp);
 int gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp);
 
 /*-- call-agent.c --*/
-int gpgsm_agent_pksign (const char *keygrip, const char *desc,
+int gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
                         unsigned char *digest,
                         size_t digestlen,
                         int digestalgo,
                         char **r_buf, size_t *r_buflen);
-int gpgsm_agent_pkdecrypt (const char *keygrip, const char *desc,
+int gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                            ksba_const_sexp_t ciphertext, 
                            char **r_buf, size_t *r_buflen);
-int gpgsm_agent_genkey (ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey);
-int gpgsm_agent_istrusted (ksba_cert_t cert);
-int gpgsm_agent_havekey (const char *hexkeygrip);
-int gpgsm_agent_marktrusted (ksba_cert_t cert);
-int gpgsm_agent_learn (void);
-int gpgsm_agent_passwd (const char *hexkeygrip, const char *desc);
+int gpgsm_agent_genkey (ctrl_t ctrl,
+                        ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey);
+int gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert);
+int gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip);
+int gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert);
+int gpgsm_agent_learn (ctrl_t ctrl);
+int gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (ctrl_t ctrl,

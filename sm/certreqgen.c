@@ -129,9 +129,11 @@ struct reqgen_ctrl_s {
 };
 
 
-static int proc_parameters (struct para_data_s *para,
+static int proc_parameters (ctrl_t ctrl,
+                            struct para_data_s *para,
                             struct reqgen_ctrl_s *outctrl);
-static int create_request (struct para_data_s *para,
+static int create_request (ctrl_t ctrl,
+                           struct para_data_s *para,
                            ksba_const_sexp_t public,
                            struct reqgen_ctrl_s *outctrl);
 
@@ -228,7 +230,7 @@ get_parameter_uint (struct para_data_s *para, enum para_name key)
 /* Read the certificate generation parameters from FP and generate
    (all) certificate requests.  */
 static int
-read_parameters (FILE *fp, ksba_writer_t writer)
+read_parameters (ctrl_t ctrl, FILE *fp, ksba_writer_t writer)
 {
   static struct {
     const char *name;
@@ -285,7 +287,7 @@ read_parameters (FILE *fp, ksba_writer_t writer)
             outctrl.dryrun = 1;
           else if (!ascii_strcasecmp( keyword, "%commit"))
             {
-              rc = proc_parameters (para, &outctrl);
+              rc = proc_parameters (ctrl, para, &outctrl);
               if (rc)
                 goto leave;
               any = 1;
@@ -332,7 +334,7 @@ read_parameters (FILE *fp, ksba_writer_t writer)
 
       if (keywords[i].key == pKEYTYPE && para)
         {
-          rc = proc_parameters (para, &outctrl);
+          rc = proc_parameters (ctrl, para, &outctrl);
           if (rc)
             goto leave;
           any = 1;
@@ -375,7 +377,7 @@ read_parameters (FILE *fp, ksba_writer_t writer)
     }
   else if (para)
     {
-      rc = proc_parameters (para, &outctrl);
+      rc = proc_parameters (ctrl, para, &outctrl);
       if (rc)
         goto leave;
       any = 1;
@@ -414,7 +416,8 @@ has_invalid_email_chars (const char *s)
 
 /* Check that all required parameters are given and perform the action */
 static int
-proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
+proc_parameters (ctrl_t ctrl,
+                 struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
 {
   struct para_data_s *r;
   const char *s;
@@ -484,7 +487,7 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
   sprintf (numbuf, "%u", nbits);
   snprintf (keyparms, DIM (keyparms)-1, 
             "(6:genkey(3:rsa(5:nbits%d:%s)))", strlen (numbuf), numbuf);
-  rc = gpgsm_agent_genkey (keyparms, &public);
+  rc = gpgsm_agent_genkey (ctrl, keyparms, &public);
   if (rc)
     {
       r = get_parameter (para, pKEYTYPE);
@@ -493,7 +496,7 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
       return rc;
     }
 
-  rc = create_request (para, public, outctrl);
+  rc = create_request (ctrl, para, public, outctrl);
   xfree (public);
 
   return rc;
@@ -503,7 +506,8 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
 /* Parameters are checked, the key pair has been created.  Now
    generate the request and write it out */
 static int
-create_request (struct para_data_s *para, ksba_const_sexp_t public,
+create_request (ctrl_t ctrl,
+                struct para_data_s *para, ksba_const_sexp_t public,
                 struct reqgen_ctrl_s *outctrl)
 {
   ksba_certreq_t cr;
@@ -614,7 +618,7 @@ create_request (struct para_data_s *para, ksba_const_sexp_t public,
           for (n=0; n < 20; n++)
             sprintf (hexgrip+n*2, "%02X", grip[n]);
 
-          rc = gpgsm_agent_pksign (hexgrip, NULL,
+          rc = gpgsm_agent_pksign (ctrl, hexgrip, NULL,
                                    gcry_md_read(md, GCRY_MD_SHA1), 
                                    gcry_md_get_algo_dlen (GCRY_MD_SHA1),
                                    GCRY_MD_SHA1,
@@ -650,7 +654,7 @@ create_request (struct para_data_s *para, ksba_const_sexp_t public,
 /* Create a new key by reading the parameters from in_fd.  Multiple
    keys may be created */
 int
-gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp)
+gpgsm_genkey (ctrl_t ctrl, int in_fd, FILE *out_fp)
 {
   int rc;
   FILE *in_fp;
@@ -673,7 +677,7 @@ gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
-  rc = read_parameters (in_fp, writer);
+  rc = read_parameters (ctrl, in_fp, writer);
   if (rc)
     {
       log_error ("error creating certificate request: %s\n",

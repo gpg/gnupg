@@ -11,7 +11,6 @@ We should always use valid S-Exp and not just parts.
 ** When we allow concurrent service request in gpgsm, we
 might want to have an agent context for each service request
 (i.e. Assuan context).
-** There is no error report if GPG_AGENT_INFO has been set but the agent is not anymore running. 
 
 * sm/certreqgen.c
 ** Improve error reporting

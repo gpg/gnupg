@@ -666,7 +666,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           if (rc)
             goto leave;
 
-          rc = gpgsm_agent_istrusted (subject_cert);
+          rc = gpgsm_agent_istrusted (ctrl, subject_cert);
           if (!rc)
             ;
           else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
@@ -679,7 +679,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                                                             GCRY_MD_SHA1);
                   log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
                   xfree (fpr);
-                  rc2 = gpgsm_agent_marktrusted (subject_cert);
+                  rc2 = gpgsm_agent_marktrusted (ctrl, subject_cert);
                   if (!rc2)
                     {
                       log_info (_("root certificate has now"

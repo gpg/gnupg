@@ -1496,7 +1496,7 @@ main ( int argc, char **argv)
         wrong_args ("--learn-card");
       else
         {
-          int rc = gpgsm_agent_learn ();
+          int rc = gpgsm_agent_learn (&ctrl);
           if (rc)
             log_error ("error learning card: %s\n", gpg_strerror (rc));
         }
@@ -1519,7 +1519,7 @@ main ( int argc, char **argv)
           else 
             {
               char *desc = gpgsm_format_keydesc (cert);
-              rc = gpgsm_agent_passwd (grip, desc);
+              rc = gpgsm_agent_passwd (&ctrl, grip, desc);
               xfree (desc);
             }
           if (rc)

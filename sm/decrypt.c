@@ -54,7 +54,7 @@ struct decrypt_filter_parm_s {
 /* Decrypt the session key and fill in the parm structure.  The
    algo and the IV is expected to be already in PARM. */
 static int 
-prepare_decryption (const char *hexkeygrip, const char *desc,
+prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                     ksba_const_sexp_t enc_val,
                     struct decrypt_filter_parm_s *parm)
 {
@@ -62,7 +62,7 @@ prepare_decryption (const char *hexkeygrip, const char *desc,
   size_t n, seskeylen;
   int rc;
 
-  rc = gpgsm_agent_pkdecrypt (hexkeygrip, desc, enc_val,
+  rc = gpgsm_agent_pkdecrypt (ctrl, hexkeygrip, desc, enc_val,
                               &seskey, &seskeylen);
   if (rc)
     {
@@ -238,7 +238,7 @@ decrypt_filter (void *arg,
 
 /* Perform a decrypt operation.  */
 int
-gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
+gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
 {
   int rc;
   Base64Context b64reader = NULL;
@@ -424,7 +424,8 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                            recp);
               else
                 {
-                  rc = prepare_decryption (hexkeygrip, desc, enc_val, &dfparm);
+                  rc = prepare_decryption (ctrl,
+                                           hexkeygrip, desc, enc_val, &dfparm);
                   xfree (enc_val);
                   if (rc)
                     {

@@ -126,7 +126,7 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, ksba_writer_t writer)
 /* Get the default certificate which is defined as the first one our
    keyDB returns and has a secret key available. */
 int
-gpgsm_get_default_cert (ksba_cert_t *r_cert)
+gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
 {
   KEYDB_HANDLE hd;
   ksba_cert_t cert = NULL;
@@ -156,7 +156,7 @@ gpgsm_get_default_cert (ksba_cert_t *r_cert)
       p = gpgsm_get_keygrip_hexstring (cert);
       if (p)
         {
-          if (!gpgsm_agent_havekey (p))
+          if (!gpgsm_agent_havekey (ctrl, p))
             {
               xfree (p);
               keydb_release (hd);
@@ -180,7 +180,7 @@ gpgsm_get_default_cert (ksba_cert_t *r_cert)
 
 
 static ksba_cert_t
-get_default_signer (void)
+get_default_signer (ctrl_t ctrl)
 {
   KEYDB_SEARCH_DESC desc;
   ksba_cert_t cert = NULL;
@@ -189,7 +189,7 @@ get_default_signer (void)
 
   if (!opt.local_user)
     {
-      rc = gpgsm_get_default_cert (&cert);
+      rc = gpgsm_get_default_cert (ctrl, &cert);
       if (rc)
         {
           if (rc != -1)
@@ -365,7 +365,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   /* If no list of signers is given, use a default one. */
   if (!signerlist)
     {
-      ksba_cert_t cert = get_default_signer ();
+      ksba_cert_t cert = get_default_signer (ctrl);
       if (!cert)
         {
           log_error ("no default signer found\n");
@@ -589,7 +589,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
                   goto leave;
                 }
             
-              rc = gpgsm_create_cms_signature (cl->cert, md, algo, &sigval);
+              rc = gpgsm_create_cms_signature (ctrl, cl->cert,
+                                               md, algo, &sigval);
               if (rc)
                 {
                   gcry_md_close (md);

@@ -1,3 +1,17 @@
+2004-04-26  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (gpgsm_agent_pksign, gpgsm_agent_pkdecrypt) 
+	(gpgsm_agent_genkey, gpgsm_agent_istrusted) 
+	(gpgsm_agent_marktrusted, gpgsm_agent_havekey) 
+	(gpgsm_agent_passwd): Add new arg CTRL and changed all callers.
+	(start_agent): New arg CTRL.  Send progress item when starting a
+	new agent.
+	* sign.c (gpgsm_get_default_cert, get_default_signer): New arg
+	CTRL to be passed down to the agent function.
+	* decrypt.c (prepare_decryption): Ditto.
+	* certreqgen.c (proc_parameters, read_parameters): Ditto.
+	* certcheck.c (gpgsm_create_cms_signature): Ditto.
+
 2004-04-23  Werner Koch  <wk@gnupg.org>
 
 	* keydb.c (keydb_add_resource): Try to compress the file on init.

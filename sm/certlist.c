@@ -245,7 +245,7 @@ gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
    available for the certificate. IS_ENCRYPT_TO sets the corresponding
    flag in the new create LISTADDR item.  */
 int
-gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
+gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                        CERTLIST *listaddr, int is_encrypt_to)
 {
   int rc;
@@ -342,7 +342,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
                   p = gpgsm_get_keygrip_hexstring (cert);
                   if (p)
                     {
-                      if (!gpgsm_agent_havekey (p))
+                      if (!gpgsm_agent_havekey (ctrl, p))
                         rc = 0;
                       xfree (p);
                     }
