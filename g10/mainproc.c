@@ -79,36 +79,10 @@ struct mainproc_context {
 };
 
 
-static FILE *list_fp = NULL;
-
 static int do_proc_packets( CTX c, IOBUF a );
 
 static void list_node( CTX c, KBNODE node );
 static void proc_tree( CTX c, KBNODE node );
-
-
-void
-mainproc_open_output( const char * file )
-{
-    if( !file ) {
-        if( list_fp && list_fp != stderr && list_fp != stdout ) {
-            fclose( list_fp );
-            list_fp = stdout;
-        }
-        return;
-    }
-    if( *file != '-' )
-        list_fp = fopen( file, "w" );
-    if( !list_fp )
-        list_fp = stdout;
-}
-
-
-FILE*
-mainproc_get_output( void )
-{
-    return list_fp? list_fp : stdout;
-}
 
 
 static void
@@ -759,28 +733,27 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
 
 
 static void
-print_userid (PACKET *pkt)
+print_userid( PACKET *pkt )
 {
-  if (!pkt)
-    BUG();
-  if (pkt->pkttype != PKT_USER_ID)
-    {
-      printf("ERROR: unexpected packet type %d", pkt->pkttype );
-      return;
+    if( !pkt )
+	BUG();
+    if( pkt->pkttype != PKT_USER_ID ) {
+	printf("ERROR: unexpected packet type %d", pkt->pkttype );
+	return;
     }
-  if (opt.with_colons)
-    {
-      if (pkt->pkt.user_id->attrib_data)
-        fprintf (list_fp, "%u %lu",
-                 pkt->pkt.user_id->numattribs,
-                 pkt->pkt.user_id->attrib_len);
-      else
-        print_string (list_fp,  pkt->pkt.user_id->name,
-                      pkt->pkt.user_id->len, ':');
-    }
-  else
-    print_utf8_string (list_fp,  pkt->pkt.user_id->name,
-                       pkt->pkt.user_id->len);
+    if( opt.with_colons )
+      {
+	if(pkt->pkt.user_id->attrib_data)
+	  printf("%u %lu",
+		 pkt->pkt.user_id->numattribs,
+		 pkt->pkt.user_id->attrib_len);
+	else
+	  print_string( stdout,  pkt->pkt.user_id->name,
+			pkt->pkt.user_id->len, ':');
+      }
+    else
+	print_utf8_string( stdout,  pkt->pkt.user_id->name,
+				     pkt->pkt.user_id->len );
 }
 
 
@@ -854,31 +827,31 @@ list_node( CTX c, KBNODE node )
 		c->trustletter = opt.fast_list_mode?
 					   0 : get_validity_info( pk, NULL );
 	    }
-	    fprintf( list_fp, "%s:", mainkey? "pub":"sub" );
+	    printf("%s:", mainkey? "pub":"sub" );
 	    if( c->trustletter )
-		fputc( c->trustletter, list_fp );
-	    fprintf( list_fp, ":%u:%d:%08lX%08lX:%s:%s:",
+		putchar( c->trustletter );
+	    printf(":%u:%d:%08lX%08lX:%s:%s:",
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    colon_datestr_from_pk( pk ),
 		    colon_strtime (pk->expiredate) );
 	    if( c->local_id )
-		fprintf( list_fp, "%lu", c->local_id );
-	    fputc( ':', list_fp );
+		printf("%lu", c->local_id );
+	    putchar(':');
 	    if( mainkey && !opt.fast_list_mode )
-                fputc( get_ownertrust_info (pk), list_fp );
-	    fputc( ':', list_fp );
+                 putchar( get_ownertrust_info (pk) );
+	    putchar(':');
 	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
-		fputc('\n', list_fp ); any=1;
+		putchar('\n'); any=1;
 		if( opt.fingerprint )
 		    print_fingerprint( pk, NULL, 0 );
-		fprintf( list_fp, "rtv:1:%u:\n",
+		printf("rtv:1:%u:\n",
 			    node->next->pkt->pkt.ring_trust->trustval );
 	    }
 	}
 	else
-	    fprintf( list_fp, "%s  %4u%c/%08lX %s ",
+	    printf("%s  %4u%c/%08lX %s ",
 				      mainkey? "pub":"sub",
 				      nbits_from_pk( pk ),
 				      pubkey_letter( pk->pubkey_algo ),
@@ -891,9 +864,9 @@ list_node( CTX c, KBNODE node )
 		if( node->pkt->pkttype == PKT_SIGNATURE ) {
 		    if( !any ) {
 			if( node->pkt->pkt.signature->sig_class == 0x20 )
-			    fputs("[revoked]", list_fp );
+			    puts("[revoked]");
 			else
-			    fputc('\n', list_fp );
+			    putchar('\n');
 			any = 1;
 		    }
 		    list_node(c,  node );
@@ -901,27 +874,27 @@ list_node( CTX c, KBNODE node )
 		else if( node->pkt->pkttype == PKT_USER_ID ) {
 		    if( any ) {
 			if( opt.with_colons )
-			    fprintf( list_fp, "%s:::::::::",
+			    printf("%s:::::::::",
 			      node->pkt->pkt.user_id->attrib_data?"uat":"uid");
 			else
-			    fprintf( list_fp, "uid%*s", 28, "" );
+			    printf( "uid%*s", 28, "" );
 		    }
 		    print_userid( node->pkt );
 		    if( opt.with_colons )
-			fputc( ':', list_fp );
-		    fputc( '\n', list_fp );
+			putchar(':');
+		    putchar('\n');
 		    if( opt.fingerprint && !any )
 			print_fingerprint( pk, NULL, 0 );
 		    if( node->next
 			&& node->next->pkt->pkttype == PKT_RING_TRUST ) {
-			fprintf( list_fp, "rtv:2:%u:\n",
+			printf("rtv:2:%u:\n",
 				 node->next->pkt->pkt.ring_trust->trustval );
 		    }
 		    any=1;
 		}
 		else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 		    if( !any ) {
-			fputc('\n', list_fp );
+			putchar('\n');
 			any = 1;
 		    }
 		    list_node(c,  node );
@@ -929,11 +902,11 @@ list_node( CTX c, KBNODE node )
 	    }
 	}
 	else if( pk->expiredate ) { /* of subkey */
-	    fprintf( list_fp, _(" [expires: %s]"), expirestr_from_pk( pk ) );
+	    printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
 	}
 
 	if( !any )
-	    fputc('\n', list_fp );
+	    putchar('\n');
 	if( !mainkey && opt.fingerprint > 1 )
 	    print_fingerprint( pk, NULL, 0 );
     }
@@ -944,7 +917,7 @@ list_node( CTX c, KBNODE node )
 	if( opt.with_colons ) {
 	    u32 keyid[2];
 	    keyid_from_sk( sk, keyid );
-	    fprintf( list_fp, "%s::%u:%d:%08lX%08lX:%s:%s:::",
+	    printf("%s::%u:%d:%08lX%08lX:%s:%s:::",
 		    mainkey? "sec":"ssb",
 		    nbits_from_sk( sk ),
 		    sk->pubkey_algo,
@@ -954,7 +927,7 @@ list_node( CTX c, KBNODE node )
 		    /* fixme: add LID */ );
 	}
 	else
-	    fprintf( list_fp, "%s  %4u%c/%08lX %s ",
+	    printf("%s  %4u%c/%08lX %s ",
 				      mainkey? "sec":"ssb",
 				      nbits_from_sk( sk ),
 				      pubkey_letter( sk->pubkey_algo ),
@@ -966,9 +939,9 @@ list_node( CTX c, KBNODE node )
 		if( node->pkt->pkttype == PKT_SIGNATURE ) {
 		    if( !any ) {
 			if( node->pkt->pkt.signature->sig_class == 0x20 )
-			    fputs("[revoked]", list_fp);
+			    puts("[revoked]");
 			else
-			    fputc('\n', list_fp);
+			    putchar('\n');
 			any = 1;
 		    }
 		    list_node(c,  node );
@@ -976,22 +949,22 @@ list_node( CTX c, KBNODE node )
 		else if( node->pkt->pkttype == PKT_USER_ID ) {
 		    if( any ) {
 			if( opt.with_colons )
-			    fprintf( list_fp, "%s:::::::::",
+			    printf("%s:::::::::",
 			      node->pkt->pkt.user_id->attrib_data?"uat":"uid");
 			else
-			    fprintf( list_fp, "uid%*s", 28, "" );
+			    printf( "uid%*s", 28, "" );
 		    }
 		    print_userid( node->pkt );
 		    if( opt.with_colons )
-			fputc(':', list_fp);
-		    fputc('\n', list_fp);
+			putchar(':');
+		    putchar('\n');
 		    if( opt.fingerprint && !any )
 			print_fingerprint( NULL, sk, 0 );
 		    any=1;
 		}
 		else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
 		    if( !any ) {
-			fputc('\n', list_fp);
+			putchar('\n');
 			any = 1;
 		    }
 		    list_node(c,  node );
@@ -1015,11 +988,11 @@ list_node( CTX c, KBNODE node )
 	    return;
 
 	if( sig->sig_class == 0x20 || sig->sig_class == 0x30 )
-	    fputs("rev", list_fp);
+	    fputs("rev", stdout);
 	else
-	    fputs("sig", list_fp);
+	    fputs("sig", stdout);
 	if( opt.check_sigs ) {
-	    fflush(list_fp);
+	    fflush(stdout);
 	    switch( (rc2=do_check_sig( c, node, &is_selfsig, NULL )) ) {
 	      case 0:		       sigrc = '!'; break;
 	      case G10ERR_BAD_SIGN:    sigrc = '-'; break;
@@ -1043,36 +1016,35 @@ list_node( CTX c, KBNODE node )
 	    }
 	}
 	if( opt.with_colons ) {
-	    fputc(':', list_fp);
+	    putchar(':');
 	    if( sigrc != ' ' )
-		fputc(sigrc, list_fp);
-	    fprintf( list_fp, "::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
+		putchar(sigrc);
+	    printf("::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
 					     (ulong)sig->keyid[0],
 		       (ulong)sig->keyid[1], colon_datestr_from_sig(sig));
 	}
 	else
-	    fprintf( list_fp, "%c       %08lX %s   ",
+	    printf("%c       %08lX %s   ",
 		    sigrc, (ulong)sig->keyid[1], datestr_from_sig(sig));
 	if( sigrc == '%' )
-	    fprintf( list_fp, "[%s] ", g10_errstr(rc2) );
+	    printf("[%s] ", g10_errstr(rc2) );
 	else if( sigrc == '?' )
 	    ;
 	else if( is_selfsig ) {
 	    if( opt.with_colons )
-		fputc(':', list_fp);
-	    fputs( sig->sig_class == 0x18? "[keybind]":"[selfsig]", list_fp );
+		putchar(':');
+	    fputs( sig->sig_class == 0x18? "[keybind]":"[selfsig]", stdout);
 	    if( opt.with_colons )
-		fputc(':', list_fp);
+		putchar(':');
 	}
 	else if( !opt.fast_list_mode ) {
 	    p = get_user_id( sig->keyid, &n );
-	    print_string( list_fp, p, n, opt.with_colons );
+	    print_string( stdout, p, n, opt.with_colons );
 	    m_free(p);
 	}
 	if( opt.with_colons )
-	    fprintf( list_fp, ":%02x%c:", sig->sig_class,
-                     sig->flags.exportable?'x':'l');
-	fputc('\n', list_fp);
+	    printf(":%02x%c:", sig->sig_class, sig->flags.exportable?'x':'l');
+	putchar('\n');
     }
     else
 	log_error("invalid node with packet of type %d\n", node->pkt->pkttype);
@@ -1132,8 +1104,6 @@ do_proc_packets( CTX c, IOBUF a )
     int any_data=0;
     int newpkt;
 
-    if( !list_fp )
-        list_fp = stdout;
     c->iobuf = a;
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {

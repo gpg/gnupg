@@ -356,8 +356,6 @@ int proc_signature_packets( void *ctx, IOBUF a,
 			    STRLIST signedfiles, const char *sigfile );
 int proc_encryption_packets( void *ctx, IOBUF a );
 int list_packets( IOBUF a );
-void mainproc_open_output( const char * file );
-FILE* mainproc_get_output( void );
 
 /*-- parse-packet.c --*/
 int set_packet_list_mode( int mode );
