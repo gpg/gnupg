@@ -221,6 +221,7 @@ more arguments in future versions.
 	Start processing a file <filename>.  <what> indicates the performed
 	operation:
 	    1 - verify
+        2 - encrypt
 
     FILE_DONE
 	Marks the end of a file processing which has been started

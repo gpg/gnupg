@@ -556,3 +556,19 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
     return 0;
 }
 
+void
+encode_crypt_files(int argc, char **argv, STRLIST remusr)
+{
+    int rc = 0;
+
+    while (argc--) {
+        print_file_status(STATUS_FILE_START, *argv, 2);
+        if ( (rc = encode_crypt(*argv, remusr)) )
+            log_error("%s: encryption failed: %s\n", print_fname_stdin(*argv),
+                                                        g10_errstr(rc) );
+        write_status( STATUS_FILE_DONE );
+        argv++;
+    }
+}
+                                                                                                                
+    

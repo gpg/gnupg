@@ -115,7 +115,7 @@ verify_signatures( int nfiles, char **files )
 }
 
 
-static void
+void
 print_file_status( int status, const char *name, int what )
 {
     char *p = m_alloc(strlen(name)+10);

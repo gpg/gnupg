@@ -56,6 +56,7 @@ enum cmd_and_opt_values { aNull = 0,
     aSym	  = 'c',
     aDecrypt	  = 'd',
     aEncr	  = 'e',
+    aEncrFiles,
     oInteractive  = 'i',
     oKOption	  = 'k',
     oDryRun	  = 'n',
@@ -265,6 +266,7 @@ static ARGPARSE_OPTS opts[] = {
     { aClearsign, "clearsign", 256, N_("|[file]|make a clear text signature") },
     { aDetachedSign, "detach-sign", 256, N_("make a detached signature")},
     { aEncr, "encrypt",   256, N_("encrypt data")},
+    { aEncrFiles, "encrypt-files", 256, N_("encrypt files")},
     { aSym, "symmetric", 256, N_("encryption only with symmetric cipher")},
     { aStore, "store",     256, N_("store only")},
     { aDecrypt, "decrypt",   256, N_("decrypt data (default)")},
@@ -894,6 +896,7 @@ main( int argc, char **argv )
 	  case aDecrypt: set_cmd( &cmd, aDecrypt); break;
 
 	  case aEncr: set_cmd( &cmd, aEncr); break;
+	  case aEncrFiles: set_cmd( &cmd, aEncrFiles ); break;
 	  case aSign: set_cmd( &cmd, aSign );  break;
 	  case aKeygen: set_cmd( &cmd, aKeygen); greeting=1; break;
 	  case aSignKey: set_cmd( &cmd, aSignKey); break;
@@ -1518,6 +1521,11 @@ main( int argc, char **argv )
 	    log_error("%s: encryption failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	break;
 
+      case aEncrFiles: /* encrypt the given files */
+    if (argc)
+        encode_crypt_files(argc, argv, remusr);
+    break;
+          
       case aSign: /* sign the given file */
 	sl = NULL;
 	if( detached_sig ) { /* sign all files */

@@ -1,3 +1,15 @@
+2002-01-03  Timo Schulz <ts@winpt.org>
+
+    * g10.c: New command --encrypt-files.
+    
+    * verify.c (print_file_status): Removed the static because
+    encode_crypt_files also uses this function.
+
+    * main.h (print_files_status): New.
+    (encode_crypt_files): New.
+
+    * encode.c (encode_crypt_files): New.
+
 2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
 	* keyserver.c: Moved util.h include down in order to avoid
