@@ -265,10 +265,18 @@ copy_secret_key( PKT_secret_key *d, PKT_secret_key *s )
     memcpy( d, s, sizeof *d );
     n = pubkey_get_nskey( s->pubkey_algo );
     if( !n )
+      {
+        if (d->skey[0])
+          mpi_free (d->skey[0]);
 	d->skey[0] = mpi_copy(s->skey[0]);
+      }
     else {
 	for(i=0; i < n; i++ )
+          {
+            if (d->skey[1])
+              mpi_free (d->skey[1]);
 	    d->skey[i] = mpi_copy( s->skey[i] );
+          }
     }
     return d;
 }

@@ -1057,7 +1057,13 @@ ask_passphrase (const char *description,
 }
 
 
+/* Return a new DEK object Using the string-to-key sepcifier S2K.  Use
+ * KEYID and PUBKEY_ALGO to prompt the user.
 
+   MODE 0:  Allow cached passphrase
+        1:  Ignore cached passphrase 
+        2:  Ditto, but change the text to "repeat entry"
+*/
 DEK *
 passphrase_to_dek( u32 *keyid, int pubkey_algo,
 		   int cipher_algo, STRING2KEY *s2k, int mode,
@@ -1078,9 +1084,11 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	s2k->hash_algo = opt.s2k_digest_algo;
     }
 
+    /* If we do not have a passphrase available in NEXT_PW and status
+       information are request, we print them now. */
     if( !next_pw && is_status_enabled() ) {
 	char buf[50];
-
+ 
 	if( keyid ) {
             u32 used_kid[2];
             char *us;
@@ -1111,6 +1119,10 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	}
     }
 
+    /* If we do have a keyID, we do not have a passphrase available in
+       NEXT_PW, we are not running in batch mode and we do not want to
+       ignore the passphrase cache (mode!=1), print a prompt with
+       information on that key. */
     if( keyid && !opt.batch && !next_pw && mode!=1 ) {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	size_t n;
@@ -1149,10 +1161,12 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 
  agent_died:
     if( next_pw ) {
+        /* Simply return the passpharse we already have in NEXT_PW. */
 	pw = next_pw;
 	next_pw = NULL;
     }
     else if ( opt.use_agent ) {
+      /* Divert to teh gpg-agent. */
 	pw = agent_get_passphrase ( keyid, mode == 2? 1: 0,
                                     tryagain_text, canceled );
         if (!pw)
@@ -1182,6 +1196,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	}
     }
     else if( fd_passwd ) {
+        /* Return the passphrase we have store in FD_PASSWD. */
 	pw = m_alloc_secure( strlen(fd_passwd)+1 );
 	strcpy( pw, fd_passwd );
     }
@@ -1190,6 +1205,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	pw = m_strdup( "" ); /* return an empty passphrase */
     }
     else {
+        /* Read the passphrase from the tty or the command-fd. */
 	pw = cpr_get_hidden("passphrase.enter", _("Enter passphrase: ") );
 	tty_kill_prompt();
 	if( mode == 2 && !cpr_enabled() ) {
@@ -1208,6 +1224,9 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     if( !pw || !*pw )
 	write_status( STATUS_MISSING_PASSPHRASE );
 
+    /* Hash the passphrase and store it in a newly allocated DEK
+       object.  Keep a copy of the passphrase in LAST_PW for use by
+       get_last_passphrase(). */
     dek = m_alloc_secure_clear ( sizeof *dek );
     dek->algo = cipher_algo;
     if( !*pw && mode == 2 )

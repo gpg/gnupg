@@ -1,3 +1,11 @@
+2004-06-16  Werner Koch  <wk@gnupg.org>
+
+	* free-packet.c (copy_secret_key): Fixed memory leak when D is not
+	NULL.
+
+	* passphrase.c (passphrase_to_dek): Added a few comments to the
+	code.
+
 2004-05-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_refresh): Keep track of keys already
