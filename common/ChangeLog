@@ -1,3 +1,7 @@
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	* cryptmiss.c: New.
+
 2002-02-14  Werner Koch  <wk@gnupg.org>
 
 	* maperror.c: Add more assuan<->gnupg mappings.
