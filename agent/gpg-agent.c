@@ -159,7 +159,11 @@ static const char *debug_level;
 static void create_directories (void);
 #ifdef USE_GNU_PTH
 static void handle_connections (int listen_fd);
-#endif
+
+/* Pth wrapper function definitions. */
+GCRY_THREAD_OPTION_PTH_IMPL;
+
+#endif /*USE_GNU_PTH*/
 
 
 
@@ -378,6 +382,7 @@ main (int argc, char **argv )
   int debug_wait = 0;
   int disable_pth = 0;
   int gpgconf_list = 0;
+  gpg_error_t err;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -391,20 +396,19 @@ main (int argc, char **argv )
 
   i18n_init ();
 
-  /* We need to initialize Pth before libgcrypt, because the libgcrypt
-     initialization done by gcry_check_version internally sets up its
-     mutex system.  Note that one must not link against pth if
-     USE_GNU_PTH is not defined. */
+  /* Libgcrypt requires us to register the threading model first.
+     Note that this will also do the pth_init. */
 #ifdef USE_GNU_PTH
-  if (!pth_init ())
+  err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
+  if (err)
     {
-      log_error ("failed to initialize the Pth library\n");
-      exit (1);
+      log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
+                 gpg_strerror (err));
     }
 #endif /*USE_GNU_PTH*/
 
-  /* check that the libraries are suitable.  Do it here because
-     the option parsing may need services of the library */
+  /* Check that the libraries are suitable.  Do it here because
+     the option parsing may need services of the library. */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
       log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
@@ -533,7 +537,8 @@ main (int argc, char **argv )
         case oTTYname: default_ttyname = xstrdup (pargs.r.ret_str); break;
         case oTTYtype: default_ttytype = xstrdup (pargs.r.ret_str); break;
         case oLCctype: default_lc_ctype = xstrdup (pargs.r.ret_str); break;
-        case oLCmessages: default_lc_messages = xstrdup (pargs.r.ret_str); break;
+        case oLCmessages: default_lc_messages = xstrdup (pargs.r.ret_str);
+          break;
 
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
