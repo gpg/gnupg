@@ -1,5 +1,7 @@
 2004-02-12  Werner Koch  <wk@gnupg.org>
 
+	* autogen.sh: Removed cruft from debugging.
+
 	* am/cmacros.am: New.
 
 2004-02-11  Werner Koch  <wk@gnupg.org>

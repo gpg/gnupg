@@ -148,7 +148,6 @@ EOF
     exit 1
 fi
 
-exit 0
 
 echo "Running aclocal -I m4 ..."
 $ACLOCAL -I m4
