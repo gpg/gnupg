@@ -26,7 +26,7 @@ extern char **environ;
 
 /* Basically borrowed from glibc */
 int
-unsetenv2 (const char *name)
+unsetenv(const char *name)
 {
   size_t len;
   char **ep;

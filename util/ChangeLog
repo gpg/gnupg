@@ -1,3 +1,7 @@
+2004-02-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* unsetenv.c: Fixed debugging typo.
+
 2004-02-24  Werner Koch  <wk@gnupg.org>
 
 	* secmem.c (lock_pool) [_AIX]: Also set errno.
