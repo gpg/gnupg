@@ -3,6 +3,13 @@
 
     * New option --preserve-permissions.
 
+    * Subkeys created in the future are not used for encryption or
+      signing unless the new option --ignore-valid-from is used.
+
+    * Revoked user-IDs are not listed unless signatures are listed too
+      or we are in verbose mode.
+
+
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------
 

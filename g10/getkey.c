@@ -1649,7 +1649,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     if ( pk->version >= 4 ) 
         pk->expiredate = key_expire;
     /* Fixme: we should see how to get rid of the expiretime fields  but
-     * this needs changes at other palces too. */
+     * this needs changes at other places too. */
 
     /* and now find the real primary user ID and delete all others */
     uiddate = uiddate2 = 0;
@@ -2077,6 +2077,7 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
     unsigned int req_usage = ( ctx->req_usage & USAGE_MASK );
     u32 latest_date;
     KBNODE latest_key;
+    u32 curtime = make_timestamp ();
 
     assert( !foundk || foundk->pkt->pkttype == PKT_PUBLIC_KEY
 	            || foundk->pkt->pkttype == PKT_PUBLIC_SUBKEY );
@@ -2132,6 +2133,11 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
             if ( pk->has_expired ) {
                 if (DBG_CACHE)
                     log_debug( "\tsubkey has expired\n");
+                continue;
+            }
+            if ( pk->timestamp > curtime && !opt.ignore_valid_from ) {
+                if (DBG_CACHE)
+                    log_debug( "\tsubkey not yet valid\n");
                 continue;
             }
             

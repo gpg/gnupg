@@ -190,7 +190,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
     cache_public_key (pk);
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0,
+    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0,
 			     keygen_add_std_prefs, pk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
@@ -235,7 +235,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
 	BUG();
 
     /* and make the signature */
-    rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0,
+    rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0, 0,
 				    keygen_add_key_expire, subpk );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );

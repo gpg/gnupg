@@ -1268,6 +1268,15 @@ checks just a warning.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--ignore-valid-from</term>
+<listitem><para>
+GnuPG normally does not select and use subkeys created in the future.  This
+option allows the use of such keys and thus exhibits the pre-1.0.7
+behaviour.  You should not use this option unless you there is some
+clock problem.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--ignore-crc-error</term>
 <listitem><para>
 The ASCII armor used by OpenPG is protected by a CRC checksum against

@@ -243,6 +243,12 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
+            /* don't list revoked UIDS unless we are in verbose mode and 
+             * signature listing has not been requested */
+            if ( !opt.verbose && !opt.list_sigs
+                 && node->pkt->pkt.user_id->is_revoked )
+                continue; 
+
 	    if( any ) 
                 printf("uid%*s", 28, "");
 

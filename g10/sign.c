@@ -793,16 +793,20 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
 
 /****************
- * Create a signature packet for the given public key certificate
- * and the user id and return it in ret_sig. User signature class SIGCLASS
- * user-id is not used (and may be NULL if sigclass is 0x20)
- * If digest_algo is 0 the function selects an appropriate one.
+ * Create a signature packet for the given public key certificate and
+ * the user id and return it in ret_sig. User signature class SIGCLASS
+ * user-id is not used (and may be NULL if sigclass is 0x20) If
+ * DIGEST_ALGO is 0 the function selects an appropriate one.
+ * SIGVERSION gives the minimal required signature packet version;
+ * this is needed so that special properties like local sign are not
+ * applied (actually: dropped) when a v3 key is used.
  */
 int
 make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_user_id *uid, PKT_public_key *subpk,
 		    PKT_secret_key *sk,
 		    int sigclass, int digest_algo,
+                    int sigversion,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque
 		   )
 {
@@ -813,6 +817,10 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     assert( (sigclass >= 0x10 && sigclass <= 0x13)
 	    || sigclass == 0x20 || sigclass == 0x18
 	    || sigclass == 0x30 || sigclass == 0x28 );
+
+    if (sigversion < sk->version)
+        sigversion = sk->version;
+
     if( !digest_algo ) {
 	switch( sk->pubkey_algo ) {
 	  case PUBKEY_ALGO_DSA: digest_algo = DIGEST_ALGO_SHA1; break;
@@ -829,7 +837,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	hash_public_key( md, subpk );
     }
     else if( sigclass != 0x20 ) {
-	if( sk->version >=4 ) {
+	if( sigversion >=4 ) {
 	    byte buf[5];
 	    buf[0] = 0xb4;	      /* indicates a userid packet */
 	    buf[1] = uid->len >> 24;  /* always use 4 length bytes */
@@ -842,7 +850,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     }
     /* and make the signature packet */
     sig = m_alloc_clear( sizeof *sig );
-    sig->version = sk->version;
+    sig->version = sigversion;
     keyid_from_sk( sk, sig->keyid );
     sig->pubkey_algo = sk->pubkey_algo;
     sig->digest_algo = digest_algo;

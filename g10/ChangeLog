@@ -1,3 +1,17 @@
+2001-08-01  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_keyblock_print): Do not list revoked UIDs unless
+	in verbose mode and we do no signature listing.
+
+	* getkey.c (finish_lookup): Skip subkeys which are not yet valid.
+	* g10.c, options.h: New option --ignore-valid-from.
+
+	* sign.c (make_keysig_packet): Added new sigversion argument to
+	allow the caller to force generation of required signature
+	version. Changed all callers. Suggested by Thomas Roessler. 
+	* keyedit.c (sign_uids): Force v4 signature generation for local
+	sigs.  Removed the check for local signature and pre-v4 keys.
+
 2001-07-27  Werner Koch  <wk@gnupg.org>
 
 	* keyedit.c (sign_uids): Check that we are not trying to to a

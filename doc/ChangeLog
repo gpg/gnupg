@@ -1,3 +1,7 @@
+2001-08-01  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Added --ignore-valid-from
+
 2001-04-20  Werner Koch  <wk@gnupg.org>
 
 	* faq.raw (Maintained-by): Removed note that load-extension is not

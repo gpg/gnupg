@@ -282,17 +282,6 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
     if( rc )
 	goto leave;
 
-    if (local) {
-        for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-            if (sk_rover->sk->version < 4) {
-                tty_printf ("Local only signing not possible "
-                            "due to an old style key\n");
-                rc = G10ERR_UNU_SECKEY;
-                goto leave;
-            }
-        }
-    }
-
     /* loop over all signaturs */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	u32 sk_keyid[2];
@@ -375,11 +364,16 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		memset( &attrib, 0, sizeof attrib );
 		attrib.non_exportable = local;
 		node->flag &= ~NODFLG_MARK_A;
+
+                /* we force createion of a v4 signature for local
+                 * signatures, otherwise we would not generate the
+                 * subpacket with v3 keys and the signature becomes
+                 * exportable */
 		rc = make_keysig_packet( &sig, primary_pk,
 					       node->pkt->pkt.user_id,
 					       NULL,
 					       sk,
-					       0x10, 0,
+                                         0x10, 0, local?4:0,
 					       sign_mk_attrib,
 					       &attrib );
 		if( rc ) {
@@ -1319,7 +1313,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	sec_where = NULL;
     assert(pk && sk );
 
-    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0,
+    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0, 0,
 			     keygen_add_std_prefs, pk );
     free_secret_key( sk );
     if( rc ) {
@@ -1614,11 +1608,11 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		/* create new self signature */
 		if( mainkey )
 		    rc = make_keysig_packet( &newsig, main_pk, uid, NULL,
-					     sk, 0x13, 0,
+					     sk, 0x13, 0, 0,
 					     keygen_add_std_prefs, main_pk );
 		else
 		    rc = make_keysig_packet( &newsig, main_pk, NULL, sub_pk,
-					     sk, 0x18, 0,
+					     sk, 0x18, 0, 0,
 					     keygen_add_key_expire, sub_pk );
 		if( rc ) {
 		    log_error("make_keysig_packet failed: %s\n",
@@ -2058,7 +2052,7 @@ menu_revsig( KBNODE keyblock )
 				       unode->pkt->pkt.user_id,
 				       NULL,
 				       sk,
-				       0x30, 0,
+                                       0x30, 0, 0,
 				       sign_mk_attrib,
 				       &attrib );
 	free_secret_key(sk);
@@ -2120,9 +2114,9 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
 	    node->flag &= ~NODFLG_SELKEY;
 	    sk = copy_secret_key( NULL, sec_keyblock->pkt->pkt.secret_key );
-	    rc = make_keysig_packet( &sig, mainpk, NULL, subpk, sk, 0x28, 0,
-				       sign_mk_attrib,
-				       &attrib );
+	    rc = make_keysig_packet( &sig, mainpk, NULL, subpk, sk,
+                                     0x28, 0, 0, 
+				     sign_mk_attrib, &attrib );
 	    free_secret_key(sk);
 	    if( rc ) {
 		log_error(_("signing failed: %s\n"), g10_errstr(rc));
