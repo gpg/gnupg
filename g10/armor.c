@@ -1079,7 +1079,7 @@ armor_filter( void *opaque, int control,
 	    }
 	    else
 		iobuf_writestr(a,
-		    "Comment: For info finger gcrypt@ftp.guug.de\n");
+		    "Comment: For info see www.gnupg.org");
 	    if( afx->hdrlines )
 		iobuf_writestr(a, afx->hdrlines);
 	    iobuf_put(a, '\n');

@@ -28,6 +28,13 @@ $Id$
 
 force-v3-sigs
 
+# Because some mailers change lines starting with "From " to ">From "
+# it is good to handle such lines in a special way when creating
+# cleartext signatures; all other PGP versions it this way too.
+# To enable full OpenPGP compliance you have to remove this option.
+
+escape_from_lines
+
 # If you do not use the Latin-1 (ISO-8859-1) charset, you should
 # tell GnuPG which is the native character set.  Please check
 # the man page for supported character sets.

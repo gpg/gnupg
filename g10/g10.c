@@ -150,6 +150,7 @@ enum cmd_and_opt_values { aNull = 0,
     oS2KCipher,
     oCharset,
     oNotDashEscaped,
+    oEscapeFrom,
     oLockOnce,
 aTest };
 
@@ -301,6 +302,7 @@ static ARGPARSE_OPTS opts[] = {
     { oSetFilename, "set-filename", 2, "@" },
     { oComment, "comment", 2, "@" },
     { oNotDashEscaped, "not-dash-escaped", 0, "@" },
+    { oEscapeFrom, "escape-from-lines", 0, "@" },
     { oLockOnce, "lock-once", 0, "@" },
 {0} };
 
@@ -727,7 +729,11 @@ main( int argc, char **argv )
 	    register_cipher_extension(orig_argc? *orig_argv:NULL,
 				      pargs.r.ret_str);
 	    break;
-	  case oRFC1991: opt.rfc1991 = 1; opt.no_comment = 1; break;
+	  case oRFC1991:
+	    opt.rfc1991 = 1;
+	    opt.no_comment = 1;
+	    opt.escape_from = 1;
+	    break;
 	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
@@ -777,6 +783,7 @@ main( int argc, char **argv )
 						    pargs.r.ret_str);
 	    break;
 	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
+	  case oEscapeFrom: opt.escape_from = 1; break;
 	  case oLockOnce: opt.lock_once = 1; break;
 
 	  default : pargs.err = configfp? 1:2; break;

@@ -1,3 +1,21 @@
+Thu Dec 17 18:31:15 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* misc.c (trap_unaligned): Only for glibc 1
+
+	* sign.c (write_dash_escaped): Now escapes "From " lines
+	* g10.c: New option --escape-from-lines
+
+	* trustdb.c (sort_tsl_list): New
+	(list_trust_path): Now prints sorted list.
+	(enum_cert_paths): Likewise.
+	(enum_cert_paths_print): New.
+	(print_paths): New printing format.
+	* pkclist.c (add_ownertrust): New arg quit.
+	(edit_ownertrust): New quit selection and does not query
+	the recipients ownertrust anymore.
+	(add_ownertrust): Print the ceritficate path.
+
+
 Mon Dec 14 21:18:49 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* parse-packet.c (parse_signature): Now checks for critical bit

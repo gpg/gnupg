@@ -475,11 +475,34 @@ write_dash_escaped( IOBUF inp, IOBUF out, MD_HANDLE md )
     }
 
     while( (c = iobuf_get(inp)) != -1 ) {
-	/* Note: We don't escape "From " because the MUA should cope with it */
 	if( lastlf ) {
 	    if( c == '-' ) {
 		iobuf_put( out, c );
 		iobuf_put( out, ' ' );
+	    }
+	    else if( c == 'F' && opt.escape_from ) {
+		int i;
+
+		if( state >= 1 )
+		    md_putc(md, '\r');
+		if( state >= 2 )
+		    md_putc(md, '\n');
+		state = 0;
+
+		for( i=1; i < 5 && (c = iobuf_get(inp)) != -1; i++ ) {
+		    if( "From "[i] != c )
+			break;
+		}
+		if( i < 5 ) {
+		    iobuf_write( out, "From", i );
+		    md_write( md, "From", i );
+		    if( c == -1 )
+			break;
+		}
+		else {
+		    iobuf_writestr( out, "- From" );
+		    md_write( md, "From", 4 );
+		}
 	    }
 	}
 
@@ -614,7 +637,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	PKT_secret_key *sk = sk_rover->sk;
 	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
-    /*md_start_debug( textmd, "create" );*/
+    md_start_debug( textmd, "create" );
     if( !opt.not_dash_escaped )
 	iobuf_push_filter( inp, text_filter, &tfx );
     rc = write_dash_escaped( inp, out, textmd );

@@ -2,59 +2,57 @@
 # gnupg -- gnu privacy guard
 # This is a template.  The dist target uses it to create the real file.
 #
+%define version @pkg_version@
 Summary: GPL public key crypto
 Name: gnupg
-Version: @pkg_version@
-Release: 3
+Version: %{version}
+Release: 1
 Copyright: GPL
 Group: Applications/Cryptography
-Source: ftp://ftp.guug.de/pub/gcrypt/
-URL: http://www.d.shuttle.de/isil/crypt/gnupg.html
-Vendor: TechnoCage
-Packager: Caskey L. Dickson <caskey-at-technocage.com>
+Source: ftp://ftp.gnupg.org/pub/gcrypt/gnupg-%{version}.tar.gz
+URL: http://www.gnupg.org
 Provides: gpg openpgp
+BuildRoot: /tmp/gnupg
 
 %description
-GNUPG is a complete and free replacement for PGP. Because it does not use
-IDEA or RSA it can be used without any restrictions. GNUPG is nearly in
-compliance with the OpenPGP draft.
+GnuPG is a complete and free replacement for PGP. Because it does not use
+IDEA or RSA it can be used without any restrictions. GnuPG is in
+compliance with the OpenPGP specification (RFC2440).
 
 %prep
-rm -rf $RPM_BUILD_DIR/gnupg-@pkg_version@
-tar -xvzf $RPM_SOURCE_DIR/gnupg-@pkg_version@.tar.gz
+%setup
+
+rm -rf $RPM_BUILD_ROOT
 
 %build
-cd gnupg-@pkg_version@
-chown -R root.root *
-./configure  --prefix=/usr
+CFLAGS="$RPM_OPT_FLAGS" ./configure  --prefix=/usr
 make
 
 %install
-cd gnupg-@pkg_version@
-make install
+make prefix="${RPM_BUILD_ROOT}/usr" install
+
+%clean
+rm -rf $RPM_BUILD_ROOT
 
 %files
-%doc gnupg-@pkg_version@/doc/DETAILS
-%doc gnupg-@pkg_version@/INSTALL
-%doc gnupg-@pkg_version@/doc/rfcs
-%doc gnupg-@pkg_version@/AUTHORS
-%doc gnupg-@pkg_version@/ABOUT-NLS
-%doc gnupg-@pkg_version@/COPYING
-%doc gnupg-@pkg_version@/ChangeLog
-%doc gnupg-@pkg_version@/NEWS
-%doc gnupg-@pkg_version@/README
-%doc gnupg-@pkg_version@/THANKS
-%doc gnupg-@pkg_version@/TODO
-/usr/man/man1/gpg.1
-/usr/bin/gpg
-/usr/bin/gpgm
-/usr/share/locale/en/LC_MESSAGES/gnupg.mo
-/usr/share/locale/de/LC_MESSAGES/gnupg.mo
-/usr/share/locale/it/LC_MESSAGES/gnupg.mo
-/usr/share/locale/fr/LC_MESSAGES/gnupg.mo
-/usr/lib/gnupg/tiger
-/usr/lib/gnupg/twofish
-
+%attr(-,root,root) %doc doc/DETAILS
+%attr(-,root,root) %doc INSTALL
+%attr(-,root,root) %doc AUTHORS
+%attr(-,root,root) %doc ABOUT-NLS
+%attr(-,root,root) %doc COPYING
+%attr(-,root,root) %doc ChangeLog
+%attr(-,root,root) %doc NEWS
+%attr(-,root,root) %doc README
+%attr(-,root,root) %doc THANKS
+%attr(-,root,root) %doc TODO
+%attr(-,root,root) /usr/man/man1/gpg.1
 %attr (4755,root,root) /usr/bin/gpg
-%attr (4755,root,root) /usr/bin/gpgm
+%attr (755,root,root) /usr/bin/gpgm
+%attr(-,root,root) /usr/share/locale/en/LC_MESSAGES/gnupg.mo
+%attr(-,root,root) /usr/share/locale/de/LC_MESSAGES/gnupg.mo
+%attr(-,root,root) /usr/share/locale/it/LC_MESSAGES/gnupg.mo
+%attr(-,root,root) /usr/share/locale/fr/LC_MESSAGES/gnupg.mo
+%attr(-,root,root) /usr/lib/gnupg/tiger
+%attr(-,root,root) /usr/lib/gnupg/twofish
+%attr(-,root,root) /usr/share/gnupg/options.skel
 

@@ -427,6 +427,13 @@ B<--not-dash-escaped>
     A special armor header line tells GnuPG about this
     cleartext signature framework.
 
+B<--escape-from-lines>
+    Because some mailers change lines starting with "From "
+    to ">From " it is good to handle such lines in a special
+    way when creating cleartext signatures; all other PGP
+    versions do it this way too.  Because this would violate
+    rfc2440, this option is not enabled per default.
+
 B<--passphrase-fd> I<n>
     Read the passphrase from file descriptor I<n>. If you use
     0 for I<n>, the passphrase will be read from stdin.  This
@@ -510,6 +517,7 @@ F<~/.gnupg/trustdb.gpg>      The trust database
 F<~/.gnupg/trustdb.gpg.lock> and the lock file
 
 F<~/.gnupg/options>	    May contain options
+F</usr[/local]/share/gnupg/options.skel> Skeleton file
 
 F</usr[/local]/lib/gnupg/>  Default location for extensions
 

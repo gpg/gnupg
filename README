@@ -322,8 +322,8 @@
     This is work in progress, so you may find duplicated code fragments,
     ugly data structures, weird usage of filenames and other things.
 
-    The primary FTP site is "ftp://ftp.guug.de/pub/gcrypt/"
-    The primary WWW page is "http://www.d.shuttle.de/isil/gnupg/"
+    The primary FTP site is "ftp://ftp.gnupg.org/pub/gcrypt/"
+    The primary WWW page is "http://www.gnupg.org"
 
     If you like, send your keys to <gnupg-keys@isil.d.shuttle.de>; use
     "gpg --export --armor | mail gnupg-keys@isil.d.shuttle.de" to do this.

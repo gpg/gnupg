@@ -62,8 +62,11 @@ Most of the stuff in mpi has been taken from the GMP library.
 
 The file cipher/rndunix.c is heavily based on Peter Gutmann's
 rndunix.c from cryptlib. - He promised to add the GPL as an alternative
-license to this and some other files.  We don't have a dissclaimer for
+license to this and some other files.  We don't have a disclaimer for
 this file, but due to the fact that this is only needed for non-free
 system we can easily remove this from the distribution and put it as
 a module on some FTP server.
+
+The RPM specs file scripts/gnupg.specs has been contributed by
+Caskey L. Dickson and Reuben Sumner.
 

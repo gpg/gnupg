@@ -77,6 +77,22 @@ show_paths( ulong lid, int only_first )
 		  level*2, "",
 		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 		  (ulong)keyid[1], lid, datestr_from_pk( pk ) );
+     #if 0
+	c = trust_letter(otrust);
+	if( c )
+	    putchar( c );
+	else
+	    printf( "%02x", otrust );
+	putchar('/');
+	c = trust_letter(validity);
+	if( c )
+	    putchar( c );
+	else
+	    printf( "%02x", validity );
+	putchar(' ');
+      #endif
+
+
 	p = get_user_id( keyid, &n );
 	tty_print_string( p, n ),
 	m_free(p);
@@ -102,6 +118,7 @@ edit_ownertrust( ulong lid, int mode )
     u32 keyid[2];
     PKT_public_key *pk ;
     int changed=0;
+    int quit=0;
 
     rc = keyid_from_lid( lid, keyid );
     if( rc ) {
@@ -138,13 +155,15 @@ edit_ownertrust( ulong lid, int mode )
 " s = please show me more information\n") );
     if( mode )
 	tty_printf(_(" m = back to the main menu\n"));
+    else
+	tty_printf(_(" q = quit\n"));
     tty_printf("\n");
 
     for(;;) {
 	/* a string with valid answers */
-	char *ans = _("sSmM");
+	char *ans = _("sSmMqQ");
 
-	if( strlen(ans) != 4 )
+	if( strlen(ans) != 6 )
 	    BUG();
 	p = cpr_get("edit_ownertrust.value",_("Your decision? "));
 	trim_spaces(p);
@@ -172,11 +191,15 @@ edit_ownertrust( ulong lid, int mode )
 	else if( mode && (*p == ans[2] || *p == ans[3] || *p == CONTROL_D ) ) {
 	    break ; /* back to the menu */
 	}
+	else if( !mode && (*p == ans[4] || *p == ans[5] ) ) {
+	    quit = 1;
+	    break ; /* back to the menu */
+	}
 	m_free(p); p = NULL;
     }
     m_free(p);
     m_free(pk);
-    return changed;
+    return quit? -1 : changed;
 }
 
 
@@ -185,7 +208,7 @@ edit_ownertrust( ulong lid, int mode )
  * Returns: -1 if no ownertrust were added.
  */
 static int
-add_ownertrust( PKT_public_key *pk )
+add_ownertrust( PKT_public_key *pk, int *quit )
 {
     int rc;
     void *context = NULL;
@@ -193,6 +216,7 @@ add_ownertrust( PKT_public_key *pk )
     unsigned otrust, validity;
     int any=0, changed=0, any_undefined=0;
 
+    *quit = 0;
     tty_printf(
 _("Could not find a valid trust path to the key.  Let's see whether we\n"
   "can assign some missing owner trust values.\n\n"));
@@ -205,12 +229,20 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
 
     lid = pk->local_id;
     while( enum_cert_paths( &context, &lid, &otrust, &validity ) != -1 ) {
+	if( lid == pk->local_id )
+	    continue;
 	any=1;
 	if( otrust == TRUST_UNDEFINED || otrust == TRUST_EXPIRED ||
 	    otrust == TRUST_UNKNOWN ) {
 	    any_undefined=1;
-	    if( edit_ownertrust( lid, 0 ) )
-		changed=1;
+	    enum_cert_paths_print( &context, NULL, lid );
+	    rc = edit_ownertrust( lid, 0 );
+	    if( rc == -1 ) {
+		*quit = 1;
+		break;
+	    }
+	    else if( rc > 0 )
+	       changed = 1;
 	}
     }
     enum_cert_paths( &context, NULL, NULL, NULL ); /* release context */
@@ -272,8 +304,10 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	    log_info(_("%08lX: no info to calculate a trust probability\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
 	else {
-	    rc = add_ownertrust( pk );
-	    if( !rc ) {
+	    int quit;
+
+	    rc = add_ownertrust( pk, &quit );
+	    if( !rc && !quit ) {
 		rc = check_trust( pk, &trustlevel );
 		if( rc )
 		    log_fatal("trust check after add_ownertrust failed: %s\n",
@@ -407,8 +441,9 @@ check_signatures_trust( PKT_signature *sig )
 				    "signature belongs to the owner.\n" ));
 	}
 	else {
-	    rc = add_ownertrust( pk );
-	    if( rc ) {
+	    int quit;
+	    rc = add_ownertrust( pk, &quit );
+	    if( rc || quit ) {
 		dont_try = 1;
 		rc = 0;
 	    }

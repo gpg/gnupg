@@ -44,6 +44,7 @@ special_md_putc( MD_HANDLE md, int c, int *state )
 	if( *state == 1 ) {
 	    md_putc(md, '\r');
 	}
+
 	*state = 0;
 	return;
     }

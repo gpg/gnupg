@@ -1,6 +1,8 @@
 
     * Check revocation and expire stuff.  PLEASE: THIS MUST BE TESTED!
 
+    * Escape "From "
+
     * Check calculation of key validity. PLEASE: IT IS IMPORTED THAT
       THIS GET TESTED.
 

@@ -81,6 +81,13 @@ struct trust_seg_list {
 };
 
 
+struct enum_cert_paths_ctx {
+   int init;
+   TRUST_SEG_LIST tsl_head;
+   TRUST_SEG_LIST tsl;
+   int idx;
+};
+
 
 struct recno_list_struct {
     struct recno_list_struct *next;
@@ -98,6 +105,7 @@ static int ins_lid_table_item( LOCAL_ID_TABLE tbl, ulong lid, unsigned flag );
 static int qry_lid_table_flag( LOCAL_ID_TABLE tbl, ulong lid, unsigned *flag );
 
 static void print_user_id( const char *text, u32 *keyid );
+static void sort_tsl_list( TRUST_SEG_LIST *trust_seg_list );
 static int list_sigs( ulong pubkey_id );
 static int do_check( TRUSTREC *drec, unsigned *trustlevel );
 static int get_dir_record( PKT_public_key *pk, TRUSTREC *rec );
@@ -890,17 +898,23 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 	    for(i=0; i < SIGS_PER_RECORD; i++ ) {
 		TRUSTREC tmp;
 		int ot, nt;
+		int unchecked = 0;
 
 		if( !rec.r.sig.sig[i].lid )
 		    continue; /* skip deleted sigs */
-		if( !(rec.r.sig.sig[i].flag & SIGF_CHECKED) )
-		    continue; /* skip unchecked signatures */
-		if( !(rec.r.sig.sig[i].flag & SIGF_VALID) )
-		    continue; /* skip invalid signatures */
-		if( (rec.r.sig.sig[i].flag & SIGF_EXPIRED) )
-		    continue; /* skip expired signatures */
-		if( (rec.r.sig.sig[i].flag & SIGF_REVOKED) )
-		    continue; /* skip revoked signatures */
+		if( !(rec.r.sig.sig[i].flag & SIGF_CHECKED) ) {
+		    if( !all )
+			continue; /* skip unchecked signatures */
+		    unchecked = 1;
+		}
+		else {
+		    if( !(rec.r.sig.sig[i].flag & SIGF_VALID) )
+			continue; /* skip invalid signatures */
+		    if( (rec.r.sig.sig[i].flag & SIGF_EXPIRED) )
+			continue; /* skip expired signatures */
+		    if( (rec.r.sig.sig[i].flag & SIGF_REVOKED) )
+			continue; /* skip revoked signatures */
+		}
 
 		/* visit every signer only once (a signer may have
 		 * signed more than one user ID) */
@@ -923,7 +937,7 @@ collect_paths( int depth, int max_depth, int all, TRUSTREC *drec,
 							trust_seg_head );
 		nt &= TRUST_MASK;
 
-		if( nt < TRUST_MARGINAL ) {
+		if( nt < TRUST_MARGINAL || unchecked ) {
 		    continue;
 		}
 
@@ -1175,7 +1189,7 @@ import_ownertrust( const char *fname )
 	    continue;
 	n = strlen(line);
 	if( line[n-1] != '\n' ) {
-	    log_error_f(fname, _("line to long\n") );
+	    log_error_f(fname, _("line too long\n") );
 	    /* ... or last line does not have a LF */
 	    break; /* can't continue */
 	}
@@ -1249,7 +1263,7 @@ import_ownertrust( const char *fname )
 
 
 static void
-print_path( int pathlen, TRUST_INFO *path )
+print_path( int pathlen, TRUST_INFO *path, FILE *fp, ulong highlight )
 {
     int rc, c, i;
     u32 keyid[2];
@@ -1257,34 +1271,66 @@ print_path( int pathlen, TRUST_INFO *path )
     size_t n;
 
     for( i = 0; i < pathlen; i++ )  {
-	printf("%*s", i*2, "" );
+	if( highlight )
+	    fputs(highlight == path[i].lid? "* ":"  ", fp );
 	rc = keyid_from_lid( path[i].lid, keyid );
 	if( rc )
-	    printf("????????.%lu:", path[i].lid );
+	    fprintf(fp, "????????.%lu:", path[i].lid );
 	else
-	    printf("%08lX.%lu:", (ulong)keyid[1], path[i].lid );
+	    fprintf(fp,"%08lX.%lu:", (ulong)keyid[1], path[i].lid );
 	c = trust_letter(path[i].otrust);
 	if( c )
-	    putchar( c );
+	    putc( c, fp );
 	else
-	    printf( "%02x", path[i].otrust );
-	putchar('/');
+	    fprintf( fp, "%02x", path[i].otrust );
+	putc('/', fp);
 	c = trust_letter(path[i].trust);
 	if( c )
-	    putchar( c );
+	    putc( c, fp );
 	else
-	    printf( "%02x", path[i].trust );
-	putchar(' ');
+	    fprintf( fp, "%02x", path[i].trust );
+	putc(' ', fp);
 	p = get_user_id( keyid, &n );
-	putchar(' ');
-	putchar('\"');
-	print_string( stdout, p, n > 40? 40:n, 0 );
-	putchar('\"');
+	putc(' ', fp);
+	putc('\"', fp);
+	print_string( fp, p, n > 40? 40:n, 0 );
+	putc('\"', fp);
 	m_free(p);
-	putchar('\n');
+	putc('\n', fp );
     }
 }
 
+
+static int
+cmp_tsl_array( const void *xa, const void *xb )
+{
+    TRUST_SEG_LIST a = *(TRUST_SEG_LIST*)xa;
+    TRUST_SEG_LIST b = *(TRUST_SEG_LIST*)xb;
+    return a->pathlen - b->pathlen;
+}
+
+
+static void
+sort_tsl_list( TRUST_SEG_LIST *trust_seg_list )
+{
+    TRUST_SEG_LIST *array, *tail, tsl;
+    size_t n;
+
+    for(n=0, tsl = *trust_seg_list; tsl; tsl = tsl->next )
+	n++;
+    array = m_alloc( (n+1) * sizeof *array );
+    for(n=0, tsl = *trust_seg_list; tsl; tsl = tsl->next )
+	array[n++] = tsl;
+    array[n] = NULL;
+    qsort( array, n, sizeof *array, cmp_tsl_array );
+    *trust_seg_list = NULL;
+    tail = trust_seg_list;
+    for(n=0; (tsl=array[n]); n++ ) {
+	*tail = tsl;
+	tail = &tsl->next;
+    }
+    m_free( array );
+}
 
 
 void
@@ -1318,9 +1364,12 @@ list_trust_path( const char *username )
     trust_seg_list = NULL;
     collect_paths( 0, opt.max_cert_depth, 1, &rec, tmppath, &trust_seg_list );
     m_free( tmppath );
+    sort_tsl_list( &trust_seg_list );
     /* and now print them */
     for(tsl = trust_seg_list; tsl; tsl = tsl->next ) {
-	print_path( tsl->pathlen, tsl->path );
+	print_path( tsl->pathlen, tsl->path, stdout, 0 );
+	if( tsl->next )
+	    putchar('\n');
     }
 
     /* release the list */
@@ -1638,12 +1687,7 @@ int
 enum_cert_paths( void **context, ulong *lid,
 		 unsigned *ownertrust, unsigned *validity )
 {
-    struct {
-       int init;
-       TRUST_SEG_LIST tsl_head;
-       TRUST_SEG_LIST tsl;
-       int idx;
-    } *ctx;
+    struct enum_cert_paths_ctx *ctx;
     TRUST_SEG_LIST tsl;
 
     if( !lid ) {  /* release the context */
@@ -1675,7 +1719,8 @@ enum_cert_paths( void **context, ulong *lid,
 	tsl = NULL;
 	collect_paths( 0, opt.max_cert_depth, 1, &rec, tmppath, &tsl );
 	m_free( tmppath );
-	/* and now print them */
+	sort_tsl_list( &tsl );
+	/* setup the context */
 	ctx->tsl_head = tsl;
 	ctx->tsl = ctx->tsl_head;
 	ctx->idx = 0;
@@ -1698,6 +1743,28 @@ enum_cert_paths( void **context, ulong *lid,
     *lid = tsl->path[ctx->idx].lid;
     ctx->idx++;
     return ctx->idx-1;
+}
+
+
+/****************
+ * Print the current path
+ */
+int
+enum_cert_paths_print( void **context, FILE *fp, ulong selected_lid )
+{
+    struct enum_cert_paths_ctx *ctx;
+    TRUST_SEG_LIST tsl;
+
+    if( !*context )
+	return;
+    ctx = *context;
+    if( !ctx->tsl )
+	return;
+
+    if( !fp )
+	fp = stderr;
+
+    print_path( ctx->tsl->pathlen, ctx->tsl->path, fp, selected_lid );
 }
 
 

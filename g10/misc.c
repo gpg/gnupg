@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#if defined(__linux__) && defined(__alpha__)
+#if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
   #include <asm/sysinfo.h>
   #include <asm/unistd.h>
 #endif
@@ -50,7 +50,7 @@ pull_in_libs(void)
 }
 
 
-#if defined(__linux__) && defined(__alpha__) && defined(UAC_SIGBUS)
+#if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
 #warning using trap_unaligned
 static int
 setsysinfo(unsigned long op, void *buffer, unsigned long size,

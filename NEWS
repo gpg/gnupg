@@ -7,10 +7,14 @@
     * Fixed the uncompress bug.
 
     * Rewrote the rndunix module. There are two environment variables
-    used for debugging now: GNUPG_RNDUNIX_DBG give the file to write
-    debugging information (use "-" for stdout) and if GNUPG_RNDUNIX_DBGALL
-    is set, all programs which are only tried are also printed.
+      used for debugging now: GNUPG_RNDUNIX_DBG give the file to write
+      debugging information (use "-" for stdout) and if GNUPG_RNDUNIX_DBGALL
+      is set, all programs which are only tried are also printed.
 
+    * New option --escape-from-lines to "dash-escape" "From " lines to
+      prevent mailers to change them to ">From ".  This is not enabled by
+      default because it is not in compliace with rfc2440. but you should
+      turn it on.
 
 Noteworthy changes in version 0.4.5
 -----------------------------------

@@ -2486,7 +2486,7 @@ msgid "error reading key record: %s\n"
 msgstr "Fehler beim Lesen des Schl.Satzes: %s\n"
 
 #: g10/trustdb.c:1178
-msgid "line to long\n"
+msgid "line too long\n"
 msgstr "Zeile zu lang\n"
 
 #: g10/trustdb.c:1186
