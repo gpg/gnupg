@@ -908,6 +908,10 @@ int
 parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 {
     switch( type ) {
+      case SIGSUBPKT_REV_KEY:
+	if(n < 22)
+	  break;
+	return 0;
       case SIGSUBPKT_SIG_CREATED:
       case SIGSUBPKT_SIG_EXPIRE:
       case SIGSUBPKT_KEY_EXPIRE:
@@ -915,13 +919,19 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	    break;
 	return 0;
       case SIGSUBPKT_KEY_FLAGS:
-          return 0;  
+      case SIGSUBPKT_KS_FLAGS:
+      case SIGSUBPKT_PREF_SYM:
+      case SIGSUBPKT_PREF_HASH:
+      case SIGSUBPKT_PREF_COMPR:
+      case SIGSUBPKT_POLICY:
+      case SIGSUBPKT_FEATURES:
+	return 0;
       case SIGSUBPKT_EXPORTABLE:
       case SIGSUBPKT_REVOCABLE:
 	if( !n )
 	    break;
 	return 0;
-      case SIGSUBPKT_ISSUER:/* issuer key ID */
+      case SIGSUBPKT_ISSUER: /* issuer key ID */
 	if( n < 8 )
 	    break;
 	return 0;
@@ -929,19 +939,9 @@ parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 	if( n < 8 ) /* minimum length needed */
 	    break;
 	return 0;
-      case SIGSUBPKT_REV_KEY:
-	if(n < 22)
-	  break;
-	return 0;
       case SIGSUBPKT_REVOC_REASON:
 	if( !n	)
 	    break;
-	return 0;
-      case SIGSUBPKT_PREF_SYM:
-      case SIGSUBPKT_PREF_HASH:
-      case SIGSUBPKT_PREF_COMPR:
-      case SIGSUBPKT_POLICY:
-      case SIGSUBPKT_FEATURES:
 	return 0;
       case SIGSUBPKT_PRIMARY_UID:
           if ( n != 1 )

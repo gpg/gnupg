@@ -514,7 +514,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
 static int
 write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
                          int sigclass, u32 timestamp, u32 duration,
-			 int old_style, int status_letter)
+			 int status_letter)
 {
     SK_LIST sk_rover;
 
@@ -529,9 +529,9 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 
 	/* build the signature packet */
 	sig = m_alloc_clear (sizeof *sig);
-	if(old_style || opt.force_v3_sigs)
+	if(opt.force_v3_sigs || opt.rfc1991)
 	  sig->version=3;
-	else if(duration)
+	else if(duration || opt.sig_policy_url || opt.sig_notation_data)
 	  sig->version=4;
 	else
 	  sig->version=sk->version;
@@ -609,7 +609,6 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
     int multifile = 0;
-    int old_style = opt.rfc1991;
     u32 timestamp=0,duration=0;
 
     memset( &afx, 0, sizeof afx);
@@ -629,18 +628,15 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( fname && filenames->next && (!detached || encryptflag) )
 	log_bug("multiple files can only be detached signed");
 
-    if(opt.ask_sig_expire && !opt.pgp2 && !opt.batch &&
-       !opt.force_v3_sigs && !old_style)
+    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !opt.rfc1991)
       duration=ask_expire_interval(1);
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
-    if( (!old_style && !duration) || opt.pgp2 )
-	old_style = only_old_style( sk_list );
 
-    if(!old_style && opt.pgp2)
+    if(opt.pgp2 && !only_old_style(sk_list))
       {
-	log_info(_("you can only sign with PGP 2.x style keys "
+	log_info(_("you can only detach-sign with PGP 2.x style keys "
 		   "while in --pgp2 mode\n"));
 	log_info(_("this message may not be usable by PGP 2.x\n"));
 	opt.pgp2=0;
@@ -774,8 +770,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     /* write the signatures */
     rc = write_signature_packets (sk_list, out, mfx.md,
                                   opt.textmode && !outfile? 0x01 : 0x00,
-				  timestamp, duration,
-                                  old_style, detached ? 'D':'S');
+				  timestamp, duration, detached ? 'D':'S');
     if( rc )
         goto leave;
 
@@ -817,13 +812,13 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
 
-    if(opt.ask_sig_expire && !opt.pgp2 && !opt.batch &&
-       !opt.force_v3_sigs && !old_style)
+    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !opt.rfc1991)
       duration=ask_expire_interval(1);
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
 	goto leave;
-    if( (!old_style && !duration) || opt.pgp2 )
+
+    if( !old_style && !duration )
 	old_style = only_old_style( sk_list );
 
     if(!old_style && opt.pgp2)
@@ -914,7 +909,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
     /* write the signatures */
     rc = write_signature_packets (sk_list, out, textmd, 0x01,
-				  timestamp, duration, old_style, 'C');
+				  timestamp, duration, 'C');
     if( rc )
         goto leave;
 
@@ -947,7 +942,6 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     int rc = 0;
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
-    int old_style = opt.rfc1991;
     int algo;
     u32 timestamp=0,duration=0;
 
@@ -958,14 +952,12 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     memset( &cfx, 0, sizeof cfx);
     init_packet( &pkt );
 
-    if(opt.ask_sig_expire && !opt.batch && !opt.force_v3_sigs && !old_style)
+    if(opt.ask_sig_expire && !opt.force_v3_sigs && !opt.batch && !opt.rfc1991)
       duration=ask_expire_interval(1);
 
     rc = build_sk_list (locusr, &sk_list, 1, PUBKEY_USAGE_SIG);
     if (rc) 
 	goto leave;
-    if( !old_style && !duration )
-	old_style = only_old_style( sk_list );
 
     /* prepare iobufs */
     inp = iobuf_open(fname);
@@ -1067,8 +1059,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /*(current filters: zip - encrypt - armor)*/
     rc = write_signature_packets (sk_list, out, mfx.md,
 				  opt.textmode? 0x01 : 0x00,
-				  timestamp, duration,
-                                  old_style, 'S');
+				  timestamp, duration, 'S');
     if( rc )
         goto leave;
 

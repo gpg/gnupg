@@ -1,3 +1,14 @@
+2002-05-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (write_signature_packets, sign_file, clearsign_file,
+	sign_symencrypt_file): Make a v4 signature if a policy URL or
+	notation is set, unless v3 sigs are forced via rfc1991 or
+	force-v3-sigs.  Also remove some doubled code and clarify an error
+	message (we don't sign in PGP2 mode - just detach-sign).
+
+	* parse-packet.c (parse_one_sig_subpkt): Add KS_FLAGS to the "any
+	size" section.
+
 2002-05-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (keygen_set_std_prefs, add_feature_mdc): Use "mdc" and
