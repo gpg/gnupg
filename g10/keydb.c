@@ -1,5 +1,5 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -195,7 +195,8 @@ maybe_create_keyring (char *filename, int force)
  * Note: this function may be called before secure memory is
  * available.
  * Flag 1 == force
- * Flag 2 == default
+ * Flag 2 == mark resource as primary
+ * Flag 4 == This is a default resources
  */
 int
 keydb_add_resource (const char *url, int flags, int secret)
@@ -305,7 +306,18 @@ keydb_add_resource (const char *url, int flags, int secret)
 
   leave:
     if (rc)
-	log_error ("keyblock resource `%s': %s\n", filename, g10_errstr(rc));
+      {
+        /* Secret keyrings are not required in all cases.  To avoid
+           having gpg return failure we use log_info here if the
+           rewsource is a secret one and marked as default
+           resource.  */
+        if ((flags&4) && secret)
+          log_info (_("keyblock resource `%s': %s\n"),
+                    filename, g10_errstr(rc));
+        else
+          log_error (_("keyblock resource `%s': %s\n"),
+                     filename, g10_errstr(rc));
+      }
     else if (secret)
 	any_secret = 1;
     else

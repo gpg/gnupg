@@ -2924,7 +2924,7 @@ main( int argc, char **argv )
        case the secrings are stored on a floppy.
        
        We always need to add the keyrings if we are running under
-       SELinux, thi is so that the rings are added to the list of
+       SELinux, this is so that the rings are added to the list of
        secured files. */
     if( ALWAYS_ADD_KEYRINGS 
         || (cmd != aDeArmor && cmd != aEnArmor
@@ -2935,12 +2935,12 @@ main( int argc, char **argv )
                 && cmd != aVerify && cmd != aSym))
           {
             if (!sec_nrings || default_keyring) /* add default secret rings */
-              keydb_add_resource ("secring" EXTSEP_S "gpg", 0, 1);
+              keydb_add_resource ("secring" EXTSEP_S "gpg", 4, 1);
             for (sl = sec_nrings; sl; sl = sl->next)
               keydb_add_resource ( sl->d, 0, 1 );
           }
 	if( !nrings || default_keyring )  /* add default ring */
-	    keydb_add_resource ("pubring" EXTSEP_S "gpg", 0, 0);
+	    keydb_add_resource ("pubring" EXTSEP_S "gpg", 4, 0);
 	for(sl = nrings; sl; sl = sl->next )
 	    keydb_add_resource ( sl->d, sl->flags, 0 );
       }
