@@ -1,5 +1,5 @@
 /* iobuf.h - I/O buffer
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -129,12 +129,9 @@ off_t iobuf_get_filelength( IOBUF a );
 const char *iobuf_get_real_fname( IOBUF a );
 const char *iobuf_get_fname( IOBUF a );
 
-void iobuf_set_block_mode( IOBUF a, size_t n );
 void iobuf_set_partial_block_mode( IOBUF a, size_t len );
-int  iobuf_in_block_mode( IOBUF a );
 
 int iobuf_translate_file_handle ( int fd, int for_write );
-
 
 /* get a byte form the iobuf; must check for eof prior to this function
  * this function returns values in the range 0 .. 255 or -1 to indicate EOF
