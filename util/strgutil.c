@@ -144,6 +144,8 @@ load_libiconv (void)
         {
           log_info (_("error loading `%s': %s\n"),
                      "iconv.dll",  dlerror ());
+          log_info(_("please see http://www.gnupg.org/download/iconv.html "
+                     "for more information\n"));
           iconv_open = NULL;
           iconv = NULL;
           iconv_close = NULL;
@@ -479,14 +481,19 @@ set_native_charset( const char *newset )
     if (!newset) {
 #ifdef _WIN32
         static char codepage[30];
+        unsigned int cpno;
 
         /* We are a console program thus we need to use the
-           GetConsoleOutputCP fucntion and not the the GetACP which
+           GetConsoleOutputCP function and not the the GetACP which
            would give the codepage for a GUI program.  Note this is
            not a bulletproof detection because GetConsoleCP might
-           retrun a different one for console input.  Not sure how to
-           cope with that.  */
-        sprintf (codepage, "CP%u", (unsigned int)GetConsoleOutputCP ());
+           return a different one for console input.  Not sure how to
+           cope with that.  If the console Code page is not known we
+           fall back to the system code page.  */
+        cpno = GetConsoleOutputCP ();
+        if (!cpno)
+          cpno = GetACP ();
+        sprintf (codepage, "CP%u", cpno );
         /* If it is the Windows name for Latin-1 we use the standard
            name instead to avoid loading of iconv.dll.  Unfortunately
            it is often CP850 and we don't have a custom translation
@@ -498,9 +505,32 @@ set_native_charset( const char *newset )
 #else
 #ifdef HAVE_LANGINFO_CODESET
         newset = nl_langinfo (CODESET);
-#else
-        newset = "iso-8859-1";
-#endif
+#else /* !HAVE_LANGINFO_CODESET */
+        /* Try to get the used charset from environment variables.  */
+        static char codepage[30];
+        const char *lc, *dot, *mod;
+
+        strcpy (codepage, "iso-8859-1");
+        lc = getenv ("LC_ALL");
+        if (!lc || !*lc) {
+            lc = getenv ("LC_CTYPE");
+            if (!lc || !*lc)
+                lc = getenv ("LANG");
+        }
+        if (lc && *lc) {
+            dot = strchr (lc, '.');
+            if (dot) {
+                mod = strchr (++dot, '@');
+                if (!mod)
+                    mod = dot + strlen (dot);
+                if (mod - dot < sizeof codepage && dot != mod) {
+                    memcpy (codepage, dot, mod - dot);
+                    codepage [mod - dot] = 0;
+                }
+            }
+        }
+        newset = codepage;
+#endif  /* !HAVE_LANGINFO_CODESET */
 #endif
     }
 
@@ -511,9 +541,18 @@ set_native_charset( const char *newset )
             newset++;
     }
 
+    /* Note that we silently assume that plain ASCII is actually meant
+       as Latin-1.  This makes sense because many Unix system don't
+       have their locale set up properly and thus would get annoying
+       error messages and we have to handle all the "bug"
+       reports. Latin-1 has always been the character set used for 8
+       bit characters on Unix systems. */
     if( !*newset
         || !ascii_strcasecmp (newset, "8859-1" )
-        || !ascii_strcasecmp (newset, "8859-15" ) ) {
+        || !ascii_strcasecmp (newset, "646" )
+        || !ascii_strcasecmp (newset, "ASCII" )
+        || !ascii_strcasecmp (newset, "ANSI_X3.4-1968" )
+        ) {
         active_charset_name = "iso-8859-1";
         no_translation = 0;
 	active_charset = NULL;
