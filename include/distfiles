@@ -10,5 +10,6 @@ i18n.h
 host2net.h
 http.h
 keyserver.h
+_regex.h
 
 ChangeLog
