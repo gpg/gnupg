@@ -109,6 +109,17 @@ strusage( int level )
 }
 
 
+/* We need the home directory also in some other directories, so make
+   sure that both variables are always in sync. */
+static void
+set_homedir (char *dir)
+{
+  if (!dir)
+    dir = "";
+  g10_opt_homedir = opt.homedir = dir;
+}
+
+
 
 
 static void
@@ -154,12 +165,12 @@ main( int argc, char **argv )
     opt.batch = 1;
 
   #if defined (__MINGW32__) || defined (__CYGWIN32__)
-    opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
+    set_homedir (read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" ));
   #else
-    opt.homedir = getenv("GNUPGHOME");
+    set_homedir (getenv("GNUPGHOME"));
   #endif
-    if( !opt.homedir || !*opt.homedir ) {
-	opt.homedir = GNUPG_HOMEDIR;
+    if( !*opt.homedir ) {
+      set_homedir (GNUPG_HOMEDIR);
     }
     tty_no_terminal(1);
     tty_batchmode(1);
@@ -178,15 +189,13 @@ main( int argc, char **argv )
           case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
 	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
 	  case oLoggerFD: log_set_logfile( NULL, pargs.r.ret_int ); break;
-	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
+	  case oHomedir: set_homedir (pargs.r.ret_str); break;
 	  default : pargs.err = 2; break;
 	}
     }
 
     if( log_get_errorcount(0) )
 	g10_exit(2);
-
-    g10_opt_homedir = opt.homedir;
 
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
