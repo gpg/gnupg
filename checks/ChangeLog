@@ -1,3 +1,7 @@
+2001-12-22  Werner Koch  <wk@gnupg.org>
+
+	* options.in: Add no-permission-warning.
+
 2001-12-21  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (distclean-local): prefix mkdemodirs with srcdir
