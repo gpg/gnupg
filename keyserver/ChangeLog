@@ -1,3 +1,8 @@
+2003-11-27  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_hkp.c (get_key): Fixed invalid use of fprintf without
+	format string.
+
 2003-10-25  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (gpgkeys_hkp_LDADD): Replaced INTLLIBS by LIBINTL.

@@ -279,14 +279,14 @@ get_key(char *getkey)
 
 	  if(gotit)
 	    {
-	      fprintf(output,line);
+	      fputs (line, output);
 	      if(strncmp(line,END,strlen(END))==0)
 		break;
 	    }
 	  else
 	    if(strncmp(line,BEGIN,strlen(BEGIN))==0)
 	      {
-		fprintf(output,line);
+		fputs (line,output);
 		gotit=1;
 	      }
 	}
