@@ -337,7 +337,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
 
 #ifdef KEYBOX_WITH_X509 
 int
-keybox_insert_cert (KEYBOX_HANDLE hd, KsbaCert cert,
+keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
                     unsigned char *sha1_digest)
 {
   int rc;
@@ -375,7 +375,7 @@ keybox_insert_cert (KEYBOX_HANDLE hd, KsbaCert cert,
 }
 
 int
-keybox_update_cert (KEYBOX_HANDLE hd, KsbaCert cert,
+keybox_update_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
                     unsigned char *sha1_digest)
 {
   return -1;

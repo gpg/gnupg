@@ -479,7 +479,7 @@ pgp_create_blob_keyblock (KEYBOXBLOB blob, KBNODE keyblock)
 
 /* Write the raw certificate out */
 static int
-x509_create_blob_cert (KEYBOXBLOB blob, KsbaCert cert)
+x509_create_blob_cert (KEYBOXBLOB blob, ksba_cert_t cert)
 {
   struct membuf *a = blob->buf;
   const unsigned char *image;
@@ -808,7 +808,7 @@ x509_email_kludge (const char *name)
 /* Note: We should move calculation of the digest into libksba and
    remove that parameter */
 int
-_keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
+_keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
                           unsigned char *sha1_digest, int as_ephemeral)
 {
   int i, rc = 0;

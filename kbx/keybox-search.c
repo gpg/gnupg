@@ -753,13 +753,13 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
   Return the last found cert.  Caller must free it.
  */
 int
-keybox_get_cert (KEYBOX_HANDLE hd, KsbaCert *r_cert)
+keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *r_cert)
 {
   const unsigned char *buffer;
   size_t length;
   size_t cert_off, cert_len;
-  KsbaReader reader = NULL;
-  KsbaCert cert = NULL;
+  ksba_reader_t reader = NULL;
+  ksba_cert_t cert = NULL;
   int rc;
 
   if (!hd)
