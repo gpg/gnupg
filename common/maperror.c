@@ -30,7 +30,7 @@
 
 #include "util.h"
 #include "errors.h"
-
+#include "../assuan/assuan.h"
 
 /* Note: we might want to wrap this in a macro to get our hands on
    the line and file where the error occired */
@@ -78,6 +78,28 @@ map_kbx_err (int err)
       
     default:
       err = seterr (General_Error);
+      break;
+    }
+  return err;
+}
+
+
+int 
+map_assuan_err (int err)
+{
+  switch (err)
+    {
+    case -1:
+    case 0:
+      break;
+
+    case ASSUAN_Not_Implemented: err = GNUPG_Not_Implemented; break;
+    case ASSUAN_Server_Fault:    err = GNUPG_Assuan_Server_Fault; break;
+    case ASSUAN_No_Public_Key:   err = GNUPG_No_Public_Key; break;
+    case ASSUAN_No_Secret_Key:   err = GNUPG_No_Secret_Key; break;
+
+    default:
+      err = err < 100? GNUPG_Assuan_Server_Fault : GNUPG_Assuan_Error;
       break;
     }
   return err;

@@ -52,6 +52,7 @@
 int map_ksba_err (int err);
 int map_gcry_err (int err);
 int map_kbx_err (int err);
+int map_assuan_err (int err);
 
 
 #endif /*GNUPG_COMMON_UTIL_H*/

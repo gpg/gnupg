@@ -53,6 +53,9 @@ enum {
   GNUPG_File_Create_Error = 24,
   GNUPG_File_Error = 25,
   GNUPG_Not_Supported = 26,
+  GNUPG_Invalid_Data = 27,
+  GNUPG_Assuan_Server_Fault = 28,
+  GNUPG_Assuan_Error = 29, /* catch all assuan error */
 };
 
 /* Status codes - fixme: should go into another file */
