@@ -851,6 +851,7 @@ if test "$withval" != no ; then
    AC_CHECK_HEADER(bzlib.h,
       AC_CHECK_LIB(bz2,BZ2_bzCompressInit,
 	[
+	have_bz2=yes
 	ZLIBS="$ZLIBS -lbz2"
 	AC_DEFINE(HAVE_BZIP2,1,
 		[Defined if the bz2 compression library is available])
