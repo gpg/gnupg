@@ -1,4 +1,4 @@
-/* hkp.c  -  Horrowitz Keyserver Protocol
+/* hkp.c  -  Horowitz Keyserver Protocol
  * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -208,6 +208,32 @@ urlencode_filter( void *opaque, int control,
     return rc;
 }
 
+static int
+write_quoted(IOBUF a, const char *buf, char delim)
+{
+  char quoted[5];
+
+  sprintf(quoted,"\\x%02X",delim);
+
+  while(*buf)
+    {
+      if(*buf==delim)
+	{
+	  if(iobuf_writestr(a,quoted))
+	    return -1;
+	}
+      else
+	{
+	  if(iobuf_writebyte(a,*buf))
+	    return -1;
+	}
+
+      buf++;
+    }
+
+  return 0;
+}
+
 /* pub  2048/<a href="/pks/lookup?op=get&search=0x3CB3B415">3CB3B415</a> 1998/04/03 David M. Shaw &lt;<a href="/pks/lookup?op=get&search=0x3CB3B415">dshaw@jabberwocky.com</a>&gt; */
 
 /* Luckily enough, both the HKP server and NAI HKP interface to their
@@ -238,16 +264,16 @@ parse_hkp_index(IOBUF buffer,char *line)
 	{
 	  char intstr[11];
 
-	  iobuf_writestr(buffer,key);
+	  write_quoted(buffer,key,':');
 	  iobuf_writestr(buffer,":");
-	  iobuf_writestr(buffer,uid);
+	  write_quoted(buffer,uid,':');
 	  iobuf_writestr(buffer,":");
 	  iobuf_writestr(buffer,revoked?"1:":":");
 	  sprintf(intstr,"%u",createtime);
-	  iobuf_writestr(buffer,intstr);
+	  write_quoted(buffer,intstr,':');
 	  iobuf_writestr(buffer,"::::");
 	  sprintf(intstr,"%u",bits);
-	  iobuf_writestr(buffer,intstr);
+	  write_quoted(buffer,intstr,':');
 	  iobuf_writestr(buffer,"\n");
 
 	  ret=1;
