@@ -1,3 +1,9 @@
+2004-10-08  Moritz Schulte  <moritz@g10code.com>
+
+	* certchain.c (gpgsm_validate_chain): Do not use keydb_new() in
+	case the no_chain_validation-return-short-cut is used (fixes
+	memory leak).
+
 2004-10-04  Werner Koch  <wk@g10code.com>
 
 	* misc.c (setup_pinentry_env): Try hard to set a default for GPG_TTY.

@@ -534,7 +534,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   int rc = 0, depth = 0, maxdepth;
   char *issuer = NULL;
   char *subject = NULL;
-  KEYDB_HANDLE kh = keydb_new (0);
+  KEYDB_HANDLE kh = NULL;
   ksba_cert_t subject_cert = NULL, issuer_cert = NULL;
   ksba_isotime_t current_time;
   ksba_isotime_t exptime;
@@ -555,7 +555,8 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       log_info ("WARNING: bypassing certificate chain validation\n");
       return 0;
     }
-  
+
+  kh = keydb_new (0);
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
