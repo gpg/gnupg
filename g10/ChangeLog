@@ -1,3 +1,21 @@
+2002-01-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (sign_file, sign_symencrypt_file): always use one-pass
+	packets unless rfc1991 is enabled.  This allows a signature made
+	with a v3 key to work in PGP 6 and 7.  Signatures made with v4
+	keys are unchanged.
+
+	* g10.c (main): Disallow non-detached signatures in PGP2 mode.
+	Move the "you must use files and not pipes" PGP2 warning up so all
+	the PGP2 stuff is together.
+
+	* encode.c (encode_simple): Use the actual filesize instead of
+	partial length packets in the internal literal packet from a
+	symmetric message.  This breaks PGP5(?), but fixes PGP2, 6, and 7.
+	It's a decent tradeoff.  Note there was only an issue with
+	old-style RFC1991 symmetric messages.  2440-style messages in 6
+	and 7 work with or without partial length packets.
+
 2002-01-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Removed --no-default-check-level option, as it is

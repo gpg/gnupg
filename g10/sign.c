@@ -648,7 +648,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     }
 
     /* Write the one-pass signature packets if needed */
-    if (!detached && !old_style) {
+    if (!detached && !opt.rfc1991) {
         rc = write_onepass_sig_packets (sk_list, out,
                                         opt.textmode && !outfile ? 0x01:0x00);
         if (rc)
@@ -973,7 +973,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
 
     /* Write the one-pass signature packets */
     /*(current filters: zip - encrypt - armor)*/
-    if (!old_style) {
+    if (!opt.rfc1991) {
         rc = write_onepass_sig_packets (sk_list, out,
                                         opt.textmode? 0x01:0x00);
         if (rc)

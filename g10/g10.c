@@ -1282,21 +1282,31 @@ main( int argc, char **argv )
       {
 	int unusable=0;
 
-	/* Everything else should work without IDEA (except using a
-	   secret key encrypted with IDEA and setting an IDEA
-	   preference, but those have their own error messages). */
-
-	if(cmd==aSignEncr)
+	if(cmd==aSign && !detached_sig)
+	  {
+	    log_info(_("you can only make detached or clear signatures "
+		       "while in --pgp2 mode\n"));
+	    unusable=1;
+	  }
+	else if(cmd==aSignEncr)
 	  {
 	    log_info(_("you can't sign and encrypt at the "
 		       "same time while in --pgp2 mode\n"));
 	    unusable=1;
 	  }
-
-	if(cmd==aEncr || cmd==aSym)
+	else if(argc==0 && (cmd==aSign || cmd==aEncr || cmd==aSym))
 	  {
-	    /* We don't have to fail here, since the regular cipher
-               algo check will make us fail later. */
+	    log_info(_("you must use files (and not a pipe) when "
+		       "working with --pgp2 enabled.\n"));
+	    unusable=1;
+	  }
+	else if(cmd==aEncr || cmd==aSym)
+	  {
+	    /* Everything else should work without IDEA (except using
+	       a secret key encrypted with IDEA and setting an IDEA
+	       preference, but those have their own error
+	       messages). */
+
 	    if(check_cipher_algo(CIPHER_ALGO_IDEA))
 	      {
 		log_info(_("encrypting a message in --pgp2 mode requires "
@@ -1505,13 +1515,6 @@ main( int argc, char **argv )
 	break;
 
       case aEncr: /* encrypt the given file */
-	if( argc == 0 && opt.pgp2 ) {
-	  log_info(_("you must use files (and not a pipe) when "
-		     "encrypting with --pgp2 enabled.\n"));
-	  log_info(_("this message will not be usable by PGP 2.x\n"));
-	  opt.pgp2=0;
-	}
-
 	if( argc > 1 )
 	    wrong_args(_("--encrypt [filename]"));
 	if( (rc = encode_crypt(fname,remusr)) )

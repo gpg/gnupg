@@ -169,13 +169,18 @@ encode_simple( const char *filename, int mode )
 	}
     }
 
-    /* pgp5 has problems to decrypt symmetrically encrypted data from
-     * GnuPG if the filelength is in the inner packet.	It works
-     * when only partial length headers are use.  Until we have
-     * tracked this problem down. We use this temporary fix
-     * (fixme: remove the && !mode )
-     */
-    if( filename && !opt.textmode && !mode ) {
+    /* Note that PGP 5 has problems decrypting symmetrically encrypted
+       data if the file length is in the inner packet. It works when
+       only partial length headers are use.  In the past, we always
+       used partial body length here, but since PGP 2, PGP 6, and PGP
+       7 need the file length, and nobody should be using PGP 5
+       nowadays anyway, this is now set to the file length.  Note also
+       that this only applies to the RFC-1991 style symmetric
+       messages, and not the RFC-2440 style.  PGP 6 and 7 work with
+       either partial length or fixed length with the new style
+       messages. */
+
+    if( filename && !opt.textmode ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )
 	    log_info(_("%s: WARNING: empty file\n"), filename );
         /* we can't yet encode the length of very large files,
@@ -570,5 +575,3 @@ encode_crypt_files(int argc, char **argv, STRLIST remusr)
         argv++;
     }
 }
-                                                                                                                
-    
