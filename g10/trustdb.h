@@ -46,7 +46,8 @@ int setup_trustdb( int level, const char *dbname );
 void init_trustdb( void );
 void sync_trustdb( void );
 
-const char *trust_string (unsigned int value);
+const char *trust_value_to_string (unsigned int value);
+int string_to_trust_value (const char *str);
 
 void revalidation_mark (void);
 int trustdb_pending_check(void);

@@ -336,7 +336,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
         tty_printf("\n");
 	if(minimum)
 	  tty_printf(_("The minimum trust level for this key is: %s\n\n"),
-		     trust_string(minimum));
+		     trust_value_to_string(minimum));
         did_help = 1;
       }
     if( strlen(ans) != 8 )

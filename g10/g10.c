@@ -539,7 +539,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDefCertCheckLevel, "default-cert-check-level", 1, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oTrustModel, "trust-model", 2, "@"},
-    { oForceOwnertrust, "force-ownertrust", 1, "@"},
+    { oForceOwnertrust, "force-ownertrust", 2, "@"},
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
@@ -1489,8 +1489,8 @@ main( int argc, char **argv )
 	       time. */
 	  case oAlwaysTrust: opt.trust_model=TM_ALWAYS; break;
 	  case oTrustModel:
-	    if(ascii_strcasecmp(pargs.r.ret_str,"openpgp")==0)
-	      opt.trust_model=TM_OPENPGP;
+	    if(ascii_strcasecmp(pargs.r.ret_str,"pgp")==0)
+	      opt.trust_model=TM_PGP;
 	    else if(ascii_strcasecmp(pargs.r.ret_str,"classic")==0)
 	      opt.trust_model=TM_CLASSIC;
 	    else if(ascii_strcasecmp(pargs.r.ret_str,"always")==0)
@@ -1503,11 +1503,12 @@ main( int argc, char **argv )
 	  case oForceOwnertrust:
 	    log_info(_("NOTE: %s is not for normal use!\n"),
 		     "--force-ownertrust");
-	    if(pargs.r.ret_int>=TRUST_UNDEFINED
-	       && pargs.r.ret_int<=TRUST_ULTIMATE)
-	      opt.force_ownertrust=pargs.r.ret_int;
-	    else
-	      log_error("invalid ownertrust %d\n",pargs.r.ret_int);
+	    opt.force_ownertrust=string_to_trust_value(pargs.r.ret_str);
+	    if(opt.force_ownertrust==-1)
+	      {
+		log_error("invalid ownertrust \"%s\"\n",pargs.r.ret_str);
+		opt.force_ownertrust=0;
+	      }
 	    break;
 	  case oLoadExtension:
 #ifndef __riscos__

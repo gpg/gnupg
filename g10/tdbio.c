@@ -453,7 +453,10 @@ create_version_record (void)
   rec.r.ver.marginals   = opt.marginals_needed;
   rec.r.ver.completes   = opt.completes_needed;
   rec.r.ver.cert_depth  = opt.max_cert_depth;
-  rec.r.ver.trust_model = opt.trust_model;
+  if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
+    rec.r.ver.trust_model = opt.trust_model;
+  else
+    rec.r.ver.trust_model = TM_PGP;
   rec.rectype = RECTYPE_VER;
   rec.recnum = 0;
   rc = tdbio_write_record( &rec );

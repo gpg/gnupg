@@ -380,7 +380,7 @@ trust_model_string(void)
 {
   switch(opt.trust_model)
     {
-    case TM_OPENPGP: return "OpenPGP";
+    case TM_PGP:     return "PGP";
     case TM_CLASSIC: return "classic";
     case TM_ALWAYS:  return "always";
     default:         return "unknown";
@@ -443,18 +443,18 @@ init_trustdb()
       opt.trust_model=tdbio_read_model();
 
       /* Sanity check this ;) */
-      if(opt.trust_model!=TM_CLASSIC && opt.trust_model!=TM_OPENPGP)
+      if(opt.trust_model!=TM_PGP && opt.trust_model!=TM_CLASSIC)
 	{
 	  log_info(_("unable to use unknown trust model (%d) - "
-		     "assuming OpenPGP trust model\n"),opt.trust_model);
-	  opt.trust_model=TM_OPENPGP;
+		     "assuming %s trust model\n"),opt.trust_model,"PGP");
+	  opt.trust_model=TM_PGP;
 	}
 
       if(opt.verbose)
 	log_info(_("using %s trust model\n"),trust_model_string());
     }
 
-  if((opt.trust_model==TM_CLASSIC || opt.trust_model==TM_OPENPGP)
+  if((opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
      && !tdbio_db_matches_options())
     pending_check_trustdb=1;
 }
@@ -489,7 +489,7 @@ trust_letter (unsigned int value)
 /* The strings here are similar to those in
    pkclist.c:do_edit_ownertrust() */
 const char *
-trust_string (unsigned int value)
+trust_value_to_string (unsigned int value)
 {
   switch( (value & TRUST_MASK) ) 
     {
@@ -504,6 +504,23 @@ trust_string (unsigned int value)
     }
 }
 
+int
+string_to_trust_value (const char *str)
+{
+  if(ascii_strcasecmp(str,"undefined")==0)
+    return TRUST_UNDEFINED;
+  else if(ascii_strcasecmp(str,"never")==0)
+    return TRUST_NEVER;
+  else if(ascii_strcasecmp(str,"marginal")==0)
+    return TRUST_MARGINAL;
+  else if(ascii_strcasecmp(str,"full")==0)
+    return TRUST_FULLY;
+  else if(ascii_strcasecmp(str,"ultimate")==0)
+    return TRUST_ULTIMATE;
+  else
+    return -1;
+}
+
 /****************
  * Recreate the WoT but do not ask for new ownertrusts.  Special
  * feature: In batch mode and without a forced yes, this is only done
@@ -513,7 +530,7 @@ void
 check_trustdb ()
 {
   init_trustdb();
-  if(opt.trust_model==TM_OPENPGP || opt.trust_model==TM_CLASSIC)
+  if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
     {
       if (opt.batch && !opt.answer_yes)
 	{
@@ -549,7 +566,7 @@ void
 update_trustdb()
 {
   init_trustdb();
-  if(opt.trust_model==TM_OPENPGP || opt.trust_model==TM_CLASSIC)
+  if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
     validate_keys (1);
   else
     log_info (_("no need for a trustdb update with \"%s\" trust model\n"),
@@ -686,7 +703,7 @@ get_ownertrust_info (PKT_public_key *pk)
 const char *
 get_ownertrust_string (PKT_public_key *pk)
 {
-  return trust_string(get_ownertrust_with_min(pk));
+  return trust_value_to_string(get_ownertrust_with_min(pk));
 }
 
 /*
@@ -988,7 +1005,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
 
   init_trustdb ();
   if (!did_nextcheck
-      && (opt.trust_model==TM_CLASSIC || opt.trust_model==TM_OPENPGP))
+      && (opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC))
     {
       ulong scheduled;
 
@@ -1108,7 +1125,7 @@ get_validity_string (PKT_public_key *pk, PKT_user_id *uid)
   trustlevel = get_validity (pk, uid);
   if( trustlevel & TRUST_FLAG_REVOKED )
     return _("revoked");
-  return trust_string(trustlevel);
+  return trust_value_to_string(trustlevel);
 }
 
 static void
@@ -1212,8 +1229,9 @@ ask_ownertrust (u32 *kid,int minimum)
  
   if(opt.force_ownertrust)
     {
-      log_info("force trust for key %08lX to %s\n",(ulong)kid[1],
-	       trust_string(opt.force_ownertrust));
+      log_info("force trust for key %08lX%08lX to %s\n",
+	       (ulong)kid[0],(ulong)kid[1],
+	       trust_value_to_string(opt.force_ownertrust));
       update_ownertrust(pk,opt.force_ownertrust);
       ot=opt.force_ownertrust;
     }
@@ -1588,11 +1606,11 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
              did not exist.  This is safe for non-trust sigs as well
              since we don't accept a regexp on the sig unless it's a
              trust sig. */
-          if (kr && (kr->trust_regexp==NULL || opt.trust_model!=TM_OPENPGP ||
+          if (kr && (kr->trust_regexp==NULL || opt.trust_model!=TM_PGP ||
 		     (uidnode && check_regexp(kr->trust_regexp,
 					    uidnode->pkt->pkt.user_id->name))))
             {
-	      if(DBG_TRUST && opt.trust_model==TM_OPENPGP && sig->trust_depth)
+	      if(DBG_TRUST && opt.trust_model==TM_PGP && sig->trust_depth)
 		log_debug("trust sig on %s, sig depth is %d, kr depth is %d\n",
 			  uidnode->pkt->pkt.user_id->name,sig->trust_depth,
 			  kr->trust_depth);
@@ -1602,7 +1620,7 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
                  lesser trust sig or value.  I could make a decent
                  argument for any of these cases, but this seems to be
                  what PGP does, and I'd like to be compatible. -dms */
-	      if(opt.trust_model==TM_OPENPGP && sig->trust_depth
+	      if(opt.trust_model==TM_PGP && sig->trust_depth
 		 && pk->trust_timestamp<=sig->timestamp
 		 && (sig->trust_depth<=kr->trust_depth
 		     || kr->ownertrust==TRUST_ULTIMATE))
@@ -1978,7 +1996,8 @@ validate_keys (int interactive)
 		log_debug("key %08lX: "
 			  "overriding ownertrust \"%s\" with \"%s\"\n",
 			  (ulong)k->kid[1],
-			  trust_string(k->ownertrust),trust_string(min));
+			  trust_value_to_string(k->ownertrust),
+			  trust_value_to_string(min));
 
 	      k->ownertrust=min;
 	    }

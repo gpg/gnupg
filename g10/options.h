@@ -91,7 +91,7 @@ struct {
     int compress_sigs;
     /* TM_CLASSIC must be zero to accomodate trustdbs generated before
        we started storing the trust model inside the trustdb. */
-    enum {TM_CLASSIC=0, TM_OPENPGP=1, TM_ALWAYS, TM_AUTO} trust_model;
+    enum {TM_CLASSIC=0, TM_PGP=1, TM_ALWAYS, TM_AUTO} trust_model;
     unsigned int force_ownertrust;
     int pgp2;
     int pgp6;

@@ -1,3 +1,25 @@
+2003-05-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* tdbio.c (create_version_record): Only create new trustdbs with
+	TM_CLASSIC or TM_PGP.
+
+	* trustdb.h, trustdb.c (trust_string, get_ownertrust_string,
+	get_validity_string, ask_ownertrust, validate_keys), pkclist.c
+	(do_edit_ownertrust): Rename trust_string to trust_value_to_string
+	for naming consistency.
+
+	* trustdb.h, trustdb.c (string_to_trust_value): New function to
+	translate a string to a trust value.
+
+	* g10.c (main): Use string_to_trust_value here for
+	--force-ownertrust.
+	
+	* options.h, g10.c (main), trustdb.c (trust_model_string,
+	init_trustdb, check_trustdb, update_trustdb, get_validity,
+	validate_one_keyblock): An "OpenPGP" trust model is misleading
+	since there is no official OpenPGP trust model.  Use "PGP"
+	instead.
+
 2003-04-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (build_sig_subpkt): Comments.
