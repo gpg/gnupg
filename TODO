@@ -30,4 +30,6 @@
       signature packets should be implemented to avoid this.
 
     * compress does not work always!
+    * complete cipher/cast.c
+    * complete cipher/dsa.c
 

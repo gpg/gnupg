@@ -50,5 +50,7 @@
 #define G10ERR_NI_CIPHER      28
 #define G10ERR_SIG_CLASS      29
 #define G10ERR_BAD_MPI	      30
+#define G10ERR_RESOURCE_LIMIT 31
+#define G10ERR_INV_KEYRING    32
 
 #endif /*G10_ERRORS_H*/

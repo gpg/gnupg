@@ -19,6 +19,7 @@
  */
 
 #include <config.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -34,6 +35,8 @@
 #include "cipher.h"
 #include "filter.h"
 
+static void print_hex( byte *p, size_t n );
+static void print_mds( const char *fname );
 static void do_test(int);
 
 const char *
@@ -126,29 +129,86 @@ main( int argc, char **argv )
     { 514, "test"      , 0, "\rdevelopment usage" },
     { 515, "change-passphrase", 0, "change the passphrase of your secret keyring"},
     { 515, "fingerprint", 0, "show the fingerprints"},
+    { 516, "print-mds" , 0, "print all message digests"},
+    { 517, "secret-keyring" ,2, "add this secret keyring to the list" },
+    { 518, "config"    , 2, "use this config file" },
+
     {0} };
-    ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
+    ARGPARSE_ARGS pargs;
     IOBUF a;
     int rc;
     enum { aNull, aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
-	   aTest,
+	   aTest, aPrintMDs,
     } action = aNull;
+    int orig_argc;
+    char **orig_argv;
     const char *fname, *fname_print;
     STRLIST sl, remusr= NULL, locusr=NULL;
-    int nrings=0;
+    int nrings=0, sec_nrings=0;
     armor_filter_context_t afx;
     const char *s;
     int detached_sig = 0;
+    FILE *configfp = NULL;
+    char *configname = NULL;
+    unsigned configlineno;
+    int parse_verbose = 0;
+    int default_config =1;
+    int errors=0;
+
 
     opt.compress = -1; /* defaults to default compression level */
+
+    /* check wether we have a config file on the commandline */
+    orig_argc = argc;
+    orig_argv = argv;
+    pargs.argc = &argc;
+    pargs.argv = &argv;
+    pargs.flags=  1;  /* do not remove the args */
     while( arg_parse( &pargs, opts) ) {
+	if( pargs.r_opt == 'v' )
+	    parse_verbose++;
+	else if( pargs.r_opt == 518 ) {
+	    /* yes there is one, so we do not try the default one, but
+	     * read the option file when it is encountered at the commandline
+	     */
+	    default_config = 0;
+	}
+    }
+
+    if( default_config )
+	configname = make_filename("~/.g10", "options", NULL );
+
+    argc = orig_argc;
+    argv = orig_argv;
+    pargs.argc = &argc;
+    pargs.argv = &argv;
+    pargs.flags=  1;  /* do not remove the args */
+  next_pass:
+    if( configname ) {
+	configlineno = 0;
+	configfp = fopen( configname, "r" );
+	if( !configfp ) {
+	    if( default_config ) {
+		if( parse_verbose )
+		log_info("note: no default option file '%s'\n", configname );
+	    }
+	    else
+		log_fatal("option file '%s': %s\n",
+				    configname, strerror(errno) );
+	    m_free(configname); configname = NULL;
+	}
+	if( parse_verbose )
+	    log_info("reading options from '%s'\n", configname );
+	default_config = 0;
+    }
+
+    while( optfile_parse( configfp, configname, &configlineno,
+						&pargs, opts) ) {
 	switch( pargs.r_opt ) {
 	  case 'v': opt.verbose++;
 		    opt.list_sigs=1;
 		    break;
-	  case 'z':
-	    opt.compress = pargs.r.ret_int;
-	    break;
+	  case 'z': opt.compress = pargs.r.ret_int; break;
 	  case 'a': opt.armor = 1; break;
 	  case 'c': action = aSym; break;
 	  case 'o': opt.outfile = pargs.r.ret_str;
@@ -184,9 +244,29 @@ main( int argc, char **argv )
 	  case 513: action = aPrimegen; break;
 	  case 514: action = aTest; break;
 	  case 515: opt.fingerprint = 1; break;
-	  default : pargs.err = 2; break;
+	  case 516: action = aPrintMDs; break;
+	  case 517: add_secret_keyring(pargs.r.ret_str); sec_nrings++; break;
+	  case 518:
+	    /* config files may not be nested (silently ignore them) */
+	    if( !configfp ) {
+		m_free(configname);
+		configname = m_strdup(pargs.r.ret_str);
+		goto next_pass;
+	    }
+	    break;
+	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
+    if( configfp ) {
+	fclose( configfp );
+	configfp = NULL;
+	m_free(configname); configname = NULL;
+	goto next_pass;
+    }
+    m_free( configname ); configname = NULL;
+    if( errors )
+	exit(2);
+
     set_debug();
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
@@ -197,6 +277,9 @@ main( int argc, char **argv )
 	    fputs(s, stderr);
     }
 
+    if( !sec_nrings ) { /* add default secret rings */
+	add_keyring("../keys/secring.g10");
+    }
     if( !nrings ) { /* add default rings */
 	add_keyring("../keys/ring.pgp");
 	add_keyring("../keys/pubring.g10");
@@ -251,6 +334,15 @@ main( int argc, char **argv )
 	putchar('\n');
 	break;
 
+      case aPrintMDs:
+	if( !argc )
+	    print_mds(NULL);
+	else {
+	    for(; argc; argc--, argv++ )
+		print_mds(*argv);
+	}
+	break;
+
       case aKeygen: /* generate a key (interactive) */
 	if( argc )
 	    usage(1);
@@ -278,6 +370,78 @@ main( int argc, char **argv )
     return 0;
 }
 
+
+static void
+print_hex( byte *p, size_t n )
+{
+    int i;
+
+    if( n == 20 ) {
+	for(i=0; i < n ; i++, i++, p += 2 ) {
+	    if( i == 10 )
+		putchar(' ');
+	    printf(" %02X%02X", *p, p[1] );
+	}
+    }
+    else {
+	for(i=0; i < n ; i++, p++ ) {
+	    if( i && !(i%8) )
+		putchar(' ');
+	    printf(" %02X", *p );
+	}
+    }
+}
+
+static void
+print_mds( const char *fname )
+{
+    FILE *fp;
+    char buf[1024];
+    size_t n;
+    MD5HANDLE md5;
+    RMDHANDLE rmd160;
+    SHA1HANDLE sha1;
+
+    if( !fname ) {
+	fp = stdin;
+	fname = "[stdin]";
+    }
+    else
+	fp = fopen( fname, "rb" );
+    if( !fp ) {
+	log_error("%s: %s\n", fname, strerror(errno) );
+	return;
+    }
+
+    md5    = md5_open(0);
+    rmd160 = rmd160_open(0);
+    sha1   = sha1_open(0);
+
+    while( (n=fread( buf, 1, DIM(buf), fp )) ) {
+	md5_write( md5, buf, n );
+	rmd160_write( rmd160, buf, n );
+	sha1_write( sha1, buf, n );
+    }
+    if( ferror(fp) )
+	log_error("%s: %s\n", fname, strerror(errno) );
+    else {
+	byte *p;
+
+	md5_final(md5);
+	printf(  "%s:    MD5 =", fname ); print_hex(md5_read(md5), 16 );
+	printf("\n%s: RMD160 =", fname ); print_hex(rmd160_final(rmd160), 20 );
+	printf("\n%s:   SHA1 =", fname ); print_hex(sha1_final(sha1), 20 );
+	putchar('\n');
+    }
+
+
+    md5_close(md5);
+    rmd160_close(rmd160);
+    sha1_close(sha1);
+
+    if( fp != stdin )
+	fclose(fp);
+}
 
 
 static void

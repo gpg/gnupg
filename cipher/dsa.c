@@ -1,9 +1,5 @@
-/* elgamal.c  -  ElGamal Public Key encryption
+/* dsa.c  -  DSA signature scheme
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
- *
- * For a description of the algorithm, see:
- *   Bruce Schneier: Applied Cryptography. John Wiley & Sons, 1996.
- *   ISBN 0-471-11709-9. Pages 476 ff.
  *
  * This file is part of G10.
  *
@@ -29,11 +25,11 @@
 #include "util.h"
 #include "mpi.h"
 #include "cipher.h"
-#include "elgamal.h"
+#include "dsa.h"
 
 
 void
-elg_free_public_key( ELG_public_key *pk )
+dsa_free_public_key( DSA_public_key *pk )
 {
     mpi_free( pk->p ); pk->p = NULL;
     mpi_free( pk->g ); pk->g = NULL;
@@ -41,7 +37,7 @@ elg_free_public_key( ELG_public_key *pk )
 }
 
 void
-elg_free_secret_key( ELG_secret_key *sk )
+dsa_free_secret_key( DSA_secret_key *sk )
 {
     mpi_free( sk->p ); sk->p = NULL;
     mpi_free( sk->g ); sk->g = NULL;
@@ -51,7 +47,7 @@ elg_free_secret_key( ELG_secret_key *sk )
 
 
 static void
-test_keys( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
+test_keys( DSA_public_key *pk, DSA_secret_key *sk, unsigned nbits )
 {
     MPI test = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
     MPI out1_a = mpi_alloc( nbits / BITS_PER_MPI_LIMB );
@@ -60,14 +56,9 @@ test_keys( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
 
     mpi_set_bytes( test, nbits, get_random_byte, 0 );
 
-    elg_encrypt( out1_a, out1_b, test, pk );
-    elg_decrypt( out2, out1_a, out1_b, sk );
-    if( mpi_cmp( test, out2 ) )
-	log_fatal("ElGamal operation: encrypt, decrypt failed\n");
-
-    elg_sign( out1_a, out1_b, test, sk );
-    if( !elg_verify( out1_a, out1_b, test, pk ) )
-	log_fatal("ElGamal operation: sign, verify failed\n");
+    dsa_sign( out1_a, out1_b, test, sk );
+    if( !dsa_verify( out1_a, out1_b, test, pk ) )
+	log_fatal("DSA operation: sign, verify failed\n");
 
     mpi_free( test );
     mpi_free( out1_a );
@@ -95,10 +86,9 @@ gen_k( MPI p )
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
 	mpi_set_bytes( k, nbits, get_random_byte, 1 );
-	if( !(mpi_cmp( k, p_1 ) < 0) )	/* check: k < (p-1) */
-	    continue; /* no  */
-	if( !(mpi_cmp_ui( k, 0 ) > 0) ) /* check: k > 0 */
-	    continue; /* no */
+	mpi_set_bit( k, nbits-1 ); /* make sure it's high (really needed?) */
+	if( mpi_cmp( k, p_1 ) >= 0 )
+	    continue; /* is not smaller than (p-1) */
 	if( mpi_gcd( temp, k, p_1 ) )
 	    break;  /* okay, k is relatively prime to (p-1) */
     }
@@ -115,30 +105,20 @@ gen_k( MPI p )
  * Returns: 2 structures filles with all needed values
  */
 void
-elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
+dsa_generate( DSA_public_key *pk, DSA_secret_key *sk, unsigned nbits )
 {
     MPI p;    /* the prime */
-    MPI p_min1;
     MPI g;
     MPI x;    /* the secret exponent */
     MPI y;
-    MPI temp;
 
-    p = NULL;
-    p_min1 = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    temp   = mpi_alloc( (nbits+BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
-    /*do {*/
-	mpi_free(p);
-	/* FIXME!!!! Should generate a strong prime */
-	p = generate_public_prime( nbits );
-	mpi_sub_ui(p_min1, p, 1);
-    /*} while if( mpi_gcd( temp, k, p_1 ) )*/
-
-
-    g = mpi_alloc_set_ui(3); /* fixme: 3 is bad (but better than 2)*/
-    /* select a random number which has these properties:
-     *	 0 < x < p-1
+    p = generate_public_prime( nbits );
+    /* FIXME: check wether we shall assert that (p-1)/2 is also prime
+     *	      Schneier votes against it
      */
+    g = mpi_alloc_set_ui(3);
+
+    /* select a random number */
     x = mpi_alloc_secure( nbits/BITS_PER_MPI_LIMB );
     if( DBG_CIPHER )
 	log_debug("choosing a random x ");
@@ -146,18 +126,20 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
 	mpi_set_bytes( x, nbits, get_random_byte, 1 ); /* fixme: should be 2 */
-    } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, p_min1 )<0 ) );
+	mpi_set_bit( x, nbits-1 ); /* make sure it's high (needed?) */
+    } while( mpi_cmp( x, p ) >= 0 );  /* x must be smaller than p */
 
     y = mpi_alloc(nbits/BITS_PER_MPI_LIMB);
     mpi_powm( y, g, x, p );
 
     if( DBG_CIPHER ) {
 	fputc('\n', stderr);
-	log_mpidump("elg  p= ", p );
-	log_mpidump("elg  g= ", g );
-	log_mpidump("elg  y= ", y );
-	log_mpidump("elg  x= ", x );
+	log_mpidump("dsa  p= ", p );
+	log_mpidump("dsa  g= ", g );
+	log_mpidump("dsa  y= ", y );
+	log_mpidump("dsa  x= ", x );
     }
+
 
     /* copy the stuff to the key structures */
     pk->p = mpi_copy(p);
@@ -170,9 +152,6 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
 
     /* now we can test our keys (this should never fail!) */
     test_keys( pk, sk, nbits - 64 );
-
-    mpi_free( p_min1 );
-    mpi_free( temp   );
 }
 
 
@@ -181,7 +160,7 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits )
  * Returns: if this is a valid key.
  */
 int
-elg_check_secret_key( ELG_secret_key *sk )
+dsa_check_secret_key( DSA_secret_key *sk )
 {
     int rc;
     MPI y = mpi_alloc( mpi_get_nlimbs(sk->y) );
@@ -193,65 +172,13 @@ elg_check_secret_key( ELG_secret_key *sk )
 }
 
 
-void
-elg_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey )
-{
-    MPI k;
-
-    k = gen_k( pkey->p );
-    mpi_powm( a, pkey->g, k, pkey->p );
-    /* b = (y^k * input) mod p
-     *	 = ((y^k mod p) * (input mod p)) mod p
-     * and because input is < p  (FIXME: check this!)
-     *	 = ((y^k mod p) * input) mod p
-     */
-    mpi_powm( b, pkey->y, k, pkey->p );
-    mpi_mulm( b, b, input, pkey->p );
-  #if 0
-    if( DBG_CIPHER ) {
-	log_mpidump("elg encrypted y= ", pkey->y);
-	log_mpidump("elg encrypted p= ", pkey->p);
-	log_mpidump("elg encrypted k= ", k);
-	log_mpidump("elg encrypted M= ", input);
-	log_mpidump("elg encrypted a= ", a);
-	log_mpidump("elg encrypted b= ", b);
-    }
-  #endif
-    mpi_free(k);
-}
-
-
-
-
-void
-elg_decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey )
-{
-    MPI t1 = mpi_alloc_secure( mpi_get_nlimbs( skey->p ) );
-
-    /* output = b/(a^x) mod p */
-
-    mpi_powm( t1, a, skey->x, skey->p );
-    mpi_invm( t1, t1, skey->p );
-    mpi_mulm( output, b, t1, skey->p );
-  #if 0
-    if( DBG_CIPHER ) {
-	log_mpidump("elg decrypted x= ", skey->x);
-	log_mpidump("elg decrypted p= ", skey->p);
-	log_mpidump("elg decrypted a= ", a);
-	log_mpidump("elg decrypted b= ", b);
-	log_mpidump("elg decrypted M= ", output);
-    }
-  #endif
-    mpi_free(t1);
-}
-
 
 /****************
  * Make an Elgamal signature out of INPUT
  */
 
 void
-elg_sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
+dsa_sign(MPI a, MPI b, MPI input, DSA_secret_key *skey )
 {
     MPI k;
     MPI t   = mpi_alloc( mpi_get_nlimbs(a) );
@@ -276,14 +203,14 @@ elg_sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
 
   #if 0
     if( DBG_CIPHER ) {
-	log_mpidump("elg sign p= ", skey->p);
-	log_mpidump("elg sign g= ", skey->g);
-	log_mpidump("elg sign y= ", skey->y);
-	log_mpidump("elg sign x= ", skey->x);
-	log_mpidump("elg sign k= ", k);
-	log_mpidump("elg sign M= ", input);
-	log_mpidump("elg sign a= ", a);
-	log_mpidump("elg sign b= ", b);
+	log_mpidump("dsa sign p= ", skey->p);
+	log_mpidump("dsa sign g= ", skey->g);
+	log_mpidump("dsa sign y= ", skey->y);
+	log_mpidump("dsa sign x= ", skey->x);
+	log_mpidump("dsa sign k= ", k);
+	log_mpidump("dsa sign M= ", input);
+	log_mpidump("dsa sign a= ", a);
+	log_mpidump("dsa sign b= ", b);
     }
   #endif
     mpi_free(k);
@@ -297,27 +224,16 @@ elg_sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
  * Returns true if the signature composed from A and B is valid.
  */
 int
-elg_verify(MPI a, MPI b, MPI input, ELG_public_key *pkey )
+dsa_verify(MPI a, MPI b, MPI input, DSA_public_key *pkey )
 {
     int rc;
-    MPI t1;
-    MPI t2;
+    MPI t1 = mpi_alloc( mpi_get_nlimbs(a) );
+    MPI t2 = mpi_alloc( mpi_get_nlimbs(a) );
 
-    if( !(mpi_cmp_ui( a, 0 ) > 0 && mpi_cmp( a, pkey->p ) < 0) )
-	return 0; /* assertion	0 < a < p  failed */
-
-    t1 = mpi_alloc( mpi_get_nlimbs(a) );
-    t2 = mpi_alloc( mpi_get_nlimbs(a) );
-    /* t1 = (y^a mod p) * (a^b mod p) mod p
-     * fixme: should be calculated by a call which evalutes
-     *	  t1 = y^a * a^b mod p
-     * direct.
-     */
     mpi_powm( t1, pkey->y, a, pkey->p );
     mpi_powm( t2, a, b, pkey->p );
     mpi_mulm( t1, t1, t2, pkey->p );
 
-    /* t2 = g ^ input mod p */
     mpi_powm( t2, pkey->g, input, pkey->p );
 
     rc = !mpi_cmp( t1, t2 );

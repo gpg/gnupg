@@ -26,12 +26,43 @@
 #include "cipher.h"
 
 
+
+/****************
+ * A Keyblock are all packets which form an entire certificate;
+ * i.e. the public key, certificate, trust packets, user ids,
+ * signatures, and subkey.
+ *
+ * This structure is also used to bind arbitrary packets together.
+ */
+
+typedef struct kbnode_struct *KBNODE;
+struct kbnode_struct {
+    PACKET *pkt;
+    KBNODE next;   /* used to form a link list */
+    KBNODE child;
+};
+
+/****************
+ * A data structre to hold informations about the external position
+ * of a keyblock.
+ */
+struct keyblock_pos_struct {
+    int   resno;  /* resource number */
+    ulong offset; /* position information */
+    ulong length; /* length of thge keyblock */
+    int last_block;
+};
+typedef struct keyblock_pos_struct KBPOS;
+
+
+
 /*-- passphrase.h --*/
 DEK *get_passphrase_hash( u32 *keyid, char *text );
 int make_dek_from_passphrase( DEK *dek, int mode );
 
 /*-- getkey.c --*/
 void add_keyring( const char *name );
+void add_secret_keyring( const char *name );
 void cache_public_cert( PKT_public_cert *pkc );
 void cache_user_id( PKT_user_id *uid, u32 *keyid );
 int get_pubkey( PKT_public_cert *pkc, u32 *keyid );
@@ -53,6 +84,21 @@ const char *datestr_from_sig( PKT_signature *sig );
 byte *fingerprint_from_skc( PKT_secret_cert *skc, size_t *ret_len );
 byte *fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len );
 
+/*-- kbnode.c --*/
+KBNODE new_kbnode( PACKET *pkt );
+void release_kbnode( KBNODE n );
+KBNODE find_kbparent( KBNODE root, KBNODE node );
+
+/*-- ringedit.c --*/
+int add_keyblock_resource( const char *filename );
+int get_keyblock_handle( const char *filename, KBPOS *kbpos );
+int search_keyblock( PACKET *pkt, KBPOS *kbpos );
+int lock_keyblock( KBPOS *kbpos );
+int unlock_keyblock( KBPOS *kbpos );
+int read_keyblock( KBPOS *kbpos, KBNODE *ret_root );
+int insert_keyblock( KBPOS *kbpos, KBNODE root );
+int delete_keyblock( KBPOS *kbpos );
+int update_keyblock( KBPOS *kbpos, KBNODE root );
 
 
 #endif /*G10_KEYDB_H*/

@@ -52,6 +52,7 @@ typedef struct pkc_cache_entry {
 } *pkc_cache_entry_t;
 
 static STRLIST keyrings;
+static STRLIST secret_keyrings;
 
 static keyid_list_t unknown_keyids;
 static user_id_db_t user_id_db;
@@ -69,6 +70,7 @@ void
 add_keyring( const char *name )
 {
     STRLIST sl;
+    int rc;
 
     /* FIXME: check wether this one is available etc */
     /* my be we should do this later */
@@ -76,6 +78,28 @@ add_keyring( const char *name )
     strcpy(sl->d, name );
     sl->next = keyrings;
     keyrings = sl;
+
+    /* FIXME: We should remove much out of this mpdule and
+     * combine it with the keyblock stuff from ringedit.c
+     * For now we will simple add the filename as keyblock resource
+     */
+    rc = add_keyblock_resource( name );
+    if( rc )
+	log_error("keyblock resource '%s': %s\n", name, rc );
+}
+
+void
+add_secret_keyring( const char *name )
+{
+    STRLIST sl;
+    int rc;
+
+    /* FIXME: check wether this one is available etc */
+    /* my be we should do this later */
+    sl = m_alloc( sizeof *sl + strlen(name) );
+    strcpy(sl->d, name );
+    sl->next = secret_keyrings;
+    secret_keyrings = sl;
 }
 
 
@@ -255,10 +279,12 @@ get_pubkey_by_name( PKT_public_cert *pkc, const char *name )
 int
 get_seckey( PKT_secret_cert *skc, u32 *keyid )
 {
+    STRLIST sl;
     int rc=0;
 
-    if( !(rc=scan_secret_keyring( skc, keyid, NULL, "../keys/secring.g10" ) ) )
-	goto found;
+    for(sl = secret_keyrings; sl; sl = sl->next )
+	if( !(rc=scan_secret_keyring( skc, keyid, NULL, sl->d )) )
+	    goto found;
     /* fixme: look at other places */
     goto leave;
 
@@ -280,10 +306,12 @@ get_seckey( PKT_secret_cert *skc, u32 *keyid )
 int
 get_seckey_by_name( PKT_secret_cert *skc, const char *name )
 {
+    STRLIST sl;
     int rc=0;
 
-    if( !(rc=scan_secret_keyring( skc, NULL, name, "../keys/secring.g10" ) ) )
-	goto found;
+    for(sl = secret_keyrings; sl; sl = sl->next )
+	if( !(rc=scan_secret_keyring( skc, NULL, name, sl->d ) ) )
+	    goto found;
     /* fixme: look at other places */
     goto leave;
 

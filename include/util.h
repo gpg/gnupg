@@ -79,6 +79,7 @@ const char *strusage( int level );
 
 
 /*-- fileutil.c --*/
+char *make_filename( const char *first_part, ... );
 
 /*-- miscutil.c --*/
 u32 make_timestamp(void);

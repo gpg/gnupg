@@ -42,7 +42,6 @@ INCLUDES = -I$(top_srcdir)/include
 
 noinst_LIBRARIES = cipher
 
-# please add "rsa.c" and "rsa.h" manually in Makefile.am
 cipher_SOURCES = blowfish.c	\
 		 blowfish.h	\
 		 elgamal.c	\
@@ -55,6 +54,10 @@ cipher_SOURCES = blowfish.c	\
 		 random.c	\
 		 rmd.h		\
 		 rmd160.c	\
+		 sha1.h 	\
+		 sha1.c 	\
+		 dsa.h		\
+		 dsa.c		\
 		 md.c		\
 		 smallprime.c
 
@@ -78,7 +81,7 @@ LIBS = @LIBS@
 COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(LDFLAGS) -o $@
 cipher_OBJECTS = blowfish.o elgamal.o gost.o md5.o primegen.o random.o \
-rmd160.o md.o smallprime.o
+rmd160.o sha1.o dsa.o md.o smallprime.o
 EXTRA_cipher_SOURCES =
 LIBFILES =  libcipher.a
 AR = ar
@@ -95,10 +98,11 @@ DEP_DISTFILES = $(DIST_COMMON) $(SOURCES) $(BUILT_SOURCES) $(HEADERS) \
 	$(TEXINFOS) $(INFO_DEPS) $(MANS) $(EXTRA_DIST) $(DATA)
 
 TAR = tar
-DEP_FILES = $(srcdir)/.deps/blowfish.P $(srcdir)/.deps/elgamal.P \
-$(srcdir)/.deps/gost.P $(srcdir)/.deps/md.P $(srcdir)/.deps/md5.P \
-$(srcdir)/.deps/primegen.P $(srcdir)/.deps/random.P \
-$(srcdir)/.deps/rmd160.P $(srcdir)/.deps/smallprime.P
+DEP_FILES = $(srcdir)/.deps/blowfish.P $(srcdir)/.deps/dsa.P \
+$(srcdir)/.deps/elgamal.P $(srcdir)/.deps/gost.P $(srcdir)/.deps/md.P \
+$(srcdir)/.deps/md5.P $(srcdir)/.deps/primegen.P \
+$(srcdir)/.deps/random.P $(srcdir)/.deps/rmd160.P \
+$(srcdir)/.deps/sha1.P $(srcdir)/.deps/smallprime.P
 SOURCES = $(cipher_SOURCES)
 OBJECTS = $(cipher_OBJECTS)
 

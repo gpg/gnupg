@@ -106,7 +106,13 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
     int level;
 
 
-    if( (rc = inflateInit( zs )) != Z_OK ) {
+    /****************
+     * PGP uses a windowsize of 13 bits. Using a negative value for
+     * it forces zlib not to expect a zlib header.  This is a
+     * undocumented feature, Peter Gutmann told me about.
+     */
+    if( (rc = zfx->pgpmode? inflateInit2( zs, -13)
+			  : inflateInit( zs )) != Z_OK ) {
 	log_fatal("zlib problem: %s\n", zs->msg? zs->msg :
 			       rc == Z_MEM_ERROR ? "out of core" :
 			       rc == Z_VERSION_ERROR ? "invalid lib version" :
@@ -265,7 +271,9 @@ handle_compressed( PKT_compressed *cd )
     compress_filter_context_t cfx;
 
     memset( &cfx, 0, sizeof cfx );
-    if( cd->algorithm != 2 )
+    if( cd->algorithm == 1 )
+	cfx.pgpmode = 1;
+    else if( cd->algorithm != 2  )
 	return G10ERR_COMPR_ALGO;
 
     iobuf_push_filter( cd->buf, compress_filter, &cfx );

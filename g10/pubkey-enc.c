@@ -58,7 +58,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	skey.g = skc->d.elg.g;
 	skey.y = skc->d.elg.y;
 	skey.x = skc->d.elg.x;
-	elg_decrypted( dek_frame, k->d.elg.a, k->d.elg.b, &skey );
+	elg_decrypt( dek_frame, k->d.elg.a, k->d.elg.b, &skey );
 	memset( &skey, 0, sizeof skey );
     }
   #ifdef HAVE_RSA_CIPHER

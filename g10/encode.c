@@ -239,7 +239,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    pkey.y = pkc->d.elg.y;
 	    if( DBG_CIPHER )
 		log_mpidump("Plain DEK frame: ", frame);
-	    elg_encrypted( enc->d.elg.a, enc->d.elg.b, frame, &pkey);
+	    elg_encrypt( enc->d.elg.a, enc->d.elg.b, frame, &pkey);
 	    mpi_free( frame );
 	    if( DBG_CIPHER ) {
 		log_mpidump("Encry DEK a: ", enc->d.elg.a );

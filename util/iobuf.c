@@ -271,7 +271,6 @@ iobuf_close( IOBUF a )
 	if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE,
 					 a->chain, NULL, &dummy_len)) )
 	    log_error("IOBUFCTRL_FREE failed on close: %s\n", g10_errstr(rc) );
-	m_free(a->recorder.buf);
 	m_free(a->d.buf);
 	m_free(a);
     }
@@ -406,9 +405,8 @@ iobuf_push_filter( IOBUF a,
 	a->d.start = 0;
     }
     /* disable nlimit for the new stream */
+    a->ntotal = b->ntotal + b->nbytes;
     a->nlimit = a->nbytes = 0;
-    /* disable recorder for the original stream */
-    b->recorder.buf = NULL;
     /* make a link from the new stream to the original stream */
     a->chain = b;
     a->opaque = b->opaque;
@@ -601,14 +599,6 @@ iobuf_readbyte(IOBUF a)
 	return -1; /* EOF */
 
     a->nbytes++;
-
-    if( a->recorder.buf ) {
-	if( a->recorder.len >= a->recorder.size ) {
-	    a->recorder.size += 500;
-	    a->recorder.buf = m_realloc( a->recorder.buf, a->recorder.size );
-	}
-	((byte*)a->recorder.buf)[a->recorder.len++] = c;
-    }
     return c;
 }
 
@@ -678,45 +668,10 @@ void
 iobuf_set_limit( IOBUF a, unsigned long nlimit )
 {
     a->nlimit = nlimit;
+    a->ntotal += a->nbytes;
     a->nbytes = 0;
 }
 
-
-
-void
-iobuf_start_recorder( IOBUF a )
-{
-    m_free(a->recorder.buf);
-    a->recorder.size = 500;
-    a->recorder.buf = m_alloc(a->recorder.size);
-    a->recorder.len = 0;
-}
-
-void
-iobuf_push_recorder( IOBUF a, int c )
-{
-    if( a->recorder.buf ) {
-	if( a->recorder.len >= a->recorder.size ) {
-	    a->recorder.size += 500;
-	    a->recorder.buf = m_realloc( a->recorder.buf, a->recorder.size );
-	}
-	((byte*)a->recorder.buf)[a->recorder.len++] = c;
-    }
-}
-
-
-char *
-iobuf_stop_recorder( IOBUF a, size_t *n )
-{
-    char *p;
-    if( !a->recorder.buf )
-	log_bug("iobuf_recorder not started\n");
-    p = a->recorder.buf;
-    if( n )
-	*n = a->recorder.len;
-    a->recorder.buf = NULL;
-    return p;
-}
 
 
 /****************
@@ -740,6 +695,28 @@ iobuf_get_filelength( IOBUF a )
 
     return 0;
 }
+
+/****************
+ * Tell the file position, where the next read will take place
+ */
+ulong
+iobuf_tell( IOBUF a )
+{
+    return a->ntotal + a->nbytes;
+}
+
+
+int
+iobuf_seek( IOBUF a, ulong newpos )
+{
+
+    return -1;
+}
+
+
+
+
+
 
 /****************
  * Retrieve the filename

@@ -32,6 +32,7 @@ md_okay( int algo )
     switch( algo ) {
       case DIGEST_ALGO_MD5:
       case DIGEST_ALGO_RMD160:
+      case DIGEST_ALGO_SHA1:
 	return 0;
       default:
 	return G10ERR_DIGEST_ALGO;
@@ -51,6 +52,8 @@ md_open( int algo, int secure )
 	hd->u.md5 = md5_open( secure );
     else if( algo == DIGEST_ALGO_RMD160 )
 	hd->u.rmd= rmd160_open( secure );
+    else if( algo == DIGEST_ALGO_SHA1 )
+	hd->u.sha1 = sha1_open( secure );
     else
 	return NULL;
 
@@ -70,6 +73,8 @@ md_copy( MD_HANDLE *a )
 	hd->u.md5 = md5_copy( a->u.md5 );
     else if( a->algo == DIGEST_ALGO_RMD160 )
 	hd->u.rmd= rmd160_copy( a->u.rmd );
+    else if( a->algo == DIGEST_ALGO_SHA1 )
+	hd->u.sha1= sha1_copy( a->u.sha1 );
     else
 	log_bug(NULL);
     return hd;
@@ -89,6 +94,8 @@ md_makecontainer( int algo )
 	;
     else if( algo == DIGEST_ALGO_RMD160 )
 	;
+    else if( algo == DIGEST_ALGO_SHA1 )
+	;
     else
 	log_bug(NULL);
     return hd;
@@ -103,6 +110,8 @@ md_close(MD_HANDLE *a)
 	md5_close( a->u.md5 );
     else if( a->algo == DIGEST_ALGO_RMD160 )
 	rmd160_close( a->u.rmd );
+    else if( a->algo == DIGEST_ALGO_SHA1 )
+	sha1_close( a->u.sha1 );
     else
 	log_bug(NULL);
     m_free(a);
@@ -116,6 +125,8 @@ md_write( MD_HANDLE *a, byte *inbuf, size_t inlen)
 	md5_write( a->u.md5, inbuf, inlen );
     else if( a->algo == DIGEST_ALGO_RMD160 )
 	rmd160_write( a->u.rmd, inbuf, inlen  );
+    else if( a->algo == DIGEST_ALGO_SHA1 )
+	sha1_write( a->u.sha1, inbuf, inlen  );
     else
 	log_bug(NULL);
 }
@@ -128,6 +139,8 @@ md_putchar( MD_HANDLE *a, int c )
 	md5_putchar( a->u.md5, c );
     else if( a->algo == DIGEST_ALGO_RMD160 )
 	rmd160_putchar( a->u.rmd, c );
+    else if( a->algo == DIGEST_ALGO_SHA1 )
+	sha1_putchar( a->u.sha1, c );
     else
 	log_bug(NULL);
 }
@@ -147,6 +160,13 @@ md_final(MD_HANDLE *a)
     else if( a->algo == DIGEST_ALGO_RMD160 ) {
 	if( !a->datalen ) {
 	    memcpy(a->data, rmd160_final( a->u.rmd  ), 20 );
+	    a->datalen = 20;
+	}
+	return a->data;
+    }
+    else if( a->algo == DIGEST_ALGO_SHA1 ) {
+	if( !a->datalen ) {
+	    memcpy(a->data, sha1_final( a->u.sha1  ), 20 );
 	    a->datalen = 20;
 	}
 	return a->data;

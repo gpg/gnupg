@@ -36,6 +36,8 @@
 static mpi_print_mode = 0;
 static list_mode = 0;
 
+static int  parse( IOBUF inp, PACKET *pkt, int reqtype,
+					   ulong *retpos, int *skip );
 static void skip_packet( IOBUF inp, int pkttype, unsigned long pktlen );
 static void skip_rest( IOBUF inp, unsigned long pktlen );
 static int  parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -109,12 +111,47 @@ set_packet_list_mode( int mode )
 int
 parse_packet( IOBUF inp, PACKET *pkt )
 {
+    int skip, rc;
+
+    do {
+	rc = parse( inp, pkt, 0, NULL, &skip );
+    } while( skip );
+    return rc;
+}
+
+/****************
+ * Like parse packet, but do only return packet of the given type.
+ */
+int
+search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos )
+{
+    int skip, rc;
+
+    do {
+	rc = parse( inp, pkt, pkttype, retpos, &skip );
+    } while( skip );
+    return rc;
+}
+
+
+/****************
+ * Parse packet. Set the variable skip points to to 1 if the packet
+ * should be skipped; this is the case if either there is a
+ * requested packet type and the parsed packet doesn't match or the
+ * packet-type is 0, indicating deleted stuff.
+ */
+static int
+parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos, int *skip )
+{
     int rc, ctb, pkttype, lenbytes;
     unsigned long pktlen;
     byte hdr[5];
     int hdrlen;
 
+    *skip = 0;
     assert( !pkt->pkt.generic );
+    if( retpos )
+	*retpos = iobuf_tell(inp);
     if( (ctb = iobuf_get(inp)) == -1 )
 	return -1;
     hdrlen=0;
@@ -137,6 +174,12 @@ parse_packet( IOBUF inp, PACKET *pkt )
 	    pktlen <<= 8;
 	    pktlen |= hdr[hdrlen++] = iobuf_get_noeof(inp);
 	}
+    }
+
+    if( !pkttype || (reqtype && pkttype != reqtype) ) {
+	skip_packet(inp, pkttype, pktlen);
+	*skip = 1;
+	return 0;
     }
 
     if( DBG_PACKET )

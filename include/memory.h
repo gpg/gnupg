@@ -34,6 +34,7 @@
 #define m_free(n)		m_debug_free((n), M_DBGINFO(__LINE__) )
 #define m_check(n)		m_debug_check((n), M_DBGINFO(__LINE__) )
 #define m_copy(a)		m_debug_copy((a), M_DBGINFO(__LINE__) )
+#define m_strdup(a)		m_debug_strdup((a), M_DBGINFO(__LINE__) )
 
 void *m_debug_alloc( size_t n, const char *info );
 void *m_debug_alloc_clear( size_t n, const char *info  );
@@ -43,6 +44,7 @@ void *m_debug_realloc( void *a, size_t n, const char *info  );
 void m_debug_free( void *p, const char *info  );
 void m_debug_check( const void *a, const char *info );
 void *m_debug_copy( const void *a, const char *info );
+char *m_debug_strdup( const char *a, const char *info );
 
 #else
 void *m_alloc( size_t n );
@@ -52,9 +54,9 @@ void *m_alloc_secure_clear( size_t n );
 void *m_realloc( void *a, size_t n );
 void m_free( void *p );
 void m_check( const void *a );
-void *m_copy( void *a );
+void *m_copy( const void *a );
+char *m_strdup( const char * a);
 #endif
-
 
 size_t m_size( const void *a );
 int m_is_secure( const void *p );

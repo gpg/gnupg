@@ -13,6 +13,8 @@ g10_SOURCES = g10.c		\
 	      free-packet.c	\
 	      getkey.c		\
 	      keydb.h		\
+	      ringedit.c	\
+	      kbnode.c		\
 	      keygen.c		\
 	      main.h		\
 	      mainproc.c	\
@@ -37,5 +39,5 @@ g10_SOURCES = g10.c		\
 LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil
 
 
-$(PROGRAMS): ../cipher/libcipher.a ../mpi/libmpi.a
+$(PROGRAMS): ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 

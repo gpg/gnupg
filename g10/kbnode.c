@@ -1,4 +1,4 @@
-/* fileutil.c -  file utilities
+/* kbnode.c -  keyblock node utility functions
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
  *
  * This file is part of G10.
@@ -21,46 +21,59 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 #include <assert.h>
-#include <unistd.h>
 #include "util.h"
 #include "memory.h"
-#include "ttyio.h"
+#include "packet.h"
+#include "keydb.h"
+
+
+
+KBNODE
+new_kbnode( PACKET *pkt )
+{
+    KBNODE n = m_alloc( sizeof *n );
+    n->next = NULL;
+    n->pkt = pkt;
+    n->child = NULL;
+    return n;
+}
+
+
+void
+release_kbnode( KBNODE n )
+{
+    KBNODE n2;
+
+    while( n ) {
+	n2 = n->next;
+	release_kbnode( n->child );
+	free_packet( n->pkt );
+	m_free( n );
+	n = n2;
+    }
+}
 
 
 /****************
- * Construct a filename form the NULL terminated list of parts.
- * Tilde expansion is done here.
+ * Return the parent node of KBNODE from the tree with ROOT
  */
-char *
-make_filename( const char *first_part, ... )
+KBNODE
+find_kbparent( KBNODE root, KBNODE node )
 {
-    va_list arg_ptr ;
-    size_t n;
-    const char *s;
-    char *name, *home, *p;
+    KBNODE n, n2;
 
-    va_start( arg_ptr, first_part ) ;
-    n = strlen(first_part)+1;
-    while( (s=va_arg(arg_ptr, const char *)) )
-	n += strlen(s) + 1;
-    va_end(arg_ptr);
-
-    home = NULL;
-    if( *first_part == '~' && first_part[1] == '/'
-			   && (home = getenv("HOME")) && *home )
-	n += strlen(home);
-
-    name = m_alloc(n);
-    p = home ? stpcpy(stpcpy(name,home), first_part+1)
-	     : stpcpy(name, first_part);
-    va_start( arg_ptr, first_part ) ;
-    while( (s=va_arg(arg_ptr, const char *)) )
-	p = stpcpy(stpcpy(p,"/"), s);
-    va_end(arg_ptr);
-
-    return name;
+    for( ; root; root = root->child) {
+	for( n = root; n; n = n->next) {
+	    for( n2 = n->child; n2; n2 = n2->next ) {
+		if( n2 == node )
+		    return n;
+	    }
+	}
+    }
+    log_bug(NULL);
 }
+
+
 

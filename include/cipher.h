@@ -30,6 +30,7 @@
 #include "mpi.h"
 #include "../cipher/md5.h"
 #include "../cipher/rmd.h"
+#include "../cipher/sha1.h"
 #ifdef HAVE_RSA_CIPHER
   #include "../cipher/rsa.h"
 #endif
@@ -71,6 +72,7 @@ typedef struct {
     union {
       MD5HANDLE md5;
       RMDHANDLE rmd;
+      SHA1HANDLE sha1;
     } u;
     int datalen;
     char data[1];

@@ -1,4 +1,4 @@
-/* elgamal.h
+/* dsa.h  -  DSA signature scheme
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
  *
  * This file is part of G10.
@@ -17,33 +17,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-#ifndef G10_ELGAMAL_H
-#define G10_ELGAMAL_H
+#ifndef G10_DSA_H
+#define G10_DSA_H
 
 #include "mpi.h"
 
 typedef struct {
     MPI p;	    /* prime */
+    MPI q;	    /* group order */
     MPI g;	    /* group generator */
     MPI y;	    /* g^x mod p */
-} ELG_public_key;
+} DSA_public_key;
 
 
 typedef struct {
     MPI p;	    /* prime */
+    MPI q;	    /* group order */
     MPI g;	    /* group generator */
     MPI y;	    /* g^x mod p */
     MPI x;	    /* secret exponent */
-} ELG_secret_key;
+} DSA_secret_key;
 
 
-void elg_free_public_key( ELG_public_key *pk );
-void elg_free_secret_key( ELG_secret_key *sk );
-void elg_generate( ELG_public_key *pk, ELG_secret_key *sk, unsigned nbits );
-int  elg_check_secret_key( ELG_secret_key *sk );
-void elg_encrypt(MPI a, MPI b, MPI input, ELG_public_key *pkey );
-void elg_decrypt(MPI output, MPI a, MPI b, ELG_secret_key *skey );
-void elg_sign(MPI a, MPI b, MPI input, ELG_secret_key *skey);
-int  elg_verify(MPI a, MPI b, MPI input, ELG_public_key *pkey);
+void dsa_free_public_key( DSA_public_key *pk );
+void dsa_free_secret_key( DSA_secret_key *sk );
+void dsa_generate( DSA_public_key *pk, DSA_secret_key *sk, unsigned nbits );
+int  dsa_check_secret_key( DSA_secret_key *sk );
+void dsa_sign(MPI a, MPI b, MPI input, DSA_secret_key *skey);
+int  dsa_verify(MPI a, MPI b, MPI input, DSA_public_key *pkey);
 
-#endif /*G10_ELGAMAL_H*/
+#endif /*G10_DSA_H*/

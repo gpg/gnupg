@@ -54,6 +54,7 @@ const void membug( const char *fmt, ... );
   #undef m_realloc
   #undef m_free
   #undef m_check
+  #undef m_strdup
   #define FNAME(a)  m_debug_ ##a
   #define FNAMEPRT  , const char *info
   #define FNAMEARG  , info
@@ -370,7 +371,7 @@ FNAME(alloc_secure_clear)( size_t n FNAMEPRT)
 
 
 /****************
- * realloc and clear the new space
+ * realloc and clear the old space
  */
 void *
 FNAME(realloc)( void *a, size_t n FNAMEPRT )
@@ -461,13 +462,13 @@ m_is_secure( const void *p )
  * Make a copy of the memory block at a
  */
 void *
-FNAME(copy)( void *a FNAMEPRT )
+FNAME(copy)( const void *a FNAMEPRT )
 {
     void *b;
     size_t n;
 
     if( !a )
-	return a;
+	return NULL;
 
     n = m_size(a);
     if( m_is_secure(a) )
@@ -478,4 +479,13 @@ FNAME(copy)( void *a FNAMEPRT )
     return b;
 }
 
+
+char *
+FNAME(strdup)( const char *a FNAMEPRT )
+{
+    size_t n = strlen(a);
+    char *p = FNAME(alloc)(n+1 FNAMEARG);
+    strcpy(p, a);
+    return p;
+}
 

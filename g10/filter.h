@@ -48,6 +48,7 @@ typedef struct {
     unsigned inbufsize;
     byte *outbuf;
     unsigned outbufsize;
+    int pgpmode;
 } compress_filter_context_t;
 
 

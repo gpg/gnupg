@@ -39,18 +39,14 @@ typedef struct iobuf_struct *IOBUF;
 struct iobuf_struct {
     int usage;		 /* 1 input , 2 output, 3 temp */
     unsigned long nlimit;
-    unsigned long nbytes;
+    unsigned long nbytes; /* used together with nlimit */
+    unsigned long ntotal; /* total bytes read (position of stream) */
     struct {
 	size_t size;   /* allocated size */
 	size_t start;  /* number of invalid bytes at the begin of the buffer */
 	size_t len;    /* currently filled to this size */
 	byte *buf;
     } d;
-    struct {
-	size_t size;
-	size_t len;
-	char *buf;
-    } recorder;
     int filter_eof;
     int (*filter)( void *opaque, int control,
 		   IOBUF chain, byte *buf, size_t *len);
@@ -80,6 +76,9 @@ void iobuf_clear_eof(IOBUF a);
 
 void iobuf_set_limit( IOBUF a, unsigned long nlimit );
 
+ulong iobuf_tell( IOBUF a );
+int   iobuf_seek( IOBUF a, ulong newpos );
+
 int  iobuf_readbyte(IOBUF a);
 int  iobuf_writebyte(IOBUF a, unsigned c);
 int  iobuf_write(IOBUF a, byte *buf, unsigned buflen );
@@ -87,10 +86,6 @@ int  iobuf_writestr(IOBUF a, const char *buf );
 
 int  iobuf_write_temp( IOBUF a, IOBUF temp );
 size_t iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen );
-
-void iobuf_start_recorder( IOBUF a );
-void iobuf_push_recorder( IOBUF a, int c );
-char *iobuf_stop_recorder( IOBUF a, size_t *n );
 
 u32 iobuf_get_filelength( IOBUF a );
 const char *iobuf_get_fname( IOBUF a );
@@ -104,8 +99,7 @@ int  iobuf_in_block_mode( IOBUF a );
  * returned value to be in the range 0 ..255.
  */
 #define iobuf_get(a)  \
-     (	((a)->recorder.buf || (a)->nlimit \
-	 || (a)->d.start >= (a)->d.len )?  \
+     (	((a)->nlimit || (a)->d.start >= (a)->d.len )?  \
 	iobuf_readbyte((a)) : ( (a)->nbytes++, (a)->d.buf[(a)->d.start++] ) )
 #define iobuf_get_noeof(a)    (iobuf_get((a))&0xff)
 

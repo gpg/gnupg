@@ -22,14 +22,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "util.h"
 #include "cipher.h"
 
-static struct {
-    int level;
+struct cache {
     int len;
-    byte buffer[100]; /* fixme: should this be allocated in secure space? */
-} cache;
+    byte buffer[100]; /* fixme: should be allocalted with m_alloc_secure()*/
+};
+
+static struct cache cache[3];
+#define MASK_LEVEL(a) do {if( a > 2 ) a = 2; else if( a < 0 ) a = 0; } while(0)
+
+
+static int open_device( const char *name, int minor );
+static void fill_buffer( byte *buffer, size_t length, int level );
 
 /****************
  * Fill the buffer with LENGTH bytes of cryptologic strong
@@ -39,30 +48,77 @@ static struct {
 void
 randomize_buffer( byte *buffer, size_t length, int level )
 {
-    FILE *fp;
-
-    if( level == 2 )
-	level = 1; /* 2 is much too slow */
-    /* FIXME: do a stat and check that we have the correct device numbers*/
-    fp = fopen(level < 2? "/dev/urandom":"/dev/random", "r");
-    if( !fp )
-	log_fatal("can't open random device: %s\n", strerror(errno) );
     for( ; length; length-- )
-	*buffer++ = getc(fp);
-    fclose(fp);
+	*buffer++ = get_random_byte(level);
 }
 
 
 byte
 get_random_byte( int level )
 {
-    if( !cache.len || cache.level < level ) {
-	randomize_buffer(cache.buffer, DIM(cache.buffer), level );
-	cache.level = level;
-	cache.len = DIM(cache.buffer);
+    MASK_LEVEL(level);
+    if( !cache[level].len ) {
+	fill_buffer(cache[level].buffer, DIM(cache[level].buffer), level );
+	cache[level].len = DIM(cache[level].buffer);
     }
 
-    return cache.buffer[--cache.len];
+    return cache[level].buffer[--cache[level].len];
 }
 
+
+
+
+static int
+open_device( const char *name, int minor )
+{
+    int fd;
+    struct stat sb;
+
+    fd = open( name, O_RDONLY );
+    if( fd == -1 )
+	log_fatal("can't open %s: %s\n", name, strerror(errno) );
+    if( fstat( fd, &sb ) )
+	log_fatal("stat() off %s failed: %s\n", name, strerror(errno) );
+    if( !S_ISCHR(sb.st_mode)
+      #ifdef __linux__
+	|| (sb.st_rdev >> 8) != 1
+	|| (sb.st_rdev & 0xff) != minor
+      #endif
+      )
+	log_fatal("invalid random device!\n" );
+    return fd;
+}
+
+
+static void
+fill_buffer( byte *buffer, size_t length, int level )
+{
+    FILE *fp;
+    static int fd_urandom = -1;
+    static int fd_random = -1;
+    int fd;
+    int n;
+
+    if( level == 2 ) {
+	if( fd_random == -1 )
+	    fd_random = open_device( "/dev/random", 8 );
+	fd = fd_random;
+    }
+    else {
+	if( fd_urandom == -1 )
+	    fd_urandom = open_device( "/dev/urandom", 9 );
+	fd = fd_urandom;
+    }
+
+
+    do {
+	do {
+	    n = read(fd, buffer, length );
+	} while( n == -1 && errno == EINTR );
+	if( n == -1 )
+	    log_fatal("read error on random device: %s\n", strerror(errno) );
+	buffer += n;
+	length -= n;
+    } while( length );
+}
 

@@ -23,6 +23,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <string.h>
 
 #include "util.h"
@@ -124,9 +125,201 @@
  */
 
 
-static void set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s);
+static int  set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s);
 static void show_help(ARGPARSE_OPTS *opts, unsigned flags);
 static void show_version(void);
+
+static void
+initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
+{
+    if( !(arg->flags & (1<<15)) ) { /* initialize this instance */
+	arg->internal.index = 0;
+	arg->internal.last = NULL;
+	arg->internal.inarg = 0;
+	arg->internal.stopped= 0;
+	arg->err = 0;
+	arg->flags |= 1<<15; /* mark initialized */
+	if( *arg->argc < 0 )
+	    log_bug("Invalid argument for ArgParse\n");
+    }
+
+    if( arg->err ) { /* last option was erroneous */
+	const char *s;
+
+	if( filename ) {
+	    if( arg->r_opt == -6 )
+		s = "%s:%u: argument not expected\n";
+	    else if( arg->r_opt == -5 )
+		s = "%s:%u: read error\n";
+	    else if( arg->r_opt == -4 )
+		s = "%s:%u: keyword too long\n";
+	    else if( arg->r_opt == -3 )
+		s = "%s:%u: missing argument\n";
+	    else
+		s = "%s:%u: invalid option\n";
+	    log_error(s, filename, *lineno );
+	}
+	else {
+	    if( arg->r_opt == -3 )
+		s = "Missing argument for option \"%.50s\"\n";
+	    else
+		s = "Invalid option \"%.50s\"\n";
+	    log_error(s, arg->internal.last? arg->internal.last:"[??]" );
+	}
+	if( arg->err != 1 )
+	    exit(2);
+	arg->err = 0;
+    }
+}
+
+
+
+/****************
+ * Get options from a file.
+ * Lines starting with '#' are comment lines.
+ * Syntax is simply a keyword and the argument.
+ * Valid keywords are all keywords from the long_opt list without
+ * the leading dashes. The special keywords help, warranty and version
+ * are not valid here.
+ * Caller must free returned strings.
+ * If called with FP set to NULL command line args are parse instead.
+ */
+int
+optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
+	       ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
+{
+    char *s, *s2;
+    int state, i, c;
+    int index=0;
+    char keyword[100];
+    char *buffer = NULL;
+    size_t buflen = 0;
+
+    if( !fp ) /* same as arg_parse() in this case */
+	return arg_parse( arg, opts );
+
+    initialize( arg, filename, lineno );
+
+    /* find the next keyword */
+    state = i = 0;
+    for(;;) {
+	c=getc(fp);
+	if( c == '\n' || c== EOF ) {
+	    if( c != EOF )
+		++*lineno;
+	    if( state == -1 )
+		break;
+	    else if( state == 2 ) {
+		keyword[i] = 0;
+		for(i=0; opts[i].short_opt; i++ )
+		    if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
+			break;
+		index = i;
+		arg->r_opt = opts[index].short_opt;
+		if( !opts[index].short_opt )
+		    arg->r_opt = -2;	       /* unknown option */
+		else if( (opts[index].flags & 8) )  /* no optional argument */
+		    arg->r_type = 0;	       /* okay */
+		else			       /* no required argument */
+		    arg->r_opt = -3;	       /* error */
+		break;
+	    }
+	    else if( state == 3 ) {	       /* no argument found */
+		if( !(opts[index].flags & 7) ) /* does not take an argument */
+		    arg->r_type = 0;	       /* okay */
+		else if( (opts[index].flags & 8) )  /* no optional argument */
+		    arg->r_type = 0;	       /* okay */
+		else			       /* no required argument */
+		    arg->r_opt = -3;	       /* error */
+		break;
+	    }
+	    else if( state == 4 ) {	/* have an argument */
+		if( !(opts[index].flags & 7) )	/* does not take an argument */
+		    arg->r_opt = -6;	    /* error */
+		else {
+		    if( !buffer ) {
+			keyword[i] = 0;
+			buffer = m_strdup(keyword);
+		    }
+		    else
+			buffer[i] = 0;
+
+		    if( !set_opt_arg(arg, opts[index].flags, buffer) )
+			m_free(buffer);
+		}
+		break;
+	    }
+	    else if( c == EOF ) {
+		if( ferror(fp) )
+		    arg->r_opt = -5;   /* read error */
+		else
+		    arg->r_opt = 0;    /* eof */
+		break;
+	    }
+	    state = 0;
+	    i = 0;
+	}
+	else if( state == -1 )
+	    ; /* skip */
+	else if( !state && isspace(c) )
+	    ; /* skip leading white space */
+	else if( !state && c == '#' )
+	    state = 1;	/* start of a comment */
+	else if( state == 1 )
+	    ; /* skip comments */
+	else if( state == 2 && isspace(c) ) {
+	    keyword[i] = 0;
+	    for(i=0; opts[i].short_opt; i++ )
+		if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
+		    break;
+	    index = i;
+	    arg->r_opt = opts[index].short_opt;
+	    if( !opts[index].short_opt ) {
+		arg->r_opt = -2;   /* unknown option */
+		state = -1;	   /* skip rest of line and leave */
+	    }
+	    else
+		state = 3;
+	}
+	else if( state == 3 ) { /* skip leading spaces of the argument */
+	    if( !isspace(c) ) {
+		i = 0;
+		keyword[i] = c;
+		state = 4;
+	    }
+	}
+	else if( state == 4 ) { /* collect the argument */
+	    if( buffer ) {
+		if( i < buflen-1 )
+		    buffer[i++] = c;
+		else {
+		    buflen += 50;
+		    buffer = m_realloc(buffer, buflen);
+		    buffer[i++] = c;
+		}
+	    }
+	    else if( i < DIM(keyword)-1 )
+		keyword[i++] = c;
+	    else {
+		buflen = DIM(keyword)+50;
+		buffer = m_alloc(buflen);
+		memcpy(buffer, keyword, i);
+		buffer[i++] = c;
+	    }
+	}
+	else if( i >= DIM(keyword)-1 ) {
+	    arg->r_opt = -4;   /* keyword to long */
+	    state = -1;        /* skip rest of line and leave */
+	}
+	else {
+	    keyword[i++] = c;
+	    state = 2;
+	}
+    }
+
+    return arg->r_opt;
+}
+
 
 
 int
@@ -138,30 +331,10 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
     char *s, *s2;
     int i;
 
-    if( !(arg->flags & (1<<15)) ) { /* initialize this instance */
-	arg->internal.index = 0;
-	arg->internal.last = NULL;
-	arg->internal.inarg = 0;
-	arg->internal.stopped= 0;
-	arg->err = 0;
-	arg->flags |= 1<<15; /* mark initialized */
-	if( *arg->argc < 0 )
-	    log_bug("Invalid argument for ArgParse\n");
-    }
+    initialize( arg, NULL, NULL );
     argc = *arg->argc;
     argv = *arg->argv;
     index = arg->internal.index;
-
-    if( arg->err ) { /* last option was erroneous */
-	if( arg->r_opt == -3 )
-	    s = "Missing argument for option \"%.50s\"\n";
-	else
-	    s = "Invalid option \"%.50s\"\n";
-	log_error(s, arg->internal.last? arg->internal.last:"[??]" );
-	if( arg->err != 1 )
-	    exit(2);
-	arg->err = 0;
-    }
 
     if( !index && argc && !(arg->flags & (1<<4)) ) { /* skip the first entry */
 	argc--; argv++; index++;
@@ -322,7 +495,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 
 
 
-static void
+static int
 set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s)
 {
     int base = (flags & 16)? 0 : 10;
@@ -330,17 +503,17 @@ set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s)
     switch( arg->r_type = (flags & 7) ) {
       case 1: /* takes int argument */
 	arg->r.ret_int = (int)strtol(s,NULL,base);
-	break;
-      default:
-      case 2: /* takes string argument */
-	arg->r.ret_str = s;
-	break;
+	return 0;
       case 3: /* takes long argument   */
 	arg->r.ret_long= strtol(s,NULL,base);
-	break;
+	return 0;
       case 4: /* takes ulong argument  */
 	arg->r.ret_ulong= strtoul(s,NULL,base);
-	break;
+	return 0;
+      case 2: /* takes string argument */
+      default:
+	arg->r.ret_str = s;
+	return 1;
     }
 }
 

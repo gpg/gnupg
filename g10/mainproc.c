@@ -36,25 +36,6 @@
 
 
 /****************
- * We need to glue the packets together.  This done by a
- * tree of packets, which will released whenever a new start packet
- * is encounterd. Start packets are: [FIXME]
- *
- *  pubkey
- *     userid		   userid
- *	  sig, sig, sig       sig, sig
- *
- */
-
-typedef struct node_struct *NODE;
-struct node_struct {
-    PACKET *pkt;
-    NODE next;	 /* used to form a link list */
-    NODE child;
-};
-
-
-/****************
  * Structure to hold the context
  */
 
@@ -66,17 +47,14 @@ typedef struct {
     DEK *dek;
     int last_was_pubkey_enc;
     int opt_list;
-    NODE cert;	   /* the current certificate */
+    KBNODE cert;     /* the current certificate */
     int have_data;
 } *CTX;
 
 
 
-
-
-
-static void list_node( CTX c, NODE node );
-static void proc_tree( CTX c, NODE node );
+static void list_node( CTX c, KBNODE node );
+static void proc_tree( CTX c, KBNODE node );
 
 static int
 pubkey_letter( int algo )
@@ -92,60 +70,13 @@ pubkey_letter( int algo )
 }
 
 
-
-static NODE
-new_node( PACKET *pkt )
-{
-    NODE n = m_alloc( sizeof *n );
-    n->next = NULL;
-    n->pkt = pkt;
-    n->child = NULL;
-    return n;
-}
-
-
-static void
-release_node( NODE n )
-{
-    NODE n2;
-
-    while( n ) {
-	n2 = n->next;
-	release_node( n->child );
-	free_packet( n->pkt );
-	m_free( n );
-	n = n2;
-    }
-}
-
-
-/****************
- * Return the parent node of NODE from the tree with ROOT
- */
-static NODE
-find_parent( NODE root, NODE node )
-{
-    NODE n, n2;
-
-    for( ; root; root = root->child) {
-	for( n = root; n; n = n->next) {
-	    for( n2 = n->child; n2; n2 = n2->next ) {
-		if( n2 == node )
-		    return n;
-	    }
-	}
-    }
-    log_bug(NULL);
-}
-
-
 static void
 release_cert( CTX c )
 {
     if( !c->cert )
 	return;
     proc_tree(c, c->cert );
-    release_node( c->cert );
+    release_kbnode( c->cert );
     c->cert = NULL;
 }
 
@@ -153,7 +84,7 @@ release_cert( CTX c )
 static int
 add_onepass_sig( CTX c, PACKET *pkt )
 {
-    NODE node;
+    KBNODE node;
 
     if( c->cert ) { /* add another packet */
 
@@ -161,12 +92,12 @@ add_onepass_sig( CTX c, PACKET *pkt )
 	   log_error("add_onepass_sig: another packet is in the way\n");
 	   release_cert( c );
 	}
-	node = new_node( pkt );
+	node = new_kbnode( pkt );
 	node->next = c->cert;
 	c->cert = node;
     }
     else /* insert the first one */
-	c->cert = node = new_node( pkt );
+	c->cert = node = new_kbnode( pkt );
 
     return 1;
 }
@@ -176,7 +107,7 @@ static int
 add_public_cert( CTX c, PACKET *pkt )
 {
     release_cert( c );
-    c->cert = new_node( pkt );
+    c->cert = new_kbnode( pkt );
     return 1;
 }
 
@@ -184,7 +115,7 @@ static int
 add_secret_cert( CTX c, PACKET *pkt )
 {
     release_cert( c );
-    c->cert = new_node( pkt );
+    c->cert = new_kbnode( pkt );
     return 1;
 }
 
@@ -193,7 +124,7 @@ static int
 add_user_id( CTX c, PACKET *pkt )
 {
     u32 keyid[2];
-    NODE node, n1, n2;
+    KBNODE node, n1, n2;
 
     if( !c->cert ) {
 	log_error("orphaned user id\n" );
@@ -209,7 +140,7 @@ add_user_id( CTX c, PACKET *pkt )
 	return 0;
     }
     /* add a new user id node at the end */
-    node = new_node( pkt );
+    node = new_kbnode( pkt );
     if( !(n2=n1->child) )
 	n1->child = node;
     else {
@@ -225,7 +156,7 @@ static int
 add_signature( CTX c, PACKET *pkt )
 {
     u32 keyid[2];
-    NODE node, n1, n2;
+    KBNODE node, n1, n2;
 
     if( !c->cert ) {
 	/* orphaned signature (no certificate)
@@ -239,7 +170,7 @@ add_signature( CTX c, PACKET *pkt )
 	 * The childs direct under the root are the signatures
 	 * (there is no need to keep the correct sequence of packets)
 	 */
-	node = new_node( pkt );
+	node = new_kbnode( pkt );
 	node->next = c->cert->child;
 	c->cert->child = node;
 	return 1;
@@ -259,7 +190,7 @@ add_signature( CTX c, PACKET *pkt )
 	return 0;
     }
     /* and add a new signature node id at the end */
-    node = new_node( pkt );
+    node = new_kbnode( pkt );
     if( !(n2=n1->child) )
 	n1->child = node;
     else {
@@ -380,7 +311,7 @@ proc_compressed( CTX c, PACKET *pkt )
  * Returns: 0 = valid signature or an error code
  */
 static int
-do_check_sig( CTX c, NODE node )
+do_check_sig( CTX c, KBNODE node )
 {
     PKT_signature *sig;
     MD_HANDLE *md;
@@ -403,7 +334,7 @@ do_check_sig( CTX c, NODE node )
     }
     else if( (sig->sig_class&~3) == 0x10 ) { /* classes 0x10 .. 0x13 */
 	if( c->cert->pkt->pkttype == PKT_PUBLIC_CERT ) {
-	    NODE n1 = find_parent( c->cert, node );
+	    KBNODE n1 = find_kbparent( c->cert, node );
 
 	    if( n1 && n1->pkt->pkttype == PKT_USER_ID ) {
 
@@ -483,9 +414,9 @@ print_fingerprint( PKT_public_cert *pkc, PKT_secret_cert *skc )
  */
 
 static void
-list_node( CTX c, NODE node )
+list_node( CTX c, KBNODE node )
 {
-    register NODE n2;
+    register KBNODE n2;
 
     if( !node )
 	;
@@ -645,9 +576,9 @@ print_keyid( FILE *fp, u32 *keyid )
  * Preocess the tree which starts at node
  */
 static void
-proc_tree( CTX c, NODE node )
+proc_tree( CTX c, KBNODE node )
 {
-    NODE n1;
+    KBNODE n1;
     int rc;
 
     if( node->pkt->pkttype == PKT_PUBLIC_CERT )

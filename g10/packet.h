@@ -54,11 +54,11 @@ typedef struct {
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     union {
       struct {
-	MPI  rsa_integer;   /* integer containing the DEK */
-      } rsa;
-      struct {
 	MPI  a, b;	    /* integers with the encrypteded DEK */
       } elg;
+      struct {
+	MPI  rsa_integer;   /* integer containing the DEK */
+      } rsa;
     } d;
 } PKT_pubkey_enc;
 
@@ -82,13 +82,13 @@ typedef struct {
       struct {
 	byte digest_algo;     /* algorithm used for digest (DIGEST_ALGO_xxxx) */
 	byte digest_start[2]; /* first 2 byte of the digest */
-	MPI  rsa_integer;     /* the encrypted digest */
-      } rsa;
+	MPI  a, b;	      /* integers with the digest */
+      } elg;
       struct {
 	byte digest_algo;     /* algorithm used for digest (DIGEST_ALGO_xxxx) */
 	byte digest_start[2]; /* first 2 byte of the digest */
-	MPI  a, b;	      /* integers with the digest */
-      } elg;
+	MPI  rsa_integer;     /* the encrypted digest */
+      } rsa;
     } d;
 } PKT_signature;
 
@@ -100,14 +100,14 @@ typedef struct {
     md_filter_context_t mfx;
     union {
       struct {
-	MPI rsa_n;	    /* public modulus */
-	MPI rsa_e;	    /* public exponent */
-      } rsa;
-      struct {
 	MPI p;		    /* prime */
 	MPI g;		    /* group generator */
 	MPI y;		    /* g^x mod p */
       } elg;
+      struct {
+	MPI rsa_n;	    /* public modulus */
+	MPI rsa_e;	    /* public exponent */
+      } rsa;
     } d;
 } PKT_public_cert;
 
@@ -116,6 +116,23 @@ typedef struct {
     u16     valid_days;     /* valid for this number of days */
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     union {
+      struct {
+	MPI p;		    /* prime */
+	MPI g;		    /* group generator */
+	MPI y;		    /* g^x mod p */
+	MPI x;		    /* secret exponent */
+	u16 csum;	    /* checksum */
+	byte is_protected;  /* The above infos are protected and must */
+			    /* be decrypteded before use */
+	byte protect_algo;  /* cipher used to protect the secret informations*/
+	union { 	    /* information for the protection */
+	  struct {
+	    byte iv[8];     /* initialization vector for CFB mode */
+			    /* when protected, the MPIs above are pointers
+			     * to plain storage */
+	  } blowfish;
+	} protect;
+      } elg;
       struct {
 	MPI rsa_n;	    /* public modulus */
 	MPI rsa_e;	    /* public exponent */
@@ -135,23 +152,6 @@ typedef struct {
 	  } blowfish;
 	} protect;
       } rsa;
-      struct {
-	MPI p;		    /* prime */
-	MPI g;		    /* group generator */
-	MPI y;		    /* g^x mod p */
-	MPI x;		    /* secret exponent */
-	u16 csum;	    /* checksum */
-	byte is_protected;  /* The above infos are protected and must */
-			    /* be decrypteded before use */
-	byte protect_algo;  /* cipher used to protect the secret informations*/
-	union { 	    /* information for the protection */
-	  struct {
-	    byte iv[8];     /* initialization vector for CFB mode */
-			    /* when protected, the MPIs above are pointers
-			     * to plain storage */
-	  } blowfish;
-	} protect;
-      } elg;
     } d;
 } PKT_secret_cert;
 
@@ -213,6 +213,7 @@ int proc_packets( IOBUF a );
 
 /*-- parse-packet.c --*/
 int set_packet_list_mode( int mode );
+int search_packet( IOBUF inp, PACKET *pkt, int pkttype, ulong *retpos );
 int parse_packet( IOBUF inp, PACKET *ret_pkt);
 
 /*-- build-packet.c --*/
