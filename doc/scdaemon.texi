@@ -146,6 +146,17 @@ default is 32768 (first USB device).
 Use @var{library} to access the smartcard reader.  The current default
 is @code{libtowitoko.so}.
 
+
+@item --allow-admin
+@itemx --deny-admin
+@opindex allow-admin
+@opindex deny-admin
+This enables the use of Admin class commands for card application
+where this is supported.  Currently we support it for the OpenPGP
+card.  Deny is the default.  This commands is useful to inhibit
+accidental access to admin class command which could ultimately lock
+the card through worng PIN numbers.
+
 @end table
 
 All the long options may also be given in the configuration file after

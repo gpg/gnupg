@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.9.3 (unreleased)
 ------------------------------------------------
 
+ * New options --{enable,disable}-ocsp to validate keys using OCSP
+   This requires at least DirMngr 0.5.1 to work.  Default is disabled.
+
+
 Noteworthy changes in version 1.9.2 (2003-11-17)
 ------------------------------------------------
 

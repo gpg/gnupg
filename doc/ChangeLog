@@ -1,3 +1,12 @@
+2003-12-01  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.texi (Certificate Options): Add --{enable,disable}-ocsp.
+
+2003-11-17  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.texi (Scdaemon Options): Added --allow-admin and
+	--deny-admin.
+
 2003-10-27  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.texi (Agent GET_CONFIRMATION): New.
