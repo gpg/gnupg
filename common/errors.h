@@ -81,6 +81,9 @@ enum {
   GNUPG_Certificate_Expired = 52,
   GNUPG_Certificate_Too_Young = 53,
   GNUPG_Unsupported_Certificate = 54,
+  GNUPG_Unknown_Sexp = 55,
+  GNUPG_Unsupported_Protection = 56,
+  GNUPG_Corrupted_Protection = 57,
 };
 
 /* Status codes - fixme: should go into another file */
