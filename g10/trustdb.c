@@ -2457,7 +2457,7 @@ mark_fresh_keys()
 int
 query_trust_info( PKT_public_key *pk, const byte *namehash )
 {
-    unsigned trustlevel;
+    int trustlevel;
     int c;
 
     init_trustdb();
