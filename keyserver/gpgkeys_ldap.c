@@ -541,6 +541,9 @@ send_key(int *eof)
   make_one_attr(&modlist,0,"pgpSubKeyID",NULL);
   make_one_attr(&modlist,0,"pgpKeySize",NULL);
   make_one_attr(&modlist,0,"pgpKeyExpireTime",NULL);
+  make_one_attr(&modlist,0,"pgpCertID",NULL);
+  /* Note the count of these deleted attributes.  They're to be used
+     later. */
 
   /* Assemble the INFO stuff into LDAP attributes */
 
@@ -672,13 +675,13 @@ send_key(int *eof)
   err=ldap_modify_s(ldap,dn,modlist);
   if(err==LDAP_NO_SUCH_OBJECT)
     {
-      LDAPMod **addlist=&modlist[10];
+      /* This [11] is the deleted count from earlier */
+      LDAPMod **addlist=&modlist[11];
       err=ldap_add_s(ldap,dn,addlist);
     }
 
   if(err!=LDAP_SUCCESS)
     {
-      printf("err %d\n",err);
       fprintf(console,"gpgkeys: error adding key %s to keyserver: %s\n",
 	      keyid,ldap_err2string(err));
       ret=ldap_err_to_gpg_err(err);
@@ -712,12 +715,12 @@ send_key_keyserver(int *eof)
   char keyid[17];
   LDAPMod mod, *attrs[2];
 
-  memset (&mod, 0, sizeof mod);
-  mod.mod_op      = LDAP_MOD_ADD;
-  mod.mod_type    = pgpkeystr;
-  mod.mod_values  = key;
-  attrs[0]    = &mod;
-  attrs[1]    = NULL;
+  memset(&mod,0,sizeof(mod));
+  mod.mod_op=LDAP_MOD_ADD;
+  mod.mod_type=pgpkeystr;
+  mod.mod_values=key;
+  attrs[0]=&mod;
+  attrs[1]=NULL;
 
   dn=malloc(strlen("pgpCertid=virtual,")+strlen(basekeyspacedn)+1);
   if(dn==NULL)
