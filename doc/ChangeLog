@@ -1,3 +1,7 @@
+2003-09-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS: Note fingerprint of signing key in sig records.
+
 2003-08-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Use "keyserver-url" instead of "preferred-keyserver"
