@@ -958,6 +958,8 @@ AC_SUBST(NETLIBS)
 
 # Note the \\\\ for backslashes.  Autoconf eats one layer, leaving \\
 
+AC_SUBST(GNUPG_LIBEXECDIR,"${libexecdir}/gnupg")
+
 AC_CONFIG_COMMANDS(g10defs.h,[[
 cat >g10defs.tmp <<G10EOF
 /* Generated automatically by configure */

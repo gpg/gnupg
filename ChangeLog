@@ -1,6 +1,7 @@
 2002-07-24  David Shaw  <dshaw@jabberwocky.com>
 
-	* configure.ac: Include a GNUPG_LIBEXECDIR in g10defs.h
+	* configure.ac: Include a GNUPG_LIBEXECDIR in g10defs.h, as well
+	as a SUBST for Makefiles.
 
 2002-07-22  Timo Schulz  <ts@winpt.org>
 
