@@ -73,7 +73,7 @@ libmpi_a_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 # work and add one to cpp .S files
 .S.o:
 	 $(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' > _$*.s
-	 $(COMPILE) -c _$*.s
+	 $(COMPILE) $(ASFLAGS) -c _$*.s
 	 mv -f _$*.o $*.o
 
 .S.lo:
