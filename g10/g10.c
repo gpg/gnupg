@@ -317,7 +317,6 @@ enum cmd_and_opt_values
     oPersonalCipherPreferences,
     oPersonalDigestPreferences,
     oPersonalCompressPreferences,
-    oEmuMDEncodeBug,
     oDisplay,
     oTTYname,
     oTTYtype,
@@ -642,7 +641,6 @@ static ARGPARSE_OPTS opts[] = {
     { oPersonalCipherPreferences, "personal-cipher-prefs", 2, "@"},
     { oPersonalDigestPreferences, "personal-digest-prefs", 2, "@"},
     { oPersonalCompressPreferences, "personal-compress-prefs", 2, "@"},
-    { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
     { oDisplay,    "display",     2, "@" },
     { oTTYname,    "ttyname",     2, "@" },
     { oTTYtype,    "ttytype",     2, "@" },
@@ -662,9 +660,7 @@ static ARGPARSE_OPTS opts[] = {
     { opcscDriver, "pcsc-driver",    2, "@"},
     { oDisableCCID, "disable-ccid", 0, "@"},
 
-
 {0} };
-
 
 
 int g10_errors_seen = 0;
@@ -1673,7 +1669,6 @@ main( int argc, char **argv )
 	  case oPGP7:  opt.compliance = CO_PGP7;  break;
 	  case oPGP8:  opt.compliance = CO_PGP8;  break;
 	  case oGnuPG: opt.compliance = CO_GNUPG; break;
-	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
 #ifndef __riscos__

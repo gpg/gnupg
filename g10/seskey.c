@@ -142,7 +142,7 @@ encode_session_key( DEK *dek, unsigned nbits )
 
 static MPI
 do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
-	      const byte *asn, size_t asnlen, int v3compathack )
+	      const byte *asn, size_t asnlen )
 {
     int nframe = (nbits+7) / 8;
     byte *frame;
@@ -155,14 +155,14 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
 
     /* We encode the MD in this way:
      *
-     *	   0  A PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
+     *	   0  1 PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
      *
      * PAD consists of FF bytes.
      */
     frame = md_is_secure(md)? m_alloc_secure( nframe ) : m_alloc( nframe );
     n = 0;
     frame[n++] = 0;
-    frame[n++] = v3compathack? algo : 1; /* block type */
+    frame[n++] = 1; /* block type */
     i = nframe - len - asnlen -3 ;
     assert( i > 1 );
     memset( frame+n, 0xff, i ); n += i;
@@ -196,8 +196,8 @@ do_encode_md( MD_HANDLE md, int algo, size_t len, unsigned nbits,
  * the encoded value.  Setting this flag forces the old behaviour.
  */
 MPI
-encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo,
-		 unsigned nbits, int v3compathack )
+encode_md_value( int pubkey_algo, MD_HANDLE md,
+		 int hash_algo, unsigned nbits )
 {
     int algo = hash_algo? hash_algo : md_get_algo(md);
     const byte *asn;
@@ -220,7 +220,7 @@ encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo,
     }
     else {
        asn = md_asn_oid( algo, &asnlen, &mdlen );
-       frame = do_encode_md( md, algo, mdlen, nbits, asn, asnlen, v3compathack);
+       frame = do_encode_md( md, algo, mdlen, nbits, asn, asnlen );
     }
     return frame;
 }

@@ -1,3 +1,10 @@
+2003-12-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), main.h, seskey.c (do_encode_md,
+	encode_md_value), sig-check.c (do_check), sign.c (do_sign): Remove
+	--emulate-md-encode-bug as it only applied to Elgamal signatures,
+	which are going away.
+
 2003-11-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* mainproc.c (proc_symkey_enc, proc_encrypted): Add ability to use

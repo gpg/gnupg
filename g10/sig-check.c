@@ -324,7 +324,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     md_final( digest );
 
     result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
-			      mpi_get_nbits(pk->pkey[0]), 0 );
+			      mpi_get_nbits(pk->pkey[0]) );
     if (!result)
         return G10ERR_GENERAL;
     ctx.sig = sig;
@@ -332,21 +332,6 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
 			cmp_help, &ctx );
     mpi_free( result );
-    if( (opt.emulate_bugs & EMUBUG_MDENCODE)
-	&& rc == G10ERR_BAD_SIGN && is_ELGAMAL(pk->pubkey_algo) ) {
-	/* In this case we try again because old GnuPG versions didn't encode
-	 * the hash right. There is no problem with DSA however  */
-	result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
-			      mpi_get_nbits(pk->pkey[0]), (sig->version < 5) );
-        if (!result)
-            rc = G10ERR_GENERAL;
-        else {
-            ctx.sig = sig;
-            ctx.md = digest;
-            rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
-                                cmp_help, &ctx );
-        }
-    }
 
     if( !rc && sig->flags.unknown_critical ) {
       log_info(_("assuming bad signature from key %08lX due to an unknown critical bit\n"),(ulong)keyid_from_pk(pk,NULL));

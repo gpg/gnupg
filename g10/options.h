@@ -103,7 +103,6 @@ struct {
 	CO_GNUPG=0, CO_RFC2440, CO_RFC1991, CO_PGP2, CO_PGP6, CO_PGP7, CO_PGP8
       } compliance;
     int pgp2_workarounds;
-    unsigned int emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
     const char *set_filename;
     STRLIST comments;
@@ -195,9 +194,6 @@ struct {
 #endif /*ENABLE_CARD_SUPPORT*/
 
 } opt;
-
-
-#define EMUBUG_MDENCODE   4
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */

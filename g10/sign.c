@@ -334,7 +334,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     else 
       {
         frame = encode_md_value( sk->pubkey_algo, md,
-                                 digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
+                                 digest_algo, mpi_get_nbits(sk->skey[0]) );
         if (!frame)
           return G10ERR_GENERAL;
         rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
@@ -352,7 +352,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         else {
             frame = encode_md_value (pk->pubkey_algo, md,
                                      sig->digest_algo,
-                                     mpi_get_nbits(pk->pkey[0]), 0);
+                                     mpi_get_nbits(pk->pkey[0]) );
             if (!frame)
                 rc = G10ERR_GENERAL;
             else
