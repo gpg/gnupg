@@ -50,8 +50,7 @@ gpgsm_validate_path (KsbaCert cert)
       goto leave;
     }
 
-  log_debug ("validate path for certificate:\n");
-  gpgsm_dump_cert (cert);
+  gpgsm_dump_cert ("subject", cert);
 
   subject_cert = cert;
 
@@ -87,7 +86,7 @@ gpgsm_validate_path (KsbaCert cert)
 
       /* find the next cert up the tree */
       keydb_search_reset (kh);
-      rc = keydb_search_issuer (kh, issuer);
+      rc = keydb_search_subject (kh, issuer);
       if (rc)
         {
           log_debug ("failed to find issuer's certificate: rc=%d\n", rc);
@@ -105,7 +104,7 @@ gpgsm_validate_path (KsbaCert cert)
         }
 
       log_debug ("got issuer's certificate:\n");
-      gpgsm_dump_cert (issuer_cert);
+      gpgsm_dump_cert ("issuer", issuer_cert);
 
       if (gpgsm_check_cert_sig (issuer_cert, subject_cert) )
         {

@@ -106,10 +106,12 @@ char *gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len);
 char *gpgsm_get_fingerprint_string (KsbaCert cert, int algo);
 
 /*-- certdump.c --*/
-void gpgsm_dump_cert (KsbaCert cert);
+void gpgsm_dump_cert (const char *text, KsbaCert cert);
 
 /*-- certcheck.c --*/
 int gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert);
+int gpgsm_check_cms_signature (KsbaCert cert, const char *sigval,
+                               GCRY_MD_HD md, int hash_algo);
 
 
 /*-- certpath.c --*/
@@ -120,6 +122,9 @@ int gpgsm_validate_path (KsbaCert cert);
 
 /*-- import.c --*/
 int gpgsm_import (int in_fd);
+
+/*-- verify.c --*/
+int gpgsm_verify (int in_fd);
 
 
 

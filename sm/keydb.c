@@ -852,5 +852,18 @@ keydb_search_issuer_sn (KEYDB_HANDLE hd,
   return rc;
 }
 
+int
+keydb_search_subject (KEYDB_HANDLE hd, const char *name)
+{
+  KEYDB_SEARCH_DESC desc;
+  int rc;
+  
+  memset (&desc, 0, sizeof desc);
+  desc.mode = KEYDB_SEARCH_MODE_SUBJECT;
+  desc.u.name = name;
+  rc = keydb_search (hd, &desc, 1);
+  return rc;
+}
+
 
 

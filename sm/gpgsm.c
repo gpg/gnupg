@@ -912,6 +912,7 @@ main ( int argc, char **argv)
       break;
 
     case aVerify:
+      gpgsm_verify (0);
 /*        if ((rc = verify_signatures( argc, argv ) )) */
 /*          log_error ("verify signatures failed: %s\n", gpg_errstr(rc) ); */
       break;
@@ -1023,6 +1024,8 @@ gpgsm_exit (int rc)
 #warning no update_random_seed_file
   update_random_seed_file();
   #endif
+#if 0
+  /* at this time a bit annoying */
   if (opt.debug & DBG_MEMSTAT_VALUE)
     {
       gcry_control( GCRYCTL_DUMP_MEMORY_STATS );
@@ -1030,6 +1033,7 @@ gpgsm_exit (int rc)
     }
   if (opt.debug)
     gcry_control (GCRYCTL_DUMP_SECMEM_STATS );
+#endif
   gcry_control (GCRYCTL_TERM_SECMEM );
   rc = rc? rc : log_get_errorcount(0)? 2 : gpgsm_errors_seen? 1 : 0;
   exit (rc);

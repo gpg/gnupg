@@ -205,6 +205,20 @@ has_issuer_sn (KEYBOXBLOB blob, const char *name, const unsigned char *sn)
           && blob_cmp_name (blob, 0 /* issuer */, name, namelen));
 }
 
+static int
+has_subject (KEYBOXBLOB blob, const char *name)
+{
+  size_t namelen;
+
+  return_val_if_fail (name, 0);
+
+  if (blob_get_type (blob) != BLOBTYPE_X509)
+    return 0;
+
+  namelen = strlen (name);
+  return blob_cmp_name (blob, 1 /* subject */, name, namelen);
+}
+
 
 
 /*
@@ -314,6 +328,10 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               break;
             case KEYDB_SEARCH_MODE_ISSUER_SN:
               if (has_issuer_sn (blob, desc[n].u.name, desc[n].sn))
+                goto found;
+              break;
+            case KEYDB_SEARCH_MODE_SUBJECT:
+              if (has_subject (blob, desc[n].u.name))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SHORT_KID: 

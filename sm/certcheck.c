@@ -34,13 +34,26 @@
 #include "keydb.h"
 #include "i18n.h"
 
+
 static int
-do_encode_md (GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
-	      const byte *asn, size_t asnlen, GCRY_MPI *r_val)
+do_encode_md (GCRY_MD_HD md, int algo,  unsigned int nbits,
+              GCRY_MPI *r_val)
 {
   int nframe = (nbits+7) / 8;
   byte *frame;
   int i, n;
+  byte asn[100];
+  size_t asnlen;
+  size_t len;
+
+  asnlen = DIM(asn);
+  if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
+    {
+      log_error ("No object identifier for algo %d\n", algo);
+      return GPGSM_Internal_Error;
+    }
+
+  len = gcry_md_get_algo_dlen (algo);
   
   if ( len + asnlen + 4  > nframe )
     {
@@ -68,6 +81,15 @@ do_encode_md (GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
   memcpy ( frame+n, asn, asnlen ); n += asnlen;
   memcpy ( frame+n, gcry_md_read(md, algo), len ); n += len;
   assert ( n == nframe );
+  if (DBG_X509)
+    {
+      int j;
+      log_debug ("encoded hash:");
+      for (j=0; j < nframe; j++)
+        log_printf (" %02X", frame[j]);
+      log_printf ("\n");
+    }
+      
   gcry_mpi_scan (r_val, GCRYMPI_FMT_USG, frame, &nframe);
   xfree (frame);
   return 0;
@@ -81,12 +103,6 @@ do_encode_md (GCRY_MD_HD md, int algo, size_t len, unsigned nbits,
 int
 gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
 {
-  /* OID for MD5 as defined in PKCS#1 (rfc2313) */
-  static byte asn[18] = /* Object ID is 1.2.840.113549.2.5 (md5) */
-  { 0x30, 0x20, 0x30, 0x0c, 0x06, 0x08, 0x2a, 0x86, 0x48,
-    0x86, 0xf7, 0x0d, 0x02, 0x05, 0x05, 0x00, 0x04, 0x10
-  };
-
   GCRY_MD_HD md;
   int rc, algo;
   GCRY_MPI frame;
@@ -120,21 +136,6 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
       return map_gcry_err (rc);
     }
-  /*gcry_sexp_dump (s_sig);*/
-
-
-  /* FIXME: need to map the algo to the ASN OID - we assume a fixed
-     one for now */
-  rc = do_encode_md (md, algo, 16, 2048, asn, DIM(asn), &frame);
-  if (rc)
-    {
-      /* fixme: clean up some things */
-      return rc;
-    }
-  /* put hash into the S-Exp s_hash */
-  if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
-    BUG ();
-  /*fputs ("hash:\n", stderr); gcry_sexp_dump (s_hash);*/
 
   p = ksba_cert_get_public_key (issuer_cert);
   if (DBG_X509)
@@ -146,7 +147,64 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
       log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
       return map_gcry_err (rc);
     }
-  /*gcry_sexp_dump (s_pkey);*/
+
+  rc = do_encode_md (md, algo, gcry_pk_get_nbits (s_pkey), &frame);
+  if (rc)
+    {
+      /* fixme: clean up some things */
+      return rc;
+    }
+  /* put hash into the S-Exp s_hash */
+  if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
+    BUG ();
+
+  
+  rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
+  if (DBG_CRYPTO)
+      log_debug ("gcry_pk_verify: %s\n", gcry_strerror (rc));
+  return map_gcry_err (rc);
+}
+
+
+
+int
+gpgsm_check_cms_signature (KsbaCert cert, const char *sigval,
+                           GCRY_MD_HD md, int algo)
+{
+  int rc;
+  GCRY_MPI frame;
+  char *p;
+  GCRY_SEXP s_sig, s_hash, s_pkey;
+
+  rc = gcry_sexp_sscan (&s_sig, NULL, sigval, strlen(sigval));
+  if (rc)
+    {
+      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      return map_gcry_err (rc);
+    }
+
+  p = ksba_cert_get_public_key (cert);
+  if (DBG_X509)
+    log_debug ("public key: %s\n", p);
+
+  rc = gcry_sexp_sscan ( &s_pkey, NULL, p, strlen(p));
+  if (rc)
+    {
+      log_error ("gcry_sexp_scan failed: %s\n", gcry_strerror (rc));
+      return map_gcry_err (rc);
+    }
+  
+
+  rc = do_encode_md (md, algo, gcry_pk_get_nbits (s_pkey), &frame);
+  if (rc)
+    {
+      /* fixme: clean up some things */
+      return rc;
+    }
+  /* put hash into the S-Exp s_hash */
+  if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
+    BUG ();
+
   
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_CRYPTO)

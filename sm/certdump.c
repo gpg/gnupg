@@ -39,12 +39,12 @@ print_integer (unsigned char *p)
   unsigned long len;
 
   if (!p)
-    fputs ("none", stdout);
+    log_printf ("none");
   else
     {
       len = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
       for (p+=4; len; len--, p++)
-        printf ("%02X", *p);
+        log_printf ("%02X", *p);
     }
 }
 
@@ -53,17 +53,17 @@ print_time (time_t t)
 {
 
   if (!t)
-    fputs ("none", stdout);
+    log_printf ("none");
   else if ( t == (time_t)(-1) )
-    fputs ("error", stdout);
+    log_printf ("error");
   else
     {
       struct tm *tp;
 
       tp = gmtime (&t);
-      printf ("%04d-%02d-%02d %02d:%02d:%02d",
-              1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-              tp->tm_hour, tp->tm_min, tp->tm_sec);
+      log_printf ("%04d-%02d-%02d %02d:%02d:%02d",
+                  1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                  tp->tm_hour, tp->tm_min, tp->tm_sec);
       assert (!tp->tm_isdst);
     }
 }
@@ -71,61 +71,55 @@ print_time (time_t t)
 static void
 print_dn (char *p)
 {
-
   if (!p)
-    fputs ("error", stdout);
+    log_printf ("error");
   else
-    printf ("`%s'", p);
+    log_printf ("`%s'", p);
 }
 
 
 void 
-gpgsm_dump_cert (KsbaCert cert)
+gpgsm_dump_cert (const char *text, KsbaCert cert)
 {
   unsigned char *p;
   char *dn;
   time_t t;
 
-  if (!cert)
+  log_debug ("BEGIN Certificate `%s':\n", text? text:"");
+  if (cert)
     {
-      fputs ("[no certificate]\n", stdout);
-      return;
+      p = ksba_cert_get_serial (cert);
+      log_debug ("  serial: ");
+      print_integer (p);
+      ksba_free (p);
+      log_printf ("\n");
+
+      t = ksba_cert_get_validity (cert, 0);
+      log_debug ("  notBefore: ");
+      print_time (t);
+      log_printf ("\n");
+      t = ksba_cert_get_validity (cert, 1);
+      log_debug ("  notAfter: ");
+      print_time (t);
+      log_printf ("\n");
+
+      dn = ksba_cert_get_issuer (cert);
+      log_debug ("  issuer: ");
+      print_dn (dn);
+      ksba_free (dn);
+      log_printf ("\n");
+    
+      dn = ksba_cert_get_subject (cert);
+      log_debug ("  subject: ");
+      print_dn (dn);
+      ksba_free (dn);
+      log_printf ("\n");
+
+      log_debug ("  hash algo: %d\n", ksba_cert_get_digest_algo (cert));
+
+      p = gpgsm_get_fingerprint_string (cert, 0);
+      log_debug ("  SHA1 Fingerprint: %s\n", p);
+      xfree (p);
     }
-    
-  p = ksba_cert_get_serial (cert);
-  fputs ("serial: ", stdout);
-  print_integer (p);
-  ksba_free (p);
-  putchar ('\n');
-
-  t = ksba_cert_get_validity (cert, 0);
-  fputs ("notBefore: ", stdout);
-  print_time (t);
-  putchar ('\n');
-  t = ksba_cert_get_validity (cert, 1);
-  fputs ("notAfter: ", stdout);
-  print_time (t);
-  putchar ('\n');
-    
-  dn = ksba_cert_get_issuer (cert);
-  fputs ("issuer: ", stdout);
-  print_dn (dn);
-  ksba_free (dn);
-  putchar ('\n');
-    
-  dn = ksba_cert_get_subject (cert);
-  fputs ("subject: ", stdout);
-  print_dn (dn);
-  ksba_free (dn);
-  putchar ('\n');
-
-  printf ("hash algo: %d\n", ksba_cert_get_digest_algo (cert));
-
-  p = gpgsm_get_fingerprint_string (cert, 0);
-  printf ("SHA1 Fingerprint=%s\n", p);
-  xfree (p);
+  log_debug ("END Certificate\n");
 }
-
-
-
-

@@ -97,14 +97,21 @@ cmd_decrypt (ASSUAN_CONTEXT ctx, char *line)
   This does a verify operation on the message send to the input-FD.
   The result is written out using status lines.  If an output FD was
   given, the signed text will be written to that.
-
-  The behavior for detached signatures has not yet been specified.  */
+  
+  If the signature is a detached one, the server will inquire about
+  the signed material and the client must provide it.
+  */
 static int 
 cmd_verify (ASSUAN_CONTEXT ctx, char *line)
 {
-  
+  int fd = assuan_get_input_fd (ctx);
 
-  return set_error (Not_Implemented, "fixme");
+  if (fd == -1)
+    return set_error (No_Input, NULL);
+
+  gpgsm_verify (fd);
+
+  return 0;
 }
 
 

@@ -58,6 +58,7 @@ int keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
 int keydb_search_issuer (KEYDB_HANDLE hd, const char *issuer);
 int keydb_search_issuer_sn (KEYDB_HANDLE hd,
                             const char *issuer, const unsigned char *serial);
+int keydb_search_subject (KEYDB_HANDLE hd, const char *issuer);
 
 
 #endif /*GNUPG_KEYDB_H*/
