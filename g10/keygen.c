@@ -525,6 +525,98 @@ keygen_add_revkey(PKT_signature *sig, void *opaque)
 }
 
 static int
+make_backsig(PKT_signature *sig, PKT_public_key *pk,
+ 	     PKT_public_key *sub_pk, PKT_secret_key *sub_sk)
+{
+  PKT_signature *backsig;
+  int rc;
+
+  /* This is not enabled yet, as I want to get a bit closer to RFC day
+     before enabling this.  I've been burned before :) */
+
+  return 0;
+
+  cache_public_key (sub_pk);
+
+  rc=make_keysig_packet(&backsig,pk,NULL,sub_pk,sub_sk, 0x19, 0, 0, 0, 0,
+ 			NULL,NULL);
+  if( rc )
+    log_error("make_keysig_packet failed for backsig: %s\n", g10_errstr(rc) );
+  else
+    {
+      /* get it into a binary packed form. */
+      IOBUF backsig_out=iobuf_temp();
+      PACKET backsig_pkt;
+      byte *buf;
+      size_t pktlen=0;
+ 
+      init_packet(&backsig_pkt);
+      backsig_pkt.pkttype=PKT_SIGNATURE;
+      backsig_pkt.pkt.signature=backsig;
+      build_packet(backsig_out,&backsig_pkt);
+      free_packet(&backsig_pkt);
+      buf=iobuf_get_temp_buffer(backsig_out);
+ 
+      /* Remove the packet header */
+      if(buf[0]&0x40)
+ 	{
+ 	  if(buf[1]<192)
+ 	    {
+ 	      pktlen=buf[1];
+ 	      buf+=2;
+ 	    }
+ 	  else if(buf[1]<224)
+ 	    {
+ 	      pktlen=(buf[1]-192)*256;
+ 	      pktlen+=buf[2]+192;
+ 	      buf+=3;
+ 	    }
+ 	  else if(buf[1]==255)
+ 	    {
+ 	      pktlen =buf[2] << 24;
+ 	      pktlen|=buf[3] << 16;
+ 	      pktlen|=buf[4] << 8;
+ 	      pktlen|=buf[5];
+ 	      buf+=6;
+ 	    }
+	  else
+	    BUG();
+ 	}
+      else
+ 	{
+ 	  int mark=1;
+ 
+ 	  switch(buf[0]&3)
+ 	    {
+ 	    case 3:
+ 	      BUG();
+ 	      break;
+ 
+ 	    case 2:
+ 	      pktlen =buf[mark++] << 24;
+ 	      pktlen|=buf[mark++] << 16;
+ 
+ 	    case 1:
+ 	      pktlen|=buf[mark++] << 8;
+ 
+ 	    case 0:
+ 	      pktlen|=buf[mark++];
+ 	    }
+ 
+ 	  buf+=mark;
+ 	}
+ 
+      /* now make the binary blob into a subpacket */
+      build_sig_subpkt(sig,SIGSUBPKT_SIGNATURE,buf,pktlen);
+
+      iobuf_close(backsig_out);
+    }
+ 
+  return rc;
+}
+
+
+static int
 write_direct_sig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
 		  struct revocation_key *revkey )
 {
@@ -616,7 +708,7 @@ write_keybinding( KBNODE root, KBNODE pub_root,
     PKT_signature *sig;
     int rc=0;
     KBNODE node;
-    PKT_public_key *pk, *subpk;
+    PKT_public_key *pri_pk, *sub_pk;
     struct opaque_data_usage_and_pk oduap;
 
     if( opt.verbose )
@@ -626,29 +718,37 @@ write_keybinding( KBNODE root, KBNODE pub_root,
     node = find_kbnode( pub_root, PKT_PUBLIC_KEY );
     if( !node )
 	BUG();
-    pk = node->pkt->pkt.public_key;
+    pri_pk = node->pkt->pkt.public_key;
     /* we have to cache the key, so that the verification of the signature
      * creation is able to retrieve the public key */
-    cache_public_key (pk);
+    cache_public_key (pri_pk);
  
     /* find the last subkey */
-    subpk = NULL;
+    sub_pk = NULL;
     for(node=pub_root; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
-	    subpk = node->pkt->pkt.public_key;
+	    sub_pk = node->pkt->pkt.public_key;
     }
-    if( !subpk )
+    if( !sub_pk )
 	BUG();
 
     /* and make the signature */
     oduap.usage = use;
-    oduap.pk = subpk;
-    rc = make_keysig_packet( &sig, pk, NULL, subpk, pri_sk, 0x18, 0, 0, 0, 0,
-        		     keygen_add_key_flags_and_expire, &oduap );
+    oduap.pk = sub_pk;
+    rc=make_keysig_packet(&sig, pri_pk, NULL, sub_pk, pri_sk, 0x18, 0, 0, 0, 0,
+			  keygen_add_key_flags_and_expire, &oduap );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
 	return rc;
     }
+
+    /* make a backsig */
+    if(use&PUBKEY_USAGE_SIG)
+      {
+	rc=make_backsig(sig,pri_pk,sub_pk,sub_sk);
+	if(rc)
+	  return rc;
+      }
 
     pkt = m_alloc_clear( sizeof *pkt );
     pkt->pkttype = PKT_SIGNATURE;

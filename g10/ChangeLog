@@ -1,3 +1,15 @@
+2004-04-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (make_backsig): New function to add a backsig to a
+	binding sig of signing subkeys.  Currently disabled.
+	(write_keybinding): Call it here, for signing subkeys only.
+
+	* sign.c (make_keysig_packet): Allow generating 0x19 signatures
+	(same as 0x18 or 0x28, but used for backsigs).
+
+	* packet.h, build-packet.c (build_sig_subpkt): Add new
+	SIGSUBPKT_SIGNATURE type for embedded signatures.
+
 2004-03-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): --no-use-embedded-filename.
