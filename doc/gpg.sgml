@@ -1336,13 +1336,13 @@ $GNUPGHOME.
 
 
 <varlistentry>
-<term>--charset &ParmName;</term>
+<term>--display-charset &ParmName;</term>
 <listitem><para>
 Set the name of the native character set.  This is used to convert
 some informational strings like user IDs to the proper UTF-8
 encoding. If this option is not used, the default character set is
 determined from the current locale.  A verbosity level of 3 shows the
-used one.  Valid values for &ParmName; are:</para>
+chosen set.  Valid values for &ParmName; are:</para>
 <variablelist>
 <varlistentry>
 <term>iso-8859-1</term><listitem><para>This is the Latin 1 set.</para></listitem>
@@ -1369,11 +1369,11 @@ that the OS uses native UTF-8 encoding.</para></listitem>
 <term>--utf8-strings</term>
 <term>--no-utf8-strings</term>
 <listitem><para>
-Assume that the arguments are already given as UTF8 strings.  The default
-(--no-utf8-strings)
-is to assume that arguments are encoded in the character set as specified
-by --charset. These options affect all following arguments.  Both options may
-be used multiple times.
+Assume that command line arguments are given as UTF8 strings.  The
+default (--no-utf8-strings) is to assume that arguments are encoded in
+the character set as specified by --display-charset. These options
+affect all following arguments.  Both options may be used multiple
+times.
 </para></listitem></varlistentry>
 
 
@@ -1512,9 +1512,9 @@ Put the name value pair into the signature as notation data.
 must contain a '@' character.  This is to help prevent pollution of
 the IETF reserved notation namespace.  The --expert flag overrides the
 '@' check.  &ParmValue; may be any printable string; it will be
-encoded in UTF8, so you should check that your --charset is set
-correctly.  If you prefix &ParmName; with an exclamation mark (!), the
-notation data will be flagged as critical (rfc2440:5.2.3.15).
+encoded in UTF8, so you should check that your --display-charset is
+set correctly.  If you prefix &ParmName; with an exclamation mark (!),
+the notation data will be flagged as critical (rfc2440:5.2.3.15).
 --sig-notation sets a notation for data signatures.  --cert-notation
 sets a notation for key signatures (certifications).  --set-notation
 sets both.
@@ -1680,14 +1680,14 @@ conventional encryption.
 <term>--simple-sk-checksum</term>
 <listitem><para>
 Secret keys are integrity protected by using a SHA-1 checksum.  This
-method will be part of an enhanced OpenPGP specification but GnuPG
-already uses it as a countermeasure against certain attacks.  Old
-applications don't understand this new format, so this option may be
-used to switch back to the old behaviour.  Using this this option
-bears a security risk.  Note that using this option only takes effect
-when the secret key is encrypted - the simplest way to make this
-happen is to change the passphrase on the key (even changing it to the
-same value is acceptable).
+method is part of the upcoming enhanced OpenPGP specification but
+GnuPG already uses it as a countermeasure against certain attacks.
+Old applications don't understand this new format, so this option may
+be used to switch back to the old behaviour.  Using this option bears
+a security risk.  Note that using this option only takes effect when
+the secret key is encrypted - the simplest way to make this happen is
+to change the passphrase on the key (even changing it to the same
+value is acceptable).
 </para></listitem></varlistentry>
 
 
@@ -2121,11 +2121,11 @@ verification is not needed.
 <term>--with-colons</term>
 <listitem><para>
 Print key listings delimited by colons.  Note that the output will be
-encoded in UTF-8 regardless of any --charset setting.  This format is
-useful when GnuPG is called from scripts and other programs as it is
-easily machine parsed.  The details of this format are documented in
-the file doc/DETAILS, which is included in the GnuPG source
-distribution.
+encoded in UTF-8 regardless of any --display-charset setting.  This
+format is useful when GnuPG is called from scripts and other programs
+as it is easily machine parsed.  The details of this format are
+documented in the file doc/DETAILS, which is included in the GnuPG
+source distribution.
 </para></listitem></varlistentry>
 
 
