@@ -494,6 +494,9 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
      shallow copy of the list created internally by usb_init ? */
   usb_free_match (match);
 
+  if (!rc && !*handle)
+    rc = -1; /* In case we didn't enter the while lool at all. */
+
   return rc;
 }
 

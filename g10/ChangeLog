@@ -1,5 +1,10 @@
 2003-10-25  Werner Koch  <wk@gnupg.org>
 
+	* ccid-driver.c (ccid_open_reader): Return an error if no USB
+	devices are found.
+
+	* Makefile.am: Replaced INTLLIBS by LIBINTL.
+
 	* g10.c (main) [ENABLE_CARD_SUPPORT]: Add a default for
 	--pcsc-driver.
 
