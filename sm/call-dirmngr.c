@@ -304,6 +304,13 @@ gpgsm_dirmngr_isvalid (KsbaCert cert)
       return seterr (General_Error);
     }
 
+  if (opt.verbose > 1)
+    {
+      char *fpr = gpgsm_get_fingerprint_string (cert, GCRY_MD_SHA1);
+      log_info ("asking dirmngr about %s\n", fpr);
+      xfree (fpr);
+    }
+
   parm.ctx = dirmngr_ctx;
   parm.cert = cert;
 
@@ -313,6 +320,8 @@ gpgsm_dirmngr_isvalid (KsbaCert cert)
 
   rc = assuan_transact (dirmngr_ctx, line, NULL, NULL,
                         inq_certificate, &parm, NULL, NULL);
+  if (opt.verbose > 1)
+    log_info ("response of dirmngr: %s\n", rc? assuan_strerror (rc): "okay");
   return map_assuan_err (rc);
 }
 

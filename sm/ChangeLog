@@ -1,3 +1,11 @@
+2002-07-02  Werner Koch  <wk@gnupg.org>
+
+	* call-dirmngr.c (gpgsm_dirmngr_isvalid): print status of dirmngr
+	call in very verbose mode.
+
+	* gpgsm.c (main): Use the same error codes for STATUS_INV_RECP as
+	with the server mode.
+
 2002-06-29  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c: New option --auto-issuer-key-retrieve.
