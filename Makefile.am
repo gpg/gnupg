@@ -25,7 +25,7 @@ checks = checks
 endif
 
 SUBDIRS = intl zlib util mpi cipher tools g10 po doc ${checks}
-EXTRA_DIST = VERSION  PROJECTS BUGS
+EXTRA_DIST = VERSION  PROJECTS BUGS config.h.in
 DISTCLEANFILES = g10defs.h 
 
 # Add all the files listed in "distfiles" files to the distribution,

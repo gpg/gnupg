@@ -91,6 +91,8 @@
 #define STATUS_USERID_HINT      59
 #define STATUS_UNEXPECTED       60
 #define STATUS_INV_RECP         61
+#define STATUS_NO_RECP          62
+#define STATUS_ALREADY_SIGNED   63
 
 
 /*-- status.c --*/

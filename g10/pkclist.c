@@ -1047,6 +1047,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 
     if( !rc && !any_recipients ) {
 	log_error(_("no valid addressees\n"));
+        write_status_text (STATUS_NO_RECP, "0");
 	rc = G10ERR_NO_USER_ID;
     }
 

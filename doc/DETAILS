@@ -287,6 +287,12 @@ more arguments in future versions.
         Issued for each unusable recipient. The only reason code 
         currently defined is 0 for "No specific reason given".
 
+    INV_RECP <reserved>
+        Issued when no recipients are usable.
+
+    ALREADY_SIGNED <long-keyid>
+        Warning: This is eperimental and might be removed at any time.
+
 
 Key generation
 ==============

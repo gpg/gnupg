@@ -2067,7 +2067,7 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
 
   found:
     if( rc && rc != -1 )
-	log_error("enum_keyblocks_read failed: %s\n", g10_errstr(rc));
+	log_error("keydb_search failed: %s\n", g10_errstr(rc));
 
     if( !rc ) {
         *ret_keyblock = ctx->keyblock; /* return the keyblock */

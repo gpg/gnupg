@@ -76,7 +76,8 @@
   * Add option to put the list of recipients (from the encryption
     layer) into the signatures notation data.
 
-  * Allow to update key signatyres, add status that a key is already signed.
+  * Allow to update key signatures.
+
 
 Scheduled for 1.1
 -----------------

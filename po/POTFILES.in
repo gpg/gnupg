@@ -39,7 +39,6 @@ g10/textfilter.c
 g10/tdbio.c
 g10/trustdb.c
 g10/verify.c
-g10/ringedit.c
 g10/skclist.c
 g10/status.c
 g10/pubkey-enc.c
@@ -48,4 +47,5 @@ g10/encr-data.c
 g10/seskey.c
 g10/delkey.c
 g10/helptext.c
-
+g10/keydb.c
+g10/keyring.c

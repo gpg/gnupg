@@ -290,10 +290,15 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 		if( sk_keyid[0] == node->pkt->pkt.signature->keyid[0]
 		    && sk_keyid[1] == node->pkt->pkt.signature->keyid[1] ) {
+                    char buf[50];
+
 		    /* Fixme: see whether there is a revocation in which
 		     * case we should allow to sign it again. */
 		    tty_printf(_("Already signed by key %08lX\n"),
 							(ulong)sk_keyid[1] );
+                    sprintf (buf, "%08lX%08lX",
+                             (ulong)sk->keyid[0], (ulong)sk->keyid[1] );
+                    write_status_text (STATUS_ALREADY_SIGNED, buf);
 		    uidnode->flag &= ~NODFLG_MARK_A; /* remove mark */
 		}
 	    }

@@ -1,5 +1,9 @@
 2001-09-07  Werner Koch  <wk@gnupg.org>
 
+	* status.c, status.h: Added NO_RECP and ALREADY_SIGNED.
+	* pkclist.c (build_pk_list): Issue NO_RECP.
+	* keyedit.c (sign_uids): Added experimental ALREADY_SIGNED
+
 	* hkp.c (hkp_import): Use log_error. Bug reported by Neal H
 	Walfield. 
 
