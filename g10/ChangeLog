@@ -1,3 +1,10 @@
+2004-09-09  Werner Koch  <wk@g10code.com>
+
+	* photoid.c: Include ttyio.h.
+
+	* parse-packet.c (skip_rest): Removed.  Changed all callers to use
+	the new iobuf_skip_reset.  Orginal patch by Florian Weimer.
+
 2004-09-07  Werner Koch  <wk@g10code.de>
 
 	* photoid.c (generate_photo_id): Use tty_printf and not just

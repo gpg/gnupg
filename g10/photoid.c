@@ -39,6 +39,7 @@
 #include "options.h"
 #include "main.h"
 #include "photoid.h"
+#include "ttyio.h"
 
 /* Generate a new photo id packet, or return NULL if canceled */
 PKT_user_id *generate_photo_id(PKT_public_key *pk)

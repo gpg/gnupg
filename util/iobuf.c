@@ -2120,3 +2120,40 @@ translate_file_handle ( int fd, int for_write )
 #endif
     return fd;
 }
+
+
+void
+iobuf_skip_rest(IOBUF a, unsigned long n, int partial)
+{
+    if ( partial ) {
+	for (;;) {
+	    if (a->nofast || a->d.start >= a->d.len) {
+		if (iobuf_readbyte (a) == -1) {
+		    break;
+		}
+	    } else {
+		unsigned long count = a->d.len - a->d.start;
+		a->nbytes += count;
+		a->d.start = a->d.len;
+	    }
+	}
+    } else {
+	unsigned long remaining = n;
+	while (remaining > 0) {
+	    if (a->nofast || a->d.start >= a->d.len) {
+		if (iobuf_readbyte (a) == -1) {
+		    break;
+		}
+		--remaining;
+	    } else {
+		unsigned long count = a->d.len - a->d.start;
+		if (count > remaining) {
+		    count = remaining;
+		}
+		a->nbytes += count;
+		a->d.start += count;
+		remaining -= count;
+	    }
+	}
+    }
+}

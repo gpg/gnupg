@@ -50,7 +50,6 @@ static int  copy_packet( IOBUF inp, IOBUF out, int pkttype,
 			 unsigned long pktlen, int partial );
 static void skip_packet( IOBUF inp, int pkttype,
 			 unsigned long pktlen, int partial );
-static void skip_rest( IOBUF inp, unsigned long pktlen, int partial );
 static void *read_rest( IOBUF inp, size_t pktlen, int partial );
 static int  parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
 							     PACKET *packet );
@@ -434,7 +433,7 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
                         && pkttype != PKT_PUBLIC_KEY
                         && pkttype != PKT_SECRET_SUBKEY
                         && pkttype != PKT_SECRET_KEY  ) ) {
-	skip_rest(inp, pktlen, partial);
+	iobuf_skip_rest(inp, pktlen, partial);
 	*skip = 1;
 	rc = 0;
 	goto leave;
@@ -593,21 +592,7 @@ skip_packet( IOBUF inp, int pkttype, unsigned long pktlen, int partial )
 	    return;
 	}
     }
-    skip_rest(inp,pktlen,partial);
-}
-
-static void
-skip_rest( IOBUF inp, unsigned long pktlen, int partial )
-{
-    if( partial ) {
-	while( iobuf_get(inp) != -1 )
-		;
-    }
-    else {
-	for( ; pktlen; pktlen-- )
-	    if( iobuf_get(inp) == -1 )
-		break;
-    }
+    iobuf_skip_rest(inp,pktlen,partial);
 }
 
 
@@ -722,7 +707,7 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     }
 
   leave:
-    skip_rest(inp, pktlen, 0);
+    iobuf_skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -776,7 +761,7 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     }
 
   leave:
-    skip_rest(inp, pktlen, 0);
+    iobuf_skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -1427,7 +1412,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
   leave:
-    skip_rest(inp, pktlen, 0);
+    iobuf_skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -1465,7 +1450,7 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 
 
   leave:
-    skip_rest(inp, pktlen, 0);
+    iobuf_skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -1544,7 +1529,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	    printf("\"\n");
 	}
-	skip_rest(inp, pktlen, 0);
+	iobuf_skip_rest(inp, pktlen, 0);
 	return 0;
     }
     else if( version == 4 )
@@ -1876,7 +1861,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
   leave:
-    skip_rest(inp, pktlen, 0);
+    iobuf_skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -2111,7 +2096,7 @@ parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
       if( list_mode )
 	printf(":trust packet: empty\n");
     }
-  skip_rest (inp, pktlen, 0);
+  iobuf_skip_rest (inp, pktlen, 0);
 }
 
 
@@ -2236,7 +2221,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     if( orig_pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
 	log_error("packet(%d) too short\n", pkttype);
         rc = G10ERR_INVALID_PACKET;
-	skip_rest(inp, pktlen, partial);
+	iobuf_skip_rest(inp, pktlen, partial);
 	goto leave;
     }
     if( list_mode ) {
@@ -2339,7 +2324,7 @@ parse_gpg_control( IOBUF inp, int pkttype,
         }
         putchar('\n');
     }
-    skip_rest(inp,pktlen, 0);
+    iobuf_skip_rest(inp,pktlen, 0);
     return G10ERR_INVALID_PACKET;
 }
 

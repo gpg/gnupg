@@ -26,7 +26,6 @@
 
 #define DBG_IOBUF   iobuf_debug_mode
 
-
 #define IOBUFCTRL_INIT	    1
 #define IOBUFCTRL_FREE	    2
 #define IOBUFCTRL_UNDERFLOW 3
@@ -154,5 +153,7 @@ int iobuf_translate_file_handle ( int fd, int for_write );
 #define iobuf_get_temp_buffer(a) ( (a)->d.buf )
 #define iobuf_get_temp_length(a) ( (a)->d.len )
 #define iobuf_is_temp(a)	 ( (a)->use == 3 )
+
+void iobuf_skip_rest (IOBUF a, unsigned long n, int partial);
 
 #endif /*G10_IOBUF_H*/

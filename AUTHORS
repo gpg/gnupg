@@ -11,7 +11,7 @@ Birger Langkjer <birger.langkjer@image.dk> Translations [da]
 
 Daniel Resare  <daniel@resare.com> Translations [sv]
 
-David Shaw <dshaw@jabberwocky.com> Assignment
+David Shaw <dshaw@jabberwocky.com> Assigns past and future changes.
     (all in keyserver/,
      a lot of changes in g10/ see the ChangeLog,
      bug fixes here and there)           
@@ -19,6 +19,9 @@ David Shaw <dshaw@jabberwocky.com> Assignment
 Dokianakis Theofanis <madf@hellug.gr> Translations [el]
 
 Edmund GRIMLEY EVANS <edmundo@rano.org> Translations [eo]
+
+Florian Weimer	<fw@deneb.enyo.de>  Assigns past and future changes
+    (changed:g10/parse-packet.c, include/iobuf.h, util/iobuf.c)
 
 Gaël Quéri  <gael@lautre.net>  Translations [fr]
     (fixed a lot of typos)
@@ -35,7 +38,7 @@ Janusz Aleksander Urbanowicz <alex@bofh.torun.pl> Translations [po]
 
 Magda Procha'zkova'  <magda@math.muni.cz> Translations [cs]
 
-Michael Roth  <mroth@nessie.de>  Assignment
+Michael Roth  <mroth@nessie.de>  Assigns changes.
     (wrote cipher/des.c., changes and bug fixes all over the place)
 
 Marco d'Itri <md@linux.it> Translations [it]
@@ -48,7 +51,8 @@ Niklas Hernaeus <nh@df.lth.se> Disclaimer
 
 Nilgun Belma Buguner <nilgun@technologist.com> Translations [tr]
 
-Nils Ellmenreich  <nils 'at' infosun.fmi.uni-passau.de> Assignment
+Nils Ellmenreich  <nils 'at' infosun.fmi.uni-passau.de> 
+                                      Assigns past and future changes
     (configure.in, cipher/rndlinux.c, FAQ)
 
 Paul Eggert <eggert@twinsun.com> 
@@ -56,14 +60,14 @@ Paul Eggert <eggert@twinsun.com>
 
 Pedro Morais <morais@poli.org> Translations [pt_PT]
 
-Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assignment
+Rémi Guyomarch	<rguyom@mail.dotcom.fr> Assigns past and future changes.
     (g10/compress.c, g10/encr-data.c,
      g10/free-packet.c, g10/mdfilter.c, g10/plaintext.c, util/iobuf.c)
 
-Stefan Bellon   <sbellon@sbellon.de> Assignment
+Stefan Bellon   <sbellon@sbellon.de> Assigns past and future changes.
    (All patches to support RISC OS)
 
-Timo Schulz     <twoaday@freakmail.de> Assignment
+Timo Schulz     <twoaday@freakmail.de> Assigns past and future changes.
    (util/w32reg.c, g10/passphrase.c, g10/hkp.c)
 
 Tedi Heriyanto	<tedi_h@gmx.net> Translations [id]
@@ -77,7 +81,7 @@ Urko Lusa <ulusa@euskalnet.net> Translations [es_ES]
 
 Walter Koch <koch@u32.de>  Translations [de]
 
-Werner Koch  <wk@gnupg.org>  Assignment
+Werner Koch  <wk@gnupg.org>  Assigns GNU Privacy Guard and future changes.
     (started the whole thing)
 
 Yosiaki IIDA <iida@ring.gr.jp> Translations [ja]
@@ -107,7 +111,7 @@ for GnuPG.
 The RPM specs file scripts/gnupg.spec has been contributed by
 several people.
 
- Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
