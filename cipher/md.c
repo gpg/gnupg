@@ -507,7 +507,7 @@ md_start_debug( MD_HANDLE md, const char *suffix )
     }
     idx++;
     sprintf(buf, "dbgmd-%05d" EXTSEP_S "%.10s", idx, suffix );
-    md->debug = fopen(buf, "w");
+    md->debug = fopen(buf, "wb");
     if( !md->debug )
 	log_debug("md debug: can't open %s\n", buf );
 }
