@@ -51,9 +51,10 @@ record.
 		    value for most purposes
 		n = Don't trust this key at all
 		m = There is marginal trust in this key
-		f = The key is full trusted.
-		u = The key is ultimately trusted; this is only used for
-		    keys for which the secret key is also available.
+		f = The key is fully trusted
+		u = The key is ultimately trusted.  This often means
+		    that the secret key is available, but any key may
+		    be marked as ultimately trusted.
  3. Field:  length of key in bits.
  4. Field:  Algorithm:	1 = RSA
 		       16 = ElGamal (encrypt only)

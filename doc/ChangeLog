@@ -1,3 +1,10 @@
+2002-11-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* KEYSERVER: New.  Documents the --with-colons format for
+	keyserver listings.
+
+	* DETAILS: Clarify meaning of 'u'.  Noted by Timo.
+
 2002-11-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document "tsign", clarify "setpref", clarify
