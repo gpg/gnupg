@@ -1,3 +1,18 @@
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (passphrase_to_dek): Add tryagain_text arg to be
+	used with the agent.  Changed all callers.
+	(agent_get_passphrase): Likewise and send it to the agent
+	* seckey-cert.c (do_check): New arg tryagain_text.
+	(check_secret_key): Pass the string to do_check.
+	* keygen.c (ask_passphrase): Set the error text is required.
+	* keyedit.c (change_passphrase): Ditto.
+
+	* passphrase.c (agent_open): Disable opt.use_agent in case of a
+	problem with the agent. 
+	(agent_get_passphrase): Ditto.
+	(passphrase_clear_cache): Ditto.
+
 2002-01-19  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c (agent_open): Add support for the new Assuan based

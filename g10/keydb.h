@@ -174,7 +174,8 @@ int  have_static_passphrase(void);
 void read_passphrase_from_fd( int fd );
 void passphrase_clear_cache ( u32 *keyid, int algo );
 DEK *passphrase_to_dek( u32 *keyid, int pubkey_algo,
-			int cipher_algo, STRING2KEY *s2k, int mode);
+			int cipher_algo, STRING2KEY *s2k, int mode,
+                        const char *tryagain_text);
 void set_next_passphrase( const char *s );
 char *get_last_passphrase(void);
 

@@ -36,7 +36,7 @@
 
 
 static int
-do_check( PKT_secret_key *sk )
+do_check( PKT_secret_key *sk, const char *tryagain_text )
 {
     byte *buffer;
     u16 csum=0;
@@ -68,7 +68,7 @@ do_check( PKT_secret_key *sk )
             keyid[3] = sk->main_keyid[1];
 	}
 	dek = passphrase_to_dek( keyid, sk->pubkey_algo, sk->protect.algo,
-				 &sk->protect.s2k, 0 );
+				 &sk->protect.s2k, 0, tryagain_text );
 	cipher_hd = cipher_open( sk->protect.algo,
 				 CIPHER_MODE_AUTO_CFB, 1);
 	cipher_setkey( cipher_hd, dek->key, dek->keylen );
@@ -181,9 +181,12 @@ check_secret_key( PKT_secret_key *sk, int n )
 	n = opt.batch? 1 : 3; /* use the default value */
 
     for(i=0; i < n && rc == G10ERR_BAD_PASS; i++ ) {
-	if( i )
-	    log_info(_("Invalid passphrase; please try again ...\n"));
-	rc = do_check( sk );
+        const char *tryagain = NULL;
+	if (i) {
+            tryagain = _("Invalid passphrase; please try again");
+            log_info (_("%s ...\n"), tryagain);
+        }
+	rc = do_check( sk, tryagain );
 	if( rc == G10ERR_BAD_PASS && is_status_enabled() ) {
 	    u32 kid[2];
 	    char buf[50];

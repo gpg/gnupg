@@ -1184,6 +1184,7 @@ ask_passphrase( STRING2KEY **ret_s2k )
 {
     DEK *dek = NULL;
     STRING2KEY *s2k;
+    const char *errtext = NULL;
 
     tty_printf(_("You need a Passphrase to protect your secret key.\n\n") );
 
@@ -1191,9 +1192,10 @@ ask_passphrase( STRING2KEY **ret_s2k )
     for(;;) {
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;
-	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2 );
+	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k,2,errtext);
 	if( !dek ) {
-	    tty_printf(_("passphrase not correctly repeated; try again.\n"));
+	    errtext = _("passphrase not correctly repeated; try again");
+	    tty_printf(_("%s.\n"), errtext);
 	}
 	else if( !dek->keylen ) {
 	    m_free(dek); dek = NULL;
@@ -1448,7 +1450,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;
 	set_next_passphrase( r->u.value );
-	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2 );
+	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2, NULL );
 	set_next_passphrase( NULL );
 	assert( dek );
 	memset( r->u.value, 0, strlen(r->u.value) );
@@ -2080,7 +2082,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;
 	set_next_passphrase( passphrase );
-	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2 );
+	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2, NULL );
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,

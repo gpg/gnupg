@@ -641,6 +641,7 @@ change_passphrase( KBNODE keyblock )
     else {
 	DEK *dek = NULL;
 	STRING2KEY *s2k = m_alloc_secure( sizeof *s2k );
+        const char *errtext = NULL;
 
 	tty_printf(_("Enter the new passphrase for this secret key.\n\n") );
 
@@ -648,9 +649,11 @@ change_passphrase( KBNODE keyblock )
 	for(;;) {
 	    s2k->mode = opt.s2k_mode;
 	    s2k->hash_algo = opt.s2k_digest_algo;
-	    dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2 );
+	    dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo,
+                                     s2k, 2, errtext);
 	    if( !dek ) {
-		tty_printf(_("passphrase not correctly repeated; try again.\n"));
+		errtext = _("passphrase not correctly repeated; try again");
+		tty_printf ("%s.\n", errtext);
 	    }
 	    else if( !dek->keylen ) {
 		rc = 0;

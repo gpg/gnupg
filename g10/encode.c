@@ -112,8 +112,8 @@ encode_simple( const char *filename, int mode )
 	s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
 					     : opt.s2k_digest_algo;
 	cfx.dek = passphrase_to_dek( NULL, 0,
-		       opt.def_cipher_algo ? opt.def_cipher_algo
-					   : opt.s2k_cipher_algo , s2k, 2 );
+                  opt.def_cipher_algo ? opt.def_cipher_algo
+		                      : opt.s2k_cipher_algo , s2k, 2, NULL );
 	if( !cfx.dek || !cfx.dek->keylen ) {
 	    rc = G10ERR_PASSPHRASE;
 	    m_free(cfx.dek);

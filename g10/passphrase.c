@@ -371,6 +371,7 @@ agent_open (int *ret_prot)
     infostr = getenv ( "GPG_AGENT_INFO" );
     if ( !infostr ) {
         log_error (_("gpg-agent is not available in this session\n"));
+        opt.use_agent = 0;
         return -1;
     }
     infostr = m_strdup ( infostr );
@@ -378,6 +379,7 @@ agent_open (int *ret_prot)
          || (p-infostr)+1 >= sizeof client_addr.sun_path ) {
         log_error( _("malformed GPG_AGENT_INFO environment variable\n"));
         m_free (infostr );
+        opt.use_agent = 0;
         return -1;
     }
     *p++ = 0;
@@ -390,6 +392,7 @@ agent_open (int *ret_prot)
     if ( prot < 0 || prot > 1) {
         log_error (_("gpg-agent protocol version %d is not supported\n"),prot);
         m_free (infostr );
+        opt.use_agent = 0;
         return -1;
     }
     *ret_prot = prot;
@@ -397,6 +400,7 @@ agent_open (int *ret_prot)
     if( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1 ) {
         log_error ("can't create socket: %s\n", strerror(errno) );
         m_free (infostr );
+        opt.use_agent = 0;
         return -1;
     }
     
@@ -411,6 +415,7 @@ agent_open (int *ret_prot)
                     infostr, strerror (errno) );
         m_free (infostr );
         close (fd );
+        opt.use_agent = 0;
         return -1;
     }
     m_free (infostr);
@@ -430,6 +435,7 @@ agent_open (int *ret_prot)
                          && (line[2] == '\n' || line[2] == ' ')) ) {
         log_error ( _("communication problem with gpg-agent\n"));
         close (fd );
+        opt.use_agent = 0;
         return -1;
       }
         
@@ -460,7 +466,7 @@ agent_close ( int fd )
  *      2:  Ditto, but change the text to "repeat entry"
  */
 static char *
-agent_get_passphrase ( u32 *keyid, int mode )
+agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text )
 {
 #if defined(__riscos__)
   return NULL;
@@ -602,15 +608,35 @@ agent_get_passphrase ( u32 *keyid, int mode )
       char *line, *p;
       int i; 
 
+      if (!tryagain_text)
+        tryagain_text = "X";
+
       /* We allocate 2 time the needed space for atext so that there
          is nenough space for escaping */
-      line = m_alloc (15 + 46 + 3*strlen (atext) + 2);
+      line = m_alloc (15 + 46 
+                      +  3*strlen (tryagain_text) + 3*strlen (atext) + 2);
       strcpy (line, "GET_PASSPHRASE ");
       p = line+15;
-      for (i=0; i < 20; i++, p +=2 )
-        sprintf (p, "%02X", fpr[i]);
+      if (!mode)
+        {
+          for (i=0; i < 20; i++, p +=2 )
+            sprintf (p, "%02X", fpr[i]);
+        }
+      else
+        *p++ = 'X'; /* no caching */
       *p++ = ' ';
-      *p++ = 'X'; /* No error prompt */
+      for (i=0; tryagain_text[i]; i++)
+        {
+          if (tryagain_text[i] < ' ' || tryagain_text[i] == '+')
+            {
+              sprintf (p, "%%%02X", tryagain_text[i]);
+              p += 3;
+            }
+          else if (tryagain_text[i] == ' ')
+            *p++ = '+';
+          else
+            *p++ = tryagain_text[i];
+        }
       *p++ = ' ';
       *p++ = 'X'; /* Use the standard prompt */
       *p++ = ' ';
@@ -655,7 +681,10 @@ agent_get_passphrase ( u32 *keyid, int mode )
                && (pw[7] == ' ' || pw[7] == '\n') ) 
         log_info (_("cancelled by user\n") );
       else 
-        log_error (_("problem with the agent\n"));
+        {
+          log_error (_("problem with the agent - disabling agent use\n"));
+          opt.use_agent = 0;
+        }
     }
       
         
@@ -760,7 +789,10 @@ passphrase_clear_cache ( u32 *keyid, int algo )
       if (buf[0] == 'O' && buf[1] == 'K' && (buf[2] == ' ' || buf[2] == '\n')) 
         ;
       else 
-        log_error (_("problem with the agent\n"));
+        {
+          log_error (_("problem with the agent - disabling agent use\n"));
+          opt.use_agent = 0;
+        }
     }
         
  failure:
@@ -786,7 +818,8 @@ passphrase_clear_cache ( u32 *keyid, int algo )
  */
 DEK *
 passphrase_to_dek( u32 *keyid, int pubkey_algo,
-		   int cipher_algo, STRING2KEY *s2k, int mode )
+		   int cipher_algo, STRING2KEY *s2k, int mode,
+                   const char *tryagain_text)
 {
     char *pw = NULL;
     DEK *dek;
@@ -863,18 +896,31 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	free_public_key( pk );
     }
 
+ agent_died:
     if( next_pw ) {
 	pw = next_pw;
 	next_pw = NULL;
     }
     else if ( opt.use_agent ) {
-	pw = agent_get_passphrase ( keyid, mode == 2? 1: 0 );
-        if ( !pw )
+	pw = agent_get_passphrase ( keyid, mode == 2? 1: 0, tryagain_text );
+        if (!pw)
+          {
+            if (!opt.use_agent)
+              goto agent_died;
             pw = m_strdup ("");
+          }
         if( *pw && mode == 2 ) {
-	    char *pw2 = agent_get_passphrase ( keyid, 2 );
-            if ( !pw2 )
+	    char *pw2 = agent_get_passphrase ( keyid, 2, NULL );
+            if (!pw2)
+              {
+                if (!opt.use_agent)
+                  {
+                    m_free (pw);
+                    pw = NULL;
+                    goto agent_died;
+                  }
                 pw2 = m_strdup ("");
+              }
 	    if( strcmp(pw, pw2) ) {
 		m_free(pw2);
 		m_free(pw);
