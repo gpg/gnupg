@@ -260,7 +260,7 @@ log_set_file (const char *name)
       force_prefixes = 1;
       /* On success close the old logstream right now, so that we are
          really sure it has been closed. */
-      if (fp)
+      if (fp && logstream)
         {
           fclose (logstream);
           logstream = NULL;
