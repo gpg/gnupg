@@ -1,3 +1,8 @@
+2002-06-17  Werner Koch  <wk@gnupg.org>
+
+	* certreqgen.c (read_parameters): Improved error handling.
+	(gpgsm_genkey): Print error message.
+
 2002-06-13  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main): New option --log-file.

@@ -225,7 +225,7 @@ get_parameter_uint (struct para_data_s *para, enum para_name key)
 
 
 
-/* Read the certificate generation parameters from FP and genereate
+/* Read the certificate generation parameters from FP and generate
    (all) certificate requests.  */
 static int
 read_parameters (FILE *fp, KsbaWriter writer)
@@ -244,7 +244,7 @@ read_parameters (FILE *fp, KsbaWriter writer)
   char line[1024], *p;
   const char *err = NULL;
   struct para_data_s *para, *r;
-  int i;
+  int i, rc = 0, any = 0;
   struct reqgen_ctrl_s outctrl;
 
   memset (&outctrl, 0, sizeof (outctrl));
@@ -285,8 +285,10 @@ read_parameters (FILE *fp, KsbaWriter writer)
             outctrl.dryrun = 1;
           else if (!ascii_strcasecmp( keyword, "%commit"))
             {
-              proc_parameters (para, &outctrl);
-              /*FIXME: what about error handling */
+              rc = proc_parameters (para, &outctrl);
+              if (rc)
+                goto leave;
+              any = 1;
               release_parameter_list (para);
               para = NULL;
 	    }
@@ -330,7 +332,10 @@ read_parameters (FILE *fp, KsbaWriter writer)
 
       if (keywords[i].key == pKEYTYPE && para)
         {
-          proc_parameters (para, &outctrl);
+          rc = proc_parameters (para, &outctrl);
+          if (rc)
+            goto leave;
+          any = 1;
           release_parameter_list (para);
           para = NULL;
 	}
@@ -359,17 +364,29 @@ read_parameters (FILE *fp, KsbaWriter writer)
     }
 
   if (err)
-    log_error ("line %d: %s\n", outctrl.lnr, err);
+    {
+      log_error ("line %d: %s\n", outctrl.lnr, err);
+      rc = GNUPG_General_Error;
+    }
   else if (ferror(fp))
-    log_error ("line %d: read error: %s\n", outctrl.lnr, strerror(errno) );
+    {
+      log_error ("line %d: read error: %s\n", outctrl.lnr, strerror(errno) );
+      rc = GNUPG_General_Error;
+    }
   else if (para)
     {
-      proc_parameters (para, &outctrl);
-      /*FIXME: what about error handling */
+      rc = proc_parameters (para, &outctrl);
+      if (rc)
+        goto leave;
+      any = 1;
     }
 
+  if (!rc && !any)
+    rc = GNUPG_No_Data;
+
+ leave:
   release_parameter_list (para);
-  return 0;
+  return rc;
 }
 
 /* check whether there are invalid characters in the email address S */
@@ -658,7 +675,11 @@ gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp)
 
   rc = read_parameters (in_fp, writer);
   if (rc)
-    goto leave;
+    {
+      log_error ("error creating certificate request: %s\n",
+                 gnupg_strerror (rc));
+      goto leave;
+    }
 
   rc = gpgsm_finish_writer (b64writer);
   if (rc) 
