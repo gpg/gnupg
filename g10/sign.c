@@ -619,7 +619,6 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
     memset( &mfx, 0, sizeof mfx);
-    memset( &tfx, 0, sizeof tfx);
     memset( &efx, 0, sizeof efx);
     init_packet( &pkt );
 
@@ -673,8 +672,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	goto leave;
 
     /* prepare to calculate the MD over the input */
-    if( opt.textmode && !outfile )
+    if( opt.textmode && !outfile && !multifile )
+      {
+	memset( &tfx, 0, sizeof tfx);
 	iobuf_push_filter( inp, text_filter, &tfx );
+      }
+
     mfx.md = md_open(0, 0);
 
    /* If we're encrypting and signing, it is reasonable to pick the
@@ -793,6 +796,11 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		}
 		if( opt.verbose )
 		    fprintf(stderr, " `%s'", sl->d );
+		if(opt.textmode)
+		  {
+		    memset( &tfx, 0, sizeof tfx);
+		    iobuf_push_filter( inp, text_filter, &tfx );
+		  }
 		iobuf_push_filter( inp, md_filter, &mfx );
 		while( iobuf_get(inp) != -1 )
 		    ;

@@ -1,3 +1,10 @@
+2003-02-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (sign_file): Do not push textmode filter onto an unopened
+	IOBUF (segfault).  Noted by Marcus Brinkmann.  Push and
+	reinitialize textmode filter for each file in a multiple file
+	list.
+	
 2003-02-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (print_mds): Check that SHA384 and 512 are available
