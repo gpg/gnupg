@@ -221,7 +221,7 @@ char *image_type_to_string(byte type,int style)
 #if !defined(FIXED_PHOTO_VIEWER) && !defined(DISABLE_PHOTO_VIEWER)
 static const char *get_default_photo_command(void)
 {
-#if defined(HAVE_DOSISH_SYSTEM)
+#if defined(__MINGW32__)
   OSVERSIONINFO osvi;
 
   memset(&osvi,0,sizeof(osvi));

@@ -128,6 +128,9 @@
 
 2002-07-01  Werner Koch  <wk@gnupg.org>
 
+	* photoid.c (get_default_photo_command): Also use __MINGW32__
+	instead of HAVE_DOSISH_SYSTEM.
+
 	* encode.c (encode_symmetric): Do not use the new encryption code.
 
 2002-06-30  Werner Koch  <wk@gnupg.org>
