@@ -1,3 +1,24 @@
+2003-03-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h: Err on the side of making an unknown signature a SIG
+	rather than a CERT.
+
+	* import.c (delete_inv_parts): Discard any key signatures that
+	aren't key types (i.e. 0x00, 0x01, etc.)
+
+	* g10.c (main): Add deprecated option warning for
+	--list-ownertrust.  Add --compression-algo alias for
+	--compress-algo.  Change --version output strings to match
+	"showpref" strings, and make translatable.
+
+	* status.c (do_get_from_fd): Accept 'y' as well as 'Y' for
+	--command-fd boolean input.
+
+	* trustdb.c: Fix typo (DISABLE_REGEXP -> DISABLE_REGEX)
+
+	* keyedit.c (show_key_with_all_names_colon): Show no-ks-modify
+	flag.
+
 2003-03-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), keyserver.c (kopts): Add "try-dns-srv"

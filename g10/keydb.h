@@ -27,17 +27,15 @@
 #include "cipher.h"
 
 /* What qualifies as a certification (rather than a signature?) */
-#define IS_SIG(s) (((s)->sig_class==0x00) || ((s)->sig_class==0x01) || \
-		   ((s)->sig_class==0x02) || ((s)->sig_class==0x40))
-#define IS_CERT(s) (!IS_SIG(s))
-
+#define IS_CERT(s)       (IS_KEY_SIG(s) || IS_UID_SIG(s) || IS_SUBKEY_SIG(s) \
+                         || IS_KEY_REV(s) || IS_UID_REV(s) || IS_SUBKEY_REV(s))
+#define IS_SIG(s)        (!IS_CERT(s))
 #define IS_KEY_SIG(s)    ((s)->sig_class == 0x1f)
 #define IS_UID_SIG(s)    (((s)->sig_class & ~3) == 0x10)
 #define IS_SUBKEY_SIG(s) ((s)->sig_class == 0x18)
 #define IS_KEY_REV(s)    ((s)->sig_class == 0x20)
 #define IS_UID_REV(s)    ((s)->sig_class == 0x30)
 #define IS_SUBKEY_REV(s) ((s)->sig_class == 0x28)
-
 
 struct getkey_ctx_s;
 typedef struct getkey_ctx_s *GETKEY_CTX;

@@ -1871,6 +1871,8 @@ show_key_with_all_names_colon (KBNODE keyblock)
                   } 
                 if (uid->mdc_feature)
                   printf (",mdc");
+                if (!uid->ks_modify)
+                  printf (",no-ks-modify");
               } 
             putchar (':');
             /* flags */

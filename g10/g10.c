@@ -120,6 +120,7 @@ enum cmd_and_opt_values { aNull = 0,
     aListTrustDB,
     aListTrustPath,
     aExportOwnerTrust,
+    aListOwnerTrust,
     aImportOwnerTrust,
     aDeArmor,
     aEnArmor,
@@ -363,7 +364,7 @@ static ARGPARSE_OPTS opts[] = {
     { aExportOwnerTrust,
 	      "export-ownertrust", 256, N_("export the ownertrust values")},
     { aImportOwnerTrust,
-	      "import-ownertrust", 256 , N_("import ownertrust values")},
+	      "import-ownertrust", 256, N_("import ownertrust values")},
     { aUpdateTrustDB,
 	      "update-trustdb",0 , N_("update the trust database")},
     { aCheckTrustDB,
@@ -495,7 +496,8 @@ static ARGPARSE_OPTS opts[] = {
     " --fingerprint [names]      show fingerprints\n"  ) },
 
   /* hidden options */
-    { aExportOwnerTrust, "list-ownertrust",0 , "@"},  /* alias */
+    { aListOwnerTrust, "list-ownertrust", 256, "@"}, /* deprecated */
+    { oCompressAlgo, "compression-algo", 1, "@"}, /* alias */
     { aPrintMDs, "print-mds" , 256, "@"}, /* old */
     { aListTrustDB, "list-trustdb",0 , "@"},
     /* Not yet used */
@@ -666,25 +668,25 @@ strusage( int level )
       case 33: p = _("\nSupported algorithms:\n"); break;
       case 34:
 	if( !pubkeys )
-	    pubkeys = build_list("Pubkey: ", 0, pubkey_algo_to_string,
+	    pubkeys = build_list(_("Pubkey: "), 0, pubkey_algo_to_string,
 							check_pubkey_algo );
 	p = pubkeys;
 	break;
       case 35:
 	if( !ciphers )
-	    ciphers = build_list("Cipher: ", 'S', cipher_algo_to_string,
+	    ciphers = build_list(_("Cipher: "), 'S', cipher_algo_to_string,
 							check_cipher_algo );
 	p = ciphers;
 	break;
       case 36:
 	if( !digests )
-	    digests = build_list("Hash: ", 'H', digest_algo_to_string,
+	    digests = build_list(_("Hash: "), 'H', digest_algo_to_string,
 							check_digest_algo );
 	p = digests;
 	break;
       case 37:
 	if( !zips )
-	    zips = build_list("Compress: ",'Z',compress_algo_to_string,
+	    zips = build_list(_("Compression: "),'Z',compress_algo_to_string,
 			                                check_compress_algo);
 	p = zips;
 	break;
@@ -1362,6 +1364,9 @@ main( int argc, char **argv )
 	  case aListTrustPath: set_cmd( &cmd, aListTrustPath); break;
 	  case aDeArmor: set_cmd( &cmd, aDeArmor); break;
 	  case aEnArmor: set_cmd( &cmd, aEnArmor); break;
+	  case aListOwnerTrust:
+	    deprecated_warning(configname,configlineno,
+			       "--list-ownertrust","--export-ownertrust","");
 	  case aExportOwnerTrust: set_cmd( &cmd, aExportOwnerTrust); break;
 	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
           case aPipeMode: set_cmd( &cmd, aPipeMode); break;

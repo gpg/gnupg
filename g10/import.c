@@ -1378,6 +1378,14 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 		       (ulong)keyid[1]);
 	    delete_kbnode( node );
 	}
+	else if( node->pkt->pkttype == PKT_SIGNATURE
+		 && !IS_CERT(node->pkt->pkt.signature))
+	  {
+	    log_error(_("key %08lX: unexpected signature class (0x%02X) -"
+			" skipped\n"),(ulong)keyid[1],
+		      node->pkt->pkt.signature->sig_class);
+	    delete_kbnode(node);
+	  }
 	else if( (node->flag & 4) ) /* marked for deletion */
 	    delete_kbnode( node );
     }

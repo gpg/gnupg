@@ -1463,8 +1463,8 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
 static int
 check_regexp(const char *exp,const char *string)
 {
-#ifdef DISABLE_REGEXP
-  /* When DISABLE_REGEXP is defined, assume all regexps do not
+#ifdef DISABLE_REGEX
+  /* When DISABLE_REGEX is defined, assume all regexps do not
      match. */
   return 0;
 #elif defined(__riscos__)
