@@ -20,10 +20,10 @@ fi
 rm * || true
 ln ../g10/gpg gpg.exe
 i386--mingw32-strip gpg.exe
-if [ -t ../doc/gpg.man ] ; then
+if [ -f ../doc/gpg.man ] ; then
   sed `printf "s/\b.//g"` ../doc/gpg.man >gpg.man
 else
-  man -T latin1 -l ../doc/gpg.1 | sed `printf "s/\b.//g"`  >gpg.man
+  man -Tlatin1 -l ../doc/gpg.1 | sed `printf "s/\b.//g"`  >gpg.man
 fi
 todos gpg.man
 cp ${srcdir}/README .

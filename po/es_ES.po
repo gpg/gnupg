@@ -7,7 +7,7 @@
 # GPG version: 1.0.0
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2000-11-16 17:59+0100\n"
+"POT-Creation-Date: 2000-11-24 13:52+0100\n"
 "PO-Revision-Date: 1999-10-27 06:35+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
@@ -2714,25 +2714,25 @@ msgstr "no puedo manejar el algoritmo de clave pública %d\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "el subpaquete de tipo %d tiene el bit crítico activado\n"
 
-#: g10/passphrase.c:221
+#: g10/passphrase.c:223
 msgid "gpg-agent is not available in this session\n"
 msgstr ""
 
-#: g10/passphrase.c:227
+#: g10/passphrase.c:229
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr ""
 
-#: g10/hkp.c:170 g10/passphrase.c:246
+#: g10/hkp.c:170 g10/passphrase.c:248
 #, fuzzy, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "no puede abrirse `%s': %s\n"
 
-#: g10/passphrase.c:307 g10/passphrase.c:546
+#: g10/passphrase.c:313 g10/passphrase.c:557
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr "(ID clave primaria %08lX)"
 
-#: g10/passphrase.c:317
+#: g10/passphrase.c:323
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -2743,35 +2743,35 @@ msgstr ""
 "Necesita una contraseña para desbloquear la clave secreta\n"
 "del usuario: \""
 
-#: g10/passphrase.c:338
+#: g10/passphrase.c:344
 #, fuzzy
 msgid "Enter passphrase\n"
 msgstr "Introduzca contraseña: "
 
-#: g10/passphrase.c:340
+#: g10/passphrase.c:346
 #, fuzzy
 msgid "Repeat passphrase\n"
 msgstr "Repita contraseña: "
 
-#: g10/passphrase.c:378
+#: g10/passphrase.c:384
 #, fuzzy
 msgid "passphrase too long\n"
 msgstr "linea demasiado larga\n"
 
-#: g10/passphrase.c:390
+#: g10/passphrase.c:396
 msgid "invalid response from agent\n"
 msgstr ""
 
-#: g10/passphrase.c:399
+#: g10/passphrase.c:405
 msgid "cancelled by user\n"
 msgstr ""
 
-#: g10/passphrase.c:402 g10/passphrase.c:467
+#: g10/passphrase.c:408 g10/passphrase.c:477
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr ""
 
-#: g10/passphrase.c:532
+#: g10/passphrase.c:543
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2781,20 +2781,20 @@ msgstr ""
 "Necesita una contraseña para desbloquear la clave secreta\n"
 "del usuario: \""
 
-#: g10/passphrase.c:541
+#: g10/passphrase.c:552
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "clave %2$s de %1$u bits, ID %3$08lX, creada el %4$s"
 
-#: g10/passphrase.c:579
+#: g10/passphrase.c:590
 msgid "can't query password in batchmode\n"
 msgstr "imposible pedir contraseña en modo de proceso por lotes\n"
 
-#: g10/passphrase.c:583
+#: g10/passphrase.c:594
 msgid "Enter passphrase: "
 msgstr "Introduzca contraseña: "
 
-#: g10/passphrase.c:587
+#: g10/passphrase.c:598
 msgid "Repeat passphrase: "
 msgstr "Repita contraseña: "
 

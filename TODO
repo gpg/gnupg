@@ -1,6 +1,8 @@
 
   * Add Dave's UTS patches
 
+  * Fix revoked subkey problem - see key 621cc013
+
   * Don't display the "no secret for decryption available"
 
   ** Check whether the use of -u and --clearsign created 2 signatures.

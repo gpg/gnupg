@@ -9,7 +9,7 @@
 # QingLong <qinglong@Bolizm> (couldn't send an email to let you know)
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2000-11-16 17:59+0100\n"
+"POT-Creation-Date: 2000-11-24 13:52+0100\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Gregory Steuck <steuck@iname.com>\n"
@@ -2835,25 +2835,25 @@ msgstr "невозможно заблокировать связку открытых ключей: %s\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr ""
 
-#: g10/passphrase.c:221
+#: g10/passphrase.c:223
 msgid "gpg-agent is not available in this session\n"
 msgstr ""
 
-#: g10/passphrase.c:227
+#: g10/passphrase.c:229
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr ""
 
-#: g10/hkp.c:170 g10/passphrase.c:246
+#: g10/hkp.c:170 g10/passphrase.c:248
 #, fuzzy, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "невозможно открыть файл `%s': %s\n"
 
-#: g10/passphrase.c:307 g10/passphrase.c:546
+#: g10/passphrase.c:313 g10/passphrase.c:557
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr ""
 
-#: g10/passphrase.c:317
+#: g10/passphrase.c:323
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -2864,12 +2864,12 @@ msgstr ""
 "Вам нужна ключевая фраза, чтобы отомкнуть ключ\n"
 "пользователя: \""
 
-#: g10/passphrase.c:338
+#: g10/passphrase.c:344
 #, fuzzy
 msgid "Enter passphrase\n"
 msgstr "Введите ключевую фразу: %s\n"
 
-#: g10/passphrase.c:340
+#: g10/passphrase.c:346
 #, fuzzy
 msgid "Repeat passphrase\n"
 msgstr "Повторите ключевую фразу: %s\n"
@@ -2877,7 +2877,7 @@ msgstr "Повторите ключевую фразу: %s\n"
 # ################################
 # ####### Help msgids ############
 # ################################
-#: g10/passphrase.c:378
+#: g10/passphrase.c:384
 #, fuzzy
 msgid "passphrase too long\n"
 msgstr ""
@@ -2893,20 +2893,20 @@ msgstr ""
 "werden,\n"
 "sind i.d.R. eine gute Wahl"
 
-#: g10/passphrase.c:390
+#: g10/passphrase.c:396
 msgid "invalid response from agent\n"
 msgstr ""
 
-#: g10/passphrase.c:399
+#: g10/passphrase.c:405
 msgid "cancelled by user\n"
 msgstr ""
 
-#: g10/passphrase.c:402 g10/passphrase.c:467
+#: g10/passphrase.c:408 g10/passphrase.c:477
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr ""
 
-#: g10/passphrase.c:532
+#: g10/passphrase.c:543
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2916,22 +2916,22 @@ msgstr ""
 "Вам нужна ключевая фраза, чтобы отомкнуть ключ\n"
 "пользователя: \""
 
-#: g10/passphrase.c:541
+#: g10/passphrase.c:552
 #, fuzzy, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "(%u-бит %s ключ, ID %08lX, создан %s)\n"
 
-#: g10/passphrase.c:579
+#: g10/passphrase.c:590
 #, fuzzy
 msgid "can't query password in batchmode\n"
 msgstr "невозможно сделать это в пакетном режиме.\n"
 
-#: g10/passphrase.c:583
+#: g10/passphrase.c:594
 #, fuzzy
 msgid "Enter passphrase: "
 msgstr "Введите ключевую фразу: %s\n"
 
-#: g10/passphrase.c:587
+#: g10/passphrase.c:598
 #, fuzzy
 msgid "Repeat passphrase: "
 msgstr "Повторите ключевую фразу: %s\n"

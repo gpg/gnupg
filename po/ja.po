@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.4\n"
-"POT-Creation-Date: 2000-11-16 17:59+0100\n"
+"POT-Creation-Date: 2000-11-24 13:52+0100\n"
 "PO-Revision-Date: 2000-10-19 23:08+09:00\n"
 "Last-Translator: IIDA Yosiaki <y-iida@secom.co.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -2713,25 +2713,25 @@ msgstr "公開鍵のアルゴリズム%dは使用できません\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "タイプ%dの下位パケットにクリティカル・ビットを発見\n"
 
-#: g10/passphrase.c:221
+#: g10/passphrase.c:223
 msgid "gpg-agent is not available in this session\n"
 msgstr ""
 
-#: g10/passphrase.c:227
+#: g10/passphrase.c:229
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr ""
 
-#: g10/hkp.c:170 g10/passphrase.c:246
+#: g10/hkp.c:170 g10/passphrase.c:248
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "`%s'へ接続できません: %s\n"
 
-#: g10/passphrase.c:307 g10/passphrase.c:546
+#: g10/passphrase.c:313 g10/passphrase.c:557
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (主鍵ID %08lX)"
 
-#: g10/passphrase.c:317
+#: g10/passphrase.c:323
 #, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -2742,34 +2742,34 @@ msgstr ""
 "次のユーザーの秘密鍵のロックを解除するには\n"
 "パスフレーズがいります: \""
 
-#: g10/passphrase.c:338
+#: g10/passphrase.c:344
 #, fuzzy
 msgid "Enter passphrase\n"
 msgstr "パスフレーズを入力: "
 
-#: g10/passphrase.c:340
+#: g10/passphrase.c:346
 #, fuzzy
 msgid "Repeat passphrase\n"
 msgstr "パスフレーズを再入力: "
 
-#: g10/passphrase.c:378
+#: g10/passphrase.c:384
 msgid "passphrase too long\n"
 msgstr ""
 
-#: g10/passphrase.c:390
+#: g10/passphrase.c:396
 msgid "invalid response from agent\n"
 msgstr ""
 
-#: g10/passphrase.c:399
+#: g10/passphrase.c:405
 msgid "cancelled by user\n"
 msgstr ""
 
-#: g10/passphrase.c:402 g10/passphrase.c:467
+#: g10/passphrase.c:408 g10/passphrase.c:477
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr ""
 
-#: g10/passphrase.c:532
+#: g10/passphrase.c:543
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -2779,20 +2779,20 @@ msgstr ""
 "次のユーザーの秘密鍵のロックを解除するには\n"
 "パスフレーズがいります: \""
 
-#: g10/passphrase.c:541
+#: g10/passphrase.c:552
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%uビット%s鍵, ID %08lX作成日付は%s"
 
-#: g10/passphrase.c:579
+#: g10/passphrase.c:590
 msgid "can't query password in batchmode\n"
 msgstr "バッチモードではパスワードの問合せができません\n"
 
-#: g10/passphrase.c:583
+#: g10/passphrase.c:594
 msgid "Enter passphrase: "
 msgstr "パスフレーズを入力: "
 
-#: g10/passphrase.c:587
+#: g10/passphrase.c:598
 msgid "Repeat passphrase: "
 msgstr "パスフレーズを再入力: "
 

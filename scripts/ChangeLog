@@ -1,3 +1,8 @@
+2000-11-24  Werner Koch  <wk@gnupg.org>
+
+	* build-w32: New script to build the W32 version.
+	* distfiles: And put it into the distribution
+
 Thu Sep 14 17:45:11 CEST 2000  Werner Koch  <wk@openit.de>
 
         * gnupg.spec.in: Updated.

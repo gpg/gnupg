@@ -25,8 +25,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#ifndef HAVE_DOSISH_SYSTEM
 #include <sys/socket.h>
 #include <sys/un.h>
+#endif
 #include <errno.h>
 
 #include "util.h"
@@ -151,6 +153,7 @@ read_passphrase_from_fd( int fd )
     fd_passwd = pw;
 }
 
+#ifndef HAVE_DOSISH_SYSTEM
 static int
 writen ( int fd, const void *buf, size_t nbytes )
 {
@@ -201,7 +204,6 @@ readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
         *ret_nread = buflen - nleft;
     return 0;
 }
-
 
 /*
  * Open a connection to the agent and send the magic string
@@ -263,7 +265,7 @@ agent_close ( int fd )
 {
     close (fd);
 }
-
+#endif /* !HAVE_DOSISH_SYSTEM */
 
 
 /*
@@ -275,6 +277,10 @@ agent_close ( int fd )
 static char *
 agent_get_passphrase ( u32 *keyid, int mode )
 {
+  #ifdef HAVE_DOSISH_SYSTEM
+    return NULL;
+  #else
+  
     size_t n;
     char *atext;
     char buf[50];
@@ -412,6 +418,7 @@ agent_get_passphrase ( u32 *keyid, int mode )
     free_public_key( pk );
 
     return NULL;
+  #endif
 }
 
 /*
@@ -420,6 +427,9 @@ agent_get_passphrase ( u32 *keyid, int mode )
 void
 passphrase_clear_cache ( u32 *keyid, int algo )
 {
+  #ifdef HAVE_DOSISH_SYSTEM
+    return ;
+  #else
     size_t n;
     char buf[50];
     int fd = -1;
@@ -473,6 +483,7 @@ passphrase_clear_cache ( u32 *keyid, int algo )
     if ( fd != -1 )
         agent_close (fd);
     free_public_key( pk );
+  #endif
 }
 
 
