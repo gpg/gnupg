@@ -1,5 +1,6 @@
 /* mpi-div.c  -  MPI functions
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1994, 1996 Free Software Foundation, Inc.
  *
  * This file is part of G10.
  *
@@ -16,6 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * Note: This code is heavily based on the GNU MP Library.
+ *	 Actually it's the same code with only minor changes in the
+ *	 way the data is stored; this is to support the abstraction
+ *	 of an optional secure memory allocation which may be used
+ *	 to avoid revealing of sensitive data due to paging etc.
+ *	 The GNU MP Library itself is published under the LGPL;
+ *	 however I decided to publish this code under the plain GPL.
  */
 
 #include <config.h>
@@ -189,7 +198,7 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
 	/* Make sure QP and NP point to different objects.  Otherwise the
 	 * numerator would be gradually overwritten by the quotient limbs.  */
 	if(qp == np) { /* Copy NP object to temporary space.  */
-	    np = marker[markidx++] = mpi_alloc_limb_space(nsize);
+	    np = marker[markidx++] = mpi_alloc_limb_space(nsize,quot->secure);
 	    MPN_COPY(np, qp, nsize);
 	}
     }
@@ -209,7 +218,7 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
 	/* Shift up the denominator setting the most significant bit of
 	 * the most significant word.  Use temporary storage not to clobber
 	 * the original contents of the denominator.  */
-	tp = marker[markidx++] = mpi_alloc_limb_space(dsize);
+	tp = marker[markidx++] = mpi_alloc_limb_space(dsize,den->secure);
 	mpihelp_lshift( tp, dp, dsize, normalization_steps );
 	dp = tp;
 
@@ -230,7 +239,7 @@ mpi_tdiv_qr( MPI quot, MPI rem, MPI num, MPI den)
 	if( dp == rp || (quot && (dp == qp))) {
 	    mpi_ptr_t tp;
 
-	    tp = marker[markidx++] = mpi_alloc_limb_space(dsize);
+	    tp = marker[markidx++] = mpi_alloc_limb_space(dsize, den->secure);
 	    MPN_COPY( tp, dp, dsize );
 	    dp = tp;
 	}

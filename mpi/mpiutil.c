@@ -35,20 +35,6 @@
   #undef mpi_free
 #endif
 
-typedef struct unused_obj {
-    struct unused_obj *next;
-    unsigned length;
-    union {
-	MPI mpi;
-	mpi_limb_t *limb;
-    } u;
-} *unused_obj_t;
-
-static unused_obj_t unused_objs;
-static unused_obj_t unused_mpis;
-static unused_obj_t unused_limbs;
-
-
 MPI
 #ifdef M_DEBUG
 mpi_debug_alloc( unsigned nlimbs, const char *info )
@@ -58,34 +44,19 @@ mpi_alloc( unsigned nlimbs )
 {
     MPI a;
 
-    if( unused_mpis ) {
-	unused_obj_t u;
-
-	if( DBG_MEMORY )
-	    log_debug("mpi_alloc(%lu) reusing\n", nlimbs*BITS_PER_MPI_LIMB );
-	a = unused_mpis->u.mpi;
-	u = unused_mpis;
-	unused_mpis = unused_mpis->next;
-	u->next = unused_objs;
-	unused_objs = u;
-    }
-    else {
-	if( DBG_MEMORY )
-	    log_debug("mpi_alloc(%lu) new\n", nlimbs*BITS_PER_MPI_LIMB );
-      #ifdef M_DEBUG
-	a = m_debug_alloc( sizeof *a, info );
-      #else
-	a = m_alloc( sizeof *a );
-      #endif
-    }
+    if( DBG_MEMORY )
+	log_debug("mpi_alloc(%lu)\n", nlimbs*BITS_PER_MPI_LIMB );
   #ifdef M_DEBUG
-    a->d = mpi_debug_alloc_limb_space( nlimbs, info );
+    a = m_debug_alloc( sizeof *a, info );
+    a->d = nlimbs? mpi_debug_alloc_limb_space( nlimbs, 0, info ) : NULL;
   #else
-    a->d = mpi_alloc_limb_space( nlimbs );
+    a = m_alloc( sizeof *a );
+    a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 0 ) : NULL;
   #endif
     a->alloced = nlimbs;
     a->nlimbs = 0;
     a->sign = 0;
+    a->secure = 0;
     return a;
 }
 
@@ -105,13 +76,17 @@ mpi_alloc_secure( unsigned nlimbs )
 {
     MPI a;
 
-    a = m_alloc( sizeof *a );
+    if( DBG_MEMORY )
+	log_debug("mpi_alloc_secure(%lu)\n", nlimbs*BITS_PER_MPI_LIMB );
   #ifdef M_DEBUG
-    a->d = m_debug_alloc_secure( nlimbs * sizeof(mpi_limb_t), info );
+    a = m_debug_alloc( sizeof *a, info );
+    a->d = nlimbs? mpi_debug_alloc_limb_space( nlimbs, 1, info ) : NULL;
   #else
-    a->d = m_alloc_secure( nlimbs * sizeof(mpi_limb_t) );
+    a = m_alloc( sizeof *a );
+    a->d = nlimbs? mpi_alloc_limb_space( nlimbs, 1 ) : NULL;
   #endif
     a->alloced = nlimbs;
+    a->secure = 1;
     a->nlimbs = 0;
     a->sign = 0;
     return a;
@@ -120,27 +95,19 @@ mpi_alloc_secure( unsigned nlimbs )
 
 mpi_ptr_t
 #ifdef M_DEBUG
-mpi_debug_alloc_limb_space( unsigned nlimbs, const char *info )
+mpi_debug_alloc_limb_space( unsigned nlimbs, int secure, const char *info )
 #else
-mpi_alloc_limb_space( unsigned nlimbs )
+mpi_alloc_limb_space( unsigned nlimbs, int secure )
 #endif
 {
-    unused_obj_t u;
     size_t len = nlimbs * sizeof(mpi_limb_t);
 
-    for(u=unused_limbs; u; u = u->next )
-	if( u->length >= len ) {
-	    u->length = 0;
-	    if( DBG_MEMORY )
-		log_debug("mpi_alloc_limb_space(%lu) reusing\n", len*8 );
-	    return u->u.limb;
-	}
     if( DBG_MEMORY )
-	log_debug("mpi_alloc_limb_space(%u) new\n", len*8 );
+	log_debug("mpi_alloc_limb_space(%u)\n", len*8 );
   #ifdef M_DEBUG
-    return m_debug_alloc( len, info );
+    return secure? m_debug_alloc_secure(len, info):m_debug_alloc( len, info );
   #else
-    return m_alloc( len );
+    return secure? m_alloc_secure( len ):m_alloc( len );
   #endif
 }
 
@@ -151,27 +118,11 @@ mpi_debug_free_limb_space( mpi_ptr_t a, const char *info )
 mpi_free_limb_space( mpi_ptr_t a )
 #endif
 {
-    unused_obj_t u;
-
     if( !a )
 	return;
     if( DBG_MEMORY )
 	log_debug("mpi_free_limb_space of size %lu\n", (ulong)m_size(a)*8 );
-    for(u=unused_limbs; u; u = u->next )
-	if( !u->length ) {
-	    u->length = m_size(a);
-	    u->u.limb = a;
-	    return;
-	}
-
-    if( (u=unused_objs) )
-	unused_objs = unused_objs->next;
-    else
-	u = m_alloc( sizeof *u );
-    u->length = m_size(a);
-    u->u.limb = a;
-    u->next = unused_limbs;
-    unused_limbs = u;
+    m_free(a);
 }
 
 
@@ -198,6 +149,7 @@ mpi_resize( MPI a, unsigned nlimbs )
 {
     if( nlimbs <= a->alloced )
 	return; /* no need to do it */
+    /* FIXME: add realloc_secure based on a->secure */
   #ifdef M_DEBUG
     if( a->d )
 	a->d = m_debug_realloc(a->d, nlimbs * sizeof(mpi_limb_t), info );
@@ -226,8 +178,6 @@ mpi_debug_free( MPI a, const char *info )
 mpi_free( MPI a )
 #endif
 {
-    unused_obj_t u;
-
     if( !a )
 	return;
     if( DBG_MEMORY )
@@ -238,13 +188,7 @@ mpi_free( MPI a )
     mpi_free_limb_space(a->d);
   #endif
 
-    if( (u=unused_objs) )
-	unused_objs = unused_objs->next;
-    else
-	u = m_alloc( sizeof *u );
-    u->u.mpi = a;
-    u->next = unused_mpis;
-    unused_mpis = u;
+    m_free(a);
 }
 
 
@@ -264,12 +208,15 @@ mpi_copy( MPI a )
 
     if( a ) {
       #ifdef M_DEBUG
-	b = mpi_debug_alloc( a->nlimbs, info );
+	b = a->secure? mpi_debug_alloc_secure( a->nlimbs, info )
+		     : mpi_debug_alloc( a->nlimbs, info );
       #else
-	b = mpi_alloc( a->nlimbs );
+	b = a->secure? mpi_alloc_secure( a->nlimbs )
+		     : mpi_alloc( a->nlimbs );
       #endif
 	b->nlimbs = a->nlimbs;
 	b->sign = a->sign;
+	b->secure = a->secure;
 	for(i=0; i < b->nlimbs; i++ )
 	    b->d[i] = a->d[i];
     }

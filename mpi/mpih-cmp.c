@@ -1,5 +1,6 @@
 /* mpihelp-sub.c  -  MPI helper functions
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1994, 1996 Free Software Foundation, Inc.
  *
  * This file is part of G10.
  *
@@ -16,6 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * Note: This code is heavily based on the GNU MP Library.
+ *	 Actually it's the same code with only minor changes in the
+ *	 way the data is stored; this is to support the abstraction
+ *	 of an optional secure memory allocation which may be used
+ *	 to avoid revealing of sensitive data due to paging etc.
+ *	 The GNU MP Library itself is published under the LGPL;
+ *	 however I decided to publish this code under the plain GPL.
  */
 
 #include <config.h>

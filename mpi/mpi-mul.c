@@ -1,5 +1,6 @@
 /* mpi-mul.c  -  MPI functions
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1994, 1996 Free Software Foundation, Inc.
  *
  * This file is part of G10.
  *
@@ -16,6 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * Note: This code is heavily based on the GNU MP Library.
+ *	 Actually it's the same code with only minor changes in the
+ *	 way the data is stored; this is to support the abstraction
+ *	 of an optional secure memory allocation which may be used
+ *	 to avoid revealing of sensitive data due to paging etc.
+ *	 The GNU MP Library itself is published under the LGPL;
+ *	 however I decided to publish this code under the plain GPL.
  */
 
 #include <config.h>
@@ -107,24 +116,28 @@ mpi_mul( MPI w, MPI u, MPI v)
     mpi_size_t usize, vsize, wsize;
     mpi_ptr_t up, vp, wp;
     mpi_limb_t cy;
-    int usign, vsign, sign_product;
+    int usign, vsign, usecure, vsecure, sign_product;
     int assign_wp=0;
     mpi_ptr_t tmp_limb=NULL;
 
     if( u->nlimbs < v->nlimbs ) { /* Swap U and V. */
 	usize = v->nlimbs;
 	usign = v->sign;
+	usecure = v->secure;
 	up    = v->d;
 	vsize = u->nlimbs;
 	vsign = u->sign;
+	vsecure = u->secure;
 	vp    = u->d;
     }
     else {
 	usize = u->nlimbs;
 	usign = u->sign;
+	usecure = u->secure;
 	up    = u->d;
 	vsize = v->nlimbs;
 	vsign = v->sign;
+	vsecure = v->secure;
 	vp    = v->d;
     }
     sign_product = usign ^ vsign;
@@ -134,7 +147,7 @@ mpi_mul( MPI w, MPI u, MPI v)
     wsize = usize + vsize;
     if( w->alloced < wsize ) {
 	if( wp == up || wp == vp ) {
-	    wp = mpi_alloc_limb_space( wsize );
+	    wp = mpi_alloc_limb_space( wsize, w->secure );
 	    assign_wp = 1;
 	}
 	else {
@@ -145,7 +158,7 @@ mpi_mul( MPI w, MPI u, MPI v)
     else { /* Make U and V not overlap with W.	*/
 	if( wp == up ) {
 	    /* W and U are identical.  Allocate temporary space for U.	*/
-	    up = tmp_limb = mpi_alloc_limb_space( usize );
+	    up = tmp_limb = mpi_alloc_limb_space( usize, usecure  );
 	    /* Is V identical too?  Keep it identical with U.  */
 	    if( wp == vp )
 		vp = up;
@@ -154,7 +167,7 @@ mpi_mul( MPI w, MPI u, MPI v)
 	}
 	else if( wp == vp ) {
 	    /* W and V are identical.  Allocate temporary space for V.	*/
-	    vp = tmp_limb = mpi_alloc_limb_space( vsize );
+	    vp = tmp_limb = mpi_alloc_limb_space( vsize, vsecure );
 	    /* Copy to the temporary space.  */
 	    MPN_COPY( vp, wp, vsize );
 	}

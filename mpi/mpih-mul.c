@@ -1,5 +1,6 @@
 /* mpihelp-mul.c  -  MPI helper functions
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1994, 1996 Free Software Foundation, Inc.
  *
  * This file is part of G10.
  *
@@ -16,6 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * Note: This code is heavily based on the GNU MP Library.
+ *	 Actually it's the same code with only minor changes in the
+ *	 way the data is stored; this is to support the abstraction
+ *	 of an optional secure memory allocation which may be used
+ *	 to avoid revealing of sensitive data due to paging etc.
+ *	 The GNU MP Library itself is published under the LGPL;
+ *	 however I decided to publish this code under the plain GPL.
  */
 
 #include <config.h>
@@ -54,95 +63,6 @@
     } while (0);
 
 
-
-mpi_limb_t
-mpihelp_addmul_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr,
-		  mpi_size_t s1_size, mpi_limb_t s2_limb)
-{
-    mpi_limb_t cy_limb;
-    mpi_size_t j;
-    mpi_limb_t prod_high, prod_low;
-    mpi_limb_t x;
-
-    /* The loop counter and index J goes from -SIZE to -1.  This way
-     * the loop becomes faster.  */
-    j = -s1_size;
-    res_ptr -= j;
-    s1_ptr -= j;
-
-    cy_limb = 0;
-    do {
-	umul_ppmm( prod_high, prod_low, s1_ptr[j], s2_limb );
-
-	prod_low += cy_limb;
-	cy_limb = (prod_low < cy_limb?1:0) + prod_high;
-
-	x = res_ptr[j];
-	prod_low = x + prod_low;
-	cy_limb += prod_low < x?1:0;
-	res_ptr[j] = prod_low;
-    } while ( ++j );
-    return cy_limb;
-}
-
-
-mpi_limb_t
-mpihelp_submul_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr,
-		  mpi_size_t s1_size, mpi_limb_t s2_limb)
-{
-    mpi_limb_t cy_limb;
-    mpi_size_t j;
-    mpi_limb_t prod_high, prod_low;
-    mpi_limb_t x;
-
-    /* The loop counter and index J goes from -SIZE to -1.  This way
-     * the loop becomes faster.  */
-    j = -s1_size;
-    res_ptr -= j;
-    s1_ptr -= j;
-
-    cy_limb = 0;
-    do {
-	umul_ppmm( prod_high, prod_low, s1_ptr[j], s2_limb);
-
-	prod_low += cy_limb;
-	cy_limb = (prod_low < cy_limb?1:0) + prod_high;
-
-	x = res_ptr[j];
-	prod_low = x - prod_low;
-	cy_limb += prod_low > x?1:0;
-	res_ptr[j] = prod_low;
-    } while( ++j );
-
-    return cy_limb;
-}
-
-mpi_limb_t
-mpihelp_mul_1( mpi_ptr_t res_ptr, mpi_ptr_t s1_ptr, mpi_size_t s1_size,
-						    mpi_limb_t s2_limb)
-{
-    mpi_limb_t cy_limb;
-    mpi_size_t j;
-    mpi_limb_t prod_high, prod_low;
-
-    /* The loop counter and index J goes from -S1_SIZE to -1.  This way
-     * the loop becomes faster.  */
-    j = -s1_size;
-
-    /* Offset the base pointers to compensate for the negative indices.  */
-    s1_ptr -= j;
-    res_ptr -= j;
-
-    cy_limb = 0;
-    do {
-	umul_ppmm( prod_high, prod_low, s1_ptr[j], s2_limb );
-	prod_low += cy_limb;
-	cy_limb = (prod_low < cy_limb?1:0) + prod_high;
-	res_ptr[j] = prod_low;
-    } while( ++j );
-
-    return cy_limb;
-}
 
 
 /* Multiply the natural numbers u (pointed to by UP) and v (pointed to by VP),
@@ -437,12 +357,14 @@ sqr_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t size, mpi_ptr_t tspace)
 void
 mpihelp_mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp, mpi_size_t size)
 {
+    /* FIXME: mpi_alloc_limb_space, secure arg is wrong! */
+
     if( up == vp ) {
 	if( size < KARATSUBA_THRESHOLD )
 	    sqr_n_basecase( prodp, up, size );
 	else {
 	    mpi_ptr_t tspace;
-	    tspace = mpi_alloc_limb_space( 2 * size );
+	    tspace = mpi_alloc_limb_space( 2 * size, 0 );
 	    sqr_n( prodp, up, size, tspace );
 	    mpi_free_limb_space( tspace );
 	}
@@ -452,7 +374,7 @@ mpihelp_mul_n( mpi_ptr_t prodp, mpi_ptr_t up, mpi_ptr_t vp, mpi_size_t size)
 	    mul_n_basecase( prodp, up, vp, size );
 	else {
 	    mpi_ptr_t tspace;
-	    tspace = mpi_alloc_limb_space( 2 * size );
+	    tspace = mpi_alloc_limb_space( 2 * size, 0 );
 	    mul_n (prodp, up, vp, size, tspace);
 	    mpi_free_limb_space( tspace );
 	}
@@ -525,14 +447,16 @@ mpihelp_mul( mpi_ptr_t prodp, mpi_ptr_t up, mpi_size_t usize,
 	return cy;
     }
 
-    tspace = mpi_alloc_limb_space( 2 * vsize );
+    /* FIXME: mpi_alloc_limb_space, secure arg is wrong! */
+    tspace = mpi_alloc_limb_space( 2 * vsize, 0 );
     MPN_MUL_N_RECURSE( prodp, up, vp, vsize, tspace );
 
     prodp += vsize;
     up += vsize;
     usize -= vsize;
     if( usize >= vsize ) {
-	mpi_ptr_t tp = mpi_alloc_limb_space( 2 * vsize );
+	/* FIXME: mpi_alloc_limb_space, secure arg is wrong! */
+	mpi_ptr_t tp = mpi_alloc_limb_space( 2 * vsize, 0 );
 	do {
 	    MPN_MUL_N_RECURSE( tp, up, vp, vsize, tspace );
 	    cy = mpihelp_add_n( prodp, prodp, tp, vsize );

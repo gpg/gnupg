@@ -1,5 +1,6 @@
 /* mpi-pow.c  -  MPI functions
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
+ *	Copyright (C) 1994, 1996 Free Software Foundation, Inc.
  *
  * This file is part of G10.
  *
@@ -16,6 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * Note: This code is heavily based on the GNU MP Library.
+ *	 Actually it's the same code with only minor changes in the
+ *	 way the data is stored; this is to support the abstraction
+ *	 of an optional secure memory allocation which may be used
+ *	 to avoid revealing of sensitive data due to paging etc.
+ *	 The GNU MP Library itself is published under the LGPL;
+ *	 however I decided to publish this code under the plain GPL.
  */
 
 #include <config.h>
@@ -35,6 +44,7 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
     mpi_ptr_t  rp, ep, mp, bp;
     mpi_size_t esize, msize, bsize, rsize;
     int        esign, msign, bsign, rsign;
+    int        esec,  msec,  bsec,  rsec;
     mpi_size_t size;
     int mod_shift_cnt;
     int negative_result;
@@ -47,6 +57,11 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
     size = 2 * msize;
     esign = exp->sign;
     msign = mod->sign;
+
+    esec = exp->secure;
+    msec = mod->secure;
+    bsec = base->secure;
+    rsec = res->secure;
 
     rp = res->d;
     ep = exp->d;
@@ -67,7 +82,7 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
      * mpn_divrem.  This will make the intermediate values in the calculation
      * slightly larger, but the correct result is obtained after a final
      * reduction using the original MOD value.	*/
-    mp = mp_marker = mpi_alloc_limb_space(msize);
+    mp = mp_marker = mpi_alloc_limb_space(msize, msec);
     count_leading_zeros( mod_shift_cnt, mod->d[msize-1] );
     if( mod_shift_cnt )
 	mpihelp_lshift( mp, mod->d, msize, mod_shift_cnt );
@@ -79,7 +94,7 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
     if( bsize > msize ) { /* The base is larger than the module. Reduce it. */
 	/* Allocate (BSIZE + 1) with space for remainder and quotient.
 	 * (The quotient is (bsize - msize + 1) limbs.)  */
-	bp = bp_marker = mpi_alloc_limb_space( bsize + 1);
+	bp = bp_marker = mpi_alloc_limb_space( bsize + 1, bsec );
 	MPN_COPY( bp, base->d, bsize );
 	/* We don't care about the quotient, store it above the remainder,
 	 * at BP + MSIZE.  */
@@ -103,7 +118,7 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 	 * parameters are identical to RES, defer deallocation of the old
 	 * space.  */
 	if( rp == ep || rp == mp || rp == bp ) {
-	    rp = mpi_alloc_limb_space( size );
+	    rp = mpi_alloc_limb_space( size, rsec );
 	    assign_rp = 1;
 	}
 	else {
@@ -115,18 +130,18 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 	if( rp == bp ) {
 	    /* RES and BASE are identical.  Allocate temp. space for BASE.  */
 	    assert( !bp_marker );
-	    bp = bp_marker = mpi_alloc_limb_space( bsize );
+	    bp = bp_marker = mpi_alloc_limb_space( bsize, bsec );
 	    MPN_COPY(bp, rp, bsize);
 	}
 	if( rp == ep ) {
 	    /* RES and EXP are identical.  Allocate temp. space for EXP.  */
-	    ep = ep_marker = mpi_alloc_limb_space( esize );
+	    ep = ep_marker = mpi_alloc_limb_space( esize, esec );
 	    MPN_COPY(ep, rp, esize);
 	}
 	if( rp == mp ) {
 	    /* RES and MOD are identical.  Allocate temporary space for MOD.*/
 	    assert( !mp_marker );
-	    mp = mp_marker = mpi_alloc_limb_space( msize );
+	    mp = mp_marker = mpi_alloc_limb_space( msize, msec );
 	    MPN_COPY(mp, rp, msize);
 	}
     }
@@ -137,7 +152,7 @@ mpi_powm( MPI res, MPI base, MPI exp, MPI mod)
 
     {
 	mpi_size_t i;
-	mpi_ptr_t xp = xp_marker = mpi_alloc_limb_space( 2 * (msize + 1) );
+	mpi_ptr_t xp = xp_marker = mpi_alloc_limb_space( 2 * (msize + 1), msec );
 	int c;
 	mpi_limb_t e;
 	mpi_limb_t carry_limb;
