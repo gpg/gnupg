@@ -59,6 +59,7 @@
 
 
 
+
 /* Basic types.  */
 
 /* A "byte".  */
@@ -241,12 +242,12 @@ es_read_string (estream_t stream, unsigned int secure,
 
   /* Allocate space.  */
   if (secure)
-    buffer = gcry_malloc_secure (length + 1);
+    buffer = xtrymalloc_secure (length + 1);
   else
-    buffer = gcry_malloc (length + 1);
+    buffer = xtrymalloc (length + 1);
   if (! buffer)
     {
-      /* FIXME: gcry_malloc_secure does not set errno, does it?  */
+      /* FIXME: xtrymalloc_secure does not set errno, does it?  */
       err = gpg_error_from_errno (errno);
       abort ();
       goto out;
@@ -266,7 +267,7 @@ es_read_string (estream_t stream, unsigned int secure,
  out:
 
   if (err)
-    gcry_free (buffer);
+    xfree (buffer);
 
   return err;
 }
@@ -338,7 +339,7 @@ es_read_mpi (estream_t stream, unsigned int secure, gcry_mpi_t *mpint)
 
  out:
 
-  gcry_free (mpi_data);
+  xfree (mpi_data);
 
   return err;
 }
@@ -360,7 +361,7 @@ es_write_mpi (estream_t stream, gcry_mpi_t mpint)
 
  out:
 
-  free (mpi_buffer);
+  xfree (mpi_buffer);
 
   return err;
 }
@@ -391,7 +392,7 @@ es_read_file (const char *filename, unsigned char **buffer, size_t *buffer_n)
       goto out;
     }
 
-  buffer_new = gcry_malloc (statbuf.st_size);
+  buffer_new = xtrymalloc (statbuf.st_size);
   if (! buffer_new)
     {
       err = gpg_error_from_errno (errno);
@@ -411,7 +412,7 @@ es_read_file (const char *filename, unsigned char **buffer, size_t *buffer_n)
     es_fclose (stream);
 
   if (err)
-    gcry_free (buffer_new);
+    xfree (buffer_new);
 
   return err;
 }
@@ -458,7 +459,7 @@ mpint_list_free (gcry_mpi_t *mpi_list)
 
       for (i = 0; mpi_list[i]; i++)
 	gcry_mpi_release (mpi_list[i]);
-      gcry_free (mpi_list);
+      xfree (mpi_list);
     }
 }
 
@@ -489,7 +490,7 @@ ssh_receive_mpint_list (estream_t stream, int secret,
     }
   elems_n = strlen (elems);
 
-  mpis = gcry_malloc (sizeof (*mpis) * (elems_n + 1));
+  mpis = xtrymalloc (sizeof (*mpis) * (elems_n + 1));
   if (! mpis)
     {
       err = gpg_error_from_errno (errno);
@@ -568,7 +569,7 @@ ssh_signature_encoder_rsa (estream_t signature_blob, gcry_mpi_t *mpis)
     goto out;
 
   err = es_write_string (signature_blob, data, data_n);
-  gcry_free (data);
+  xfree (data);
 
  out:
 
@@ -606,7 +607,7 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
       memcpy (buffer + (i * SSH_DSA_SIGNATURE_PADDING)
 	      + (SSH_DSA_SIGNATURE_PADDING - data_n), data, data_n);
 
-      gcry_free (data);
+      xfree (data);
       data = NULL;
     }
   if (err)
@@ -616,7 +617,7 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
 
  out:
 
-  gcry_free (data);
+  xfree (data);
 
   return err;
 }
@@ -667,14 +668,14 @@ ssh_sexp_construct (gcry_sexp_t *sexp,
   elems_n = strlen (elems);
 
   sexp_template_n = 33 + strlen (key_spec.identifier) + (elems_n * 6) - (! secret);
-  sexp_template = gcry_malloc (sexp_template_n);
+  sexp_template = xtrymalloc (sexp_template_n);
   if (! sexp_template)
     {
       err = gpg_error_from_errno (errno);
       goto out;
     }
 
-  arg_list = gcry_malloc (sizeof (*arg_list) * (elems_n + 1));
+  arg_list = xtrymalloc (sizeof (*arg_list) * (elems_n + 1));
   if (! arg_list)
     {
       err = gpg_error_from_errno (errno);
@@ -699,11 +700,9 @@ ssh_sexp_construct (gcry_sexp_t *sexp,
 
  out:
 
-  gcry_free (arg_list);
-  gcry_free (sexp_template);
-  if (err)
-    gcry_sexp_release (sexp_new);
-  
+  xfree (arg_list);
+  xfree (sexp_template);
+
   return err;
 }
 
@@ -758,10 +757,10 @@ ssh_sexp_extract (gcry_sexp_t sexp,
     }
 
   elems_n = strlen (elems);
-  mpis_new = gcry_malloc (sizeof (*mpis_new) * (elems_n + 1));
+  mpis_new = xtrymalloc (sizeof (*mpis_new) * (elems_n + 1));
   if (! mpis_new)
     {
-      err = gpg_error_from_errno (errno); /* FIXME, gcry_malloc+errno.  */
+      err = gpg_error_from_errno (errno); /* FIXME, xtrymalloc+errno.  */
       goto out;
     }
   memset (mpis_new, 0, sizeof (*mpis_new) * (elems_n + 1));
@@ -798,6 +797,7 @@ ssh_sexp_extract (gcry_sexp_t sexp,
   /* We do not require a comment sublist to be present here.  */
   data = NULL;
   data_n = 0;
+
   comment_list = gcry_sexp_find_token (sexp, "comment", 0);
   if (comment_list)
     data = gcry_sexp_nth_data (comment_list, 1, &data_n);
@@ -807,7 +807,7 @@ ssh_sexp_extract (gcry_sexp_t sexp,
       data_n = 6;
     }
 
-  comment_new = gcry_malloc (data_n + 1);
+  comment_new = xtrymalloc (data_n + 1);
   if (! comment_new)
     {
       err = gpg_error_from_errno (errno);
@@ -819,8 +819,7 @@ ssh_sexp_extract (gcry_sexp_t sexp,
   if (secret)
     *secret = is_secret;
   *mpis = mpis_new;
-  if (comment)
-    *comment = comment_new;
+  *comment = comment_new;
 
  out:
 
@@ -830,7 +829,7 @@ ssh_sexp_extract (gcry_sexp_t sexp,
   
   if (err)
     {
-      gcry_free (comment_new);
+      xfree (comment_new);
       mpint_list_free (mpis_new);
     }
 
@@ -863,7 +862,7 @@ ssh_sexp_extract_key_type (gcry_sexp_t sexp, const char **key_type)
       goto out;
     }
 
-  key_type_new = gcry_malloc (data_n + 1);
+  key_type_new = xtrymalloc (data_n + 1);
   if (! key_type_new)
     {
       err = gpg_error_from_errno (errno);
@@ -962,16 +961,14 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret, int read_co
 
   if (key_spec)
     *key_spec = spec;
+  *key_new = key;
   
  out:
 
-  gcry_free (mpi_list);
-  gcry_free (key_type);
+  mpint_list_free (mpi_list);
+  xfree (key_type);
   if (read_comment)
-    gcry_free (comment);
-
-  if (! err)
-    *key_new = key;
+    xfree (comment);
 
   return err;
 }
@@ -1017,7 +1014,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   if (err)
     goto out;
 
-  blob_new = gcry_malloc (blob_size_new);
+  blob_new = xtrymalloc (blob_size_new);
   if (! blob_new)
     {
       err = gpg_error_from_errno (errno);
@@ -1036,7 +1033,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
   if (stream)
     es_fclose (stream);
   if (err)
-    gcry_free (blob_new);
+    xfree (blob_new);
 
   return err;
 }
@@ -1083,9 +1080,9 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public)
  out:
 
   mpint_list_free (mpi_list);
-  gcry_free ((void *) key_type);
-  gcry_free ((void *) comment);
-  gcry_free (blob);
+  xfree ((void *) key_type);
+  xfree ((void *) comment);
+  xfree (blob);
 
   return err;
 }
@@ -1165,7 +1162,7 @@ key_secret_to_public (gcry_sexp_t *key_public,
       data_n = 0;
     }
 
-  comment = gcry_malloc (data_n + 1);
+  comment = xtrymalloc (data_n + 1);
   if (! comment)
     {
       err = gpg_error_from_errno (errno);
@@ -1178,14 +1175,14 @@ key_secret_to_public (gcry_sexp_t *key_public,
   value_pair = NULL;
   
   template_n = 29 + strlen (spec.identifier) + (elems_n * 7) + 1;
-  template = gcry_malloc (template_n);
+  template = xtrymalloc (template_n);
   if (! template)
     {
       err = gpg_error_from_errno (errno);
       goto out;
     }
 
-  mpis = gcry_malloc (sizeof (*mpis) * (elems_n + 1));
+  mpis = xtrymalloc (sizeof (*mpis) * (elems_n + 1));
   if (! mpis)
     {
       err = gpg_error_from_errno (errno);	/* FIXME: errno.  */
@@ -1193,7 +1190,7 @@ key_secret_to_public (gcry_sexp_t *key_public,
     }
   memset (mpis, 0, sizeof (*mpis) * (elems_n + 1));
 
-  arglist = gcry_malloc (sizeof (*arglist) * (elems_n + 1));
+  arglist = xtrymalloc (sizeof (*arglist) * (elems_n + 1));
   if (! arglist)
     {
       err = gpg_error_from_errno (errno);
@@ -1235,10 +1232,10 @@ key_secret_to_public (gcry_sexp_t *key_public,
  out:
 
   gcry_sexp_release (value_pair);
-  gcry_free (template);
+  xfree (template);
   mpint_list_free (mpis);
-  gcry_free (arglist);
-  gcry_free (comment);
+  xfree (arglist);
+  xfree (comment);
 
   return err;
 }
@@ -1250,7 +1247,7 @@ make_cstring (const char *data, size_t data_n)
 {
   char *s;
 
-  s = gcry_malloc (data_n + 1);
+  s = xtrymalloc (data_n + 1);
   if (s)
     {
       strncpy (s, data, data_n);
@@ -1295,6 +1292,7 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
   key_type = NULL;
   key_path = NULL;
   key_counter = 0;
+  buffer = NULL;
   dir = NULL;
   bad = 0;
   err = 0;
@@ -1315,7 +1313,7 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
     }
   key_directory_n = strlen (key_directory);
   
-  key_path = gcry_malloc (key_directory_n + 46);
+  key_path = xtrymalloc (key_directory_n + 46);
   if (! key_path)
     {
       err = gpg_err_code_from_errno (errno);
@@ -1355,7 +1353,7 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
 	      if (err)
 		break;
 
-	      gcry_free (buffer);
+	      xfree (buffer);
 	      buffer = NULL;
 
 	      err = ssh_sexp_extract_key_type (key_secret, &key_type);
@@ -1366,7 +1364,7 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
 	      if (err)
 		break;
 
-	      gcry_free ((void *) key_type);
+	      xfree ((void *) key_type);
 	      key_type = NULL;
 
 	      err = key_secret_to_public (&key_public, spec, key_secret);
@@ -1416,10 +1414,11 @@ ssh_handler_request_identities (ctrl_t ctrl, estream_t request, estream_t respon
     es_fclose (key_blobs);
   if (dir)
     closedir (dir);
-  
+
   free (key_directory);
-  gcry_free (key_path);
-  gcry_free ((void *) key_type);		/* FIXME? */
+  xfree (key_path);
+  xfree (buffer);
+  xfree ((void *) key_type);		/* FIXME? */
 
   return bad;
 }
@@ -1509,7 +1508,7 @@ data_sign (CTRL ctrl, ssh_signature_encoder_t sig_encoder,
   elems = spec.elems_signature;
   elems_n = strlen (elems);
 
-  mpis = gcry_malloc (sizeof (*mpis) * (elems_n + 1));
+  mpis = xtrymalloc (sizeof (*mpis) * (elems_n + 1));
   if (! mpis)
     {
       err = gpg_error_from_errno (errno);
@@ -1536,7 +1535,6 @@ data_sign (CTRL ctrl, ssh_signature_encoder_t sig_encoder,
       sublist = NULL;
 
       mpis[i] = sig_value;
-      sig_value = NULL;
     }
   if (err)
     goto out;
@@ -1552,7 +1550,7 @@ data_sign (CTRL ctrl, ssh_signature_encoder_t sig_encoder,
       goto out;
     }
 
-  sig_blob = gcry_malloc (sig_blob_n);
+  sig_blob = xtrymalloc (sig_blob_n);
   if (! sig_blob)
     {
       err = gpg_error_from_errno (errno);
@@ -1575,18 +1573,16 @@ data_sign (CTRL ctrl, ssh_signature_encoder_t sig_encoder,
   
  out:
 
+  if (err)
+    xfree (sig_blob);
+
   if (stream)
     es_fclose (stream);
-
-  if (err)
-    gcry_free (sig_blob);
-
   gcry_sexp_release (valuelist);
   gcry_sexp_release (signature_sexp);
   gcry_sexp_release (sublist);
-  gcry_mpi_release (sig_value);
   mpint_list_free (mpis);
-  gcry_free ((void *) identifier);
+  xfree ((void *) identifier);
 
   return err;
 }
@@ -1680,7 +1676,7 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   memcpy (ctrl->keygrip, key_grip, 20);
 
   err = data_sign (ctrl, spec.signature_encoder, &sig, &sig_n);
-
+  
  out:
 
   if (! bad)
@@ -1697,9 +1693,9 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
     }
   
   gcry_sexp_release (key);
-  gcry_free (key_blob);
-  gcry_free (data);
-  gcry_free (sig);
+  xfree (key_blob);
+  xfree (data);
+  xfree (sig);
 
   return bad;
 }
@@ -1736,7 +1732,7 @@ get_passphrase (const char *description, size_t passphrase_n, char *passphrase)
 
  out:
 
-  gcry_free (pi);
+  xfree (pi);
   
   return err;
 }
@@ -1764,7 +1760,7 @@ ssh_key_extract_comment (gcry_sexp_t key, char **comment)
       goto out;
     }
 
-  comment_new = gcry_malloc (data_n + 1);
+  comment_new = xtrymalloc (data_n + 1);
   if (! comment_new)
     {
       err = gpg_error_from_errno (errno);
@@ -1810,7 +1806,8 @@ ssh_key_to_buffer (gcry_sexp_t key, const char *passphrase,
 
   err = 0;
   buffer_new_n = gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON, NULL, 0);
-  buffer_new = gcry_malloc (buffer_new_n);
+  buffer_new = xtrymalloc (buffer_new_n);
+  /* FIXME: secmem? */
   if (! buffer_new)
     {
       err = gpg_error_from_errno (errno);
@@ -1824,7 +1821,7 @@ ssh_key_to_buffer (gcry_sexp_t key, const char *passphrase,
 
  out:
 
-  gcry_free (buffer_new);
+  xfree (buffer_new);
 
   return err;
 }
@@ -1895,10 +1892,10 @@ ssh_identity_register (gcry_sexp_t key, int ttl)
 
  out:
 
-  free (buffer);
-  gcry_free (comment);
-  gcry_free (description);
-  /* FIXME: verify gcry_free vs free.  */
+  xfree (buffer);
+  xfree (comment);
+  xfree (description);
+  /* FIXME: verify xfree vs free.  */
 
   return err;
 }
@@ -2040,7 +2037,8 @@ ssh_handler_remove_identity (ctrl_t ctrl, estream_t request, estream_t response)
 
  out:
 
-  gcry_free (key_blob);
+  xfree (key_blob);
+  gcry_sexp_release (key);
 
   if (! bad)
     es_write_byte (response, err ? SSH_RESPONSE_FAILURE : SSH_RESPONSE_SUCCESS);
@@ -2208,13 +2206,13 @@ start_command_handler_ssh (int sock_client)
       err = gpg_error_from_errno (errno);
       goto out;
     }
-
   ret = es_setvbuf (stream_sock, NULL, _IONBF, 0);
   if (ret)
     {
       err = gpg_error_from_errno (errno);
       goto out;
     }
+
   while (1)
     {
       /* Create memory streams for request/response data.  The entire
@@ -2255,7 +2253,7 @@ start_command_handler_ssh (int sock_client)
 	  err = gpg_error_from_errno (errno);
 	  break;
 	}
-      
+
       /* Process request.  */
       err = ssh_request_process (&ctrl, stream_request, stream_response);
       if (err)
@@ -2282,7 +2280,9 @@ start_command_handler_ssh (int sock_client)
       es_fclose (stream_request);
       stream_request = NULL;
       es_fclose (stream_response);
-      stream_response = NULL;	
+      stream_response = NULL;
+      xfree (request);
+      request = NULL;
     };
 
  out:
@@ -2295,7 +2295,7 @@ start_command_handler_ssh (int sock_client)
     es_fclose (stream_request);
   if (stream_response)
     es_fclose (stream_response);
-  gcry_free (request);		/* FIXME?  */
+  xfree (request);		/* FIXME?  */
 
   if (DBG_COMMAND)
     log_debug ("[ssh-agent] Leaving ssh command handler: %s\n", gpg_strerror (err));
