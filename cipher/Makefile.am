@@ -10,14 +10,15 @@ noinst_LTLIBRARIES = libcipher.la
 # and EXTRA_foo_SOURCES entries.
 # Hmmm is there a more easy way to do this?  (EXTRA_PROGRAMS
 # might also list programs which are not modules)
-# MODULES: rndunix rndlinux rndegd
+# MODULES: rndunix rndlinux rndegd rndw32
 # MODULES: sha1 rmd160 md5 tiger
-EXTRA_PROGRAMS = rndunix rndlinux rndegd  \
+EXTRA_PROGRAMS = rndunix rndlinux rndegd rndw32 \
 		 sha1 rmd160 md5 tiger
 
 EXTRA_rndlinux_SOURCES = rndlinux.c
 EXTRA_rndunix_SOURCES = rndunix.c
 EXTRA_rndegd_SOURCES = rndegd.c
+EXTRA_rndw32_SOURCES = rndw32.c
 EXTRA_md5_SOURCES = md5.c
 EXTRA_rmd160_SOURCES = rmd160.c
 EXTRA_sha1_SOURCES = sha1.c
@@ -97,6 +98,5 @@ rndlinux: $(srcdir)/rndlinux.c
 
 rndegd: $(srcdir)/rndegd.c
 	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndegd $(srcdir)/rndegd.c
-
 
 

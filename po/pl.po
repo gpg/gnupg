@@ -3437,7 +3437,7 @@ msgstr ""
 "Proszê powrótrzyæ wyra¿enie przej¶ciowe, aby upewniæ siê ¿e nie by³o pomy³ki."
 
 #: g10/helptext.c:213
-msgid "Give the name fo the file to which the signature applies"
+msgid "Give the name of the file to which the signature applies"
 msgstr "Nazwa pliku którego dotyczy podpis"
 
 #: g10/helptext.c:218

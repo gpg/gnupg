@@ -3500,7 +3500,7 @@ msgid "Please repeat the last passphrase, so you are sure what you typed in."
 msgstr ""
 
 #: g10/helptext.c:213
-msgid "Give the name fo the file to which the signature applies"
+msgid "Give the name of the file to which the signature applies"
 msgstr ""
 
 #: g10/helptext.c:218

@@ -3435,7 +3435,7 @@ msgstr ""
 "digitou."
 
 #: g10/helptext.c:213
-msgid "Give the name fo the file to which the signature applies"
+msgid "Give the name of the file to which the signature applies"
 msgstr "Dê o nome para o arquivo ao qual a assinatura se aplica"
 
 #: g10/helptext.c:218

@@ -3471,7 +3471,7 @@ msgstr ""
 "übereinstimmen, wird das Mantra akzeptiert."
 
 #: g10/helptext.c:213
-msgid "Give the name fo the file to which the signature applies"
+msgid "Give the name of the file to which the signature applies"
 msgstr ""
 "Geben Sie den Namen der Datei an, zu dem die abgetrennte Unterschrift gehört"
 

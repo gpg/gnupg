@@ -31,4 +31,9 @@ void randomize_buffer( byte *buffer, size_t length, int level );
 byte *get_random_bits( size_t nbits, int level, int secure );
 void fast_random_poll( void );
 
+/*-- rndw32.c --*/
+#ifdef USE_STATIC_RNDW32
+void rndw32_set_dll_name( const char *name );
+#endif
+
 #endif /*G10_RANDOM_H*/

@@ -210,7 +210,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 )},
 
 { "detached_signature.filename", N_(
- "Give the name fo the file to which the signature applies"
+ "Give the name of the file to which the signature applies"
 )},
 
 /* openfile.c (overwrite_filep) */

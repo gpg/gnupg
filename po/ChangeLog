@@ -1,10 +1,15 @@
-Tue Sep  7 16:23:36 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+
+	* pt_PT.po: New. Done by Pedro Morais.
+
+	* it.po: Updated by Marco.
+
+Tue Sep  7 16:23:36 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* pl.po: Updated.
 
 Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* fr.po: Imported and fixed a msgid.
 	* de.po: Ditto.

@@ -177,6 +177,7 @@ enum cmd_and_opt_values { aNull = 0,
     oAllowNonSelfsignedUID,
     oNoLiteral,
     oSetFilesize,
+    oEntropyDLLName,
 aTest };
 
 
@@ -338,6 +339,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAllowNonSelfsignedUID, "allow-non-selfsigned-uid", 0, "@" },
     { oNoLiteral, "no-literal", 0, "@" },
     { oSetFilesize, "set-filesize", 20, "@" },
+    { oEntropyDLLName, "entropy-dll-name", 2, "@" },
 {0} };
 
 
@@ -438,6 +440,9 @@ build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
 static void
 i18n_init(void)
 {
+  #ifdef USE_SIMPLE_GETTEXT
+    set_gettext_file( PACKAGE );
+  #else
   #ifdef ENABLE_NLS
     #ifdef HAVE_LC_MESSAGES
        setlocale( LC_TIME, "" );
@@ -447,6 +452,7 @@ i18n_init(void)
     #endif
     bindtextdomain( PACKAGE, G10_LOCALEDIR );
     textdomain( PACKAGE );
+  #endif
   #endif
 }
 
@@ -857,6 +863,13 @@ main( int argc, char **argv )
 		break;
 	  case oSetFilesize:
 		opt.set_filesize = pargs.r.ret_ulong;
+		break;
+
+	  case oEntropyDLLName:
+	      #ifdef USE_STATIC_RNDW32
+		log_info("set dllname to `%s'\n", pargs.r.ret_str );
+		rndw32_set_dll_name( pargs.r.ret_str );
+	      #endif
 		break;
 
 	  default : pargs.err = configfp? 1:2; break;

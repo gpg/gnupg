@@ -844,7 +844,7 @@ show_version()
     /* additional program info */
     for(i=30; i < 40; i++ )
 	if( (s=strusage(i)) )
-	    fputs(s, stdout);
+	    fputs( (const byte*)s, stdout);
     fflush(stdout);
 }
 

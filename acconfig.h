@@ -91,6 +91,13 @@
 /* defined if we run on some of the PCDOS like systems (DOS, Windoze. OS/2)
  * with special properties like no file modes */
 #undef HAVE_DOSISH_SYSTEM
+/* because the Unix gettext has to much overhead on MingW32 systems
+ * and these systems lack Posix functions, we use a simplified version
+ * of gettext */
+#undef USE_SIMPLE_GETTEXT
+/* At some point in the system we need to know that we use the Windows
+ * random module. */
+#undef USE_STATIC_RNDW32
 
 #undef USE_CAPABILITIES
 

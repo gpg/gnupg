@@ -312,7 +312,9 @@ proc_encrypted( CTX c, PACKET *pkt )
 
     /*log_debug("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
     if( !c->dek && !c->last_was_session_key ) {
-	/* assume this is old conventional encrypted data */
+	/* assume this is old conventional encrypted data
+	 * Actually we should use IDEA and MD5 in this case, but becuase
+	 * IDEA is patented we can't do so */
 	c->dek = passphrase_to_dek( NULL, 0,
 		    opt.def_cipher_algo ? opt.def_cipher_algo
 					: DEFAULT_CIPHER_ALGO, NULL, 0 );

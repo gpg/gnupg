@@ -15,7 +15,7 @@ AM_CONFIG_HEADER(config.h)
 
 VERSION=`cat $srcdir/VERSION`
 PACKAGE=gnupg
-ALL_LINGUAS="de es_ES fr it pl pt_BR ru"
+ALL_LINGUAS="de es_ES fr it pl pt_BR pt_PT ru"
 static_modules="sha1 md5 rmd160"
 AC_SUBST(VERSION)
 AC_SUBST(PACKAGE)
@@ -138,11 +138,31 @@ AC_ARG_WITH(capabilities,
 AC_MSG_RESULT($use_capabilities)
 
 
+
+
+
 AM_MAINTAINER_MODE
 
 dnl Checks for programs.
 
 AC_CANONICAL_SYSTEM
+dnl
+dnl Setup some stuff depending on host/target.
+dnl
+case "${target}" in
+    *-*-mingw32)
+        # special stuff for Windoze NT
+        # Do we need to set cross_compiling here or is it sufficient
+        # to rely on AC_PROG_CC which is called later?
+        cross_compiling=yes
+        CC="${target}-gcc"
+        CPP="${target}-gcc -E"
+        RANLIB="${target}-ranlib"
+        ;;
+    *)
+       ;;
+esac
+
 AC_ARG_PROGRAM
 AC_PROG_MAKE_SET
 AM_SANITY_CHECK
@@ -181,14 +201,11 @@ try_gdbm=yes
 case "${target}" in
     *-*-mingw32)
         # special stuff for Windoze NT
-        cross_compiling=yes
-        CC="${target}-gcc"
-        CPP="${target}-gcc -E"
-        RANLIB="${target}-ranlib"
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_ONLY_8DOT3)
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         AC_DEFINE(HAVE_DOSISH_SYSTEM)
+        AC_DEFINE(USE_SIMPLE_GETTEXT)
         try_gettext="no"
         try_gdbm="no"
         ;;
@@ -489,6 +506,7 @@ if test "$use_static_rnd" = default; then
       case "${target}" in
           *-*-mingw32)
               static_modules="$static_modules rndw32"
+              AC_DEFINE(USE_STATIC_RNDW32)
               ;;
           i?86-emx-os2|i?86-*-os2*emx)
               static_modules="$static_modules rndos2"

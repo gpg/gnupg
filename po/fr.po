@@ -3440,7 +3440,7 @@ msgstr ""
 "Répétez le dernier mot de passe pour être sûr de ce que vous avez tapé."
 
 #: g10/helptext.c:213
-msgid "Give the name fo the file to which the signature applies"
+msgid "Give the name of the file to which the signature applies"
 msgstr "Donnez le nom du fichier auquel la signature se rapporte"
 
 #: g10/helptext.c:218

@@ -21,6 +21,14 @@
 #ifndef G10_I18N_H
 #define G10_I18N_H
 
+#ifdef USE_SIMPLE_GETTEXT
+  int set_gettext_file( const char *filename );
+  const char *gettext( const char *msgid );
+
+  #define _(a) gettext (a)
+  #define N_(a) (a)
+
+#else
 #ifdef HAVE_LOCALE_H
   #include <locale.h>	/* suggested by Ernst Molitor */
 #endif
@@ -37,5 +45,6 @@
   #define _(a) (a)
   #define N_(a) (a)
 #endif
+#endif /* !USE_SIMPLE_GETTEXT */
 
 #endif /*G10_I18N_H*/

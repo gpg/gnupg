@@ -1,3 +1,11 @@
+Wed Sep 15 16:22:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* configure.in (ALL_LINGUAS): Add pt_PT.
+
+	* configure.in: Some tweaks for cross compiling under MingW32
+	* acconfig.h (USE_STATIC_RNDW32): New.
+
 Tue Sep  7 17:08:10 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 
