@@ -72,7 +72,7 @@ X.509 specific are noted like [X.509: xxx]
 	 bit 0 =
    byte validity
    byte reserved
-   [For X509, the first user ID is the ISsuer, the second the subject
+   [For X509, the first user ID is the Issuer, the second the Subject
    and the others are subjectAltNames]
  u16  number of signatures
  u16  size of signature information (4)
@@ -195,7 +195,7 @@ struct keyboxblob {
 
 
 
-/* A simple implemnation of a dynamic buffer.  Use init_membuf() to
+/* A simple implemention of a dynamic buffer.  Use init_membuf() to
    create a buffer, put_membuf to append bytes and get_membuf to
    release and return the buffer.  Allocation errors are detected but
    only returned at the final get_membuf(), this helps not to clutter

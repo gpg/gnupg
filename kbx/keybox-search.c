@@ -566,7 +566,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 
   /* kludge: we need to convert an SN given as hexstring to it's
      binary representation - in some cases we are not able to store it
-     in the search descriptor, because due to its usgae it is not
+     in the search descriptor, because due to its usage it is not
      possible to free allocated memory */
   if (sn_array)
     {
