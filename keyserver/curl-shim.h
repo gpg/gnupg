@@ -1,0 +1,71 @@
+/* curl-shim.h
+ * Copyright (C) 2005 Free Software Foundation, Inc.
+ *
+ * This file is part of GNUPG.
+ *
+ * GNUPG is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * GNUPG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ */
+
+#ifndef _CURL_SHIM_H_
+#define _CURL_SHIM_H_
+
+#include "http.h"
+
+typedef enum
+  {
+    CURLE_OK=0,
+    CURLE_FTP_COULDNT_RETR_FILE,
+    CURLE_COULDNT_CONNECT,
+    CURLE_WRITE_ERROR
+  } CURLcode;
+
+typedef enum
+  {
+    CURLOPT_URL,
+    CURLOPT_WRITEFUNCTION,
+    CURLOPT_FILE,
+    CURLOPT_ERRORBUFFER,
+    CURLOPT_FOLLOWLOCATION,
+    CURLOPT_MAXREDIRS,
+    CURLOPT_STDERR,
+    CURLOPT_VERBOSE,
+    CURLOPT_SSL_VERIFYPEER,
+    CURLOPT_PROXY
+  } CURLoption;
+
+typedef size_t (*write_func)(char *buffer,size_t size,
+			     size_t nitems,void *outstream);
+
+typedef struct
+{
+  char *url;
+  char *errorbuffer;
+  char *proxy;
+  write_func writer;
+  void *file;
+  struct http_context hd;
+} CURL;
+
+#define CURL_ERROR_SIZE 256
+#define CURL_GLOBAL_DEFAULT 0
+
+CURLcode curl_global_init(long flags);
+void curl_global_cleanup(void);
+CURL *curl_easy_init(void);
+CURLcode curl_easy_setopt(CURL *curl,CURLoption option,...);
+CURLcode curl_easy_perform(CURL *curl);
+void curl_easy_cleanup(CURL *curl);
+
+#endif /* !_CURL_SHIM_H_ */

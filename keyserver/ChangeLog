@@ -1,3 +1,11 @@
+2005-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* curl-shim.h, curl-shim.c: New.  This is code to fake the curl
+	API in terms of the current HTTP iobuf API.
+
+	* gpgkeys_curl.c [FAKE_CURL], Makefile.am: If FAKE_CURL is set,
+	link with the iobuf code rather than libcurl.
+
 2005-02-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_finger.c (main), gpgkeys_hkp.c (main): Fix --version

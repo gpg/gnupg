@@ -27,7 +27,11 @@
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
+#ifdef FAKE_CURL
+#include "curl-shim.h"
+#else
 #include <curl/curl.h>
+#endif
 #include "keyserver.h"
 #include "ksutil.h"
 

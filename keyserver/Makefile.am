@@ -39,5 +39,12 @@ gpgkeys_ldap_LDADD = ../util/libutil.a @LDAPLIBS@ @NETLIBS@ $(other_libs) @GETOP
 gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 gpgkeys_http_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
 gpgkeys_finger_LDADD = ../util/libutil.a @NETLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
+
+if FAKE_CURL
+gpgkeys_curl_SOURCES += curl-shim.c curl-shim.h
+gpgkeys_curl_CPPFLAGS = -DFAKE_CURL
+gpgkeys_curl_LDADD = ../util/libutil.a @NETLIBS@ @SRVLIBS@ $(other_libs) @GETOPT@ @W32LIBS@
+else
 gpgkeys_curl_CPPFLAGS = @LIBCURL_CPPFLAGS@
 gpgkeys_curl_LDADD = @LIBCURL@ @GETOPT@
+endif
