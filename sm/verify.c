@@ -86,12 +86,12 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   int i, rc;
   Base64Context b64reader = NULL;
   Base64Context b64writer = NULL;
-  KsbaError err;
-  KsbaReader reader;
-  KsbaWriter writer = NULL;
-  KsbaCMS cms = NULL;
-  KsbaStopReason stopreason;
-  KsbaCert cert;
+  gpg_error_t err;
+  ksba_reader_t reader;
+  ksba_writer_t writer = NULL;
+  ksba_cms_t cms = NULL;
+  ksba_stop_reason_t stopreason;
+  ksba_cert_t cert;
   KEYDB_HANDLE kh;
   gcry_md_hd_t data_md = NULL;
   int signer;
@@ -242,9 +242,9 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   for (signer=0; ; signer++)
     {
       char *issuer = NULL;
-      KsbaSexp sigval = NULL;
+      ksba_sexp_t sigval = NULL;
       ksba_isotime_t sigtime, keyexptime;
-      KsbaSexp serial;
+      ksba_sexp_t serial;
       char *msgdigest = NULL;
       size_t msgdigestlen;
       char *ctattr;

@@ -42,10 +42,10 @@ struct dn_array_s {
 
 /* print the first element of an S-Expression */
 void
-gpgsm_print_serial (FILE *fp, KsbaConstSexp p)
+gpgsm_print_serial (FILE *fp, ksba_const_sexp_t p)
 {
   unsigned long n;
-  KsbaConstSexp endp;
+  char *endp;
 
   if (!p)
     fputs (_("none"), fp);
@@ -54,7 +54,7 @@ gpgsm_print_serial (FILE *fp, KsbaConstSexp p)
   else
     {
       p++;
-      n = strtoul (p, (char**)&endp, 10);
+      n = strtoul (p, &endp, 10);
       p = endp;
       if (*p!=':')
         fputs ("[Internal Error - invalid S-expression]", fp);
@@ -68,10 +68,10 @@ gpgsm_print_serial (FILE *fp, KsbaConstSexp p)
 
 
 void
-gpgsm_dump_serial (KsbaConstSexp p)
+gpgsm_dump_serial (ksba_const_sexp_t p)
 {
   unsigned long n;
-  KsbaConstSexp endp;
+  char *endp;
 
   if (!p)
     log_printf ("none");
@@ -80,7 +80,7 @@ gpgsm_dump_serial (KsbaConstSexp p)
   else
     {
       p++;
-      n = strtoul (p, (char**)&endp, 10);
+      n = strtoul (p, &endp, 10);
       p = endp;
       if (*p!=':')
         log_printf ("ERROR - invalid S-expression");
@@ -142,9 +142,9 @@ gpgsm_dump_string (const char *string)
 
 
 void 
-gpgsm_dump_cert (const char *text, KsbaCert cert)
+gpgsm_dump_cert (const char *text, ksba_cert_t cert)
 {
-  KsbaSexp sexp;
+  ksba_sexp_t sexp;
   unsigned char *p;
   char *dn;
   ksba_isotime_t t;

@@ -39,9 +39,9 @@
    for verification and a MODE of 3 for decryption (just for
    debugging) */
 static int
-cert_usage_p (KsbaCert cert, int mode)
+cert_usage_p (ksba_cert_t cert, int mode)
 {
-  KsbaError err;
+  gpg_error_t err;
   unsigned int use;
 
   err = ksba_cert_get_key_usage (cert, &use);
@@ -83,7 +83,7 @@ cert_usage_p (KsbaCert cert, int mode)
 
 /* Return 0 if the cert is usable for signing */
 int
-gpgsm_cert_use_sign_p (KsbaCert cert)
+gpgsm_cert_use_sign_p (ksba_cert_t cert)
 {
   return cert_usage_p (cert, 0);
 }
@@ -91,32 +91,32 @@ gpgsm_cert_use_sign_p (KsbaCert cert)
 
 /* Return 0 if the cert is usable for encryption */
 int
-gpgsm_cert_use_encrypt_p (KsbaCert cert)
+gpgsm_cert_use_encrypt_p (ksba_cert_t cert)
 {
   return cert_usage_p (cert, 1);
 }
 
 int
-gpgsm_cert_use_verify_p (KsbaCert cert)
+gpgsm_cert_use_verify_p (ksba_cert_t cert)
 {
   return cert_usage_p (cert, 2);
 }
 
 int
-gpgsm_cert_use_decrypt_p (KsbaCert cert)
+gpgsm_cert_use_decrypt_p (ksba_cert_t cert)
 {
   return cert_usage_p (cert, 3);
 }
 
 int
-gpgsm_cert_use_cert_p (KsbaCert cert)
+gpgsm_cert_use_cert_p (ksba_cert_t cert)
 {
   return cert_usage_p (cert, 4);
 }
 
 
 static int
-same_subject_issuer (const char *subject, const char *issuer, KsbaCert cert)
+same_subject_issuer (const char *subject, const char *issuer, ksba_cert_t cert)
 {
   char *subject2 = ksba_cert_get_subject (cert, 0);
   char *issuer2 = ksba_cert_get_subject (cert, 0);
@@ -143,7 +143,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
   int rc;
   KEYDB_SEARCH_DESC desc;
   KEYDB_HANDLE kh = NULL;
-  KsbaCert cert = NULL;
+  ksba_cert_t cert = NULL;
 
   rc = keydb_classify_name (name, &desc);
   if (!rc)
@@ -202,7 +202,7 @@ gpgsm_add_to_certlist (CTRL ctrl, const char *name, int secret,
                 rc = 0;
               else if (!rc)
                 {
-                  KsbaCert cert2 = NULL;
+                  ksba_cert_t cert2 = NULL;
 
                   /* We have to ignore ambigious names as long as
                      there only fault is a bad key usage */
@@ -275,7 +275,7 @@ gpgsm_release_certlist (CERTLIST list)
 /* Like gpgsm_add_to_certlist, but look only for one certificate.  No
    chain validation is done */
 int
-gpgsm_find_cert (const char *name, KsbaCert *r_cert)
+gpgsm_find_cert (const char *name, ksba_cert_t *r_cert)
 {
   int rc;
   KEYDB_SEARCH_DESC desc;

@@ -557,7 +557,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
   key used to locate the keyblock or flag bit 1 set for the user ID
   node.  */
 int
-keydb_get_cert (KEYDB_HANDLE hd, KsbaCert *r_cert)
+keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert)
 {
   int rc = 0;
 
@@ -584,7 +584,7 @@ keydb_get_cert (KEYDB_HANDLE hd, KsbaCert *r_cert)
  * Insert a new Certificate into one of the resources. 
  */
 int
-keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert)
+keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
   int rc = -1;
   int idx;
@@ -627,7 +627,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert)
 
 /* update the current keyblock with KB */
 int
-keydb_update_cert (KEYDB_HANDLE hd, KsbaCert cert)
+keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert)
 {
   int rc = 0;
   char digest[20];
@@ -881,7 +881,7 @@ keydb_search_issuer (KEYDB_HANDLE hd, const char *issuer)
 
 int
 keydb_search_issuer_sn (KEYDB_HANDLE hd,
-                        const char *issuer, KsbaConstSexp serial)
+                        const char *issuer, ksba_const_sexp_t serial)
 {
   KEYDB_SEARCH_DESC desc;
   int rc;
@@ -1219,7 +1219,7 @@ keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc)
    If EXISTED is not NULL it will be set to true if the certificate
    was already in the DB. */
 int
-keydb_store_cert (KsbaCert cert, int ephemeral, int *existed)
+keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
 {
   KEYDB_HANDLE kh;
   int rc;

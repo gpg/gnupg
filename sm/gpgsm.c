@@ -1316,7 +1316,7 @@ main ( int argc, char **argv)
       else
         {
           int rc;
-          KsbaCert cert = NULL;
+          ksba_cert_t cert = NULL;
           char *grip = NULL;
 
           rc = gpgsm_find_cert (*argv, &cert);

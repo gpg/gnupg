@@ -1,3 +1,10 @@
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* certdump.c (gpgsm_print_serial): Cleaned up cast use in strtoul.
+	(gpgsm_dump_serial): Ditto.
+
+	* decrypt.c (gpgsm_decrypt): Replaced ERR by RC.
+
 2003-12-16  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main): Set the prefixes for assuan logging.

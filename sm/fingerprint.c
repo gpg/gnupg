@@ -43,7 +43,7 @@
    digest of all 0xff.
  */
 char *
-gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len)
+gpgsm_get_fingerprint (ksba_cert_t cert, int algo, char *array, int *r_len)
 {
   gcry_md_hd_t md;
   int rc, len;
@@ -83,7 +83,7 @@ gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len)
 
 /* Return an allocated buffer with the formatted fingerprint */
 char *
-gpgsm_get_fingerprint_string (KsbaCert cert, int algo)
+gpgsm_get_fingerprint_string (ksba_cert_t cert, int algo)
 {
   unsigned char digest[MAX_DIGEST_LEN];
   char *buf;
@@ -105,7 +105,7 @@ gpgsm_get_fingerprint_string (KsbaCert cert, int algo)
 /* Return an allocated buffer with the formatted fingerprint as one
    large hexnumber */
 char *
-gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo)
+gpgsm_get_fingerprint_hexstring (ksba_cert_t cert, int algo)
 {
   unsigned char digest[MAX_DIGEST_LEN];
   char *buf;
@@ -127,7 +127,7 @@ gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo)
 /* Return a certificate ID.  These are the last 4 bytes of the SHA-1
    fingerprint. */
 unsigned long
-gpgsm_get_short_fingerprint (KsbaCert cert)
+gpgsm_get_short_fingerprint (ksba_cert_t cert)
 {
   unsigned char digest[20];
 
@@ -141,11 +141,11 @@ gpgsm_get_short_fingerprint (KsbaCert cert)
    be 20 bytes long. returns the array or a newly allocated one if the
    passed one was NULL */
 char *
-gpgsm_get_keygrip (KsbaCert cert, char *array)
+gpgsm_get_keygrip (ksba_cert_t cert, char *array)
 {
   gcry_sexp_t s_pkey;
   int rc;
-  KsbaSexp p;
+  ksba_sexp_t p;
   size_t n;
   
   p = ksba_cert_get_public_key (cert);
@@ -184,7 +184,7 @@ gpgsm_get_keygrip (KsbaCert cert, char *array)
 /* Return an allocated buffer with the keygrip of CERT in from of an
    hexstring.  NULL is returned in case of error */
 char *
-gpgsm_get_keygrip_hexstring (KsbaCert cert)
+gpgsm_get_keygrip_hexstring (ksba_cert_t cert)
 {
   unsigned char grip[20];
   char *buf, *p;
@@ -209,9 +209,9 @@ gpgsm_get_keygrip_hexstring (KsbaCert cert)
    The caller must free the string.
 */
 char *
-gpgsm_get_certid (KsbaCert cert)
+gpgsm_get_certid (ksba_cert_t cert)
 {
-  KsbaSexp serial;
+  ksba_sexp_t serial;
   unsigned char *p;
   char *endp;
   unsigned char hash[20];

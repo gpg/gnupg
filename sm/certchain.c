@@ -35,7 +35,7 @@
 #include "i18n.h"
 
 static int
-unknown_criticals (KsbaCert cert)
+unknown_criticals (ksba_cert_t cert)
 {
   static const char *known[] = {
     "2.5.29.15", /* keyUsage */
@@ -45,7 +45,7 @@ unknown_criticals (KsbaCert cert)
   };
   int rc = 0, i, idx, crit;
   const char *oid;
-  KsbaError err;
+  gpg_error_t err;
 
   for (idx=0; !(err=ksba_cert_get_extension (cert, idx,
                                              &oid, &crit, NULL, NULL));idx++)
@@ -68,9 +68,9 @@ unknown_criticals (KsbaCert cert)
 }
 
 static int
-allowed_ca (KsbaCert cert, int *chainlen)
+allowed_ca (ksba_cert_t cert, int *chainlen)
 {
-  KsbaError err;
+  gpg_error_t err;
   int flag;
 
   err = ksba_cert_is_ca (cert, &flag, chainlen);
@@ -86,9 +86,9 @@ allowed_ca (KsbaCert cert, int *chainlen)
 
 
 static int
-check_cert_policy (KsbaCert cert)
+check_cert_policy (ksba_cert_t cert)
 {
-  KsbaError err;
+  gpg_error_t err;
   char *policies;
   FILE *fp;
   int any_critical;
@@ -206,7 +206,7 @@ check_cert_policy (KsbaCert cert)
 
 
 static void
-find_up_store_certs_cb (void *cb_value, KsbaCert cert)
+find_up_store_certs_cb (void *cb_value, ksba_cert_t cert)
 {
   if (keydb_store_cert (cert, 1, NULL))
     log_error ("error storing issuer certificate as ephemeral\n");
@@ -215,10 +215,10 @@ find_up_store_certs_cb (void *cb_value, KsbaCert cert)
 
 
 static int
-find_up (KEYDB_HANDLE kh, KsbaCert cert, const char *issuer)
+find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer)
 {
-  KsbaName authid;
-  KsbaSexp authidno;
+  ksba_name_t authid;
+  ksba_sexp_t authidno;
   int rc = -1;
 
   if (!ksba_cert_get_auth_key_id (cert, NULL, &authid, &authidno))
@@ -325,7 +325,7 @@ find_up (KEYDB_HANDLE kh, KsbaCert cert, const char *issuer)
 /* Return the next certificate up in the chain starting at START.
    Returns -1 when there are no more certificates. */
 int
-gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
+gpgsm_walk_cert_chain (ksba_cert_t start, ksba_cert_t *r_next)
 {
   int rc = 0; 
   char *issuer = NULL;
@@ -390,7 +390,7 @@ gpgsm_walk_cert_chain (KsbaCert start, KsbaCert *r_next)
 /* Check whether the CERT is a root certificate.  Returns True if this
    is the case. */
 int
-gpgsm_is_root_cert (KsbaCert cert)
+gpgsm_is_root_cert (ksba_cert_t cert)
 {
   char *issuer;
   char *subject;
@@ -408,13 +408,13 @@ gpgsm_is_root_cert (KsbaCert cert)
 /* Validate a chain and optionally return the nearest expiration time
    in R_EXPTIME */
 int
-gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, ksba_isotime_t r_exptime)
+gpgsm_validate_chain (CTRL ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime)
 {
   int rc = 0, depth = 0, maxdepth;
   char *issuer = NULL;
   char *subject = NULL;
   KEYDB_HANDLE kh = keydb_new (0);
-  KsbaCert subject_cert = NULL, issuer_cert = NULL;
+  ksba_cert_t subject_cert = NULL, issuer_cert = NULL;
   ksba_isotime_t current_time;
   ksba_isotime_t exptime;
   int any_expired = 0;
@@ -714,13 +714,13 @@ gpgsm_validate_chain (CTRL ctrl, KsbaCert cert, ksba_isotime_t r_exptime)
    the DB and that this one is valid; which it should be because it
    has been checked using this function. */
 int
-gpgsm_basic_cert_check (KsbaCert cert)
+gpgsm_basic_cert_check (ksba_cert_t cert)
 {
   int rc = 0;
   char *issuer = NULL;
   char *subject = NULL;
   KEYDB_HANDLE kh = keydb_new (0);
-  KsbaCert issuer_cert = NULL;
+  ksba_cert_t issuer_cert = NULL;
 
   if (opt.no_chain_validation)
     {

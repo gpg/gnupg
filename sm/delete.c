@@ -42,7 +42,7 @@ delete_one (CTRL ctrl, const char *username)
   int rc = 0;
   KEYDB_SEARCH_DESC desc;
   KEYDB_HANDLE kh = NULL;
-  KsbaCert cert = NULL;
+  ksba_cert_t cert = NULL;
   int duplicates = 0;
   
   rc = keydb_classify_name (username, &desc);
@@ -77,7 +77,7 @@ delete_one (CTRL ctrl, const char *username)
         rc = 0;
       else if (!rc)
         {
-          KsbaCert cert2 = NULL;
+          ksba_cert_t cert2 = NULL;
           char fpr2[20];
 
           /* We ignore all duplicated certificates which might have

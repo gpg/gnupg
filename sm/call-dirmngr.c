@@ -48,13 +48,13 @@ static int force_pipe_server = 0;
 
 struct inq_certificate_parm_s {
   ASSUAN_CONTEXT ctx;
-  KsbaCert cert;
+  ksba_cert_t cert;
 };
 
 struct lookup_parm_s {
   CTRL ctrl;
   ASSUAN_CONTEXT ctx;
-  void (*cb)(void *, KsbaCert);
+  void (*cb)(void *, ksba_cert_t);
   void *cb_value;
   struct membuf data;
   int error;
@@ -258,7 +258,7 @@ inq_certificate (void *opaque, const char *line)
   else 
     { /* send the given certificate */
       int err;
-      KsbaCert cert;
+      ksba_cert_t cert;
 
       err = gpgsm_find_cert (line, &cert);
       if (err)
@@ -353,7 +353,7 @@ lookup_cb (void *opaque, const void *buffer, size_t length)
   struct lookup_parm_s *parm = opaque;
   size_t len;
   char *buf;
-  KsbaCert cert;
+  ksba_cert_t cert;
   int rc;
 
   if (parm->error)
@@ -477,7 +477,7 @@ lookup_status_cb (void *opaque, const char *line)
    is optional. */
 int 
 gpgsm_dirmngr_lookup (CTRL ctrl, STRLIST names,
-                      void (*cb)(void*, KsbaCert), void *cb_value)
+                      void (*cb)(void*, ksba_cert_t), void *cb_value)
 { 
   int rc;
   char *pattern;
@@ -537,7 +537,7 @@ run_command_inq_cb (void *opaque, const char *line)
   if ( !strncmp (line, "SENDCERT", 8) && (line[8] == ' ' || !line[8]) )
     { /* send the given certificate */
       int err;
-      KsbaCert cert;
+      ksba_cert_t cert;
       const unsigned char *der;
       size_t derlen;
 

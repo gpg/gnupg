@@ -61,9 +61,9 @@ hash_data (int fd, gcry_md_hd_t md)
 }
 
 static int
-hash_and_copy_data (int fd, gcry_md_hd_t md, KsbaWriter writer)
+hash_and_copy_data (int fd, gcry_md_hd_t md, ksba_writer_t writer)
 {
-  KsbaError err;
+  gpg_error_t err;
   FILE *fp;
   char buffer[4096];
   int nread;
@@ -126,10 +126,10 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, KsbaWriter writer)
 /* Get the default certificate which is defined as the first one our
    keyDB returns and has a secret key available. */
 int
-gpgsm_get_default_cert (KsbaCert *r_cert)
+gpgsm_get_default_cert (ksba_cert_t *r_cert)
 {
   KEYDB_HANDLE hd;
-  KsbaCert cert = NULL;
+  ksba_cert_t cert = NULL;
   int rc;
   char *p;
 
@@ -179,11 +179,11 @@ gpgsm_get_default_cert (KsbaCert *r_cert)
 }
 
 
-static KsbaCert
+static ksba_cert_t
 get_default_signer (void)
 {
   KEYDB_SEARCH_DESC desc;
-  KsbaCert cert = NULL;
+  ksba_cert_t cert = NULL;
   KEYDB_HANDLE kh = NULL;
   int rc;
 
@@ -233,11 +233,11 @@ get_default_signer (void)
    other certificate up in the chain to the Root-CA to the CMS
    object. */
 static int 
-add_certificate_list (CTRL ctrl, KsbaCMS cms, KsbaCert cert)
+add_certificate_list (CTRL ctrl, ksba_cms_t cms, ksba_cert_t cert)
 {
-  KsbaError err;
+  gpg_error_t err;
   int rc = 0;
-  KsbaCert next = NULL;
+  ksba_cert_t next = NULL;
   int n;
   int not_root = 0;
 
@@ -296,11 +296,11 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
             int data_fd, int detached, FILE *out_fp)
 {
   int i, rc;
-  KsbaError err;
+  gpg_error_t err;
   Base64Context b64writer = NULL;
-  KsbaWriter writer;
-  KsbaCMS cms = NULL;
-  KsbaStopReason stopreason;
+  ksba_writer_t writer;
+  ksba_cms_t cms = NULL;
+  ksba_stop_reason_t stopreason;
   KEYDB_HANDLE kh = NULL;
   gcry_md_hd_t data_md = NULL;
   int signer;
@@ -357,7 +357,7 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
   /* If no list of signers is given, use a default one. */
   if (!signerlist)
     {
-      KsbaCert cert = get_default_signer ();
+      ksba_cert_t cert = get_default_signer ();
       if (!cert)
         {
           log_error ("no default signer found\n");

@@ -101,13 +101,13 @@ do_encode_md (gcry_md_hd_t md, int algo,  unsigned int nbits,
   does only test the cryptographic signature and nothing else.  It is
   assumed that the ISSUER_CERT is valid. */
 int
-gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
+gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 {
   const char *algoid;
   gcry_md_hd_t md;
   int rc, algo;
   gcry_mpi_t frame;
-  KsbaSexp p;
+  ksba_sexp_t p;
   size_t n;
   gcry_sexp_t s_sig, s_hash, s_pkey;
 
@@ -210,11 +210,11 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
 
 
 int
-gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
+gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
                            gcry_md_hd_t md, int algo)
 {
   int rc;
-  KsbaSexp p;
+  ksba_sexp_t p;
   gcry_mpi_t frame;
   gcry_sexp_t s_sig, s_hash, s_pkey;
   size_t n;
@@ -278,7 +278,7 @@ gpgsm_check_cms_signature (KsbaCert cert, KsbaConstSexp sigval,
 
 
 int
-gpgsm_create_cms_signature (KsbaCert cert, gcry_md_hd_t md, int mdalgo,
+gpgsm_create_cms_signature (ksba_cert_t cert, gcry_md_hd_t md, int mdalgo,
                             char **r_sigval)
 {
   int rc;

@@ -54,7 +54,7 @@ struct decrypt_filter_parm_s {
 /* Decrypt the session key and fill in the parm structure.  The
    algo and the IV is expected to be already in PARM. */
 static int 
-prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
+prepare_decryption (const char *hexkeygrip, ksba_const_sexp_t enc_val,
                     struct decrypt_filter_parm_s *parm)
 {
   char *seskey = NULL;
@@ -148,7 +148,7 @@ prepare_decryption (const char *hexkeygrip, KsbaConstSexp enc_val,
    Due to different buffer sizes or different length of input and
    output, it may happen that fewer bytes are process or fewer bytes
    are written. */
-static KsbaError  
+static gpg_error_t
 decrypt_filter (void *arg,
                 const void *inbuf, size_t inlen, size_t *inused,
                 void *outbuf, size_t maxoutlen, size_t *outlen)
@@ -240,13 +240,12 @@ int
 gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
 {
   int rc;
-  KsbaError err;
   Base64Context b64reader = NULL;
   Base64Context b64writer = NULL;
-  KsbaReader reader;
-  KsbaWriter writer;
-  KsbaCMS cms = NULL;
-  KsbaStopReason stopreason;
+  ksba_reader_t reader;
+  ksba_writer_t writer;
+  ksba_cms_t cms = NULL;
+  ksba_stop_reason_t stopreason;
   KEYDB_HANDLE kh;
   int recp;
   FILE *in_fp = NULL;
@@ -285,30 +284,25 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
-  err = ksba_cms_new (&cms);
-  if (err)
-    {
-      rc = err;
-      goto leave;
-    }
+  rc = ksba_cms_new (&cms);
+  if (rc)
+    goto leave;
 
-  err = ksba_cms_set_reader_writer (cms, reader, writer);
-  if (err)
+  rc = ksba_cms_set_reader_writer (cms, reader, writer);
+  if (rc)
     {
       log_debug ("ksba_cms_set_reader_writer failed: %s\n",
-                 gpg_strerror (err));
-      rc = err;
+                 gpg_strerror (rc));
       goto leave;
     }
 
   /* parser loop */
   do 
     {
-      err = ksba_cms_parse (cms, &stopreason);
-      if (err)
+      rc = ksba_cms_parse (cms, &stopreason);
+      if (rc)
         {
-          log_debug ("ksba_cms_parse failed: %s\n", gpg_strerror (err));
-          rc = err;
+          log_debug ("ksba_cms_parse failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
 
@@ -352,27 +346,26 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
                                             &dfparm.ivlen);
           if (rc)
             {
-              log_error ("error getting IV: %s\n", gpg_strerror (err));
-              rc = err;
+              log_error ("error getting IV: %s\n", gpg_strerror (rc));
               goto leave;
             }
           
           for (recp=0; !any_key; recp++)
             {
               char *issuer;
-              KsbaSexp serial;
-              KsbaSexp enc_val;
+              ksba_sexp_t serial;
+              ksba_sexp_t enc_val;
               char *hexkeygrip = NULL;
 
-              err = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
-              if (err == -1 && recp)
+              rc = ksba_cms_get_issuer_serial (cms, recp, &issuer, &serial);
+              if (rc == -1 && recp)
                 break; /* no more recipients */
-              if (err)
+              if (rc)
                 log_error ("recp %d - error getting info: %s\n",
-                           recp, gpg_strerror (err));
+                           recp, gpg_strerror (rc));
               else
                 {
-                  KsbaCert cert = NULL;
+                  ksba_cert_t cert = NULL;
 
                   log_debug ("recp %d - issuer: `%s'\n",
                              recp, issuer? issuer:"[NONE]");

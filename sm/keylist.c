@@ -45,7 +45,7 @@ struct list_external_parm_s {
 
 
 static void
-print_key_data (KsbaCert cert, FILE *fp)
+print_key_data (ksba_cert_t cert, FILE *fp)
 {
 #if 0  
   int n = pk ? pubkey_get_npkey( pk->pubkey_algo ) : 0;
@@ -62,9 +62,9 @@ print_key_data (KsbaCert cert, FILE *fp)
 }
 
 static void
-print_capabilities (KsbaCert cert, FILE *fp)
+print_capabilities (ksba_cert_t cert, FILE *fp)
 {
-  KsbaError err;
+  gpg_error_t err;
   unsigned int use;
 
   err = ksba_cert_get_key_usage (cert, &use);
@@ -145,11 +145,11 @@ email_kludge (const char *name)
 
 /* List one certificate in colon mode */
 static void
-list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
+list_cert_colon (ksba_cert_t cert, FILE *fp, int have_secret)
 {
   int idx, trustletter = 0;
   char *p;
-  KsbaSexp sexp;
+  ksba_sexp_t sexp;
   char *fpr;
   ksba_isotime_t t;
 
@@ -221,7 +221,7 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
   xfree (fpr); fpr = NULL;
   /* print chaining ID (field 13)*/
   {
-    KsbaCert next;
+    ksba_cert_t next;
     
     if (!gpgsm_walk_cert_chain (cert, &next))
       {
@@ -276,10 +276,10 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
 
 /* List one certificate in standard mode */
 static void
-list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
+list_cert_std (ksba_cert_t cert, FILE *fp, int have_secret)
 {
-  KsbaError kerr;
-  KsbaSexp sexp;
+  gpg_error_t kerr;
+  ksba_sexp_t sexp;
   char *dn;
   ksba_isotime_t t;
   int idx;
@@ -397,9 +397,9 @@ list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
 
 /* Same as standard mode mode list all certifying certts too */
 static void
-list_cert_chain (KsbaCert cert, FILE *fp)
+list_cert_chain (ksba_cert_t cert, FILE *fp)
 {
-  KsbaCert next = NULL;
+  ksba_cert_t next = NULL;
 
   list_cert_std (cert, fp, 0);
   ksba_cert_ref (cert);
@@ -425,7 +425,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
   KEYDB_SEARCH_DESC *desc = NULL;
   STRLIST sl;
   int ndesc;
-  KsbaCert cert = NULL;
+  ksba_cert_t cert = NULL;
   int rc=0;
   const char *lastresname, *resname;
   int have_secret;
@@ -548,7 +548,7 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
 
 
 static void
-list_external_cb (void *cb_value, KsbaCert cert)
+list_external_cb (void *cb_value, ksba_cert_t cert)
 {
   struct list_external_parm_s *parm = cb_value;
 

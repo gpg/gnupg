@@ -33,7 +33,7 @@
 
 #include "keydb.h"
 
-static void print_short_info (KsbaCert cert, FILE *fp);
+static void print_short_info (ksba_cert_t cert, FILE *fp);
 
 
 
@@ -45,9 +45,9 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
   KEYDB_SEARCH_DESC *desc = NULL;
   int ndesc;
   Base64Context b64writer = NULL;
-  KsbaWriter writer;
+  ksba_writer_t writer;
   STRLIST sl;
-  KsbaCert cert = NULL;
+  ksba_cert_t cert = NULL;
   int rc=0;
   int count = 0;
   int i;
@@ -197,10 +197,10 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
 
 /* Print some info about the certifciate CERT to FP */
 static void
-print_short_info (KsbaCert cert, FILE *fp)
+print_short_info (ksba_cert_t cert, FILE *fp)
 {
   char *p;
-  KsbaSexp sexp;
+  ksba_sexp_t sexp;
   int idx;
 
   for (idx=0; (p = ksba_cert_get_issuer (cert, idx)); idx++)

@@ -125,14 +125,14 @@ struct para_data_s {
 struct reqgen_ctrl_s {
   int lnr;
   int dryrun;
-  KsbaWriter writer;
+  ksba_writer_t writer;
 };
 
 
 static int proc_parameters (struct para_data_s *para,
                             struct reqgen_ctrl_s *outctrl);
 static int create_request (struct para_data_s *para,
-                           KsbaConstSexp public,
+                           ksba_const_sexp_t public,
                            struct reqgen_ctrl_s *outctrl);
 
 
@@ -228,7 +228,7 @@ get_parameter_uint (struct para_data_s *para, enum para_name key)
 /* Read the certificate generation parameters from FP and generate
    (all) certificate requests.  */
 static int
-read_parameters (FILE *fp, KsbaWriter writer)
+read_parameters (FILE *fp, ksba_writer_t writer)
 {
   static struct {
     const char *name;
@@ -423,7 +423,7 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
   char numbuf[20];
   unsigned char keyparms[100];
   int rc;
-  KsbaSexp public;
+  ksba_sexp_t public;
   
   /* check that we have all required parameters */
   assert (get_parameter (para, pKEYTYPE));
@@ -503,13 +503,13 @@ proc_parameters (struct para_data_s *para, struct reqgen_ctrl_s *outctrl)
 /* Parameters are checked, the key pair has been created.  Now
    generate the request and write it out */
 static int
-create_request (struct para_data_s *para, KsbaConstSexp public,
+create_request (struct para_data_s *para, ksba_const_sexp_t public,
                 struct reqgen_ctrl_s *outctrl)
 {
-  KsbaCertreq cr;
-  KsbaError err;
+  ksba_certreq_t cr;
+  gpg_error_t err;
   gcry_md_hd_t md;
-  KsbaStopReason stopreason;
+  ksba_stop_reason_t stopreason;
   int rc = 0;
   const char *s;
 
@@ -655,7 +655,7 @@ gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp)
   int rc;
   FILE *in_fp;
   Base64Context b64writer = NULL;
-  KsbaWriter writer;
+  ksba_writer_t writer;
 
   in_fp = fdopen (dup (in_fd), "rb");
   if (!in_fp)

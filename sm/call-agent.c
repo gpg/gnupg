@@ -377,7 +377,7 @@ inq_ciphertext_cb (void *opaque, const char *keyword)
    the hex string KEYGRIP. */
 int
 gpgsm_agent_pkdecrypt (const char *keygrip,
-                       KsbaConstSexp ciphertext, 
+                       ksba_const_sexp_t ciphertext, 
                        char **r_buf, size_t *r_buflen )
 {
   int rc;
@@ -464,7 +464,7 @@ inq_genkey_parms (void *opaque, const char *keyword)
 
 /* Call the agent to generate a newkey */
 int
-gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
+gpgsm_agent_genkey (ksba_const_sexp_t keyparms, ksba_sexp_t *r_pubkey)
 {
   int rc;
   struct genkey_parm_s gk_parm;
@@ -511,7 +511,7 @@ gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
 /* Ask the agent whether the certificate is in the list of trusted
    keys */
 int
-gpgsm_agent_istrusted (KsbaCert cert)
+gpgsm_agent_istrusted (ksba_cert_t cert)
 {
   int rc;
   char *fpr;
@@ -538,7 +538,7 @@ gpgsm_agent_istrusted (KsbaCert cert)
 
 /* Ask the agent to mark CERT as a trusted Root-CA one */
 int
-gpgsm_agent_marktrusted (KsbaCert cert)
+gpgsm_agent_marktrusted (ksba_cert_t cert)
 {
   int rc;
   char *fpr, *dn;
@@ -601,7 +601,7 @@ learn_cb (void *opaque, const void *buffer, size_t length)
   struct learn_parm_s *parm = opaque;
   size_t len;
   char *buf;
-  KsbaCert cert;
+  ksba_cert_t cert;
   int rc;
 
   if (parm->error)

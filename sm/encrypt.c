@@ -152,11 +152,11 @@ encode_session_key (DEK dek, gcry_sexp_t * r_data)
 /* encrypt the DEK under the key contained in CERT and return it as a
    canonical S-Exp in encval */
 static int
-encrypt_dek (const DEK dek, KsbaCert cert, char **encval)
+encrypt_dek (const DEK dek, ksba_cert_t cert, char **encval)
 {
   gcry_sexp_t s_ciph, s_data, s_pkey;
   int rc;
-  KsbaSexp buf;
+  ksba_sexp_t buf;
   size_t len;
 
   *encval = NULL;
@@ -292,11 +292,11 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
 {
   int rc = 0;
   Base64Context b64writer = NULL;
-  KsbaError err;
-  KsbaWriter writer;
-  KsbaReader reader = NULL;
-  KsbaCMS cms = NULL;
-  KsbaStopReason stopreason;
+  gpg_error_t err;
+  ksba_writer_t writer;
+  ksba_reader_t reader = NULL;
+  ksba_cms_t cms = NULL;
+  ksba_stop_reason_t stopreason;
   KEYDB_HANDLE kh = NULL;
   struct encrypt_cb_parm_s encparm;
   DEK dek = NULL;

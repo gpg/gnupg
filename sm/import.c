@@ -44,7 +44,7 @@ struct stats_s {
 
 
 static void
-print_imported_status (CTRL ctrl, KsbaCert cert)
+print_imported_status (CTRL ctrl, ksba_cert_t cert)
 {
   char *fpr;
  
@@ -62,7 +62,7 @@ print_imported_status (CTRL ctrl, KsbaCert cert)
    4 := "Error storing certificate".
 */
 static void
-print_import_problem (CTRL ctrl, KsbaCert cert, int reason)
+print_import_problem (CTRL ctrl, ksba_cert_t cert, int reason)
 {
   char *fpr = NULL;
   char buf[25];
@@ -117,7 +117,7 @@ print_imported_summary (CTRL ctrl, struct stats_s *stats)
 
 
 static void
-check_and_store (CTRL ctrl, struct stats_s *stats, KsbaCert cert, int depth)
+check_and_store (CTRL ctrl, struct stats_s *stats, ksba_cert_t cert, int depth)
 {
   int rc;
 
@@ -137,7 +137,7 @@ check_and_store (CTRL ctrl, struct stats_s *stats, KsbaCert cert, int depth)
 
       if (!keydb_store_cert (cert, 0, &existed))
         {
-          KsbaCert next = NULL;
+          ksba_cert_t next = NULL;
 
           if (!existed)
             {
@@ -194,11 +194,11 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
 {
   int rc;
   Base64Context b64reader = NULL;
-  KsbaReader reader;
-  KsbaCert cert = NULL;
-  KsbaCMS cms = NULL;
+  ksba_reader_t reader;
+  ksba_cert_t cert = NULL;
+  ksba_cms_t cms = NULL;
   FILE *fp = NULL;
-  KsbaContentType ct;
+  ksba_content_type_t ct;
 
   fp = fdopen ( dup (in_fd), "rb");
   if (!fp)
@@ -218,7 +218,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
   ct = ksba_cms_identify (reader);
   if (ct == KSBA_CT_SIGNED_DATA)
     { /* This is probably a signed-only message - import the certs */
-      KsbaStopReason stopreason;
+      ksba_stop_reason_t stopreason;
       int i;
 
       rc = ksba_cms_new (&cms);

@@ -497,10 +497,10 @@ base64_finish_write (struct writer_cb_parm_s *parm)
    ksba_reader_release function on. */
 int
 gpgsm_create_reader (Base64Context *ctx,
-                     CTRL ctrl, FILE *fp, KsbaReader *r_reader)
+                     CTRL ctrl, FILE *fp, ksba_reader_t *r_reader)
 {
   int rc;
-  KsbaReader r;
+  ksba_reader_t r;
 
   *r_reader = NULL;
   *ctx = xtrycalloc (1, sizeof **ctx);
@@ -562,10 +562,10 @@ gpgsm_destroy_reader (Base64Context ctx)
    function on. */
 int
 gpgsm_create_writer (Base64Context *ctx,
-                     CTRL ctrl, FILE *fp, KsbaWriter *r_writer)
+                     CTRL ctrl, FILE *fp, ksba_writer_t *r_writer)
 {
   int rc;
-  KsbaWriter w;
+  ksba_writer_t w;
 
   *r_writer = NULL;
   *ctx = xtrycalloc (1, sizeof **ctx);

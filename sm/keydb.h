@@ -41,9 +41,9 @@ int keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb);
 int keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb);
 #endif
 
-int keydb_get_cert (KEYDB_HANDLE hd, KsbaCert *r_cert);
-int keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert);
-int keydb_update_cert (KEYDB_HANDLE hd, KsbaCert cert);
+int keydb_get_cert (KEYDB_HANDLE hd, ksba_cert_t *r_cert);
+int keydb_insert_cert (KEYDB_HANDLE hd, ksba_cert_t cert);
+int keydb_update_cert (KEYDB_HANDLE hd, ksba_cert_t cert);
 
 int keydb_delete (KEYDB_HANDLE hd);
 
@@ -63,7 +63,7 @@ int keydb_search_subject (KEYDB_HANDLE hd, const char *issuer);
 
 int keydb_classify_name (const char *name, KEYDB_SEARCH_DESC *desc);
 
-int keydb_store_cert (KsbaCert cert, int ephemeral, int *existed);
+int keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed);
 
 
 #endif /*GNUPG_KEYDB_H*/
