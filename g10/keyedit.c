@@ -371,9 +371,6 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 		    /* Fixme: see whether there is a revocation in which
 		     * case we should allow to sign it again. */
-                    /* Note: I kept the %s and the empty string in the
-                       else branch so that not too many translations
-                       get broken. */
                     if (!node->pkt->pkt.signature->flags.exportable && local)
                       tty_printf(_(
                          "\"%s\" was already locally signed by key %08lX\n"),
@@ -381,9 +378,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
                                    (ulong)sk_keyid[1] );
                     else
                       tty_printf(_(
-                         "\"%s\" was already %ssigned by key %08lX\n"),
+                         "\"%s\" was already signed by key %08lX\n"),
                                  uidnode->pkt->pkt.user_id->name,
-                                 "",(ulong)sk_keyid[1] );
+				 (ulong)sk_keyid[1] );
                     sprintf (buf, "%08lX%08lX",
                              (ulong)sk->keyid[0], (ulong)sk->keyid[1] );
                     write_status_text (STATUS_ALREADY_SIGNED, buf);
@@ -2013,6 +2010,7 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
     KBNODE node;
     u32 keyid[2];
     int selected;
+    int attribute = 0;
     int modified = 0;
 
     if ( count_selected_uids (pub_keyblock) != 1 ) {
@@ -2027,6 +2025,12 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
     main_pk = NULL;
     uid = NULL;
     selected = 0;
+
+    /* Is our selected uid an attribute packet? */
+    for ( node=pub_keyblock; node; node = node->next )
+      if (node->pkt->pkttype == PKT_USER_ID && node->flag & NODFLG_SELUID)
+	attribute = (node->pkt->pkt.user_id->attrib_data!=NULL);
+
     for ( node=pub_keyblock; node; node = node->next ) {
 	if ( node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
             break; /* ready */
@@ -2043,10 +2047,17 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if ( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
 		&& (uid && (sig->sig_class&~3) == 0x10)
-                && sig->version >= 4 ) {
-		/* this is a selfsignature which is to be replaced 
-                 * we can just ignore v3 signatures because they are
-                 * not able to carry the primary ID flag */
+                && sig->version >= 4
+		&& attribute == (uid->attrib_data!=NULL)) {
+	        /* This is a selfsignature which is to be replaced.
+		   We can just ignore v3 signatures because they are
+		   not able to carry the primary ID flag.  We also
+		   ignore self-sigs on user IDs that are not of the
+		   same type that we are making primary.  That is, if
+		   we are making a user ID primary, we alter user IDs.
+		   If we are making an attribute packet primary, we
+		   alter attribute packets. */
+
                 /* FIXME: We must make sure that we only have one
                    self-signature per user ID here (not counting
                    revocations) */

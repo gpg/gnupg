@@ -439,8 +439,8 @@ idea_cipher_warn(int show)
     }
 }
 
-/* The largest string we have an expando for, times two. */
-#define LARGEST_EXPANDO ((MAX_FINGERPRINT_LEN*2)*2)
+/* The largest string we have an expando for. */
+#define LARGEST_EXPANDO (MAX_FINGERPRINT_LEN*2)
 
 /* Expand %-strings.  Returns a string which must be m_freed.  Returns
    NULL if the string cannot be expanded (too large). */
@@ -454,7 +454,7 @@ pct_expando(const char *string,PKT_public_key *pk)
 
   keyid_from_pk(pk,keyid);
 
-  maxlen=LARGEST_EXPANDO;
+  maxlen=LARGEST_EXPANDO*2;
   ret=m_alloc(maxlen+1);  /* one more to leave room for the trailing \0 */
 
   ret[0]='\0';
@@ -464,7 +464,7 @@ pct_expando(const char *string,PKT_public_key *pk)
       /* 8192 is way bigger than we'll need here */
       if(maxlen-idx<LARGEST_EXPANDO && maxlen<8192)
 	{
-	  maxlen+=LARGEST_EXPANDO;
+	  maxlen+=LARGEST_EXPANDO*2;
 	  ret=m_realloc(ret,maxlen+1);
 	}
 
@@ -508,7 +508,17 @@ pct_expando(const char *string,PKT_public_key *pk)
 		  }
 	      }
 	      break;
-		
+
+	      /* photo type. For now, it's always jpeg so this is
+                 easy! */
+	    case 't':
+	      if(idx+4>maxlen)
+		goto fail;
+
+	      strcpy(&ret[idx],"jpeg");
+	      idx+=4;
+	      break;
+
 	    case '%':
 	      if(idx+1>maxlen)
 		goto fail;

@@ -1,3 +1,23 @@
+2002-04-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (pct_expando), options.skel: Use %t to indicate type of a
+	photo ID (in this version, it's always "jpeg").  Also tweak string
+	expansion loop to minimize reallocs.
+
+	* mainproc.c (do_check_sig): Variable type fix.
+
+	* keyedit.c (menu_set_primary_uid): Differentiate between true
+	user IDs and attribute user IDs when making one of them primary.
+	That is, if we are making a user ID primary, we alter user IDs.
+	If we are making an attribute packet primary, we alter attribute
+	packets.  This matches the language in the latest attribute packet
+	draft.
+
+	* keyedit.c (sign_uids): No need for the empty string hack.
+
+	* getkey.c (fixup_uidnode): Only accept preferences from the
+	hashed segment of the self-sig.
+
 2002-04-10  Werner Koch  <wk@gnupg.org>
 
 	* tdbio.c (migrate_from_v2): Fixed the offset to read the old

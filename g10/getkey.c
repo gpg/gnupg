@@ -1109,17 +1109,14 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
      * For now we only look at the hashed one. 
      */
 
-    /* now build the preferences list.  We try to get the preferences
-     * from the hashed list but if there are no such preferences, we
-     * try to get them from the unhashed list.  There is no risk with
-     * that, because our implementation comes only with strong
-     * algorithms and it would be fruitless for an attacker to insert
-     * an weak algorithm.  */
-    p = parse_sig_subpkt2 ( sig, SIGSUBPKT_PREF_SYM, &n );
+    /* Now build the preferences list.  These must come from the
+       hashed section so nobody can modify the ciphers a key is
+       willing to accept. */
+    p = parse_sig_subpkt ( sig->hashed, SIGSUBPKT_PREF_SYM, &n );
     sym = p; nsym = p?n:0;
-    p = parse_sig_subpkt2 ( sig, SIGSUBPKT_PREF_HASH, &n );
+    p = parse_sig_subpkt ( sig->hashed, SIGSUBPKT_PREF_HASH, &n );
     hash = p; nhash = p?n:0;
-    p = parse_sig_subpkt2 ( sig, SIGSUBPKT_PREF_COMPR, &n );
+    p = parse_sig_subpkt ( sig->hashed, SIGSUBPKT_PREF_COMPR, &n );
     zip = p; nzip = p?n:0;
     if (uid->prefs) 
         m_free (uid->prefs);

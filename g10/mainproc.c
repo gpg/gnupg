@@ -623,7 +623,8 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
 {
     PKT_signature *sig;
     MD_HANDLE md = NULL, md2 = NULL;
-    int algo, rc, dummy, dum2;
+    int algo, rc, dum2;
+    u32 dummy;
 
     if(!is_expkey)
       is_expkey=&dum2;
