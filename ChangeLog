@@ -1,3 +1,9 @@
+Thu Dec  9 17:22:27 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* acinclude.m4 (GNUPG_FIX_HDR_VERSION): New.
+	* configure.in: Check and fix the version number of gcrypt/gcrypt.h
+	so that it is always the save as VERSION.
+
 Thu Oct 28 16:17:46 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* Started with development series 1.1 on 1999-10-26

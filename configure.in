@@ -678,8 +678,15 @@ AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 
 GNUPG_DO_LINK_FILES
 
+dnl
+dnl Make the version number in gcrypt/gcrypt.h the same as the one here.
+dnl (this is easier than to have a .in file just for one substitution)
+dnl
+GNUPG_FIX_HDR_VERSION(gcrypt/gcrypt.h, GCRYPT_VERSION)
+
 
 AC_OUTPUT_COMMANDS([
+chmod +x gcrypt/gcrypt-config
 cat >g10defs.tmp <<G10EOF
 /* Generated automatically by configure */
 #ifdef HAVE_DRIVE_LETTERS
@@ -700,7 +707,6 @@ else
     mv g10defs.tmp g10defs.h
     echo "g10defs.h created"
 fi
-chmod +x gcrypt/gcrypt-config
 ],[
 prefix=$prefix
 exec_prefix=$exec_prefix

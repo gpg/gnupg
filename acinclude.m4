@@ -27,6 +27,28 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
   ])
 
 
+dnl GNUPG_FIX_HDR_VERSION(FILE, NAME)
+dnl Make the version number in gcrypt/gcrypt.h the same as the one here.
+dnl (this is easier than to have a .in file just for one substitution)
+dnl
+AC_DEFUN(GNUPG_FIX_HDR_VERSION,
+  [ sed "s/^#define $2 \".*/#define $2 \"$VERSION\"/" $1 > $1.tmp
+    if cmp -s $1 $1.tmp 2>/dev/null; then
+        rm -f $1.tmp
+    else
+        rm -f $1
+        if mv $1.tmp $1 ; then
+            :
+        else
+            AC_MSG_ERROR([[
+*** Failed to fix the version string macro $2 in $1.
+*** The old file has been saved as $1.tmp
+                         ]])
+        fi
+        AC_MSG_WARN([fixed the $2 macro in $1])
+    fi
+  ])
+
 
 dnl GNUPG_LINK_FILES( SRC, DEST )
 dnl same as AC_LINK_FILES, but collect the files to link in
@@ -47,6 +69,8 @@ define(GNUPG_LINK_FILES,
 define(GNUPG_DO_LINK_FILES,
   [ AC_LINK_FILES( $wk_link_files_src, $wk_link_files_dst )
   ])
+
+
 
 
 dnl GNUPG_CHECK_ENDIAN
@@ -633,7 +657,7 @@ AC_DEFUN(GNUPG_FUNC_MKDIR_TAKES_ONE_ARG,
 #ifdef HAVE_DIRECT_H
 # include <direct.h>
 #endif], [mkdir ("foo", 0);],
-	gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
+        gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
 if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
   AC_DEFINE(MKDIR_TAKES_ONE_ARG)
 fi
