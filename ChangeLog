@@ -1,3 +1,9 @@
+2002-10-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: OpenLDAP 2.0.27 changed the dependencies again.
+	Add a "LDAPLIBS" variable so users can try and suggest the right
+	dependencies for their platform.
+
 2002-10-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Make "new" the default for TIGER.  Still use

@@ -368,15 +368,17 @@ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 	[NETLIBS="-lsocket $NETLIBS"]))
 
 # Try and link a LDAP test program to weed out unusable LDAP
-# libraries.  -lldap [-llber [-lresolv]] is for OpenLDAP.  -lldapssl41
-# is for Mozilla LDAP.
+# libraries.  -lldap [-llber [-lresolv]] is for OpenLDAP.  OpenLDAP in
+# general is terrible with creating weird dependencies.  If all else
+# fails, the user can play guess-the-dependency by using something
+# like LDAPLIBS="-lfoo" ./configure
 
 if test "$try_ldap" = yes ; then
-  for LDAPLIBS in "-lldap" "-lldap -llber" "-lldap -llber -lresolv" "-lldapssl41"; do
+  for MY_LDAPLIBS in ${LDAPLIBS+"$LDAPLIBS"} "-lldap" "-lldap -llber" "-lldap -llber -lresolv"; do
     _ldap_save_libs=$LIBS
-    LIBS="$LDAPLIBS $NETLIBS $LIBS"
+    LIBS="$MY_LDAPLIBS $NETLIBS $LIBS"
 
-    AC_MSG_CHECKING([whether LDAP via \"$LDAPLIBS\" is present and sane])
+    AC_MSG_CHECKING([whether LDAP via \"$MY_LDAPLIBS\" is present and sane])
     AC_TRY_LINK([#include <ldap.h>],[ldap_open("foobar",1234);],
                 [gnupg_cv_func_ldap_init=yes],[gnupg_cv_func_ldap_init=no])
     AC_MSG_RESULT([$gnupg_cv_func_ldap_init])
@@ -396,6 +398,7 @@ if test "$try_ldap" = yes ; then
     if test "$gnupg_cv_func_ldap_init" = yes || \
   	test "$gnupg_cv_func_ldaplber_init" = yes ; then
        GPGKEYS_LDAP="gpgkeys_ldap"
+       LDAPLIBS=$MY_LDAPLIBS
     fi
 
     LIBS=$_ldap_save_libs
