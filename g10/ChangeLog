@@ -1,3 +1,9 @@
+2004-02-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (check_prefs): Some language fixes.
+	(sec_to_pub_keyblock, import_secret_one): Without knowing the
+	number of MPIs there are, we cannot try and sk-to-pk-ize a key.
+
 2004-02-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (check_prefs): New function to check preferences on a

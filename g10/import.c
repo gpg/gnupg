@@ -608,10 +608,10 @@ check_prefs(KBNODE keyblock)
 
   if(problem)
     {
-      log_info(_("It strongly suggested that you update"
-		 " your preferences and re-distribute\n"));
-      log_info(_("this key to avoid potential algorithm"
-		 " mismatch problems.\n"));
+      log_info(_("it is strongly suggested that you update"
+		 " your preferences and\n"));
+      log_info(_("re-distribute this key to avoid potential algorithm"
+		 " mismatch problems\n"));
 
       if(!opt.batch)
 	{
@@ -956,7 +956,12 @@ sec_to_pub_keyblock(KBNODE sec_keyblock)
 
 	  n=pubkey_get_npkey(pk->pubkey_algo);
 	  if(n==0)
-	    pk->pkey[0]=mpi_copy(sk->skey[0]);
+	    {
+	      /* we can't properly extract the pubkey without knowing
+		 the number of MPIs */
+	      release_kbnode(pub_keyblock);
+	      return NULL;
+	    }
 	  else
 	    {
 	      int i;
@@ -1062,8 +1067,11 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	    /* Try and make a public key out of this. */
 
 	    KBNODE pub_keyblock=sec_to_pub_keyblock(keyblock);
-	    import_one(fname,pub_keyblock,stats,opt.import_options);
-	    release_kbnode(pub_keyblock);
+	    if(pub_keyblock)
+	      {
+		import_one(fname,pub_keyblock,stats,opt.import_options);
+		release_kbnode(pub_keyblock);
+	      }
 	  }
 
 	/* Now that the key is definitely incorporated into the keydb,
