@@ -105,11 +105,27 @@ write_status_text ( int no, const char *text)
 
 
 #ifdef USE_SHM_COPROCESSING
+
+#ifndef IPC_RMID_DEFERRED_RELEASE
+static void
+remove_shmid( void )
+{
+    if( shm_id != -1 ) {
+	shmctl ( shm_id, IPC_RMID, 0);
+	shm_id = -1;
+    }
+}
+#endif
+
 void
 init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 {
     char buf[100];
+    struct shmid_ds shmds;
 
+  #ifndef IPC_RMID_DEFERRED_RELEASE
+    atexit( remove_shmid );
+  #endif
     requested_shm_size = (requested_shm_size + 4095) & ~4095;
     if ( requested_shm_size > 2 * 4096 )
 	log_fatal("too much shared memory requested; only 8k are allowed\n");
@@ -133,13 +149,23 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 	    shm_is_locked = 1;
     }
 
+
+
   #ifdef IPC_RMID_DEFERRED_RELEASE
-    if ( shmctl ( shm_id, IPC_RMID, 0) )
+    if( shmctl( shm_id, IPC_RMID, 0) )
 	log_fatal("shmctl IPC_RMDID of %d failed: %s\n",
 					    shm_id, strerror(errno));
-  #else
-    #error Must add a cleanup function
   #endif
+
+    if( shmctl( shm_id, IPC_STAT, &shmds ) )
+	log_fatal("shmctl IPC_STAT of %d failed: %s\n",
+					    shm_id, strerror(errno));
+    if( shmds.shm_perm.uid != getuid() ) {
+	shmds.shm_perm.uid = getuid();
+	if( shmctl( shm_id, IPC_SET, &shmds ) )
+	    log_fatal("shmctl IPC_SET of %d failed: %s\n",
+						shm_id, strerror(errno));
+    }
 
     /* write info; Protocol version, id, size, locked size */
     sprintf( buf, "pv=1 pid=%d shmid=%d sz=%u lz=%u", (int)getpid(),

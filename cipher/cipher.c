@@ -43,7 +43,7 @@ struct cipher_table_s {
     size_t blocksize;
     size_t keylen;
     size_t contextsize; /* allocate this amount of context */
-    void (*setkey)( void *c, byte *key, unsigned keylen );
+    int  (*setkey)( void *c, byte *key, unsigned keylen );
     void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
     void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
 };
@@ -58,15 +58,15 @@ struct cipher_handle_s {
     byte iv[MAX_BLOCKSIZE];	/* (this should be ulong aligned) */
     byte lastiv[MAX_BLOCKSIZE];
     int  unused;  /* in IV */
-    void (*setkey)( void *c, byte *key, unsigned keylen );
+    int  (*setkey)( void *c, byte *key, unsigned keylen );
     void (*encrypt)( void *c, byte *outbuf, byte *inbuf );
     void (*decrypt)( void *c, byte *outbuf, byte *inbuf );
     byte context[1];
 };
 
 
-static void
-dummy_setkey( void *c, byte *key, unsigned keylen ) { }
+static int
+dummy_setkey( void *c, byte *key, unsigned keylen ) { return 0; }
 static void
 dummy_encrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
 static void
@@ -346,10 +346,10 @@ cipher_close( CIPHER_HANDLE c )
 }
 
 
-void
+int
 cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen )
 {
-    (*c->setkey)( &c->context, key, keylen );
+    return (*c->setkey)( &c->context, key, keylen );
 }
 
 

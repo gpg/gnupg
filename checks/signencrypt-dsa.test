@@ -4,17 +4,17 @@
 
 #info Checking signing and encryption for DSA
 for i in $plain_files $data_files ; do
-    ./run-gpg $dsa_keyrings -se -o x --yes \
+    $srcdir/run-gpg $dsa_keyrings -se -o x --yes \
 		-u "$dsa_usrname1" -r "$dsa_usrname2" $i
-    ./run-gpg $dsa_keyrings -o y --yes x
+    $srcdir/run-gpg $dsa_keyrings -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
 
 for da in ripemd160 sha1 md5; do
     for i in $plain_files; do
-	./run-gpg $dsa_keyrings -se -o x --yes --digest-algo $da \
+	$srcdir/run-gpg $dsa_keyrings -se -o x --yes --digest-algo $da \
 		    -u "$dsa_usrname1" -r "$dsa_usrname2" $i
-	./run-gpg $dsa_keyrings -o y --yes x
+	$srcdir/run-gpg $dsa_keyrings -o y --yes x
 	cmp $i y || error "$i: mismatch"
 	# process only the first one
 	break

@@ -4,9 +4,9 @@
 
 #info Checking armored encryption with a pipe
 for i in $plain_files $data_files ; do
-    ./run-gpg -ea --yes -r "$usrname2" < $i | tee x | ./run-gpg -o y --yes
+    $srcdir/run-gpg -ea --yes -r "$usrname2" < $i | tee x | $srcdir/run-gpg -o y --yes
     cmp $i y || error "$i: mismatch"
-    ./run-gpg --yes < x > y
+    $srcdir/run-gpg --yes < x > y
     cmp $i y || error "$i: mismatch"
 done
 

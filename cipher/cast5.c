@@ -47,7 +47,7 @@
 
 #define CIPHER_ALGO_CAST5	 3
 
-#define FNCCAST_SETKEY(f)  (void(*)(void*, byte*, unsigned))(f)
+#define FNCCAST_SETKEY(f)  (int(*)(void*, byte*, unsigned))(f)
 #define FNCCAST_CRYPT(f)   (void(*)(void*, byte*, byte*))(f)
 
 #define CAST5_BLOCKSIZE 8
@@ -57,7 +57,7 @@ typedef struct {
     byte Kr[16];
 } CAST5_context;
 
-static void cast_setkey( CAST5_context *c, byte *key, unsigned keylen );
+static int  cast_setkey( CAST5_context *c, byte *key, unsigned keylen );
 static void encrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
 static void decrypt_block( CAST5_context *bc, byte *outbuf, byte *inbuf );
 
@@ -549,7 +549,7 @@ key_schedule( u32 *x, u32 *z, u32 *k )
 }
 
 
-static void
+static int
 cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
 {
   static int initialized;
@@ -582,6 +582,7 @@ cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
 
   #undef xi
   #undef zi
+    return 0;
 }
 
 
@@ -594,7 +595,7 @@ cast_setkey( CAST5_context *c, byte *key, unsigned keylen )
 const char *
 cast5_get_info( int algo, size_t *keylen,
 		   size_t *blocksize, size_t *contextsize,
-		   void (**r_setkey)( void *c, byte *key, unsigned keylen ),
+		   int	(**r_setkey)( void *c, byte *key, unsigned keylen ),
 		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
 		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
 		 )

@@ -28,6 +28,7 @@
   #include <unistd.h>
   #include <sys/mman.h>
   #include <sys/types.h>
+  #include <fcntl.h>
 #endif
 
 #include "types.h"
@@ -103,15 +104,38 @@ lock_pool( void *p, size_t n )
 static void
 init_pool( size_t n)
 {
+    size_t pgsize;
+
     poolsize = n;
 
     if( disable_secmem )
 	log_bug("secure memory is disabled");
 
-  #if HAVE_MMAP && defined(MAP_ANON)
-    poolsize = (poolsize + 4095) & ~4095;
-    pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,
-			      MAP_PRIVATE|MAP_ANON, -1, 0);
+  #ifdef HAVE_GETPAGESIZE
+    pgsize = getpagesize();
+  #else
+    pgsize = 4096;
+  #endif
+
+  #if HAVE_MMAP
+    poolsize = (poolsize + pgsize -1 ) & ~(pgsize-1);
+    #ifdef MAP_ANONYMOUS
+       pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,
+				 MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    #else /* map /dev/zero instead */
+    {	int fd;
+
+	fd = open("/dev/zero", O_RDWR);
+	if( fd == -1 ) {
+	    log_error("can't open /dev/zero: %s\n", strerror(errno) );
+	    pool = (void*)-1;
+	}
+	else {
+	    pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,
+				      MAP_PRIVATE, fd, 0);
+	}
+    }
+    #endif
     if( pool == (void*)-1 )
 	log_error("can't mmap pool of %u bytes: %s - using malloc\n",
 			    (unsigned)poolsize, strerror(errno));

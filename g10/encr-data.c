@@ -29,6 +29,7 @@
 #include "mpi.h"
 #include "cipher.h"
 #include "options.h"
+#include "i18n.h"
 
 
 static int decode_filter( void *opaque, int control, IOBUF a,
@@ -68,7 +69,10 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
 	log_bug("Nanu\n");   /* oops: found a bug */
 
     dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
-    cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen  );
+    if( cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen ) )
+	log_info(_("Warning: Message was encrypted with "
+		    "a weak key in the symmetric cipher.\n"));
+
     cipher_setiv( dfx.cipher_hd, NULL );
 
     if( ed->len ) {

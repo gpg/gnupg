@@ -4,16 +4,16 @@
 
 #info Checking DSA signatures (default digest algo)
 for i in $plain_files $data_files; do
-    ./run-gpg $dsa_keyrings -s -o x --yes -u $dsa_usrname1 $i
-    ./run-gpg $dsa_keyrings -o y --yes x
+    $srcdir/run-gpg $dsa_keyrings -s -o x --yes -u $dsa_usrname1 $i
+    $srcdir/run-gpg $dsa_keyrings -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
 
 for da in ripemd160 sha1 md5; do
     for i in $plain_files; do
-	./run-gpg $dsa_keyrings --digest-algo $da \
+	$srcdir/run-gpg $dsa_keyrings --digest-algo $da \
 				-s -o x --yes -u $dsa_usrname1 $i
-	./run-gpg $dsa_keyrings -o y --yes x
+	$srcdir/run-gpg $dsa_keyrings -o y --yes x
 	cmp $i y || error "$i: mismatch"
 	# process only the first one
 	break

@@ -3,19 +3,23 @@ Authors of GNU Privacy Guard (gnupg).
 Werner Koch.  Designed and implemented gnupg.
 
 
-TRANSLATIONS	Marco d'Itri    1997-02-22
-Disclaim
-
-GPG	Matthew Skala	1998-08-10
+GPG	Matthew Skala		    1998-08-10
 Disclaims changes (Twofish code).
 mskala@ansuz.sooke.bc.ca
 
-GPG	Natural Resources Canada       1998-08-11
+GPG	Natural Resources Canada    1998-08-11
 Disclaims changes by Matthew Skala.
 
-TRANSLATIONS	Gaël Quéri	?????????????
+GPG	Niklas Hernaeus 	    ??????????
+(Weak key patches)
+
+
+TRANSLATIONS	Marco d'Itri        1997-02-22
+Disclaim
+
+TRANSLATIONS	Gaël Quéri	    ??????????
 fr.po
 
-TRANSLATIONS	Walter Koch	???????????
+TRANSLATIONS	Walter Koch	    ??????????
 de.po
 

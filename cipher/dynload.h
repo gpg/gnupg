@@ -31,7 +31,7 @@ enum_gnupgext_digests( void **enum_context,
 const char *
 enum_gnupgext_ciphers( void **enum_context, int *algo,
 		       size_t *keylen, size_t *blocksize, size_t *contextsize,
-		       void (**setkey)( void *c, byte *key, unsigned keylen ),
+		       int  (**setkey)( void *c, byte *key, unsigned keylen ),
 		       void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
 		       void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
 		     );

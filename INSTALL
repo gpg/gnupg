@@ -33,8 +33,12 @@ Configure options for GNUPG
 Problems
 ========
 
-If you have compile problems, try the configure options "--with-included-zlib",
-"--disable-nls" (See ABOUT-NLS) or --disable-dynload.
+If you get unresolved externals "gettext" you should run configure again
+with the option "--with-included-gettext".
+
+If you have other compile problems, try the configure options
+"--with-included-zlib" or "--disable-nls" (See ABOUT-NLS)
+or --disable-dynload.
 
 I can't check all assembler files, so if you have problems assembling them
 (or the program crashes), simply delete the files in the mpi/<cpu> directory.

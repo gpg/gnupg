@@ -46,7 +46,7 @@ EXTRA_twofish_SOURCES = twofish.c
 
 
 tiger: $(srcdir)/tiger.c
-	$(COMPILE) -shared  -fPIC -o tiger $(srcdir)/tiger.c
+	$(COMPILE) -shared  -fPIC -O1 -o tiger $(srcdir)/tiger.c
 
 twofish: $(srcdir)/twofish.c
 	$(COMPILE) -shared  -fPIC -o twofish $(srcdir)/twofish.c

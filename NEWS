@@ -10,6 +10,16 @@ Noteworthy changes in version 0.3.5
 
     * --delete-[secret-]key is now also availabe in gpgm.
 
+    * cleartext signatures are not anymore converted to LF only.
+
+    * Fixed a trustdb problem.	Run "gpgm --check-trustdb" to fix old
+      trust dbs.
+
+    * Building in another directory should now work.
+
+    * Weak key detection mechanism (Niklas Hernaeus).
+
+
 Noteworthy changes in version 0.3.4
 -----------------------------------
     * New options --comment and --set-filename; see g10/OPTIONS

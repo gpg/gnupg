@@ -191,7 +191,7 @@ PO files have been submitted to translation coordination.
      gcal            |       []          []          []    []          [] |  5
      gettext         |    [] []    []    []       [] [] [] [] []    [] [] | 12
      grep            |       []    []    []       [] [] [] []    [] [] [] | 10
-     hello           |       []    []    []       [] [] [] [] []    [] [] | 10
+     hello           |    [] []    []    []       [] [] [] [] []    [] [] | 11
      id-utils        |       []          []                []             |  3
      indent          |    [] []                   []       []    []       |  5
      libc            |       []    []    []       [] []    []          [] |  7
@@ -201,14 +201,14 @@ PO files have been submitted to translation coordination.
      ptx             |       []    []    []          [] [] [] []       [] |  8
      recode          |    [] []    []    []          []    [] []    [] [] |  9
      sh-utils        |       []    []    []          [] [] [] []       [] |  8
-     sharutils       |       []    []    []          []                [] |  5
-     tar             |       []          [] []    [] [] [] [] []    [] [] | 10
-     texinfo         |       []          []                               |  2
+     sharutils       | []    []    []    []          []                [] |  6
+     tar             | []    []          [] []    [] [] [] [] []    [] [] | 11
+     texinfo         | []    []          []                               |  3
      textutils       | []    []    []    []       [] [] [] []          [] |  9
      wdiff           | []    []    []    []          [] [] []          [] |  8
                      `----------------------------------------------------'
        17 languages    cs da de en es fi fr it ja ko nl no pl pt ru sl sv
-       27 packages      3  3 25  1 18  1 26  2  1 12 20  9 19  7  4  7 17  175
+       27 packages      6  4 25  1 18  1 26  2  1 12 20  9 19  7  4  7 17  179
 
    Some counters in the preceding matrix are higher than the number of
 visible blocks let us expect.  This is because a few extra PO files are

@@ -29,7 +29,7 @@
 static void selftest(void);
 
 /* Macros used by the info function. */
-#define FNCCAST_SETKEY(f)  ((void(*)(void*, byte*, unsigned))(f))
+#define FNCCAST_SETKEY(f)  ((int(*)(void*, byte*, unsigned))(f))
 #define FNCCAST_CRYPT(f)   ((void(*)(void*, byte*, byte*))(f))
 
 /* Structure for an expanded Twofish key.  s contains the key-dependent
@@ -443,7 +443,7 @@ static const byte exp_to_poly[492] = {
 /* Perform the key setup.  Note that this works *only* with 128-bit keys,
  * despite the API that makes it look like it might support other sizes. */
 
-static void
+static int
 twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
 {
    /* Temporaries for CALC_K. */
@@ -577,6 +577,8 @@ twofish_setkey (TWOFISH_context *ctx, const byte *key, const unsigned keylen)
    CALC_K (k, 26, 0x8B, 0xAE, 0x30, 0x5B);
    CALC_K (k, 28, 0x84, 0x8A, 0x54, 0x00);
    CALC_K (k, 30, 0xDF, 0xBC, 0x23, 0x9D);
+
+   return 0;
 }
 
 /* Macros to compute the g() function in the encryption and decryption
@@ -825,7 +827,7 @@ main()
 static const char *
 twofish_get_info (int algo, size_t *keylen,
 		  size_t *blocksize, size_t *contextsize,
-		  void (**r_setkey) (void *c, byte *key, unsigned keylen),
+		  int  (**r_setkey) (void *c, byte *key, unsigned keylen),
 		  void (**r_encrypt) (void *c, byte *outbuf, byte *inbuf),
 		  void (**r_decrypt) (void *c, byte *outbuf, byte *inbuf)
 		 )

@@ -6,13 +6,13 @@
 # but the output has always one.  I do not thinkl this is a bug, because
 # it is clear text and not binary text.
 for i in $plain_files; do
-    echo "$usrpass1" | ./run-gpg --passphrase-fd 0 -sat -o x --yes $i
-    ./run-gpg --verify x
+    echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 -sat -o x --yes $i
+    $srcdir/run-gpg --verify x
 done
 # and once more to check rfc1991
 for i in $plain_files; do
-    echo "$usrpass1" | ./run-gpg --passphrase-fd 0 \
+    echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 \
 			 --rfc1991 --digest-algo md5 -sat -o x --yes $i
-    ./run-gpg --verify x
+    $srcdir/run-gpg --verify x
 done
 

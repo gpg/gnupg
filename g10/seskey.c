@@ -27,6 +27,7 @@
 #include "cipher.h"
 #include "mpi.h"
 #include "main.h"
+#include "i18n.h"
 
 
 /****************
@@ -35,8 +36,25 @@
 void
 make_session_key( DEK *dek )
 {
+    CIPHER_HANDLE chd;
+    int i, rc;
+
     dek->keylen = cipher_get_keylen( dek->algo ) / 8;
-    randomize_buffer( dek->key, dek->keylen, 1 );
+
+    chd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
+    for(i=0; i < 16; i++ ) {
+	rc = cipher_setkey( chd, dek->key, dek->keylen );
+	if( !rc ) {
+	    cipher_close( chd );
+	    return;
+	}
+	log_info(_("weak key created - retrying\n") );
+	/* Renew the session key until we get a non-weak key. */
+	randomize_buffer( dek->key, dek->keylen, 1 );
+    }
+    log_fatal(_(
+	    "cannot avoid weak key for symmetric cipher; tried %d times!\n"),
+		  i);
 }
 
 

@@ -166,6 +166,15 @@ char *strlwr(char *a);
 #endif
 
 
+/**** other missing stuff ****/
+#ifndef HAVE_ATEXIT  /* For SunOS */
+  #define atexit(a)    (on_exit((a),0))
+#endif
+
+#ifndef HAVE_RAISE
+  #define raise(a) kill(getpid(), (a))
+#endif
+
 /******** some macros ************/
 #ifndef STR
   #define STR(v) #v

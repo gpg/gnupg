@@ -394,6 +394,8 @@ import_one( const char *fname, KBNODE keyblock )
 		log_error("key %08lX: trustdb insert failed: %s\n",
 					(ulong)keyid[1], g10_errstr(rc) );
 	}
+	else
+	    rc = clear_trust_checked_flag( new_key? pk : pk_orig );
     }
 
   leave:

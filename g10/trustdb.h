@@ -56,6 +56,7 @@ byte *get_pref_data( ulong lid, const byte *namehash, size_t *ret_n );
 int is_algo_in_prefs( ulong lid, int preftype, int algo );
 int keyid_from_lid( ulong lid, u32 *keyid );
 int query_trust_record( PKT_public_key *pk );
+int clear_trust_checked_flag( PKT_public_key *pk );
 int insert_trust_record( PKT_public_key *pk );
 int update_ownertrust( ulong lid, unsigned new_trust );
 

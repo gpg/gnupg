@@ -213,6 +213,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
     KBNODE node, uidnode;
     PKT_public_key *primary_pk;
     int select_all = !count_selected_uids(keyblock);
+    int upd_trust = 0;
 
     /* build a list of all signators */
     rc=build_sk_list( locusr, &sk_list, 0, 1 );
@@ -292,6 +293,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 		    goto leave;
 		}
 		*ret_modified = 1; /* we changed the keyblock */
+		upd_trust = 1;
 
 		pkt = m_alloc_clear( sizeof *pkt );
 		pkt->pkttype = PKT_SIGNATURE;
@@ -301,6 +303,10 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 	    }
 	}
     } /* end loop over signators */
+    if( upd_trust && primary_pk ) {
+	rc = clear_trust_checked_flag( primary_pk );
+    }
+
 
   leave:
     release_sk_list( sk_list );

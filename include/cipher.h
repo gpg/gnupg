@@ -134,7 +134,7 @@ unsigned cipher_get_keylen( int algo );
 unsigned cipher_get_blocksize( int algo );
 CIPHER_HANDLE cipher_open( int algo, int mode, int secure );
 void cipher_close( CIPHER_HANDLE c );
-void cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen );
+int  cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen );
 void cipher_setiv( CIPHER_HANDLE c, const byte *iv );
 void cipher_encrypt( CIPHER_HANDLE c, byte *out, byte *in, unsigned nbytes );
 void cipher_decrypt( CIPHER_HANDLE c, byte *out, byte *in, unsigned nbytes );

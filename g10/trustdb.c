@@ -1704,9 +1704,28 @@ enum_trust_web( void **context, ulong *lid )
     if( !c ) { /* make a new context */
 	c = m_alloc_clear( sizeof *c );
 	*context = c;
-	if( *lid != last_trust_web_key && last_trust_web_key )
-	    log_bug("enum_trust_web: nyi\n"); /* <--- FIXME */
-	c->tsl = last_trust_web_tslist;
+	if( *lid == last_trust_web_key && last_trust_web_tslist )
+	    c->tsl = last_trust_web_tslist;
+	else {
+	    TRUST_SEG_LIST tsl, tsl2, tslist;
+	    int rc;
+
+	    rc = make_tsl( *lid, &tslist );
+	    if( rc ) {
+		log_error("failed to build the TSL\n");
+		return rc;
+	    }
+	    /* cache the tslist, so that we do not need to free it */
+	    if( last_trust_web_key ) {
+		for( tsl = last_trust_web_tslist; tsl; tsl = tsl2 ) {
+		    tsl2 = tsl->next;
+		    m_free(tsl);
+		}
+	    }
+	    last_trust_web_key = *lid;
+	    last_trust_web_tslist = tslist;
+	    c->tsl = last_trust_web_tslist;
+	}
 	c->index = 1;
     }
 
@@ -1879,6 +1898,38 @@ query_trust_record( PKT_public_key *pk )
     return rc;
 }
 
+
+int
+clear_trust_checked_flag( PKT_public_key *pk )
+{
+    TRUSTREC rec;
+    int rc;
+
+    if( !pk->local_id ) {
+	query_trust_record( pk );
+	if( !pk->local_id )
+	    log_bug("clear_trust_checked_flag: Still no LID\n");
+    }
+
+    if( (rc=tdbio_read_record( pk->local_id, &rec, RECTYPE_DIR ))) {
+	log_error("clear_trust_checked_flag: read record failed: %s\n",
+							      g10_errstr(rc));
+	return rc;
+    }
+
+    if( !(rec.r.dir.dirflags & DIRF_CHECKED) )
+	return 0;
+
+    /* reset the flag */
+    rec.r.dir.dirflags &= ~DIRF_CHECKED;
+    rc = tdbio_write_record( &rec );
+    if( rc ) {
+	log_error("clear_trust_checked_flag: write dir record failed: %s\n",
+							      g10_errstr(rc));
+	return rc;
+    }
+    return 0;
+}
 
 
 /****************
@@ -2138,11 +2189,11 @@ insert_trust_record( PKT_public_key *orig_pk )
 
 
   leave:
-    for(rec=uidlist_head; rec; rec = rec->next ) {
+    for(rec=uidlist_head; rec; rec = rec2 ) {
 	rec2 = rec->next;
 	rel_mem_uidnode(NULL, 0, rec );
     }
-    for(rec=keylist_head; rec; rec = rec->next ) {
+    for(rec=keylist_head; rec; rec = rec2 ) {
 	rec2 = rec->next;
 	m_free(rec);
     }

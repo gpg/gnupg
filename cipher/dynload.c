@@ -30,6 +30,11 @@
 #include "cipher.h"
 #include "dynload.h"
 
+
+#ifndef RTLD_NOW
+  #define RTLD_NOW  1
+#endif
+
 typedef struct ext_list {
     struct ext_list *next;
     void *handle; /* handle from dlopen() */
@@ -234,7 +239,7 @@ enum_gnupgext_digests( void **enum_context,
 const char *
 enum_gnupgext_ciphers( void **enum_context, int *algo,
 		       size_t *keylen, size_t *blocksize, size_t *contextsize,
-		       void (**setkey)( void *c, byte *key, unsigned keylen ),
+		       int  (**setkey)( void *c, byte *key, unsigned keylen ),
 		       void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
 		       void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
 		     )
@@ -242,7 +247,7 @@ enum_gnupgext_ciphers( void **enum_context, int *algo,
     EXTLIST r;
     ENUMCONTEXT *ctx;
     const char * (*finfo)(int, size_t*, size_t*, size_t*,
-			  void (**)( void *, byte *, unsigned),
+			  int  (**)( void *, byte *, unsigned),
 			  void (**)( void *, byte *, byte *),
 			  void (**)( void *, byte *, byte *));
 

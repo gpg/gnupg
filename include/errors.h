@@ -62,6 +62,7 @@
 #define G10ERR_TIME_CONFLICT  40
 #define G10ERR_WR_PUBKEY_ALGO 41 /* unusabe pubkey algo */
 #define G10ERR_FILE_EXISTS    42
+#define G10ERR_WEAK_KEY       43
 
 
 #ifndef HAVE_STRERROR

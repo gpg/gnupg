@@ -73,7 +73,6 @@ do_check( PKT_secret_key *sk )
 	    int ndata;
 	    byte *p, *data;
 
-
 	    i = pubkey_get_npkey(sk->pubkey_algo);
 	    assert( mpi_is_opaque( sk->skey[i] ) );
 	    p = mpi_get_opaque( sk->skey[i], &ndata );
@@ -212,7 +211,9 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	else {
 	    cipher_hd = cipher_open( sk->protect.algo,
 				     CIPHER_MODE_AUTO_CFB, 1 );
-	    cipher_setkey( cipher_hd, dek->key, dek->keylen );
+	    if( cipher_setkey( cipher_hd, dek->key, dek->keylen ) )
+		log_info(_("Warning: Weak key detected"
+			   " - please change passphrase again.\n"));
 	    cipher_setiv( cipher_hd, NULL );
 	    cipher_encrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
 	    if( sk->version >= 4 ) {

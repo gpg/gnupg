@@ -137,7 +137,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		else
 		    md_putc(mfx->md, c );
 	    }
-	    if( convert && c == '\r' )
+	    if( convert && !clearsig && c == '\r' )
 		continue; /* fixme: this hack might be too simple */
 	    if( fp ) {
 		if( putc( c, fp ) == EOF ) {
@@ -157,7 +157,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		else
 		    md_putc(mfx->md, c );
 	    }
-	    if( convert && c == '\r' )
+	    if( convert && !clearsig && c == '\r' )
 		continue; /* fixme: this hack might be too simple */
 	    if( fp ) {
 		if( putc( c, fp ) == EOF ) {

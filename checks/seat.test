@@ -3,8 +3,8 @@
 . $srcdir/defs.inc || exit 3
 
 for i in $plain_files ; do
-    echo "$usrpass1" | ./run-gpg --passphrase-fd 0 -seat -r two -o x --yes $i
-    ./run-gpg -o y --yes x
+    echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 -seat -r two -o x --yes $i
+    $srcdir/run-gpg -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
 

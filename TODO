@@ -1,11 +1,6 @@
 
-    * cleanup for SHM einbauen (non-linux)
-
-    * shared memory access funktioniert nicht wenn seuid installiert.
-
-    * ElGamal key benutzen wenn die DSA keyid angegeben ist??
-
-    * Apply Paul D. Smith's sugestions for building in another direcory.
+    * Should we use the ElGamal subkey if the DSA keyid is given?
+      What about an option --loose-keyid-match?
 
     * salted and iterated S2Ks don't work (see passphrase.c).
 
@@ -15,13 +10,8 @@
 
     * fix the expire stuff for v4 packets.
 
-    * Fix Oscaris problems with the trustdb.
-    * invalid packets (Marco)  und Markus Gruber
-
     * add some sanity checks to read_keyblock, so that we are sure that
      the minimal requirements are met (?)
-
-    * what about the CR,LF in cleartext singatures?
 
     * decryption of message with multiple recipients does not work.
 
@@ -48,10 +38,6 @@
     * change the fake_data stuff to mpi_set_opaque
 
     * Is it okay to use gettext for the help system???
-
-    * configure checks two times for gcc
-
-    * update gettext
 
     * Add some stuff for DU cc
 

@@ -19,10 +19,15 @@ TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 DATA_FILES = data-500 data-9000 data-32000 data-80000
 
 EXTRA_DIST = defs.inc run-gpg run-gpgm $(TESTS) $(TEST_FILES)
-CLEANFILES = prepared.stamp x y z out err  $(DATA_FILES)
+CLEANFILES = prepared.stamp x y z out err  $(DATA_FILES) \
+	     plain-1 plain-2 plain-3
+DISTCLEANFILES = pubring.gpg secring.gpg pubring.pkr secring.skr
+
 
 
 check: prepared.stamp
+
+testdata: prepared.stamp
 
 prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 		./pubring.pkr ./secring.skr $(DATA_FILES)

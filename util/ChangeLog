@@ -1,3 +1,7 @@
+Mon Sep 14 09:38:18 1998  Werner Koch  (wk@(none))
+
+	* secmem.c (init_pool): Now mmaps /dev/zero if we do not have MAP_ANON.
+
 Wed Sep  9 13:52:28 1998  Werner Koch  (wk@(none))
 
 	* ttyio.c (do_get): Ctrl-D is now a valid but special character

@@ -41,7 +41,7 @@
 #define CIPHER_ALGO_BLOWFISH	 4  /* blowfish 128 bit key */
 #define CIPHER_ALGO_BLOWFISH160 42  /* blowfish 160 bit key (not in OpenPGP)*/
 
-#define FNCCAST_SETKEY(f)  (void(*)(void*, byte*, unsigned))(f)
+#define FNCCAST_SETKEY(f)  (int(*)(void*, byte*, unsigned))(f)
 #define FNCCAST_CRYPT(f)   (void(*)(void*, byte*, byte*))(f)
 
 #define BLOWFISH_BLOCKSIZE 8
@@ -55,7 +55,7 @@ typedef struct {
     u32 p[BLOWFISH_ROUNDS+2];
 } BLOWFISH_context;
 
-static void bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen );
+static int  bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen );
 static void encrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
 static void decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf );
 
@@ -480,7 +480,7 @@ selftest()
 
 
 
-static void
+static int
 bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 {
     int i, j;
@@ -543,6 +543,19 @@ bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 	c->s3[i]   = datal;
 	c->s3[i+1] = datar;
     }
+
+
+    /* Check for weak key.  A weak key is a key in which a value in */
+    /* the P-array (here c) occurs more than once per table.	    */
+    for(i=0; i < 255; i++ ) {
+	for( j=i+1; j < 256; j++) {
+	    if( (c->s0[i] == c->s0[j]) || (c->s1[i] == c->s1[j]) ||
+		(c->s2[i] == c->s2[j]) || (c->s3[i] == c->s3[j]) )
+		return G10ERR_WEAK_KEY;
+	}
+    }
+
+    return 0;
 }
 
 
@@ -555,7 +568,7 @@ bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 const char *
 blowfish_get_info( int algo, size_t *keylen,
 		   size_t *blocksize, size_t *contextsize,
-		   void (**r_setkey)( void *c, byte *key, unsigned keylen ),
+		   int	(**r_setkey)( void *c, byte *key, unsigned keylen ),
 		   void (**r_encrypt)( void *c, byte *outbuf, byte *inbuf ),
 		   void (**r_decrypt)( void *c, byte *outbuf, byte *inbuf )
 		 )

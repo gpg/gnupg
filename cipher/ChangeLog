@@ -1,3 +1,11 @@
+Mon Sep 14 11:10:55 1998  Werner Koch  (wk@(none))
+
+	* blowfish.c (bf_setkey): Niklas Hernaeus patch to detect weak keys.
+
+Mon Sep 14 09:19:25 1998  Werner Koch  (wk@(none))
+
+	* dynload.c (RTLD_NOW): Now defined to 1 if it is undefined.
+
 Mon Sep  7 17:04:33 1998  Werner Koch  (wk@(none))
 
 	* Makefile.am: Fixes to allow a different build directory
