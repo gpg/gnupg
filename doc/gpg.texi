@@ -26,6 +26,10 @@ For a more verbose documentation get the GNU Privacy Handbook (GPH), which is
 available at http://www.gnupg.org/gph/ .
 You will find a list of HOWTO documents at http://www.gnupg.org/docs.html .
 
+Please remember that option parsing stops as soon as a non option is
+encountered, you can explicitly stop option parsing by using the
+special option "---".
+
 @majorheading COMMANDS
 @code{gpg} recognizes these commands:
 

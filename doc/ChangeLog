@@ -1,3 +1,7 @@
+2001-09-28  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Add a note on option parsing.
+
 2001-09-24  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Described --{update,check}-trustdb.

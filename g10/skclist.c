@@ -82,8 +82,8 @@ is_duplicated_entry (STRLIST list, STRLIST item)
 
 
 int
-build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
-							unsigned use )
+build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
+               int unlock, unsigned int use )
 {
     SK_LIST sk_list = NULL;
     int rc;

@@ -102,6 +102,7 @@ new_offset_item (void)
   return k;
 }
 
+#if 0
 static void
 release_offset_items (struct off_item *k)
 {
@@ -113,7 +114,7 @@ release_offset_items (struct off_item *k)
       m_free (k);
     }
 }
-
+#endif
 
 static OffsetHashTable 
 new_offset_hash_table (void)

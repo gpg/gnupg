@@ -1,5 +1,18 @@
 2001-09-28  Werner Koch  <wk@gnupg.org>
 
+	* keyedit.c (sign_uids): Always use the primary key to sign keys.
+	* getkey.c (finish_lookup): Hack to return only the primary key if
+	a certification key has been requested.
+
+	* trustdb.c (cmp_kid_for_make_key_array): Renamed to
+	(validate_one_keyblock): this and changed arg for direct calling.
+	(make_key_array): Renamed to
+	(validate_one_keyblock): this and changed args for direct calling.
+	(mark_usable_uid_certs, validate_one_keyblock)
+	(validate_key_list): Add next_expire arg to keep track of
+	expiration times.  
+	(validate_keys): Ditto for UTKs and write the stamp.
+
 	* tdbio.c (migrate_from_v2): Check return code of tbdio_sync.
 
 	* tdbdump.c (import_ownertrust): Do a tdbio_sync().

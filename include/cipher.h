@@ -50,6 +50,7 @@
 
 #define PUBKEY_USAGE_SIG     1	    /* key is good for signatures */
 #define PUBKEY_USAGE_ENC     2	    /* key is good for encryption */
+#define PUBKEY_USAGE_CERT    4      /* key is also good to certify other keys*/
 
 #define DIGEST_ALGO_MD5       1
 #define DIGEST_ALGO_SHA1      2

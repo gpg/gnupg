@@ -452,12 +452,33 @@ trust_letter (unsigned int value)
 
 
 /****************
- * Recreate the WoT but do not ask for new ownertrusts
+ * Recreate the WoT but do not ask for new ownertrusts.  Special
+ * feature: In batch mode and without a forced yes, this is only done
+ * when a check is due.  This can be used to run the check from a crontab
  */
 void
-check_trustdb()
+check_trustdb ()
 {
   init_trustdb();
+  if (opt.batch && !opt.answer_yes)
+    {
+      ulong scheduled;
+
+      scheduled = tdbio_read_nextcheck ();
+      if (!scheduled)
+        {
+          log_info (_("no need for a trustdb check\n"));
+          return;
+        }
+
+      if (scheduled > make_timestamp ())
+        {
+          log_info (_("next trustdb check due at %s\n"),
+                    strtimestamp (scheduled));
+          return;
+        }
+    }
+
   validate_keys (0);
 }
 
@@ -865,116 +886,6 @@ mark_keyblock_seen (KeyHashTable tbl, KBNODE node)
 }
 
 
-static int
-search_skipfnc (void *opaque, u32 *kid)
-{
-  return test_key_hash_table ((KeyHashTable)opaque, kid);
-}
-
-/*
- * Scan all keys and return a key_array of all keys which are
- * indicated as found by the supplied CMPFNC.  The caller has to pass
- * a keydb handle so that we don't use to create our own.  Returns
- * either a key_array or NULL in case of an error.  No results found
- * are indicated by an empty array.  Caller hast to release the
- * returned array.
- */
-static struct key_array *
-make_key_array (KEYDB_HANDLE hd, KeyHashTable visited,
-                int (*cmpfnc)(KBNODE kb, void *opaque), void *cmpval)
-{
-  KBNODE keyblock = NULL;
-  struct key_array *keys = NULL;
-  size_t nkeys, maxkeys;
-  int rc;
-  KEYDB_SEARCH_DESC desc;
-  
-  maxkeys = 1000;
-  keys = m_alloc ((maxkeys+1) * sizeof *keys);
-  nkeys = 0;
-  
-  rc = keydb_search_reset (hd);
-  if (rc)
-    {
-      log_error ("keydb_search_reset failed: %s\n", g10_errstr(rc));
-      m_free (keys);
-      return NULL;
-    }
-
-  memset (&desc, 0, sizeof desc);
-  desc.mode = KEYDB_SEARCH_MODE_FIRST;
-  desc.skipfnc = search_skipfnc;
-  desc.skipfncvalue = visited;
-  rc = keydb_search (hd, &desc, 1);
-  if (rc == -1)
-    {
-      keys[nkeys].keyblock = NULL;
-      return keys;
-    }
-  if (rc)
-    {
-      log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
-      m_free (keys);
-      return NULL;
-    }
-  
-  desc.mode = KEYDB_SEARCH_MODE_NEXT; /* change mode */
-  do
-    {
-      PKT_public_key *pk;
-        
-      rc = keydb_get_keyblock (hd, &keyblock);
-      if (rc) 
-        {
-          log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
-          m_free (keys);
-          return NULL;
-        }
-      
-      if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY) 
-        {
-          log_debug ("ooops: invalid pkttype %d encountered\n",
-                     keyblock->pkt->pkttype);
-          dump_kbnode (keyblock);
-          release_kbnode(keyblock);
-          continue;
-        }
-
-      /* prepare the keyblock for further processing */
-      merge_keys_and_selfsig (keyblock); 
-      clear_kbnode_flags (keyblock);
-      pk = keyblock->pkt->pkt.public_key;
-      if (pk->has_expired || pk->is_revoked)
-        {
-          /* it does not make sense to look further at those keys */
-          mark_keyblock_seen (visited, keyblock);
-        }
-      else if (cmpfnc (keyblock, cmpval))
-        {
-          if (nkeys == maxkeys) {
-            maxkeys += 1000;
-            keys = m_realloc (keys, (maxkeys+1) * sizeof *keys);
-          }
-          keys[nkeys++].keyblock = keyblock;
-          /* This key is signed - don't check it again */
-          mark_keyblock_seen (visited, keyblock);
-        }
-      else 
-        release_kbnode (keyblock);
-      keyblock = NULL;
-    } 
-  while ( !(rc = keydb_search (hd, &desc, 1)) );
-  if (rc && rc != -1) 
-    {
-      log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
-      m_free (keys);
-      return NULL;
-    }
-
-  keys[nkeys].keyblock = NULL;
-  return keys;
-} 
-
 
 static void
 dump_key_array (int depth, struct key_array *keys)
@@ -1077,7 +988,8 @@ is_in_klist (struct key_item *k, PKT_signature *sig)
  */
 static void
 mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
-                       u32 *main_kid, struct key_item *klist, u32 curtime)
+                       u32 *main_kid, struct key_item *klist,
+                       u32 curtime, u32 *next_expire)
 {
   KBNODE node;
   PKT_signature *sig = node->pkt->pkt.signature;
@@ -1157,12 +1069,16 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
            * system falls back to an older certification which has a
            * different expiration time */
           const byte *p;
+          u32 expire;
                     
           p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL );
-          if ( p && (sig->timestamp + buffer_to_u32(p)) >= curtime )
-            ; /* signature expired */
-          else 
-            signode->flag |= (1<<8); /* yeah eventually we found a good cert */
+          expire = p? sig->timestamp + buffer_to_u32(p) : 0;
+          if ( expire < curtime )
+            {
+              signode->flag |= (1<<8); /* yeah, found a good cert */
+              if (expire && expire < *next_expire)
+                *next_expire = expire;
+            }
         }
     }
 }
@@ -1181,9 +1097,8 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
  * This function assumes that all kbnode flags are cleared on entry.
  */
 static int
-cmp_kid_for_make_key_array (KBNODE kb, void *opaque)
+validate_one_keyblock (KBNODE kb, struct key_item *klist, u32 *next_expire)
 {
-  struct key_item *klist = opaque;
   struct key_item *kr;
   KBNODE node, uidnode=NULL;
   PKT_public_key *pk = kb->pkt->pkt.public_key;
@@ -1209,7 +1124,8 @@ cmp_kid_for_make_key_array (KBNODE kb, void *opaque)
           uidnode = node;
           issigned = 0;
           fully_count = marginal_count = 0;
-          mark_usable_uid_certs (kb, uidnode, main_kid, klist, curtime);
+          mark_usable_uid_certs (kb, uidnode, main_kid, klist, 
+                                 curtime, next_expire);
         }
       else if (node->pkt->pkttype == PKT_SIGNATURE 
                && (node->flag & (1<<8)) )
@@ -1243,6 +1159,120 @@ cmp_kid_for_make_key_array (KBNODE kb, void *opaque)
 
   return any_signed;
 }
+
+
+static int
+search_skipfnc (void *opaque, u32 *kid)
+{
+  return test_key_hash_table ((KeyHashTable)opaque, kid);
+}
+
+/*
+ * Scan all keys and return a key_array of all suitable keys from
+ * kllist.  The caller has to pass keydb handle so that we don't use
+ * to create our own.  Returns either a key_array or NULL in case of
+ * an error.  No results found are indicated by an empty array.
+ * Caller hast to release the returned array.  
+ */
+static struct key_array *
+validate_key_list (KEYDB_HANDLE hd, KeyHashTable visited,
+                   struct key_item *klist, u32 *next_expire)
+{
+  KBNODE keyblock = NULL;
+  struct key_array *keys = NULL;
+  size_t nkeys, maxkeys;
+  int rc;
+  KEYDB_SEARCH_DESC desc;
+  
+  maxkeys = 1000;
+  keys = m_alloc ((maxkeys+1) * sizeof *keys);
+  nkeys = 0;
+  
+  rc = keydb_search_reset (hd);
+  if (rc)
+    {
+      log_error ("keydb_search_reset failed: %s\n", g10_errstr(rc));
+      m_free (keys);
+      return NULL;
+    }
+
+  memset (&desc, 0, sizeof desc);
+  desc.mode = KEYDB_SEARCH_MODE_FIRST;
+  desc.skipfnc = search_skipfnc;
+  desc.skipfncvalue = visited;
+  rc = keydb_search (hd, &desc, 1);
+  if (rc == -1)
+    {
+      keys[nkeys].keyblock = NULL;
+      return keys;
+    }
+  if (rc)
+    {
+      log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
+      m_free (keys);
+      return NULL;
+    }
+  
+  desc.mode = KEYDB_SEARCH_MODE_NEXT; /* change mode */
+  do
+    {
+      PKT_public_key *pk;
+        
+      rc = keydb_get_keyblock (hd, &keyblock);
+      if (rc) 
+        {
+          log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
+          m_free (keys);
+          return NULL;
+        }
+      
+      if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY) 
+        {
+          log_debug ("ooops: invalid pkttype %d encountered\n",
+                     keyblock->pkt->pkttype);
+          dump_kbnode (keyblock);
+          release_kbnode(keyblock);
+          continue;
+        }
+
+      /* prepare the keyblock for further processing */
+      merge_keys_and_selfsig (keyblock); 
+      clear_kbnode_flags (keyblock);
+      pk = keyblock->pkt->pkt.public_key;
+      if (pk->has_expired || pk->is_revoked)
+        {
+          /* it does not make sense to look further at those keys */
+          mark_keyblock_seen (visited, keyblock);
+        }
+      else if (validate_one_keyblock (keyblock, klist, next_expire))
+        {
+          if (pk->expiredate && pk->expiredate < *next_expire)
+            *next_expire = pk->expiredate;
+
+          if (nkeys == maxkeys) {
+            maxkeys += 1000;
+            keys = m_realloc (keys, (maxkeys+1) * sizeof *keys);
+          }
+          keys[nkeys++].keyblock = keyblock;
+          /* this key is signed - don't check it again */
+          mark_keyblock_seen (visited, keyblock);
+          keyblock = NULL;
+        }
+
+      release_kbnode (keyblock);
+      keyblock = NULL;
+    } 
+  while ( !(rc = keydb_search (hd, &desc, 1)) );
+  if (rc && rc != -1) 
+    {
+      log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
+      m_free (keys);
+      return NULL;
+    }
+
+  keys[nkeys].keyblock = NULL;
+  return keys;
+} 
 
 
 /*
@@ -1283,6 +1313,7 @@ validate_keys (int interactive)
   int key_count;
   int ot_unknown, ot_undefined, ot_never, ot_marginal, ot_full, ot_ultimate;
   KeyHashTable visited;
+  u32 next_expire;
 
   visited = new_key_hash_table ();
   /* Fixme: Instead of always building a UTK list, we could just build it
@@ -1293,10 +1324,13 @@ validate_keys (int interactive)
       goto leave;
     }
 
+  next_expire = 0xffffffff; /* set next expire to the year 2106 */
+
   /* mark all UTKs as visited and set validity to ultimate */
   for (k=utk_list; k; k = k->next)
     {
       KBNODE keyblock;
+      PKT_public_key *pk;
 
       keyblock = get_pubkeyblock (k->kid);
       if (!keyblock)
@@ -1306,6 +1340,7 @@ validate_keys (int interactive)
           continue;
         }
       mark_keyblock_seen (visited, keyblock);
+      pk = keyblock->pkt->pkt.public_key;
       for (node=keyblock; node; node = node->next)
         {
           if (node->pkt->pkttype == PKT_USER_ID)
@@ -1317,10 +1352,12 @@ validate_keys (int interactive)
                 rmd160_hash_buffer (namehash, uid->photo, uid->photolen);
               else
                 rmd160_hash_buffer (namehash, uid->name, uid->len );
-              update_validity (keyblock->pkt->pkt.public_key,
-                               namehash, 0, TRUST_ULTIMATE);
+              update_validity (pk, namehash, 0, TRUST_ULTIMATE);
             }
         }
+      if ( pk->expiredate && pk->expiredate < next_expire)
+        next_expire = pk->expiredate;
+      
       release_kbnode (keyblock);
       do_sync ();
     }
@@ -1355,10 +1392,10 @@ validate_keys (int interactive)
         }
 
       /* Find all keys which are signed by a key in kdlist */
-      keys = make_key_array (kdb, visited, cmp_kid_for_make_key_array, klist);
+      keys = validate_key_list (kdb, visited, klist, &next_expire);
       if (!keys) 
         {
-          log_error ("make_key_array failed\n");
+          log_error ("validate_key_list failed\n");
           rc = G10ERR_GENERAL;
           goto leave;
         }
@@ -1413,7 +1450,14 @@ validate_keys (int interactive)
   release_key_hash_table (visited);
   if (!rc) /* mark trustDB as checked */
     {
-      tdbio_write_nextcheck (0);
+      if (next_expire == 0xffffffff)
+        tdbio_write_nextcheck (0); 
+      else
+        {
+          tdbio_write_nextcheck (next_expire); 
+          log_info (_("next trustdb check due at %s\n"),
+                    strtimestamp (next_expire));
+        }
       do_sync ();
     }
   return rc;

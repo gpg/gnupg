@@ -49,6 +49,8 @@
     * --trusted-keys is again obsolete, --edit can be used to set the
       ownertrust of any key to ultimately trusted.
 
+    * A subkey is never used to sign keys.
+
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------

@@ -1110,6 +1110,8 @@ fixup_uidnode ( KBNODE uidnode, KBNODE signode, u32 keycreated )
             uid->help_key_usage |= PUBKEY_USAGE_SIG;
         if ( (*p & 12) )    
             uid->help_key_usage |= PUBKEY_USAGE_ENC;
+        /* Note: we do not set the CERT flag here because it can be assumed
+         * that thre is no real policy to set it. */
     }
 
     /* ditto or the key expiration */
@@ -1656,7 +1658,7 @@ merge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
  * secret subkey is avalable and deletes the public subkey otherwise.
  * We need this function because we can't delete it later when we
  * actually merge the secret parts into the pubring.
- & The function also plays some games with the node flags.
+ * The function also plays some games with the node flags.
  */
 static void
 premerge_public_with_secret ( KBNODE pubblock, KBNODE secblock )
@@ -1754,6 +1756,7 @@ finish_lookup (GETKEY_CTX ctx)
     PKT_user_id *foundu = NULL;
   #define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC)
     unsigned int req_usage = ( ctx->req_usage & USAGE_MASK );
+    int req_cert = (ctx->req_usage & PUBKEY_USAGE_CERT);
     u32 latest_date;
     KBNODE latest_key;
     u32 curtime = make_timestamp ();
@@ -1803,7 +1806,8 @@ finish_lookup (GETKEY_CTX ctx)
     
     latest_date = 0;
     latest_key  = NULL;
-    if ( !foundk || foundk->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+    /* do not look at subkeys if a certification key is requested */
+    if ((!foundk || foundk->pkt->pkttype == PKT_PUBLIC_SUBKEY) && !req_cert) {
         KBNODE nextk;
         /* either start a loop or check just this one subkey */
         for (k=foundk?foundk:keyblock; k; k = nextk ) {
@@ -1854,11 +1858,11 @@ finish_lookup (GETKEY_CTX ctx)
         }
     }
 
-    /* Okay now try the primary key unless we have want an exact 
+    /* Okay now try the primary key unless we want an exact 
      * key ID match on a subkey */
-    if ( !latest_key && !(ctx->exact && foundk != keyblock) ) {
+    if ((!latest_key && !(ctx->exact && foundk != keyblock)) || req_cert) {
         PKT_public_key *pk;
-        if (DBG_CACHE && !foundk )
+        if (DBG_CACHE && !foundk && !req_cert )
             log_debug( "\tno suitable subkeys found - trying primary\n");
         pk = keyblock->pkt->pkt.public_key;
         if ( !pk->is_valid ) {

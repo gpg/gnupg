@@ -121,6 +121,15 @@ list_one( STRLIST names, int secret )
     KBNODE keyblock = NULL;
     GETKEY_CTX ctx;
 
+    /* fixme: using the bynames function has the disadvantage that we
+     * don't knowether one of the names given was not found.  OTOH,
+     * this function has the advantage to list the names in the
+     * sequence as defined by the keyDB and does not duplicate
+     * outputs.  A solution could be do test whether all given have
+     * been listed (this needs a way to use the keyDB search
+     * functions) or to have the search function return indicators for
+     * found names.  Yet another way is to use the keydb search
+     * facilities directly. */
     if( secret ) {
 	rc = get_seckey_bynames( &ctx, NULL, names, &keyblock );
 	if( rc ) {

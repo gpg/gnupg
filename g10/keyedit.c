@@ -253,8 +253,14 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
     int select_all = !count_selected_uids(keyblock);
     int upd_trust = 0;
 
-    /* build a list of all signators */
-    rc=build_sk_list( locusr, &sk_list, 0, 1 );
+    /* build a list of all signators.
+     *    
+     * We use the CERT flag to request the primary which must always
+     * be one which is capable of signing keys.  I can't see a reason
+     * why to sign keys using a subkey.  Implementation of SUAGE_CERT
+     * is just a hack in getkey.c and does not mean that a subkey
+     * marked as certification capable will be used */
+    rc=build_sk_list( locusr, &sk_list, 0, PUBKEY_USAGE_SIG|PUBKEY_USAGE_CERT);
     if( rc )
 	goto leave;
 

@@ -77,6 +77,10 @@ For a more verbose documentation get the GNU Privacy Handbook (GPH), which is
 available at http://www.gnupg.org/gph/ .
 You will find a list of HOWTO documents at http://www.gnupg.org/docs.html .
 </para>
+<para>
+Please remember that option parsing stops as soon as a non option is
+encountered, you can explicitly stop option parsing by using the
+special option "--".
 </refsect1>
 
 <refsect1>
@@ -504,10 +508,7 @@ not be expected to successfully import such a key.
 <term>--fast-import &OptParmFiles;</term>
 <listitem><para>
 Import/merge keys. This adds the given keys to the
-keyring.
-The fast version does not update
-the trustdb; this can be done at any time with the
-command --update-trustdb.
+keyring.  The fast version is currently just a synonym.
 </para>
 <para>
 There are a few other options which control how this command works.
@@ -554,6 +555,11 @@ changes in the Web-of_trust can be tracked.  GnuPG tries to figure
 when this is required and then does it implicitly; this command can be
 used to force such a check.  The processing is identically to that of
 --update-trustdb but it skips keys with a not yet defined "ownertrust".
+</para>
+<para>
+For use with cron jobs, this command can be used together with --batch
+in which case the check is only done when it is due.  To force a run
+even in batch mode add the option --yes.
 </para></listitem></varlistentry>
 
 

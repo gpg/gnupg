@@ -4,8 +4,6 @@
 
   * Selection using +wordlist does not work.
 
-  * Always use the primary key to sign other keys.
-
   * add listing of notation data
 
   * Check the changes to the gpg random gatherer on all W32 platforms.
