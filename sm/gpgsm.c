@@ -98,6 +98,7 @@ enum cmd_and_opt_values {
   oLCmessages,
 
   oDirmngrProgram,
+  oProtectToolProgram,
   oFakedSystemTime,
 
 
@@ -370,6 +371,7 @@ static ARGPARSE_OPTS opts[] = {
     { oLCctype,    "lc-ctype",    2, "@" },
     { oLCmessages, "lc-messages", 2, "@" },
     { oDirmngrProgram, "dirmngr-program", 2 , "@" },
+    { oProtectToolProgram, "protect-tool-program", 2 , "@" },
     { oFakedSystemTime, "faked-system-time", 4, "@" }, /* (epoch time) */
 
 
@@ -947,6 +949,9 @@ main ( int argc, char **argv)
         case oLCctype: opt.lc_ctype = xstrdup (pargs.r.ret_str); break;
         case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
+        case oProtectToolProgram:
+          opt.protect_tool_program = pargs.r.ret_str; 
+          break;
           
         case oFakedSystemTime:
           gnupg_set_time ( (time_t)pargs.r.ret_ulong, 0);
@@ -1480,14 +1485,19 @@ open_fwrite (const char *filename)
 static void
 run_protect_tool (int argc, char **argv)
 {
-  char *pgm = GNUPG_DEFAULT_PROTECT_TOOL;
+  const char *pgm;
   char **av;
   int i;
+
+  if (!opt.protect_tool_program || !*opt.protect_tool_program)
+    pgm = GNUPG_DEFAULT_PROTECT_TOOL;
+  else
+    pgm = opt.protect_tool_program;
 
   av = xcalloc (argc+2, sizeof *av);
   av[0] = strrchr (pgm, '/');
   if (!av[0])
-    av[0] = pgm;
+    av[0] = xstrdup (pgm);
   for (i=1; argc; i++, argc--, argv++)
     av[i] = *argv;
   av[i] = NULL;
@@ -1495,4 +1505,3 @@ run_protect_tool (int argc, char **argv)
   log_error ("error executing `%s': %s\n", pgm, strerror (errno));
   gpgsm_exit (2);
 }
-

@@ -270,7 +270,7 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
       goto leave;
     }
 
-  rc = gpgsm_create_reader (&b64reader, ctrl, in_fp, &reader);
+  rc = gpgsm_create_reader (&b64reader, ctrl, in_fp, 0, &reader);
   if (rc)
     {
       log_error ("can't create reader: %s\n", gpg_strerror (rc));

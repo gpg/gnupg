@@ -1,5 +1,5 @@
 /* encrypt.c - Encrypt a message
- *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -74,6 +74,20 @@ init_dek (DEK dek)
       log_error ("unsupported algorithm `%s'\n", dek->algoid);
       return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     }
+  
+  /* Extra check for algorithms we considere to be to weak for
+     encryption, qlthough we suppor them fro decryption.  Note that
+     there is another check below discriminating on the key length. */
+  switch (dek->algo)
+    {
+    case GCRY_CIPHER_DES:
+    case GCRY_CIPHER_RFC2268_40:
+      log_error ("cipher algorithm `%s' not allowed: too weak\n",
+                 gcry_cipher_algo_name (dek->algo));
+      return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+    default:
+      break;
+    }
 
   dek->keylen = gcry_cipher_get_algo_keylen (dek->algo);
   if (!dek->keylen || dek->keylen > sizeof (dek->key))
@@ -83,8 +97,9 @@ init_dek (DEK dek)
   if (!dek->ivlen || dek->ivlen > sizeof (dek->iv))
     return gpg_error (GPG_ERR_BUG);
 
+  /* Make sure we don't use weak keys. */
   if (dek->keylen < 100/8)
-    { /* make sure we don't use weak keys */
+    { 
       log_error ("key length of `%s' too small\n", dek->algoid);
       return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     }

@@ -1,3 +1,21 @@
+2004-02-13  Werner Koch  <wk@gnupg.org>
+
+	* encrypt.c (init_dek): Check for too weak algorithms.
+
+	* import.c (parse_p12, popen_protect_tool): New.
+
+	* base64.c (gpgsm_create_reader): New arg ALLOW_MULTI_PEM.
+	Changed all callers.
+	(base64_reader_cb): Handle it here.
+	(gpgsm_reader_eof_seen): New.
+	(base64_reader_cb): Set a flag for EOF.
+	(simple_reader_cb): Ditto.
+
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.h, gpgsm.c: New option --protect-tool-program.
+	* gpgsm.c (run_protect_tool): Use it.
+
 2004-02-11  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (AM_CPPFLAGS): Pass directory constants via -D; this

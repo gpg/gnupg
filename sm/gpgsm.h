@@ -1,5 +1,5 @@
 /* gpgsm.h - Global definitions for GpgSM
- *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -54,6 +54,7 @@ struct {
   char *lc_messages;
 
   const char *dirmngr_program;
+  const char *protect_tool_program;
   char *outfile;    /* name of output file */
 
   int with_key_data;/* include raw key in the column delimted output */
@@ -176,7 +177,9 @@ char *gpgsm_get_certid (ksba_cert_t cert);
 
 /*-- base64.c --*/
 int  gpgsm_create_reader (Base64Context *ctx,
-                          ctrl_t ctrl, FILE *fp, ksba_reader_t *r_reader);
+                          ctrl_t ctrl, FILE *fp, int allow_multi_pem,
+                          ksba_reader_t *r_reader);
+int gpgsm_reader_eof_seen (Base64Context ctx);
 void gpgsm_destroy_reader (Base64Context ctx);
 int  gpgsm_create_writer (Base64Context *ctx,
                           ctrl_t ctrl, FILE *fp, ksba_writer_t *r_writer);

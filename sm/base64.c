@@ -48,15 +48,18 @@ struct reader_cb_parm_s {
   int have_lf;
   unsigned long line_counter;
 
-  int autodetect; /* try to detect the input encoding */
-  int assume_pem; /* assume input encoding is PEM */
-  int assume_base64; /* assume input is base64 encoded */
+  int allow_multi_pem;  /* Allow processing of multiple PEM objects. */
+  int autodetect;       /* Try to detect the input encoding. */
+  int assume_pem;       /* Assume input encoding is PEM. */
+  int assume_base64;    /* Assume input is base64 encoded. */
 
   int identified;
   int is_pem;
   int is_base64;
   int stop_seen;
   int might_be_smime;
+
+  int eof_seen;         
 
   struct {
     int idx;
@@ -171,6 +174,7 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
           c = getc (parm->fp);
           if (c == EOF)
             {
+              parm->eof_seen = 1;
               if (ferror (parm->fp))
                 return -1;
               break; 
@@ -268,7 +272,22 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
         { 
           parm->identified = 0;
           parm->linelen = parm->readpos = 0;
-          /* let us return 0 */
+
+          /* If the caller want to read multiple PEM objects from one
+             file, we have to reset our internal state and return a
+             EOF immediately. The caller is the expected to use
+             ksba_reader_clear to clear the EOF condition and continue
+             to read.  If we don't want to do that we just return 0
+             bytes which will force the ksba_reader to skip until
+             EOF. */
+          if (parm->allow_multi_pem)
+            {
+              parm->identified = 0;
+              parm->autodetect = 0;
+              parm->assume_pem = 1;
+              parm->stop_seen = 0;
+              return -1; /* Send EOF now. */
+            }
         }
       else if (parm->stop_seen)
         { /* skip the rest of the line */
@@ -356,6 +375,7 @@ simple_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
       c = getc (parm->fp);
       if (c == EOF)
         {
+          parm->eof_seen = 1;
           if ( ferror (parm->fp) )
             return -1;
           if (n)
@@ -494,10 +514,13 @@ base64_finish_write (struct writer_cb_parm_s *parm)
    The function returns a Base64Context object which must be passed to
    the gpgme_destroy_reader function.  The created KsbaReader object
    is also returned, but the caller must not call the
-   ksba_reader_release function on. */
+   ksba_reader_release function on.  If ALLOW_MULTI_PEM is true, the
+   reader expects that the caller uses ksba_reader_clear after EOF
+   until no more objects were found. */
 int
 gpgsm_create_reader (Base64Context *ctx,
-                     CTRL ctrl, FILE *fp, ksba_reader_t *r_reader)
+                     CTRL ctrl, FILE *fp, int allow_multi_pem,
+                     ksba_reader_t *r_reader)
 {
   int rc;
   ksba_reader_t r;
@@ -506,6 +529,7 @@ gpgsm_create_reader (Base64Context *ctx,
   *ctx = xtrycalloc (1, sizeof **ctx);
   if (!*ctx)
     return OUT_OF_CORE (errno);
+  (*ctx)->u.rparm.allow_multi_pem = allow_multi_pem;
 
   rc = ksba_reader_new (&r);
   if (rc)
@@ -545,6 +569,12 @@ gpgsm_create_reader (Base64Context *ctx,
   return 0;
 }
 
+
+int
+gpgsm_reader_eof_seen (Base64Context ctx)
+{
+  return ctx && ctx->u.rparm.eof_seen;
+}
 
 void
 gpgsm_destroy_reader (Base64Context ctx)

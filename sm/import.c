@@ -1,5 +1,5 @@
 /* import.c - Import certificates
- *	Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -26,6 +26,9 @@
 #include <unistd.h> 
 #include <time.h>
 #include <assert.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <sys/wait.h>
 
 #include "gpgsm.h"
 #include <gcrypt.h>
@@ -34,12 +37,22 @@
 #include "keydb.h"
 #include "i18n.h"
 
+#ifdef _POSIX_OPEN_MAX
+#define MAX_OPEN_FDS _POSIX_OPEN_MAX
+#else
+#define MAX_OPEN_FDS 20
+#endif
+
+
 struct stats_s {
   unsigned long count;
   unsigned long imported;
   unsigned long unchanged;
   unsigned long not_imported;
 };
+
+
+static gpg_error_t parse_p12 (ksba_reader_t reader, FILE **retfp);
 
 
 
@@ -208,6 +221,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
   ksba_cms_t cms = NULL;
   FILE *fp = NULL;
   ksba_content_type_t ct;
+  int any = 0;
 
   fp = fdopen ( dup (in_fd), "rb");
   if (!fp)
@@ -217,75 +231,138 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
       goto leave;
     }
 
-  rc = gpgsm_create_reader (&b64reader, ctrl, fp, &reader);
+  rc = gpgsm_create_reader (&b64reader, ctrl, fp, 1, &reader);
   if (rc)
     {
       log_error ("can't create reader: %s\n", gpg_strerror (rc));
       goto leave;
     }
-
-  ct = ksba_cms_identify (reader);
-  if (ct == KSBA_CT_SIGNED_DATA)
-    { /* This is probably a signed-only message - import the certs */
-      ksba_stop_reason_t stopreason;
-      int i;
-
-      rc = ksba_cms_new (&cms);
-      if (rc)
-        goto leave;
-
-      rc = ksba_cms_set_reader_writer (cms, reader, NULL);
-      if (rc)
-        {
-          log_error ("ksba_cms_set_reader_writer failed: %s\n",
-                     gpg_strerror (rc));
-          goto leave;
-        }
-
-
-      do 
-        {
-          rc = ksba_cms_parse (cms, &stopreason);
+  
+  
+  /* We need to loop here to handle multiple PEM objects in one
+     file. */
+  do
+    {
+      ksba_cms_release (cms); cms = NULL;
+      ksba_cert_release (cert); cert = NULL;
+      
+      ct = ksba_cms_identify (reader);
+      if (ct == KSBA_CT_SIGNED_DATA)
+        { /* This is probably a signed-only message - import the certs */
+          ksba_stop_reason_t stopreason;
+          int i;
+          
+          rc = ksba_cms_new (&cms);
+          if (rc)
+            goto leave;
+          
+          rc = ksba_cms_set_reader_writer (cms, reader, NULL);
           if (rc)
             {
-              log_error ("ksba_cms_parse failed: %s\n", gpg_strerror (rc));
+              log_error ("ksba_cms_set_reader_writer failed: %s\n",
+                         gpg_strerror (rc));
               goto leave;
             }
 
-          if (stopreason == KSBA_SR_BEGIN_DATA)
-              log_info ("not a certs-only message\n");
-        }
-      while (stopreason != KSBA_SR_READY);   
+          do 
+            {
+              rc = ksba_cms_parse (cms, &stopreason);
+              if (rc)
+                {
+                  log_error ("ksba_cms_parse failed: %s\n", gpg_strerror (rc));
+                  goto leave;
+                }
+
+              if (stopreason == KSBA_SR_BEGIN_DATA)
+                log_info ("not a certs-only message\n");
+            }
+          while (stopreason != KSBA_SR_READY);   
       
-      for (i=0; (cert=ksba_cms_get_cert (cms, i)); i++)
-        {
-          check_and_store (ctrl, stats, cert, 0);
-          ksba_cert_release (cert); 
-          cert = NULL;
+          for (i=0; (cert=ksba_cms_get_cert (cms, i)); i++)
+            {
+              check_and_store (ctrl, stats, cert, 0);
+              ksba_cert_release (cert); 
+              cert = NULL;
+            }
+          if (!i)
+            log_error ("no certificate found\n");
+          else
+            any = 1;
         }
-      if (!i)
-        log_error ("no certificate found\n");
-    }
-  else if (ct == KSBA_CT_NONE)
-    { /* Failed to identify this message - assume a certificate */
+      else if (ct == KSBA_CT_PKCS12)
+        { /* This seems to be a pkcs12 message.  We use an external
+             tool to parse the message and to store the private keys.
+             We need to use a another reader here to parse the
+             certificate we included in the p12 file; then we continue
+             to look for other pkcs12 files (works only if they are in
+             PEM format. */
+          FILE *certfp;
+          Base64Context b64p12rdr;
+          ksba_reader_t p12rdr;
+          
+          rc = parse_p12 (reader, &certfp);
+          if (!rc)
+            {
+              any = 1;
+              
+              rewind (certfp);
+              rc = gpgsm_create_reader (&b64p12rdr, ctrl, certfp, 1, &p12rdr);
+              if (rc)
+                {
+                  log_error ("can't create reader: %s\n", gpg_strerror (rc));
+                  fclose (certfp);
+                  goto leave;
+                }
 
-      rc = ksba_cert_new (&cert);
-      if (rc)
-        goto leave;
+              do
+                {
+                  ksba_cert_release (cert); cert = NULL;
+                  rc = ksba_cert_new (&cert);
+                  if (!rc)
+                    {
+                      rc = ksba_cert_read_der (cert, p12rdr);
+                      if (!rc)
+                        check_and_store (ctrl, stats, cert, 0);
+                    }
+                  ksba_reader_clear (p12rdr, NULL, NULL);
+                }
+              while (!rc && !gpgsm_reader_eof_seen (b64p12rdr));
 
-      rc = ksba_cert_read_der (cert, reader);
-      if (rc)
-        goto leave;
+              if (gpg_err_code (rc) == GPG_ERR_EOF)
+                rc = 0;
+              gpgsm_destroy_reader (b64p12rdr);
+              fclose (certfp);
+              if (rc)
+                goto leave;
+            }
+        }
+      else if (ct == KSBA_CT_NONE)
+        { /* Failed to identify this message - assume a certificate */
 
-      check_and_store (ctrl, stats, cert, 0);
+          rc = ksba_cert_new (&cert);
+          if (rc)
+            goto leave;
+
+          rc = ksba_cert_read_der (cert, reader);
+          if (rc)
+            goto leave;
+
+          check_and_store (ctrl, stats, cert, 0);
+          any = 1;
+        }
+      else
+        {
+          log_error ("can't extract certificates from input\n");
+          rc = gpg_error (GPG_ERR_NO_DATA);
+        }
+      
+      ksba_reader_clear (reader, NULL, NULL);
     }
-  else
-    {
-      log_error ("can't extract certificates from input\n");
-      rc = gpg_error (GPG_ERR_NO_DATA);
-    }
-   
+  while (!gpgsm_reader_eof_seen (b64reader));
+
  leave:
+  if (any && gpg_err_code (rc) == GPG_ERR_EOF)
+    rc = 0;
   ksba_cms_release (cms);
   ksba_cert_release (cert);
   gpgsm_destroy_reader (b64reader);
@@ -345,3 +422,240 @@ gpgsm_import_files (CTRL ctrl, int nfiles, char **files,
 }
 
 
+/* Fork and exec the protecttool, connect the file descriptor of
+   INFILE to stdin, return a new stream in STATUSFILE, write the
+   output to OUTFILE and the pid of the process in PID.  Returns 0 on
+   success or an error code. */
+static gpg_error_t
+popen_protect_tool (const char *pgmname,
+                    FILE *infile, FILE *outfile, FILE **statusfile, pid_t *pid)
+{
+  gpg_error_t err;
+  int fd, fdout, rp[2];
+  int n, i;
+
+  fflush (infile);
+  rewind (infile);
+  fd = fileno (infile);
+  fdout = fileno (outfile);
+  if (fd == -1 || fdout == -1)
+    log_fatal ("no file descriptor for temporary file: %s\n",
+               strerror (errno));
+
+  /* Now start the protect-tool. */
+  if (pipe (rp) == -1)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error creating a pipe: %s\n"), strerror (errno));
+      return err;
+    }
+      
+  *pid = fork ();
+  if (*pid == -1)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error forking process: %s\n"), strerror (errno));
+      close (rp[0]);
+      close (rp[1]);
+      return err;
+    }
+
+  if (!*pid)
+    { /* Child. */
+      const char *arg0;
+
+      arg0 = strrchr (pgmname, '/');
+      if (arg0)
+        arg0++;
+      else
+        arg0 = pgmname;
+
+      /* Connect the infile to stdin. */
+      if (fd != 0 && dup2 (fd, 0) == -1)
+        log_fatal ("dup2 stdin failed: %s\n", strerror (errno));
+
+      /* Connect the outfile to stdout. */
+      if (fdout != 1 && dup2 (fdout, 1) == -1)
+        log_fatal ("dup2 stdout failed: %s\n", strerror (errno));
+      
+      /* Connect stderr to our pipe. */
+      if (rp[1] != 2 && dup2 (rp[1], 2) == -1)
+        log_fatal ("dup2 stderr failed: %s\n", strerror (errno));
+
+      /* Close all other files. */
+      n = sysconf (_SC_OPEN_MAX);
+      if (n < 0)
+        n = MAX_OPEN_FDS;
+      for (i=3; i < n; i++)
+        close(i);
+      errno = 0;
+
+      execlp (pgmname, arg0,
+              "--homedir", opt.homedir,
+              "--p12-import",
+              "--store", 
+              "--no-fail-on-exist",
+              "--",
+              NULL);
+      /* No way to print anything, as we have closed all streams. */
+      _exit (31);
+    }
+
+  /* Parent. */
+  close (rp[1]);
+  *statusfile = fdopen (rp[0], "r");
+  if (!*statusfile)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error ("can't fdopen pipe for reading: %s", strerror (errno));
+      kill (*pid, SIGTERM);
+      return err;
+    }
+
+  return 0;
+}
+
+
+/* Assume that the reader is at a pkcs#12 message and try to import
+   certificates from that stupid format. We will alos store secret
+   keys.  All of the pkcs#12 parsing and key storing is handled by the
+   gpg-protect-tool, we merely have to take care of receiving the
+   certificates. On success RETFP returns a temporary file with
+   certificates. */
+static gpg_error_t
+parse_p12 (ksba_reader_t reader, FILE **retfp)
+{
+  const char *pgmname;
+  gpg_error_t err = 0, child_err = 0;
+  int i, c, cont_line;
+  unsigned int pos;
+  FILE *tmpfp, *certfp = NULL, *fp = NULL;
+  char buffer[1024];
+  size_t nread;
+  pid_t pid = -1;
+
+  if (!opt.protect_tool_program || !*opt.protect_tool_program)
+    pgmname = GNUPG_DEFAULT_PROTECT_TOOL;
+  else
+    pgmname = opt.protect_tool_program;
+
+  *retfp = NULL;
+
+  /* To avoid an extra feeder process or doing selects and because
+     gpg-protect-tool will anyway parse the entire pkcs#12 message in
+     memory, we simply use tempfiles here and pass them to
+     the gpg-protect-tool. */
+  tmpfp = tmpfile ();
+  if (!tmpfp)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error creating temporary file: %s\n"), strerror (errno));
+      goto cleanup;
+    }
+  while (!(err = ksba_reader_read (reader, buffer, sizeof buffer, &nread)))
+    {
+      if (fwrite (buffer, nread, 1, tmpfp) != 1)
+        {
+          err = gpg_error_from_errno (errno);
+          log_error (_("error writing to temporary file: %s\n"),
+                     strerror (errno));
+          goto cleanup;
+        }
+    }
+  if (gpg_err_code (err) == GPG_ERR_EOF)
+    err = 0;
+  if (err)
+    {
+      log_error (_("error reading input: %s\n"), gpg_strerror (err));
+      goto cleanup;
+    }
+
+  certfp = tmpfile ();
+  if (!certfp)
+    {
+      err = gpg_error_from_errno (errno);
+      log_error (_("error creating temporary file: %s\n"), strerror (errno));
+      goto cleanup;
+    }
+
+  err = popen_protect_tool (pgmname, tmpfp, certfp, &fp, &pid);
+  if (err)
+    {
+      pid = -1;
+      goto cleanup;
+    }
+  fclose (tmpfp);
+  tmpfp = NULL;
+
+  /* Read stderr of the protect tool. */
+  pos = 0;
+  cont_line = 0;
+  while ((c=getc (fp)) != EOF)
+    {
+      /* fixme: We could here grep for status information of the
+         protect tool to figure out better error codes for
+         CHILD_ERR. */
+      buffer[pos++] = c;
+      if (pos >= 5 /*sizeof buffer - 1*/ || c == '\n')
+        {
+          buffer[pos - (c == '\n')] = 0;
+          if (cont_line)
+            log_printf ("%s", buffer);
+          else
+            log_info ("%s", buffer);
+          pos = 0;
+          cont_line = (c != '\n');
+        }
+    }
+
+  if (pos)
+    {
+      buffer[pos] = 0;
+      if (cont_line)
+        log_printf ("%s\n", buffer);
+      else
+        log_info ("%s\n", buffer);
+    }
+
+  /* If we found no error in the output of the cild, setup a suitable
+     error code, which will later be reset if the exit status of the
+     child is 0. */
+  if (!child_err)
+    child_err = gpg_error (GPG_ERR_DECRYPT_FAILED);
+
+
+ cleanup:
+  if (tmpfp)
+    fclose (tmpfp);
+  if (fp)
+    fclose (fp);
+  if (pid != -1)
+    {
+      int status;
+
+      while ( (i=waitpid (pid, &status, 0)) == -1 && errno == EINTR)
+        ;
+      if (i == -1)
+        log_error (_("waiting for protect-tools to terminate failed: %s\n"),
+                   strerror (errno));
+      else if (WIFEXITED (status) && WEXITSTATUS (status) == 31)
+        log_error (_("error running `%s': probably not installed\n"), pgmname);
+      else if (WIFEXITED (status) && WEXITSTATUS (status))
+        log_error (_("error running `%s': exit status %d\n"), pgmname,
+                     WEXITSTATUS (status));
+      else if (!WIFEXITED (status))
+        log_error (_("error running `%s': terminated\n"), pgmname);
+      else 
+        child_err = 0;
+    }
+  if (!err)
+    err = child_err;
+  if (err)
+    {
+      if (certfp)
+        fclose (certfp);
+    }
+  else
+    *retfp = certfp;
+  return err;
+}
