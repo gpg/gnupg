@@ -837,7 +837,9 @@ msgstr "Optionen werden aus '%s' gelesen\n"
 #: g10/g10.c:1390
 #, c-format
 msgid "cipher extension \"%s\" not loaded due to unsafe permissions\n"
-msgstr "Verschlüsselungserweiterung \"%s\" wurde wegen falscher Rechte nicht geladen\n"
+msgstr ""
+"Verschlüsselungserweiterung \"%s\" wurde wegen falscher Rechte nicht "
+"geladen\n"
 
 #: g10/g10.c:1523
 #, c-format
@@ -1917,7 +1919,9 @@ msgstr "Fehler beim Erzeugen des Mantras: %s\n"
 
 #: g10/encode.c:210
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
-msgstr "Aufgrund des S2K-Modus kann ein symmetrisches ESK Packet nicht benutzt werden\n"
+msgstr ""
+"Aufgrund des S2K-Modus kann ein symmetrisches ESK Packet nicht benutzt "
+"werden\n"
 
 #: g10/encode.c:229 g10/encode.c:486
 #, c-format
@@ -3797,31 +3801,40 @@ msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Nachricht\n"
 msgid ""
 "key %08lX: this is a PGP generated ElGamal key which is NOT secure for "
 "signatures!\n"
-msgstr "Schlüssel %08lX: Dieser durch PGP erzeugte ElGamal-Schlüssel ist für Signaturen NICHT sicher genug!\n"
+msgstr ""
+"Schlüssel %08lX: Dieser durch PGP erzeugte ElGamal-Schlüssel ist für "
+"Signaturen NICHT sicher genug!\n"
 
 #: g10/sig-check.c:224
 #, c-format
 msgid "public key %08lX is %lu second newer than the signature\n"
-msgstr "Öffentlicher Schlüssel %08lX ist um %lu Sekunde jünger als die Unterschrift\n"
+msgstr ""
+"Öffentlicher Schlüssel %08lX ist um %lu Sekunde jünger als die Unterschrift\n"
 
 #: g10/sig-check.c:225
 #, c-format
 msgid "public key %08lX is %lu seconds newer than the signature\n"
-msgstr "Öffentlicher Schlüssel %08lX ist um %lu Sekunden jünger als die Unterschrift\n"
+msgstr ""
+"Öffentlicher Schlüssel %08lX ist um %lu Sekunden jünger als die "
+"Unterschrift\n"
 
 #: g10/sig-check.c:234
 #, c-format
 msgid ""
 "key %08lX has been created %lu second in future (time warp or clock "
 "problem)\n"
-msgstr "Der Schlüssel %08lX wurde %lu Sekunde in der Zukunft erzeugt (Zeitreise oder Uhren stimmen nicht überein)\n"
+msgstr ""
+"Der Schlüssel %08lX wurde %lu Sekunde in der Zukunft erzeugt (Zeitreise oder "
+"Uhren stimmen nicht überein)\n"
 
 #: g10/sig-check.c:236
 #, c-format
 msgid ""
 "key %08lX has been created %lu seconds in future (time warp or clock "
 "problem)\n"
-msgstr "Der Schlüssel %08lX wurde %lu Sekunden in der Zukunft erzeugt (Zeitreise oder Uhren stimmen nicht überein)\n"
+msgstr ""
+"Der Schlüssel %08lX wurde %lu Sekunden in der Zukunft erzeugt (Zeitreise "
+"oder Uhren stimmen nicht überein)\n"
 
 #: g10/sig-check.c:249
 #, c-format
@@ -3831,7 +3844,9 @@ msgstr "Hinweis: Signaturschlüssel %08lX ist am %s verfallen.\n"
 #: g10/sig-check.c:348
 #, c-format
 msgid "assuming bad signature from key %08lX due to an unknown critical bit\n"
-msgstr "Vermutlich eine FALSCHE Unterschrift von Schlüssel %08lX, wegen unbekanntem \"critical bit\"\n"
+msgstr ""
+"Vermutlich eine FALSCHE Unterschrift von Schlüssel %08lX, wegen unbekanntem "
+"\"critical bit\"\n"
 
 #: g10/sign.c:103
 #, c-format
@@ -4709,7 +4724,9 @@ msgstr "%s: Schlüsselbund erstellt\n"
 #, fuzzy
 #~ msgid ""
 #~ "you have to start GnuPG again, so it can read the new configuration file\n"
-#~ msgstr "Sie müssen GnuPG noch einmal starten, damit es die neue Konfigurationsdatei liest\n"
+#~ msgstr ""
+#~ "Sie müssen GnuPG noch einmal starten, damit es die neue "
+#~ "Konfigurationsdatei liest\n"
 
 #~ msgid "changing permission of  `%s' failed: %s\n"
 #~ msgstr "Ändern der Zugriffsrechte für `%s' ist fehlgeschlagen: %s\n"
