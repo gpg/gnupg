@@ -85,7 +85,7 @@ libcipher_a_LIBADD =	   @STATIC_CIPHER_OBJS@
 # If I remember it correct, automake 1.4 has a feature to set
 # fooFLAGS depending on the program.  So we should check it out.
 
-tiger: $(srcdir)/tiger.c
+tiger$(EXEEXT): $(srcdir)/tiger.c
 	`echo $(COMPILE) $(DYNLINK_MOD_CFLAGS) -o tiger $(srcdir)/tiger.c | \
 	    sed -e 's/-O[2-9s]*/-O/g' `
 
@@ -103,12 +103,12 @@ twofish: $(srcdir)/twofish.c
 #	 `echo $(COMPILE) -c $(srcdir)/twofish.c | sed -e 's/-O[0-9s]*/  /g' `
 
 
-rndunix: $(srcdir)/rndunix.c
+rndunix$(EXEEXT): $(srcdir)/rndunix.c
 	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndunix $(srcdir)/rndunix.c
 
-rndlinux: $(srcdir)/rndlinux.c
+rndlinux$(EXEEXT): $(srcdir)/rndlinux.c
 	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndlinux $(srcdir)/rndlinux.c
 
-rndegd: $(srcdir)/rndegd.c
+rndegd$(EXEEXT): $(srcdir)/rndegd.c
 	$(COMPILE) $(DYNLINK_MOD_CFLAGS) -o rndegd $(srcdir)/rndegd.c
 

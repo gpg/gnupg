@@ -151,7 +151,7 @@ show_revocation_reason( PKT_public_key *pk )
 static void
 show_paths (const PKT_public_key *pk, int only_first )
 {
-#warning must change enum_cert_paths to use pk
+    log_debug("not yet implemented\n");
 #if 0    
     void *context = NULL;
     unsigned otrust, validity;

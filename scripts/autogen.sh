@@ -14,8 +14,8 @@
 PGM=GnuPG
 lib_config_files=""
 autoconf_vers=2.52
-automake_vers=1.4
-aclocal_vers=1.4
+automake_vers=1.5
+aclocal_vers=1.5
 
 
 DIE=no

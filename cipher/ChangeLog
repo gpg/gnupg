@@ -1,3 +1,7 @@
+2001-10-22  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Need to use $(EXEEXT) where approriate.
+
 2001-09-09  Werner Koch  <wk@gnupg.org>
 
 	* rsa.c (rsa_get_info): s/usage/r_usage/ to avoid shadow warnings.

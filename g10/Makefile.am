@@ -20,7 +20,8 @@
 
 INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = OPTIONS  pubring.asc  options.skel
-OMIT_DEPENDENCIES = zlib.h zconf.h
+# it seems that we can't use this with automake 1.5
+#OMIT_DEPENDENCIES = zlib.h zconf.h
 LDFLAGS = @LDFLAGS@ @DYNLINK_LDFLAGS@
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 

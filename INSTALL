@@ -107,6 +107,12 @@ Specific problems on some machines
         You may want to use the option "-msg-disable ptrmismatch1"
         to get rid of the sign/unsigned char mismatch warnings.
 
+  * SVR4.2 (ESIX V4.2 cc)
+
+        Due to problems with the ESIX as, you probably want to do
+            CFLAGS="-O -K pentium" ./configure --disable-asm
+        Reported by Reinhard Wobst.
+
 
 
 The Random Device

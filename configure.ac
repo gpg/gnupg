@@ -18,24 +18,26 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 dnl
 dnl (Process this file with autoconf to produce a configure script.)
-AC_REVISION($Revision$)dnl
+dnlAC_REVISION($Revision$)dnl
 
 AC_PREREQ(2.52)
 dnl A snapshot release has a letter appended. CVS files before a release
 dnl are suffixed with the string "-cvs", so "1.0.6a-cvs" is a cvs version
 dnl between 1.0.6 and 1.0.6a. 
-AC_INIT(gnupg,1.0.6b-cvs)
-AC_CONFIG_SRCDIR(g10/g10.c)
-AC_CONFIG_AUX_DIR(scripts)
-AC_CONFIG_HEADERS(config.h)
-AC_CANONICAL_TARGET()
-
+AC_INIT(gnupg, 1.0.6b, bug-gnupg@gnu.org)
 ALL_LINGUAS="da de eo es_ES et fr id it ja nl pl pt_BR pt_PT sv tr"
 static_modules="sha1 md5 rmd160"
 static_random_module=""
 
-PACKAGE="$PACKAGE_NAME"
-VERSION="$PACKAGE_VERSION"
+PACKAGE=$PACKAGE_NAME
+VERSION=$PACKAGE_VERSION
+
+AC_CONFIG_AUX_DIR(scripts)
+AC_CONFIG_SRCDIR(g10/g10.c)
+AC_CANONICAL_TARGET()
+AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_CONFIG_HEADER(config.h)
+
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of this package])
@@ -162,7 +164,6 @@ case "${target}" in
        ;;
 esac
 
-AC_ARG_PROGRAM
 AC_PROG_MAKE_SET
 AM_SANITY_CHECK
 missing_dir=`cd $ac_aux_dir && pwd`

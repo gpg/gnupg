@@ -7,26 +7,6 @@
 # $Id$
 
 errstatus=0
-dirmode=""
-
-usage="\
-Usage: mkinstalldirs [-h] [--help] [-m mode] dir ..."
-
-# process command line arguments
-while test $# -gt 0 ; do
-   case "${1}" in
-     -h | --help | --h* )			# -h for help
-        echo "${usage}" 1>&2; exit 0 ;;
-     -m )					# -m PERM arg
-        shift
-        test $# -eq 0 && { echo "${usage}" 1>&2; exit 1; }
-        dirmode="${1}"
-        shift ;;
-     -- ) shift; break ;;			# stop option processing
-     -* ) echo "${usage}" 1>&2; exit 1 ;;	# unknown option
-     * )  break ;;				# first non-opt arg
-   esac
-done
 
 for file
 do
@@ -48,17 +28,6 @@ do
 
         if test ! -d "$pathcomp"; then
   	  errstatus=$lasterr
-	else
-	  if test ! -z "$dirmode"; then
-	     echo "chmod $dirmode $pathcomp"
-
-	     lasterr=""
-	     chmod $dirmode "$pathcomp" || lasterr=$?
-
-	     if test ! -z "$lasterr"; then
-	       errstatus=$lasterr
-	     fi
-	  fi
         fi
      fi
 
@@ -68,7 +37,4 @@ done
 
 exit $errstatus
 
-# Local Variables:
-# mode:shell-script
-# sh-indentation:3
-# End:
+# mkinstalldirs ends here

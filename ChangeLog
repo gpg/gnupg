@@ -1,3 +1,7 @@
+2001-10-22  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Fixed for automake 1.5 
+
 2001-10-17  Werner Koch  <wk@gnupg.org>
 
 	* README: Removed note on local_ID.

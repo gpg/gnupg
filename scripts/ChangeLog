@@ -1,3 +1,7 @@
+2001-10-22  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh (aclocal_vers): Require automalke 1.5.
+
 2001-08-21  Stefan Bellon  <sbellon@sbellon.de>
 
 	* build-riscos [__riscos__]: New.

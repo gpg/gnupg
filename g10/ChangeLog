@@ -1,4 +1,14 @@
+2001-10-23  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (keyedit_menu): Changed helptext for showpref
+	command.  Suggested by Reinhard Wobst.
+
+	* keyring.c (keyring_search): When marking the offtbl ready, take
+	into account that we may have more than one keyring.
+
 2001-10-22  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Do not use OMIT_DEPENDENCIES
 
 	* build-packet.c (build_sig_subpkt): Default is now to put all
 	types of subpackets into the hashed area and only list those which

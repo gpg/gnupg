@@ -1,3 +1,8 @@
+2001-10-23  Werner Koch  <wk@gnupg.org>
+
+	* defs.inc, Makefile.am: Do not use $srcdir when invoking gpg.
+	Write the logfile to the current directory.
+
 2001-09-28  Werner Koch  <wk@gnupg.org>
 
 	* defs.inc: Write a log file for each test. 

@@ -98,9 +98,9 @@ pgmname=`basename $0`
 
 [ -z "$srcdir" ] && fatal "not called from make"
 
-GPG="${srcdir}/../g10/gpg --homedir . "
+GPG="../g10/gpg --homedir . "
 
-exec 2> ${0}.log
+exec 2> ${pgmname}.log
 
 :
 # end

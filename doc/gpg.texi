@@ -319,10 +319,7 @@ not be expected to successfully import such a key.
 @item ---import @code{files}
 @itemx ---fast-import @code{files}
 Import/merge keys. This adds the given keys to the
-keyring.
-The fast version does not update
-the trustdb; this can be done at any time with the
-command ---update-trustdb.
+keyring. The fast version is currently just a synonym.
 
 There are a few other options which control how this command works.
 Most notable here is the ---merge-only option which does not insert new keys
@@ -354,6 +351,10 @@ changes in the Web-of_trust can be tracked. GnuPG tries to figure
 when this is required and then does it implicitly; this command can be
 used to force such a check. The processing is identically to that of
 ---update-trustdb but it skips keys with a not yet defined "ownertrust".
+
+For use with cron jobs, this command can be used together with ---batch
+in which case the check is only done when it is due. To force a run
+even in batch mode add the option ---yes.
 
 @item ---import-ownertrust @code{files}
 Update the trustdb with the ownertrust values stored
@@ -787,6 +788,9 @@ v4 signatures but PGP 5.x recognizes v4 signatures only
 on key material. This option forces v3 signatures for
 signatures on data.
 
+@item ---no-force-v3-sigs
+Reset the ---force-v3-sigs option.
+
 @item ---force-mdc
 Force the use of encryption with appended manipulation
 code. This is always used with the newer ciphers (those
@@ -996,12 +1000,6 @@ indicates this email address mode.
 All words must match exactly (not case sensitive) but can appear in
 any order in the user ID. Words are any sequences of letters,
 digits, the underscore and all characters with bit 7 set.
-
-@item #34
-Using the Local ID. This is a very low level method and should
-only be used by applications which really need it. The hash character
-indicates this method. An application should not assume that this is
-only a number.
 
 @item Heine
 @itemx *Heine

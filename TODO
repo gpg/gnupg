@@ -1,4 +1,6 @@
 
+  * pause scrolling help in --edit-key and elsewhere.
+
   * getkey does not return revoked/expired keys - therefore it is not
     possible to override it.
 

@@ -55,6 +55,7 @@ struct keyring_name {
   int secret;
   DOTLOCK lockhd;
   int is_locked;
+  int did_full_scan;
   char fname[1];
 };
 typedef struct keyring_name const * CONST_KR_NAME;
@@ -214,6 +215,7 @@ keyring_register_filename (const char *fname, int secret)
     kr->secret = !!secret;
     kr->lockhd = NULL;
     kr->is_locked = 0;
+    kr->did_full_scan = 0;
     /* keep a list of all issued pointers */
     kr->next = kr_names;
     kr_names = kr;
@@ -1074,10 +1076,32 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
   else if (rc == -1)
     {
       hd->current.eof = 1;
-      /* if we scanned the entire keyring, we are sure that
+      /* if we scanned all keyrings, we are sure that
        * all known key IDs are in our offtbl, mark that. */
-      if (use_offtbl)
-        kr_offtbl_ready = 1;
+      if (use_offtbl && !kr_offtbl_ready)
+        {
+          KR_NAME kr;
+          
+          /* First set the did_full_scan flag for this keyring (ignore
+             secret keyrings) */
+          for (kr=kr_names; kr; kr = kr->next)
+            {
+              if (!kr->secret && hd->resource == kr) 
+                {
+                  kr->did_full_scan = 1;
+                  break;
+                }
+            }
+          /* Then check whether all flags are set and if so, mark the
+             offtbl ready */
+          for (kr=kr_names; kr; kr = kr->next)
+            {
+              if (!kr->secret && !kr->did_full_scan) 
+                break;
+            }
+          if (!kr)
+            kr_offtbl_ready = 1;
+        }
     }
   else 
     hd->current.error = rc;
