@@ -1,3 +1,8 @@
+2003-10-08  Werner Koch  <wk@gnupg.org>
+
+	* ttyio.c (tty_print_string, tty_print_utf8_string2)
+	(tty_print_utf8_string): Made string arg const.
+
 2003-09-28  Timo Schulz  <twoaday@freakmail.de>
 
 	* strgutil.c [WIN32] (asprintf): New.

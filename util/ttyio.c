@@ -268,7 +268,7 @@ tty_fprintf (FILE *fp, const char *fmt, ... )
  * Print a string, but filter all control characters out.
  */
 void
-tty_print_string( byte *p, size_t n )
+tty_print_string( const byte *p, size_t n )
 {
     if (no_terminal)
 	return;
@@ -306,7 +306,7 @@ tty_print_string( byte *p, size_t n )
 }
 
 void
-tty_print_utf8_string2( byte *p, size_t n, size_t max_n )
+tty_print_utf8_string2 (const byte *p, size_t n, size_t max_n )
 {
     size_t i;
     char *buf;
@@ -337,7 +337,7 @@ tty_print_utf8_string2( byte *p, size_t n, size_t max_n )
 }
 
 void
-tty_print_utf8_string( byte *p, size_t n )
+tty_print_utf8_string( const byte *p, size_t n )
 {
     tty_print_utf8_string2( p, n, 0 );
 }
