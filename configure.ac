@@ -1,4 +1,4 @@
-dnl Configure script for GnuPG
+dnl Configure.ac script for GnuPG
 dnl Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
@@ -20,20 +20,23 @@ dnl
 dnl (Process this file with autoconf to produce a configure script.)
 AC_REVISION($Revision$)dnl
 
-dnl Must reset CDPATH so that bash's cd does not print to stdout
-CDPATH=
-
-AC_PREREQ(2.13)
-AC_INIT(g10/g10.c)
+AC_PREREQ(2.52)
+AC_INIT(gnupg,1.0.6a)
+AC_CONFIG_SRCDIR(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
-AM_CONFIG_HEADER(config.h)
-AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnupg,`cat $srcdir/VERSION`)
-
+AC_CONFIG_HEADERS(config.h)
+AC_CANONICAL_TARGET()
 
 ALL_LINGUAS="da de eo es_ES et fr id it ja nl pl pt_BR pt_PT sv tr"
 static_modules="sha1 md5 rmd160"
 static_random_module=""
+
+PACKAGE="$PACKAGE_NAME"
+VERSION="$PACKAGE_VERSION"
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+AC_DEFINE_UNQUOTED(PACKAGE, $PACKAGE, [Name of this package])
+AC_DEFINE_UNQUOTED(VERSION, $VERSION, [Version of this package])
 
 AC_PROG_AWK
 
@@ -68,7 +71,9 @@ esac
 AC_ARG_WITH(egd-socket,
     [  --with-egd-socket=NAME  Use NAME for the EGD socket)],
             egd_socket_name="$withval", egd_socket_name="" )
-AC_DEFINE_UNQUOTED(EGD_SOCKET_NAME, "$egd_socket_name")
+AC_DEFINE_UNQUOTED(EGD_SOCKET_NAME, "$egd_socket_name",
+                   [Define if you don't want the default EGD socket name.
+                    For details see cipher/rndegd.c])
 
 
 dnl
@@ -103,7 +108,7 @@ AC_ARG_ENABLE(m-guard,
     use_m_guard=$enableval, use_m_guard=no)
 AC_MSG_RESULT($use_m_guard)
 if test "$use_m_guard" = yes ; then
-    AC_DEFINE(M_GUARD)
+    AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
 
@@ -123,6 +128,17 @@ AC_ARG_WITH(capabilities,
 [use_capabilities="$withval"],[use_capabilities=no])
 AC_MSG_RESULT($use_capabilities)
 
+
+
+AH_TOP([
+/* need this, because some autoconf tests rely on this (e.g. stpcpy)
+ * and it should be used for new programs  */
+#define _GNU_SOURCE  1
+])
+
+AH_BOTTOM([
+#include "g10defs.h"
+])
 
 
 
@@ -172,10 +188,18 @@ case "${target}" in
     *-*-mingw32*)
         # special stuff for Windoze NT
         ac_cv_have_dev_random=no
-        AC_DEFINE(USE_ONLY_8DOT3)
-        AC_DEFINE(HAVE_DRIVE_LETTERS)
-        AC_DEFINE(HAVE_DOSISH_SYSTEM)
-        AC_DEFINE(USE_SIMPLE_GETTEXT)
+        AC_DEFINE(USE_ONLY_8DOT3,1,
+                  [set this to limit filenames to the 8.3 format])
+        AC_DEFINE(HAVE_DRIVE_LETTERS,1,
+                  [defined if we must run on a stupid file system])
+        AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
+                  [defined if we run on some of the PCDOS like systems 
+                   (DOS, Windoze. OS/2) with special properties like
+                    no file modes])
+        AC_DEFINE(USE_SIMPLE_GETTEXT,1,
+                  [because the Unix gettext has too much overhead on
+                   MingW32 systems and these systems lack Posix functions,
+                   we use a simplified version of gettext])
         try_gettext="no"
         try_gdbm="no"
         ;;
@@ -252,7 +276,8 @@ dnl let that after linux to avoid gnu-linux problems
         PRINTABLE_OS_NAME=`uname -s || echo "Unknown"`
         ;;
 esac
-AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME")
+AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
+                   [A human readable text with the name of the OS])
 
 dnl  Fixme: Are these the best flags for OpenBSD????
 case "${target}" in
@@ -279,8 +304,10 @@ case "${target}" in
         fi
         ;;
 esac
-AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM")
-AC_DEFINE_UNQUOTED(NAME_OF_DEV_URANDOM, "$NAME_OF_DEV_URANDOM")
+AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM",
+                   [defined to the name of the strong random device])
+AC_DEFINE_UNQUOTED(NAME_OF_DEV_URANDOM, "$NAME_OF_DEV_URANDOM",
+                   [defined to the name of the weaker random device])
 AC_SUBST(MPI_OPT_FLAGS)
 
 
@@ -335,8 +362,10 @@ esac
 if test "$try_dynload" = yes ; then
   AC_CHECK_LIB(dl,dlopen)
   if test "$ac_cv_lib_dl_dlopen" = "yes"; then
-    AC_DEFINE(USE_DYNAMIC_LINKING)
-    AC_DEFINE(HAVE_DL_DLOPEN)
+    AC_DEFINE(USE_DYNAMIC_LINKING,1,
+              [define to enable the use of extensions])
+    AC_DEFINE(HAVE_DL_DLOPEN,1,
+              [Defined when the dlopen function family is available])
     DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
     use_gnupg_extensions=yes
   else
@@ -350,7 +379,8 @@ if test "$try_dynload" = yes ; then
       AC_CHECK_LIB(dld,shl_load)
       if test "$ac_cv_lib_dld_shl_load" = "yes"; then
         AC_DEFINE(USE_DYNAMIC_LINKING)
-        AC_DEFINE(HAVE_DL_SHL_LOAD)
+        AC_DEFINE(HAVE_DL_SHL_LOAD,1,
+                  [Defined if the shl_load function family is available])
         DYNLINK_LDFLAGS="$CFLAGS_EXPORTDYNAMIC"
         use_gnupg_extensions=yes
 dnl -----------------
@@ -432,7 +462,8 @@ AC_CHECK_HEADERS(sys/capability.h)
 if test "$ac_cv_header_sys_capability_h" = "yes" ; then
   AC_CHECK_LIB(cap, cap_init, ac_need_libcap=1)
   if test "$ac_cv_lib_cap_cap_init" = "yes"; then
-     AC_DEFINE(USE_CAPABILITIES)
+     AC_DEFINE(USE_CAPABILITIES,1,
+               [define if capabilities should be used])
      LIBS="$LIBS -lcap"
      use_capabilities=yes
   fi
@@ -454,7 +485,8 @@ fi
 
 GNUPG_CHECK_IPC
 if test "$ac_cv_header_sys_shm_h" = "yes"; then
-  AC_DEFINE(USE_SHM_COPROCESSING)
+  AC_DEFINE(USE_SHM_COPROCESSING,1,
+            [define if the shared memory interface should be made available])
 fi
 
 dnl
@@ -465,7 +497,8 @@ if test "$try_dev_random" = yes ; then
     [if test -r "$NAME_OF_DEV_RANDOM" && test -r "$NAME_OF_DEV_URANDOM" ; then
       ac_cv_have_dev_random=yes; else ac_cv_have_dev_random=no; fi])
     if test "$ac_cv_have_dev_random" = yes; then
-        AC_DEFINE(HAVE_DEV_RANDOM)
+        AC_DEFINE(HAVE_DEV_RANDOM,1,
+                 [defined if the system supports a random device] )
     fi
 else
     AC_MSG_CHECKING(for random device)
@@ -487,7 +520,8 @@ if test "$ac_cv_have_dev_random" = yes ; then
         fi
       ])
     if test "$ac_cv_have_dev_random_ioctl" = yes; then
-        AC_DEFINE(HAVE_DEV_RANDOM_IOCTL)
+        AC_DEFINE(HAVE_DEV_RANDOM_IOCTL,1,
+                  [defined if the random device supports some IOCTLs])
     fi
 fi
 
@@ -503,7 +537,9 @@ if test "$use_static_rnd" = default; then
       case "${target}" in
           *-*-mingw32*)
               static_random_module="rndw32"
-              AC_DEFINE(USE_STATIC_RNDW32)
+              AC_DEFINE(USE_STATIC_RNDW32,1,
+                       [At some point in the code we need to know that
+                        we use the Windows random module.])
               ;;
           i?86-emx-os2|i?86-*-os2*emx)
               static_random_module="rndos2"
@@ -562,7 +598,7 @@ static_modules="$static_modules rmd160 $static_random_module"
 STATIC_CIPHER_NAMES=""
 STATIC_CIPHER_OBJS=""
 DYNAMIC_CIPHER_MODS=""
-GNUPG_MSG_PRINT([dynamically linked cipher modules:])
+show_dynlink=""
 for name in $MODULES_IN_CIPHER; do
     x="yes"
     for i in $disallowed_modules; do
@@ -580,11 +616,10 @@ for name in $MODULES_IN_CIPHER; do
             STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.o"
         else
             DYNAMIC_CIPHER_MODS="$DYNAMIC_CIPHER_MODS $name"
-            GNUPG_MSG_PRINT([$name])
+            show_dynlink="$show_dynlink $name"
         fi
     fi
 done
-AC_MSG_RESULT()
 AC_SUBST(STATIC_CIPHER_OBJS)
 AC_SUBST(STATIC_CIPHER_NAMES)
 AC_SUBST(DYNAMIC_CIPHER_MODS)
@@ -598,12 +633,12 @@ cat <<G10EOF >cipher/construct.c
 /* automatically generated by configure - do not edit */
 
 G10EOF
-GNUPG_MSG_PRINT([statically linked cipher modules:])
+show_statlink=""
 for name in $STATIC_CIPHER_NAMES; do
     echo "void ${name}_constructor(void);" >>cipher/construct.c
-    GNUPG_MSG_PRINT([$name])
+    show_statlink="$show_statlink $name"
 done
-AC_MSG_RESULT()
+
 cat <<G10EOF >>cipher/construct.c
 
 void
@@ -634,7 +669,7 @@ dnl setup assembler stuff
 AC_MSG_CHECKING(for mpi assembler functions)
 if test -f $srcdir/mpi/config.links ; then
     . $srcdir/mpi/config.links
-    GNUPG_LINK_FILES($mpi_ln_src, $mpi_ln_dst)
+    AC_CONFIG_LINKS("$mpi_ln_list")
     ac_cv_mpi_extra_asm_modules="$mpi_extra_modules"
     ac_cv_mpi_sflags="$mpi_sflags"
     ac_cv_mpi_config_done="yes"
@@ -644,13 +679,12 @@ else
     AC_MSG_ERROR([mpi/config.links missing!])
 fi
 MPI_EXTRA_ASM_OBJS=""
+show_extraasm=""
 if test "$ac_cv_mpi_extra_asm_modules" != ""; then
-GNUPG_MSG_PRINT([mpi extra asm functions:])
 for i in $ac_cv_mpi_extra_asm_modules; do
-    GNUPG_MSG_PRINT([$i])
+    show_extraasm="$show_extraasm $i"
     MPI_EXTRA_ASM_OBJS="$MPI_EXTRA_ASM_OBJS $i.o"
 done
-AC_MSG_RESULT()
 fi
 AC_SUBST(MPI_EXTRA_ASM_OBJS)
 MPI_SFLAGS="$ac_cv_mpi_sflags"
@@ -670,8 +704,7 @@ fi
 
 if test "$use_local_zlib" = yes ; then
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
-    GNUPG_LINK_FILES(zlib/zlib.h, zlib.h )
-    GNUPG_LINK_FILES(zlib/zconf.h, zconf.h )
+    AC_CONFIG_LINKS(zlib.h:zlib/zlib.h zconf.h:zlib/zconf.h )
     ZLIBS="../zlib/libzlib.a"
 else
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
@@ -688,12 +721,11 @@ changequote(,)dnl
 tmp_pat='[a-zA-Z]'
 changequote([,])dnl
 if echo "$VERSION" | sed 's/-.*//' | grep "$tmp_pat" >/dev/null ; then
-    AC_DEFINE(IS_DEVELOPMENT_VERSION)
+    AC_DEFINE(IS_DEVELOPMENT_VERSION,1,
+              [Defined if this is not a regular release])
 fi
 
 AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
-
-GNUPG_DO_LINK_FILES
 
 GNUPG_CHECK_GNUMAKE
 
@@ -716,7 +748,7 @@ if test "$GCC" = yes; then
     fi
 fi
 
-AC_OUTPUT_COMMANDS([
+AC_CONFIG_COMMANDS(g10defs.h,[[
 cat >g10defs.tmp <<G10EOF
 /* Generated automatically by configure */
 #ifdef HAVE_DRIVE_LETTERS
@@ -744,16 +776,16 @@ else
     mv g10defs.tmp g10defs.h
     echo "g10defs.h created"
 fi
-],[
+]],[[
 prefix=$prefix
 exec_prefix=$exec_prefix
 libdir=$libdir
 datadir=$datadir
 DATADIRNAME=$DATADIRNAME
-])
+]])
 
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 intl/Makefile
 po/Makefile.in
@@ -766,5 +798,17 @@ tools/Makefile
 zlib/Makefile
 checks/Makefile
 ])
+AC_OUTPUT
 
-dnl *-*wedit:notab*-*  Please keep this as the last line.
+# Give some feedback
+echo "Configured for: $PRINTABLE_OS_NAME ($target)"
+if test -n "$show_dynlink"; then
+  echo "Dynamically linked modules:$show_dynlink"
+fi
+if test -n "$show_statlink"; then
+  echo "Statically linked modules:$show_statlink"
+fi
+if test -n "$show_extraasm"; then
+  echo "Extra cpu specific functions:$show_extraasm"
+fi
+

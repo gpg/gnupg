@@ -1,4 +1,7 @@
 
+  * Change the 'no lsign with v3 key policy" to simply use a v4
+    signature in that case.  Hmm, that's what Thomas' patch was about.
+
   * Put a note into readme.w32 that there is a man page and a options
     file;  write the registry stuff in regedit format.
 
