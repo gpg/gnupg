@@ -161,7 +161,6 @@ ask_outfile_name( const char *name, size_t namelen )
 }
 
 
-
 /****************
  * Make an output filename for the inputfile INAME.
  * Returns an IOBUF and an errorcode
@@ -172,82 +171,92 @@ ask_outfile_name( const char *name, size_t namelen )
 int
 open_outfile( const char *iname, int mode, IOBUF *a )
 {
-    int rc = 0;
+  int rc = 0;
 
-    *a = NULL;
-    if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
-	if( !(*a = iobuf_create(NULL)) ) {
-	    log_error(_("%s: can't open: %s\n"), "[stdout]", strerror(errno) );
-	    rc = G10ERR_CREATE_FILE;
-	}
-	else if( opt.verbose )
-	    log_info(_("writing to stdout\n"));
+  *a = NULL;
+  if( (!iname || (*iname=='-' && !iname[1])) && !opt.outfile ) {
+    if( !(*a = iobuf_create(NULL)) ) {
+      log_error(_("%s: can't open: %s\n"), "[stdout]", strerror(errno) );
+      rc = G10ERR_CREATE_FILE;
     }
+    else if( opt.verbose )
+      log_info(_("writing to stdout\n"));
+  }
+  else {
+    char *buf = NULL;
+    const char *name;
+    
+    if( opt.dry_run )
+      name = "/dev/null";
+    else if( opt.outfile )
+      name = opt.outfile;
     else {
-	char *buf=NULL;
-	const char *name;
-
-	if( opt.dry_run )
-	    name = "/dev/null";
-	else if( opt.outfile )
-	    name = opt.outfile;
-	else {
-	  #ifdef USE_ONLY_8DOT3
-	    /* It is quite common DOS system to have only one dot in a
-	     * a filename So if we have something like this, we simple
-	     * replace the suffix execpt in cases where the suffix is
-	     * larger than 3 characters and not the same as.
-	     * We should really map the filenames to 8.3 but this tends to
-	     * be more complicated and is probaly a duty of the filesystem
-	     */
-	    char *dot;
-	    const char *newsfx = mode==1 ? ".asc" :
-				 mode==2 ? ".sig" : ".gpg";
-
-	    buf = m_alloc(strlen(iname)+4+1);
-	    strcpy(buf,iname);
-	    dot = strchr(buf, '.' );
-	    if( dot && dot > buf && dot[1] && strlen(dot) <= 4
-					   && CMP_FILENAME(newsfx, dot) ) {
-		strcpy(dot, newsfx );
-	    }
-	    else if( dot && !dot[1] ) /* don't duplicate a dot */
-		strcpy( dot, newsfx+1 );
-	    else
-		strcat( buf, newsfx );
-	  #else
-	    buf = m_alloc(strlen(iname)+4+1);
-	    strcpy(stpcpy(buf,iname), mode==1 ? EXTSEP_S "asc" :
-				      mode==2 ? EXTSEP_S "sig" : EXTSEP_S "gpg");
-	  #endif
-	    name = buf;
-	}
-
-        rc = 0;
-	while( !overwrite_filep (name) ) {
-            char *tmp = ask_outfile_name (NULL, 0);
-            if ( !tmp || !*tmp ) {
-                m_free (tmp);
-                rc = G10ERR_FILE_EXISTS;
-                break;
+#ifdef USE_ONLY_8DOT3
+      if (opt.mangle_dos_filenames)
+        {
+          /* It is quite common DOS system to have only one dot in a
+           * a filename So if we have something like this, we simple
+           * replace the suffix execpt in cases where the suffix is
+           * larger than 3 characters and not the same as.
+           * We should really map the filenames to 8.3 but this tends to
+           * be more complicated and is probaly a duty of the filesystem
+           */
+          char *dot;
+          const char *newsfx = mode==1 ? ".asc" :
+                               mode==2 ? ".sig" : ".gpg";
+          
+          buf = m_alloc(strlen(iname)+4+1);
+          strcpy(buf,iname);
+          dot = strchr(buf, '.' );
+          if ( dot && dot > buf && dot[1] && strlen(dot) <= 4
+				  && CMP_FILENAME(newsfx, dot) )
+            {
+              strcpy(dot, newsfx );
             }
-            m_free (buf);
-            name = buf = tmp;
+          else if ( dot && !dot[1] ) /* don't duplicate a dot */
+            strcpy( dot, newsfx+1 );
+          else
+            strcat ( buf, newsfx );
         }
-
-	if( !rc ) {
-	    if( !(*a = iobuf_create( name )) ) {
-		log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
-		rc = G10ERR_CREATE_FILE;
-	    }
-	    else if( opt.verbose )
-		log_info(_("writing to `%s'\n"), name );
-	}
-	m_free(buf);
+      if (!buf)
+#endif /* USE_ONLY_8DOT3 */
+        {
+          buf = m_alloc(strlen(iname)+4+1);
+          strcpy(stpcpy(buf,iname), mode==1 ? EXTSEP_S "asc" :
+		                   mode==2 ? EXTSEP_S "sig" : EXTSEP_S "gpg");
+        }
+      name = buf;
     }
-    return rc;
-}
 
+    rc = 0;
+    while( !overwrite_filep (name) )
+      {
+        char *tmp = ask_outfile_name (NULL, 0);
+        if ( !tmp || !*tmp )
+          {
+            m_free (tmp);
+            rc = G10ERR_FILE_EXISTS;
+            break;
+          }
+        m_free (buf);
+        name = buf = tmp;
+      }
+    
+    if( !rc )
+      {
+        if( !(*a = iobuf_create( name )) )
+          {
+            log_error(_("%s: can't create: %s\n"), name, strerror(errno) );
+            rc = G10ERR_CREATE_FILE;
+          }
+        else if( opt.verbose )
+          log_info(_("writing to `%s'\n"), name );
+      }
+    m_free(buf);
+  }
+
+  return rc;
+}
 
 
 /****************

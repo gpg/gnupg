@@ -310,6 +310,8 @@ enum cmd_and_opt_values { aNull = 0,
     oGroup,
     oStrict,
     oNoStrict,
+    oMangleDosFilenames,
+    oNoMangleDosFilenames,
 aTest };
 
 
@@ -608,6 +610,8 @@ static ARGPARSE_OPTS opts[] = {
     { oGroup,      "group",       2, "@" },
     { oStrict,     "strict",      0, "@" },
     { oNoStrict,   "no-strict",   0, "@" },
+    { oMangleDosFilenames, "mangle-dos-filenames", 0, "@" },
+    { oNoMangleDosFilenames, "no-mangle-dos-filenames", 0, "@" },
 {0} };
 
 
@@ -1154,6 +1158,8 @@ main( int argc, char **argv )
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
     opt.trust_model=TM_OPENPGP;
+    opt.mangle_dos_filenames = 1;
+
 #if defined (__MINGW32__)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
@@ -1788,6 +1794,10 @@ main( int argc, char **argv )
 	  case oGroup: add_group(pargs.r.ret_str); break;
 	  case oStrict: opt.strict=1; log_set_strict(1); break;
 	  case oNoStrict: opt.strict=0; log_set_strict(0); break;
+
+          case oMangleDosFilenames: opt.mangle_dos_filenames = 1; break;
+          case oNoMangleDosFilenames: opt.mangle_dos_filenames = 0; break;
+
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }
