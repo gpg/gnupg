@@ -1,14 +1,14 @@
 /* import.c
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
- * GNUPG is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GNUPG is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -64,7 +64,11 @@ static int merge_blocks( const char *fname, KBNODE keyblock_orig,
 			 int *n_uids, int *n_sigs, int *n_subk );
 static int append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
 			     const char *fname, u32 *keyid );
+static int append_key( KBNODE keyblock, KBNODE node, int *n_sigs,
+			     const char *fname, u32 *keyid );
 static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
+			     const char *fname, u32 *keyid );
+static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
 			     const char *fname, u32 *keyid );
 
 
@@ -683,7 +687,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 
 		unode->flag |= 2; /* mark as invalid */
 	    }
-	    unode->flag |= 1; /* mark that user-id checked */
+	    unode->flag |= 1; /* mark that signature checked */
 	}
     }
     return 0;
@@ -759,8 +763,6 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
  *
  * o compare the signatures: If we already have this signature, check
  *   that they compare okay; if not, issue a warning and ask the user.
- *   FIXME: add the check that we don't have duplicate signatures and the
- *   warning in cases where the old/new signatures don't match.
  * o Simply add the signature.	Can't verify here because we may not have
  *   the signature's public key yet; verification is done when putting it
  *   into the trustdb, which is done automagically as soon as this pubkey
@@ -799,20 +801,18 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		KBNODE n2 = clone_kbnode(node);
 		insert_kbnode( keyblock_orig, n2, 0 );
 		n2->flag |= 1;
-		node->flag |= 1;
 		log_info_f(fname, _("key %08lX: revocation certificate added\n"),
 					 (ulong)keyid[1]);
 	    }
 	}
     }
 
-    /* 2nd: try to merge new ones in */
+    /* 2nd: try to merge new certificates in */
     for(onode=keyblock_orig->next; onode; onode=onode->next ) {
 	if( !(onode->flag & 1) && onode->pkt->pkttype == PKT_USER_ID) {
 	    /* find the user id in the imported keyblock */
 	    for(node=keyblock->next; node; node=node->next )
-		if( !(node->flag & 1)
-		    && node->pkt->pkttype == PKT_USER_ID
+		if( node->pkt->pkttype == PKT_USER_ID
 		    && !cmp_user_ids( onode->pkt->pkt.user_id,
 					  node->pkt->pkt.user_id ) )
 		    break;
@@ -826,15 +826,14 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 
     /* 3rd: add new user-ids */
     for(node=keyblock->next; node; node=node->next ) {
-	if( !(node->flag & 1) && node->pkt->pkttype == PKT_USER_ID) {
+	if( node->pkt->pkttype == PKT_USER_ID) {
 	    /* do we have this in the original keyblock */
 	    for(onode=keyblock_orig->next; onode; onode=onode->next )
-		if( !(onode->flag & 1)
-		    && onode->pkt->pkttype == PKT_USER_ID
-		    && cmp_user_ids( onode->pkt->pkt.user_id,
-				     node->pkt->pkt.user_id ) )
+		if( onode->pkt->pkttype == PKT_USER_ID
+		    && !cmp_user_ids( onode->pkt->pkt.user_id,
+				      node->pkt->pkt.user_id ) )
 		    break;
-	    if( !node ) { /* this is a new user id: append */
+	    if( !onode ) { /* this is a new user id: append */
 		rc = append_uid( keyblock_orig, node, n_sigs, fname, keyid);
 		if( rc )
 		    return rc;
@@ -843,8 +842,62 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	}
     }
 
-    /* 4th: add new subkeys */
-    /* FIXME */
+    /* merge subkey certifcates */
+    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
+	if( !(onode->flag & 1)
+	    &&	(   onode->pkt->pkttype == PKT_PUBLIC_SUBKEY
+		 || onode->pkt->pkttype == PKT_SECRET_SUBKEY) ) {
+	    /* find the subkey in the imported keyblock */
+	    for(node=keyblock->next; node; node=node->next ) {
+		if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+		    && !cmp_public_keys( onode->pkt->pkt.public_key,
+					  node->pkt->pkt.public_key ) )
+		    break;
+		else if( node->pkt->pkttype == PKT_SECRET_SUBKEY
+		    && !cmp_secret_keys( onode->pkt->pkt.secret_key,
+					  node->pkt->pkt.secret_key ) )
+		    break;
+	    }
+	    if( node ) { /* found: merge */
+		rc = merge_keysigs( onode, node, n_sigs, fname, keyid );
+		if( rc )
+		    return rc;
+	    }
+	}
+    }
+
+    /*	add new subkeys */
+    for(node=keyblock->next; node; node=node->next ) {
+	onode = NULL;
+	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	    /* do we have this in the original keyblock? */
+	    for(onode=keyblock_orig->next; onode; onode=onode->next )
+		if( onode->pkt->pkttype == PKT_PUBLIC_SUBKEY
+		    && !cmp_public_keys( onode->pkt->pkt.public_key,
+					 node->pkt->pkt.public_key ) )
+		    break;
+	    if( !onode ) { /* this is a new subkey: append */
+		rc = append_key( keyblock_orig, node, n_sigs, fname, keyid);
+		if( rc )
+		    return rc;
+		++*n_subk;
+	    }
+	}
+	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+	    /* do we have this in the original keyblock? */
+	    for(onode=keyblock_orig->next; onode; onode=onode->next )
+		if( onode->pkt->pkttype == PKT_SECRET_SUBKEY
+		    && !cmp_secret_keys( onode->pkt->pkt.secret_key,
+					 node->pkt->pkt.secret_key ) )
+		    break;
+	    if( !onode ) { /* this is a new subkey: append */
+		rc = append_key( keyblock_orig, node, n_sigs, fname, keyid);
+		if( rc )
+		    return rc;
+		++*n_subk;
+	    }
+	}
+    }
 
     return 0;
 }
@@ -858,25 +911,43 @@ static int
 append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
 					  const char *fname, u32 *keyid )
 {
-    KBNODE n;
+    KBNODE n, n_where=NULL;
 
     assert(node->pkt->pkttype == PKT_USER_ID );
-    /* at lease a self signature comes next to the user-id */
     if( node->next->pkt->pkttype == PKT_USER_ID ) {
 	log_error_f(fname, _("key %08lX: our copy has no self-signature\n"),
 						  (ulong)keyid[1]);
 	return G10ERR_GENERAL;
     }
 
-    for( ;node && node->pkt->pkttype != PKT_USER_ID; node = node->next ) {
+    /* find the position */
+    for( n = keyblock; n; n_where = n, n = n->next ) {
+	if( n->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	    || n->pkt->pkttype == PKT_SECRET_SUBKEY )
+	    break;
+    }
+    if( !n )
+	n_where = NULL;
+
+    /* and append/insert */
+    while( node ) {
 	/* we add a clone to the original keyblock, because this
 	 * one is released first */
 	n = clone_kbnode(node);
-	add_kbnode( keyblock, n );
-	node->flag |= 1;
+	if( n_where ) {
+	    insert_kbnode( n_where, n, 0 );
+	    n_where = n;
+	}
+	else
+	    add_kbnode( keyblock, n );
 	n->flag |= 1;
+	node->flag |= 1;
 	if( n->pkt->pkttype == PKT_SIGNATURE )
 	    ++*n_sigs;
+
+	node = node->next;
+	if( node && node->pkt->pkttype != PKT_SIGNATURE )
+	    break;
     }
 
     return 0;
@@ -909,33 +980,113 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
 	if( n->pkt->pkttype != PKT_SIGNATURE )
 	    continue;
 	found = 0;
-	for(n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next)
+	for(n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next){
 	    if( n2->pkt->pkttype == PKT_SIGNATURE
 		&& n->pkt->pkt.signature->keyid[0]
 		   == n2->pkt->pkt.signature->keyid[0]
 		&& n->pkt->pkt.signature->keyid[1]
-		   == n2->pkt->pkt.signature->keyid[1] ) {
-	    found++;
+		   == n2->pkt->pkt.signature->keyid[1]
+		&& n->pkt->pkt.signature->timestamp
+		   <= n2->pkt->pkt.signature->timestamp
+		&& n->pkt->pkt.signature->sig_class
+		   == n2->pkt->pkt.signature->sig_class ) {
+		found++;
+		break;
+	    }
+	}
+	if( !found ) {
+	    /* This signature is new or newer, append N to DST.
+	     * We add a clone to the original keyblock, because this
+	     * one is released first */
+	    n2 = clone_kbnode(n);
+	    insert_kbnode( dst, n2, PKT_SIGNATURE );
+	    n2->flag |= 1;
+	    n->flag |= 1;
+	    ++*n_sigs;
+	}
+    }
+
+    return 0;
+}
+
+/****************
+ * Merge the sigs from SRC onto DST. SRC and DST are both a PKT_xxx_SUBKEY.
+ */
+static int
+merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
+				    const char *fname, u32 *keyid )
+{
+    KBNODE n, n2;
+    int found=0;
+
+    assert(   dst->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	   || dst->pkt->pkttype == PKT_SECRET_SUBKEY );
+
+    for(n=src->next; n ; n = n->next ) {
+	if( n->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	    || n->pkt->pkttype == PKT_PUBLIC_KEY )
 	    break;
-	}
-
-	if( found ) { /* we already have this signature */
-	    /* Hmmm: should we compare the timestamp etc?
-	     * but then we have first to see whether this signature is valid
-	     * - or simply add it in such a case and let trustdb logic
-	     * decide whether to remove the old one
-	     */
+	if( n->pkt->pkttype != PKT_SIGNATURE )
 	    continue;
+	found = 0;
+	for(n2=dst->next; n2; n2 = n2->next){
+	    if( n2->pkt->pkttype == PKT_PUBLIC_SUBKEY
+		|| n2->pkt->pkttype == PKT_PUBLIC_KEY )
+		break;
+	    if( n2->pkt->pkttype == PKT_SIGNATURE
+		&& n->pkt->pkt.signature->keyid[0]
+		   == n2->pkt->pkt.signature->keyid[0]
+		&& n->pkt->pkt.signature->keyid[1]
+		   == n2->pkt->pkt.signature->keyid[1]
+		&& n->pkt->pkt.signature->timestamp
+		   <= n2->pkt->pkt.signature->timestamp
+		&& n->pkt->pkt.signature->sig_class
+		   == n2->pkt->pkt.signature->sig_class ) {
+		found++;
+		break;
+	    }
 	}
+	if( !found ) {
+	    /* This signature is new or newer, append N to DST.
+	     * We add a clone to the original keyblock, because this
+	     * one is released first */
+	    n2 = clone_kbnode(n);
+	    insert_kbnode( dst, n2, PKT_SIGNATURE );
+	    n2->flag |= 1;
+	    n->flag |= 1;
+	    ++*n_sigs;
+	}
+    }
 
-	/* This signature is new, append N to DST it.
-	 * We add a clone to the original keyblock, because this
+    return 0;
+}
+
+/****************
+ * append the subkey starting with NODE and all signatures to KEYBLOCK.
+ * Mark all new and copied packets by setting flag bit 0.
+ */
+static int
+append_key( KBNODE keyblock, KBNODE node, int *n_sigs,
+					  const char *fname, u32 *keyid )
+{
+    KBNODE n;
+
+    assert( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	   || node->pkt->pkttype == PKT_SECRET_SUBKEY );
+
+    while(  node ) {
+	/* we add a clone to the original keyblock, because this
 	 * one is released first */
-	n2 = clone_kbnode(n);
-	insert_kbnode( dst, n2, PKT_SIGNATURE );
-	n2->flag |= 1;
+	n = clone_kbnode(node);
+	add_kbnode( keyblock, n );
 	n->flag |= 1;
-	++*n_sigs;
+	node->flag |= 1;
+	if( n->pkt->pkttype == PKT_SIGNATURE )
+	    ++*n_sigs;
+
+	node = node->next;
+	if( node && node->pkt->pkttype != PKT_SIGNATURE )
+	    break;
     }
 
     return 0;

@@ -1,4 +1,4 @@
-/* mpiutilac  -  Utility functions for MPI
+/* mpiutil.ac  -  Utility functions for MPI
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -367,7 +367,7 @@ mpi_alloc_set_ui( unsigned long u)
 void
 mpi_swap( MPI a, MPI b)
 {
-    struct mpi_struct tmp;
+    struct gcry_mpi tmp;
 
     tmp = *a; *a = *b; *b = tmp;
 }

@@ -49,7 +49,7 @@ mpihelp_sub_n:
 	mtctr	6		# copy size into CTR
 	lwz	8,0(4)		# load least significant s1 limb
 	lwz	0,0(5)		# load least significant s2 limb
-	addi	3,3,-4		# offset res_ptr, it's updated before used
+	addi	3,3,-4		# offset res_ptr, it is updated before used
 	subfc	7,0,8		# add least significant limbs, set cy
 	bdz	Lend		# If done, skip loop
 Loop:	lwzu	8,4(4)		# load s1 limb and update s1_ptr
@@ -90,7 +90,7 @@ Lend:	stw	7,4(3)		# store ultimate result limb
    possible 2-unrolled inner loop will not be.	Also, watch out for the
    alignment...  */
 
-EALIGN(_mpihelp_sub_n,3,1)
+EALIGN(mpihelp_sub_n,3,1)
 /* Set up for loop below.  */
        mtcrf 0x01,%r6
        srwi. %r7,%r6,1
@@ -128,5 +128,5 @@ EALIGN(_mpihelp_sub_n,3,1)
 1:     subfe %r3,%r3,%r3
        neg   %r3,%r3
        blr
-END(_mpihelp_sub_n)
+END(mpihelp_sub_n)
 #endif

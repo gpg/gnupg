@@ -383,23 +383,27 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
 	else if( i == 32 || ( i == 33 && *s == '0' ) ) { /* md5 fingerprint */
 	    if( i==33 )
 		s++;
-	    memset(fprint+16, 4, 0);
-	    for(j=0; j < 16; j++, s+=2 ) {
-		int c = hextobyte( s );
-		if( c == -1 )
-		    return 0;
-		fprint[j] = c;
+	    if( fprint ) {
+		memset(fprint+16, 4, 0);
+		for(j=0; j < 16; j++, s+=2 ) {
+		    int c = hextobyte( s );
+		    if( c == -1 )
+			return 0;
+		    fprint[j] = c;
+		}
 	    }
 	    mode = 16;
 	}
 	else if( i == 40 || ( i == 41 && *s == '0' ) ) { /* sha1/rmd160 fprint*/
 	    if( i==33 )
 		s++;
-	    for(j=0; j < 20; j++, s+=2 ) {
-		int c = hextobyte( s );
-		if( c == -1 )
-		    return 0;
-		fprint[j] = c;
+	    if( fprint ) {
+		for(j=0; j < 20; j++, s+=2 ) {
+		    int c = hextobyte( s );
+		    if( c == -1 )
+			return 0;
+		    fprint[j] = c;
+		}
 	    }
 	    mode = 20;
 	}
@@ -693,6 +697,7 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
     PKT_signature *sig;
     KBNODE k;
     u32 kid[2];
+    u32 sigdate = 0;
 
     assert(    knode->pkt->pkttype == PKT_PUBLIC_KEY
 	    || knode->pkt->pkttype == PKT_PUBLIC_SUBKEY );
@@ -709,6 +714,7 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
     }
     else
 	keyid_from_pk( pk, kid );
+
     for(k=keyblock; k; k = k->next ) {
 	if( k->pkt->pkttype == PKT_SIGNATURE
 	    && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
@@ -716,16 +722,22 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
 	    && sig->keyid[0] == kid[0]
 	    && sig->keyid[1] == kid[1]
 	    && sig->version > 3 ) {
-	    /* okay this is (the first) self-signature which can be used
+	    /* okay this is a self-signature which can be used.
+	     * We use the latest self-signature.
 	     * FIXME: We should only use this if the signature is valid
 	     *	      but this is time consuming - we must provide another
 	     *	      way to handle this
 	     */
 	    const byte *p;
+	    u32 ed;
+
 	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
-	    pk->expiredate = p? pk->timestamp + buffer_to_u32(p):0;
+	    ed = p? pk->timestamp + buffer_to_u32(p):0;
+	    if( sig->timestamp > sigdate ) {
+		pk->expiredate = ed;
+		sigdate = sig->timestamp;
+	    }
 	    /* fixme: add usage etc. to pk */
-	    break;
 	}
     }
 }
@@ -742,6 +754,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
     PKT_signature *sig;
     KBNODE k;
     u32 kid[2] = { 0, 0 };
+    u32 sigdate = 0;
 
     for(k=keyblock; k; k = k->next ) {
 	if( k->pkt->pkttype == PKT_PUBLIC_KEY
@@ -764,21 +777,28 @@ merge_keys_and_selfsig( KBNODE keyblock )
 		 && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
 		 && sig->sig_class <= 0x30 && sig->version > 3
 		 && sig->keyid[0] == kid[0] && sig->keyid[1] == kid[1] ) {
-	    /* okay this is (the first) self-signature which can be used
+	    /* okay this is a self-signature which can be used.
 	     * FIXME: We should only use this if the signature is valid
 	     *	      but this is time consuming - we must provide another
 	     *	      way to handle this
 	     */
 	    const byte *p;
+	    u32 ed;
+
 	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
 	    if( pk ) {
-		pk->expiredate = p? pk->timestamp + buffer_to_u32(p):0;
-		/* fixme: add usage etc. */
-		pk = NULL; /* use only the first self signature */
+		ed = p? pk->timestamp + buffer_to_u32(p):0;
+		if( sig->timestamp > sigdate ) {
+		    pk->expiredate = ed;
+		    sigdate = sig->timestamp;
+		}
 	    }
 	    else {
-		sk->expiredate = p? sk->timestamp + buffer_to_u32(p):0;
-		sk = NULL; /* use only the first self signature */
+		ed = p? sk->timestamp + buffer_to_u32(p):0;
+		if( sig->timestamp > sigdate ) {
+		    sk->expiredate = ed;
+		    sigdate = sig->timestamp;
+		}
 	    }
 	}
     }

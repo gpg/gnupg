@@ -96,6 +96,10 @@ asctimestamp( u32 stamp )
 
     tp = localtime( &atime );
   #ifdef HAVE_STRFTIME
+    /* fixme: we should check whether the locale apppends a " %Z"
+     * These locales from glibc don't put the " %Z":
+     * fi_FI hr_HR ja_JP lt_LT lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN
+     */
     strftime( buffer, DIM(buffer)-1, "%c %Z", tp );
     buffer[DIM(buffer)-1] = 0;
   #else

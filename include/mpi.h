@@ -43,7 +43,7 @@ int mpi_debug_mode;
 typedef unsigned long int mpi_limb_t;
 typedef   signed long int mpi_limb_signed_t;
 
-typedef struct mpi_struct {
+struct gcry_mpi {
     int alloced;    /* array size (# of allocated limbs) */
     int nlimbs;     /* number of valid limbs */
     int nbits;	    /* the real number of valid bits (info only) */
@@ -52,7 +52,9 @@ typedef struct mpi_struct {
 		    /* bit 1: the mpi is encrypted */
 		    /* bit 2: the limb is a pointer to some m_alloced data */
     mpi_limb_t *d;  /* array with the limbs */
-} *MPI;
+};
+
+typedef struct gcry_mpi *MPI;
 
 #define MPI_NULL NULL
 

@@ -1,3 +1,25 @@
+Tue Dec  8 13:15:16 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* trustdb.c (upd_uid_record): Now uses the newest self-signature
+	(insert_trust_record): Now calls update with recheck set to true.
+	(register_trusted_key): New.
+	(verify_own_keys): Enhanced by list of trusted keys.
+
+	* g10.c (main): Print a warning when a devel version is used.
+	(main): New option --trusted-key
+
+	* import.c (merge_blocks): Fixed merging of new user ids and
+	added merging of subkeys.
+	(append_uid): Ditto.
+	(merge_keysig): New.
+	(append_key): New.
+	* getkey.c (merge_one_pk_and_selfsig): Get the expiration time
+	from the newest self-signature.
+	(merge_keys_and_selfsig): Ditto.
+
+	* free-packet.c (cmp_secret_key): New.
+
+
 Fri Nov 27 21:37:41 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* g10.c: New option --lock-once

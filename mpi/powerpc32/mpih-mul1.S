@@ -95,7 +95,7 @@ Lend:	stw	7,4(3)
 			mp_size_t s1_size, mp_limb_t s2_limb)
    Calculate s1*s2 and put result in res_ptr; return carry.  */
 
-ENTRY(_mpihelp_mul_1)
+ENTRY(mpihelp_mul_1)
        mtctr   %r5
 
        lwz     %r0,0(%r4)
@@ -115,5 +115,5 @@ ENTRY(_mpihelp_mul_1)
 1:     stw     %r7,4(%r3)
        addze   %r3,%r10
        blr
-END(_mpihelp_mul_1)
+END(mpihelp_mul_1)
 #endif

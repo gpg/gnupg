@@ -124,6 +124,12 @@ case "${target}" in
 	path="m68k/mc68020 m68k"
 	;;
 
+    powerpc*-*-linux*)
+	echo '/* configured for powerpc/ELF */' >>./mpi/asm-syntax.h
+	echo '#define ELF_SYNTAX'               >>./mpi/asm-syntax.h
+	cat   $srcdir/mpi/powerpc32/syntax.h	>>./mpi/asm-syntax.h
+	path="powerpc32"
+	;;
     rs6000-*-aix[456789]* | rs6000-*-aix3.2.[456789])
 	mpi_sflags="-Wa,-mpwr"
 	path="power"
@@ -145,12 +151,6 @@ case "${target}" in
     ppc620-*-* | powerpc64*-*-*)
 	mpi_sflags="-Wa,-mppc"
 	path="powerpc64"
-	;;
-    powerpc*-*-linux*)
-	echo '/* configured for powerpc/ELF */' >>./mpi/asm-syntax.h
-	echo '#define ELF_SYNTAX'               >>asm-syntax.h
-	cat   $srcdir/powerpc32/syntax.h	>>./mpi/asm-syntax.h
-	path="powerpc32"
 	;;
 
     *)

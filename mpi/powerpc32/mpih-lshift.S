@@ -96,7 +96,7 @@ Lend2:	slw	0,10,6
 /* mp_limb_t mpn_lshift (mp_ptr wp, mp_srcptr up, mp_size_t usize,
 			unsigned int cnt)  */
 
-EALIGN(_mpihelp_lshift,3,0)
+EALIGN(mpihelp_lshift,3,0)
        mtctr   %r5	       # copy size into CTR
        cmplwi  %cr0,%r5,16     # is size < 16
        slwi    %r0,%r5,2
@@ -194,5 +194,5 @@ L(end2):slw    %r0,%r10,%r6
        DO_LSHIFT(30)
        DO_LSHIFT(31)
 
-END(_mpihelp_lshift)
+END(mpihelp_lshift)
 #endif

@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 
 #define MAINTAINER_OPTIONS
@@ -107,6 +108,7 @@ enum cmd_and_opt_values { aNull = 0,
     oKeyring,
     oSecretKeyring,
     oDefaultKey,
+    oTrustedKey,
     oOptions,
     oDebug,
     oDebugAll,
@@ -224,7 +226,7 @@ static ARGPARSE_OPTS opts[] = {
     { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
     { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
-    { oCharset, "charset"   , 2, N_("|NAME| set terminal charset to NAME") },
+    { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 
     { oDebug, "debug"     ,4|16, N_("set debugging flags")},
@@ -234,6 +236,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompletesNeeded, "completes-needed", 1, N_("(default is 1)")},
     { oMarginalsNeeded, "marginals-needed", 1, N_("(default is 3)")},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
+    { oTrustedKey, "trusted-key", 2, N_("|KEYID|ulimately trust this key")},
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
@@ -706,6 +709,7 @@ main( int argc, char **argv )
 	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;
 	  case oTrustDBName: trustdb_name = pargs.r.ret_str; break;
 	  case oDefaultKey: opt.def_secret_key = pargs.r.ret_str; break;
+	  case oTrustedKey: register_trusted_key( pargs.r.ret_str ); break;
 	  case oNoOptions: break; /* no-options */
 	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
 	  case oNoBatch: opt.batch = 0; break;
@@ -835,6 +839,13 @@ main( int argc, char **argv )
       case 1: case 3: break;
       default:
 	log_error(_("invalid S2K mode; must be 0, 1 or 3\n"));
+    }
+
+    {	const char *p = strusage(13);
+	for( ; *p && (isdigit(*p) || *p=='.'); p++ )
+	    ;
+	if( p )
+	    log_info("NOTE: This is a development version!\n");
     }
 
     if( log_get_errorcount(0) )

@@ -1959,7 +1959,7 @@ msgid "Command> "
 msgstr "Commande> "
 
 #: g10/keyedit.c:617
-msgid "Need the secret key to to this.\n"
+msgid "Need the secret key to do this.\n"
 msgstr "Il faut la clé secrète pour faire cela.\n"
 
 #: g10/keyedit.c:638

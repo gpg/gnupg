@@ -1,4 +1,4 @@
-GNUPG was originally written by Werner Koch.  Other people contributed by
+GnuPG was originally written by Werner Koch.  Other people contributed by
 reporting problems, suggesting various improvements or submitting actual
 code.  Here is a list of those people.	Help me keep it complete and free of
 errors.
@@ -24,6 +24,7 @@ Frank Heckenbach	heckenb@mi.uni-erlangen.de
 Gaël Quéri		gqueri@mail.dotcom.fr
 Greg Louis		glouis@dynamicro.on.ca
 Gregory Steuck		steuck@iname.com
+Geoff Keating		geoffk@ozemail.com.au
 Hendrik Buschkamp	buschkamp@rheumanet.org
 Holger Schurig		holger@d.om.org
 Hugh Daniel		hugh@toad.com

@@ -5,7 +5,7 @@
 
     * preferences of hash algorithms are not yet used.
 
-    * Check Berkeley BD - it is in glibc -any licensing problems?
+    * Check Berkeley BD - it is in glibc - any licensing problems?
 
     * I noticed, that we sometimes have only 3 items in a trustrecord, but
       a next pointer ro more records - check wehther the reuse code really
@@ -22,10 +22,6 @@
 
     * clearsig: keep lineendings as they are. Remember that trailings
       blanks are not hashed.
-
-    * Always use the latest key signature (import).  This is needed, so
-      that we are able to chnage the expiration time or other info in the
-      selfsignature
 
     * OpenBSD: dynamic loading with dlopen works on OpenBSD, but:
 	OpenBSD binaries are a.out, so every symbol begins with "_"

@@ -1,3 +1,8 @@
+Tue Dec  8 13:15:16 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* config.links: Moved the case for powerpc*linux
+	* powerpcp32/*.S: Removed some underscores.
+
 Thu Nov 26 07:27:52 1998  Werner Koch  <werner.koch@guug.de>
 
 	* config.links: Support for ppc with ELF

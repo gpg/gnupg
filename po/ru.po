@@ -1988,7 +1988,7 @@ msgstr "Команда> "
 
 #: g10/keyedit.c:617
 #, fuzzy
-msgid "Need the secret key to to this.\n"
+msgid "Need the secret key to do this.\n"
 msgstr "Чтобы это сделать, нужен секретный ключ.\n"
 
 #: g10/keyedit.c:638

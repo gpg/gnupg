@@ -44,11 +44,11 @@
 /* No profiling of gmp's assembly for now... */
 #define CALL_MCOUNT /* no profiling */
 
-#define        ENTRY(name)							     \
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME(name);				     \
-  ASM_TYPE_DIRECTIVE (C_SYMBOL_NAME(name),@function)			     \
-  .align ALIGNARG(2);							     \
-  C_LABEL(name) 								     \
+#define        ENTRY(name)				    \
+  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME(name);		    \
+  ASM_TYPE_DIRECTIVE (C_SYMBOL_NAME(name),@function)	    \
+  .align ALIGNARG(2);					    \
+  C_LABEL(name) 					    \
   CALL_MCOUNT
 
 #define EALIGN_W_0  /* No words to insert.  */
@@ -62,14 +62,14 @@
 
 /* EALIGN is like ENTRY, but does alignment to 'words'*4 bytes
    past a 2^align boundary.  */
-#define EALIGN(name, alignt, words)					     \
-  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME(name);				     \
-  ASM_TYPE_DIRECTIVE (C_SYMBOL_NAME(name),@function)			     \
-  .align ALIGNARG(alignt);						     \
-  EALIGN_W_##words;							     \
+#define EALIGN(name, alignt, words)			\
+  ASM_GLOBAL_DIRECTIVE C_SYMBOL_NAME(name);		\
+  ASM_TYPE_DIRECTIVE (C_SYMBOL_NAME(name),@function)	\
+  .align ALIGNARG(alignt);				\
+  EALIGN_W_##words;					\
   C_LABEL(name)
 
 #undef END
-#define END(name)							     \
+#define END(name)		     \
   ASM_SIZE_DIRECTIVE(name)
 

@@ -25,3 +25,5 @@
     Can "--dump-options" be used for this or should we place the
     options in a special ELF segment?
 
+  * Split key support (n-out-of-m)
+

@@ -45,6 +45,7 @@ void list_trustdb(const char *username);
 void list_trust_path( const char *username );
 void export_ownertrust(void);
 void import_ownertrust(const char *fname);
+void register_trusted_key( const char *string );
 void check_trustdb( const char *username );
 void update_trustdb( void );
 int init_trustdb( int level, const char *dbname );

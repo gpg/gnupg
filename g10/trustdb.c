@@ -46,6 +46,11 @@
   #error Must change structure of trustdb
 #endif
 
+struct keyid_list {
+    struct keyid_list *next;
+    u32 keyid[2];
+};
+
 struct local_id_item {
     struct local_id_item *next;
     ulong lid;
@@ -102,9 +107,10 @@ static void upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 		 TRUSTREC *drec, RECNO_LIST *recno_list, int recheck,
 		 TRUSTREC *urec, const byte *uidhash, int revoke );
 
+static struct keyid_list *trusted_key_list;
 
 /* a table used to keep track of ultimately trusted keys
- * which are the ones from our secrings */
+ * which are the ones from our secrings and the trusted keys */
 static LOCAL_ID_TABLE ultikey_table;
 
 /* list of unused lid items and tables */
@@ -438,8 +444,30 @@ trust_letter( unsigned value )
     }
 }
 
+
+void
+register_trusted_key( const char *string )
+{
+    u32 keyid[2];
+    struct keyid_list *r;
+
+    if( classify_user_id( string, keyid, NULL, NULL, NULL ) != 11 ) {
+	log_error(_("'%s' is not a valid long keyID\n"), string );
+	return;
+    }
+
+    for( r = trusted_key_list; r; r = r->next )
+	if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] )
+	    return;
+    r = m_alloc( sizeof *r );
+    r->keyid[0] = keyid[0];
+    r->keyid[1] = keyid[1];
+    r->next = trusted_key_list;
+    trusted_key_list = r;
+}
+
 /****************
- * Verify that all our public keys are in the trustDB.
+ * Verify that all our public keys are in the trustdb.
  */
 static int
 verify_own_keys()
@@ -449,8 +477,48 @@ verify_own_keys()
     PKT_secret_key *sk = m_alloc_clear( sizeof *sk );
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     u32 keyid[2];
+    struct keyid_list *kl;
+
+    /* put the trusted keys into the trusted key table */
+    for( kl = trusted_key_list; kl; kl = kl->next ) {
+	keyid[0] = kl->keyid[0];
+	keyid[1] = kl->keyid[1];
+	/* get the public key */
+	memset( pk, 0, sizeof *pk );
+	rc = get_pubkey( pk, keyid );
+	if( rc ) {
+	    log_info(_("key %08lX: no public key for trusted key - skipped\n"),
+							    (ulong)keyid[1] );
+	}
+	else {
+	    /* make sure that the pubkey is in the trustdb */
+	    rc = query_trust_record( pk );
+	    if( rc == -1 ) { /* put it into the trustdb */
+		rc = insert_trust_record( pk );
+		if( rc ) {
+		    log_error(_("key %08lX: can't put it into the trustdb\n"),
+							(ulong)keyid[1] );
+		}
+	    }
+	    else if( rc ) {
+		log_error(_("key %08lX: query record failed\n"),
+							(ulong)keyid[1] );
+	    }
+	    else {
+		if( ins_lid_table_item( ultikey_table, pk->local_id, 0 ) )
+		    log_error(_("key %08lX: already in trusted key table\n"),
+							  (ulong)keyid[1]);
+		else if( opt.verbose > 1 )
+		    log_info(_("key %08lX: accepted as trusted key.\n"),
+							  (ulong)keyid[1]);
+	    }
+	}
+	release_public_key_parts( pk );
+    }
 
     while( !(rc=enum_secret_keys( &enum_context, sk, 0 ) ) ) {
+	int have_pk = 0;
+
 	keyid_from_sk( sk, keyid );
 
 	if( DBG_TRUST )
@@ -460,6 +528,11 @@ verify_own_keys()
 	    log_info(_("NOTE: secret key %08lX is NOT protected.\n"),
 							    (ulong)keyid[1] );
 
+	for( kl = trusted_key_list; kl; kl = kl->next ) {
+	    if( kl->keyid[0] == keyid[0] && kl->keyid[1] == keyid[1] )
+		goto skip; /* already in trusted key table */
+	}
+
 	/* see whether we can access the public key of this secret key */
 	memset( pk, 0, sizeof *pk );
 	rc = get_pubkey( pk, keyid );
@@ -468,6 +541,7 @@ verify_own_keys()
 							    (ulong)keyid[1] );
 	    goto skip;
 	}
+	have_pk=1;
 
 	if( cmp_public_secret_key( pk, sk ) ) {
 	    log_info(_("key %08lX: secret and public key don't match\n"),
@@ -495,19 +569,29 @@ verify_own_keys()
 	    log_debug("key %08lX.%lu: stored into ultikey_table\n",
 				    (ulong)keyid[1], pk->local_id );
 	if( ins_lid_table_item( ultikey_table, pk->local_id, 0 ) )
-	    log_error(_("key %08lX: already in secret key table\n"),
+	    log_error(_("key %08lX: already in trusted key table\n"),
 							(ulong)keyid[1]);
 	else if( opt.verbose > 1 )
-	    log_info(_("key %08lX: accepted as secret key.\n"),
+	    log_info(_("key %08lX: accepted as trusted key.\n"),
 							(ulong)keyid[1]);
       skip:
 	release_secret_key_parts( sk );
-	release_public_key_parts( pk );
+	if( have_pk )
+	    release_public_key_parts( pk );
     }
     if( rc != -1 )
 	log_error(_("enumerate secret keys failed: %s\n"), g10_errstr(rc) );
     else
 	rc = 0;
+
+    /* release the trusted keyid table */
+    {	struct keyid_list *kl2;
+	for( kl = trusted_key_list; kl; kl = kl2 ) {
+	    kl2 = kl->next;
+	    m_free( kl );
+	}
+	trusted_key_list = NULL;
+    }
 
     enum_secret_keys( &enum_context, NULL, 0 ); /* free context */
     free_secret_key( sk );
@@ -1727,7 +1811,7 @@ get_dir_record( PKT_public_key *pk, TRUSTREC *rec )
 
 /****************
  * This function simply looks for the key in the trustdb
- * and makes sure that pk->local_id is set to the coreect value.
+ * and makes sure that pk->local_id is set to the correct value.
  * Return: 0 = found
  *	   -1 = not found
  *	  other = error
@@ -2282,6 +2366,9 @@ upd_uid_record( KBNODE keyblock, KBNODE uidnode, u32 *keyid,
 		    urec.r.uid.uidflags |= UIDF_CHECKED | UIDF_VALID;
 		    if( !selfsig )
 			selfsig = sig; /* use the first valid sig */
+		    else if( sig->timestamp > selfsig->timestamp
+			     && sig->sig_class >= selfsig->sig_class )
+			selfsig = sig; /* but this one is newer */
 		}
 		else {
 		    log_info( "uid %08lX/%02X%02X: %s: %s\n",
@@ -2293,7 +2380,13 @@ upd_uid_record( KBNODE keyblock, KBNODE uidnode, u32 *keyid,
 	    }
 	    else if( sig->sig_class == 0x30 ) { /* cert revocation */
 		rc = check_key_signature( keyblock, node, NULL );
-		if( !rc ) {
+		if( !rc && selfsig && selfsig->timestamp > sig->timestamp ) {
+		    log_info( "uid %08lX.%lu/%02X%02X: %s\n",
+			   (ulong)keyid[1], lid, uidhash[18], uidhash[19],
+			   _("Valid user ID revocation skipped "
+			     "due to a newer self signature\n") );
+		}
+		else if( !rc ) {
 		    if( opt.verbose )
 			log_info( "uid %08lX.%lu/%02X%02X: %s\n",
 			   (ulong)keyid[1], lid, uidhash[18], uidhash[19],
@@ -2569,11 +2662,13 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
 		}
 		else if( rc == G10ERR_NO_PUBKEY ) {
+		  #if 0 /* fixme: For some reason this really happens? */
 		    if( (rec.r.sig.sig[i].flag & SIGF_CHECKED) )
 			log_info("sig %08lX.%lu/%02X%02X/%08lX: %s\n",
 				  (ulong)keyid[1], lid, uidhash[18],
 				 uidhash[19], (ulong)sig->keyid[1],
 				 _("Hmmm, public key lost?") );
+		  #endif
 		    rec.r.sig.sig[i].flag = SIGF_NOPUBKEY;
 		    if( revoke )
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
@@ -2918,7 +3013,7 @@ insert_trust_record( PKT_public_key *pk )
     }
 
     /* and put all the other stuff into the keydb */
-    rc = update_trust_record( keyblock, 0, NULL );
+    rc = update_trust_record( keyblock, 1, NULL );
     if( !rc )
 	process_hintlist( hintlist, dirrec.r.dir.lid );
 

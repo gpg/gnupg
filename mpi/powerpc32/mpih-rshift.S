@@ -99,7 +99,7 @@ Lend2:	srw	0,10,6
    size 	       r5
    cnt	       r6  */
 
-ENTRY(_mpihelp_rshift)
+ENTRY(mpihelp_rshift)
        mtctr   5	       # copy size into CTR
        addi    7,3,-4	       # move adjusted res_ptr to free return reg
        subfic  8,6,32
@@ -127,5 +127,5 @@ ENTRY(_mpihelp_rshift)
 2:     srw     0,10,6
        stw     0,4(7)
        blr
-END(_mpihelp_rshift)
+END(mpihelp_rshift)
 #endif

@@ -614,7 +614,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		if( !stricmp( answer, cmds[i].name ) )
 		    break;
 	    if( cmds[i].need_sk && !sec_keyblock ) {
-		tty_printf(_("Need the secret key to to this.\n"));
+		tty_printf(_("Need the secret key to do this.\n"));
 		cmd = cmdNOP;
 	    }
 	    else

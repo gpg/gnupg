@@ -345,7 +345,7 @@ free_packet( PACKET *pkt )
 }
 
 /****************
- * Returns 0 if they match.
+ * returns 0 if they match.
  */
 int
 cmp_public_keys( PKT_public_key *a, PKT_public_key *b )
@@ -364,6 +364,33 @@ cmp_public_keys( PKT_public_key *a, PKT_public_key *b )
 	return -1; /* can't compare due to unknown algorithm */
     for(i=0; i < n; i++ ) {
 	if( mpi_cmp( a->pkey[i], b->pkey[i] ) )
+	    return -1;
+    }
+
+    return 0;
+}
+
+/****************
+ * Returns 0 if they match.
+ * We only compare the public parts.
+ */
+int
+cmp_secret_keys( PKT_secret_key *a, PKT_secret_key *b )
+{
+    int n, i;
+
+    if( a->timestamp != b->timestamp )
+	return -1;
+    if( a->expiredate != b->expiredate )
+	return -1;
+    if( a->pubkey_algo != b->pubkey_algo )
+	return -1;
+
+    n = pubkey_get_npkey( b->pubkey_algo );
+    if( !n )
+	return -1; /* can't compare due to unknown algorithm */
+    for(i=0; i < n; i++ ) {
+	if( mpi_cmp( a->skey[i], b->skey[i] ) )
 	    return -1;
     }
 

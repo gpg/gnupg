@@ -218,7 +218,7 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "Sie haben eine Wanze (Programmfehler) gefunden ... (%s:%d)\n"
 
 #: cipher/rand-dummy.c:112
-#, 
+#,
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr "Der Zufallszahlengenerator erzeugt keine echten Zufallszahlen!\n"
 
@@ -257,12 +257,12 @@ msgstr ""
 " "
 
 #: g10/g10.c:158
-#, 
+#,
 msgid "|[file]|make a signature"
 msgstr "|[file]|Eine Unterschrift erzeugen"
 
 #: g10/g10.c:159
-#, 
+#,
 msgid "|[file]|make a clear text signature"
 msgstr "|[file]|Eine Klartextunterschrift erzeugen"
 
@@ -808,7 +808,7 @@ msgid ""
 msgstr ""
 "Bitte entscheiden Sie, in wieweit Sie diesem User zutrauen,\n"
 "den Schlüssel eines anderen Users korrekt zu prüfen (Vergleich mit\n"
-"Lictbildausweisen, Vergleich der Fingerabdrücke aus unterschiedlichen\n" 
+"Lictbildausweisen, Vergleich der Fingerabdrücke aus unterschiedlichen\n"
 "Quellen ...)?\n"
 "\n"
 " 1 = Weiß nicht so recht\n"
@@ -1964,7 +1964,7 @@ msgid "Command> "
 msgstr "Befehl> "
 
 #: g10/keyedit.c:617
-msgid "Need the secret key to to this.\n"
+msgid "Need the secret key to do this.\n"
 msgstr "Hierzu wird der geheime Schlüssel benötigt.\n"
 
 #: g10/keyedit.c:638
@@ -2731,7 +2731,7 @@ msgid "lid %lu: insert failed: %s\n"
 msgstr "lid %lu: Einfügen fehlgeschlagen: %s\n"
 
 #: g10/trustdb.c:1391
-#, c-format    
+#, c-format
 msgid "lid %lu: inserted\n"
 msgstr "lid %lu: eingefügt\n"
 
@@ -2978,7 +2978,7 @@ msgid ""
 "skipped '%s': this is a PGP generated ElGamal key which is not secure for "
 "signatures!\n"
 msgstr ""
-"'%s übersprungen: Dies ist ein durch PGP erzeugter ElGamal-Schlüssel. "  
+"'%s übersprungen: Dies ist ein durch PGP erzeugter ElGamal-Schlüssel. "
 "Das ist für Signaturen NICHT sicher genug!\n"
 
 #: g10/status.c:246
