@@ -157,7 +157,7 @@ hkp_export( STRLIST users )
 	return rc;
     }
 
-    sprintf( request, "Content-Length: %u\n",
+    sprintf( request, "Content-Length: %u\r\n",
 		      (unsigned)iobuf_get_temp_length(temp) + 9 );
     iobuf_writestr( hd.fp_write, request );
     m_free( request );

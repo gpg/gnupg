@@ -816,10 +816,10 @@ static void add_group(char *string)
   STRLIST values=NULL;
 
   /* Break off the group name */
-  name=strsep(&string," ");
+  name=strsep(&string,"=");
   if(string==NULL)
     {
-      log_error(_("no values for group \"%s\"\n"),name);
+      log_error(_("no = sign found in group definition \"%s\"\n"),name);
       return;
     }
 
