@@ -1,3 +1,14 @@
+2004-06-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* DETAILS: Document PLAINTEXT and PLAINTEXT_LENGTH.
+
+	* gpg.sgml: Clarify that --min-cert-level disregards level 1 certs
+	by default.  Clarify include-revoked a bit to note that keyservers
+	might not be accurate.  Note that --charset is --display-charset.
+	Some language tweaks for --simple-sk-checksum (Debian 251795).
+	Note the PGP silliness with preferred keyserver subpackets causing
+	PGP/MIME.
+
 2004-05-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document --edit-key "keyserver" command,
