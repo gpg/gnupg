@@ -40,8 +40,7 @@ extern int optind;
 
 int verbose=0;
 unsigned int http_flags=0;
-char scheme[80]={'\0'},host[80]={'\0'},proxy[80]={'\0'},port[10]={'\0'},
-  path[1024]={'\0'};
+char host[80]={'\0'},proxy[80]={'\0'},port[10]={'\0'},path[1024]={'\0'};
 FILE *input=NULL,*output=NULL,*console=NULL;
 
 #define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
@@ -56,7 +55,7 @@ FILE *input=NULL,*output=NULL,*console=NULL;
 static int
 get_key(char *getkey)
 {
-  int rc,gotit=0;
+  int rc;
   char *request;
   struct http_context hd;
 
@@ -65,22 +64,19 @@ get_key(char *getkey)
 
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
-  if(verbose)
-    fprintf(console,"gpgkeys: requesting key 0x%s from http://%s%s%s%s%s\n",
-	    getkey,host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
-
-  request=malloc(strlen(scheme)+3+strlen(host)+1+strlen(port)+strlen(path)+99);
+  request=malloc(4+3+strlen(host)+1+strlen(port)+1+strlen(path)+50);
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
       return KEYSERVER_NO_MEMORY;
     }
 
-  sprintf(request,"%s://%s%s%s%s%s",scheme,host,
-	  port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
+  sprintf(request,"http://%s%s%s%s%s",host,port[0]?":":"",
+	  port[0]?port:"",path[0]?"":"/",path);
 
-  if(verbose>2)
-    fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
+  if(verbose)
+    fprintf(console,"gpgkeys: requesting key 0x%s from http://%s%s%s%s%s\n",
+	    getkey,host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
 
   rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);
   if(rc!=0)
@@ -92,7 +88,7 @@ get_key(char *getkey)
     }
   else
     {
-      unsigned int maxlen=1024,buflen;
+      unsigned int maxlen=1024,buflen,gotit=0;
       byte *line=NULL;
 
       while(iobuf_read_line(hd.fp_read,&line,&buflen,&maxlen))
@@ -101,14 +97,14 @@ get_key(char *getkey)
 
 	  if(gotit)
 	    {
-	      fputs (line, output);
+	      fputs(line,output);
 	      if(strncmp(line,END,strlen(END))==0)
 		break;
 	    }
 	  else
 	    if(strncmp(line,BEGIN,strlen(BEGIN))==0)
 	      {
-		fputs (line,output);
+		fputs(line,output);
 		gotit=1;
 	      }
 	}
@@ -135,7 +131,6 @@ main(int argc,char *argv[])
 {
   int arg,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
-  int failed=0;
   char *thekey=NULL;
 
   console=stderr;
@@ -189,7 +184,7 @@ main(int argc,char *argv[])
     {
       int version;
       char commandstr[7];
-      char optionstr[110];
+      char optionstr[256];
       char hash;
 
       if(line[0]=='\n')
@@ -205,12 +200,6 @@ main(int argc,char *argv[])
 	  if(strcasecmp(commandstr,"get")==0)
 	    action=GET;
 
-	  continue;
-	}
-
-      if(sscanf(line,"SCHEME %79s\n",scheme)==1)
-	{
-	  scheme[79]='\0';
 	  continue;
 	}
 
@@ -243,12 +232,12 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"OPTION %109s\n",optionstr)==1)
+      if(sscanf(line,"OPTION %255s\n",optionstr)==1)
 	{
 	  int no=0;
 	  char *start=&optionstr[0];
 
-	  optionstr[109]='\0';
+	  optionstr[255]='\0';
 
 	  if(strncasecmp(optionstr,"no-",3)==0)
 	    {
@@ -345,6 +334,12 @@ main(int argc,char *argv[])
       goto fail;
     }
 
+  if(!thekey || !host[0])
+    {
+      fprintf(console,"gpgkeys: invalid keyserver instructions\n");
+      goto fail;
+    }
+
   /* Send the response */
 
   fprintf(output,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
@@ -352,7 +347,6 @@ main(int argc,char *argv[])
 
   if(verbose>1)
     {
-      fprintf(console,"Scheme:\t\t%s\n",scheme);
       fprintf(console,"Host:\t\t%s\n",host);
       if(port[0])
 	fprintf(console,"Port:\t\t%s\n",port);
@@ -361,11 +355,7 @@ main(int argc,char *argv[])
       fprintf(console,"Command:\tGET\n");
     }
 
-  if(get_key(thekey)!=KEYSERVER_OK)
-    failed++;
-
-  if(!failed)
-    ret=KEYSERVER_OK;
+  ret=get_key(thekey);
 
  fail:
 
