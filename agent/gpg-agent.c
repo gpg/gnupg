@@ -1194,7 +1194,7 @@ start_connection_thread (void *arg)
 
   /* FIXME: Move this housekeeping into a ticker function.  Calling it
      for each connection should work but won't work anymore if our
-     cleints start to keep connections. */
+     clients start to keep connections. */
   agent_trustlist_housekeeping ();
 
   start_command_handler (-1, fd);

@@ -1,3 +1,16 @@
+2004-12-14  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c (_pth_strerror): Renamed to ...
+	(w32_strerror): .. this. And let callers provide a buffer.
+	(spawn_helper_thread): Removed HD arg and hardwire the stack size
+	to 32k.
+	(do_pth_wait): Removed use of ATTR; not needed for the helper
+	threads.
+	(helper_thread): Renamed to ..
+	(launch_thread): .. this.  Release handle if not joinable.
+	(struct pth_priv_hd_s): Renamed to ...
+	(struct thread_info_s): .. this.  Add member JOINABLE and TH.
+
 2004-12-14  Timo Schulz  <twoaday@g10code.com>
 
 	* w32-pth.c (pth_kill): Just release the crit section if

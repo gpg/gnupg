@@ -49,9 +49,6 @@ static HANDLE pth_signo_ev = NULL;
 static CRITICAL_SECTION pth_shd;
 
 
-#define implicit_init() do { if (!pth_initialized) pth_init(); } while (0)
-
-
 
 struct pth_event_s
 {
@@ -79,19 +76,27 @@ struct pth_attr_s
 };
 
 
-struct _pth_priv_hd_s
+/* Object to keep information about a thread.  This may eventually be
+   used to implement a scheduler queue.  */
+struct thread_info_s
 {
-    void *(*thread)(void *);
-    void * arg;
+  void *(*thread)(void *); /* The actual thread fucntion.  */
+  void * arg;              /* The argument passed to that fucntion.  */
+  int joinable;            /* True if this Thread is joinable.  */
+  HANDLE th;               /* Handle of this thread.  Used by non-joinable
+                              threads to close the handle.  */
 };
 
+
+/* Convenience macro to startup the system.  */
+#define implicit_init() do { if (!pth_initialized) pth_init(); } while (0)
 
 /* Prototypes.  */
 static pth_event_t do_pth_event (unsigned long spec, ...);
 static unsigned int do_pth_waitpid (unsigned pid, int * status, int options);
 static int do_pth_wait (pth_event_t ev);
 static int do_pth_event_status (pth_event_t ev);
-static void * helper_thread (void * ctx);
+static void *launch_thread (void * ctx);
 
 
 
@@ -139,14 +144,13 @@ pth_kill (void)
 }
 
 
-static const char *
-_pth_strerror (void)
+static char *
+w32_strerror (char *strerr, size_t strerrsize)
 {
-  static char strerr[256];
-  
-  FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, (int)GetLastError (),
-                 MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
-                 strerr, sizeof (strerr)-1, NULL);
+  if (strerrsize > 1)
+    FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, (int)GetLastError (),
+                   MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+                   strerr, strerrsize, NULL);
   return strerr;
 }
 
@@ -228,8 +232,10 @@ pth_read (int fd,  void * buffer, size_t size)
       n = ReadFile ((HANDLE)fd, buffer, size, &nread, NULL);
       if (!n)
         {
-          fprintf (stderr, "pth_read(%d) failed read from: %s.\n", fd,
-                   _pth_strerror ());
+          char strerr[256];
+
+          fprintf (stderr, "pth_read(%d) failed read from file: %s\n", fd,
+                   w32_strerror (strerr, sizeof strerr));
           n = -1;
         }
       else
@@ -259,17 +265,16 @@ pth_write (int fd, const void * buffer, size_t size)
   if (n == -1 && WSAGetLastError () == WSAENOTSOCK)
     {
       DWORD nwrite;
+      char strerr[256];
 
-      /* this is no real error because we first need to figure out if
-         we have a handle or a socket. */
-      /*fprintf (stderr, "pth_write(%d) failed in send: %s\n", fd,
-                 _pth_strerror ());*/
+      /* This is no real error because we first need to figure out if
+         we have a handle or a socket.  */
 
       n = WriteFile ((HANDLE)fd, buffer, size, &nwrite, NULL);
       if (!n)
         {
           fprintf (stderr, "pth_write(%d) failed in write: %s\n", fd,
-                   _pth_strerror ());
+                   w32_strerror (strerr, sizeof strerr));
           n = -1;
         }
       else
@@ -597,7 +602,7 @@ do_pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
   SECURITY_ATTRIBUTES sa;
   DWORD tid;
   HANDLE th;
-  struct _pth_priv_hd_s * ctx;
+  struct thread_info_s *ctx;
 
   if (!hd)
     return NULL;
@@ -607,20 +612,32 @@ do_pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
   sa.lpSecurityDescriptor = NULL;
   sa.nLength = sizeof sa;
 
-  ctx = calloc (1, sizeof * ctx);
+  ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     return NULL;
   ctx->thread = func;
   ctx->arg = arg;
+  ctx->joinable = (hd->flags & PTH_ATTR_JOINABLE);
 
   /* XXX: we don't use all thread attributes. */
 
+  /* Note that we create the thread suspended so that we are able to
+     store the thread's handle in the context structure.  We need to
+     do this to be able to close the handle from the launch helper. 
+
+     FIXME: We should no use th W32's Thread handle directly but keep
+     our own thread control structure.  CTX may be used for that.  */
   fprintf (stderr, "do_pth_spawn creating thread ...\n");
   th = CreateThread (&sa, hd->stack_size,
-                     (LPTHREAD_START_ROUTINE)helper_thread,
-                     ctx, 0, &tid);
+                     (LPTHREAD_START_ROUTINE)launch_thread,
+                     ctx, CREATE_SUSPENDED, &tid);
+  ctx->th = th;
   fprintf (stderr, "do_pth_spawn created thread %p\n", th);
-
+  if (!th)
+    free (ctx);
+  else
+    ResumeThread (th);
+  
   return th;
 }
 
@@ -909,14 +926,22 @@ wait_for_fd (int fd, int is_read, int nwait)
 
 
 static void *
-helper_thread (void * ctx)
+launch_thread (void *arg)
 {
-  struct _pth_priv_hd_s * c = ctx;
+  struct thread_info_s *c = arg;
 
   if (c)
     {
       leave_pth (__FUNCTION__);
       c->thread (c->arg);
+      if (!c->joinable && c->th)
+        {
+          CloseHandle (c->th);
+          c->th = NULL;
+        }
+      /* FIXME: We would badly fail if someone accesses the now
+         deallocated handle. Don't use it directly but setup proper
+         scheduling queues.  */
       enter_pth (__FUNCTION__);
       free (c);
     }
@@ -1098,7 +1123,7 @@ _pth_event_count (pth_event_t ev)
 
 
 static pth_t
-spawn_helper_thread (pth_attr_t hd, void *(*func)(void *), void *arg)
+spawn_helper_thread (void *(*func)(void *), void *arg)
 {
   SECURITY_ATTRIBUTES sa;
   DWORD tid;
@@ -1110,7 +1135,7 @@ spawn_helper_thread (pth_attr_t hd, void *(*func)(void *), void *arg)
   sa.nLength = sizeof sa;
 
   fprintf (stderr, "spawn_helper_thread creating thread ...\n");
-  th = CreateThread (&sa, hd->stack_size,
+  th = CreateThread (&sa, 32*1024,
                      (LPTHREAD_START_ROUTINE)func,
                      arg, 0, &tid);
   fprintf (stderr, "spawn_helper_thread created thread %p\n", th);
@@ -1164,7 +1189,6 @@ do_pth_wait (pth_event_t ev)
   HANDLE waitbuf[MAXIMUM_WAIT_OBJECTS/2];
   int    hdidx[MAXIMUM_WAIT_OBJECTS/2];
   DWORD n = 0;
-  pth_attr_t attr;
   pth_event_t tmp;
   int pos=0, i=0;
 
@@ -1175,10 +1199,6 @@ do_pth_wait (pth_event_t ev)
   if (n > MAXIMUM_WAIT_OBJECTS/2)
     return -1;
 
-  attr = pth_attr_new ();
-  pth_attr_set (attr, PTH_ATTR_JOINABLE, 1);
-  pth_attr_set (attr, PTH_ATTR_STACK_SIZE, 4096);
-    
   fprintf (stderr, "pth_wait: cnt %lu\n", n);
   for (tmp = ev; tmp; tmp = tmp->next)
     {
@@ -1196,13 +1216,13 @@ do_pth_wait (pth_event_t ev)
         case PTH_EVENT_FD:
           fprintf (stderr, "pth_wait: spawn event wait thread.\n");
           hdidx[i++] = pos;
-          waitbuf[pos++] = spawn_helper_thread (attr, wait_fd_thread, tmp);
+          waitbuf[pos++] = spawn_helper_thread (wait_fd_thread, tmp);
           break;
 
         case PTH_EVENT_TIME:
           fprintf (stderr, "pth_wait: spawn event timer thread.\n");
           hdidx[i++] = pos;
-          waitbuf[pos++] = spawn_helper_thread (attr, wait_timer_thread, tmp);
+          waitbuf[pos++] = spawn_helper_thread (wait_timer_thread, tmp);
           break;
 
         case PTH_EVENT_MUTEX:
@@ -1216,7 +1236,6 @@ do_pth_wait (pth_event_t ev)
   fprintf (stderr, "pth_wait: set %d\n", pos);
   n = WaitForMultipleObjects (pos, waitbuf, FALSE, INFINITE);
   free_helper_threads (waitbuf, hdidx, i);
-  pth_attr_destroy (attr);
   fprintf (stderr, "pth_wait: n %ld\n", n);
 
   if (n != WAIT_TIMEOUT)
