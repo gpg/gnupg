@@ -1,3 +1,11 @@
+2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
+
+	* plaintext.c (handle_plaintext) [__riscos__]: Don't mangle
+	filename if the user specified it.
+
+	* g10.c, gpgv.c [__riscos__]: Removal of unnecessary #ifdef
+	__riscos__ sections.
+
 2003-12-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (strip_leading_space, get_arg): New.

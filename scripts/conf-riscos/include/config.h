@@ -273,6 +273,9 @@
 /* Define if you have the strtoul function.  */
 #define HAVE_STRTOUL 1
 
+/* Define if you have the strsep function.  */
+#define HAVE_STRSEP 1
+
 /* Define if you have the tcgetattr function.  */
 #undef HAVE_TCGETATTR
 
@@ -364,29 +367,58 @@
 /* define if compiled symbols have a leading underscore */
 #define WITH_SYMBOL_UNDERSCORE 1
 
+#define HAVE_BUILTIN_EXPECT 1
+#define HAVE_ULONG_TYPEDEF 1
+#define HAVE_USHORT_TYPEDEF 1
+#define HAVE_TIMES 1
+#define HAVE_INTTYPES_H 1
+#define HAVE_FSEEKO 1
+#define HAVE_GETOPT_H 1
+#define HAVE_SIGSET_T 1
+#define HAVE_STRUCT_SIGACTION 1
+#define HAVE_ICONV 0
+
+#ifndef __set_errno
+#define __set_errno(val) (errno = (val), -1)
+#endif
+
 /* RISC OS specifica */
 #if (__CC_NORCROFT == 1) /* Norcroft */
 # undef __GNUC__
 # define __GNUC_MINOR__ 0
 # define __GLIBC__ 0
-# define __attribute__(x) 
-# define SIZEOF_UNSIGNED_LONG_LONG 0
+
 # if (__CC_NORCROFT_VERSION < 544) /* old version of Norcroft */
 #  define inline __inline
 #  define STR(a) #a
 #  define __func__ "[" __FILE__ ":" STR(__LINE__) "]"
+#  define SIZEOF_UNSIGNED_LONG_LONG 0
+# else
+#  define SIZEOF_UNSIGNED_LONG_LONG 8
 # endif
 #else /* gcc */
 # define SIZEOF_UNSIGNED_LONG_LONG 8
 #endif
 
-#define USE_RNDRISCOS 1
 #define HAVE_LDAP_GET_OPTION 1
+#undef  USE_ZLIBRISCOS
+#define USE_DNS_SRV 1
+#define USE_RNDRISCOS 1
+#define USE_RSA 1
+#define USE_CAST5 1
+#define USE_BLOWFISH 1
+#define USE_AES 1
+#define USE_TWOFISH 1
+#define USE_SHA256 1
+#if SIZEOF_UNSIGNED_LONG_LONG == 8
+# define USE_SHA512
+#endif
 
 #ifdef IS_DEVELOPMENT_VERSION
-#  define DEBUG 1
-/*#  define M_DEBUG */
-#  define M_GUARD 1
+# define DEBUG 1
+/*# define M_DEBUG */
+# define M_GUARD 1
+# define USE_IDEA 1
 #endif
 
 #include "g10defs.h"

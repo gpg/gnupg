@@ -502,10 +502,6 @@ selftest(void)
     return NULL;
 }
 
-#ifdef __riscos__
-/* need to switch off CSE optimisation for Norcroft C (Acorn/Pace) */
-#pragma no_optimise_cse
-#endif /* __riscos__ */
 
 static int
 do_bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
@@ -589,10 +585,6 @@ do_bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )
 
     return 0;
 }
-
-#ifdef __riscos__
-#pragma optimise_cse
-#endif /* __riscos__ */
 
 static int
 bf_setkey( BLOWFISH_context *c, byte *key, unsigned keylen )

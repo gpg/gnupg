@@ -27,7 +27,6 @@
 #include <swis.h>
 #include "util.h"
 
-#define CryptRandom_Byte 0x51980
 
 static const char * const cryptrandom_path[] = {
     "GnuPG:CryptRandom",
@@ -47,7 +46,7 @@ rndriscos_gather_random(void (*add)(const void*, size_t, int), int requester,
 	                size_t length, int level)
 {
     static int rndriscos_initialized = 0;
-    int n;
+    int n, nbytes;
     byte buffer[768];
 
     if (!rndriscos_initialized)
@@ -55,7 +54,7 @@ rndriscos_gather_random(void (*add)(const void*, size_t, int), int requester,
                                                    cryptrandom_path, 1);
 
     while (length) {
-        int nbytes = length < sizeof(buffer) ? length : sizeof(buffer);
+        nbytes = length < sizeof(buffer) ? length : sizeof(buffer);
 
         for (n = 0; n < nbytes; ++n)
             if (_swix(CryptRandom_Byte, _OUT(0), &buffer[n]))

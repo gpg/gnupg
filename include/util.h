@@ -287,14 +287,6 @@ int asprintf (char **buf, const char *fmt, ...);
 
 /******* RISC OS stuff ***********/
 #ifdef __riscos__
-/* needed for strcasecmp() */
-#include <strings.h>
-/* needed for filename munging */
-#include <unixlib/local.h>
-/* needed for image file system feature */
-#include <unixlib/features.h>
-void riscos_global_defaults(void);
-#define RISCOS_GLOBAL_STATICS(a) const char *__dynamic_da_name = (a);
 int riscos_load_module(const char *name, const char * const path[], int fatal);
 int riscos_get_filetype_from_string(const char *string, int len);
 int riscos_get_filetype(const char *filename);

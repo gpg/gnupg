@@ -114,10 +114,13 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	goto leave;
     }
 #else /* __riscos__ */
-    /* Convert all '.' in fname to '/' -- we don't create directories! */
-    for( c=0; fname[c]; ++c )
-        if( fname[c] == '.' )
-            fname[c] = '/';
+    /* If no output filename was given, i.e. we constructed it,
+       convert all '.' in fname to '/' but not vice versa as
+       we don't create directories! */
+    if( !opt.outfile )
+        for( c=0; fname[c]; ++c )
+            if( fname[c] == '.' )
+                fname[c] = '/';
 
     if( fp || nooutput )
 	;

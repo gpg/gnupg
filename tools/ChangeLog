@@ -1,3 +1,8 @@
+2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgsplit.c [__riscos__]: Removal of unnecessary #ifdef
+	__riscos__ sections.
+
 2003-12-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgsplit.c (write_part): Split off decompression code.

@@ -37,10 +37,9 @@
 #ifdef HAVE_BZIP2
 #include <bzlib.h>
 #endif /* HAVE_BZIP2 */
-#ifdef __riscos__
+#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
 # include "zlib-riscos.h"
-# include <unixlib/local.h>
-#endif /* __riscos__ */
+#endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "../g10/packet.h"
@@ -114,10 +113,6 @@ main( int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
 
-#ifdef __riscos__
-  /* set global RISC OS specific properties */
-  __riscosify_control = __RISCOSIFY_NO_PROCESS;
-#endif /* __riscos__ */
 #ifdef HAVE_DOSISH_SYSTEM
   setmode( fileno(stdin), O_BINARY );
   setmode( fileno(stdout), O_BINARY );
@@ -533,7 +528,7 @@ write_part ( const char *fname, FILE *fpin, unsigned long pktlen,
   unsigned char *p;
   const char *outname = create_filename (pkttype);
   
-#ifdef __riscos__
+#if defined(__riscos__) && defined(USE_ZLIBRISCOS)
   static int initialized = 0;
 
   if (!initialized)

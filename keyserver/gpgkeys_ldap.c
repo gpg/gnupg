@@ -60,10 +60,6 @@ struct keylist
   struct keylist *next;
 };
 
-#ifdef __riscos__
-RISCOS_GLOBAL_STATICS("LDAP Keyfetcher Heap")
-#endif /* __riscos__ */
-
 int
 ldap_err_to_gpg_err(int err)
 {
@@ -807,10 +803,6 @@ main(int argc,char *argv[])
   char *attrs[]={"basekeyspacedn","version","software",NULL};
   LDAPMessage *res;
   struct keylist *keylist=NULL,*keyptr=NULL;
-
-#ifdef __riscos__
-  riscos_global_defaults();
-#endif
 
   console=stderr;
 

@@ -55,10 +55,6 @@ struct keylist
   struct keylist *next;
 };
 
-#ifdef __riscos__
-RISCOS_GLOBAL_STATICS("HKP Keyfetcher Heap")
-#endif /* __riscos__ */
-
 int
 urlencode_filter( void *opaque, int control,
 		  IOBUF a, byte *buf, size_t *ret_len)
@@ -747,10 +743,6 @@ main(int argc,char *argv[])
   char line[MAX_LINE];
   int failed=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
-
-#ifdef __riscos__
-  riscos_global_defaults();
-#endif
 
   console=stderr;
 

@@ -1,3 +1,11 @@
+2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
+
+	* riscos.c [__riscos__]: Better filetype handling (use a
+	different SWI) and removal of unnecessary function.
+
+	* memory.c (out_of_core) [__riscos__]: Produce stack backtrace on
+	RISC OS if out_of_core() is called and M_GUARD is compiled in.
+
 2003-12-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (send_request): Add a Host: header for virtual hosts.

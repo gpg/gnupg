@@ -30,6 +30,8 @@
 #define EXTSEP_C            '/'
 #define DIRSEP_S            "."
 #define EXTSEP_S            "/"
+#define SAFE_VERSION_DOT    '/'
+#define SAFE_VERSION_DASH   '-'
 
 /* This file defines some basic constants for the MPI machinery.  We
  * need to define the types on a per-CPU basis, so it is done with

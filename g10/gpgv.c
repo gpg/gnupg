@@ -78,10 +78,6 @@ static ARGPARSE_OPTS opts[] = {
 
 int g10_errors_seen = 0;
 
-#ifdef __riscos__
-RISCOS_GLOBAL_STATICS("GnuPG (gpgv) Heap")
-#endif /* __riscos__ */
-
 const char *
 strusage( int level )
 {
@@ -139,10 +135,6 @@ main( int argc, char **argv )
     STRLIST sl;
     STRLIST nrings=NULL;
     unsigned configlineno;
-
-#ifdef __riscos__
-    riscos_global_defaults();
-#endif /* __riscos__ */
 
     log_set_name("gpgv");
     init_signals();

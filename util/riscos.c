@@ -23,6 +23,7 @@
 
 #include <config.h>
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -32,9 +33,16 @@
 #include "util.h"
 #include "memory.h"
 
+#include <unixlib/local.h>     /* needed for RISCOSIFY_NO_PROCESS */
 #define __UNIXLIB_INTERNALS
 #include <unixlib/swiparams.h> /* needed for MMM_TYPE_* definitions */
 #undef __UNIXLIB_INTERNALS
+
+
+/* static symbols that trigger UnixLib behaviour */
+
+int __riscosify_control = __RISCOSIFY_NO_PROCESS;
+int __feature_imagefs_is_file = 1;
 
 
 /* RISC OS file open descriptor control list */
@@ -68,13 +76,6 @@ is_read_only(const char *filename)
 }
 
 /* exported RISC OS functions */
-
-void
-riscos_global_defaults(void)
-{
-    __riscosify_control = __RISCOSIFY_NO_PROCESS;
-    __feature_imagefs_is_file = 1;
-}
 
 int
 riscos_load_module(const char *name, const char * const path[], int fatal)
@@ -118,10 +119,13 @@ riscos_get_filetype(const char *filename)
 {
     int result;
 
-    if (_swix(OS_File, _INR(0,1) | _OUT(6), 23, filename, &result))
+    if (_swix(OS_File, _INR(0,1) | _OUT(2), 17, filename, &result))
         log_fatal("Can't get filetype for file \"%s\"!\n", filename);
 
-    return result;
+    if ((result & 0xfff00000) == 0xfff00000)
+        return (result & 0xfff00) >> 8;
+    else
+        return 0;
 }        
 
 void
@@ -307,18 +311,21 @@ riscos_gstrans(const char *old)
 char *
 riscos_make_basename(const char *filepath, const char *realfname)
 {
-    char *result, *p = (char*)filepath-1;
+    char *result, *p;
     int i, filetype;
 
-    if ( !(p=strrchr(filepath, DIRSEP_C)) )
-        if ( !(p=strrchr(filepath, ':')) )
-            ;
+    if ( (p = strrchr(filepath, DIRSEP_C)) )
+        p++;
+    else if ( (p = strrchr(filepath, ':')) )
+        p++;
+    else
+        p = (char*) filepath;
 
-    i = strlen(p+1);
+    i = strlen(p);
     result = m_alloc(i + 5);
     if (!result)
         log_fatal("Can't claim memory for riscos_make_basename() buffer!\n");
-    strcpy(result, p+1);
+    strcpy(result, p);
     
     filetype = riscos_get_filetype( realfname );
     result[i++] = ',';

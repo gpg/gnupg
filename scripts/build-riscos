@@ -2,8 +2,6 @@
 | for the RISC OS version into the correct places.
 | It won't run on anything other than RISC OS -- I think ;-)
 
-copy <obey$dir>.conf-riscos.cipher.c.construct <obey$dir>.^.cipher.c.construct ~cf~v
-copy <obey$dir>.conf-riscos.cipher.c.constructv <obey$dir>.^.cipher.c.constructv ~cf~v
 copy <obey$dir>.conf-riscos.include.h.config <obey$dir>.^.include.h.config ~cf~v
 copy <obey$dir>.conf-riscos.include.h.g10defs <obey$dir>.^.include.h.g10defs ~cf~v
 copy <obey$dir>.conf-riscos.Makefile <obey$dir>.^.Makefile ~cf~v

@@ -406,6 +406,9 @@ out_of_core(size_t n, int secure)
         log_info ("(this may be caused by too many secret keys used "
                   "simultaneously or due to excessive large key sizes)\n");
     }
+#if defined(M_GUARD) && defined(__riscos__)
+    abort();
+#endif
     exit (2);
 }
 

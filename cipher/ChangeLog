@@ -1,3 +1,11 @@
+2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
+
+	* rndriscos.c (rndriscos_gather_random) [__riscos__]: Declare
+	variable outside loop.
+
+	* blowfish.c, twofish.c [__riscos__]: Removal of unnecessary
+	#ifdef __riscos__ sections.
+
 2003-12-17  David Shaw  <dshaw@localhost.localdomain>
 
 	* dsa.h, dsa.c (dsa_verify), elgamal.h, elgamal.c (elg_verify),

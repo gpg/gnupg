@@ -1,3 +1,7 @@
+2003-12-28  Stefan Bellon  <sbellon@sbellon.de>
+
+	* util.h [__riscos__]: Removal of unnecessary RISC OS stuff.
+
 2003-12-17  David Shaw  <dshaw@localhost.localdomain>
 
 	* mpi.h (gcry_mpi, mpi_get_opaque, mpi_set_opaque): Make nbits and

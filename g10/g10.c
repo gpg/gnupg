@@ -675,10 +675,6 @@ static void add_notation_data( const char *string, int which );
 static void add_policy_url( const char *string, int which );
 static void add_keyserver_url( const char *string, int which );
 
-#ifdef __riscos__
-RISCOS_GLOBAL_STATICS("GnuPG Heap")
-#endif /* __riscos__ */
-
 const char *
 strusage( int level )
 {
@@ -1191,7 +1187,6 @@ main( int argc, char **argv )
 #endif
 
 #ifdef __riscos__
-    riscos_global_defaults();
     opt.lock_once = 1;
 #endif /* __riscos__ */
 
