@@ -237,6 +237,7 @@ enum cmd_and_opt_values
     oNoShowPolicyURL,
     oSigKeyserverURL,
     oUseEmbeddedFilename,
+    oNoUseEmbeddedFilename,
     oComment,
     oDefaultComment,
     oNoComments,
@@ -605,6 +606,7 @@ static ARGPARSE_OPTS opts[] = {
     { oLoggerFile, "logger-file",2, "@" },
 #endif /* __riscos__ */
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
+    { oNoUseEmbeddedFilename, "no-use-embedded-filename", 0, "@" },
     { oUtf8Strings, "utf8-strings", 0, "@" },
     { oNoUtf8Strings, "no-utf8-strings", 0, "@" },
     { oWithFingerprint, "with-fingerprint", 0, "@" },
@@ -1926,6 +1928,7 @@ main( int argc, char **argv )
 	    break;
 	  case oSigKeyserverURL: add_keyserver_url(pargs.r.ret_str,0); break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
+	  case oNoUseEmbeddedFilename: opt.use_embedded_filename = 0; break;
 	  case oComment:
 	    if(pargs.r.ret_str[0])
 	      append_to_strlist(&opt.comments,pargs.r.ret_str);

@@ -1,5 +1,22 @@
 2004-04-16  David Shaw  <dshaw@jabberwocky.com>
 
+	* plaintext.c (handle_plaintext): Accept 'u' as a plaintext mode
+	that requires end of line conversion.  This is being considered
+	for a UTF8 text packet.  If this doesn't take place, no major harm
+	done.  If it does take place, we'll get a jump on starting the
+	changeover.
+
+	* g10.c (main): --no-use-embedded-filename.
+
+	* build-packet.c (calc_plaintext, do_plaintext): Do not create
+	illegal (packet header indicates a size larger than the actual
+	packet) encrypted data packets when not compressing and using a
+	filename longer than 255 characters.
+
+	* keyedit.c (no_primary_warning): Cleanup. (menu_expire): Don't
+	give primary warning for subkey expiration changes.  These cannot
+	reorder primaries.
+
 	* keygen.c (gen_elg, gen_dsa, gen_rsa, do_create,
 	do_generate_keypair, generate_subkeypair): New is_subkey argument
 	to set whether a generated key is a subkey.  Do not overload the

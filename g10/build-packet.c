@@ -460,7 +460,14 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 static u32
 calc_plaintext( PKT_plaintext *pt )
 {
-    return pt->len? (1 + 1 + pt->namelen + 4 + pt->len) : 0;
+  /* Truncate namelen to the maximum 255 characters.  Note this means
+     that a function that calls build_packet with an illegal literal
+     packet will get it back legalized. */
+
+  if(pt->namelen>255)
+    pt->namelen=255;
+
+  return pt->len? (1 + 1 + pt->namelen + 4 + pt->len) : 0;
 }
 
 static int
@@ -470,12 +477,6 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     u32 n;
     byte buf[1000]; /* this buffer has the plaintext! */
     int nbytes;
-
-    /* Truncate namelen to the maximum 255 characters.  This does mean
-       that a function that calls build_packet with an illegal literal
-       packet will get it back legalized. */
-    if(pt->namelen>255)
-      pt->namelen=255;
 
     write_header(out, ctb, calc_plaintext( pt ) );
     iobuf_put(out, pt->mode );
