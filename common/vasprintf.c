@@ -31,7 +31,7 @@ int global_total_width;
 #endif
 
 int
-vasprintf (char **result, const char *format, va_list *args)
+vasprintf (char **result, const char *format, va_list args)
 {
   const char *p = format;
   /* Add one to make sure that it is never zero, which might cause malloc
@@ -120,7 +120,7 @@ vasprintf (char **result, const char *format, va_list *args)
 #endif
   *result = malloc (total_width);
   if (*result != NULL)
-    return vsprintf (*result, format, *args);
+    return vsprintf (*result, format, args);
   else
     return 0;
 }

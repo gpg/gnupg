@@ -1,3 +1,8 @@
+2003-11-13  Werner Koch  <wk@gnupg.org>
+
+	* vasprintf.c (vasprintf): ARGS should not be a pointer.  Fixed
+	segv on Solaris.  Reported by Andrew J. Schorr.
+
 2003-11-12  Werner Koch  <wk@gnupg.org>
 
 	* maperror.c (map_ksba_err, map_gcry_err, map_kbx_err): Removed.
