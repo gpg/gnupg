@@ -1107,18 +1107,18 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
    CAST5 (3), all hashes except MD5 (1), SHA1 (2), and RIPEMD160 (3),
    and all compressions except none (0) and ZIP (1).  pgp7 and pgp8
    mode expands the cipher list to include AES128 (7), AES192 (8),
-   AES256 (9), and TWOFISH (10).  For a true PGP key all of this is
-   unneeded as they are the only items present in the preferences
-   subpacket, but checking here covers the weird case of encrypting to
-   a key that had preferences from a different implementation which
-   was then used with PGP.  I am not completely comfortable with this
-   as the right thing to do, as it slightly alters the list of what
-   the user is supposedly requesting.  It is not against the RFC
-   however, as the preference chosen will never be one that the user
-   didn't specify somewhere ("The implementation may use any mechanism
-   to pick an algorithm in the intersection"), and PGP has no
-   mechanism to fix such a broken preference list, so I'm including
-   it. -dms */
+   AES256 (9), and TWOFISH (10).  pgp8 adds the SHA-256 hash (8).  For
+   a true PGP key all of this is unneeded as they are the only items
+   present in the preferences subpacket, but checking here covers the
+   weird case of encrypting to a key that had preferences from a
+   different implementation which was then used with PGP.  I am not
+   completely comfortable with this as the right thing to do, as it
+   slightly alters the list of what the user is supposedly requesting.
+   It is not against the RFC however, as the preference chosen will
+   never be one that the user didn't specify somewhere ("The
+   implementation may use any mechanism to pick an algorithm in the
+   intersection"), and PGP has no mechanism to fix such a broken
+   preference list, so I'm including it. -dms */
 
 static int
 algo_available( int preftype, int algo, void *hint )
@@ -1143,8 +1143,10 @@ algo_available( int preftype, int algo, void *hint )
 	if(bits && (bits != md_digest_length(algo)))
 	  return 0;
 
-        if( (opt.pgp6 || opt.pgp7 || opt.pgp8 )
-	    && ( algo != 1 && algo != 2 && algo != 3) )
+        if( (opt.pgp6 || opt.pgp7) && (algo != 1 && algo != 2 && algo != 3) )
+	  return 0;
+
+	if( opt.pgp8 && (algo != 1 && algo != 2 && algo != 3 && algo != 8))
 	  return 0;
 
 	return algo && !check_digest_algo( algo );

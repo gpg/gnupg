@@ -1,3 +1,10 @@
+2003-04-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (algo_available): PGP 8 can use the SHA-256 hash.
+
+	* sign.c (sign_file, clearsign_file, sign_symencrypt_file): Remove
+	unused code.
+
 2003-03-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* keydb.h: Err on the side of making an unknown signature a SIG
