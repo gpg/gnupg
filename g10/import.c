@@ -887,7 +887,6 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 {
     KBNODE node;
     int nvalid=0, uid_seen=0;
-    const char *p;
 
     for(node=keyblock->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
@@ -933,11 +932,9 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		 && check_pubkey_algo( node->pkt->pkt.signature->pubkey_algo)
 		 && node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
 	    delete_kbnode( node ); /* build_packet() can't handle this */
-	else if( node->pkt->pkttype == PKT_SIGNATURE
-		 && (p = parse_sig_subpkt2( node->pkt->pkt.signature,
-					    SIGSUBPKT_EXPORTABLE, NULL ))
-		 && !*p
-		 && seckey_available( node->pkt->pkt.signature->keyid ) ) {
+	else if( node->pkt->pkttype == PKT_SIGNATURE &&
+		 !node->pkt->pkt.signature->flags.exportable &&
+		 seckey_available( node->pkt->pkt.signature->keyid ) ) {
 	    /* here we violate the rfc a bit by still allowing
 	     * to import non-exportable signature when we have the
 	     * the secret key used to create this signature - it

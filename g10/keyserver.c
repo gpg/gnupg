@@ -256,7 +256,7 @@ print_keyinfo(int count,char *keystring,u32 *keyid)
 static int 
 keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 {
-  int ret=0,i, gotversion=0;
+  int ret=0,i,gotversion=0,outofband=0;
   STRLIST temp;
   unsigned int maxlen=256,buflen;
   char *command=NULL,*searchstr=NULL;
@@ -447,6 +447,10 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 	    log_info(_("Warning: keyserver handler from a different "
 		       "version of GnuPG (%s)\n"),&line[8]);
 	}
+
+      /* Currently the only OPTION */
+      if(strncasecmp(line,"OPTION OUTOFBAND",16)==0)
+	outofband=1;
     }
   while(line[0]!='\n');
 
@@ -456,59 +460,60 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
       goto fail;
     }
 
-  switch(action)
-    {
-    case GET:
+  if(!outofband)
+    switch(action)
       {
-	void *stats_handle;
+      case GET:
+	{
+	  void *stats_handle;
 
-	stats_handle=import_new_stats_handle();
+	  stats_handle=import_new_stats_handle();
 
-	/* Slurp up all the key data.  In the future, it might be nice
-	   to look for KEY foo OUTOFBAND and FAILED indicators.  It's
-	   harmless to ignore them, but ignoring them does make gpg
-	   complain about "no valid OpenPGP data found".  One way to
-	   do this could be to continue parsing this line-by-line and
-	   make a temp iobuf for each key. */
+	  /* Slurp up all the key data.  In the future, it might be nice
+	     to look for KEY foo OUTOFBAND and FAILED indicators.  It's
+	     harmless to ignore them, but ignoring them does make gpg
+	     complain about "no valid OpenPGP data found".  One way to
+	     do this could be to continue parsing this line-by-line and
+	     make a temp iobuf for each key. */
 
-	import_keys_stream(spawn->fromchild,
-			   opt.keyserver_options.fast_import,stats_handle);
+	  import_keys_stream(spawn->fromchild,
+			     opt.keyserver_options.fast_import,stats_handle);
 
-	import_print_stats(stats_handle);
-	import_release_stats_handle(stats_handle);
+	  import_print_stats(stats_handle);
+	  import_release_stats_handle(stats_handle);
 
+	  break;
+	}
+
+	/* Nothing to do here */
+      case SEND:
+	break;
+
+      case SEARCH:
+	{
+	  line=NULL;
+	  buflen = 0;
+	  maxlen = 80;
+	  /* Look for the COUNT line */
+	  do
+	    {
+	      if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
+		{
+		  ret=G10ERR_READ_FILE;
+		  goto fail; /* i.e. EOF */
+		}
+	    }
+	  while(sscanf(line,"COUNT %d\n",&i)!=1);
+
+	  keyserver_search_prompt(spawn->fromchild,i,searchstr);
+
+	  break;
+	}
+
+      default:
+	log_fatal(_("no keyserver action!\n"));
 	break;
       }
-
-      /* Nothing to do here */
-    case SEND:
-      break;
-
-    case SEARCH:
-      {
-	line=NULL;
-        buflen = 0;
-        maxlen = 80;
-	/* Look for the COUNT line */
-	do
-	  {
-	    if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
-	      {
-		ret=G10ERR_READ_FILE;
-		goto fail; /* i.e. EOF */
-	      }
-	  }
-	while(sscanf(line,"COUNT %d\n",&i)!=1);
-
-	keyserver_search_prompt(spawn->fromchild,i,searchstr);
-
-	break;
-      }
-
-    default:
-      log_fatal(_("no keyserver action!\n"));
-      break;
-    }
 
  fail:
   *prog=exec_finish(spawn);
@@ -765,7 +770,7 @@ keyserver_search(STRLIST tokens)
 }
 
 /* Count is just for cosmetics.  If it is too small, it will grow
-   safely.  If it negative it disables the "Key x-y of z" messages. */
+   safely.  If negative it disables the "Key x-y of z" messages. */
 void 
 keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 {

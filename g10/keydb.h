@@ -213,7 +213,6 @@ KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
 
 /*-- keyid.c --*/
 int pubkey_letter( int algo );
-int get_lsign_letter ( PKT_signature *sig );
 u32 keyid_from_sk( PKT_secret_key *sk, u32 *keyid );
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );

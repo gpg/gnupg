@@ -194,11 +194,8 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
               continue;
 	    /* do not export packets which are marked as not exportable */
 	    if( node->pkt->pkttype == PKT_SIGNATURE ) {
-		const char *p;
-		p = parse_sig_subpkt2( node->pkt->pkt.signature,
-				       SIGSUBPKT_EXPORTABLE, NULL );
-		if( p && !*p )
-		    continue; /* not exportable */
+	        if( !node->pkt->pkt.signature->flags.exportable )
+		  continue; /* not exportable */
 
                 /* delete our verification cache */
                 delete_sig_subpkt (node->pkt->pkt.signature->unhashed,

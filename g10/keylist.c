@@ -718,7 +718,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 	       sigstr = "sig";
 	    else {
                 printf ("sig::::::::::%02x%c:\n",
-                        sig->sig_class, get_lsign_letter (sig) );
+                        sig->sig_class, sig->flags.exportable?'x':'l');
 		continue;
 	    }
 	    if( opt.check_sigs ) {
@@ -754,7 +754,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 print_string( stdout, p, n, ':' );
 		m_free(p);
 	    }
-            printf(":%02x%c:\n", sig->sig_class, get_lsign_letter (sig) );
+            printf(":%02x%c:\n", sig->sig_class,sig->flags.exportable?'x':'l');
 	    /* fixme: check or list other sigs here */
 	}
     }

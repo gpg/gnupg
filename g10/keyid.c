@@ -48,18 +48,6 @@ pubkey_letter( int algo )
     }
 }
 
-int
-get_lsign_letter ( PKT_signature *sig )
-{
-    const char *p;
-    
-    if (!sig)
-        return '?';
-    p = parse_sig_subpkt2( sig, SIGSUBPKT_EXPORTABLE, NULL );
-    return (p && !*p)? 'l':'x';
-}
-
-
 static MD_HANDLE
 do_fingerprint_md( PKT_public_key *pk )
 {
