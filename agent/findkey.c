@@ -52,7 +52,7 @@ agent_write_private_key (const unsigned char *grip,
     sprintf (hexgrip+2*i, "%02X", grip[i]);
   strcpy (hexgrip+40, ".key");
 
-  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL);
+  fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
   if (force)
     fp = fopen (fname, "wb");
   else
@@ -194,7 +194,7 @@ agent_key_from_file (const unsigned char *grip, unsigned char **shadow_info)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
   strcpy (hexgrip+40, ".key");
 
-  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL);
+  fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
   fp = fopen (fname, "rb");
   if (!fp)
     {
@@ -318,7 +318,7 @@ agent_key_available (const unsigned char *grip)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
   strcpy (hexgrip+40, ".key");
 
-  fname = make_filename (opt.homedir, "private-keys-v1.d", hexgrip, NULL);
+  fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
   i = !access (fname, R_OK)? 0 : -1;
   xfree (fname);
   return i;

@@ -295,13 +295,7 @@ main (int argc, char **argv )
   
   opt.homedir = getenv("GNUPGHOME");
   if (!opt.homedir || !*opt.homedir)
-    {
-#ifdef HAVE_DRIVE_LETTERS
-      opt.homedir = "c:/gnupg-test";
-#else
-      opt.homedir = "~/.gnupg-test";
-#endif
-    }
+    opt.homedir = GNUPG_DEFAULT_HOMEDIR;
   opt.def_cache_ttl = 10*60; /* default to 10 minutes */
 
 
@@ -473,7 +467,6 @@ main (int argc, char **argv )
     { /* regular server mode */
       int fd;
       pid_t pid;
-      int i;
       int len;
       struct sockaddr_un serv_addr;
       char *p;
@@ -599,7 +592,10 @@ main (int argc, char **argv )
 
       /* detach from tty and put process into a new session */
       if (!nodetach )
-        {  /* close stdin, stdout and stderr unless it is the log stream */
+        { 
+          int i;
+
+          /* close stdin, stdout and stderr unless it is the log stream */
           for (i=0; i <= 2; i++) 
             {
               if ( log_get_fd () != i)
@@ -611,6 +607,7 @@ main (int argc, char **argv )
               cleanup ();
               exit (1);
             }
+          opt.running_detached = 1;
         }
 
       if (chdir("/"))

@@ -173,7 +173,6 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 {
   struct pin_entry_info_s *pi;
   int rc;
-  int tries = 0;
 
   assert (!opaque);
 

@@ -80,6 +80,8 @@ start_pinentry (void)
   const char *pgmname;
   ASSUAN_CONTEXT ctx;
   const char *argv[5];
+  int no_close_list[3];
+  int i;
 
 #ifdef USE_GNU_PTH
   if (!pth_mutex_acquire (&entry_lock, 0, NULL))
@@ -119,9 +121,19 @@ start_pinentry (void)
     }
   else
     argv[1] = NULL;
+  
+  i=0;
+  if (!opt.running_detached)
+    {
+      if (log_get_fd () != -1)
+        no_close_list[i++] = log_get_fd ();
+      no_close_list[i++] = fileno (stderr);
+    }
+  no_close_list[i] = -1;
 
   /* connect to the pinentry and perform initial handshaking */
-  rc = assuan_pipe_connect (&ctx, opt.pinentry_program, (char**)argv, 0);
+  rc = assuan_pipe_connect (&ctx, opt.pinentry_program, (char**)argv,
+                            no_close_list);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module: %s\n",

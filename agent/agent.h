@@ -45,6 +45,8 @@ struct {
   int no_grab;      /* don't let the pinentry grab the keyboard */
   unsigned long def_cache_ttl;
 
+  int running_detached; /* we are running detached from the tty. */
+
 } opt;
 
 

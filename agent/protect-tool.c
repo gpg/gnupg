@@ -35,6 +35,7 @@
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
 #include "minip12.h"
+#include "simple-pwquery.h"
 
 #define N_(a) a
 #define _(a) a
@@ -55,6 +56,8 @@ enum cmd_and_opt_values
   oShowKeygrip,
 
   oP12Import,
+  oStore,
+  oForce,
 
 aTest };
 
@@ -70,7 +73,14 @@ struct rsa_secret_key_s
 
 
 static int opt_armor;
-static const char *passphrase = "abc";
+static int opt_store;
+static int opt_force;
+static const char *passphrase;
+
+static const char *get_passphrase (void);
+static int store_private_key (const unsigned char *grip,
+                              const void *buffer, size_t length, int force);
+
 
 static ARGPARSE_OPTS opts[] = {
   
@@ -86,6 +96,8 @@ static ARGPARSE_OPTS opts[] = {
   { oShowKeygrip, "show-keygrip", 256, "show the \"keygrip\""},
 
   { oP12Import, "p12-import", 256, "import a PKCS-12 encoded private key"},
+  { oStore,     "store", 0, "store the created key in the appropriate place"},
+  { oForce,     "force", 0, "force overwriting"},
   {0}
 };
 
@@ -283,7 +295,7 @@ read_and_protect (const char *fname)
   if (!key)
     return;
 
-  rc = agent_protect (key, passphrase, &result, &resultlen);
+  rc = agent_protect (key, get_passphrase (), &result, &resultlen);
   xfree (key);
   if (rc)
     {
@@ -318,7 +330,7 @@ read_and_unprotect (const char *fname)
   if (!key)
     return;
 
-  rc = agent_unprotect (key, passphrase, &result, &resultlen);
+  rc = agent_unprotect (key, get_passphrase (), &result, &resultlen);
   xfree (key);
   if (rc)
     {
@@ -564,6 +576,7 @@ import_p12_file (const char *fname)
   struct rsa_secret_key_s sk;
   GcrySexp s_key;
   unsigned char *key;
+  unsigned char grip[20];
 
   /* fixme: we should release some stuff on error */
   
@@ -571,7 +584,7 @@ import_p12_file (const char *fname)
   if (!buf)
     return;
 
-  kparms = p12_parse (buf, buflen, passphrase);
+  kparms = p12_parse (buf, buflen, get_passphrase ());
   xfree (buf);
   if (!kparms)
     {
@@ -626,18 +639,15 @@ import_p12_file (const char *fname)
     }
 
   /* Compute the keygrip. */
-  {
-    unsigned char grip[20];
-    if (!gcry_pk_get_keygrip (s_key, grip))
-      {
-        log_error ("can't calculate keygrip\n");
-        return;
-      }
-    log_info ("keygrip: ");
-    for (i=0; i < 20; i++)
-      log_printf ("%02X", grip[i]);
-    log_printf ("\n");
-  }
+  if (!gcry_pk_get_keygrip (s_key, grip))
+    {
+      log_error ("can't calculate keygrip\n");
+      return;
+    }
+  log_info ("keygrip: ");
+  for (i=0; i < 20; i++)
+    log_printf ("%02X", grip[i]);
+  log_printf ("\n");
 
   /* convert to canonical encoding */
   buflen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_CANON, NULL, 0);
@@ -648,7 +658,7 @@ import_p12_file (const char *fname)
   gcry_sexp_release (s_key);
 
 
-  rc = agent_protect (key, passphrase, &result, &resultlen);
+  rc = agent_protect (key, get_passphrase (), &result, &resultlen);
   xfree (key);
   if (rc)
     {
@@ -666,7 +676,11 @@ import_p12_file (const char *fname)
       resultlen = strlen (p);
     }
 
-  fwrite (result, resultlen, 1, stdout);
+  if (opt_store)
+    store_private_key (grip, result, resultlen, opt_force);
+  else
+    fwrite (result, resultlen, 1, stdout);
+
   xfree (result);
 }
 
@@ -711,6 +725,8 @@ main (int argc, char **argv )
         case oP12Import: cmd = oP12Import; break;
 
         case oPassphrase: passphrase = pargs.r.ret_str; break;
+        case oStore: opt_store = 1; break;
+        case oForce: opt_force = 1; break;
 
         default : pargs.err = 2; break;
 	}
@@ -736,7 +752,8 @@ main (int argc, char **argv )
   else
     show_file (*argv);
 
-  return 0;
+  agent_exit (0);
+  return 8; /*NOTREACHED*/
 }
 
 void
@@ -744,4 +761,96 @@ agent_exit (int rc)
 {
   rc = rc? rc : log_get_errorcount(0)? 2 : 0;
   exit (rc);
+}
+
+
+/* Return the passphrase string and ask the agent if it has not been
+   set from the command line. */
+static const char *
+get_passphrase (void)
+{
+  char *pw;
+  int err;
+
+  if (passphrase)
+    return passphrase;
+
+  pw = simple_pwquery (NULL,NULL, 
+                       _("Enter passphrase:"),
+                       _("Please enter the passphrase or the PIN\n"
+                         "needed to complete this operation."),
+                       &err);
+  if (!pw)
+    {
+      if (err)
+        log_error ("error while asking for the passphrase\n");
+      else
+        log_info ("cancelled\n");
+      agent_exit (0);
+    }
+  passphrase = pw;
+  return passphrase;
+}
+
+
+static int
+store_private_key (const unsigned char *grip,
+                   const void *buffer, size_t length, int force)
+{
+  int i;
+  const char *homedir;
+  char *fname;
+  FILE *fp;
+  char hexgrip[40+4+1];
+  
+  for (i=0; i < 20; i++)
+    sprintf (hexgrip+2*i, "%02X", grip[i]);
+  strcpy (hexgrip+40, ".key");
+
+  homedir = getenv("GNUPGHOME");
+  if (!homedir || !*homedir)
+    homedir = GNUPG_DEFAULT_HOMEDIR;
+
+  fname = make_filename (homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
+  if (force)
+    fp = fopen (fname, "wb");
+  else
+    {
+      if (!access (fname, F_OK))
+      {
+        log_error ("secret key file `%s' already exists\n", fname);
+        xfree (fname);
+        return -1;
+      }
+      fp = fopen (fname, "wbx");  /* FIXME: the x is a GNU extension - let
+                                     configure check whether this actually
+                                     works */
+    }
+
+  if (!fp) 
+    { 
+      log_error ("can't create `%s': %s\n", fname, strerror (errno));
+      xfree (fname);
+      return -1;
+    }
+
+  if (fwrite (buffer, length, 1, fp) != 1)
+    {
+      log_error ("error writing `%s': %s\n", fname, strerror (errno));
+      fclose (fp);
+      remove (fname);
+      xfree (fname);
+      return -1;
+    }
+  if ( fclose (fp) )
+    {
+      log_error ("error closing `%s': %s\n", fname, strerror (errno));
+      remove (fname);
+      xfree (fname);
+      return -1;
+    }
+  log_info ("secret key stored as `%s'\n", fname);
+
+  xfree (fname);
+  return 0;
 }

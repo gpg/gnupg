@@ -660,7 +660,7 @@ p12_parse (const unsigned char *buffer, size_t length, const char *pw)
   bagseqlength = ti.length;
   while (bagseqlength)
     {
-      log_error ( "at offset %u\n", (p - buffer));
+      /*log_debug ( "at offset %u\n", (p - buffer));*/
       where = "bag-sequence";
       if (parse_tag (&p, &n, &ti))
         goto bailout;

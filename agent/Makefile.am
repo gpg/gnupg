@@ -19,7 +19,7 @@
 ## Process this file with automake to produce Makefile.in
 
 bin_PROGRAMS = gpg-agent
-noinst_PROGRAMS = protect-tool
+pkglib_PROGRAMS = protect-tool
 
 AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBGCRYPT_CFLAGS) $(PTH_CFLAGS)
 LDFLAGS = @LDFLAGS@ 
@@ -48,8 +48,8 @@ gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
 protect_tool_SOURCES = \
 	protect-tool.c \
 	protect.c \
-	minip12.c minip12.h
-
+	minip12.c minip12.h \
+	simple-pwquery.c simple-pwquery.h
 
 protect_tool_LDADD = ../jnlib/libjnlib.a \
 		     ../common/libcommon.a $(LIBGCRYPT_LIBS)

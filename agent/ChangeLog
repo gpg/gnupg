@@ -1,3 +1,30 @@
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (pkglib_PROGRAMS): Put protect-tool there.
+
+	* findkey.c (agent_write_private_key,agent_key_from_file)
+	(agent_key_available): Use GNUPG_PRIVATE_KEYS_DIR constant.
+	* gpg-agent.c (main): Use GNUPG_DEFAULT_HOMEDIR constant.
+
+	* protect-tool.c (store_private_key): New.
+	(import_p12_file): Store the new file if requested.
+	(main): New options --force and --store.
+
+	* gpg-agent.c (main): Set a global flag when runing detached.
+	* query.c (start_pinentry): Pass the list of FD to keep in the
+	child when not running detached.
+	* call-scd.c (start_scd): Ditto.
+
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_istrusted, cmd_listtrusted, cmd_marktrusted)
+	(cmd_pksign, cmd_pkdecrypt, cmd_genkey, cmd_get_passphrase)
+	(cmd_learn): Print an error message for a failed operation.
+
+	* simple-pwquery.c, simple-pwquery.h: New.
+	* protect-tool. (get_passphrase): New, used to ge a passphrase
+	from the agent if none was given on the command line.
+
 2002-06-25  Werner Koch  <wk@gnupg.org>
 
 	* protect-tool.c (rsa_key_check): New.
