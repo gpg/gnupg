@@ -1189,6 +1189,14 @@ needed for some German keys generated with pgp 2.6.3in. You should really
 avoid using it, because OpenPGP has better mechanics to do separate signing
 and encryption keys.
 </para></listitem></varlistentry>
+<varlistentry>
+
+<term>--allow-freeform-uid</term>
+<listitem><para>
+Disable all checks on the form of the user ID while generating a new
+one.  This option should only be used in very special environments as
+it does not ensure the de-facto standard format of user IDs.
+</para></listitem></varlistentry>
 
 
 <varlistentry>

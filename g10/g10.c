@@ -182,6 +182,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDisableCipherAlgo,
     oDisablePubkeyAlgo,
     oAllowNonSelfsignedUID,
+    oAllowFreeformUID,
     oNoLiteral,
     oSetFilesize,
     oHonorHttpProxy,
@@ -368,6 +369,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDisableCipherAlgo,  "disable-cipher-algo", 2, "@" },
     { oDisablePubkeyAlgo,  "disable-pubkey-algo", 2, "@" },
     { oAllowNonSelfsignedUID, "allow-non-selfsigned-uid", 0, "@" },
+    { oAllowFreeformUID, "allow-freeform-uid", 0, "@" },
     { oNoLiteral, "no-literal", 0, "@" },
     { oSetFilesize, "set-filesize", 20, "@" },
     { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
@@ -920,6 +922,7 @@ main( int argc, char **argv )
 		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
 		break;
 	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
+	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;
 	  case oNoLiteral: opt.no_literal = 1; break;
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy: opt.honor_http_proxy = 1; break;

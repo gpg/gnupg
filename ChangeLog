@@ -1,3 +1,7 @@
+Wed Aug 23 19:52:51 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * acinclude.m4 (GNUPG_CHECK_MLOCK):  Removed that silly mkdir().
+
 Wed Jul 19 11:26:43 CEST 2000  Werner Koch  <wk@openit.de>
 
   * configure.in (mingw32): Changes to allow for mingw32msvc

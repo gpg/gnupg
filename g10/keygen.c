@@ -793,7 +793,11 @@ ask_user_id( int mode )
 		aname = cpr_get("keygen.name",_("Real name: "));
 		trim_spaces(aname);
 		cpr_kill_prompt();
-		if( strpbrk( aname, "<([])>" ) )
+
+		if( opt.allow_freeform_uid )
+		    break;
+
+		if( strpbrk( aname, "<>" ) )
 		    tty_printf(_("Invalid character in name\n"));
 		else if( isdigit(*aname) )
 		    tty_printf(_("Name may not start with a digit\n"));

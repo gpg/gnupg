@@ -333,7 +333,7 @@ define(GNUPG_CHECK_MLOCK,
                     #endif
                 ], [
                     int i;
-                    mkdir ("foo", 0);
+
                     /* glibc defines this for functions which it implements
                      * to always fail with ENOSYS.  Some functions are actually
                      * named something starting with __ and the normal name

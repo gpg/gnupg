@@ -1,3 +1,8 @@
+Wed Aug 23 19:52:51 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * g10.c: New option --allow-freeform-uid. By Jeroen C. van Gelderen.
+        * keygen.c (ask_user_id): Implemented here.
+
 Fri Aug  4 14:23:05 CEST 2000  Werner Koch  <wk@openit.de>
 
   * status.c (do_get_from_fd): Ooops, we used fd instead of opt.command_fd.

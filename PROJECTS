@@ -15,8 +15,9 @@
 
     * add an option to re-create a public key from a secret key; we
       can do this in trustdb.c:verify_own_keys. (special tool?)
-
-    * rewrite --list-packets or put it into another tool.
+      Hmmm, we better drop the duplication of the public part and just keep
+      the secrets in the "secring" - this has the additional that we can
+      put those secrets on a hardware token.
 
     * write a tool to extract selected keys from a file.
 
