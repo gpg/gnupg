@@ -91,6 +91,7 @@ enum cmd_and_opt_values
     aNRSignKey,
     aNRLSignKey,
     aListConfig,
+    aGPGConfList,
     aListPackets,
     aEditKey,
     aDeleteKeys,
@@ -361,6 +362,7 @@ static ARGPARSE_OPTS opts[] = {
     { aImport, "import", 256, N_("import/merge keys")},
     { aFastImport, "fast-import",  256, "@"},
     { aListConfig, "list-config", 256, "@"},
+    { aGPGConfList, "gpgconf-list", 256, "@" },
     { aListPackets,"list-packets",256,N_("list only the sequence of packets")},
     { aExportOwnerTrust,
 	      "export-ownertrust", 256, N_("export the ownertrust values")},
@@ -1220,6 +1222,27 @@ list_config(char *items)
 }
 
 
+/* List options and default values in the GPG Conf format.  This is a
+   new tool distributed with gnupg 1.9.x but we also want some limited
+   support in older gpg versions.  The output is the name of the
+   configuration file and a list of options available for editing by
+   gpgconf.  */
+static void
+gpgconf_list (const char *configfile)
+{
+  /* The following definitions are taken from gnupg/tools/gpgconf-comp.c.  */
+#define GC_OPT_FLAG_NONE	0UL
+#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
+
+  printf ("gpgconf-gpg.conf:%lu:\"%s\n",
+          GC_OPT_FLAG_DEFAULT,configfile?configfile:"/dev/null");
+  printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);
+  printf ("quiet:%lu:\n",   GC_OPT_FLAG_NONE);
+  printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
+}
+
+
+
 /* Collapses argc/argv into a single string that must be freed */
 static char *
 collapse_args(int argc,char *argv[])
@@ -1263,6 +1286,7 @@ main( int argc, char **argv )
     int detached_sig = 0;
     FILE *configfp = NULL;
     char *configname = NULL;
+    char *save_configname = NULL;
     unsigned configlineno;
     int parse_debug = 0;
     int default_config = 1;
@@ -1463,16 +1487,20 @@ main( int argc, char **argv )
       {
 	switch( pargs.r_opt )
 	  {
-	  case aCheckKeys: set_cmd( &cmd, aCheckKeys); break;
-	  case aListConfig: set_cmd( &cmd, aListConfig); break;
-	  case aListPackets: set_cmd( &cmd, aListPackets); break;
-	  case aImport: set_cmd( &cmd, aImport); break;
-	  case aFastImport: set_cmd( &cmd, aFastImport); break;
-	  case aSendKeys: set_cmd( &cmd, aSendKeys); break;
-	  case aRecvKeys: set_cmd( &cmd, aRecvKeys); break;
-	  case aSearchKeys: set_cmd( &cmd, aSearchKeys); break;
-	  case aRefreshKeys: set_cmd( &cmd, aRefreshKeys); break;
-	  case aExport: set_cmd( &cmd, aExport); break;
+	  case aCheckKeys: 
+	  case aListConfig:
+          case aGPGConfList:
+	  case aListPackets:
+	  case aImport: 
+	  case aFastImport: 
+	  case aSendKeys: 
+	  case aRecvKeys: 
+	  case aSearchKeys:
+	  case aRefreshKeys:
+	  case aExport: 
+            set_cmd (&cmd, pargs.r_opt);
+            break;
+
 	  case aExportAll:
 	    opt.export_options|=EXPORT_INCLUDE_NON_RFC;
 	    set_cmd(&cmd,aExport);
@@ -1946,15 +1974,31 @@ main( int argc, char **argv )
 	  }
       }
 
+
     if( configfp ) {
 	fclose( configfp );
 	configfp = NULL;
-	m_free(configname); configname = NULL;
+        /* Remember the first config file name. */
+        if (!save_configname)
+          save_configname = configname;
+        else
+          m_free(configname);
+        configname = NULL;
 	goto next_pass;
     }
     m_free( configname ); configname = NULL;
     if( log_get_errorcount(0) )
 	g10_exit(2);
+
+    /* The command --gpgconf-list is pretty simple and may be called
+       directly after the option parsing. */
+    if (cmd == aGPGConfList)
+      {
+        gpgconf_list (save_configname);
+        g10_exit (0);
+      }
+    m_free (save_configname);
+
     if( nogreeting )
 	greeting = 0;
 

@@ -1,3 +1,7 @@
+2004-03-29  Werner Koch  <wk@gnupg.org>
+
+	* mpi.h: s/exp/exponent/ to shutup a compiler warning.
+
 2004-01-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Add prototype for print_string2().

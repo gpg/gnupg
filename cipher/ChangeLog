@@ -1,3 +1,9 @@
+2004-03-29  Werner Koch  <wk@gnupg.org>
+
+	* elgamal.c (verify): s/exp/exponent/ to shutup a compiler
+	warning.
+	* dsa.c (verify): Ditto.
+
 2003-11-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* elgamal.c (gen_k): New arg SMALL_K.

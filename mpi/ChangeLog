@@ -1,3 +1,8 @@
+2004-03-29  Werner Koch  <wk@gnupg.org>
+
+	* mpi-pow.c (mpi_powm): s/exp/exponent/ to shutup a compiler
+	warning.
+
 2004-01-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* hppa1.1/udiv-qrnnd.S: Alignment fix from Lamont Jones for
