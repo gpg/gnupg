@@ -431,7 +431,8 @@ proc_encrypted( CTX c, PACKET *pkt )
         else if ( check_cipher_algo(CIPHER_ALGO_IDEA) ) {
             algo = opt.def_cipher_algo;
             if (!algo)
-                algo = opt.s2k_cipher_algo;;
+                algo = opt.s2k_cipher_algo;
+	    idea_cipher_warn();
             log_info (_("IDEA cipher unavailable, "
                         "optimistically attempting to use %s instead\n"),
                        cipher_algo_to_string(algo));

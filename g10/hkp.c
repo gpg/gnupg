@@ -75,7 +75,7 @@ hkp_ask_import( u32 *keyid, void *stats_handle)
 	    (ulong)keyid[1] );
 
   if(opt.keyserver_options.verbose>2)
-    log_info("Request is \"%s\"\n",request);
+    log_info("request is \"%s\"\n",request);
 
     rc = http_open_document( &hd, request, hflags );
     if( rc ) {
@@ -129,7 +129,7 @@ hkp_export( STRLIST users )
 	     atoi(opt.keyserver_port)>0?opt.keyserver_port:"");
 
   if(opt.keyserver_options.verbose>2)
-    log_info("Request is \"%s\"\n",request);
+    log_info("request is \"%s\"\n",request);
 
     rc = http_open( &hd, HTTP_REQ_POST, request , hflags );
     if( rc ) {
@@ -232,7 +232,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 
       if(!(revoked && !opt.keyserver_options.include_revoked))
 	{
-	  char intstr[20];
+	  char intstr[11];
 
 	  iobuf_writestr(buffer,key);
 	  iobuf_writestr(buffer,":");
@@ -454,7 +454,7 @@ int hkp_search(STRLIST tokens)
 	  searchurl);
 
   if(opt.keyserver_options.verbose>2)
-    log_info("Request is \"%s\"\n",request);
+    log_info("request is \"%s\"\n",request);
 
   rc=http_open_document(&hd,request,hflags);
   if(rc)

@@ -1,3 +1,9 @@
+2001-12-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c, gpgkeys_mailto.in: Fix GNU capitalization
+	issues.  Prefix log messages with "gpgkeys" to clarify which
+	program is generating them.
+
 2001-12-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (search_key): Use unsigned int rather than uint

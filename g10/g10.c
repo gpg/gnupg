@@ -1107,7 +1107,7 @@ main( int argc, char **argv )
             break;
 	  case oKeyServer:
 	    if(parse_keyserver_uri(pargs.r.ret_str))
-	      log_error(_("Could not parse keyserver URI\n"));
+	      log_error(_("could not parse keyserver URI\n"));
 	    break;
 	  case oKeyServerOptions:
 	    parse_keyserver_options(pargs.r.ret_str);
@@ -1133,7 +1133,7 @@ main( int argc, char **argv )
 	  case oHonorHttpProxy:
                 opt.honor_http_proxy = 1;
 		log_info("WARNING: --honor-http-proxy is deprecated.\n");
-		log_info("Please use \"--keyserver-options honor-http-proxy\" instead\n");
+		log_info("please use \"--keyserver-options honor-http-proxy\" instead\n");
 		break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: opt.fixed_list_mode = 1; break;
@@ -2144,9 +2144,15 @@ check_policy_url( const char *s )
 void
 idea_cipher_warn(void)
 {
-  log_info("the IDEA cipher plugin is not present\n");
-  log_info("please see http://www.gnupg.org/why-not-idea.html "
-	   "for more information\n");
+  static int warned=0;
+
+  if(!warned)
+    {
+      log_info("the IDEA cipher plugin is not present\n");
+      log_info("please see http://www.gnupg.org/why-not-idea.html "
+	       "for more information\n");
+      warned=1;
+    }
 }
 
 const char *

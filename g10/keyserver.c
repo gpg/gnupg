@@ -342,7 +342,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	  /* If we get this far the exec failed.  Clean up and return. */
 
 	  if(opt.keyserver_options.verbose>2)
-	    log_error(_("Unable to execute %s: %s\n"),
+	    log_error(_("unable to execute %s: %s\n"),
 		      filename,strerror(errno));
 
 	  if(errno==ENOENT)
@@ -515,13 +515,13 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
       if(ret==127)
 	{
-	  log_error(_("Unable to exec keyserver program\n"));
+	  log_error(_("unable to exec keyserver program\n"));
 	  goto fail;
 	}
 
       if(ret==-1)
 	{
-	  log_error(_("Internal system error while calling keyserver: %s\n"),
+	  log_error(_("internal system error while calling keyserver: %s\n"),
 		    strerror(errno));
 	  goto fail;
 	}
@@ -529,7 +529,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
       fromchild=iobuf_open(tempfile_out);
       if(fromchild==NULL)
 	{
-	  log_error(_("Unable to read keyserver response: %s\n"),
+	  log_error(_("unable to read keyserver response: %s\n"),
 		    strerror(errno));
 	  goto fail;
 	}
@@ -551,7 +551,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
 	  if(atoi(&line[8])!=KEYSERVER_PROTO_VERSION)
 	    {
-	      log_error(_("Invalid keyserver protocol (us %d!=handler %d)\n"),
+	      log_error(_("invalid keyserver protocol (us %d!=handler %d)\n"),
 			KEYSERVER_PROTO_VERSION,atoi(&line[8]));
 	      goto fail;
 	    }
@@ -569,7 +569,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
   if(!gotversion)
     {
-      log_error(_("Keyserver communications error\n"));
+      log_error(_("keyserver communications error\n"));
       goto fail;
     }
 
@@ -730,13 +730,13 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
       switch(rc)
 	{
 	case KEYSERVER_SCHEME_NOT_FOUND:
-	  log_error(_("No handler for keyserver scheme \"%s\"\n"),
+	  log_error(_("no handler for keyserver scheme \"%s\"\n"),
 		    opt.keyserver_scheme);
 	  break;
 
 	case KEYSERVER_INTERNAL_ERROR:
 	default:
-	  log_error(_("Keyserver internal error\n"));
+	  log_error(_("keyserver internal error\n"));
 	  break;
 	}
 
@@ -783,7 +783,7 @@ keyserver_import(STRLIST users)
 	}
       else
 	{
-	  log_error (_("Skipping invalid key ID \"%s\"\n"), users->d );
+	  log_error (_("skipping invalid key ID \"%s\"\n"), users->d );
 	  continue;
 	}
     }
@@ -903,13 +903,10 @@ keyserver_refresh(STRLIST users)
   if(rc)
     return rc;
 
-  /* fixme: this is is a problem: for Example in German you have 1
-     Schlüssel, 2 Schlüssel but 1 Auto, 2 Autos.  There is no
-     regularity in German (afaik); other languages have even more
-     complicates ways.  The latest gettext versions have some code to
-     cope with this, but I haven't looked into it.  The old suggestion
-     is to write 2 full strings and don't use %s */
-  log_info(_("%d key%s to refresh\n"),count,count!=1?"s":"");
+  if(count==1)
+    log_info(_("%d key to refresh\n"),count);
+  else
+    log_info(_("%d keys to refresh\n"),count);
 
   if(count>0)
     rc=keyserver_work(GET,NULL,kidlist,count);
@@ -942,9 +939,9 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
   if(count==0)
     {
       if(searchstr)
-	log_info(_("Key \"%s\" not found on keyserver\n"),searchstr);
+	log_info(_("key \"%s\" not found on keyserver\n"),searchstr);
       else
-	log_info(_("Key not found on keyserver\n"));
+	log_info(_("key not found on keyserver\n"));
       return;
     }
 

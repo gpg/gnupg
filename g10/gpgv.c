@@ -300,6 +300,9 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     return NULL;
 }
 
+/* Stub: no decrypting, so no IDEA needed */
+void
+idea_cipher_warn(void) {}
 
 /* Stubs to void linking to ../cipher/cipher.c */
 int string_to_cipher_algo( const char *string ) { return 0; }

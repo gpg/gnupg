@@ -1,5 +1,11 @@
 2001-12-17  David Shaw  <dshaw@jabberwocky.com>
 
+	* mainproc.c (proc_encrypted): Use generic IDEA warning.
+
+	* gpgv.c: add stub for idea_cipher_warn
+
+	* g10.c, hkp.c, keyserver.c: Fix capitalization and plural issues.
+
 	* encode.c (encode_crypt), sign.c (sign_file, clearsign_file):
 	disable pgp2 mode after the message is no longer pgp2 compatible.
 

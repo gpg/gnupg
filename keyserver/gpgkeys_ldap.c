@@ -71,7 +71,7 @@ int send_key(LDAP *ldap,char *keyid)
   dn=malloc(strlen("pgpCertid=virtual,")+strlen(basekeyspacedn)+1);
   if(dn==NULL)
     {
-      fprintf(console,"gpg: Can't allocate memory for keyserver record\n");
+      fprintf(console,"gpgkeys: can't allocate memory for keyserver record\n");
       goto fail;
     }
 
@@ -81,7 +81,7 @@ int send_key(LDAP *ldap,char *keyid)
   key[0]=malloc(1);
   if(key[0]==NULL)
     {
-      fprintf(console,"gpg: Unable to allocate memory for key\n");
+      fprintf(console,"gpgkeys: unable to allocate memory for key\n");
       goto fail;
     }
 
@@ -119,7 +119,7 @@ int send_key(LDAP *ldap,char *keyid)
 	key[0]=realloc(key[0],keysize);
 	if(key[0]==NULL)
 	  {
-	    fprintf(console,"gpg: Unable to reallocate for key\n");
+	    fprintf(console,"gpgkeys: unable to reallocate for key\n");
 	    goto fail;
 	  }
 
@@ -128,14 +128,14 @@ int send_key(LDAP *ldap,char *keyid)
 
   if(!gotit)
     {
-      fprintf(console,"gpg: keyserver: No KEY %s END found\n",keyid);
+      fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
       goto fail;
     }
 
   err=ldap_add_s(ldap,dn,attrs);
   if(err!=LDAP_SUCCESS)
     {
-      fprintf(console,"gpg: error adding key %s to keyserver: %s\n",
+      fprintf(console,"gpgkeys: error adding key %s to keyserver: %s\n",
 	      keyid,ldap_err2string(err));
       goto fail;
     }
@@ -175,20 +175,20 @@ int get_key(LDAP *ldap,char *getkey)
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
   if(verbose>2)
-    fprintf(console,"LDAP fetch for: %s\n",search);
+    fprintf(console,"gpgkeys: LDAP fetch for: %s\n",search);
 
   if(!verbose)
     attrs[1]=NULL;
 
   fprintf(console,
-	  "gpg: requesting key %s from LDAP keyserver %s\n",
+	  "gpgkeys: requesting key %s from LDAP keyserver %s\n",
 	  getkey,host);
 
   err=ldap_search_s(ldap,basekeyspacedn,
 		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
   if(err!=0)
     {
-      fprintf(console,"gpg: LDAP search error: %s\n",ldap_err2string(err));
+      fprintf(console,"gpgkeys: LDAP search error: %s\n",ldap_err2string(err));
       fprintf(output,"KEY 0x%s FAILED\n",getkey);
       return -1;
     }
@@ -196,7 +196,7 @@ int get_key(LDAP *ldap,char *getkey)
   count=ldap_count_entries(ldap,res);
   if(count<1)
     {
-      fprintf(console,"gpg: Key %s not found on keyserver\n",getkey);
+      fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
       fprintf(output,"KEY 0x%s FAILED\n",getkey);
       return -1;
     }
@@ -284,7 +284,7 @@ int get_key(LDAP *ldap,char *getkey)
       if(vals==NULL)
 	{
 	  fprintf(console,
-		  "gpg: Unable to retrieve key %s from keyserver\n",getkey);
+		  "gpgkeys: unable to retrieve key %s from keyserver\n",getkey);
 	  fprintf(output,"KEY 0x%s FAILED\n",getkey);
 	}
       else
@@ -358,16 +358,16 @@ int search_key(LDAP *ldap,char *searchkey)
 	  !(include_disabled&&include_revoked)?")":"");
 
   if(verbose>2)
-    fprintf(console,"LDAP search for: %s\n",search);
+    fprintf(console,"gpgkeys: LDAP search for: %s\n",search);
 
-  fprintf(console,("gpg: searching for \"%s\" from LDAP server %s\n"),
+  fprintf(console,("gpgkeys: searching for \"%s\" from LDAP server %s\n"),
 	  searchkey,host);
 
   err=ldap_search_s(ldap,basekeyspacedn,
 		    LDAP_SCOPE_SUBTREE,search,attrs,0,&res);
   if(err!=0)
     {
-      fprintf(console,"gpg: LDAP search error: %s\n",ldap_err2string(err));
+      fprintf(console,"gpgkeys: LDAP search error: %s\n",ldap_err2string(err));
       return -1;
     }
 
@@ -637,7 +637,7 @@ int main(int argc,char *argv[])
       keylist=malloc(sizeof(struct keylist));
       if(keylist==NULL)
 	{
-	  fprintf(console,"gpg: Out of memory when building key list\n");
+	  fprintf(console,"gpgkeys: out of memory when building key list\n");
 	  goto fail;
 	}
 
@@ -646,7 +646,7 @@ int main(int argc,char *argv[])
       keyptr->keystr=malloc(MAX_LINE);
       if(keyptr->keystr==NULL)
 	{
-	  fprintf(console,"gpg: Out of memory when building key list\n");
+	  fprintf(console,"gpgkeys: out of memory when building key list\n");
 	  goto fail;
 	}
 
@@ -669,7 +669,7 @@ int main(int argc,char *argv[])
 	  keyptr->next=malloc(sizeof(struct keylist));
 	  if(keyptr->next==NULL)
 	    {
-	      fprintf(console,"gpg: Out of memory when building key list\n");
+	      fprintf(console,"gpgkeys: out of memory when building key list\n");
 	      goto fail;
 	    }
 
@@ -679,14 +679,14 @@ int main(int argc,char *argv[])
 	  keyptr->keystr=malloc(MAX_LINE);
 	  if(keyptr->keystr==NULL)
 	    {
-	      fprintf(console,"gpg: Out of memory when building key list\n");
+	      fprintf(console,"gpgkeys: out of memory when building key list\n");
 	      goto fail;
 	    }
 	}
     }
   else
     {
-      fprintf(console,"gpg: No keyserver command specified\n");
+      fprintf(console,"gpgkeys: no keyserver command specified\n");
       goto fail;
     }
 
@@ -707,14 +707,14 @@ int main(int argc,char *argv[])
   ldap=ldap_init(host,port);
   if(ldap==NULL)
     {
-      fprintf(console,"gpg: Internal LDAP init error: %s\n",strerror(errno));
+      fprintf(console,"gpgkeys: internal LDAP init error: %s\n",strerror(errno));
       goto fail;
     }
 
   err=ldap_simple_bind_s(ldap,NULL,NULL);
   if(err!=0)
     {
-      fprintf(console,"gpg: Internal LDAP bind error: %s\n",
+      fprintf(console,"gpgkeys: internal LDAP bind error: %s\n",
 	      ldap_err2string(err));
       goto fail;
     }
@@ -725,14 +725,14 @@ int main(int argc,char *argv[])
 		    "(objectclass=*)",attrs,0,&res);
   if(err==-1)
     {
-      fprintf(console,"gpg: Error retrieving LDAP server info: %s\n",
+      fprintf(console,"gpgkeys: error retrieving LDAP server info: %s\n",
 	      ldap_err2string(err));
       goto fail;
     }
 
   if(ldap_count_entries(ldap,res)!=1)
     {
-      fprintf(console,"gpg: More than one serverinfo record\n");
+      fprintf(console,"gpgkeys: more than one serverinfo record\n");
       goto fail;
     }
 
@@ -762,7 +762,7 @@ int main(int argc,char *argv[])
       basekeyspacedn=strdup(vals[0]);
       if(basekeyspacedn==NULL)
 	{
-	  fprintf(console,"gpg: Can't allocate string space for LDAP base\n");
+	  fprintf(console,"gpgkeys: can't allocate string space for LDAP base\n");
 	  goto fail;
 	}
 

@@ -112,7 +112,7 @@ if($command=~/get/i || $command=~/search/i)
 
 	if($verbose)
 	{
-	    print STDERR "Key $key requested from $host\n";
+	    print STDERR "gpgkeys: key $key requested from $host\n";
 	}
     }
 }
@@ -149,7 +149,7 @@ if($command=~/send/i)
 
 	if($verbose)
 	{
-	    print STDERR "Key $key sent to $host\n";
+	    print STDERR "gpgkeys: key $key sent to $host\n";
 	}
     }
 }
