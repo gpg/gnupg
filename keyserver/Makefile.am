@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_PROGRAMS = gpgkeys_ldap gpgkeys_hkp
 EXTRA_SCRIPTS = gpgkeys_mailto
 libexecdir = @GNUPG_LIBEXECDIR@
@@ -31,4 +31,4 @@ libexec_SCRIPTS = @GPGKEYS_MAILTO@
 noinst_SCRIPTS = gpgkeys_test
 
 gpgkeys_ldap_LDADD = @LDAPLIBS@ @NETLIBS@
-gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@
+gpgkeys_hkp_LDADD = ../util/libutil.a @NETLIBS@ @INTLLIBS@
