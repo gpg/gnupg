@@ -60,6 +60,67 @@ hash_data (int fd, GCRY_MD_HD md)
   fclose (fp);
 }
 
+static int
+hash_and_copy_data (int fd, GCRY_MD_HD md, KsbaWriter writer)
+{
+  KsbaError err;
+  FILE *fp;
+  char buffer[4096];
+  int nread;
+  int rc = 0;
+  int any = 0;
+
+  fp = fdopen ( dup (fd), "rb");
+  if (!fp)
+    {
+      log_error ("fdopen(%d) failed: %s\n", fd, strerror (errno));
+      return GNUPG_File_Open_Error;
+    }
+
+  do 
+    {
+      nread = fread (buffer, 1, DIM(buffer), fp);
+      if (nread)
+        {
+          any = 1;
+          gcry_md_write (md, buffer, nread);
+          err = ksba_writer_write_octet_string (writer, buffer, nread, 0);
+          if (err)
+            {
+              log_error ("write failed: %s\n", ksba_strerror (err));
+              rc = map_ksba_err (err);
+            }
+        }
+    }
+  while (nread && !rc);
+  if (ferror (fp))
+    {
+      log_error ("read error on fd %d: %s\n", fd, strerror (errno));
+      rc = GNUPG_Read_Error;
+    }
+  fclose (fp);
+  if (!any)
+    {
+      /* We can't allow to sign an empty message becuase it does not
+         make mnuch sense and more seriously, ksba-cms_build has
+         already written the tag for data and now expects an octet
+         string but an octet string of zeize 0 is illegal. */
+      log_error ("cannot sign an empty message\n");
+      rc = GNUPG_No_Data;
+    }
+  if (!rc)
+    {
+      err = ksba_writer_write_octet_string (writer, NULL, 0, 1);
+      if (err)
+        {
+          log_error ("write failed: %s\n", ksba_strerror (err));
+          rc = map_ksba_err (err);
+        }
+    }
+
+  return rc;
+}
+
 
 /* Get the default certificate which is defined as the first one our
    keyDB retruns and has a secret key available */
@@ -227,10 +288,10 @@ add_certificate_list (CTRL ctrl, KsbaCMS cms, KsbaCert cert)
 
 /* Perform a sign operation.  
 
-   Sign the data received on DATA-FD in embedded mode or in deatched
-   mode when DETACHED is true.  Write the signature to OUT_FP The key
-   used to sign is the default - we will extend the fucntion to take a
-   list of fingerprints in the future. */
+   Sign the data received on DATA-FD in embedded mode or in detached
+   mode when DETACHED is true.  Write the signature to OUT_FP.  The
+   key used to sign is the default one - we will extend the function
+   to take a list of fingerprints in the future. */
 int
 gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
 {
@@ -247,13 +308,6 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
   const char *algoid;
   int algo;
   time_t signed_at;
-
-  if (!detached)
-    {
-       rc = seterr (Not_Implemented);
-       goto leave;
-    }
-
 
   kh = keydb_new (0);
   if (!kh)
@@ -415,7 +469,35 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
 
       if (stopreason == KSBA_SR_BEGIN_DATA)
         { /* hash the data and store the message digest */
+          unsigned char *digest;
+          size_t digest_len;
+
           assert (!detached);
+          /* Fixme do this for all signers and get the algo to use from
+             the signer's certificate - does not make mich sense, bu we
+             should do this consistent as we have already done it above.
+             Code is mostly duplicated above. */
+
+          algo = GCRY_MD_SHA1; 
+          rc = hash_and_copy_data (data_fd, data_md, writer);
+          if (rc)
+            goto leave;
+          digest = gcry_md_read (data_md, algo);
+          digest_len = gcry_md_get_algo_dlen (algo);
+          if ( !digest || !digest_len)
+            {
+              log_error ("problem getting the hash of the data\n");
+              rc = GNUPG_Bug;
+              goto leave;
+            }
+          err = ksba_cms_set_message_digest (cms, signer, digest, digest_len);
+          if (err)
+            {
+              log_error ("ksba_cms_set_message_digest failed: %s\n",
+                         ksba_strerror (err));
+              rc = map_ksba_err (err);
+              goto leave;
+            }
         }
       else if (stopreason == KSBA_SR_NEED_SIG)
         { /* calculate the signature for all signers */

@@ -317,8 +317,18 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       rc = keydb_search_issuer_sn (kh, issuer, serial);
       if (rc)
         {
-          log_error ("failed to find the certificate: %s\n",
-                     gnupg_strerror(rc));
+          if (rc == -1)
+            {
+              log_error ("certificate not found\n");
+              rc = GNUPG_No_Public_Key;
+            }
+          else
+            log_error ("failed to find the certificate: %s\n",
+                       gnupg_strerror(rc));
+          gpgsm_status2 (ctrl, STATUS_ERROR, "verify.findkey",
+                         gnupg_error_token (rc), NULL);
+          /* fixme: we might want to append the issuer and serial
+             using our standard notation */
           goto next_signer;
         }
 
@@ -384,7 +394,10 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         log_debug ("signature okay - checking certs\n");
       rc = gpgsm_validate_path (cert, &keyexptime);
       if (rc == GNUPG_Certificate_Expired)
-        gpgsm_status (ctrl, STATUS_EXPKEYSIG, NULL);
+        {
+          gpgsm_status (ctrl, STATUS_EXPKEYSIG, NULL);
+          rc = 0;
+        }
       else
         gpgsm_status (ctrl, STATUS_GOODSIG, NULL);
       
@@ -406,10 +419,12 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         {
           log_error ("invalid certification path: %s\n", gnupg_strerror (rc));
           if (rc == GNUPG_Bad_Certificate_Path
-              || rc == GNUPG_Bad_Certificate)
-            gpgsm_status (ctrl, STATUS_TRUST_NEVER, NULL);
+              || rc == GNUPG_Bad_Certificate
+              || rc == GNUPG_Bad_CA_Certificate
+              || rc == GNUPG_Certificate_Revoked)
+            gpgsm_status (ctrl, STATUS_TRUST_NEVER, gnupg_error_token (rc));
           else
-            gpgsm_status (ctrl, STATUS_TRUST_UNDEFINED, NULL);
+            gpgsm_status (ctrl, STATUS_TRUST_UNDEFINED, gnupg_error_token (rc));
           goto next_signer;
         }
       log_info ("signature is good\n");
@@ -442,6 +457,10 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   gcry_md_close (data_md);
   if (fp)
     fclose (fp);
+
+  if (rc)
+    gpgsm_status2 (ctrl, STATUS_ERROR, "verify.leave",
+                   gnupg_error_token (rc), NULL);
   return rc;
 }
 

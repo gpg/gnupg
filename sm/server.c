@@ -789,6 +789,7 @@ get_status_string ( int no )
     case STATUS_EXPSIG         : s = "EXPSIG"; break;
     case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
     case STATUS_TRUNCATED      : s = "TRUNCATED"; break;
+    case STATUS_ERROR          : s = "ERROR"; break;
     default: s = "?"; break;
     }
   return s;

@@ -1,3 +1,24 @@
+2002-06-12  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (hash_and_copy_data): New.
+	(gpgsm_sign): Implemented normal (non-detached) signatures.
+	* gpgsm.c (main): Ditto.
+
+	* certpath.c (gpgsm_validate_path): Special error handling for
+	no policy match.
+
+2002-06-10  Werner Koch  <wk@gnupg.org>
+
+	* server.c (get_status_string): Add STATUS_ERROR.
+
+	* certpath.c (gpgsm_validate_path): Tweaked the error checking to 
+	return error codes in a more sensitive way.
+	* verify.c (gpgsm_verify): Send status TRUST_NEVER also for a bad
+	CA certificate and when the certificate has been revoked.  Issue
+	TRUST_FULLY even when the cert has expired.  Append an error token
+	to these status lines.  Issue the new generic error status when a
+	cert was not found and when leaving the function.
+
 2002-06-04  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main): New command --list-sigs

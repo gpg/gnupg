@@ -1080,13 +1080,14 @@ main ( int argc, char **argv)
       break;
 
     case aSign: /* sign the given file */
-      /* FIXME: we can only do detached sigs for now and we don't
-         handle --output yet. We should also allow to concatenate
-         multiple files for signing because that is what gpg does.*/
+      /* FIXME: W we don't handle --output yet. We should also allow
+         to concatenate multiple files for signing because that is
+         what gpg does.*/
       if (!argc)
-        gpgsm_sign (&ctrl, 0, 1, stdout); /* create from stdin */
+        gpgsm_sign (&ctrl, 0, detached_sig, stdout); /* create from stdin */
       else if (argc == 1)
-        gpgsm_sign (&ctrl, open_read (*argv), 1, stdout); /* from file */
+        gpgsm_sign (&ctrl, open_read (*argv),
+                    detached_sig, stdout); /* from file */
       else
         wrong_args (_("--sign [datafile]"));
       break;

@@ -317,6 +317,11 @@ gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
   KsbaCert subject_cert = NULL, issuer_cert = NULL;
   time_t current_time = gnupg_get_time ();
   time_t exptime = 0;
+  int any_expired = 0;
+  int any_revoked = 0;
+  int any_no_crl = 0;
+  int any_crl_too_old = 0;
+  int any_no_policy_match = 0;
 
   if (r_exptime)
     *r_exptime = 0;
@@ -376,7 +381,7 @@ gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
 
         if (not_before && current_time < not_before)
           {
-            log_error ("certificate to young; valid from ");
+            log_error ("certificate too young; valid from ");
             gpgsm_dump_time (not_before);
             log_printf ("\n");
             rc = GNUPG_Certificate_Too_Young;
@@ -387,8 +392,7 @@ gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
             log_error ("certificate has expired at ");
             gpgsm_dump_time (not_after);
             log_printf ("\n");
-            rc = GNUPG_Certificate_Expired;
-            goto leave;
+            any_expired = 1;
           }            
       }
 
@@ -399,7 +403,12 @@ gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
       if (!opt.no_policy_check)
         {
           rc = check_cert_policy (subject_cert);
-          if (rc)
+          if (rc == GNUPG_No_Policy_Match)
+            {
+              any_no_policy_match = 1;
+              rc = 1;
+            }
+          else if (rc)
             goto leave;
         }
 
@@ -412,21 +421,24 @@ gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
                 {
                 case GNUPG_Certificate_Revoked:
                   log_error (_("the certificate has been revoked\n"));
+                  any_revoked = 1;
                   break;
                 case GNUPG_No_CRL_Known:
                   log_error (_("no CRL found for certificate\n"));
+                  any_no_crl = 1;
                   break;
                 case GNUPG_CRL_Too_Old:
                   log_error (_("the available CRL is too old\n"));
                   log_info (_("please make sure that the "
                               "\"dirmngr\" is properly installed\n"));
+                  any_crl_too_old = 1;
                   break;
                 default:
                   log_error (_("checking the CRL failed: %s\n"),
                              gnupg_strerror (rc));
-                  break;
+                  goto leave;
                 }
-              goto leave;
+              rc = 0;
             }
         }
 
@@ -551,6 +563,21 @@ gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
     log_info ("policies not checked due to --disable-policy-checks option\n");
   if (opt.no_crl_check)
     log_info ("CRLs not checked due to --disable-crl-checks option\n");
+
+  if (!rc)
+    { /* If we encountered an error somewhere during the checks, set
+         the error code to the most critical one */
+      if (any_revoked)
+        rc = GNUPG_Certificate_Revoked;
+      else if (any_no_crl)
+        rc = GNUPG_No_CRL_Known;
+      else if (any_crl_too_old)
+        rc = GNUPG_CRL_Too_Old;
+      else if (any_no_policy_match)
+        rc = GNUPG_No_Policy_Match;
+      else if (any_expired)
+        rc = GNUPG_Certificate_Expired;
+    }
   
  leave:
   if (r_exptime)
