@@ -12,11 +12,11 @@ The most recent version of the FAQ is available from
 [H body bgcolor=#ffffff text=#000000 link=#1f00ff alink=#ff0000 vlink=#9900dd]
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
-[H pre]
-Version: 0.31
-Last-Modified: Oct 24, 2000
+
+Version: 0.32[H p]
+Last-Modified: Oct 24, 2000[H p]
 Maintained-by: [$maintainer]
-[H/pre]
+
 
 This is the GnuPG FAQ. The latest HTML version is available  
 [H a href=[$hGPG]/faq.html] here[H/a].  
@@ -25,10 +25,10 @@ The index is generated automatically, so there may be errors here.  Not
 all questions may be in the section they belong to. Suggestions about
 how to improve the structure of this FAQ are welcome.
 
-Please send additions and corrections to the maintainer. Don't send
-message like "This should be a FAQ - what's the answer?". If it hasn't
-been asked before, it isn't a FAQ. Maybe you should have a look at the
-mailing list archive. Otherwise, please provide the answer to be
+Please send additions and corrections to the maintainer. Please, don't
+send message like "This should be a FAQ - what's the answer?". If it
+hasn't been asked before, it isn't a FAQ. Maybe you should have a look
+at the mailing list archive. Otherwise, please provide the answer to be
 included here.
 
 
@@ -76,8 +76,9 @@ included here.
 
     [H B]PLEASE:[H/B]
     Before posting to a list, read this FAQ and the available
-    documentation. This way you help people focus on topics that have
-    not yet been resolved.
+    documentation. In addition, search the list archive - maybe your
+    question has already been discussed. This way you help people focus
+    on topics that have not yet been resolved.
     [H /UL]
 
 <Q> Where do I get GnuPG?
@@ -106,10 +107,13 @@ included here.
     random data through /dev/random - this should be the preferred
     choice on these systems. Also Solaris users with the SUNWski package
     installed have a /dev/random. In these cases, use the configure
-    option [H pre]--enable-static-rnd=linux[H/pre].
+    option [H pre]--enable-static-rnd=linux[H/pre]. In addition, there's
+    also the kernel random device by Andi Maier [H a href= http://www.cosy.sbg.ac.at/~andi]
+    <http://www.cosy.sbg.ac.at/~andi>[H /a], but it's still beta. Use at
+    own risk!
 
     On other systems, the Entropy Gathering Daemon (EGD) is a good
-    choice. It is a perl-daemon that monitors system activity nad hashes
+    choice. It is a perl-daemon that monitors system activity and hashes
     it into random data. See the download page [H a href=http://www.gnupg.org/download.html]<http://www.gnupg.org/download.html>[H /a] 
     how to obtain egd. Use [H pre]--enable-static-rnd=egd[H/pre] here.
 
@@ -343,6 +347,26 @@ messages?
     hopefully get a notice of an successful intrusion, so that you in
     turn can revoke all the subkeys installed on that machine and
     install new subkeys.  [H /OL]
+
+<Q> Which email-client can I use with GnuPG?
+
+    Using GnuPG to encrypt email is one of the most popular
+    uses. Several mail clients or mail user-agents (MUA) support GnuPG
+    at varying degrees. Simplifying a bit, there are two ways a mail can
+    be encrypted with GnuPG: the "old style" ASCII armor, i.e. plain
+    text encryption, and RFC2015 style (previously PGP/MIME, now
+    OpenPGP). The latter has full MIME support. Some MUAs support only
+    one of them, so whichever you actually use depends on your needs as
+    well as the capabilities of your adressee.
+
+    The following list is probably not exhaustive:
+
+    OpenPGP: Mutt (Unix), Emacs/Mew, Becky2 (Windows, with plugin),
+             TkRat (Unix). There is effort for a Mozilla plugin and a
+	     group works on support for Emacs/GNUS.
+    
+    ASCII:   Emacs/{VM,GNUS}/MailCrypt, Mutt(Unix), Pine(Unix), and
+             probably many more.
 
 
 
