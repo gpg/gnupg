@@ -207,6 +207,7 @@ static ARGPARSE_OPTS opts[] = {
     { aVerifyFiles, "verify-files" , 256, "@" },
     { aListKeys, "list-keys", 256, N_("list keys")},
     { aListKeys, "list-public-keys", 256, "@" },
+    { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aDummy,    "list-sigs", 256, "@"}, 
     { aDummy,    "check-sigs",256, "@"},
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
@@ -699,6 +700,7 @@ main ( int argc, char **argv)
         case aRecvKeys: set_cmd (&cmd, aRecvKeys); break;
         case aExport: set_cmd (&cmd, aExport); break;
         case aListKeys: set_cmd (&cmd, aListKeys); break;
+        case aListSecretKeys: set_cmd (&cmd, aListSecretKeys); break;
 
         case aDeleteKey:
           set_cmd (&cmd, aDeleteKey);
@@ -1108,15 +1110,14 @@ main ( int argc, char **argv)
     case aListKeys:
       for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
-      gpgsm_list_keys (&ctrl, sl, stdout);
+      gpgsm_list_keys (&ctrl, sl, stdout, 0);
       free_strlist(sl);
       break;
 
     case aListSecretKeys:
-      sl = NULL;
-      for( ; argc; argc--, argv++ )
+      for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
-/*        secret_key_list ( sl ); */
+      gpgsm_list_keys (&ctrl, sl, stdout, 2);
       free_strlist(sl);
       break;
 

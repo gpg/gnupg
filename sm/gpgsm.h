@@ -176,7 +176,7 @@ void gpgsm_release_certlist (CERTLIST list);
 int gpgsm_find_cert (const char *name, KsbaCert *r_cert);
 
 /*-- keylist.c --*/
-void gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp);
+void gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode);
 
 /*-- import.c --*/
 int gpgsm_import (CTRL ctrl, int in_fd);
@@ -207,6 +207,7 @@ int gpgsm_agent_pkdecrypt (const char *keygrip,
                            char **r_buf, size_t *r_buflen);
 int gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey);
 int gpgsm_agent_istrusted (KsbaCert cert);
+int gpgsm_agent_havekey (const char *hexkeygrip);
 
 /*-- call-dirmngr.c --*/
 int gpgsm_dirmngr_isvalid (KsbaCert cert);

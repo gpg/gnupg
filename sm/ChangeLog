@@ -1,3 +1,14 @@
+2002-01-29  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (gpgsm_agent_havekey): New.
+	* keylist.c (list_cert_colon): New arg HAVE_SECRET, print "crs"
+	when we know that the secret key is available.
+	(gpgsm_list_keys): New arg MODE, check whether a secret key is
+	available.  Changed all callers.
+	* gpgsm.c (main): New command --list-secret-keys.
+	* server.c (cmd_listsecretkeys): New.
+	(cmd_listkeys): Return secret keys with "crs" record.
+
 2002-01-28  Werner Koch  <wk@gnupg.org>
 
 	* certreqgen.c (create_request): Store the email address in the req.

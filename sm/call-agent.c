@@ -456,3 +456,26 @@ gpgsm_agent_istrusted (KsbaCert cert)
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
   return map_assuan_err (rc);
 }
+
+
+/* Ask the agent whether the a corresponding secret key is available
+   for the given keygrip */
+int
+gpgsm_agent_havekey (const char *hexkeygrip)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  if (!hexkeygrip || strlen (hexkeygrip) != 40)
+    return GNUPG_Invalid_Value;
+
+  snprintf (line, DIM(line)-1, "HAVEKEY %s", hexkeygrip);
+  line[DIM(line)-1] = 0;
+
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL);
+  return map_assuan_err (rc);
+}

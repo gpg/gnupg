@@ -113,13 +113,13 @@ email_kludge (const char *name)
 
 /* List one certificate in colon mode */
 static void
-list_cert_colon (KsbaCert cert, FILE *fp)
+list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
 {
   int idx, trustletter = 0;
   char *p;
   KsbaSexp sexp;
 
-  fputs ("crt:", fp);
+  fputs (have_secret? "crs:":"crt:", fp);
   trustletter = 0;
 #if 0
   if (is_not_valid (cert))
@@ -216,14 +216,21 @@ list_cert_colon (KsbaCert cert, FILE *fp)
 
 
 
-/* List all keys or just the key given as NAMES */
+/* List all keys or just the key given as NAMES.
+   MODE controls the operation mode: 
+      0 = list all public keys but don't flag secret ones
+      1 = list only public keys
+      2 = list only secret keys
+      3 = list secret and public keys
+ */
 void
-gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp)
+gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
 {
   KEYDB_HANDLE hd;
   KsbaCert cert = NULL;
   int rc=0;
   const char *lastresname, *resname;
+  int have_secret;
 
   hd = keydb_new (0);
   if (!hd)
@@ -262,10 +269,28 @@ gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp)
               lastresname = resname;
             }
         }
-      if (ctrl->with_colons)
-        list_cert_colon (cert, fp);
-      else
-        list_cert_colon (cert, fp);
+
+      have_secret = 0;
+      if (mode)
+        {
+          char *p = gpgsm_get_keygrip_hexstring (cert);
+          if (p)
+            {
+              if (!gpgsm_agent_havekey (p))
+                have_secret = 1;
+              xfree (p);
+            }
+        }
+
+      if (!mode
+          || ((mode & 1) && !have_secret)
+          || ((mode & 2) && have_secret)  )
+        {
+          if (ctrl->with_colons)
+            list_cert_colon (cert, fp, have_secret);
+          else
+            list_cert_colon (cert, fp, have_secret);
+        }
       ksba_cert_release (cert); 
       cert = NULL;
     }
