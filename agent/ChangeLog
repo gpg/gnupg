@@ -1,3 +1,9 @@
+2004-03-16  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (parse_rereadable_options): Use the new
+	DEFAULT_CACHE_TTL macro.
+	(main): Updated --gpgconf-list output.
+
 2004-02-21  Werner Koch  <wk@gnupg.org>
 
 	* command.c (cmd_passwd): Take acount of a key description.

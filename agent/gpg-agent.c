@@ -99,7 +99,7 @@ static ARGPARSE_OPTS opts[] = {
   { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
   { oSh,	"sh",        0, N_("sh-style command output") },
   { oCsh,	"csh",       0, N_("csh-style command output") },
-  { oOptions, "options"  , 2, N_("read options from file")},
+  { oOptions, "options"  , 2, N_("|FILE|read options from FILE")},
   { oDebug,	"debug"     ,4|16, "@"},
   { oDebugAll, "debug-all"     ,0, "@"},
   { oDebugLevel, "debug-level" ,2, "@"},
@@ -127,6 +127,8 @@ static ARGPARSE_OPTS opts[] = {
   {0}
 };
 
+
+#define DEFAULT_CACHE_TTL (10*60) /* 10 minutes */
 
 static volatile int caught_fatal_sig = 0;
 
@@ -323,7 +325,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs)
       opt.no_grab = 0;
       opt.pinentry_program = NULL;
       opt.scdaemon_program = NULL;
-      opt.def_cache_ttl = 10*60; /* default to 10 minutes */
+      opt.def_cache_ttl = DEFAULT_CACHE_TTL;
       opt.ignore_cache_for_signing = 0;
       return 1;
     }
@@ -587,15 +589,40 @@ main (int argc, char **argv )
   if (gpgconf_list)
     { /* List options and default values in the GPG Conf format.  */
 
-      printf ("gpgconf-gpg-agent.conf:\"%s\n", config_filename);
+      /* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
+      /* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
+         FLAGS, AS THEY ARE PART OF THE EXTERNAL INTERFACE.  */
+#define GC_OPT_FLAG_NONE	0UL
+      /* The RUNTIME flag for an option indicates that the option can be
+         changed at runtime.  */
+#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
+      /* The DEFAULT flag for an option indicates that the option has a
+         default value.  */
+#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
+      /* The DEF_DESC flag for an option indicates that the option has a
+         default, which is described by the value of the default field.  */
+#define GC_OPT_FLAG_DEF_DESC	(1UL << 5)
+      /* The NO_ARG_DESC flag for an option indicates that the argument has
+         a default, which is described by the value of the ARGDEF field.  */
+#define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
+
+      printf ("gpgconf-gpg-agent.conf:%lu:\"%s\n",
+              GC_OPT_FLAG_DEFAULT, config_filename);
       
-      printf ("verbose:\n"
-              "quiet:\n"
-              "debug-level:none\n"
-              "log-file:\n"
-              "force:\n"
-              "faked-system-time:\n"
-              "no-greeting:\n");
+      printf ("verbose:%lu:\n"
+              "quiet:%lu:\n"
+              "debug-level:%lu:\"none\":\n"
+              "log-file:%lu:\n",
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME,
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,
+              GC_OPT_FLAG_NONE );
+      printf ("default-cache-ttl:%lu:%d:\n",
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, DEFAULT_CACHE_TTL );
+      printf ("no-grab:%lu:\n", 
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      printf ("ignore-cache-for-signing:%lu:\n",
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
 
       agent_exit (0);
     }
@@ -605,13 +632,13 @@ main (int argc, char **argv )
                 " to run the program in the background\n"));
   
 #ifdef ENABLE_NLS
-  /* gpg-agent usdually does not ooutput any messages becuase it runs
-     in the background.  For log files it is acceptable to have
-     messages always encoded in utf-8.  We switch here to utf-8, so
-     that commands like --help still give native messages.  It is far
-     easier to swicthnonly once instead of for every message and it
-     actually helps when more then one thread is active (avoids
-     required an extra copy step). */
+  /* gpg-agent usually does not output any messages because it runs in
+     the background.  For log files it is acceptable to have messages
+     always encoded in utf-8.  We switch here to utf-8, so that
+     commands like --help still give native messages.  It is far
+     easier to switch only once instead of for every message and it
+     actually helps when more then one thread is active (avoids an
+     extra copy step). */
     bind_textdomain_codeset (PACKAGE, "UTF-8");
 #endif
 
