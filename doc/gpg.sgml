@@ -221,8 +221,10 @@ ones given on the command line.
 <varlistentry>
 <term>--list-secret-keys &OptParmNames;</term>
 <listitem><para>
-List all keys from the secret keyrings, or just the
-ones given on the command line.
+List all keys from the secret keyrings, or just the ones given on the
+command line.  A '#' after the letters 'sec' means that the secret key
+is not usable (for example, if it was created via
+--export-secret-subkeys).
 </para></listitem></varlistentry>
 
 
@@ -964,7 +966,8 @@ from, send keys to, and search for keys on.  The format of the
 the type of keyserver: "hkp" for the Horowitz (or compatible)
 keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
 Horowitz email keyserver.  Note that your particular installation of
-GnuPG may have other keyserver types available as well.
+GnuPG may have other keyserver types available as well.  Keyserver
+schemes are case-insensitive.
 </para><para>
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server.  Using the command "host -l
