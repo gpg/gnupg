@@ -1761,9 +1761,10 @@ main( int argc, char **argv )
 		  {"show-photos",LIST_SHOW_PHOTOS},
 		  {"show-policy-url",LIST_SHOW_POLICY},
 		  {"show-notation",LIST_SHOW_NOTATION},
-		  {"show-keyring",LIST_SHOW_KEYRING},
+		  {"show-preferred-keyserver",LIST_SHOW_KEYSERVER},
 		  {"show-validity",LIST_SHOW_VALIDITY},
 		  {"show-long-keyid",LIST_SHOW_LONG_KEYID},
+		  {"show-keyring",LIST_SHOW_KEYRING},
 		  {"show-sig-expire",LIST_SHOW_SIG_EXPIRE},
 		  {NULL,0}
 		};

@@ -1,5 +1,12 @@
 2003-08-25  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main): Add list-option
+	list-preferred-keyserver.
+
+	* keyedit.c (change_passphrase): When responding 'no' to the blank
+	passphrase question, re-prompt for a new passphrase.  This is bug
+	#202.
+
 	* mainproc.c (check_sig_and_print): Use two different preferred
 	keyserver displays - one if the key is not present (to tell the
 	user where to get the key), the other if it is present (to tell
