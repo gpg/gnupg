@@ -111,13 +111,13 @@ struct pubkey_find_info {
 /*-- pkclist.c --*/
 int  check_signatures_trust( PKT_signature *sig );
 void release_pk_list( PK_LIST pk_list );
-int  build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage );
+int  build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use );
 int  select_algo_from_prefs( PK_LIST pk_list, int preftype );
 
 /*-- skclist.c --*/
 void release_sk_list( SK_LIST sk_list );
 int  build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list,
-					    int unlock, unsigned usage );
+					    int unlock, unsigned use );
 
 /*-- passphrase.h --*/
 int  have_static_passphrase(void);

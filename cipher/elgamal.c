@@ -109,9 +109,9 @@ gen_k( MPI p )
     for(;;) {
 	if( DBG_CIPHER )
 	    fputc('.', stderr);
-	{   char *p = get_random_bits( nbits, 1, 1 );
-	    mpi_set_buffer( k, p, (nbits+7)/8, 0 );
-	    m_free(p);
+	{   char *pp = get_random_bits( nbits, 1, 1 );
+	    mpi_set_buffer( k, pp, (nbits+7)/8, 0 );
+	    m_free(pp);
 	    /* make sure that the number is of the exact lenght */
 	    if( mpi_test_bit( k, nbits-1 ) )
 		mpi_set_highbit( k, nbits-1 );
@@ -530,7 +530,7 @@ elg_get_nbits( int algo, MPI *pkey )
  */
 const char *
 elg_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
-							 int *usage )
+							 int *use )
 {
     *npkey = 3;
     *nskey = 4;
@@ -539,12 +539,12 @@ elg_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
 
     switch( algo ) {
       case PUBKEY_ALGO_ELGAMAL:
-	*usage = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
+	*use = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
 	return "ELG";
       case PUBKEY_ALGO_ELGAMAL_E:
-	*usage = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
+	*use = PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC;
 	return "ELG-E";
-      default: *usage = 0; return NULL;
+      default: *use = 0; return NULL;
     }
 }
 

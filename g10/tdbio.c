@@ -514,7 +514,8 @@ open_db()
     TRUSTREC rec;
     assert( db_fd == -1 );
 
-    lockhandle = create_dotlock( db_name );
+    if( !lockhandle )
+	lockhandle = create_dotlock( db_name );
     if( !lockhandle )
 	log_fatal( _("%s: can't create lock\n"), db_name );
   #ifdef HAVE_DOSISH_SYSTEM
@@ -611,7 +612,7 @@ tdbio_db_matches_options()
  * Return the record number of the keyhash tbl or create a new one.
  */
 static ulong
-get_keyhashrec()
+get_keyhashrec(void)
 {
     static ulong keyhashtbl; /* record number of the key hashtable */
 
@@ -636,7 +637,7 @@ get_keyhashrec()
  * or create a new one.
  */
 static ulong
-get_sdirhashrec()
+get_sdirhashrec(void)
 {
     static ulong sdirhashtbl; /* record number of the hashtable */
 

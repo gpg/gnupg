@@ -1,3 +1,15 @@
+Tue Feb 16 14:10:02 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* g10.c (main): New option --encrypt-to
+
+	* pkclist.c (build_pk_list): Implemented encrypt-to.
+
+	* parse-packet.c (parse_user_id): Removed the hack to work with
+	utf-8 strings.
+
+	* g10.c (main): Install lockfile cleanup handler.
+	* tdbio.c (cleanup): Removed: this is now handled by dotlock.
+
 Sat Feb 13 14:13:04 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* tdbio.c (tdbio_set_dbname): Init lockhandle for a new trustdb

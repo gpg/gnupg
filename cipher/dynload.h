@@ -37,19 +37,19 @@ enum_gnupgext_digests( void **enum_context,
 const char *
 enum_gnupgext_ciphers( void **enum_context, int *algo,
 		       size_t *keylen, size_t *blocksize, size_t *contextsize,
-		       int  (**setkey)( void *c, byte *key, unsigned keylen ),
-		       void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		       void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
+		       int  (**setkeyf)( void *c, byte *key, unsigned keylen ),
+		       void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+		       void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
 		     );
 
 
 const char *
 enum_gnupgext_pubkeys( void **enum_context, int *algo,
-    int *npkey, int *nskey, int *nenc, int *nsig, int *usage,
+    int *npkey, int *nskey, int *nenc, int *nsig, int *use,
     int (**generate)( int algo, unsigned nbits, MPI *skey, MPI **retfactors ),
     int (**check_secret_key)( int algo, MPI *skey ),
-    int (**encrypt)( int algo, MPI *resarr, MPI data, MPI *pkey ),
-    int (**decrypt)( int algo, MPI *result, MPI *data, MPI *skey ),
+    int (**encryptf)( int algo, MPI *resarr, MPI data, MPI *pkey ),
+    int (**decryptf)( int algo, MPI *result, MPI *data, MPI *skey ),
     int (**sign)( int algo, MPI *resarr, MPI data, MPI *skey ),
     int (**verify)( int algo, MPI hash, MPI *data, MPI *pkey,
 		    int (*cmp)(void *, MPI), void *opaquev ),

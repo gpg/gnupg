@@ -49,7 +49,7 @@
  *	    char *ret_str;
  *	} r;			  Return values
  *	struct {
- *	    int index;
+ *	    int idx;
  *	    const char *last;
  *	    void *aliases;
  *	} internal;		  DO NOT CHANGE
@@ -143,7 +143,7 @@ static void
 initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 {
     if( !(arg->flags & (1<<15)) ) { /* initialize this instance */
-	arg->internal.index = 0;
+	arg->internal.idx = 0;
 	arg->internal.last = NULL;
 	arg->internal.inarg = 0;
 	arg->internal.stopped = 0;
@@ -230,7 +230,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 	       ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 {
     int state, i, c;
-    int index=0;
+    int idx=0;
     char keyword[100];
     char *buffer = NULL;
     size_t buflen = 0;
@@ -256,13 +256,13 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		for(i=0; opts[i].short_opt; i++ )
 		    if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
 			break;
-		index = i;
-		arg->r_opt = opts[index].short_opt;
+		idx = i;
+		arg->r_opt = opts[idx].short_opt;
 		if( inverse ) /* this does not have an effect, hmmm */
 		    arg->r_opt = -arg->r_opt;
-		if( !opts[index].short_opt )   /* unknown command/option */
-		    arg->r_opt = (opts[index].flags & 256)? -7:-2;
-		else if( (opts[index].flags & 8) ) /* no argument */
+		if( !opts[idx].short_opt )   /* unknown command/option */
+		    arg->r_opt = (opts[idx].flags & 256)? -7:-2;
+		else if( (opts[idx].flags & 8) ) /* no argument */
 		    arg->r_opt = -3;	       /* error */
 		else			       /* no or optional argument */
 		    arg->r_type = 0;	       /* okay */
@@ -271,9 +271,9 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 	    else if( state == 3 ) {	       /* no argument found */
 		if( in_alias )
 		    arg->r_opt = -3;	       /* error */
-		else if( !(opts[index].flags & 7) ) /* does not take an arg */
+		else if( !(opts[idx].flags & 7) ) /* does not take an arg */
 		    arg->r_type = 0;	       /* okay */
-		else if( (opts[index].flags & 8) )  /* no optional argument */
+		else if( (opts[idx].flags & 8) )  /* no optional argument */
 		    arg->r_type = 0;	       /* okay */
 		else			       /* no required argument */
 		    arg->r_opt = -3;	       /* error */
@@ -301,7 +301,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			}
 		    }
 		}
-		else if( !(opts[index].flags & 7) )  /* does not take an arg */
+		else if( !(opts[idx].flags & 7) )  /* does not take an arg */
 		    arg->r_opt = -6;	    /* error */
 		else {
 		    if( !buffer ) {
@@ -312,7 +312,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			buffer[i] = 0;
 
 		    trim_spaces( buffer );
-		    if( !set_opt_arg(arg, opts[index].flags, buffer) )
+		    if( !set_opt_arg(arg, opts[idx].flags, buffer) )
 			m_free(buffer);
 		}
 		break;
@@ -340,15 +340,15 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 	    for(i=0; opts[i].short_opt; i++ )
 		if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
 		    break;
-	    index = i;
-	    arg->r_opt = opts[index].short_opt;
-	    if( !opts[index].short_opt ) {
+	    idx = i;
+	    arg->r_opt = opts[idx].short_opt;
+	    if( !opts[idx].short_opt ) {
 		if( !strcmp( keyword, "alias" ) ) {
 		    in_alias = 1;
 		    state = 3;
 		}
 		else {
-		    arg->r_opt = (opts[index].flags & 256)? -7:-2;
+		    arg->r_opt = (opts[idx].flags & 256)? -7:-2;
 		    state = -1;        /* skip rest of line and leave */
 		}
 	    }
@@ -445,7 +445,7 @@ find_long_option( ARGPARSE_ARGS *arg,
 int
 arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 {
-    int index;
+    int idx;
     int argc;
     char **argv;
     char *s, *s2;
@@ -454,10 +454,10 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
     initialize( arg, NULL, NULL );
     argc = *arg->argc;
     argv = *arg->argv;
-    index = arg->internal.index;
+    idx = arg->internal.idx;
 
-    if( !index && argc && !(arg->flags & (1<<4)) ) { /* skip the first entry */
-	argc--; argv++; index++;
+    if( !idx && argc && !(arg->flags & (1<<4)) ) { /* skip the first entry */
+	argc--; argv++; idx++;
     }
 
   next_one:
@@ -473,7 +473,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	arg->r_opt = -1;  /* not an option but a argument */
 	arg->r_type = 2;
 	arg->r.ret_str = s;
-	argc--; argv++; index++; /* set to next one */
+	argc--; argv++; idx++; /* set to next one */
     }
     else if( arg->internal.stopped ) { /* ready */
 	arg->r_opt = 0;
@@ -485,7 +485,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	arg->internal.inarg = 0;
 	if( !s[2] && !(arg->flags & (1<<3)) ) { /* stop option processing */
 	    arg->internal.stopped = 1;
-	    argc--; argv++; index++;
+	    argc--; argv++; idx++;
 	    goto next_one;
 	}
 
@@ -548,7 +548,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	    else {
 		set_opt_arg(arg, opts[i].flags, s2);
 		if( !argpos ) {
-		    argc--; argv++; index++; /* skip one */
+		    argc--; argv++; idx++; /* skip one */
 		}
 	    }
 	}
@@ -558,7 +558,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	    else
 		arg->r_type = 0;
 	}
-	argc--; argv++; index++; /* set to next one */
+	argc--; argv++; idx++; /* set to next one */
     }
     else if( (*s == '-' && s[1]) || arg->internal.inarg ) { /* short option */
 	int dash_kludge = 0;
@@ -611,7 +611,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 		}
 		else {
 		    set_opt_arg(arg, opts[i].flags, s2);
-		    argc--; argv++; index++; /* skip one */
+		    argc--; argv++; idx++; /* skip one */
 		}
 	    }
 	    s = "x"; /* so that !s[1] yields false */
@@ -622,14 +622,14 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	}
 	if( !s[1] || dash_kludge ) { /* no more concatenated short options */
 	    arg->internal.inarg = 0;
-	    argc--; argv++; index++;
+	    argc--; argv++; idx++;
 	}
     }
     else if( arg->flags & (1<<2) ) {
 	arg->r_opt = -1;  /* not an option but a argument */
 	arg->r_type = 2;
 	arg->r.ret_str = s;
-	argc--; argv++; index++; /* set to next one */
+	argc--; argv++; idx++; /* set to next one */
     }
     else {
 	arg->internal.stopped = 1; /* stop option processing */
@@ -639,7 +639,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
   leave:
     *arg->argc = argc;
     *arg->argv = argv;
-    arg->internal.index = index;
+    arg->internal.idx = idx;
     return arg->r_opt;
 }
 

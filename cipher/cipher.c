@@ -77,7 +77,7 @@ dummy_decrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
  * Put the static entries into the table.
  */
 static void
-setup_cipher_table()
+setup_cipher_table(void)
 {
 
     int i;
@@ -146,7 +146,7 @@ setup_cipher_table()
  * Try to load all modules and return true if new modules are available
  */
 static int
-load_cipher_modules()
+load_cipher_modules(void)
 {
     static int done = 0;
     static int initialized = 0;

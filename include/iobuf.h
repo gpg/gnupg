@@ -36,8 +36,9 @@
 
 typedef struct iobuf_struct *IOBUF;
 
+/* fixme: we should hide most of this stuff */
 struct iobuf_struct {
-    int usage;		 /* 1 input , 2 output, 3 temp */
+    int use;	       /* 1 input , 2 output, 3 temp */
     unsigned long nlimit;
     unsigned long nbytes; /* used together with nlimit */
     unsigned long ntotal; /* total bytes read (position of stream) */
@@ -69,7 +70,7 @@ struct iobuf_struct {
 
 int iobuf_debug_mode;
 
-IOBUF iobuf_alloc(int usage, size_t bufsize);
+IOBUF iobuf_alloc(int use, size_t bufsize);
 IOBUF iobuf_temp(void);
 IOBUF iobuf_temp_with_content( const char *buffer, size_t length );
 IOBUF iobuf_open( const char *fname );
@@ -136,6 +137,6 @@ int  iobuf_in_block_mode( IOBUF a );
 
 #define iobuf_get_temp_buffer(a) ( (a)->d.buf )
 #define iobuf_get_temp_length(a) ( (a)->d.len )
-#define iobuf_is_temp(a)	 ( (a)->usage == 3 )
+#define iobuf_is_temp(a)	 ( (a)->use == 3 )
 
 #endif /*G10_IOBUF_H*/

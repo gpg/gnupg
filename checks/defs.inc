@@ -81,5 +81,6 @@ no-greeting
 no-secmem-warning
 load-extension ../cipher/tiger
 batch
+lock-once
 EOF
 

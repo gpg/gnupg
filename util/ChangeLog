@@ -1,3 +1,10 @@
+Tue Feb 16 14:10:02 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* strgutil.c (add_to_strglist): Clear the new flags field
+	(append_to_strglist): Ditto.
+
+	* dotlock.c (read_lockfile): terminate pidstr (Michael).
+
 Wed Feb 10 17:15:39 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* dotlock.c (remove_lockfiles): Add cleanup function.

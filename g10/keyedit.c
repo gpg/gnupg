@@ -49,8 +49,8 @@ static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
-static int menu_select_uid( KBNODE keyblock, int index );
-static int menu_select_key( KBNODE keyblock, int index );
+static int menu_select_uid( KBNODE keyblock, int idx );
+static int menu_select_key( KBNODE keyblock, int idx );
 static int count_uids( KBNODE keyblock );
 static int count_uids_with_flag( KBNODE keyblock, unsigned flag );
 static int count_keys_with_flag( KBNODE keyblock, unsigned flag );
@@ -1309,21 +1309,21 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
  * Returns: True if the selection changed;
  */
 static int
-menu_select_uid( KBNODE keyblock, int index )
+menu_select_uid( KBNODE keyblock, int idx )
 {
     KBNODE node;
     int i;
 
     /* first check that the index is valid */
-    if( index ) {
+    if( idx ) {
 	for( i=0, node = keyblock; node; node = node->next ) {
 	    if( node->pkt->pkttype == PKT_USER_ID ) {
-		if( ++i == index )
+		if( ++i == idx )
 		    break;
 	    }
 	}
 	if( !node ) {
-	    tty_printf(_("No user id with index %d\n"), index );
+	    tty_printf(_("No user id with index %d\n"), idx );
 	    return 0;
 	}
     }
@@ -1337,7 +1337,7 @@ menu_select_uid( KBNODE keyblock, int index )
     /* and toggle the new index */
     for( i=0, node = keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
-	    if( ++i == index )
+	    if( ++i == idx )
 		if( (node->flag & NODFLG_SELUID) )
 		    node->flag &= ~NODFLG_SELUID;
 		else
@@ -1353,22 +1353,22 @@ menu_select_uid( KBNODE keyblock, int index )
  * Returns: True if the selection changed;
  */
 static int
-menu_select_key( KBNODE keyblock, int index )
+menu_select_key( KBNODE keyblock, int idx )
 {
     KBNODE node;
     int i;
 
     /* first check that the index is valid */
-    if( index ) {
+    if( idx ) {
 	for( i=0, node = keyblock; node; node = node->next ) {
 	    if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
 		|| node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-		if( ++i == index )
+		if( ++i == idx )
 		    break;
 	    }
 	}
 	if( !node ) {
-	    tty_printf(_("No secondary key with index %d\n"), index );
+	    tty_printf(_("No secondary key with index %d\n"), idx );
 	    return 0;
 	}
     }
@@ -1384,7 +1384,7 @@ menu_select_key( KBNODE keyblock, int index )
     for( i=0, node = keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
 	    || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-	    if( ++i == index )
+	    if( ++i == idx )
 		if( (node->flag & NODFLG_SELKEY) )
 		    node->flag &= ~NODFLG_SELKEY;
 		else

@@ -46,7 +46,7 @@ typedef struct {
 #define OP_MIN_PARTIAL_CHUNK_2POW 9
 
 typedef struct {
-    int usage;
+    int use;
     size_t size;
     size_t count;
     int partial;  /* 1 = partial header, 2 in last partial packet */
@@ -340,7 +340,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	    log_debug("init block_filter %p\n", a );
 	if( a->partial )
 	    a->count = 0;
-	else if( a->usage == 1 )
+	else if( a->use == 1 )
 	    a->count = a->size = 0;
 	else
 	    a->count = a->size; /* force first length bytes */
@@ -352,7 +352,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	*(char**)buf = "block_filter";
     }
     else if( control == IOBUFCTRL_FREE ) {
-	if( a->usage == 2 ) { /* write the end markers */
+	if( a->use == 2 ) { /* write the end markers */
 	    if( a->partial ) {
 		u32 len;
 		/* write out the remaining bytes without a partial header
@@ -426,17 +426,17 @@ print_chain( IOBUF a )
 
 /****************
  * Allocate a new io buffer, with no function assigned.
- * Usage is the desired usage: 1 for input, 2 for output, 3 for temp buffer
+ * Use is the desired usage: 1 for input, 2 for output, 3 for temp buffer
  * BUFSIZE is a suggested buffer size.
  */
 IOBUF
-iobuf_alloc(int usage, size_t bufsize)
+iobuf_alloc(int use, size_t bufsize)
 {
     IOBUF a;
     static int number=0;
 
     a = m_alloc_clear(sizeof *a);
-    a->usage = usage;
+    a->use = use;
     a->d.buf = m_alloc( bufsize );
     a->d.size = bufsize;
     a->no = ++number;
@@ -462,7 +462,7 @@ iobuf_close( IOBUF a )
 
     for( ; a && !rc ; a = a2 ) {
 	a2 = a->chain;
-	if( a->usage == 2 && (rc=iobuf_flush(a)) )
+	if( a->use == 2 && (rc=iobuf_flush(a)) )
 	    log_error("iobuf_flush failed on close: %s\n", g10_errstr(rc));
 
 	if( DBG_IOBUF )
@@ -481,7 +481,7 @@ iobuf_cancel( IOBUF a )
 {
     const char *s;
 
-    if( a && a->usage == 2 ) {
+    if( a && a->use == 2 ) {
 	s = get_real_fname(a);
 	if( s && *s )
 	    remove(s);	/* remove the file. Fixme: this will fail for MSDOZE*/
@@ -720,7 +720,7 @@ iobuf_push_filter( IOBUF a,
     if( a->directfp )
 	BUG();
 
-    if( a->usage == 2 && (rc=iobuf_flush(a)) )
+    if( a->use == 2 && (rc=iobuf_flush(a)) )
 	return rc;
     /* make a copy of the current stream, so that
      * A is the new stream and B the original one.
@@ -733,10 +733,10 @@ iobuf_push_filter( IOBUF a,
     a->filter = NULL;
     a->filter_ov = NULL;
     a->filter_eof = 0;
-    if( a->usage == 3 )
-	a->usage = 2;  /* make a write stream from a temp stream */
+    if( a->use == 3 )
+	a->use = 2;  /* make a write stream from a temp stream */
 
-    if( a->usage == 2 ) { /* allocate a fresh buffer for the original stream */
+    if( a->use == 2 ) { /* allocate a fresh buffer for the original stream */
 	b->d.buf = m_alloc( a->d.size );
 	b->d.len = 0;
 	b->d.start = 0;
@@ -805,7 +805,7 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	log_bug("iobuf_pop_filter(): filter function not found\n");
 
     /* flush this stream if it is an output stream */
-    if( a->usage == 2 && (rc=iobuf_flush(b)) ) {
+    if( a->use == 2 && (rc=iobuf_flush(b)) ) {
 	log_error("iobuf_flush failed in pop_filter: %s\n", g10_errstr(rc));
 	return rc;
     }
@@ -853,7 +853,7 @@ underflow(IOBUF a)
     int rc;
 
     assert( a->d.start == a->d.len );
-    if( a->usage == 3 )
+    if( a->use == 3 )
 	return -1; /* EOF because a temp buffer can't do an underflow */
 
     if( a->filter_eof ) {
@@ -909,7 +909,7 @@ underflow(IOBUF a)
 	  #endif
 
 	}
-	if( a->usage == 1 && rc == -1 ) { /* EOF: we can remove the filter */
+	if( a->use == 1 && rc == -1 ) { /* EOF: we can remove the filter */
 	    size_t dummy_len;
 
 	    /* and tell the filter to free itself */
@@ -965,7 +965,7 @@ iobuf_flush(IOBUF a)
 	return 0;
 
     /*log_debug("iobuf-%d.%d: flush\n", a->no, a->subno );*/
-    if( a->usage == 3 ) { /* increase the temp buffer */
+    if( a->use == 3 ) { /* increase the temp buffer */
 	char *newbuf;
 	size_t newsize = a->d.size + 8192;
 
@@ -978,7 +978,7 @@ iobuf_flush(IOBUF a)
 	a->d.size = newsize;
 	return 0;
     }
-    else if( a->usage != 2 )
+    else if( a->use != 2 )
 	log_bug("flush on non-output iobuf\n");
     else if( !a->filter )
 	log_bug("iobuf_flush: no filter\n");
@@ -1332,15 +1332,15 @@ iobuf_set_block_mode( IOBUF a, size_t n )
 {
     block_filter_ctx_t *ctx = m_alloc_clear( sizeof *ctx );
 
-    assert( a->usage == 1 || a->usage == 2 );
-    ctx->usage = a->usage;
+    assert( a->use == 1 || a->use == 2 );
+    ctx->use = a->use;
     if( !n ) {
-	if( a->usage == 1 )
+	if( a->use == 1 )
 	    log_debug("pop_filter called in set_block_mode - please report\n");
 	pop_filter(a, block_filter, NULL );
     }
     else {
-	ctx->size = n; /* only needed for usage 2 */
+	ctx->size = n; /* only needed for use 2 */
 	iobuf_push_filter(a, block_filter, ctx );
     }
 }
@@ -1354,10 +1354,10 @@ iobuf_set_partial_block_mode( IOBUF a, size_t len )
 {
     block_filter_ctx_t *ctx = m_alloc_clear( sizeof *ctx );
 
-    assert( a->usage == 1 || a->usage == 2 );
-    ctx->usage = a->usage;
+    assert( a->use == 1 || a->use == 2 );
+    ctx->use = a->use;
     if( !len ) {
-	if( a->usage == 1 )
+	if( a->use == 1 )
 	    log_debug("pop_filter called in set_partial_block_mode"
 						    " - please report\n");
 	pop_filter(a, block_filter, NULL );

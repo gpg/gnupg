@@ -1,3 +1,9 @@
+Tue Feb 16 14:10:02 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* configure.in (socket): Check for -lsocket and -lnsl.
+	(osf4): Disable all warnings for DEC's cc.
+	(-Wall): Add more warning options for gcc
+
 Sat Feb 13 12:04:43 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in: Changed detection of compiler flags.

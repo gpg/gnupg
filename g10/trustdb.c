@@ -115,7 +115,7 @@ static int get_dir_record( PKT_public_key *pk, TRUSTREC *rec );
 static void upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig );
 static void upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 		 TRUSTREC *drec, RECNO_LIST *recno_list, int recheck,
-		 TRUSTREC *urec, const byte *uidhash, int revoke );
+		 TRUSTREC *urec, const byte *uidhash, int revoked );
 
 static struct keyid_list *trusted_key_list;
 
@@ -138,7 +138,7 @@ static struct local_id_item *unused_lid_items;
  **********************************************/
 
 static void
-die_invalid_db()
+die_invalid_db(void)
 {
     log_error(_(
 	"The trustdb is corrupted; please run \"gpgm --fix-trustdb\".\n") );
@@ -192,7 +192,7 @@ delete_record( ulong recno )
  * sync the db
  */
 static void
-do_sync( )
+do_sync(void)
 {
     int rc = tdbio_sync();
     if( !rc )
@@ -480,7 +480,7 @@ register_trusted_key( const char *string )
  * Verify that all our public keys are in the trustdb.
  */
 static int
-verify_own_keys()
+verify_own_keys(void)
 {
     int rc;
     void *enum_context = NULL;
@@ -2111,7 +2111,7 @@ check_hint_sig( ulong lid, KBNODE keyblock, u32 *keyid, byte *uidrec_hash,
     PKT_signature *sigpkt = NULL;
     TRUSTREC tmp;
     u32 sigkid[2];
-    int revoke = 0;
+    int revoked = 0;
 
     if( sigrec->r.sig.sig[sigidx].flag & SIGF_CHECKED )
 	log_info(_("NOTE: sig rec %lu[%d] in hintlist "
@@ -2156,7 +2156,7 @@ check_hint_sig( ulong lid, KBNODE keyblock, u32 *keyid, byte *uidrec_hash,
 	    if( sigpkt->keyid[0] == sigkid[0]
 		&& sigpkt->keyid[1] == sigkid[1]
 		&& ( (sigpkt->sig_class&~3) == 0x10
-		     || ( revoke = (sigpkt->sig_class == 0x30)) ) ) {
+		     || ( revoked = (sigpkt->sig_class == 0x30)) ) ) {
 		state = 2;
 		break; /* found */
 	    }
@@ -2186,10 +2186,10 @@ check_hint_sig( ulong lid, KBNODE keyblock, u32 *keyid, byte *uidrec_hash,
 	    log_info("sig %08lX.%lu/%02X%02X/%08lX: %s\n",
 		    (ulong)keyid[1], lid, uhash[18], uhash[19],
 		    (ulong)sigpkt->keyid[1],
-		    revoke? _("Valid certificate revocation")
-			  : _("Good certificate") );
+		    revoked? _("Valid certificate revocation")
+			   : _("Good certificate") );
 	sigrec->r.sig.sig[sigidx].flag = SIGF_CHECKED | SIGF_VALID;
-	if( revoke )
+	if( revoked )
 	    sigrec->r.sig.sig[sigidx].flag |= SIGF_REVOKED;
     }
     else if( rc == G10ERR_NO_PUBKEY ) {
@@ -2779,9 +2779,9 @@ upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig )
     else { /* need more than one pref record */
 	TRUSTREC tmp;
 	ulong nextrn;
-	int n = n_prefs_sig;
 	byte *pp = prefs_sig;
 
+	n = n_prefs_sig;
 	memcpy( prec.r.pref.data, pp, ITEMS_PER_PREF_RECORD );
 	n -= ITEMS_PER_PREF_RECORD;
 	pp += ITEMS_PER_PREF_RECORD;
@@ -2814,7 +2814,7 @@ upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig )
 static void
 upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 		 TRUSTREC *drec, RECNO_LIST *recno_list, int recheck,
-		 TRUSTREC *urec, const byte *uidhash, int revoke )
+		 TRUSTREC *urec, const byte *uidhash, int revoked )
 {
     /* We simply insert the signature into the sig records but
      * avoid duplicate ones.  We do not check them here because
@@ -2893,7 +2893,7 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 	      #endif
 		found_sig = 1;
 	    }
-	    if( !recheck && !revoke && (rec.r.sig.sig[i].flag & SIGF_CHECKED) )
+	    if( !recheck && !revoked && (rec.r.sig.sig[i].flag & SIGF_CHECKED) )
 		continue; /* we already checked this signature */
 	    if( !recheck && (rec.r.sig.sig[i].flag & SIGF_NOPUBKEY) )
 		continue; /* we do not have the public key */
@@ -2907,10 +2907,10 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 			log_info("sig %08lX.%lu/%02X%02X/%08lX: %s\n",
 				(ulong)keyid[1], lid, uidhash[18],
 				uidhash[19], (ulong)sig->keyid[1],
-				revoke? _("Valid certificate revocation")
-				      : _("Good certificate") );
+				revoked? _("Valid certificate revocation")
+				       : _("Good certificate") );
 		    rec.r.sig.sig[i].flag = SIGF_CHECKED | SIGF_VALID;
-		    if( revoke )
+		    if( revoked )
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
 		}
 		else if( rc == G10ERR_NO_PUBKEY ) {
@@ -2922,18 +2922,18 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 				 _("Hmmm, public key lost?") );
 		  #endif
 		    rec.r.sig.sig[i].flag = SIGF_NOPUBKEY;
-		    if( revoke )
+		    if( revoked )
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
 		}
 		else {
 		    log_info("sig %08lX.%lu/%02X%02X/%08lX: %s: %s\n",
 				(ulong)keyid[1], lid, uidhash[18],
 				uidhash[19], (ulong)sig->keyid[1],
-				revoke? _("Invalid certificate revocation")
-				      : _("Invalid certificate"),
+				revoked? _("Invalid certificate revocation")
+				       : _("Invalid certificate"),
 						    g10_errstr(rc));
 		    rec.r.sig.sig[i].flag = SIGF_CHECKED;
-		    if( revoke )
+		    if( revoked )
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
 		}
 		rec.dirty = 1;
@@ -2950,7 +2950,7 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 				(ulong)keyid[1], lid,
 				uidhash[18], uidhash[19], tmp.recnum );
 		    rec.r.sig.sig[i].flag = SIGF_NOPUBKEY;
-		    if( revoke )
+		    if( revoked )
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
 		    rec.dirty = 1;
 		    /* fixme: should we verify that the record is
@@ -2991,11 +2991,11 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 	    log_info("sig %08lX.%lu/%02X%02X/%08lX: %s\n",
 			  (ulong)keyid[1], lid, uidhash[18],
 			   uidhash[19], (ulong)sig->keyid[1],
-				revoke? _("Valid certificate revocation")
-				      : _("Good certificate") );
+				revoked? _("Valid certificate revocation")
+				       : _("Good certificate") );
 	newlid = pk_lid;  /* this is the pk of the signature */
 	newflag = SIGF_CHECKED | SIGF_VALID;
-	if( revoke )
+	if( revoked )
 	    newflag |= SIGF_REVOKED;
     }
     else if( rc == G10ERR_NO_PUBKEY ) {
@@ -3005,19 +3005,19 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 		      uidhash[19], (ulong)sig->keyid[1], g10_errstr(rc) );
 	newlid = create_shadow_dir( sig, lid );
 	newflag = SIGF_NOPUBKEY;
-	if( revoke )
+	if( revoked )
 	    newflag |= SIGF_REVOKED;
     }
     else {
 	log_info( "sig %08lX.%lu/%02X%02X/%08lX: %s: %s\n",
 		    (ulong)keyid[1], lid, uidhash[18], uidhash[19],
 			      (ulong)sig->keyid[1],
-		revoke? _("Invalid certificate revocation")
-		      : _("Invalid certificate"),
+		revoked? _("Invalid certificate revocation")
+		       : _("Invalid certificate"),
 					    g10_errstr(rc));
 	newlid = create_shadow_dir( sig, lid );
 	newflag = SIGF_CHECKED;
-	if( revoke )
+	if( revoked )
 	    newflag |= SIGF_REVOKED;
     }
 
@@ -3264,12 +3264,12 @@ insert_trust_record( PKT_public_key *pk )
     for( node=keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY
 	    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-	    PKT_public_key *pk = node->pkt->pkt.public_key;
-	    pk->local_id = dirrec.r.dir.lid;
+	    PKT_public_key *a_pk = node->pkt->pkt.public_key;
+	    a_pk->local_id = dirrec.r.dir.lid;
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
-	    PKT_signature *sig = node->pkt->pkt.signature;
-	    sig->local_id = dirrec.r.dir.lid;
+	    PKT_signature *a_sig = node->pkt->pkt.signature;
+	    a_sig->local_id = dirrec.r.dir.lid;
 	}
     }
 

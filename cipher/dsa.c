@@ -412,7 +412,7 @@ dsa_get_nbits( int algo, MPI *pkey )
  */
 const char *
 dsa_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
-							 int *usage )
+							 int *use )
 {
     *npkey = 4;
     *nskey = 5;
@@ -420,8 +420,8 @@ dsa_get_info( int algo, int *npkey, int *nskey, int *nenc, int *nsig,
     *nsig = 2;
 
     switch( algo ) {
-      case PUBKEY_ALGO_DSA:   *usage = PUBKEY_USAGE_SIG; return "DSA";
-      default: *usage = 0; return NULL;
+      case PUBKEY_ALGO_DSA:   *use = PUBKEY_USAGE_SIG; return "DSA";
+      default: *use = 0; return NULL;
     }
 }
 

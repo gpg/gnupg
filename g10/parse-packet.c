@@ -1400,19 +1400,8 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + pktlen);
     packet->pkt.user_id->len = pktlen;
     p = packet->pkt.user_id->name;
-    for( ; pktlen; pktlen--, p++ ) {
+    for( ; pktlen; pktlen--, p++ )
 	*p = iobuf_get_noeof(inp);
-	/* 0xff is not a valid utf-8 encoding so we can use it to replace
-	 * Nulls. This has the advantage that we can work with regular
-	 * C strings. When exporting it, we change it back to Null
-	 * the utf-8 functions know about this special convention.
-	 * The advantage of this single character is that we can
-	 * simple replace it.  Problem is that we can't handle the 0xff
-	 * character which may have been used by pref rfc2440 implementations
-	 * I hope we can live with this. */
-	if( !*p )
-	    *p = 0xff;
-    }
     *p = 0;
 
     if( list_mode ) {

@@ -25,9 +25,9 @@
 const char *
 cast5_get_info( int algo, size_t *keylen,
 		   size_t *blocksize, size_t *contextsize,
-		   int	(**setkey)( void *c, byte *key, unsigned keylen ),
-		   void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		   void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
+		   int	(**setkeyf)( void *c, byte *key, unsigned keylen ),
+		   void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
 		 );
 
 #endif /*G10_CAST5_H*/

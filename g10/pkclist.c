@@ -511,13 +511,43 @@ release_pk_list( PK_LIST pk_list )
 }
 
 int
-build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
+build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 {
     PK_LIST pk_list = NULL;
     PKT_public_key *pk=NULL;
     int rc=0;
+    int any_recipients=0;
+    STRLIST rov;
 
-    if( !remusr && !opt.batch ) { /* ask */
+    /* check whether there are any recipients in the list and build the
+     * list of the encrypt-to ones (we always trust them) */
+    for( rov = remusr; rov; rov = rov->next ) {
+	if( !(rov->flags & 1) )
+	    any_recipients = 1;
+	else if( (use & PUBKEY_USAGE_ENC) ) {
+	    pk = m_alloc_clear( sizeof *pk );
+	    pk->pubkey_usage = use;
+	    if( (rc = get_pubkey_byname( NULL, pk, rov->d, NULL )) ) {
+		free_public_key( pk ); pk = NULL;
+		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+	    }
+	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
+		PK_LIST r;
+
+		r = m_alloc( sizeof *r );
+		r->pk = pk; pk = NULL;
+		r->next = pk_list;
+		r->mark = 0;
+		pk_list = r;
+	    }
+	    else {
+		free_public_key( pk ); pk = NULL;
+		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+	    }
+	}
+    }
+
+    if( !any_recipients && !opt.batch ) { /* ask */
 	char *answer=NULL;
 
 	tty_printf(_(
@@ -534,11 +564,11 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 	    if( pk )
 		free_public_key( pk );
 	    pk = m_alloc_clear( sizeof *pk );
-	    pk->pubkey_usage = usage;
+	    pk->pubkey_usage = use;
 	    rc = get_pubkey_byname( NULL, pk, answer, NULL );
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, usage)) ) {
+	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
 		int trustlevel;
 
 		rc = check_trust( pk, &trustlevel );
@@ -554,6 +584,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 		    r->next = pk_list;
 		    r->mark = 0;
 		    pk_list = r;
+		    any_recipients = 1;
 		    break;
 		}
 	    }
@@ -568,12 +599,12 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 	for(; remusr; remusr = remusr->next ) {
 
 	    pk = m_alloc_clear( sizeof *pk );
-	    pk->pubkey_usage = usage;
+	    pk->pubkey_usage = use;
 	    if( (rc = get_pubkey_byname( NULL, pk, remusr->d, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
 	    }
-	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, usage )) ) {
+	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		int trustlevel;
 
 		rc = check_trust( pk, &trustlevel );
@@ -591,6 +622,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 		    r->next = pk_list;
 		    r->mark = 0;
 		    pk_list = r;
+		    any_recipients = 1;
 		}
 		else { /* we don't trust this pk */
 		    free_public_key( pk ); pk = NULL;
@@ -603,8 +635,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 	}
     }
 
-
-    if( !rc && !pk_list ) {
+    if( !rc && !any_recipients ) {
 	log_error(_("no valid addressees\n"));
 	rc = G10ERR_NO_USER_ID;
     }

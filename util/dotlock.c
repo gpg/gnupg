@@ -85,7 +85,7 @@ create_dotlock( const char *file_to_lock )
 
     h = m_alloc_clear( sizeof *h );
 #ifndef HAVE_DOSISH_SYSTEM
-    sprintf( pidstr, "%10d\n", getpid() );
+    sprintf( pidstr, "%10d\n", (int)getpid() );
     /* fixme: add the hostname to the second line (FQDN or IP addr?) */
 
     /* create a temporary file */
@@ -298,12 +298,13 @@ read_lockfile( const char *name )
 	errno = e;
 	return -1;
     }
-    if( read(fd, pidstr, 10 ) != 10 ) {
+    if( read(fd, pidstr, 10 ) != 10 ) {  /* Read 10 digits w/o newline */
 	log_debug("error reading lockfile `%s'", name );
 	close(fd);
 	errno = 0;
 	return -1;
     }
+    pidstr[10] = 0;  /* terminate pid string */
     close(fd);
     pid = atoi(pidstr);
     if( !pid || pid == -1 ) {

@@ -11,12 +11,8 @@ Bugs
     * README does not verify okay. verify inserts an extra CR,LF
       just before "Esoteric Command" (after ~8k of text).
 
-    * Did I add -lsocket and -lnls for Solaris?
-
 Important
 ----------
-    * replace gettext by a non exploitable one.
-
     * Check revocation and expire stuff.  PLEASE: THIS MUST BE TESTED!
 
     * Check calculation of key validity. PLEASE: IT IS IMPORTED THAT
@@ -28,21 +24,9 @@ Important
 
 Needed
 ------
-    * encrypttoself, damit keine Angabe von -r immer noch zu einer
-      abfrage führt.
-
     * remove more "Fixmes"
 
-    * Replace Blowfish by Twofish and add the new encrypted packet type
-      which has a MACing option (append SHA1 hash to the plaintext and
-      encrypt this all) - We need an identifier for Twofish to put this
-      one into the cipher preferences.
-
-    * The -export-dynamic flag to ld works only for FreeBSD 3.0.  It does
-      not exist on FreeBSD's 2.2.x version of ld.
-      Also, on my FreeBSD 2.2-stable box, i simply removed the
-      -Wl,-export-dynamic flag from my Makefile and it linked and seems to
-      be working OK so far.
+    * Implement 256 bit key Twofish.
 
     * Use capabilities if available.
 
@@ -55,6 +39,8 @@ Minor Bugs
       implementaion to a create handle, make and release implemenation
       and use an atexit to cleanup all pending locks.  This is also
       faster.
+    * --list-packets should continue even w/o a passphrase (or in batch
+      mode).
 
 Nice to have
 ------------

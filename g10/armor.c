@@ -608,15 +608,16 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    /* some mailers leave quoted-printable encoded characters
 	     * so we try to workaround this */
 	    if( afx->buffer_pos+2 < afx->buffer_len ) {
-		int c1, c2, c3;
-		c1 = afx->buffer[afx->buffer_pos];
-		c2 = afx->buffer[afx->buffer_pos+1];
-		c3 = afx->buffer[afx->buffer_pos+2];
-		if( isxdigit(c1) && isxdigit(c2) && strchr( "=\n\r\t ", c3 )) {
+		int cc1, cc2, cc3;
+		cc1 = afx->buffer[afx->buffer_pos];
+		cc2 = afx->buffer[afx->buffer_pos+1];
+		cc3 = afx->buffer[afx->buffer_pos+2];
+		if( isxdigit(cc1) && isxdigit(cc2)
+				  && strchr( "=\n\r\t ", cc3 )) {
 		    /* well it seems to be the case - adjust */
-		    c = isdigit(c1)? (c1 - '0'): (toupper(c1)-'A'+10);
+		    c = isdigit(cc1)? (cc1 - '0'): (toupper(cc1)-'A'+10);
 		    c <<= 4;
-		    c |= isdigit(c2)? (c2 - '0'): (toupper(c2)-'A'+10);
+		    c |= isdigit(cc2)? (cc2 - '0'): (toupper(cc2)-'A'+10);
 		    afx->buffer_pos += 2;
 		    afx->qp_detected = 1;
 		    goto again;

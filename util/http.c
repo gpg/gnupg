@@ -61,7 +61,7 @@ static byte *build_rel_path( PARSED_URI uri );
 static int parse_response( HTTP_HD hd );
 
 static int connect_server( const char *server, ushort port );
-static int write_server( int socket, const char *data, size_t length );
+static int write_server( int sock, const char *data, size_t length );
 
 
 int
@@ -75,7 +75,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 
     /* initialize the handle */
     memset( hd, 0, sizeof *hd );
-    hd->socket = -1;
+    hd->sock = -1;
     hd->initialized = 1;
     hd->req_type = reqtype;
 
@@ -83,15 +83,15 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
     if( !rc ) {
 	rc = send_request( hd );
 	if( !rc ) {
-	    hd->fp_write = iobuf_fdopen( hd->socket , "w" );
+	    hd->fp_write = iobuf_fdopen( hd->sock , "w" );
 	    if( hd->fp_write )
 		return 0;
 	    rc = G10ERR_GENERAL;
 	}
     }
 
-    if( !hd->fp_read && !hd->fp_write && hd->socket != -1 )
-	close( hd->socket );
+    if( !hd->fp_read && !hd->fp_write && hd->sock != -1 )
+	close( hd->sock );
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write);
     release_parsed_uri( hd->uri );
@@ -119,15 +119,15 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
     http_start_data( hd ); /* make sure that we are in the data */
     iobuf_flush( hd->fp_write );
 
-    hd->socket = dup( hd->socket );
-    if( hd->socket == -1 )
+    hd->sock = dup( hd->sock );
+    if( hd->sock == -1 )
 	return G10ERR_GENERAL;
     iobuf_close( hd->fp_write );
     hd->fp_write = NULL;
-    shutdown( hd->socket, 1 );
+    shutdown( hd->sock, 1 );
     hd->in_data = 0;
 
-    hd->fp_read = iobuf_fdopen( hd->socket , "r" );
+    hd->fp_read = iobuf_fdopen( hd->sock , "r" );
     if( !hd->fp_read )
 	return G10ERR_GENERAL;
 
@@ -166,8 +166,8 @@ http_close( HTTP_HD hd )
 {
     if( !hd || !hd->initialized )
 	return;
-    if( !hd->fp_read && !hd->fp_write && hd->socket != -1 )
-	close( hd->socket );
+    if( !hd->fp_read && !hd->fp_write && hd->sock != -1 )
+	close( hd->sock );
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write );
     release_parsed_uri( hd->uri );
@@ -427,8 +427,8 @@ send_request( HTTP_HD hd )
     server = *hd->uri->host? hd->uri->host : "localhost";
     port   = hd->uri->port?  hd->uri->port : 80;
 
-    hd->socket = connect_server( server, port );
-    if( hd->socket == -1 )
+    hd->sock = connect_server( server, port );
+    if( hd->sock == -1 )
 	return G10ERR_NETWORK;
 
     p = build_rel_path( hd->uri );
@@ -440,7 +440,7 @@ send_request( HTTP_HD hd )
 						  *p == '/'? "":"/", p );
     m_free(p);
 
-    rc = write_server( hd->socket, request, strlen(request) );
+    rc = write_server( hd->sock, request, strlen(request) );
     m_free( request );
 
     return rc;
@@ -656,13 +656,13 @@ connect_server( const char *server, ushort port )
 
 
 static int
-write_server( int socket, const char *data, size_t length )
+write_server( int sock, const char *data, size_t length )
 {
     int nleft, nwritten;
 
     nleft = length;
     while( nleft > 0 ) {
-	nwritten = write( socket, data, nleft );
+	nwritten = write( sock, data, nleft );
 	if( nwritten == -1 ) {
 	    if( errno == EINTR )
 		continue;

@@ -144,7 +144,7 @@ void cipher_sync( CIPHER_HANDLE c );
 int string_to_pubkey_algo( const char *string );
 const char * pubkey_algo_to_string( int algo );
 int check_pubkey_algo( int algo );
-int check_pubkey_algo2( int algo, unsigned usage );
+int check_pubkey_algo2( int algo, unsigned use );
 int pubkey_get_npkey( int algo );
 int pubkey_get_nskey( int algo );
 int pubkey_get_nsig( int algo );

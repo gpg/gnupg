@@ -101,15 +101,15 @@ register_cipher_extension( const char *mainpgm, const char *fname )
 	mainpgm_path = m_strdup(mainpgm);
   #endif
     if( *fname != '/' ) { /* do tilde expansion etc */
-	char *p ;
+	char *tmp;
 
 	if( strchr(fname, '/') )
-	    p = make_filename(fname, NULL);
+	    tmp = make_filename(fname, NULL);
 	else
-	    p = make_filename(GNUPG_LIBDIR, fname, NULL);
-	el = m_alloc_clear( sizeof *el + strlen(p) );
-	strcpy(el->name, p );
-	m_free(p);
+	    tmp = make_filename(GNUPG_LIBDIR, fname, NULL);
+	el = m_alloc_clear( sizeof *el + strlen(tmp) );
+	strcpy(el->name, tmp );
+	m_free(tmp);
     }
     else {
 	el = m_alloc_clear( sizeof *el + strlen(fname) );
@@ -371,9 +371,9 @@ enum_gnupgext_digests( void **enum_context,
 const char *
 enum_gnupgext_ciphers( void **enum_context, int *algo,
 		       size_t *keylen, size_t *blocksize, size_t *contextsize,
-		       int  (**setkey)( void *c, byte *key, unsigned keylen ),
-		       void (**encrypt)( void *c, byte *outbuf, byte *inbuf ),
-		       void (**decrypt)( void *c, byte *outbuf, byte *inbuf )
+		       int  (**setkeyf)( void *c, byte *key, unsigned keylen ),
+		       void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+		       void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
 		     )
 {
     EXTLIST r;
@@ -419,7 +419,7 @@ enum_gnupgext_ciphers( void **enum_context, int *algo,
 		    continue;
 		*algo = *(int*)sym;
 		algname = (*finfo)( *algo, keylen, blocksize, contextsize,
-				    setkey, encrypt, decrypt );
+				    setkeyf, encryptf, decryptf );
 		if( algname ) {
 		    ctx->r = r;
 		    return algname;
@@ -435,11 +435,11 @@ enum_gnupgext_ciphers( void **enum_context, int *algo,
 
 const char *
 enum_gnupgext_pubkeys( void **enum_context, int *algo,
-    int *npkey, int *nskey, int *nenc, int *nsig, int *usage,
+    int *npkey, int *nskey, int *nenc, int *nsig, int *use,
     int (**generate)( int algo, unsigned nbits, MPI *skey, MPI **retfactors ),
     int (**check_secret_key)( int algo, MPI *skey ),
-    int (**encrypt)( int algo, MPI *resarr, MPI data, MPI *pkey ),
-    int (**decrypt)( int algo, MPI *result, MPI *data, MPI *skey ),
+    int (**encryptf)( int algo, MPI *resarr, MPI data, MPI *pkey ),
+    int (**decryptf)( int algo, MPI *result, MPI *data, MPI *skey ),
     int (**sign)( int algo, MPI *resarr, MPI data, MPI *skey ),
     int (**verify)( int algo, MPI hash, MPI *data, MPI *pkey,
 		    int (*cmp)(void *, MPI), void *opaquev ),
@@ -491,9 +491,9 @@ enum_gnupgext_pubkeys( void **enum_context, int *algo,
 		if( vers != 1 || class != 31 )
 		    continue;
 		*algo = *(int*)sym;
-		algname = (*finfo)( *algo, npkey, nskey, nenc, nsig, usage,
-				    generate, check_secret_key, encrypt,
-				    decrypt, sign, verify, get_nbits );
+		algname = (*finfo)( *algo, npkey, nskey, nenc, nsig, use,
+				    generate, check_secret_key, encryptf,
+				    decryptf, sign, verify, get_nbits );
 		if( algname ) {
 		    ctx->r = r;
 		    return algname;

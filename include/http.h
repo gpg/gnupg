@@ -52,7 +52,7 @@ typedef enum {
 struct http_context {
     int initialized;
     unsigned int status_code;
-    int socket;
+    int sock;
     int in_data;
     IOBUF fp_read;
     IOBUF fp_write;

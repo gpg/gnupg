@@ -29,7 +29,7 @@ int elg_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 		    int (*cmp)(void *, MPI), void *opaquev );
 unsigned elg_get_nbits( int algo, MPI *pkey );
 const char *elg_get_info( int algo, int *npkey, int *nskey,
-				    int *nenc, int *nsig, int *usage );
+				    int *nenc, int *nsig, int *use );
 
 
 #endif /*G10_ELGAMAL_H*/

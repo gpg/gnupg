@@ -90,9 +90,9 @@ dnl AC_CYGWIN32
 
 MPI_OPT_FLAGS=""
 if test "$GCC" = yes; then
-    CFLAGS="$CFLAGS -Wall"
+    CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
     dnl Always enable optimazation in MPI
-    if echo "$CFLAGS" | grep "[-]O" >/dev/null ; then
+    if (echo "$CFLAGS" | grep '[-]O') >/dev/null ; then
         :
     else
         MPI_OPT_FLAGS=-O2
@@ -127,6 +127,13 @@ case "${target}" in
     *-*-hpux*)
         if test -z "$GCC" ; then
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
+        fi
+        ;;
+    *-dec-osf4*)
+        if test -z "$GCC" ; then
+            # Suppress all warnings
+            # to get rid of the unsigned/signed char mismatch warnings.
+            CFLAGS="$CFLAGS -w"
         fi
         ;;
     m68k-atari-mint)
@@ -187,6 +194,10 @@ fi
 if test "$try_gdbm" = yes; then
 AC_CHECK_LIB(gdbm,gdbm_firstkey)
 fi
+
+dnl Solaris needs -lsocket and -lnsl
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(nsl, gethostbyname)
 
 
 if test "$try_dynload" = yes ; then

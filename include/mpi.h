@@ -153,8 +153,8 @@ int mpi_cmp_ui( MPI u, ulong v );
 int mpi_cmp( MPI u, MPI v );
 
 /*-- mpi-scan.c --*/
-int mpi_getbyte( MPI a, unsigned index );
-void mpi_putbyte( MPI a, unsigned index, int value );
+int mpi_getbyte( MPI a, unsigned idx );
+void mpi_putbyte( MPI a, unsigned idx, int value );
 unsigned mpi_trailing_zeros( MPI a );
 
 /*-- mpi-bit.c --*/

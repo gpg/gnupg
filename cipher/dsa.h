@@ -27,6 +27,6 @@ int dsa_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 		    int (*cmp)(void *, MPI), void *opaquev );
 unsigned dsa_get_nbits( int algo, MPI *pkey );
 const char *dsa_get_info( int algo, int *npkey, int *nskey,
-				    int *nenc, int *nsig, int *usage );
+				    int *nenc, int *nsig, int *use );
 
 #endif /*G10_DSA_H*/

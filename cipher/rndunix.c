@@ -401,11 +401,8 @@ slow_poll(FILE *dbgfp, int dbgall, size_t *nbytes )
     fd_set fds;
   #if defined( __hpux )
     size_t maxFD = 0;
-    int pageSize = 4096;	/* PHUX doesn't have getpagesize() */
-  #elif defined( _M_XENIX ) || defined( __aux )
-    int maxFD = 0, pageSize = 4096;/* Nor do others, but they get fd right */
   #else
-    int maxFD = 0, pageSize = getpagesize();
+    int maxFD = 0;
   #endif /* OS-specific brokenness */
     int bufPos, i, usefulness = 0;
 

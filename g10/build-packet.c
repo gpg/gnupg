@@ -677,20 +677,20 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     iobuf_put(a, sig->pubkey_algo );
     iobuf_put(a, sig->digest_algo );
     if( sig->version >= 4 ) {
-	size_t n;
+	size_t nn;
 	/* timestamp and keyid must have been packed into the
 	 * subpackets prior to the call of this function, because
 	 * these subpackets are hashed */
-	n = sig->hashed_data?((sig->hashed_data[0]<<8)
-			      |sig->hashed_data[1])   :0;
-	write_16(a, n);
-	if( n )
-	    iobuf_write( a, sig->hashed_data+2, n );
-	n = sig->unhashed_data?((sig->unhashed_data[0]<<8)
-				|sig->unhashed_data[1])   :0;
-	write_16(a, n);
-	if( n )
-	    iobuf_write( a, sig->unhashed_data+2, n );
+	nn = sig->hashed_data?((sig->hashed_data[0]<<8)
+				|sig->hashed_data[1])	:0;
+	write_16(a, nn);
+	if( nn )
+	    iobuf_write( a, sig->hashed_data+2, nn );
+	nn = sig->unhashed_data?((sig->unhashed_data[0]<<8)
+				  |sig->unhashed_data[1])   :0;
+	write_16(a, nn);
+	if( nn )
+	    iobuf_write( a, sig->unhashed_data+2, nn );
     }
     iobuf_put(a, sig->digest_start[0] );
     iobuf_put(a, sig->digest_start[1] );

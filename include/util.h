@@ -41,7 +41,7 @@ typedef struct {
 	 char *ret_str;
      } r;		    /* Return values */
      struct {
-	 int index;
+	 int idx;
 	 int inarg;
 	 int stopped;
 	 const char *last;

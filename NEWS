@@ -2,6 +2,17 @@
     * changed the internal design of getkey which now allows a
       efficient lookup of multiple keys and add a word match mode.
 
+    * New option --encrypt-to
+
+    * Some changes to the configure stuff.  Switched to automake 1.4.
+      Removed intl/ from CVS, autgen.sh now uses gettextize.
+
+    * Preferences now include twofish and removed preference to Blowfish with
+      a special hack to suppress the "not listed in preferences" warning.
+      This is to allow us to switch completely to Twofish in the near future.
+
+    * Changed the locking stuff.
+
 
 Noteworthy changes in version 0.9.2
 -----------------------------------

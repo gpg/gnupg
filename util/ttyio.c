@@ -76,7 +76,7 @@ cleanup(void)
 #endif
 
 static void
-init_ttyfp()
+init_ttyfp(void)
 {
     if( initialized )
 	return;

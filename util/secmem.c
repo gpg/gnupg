@@ -71,7 +71,7 @@ static int suspend_warning;
 
 
 static void
-print_warn()
+print_warn(void)
 {
     if( !no_warning )
 	log_info(_("Warning: using insecure memory!\n"));

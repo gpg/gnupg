@@ -488,7 +488,7 @@ ask_keysize( int algo )
 
 
 static u32
-ask_expire_interval()
+ask_expire_interval(void)
 {
     char *answer;
     int valid_days=0;

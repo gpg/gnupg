@@ -32,7 +32,7 @@
  * FIXME: This code is VERY ugly!
  */
 int
-mpi_getbyte( MPI a, unsigned index )
+mpi_getbyte( MPI a, unsigned idx )
 {
     int i, j;
     unsigned n;
@@ -43,7 +43,7 @@ mpi_getbyte( MPI a, unsigned index )
     for(n=0,i=0; i < a->nlimbs; i++ ) {
 	limb = ap[i];
 	for( j=0; j < BYTES_PER_MPI_LIMB; j++, n++ )
-	    if( n == index )
+	    if( n == idx )
 		return (limb >> j*8) & 0xff;
     }
     return -1;
@@ -51,10 +51,10 @@ mpi_getbyte( MPI a, unsigned index )
 
 
 /****************
- * Put a value at position INDEX into A. index counts from lsb to msb
+ * Put a value at position IDX into A. idx counts from lsb to msb
  */
 void
-mpi_putbyte( MPI a, unsigned index, int xc )
+mpi_putbyte( MPI a, unsigned idx, int xc )
 {
     int i, j;
     unsigned n;
@@ -66,7 +66,7 @@ mpi_putbyte( MPI a, unsigned index, int xc )
     for(n=0,i=0; i < a->alloced; i++ ) {
 	limb = ap[i];
 	for( j=0; j < BYTES_PER_MPI_LIMB; j++, n++ )
-	    if( n == index ) {
+	    if( n == idx ) {
 	      #if BYTES_PER_MPI_LIMB == 4
 		if( j == 0 )
 		    limb = (limb & 0xffffff00) | c;

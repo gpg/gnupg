@@ -479,15 +479,15 @@ md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 void
 md_start_debug( MD_HANDLE md, const char *suffix )
 {
-    static int index=0;
+    static int idx=0;
     char buf[25];
 
     if( md->debug ) {
 	log_debug("Oops: md debug already started\n");
 	return;
     }
-    index++;
-    sprintf(buf, "dbgmd-%05d.%.10s", index, suffix );
+    idx++;
+    sprintf(buf, "dbgmd-%05d.%.10s", idx, suffix );
     md->debug = fopen(buf, "w");
     if( !md->debug )
 	log_debug("md debug: can't open %s\n", buf );

@@ -20,6 +20,7 @@ GNUPG	Michael Roth	Germany     1998-09-17
 Assigns changes.
 mroth@nessie.de
 Wrote cipher/des.c.
+Changes and bug fixes all over the place.
 
 
 GNUPG	Niklas Hernaeus 	1998-09-18

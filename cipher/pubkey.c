@@ -42,7 +42,7 @@ struct pubkey_table_s {
     int nskey;
     int nenc;
     int nsig;
-    int usage;
+    int use;
     int (*generate)( int algo, unsigned nbits, MPI *skey, MPI **retfactors );
     int (*check_secret_key)( int algo, MPI *skey );
     int (*encrypt)( int algo, MPI *resarr, MPI data, MPI *pkey );
@@ -91,7 +91,7 @@ dummy_get_nbits( int algo, MPI *pkey )
  * Put the static entries into the table.
  */
 static void
-setup_pubkey_table()
+setup_pubkey_table(void)
 {
     int i;
 
@@ -102,7 +102,7 @@ setup_pubkey_table()
 					 &pubkey_table[i].nskey,
 					 &pubkey_table[i].nenc,
 					 &pubkey_table[i].nsig,
-					 &pubkey_table[i].usage );
+					 &pubkey_table[i].use );
     pubkey_table[i].generate	     = elg_generate;
     pubkey_table[i].check_secret_key = elg_check_secret_key;
     pubkey_table[i].encrypt	     = elg_encrypt;
@@ -119,7 +119,7 @@ setup_pubkey_table()
 					 &pubkey_table[i].nskey,
 					 &pubkey_table[i].nenc,
 					 &pubkey_table[i].nsig,
-					 &pubkey_table[i].usage );
+					 &pubkey_table[i].use );
     pubkey_table[i].generate	     = elg_generate;
     pubkey_table[i].check_secret_key = elg_check_secret_key;
     pubkey_table[i].encrypt	     = elg_encrypt;
@@ -136,7 +136,7 @@ setup_pubkey_table()
 					 &pubkey_table[i].nskey,
 					 &pubkey_table[i].nenc,
 					 &pubkey_table[i].nsig,
-					 &pubkey_table[i].usage );
+					 &pubkey_table[i].use );
     pubkey_table[i].generate	     = dsa_generate;
     pubkey_table[i].check_secret_key = dsa_check_secret_key;
     pubkey_table[i].encrypt	     = dummy_encrypt;
@@ -157,7 +157,7 @@ setup_pubkey_table()
  * Try to load all modules and return true if new modules are available
  */
 static int
-load_pubkey_modules()
+load_pubkey_modules(void)
 {
     static int initialized = 0;
     static int done = 0;
@@ -187,7 +187,7 @@ load_pubkey_modules()
     /* now load all extensions */
     while( (name = enum_gnupgext_pubkeys( &context, &ct->algo,
 				&ct->npkey, &ct->nskey, &ct->nenc,
-				&ct->nsig,  &ct->usage,
+				&ct->nsig,  &ct->use,
 				&ct->generate,
 				&ct->check_secret_key,
 				&ct->encrypt,
@@ -273,21 +273,21 @@ check_pubkey_algo( int algo )
 }
 
 /****************
- * a usage of 0 means: don't care
+ * a use of 0 means: don't care
  */
 int
-check_pubkey_algo2( int algo, unsigned usage )
+check_pubkey_algo2( int algo, unsigned use )
 {
     int i;
 
     do {
 	for(i=0; pubkey_table[i].name; i++ )
 	    if( pubkey_table[i].algo == algo ) {
-		if( (usage & PUBKEY_USAGE_SIG)
-		    && !(pubkey_table[i].usage & PUBKEY_USAGE_SIG) )
+		if( (use & PUBKEY_USAGE_SIG)
+		    && !(pubkey_table[i].use & PUBKEY_USAGE_SIG) )
 		    return G10ERR_WR_PUBKEY_ALGO;
-		if( (usage & PUBKEY_USAGE_ENC)
-		    && !(pubkey_table[i].usage & PUBKEY_USAGE_ENC) )
+		if( (use & PUBKEY_USAGE_ENC)
+		    && !(pubkey_table[i].use & PUBKEY_USAGE_ENC) )
 		    return G10ERR_WR_PUBKEY_ALGO;
 		return 0; /* okay */
 	    }

@@ -455,7 +455,7 @@ decrypt_block(	CAST5_context *c, byte *outbuf, byte *inbuf )
 
 
 static const char*
-selftest()
+selftest(void)
 {
     CAST5_context c;
     byte key[16]  = { 0x01, 0x23, 0x45, 0x67, 0x12, 0x34, 0x56, 0x78,

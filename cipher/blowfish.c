@@ -455,7 +455,7 @@ decrypt_block( BLOWFISH_context *bc, byte *outbuf, byte *inbuf )
 
 
 static const char*
-selftest()
+selftest(void)
 {
     BLOWFISH_context c;
     byte plain[] = "BLOWFISH";

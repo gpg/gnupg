@@ -67,6 +67,7 @@ add_to_strlist( STRLIST *list, const char *string )
     STRLIST sl;
 
     sl = m_alloc( sizeof *sl + strlen(string));
+    sl->flags = 0;
     strcpy(sl->d, string);
     sl->next = *list;
     *list = sl;
@@ -79,6 +80,7 @@ append_to_strlist( STRLIST *list, const char *string )
     STRLIST r, sl;
 
     sl = m_alloc( sizeof *sl + strlen(string));
+    sl->flags = 0;
     strcpy(sl->d, string);
     sl->next = NULL;
     if( !*list )

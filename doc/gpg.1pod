@@ -254,9 +254,16 @@ B<--trusted-key>  I<keyid>
     your key.
 
 B<-r>  I<name>, B<--recipient>	I<name>
-    Use I<name> as the user-id for encryption.
-    This option is silently ignored for the list commands,
-    so that it can be used in an options file.
+    Encrypt for user id I<name>.  If this option is not
+    specified, GnuPG asks for the user id.
+
+B<--encrypt-to>  I<name>
+    Same as B<--recipient> but this one is intended for
+    in the options file and may be used together with
+    an own user-id as an "encrypt-to-self".  These keys
+    are only used when there are other recipients given
+    either by use of --recipient or by the asked user id.
+    No trust checking is performed for these user ids.
 
 B<-v>, B<--verbose>
     Give more information during processing. If used

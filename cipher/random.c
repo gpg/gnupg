@@ -106,7 +106,7 @@ static int gather_faked( void (*add)(const void*, size_t, int), int requester,
 
 
 static void
-initialize()
+initialize(void)
 {
     /* The data buffer is allocated somewhat larger, so that
      * we can use this extra space (which is allocated in secure memory)

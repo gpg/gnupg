@@ -226,8 +226,8 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    cipher_encrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );
 	    if( sk->version >= 4 ) {
 	      #define NMPIS (PUBKEY_MAX_NSKEY - PUBKEY_MAX_NPKEY)
-		byte *buffer[NMPIS];
-		unsigned nbytes[NMPIS];
+		byte *bufarr[NMPIS];
+		unsigned narr[NMPIS];
 		unsigned nbits[NMPIS];
 		int ndata=0;
 		byte *p, *data;
@@ -235,23 +235,23 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		for(j=0, i = pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++, j++ ) {
 		    assert( !mpi_is_opaque( sk->skey[i] ) );
-		    buffer[j] = mpi_get_buffer( sk->skey[i], &nbytes[j], NULL );
+		    bufarr[j] = mpi_get_buffer( sk->skey[i], &narr[j], NULL );
 		    nbits[j]  = mpi_get_nbits( sk->skey[i] );
-		    ndata += nbytes[j] + 2;
+		    ndata += narr[j] + 2;
 		}
 		for( ; j < NMPIS; j++ )
-		    buffer[j] = NULL;
+		    bufarr[j] = NULL;
 		ndata += 2; /* for checksum */
 
 		data = m_alloc_secure( ndata );
 		p = data;
-		for(j=0; j < NMPIS && buffer[j]; j++ ) {
+		for(j=0; j < NMPIS && bufarr[j]; j++ ) {
 		    p[0] = nbits[j] >> 8 ;
 		    p[1] = nbits[j];
 		    p += 2;
-		    memcpy(p, buffer[j], nbytes[j] );
-		    p += nbytes[j];
-		    m_free(buffer[j]);
+		    memcpy(p, bufarr[j], narr[j] );
+		    p += narr[j];
+		    m_free(bufarr[j]);
 		}
 	      #undef NMPIS
 		csum = checksum( data, ndata-2);
