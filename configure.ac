@@ -26,7 +26,7 @@ AC_PREREQ(2.52)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
-AC_INIT(gnupg, 1.1.93, bug-gnupg@gnu.org)
+AC_INIT(gnupg, 1.3, bug-gnupg@gnu.org)
 development_version=yes
 
 ALL_LINGUAS="ca cs da de eo el es et fr gl id it ja nl pl pt_BR pt sv tr"
@@ -194,15 +194,14 @@ if test "$use_exec" = yes ; then
         try_ldap=$enableval, try_ldap=yes)
     AC_MSG_RESULT($try_ldap)
 
-    AC_MSG_CHECKING([whether experimental external hkp keyserver support is requested])
-    AC_ARG_ENABLE(external-hkp,
-    [  --enable-external-hkp   enable experimental external HKP keyserver interface],
-        try_hkp=$enableval, try_hkp=no)
+    AC_MSG_CHECKING([whether HKP keyserver support is requested])
+    AC_ARG_ENABLE(hkp,
+    [  --disable-hkp           disable HKP keyserver interface],
+        try_hkp=$enableval, try_hkp=yes)
     AC_MSG_RESULT($try_hkp)
 
     if test "$try_hkp" = yes ; then
-      GPGKEYS_HKP="gpgkeys_hkp"
-      AC_DEFINE(USE_EXTERNAL_HKP,1,[define to use the experimental external HKP keyserver interface])
+      AC_SUBST(GPGKEYS_HKP,"gpgkeys_hkp")
     fi
 
     AC_MSG_CHECKING([whether email keyserver support is requested])
@@ -416,7 +415,6 @@ if test "$try_mailto" = yes ; then
 fi
 
 AC_SUBST(GPGKEYS_MAILTO)
-AC_SUBST(GPGKEYS_HKP)
 
 case "${target}" in
     *-*-mingw32*)
