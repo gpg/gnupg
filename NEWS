@@ -1,10 +1,13 @@
-Noteworthy changes in version ...
+Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------
 
     * Security fix for a format string bug in the tty code.
 
-    * Fixed format string bugs in all po files.  Removed Russian
-      translation due to too many bugs.
+    * Fixed format string bugs in all PO files. 
+
+    * Removed Russian translation due to too many bugs.  The FTP
+      server has an unofficial but better translation in the contrib
+      directory.
 
     * Fixed expire time calculation and keyserver access.
 

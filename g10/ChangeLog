@@ -1,3 +1,8 @@
+2001-05-29  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (generate_subkeypair): Print a warning if a subkey is
+	created on a v3 key. Suggested by Brian M. Carlson.
+
 2001-05-27  Werner Koch  <wk@gnupg.org>
 
 	* keyid.c (get_lsign_letter): New.
