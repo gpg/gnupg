@@ -49,6 +49,7 @@ static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock, int photo );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int  menu_delsig( KBNODE pub_keyblock );
 static void menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_primary_uid( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int menu_set_preferences( KBNODE pub_keyblock, KBNODE sec_keyblock );
@@ -877,10 +878,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
            cmdLSIGN, cmdNRSIGN, cmdNRLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
 	   cmdPRIMARY, cmdDEBUG, cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID,
-           cmdADDKEY, cmdDELKEY, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST,
-           cmdPREF, cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF,
-           cmdSETPREF, cmdUPDPREF, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
-           cmdCHKTRUST, cmdNOP };
+           cmdADDKEY, cmdDELKEY, cmdADDREVOKER, cmdTOGGLE, cmdSELKEY,
+	   cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE, cmdENABLEKEY,
+	   cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF, cmdINVCMD,
+           cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST, cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
 		    int need_sk;
@@ -913,6 +914,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("delphoto"), cmdDELUID    , 0,1,0, NULL },
 	{ N_("addkey")  , cmdADDKEY    , 1,1,0, N_("add a secondary key") },
 	{ N_("delkey")  , cmdDELKEY    , 0,1,0, N_("delete a secondary key") },
+	{ N_("addrevoker"),cmdADDREVOKER,1,1,0, N_("add a revocation key") },
 	{ N_("delsig")  , cmdDELSIG    , 0,1,0, N_("delete signatures") },
 	{ N_("expire")  , cmdEXPIRE    , 1,1,0, N_("change the expire date") },
         { N_("primary") , cmdPRIMARY   , 1,1,0, N_("flag user ID as primary")},
@@ -1244,6 +1246,15 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		    if( sec_keyblock )
 		       sec_modified = 1;
 		}
+	    }
+	    break;
+
+	  case cmdADDREVOKER:
+	    if( menu_addrevoker( keyblock, sec_keyblock ) ) {
+		redisplay = 1;
+		sec_modified = modified = 1;
+		merge_keys_and_selfsig( sec_keyblock );
+		merge_keys_and_selfsig( keyblock );
 	    }
 	    break;
 
@@ -2009,6 +2020,139 @@ menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
        when revoking/removing them */
 }
 
+
+/****************
+ * Ask for a new revoker, do the selfsignature and put it into
+ * both keyblocks.
+ * Return true if there is a new revoker
+ */
+static int
+menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+  PKT_public_key *pk=NULL,*revoker_pk=NULL;
+  PKT_secret_key *sk=NULL;
+  PKT_signature *sig=NULL;
+  PACKET *pkt;
+  struct revocation_key revkey;
+  size_t fprlen;
+  int rc;
+
+  assert(pub_keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  assert(sec_keyblock->pkt->pkttype==PKT_SECRET_KEY);
+
+  pk=pub_keyblock->pkt->pkt.public_key;
+  sk=copy_secret_key(NULL,sec_keyblock->pkt->pkt.secret_key);
+
+  for(;;)
+    {
+      char *answer;
+      u32 keyid[2];
+      char *p;
+      size_t n;
+
+      if(revoker_pk)
+	free_public_key(revoker_pk);
+
+      revoker_pk=m_alloc_clear(sizeof(*revoker_pk));
+
+      tty_printf("\n");
+
+      answer=cpr_get_utf8("keyedit.add_revoker",
+			  _("Enter the user ID of the designated revoker: "));
+      if(answer[0]=='\0' || answer[0]=='\004')
+	goto fail;
+
+      rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL);
+
+      if(rc)
+	{
+	  log_error (_("key `%s' not found: %s\n"),answer,g10_errstr(rc));
+	  continue;
+	}
+
+      fingerprint_from_pk(revoker_pk,revkey.fpr,&fprlen);
+      if(fprlen!=20)
+	{
+	  log_error(_("cannot appoint a PGP 2.x style key as a "
+		      "designated revoker\n"));
+	  continue;
+	}
+
+      if(cmp_public_keys(revoker_pk,pk)==0)
+	{
+	  /* This actually causes no harm (after all, a key that
+	     designates itself as a revoker is the same as a
+	     regular key), but it's easy enough to check. */
+	  log_error(_("you cannot appoint a key as its own "
+		      "designated revoker\n"));
+	  continue;
+	}
+
+      keyid_from_pk(revoker_pk,keyid);
+
+      tty_printf("\npub  %4u%c/%08lX %s   ",
+		 nbits_from_pk( revoker_pk ),
+		 pubkey_letter( revoker_pk->pubkey_algo ),
+		 (ulong)keyid[1], datestr_from_pk(pk) );
+
+      p = get_user_id( keyid, &n );
+      tty_print_utf8_string( p, n );
+      m_free(p);
+      tty_printf("\n");
+      print_fingerprint(revoker_pk,NULL,2);
+      tty_printf("\n");
+
+      tty_printf("WARNING: appointing a key as a designated revoker "
+		 "cannot be undone!\n");
+
+      tty_printf("\n");
+
+      if(!cpr_get_answer_is_yes("keyedit.add_revoker.okay",
+				"Are you sure you want to appoint this "
+				"key as a designated revoker? (y/N): "))
+	continue;
+
+      revkey.class=0x80;
+      revkey.algid=revoker_pk->pubkey_algo;
+      free_public_key(revoker_pk);
+      break;
+    }
+
+  rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x1F, 0, 0, 0, 0,
+			   keygen_add_revkey,&revkey );
+  if( rc )
+    {
+      log_error("signing failed: %s\n", g10_errstr(rc) );
+      goto fail;
+    }
+
+  free_secret_key(sk);
+  sk=NULL;
+
+  /* insert into secret keyblock */
+  pkt = m_alloc_clear( sizeof *pkt );
+  pkt->pkttype = PKT_SIGNATURE;
+  pkt->pkt.signature = copy_signature(NULL, sig);
+  insert_kbnode( sec_keyblock, new_kbnode(pkt), PKT_SIGNATURE );
+
+  /* insert into public keyblock */
+  pkt = m_alloc_clear( sizeof *pkt );
+  pkt->pkttype = PKT_SIGNATURE;
+  pkt->pkt.signature = sig;
+  insert_kbnode( pub_keyblock, new_kbnode(pkt), PKT_SIGNATURE );
+
+  return 1;
+
+ fail:
+  if(sk)
+    free_secret_key(sk);
+  if(sig)
+    free_seckey_enc(sig);
+  if(revoker_pk)
+    free_public_key(revoker_pk);
+
+  return 0;
+}
 
 
 static int

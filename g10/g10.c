@@ -107,6 +107,7 @@ enum cmd_and_opt_values { aNull = 0,
     aExportSecretSub,
     aCheckKeys,
     aGenRevoke,
+    aDesigRevoke,
     aPrimegen,
     aPrintMD,
     aPrintMDs,
@@ -320,6 +321,7 @@ static ARGPARSE_OPTS opts[] = {
     { aNRLSignKey, "nrlsign-key"  ,256, N_("sign a key locally and non-revocably")},
     { aEditKey,  "edit-key"   ,256, N_("sign or edit a key")},
     { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
+    { aDesigRevoke, "desig-revoke",256, "@" },
     { aExport, "export"           , 256, N_("export keys") },
     { aSendKeys, "send-keys"     , 256, N_("export keys to a key server") },
     { aRecvKeys, "recv-keys"     , 256, N_("import keys from a key server") },
@@ -975,6 +977,7 @@ main( int argc, char **argv )
 	  case aEditKey: set_cmd( &cmd, aEditKey); greeting=1; break;
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
 	  case aGenRevoke: set_cmd( &cmd, aGenRevoke); break;
+	  case aDesigRevoke: set_cmd( &cmd, aDesigRevoke); break;
 	  case aVerify: set_cmd( &cmd, aVerify); break;
 	  case aVerifyFiles: set_cmd( &cmd, aVerifyFiles); break;
 	  case aPrimegen: set_cmd( &cmd, aPrimegen); break;
@@ -1937,6 +1940,14 @@ main( int argc, char **argv )
 	    wrong_args("--gen-revoke user-id");
 	username =  make_username(*argv);
 	gen_revoke( username );
+	m_free( username );
+	break;
+
+      case aDesigRevoke:
+	if( argc != 1 )
+	    wrong_args("--desig-revoke user-id");
+	username =  make_username(*argv);
+	gen_desig_revoke( username );
 	m_free( username );
 	break;
 

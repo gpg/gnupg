@@ -74,6 +74,252 @@ revocation_reason_build_cb( PKT_signature *sig, void *opaque )
 
 
 /****************
+ * Generate a revocation certificate for UNAME via a designated revoker
+ */
+int
+gen_desig_revoke( const char *uname )
+{
+    int rc = 0;
+    armor_filter_context_t afx;
+    PACKET pkt;
+    PKT_public_key *pk = NULL;
+    PKT_secret_key *sk = NULL;
+    PKT_signature *sig = NULL;
+    IOBUF out = NULL;
+    struct revocation_reason_info *reason = NULL;
+    KEYDB_HANDLE kdbhd;
+    KEYDB_SEARCH_DESC desc;
+    KBNODE keyblock=NULL,node;
+    u32 keyid[2];
+    int i,any=0;
+
+    if( opt.batch ) {
+	log_error(_("sorry, can't do this in batch mode\n"));
+	return G10ERR_GENERAL;
+    }
+
+    memset( &afx, 0, sizeof afx);
+
+    kdbhd = keydb_new (0);
+    classify_user_id (uname, &desc);
+    rc = desc.mode? keydb_search (kdbhd, &desc, 1) : G10ERR_INV_USER_ID;
+    if (rc) {
+	log_error (_("key `%s' not found: %s\n"),uname, g10_errstr (rc));
+	goto leave;
+    }
+
+    rc = keydb_get_keyblock (kdbhd, &keyblock );
+    if( rc ) {
+	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+	goto leave;
+    }
+
+    /* To parse the revkeys */
+    merge_keys_and_selfsig(keyblock);
+
+    /* get the key from the keyblock */
+    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
+    if( !node ) 
+      BUG ();
+
+    pk=node->pkt->pkt.public_key;
+
+    keyid_from_pk(pk,keyid);
+
+    /* Are we a designated revoker for this key? */
+
+    if(!pk->revkey && pk->numrevkeys)
+      BUG();
+
+    for(i=0;i<pk->numrevkeys;i++)
+      {
+	if(sk)
+	  free_secret_key(sk);
+
+	sk=m_alloc_clear(sizeof(*sk));
+
+	rc=get_seckey_byfprint(sk,pk->revkey[i].fpr,MAX_FINGERPRINT_LEN);
+
+	/* We have the revocation key */
+	if(!rc)
+	  {
+	    size_t n;
+	    char *p;
+	    u32 sk_keyid[2];
+	    PKT_user_id *uid=NULL;
+	    PKT_signature *selfsig=NULL;
+
+	    any=1;
+	    keyid_from_sk(sk,sk_keyid);
+
+	    tty_printf("\npub  %4u%c/%08lX %s   ",
+		       nbits_from_pk( pk ),
+		       pubkey_letter( pk->pubkey_algo ),
+		       (ulong)keyid[1], datestr_from_pk(pk) );
+
+	    p = get_user_id( keyid, &n );
+	    tty_print_utf8_string( p, n );
+	    m_free(p);
+	    tty_printf("\n\n");
+
+	    tty_printf(_("To be revoked by:\n"));
+
+	    tty_printf("\nsec  %4u%c/%08lX %s   ",
+		       nbits_from_sk( sk ),
+		       pubkey_letter( sk->pubkey_algo ),
+		       (ulong)sk_keyid[1], datestr_from_sk(sk) );
+
+	    p = get_user_id( sk_keyid, &n );
+	    tty_print_utf8_string( p, n );
+	    m_free(p);
+	    tty_printf("\n\n");
+
+	    if( !cpr_get_answer_is_yes("gen_desig_revoke.okay",
+		       _("Create a revocation certificate for this key? ")) )
+	      continue;
+
+	    /* get the reason for the revocation (this is always v4) */
+	    reason = ask_revocation_reason( 1, 0, 1 );
+	    if( !reason )
+	      continue;
+
+	    rc = check_secret_key( sk, 0 );
+	    if( rc )
+	      continue;
+
+	    if( !opt.armor )
+	      tty_printf(_("ASCII armored output forced.\n"));
+
+	    if( (rc = open_outfile( NULL, 0, &out )) )
+	      goto leave;
+
+	    afx.what = 1;
+	    afx.hdrlines = "Comment: A revocation certificate should follow\n";
+	    iobuf_push_filter( out, armor_filter, &afx );
+
+	    /* create it */
+	    rc = make_keysig_packet( &sig, pk, NULL, NULL, sk, 0x20, 0,
+				     0, 0, 0,
+				     revocation_reason_build_cb, reason );
+	    if( rc ) {
+	      log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
+	      goto leave;
+	    }
+
+	    /* Spit out a minimal pk as well, since otherwise there is
+               no way to know which key to attach this revocation
+               to. */
+
+	    node=find_kbnode(keyblock,PKT_PUBLIC_KEY);
+	    if(!node)
+	      {
+		rc=G10ERR_GENERAL;
+		log_error(_("key %08lX incomplete\n"),(ulong)keyid[1]);
+		goto leave;
+	      }
+
+	    pkt = *node->pkt;
+	    rc=build_packet(out,&pkt);
+	    if( rc ) {
+	      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	      goto leave;
+	    }
+
+	    init_packet( &pkt );
+	    pkt.pkttype = PKT_SIGNATURE;
+	    pkt.pkt.signature = sig;
+
+	    rc = build_packet( out, &pkt );
+	    if( rc ) {
+	      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	      goto leave;
+	    }
+
+	    while(!selfsig)
+	      {
+		KBNODE signode;
+
+		node=find_next_kbnode(node,PKT_USER_ID);
+		if(!node)
+		  {
+		    /* We're out of user IDs - none were
+                       self-signed. */
+		    if(uid)
+		      break;
+		    else
+		      {
+			rc=G10ERR_GENERAL;
+			log_error(_("key %08lX incomplete\n"),(ulong)keyid[1]);
+			goto leave;
+		      }
+		  }
+
+		if(node->pkt->pkt.user_id->attrib_data)
+		  continue;
+
+		uid=node->pkt->pkt.user_id;
+		signode=node;
+
+		while((signode=find_next_kbnode(signode,PKT_SIGNATURE)))
+		  {
+		    if(keyid[0]==signode->pkt->pkt.signature->keyid[0] &&
+		       keyid[1]==signode->pkt->pkt.signature->keyid[1] &&
+		       IS_UID_SIG(signode->pkt->pkt.signature))
+		      {
+			selfsig=signode->pkt->pkt.signature;
+			break;
+		      }
+		  }
+	      }
+
+	    pkt.pkttype = PKT_USER_ID;
+	    pkt.pkt.user_id = uid;
+
+	    rc = build_packet( out, &pkt );
+	    if( rc ) {
+	      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	      goto leave;
+	    }
+
+	    if(selfsig)
+	      {
+		pkt.pkttype = PKT_SIGNATURE;
+		pkt.pkt.signature = selfsig;
+
+		rc = build_packet( out, &pkt );
+		if( rc ) {
+		  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+		  goto leave;
+		}
+	      }
+
+	    /* and issue a usage notice */
+	    tty_printf(_("Revocation certificate created.\n"));
+	    break;
+	  }
+      }
+
+    if(!any)
+      log_error(_("no revocation keys found for `%s'\n"),uname);
+
+  leave:
+    if( pk )
+	free_public_key( pk );
+    if( sk )
+	free_secret_key( sk );
+    if( sig )
+	free_seckey_enc( sig );
+
+    if( rc )
+	iobuf_cancel(out);
+    else
+	iobuf_close(out);
+    release_revocation_reason_info( reason );
+    return rc;
+}
+
+
+/****************
  * Generate a revocation certificate for UNAME
  */
 int
@@ -81,7 +327,6 @@ gen_revoke( const char *uname )
 {
     int rc = 0;
     armor_filter_context_t afx;
-    compress_filter_context_t zfx;
     PACKET pkt;
     PKT_secret_key *sk; /* used as pointer into a kbnode */
     PKT_public_key *pk = NULL;
@@ -100,7 +345,6 @@ gen_revoke( const char *uname )
     }
 
     memset( &afx, 0, sizeof afx);
-    memset( &zfx, 0, sizeof zfx);
     init_packet( &pkt );
 
     /* search the userid: 
@@ -363,4 +607,3 @@ release_revocation_reason_info( struct revocation_reason_info *reason )
 	m_free( reason );
     }
 }
-

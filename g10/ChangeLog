@@ -1,3 +1,11 @@
+2002-05-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, g10.c (main), revoke.c (gen_desig_revoke): Generate a
+	designated revocation via --desig-revoke
+
+	* keyedit.c (keyedit_menu, menu_addrevoker): New "addrevoker"
+	command to add a designated revoker to a key.
+
 2002-05-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgv.c: Add stub for get_ownertrust().
