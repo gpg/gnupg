@@ -1,3 +1,9 @@
+2003-01-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* sign.c (clearsign_file): Only use pgp2mode with v3 keys and MD5.
+	This matches what we do when decoding such messages and prevents
+	creating a message (v3+RIPEMD/160) that we can't verify.
+
 2003-01-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* sig-check.c (signature_check2): Use G10ERR_GENERAL as the error
