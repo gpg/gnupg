@@ -82,13 +82,30 @@ gpgsm_dump_time (time_t t)
 }
 
 
-static void
-print_dn (char *p)
+void
+gpgsm_dump_string (const char *string)
 {
-  if (!p)
-    log_printf ("error");
+
+  if (!string)
+    log_printf ("[error]");
   else
-    log_printf ("`%s'", p);
+    {
+      const unsigned char *s;
+
+      for (s=string; *s; s++)
+        {
+          if (*s < ' ' || (*s >= 0x7f && *s <= 0xa0))
+            break;
+        }
+      if (!*s && *string != '[')
+        log_printf ("%s", string);
+      else
+        {
+          log_printf ( "[ ");
+          log_printhex (NULL, string, strlen (string));
+          log_printf ( " ]");
+        }
+    }
 }
 
 
@@ -104,7 +121,7 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
   if (cert)
     {
       sexp = ksba_cert_get_serial (cert);
-      log_debug ("  serial: ");
+      log_debug ("     serial: ");
       gpgsm_dump_serial (sexp);
       ksba_free (sexp);
       log_printf ("\n");
@@ -114,19 +131,19 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
       gpgsm_dump_time (t);
       log_printf ("\n");
       t = ksba_cert_get_validity (cert, 1);
-      log_debug ("  notAfter: ");
+      log_debug ("   notAfter: ");
       gpgsm_dump_time (t);
       log_printf ("\n");
 
       dn = ksba_cert_get_issuer (cert, 0);
-      log_debug ("  issuer: ");
-      print_dn (dn);
+      log_debug ("     issuer: ");
+      gpgsm_dump_string (dn);
       ksba_free (dn);
       log_printf ("\n");
     
       dn = ksba_cert_get_subject (cert, 0);
-      log_debug ("  subject: ");
-      print_dn (dn);
+      log_debug ("    subject: ");
+      gpgsm_dump_string (dn);
       ksba_free (dn);
       log_printf ("\n");
 
@@ -138,5 +155,9 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
     }
   log_debug ("END Certificate\n");
 }
+
+
+
+
 
 

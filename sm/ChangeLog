@@ -1,3 +1,9 @@
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (gpgsm_validate_path): Print the DN of a missing issuer.
+	* certdump.c (gpgsm_dump_string): New.
+	(print_dn): Replaced by above.
+
 2002-01-22  Werner Koch  <wk@gnupg.org>
 
 	* certpath.c (unknown_criticals): New.

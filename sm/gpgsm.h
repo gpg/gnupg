@@ -146,6 +146,7 @@ void gpgsm_destroy_writer (Base64Context ctx);
 void gpgsm_dump_cert (const char *text, KsbaCert cert);
 void gpgsm_dump_serial (KsbaConstSexp p);
 void gpgsm_dump_time (time_t t);
+void gpgsm_dump_string (const char *string);
 
 /*-- certcheck.c --*/
 int gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert);

@@ -38,7 +38,9 @@ static int
 unknown_criticals (KsbaCert cert)
 {
   static const char *known[] = {
+    "2.5.29.15", /* keyUsage */
     "2.5.29.19", /* basic Constraints */
+    "2.5.29.32", /* certificatePolicies */
     NULL
   };
   int rc = 0, i, idx, crit;
@@ -232,7 +234,14 @@ gpgsm_validate_path (KsbaCert cert)
       rc = keydb_search_subject (kh, issuer);
       if (rc)
         {
-          log_error ("failed to find issuer's certificate: rc=%d\n", rc);
+          if (rc == -1)
+            {
+              log_info ("issuer certificate (");
+              gpgsm_dump_string (issuer);
+              log_printf (") not found\n");
+            }
+          else
+            log_error ("failed to find issuer's certificate: rc=%d\n", rc);
           rc = GNUPG_Missing_Certificate;
           goto leave;
         }
@@ -340,7 +349,14 @@ gpgsm_basic_cert_check (KsbaCert cert)
       rc = keydb_search_subject (kh, issuer);
       if (rc)
         {
-          log_error ("failed to find issuer's certificate: rc=%d\n", rc);
+          if (rc == -1)
+            {
+              log_info ("issuer certificate (");
+              gpgsm_dump_string (issuer);
+              log_printf (") not found\n");
+            }
+          else
+            log_error ("failed to find issuer's certificate: rc=%d\n", rc);
           rc = GNUPG_Missing_Certificate;
           goto leave;
         }
