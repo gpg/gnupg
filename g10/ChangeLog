@@ -1,3 +1,11 @@
+2002-07-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, exec.h, exec.c (set_exec_path, exec_write), g10.c
+	(main), keyserver.c (keyserver_spawn): If the user does not use
+	"exec-path", completely replace $PATH with GNUPG_LIBEXECDIR before
+	calling the keyserver helper.  If the user does use "exec-path",
+	append GNUPG_LIBEXECDIR after the specified path.
+
 2002-07-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (parse_import_options), export.c

@@ -1361,8 +1361,10 @@ main( int argc, char **argv )
 	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
 	  case oExecPath:
 #ifndef FIXED_EXEC_PATH
-	    if(set_exec_path(pargs.r.ret_str))
+	    if(set_exec_path(pargs.r.ret_str,0))
 	      log_error(_("unable to set exec-path to %s\n"),pargs.r.ret_str);
+	    else
+	      opt.exec_path_set=1;
 #endif
 	    break;
 	  case oNotation:

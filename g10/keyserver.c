@@ -339,6 +339,11 @@ keyserver_spawn(int action,STRLIST list,
   opt.keyserver_options.use_temp_files=1;
 #endif
 
+#ifndef FIXED_EXEC_PATH
+  /* Push the libdir into path */
+  set_exec_path(GNUPG_LIBEXECDIR,opt.exec_path_set);
+#endif
+
   /* Build the filename for the helper to execute */
 
   command=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);

@@ -133,6 +133,7 @@ struct {
       STRLIST other;
     } keyserver_options;
     int exec_disable;
+    int exec_path_set;
     unsigned int import_options;
     unsigned int export_options;
     char *def_preference_list;
