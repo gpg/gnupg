@@ -1,3 +1,9 @@
+2005-01-26  Werner Koch  <wk@g10code.com>
+
+	* ccid-driver.c (parse_ccid_descriptor): Need the CSM workaround
+	also for newer firmware versions.  Need to get a list of fixed
+	firmware versions and use that.
+
 2005-01-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (parse_keyserver_uri): Allow RFC-2732 IPv6 [literal
@@ -11135,7 +11141,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 
 
  Copyright 1998, 1999, 2000, 2001, 2002, 2003,
-	   2004 Free Software Foundation, Inc.
+	   2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

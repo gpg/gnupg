@@ -1,3 +1,7 @@
+2005-01-27  Werner Koch  <wk@g10code.com>
+
+	* faq.raw: Updated to the version from 1.2.7.
+
 2005-01-18  Werner Koch  <wk@g10code.com>
 
 	* gnupg-w32.reg: Remove the entry for the home directory.
