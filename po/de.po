@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.7\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-04-06 12:06+0200\n"
+"POT-Creation-Date: 2004-04-29 19:50+0200\n"
 "PO-Revision-Date: 2004-04-06 11:47+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: agent/gpg-agent.c:94 agent/protect-tool.c:92 scd/scdaemon.c:89
+#: agent/gpg-agent.c:94 agent/protect-tool.c:92 scd/scdaemon.c:92
 msgid ""
 "@Options:\n"
 " "
@@ -26,28 +26,28 @@ msgstr ""
 "@Optionen:\n"
 " "
 
-#: agent/gpg-agent.c:96 scd/scdaemon.c:91
+#: agent/gpg-agent.c:96 scd/scdaemon.c:94
 msgid "run in server mode (foreground)"
 msgstr "Im Server Modus ausführen"
 
-#: agent/gpg-agent.c:97 scd/scdaemon.c:92
+#: agent/gpg-agent.c:97 scd/scdaemon.c:95
 msgid "run in daemon mode (background)"
 msgstr "Im Daemon Modus ausführen"
 
-#: agent/gpg-agent.c:98 kbx/kbxutil.c:73 scd/scdaemon.c:93 sm/gpgsm.c:301
+#: agent/gpg-agent.c:98 kbx/kbxutil.c:73 scd/scdaemon.c:96 sm/gpgsm.c:312
 #: tools/gpgconf.c:62
 msgid "verbose"
 msgstr "ausführlich"
 
-#: agent/gpg-agent.c:99 kbx/kbxutil.c:74 scd/scdaemon.c:94 sm/gpgsm.c:302
+#: agent/gpg-agent.c:99 kbx/kbxutil.c:74 scd/scdaemon.c:97 sm/gpgsm.c:313
 msgid "be somewhat more quiet"
 msgstr "etwas weniger Aussageb erzeugen"
 
-#: agent/gpg-agent.c:100 scd/scdaemon.c:95
+#: agent/gpg-agent.c:100 scd/scdaemon.c:98
 msgid "sh-style command output"
 msgstr "Ausgabe für /bin/sh"
 
-#: agent/gpg-agent.c:101 scd/scdaemon.c:96
+#: agent/gpg-agent.c:101 scd/scdaemon.c:99
 msgid "csh-style command output"
 msgstr "Ausgabe für /bin/csh"
 
@@ -55,7 +55,7 @@ msgstr "Ausgabe für /bin/csh"
 msgid "|FILE|read options from FILE"
 msgstr "|DATEI|Konfigurationsoptionen aus DATEI lesen"
 
-#: agent/gpg-agent.c:107 scd/scdaemon.c:103
+#: agent/gpg-agent.c:107 scd/scdaemon.c:106
 msgid "do not detach from the console"
 msgstr "Im Vordergrund laufen lassen"
 
@@ -63,7 +63,7 @@ msgstr "Im Vordergrund laufen lassen"
 msgid "do not grab keyboard and mouse"
 msgstr "Tastatur und Maus nicht \"grabben\""
 
-#: agent/gpg-agent.c:109 scd/scdaemon.c:104 sm/gpgsm.c:304
+#: agent/gpg-agent.c:109 scd/scdaemon.c:107 sm/gpgsm.c:315
 msgid "use a log file for the server"
 msgstr "Logausgaben in eine Datei umlenken"
 
@@ -79,13 +79,13 @@ msgstr "Ignoriere Anfragen, das TTY zu wechseln"
 msgid "ignore requests to change the X display"
 msgstr "Ignoriere Anfragen, das X-Display zu wechseln"
 
-#: agent/gpg-agent.c:180 agent/protect-tool.c:124 scd/scdaemon.c:150
-#: sm/gpgsm.c:468 tools/gpgconf.c:85
+#: agent/gpg-agent.c:180 agent/protect-tool.c:124 scd/scdaemon.c:165
+#: sm/gpgsm.c:479 tools/gpgconf.c:85
 msgid "Please report bugs to <"
 msgstr "Fehlerberichte bitte an <"
 
-#: agent/gpg-agent.c:180 agent/protect-tool.c:124 scd/scdaemon.c:150
-#: sm/gpgsm.c:468 tools/gpgconf.c:85
+#: agent/gpg-agent.c:180 agent/protect-tool.c:124 scd/scdaemon.c:165
+#: sm/gpgsm.c:479 tools/gpgconf.c:85
 msgid ">.\n"
 msgstr ">.\n"
 
@@ -101,46 +101,46 @@ msgstr ""
 "Syntax: gpg-agent [Optionen] [Kommando [Argumente]]\n"
 "Verwaltung von geheimen Schlüssel für GnuPG\n"
 
-#: agent/gpg-agent.c:256 scd/scdaemon.c:224 sm/gpgsm.c:591
+#: agent/gpg-agent.c:256 scd/scdaemon.c:239 sm/gpgsm.c:602
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "ungültige Debugebene `%s' angegeben\n"
 
 #: agent/gpg-agent.c:414 agent/protect-tool.c:1035 kbx/kbxutil.c:230
-#: scd/scdaemon.c:325 sm/gpgsm.c:714
+#: scd/scdaemon.c:352 sm/gpgsm.c:725
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 "Die Bibliothek \"libgcrypt\" is zu alt (benötigt wird %s, vorhanden ist %s)\n"
 
-#: agent/gpg-agent.c:487 scd/scdaemon.c:405 sm/gpgsm.c:812
+#: agent/gpg-agent.c:487 scd/scdaemon.c:432 sm/gpgsm.c:823
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "Notiz: Voreingestellte Konfigurationsdatei `%s' fehlt\n"
 
-#: agent/gpg-agent.c:492 agent/gpg-agent.c:947 scd/scdaemon.c:410
-#: sm/gpgsm.c:816
+#: agent/gpg-agent.c:492 agent/gpg-agent.c:955 scd/scdaemon.c:437
+#: sm/gpgsm.c:827
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "Konfigurationsdatei `%s': %s\n"
 
-#: agent/gpg-agent.c:500 scd/scdaemon.c:418 sm/gpgsm.c:823
+#: agent/gpg-agent.c:500 scd/scdaemon.c:445 sm/gpgsm.c:834
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "Optionen werden aus `%s' gelesen\n"
 
-#: agent/gpg-agent.c:641 scd/scdaemon.c:576
+#: agent/gpg-agent.c:641 scd/scdaemon.c:619
 msgid "please use the option `--daemon' to run the program in the background\n"
 msgstr ""
 "Bitte die Option `--daemon' nutzen um das Programm im Hintergund "
 "auszuführen\n"
 
-#: agent/gpg-agent.c:980 agent/gpg-agent.c:1014
+#: agent/gpg-agent.c:988 agent/gpg-agent.c:1022
 #, c-format
 msgid "can't create directory `%s': %s\n"
 msgstr "Das Verzeichniss `%s' kann nicht erstell werden: %s\n"
 
-#: agent/gpg-agent.c:983 agent/gpg-agent.c:1019
+#: agent/gpg-agent.c:991 agent/gpg-agent.c:1027
 #, c-format
 msgid "directory `%s' created\n"
 msgstr "Verzeichniss `%s' wurde erstellt\n"
@@ -257,11 +257,11 @@ msgstr "WARNUNG: Unsichere Zugriffsrechte für %s \"%s\"\n"
 msgid "gpg-agent is not available in this session\n"
 msgstr "Der gpg-agent ist nicht verfügbar\n"
 
-#: common/simple-pwquery.c:286 sm/call-agent.c:126
+#: common/simple-pwquery.c:286 sm/call-agent.c:128
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "Die Variable GPG_AGENT_INFO ist fehlerhaft\n"
 
-#: common/simple-pwquery.c:298 sm/call-agent.c:138
+#: common/simple-pwquery.c:298 sm/call-agent.c:140
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
 msgstr "Das gpg-agent Protocol %d wird nicht unterstützt\n"
@@ -279,20 +279,20 @@ msgstr "Kommunikationsproblem mit gpg-agent\n"
 msgid "problem setting the gpg-agent options\n"
 msgstr "Beim setzen der gpg-agent Optionen ist ein problem aufgetreten\n"
 
-#: common/simple-pwquery.c:471
+#: common/simple-pwquery.c:473
 msgid "canceled by user\n"
 msgstr "Vom Benutzer abgebrochen\n"
 
-#: common/simple-pwquery.c:478
+#: common/simple-pwquery.c:480
 msgid "problem with the agent\n"
 msgstr "Problem mit dem Agenten\n"
 
-#: jnlib/logging.c:516
+#: jnlib/logging.c:547
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "Sie haben einen Bug (Softwarefehler) gefunden ... (%s:%d)\n"
 
-#: kbx/kbxutil.c:62 sm/gpgsm.c:218 tools/gpgconf.c:53
+#: kbx/kbxutil.c:62 sm/gpgsm.c:223 tools/gpgconf.c:53
 msgid ""
 "@Commands:\n"
 " "
@@ -300,7 +300,7 @@ msgstr ""
 "@Kommandos:\n"
 " "
 
-#: kbx/kbxutil.c:68 sm/gpgsm.c:248 tools/gpgconf.c:59
+#: kbx/kbxutil.c:68 sm/gpgsm.c:258 tools/gpgconf.c:59
 msgid ""
 "@\n"
 "Options:\n"
@@ -310,15 +310,15 @@ msgstr ""
 "Optionen:\n"
 " "
 
-#: kbx/kbxutil.c:70 sm/gpgsm.c:250
+#: kbx/kbxutil.c:70 sm/gpgsm.c:260
 msgid "create ascii armored output"
 msgstr "Ausgabe mit ASCII Hülle wird erzeugt"
 
-#: kbx/kbxutil.c:72 sm/gpgsm.c:300 tools/gpgconf.c:61
+#: kbx/kbxutil.c:72 sm/gpgsm.c:311 tools/gpgconf.c:61
 msgid "use as output file"
 msgstr "als Ausgabedatei benutzen"
 
-#: kbx/kbxutil.c:75 sm/gpgsm.c:309 tools/gpgconf.c:64
+#: kbx/kbxutil.c:75 sm/gpgsm.c:320 tools/gpgconf.c:64
 msgid "do not make any changes"
 msgstr "Keine Änderungen durchführen"
 
@@ -350,43 +350,43 @@ msgstr ""
 "Syntax: kbxutil [Optionen] [Dateien]\n"
 "Anlistem exportieren und Importieren von KeyBox Dateien\n"
 
-#: scd/scdaemon.c:97 sm/gpgsm.c:321
+#: scd/scdaemon.c:100 sm/gpgsm.c:332
 msgid "read options from file"
 msgstr "Konfigurationsoptionen aus Datei lesen"
 
-#: scd/scdaemon.c:102
+#: scd/scdaemon.c:105
 msgid "|N|set OpenSC debug level to N"
 msgstr "|N|Den OpenSC Debugstufe auf N setzen"
 
-#: scd/scdaemon.c:105
+#: scd/scdaemon.c:108
 msgid "|N|connect to reader at port N"
 msgstr "|N|Verbinde mit dem Leser auf Port N"
 
-#: scd/scdaemon.c:106
+#: scd/scdaemon.c:109
 msgid "|NAME|use NAME as ct-API driver"
 msgstr "|NAME|Benutze NAME als CT-API Treiber"
 
-#: scd/scdaemon.c:107
+#: scd/scdaemon.c:110
 msgid "|NAME|use NAME as PC/SC driver"
 msgstr "|NAME|Benutze NAME als PC/SC Treiber"
 
-#: scd/scdaemon.c:110
+#: scd/scdaemon.c:113
 msgid "do not use the internal CCID driver"
 msgstr "Den internen CCID Treiber nicht benutzen"
 
-#: scd/scdaemon.c:117
+#: scd/scdaemon.c:120
 msgid "do not use the OpenSC layer"
 msgstr "Den OpenSC basierten Kartenzugriff nicht nutzen"
 
-#: scd/scdaemon.c:122
+#: scd/scdaemon.c:125
 msgid "allow the use of admin card commands"
 msgstr "Erlaube die Benuztung von \"Admin\" Kommandos"
 
-#: scd/scdaemon.c:153
+#: scd/scdaemon.c:168
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Gebrauch: scdaemon [Optionen] (-h für Hilfe)"
 
-#: scd/scdaemon.c:155
+#: scd/scdaemon.c:170
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
 "Smartcard daemon for GnuPG\n"
@@ -403,24 +403,24 @@ msgstr "Ungültiges Basis-64 Zeichen %02X wurde übergangen\n"
 msgid "no running gpg-agent - starting one\n"
 msgstr "Kein aktiver gpg-agent - es wird einer gestarted\n"
 
-#: sm/call-agent.c:149
+#: sm/call-agent.c:151
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "Verbindung zum gpg-agent nicht möglich - Ersatzmethode wird versucht\n"
 
-#: sm/call-dirmngr.c:162
+#: sm/call-dirmngr.c:164
 msgid "no running dirmngr - starting one\n"
 msgstr "Kein aktiver Dirmngr - es wird einer gestartet\n"
 
-#: sm/call-dirmngr.c:200
+#: sm/call-dirmngr.c:202
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "Die Variable DIRMNGR_INFO ist fehlerhaft\n"
 
-#: sm/call-dirmngr.c:212
+#: sm/call-dirmngr.c:214
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "Die Dirmngr Protokollversion %d wird nicht unterstützt\n"
 
-#: sm/call-dirmngr.c:223
+#: sm/call-dirmngr.c:225
 msgid "can't connect to the dirmngr - trying fall back\n"
 msgstr ""
 "Verbindung zum Dirmngr kann nicht aufgebaut werden - Ersatzmethode wird "
@@ -434,23 +434,23 @@ msgstr "keine"
 msgid "[none]"
 msgstr "[keine]"
 
-#: sm/certdump.c:489
+#: sm/certdump.c:490
 msgid "[Error - No name]"
 msgstr "[Fehler - Kein Name]"
 
-#: sm/certdump.c:498
+#: sm/certdump.c:499
 msgid "[Error - unknown encoding]"
 msgstr "[Fehler - Unbekannte Kodierung]"
 
-#: sm/certdump.c:502
+#: sm/certdump.c:503
 msgid "[Error - invalid encoding]"
 msgstr "[Fehler - Ungültige Kodierung]"
 
-#: sm/certdump.c:507
+#: sm/certdump.c:508
 msgid "[Error - invalid DN]"
 msgstr "[Fehler - Ungültiger DN]"
 
-#: sm/certdump.c:651
+#: sm/certdump.c:652
 #, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for:\n"
@@ -468,7 +468,7 @@ msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 "Schlüsselverwendungszweck nicht vorhanden - für alle Zwecke akzeptiert\n"
 
-#: sm/certlist.c:123 sm/keylist.c:108
+#: sm/certlist.c:123 sm/keylist.c:224
 #, c-format
 msgid "error getting key usage information: %s\n"
 msgstr "Fehler beim holen der Schlüsselbenutzungsinformationen: %s\n"
@@ -632,7 +632,7 @@ msgstr "(dies is wahrscheinlich keine verschlüsselte Nachricht)\n"
 msgid "certificate `%s' not found: %s\n"
 msgstr "Zertifikat `%s' nicht gefunden: %s\n"
 
-#: sm/delete.c:112 sm/keydb.c:1388
+#: sm/delete.c:112 sm/keydb.c:1403 sm/keydb.c:1496
 #, c-format
 msgid "error locking keybox: %s\n"
 msgstr "Fehler beim Sperren der Keybox: %s\n"
@@ -660,227 +660,227 @@ msgstr "Schwacher Schlüssel - es wird erneut versucht\n"
 msgid "no valid recipients given\n"
 msgstr "Keine gültigen Empfänger angegeben\n"
 
-#: sm/gpgsm.c:220
+#: sm/gpgsm.c:225
 msgid "|[FILE]|make a signature"
 msgstr "|[DATEI]|Erzeuge eine Signatur"
 
-#: sm/gpgsm.c:221
+#: sm/gpgsm.c:226
 msgid "|[FILE]|make a clear text signature"
 msgstr "|[DATEI]|Erzeuge eine Klartextsignatur"
 
-#: sm/gpgsm.c:222
+#: sm/gpgsm.c:227
 msgid "make a detached signature"
 msgstr "Erzeuge eine abgetrennte Signatur"
 
-#: sm/gpgsm.c:223
+#: sm/gpgsm.c:228
 msgid "encrypt data"
 msgstr "Verschlüssele die Daten"
 
-#: sm/gpgsm.c:224
+#: sm/gpgsm.c:229
 msgid "encryption only with symmetric cipher"
 msgstr "Verschlüsselung nur mit symmetrischem Algrithmus"
 
-#: sm/gpgsm.c:225
+#: sm/gpgsm.c:230
 msgid "decrypt data (default)"
 msgstr "Enschlüssele die Daten"
 
-#: sm/gpgsm.c:226
+#: sm/gpgsm.c:231
 msgid "verify a signature"
 msgstr "Überprüfen einer Signatur"
 
-#: sm/gpgsm.c:228
+#: sm/gpgsm.c:233
 msgid "list keys"
 msgstr "Schlüssel anzeigen"
 
-#: sm/gpgsm.c:229
+#: sm/gpgsm.c:234
 msgid "list external keys"
 msgstr "Externe Schlüssel anzeigen"
 
-#: sm/gpgsm.c:230
+#: sm/gpgsm.c:235
 msgid "list secret keys"
 msgstr "Geheime Schlüssel anzeigen"
 
-#: sm/gpgsm.c:231
+#: sm/gpgsm.c:236
 msgid "list certificate chain"
 msgstr "Schlüssel mit Zertifikatekette anzeigen"
 
-#: sm/gpgsm.c:233
+#: sm/gpgsm.c:238
 msgid "list keys and fingerprints"
 msgstr "Schlüssel und Fingerprint anzeigen"
 
-#: sm/gpgsm.c:234
+#: sm/gpgsm.c:239
 msgid "generate a new key pair"
 msgstr "Neues Schlüsselpaar erzeugen"
 
-#: sm/gpgsm.c:235
+#: sm/gpgsm.c:240
 msgid "remove key from the public keyring"
 msgstr "Schlüssel aus dem öffentlichen Schlüsselbund löschen"
 
-#: sm/gpgsm.c:236
+#: sm/gpgsm.c:241
 msgid "export keys to a key server"
 msgstr "Schlüssen an eine Schlüsselserver exportieren"
 
-#: sm/gpgsm.c:237
+#: sm/gpgsm.c:242
 msgid "import keys from a key server"
 msgstr "Schlüssel von einem Schlüsselserver importieren"
 
-#: sm/gpgsm.c:238
+#: sm/gpgsm.c:243
 msgid "import certificates"
 msgstr "Zertifikate importieren"
 
-#: sm/gpgsm.c:239
+#: sm/gpgsm.c:244
 msgid "export certificates"
 msgstr "Zertifikate exportieren"
 
-#: sm/gpgsm.c:240
+#: sm/gpgsm.c:245
 msgid "register a smartcard"
 msgstr "Smartcard registrieren"
 
-#: sm/gpgsm.c:241
+#: sm/gpgsm.c:246
 msgid "run in server mode"
 msgstr "Im Server Modus ausführen"
 
-#: sm/gpgsm.c:242
+#: sm/gpgsm.c:247
 msgid "pass a command to the dirmngr"
 msgstr "Das Kommand an den Dirmngr durchreichen"
 
-#: sm/gpgsm.c:244
+#: sm/gpgsm.c:249
 msgid "invoke gpg-protect-tool"
 msgstr "Rufe das gpg-protect-tool auf"
 
-#: sm/gpgsm.c:245
+#: sm/gpgsm.c:250
 msgid "change a passphrase"
 msgstr "Das Mantra (Passphrase) ändern"
 
-#: sm/gpgsm.c:252
+#: sm/gpgsm.c:262
 msgid "create base-64 encoded output"
 msgstr "Ausgabe im Basis-64 format erzeugen"
 
-#: sm/gpgsm.c:254
+#: sm/gpgsm.c:264
 msgid "assume input is in PEM format"
 msgstr "Eingabedaten sind im PEM Format"
 
-#: sm/gpgsm.c:256
+#: sm/gpgsm.c:266
 msgid "assume input is in base-64 format"
 msgstr "Eingabedaten sin im Basis-64 Format"
 
-#: sm/gpgsm.c:258
+#: sm/gpgsm.c:268
 msgid "assume input is in binary format"
 msgstr "Eingabedaten sind im Binärformat"
 
-#: sm/gpgsm.c:260
+#: sm/gpgsm.c:270
 msgid "|NAME|encrypt for NAME"
 msgstr "|NAME|Verschlüsseln für NAME"
 
-#: sm/gpgsm.c:263
+#: sm/gpgsm.c:273
 msgid "never consult a CRL"
 msgstr "Niemals eine CRL konsultieren"
 
-#: sm/gpgsm.c:267
+#: sm/gpgsm.c:278
 msgid "check validity using OCSP"
 msgstr "Die Gültigkeit mittels OCSP prüfen"
 
-#: sm/gpgsm.c:270
+#: sm/gpgsm.c:281
 msgid "|N|number of certificates to include"
 msgstr "|N|Sende N Zertifikate mit"
 
-#: sm/gpgsm.c:273
+#: sm/gpgsm.c:284
 msgid "|FILE|take policy information from FILE"
 msgstr "|DATEI|Richtlinieninformationen DATEI entnehmen"
 
-#: sm/gpgsm.c:276
+#: sm/gpgsm.c:287
 msgid "do not check certificate policies"
 msgstr "Zertikikatrichtlinien nicht überprüfen"
 
-#: sm/gpgsm.c:280
+#: sm/gpgsm.c:291
 msgid "fetch missing issuer certificates"
 msgstr "Fehlende Zertifikate automatisch holen"
 
-#: sm/gpgsm.c:284
+#: sm/gpgsm.c:295
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NAME|Benutze NAME als voreingestellten Empfänger"
 
-#: sm/gpgsm.c:286
+#: sm/gpgsm.c:297
 msgid "use the default key as default recipient"
 msgstr "Benuzte voreingestellten Schlüssel als Standardempfänger"
 
-#: sm/gpgsm.c:292
+#: sm/gpgsm.c:303
 msgid "use this user-id to sign or decrypt"
 msgstr "Benuzte diese Benutzer ID zum Signieren oder Entschlüsseln"
 
-#: sm/gpgsm.c:295
+#: sm/gpgsm.c:306
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|Benutze Komprimierungsstufe N"
 
-#: sm/gpgsm.c:297
+#: sm/gpgsm.c:308
 msgid "use canonical text mode"
 msgstr "Kanonischen Textmodus benutzen"
 
-#: sm/gpgsm.c:303
+#: sm/gpgsm.c:314
 msgid "don't use the terminal at all"
 msgstr "Das Terminal überhaupt nicht benutzen"
 
-#: sm/gpgsm.c:306
+#: sm/gpgsm.c:317
 msgid "force v3 signatures"
 msgstr "Version 3 Signaturen erzwingen"
 
-#: sm/gpgsm.c:307
+#: sm/gpgsm.c:318
 msgid "always use a MDC for encryption"
 msgstr "Immer das MDC Verfahren zum verschlüsseln mitbenutzen"
 
-#: sm/gpgsm.c:312
+#: sm/gpgsm.c:323
 msgid "batch mode: never ask"
 msgstr "Stapelverarbeitungs Modus: Nie nachfragen"
 
-#: sm/gpgsm.c:313
+#: sm/gpgsm.c:324
 msgid "assume yes on most questions"
 msgstr "\"Ja\" auf die meisten Anfragen annehmen"
 
-#: sm/gpgsm.c:314
+#: sm/gpgsm.c:325
 msgid "assume no on most questions"
 msgstr "\"Nein\" auf die meisten Anfragen annehmen"
 
-#: sm/gpgsm.c:316
+#: sm/gpgsm.c:327
 msgid "add this keyring to the list of keyrings"
 msgstr "Diesen Keyring in die Liste der Keyrings aufnehmen"
 
-#: sm/gpgsm.c:317
+#: sm/gpgsm.c:328
 msgid "add this secret keyring to the list"
 msgstr "Diese geheimen Keyring in die Liste aufnehmen"
 
-#: sm/gpgsm.c:318
+#: sm/gpgsm.c:329
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|Benutze NAME als voreingestellten Schlüssel"
 
-#: sm/gpgsm.c:319
+#: sm/gpgsm.c:330
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|HOST|Benutze HOST als Schlüsselserver"
 
-#: sm/gpgsm.c:320
+#: sm/gpgsm.c:331
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NAME|Den Zeichensatz für das Terminal auf NAME setzen"
 
-#: sm/gpgsm.c:329
+#: sm/gpgsm.c:340
 msgid "|FD|write status info to this FD"
 msgstr "|FD|Statusinformationen auf Dateidescriptor FD schreiben"
 
-#: sm/gpgsm.c:336
+#: sm/gpgsm.c:347
 msgid "|FILE|load extension module FILE"
 msgstr "|DATEI|Das Erweiterungsmodul DATEI laden"
 
-#: sm/gpgsm.c:342
+#: sm/gpgsm.c:353
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAME|Den Verhsclüsselungsalgrithmus NAME benutzen"
 
-#: sm/gpgsm.c:344
+#: sm/gpgsm.c:355
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAME|Den Hashalgorithmus NAME benutzen"
 
-#: sm/gpgsm.c:346
+#: sm/gpgsm.c:357
 msgid "|N|use compress algorithm N"
 msgstr "|N|Den Kompressionsalgorithmus Nummer N benutzen"
 
-#: sm/gpgsm.c:354
+#: sm/gpgsm.c:365
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -888,7 +888,7 @@ msgstr ""
 "@\n"
 "(Die \"man\" Seite beschreibt alle Kommands und Optionen)\n"
 
-#: sm/gpgsm.c:357
+#: sm/gpgsm.c:368
 msgid ""
 "@\n"
 "Examples:\n"
@@ -908,11 +908,11 @@ msgstr ""
 " --list-keys [Namen]        Schlüssel anzeigenn\n"
 " --fingerprint [Namen]      \"Fingerabdrücke\" anzeigen\\n\n"
 
-#: sm/gpgsm.c:471
+#: sm/gpgsm.c:482
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Gebrauch: gpgsm [Optionen] [Dateien] (-h für Hilfe)"
 
-#: sm/gpgsm.c:474
+#: sm/gpgsm.c:485
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "sign, check, encrypt or decrypt using the S/MIME protocol\n"
@@ -921,7 +921,7 @@ msgstr ""
 "Gebrauch: gpgsm [Optionen] [Dateien]\n"
 "Signieren, prüfen, ver- und entschlüsseln mittels S/MIME protocol\n"
 
-#: sm/gpgsm.c:481
+#: sm/gpgsm.c:492
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -929,50 +929,50 @@ msgstr ""
 "\n"
 "Unterstützte Algorithmen:\n"
 
-#: sm/gpgsm.c:562
+#: sm/gpgsm.c:573
 msgid "usage: gpgsm [options] "
 msgstr "Gebrauch: gpgsm [Optionen] "
 
-#: sm/gpgsm.c:628
+#: sm/gpgsm.c:639
 msgid "conflicting commands\n"
 msgstr "Widersprechende Kommandos\n"
 
-#: sm/gpgsm.c:644
+#: sm/gpgsm.c:655
 #, c-format
 msgid "can't encrypt to `%s': %s\n"
 msgstr "Verschlüsseln für `%s' nicht möglich: %s\n"
 
-#: sm/gpgsm.c:719
+#: sm/gpgsm.c:730
 #, c-format
 msgid "libksba is too old (need %s, have %s)\n"
 msgstr "Die Bibliothek Libksba is nicht aktuell (benötige %s, habe %s)\n"
 
-#: sm/gpgsm.c:1151
+#: sm/gpgsm.c:1169
 msgid "WARNING: program may create a core file!\n"
 msgstr "WARNUNG: Programm könnte eine core-dump-Datei schreiben!\n"
 
-#: sm/gpgsm.c:1163
+#: sm/gpgsm.c:1181
 msgid "WARNING: running with faked system time: "
 msgstr "WARNUNG: Ausführung mit gefälschter Systemzeit: "
 
-#: sm/gpgsm.c:1183
+#: sm/gpgsm.c:1201
 msgid "selected cipher algorithm is invalid\n"
 msgstr "Das ausgewählte Verschlüsselungsverfahren ist ungültig\n"
 
-#: sm/gpgsm.c:1191
+#: sm/gpgsm.c:1209
 msgid "selected digest algorithm is invalid\n"
 msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
 
-#: sm/gpgsm.c:1221
+#: sm/gpgsm.c:1239
 #, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "Signieren mit `%s' nicht möglich: %s\n"
 
-#: sm/gpgsm.c:1386
+#: sm/gpgsm.c:1406
 msgid "this command has not yet been implemented\n"
 msgstr "Diee Kommando wurde noch nicht implementiert\n"
 
-#: sm/gpgsm.c:1579 sm/gpgsm.c:1612
+#: sm/gpgsm.c:1629 sm/gpgsm.c:1662
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
@@ -1020,38 +1020,38 @@ msgstr "Fehler beim Erzeugen einer \"Pipe\": %s\n"
 msgid "error forking process: %s\n"
 msgstr "Fehler beim \"Forken\" des Prozess: %s\n"
 
-#: sm/import.c:560 sm/import.c:585
+#: sm/import.c:562 sm/import.c:587
 #, c-format
 msgid "error creating temporary file: %s\n"
 msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
 
-#: sm/import.c:568
+#: sm/import.c:570
 #, c-format
 msgid "error writing to temporary file: %s\n"
 msgstr "Fehler beim Schreiben auf eine temporäre Datei: %s\n"
 
-#: sm/import.c:577
+#: sm/import.c:579
 #, c-format
 msgid "error reading input: %s\n"
 msgstr "Fehler beim Lesen der Eingabe: %s\n"
 
-#: sm/import.c:647
+#: sm/import.c:649
 #, c-format
 msgid "waiting for protect-tool to terminate failed: %s\n"
 msgstr ""
 "Das Warten auf die Beendigung des protect-tools ist fehlgeschlagen: %s\n"
 
-#: sm/import.c:650
+#: sm/import.c:652
 #, c-format
 msgid "error running `%s': probably not installed\n"
 msgstr "Feler bei Ausführung von `%s': wahrscheinlich nicht installiert\n"
 
-#: sm/import.c:652
+#: sm/import.c:654
 #, c-format
 msgid "error running `%s': exit status %d\n"
 msgstr "Fehler bei Ausführung von `%s': Endestatus %d\n"
 
-#: sm/import.c:655
+#: sm/import.c:657
 #, c-format
 msgid "error running `%s': terminated\n"
 msgstr "Fehler beim Ausführen von `%s': beendet\n"
@@ -1075,40 +1075,40 @@ msgstr "Die \"Keybox\" `%s' wurde erstellt\n"
 msgid "can't create lock for `%s'\n"
 msgstr "Datei `%s' konnte nicht gesperrt werden\n"
 
-#: sm/keydb.c:1312 sm/keydb.c:1374
+#: sm/keydb.c:1327 sm/keydb.c:1389
 msgid "failed to get the fingerprint\n"
 msgstr "Kann den Fingerprint nicht ermitteln\n"
 
-#: sm/keydb.c:1319 sm/keydb.c:1381
+#: sm/keydb.c:1334 sm/keydb.c:1396
 msgid "failed to allocate keyDB handle\n"
 msgstr "Kann keinen KeyDB Handler bereitstellen\n"
 
-#: sm/keydb.c:1336
+#: sm/keydb.c:1351
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
 msgstr "Problem bei der Suche nach vorhandenem Zertifikat: %s\n"
 
-#: sm/keydb.c:1344
+#: sm/keydb.c:1359
 #, c-format
 msgid "error finding writable keyDB: %s\n"
 msgstr "Fehler bei der Suche nach einer schreibbaren KeyDB: %s\n"
 
-#: sm/keydb.c:1352
+#: sm/keydb.c:1367
 #, c-format
 msgid "error storing certificate: %s\n"
 msgstr "Fehler beim Speichern des Zertifikats: %s\n"
 
-#: sm/keydb.c:1396
+#: sm/keydb.c:1411
 #, c-format
 msgid "problem re-searching certificate: %s\n"
 msgstr "Problem bei Wiederfinden des Zertifikats: %s\n"
 
-#: sm/keydb.c:1405
+#: sm/keydb.c:1420 sm/keydb.c:1508
 #, c-format
 msgid "error getting stored flags: %s\n"
 msgstr "Fehler beim Holen der gespeicherten Flags: %s\n"
 
-#: sm/keydb.c:1414
+#: sm/keydb.c:1429 sm/keydb.c:1519
 #, c-format
 msgid "error storing flags: %s\n"
 msgstr "Fehler beim Speichern der Flags: %s\n"
