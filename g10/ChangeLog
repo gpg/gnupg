@@ -1,7 +1,8 @@
-2002-09-21  Stefan Bellon  <sbellon@sbellon.de>
+2002-09-22  Stefan Bellon  <sbellon@sbellon.de>
 
-	* import.c (import_keys): Added trustdb update/check to key import
-	if not fast-import and interactive set/no-auto-check-trustdb unset.
+	* import.c (import_keys, import_keys_stream): Added trustdb
+	update/check to key import if not fast-import and interactive
+	set/no-auto-check-trustdb unset.
 
 2002-09-19  David Shaw  <dshaw@jabberwocky.com>
 
