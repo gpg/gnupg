@@ -116,7 +116,7 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 
   leave:
     if( nread > *ret_nread )
-	log_bug("mpi crosses packet border");
+	log_bug("mpi crosses packet border\n");
     else
 	*ret_nread = nread;
     return val;
@@ -154,7 +154,7 @@ mpi_read_from_buffer(byte *buffer, unsigned *ret_nread, int secure)
 	a = 0;
 	for(; i < BYTES_PER_MPI_LIMB; i++ ) {
 	    if( ++nread > *ret_nread )
-		log_bug("mpi larger than buffer");
+		log_bug("mpi larger than buffer\n");
 	    a <<= 8;
 	    a |= *buffer++;
 	}
