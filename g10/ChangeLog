@@ -1,3 +1,29 @@
+2001-03-03  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c: Introduced a new lookup context flag "exact" and used 
+	it in all place where we once used primary.
+	(classify_user_id2): Replaced the old function and add an extra
+	argument to return whether an exact keyID has been requested.
+	(key_byname): Removed the unused ctx.primary flag
+	(get_seckey_byname2): Ditto.
+	(finish_lookup): Changed debugging output.
+
+2001-03-02  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_one): Remove the merge key calls. 
+
+2001-03-01  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (finish_lookup): Don't use it if we no specific usage
+	has been requested.
+	(merge_selfsigs_main): fix UID only if we have an signature.
+	(lookup): Return UNU_PUBKEY etc. instead of NO_PUBKEY if we found
+	a key but the requested usage does not allow this key.
+	* import.c (import_one): Take UNU_PUBKEY into account.
+	* mainproc.c (list_node): Ditto.
+	* keylist.c (list_keyblock): Ditto.
+	* keyedit.c (print_and_check_one_sig): Ditto. 
+
 2001-02-09  Werner Koch  <wk@gnupg.org>
 
 	* delkey.c (delete_key): Removed that silly assert which rendered
@@ -121,7 +147,7 @@
 	* g10.c: New option --allow-secret-key-import.
 	* import.c (import_keys,import_keys_stream): Honor this option.
 	(import): New arg allow_secret and pass that arg down to ...
-	(import_secret_one): to this and print a warnign if secret key
+	(import_secret_one): to this and print a warning if secret key
 	importing is not allowed.
 
 2000-12-05  Werner Koch  <wk@gnupg.org>

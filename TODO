@@ -1,9 +1,12 @@
 
+  * check whether we can remove all the expire stuff in trustdb because this
+    is now done getkey.  
+
+  * ask for alternate filename?
+
   * Can we output things like the preferences?      
 
   * Add Dave's UTS patches
-
-  * Fix revoked subkey problem - see key 621cc013
 
   ** Check whether the use of -u and --clearsign created 2 signatures.
      removed dups from the skclist.
@@ -43,6 +46,7 @@
 
   * Add a way to show the fingerprint of an key signator's keys
 
+  * New option --file-remove path-to-wipe-program ?
 
 Scheduled for 1.1
 -----------------

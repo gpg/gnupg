@@ -1,3 +1,8 @@
+2001-02-12  Werner Koch  <wk@gnupg.org>
+
+	* multisig.test: new
+	* Makefile.am (TESTS): Added.
+
 2000-10-18  Werner Koch  <wk@gnupg.org>
 
 	* conventional-mdc.test: Add Rijndael and fix for empty plain texts.

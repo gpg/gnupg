@@ -1,8 +1,16 @@
 # GnuPG german translation
 # Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
-# Walter Koch <koch@hsp.de>, 1998, 1999, 2000
+# Walter Koch <koch@hsp.de>, 1998, 1999, 2000, 2001
 msgid ""
-msgstr "POT-Creation-Date: 2001-02-07 16:46+0100\n"
+msgstr ""
+"Project-Id-Version: gnupg-1.0.4\n"
+"POT-Creation-Date: 2001-02-17 02:26+0000\n"
+"PO-Revision-Date: 2001-02-20 21:20+0200\n"
+"Last-Translator: Walter Koch <koch@hsp.de>\n"
+"Language-Team: German <de@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: util/secmem.c:79
 msgid "Warning: using insecure memory!\n"
@@ -830,9 +838,8 @@ msgid "--delete-key user-id"
 msgstr "--delete-key User-ID"
 
 #: g10/g10.c:1295
-#, fuzzy
 msgid "--delete-secret-and-public-key user-id"
-msgstr "--delete-secret-key User-ID"
+msgstr "--delete-secret-and-public-key User-ID"
 
 #: g10/encode.c:268 g10/g10.c:1332 g10/sign.c:393
 #, c-format
@@ -1230,7 +1237,7 @@ msgid ""
 "You did not specify a user ID. (you may use \"-r\")\n"
 "\n"
 msgstr ""
-"Sie gaben keine User-ID angegeben (Benutzen Sie die Option \"-r\").\n"
+"Sie haben keine User-ID angegeben (Benutzen Sie die Option \"-r\").\n"
 "\n"
 
 #: g10/pkclist.c:864
@@ -1687,29 +1694,24 @@ msgstr "WARNUNG: Nichts exportiert\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "zu viele Einträge im pk-Lager - abgeschaltet\n"
 
-#: g10/getkey.c:350
+#: g10/getkey.c:445
 msgid "too many entries in unk cache - disabled\n"
 msgstr "zu viele Einträge im unk-Lager - abgeschaltet\n"
 
-#: g10/getkey.c:1308 g10/getkey.c:1347
-msgid "RSA key cannot be used in this version\n"
-msgstr "RSA-Schlüssel können in dieser Version nicht verwendet werden\n"
-
-#: g10/getkey.c:1310 g10/getkey.c:1349
-msgid "No key for user ID\n"
-msgstr "Kein Schlüssel für User-ID\n"
-
-#: g10/getkey.c:1388 g10/getkey.c:1428
-msgid "No user ID for key\n"
-msgstr "Keine User-ID für Schlüssel\n"
-
-#: g10/getkey.c:1628 g10/getkey.c:1675 g10/getkey.c:1731
+#: g10/getkey.c:2100
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
 "der Zweitschlüssel %08lX wird anstelle des Hauptschlüssels %08lX verwendet\n"
 
-#: g10/getkey.c:2050
+#: g10/getkey.c:2141 g10/trustdb.c:577
+#, c-format
+msgid "key %08lX: secret key without public key - skipped\n"
+msgstr ""
+"Schlüssel %08lX: geheimer Schlüssel, aber ohne öffentlichen Schlüssel - "
+"übersprungen\n"
+
+#: g10/getkey.c:2424
 msgid "[User id not found]"
 msgstr "[User-ID nicht gefunden]"
 
@@ -2711,7 +2713,6 @@ msgid "Experimental algorithms should not be used!\n"
 msgstr "Experimentiermethoden sollten nicht benutzt werden!\n"
 
 #: g10/misc.c:237
-#, fuzzy
 msgid "this cipher algorithm is deprecated; please use a more standard one!x\n"
 msgstr "Es ist davon abzuraten, diese Verschlüsselungsmethode zu benutzen!\n"
 
@@ -2720,7 +2721,7 @@ msgstr "Es ist davon abzuraten, diese Verschlüsselungsmethode zu benutzen!\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "dieses Public-Key Verfahren %d kann nicht benutzt werden\n"
 
-#: g10/parse-packet.c:990
+#: g10/parse-packet.c:998
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "Im Unterpaket des Typs %d ist das \"critical bit\" gesetzt\n"
@@ -2903,11 +2904,11 @@ msgstr "Teile des geheimen Schlüssels sind nicht vorhanden\n"
 msgid "protection algorithm %d is not supported\n"
 msgstr "Schutzverfahren %d wird nicht unterstützt\n"
 
-#: g10/seckey-cert.c:186
+#: g10/seckey-cert.c:184
 msgid "Invalid passphrase; please try again ...\n"
 msgstr "Ungültiges Mantra; versuchen Sie's doch noch einmal ...\n"
 
-#: g10/seckey-cert.c:242
+#: g10/seckey-cert.c:240
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr ""
 "WARNUNG: Unsicherer Schlüssel entdeckt -\n"
@@ -3174,7 +3175,7 @@ msgid "key %08lX: accepted as trusted key.\n"
 msgstr "Schlüssel %08lX: Akzeptiert als vertrauenswürdiger Schlüssel.\n"
 
 #: g10/trustdb.c:546
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no public key for trusted key - skipped\n"
 msgstr ""
 "Schlüssel %08lX: kein öffentlicher Schlüssel für den vertrauenswürdigen "
@@ -3184,13 +3185,6 @@ msgstr ""
 #, c-format
 msgid "NOTE: secret key %08lX is NOT protected.\n"
 msgstr "HINWEIS: Geheimer Schlüssel %08lX ist NICHT geschützt.\n"
-
-#: g10/trustdb.c:577
-#, c-format
-msgid "key %08lX: secret key without public key - skipped\n"
-msgstr ""
-"Schlüssel %08lX: geheimer Schlüssel, aber ohne öffentlichen Schlüssel - "
-"übersprungen\n"
 
 #: g10/trustdb.c:584
 #, c-format
@@ -3532,9 +3526,8 @@ msgstr ""
 "Warnung: Botschaft wurde mit einem unsicheren Schlüssel verschlüsselt.\n"
 
 #: g10/encr-data.c:97
-#, fuzzy
 msgid "problem handling encrypted packet\n"
-msgstr "Entferne Empfänger-ID verschlüsselter Pakete"
+msgstr "Problem beim Bearbeiten des verschlüsselten Pakets\n"
 
 #: g10/seskey.c:52
 msgid "weak key created - retrying\n"
@@ -3559,11 +3552,11 @@ msgstr "Diesen Schlüssel aus dem Schlüsselbund löschen? "
 msgid "This is a secret key! - really delete? "
 msgstr "Dies ist ein privater Schlüssel! - Wirklich löschen? "
 
-#: g10/delkey.c:182
+#: g10/delkey.c:181
 msgid "there is a secret key for this public key!\n"
 msgstr "Es gibt einen privaten Schlüssel zu diesem öffentlichen Schlüssel!\n"
 
-#: g10/delkey.c:184
+#: g10/delkey.c:183
 msgid "use option \"--delete-secret-key\" to delete it first.\n"
 msgstr ""
 "Benutzen Sie das Kommando \"--delete-secret-key\", um ihn vorab zu "
@@ -3861,6 +3854,15 @@ msgstr "Keine Hilfe vorhanden."
 #, c-format
 msgid "No help available for `%s'"
 msgstr "Keine Hilfe für '%s' vorhanden."
+
+#~ msgid "RSA key cannot be used in this version\n"
+#~ msgstr "RSA-Schlüssel können in dieser Version nicht verwendet werden\n"
+
+#~ msgid "No key for user ID\n"
+#~ msgstr "Kein Schlüssel für User-ID\n"
+
+#~ msgid "No user ID for key\n"
+#~ msgstr "Keine User-ID für Schlüssel\n"
 
 #~ msgid "no secret key for decryption available\n"
 #~ msgstr "kein geheimer Schlüssel zur Entschlüsselung vorhanden\n"

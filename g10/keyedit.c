@@ -100,7 +100,7 @@ get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
     if( rc )
 	log_error("%s: keyblock read problem: %s\n", username, g10_errstr(rc));
     else
-	merge_keys_and_selfsig( *keyblock );
+	merge_keys_and_selfsig( *keyblock ); 
 
     return rc;
 }
@@ -131,6 +131,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	    ++*inv_sigs;
 	break;
       case G10ERR_NO_PUBKEY:
+      case G10ERR_UNU_PUBKEY:
 	node->flag = NODFLG_NOKEY;
 	sigrc = '?';
 	if( no_key )

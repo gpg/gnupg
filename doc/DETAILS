@@ -67,6 +67,9 @@ more arguments in future versions.
 
     GOODSIG	<long keyid>  <username>
 	The signature with the keyid is good.
+        For each signature only one of the three codes GOODSIG, BADSIG
+        or ERRSIG will be emitted and they may be used as a marker for
+        a new signature.
 
     BADSIG	<long keyid>  <username>
 	The signature with the keyid has not been verified okay.
@@ -82,7 +85,7 @@ more arguments in future versions.
     VALIDSIG	<fingerprint in hex> <sig_creation_date> <sig-timestamp>
 	The signature with the keyid is good. This is the same
 	as GOODSIG but has the fingerprint as the argument. Both
-	status lines ere emitted for a good signature.
+	status lines are emitted for a good signature.
 	sig-timestamp is the signature creation time in seconds after
 	the epoch.
 

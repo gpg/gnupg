@@ -101,6 +101,9 @@ g10_errstr( int err )
       X(SELFTEST_FAILED,"selftest failed")
       X(NOT_ENCRYPTED  ,N_("not encrypted"))
       X(NOT_PROCESSED  ,N_("not processed"))
+      /* the key cannot be used for a specific usage */
+      X(UNU_PUBKEY     ,N_("unusable public key"))
+      X(UNU_SECKEY     ,N_("unusable secret key"))
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
   #undef X

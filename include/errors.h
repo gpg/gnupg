@@ -72,6 +72,9 @@
 #define G10ERR_SELFTEST_FAILED 50
 #define G10ERR_NOT_ENCRYPTED  51
 #define G10ERR_NOT_PROCESSED  52
+#define G10ERR_UNU_PUBKEY     53
+#define G10ERR_UNU_SECKEY     54
+
 
 #ifndef HAVE_STRERROR
 char *strerror( int n );

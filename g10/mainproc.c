@@ -926,7 +926,8 @@ list_node( CTX c, KBNODE node )
 	    switch( (rc2=do_check_sig( c, node, &is_selfsig )) ) {
 	      case 0:		       sigrc = '!'; break;
 	      case G10ERR_BAD_SIGN:    sigrc = '-'; break;
-	      case G10ERR_NO_PUBKEY:   sigrc = '?'; break;
+	      case G10ERR_NO_PUBKEY: 
+	      case G10ERR_UNU_PUBKEY:  sigrc = '?'; break;
 	      default:		       sigrc = '%'; break;
 	    }
 	}

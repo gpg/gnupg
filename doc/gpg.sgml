@@ -1532,6 +1532,13 @@ in front.
 
     </variablelist>
 
+    <para>
+Note that you can append an exclamation mark to key IDs or
+fingerprints.  This flag which tells GnuPG to use exactly
+that primary or secondary key and don't try to figure out which 
+secondary or primary key to use.
+    </para>
+
 </refsect1>
 
 

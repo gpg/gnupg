@@ -1,3 +1,7 @@
+2001-03-03  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Tell something about the 0x12345678! key ID syntax.
+
 2001-01-18  Werner Koch  <wk@gnupg.org>
 
 	* README.W32: Changed building instructions for MinGW32/CPD 0.3 

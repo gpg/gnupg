@@ -1,3 +1,7 @@
+2001-03-01  Werner Koch  <wk@gnupg.org>
+
+	* errors.c (g10_errstr): New codes UNU_SECKEY and UNU_PUBKEY.
+
 2000-12-28  Werner Koch  <wk@gnupg.org>
 
 	* dotlock.c: Made all_lockfiles volatile.

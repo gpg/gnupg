@@ -819,7 +819,6 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
 	    }
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
-
 		/* Skip the actual key if the key is already present
 		 * in the list */
 		if (key_present_in_pk_list(pk_list, pk) == 0) {

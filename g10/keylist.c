@@ -91,7 +91,7 @@ list_all( int secret )
 		putchar('-');
 	    putchar('\n');
 	}
-	merge_keys_and_selfsig( keyblock );
+        merge_keys_and_selfsig( keyblock );
 	list_keyblock( keyblock, secret );
 	release_kbnode( keyblock ); keyblock = NULL;
     }
@@ -199,7 +199,6 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
-	    merge_keys_and_selfsig( keyblock );
 	    list_keyblock( keyblock, 1 );
 	    release_kbnode( keyblock );
 	} while( !get_seckey_next( ctx, NULL, &keyblock ) );
@@ -213,7 +212,6 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
-	    merge_keys_and_selfsig( keyblock );
 	    list_keyblock( keyblock, 0 );
 	    release_kbnode( keyblock );
 	} while( !get_pubkey_next( ctx, NULL, &keyblock ) );
@@ -480,7 +478,8 @@ list_keyblock( KBNODE keyblock, int secret )
 		switch( rc ) {
 		  case 0:		   sigrc = '!'; break;
 		  case G10ERR_BAD_SIGN:    sigrc = '-'; break;
-		  case G10ERR_NO_PUBKEY:   sigrc = '?'; break;
+		  case G10ERR_NO_PUBKEY: 
+		  case G10ERR_UNU_PUBKEY:  sigrc = '?'; break;
 		  default:		   sigrc = '%'; break;
 		}
 	    }

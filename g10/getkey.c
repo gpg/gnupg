@@ -97,8 +97,7 @@ typedef struct {
 } getkey_item_t;
 
 struct getkey_ctx_s {
-    /* make an array or a linked list from dome fields */
-    int primary;
+    int exact;
     KBNODE keyblock;
     KBPOS  kbpos;
     KBNODE found_key; /* pointer into some keyblock */
@@ -418,6 +417,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
     {	struct getkey_ctx_s ctx;
         KBNODE kb = NULL;
 	memset( &ctx, 0, sizeof ctx );
+        ctx.exact = 1; /* use the key ID exactly as given */
 	ctx.not_allocated = 1;
 	ctx.nitems = 1;
 	ctx.items[0].mode = 11;
@@ -473,6 +473,7 @@ get_pubkeyblock( u32 *keyid )
     KBNODE keyblock = NULL;
 
     memset( &ctx, 0, sizeof ctx );
+    /* co need to set exact here because we want the entire block */
     ctx.not_allocated = 1;
     ctx.nitems = 1;
     ctx.items[0].mode = 11;
@@ -498,6 +499,7 @@ get_seckey( PKT_secret_key *sk, u32 *keyid )
     KBNODE kb = NULL;
 
     memset( &ctx, 0, sizeof ctx );
+    ctx.exact = 1; /* use the key ID exactly as given */
     ctx.not_allocated = 1;
     ctx.nitems = 1;
     ctx.items[0].mode = 11;
@@ -536,6 +538,7 @@ seckey_available( u32 *keyid )
     KBNODE kb = NULL;
 
     memset( &ctx, 0, sizeof ctx );
+    ctx.exact = 1; /* use the key ID exactly as given */
     ctx.not_allocated = 1;
     ctx.nitems = 1;
     ctx.items[0].mode = 11;
@@ -620,15 +623,16 @@ hextobyte( const byte *s )
  *   is not case sensitive.
  */
 
-int
-classify_user_id( const char *name, u32 *keyid, byte *fprint,
-		  const char **retstr, size_t *retlen )
+static int
+classify_user_id2( const char *name, u32 *keyid, byte *fprint,
+		  const char **retstr, size_t *retlen, int *force_exact )
 {
     const char *	s;
     int 		mode = 0;
     int 		hexprefix = 0;
     int 		hexlength;
-
+    
+    *force_exact = 0;
     /* skip leading spaces.   FIXME: what is with leading spaces? */
     for(s = name; *s && isspace(*s); s++ )
 	;
@@ -707,6 +711,10 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
 	    }
 
 	    hexlength = strspn(s, "0123456789abcdefABCDEF");
+            if (hexlength >= 8 && s[hexlength] =='!') {
+                *force_exact = 1;
+                hexlength++; /* just for the following check */
+            }
 
 	    /* check if a hexadecimal number is terminated by EOS or blank */
 	    if (hexlength && s[hexlength] && !isspace(s[hexlength])) {
@@ -715,6 +723,9 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
 		else		    /* The first chars looked like */
 		    hexlength = 0;  /* a hex number, but really were not. */
 	    }
+
+            if (*force_exact)
+                hexlength--;
 
 	    if (hexlength == 8
                 || (!hexprefix && hexlength == 9 && *s == '0')){
@@ -775,6 +786,7 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
 		if (hexprefix)	/* This was a hex number with a prefix */
 		    return 0;	/* and a wrong length */
 
+                *force_exact = 0;
 		mode = 2;   /* Default is case insensitive substring search */
 	    }
     }
@@ -787,14 +799,20 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
     return mode;
 }
 
-
+int
+classify_user_id( const char *name, u32 *keyid, byte *fprint,
+		  const char **retstr, size_t *retlen )
+{
+    int dummy;
+    return classify_user_id2 (name, keyid, fprint, retstr, retlen, &dummy);
+}
 
 /****************
  * Try to get the pubkey by the userid. This function looks for the
  * first pubkey certificate which has the given name in a user_id.
  * if pk/sk has the pubkey algo set, the function will only return
  * a pubkey with that algo.
- * The caller must provide provide storage for either the pk or the sk.
+ * The caller must provide storage for either the pk or the sk.
  * If ret_kb is not NULL the funtion will return the keyblock there.
  */
 
@@ -807,6 +825,7 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     STRLIST r;
     GETKEY_CTX ctx;
     KBNODE help_kb = NULL;
+    int exact;
     
     if( retctx ) /* reset the returned context in case of error */
 	*retctx = NULL;
@@ -820,18 +839,14 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     ctx->nitems = n;
 
     for(n=0, r=namelist; r; r = r->next, n++ ) {
-	int mode = classify_user_id( r->d,
-                                 ctx->items[n].keyid,
-                                 ctx->items[n].fprint,
-                                 &ctx->items[n].name,
-                                 NULL );
+	int mode = classify_user_id2 ( r->d,
+                                       ctx->items[n].keyid,
+                                       ctx->items[n].fprint,
+                                       &ctx->items[n].name,
+                                       NULL, &exact );
 
-        /* if we don't use one of the exact key specifications, we assume that
-         * the primary key is requested */
-        if ( mode != 10 && mode != 11
-             && mode != 16 && mode == 20 && mode != 21 )
-            ctx->primary = 1; 
-
+        if ( exact )
+            ctx->exact = 1;
 	ctx->items[n].mode = mode;
         if( !ctx->items[n].mode ) {
 	    m_free( ctx );
@@ -951,6 +966,7 @@ get_pubkey_byfprint( PKT_public_key *pk,
         KBNODE kb = NULL;
 
 	memset( &ctx, 0, sizeof ctx );
+        ctx.exact = 1 ;
 	ctx.not_allocated = 1;
 	ctx.nitems = 1;
 	ctx.items[0].mode = fprint_len;
@@ -1008,6 +1024,7 @@ get_keyblock_bylid( KBNODE *ret_keyblock, ulong lid )
     if( keyid_from_lid( lid, kid ) )
 	kid[0] = kid[1] = 0;
     memset( &ctx, 0, sizeof ctx );
+    ctx.exact = 1;
     ctx.not_allocated = 1;
     ctx.nitems = 1;
     ctx.items[0].mode = 12;
@@ -1047,7 +1064,6 @@ get_seckey_byname2( GETKEY_CTX *retctx,
         assert (!retblock);
 	memset( &ctx, 0, sizeof ctx );
 	ctx.not_allocated = 1;
-	ctx.primary = 1;
 	ctx.nitems = 1;
 	ctx.items[0].mode = 15;
 	rc = lookup( &ctx, &kb, 1 );
@@ -1255,7 +1271,11 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
 /****************
  * merge all selfsignatures with the keys.
  * FIXME: replace this at least for the public key parts
- *        by merge_selfsigs
+ *        by merge_selfsigs.
+ *        It is still used in keyedit.c and
+ *        at 2 or 3 other places - check whether it is really needed.
+ *        It might be needed by the key edit and import stuff because
+ *        the keylock is changed.
  */
 void
 merge_keys_and_selfsig( KBNODE keyblock )
@@ -1516,7 +1536,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
             }
         }
     }
-    if ( uidnode ) {
+    if ( uidnode && signode ) {
         fixup_uidnode ( uidnode, signode );
         pk->is_valid = 1;
     }
@@ -1961,14 +1981,14 @@ find_by_fpr( KBNODE keyblock,  const char *name, int mode )
 
 /* See see whether the key fits
  * our requirements and in case we do not
- * request a the primary key, we should select
+ * request the primary key, we should select
  * a suitable subkey.
  * FIXME: Check against PGP 7 whether we still need a kludge
  *        to favor type 16 keys over type 20 keys when type 20
  *        has not been explitely requested.
  * Returns: True when a suitable key has been found.
  *
- * We have to distinguish four cases:
+ * We have to distinguish four cases:  FIXME!
  *  1. No usage and no primary key requested
  *     Examples for this case are that we have a keyID to be used
  *     for decrytion or verification.
@@ -1980,7 +2000,12 @@ find_by_fpr( KBNODE keyblock,  const char *name, int mode )
  *  4. Usage but no primary key requested
  *     FIXME
  * FIXME: Tell what is going to happen here and something about the rationale
+ * Note: We don't use this function if no specific usage is requested;
+ *       This way the getkey functions can be used for plain key listings.
  *
+ * CTX ist the keyblock we are investigating, if FOUNDK is not NULL this
+ * is the key we actually found by looking at the keyid or a fingerprint and
+ * may eitehr point to the primary or one of the subkeys.
  */
 
 static int
@@ -1998,17 +2023,29 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
     assert( keyblock->pkt->pkttype == PKT_PUBLIC_KEY );
    
     ctx->found_key = NULL;
-    
-    if ( DBG_CACHE )
-        log_debug( "finish_lookup: checking %s (req_usage=%x)\n",
-                   foundk? "one key":"all keys", req_usage);
 
+    if (!ctx->exact)
+        foundk = NULL;
+
+    if ( DBG_CACHE )
+        log_debug( "finish_lookup: checking key %08lX (%s)(req_usage=%x)\n",
+                   (ulong)keyid_from_pk( keyblock->pkt->pkt.public_key, NULL),
+                   foundk? "one":"all", req_usage);
+
+    if (!req_usage) {
+        latest_key = foundk? foundk:keyblock;
+        goto found;
+    }
+    
+    if (!req_usage) {
+        ctx->found_key = foundk;
+        cache_user_id( keyblock );
+        return 1; /* found */
+    }
+    
     latest_date = 0;
     latest_key  = NULL;
-    /* We do check the subkeys only if we either have requested a specific
-     * usage or have not requested to get the primary key. */
-    if ( (req_usage || !ctx->primary)
-         && (!foundk || foundk->pkt->pkttype == PKT_PUBLIC_SUBKEY) ) {
+    if ( !foundk || foundk->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
         KBNODE nextk;
         /* either start a loop or check just this one subkey */
         for (k=foundk?foundk:keyblock; k; k = nextk ) {
@@ -2019,6 +2056,9 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
             if ( foundk )
                 nextk = NULL;  /* what a hack */
             pk = k->pkt->pkt.public_key;
+            if (DBG_CACHE)
+                log_debug( "\tchecking subkey %08lX\n",
+                           (ulong)keyid_from_pk( pk, NULL));
             if ( !pk->is_valid ) {
                 if (DBG_CACHE)
                     log_debug( "\tsubkey not valid\n");
@@ -2035,8 +2075,7 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
                 continue;
             }
             
-            if ( req_usage &&
-                 !((pk->pubkey_usage&USAGE_MASK) & req_usage) ) {
+            if ( !((pk->pubkey_usage&USAGE_MASK) & req_usage) ) {
                 if (DBG_CACHE)
                     log_debug( "\tusage does not match: want=%x have=%x\n",
                                req_usage, pk->pubkey_usage );
@@ -2044,8 +2083,7 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
             }
 
             if (DBG_CACHE)
-                log_debug( "\tconsidering key %08lX\n",
-                           (ulong)keyid_from_pk( pk, NULL));
+                log_debug( "\tsubkey looks fine\n");
             if ( pk->created > latest_date ) {
                 latest_date = pk->created;
                 latest_key  = k;
@@ -2053,7 +2091,9 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
         }
     }
 
-    if ( !latest_key ) {
+    /* Okay now try the primary key unless we have want an exact 
+     * key ID match on a subkey */
+    if ( !latest_key && !(ctx->exact && foundk != keyblock) ) {
         PKT_public_key *pk;
         if (DBG_CACHE && !foundk )
             log_debug( "\tno suitable subkeys found - trying primary\n");
@@ -2070,10 +2110,10 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
             if (DBG_CACHE)
                 log_debug( "\tprimary key has expired\n");
         }
-        else  if ( req_usage
-                   && !((pk->pubkey_usage&USAGE_MASK) & req_usage) ) {
+        else  if ( !((pk->pubkey_usage&USAGE_MASK) & req_usage) ) {
             if (DBG_CACHE)
-                log_debug( "\tusage does not match: want=%x have=%x\n",
+                log_debug( "\tprimary key usage does not match: "
+                           "want=%x have=%x\n",
                            req_usage, pk->pubkey_usage );
         }
         else { /* okay */
@@ -2090,6 +2130,7 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
         return 0;
     }
 
+ found:
     if (DBG_CACHE)
         log_debug( "\tusing key %08lX\n",
                 (ulong)keyid_from_pk( latest_key->pkt->pkt.public_key, NULL) );
@@ -2117,6 +2158,7 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
     byte namehash[20];
     int use_namehash=0;
     KBNODE secblock = NULL; /* helper */
+    int no_suitable_key = 0;
 
     if( !ctx->count ) /* first time */
 	rc = enum_keyblocks( secmode? 5:0, &ctx->kbpos, NULL );
@@ -2180,6 +2222,7 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
                     /* this keyblock looks fine - do further investigation */
                     merge_selfsigs ( ctx->keyblock );
 		    if ( finish_lookup( ctx, k ) ) {
+                        no_suitable_key = 0;
                         if ( secmode ) {
                             merge_public_with_secret ( ctx->keyblock,
                                                        secblock);
@@ -2188,6 +2231,8 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
                         }
                         goto found;
                     }
+                    else
+                        no_suitable_key = 1;
 		}
 	    }
           skip:
@@ -2209,6 +2254,8 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
         *ret_keyblock = ctx->keyblock; /* return the keyblock */
         ctx->keyblock = NULL;
     }
+    else if (rc == -1 && no_suitable_key)
+        rc = secmode ? G10ERR_UNU_SECKEY : G10ERR_UNU_PUBKEY;
     else if( rc == -1 )
 	rc = secmode ? G10ERR_NO_SECKEY : G10ERR_NO_PUBKEY;
 

@@ -11,3 +11,4 @@ gpg: NOTE: signature key expired
 NOTE: this is a development version!
 gpg: encrypted with 
 "test two (no pp) <two@test.nowhere.nil>"
+gpg: using secondary key
