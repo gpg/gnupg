@@ -53,6 +53,7 @@ struct reader_cb_parm_s {
 
   int identified;
   int is_pem;
+  int is_base64;
   int stop_seen;
 
   struct {
@@ -164,14 +165,28 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
 
   if (!parm->identified)
     {
-      if (parm->line_counter == 1 && !parm->have_lf)
+      if (!parm->autodetect)
+        {
+          if (parm->assume_pem)
+            {
+              /* wait for the header line */
+              if (!parm->have_lf || strncmp (parm->line, "-----BEGIN ", 11)
+                  || strncmp (parm->line+11, "PGP ", 4))
+                goto next;
+              parm->linelen = parm->readpos = 0;
+              parm->is_pem = 1;
+            }
+          else if (parm->assume_base64)
+            parm->is_base64 = 1;
+        }
+      else if (parm->line_counter == 1 && !parm->have_lf)
         {
           /* first line too long - assume DER encoding */
           parm->is_pem = 0;
         }
       else if (parm->line_counter == 1 && parm->linelen && *parm->line == 0x30)
         {
-          /* the very first bytes does pretty much look like a SEQUENCE tag*/
+          /* the very first byte does pretty much look like a SEQUENCE tag*/
           parm->is_pem = 0;
         }
       else if ( parm->have_lf && !strncmp (parm->line, "-----BEGIN ", 11)
@@ -194,9 +209,10 @@ base64_reader_cb (void *cb_value, char *buffer, size_t count, size_t *nread)
   
 
   n = 0;
-  if (parm->is_pem)
+  if (parm->is_pem || parm->is_base64)
     {  
-      if (parm->have_lf && !strncmp (parm->line, "-----END ", 9))
+      if (parm->is_pem && parm->have_lf
+          && !strncmp (parm->line, "-----END ", 9))
         { 
           parm->identified = 0;
           parm->linelen = parm->readpos = 0;

@@ -79,6 +79,10 @@ enum cmd_and_opt_values {
   oEnableSpecialFilenames,
   oAgentProgram,
 
+  oAssumeArmor,
+  oAssumeBase64,
+  oAssumeBinary,
+
   oTextmode,
   oFingerprint,
   oWithFingerprint,
@@ -200,7 +204,17 @@ static ARGPARSE_OPTS opts[] = {
 
     { oArmor, "armor",     0, N_("create ascii armored output")},
     { oArmor, "armour",     0, "@" },
+    
+    { oAssumeArmor,  "assume-armor", 0, N_("assume input is in PEM format")},
+    { oAssumeBase64, "assume-base64", 0,
+                                      N_("assume input is in base-64 format")},
+    { oAssumeBase64, "assume-binary", 0,
+                                      N_("assume input is in binary format")},
+
+
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
+
+#if 0
     { oRecipient, "remote-user", 2, "@"},  /* old option name */
     { oDefRecipient, "default-recipient" ,2,
 				  N_("|NAME|use NAME as default recipient")},
@@ -209,19 +223,25 @@ static ARGPARSE_OPTS opts[] = {
     { oNoDefRecipient, "no-default-recipient", 0, "@" },
     { oEncryptTo, "encrypt-to", 2, "@" },
     { oNoEncryptTo, "no-encrypt-to", 0, "@" },
+
+#endif
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
     { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
+#if 0
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
+#endif
     { oOutput, "output",    2, N_("use as output file")},
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
     { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
+#if 0
     { oForceV3Sigs, "force-v3-sigs", 0, N_("force v3 signatures") },
     { oForceMDC, "force-mdc", 0, N_("always use a MDC for encryption") },
+#endif
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
   /*{ oInteractive, "interactive", 0, N_("prompt before overwriting") }, */
-    { oUseAgent, "use-agent",0, N_("use the gpg-agent")},
+    /*{ oUseAgent, "use-agent",0, N_("use the gpg-agent")},*/
     { oBatch, "batch",     0, N_("batch mode: never ask")},
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
     { oAnswerNo,  "no",        0, N_("assume no on most questions")},
@@ -664,9 +684,28 @@ main ( int argc, char **argv)
 
         case oArmor: opt.armor = 1; opt.no_armor=0; break;
         case oNoArmor: 
+          /* use of no-armor for setting the input encoding is deprecated*/
           ctrl.autodetect_encoding = 0;
           opt.no_armor=1; opt.armor=0; 
           break;
+          
+        case oAssumeArmor:
+          ctrl.autodetect_encoding = 0;
+          ctrl.is_pem = 1;
+          ctrl.is_base64 = 0;
+          break;
+        case oAssumeBase64:
+          ctrl.autodetect_encoding = 0;
+          ctrl.is_pem = 0;
+          ctrl.is_base64 = 1;
+          break;
+        case oAssumeBinary:
+          ctrl.autodetect_encoding = 0;
+          ctrl.is_pem = 0;
+          ctrl.is_base64 = 0;
+          break;
+          
+
         case oOutput: opt.outfile = pargs.r.ret_str; break;
         case oQuiet: opt.quiet = 1; break;
         case oNoTTY: /* fixme:tty_no_terminal(1);*/ break;
