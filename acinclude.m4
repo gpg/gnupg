@@ -1,5 +1,5 @@
 dnl macros to configure gnupg
-dnl Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
 dnl
@@ -115,7 +115,7 @@ define(GNUPG_CHECK_ENDIAN,
     tmp_assumed_endian=big
     if test "$cross_compiling" = yes; then
       case "$host_cpu" in
-         i[345678]* )
+         i@<:@345678@:>@* )
             tmp_assumed_endian=little
             ;;
          *)

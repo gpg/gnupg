@@ -41,6 +41,8 @@ Noteworthy changes in version 1.2.2 (unreleased)
     * Add read-only support for the SHA-256 hash, and optional
       read-only support for the SHA-384 and SHA-512 hashes.
 
+    * New option --enable-progress-filter for use with frontends.
+
 
 Noteworthy changes in version 1.2.1 (2002-10-25)
 ------------------------------------------------
