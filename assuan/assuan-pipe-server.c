@@ -35,6 +35,7 @@ assuan_init_pipe_server (ASSUAN_CONTEXT *r_ctx, int filedes[2])
   ctx = xtrycalloc (1, sizeof *ctx);
   if (!ctx)
     return ASSUAN_Out_Of_Core;
+  ctx->is_server = 1;
   ctx->input_fd = -1;
   ctx->output_fd = -1;
 

@@ -40,6 +40,12 @@ typedef enum {
   ASSUAN_Read_Error = 5,
   ASSUAN_Write_Error = 6,
   ASSUAN_Problem_Starting_Server = 7,
+  ASSUAN_Not_A_Server = 8,
+  ASSUAN_Not_A_Client = 9,
+  ASSUAN_Nested_Commands = 10,
+  ASSUAN_Invalid_Response = 11,
+  ASSUAN_No_Data_Callback = 12,
+  ASSUAN_No_Inquire_Callback = 13,
 
   /* error codes above 99 are meant as status codes */
   ASSUAN_Not_Implemented = 100,
@@ -59,6 +65,9 @@ typedef enum {
   ASSUAN_Server_IO_Error = 114,
   ASSUAN_Server_Bug = 115,
   ASSUAN_No_Data_Available = 116,
+  ASSUAN_Invalid_Data = 117,
+  ASSUAN_Unexpected_Command = 118,
+  ASSUAN_Too_Much_Data = 119,
 
   ASSUAN_Bad_Certificate = 201,
   ASSUAN_Bad_Certificate_Path = 202,
@@ -71,7 +80,7 @@ typedef enum {
 
   ASSUAN_Cert_Revoked = 301,
   ASSUAN_No_CRL_For_Cert = 302,
-  ASSUNA_CRL_Too_Old = 303,
+  ASSUAN_CRL_Too_Old = 303,
 
 } AssuanError;
 
@@ -136,6 +145,25 @@ AssuanError assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name,
 void assuan_pipe_disconnect (ASSUAN_CONTEXT ctx);
 pid_t assuan_get_pid (ASSUAN_CONTEXT ctx);
 
+/*-- assuan-client.c --*/
+AssuanError 
+assuan_transact (ASSUAN_CONTEXT ctx,
+                 const char *command,
+                 AssuanError (*data_cb)(void *, const void *, size_t),
+                 void *data_cb_arg,
+                 AssuanError (*inquire_cb)(void*, const char *),
+                 void *inquire_cb_arg);
+
+
+/*-- assuan-inquire.c --*/
+AssuanError assuan_inquire (ASSUAN_CONTEXT ctx, const char *keyword,
+                            char **r_buffer, size_t *r_length, size_t maxlen);
+
+/*-- assuan-buffer.c --*/
+AssuanError assuan_send_data (ASSUAN_CONTEXT ctx,
+                              const void *buffer, size_t length);
+
+
 /*-- assuan-util.c --*/
 void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
                                void *(*new_realloc_func)(void *p, size_t n),
@@ -153,3 +181,5 @@ const char *assuan_strerror (AssuanError err);
 }
 #endif
 #endif /*ASSUAN_H*/
+
+

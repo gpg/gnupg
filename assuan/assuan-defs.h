@@ -35,6 +35,9 @@ struct cmdtbl_s {
 struct assuan_context_s {
   AssuanError err_no;
   const char *err_str;
+
+  int is_server;  /* set if this is context belongs to a server */
+  int in_inquire;
   
   void *user_pointer;  /* for assuan_[gs]et_pointer () */
 

@@ -353,6 +353,9 @@ process_request (ASSUAN_CONTEXT ctx)
 {
   int rc;
 
+  if (ctx->in_inquire)
+    return ASSUAN_Nested_Commands;
+
   rc = _assuan_read_line (ctx);
   if (rc)
     return rc;

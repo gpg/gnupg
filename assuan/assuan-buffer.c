@@ -265,5 +265,50 @@ _assuan_cookie_write_flush (void *cookie)
 }
 
 
+/**
+ * assuan_send_data:
+ * @ctx: An assuan context
+ * @buffer: Data to send or NULL to flush
+ * @length: length of the data to send/
+ * 
+ * This function may be used by the server or the client to send data
+ * lines.  The data will be escaped as required by the Assuan protocol
+ * and may get buffered until a line is full.  To force sending the
+ * data out @buffer may be passed as NULL (in which case @length must
+ * also be 0); however when used by a client this flush operation does
+ * also send the terminating "END" command to terminate the reponse on
+ * a INQUIRE response.  However, when assuan_transact() is used, this
+ * function takes care of sending END itself.
+ * 
+ * Return value: 0 on success or an error code
+ **/
+
+AssuanError
+assuan_send_data (ASSUAN_CONTEXT ctx, const void *buffer, size_t length)
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  if (!buffer && length)
+    return ASSUAN_Invalid_Value;
+
+  if (!buffer)
+    { /* flush what we have */
+      _assuan_cookie_write_flush (ctx);
+      if (ctx->outbound.data.error)
+        return ctx->outbound.data.error;
+      if (!ctx->is_server)
+        return _assuan_write_line (ctx, "END");
+    }
+  else
+    {
+      _assuan_cookie_write_data (ctx, buffer, length);
+      if (ctx->outbound.data.error)
+        return ctx->outbound.data.error;
+    }
+
+  return 0;
+}
+
+
 
 

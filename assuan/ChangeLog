@@ -1,3 +1,11 @@
+2001-12-04  Werner Koch  <wk@gnupg.org>
+
+	* assuan-connect.c (assuan_pipe_connect): Add more error reporting.
+	* assuan-client.c: New.
+
+	* assuan-inquire.c: New.
+	* assuan-handler.c (process_request): Check for nested invocations.
+
 2001-11-27  Werner Koch  <wk@gnupg.org>
 
 	* assuan-handler.c (assuan_register_input_notify): New.
