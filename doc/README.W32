@@ -39,12 +39,12 @@ Installation instructions:
 
 Internationalization support:
 -----------------------------
-  1. Decide where to store the translation files.  Here we assume
-     the directory "c:/gnu/share"
+  1. Decide where to store the translation files for your language.
+     Here we assume the directory "c:/gnu/locale/fr"
   2. Set an environment Variable:
-     "set MINGW32_NLS_DIR=c:/gnu/share"
+     "set MINGW32_NLS_DIR=c:/gnu/locale/fr"
   3. Select which language to use.  If you want the French translation,
-     copy the file "fr.mo" to "c:/gnu/share/gnupg.mo".
+     copy the file "fr.mo" to "c:/gnu/locale/fr/gnupg.mo".
   4. Done.
 
 Currently we only support the Codepages 437, 850 und Latin1.  If you have
