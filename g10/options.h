@@ -95,6 +95,7 @@ struct {
     int auto_key_retrieve;
     const char *override_session_key;
     int show_session_key;
+    int use_agent;
     int merge_only;
     int try_all_secrets;
 } opt;

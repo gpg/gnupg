@@ -1,3 +1,12 @@
+2000-11-16  Werner Koch  <wk@gnupg.org>
+
+        * g10.c: New option --use-agent
+        * passphrase.c (agent_open,agent_close): New.
+        (agent_get_passphrase,agent_clear_passphrase): New.
+	(passphrase_clear_cache): New.
+        (passphrase_to_dek): Use the agent here.
+	* seckey-cert.c (do_check): Clear cached passphrases.
+
 2000-11-15  Werner Koch  <wk@gnupg.org>
 
 	* status.c (write_status_text): Moved the big switch to ...
