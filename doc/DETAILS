@@ -587,17 +587,17 @@ FIXME:  The layout changed, document it here.
      1 byte max_cert_depth
 	    The three items are used to check whether the cached
 	    validity value from the dir record can be used.
-     1 u32  locked flags
+     1 u32  locked flags [not used]
      1 u32  timestamp of trustdb creation
      1 u32  timestamp of last modification which may affect the validity
 	    of keys in the trustdb.  This value is checked against the
 	    validity timestamp in the dir records.
-     1 u32  timestamp of last validation
+     1 u32  timestamp of last validation [currently not used]
 	    (Used to keep track of the time, when this TrustDB was checked
 	     against the pubring)
-     1 u32  record number of keyhashtable
+     1 u32  record number of keyhashtable [currently not used]
      1 u32  first free record
-     1 u32  record number of shadow directory hash table
+     1 u32  record number of shadow directory hash table [currently not used]
 	    It does not make sense to combine this table with the key table
 	    because the keyid is not in every case a part of the fingerprint.
      1 u32  record number of the trusthashtbale
