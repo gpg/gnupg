@@ -176,6 +176,7 @@ int answer_is_yes_no_default( const char *s, int def_answer );
 int answer_is_yes( const char *s );
 int answer_is_yes_no_quit( const char *s );
 int answer_is_okay_cancel (const char *s, int def_answer);
+int match_multistr(const char *multistr,const char *match);
 
 /*-- strgutil.c --*/
 void free_strlist( STRLIST sl );
