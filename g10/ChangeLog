@@ -1,3 +1,11 @@
+2000-12-08  Werner Koch  <wk@gnupg.org>
+
+	* pipemode.c: Made the command work.  Currently only for
+	non-armored detached signatures.
+	* mainproc.c (release_list): Reset the new pipemode vars.
+	(add_gpg_control): Handle the control packets for pipemode
+	* status.c, status.h: New stati {BEGIN,END}_STREAM.
+
 2000-12-07  Werner Koch  <wk@gnupg.org>
 
 	* g10.c: New option --allow-secret-key-import.

@@ -38,12 +38,15 @@
 
 
 #define CONTROL_PACKET_SPACE 30 
+#define FAKED_LITERAL_PACKET_SPACE (9+2+2)
 
 enum pipemode_state_e {
     STX_init = 0,
     STX_wait_operation,
     STX_begin,
     STX_text,
+    STX_detached_signature,
+    STX_signed_data,
     STX_wait_init
 };
 
@@ -52,6 +55,7 @@ struct pipemode_context_s {
     enum pipemode_state_e state;
     int operation;
     int stop;
+    int block_mode;
 };
 
 
@@ -89,12 +93,23 @@ pipemode_filter( void *opaque, int control,
     if( control == IOBUFCTRL_UNDERFLOW ) {
         *ret_len = 0;
         /* reserve some space for one control packet */
-        if ( size <= CONTROL_PACKET_SPACE )
+        if ( size <= CONTROL_PACKET_SPACE+FAKED_LITERAL_PACKET_SPACE )
             BUG();
-        size -= CONTROL_PACKET_SPACE;
+        size -= CONTROL_PACKET_SPACE+FAKED_LITERAL_PACKET_SPACE;
 
+        if ( stx->block_mode ) {
+            /* reserve 2 bytes for the block length */
+            buf[n++] = 0;
+            buf[n++] = 0;
+        }
+            
 
         while ( n < size ) {
+            /* FIXME: we have to make sure that we have a large enough
+             * buffer for a control packet even after we already read 
+             * something. The easest way to do this is probably by ungetting
+             * the control sequenceand and returning the buffer we have
+             * already assembled */
             int c = iobuf_get (a);
             if (c == -1) {
                 if ( stx->state != STX_init ) {
@@ -120,6 +135,7 @@ pipemode_filter( void *opaque, int control,
                         return -1;
                     }
                     stx->state = STX_wait_operation;
+                    stx->block_mode = 0;
                     break;
                    case '>': /* end of stream part */
                      if ( stx->state != STX_wait_init ) {
@@ -141,35 +157,64 @@ pipemode_filter( void *opaque, int control,
                         return -1;
                     }
                     stx->operation = c;
-                    stx->state = STX_begin;
-                    n += make_control ( buf, 1, stx->operation );
+                    stx->state = c == 'B'? STX_detached_signature
+                                         : STX_begin;
+                    n += make_control ( buf+n, 1, stx->operation );
+                    /* must leave after a control packet */
                     goto leave;
 
                   case 't': /* plaintext text follows */
-                    if ( stx->state != STX_begin ) {
+                    if ( stx->state == STX_detached_signature ) {
+                        if ( stx->operation != 'B' ) {
+                            log_error ("invalid operation for this state\n");
+                            stx->stop = 1;
+                            return -1;
+                        }
+                        stx->state = STX_signed_data;
+                        n += make_control ( buf+n, 2, 'B' );
+                        /* and now we fake a literal data packet much the same
+                         * as in armor.c */
+                        buf[n++] = 0xaf; /* old packet format, type 11,
+                                            var length */
+                        buf[n++] = 0;	 /* set the length header */
+                        buf[n++] = 6;
+                        buf[n++] = 'b';  /* we ignore it anyway */
+                        buf[n++] = 0;	 /* namelength */
+                        memset(buf+n, 0, 4); /* timestamp */
+                        n += 4;
+                        /* and return now so that we are sure to have
+                         * more space in the bufer for the next control
+                         * packet */
+                        stx->block_mode = 1;
+                        goto leave2;
+                    }
+                    else {
                         log_error ("invalid state for @t\n");
                         stx->stop = 1;
                         return -1;
                     }
-                    if ( stx->operation != 'E' ) {
-                        log_error ("invalid operation for @t\n");
-                        stx->stop = 1;
-                        return -1;
-                    }
-                    stx->state = STX_text;
-                    n += make_control ( buf, 2, c );
-                    goto leave;
+                    break;
 
                   case '.': /* ready */
-                    if ( stx->state == STX_text ) 
-                        ;
+                    if ( stx->state == STX_signed_data ) { 
+                        if (stx->block_mode) {
+                            buf[0] = (n-2) >> 8;
+                            buf[1] = (n-2);
+                            if ( buf[0] || buf[1] ) {
+                                /* end of blocks marker */
+                                buf[n++] = 0;
+                                buf[n++] = 0;
+                            }
+                            stx->block_mode = 0;
+                        }
+                        n += make_control ( buf+n, 3, 'B' );
+                    }
                     else {
                         log_error ("invalid state for @.\n");
                         stx->stop = 1;
                         return -1;
                     }
                     stx->state = STX_wait_init;
-                    n += make_control ( buf, 3, c );
                     goto leave;
 
                  default:      
@@ -191,6 +236,13 @@ pipemode_filter( void *opaque, int control,
             stx->stop = 1;
             rc = -1; /* eof */
         }
+        if ( stx->block_mode ) {
+            /* fixup the block length */
+            buf[0] = (n-2) >> 8;
+            buf[1] = (n-2);
+        }
+      leave2:
+        log_hexdump ("pipemode:", buf, n );
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_DESC )
@@ -211,19 +263,23 @@ run_in_pipemode(void)
     memset( &afx, 0, sizeof afx);
     memset( &stx, 0, sizeof stx);
 
+    /* FIXME: We have to handle de-armoring somehow.  We can't rely on
+     * the standard armor filter becuase it checks only once whether armoring
+     * is required and it would try to unarmor everything which is not good.
+     * So, currently only non-armored detached signatures do work.
+     */
+
     fp = iobuf_open("-");
     iobuf_push_filter (fp, pipemode_filter, &stx );
 
-    if( !opt.no_armor ) 
-        iobuf_push_filter( fp, armor_filter, &afx );
-   
     do {
-        log_debug ("pipemode: begin proc_packets\n");
+        write_status (STATUS_BEGIN_STREAM);
         rc = proc_packets( NULL, fp );
-        log_debug ("pipemode: end   proc_packets: %s\n", g10_errstr (rc));
+        write_status (STATUS_END_STREAM);
     } while ( !stx.stop );
   
 }
+
 
 
 

@@ -134,6 +134,8 @@ get_status_string ( int no )
       case STATUS_NOTATION_NAME  : s = "NOTATION_NAME" ; break;
       case STATUS_NOTATION_DATA  : s = "NOTATION_DATA" ; break;
       case STATUS_POLICY_URL     : s = "POLICY_URL" ; break;
+      case STATUS_BEGIN_STREAM   : s = "BEGIN_STREAM"; break;
+      case STATUS_END_STREAM     : s = "END_STREAM"; break;
       default: s = "?"; break;
     }
     return s;

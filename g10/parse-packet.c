@@ -1796,6 +1796,7 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
  * The format of such a control packet is:
  *   n byte  session marker
  *   1 byte  control type: 1 = Clearsign hash info
+ *                         2 = Pipemode control
  *   m byte  control data
  */
 

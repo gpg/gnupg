@@ -241,6 +241,10 @@ more arguments in future versions.
     POLICY_URL <string>
         string is %XX escaped
 
+    BEGIN_STREAM
+    END_STREAM
+        Issued by pipemode.
+
 
 Key generation
 ==============
@@ -666,6 +670,41 @@ Usage of gdbm files for keyrings
       1 = keyblock
       2 = list of 20 byte padded fingerprints
       3 = list of list fingerprints (but how to we key them?)
+
+
+
+Pipemode
+========
+This mode can be used to perform multiple operations with one call to
+gpg. It comes handy in cases where you have to verify a lot of
+signatures. Currently we support only detached signatures.  This mode
+is a kludge to avoid running gpg n daemon mode and using Unix Domain
+Sockets to pass the data to it.  There is no easy portable way to do
+this under Windows, so we use plain old pipes which do work well under
+Windows.  Because there is no way to signal multiple EOFs in a pipe we
+have to embed control commands in the data stream: We distinguish
+between a data state and a control state.  Initially the system is in
+data state but it won't accept any data.  Instead it waits for
+transition to control state which is done by sending a single '@'
+character.  While in control state the control command os expected and
+this command is just a single byte after which the system falls back
+to data state (but does not necesary accept data now).  The simplest
+control command is a '@' which just inserts this character into the
+data stream.
+
+Here is the format we use for detached signatures:
+"@<"  - Begin of new stream
+"@B"  - Detached signature follows.
+        This emits a control packet (1,'B')
+detached_signature
+"@t"  - Signed text follows. 
+        This emits the control packet (2, 'B')
+signed_text
+"@."  - End of operation. The final control packet forces signature
+        verification
+"@>"  - End of stream   
+
+
 
 
 

@@ -85,6 +85,9 @@
 #define STATUS_NOTATION_NAME    53
 #define STATUS_NOTATION_DATA    54
 #define STATUS_POLICY_URL       55
+#define STATUS_BEGIN_STREAM     56
+#define STATUS_END_STREAM       57
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

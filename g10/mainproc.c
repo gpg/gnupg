@@ -72,6 +72,10 @@ struct mainproc_context {
     ulong local_id;    /* ditto */
     struct kidlist_item *failed_pkenc;	/* list of packets for which
 					   we do not have a secret key */
+    struct {
+        int op;
+        int stop_now;
+    } pipemode;
 };
 
 
@@ -97,6 +101,8 @@ release_list( CTX c )
     c->list = NULL;
     c->have_data = 0;
     c->last_was_session_key = 0;
+    c->pipemode.op = 0;
+    c->pipemode.stop_now = 0;
     m_free(c->dek); c->dek = NULL;
 }
 
@@ -135,6 +141,31 @@ add_gpg_control( CTX c, PACKET *pkt )
         /* New clear text signature.
          * Process the last one and reset everything */
         release_list(c);
+    }   
+    else if ( pkt->pkt.gpg_control->control == 2 ) {
+        /* Pipemode control packet */
+#warning We have to do some sanit checks all over the place 
+        if ( pkt->pkt.gpg_control->datalen < 2 ) 
+            log_fatal ("invalid pipemode control packet length\n");
+        if (pkt->pkt.gpg_control->data[0] == 1) {
+            /* start the whole thing */
+            assert ( !c->list ); /* we should be in a pretty virgin state */
+            assert ( !c->pipemode.op );
+            c->pipemode.op = pkt->pkt.gpg_control->data[1];
+        }
+        else if (pkt->pkt.gpg_control->data[0] == 2) {
+            /* the signed material follows in a plaintext packet */
+            assert ( c->pipemode.op == 'B' );
+        }
+        else if (pkt->pkt.gpg_control->data[0] == 3) {
+            assert ( c->pipemode.op == 'B' );
+            release_list (c);
+            /* and tell the outer loop to terminate */
+            c->pipemode.stop_now = 1;
+        }
+        else 
+            log_fatal ("invalid pipemode control packet code\n");
+        return 0; /* no need to store the packet */
     }   
 
     if( c->list )  /* add another packet */
@@ -1094,6 +1125,12 @@ do_proc_packets( CTX c, IOBUF a )
 	}
 	else
 	    free_packet(pkt);
+        if ( c->pipemode.stop_now ) {
+            /* we won't get an EOF in pipemode, so we have to 
+             * break the loop here */ 
+            rc = -1;
+            break;
+        }
     }
     if( rc == G10ERR_INVALID_PACKET )
 	write_status_text( STATUS_NODATA, "3" );
