@@ -19,13 +19,14 @@
 ## Process this file with automake to produce Makefile.in
 
 bin_PROGRAMS = scdaemon sc-investigate sc-copykeys
+pkglib_PROGRAMS = pcsc-wrapper
 
 AM_CPPFLAGS = -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS =  $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
-	      $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
+	      $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
 
 card_apps = app-openpgp.c app-nks.c app-dinsig.c
@@ -43,7 +44,8 @@ scdaemon_SOURCES = \
 
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-	  $(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
+	  $(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(PTH_LIBS) \
+          $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
 	  $(LIBUSB_LIBS) -lgpg-error @INTLLIBS@ -ldl
 
 sc_investigate_SOURCES = \
@@ -57,7 +59,8 @@ sc_investigate_SOURCES = \
 
 sc_investigate_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
-	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBUSB_LIBS) \
+	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(PTH_LIBS) \
+	$(KSBA_LIBS) $(LIBUSB_LIBS) \
          @INTLLIBS@  -lgpg-error -ldl
 
 
@@ -73,5 +76,10 @@ sc_copykeys_SOURCES = \
 sc_copykeys_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
 	../common/libsimple-pwquery.a \
-	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBUSB_LIBS) \
+	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(PTH_LIBS) \
+	$(KSBA_LIBS) $(LIBUSB_LIBS) \
         -lgpg-error @INTLLIBS@ -ldl
+
+pcsc_wrapper_SOURCES = pcsc-wrapper.c
+pcsc_wrapper_LDADD = -ldl
+pcsc_wrapper_CFLAGS = 

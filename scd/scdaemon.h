@@ -79,6 +79,7 @@ struct app_ctx_s;
 
 struct server_control_s {
   struct server_local_s *server_local;
+  int reader_slot;  /* Slot of the open reader or -1 if not open. */
   struct card_ctx_s *card_ctx;
   struct app_ctx_s *app_ctx;
   struct {
@@ -101,6 +102,7 @@ void scd_init_default_ctrl (CTRL ctrl);
 /*-- command.c --*/
 void scd_command_handler (int);
 void send_status_info (CTRL ctrl, const char *keyword, ...);
+void scd_update_reader_status_file (void);
 
 /*-- card.c --*/
 int card_open (CARD *rcard);

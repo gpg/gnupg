@@ -82,6 +82,9 @@ map_sw (int sw)
     case SW_HOST_OUT_OF_CORE: ec = GPG_ERR_ENOMEM; break;
     case SW_HOST_INV_VALUE:   ec = GPG_ERR_INV_VALUE; break;
     case SW_HOST_INCOMPLETE_CARD_RESPONSE: ec = GPG_ERR_CARD; break;
+    case SW_HOST_NOT_SUPPORTED: ec = GPG_ERR_NOT_SUPPORTED; break;
+    case SW_HOST_LOCKING_FAILED: ec = GPG_ERR_BUG; break;
+    case SW_HOST_BUSY:           ec = GPG_ERR_EBUSY; break;
     default:
       if ((sw & 0x010000))
         ec = GPG_ERR_GENERAL; /* Should not happen. */

@@ -56,14 +56,11 @@ has_option (const char *line, const char *name)
 }
 
 
-
-
-/* Note, that this reset_notify is also used for cleanup purposes. */
+/* Reset the card and free the application context.  With DO_CLOSE set
+   to true, close the reader and don't do just a reset. */
 static void
-reset_notify (ASSUAN_CONTEXT ctx)
+do_reset (ctrl_t ctrl, int do_close)
 {
-  CTRL ctrl = assuan_get_pointer (ctx); 
-
   if (ctrl->card_ctx)
     {
       card_close (ctrl->card_ctx);
@@ -73,11 +70,26 @@ reset_notify (ASSUAN_CONTEXT ctx)
     }
   if (ctrl->app_ctx)
     {
-      int slot = ctrl->app_ctx->slot;
       release_application (ctrl->app_ctx);
       ctrl->app_ctx = NULL;
-      apdu_close_reader (slot);
     }
+  if (ctrl->reader_slot != -1)
+    {
+      if (do_close || apdu_reset (ctrl->reader_slot))
+        {
+          apdu_close_reader (ctrl->reader_slot);
+          ctrl->reader_slot = -1;
+        }
+    }
+}
+
+
+static void
+reset_notify (ASSUAN_CONTEXT ctx)
+{
+  CTRL ctrl = assuan_get_pointer (ctx); 
+
+  do_reset (ctrl, 0);
 }
 
 
@@ -92,7 +104,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
    function returns an Assuan error, so don't map the error a second
    time */
 static AssuanError
-open_card (CTRL ctrl, const char *apptype)
+open_card (ctrl_t ctrl, const char *apptype)
 {
   int slot;
 
@@ -101,13 +113,13 @@ open_card (CTRL ctrl, const char *apptype)
   if (ctrl->card_ctx)
     return 0; /* Already initialized using a card context. */
 
-  slot = apdu_open_reader (opt.reader_port);
+  if (ctrl->reader_slot != -1)
+    slot = ctrl->reader_slot;
+  else
+    slot = apdu_open_reader (opt.reader_port);
+  ctrl->reader_slot = slot;
   if (slot != -1)
-    {
-      ctrl->app_ctx = select_application (ctrl, slot, apptype);
-      if (!ctrl->app_ctx)
-        apdu_close_reader (slot);
-    }
+    ctrl->app_ctx = select_application (ctrl, slot, apptype);
   if (!ctrl->app_ctx)
     { /* No application found - fall back to old mode. */
       /* Note that we should rework the old code to use the
@@ -1084,6 +1096,12 @@ scd_command_handler (int listen_fd)
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());
 
+  /* We open the reader right at startup so that the ticker is able to
+     update the status file. */
+  if (ctrl.reader_slot == -1)
+    ctrl.reader_slot = apdu_open_reader (opt.reader_port);
+
+  /* Command processing loop. */
   for (;;)
     {
       rc = assuan_accept (ctx);
@@ -1104,7 +1122,7 @@ scd_command_handler (int listen_fd)
           continue;
         }
     }
-  reset_notify (ctx); /* used for cleanup */
+  do_reset (&ctrl, 1); /* Cleanup. */
 
   assuan_deinit_server (ctx);
 }
@@ -1156,3 +1174,22 @@ send_status_info (CTRL ctrl, const char *keyword, ...)
   va_end (arg_ptr);
 }
 
+
+
+void
+scd_update_reader_status_file (void)
+{
+  int slot;
+  int used;
+  unsigned int status, changed;
+
+  /* Note, that we only try to get the status, becuase it does not
+     make sense to wait here for a operation to complete.  If we are
+     so busy working with the card, delays in the status file updated
+     are should be acceptable. */
+  for (slot=0; !apdu_enum_reader (slot, &used); slot++)
+    if (used && !apdu_get_status (slot, 0, &status, &changed))
+      {
+        log_info ("status of slot %d is %u\n", slot, status);
+      }
+}

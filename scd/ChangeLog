@@ -1,3 +1,57 @@
+2004-04-20  Werner Koch  <wk@gnupg.org>
+
+	* pcsc-wrapper.c: New.
+	* Makefile.am (pkglib_PROGRAMS): Install it here.
+	* apdu.c (writen, readn): New.
+	(open_pcsc_reader, pcsc_send_apdu, close_pcsc_reader): Use the
+	pcsc-wrapper if we are using Pth.
+
+2004-04-19  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c (parse_ccid_descriptor): Store some of the reader
+	features away.  New arg HANDLE
+	(read_device_info): New arg HANDLE. Changed caller.
+	(bulk_in): Handle time extension requests.
+	(ccid_get_atr): Setup parameters and the IFSD.
+	(compute_edc): New. Factored out code.
+	(ccid_transceive): Use default NADs when required.
+
+2004-04-14  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.h (server_control_s): Add member READER_SLOT.
+	* scdaemon.c (scd_init_default_ctrl): Initialize READER_SLOT to -1.
+	* command.c (open_card): Reuse an open slot.
+	(reset_notify): Just reset the slot if supported by the reader.
+	(do_reset): Factored code from above out.
+	(scd_command_handler): Use it for cleanup.
+
+	* apdu.h: New pseudo stati SW_HOST_NOT_SUPPORTED,
+	SW_HOST_LOCKING_FAILED and SW_HOST_BUSY.
+	* iso7816.c (map_sw): Map it.
+	
+	* ccid-driver.c (ccid_slot_status): Add arg STATUSBITS.
+	* apdu.c (apdu_get_status): New.
+	(ct_get_status, pcsc_get_status, ocsc_get_status): New stubs.
+	(get_status_ccid): New.
+	(apdu_reset): New.
+	(reset_ct_reader, reset_pcsc_reader, reset_osc_reader): New stubs.
+	(reset_ccid_reader): New.
+	(apdu_enum_reader): New.
+	
+	* apdu.c (lock_slot, trylock_slot, unlock_slot): New helpers.
+	(new_reader_slot) [USE_GNU_PTH]: Init mutex.
+	(apdu_reset, apdu_get_status, apdu_send_le): Run functions
+	in locked mode.
+
+	* command.c (scd_update_reader_status_file): New.
+	* scdaemon.c (handle_tick): Call it.
+
+2004-04-13  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c: Convert to a Pth application.
+	(handle_signal, ticker_thread, handle_tick): New.
+	(main): Fire up the ticker thread in server mode.
+
 2004-03-23  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.c (main) <gpgconf_list>: Fixed output for pcsc_driver.

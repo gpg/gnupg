@@ -33,6 +33,9 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <signal.h>
+#ifdef USE_GNU_PTH
+# include <pth.h>
+#endif
 
 #define JNLIB_NEED_LOG_LOGV
 #include "scdaemon.h"
@@ -131,11 +134,23 @@ static ARGPARSE_OPTS opts[] = {
 
 static volatile int caught_fatal_sig = 0;
 
+/* Flag to indicate that a shutdown was requested. */
+static int shutdown_pending;
+
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
 
 /* Name of the communication socket */
 static char socket_name[128];
+
+
+#ifdef USE_GNU_PTH
+/* Pth wrapper function definitions. */
+GCRY_THREAD_OPTION_PTH_IMPL;
+
+static void *ticker_thread (void *arg);
+#endif /*USE_GNU_PTH*/
+
 
 static const char *
 my_strusage (int level)
@@ -287,6 +302,7 @@ main (int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
   int orig_argc;
+  gpg_error_t err;
   int may_coredump;
   char **orig_argv;
   FILE *configfp = NULL;
@@ -318,7 +334,18 @@ main (int argc, char **argv )
 
   i18n_init ();
 
-  /* check that the libraries are suitable.  Do it here because
+  /* Libgcrypt requires us to register the threading model first.
+     Note that this will also do the pth_init. */
+#ifdef USE_GNU_PTH
+  err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
+  if (err)
+    {
+      log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
+                 gpg_strerror (err));
+    }
+#endif /*USE_GNU_PTH*/
+
+  /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
@@ -568,7 +595,21 @@ main (int argc, char **argv )
 
 
   if (pipe_server)
-    { /* this is the simple pipe based server */
+    { /* This is the simple pipe based server */
+#ifdef USE_GNU_PTH
+      pth_attr_t tattr;
+ 
+      tattr = pth_attr_new();
+      pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
+      pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
+      pth_attr_set (tattr, PTH_ATTR_NAME, "ticker");
+
+      if (!pth_spawn (tattr, ticker_thread, NULL))
+        {
+          log_error ("error spawning ticker thread: %s\n", strerror (errno));
+          scd_exit (2);
+        }
+#endif /*USE_GNU_PTH*/
       scd_command_handler (-1);
     }
   else if (!is_daemon)
@@ -780,6 +821,115 @@ scd_exit (int rc)
 void
 scd_init_default_ctrl (CTRL ctrl)
 {
-
+  ctrl->reader_slot = -1;
 }
 
+
+#ifdef USE_GNU_PTH
+
+static void
+handle_signal (int signo)
+{
+  switch (signo)
+    {
+    case SIGHUP:
+      log_info ("SIGHUP received - "
+                "re-reading configuration and resetting cards\n");
+/*       reread_configuration (); */
+      break;
+      
+    case SIGUSR1:
+      if (opt.verbose < 5)
+        opt.verbose++;
+      log_info ("SIGUSR1 received - verbosity set to %d\n", opt.verbose);
+      break;
+
+    case SIGUSR2:
+      if (opt.verbose)
+        opt.verbose--;
+      log_info ("SIGUSR2 received - verbosity set to %d\n", opt.verbose );
+      break;
+
+    case SIGTERM:
+      if (!shutdown_pending)
+        log_info ("SIGTERM received - shutting down ...\n");
+      else
+        log_info ("SIGTERM received - still %ld running threads\n",
+                  pth_ctrl( PTH_CTRL_GETTHREADS ));
+      shutdown_pending++;
+      if (shutdown_pending > 2)
+        {
+          log_info ("shutdown forced\n");
+          log_info ("%s %s stopped\n", strusage(11), strusage(13) );
+          cleanup ();
+          scd_exit (0);
+	}
+      break;
+        
+    case SIGINT:
+      log_info ("SIGINT received - immediate shutdown\n");
+      log_info( "%s %s stopped\n", strusage(11), strusage(13));
+      cleanup ();
+      scd_exit (0);
+      break;
+
+    default:
+      log_info ("signal %d received - no action defined\n", signo);
+    }
+}
+
+static void
+handle_tick (void)
+{
+  scd_update_reader_status_file ();
+}
+
+static void *
+ticker_thread (void *dummy_arg)
+{
+  pth_event_t sigs_ev, time_ev = NULL;
+  sigset_t sigs;
+  int signo;
+
+  sigemptyset (&sigs );
+  sigaddset (&sigs, SIGHUP);
+  sigaddset (&sigs, SIGUSR1);
+  sigaddset (&sigs, SIGUSR2);
+  sigaddset (&sigs, SIGINT);
+  sigaddset (&sigs, SIGTERM);
+  sigs_ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+  
+  for (;;)
+    {
+      if (!time_ev)
+        {
+          time_ev = pth_event (PTH_EVENT_TIME, pth_timeout (2, 0));
+          if (time_ev)
+            pth_event_concat (sigs_ev, time_ev, NULL);
+        }
+
+      if (pth_wait (sigs_ev) < 1)
+        continue;
+
+      if (
+#ifdef PTH_STATUS_OCCURRED     /* This is Pth 2 */
+          pth_event_status (sigs_ev) == PTH_STATUS_OCCURRED
+#else
+          pth_event_occurred (sigs_ev)
+#endif
+          )
+        handle_signal (signo);
+
+      /* Always run the ticker. */
+      if (!shutdown_pending)
+        {
+          pth_event_isolate (sigs_ev);
+          pth_event_free (time_ev, PTH_FREE_ALL);
+          time_ev = NULL;
+          handle_tick ();
+        }
+    }
+
+  pth_event_free (sigs_ev, PTH_FREE_ALL);
+}
+#endif /*USE_GNU_PTH*/

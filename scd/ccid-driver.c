@@ -1,5 +1,5 @@
 /* ccid-driver.c - USB ChipCardInterfaceDevices driver
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *      Written by Werner Koch.
  *
  * This file is part of GnuPG.
@@ -108,7 +108,10 @@
 
 /* Disable all debugging output for now. */
 #undef DBG_CARD_IO
-#define DBG_CARD_IO 0
+#define DBG_CARD_IO 1
+
+/* Define to print information pertaining the T=1 protocol. */
+#undef DEBUG_T1 
 
 
 # define DEBUGOUT(t)         do { if (DBG_CARD_IO) \
@@ -145,8 +148,6 @@
 #endif /* This source not used by scdaemon. */
 
 
-/* Define to print information pertaining the T=1 protocol. */
-#undef DEBUG_T1 
 
 
 
@@ -184,9 +185,15 @@ struct ccid_driver_s {
   int seqno;
   unsigned char t1_ns;
   unsigned char t1_nr;
+  int nonnull_nad;
+  int auto_ifsd;
+  int max_ifsd;
+  int ifsd;
 };
 
 
+static unsigned int compute_edc (const unsigned char *data, size_t datalen,
+                                 int use_crc);
 static int bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen);
 static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                     size_t *nread, int expected_type, int seqno);
@@ -220,13 +227,18 @@ set_msg_len (unsigned char *msg, unsigned int length)
    Note, that this code is based on the one in lsusb.c of the
    usb-utils package, I wrote on 2003-09-01. -wk. */
 static int
-parse_ccid_descriptor (const unsigned char *buf, size_t buflen)
+parse_ccid_descriptor (ccid_driver_t handle,
+                       const unsigned char *buf, size_t buflen)
 {
   unsigned int i;
   unsigned int us;
   int have_t1 = 0, have_tpdu=0, have_auto_conf = 0;
 
 
+  handle->nonnull_nad = 0;
+  handle->auto_ifsd = 0;
+  handle->max_ifsd = 32;
+  handle->ifsd = 0;
   if (buflen < 54 || buf[0] < 54)
     {
       DEBUGOUT ("CCID device descriptor is too short\n");
@@ -272,6 +284,7 @@ parse_ccid_descriptor (const unsigned char *buf, size_t buflen)
         
   us = convert_le_u32(buf+28);
   DEBUGOUT_1 ("  dwMaxIFSD           %5u\n", us);
+  handle->max_ifsd = us;
 
   us = convert_le_u32(buf+32);
   DEBUGOUT_1 ("  dwSyncProtocols  %08X ", us);
@@ -320,9 +333,15 @@ parse_ccid_descriptor (const unsigned char *buf, size_t buflen)
   if ((us & 0x0100))
     DEBUGOUT ("    CCID can set ICC in clock stop mode\n");
   if ((us & 0x0200))
-    DEBUGOUT ("    NAD value other than 0x00 accpeted\n");
+    {
+      DEBUGOUT ("    NAD value other than 0x00 accepted\n");
+      handle->nonnull_nad = 1;
+    }
   if ((us & 0x0400))
-    DEBUGOUT ("    Auto IFSD exchange\n");
+    {
+      DEBUGOUT ("    Auto IFSD exchange\n");
+      handle->auto_ifsd = 1;
+    }
 
   if ((us & 0x00010000))
     {
@@ -389,7 +408,7 @@ parse_ccid_descriptor (const unsigned char *buf, size_t buflen)
    that the device is usable for us.  Returns 0 on success or an error
    code. */
 static int
-read_device_info (struct usb_device *dev)
+read_device_info (ccid_driver_t handle, struct usb_device *dev)
 {
   int cfg_no;
 
@@ -414,8 +433,9 @@ read_device_info (struct usb_device *dev)
                 {
                   if (ifcdesc->extra)
                     {
-                      if (!parse_ccid_descriptor (ifcdesc->extra,
-                                                 ifcdesc->extralen))
+                      if (!parse_ccid_descriptor (handle, 
+                                                  ifcdesc->extra,
+                                                  ifcdesc->extralen))
                         return 0; /* okay. we can use it. */
                     }
                 }
@@ -458,10 +478,22 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
                   dev->descriptor->idVendor, dev->descriptor->idProduct);
       if (!readerno)
         {
-          rc = read_device_info (dev);
+          *handle = calloc (1, sizeof **handle);
+          if (!*handle)
+            {
+              DEBUGOUT ("out of memory\n");
+              rc = -1;
+              free (*handle);
+              *handle = NULL;
+              goto leave;
+            }
+
+          rc = read_device_info (*handle, dev);
           if (rc)
             {
               DEBUGOUT ("device not supported\n");
+              free (*handle);
+              *handle = NULL;
               goto leave;
             }
 
@@ -469,6 +501,8 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
           if (rc)
             {
               DEBUGOUT_1 ("usb_open failed: %d\n", rc);
+              free (*handle);
+              *handle = NULL;
               goto leave;
             }
 
@@ -479,16 +513,11 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
           if (rc)
             {
               DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
+              free (*handle);
+              *handle = NULL;
               goto leave;
             }
 
-          *handle = calloc (1, sizeof **handle);
-          if (!*handle)
-            {
-              DEBUGOUT ("out of memory\n");
-              rc = -1;
-              goto leave;
-            }
           (*handle)->idev = idev;
           idev = NULL;
           /* FIXME: Do we need to get the endpoint addresses from the
@@ -508,7 +537,7 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
   usb_free_match (match);
 
   if (!rc && !*handle)
-    rc = -1; /* In case we didn't enter the while lool at all. */
+    rc = -1; /* In case we didn't enter the while loop at all. */
 
   return rc;
 }
@@ -592,6 +621,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   int i, rc;
   size_t msglen;
 
+ retry:
   rc = usb_bulk_read (handle->idev, 
                       0x82,
                       buffer, length,
@@ -628,6 +658,14 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       return -1;
     }
 
+  if ( !(buffer[7] & 0x03) && (buffer[7] & 0xC0) == 0x80)
+    { 
+      /* Card present and active, time extension requested. */
+      DEBUGOUT_2 ("time extension requested (%02X,%02X)\n",
+                  buffer[7], buffer[8]);
+      goto retry;
+    }
+  
   DEBUGOUT_3 ("status: %02X  error: %02X  octet[9]: %02X\n"
               "               data:",  buffer[7], buffer[8], buffer[9] );
   for (i=10; i < msglen; i++)
@@ -695,7 +733,7 @@ ccid_poll (ccid_driver_t handle)
 
 
 int 
-ccid_slot_status (ccid_driver_t handle)
+ccid_slot_status (ccid_driver_t handle, int *statusbits)
 {
   int rc;
   unsigned char msg[100];
@@ -716,6 +754,7 @@ ccid_slot_status (ccid_driver_t handle)
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus, seqno);
   if (rc)
     return rc;
+  *statusbits = (msg[7] & 3);
 
   return 0;
 }
@@ -727,8 +766,12 @@ ccid_get_atr (ccid_driver_t handle,
 {
   int rc;
   unsigned char msg[100];
-  size_t msglen;
+  unsigned char *tpdu;
+  size_t msglen, tpdulen;
   unsigned char seqno;
+  int use_crc = 0;
+  unsigned int edc;
+  int i;
 
   msg[0] = PC_to_RDR_IccPowerOn;
   msg[5] = 0; /* slot */
@@ -756,11 +799,135 @@ ccid_get_atr (ccid_driver_t handle,
       *atrlen = n;
     }
 
+  /* Setup parameters to select T=1. */
+  msg[0] = PC_to_RDR_SetParameters;
+  msg[5] = 0; /* slot */
+  msg[6] = seqno = handle->seqno++;
+  msg[7] = 1; /* Select T=1. */
+  msg[8] = 0; /* RFU */
+  msg[9] = 0; /* RFU */
+
+  /* FIXME: Get those values from the ATR. */
+  msg[10]= 0x01; /* Fi/Di */
+  msg[11]= 0x10; /* LRC, direct convention. */
+  msg[12]= 0;    /* Extra guardtime. */
+  msg[13]= 0x41; /* BWI/CWI */
+  msg[14]= 0;    /* No clock stoppping. */
+  msg[15]= 254;  /* IFSC */
+  msg[16]= 0;    /* Does not support non default NAD values. */
+  set_msg_len (msg, 7);
+  msglen = 10 + 7;
+
+  DEBUGOUT ("sending");
+  for (i=0; i < msglen; i++)
+    DEBUGOUT_CONT_1 (" %02X", msg[i]);
+  DEBUGOUT_LF ();
+
+  rc = bulk_out (handle, msg, msglen);
+  if (rc)
+    return rc;
+  /* Note that we ignore the error code on purpose. */
+  bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters, seqno);
+
+
+  /* Send an S-Block with our maximun IFSD to the CCID.  */
+  if (!handle->auto_ifsd)
+    {
+      tpdu = msg+10;
+      /* NAD: DAD=1, SAD=0 */
+      tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+      tpdu[1] = (0xc0 | 0 | 1); /* S-block request: change IFSD */
+      tpdu[2] = 1;
+      tpdu[3] = handle->max_ifsd? handle->max_ifsd : 32; 
+      tpdulen = 4;
+      edc = compute_edc (tpdu, tpdulen, use_crc);
+      if (use_crc)
+        tpdu[tpdulen++] = (edc >> 8);
+      tpdu[tpdulen++] = edc;
+
+      msg[0] = PC_to_RDR_XfrBlock;
+      msg[5] = 0; /* slot */
+      msg[6] = seqno = handle->seqno++;
+      msg[7] = 0; 
+      msg[8] = 0; /* RFU */
+      msg[9] = 0; /* RFU */
+      set_msg_len (msg, tpdulen);
+      msglen = 10 + tpdulen;
+
+      DEBUGOUT ("sending");
+      for (i=0; i < msglen; i++)
+        DEBUGOUT_CONT_1 (" %02X", msg[i]);
+      DEBUGOUT_LF ();
+
+#ifdef DEBUG_T1      
+      fprintf (stderr, "T1: put %c-block seq=%d\n",
+               ((msg[11] & 0xc0) == 0x80)? 'R' :
+               (msg[11] & 0x80)? 'S' : 'I',
+               ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)));
+#endif  
+
+      rc = bulk_out (handle, msg, msglen);
+      if (rc)
+        return rc;
+
+      /* Fixme: The next line for the current Valgrid without support
+         for USB IOCTLs. */
+      memset (msg, 0, sizeof msg);
+
+      rc = bulk_in (handle, msg, sizeof msg, &msglen,
+                    RDR_to_PC_DataBlock, seqno);
+      if (rc)
+        return rc;
+      
+      tpdu = msg + 10;
+      tpdulen = msglen - 10;
+      
+      if (tpdulen < 4) 
+        {
+          DEBUGOUT ("cannot yet handle short blocks!\n");
+          return -1; 
+        }
+
+#ifdef DEBUG_T1
+      fprintf (stderr, "T1: got %c-block seq=%d err=%d\n",
+               ((msg[11] & 0xc0) == 0x80)? 'R' :
+               (msg[11] & 0x80)? 'S' : 'I',
+               ((msg[11] & 0x80)? !!(msg[11]& 0x10) : !!(msg[11] & 0x40)),
+               ((msg[11] & 0xc0) == 0x80)? (msg[11] & 0x0f) : 0
+               );
+#endif
+      if ((tpdu[1] & 0xe0) != 0xe0 || tpdu[2] != 1)
+        {
+          DEBUGOUT ("invalid response for S-block (Change-IFSD)\n");
+          return -1;
+        }
+      DEBUGOUT_1 ("IFSD has been set to %d\n", tpdu[3]);
+    }
+
   return 0;
 }
 
 
 
+
+static unsigned int 
+compute_edc (const unsigned char *data, size_t datalen, int use_crc)
+{
+  if (use_crc)
+    {
+      return 0x42; /* Not yet implemented. */
+    }
+  else
+    {
+      unsigned char crc = 0;
+      
+      for (; datalen; datalen--)
+        crc ^= *data++;
+      return crc;
+    }
+}
+
+
 /*
   Protocol T=1 overview
 
@@ -819,17 +986,19 @@ ccid_transceive (ccid_driver_t handle,
                  unsigned char *resp, size_t maxresplen, size_t *nresp)
 {
   int rc;
-  unsigned char send_buffer[10+258], recv_buffer[10+258];
+  unsigned char send_buffer[10+259], recv_buffer[10+259];
   const unsigned char *apdu;
   size_t apdulen;
   unsigned char *msg, *tpdu, *p;
-  size_t msglen, tpdulen, n;
+  size_t msglen, tpdulen, last_tpdulen, n;
   unsigned char seqno;
   int i;
-  unsigned char crc;
+  unsigned int edc;
+  int use_crc = 0;
   size_t dummy_nresp;
   int next_chunk = 1;
   int sending = 1;
+  int retries = 0;
 
   if (!nresp)
     nresp = &dummy_nresp;
@@ -852,7 +1021,8 @@ ccid_transceive (ccid_driver_t handle,
             return -1; /* Invalid length. */
 
           tpdu = msg+10;
-          tpdu[0] = ((1 << 4) | 0); /* NAD: DAD=1, SAD=0 */
+          /* NAD: DAD=1, SAD=0 */
+          tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
           tpdu[1] = ((handle->t1_ns & 1) << 6); /* I-block */
           if (apdulen > 128 /* fixme: replace by ifsc */)
             {
@@ -863,12 +1033,11 @@ ccid_transceive (ccid_driver_t handle,
             }
           tpdu[2] = apdulen;
           memcpy (tpdu+3, apdu, apdulen);
-          crc = 0;
-          for (i=0,p=tpdu; i < apdulen+3; i++)
-            crc ^= *p++;
-          tpdu[3+apdulen] = crc;
-          
-          tpdulen = apdulen + 4;
+          tpdulen = 3 + apdulen;
+          edc = compute_edc (tpdu, tpdulen, use_crc);
+          if (use_crc)
+            tpdu[tpdulen++] = (edc >> 8);
+          tpdu[tpdulen++] = edc;
         }
 
       msg[0] = PC_to_RDR_XfrBlock;
@@ -879,6 +1048,7 @@ ccid_transceive (ccid_driver_t handle,
       msg[9] = 0; /* RFU */
       set_msg_len (msg, tpdulen);
       msglen = 10 + tpdulen;
+      last_tpdulen = tpdulen;
 
       DEBUGOUT ("sending");
       for (i=0; i < msglen; i++)
@@ -926,7 +1096,7 @@ ccid_transceive (ccid_driver_t handle,
 
       if (!(tpdu[1] & 0x80))
         { /* This is an I-block. */
-          
+          retries = 0;
           if (sending)
             { /* last block sent was successful. */
               handle->t1_ns ^= 1;
@@ -937,13 +1107,15 @@ ccid_transceive (ccid_driver_t handle,
             { /* Reponse does not match our sequence number. */
               msg = send_buffer;
               tpdu = msg+10;
-              tpdu[0] = ((1 << 4) | 0); /* NAD: DAD=1, SAD=0 */
+              /* NAD: DAD=1, SAD=0 */
+              tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
               tpdu[1] = (0x80 | (handle->t1_nr & 1) << 4 | 2); /* R-block */
               tpdu[2] = 0;
               tpdulen = 3;
-              for (crc=0,i=0,p=tpdu; i < tpdulen; i++)
-                crc ^= *p++;
-              tpdu[tpdulen++] = crc;
+              edc = compute_edc (tpdu, tpdulen, use_crc);
+              if (use_crc)
+                tpdu[tpdulen++] = (edc >> 8);
+              tpdu[tpdulen++] = edc;
 
               continue;
             }
@@ -974,20 +1146,27 @@ ccid_transceive (ccid_driver_t handle,
           
           msg = send_buffer;
           tpdu = msg+10;
-          tpdu[0] = ((1 << 4) | 0); /* NAD: DAD=1, SAD=0 */
+          /* NAD: DAD=1, SAD=0 */
+          tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
           tpdu[1] = (0x80 | (handle->t1_nr & 1) << 4); /* R-block */
           tpdu[2] = 0;
           tpdulen = 3;
-          for (crc=0,i=0,p=tpdu; i < tpdulen; i++)
-            crc ^= *p++;
-          tpdu[tpdulen++] = crc;
-          
+          edc = compute_edc (tpdu, tpdulen, use_crc);
+          if (use_crc)
+            tpdu[tpdulen++] = (edc >> 8);
+          tpdu[tpdulen++] = edc;
         }
       else if ((tpdu[1] & 0xc0) == 0x80)
         { /* This is a R-block. */
           if ( (tpdu[1] & 0x0f)) 
             { /* Error: repeat last block */
+              if (++retries > 3)
+                {
+                  DEBUGOUT ("3 failed retries\n");
+                  return -1;
+                }
               msg = send_buffer;
+              tpdulen = last_tpdulen;
             }
           else if (sending && !!(tpdu[1] & 0x40) == handle->t1_ns)
             { /* Reponse does not match our sequence number. */
@@ -996,6 +1175,7 @@ ccid_transceive (ccid_driver_t handle,
             }
           else if (sending)
             { /* Send next chunk. */
+              retries = 0;
               msg = send_buffer;
               next_chunk = 1;
               handle->t1_ns ^= 1;
@@ -1008,6 +1188,7 @@ ccid_transceive (ccid_driver_t handle,
         }
       else 
         { /* This is a S-block. */
+          retries = 0;
           DEBUGOUT_2 ("T1 S-block %s received cmd=%d\n",
                       (tpdu[1] & 0x20)? "response": "request",
                       (tpdu[1] & 0x1f));
@@ -1016,14 +1197,16 @@ ccid_transceive (ccid_driver_t handle,
               unsigned char bwi = tpdu[3];
               msg = send_buffer;
               tpdu = msg+10;
-              tpdu[0] = ((1 << 4) | 0); /* NAD: DAD=1, SAD=0 */
+              /* NAD: DAD=1, SAD=0 */
+              tpdu[0] = handle->nonnull_nad? ((1 << 4) | 0): 0;
               tpdu[1] = (0xc0 | 0x20 | 3); /* S-block response */
               tpdu[2] = 1;
               tpdu[3] = bwi;
               tpdulen = 4;
-              for (crc=0,i=0,p=tpdu; i < tpdulen; i++)
-                crc ^= *p++;
-              tpdu[tpdulen++] = crc;
+              edc = compute_edc (tpdu, tpdulen, use_crc);
+              if (use_crc)
+                tpdu[tpdulen++] = (edc >> 8);
+              tpdu[tpdulen++] = edc;
               DEBUGOUT_1 ("T1 waittime extension of bwi=%d\n", bwi);
             }
           else
@@ -1043,6 +1226,7 @@ main (int argc, char **argv)
 {
   int rc;
   ccid_driver_t ccid;
+  unsigned int slotstat;
 
   rc = ccid_open_reader (&ccid, 0);
   if (rc)
@@ -1056,7 +1240,7 @@ main (int argc, char **argv)
 
   ccid_poll (ccid);
   fputs ("getting slot status ...\n", stderr);
-  rc = ccid_slot_status (ccid);
+  rc = ccid_slot_status (ccid, &slotstat);
   if (rc)
     return 1;
 

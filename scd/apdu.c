@@ -1,5 +1,5 @@
 /* apdu.c - ISO 7816 APDU functions and low level I/O
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +24,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifdef USE_GNU_PTH
+# include <pth.h>
+# include <unistd.h>
+# include <fcntl.h>
+#endif
 #ifdef HAVE_OPENSC
 # include <opensc/opensc.h>
 #endif
@@ -48,6 +53,11 @@
 #include "dynload.h"
 #include "ccid-driver.h"
 
+#ifdef USE_GNU_PTH
+#define NEED_PCSC_WRAPPER 1
+#endif
+
+
 #define MAX_READER 4 /* Number of readers we support concurrently. */
 #define CARD_CONNECT_TIMEOUT 1 /* Number of seconds to wait for
                                   insertion of the card (1 = don't wait). */
@@ -57,6 +67,12 @@
 #define DLSTDCALL __stdcall
 #else
 #define DLSTDCALL
+#endif
+
+#ifdef _POSIX_OPEN_MAX
+#define MAX_OPEN_FDS _POSIX_OPEN_MAX
+#else
+#define MAX_OPEN_FDS 20
 #endif
 
 
@@ -74,6 +90,11 @@ struct reader_table_s {
     unsigned long context;
     unsigned long card;
     unsigned long protocol;
+#ifdef NEED_PCSC_WRAPPER
+    int req_fd;
+    int rsp_fd;
+    pid_t pid;
+#endif /*NEED_PCSC_WRAPPER*/
   } pcsc;
 #ifdef HAVE_OPENSC
   int is_osc;          /* We are using the OpenSC driver layer. */
@@ -85,6 +106,11 @@ struct reader_table_s {
   int status;
   unsigned char atr[33];
   size_t atrlen;
+  unsigned int change_counter;
+#ifdef USE_GNU_PTH
+  int lock_initialized;
+  pth_mutex_t lock;
+#endif
 };
 typedef struct reader_table_s *reader_table_t;
 
@@ -185,11 +211,27 @@ new_reader_slot (void)
       log_error ("new_reader_slot: out of slots\n");
       return -1;
     }
+#ifdef USE_GNU_PTH
+  if (!reader_table[reader].lock_initialized)
+    {
+      if (!pth_mutex_init (&reader_table[reader].lock))
+        {
+          log_error ("error initializing mutex: %s\n", strerror (errno));
+          return -1;
+        }
+      reader_table[reader].lock_initialized = 1;
+    }
+#endif /*USE_GNU_PTH*/
   reader_table[reader].used = 1;
   reader_table[reader].is_ccid = 0;
   reader_table[reader].is_ctapi = 0;
 #ifdef HAVE_OPENSC
   reader_table[reader].is_osc = 0;
+#endif
+#ifdef NEED_PCSC_WRAPPER
+  reader_table[reader].pcsc.req_fd = -1;
+  reader_table[reader].pcsc.rsp_fd = -1;
+  reader_table[reader].pcsc.pid = (pid_t)(-1);
 #endif
   return reader;
 }
@@ -370,6 +412,18 @@ close_ct_reader (int slot)
   return 0;
 }
 
+static int
+reset_ct_reader (int slot)
+{
+  return SW_HOST_NOT_SUPPORTED;
+}
+
+
+static int
+ct_get_status (int slot, unsigned int *status)
+{
+  return SW_HOST_NOT_SUPPORTED;
+}
 
 /* Actually send the APDU of length APDULEN to SLOT and return a
    maximum of *BUFLEN data in BUFFER, the actual retruned size will be
@@ -397,6 +451,66 @@ ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 
 
 
+#ifdef NEED_PCSC_WRAPPER
+static int
+writen (int fd, const void *buf, size_t nbytes)
+{
+  size_t nleft = nbytes;
+  int nwritten;
+
+/*   log_printhex (" writen:", buf, nbytes); */
+
+  while (nleft > 0)
+    {
+#ifdef USE_GNU_PTH
+      nwritten = pth_write (fd, buf, nleft);
+#else
+      nwritten = write (fd, buf, nleft);
+#endif
+      if (nwritten < 0 && errno == EINTR)
+        continue;
+      if (nwritten < 0)
+        return -1;
+      nleft -= nwritten;
+      buf = (const char*)buf + nwritten;
+    }
+  return 0;
+}
+
+/* Read up to BUFLEN bytes from FD and return the number of bytes
+   actually read in NREAD.  Returns -1 on error or 0 on success. */
+static int
+readn (int fd, void *buf, size_t buflen, size_t *nread)
+{
+  size_t nleft = buflen;
+  int n;
+/*   void *orig_buf = buf; */
+
+  while (nleft > 0)
+    {
+#ifdef USE_GNU_PTH
+      n = pth_read (fd, buf, nleft);
+#else
+      n = read (fd, buf, nleft);
+#endif
+      if (n < 0 && errno == EINTR) 
+        continue;
+      if (n < 0)
+        return -1; /* read error. */
+      if (!n)
+        break; /* EOF */
+      nleft -= n;
+      buf = (char*)buf + n;
+    }
+  if (nread)
+    *nread = buflen - nleft;
+
+/*   log_printhex ("  readn:", orig_buf, *nread); */
+    
+  return 0;
+}
+#endif /*NEED_PCSC_WRAPPER*/
+
 static const char *
 pcsc_error_string (long err)
 {
@@ -457,6 +571,172 @@ pcsc_error_string (long err)
 static int
 open_pcsc_reader (const char *portstr)
 {
+#ifdef NEED_PCSC_WRAPPER
+/* Open the PC/SC reader using the pcsc_wrapper program.  This is
+   needed to cope with different thread models and other peculiarities
+   of libpcsclite. */
+  int slot;
+  reader_table_t slotp;
+  int fd, rp[2], wp[2];
+  int n, i;
+  pid_t pid;
+  size_t len;
+  unsigned char msgbuf[9];
+  int err;
+
+  slot = new_reader_slot ();
+  if (slot == -1)
+    return -1;
+  slotp = reader_table + slot;
+
+  /* Fire up the pcsc wrapper.  We don't use any fork/exec code from
+     the common directy but implement it direclty so that this file
+     may still be source copied. */
+  
+  if (pipe (rp) == -1)
+    {
+      log_error ("error creating a pipe: %s\n", strerror (errno));
+      slotp->used = 0;
+      return -1;
+    }
+  if (pipe (wp) == -1)
+    {
+      log_error ("error creating a pipe: %s\n", strerror (errno));
+      close (rp[0]);
+      close (rp[1]);
+      slotp->used = 0;
+      return -1;
+    }
+      
+  pid = fork ();
+  if (pid == -1)
+    {
+      log_error ("error forking process: %s\n", strerror (errno));
+      close (rp[0]);
+      close (rp[1]);
+      close (wp[0]);
+      close (wp[1]);
+      slotp->used = 0;
+      return -1;
+    }
+  slotp->pcsc.pid = pid;
+
+  if (!pid)
+    { /*
+         === Child ===
+       */
+
+      /* Double fork. */
+      pid = fork ();
+      if (pid == -1)
+        _exit (31); 
+      if (pid)
+        _exit (0); /* Immediate exit this parent, so that the child
+                      gets cleaned up by the init process. */
+
+      /* Connect our pipes. */
+      if (wp[0] != 0 && dup2 (wp[0], 0) == -1)
+        log_fatal ("dup2 stdin failed: %s\n", strerror (errno));
+      if (rp[1] != 1 && dup2 (rp[1], 1) == -1)
+        log_fatal ("dup2 stdout failed: %s\n", strerror (errno));
+      
+      /* Send stderr to the bit bucket. */
+      fd = open ("/dev/null", O_WRONLY);
+      if (fd == -1)
+        log_fatal ("can't open `/dev/null': %s", strerror (errno));
+      if (fd != 2 && dup2 (fd, 2) == -1)
+        log_fatal ("dup2 stderr failed: %s\n", strerror (errno));
+
+      /* Close all other files. */
+      n = sysconf (_SC_OPEN_MAX);
+      if (n < 0)
+        n = MAX_OPEN_FDS;
+      for (i=3; i < n; i++)
+        close(i);
+      errno = 0;
+
+      execl (GNUPG_LIBDIR "/pcsc-wrapper",
+             "pcsc-wrapper",
+             "--",
+             "1", /* API version */
+             opt.pcsc_driver, /* Name of the PC/SC library. */
+              NULL);
+      _exit (31);
+    }
+
+  /* 
+     === Parent ===
+   */
+  close (wp[0]);
+  close (rp[1]);
+  slotp->pcsc.req_fd = wp[1];
+  slotp->pcsc.rsp_fd = rp[0];
+
+  /* Wait for the intermediate child to terminate. */
+  while ( (i=pth_waitpid (pid, NULL, 0)) == -1 && errno == EINTR)
+    ;
+
+  /* Now send the open request. */
+  msgbuf[0] = 0x01; /* OPEN command. */
+  len = portstr? strlen (portstr):0;
+  msgbuf[1] = (len >> 24);
+  msgbuf[2] = (len >> 16);
+  msgbuf[3] = (len >>  8);
+  msgbuf[4] = (len      );
+  if ( writen (slotp->pcsc.req_fd, msgbuf, 5)
+       || (portstr && writen (slotp->pcsc.req_fd, portstr, len)))
+    {
+      log_error ("error sending PC/SC OPEN request: %s\n",
+                 strerror (errno));
+      goto command_failed;
+    }
+  /* Read the response. */
+  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
+    {
+      log_error ("error receiving PC/SC OPEN response: %s\n",
+                 i? strerror (errno) : "premature EOF");
+      goto command_failed;
+    }
+  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  if (msgbuf[0] != 0x81 || len < 4)
+    {
+      log_error ("invalid response header from PC/SC received\n");
+      goto command_failed;
+    }
+  len -= 4; /* Already read the error code. */
+  if (len > DIM (slotp->atr))
+    {
+      log_error ("PC/SC returned a too large ATR (len=%x)\n", len);
+      goto command_failed;
+    }
+  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  if (err)
+    {
+      log_error ("PC/SC OPEN failed: %s\n", pcsc_error_string (err));
+      goto command_failed;
+    }
+  n = len;
+  if ((i=readn (slotp->pcsc.rsp_fd, slotp->atr, n, &len)) || len != n)
+    {
+      log_error ("error receiving PC/SC OPEN response: %s\n",
+                 i? strerror (errno) : "premature EOF");
+      goto command_failed;
+    }
+  slotp->atrlen = len;
+
+  dump_reader_status (slot); 
+  return slot;
+
+ command_failed:
+  close (slotp->pcsc.req_fd);
+  close (slotp->pcsc.rsp_fd);
+  slotp->pcsc.req_fd = -1;
+  slotp->pcsc.rsp_fd = -1;
+  kill (slotp->pcsc.pid, SIGTERM);
+  slotp->pcsc.pid = (pid_t)(-1);
+  slotp->used = 0;
+  return -1;
+#else /*!NEED_PCSC_WRAPPER */
   long err;
   int slot;
   char *list = NULL;
@@ -559,8 +839,15 @@ open_pcsc_reader (const char *portstr)
 
   dump_reader_status (slot); 
   return slot;
+#endif /*!NEED_PCSC_WRAPPER */
 }
 
+
+static int
+pcsc_get_status (int slot, unsigned int *status)
+{
+  return SW_HOST_NOT_SUPPORTED;
+}
 
 /* Actually send the APDU of length APDULEN to SLOT and return a
    maximum of *BUFLEN data in BUFFER, the actual returned size will be
@@ -569,6 +856,108 @@ static int
 pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
                 unsigned char *buffer, size_t *buflen)
 {
+#ifdef NEED_PCSC_WRAPPER
+  long err;
+  reader_table_t slotp;
+  size_t len, full_len;
+  int i, n;
+  unsigned char msgbuf[9];
+
+  if (DBG_CARD_IO)
+    log_printhex ("  PCSC_data:", apdu, apdulen);
+
+  slotp = reader_table + slot;
+
+  if (slotp->pcsc.req_fd == -1 
+      || slotp->pcsc.rsp_fd == -1 
+      || slotp->pcsc.pid == (pid_t)(-1) )
+    {
+      log_error ("pcsc_send_apdu: pcsc-wrapper not running\n");
+      return -1;
+    }
+
+  msgbuf[0] = 0x03; /* TRANSMIT command. */
+  len = apdulen;
+  msgbuf[1] = (len >> 24);
+  msgbuf[2] = (len >> 16);
+  msgbuf[3] = (len >>  8);
+  msgbuf[4] = (len      );
+  if ( writen (slotp->pcsc.req_fd, msgbuf, 5)
+       || writen (slotp->pcsc.req_fd, apdu, len))
+    {
+      log_error ("error sending PC/SC TRANSMIT request: %s\n",
+                 strerror (errno));
+      goto command_failed;
+    }
+
+  /* Read the response. */
+  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
+    {
+      log_error ("error receiving PC/SC TRANSMIT response: %s\n",
+                 i? strerror (errno) : "premature EOF");
+      goto command_failed;
+    }
+  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  if (msgbuf[0] != 0x81 || len < 4)
+    {
+      log_error ("invalid response header from PC/SC received\n");
+      goto command_failed;
+    }
+  len -= 4; /* Already read the error code. */
+  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  if (err)
+    {
+      log_error ("pcsc_transmit failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      return -1;
+    }
+
+   full_len = len;
+
+   n = *buflen < len ? *buflen : len;
+   if ((i=readn (slotp->pcsc.rsp_fd, buffer, n, &len)) || len != n)
+     {
+       log_error ("error receiving PC/SC TRANSMIT response: %s\n",
+                  i? strerror (errno) : "premature EOF");
+       goto command_failed;
+     }
+   *buflen = n;
+   full_len -= len;
+   if (full_len)
+     {
+       log_error ("pcsc_send_apdu: provided buffer too short - truncated\n");
+       err = -1; 
+     }
+   /* We need to read any rest of the response, to keep the
+      protocol runnng. */
+   while (full_len)
+     {
+       unsigned char dummybuf[128];
+
+       n = full_len < DIM (dummybuf) ? full_len : DIM (dummybuf);
+       if ((i=readn (slotp->pcsc.rsp_fd, dummybuf, n, &len)) || len != n)
+         {
+           log_error ("error receiving PC/SC TRANSMIT response: %s\n",
+                      i? strerror (errno) : "premature EOF");
+           goto command_failed;
+         }
+       full_len -= n;
+     }
+
+   return err;
+
+ command_failed:
+  close (slotp->pcsc.req_fd);
+  close (slotp->pcsc.rsp_fd);
+  slotp->pcsc.req_fd = -1;
+  slotp->pcsc.rsp_fd = -1;
+  kill (slotp->pcsc.pid, SIGTERM);
+  slotp->pcsc.pid = (pid_t)(-1);
+  slotp->used = 0;
+  return -1;
+
+#else /*!NEED_PCSC_WRAPPER*/
+
   long err;
   struct pcsc_io_request_s send_pci;
   unsigned long recv_len;
@@ -591,14 +980,87 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
                pcsc_error_string (err), err);
   
   return err? -1:0; /* FIXME: Return appropriate error code. */
+#endif /*!NEED_PCSC_WRAPPER*/
 }
+
 
 static int
 close_pcsc_reader (int slot)
 {
+#ifdef NEED_PCSC_WRAPPER
+  long err;
+  reader_table_t slotp;
+  size_t len;
+  int i;
+  unsigned char msgbuf[9];
+
+  slotp = reader_table + slot;
+
+  if (slotp->pcsc.req_fd == -1 
+      || slotp->pcsc.rsp_fd == -1 
+      || slotp->pcsc.pid == (pid_t)(-1) )
+    {
+      log_error ("close_pcsc_reader: pcsc-wrapper not running\n");
+      return 0;
+    }
+
+  msgbuf[0] = 0x02; /* CLOSE command. */
+  len = 0;
+  msgbuf[1] = (len >> 24);
+  msgbuf[2] = (len >> 16);
+  msgbuf[3] = (len >>  8);
+  msgbuf[4] = (len      );
+  if ( writen (slotp->pcsc.req_fd, msgbuf, 5) )
+    {
+      log_error ("error sending PC/SC CLOSE request: %s\n",
+                 strerror (errno));
+      goto command_failed;
+    }
+
+  /* Read the response. */
+  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
+    {
+      log_error ("error receiving PC/SC CLOSE response: %s\n",
+                 i? strerror (errno) : "premature EOF");
+      goto command_failed;
+    }
+  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  if (msgbuf[0] != 0x81 || len < 4)
+    {
+      log_error ("invalid response header from PC/SC received\n");
+      goto command_failed;
+    }
+  len -= 4; /* Already read the error code. */
+  err = (msgbuf[5] << 24) | (msgbuf[6] << 16) | (msgbuf[7] << 8 ) | msgbuf[8];
+  if (err)
+    log_error ("pcsc_close failed: %s (0x%lx)\n",
+               pcsc_error_string (err), err);
+  
+  /* We will the wrapper in any case - errors are merely
+     informational. */
+  
+ command_failed:
+  close (slotp->pcsc.req_fd);
+  close (slotp->pcsc.rsp_fd);
+  slotp->pcsc.req_fd = -1;
+  slotp->pcsc.rsp_fd = -1;
+  kill (slotp->pcsc.pid, SIGTERM);
+  slotp->pcsc.pid = (pid_t)(-1);
+  slotp->used = 0;
+  return 0;
+
+#else /*!NEED_PCSC_WRAPPER*/
+
   pcsc_release_context (reader_table[slot].pcsc.context);
   reader_table[slot].used = 0;
   return 0;
+#endif /*!NEED_PCSC_WRAPPER*/
+}
+
+static int
+reset_pcsc_reader (int slot)
+{
+  return SW_HOST_NOT_SUPPORTED;
 }
 
 
@@ -660,6 +1122,46 @@ close_ccid_reader (int slot)
   return 0;
 }                       
   
+
+static int
+reset_ccid_reader (int slot)
+{
+  int err;
+  reader_table_t slotp = reader_table + slot;
+  unsigned char atr[33];
+  size_t atrlen;
+
+  err = ccid_get_atr (slotp->ccid.handle, atr, sizeof atr, &atrlen);
+  if (err)
+    return -1;
+  /* If the reset was successful, update the ATR. */
+  assert (sizeof slotp->atr >= sizeof atr);
+  slotp->atrlen = atrlen;
+  memcpy (slotp->atr, atr, atrlen);
+  dump_reader_status (slot); 
+  return 0;
+}                       
+  
+
+static int
+get_status_ccid (int slot, unsigned int *status)
+{
+  int rc;
+  int bits;
+
+  rc = ccid_slot_status (reader_table[slot].ccid.handle, &bits);
+  if (rc)
+    return -1;
+
+  if (bits == 0)
+    *status = 1|2|4;
+  else if (bits == 1)
+    *status = 2;
+  else 
+    *status = 0;
+
+  return 0;
+}
 
 
 /* Actually send the APDU of length APDULEN to SLOT and return a
@@ -798,6 +1300,18 @@ close_osc_reader (int slot)
   return 0;
 }
 
+static int
+reset_osc_reader (int slot)
+{
+  return SW_HOST_NOT_SUPPORTED;
+}
+
+
+static int
+ocsc_get_status (int slot, unsigned int *status)
+{
+  return SW_HOST_NOT_SUPPORTED;
+}
 
 
 /* Actually send the APDU of length APDULEN to SLOT and return a
@@ -896,6 +1410,45 @@ osc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
        Driver Access
  */
 
+
+static int
+lock_slot (int slot)
+{
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_acquire (&reader_table[slot].lock, 0, NULL))
+    {
+      log_error ("failed to acquire apdu lock: %s\n", strerror (errno));
+      return SW_HOST_LOCKING_FAILED;
+    }
+#endif /*USE_GNU_PTH*/
+  return 0;
+}
+
+static int
+trylock_slot (int slot)
+{
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_acquire (&reader_table[slot].lock, TRUE, NULL))
+    {
+      if (errno == EBUSY)
+        return SW_HOST_BUSY;
+      log_error ("failed to acquire apdu lock: %s\n", strerror (errno));
+      return SW_HOST_LOCKING_FAILED;
+    }
+#endif /*USE_GNU_PTH*/
+  return 0;
+}
+
+static void
+unlock_slot (int slot)
+{
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_release (&reader_table[slot].lock))
+    log_error ("failed to release apdu lock: %s\n", strerror (errno));
+#endif /*USE_GNU_PTH*/
+}
+
+
 /* Open the reader and return an internal slot number or -1 on
    error. If PORTSTR is NULL we default to a suitable port (for ctAPI:
    the first USB reader.  For PC/SC the first listed reader).  If
@@ -937,7 +1490,7 @@ apdu_open_reader (const char *portstr)
           handle = dlopen (opt.ctapi_driver, RTLD_LAZY);
           if (!handle)
             {
-              log_error ("apdu_open_reader: failed to open driver: %s",
+              log_error ("apdu_open_reader: failed to open driver: %s\n",
                          dlerror ());
               return -1;
             }
@@ -959,12 +1512,13 @@ apdu_open_reader (const char *portstr)
   /* No ctAPI configured, so lets try the PC/SC API */
   if (!pcsc_api_loaded)
     {
+#ifndef NEED_PCSC_WRAPPER
       void *handle;
 
       handle = dlopen (opt.pcsc_driver, RTLD_LAZY);
       if (!handle)
         {
-          log_error ("apdu_open_reader: failed to open driver `%s': %s",
+          log_error ("apdu_open_reader: failed to open driver `%s': %s\n",
                      opt.pcsc_driver, dlerror ());
           return -1;
         }
@@ -1020,9 +1574,10 @@ apdu_open_reader (const char *portstr)
           dlclose (handle);
           return -1;
         }
+#endif /*!NEED_PCSC_WRAPPER*/  
       pcsc_api_loaded = 1;
     }
-  
+
   return open_pcsc_reader (portstr);
 }
 
@@ -1046,6 +1601,47 @@ apdu_close_reader (int slot)
     return close_pcsc_reader (slot);
 }
 
+/* Enumerate all readers and return information on whether this reader
+   is in use.  The caller should start with SLOT set to 0 and
+   increment it with each call until an error is returned. */
+int
+apdu_enum_reader (int slot, int *used)
+{
+  if (slot < 0 || slot >= MAX_READER)
+    return SW_HOST_NO_DRIVER;
+  *used = reader_table[slot].used;
+  return 0;
+}
+
+/* Do a reset for the card in reader at SLOT. */
+int
+apdu_reset (int slot)
+{
+  int sw;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+  
+  if ((sw = lock_slot (slot)))
+    return sw;
+
+  if (reader_table[slot].is_ctapi)
+    sw = reset_ct_reader (slot);
+#ifdef HAVE_LIBUSB
+  else if (reader_table[slot].is_ccid)
+    sw = reset_ccid_reader (slot);
+#endif
+#ifdef HAVE_OPENSC
+  else if (reader_table[slot].is_osc)
+    sw = reset_osc_reader (slot);
+#endif
+  else
+    sw = reset_pcsc_reader (slot);
+
+  unlock_slot (slot);
+  return sw;
+}
+
 
 unsigned char *
 apdu_get_atr (int slot, size_t *atrlen)
@@ -1062,6 +1658,7 @@ apdu_get_atr (int slot, size_t *atrlen)
   *atrlen = reader_table[slot].atrlen;
   return buf;
 }
+
   
     
 static const char *
@@ -1084,7 +1681,62 @@ error_string (int slot, long rc)
 }
 
 
-/* Dispatcher for the actual send_apdu fucntion. */
+/* Retrieve the status for SLOT. The function does obnly wait fot the
+   card to become available if HANG is set to true. On success the
+   bits in STATUS will be set to
+
+     bit 0 = card present and usable
+     bit 1 = card present
+     bit 2 = card active
+     bit 3 = card access locked [not yet implemented]
+
+   For must application, tetsing bit 0 is sufficient.
+
+   CHANGED will receive the value of the counter tracking the number
+   of card insertions.  This value may be used to detect a card
+   change.
+*/
+int
+apdu_get_status (int slot, int hang,
+                 unsigned int *status, unsigned int *changed)
+{
+  int sw;
+  unsigned int s;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+
+  if ((sw = hang? lock_slot (slot) : trylock_slot (slot)))
+    return sw;
+
+  if (reader_table[slot].is_ctapi)
+    sw = ct_get_status (slot, &s);
+#ifdef HAVE_LIBUSB
+  else if (reader_table[slot].is_ccid)
+    sw = get_status_ccid (slot, &s);
+#endif
+#ifdef HAVE_OPENSC
+  else if (reader_table[slot].is_osc)
+    sw = osc_get_status (slot, &s);
+#endif
+  else
+    sw = pcsc_get_status (slot, &s);
+
+  unlock_slot (slot);
+
+  if (sw)
+    return sw;
+
+  if (status)
+    *status = s;
+  if (changed)
+    *changed = reader_table[slot].change_counter;
+  return 0;
+}
+
+
+/* Dispatcher for the actual send_apdu function. Note, that this
+   function should be called in locked state. */
 static int
 send_apdu (int slot, unsigned char *apdu, size_t apdulen,
            unsigned char *buffer, size_t *buflen)
@@ -1126,6 +1778,9 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
   int sw;
   long rc; /* we need a long here due to PC/SC. */
 
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+
   if (DBG_CARD_IO)
     log_debug ("send apdu: c=%02X i=%02X p0=%02X p1=%02X lc=%d le=%d\n",
                class, ins, p0, p1, lc, le);
@@ -1136,6 +1791,9 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
     return SW_WRONG_LENGTH; 
   if ((!data && lc != -1) || (data && lc == -1))
     return SW_HOST_INV_VALUE;
+
+  if ((sw = lock_slot (slot)))
+    return sw;
 
   apdulen = 0;
   apdu[apdulen++] = class;
@@ -1158,6 +1816,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
     {
       log_error ("apdu_send_simple(%d) failed: %s\n",
                  slot, error_string (slot, rc));
+      unlock_slot (slot);
       return SW_HOST_INCOMPLETE_CARD_RESPONSE;
     }
   sw = (result[resultlen-2] << 8) | result[resultlen-1];
@@ -1176,7 +1835,10 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
         {
           *retbuf = xtrymalloc (resultlen? resultlen : 1);
           if (!*retbuf)
-            return SW_HOST_OUT_OF_CORE;
+            {
+              unlock_slot (slot);
+              return SW_HOST_OUT_OF_CORE;
+            }
           *retbuflen = resultlen;
           memcpy (*retbuf, result, resultlen);
         }
@@ -1192,7 +1854,10 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
         {
           *retbuf = p = xtrymalloc (bufsize);
           if (!*retbuf)
-            return SW_HOST_OUT_OF_CORE;
+            {
+              unlock_slot (slot);
+              return SW_HOST_OUT_OF_CORE;
+            }
           assert (resultlen < bufsize);
           memcpy (p, result, resultlen);
           p += resultlen;
@@ -1216,6 +1881,7 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
             {
               log_error ("apdu_send_simple(%d) for get response failed: %s\n",
                          slot, error_string (slot, rc));
+              unlock_slot (slot);
               return SW_HOST_INCOMPLETE_CARD_RESPONSE;
             }
           sw = (result[resultlen-2] << 8) | result[resultlen-1];
@@ -1236,7 +1902,10 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
                       bufsize += resultlen > 4096? resultlen: 4096;
                       tmp = xtryrealloc (*retbuf, bufsize);
                       if (!tmp)
-                        return SW_HOST_OUT_OF_CORE;
+                        {
+                          unlock_slot (slot);
+                          return SW_HOST_OUT_OF_CORE;
+                        }
                       p = tmp + (p - *retbuf);
                       *retbuf = tmp;
                     }
@@ -1259,6 +1928,9 @@ apdu_send_le(int slot, int class, int ins, int p0, int p1,
             *retbuf = tmp;
         }
     }
+
+  unlock_slot (slot);
+
   if (DBG_CARD_IO && retbuf && sw == SW_SUCCESS)
     log_printhex ("      dump: ", *retbuf, *retbuflen);
  

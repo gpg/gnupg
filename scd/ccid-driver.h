@@ -63,6 +63,7 @@ int ccid_open_reader (ccid_driver_t *handle, int readerno);
 int ccid_close_reader (ccid_driver_t handle);
 int ccid_get_atr (ccid_driver_t handle,
                   unsigned char *atr, size_t maxatrlen, size_t *atrlen);
+int ccid_slot_status (ccid_driver_t handle, int *statusbits);
 int ccid_transceive (ccid_driver_t handle,
                      const unsigned char *apdu, size_t apdulen,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);

@@ -48,9 +48,12 @@ enum {
      those values can't be issued by a card. */
   SW_HOST_OUT_OF_CORE = 0x10001,  /* No way yet to differentiate
                                      between errnos on a failed malloc. */
-  SW_HOST_INV_VALUE   = 0x10002,
+  SW_HOST_INV_VALUE     = 0x10002,
   SW_HOST_INCOMPLETE_CARD_RESPONSE = 0x10003,
-  SW_HOST_NO_DRIVER   = 0x10004
+  SW_HOST_NO_DRIVER     = 0x10004,
+  SW_HOST_NOT_SUPPORTED = 0x10005,
+  SW_HOST_LOCKING_FAILED= 0x10006,
+  SW_HOST_BUSY          = 0x10007
 };
 
 
@@ -58,10 +61,14 @@ enum {
 /* Note , that apdu_open_reader returns no status word but -1 on error. */
 int apdu_open_reader (const char *portstr);
 int apdu_close_reader (int slot);
+int apdu_enum_reader (int slot, int *used);
 unsigned char *apdu_get_atr (int slot, size_t *atrlen);
 
 
 /* The apdu send functions do return status words. */
+int apdu_reset (int slot);
+int apdu_get_status (int slot, int hang,
+                     unsigned int *status, unsigned int *changed);
 int apdu_send_simple (int slot, int class, int ins, int p0, int p1,
                       int lc, const char *data);
 int apdu_send (int slot, int class, int ins, int p0, int p1,
