@@ -1165,50 +1165,50 @@ check_permissions(const char *path,int item)
       if(own)
 	{
 	  if(item==0)
-	    log_info(_("WARNING: unsafe ownership on "
-		       "homedir \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe ownership on"
+		       " homedir `%s'\n"),tmppath);
 	  else if(item==1)
-	    log_info(_("WARNING: unsafe ownership on "
-		       "configuration file \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe ownership on"
+		       " configuration file `%s'\n"),tmppath);
 	  else
-	    log_info(_("WARNING: unsafe ownership on "
-		       "extension \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe ownership on"
+		       " extension `%s'\n"),tmppath);
 	}
       if(perm)
 	{
 	  if(item==0)
-	    log_info(_("WARNING: unsafe permissions on "
-		       "homedir \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe permissions on"
+		       " homedir `%s'\n"),tmppath);
 	  else if(item==1)
-	    log_info(_("WARNING: unsafe permissions on "
-		       "configuration file \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe permissions on"
+		       " configuration file `%s'\n"),tmppath);
 	  else
-	    log_info(_("WARNING: unsafe permissions on "
-		       "extension \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe permissions on"
+		       " extension `%s'\n"),tmppath);
 	}
       if(enc_dir_own)
 	{
 	  if(item==0)
-	    log_info(_("WARNING: unsafe enclosing directory ownership on "
-		       "homedir \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe enclosing directory ownership on"
+		       " homedir `%s'\n"),tmppath);
 	  else if(item==1)
-	    log_info(_("WARNING: unsafe enclosing directory ownership on "
-		       "configuration file \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe enclosing directory ownership on"
+		       " configuration file `%s'\n"),tmppath);
 	  else
-	    log_info(_("WARNING: unsafe enclosing directory ownership on "
-		       "extension \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe enclosing directory ownership on"
+		       " extension `%s'\n"),tmppath);
 	}
       if(enc_dir_perm)
 	{
 	  if(item==0)
-	    log_info(_("WARNING: unsafe enclosing directory permissions on "
-		       "homedir \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe enclosing directory permissions on"
+		       " homedir `%s'\n"),tmppath);
 	  else if(item==1)
-	    log_info(_("WARNING: unsafe enclosing directory permissions on "
-		       "configuration file \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe enclosing directory permissions on"
+		       " configuration file `%s'\n"),tmppath);
 	  else
-	    log_info(_("WARNING: unsafe enclosing directory permissions on "
-		       "extension \"%s\"\n"),tmppath);
+	    log_info(_("WARNING: unsafe enclosing directory permissions on"
+		       " extension `%s'\n"),tmppath);
 	}
     }
 
@@ -1333,7 +1333,7 @@ list_config(char *items)
 	break;
 
       if(!any)
-	log_error(_("unknown configuration item \"%s\"\n"),name);
+	log_error(_("unknown configuration item `%s'\n"),name);
     }
 }
 
@@ -1886,8 +1886,8 @@ main( int argc, char **argv )
 #ifndef __riscos__
 #if defined(USE_DYNAMIC_LINKING) || defined(_WIN32)
 	    if(check_permissions(pargs.r.ret_str,2))
-	      log_info(_("cipher extension \"%s\" not loaded due to "
-			 "unsafe permissions\n"),pargs.r.ret_str);
+	      log_info(_("cipher extension `%s' not loaded due to"
+			 " unsafe permissions\n"),pargs.r.ret_str);
 	    else
 	      register_cipher_extension(orig_argc? *orig_argv:NULL,
 					pargs.r.ret_str);
@@ -2098,8 +2098,8 @@ main( int argc, char **argv )
 	  case oNoMDCWarn: opt.no_mdc_warn=1; break;
           case oDisplayCharset:
 	    if( set_native_charset( pargs.r.ret_str ) )
-		log_error(_("%s is not a valid character set\n"),
-						    pargs.r.ret_str);
+		log_error(_("`%s' is not a valid character set\n"),
+			  pargs.r.ret_str);
 	    break;
 	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
 	  case oEscapeFrom: opt.escape_from = 1; break;
@@ -2679,18 +2679,18 @@ main( int argc, char **argv )
 	    switch(badtype)
 	      {
 	      case PREFTYPE_SYM:
-		log_info(_("you may not use cipher algorithm \"%s\" "
-			   "while in %s mode\n"),
+		log_info(_("you may not use cipher algorithm `%s'"
+			   " while in %s mode\n"),
 			 badalg,compliance_option_string());
 		break;
 	      case PREFTYPE_HASH:
-		log_info(_("you may not use digest algorithm \"%s\" "
-			   "while in %s mode\n"),
+		log_info(_("you may not use digest algorithm `%s'"
+			   " while in %s mode\n"),
 			 badalg,compliance_option_string());
 		break;
 	      case PREFTYPE_ZIP:
-		log_info(_("you may not use compression algorithm \"%s\" "
-			   "while in %s mode\n"),
+		log_info(_("you may not use compression algorithm `%s'"
+			   " while in %s mode\n"),
 			 badalg,compliance_option_string());
 		break;
 	      default:
@@ -3041,7 +3041,7 @@ main( int argc, char **argv )
 	}
 	else if( argc == 2 ) { /* -kv userid keyring */
 	    if( access( argv[1], R_OK ) ) {
-		log_error(_("can't open %s: %s\n"),
+		log_error(_("can't open `%s': %s\n"),
 			       print_fname_stdin(argv[1]), strerror(errno));
 	    }
 	    else {
@@ -3677,8 +3677,8 @@ add_notation_data( const char *string, int which )
 	if ((*s & 0x80))
           highbit = 1;
 	else if (iscntrl(*s)) {
-	    log_error(_("a notation value must not use "
-			"any control characters\n") );
+	    log_error(_("a notation value must not use"
+			" any control characters\n") );
 	    return;
 	}
     }
@@ -3746,8 +3746,7 @@ add_keyserver_url( const char *string, int which )
       if(which)
 	BUG();
       else
-	log_error(_("the given signature preferred"
-		    " keyserver URL is invalid\n"));
+	log_error(_("the given preferred keyserver URL is invalid\n"));
     }
 
   if(which)

@@ -1,3 +1,8 @@
+2004-08-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* encode.c, exec.c, g10.c, sign.c: Some translatable string
+	cleanup.  Change some "this" to `this'.
+
 2004-08-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_spawn): Show log line for what keyserver

@@ -523,8 +523,8 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
       if(!opt.expert &&
 	 select_algo_from_prefs(pk_list,PREFTYPE_SYM,
 				opt.def_cipher_algo,NULL)!=opt.def_cipher_algo)
-	log_info(_("forcing symmetric cipher %s (%d) "
-		   "violates recipient preferences\n"),
+	log_info(_("WARNING: forcing symmetric cipher %s (%d)"
+		   " violates recipient preferences\n"),
 		 cipher_algo_to_string(opt.def_cipher_algo),
 		 opt.def_cipher_algo);
 
@@ -631,8 +631,8 @@ encode_crypt( const char *filename, STRLIST remusr, int use_symkey )
 	else if(!opt.expert &&
 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,
 				       compr_algo,NULL)!=compr_algo)
-	  log_info(_("forcing compression algorithm %s (%d) "
-		     "violates recipient preferences\n"),
+	  log_info(_("WARNING: forcing compression algorithm %s (%d)"
+		     " violates recipient preferences\n"),
 		   compress_algo_to_string(compr_algo),compr_algo);
 
 	/* algo 0 means no compression */

@@ -762,12 +762,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( outfile ) {
 	if( !(out = iobuf_create( outfile )) ) {
-	    log_error(_("can't create %s: %s\n"), outfile, strerror(errno) );
+	    log_error(_("can't create file `%s': %s\n"),
+		      outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
 	else if( opt.verbose )
-	    log_info(_("writing to `%s'\n"), outfile );
+	    log_info(_("writing to file `%s'\n"), outfile );
     }
     else if( (rc = open_outfile( fname, opt.armor? 1: detached? 2:0, &out )))
 	goto leave;
@@ -791,8 +792,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	       select_algo_from_prefs(pk_list,PREFTYPE_HASH,
 				      opt.def_digest_algo,
 				      NULL)!=opt.def_digest_algo)
-	  log_info(_("forcing digest algorithm %s (%d) "
-		     "violates recipient preferences\n"),
+	  log_info(_("WARNING: forcing digest algorithm %s (%d)"
+		     " violates recipient preferences\n"),
 		   digest_algo_to_string(opt.def_digest_algo),
 		   opt.def_digest_algo);
 	  }
@@ -860,8 +861,8 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
  	else if(!opt.expert && pk_list
  		&& select_algo_from_prefs(pk_list,PREFTYPE_ZIP,
 					  compr_algo,NULL)!=compr_algo)
- 	  log_info(_("forcing compression algorithm %s (%d) "
- 		     "violates recipient preferences\n"),
+ 	  log_info(_("WARNING: forcing compression algorithm %s (%d)"
+ 		     " violates recipient preferences\n"),
  		   compress_algo_to_string(compr_algo),compr_algo);
 
 	/* algo 0 means no compression */
@@ -888,7 +889,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    for( sl = strlist_last(filenames); sl;
 			sl = strlist_prev( filenames, sl ) ) {
 		if( !(inp = iobuf_open(sl->d)) ) {
-		    log_error(_("can't open %s: %s\n"),
+		    log_error(_("can't open file `%s': %s\n"),
 					    sl->d, strerror(errno) );
 		    rc = G10ERR_OPEN_FILE;
 		    goto leave;
@@ -998,12 +999,13 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
     if( outfile ) {
 	if( !(out = iobuf_create( outfile )) ) {
-	    log_error(_("can't create %s: %s\n"), outfile, strerror(errno) );
+	    log_error(_("can't create file `%s': %s\n"),
+		      outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
 	else if( opt.verbose )
-	    log_info(_("writing to `%s'\n"), outfile );
+	    log_info(_("writing to file `%s'\n"), outfile );
     }
     else if( (rc = open_outfile( fname, 1, &out )) )
 	goto leave;

@@ -352,8 +352,8 @@ int exec_write(struct exec_info **info,const char *program,
 #ifdef EXEC_TEMPFILE_ONLY
   if(!(*info)->use_temp_files)
     {
-      log_error(_("this platform requires temp files when calling external "
-		  "programs\n"));
+      log_error(_("this platform requires temporary files when calling"
+		  " external programs\n"));
       goto fail;
     }
 
@@ -429,10 +429,12 @@ int exec_write(struct exec_info **info,const char *program,
 
 	  /* If we get this far the exec failed.  Clean up and return. */
 
-	  log_error(_("unable to execute %s \"%s\": %s\n"),
-		    args_in==NULL?"program":"shell",
-		    args_in==NULL?program:shell,
-		    strerror(errno));
+	  if(args_in==NULL)
+	    log_error(_("unable to execute program `%s': %s\n"),
+		      program,strerror(errno));
+	  else
+	    log_error(_("unable to execute shell `%s': %s\n"),
+		      shell,strerror(errno));
 
 	  /* This mimics the POSIX sh behavior - 127 means "not found"
              from the shell. */
@@ -478,7 +480,7 @@ int exec_write(struct exec_info **info,const char *program,
   (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
-      log_error(_("can't create `%s': %s\n"),
+      log_error(_("can't create file `%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
       ret=G10ERR_WRITE_FILE;
       goto fail;
