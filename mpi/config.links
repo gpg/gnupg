@@ -119,6 +119,12 @@ case "${target}" in
 	path="sparc32v8 sparc32"
 	mpi_extra_modules="udiv"
 	;;
+    sparc64-sun-solaris2*)
+	# Got a report that udiv is missing, so we try this one
+	echo '/* configured for sparc64-sun-solaris2 */' >>./mpi/asm-syntax.h
+	path="sparc32v8 sparc32"
+	mpi_extra_modules="udiv"
+        ;;
     sparc9*-*-*     | \
     sparc64*-*-*    | \
     ultrasparc*-*-* )

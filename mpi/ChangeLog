@@ -1,3 +1,7 @@
+2001-11-08  Werner Koch  <wk@gnupg.org>
+
+	* config.links (mpi_sflags): Add extra rule for sparc64-sun-solaris2.
+
 2001-08-20  Werner Koch  <wk@gnupg.org>
 
 	* longlong.h [__riscos__]: Need a special pragma here.
