@@ -71,7 +71,7 @@ if test "$1" = "--build-w32"; then
     [ $DIE = yes ] && exit 1
 
     $tsdir/configure --build=${build} --host=${host} \
-                ${disable_foo_tests} $*
+                ${disable_foo_tests} --disable-keyserver-helpers $*
 
     # Ugly hack to overcome a gettext problem.  Someone should look into
     # gettext to figure out why the po directory is not ignored as it used

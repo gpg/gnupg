@@ -1,3 +1,7 @@
+2004-05-22  Werner Koch  <wk@gnupg.org>
+
+	Releases 1.3.6.
+
 2004-05-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note --sig-keyserver-url and the ability to use a
