@@ -1,6 +1,8 @@
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
-	* acinclude.m4 (GNUPG_CHECK_ENDIAN): Fix quoting of r.e. using
+	* configure.ac (HAVE_DOSISH_SYSTEM): New automake conditional.
+
+	* acinclude.m4 (GNUPG_CHECK_ENDIAN): Fixed quoting of r.e. using
 	quadrigraphs.
 
 2003-04-08  Werner Koch  <wk@gnupg.org>

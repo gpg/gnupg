@@ -353,6 +353,7 @@ MPI_OPT_FLAGS=""
 
 
 try_gettext=yes
+have_dosish_system=no
 case "${target}" in
     *-*-mingw32*)
         # special stuff for Windoze NT
@@ -361,21 +362,18 @@ case "${target}" in
                   [set this to limit filenames to the 8.3 format])
         AC_DEFINE(HAVE_DRIVE_LETTERS,1,
                   [defined if we must run on a stupid file system])
-        AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
-                  [defined if we run on some of the PCDOS like systems 
-                   (DOS, Windoze. OS/2) with special properties like
-                    no file modes])
         AC_DEFINE(USE_SIMPLE_GETTEXT,1,
                   [because the Unix gettext has too much overhead on
                    MingW32 systems and these systems lack Posix functions,
                    we use a simplified version of gettext])
+        have_dosish_system=yes
         try_gettext="no"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
         ac_cv_have_dev_random=no
         AC_DEFINE(HAVE_DRIVE_LETTERS)
-        AC_DEFINE(HAVE_DOSISH_SYSTEM)
+        have_dosish_system=yes
         try_gettext="no"
         ;;
 
@@ -383,7 +381,7 @@ case "${target}" in
         # DOS with the DJGPP environment
         ac_cv_have_dev_random=no
         AC_DEFINE(HAVE_DRIVE_LETTERS)
-        AC_DEFINE(HAVE_DOSISH_SYSTEM)
+        have_dosish_system=yes
         try_gettext="no"
         ;;
 
@@ -419,6 +417,14 @@ case "${target}" in
     *)
        ;;
 esac
+
+if test "$have_dosish_system" = yes; then
+   AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
+             [defined if we run on some of the PCDOS like systems 
+              (DOS, Windoze. OS/2) with special properties like
+              no file modes])
+fi
+AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 
 AC_SUBST(MPI_OPT_FLAGS)
 GNUPG_SYS_SYMBOL_UNDERSCORE
