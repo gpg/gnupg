@@ -270,6 +270,17 @@ more arguments in future versions.
     IMPORTED   <long keyid>  <username>
 	The keyid and name of the signature just imported
 
+    IMPORT_OK  <reason> [<fingerprint>]
+        The key with the primary key's FINGERPRINT has been imported.
+        Reason flags:
+          0 := Not actually changed
+          1 := Entirely new key.
+          2 := New user IDs
+          4 := New signatures
+          8 := New subkeys 
+         16 := Contains private key.
+        The flags may be XORed.
+
     IMPORT_PROBLEM <reason> [<fingerprint>]
         Issued for each import failure.  Reason codes are:
           0 := "No specific reason given".

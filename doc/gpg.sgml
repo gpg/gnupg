@@ -1200,14 +1200,19 @@ also overrides the environment variable "GNUPGHOME".
 <term>--charset &ParmName;</term>
 <listitem><para>
 Set the name of the native character set.  This is used
-to convert some strings to proper UTF-8 encoding.
+to convert some strings to proper UTF-8 encoding. If this option is not used, the default character set is determined
+from the current locale.  A verbosity level of 3 shows the used one.
 Valid values for &ParmName; are:</para>
 <variablelist>
 <varlistentry>
-<term>iso-8859-1</term><listitem><para>This is the default Latin 1 set.</para></listitem>
+<term>iso-8859-1</term><listitem><para>This is the Latin 1 set.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>iso-8859-2</term><listitem><para>The Latin 2 set.</para></listitem>
+</varlistentry>
+<varlistentry>
+<term>iso-8859-15</term><listitem><para>This is currently an alias for
+the Latin 1 set.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term>koi8-r</term><listitem><para>The usual Russian set (rfc1489).</para></listitem>
