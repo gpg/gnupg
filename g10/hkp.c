@@ -260,11 +260,11 @@ static int
 parse_hkp_index(IOBUF buffer,char *line)
 {
   static int open=0,revoked=0;
-  static char *key;
+  static char *key=NULL;
 #ifdef __riscos__
-  static char *uid;
+  static char *uid=NULL;
 #else
-  static unsigned char *uid;
+  static unsigned char *uid=NULL;
 #endif
   static u32 bits,createtime;
   int ret=0;
@@ -278,6 +278,8 @@ parse_hkp_index(IOBUF buffer,char *line)
      ascii_memcasecmp(line,"pub  ",5)!=0 &&
      ascii_memcasecmp(line,"     ",5)!=0)
     {
+      m_free(key);
+      m_free(uid);
       log_error(_("this keyserver is not fully HKP compatible\n"));
       return -1;
     }

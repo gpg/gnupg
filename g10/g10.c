@@ -2460,7 +2460,6 @@ static void
 add_notation_data( const char *string, int which )
 {
     const char *s;
-    const char *s2;
     STRLIST sl,*notation_data;
     int critical=0;
     int highbit=0;
@@ -2474,26 +2473,15 @@ add_notation_data( const char *string, int which )
 	critical = 1;
 	string++;
     }
-    s = string;
 
-    if( !*s || (*s & 0x80) || (!isalpha(*s) && *s != '_') ) {
-	log_error(_("the first character of a notation name "
-		    "must be a letter or an underscore\n") );
-	return;
-    }
-    for(s++; *s != '='; s++ ) {
-	if( !*s || (*s & 0x80) || (!isalnum(*s) && *s != '_' && *s != '.' ) ) {
-	    log_error(_("a notation name must have only letters, "
-			"digits, dots or underscores and end with an '='\n") );
+    for( s=string ; *s != '='; s++ ) {
+	if( !*s || (*s & 0x80) || (!isgraph(*s) && !isspace(*s)) ) {
+	    log_error(_("a notation name must have only printable characters "
+			"or spaces, and end with an '='\n") );
 	    return;
 	}
     }
-    if( s[-1] == '.' || ((s2=strstr(string, "..")) && s2 < s ) ) {
-	log_error(_("dots in a notation name must be surrounded "
-		    "by other characters\n") );
-	return;
-    }
-    /* we do only support printabe text - therefore we enforce the use
+    /* we only support printable text - therefore we enforce the use
      * of only printable characters (an empty value is valid) */
     for( s++; *s ; s++ ) {
 	if( iscntrl(*s) ) {

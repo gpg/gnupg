@@ -1,3 +1,11 @@
+2002-06-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (parse_hkp_index): Don't leak memory when failing out of a
+	bad HKP keyserver.
+
+	* g10.c (add_notation_data): Relax slightly the rules as to what
+	can go into a notation name - 2440 allows "@", for example.
+
 2002-06-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* import.c (clean_subkeys, import_one): Only allow at most 1
