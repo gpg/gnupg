@@ -19,15 +19,38 @@
 
 ## Process this file with automake to produce Makefile.in
 
-TESTS_ENVIRONMENT = 
+GPGSM = ../sm/gpgsm
 
-EXTRA_DIST =
+# We can't unset a variable here so we unset GPG_AGENT_INFO in runtest
+TESTS_ENVIRONMENT = GNUPGHOME=`pwd` LC_ALL=C GPGSM=${GPGSM} ./runtest
 
-TESTS = 
+EXTRA_DIST = runtest inittests \
+	     text-1.txt text-2.txt text-3.txt \
+	     text-1.osig.pem text-1.dsig.pem text-1.osig-bad.pem \
+	     text-2.osig.pem text-2.osig-bad.pem
 
-noinst_PROGRAMS = asschk $(TESTS) 
+TESTS = sm-sign+verify sm-verify
+
+CLEANFILES = inittests.stamp x y y z out err 
+	     *.lock .\#lk* 
+
+DISTCLEANFILES = keyring.kbx~ random_seed
+
+noinst_PROGRAMS = asschk
 
 asschk_SOURCES = asschk.c
+
+
+all-local: inittests.stamp
+
+clean-local:
+	$(TESTS_ENVIRONMENT) $(srcdir)/inittests --clean
+
+inittests.stamp: inittests
+	$(TESTS_ENVIRONMENT) $(srcdir)/inittests
+	echo timestamp >./inittests.stamp
+
+
 
 
 

@@ -1,3 +1,13 @@
+2002-08-08  Werner Koch  <wk@gnupg.org>
+
+	* asschk.c: Added some new features.
+	* runtest, inittests: New.
+	* text-1.txt, text-2.txt, text-3.txt: New.
+	* text-1.osig.pem, text-1.dsig.pem, text-1.osig-bad.pem: New.
+	* text-2.osig.pem, text-2.osig-bad.pem: New.
+	* samplekeys : New directory
+	* sm-verify, sm-sign+verify: The first test scripts.
+
 2002-08-06  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am, asschk.c: New.

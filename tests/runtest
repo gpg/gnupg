@@ -1,0 +1,5 @@
+#!/bin/sh
+unset GPG_AGENT_INFO
+[ -x "$1" ] && exec "$1"
+exec ./asschk --no-echo -DGPGSM=${GPGSM} <"$1"
+

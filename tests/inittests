@@ -1,0 +1,89 @@
+#!/bin/sh
+#     	Copyright (C) 2002 Free Software Foundation, Inc.
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+set -e
+
+sample_cert='
+cert_g10code_test1.pem
+cert_g10code_pete1.pem
+cert_g10code_theo1.pem
+'
+
+private_keys='
+32100C27173EF6E9C4E9A25D3D69F86D37A4F939
+'
+
+clean_files='
+gpgsm.conf gpg-agent.conf trustlist.txt keyring.kbx
+msg msg.sig msg.unsig
+'
+
+
+[ -z "$srcdir" ] && srcdir=.
+[ -z "$GPGSM" ] && GPGSM=../sm/gpgsm
+
+if [ -d $srcdir/samplekeys ] \
+   && grep TESTS_ENVIRONMENT Makefile >/dev/null 2>&1; then
+ :
+else
+    echo "inittests: please cd to the tests directory first" >&2
+    exit 1
+fi
+
+if [ "$1" = "--clean" ]; then
+    if [ -d private-keys-v1.d ]; then
+       rm private-keys-v1.d/* 2>/dev/null || true
+       rmdir private-keys-v1.d
+    fi
+    rm ${clean_files} 2>/dev/null || true
+    exit 0
+fi
+
+if [ "$GNUPGHOME" != "`pwd`" ]; then
+    echo "inittests: please set GNUPGHOME to the test directory" >&2
+    exit 1
+fi
+
+if [ -n "$GPG_AGENT_INFO" ]; then
+    echo "inittests: please unset GPG_AGENT_INFO" >&2
+    exit 1
+fi
+
+
+
+# Create the private key directy if it does not exists and copy 
+# the sample keys.
+[ -d private-keys-v1.d ] || mkdir private-keys-v1.d
+for i in ${private_keys}; do 
+    cp ${srcdir}/samplekeys/$i.key private-keys-v1.d/$i.key
+done
+
+# Create the configuration scripts
+cat > gpgsm.conf <<EOF
+no-secmem-warning
+disable-crl-checks
+agent-program ../agent/gpg-agent
+EOF
+
+cat > gpg-agent.conf <<EOF
+no-grab
+pinentry-program /home/wk/work/pinentry/gtk/pinentry-gtk
+EOF
+
+cat > trustlist.txt <<EOF
+# CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE
+3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E S
+EOF
+
+# Make sure that the sample certs are available
+for i in ${sample_certs}; do 
+    $GPGSM --import ${srcdir}/samplekeys/$i.pem 
+done

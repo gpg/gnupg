@@ -1,15 +1,16 @@
 # sm-sign+verify 
 #
-# Requirements: a plain file "msg" and standard key setup
+# Creating a signature and verifying it
+# Requirements: a plain file "text-1.txt" 
 
-echo Creating a signature and verifying it
+plaintext = text-1.txt
 
-in  = openfile msg
+in  = openfile $plaintext
 out = createfile msg.sig
 in2 = openfile msg.sig
 out2 = createfile msg.unsig
 
-pipeserver /usr/local/bin/gpgsm
+pipeserver $GPGSM
 send INPUT FD=$in
 expect-ok
 send OUTPUT FD=$out
@@ -23,9 +24,13 @@ send INPUT FD=$in2
 expect-ok
 send OUTPUT FD=$out2
 expect-ok
+goodsig = count-status GOODSIG
+trusted = count-status TRUST_FULLY
 send VERIFY
 expect-ok
-
+echo goodsig=$goodsig trusted=$trusted
+fail-if !$goodsig
+fail-if !$trusted
 send BYE
 expect-ok
 
@@ -35,24 +40,33 @@ out =
 in2 = 
 out2=
 
-cmpfiles msg msg.unsig
+cmpfiles $plaintext msg.unsig
 fail-if !$?
 
-# Lets check it again with a new server instance.
+# Lets check it again with a new server instance, this time we keep
+# the server running to check whether the entire message has been
+# output after the VERIFY.
 in = openfile msg.sig
 out = createfile msg.unsig
-pipeserver /usr/local/bin/gpgsm
+pipeserver $GPGSM
 send INPUT FD=$in
 expect-ok
 send OUTPUT FD=$out
 expect-ok
+goodsig = count-status GOODSIG
+trusted = count-status TRUST_FULLY
 send VERIFY
 expect-ok
+echo goodsig=$goodsig trusted=$trusted
+fail-if !$goodsig
+fail-if !$trusted
 
-cmpfiles msg msg.unsig
+cmpfiles $plaintext msg.unsig
 fail-if !$?
 
+send BYE
+expect-ok
 
-echo fine, it works
+
 quit
 

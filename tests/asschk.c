@@ -65,9 +65,8 @@
       Create file FILENAME, open for write access and retrun the file
       descriptor.
 
-   pipeserver [<path>]
-      Connect to an Assuan server with name PATH.  If PATH is not
-      specified the value ../sm/gpgsm is used.
+   pipeserver <program>
+      Connect to the Assuan server PROGRAM.
 
    send <line>
       Send LINE to the server.
@@ -79,6 +78,10 @@
    expect-err
       Expect an ERR response from the server.  Status and data out put
       is ignored.
+
+   count-status <code>
+      Initialize the assigned variable to 0 and assign it as an counter for 
+      status code CODE.  This command must be called with an assignment.
 
    quit
       Terminate the process.
@@ -112,6 +115,8 @@
 
 #define spacep(p) (*(p) == ' ' || *(p) == '\t')
 
+#define MAX_LINELEN 2048
+
 typedef enum {
   LINE_OK = 0,
   LINE_ERR,
@@ -120,15 +125,21 @@ typedef enum {
   LINE_END,
 } LINETYPE;
 
+typedef enum {
+  VARTYPE_SIMPLE = 0,
+  VARTYPE_FD,
+  VARTYPE_COUNTER
+} VARTYPE;
+
 
 struct variable_s {
   struct variable_s *next;
-  int is_fd;
+  VARTYPE type;
+  unsigned int count;
   char *value;
   char name[1];
 };
 typedef struct variable_s *VARIABLE;
-
 
 
 static void die (const char *format, ...)  ATTR_PRINTF(1,2);
@@ -140,6 +151,9 @@ static const char *invocation_name;
 /* Talk a bit about what is going on. */
 static int opt_verbose;
 
+/* Option to ignore the echo command. */
+static int opt_no_echo;
+
 /* File descriptors used to communicate with the current server. */
 static int server_send_fd = -1;
 static int server_recv_fd = -1;
@@ -147,7 +161,7 @@ static int server_recv_fd = -1;
 /* The Assuan protocol limits the line length to 1024, so we can
    safely use a (larger) buffer.  The buffer is filled using the
    read_assuan(). */
-static char recv_line[2048];
+static char recv_line[MAX_LINELEN];
 /* Tell the status of the current line. */
 static LINETYPE recv_type;
 
@@ -245,6 +259,8 @@ writen (int fd, const char *buffer, size_t length)
 static char *
 read_assuan (int fd)
 {
+  static char pending[MAX_LINELEN];
+  static size_t pending_len;
   size_t nleft = sizeof recv_line;
   char *buf = recv_line;
   char *p;
@@ -252,7 +268,18 @@ read_assuan (int fd)
 
   while (nleft > 0)
     {
-      int n = read (fd, buf, nleft);
+      int n;
+
+      if (pending_len)
+        {
+          if (pending_len >= nleft)
+            die ("received line too large");
+          memcpy (buf, pending, pending_len);
+          n = pending_len;
+          pending_len = 0;
+        }
+      else
+        n = read (fd, buf, nleft);
       if (n < 0)
         {
           if (errno == EINTR)
@@ -270,7 +297,12 @@ read_assuan (int fd)
         ;
       if (n)
         {
-          /* fixme: keep pending bytes for next read. */
+          if (n>1)
+            {
+              n--;
+              memcpy (pending, p+1, n);
+              pending_len = n;
+            }
           break;
         }
     }
@@ -278,7 +310,7 @@ read_assuan (int fd)
     die ("received line too large");
   assert (nread>0);
   recv_line[nread-1] = 0;
-  
+
   p = recv_line;
   if (p[0] == 'O' && p[1] == 'K' && (p[2] == ' ' || !p[2]))
     {
@@ -375,6 +407,15 @@ start_server (const char *pgmname)
               die ("dup2 failed in child: %s", strerror (errno));
           close (rp[1]);
         }
+      if (!opt_verbose)
+        {
+	  int fd = open ("/dev/null", O_WRONLY);
+	  if (fd == -1)
+	    die ("can't open `/dev/null': %s", strerror (errno));
+          if (dup2 (fd, STDERR_FILENO) == -1)
+            die ("dup2 failed in child: %s", strerror (errno));
+	  close (fd);
+        }
 
       execl (pgmname, arg0, "--server", NULL); 
       die ("exec failed for `%s': %s", pgmname, strerror (errno));
@@ -406,7 +447,7 @@ unset_var (const char *name)
     return;
 /*    fprintf (stderr, "unsetting `%s'\n", name); */
 
-  if (var->is_fd && var->value)
+  if (var->type == VARTYPE_FD && var->value)
     {
       int fd;
 
@@ -417,12 +458,13 @@ unset_var (const char *name)
 
   free (var->value);
   var->value = NULL;
-  var->is_fd = 0;
+  var->type = 0;
+  var->count = 0;
 }
 
 
 static void
-set_fd_var (const char *name, const char *value, int is_fd)
+set_type_var (const char *name, const char *value, VARTYPE type)
 {
   VARIABLE var;
 
@@ -440,7 +482,7 @@ set_fd_var (const char *name, const char *value, int is_fd)
   else
     free (var->value);
 
-  if (var->is_fd && var->value)
+  if (var->type == VARTYPE_FD && var->value)
     {
       int fd;
 
@@ -449,16 +491,22 @@ set_fd_var (const char *name, const char *value, int is_fd)
           close (fd);
     }
   
-  var->is_fd = is_fd;
-  var->value = xstrdup (value);
-/*    fprintf (stderr, "setting `%s' to `%s'\n", var->name, var->value); */
-
+  var->type = type;
+  var->count = 0;
+  if (var->type == VARTYPE_COUNTER)
+    {
+      /* We need some extra sapce as scratch area for get_var. */
+      var->value = xmalloc (strlen (value) + 1 + 20);
+      strcpy (var->value, value);
+    }
+  else
+    var->value = xstrdup (value);
 }
 
 static void
 set_var (const char *name, const char *value)
 {
-  set_fd_var (name, value, 0);
+  set_type_var (name, value, 0);
 }
 
 
@@ -469,9 +517,34 @@ get_var (const char *name)
 
   for (var=variable_list; var && strcmp (var->name, name); var = var->next)
     ;
-  return var? var->value:NULL;
+  if (!var)
+    return NULL;
+  if (var->type == VARTYPE_COUNTER && var->value)
+    { /* Use the scratch space allocated by set_var. */
+      char *p = var->value + strlen(var->value)+1;
+      sprintf (p, "%u", var->count);
+      return p;
+    }
+  else
+    return var->value;
 }
 
+
+/* Incremente all counter type variables with NAME in their VALUE. */
+static void
+inc_counter (const char *name)
+{
+  VARIABLE var;
+
+  if (!*name)
+    return;
+  for (var=variable_list; var; var = var->next)
+    {
+      if (var->type == VARTYPE_COUNTER
+          && var->value && !strcmp (var->value, name))
+        var->count++;
+    }
+}
 
 
 /* Expand variables in LINE and return a new allocated buffer if
@@ -568,7 +641,8 @@ cmd_let (const char *assign_to, char *arg)
 static void
 cmd_echo (const char *assign_to, char *arg)
 {
-  printf ("%s\n", arg);
+  if (!opt_no_echo)
+    printf ("%s\n", arg);
 }
 
 static void
@@ -580,15 +654,35 @@ cmd_send (const char *assign_to, char *arg)
 }
 
 static void
+handle_status_line (char *arg)
+{
+  char *p;
+
+  for (p=arg; *p && !spacep (p); p++)
+    ;
+  if (*p)
+    {
+      int save = *p;
+      *p = 0;
+      inc_counter (arg);
+      *p = save;
+    }
+  else
+    inc_counter (arg);
+}
+
+static void
 cmd_expect_ok (const char *assign_to, char *arg)
 {
   if (opt_verbose)
     fprintf (stderr, "expecting OK\n");
   do
     {
-      read_assuan (server_recv_fd);
-      if (opt_verbose)
+      char *p = read_assuan (server_recv_fd);
+      if (opt_verbose > 1)
         fprintf (stderr, "got line `%s'\n", recv_line);
+      if (recv_type == LINE_STAT)
+        handle_status_line (p);
     }
   while (recv_type != LINE_OK && recv_type != LINE_ERR);
   if (recv_type != LINE_OK)
@@ -602,13 +696,35 @@ cmd_expect_err (const char *assign_to, char *arg)
     fprintf (stderr, "expecting ERR\n");
   do
     {
-      read_assuan (server_recv_fd);
-      if (opt_verbose)
+      char *p = read_assuan (server_recv_fd);
+      if (opt_verbose > 1)
         fprintf (stderr, "got line `%s'\n", recv_line);
+      if (recv_type == LINE_STAT)
+        handle_status_line (p);
     }
   while (recv_type != LINE_OK && recv_type != LINE_ERR);
   if (recv_type != LINE_ERR)
     die ("expected ERR but got `%s'", recv_line);
+}
+
+static void
+cmd_count_status (const char *assign_to, char *arg)
+{
+  char *p;
+
+  if (!*assign_to || !*arg)
+    die ("syntax error: count-status requires an argument and a variable");
+
+  for (p=arg; *p && !spacep (p); p++)
+    ;
+  if (*p)
+    {
+      for (*p++ = 0; spacep (p); p++)
+        ;
+      if (*p)
+        die ("cmpfiles: syntax error");
+    }
+  set_type_var (assign_to, arg, VARTYPE_COUNTER);
 }
 
 static void
@@ -624,7 +740,7 @@ cmd_openfile (const char *assign_to, char *arg)
     die ("error opening `%s': %s", arg, strerror (errno));
   
   sprintf (numbuf, "%d", fd);
-  set_fd_var (assign_to, numbuf, 1);
+  set_type_var (assign_to, numbuf, VARTYPE_FD);
 }
 
 static void
@@ -640,7 +756,7 @@ cmd_createfile (const char *assign_to, char *arg)
     die ("error creating `%s': %s", arg, strerror (errno));
 
   sprintf (numbuf, "%d", fd);
-  set_fd_var (assign_to, numbuf, 1);
+  set_type_var (assign_to, numbuf, VARTYPE_FD);
 }
 
 
@@ -648,7 +764,7 @@ static void
 cmd_pipeserver (const char *assign_to, char *arg)
 {
   if (!*arg)
-    arg = "../sm/gpgsm";
+    die ("syntax error: servername missing");
 
   start_server (arg);
 }
@@ -751,6 +867,7 @@ interpreter (char *line)
     { "send"      , cmd_send },
     { "expect-ok" , cmd_expect_ok },
     { "expect-err", cmd_expect_err },
+    { "count-status", cmd_count_status },
     { "openfile"  , cmd_openfile },
     { "createfile", cmd_createfile },
     { "pipeserver", cmd_pipeserver },
@@ -783,7 +900,6 @@ interpreter (char *line)
           return 0; /* empty or comment */
         }
     }
-
   for (p=line; *p && !spacep (p) && *p != '='; p++)
     ;
   if (*p == '=')
@@ -871,7 +987,9 @@ main (int argc, char **argv)
       if (*p != '-')
         break;
       if (!strcmp (p, "--verbose"))
-        opt_verbose = 1;
+        opt_verbose++;
+      else if (!strcmp (p, "--no-echo"))
+        opt_no_echo++;
       else if (*p == '-' && p[1] == 'D')
         {
           p += 2;
