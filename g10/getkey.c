@@ -2286,6 +2286,9 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
  *                   b) to get the ultimately trusted keys.
  *        The a) usage might have some problems.
  *
+ * set with_subkeys true to include subkeys
+ * set with_spm true to include secret-parts-missing keys
+ *
  * Enumerate all primary secret keys.  Caller must use these procedure:
  *  1) create a void pointer and initialize it to NULL
  *  2) pass this void pointer by reference to this function
@@ -2296,7 +2299,8 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
  *     so that can free it's context.
  */
 int
-enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
+enum_secret_keys( void **context, PKT_secret_key *sk,
+		  int with_subkeys, int with_spm )
 {
     int rc=0;
     struct {
@@ -2331,9 +2335,11 @@ enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
     do {
         /* get the next secret key from the current keyblock */
         for (; c->node; c->node = c->node->next) {
-            if (c->node->pkt->pkttype == PKT_SECRET_KEY
+            if ((c->node->pkt->pkttype == PKT_SECRET_KEY
                 || (with_subkeys
-                    && c->node->pkt->pkttype == PKT_SECRET_SUBKEY) ) {
+                    && c->node->pkt->pkttype == PKT_SECRET_SUBKEY) )
+		&& !(c->node->pkt->pkt.secret_key->protect.s2k.mode==1001
+		     && !with_spm)) {
                 copy_secret_key (sk, c->node->pkt->pkt.secret_key );
                 c->node = c->node->next;
                 return 0; /* found */

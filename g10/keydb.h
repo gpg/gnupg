@@ -212,7 +212,8 @@ int get_seckey_byfprint( PKT_secret_key *sk,
 			 const byte *fprint, size_t fprint_len);
 int get_seckey_next( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock );
 void get_seckey_end( GETKEY_CTX ctx );
-int enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys );
+int enum_secret_keys( void **context, PKT_secret_key *sk,
+		      int with_subkeys, int with_spm );
 void merge_keys_and_selfsig( KBNODE keyblock );
 char*get_user_id_string( u32 *keyid );
 char*get_user_id_string_printable( u32 *keyid );

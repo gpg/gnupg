@@ -1,3 +1,19 @@
+2002-11-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* pubkey-enc.c (get_session_key): With hidden recipients or try a
+	given passphrase against all secret keys rather than trying all
+	secret keys in turn.  Don't if --try-all-secrets or --status-fd is
+	enabled.
+
+	* passphrase.c (passphrase_to_dek): Mode 1 means do a regular
+	passphrase query, but don't prompt with the key info.
+
+	* seckey-cert.c (do_check, check_secret_key): A negative ask count
+	means to enable passphrase mode 1.
+
+	* keydb.h, getkey.c (enum_secret_keys): Add flag to include
+	secret-parts-missing keys (or not) in the list.
+
 2002-11-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (keyserver_search_prompt): When --with-colons is

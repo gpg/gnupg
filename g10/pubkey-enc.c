@@ -85,12 +85,13 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
     else { /* anonymous receiver: Try all available secret keys */
 	void *enum_context = NULL;
 	u32 keyid[2];
+	char *p;
 
 	for(;;) {
 	    if( sk )
 		free_secret_key( sk );
 	    sk = m_alloc_clear( sizeof *sk );
-	    rc=enum_secret_keys( &enum_context, sk, 1);
+	    rc=enum_secret_keys( &enum_context, sk, 1, 0);
 	    if( rc ) {
 		rc = G10ERR_NO_SECKEY;
 		break;
@@ -100,7 +101,17 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	    keyid_from_sk( sk, keyid );
 	    log_info(_("anonymous recipient; trying secret key %08lX ...\n"),
                      (ulong)keyid[1] );
-	    rc = check_secret_key( sk, 1 ); /* ask only once */
+
+	    if(!opt.try_all_secrets && !is_status_enabled())
+	      {
+		p=get_last_passphrase();
+		set_next_passphrase(p);
+		m_free(p);
+	      }
+
+	    rc = check_secret_key( sk, opt.try_all_secrets?1:-1 ); /* ask
+								      only
+								      once */
 	    if( !rc )
 		rc = get_it( k, dek, sk, keyid );
 	    if( !rc ) {
@@ -108,7 +119,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 		break;
 	    }
 	}
-	enum_secret_keys( &enum_context, NULL, 0 ); /* free context */
+	enum_secret_keys( &enum_context, NULL, 0, 0 ); /* free context */
     }
 
   leave:

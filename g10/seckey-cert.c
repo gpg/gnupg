@@ -36,7 +36,7 @@
 
 
 static int
-do_check( PKT_secret_key *sk, const char *tryagain_text )
+do_check( PKT_secret_key *sk, const char *tryagain_text, int mode )
 {
     byte *buffer;
     u16 csum=0;
@@ -69,7 +69,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text )
             keyid[3] = sk->main_keyid[1];
 	}
 	dek = passphrase_to_dek( keyid, sk->pubkey_algo, sk->protect.algo,
-				 &sk->protect.s2k, 0, tryagain_text );
+				 &sk->protect.s2k, mode, tryagain_text );
 	cipher_hd = cipher_open( sk->protect.algo,
 				 CIPHER_MODE_AUTO_CFB, 1);
 	cipher_setkey( cipher_hd, dek->key, dek->keylen );
@@ -209,12 +209,21 @@ do_check( PKT_secret_key *sk, const char *tryagain_text )
 /****************
  * Check the secret key
  * Ask up to 3 (or n) times for a correct passphrase
+ * If n is negative, disable the key info prompt and make n=abs(n)
  */
 int
 check_secret_key( PKT_secret_key *sk, int n )
 {
     int rc = G10ERR_BAD_PASS;
-    int i;
+    int i,mode;
+
+    if(n<0)
+      {
+	n=abs(n);
+	mode=1;
+      }
+    else
+      mode=0;
 
     if( n < 1 )
 	n = (opt.batch && !opt.use_agent)? 1 : 3; /* use the default value */
@@ -225,7 +234,7 @@ check_secret_key( PKT_secret_key *sk, int n )
             tryagain = _("Invalid passphrase; please try again");
             log_info (_("%s ...\n"), tryagain);
         }
-	rc = do_check( sk, tryagain );
+	rc = do_check( sk, tryagain, mode );
 	if( rc == G10ERR_BAD_PASS && is_status_enabled() ) {
 	    u32 kid[2];
 	    char buf[50];

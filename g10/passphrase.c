@@ -935,7 +935,8 @@ passphrase_clear_cache ( u32 *keyid, int algo )
 /****************
  * Get a passphrase for the secret key with KEYID, display TEXT
  * if the user needs to enter the passphrase.
- * mode 0 = standard, 2 = create new passphrase
+ * mode 0 = standard, 1 = same but don't show key info,
+ *      2 = create new passphrase
  * Returns: a DEK with a session key; caller must free
  *	    or NULL if the passphrase was not correctly repeated.
  *	    (only for mode 2)
@@ -996,7 +997,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	}
     }
 
-    if( keyid && !opt.batch && !next_pw ) {
+    if( keyid && !opt.batch && !next_pw && mode!=1 ) {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	size_t n;
 	char *p;
