@@ -1,3 +1,7 @@
+2004-03-16  Werner Koch  <wk@gnupg.org>
+
+	* gpgconf-comp.c (gc_options_gpg_agent): Implemented.
+
 2004-03-12  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgconf-comp.c (gc_component_change_options): Set the filenames

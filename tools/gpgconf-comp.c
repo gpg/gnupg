@@ -409,6 +409,57 @@ typedef struct gc_option gc_option_t;
 /* The options of the GC_COMPONENT_GPG_AGENT component.  */
 static gc_option_t gc_options_gpg_agent[] =
  {
+   /* The configuration file to which we write the changes.  */
+   { "gpgconf-gpg-agent.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+     NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
+
+   { "Monitor",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
+     NULL, "Options controlling the diagnostic output" },
+   { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
+     "gnupg", "verbose",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
+   { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "be somewhat more quiet",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
+   { "no-greeting", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
+
+   { "Configuration",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_EXPERT,
+     NULL, "Options controlling the configuration" },
+   { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", "|FILE|read options from FILE",
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
+
+   { "Debug",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
+     "gnupg", "Options useful for debugging" },
+   { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
+     "gnupg", "|LEVEL|set the debugging level to LEVEL",
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPG_AGENT },
+   { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "|FILE|write logs to FILE",
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
+   { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+
+   { "Security",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
+     NULL, "Options controlling the security" },
+   { "default-cache-ttl", GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
+     "gnupg", "|N|expire cached PINs after N seconds",
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+   { "ignore-cache-for-signing", GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
+     "gnupg", "do not use the PIN cache when signing",
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
+   { "no-grab", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", "do not grab keybourd and mouse",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
+
+
    GC_OPTION_NULL
  };
 
@@ -524,6 +575,14 @@ static gc_option_t gc_options_dirmngr[] =
    { "max-replies", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "dirmngr", "|N|do not return more than N items in one query",
      GC_ARG_TYPE_UINT32, GC_BACKEND_DIRMNGR },
+
+   { "OCSP",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
+     NULL, "Configuration for OCSP" },
+   { "ocsp-responder", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "dirmngr", "|URL|use OCSP responder URL",
+     GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
+
 
    GC_OPTION_NULL
  };
