@@ -51,7 +51,6 @@
 
     Key Generation
     --------------
-    Create a key pair with this command:
 
 	g10 --gen-key
 
@@ -59,7 +58,7 @@
     good random numbers for prime number generation, it uses a /dev/random
     which will emit only bytes if the kernel can gather enough entropy.
     If you see no progress, you should start some other activities such
-    as a mouse moves or a "find /".  Because we have no hardware device
+    as mouse moves or a "find /".  Because we have no hardware device
     to generate random we have to use this method.
 
     Key generation shows progress by printing different characters to
@@ -89,9 +88,25 @@
     9) Find a generator for that prime.
 
 
-    Signatures
-    ----------
-    To create a signature, use this:
+    You can sign a key with this command:
+
+	g10 --sign-key Donald
+
+    To sign the key of of "Donald" with your default userid
+
+	g10 --sign-key -u Karl -u Joe Donald
+
+    To sign the key of of "Donald" with the userids of "Karl" and "Joe".
+    All existing signatures are checked, if some are invalid, a menu is
+    offered to delete some of them, and the you are asked for every user
+    wether you want to sign this key.
+
+    You may remove a signature at any time by usiing the option "--edit-sig",
+    which also asks for the sigs to remove.
+
+
+    Sign
+    ----
 
 	g10 -s file
 
@@ -106,9 +121,9 @@
 
     Creates a signature of file, but writes the output to the file "out".
 
-    Encryption
-    ----------
-    To encrypt data use this:
+
+    Encrypt
+    -------
 
 	g10 -e -r heine file
 
@@ -118,6 +133,51 @@
 	echo "hallo" | g10 -ea -r heine | mail heine
 
     Ditto, but encrypts "hallo\n" and mails it as ascii armored message.
+
+
+    Sign and Encrypt
+    ----------------
+
+	g10 -se -r heine file
+
+    This encrypts files with the public key of "heine" and writes it
+    to "file.g10" after signing it with the default user id.
+
+
+	g10 -se -r heine -u Suttner file
+
+    Ditto, but sign the file with the user id "Suttner"
+
+
+
+    Examine a data or key file
+    --------------------------
+
+	g10 --list-packets datafile
+
+    Use this to list the contents of a data file. If the file is encrypted
+    you are asked for the passphrase, so that G10 is able to look at the
+    inner structure of a encrypted packet.
+
+
+    Batch mode
+    ----------
+    If you use the option "--batch", G10 runs in non-interactive mode and
+    never prompts for input data.  This even does not allow to enter
+    passphrase; until we have a better solution (something like ssh-agent),
+    you can use the option "--passhrase-fd n", which works like PGPs
+    PGPPASSFD.
+
+    Batch mode also causes PGP to terminate as soon as a BAD signature is
+    detected.
+
+
+    Exit status
+    -----------
+    G10 returns with an exit status of 1 if in batch mode and a bad signature
+    has been detected or 2 or higher for all other errors.  You should parse
+    stderr to get detailed informations about the errors.
+
 
 
     Debug Flags
@@ -146,18 +206,10 @@
     I will run "indent" over the source when making a real distribution,
     but for now I stick to my own formatting rules.
 
-    Compression does not work always; this is the reason that "-z 0"
-    is the default.
-
-    This will be cleaned up of course.
-
     The primary FTP site is "ftp://ftp.guug.de/pub/gcrypt/"
     The primary WWW page is "http://www.d.shuttle.de/isil/g10.html"
 
     Please direct bug reports to <g10-bugs@isil.d.shuttle.de> or better
     post them to the mailing list <g10@net.lut.ac.uk>.
 
-    Have fun
-
-	Werner
 

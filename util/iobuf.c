@@ -450,6 +450,7 @@ iobuf_push_filter( IOBUF a,
     /* remove the filter stuff from the new stream */
     a->filter = NULL;
     a->filter_ov = NULL;
+    a->filter_eof = 0;
     if( a->usage == 2 ) { /* allocate a fresh buffer for the original stream */
 	b->d.buf = m_alloc( a->d.size );
 	b->d.len = 0;
@@ -539,7 +540,7 @@ iobuf_pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	m_free(b);
     }
     else if( !b->chain ) { /* remove the last iobuf from the chain */
-	log_bug("Ohh jeee, trying to a head filter\n");
+	log_bug("Ohh jeee, trying to remove a head filter\n");
     }
     else {  /* remove an intermediate iobuf from the chain */
 	log_bug("Ohh jeee, trying to remove an intermediate filter\n");
@@ -833,13 +834,13 @@ iobuf_set_block_mode( IOBUF a, size_t n )
 
 
 /****************
- * checks wether the stream is in block mode
+ * Checks wether the stream is in block mode
+ * Note: This does not work if other filters are pushed on the stream.
  */
 int
 iobuf_in_block_mode( IOBUF a )
 {
-    for(; a; a = a->chain )
-	if( a->filter == block_filter )
+    if( a && a->filter == block_filter )
 	    return 1; /* yes */
     return 0; /* no */
 }

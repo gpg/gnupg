@@ -121,7 +121,7 @@ main( int argc, char **argv )
     { 'e', "encrypt",   0, "encrypt data" },
     { 'd', "decrypt",   0, "decrypt data (default)" },
   /*{ 'c', "check",     0, "check a signature (default)" }, */
-    { 'l', "local-user",2, "use this user-id to sign or decrypt" },
+    { 'u', "local-user",2, "use this user-id to sign or decrypt" },
     { 'r', "remote-user", 2, "use this user-id for encryption" },
     { 510, "debug"     ,4|16, "set debugging flags" },
     { 511, "debug-all" ,0, "enable full debugging"},
@@ -135,13 +135,17 @@ main( int argc, char **argv )
     { 518, "options"   , 2, "read options from file" },
     { 519, "no-armor",   0, "\r"},
     { 520, "no-default-keyring", 0, "\r" },
+    { 521, "list-packets",0,"list only the sequence of packets"},
+    { 522, "no-greeting", 0, "\r" },
+    { 523, "passphrase-fd",1, "\r" },
+    { 524, "edit-sig"  ,0, "edit a key signature" },
 
     {0} };
     ARGPARSE_ARGS pargs;
     IOBUF a;
     int rc;
     enum { aNull, aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
-	   aTest, aPrintMDs, aSignKey, aClearsig
+	   aTest, aPrintMDs, aSignKey, aClearsig, aListPackets, aEditSig,
     } action = aNull;
     int orig_argc;
     char **orig_argv;
@@ -158,9 +162,10 @@ main( int argc, char **argv )
     int default_config =1;
     int errors=0;
     int default_keyring = 1;
+    int greeting = 1;
 
 
-    opt.compress = 0; /* defaults to no compression level */
+    opt.compress = -1; /* defaults to standard compress level */
 
     /* check wether we have a config file on the commandline */
     orig_argc = argc;
@@ -221,7 +226,7 @@ main( int argc, char **argv )
 	       /* fall trough */
 	  case 's': action = action == aEncr? aSignEncr : aSign;  break;
 	  case 't': action = aClearsig;  break;
-	  case 'l': /* store the local users */
+	  case 'u': /* store the local users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
 	    strcpy(sl->d, pargs.r.ret_str);
 	    sl->next = locusr;
@@ -233,7 +238,7 @@ main( int argc, char **argv )
 	    sl->next = remusr;
 	    remusr = sl;
 	    break;
-	  case 500: opt.batch = 1; break;
+	  case 500: opt.batch = 1; greeting = 0; break;
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
 	  case 503: action = aKeygen; break;
@@ -259,6 +264,10 @@ main( int argc, char **argv )
 	    break;
 	  case 519: opt.no_armor=1; opt.armor=0; break;
 	  case 520: default_keyring = 0; break;
+	  case 521: action = aListPackets; break;
+	  case 522: greeting = 0; break;
+	  case 523: set_passphrase_fd( pargs.r.ret_int ); break;
+	  case 524: action = aEditSig; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -275,11 +284,11 @@ main( int argc, char **argv )
     set_debug();
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
-    if( opt.verbose && isatty(fileno(stdin)) ) {
+    if( greeting ) {
 	if( *(s=strusage(10))  )
-	    fputs(s, stderr);
+	    tty_printf("%s", s);
 	if( *(s=strusage(30))  )
-	    fputs(s, stderr);
+	    tty_printf("%s", s);
     }
 
     if( !sec_nrings || default_keyring ) { /* add default secret rings */
@@ -347,6 +356,14 @@ main( int argc, char **argv )
 	    log_error("sign_key('%s'): %s\n", fname_print, g10_errstr(rc) );
 	break;
 
+      case aEditSig: /* Edit a key signature */
+	if( argc != 1 )
+	    usage(1);
+	/* note: fname is the user id! */
+	if( (rc = edit_keysigs(fname)) )
+	    log_error("edit_keysig('%s'): %s\n", fname_print, g10_errstr(rc) );
+	break;
+
 
       case aPrimegen:
 	if( argc == 1 ) {
@@ -388,6 +405,8 @@ main( int argc, char **argv )
 
       case aTest: do_test( argc? atoi(*argv): 0 ); break;
 
+      case aListPackets:
+	opt.list_packets=1;
       default:
 	if( argc > 1 )
 	    usage(1);
@@ -398,6 +417,10 @@ main( int argc, char **argv )
 	    memset( &afx, 0, sizeof afx);
 	    iobuf_push_filter( a, armor_filter, &afx );
 	}
+	if( action == aListPackets ) {
+	    set_packet_list_mode(1);
+	    opt.list_packets=1;
+	}
 	proc_packets( a );
 	iobuf_close(a);
 	break;
@@ -406,7 +429,7 @@ main( int argc, char **argv )
     /* cleanup */
     FREE_STRLIST(remusr);
     FREE_STRLIST(locusr);
-    return 0;
+    return log_get_errorcount(0)? 2:0;
 }
 
 
@@ -509,33 +532,5 @@ do_test(int times)
 
     m_check(NULL);
   #endif
-  #if 0
-    char *array;
-    int i, j;
-    int n = 6;
-    int m = times;
-
-    if( m > n )
-	abort();
-    array = m_alloc_clear( n );
-    memset( array, 1, m );
-
-    for(i=0;; i++) {
-	printf("i=%3d: ", i );
-	for(j=0; j < n ; j++ )
-	    if( array[j] )
-		putchar( 'X' );
-	    else
-		putchar( '-' );
-	putchar('\n');
-	m_out_of_n( array, m, n );
-	for(j=0; j < n; j++ )
-	    if( !array[j] )
-		break;
-	if( j == m )
-	    break;
-    }
-  #endif
 }
-
 

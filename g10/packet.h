@@ -210,6 +210,7 @@ struct packet_struct {
 
 /*-- mainproc.c --*/
 int proc_packets( IOBUF a );
+int list_packets( IOBUF a );
 
 /*-- parse-packet.c --*/
 int set_packet_list_mode( int mode );

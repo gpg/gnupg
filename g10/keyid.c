@@ -155,7 +155,7 @@ datestr_from_pkc( PKT_public_cert *pkc )
     time_t atime = pkc->timestamp;
 
     tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon, tp->tm_mday );
+    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
     return buffer;
 }
 
@@ -167,7 +167,7 @@ datestr_from_skc( PKT_secret_cert *skc )
     time_t atime = skc->timestamp;
 
     tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon, tp->tm_mday );
+    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
     return buffer;
 }
 
@@ -179,7 +179,7 @@ datestr_from_sig( PKT_signature *sig )
     time_t atime = sig->timestamp;
 
     tp = gmtime( &atime );
-    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon, tp->tm_mday );
+    sprintf(buffer,"%04d-%02d-%02d", 1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
     return buffer;
 }
 

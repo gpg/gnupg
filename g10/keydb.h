@@ -41,6 +41,7 @@ struct kbnode_struct {
     KBNODE next;   /* used to form a link list */
     KBNODE child;
     int flag;
+    int private_flag;
 };
 
 /****************
@@ -81,6 +82,8 @@ void release_skc_list( SKC_LIST skc_list );
 int  build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list, int unlock );
 
 /*-- passphrase.h --*/
+void set_passphrase_fd( int fd );
+int  get_passphrase_fd(void);
 DEK *get_passphrase_hash( u32 *keyid, char *text );
 int make_dek_from_passphrase( DEK *dek, int mode );
 
@@ -112,10 +115,12 @@ byte *fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len );
 /*-- kbnode.c --*/
 KBNODE new_kbnode( PACKET *pkt );
 void release_kbnode( KBNODE n );
+void delete_kbnode( KBNODE root, KBNODE node );
 void add_kbnode( KBNODE root, KBNODE node );
 void add_kbnode_as_child( KBNODE root, KBNODE node );
 KBNODE find_kbparent( KBNODE root, KBNODE node );
 KBNODE walk_kbtree( KBNODE root, KBNODE *context );
+KBNODE walk_kbtree2( KBNODE root, KBNODE *context, int all );
 void clear_kbnode_flags( KBNODE n );
 
 /*-- ringedit.c --*/

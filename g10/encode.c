@@ -37,6 +37,7 @@
 
 
 static int encode_simple( const char *filename, int mode );
+static int write_pubkey_enc_from_list( PKC_LIST pkc_list, DEK *dek, IOBUF out );
 
 
 
@@ -164,7 +165,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
-    PKC_LIST pkc_list, pkc_rover;
+    PKC_LIST pkc_list;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
@@ -203,31 +204,9 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( DBG_CIPHER )
 	log_hexdump("DEK is: ", cfx.dek->key, cfx.dek->keylen );
 
-    /* loop over all public key certificates */
-    for( pkc_rover=pkc_list; pkc_rover; pkc_rover = pkc_rover->next ) {
-	PKT_public_cert *pkc;
-	PKT_pubkey_enc	*enc;
-
-	pkc = pkc_rover->pkc;
-	enc = m_alloc_clear( sizeof *enc );
-	enc->pubkey_algo = pkc->pubkey_algo;
-	if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	    g10_elg_encrypt( pkc, enc, cfx.dek );
-	else if( enc->pubkey_algo == PUBKEY_ALGO_RSA )
-	    g10_rsa_encrypt( pkc, enc, cfx.dek );
-	else
-	    log_bug(NULL);
-	/* and write it */
-	init_packet(&pkt);
-	pkt.pkttype = PKT_PUBKEY_ENC;
-	pkt.pkt.pubkey_enc = enc;
-	rc = build_packet( out, &pkt );
-	free_pubkey_enc(enc);
-	if( rc ) {
-	    log_error("build pubkey_enc packet failed: %s\n", g10_errstr(rc) );
-	    goto leave;
-	}
-    }
+    rc = write_pubkey_enc_from_list( pkc_list, cfx.dek, out );
+    if( rc  )
+	goto leave;
 
     /* setup the inner packet */
     if( filename ) {
@@ -276,7 +255,6 @@ encode_crypt( const char *filename, STRLIST remusr )
 /****************
  * Filter to do a complete public key encryption.
  */
- #if 0
 int
 encrypt_filter( void *opaque, int control,
 	       IOBUF a, byte *buf, size_t *ret_len)
@@ -289,6 +267,24 @@ encrypt_filter( void *opaque, int control,
 	log_bug(NULL); /* not used */
     }
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
+	if( !efx->header_okay ) {
+	    efx->cfx.dek = m_alloc_secure( sizeof *efx->cfx.dek );
+	    efx->cfx.dek->algo = DEFAULT_CIPHER_ALGO;
+	    make_session_key( efx->cfx.dek );
+	    if( DBG_CIPHER )
+		log_hexdump("DEK is: ",
+			     efx->cfx.dek->key, efx->cfx.dek->keylen );
+
+	    rc = write_pubkey_enc_from_list( efx->pkc_list, efx->cfx.dek, a );
+	    if( rc )
+		return rc;
+
+	    iobuf_push_filter( a, cipher_filter, &efx->cfx );
+
+	    efx->header_okay = 1;
+	}
+	rc = iobuf_write( a, buf, size );
+
     }
     else if( control == IOBUFCTRL_FREE ) {
     }
@@ -297,5 +293,41 @@ encrypt_filter( void *opaque, int control,
     }
     return rc;
 }
-  #endif
+
+
+/****************
+ * Write pubkey-enc packets from the list of PKCs to OUT.
+ */
+static int
+write_pubkey_enc_from_list( PKC_LIST pkc_list, DEK *dek, IOBUF out )
+{
+    PACKET pkt;
+    PKT_public_cert *pkc;
+    PKT_pubkey_enc  *enc;
+    int rc;
+
+    for( ; pkc_list; pkc_list = pkc_list->next ) {
+
+	pkc = pkc_list->pkc;
+	enc = m_alloc_clear( sizeof *enc );
+	enc->pubkey_algo = pkc->pubkey_algo;
+	if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	    g10_elg_encrypt( pkc, enc, dek );
+	else if( enc->pubkey_algo == PUBKEY_ALGO_RSA )
+	    g10_rsa_encrypt( pkc, enc, dek );
+	else
+	    log_bug(NULL);
+	/* and write it */
+	init_packet(&pkt);
+	pkt.pkttype = PKT_PUBKEY_ENC;
+	pkt.pkt.pubkey_enc = enc;
+	rc = build_packet( out, &pkt );
+	free_pubkey_enc(enc);
+	if( rc ) {
+	    log_error("build pubkey_enc packet failed: %s\n", g10_errstr(rc) );
+	    return rc;
+	}
+    }
+    return 0;
+}
 

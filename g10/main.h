@@ -28,15 +28,27 @@
 #define DEFAULT_PUBKEY_ALGO  PUBKEY_ALGO_ELGAMAL
 #define DEFAULT_DIGEST_ALGO  DIGEST_ALGO_RMD160
 
+
+typedef struct {
+    int header_okay;
+    PKC_LIST pkc_list;
+    cipher_filter_context_t cfx;
+} encrypt_filter_context_t;
+
+
 /*-- encode.c --*/
 int encode_symmetric( const char *filename );
 int encode_store( const char *filename );
 int encode_crypt( const char *filename, STRLIST remusr );
+int encrypt_filter( void *opaque, int control,
+		    IOBUF a, byte *buf, size_t *ret_len);
+
 
 /*-- sign.c --*/
 int sign_file( const char *filename, int detached, STRLIST locusr,
 	       int encrypt, STRLIST remusr );
 int sign_key( const char *username, STRLIST locusr );
+int edit_keysigs( const char *username );
 
 /*-- sig-check.c --*/
 int check_key_signature( KBNODE root, KBNODE node );

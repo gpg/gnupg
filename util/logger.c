@@ -26,15 +26,24 @@
 #include "util.h"
 
 static char pidstring[15];
-
+static int errorcount;
 
 void
-set_log_pid( int pid )
+log_set_pid( int pid )
 {
     if( pid )
 	sprintf(pidstring,"[%u]", (unsigned)pid );
     else
 	*pidstring = 0;
+}
+
+int
+log_get_errorcount( int clear)
+{
+    int n = errorcount;
+    if( clear )
+	errorcount = 0;
+    return n;
 }
 
 
@@ -90,6 +99,7 @@ log_error( const char *fmt, ... )
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
+    errorcount++;
 }
 
 void

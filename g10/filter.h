@@ -65,6 +65,7 @@ typedef struct {
 } cipher_filter_context_t;
 
 
+
 typedef struct {
     size_t linesize;
     byte *line;
@@ -72,6 +73,9 @@ typedef struct {
     size_t pos;
     int eof;
 } text_filter_context_t;
+
+
+/* encrypt_filter_context_t defined in main.h */
 
 /*-- mdfilter.c --*/
 int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);

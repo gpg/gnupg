@@ -21,9 +21,12 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <errno.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include "util.h"
 #include "cipher.h"
@@ -98,6 +101,7 @@ fill_buffer( byte *buffer, size_t length, int level )
     static int fd_random = -1;
     int fd;
     int n;
+    int warn=0;
 
     if( level == 2 ) {
 	if( fd_random == -1 )
@@ -112,11 +116,34 @@ fill_buffer( byte *buffer, size_t length, int level )
 
 
     do {
+	fd_set rfds;
+	struct timeval tv;
+	int rc;
+
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+	tv.tv_sec = 3;
+	tv.tv_usec = 0;
+	if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
+	    if( !warn )
+		tty_printf(
+"\nNot enough random bytes available.  Please do some other work to give
+the OS a chance to collect more entropy! (Need %d more bytes)\n", length );
+	    warn = 1;
+	    continue;
+	}
+	else if( rc == -1 ) {
+	    tty_printf("select() error: %s\n", strerror(errno));
+	    continue;
+	}
+
+	assert( length < 200 );
 	do {
 	    n = read(fd, buffer, length );
 	} while( n == -1 && errno == EINTR );
 	if( n == -1 )
 	    log_fatal("read error on random device: %s\n", strerror(errno) );
+	assert( n <= length );
 	buffer += n;
 	length -= n;
     } while( length );

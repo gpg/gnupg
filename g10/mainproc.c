@@ -46,7 +46,6 @@ typedef struct {
     md_filter_context_t mfx;
     DEK *dek;
     int last_was_pubkey_enc;
-    int opt_list;
     KBNODE cert;     /* the current certificate */
     int have_data;
     IOBUF iobuf;    /* used to get the filename etc. */
@@ -198,7 +197,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 
     c->last_was_pubkey_enc = 1;
     enc = pkt->pkt.pubkey_enc;
-    printf("enc: encrypted by a pubkey with keyid %08lX\n", enc->keyid[1] );
+    /*printf("enc: encrypted by a pubkey with keyid %08lX\n", enc->keyid[1] );*/
     if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL
 	|| enc->pubkey_algo == PUBKEY_ALGO_RSA	) {
 	m_free(c->dek ); /* paranoid: delete a pending DEK */
@@ -213,11 +212,12 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 
     if( result == -1 )
 	;
-    else if( !result )
-	fputs(	"     DEK is good", stdout );
+    else if( !result ) {
+	if( opt.verbose > 1 )
+	    log_info( "pubkey_enc packet: Good DEK\n" );
+    }
     else
-	printf( "     %s", g10_errstr(result));
-    putchar('\n');
+	log_error( "pubkey_enc packet: %s\n", g10_errstr(result));
     free_packet(pkt);
 }
 
@@ -228,7 +228,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 {
     int result = 0;
 
-    printf("dat: %sencrypted data\n", c->dek?"":"conventional ");
+    /*printf("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
     if( !c->dek && !c->last_was_pubkey_enc ) {
 	/* assume this is conventional encrypted data */
 	c->dek = m_alloc_secure( sizeof *c->dek );
@@ -242,11 +242,13 @@ proc_encrypted( CTX c, PACKET *pkt )
     m_free(c->dek); c->dek = NULL;
     if( result == -1 )
 	;
-    else if( !result )
-	fputs(	"     encryption okay",stdout);
-    else
-	printf( "     %s", g10_errstr(result));
-    putchar('\n');
+    else if( !result ) {
+	if( opt.verbose > 1 )
+	    log_info("encryption okay\n");
+    }
+    else {
+	log_error("encryption failed: %s\n", g10_errstr(result));
+    }
     free_packet(pkt);
     c->last_was_pubkey_enc = 0;
 }
@@ -256,9 +258,10 @@ static void
 proc_plaintext( CTX c, PACKET *pkt )
 {
     PKT_plaintext *pt = pkt->pkt.plaintext;
-    int result;
+    int rc;
 
-    printf("txt: plain text data name='%.*s'\n", pt->namelen, pt->name);
+    if( opt.verbose )
+	log_info("original file name='%.*s'\n", pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
     /* fixme: take the digest algo(s) to use from the
      * onepass_sig packet (if we have these)
@@ -266,12 +269,9 @@ proc_plaintext( CTX c, PACKET *pkt )
      * textmode filter (sigclass 0x01)
      */
     c->mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
-    result = handle_plaintext( pt, &c->mfx );
-    if( !result )
-	fputs(	"     okay", stdout);
-    else
-	printf( "     %s", g10_errstr(result));
-    putchar('\n');
+    rc = handle_plaintext( pt, &c->mfx );
+    if( rc )
+	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
     c->last_was_pubkey_enc = 0;
 }
@@ -281,15 +281,12 @@ static void
 proc_compressed( CTX c, PACKET *pkt )
 {
     PKT_compressed *zd = pkt->pkt.compressed;
-    int result;
+    int rc;
 
-    printf("zip: compressed data packet\n");
-    result = handle_compressed( zd );
-    if( !result )
-	fputs(	"     okay", stdout);
-    else
-	printf( "     %s", g10_errstr(result));
-    putchar('\n');
+    /*printf("zip: compressed data packet\n");*/
+    rc = handle_compressed( zd );
+    if( rc )
+	log_error("uncompressing failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
     c->last_was_pubkey_enc = 0;
 }
@@ -505,7 +502,6 @@ proc_packets( IOBUF a )
     u32 keyid[2];
     int newpkt;
 
-    c->opt_list = 1;
     c->iobuf = a;
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
@@ -522,17 +518,27 @@ proc_packets( IOBUF a )
 	    continue;
 	}
 	newpkt = -1;
-	switch( pkt->pkttype ) {
-	  case PKT_PUBLIC_CERT: newpkt = add_public_cert( c, pkt ); break;
-	  case PKT_SECRET_CERT: newpkt = add_secret_cert( c, pkt ); break;
-	  case PKT_USER_ID:	newpkt = add_user_id( c, pkt ); break;
-	  case PKT_SIGNATURE:	newpkt = add_signature( c, pkt ); break;
-	  case PKT_PUBKEY_ENC:	proc_pubkey_enc( c, pkt ); break;
-	  case PKT_ENCRYPTED:	proc_encrypted( c, pkt ); break;
-	  case PKT_PLAINTEXT:	proc_plaintext( c, pkt ); break;
-	  case PKT_COMPRESSED:	proc_compressed( c, pkt ); break;
-	  case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
-	  default: newpkt = 0; break;
+	if( opt.list_packets ) {
+	    switch( pkt->pkttype ) {
+	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
+	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
+	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
+	      default: newpkt = 0; break;
+	    }
+	}
+	else {
+	    switch( pkt->pkttype ) {
+	      case PKT_PUBLIC_CERT: newpkt = add_public_cert( c, pkt ); break;
+	      case PKT_SECRET_CERT: newpkt = add_secret_cert( c, pkt ); break;
+	      case PKT_USER_ID:     newpkt = add_user_id( c, pkt ); break;
+	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
+	      case PKT_PUBKEY_ENC:  proc_pubkey_enc( c, pkt ); break;
+	      case PKT_ENCRYPTED:   proc_encrypted( c, pkt ); break;
+	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
+	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
+	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
+	      default: newpkt = 0; break;
+	    }
 	}
 	if( pkt->pkttype != PKT_SIGNATURE )
 	    c->have_data = pkt->pkttype == PKT_PLAINTEXT;
@@ -575,13 +581,16 @@ proc_tree( CTX c, KBNODE node )
     KBNODE n1;
     int rc;
 
+    if( opt.list_packets )
+	return;
+
     if( node->pkt->pkttype == PKT_PUBLIC_CERT )
 	list_node( c, node );
     else if( node->pkt->pkttype == PKT_SECRET_CERT )
 	list_node( c, node );
     else if( node->pkt->pkttype == PKT_ONEPASS_SIG ) {
 	if( !node->child )
-	    log_error("proc_tree: onepass_sig without followin data\n");
+	    log_error("proc_tree: onepass_sig without data\n");
 	else if( node->child->pkt->pkttype != PKT_SIGNATURE )
 	    log_error("proc_tree: onepass_sig not followed by signature\n");
 	else {	/* check all signatures */
@@ -611,6 +620,8 @@ proc_tree( CTX c, KBNODE node )
 		    log_error("BAD signature from ");
 		    print_keyid( stderr, sig->keyid );
 		    putc('\n', stderr);
+		    if( opt.batch )
+			exit(1);
 		}
 		else
 		    log_error("Can't check signature made by %08lX: %s\n",

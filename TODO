@@ -22,7 +22,6 @@
       before we can check wether we have the pubkey or not.  The one-pass
       signature packets should be implemented to avoid this.
 
-    * compress does not work always!
     * complete cipher/cast.c
     * complete cipher/dsa.c
 
@@ -33,4 +32,6 @@
       this is a email address and should be used, all others are substrings
       of the userid.
       [can be handles in get_pubkey_by_name()]
+
+    * armor has now some problems.
 

@@ -38,6 +38,7 @@ new_kbnode( PACKET *pkt )
     n->pkt = pkt;
     n->child = NULL;
     n->flag = 0;
+    n->private_flag=0; /* kludge to delete a node */
     return n;
 }
 
@@ -56,6 +57,16 @@ release_kbnode( KBNODE n )
     }
 }
 
+
+/****************
+ * Delete NODE from ROOT, ROOT must exist!
+ * Note does only work with walk_kbtree!!
+ */
+void
+delete_kbnode( KBNODE root, KBNODE node )
+{
+    node->private_flag |= 1;
+}
 
 /****************
  * Append NODE to ROOT, ROOT must exist!
@@ -116,26 +127,35 @@ find_kbparent( KBNODE root, KBNODE node )
 KBNODE
 walk_kbtree( KBNODE root, KBNODE *context )
 {
+    return walk_kbtree2( root, context, 0 );
+}
+
+KBNODE
+walk_kbtree2( KBNODE root, KBNODE *context, int all )
+{
     KBNODE n;
 
-    if( !*context ) {
-	*context = root;
-	return root;
-    }
+    do {
+	if( !*context ) {
+	    *context = root;
+	    return root;
+	}
 
-    n = *context;
-    if( n->child ) {
-	n = n->child;
-	*context = n;
-    }
-    else if( n->next ) {
-	n = n->next;
-	*context = n;
-    }
-    else if( (n = find_kbparent( root, n )) ) {
-	n = n->next;
-	*context = n;
-    }
+	n = *context;
+	if( n->child ) {
+	    n = n->child;
+	    *context = n;
+	}
+	else if( n->next ) {
+	    n = n->next;
+	    *context = n;
+	}
+	else if( (n = find_kbparent( root, n )) ) {
+	    n = n->next;
+	    *context = n;
+	}
+    } while( !all && n && (n->private_flag & 1) );
+
     return n;
 }
 
@@ -147,3 +167,4 @@ clear_kbnode_flags( KBNODE n )
 	n->flag = 0;
     }
 }
+

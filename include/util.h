@@ -56,7 +56,8 @@ typedef struct {
 } ARGPARSE_OPTS;
 
 /*-- logger.c --*/
-void set_log_pid( int pid );
+void log_set_pid( int pid );
+int  log_get_errorcount( int clear );
 void printstr( int level, const char *fmt, ... );
 void log_bug( const char *fmt, ... );
 void log_fatal( const char *fmt, ... );

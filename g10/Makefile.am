@@ -30,6 +30,7 @@ g10_SOURCES = g10.c		\
 	      options.h 	\
 	      openfile.c	\
 	      keyid.c		\
+	      trustdb.c 	\
 	      packet.h		\
 	      parse-packet.c	\
 	      passphrase.c	\

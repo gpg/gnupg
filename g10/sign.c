@@ -79,6 +79,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
     compress_filter_context_t zfx;
     md_filter_context_t mfx;
     text_filter_context_t tfx;
+    encrypt_filter_context_t efx;
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     PKT_plaintext *pt = NULL;
@@ -92,6 +93,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
     memset( &zfx, 0, sizeof zfx);
     memset( &mfx, 0, sizeof mfx);
     memset( &tfx, 0, sizeof tfx);
+    memset( &efx, 0, sizeof efx);
     init_packet( &pkt );
 
     if( (rc=build_skc_list( locusr, &skc_list, 1 )) )
@@ -127,8 +129,9 @@ sign_file( const char *filename, int detached, STRLIST locusr,
 	iobuf_push_filter( out, compress_filter, &zfx );
 
     if( encrypt ) {
-	/* prepare for encryption */
-	/* FIXME!!!!!!! */
+	efx.pkc_list = pkc_list;
+	/* fixme: set efx.cfx.datalen if known */
+	iobuf_push_filter( out, encrypt_filter, &efx );
     }
 
     /* loop over the secret certificates and build headers */
@@ -348,7 +351,15 @@ sign_it_p( PKT_public_cert *pkc, PKT_user_id *uid )
 }
 
 
-static void
+/****************
+ * Check the keysigs and set the flags to indicate errors.
+ * Usage of nodes flag bits:
+ * Bit	0 = bad signature
+ *	1 = no public key
+ *	2 = other error
+ * Returns true if error found.
+ */
+static int
 check_all_keysigs( KBNODE keyblock )
 {
     KBNODE kbctx;
@@ -384,6 +395,7 @@ check_all_keysigs( KBNODE keyblock )
 		m_free(p);
 	    }
 	    tty_printf("\n");
+	    /* FIXME: update the trustdb */
 	}
     }
     if( inv_sigs )
@@ -392,6 +404,76 @@ check_all_keysigs( KBNODE keyblock )
 	tty_printf("No public key for %d signatures\n", no_key );
     if( oth_err )
 	tty_printf("%d signatures not checked due to errors\n", oth_err );
+    return inv_sigs || no_key || oth_err;
+}
+
+
+/****************
+ * Ask and remove invalid signatures are to be removed.
+ */
+static int
+remove_keysigs( KBNODE keyblock, int all )
+{
+    KBNODE kbctx;
+    KBNODE node;
+    char *answer;
+    int yes;
+    int count;
+
+    count = 0;
+    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
+	if( ((node->flag & 7) || all )
+	    && node->pkt->pkttype == PKT_SIGNATURE
+	    && (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
+	    int sigrc;
+
+	    if( all ) {
+		/* fixme: skip self-sig */
+	    }
+
+	    tty_printf("\n \"%08lX %s   ",
+			sig->keyid[1], datestr_from_sig(sig));
+	    if( node->flag & 6 )
+		tty_printf("[User name not available] ");
+	    else {
+		size_t n;
+		char *p = get_user_id( sig->keyid, &n );
+		tty_print_string( p, n );
+		m_free(p);
+	    }
+	    tty_printf("\"\n");
+	    if( node->flag & 1 )
+		tty_printf("This is a BAD signature!\n");
+	    else if( node->flag & 2 )
+		tty_printf("Public key not available.\n");
+	    else if( node->flag & 4 )
+		tty_printf("The signature could not be checked!\n");
+	    answer = tty_get("\nRemove this signature? ");
+	    tty_kill_prompt();
+	    if( answer_is_yes(answer) ) {
+		node->flag |= 128;     /* use bit 7 to mark this node */
+		count++;
+	    }
+	    m_free(answer);
+	}
+    }
+
+    if( !count )
+	return 0; /* nothing to remove */
+    answer = tty_get("Do you really want to remove the selected signatures? ");
+    tty_kill_prompt();
+    yes = answer_is_yes(answer);
+    m_free(answer);
+    if( !yes )
+	return 0;
+
+    for( kbctx=NULL; (node=walk_kbtree2( keyblock, &kbctx, 1)) ; ) {
+	if( node->flag & 128)
+	    delete_kbnode( keyblock, node );
+    }
+
+    return 1;
 }
 
 
@@ -414,6 +496,7 @@ sign_key( const char *username, STRLIST locusr )
     PKT_public_cert *pkc;
     int any;
     u32 pkc_keyid[2];
+    char *answer;
 
     memset( &mfx, 0, sizeof mfx);
 
@@ -464,9 +547,16 @@ sign_key( const char *username, STRLIST locusr )
     }
 
     clear_kbnode_flags( keyblock );
-    check_all_keysigs( keyblock );
-    /* look wether we should ask to remove invalid keys */
-    /*+ FIXME: */
+    if( check_all_keysigs( keyblock ) ) {
+	if( !opt.batch ) {
+	    /* ask wether we really should do anything */
+	    answer = tty_get("To you want to remove some of the invalid sigs? ");
+	    tty_kill_prompt();
+	    if( answer_is_yes(answer) )
+		remove_keysigs( keyblock, 0 );
+	    m_free(answer);
+	}
+    }
 
     /* check wether we have already signed it */
     for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
@@ -524,7 +614,7 @@ sign_key( const char *username, STRLIST locusr )
 
     rc = update_keyblock( &kbpos, keyblock );
     if( rc ) {
-	log_error("insert_keyblock failed: %s\n", g10_errstr(rc) );
+	log_error("update_keyblock failed: %s\n", g10_errstr(rc) );
 	goto leave;
     }
 
@@ -532,6 +622,75 @@ sign_key( const char *username, STRLIST locusr )
     release_kbnode( keyblock );
     release_skc_list( skc_list );
     rmd160_close( mfx.rmd160 );
+    return rc;
+}
+
+
+
+int
+edit_keysigs( const char *username )
+{
+    int rc = 0;
+    KBNODE keyblock = NULL;
+    KBNODE kbctx, node;
+    KBPOS kbpos;
+    PKT_public_cert *pkc;
+    int any;
+    u32 pkc_keyid[2];
+    char *answer;
+
+    /* search the userid */
+    rc = search_keyblock_byname( &kbpos, username );
+    if( rc ) {
+	log_error("user '%s' not found\n", username );
+	goto leave;
+    }
+
+    /* read the keyblock */
+    rc = read_keyblock( &kbpos, &keyblock );
+    if( rc ) {
+	log_error("error reading the certificate: %s\n", g10_errstr(rc) );
+	goto leave;
+    }
+
+    /* get the keyid from the keyblock */
+    for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
+	if( node->pkt->pkttype == PKT_PUBLIC_CERT )
+	    break;
+    }
+    if( !node ) {
+	log_error("Oops; public key not found anymore!\n");
+	rc = G10ERR_GENERAL;
+	goto leave;
+    }
+
+    pkc = node->pkt->pkt.public_cert;
+    keyid_from_pkc( pkc, pkc_keyid );
+    log_info("Checking signatures of this public key certificate:\n");
+    tty_printf("pub  %4u%c/%08lX %s   ",
+	      nbits_from_pkc( pkc ),
+	      pubkey_letter( pkc->pubkey_algo ),
+	      pkc_keyid[1], datestr_from_pkc(pkc) );
+    {
+	size_t n;
+	char *p = get_user_id( pkc_keyid, &n );
+	tty_print_string( p, n > 40? 40 : n );
+	m_free(p);
+	tty_printf("\n");
+    }
+
+    clear_kbnode_flags( keyblock );
+    check_all_keysigs( keyblock );
+    if( remove_keysigs( keyblock, 1 ) ) {
+	rc = update_keyblock( &kbpos, keyblock );
+	if( rc ) {
+	    log_error("update_keyblock failed: %s\n", g10_errstr(rc) );
+	    goto leave;
+	}
+    }
+
+  leave:
+    release_kbnode( keyblock );
     return rc;
 }
 

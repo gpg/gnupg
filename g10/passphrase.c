@@ -25,12 +25,26 @@
 #include <assert.h>
 #include "util.h"
 #include "memory.h"
+#include "options.h"
 #include "ttyio.h"
 #include "cipher.h"
 #include "keydb.h"
 
+static int pwfd = -1;
 
 static int hash_passphrase( DEK *dek, char *pw );
+
+void
+set_passphrase_fd( int fd )
+{
+    pwfd = fd;
+}
+
+int
+get_passphrase_fd()
+{
+    return pwfd;
+}
 
 
 /****************
@@ -41,35 +55,51 @@ static int hash_passphrase( DEK *dek, char *pw );
 DEK *
 get_passphrase_hash( u32 *keyid, char *text )
 {
-    char *p=NULL, *pw;
+    char *pw;
     DEK *dek;
 
-    if( keyid ) {
+    if( keyid && !opt.batch ) {
 	char *ustr;
-	tty_printf("\nNeed a pass phrase to unlock the secret key!\n");
-	tty_printf("KeyID: " );
+	tty_printf("Need a pass phrase to unlock the secret key for:\n");
+	tty_printf("  \"" );
 	ustr = get_user_id_string( keyid );
 	tty_print_string( ustr, strlen(ustr) );
 	m_free(ustr);
-	tty_printf("\n\n");
+	tty_printf("\"\n\n");
 
     }
-    if( keyid && (p=getenv("G10PASSPHRASE")) ) {
-	pw = m_alloc_secure(strlen(p)+1);
-	strcpy(pw,p);
-	tty_printf("Taking it from $G10PASSPHRASE !\n",  keyid[1] );
+    if( pwfd != -1 ) { /* read the passphrase from the given descriptor */
+	int i, len;
+
+	if( !opt.batch )
+	    tty_printf("Reading from file descriptor %d ...", pwfd );
+	for( pw = NULL, i = len = 100; ; i++ ) {
+	    if( i >= len-1 ) {
+		char *pw2 = pw;
+		len += 100;
+		pw = m_alloc_secure( len );
+		if( pw2 )
+		    memcpy(pw, pw2, i );
+		i=0;
+	    }
+	    if( read( pwfd, pw+i, 1) != 1 || pw[i] == '\n' )
+		break;
+	}
+	pw[i] = 0;
+	if( !opt.batch )
+	    tty_printf("\b\b\b   \n" );
     }
-    else
+    else if( opt.batch )
+	log_fatal("Can't query password in batchmode\n");
+    else {
 	pw = tty_get_hidden("Enter pass phrase: " );
+	tty_kill_prompt();
+    }
     dek = m_alloc_secure( sizeof *dek );
     dek->algo = CIPHER_ALGO_BLOWFISH;
     if( hash_passphrase( dek, pw ) )
 	log_bug("get_passphrase_hash\n");
     m_free(pw); /* is allocated in secure memory, so it will be burned */
-    if( !p ) {
-	tty_kill_prompt();
-	tty_printf("\n");
-    }
     return dek;
 }
 
@@ -89,6 +119,7 @@ make_dek_from_passphrase( DEK *dek, int mode )
     tty_kill_prompt();
     if( mode == 2 ) {
 	pw2 = tty_get_hidden("Repeat pass phrase: " );
+	tty_kill_prompt();
 	if( strcmp(pw, pw2) ) {
 	    m_free(pw2);
 	    m_free(pw);

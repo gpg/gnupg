@@ -30,41 +30,19 @@
 #include "memory.h"
 #include "ttyio.h"
 
+static FILE *ttyfp = NULL;
 static int last_prompt_len;
 
-static FILE *
-open_tty(struct termios *termsave )
-{
-    struct termios term;
-
-    FILE *tty = fopen("/dev/tty", "r");
-    if( !tty )
-	log_fatal("cannot open /dev/tty: %s\n", strerror(errno) );
-
-    if( termsave ) { /* hide input */
-	if( tcgetattr(fileno(tty), termsave) )
-	    log_fatal("tcgetattr() failed: %s\n", strerror(errno) );
-	term = *termsave;
-	term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
-	if( tcsetattr( fileno(tty), TCSAFLUSH, &term ) )
-	    log_fatal("tcsetattr() failed: %s\n", strerror(errno) );
-    }
-
-
-    return tty;
-}
-
 static void
-close_tty( FILE *tty, struct termios *termsave )
+init_ttyfp()
 {
-    if( termsave ) {
-	if( tcsetattr(fileno(tty), TCSAFLUSH, termsave) )
-	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
-	putc('\n', stderr);
-    }
-    fclose(tty);
-}
+    if( ttyfp )
+	return;
 
+    ttyfp = fopen("/dev/tty", "r+");
+    if( !ttyfp )
+	log_fatal("cannot open /dev/tty: %s\n", strerror(errno) );
+}
 
 
 void
@@ -72,10 +50,13 @@ tty_printf( const char *fmt, ... )
 {
     va_list arg_ptr;
 
+    if( !ttyfp )
+	init_ttyfp();
+
     va_start( arg_ptr, fmt ) ;
-    last_prompt_len += vfprintf(stderr,fmt,arg_ptr) ;
+    last_prompt_len += vfprintf(ttyfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
-    fflush(stderr);
+    fflush(ttyfp);
 }
 
 
@@ -85,18 +66,21 @@ tty_printf( const char *fmt, ... )
 void
 tty_print_string( byte *p, size_t n )
 {
+    if( !ttyfp )
+	init_ttyfp();
+
     for( ; n; n--, p++ )
 	if( iscntrl( *p ) ) {
-	    putc('\\', stderr);
+	    putc('\\', ttyfp);
 	    if( *p == '\n' )
-		putc('n', stderr);
+		putc('n', ttyfp);
 	    else if( !*p )
-		putc('0', stderr);
+		putc('0', ttyfp);
 	    else
-		fprintf(stderr, "x%02x", *p );
+		fprintf(ttyfp, "x%02x", *p );
 	}
 	else
-	    putc(*p, stderr);
+	    putc(*p, ttyfp);
 }
 
 
@@ -107,17 +91,36 @@ static char *
 do_get( const char *prompt, int hidden )
 {
     char *buf;
+    byte cbuf[1];
     int c, n, i;
     FILE *fp;
     struct termios termsave;
+
+    if( !ttyfp )
+	init_ttyfp();
 
     last_prompt_len = 0;
     tty_printf( prompt );
     buf = m_alloc(n=50);
     i = 0;
-    fp = open_tty(hidden? &termsave: NULL);
-    while( (c=getc(fp)) != EOF && c != '\n' ) {
-	last_prompt_len++;
+
+    if( hidden ) {
+	struct termios term;
+
+	if( tcgetattr(fileno(ttyfp), &termsave) )
+	    log_fatal("tcgetattr() failed: %s\n", strerror(errno) );
+	term = termsave;
+	term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+	if( tcsetattr( fileno(ttyfp), TCSAFLUSH, &term ) )
+	    log_fatal("tcsetattr() failed: %s\n", strerror(errno) );
+    }
+
+    /* fixme: How can we avoid that the \n is echoed w/o disabling
+     * canonical mode - w/o this kill_prompt can't work */
+    while( read(fileno(ttyfp), cbuf, 1) == 1 && *cbuf != '\n' ) {
+	if( !hidden )
+	    last_prompt_len++;
+	c = *cbuf;
 	if( c == '\t' )
 	    c = ' ';
 	else if( iscntrl(c) )
@@ -128,7 +131,11 @@ do_get( const char *prompt, int hidden )
 	}
 	buf[i++] = c;
     }
-    close_tty(fp, hidden? &termsave: NULL);
+
+    if( hidden ) {
+	if( tcsetattr(fileno(ttyfp), TCSAFLUSH, &termsave) )
+	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
+    }
     buf[i] = 0;
     return buf;
 }
@@ -151,15 +158,16 @@ void
 tty_kill_prompt()
 {
     int i;
-#if 0
+
+    if( !ttyfp )
+	init_ttyfp();
+    if( !last_prompt_len )
+	return;
+    fputc('\r', ttyfp);
     for(i=0; i < last_prompt_len; i ++ )
-	fputc('\b', stderr);
-    for(i=0; i < last_prompt_len; i ++ )
-	fputc(' ', stderr);
-    for(i=0; i < last_prompt_len; i ++ )
-	fputc('\b', stderr);
-#endif
+	fputc(' ', ttyfp);
+    fputc('\r', ttyfp);
     last_prompt_len = 0;
-    fflush(stderr);
+    fflush(ttyfp);
 }
 

@@ -65,6 +65,7 @@ check_elg( PKT_secret_cert *cert )
     unsigned nbytes;
     u32 keyid[2];
     ELG_secret_key skey;
+    char save_iv[8];
 
     if( cert->d.elg.is_protected ) { /* remove the protection */
 	DEK *dek = NULL;
@@ -80,6 +81,7 @@ check_elg( PKT_secret_cert *cert )
 	    blowfish_setkey( blowfish_ctx, dek->key, dek->keylen );
 	    m_free(dek); /* pw is in secure memory, so m_free() burns it */
 	    blowfish_setiv( blowfish_ctx, NULL );
+	    memcpy(save_iv, cert->d.elg.protect.blowfish.iv, 8 );
 	    blowfish_decode_cfb( blowfish_ctx,
 				 cert->d.elg.protect.blowfish.iv,
 				 cert->d.elg.protect.blowfish.iv, 8 );
@@ -94,6 +96,7 @@ check_elg( PKT_secret_cert *cert )
 	    /* now let's see wether we have used the right passphrase */
 	    if( csum != cert->d.elg.csum ) {
 		mpi_free(test_x);
+		memcpy( cert->d.elg.protect.blowfish.iv, save_iv, 8 );
 		return G10ERR_BAD_PASS;
 	    }
 
@@ -105,6 +108,7 @@ check_elg( PKT_secret_cert *cert )
 	    memset( &skey, 0, sizeof skey );
 	    if( !res ) {
 		mpi_free(test_x);
+		memcpy( cert->d.elg.protect.blowfish.iv, save_iv, 8 );
 		return G10ERR_BAD_PASS;
 	    }
 	    mpi_set(cert->d.elg.x, test_x);
@@ -274,6 +278,8 @@ check_secret_key( PKT_secret_cert *cert )
       #endif
 	else
 	    rc = G10ERR_PUBKEY_ALGO;
+	if( get_passphrase_fd() != -1 )
+	    break;
     }
     return rc;
 }

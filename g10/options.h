@@ -35,7 +35,7 @@ struct {
     int fingerprint; /* list fingerprints */
     int list_sigs;   /* list signatures */
     int no_armor;
-    int reserved5;
+    int list_packets; /* list-packets mode */
     int reserved6;
     int reserved7;
     int reserved8;
