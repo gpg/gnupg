@@ -1,3 +1,10 @@
+2003-01-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* sig-check.c (signature_check2): Use G10ERR_GENERAL as the error
+	for signature digest conflict.  BAD_SIGN implies that a signature
+	was checked and we may try and print out a user ID for a key that
+	doesn't exist.
+
 2003-01-14  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (add_group): Fixed group parsing to allow more than one

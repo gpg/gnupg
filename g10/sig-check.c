@@ -71,7 +71,7 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
 
     if(!md_algo_present(digest,sig->digest_algo)) {
         log_info(_("WARNING: signature digest conflict in message\n"));
-	rc=G10ERR_BAD_SIGN;
+	rc=G10ERR_GENERAL;
     }
     else if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
