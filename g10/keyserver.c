@@ -52,22 +52,20 @@ struct keyrec
   int lines;
 };
 
-struct kopts
-{
-  char *name;
-  int tell; /* tell remote process about this one */
-  int *flag;
-} keyserver_opts[]=
-{
-  {"include-revoked",1,&opt.keyserver_options.include_revoked},
-  {"include-disabled",1,&opt.keyserver_options.include_disabled},
-  {"include-subkeys",1,&opt.keyserver_options.include_subkeys},
-  {"keep-temp-files",0,&opt.keyserver_options.keep_temp_files},
-  {"refresh-add-fake-v3-keyids",0,&opt.keyserver_options.fake_v3_keyids},
-  {"auto-key-retrieve",0,&opt.keyserver_options.auto_key_retrieve},
-  {"try-dns-srv",1,&opt.keyserver_options.try_dns_srv},
-  {NULL}
-};
+/* Tell remote processes about these options */
+#define REMOTE_TELL (KEYSERVER_INCLUDE_REVOKED|KEYSERVER_INCLUDE_DISABLED|KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_TRY_DNS_SRV)
+
+static struct parse_options keyserver_opts[]=
+  {
+    {"include-revoked",KEYSERVER_INCLUDE_REVOKED,NULL},      
+    {"include-disabled",KEYSERVER_INCLUDE_DISABLED,NULL},
+    {"include-subkeys",KEYSERVER_INCLUDE_SUBKEYS,NULL},
+    {"keep-temp-files",KEYSERVER_KEEP_TEMP_FILES,NULL},
+    {"refresh-add-fake-v3-keyids",KEYSERVER_ADD_FAKE_V3,NULL},
+    {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL},
+    {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL},
+    {NULL,0,NULL}
+  };
 
 static int keyserver_work(int action,STRLIST list,
 			  KEYDB_SEARCH_DESC *desc,int count);
@@ -79,69 +77,53 @@ parse_keyserver_options(char *options)
 
   while((tok=argsep(&options,&arg)))
     {
-      int i,hit=0;
-
       if(tok[0]=='\0')
 	continue;
 
-      for(i=0;keyserver_opts[i].name;i++)
-	{
-	  if(ascii_strcasecmp(tok,keyserver_opts[i].name)==0)
-	    {
-	      *(keyserver_opts[i].flag)=1;
-	      hit=1;
-	      break;
-	    }
-	  else if(ascii_strncasecmp("no-",tok,3)==0 &&
-		  ascii_strcasecmp(&tok[3],keyserver_opts[i].name)==0)
-	    {
-	      *(keyserver_opts[i].flag)=0;
-	      hit=1;
-	      break;
-	    }
-	}
+      /* We accept quite a few possible options here - some options to
+	 handle specially, the keyserver_options list, and import and
+	 export options that pertain to keyserver operations. */
 
-      /* These options need more than just a flag */
-      if(!hit)
-	{
-	  if(ascii_strcasecmp(tok,"verbose")==0)
-	    opt.keyserver_options.verbose++;
-	  else if(ascii_strcasecmp(tok,"no-verbose")==0)
-	    opt.keyserver_options.verbose--;
+      if(ascii_strcasecmp(tok,"verbose")==0)
+	opt.keyserver_options.verbose++;
+      else if(ascii_strcasecmp(tok,"no-verbose")==0)
+	opt.keyserver_options.verbose--;
 #ifdef EXEC_TEMPFILE_ONLY
-	  else if(ascii_strcasecmp(tok,"use-temp-files")==0 ||
-		  ascii_strcasecmp(tok,"no-use-temp-files")==0)
-	    log_info(_("WARNING: keyserver option \"%s\" is not used "
-		       "on this platform\n"),tok);
+      else if(ascii_strcasecmp(tok,"use-temp-files")==0 ||
+	      ascii_strcasecmp(tok,"no-use-temp-files")==0)
+	log_info(_("WARNING: keyserver option \"%s\" is not used "
+		   "on this platform\n"),tok);
 #else
-	  else if(ascii_strcasecmp(tok,"use-temp-files")==0)
-	    opt.keyserver_options.use_temp_files=1;
-	  else if(ascii_strcasecmp(tok,"no-use-temp-files")==0)
-	    opt.keyserver_options.use_temp_files=0;
+      else if(ascii_strcasecmp(tok,"use-temp-files")==0)
+	opt.keyserver_options.options|=KEYSERVER_USE_TEMP_FILES;
+      else if(ascii_strcasecmp(tok,"no-use-temp-files")==0)
+	opt.keyserver_options.options&=~KEYSERVER_USE_TEMP_FILES;
 #endif
-	  else
-	    if(!parse_import_options(tok,
-				     &opt.keyserver_options.import_options,0)
-	       &&
-	       !parse_export_options(tok,
-				     &opt.keyserver_options.export_options,0))
-	      {
-		if(arg)
-		  {
-		    char *joined;
+      else if(!parse_options(tok,&opt.keyserver_options.options,
+			     keyserver_opts,0)
+	 && !parse_import_options(tok,
+				  &opt.keyserver_options.import_options,0)
+	 && !parse_export_options(tok,
+				  &opt.keyserver_options.export_options,0))
+	{
+	  /* All of the standard options have failed, so the option is
+	     destined for a keyserver plugin. */
 
-		    joined=m_alloc(strlen(tok)+1+strlen(arg)+1);
-		    /* Make a canonical name=value form with no
-		       spaces */
-		    strcpy(joined,tok);
-		    strcat(joined,"=");
-		    strcat(joined,arg);
-		    add_to_strlist(&opt.keyserver_options.other,joined);
-		    m_free(joined);
-		  }
-		else
-		  add_to_strlist(&opt.keyserver_options.other,tok);
-	      }
+	  if(arg)
+	    {
+	      char *joined;
+
+	      joined=m_alloc(strlen(tok)+1+strlen(arg)+1);
+	      /* Make a canonical name=value form with no
+		 spaces */
+	      strcpy(joined,tok);
+	      strcat(joined,"=");
+	      strcat(joined,arg);
+	      add_to_strlist(&opt.keyserver_options.other,joined);
+	      m_free(joined);
+	    }
+	  else
+	    add_to_strlist(&opt.keyserver_options.other,tok);
 	}
     }
 }
@@ -720,7 +702,7 @@ keyserver_spawn(int action,STRLIST list,
   unsigned int maxlen,buflen;
   char *command=NULL,*searchstr=NULL;
   byte *line=NULL;
-  struct kopts *kopts;
+  struct parse_options *kopts;
   struct exec_info *spawn;
 
   assert(opt.keyserver);
@@ -742,9 +724,9 @@ keyserver_spawn(int action,STRLIST list,
   strcpy(command,"gpgkeys_");
   strcat(command,opt.keyserver->scheme);
 
-  if(opt.keyserver_options.use_temp_files)
+  if(opt.keyserver_options.options&KEYSERVER_USE_TEMP_FILES)
     {
-      if(opt.keyserver_options.keep_temp_files)
+      if(opt.keyserver_options.options&KEYSERVER_KEEP_TEMP_FILES)
 	{
 	  command=m_realloc(command,strlen(command)+
 			    strlen(KEYSERVER_ARGS_KEEP)+1);
@@ -784,15 +766,13 @@ keyserver_spawn(int action,STRLIST list,
   /* Write options */
 
   for(i=0,kopts=keyserver_opts;kopts[i].name;i++)
-    if(*(kopts[i].flag) && kopts[i].tell)
+    if(opt.keyserver_options.options & kopts[i].bit & REMOTE_TELL)
       fprintf(spawn->tochild,"OPTION %s\n",kopts[i].name);
 
   for(i=0;i<opt.keyserver_options.verbose;i++)
     fprintf(spawn->tochild,"OPTION verbose\n");
 
-  temp=opt.keyserver_options.other;
-
-  for(;temp;temp=temp->next)
+  for(temp=opt.keyserver_options.other;temp;temp=temp->next)
     fprintf(spawn->tochild,"OPTION %s\n",temp->d);
 
   switch(action)
@@ -1423,7 +1403,7 @@ keyserver_refresh(STRLIST users)
 
   /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
      scheme, then enable fake v3 keyid generation. */
-  if(opt.keyserver_options.fake_v3_keyids && opt.keyserver
+  if((opt.keyserver_options.options&KEYSERVER_ADD_FAKE_V3) && opt.keyserver
      && (ascii_strcasecmp(opt.keyserver->scheme,"hkp")==0 ||
 	 ascii_strcasecmp(opt.keyserver->scheme,"mailto")==0))
     fakev3=1;

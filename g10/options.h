@@ -136,14 +136,7 @@ struct
   struct
   {
     int verbose;
-    int include_revoked;
-    int include_disabled;
-    int include_subkeys;
-    int use_temp_files;
-    int keep_temp_files;
-    int fake_v3_keyids;
-    int auto_key_retrieve;
-    int try_dns_srv;
+    unsigned int options;
     unsigned int import_options;
     unsigned int export_options;
     STRLIST other;
@@ -265,5 +258,14 @@ struct
 #define VERIFY_SHOW_KEYSERVER_URLS       (1<<3)
 #define VERIFY_SHOW_VALIDITY             (1<<4)
 #define VERIFY_SHOW_UNUSABLE_UIDS        (1<<5)
+
+#define KEYSERVER_INCLUDE_REVOKED        (1<<0)
+#define KEYSERVER_INCLUDE_DISABLED       (1<<1)
+#define KEYSERVER_INCLUDE_SUBKEYS        (1<<2)
+#define KEYSERVER_USE_TEMP_FILES         (1<<3)
+#define KEYSERVER_KEEP_TEMP_FILES        (1<<4)
+#define KEYSERVER_ADD_FAKE_V3            (1<<5)
+#define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<6)
+#define KEYSERVER_TRY_DNS_SRV            (1<<7)
 
 #endif /*G10_OPTIONS_H*/

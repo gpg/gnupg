@@ -1436,9 +1436,8 @@ main( int argc, char **argv )
     opt.export_options=EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.import_options=IMPORT_REPAIR_PKS_SUBKEY_BUG;
     opt.keyserver_options.export_options=EXPORT_INCLUDE_ATTRIBUTES;
-    opt.keyserver_options.include_subkeys=1;
-    opt.keyserver_options.include_revoked=1;
-    opt.keyserver_options.try_dns_srv=1;
+    opt.keyserver_options.options=
+      KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_INCLUDE_REVOKED|KEYSERVER_TRY_DNS_SRV;
     opt.verify_options=
       VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
     opt.trust_model=TM_AUTO;
@@ -2212,8 +2211,11 @@ main( int argc, char **argv )
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
 	  case oAutoKeyRetrieve:
 	  case oNoAutoKeyRetrieve:
-	        opt.keyserver_options.auto_key_retrieve=
-	                                     (pargs.r_opt==oAutoKeyRetrieve);
+	        if(pargs.r_opt==oAutoKeyRetrieve)
+		  opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
+		else
+		  opt.keyserver_options.options&=~KEYSERVER_AUTO_KEY_RETRIEVE;
+
 		deprecated_warning(configname,configlineno,
 			   pargs.r_opt==oAutoKeyRetrieve?"--auto-key-retrieve":
 			       "--no-auto-key-retrieve","--keyserver-options ",

@@ -1692,7 +1692,8 @@ revocation_present(KBNODE keyblock)
 
 			  /* No, so try and get it */
 			  if(opt.keyserver
-			     && opt.keyserver_options.auto_key_retrieve)
+			     && (opt.keyserver_options.options
+				 & KEYSERVER_AUTO_KEY_RETRIEVE))
 			    {
 			      log_info(_("WARNING: key %s may be revoked:"
 					 " fetching revocation key %s\n"),
