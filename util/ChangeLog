@@ -1,3 +1,11 @@
+2003-04-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* srv.c (main): Test against wwwkeys.pgp.net.
+
+	* srv.h: Grr. The RH7.3 Linux man page defines the fourth arg of
+	dn_expand as unsigned char*, but it is really char* according to
+	resolv.h.
+
 2003-03-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* argparse.c (default_strusage): Change copyright date.

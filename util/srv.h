@@ -35,7 +35,7 @@ struct srventry
   u16 weight;
   u16 port;
   int run_count;
-  unsigned char target[MAXDNAME];
+  char target[MAXDNAME];
 };
 
 int getsrv(const char *name,struct srventry **list);

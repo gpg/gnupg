@@ -230,7 +230,7 @@ main(int argc,char *argv[])
   struct srventry *srv;
   int rc,i;
 
-  rc=getsrv("_hkp._tcp.pgp.net",&srv);
+  rc=getsrv("_hkp._tcp.wwwkeys.pgp.net",&srv);
   printf("Count=%d\n\n",rc);
   for(i=0;i<rc;i++)
     {
