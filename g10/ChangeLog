@@ -1,3 +1,8 @@
+2004-08-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* passphrase.c (agent_get_passphrase): Fix detection of gpg-agent
+	cancellation.
+
 2004-07-01  Werner Koch  <wk@gnupg.org>
 
 	* card-util.c (change_login): Kludge to allow reading data from a
