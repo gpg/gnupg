@@ -1850,6 +1850,28 @@ iobuf_get_filelength( IOBUF a )
     return 0;
 }
 
+
+/* Return the file descriptor of the underlying file or -1 if it is
+   not available.  */
+int 
+iobuf_get_fd (IOBUF a)
+{
+  if (a->directfp)
+    return a->directfp? fileno(a->directfp) : -1;
+
+  for ( ; a; a = a->chain )
+    if (!a->chain && a->filter == file_filter)
+      {
+        file_filter_ctx_t *b = a->filter_ov;
+        FILEP_OR_FD fp = b->fp;
+
+        return my_fileno (fp);
+      }
+
+  return -1;
+}
+
+
 /****************
  * Tell the file position, where the next read will take place
  */

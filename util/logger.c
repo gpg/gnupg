@@ -130,19 +130,6 @@ g10_log_print_prefix(const char *text)
 #endif /* __riscos__ */
 }
 
-static void
-print_prefix_f(const char *text, const char *fname)
-{
-    if( !logfp )
-	logfp = stderr;
-    if( pgm_name )
-	fprintf(logfp, "%s%s:%s: %s", pgm_name, pidstring, fname, text );
-    else
-	fprintf(logfp, "?%s:%s: %s", pidstring, fname, text );
-#ifdef __riscos__
-    fflush( logfp );
-#endif /* __riscos__ */
-}
 
 void
 g10_log_info( const char *fmt, ... )
@@ -158,19 +145,6 @@ g10_log_info( const char *fmt, ... )
 #endif /* __riscos__ */
 }
 
-void
-g10_log_info_f( const char *fname, const char *fmt, ... )
-{
-    va_list arg_ptr ;
-
-    print_prefix_f("", fname);
-    va_start( arg_ptr, fmt ) ;
-    vfprintf(logfp,fmt,arg_ptr) ;
-    va_end(arg_ptr);
-#ifdef __riscos__
-    fflush( logfp );
-#endif /* __riscos__ */
-}
 
 void
 g10_log_warning( const char *fmt, ... )
@@ -209,20 +183,6 @@ g10_log_error( const char *fmt, ... )
 #endif /* __riscos__ */
 }
 
-void
-g10_log_error_f( const char *fname, const char *fmt, ... )
-{
-    va_list arg_ptr ;
-
-    print_prefix_f("", fname);
-    va_start( arg_ptr, fmt ) ;
-    vfprintf(logfp,fmt,arg_ptr) ;
-    va_end(arg_ptr);
-    errorcount++;
-#ifdef __riscos__
-    fflush( logfp );
-#endif /* __riscos__ */
-}
 
 void
 g10_log_fatal( const char *fmt, ... )
@@ -230,22 +190,6 @@ g10_log_fatal( const char *fmt, ... )
     va_list arg_ptr ;
 
     g10_log_print_prefix("fatal: ");
-    va_start( arg_ptr, fmt ) ;
-    vfprintf(logfp,fmt,arg_ptr) ;
-    va_end(arg_ptr);
-    secmem_dump_stats();
-#ifdef __riscos__
-    fflush( logfp );
-#endif /* __riscos__ */
-    exit(2);
-}
-
-void
-g10_log_fatal_f( const char *fname, const char *fmt, ... )
-{
-    va_list arg_ptr ;
-
-    print_prefix_f("fatal: ", fname);
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -292,20 +236,6 @@ g10_log_debug( const char *fmt, ... )
     va_list arg_ptr ;
 
     g10_log_print_prefix("DBG: ");
-    va_start( arg_ptr, fmt ) ;
-    vfprintf(logfp,fmt,arg_ptr) ;
-    va_end(arg_ptr);
-#ifdef __riscos__
-    fflush( logfp );
-#endif /* __riscos__ */
-}
-
-void
-g10_log_debug_f( const char *fname, const char *fmt, ... )
-{
-    va_list arg_ptr ;
-
-    print_prefix_f("DBG: ", fname);
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);

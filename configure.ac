@@ -102,10 +102,17 @@ if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD,1,[Define to use the (obsolete) malloc guarding feature])
 fi
 
+AC_MSG_CHECKING([whether SELinux support is requested])
+AC_ARG_ENABLE(selinux-support,
+              AC_HELP_STRING([--enable-selinux-support],
+                             [enable SELinux support]),
+              selinux_support=$enableval, selinux_support=no)
+AC_MSG_RESULT($selinux_support)
+
 AC_MSG_CHECKING([whether OpenPGP card support is requested])
 AC_ARG_ENABLE(card-support,
               AC_HELP_STRING([--disable-card-support],
-                             [enable OpenPGP card support]),
+                             [disable OpenPGP card support]),
               card_support=$enableval, card_support=yes)
 AC_MSG_RESULT($card_support)
 
@@ -719,6 +726,10 @@ fi
 
 if test "$try_extensions" = yes ; then
   AC_DEFINE(USE_DYNAMIC_LINKING,1,[Define to enable the use of extensions])
+fi
+
+if test "$selinux_support" = yes ; then
+  AC_DEFINE(ENABLE_SELINUX_HACKS,1,[Define to enable SELinux support])
 fi
 
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
