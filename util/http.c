@@ -619,7 +619,7 @@ parse_response( HTTP_HD hd )
     return 0;
 }
 
-#if 0
+#ifdef TEST
 static int
 start_server()
 {
@@ -943,7 +943,7 @@ main(int argc, char **argv)
     }
     release_parsed_uri( uri ); uri = NULL;
 
-    rc = http_open_document( &hd, *argv, 0 );
+    rc = http_open_document( &hd, *argv, 0, NULL );
     if( rc ) {
 	log_error("can't get `%s': %s\n", *argv, g10_errstr(rc));
 	return 1;
