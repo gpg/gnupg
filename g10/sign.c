@@ -400,8 +400,16 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	goto leave;
     }
 
-    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n"
-			"Hash: RIPEMD160\n\n" );
+    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n" );
+    if( opt.def_digest_algo == DIGEST_ALGO_MD5 )
+	iobuf_writestr(out, "\n" );
+    else {
+	const char *s = digest_algo_to_string(opt.def_digest_algo);
+	assert(s);
+	iobuf_writestr(out, s );
+	iobuf_writestr(out, "\n\n" );
+    }
+
 
     textmd = md_open(opt.def_digest_algo, 0);
     iobuf_push_filter( inp, text_filter, &tfx );

@@ -1,3 +1,7 @@
+Thu Apr 30 16:33:34 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* sign.c (clearsign_file): Fixed "Hash: " armor line.
+
 Tue Apr 28 14:27:42 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* parse-packet.c (parse_subpkt): Some new types.
