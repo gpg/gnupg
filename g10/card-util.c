@@ -355,7 +355,7 @@ card_status (FILE *fp)
       if (info.fpr1valid && !get_pubkey_byfprint (pk, info.fpr1, 20))
         print_pubkey_info (fp, pk);
       else
-        fputs ("[none]\n", fp);
+        tty_fprintf (fp, "[none]\n");
     }
       
   free_public_key (pk);
