@@ -74,8 +74,6 @@
 
 #if defined(HAVE_LIBUSB) || defined(TEST)
 
-#define  GNUPG_DEFAULT_SCDAEMON 1 /* Hack for 1.3 */
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,12 +87,16 @@
 #define DRVNAME "ccid-driver: "
 
 
-#ifdef GNUPG_DEFAULT_SCDAEMON /* This source is used within the
-                                 gnupg>=1.9 source tree. */
-# include "options.h"
-# include "util.h"
-# include "memory.h"
+#ifdef GNUPG_MAJOR_VERSION  /* This source is used within GnuPG. */
 
+# if GNUPG_MAJOR_VERSION == 1 /* GnuPG Version is < 1.9. */
+#  include "options.h"
+#  include "util.h"
+#  include "memory.h"
+#  include "cardglue.h"
+# else /* This is the modularized GnuPG 1.9 or later. */
+#  include "scdaemon.h"
+# endif
 
 # define DEBUGOUT(t)         do { if (DBG_CARD_IO) \
                                   log_debug (DRVNAME t); } while (0)

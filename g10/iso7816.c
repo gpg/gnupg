@@ -19,23 +19,23 @@
  */
 
 #include <config.h>
-#ifdef ENABLE_CARD_SUPPORT
-/* 
-   Note, that most of this code has been taken from 1.9.x branch
-   and is maintained over there if at all possible.  Thus, if you make
-   changes here, please check that a similar change has been commited
-   to the 1.9.x branch.
-*/
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#if GNUPG_MAJOR_VERSION == 1
+/* This is used with GnuPG version < 1.9.  The code has been source
+   copied from the current GnuPG >= 1.9  and is maintained over
+   there. */
 #include "options.h"
 #include "errors.h"
 #include "memory.h"
 #include "util.h"
 #include "i18n.h"
+#else /* GNUPG_MAJOR_VERSION != 1 */
+#include "scdaemon.h"
+#endif /* GNUPG_MAJOR_VERSION != 1 */
 
 #include "iso7816.h"
 #include "apdu.h"
@@ -381,5 +381,3 @@ iso7816_get_challenge (int slot, int length, unsigned char *buffer)
 
   return 0;
 }
-
-#endif /*ENABLE_CARD_SUPPORT*/

@@ -19,27 +19,26 @@
  */
 
 #include <config.h>
-#ifdef ENABLE_CARD_SUPPORT
-/* 
-   Note, that most card related code has been taken from 1.9.x branch
-   and is maintained over there if at all possible.  Thus, if you make
-   changes here, please check that a similar change has been commited
-   to the 1.9.x branch.
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
 
+#if GNUPG_MAJOR_VERSION != 1
+#include "gpg.h"
+#endif
 #include "util.h"
 #include "i18n.h"
 #include "ttyio.h"
 #include "status.h"
 #include "options.h"
 #include "main.h"
-
+#if GNUPG_MAJOR_VERSION == 1
 #include "cardglue.h"
+#else
+#include "call-agent.h"
+#endif
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -51,7 +50,6 @@ change_pin (int chvno)
 {
   struct agent_card_info_s info;
   int rc;
-  int reset_mode = 0;
 
   rc = agent_learn (&info);
   if (rc)
@@ -77,17 +75,11 @@ change_pin (int chvno)
       char *answer;
 
       tty_printf ("\n");
-      tty_printf ("1 - change signature PIN\n"
-                  "2 - change decryption and authentication PIN\n"
-                  "3 - change Admin's PIN\n"
-                  "R - toggle reset retry counter mode\n"
+      tty_printf ("1 - change PIN\n"
+                  "2 - unblock PIN\n"
+                  "3 - change Admin PIN\n"
                   "Q - quit\n");
       tty_printf ("\n");
-      if (reset_mode)
-        {
-          tty_printf ("Reset Retry Counter mode active\n");
-          tty_printf ("\n");
-        }
 
       answer = cpr_get("cardutil.change_pin.menu",_("Your selection? "));
       cpr_kill_prompt();
@@ -95,30 +87,35 @@ change_pin (int chvno)
         continue;
 
       rc = 0;
-      if (reset_mode && *answer == '3')
+      if (*answer == '1')
         {
-          tty_printf ("Sorry, reset of the Admin PIN's retry counter "
-                      "is not possible.\n");
-        }
-      else if (*answer == '1'  || *answer == '2' || *answer == '3')
-        {
-          rc = agent_scd_change_pin (*answer - '0' + (reset_mode?100:0));
+          rc = agent_scd_change_pin (1);
           if (rc)
-            tty_printf ("Error changing/resetting the PIN: %s\n",
-                        gpg_strerror (rc));
+            tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
           else
-            tty_printf ("New PIN successfully set.\n");
+            tty_printf ("PIN changed.\n");
         }
-      else if (*answer == 'r' || *answer == 'R')
+      else if (*answer == '2')
         {
-          reset_mode = !reset_mode;
+          rc = agent_scd_change_pin (101);
+          if (rc)
+            tty_printf ("Error unblocking the PIN: %s\n", gpg_strerror (rc));
+          else
+            tty_printf ("PIN unblocked and new PIN set.\n");
+        }
+      else if (*answer == '3')
+        {
+          rc = agent_scd_change_pin (3);
+          if (rc)
+            tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
+          else
+            tty_printf ("PIN changed.\n");
         }
       else if (*answer == 'q' || *answer == 'Q')
         {
           break;
         }
     }
-
 }
 
 static const char *
@@ -182,7 +179,7 @@ print_name (FILE *fp, const char *text, const char *name)
       if (fp)
         print_utf8_string2 (fp, name, strlen (name), '\n');
       else
-        tty_print_utf8_string2 (name, strlen (name), '\n');
+        tty_print_utf8_string2 (name, strlen (name), 0);
     }
   else
     tty_fprintf (fp, _("[not set]"));
@@ -214,7 +211,7 @@ print_isoname (FILE *fp, const char *text, const char *tag, const char *name)
           else if (fp)
             print_utf8_string2 (fp, given, strlen (given), '\n');
           else
-            tty_print_utf8_string2 (given, strlen (given), '\n');
+            tty_print_utf8_string2 (given, strlen (given), 0);
 
           if (opt.with_colons)
             putc (':', fp);
@@ -227,7 +224,7 @@ print_isoname (FILE *fp, const char *text, const char *tag, const char *name)
       else if (fp)
         print_utf8_string2 (fp, buf, strlen (buf), '\n');
       else
-        tty_print_utf8_string2 (buf, strlen (buf), '\n');
+        tty_print_utf8_string2 (buf, strlen (buf), 0);
       xfree (buf);
     }
   else
@@ -346,7 +343,7 @@ card_status (FILE *fp)
       print_name (fp, "URL of public key : ", info.pubkey_url);
       print_name (fp, "Login data .......: ", info.login_data);
       tty_fprintf (fp,    "Signature PIN ....: %s\n",
-                   info.chv1_cached? _("cached"): _("not cached"));
+                   info.chv1_cached? _("not forced"): _("forced"));
       tty_fprintf (fp,    "Max. PIN lengths .: %d %d %d\n",
                    info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
       tty_fprintf (fp,    "PIN retry counter : %d %d %d\n",
@@ -358,11 +355,11 @@ card_status (FILE *fp)
       print_sha1_fpr (fp, info.fpr2valid? info.fpr2:NULL);
       tty_fprintf (fp, "Authentication key:");
       print_sha1_fpr (fp, info.fpr3valid? info.fpr3:NULL);
-/*       tty_fprintf (fp, "General key info..: ");  */
-/*       if (info.fpr1valid && !get_pubkey_byfprint (pk, info.fpr1, 20)) */
-/*         print_pubkey_info (fp, pk); */
-/*       else */
-/*         tty_fprintf (fp, "[none]\n"); */
+      tty_fprintf (fp, "General key info..: "); 
+      if (info.fpr1valid && !get_pubkey_byfprint (pk, info.fpr1, 20))
+        print_pubkey_info (fp, pk);
+      else
+        tty_fprintf (fp, "[none]\n");
     }
       
   free_public_key (pk);
@@ -549,6 +546,30 @@ change_sex (void)
 }
 
 
+static void
+toggle_forcesig (void)
+{
+  struct agent_card_info_s info;
+  int rc;
+  int newstate;
+
+  memset (&info, 0, sizeof info);
+  rc = agent_scd_getattr ("CHV-STATUS", &info);
+  if (rc)
+    {
+      log_error ("error getting current status: %s\n", gpg_strerror (rc));
+      return;
+    }
+  newstate = !info.chv1_cached;
+  agent_release_card_info (&info);
+
+  rc = agent_scd_setattr ("CHV-STATUS-1", newstate? "\x01":"", 1);
+  if (rc)
+    log_error ("error toggling signature PIN flag: %s\n", gpg_strerror (rc));
+}
+
+
+
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
 void
@@ -558,7 +579,7 @@ card_edit (STRLIST commands)
     cmdNOP = 0,
     cmdQUIT, cmdHELP, cmdLIST, cmdDEBUG,
     cmdNAME, cmdURL, cmdLOGIN, cmdLANG, cmdSEX,
-
+    cmdFORCESIG,
     cmdINVCMD
   };
 
@@ -579,9 +600,10 @@ card_edit (STRLIST commands)
     { N_("login") , cmdLOGIN , N_("change the login name") },
     { N_("lang")  , cmdLANG  , N_("change the language preferences") },
     { N_("sex")   , cmdSEX   , N_("change card holder's sex") },
+    { N_("forcesig"), cmdFORCESIG, N_("toggle the signature force PIN flag") },
     { NULL, cmdINVCMD } 
   };
-
+ 
   enum cmdids cmd = cmdNOP;
   int have_commands = !!commands;
   int redisplay = 1;
@@ -699,6 +721,10 @@ card_edit (STRLIST commands)
           change_sex ();
           break;
 
+        case cmdFORCESIG:
+          toggle_forcesig ();
+          break;
+
         case cmdQUIT:
           goto leave;
 
@@ -717,4 +743,3 @@ card_edit (STRLIST commands)
   xfree (answer);
 }
 
-#endif /*ENABLE_CARD_SUPPORT*/

@@ -84,7 +84,7 @@ typedef struct ctrl_ctx_s *CTRL;
 #define GPG_ERR_USE_CONDITIONS    G10ERR_GENERAL
 #define GPG_ERR_WRONG_CARD        G10ERR_GENERAL
 #define GPG_ERR_WRONG_SECKEY      G10ERR_WRONG_SECKEY
-
+#define GPG_ERR_PIN_NOT_SYNCED    G10ERR_GENERAL
 
 typedef int gpg_error_t;
 typedef int gpg_err_code_t;
@@ -129,6 +129,9 @@ int agent_learn (struct agent_card_info_s *info);
 /* Check whether the secret key for the key identified by HEXKEYGRIP
    is available.  Return 0 for yes or an error code. */
 int agent_havekey (const char *hexkeygrip);
+
+/* Return card info. */
+int agent_scd_getattr (const char *name, struct agent_card_info_s *info);
 
 /* Send a SETATTR command to the SCdaemon. */
 int agent_scd_setattr (const char *name,

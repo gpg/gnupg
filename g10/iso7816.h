@@ -21,7 +21,9 @@
 #ifndef ISO7816_H
 #define ISO7816_H
 
+#if GNUPG_MAJOR_VERSION == 1
 #include "cardglue.h"
+#endif
 
 gpg_error_t iso7816_select_application (int slot,
                                         const char *aid, size_t aidlen);

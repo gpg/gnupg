@@ -112,6 +112,7 @@ if test "$card_support" = yes ; then
     AC_DEFINE(ENABLE_CARD_SUPPORT,1,
              [Define to include the OpenPGP card support])
 fi
+AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 
 dnl See if we are disabling any algorithms or features for a smaller
 dnl binary
@@ -308,6 +309,10 @@ AH_BOTTOM([
 #if !(defined(HAVE_FORK) && defined(HAVE_PIPE) && defined(HAVE_WAITPID))
 #define EXEC_TEMPFILE_ONLY
 #endif
+
+/* This is the major version number of GnuPG so that
+   source included files can test for this. */
+#define GNUPG_MAJOR_VERSION 1
 
 #include "g10defs.h"
 ])

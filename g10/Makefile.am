@@ -63,15 +63,22 @@ common_source =  \
 	      keylist.c 	\
 	      signal.c
 
-card_support_source = \
-	cardglue.c cardclue.h \
-	card-util.c \
+if ENABLE_CARD_SUPPORT
+card_support_source_g10 = card-util.c 
+card_support_source_scd = \
 	app-common.h \
 	app-openpgp.c \
 	iso7816.c iso7816.h \
 	apdu.c apdu.h \
 	ccid-driver.c ccid-driver.h
+card_support_source_local = cardglue.c cardclue.h
+else
+card_support_source_g10 =
+card_support_source_scd = 
+card_support_source_local =
+endif
 
+card_support_source = $(card_support_source_local) $(card_support_source_g10) $(card_support_source_scd)
 
 gpg_SOURCES  = g10.c		\
 	      $(common_source)	\
@@ -132,3 +139,15 @@ install-data-local:
 	   echo "removing obsolete gpgm binary" ;   \
 	   rm $(DESTDIR)$(bindir)/gpgm ;	    \
 	 fi
+
+# Helper to update some source files.
+update-source-from-gnupg-2:
+	test -d ../../gnupg-1.9/scd
+	@for i in $(card_support_source_scd); do \
+           cp ../../gnupg-1.9/scd/$$i $$i; echo $$i; \
+	done
+	@for i in $(card_support_source_g10); do \
+           cp ../../gnupg-1.9/g10/$$i $$i; echo $$i; \
+	done
+	@echo "Please remember to update the ChangeLog accordingly!"
+

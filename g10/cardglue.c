@@ -19,13 +19,9 @@
  */
 
 #include <config.h>
-#ifdef ENABLE_CARD_SUPPORT
-/* 
-   Note, that most card related code has been taken from 1.9.x branch
-   and is maintained over there if at all possible.  Thus, if you make
-   changes here, please check that a similar change has been commited
-   to the 1.9.x branch.
-*/
+#ifndef ENABLE_CARD_SUPPORT
+#error  no configured for card support.
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -357,14 +353,17 @@ learn_status_cb (void *opaque, const char *line)
 
   if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
     {
+      xfree (parm->serialno);
       parm->serialno = store_serialno (line);
     }
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-NAME", keywordlen))
     {
+      xfree (parm->disp_name);
       parm->disp_name = unescape_status_string (line);
     }
   else if (keywordlen == 9 && !memcmp (keyword, "DISP-LANG", keywordlen))
     {
+      xfree (parm->disp_lang);
       parm->disp_lang = unescape_status_string (line);
     }
   else if (keywordlen == 8 && !memcmp (keyword, "DISP-SEX", keywordlen))
@@ -373,10 +372,12 @@ learn_status_cb (void *opaque, const char *line)
     }
   else if (keywordlen == 10 && !memcmp (keyword, "PUBKEY-URL", keywordlen))
     {
+      xfree (parm->pubkey_url);
       parm->pubkey_url = unescape_status_string (line);
     }
   else if (keywordlen == 10 && !memcmp (keyword, "LOGIN-DATA", keywordlen))
     {
+      xfree (parm->login_data);
       parm->login_data = unescape_status_string (line);
     }
   else if (keywordlen == 11 && !memcmp (keyword, "SIG-COUNTER", keywordlen))
@@ -449,6 +450,7 @@ agent_learn (struct agent_card_info_s *info)
   if (!app)
     return gpg_error (GPG_ERR_CARD);
 
+  memset (info, 0, sizeof *info);
   memset (&ctrl, 0, sizeof ctrl);
   ctrl.status_cb = learn_status_cb;
   ctrl.status_cb_arg = info;
@@ -463,6 +465,24 @@ agent_learn (struct agent_card_info_s *info)
 
   return rc;
 }
+
+/* Get an attribite from the card. Make sure info is initialized. */
+int 
+agent_scd_getattr (const char *name, struct agent_card_info_s *info)
+{
+  APP app;
+  struct ctrl_ctx_s ctrl;
+
+  app = current_app? current_app : open_card ();
+  if (!app)
+    return gpg_error (GPG_ERR_CARD);
+
+  ctrl.status_cb = learn_status_cb;
+  ctrl.status_cb_arg = info;
+  return app->fnc.getattr (app, &ctrl, name);
+}
+
+
 
 static int 
 pin_cb (void *opaque, const char *info, char **retstr)
@@ -547,9 +567,4 @@ agent_scd_change_pin (int chvno)
 
   return gpg_error (GPG_ERR_CARD);
 }
-
-
-
-
-#endif /*ENABLE_CARD_SUPPORT*/
 

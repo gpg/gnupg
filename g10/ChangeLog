@@ -1,3 +1,45 @@
+2003-10-02  Werner Koch  <wk@gnupg.org>
+
+	* cardglue.c (learn_status_cb): Release values before assignment
+	so that it can be used by getattr to update the structure.
+	(agent_scd_getattr): New.
+
+	* keylist.c (print_pubkey_info): Add FP arg for optional printing
+	to a stream.  Changed all callers.
+
+2003-10-01  Werner Koch  <wk@gnupg.org>
+
+	* app-common.h, app-openpgp.c, iso7816.c, iso7816.h, apdu.c
+	* apdu.h, ccid-driver.c, ccid-driver.h, card-util.c: Updated
+	from current GnuPG 1.9. Changes over there are:
+	* card-util.c: Tweaked to use this source also under 1.3. 
+	(card_edit): New command "forcesig".
+	* card-util.c (print_name, print_isoname): Use 0 and not LF fro
+	the max_n arg of tty_print_utf8_string2.
+	* card-util.c (change_pin): Simplified.  We now have only a PIN
+	and an Admin PIN.
+	* ccid-driver.c: Detect GnuPG 1.3 and include appropriate files.
+	* apdu.c: Ditto.
+	* app-openpgp.c: Ditto.
+	* iso7816.c: Ditto.
+	(generate_keypair): Renamed to ..
+	(do_generate_keypair): .. this.
+	* app-common.h [GNUPG_MAJOR_VERSION]: New.
+	* iso7816.h [GNUPG_MAJOR_VERSION]: Include cardglue.h
+	* app-openpgp.c (do_change_pin): Make sure CVH1 and CHV2 are
+	always synced.
+	(verify_chv2, verify_chv3): New. Factored out common code.
+	(do_setattr, do_sign, do_auth, do_decipher): Change the names of
+	the prompts to match that we have only 2 different PINs.
+	(app_select_openpgp): Check whether the card enforced CHV1.
+	(convert_sig_counter_value): New. Factor out code from
+	get_sig_counter.
+
+	* Makefile.am (card_support_source): Depend on new AM conditional
+	to get the ifdef ENABLE_CARD_SUPPORT off the way from source
+	copied files.
+	(update-source-from-gnupg-2): Maintainer helper.
+	
 2003-10-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Add --no-groups to zero --group list.

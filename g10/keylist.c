@@ -129,25 +129,39 @@ print_seckey_info (PKT_secret_key *sk)
     tty_printf ("\n");   
 }
 
+/* Print information about the public key.  With FP passed as NULL,
+   the tty output interface is used, otherwise output is directted to
+   the given stream. */
 void
-print_pubkey_info (PKT_public_key *pk)
+print_pubkey_info (FILE *fp, PKT_public_key *pk)
 {
   u32 pk_keyid[2];
   size_t n;
   char *p;
 
   keyid_from_pk (pk, pk_keyid);
-  tty_printf ("\npub  %4u%c/%08lX %s   ",
-              nbits_from_pk (pk),
-              pubkey_letter (pk->pubkey_algo),
-              (ulong)pk_keyid[1], datestr_from_pk (pk));
-
+  if (fp)
+    fprintf (fp, "pub  %4u%c/%08lX %s   ",
+             nbits_from_pk (pk),
+             pubkey_letter (pk->pubkey_algo),
+             (ulong)pk_keyid[1], datestr_from_pk (pk));
+  else
+    tty_printf ("\npub  %4u%c/%08lX %s   ",
+                nbits_from_pk (pk),
+                pubkey_letter (pk->pubkey_algo),
+                (ulong)pk_keyid[1], datestr_from_pk (pk));
 
   p = get_user_id (pk_keyid, &n);
-  tty_print_utf8_string (p, n);
+  if (fp)
+    print_utf8_string2 (fp, p, n, '\n');
+  else
+    tty_print_utf8_string (p, n);
   m_free (p);
   
-  tty_printf ("\n\n"); 
+  if (fp)
+    putc ('\n', fp);
+  else
+    tty_printf ("\n\n"); 
 }
 
 /*
