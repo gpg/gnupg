@@ -1565,6 +1565,13 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    break;
 
 	  case cmdTRUST:
+	    if(opt.trust_model==TM_EXTERNAL)
+	      {
+		tty_printf(_("Owner trust may not be set while "
+			     "using an user provided trust database\n"));
+		break;
+	      }
+
 	    show_key_with_all_names( keyblock, 0, 0, 0, 1, 0 );
 	    tty_printf("\n");
 	    if( edit_ownertrust( find_kbnode( keyblock,

@@ -1,6 +1,6 @@
 /* trustdb.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *                                             Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -388,10 +388,11 @@ trust_model_string(void)
 {
   switch(opt.trust_model)
     {
-    case TM_PGP:     return "PGP";
-    case TM_CLASSIC: return "classic";
-    case TM_ALWAYS:  return "always";
-    default:         return "unknown";
+    case TM_CLASSIC:  return "classic";
+    case TM_PGP:      return "PGP";
+    case TM_EXTERNAL: return "external";
+    case TM_ALWAYS:   return "always";
+    default:          return "unknown";
     }
 }
 
@@ -438,7 +439,9 @@ init_trustdb()
       opt.trust_model=tdbio_read_model();
 
       /* Sanity check this ;) */
-      if(opt.trust_model!=TM_CLASSIC && opt.trust_model!=TM_PGP)
+      if(opt.trust_model!=TM_CLASSIC
+	 && opt.trust_model!=TM_PGP
+	 && opt.trust_model!=TM_EXTERNAL)
 	{
 	  log_info(_("unable to use unknown trust model (%d) - "
 		     "assuming %s trust model\n"),opt.trust_model,"PGP");
