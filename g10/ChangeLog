@@ -1,5 +1,8 @@
 2003-11-15  David Shaw  <dshaw@jabberwocky.com>
 
+	* compress-bz2.c (init_compress): Compression level 0 is not
+	meaningful for bzip2.
+
 	* g10.c: Add --compress-level (same as -z).
 
 2003-11-05  David Shaw  <dshaw@jabberwocky.com>

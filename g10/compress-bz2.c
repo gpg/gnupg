@@ -30,10 +30,10 @@
 #include "options.h"
 
 /* Note that the code in compress.c is nearly identical to the code
-   here, so if you fix a bug here, look there to see if the matching
-   bug needs to be fixed.  I tried to have one set of functions that
-   could do ZIP, ZLIB, and BZIP2, but it became dangerously unreadable
-   with #ifdefs and if(algo) -dshaw */
+   here, so if you fix a bug here, look there to see if a matching bug
+   needs to be fixed.  I tried to have one set of functions that could
+   do ZIP, ZLIB, and BZIP2, but it became dangerously unreadable with
+   #ifdefs and if(algo) -dshaw */
 
 static void
 init_compress( compress_filter_context_t *zfx, bz_stream *bzs )
@@ -41,12 +41,10 @@ init_compress( compress_filter_context_t *zfx, bz_stream *bzs )
   int rc;
   int level;
 
-  if( opt.compress >= 0 && opt.compress <= 9 )
+  if( opt.compress >= 1 && opt.compress <= 9 )
     level = opt.compress;
   else if( opt.compress == -1 )
     level = 6; /* no particular reason, but it seems reasonable */
-  else if( opt.compress == 10 ) /* remove this ! */
-    level = 0;
   else
     {
       log_error("invalid compression level; using default level\n");
