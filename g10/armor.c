@@ -545,32 +545,31 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	p = afx->buffer;
 	n = afx->buffer_len;
 
-	if( n > 2 && *p == '-' ) {
+	if( n > 2 && *p == '-' )
+	  {
 	    /* check for dash escaped or armor header */
-	    if( p[1] == ' ' && !afx->not_dash_escaped ) {
-		/* issue a warning if it is not regular encoded */
-		if( p[2] != '-' && !( n > 6 && !memcmp(p+2, "From ", 5))) {
-		    log_info(_("invalid dash escaped line: "));
-		    print_string( stderr, p, n, 0 );
-		    putc('\n', stderr);
-		}
+	    if( p[1] == ' ' && !afx->not_dash_escaped )
+	      {
+		/* It's a dash-escaped line */
 		afx->buffer_pos = 2; /* skip */
-	    }
-	    else if( n >= 15 &&  p[1] == '-' && p[2] == '-' && p[3] == '-' ) {
+	      }
+	    else if( n >= 15 &&  p[1] == '-' && p[2] == '-' && p[3] == '-' )
+	      {
+		/* It's armor header */
 		int type = is_armor_header( p, n );
 		if( afx->not_dash_escaped && type != BEGIN_SIGNATURE )
-		    ; /* this is okay */
+		  ; /* this is okay */
 		else {
-		    if( type != BEGIN_SIGNATURE ) {
-			log_info(_("unexpected armor: "));
-			print_string( stderr, p, n, 0 );
-			putc('\n', stderr);
-		    }
-		    lastline = 1;
-		    rc = -1;
+		  if( type != BEGIN_SIGNATURE ) {
+		    log_info(_("unexpected armor: "));
+		    print_string( stderr, p, n, 0 );
+		    putc('\n', stderr);
+		  }
+		  lastline = 1;
+		  rc = -1;
 		}
-	    }
-	}
+	      }
+	  }
     }
 
     if( lastline ) { /* write last (ending) length header */

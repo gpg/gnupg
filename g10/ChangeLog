@@ -1,5 +1,8 @@
 2004-10-13  David Shaw  <dshaw@jabberwocky.com>
 
+	* armor.c (fake_packet): Allow arbitrary dash-escaped lines as per
+	2440bis-10.  This is bug #158.
+
 	* keyserver.c (keyserver_work): Handle keyserver timeouts.
 
 	* pkclist.c (do_edit_ownertrust): Different prompt when we're
