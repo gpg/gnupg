@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 1.5.1[H p]
-Last-Modified: Jun 15, 2001[H p]
+Version: 1.5.2[H p]
+Last-Modified: Jun 22, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -681,9 +681,12 @@ in it - why?
     0xA5). This might also be the reason why keyservers can't find
     your key.
 
-<Q> I get 'sed' errors when running ./configure on OS X ...
+<Q> I get 'sed' errors when running ./configure on Mac OS X ...
 
-    Please install GNU sed and use it instead of the broken OS X sed.
+    This will be fixed after GnuPG has been upgraded to
+    autoconf-2.50. Until then, find the line setting CDPATH in the
+    configure script and place a [H pre]unset CDPATH[H /pre] statement
+    below it. 
 
 
 <S> ADVANCED TOPICS

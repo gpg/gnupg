@@ -2,8 +2,8 @@
 GNUPG FREQUENTLY ASKED QUESTIONS
 
 
-Version: 1.5.1
-Last-Modified: Jun 15, 2001
+Version: 1.5.2
+Last-Modified: Jun 22, 2001
 Maintained-by: Nils Ellmenreich <nils 'at' gnupg.org>
 
 
@@ -89,7 +89,7 @@ you could search in the mailing list archive.
    6.15) I still have a problem. How do I report a bug?
    6.16) Why doesn't GnuPG support X509 certificates?
    6.17) Why do national characters in my user ID look funny?
-   6.18) I get 'sed' errors when running ./configure on OS X ...
+   6.18) I get 'sed' errors when running ./configure on Mac OS X ...
 
  7. ADVANCED TOPICS
    7.1) How does this whole thing work?
@@ -714,9 +714,12 @@ in it - why?
     0xA5). This might also be the reason why keyservers can't find
     your key.
 
-6.18) I get 'sed' errors when running ./configure on OS X ...
+6.18) I get 'sed' errors when running ./configure on Mac OS X ...
 
-    Please install GNU sed and use it instead of the broken OS X sed.
+    This will be fixed after GnuPG has been upgraded to
+    autoconf-2.50. Until then, find the line setting CDPATH in the
+    configure script and place a unset CDPATH statement
+    below it. 
 
 
 7. ADVANCED TOPICS
