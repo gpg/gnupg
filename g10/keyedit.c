@@ -63,6 +63,7 @@ static int count_selected_uids( KBNODE keyblock );
 static int real_uids_left( KBNODE keyblock );
 static int count_selected_keys( KBNODE keyblock );
 static int menu_revsig( KBNODE keyblock );
+static int menu_revuid( KBNODE keyblock, KBNODE sec_keyblock );
 static int menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int enable_disable_key( KBNODE keyblock, int disable );
 static void menu_showphoto( KBNODE keyblock );
@@ -885,10 +886,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-           cmdLSIGN, cmdNRSIGN, cmdNRLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
-	   cmdPRIMARY, cmdDEBUG, cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID,
-           cmdADDKEY, cmdDELKEY, cmdADDREVOKER, cmdTOGGLE, cmdSELKEY,
-	   cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE, cmdENABLEKEY,
+           cmdLSIGN, cmdNRSIGN, cmdNRLSIGN, cmdREVSIG, cmdREVKEY, cmdREVUID,
+	   cmdDELSIG, cmdPRIMARY, cmdDEBUG, cmdSAVE, cmdADDUID, cmdADDPHOTO,
+	   cmdDELUID, cmdADDKEY, cmdDELKEY, cmdADDREVOKER, cmdTOGGLE,
+	   cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE, cmdENABLEKEY,
 	   cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF, cmdUPDPREF, cmdINVCMD,
            cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST, cmdNOP };
     static struct { const char *name;
@@ -937,6 +938,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	{ N_("passwd")  , cmdPASSWD    , 1,1,0, N_("change the passphrase") },
 	{ N_("trust")   , cmdTRUST     , 0,1,0, N_("change the ownertrust") },
 	{ N_("revsig")  , cmdREVSIG    , 0,1,0, N_("revoke signatures") },
+	{ N_("revuid")  , cmdREVUID    , 1,1,0, N_("revoke a user ID") },
 	{ N_("revkey")  , cmdREVKEY    , 1,1,0, N_("revoke a secondary key") },
 	{ N_("disable") , cmdDISABLEKEY, 0,1,0, N_("disable a key") },
 	{ N_("enable")  , cmdENABLEKEY , 0,1,0, N_("enable a key") },
@@ -1271,6 +1273,25 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 		merge_keys_and_selfsig( sec_keyblock );
 		merge_keys_and_selfsig( keyblock );
 	      }
+	    }
+	    break;
+
+	  case cmdREVUID: {
+		int n1;
+
+		if( !(n1=count_selected_uids(keyblock)) )
+		    tty_printf(_("You must select at least one user ID.\n"));
+		else if( cpr_get_answer_is_yes(
+			    "keyedit.revoke.uid.okay",
+			n1 > 1? _("Really revoke all selected user IDs? ")
+			      : _("Really revoke this user ID? ")
+		       ) ) {
+		  if(menu_revuid(keyblock,sec_keyblock))
+		    {
+		      modified=1;
+		      redisplay=1;
+		    }
+		}
 	    }
 	    break;
 
@@ -3135,6 +3156,109 @@ menu_revsig( KBNODE keyblock )
     return changed;
 }
 
+/* Revoke a user ID (i.e. revoke a user ID selfsig).  Return true if
+   keyblock changed. */
+static int
+menu_revuid( KBNODE pub_keyblock, KBNODE sec_keyblock )
+{
+  PKT_public_key *pk = pub_keyblock->pkt->pkt.public_key;
+  PKT_secret_key *sk = copy_secret_key( NULL,
+					sec_keyblock->pkt->pkt.secret_key );
+  KBNODE node;
+  int changed = 0;
+  int rc;
+  struct revocation_reason_info *reason = NULL;
+
+  /* Note that this is correct as per the RFCs, but nevertheless
+     somewhat meaningless in the real world.  1991 did define the 0x30
+     sig class, but PGP 2.x did not actually implement it, so it would
+     probably be safe to use v4 revocations everywhere. -ds */
+
+  for( node = pub_keyblock; node; node = node->next )
+    if(pk->version>3 || (node->pkt->pkttype==PKT_USER_ID &&
+			 node->pkt->pkt.user_id->selfsigversion>3))
+      {
+	if((reason = ask_revocation_reason( 0, 1, 4 )))
+	  break;
+	else
+	  goto leave;
+      }
+
+ reloop: /* (better this way because we are modifing the keyring) */
+  for( node = pub_keyblock; node; node = node->next )
+    if(node->pkt->pkttype == PKT_USER_ID && (node->flag & NODFLG_SELUID))
+      {
+	PKT_user_id *uid=node->pkt->pkt.user_id;
+
+	if(uid->is_revoked)
+	  {
+	    char *user=utf8_to_native(uid->name,uid->len,0);
+	    log_info(_("user ID \"%s\" is already revoked\n"),user);
+	    m_free(user);
+	  }
+	else
+	  {
+	    PACKET *pkt;
+	    PKT_signature *sig;
+	    struct sign_attrib attrib;
+	    u32 timestamp=make_timestamp();
+
+	    if(uid->created>=timestamp)
+	      {
+		/* Okay, this is a problem.  The user ID selfsig was
+		   created in the future, so we need to warn the user and
+		   set our revocation timestamp one second after that so
+		   everything comes out clean. */
+
+		log_info(_("WARNING: a user ID signature is dated %d"
+			   " seconds in the future\n"),uid->created-timestamp);
+
+		timestamp=uid->created+1;
+	      }
+
+	    memset( &attrib, 0, sizeof attrib );
+	    attrib.reason = reason;
+
+	    node->flag &= ~NODFLG_SELUID;
+
+	    rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x30, 0,
+				     (reason==NULL)?3:0, timestamp, 0,
+				     sign_mk_attrib, &attrib );
+	    if( rc )
+	      {
+		log_error(_("signing failed: %s\n"), g10_errstr(rc));
+		goto leave;
+	      }
+	    else
+	      {
+		pkt = m_alloc_clear( sizeof *pkt );
+		pkt->pkttype = PKT_SIGNATURE;
+		pkt->pkt.signature = sig;
+		insert_kbnode( node, new_kbnode(pkt), 0 );
+
+		/* If the trustdb has an entry for this key+uid then the
+		   trustdb needs an update. */
+		if(!update_trust
+		   && (get_validity(pk,uid)&TRUST_MASK)>=TRUST_UNDEFINED)
+		  update_trust=1;
+
+		changed = 1;
+		node->pkt->pkt.user_id->is_revoked=1;
+
+		goto reloop;
+	      }
+	  }
+      }
+
+  if(changed)
+    commit_kbnode( &pub_keyblock );
+
+ leave:
+  free_secret_key(sk);
+  release_revocation_reason_info( reason );
+  return changed;
+}
+
 /****************
  * Revoke some of the secondary keys.
  * Hmmm: Should we add a revocation to the secret keyring too?
@@ -3153,7 +3277,6 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     if( !reason ) { /* user decided to cancel */
 	return 0;
     }
-
 
   reloop: /* (better this way because we are modifing the keyring) */
     mainpk = pub_keyblock->pkt->pkt.public_key;

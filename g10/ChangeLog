@@ -1,3 +1,17 @@
+2003-02-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_revuid): Properly handle a nonselfsigned uid on
+	a v4 key (treat as a v4 revocation).
+
+	* keyedit.c (keyedit_menu, menu_revuid): Backport "revuid" from
+	devel.
+
+	* import.c (print_import_check): Do not re-utf8 convert user IDs.
+
+	* status.h, status.c (get_status_string), import.c (import_one,
+	print_import_check): Backport Timo's IMPORT_CHECK status message
+	from devel.
+
 2003-01-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (add_group): Trim whitespace after a group name so it does

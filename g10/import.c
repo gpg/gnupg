@@ -543,6 +543,29 @@ print_import_ok (PKT_public_key *pk, PKT_secret_key *sk, unsigned int reason)
 }
 
 
+void
+print_import_check (PKT_public_key * pk, PKT_user_id * id)
+{
+    char * buf;
+    byte fpr[24];
+    u32 keyid[2];
+    size_t i, pos = 0, n;
+
+    buf = m_alloc (17+41+id->len+32);
+    keyid_from_pk (pk, keyid);
+    sprintf (buf, "%08X%08X ", keyid[0], keyid[1]);
+    pos = 17;
+    fingerprint_from_pk (pk, fpr, &n);
+    for (i = 0; i < n; i++, pos += 2)
+        sprintf (buf+pos, "%02X", fpr[i]);
+    strcat (buf, " ");
+    pos += 1;
+    strcat (buf, id->name);
+    write_status_text (STATUS_IMPORT_CHECK, buf);
+    m_free (buf);
+}
+
+
 /****************
  * Try to import one keyblock.	Return an error only in serious cases, but
  * never for an invalid keyblock.  It uses log_error to increase the
@@ -591,7 +614,9 @@ import_one( const char *fname, KBNODE keyblock, int fast,
     }
     
     if (opt.interactive) {
-        merge_keys_and_selfsig (keyblock);
+        if(is_status_enabled())
+	  print_import_check (pk, uidnode->pkt->pkt.user_id);
+	merge_keys_and_selfsig (keyblock);
         tty_printf ("\n");
         show_basic_key_info (keyblock);
         tty_printf ("\n");
