@@ -53,6 +53,11 @@
 #include "keyserver-internal.h"
 #include "exec.h"
 #include "cardglue.h"
+#ifdef ENABLE_CARD_SUPPORT
+#include "ccid-driver.h"
+#endif
+
+
 
 enum cmd_and_opt_values
   {
@@ -167,6 +172,7 @@ enum cmd_and_opt_values
     oOptions,
     oDebug,
     oDebugAll,
+    oDebugCCIDDriver,
     oStatusFD,
 #ifdef __riscos__
     oStatusFile,
@@ -683,6 +689,9 @@ static ARGPARSE_OPTS opts[] = {
     { octapiDriver, "ctapi-driver",  2, "@"},
     { opcscDriver, "pcsc-driver",    2, "@"},
     { oDisableCCID, "disable-ccid", 0, "@"},
+#if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
+    { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
+#endif
 
     {0,NULL,0,NULL}
 };
@@ -1886,6 +1895,11 @@ main( int argc, char **argv )
 	    break;
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
+          case oDebugCCIDDriver: 
+#if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
+            ccid_set_debug_level (1);
+#endif
+            break;
 	  case oStatusFD:
             set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
             break;

@@ -1,3 +1,14 @@
+2004-09-15  Werner Koch  <wk@g10code.com>
+
+	* g10.c [HAVE_LIBUSB]: New option --debug-ccid-driver.
+
+	* ccid-driver.c (read_device_info): Removed.
+	(make_reader_id, scan_or_find_devices): New.
+	(ccid_open_reader): Simplified by make use of the new functions.
+	(ccid_set_debug_level): New.  Changed the macros to make use of
+	it.  It has turned out that it is often useful to enable debugging
+	at runtime so I added this option.
+
 2004-09-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (premerge_public_with_secret): Fix subkey<->binding sig
