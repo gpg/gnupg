@@ -25,9 +25,10 @@
 const char *memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
-unsigned int trim_trailing_chars( byte *line, unsigned len,
+char *trim_trailing_spaces( char *string );
+unsigned int trim_trailing_chars( unsigned char *line, unsigned len,
 					      const char *trimchars);
-unsigned int trim_trailing_ws( byte *line, unsigned len );
+unsigned int trim_trailing_ws( unsigned char *line, unsigned len );
 
 
 #ifndef HAVE_MEMICMP

@@ -8,7 +8,6 @@ pgm="gnupg-www"
 mod="gnupg-www"
 MKWEBSITE=$HOME/bin/mkwebsite
 
-
 cd $myhome
 
 rm -rf $pgm.tmp 2>/dev/null || true
@@ -30,6 +29,8 @@ echo "(List generated from CVS: " $(date +%Y-%m-%d) ")"  >> $pgm.tmp/en/include-
 cd $pgm.tmp
 $MKWEBSITE --cvs --use-this-dir $myhome/$pgm.new
 cd $myhome
+cp -a gph $pgm.new/ || true
+
 rm -rf $pgm.tmp || true
 
 rm -rf $pgm.old || true

@@ -100,3 +100,35 @@
     Ctrl-D does not work correct for messages entered at the tty.
     FIX: 1999-06-18  (Better EOF detection on terminals)
 
+[  *] #22 1999-07-22
+    Solaris make has problems with the generated POTFILES - seems to be a
+    gettext bug.  Use GNU make as a workaround.
+    FIX: 1999-12-03 (meanwhile fixed in gettext)
+
+[  *] #23 1999-09-03 <todd.brooks@yale.edu> 0.9.11
+    Only the first signature of a cleartext sig seems to be verified.
+    Can't fix it in 1.0 because the code is semi-frozen.
+    HMMM: Can't reprodude the bug here - it just works.
+
+[ **] #25 1999-10-04  <wk@gnupg.org> 1.0
+    Validity check based on user name is only done when listing a key;
+    the key ID based checking (selecting the user ID with the most
+    validity) is used in all other cases.  The Edit menu does not have
+    a way to disable user ID based validity.
+    FIX: 1999-12-03 (1.0.x only)
+
+[  *] #26 1999-11-11
+    gpg still does not take UTF8 strings to select a UID.
+    FIX: 1999-11-12
+
+[ **] #27 1999-11-12 <oren@hishome.net>
+    Unknown packets (type 17 - photo ID?) mess up the checking
+    of self-signature because they are simply ignored.
+    FIX: 1999-11-12 (1.0.x only)
+
+[ **] #29 1999-12-01 <karney@pppl.gov>
+    Using a --gen-key on a new user account (w/o ~./gnupg) doesn't pay
+    attention to the standard options files, which get's installed
+    afterwards.
+    FIX: 1999-12-02
+

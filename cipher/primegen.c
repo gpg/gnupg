@@ -241,7 +241,8 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	    mpi_add_ui(g, g, 1);
 	    if( DBG_CIPHER ) {
 		log_debug("checking g: ");
-		mpi_print( stderr, g, 1 );
+		/*mpi_print( stderr, g, 1 );*/
+		#warning we need an internal mpi_print for debugging
 	    }
 	    else
 		progress('^');

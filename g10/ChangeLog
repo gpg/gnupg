@@ -1,3 +1,20 @@
+Fri Dec 31 12:48:31 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* keyid.c (do_fingerprint_md): Replaced mpi_get_buffer by gcry_mpi_print.
+	(v3_keyid): New.
+	(keyid_from_sk): And use it here.
+	(keyid_from_pk): Ditto.
+	(fingerprint_from_sk): Ditto.
+	(fingerprint_from_pk): Ditto.
+
+	* misc.c (mpi_print): New.
+
+	* misc.c (checksum_mpi): Now uses gcry_mpi_print to get the data.
+
+	* seckey-cert.c (do_check): Replaced mpi_read_from_buffer.
+
+	* armor.c (armor_filter): Made the "Comment:" header translatable.
+
 Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* seckey-cert.c: Removed obsolete mpi_*_protect_flag.

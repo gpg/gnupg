@@ -37,7 +37,7 @@
 #include "memory.h"
 #include "util.h"
 
-/* FXIME: ugly hack.  Need a prototype here bug can't include g10lib.h */
+/* FXIME: ugly hack.  Need a prototype here but can't include g10lib.h */
 int g10_private_is_secure( void *p );
 
 
@@ -640,6 +640,12 @@ FNAME(strdup)( const char *a FNAMEPRT )
     char *p = FNAME(alloc)(n+1 FNAMEARG);
     strcpy(p, a);
     return p;
+}
+
+int
+m_is_secure( const void *a )
+{
+    return g10_private_is_secure(a);
 }
 
 

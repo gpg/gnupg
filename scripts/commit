@@ -59,5 +59,5 @@ for i in `find . -name cvs-add -print`; do
     fi
 done
 
-cvs commit -m "See ChangeLog: $date  $name" $*
+cvs -z3 commit -m "See ChangeLog: $date  $name" $*
 

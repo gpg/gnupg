@@ -1,3 +1,9 @@
+Fri Dec 31 12:48:31 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* memory.c (m_is_secure): New.
+
+	* stringhelp.c (trim_trailing_spaces): New.
+
 Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* strgutil.c (strcasecmp): New.

@@ -102,6 +102,7 @@ struct {
 #define DBG_FILTER (opt.debug & DBG_FILTER_VALUE)
 #define DBG_CACHE  (opt.debug & DBG_CACHE_VALUE)
 #define DBG_TRUST  (opt.debug & DBG_TRUST_VALUE)
+#define DBG_CIPHER (opt.debug & DBG_CIPHER_VALUE)
 
 
 #endif /*G10_OPTIONS_H*/

@@ -32,7 +32,7 @@
 #define MAX_EXTERN_MPI_BITS 16384
 
 
-MPI
+static MPI
 mpi_read_from_buffer(byte *buffer, unsigned *ret_nread, int secure)
 {
     int i, j;
@@ -156,7 +156,7 @@ mpi_fromstr(MPI val, const char *str)
  * printed.
  * FIXME: Replace this by the more generic gcry_mpi_print()
  */
-int
+static int
 mpi_print( FILE *fp, MPI a, int mode )
 {
     int i, n=0;
@@ -202,30 +202,6 @@ g10_log_mpidump( const char *text, MPI a )
     fputc('\n', fp);
 }
 
-/****************
- * Special function to get the low 8 bytes from an mpi.
- * This can be used as a keyid; KEYID is an 2 element array.
- * Return the low 4 bytes.
- */
-u32
-mpi_get_keyid( MPI a, u32 *keyid )
-{
-#if BYTES_PER_MPI_LIMB == 4
-    if( keyid ) {
-	keyid[0] = a->nlimbs >= 2? a->d[1] : 0;
-	keyid[1] = a->nlimbs >= 1? a->d[0] : 0;
-    }
-    return a->nlimbs >= 1? a->d[0] : 0;
-#elif BYTES_PER_MPI_LIMB == 8
-    if( keyid ) {
-	keyid[0] = a->nlimbs? (u32)(a->d[0] >> 32) : 0;
-	keyid[1] = a->nlimbs? (u32)(a->d[0] & 0xffffffff) : 0;
-    }
-    return a->nlimbs? (u32)(a->d[0] & 0xffffffff) : 0;
-#else
-  #error Make this function work with other LIMB sizes
-#endif
-}
 
 
 /****************
@@ -453,6 +429,7 @@ gcry_mpi_scan( struct gcry_mpi **ret_mpi, enum gcry_mpi_format format,
 /****************
  * Write a using format into buffer which has a length of *NBYTES.
  * Returns the number of bytes actually written in nbytes.
+ * Buffer maybe NULL to query the required length of the buffer
  */
 int
 gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
@@ -465,8 +442,8 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 	return GCRYERR_INV_ARG;
 
     len = *nbytes;
+    *nbytes = 0;
     if( format == GCRYMPI_FMT_STD ) {
-	byte *s = buffer;
 	char *tmp;
 	int extra = 0;
 	unsigned int n;
@@ -480,39 +457,43 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 	    extra=1;
 	}
 
-	if( n > len ) {
+	if( n > len && buffer ) {
 	    m_free(tmp);
 	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
 	}
-	if( extra )
-	    *s++ = 0;
+	if( buffer ) {
+	    byte *s = buffer;
+	    if( extra )
+		*s++ = 0;
 
-	memcpy( s, tmp, n-extra );
+	    memcpy( s, tmp, n-extra );
+	}
 	m_free(tmp);
 	*nbytes = n;
 	return 0;
     }
     else if( format == GCRYMPI_FMT_PGP ) {
 	unsigned int n = (nbits + 7)/8;
-	byte *s = buffer;
-	char *tmp;
 
 	if( a->sign )
 	    return GCRYERR_INV_ARG; /* pgp format can only handle unsigned */
 
-	if( n+2 > len )
+	if( n+2 > len && buffer )
 	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
-	s[0] = nbits >> 8;
-	s[1] = nbits;
+	if( buffer ) {
+	    char *tmp;
+	    byte *s = buffer;
+	    s[0] = nbits >> 8;
+	    s[1] = nbits;
 
-	tmp = mpi_get_buffer( a, &n, NULL );
-	memcpy( s+2, tmp, n );
-	m_free(tmp);
+	    tmp = mpi_get_buffer( a, &n, NULL );
+	    memcpy( s+2, tmp, n );
+	    m_free(tmp);
+	}
 	*nbytes = n+2;
 	return 0;
     }
     else if( format == GCRYMPI_FMT_SSH ) {
-	byte *s = buffer;
 	char *tmp;
 	int extra = 0;
 	unsigned int n;
@@ -526,24 +507,26 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 	    extra=1;
 	}
 
-	if( n+4 > len ) {
+	if( n+4 > len && buffer ) {
 	    m_free(tmp);
 	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
 	}
-	*s++ = n >> 24;
-	*s++ = n >> 16;
-	*s++ = n >> 8;
-	*s++ = n;
-	if( extra )
-	    *s++ = 0;
+	if( buffer ) {
+	    byte *s = buffer;
+	    *s++ = n >> 24;
+	    *s++ = n >> 16;
+	    *s++ = n >> 8;
+	    *s++ = n;
+	    if( extra )
+		*s++ = 0;
 
-	memcpy( s, tmp, n-extra );
+	    memcpy( s, tmp, n-extra );
+	}
 	m_free(tmp);
 	*nbytes = 4+n;
 	return 0;
     }
     else if( format == GCRYMPI_FMT_HEX ) {
-	byte *s = buffer;
 	byte *tmp;
 	int i;
 	int extra = 0;
@@ -553,25 +536,37 @@ gcry_mpi_print( enum gcry_mpi_format format, char *buffer, size_t *nbytes,
 	if( !n || (*tmp & 0x80) )
 	    extra=1;
 
-	if( 2*n+3+1 > len ) {
+	if( 2*n+3+1 > len && buffer ) {
 	    m_free(tmp);
 	    return GCRYERR_TOO_SHORT;  /* the provided buffer is too short */
 	}
-	if( a->sign )
-	    *s++ = '-';
-	if( extra ) {
-	    *s++ = '0';
-	    *s++ = '0';
-	}
+	if( buffer ) {
+	    byte *s = buffer;
+	    if( a->sign )
+		*s++ = '-';
+	    if( extra ) {
+		*s++ = '0';
+		*s++ = '0';
+	    }
 
-	for(i=0; i < n; i++ ) {
-	    unsigned int c = tmp[i];
-	    *s++ = (c >> 4) < 10? '0'+(c>>4) : 'A'+(c>>4)-10 ;
-	    c &= 15;
-	    *s++ = c < 10? '0'+c : 'A'+c-10 ;
+	    for(i=0; i < n; i++ ) {
+		unsigned int c = tmp[i];
+		*s++ = (c >> 4) < 10? '0'+(c>>4) : 'A'+(c>>4)-10 ;
+		c &= 15;
+		*s++ = c < 10? '0'+c : 'A'+c-10 ;
+	    }
+	    *s++ = 0;
+	    *nbytes = (char*)s - buffer;
 	}
-	*s++ = 0;
-	*nbytes = (char*)s - buffer;
+	else {
+	    *nbytes = n;
+	    if( a->sign )
+		++*nbytes;
+	    if( extra )
+		*nbytes += 2;
+	    ++*nbytes; /* terminating Nul */
+	}
+	m_free(tmp);
 	return 0;
     }
     else

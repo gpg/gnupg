@@ -105,7 +105,7 @@ pk_verify( int algo, MPI hash, MPI *data, MPI *pkey,
 			  NULL ));
     }
     else if( algo == GCRY_PK_RSA ) {
-	s_sig = SEXP_CONS( SEXP_NEW( "public-key", 10 ),
+	s_sig = SEXP_CONS( SEXP_NEW( "sig-val", 0 ),
 			  gcry_sexp_vlist( SEXP_NEW( "rsa", 3 ),
 			  gcry_sexp_new_name_mpi( "s", data[0] ),
 			  NULL ));
@@ -167,7 +167,7 @@ do_signature_check( PKT_signature *sig, GCRY_MD_HD digest, u32 *r_expire )
 	int i, nsig = pubkey_get_nsig( sig->pubkey_algo );
 	byte *p, *buffer;
 
-	if( !(md = gcry_md_open( DIGEST_ALGO_RMD160, 0)) )
+	if( !(md = gcry_md_open( GCRY_MD_RMD160, 0)) )
 	    BUG();
 	gcry_md_putc( digest, sig->pubkey_algo );
 	gcry_md_putc( digest, sig->digest_algo );

@@ -876,6 +876,8 @@ armor_filter( void *opaque, int control,
     }
     else if( control == IOBUFCTRL_FLUSH ) {
 	if( !afx->status ) { /* write the header line */
+	    const char *s;
+
 	    if( afx->what >= DIM(head_strings) )
 		log_bug("afx->what=%d", afx->what);
 	    iobuf_writestr(a, "-----");
@@ -885,26 +887,24 @@ armor_filter( void *opaque, int control,
 		iobuf_writestr(a, "Version: GnuPG v"  VERSION " ("
 					      PRINTABLE_OS_NAME ")\n");
 
-	    if( opt.comment_string ) {
-		const char *s = opt.comment_string;
-		if( *s ) {
-		    iobuf_writestr(a, "Comment: " );
-		    for( ; *s; s++ ) {
-			if( *s == '\n' )
-			    iobuf_writestr(a, "\\n" );
-			else if( *s == '\r' )
-			    iobuf_writestr(a, "\\r" );
-			else if( *s == '\v' )
-			    iobuf_writestr(a, "\\v" );
-			else
-			    iobuf_put(a, *s );
-		    }
-		    iobuf_put(a, '\n' );
+	    /* write the comment string or a default one */
+	    s = opt.comment_string ? opt.comment_string
+				   : _("For info see http://www.gnupg.org");
+	    if( *s ) {
+		iobuf_writestr(a, "Comment: " );
+		for( ; *s; s++ ) {
+		    if( *s == '\n' )
+			iobuf_writestr(a, "\\n" );
+		    else if( *s == '\r' )
+			iobuf_writestr(a, "\\r" );
+		    else if( *s == '\v' )
+			iobuf_writestr(a, "\\v" );
+		    else
+			iobuf_put(a, *s );
 		}
+		iobuf_put(a, '\n' );
 	    }
-	    else
-		iobuf_writestr(a,
-		    "Comment: For info see http://www.gnupg.org\n");
+
 	    if( afx->hdrlines )
 		iobuf_writestr(a, afx->hdrlines);
 	    iobuf_put(a, '\n');

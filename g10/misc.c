@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
   #include <asm/sysinfo.h>
   #include <asm/unistd.h>
@@ -116,12 +117,13 @@ mpi_write_opaque( IOBUF out, MPI a )
 {
     size_t nbytes, nbits;
     int rc;
+    char *p;
 
     assert( gcry_mpi_get_flag( a, GCRYMPI_FLAG_OPAQUE ) );
     p = gcry_mpi_get_opaque( a, &nbits );
     nbytes = (nbits+7) / 8;
     iobuf_put( out, nbits >> 8 );
-    iobuf_put( out, nbits )
+    iobuf_put( out, nbits );
     rc = iobuf_write( out, p, nbytes );
     return rc;
 }
@@ -134,10 +136,10 @@ mpi_write_opaque( IOBUF out, MPI a )
  * with MSB first (left padded with zeroes to align on a byte boundary).
  */
 MPI
-mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
+mpi_read(IOBUF inp, unsigned int *ret_nread, int secure)
 {
     int c, c1, c2, i;
-    unsigned nbits, nbytes, nread=0;
+    unsigned int nbits, nbytes, nread=0;
     MPI a = NULL;
     byte *buf = NULL;
     byte *p;
@@ -163,8 +165,8 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 	nread++;
     }
     nread += nbytes;
-    /* FIXME: replace with the gcry_scan function */
-    a = mpi_read_from_buffer( buf, &nread, secure );
+    if( gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, buf, &nread ) )
+	a = NULL;
 
   leave:
     m_free(buf);
@@ -220,6 +222,35 @@ mpi_read_opaque(IOBUF inp, unsigned *ret_nread )
 }
 
 
+int
+mpi_print( FILE *fp, MPI a, int mode )
+{
+    int n=0;
+
+    if( !a )
+	return fprintf(fp, "[MPI_NULL]");
+    if( !mode ) {
+	unsigned int n1;
+	n1 = gcry_mpi_get_nbits(a);
+	n += fprintf(fp, "[%u bits]", n1);
+    }
+    else {
+	int rc;
+	byte *buffer;
+	size_t nbytes;
+
+	rc = gcry_mpi_print( GCRYMPI_FMT_HEX, NULL, &nbytes, a );
+	assert( !rc );
+	buffer = m_is_secure(a)? m_alloc_secure(nbytes) : m_alloc(nbytes);
+	rc = gcry_mpi_print( GCRYMPI_FMT_HEX, buffer, &nbytes, a );
+	assert( !rc );
+	fputs( buffer, fp );
+	n += strlen(buffer);
+	m_free( buffer );
+    }
+    return n;
+}
+
 
 u16
 checksum_u16( unsigned n )
@@ -244,15 +275,21 @@ checksum( byte *p, unsigned n )
 u16
 checksum_mpi( MPI a )
 {
+    int rc;
     u16 csum;
     byte *buffer;
-    unsigned nbytes;
-    unsigned nbits;
+    size_t nbytes;
 
-    buffer = mpi_get_buffer( a, &nbytes, NULL );
-    nbits = mpi_get_nbits(a);
-    csum = checksum_u16( nbits );
-    csum += checksum( buffer, nbytes );
+    rc = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &nbytes, a );
+    assert( !rc );
+    /* fixme: for numbers not in the suecre memory we
+     * should use a stack based buffer and only allocate
+     * a larger one when the mpi_print return an error
+     */
+    buffer = m_is_secure(a)? m_alloc_secure(nbytes) : m_alloc(nbytes);
+    rc = gcry_mpi_print( GCRYMPI_FMT_PGP, buffer, &nbytes, a );
+    assert( !rc );
+    csum = checksum( buffer, nbytes );
     m_free( buffer );
     return csum;
 }
@@ -386,5 +423,10 @@ pubkey_get_nenc( int algo )
 {
     int n = gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, 0 );
     return n > 0? n : 0;
+}
+
+int
+pubkey_nbits()
+{
 }
 

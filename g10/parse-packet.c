@@ -1423,7 +1423,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	else { /* v3 method: the mpi length is not encrypted */
 	    for(i=npkey; i < nskey; i++ ) {
 		n = pktlen;
-		sk->skey[i] = mpi_read_opaque(inp, &n, 0 );
+		sk->skey[i] = mpi_read_opaque(inp, &n );
 		pktlen -=n;
 		if( list_mode ) {
 		    printf(  "\tskey[%d]: ", i);

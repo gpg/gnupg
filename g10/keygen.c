@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <assert.h>
 #include "util.h"
+#include "memory.h"
 #include "main.h"
 #include "packet.h"
 #include "dummy-cipher.h"
@@ -83,12 +84,12 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 
     keygen_add_key_expire( sig, opaque );
 
-    buf[0] = CIPHER_ALGO_TWOFISH;
-    buf[1] = CIPHER_ALGO_CAST5;
+    buf[0] = GCRY_CIPHER_TWOFISH;
+    buf[1] = GCRY_CIPHER_CAST5;
     build_sig_subpkt( sig, SIGSUBPKT_PREF_SYM, buf, 2 );
 
-    buf[0] = DIGEST_ALGO_RMD160;
-    buf[1] = DIGEST_ALGO_SHA1;
+    buf[0] = GCRY_MD_RMD160;
+    buf[1] = GCRY_MD_SHA1;
     build_sig_subpkt( sig, SIGSUBPKT_PREF_HASH, buf, 2 );
 
     buf[0] = 2;

@@ -1,3 +1,11 @@
+Fri Dec 31 12:48:31 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* mpicoder.c (mpi_read_from_buffer): Made static.
+	(gcry_mpi_print): A buffer of NULL is now allowed to get the required
+	length back.
+	(mpi_get_keyid): Removed.
+	(mpi_print): Made static - should be removed.
+
 Wed Dec  8 21:58:32 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* Makefile.am (INCLUDES): Add ../gcrypt.

@@ -109,8 +109,12 @@ do_check( PKT_secret_key *sk )
 	    if( sk->csum == csum ) {
 		for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
 		    nbytes = ndata;
-		    sk->skey[i] = mpi_read_from_buffer(p, &nbytes, 1 );
-		    /* fixme: replace by mpi_scan */
+		    assert( m_is_secure( p ) );
+		    res = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_PGP,
+							     p, &nbytes);
+		    if( res )
+			log_bug("gcry_mpi_scan failed in do_check: rc=%d\n", res);
+
 		    ndata -= nbytes;
 		    p += nbytes;
 		}
@@ -134,6 +138,8 @@ do_check( PKT_secret_key *sk )
 
 		res = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_USG,
 				     data, &ndata );
+		if( res )
+		    log_bug("gcry_mpi_scan failed in do_check: rc=%d\n", res);
 
 		csum += checksum_mpi( sk->skey[i] );
 		m_free( buffer );

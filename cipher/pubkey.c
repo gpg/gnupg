@@ -635,6 +635,17 @@ release_mpi_array( MPI *array )
  *
  * Returns: A pointer to an allocated array of MPIs if the return value is
  *	    zero; the caller has to release this array.
+ *
+ * Example of a DSA public key:
+ *  (private-key
+ *    (dsa
+ *	(p <mpi>)
+ *	(g <mpi>)
+ *	(y <mpi>)
+ *	(x <mpi>)
+ *    )
+ *  )
+ * The <mpi> are expected to be in GCRYMPI_FMT_USG
  */
 static int
 sexp_to_key( GCRY_SEXP sexp, int want_private, MPI **retarray, int *retalgo)
@@ -783,8 +794,8 @@ gcry_pk_decrypt( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP skey )
 /****************
  * Create a signature.
  *
- * Caller has to provide a secret kez as the SEXP skey and data expressed
- * as a SEXP list hash with only one emelennt which should instantly be
+ * Caller has to provide a secret key as the SEXP skey and data expressed
+ * as a SEXP list hash with only one element which should instantly be
  * available as a MPI.	Later versions of this functions may provide padding
  * and other things depending on data.
  *
@@ -793,6 +804,15 @@ gcry_pk_decrypt( GCRY_SEXP *result, GCRY_SEXP data, GCRY_SEXP skey )
  *	    signature value; the structure of this signature depends on the
  *	    other arguments but is always suitable to be passed to
  *	    gcry_pk_verify
+ *
+ * s_hash = (<mpi>)
+ * s_skey = <key-as-defined-in-sexp_to_key>
+ * r_sig  = (sig-val
+ *	      (<algo>
+ *		(<param_name1> <mpi>)
+ *		...
+ *		(<param_namen> <mpi>)
+ *	      ))
  */
 int
 gcry_pk_sign( GCRY_SEXP *r_sig, GCRY_SEXP s_hash, GCRY_SEXP s_skey )

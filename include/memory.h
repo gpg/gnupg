@@ -58,6 +58,8 @@ void m_check( const void *a );
 char *m_strdup( const char * a);
 #endif
 
+int m_is_secure( const void *a );
+
 size_t m_size( const void *a );
 void m_print_stats(const char *prefix);
 

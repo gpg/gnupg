@@ -58,8 +58,10 @@ u16 checksum_mpi( MPI a );
 u32 buffer_to_u32( const byte *buffer );
 
 int mpi_write( IOBUF out, GCRY_MPI a );
-GCRY_MPI mpi_read(IOBUF inp, unsigned *ret_nread );
-GCRY_MPI mpi_read_opaque(IOBUF inp, unsigned *ret_nread );
+int mpi_write_opaque( IOBUF out, MPI a );
+GCRY_MPI mpi_read(IOBUF inp, unsigned int *ret_nread, int secure );
+GCRY_MPI mpi_read_opaque(IOBUF inp, unsigned int *ret_nread );
+int mpi_print( FILE *fp, MPI a, int mode );
 
 int openpgp_cipher_test_algo( int algo );
 int openpgp_pk_test_algo( int algo, unsigned int usage_flags );

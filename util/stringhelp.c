@@ -103,6 +103,28 @@ trim_spaces( char *str )
     return str ;
 }
 
+/****************
+ * remove trailing white spaces
+ */
+char *
+trim_trailing_spaces( char *string )
+{
+    char *p, *mark;
+
+    for( mark = NULL, p = string; *p; p++ ) {
+	if( isspace( *(byte*)p ) ) {
+	    if( !mark )
+		mark = p;
+	}
+	else
+	    mark = NULL;
+    }
+    if( mark )
+	*mark = '\0' ;
+
+    return string ;
+}
+
 
 
 unsigned
