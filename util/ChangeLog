@@ -1,3 +1,8 @@
+2003-10-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* srv.c: OSX 10.2.8/Darwin 6.8 seems to have some #include
+	ordering issues?  Move sys/types.h up higher to work around.
+
 2003-10-08  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.c (tty_print_string, tty_print_utf8_string2)

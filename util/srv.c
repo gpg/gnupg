@@ -20,6 +20,7 @@
 
 #include <config.h>
 #ifdef USE_DNS_SRV
+#include <sys/types.h>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -27,7 +28,6 @@
 #include <arpa/nameser.h>
 #include <resolv.h>
 #endif
-#include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
