@@ -133,6 +133,13 @@ test -n "$GNUPG_PROTECT_TOOL_PGM" \
       && show_gnupg_protect_tool_pgm="$GNUPG_PROTECT_TOOL_PGM"
 
 
+# Some folks want to use only the agent form this packet.  Make it
+# easier for them by providing the configure option
+# --enable-only-agent.
+AC_ARG_ENABLE(agent-only,
+    AC_HELP_STRING([--enable-agent-only],[build only the gpg-agent]),
+    build_agent_only=$enableval)
+
 
 # Configure option to allow ot disallow execution of external
 # programs, like a photo viewer.
@@ -744,6 +751,7 @@ else
   fi
 fi
 
+# fixme: do we really need this - it should be encapsulated in libassuan
 GNUPG_SYS_SO_PEERCRED
 
 # Checks for library functions.
@@ -776,6 +784,8 @@ AC_REPLACE_FUNCS(putc_unlocked)
 # check for gethrtime and run a testprogram to see whether
 # it is broken.  It has been reported that some Solaris and HP UX systems 
 # raise an SIGILL
+#
+#  fixme: Do we need this - iirc, this is only used by libgcrypt.
 #
 AC_CACHE_CHECK([for gethrtime], 
                [gnupg_cv_func_gethrtime],
@@ -815,6 +825,8 @@ GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
 dnl
 dnl Check whether we can use Linux capabilities as requested
 dnl
+#  fixme: Still required?
+#
 if test "$use_capabilities" = "yes" ; then
 use_capabilities=no
 AC_CHECK_HEADERS(sys/capability.h)
@@ -968,7 +980,7 @@ AC_SUBST(W32LIBS)
 
 # We use jnlib, so tell other modules about it
 AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
-        [Defined if jnlib style logging fucntions are available])
+          [Defined if jnlib style logging functions are available])
 
 
 
@@ -1004,6 +1016,12 @@ if test "$build_scdaemon" = "yes"; then
   if test -n "$build_scdaemon_extra"; then
      build_scdaemon_extra="(${build_scdaemon_extra})"
   fi
+fi
+
+if test "$build_agent_only" = "yes" ; then
+  build_gpg=no
+  build_gpgsm=no
+  build_scdaemon=no
 fi
 
 AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")
@@ -1049,7 +1067,7 @@ if test "$have_libassuan" = "no"; then
 ***]])
 fi
 if test "$have_ksba" = "no"; then
-   die=yes
+   die=no
     AC_MSG_NOTICE([[
 ***
 *** You need libksba to build this program.

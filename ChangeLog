@@ -1,3 +1,7 @@
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: New option --enable-agent-only.
+
 2004-06-08  Werner Koch  <wk@gnupg.org>
 
 	Released 1.9.9.
