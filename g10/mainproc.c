@@ -1325,7 +1325,11 @@ check_sig_and_print( CTX c, KBNODE node )
 
 	while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL)))
 	  {
-	    log_info(_("Key available from: ") );
+	    /* According to my favorite copy editor, in English
+	       grammar, you say "at" if the key is located on a web
+	       page, but "from" if it is located on a keyserver.  I'm
+	       not going to even try to make two strings here :) */
+	    log_info(_("Key available at: ") );
 	    print_string( log_stream(), p, n, 0 );
 	    putc( '\n', log_stream() );
 	  }

@@ -1,5 +1,10 @@
 2003-06-18  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (parse_keyserver_uri): Accept "http" as an alias for
+	"hkp", since it is occasionally written that way.
+
+	* mainproc.c (check_sig_and_print): Grammar fix ;)
+
 	* keygen.c (ask_user_id): Make --allow-freeform-uid apply to the
 	email field as well as the name field, and allow mixing fields
 	when it is set.
