@@ -1,3 +1,8 @@
+2002-08-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* tdbio.c (tdbio_set_dbname): Create new trustdbs with user-only
+	permissions.
+
 2002-08-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* sig-check.c (signature_check2): Sanity check that the md has a

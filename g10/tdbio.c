@@ -458,6 +458,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    TRUSTREC rec;
 	    int rc;
 	    char *p = strrchr( fname, DIRSEP_C );
+	    mode_t oldmask;
 
 	    assert(p);
 	    *p = 0;
@@ -477,7 +478,9 @@ tdbio_set_dbname( const char *new_dbname, int create )
             if( make_dotlock( lockhandle, -1 ) )
                 log_fatal( _("%s: can't make lock\n"), db_name );
 #endif /* __riscos__ */
+	    oldmask=umask(077);
 	    fp =fopen( fname, "wb" );
+	    umask(oldmask);
 	    if( !fp )
 		log_fatal( _("%s: can't create: %s\n"), fname, strerror(errno) );
 	    fclose(fp);
