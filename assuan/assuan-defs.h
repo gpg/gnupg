@@ -39,6 +39,7 @@ struct assuan_context_s {
   int is_server;  /* set if this is context belongs to a server */
   int in_inquire;
   char *hello_line;
+  char *okay_line; /* see assan_set_okay_line() */
   
   void *user_pointer;  /* for assuan_[gs]et_pointer () */
 

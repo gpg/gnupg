@@ -58,6 +58,7 @@ assuan_deinit_pipe_server (ASSUAN_CONTEXT ctx)
   if (ctx)
     {
       xfree (ctx->hello_line);
+      xfree (ctx->okay_line);
       xfree (ctx);
     }
 }

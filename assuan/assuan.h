@@ -127,6 +127,7 @@ int assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
 
 
 FILE *assuan_get_data_fp (ASSUAN_CONTEXT ctx);
+AssuanError assuan_set_okay_line (ASSUAN_CONTEXT ctx, const char *line);
 void assuan_write_status (ASSUAN_CONTEXT ctx,
                           const char *keyword, const char *text);
 

@@ -382,7 +382,7 @@ process_request (ASSUAN_CONTEXT ctx)
   /* Error handling */
   if (!rc)
     {
-      rc = assuan_write_line (ctx, "OK");
+      rc = assuan_write_line (ctx, ctx->okay_line? ctx->okay_line : "OK");
     }
   else if (rc == -1)
     { /* No error checking because the peer may have already disconnect */ 
@@ -405,6 +405,11 @@ process_request (ASSUAN_CONTEXT ctx)
       rc = assuan_write_line (ctx, errline);
     }
 
+  if (ctx->okay_line)
+    {
+      xfree (ctx->okay_line);
+      ctx->okay_line = NULL;
+    }
   return rc;
 }
 
@@ -520,6 +525,35 @@ assuan_get_data_fp (ASSUAN_CONTEXT ctx)
   ctx->outbound.data.error = 0;
   return ctx->outbound.data.fp;
 }
+
+
+/* Set the text used for the next OK reponse.  This string is
+   automatically reset to NULL after the next command. */
+AssuanError
+assuan_set_okay_line (ASSUAN_CONTEXT ctx, const char *line)
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  if (!line)
+    {
+      xfree (ctx->okay_line);
+      ctx->okay_line = NULL;
+    }
+  else
+    {
+      /* FIXME: we need to use gcry_is_secure() to test whether
+         we should allocate the entire line in secure memory */
+      char *buf = xtrymalloc (3+strlen(line)+1);
+      if (!buf)
+        return ASSUAN_Out_Of_Core;
+      strcpy (buf, "OK ");
+      strcpy (buf+3, line);
+      xfree (ctx->okay_line);
+      ctx->okay_line = buf;
+    }
+  return 0;
+}
+
 
 
 void

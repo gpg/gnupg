@@ -1,5 +1,5 @@
 /* assuan-inquire.c - handle inquire stuff
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -56,7 +56,8 @@ init_membuf (struct membuf *mb, int initiallen, size_t maxlen)
   mb->out_of_core = 0;
   mb->too_large = 0;
   mb->maxlen = maxlen;
-  mb->buf = xtrymalloc (initiallen);
+  /* we need to allocate one byte more for get_membuf */
+  mb->buf = xtrymalloc (initiallen+1);
   if (!mb->buf)
       mb->out_of_core = 1;
 }
@@ -78,7 +79,8 @@ put_membuf (struct membuf *mb, const void *buf, size_t len)
       char *p;
       
       mb->size += len + 1024;
-      p = xtryrealloc (mb->buf, mb->size);
+      /* we need to allocate one byte more for get_membuf */
+      p = xtryrealloc (mb->buf, mb->size+1);
       if (!p)
         {
           mb->out_of_core = 1;
@@ -102,6 +104,7 @@ get_membuf (struct membuf *mb, size_t *len)
       return NULL;
     }
 
+  mb->buf[mb->len] = 0; /* there is enough space for the hidden eos */
   p = mb->buf;
   *len = mb->len;
   mb->buf = NULL;

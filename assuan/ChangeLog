@@ -1,3 +1,14 @@
+2002-01-03  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (assuan_set_okay_line): New.
+	(process_request): And use it here.
+
+2002-01-02  Werner Koch  <wk@gnupg.org>
+
+	* assuan-inquire.c (init_membuf,put_membuf,get_membuf): Apply a
+	hidden 0 behind the buffer so that the buffer can be used as a
+	string in certain contexts.
+
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-connect.c (assuan_pipe_connect): New argument
@@ -90,7 +101,7 @@
      * You may find it source-copied in other packages.        *
      ***********************************************************	
 	
- Copyright 2001 Free Software Foundation, Inc.
+ Copyright 2001, 2002 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
