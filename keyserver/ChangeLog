@@ -1,3 +1,8 @@
+2003-11-27  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_hkp.c (get_key): Fixed bad use of fprintf w/o format
+	string.
+
 2003-06-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Use W32LIBS where appropriate.

@@ -268,14 +268,14 @@ int get_key(char *getkey)
 
 	  if(gotit)
 	    {
-	      fprintf(output,line);
+	      fputs (line, output);
 	      if(strcmp(line,"-----END PGP PUBLIC KEY BLOCK-----\n")==0)
 		break;
 	    }
 	  else
 	    if(strcmp(line,"-----BEGIN PGP PUBLIC KEY BLOCK-----\n")==0)
 	      {
-		fprintf(output,line);
+		fputs (line, output);
 		gotit=1;
 	      }
 	}
