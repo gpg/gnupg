@@ -4,8 +4,10 @@
 
 set -e
 
-cd $HOME/pub
+ftp_dir=$1
 
+cd $HOME/pub
+PATH="$HOME/bin:$PATH"
 
 fix_version () {
     version=$(cat $1/VERSION)
@@ -25,6 +27,14 @@ Thanks,
 EOF
 }
 
+build_dist () {
+    set +e
+    nice scripts/autogen.sh && nice ./configure && nice make dist 
+    rm $ftp_dir/gnupg-*snap*-*-*.tar.gz
+    mv gnupg-*.tar.gz $ftp_dir/
+    set -e
+}
+
 
 do_export () {
     pgm=$1
@@ -34,6 +44,12 @@ do_export () {
     rm -rf $pgm.old || true
     cvs -Q export -r HEAD -d $pgm.new $mod
     fix_version $pgm.new
+    if [ -n "$ftp_dir" ]; then
+      here=$(pwd)
+      cd $pgm.new    
+      build_dist 
+      cd $here
+    fi
     [ -d $pgm ] && mv $pgm $pgm.old
     if ! mv $pgm.new $pgm ; then
 	echo "rename failed - restoring" >&2
