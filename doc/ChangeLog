@@ -1,3 +1,8 @@
+2002-08-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Clarify that only long-form options can go in the
+	config file.
+
 2002-08-06  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Fixed doc regarding the name change of the option

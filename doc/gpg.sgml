@@ -706,11 +706,13 @@ all options.
 <refsect1>
 <title>OPTIONS</title>
 <para>
-Long options can be put in an options file (default "~/.gnupg/gpg.conf").
-Do not write the 2 dashes, but simply the name of the option and any
-required arguments. Lines with a hash as the first non-white-space
-character are ignored. Commands may be put in this file too, but that
-does not make sense.
+Long options can be put in an options file (default
+"~/.gnupg/gpg.conf").  Short option names will not work - for example,
+"armor" is a valid option for the options file, while "a" is not.  Do
+not write the 2 dashes, but simply the name of the option and any
+required arguments.  Lines with a hash ('#') as the first
+non-white-space character are ignored.  Commands may be put in this
+file too, but that does not make sense.
 </para>
 <para>
 <command/gpg/ recognizes these options:
