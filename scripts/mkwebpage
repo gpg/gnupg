@@ -6,7 +6,7 @@
 
 set -e
 
-#cd $HOME/pub
+cd $HOME/pub
 
 extract_date () {
     # This strange construct is to speed up things.  Grouping a "s" and a "q"
@@ -77,9 +77,9 @@ EOF
     cvs -Q checkout -p gnupg/BUGS | sed  '1,/^~~~~~~~~~~~/ d' > $pgm.tmp/BUGS
     echo "(List generated from CVS: " $(date +%Y-%m-%d) ")"  >> $pgm.tmp/BUGS
     sed_it $pgm.tmp $pgm.new
-    fix_it $pgm.tmp $pgm.new
-    rm -rf $pgm.old || true
+    rm -rf $pgm.tmp || true
 
+    rm -rf $pgm.old || true
     [ -d $pgm ] && mv $pgm $pgm.old
     if ! mv $pgm.new $pgm ; then
 	echo "rename failed - restoring" >&2
