@@ -1,7 +1,7 @@
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-buffer.c (_assuan_read_line): New variable ATTICLEN, use
-	it to save the number of bytes left over after the complete line.
+	it to save the length of the attic line.
 	Rediddle the code a bit to make it more clear what happens.
 
 2001-12-14  Marcus Brinkmann  <marcus@g10code.de>
