@@ -151,6 +151,8 @@ lock_pool( void *p, size_t n )
      * wipes out the memory on a free().
      * Therefore it is sufficient to suppress the warning
      */
+  #elif defined (HAVE_DOSISH_SYSTEM)
+     #warning We suppress the warning for now
   #else
     log_info("Please note that you don't have secure memory on this system\n");
   #endif

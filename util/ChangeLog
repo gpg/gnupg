@@ -1,3 +1,7 @@
+2000-05-31 09:54:46  Werner Koch  (wk@habibti.openit.de)
+
+  * secmem.c: Suppress the no secmem warbing for DOSish systems.
+
 Tue May 30 16:37:55 CEST 2000  Werner Koch  <wk@openit.de>
 
   * iobuf.c (iobuf_cancel): Fix for MSDOS.
