@@ -1,3 +1,7 @@
+2000-10-07  Werner Koch  <wk@gnupg.org>
+
+	* gpgv.c: Add more stubs for ununsed code to make the binary smaller.
+
 Wed Oct  4 15:50:18 CEST 2000  Werner Koch  <wk@openit.de>
 
         * sign.c (hash_for): New arg to take packet version in account, changed

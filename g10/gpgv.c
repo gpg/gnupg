@@ -303,3 +303,70 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 }
 
 
+/* Stubs to void linking to ../cipher/cipher.c */
+int string_to_cipher_algo( const char *string ) { return 0; }
+const char *cipher_algo_to_string( int algo ) { return "?";}
+void disable_cipher_algo( int algo ) {}
+int check_cipher_algo( int algo ) { return -1;}
+unsigned int cipher_get_keylen( int algo ) { return 0; }
+unsigned int cipher_get_blocksize( int algo ) {return 0;}
+CIPHER_HANDLE cipher_open( int algo, int mode, int secure ) { return NULL;}
+void cipher_close( CIPHER_HANDLE c ) {}
+int cipher_setkey( CIPHER_HANDLE c, byte *key, unsigned keylen ) { return -1;}
+void cipher_setiv( CIPHER_HANDLE c, const byte *iv, unsigned ivlen ){}
+void cipher_encrypt( CIPHER_HANDLE c, byte *outbuf,
+                     byte *inbuf, unsigned nbytes ) {}
+void cipher_decrypt( CIPHER_HANDLE c, byte *outbuf,
+                     byte *inbuf, unsigned nbytes ) {}
+void cipher_sync( CIPHER_HANDLE c ) {}
+
+/* Stubs to avoid linking to ../cipher/random.c */
+void random_dump_stats(void) {}
+int quick_random_gen( int onoff ) { return -1;}
+void randomize_buffer( byte *buffer, size_t length, int level ) {}
+int random_is_faked() { return -1;}
+byte *get_random_bits( size_t nbits, int level, int secure ) { return NULL;}
+void set_random_seed_file( const char *name ) {}
+void update_random_seed_file() {}
+void fast_random_poll() {}
+
+/* Stubs to avoid linking of ../cipher/primegen.c */
+void register_primegen_progress ( void (*cb)( void *, int), void *cb_data ) {}
+MPI generate_secret_prime( unsigned  nbits ) { return NULL;}
+MPI generate_public_prime( unsigned  nbits ) { return NULL;}
+MPI generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
+                        MPI g, MPI **ret_factors ) { return NULL;}
+
+/* Do not link to ../cipher/rndlinux.c */
+void rndlinux_constructor(void) {}
+
+
+/* Stubs to avoid linking to ../util/ttyio.c */
+int tty_batchmode( int onoff ) { return 0; }
+void tty_printf( const char *fmt, ... ) { }
+void tty_print_string( byte *p, size_t n ) { }
+void tty_print_utf8_string( byte *p, size_t n ) {}
+void tty_print_utf8_string2( byte *p, size_t n, size_t max_n ) {}
+char *tty_get( const char *prompt ) { return NULL;}
+char *tty_get_hidden( const char *prompt ) {return NULL; }
+void tty_kill_prompt(void) {}
+int tty_get_answer_is_yes( const char *prompt ) {return 0;}
+int tty_no_terminal(int onoff) {return 0;}
+
+/* We do not do any locking, so use these stubs here */
+void disable_dotlock(void) {}
+DOTLOCK create_dotlock( const char *file_to_lock ) { return NULL; }
+int make_dotlock( DOTLOCK h, long timeout ) { return 0;}
+int release_dotlock( DOTLOCK h ) {return 0;}
+
+
+
+
+
+
+
+
+
+
+
+
