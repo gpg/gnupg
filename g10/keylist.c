@@ -760,7 +760,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
 	    PKT_user_id *uid=node->pkt->pkt.user_id;
 
-	    if((uid->is_expired || uid->is_revoked)
+	    if(pk && (uid->is_expired || uid->is_revoked)
 	       && !(opt.list_options&LIST_SHOW_UNUSABLE_UIDS))
 	      {
 		skip_sigs=1;

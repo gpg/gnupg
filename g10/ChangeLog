@@ -1,3 +1,11 @@
+2004-12-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (list_keyblock_print): Secret key listings should
+	always show everything (expired UIDs, revoked subkeys, etc, etc).
+
+	* keyedit.c (keyedit_menu): Add additional help for the "sign"
+	flags.
+
 2004-12-20  Werner Koch  <wk@g10code.com>
 
 	* keygen.c (ask_expire_interval): For better translations chnage 2
