@@ -2,5 +2,5 @@ mkdiff
 build-w32
 gnupg.spec.in
 autogen.sh
-mg-gpg-texi
+mk-gpg-texi
 
