@@ -305,8 +305,10 @@ gpgsm_is_root_cert (KsbaCert cert)
 }
 
 
+/* Validate a path and optionally return the nearest expiration time
+   in R_EXPTIME */
 int
-gpgsm_validate_path (KsbaCert cert)
+gpgsm_validate_path (KsbaCert cert, time_t *r_exptime)
 {
   int rc = 0, depth = 0, maxdepth;
   char *issuer = NULL;
@@ -314,14 +316,17 @@ gpgsm_validate_path (KsbaCert cert)
   KEYDB_HANDLE kh = keydb_new (0);
   KsbaCert subject_cert = NULL, issuer_cert = NULL;
   time_t current_time = time (NULL);
+  time_t exptime = 0;
+
+  if (r_exptime)
+    *r_exptime = 0;
 
   if ((opt.debug & 4096))
     {
       log_info ("WARNING: bypassing path validation\n");
       return 0;
     }
-      
-
+  
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
@@ -361,7 +366,15 @@ gpgsm_validate_path (KsbaCert cert)
             goto leave;
           }
 
-        if (current_time < not_before)
+        if (not_after)
+          {
+            if (!exptime)
+              exptime = not_after;
+            else if (not_after < exptime)
+              exptime = not_after;
+          }
+
+        if (not_before && current_time < not_before)
           {
             log_error ("certificate to young; valid from ");
             gpgsm_dump_time (not_before);
@@ -369,7 +382,7 @@ gpgsm_validate_path (KsbaCert cert)
             rc = GNUPG_Certificate_Too_Young;
             goto leave;
           }            
-        if (current_time > not_after)
+        if (not_after && current_time > not_after)
           {
             log_error ("certificate has expired at ");
             gpgsm_dump_time (not_after);
@@ -526,7 +539,8 @@ gpgsm_validate_path (KsbaCert cert)
           }
       }
 
-      log_info ("certificate is good\n");
+      if (opt.verbose)
+        log_info ("certificate is good\n");
       
       keydb_search_reset (kh);
       subject_cert = issuer_cert;
@@ -539,6 +553,8 @@ gpgsm_validate_path (KsbaCert cert)
     log_info ("CRLs not checked due to --disable-crl-checks option\n");
   
  leave:
+  if (r_exptime)
+    *r_exptime = exptime;
   xfree (issuer);
   keydb_release (kh); 
   ksba_cert_release (issuer_cert);

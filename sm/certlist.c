@@ -152,7 +152,7 @@ gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
                 rc = GNUPG_Ambiguous_Name;
             }
           if (!rc)
-            rc = gpgsm_validate_path (cert);
+            rc = gpgsm_validate_path (cert, NULL);
           if (!rc)
             {
               CERTLIST cl = xtrycalloc (1, sizeof *cl);

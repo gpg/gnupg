@@ -1,3 +1,10 @@
+2002-05-03  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (gpgsm_validate_path): Added EXPTIME arg and changed
+	all callers.
+	* verify.c (gpgsm_verify): Tweaked usage of log_debug and
+	log_error.  Return EXPSIG status and add expiretime to VALIDSIG.
+
 2002-04-26  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.h (DBG_AGENT,DBG_AGENT_VALUE): Replaced by DBG_ASSUAN_*.

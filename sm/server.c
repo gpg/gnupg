@@ -755,6 +755,8 @@ get_status_string ( int no )
     case STATUS_INV_RECP       : s = "INV_RECP"; break;
     case STATUS_NO_RECP        : s = "NO_RECP"; break;
     case STATUS_ALREADY_SIGNED : s = "ALREADY_SIGNED"; break;
+    case STATUS_EXPSIG         : s = "EXPSIG"; break;
+    case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
     default: s = "?"; break;
     }
   return s;

@@ -153,7 +153,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   err = ksba_cms_set_reader_writer (cms, reader, writer);
   if (err)
     {
-      log_debug ("ksba_cms_set_reader_writer failed: %s\n",
+      log_error ("ksba_cms_set_reader_writer failed: %s\n",
                  ksba_strerror (err));
       rc = map_ksba_err (err);
       goto leave;
@@ -175,7 +175,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       err = ksba_cms_parse (cms, &stopreason);
       if (err)
         {
-          log_debug ("ksba_cms_parse failed: %s\n", ksba_strerror (err));
+          log_error ("ksba_cms_parse failed: %s\n", ksba_strerror (err));
           rc = map_ksba_err (err);
           goto leave;
         }
@@ -183,7 +183,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       if (stopreason == KSBA_SR_NEED_HASH)
         {
           is_detached = 1;
-          log_debug ("Detached signature\n");
+          if (opt.verbose)
+            log_info ("detached signature\n");
         }
 
       if (stopreason == KSBA_SR_NEED_HASH
@@ -251,7 +252,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
     {
       char *issuer = NULL;
       KsbaSexp sigval = NULL;
-      time_t sigtime;
+      time_t sigtime, keyexptime;
       KsbaSexp serial;
       char *msgdigest = NULL;
       size_t msgdigestlen;
@@ -265,21 +266,27 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
         }
       if (err)
         break;
-      log_debug ("signer %d - issuer: `%s'\n", signer, issuer? issuer:"[NONE]");
-      log_debug ("signer %d - serial: ", signer);
-      gpgsm_dump_serial (serial);
-      log_printf ("\n");
+      if (DBG_X509)
+        {
+          log_debug ("signer %d - issuer: `%s'\n",
+                     signer, issuer? issuer:"[NONE]");
+          log_debug ("signer %d - serial: ", signer);
+          gpgsm_dump_serial (serial);
+          log_printf ("\n");
+        }
 
       err = ksba_cms_get_signing_time (cms, signer, &sigtime);
       if (err)
         {
-          log_debug ("error getting signing time: %s\n", ksba_strerror (err));
+          log_error ("error getting signing time: %s\n", ksba_strerror (err));
           sigtime = (time_t)-1;
         }
-      log_debug ("signer %d - sigtime: ", signer);
-      gpgsm_dump_time (sigtime);  
-      log_printf ("\n");
-
+      if (DBG_X509)
+        {
+          log_debug ("signer %d - sigtime: ", signer);
+          gpgsm_dump_time (sigtime);  
+          log_printf ("\n");
+        }
 
       err = ksba_cms_get_message_digest (cms, signer,
                                          &msgdigest, &msgdigestlen);
@@ -288,10 +295,11 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
 
       algoid = ksba_cms_get_digest_algo (cms, signer);
       algo = gcry_md_map_name (algoid);
-      log_debug ("signer %d - digest algo: %d\n", signer, algo);
+      if (DBG_X509)
+        log_debug ("signer %d - digest algo: %d\n", signer, algo);
       if ( !gcry_md_info (data_md, GCRYCTL_IS_ALGO_ENABLED, &algo, NULL) )
         {
-          log_debug ("digest algo %d has not been enabled\n", algo);
+          log_error ("digest algo %d has not been enabled\n", algo);
           goto next_signer;
         }
 
@@ -301,14 +309,15 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           log_error ("no signature value available\n");
           goto next_signer;
         }
-      log_debug ("signer %d - signature available", signer);
+      if (DBG_X509)
+        log_debug ("signer %d - signature available", signer);
 
       /* Find the certificate of the signer */
       keydb_search_reset (kh);
       rc = keydb_search_issuer_sn (kh, issuer, serial);
       if (rc)
         {
-          log_debug ("failed to find the certificate: %s\n",
+          log_error ("failed to find the certificate: %s\n",
                      gnupg_strerror(rc));
           goto next_signer;
         }
@@ -316,7 +325,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
       rc = keydb_get_cert (kh, &cert);
       if (rc)
         {
-          log_debug ("failed to get cert: %s\n", gnupg_strerror (rc));
+          log_error ("failed to get cert: %s\n", gnupg_strerror (rc));
           goto next_signer;
         }
 
@@ -351,7 +360,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           rc = ksba_cms_hash_signed_attrs (cms, signer);
           if (rc)
             {
-              log_debug ("hashing signed attrs failed: %s\n",
+              log_error ("hashing signed attrs failed: %s\n",
                          ksba_strerror (rc));
               gcry_md_close (md);
               goto next_signer;
@@ -371,23 +380,29 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           goto next_signer;
         }
       gpgsm_cert_use_verify_p (cert); /* this displays an info message */
-      log_debug ("signature okay - checking certs\n");
-      gpgsm_status (ctrl, STATUS_GOODSIG, NULL);
+      if (DBG_X509)
+        log_debug ("signature okay - checking certs\n");
+      rc = gpgsm_validate_path (cert, &keyexptime);
+      if (rc == GNUPG_Certificate_Expired)
+        gpgsm_status (ctrl, STATUS_EXPKEYSIG, NULL);
+      else
+        gpgsm_status (ctrl, STATUS_GOODSIG, NULL);
+      
       {
         char *buf, *fpr, *tstr;
 
         fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
         tstr = strtimestamp (sigtime);
-        buf = xmalloc ( strlen(fpr) + strlen (tstr) + 100);
-        sprintf (buf, "%s %s %lu", fpr, tstr, (unsigned long)sigtime );
+        buf = xmalloc ( strlen(fpr) + strlen (tstr) + 120);
+        sprintf (buf, "%s %s %lu %lu", fpr, tstr,
+                 (unsigned long)sigtime, (unsigned long)keyexptime );
         xfree (tstr);
         xfree (fpr);
         gpgsm_status (ctrl, STATUS_VALIDSIG, buf);
         xfree (buf);
       }
 
-      rc = gpgsm_validate_path (cert);
-      if (rc)
+      if (rc) /* of validate_path */
         {
           log_error ("invalid certification path: %s\n", gnupg_strerror (rc));
           if (rc == GNUPG_Bad_Certificate_Path
@@ -413,7 +428,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   rc = 0;
   if (err)
     {
-      log_debug ("ksba error: %s\n", ksba_strerror (err));
+      log_error ("ksba error: %s\n", ksba_strerror (err));
       rc = map_ksba_err (rc);
     }    
 
