@@ -120,7 +120,7 @@ connect_server (const char *server, unsigned short port)
 
   /* Win32 gethostbyname doesn't handle IP addresses internally, so we
      try inet_addr first on that platform only. */
-  if ((l = inet_addr (server)) != SOCKET_ERROR) 
+  if ((l = inet_addr (server)) != INADDR_NONE) 
     memcpy (&addr.sin_addr, &l, sizeof l);
   else if ((hp = gethostbyname (server))) 
     {

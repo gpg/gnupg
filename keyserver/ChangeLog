@@ -1,3 +1,8 @@
+2005-01-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_finger.c (connect_server): Use INADDR_NONE instead of
+	SOCKET_ERROR.  Noted by Timo.
+
 2005-01-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_curl.c (get_key): Newer versions of libcurl don't define
