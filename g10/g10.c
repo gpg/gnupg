@@ -1984,7 +1984,8 @@ main( int argc, char **argv )
     if( def_cipher_string ) {
 	opt.def_cipher_algo = string_to_cipher_algo(def_cipher_string);
 	if(opt.def_cipher_algo==0 &&
-	   ascii_strcasecmp(def_cipher_string,"idea")==0)
+	   (ascii_strcasecmp(def_cipher_string,"idea")==0
+	    || ascii_strcasecmp(def_cipher_string,"s1")==0))
 	  idea_cipher_warn(1);
 	m_free(def_cipher_string); def_cipher_string = NULL;
 	if( check_cipher_algo(opt.def_cipher_algo) )

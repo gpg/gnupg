@@ -72,7 +72,12 @@ int openpgp_cipher_test_algo( int algo );
 int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
+
+#ifdef USE_IDEA
 void idea_cipher_warn( int show );
+#else
+#define idea_cipher_warn(a)
+#endif
 
 struct expando_args
 {

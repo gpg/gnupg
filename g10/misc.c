@@ -289,6 +289,7 @@ openpgp_md_test_algo( int algo )
     return check_digest_algo(algo);
 }
 
+#ifdef USE_IDEA
 /* Special warning for the IDEA cipher */
 void
 idea_cipher_warn(int show)
@@ -303,6 +304,7 @@ idea_cipher_warn(int show)
       warned=1;
     }
 }
+#endif
 
 /* Expand %-strings.  Returns a string which must be m_freed.  Returns
    NULL if the string cannot be expanded (too large). */
