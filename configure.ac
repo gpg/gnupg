@@ -440,38 +440,23 @@ AC_ARG_ENABLE(dns-srv,
    use_dns_srv=$enableval,use_dns_srv=yes)
 
 if test x"$try_hkp" = xyes && test x"$use_dns_srv" = xyes ; then
-  AC_CHECK_FUNC(res_query)
+  _srv_save_libs=$LIBS
+  LIBS=""
   # the double underscore thing is a glibc-ism?
-  if test $ac_cv_func_res_query = no ; then 
-     AC_CHECK_FUNC(__res_query)
-     ac_cv_func_res_query=$ac_cv_func___res_query
-  fi
-  if test $ac_cv_func_res_query = no ; then 
-     AC_CHECK_LIB(resolv,res_query)
-     ac_cv_func_res_query=$ac_cv_lib_resolv_res_query
-     srvlib="-lresolv"
-  fi
-  if test $ac_cv_func_res_query = no ; then 
-     AC_CHECK_LIB(resolv,__res_query)
-     ac_cv_func_res_query=$ac_cv_lib_resolv___res_query
-     srvlib="-lresolv"
-  fi
-  if test $ac_cv_func_res_query = no ; then 
-     AC_CHECK_LIB(bind,res_query)
-     ac_cv_func_res_query=$ac_cv_lib_bind_res_query
-     srvlib="-lbind"
-  fi
-  if test $ac_cv_func_res_query = no ; then 
-     AC_CHECK_LIB(bind,__res_query)
-     ac_cv_func_res_query=$ac_cv_lib_bind___res_query
-     srvlib="-lbind"
-  fi
-  # we assume if we can find res_query, we can also use the dn_expand
-  # and dn_skipname functions.
-  if test x"$ac_cv_func_res_query" = xyes ; then
+  AC_SEARCH_LIBS(res_query,resolv bind,,
+                 AC_SEARCH_LIBS(__res_query,resolv bind,,use_dns_srv=no))
+  AC_SEARCH_LIBS(dn_expand,resolv bind,,
+                 AC_SEARCH_LIBS(__dn_expand,resolv bind,,use_dns_srv=no))
+  AC_SEARCH_LIBS(dn_skipname,resolv bind,,
+                 AC_SEARCH_LIBS(__dn_skipname,resolv bind,,use_dns_srv=no))
+
+  if test x"$use_dns_srv" = xyes ; then
      AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
-     SRVLIBS=$srvlib
+     SRVLIBS=$LIBS
+  else
+     AC_MSG_WARN([Resolver functions not found.  Disabling DNS SRV.])
   fi
+  LIBS=$_srv_save_libs
 fi
 
 AC_SUBST(SRVLIBS)

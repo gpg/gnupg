@@ -83,7 +83,7 @@ dnl ***
 dnl *** It seems that the faqprog.pl program is not installed;
 dnl *** however it is only needed if you want to change the FAQ.
 dnl ***  (faqprog.pl should be available at:
-dnl ***    ftp://ftp.gnupg.org/pub/gcrypt/contrib/faqprog.pl )
+dnl ***    ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl )
 dnl *** No need to worry about this warning.
 dnl ***]])
 dnl     fi
