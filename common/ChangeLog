@@ -1,3 +1,7 @@
+2004-02-17  Werner Koch  <wk@gnupg.org>
+
+	* errors.h: Added STATUS_IMPORT_OK.
+
 2004-02-10  Werner Koch  <wk@gnupg.org>
 
 	* b64enc.c: New.  Based on code from ../sm/base64.c.
