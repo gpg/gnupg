@@ -870,8 +870,10 @@ change_passphrase( KBNODE keyblock )
 			    " this is probably a *bad* idea!\n\n"));
 		if( cpr_get_answer_is_yes("change_passwd.empty.okay",
 			       _("Do you really want to do this? ")))
+		  {
 		    changed++;
-		break;
+		    break;
+		  }
 	    }
 	    else { /* okay */
 		rc = 0;

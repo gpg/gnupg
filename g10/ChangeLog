@@ -1,3 +1,9 @@
+2003-08-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (change_passphrase): When responding 'no' to the blank
+	passphrase question, re-prompt for a new passphrase.  This is bug
+	#202.
+
 2003-08-21  Werner Koch  <wk@gnupg.org>
 
 	* keyserver.c (keyserver_search_prompt): Flush stdout before
