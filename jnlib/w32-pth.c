@@ -40,8 +40,6 @@
 #define W32_PTH_HANDLE_INTERNAL  HANDLE
 #include "w32-pth.h"
 
-#define DEBUG_ENTER_LEAVE 1 /* Set to 1 to enable full debugging. */
-
 
 #ifndef FALSE
 #define FALSE 0
@@ -54,11 +52,14 @@
 #endif
 
 
-/* States whether trhis module has been initialized.  */
+/* States whether this module has been initialized.  */
 static int pth_initialized;
 
-/* Controls whether debugging is enabled.  */
-static int debug_enter_leave;
+/* Keeps the current debug level. Define marcos to test them. */
+static int debug_level;
+#define DBG_ERROR  (debug_level >= 1)
+#define DBG_INFO   (debug_level >= 2)
+#define DBG_CALLS  (debug_level >= 3)
 
 /* Variables to support event handling. */
 static int pth_signo;
@@ -67,7 +68,7 @@ static HANDLE pth_signo_ev;
 /* Mutex to make sure only one thread is running. */
 static CRITICAL_SECTION pth_shd;
 
-
+/* Events are store in a double linked event ring.  */
 struct pth_event_s
 {
   struct pth_event_s * next;
@@ -124,12 +125,14 @@ pth_init (void)
 {
   SECURITY_ATTRIBUTES sa;
   WSADATA wsadat;
+  const char *s;
   
   if (pth_initialized)
     return TRUE;
 
-  fprintf (stderr, "%s: pth_init: called.\n", log_get_prefix (NULL));
-  debug_enter_leave = !!getenv ("DEBUG_PTH");
+  debug_level = (s=getenv ("DEBUG_PTH"))? atoi (s):0;
+  if (debug_level)
+    fprintf (stderr, "%s: pth_init: called.\n", log_get_prefix (NULL));
 
   if (WSAStartup (0x202, &wsadat))
     return FALSE;
@@ -184,7 +187,7 @@ enter_pth (const char *function)
 {
   /* Fixme: I am not sure whether the same thread my enter a critical
      section twice.  */
-  if (debug_enter_leave)
+  if (DBG_CALLS)
     fprintf (stderr, "%s: enter_pth (%s)\n",
              log_get_prefix (NULL), function? function:"");
   LeaveCriticalSection (&pth_shd);
@@ -195,7 +198,7 @@ static void
 leave_pth (const char *function)
 {
   EnterCriticalSection (&pth_shd);
-  if (debug_enter_leave)
+  if (DBG_CALLS)
     fprintf (stderr, "%s: leave_pth (%s)\n",
              log_get_prefix (NULL), function? function:"");
 }
@@ -262,9 +265,10 @@ pth_read (int fd,  void * buffer, size_t size)
         {
           char strerr[256];
 
-          fprintf (stderr, "%s: pth_read(%d) failed read from file: %s\n",
-                   log_get_prefix (NULL), fd,
-                   w32_strerror (strerr, sizeof strerr));
+          if (DBG_ERROR)
+            fprintf (stderr, "%s: pth_read(%d) failed read from file: %s\n",
+                     log_get_prefix (NULL), fd,
+                     w32_strerror (strerr, sizeof strerr));
           n = -1;
         }
       else
@@ -302,9 +306,10 @@ pth_write (int fd, const void * buffer, size_t size)
       n = WriteFile ((HANDLE)fd, buffer, size, &nwrite, NULL);
       if (!n)
         {
-          fprintf (stderr, "%s: pth_write(%d) failed in write: %s\n",
-                   log_get_prefix (NULL), fd,
-                   w32_strerror (strerr, sizeof strerr));
+          if (DBG_ERROR)
+            fprintf (stderr, "%s: pth_write(%d) failed in write: %s\n",
+                     log_get_prefix (NULL), fd,
+                     w32_strerror (strerr, sizeof strerr));
           n = -1;
         }
       else
@@ -395,21 +400,21 @@ pth_accept_ev (int fd, struct sockaddr *addr, int *addrlen,
          (WSAGetLastError () == WSAEINPROGRESS || 
           WSAGetLastError () == WSAEWOULDBLOCK))
     {
-      if (ev == NULL)
+      if (!ev)
         {
           ev = do_pth_event (PTH_EVENT_FD|PTH_UNTIL_FD_READABLE|
                              PTH_MODE_STATIC, &ev_key, fd);
-          if (ev == NULL)
+          if (!ev)
             {
               leave_pth (__FUNCTION__);
               return -1;
             }
-          if (ev_extra != NULL)
+          if (ev_extra)
             pth_event_concat (ev, ev_extra, NULL);
         }
       /* Wait until accept has a chance. */
       do_pth_wait (ev);
-      if (ev_extra != NULL)
+      if (ev_extra)
         {
           pth_event_isolate (ev);
           if (do_pth_event_status (ev) != PTH_STATUS_OCCURRED)
@@ -452,9 +457,10 @@ pth_mutex_release (pth_mutex_t *mutex)
     {
       char strerr[256];
 
-      fprintf (stderr, "%s: pth_release_mutex %p failed: %s\n",
-               log_get_prefix (NULL), *mutex,
-               w32_strerror (strerr, sizeof strerr));
+      if (DBG_ERROR)
+        fprintf (stderr, "%s: pth_release_mutex %p failed: %s\n",
+                 log_get_prefix (NULL), *mutex,
+                 w32_strerror (strerr, sizeof strerr));
       rc = FALSE;
     }
   else
@@ -483,9 +489,10 @@ pth_mutex_acquire (pth_mutex_t *mutex, int tryonly, pth_event_t ev_extra)
         {
           char strerr[256];
           
-          fprintf (stderr, "%s: pth_mutex_acquire for %p failed: %s\n",
-                   log_get_prefix (NULL), *mutex,
-                   w32_strerror (strerr, sizeof strerr));
+          if (DBG_ERROR)
+            fprintf (stderr, "%s: pth_mutex_acquire for %p failed: %s\n",
+                     log_get_prefix (NULL), *mutex,
+                     w32_strerror (strerr, sizeof strerr));
         }
         rc = FALSE;
         break;
@@ -495,9 +502,10 @@ pth_mutex_acquire (pth_mutex_t *mutex, int tryonly, pth_event_t ev_extra)
         break;
 
       default:
-        fprintf (stderr, "%s: WaitForSingleObject returned unexpected "
-                 "code %d for mutex %p\n",
-                 log_get_prefix (NULL), code, *mutex);
+        if (DBG_ERROR)
+          fprintf (stderr, "%s: WaitForSingleObject returned unexpected "
+                   "code %d for mutex %p\n",
+                   log_get_prefix (NULL), code, *mutex);
         rc = FALSE;
         break;
     }
@@ -576,8 +584,9 @@ pth_attr_set (pth_attr_t hd, int field, ...)
       if (val)
         {
           hd->flags |= PTH_ATTR_JOINABLE;
-          fprintf (stderr, "%s: pth_attr_set: PTH_ATTR_JOINABLE\n",
-                   log_get_prefix (NULL));
+          if (DBG_INFO)
+            fprintf (stderr, "%s: pth_attr_set: PTH_ATTR_JOINABLE\n",
+                     log_get_prefix (NULL));
         }
       break;
 
@@ -587,8 +596,9 @@ pth_attr_set (pth_attr_t hd, int field, ...)
         {
           hd->flags |= PTH_ATTR_STACK_SIZE;
           hd->stack_size = val;
-          fprintf (stderr, "%s: pth_attr_set: PTH_ATTR_STACK_SIZE %d\n",
-                   log_get_prefix (NULL), val);
+          if (DBG_INFO)
+            fprintf (stderr, "%s: pth_attr_set: PTH_ATTR_STACK_SIZE %d\n",
+                     log_get_prefix (NULL), val);
         }
       break;
 
@@ -602,8 +612,9 @@ pth_attr_set (pth_attr_t hd, int field, ...)
           if (!hd->name)
             return FALSE;
           hd->flags |= PTH_ATTR_NAME;
-          fprintf (stderr, "%s: pth_attr_set: PTH_ATTR_NAME %s\n",
-                   log_get_prefix (NULL), hd->name);
+          if (DBG_INFO)
+            fprintf (stderr, "%s: pth_attr_set: PTH_ATTR_NAME %s\n",
+                     log_get_prefix (NULL), hd->name);
         }
       break;
 
@@ -647,14 +658,16 @@ do_pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
 
      FIXME: We should no use th W32's Thread handle directly but keep
      our own thread control structure.  CTX may be used for that.  */
-  fprintf (stderr, "%s: do_pth_spawn creating thread ...\n",
-           log_get_prefix (NULL));
+  if (DBG_INFO)
+    fprintf (stderr, "%s: do_pth_spawn creating thread ...\n",
+             log_get_prefix (NULL));
   th = CreateThread (&sa, hd->stack_size,
                      (LPTHREAD_START_ROUTINE)launch_thread,
                      ctx, CREATE_SUSPENDED, &tid);
   ctx->th = th;
-  fprintf (stderr, "%s: do_pth_spawn created thread %p\n",
-           log_get_prefix (NULL),th);
+  if (DBG_INFO)
+    fprintf (stderr, "%s: do_pth_spawn created thread %p\n",
+             log_get_prefix (NULL),th);
   if (!th)
     free (ctx);
   else
@@ -787,7 +800,8 @@ sig_handler (DWORD signo)
     case CTRL_BREAK_EVENT: pth_signo = SIGTERM; break;
     }
   SetEvent (pth_signo_ev);
-  fprintf (stderr, "%s: sig_handler=%d\n", log_get_prefix (NULL), pth_signo);
+  if (DBG_INFO)
+    fprintf (stderr, "%s: sig_handler=%d\n", log_get_prefix (NULL), pth_signo);
   return TRUE;
 }
 
@@ -799,7 +813,8 @@ do_pth_event_body (unsigned long spec, va_list arg)
   pth_event_t ev;
   int rc;
 
-  fprintf (stderr, "%s: pth_event spec=%lu\n", log_get_prefix (NULL), spec);
+  if (DBG_INFO)
+    fprintf (stderr, "%s: pth_event spec=%lu\n", log_get_prefix (NULL), spec);
   ev = calloc (1, sizeof *ev);
   if (!ev)
     return NULL;
@@ -811,8 +826,9 @@ do_pth_event_body (unsigned long spec, va_list arg)
       ev->u_type = PTH_EVENT_SIGS;
       ev->val = va_arg (arg, int *);	
       rc = SetConsoleCtrlHandler (sig_handler, TRUE);
-      fprintf (stderr, "%s: pth_event: sigs rc=%d\n",
-               log_get_prefix (NULL), rc);
+      if (DBG_INFO)
+        fprintf (stderr, "%s: pth_event: sigs rc=%d\n",
+                 log_get_prefix (NULL), rc);
     }
   else if (spec & PTH_EVENT_FD)
     {
@@ -823,8 +839,9 @@ do_pth_event_body (unsigned long spec, va_list arg)
       ev->u_type = PTH_EVENT_FD;
       va_arg (arg, pth_key_t);
       ev->u.fd = va_arg (arg, int);
-      fprintf (stderr, "%s: pth_event: fd=%d\n",
-               log_get_prefix (NULL), ev->u.fd);
+      if (DBG_INFO)
+        fprintf (stderr, "%s: pth_event: fd=%d\n",
+                 log_get_prefix (NULL), ev->u.fd);
     }
   else if (spec & PTH_EVENT_TIME)
     {
@@ -854,6 +871,8 @@ do_pth_event_body (unsigned long spec, va_list arg)
       free (ev);
       return NULL;
     }
+  ev->next = ev;
+  ev->prev = ev;
 
   return ev;
 }
@@ -938,8 +957,9 @@ wait_for_fd (int fd, int is_read, int nwait)
   while (1)
     {
       n = select (fd+1, &r, &w, NULL, &tv);
-      fprintf (stderr, "%s: wait_for_fd=%d fd %d (ec=%d)\n",
-               log_get_prefix (NULL), n, fd,(int)WSAGetLastError ());
+      if (DBG_INFO)
+        fprintf (stderr, "%s: wait_for_fd=%d fd %d (ec=%d)\n",
+                 log_get_prefix (NULL), n, fd,(int)WSAGetLastError ());
       if (n == -1)
         break;
       if (!n)
@@ -1036,8 +1056,9 @@ do_pth_event_occurred (pth_event_t ev)
       if (sigpresent (ev->u.sig, pth_signo) &&
           WaitForSingleObject (pth_signo_ev, 0) == WAIT_OBJECT_0)
         {
-          fprintf (stderr, "%s: pth_event_occurred: sig signaled.\n",
-                   log_get_prefix (NULL));
+          if (DBG_INFO)
+            fprintf (stderr, "%s: pth_event_occurred: sig signaled.\n",
+                     log_get_prefix (NULL));
           (*ev->val) = pth_signo;
           ret = 1;
         }
@@ -1090,18 +1111,21 @@ pth_event_status (pth_event_t ev)
 static int
 do_pth_event_free (pth_event_t ev, int mode)
 {
-  pth_event_t n;
+  if (!ev)
+    return FALSE;
 
   if (mode == PTH_FREE_ALL)
     {
-      while (ev)
+      pth_event_t cur = ev;
+      do
         {
-          n = ev->next;
-          CloseHandle (ev->hd);
-          ev->hd = NULL;
-          free (ev);
-          ev = n;
+          pth_event_t next = cur->next;
+          CloseHandle (cur->hd);
+          cur->hd = NULL;
+          free (cur);
+          cur = next;
         }
+      while (cur != ev);
     }
   else if (mode == PTH_FREE_THIS)
     {
@@ -1111,6 +1135,8 @@ do_pth_event_free (pth_event_t ev, int mode)
       ev->hd = NULL;	    
       free (ev);
     }
+  else
+    return FALSE;
 
   return TRUE;
 }
@@ -1131,24 +1157,39 @@ pth_event_free (pth_event_t ev, int mode)
 pth_event_t
 pth_event_isolate (pth_event_t ev)
 {
-  pth_event_t ring = NULL;
+  pth_event_t ring;
 
   if (!ev)
     return NULL;
+  if (ev->next == ev && ev->prev == ev)
+    return NULL; /* Only one event.  */
+
+  ring = ev->next;
+  ev->prev->next = ev->next;
+  ev->next->prev = ev->prev;
+  ev->prev = ev;
+  ev->next = ev;
   return ring;    
 }
 
 
 static int
-_pth_event_count (pth_event_t ev)
+event_count (pth_event_t ev)
 {
-  pth_event_t p;
-  int cnt=0;
+  pth_event_t r;
+  int cnt = 0;
 
-  if (!ev)
-    return 0;
-  for (p = ev; p; p = p->next)
-    cnt++;    
+  if (ev)
+    {
+      r = ev;
+      do
+        {
+          cnt++;
+          r = r->next;
+        }
+      while (r != ev);
+    }
+
   return cnt;
 }
 
@@ -1166,13 +1207,15 @@ spawn_helper_thread (void *(*func)(void *), void *arg)
   sa.lpSecurityDescriptor = NULL;
   sa.nLength = sizeof sa;
 
-  fprintf (stderr, "%s: spawn_helper_thread creating thread ...\n",
-           log_get_prefix (NULL));
+  if (DBG_INFO)
+    fprintf (stderr, "%s: spawn_helper_thread creating thread ...\n",
+             log_get_prefix (NULL));
   th = CreateThread (&sa, 32*1024,
                      (LPTHREAD_START_ROUTINE)func,
                      arg, 0, &tid);
-  fprintf (stderr, "%s: spawn_helper_thread created thread %p\n",
-           log_get_prefix (NULL), th);
+  if (DBG_INFO)
+    fprintf (stderr, "%s: spawn_helper_thread created thread %p\n",
+             log_get_prefix (NULL), th);
 
   return th;
 }
@@ -1197,7 +1240,8 @@ wait_fd_thread (void * ctx)
   pth_event_t ev = ctx;
 
   wait_for_fd (ev->u.fd, ev->flags & PTH_UNTIL_FD_READABLE, 3600);
-  fprintf (stderr, "%s: wait_fd_thread: exit.\n", log_get_prefix (NULL));
+  if (DBG_INFO)
+    fprintf (stderr, "%s: wait_fd_thread: exit.\n", log_get_prefix (NULL));
   SetEvent (ev->hd);
   ExitThread (0);
   return NULL;
@@ -1211,7 +1255,8 @@ wait_timer_thread (void * ctx)
   int n = ev->u.tv.tv_sec*1000;
   Sleep (n);
   SetEvent (ev->hd);
-  fprintf (stderr, "%s: wait_timer_thread: exit.\n", log_get_prefix (NULL));
+  if (DBG_INFO)
+    fprintf (stderr, "%s: wait_timer_thread: exit.\n", log_get_prefix (NULL));
   ExitThread (0);
   return NULL;
 }
@@ -1223,51 +1268,62 @@ do_pth_wait (pth_event_t ev)
   HANDLE waitbuf[MAXIMUM_WAIT_OBJECTS/2];
   int    hdidx[MAXIMUM_WAIT_OBJECTS/2];
   DWORD n = 0;
-  pth_event_t tmp;
   int pos=0, i=0;
 
   if (!ev)
     return 0;
 
-  n =_pth_event_count (ev);
+  n = event_count (ev);
   if (n > MAXIMUM_WAIT_OBJECTS/2)
     return -1;
 
-  fprintf (stderr, "%s: pth_wait: cnt %lu\n", log_get_prefix (NULL), n);
-  for (tmp = ev; tmp; tmp = tmp->next)
+  if (DBG_INFO)
+    fprintf (stderr, "%s: pth_wait: cnt %lu\n", log_get_prefix (NULL), n);
+  if (ev)
     {
-      switch (tmp->u_type)
+      pth_event_t r = ev;
+      do
         {
-        case 0:
-          waitbuf[pos++] = tmp->hd;
-          break;
-
-        case PTH_EVENT_SIGS:
-          waitbuf[pos++] = pth_signo_ev;
-          fprintf (stderr, "pth_wait: add signal event.\n");
-          break;
-
-        case PTH_EVENT_FD:
-          fprintf (stderr, "pth_wait: spawn event wait thread.\n");
-          hdidx[i++] = pos;
-          waitbuf[pos++] = spawn_helper_thread (wait_fd_thread, tmp);
-          break;
-
-        case PTH_EVENT_TIME:
-          fprintf (stderr, "pth_wait: spawn event timer thread.\n");
-          hdidx[i++] = pos;
-          waitbuf[pos++] = spawn_helper_thread (wait_timer_thread, tmp);
-          break;
-
-        case PTH_EVENT_MUTEX:
-          fprintf (stderr, "pth_wait: add mutex event.\n");
-          break;
+          switch (r->u_type)
+            {
+            case 0:
+              waitbuf[pos++] = r->hd;
+              break;
+              
+            case PTH_EVENT_SIGS:
+              waitbuf[pos++] = pth_signo_ev;
+              if (DBG_INFO)
+                fprintf (stderr, "pth_wait: add signal event.\n");
+              break;
+              
+            case PTH_EVENT_FD:
+              if (DBG_INFO)
+                fprintf (stderr, "pth_wait: spawn event wait thread.\n");
+              hdidx[i++] = pos;
+              waitbuf[pos++] = spawn_helper_thread (wait_fd_thread, r);
+              break;
+              
+            case PTH_EVENT_TIME:
+              if (DBG_INFO)
+                fprintf (stderr, "pth_wait: spawn event timer thread.\n");
+              hdidx[i++] = pos;
+              waitbuf[pos++] = spawn_helper_thread (wait_timer_thread, r);
+              break;
+          
+            case PTH_EVENT_MUTEX:
+              if (DBG_INFO)
+                fprintf (stderr, "pth_wait: ignoring mutex event.\n");
+              break;
+            }
         }
+      while ( r != ev );
     }
-  fprintf (stderr, "%s: pth_wait: set %d\n", log_get_prefix (NULL), pos);
+  if (DBG_INFO)
+    fprintf (stderr, "%s: pth_wait: set %d\n", log_get_prefix (NULL), pos);
   n = WaitForMultipleObjects (pos, waitbuf, FALSE, INFINITE);
   free_helper_threads (waitbuf, hdidx, i);
-  fprintf (stderr, "%s: pth_wait: n %ld\n", log_get_prefix (NULL), n);
+  if (DBG_INFO)
+    fprintf (stderr, "%s: pth_wait: n %ld\n", log_get_prefix (NULL), n);
 
   if (n != WAIT_TIMEOUT)
     return 1;

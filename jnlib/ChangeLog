@@ -1,3 +1,15 @@
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c (do_pth_event_free): The events are hold in a ring
+	buffer.  Adjust for that.
+	(do_pth_event_body): Ditto.
+	(pth_event_isolate): Ditto.
+	(do_pth_wait): Ditto.
+	(_pth_event_count): Renamed to ..
+	(event_count): .. and adjusted as above.
+	(pth_init): Define 3 debug levels and change all debug calls to
+	make use of them.  This makes the moule now silent.
+
 2004-12-19  Werner Koch  <wk@g10code.com>
 
 	* w32-pth.c (pth_init): Enable debugging depending on env var.
