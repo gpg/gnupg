@@ -1,3 +1,9 @@
+Thu Apr  8 09:35:53 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* acinclude.m4 (GNUPG_CHECK_RDYNAMIC): Fix for
+					       amiga-openbsd (Peter Reich)
+	(GNUPG_PROG_NM): Ditto
+
 Wed Apr  7 20:51:39 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* Makefile.am (g10defs.h): Removed.

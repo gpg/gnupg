@@ -245,6 +245,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	    log_info(_("decryption okay\n"));
     }
     else {
+	write_status( STATUS_DECRYPTION_FAILED );
 	log_error(_("decryption failed: %s\n"), g10_errstr(result));
 	/* FIXME: if this is secret key not available, try with
 	 * other keys */

@@ -1,3 +1,9 @@
+Thu Apr  8 09:35:53 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* mainproc.c (proc_encrypted): Add a new status output
+	* passphrase.c (passphrase_to_dek): Ditto.
+	* status.h status.c: Add new status tokens.
+
 Wed Apr  7 20:51:39 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* encr-data.c (decrypt_data): Fixes for 128 bit blocksize

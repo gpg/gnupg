@@ -108,8 +108,15 @@ more arguments in future versions.
     NEED_PASSPHRASE <long keyid>
 	Issued whenever a passphrase is needed.
 
+    NEED_PASSPHRASE_SYM <cipher_algo> <s2k_mode> <s2k_hash>
+	Issued whenever a passphrase for symmetric encryption is needed.
+
     BAD_PASSPHRASE <long keyid>
 	The supplied passphrase was wrong
+
+    DECRYPTION_FAILED
+	The symmetric decryption failed - one reason could be a wrong
+	passphrase for a symmetrical encrypted message.
 
     NO_PUBKEY  <long keyid>
     NO_SECKEY  <long keyid>

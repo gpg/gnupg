@@ -55,6 +55,8 @@
 #define STATUS_BAD_PASSPHRASE  25
 #define STATUS_NO_PUBKEY       26
 #define STATUS_NO_SECKEY       27
+#define STATUS_NEED_PASSPHRASE_SYM 28
+#define STATUS_DECRYPTION_FAILED 29
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
