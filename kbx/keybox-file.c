@@ -32,38 +32,54 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
 {
   char *image;
   size_t imagelen = 0;
-  int c1, c2, c3, c4;
+  int c1, c2, c3, c4, type;
   int rc;
+  off_t off;
 
+ again:
   *r_blob = NULL;
+  off = ftello (fp);
+  if (off == (off_t)-1)
+    return KEYBOX_Read_Error;
+
   if ((c1 = getc (fp)) == EOF
       || (c2 = getc (fp)) == EOF
       || (c3 = getc (fp)) == EOF
-      || (c4 = getc (fp)) == EOF ) {
-    if ( c1 == EOF && !ferror (fp) )
-      return -1; /* eof */
-    return KEYBOX_Read_Error;
-  }
+      || (c4 = getc (fp)) == EOF
+      || (type = getc (fp)) == EOF)
+    {
+      if ( c1 == EOF && !ferror (fp) )
+        return -1; /* eof */
+      return KEYBOX_Read_Error;
+    }
 
   imagelen = (c1 << 24) | (c2 << 16) | (c3 << 8 ) | c4;
   if (imagelen > 500000) /* sanity check */
     return KEYBOX_Blob_Too_Large;
   
-  if (imagelen < 4) 
+  if (imagelen < 5) 
     return KEYBOX_Blob_Too_Short;
-    
+
+  if (!type)
+    {
+      /* special treatment for empty blobs. */
+      if (fseek (fp, imagelen-5, SEEK_CUR))
+        return KEYBOX_Read_Error;
+      goto again;
+    }
+
   image = xtrymalloc (imagelen);
   if (!image) 
     return KEYBOX_Out_Of_Core;
 
-  image[0] = c1; image[1] = c2; image[2] = c3; image[3] = c4;
-  if (fread (image+4, imagelen-4, 1, fp) != 1)
+  image[0] = c1; image[1] = c2; image[2] = c3; image[3] = c4; image[4] = type;
+  if (fread (image+5, imagelen-5, 1, fp) != 1)
     {
       xfree (image);
       return KEYBOX_Read_Error;
     }
   
-  rc = r_blob? _keybox_new_blob (r_blob, image, imagelen) : 0;
+  rc = r_blob? _keybox_new_blob (r_blob, image, imagelen, off) : 0;
   if (rc || !r_blob)
         xfree (image);
   return rc;

@@ -384,7 +384,50 @@ keybox_update_cert (KEYBOX_HANDLE hd, KsbaCert cert,
 int
 keybox_delete (KEYBOX_HANDLE hd)
 {
-  return -1;
+  off_t off;
+  const char *fname;
+  FILE *fp;
+  int rc;
+
+  if (!hd)
+    return KEYBOX_Invalid_Value;
+  if (!hd->found.blob)
+    return KEYBOX_Nothing_Found;
+  if (!hd->kb)
+    return KEYBOX_Invalid_Handle; 
+  fname = hd->kb->fname;
+  if (!fname)
+    return KEYBOX_Invalid_Handle; 
+
+  off = _keybox_get_blob_fileoffset (hd->found.blob);
+  if (off == (off_t)-1)
+    return KEYBOX_General_Error;
+  off += 4;
+
+  if (hd->fp)
+    {
+      fclose (hd->fp);
+      hd->fp = NULL;
+    }
+  
+  fp = fopen (hd->kb->fname, "r+b");
+  if (!fp)
+    return KEYBOX_File_Open_Error;
+
+  if (fseeko (fp, off, SEEK_SET))
+    rc = KEYBOX_Write_Error;
+  else if (putc (0, fp) == EOF)
+    rc = KEYBOX_Write_Error;
+  else
+    rc = 0;
+
+  if (fclose (fp))
+    {
+      if (!rc)
+        rc = KEYBOX_File_Close_Error;
+    }
+
+  return rc;
 }
 
 

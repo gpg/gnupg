@@ -171,6 +171,7 @@ struct fixup_list {
 struct keyboxblob {
   byte *blob;
   size_t bloblen;
+  off_t fileoffset;
   
   /* stuff used only by keybox_create_blob */
   unsigned char *serialbuf;
@@ -956,7 +957,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
 
 
 int
-_keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen)
+_keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen, off_t off)
 {
   KEYBOXBLOB blob;
   
@@ -967,6 +968,7 @@ _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen)
 
   blob->blob = image;
   blob->bloblen = imagelen;
+  blob->fileoffset = off;
   *r_blob = blob;
   return 0;
 }
@@ -993,6 +995,13 @@ _keybox_release_blob (KEYBOXBLOB blob)
 const char *
 _keybox_get_blob_image ( KEYBOXBLOB blob, size_t *n )
 {
-    *n = blob->bloblen;
-    return blob->blob;
+  *n = blob->bloblen;
+  return blob->blob;
 }
+
+off_t
+_keybox_get_blob_fileoffset (KEYBOXBLOB blob)
+{
+  return blob->fileoffset;
+}
+

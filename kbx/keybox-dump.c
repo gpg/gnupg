@@ -117,6 +117,10 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   type = buffer[4];
   switch (type)
     {
+    case BLOBTYPE_EMPTY:
+      fprintf (fp, "Type:   Empty\n");
+      return 0;
+
     case BLOBTYPE_HEADER:
       fprintf (fp, "Type:   Header\n");
       return dump_header_blob (buffer, length, fp);

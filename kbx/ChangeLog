@@ -1,3 +1,13 @@
+2002-07-22  Werner Koch  <wk@gnupg.org>
+
+	* keybox-defs.h: New BLOBTYPTE_EMPTY.
+	* keybox-dump.c (_keybox_dump_blob): Handle new type.
+	* keybox-file.c (_keybox_read_blob): Skip over empty blobs.  Store
+	the file offset.
+	* keybox-blob.c (_keybox_new_blob): Add new arg OFF.
+	(_keybox_get_blob_fileoffset): New.
+	* keybox-update.c (keybox_delete): Implemented.
+
 2002-06-19  Werner Koch  <wk@gnupg.org>
 
 	* keybox-init.c (keybox_set_ephemeral): New.

@@ -35,6 +35,7 @@ typedef unsigned int u32; /* fixme */
 #endif
 
 enum {
+  BLOBTYPE_EMPTY = 0,
   BLOBTYPE_HEADER = 1,
   BLOBTYPE_PGP = 2,
   BLOBTYPE_X509 = 3
@@ -97,9 +98,11 @@ int _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
                               unsigned char *sha1_digest, int as_ephemeral);
 #endif /*KEYBOX_WITH_X509*/
 
-int  _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen);
+int  _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen,
+                       off_t off);
 void _keybox_release_blob (KEYBOXBLOB blob);
 const char *_keybox_get_blob_image (KEYBOXBLOB blob, size_t *n);
+off_t _keybox_get_blob_fileoffset (KEYBOXBLOB blob);
 
 /*-- keybox-file.c --*/
 int _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp);
