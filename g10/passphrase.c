@@ -285,7 +285,7 @@ agent_get_passphrase ( u32 *keyid, int mode )
     char *atext;
     char buf[50];
     int fd = -1;
-    int nread;
+    size_t nread;
     u32 reply;
     char *pw = NULL;
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
@@ -433,7 +433,7 @@ passphrase_clear_cache ( u32 *keyid, int algo )
     size_t n;
     char buf[50];
     int fd = -1;
-    int nread;
+    size_t nread;
     u32 reply;
     PKT_public_key *pk;
     byte fpr[MAX_FINGERPRINT_LEN];

@@ -126,7 +126,7 @@ strtimestamp( u32 stamp )
     time_t atime = stamp;
     
     if (atime < 0) {
-        strcpy (buffer, "????-??-??");
+        strcpy (buffer, "????" "-??" "-??");
     }
     else {
         tp = gmtime( &atime );
@@ -150,7 +150,7 @@ asctimestamp( u32 stamp )
     time_t atime = stamp;
 
     if (atime < 0) {
-        strcpy (buffer, "????-??-??");
+        strcpy (buffer, "????" "-??" "-??");
         return buffer;
     }
 

@@ -158,24 +158,24 @@ parse_packet( IOBUF inp, PACKET *pkt )
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_search_packet( IOBUF inp, PACKET *pkt, off_t *retpos,
+dbg_search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid,
 		   const char *dbg_f, int dbg_l )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, 1, retpos, &skip, NULL, 0, "search", dbg_f, dbg_l );
+	rc = parse( inp, pkt, with_uid?2:1, retpos, &skip, NULL, 0, "search", dbg_f, dbg_l );
     } while( skip );
     return rc;
 }
 #else
 int
-search_packet( IOBUF inp, PACKET *pkt, off_t *retpos )
+search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid )
 {
     int skip, rc;
 
     do {
-	rc = parse( inp, pkt, 1, retpos, &skip, NULL, 0 );
+	rc = parse( inp, pkt, with_uid?2:1, retpos, &skip, NULL, 0 );
     } while( skip );
     return rc;
 }
@@ -296,6 +296,7 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
     byte hdr[8];
     int hdrlen;
     int new_ctb = 0;
+    int with_uid = (onlykeypkts == 2);
 
     *skip = 0;
     assert( !pkt->pkt.generic );
@@ -309,7 +310,7 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
     hdrlen=0;
     hdr[hdrlen++] = ctb;
     if( !(ctb & 0x80) ) {
-       log_error("%s: invalid packet (ctb=%02x)\n", iobuf_where(inp), ctb );
+        log_error("%s: invalid packet (ctb=%02x)\n", iobuf_where(inp), ctb );
 	rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
@@ -375,12 +376,14 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	goto leave;
     }
 
-    if( do_skip 
+    if (with_uid && pkttype == PKT_USER_ID)
+        ;
+    else if( do_skip 
         || !pkttype
         || (onlykeypkts && pkttype != PKT_PUBLIC_SUBKEY
                         && pkttype != PKT_PUBLIC_KEY
                         && pkttype != PKT_SECRET_SUBKEY
-                        && pkttype != PKT_SECRET_KEY    ) ) {
+                        && pkttype != PKT_SECRET_KEY  ) ) {
 	skip_rest(inp, pktlen);
 	*skip = 1;
 	rc = 0;
@@ -866,7 +869,7 @@ dump_sig_subpkt( int hashed, int type, int critical,
       case SIGSUBPKT_FEATURES:
         fputs ( "features:", stdout );
         for( i=0; i < length; i++ )
-            printf(" %d", buffer[i] );
+            printf(" %02x", buffer[i] );
 	break;
       case SIGSUBPKT_PRIV_VERIFY_CACHE:
 	p = "verification cache";

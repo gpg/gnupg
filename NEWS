@@ -33,6 +33,10 @@
       UID, encoded using %XX escaping (but with spaces left as spaces,
       so that it should not break too much)
 
+    * Support for GDBM based keyrings has been removed.
+
+    * The entire keyring management has been revamped.
+
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------

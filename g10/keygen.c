@@ -284,22 +284,22 @@ static void
 add_feature_mdc (PKT_signature *sig)
 {
     const byte *s;
-    size_t i, n;
+    size_t n;
     char *buf;
 
     s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n );
-    if (!s)
-        n = 0;
-
-    for (i=0; i < n; i++ ) {
-        if (s[i] == 1)
-            return; /* already set */
+    if (s && n && (s[0] & 0x01))
+        return; /* already set */
+    if (!s || !n) { /* create a new one */
+        n = 1;
+        buf = m_alloc (n);
     }
-
-    buf = m_alloc (n+1);
-    buf[0] = 1; /* MDC feature */
-    memcpy (buf+1, s, n);
-    build_sig_subpkt (sig, SIGSUBPKT_FEATURES, buf, n+1);
+    else {
+        buf = m_alloc (n);
+        memcpy (buf, s, n);
+    }
+    buf[0] |= 0x01; /* MDC feature */
+    build_sig_subpkt (sig, SIGSUBPKT_FEATURES, buf, n);
     m_free (buf);
 }
 
@@ -1769,8 +1769,6 @@ static void
 do_generate_keypair( struct para_data_s *para,
 		     struct output_control_s *outctrl )
 {
-    char *pub_fname = NULL;
-    char *sec_fname = NULL;
     KBNODE pub_root = NULL;
     KBNODE sec_root = NULL;
     PKT_secret_key *sk = NULL;
@@ -1823,20 +1821,14 @@ do_generate_keypair( struct para_data_s *para,
 						    &outctrl->sec.afx );
 	    }
 	}
-	pub_fname = outctrl->pub.fname; /* only for info output */
-	sec_fname = outctrl->sec.fname; /* only for info output */
 	assert( outctrl->pub.stream );
 	assert( outctrl->sec.stream );
-    }
-    else {
-	pub_fname = get_writable_keyblock_file( 0 );
-	sec_fname = get_writable_keyblock_file( 1 );
+        if( opt.verbose ) {
+            log_info(_("writing public key to `%s'\n"), outctrl->pub.fname );
+            log_info(_("writing secret key to `%s'\n"), outctrl->sec.fname );
+        }
     }
 
-    if( opt.verbose ) {
-	log_info(_("writing public key to `%s'\n"), pub_fname );
-	log_info(_("writing secret key to `%s'\n"), sec_fname );
-    }
 
     /* we create the packets as a tree of kbnodes. Because the structure
      * we create is known in advance we simply generate a linked list
@@ -1895,46 +1887,47 @@ do_generate_keypair( struct para_data_s *para,
 
     }
     else if( !rc ) { /* write to the standard keyrings */
-	KBPOS pub_kbpos;
-	KBPOS sec_kbpos;
-	int rc1 = -1;
-	int rc2 = -1;
+	KEYDB_HANDLE pub_hd = keydb_new (0);
+	KEYDB_HANDLE sec_hd = keydb_new (1);
 
-	/* we can now write the certificates */
-	if( get_keyblock_handle( pub_fname, 0, &pub_kbpos ) ) {
-	    if( add_keyblock_resource( pub_fname, 1, 0 ) ) {
-		log_error("can add keyblock file `%s'\n", pub_fname );
-		rc = G10ERR_CREATE_FILE;
-	    }
-	    else if( get_keyblock_handle( pub_fname, 0, &pub_kbpos ) ) {
-		log_error("can get keyblock handle for `%s'\n", pub_fname );
-		rc = G10ERR_CREATE_FILE;
-	    }
-	}
-	if( rc )
-	    ;
-	else if( get_keyblock_handle( sec_fname, 1, &sec_kbpos ) ) {
-	    if( add_keyblock_resource( sec_fname, 1, 1 ) ) {
-		log_error("can add keyblock file `%s'\n", sec_fname );
-		rc = G10ERR_CREATE_FILE;
-	    }
-	    else if( get_keyblock_handle( sec_fname, 1, &sec_kbpos ) ) {
-		log_error("can get keyblock handle for `%s'\n", sec_fname );
-		rc = G10ERR_CREATE_FILE;
-	    }
-	}
+        /* FIXME: we may have to create the keyring first */
+        rc = keydb_locate_writable (pub_hd, NULL);
+        if (rc) 
+    	    log_error (_("no writable public keyring found: %s\n"),
+                       g10_errstr (rc));
 
-	if( rc )
-	    ;
-	else if( (rc=rc1=lock_keyblock( &pub_kbpos )) )
-	    log_error("can't lock public keyring: %s\n", g10_errstr(rc) );
-	else if( (rc=rc2=lock_keyblock( &sec_kbpos )) )
-	    log_error("can't lock secret keyring: %s\n", g10_errstr(rc) );
-	else if( (rc=insert_keyblock( &pub_kbpos, pub_root )) )
-	    log_error("can't write public key: %s\n", g10_errstr(rc) );
-	else if( (rc=insert_keyblock( &sec_kbpos, sec_root )) )
-	    log_error("can't write secret key: %s\n", g10_errstr(rc) );
-	else {
+        if (!rc) {  
+            rc = keydb_locate_writable (sec_hd, NULL);
+            if (rc) 
+                log_error (_("no writable secret keyring found: %s\n"),
+                           g10_errstr (rc));
+        }
+
+        if (!rc && opt.verbose) {
+            log_info(_("writing public key to `%s'\n"),
+                     keydb_get_resource_name (pub_hd));
+            log_info(_("writing secret key to `%s'\n"),
+                     keydb_get_resource_name (sec_hd));
+        }
+
+        if (!rc) {
+	    rc = keydb_insert_keyblock (pub_hd, pub_root);
+            if (rc)
+                log_error (_("error writing public keyring `%s': %s\n"),
+                           keydb_get_resource_name (pub_hd), g10_errstr(rc));
+        }
+
+        if (!rc) {
+	    rc = keydb_insert_keyblock (sec_hd, sec_root);
+            if (rc)
+                log_error (_("error writing secret keyring `%s': %s\n"),
+                           keydb_get_resource_name (pub_hd), g10_errstr(rc));
+        }
+
+        keydb_release (pub_hd);
+        keydb_release (sec_hd);
+
+	if (!rc) {
             int no_enc_rsa =
                 get_parameter_algo(para, pKEYTYPE) == PUBKEY_ALGO_RSA
                 && get_parameter_uint( para, pKEYUSAGE )
@@ -1953,11 +1946,6 @@ do_generate_keypair( struct para_data_s *para,
 			     "secondary key for this purpose.\n") );
 	    }
 	}
-
-	if( !rc1 )
-	    unlock_keyblock( &pub_kbpos );
-	if( !rc2 )
-	    unlock_keyblock( &sec_kbpos );
     }
 
     if( rc ) {
@@ -1973,10 +1961,6 @@ do_generate_keypair( struct para_data_s *para,
     release_kbnode( sec_root );
     if( sk ) /* the unprotected  secret key */
 	free_secret_key(sk);
-    if( !outctrl->use_files ) {
-	m_free(pub_fname);
-	m_free(sec_fname);
-    }
 }
 
 

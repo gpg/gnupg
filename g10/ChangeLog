@@ -1,3 +1,57 @@
+2001-09-06  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (fixup_uidnode): Features flag is now a bit vector.
+	* keygen.c (add_feature_mdc): Ditto.
+
+	Revamped the entire key I/O code to be prepared for other ways of
+	key storages and to get rid of the existing shit.  GDBM support has
+	gone.
+	* keydb.c: New
+	* keyring.c, keyring.h: New.
+	* ringedit.c: Removed.  Moved some stuff to keyring.c
+	* getkey.c: Changed everything related to the key retrieving
+	functions which are now using the keydb_ functions.  
+	(prepare_search, word_match_chars, word_match)
+	(prepare_word_match, compare_name): Moved to keyring.c
+	(get_pubkey_byname): Removed ctx arg and add ret_kdbhd
+	arg.  Changed all callers.
+	(key_byname): Use get_pubkey_end to release the context and take
+	new ret_kbdhd arg.  Changed all callers.
+	(classify_user_id2): Fill the 16 byte fingerprint up with 4 null
+	bytes not with zero bytes of value 4, tsss.
+	* import.c (import_one): Updated to use the new keydb interface.
+	(import_secret_one): Ditto.
+	(import_revoke_cert): Ditto.
+	* delkey.c (do_delete_key): Ditto. 
+	* keyedit.c (keyedit_menu): Ditto.
+	(get_keyblock_byname): Removed.
+	* revoke.c (gen_revoke): Ditto. 
+	* export.c (do_export_stream): Ditto.
+	* trustdb.c (update_trustdb): Ditto.
+	* g10.c, gpgv.c (main): Renamed add_keyblock_resource to
+	keydb_add_resource. 
+	* Makefile.am:  Added and removed files.
+
+	* keydb.h: Moved KBNODE typedef and MAX_FINGERPRINT_LEN to
+	* global.h: this new header.
+ 	
+2001-09-03  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (agent_get_passphrase): Changed nread to size_t.
+	(passphrase_clear_cache): Ditto.
+
+	* keyid.c (mk_datestr): Avoid trigraphs.
+	(fingerprint_from_pk): Cache the keyid in the pk.
+
+	* options.h: Add opt.with_fingerprint so that we know whether the
+	corresponding options was used.
+	* g10.c (main): Set it here.
+	* pkclist.c (check_signatures_trust): Always print fingerprint
+	when this option is used.  Mixed a minor memory leak.
+
+	* status.c, status.h: New status INV_RECP.
+	* pkclist.c (build_pk_list): Issue this status.
+
 2001-08-31  Werner Koch  <wk@gnupg.org>
 
 	* parse-packet.c (parse_key,parse_pubkeyenc)

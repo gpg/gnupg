@@ -49,7 +49,6 @@ enum cmd_and_opt_values { aNull = 0,
     oPrefix       = 'p',                          
 aTest };
 
-#warning  Add an option to split a keyring into reasonable sized chunks.
 
 static ARGPARSE_OPTS opts[] = {
 

@@ -140,6 +140,7 @@ get_status_string ( int no )
       case STATUS_KEY_CREATED    : s = "KEY_CREATED"; break;
       case STATUS_USERID_HINT    : s = "USERID_HINT"; break;
       case STATUS_UNEXPECTED     : s = "UNEXPECTED"; break;
+      case STATUS_INV_RECP       : s = "INV_RECP"; break;
       default: s = "?"; break;
     }
     return s;

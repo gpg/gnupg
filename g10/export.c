@@ -112,57 +112,55 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
     PACKET pkt;
     KBNODE keyblock = NULL;
     KBNODE kbctx, node;
-    KBPOS kbpos;
+    KEYDB_HANDLE kdbhd;
     STRLIST sl;
     int all = !users;
+    int all_first = 1;
 
     *any = 0;
     memset( &zfx, 0, sizeof zfx);
     init_packet( &pkt );
 
+    kdbhd = keydb_new (secret);
+
     if( opt.compress_keys && opt.compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
-
-    if( all ) {
-	rc = enum_keyblocks( secret?5:0, &kbpos, &keyblock );
-	if( rc ) {
-	    if( rc != -1 )
-		log_error("enum_keyblocks(open) failed: %s\n", g10_errstr(rc) );
-	    goto leave;
-	}
-	all = 2;
-    }
 
     /* use the correct sequence. strlist_last,prev do work correctly with
      * NULL pointers :-) */
     for( sl=strlist_last(users); sl || all ; sl=strlist_prev( users, sl )) {
 	if( all ) { /* get the next user */
-	    rc = enum_keyblocks( 1, &kbpos, &keyblock );
+	    rc = all_first ? keydb_search_first (kdbhd)
+                           : keydb_search_next (kdbhd);
+            all_first = 0;
 	    if( rc == -1 )  /* EOF */
 		break;
 	    if( rc ) {
-		log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
+		log_error ("error searching key: %s\n", g10_errstr(rc));
 		break;
 	    }
 	}
 	else {
-	    /* search the userid */
-	    rc = secret? find_secret_keyblock_byname( &kbpos, sl->d )
-		       : find_keyblock_byname( &kbpos, sl->d );
+            KEYDB_SEARCH_DESC desc;
+
+            memset (&desc, 0, sizeof desc);
+            desc.mode = classify_user_id (sl->d, desc.u.kid, desc.u.fpr,
+                                          &desc.u.name, NULL);
+            rc = desc.mode? keydb_search (kdbhd, &desc, 1):G10ERR_INV_USER_ID;
 	    if( rc ) {
-		log_error(_("%s: user not found: %s\n"), sl->d, g10_errstr(rc));
+                log_error (_("key `%s' not found: %s\n"),
+                           sl->d, g10_errstr (rc));
 		rc = 0;
 		continue;
 	    }
-	    /* read the keyblock */
-	    rc = read_keyblock( &kbpos, &keyblock );
 	}
 
+        /* read the keyblock */
+        rc = keydb_get_keyblock (kdbhd, &keyblock );
 	if( rc ) {
-	    log_error(_("certificate read problem: %s\n"), g10_errstr(rc));
+            log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
 	    goto leave;
 	}
-
 
 	/* do not export keys which are incompatible with rfc2440 */
 	if( onlyrfc && (node = find_kbnode( keyblock, PKT_PUBLIC_KEY )) ) {
@@ -229,8 +227,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	rc = 0;
 
   leave:
-    if( all == 2 )
-	enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    keydb_release (kdbhd);
     release_kbnode( keyblock );
     if( !*any )
 	log_info(_("WARNING: nothing exported\n"));

@@ -28,14 +28,15 @@ needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 bin_PROGRAMS = gpg gpgv
 
 common_source =  \
+	      global.h          \
 	      build-packet.c	\
 	      compress.c	\
 	      filter.h		\
 	      free-packet.c	\
 	      getkey.c		\
-	      ringedit.c	\
+	      keydb.c keydb.h    \
+	      keyring.c keyring.h \
 	      seskey.c		\
-	      keydb.h		\
 	      kbnode.c		\
 	      main.h		\
 	      mainproc.c	\

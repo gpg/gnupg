@@ -52,37 +52,35 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     int rc = 0;
     KBNODE keyblock = NULL;
     KBNODE node;
-    KBPOS kbpos;
+    KEYDB_HANDLE hd = keydb_new (secret);
     PKT_public_key *pk = NULL;
     PKT_secret_key *sk = NULL;
     u32 keyid[2];
     int okay=0;
     int yes;
+    KEYDB_SEARCH_DESC desc;
 
     *r_sec_avail = 0;
-    /* search the userid */
-    if (secret
-        && classify_user_id (username, keyid, NULL, NULL, NULL) == 11) {
-        /* if the user supplied a long keyID we use the direct search
-           methods which allows us to delete a key if the
-           corresponding secret key is missing */
-        rc = find_secret_keyblock_direct (&kbpos, keyid);
-    }
-    else if (secret)
-        rc = find_secret_keyblock_byname (&kbpos, username);
-    else 
-	rc = find_keyblock_byname (&kbpos, username);
 
-    if( rc ) {
-	log_error(_("%s: user not found\n"), username );
+    /* search the userid */
+    memset (&desc, 0, sizeof desc);
+    desc.mode = classify_user_id (username,
+                                  desc.u.kid,
+                                  desc.u.fpr,
+                                  &desc.u.name,
+                                  NULL);
+
+    rc = desc.mode? keydb_search (hd, &desc, 1):G10ERR_INV_USER_ID;
+    if (rc) {
+	log_error (_("key `%s' not found: %s\n"), username, g10_errstr (rc));
 	write_status_text( STATUS_DELETE_PROBLEM, "1" );
 	goto leave;
     }
 
     /* read the keyblock */
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error("%s: read problem: %s\n", username, g10_errstr(rc) );
+    rc = keydb_get_keyblock (hd, &keyblock );
+    if (rc) {
+	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
 	goto leave;
     }
 
@@ -159,15 +157,16 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 
 
     if( okay ) {
-	rc = delete_keyblock( &kbpos );
-	if( rc ) {
-	    log_error("delete_keyblock failed: %s\n", g10_errstr(rc) );
+	rc = keydb_delete_keyblock (hd);
+	if (rc) {
+	    log_error (_("deleting keyblock failed: %s\n"), g10_errstr(rc) );
 	    goto leave;
 	}
     }
 
   leave:
-    release_kbnode( keyblock );
+    keydb_release (hd);
+    release_kbnode (keyblock);
     return rc;
 }
 

@@ -84,30 +84,6 @@ struct sign_attrib {
 
 
 
-static int
-get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
-{
-    int rc;
-
-    *keyblock = NULL;
-    /* search the userid */
-    rc = find_keyblock_byname( kbpos, username );
-    if( rc ) {
-	log_error(_("%s: user not found\n"), username );
-	return rc;
-    }
-
-    /* read the keyblock */
-    rc = read_keyblock( kbpos, keyblock );
-    if( rc )
-	log_error("%s: keyblock read problem: %s\n", username, g10_errstr(rc));
-    else
-	merge_keys_and_selfsig( *keyblock ); 
-
-    return rc;
-}
-
-
 /****************
  * Print information about a signature, check it and return true
  * if the signature is okay. NODE must be a signature packet.
@@ -626,9 +602,9 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     enum cmdids cmd = 0;
     int rc = 0;
     KBNODE keyblock = NULL;
-    KBPOS keyblockpos;
+    KEYDB_HANDLE kdbhd = NULL;
     KBNODE sec_keyblock = NULL;
-    KBPOS sec_keyblockpos;
+    KEYDB_HANDLE sec_kdbhd = NULL;
     KBNODE cur_keyblock;
     char *answer = NULL;
     int redisplay = 1;
@@ -651,7 +627,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     }
 
     /* get the public key */
-    rc = get_keyblock_byname( &keyblock, &keyblockpos, username );
+    rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd);
     if( rc )
 	goto leave;
     if( fix_keyblock( keyblock ) )
@@ -662,18 +638,34 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     if( !sign_mode ) {/* see whether we have a matching secret key */
         PKT_public_key *pk = keyblock->pkt->pkt.public_key;
 
-        rc = find_secret_keyblock_bypk( &sec_keyblockpos, pk );
-	if( !rc ) {
-	    rc = read_keyblock( &sec_keyblockpos, &sec_keyblock );
-	    if( rc ) {
-		log_error("%s: secret keyblock read problem: %s\n",
+        sec_kdbhd = keydb_new (1);
+        {
+            byte afp[MAX_FINGERPRINT_LEN];
+            size_t an;
+
+            fingerprint_from_pk (pk, afp, &an);
+            while (an < MAX_FINGERPRINT_LEN) 
+                afp[an++] = 0;
+            rc = keydb_search_fpr (sec_kdbhd, afp);
+        }
+	if (!rc) {
+	    rc = keydb_get_keyblock (sec_kdbhd, &sec_keyblock);
+	    if (rc) {
+		log_error (_("error reading secret keyblock `%s': %s\n"),
 						username, g10_errstr(rc));
-		goto leave;
 	    }
-	    merge_keys_and_selfsig( sec_keyblock );
-	    if( fix_keyblock( sec_keyblock ) )
-		sec_modified++;
+            else {
+                merge_keys_and_selfsig( sec_keyblock );
+                if( fix_keyblock( sec_keyblock ) )
+                    sec_modified++;
+            }
 	}
+
+        if (rc) {
+            sec_keyblock = NULL;
+            keydb_release (sec_kdbhd); sec_kdbhd = NULL;
+            rc = 0;
+        }
     }
 
     if( sec_keyblock ) { 
@@ -1012,23 +1004,24 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  do_cmd_save:
 	    if( modified || sec_modified  ) {
 		if( modified ) {
-		    rc = update_keyblock( &keyblockpos, keyblock );
+		    rc = keydb_update_keyblock (kdbhd, keyblock);
 		    if( rc ) {
 			log_error(_("update failed: %s\n"), g10_errstr(rc) );
 			break;
 		    }
 		}
 		if( sec_modified ) {
-		    rc = update_keyblock( &sec_keyblockpos, sec_keyblock );
+		    rc = keydb_update_keyblock (sec_kdbhd, sec_keyblock );
 		    if( rc ) {
-			log_error(_("update secret failed: %s\n"),
-							    g10_errstr(rc) );
+			log_error( _("update secret failed: %s\n"),
+                                   g10_errstr(rc) );
 			break;
 		    }
 		}
 	    }
 	    else
 		tty_printf(_("Key not changed so no update needed.\n"));
+
 	    /* TODO: we should keep track whether we have changed
 	     *	     something relevant to the trustdb */
 	    if( !modified && sign_mode )
@@ -1051,6 +1044,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
   leave:
     release_kbnode( keyblock );
     release_kbnode( sec_keyblock );
+    keydb_release (kdbhd);
     m_free(answer);
 }
 

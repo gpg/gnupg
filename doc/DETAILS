@@ -283,6 +283,10 @@ more arguments in future versions.
     END_STREAM
         Issued by pipemode.
 
+    INV_RECP <reason> <requested_recipient>
+        Issued for each unusable recipient. The only reason code 
+        currently defined is 0 for "No specific reason given".
+
 
 Key generation
 ==============

@@ -1697,22 +1697,28 @@ void
 update_trustdb()
 {
     KBNODE keyblock = NULL;
-    KBPOS kbpos;
+    KEYDB_HANDLE kdbhd;
     int rc;
 
     if( opt.dry_run )
 	return;
 
     init_trustdb();
-    rc = enum_keyblocks( 0, &kbpos, &keyblock );
-    if( !rc ) {
+    kdbhd = keydb_new (0);
+    rc = keydb_search_first (kdbhd);
+    if (!rc) {
 	ulong count=0, err_count=0, new_count=0;
 
-	while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
-	    /*int modified;*/
+	do {
 	    TRUSTREC drec;
-	    PKT_public_key *pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )
-					->pkt->pkt.public_key;
+	    PKT_public_key *pk;
+	    /*int modified;*/
+
+            rc = keydb_get_keyblock (kdbhd, &keyblock );
+            if (rc)
+                break;
+
+	    pk = find_kbnode (keyblock, PKT_PUBLIC_KEY)->pkt->pkt.public_key;
 
 	    rc = get_dir_record( pk, &drec );
 	    if( rc == -1 ) { /* not in trustdb: insert */
@@ -1741,7 +1747,7 @@ update_trustdb()
 	    release_kbnode( keyblock ); keyblock = NULL;
 	    if( !(++count % 100) )
 		log_info(_("%lu keys so far processed\n"), count);
-	}
+	} while ( !(rc = keydb_search_next (kdbhd)));
 	log_info(_("%lu keys processed\n"), count);
 	if( err_count )
 	    log_info(_("\t%lu keys with errors\n"), err_count);
@@ -1751,7 +1757,7 @@ update_trustdb()
     if( rc && rc != -1 )
 	log_error(_("enumerate keyblocks failed: %s\n"), g10_errstr(rc));
 
-    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    keydb_release (kdbhd);
     release_kbnode( keyblock );
 }
 
@@ -2514,7 +2520,7 @@ list_trust_path( const char *username )
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
     init_trustdb();
-    if( (rc = get_pubkey_byname(NULL, pk, username, NULL )) )
+    if( (rc = get_pubkey_byname (pk, username, NULL, NULL )) )
 	log_error(_("user '%s' not found: %s\n"), username, g10_errstr(rc) );
     else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
 	log_error(_("problem finding '%s' in trustdb: %s\n"),

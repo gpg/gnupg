@@ -73,10 +73,10 @@
   * Concatenated encryption messages don't work corectly - only the
     first one is processed.
 
-  * Add status message for reasons why a key was not selected.
-
   * Add option to put the list of recipients (from the encryption
     layer) into the signatures notation data.
+
+  * Allow to update key signatyres, add status that a key is already signed.
 
 Scheduled for 1.1
 -----------------

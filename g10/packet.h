@@ -323,7 +323,7 @@ int list_packets( IOBUF a );
 int set_packet_list_mode( int mode );
 
 #if DEBUG_PARSE_PACKET
-int dbg_search_packet( IOBUF inp, PACKET *pkt, off_t *retpos,
+int dbg_search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid,
                        const char* file, int lineno  );
 int dbg_parse_packet( IOBUF inp, PACKET *ret_pkt,
                       const char* file, int lineno );
@@ -333,8 +333,8 @@ int dbg_copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff,
                            const char* file, int lineno  );
 int dbg_skip_some_packets( IOBUF inp, unsigned n,
                            const char* file, int lineno	);
-#define search_packet( a,b,c )   \
-             dbg_search_packet( (a), (b), (c), __FILE__, __LINE__ )
+#define search_packet( a,b,c,d )   \
+             dbg_search_packet( (a), (b), (c), (d), __FILE__, __LINE__ )
 #define parse_packet( a, b )  \
 	     dbg_parse_packet( (a), (b), __FILE__, __LINE__ )
 #define copy_all_packets( a,b )  \
@@ -344,7 +344,7 @@ int dbg_skip_some_packets( IOBUF inp, unsigned n,
 #define skip_some_packets( a,b ) \
              dbg_skip_some_packets((a),(b), __FILE__, __LINE__ )
 #else
-int search_packet( IOBUF inp, PACKET *pkt, off_t *retpos );
+int search_packet( IOBUF inp, PACKET *pkt, off_t *retpos, int with_uid );
 int parse_packet( IOBUF inp, PACKET *ret_pkt);
 int copy_all_packets( IOBUF inp, IOBUF out );
 int copy_some_packets( IOBUF inp, IOBUF out, off_t stopoff );

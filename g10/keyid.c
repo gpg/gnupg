@@ -277,7 +277,7 @@ mk_datestr (char *buffer, time_t atime)
     struct tm *tp;
 
     if ( atime < 0 ) /* 32 bit time_t and after 2038-01-19 */
-        strcpy (buffer, "????-??-??"); /* mark this as invalid */
+        strcpy (buffer, "????" "-??" "-??"); /* mark this as invalid */
     else {
         tp = gmtime (&atime);
         sprintf (buffer,"%04d-%02d-%02d",
@@ -401,9 +401,9 @@ byte *
 fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 {
     byte *p, *buf;
-    const char *dp;
+    const byte *dp;
     size_t len;
-    unsigned n;
+    unsigned int n;
 
     if( pk->version < 4 && is_RSA(pk->pubkey_algo) ) {
 	/* RSA in version 3 packets is special */
@@ -434,6 +434,8 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	if( !array )
 	    array = m_alloc( len );
 	memcpy(array, dp, len );
+	pk->keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
+	pk->keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
 	md_close(md);
     }
 

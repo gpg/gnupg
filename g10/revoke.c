@@ -87,41 +87,46 @@ gen_revoke( const char *uname )
     IOBUF out = NULL;
     KBNODE keyblock = NULL;
     KBNODE node;
-    KBPOS kbpos;
+    KEYDB_HANDLE kdbhd;
     struct revocation_reason_info *reason = NULL;
+    KEYDB_SEARCH_DESC desc;
 
     if( opt.batch ) {
 	log_error(_("sorry, can't do this in batch mode\n"));
 	return G10ERR_GENERAL;
     }
 
-
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
     init_packet( &pkt );
 
-
-    /* search the userid */
-    rc = find_secret_keyblock_byname( &kbpos, uname );
-    if( rc ) {
-	log_error(_("secret key for user `%s' not found\n"), uname );
+    /* search the userid: 
+     * We don't want the whole getkey stuff here but the entire keyblock
+     */
+    kdbhd = keydb_new (1);
+    memset (&desc, 0, sizeof desc);
+    desc.mode = classify_user_id (uname,
+                                  desc.u.kid,
+                                  desc.u.fpr,
+                                  &desc.u.name,
+                                  NULL);
+    rc = desc.mode? keydb_search (kdbhd, &desc, 1) : G10ERR_INV_USER_ID;
+    if (rc) {
+	log_error (_("secret key `%s' not found: %s\n"),
+                   uname, g10_errstr (rc));
 	goto leave;
     }
 
-    /* read the keyblock */
-    rc = read_keyblock( &kbpos, &keyblock );
+    rc = keydb_get_keyblock (kdbhd, &keyblock );
     if( rc ) {
-	log_error(_("error reading the certificate: %s\n"), g10_errstr(rc) );
+	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
 	goto leave;
     }
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, PKT_SECRET_KEY );
-    if( !node ) { /* maybe better to use log_bug ? */
-	log_error(_("Oops; secret key not found anymore!\n"));
-	rc = G10ERR_GENERAL;
-	goto leave;
-    }
+    if( !node ) 
+	BUG ();
 
     /* fixme: should make a function out of this stuff,
      * it's used all over the source */
@@ -139,6 +144,8 @@ gen_revoke( const char *uname )
 	tty_printf("\n");
     }
     pk = m_alloc_clear( sizeof *pk );
+
+    /* FIXME: We should get the public key direct from the secret one */
     rc = get_pubkey( pk, sk_keyid );
     if( rc ) {
 	log_error(_("no corresponding public key: %s\n"), g10_errstr(rc) );
@@ -224,6 +231,7 @@ gen_revoke( const char *uname )
     if( sig )
 	free_seckey_enc( sig );
     release_kbnode( keyblock );
+    keydb_release (kdbhd);
     if( rc )
 	iobuf_cancel(out);
     else

@@ -67,41 +67,50 @@ secret_key_list( STRLIST list )
 static void
 list_all( int secret )
 {
-    KBPOS kbpos;
+    KEYDB_HANDLE hd;
     KBNODE keyblock = NULL;
     int rc=0;
-    int lastresno;
+    const char *lastresname, *resname;
 
-    rc = enum_keyblocks( secret? 5:0, &kbpos, &keyblock );
+    hd = keydb_new (secret);
+    if (!hd)
+        rc = G10ERR_GENERAL;
+    else
+        rc = keydb_search_first (hd);
     if( rc ) {
 	if( rc != -1 )
-	    log_error("enum_keyblocks(open) failed: %s\n", g10_errstr(rc) );
+	    log_error("keydb_search_first failed: %s\n", g10_errstr(rc) );
 	goto leave;
     }
 
-    lastresno = -1;
-    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
-	if( lastresno != kbpos.resno ) {
-	    const char *s = keyblock_resource_name( &kbpos );
+    lastresname = NULL;
+    do {
+        rc = keydb_get_keyblock (hd, &keyblock);
+        if (rc) {
+            log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
+            goto leave;
+        }
+        resname = keydb_get_resource_name (hd);
+	if (lastresname != resname ) {
 	    int i;
 
-	    lastresno = kbpos.resno;
-	    printf("%s\n", s );
-	    for(i=strlen(s); i; i-- )
+	    printf("%s\n", resname );
+	    for(i=strlen(resname); i; i-- )
 		putchar('-');
 	    putchar('\n');
+            lastresname = resname;
 	}
         merge_keys_and_selfsig( keyblock );
 	list_keyblock( keyblock, secret );
-	release_kbnode( keyblock ); keyblock = NULL;
-    }
-
+	release_kbnode( keyblock ); 
+        keyblock = NULL;
+    } while (!(rc = keydb_search_next (hd)));
     if( rc && rc != -1 )
-	log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
+	log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
 
   leave:
-    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
-    release_kbnode( keyblock );
+    release_kbnode (keyblock);
+    keydb_release (hd);
 }
 
 

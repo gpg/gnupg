@@ -90,6 +90,8 @@
 #define STATUS_KEY_CREATED      58
 #define STATUS_USERID_HINT      59
 #define STATUS_UNEXPECTED       60
+#define STATUS_INV_RECP         61
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

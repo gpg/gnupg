@@ -628,7 +628,10 @@ check_signatures_trust( PKT_signature *sig )
     if( opt.always_trust ) {
 	if( !opt.quiet )
 	    log_info(_("WARNING: Using untrusted key!\n"));
-	return 0;
+        if (opt.with_fingerprint)
+            fpr_info (pk);
+	rc = 0;
+        goto leave;
     }
 
 
@@ -705,6 +708,8 @@ check_signatures_trust( PKT_signature *sig )
 	write_status( STATUS_TRUST_NEVER );
 	log_info(_("WARNING: We do NOT trust this key!\n"));
 	log_info(_("         The signature is probably a FORGERY.\n"));
+        if (opt.with_fingerprint)
+            fpr_info (pk);
 	rc = G10ERR_BAD_SIGN;
 	break;
 
@@ -721,10 +726,14 @@ check_signatures_trust( PKT_signature *sig )
 
       case TRUST_FULLY:
 	write_status( STATUS_TRUST_FULLY );
+        if (opt.with_fingerprint)
+            fpr_info (pk);
 	break;
 
       case TRUST_ULTIMATE:
 	write_status( STATUS_TRUST_ULTIMATE );
+        if (opt.with_fingerprint)
+            fpr_info (pk);
 	break;
 
       default: BUG();
@@ -814,10 +823,12 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	else if( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to ) {
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->req_usage = use;
-	    if( (rc = get_pubkey_byname( NULL, pk, rov->d, NULL )) ) {
+	    if( (rc = get_pubkey_byname( pk, rov->d, NULL, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
-	    }
+                write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                              rov->d, strlen (rov->d), -1);
+            }
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		/* Skip the actual key if the key is already present
 		 * in the list */
@@ -838,6 +849,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	    else {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+                write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                              rov->d, strlen (rov->d), -1);
 	    }
 	}
     }
@@ -870,7 +883,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		free_public_key( pk );
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->req_usage = use;
-	    rc = get_pubkey_byname( NULL, pk, answer, NULL );
+	    rc = get_pubkey_byname( pk, answer, NULL, NULL );
 	    if( rc )
 		tty_printf(_("No such user ID.\n"));
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
@@ -936,7 +949,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
     else if( !any_recipients && (def_rec = default_recipient()) ) {
 	pk = m_alloc_clear( sizeof *pk );
 	pk->req_usage = use;
-	rc = get_pubkey_byname( NULL, pk, def_rec, NULL );
+	rc = get_pubkey_byname( pk, def_rec, NULL, NULL );
 	if( rc )
 	    log_error(_("unknown default recipient `%s'\n"), def_rec );
 	else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
@@ -961,9 +974,12 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 
 	    pk = m_alloc_clear( sizeof *pk );
 	    pk->req_usage = use;
-	    if( (rc = get_pubkey_byname( NULL, pk, remusr->d, NULL )) ) {
+	    if( (rc = get_pubkey_byname( pk, remusr->d, NULL, NULL )) ) {
 		free_public_key( pk ); pk = NULL;
 		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
+                write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                              remusr->d, strlen (remusr->d),
+                                              -1);
 	    }
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		int trustlevel;
@@ -973,11 +989,19 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		    free_public_key( pk ); pk = NULL;
 		    log_error(_("%s: error checking key: %s\n"),
 						      remusr->d, g10_errstr(rc) );
+                    write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                                  remusr->d,
+                                                  strlen (remusr->d),
+                                                  -1);
 		}
 		else if( (trustlevel & TRUST_FLAG_DISABLED) ) {
 		    free_public_key(pk); pk = NULL;
 		    log_info(_("%s: skipped: public key is disabled\n"),
 								    remusr->d);
+                    write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                                  remusr->d,
+                                                  strlen (remusr->d),
+                                                  -1);
 		}
 		else if( do_we_trust_pre( pk, trustlevel ) ) {
 		    /* note: do_we_trust may have changed the trustlevel */
@@ -1004,10 +1028,18 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		}
 		else { /* we don't trust this pk */
 		    free_public_key( pk ); pk = NULL;
+                    write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                                  remusr->d,
+                                                  strlen (remusr->d),
+                                                  -1);
 		}
 	    }
 	    else {
 		free_public_key( pk ); pk = NULL;
+                write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                                              remusr->d,
+                                              strlen (remusr->d),
+                                              -1);
 		log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
 	    }
 	}

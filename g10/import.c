@@ -379,7 +379,6 @@ import_one( const char *fname, KBNODE keyblock, int fast )
     PKT_public_key *pk_orig;
     KBNODE node, uidnode;
     KBNODE keyblock_orig = NULL;
-    KBPOS kbpos;
     u32 keyid[2];
     int rc = 0;
     int new_key = 0;
@@ -443,21 +442,20 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	stats.skipped_new_keys++;
     }
     else if( rc ) { /* insert this key */
-	/* get default resource */
-	if( get_keyblock_handle( NULL, 0, &kbpos ) ) {
-	    log_error(_("no default public keyring\n"));
+        KEYDB_HANDLE hd = keydb_new (0);
+
+        rc = keydb_locate_writable (hd, NULL);
+	if (rc) {
+	    log_error (_("no writable keyring found: %s\n"), g10_errstr (rc));
 	    return G10ERR_GENERAL;
 	}
 	if( opt.verbose > 1 )
-	    log_info( _("writing to `%s'\n"),
-				keyblock_resource_name(&kbpos) );
-	if( (rc=lock_keyblock( &kbpos )) )
-	   log_error(_("can't lock keyring `%s': %s\n"),
-		       keyblock_resource_name(&kbpos), g10_errstr(rc) );
-	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
-	   log_error( _("error writing keyring `%s': %s\n"),
-		       keyblock_resource_name(&kbpos), g10_errstr(rc) );
-	unlock_keyblock( &kbpos );
+	    log_info (_("writing to `%s'\n"), keydb_get_resource_name (hd) );
+	rc = keydb_insert_keyblock (hd, keyblock );
+        if (rc)
+	   log_error (_("error writing keyring `%s': %s\n"),
+		       keydb_get_resource_name (hd), g10_errstr(rc));
+        keydb_release (hd);
 	/* we are ready */
 	if( !opt.quiet )
 	    log_info( _("key %08lX: public key imported\n"), (ulong)keyid[1]);
@@ -472,7 +470,9 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	new_key = 1;
     }
     else { /* merge */
+        KEYDB_HANDLE hd;
 	int n_uids, n_sigs, n_subk;
+
 
 	/* Compare the original against the new key; just to be sure nothing
 	 * weird is going on */
@@ -484,16 +484,27 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	}
 
 	/* now read the original keyblock */
-	rc = find_keyblock_bypk( &kbpos, pk_orig );
+        hd = keydb_new (0);
+        {
+            byte afp[MAX_FINGERPRINT_LEN];
+            size_t an;
+
+            fingerprint_from_pk (pk_orig, afp, &an);
+            while (an < MAX_FINGERPRINT_LEN) 
+                afp[an++] = 0;
+            rc = keydb_search_fpr (hd, afp);
+        }
 	if( rc ) {
-	    log_error( _("key %08lX: can't locate original keyblock: %s\n"),
+	    log_error (_("key %08lX: can't locate original keyblock: %s\n"),
 				     (ulong)keyid[1], g10_errstr(rc));
+            keydb_release (hd);
 	    goto leave;
 	}
-	rc = read_keyblock( &kbpos, &keyblock_orig );
-	if( rc ) {
-	    log_error( _("key %08lX: can't read original keyblock: %s\n"),
+	rc = keydb_get_keyblock (hd, &keyblock_orig );
+	if (rc) {
+	    log_error (_("key %08lX: can't read original keyblock: %s\n"),
 					    (ulong)keyid[1], g10_errstr(rc));
+            keydb_release (hd);
 	    goto leave;
 	}
 
@@ -504,18 +515,18 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	n_uids = n_sigs = n_subk = 0;
 	rc = merge_blocks( fname, keyblock_orig, keyblock,
 				keyid, &n_uids, &n_sigs, &n_subk );
-	if( rc )
+	if( rc ) {
+            keydb_release (hd);
 	    goto leave;
+        }
 	if( n_uids || n_sigs || n_subk ) {
 	    mod_key = 1;
 	    /* keyblock_orig has been updated; write */
-	    if( (rc=lock_keyblock( &kbpos )) )
-	       log_error( _("can't lock keyring `%s': %s\n"),
-			  keyblock_resource_name(&kbpos), g10_errstr(rc) );
-	    else if( (rc=update_keyblock( &kbpos, keyblock_orig )) )
-		log_error( _("error writing keyring `%s': %s\n"),
-			     keyblock_resource_name(&kbpos), g10_errstr(rc) );
-	    unlock_keyblock( &kbpos );
+	    rc = keydb_update_keyblock (hd, keyblock_orig);
+            if (rc)
+		log_error (_("error writing keyring `%s': %s\n"),
+			     keydb_get_resource_name (hd), g10_errstr(rc) );
+	    keydb_release (hd); hd = NULL;
 	    /* we are ready */
 	    if( !opt.quiet ) {
 		if( n_uids == 1 )
@@ -582,7 +593,6 @@ import_secret_one( const char *fname, KBNODE keyblock, int allow )
 {
     PKT_secret_key *sk;
     KBNODE node, uidnode;
-    KBPOS kbpos;
     u32 keyid[2];
     int rc = 0;
 
@@ -623,18 +633,20 @@ import_secret_one( const char *fname, KBNODE keyblock, int allow )
     /* do we have this key already in one of our secrings ? */
     rc = seckey_available( keyid );
     if( rc == G10ERR_NO_SECKEY && !opt.merge_only ) { /* simply insert this key */
+        KEYDB_HANDLE hd = keydb_new (1);
+
 	/* get default resource */
-	if( get_keyblock_handle( NULL, 1, &kbpos ) ) {
-	    log_error("no default secret keyring\n");
+        rc = keydb_locate_writable (hd, NULL);
+	if (rc) {
+	    log_error (_("no default secret keyring: %s\n"), g10_errstr (rc));
+            keydb_release (hd);
 	    return G10ERR_GENERAL;
 	}
-	if( (rc=lock_keyblock( &kbpos )) )
-	    log_error( _("can't lock keyring `%s': %s\n"),
-			 keyblock_resource_name(&kbpos), g10_errstr(rc) );
-	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
-	    log_error( _("error writing keyring `%s': %s\n"),
-		      keyblock_resource_name(&kbpos), g10_errstr(rc) );
-	unlock_keyblock( &kbpos );
+	rc = keydb_insert_keyblock (hd, keyblock );
+        if (rc)
+	    log_error (_("error writing keyring `%s': %s\n"),
+                       keydb_get_resource_name (hd), g10_errstr(rc) );
+        keydb_release (hd);
 	/* we are ready */
 	if( !opt.quiet )
 	    log_info( _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
@@ -661,7 +673,7 @@ import_revoke_cert( const char *fname, KBNODE node )
 {
     PKT_public_key *pk=NULL;
     KBNODE onode, keyblock = NULL;
-    KBPOS kbpos;
+    KEYDB_HANDLE hd = NULL;
     u32 keyid[2];
     int rc = 0;
 
@@ -687,16 +699,25 @@ import_revoke_cert( const char *fname, KBNODE node )
     }
 
     /* read the original keyblock */
-    rc = find_keyblock_bypk( &kbpos, pk );
-    if( rc ) {
-	log_error( _("key %08lX: can't locate original keyblock: %s\n"),
-					(ulong)keyid[1], g10_errstr(rc));
+    hd = keydb_new (0);
+    {
+        byte afp[MAX_FINGERPRINT_LEN];
+        size_t an;
+        
+        fingerprint_from_pk (pk, afp, &an);
+        while (an < MAX_FINGERPRINT_LEN) 
+            afp[an++] = 0;
+        rc = keydb_search_fpr (hd, afp);
+    }
+    if (rc) {
+	log_error (_("key %08lX: can't locate original keyblock: %s\n"),
+                   (ulong)keyid[1], g10_errstr(rc));
 	goto leave;
     }
-    rc = read_keyblock( &kbpos, &keyblock );
-    if( rc ) {
-	log_error( _("key %08lX: can't read original keyblock: %s\n"),
-					(ulong)keyid[1], g10_errstr(rc));
+    rc = keydb_get_keyblock (hd, &keyblock );
+    if (rc) {
+	log_error (_("key %08lX: can't read original keyblock: %s\n"),
+                   (ulong)keyid[1], g10_errstr(rc));
 	goto leave;
     }
 
@@ -729,13 +750,11 @@ import_revoke_cert( const char *fname, KBNODE node )
     insert_kbnode( keyblock, clone_kbnode(node), 0 );
 
     /* and write the keyblock back */
-    if( (rc=lock_keyblock( &kbpos )) )
-	log_error( _("can't lock keyring `%s': %s\n"),
-		   keyblock_resource_name(&kbpos), g10_errstr(rc) );
-    else if( (rc=update_keyblock( &kbpos, keyblock )) )
-	log_error( _("error writing keyring `%s': %s\n"),
-		    keyblock_resource_name(&kbpos), g10_errstr(rc) );
-    unlock_keyblock( &kbpos );
+    rc = keydb_update_keyblock (hd, keyblock );
+    if (rc)
+	log_error (_("error writing keyring `%s': %s\n"),
+                   keydb_get_resource_name (hd), g10_errstr(rc) );
+    keydb_release (hd); hd = NULL;
     /* we are ready */
     if( !opt.quiet )
 	log_info( _("key %08lX: revocation certificate imported\n"),
@@ -752,6 +771,7 @@ import_revoke_cert( const char *fname, KBNODE node )
     }
 
   leave:
+    keydb_release (hd);
     release_kbnode( keyblock );
     free_public_key( pk );
     return rc;

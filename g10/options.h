@@ -50,6 +50,7 @@ struct {
     int check_sigs; /* check key signatures */
     int with_colons;
     int with_key_data;
+    int with_fingerprint; /* opt --with-fingerprint active */
     int fingerprint; /* list fingerprints */
     int list_sigs;   /* list signatures */
     int no_armor;

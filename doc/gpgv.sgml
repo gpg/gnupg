@@ -119,8 +119,6 @@ does not contain a slash, it is assumed to be in the
 home-directory ("~/.gnupg" if --homedir is not used).
 The filename may be prefixed with a scheme:</para>
 <para>"gnupg-ring:" is the default one.</para>
-<para>"gnupg-gdbm:" may be used for a GDBM ring. Note that GDBM
-is experimental and likely to be removed in future versions.</para>
 <para>It might make sense to use it together with --no-default-keyring.
 </para></listitem></varlistentry>
 

@@ -352,7 +352,7 @@ list_trustdb( const char *username )
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	int rc;
 
-	if( (rc = get_pubkey_byname( NULL, pk, username, NULL )) )
+	if( (rc = get_pubkey_byname( pk, username, NULL, NULL )) )
 	    log_error(_("user '%s' not found: %s\n"), username, g10_errstr(rc) );
 	else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
 	    log_error(_("problem finding '%s' in trustdb: %s\n"),

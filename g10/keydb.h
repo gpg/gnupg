@@ -21,15 +21,11 @@
 #ifndef G10_KEYDB_H
 #define G10_KEYDB_H
 
-#ifdef HAVE_LIBGDBM
-  #include <gdbm.h>
-#endif
-
 #include "types.h"
+#include "global.h"
 #include "packet.h"
 #include "cipher.h"
 
-#define MAX_FINGERPRINT_LEN 20
 
 #define IS_KEY_SIG(s)    ((s)->sig_class == 0x1f)
 #define IS_UID_SIG(s)    (((s)->sig_class & ~3) == 0x10)
@@ -50,7 +46,6 @@ typedef struct getkey_ctx_s *GETKEY_CTX;
  * This structure is also used to bind arbitrary packets together.
  */
 
-typedef struct kbnode_struct *KBNODE;
 struct kbnode_struct {
     KBNODE next;
     PACKET *pkt;
@@ -65,8 +60,7 @@ struct kbnode_struct {
 
 enum resource_type {
     rt_UNKNOWN = 0,
-    rt_RING = 1,
-    rt_GDBM = 2
+    rt_RING = 1
 };
 
 
@@ -81,10 +75,6 @@ struct keyblock_pos_struct {
     unsigned count;  /* length of the keyblock in packets */
     IOBUF  fp;	     /* used by enum_keyblocks */
     int secret;      /* working on a secret keyring */
-  #ifdef HAVE_LIBGDBM
-    GDBM_FILE dbf;
-    byte keybuf[21];
-  #endif
     PACKET *pkt;     /* ditto */
     int valid;
 };
@@ -118,6 +108,52 @@ struct pubkey_find_info {
 };
 
 
+typedef struct keydb_handle *KEYDB_HANDLE;
+
+typedef enum {
+    KEYDB_SEARCH_MODE_NONE,
+    KEYDB_SEARCH_MODE_EXACT,
+    KEYDB_SEARCH_MODE_SUBSTR,
+    KEYDB_SEARCH_MODE_MAIL,
+    KEYDB_SEARCH_MODE_MAILSUB,
+    KEYDB_SEARCH_MODE_MAILEND,
+    KEYDB_SEARCH_MODE_WORDS,
+    KEYDB_SEARCH_MODE_SHORT_KID,
+    KEYDB_SEARCH_MODE_LONG_KID,
+    KEYDB_SEARCH_MODE_TDBIDX,
+    KEYDB_SEARCH_MODE_FPR16,
+    KEYDB_SEARCH_MODE_FPR20,
+    KEYDB_SEARCH_MODE_FPR,
+    KEYDB_SEARCH_MODE_FIRST,
+    KEYDB_SEARCH_MODE_NEXT
+} KeydbSearchMode;
+
+struct keydb_search_desc {
+    KeydbSearchMode mode;
+    union {
+        const char *name;
+        char fpr[MAX_FINGERPRINT_LEN];
+        u32  kid[2];
+    } u;
+};
+
+/*-- keydb.c --*/
+int keydb_add_resource (const char *url, int force, int secret);
+KEYDB_HANDLE keydb_new (int secret);
+void keydb_release (KEYDB_HANDLE hd);
+const char *keydb_get_resource_name (KEYDB_HANDLE hd);
+int keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
+int keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb);
+int keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb);
+int keydb_delete_keyblock (KEYDB_HANDLE hd);
+int keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
+int keydb_search_reset (KEYDB_HANDLE hd);
+int keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc);
+int keydb_search_first (KEYDB_HANDLE hd);
+int keydb_search_next (KEYDB_HANDLE hd);
+int keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);
+int keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
+
 
 /*-- pkclist.c --*/
 int  check_signatures_trust( PKT_signature *sig );
@@ -147,8 +183,8 @@ void cache_public_key( PKT_public_key *pk );
 void getkey_disable_caches(void);
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
 KBNODE get_pubkeyblock( u32 *keyid );
-int get_pubkey_byname( GETKEY_CTX *rx, PKT_public_key *pk,
-		       const char *name, KBNODE *ret_keyblock );
+int get_pubkey_byname( PKT_public_key *pk,  const char *name,
+                       KBNODE *ret_keyblock, KEYDB_HANDLE *ret_kdbhd);
 int get_pubkey_bynames( GETKEY_CTX *rx, PKT_public_key *pk,
 			STRLIST names, KBNODE *ret_keyblock );
 int get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock );
@@ -212,26 +248,5 @@ KBNODE walk_kbnode( KBNODE root, KBNODE *context, int all );
 void clear_kbnode_flags( KBNODE n );
 int  commit_kbnode( KBNODE *root );
 void dump_kbnode( KBNODE node );
-
-/*-- ringedit.c --*/
-const char *enum_keyblock_resources( int *sequence, int secret );
-int add_keyblock_resource( const char *resname, int force, int secret );
-const char *keyblock_resource_name( KBPOS *kbpos );
-int get_keyblock_handle( const char *filename, int secret, KBPOS *kbpos );
-char *get_writable_keyblock_file( int secret );
-int find_keyblock( PUBKEY_FIND_INFO info, KBPOS *kbpos );
-int find_keyblock_byname( KBPOS *kbpos, const char *username );
-int find_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk );
-int find_secret_keyblock_bypk( KBPOS *kbpos, PKT_public_key *pk );
-int find_secret_keyblock_byname( KBPOS *kbpos, const char *username );
-int find_secret_keyblock_direct (KBPOS *kbpos, u32 *keyid);
-int lock_keyblock( KBPOS *kbpos );
-void unlock_keyblock( KBPOS *kbpos );
-int read_keyblock( KBPOS *kbpos, KBNODE *ret_root );
-int enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root );
-int insert_keyblock( KBPOS *kbpos, KBNODE root );
-int delete_keyblock( KBPOS *kbpos );
-int update_keyblock( KBPOS *kbpos, KBNODE root );
-
 
 #endif /*G10_KEYDB_H*/

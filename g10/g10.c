@@ -886,7 +886,8 @@ main( int argc, char **argv )
             break;
 #endif /* __riscos__ */
 	  case oWithFingerprint:
-		with_fpr=1; /*fall thru*/
+            opt.with_fingerprint = 1;
+            with_fpr=1; /*fall thru*/
 	  case oFingerprint: opt.fingerprint++; break;
 	  case oSecretKeyring: append_to_strlist( &sec_nrings, pargs.r.ret_str); break;
 	  case oOptions:
@@ -1225,13 +1226,13 @@ main( int argc, char **argv )
 	&& !(cmd == aKMode && argc == 2 ) ) {
 
 	if( !sec_nrings || default_keyring )  /* add default secret rings */
-	    add_keyblock_resource("secring" EXTSEP_S "gpg", 0, 1);
+	    keydb_add_resource ("secring" EXTSEP_S "gpg", 0, 1);
 	for(sl = sec_nrings; sl; sl = sl->next )
-	    add_keyblock_resource( sl->d, 0, 1 );
+	    keydb_add_resource ( sl->d, 0, 1 );
 	if( !nrings || default_keyring )  /* add default ring */
-	    add_keyblock_resource("pubring" EXTSEP_S "gpg", 0, 0);
+	    keydb_add_resource ("pubring" EXTSEP_S "gpg", 0, 0);
 	for(sl = nrings; sl; sl = sl->next )
-	    add_keyblock_resource( sl->d, 0, 0 );
+	    keydb_add_resource ( sl->d, 0, 0 );
     }
     FREE_STRLIST(nrings);
     FREE_STRLIST(sec_nrings);
@@ -1445,7 +1446,7 @@ main( int argc, char **argv )
 	    else {
 		/* add keyring (default keyrings are not registered in this
 		 * special case */
-		add_keyblock_resource( argv[1], 0, 0 );
+		keydb_add_resource( argv[1], 0, 0 );
 		sl = NULL;
 		if (**argv)
 		    add_to_strlist2( &sl, *argv, utf8_strings );

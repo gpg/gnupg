@@ -183,7 +183,6 @@ MPI_OPT_FLAGS=""
 
 
 try_gettext=yes
-try_gdbm=yes
 case "${target}" in
     *-*-mingw32*)
         # special stuff for Windoze NT
@@ -201,7 +200,6 @@ case "${target}" in
                    MingW32 systems and these systems lack Posix functions,
                    we use a simplified version of gettext])
         try_gettext="no"
-        try_gdbm="no"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -209,7 +207,6 @@ case "${target}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         AC_DEFINE(HAVE_DOSISH_SYSTEM)
         try_gettext="no"
-        try_gdbm="no"
         ;;
 
     i?86-*-msdosdjgpp*)
@@ -218,7 +215,6 @@ case "${target}" in
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         AC_DEFINE(HAVE_DOSISH_SYSTEM)
         try_gettext="no"
-        try_gdbm="no"
         ;;
 
     *-*-freebsd*)
@@ -363,41 +359,6 @@ AC_SUBST(USE_INCLUDED_LIBINTL)
 AC_SUBST(BUILD_INCLUDED_LIBINTL)
 fi
 
-dnl
-dnl There are lot of misconfigured systems.  We include
-dnl gdbm support only if the lib and the header is installed.
-dnl
-if test "$try_gdbm" = yes; then
-AC_CHECK_HEADERS(gdbm.h)
-if test "$ac_cv_header_gdbm_h" = yes ; then
-  AC_CHECK_LIB(gdbm,gdbm_firstkey)
-fi
-fi
-
-dnl This old test is here just for reference tin case it fails:
-dnl
-dnl Solaris needs -lsocket and -lnsl. Unisys system includes
-dnl gethostbyname in libsocket but needs libnsl for socket.
-dnl The test does not workfor all system, so some are hardcoded here.
-dnl case "${target}" in
-dnl    i386-univel-sysv4*)
-dnl         LIBS="$LIBS -lsocket -lnsl"
-dnl         ;;
-dnl    *)
-dnl       AC_CHECK_LIB(nsl, gethostbyname)
-dnl       AC_CHECK_LIB(socket, socket, ac_need_libsocket=1, ac_try_nsl=1)
-dnl       if test x$ac_need_libsocket = x1; then
-dnl           LIBS="$LIBS -lsocket"
-dnl       fi
-dnl       if test x$ac_try_nsl = x1; then
-dnl          AC_CHECK_LIB(nsl, gethostbyname, ac_need_libnsl=1)
-dnl          if test x$ac_need_libnsl = x1
-dnl          then
-dnl             LIBS="$LIBS -lnsl"
-dnl          fi
-dnl       fi
-dnl       ;;
-dnl esac
 
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
 AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt))

@@ -755,7 +755,7 @@ print_notation_data( PKT_signature *sig )
         write_status_buffer ( STATUS_POLICY_URL, p, n, 0 );
     }
 
-    /* Now check wheter the key of this signature has some
+    /* Now check whether the key of this signature has some
      * notation data */
 
     /* TODO */

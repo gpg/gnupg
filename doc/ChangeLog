@@ -1,3 +1,7 @@
+2001-09-03  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml, gpgv.sgml: Removed GDBM stuff.
+
 2001-08-29  Werner Koch  <wk@gnupg.org>
 
 	* faq.raw: Described how to delete a secret key w/o a public key

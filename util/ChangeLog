@@ -1,3 +1,7 @@
+2001-09-03  Werner Koch  <wk@gnupg.org>
+
+	* miscutil.c (strtimestamp,asctimestamp): Avoid trigraphs.
+
 2001-08-21  Stefan Bellon  <sbellon@sbellon.de>
 
 	* riscos.c [__riscos__] (close_fds): Fixed possible endless loop.

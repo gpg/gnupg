@@ -1,3 +1,7 @@
+2001-09-03  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Removed GDBM tests.
+
 2001-08-23  Werner Koch  <wk@gnupg.org>
 
 	* configure.in (AC_FUNC_FSEEKO): Add.

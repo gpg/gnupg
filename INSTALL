@@ -102,6 +102,11 @@ Specific problems on some machines
 	not build. In this case try to run configure using:
 	    CFLAGS="-g -O2 -mcpu=powerpc" ./configure
 
+  * Compaq C V6.2 for alpha:
+
+        You may want to use the option "-msg-disable ptrmismatch1"
+        to get rid of the sign/unsigned char mismatch warnings.
+
 
 
 The Random Device
