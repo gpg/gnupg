@@ -1,3 +1,8 @@
+2002-07-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (get_key), gpgkeys_hkp.c (get_key): Display
+	keyserver URI as a URI, but only if verbose.
+
 2002-07-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (parse_hkp_index): Error if the keyserver returns

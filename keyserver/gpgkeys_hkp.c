@@ -40,6 +40,7 @@
 int verbose=0,include_disabled=0,include_revoked=0;
 char *basekeyspacedn=NULL;
 char host[80];
+char portstr[10];
 FILE *input=NULL,*output=NULL,*console=NULL,*server=NULL;
 
 struct keylist
@@ -287,8 +288,9 @@ int get_key(char *getkey)
   if(verbose>2)
     fprintf(console,"gpgkeys: HKP fetch for: %s\n",search);
 
-  fprintf(console,"gpgkeys: requesting key 0x%s from HKP keyserver %s\n",
-	  getkey,host);
+  if(verbose)
+    fprintf(console,"gpgkeys: requesting key 0x%s from hkp://%s%s%s\n",
+	    getkey,host,portstr?":":"",portstr?portstr:"");
 
   err=http_get("get",search);
   if(err!=0)
@@ -724,7 +726,6 @@ int main(int argc,char *argv[])
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
       char commandstr[7];
-      char portstr[10];
       char optionstr[30];
       char hash;
 
