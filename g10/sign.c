@@ -561,9 +561,10 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if(!old_style && opt.pgp2)
       {
-	log_info(_("You can only sign with PGP 2.x style keys "
-		    "while in --pgp2 mode\n"));
-	log_info(_("This message will not be usable by PGP 2.x\n"));
+	log_info(_("you can only sign with PGP 2.x style keys "
+		   "while in --pgp2 mode\n"));
+	log_info(_("this message will not be usable by PGP 2.x\n"));
+	opt.pgp2=0;
       }
 
     if( encryptflag ) {
@@ -738,9 +739,10 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
     if(!old_style && opt.pgp2)
       {
-	log_info(_("You can only clearsign with PGP 2.x style keys "
+	log_info(_("you can only clearsign with PGP 2.x style keys "
 		   "while in --pgp2 mode\n"));
-	log_info(_("This message will not be usable by PGP 2.x\n"));
+	log_info(_("this message will not be usable by PGP 2.x\n"));
+	opt.pgp2=0;
       }
 
     /* prepare iobufs */

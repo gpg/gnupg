@@ -1,3 +1,17 @@
+2001-12-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* encode.c (encode_crypt), sign.c (sign_file, clearsign_file):
+	disable pgp2 mode after the message is no longer pgp2 compatible.
+
+	* g10.c (main): Tweak the PGP2.x IDEA warning to use the generic
+	warning, and not merely fail if the IDEA plugin isn't there.
+
+	* g10.c (main, idea_cipher_warn), keygen.c (set_one_pref),
+	seckey-cert.c (do_check): Add a generic IDEA warning for when the
+	IDEA plugin is not present.  This pops up when the user uses
+	"--cipher-algo idea", when setpref is used to set a "S1"
+	preference, and when a secret key protected with IDEA is used.
+
 2001-12-15  Werner Koch  <wk@gnupg.org>
 
 	* keyserver.c (keyserver_spawn): Assert that we have dropped privs.

@@ -1219,11 +1219,66 @@ main( int argc, char **argv )
     set_debug();
     g10_opt_homedir = opt.homedir;
 
+    /* Do this after the switch(), so it can override settings. */
+    if(opt.pgp2)
+      {
+	int unusable=0;
+
+	/* Everything else should work without IDEA (except using a
+	   secret key encrypted with IDEA and setting an IDEA
+	   preference, but those have their own error messages). */
+
+	if(cmd==aSignEncr)
+	  {
+	    log_info(_("you can't sign and encrypt at the "
+		       "same time while in --pgp2 mode\n"));
+	    unusable=1;
+	  }
+
+	if(cmd==aEncr || cmd==aSym)
+	  {
+	    /* We don't have to fail here, since the regular cipher
+               algo check will make us fail later. */
+	    if(check_cipher_algo(CIPHER_ALGO_IDEA))
+	      {
+		log_info(_("encrypting a message in --pgp2 mode requires "
+			   "the IDEA cipher\n"));
+		idea_cipher_warn();
+		unusable=1;
+	      }
+	    else
+	      {
+		m_free(def_cipher_string);
+		def_cipher_string = m_strdup("idea");
+	      }
+	  }
+
+	if(unusable)
+	  {
+	    log_info(_("this message will not be usable by PGP 2.x\n"));
+	    opt.pgp2=0;
+	  }
+	else
+	  {
+	    opt.rfc1991 = 1;
+	    opt.rfc2440 = 0;
+	    opt.force_v4_certs = 0;
+	    opt.no_comment = 1;
+	    opt.escape_from = 1;
+	    opt.force_v3_sigs = 1;
+	    opt.pgp2_workarounds = 1;
+	    m_free(def_digest_string);
+	    def_digest_string = m_strdup("md5");
+	    opt.def_compress_algo = 1;
+	  }
+      }
 
     /* must do this after dropping setuid, because string_to...
      * may try to load an module */
     if( def_cipher_string ) {
 	opt.def_cipher_algo = string_to_cipher_algo(def_cipher_string);
+	if(opt.def_cipher_algo==0 && strcasecmp(def_cipher_string,"idea")==0)
+	  idea_cipher_warn();
 	m_free(def_cipher_string); def_cipher_string = NULL;
 	if( check_cipher_algo(opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
@@ -1272,29 +1327,6 @@ main( int argc, char **argv )
 
     if (preference_list && keygen_set_std_prefs (preference_list))
         log_error(_("invalid preferences\n"));
-
-    /* Do this after the switch(), so it can override these
-       settings. */
-    if(opt.pgp2)
-      {
-	opt.rfc1991 = 1;
-	opt.rfc2440 = 0;
-	opt.force_v4_certs = 0;
-	opt.no_comment = 1;
-	opt.escape_from = 1;
-	opt.force_v3_sigs = 1;
-	opt.pgp2_workarounds = 1;
-	opt.def_cipher_algo = CIPHER_ALGO_IDEA;
-	if( (cmd==aEncr || cmd==aSym || cmd==aSignEncr)
-            && check_cipher_algo(CIPHER_ALGO_IDEA) ) {
-	  log_info(_("Encrypting a message to a PGP 2.x user requires "
-		     "the IDEA cipher module.\n"));
-	  log_error(_("Please see http://www.gnupg.org/why-not-idea.html"
-		      " for more information.\n"));
-	}
-	opt.def_digest_algo = DIGEST_ALGO_MD5;
-	opt.def_compress_algo = 1;
-      }
 
     if( log_get_errorcount(0) )
 	g10_exit(2);
@@ -1415,9 +1447,10 @@ main( int argc, char **argv )
 
       case aEncr: /* encrypt the given file */
 	if( argc == 0 && opt.pgp2 ) {
-	  log_info(_("You must use files (and not a pipe) when "
+	  log_info(_("you must use files (and not a pipe) when "
 		     "encrypting with --pgp2 enabled.\n"));
-	  log_info(_("This message will not be usable by PGP 2.x\n"));
+	  log_info(_("this message will not be usable by PGP 2.x\n"));
+	  opt.pgp2=0;
 	}
 
 	if( argc > 1 )
@@ -1448,10 +1481,6 @@ main( int argc, char **argv )
       case aSignEncr: /* sign and encrypt the given file */
 	if( argc > 1 )
 	    wrong_args(_("--sign --encrypt [filename]"));
-        if(opt.pgp2) {
-	  log_info(_("You can't sign and encrypt at the same time while in --pgp2 mode\n"));
-	  log_info(_("This message will not be usable by PGP 2.x\n"));
-	}
 	if( argc ) {
 	    sl = m_alloc_clear( sizeof *sl + strlen(fname));
 	    strcpy(sl->d, fname);
@@ -2109,6 +2138,15 @@ check_policy_url( const char *s )
 	    return -1;
     }
     return 0;
+}
+
+/* Special warning for the IDEA cipher */
+void
+idea_cipher_warn(void)
+{
+  log_info("the IDEA cipher plugin is not present\n");
+  log_info("please see http://www.gnupg.org/why-not-idea.html "
+	   "for more information\n");
 }
 
 const char *

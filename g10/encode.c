@@ -268,9 +268,10 @@ encode_crypt( const char *filename, STRLIST remusr )
 	if(!(is_RSA(work_list->pk->pubkey_algo) &&
 	     nbits_from_pk(work_list->pk)<=2048))
 	  {
-	    log_info(_("You can only encrypt to RSA keys of 2048 bits or "
+	    log_info(_("you can only encrypt to RSA keys of 2048 bits or "
 		       "less in --pgp2 mode\n"));
-	    log_info(_("This message will not be usable by PGP 2.x\n"));
+	    log_info(_("this message will not be usable by PGP 2.x\n"));
+	    opt.pgp2=0;
 	    break;
 	  }
     }
