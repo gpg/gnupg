@@ -1,5 +1,8 @@
 2005-01-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (keyedit_menu): Move command strings outside the
+	function to get ready for the readline completion code.
+
 	* passphrase.c (readline, agent_send_option, agent_open,
 	agent_get_passphrase, passphrase_clear_cache): Rename readline()
 	to readaline() to keep readline library namespace clear.

@@ -1,6 +1,6 @@
 /* keyedit.c - keyedit stuff
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
- *               2004 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+ *               2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1261,84 +1261,89 @@ parse_sign_type(const char *str,int *localsig,int *nonrevokesig,int *trustsig)
 /* Match the tail of the string */
 #define KEYEDIT_TAIL_MATCH 8
 
+enum cmdids
+  {
+    cmdNONE = 0,
+    cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
+    cmdREVSIG, cmdREVKEY, cmdREVUID, cmdDELSIG, cmdPRIMARY, cmdDEBUG,
+    cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
+    cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
+    cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF,
+    cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
+    cmdADDCARDKEY, cmdKEYTOCARD, cmdNOP
+  };
+
+static struct
+{
+  const char *name;
+  enum cmdids id;
+  int flags;
+  const char *desc;
+} cmds[] =
+  { 
+    { "quit"    , cmdQUIT      , 0, N_("quit this menu") },
+    { "q"       , cmdQUIT      , 0, NULL   },
+    { "save"    , cmdSAVE      , 0, N_("save and quit") },
+    { "help"    , cmdHELP      , 0, N_("show this help") },
+    { "?"       , cmdHELP      , 0, NULL   },
+    { "fpr"     , cmdFPR       , 0, N_("show key fingerprint") },
+    { "list"    , cmdLIST      , 0, N_("list key and user IDs") },
+    { "l"       , cmdLIST      , 0, NULL   },
+    { "uid"     , cmdSELUID    , 0, N_("select user ID N") },
+    { "key"     , cmdSELKEY    , 0, N_("select subkey N") },
+    { "check"   , cmdCHECK     , 0, N_("check signatures") },
+    { "c"       , cmdCHECK     , 0, NULL },
+    { "sign"    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH, N_("sign selected user IDs [* see below for related commands]") },
+    { "s"       , cmdSIGN      , KEYEDIT_NOT_SK, NULL },
+    /* "lsign" and friends will never match since "sign" comes first
+       and it is a tail match.  They are just here so they show up in
+       the help menu. */
+    { "lsign"   , cmdNOP       , 0, N_("sign selected user IDs locally") },
+    { "tsign"   , cmdNOP       , 0, N_("sign selected user IDs with a trust signature") },
+    { "nrsign"  , cmdNOP       , 0, N_("sign selected user IDs with a non-revocable signature") },
+    { "debug"   , cmdDEBUG     , 0, NULL },
+    { "adduid"  , cmdADDUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a user ID") },
+    { "addphoto", cmdADDPHOTO  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a photo ID") },
+    { "deluid"  , cmdDELUID    , KEYEDIT_NOT_SK, N_("delete selected user IDs") },
+    /* delphoto is really deluid in disguise */
+    { "delphoto", cmdDELUID    , KEYEDIT_NOT_SK, NULL },
+    { "addkey"  , cmdADDKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a subkey") },
+#ifdef ENABLE_CARD_SUPPORT
+    { "addcardkey", cmdADDCARDKEY , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a key to a smartcard") },
+    { "keytocard", cmdKEYTOCARD , KEYEDIT_NEED_SK|KEYEDIT_ONLY_SK, N_("move a key to a smartcard")},
+#endif /*ENABLE_CARD_SUPPORT*/
+    { "delkey"  , cmdDELKEY    , KEYEDIT_NOT_SK, N_("delete selected subkeys") },
+    { "addrevoker",cmdADDREVOKER,KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a revocation key") },
+    { "delsig"  , cmdDELSIG    , KEYEDIT_NOT_SK, N_("delete signatures from the selected user IDs") },
+    { "expire"  , cmdEXPIRE    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the expiration date for the key or selected subkeys") },
+    { "primary" , cmdPRIMARY   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("flag the selected user ID as primary")},
+    { "toggle"  , cmdTOGGLE    , KEYEDIT_NEED_SK, N_("toggle between the secret and public key listings") },
+    { "t"       , cmdTOGGLE    , KEYEDIT_NEED_SK, NULL },
+    { "pref"    , cmdPREF      , KEYEDIT_NOT_SK, N_("list preferences (expert)")},
+    { "showpref", cmdSHOWPREF  , KEYEDIT_NOT_SK, N_("list preferences (verbose)") },
+    { "setpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preference list for the selected user IDs") },
+    /* Alias */
+    { "updpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
+    { "keyserver",cmdPREFKS    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preferred keyserver URL for the selected user IDs")},
+    { "passwd"  , cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the passphrase") },
+    /* Alias */
+    { "password", cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
+    { "trust"   , cmdTRUST     , KEYEDIT_NOT_SK, N_("change the ownertrust") },
+    { "revsig"  , cmdREVSIG    , KEYEDIT_NOT_SK, N_("revoke signatures on the selected user IDs") },
+    { "revuid"  , cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke selected user IDs") },
+    /* Alias */
+    { "revphoto", cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
+    { "revkey"  , cmdREVKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke key or selected subkeys") },
+    { "enable"  , cmdENABLEKEY , KEYEDIT_NOT_SK, N_("enable key") },
+    { "disable" , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable key") },
+    { "showphoto",cmdSHOWPHOTO , 0, N_("show selected photo IDs") },
+    { NULL, cmdNONE, 0, NULL }
+  };
+
 void
 keyedit_menu( const char *username, STRLIST locusr,
 	      STRLIST commands, int quiet, int seckey_check )
 {
-  enum cmdids
-    { cmdNONE = 0,
-      cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
-      cmdREVSIG, cmdREVKEY, cmdREVUID, cmdDELSIG, cmdPRIMARY, cmdDEBUG,
-      cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
-      cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
-      cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF,
-      cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
-      cmdADDCARDKEY, cmdKEYTOCARD,
-      cmdNOP };
-  static struct
-  {
-    const char *name;
-    enum cmdids id;
-    int flags;
-    const char *desc;
-  } cmds[] =
-    { 
-      { "quit"    , cmdQUIT      , 0, N_("quit this menu") },
-      { "q"       , cmdQUIT      , 0, NULL   },
-      { "save"    , cmdSAVE      , 0, N_("save and quit") },
-      { "help"    , cmdHELP      , 0, N_("show this help") },
-      { "?"       , cmdHELP      , 0, NULL   },
-      { "fpr"     , cmdFPR       , 0, N_("show key fingerprint") },
-      { "list"    , cmdLIST      , 0, N_("list key and user IDs") },
-      { "l"       , cmdLIST      , 0, NULL   },
-      { "uid"     , cmdSELUID    , 0, N_("select user ID N") },
-      { "key"     , cmdSELKEY    , 0, N_("select subkey N") },
-      { "check"   , cmdCHECK     , 0, N_("check signatures") },
-      { "c"       , cmdCHECK     , 0, NULL },
-      { "sign"    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH, N_("sign selected user IDs [* see below for related commands]") },
-      { "s"       , cmdSIGN      , KEYEDIT_NOT_SK, NULL },
-      /* "lsign" will never match since "sign" comes first and it is a
-	 tail match.  It is just here so it shows up in the help
-	 menu. */
-      { "lsign"   , cmdNOP       , 0, N_("sign selected user IDs locally") },
-      { "debug"   , cmdDEBUG     , 0, NULL },
-      { "adduid"  , cmdADDUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a user ID") },
-      { "addphoto", cmdADDPHOTO  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a photo ID") },
-      { "deluid"  , cmdDELUID    , KEYEDIT_NOT_SK, N_("delete selected user IDs") },
-      /* delphoto is really deluid in disguise */
-      { "delphoto", cmdDELUID    , KEYEDIT_NOT_SK, NULL },
-      { "addkey"  , cmdADDKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a subkey") },
-#ifdef ENABLE_CARD_SUPPORT
-      { "addcardkey", cmdADDCARDKEY , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a key to a smartcard") },
-      { "keytocard", cmdKEYTOCARD , KEYEDIT_NEED_SK|KEYEDIT_ONLY_SK, N_("move a key to a smartcard")},
-#endif /*ENABLE_CARD_SUPPORT*/
-      { "delkey"  , cmdDELKEY    , KEYEDIT_NOT_SK, N_("delete selected subkeys") },
-      { "addrevoker",cmdADDREVOKER,KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a revocation key") },
-      { "delsig"  , cmdDELSIG    , KEYEDIT_NOT_SK, N_("delete signatures from the selected user IDs") },
-      { "expire"  , cmdEXPIRE    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the expiration date for the key or selected subkeys") },
-      { "primary" , cmdPRIMARY   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("flag the selected user ID as primary")},
-      { "toggle"  , cmdTOGGLE    , KEYEDIT_NEED_SK, N_("toggle between the secret and public key listings") },
-      { "t"       , cmdTOGGLE    , KEYEDIT_NEED_SK, NULL },
-      { "pref"    , cmdPREF      , KEYEDIT_NOT_SK, N_("list preferences (expert)")},
-      { "showpref", cmdSHOWPREF  , KEYEDIT_NOT_SK, N_("list preferences (verbose)") },
-      { "setpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preference list for the selected user IDs") },
-      /* Alias */
-      { "updpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
-      { "keyserver",cmdPREFKS    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preferred keyserver URL for the selected user IDs")},
-      { "passwd"  , cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the passphrase") },
-      /* Alias */
-      { "password", cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
-      { "trust"   , cmdTRUST     , KEYEDIT_NOT_SK, N_("change the ownertrust") },
-      { "revsig"  , cmdREVSIG    , KEYEDIT_NOT_SK, N_("revoke signatures on the selected user IDs") },
-      { "revuid"  , cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke selected user IDs") },
-      /* Alias */
-      { "revphoto", cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
-      { "revkey"  , cmdREVKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke key or selected subkeys") },
-      { "enable"  , cmdENABLEKEY , KEYEDIT_NOT_SK, N_("enable key") },
-      { "disable" , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable key") },
-      { "showphoto",cmdSHOWPHOTO , 0, N_("show selected photo IDs") },
-      { NULL, cmdNONE, 0, NULL }
-    };
     enum cmdids cmd = 0;
     int rc = 0;
     KBNODE keyblock = NULL;
@@ -1499,7 +1504,8 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    else
 	      cmd = cmds[i].id;
 	}
-	switch( cmd )  {
+	switch( cmd )
+	  {
 	  case cmdHELP:
 	    for(i=0; cmds[i].name; i++ )
 	      {
@@ -1511,9 +1517,9 @@ keyedit_menu( const char *username, STRLIST locusr,
 
 	    tty_printf("\n");
 	    tty_printf(_(
-"* The `sign' command may be prefixed with `l' for local signatures (lsign),\n"
-"  a `t' for trust signatures (tsign), a `nr' for non-revocable signatures\n"
-"  (nrsign), or any combination thereof (ltsign, tnrsign, etc).\n"));
+"* The `sign' command may be prefixed with an `l' for local signatures (lsign),\n"
+"  a `t' for trust signatures (tsign), an `nr' for non-revocable signatures\n"
+"  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"));
 
 	    break;
 
