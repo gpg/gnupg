@@ -1,8 +1,25 @@
+2000-12-05  Werner Koch  <wk@gnupg.org>
+
+	* cipher.c (cipher_filter): Moved the end_encryption status ...
+	* encode.c (encode_simple,encode_crypt): to here
+	* sign.c (sign_file): and here.
+
+	* status.c (mywrite): Removed.
+	(get_status_string): Removed the LFs from the strings.
+	(set_status_fd,is_status_enabed,write_status_text,
+	write_status_buffer): Replaced all mywrite by stdio calls and use
+	fdopen to create a strem.  This is needed to make things smoother
+	in the W32 version.
+
+2000-12-04  Werner Koch  <wk@gnupg.org>
+
+	* import.c (merge_blocks): Increment n_sigs for revocations.
+
 2000-11-30  Werner Koch  <wk@gnupg.org>
 
 	* g10.c (main): Use iobuf_translate_file_handle for all options
 	with filehandles as arguments.  This is function does some magic
-	some for the W32 API.
+	for the W32 API.
 
 	* verify.c (verify_signatures): Add a comment rant about the
 	detached signature problem.

@@ -677,7 +677,7 @@ main( int argc, char **argv )
 	else if ( pargs.r_opt == oStatusFD ) {
 	    /* this is needed to ensure that the status-fd filedescriptor is
 	     * initialized when init_shm_coprocessing() is called */
-	    set_status_fd( pargs.r.ret_int );
+	    set_status_fd( iobuf_translate_file_handle (pargs.r.ret_int, 1) );
 	}
       #endif
     }
@@ -1594,7 +1594,6 @@ g10_exit( int rc )
     secmem_term();
     rc = rc? rc : log_get_errorcount(0)? 2 :
 			g10_errors_seen? 1 : 0;
-    /*write_status( STATUS_LEAVE );*/
     exit(rc );
 }
 

@@ -36,7 +36,7 @@
 #include "filter.h"
 #include "trustdb.h"
 #include "i18n.h"
-
+#include "status.h"
 
 static int encode_simple( const char *filename, int mode );
 static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
@@ -221,8 +221,11 @@ encode_simple( const char *filename, int mode )
     iobuf_close(inp);
     if (rc)
 	iobuf_cancel(out);
-    else
+    else {
 	iobuf_close(out); /* fixme: check returncode */
+        if (mode)
+            write_status( STATUS_END_ENCRYPTION );
+    }
     if (pt)
 	pt->buf = NULL;
     free_packet(&pkt);
@@ -323,7 +326,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	if( !(filesize = iobuf_get_filelength(inp)) )
 	    log_info(_("%s: WARNING: empty file\n"), filename );
         /* we can't yet encode the length of very large files,
-         * so we switch to partial lengthn encoding in this case */
+         * so we switch to partial length encoding in this case */
         if ( filesize >= IOBUF_FILELENGTH_LIMIT )
             filesize = 0;
     }
@@ -381,8 +384,10 @@ encode_crypt( const char *filename, STRLIST remusr )
     iobuf_close(inp);
     if( rc )
 	iobuf_cancel(out);
-    else
+    else {
 	iobuf_close(out); /* fixme: check returncode */
+        write_status( STATUS_END_ENCRYPTION );
+    }
     if( pt )
 	pt->buf = NULL;
     free_packet(&pkt);

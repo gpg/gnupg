@@ -51,7 +51,8 @@
 
 
 
-static int fd = -1;
+static FILE *statusfp;
+
 #ifdef USE_SHM_COPROCESSING
   static int shm_id = -1;
   static volatile char *shm_area;
@@ -78,81 +79,100 @@ get_status_string ( int no )
     const char *s;
 
     switch( no ) {
-      case STATUS_ENTER  : s = "ENTER\n"; break;
-      case STATUS_LEAVE  : s = "LEAVE\n"; break;
-      case STATUS_ABORT  : s = "ABORT\n"; break;
-      case STATUS_GOODSIG: s = "GOODSIG\n"; break;
-      case STATUS_SIGEXPIRED: s = "SIGEXPIRED\n"; break;
-      case STATUS_KEYREVOKED: s = "KEYREVOKED\n"; break;
-      case STATUS_BADSIG : s = "BADSIG\n"; break;
-      case STATUS_ERRSIG : s = "ERRSIG\n"; break;
-      case STATUS_BADARMOR : s = "BADARMOR\n"; break;
-      case STATUS_RSA_OR_IDEA : s= "RSA_OR_IDEA\n"; break;
-      case STATUS_TRUST_UNDEFINED: s = "TRUST_UNDEFINED\n"; break;
-      case STATUS_TRUST_NEVER	 : s = "TRUST_NEVER\n"; break;
-      case STATUS_TRUST_MARGINAL : s = "TRUST_MARGINAL\n"; break;
-      case STATUS_TRUST_FULLY	 : s = "TRUST_FULLY\n"; break;
-      case STATUS_TRUST_ULTIMATE : s = "TRUST_ULTIMATE\n"; break;
-      case STATUS_GET_BOOL	 : s = "GET_BOOL\n"; break;
-      case STATUS_GET_LINE	 : s = "GET_LINE\n"; break;
-      case STATUS_GET_HIDDEN	 : s = "GET_HIDDEN\n"; break;
-      case STATUS_GOT_IT	 : s = "GOT_IT\n"; break;
-      case STATUS_SHM_INFO	 : s = "SHM_INFO\n"; break;
-      case STATUS_SHM_GET	 : s = "SHM_GET\n"; break;
-      case STATUS_SHM_GET_BOOL	 : s = "SHM_GET_BOOL\n"; break;
-      case STATUS_SHM_GET_HIDDEN : s = "SHM_GET_HIDDEN\n"; break;
-      case STATUS_NEED_PASSPHRASE: s = "NEED_PASSPHRASE\n"; break;
-      case STATUS_VALIDSIG	 : s = "VALIDSIG\n"; break;
-      case STATUS_SIG_ID	 : s = "SIG_ID\n"; break;
-      case STATUS_ENC_TO	 : s = "ENC_TO\n"; break;
-      case STATUS_NODATA	 : s = "NODATA\n"; break;
-      case STATUS_BAD_PASSPHRASE : s = "BAD_PASSPHRASE\n"; break;
-      case STATUS_NO_PUBKEY	 : s = "NO_PUBKEY\n"; break;
-      case STATUS_NO_SECKEY	 : s = "NO_SECKEY\n"; break;
-      case STATUS_NEED_PASSPHRASE_SYM: s = "NEED_PASSPHRASE_SYM\n"; break;
-      case STATUS_DECRYPTION_FAILED: s = "DECRYPTION_FAILED\n"; break;
-      case STATUS_DECRYPTION_OKAY: s = "DECRYPTION_OKAY\n"; break;
-      case STATUS_MISSING_PASSPHRASE: s = "MISSING_PASSPHRASE\n"; break;
-      case STATUS_GOOD_PASSPHRASE : s = "GOOD_PASSPHRASE\n"; break;
-      case STATUS_GOODMDC	 : s = "GOODMDC\n"; break;
-      case STATUS_BADMDC	 : s = "BADMDC\n"; break;
-      case STATUS_ERRMDC	 : s = "ERRMDC\n"; break;
-      case STATUS_IMPORTED	 : s = "IMPORTED\n"; break;
-      case STATUS_IMPORT_RES	 : s = "IMPORT_RES\n"; break;
-      case STATUS_FILE_START	 : s = "FILE_START\n"; break;
-      case STATUS_FILE_DONE	 : s = "FILE_DONE\n"; break;
-      case STATUS_FILE_ERROR	 : s = "FILE_ERROR\n"; break;
-      case STATUS_BEGIN_DECRYPTION:s = "BEGIN_DECRYPTION\n"; break;
-      case STATUS_END_DECRYPTION : s = "END_DECRYPTION\n"; break;
-      case STATUS_BEGIN_ENCRYPTION:s = "BEGIN_ENCRYPTION\n"; break;
-      case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION\n"; break;
-      case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM\n"; break;
-      case STATUS_PROGRESS	 : s = "PROGRESS\n"; break;
-      case STATUS_SIG_CREATED	 : s = "SIG_CREATED\n"; break;
-      case STATUS_SESSION_KEY	 : s = "SESSION_KEY\n"; break;
-      case STATUS_NOTATION_NAME  : s = "NOTATION_NAME\n" ; break;
-      case STATUS_NOTATION_DATA  : s = "NOTATION_DATA\n" ; break;
-      case STATUS_POLICY_URL     : s = "POLICY_URL\n" ; break;
-      default: s = "?\n"; break;
+      case STATUS_ENTER  : s = "ENTER"; break;
+      case STATUS_LEAVE  : s = "LEAVE"; break;
+      case STATUS_ABORT  : s = "ABORT"; break;
+      case STATUS_GOODSIG: s = "GOODSIG"; break;
+      case STATUS_SIGEXPIRED: s = "SIGEXPIRED"; break;
+      case STATUS_KEYREVOKED: s = "KEYREVOKED"; break;
+      case STATUS_BADSIG : s = "BADSIG"; break;
+      case STATUS_ERRSIG : s = "ERRSIG"; break;
+      case STATUS_BADARMOR : s = "BADARMOR"; break;
+      case STATUS_RSA_OR_IDEA : s= "RSA_OR_IDEA"; break;
+      case STATUS_TRUST_UNDEFINED: s = "TRUST_UNDEFINED"; break;
+      case STATUS_TRUST_NEVER	 : s = "TRUST_NEVER"; break;
+      case STATUS_TRUST_MARGINAL : s = "TRUST_MARGINAL"; break;
+      case STATUS_TRUST_FULLY	 : s = "TRUST_FULLY"; break;
+      case STATUS_TRUST_ULTIMATE : s = "TRUST_ULTIMATE"; break;
+      case STATUS_GET_BOOL	 : s = "GET_BOOL"; break;
+      case STATUS_GET_LINE	 : s = "GET_LINE"; break;
+      case STATUS_GET_HIDDEN	 : s = "GET_HIDDEN"; break;
+      case STATUS_GOT_IT	 : s = "GOT_IT"; break;
+      case STATUS_SHM_INFO	 : s = "SHM_INFO"; break;
+      case STATUS_SHM_GET	 : s = "SHM_GET"; break;
+      case STATUS_SHM_GET_BOOL	 : s = "SHM_GET_BOOL"; break;
+      case STATUS_SHM_GET_HIDDEN : s = "SHM_GET_HIDDEN"; break;
+      case STATUS_NEED_PASSPHRASE: s = "NEED_PASSPHRASE"; break;
+      case STATUS_VALIDSIG	 : s = "VALIDSIG"; break;
+      case STATUS_SIG_ID	 : s = "SIG_ID"; break;
+      case STATUS_ENC_TO	 : s = "ENC_TO"; break;
+      case STATUS_NODATA	 : s = "NODATA"; break;
+      case STATUS_BAD_PASSPHRASE : s = "BAD_PASSPHRASE"; break;
+      case STATUS_NO_PUBKEY	 : s = "NO_PUBKEY"; break;
+      case STATUS_NO_SECKEY	 : s = "NO_SECKEY"; break;
+      case STATUS_NEED_PASSPHRASE_SYM: s = "NEED_PASSPHRASE_SYM"; break;
+      case STATUS_DECRYPTION_FAILED: s = "DECRYPTION_FAILED"; break;
+      case STATUS_DECRYPTION_OKAY: s = "DECRYPTION_OKAY"; break;
+      case STATUS_MISSING_PASSPHRASE: s = "MISSING_PASSPHRASE"; break;
+      case STATUS_GOOD_PASSPHRASE : s = "GOOD_PASSPHRASE"; break;
+      case STATUS_GOODMDC	 : s = "GOODMDC"; break;
+      case STATUS_BADMDC	 : s = "BADMDC"; break;
+      case STATUS_ERRMDC	 : s = "ERRMDC"; break;
+      case STATUS_IMPORTED	 : s = "IMPORTED"; break;
+      case STATUS_IMPORT_RES	 : s = "IMPORT_RES"; break;
+      case STATUS_FILE_START	 : s = "FILE_START"; break;
+      case STATUS_FILE_DONE	 : s = "FILE_DONE"; break;
+      case STATUS_FILE_ERROR	 : s = "FILE_ERROR"; break;
+      case STATUS_BEGIN_DECRYPTION:s = "BEGIN_DECRYPTION"; break;
+      case STATUS_END_DECRYPTION : s = "END_DECRYPTION"; break;
+      case STATUS_BEGIN_ENCRYPTION:s = "BEGIN_ENCRYPTION"; break;
+      case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION"; break;
+      case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM"; break;
+      case STATUS_PROGRESS	 : s = "PROGRESS"; break;
+      case STATUS_SIG_CREATED	 : s = "SIG_CREATED"; break;
+      case STATUS_SESSION_KEY	 : s = "SESSION_KEY"; break;
+      case STATUS_NOTATION_NAME  : s = "NOTATION_NAME" ; break;
+      case STATUS_NOTATION_DATA  : s = "NOTATION_DATA" ; break;
+      case STATUS_POLICY_URL     : s = "POLICY_URL" ; break;
+      default: s = "?"; break;
     }
     return s;
 }
 
 void
-set_status_fd ( int newfd )
+set_status_fd ( int fd )
 {
-    fd = newfd;
-    if ( fd != -1 ) {
-	register_primegen_progress ( progress_cb, "primegen" );
-	register_pk_dsa_progress ( progress_cb, "pk_dsa" );
-	register_pk_elg_progress ( progress_cb, "pk_elg" );
+    static int last_fd = -1;
+
+    if ( fd != -1 && last_fd == fd )
+        return;
+
+    if ( statusfp && statusfp != stdout && statusfp != stderr )
+        fclose (statusfp);
+    statusfp = NULL;
+    if ( fd == -1 ) 
+        return;
+
+    if( fd == 1 )
+	statusfp = stdout;
+    else if( fd == 2 )
+	statusfp = stderr;
+    else
+	statusfp = fdopen( fd, "w" );
+    if( !statusfp ) {
+	log_fatal("can't open fd %d for status output: %s\n",
+                  fd, strerror(errno));
     }
+    last_fd = fd;
+    register_primegen_progress ( progress_cb, "primegen" );
+    register_pk_dsa_progress ( progress_cb, "pk_dsa" );
+    register_pk_elg_progress ( progress_cb, "pk_elg" );
 }
 
 int
 is_status_enabled()
 {
-    return fd != -1;
+    return !!statusfp;
 }
 
 void
@@ -161,35 +181,20 @@ write_status ( int no )
     write_status_text( no, NULL );
 }
 
-static void
-mywrite ( int fd, const char *buffer, size_t len )
-{
-    int nwritten;
-
-    do {
-        nwritten = write (fd, buffer, len );
-    } while (nwritten == -1 && errno == EINTR );
-}
-
 void
 write_status_text ( int no, const char *text)
 {
-    const char *s;
-
-    if( fd == -1 )
+    if( !statusfp )
 	return;  /* not enabled */
 
-    s = get_status_string (no);
-
-    mywrite( fd, "[GNUPG:] ", 9 );
+    fputs ( "[GNUPG:] ", statusfp );
+    fputs ( get_status_string (no), statusfp );
     if( text ) {
-	mywrite( fd, s, strlen(s)-1 );
-	mywrite( fd, " ", 1 );
-	mywrite( fd, text, strlen(text) );
-	mywrite( fd, "\n", 1 );
+        putc ( ' ', statusfp );
+        fputs ( text, statusfp );
     }
-    else
-	mywrite( fd, s, strlen(s) );
+    putc ('\n',statusfp);
+    fflush (statusfp);
 }
 
 
@@ -204,16 +209,14 @@ write_status_buffer ( int no, const char *buffer, size_t len, int wrap )
     int esc;
     size_t n, count, dowrap;
 
-    if( fd == -1 )
+    if( !statusfp )
 	return;  /* not enabled */
 
     text = get_status_string (no);
     count = dowrap = 1;
     do {
         if (dowrap) {
-            mywrite( fd, "[GNUPG:] ", 9 );
-            mywrite( fd, text, strlen(text)-1 );
-            mywrite( fd, " ", 1 );
+            fprintf (statusfp, "[GNUPG:] %s ", text );
             count = dowrap = 0;
         }
         for (esc=0, s=buffer, n=len; n && !esc; s++, n-- ) {
@@ -228,20 +231,19 @@ write_status_buffer ( int no, const char *buffer, size_t len, int wrap )
             s--; n++;
         }
         if (s != buffer) 
-            mywrite ( fd, buffer, s-buffer );
+            fwrite (buffer, s-buffer, 1, statusfp );
         if ( esc ) {
-            char buf[5];
-            sprintf (buf, "%%%02X", *(const byte*)s );
-            mywrite (fd, buf, 3 );
+            fprintf (statusfp, "%%%02X", *(const byte*)s );
             s++; n--;
         }
         buffer = s;
         len = n;
         if ( dowrap && len )
-            mywrite( fd, "\n", 1 );
+            putc ( '\n', statusfp );
     } while ( len );
 
-    mywrite( fd, "\n", 1 );
+    putc ('\n',statusfp);
+    fflush (statusfp);
 }
 
 

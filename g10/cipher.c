@@ -141,7 +141,6 @@ cipher_filter( void *opaque, int control,
 		log_error("writing MDC packet failed\n" );
 	}
 	cipher_close(cfx->cipher_hd);
-	write_status( STATUS_END_ENCRYPTION );
     }
     else if( control == IOBUFCTRL_DESC ) {
 	*(char**)buf = "cipher_filter";

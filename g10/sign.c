@@ -562,8 +562,11 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
   leave:
     if( rc )
 	iobuf_cancel(out);
-    else
+    else {
 	iobuf_close(out);
+        if (encrypt)
+            write_status( STATUS_END_ENCRYPTION );
+    }
     iobuf_close(inp);
     md_close( mfx.md );
     release_sk_list( sk_list );

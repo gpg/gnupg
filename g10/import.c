@@ -1057,6 +1057,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 		KBNODE n2 = clone_kbnode(node);
 		insert_kbnode( keyblock_orig, n2, 0 );
 		n2->flag |= 1;
+                ++*n_sigs;
 		log_info( _("key %08lX: revocation certificate added\n"),
 					 (ulong)keyid[1]);
 	    }

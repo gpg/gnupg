@@ -107,8 +107,9 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	else {
 	    clearerr( fp );
 	    nbytes = fread( buf, 1, size, fp );
-	    if( feof(fp) && !nbytes )
+	    if( feof(fp) && !nbytes ) {
 		rc = -1; /* okay: we can return EOF now. */
+            }
 	    else if( ferror(fp) && errno != EPIPE  ) {
 		log_error("%s: read error: %s\n",
 			  a->fname, strerror(errno));
@@ -1626,14 +1627,21 @@ iobuf_translate_file_handle ( int fd, int for_write )
 {
   #ifdef __MINGW32__
     {
-        int x = _open_osfhandle ( (void*)fd, for_write? 1:0 );
+        int x;
+            
+        if  ( fd <= 2 )
+            return fd; /* do not do this for error, stdin, stdout, stderr */
+
+        x = _open_osfhandle ( (void*)fd, for_write? 1:0 );
         if (x==-1 )
             log_error ("failed to translate osfhandle %p\n", (void*)fd );
         else {
-            log_info ("_open_osfhandle %p yields %d\n", (void*)fd, x );
+            /*log_info ("_open_osfhandle %p yields %d%s\n",
+              (void*)fd, x, for_write? " for writing":"" );*/
             fd = x;
         }
     }
   #endif
     return fd;
 }
+
