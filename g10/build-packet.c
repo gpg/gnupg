@@ -54,7 +54,7 @@ static int write_16(IOBUF inp, u16 a);
 static int write_32(IOBUF inp, u32 a);
 static int write_header( IOBUF out, int ctb, u32 len );
 static int write_sign_packet_header( IOBUF out, int ctb, u32 len );
-static int write_header2( IOBUF out, int ctb, u32 len, int hdrlen, int blkmode );
+static int write_header2( IOBUF out, int ctb, u32 len, int hdrlen );
 static int write_new_header( IOBUF out, int ctb, u32 len, int hdrlen );
 static int write_version( IOBUF out, int ctb );
 
@@ -196,7 +196,7 @@ do_comment( IOBUF out, int ctb, PKT_comment *rem )
 {
     if( opt.sk_comments )
       {
-	write_header2(out, ctb, rem->len, 1, 1);
+	write_header2(out, ctb, rem->len, 2);
 	if( iobuf_write( out, rem->data, rem->len ) )
 	  return G10ERR_WRITE_FILE;
       }
@@ -214,7 +214,7 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
       }
     else
       {
-        write_header2( out, ctb, uid->len, 1, 1 );
+        write_header2( out, ctb, uid->len, 2 );
 	if( iobuf_write( out, uid->name, uid->len ) )
 	  return G10ERR_WRITE_FILE;
       }
@@ -248,7 +248,7 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
     for(i=0; i < n; i++ )
 	mpi_write(a, pk->pkey[i] );
 
-    write_header2(out, ctb, iobuf_get_temp_length(a), pk->hdrbytes, 1 );
+    write_header2(out, ctb, iobuf_get_temp_length(a), pk->hdrbytes);
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
 
@@ -384,7 +384,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
   leave:
     /* Build the header of the packet - which we must do after writing all
        the other stuff, so that we know the length of the packet */
-    write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes, 1 );
+    write_header2(out, ctb, iobuf_get_temp_length(a), sk->hdrbytes);
     /* And finally write it out the real stream */
     if( iobuf_write_temp( out, a ) )
 	rc = G10ERR_WRITE_FILE;
@@ -494,11 +494,11 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 	n += nbytes;
     }
     wipememory(buf,1000); /* burn the buffer */
-    if( !pt->len )
-	iobuf_set_block_mode(out, 0 ); /* write end marker */
-    else if( n != pt->len )
-	log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
-			(ulong)n, (ulong)pt->len );
+    if( (ctb&0x40) && !pt->len )
+      iobuf_set_partial_block_mode(out, 0 ); /* turn off partial */
+    if( pt->len && n != pt->len )
+      log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
+		(ulong)n, (ulong)pt->len );
 
     return rc;
 }
@@ -548,7 +548,7 @@ do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
        set, CTB is already formatted as new style and write_header2
        does create a partial length encoding using new the new
        style. */
-    write_header2(out, ctb, 0, 0, 0 );
+    write_header2(out, ctb, 0, 0);
     iobuf_put(out, cd->algorithm );
 
     /* This is all. The caller has to write the real data */
@@ -1018,7 +1018,7 @@ calc_header_length( u32 len, int new_ctb )
 static int
 write_header( IOBUF out, int ctb, u32 len )
 {
-    return write_header2( out, ctb, len, 0, 1 );
+    return write_header2( out, ctb, len, 0 );
 }
 
 
@@ -1041,46 +1041,54 @@ write_sign_packet_header( IOBUF out, int ctb, u32 len )
  * (using the specified hdrlen).
  */
 static int
-write_header2( IOBUF out, int ctb, u32 len, int hdrlen, int blkmode )
+write_header2( IOBUF out, int ctb, u32 len, int hdrlen )
 {
-    if( ctb & 0x40 )
-	return write_new_header( out, ctb, len, hdrlen );
+  if( ctb & 0x40 )
+    return write_new_header( out, ctb, len, hdrlen );
 
-    if( hdrlen ) {
-        if( hdrlen == 2 && len < 256 )
-	    ;
-	else if( hdrlen == 3 && len < 65536 )
-	    ctb |= 1;
-	else
-	    ctb |= 2;
+  if( hdrlen )
+    {
+      if( hdrlen == 2 && len < 256 )
+	;
+      else if( hdrlen == 3 && len < 65536 )
+	ctb |= 1;
+      else
+	ctb |= 2;
     }
-    else {
-	if( !len )
-	    ctb |= 3;
-	else if( len < 256 )
-	    ;
-	else if( len < 65536 )
-	    ctb |= 1;
-	else
-	    ctb |= 2;
+  else
+    {
+      if( !len )
+	ctb |= 3;
+      else if( len < 256 )
+	;
+      else if( len < 65536 )
+	ctb |= 1;
+      else
+	ctb |= 2;
     }
-    if( iobuf_put(out, ctb ) )
-	return -1;
-    if( !len && !hdrlen ) {
-	if( blkmode )
-	    iobuf_set_block_mode(out, 8196 );
-    }
-    else {
-	if( ctb & 2 ) {
-	    iobuf_put(out, len >> 24 );
-	    iobuf_put(out, len >> 16 );
-	}
-	if( ctb & 3 )
-	    iobuf_put(out, len >> 8 );
-	if( iobuf_put(out, len ) )
+
+  if( iobuf_put(out, ctb ) )
+    return -1;
+
+  if( len || hdrlen )
+    {
+      if( ctb & 2 )
+	{
+	  if(iobuf_put(out, len >> 24 ))
 	    return -1;
+	  if(iobuf_put(out, len >> 16 ))
+	    return -1;
+	}
+
+      if( ctb & 3 )
+	if(iobuf_put(out, len >> 8 ))
+	  return -1;
+
+      if( iobuf_put(out, len ) )
+	return -1;
     }
-    return 0;
+
+  return 0;
 }
 
 

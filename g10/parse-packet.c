@@ -383,42 +383,34 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	       }
 	}
     }
-    else {
+    else
+      {
 	pkttype = (ctb>>2)&0xf;
 	lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
-	if( !lenbytes ) {
+	if( !lenbytes )
+	  {
 	    pktlen = 0; /* don't know the value */
+	    /* This isn't really partial, but we can treat it the same
+	       in a "read until the end" sort of way. */
 	    partial=1;
-            switch (pkttype) {
-              case PKT_ENCRYPTED:
-              case PKT_PLAINTEXT:
-                /* These partial length encodings are from an very
-		   early GnuPG release and deprecated.  However we
-		   still support them read-wise.  Note, that we should
-		   not allow them for any key related packets, because
-		   this might render a keyring unusable if an errenous
-		   packet indicated this mode but not complying to it
-		   gets imported. */
-                iobuf_set_block_mode(inp, 1);
-		break;
-
-              case PKT_COMPRESSED:
-                break; /* the orginal pgp 2 way. */
-
-	    default:
-              log_error ("%s: old style partial length for invalid"
-			 " packet type %d\n", iobuf_where(inp), pkttype );
-              rc = G10ERR_INVALID_PACKET;
-              goto leave;
-            }
-	}
-	else {
-	    for( ; lenbytes; lenbytes-- ) {
+	    if(pkttype!=PKT_ENCRYPTED && pkttype!=PKT_PLAINTEXT
+	       && pkttype!=PKT_COMPRESSED)
+	      {
+		log_error ("%s: indeterminate length for invalid"
+			   " packet type %d\n", iobuf_where(inp), pkttype );
+		rc = G10ERR_INVALID_PACKET;
+		goto leave;
+	      }
+	  }
+	else
+	  {
+	    for( ; lenbytes; lenbytes-- )
+	      {
 		pktlen <<= 8;
 		pktlen |= hdr[hdrlen++] = iobuf_get_noeof(inp);
-	    }
-	}
-    }
+	      }
+	  }
+      }
 
     if (pktlen == 0xffffffff) {
         /* with a some probability this is caused by a problem in the
