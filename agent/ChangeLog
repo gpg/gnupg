@@ -1,3 +1,9 @@
+2004-05-03  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c: Remove help texts for options lile --lc-ctype.
+	(main): New option --allow-mark-trusted. 
+	* trustlist.c (agent_marktrusted): Use it here.
+
 2004-04-30  Werner Koch  <wk@gnupg.org>
 
 	* protect-tool.c: New option --enable-status-msg.

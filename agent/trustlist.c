@@ -224,7 +224,7 @@ agent_listtrusted (void *assuan_context)
 
 /* Insert the given fpr into our trustdb.  We expect FPR to be an all
    uppercase hexstring of 40 characters. FLAG is either 'P' or 'C'.
-   This function does first check whether that key has alreay ben put
+   This function does first check whether that key has alreay been put
    into the trustdb and returns success in this case.  Before a FPR
    actually gets inserted, the user is asked by means of the pin-entry
    whether this is actual wants he want to do.
@@ -264,6 +264,10 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
   trustfp = NULL;
   if (rc != -1)
     return rc;   /* error in the trustdb */
+
+  /* This feature must explicitly been enabled. */
+  if (!opt.allow_mark_trusted)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   /* insert a new one */
   if (asprintf (&desc,

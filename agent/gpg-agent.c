@@ -80,6 +80,7 @@ enum cmd_and_opt_values
   oDisablePth,
 
   oIgnoreCacheForSigning,
+  oAllowMarkTrusted,
   oKeepTTY,
   oKeepDISPLAY,
 
@@ -109,21 +110,26 @@ static ARGPARSE_OPTS opts[] = {
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
   { oDisablePth, "disable-pth", 0, N_("do not allow multiple connections")},
 
-  { oPinentryProgram, "pinentry-program", 2 , "path to PIN Entry program" },
-  { oDisplay,    "display",     2, "set the display" },
-  { oTTYname,    "ttyname",     2, "set the tty terminal node name" },
-  { oTTYtype,    "ttytype",     2, "set the tty terminal type" },
-  { oLCctype,    "lc-ctype",    2, "set the tty LC_CTYPE value" },
-  { oLCmessages, "lc-messages", 2, "set the tty LC_MESSAGES value" },
+  { oPinentryProgram, "pinentry-program", 2 ,
+                               N_("|PGM|use PGM as the PIN-Entry program") },
+  { oScdaemonProgram, "scdaemon-program", 2 ,
+                               N_("|PGM|use PGM as the SCdaemon program") },
 
-  { oScdaemonProgram, "scdaemon-program", 2 , "path to SCdaemon program" },
-  { oDefCacheTTL, "default-cache-ttl", 4,
-                                 "|N|expire cached PINs after N seconds"},
-  { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
-                                 "do not use the PIN cache when signing"},
+  { oDisplay,    "display",     2, "@" },
+  { oTTYname,    "ttyname",     2, "@" },
+  { oTTYtype,    "ttytype",     2, "@" },
+  { oLCctype,    "lc-ctype",    2, "@" },
+  { oLCmessages, "lc-messages", 2, "@" },
   { oKeepTTY, "keep-tty", 0,  N_("ignore requests to change the TTY")},
   { oKeepDISPLAY, "keep-display",
                           0, N_("ignore requests to change the X display")},
+
+  { oDefCacheTTL, "default-cache-ttl", 4,
+                               N_("|N|expire cached PINs after N seconds")},
+  { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
+                               N_("do not use the PIN cache when signing")},
+  { oAllowMarkTrusted, "allow-mark-trusted", 0,
+                             N_("allow clients to mark keys as \"trusted\"")},
   {0}
 };
 
@@ -336,6 +342,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.scdaemon_program = NULL;
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
       opt.ignore_cache_for_signing = 0;
+      opt.allow_mark_trusted = 0;
       return 1;
     }
 
@@ -366,6 +373,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oDefCacheTTL: opt.def_cache_ttl = pargs->r.ret_ulong; break;
       
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
+
+    case oAllowMarkTrusted: opt.allow_mark_trusted = 1; break;
 
     default:
       return 0; /* not handled */
@@ -647,6 +656,8 @@ main (int argc, char **argv )
       printf ("no-grab:%lu:\n", 
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("ignore-cache-for-signing:%lu:\n",
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      printf ("allow-mark-trusted:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
 
       agent_exit (0);

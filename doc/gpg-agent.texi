@@ -238,6 +238,12 @@ seeing what the agent actually does.
 Don't allow multiple connections.  This option is in general not very
 useful. 
 
+@item --allow-mark-trusted
+@opindex allow-mark-trusted
+Allow clients to mark keys as trusted, i.e. put them into the
+@code{trustlist.txt} file.  This is by default not allowed to make it
+harder for users to inadvertly accept Root-CA keys.
+
 @item --ignore-cache-for-signing
 @opindex ignore-cache-for-signing
 This option will let gpg-agent bypass the passphrase cache for all

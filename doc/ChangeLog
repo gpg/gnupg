@@ -1,3 +1,7 @@
+2004-05-03  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.texi (Agent Options): Add --allow-mark-trusted.
+
 2004-02-03  Werner Koch  <wk@gnupg.org>
 
 	* contrib.texi (Contributors): Updated from the gpg 1.2.3 thanks
