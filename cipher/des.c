@@ -152,7 +152,6 @@
  */
 typedef struct _des_ctx
   {
-    int mode;
     u32 encrypt_subkeys[32];
     u32 decrypt_subkeys[32];
   }
@@ -163,19 +162,19 @@ des_ctx[1];
  */
 typedef struct _tripledes_ctx
   {
-    int mode;
     u32 encrypt_subkeys[96];
     u32 decrypt_subkeys[96];
   }
 tripledes_ctx[1];
 
 
-static void des_key_schedule (const byte *, u32 *, int);
+static void des_key_schedule (const byte *, u32 *);
 static int des_setkey (struct _des_ctx *, const byte *);
 static int des_ecb_crypt (struct _des_ctx *, const byte *, byte *, int);
 static int tripledes_set2keys (struct _tripledes_ctx *, const byte *, const byte *);
 static int tripledes_set3keys (struct _tripledes_ctx *, const byte *, const byte *, const byte *);
 static int tripledes_ecb_crypt (struct _tripledes_ctx *, const byte *, byte *, int);
+static int is_weak_key ( const byte *key );
 static const char *selftest (void);
 
 
@@ -308,18 +307,58 @@ u32 rightkey_swap[16] =
 
 /*
  * Numbers of left shifts per round for encryption subkey schedule
+ * To calculate the decryption key scheduling we just reverse the
+ * ordering of the subkeys so we can omit the table for decryption
+ * subkey schedule.
  */
 static byte encrypt_rotate_tab[16] =
 {
   1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1
 };
 
+
+
 /*
- * Numbers of right shifts per round for decryption subkey schedule
+ * Table with weak DES keys sorted in ascending order.
+ * In DES their are 64 known keys wich are weak. They are weak
+ * because they produce only one, two or four different
+ * subkeys in the subkey scheduling process.
+ * The keys in this table have all their parity bits cleared.
  */
-static byte decrypt_rotate_tab[16] =
+static byte weak_keys[64][8] =
 {
-  0, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1
+  { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },  { 0x00, 0x00, 0x1e, 0x1e, 0x00, 0x00, 0x0e, 0x0e },
+  { 0x00, 0x00, 0xe0, 0xe0, 0x00, 0x00, 0xf0, 0xf0 },  { 0x00, 0x00, 0xfe, 0xfe, 0x00, 0x00, 0xfe, 0xfe },
+  { 0x00, 0x1e, 0x00, 0x1e, 0x00, 0x0e, 0x00, 0x0e },  { 0x00, 0x1e, 0x1e, 0x00, 0x00, 0x0e, 0x0e, 0x00 },
+  { 0x00, 0x1e, 0xe0, 0xfe, 0x00, 0x0e, 0xf0, 0xfe },  { 0x00, 0x1e, 0xfe, 0xe0, 0x00, 0x0e, 0xfe, 0xf0 },
+  { 0x00, 0xe0, 0x00, 0xe0, 0x00, 0xf0, 0x00, 0xf0 },  { 0x00, 0xe0, 0x1e, 0xfe, 0x00, 0xf0, 0x0e, 0xfe },
+  { 0x00, 0xe0, 0xe0, 0x00, 0x00, 0xf0, 0xf0, 0x00 },  { 0x00, 0xe0, 0xfe, 0x1e, 0x00, 0xf0, 0xfe, 0x0e },
+  { 0x00, 0xfe, 0x00, 0xfe, 0x00, 0xfe, 0x00, 0xfe },  { 0x00, 0xfe, 0x1e, 0xe0, 0x00, 0xfe, 0x0e, 0xf0 },
+  { 0x00, 0xfe, 0xe0, 0x1e, 0x00, 0xfe, 0xf0, 0x0e },  { 0x00, 0xfe, 0xfe, 0x00, 0x00, 0xfe, 0xfe, 0x00 },
+  { 0x0e, 0x0e, 0x0e, 0x0e, 0xf0, 0xf0, 0xf0, 0xf0 },  { 0x1e, 0x00, 0x00, 0x1e, 0x0e, 0x00, 0x00, 0x0e },
+  { 0x1e, 0x00, 0x1e, 0x00, 0x0e, 0x00, 0x0e, 0x00 },  { 0x1e, 0x00, 0xe0, 0xfe, 0x0e, 0x00, 0xf0, 0xfe },
+  { 0x1e, 0x00, 0xfe, 0xe0, 0x0e, 0x00, 0xfe, 0xf0 },  { 0x1e, 0x1e, 0x00, 0x00, 0x0e, 0x0e, 0x00, 0x00 },
+  { 0x1e, 0x1e, 0x1e, 0x1e, 0x0e, 0x0e, 0x0e, 0x0e },  { 0x1e, 0x1e, 0xe0, 0xe0, 0x0e, 0x0e, 0xf0, 0xf0 },
+  { 0x1e, 0x1e, 0xfe, 0xfe, 0x0e, 0x0e, 0xfe, 0xfe },  { 0x1e, 0xe0, 0x00, 0xfe, 0x0e, 0xf0, 0x00, 0xfe },
+  { 0x1e, 0xe0, 0x1e, 0xe0, 0x0e, 0xf0, 0x0e, 0xf0 },  { 0x1e, 0xe0, 0xe0, 0x1e, 0x0e, 0xf0, 0xf0, 0x0e },
+  { 0x1e, 0xe0, 0xfe, 0x00, 0x0e, 0xf0, 0xfe, 0x00 },  { 0x1e, 0xfe, 0x00, 0xe0, 0x0e, 0xfe, 0x00, 0xf0 },
+  { 0x1e, 0xfe, 0x1e, 0xfe, 0x0e, 0xfe, 0x0e, 0xfe },  { 0x1e, 0xfe, 0xe0, 0x00, 0x0e, 0xfe, 0xf0, 0x00 },
+  { 0x1e, 0xfe, 0xfe, 0x1e, 0x0e, 0xfe, 0xfe, 0x0e },  { 0xe0, 0x00, 0x00, 0xe0, 0xf0, 0x00, 0x00, 0xf0 },
+  { 0xe0, 0x00, 0x1e, 0xfe, 0xf0, 0x00, 0x0e, 0xfe },  { 0xe0, 0x00, 0xe0, 0x00, 0xf0, 0x00, 0xf0, 0x00 },
+  { 0xe0, 0x00, 0xfe, 0x1e, 0xf0, 0x00, 0xfe, 0x0e },  { 0xe0, 0x1e, 0x00, 0xfe, 0xf0, 0x0e, 0x00, 0xfe },
+  { 0xe0, 0x1e, 0x1e, 0xe0, 0xf0, 0x0e, 0x0e, 0xf0 },  { 0xe0, 0x1e, 0xe0, 0x1e, 0xf0, 0x0e, 0xf0, 0x0e },
+  { 0xe0, 0x1e, 0xfe, 0x00, 0xf0, 0x0e, 0xfe, 0x00 },  { 0xe0, 0xe0, 0x00, 0x00, 0xf0, 0xf0, 0x00, 0x00 },
+  { 0xe0, 0xe0, 0x1e, 0x1e, 0xf0, 0xf0, 0x0e, 0x0e },  { 0xe0, 0xe0, 0xfe, 0xfe, 0xf0, 0xf0, 0xfe, 0xfe },
+  { 0xe0, 0xfe, 0x00, 0x1e, 0xf0, 0xfe, 0x00, 0x0e },  { 0xe0, 0xfe, 0x1e, 0x00, 0xf0, 0xfe, 0x0e, 0x00 },
+  { 0xe0, 0xfe, 0xe0, 0xfe, 0xf0, 0xfe, 0xf0, 0xfe },  { 0xe0, 0xfe, 0xfe, 0xe0, 0xf0, 0xfe, 0xfe, 0xf0 },
+  { 0xfe, 0x00, 0x00, 0xfe, 0xfe, 0x00, 0x00, 0xfe },  { 0xfe, 0x00, 0x1e, 0xe0, 0xfe, 0x00, 0x0e, 0xf0 },
+  { 0xfe, 0x00, 0xe0, 0x1e, 0xfe, 0x00, 0xf0, 0x0e },  { 0xfe, 0x00, 0xfe, 0x00, 0xfe, 0x00, 0xfe, 0x00 },
+  { 0xfe, 0x1e, 0x00, 0xe0, 0xfe, 0x0e, 0x00, 0xf0 },  { 0xfe, 0x1e, 0x1e, 0xfe, 0xfe, 0x0e, 0x0e, 0xfe },
+  { 0xfe, 0x1e, 0xe0, 0x00, 0xfe, 0x0e, 0xf0, 0x00 },  { 0xfe, 0x1e, 0xfe, 0x1e, 0xfe, 0x0e, 0xfe, 0x0e },
+  { 0xfe, 0xe0, 0x00, 0x1e, 0xfe, 0xf0, 0x00, 0x0e },  { 0xfe, 0xe0, 0x1e, 0x00, 0xfe, 0xf0, 0x0e, 0x00 },
+  { 0xfe, 0xe0, 0xe0, 0xfe, 0xfe, 0xf0, 0xf0, 0xfe },  { 0xfe, 0xe0, 0xfe, 0xe0, 0xfe, 0xf0, 0xfe, 0xf0 },
+  { 0xfe, 0xfe, 0x00, 0x00, 0xfe, 0xfe, 0x00, 0x00 },  { 0xfe, 0xfe, 0x1e, 0x1e, 0xfe, 0xfe, 0x0e, 0x0e },
+  { 0xfe, 0xfe, 0xe0, 0xe0, 0xfe, 0xfe, 0xf0, 0xf0 },  { 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe }
 };
 
 
@@ -359,7 +398,7 @@ static byte decrypt_rotate_tab[16] =
 
 
 /*
- * A full DES round including 'expansion funtion', 'sbox substitution'
+ * A full DES round including 'expansion function', 'sbox substitution'
  * and 'primitive function P' but without swapping the left and right word.
  */
 #define DES_ROUND(from, to, work, subkey)		\
@@ -403,22 +442,21 @@ static byte decrypt_rotate_tab[16] =
 
 
 /*
- * des_key_schedule():	  Calculate 16 subkeys pairs (even/odd) for one DES round
+ * des_key_schedule():	  Calculate 16 subkeys pairs (even/odd) for
+ *			  16 encryption rounds.
+ *			  To calculate subkeys for decryption the caller
+ *			  have to reorder the generated subkeys.
  *
  *    rawkey:	    8 Bytes of key data
  *    subkey:	    Array of at least 32 u32s. Will be filled
  *		    with calculated subkeys.
- *    mode:	    Key schedule mode.
- *		    mode == 0:	Calculate subkeys to encrypt
- *		    mode != 0:	Calculate subkeys to decrypt
  *
  */
 static void
-des_key_schedule (const byte * rawkey, u32 * subkey, int mode)
+des_key_schedule (const byte * rawkey, u32 * subkey)
 {
   u32 left, right, work;
   int round;
-
 
   READ_64BIT_DATA (rawkey, left, right)
 
@@ -441,20 +479,8 @@ des_key_schedule (const byte * rawkey, u32 * subkey, int mode)
 
   for (round = 0; round < 16; ++round)
     {
-      if (mode)
-	{
-	  /* decrypt */
-
-	  left = ((left >> decrypt_rotate_tab[round]) | (left << (28 - decrypt_rotate_tab[round]))) & 0x0fffffff;
-	  right = ((right >> decrypt_rotate_tab[round]) | (right << (28 - decrypt_rotate_tab[round]))) & 0x0fffffff;
-	}
-      else
-	{
-	  /* encrypt */
-
-	  left = ((left << encrypt_rotate_tab[round]) | (left >> (28 - encrypt_rotate_tab[round]))) & 0x0fffffff;
-	  right = ((right << encrypt_rotate_tab[round]) | (right >> (28 - encrypt_rotate_tab[round]))) & 0x0fffffff;
-	}
+      left = ((left << encrypt_rotate_tab[round]) | (left >> (28 - encrypt_rotate_tab[round]))) & 0x0fffffff;
+      right = ((right << encrypt_rotate_tab[round]) | (right >> (28 - encrypt_rotate_tab[round]))) & 0x0fffffff;
 
       *subkey++ = ((left << 4) & 0x24000000)
 	| ((left << 28) & 0x10000000)
@@ -514,11 +540,15 @@ des_key_schedule (const byte * rawkey, u32 * subkey, int mode)
 static int
 des_setkey (struct _des_ctx *ctx, const byte * key)
 {
-  if (!ctx || !key)
-    return -1;
+  int i;
 
-  des_key_schedule (key, ctx->encrypt_subkeys, 0);
-  des_key_schedule (key, ctx->decrypt_subkeys, 1);
+  des_key_schedule (key, ctx->encrypt_subkeys);
+
+  for(i=0; i<32; i+=2)
+    {
+      ctx->decrypt_subkeys[i]	= ctx->encrypt_subkeys[30-i];
+      ctx->decrypt_subkeys[i+1] = ctx->encrypt_subkeys[31-i];
+    }
 
   return 0;
 }
@@ -534,9 +564,6 @@ des_ecb_crypt (struct _des_ctx *ctx, const byte * from, byte * to, int mode)
 {
   u32 left, right, work;
   u32 *keys;
-
-  if (!ctx || !from || !to)
-    return -1;
 
   keys = mode ? ctx->decrypt_subkeys : ctx->encrypt_subkeys;
 
@@ -570,17 +597,25 @@ tripledes_set2keys (struct _tripledes_ctx *ctx,
 		    const byte * key1,
 		    const byte * key2)
 {
-  if (!ctx || !key1 || !key2)
-    return -1;
+  int i;
 
-  des_key_schedule (key1, ctx->encrypt_subkeys, 0);
-  des_key_schedule (key1, ctx->decrypt_subkeys, 1);
+  des_key_schedule (key1, ctx->encrypt_subkeys);
+  des_key_schedule (key2, &(ctx->decrypt_subkeys[32]));
 
-  des_key_schedule (key2, &(ctx->encrypt_subkeys[32]), 1);
-  des_key_schedule (key2, &(ctx->decrypt_subkeys[32]), 0);
+  for(i=0; i<32; i+=2)
+    {
+      ctx->decrypt_subkeys[i]	 = ctx->encrypt_subkeys[30-i];
+      ctx->decrypt_subkeys[i+1]  = ctx->encrypt_subkeys[31-i];
 
-  des_key_schedule (key1, &(ctx->encrypt_subkeys[64]), 0);
-  des_key_schedule (key1, &(ctx->decrypt_subkeys[64]), 1);
+      ctx->encrypt_subkeys[i+32] = ctx->decrypt_subkeys[62-i];
+      ctx->encrypt_subkeys[i+33] = ctx->decrypt_subkeys[63-i];
+
+      ctx->encrypt_subkeys[i+64] = ctx->encrypt_subkeys[i];
+      ctx->encrypt_subkeys[i+65] = ctx->encrypt_subkeys[i+1];
+
+      ctx->decrypt_subkeys[i+64] = ctx->decrypt_subkeys[i];
+      ctx->decrypt_subkeys[i+65] = ctx->decrypt_subkeys[i+1];
+    }
 
   return 0;
 }
@@ -598,17 +633,23 @@ tripledes_set3keys (struct _tripledes_ctx *ctx,
 		    const byte * key2,
 		    const byte * key3)
 {
-  if (!ctx || !key1 || !key2 || !key3)
-    return -1;
+  int i;
 
-  des_key_schedule (key1, ctx->encrypt_subkeys, 0);
-  des_key_schedule (key1, ctx->decrypt_subkeys, 1);
+  des_key_schedule (key1, ctx->encrypt_subkeys);
+  des_key_schedule (key2, &(ctx->decrypt_subkeys[32]));
+  des_key_schedule (key3, &(ctx->encrypt_subkeys[64]));
 
-  des_key_schedule (key2, &(ctx->encrypt_subkeys[32]), 1);
-  des_key_schedule (key2, &(ctx->decrypt_subkeys[32]), 0);
+  for(i=0; i<32; i+=2)
+    {
+      ctx->decrypt_subkeys[i]	 = ctx->encrypt_subkeys[94-i];
+      ctx->decrypt_subkeys[i+1]  = ctx->encrypt_subkeys[95-i];
 
-  des_key_schedule (key3, &(ctx->encrypt_subkeys[64]), 0);
-  des_key_schedule (key3, &(ctx->decrypt_subkeys[64]), 1);
+      ctx->encrypt_subkeys[i+32] = ctx->decrypt_subkeys[62-i];
+      ctx->encrypt_subkeys[i+33] = ctx->decrypt_subkeys[63-i];
+
+      ctx->decrypt_subkeys[i+64] = ctx->encrypt_subkeys[30-i];
+      ctx->decrypt_subkeys[i+65] = ctx->encrypt_subkeys[31-i];
+    }
 
   return 0;
 }
@@ -617,15 +658,13 @@ tripledes_set3keys (struct _tripledes_ctx *ctx,
 
 /*
  * Electronic Codebook Mode Triple-DES encryption/decryption of data according to 'mode'.
+ * Sometimes this mode is named 'EDE' mode (Encryption-Decryption-Encryption).
  */
 static int
 tripledes_ecb_crypt (struct _tripledes_ctx *ctx, const byte * from, byte * to, int mode)
 {
   u32 left, right, work;
   u32 *keys;
-
-  if (!ctx || !from || !to)
-    return -1;
 
   keys = mode ? ctx->decrypt_subkeys : ctx->encrypt_subkeys;
 
@@ -666,15 +705,43 @@ tripledes_ecb_crypt (struct _tripledes_ctx *ctx, const byte * from, byte * to, i
 }
 
 
+
 /*
  * Check whether the 8 byte key is weak.
+ * Dose not check the parity bits of the key but simple ignore them.
  */
-
 static int
-is_weak_key ( byte *key )
+is_weak_key ( const byte *key )
 {
-    return 0; /* FIXME */
+  byte work[8];
+  int i, left, right, middle, cmp_result;
+
+  /* clear parity bits */
+  for(i=0; i<8; ++i)
+     work[i] = key[i] & 0xfe;
+
+  /* binary search in the weak key table */
+  left = 0;
+  right = 63;
+  while(1)
+    {
+      middle = (left + right) / 2;
+
+      if ( !(cmp_result=memcmp(work, weak_keys[middle], 8)) )
+	  return -1;
+
+      if ( left == right )
+	  break;
+
+      if ( cmp_result > 0 )
+	  left = middle + 1;
+      else
+	  right = middle - 1;
+    }
+
+  return 0;
 }
+
 
 
 /*
@@ -717,12 +784,14 @@ selftest (void)
 	memcpy (input, temp1, 8);
       }
     if (memcmp (temp3, result, 8))
-      return "DES maintenace test failed.";
+      return "DES maintenance test failed.";
   }
 
 
   /*
-   * Triple-DES test  (Does somebody known on official test?)
+   * Triple-DES test  (Do somebody known on official test?)
+   *
+   * FIXME: This test doesn't use tripledes_set3keys() !
    */
   {
     int i;
@@ -749,6 +818,20 @@ selftest (void)
       return "TRIPLE-DES test failed.";
   }
 
+
+  /*
+   * Check the weak key detection. We simply assume the table with
+   * weak keys is ok and check every key in the table if it is
+   * detected... (This test is a little bit stupid)
+   */
+  {
+    int i;
+
+    for (i = 0; i < 64; ++i)
+	if (!is_weak_key(weak_keys[i]))
+	    return "DES weak key detection failed";
+  }
+
   return 0;
 }
 
@@ -759,10 +842,10 @@ do_tripledes_setkey ( struct _tripledes_ctx *ctx, byte *key, unsigned keylen )
     if( keylen != 24 )
 	return G10ERR_WRONG_KEYLEN;
 
+    tripledes_set3keys ( ctx, key, key+8, key+16);
+
     if( is_weak_key( key ) || is_weak_key( key+8 ) || is_weak_key( key+16 ) )
 	return G10ERR_WEAK_KEY;
-
-    tripledes_set3keys ( ctx, key, key+8, key+16);
 
     return 0;
 }
@@ -800,7 +883,7 @@ des_get_info( int algo, size_t *keylen,
     if( !did_selftest ) {
 	const char *s = selftest();
 	if( s )
-	    log_fatal("selftest failed: %s", s );
+	    log_fatal("selftest failed: %s\n", s );
 	did_selftest = 1;
     }
 

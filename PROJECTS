@@ -1,0 +1,6 @@
+
+  - abstraction of the MPI
+
+  - Add a way to override the current cipher/md implementations
+    by others (using extensions)
+

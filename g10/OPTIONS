@@ -49,7 +49,7 @@ compress-sigs
 run-as-shm-coprocess [request-locked-shm-size]
 # very special :-)
 # You will have to use "--status-fd" too
-
+# Note:  This option dioes only work if given on the command line.
 
 set-filename <name>
 # Set <name> as the filename into the plaintext packet

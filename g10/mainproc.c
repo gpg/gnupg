@@ -88,8 +88,10 @@ add_onepass_sig( CTX c, PACKET *pkt )
 	if( c->list->pkt->pkttype != PKT_ONEPASS_SIG ) {
 	   log_error("add_onepass_sig: another packet is in the way\n");
 	   release_list( c );
+	   c->list = new_kbnode( pkt );
 	}
-	add_kbnode( c->list, new_kbnode( pkt ));
+	else
+	   add_kbnode( c->list, new_kbnode( pkt ));
     }
     else /* insert the first one */
 	c->list = node = new_kbnode( pkt );

@@ -1,11 +1,18 @@
 
+    * after creating a new uid, the preferences in the trustdb are not updated.
+      We should always sync the trustdb in such cases.
+
+    * write a tool to extract selected keys from a file.
+
+    * new menu to delete signatures and list signature in menu
+
+    * commandline controlled --edit-key with assumed save.
+
+    * -rdynamic auf Solaris Problem
+
     * if --libdir is used, the extensions are put in a wrong place.
       How does GNOME handle this or make a new option for this directory.
-
-    * Should we use the ElGamal subkey if the DSA keyid is given?
-      What about an option --loose-keyid-match?
-
-    * salted and iterated S2Ks don't work (see passphrase.c).
+      Hmmm, I don´ like to pass ot as a commandline option to cc.
 
     * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
 
@@ -42,11 +49,6 @@
 
     * Add some stuff for DU cc
 
-    * check for "expect" before running test genkey1024
-
     * use "passphrase" instead of "pass phrase"
     * Use "user ID", "trustdb" and "WARNING".
-
-    * armor.c cannot handle concatenated armored messages.
-      at least it should be possible to do this for "KEY BLOCK"
 

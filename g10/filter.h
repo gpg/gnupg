@@ -42,7 +42,7 @@ typedef struct {
     int parse_state;
     int inp_checked;   /* set if inp has been checked */
     int inp_bypass;    /* set if the input is not armored */
-    int inp_eof;
+    int any_data;
     const char *hdrlines;
 } armor_filter_context_t;
 

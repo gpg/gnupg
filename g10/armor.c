@@ -34,6 +34,7 @@
 #include "options.h"
 #include "main.h"
 #include "status.h"
+#include "i18n.h"
 
 
 #define CRCINIT 0xB704CE
@@ -51,7 +52,7 @@ static int is_initialized;
 
 
 typedef enum {
-    fhdrHASArmor,
+    fhdrHASArmor = 0,
     fhdrNOArmor,
     fhdrINIT,
     fhdrINITCont,
@@ -331,12 +332,12 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 			if( buf[n-1] == '\r' )
 			    buf[--n] = 0;
 			if( opt.verbose ) {
-			    log_info("armor header: ");
+			    log_info(_("armor header: "));
 			    print_string( stderr, buf, n, 0 );
 			    putc('\n', stderr);
 			}
 			if( clearsig && !(hashes=parse_hash_header( buf )) ) {
-			    log_error("invalid clearsig header\n");
+			    log_error(_("invalid clearsig header\n"));
 			    state = fhdrERROR;
 			}
 			else {
@@ -362,7 +363,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		    }
 		}
 		else {
-		    log_error("invalid armor header: ");
+		    log_error(_("invalid armor header: "));
 		    print_string( stderr, buf, n, 0 );
 		    putc('\n', stderr);
 		    state = fhdrERROR;
@@ -371,7 +372,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    else if( c != -1 ) {
 		if( strchr( buf, ':') ) { /* buffer to short, but this is okay*/
 		    if( opt.verbose ) {
-			log_info("armor header: ");
+			log_info(_("armor header: "));
 			print_string( stderr, buf, n, 0 );
 			fputs("[...]\n", stderr);  /* indicate it is truncated */
 		    }
@@ -436,7 +437,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX )
 		clearsig = 1;
 	    if( opt.verbose > 1 )
-		log_info("armor: %s\n", head_strings[hdr_line]);
+		log_info(_("armor: %s\n"), head_strings[hdr_line]);
 	    break;
 
 	  case fhdrCLEARSIG:
@@ -480,7 +481,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 				 fhdrREADClearsig : fhdrTESTSpaces;
 	    }
 	    else {
-		log_error("invalid dash escaped line: ");
+		log_error(_("invalid dash escaped line: "));
 		print_string( stderr, buf, n, 0 );
 		putc('\n', stderr);
 		state = fhdrERROR;
@@ -549,7 +550,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	  } break;
 
 	  case fhdrERRORShow:
-	    log_error("invalid clear text header: ");
+	    log_error(_("invalid clear text header: "));
 	    print_string( stderr, buf, n, 0 );
 	    putc('\n', stderr);
 	    state = fhdrERROR;
@@ -779,7 +780,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    break;
 	}
 	else if( (c = asctobin[(c2=c)]) == 255 ) {
-	    log_error("invalid radix64 character %02x skipped\n", c2);
+	    log_error(_("invalid radix64 character %02x skipped\n"), c2);
 	    continue;
 	}
 	switch(idx) {
@@ -797,7 +798,10 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     afx->idx = idx;
     afx->radbuf[0] = val;
     if( checkcrc ) {
-	afx->inp_eof = 1; /*assume eof */
+	afx->any_data = 1;
+	afx->inp_checked=0;
+	afx->faked = 0;
+	afx->parse_state = 0;
 	for(;;) { /* skip lf and pad characters */
 	    if( afx->helpidx < afx->helplen )
 		c = afx->helpbuf[afx->helpidx++];
@@ -809,7 +813,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	    break;
 	}
 	if( c == -1 )
-	    log_error("premature eof (no CRC)\n");
+	    log_error(_("premature eof (no CRC)\n"));
 	else {
 	    u32 mycrc = 0;
 	    idx = 0;
@@ -828,15 +832,15 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    break;
 	    } while( ++idx < 4 );
 	    if( c == -1 ) {
-		log_error("premature eof (in CRC)\n");
+		log_error(_("premature eof (in CRC)\n"));
 		rc = G10ERR_INVALID_ARMOR;
 	    }
 	    else if( idx != 4 ) {
-		log_error("malformed CRC\n");
+		log_error(_("malformed CRC\n"));
 		rc = G10ERR_INVALID_ARMOR;
 	    }
 	    else if( mycrc != afx->crc ) {
-		log_error("CRC error; %06lx - %06lx\n",
+		log_error(_("CRC error; %06lx - %06lx\n"),
 				    (ulong)afx->crc, (ulong)mycrc);
 		rc = G10ERR_INVALID_ARMOR;
 	    }
@@ -855,11 +859,11 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		if( rc == -1 )
 		    rc = 0;
 		else if( rc == 2 ) {
-		    log_error("premature eof (in Trailer)\n");
+		    log_error(_("premature eof (in Trailer)\n"));
 		    rc = G10ERR_INVALID_ARMOR;
 		}
 		else {
-		    log_error("error in trailer line\n");
+		    log_error(_("error in trailer line\n"));
 		    rc = G10ERR_INVALID_ARMOR;
 		}
 	      #endif
@@ -873,7 +877,6 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
     *retn = n;
     return rc;
 }
-
 
 /****************
  * This filter is used to handle the armor stuff
@@ -913,13 +916,6 @@ armor_filter( void *opaque, int control,
     else if( control == IOBUFCTRL_UNDERFLOW ) {
 	if( size < 15+(4*15) )	/* need space for up to 4 onepass_sigs */
 	    BUG(); /* supplied buffer too short */
-
-	if( afx->inp_eof ) {
-	    *ret_len = 0;
-	    if( DBG_FILTER )
-		log_debug("armor-filter: eof due to inp_eof flag\n" );
-	    return -1;
-	}
 
 	if( afx->faked )
 	    rc = fake_packet( afx, a, &n, buf, size );
@@ -1021,7 +1017,7 @@ armor_filter( void *opaque, int control,
 	    }
 	    else
 		iobuf_writestr(a,
-		    "Comment: Get GNUPG from ftp://ftp.guug.de/pub/gcrypt/\n");
+		    "Comment: For info finger gcrypt@ftp.guug.de\n");
 	    if( afx->hdrlines )
 		iobuf_writestr(a, afx->hdrlines);
 	    iobuf_put(a, '\n');
@@ -1120,6 +1116,8 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, tail_strings[afx->what] );
 	    iobuf_writestr(a, "-----\n");
 	}
+	else if( !afx->any_data && !afx->inp_bypass )
+	    log_error(_("no valid RFC1991 or OpenPGP data found.\n"));
     }
     else if( control == IOBUFCTRL_DESC )
 	*(char**)buf = "armor_filter";

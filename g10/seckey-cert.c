@@ -168,7 +168,7 @@ check_secret_key( PKT_secret_key *sk, int n )
 	if( i )
 	    log_error(_("Invalid passphrase; please try again ...\n"));
 	rc = do_check( sk );
-	if( get_passphrase_fd() != -1 )
+	if( have_static_passphrase() )
 	    break;
     }
 

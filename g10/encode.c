@@ -76,6 +76,7 @@ encode_simple( const char *filename, int mode )
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
+    int do_compress = opt.compress && !opt.rfc1991;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
@@ -92,12 +93,12 @@ encode_simple( const char *filename, int mode )
     cfx.dek = NULL;
     if( mode ) {
 	s2k = m_alloc_clear( sizeof *s2k );
-	s2k->mode = opt.rfc1991? 0:1;
+	s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
 	s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
-					     : DEFAULT_DIGEST_ALGO;
+					     : opt.s2k_digest_algo;
 	cfx.dek = passphrase_to_dek( NULL,
 		       opt.def_cipher_algo ? opt.def_cipher_algo
-					   : DEFAULT_CIPHER_ALGO , s2k, 2 );
+					   : opt.s2k_cipher_algo , s2k, 2 );
 	if( !cfx.dek || !cfx.dek->keylen ) {
 	    rc = G10ERR_PASSPHRASE;
 	    m_free(cfx.dek);
@@ -158,13 +159,13 @@ encode_simple( const char *filename, int mode )
     pt->buf = inp;
     pkt.pkttype = PKT_PLAINTEXT;
     pkt.pkt.plaintext = pt;
-    cfx.datalen = filesize && !opt.compress ? calc_packet_length( &pkt ) : 0;
+    cfx.datalen = filesize && !do_compress ? calc_packet_length( &pkt ) : 0;
 
     /* register the cipher filter */
     if( mode )
 	iobuf_push_filter( out, cipher_filter, &cfx );
     /* register the compress filter */
-    if( opt.compress )
+    if( do_compress )
 	iobuf_push_filter( out, compress_filter, &zfx );
 
     /* do the work */
@@ -197,6 +198,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
     PK_LIST pk_list;
+    int do_compress = opt.compress && !opt.rfc1991;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
@@ -270,12 +272,12 @@ encode_crypt( const char *filename, STRLIST remusr )
     pt->buf = inp;
     pkt.pkttype = PKT_PLAINTEXT;
     pkt.pkt.plaintext = pt;
-    cfx.datalen = filesize && !opt.compress? calc_packet_length( &pkt ) : 0;
+    cfx.datalen = filesize && !do_compress? calc_packet_length( &pkt ) : 0;
 
     /* register the cipher filter */
     iobuf_push_filter( out, cipher_filter, &cfx );
     /* register the compress filter */
-    if( opt.compress ) {
+    if( do_compress ) {
 	int compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_COMPR );
 	if( !compr_algo )
 	    ; /* don't use compression */

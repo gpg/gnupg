@@ -1068,6 +1068,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		    }
 		    sk->protect.s2k.count = iobuf_get(inp);
 		    pktlen--;
+		    if( list_mode )
+			printf("\tprotect count: %lu\n",
+					    (ulong)sk->protect.s2k.count);
 		}
 	    }
 	    else { /* old version; no S2K, so we set mode to 0, hash MD5 */

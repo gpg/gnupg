@@ -31,6 +31,7 @@
 #include "keydb.h"
 #include "options.h"
 #include "main.h"
+#include "i18n.h"
 
 #define MAX_PK_CACHE_ENTRIES 500
 
@@ -789,9 +790,6 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 	    }
 	}
 	else { /* keyid or fingerprint lookup */
-	    /* No need to compare the usage here, as we already have the
-	     * keyid to use
-	     */
 	    if( DBG_CACHE && (mode== 10 || mode==11) ) {
 		log_debug("lookup keyid=%08lx%08lx req_algo=%d mode=%d\n",
 				(ulong)keyid[0], (ulong)keyid[1],
@@ -867,6 +865,29 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 		merge_one_pk_and_selfsig( keyblock, keyblock );
 	    }
 	    else {
+		if( primary && pk->pubkey_usage
+		    && check_pubkey_algo2( k->pkt->pkt.public_key->pubkey_algo,
+			       pk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
+		    /* if the usage is not correct, try to use a subkey */
+		    KBNODE save_k = k;
+
+		    for( ; k; k = k->next ) {
+			if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
+			    && !check_pubkey_algo2(
+				    k->pkt->pkt.public_key->pubkey_algo,
+						     pk->pubkey_usage ) )
+			    break;
+		    }
+		    if( !k )
+			k = save_k;
+		    else
+			log_info(_("using secondary key %08lX "
+				   "instead of primary key %08lX\n"),
+		      (ulong)keyid_from_pk( k->pkt->pkt.public_key, NULL),
+		      (ulong)keyid_from_pk( save_k->pkt->pkt.public_key, NULL)
+				);
+		}
+
 		copy_public_key_new_namehash( pk, k->pkt->pkt.public_key,
 					      use_namehash? namehash:NULL);
 		merge_one_pk_and_selfsig( keyblock, k );

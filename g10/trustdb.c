@@ -105,7 +105,7 @@ static TRUST_SEG_LIST last_trust_web_tslist;
 
 #define HEXTOBIN(a) ( (a) >= '0' && (a) <= '9' ? ((a)-'0') : \
 		      (a) >= 'A' && (a) <= 'F' ? ((a)-'A'+10) : ((a)-'a'+10))
-
+
 /**********************************************
  ************* list helpers *******************
  **********************************************/
@@ -239,6 +239,8 @@ keyid_from_lid( ulong lid, u32 *keyid )
     return 0;
 }
 
+
+
 /****************
  * Walk through the signatures of a public key.
  * The caller must provide a context structure, with all fields set
@@ -333,7 +335,7 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
 
 
 
-
+
 /***********************************************
  *************	Trust  stuff  ******************
  ***********************************************/
@@ -356,6 +358,10 @@ verify_own_keys()
 
 	if( DBG_TRUST )
 	    log_debug("key %08lX: checking secret key\n", (ulong)keyid[1] );
+
+	if( is_secret_key_protected( sk ) < 1 )
+	    log_info("note: secret key %08lX is NOT protected.\n",
+							    (ulong)keyid[1] );
 
 	/* see whether we can access the public key of this secret key */
 	memset( pk, 0, sizeof *pk );
@@ -1204,7 +1210,7 @@ do_check( TRUSTREC *dr, unsigned *trustlevel )
     return 0;
 }
 
-
+
 /***********************************************
  ****************  API	************************
  ***********************************************/
@@ -1564,6 +1570,8 @@ check_trustdb( const char *username )
     }
 }
 
+
+
 /****************
  * Get the trustlevel for this PK.
  * Note: This does not ask any questions
@@ -1612,11 +1620,11 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
 	    rc = insert_trust_record( pk );
 	    if( rc ) {
 		log_error(_("key %08lX: insert trust record failed: %s\n"),
-						keyid[1], g10_errstr(rc));
+					  (ulong)keyid[1], g10_errstr(rc));
 		goto leave;
 	    }
 	    log_info(_("key %08lX.%lu: inserted into trustdb\n"),
-					  keyid[1], pk->local_id );
+					  (ulong)keyid[1], pk->local_id );
 	    /* and re-read the dir record */
 	    if( tdbio_read_record( pk->local_id, &rec, RECTYPE_DIR ) ) {
 		log_error("check_trust: reread dir record failed\n");
@@ -1628,14 +1636,14 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
     if( pk->timestamp > cur_time ) {
 	log_info(_("key %08lX.%lu: created in future "
 		   "(time warp or clock problem)\n"),
-					  keyid[1], pk->local_id );
+					  (ulong)keyid[1], pk->local_id );
 	return G10ERR_TIME_CONFLICT;
     }
 
     if( pk->valid_days && add_days_to_timestamp(pk->timestamp,
 						pk->valid_days) < cur_time ) {
 	log_info(_("key %08lX.%lu: expired at %s\n"),
-			keyid[1], pk->local_id,
+			(ulong)keyid[1], pk->local_id,
 		    asctimestamp( add_days_to_timestamp(pk->timestamp,
 							pk->valid_days)));
 	 trustlevel = TRUST_EXPIRED;
@@ -1644,7 +1652,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
 	rc = do_check( &rec, &trustlevel );
 	if( rc ) {
 	    log_error(_("key %08lX.%lu: trust check failed: %s\n"),
-			    keyid[1], pk->local_id, g10_errstr(rc));
+			    (ulong)keyid[1], pk->local_id, g10_errstr(rc));
 	    return rc;
 	}
     }

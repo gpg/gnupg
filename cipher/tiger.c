@@ -29,9 +29,9 @@
 
 typedef struct {
     u64  a, b, c;
-    u32  nblocks;
     byte buf[64];
     int  count;
+    u32  nblocks;
 } TIGER_CONTEXT;
 
 

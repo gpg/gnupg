@@ -31,6 +31,9 @@
   #ifdef HAVE_SYS_SHM_H
     #include <sys/shm.h>
   #endif
+  #if defined(HAVE_MLOCK)
+    #include <sys/mman.h>
+  #endif
 #endif
 #include "util.h"
 #include "status.h"
@@ -142,11 +145,21 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
     log_info("mapped %uk shared memory at %p, id=%d\n",
 			    (unsigned)shm_size/1024, shm_area, shm_id );
     if( lock_mem ) {
+      #ifdef IPC_HAVE_SHM_LOCK
 	if ( shmctl (shm_id, SHM_LOCK, 0) )
-	    log_info("Locking shared memory %d failed: %s\n",
+	    log_info("locking shared memory %d failed: %s\n",
 				shm_id, strerror(errno));
 	else
 	    shm_is_locked = 1;
+      #elif defined(HAVE_MLOCK) && !defined(HAVE_BROKEN_MLOCK)
+	if ( mlock (shm_area, shm_size) )
+	    log_info("locking shared memory %d failed: %s\n",
+				shm_id, strerror(errno));
+	else
+	    shm_is_locked = 1;
+      #else
+	log_info("Locking shared memory %d failed: No way to do it\n", shm_id );
+      #endif
     }
 
 
@@ -225,7 +238,7 @@ do_shm_get( const char *keyword, int hidden, int bool )
 static void
 display_help( const char *keyword )
 {
-    char *p;
+    const char *p;
     int hint = 0;
 
     tty_kill_prompt();

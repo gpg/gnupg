@@ -1,3 +1,7 @@
+Mon Sep 21 19:45:01 1998  Werner Koch  (wk@(none))
+
+	* secmem.c: New flags to allow suspend/resume of warnings.
+
 Fri Sep 18 16:25:47 1998  Werner Koch  (wk@(none))
 
 	* secmem.c (lock_pool): Kludge for broken mlock on HPUX 10.20

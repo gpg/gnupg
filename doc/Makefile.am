@@ -1,8 +1,17 @@
 ## Process this file with automake to create Makefile.in
 
-EXTRA_DIST = DETAILS rfcs gpg.1pod gpg.1 FAQ
+EXTRA_DIST = DETAILS rfcs gpg.1pod gpg.1 FAQ  HACKING
 
 man_MANS = gpg.1
+
+
+
+install-data-hook:
+	 if test -f $(man1dir)/gpgm.1; then rm $(man1dir)/gpgm.1; fi
+	 ln -s $(man1dir)/gpg.1 $(man1dir)/gpgm.1 \
+	    || ln $(man1dir)/gpg.1 $(man1dir)/gpgm.1
+
+
 
 %: %pod
 	 pod2man $< --section=`echo $@ | sed 's/^.*(?)$$/$$&/'`\

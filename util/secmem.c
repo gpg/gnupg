@@ -67,6 +67,16 @@ static unsigned cur_blocks;
 static int disable_secmem;
 static int show_warning;
 static int no_warning;
+static int suspend_warning;
+
+
+static void
+print_warn()
+{
+    if( !no_warning )
+	log_info(_("Warning: using insecure memory!\n"));
+}
+
 
 static void
 lock_pool( void *p, size_t n )
@@ -78,8 +88,10 @@ lock_pool( void *p, size_t n )
     uid = getuid();
 
   #ifdef HAVE_BROKEN_MLOCK
-    if( uid )
-	err = EPERM;
+    if( uid ) {
+	errno = EPERM;
+	err = errno;
+    }
     else {
 	err = mlock( p, n );
 	if( err && errno )
@@ -179,13 +191,26 @@ compress_pool(void)
 void
 secmem_set_flags( unsigned flags )
 {
+    int was_susp = suspend_warning;
+
     no_warning = flags & 1;
+    suspend_warning = flags & 2;
+
+    /* and now issue the warning if it is not longer suspended */
+    if( was_susp && !suspend_warning && show_warning ) {
+	show_warning = 0;
+	print_warn();
+    }
 }
 
 unsigned
 secmem_get_flags(void)
 {
-    return no_warning ? 1:0;
+    unsigned flags;
+
+    flags  = no_warning      ? 1:0;
+    flags |= suspend_warning ? 2:0;
+    return flags;
 }
 
 void
@@ -220,10 +245,9 @@ secmem_malloc( size_t size )
 
     if( !pool_okay )
 	log_bug("secmem not initialized\n");
-    if( show_warning ) {
+    if( show_warning && !suspend_warning ) {
 	show_warning = 0;
-	if( !no_warning )
-	    log_info(_("Warning: using insecure memory!\n"));
+	print_warn();
     }
 
     /* blocks are always a multiple of 32 */

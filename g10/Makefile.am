@@ -71,6 +71,8 @@ gpgm_SOURCES = dearmor.c     \
 #gpgd_SOURCES = gpgd.c \
 #	       ks-proto.h \
 #	       ks-proto.c \
+#	       ks-db.c \
+#	       ks-db.h \
 #	       $(common_source)
 
 

@@ -480,7 +480,7 @@ pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 
 /****************
  * This is the interface to the public key signing.
- * Sign hash with skey and put the result into resarr which
+ * Sign data with skey and put the result into resarr which
  * should be an array of MPIs of size PUBKEY_MAX_NSIG (or less if the
  * algorithm allows this - check with pubkey_get_nsig() )
  */

@@ -1,0 +1,92 @@
+			  A Hacker's Guide to GNUPG
+		       ================================
+		       (Some notes on GNUPG internals.)
+
+
+
+Memory allocation
+-----------------
+Use only the functions:
+
+    m_alloc()
+    m_alloc_clear()
+    m_strdup()
+    m_free()
+
+If you want to store a passphrase or some other sensitive data you may
+want to use m_alloc_secure() instead of m_alloc(), as this puts the data
+into a memory region which is protected from swapping (on some platforms).
+m_free() works for both.  This functions will not return if there is not
+enough memory available.
+
+
+
+Logging
+-------
+
+
+
+
+
+
+Option parsing
+---------------
+GNUPG does not use getopt or GNU getopt but functions of it's own.  See
+util/argparse.c for details.  The advantage of these funtions is that
+it is more easy to display and maintain the help texts for the options.
+The same option table is also used to parse resource files.
+
+
+
+What is an iobuf
+----------------
+This is the data structure used for most I/O of gnupg.	It is similiar
+to System V Streams but much simpler.  It should be replaced by a cleaner
+and faster implementation.  We are doing to much copying and the semantics
+of "filter" removing are not very clean.  EOF handling is also a problem.
+
+
+
+How to use the message digest functions
+---------------------------------------
+cipher/md.c implements an interface to hash (message diesgt functions).
+
+a) If you have a common part of data and some variable parts
+   and you need to hash of the concatenated parts, you can use this:
+	md = md_open(...)
+	md_write( md,  common_part )
+	md1 = md_copy( md )
+	md_write(md1, part1)
+	md_final(md1);
+	digest1 = md_read(md1)
+	md2 = md_copy( md )
+	md_write(md2, part2)
+	md_final(md2);
+	digest2 = md_read(md2)
+
+   An example are key signatures; the key packet is the common part
+   and the user-id packets are the variable parts.
+
+b) If you need a running digest you should use this:
+	md = md_open(...)
+	md_write( md, part1 )
+	digest_of_part1 = md_digest( md );
+	md_write( md, part2 )
+	digest_of_part1_cat_part2 = md_digest( md );
+	....
+
+Both methods may be combined. [Please see the source for the real syntax]
+
+
+
+
+How to use the cipher functions
+-------------------------------
+
+
+
+
+How to use the public key functions
+-----------------------------------
+
+

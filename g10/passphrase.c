@@ -34,22 +34,16 @@
 #include "i18n.h"
 #include "status.h"
 
-static int pwfd = -1;
+static char *fd_passwd = NULL;
 static char *next_pw = NULL;
 static char *last_pw = NULL;
 
 static void hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create );
 
-void
-set_passphrase_fd( int fd )
-{
-    pwfd = fd;
-}
-
 int
-get_passphrase_fd()
+have_static_passphrase()
 {
-    return pwfd;
+    return !!fd_passwd;
 }
 
 /****************
@@ -78,6 +72,36 @@ get_last_passphrase()
     char *p = last_pw;
     last_pw = NULL;
     return p;
+}
+
+
+void
+read_passphrase_from_fd( int fd )
+{
+    int i, len;
+    char *pw;
+
+    if( !opt.batch )
+	tty_printf("Reading passphrase from file descriptor %d ...", fd );
+    for( pw = NULL, i = len = 100; ; i++ ) {
+	if( i >= len-1 ) {
+	    char *pw2 = pw;
+	    len += 100;
+	    pw = m_alloc_secure( len );
+	    if( pw2 )
+		memcpy(pw, pw2, i );
+	    else
+		i=0;
+	}
+	if( read( fd, pw+i, 1) != 1 || pw[i] == '\n' )
+	    break;
+    }
+    pw[i] = 0;
+    if( !opt.batch )
+	tty_printf("\b\b\b   \n" );
+
+    m_free( fd_passwd );
+    fd_passwd = pw;
 }
 
 
@@ -140,26 +164,9 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 	pw = next_pw;
 	next_pw = NULL;
     }
-    else if( pwfd != -1 ) { /* read the passphrase from the file */
-	int i, len;
-
-	if( !opt.batch )
-	    tty_printf("Reading from file descriptor %d ...", pwfd );
-	for( pw = NULL, i = len = 100; ; i++ ) {
-	    if( i >= len-1 ) {
-		char *pw2 = pw;
-		len += 100;
-		pw = m_alloc_secure( len );
-		if( pw2 )
-		    memcpy(pw, pw2, i );
-		i=0;
-	    }
-	    if( read( pwfd, pw+i, 1) != 1 || pw[i] == '\n' )
-		break;
-	}
-	pw[i] = 0;
-	if( !opt.batch )
-	    tty_printf("\b\b\b   \n" );
+    else if( fd_passwd ) {
+	pw = m_alloc_secure( strlen(fd_passwd)+1 );
+	strcpy( pw, fd_passwd );
     }
     else if( opt.batch )
 	log_fatal("Can't query password in batchmode\n");
@@ -192,54 +199,69 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 
 /****************
  * Hash a passphrase using the supplied s2k. If create is true, create
- * a new salt or whatelse must be filled into the s2k for a new key.
+ * a new salt or what else must be filled into the s2k for a new key.
  * always needs: dek->algo, s2k->mode, s2k->hash_algo.
  */
 static void
 hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 {
     MD_HANDLE md;
+    int pass, i;
+    int used = 0;
+    int pwlen = strlen(pw);
 
     assert( s2k->hash_algo );
-    dek->keylen = 0;
+    dek->keylen = cipher_get_keylen( dek->algo ) / 8;
+    if( !(dek->keylen > 0 && dek->keylen <= DIM(dek->key)) )
+	BUG();
+
     md = md_open( s2k->hash_algo, 1);
-    if( s2k->mode == 1 || s2k->mode == 3 ) {
-	ulong count = 0;
-	int len = strlen(pw);
-	int len2 = len + 8;
-
-	if( create )
-	    randomize_buffer(s2k->salt, 8, 1);
-
-	if( s2k->mode == 3 ) {
-	    count = (16ul + (s2k->count & 15)) << ((s2k->count >> 4) + 6);
-	    log_debug("s2k iteration count=%lu\n", count );
+    for(pass=0; used < dek->keylen ; pass++ ) {
+	if( pass ) {
+	    md_reset(md);
+	    for(i=0; i < pass; i++ ) /* preset the hash context */
+		md_putc(md, 0 );
 	}
-	for(;;) {
-	    md_write( md, s2k->salt, 8 );
-	    md_write( md, pw, len );
-	    if( count <= len2 )
-		break;
-	    count -= len2;
-	}
-	if( count ) {
-	    if( count < 8 ) {
-		md_write( md, s2k->salt, count );
+
+	if( s2k->mode == 1 || s2k->mode == 3 ) {
+	    int len2 = pwlen + 8;
+	    ulong count = len2;
+
+	    if( create && !pass ) {
+		randomize_buffer(s2k->salt, 8, 1);
+		if( s2k->mode == 3 )
+		    s2k->count = 96; /* = 56536 */
 	    }
+
+	    if( s2k->mode == 3 ) {
+		count = (16ul + (s2k->count & 15)) << ((s2k->count >> 4) + 6);
+		if( count < len2 )
+		    count = len2;
+	    }
+	    /* a little bit complicated because we need a ulong for count */
+	    while( count > len2 ) { /* maybe iterated+salted */
+		md_write( md, s2k->salt, 8 );
+		md_write( md, pw, pwlen );
+		count -= len2;
+	    }
+	    if( count < 8 )
+		md_write( md, s2k->salt, count );
 	    else {
 		md_write( md, s2k->salt, 8 );
 		count -= 8;
-		assert( count <= len );
+		assert( count >= 0 );
 		md_write( md, pw, count );
 	    }
 	}
+	else
+	    md_write( md, pw, pwlen );
+	md_final( md );
+	i = md_digest_length( s2k->hash_algo );
+	if( i > dek->keylen - used )
+	    i = dek->keylen - used;
+	memcpy( dek->key+used, md_read(md, s2k->hash_algo), i );
+	used += i;
     }
-    else
-	md_write( md, pw, strlen(pw) );
-    md_final( md );
-    dek->keylen = cipher_get_keylen( dek->algo ) / 8;
-    assert(dek->keylen > 0 && dek->keylen <= DIM(dek->key) );
-    memcpy( dek->key, md_read(md,0), dek->keylen );
     md_close(md);
 }
 

@@ -48,11 +48,11 @@ EXTRA_twofish_SOURCES = twofish.c
 
 
 tiger: $(srcdir)/tiger.c
-	`echo $(COMPILE) -shared  -fPIC -o tiger $(srcdir)/tiger.c | \
+	`echo $(COMPILE) -shared  -fPIC -lc -o tiger $(srcdir)/tiger.c | \
 	    sed -e 's/-O2/-O1/' `
 
 twofish: $(srcdir)/twofish.c
-	`echo $(COMPILE) -shared  -fPIC -o twofish $(srcdir)/twofish.c | \
+	`echo $(COMPILE) -shared  -fPIC -lc -o twofish $(srcdir)/twofish.c | \
 	    sed -e 's/-O2/  /' `
 
 

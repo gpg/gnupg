@@ -256,7 +256,7 @@ md_copy( MD_HANDLE a )
 		  : m_alloc( sizeof *b );
     memcpy( b, a, sizeof *a );
     b->list = NULL;
-    /* and now copy the compelte list of algorithms */
+    /* and now copy the complete list of algorithms */
     /* I know that the copied list is reversed, but that doesn't matter */
     for( ar=a->list; ar; ar = ar->next ) {
 	br = a->secure ? m_alloc_secure( sizeof *br + ar->contextsize )
@@ -266,6 +266,23 @@ md_copy( MD_HANDLE a )
 	b->list = br;
     }
     return b;
+}
+
+
+/****************
+ * Reset all contexts and discard any buffered stuuf.  This may be used
+ * instead of a md_close(); md_open().
+ */
+void
+md_reset( MD_HANDLE a )
+{
+    struct md_digest_list_s *r;
+
+    a->bufcount = 0;
+    for( r=a->list; r; r = r->next ) {
+	memset( r->context, 0, r->contextsize );
+	(*r->init)( &r->context );
+    }
 }
 
 
@@ -331,7 +348,7 @@ md_read( MD_HANDLE a, int algo )
     if( !algo ) {  /* return the first algorithm */
 	if( (r=a->list) ) {
 	    if( r->next )
-		log_error("warning: more than algorithm in md_read(0)\n");
+		log_debug("more than algorithm in md_read(0)\n");
 	    return (*r->read)( &r->context );
 	}
     }
@@ -343,6 +360,58 @@ md_read( MD_HANDLE a, int algo )
     BUG();
     return NULL;
 }
+
+
+/****************
+ * This function combines md_final and md_read but keeps the context
+ * intact.  This function can be used to calculate intermediate
+ * digests.  The digest is copied into buffer and the digestlength is
+ * returned.  If buffer is NULL only the needed size for buffer is returned.
+ * buflen gives the max size of buffer. If the buffer is too shourt to
+ * hold the complete digest, the buffer is filled with as many bytes are
+ * possible and this value is returned.
+ */
+int
+md_digest( MD_HANDLE a, int algo, byte *buffer, int buflen )
+{
+    struct md_digest_list_s *r = NULL;
+    char *context;
+    char *digest;
+
+    if( a->bufcount )
+	md_write( a, NULL, 0 );
+
+    if( !algo ) {  /* return digest for the first algorithm */
+	if( (r=a->list) && r->next )
+	    log_debug("more than algorithm in md_digest(0)\n");
+    }
+    else {
+	for(r=a->list; r; r = r->next )
+	    if( r->algo == algo )
+		break;
+    }
+    if( !r )
+	BUG();
+
+    if( !buffer )
+	return r->mdlen;
+
+    /* I don't want to change the interface, so I simply work on a copy
+     * the context (extra overhead - should be fixed)*/
+    context = a->secure ? m_alloc_secure( r->contextsize )
+			: m_alloc( r->contextsize );
+    memcpy( context, r->context, r->contextsize );
+    (*r->final)( context );
+    digest = (*r->read)( context );
+
+    if( buflen > r->mdlen )
+	buflen = r->mdlen;
+    memcpy( buffer, digest, buflen );
+
+    m_free(context);
+    return buflen;
+}
+
 
 int
 md_get_algo( MD_HANDLE a )
@@ -423,5 +492,13 @@ md_stop_debug( MD_HANDLE md )
 	fclose(md->debug);
 	md->debug = NULL;
     }
+  #ifdef HAVE_U64_TYPEDEF
+    {  /* a kludge to pull in the __muldi3 for Solaris */
+       volatile u32 a = (u32)md;
+       volatile u32 b = 42;
+       volatile u64 c;
+       c = a * b;
+    }
+  #endif
 }
 

@@ -1,5 +1,3 @@
------BEGIN PGP SIGNED MESSAGE-----
-
 		  GNUPG - The GNU Privacy Guard
 		 -------------------------------
 			  Version 0.4
@@ -49,7 +47,7 @@
     The default algorithms are now DSA and ELGamal.  ELGamal for signing
     is still available, but due to the larger size of such signatures it
     is depreciated (Please note that the GNUPG implementation of ElGamal
-    signatures is *not* insecure).  Symmetric algorithms are: Blowfish
+    signatures is *not* insecure).  Symmetric algorithms are: 3DES, Blowfish
     and CAST5,	Digest algorithms are MD5, RIPEMD160, SHA1 and TIGER/192.
 
 
@@ -57,7 +55,9 @@
     Installation
     ------------
 
-    See the file INSTALL.  Here is a quick summary:
+    Please read the file INSTALL.
+
+    Here is a quick summary:
 
     1)	"./configure"
 
@@ -321,7 +321,7 @@
     ugly data structures, weird usage of filenames and other things.
 
     The primary FTP site is "ftp://ftp.guug.de/pub/gcrypt/"
-    The primary WWW page is "http://www.d.shuttle.de/isil/crypt/gnupg.html"
+    The primary WWW page is "http://www.d.shuttle.de/isil/gnupg/"
 
     If you like, send your keys to <gnupg-keys@isil.d.shuttle.de>; use
     "gpg --export --armor | mail gnupg-keys@isil.d.shuttle.de" to do this.
@@ -330,12 +330,3 @@
     post them to the mailing list <g10@net.lut.ac.uk> (this is a closed list,
     please subscribe before posting).
 
------BEGIN PGP SIGNATURE-----
-Version: GNUPG v0.3.5a (GNU/Linux)
-Comment: Get GNUPG from ftp://ftp.guug.de/pub/gcrypt/
-
-iQB1AwUBNgJ6bB0Z9MEMmFelAQEBHgL+JhFVCrTAK2G3NVVVQBHXU5eucNx3tQQE3UucvSBA
-YaKfX8dC5QU7wfgv8nFBXMK2mnAcJhJzBT6mZwxpzTZZTh7IS4qu//R9Vgy3A06ZddxKFf2M
-YFelmgdpqTL6ntJC
-=JZ3m
------END PGP SIGNATURE-----

@@ -1,21 +1,67 @@
-Fri Sep 18 16:50:32 1998  Werner Koch  (wk@(none))
+Mon Sep 28 12:57:12 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (verify_own_keys): Add warning if a key is not protected.
+
+	* passphrase (hash_passphrase): Fixed iterated+salted mode and
+	setup for keysizes > hashsize.
+
+	* g10.c (main): New options: --s2k-{cipher,digest,mode}.
+
+Fri Sep 25 09:34:23 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c: Chnaged some help texts.
+
+Tue Sep 22 19:34:39 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* passphrase.c (read_passphrase_from_fd): fixed bug for long
+	passphrases.
+
+Mon Sep 21 11:28:05 1998  Werner Koch  (wk@(none))
+
+	* getkey.c (lookup): Add code to use the sub key if the primary one
+	does not match the usage.
+
+	* armor.c (armor_filter): New error message: no valid data found.
+	(radix64_read): Changes to support multiple messages.
+	(i18n.h): New.
+	* mainproc.c (add_onepass_sig): bug fix.
+
+Mon Sep 21 08:03:16 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* pkclist.c (do_we_trust): Add keyid to most messages.
+
+	* passphrase.c (read_passphrase_from_fd): New.
+	(have_static_passphrase): New
+	(get_passphrase_fd): Removed.
+	(set_passphrase_fd): Removed.
+	* g10.c (main): passphrase is now read here.
+
+	* keyedit.c (keyedit_menu): "help" texts should now translate fine.
+
+Mon Sep 21 06:40:02 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* encode.c (encode_simple): Now disables compression
+	when --rfc1991 is used.
+	(encode_crypt): Ditto.
+
+Fri Sep 18 16:50:32 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* getkey.c (merge_key_and_selfsig): New.
 
-Fri Sep 18 10:20:11 1998  Werner Koch  (wk@(none))
+Fri Sep 18 10:20:11 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
-	* pkclist.c (select_algo_from_prefs): Removed 3DEs kludge.
+	* pkclist.c (select_algo_from_prefs): Removed 3DES kludge.
 
 	* seskey.c (make_session_key): Fixed SERIOUS bug introduced
 	by adding the weak key detection code.
 
 	* sign.c (sign_file): Changed aremor header in certain cases.
 
-Tue Sep 15 17:52:55 1998  Werner Koch  (wk@(none))
+Tue Sep 15 17:52:55 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* mainproc.c (check_sig_and_print): Replaced ascime by asctimestamp.
 
-Mon Sep 14 11:40:52 1998  Werner Koch  (wk@(none))
+Mon Sep 14 11:40:52 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* seskey.c (make_session_key): Now detects weak keys.
 
@@ -24,17 +70,17 @@ Mon Sep 14 11:40:52 1998  Werner Koch  (wk@(none))
 	* plaintext.c (handle_plaintext): Does no anymore suppress CR from
 	cleartext signed messages.
 
-Sun Sep 13 12:54:29 1998  Werner Koch  (wk@(none))
+Sun Sep 13 12:54:29 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* trustdb.c (insert_trust_record): Fixed a stupid bug in the free
 	liunked list loops.
 
-Sat Sep 12 15:49:16 1998  Werner Koch  (wk@(none))
+Sat Sep 12 15:49:16 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* status.c (remove_shmid): New.
 	(init_shm_comprocess): Now sets permission to the real uid.
 
-Wed Sep  9 11:15:03 1998  Werner Koch  (wk@(none))
+Wed Sep  9 11:15:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* packet.h (PKT_pubkey_enc): New flah throw_keyid, and add logic to
 	implement it.
@@ -42,11 +88,11 @@ Wed Sep  9 11:15:03 1998  Werner Koch  (wk@(none))
 
 	* getkey.c (enum_secret_keys): Add new ar and changed all callers.
 
-Tue Sep  8 20:04:09 1998  Werner Koch  (wk@(none))
+Tue Sep  8 20:04:09 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* delkey.c (delete_key): Moved from keyedit.c.
 
-Mon Sep  7 16:37:52 1998  Werner Koch  (wk@(none))
+Mon Sep  7 16:37:52 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* build-packet.c (calc_length_header): New arg new_ctb to correctly
 	calculate the length of new style packets.
@@ -55,7 +101,7 @@ Mon Sep  7 16:37:52 1998  Werner Koch  (wk@(none))
 
 	* pkclist.c (select_algo_from_prefs): 3DEs substitute is now CAST5.
 
-Tue Aug 11 17:54:50 1998  Werner Koch  (wk@(none))
+Tue Aug 11 17:54:50 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* build-packet.c (do_secret_key): Fixed handling of old keys.
 
@@ -63,7 +109,7 @@ Tue Aug 11 17:54:50 1998  Werner Koch  (wk@(none))
 
 	* openfile.c (open_outfile): Changed arguments and all callers.
 
-Tue Aug 11 09:14:35 1998  Werner Koch  (wk@(none))
+Tue Aug 11 09:14:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* encode.c (encode_simple): Applied option set-filename and comment.
 	(encode_crypt): Ditto.
@@ -87,7 +133,7 @@ Tue Aug 11 09:14:35 1998  Werner Koch  (wk@(none))
 
 	* status.c (cpr_get_answer_is_yes): add display_help.
 
-Mon Aug 10 10:11:28 1998  Werner Koch  (wk@(none))
+Mon Aug 10 10:11:28 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* getkey.c (lookup_sk): Now always returns the primary if arg
 	primary is true.
@@ -96,15 +142,15 @@ Mon Aug 10 10:11:28 1998  Werner Koch  (wk@(none))
 	(get_seckey_byname): Ditto.
 
 
-Mon Aug 10 08:34:03 1998  Werner Koch  (wk@(none))
+Mon Aug 10 08:34:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* keyid.c (pubkey_letter): ELG_E is now a small g.
 
-Sat Aug  8 17:26:12 1998  Werner Koch  (wk@(none))
+Sat Aug  8 17:26:12 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* openfile (overwrite_filep): Changed semantics and all callers.
 
-Sat Aug  8 12:17:07 1998  Werner Koch  (wk@(none))
+Sat Aug  8 12:17:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* status.c (display_help): New.
 
@@ -118,7 +164,7 @@ Thu Aug  6 07:34:56 1998  Werner Koch,mobil,,,	(wk@tobold)
 	secret keyrings and add additional warning in case of
 	a failed secret keyring operation.
 
-Wed Aug  5 11:54:37 1998  Werner Koch  (wk@(none))
+Wed Aug  5 11:54:37 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* g10.c (check_opts): Moved to main.  Changed def_cipher_algo
 	semantics and chnaged all users.
@@ -131,7 +177,7 @@ Wed Aug  5 11:54:37 1998  Werner Koch  (wk@(none))
 	* build-packet.c (do_secret_key): Ditto.
 	(do_symkey_enc): Ditto.
 
-Tue Aug  4 08:59:10 1998  Werner Koch  (wk@(none))
+Tue Aug  4 08:59:10 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* getkey.c (enum_secret_keys): Now returns only primary keys.
 
@@ -142,36 +188,36 @@ Tue Aug  4 08:59:10 1998  Werner Koch  (wk@(none))
 	* sign.c (sign_file): one-pass sigs are now emiited reverse.
 	Preference data is considered when selecting the compress algo.
 
-Wed Jul 29 12:53:03 1998  Werner Koch  (wk@(none))
+Wed Jul 29 12:53:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* free-packet.c (copy_signature): New.
 
 	* keygen.c (generate_subkeypair): rewritten
 	* g10.c (aKeyadd): Removed option --add-key
 
-Mon Jul 27 10:37:28 1998  Werner Koch  (wk@(none))
+Mon Jul 27 10:37:28 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* seckey-cert.c (do_check): Additional check on cipher blocksize.
 	(protect_secret_key): Ditto.
 	* encr-data.c: Support for other blocksizes.
 	* cipher.c (write_header): Ditto.
 
-Fri Jul 24 16:47:59 1998  Werner Koch  (wk@(none))
+Fri Jul 24 16:47:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* kbnode.c (insert_kbnode): Changed semantics and all callers.
 	* keyedit.c : More or less a complete rewrite
 
-Wed Jul 22 17:10:04 1998  Werner Koch  (wk@(none))
+Wed Jul 22 17:10:04 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* build-packet.c (write_sign_packet_header): New.
 
-Tue Jul 21 14:37:09 1998  Werner Koch  (wk@(none))
+Tue Jul 21 14:37:09 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* import.c (import_one): Now creates a trustdb record.
 
 	* g10.c (main): New command --check-trustdb
 
-Mon Jul 20 11:15:07 1998  Werner Koch  (wk@(none))
+Mon Jul 20 11:15:07 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* genkey.c (generate_keypair): Default key is now DSA with
 	encryption only ElGamal subkey.

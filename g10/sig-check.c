@@ -152,8 +152,8 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
     u32 cur_time;
 
     if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
-	log_info("this is a PGP generated "
-		 "ElGamal key which is NOT secure for signatures!\n");
+	log_info(_("this is a PGP generated "
+		  "ElGamal key which is NOT secure for signatures!\n"));
 	return G10ERR_PUBKEY_ALGO;
     }
 

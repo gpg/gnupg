@@ -15,10 +15,12 @@ cipher/rand-w32.c
 # main program
 
 g10/g10.c
+g10/armor.c
 g10/pkclist.c
 g10/keygen.c
 g10/decrypt.c
 g10/encode.c
+g10/getkey.c
 g10/import.c
 g10/keyedit.c
 g10/keylist.c

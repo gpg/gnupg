@@ -116,6 +116,7 @@ define(WK_CHECK_CACHE,
 
 ######################################################################
 # Check for SysV IPC  (from GIMP)
+#   And see whether we have a SHM_LOCK (FreeBSD does not have it).
 ######################################################################
 dnl WK_CHECK_IPC
 dnl
@@ -150,6 +151,15 @@ define(WK_CHECK_IPC,
 	AC_MSG_RESULT(yes),
 	AC_MSG_RESULT(no),
 	AC_MSG_RESULT(assuming no))
+      AC_MSG_CHECKING(whether SHM_LOCK is available)
+      AC_TRY_COMPILE([#include <sys/types.h>
+	    #include <sys/ipc.h>
+	    #include <sys/shm.h>],[
+	    int foo( int shm_id ) {  shmctl(shm_id, SHM_LOCK, 0); }
+	    ],
+	AC_DEFINE(IPC_HAVE_SHM_LOCK)
+	AC_MSG_RESULT(yes),
+	AC_MSG_RESULT(no))
     fi
   ])
 
@@ -165,6 +175,7 @@ define(WK_CHECK_MLOCK,
     if test "$ac_cv_func_mlock" = "yes"; then
 	AC_MSG_CHECKING(whether mlock is broken)
 	  AC_TRY_RUN([
+		#include <stdlib.h>
 		#include <unistd.h>
 		#include <errno.h>
 		#include <sys/mman.h>

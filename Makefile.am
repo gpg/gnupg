@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 SUBDIRS =  intl po zlib util mpi cipher tools g10 doc checks
-EXTRA_DIST = VERSION
+EXTRA_DIST = VERSION  PROJECTS
 
 
 dist-hook:

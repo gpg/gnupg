@@ -199,7 +199,6 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 }
 
 
-
 /****************
  * Loop over all locusr and and sign the uids after asking.
  * If no user id is marked, all user ids will be signed;
@@ -259,10 +258,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 						  (ulong)sk_keyid[1] );
 	    continue;
 	}
-	/* Ask whether we realy should sign these user id(s) */
+	/* Ask whether we really should sign these user id(s) */
 	tty_printf("\n");
 	show_key_with_all_names( keyblock, 1, 1, 0, 0 );
-	tty_printf("\n");
 	tty_printf(_(
 	     "Are you really sure that you want to sign this key\n"
 	     "with your key: \""));
@@ -372,9 +370,9 @@ change_passphrase( KBNODE keyblock )
 
 	set_next_passphrase( NULL );
 	for(;;) {
-	    s2k->mode = 1;
-	    s2k->hash_algo = DIGEST_ALGO_RMD160;
-	    dek = passphrase_to_dek( NULL, CIPHER_ALGO_BLOWFISH, s2k, 2 );
+	    s2k->mode = opt.s2k_mode;
+	    s2k->hash_algo = opt.s2k_digest_algo;
+	    dek = passphrase_to_dek( NULL, opt.s2k_cipher_algo, s2k, 2 );
 	    if( !dek ) {
 		tty_printf(_("passphrase not correctly repeated; try again.\n"));
 	    }
@@ -556,7 +554,7 @@ keyedit_menu( const char *username, STRLIST locusr )
 		if( cmds[i].need_sk && !sec_keyblock )
 		    ; /* skip if we do not have the secret key */
 		else if( cmds[i].desc )
-		    tty_printf("%-10s %s\n", cmds[i].name, cmds[i].desc );
+		    tty_printf("%-10s %s\n", cmds[i].name, _(cmds[i].desc) );
 	    }
 	    break;
 

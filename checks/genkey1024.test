@@ -2,9 +2,19 @@
 
 . $srcdir/defs.inc || exit 3
 
+
+if which expect ; then
+  :
+else
+  echo "\"expect\" needed but not found - test skipped"
+  exit 0
+fi
+
+
+
 expect - <<EOF
 #set timeout -1
-set timeout 5
+set timeout 8
 match_max 100000
 spawn ../g10/gpg --no-batch --quick-random --homedir . --gen-key
 expect { 
@@ -86,7 +96,7 @@ some other action (work in another window, move the mouse, utilize the\r
 network and the disks) during the prime generation; this gives the random\r
 number generator a better chance to gain enough entropy.\r" {}
     timeout { exit 1 } }
-set timeout 120
+set timeout 600
 expect {
     -ex "public and secret key created and signed.\r" { exit 0 }
     eof  { exit 1 }

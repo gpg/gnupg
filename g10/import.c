@@ -459,7 +459,7 @@ import_secret_one( const char *fname, KBNODE keyblock )
 		      _("can't lock secret keyring: %s\n"), g10_errstr(rc) );
 	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
 	    log_error_f(keyblock_resource_name(&kbpos),
-		      _("can't write keyring\n"), g10_errstr(rc) );
+		      _("can't write keyring: %s\n"), g10_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
 	log_info_f(fname, _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
@@ -655,16 +655,17 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && node->pkt->pkt.signature->sig_class == 0x20 )  {
 	    if( uid_seen ) {
-		log_error_f(fname, _("key %08lX: revocation certificate at wrong "
-			   "place - skipped\n"), fname, (ulong)keyid[1]);
+		log_error_f(fname, _("key %08lX: revocation certificate "
+				     "at wrong place - skipped\n"),
+				    (ulong)keyid[1]);
 		delete_kbnode( node );
 	    }
 	    else {
 		int rc = check_key_signature( keyblock, node, NULL);
 		if( rc ) {
-		    log_error_f(fname, _("key %08lX: invalid revocation certificate"
-			      ": %s - skipped\n"),
-			      fname, (ulong)keyid[1], g10_errstr(rc));
+		    log_error_f(fname, _("key %08lX: invalid revocation "
+			      "certificate: %s - skipped\n"),
+			      (ulong)keyid[1], g10_errstr(rc));
 		    delete_kbnode( node );
 		}
 	    }
@@ -788,7 +789,7 @@ append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
     /* at lease a self signature comes next to the user-id */
     if( node->next->pkt->pkttype == PKT_USER_ID ) {
 	log_error_f(fname, _("key %08lX: our copy has no self-signature\n"),
-						  fname, (ulong)keyid[1]);
+						  (ulong)keyid[1]);
 	return G10ERR_GENERAL;
     }
 

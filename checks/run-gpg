@@ -10,11 +10,6 @@ else
     rm err.tmp.$$
     exit 1
 fi
-fgrep -v -f - err.tmp.$$ <<EOF
-gpg: Good signature from
-gpg: Signature made
-gpg: note: cipher algorithm 3 not found in preferences
-gpg: note: cipher algorithm 4 not found in preferences
-EOF
+fgrep -v -f run-gpg.patterns err.tmp.$$
 rm err.tmp.$$
 

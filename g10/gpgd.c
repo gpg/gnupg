@@ -18,6 +18,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+/****************
+ * This is a spinning server for most purposes, the server does only
+ * fork for updates (which may require signature checks and lengthy DB
+ * operations).
+ *
+ * see ks-proto.c for the used protocol.
+ * see ks-db.c	  for the layout of the database.
+ */
+
 #include <config.h>
 #include <stdio.h>
 #include <errno.h>

@@ -135,6 +135,9 @@ enum cmd_and_opt_values { aNull = 0,
     oSetFilename,
     oComment,
     oThrowKeyid,
+    oS2KMode,
+    oS2KDigest,
+    oS2KCipher,
 aTest };
 
 
@@ -212,6 +215,11 @@ static ARGPARSE_OPTS opts[] = {
     { oMarginalsNeeded, "marginals-needed", 1, N_("(default is 3)")},
     { oLoadExtension, "load-extension" ,2, N_("|file|load extension module")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
+    { oS2KMode, "s2k-mode",  1, N_("|N| use passphrase mode N")},
+    { oS2KDigest, "s2k-digest-algo",2,
+		N_("|NAME| use message digest algorithm NAME for passphrases")},
+    { oS2KCipher, "s2k-cipher-algo",2,
+		N_("|NAME| use cipher algorithm NAME for passphrases")},
   #ifdef IS_G10
     { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
     { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
@@ -226,10 +234,10 @@ static ARGPARSE_OPTS opts[] = {
   #ifdef IS_G10
     { 302, NULL, 0, N_("@\nExamples:\n\n"
     " -se -r Bob [file]          sign and encrypt for user Bob\n"
-    " -sat [file]                make a clear text signature\n"
-    " -sb  [file]                make a detached signature\n"
-    " -k   [userid]              show keys\n"
-    " -kc  [userid]              show fingerprint\n"  ) },
+    " --clearsign [file]         make a clear text signature\n"
+    " --detach-sign [file]       make a detached signature\n"
+    " --list-keys [names]        show keys\n"
+    " --fingerprint [names]      show fingerprints\n"  ) },
   #endif
 
   /* hidden options */
@@ -472,11 +480,15 @@ main( int argc, char **argv )
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
     char *def_digest_string = NULL;
+    char *s2k_cipher_string = NULL;
+    char *s2k_digest_string = NULL;
+    int pwfd = -1;
   #ifdef USE_SHM_COPROCESSING
     ulong requested_shm_size=0;
   #endif
 
     trap_unaligned();
+    secmem_set_flags( secmem_get_flags() | 2 ); /* suspend warnings */
   #ifdef IS_G10MAINT
     secmem_init( 0 );	   /* disable use of secmem */
     maybe_setuid = 0;
@@ -497,6 +509,9 @@ main( int argc, char **argv )
     opt.def_cipher_algo = 0;
     opt.def_digest_algo = 0;
     opt.def_compress_algo = 2;
+    opt.s2k_mode = 1; /* salted */
+    opt.s2k_digest_algo = DIGEST_ALGO_RMD160;
+    opt.s2k_cipher_algo = CIPHER_ALGO_BLOWFISH;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.homedir = getenv("GNUPGHOME");
@@ -527,7 +542,33 @@ main( int argc, char **argv )
 	    default_config = 0; /* --no-options */
 	else if( pargs.r_opt == oHomedir )
 	    opt.homedir = pargs.r.ret_str;
+      #ifdef USE_SHM_COPROCESSING
+	else if( pargs.r_opt == oRunAsShmCP ) {
+	    /* does not make sense in a options file, we do it here,
+	     * so that we are the able to drop setuid as soon as possible */
+	    opt.shm_coprocess = 1;
+	    requested_shm_size = pargs.r.ret_ulong;
+	}
+      #endif
     }
+
+
+  #ifdef USE_SHM_COPROCESSING
+    if( opt.shm_coprocess ) {
+      #ifdef IS_G10
+	init_shm_coprocessing(requested_shm_size, 1 );
+      #else
+	init_shm_coprocessing(requested_shm_size, 0 );
+      #endif
+    }
+  #endif
+  #ifdef IS_G10
+    /* initialize the secure memory. */
+    secmem_init( 16384 );
+    maybe_setuid = 0;
+    /* Okay, we are now working under our real uid */
+  #endif
+
 
     if( default_config )
 	configname = make_filename(opt.homedir, "options", NULL );
@@ -550,7 +591,7 @@ main( int argc, char **argv )
 	    else {
 		log_error(_("option file '%s': %s\n"),
 				    configname, strerror(errno) );
-		g10_exit(1);
+		g10_exit(2);
 	    }
 	    m_free(configname); configname = NULL;
 	}
@@ -654,16 +695,18 @@ main( int argc, char **argv )
 	  case oDoNotExportRSA: opt.do_not_export_rsa = 1; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
-	  #ifdef USE_SHM_COPROCESSING
-	    opt.shm_coprocess = 1;
-	    requested_shm_size = pargs.r.ret_ulong;
-	  #else
+	  #ifndef USE_SHM_COPROCESSING
+	    /* not possible in the option file,
+	     * but we print the warning here anyway */
 	    log_error("shared memory coprocessing is not available\n");
 	  #endif
 	    break;
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
+	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
+	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
+	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;
 
 	#ifdef IS_G10
 	  case oRemote: /* store the remote users */
@@ -680,7 +723,7 @@ main( int argc, char **argv )
 	    locusr = sl;
 	    break;
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
-	  case oPasswdFD: set_passphrase_fd( pargs.r.ret_int ); break;
+	  case oPasswdFD: pwfd = pargs.r.ret_int; break;
 	  case oCipherAlgo: def_cipher_string = m_strdup(pargs.r.ret_str); break;
 	  case oDigestAlgo: def_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
@@ -709,22 +752,7 @@ main( int argc, char **argv )
 	tty_printf("%s\n", strusage(15) );
     }
 
-  #ifdef USE_SHM_COPROCESSING
-    if( opt.shm_coprocess ) {
-      #ifdef IS_G10
-	init_shm_coprocessing(requested_shm_size, 1 );
-      #else
-	init_shm_coprocessing(requested_shm_size, 0 );
-      #endif
-    }
-  #endif
-  #ifdef IS_G10
-    /* initialize the secure memory. */
-    secmem_init( 16384 );
-    maybe_setuid = 0;
-    /* Okay, we are now working under our real uid */
-  #endif
-
+    secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
 
     set_debug();
 
@@ -742,12 +770,29 @@ main( int argc, char **argv )
 	if( check_digest_algo(opt.def_digest_algo) )
 	    log_error(_("selected digest algorithm is invalid\n"));
     }
+    if( s2k_cipher_string ) {
+	opt.s2k_cipher_algo = string_to_cipher_algo(s2k_cipher_string);
+	m_free(s2k_cipher_string); s2k_cipher_string = NULL;
+	if( check_cipher_algo(opt.s2k_cipher_algo) )
+	    log_error(_("selected cipher algorithm is invalid\n"));
+    }
+    if( s2k_digest_string ) {
+	opt.s2k_digest_algo = string_to_digest_algo(s2k_digest_string);
+	m_free(s2k_digest_string); s2k_digest_string = NULL;
+	if( check_digest_algo(opt.s2k_digest_algo) )
+	    log_error(_("selected digest algorithm is invalid\n"));
+    }
     if( opt.def_compress_algo < 1 || opt.def_compress_algo > 2 )
 	log_error(_("compress algorithm must be in range %d..%d\n"), 1, 2);
     if( opt.completes_needed < 1 )
 	log_error(_("completes-needed must be greater than 0\n"));
     if( opt.marginals_needed < 2 )
 	log_error(_("marginals-needed must be greater than 1\n"));
+    switch( opt.s2k_mode ) {
+      case 0: case 1: case 3: break;
+      default:
+	log_error(_("invalid S2K mode; must be 0, 1 or 3\n"));
+    }
 
     if( log_get_errorcount(0) )
 	g10_exit(2);
@@ -795,20 +840,11 @@ main( int argc, char **argv )
     FREE_STRLIST(nrings);
     FREE_STRLIST(sec_nrings);
 
-    if( argc )
-	fname = *argv;
-    else {
-	fname = NULL;
-	if( get_passphrase_fd() == 0 ) {
-	    /* reading data and passphrase from stdin:
-	     * we assume the first line is the passphrase, so
-	     * we should read it now.
-	     *
-	     * We should do it here, but for now it is not needed.
-	     * Anyway, this password scheme is not quite good
-	     */
-	}
-    }
+
+    if( pwfd != -1 )  /* read the passphrase now. */
+	read_passphrase_from_fd( pwfd );
+
+    fname = argc? *argv : NULL;
 
     switch( cmd ) {
       case aPrimegen:

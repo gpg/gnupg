@@ -75,7 +75,7 @@ B<-k> [I<username>] [I<keyring>]
     B<-kvc>   List fingerprints
     B<-kvvc>  List fingerprints and signatures
 
-B<--list-keys>	[I<names>]
+B<--list-keys>  [I<names>]
     List all keys from the public keyrings, or just the
     ones given on the command line.
 
@@ -83,7 +83,7 @@ B<--list-secret-keys> [I<names>]
     List all keys from the secret keyrings, or just the
     ones given on the command line.
 
-B<--list-sigs>	[I<names>]
+B<--list-sigs>  [I<names>]
     Same as B<--list-keys>, but the signatures are listed
     too.
 
@@ -201,7 +201,7 @@ B<--import-ownertrust> [I<filename>]
 
 Long options can be put in an options file (default F<~/.gnupg/options>);
 do not write the 2 dashes, but simply the name of the option and any
-arguments if required.	Lines with a hash as the first non-white-space
+arguments if required.  Lines with a hash as the first non-white-space
 character are ignored. Commands may be put in this file too, but that
 does not make sense.
 
@@ -324,6 +324,26 @@ B<--digest-algo> I<name>
     program with the option B<--verbose> yields a list of
     supported algorithms.
 
+B<--s2k-cipher-algo> I<name>
+    Use I<name> as the cipher algorithm used to protect secret
+    keys.  The default cipher is BLOWFISH.  This cipher is
+    also used for conventional encryption if B<--cipher-algo>
+    is not given.
+
+B<--s2k-digest-algo> I<name>
+    Use I<name> as the digest algorithm used to mangle the
+    passphrases.  The default algorithm is RIPE-MD-160.
+    This digest algorithm is also used for conventional
+    encryption if B<--digest-algo> is not given.
+
+B<--s2k-mode> I<number>
+    Selects how passphrases are mangled: A number of I<0>
+    uses the plain passphrase (which is not recommended),
+    a I<1> (default) adds a salt to the passphrase and
+    I<3> interates the whole process a couple of times.
+    Unless -B<--rfc1991> is used, this mode is also used
+    for conventional encryption.
+
 B<--compress-algo> I<number>
     Use compress algorithm I<number>. Default is I<2> which is
     RFC1950 compression; you may use I<1> to use the old zlib
@@ -332,6 +352,12 @@ B<--compress-algo> I<number>
     results because the window size is not limited to 8K.
     If this is not used the OpenPGP behaviour is used; i.e.
     the compression algorith is selected from the preferences.
+
+B<--digest-algo> I<name>
+    Use I<name> as message digest algorithm. Running the
+    program with the option B<--verbose> yields a list of
+    supported algorithms.
+
 
 B<--throw-keyid>
     Do not put the keyid into encrypted packets.  This option
@@ -385,11 +411,11 @@ a signature was bad and other errorcode for fatal errors.
 
 =head1 EXAMPLES
 
-  -se -r Bob [file]	     sign and encrypt for user Bob
-  -sat [file]		     make a clear text signature
-  -sb  [file]		     make a detached signature
-  -k   [userid] 	     show keys
-  -kc  [userid] 	     show fingerprint
+  -se -r Bob [file]          sign and encrypt for user Bob
+  -sat [file]                make a clear text signature
+  -sb  [file]                make a detached signature
+  -k   [userid]              show keys
+  -kc  [userid]              show fingerprint
 
 =head1 ENVIRONMENT
 
@@ -404,13 +430,13 @@ F<~/.gnupg/pubring.gpg>     The public keyring
 
 F<~/.gnupg/trustdb.gpg>     The trust database
 
-F<~/.gnupg/options>	    May contain options
+F<~/.gnupg/options>         May contain options
 
 F</usr[/local]/lib/gnupg/>  Default location for extensions
 
 =head1 SEE ALSO
 
-gpgm(1)  gpgd(1)
+gpg(1)  gpgm(1)
 
 
 =head1 WARNINGS

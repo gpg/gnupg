@@ -3,7 +3,7 @@
 . $srcdir/defs.inc || exit 3
 
 test_one () {
-   if [ "$(grep $1 y | sed -e 's/.*=[ ]\(.*\)/\1/' -e 's/ //g')" != "$2" ]; then
+   if [ "`grep $1 y | sed -e 's/.*=[ ]\(.*\)/\1/' -e 's/ //g'`" != "$2" ]; then
 	failed="$failed $1"
    fi
 }

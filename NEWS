@@ -1,3 +1,17 @@
+Noteworthy changes in version 0.4.1
+-----------------------------------
+    * A secondary key is used when the primary key is specified but cannot
+      be used for the operation (if it is a sign-only key).
+
+    * GNUPG can now handle concatenated armored messages:  There is still a
+      bug if different kinds of messages are mixed.
+
+    * Iterated+Salted passphrases now work.  If want to be sure that PGP5
+      is able to handle them you may want to use the options
+	"--s2k-mode 3 --s2k-cipher-algo cast5 --s2k-digest-algo sha1"
+      when changing a passphrase.
+
+
 Noteworthy changes in version 0.4.0
 -----------------------------------
     * Triple DES is now supported.  Michael Roth did this piece of

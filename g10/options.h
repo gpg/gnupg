@@ -55,6 +55,9 @@ struct {
     const char *set_filename;
     const char *comment_string;
     int throw_keyid;
+    int s2k_mode;
+    int s2k_digest_algo;
+    int s2k_cipher_algo;
 } opt;
 
 

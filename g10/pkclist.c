@@ -182,7 +182,8 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
     int rc;
 
     if( (trustlevel & TRUST_FLAG_REVOKED) ) {
-	log_info("key has been revoked!\n");
+	log_info("%08lX: key has been revoked!\n",
+					(ulong)keyid_from_pk( pk, NULL) );
 	if( opt.batch )
 	    return 0;
 
@@ -209,12 +210,13 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	return do_we_trust( pk, trustlevel );
 
       case TRUST_EXPIRED:
-	log_info("key has expired\n");
+	log_info("%08lX: key has expired\n", (ulong)keyid_from_pk( pk, NULL) );
 	return 0; /* no */
 
       case TRUST_UNDEFINED:
 	if( opt.batch || opt.answer_no )
-	    log_info("no info to calculate a trust probability\n");
+	    log_info("%08lX: no info to calculate a trust probability\n",
+					(ulong)keyid_from_pk( pk, NULL) );
 	else {
 	    rc = add_ownertrust( pk );
 	    if( !rc ) {
@@ -229,12 +231,14 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	return 0;
 
       case TRUST_NEVER:
-	log_info("We do NOT trust this key\n");
+	log_info("%08lX: We do NOT trust this key\n",
+					(ulong)keyid_from_pk( pk, NULL) );
 	return 0; /* no */
 
       case TRUST_MARGINAL:
-	log_info("I'm not sure whether this key really belongs to the owner\n"
-		 "but I proceed anyway\n");
+	log_info("%08lX: I'm not sure whether this key really belongs to the owner\n"
+		 "but I proceed anyway\n",
+					(ulong)keyid_from_pk( pk, NULL) );
 	return 1; /* yes */
 
       case TRUST_FULLY:
