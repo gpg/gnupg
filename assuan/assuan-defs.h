@@ -21,6 +21,7 @@
 #ifndef ASSUAN_DEFS_H
 #define ASSUAN_DEFS_H
 
+#include <sys/types.h>
 #include "assuan.h"
 
 #define LINELENGTH 1002 /* 1000 + [CR,]LF */
@@ -50,6 +51,7 @@ struct assuan_context_s {
 
   int pipe_mode;  /* We are in pipe mode, i.e. we can handle just one
                      connection and must terminate then */
+  pid_t pid;	/* In pipe mode, the pid of the child server process.  */
 
   struct cmdtbl_s *cmdtbl;
   size_t cmdtbl_used; /* used entries */
