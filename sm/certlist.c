@@ -45,13 +45,15 @@ static const char oid_kp_ocspSigning[]    = "1.3.6.1.5.6.7.3.9";
 /* Return 0 if the cert is usable for encryption.  A MODE of 0 checks
    for signing a MODE of 1 checks for encryption, a MODE of 2 checks
    for verification and a MODE of 3 for decryption (just for
-   debugging) */
+   debugging).  MODE 4 is for certificate signing, MODE for COSP
+   response signing. */
 static int
 cert_usage_p (ksba_cert_t cert, int mode)
 {
   gpg_error_t err;
   unsigned int use;
   char *extkeyusages;
+  int have_ocsp_signing = 0;
 
   err = ksba_cert_get_ext_key_usages (cert, &extkeyusages);
   if (gpg_err_code (err) == GPG_ERR_NO_DATA)
@@ -94,6 +96,13 @@ cert_usage_p (ksba_cert_t cert, int mode)
                                    | KSBA_KEYUSAGE_NON_REPUDIATION);
                 }
               
+              /* This is a hack to cope with OCSP.  Note that we do
+                 not yet fully comply with the requirements and that
+                 the entire CRL/OCSP checking thing should undergo a
+                 thorough review and probably redesign. */
+              if ( !strcmp (p, oid_kp_ocspSigning))
+                have_ocsp_signing = 1;
+
               if ((p = strchr (pend, '\n')))
                 p++;
             }
@@ -132,6 +141,18 @@ cert_usage_p (ksba_cert_t cert, int mode)
         return 0;
       log_info (_("certificate should have not "
                   "been used for certification\n"));
+      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+    }
+
+  if (mode == 5)
+    {
+      if (use != ~0 
+          && (have_ocsp_signing
+              || (use & (KSBA_KEYUSAGE_KEY_CERT_SIGN
+                         |KSBA_KEYUSAGE_CRL_SIGN))))
+        return 0;
+      log_info (_("certificate should have not "
+                  "been used for OCSP response signing\n"));
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
 
@@ -180,6 +201,12 @@ int
 gpgsm_cert_use_cert_p (ksba_cert_t cert)
 {
   return cert_usage_p (cert, 4);
+}
+
+int
+gpgsm_cert_use_ocsp_p (ksba_cert_t cert)
+{
+  return cert_usage_p (cert, 5);
 }
 
 

@@ -458,9 +458,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
 
           if (!rc)
             {
-              /* fixme: We should refine the check to check for
-                 certificates allowed for CRL/OCPS. */
-              rc = gpgsm_cert_use_verify_p (rspcert);
+              rc = gpgsm_cert_use_ocsp_p (rspcert);
               if (rc)
                 rc = gpg_error (GPG_ERR_INV_CRL);
               else

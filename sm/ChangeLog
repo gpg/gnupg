@@ -1,3 +1,9 @@
+2004-08-18  Werner Koch  <wk@g10code.de>
+
+	* certlist.c (gpgsm_cert_use_ocsp_p): New.
+	(cert_usage_p): Support it here.
+	* call-dirmngr.c (gpgsm_dirmngr_isvalid): Use it here.
+
 2004-08-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* import.c: Fix typo in last change.

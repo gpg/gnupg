@@ -240,6 +240,7 @@ int gpgsm_cert_use_encrypt_p (ksba_cert_t cert);
 int gpgsm_cert_use_verify_p (ksba_cert_t cert);
 int gpgsm_cert_use_decrypt_p (ksba_cert_t cert);
 int gpgsm_cert_use_cert_p (ksba_cert_t cert);
+int gpgsm_cert_use_ocsp_p (ksba_cert_t cert);
 int gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
                                 certlist_t *listaddr, int is_encrypt_to);
 int gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
