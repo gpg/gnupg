@@ -87,6 +87,14 @@ special option "--".
 
 <refsect1>
 <title>COMMANDS</title>
+
+<para>
+<command/gpg/ may be run with no commands, in which case it will
+perform a reasonable action depending on the type of file it is given
+as input (an encrypted message is decrypted, a signature is verified,
+a file containing keys is listed).
+</para>
+
 <para>
 <command/gpg/ recognizes these commands:
 </para>
@@ -183,28 +191,32 @@ material from stdin without denoting it in the above way.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--multifile</term>
+<listitem><para>
+This modifies certain other commands to accept multiple files for
+processing on the command line or read from stdin with each filename
+on a separate line.  This allows for many files to be processed at
+once.  --multifile may currently be used along with --verify,
+--encrypt, and --decrypt.  Note that `--multifile --verify' may not be
+used with detached signatures.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--verify-files <optional><parameter/files/</optional></term>
 <listitem><para>
-This is a special version of the --verify command which does not work with
-detached signatures.  The command expects the files to be verified either
-on the command line or reads the filenames from stdin;  each name must be on
-separate line. The command is intended for quick checking of many files.
+Identical to `--multifile --verify'.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--encrypt-files <optional><parameter/files/</optional></term>
 <listitem><para>
-This is a special version of the --encrypt command. The command expects
-the files to be encrypted either on the command line or reads the filenames
-from stdin; each name must be on separate line. The command is intended
-for a quick encryption of multiple files.
+Identical to `--multifile --encrypt'.
 </para></listitem></varlistentry>
 
 <varlistentry>
 <term>--decrypt-files <optional><parameter/files/</optional></term>
 <listitem><para>
-The same as --encrypt-files with the difference that files will be
-decrypted. The syntax of the filenames is the same.
+Identical to `--multifile --decrypt'.
 </para></listitem></varlistentry>
 
 <!--
@@ -805,20 +817,17 @@ option is off by default and has no effect on non-Windows platforms.
 <varlistentry>
 <term>-u, --local-user &ParmName;</term>
 <listitem><para>
-Use &ParmName; as the user ID to sign with.  This option is silently
-ignored for the list commands, so that it can be used in an options
-file.
+Use &ParmName; as the key to sign with.  Note that this option
+overrides --default-key.
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--default-key &ParmName;</term>
 <listitem><para>
-Use &ParmName; as default user ID for signatures.  If this
-is not used the default user ID is the first user ID
-found in the secret keyring.
+Use &ParmName; as the default key to sign with.  If this option is not
+used, the default key is the first key found in the secret keyring.
+Note that -u or --local-user overrides this option.
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>-r, --recipient &ParmName;</term>
@@ -1308,6 +1317,12 @@ than the more common 32 bit (8 digit) IDs.  Defaults to no.
 <term>show-unusable-uids</term>
 <listitem><para>
 Show revoked and expired user IDs in key listings.  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>show-unusable-subkeys</term>
+<listitem><para>
+Show revoked and expired subkeys in key listings.  Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2524,7 +2539,7 @@ option is intended for external programs that call GnuPG to perform
 tasks, and is thus not generally useful.  See the file
 <filename>doc/DETAILS</filename> in the source distribution for the
 details of which configuration items may be listed.  --list-config is
-only useful with --with-colons set.
+only usable with --with-colons set.
 </para></listitem></varlistentry>
 
 </variablelist>

@@ -1,3 +1,14 @@
+2004-02-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* gnupg.7: Clarify that 'gpgv' doesn't encrypt, and that's not a
+	bug.
+
+	* samplekeys.asc: Update 99242560.
+
+	* gpg.sgml: Clarify -u/--local-user and --default-key.  Note what
+	happens if you run 'gpg' without any commands.  Document
+	--multifile.  Document list-option show-unusable-subkeys.
+
 2004-01-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Details for --list-config.
