@@ -254,7 +254,8 @@ get_key(char *getkey)
     {
       fprintf(console,"gpgkeys: HKP fetch error: %s\n",
 	      rc==G10ERR_NETWORK?strerror(errno):g10_errstr(rc));
-      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,KEYSERVER_INTERNAL_ERROR);
+      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,
+	    rc==G10ERR_NETWORK?KEYSERVER_UNREACHABLE:KEYSERVER_INTERNAL_ERROR);
     }
   else
     {
@@ -682,6 +683,30 @@ search_key(char *searchkey)
   return ret;
 }
 
+void
+fail_all(struct keylist *keylist,int action,int err)
+{
+  if(!keylist)
+    return;
+
+  if(action==SEARCH)
+    {
+      fprintf(output,"SEARCH ");
+      while(keylist)
+	{
+	  fprintf(output,"%s ",keylist->str);
+	  keylist=keylist->next;
+	}
+      fprintf(output,"FAILED %d\n",err);
+    }
+  else
+    while(keylist)
+      {
+	fprintf(output,"KEY %s FAILED %d\n",keylist->str,err);
+	keylist=keylist->next;
+      }
+}
+
 int
 main(int argc,char *argv[])
 {
@@ -856,6 +881,7 @@ main(int argc,char *argv[])
 		{
 		  fprintf(console,"gpgkeys: out of memory while "
 			  "building key list\n");
+		  ret=KEYSERVER_NO_MEMORY;
 		  goto fail;
 		}
 
@@ -960,7 +986,11 @@ main(int argc,char *argv[])
 
 	searchkey=malloc(len+1);
 	if(searchkey==NULL)
-	  goto fail;
+	  {
+	    ret=KEYSERVER_NO_MEMORY;
+	    fail_all(keylist,action,KEYSERVER_NO_MEMORY);
+	    goto fail;
+	  }
 
 	searchkey[0]='\0';
 

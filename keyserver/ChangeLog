@@ -1,3 +1,17 @@
+2002-10-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (fail_all): New function to unwind a keylist and
+	error each item.
+	(main): Call fail_all from here, as needed.  Also add a NO_MEMORY
+	error in an appropriate place and fix error return code.
+	(ldap_err_to_gpg_err): Add KEYSERVER_UNREACHABLE.
+
+	* gpgkeys_hkp.c (fail_all): New function to unwind a keylist and
+	error each item.
+	(main): Call fail_all from here.  Also add a NO_MEMORY error in an
+	appropriate place.
+	(get_key): Use new UNREACHABLE error for network errors.
+
 2002-09-26  Werner Koch  <wk@gnupg.org>
 
 	* gpgkeys_ldap.c (send_key): Removed non-constant initializers.
