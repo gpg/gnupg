@@ -179,6 +179,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoLiteral,
     oSetFilesize,
     oHonorHttpProxy,
+    oFastListMode,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
 aTest };
 
@@ -347,6 +348,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoLiteral, "no-literal", 0, "@" },
     { oSetFilesize, "set-filesize", 20, "@" },
     { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
+    { oFastListMode,"fast-list-mode", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
 {0} };
 
@@ -873,6 +875,7 @@ main( int argc, char **argv )
 	  case oNoLiteral: opt.no_literal = 1; break;
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy: opt.honor_http_proxy = 1; break;
+	  case oFastListMode: opt.fast_list_mode = 1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}

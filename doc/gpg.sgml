@@ -1223,6 +1223,16 @@ and may be used together with another command.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--fast-list-mode</term>
+<listitem><para>
+Changes the output of the list commands to work faster; this is achieved
+by leaving some parts empty.  Some applications don't need the user ID and
+the trust information given in the listings.  By using this options they
+can get a faster listing.  The excact behaviour of this option may change
+in future versions.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--no-literal</term>
 <listitem><para>
 This is not for normal use.  Use the source to see for what it might be useful.

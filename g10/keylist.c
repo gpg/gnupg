@@ -201,21 +201,26 @@ list_keyblock( KBNODE keyblock, int secret )
 	sk = NULL;
 	keyid_from_pk( pk, keyid );
 	if( opt.with_colons ) {
-	    trustletter = query_trust_info( pk, NULL );
-	    if( trustletter == 'u' )
-		ulti_hack = 1;
-	    printf("pub:%c:%u:%d:%08lX%08lX:%s:%s:",
-		    trustletter,
+	    if ( opt.fast_list_mode ) {
+		fputs( "pub::", stdout );
+		trustletter = 0;
+	    }
+	    else {
+		trustletter = query_trust_info( pk, NULL );
+		if( trustletter == 'u' )
+		    ulti_hack = 1;
+		printf("pub:%c:", trustletter );
+	    }
+	    printf("%u:%d:%08lX%08lX:%s:%s:",
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
 		    datestr_from_pk( pk ),
-		    pk->expiredate? strtimestamp(pk->expiredate):""
-					     );
+		    pk->expiredate? strtimestamp(pk->expiredate):"" );
 	    if( pk->local_id )
 		printf("%lu", pk->local_id );
 	    putchar(':');
-	    if( pk->local_id )
+	    if( pk->local_id && !opt.fast_list_mode )
 		putchar( get_ownertrust_info( pk->local_id ) );
 	    putchar(':');
 	}
@@ -227,9 +232,9 @@ list_keyblock( KBNODE keyblock, int secret )
     }
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
-	if( node->pkt->pkttype == PKT_USER_ID ) {
+	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
 	    if( any ) {
-		if( opt.with_colons ) {
+		if ( opt.with_colons ) {
 		    byte namehash[20];
 
 		    if( pk && !ulti_hack ) {
@@ -283,8 +288,13 @@ list_keyblock( KBNODE keyblock, int secret )
 
 	    keyid_from_pk( pk2, keyid2 );
 	    if( opt.with_colons ) {
-		printf("sub:%c:%u:%d:%08lX%08lX:%s:%s:",
-			trustletter,
+		if ( opt.fast_list_mode ) {
+		    fputs( "sub::", stdout );
+		}
+		else {
+		    printf("sub:%c:", trustletter );
+		}
+		printf("%u:%d:%08lX%08lX:%s:%s:",
 			nbits_from_pk( pk2 ),
 			pk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
@@ -400,7 +410,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		printf("[%s] ", g10_errstr(rc) );
 	    else if( sigrc == '?' )
 		;
-	    else {
+	    else if ( !opt.fast_list_mode ) {
 		size_t n;
 		char *p = get_user_id( sig->keyid, &n );
 		if( opt.with_colons )

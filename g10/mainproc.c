@@ -645,11 +645,13 @@ list_node( CTX c, KBNODE node )
 	    keyid_from_pk( pk, keyid );
 	    if( mainkey ) {
 		c->local_id = pk->local_id;
-		c->trustletter = query_trust_info( pk, NULL );
+		c->trustletter = opt.fast_list_mode?
+					   0 : query_trust_info( pk, NULL );
 	    }
-	    printf("%s:%c:%u:%d:%08lX%08lX:%s:%s:",
-		    mainkey? "pub":"sub",
-		    c->trustletter,
+	    printf("%s:", mainkey? "pub":"sub" );
+	    if( c->trustletter )
+		putchar( c->trustletter );
+	    printf(":%u:%d:%08lX%08lX:%s:%s:",
 		    nbits_from_pk( pk ),
 		    pk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
@@ -658,7 +660,7 @@ list_node( CTX c, KBNODE node )
 	    if( c->local_id )
 		printf("%lu", c->local_id );
 	    putchar(':');
-	    if( c->local_id )
+	    if( c->local_id && !opt.fast_list_mode )
 		putchar( get_ownertrust_info( c->local_id ) );
 	    putchar(':');
 	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
@@ -848,7 +850,7 @@ list_node( CTX c, KBNODE node )
 	    if( opt.with_colons )
 		putchar(':');
 	}
-	else {
+	else if( !opt.fast_list_mode ) {
 	    p = get_user_id( sig->keyid, &n );
 	    print_string( stdout, p, n, opt.with_colons );
 	    m_free(p);

@@ -84,6 +84,7 @@ struct {
     int no_literal;
     ulong set_filesize;
     int honor_http_proxy;
+    int fast_list_mode;
 } opt;
 
 

@@ -794,7 +794,8 @@ mark_non_selfsigned_uids_valid( KBNODE keyblock, u32 *kid )
     KBNODE node;
     for(node=keyblock->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !(node->flag & 1) ) {
-	    if( node->next && node->next->pkt->pkttype == PKT_SIGNATURE ) {
+	    if( (node->next && node->next->pkt->pkttype == PKT_SIGNATURE)
+		|| !node->next ) {
 		node->flag |= 1;
 		log_info( _("key %08lX: accepted non self-signed user ID '"),
 							 (ulong)kid[1]);

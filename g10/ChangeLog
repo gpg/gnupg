@@ -1,3 +1,12 @@
+Mon Nov 29 21:52:11 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* g10.c: New option --fast-list-mode ..
+	* keylist.c (list_keyblock): .. and implemented.
+	* mainproc.c (list_node): Ditto.
+
+	* import.c (mark_non_selfsigned_uids_valid): Fixed the case that there
+	is a uid without any packet following.
+
 Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* mainproc.c (proc_plaintext): Never enable the hash processing
