@@ -1439,7 +1439,7 @@ main( int argc, char **argv )
     opt.keyserver_options.import_options=IMPORT_REPAIR_PKS_SUBKEY_BUG;
     opt.keyserver_options.export_options=EXPORT_INCLUDE_ATTRIBUTES;
     opt.keyserver_options.options=
-      KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_INCLUDE_REVOKED|KEYSERVER_TRY_DNS_SRV;
+      KEYSERVER_INCLUDE_SUBKEYS|KEYSERVER_INCLUDE_REVOKED|KEYSERVER_TRY_DNS_SRV|KEYSERVER_HONOR_KEYSERVER_URL;
     opt.verify_options=
       VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
     opt.trust_model=TM_AUTO;
@@ -2082,7 +2082,14 @@ main( int argc, char **argv )
 	      log_error(_("could not parse keyserver URI\n"));
 	    break;
 	  case oKeyServerOptions:
-	    parse_keyserver_options(pargs.r.ret_str);
+	    if(!parse_keyserver_options(pargs.r.ret_str))
+	      {
+		if(configname)
+		  log_error(_("%s:%d: invalid keyserver options\n"),
+			    configname,configlineno);
+		else
+		  log_error(_("invalid keyserver options\n"));
+	      }
 	    break;
 	  case oImportOptions:
 	    if(!parse_import_options(pargs.r.ret_str,&opt.import_options,1))

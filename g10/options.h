@@ -267,5 +267,6 @@ struct
 #define KEYSERVER_ADD_FAKE_V3            (1<<5)
 #define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<6)
 #define KEYSERVER_TRY_DNS_SRV            (1<<7)
+#define KEYSERVER_HONOR_KEYSERVER_URL    (1<<8)
 
 #endif /*G10_OPTIONS_H*/

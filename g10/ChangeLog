@@ -1,3 +1,24 @@
+2004-04-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main): Add keyserver-option
+	honor-keyserver-url.  parse_keyserver_options now returns a
+	success code.
+
+	* keyserver.c (parse_keyserver_options): Return error on failure
+	to parse.  Currently there is no way to fail as any unrecognized
+	options get saved to be sent to the keyserver plugins later.
+	Check length of keyserver option tokens since with =arguments we
+	must only match the prefix.
+	(free_keyserver_spec): Moved code from parse_keyserver_url.
+	(keyserver_work, keyserver_spawn): Pass in a struct keyserver_spec
+	rather than using the global keyserver option.
+	(calculate_keyid_fpr): New.  Fills in a KEYDB_SEARCH_DESC for a
+	key.
+	(keyidlist): New implementation using get_pubkey_bynames rather
+	than searching the keydb directly.  If honor-keyserver-url is set,
+	make up a keyserver_spec and try and fetch that key directly.  Do
+	not include it in the returned keyidlist in that case.
+
 2004-04-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* plaintext.c (handle_plaintext): Accept 'u' as a plaintext mode

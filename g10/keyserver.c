@@ -64,11 +64,12 @@ static struct parse_options keyserver_opts[]=
     {"refresh-add-fake-v3-keyids",KEYSERVER_ADD_FAKE_V3,NULL},
     {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL},
     {"try-dns-srv",KEYSERVER_TRY_DNS_SRV,NULL},
+    {"honor-keyserver-url",KEYSERVER_HONOR_KEYSERVER_URL,NULL},
     {NULL,0,NULL}
   };
 
-static int keyserver_work(int action,STRLIST list,
-			  KEYDB_SEARCH_DESC *desc,int count);
+static int keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
+			  int count,struct keyserver_spec *keyserver);
 
 int
 parse_keyserver_options(char *options)
@@ -83,21 +84,23 @@ parse_keyserver_options(char *options)
 
       /* We accept quite a few possible options here - some options to
 	 handle specially, the keyserver_options list, and import and
-	 export options that pertain to keyserver operations. */
+	 export options that pertain to keyserver operations.  Note
+	 that you must use strncasecmp here as there might be an
+	 =argument attached which will foil the use of strcasecmp. */
 
-      if(ascii_strcasecmp(tok,"verbose")==0)
+      if(ascii_strncasecmp(tok,"verbose",7)==0)
 	opt.keyserver_options.verbose++;
-      else if(ascii_strcasecmp(tok,"no-verbose")==0)
+      else if(ascii_strncasecmp(tok,"no-verbose",10)==0)
 	opt.keyserver_options.verbose--;
 #ifdef EXEC_TEMPFILE_ONLY
-      else if(ascii_strcasecmp(tok,"use-temp-files")==0 ||
-	      ascii_strcasecmp(tok,"no-use-temp-files")==0)
+      else if(ascii_strncasecmp(tok,"use-temp-files",14)==0 ||
+	      ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
 	log_info(_("WARNING: keyserver option \"%s\" is not used "
 		   "on this platform\n"),tok);
 #else
-      else if(ascii_strcasecmp(tok,"use-temp-files")==0)
+      else if(ascii_strncasecmp(tok,"use-temp-files",14)==0)
 	opt.keyserver_options.options|=KEYSERVER_USE_TEMP_FILES;
-      else if(ascii_strcasecmp(tok,"no-use-temp-files")==0)
+      else if(ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
 	opt.keyserver_options.options&=~KEYSERVER_USE_TEMP_FILES;
 #endif
       else if(!parse_options(tok,&opt.keyserver_options.options,
@@ -130,6 +133,16 @@ parse_keyserver_options(char *options)
     }
 
   return ret;
+}
+
+static void
+free_keyserver_spec(struct keyserver_spec *keyserver)
+{
+  m_free(keyserver->uri);
+  m_free(keyserver->host);
+  m_free(keyserver->port);
+  m_free(keyserver->opaque);
+  m_free(keyserver);
 }
 
 struct keyserver_spec *
@@ -247,11 +260,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
   return keyserver;
 
  fail:
-  m_free(keyserver->uri);
-  m_free(keyserver->host);
-  m_free(keyserver->port);
-  m_free(keyserver->opaque);
-  m_free(keyserver);
+  free_keyserver_spec(keyserver);
 
   return NULL;
 }
@@ -534,7 +543,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 
       while((num=strsep(&split," ,"))!=NULL)
 	if(atoi(num)>=1 && atoi(num)<=numdesc)
-	  keyserver_work(GET,NULL,&desc[atoi(num)-1],1);
+	  keyserver_work(GET,NULL,&desc[atoi(num)-1],1,opt.keyserver);
 
       m_free(answer);
       return 1;
@@ -698,8 +707,8 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
 static int 
-keyserver_spawn(int action,STRLIST list,
-		KEYDB_SEARCH_DESC *desc,int count,int *prog)
+keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
+		int count,int *prog,struct keyserver_spec *keyserver)
 {
   int ret=0,i,gotversion=0,outofband=0;
   STRLIST temp;
@@ -709,7 +718,7 @@ keyserver_spawn(int action,STRLIST list,
   struct parse_options *kopts;
   struct exec_info *spawn;
 
-  assert(opt.keyserver);
+  assert(keyserver);
 
 #ifdef EXEC_TEMPFILE_ONLY
   opt.keyserver_options.use_temp_files=1;
@@ -724,9 +733,9 @@ keyserver_spawn(int action,STRLIST list,
 #endif
 
   /* Build the filename for the helper to execute */
-  command=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver->scheme)+1);
+  command=m_alloc(strlen("gpgkeys_")+strlen(keyserver->scheme)+1);
   strcpy(command,"gpgkeys_");
-  strcat(command,opt.keyserver->scheme);
+  strcat(command,keyserver->scheme);
 
   if(opt.keyserver_options.options&KEYSERVER_USE_TEMP_FILES)
     {
@@ -754,17 +763,17 @@ keyserver_spawn(int action,STRLIST list,
   fprintf(spawn->tochild,"# This is a gpg keyserver communications file\n");
   fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);
   fprintf(spawn->tochild,"PROGRAM %s\n",VERSION);
-  fprintf(spawn->tochild,"SCHEME %s\n",opt.keyserver->scheme);
+  fprintf(spawn->tochild,"SCHEME %s\n",keyserver->scheme);
 
-  if(opt.keyserver->opaque)
-    fprintf(spawn->tochild,"OPAQUE %s\n",opt.keyserver->opaque);
+  if(keyserver->opaque)
+    fprintf(spawn->tochild,"OPAQUE %s\n",keyserver->opaque);
   else
     {
-      if(opt.keyserver->host)
-	fprintf(spawn->tochild,"HOST %s\n",opt.keyserver->host);
+      if(keyserver->host)
+	fprintf(spawn->tochild,"HOST %s\n",keyserver->host);
 
-      if(opt.keyserver->port)
-	fprintf(spawn->tochild,"PORT %s\n",opt.keyserver->port);
+      if(keyserver->port)
+	fprintf(spawn->tochild,"PORT %s\n",keyserver->port);
     }
 
   /* Write options */
@@ -1112,7 +1121,8 @@ keyserver_spawn(int action,STRLIST list,
 }
 
 static int 
-keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
+keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
+	       int count,struct keyserver_spec *keyserver)
 {
   int rc=0,ret=0;
 
@@ -1130,7 +1140,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 #else
   /* Spawn a handler */
 
-  rc=keyserver_spawn(action,list,desc,count,&ret);
+  rc=keyserver_spawn(action,list,desc,count,&ret,keyserver);
   if(ret)
     {
       switch(ret)
@@ -1198,7 +1208,7 @@ keyserver_export(STRLIST users)
 
   if(sl)
     {
-      rc=keyserver_work(SEND,sl,NULL,0);
+      rc=keyserver_work(SEND,sl,NULL,0,opt.keyserver);
       free_strlist(sl);
     }
 
@@ -1236,7 +1246,7 @@ keyserver_import(STRLIST users)
     }
 
   if(count>0)
-    rc=keyserver_work(GET,NULL,desc,count);
+    rc=keyserver_work(GET,NULL,desc,count,opt.keyserver);
 
   m_free(desc);
 
@@ -1259,7 +1269,7 @@ keyserver_import_fprint(const byte *fprint,size_t fprint_len)
 
   memcpy(desc.u.fpr,fprint,fprint_len);
 
-  return keyserver_work(GET,NULL,&desc,1);
+  return keyserver_work(GET,NULL,&desc,1,opt.keyserver);
 }
 
 int 
@@ -1273,62 +1283,115 @@ keyserver_import_keyid(u32 *keyid)
   desc.u.kid[0]=keyid[0];
   desc.u.kid[1]=keyid[1];
 
-  return keyserver_work(GET,NULL,&desc,1);
+  return keyserver_work(GET,NULL,&desc,1,opt.keyserver);
 }
 
-/* code mostly stolen from do_export_stream */
-static int 
-keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
+static void
+calculate_keyid_fpr(PKT_public_key *pk,KEYDB_SEARCH_DESC *desc)
 {
-  int rc=0,ndesc,num=100;
-  KBNODE keyblock=NULL,node;
-  KEYDB_HANDLE kdbhd;
-  KEYDB_SEARCH_DESC *desc;
-  STRLIST sl;
-
-  *count=0;
-
-  *klist=m_alloc(sizeof(KEYDB_SEARCH_DESC)*num);
-
-  kdbhd=keydb_new(0);
-
-  if(!users)
+  if(pk->version<4)
     {
-      ndesc = 1;
-      desc = m_alloc_clear ( ndesc * sizeof *desc);
-      desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
+      desc->mode=KEYDB_SEARCH_MODE_LONG_KID;
+      keyid_from_pk(pk,desc->u.kid);
     }
   else
     {
-      for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
-	;
-      desc = m_alloc ( ndesc * sizeof *desc);
-        
-      for (ndesc=0, sl=users; sl; sl = sl->next)
-	{
-	  if(classify_user_id (sl->d, desc+ndesc))
-	    ndesc++;
-	  else
-	    log_error (_("key `%s' not found: %s\n"),
-		       sl->d, g10_errstr (G10ERR_INV_USER_ID));
-	}
+      size_t dummy;
+
+      desc->mode=KEYDB_SEARCH_MODE_FPR20;
+      fingerprint_from_pk(pk,desc->u.fpr,&dummy);
+    }
+}
+
+static int 
+keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
+{
+  int rc=0,num=100;
+  KBNODE keyblock=NULL,node;
+  GETKEY_CTX ctx;
+
+  *count=0;
+
+  rc=get_pubkey_bynames(&ctx,NULL,users,&keyblock);
+  if(rc)
+    {
+      log_error("error reading key: %s\n", g10_errstr(rc) );
+      get_pubkey_end( ctx );
+      return rc;
     }
 
-  while (!(rc = keydb_search (kdbhd, desc, ndesc)))
+  *klist=m_alloc(sizeof(KEYDB_SEARCH_DESC)*num);
+
+  do
     {
-      if (!users) 
-	desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
-
-      /* read the keyblock */
-      rc = keydb_get_keyblock (kdbhd, &keyblock );
-      if( rc )
-	{
-	  log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
-	  goto leave;
-	}
-
       if((node=find_kbnode(keyblock,PKT_PUBLIC_KEY)))
 	{
+	  PKT_public_key *pk=node->pkt->pkt.public_key;
+
+	  /* Check the user ID for a preferred keyserver subpacket. */
+	  if(opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL)
+	    {
+	      PKT_user_id *uid=NULL;
+	      PKT_signature *sig=NULL;
+
+	      for(node=node->next;node;node=node->next)
+		{
+		  if(node->pkt->pkttype==PKT_USER_ID
+		     && node->pkt->pkt.user_id->is_primary)
+		    uid=node->pkt->pkt.user_id;
+		  else if(node->pkt->pkttype==PKT_SIGNATURE
+			  && node->pkt->pkt.signature->
+			  flags.chosen_selfsig && uid)
+		    {
+		      sig=node->pkt->pkt.signature;
+		      break;
+		    }
+		}
+
+	      if(uid && sig)
+		{
+		  const byte *p;
+		  size_t plen;
+		  p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&plen);
+		  if(p && plen)
+		    {
+		      struct keyserver_spec *keyserver;
+		      byte *dupe=m_alloc(plen+1);
+
+		      memcpy(dupe,p,plen);
+		      dupe[plen]='\0';
+
+		      /* Make up a keyserver structure and do an
+			 import for this key. */
+
+		      keyserver=parse_keyserver_uri(dupe,NULL,0);
+		      m_free(dupe);
+
+		      if(keyserver)
+			{
+			  KEYDB_SEARCH_DESC desc;
+
+			  calculate_keyid_fpr(pk,&desc);
+
+			  rc=keyserver_work(GET,NULL,&desc,1,keyserver);
+			  if(rc)
+			    log_info(_("WARNING: unable to refresh key %s"
+				       " via %s: %s\n"),
+				     keystr_from_pk(pk),keyserver->uri,
+				     g10_errstr(rc));
+			  free_keyserver_spec(keyserver);
+
+			  continue;
+			}
+		      else
+			log_info(_("WARNING: unable to refresh key %s"
+				   " via %s: %s\n"),
+				 keystr_from_pk(pk),keyserver->uri,
+				 g10_errstr(G10ERR_BAD_URI));
+		    }
+		}
+	    }
+
 	  /* This is to work around a bug in some keyservers (pksd and
              OKS) that calculate v4 RSA keyids as if they were v3 RSA.
              The answer is to refresh both the correct v4 keyid
@@ -1336,12 +1399,10 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
              This only happens for key refresh using the HKP scheme
              and if the refresh-add-fake-v3-keyids keyserver option is
              set. */
-	  if(fakev3 && is_RSA(node->pkt->pkt.public_key->pubkey_algo) &&
-	     node->pkt->pkt.public_key->version>=4)
+	  if(fakev3 && is_RSA(pk->pubkey_algo) && pk->version>=4)
 	    {
 	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
-	      mpi_get_keyid(node->pkt->pkt.public_key->pkey[0],
-			    (*klist)[*count].u.kid);
+	      mpi_get_keyid(pk->pkey[0],(*klist)[*count].u.kid);
 	      (*count)++;
 
 	      if(*count==num)
@@ -1355,19 +1416,17 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
              This is because it's easy to calculate any sort of key id
              from a v4 fingerprint, but not a v3 fingerprint. */
 
-	  if(node->pkt->pkt.public_key->version<4)
+	  if(pk->version<4)
 	    {
 	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_LONG_KID;
-	      keyid_from_pk(node->pkt->pkt.public_key,
-			    (*klist)[*count].u.kid);
+	      keyid_from_pk(pk,(*klist)[*count].u.kid);
 	    }
 	  else
 	    {
 	      size_t dummy;
 
 	      (*klist)[*count].mode=KEYDB_SEARCH_MODE_FPR20;
-	      fingerprint_from_pk(node->pkt->pkt.public_key,
-				  (*klist)[*count].u.fpr,&dummy);
+	      fingerprint_from_pk(pk,(*klist)[*count].u.fpr,&dummy);
 	    }
 
 	  (*count)++;
@@ -1378,17 +1437,12 @@ keyidlist(STRLIST users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	      *klist=m_realloc(*klist,sizeof(KEYDB_SEARCH_DESC)*num);
 	    }
 	}
+
+      release_kbnode(keyblock);
     }
+  while(!get_pubkey_next(ctx,NULL,&keyblock));
 
-  if(rc==-1)
-    rc=0;
-  
- leave:
-  m_free(desc);
-  keydb_release(kdbhd);
-  release_kbnode(keyblock);
-
-  return rc;
+  return 0;
 }
 
 /* Note this is different than the original HKP refresh.  It allows
@@ -1427,7 +1481,7 @@ keyserver_refresh(STRLIST users)
 		     count,opt.keyserver->uri);
 	}
 
-      rc=keyserver_work(GET,NULL,desc,count);
+      rc=keyserver_work(GET,NULL,desc,count,opt.keyserver);
     }
 
   m_free(desc);
@@ -1439,7 +1493,7 @@ int
 keyserver_search(STRLIST tokens)
 {
   if(tokens)
-    return keyserver_work(SEARCH,tokens,NULL,0);
+    return keyserver_work(SEARCH,tokens,NULL,0,opt.keyserver);
   else
     return 0;
 }
