@@ -1,4 +1,4 @@
-/* strgutil.c -  miscellaneous utilities
+/* strgutil.c -  string utilities
  *	Copyright (C) 1998 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

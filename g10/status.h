@@ -63,6 +63,9 @@
 #define STATUS_GOODMDC		33
 #define STATUS_BADMDC		34
 #define STATUS_ERRMDC		35
+#define STATUS_IMPORTED 	36
+#define STATUS_IMPORT_RES	37
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

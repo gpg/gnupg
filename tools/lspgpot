@@ -1,6 +1,6 @@
 #!/bin/sh
 # lspgpot - script to extract the ownertrust values
-# from a PGP keyrings and list them in GnuPG ownertrust format.
+# from PGP keyrings and list them in GnuPG ownertrust format.
 
 ../g10/gpg --dry-run --with-fingerprint --with-colons $* | awk '
 BEGIN { FS=":"

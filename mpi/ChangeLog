@@ -1,3 +1,8 @@
+Wed Jul 14 19:42:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* Makefile.am: Use .s files as temporaries, disabled other .S rules.
+
 Wed Jul  7 13:08:40 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

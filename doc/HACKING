@@ -30,7 +30,10 @@ by sending a mail with subject "subscribe" to
     gnupg-commit-watchers-request@gnupg.org
 
 
-Please run scripts/autogen.sh to create some required files.
+You must run scripts/autogen.sh before doing the ./configure,
+as this creates some needed while which are not in the CVS.
+autogen.sh should checks that you have all required tools
+installed.
 
 
 RSYNC access
@@ -39,6 +42,17 @@ The FTP archive is also available by anonymous rsync.  A daily snapshot
 of the CVS head revision is also available.  See rsync(1) and try
 "rsync ftp.gnupg.org::" to see available resources.
 
+
+
+Special Tools
+=============
+Documention is based on the docbook DTD.  Actually we have only the
+man page for now.  To build a man page you need the docbook-to-man
+tool and all the other thinks needed for SGML processing.  Debian
+comes with the docbook tools and you only need this docbook-to-man
+script which is comes with gtk-doc or download it from
+ftp.openit.de:/pub/devel/sgml.	If you don't have it everything
+should still work fine but you will have only a dummy man page.
 
 
 RFCs

@@ -34,6 +34,7 @@
 #include "trustdb.h"
 #include "main.h"
 #include "i18n.h"
+#include "status.h"
 
 
 static struct {
@@ -197,6 +198,24 @@ import( IOBUF inp, int fast, const char* fname )
 	    log_info(_("  secret keys imported: %lu\n"), stats.secret_imported );
 	if( stats.secret_dups )
 	    log_info(_(" secret keys unchanged: %lu\n"), stats.secret_dups );
+    }
+
+    if( is_status_enabled() ) {
+	char buf[12*16];
+	sprintf(buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+		count,
+		stats.no_user_id,
+		stats.imported,
+		stats.imported_rsa,
+		stats.unchanged,
+		stats.n_uids,
+		stats.n_subk,
+		stats.n_sigs,
+		stats.n_revoc,
+		stats.secret_read,
+		stats.secret_imported,
+		stats.secret_dups);
+	write_status_text( STATUS_IMPORT_RES, buf );
     }
 
     return rc;
@@ -385,6 +404,11 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	/* we are ready */
 	if( !opt.quiet )
 	    log_info( _("key %08lX: public key imported\n"), (ulong)keyid[1]);
+	if( is_status_enabled() ) {
+	    char *us = get_long_user_id_string( keyid );
+	    write_status_text( STATUS_IMPORTED, us );
+	    m_free(us);
+	}
 	stats.imported++;
 	if( is_RSA( pk->pubkey_algo ) )
 	    stats.imported_rsa++;

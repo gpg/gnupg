@@ -7,17 +7,19 @@ man_MANS = gpg.1
 
 %.1 : %.sgml
 if HAVE_DOCBOOK_TO_MAN
-	  docbook-to-man $<  >$@
+	docbook-to-man $<  >$@
 else
-	  : Warning: missing docbook-to-man, cannot make $@
+	: Warning: missing docbook-to-man, cannot make $@
+	echo ".TH $< 1"   >$@
+	echo "No man page due to missing docbook-to-man" >>$@
 endif
 
 
 %.txt : %.sgml
-	 sgml2txt -c latin $*
+	sgml2txt -c latin $*
 
 %.html : %.sgml
-	 sgml2html -c latin $*
+	sgml2html -c latin $*
 
 %.dvi : %.sgml
 	-rm $*.sgml.tmp

@@ -14,24 +14,33 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 	    fpr = fingerprint: (fingerprint is in field 10)
 	    pkd = public key data (special field format, see below)
 
- 2. Field:  A letter describing the calculated trust, see doc/FAQ
-	    This is a single letter, but be prepared that additional
-	    information may follow in some future versions.
-	    (not used for secret keys)
+ 2. Field:  A letter describing the calculated trust. This is a single
+	    letter, but be prepared that additional information may follow
+	    in some future versions. (not used for secret keys)
+		o = Unknown (this key is new to the system)
+		d = The key has been disabled
+		r = The key has been revoked
+		e = The key has expired
+		q = Undefined (no value assigned)
+		n = Don't trust this key at all
+		m = There is marginal trust in this key
+		f = The key is full trusted.
+		u = The key is ultimately trusted; this is only used for
+		    keys for which the secret key is also available.
  3. Field:  length of key in bits.
  4. Field:  Algorithm:	1 = RSA
 		       16 = ElGamal (encrypt only)
 		       17 = DSA (sometimes called DH, sign only)
 		       20 = ElGamal (sign and encrypt)
+            (for other id's see include/cipher.h)
  5. Field:  KeyID
  6. Field:  Creation Date (in UTC)
  7. Field:  Key expiration date or empty if none.
- 8. Field:  Local ID: record number of the dir record in the trustdb
-	    this value is only valid as long as the trustdb is not
-	    deleted.  May be later used to lookup the key: You will be
-	    able to use "#<local-id> as the user id.  This is needed
-	    because keyids may not be unique - a program may use this
-	    number to access keys later.
+ 8. Field:  Local ID: record number of the dir record in the trustdb.
+	    This value is only valid as long as the trustdb is not
+	    deleted. You can use "#<local-id> as the user id when
+	    specifying a key. This is needed because keyids may not be
+	    unique - a program may use this number to access keys later.
  9. Field:  Ownertrust (primary public keys only)
 	    This is a single letter, but be prepared that additional
 	    information may follow in some future versions.
@@ -158,6 +167,14 @@ more arguments in future versions.
     NO_SECKEY  <long keyid>
 	The key is not available
 
+    IMPORTED   <long keyid>  <username>
+	The keyid and name of the signature just imported
+
+    IMPORTED_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
+	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported> <sec_dups>
+	Final statistics on import process (this is one long line)
+
+
 
 Key generation
 ==============
@@ -196,7 +213,7 @@ Layout of the TrustDB
 The TrustDB is built from fixed length records, where the first byte
 describes the record type.  All numeric values are stored in network
 byte order. The length of each record is 40 bytes. The first record of
-the DB is always of type 2 and this is the only record of this type.
+the DB is always of type 1 and this is the only record of this type.
 
   Record type 0:
   --------------
@@ -541,30 +558,28 @@ Status codes are:
 
 
 
-Ich werde jetzt doch das HKP Protokoll implementieren:
+Documentation on HKP (the http keyserver protocol):
 
-Naja, die Doku ist so gut wie nichtexistent, da gebe ich Dir recht.
-In kurzen Worten:
+A minimalistic HTTP server on port 11371 recognizes a GET for /pks/lookup.
+The standard http URL encoded query parameters are this (always key=value):
 
-(Minimal-)HTTP-Server auf Port 11371, versteht ein GET auf /pks/lookup,
-wobei die Query-Parameter (Key-Value-Paare mit = zwischen Key und
-Value; die Paare sind hinter ? und durch & getrennt). Gültige
-Operationen sind:
+- op=index (like pgp -kv), op=vindex (like pgp -kvv) and op=get (like
+  pgp -kxa)
 
-- - op (Operation) mit den Möglichkeiten index (gleich wie -kv bei
-  PGP), vindex (-kvv) und get (-kxa)
-- - search: Liste der Worte, die im Key vorkommen müssen. Worte sind
-  mit Worttrennzeichen wie Space, Punkt, @, ... getrennt, Worttrennzeichen
-  werden nicht betrachtet, die Reihenfolge der Worte ist egal.
-- - exact: (on=aktiv, alles andere inaktiv) Nur die Schlüssel
-  zurückgeben, die auch den "search"-String beinhalten (d.h.
-  Wortreihenfolge und Sonderzeichen sind wichtig)
-- - fingerprint (Bei [v]index auch den Fingerprint ausgeben), "on"
-  für aktiv, alles andere inaktiv
+- search=<stringlist>. This is a list of words that must occur in the key.
+  The words are delimited with space, points, @ and so on. The delimiters
+  are not searched for and the order of the words doesn't matter (but see
+  next option).
 
-Neu (wird von GNUPG benutzt):
+- exact=on. This switch tells the hkp server to only report exact mathing
+  keys back. In this case the order and the "delimiters" are important.
+
+- fingerprint=on. Also reports the fingerprints when used with 'index' or
+  'vindex'
+
+New (already used by GnuPG):
+
    /pks/lookup/<gnupg_formatierte_user_id>?op=<operation>
 
-Zusätzlich versteht der Keyserver auch ein POST auf /pks/add, womit
-man Keys hochladen kann.
-
+The keyserver also recognizes http-POSTs to /pks/add. Use this to upload
+keys.

@@ -1,3 +1,12 @@
+Wed Jul 14 19:42:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* status.h (STATUS_IMPORTED): New.
+	* import.c (import): Print some status information (Holger Schurig).
+
+	* g10.c (main): Make --no-greeting work again. Add a warning when
+	--force-mds is used.
+
 Tue Jul 13 17:39:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

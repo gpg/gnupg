@@ -212,7 +212,7 @@ static ARGPARSE_OPTS opts[] = {
     { aImportOwnerTrust,
 	      "import-ownertrust", 256 , N_("import ownertrust values")},
     { aUpdateTrustDB,
-	      "update-trustdb",0 , N_("|[NAMES]|update the trust database")},
+	      "update-trustdb",0 , N_("update the trust database")},
     { aCheckTrustDB,
 	      "check-trustdb",0 , N_("|[NAMES]|check the trust database")},
     { aFixTrustDB, "fix-trustdb",0 , N_("fix a corrupted trust database")},
@@ -526,6 +526,7 @@ main( int argc, char **argv )
     int default_config =1;
     int default_keyring = 1;
     int greeting = 0;
+    int nogreeting = 0;
     enum cmd_and_opt_values cmd = 0;
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
@@ -722,7 +723,7 @@ main( int argc, char **argv )
 	    break;
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
-	  case oNoGreeting: greeting = 0; break;
+	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
 	  case oQuickRandom: quick_random_gen(1); break;
@@ -845,6 +846,8 @@ main( int argc, char **argv )
     m_free( configname ); configname = NULL;
     if( log_get_errorcount(0) )
 	g10_exit(2);
+    if( nogreeting )
+	greeting = 0;
 
     if( greeting ) {
 	fprintf(stderr, "%s %s; %s\n",
@@ -855,6 +858,11 @@ main( int argc, char **argv )
     if( !opt.batch )
 	log_info("NOTE: this is a development version!\n");
   #endif
+    if( opt.force_mdc ) {
+	log_info("--force-mdc ignored because"
+		 " the OpenPGP WG has not yet aggreed on MDCs\n");
+	opt.force_mdc = 0;
+    }
     if( opt.batch )
 	tty_batchmode( 1 );
 

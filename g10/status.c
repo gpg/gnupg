@@ -115,6 +115,8 @@ write_status_text ( int no, const char *text)
       case STATUS_GOODMDC	 : s = "GOODMDC\n"; break;
       case STATUS_BADMDC	 : s = "BADMDC\n"; break;
       case STATUS_ERRMDC	 : s = "ERRMDC\n"; break;
+      case STATUS_IMPORTED	 : s = "IMPORTED\n"; break;
+      case STATUS_IMPORT_RES	 : s = "IMPORT_RES\n"; break;
       default: s = "?\n"; break;
     }
 

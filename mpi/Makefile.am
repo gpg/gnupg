@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
+
 INCLUDES =  -I$(top_srcdir)/include
 CFLAGS = @CFLAGS@ @MPI_OPT_FLAGS@
 SFLAGS = @MPI_SFLAGS@
@@ -7,7 +8,8 @@ SFLAGS = @MPI_SFLAGS@
 EXTRA_DIST = config.links
 DISTCLEANFILES = mpih-add1.S mpih-mul1.S mpih-mul2.S mpih-mul3.S  \
 		 mpih-lshift.S mpih-rshift.S mpih-sub1.S asm-syntax.h sysdep.h
-CLEANFILES = tmp-*.s
+# Note: we only use .S files so we should delete all left over .s
+CLEANFILES = *.s
 
 noinst_LTLIBRARIES = libmpi.la
 
@@ -46,20 +48,13 @@ common_asm_objects = mpih-mul1.lo    \
 libmpi_la_DEPENDENCIES = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 libmpi_la_LIBADD = $(common_asm_objects) @MPI_EXTRA_ASM_OBJS@
 
-SUFFIXES = .S
-
+# cancel the default rules used by libtool which do not really
+# work and add one to cpp .S files
 .S.o:
-	$(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' >tmp-$*.s
-	$(CC) $(CFLAGS) $(SFLAGS) -c tmp-$*.s
-	mv tmp-$*.o $@
-	rm -f tmp-$*.s
 
 .S.lo:
-	$(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' >tmp-$*.s
-	if test -f tmp-$*.lo; then rm tmp-$*.lo; fi
-	if test -f tmp-$*.o ; then rm tmp-$*.o ; fi
-	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(SFLAGS) -c tmp-$*.s
-	if test -f tmp-$*.lo; then mv tmp-$*.lo $*.lo; fi
-	if test -f tmp-$*.o ; then mv tmp-$*.o	$*.o ; fi
-	rm -f tmp-$*.s
+
+.S.s:
+	 $(CPP) $(INCLUDES) $(DEFS) $< | grep -v '^#' >$*.s
+
 

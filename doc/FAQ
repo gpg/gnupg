@@ -161,7 +161,7 @@
   on a local computer (a disconnected laptop is probably the best choice)
   and if you need it on your connected box (I know: We all do this) be
   sure to have a strong password for your account and for your secret key
-  and trust your Root.
+  and that you can trust your system administrator.
 
   When I check GnuPG on a remote system via ssh (I have no Alpha here ;-)
   I have the same problem.  It takes a *very* long time to create the
@@ -178,7 +178,7 @@
 
   You can see the validity (calculated trust value) using this command.
 
-      gpgm --list-keys --with-colons
+      gpg --list-keys --with-colons
 
   If the first field is "pub" or "uid", the second field shows you the trust:
 
@@ -199,7 +199,7 @@
   You can get a list of the assigned trust values (how much you trust
   the owner to correctly sign another person's key)
 
-      gpgm --list-ownertrust
+      gpg --list-ownertrust
 
   The first field is the fingerprint of the primary key, the second field
   is the assigned value:
