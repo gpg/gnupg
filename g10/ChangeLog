@@ -1,5 +1,8 @@
 2005-03-17  David Shaw  <dshaw@jabberwocky.com>
 
+	* Makefile.am: Calculate GNUPG_LIBEXECDIR directly.  Do not
+	redefine $libexecdir.
+
 	* options.h, keyserver.c (parse_keyserver_options,
 	keyserver_spawn): Don't treat 'verbose' and 'include-disabled' as
 	special.  Just pass them through silently to the keyserver helper.

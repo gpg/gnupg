@@ -1,5 +1,5 @@
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
-#               2004 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+#               2005 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -23,14 +23,13 @@ INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = options.skel
 # it seems that we can't use this with automake 1.5
 #OMIT_DEPENDENCIES = zlib.h zconf.h
-libexecdir = @libexecdir@/@PACKAGE@
+
 if ! HAVE_DOSISH_SYSTEM
-AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
+AM_CFLAGS = -DGNUPG_LIBEXECDIR="\"$(libexecdir)/@PACKAGE@\""
 endif
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 other_libs = $(LIBICONV) $(LIBINTL) $(CAPLIBS)
 
-#noinst_PROGRAMS = gpgd
 bin_PROGRAMS = gpg gpgv
 
 if ENABLE_BZIP2_SUPPORT
@@ -124,13 +123,6 @@ gpg_SOURCES  = g10.c		\
 gpgv_SOURCES = gpgv.c           \
 	      $(common_source)  \
 	      verify.c          
-
-#gpgd_SOURCES = gpgd.c \
-#	       ks-proto.h \
-#	       ks-proto.c \
-#	       ks-db.c \
-#	       ks-db.h \
-#	       $(common_source)
 
 LDADD =  $(needed_libs) $(other_libs) @ZLIBS@ @W32LIBS@ @LIBREADLINE@
 gpg_LDADD = $(LDADD) @DLLIBS@ @NETLIBS@ @LIBUSB@
