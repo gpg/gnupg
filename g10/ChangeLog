@@ -1,3 +1,8 @@
+Mon Feb 21 22:43:01 CET 2000  Werner Koch  <wk@>
+
+	* kbx.h: New.
+	* kbxblob.c: Started to work on the keybox stuff.
+
 Mon Jan 31 16:37:34 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* keygen.c (gen_dsa): Modified to work with gcry_pk_genkey.
