@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.9.9
 ------------------------------------------------
 
+ * [gpg-agent] The new option --allow-mark-trusted is now required to
+   allow gpg-agent to add a key to the trustlist.txt after user
+   confirmation.
 
 
 Noteworthy changes in version 1.9.8 (2004-04-29)

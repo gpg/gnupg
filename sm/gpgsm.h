@@ -45,7 +45,8 @@ struct {
   int answer_no;    /* assume no on most questions */
   int dry_run;      /* don't change any persistent data */
 
-  const char *homedir; /* configuration directory name */
+  const char *homedir;         /* Configuration directory name */
+  const char *config_filename; /* Name of the used config file. */
   const char *agent_program; 
   char *display;
   char *ttyname;

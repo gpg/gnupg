@@ -1,5 +1,5 @@
 /* server.c - Server mode and main entry point 
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -786,6 +786,8 @@ gpgsm_server (certlist_t default_recplist)
   int filedes[2];
   ASSUAN_CONTEXT ctx;
   struct server_control_s ctrl;
+  static const char hello[] = ("GNU Privacy Guard's S/M server "
+                               VERSION " ready");
 
   memset (&ctrl, 0, sizeof ctrl);
   gpgsm_init_default_ctrl (&ctrl);
@@ -809,7 +811,23 @@ gpgsm_server (certlist_t default_recplist)
                  assuan_strerror(rc));
       gpgsm_exit (2);
     }
-  assuan_set_hello_line (ctx, "GNU Privacy Guard's S/M server ready");
+  if (opt.verbose)
+    {
+      char *tmp = NULL;
+      if (asprintf (&tmp,
+                     "Home: %s\n"
+                     "Config: %s\n"
+                     "%s",
+                     opt.homedir,
+                     opt.config_filename,
+                     hello) > 0)
+        {
+          assuan_set_hello_line (ctx, tmp);
+          free (tmp);
+        }
+    }
+  else
+    assuan_set_hello_line (ctx, hello);
 
   assuan_register_reset_notify (ctx, reset_notify);
   assuan_register_input_notify (ctx, input_notify);

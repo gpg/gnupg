@@ -701,7 +701,6 @@ main ( int argc, char **argv)
   CERTLIST recplist = NULL;
   CERTLIST signerlist = NULL;
   int do_not_setup_keys = 0;
-  char *config_filename = NULL;
 
   /* trap_unaligned ();*/
   set_strusage (my_strusage);
@@ -1136,13 +1135,15 @@ main ( int argc, char **argv)
       fclose (configfp);
       configfp = NULL;
       /* Keep a copy of the config filename. */
-      config_filename = configname;
+      opt.config_filename = configname;
       configname = NULL;
       goto next_pass;
     }
-  
   xfree (configname);
   configname = NULL;
+
+  if (!opt.config_filename)
+    opt.config_filename = make_filename (opt.homedir, "gpgsm.conf", NULL);
 
   if (log_get_errorcount(0))
     gpgsm_exit(2);
@@ -1297,11 +1298,8 @@ main ( int argc, char **argv)
            a default, which is described by the value of the ARGDEF field.  */
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
-        if (!config_filename)
-          config_filename = make_filename (opt.homedir, "gpgsm.conf", NULL);
-
         printf ("gpgconf-gpgsm.conf:%lu:\"%s\n",
-                GC_OPT_FLAG_DEFAULT, config_filename);
+                GC_OPT_FLAG_DEFAULT, opt.config_filename);
         
         printf ("verbose:%lu:\n"
                 "quiet:%lu:\n"

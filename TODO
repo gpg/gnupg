@@ -70,11 +70,6 @@ might want to have an agent context for each service request
 * scd/sc-investigate
 ** Enhance with card compatibility check
 
-* scd/app-openpgp
-  Must check that the fingerprint used is not the one of the
-  authentication key.  Old GnuPG versions seem to encode the wrong
-  keyID.
-
 * tests
 ** Makefile.am
   We use printf(1) to setup the library path, this is not portable.
