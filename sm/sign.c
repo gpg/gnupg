@@ -622,6 +622,8 @@ gpgsm_sign (CTRL ctrl, CERTLIST signerlist,
 
 
  leave:
+  if (rc)
+    log_error ("error creating signature: %s\n", gpg_strerror (rc));
   if (release_signerlist)
     gpgsm_release_certlist (signerlist);
   ksba_cms_release (cms);

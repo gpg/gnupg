@@ -482,7 +482,10 @@ gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp)
 
  leave:
   if (rc)
-    gpgsm_status (ctrl, STATUS_DECRYPTION_FAILED, NULL);
+    {
+      gpgsm_status (ctrl, STATUS_DECRYPTION_FAILED, NULL);
+      log_error ("message decryption failed: %s\n", gpg_strerror (rc));
+    }
   ksba_cms_release (cms);
   gpgsm_destroy_reader (b64reader);
   gpgsm_destroy_writer (b64writer);
