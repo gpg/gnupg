@@ -13,6 +13,11 @@
 	* sig-check.c (do_check): Properly validate v4 sigs with no hashed
 	section at all.
 
+2002-07-25  Werner Koch  <wk@gnupg.org>
+
+	* delkey.c (do_delete_key): Always allow to delete a key in batch mode
+	when specified by fingerprint.  Suggested by Enzo Michelangeli.
+
 2002-07-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_revsig): Change "revsig" to honor selected uids
@@ -25,6 +30,7 @@
 	* exec.c, export.c, import.c, keyedit.c, keyserver.c, misc.c:
 	"Warning" -> "WARNING"
 
+>>>>>>> 1.214
 2002-07-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, import.c (parse_import_options, fix_hkp_corruption,
