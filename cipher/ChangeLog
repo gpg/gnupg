@@ -1,3 +1,16 @@
+2002-02-10  Werner Koch  <wk@gnupg.org>
+
+	* random.c (mix_pool): Carry an extra failsafe_digest buffer
+	around to make the function more robust.
+
+2002-02-08  Werner Koch  <wk@gnupg.org>
+
+	* random.c (add_randomness): Xor new data into the pool and not
+	just copy it.  This avoids any choosen input attacks which are not
+	serious in our setting because an outsider won't be able to mix
+	data in and even then we keep going with a PRNG.  Thanks to Stefan
+	Keller for pointing this out.
+
 2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
 	* rndriscos.c [__riscos__]: Updated include file name.
