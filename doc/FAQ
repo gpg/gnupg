@@ -1,13 +1,12 @@
 
-
 GNUPG FREQUENTLY ASKED QUESTIONS
 
-Version: 0.1
-Last-Modified: Sep 14, 2000
+Version: 0.2
+Last-Modified: Oct 01, 2000
 Maintained-by: Nils Ellmenreich <nils 'at' infosun.fmi.uni-passau.de>
 
 This is the GnuPG FAQ. The latest HTML version is available  
- here.   <http://www.gnupg.org>
+ here.   <http://www.gnupg.org/faq.html>
 
 The index is generated automatically, so there may be errors here.  Not
 all questions may be in the section they belong to. Suggestions about
@@ -17,6 +16,7 @@ Please send additions and corrections to the maintainer. Don't send
 message like "This should be a FAQ - what's the answer?". If it hasn't
 been asked before, it isn't a FAQ. Otherwise, please provide the answer
 to be included here.
+
 
 
 
@@ -39,7 +39,7 @@ to be included here.
    4.3) And it really takes long when I work on a remote system. Why?
    4.4) What is the difference between options and commands?
    4.5) I can't delete an user id because it is already deleted on my public
-	keying?
+	keyring?
    4.6) What are trust, validity and ownertrust?
    4.7) How do I sign a patch file?
    4.8) Where is the "encrypt-to-self" option?
@@ -52,13 +52,14 @@ to be included here.
    4.13) How can I used GnuPG in an automated environment?
 
  5. COMPATIBILITY ISSUES 
-   5.1) How can I encrypt a message so that pgp 2.x is able to decrypt it?
-   5.2) How can I conventional encrypt a message, so that PGP can decrypt
+   5.1) How can I encrypt a message so that PGP 2.x is able to decrypt it?
+   5.2) How do I migrate from PGP 2.x to GnuPG?
+   5.3) How can I conventional encrypt a message, so that PGP can decrypt
 	it?
-   5.3) Why is PGP 5.x not able to encrypt messages with some keys?
-   5.4) Why is PGP 5.x not able to verify my messages?
-   5.5) How do I transfer owner trust values from PGP to GnuPG?
-   5.6) PGP 5.x, 6.x do not like my secret key.
+   5.4) Why is PGP 5.x not able to encrypt messages with some keys?
+   5.5) Why is PGP 5.x not able to verify my messages?
+   5.6) How do I transfer owner trust values from PGP to GnuPG?
+   5.7) PGP 5.x, 6.x do not like my secret key.
 
  6. PROBLEMS and ERROR MESSAGES
    6.1) Why do I get "gpg: Warning: using insecure memory!"
@@ -157,22 +158,22 @@ to be included here.
 
 3.3) How do I include support for RSA and IDEA?
 
-    The official GnuPG distribution (as of 1.0.2) does not contain
-    either of them due to patents restriction. The RSA patent expires
-    Sept 20, 2000. A new GnuPG release is then scheduled to include
-    it. The IDEA patent does not expire before 2007 so don't expect
-    official support before then.
+    RSA is included as of GnuPG 1.0.3.
 
-    However, there are unofficial modules to include both of them even
-    in earlier version of GnuPG. They're available from  
+    The official GnuPG distribution does not contain IDEA due to a
+    patent restriction. The patent does not expire before 2007 so don't
+    expect official support before then.
+
+    However, there is an unofficial modules to include it even
+    in earlier version of GnuPG. It's available from  
 	    <ftp://ftp.gnupg.org/pub/gcrypt/contrib/>
-    <ftp://ftp.gnupg.org/pub/gcrypt/contrib/>. Look for idea.c 
-    and rsa.c. Compilation directives are in the headers
-    of these files. Then add the following lines to your ~/.gnupg/options:
-    load-extension idea 
-    load-extension rsa
+    <ftp://ftp.gnupg.org/pub/gcrypt/contrib/>. Look for idea.c. 
 
-    These extensions are not available for the Windows version of GnuPG.
+    Compilation directives are in the headers of these files. Then add
+    the following line to your ~/.gnupg/options: 
+    load-extension idea 
+
+    The extension is not available for the Windows version of GnuPG.
 
 
 4. USAGE
@@ -196,7 +197,7 @@ to be included here.
     What I do is to hit several times on the shift, control, alternate,
     and capslock keys, because these keys do not produce output to the
     screen. This way you get your keys really fast (it's the same thing
-    pgp2 does).
+    PGP2 does).
 
     Another problem might be another program which eats up your random
     bytes (a program (look at your daemons) that reads from
@@ -273,7 +274,7 @@ to be included here.
 
 
 4.5) I can't delete an user id because it is already deleted on my public
-keying?
+keyring?
 
     Because you can only select from the public key ring, there is no
     direct way to do this.  However it is not very complicated to do it
@@ -372,18 +373,29 @@ messages?
 5. COMPATIBILITY ISSUES 
 
 
-5.1) How can I encrypt a message so that pgp 2.x is able to decrypt it?
+5.1) How can I encrypt a message so that PGP 2.x is able to decrypt it?
 
-    You can't do that because pgp 2.x normally uses IDEA which is not
-    supported by GnuPG because it is patented, but if you have a
-    modified version of PGP you can try this:
+    You can't do that because PGP 2.x normally uses IDEA which is not
+    supported by GnuPG because it is patented (see 3.3), but if you
+    have a modified version of PGP you can try this:
 
      gpg --rfc1991 --cipher-algo 3des ...  
 
     Please don't pipe the data to encrypt to gpg but give it as a
-    filename; otherwise, pgp 2 will not be able to handle it.
+    filename; otherwise, PGP 2 will not be able to handle it.
 
-5.2) How can I conventional encrypt a message, so that PGP can decrypt
+5.2) How do I migrate from PGP 2.x to GnuPG?
+
+    PGP 2 uses the RSA and IDEA encryption algorithms. Whereas the RSA
+    patent has expired and RSA is included as of GnuPG 1.0.3, the IDEA
+    algorithm is still patented until 2007. Under certain conditions you
+    may use IDEA even today. In that case, you may refer to Question
+    3.3 about how to add IDEA support to GnuPG and read
+    http://www.gnupg.org/gph/en/pgp2x.html
+    to perfrom the migration. 
+
+
+5.3) How can I conventional encrypt a message, so that PGP can decrypt
 it?
 
     You can't do this for PGP 2.  For PGP 5 you should use this: 
@@ -396,7 +408,7 @@ it?
     normal gnupg operation.
 
 
-5.3) Why is PGP 5.x not able to encrypt messages with some keys?
+5.4) Why is PGP 5.x not able to encrypt messages with some keys?
 
     PGP Inc refuses to accept ElGamal keys of type 20 even for
     encryption.  They only support type 16 (which is identical at least
@@ -406,13 +418,13 @@ it?
     16 ElGamal key to your public key which is easy as your key
     signatures are still valid.
 
-5.4) Why is PGP 5.x not able to verify my messages?
+5.5) Why is PGP 5.x not able to verify my messages?
 
     PGP 5.x does not accept V4 signatures for data material but OpenPGP
     requires generation of V4 signatures for all kind of data.  Use the
     option "--force-v3-sigs" to generate V3 signatures for data.
 
-5.5) How do I transfer owner trust values from PGP to GnuPG?
+5.6) How do I transfer owner trust values from PGP to GnuPG?
 
     There is a script in the tools directory to help you: After you have
     imported the PGP keyring you can give this command: 
@@ -422,7 +434,7 @@ it?
     where pgpkeyring is the original keyring and not the GnuPG one you
     might have created in the first step.
 
-5.6) PGP 5.x, 6.x do not like my secret key.
+5.7) PGP 5.x, 6.x do not like my secret key.
 
     PGP probably bails out on some private comment packets used by
     GnuPG.  These packets are fully in compliance with OpenPGP; however
@@ -470,10 +482,11 @@ in it - why?
 
     This is called dash-escaped text and required by OpenPGP.
     It always happens when a line starts with a dash ("-") and is needed
-    to distinguish those lines from the thos lines which make up such
-    a clearsigned message. 
+    to make the lines that structure signature and text
+    (i.e., "-----BEGIN PGP SIGNATURE-----") to be the only lines that
+    start with two dashes.
 
-    If you use GnuPG to process those emessage, the extra dashes are removed.
+    If you use GnuPG to process those messages, the extra dashes are removed.
     Good mail clients remove those extra dashes when displaying such a 
     message.      
 

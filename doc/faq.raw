@@ -7,23 +7,19 @@ The most recent version of the FAQ is available from
 [$usenetheader=
 ]
 [$maintainer=Nils Ellmenreich <nils 'at' infosun.fmi.uni-passau.de>]
-[$WINS=.wins.uva.nl/pub/solaris]
-[$ftpWINS=ftp://ftp.wins.uva.nl/pub/solaris]
-[$hWINS=http://www.wins.uva.nl/]
-[$fhWINS=http://www.wins.uva.nl/pub/solaris/solaris2]
 [$hGPG=http://www.gnupg.org]
 
-
+[H body bgcolor=#ffffff text=#000000 link=#1f00ff alink=#ff0000 vlink=#9900dd]
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 [H pre]
-Version: 0.1
-Last-Modified: Sep 14, 2000
+Version: 0.2
+Last-Modified: Oct 01, 2000
 Maintained-by: [$maintainer]
 [H/pre]
 
 This is the GnuPG FAQ. The latest HTML version is available  
-[H a href=[$hGPG]] here[H/a].  
+[H a href=[$hGPG]/faq.html] here[H/a].  
 
 The index is generated automatically, so there may be errors here.  Not
 all questions may be in the section they belong to. Suggestions about
@@ -33,6 +29,7 @@ Please send additions and corrections to the maintainer. Don't send
 message like "This should be a FAQ - what's the answer?". If it hasn't
 been asked before, it isn't a FAQ. Otherwise, please provide the answer
 to be included here.
+
 
 [H HR]
 
@@ -116,25 +113,26 @@ to be included here.
     avoided. The random quality isn't very good so don't use it on
     sensitive data.
 
+<Didea>
 <Q> How do I include support for RSA and IDEA?
 
-    The official GnuPG distribution (as of 1.0.2) does not contain
-    either of them due to patents restriction. The RSA patent expires
-    Sept 20, 2000. A new GnuPG release is then scheduled to include
-    it. The IDEA patent does not expire before 2007 so don't expect
-    official support before then.
+    RSA is included as of GnuPG 1.0.3.
 
-    However, there are unofficial modules to include both of them even
-    in earlier version of GnuPG. They're available from [H a href=ftp://ftp.gnupg.org/pub/gcrypt/contrib/] 
-    <ftp://ftp.gnupg.org/pub/gcrypt/contrib/>[H /a]. Look for [H pre]idea.c[H /pre] 
-    and [H pre]rsa.c[H /pre]. Compilation directives are in the headers
-    of these files. Then add the following lines to your ~/.gnupg/options:
+    The official GnuPG distribution does not contain IDEA due to a
+    patent restriction. The patent does not expire before 2007 so don't
+    expect official support before then.
+
+    However, there is an unofficial modules to include it even
+    in earlier version of GnuPG. It's available from [H a href=ftp://ftp.gnupg.org/pub/gcrypt/contrib/] 
+    <ftp://ftp.gnupg.org/pub/gcrypt/contrib/>[H /a]. Look for [H pre]idea.c[H /pre]. 
+
+    Compilation directives are in the headers of these files. Then add
+    the following line to your ~/.gnupg/options: 
     [H pre]
     load-extension idea 
-    load-extension rsa
     [H /pre]
 
-    These extensions are not available for the Windows version of GnuPG.
+    The extension is not available for the Windows version of GnuPG.
 
 
 <S> USAGE
@@ -158,7 +156,7 @@ to be included here.
     What I do is to hit several times on the shift, control, alternate,
     and capslock keys, because these keys do not produce output to the
     screen. This way you get your keys really fast (it's the same thing
-    pgp2 does).
+    PGP2 does).
 
     Another problem might be another program which eats up your random
     bytes (a program (look at your daemons) that reads from
@@ -247,7 +245,7 @@ to be included here.
 
 
 <Q> I can't delete an user id because it is already deleted on my public
-keying?
+keyring?
 
     Because you can only select from the public key ring, there is no
     direct way to do this.  However it is not very complicated to do it
@@ -347,16 +345,27 @@ messages?
 
 <Dcompat>
 
-<Q> How can I encrypt a message so that pgp 2.x is able to decrypt it?
+<Q> How can I encrypt a message so that PGP 2.x is able to decrypt it?
 
-    You can't do that because pgp 2.x normally uses IDEA which is not
-    supported by GnuPG because it is patented, but if you have a
-    modified version of PGP you can try this:
+    You can't do that because PGP 2.x normally uses IDEA which is not
+    supported by GnuPG because it is patented (see <Ridea>), but if you
+    have a modified version of PGP you can try this:
 
     [H pre] gpg --rfc1991 --cipher-algo 3des ...  [H/pre]
 
     Please don't pipe the data to encrypt to gpg but give it as a
-    filename; otherwise, pgp 2 will not be able to handle it.
+    filename; otherwise, PGP 2 will not be able to handle it.
+
+<Q> How do I migrate from PGP 2.x to GnuPG?
+
+    PGP 2 uses the RSA and IDEA encryption algorithms. Whereas the RSA
+    patent has expired and RSA is included as of GnuPG 1.0.3, the IDEA
+    algorithm is still patented until 2007. Under certain conditions you
+    may use IDEA even today. In that case, you may refer to Question
+    <Ridea> about how to add IDEA support to GnuPG and read
+    [H a href=http://www.gnupg.org/gph/en/pgp2x.html]http://www.gnupg.org/gph/en/pgp2x.html[H /a]
+    to perfrom the migration. 
+    
 
 <Q> How can I conventional encrypt a message, so that PGP can decrypt
 it?
@@ -449,10 +458,11 @@ in it - why?
 
     This is called dash-escaped text and required by OpenPGP.
     It always happens when a line starts with a dash ("-") and is needed
-    to distinguish those lines from the thos lines which make up such
-    a clearsigned message. 
+    to make the lines that structure signature and text
+    (i.e., "-----BEGIN PGP SIGNATURE-----") to be the only lines that
+    start with two dashes.
     
-    If you use GnuPG to process those emessage, the extra dashes are removed.
+    If you use GnuPG to process those messages, the extra dashes are removed.
     Good mail clients remove those extra dashes when displaying such a 
     message.      
 
