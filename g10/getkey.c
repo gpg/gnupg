@@ -1807,8 +1807,17 @@ merge_selfsigs( KBNODE keyblock )
     int revoked;
     PKT_public_key *main_pk;
 
-    if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY )
+    if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY ) {
+        if (keyblock->pkt->pkttype == PKT_SECRET_KEY ) {
+            log_error ("expected public key but found secret key "
+                       "- must stop\n");
+            /* we better exit here becuase a public key is expected at
+               other places too.  FIXME: Figure this out earlier and
+               don't get to here at all */
+            g10_exit (1);
+        }
         BUG ();
+    }
 
     merge_selfsigs_main ( keyblock, &revoked );
     main_pk = keyblock->pkt->pkt.public_key;

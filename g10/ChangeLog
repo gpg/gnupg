@@ -1,3 +1,9 @@
+2001-06-15  Werner Koch  <wk@gnupg.org>
+
+	* getkey.c (merge_selfsigs): Exit gracefully when a secret key is
+	encountered.  May happen if a secret key is in public keyring.
+	Reported by Francesco Potorti.
+	
 2001-06-12  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c (compare_name): Use ascii_memistr(), ascii_memcasecmp()
