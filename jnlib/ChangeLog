@@ -1,3 +1,10 @@
+2004-12-14  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.h (pth_event_occured): Removed macro. 
+	* w32-pth.c: Fixed license statement; its under the LGPL.
+	(enter_pth, leave_pth): Use them to bracket almost all public
+	functions.
+
 2004-12-13  Timo Schulz  <twoaday@g10code.com>
 
 	* w32-pth.c (enter_pth, leave_pth): New.

@@ -4,19 +4,19 @@
  *
  * This file is part of GnuPG.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * GnuPG is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GnuPG is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  *
  * ------------------------------------------------------------------
  * This code is based on Ralf Engelschall's GNU Pth, a non-preemptive
@@ -51,7 +51,6 @@ static CRITICAL_SECTION pth_shd;
 
 #define implicit_init() do { if (!pth_initialized) pth_init(); } while (0)
 
-static void * helper_thread (void * ctx);
 
 
 struct pth_event_s
@@ -87,14 +86,23 @@ struct _pth_priv_hd_s
 };
 
 
+/* Prototypes.  */
+static pth_event_t do_pth_event (unsigned long spec, ...);
+static unsigned int do_pth_waitpid (unsigned pid, int * status, int options);
+static int do_pth_wait (pth_event_t ev);
+static int do_pth_event_status (pth_event_t ev);
+static void * helper_thread (void * ctx);
+
+
+
 
 int
 pth_init (void)
 {
   SECURITY_ATTRIBUTES sa;
   WSADATA wsadat;
-    
-  printf ("pth_init: called.\n");
+  
+  fprintf (stderr, "pth_init: called.\n");
   pth_initialized = 1;
   if (WSAStartup (0x202, &wsadat))
     abort ();
@@ -128,18 +136,20 @@ pth_kill (void)
 
 
 static void
-enter_pth (void)
+enter_pth (const char *function)
 {
-  EnterCriticalSection (&pth_shd);
-  /*LeaveCriticalSection (&pth_shd);*/
+  /* Fixme: I am not sure whether the same thread my enter a critical
+     section twice.  */
+  fprintf (stderr, "enter_pth (%s)\n", function? function:"");
+  LeaveCriticalSection (&pth_shd);
 }
 
 
 static void
-leave_pth (void)
+leave_pth (const char *function)
 {
-  LeaveCriticalSection (&pth_shd);
-  /*EnterCriticalSection (&pth_shd);*/
+  EnterCriticalSection (&pth_shd);
+  fprintf (stderr, "leave_pth (%s)\n", function? function:"");
 }
 
 
@@ -193,15 +203,19 @@ pth_read (int fd,  void * buffer, size_t size)
   int n;
 
   implicit_init ();
+  enter_pth (__FUNCTION__);
+
   n = recv (fd, buffer, size, 0);
   if (n == -1 && WSAGetLastError () == WSAENOTSOCK)
     {
       DWORD nread = 0;
       n = ReadFile ((HANDLE)fd, buffer, size, &nread, NULL);
       if (!n)
-        return -1;
-      return (int)nread;
+        n = -1;
+      else
+        n = (int)nread;
     }
+  leave_pth (__FUNCTION__);
   return n;
 }
 
@@ -220,15 +234,32 @@ pth_write (int fd, const void * buffer, size_t size)
   int n;
 
   implicit_init ();
+  enter_pth (__FUNCTION__);
   n = send (fd, buffer, size, 0);
   if (n == -1 && WSAGetLastError () == WSAENOTSOCK)
     {
+      char strerr[256];
+  
+      FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, (int)GetLastError (),
+                     MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+                     strerr, sizeof (strerr)-1, NULL);
+      fprintf (stderr, "pth_write(%d) failed in send: %s\n", fd, strerr);
+
+ 
       DWORD nwrite;
       n = WriteFile ((HANDLE)fd, buffer, size, &nwrite, NULL);
       if (!n)
-        return -1;
-      return (int)nwrite;
+        {
+          FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL,(int)GetLastError (),
+                         MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+                         strerr, sizeof (strerr)-1, NULL);
+          fprintf (stderr, "pth_write(%d) failed in write: %s\n", fd, strerr);
+          n = -1;
+        }
+      else
+        n = (int)nwrite;
     }
+  leave_pth (__FUNCTION__);
   return n;
 }
 
@@ -237,8 +268,13 @@ int
 pth_select (int nfds, fd_set * rfds, fd_set * wfds, fd_set * efds,
 	    const struct timeval * timeout)
 {
+  int n;
+
   implicit_init ();
-  return select (nfds, rfds, wfds, efds, timeout);
+  enter_pth (__FUNCTION__);
+  n = select (nfds, rfds, wfds, efds, timeout);
+  leave_pth (__FUNCTION__);
+  return n;
 }
 
 
@@ -246,32 +282,41 @@ int
 pth_fdmode (int fd, int mode)
 {
   unsigned long val;
+  int ret = PTH_FDMODE_BLOCK;
 
   implicit_init ();
+  /* Note: we don't do the eter/leave pth here because this is for one
+     a fast fucntion and secondly already called from inside such a
+     block.  */
   /* XXX: figure out original fd mode */
   switch (mode)
     {
     case PTH_FDMODE_NONBLOCK:
       val = 1;
       if (ioctlsocket (fd, FIONBIO, &val) == SOCKET_ERROR)
-        return PTH_FDMODE_ERROR;
+        ret = PTH_FDMODE_ERROR;
       break;
 
     case PTH_FDMODE_BLOCK:
       val = 0;
       if (ioctlsocket (fd, FIONBIO, &val) == SOCKET_ERROR)
-        return PTH_FDMODE_ERROR;
+        ret = PTH_FDMODE_ERROR;
       break;
     }
-  return PTH_FDMODE_BLOCK;
+  return ret;
 }
 
 
 int
 pth_accept (int fd, struct sockaddr *addr, int *addrlen)
 {
+  int rc;
+
   implicit_init ();
-  return accept (fd, addr, addrlen);
+  enter_pth (__FUNCTION__);
+  rc = accept (fd, addr, addrlen);
+  leave_pth (__FUNCTION__);
+  return rc;
 }
 
 
@@ -285,10 +330,14 @@ pth_accept_ev (int fd, struct sockaddr *addr, int *addrlen,
   int fdmode;
 
   implicit_init ();
+  enter_pth (__FUNCTION__);
 
   fdmode = pth_fdmode (fd, PTH_FDMODE_NONBLOCK);
   if (fdmode == PTH_FDMODE_ERROR)
-    return -1;
+    {
+      leave_pth (__FUNCTION__);
+      return -1;
+    }
 
   ev = NULL;
   while ((rv = accept (fd, addr, addrlen)) == -1 && 
@@ -296,27 +345,32 @@ pth_accept_ev (int fd, struct sockaddr *addr, int *addrlen,
           WSAGetLastError () == WSAEWOULDBLOCK))
     {
       if (ev == NULL) {
-        ev = pth_event (PTH_EVENT_FD|PTH_UNTIL_FD_READABLE|PTH_MODE_STATIC,
-                        &ev_key, fd);
+        ev = do_pth_event (PTH_EVENT_FD|PTH_UNTIL_FD_READABLE|PTH_MODE_STATIC,
+                           &ev_key, fd);
         if (ev == NULL)
-          return -1;
+          {
+            leave_pth (__FUNCTION__);
+            return -1;
+          }
         if (ev_extra != NULL)
           pth_event_concat (ev, ev_extra, NULL);
       }
-      /* wait until accept has a chance */
-      pth_wait (ev);
+      /* Wait until accept has a chance. */
+      do_pth_wait (ev);
       if (ev_extra != NULL)
         {
           pth_event_isolate (ev);
-          if (pth_event_status (ev) != PTH_STATUS_OCCURRED)
+          if (do_pth_event_status (ev) != PTH_STATUS_OCCURRED)
             {
               pth_fdmode (fd, fdmode);
+              leave_pth (__FUNCTION__);
               return -1;
             }
         }
     }
 
   pth_fdmode (fd, fdmode);
+  leave_pth (__FUNCTION__);
   return rv;   
 }
 
@@ -324,8 +378,13 @@ pth_accept_ev (int fd, struct sockaddr *addr, int *addrlen,
 int
 pth_connect (int fd, struct sockaddr *name, int namelen)
 {
+  int rc;
+
   implicit_init ();
-  return connect (fd, name, namelen);
+  enter_pth (__FUNCTION__);
+  rc = connect (fd, name, namelen);
+  leave_pth (__FUNCTION__);
+  return rc;
 }
 
 
@@ -335,12 +394,14 @@ pth_mutex_release (pth_mutex_t *hd)
   if (!hd)
     return -1;
   implicit_init ();
+  enter_pth (__FUNCTION__);
   if (hd->mx)
     {
       CloseHandle (hd->mx);
       hd->mx = NULL;
     }
   free (hd);
+  leave_pth (__FUNCTION__);
   return 0;
 }
 
@@ -349,11 +410,13 @@ int
 pth_mutex_acquire (pth_mutex_t *hd, int tryonly, pth_event_t ev_extra)
 {
   implicit_init ();
+  enter_pth (__FUNCTION__);
 
-  if (!hd)
-    return -1;
-  if (!hd->mx)
-    return -1;
+  if (!hd || !hd->mx)
+    {
+      leave_pth (__FUNCTION__);
+      return -1;
+    }
     
 #if 0
   /* still not locked, so simply acquire mutex? */
@@ -376,7 +439,10 @@ pth_mutex_acquire (pth_mutex_t *hd, int tryonly, pth_event_t ev_extra)
     }
 
   if (tryonly)
-    return return -1;
+    {
+      leave_pth (__FUNCTION__);
+      return -1;
+    }
 
   for (;;)
     {
@@ -386,8 +452,11 @@ pth_mutex_acquire (pth_mutex_t *hd, int tryonly, pth_event_t ev_extra)
       pth_wait (ev);
       if (ev_extra != NULL) {
         pth_event_isolate (ev);
-        if (pth_event_status(ev) == PTH_STATUS_PENDING)
-          return return -1;
+        if (do_pth_event_status(ev) == PTH_STATUS_PENDING)
+          {
+            leave_pth (__FUNCTION__);
+            return -1;
+          }
       }
       if (!(mutex->mx_state & PTH_MUTEX_LOCKED))
         break;
@@ -395,6 +464,7 @@ pth_mutex_acquire (pth_mutex_t *hd, int tryonly, pth_event_t ev_extra)
 #endif
 
   hd->mx_state |= PTH_MUTEX_LOCKED;
+  leave_pth (__FUNCTION__);
   return 0;
 }
 
@@ -405,6 +475,8 @@ pth_mutex_init (pth_mutex_t *hd)
   SECURITY_ATTRIBUTES sa;
   
   implicit_init ();
+  enter_pth (__FUNCTION__);
+
   if (hd->mx)
     {
       ReleaseMutex (hd->mx);
@@ -416,6 +488,8 @@ pth_mutex_init (pth_mutex_t *hd)
   sa.nLength = sizeof sa;
   hd->mx = CreateMutex (&sa, FALSE, NULL);
   hd->mx_state = PTH_MUTEX_INITIALIZED;
+
+  leave_pth (__FUNCTION__);
   return 0;
 }
 
@@ -427,8 +501,6 @@ pth_attr_new (void)
 
   implicit_init ();
   hd = calloc (1, sizeof *hd);
-  if (!hd)
-    return NULL;
   return hd;
 }
 
@@ -455,6 +527,7 @@ pth_attr_set (pth_attr_t hd, int field, ...)
   int rc = 0;
 
   implicit_init ();
+
   va_start (args, field);
   switch (field)
     {
@@ -463,7 +536,7 @@ pth_attr_set (pth_attr_t hd, int field, ...)
       if (val)
         {
           hd->flags |= PTH_ATTR_JOINABLE;
-          printf ("pth_attr_set: PTH_ATTR_JOINABLE\n");
+          fprintf (stderr, "pth_attr_set: PTH_ATTR_JOINABLE\n");
         }
       break;
 
@@ -473,7 +546,7 @@ pth_attr_set (pth_attr_t hd, int field, ...)
         {
           hd->flags |= PTH_ATTR_STACK_SIZE;
           hd->stack_size = val;
-          printf ("pth_attr_set: PTH_ATTR_STACK_SIZE %d\n", val);
+          fprintf (stderr, "pth_attr_set: PTH_ATTR_STACK_SIZE %d\n", val);
         }
       break;
 
@@ -487,7 +560,7 @@ pth_attr_set (pth_attr_t hd, int field, ...)
           if (!hd->name)
             return -1;
           hd->flags |= PTH_ATTR_NAME;
-          printf ("pth_attr_set: PTH_ATTR_NAME %s\n", hd->name);
+          fprintf (stderr, "pth_attr_set: PTH_ATTR_NAME %s\n", hd->name);
         }
       break;
 
@@ -512,6 +585,7 @@ pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
     return NULL;
 
   implicit_init ();
+  enter_pth (__FUNCTION__);
 
   memset (&sa, 0, sizeof sa);
   sa.bInheritHandle = TRUE;
@@ -519,16 +593,23 @@ pth_spawn (pth_attr_t hd, void *(*func)(void *), void *arg)
   sa.nLength = sizeof sa;
 
   ctx = calloc (1, sizeof * ctx);
+  if (!ctx)
+    {
+      leave_pth (__FUNCTION__);
+      return NULL;
+    }
   ctx->thread = func;
   ctx->arg = arg;
 
   /* XXX: we don't use all thread attributes. */
-  enter_pth ();
+
+  fprintf (stderr, "pth_spawn creating thread ...\n");
   th = CreateThread (&sa, hd->stack_size,
                      (LPTHREAD_START_ROUTINE)helper_thread,
                      ctx, 0, &tid);
-  leave_pth ();
-  
+  fprintf (stderr, "pth_spawn created thread %p\n", th);
+
+  leave_pth (__FUNCTION__);
   return th;
 }
 
@@ -547,8 +628,10 @@ pth_cancel (pth_t hd)
   if (!hd)
     return -1;
   implicit_init ();
+  enter_pth (__FUNCTION__);
   WaitForSingleObject (hd, 1000);
   TerminateThread (hd, 0);
+  leave_pth (__FUNCTION__);
   return 0;
 }
 
@@ -560,7 +643,9 @@ pth_abort (pth_t hd)
   if (!hd)
     return -1;
   implicit_init ();
+  enter_pth (__FUNCTION__);
   TerminateThread (hd, 0);
+  leave_pth (__FUNCTION__);
   return 0;
 }
 
@@ -569,15 +654,16 @@ void
 pth_exit (void *value)
 {
   implicit_init ();
+  enter_pth (__FUNCTION__);
   pth_kill ();
+  leave_pth (__FUNCTION__);
   exit ((int)(long)value);
 }
 
 
-unsigned
-pth_waitpid (unsigned pid, int * status, int options)
+static unsigned int
+do_pth_waitpid (unsigned pid, int * status, int options)
 {
-  implicit_init ();
 #if 0
   pth_event_t ev;
   static pth_key_t ev_key = PTH_KEY_INIT;
@@ -608,6 +694,19 @@ pth_waitpid (unsigned pid, int * status, int options)
 }
 
 
+unsigned int
+pth_waitpid (unsigned pid, int * status, int options)
+{
+  unsigned int n;
+
+  implicit_init ();
+  enter_pth (__FUNCTION__);
+  n = do_pth_waitpid (pid, status, options);
+  leave_pth (__FUNCTION__);
+  return n;
+}
+
+
 static BOOL WINAPI
 sig_handler (DWORD signo)
 {
@@ -617,22 +716,19 @@ sig_handler (DWORD signo)
     case CTRL_BREAK_EVENT: pth_signo = SIGTERM; break;
     }
   SetEvent (pth_signo_ev);
-  printf ("sig_handler=%d\n", pth_signo);
+  fprintf (stderr, "sig_handler=%d\n", pth_signo);
   return TRUE;
 }
 
 
-pth_event_t
-pth_event (unsigned long spec, ...)
+static pth_event_t
+do_pth_event_body (unsigned long spec, va_list arg)
 {
-  va_list arg;
   SECURITY_ATTRIBUTES sa;
   pth_event_t ev;
   int rc;
 
-  implicit_init ();
-  printf ("pth_event spec=%lu\n", spec);
-  va_start (arg, spec);
+  fprintf (stderr, "pth_event spec=%lu\n", spec);
   ev = calloc (1, sizeof *ev);
   if (!ev)
     return NULL;
@@ -644,7 +740,7 @@ pth_event (unsigned long spec, ...)
       ev->u_type = PTH_EVENT_SIGS;
       ev->val = va_arg (arg, int *);	
       rc = SetConsoleCtrlHandler (sig_handler, TRUE);
-      printf ("pth_event: sigs rc=%d\n", rc);
+      fprintf (stderr, "pth_event: sigs rc=%d\n", rc);
     }
   else if (spec & PTH_EVENT_FD)
     {
@@ -655,7 +751,7 @@ pth_event (unsigned long spec, ...)
       ev->u_type = PTH_EVENT_FD;
       va_arg (arg, pth_key_t);
       ev->u.fd = va_arg (arg, int);
-      printf ("pth_event: fd=%d\n", ev->u.fd);
+      fprintf (stderr, "pth_event: fd=%d\n", ev->u.fd);
     }
   else if (spec & PTH_EVENT_TIME)
     {
@@ -674,7 +770,6 @@ pth_event (unsigned long spec, ...)
       ev->u_type = PTH_EVENT_MUTEX;
       ev->u.mx = va_arg (arg, pth_mutex_t*);
     }
-  va_end (arg);
     
   memset (&sa, 0, sizeof sa);
   sa.bInheritHandle = TRUE;
@@ -687,6 +782,36 @@ pth_event (unsigned long spec, ...)
       return NULL;
     }
 
+  return ev;
+}
+
+static pth_event_t
+do_pth_event (unsigned long spec, ...)
+{
+  va_list arg;
+  pth_event_t ev;
+
+  va_start (arg, spec);
+  ev = do_pth_event_body (spec, arg);
+  va_end (arg);
+    
+  return ev;
+}
+
+pth_event_t
+pth_event (unsigned long spec, ...)
+{
+  va_list arg;
+  pth_event_t ev;
+
+  implicit_init ();
+  enter_pth (__FUNCTION__);
+  
+  va_start (arg, spec);
+  ev = do_pth_event_body (spec, arg);
+  va_end (arg);
+    
+  leave_pth (__FUNCTION__);
   return ev;
 }
 
@@ -712,6 +837,7 @@ pth_event_concat (pth_event_t evf, ...)
     return NULL;
 
   implicit_init ();
+
   va_start (ap, evf);
   while ((evn = va_arg(ap, pth_event_t)) != NULL)
     pth_event_add (evf, evn);
@@ -739,7 +865,7 @@ wait_for_fd (int fd, int is_read, int nwait)
   while (1)
     {
       n = select (fd+1, &r, &w, NULL, &tv);
-      printf ("wait_for_fd=%d fd %d (ec=%d)\n", n, fd,(int)WSAGetLastError ());
+      fprintf (stderr, "wait_for_fd=%d fd %d (ec=%d)\n", n, fd,(int)WSAGetLastError ());
       if (n == -1)
         break;
       if (!n)
@@ -761,9 +887,9 @@ helper_thread (void * ctx)
 {
   struct _pth_priv_hd_s * c = ctx;
   
-  leave_pth ();
+  leave_pth (__FUNCTION__);
   c->thread (c->arg);
-  enter_pth ();
+  enter_pth (__FUNCTION__);
   free (c);
   ExitThread (0);
   return NULL;
@@ -776,7 +902,7 @@ wait_fd_thread (void * ctx)
   pth_event_t ev = ctx;
 
   wait_for_fd (ev->u.fd, ev->flags & PTH_UNTIL_FD_READABLE, 3600);
-  printf ("wait_fd_thread: exit.\n");
+  fprintf (stderr, "wait_fd_thread: exit.\n");
   SetEvent (ev->hd);
   ExitThread (0);
   return NULL;
@@ -790,7 +916,7 @@ wait_timer_thread (void * ctx)
   int n = ev->u.tv.tv_sec*1000;
   Sleep (n);
   SetEvent (ev->hd);
-  printf ("wait_timer_thread: exit.\n");
+  fprintf (stderr, "wait_timer_thread: exit.\n");
   ExitThread (0);
   return NULL;
 }
@@ -832,57 +958,81 @@ sigpresent (struct sigset_s * ss, int signo)
 }
 
 
-int
-pth_event_occured (pth_event_t ev)
+static int
+do_pth_event_occurred (pth_event_t ev)
 {
+  int ret;
+
   if (!ev)
     return 0;
-  implicit_init ();
+
+  ret = 0;
   switch (ev->u_type)
     {
     case 0:
       if (WaitForSingleObject (ev->hd, 0) == WAIT_OBJECT_0)
-        return 1;
+        ret = 1;
       break;
 
     case PTH_EVENT_SIGS:
       if (sigpresent (ev->u.sig, pth_signo) &&
           WaitForSingleObject (pth_signo_ev, 0) == WAIT_OBJECT_0)
         {
-          printf ("pth_event_occured: sig signaled.\n");
+          fprintf (stderr, "pth_event_occurred: sig signaled.\n");
           (*ev->val) = pth_signo;
-          return 1;
+          ret = 1;
         }
       break;
 
     case PTH_EVENT_FD:
       if (WaitForSingleObject (ev->hd, 0) == WAIT_OBJECT_0)
-        return 1;
+        ret = 1;
       break;
     }
 
-  return 0;
+  return ret;
 }
 
+
+int
+pth_event_occurred (pth_event_t ev)
+{
+  int ret;
+
+  implicit_init ();
+  enter_pth (__FUNCTION__);
+  ret = do_pth_event_occurred (ev);
+  leave_pth (__FUNCTION__);
+  return ret;
+}
+
+
+static int
+do_pth_event_status (pth_event_t ev)
+{
+  if (!ev)
+    return 0;
+  if (do_pth_event_occurred (ev))
+    return PTH_STATUS_OCCURRED;
+  return 0;
+}
 
 int
 pth_event_status (pth_event_t ev)
 {
   if (!ev)
     return 0;
-  implicit_init ();
-  if (pth_event_occured (ev))
+  if (pth_event_occurred (ev))
     return PTH_STATUS_OCCURRED;
   return 0;
 }
 
 
-int
-pth_event_free (pth_event_t ev, int mode)
+static int
+do_pth_event_free (pth_event_t ev, int mode)
 {
   pth_event_t n;
 
-  implicit_init ();
   if (mode == PTH_FREE_ALL)
     {
       while (ev)
@@ -901,7 +1051,20 @@ pth_event_free (pth_event_t ev, int mode)
       free (ev);
 	
     }
+
   return 0;
+}
+
+int
+pth_event_free (pth_event_t ev, int mode)
+{
+  int rc;
+
+  implicit_init ();
+  enter_pth (__FUNCTION__);
+  rc = do_pth_event_free (ev, mode);
+  leave_pth (__FUNCTION__);
+  return rc;
 }
 
 
@@ -912,7 +1075,6 @@ pth_event_isolate (pth_event_t ev)
 
   if (!ev)
     return NULL;
-  implicit_init ();
   return ring;    
 }
 
@@ -941,8 +1103,8 @@ pth_event_count (pth_event_t ev)
 }
 
 
-int
-pth_wait (pth_event_t ev)
+static int
+do_pth_wait (pth_event_t ev)
 {
   HANDLE waitbuf[MAXIMUM_WAIT_OBJECTS/2];
   int    hdidx[MAXIMUM_WAIT_OBJECTS/2];
@@ -954,12 +1116,11 @@ pth_wait (pth_event_t ev)
   if (!ev)
     return 0;
 
-  implicit_init ();
   attr = pth_attr_new ();
   pth_attr_set (attr, PTH_ATTR_JOINABLE, 1);
   pth_attr_set (attr, PTH_ATTR_STACK_SIZE, 4096);
     
-  printf ("pth_wait: cnt %d\n", pth_event_count (ev));
+  fprintf (stderr, "pth_wait: cnt %d\n", pth_event_count (ev));
   for (tmp = ev; tmp; tmp = tmp->next)
     {
       if (pos+1 > MAXIMUM_WAIT_OBJECTS/2)
@@ -976,38 +1137,51 @@ pth_wait (pth_event_t ev)
 
         case PTH_EVENT_SIGS:
           waitbuf[pos++] = pth_signo_ev;
-          printf ("pth_wait: add signal event.\n");
+          fprintf (stderr, "pth_wait: add signal event.\n");
           break;
 
         case PTH_EVENT_FD:
-          printf ("pth_wait: spawn event wait thread.\n");
+          fprintf (stderr, "pth_wait: spawn event wait thread.\n");
           hdidx[i++] = pos;
           waitbuf[pos++] = pth_spawn (attr, wait_fd_thread, tmp);
           break;
 
         case PTH_EVENT_TIME:
-          printf ("pth_wait: spawn event timer thread.\n");
+          fprintf (stderr, "pth_wait: spawn event timer thread.\n");
           hdidx[i++] = pos;
           waitbuf[pos++] = pth_spawn (attr, wait_timer_thread, tmp);
           break;
 
         case PTH_EVENT_MUTEX:
-          printf ("pth_wait: add mutex event.\n");
+          fprintf (stderr, "pth_wait: add mutex event.\n");
           hdidx[i++] = pos;
           waitbuf[pos++] = tmp->u.mx->mx;
           /* XXX: Use SetEvent(hd->ev) */
           break;
         }
     }
-  printf ("pth_wait: set %d\n", pos);
+  fprintf (stderr, "pth_wait: set %d\n", pos);
   n = WaitForMultipleObjects (pos, waitbuf, FALSE, INFINITE);
   free_threads (waitbuf, hdidx, i);
   pth_attr_destroy (attr);
-  printf ("pth_wait: n %ld\n", n);
+  fprintf (stderr, "pth_wait: n %ld\n", n);
+
   if (n != WAIT_TIMEOUT)
     return 1;
     
   return 0;
+}
+
+int
+pth_wait (pth_event_t ev)
+{
+  int rc;
+
+  implicit_init ();
+  enter_pth (__FUNCTION__);
+  rc = do_pth_wait (ev);
+  leave_pth (__FUNCTION__);
+  return rc;
 }
 
 
@@ -1018,15 +1192,25 @@ pth_sleep (int sec)
   pth_event_t ev;
 
   implicit_init ();
+  enter_pth (__FUNCTION__);
+
   if (sec == 0)
-    return 0;
-    
-  ev = pth_event (PTH_EVENT_TIME|PTH_MODE_STATIC, &ev_key,
-                  pth_timeout (sec, 0));
+    {
+      leave_pth (__FUNCTION__);
+      return 0;
+    }
+
+  ev = do_pth_event (PTH_EVENT_TIME|PTH_MODE_STATIC, &ev_key,
+                     pth_timeout (sec, 0));
   if (ev == NULL)
-    return -1;
-  pth_wait (ev);
-  pth_event_free (ev, PTH_FREE_ALL);
+    {
+      leave_pth (__FUNCTION__);
+      return -1;
+    }
+  do_pth_wait (ev);
+  do_pth_event_free (ev, PTH_FREE_ALL);
+
+  leave_pth (__FUNCTION__);
   return 0;
 }
 
@@ -1045,7 +1229,7 @@ void * thread (void * c)
 
   Sleep (2000);
   SetEvent (((pth_event_t)c)->hd);
-  printf ("\n\nhallo!.\n");
+  fprintf (stderr, "\n\nhallo!.\n");
   pth_exit (NULL);
   return NULL;
 }
@@ -1098,7 +1282,7 @@ main_2 (int argc, char ** argv)
   ev = setup_signals (&sigs, &signo);
   pth_wait (ev);
   if (pth_event_occured (ev) && signo)
-    printf ("signal caught! signo %d\n", signo);
+    fprintf (stderr, "signal caught! signo %d\n", signo);
 
   pth_event_free (ev, PTH_FREE_ALL);
   pth_kill ();
@@ -1127,7 +1311,7 @@ main_3 (int argc, char ** argv)
   ev = setup_signals (&sigs, &signo);
   n = sizeof addr;
   infd = pth_accept_ev (fd, (struct sockaddr *)&rem, &n, ev);
-  printf ("infd %d: %s:%d\n", infd, inet_ntoa (rem.sin_addr),
+  fprintf (stderr, "infd %d: %s:%d\n", infd, inet_ntoa (rem.sin_addr),
           htons (rem.sin_port));
 
   closesocket (infd);

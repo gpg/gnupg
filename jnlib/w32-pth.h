@@ -229,16 +229,10 @@ pth_time_t pth_timeout (long sec, long usec);
 pth_event_t pth_event_isolate (pth_event_t hd);
 int pth_event_free (pth_event_t hd, int mode);
 int pth_event_status (pth_event_t hd);
-int pth_event_occured (pth_event_t hd);
+int pth_event_occurred (pth_event_t hd);
 pth_event_t pth_event_concat (pth_event_t ev, ...);
 pth_event_t pth_event (unsigned long spec, ...);
 
-
-
-/* Backward compatibility (Pth < 1.5.0). */
-#define pth_event_occurred(ev) \
-    (   pth_event_status(ev) == PTH_STATUS_OCCURRED \
-     || pth_event_status(ev) == PTH_STATUS_FAILED   )
 
 
 /*-- pth_util.c --*/
