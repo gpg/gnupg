@@ -91,7 +91,6 @@ struct expando_args
 };
 
 char *pct_expando(const char *string,struct expando_args *args);
-int hextobyte( const char *s );
 void deprecated_warning(const char *configname,unsigned int configlineno,
 			const char *option,const char *repl1,const char *repl2);
 const char *compress_algo_to_string(int algo);
