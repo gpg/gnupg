@@ -1,3 +1,7 @@
+Wed Feb 16 16:25:09 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* configure.in (ALL_LINGUAS): Add Esperanto.
+
 Wed Feb 16 14:09:00 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* configure.in (ALL_LINGUAS): Add sv and ja.
