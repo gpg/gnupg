@@ -1,3 +1,12 @@
+2003-07-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (pct_expando): Minor performance tweak.  Don't bother to
+	re-fetch the primary key if the key making the signature is the
+	primary key.
+
+	* parse-packet.c (parse_signature): No need to reserve 8 bytes for
+	the unhashed signature cache any longer.
+
 2003-07-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* misc.c (pct_expando): Add two new expandos - signer's

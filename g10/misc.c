@@ -391,16 +391,23 @@ pct_expando(const char *string,struct expando_args *args)
 		size_t len;
 		int i;
 
-		if((*(ch+1))=='p' && args->sk
-		   && (args->sk->main_keyid[0] || args->sk->main_keyid[1]))
+		if((*(ch+1))=='p' && args->sk)
 		  {
-		    PKT_public_key *pk=m_alloc_clear(sizeof(PKT_public_key));
+		    if(args->sk->is_primary)
+		      fingerprint_from_sk(args->sk,array,&len);
+		    else if(args->sk->main_keyid[0] || args->sk->main_keyid[1])
+		      {
+			PKT_public_key *pk=
+			  m_alloc_clear(sizeof(PKT_public_key));
 
-		    if(get_pubkey_fast(pk,args->sk->main_keyid)==0)
-		      fingerprint_from_pk(pk,array,&len);
+			if(get_pubkey_fast(pk,args->sk->main_keyid)==0)
+			  fingerprint_from_pk(pk,array,&len);
+			else
+			  memset(array,0,(len=MAX_FINGERPRINT_LEN));
+			free_public_key(pk);
+		      }
 		    else
 		      memset(array,0,(len=MAX_FINGERPRINT_LEN));
-		    free_public_key(pk);
 		  }
 		else if((*(ch+1))=='f' && args->pk)
 		  fingerprint_from_pk(args->pk,array,&len);
