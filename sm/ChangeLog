@@ -1,3 +1,7 @@
+2002-01-28  Werner Koch  <wk@gnupg.org>
+
+	* certreqgen.c (create_request): Store the email address in the req.
+
 2002-01-25  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main): Disable core dumps.

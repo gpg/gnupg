@@ -494,6 +494,7 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
   GCRY_MD_HD md;
   KsbaStopReason stopreason;
   int rc = 0;
+  const char *s;
 
   cr = ksba_certreq_new ();
   if (!cr)
@@ -512,7 +513,7 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
   ksba_certreq_set_hash_function (cr, HASH_FNC, md);
   ksba_certreq_set_writer (cr, outctrl->writer);
   
-  err = ksba_certreq_set_subject (cr, get_parameter_value (para, pNAMEDN));
+  err = ksba_certreq_add_subject (cr, get_parameter_value (para, pNAMEDN));
   if (err)
     {
       log_error ("error setting the subject's name: %s\n",
@@ -520,6 +521,31 @@ create_request (struct para_data_s *para, KsbaConstSexp public,
       rc = map_ksba_err (err);
       goto leave;
     }
+
+  s = get_parameter_value (para, pNAMEEMAIL);
+  if (s)
+    {
+      char *buf = xtrymalloc (strlen (s) + 3);
+
+      if (!buf)
+        {
+          rc = GNUPG_Out_Of_Core;
+          goto leave;
+        }
+      *buf = '<';
+      strcpy (buf+1, s);
+      strcat (buf+1, ">");
+      err = ksba_certreq_add_subject (cr, buf);
+      xfree (buf);
+      if (err)
+        {
+          log_error ("error setting the subject's alternate name: %s\n",
+                     ksba_strerror (err));
+          rc = map_ksba_err (err);
+          goto leave;
+        }
+    }
+
 
   err = ksba_certreq_set_public_key (cr, public);
   if (err)
