@@ -1,5 +1,8 @@
 2003-05-07  David Shaw  <dshaw@jabberwocky.com>
 
+	* revoke.c (ask_revocation_reason): Clear old reason if user
+	elects to repeat question.  This is bug 153.
+
 	* keyedit.c (sign_uids): Show keyid of the key making the
 	signature.
 
