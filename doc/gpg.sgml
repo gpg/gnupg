@@ -341,6 +341,10 @@ Create a photographic user id.</para></listitem></varlistentry>
     <listitem><para>
 Delete a user id.</para></listitem></varlistentry>
     <varlistentry>
+    <term>revuid</term>
+    <listitem><para>
+Revoke a user id.</para></listitem></varlistentry>
+    <varlistentry>
     <term>addkey</term>
     <listitem><para>
 Add a subkey to this key.</para></listitem></varlistentry>
@@ -1829,10 +1833,9 @@ Resets the --pgp8 option.
 Reset all packet, cipher and digest options to OpenPGP behavior. Use
 this option to reset all previous options like --rfc1991,
 --force-v3-sigs, --s2k-*, --cipher-algo, --digest-algo and
---compress-algo to OpenPGP compliant values.  All PGP workarounds are
-also disabled.
+--compress-algo to OpenPGP compliant values.  All PGP workarounds and
+--pgpX modes are also disabled.
 </para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--force-v3-sigs</term>

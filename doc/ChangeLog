@@ -1,3 +1,10 @@
+2003-02-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document "revuid".  Clarify that --openpgp resets
+	--pgpX.
+
+	* samplekeys.asc: Updated.
+
 2003-01-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Minor language tweaks, spell check, copyright date,
