@@ -22,14 +22,17 @@
 #define G10_TRUSTDB_H
 
 
-/* Trust values mus be sorted in ascending order */
+/* Trust values must be sorted in ascending order */
+#define TRUST_MASK	 15
 #define TRUST_UNKNOWN	  0  /* not yet calculated */
 #define TRUST_EXPIRED	  1  /* calculation may be invalid */
 #define TRUST_UNDEFINED   2  /* not enough informations for calculation */
-#define TRUST_NEVER	  3  /* never trusted this pubkey */
+#define TRUST_NEVER	  3  /* never trust this pubkey */
 #define TRUST_MARGINAL	  4  /* marginally trusted */
 #define TRUST_FULLY	  5  /* fully trusted	   */
 #define TRUST_ULTIMATE	  6  /* ultimately trusted */
+/* trust values not covered by the mask */
+#define TRUST_FLAG_REVOKED 32
 
 
 /*-- trustdb.c --*/

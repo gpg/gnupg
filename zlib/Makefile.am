@@ -5,7 +5,7 @@
 
 CFLAGS = -O -Wall
 
-EXTRA_DIST = README algorithm.doc ChangeLog example.c
+EXTRA_DIST = README algorithm.doc ChangeLog  example.c
 
 # I found no other easy way to use this only if zlib is neede
 # doing this with SUBDIR = @xxx@  in the top Makefile.am does not

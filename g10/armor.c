@@ -944,7 +944,10 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, "-----\n");
 	    iobuf_writestr(a, "Version: G10 v"  VERSION " ("
 					    PRINTABLE_OS_NAME ")\n");
-	    iobuf_writestr(a, "Comment: This is an alpha version!\n\n");
+	    iobuf_writestr(a, "Comment: This is an alpha version!\n");
+	    if( afx->hdrlines )
+		iobuf_writestr(a, afx->hdrlines);
+	    iobuf_put(a, '\n');
 	    afx->status++;
 	    afx->idx = 0;
 	    afx->idx2 = 0;

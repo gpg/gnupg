@@ -1,11 +1,21 @@
 Noteworthy changes in version 0.2.7
 -----------------------------------
 
-    * new option --dearmot for g10maint
+    * New command "gen-revoke" to create a key revocation certificate.
 
-    * option --version now conforming to the GNU standards and lists
+    * New option "homedir" to set the homedir (which defaults to "~/.g10").
+      This directory is created if it does not exists (only the last
+      part of the name and not the complete hierarchy)
+
+    * Command "import" works. (Try: "finger gcrypt@ftp.guug.de|g10 --import")
+
+    * New commands "dearmor/enarmor" for g10maint.  These are mainly
+      used for internal test purposes.
+
+    * Option --version now conforming to the GNU standards and lists
       the available ciphers, message digests and public key algorithms.
 
+    * Assembler code for m68k (not tested).
 
 Noteworthy changes in version 0.2.6
 -----------------------------------

@@ -99,7 +99,6 @@ typedef struct {
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    pubkey_algo;    /* algorithm used for public key scheme */
-    md_filter_context_t mfx;
     ulong   local_id;	    /* internal use, valid if > 0 */
     union {
       struct {

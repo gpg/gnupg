@@ -20,6 +20,7 @@
 #ifndef G10_FILTER_H
 #define G10_FILTER_H
 
+#include "types.h"
 #include "cipher.h"
 
 typedef struct {
@@ -41,6 +42,7 @@ typedef struct {
     int inp_checked;   /* set if inp has been checked */
     int inp_bypass;    /* set if the input is not armored */
     int inp_eof;
+    const char *hdrlines;
 } armor_filter_context_t;
 
 

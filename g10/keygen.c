@@ -154,7 +154,6 @@ gen_elg(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     skc->timestamp = pkc->timestamp = make_timestamp();
     skc->valid_days = pkc->valid_days = 0; /* fixme: make it configurable*/
     skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_ELGAMAL;
-		       memset(&pkc->mfx, 0, sizeof pkc->mfx);
 		       pkc->d.elg.p = pk.p;
 		       pkc->d.elg.g = pk.g;
 		       pkc->d.elg.y = pk.y;

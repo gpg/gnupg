@@ -38,6 +38,7 @@
 static int read_block( IOBUF a, compress_filter_context_t *cfx,
 			     PACKET **pending_pkt, KBNODE *ret_root );
 static int import_one( const char *fname, KBNODE keyblock );
+static int import_revoke_cert( const char *fname, KBNODE node );
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
 			  PKT_public_cert *pkc, u32 *keyid );
 static int delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid );
@@ -56,7 +57,6 @@ static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
  * Other signatures are not not checked.
  *
  * Actually this functtion does a merge. It works like this:
- *   FIXME: add handling for revocation certs
  *
  *  - get the keyblock
  *  - check self-signatures and remove all userids and their signatures
@@ -77,6 +77,8 @@ static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
  *    into the trustdb, which is done automagically as soon as this pubkey
  *    is used.
  *  - Proceed with next signature.
+ *
+ *  Key revocation certificates have a special handling.
  *
  */
 int
@@ -107,6 +109,9 @@ import_pubkeys( const char *fname )
     while( !(rc = read_block( inp, &cfx, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_CERT )
 	    rc = import_one( fname, keyblock );
+	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
+		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
+	    rc = import_revoke_cert( fname, keyblock );
 	else
 	    log_info("%s: skipping block of type %d\n",
 					    fname, keyblock->pkt->pkttype );
@@ -159,6 +164,16 @@ read_block( IOBUF a, compress_filter_context_t *cfx,
 	    init_packet(pkt);
 	    continue;
 	}
+
+	if( !root && pkt->pkttype == PKT_SIGNATURE
+		  && pkt->pkt.signature->sig_class == 0x20 ) {
+	    /* this is a revocation certificate which is handled
+	     * in a special way */
+	    root = new_kbnode( pkt );
+	    pkt = NULL;
+	    goto ready;
+	}
+
 	/* make a linked list of all packets */
 	switch( pkt->pkttype ) {
 	  case PKT_COMPRESSED:
@@ -332,7 +347,7 @@ import_one( const char *fname, KBNODE keyblock )
 	    if( (rc=lock_keyblock( &kbpos )) )
 		log_error("can't lock public keyring '%s': %s\n",
 				 keyblock_resource_name(&kbpos), g10_errstr(rc) );
-	    else if( (rc=insert_keyblock( &kbpos, keyblock )) )
+	    else if( (rc=update_keyblock( &kbpos, keyblock )) )
 		log_error("%s: can't write to '%s': %s\n", fname,
 				 keyblock_resource_name(&kbpos), g10_errstr(rc) );
 	    unlock_keyblock( &kbpos );
@@ -357,6 +372,105 @@ import_one( const char *fname, KBNODE keyblock )
   leave:
     release_kbnode( keyblock_orig );
     free_public_cert( pkc_orig );
+    return rc;
+}
+
+
+/****************
+ * Import a revocation certificate, this is a single signature packet.
+ */
+static int
+import_revoke_cert( const char *fname, KBNODE node )
+{
+    PKT_public_cert *pkc=NULL;
+    KBNODE onode, keyblock = NULL;
+    KBPOS kbpos;
+    u32 keyid[2];
+    int rc = 0;
+
+    assert( !node->next );
+    assert( node->pkt->pkttype == PKT_SIGNATURE );
+    assert( node->pkt->pkt.signature->sig_class == 0x20 );
+
+    keyid[0] = node->pkt->pkt.signature->keyid[0];
+    keyid[1] = node->pkt->pkt.signature->keyid[1];
+
+    pkc = m_alloc_clear( sizeof *pkc );
+    rc = get_pubkey( pkc, keyid );
+    if( rc == G10ERR_NO_PUBKEY ) {
+	log_info("%s: key %08lX, no public key - "
+		 "can't apply revocation certificate\n",
+				fname, (ulong)keyid[1]);
+	rc = 0;
+	goto leave;
+    }
+    else if( rc ) {
+	log_error("%s: key %08lX, public key not found: %s\n",
+				fname, (ulong)keyid[1], g10_errstr(rc));
+	goto leave;
+    }
+
+    /* read the original keyblock */
+    rc = find_keyblock_bypkc( &kbpos, pkc );
+    if( rc ) {
+	log_error("%s: key %08lX, can't locate original keyblock: %s\n",
+				 fname, (ulong)keyid[1], g10_errstr(rc));
+	goto leave;
+    }
+    rc = read_keyblock( &kbpos, &keyblock );
+    if( rc ) {
+	log_error("%s: key %08lX, can't read original keyblock: %s\n",
+				 fname, (ulong)keyid[1], g10_errstr(rc));
+	goto leave;
+    }
+
+
+    /* it is okay, that node is not in keyblock because
+     * check_key_signature works fine for sig_class 0x20 in this
+     * special case. */
+    rc = check_key_signature( keyblock, node, NULL);
+    if( rc ) {
+	log_error("%s: key %08lX, invalid revocation certificate"
+		  ": %s - rejected\n",
+		  fname, (ulong)keyid[1], g10_errstr(rc));
+    }
+
+
+    /* check wether we already have this */
+    for(onode=keyblock->next; onode; onode=onode->next ) {
+	if( onode->pkt->pkttype == PKT_USER_ID )
+	    break;
+	else if( onode->pkt->pkttype == PKT_SIGNATURE
+		 && onode->pkt->pkt.signature->sig_class == 0x20
+		 && keyid[0] == onode->pkt->pkt.signature->keyid[0]
+		 && keyid[1] == onode->pkt->pkt.signature->keyid[1] ) {
+	    rc = 0;
+	    goto leave; /* yes, we already know about it */
+	}
+    }
+
+
+    /* insert it */
+    insert_kbnode( keyblock, clone_kbnode(node), 0 );
+
+    /* and write the keyblock back */
+    if( opt.verbose > 1 )
+	log_info("%s: writing to '%s'\n",
+			    fname, keyblock_resource_name(&kbpos) );
+    if( (rc=lock_keyblock( &kbpos )) )
+	log_error("can't lock public keyring '%s': %s\n",
+			 keyblock_resource_name(&kbpos), g10_errstr(rc) );
+    else if( (rc=update_keyblock( &kbpos, keyblock )) )
+	log_error("%s: can't write to '%s': %s\n", fname,
+			 keyblock_resource_name(&kbpos), g10_errstr(rc) );
+    unlock_keyblock( &kbpos );
+    /* we are ready */
+    log_info("%s: key %08lX, added revocation certificate\n",
+				 fname, (ulong)keyid[1]);
+
+  leave:
+    release_kbnode( keyblock );
+    free_public_cert( pkc );
     return rc;
 }
 
@@ -408,10 +522,11 @@ static int
 delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 {
     KBNODE node;
-    int nvalid=0;
+    int nvalid=0, uid_seen=0;
 
     for(node=keyblock->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
+	    uid_seen = 1;
 	    if( (node->flag & 2) || !(node->flag & 1) ) {
 		if( opt.verbose ) {
 		    log_info("%s: key %08lX, removed userid '",
@@ -434,6 +549,23 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		 && check_pubkey_algo( node->pkt->pkt.signature->pubkey_algo)
 		 && node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
 	    delete_kbnode( node ); /* build_packet() can't handle this */
+	else if( node->pkt->pkttype == PKT_SIGNATURE
+		 && node->pkt->pkt.signature->sig_class == 0x20 )  {
+	    if( uid_seen ) {
+		log_error("%s: key %08lX, revocation certificate at wrong "
+			   "place - removed\n", fname, (ulong)keyid[1]);
+		delete_kbnode( node );
+	    }
+	    else {
+		int rc = check_key_signature( keyblock, node, NULL);
+		if( rc ) {
+		    log_error("%s: key %08lX, invalid revocation certificate"
+			      ": %s - removed\n",
+			      fname, (ulong)keyid[1], g10_errstr(rc));
+		    delete_kbnode( node );
+		}
+	    }
+	}
     }
 
     /* note: because keyblock is the public key, it is never marked
@@ -460,36 +592,67 @@ static int
 merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 				   u32 *keyid, int *n_uids, int *n_sigs )
 {
-    KBNODE node_orig, node;
-    int rc;
+    KBNODE onode, node;
+    int rc, found;
 
-    /* first, try to merge new ones in */
-    for(node_orig=keyblock_orig->next; node_orig; node_orig=node_orig->next ) {
-	if( !(node_orig->flag & 1) && node_orig->pkt->pkttype == PKT_USER_ID) {
+    /* 1st: handle revocation certificates */
+    for(node=keyblock->next; node; node=node->next ) {
+	if( node->pkt->pkttype == PKT_USER_ID )
+	    break;
+	else if( node->pkt->pkttype == PKT_SIGNATURE
+		 && node->pkt->pkt.signature->sig_class == 0x20 )  {
+	    /* check wether we already have this */
+	    found = 0;
+	    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
+		if( onode->pkt->pkttype == PKT_USER_ID )
+		    break;
+		else if( onode->pkt->pkttype == PKT_SIGNATURE
+			 && onode->pkt->pkt.signature->sig_class == 0x20
+			 && node->pkt->pkt.signature->keyid[0]
+			    == onode->pkt->pkt.signature->keyid[0]
+			 && node->pkt->pkt.signature->keyid[1]
+			    == onode->pkt->pkt.signature->keyid[1] ) {
+		    found = 1;
+		    break;
+		}
+	    }
+	    if( !found ) {
+		KBNODE n2 = clone_kbnode(node);
+		insert_kbnode( keyblock_orig, n2, 0 );
+		n2->flag |= 1;
+		node->flag |= 1;
+		log_info("%s: key %08lX, added revocation certificate\n",
+					 fname, (ulong)keyid[1]);
+	    }
+	}
+    }
+
+    /* 2nd: try to merge new ones in */
+    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
+	if( !(onode->flag & 1) && onode->pkt->pkttype == PKT_USER_ID) {
 	    /* find the user id in the imported keyblock */
 	    for(node=keyblock->next; node; node=node->next )
 		if( !(node->flag & 1)
 		    && node->pkt->pkttype == PKT_USER_ID
-		    && !cmp_user_ids( node_orig->pkt->pkt.user_id,
+		    && !cmp_user_ids( onode->pkt->pkt.user_id,
 					  node->pkt->pkt.user_id ) )
 		    break;
 	    if( node ) { /* found: merge */
-		rc = merge_sigs( node_orig, node, n_sigs, fname, keyid );
+		rc = merge_sigs( onode, node, n_sigs, fname, keyid );
 		if( rc )
 		    return rc;
 	    }
 	}
     }
 
-    /* second, add new user-ids */
+    /* 3rd: add new user-ids */
     for(node=keyblock->next; node; node=node->next ) {
 	if( !(node->flag & 1) && node->pkt->pkttype == PKT_USER_ID) {
 	    /* do we have this in the original keyblock */
-	    for(node_orig=keyblock_orig->next; node_orig;
-						node_orig=node_orig->next )
-		if( !(node_orig->flag & 1)
-		    && node_orig->pkt->pkttype == PKT_USER_ID
-		    && cmp_user_ids( node_orig->pkt->pkt.user_id,
+	    for(onode=keyblock_orig->next; onode; onode=onode->next )
+		if( !(onode->flag & 1)
+		    && onode->pkt->pkttype == PKT_USER_ID
+		    && cmp_user_ids( onode->pkt->pkt.user_id,
 				     node->pkt->pkt.user_id ) )
 		    break;
 	    if( !node ) { /* this is a new user id: append */

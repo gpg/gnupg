@@ -380,8 +380,10 @@ dump_record( ulong rnum, TRUSTREC *rec, FILE *fp  )
 	    fputs(", (none)", fp );
 	else if( rec->r.dir.no_sigs == 2 )
 	    fputs(", (invalid)", fp );
-	else if( rec->r.dir.no_sigs )
+	else if( rec->r.dir.no_sigs == 3 )
 	    fputs(", (revoked)", fp );
+	else if( rec->r.dir.no_sigs )
+	    fputs(", (??)", fp );
 	putc('\n', fp);
 	break;
       case RECTYPE_KEY: fprintf(fp, "key keyid=%08lX, own=%lu, ownertrust=%02x\n",
@@ -1084,17 +1086,19 @@ do_list_path( TRUST_INFO *stack, int depth, int max_depth,
  *	  some of them are bad?
  */
 static int
-check_sigs( KBNODE keyblock, int *selfsig_okay )
+check_sigs( KBNODE keyblock, int *selfsig_okay, int *revoked )
 {
-    KBNODE kbctx;
     KBNODE node;
     int rc;
     LOCAL_ID_INFO *dups = NULL;
 
     *selfsig_okay = 0;
-    for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx,0)) ; ) {
+    *revoked = 0;
+    for( node=keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_SIGNATURE
-	    && (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
+	    && ( (node->pkt->pkt.signature->sig_class&~3) == 0x10
+		  || node->pkt->pkt.signature->sig_class == 0x20
+		  || node->pkt->pkt.signature->sig_class == 0x30) ) {
 	    int selfsig;
 	    rc = check_key_signature( keyblock, node, &selfsig );
 	    if( !rc ) {
@@ -1106,13 +1110,18 @@ check_sigs( KBNODE keyblock, int *selfsig_okay )
 		    node->flag |= 2; /* mark signature valid */
 		    *selfsig_okay = 1;
 		}
+		else if( node->pkt->pkt.signature->sig_class == 0x20 )
+		    *revoked = 1;
 		else
 		    node->flag |= 1; /* mark signature valid */
-		if( !dups )
-		    dups = new_lid_table();
-		if( ins_lid_table_item( dups,
-				    node->pkt->pkt.signature->local_id, 0) )
-		    node->flag |= 4; /* mark as duplicate */
+
+		if( node->pkt->pkt.signature->sig_class != 0x20 ) {
+		    if( !dups )
+			dups = new_lid_table();
+		    if( ins_lid_table_item( dups,
+					node->pkt->pkt.signature->local_id, 0) )
+			node->flag |= 4; /* mark as duplicate */
+		}
 	    }
 	    if( DBG_TRUST )
 		log_debug("trustdb: sig from %08lX(%lu): %s%s\n",
@@ -1138,10 +1147,9 @@ build_sigrecs( ulong pubkeyid )
     PUBKEY_FIND_INFO finfo=NULL;
     KBPOS kbpos;
     KBNODE keyblock = NULL;
-    KBNODE kbctx;
     KBNODE node;
     int rc=0;
-    int i, selfsig;
+    int i, selfsig, revoked;
     ulong rnum, rnum2;
     ulong first_sigrec = 0;
 
@@ -1173,7 +1181,7 @@ build_sigrecs( ulong pubkeyid )
 	goto leave;
     }
     /* check all key signatures */
-    rc = check_sigs( keyblock, &selfsig );
+    rc = check_sigs( keyblock, &selfsig, &revoked );
     if( rc ) {
 	log_error("build_sigrecs: check_sigs failed\n" );
 	goto leave;
@@ -1184,7 +1192,12 @@ build_sigrecs( ulong pubkeyid )
 	rc = G10ERR_BAD_CERT;
 	goto leave;
     }
-    update_no_sigs( pubkeyid, 0 ); /* assume we have sigs */
+    if( revoked ) {
+	log_info("build_sigrecs: key has been revoked\n" );
+	update_no_sigs( pubkeyid, 3 );
+    }
+    else
+	update_no_sigs( pubkeyid, 0 ); /* assume we have sigs */
 
     /* valid key signatures are now marked; we can now build the
      * sigrecs */
@@ -1192,7 +1205,7 @@ build_sigrecs( ulong pubkeyid )
     rec.rectype = RECTYPE_SIG;
     i = 0;
     rnum = rnum2 = 0;
-    for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
+    for( node=keyblock; node; node = node->next ) {
 	/* insert sigs which are not a selfsig nor a duplicate */
 	if( (node->flag & 1) && !(node->flag & 4) ) {
 	    assert( node->pkt->pkttype == PKT_SIGNATURE );
@@ -1272,7 +1285,7 @@ build_sigrecs( ulong pubkeyid )
 	}
     }
     else
-	update_no_sigs( pubkeyid, 1 ); /* no signatures */
+	update_no_sigs( pubkeyid, revoked? 3:1 ); /* no signatures */
 
   leave:
     m_free( finfo );
@@ -1385,6 +1398,7 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
     int marginal, fully;
     int fully_needed = opt.completes_needed;
     int marginal_needed = opt.marginals_needed;
+    unsigned tflags = 0;
 
     assert( fully_needed > 0 && marginal_needed > 1 );
 
@@ -1400,10 +1414,14 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 	if( !rc ) /* and read again */
 	    rc = read_record( pubkeyid, dr, RECTYPE_DIR );
     }
+
+    if( dr->r.dir.no_sigs == 3 )
+	tflags |= TRUST_FLAG_REVOKED;
+
     if( !rc && !dr->r.dir.sigrec ) {
 	/* See wether this is our own key */
 	if( !qry_lid_table_flag( ultikey_table, pubkeyid, NULL ) ) {
-	    *trustlevel = TRUST_ULTIMATE;
+	    *trustlevel = tflags | TRUST_ULTIMATE;
 	    return 0;
 	}
 	else
@@ -1442,7 +1460,7 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 	if( tsl->dup )
 	    continue;
 	if( tsl->seg[0].trust == TRUST_ULTIMATE ) {
-	    *trustlevel = TRUST_ULTIMATE; /* our own key */
+	    *trustlevel = tflags | TRUST_ULTIMATE; /* our own key */
 	    break;
 	}
 	if( tsl->seg[0].trust == TRUST_FULLY ) {
@@ -1453,12 +1471,12 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 	    marginal++;
 
 	if( fully >= fully_needed ) {
-	    *trustlevel = TRUST_FULLY;
+	    *trustlevel = tflags | TRUST_FULLY;
 	    break;
 	}
     }
     if( !tsl && marginal >= marginal_needed )
-	*trustlevel = TRUST_MARGINAL;
+	*trustlevel = tflags | TRUST_MARGINAL;
 
     /* cache the tslist */
     if( last_trust_web_key ) {

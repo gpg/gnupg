@@ -211,7 +211,12 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     int rc = 0;
     int c;
     IOBUF a = iobuf_temp();
-   /* FILE *fp = fopen("dump.pkc", "a");*/
+  #if 1
+    FILE *fp = fopen("dump.pkc", "a");
+    int i=0;
+
+    fprintf(fp, "\nHashing PKC:\n");
+  #endif
 
     /* build the packet */
     init_packet(&pkt);
@@ -220,10 +225,19 @@ hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc )
     if( (rc = build_packet( a, &pkt )) )
 	log_fatal("build public_cert for hashing failed: %s\n", g10_errstr(rc));
     while( (c=iobuf_get(a)) != -1 ) {
-	/* putc( c, fp);*/
+      #if 1
+	fprintf( fp," %02x", c );
+	if( (++i == 24) ) {
+	    putc('\n', fp);
+	    i=0;
+	}
+      #endif
 	md_putc( md, c );
     }
-    /*fclose(fp);*/
+  #if 1
+    putc('\n', fp);
+    fclose(fp);
+  #endif
     iobuf_cancel(a);
 }
 

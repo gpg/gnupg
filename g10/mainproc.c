@@ -265,11 +265,8 @@ do_check_sig( CTX c, KBNODE node )
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     sig = node->pkt->pkt.signature;
 
-    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	algo = sig->d.elg.digest_algo;
-    else if(sig->pubkey_algo == PUBKEY_ALGO_RSA )
-	algo = sig->d.rsa.digest_algo;
-    else
+    algo = digest_algo_from_sig( sig );
+    if( !algo )
 	return G10ERR_PUBKEY_ALGO;
     if( (rc=check_digest_algo(algo)) )
 	return rc;
@@ -282,24 +279,36 @@ do_check_sig( CTX c, KBNODE node )
 	 * in canonical mode ??? (calculating both modes???) */
 	md = md_copy( c->mfx.md );
     }
-    else if( (sig->sig_class&~3) == 0x10 ) { /* classes 0x10 .. 0x13 */
+    else if( (sig->sig_class&~3) == 0x10
+	     || sig->sig_class == 0x20
+	     || sig->sig_class == 0x30	) { /* classes 0x10..0x13,0x20,0x30 */
 	if( c->list->pkt->pkttype == PKT_PUBLIC_CERT ) {
-	    KBNODE n1 = find_prev_kbnode( c->list, node, PKT_USER_ID );
+	  #if 0
+	    KBNODE n1;
 
-	    if( n1 ) {
-		if( c->list->pkt->pkt.public_cert->mfx.md )
-		    md = md_copy( c->list->pkt->pkt.public_cert->mfx.md );
-		else
-		    BUG();
-		md_write( md, n1->pkt->pkt.user_id->name, n1->pkt->pkt.user_id->len);
+	    if( sig->sig_class == 0x20 ) {
+		md = md_open( algo, 0 );
+		hash_public_cert( md, c->list->pkt->pkt.public_cert );
+	    }
+	    else if( (n1=find_prev_kbnode( c->list, node, PKT_USER_ID )) ) {
+		md = md_open( algo, 0 );
+		hash_public_cert( md, c->list->pkt->pkt.public_cert );
+		if( sig->sig_class != 0x20 )
+		    md_write( md, n1->pkt->pkt.user_id->name,
+				  n1->pkt->pkt.user_id->len);
 	    }
 	    else {
-		log_error("invalid parent packet for sigclass 0x10\n");
+		log_error("invalid parent packet for sigclass %02x\n",
+							sig->sig_class);
 		return G10ERR_SIG_CLASS;
 	    }
+	  #endif
+
+	    return check_key_signature( c->list, node, NULL );
 	}
 	else {
-	    log_error("invalid root packet for sigclass 0x10\n");
+	    log_error("invalid root packet for sigclass %02x\n",
+							sig->sig_class);
 	    return G10ERR_SIG_CLASS;
 	}
     }
@@ -374,7 +383,13 @@ list_node( CTX c, KBNODE node )
 				      datestr_from_pkc( pkc )	  );
 	/* and now list all userids with their signatures */
 	for( node = node->next; node; node = node->next ) {
-	    if( node->pkt->pkttype == PKT_USER_ID ) {
+	    if( any != 2 && node->pkt->pkttype == PKT_SIGNATURE ) {
+		if( !any )
+		    putchar('\n');
+		list_node(c,  node );
+		any = 1;
+	    }
+	    else if( node->pkt->pkttype == PKT_USER_ID ) {
 		KBNODE n;
 
 		if( any )
@@ -389,10 +404,10 @@ list_node( CTX c, KBNODE node )
 		    if( n->pkt->pkttype == PKT_SIGNATURE )
 			list_node(c,  n );
 		}
-		any=1;
+		any=2;
 	    }
 	}
-	if( !any )
+	if( any != 2 )
 	    printf("ERROR: no user id!\n");
     }
     else if( node->pkt->pkttype == PKT_SECRET_CERT ) {
@@ -423,7 +438,10 @@ list_node( CTX c, KBNODE node )
 	if( !opt.list_sigs )
 	    return;
 
-	fputs("sig", stdout);
+	if( sig->sig_class == 0x20 || sig->sig_class == 0x30 )
+	    fputs("rev", stdout);
+	else
+	    fputs("sig", stdout);
 	if( opt.check_sigs ) {
 	    fflush(stdout);
 	    switch( (rc2=do_check_sig( c, node )) ) {

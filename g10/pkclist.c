@@ -167,7 +167,24 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 {
     int rc;
 
-    switch( trustlevel ) {
+    if( (trustlevel & TRUST_FLAG_REVOKED) ) {
+	char *answer;
+	int yes;
+
+	log_info("key has beed revoked!\n");
+	if( opt.batch )
+	    return 0;
+
+	answer = tty_get("Use this key anyway? ");
+	tty_kill_prompt();
+	yes = answer_is_yes(answer);
+	m_free(answer);
+	if( !yes )
+	    return 0;
+    }
+
+
+    switch( (trustlevel & TRUST_MASK) ) {
       case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
 	rc = insert_trust_record( pkc );
 	if( rc ) {
@@ -184,7 +201,7 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 	return do_we_trust( pkc, trustlevel );
 
       case TRUST_EXPIRED:
-	log_error("trust has expired: NOT yet implemented\n");
+	log_info("trust has expired: NOT yet implemented\n");
 	return 0; /* no */
 
       case TRUST_UNDEFINED:

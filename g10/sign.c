@@ -987,6 +987,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_cert *pkc,
 
     assert( (sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x20 );
     md = md_open( digest_algo, 0 );
+
     /* hash the public key certificate and the user id */
     hash_public_cert( md, pkc );
     if( sigclass != 0x20 )

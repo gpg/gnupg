@@ -183,7 +183,9 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 
 
 /****************
- * check the signature pointed to by NODE. This is a key signatures
+ * check the signature pointed to by NODE. This is a key signatures.
+ * If the function detects a elf signature, it uses the PKC from
+ * NODE and does not read the any public key.
  */
 int
 check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
@@ -198,7 +200,6 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
     if( is_selfsig )
 	*is_selfsig = 0;
     assert( node->pkt->pkttype == PKT_SIGNATURE );
-    assert( (node->pkt->pkt.signature->sig_class&~3) == 0x10 );
     assert( root->pkt->pkttype == PKT_PUBLIC_CERT );
 
     pkc = root->pkt->pkt.public_cert;
@@ -213,27 +214,36 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
     if( (rc=check_digest_algo(algo)) )
 	return rc;
 
-    unode = find_prev_kbnode( root, node, PKT_USER_ID );
-
-    if( unode ) {
-	PKT_user_id *uid = unode->pkt->pkt.user_id;
-
-	if( is_selfsig ) {
-	    u32 keyid[2];
-
-	    keyid_from_pkc( pkc, keyid );
-	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
-		*is_selfsig = 1;
-	}
+    if( sig->sig_class == 0x20 ) {
 	md = md_open( algo, 0 );
 	hash_public_cert( md, pkc );
-	md_write( md, uid->name, uid->len );
 	rc = do_check( pkc, sig, md );
 	md_close(md);
     }
     else {
-	log_error("no user id for key signature packet\n");
-	rc = G10ERR_SIG_CLASS;
+	unode = find_prev_kbnode( root, node, PKT_USER_ID );
+
+	if( unode ) {
+	    PKT_user_id *uid = unode->pkt->pkt.user_id;
+	    u32 keyid[2];
+
+	    keyid_from_pkc( pkc, keyid );
+	    md = md_open( algo, 0 );
+	    hash_public_cert( md, pkc );
+	    md_write( md, uid->name, uid->len );
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
+		if( is_selfsig )
+		    *is_selfsig = 1;
+		rc = do_check( pkc, sig, md );
+	    }
+	    else
+		rc = signature_check( sig, md );
+	    md_close(md);
+	}
+	else {
+	    log_error("no user id for key signature packet\n");
+	    rc = G10ERR_SIG_CLASS;
+	}
     }
 
     return rc;

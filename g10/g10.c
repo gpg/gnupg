@@ -474,7 +474,7 @@ main( int argc, char **argv )
 
     if( greeting ) {
 	tty_printf("%s %s; %s\n", strusage(11), strusage(13), strusage(14) );
-	tty_printf("%s", strusage(15) );
+	tty_printf("%s\n", strusage(15) );
     }
 
     /* initialize the secure memory. */

@@ -6,6 +6,10 @@
 		   a rmd160 hash value from it. This is used as the
 		   fingerprint and the low 64 bits are the keyid.
 
+    * Revocation certificates consists only of the signature packet;
+      "import" knows how to handle this.  The rationale behind it is
+      to keep them small.
+
 
 
 
@@ -162,7 +166,7 @@ Record Type 6 (hash table)
 	 if this is not the correct dir record, we look at the next
 	 dir record which is linked by the link field.
 
-Record type 7  (hast list)
+Record type 7  (hash list)
 -------------
     see hash table for an explanation.
 
@@ -174,4 +178,59 @@ Record type 7  (hast list)
 	1 u32  recnum
 
     For the current record length of 40, n is 6
+
+
+
+
+Packet Headers
+===============
+
+G10 uses PGP 2 packet headers and also understand OpenPGP packet header.
+There is one enhavement used ith the old style packet headers:
+
+   CTB bits 10, the "packet-length length bits", have values listed in
+   the following table:
+
+      00 - 1-byte packet-length field
+      01 - 2-byte packet-length field
+      10 - 4-byte packet-length field
+      11 - no packet length supplied, unknown packet length
+
+   As indicated in this table, depending on the packet-length length
+   bits, the remaining 1, 2, 4, or 0 bytes of the packet structure field
+   are a "packet-length field".  The packet-length field is a whole
+   number field.  The value of the packet-length field is defined to be
+   the value of the whole number field.
+
+   A value of 11 is currently used in one place: on compressed data.
+   That is, a compressed data block currently looks like <A3 01 . .  .>,
+   where <A3>, binary 10 1000 11, is an indefinite-length packet. The
+   proper interpretation is "until the end of the enclosing structure",
+   although it should never appear outermost (where the enclosing
+   structure is a file).
+
++  This will be changed with another version, where the new meaning of
++  the value 11 (see below) will also take place.
++
++  A value of 11 for other packets enables a special length encoding,
++  which is used in case, where the length of the following packet can
++  not be determined prior to writing the packet; especially this will
++  be used if large amounts of data are processed in filter mode.
++
++  It works like this: After the CTB (with a length field of 11) a
++  marker field is used, which gives the length of the following datablock.
++  This is a simple 2 byte field (MSB first) containig the amount of data
++  following this field, not including this length field. After this datablock
++  another length field follows, which gives the size of the next datablock.
++  A value of 0 indicates the end of the packet. The maximum size of a
++  data block is limited to 65534, thereby reserving a value of 0xffff for
++  future extensions. These length markers must be insereted into the data
++  stream just before writing the data out.
++
++  This 2 byte filed is large enough, because the application must buffer
++  this amount of data to prepend the length marker before writing it out.
++  Data block sizes larger than about 32k doesn't make any sense. Note
++  that this may also be used for compressed data streams, but we must use
++  another packet version to tell the application that it can not assume,
++  that this is the last packet.
 

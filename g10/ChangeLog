@@ -1,3 +1,27 @@
+Wed Feb 18 13:35:58 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* mainproc.c (do_check_sig): Now uses hash_public_cert.
+	* parse-packet.c (parse_certificate): Removed hashing.
+	* packet.h (public_cert): Removed hash variable.
+	* free-packet.c (copy_public_cert, free_public_cert): Likewise.
+
+	* sig-check.c (check_key_signatures): Changed semantics.
+
+Wed Feb 18 12:11:28 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (do_check): Add handling for revocation certificates.
+	(build_sigrecs): Ditto.
+	(check_sigs): Ditto.
+
+Wed Feb 18 09:31:04 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (armor_filter): Add afx->hdrlines.
+	* revoke.c (gen_revoke): Add comment line.
+	* dearmor.c (enarmor_file): Ditto.
+
+	* sig-check.c (check_key_signature): Add handling for class 0x20.
+	* mainproc.c : Ditto.
+
 Tue Feb 17 21:24:17 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* armor.c : Add header lines "...ARMORED FILE .."

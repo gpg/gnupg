@@ -20,6 +20,7 @@
 #ifndef G10_MD_H
 #define G10_MD_H
 
+#include <stdio.h>
 #include "types.h"
 #include "rmd.h"
 #include "sha1.h"
@@ -37,6 +38,7 @@ typedef struct {
     byte buffer[MD_BUFFER_SIZE]; /* primary buffer */
     int  bufcount;
     int  secure;
+    FILE  *debug;
 } *MD_HANDLE;
 
 
