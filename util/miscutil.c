@@ -19,6 +19,7 @@
  */
 
 #include <config.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -30,11 +31,54 @@
 #include "util.h"
 #include "i18n.h"
 
+/****************
+ * I know that the OpenPGP protocol has a Y2106 problem ;-)
+ */
 u32
 make_timestamp()
 {
     return time(NULL);
 }
+
+/****************
+ * Scan a date string and return a timestamp.
+ * The only supported format is "yyyy-mm-dd"
+ * Returns 0 for an invalid date.
+ */
+u32
+scan_isodatestr( const char *string )
+{
+    int year, month, day;
+    struct tm tmbuf;
+    time_t stamp;
+    int i;
+
+    if( strlen(string) != 10 || string[4] != '-' || string[7] != '-' )
+	return 0;
+    for( i=0; i < 4; i++ )
+	if( !isdigit(string[i]) )
+	    return 0;
+    if( !isdigit(string[5]) || !isdigit(string[6]) )
+	return 0;
+    if( !isdigit(string[8]) || !isdigit(string[9]) )
+	return 0;
+    year = atoi(string);
+    month = atoi(string+5);
+    day = atoi(string+8);
+    /* some basic checks */
+    if( year < 1970 || month < 1 || month > 12 || day < 1 || day > 31 )
+	return 0;
+    memset( &tmbuf, 0, sizeof tmbuf );
+    tmbuf.tm_mday = day;
+    tmbuf.tm_mon = month-1;
+    tmbuf.tm_year = year - 1900;
+    tmbuf.tm_isdst = -1;
+    stamp = mktime( &tmbuf );
+    if( stamp == (time_t)-1 )
+	return 0;
+    return stamp;
+}
+
 
 u32
 add_days_to_timestamp( u32 stamp, u16 days )

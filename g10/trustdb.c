@@ -124,6 +124,9 @@ static int do_check( TRUSTREC *drec, unsigned *trustlevel,
 		     const char *nhash, int (*add_fnc)(ulong),
 						unsigned *retflgs);
 static int get_dir_record( PKT_public_key *pk, TRUSTREC *rec );
+static int do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
+					  int recheck, int *modified );
+static int check_trust_record( TRUSTREC *drec );
 
 /* a table used to keep track of ultimately trusted keys
  * which are the ones from our secrings and the trusted keys */
@@ -402,44 +405,6 @@ get_dir_record( PKT_public_key *pk, TRUSTREC *rec )
     }
     return rc;
 }
-
-/****************
- * Get the LID of a public key.
- * Returns: The LID of the key (note, that this may be a shadow dir)
- *	    or 0 if not available.
- * fixme: make this ftser by putting entries into the sdir hash table
- */
-#if 0
-static ulong
-lid_from_keyid( u32 *keyid )
-{
-    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
-    TRUSTREC rec;
-    ulong lid = 0;
-    int rc;
-
-    rc = get_pubkey( pk, keyid );
-    if( !rc ) {
-	if( pk->local_id )
-	    lid = pk->local_id;
-	else {
-	    rc = tdbio_search_dir_bypk( pk, &rec );
-	    if( !rc )
-		lid = rec.recnum;
-	    else if( rc == -1 ) { /* see whether there is a sdir instead */
-		u32 akid[2];
-
-		keyid_from_pk( pk, akid );
-		rc = tdbio_search_sdir( akid, pk->pubkey_algo, &rec );
-		if( !rc )
-		    lid = rec.recnum;
-	    }
-	}
-    }
-    free_public_key( pk );
-    return lid;
-}
-#endif
 
 static ulong
 lid_from_keyid_no_sdir( u32 *keyid )
@@ -862,124 +827,6 @@ find_or_create_lid( PKT_signature *sig )
 
 
 
-#if 0
-static void
-upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig )
-{
-    static struct {
-	sigsubpkttype_t subpkttype;
-	int preftype;
-    } ptable[] = {
-	{ SIGSUBPKT_PREF_SYM,	PREFTYPE_SYM	},
-	{ SIGSUBPKT_PREF_HASH,	PREFTYPE_HASH	},
-	{ SIGSUBPKT_PREF_COMPR, PREFTYPE_COMPR	},
-	{ 0, 0 }
-    };
-    TRUSTREC prec;
-    ulong lid = urec->r.uid.lid ;
-    const byte *uidhash = urec->r.uid.namehash;
-    const byte *s;
-    size_t n;
-    int k, i;
-    ulong recno;
-    byte prefs_sig[200];
-    int n_prefs_sig = 0;
-    byte prefs_rec[200];
-    int n_prefs_rec = 0;
-
-    if( DBG_TRUST )
-	log_debug("upd_pref_record for %08lX.%lu/%02X%02X\n",
-			  (ulong)keyid[1], lid, uidhash[18], uidhash[19] );
-
-
-    /* check for changed preferences */
-    for(k=0; ptable[k].subpkttype; k++ ) {
-	s = parse_sig_subpkt2( sig, ptable[k].subpkttype, &n );
-	if( s ) {
-	    for( ; n; n--, s++ ) {
-		if( n_prefs_sig >= DIM(prefs_sig)-1 ) {
-		    log_info("uid %08lX.%lu/%02X%02X: %s\n",
-			      (ulong)keyid[1], lid, uidhash[18], uidhash[19],
-			      _("Too many preferences") );
-		    break;
-		}
-		prefs_sig[n_prefs_sig++] = ptable[k].preftype;
-		prefs_sig[n_prefs_sig++] = *s;
-	    }
-	}
-    }
-    for( recno=urec->r.uid.prefrec; recno; recno = prec.r.pref.next ) {
-	read_record( recno, &prec, RECTYPE_PREF );
-	for(i = 0; i < ITEMS_PER_PREF_RECORD; i +=2 )  {
-	    if( n_prefs_rec >= DIM(prefs_rec)-1 ) {
-		log_info("uid %08lX.%lu/%02X%02X: %s\n",
-			  (ulong)keyid[1], lid, uidhash[18], uidhash[19],
-			  _("Too many preference items") );
-		break;
-	    }
-	    if( prec.r.pref.data[i] ) {
-		prefs_rec[n_prefs_rec++] = prec.r.pref.data[i];
-		prefs_rec[n_prefs_rec++] = prec.r.pref.data[i+1];
-	    }
-	}
-    }
-    if( n_prefs_sig == n_prefs_rec
-	&& !memcmp( prefs_sig, prefs_rec, n_prefs_sig ) )
-	return;  /* not changed */
-
-    /* Preferences have changed:  Delete all pref records
-     * This is much simpler than checking whether we have to
-     * do update the record at all - the record cache may care about it
-     */
-    for( recno=urec->r.uid.prefrec; recno; recno = prec.r.pref.next ) {
-	read_record( recno, &prec, RECTYPE_PREF );
-	delete_record( recno );
-    }
-
-    if( n_prefs_sig > ITEMS_PER_PREF_RECORD )
-	 log_info(_("WARNING: can't yet handle long pref records\n"));
-
-    memset( &prec, 0, sizeof prec );
-    prec.recnum = tdbio_new_recnum();
-    prec.rectype = RECTYPE_PREF;
-    prec.r.pref.lid = lid;
-    if( n_prefs_sig <= ITEMS_PER_PREF_RECORD )
-	memcpy( prec.r.pref.data, prefs_sig, n_prefs_sig );
-    else { /* need more than one pref record */
-	TRUSTREC tmp;
-	ulong nextrn;
-	byte *pp = prefs_sig;
-
-	n = n_prefs_sig;
-	memcpy( prec.r.pref.data, pp, ITEMS_PER_PREF_RECORD );
-	n -= ITEMS_PER_PREF_RECORD;
-	pp += ITEMS_PER_PREF_RECORD;
-	nextrn = prec.r.pref.next = tdbio_new_recnum();
-	do {
-	    memset( &tmp, 0, sizeof tmp );
-	    tmp.recnum = nextrn;
-	    tmp.rectype = RECTYPE_PREF;
-	    tmp.r.pref.lid = lid;
-	    if( n <= ITEMS_PER_PREF_RECORD ) {
-		memcpy( tmp.r.pref.data, pp, n );
-		n = 0;
-	    }
-	    else {
-		memcpy( tmp.r.pref.data, pp, ITEMS_PER_PREF_RECORD );
-		n -= ITEMS_PER_PREF_RECORD;
-		pp += ITEMS_PER_PREF_RECORD;
-		nextrn = tmp.r.pref.next = tdbio_new_recnum();
-	    }
-	    write_record( &tmp );
-	} while( n );
-    }
-    write_record( &prec );
-    urec->r.uid.prefrec = prec.recnum;
-    urec->dirty = 1;
-}
-#endif
-
-
 /****************
  * Check the validity of a key and calculate the keyflags
  * keynode points to
@@ -1045,7 +892,7 @@ check_keybinding( KBNODE keyblock, KBNODE keynode, u32 *mainkid,
 		if( opt.verbose )
 		    log_info(_("key %08lX.%lu: Valid key revocation\n"),
 				 (ulong)keyid_from_pk(pk, NULL), lid );
-		keyflags |= KEYF_REVOKED;  /* fixme: revoke the main key too*/
+		keyflags |= KEYF_REVOKED;
 	    }
 	    else {
 		log_info(_(
@@ -1056,8 +903,6 @@ check_keybinding( KBNODE keyblock, KBNODE keynode, u32 *mainkid,
 	}
 	else if( sig->sig_class == 0x28 && !revoke_seen && !is_main ) {
 	    /* this is a subkey revocation certificate: check it */
-	    /* fixme: we should also check that the revocation
-	     * is newer than the key (OpenPGP) */
 	    rc = check_key_signature( keyblock, node, NULL );
 	    if( !rc ) {
 		if( opt.verbose )
@@ -1081,7 +926,7 @@ check_keybinding( KBNODE keyblock, KBNODE keynode, u32 *mainkid,
 
 
 static ulong
-make_key_records( KBNODE keyblock, ulong lid, u32 *keyid )
+make_key_records( KBNODE keyblock, ulong lid, u32 *keyid, int *mainrev )
 {
     TRUSTREC *krecs, **kend, *k, *k2;
     KBNODE  node;
@@ -1090,6 +935,7 @@ make_key_records( KBNODE keyblock, ulong lid, u32 *keyid )
     size_t fprlen;
     ulong keyrecno;
 
+    *mainrev = 0;
     krecs = NULL; kend = &krecs;
     for( node=keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype != PKT_PUBLIC_KEY
@@ -1110,7 +956,9 @@ make_key_records( KBNODE keyblock, ulong lid, u32 *keyid )
 	kend = &k->next;
 
 	k->r.key.keyflags = check_keybinding( keyblock, node, keyid, lid, pk );
-
+	if( (k->r.key.keyflags & KEYF_REVOKED)
+	    && node->pkt->pkttype == PKT_PUBLIC_KEY )
+	    *mainrev = 1;
     }
 
     keyrecno = krecs? krecs->recnum : 0;
@@ -1128,13 +976,15 @@ make_key_records( KBNODE keyblock, ulong lid, u32 *keyid )
 
 /****************
  * Check the validity of a user ID and calculate the uidflags
- * keynode points to
- * a node with a user ID.  mainkid has the key ID of the primary key
- * keyblock is the complete keyblock which is needed for signature
- * checking.
+ * keynode points to  a node with a user ID.
+ * mainkid has the key ID of the primary key, keyblock is the complete
+ * keyblock which is needed for signature checking.
+ * Returns: The uid flags and the self-signature which is considered to
+ * be the most current.
  */
 static unsigned int
-check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid )
+check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid,
+						  PKT_signature **bestsig )
 {
     KBNODE node;
     unsigned int uidflags = 0;
@@ -1188,7 +1038,8 @@ check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid )
     /* and now check for revocations - we must do this after the
      * self signature check because a self-signature which is newer
      * than a revocation makes the revocation invalid.
-     * Fixme: Is this correct - check with rfc2440 */
+     * RFC2440 is quiet about tis but I feel this is reasonable for
+     * non-primary-key revocations. */
     for( node=keynode->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID
 	    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
@@ -1221,7 +1072,7 @@ check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid )
 	}
     }
 
-
+    *bestsig = selfsig;
     return uidflags;
 }
 
@@ -1397,6 +1248,74 @@ make_sig_records( KBNODE keyblock, KBNODE uidnode,
 }
 
 
+
+/****************
+ * Make a preference record (or a list of them) according to the supplied
+ * signature.
+ * Returns: The record number of the first pref record.
+ */
+static ulong
+make_pref_record( PKT_signature *sig, ulong lid )
+{
+    static struct {
+	sigsubpkttype_t subpkttype;
+	int preftype;
+    } ptable[] = {
+	{ SIGSUBPKT_PREF_SYM,	PREFTYPE_SYM	},
+	{ SIGSUBPKT_PREF_HASH,	PREFTYPE_HASH	},
+	{ SIGSUBPKT_PREF_COMPR, PREFTYPE_COMPR	},
+	{ 0, 0 }
+    };
+    TRUSTREC *precs, **p_end, *p=NULL, *p2;
+    ulong precno;
+    int k, idx=0;
+    const byte *s;
+    size_t n;
+
+  #if (ITEMS_PER_PREF_RECORD % 2) != 0
+    #error ITEMS_PER_PREF_RECORD must have an even value
+  #endif
+
+    precs = NULL; p_end = &precs;
+    for(k=0; ptable[k].subpkttype; k++ ) {
+	s = parse_sig_subpkt2( sig, ptable[k].subpkttype, &n );
+	if( !s )
+	    continue;
+	for( ; n; n--, s++ ) {
+	    if( !idx ) {
+		p = m_alloc_clear( sizeof *p );
+		p->rectype = RECTYPE_PREF;
+		p->r.pref.lid = lid;
+	    }
+	    p->r.pref.data[idx++] = ptable[k].preftype;
+	    p->r.pref.data[idx++] = *s;
+	    if( idx >= ITEMS_PER_PREF_RECORD ) {
+		p->recnum = tdbio_new_recnum();
+		*p_end = p;
+		p_end = &p->next;
+		idx = 0;
+	    }
+	}
+    }
+    if( idx ) {
+       p->recnum = tdbio_new_recnum();
+       *p_end = p;
+       p_end = &p->next;
+    }
+
+    precno = precs? precs->recnum : 0;
+    /* write the precs and release the memory */
+    for( p = precs; p ; p = p2 ) {
+	if( p->next )
+	    p->r.pref.next = p->next->recnum;
+	write_record( p );
+	p2 = p->next;
+	m_free( p );
+    }
+    return precno;
+}
+
+
 static ulong
 make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
 {
@@ -1408,6 +1327,8 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
 
     urecs = NULL; uend = &urecs;
     for( node=keyblock; node; node = node->next ) {
+	PKT_signature *bestsig;
+
 	if( node->pkt->pkttype != PKT_USER_ID )
 	    continue;
 	uid = node->pkt->pkt.user_id;
@@ -1422,10 +1343,12 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
 	*uend = u;
 	uend = &u->next;
 
-	u->r.uid.uidflags = check_uidsigs( keyblock, node, keyid, lid );
+	u->r.uid.uidflags = check_uidsigs( keyblock, node, keyid,
+						     lid, &bestsig );
 	if( (u->r.uid.uidflags & UIDF_CHECKED)
-	    && (u->r.uid.uidflags & UIDF_VALID) )
-	    /*make_pref_record( &urec, keyid, selfsig )*/;
+	    && (u->r.uid.uidflags & UIDF_VALID) ) {
+	    u->r.uid.prefrec = bestsig? make_pref_record( bestsig, lid ) : 0;
+	}
 	/* create the list of signatures */
 	u->r.uid.siglist = make_sig_records( keyblock, node,
 					     lid, keyid, min_expire );
@@ -1452,46 +1375,60 @@ make_uid_records( KBNODE keyblock, ulong lid, u32 *keyid, u32 *min_expire )
 int
 update_trust_record( KBNODE keyblock, int recheck, int *modified )
 {
+    TRUSTREC drec;
+    int rc;
+
+    if( opt.dry_run )
+	return 0;
+    if( modified )
+	*modified = 0;
+    init_trustdb();
+    rc = get_dir_record( find_kbnode( keyblock, PKT_PUBLIC_KEY )
+					    ->pkt->pkt.public_key, &drec );
+    if( rc )
+	return rc;
+
+    rc = do_update_trust_record( keyblock, &drec, recheck, modified );
+    return rc;
+}
+
+/****************
+ * Same as update_trust_record, but tghis functions expects the dir record.
+ * On exit the dirrecord will reflect any changes made.
+ */
+static int
+do_update_trust_record( KBNODE keyblock, TRUSTREC *drec,
+			int recheck, int *modified )
+{
     PKT_public_key *primary_pk;
-    KBNODE node;
-    TRUSTREC drec, krec, urec, prec, helprec;
-    int rc = 0;
+    TRUSTREC krec, urec, prec, helprec;
+    int i, rc = 0;
     u32 keyid[2]; /* keyid of primary key */
 /*    int mod_up = 0;
     int mod_down = 0; */
     ulong recno, r2;
     u32 expire;
 
-    if( opt.dry_run )
-	return 0;
-
-    init_trustdb();
-    if( modified )
-	*modified = 0;
-
-    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
-    primary_pk = node->pkt->pkt.public_key;
-    rc = get_dir_record( primary_pk, &drec );
-    if( rc )
-	return rc;
+    primary_pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )->pkt->pkt.public_key;
     if( !primary_pk->local_id )
-	primary_pk->local_id = drec.recnum;
+	primary_pk->local_id = drec->recnum;
 
     keyid_from_pk( primary_pk, keyid );
     if( DBG_TRUST )
-	log_debug("update_trust_record: %08lX.%lu\n", (ulong)keyid[1], drec.recnum );
+	log_debug("do_update_trust_record: %08lX.%lu\n",
+					(ulong)keyid[1], drec->recnum );
 
     rc = tdbio_begin_transaction();
     if( rc )
 	return rc;
 
     /* delete the old stuff */
-    for( recno=drec.r.dir.keylist; recno; recno = krec.r.key.next ) {
+    for( recno=drec->r.dir.keylist; recno; recno = krec.r.key.next ) {
 	read_record( recno, &krec, RECTYPE_KEY );
 	delete_record( recno );
     }
-    drec.r.dir.keylist = 0;
-    for( recno=drec.r.dir.uidlist; recno; recno = urec.r.uid.next ) {
+    drec->r.dir.keylist = 0;
+    for( recno=drec->r.dir.uidlist; recno; recno = urec.r.uid.next ) {
 	read_record( recno, &urec, RECTYPE_UID );
 	for(r2=urec.r.uid.prefrec ; r2; r2 = prec.r.pref.next ) {
 	    read_record( r2, &prec, RECTYPE_PREF );
@@ -1503,15 +1440,17 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
 	}
 	delete_record( recno );
     }
-    drec.r.dir.uidlist = 0;
+    drec->r.dir.uidlist = 0;
 
 
     /* insert new stuff */
-    drec.r.dir.dirflags &= ~DIRF_REVOKED;
-    drec.r.dir.keylist = make_key_records( keyblock, drec.recnum, keyid );
+    drec->r.dir.dirflags &= ~DIRF_REVOKED;
+    drec->r.dir.keylist = make_key_records( keyblock, drec->recnum, keyid, &i );
+    if( i ) /* primary key has been revoked */
+	drec->r.dir.dirflags &= DIRF_REVOKED;
     expire = 0;
-    drec.r.dir.uidlist = make_uid_records( keyblock, drec.recnum, keyid,
-								 &expire );
+    drec->r.dir.uidlist = make_uid_records( keyblock, drec->recnum, keyid,
+								  &expire );
     #if 0
 	if( orig_uidflags != urec.r.uid.uidflags ) {
 	    write_record( &urec );
@@ -1522,18 +1461,15 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
 		*mod_up=1; /*(maybe a new user id)*/
     #endif
 
-    /* FIXME: if the primary key has been revoked, we should
-       set the revoked flag in the dir records */
-
     if( rc )
 	rc = tdbio_cancel_transaction();
     else {
 	if( modified && tdbio_is_dirty() )
 	    *modified = 1;
-	drec.r.dir.dirflags |= DIRF_CHECKED;
-	drec.r.dir.valcheck = 0;
-	drec.r.dir.checkat = expire;
-	write_record( &drec );
+	drec->r.dir.dirflags |= DIRF_CHECKED;
+	drec->r.dir.valcheck = 0;
+	drec->r.dir.checkat = expire;
+	write_record( drec );
 	/*tdbio_write_modify_stamp( mod_up, mod_down );*/
 	rc = tdbio_end_transaction();
     }
@@ -1603,7 +1539,7 @@ insert_trust_record( KBNODE keyblock )
     tdbio_write_modify_stamp( 1, 0 );
 
     /* and put all the other stuff into the keydb */
-    rc = update_trust_record( keyblock, 1, NULL );
+    rc = do_update_trust_record( keyblock, &dirrec, 1, NULL );
 
     do_sync();
     return rc;
@@ -1639,9 +1575,35 @@ insert_trust_record_by_pk( PKT_public_key *pk )
 }
 
 
+/****************
+ * Check one trust record.  This function is called for every
+ * directory record which is to be checked.  The supplied
+ * dir record is modified according to the performed actions.
+ * Currently we only do an update_trust_record.
+ */
+static int
+check_trust_record( TRUSTREC *drec )
+{
+    KBNODE keyblock;
+    int modified, rc;
+
+    rc = get_keyblock_bylid( &keyblock, drec->recnum );
+    if( rc ) {
+	log_debug( "check_trust_record %lu: keyblock not found: %s\n",
+					      drec->recnum, g10_errstr(rc) );
+	return rc;
+    }
+
+    rc = do_update_trust_record( keyblock, drec, 0, &modified );
+    release_kbnode( keyblock );
+
+    return rc;
+}
+
 
 /****************
  * Walk over the keyrings and create trustdb records for all keys
+ * which are not currently in the trustdb.
  * It is intended to be used after a fast-import operation.
  */
 void
@@ -1657,16 +1619,17 @@ update_trustdb()
     init_trustdb();
     rc = enum_keyblocks( 0, &kbpos, &keyblock );
     if( !rc ) {
-	ulong count=0, upd_count=0, err_count=0, new_count=0;
+	ulong count=0, err_count=0, new_count=0;
 
 	while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
 	    int modified;
+	    TRUSTREC drec;
+	    PKT_public_key *pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )
+					->pkt->pkt.public_key;
 
-	    rc = update_trust_record( keyblock, 1, &modified );
-	    if( rc == -1 ) { /* not yet in trustdb: insert */
-		PKT_public_key *pk;
+	    rc = get_dir_record( pk, &drec );
+	    if( rc == -1 ) { /* not in trustdb: insert */
 		rc = insert_trust_record( keyblock );
-		pk = keyblock->pkt->pkt.public_key;
 		if( rc && !pk->local_id ) {
 		    log_error(_("lid ?: insert failed: %s\n"),
 						     g10_errstr(rc) );
@@ -1684,18 +1647,9 @@ update_trustdb()
 		}
 	    }
 	    else if( rc ) {
-		log_error(_("lid %lu: update failed: %s\n"),
-			 lid_from_keyblock(keyblock), g10_errstr(rc) );
+		log_error(_("error reading dir record: %s\n"), g10_errstr(rc));
 		err_count++;
 	    }
-	    else if( modified ) {
-		if( opt.verbose )
-		    log_info(_("lid %lu: updated\n"),
-					lid_from_keyblock(keyblock));
-		upd_count++;
-	    }
-	    else if( opt.verbose > 1 )
-		log_info(_("lid %lu: okay\n"), lid_from_keyblock(keyblock) );
 
 	    release_kbnode( keyblock ); keyblock = NULL;
 	    if( !(++count % 100) )
@@ -1704,8 +1658,6 @@ update_trustdb()
 	log_info(_("%lu keys processed\n"), count);
 	if( err_count )
 	    log_info(_("\t%lu keys with errors\n"), err_count);
-	if( upd_count )
-	    log_info(_("\t%lu keys updated\n"), upd_count);
 	if( new_count )
 	    log_info(_("\t%lu keys inserted\n"), new_count);
     }
@@ -1753,6 +1705,8 @@ check_trustdb( const char *username )
 	    continue;
 	}
 
+	check_trust_record( &rec );
+
     }
 
     log_info(_("%lu keys processed\n"), count);
@@ -1780,7 +1734,7 @@ check_trustdb( const char *username )
  * certchain_set must be a valid set or point to NULL; this function
  * may modifiy it.
  *
- * Fixme: add a fastscan mode which stops ad valid validity nodes.
+ * Hmmm: add a fastscan mode which stops at valid validity nodes.
  */
 static TN
 build_cert_tree( ulong lid, int depth, int max_depth, TN helproot )
@@ -1814,6 +1768,10 @@ build_cert_tree( ulong lid, int depth, int max_depth, TN helproot )
 	m_free(keynode);
 	return NULL;
     }
+
+    if( dirrec.r.dir.checkat && dirrec.r.dir.checkat <= make_timestamp() )
+	check_trust_record( &dirrec );
+
     keynode->n.k.ownertrust = dirrec.r.dir.ownertrust & TRUST_MASK;
 
     /* loop over all user ids */
@@ -1873,14 +1831,12 @@ build_cert_tree( ulong lid, int depth, int max_depth, TN helproot )
 		tn->back = uidnode;
 		tn->next = uidnode->list;
 		uidnode->list = tn;
-	      #if 0 /* optimazation - fixme: reenable this later */
 		if( tn->n.k.buckstop ) {
 		    /* ultimately trusted key found:
 		     * no need to check more signatures of this uid */
 		    sigrec.r.sig.next = 0;
 		    break;
 		}
-	      #endif
 	    }
 	} /* end loop over sig recs */
     } /* end loop over user ids */
@@ -1965,10 +1921,10 @@ propagate_validity( TN root, TN node, int (*add_fnc)(ulong), unsigned *retflgs )
     }
 
     /* loop over all user ids */
-    for( ur=node->list; ur; ur = ur->next ) {
+    for( ur=node->list; ur && max_validity < TRUST_FULLY; ur = ur->next ) {
 	assert( ur->is_uid );
 	/* loop over all signators */
-	for(kr=ur->list; kr; kr = kr->next ) {
+	for(kr=ur->list; kr && max_validity < TRUST_FULLY; kr = kr->next ) {
 	    if( propagate_validity( root, kr, add_fnc, retflgs ) )
 		return -1; /* quit */
 	    if( kr->n.k.validity == TRUST_ULTIMATE ) {
@@ -2007,18 +1963,16 @@ propagate_validity( TN root, TN node, int (*add_fnc)(ulong), unsigned *retflgs )
 		else if( kr->n.k.ownertrust == TRUST_MARGINAL )
 		    ur->n.u.marginal_count++;
 	    }
-	}
-	/* fixme: We can move this test into the loop to stop as soon as
-	 * we have a level of FULLY and return from this function
-	 * We dont do this now to get better debug output */
-	if( ur->n.u.fully_count >= opt.completes_needed
-	    || ur->n.u.marginal_count >= opt.marginals_needed )
-	    ur->n.u.validity = TRUST_FULLY;
-	else if( ur->n.u.fully_count || ur->n.u.marginal_count )
-	    ur->n.u.validity = TRUST_MARGINAL;
 
-	if( ur->n.u.validity >= max_validity )
-	    max_validity = ur->n.u.validity;
+	    if( ur->n.u.fully_count >= opt.completes_needed
+		|| ur->n.u.marginal_count >= opt.marginals_needed )
+		ur->n.u.validity = TRUST_FULLY;
+	    else if( ur->n.u.fully_count || ur->n.u.marginal_count )
+		ur->n.u.validity = TRUST_MARGINAL;
+
+	    if( ur->n.u.validity >= max_validity )
+		max_validity = ur->n.u.validity;
+	}
     }
 
     node->n.k.validity = max_validity;
@@ -2112,7 +2066,7 @@ do_check( TRUSTREC *dr, unsigned *validity,
     if( (dr->r.dir.ownertrust & TRUST_FLAG_DISABLED) )
 	*validity = 0; /* no need to check further */
     else if( namehash ) {
-	/* Fixme: use the cache */
+	/* Fixme: use a cache */
 	*validity = verify_key( opt.max_cert_depth, dr, namehash,
 							add_fnc, retflgs );
     }
@@ -2283,6 +2237,8 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 					  (ulong)keyid[1], pk->local_id );
 	return G10ERR_TIME_CONFLICT;
     }
+    if( rec.r.dir.checkat && rec.r.dir.checkat <= cur_time )
+	check_trust_record( &rec );
 
     if( pk->expiredate && pk->expiredate <= cur_time ) {
 	log_info(_("key %08lX.%lu: expired at %s\n"),

@@ -23,9 +23,11 @@ dist-hook:
 	sed -e 's/@pkg_version@/$(VERSION)/g' \
 	    $(top_srcdir)/scripts/gnupg.spec.in \
 	    > $(distdir)/scripts/gnupg.spec
+	rm $(distdir)/gcrypt/*.[ch]
 
 
-# maintainer only
+if MAINTAINER_MODE
+# This is only useful within my local environment (wk)
 cvs-get:
 	rsync -Cavuzb  --exclude scratch --exclude .deps \
 		      wkoch@sigtrap.guug.de:work/gnupg .
@@ -36,6 +38,7 @@ cvs-put:
 
 cvs-sync: cvs-get cvs-put
 
+endif
 
 
 .PHONY: cvs-get cvs-put cvs-sync

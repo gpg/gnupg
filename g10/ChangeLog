@@ -1,3 +1,20 @@
+Wed Jul  7 13:08:40 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* Makefile.am: Support for libtool.
+
+	* keygen.c (ask_expire_interval): Hack to allow for an expire date.
+
+	* trustdb.c (do_update_trust_record,update_trust_record): Splitted.
+	(check_trust_record): New.
+	(check_trust,build_cert_tree): Check the dir record as needed.
+	(upd_pref_record): Removed.
+	(make_pref_record): New.
+	(propagate_validity): Stop as soon as we have enough validity.
+
+	* tbdio.c (MAX_CACHE_ENTRIES_HARD): Increased the limit.
+
+
 Fri Jul  2 11:45:54 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -7,7 +7,7 @@ DIE=no
 autoconf_vers=2.13
 automake_vers=1.4
 aclocal_vers=1.4
-libtool_vers=1.2
+libtool_vers=1.3
 
 if (autoconf --version) < /dev/null > /dev/null 2>&1 ; then
     if (autoconf --version | awk 'NR==1 { if( $3 >= '$autoconf_vers') \

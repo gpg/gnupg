@@ -33,7 +33,6 @@ Nice to have
     utility and SOCKSify this utility.
   * Do a real fix for bug #7 or document that it is a PGP 5 error.
   * preferences of hash algorithms are not yet used.
-  * new menu to delete signatures and list signature in menu
   * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
     or use POSIX.4 realtime signals.  Overhaul the interface and the
     test program.  Use it with the test suite?
@@ -42,7 +41,6 @@ Nice to have
   * Burn the buffers used by fopen(), or use read(2). Does this
     really make sense?	And while we are at it:  implement a secure deletion
     stuff?
-  * Stats about used random numbers.
   * the pubkey encrypt functions should do some sanity checks.
   * dynload: implement the hint stuff.
   * "gpg filename.tar.gz.asc" sollte wie mit --verify funktionieren (-sab).

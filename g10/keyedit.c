@@ -592,7 +592,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	{ N_("enable")  , cmdENABLEKEY , 0, N_("enable a key") },
 
     { NULL, cmdNONE } };
-    enum cmdids cmd;
+    enum cmdids cmd = 0;
     int rc = 0;
     KBNODE keyblock = NULL;
     KBPOS keyblockpos;
@@ -643,7 +643,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
     toggle = 0;
     cur_keyblock = keyblock;
     for(;;) { /* main loop */
-	int i, arg_number;
+	int i, arg_number=0;
 	char *p;
 
 	tty_printf("\n");

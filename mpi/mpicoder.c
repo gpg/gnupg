@@ -286,6 +286,16 @@ mpi_print( FILE *fp, MPI a, int mode )
 }
 
 
+void
+g10_log_mpidump( const char *text, MPI a )
+{
+    FILE *fp = log_stream();
+
+    g10_log_print_prefix(text);
+    mpi_print(fp, a, 1 );
+    fputc('\n', fp);
+}
+
 /****************
  * Special function to get the low 8 bytes from an mpi.
  * This can be used as a keyid; KEYID is an 2 element array.

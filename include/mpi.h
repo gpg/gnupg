@@ -110,10 +110,13 @@ int mpi_write( IOBUF out, MPI a );
 MPI mpi_read_from_buffer(byte *buffer, unsigned *ret_nread, int secure);
 int mpi_fromstr(MPI val, const char *str);
 int mpi_print( FILE *fp, MPI a, int mode );
+void g10_log_mpidump( const char *text, MPI a );
 u32 mpi_get_keyid( MPI a, u32 *keyid );
 byte *mpi_get_buffer( MPI a, unsigned *nbytes, int *sign );
 byte *mpi_get_secure_buffer( MPI a, unsigned *nbytes, int *sign );
 void  mpi_set_buffer( MPI a, const byte *buffer, unsigned nbytes, int sign );
+
+#define log_mpidump g10_log_mpidump
 
 /*-- mpi-add.c --*/
 void mpi_add_ui(MPI w, MPI u, ulong v );

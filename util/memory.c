@@ -48,9 +48,11 @@
   #define EXTRA_ALIGN 0
 #endif
 
+#if defined(M_DEBUG) || defined(M_GUARD)
+  static void membug( const char *fmt, ... );
+#endif
 
 #ifdef M_DEBUG
-  static void membug( const char *fmt, ... );
 
   #ifndef M_GUARD
     #define M_GUARD 1
@@ -319,7 +321,9 @@ check_allmem( const char *info )
 	    check_mem(e->user_p-4-EXTRA_ALIGN, info);
 }
 
+#endif /* M_DEBUG */
 
+#if defined(M_DEBUG) || defined(M_GUARD)
 static void
 membug( const char *fmt, ... )
 {
@@ -336,8 +340,7 @@ membug( const char *fmt, ... )
   #endif
     abort();
 }
-
-#endif /* M_DEBUG */
+#endif
 
 void
 m_print_stats( const char *prefix )

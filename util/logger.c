@@ -102,8 +102,8 @@ log_get_errorcount( int clear)
 }
 
 
-static void
-print_prefix(const char *text)
+void
+g10_log_print_prefix(const char *text)
 {
     if( !logfp )
 	logfp = stderr;
@@ -129,7 +129,7 @@ g10_log_info( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    print_prefix("");
+    g10_log_print_prefix("");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -151,7 +151,7 @@ g10_log_error( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    print_prefix("");
+    g10_log_print_prefix("");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -175,7 +175,7 @@ g10_log_fatal( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    print_prefix("fatal: ");
+    g10_log_print_prefix("fatal: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -202,7 +202,7 @@ g10_log_bug( const char *fmt, ... )
     va_list arg_ptr ;
 
     putc('\n', stderr );
-    print_prefix("Ohhhh jeeee: ");
+    g10_log_print_prefix("Ohhhh jeeee: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -230,7 +230,7 @@ g10_log_debug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    print_prefix("DBG: ");
+    g10_log_print_prefix("DBG: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(logfp,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -254,18 +254,11 @@ g10_log_hexdump( const char *text, const char *buf, size_t len )
 {
     int i;
 
-    print_prefix(text);
+    g10_log_print_prefix(text);
     for(i=0; i < len; i++ )
 	fprintf(logfp, " %02X", ((const byte*)buf)[i] );
     fputc('\n', logfp);
 }
 
 
-void
-g10_log_mpidump( const char *text, MPI a )
-{
-    print_prefix(text);
-    mpi_print(logfp, a, 1 );
-    fputc('\n', logfp);
-}
 

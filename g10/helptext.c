@@ -101,7 +101,10 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 
 
 { N_("keygen.valid"),
- "Enter the required value"
+ "Enter the required value as shown in the pronpt.\n"
+ "It is possible to enter a ISO date (YYYY-MM-DD) but you won't\n"
+ "get a good error response - instead the system tries to interpret\n"
+ "the given value as an interval."
 },
 
 { N_("keygen.valid.okay"),

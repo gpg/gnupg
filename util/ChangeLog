@@ -1,3 +1,15 @@
+Wed Jul  7 13:08:40 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* memory.c (membug): Use if either M_DEBUG or M_GUARD is used.
+
+	* miscutil.c (scan_isodatestr): New.
+
+	* logger.c (g10_log_mpidump): Moved to ../mpi/mpicoder.c
+	(g10_log_print_prefix): Renamed from print_prefix and made global.
+
+	* Makefile.am: Support for libtool.
+
 Thu Jul  1 12:47:31 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

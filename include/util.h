@@ -60,12 +60,12 @@ typedef struct {
 /*-- logger.c --*/
 void log_set_logfile( const char *name, int fd );
 FILE *log_stream(void);
+void g10_log_print_prefix(const char *text);
 void log_set_name( const char *name );
 const char *log_get_name(void);
 void log_set_pid( int pid );
 int  log_get_errorcount( int clear );
 void g10_log_hexdump( const char *text, const char *buf, size_t len );
-void g10_log_mpidump( const char *text, MPI a );
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
   void g10_log_bug( const char *fmt, ... )
@@ -100,7 +100,6 @@ void g10_log_mpidump( const char *text, MPI a );
 #endif
 
 #define log_hexdump g10_log_hexdump
-#define log_mpidump g10_log_mpidump
 #define log_bug     g10_log_bug
 #define log_bug0    g10_log_bug0
 #define log_fatal   g10_log_fatal
@@ -148,6 +147,7 @@ const char *print_fname_stdout( const char *s );
 
 /*-- miscutil.c --*/
 u32 make_timestamp(void);
+u32 scan_isodatestr( const char *string );
 u32 add_days_to_timestamp( u32 stamp, u16 days );
 const char *strtimevalue( u32 stamp );
 const char *strtimestamp( u32 stamp ); /* GMT */

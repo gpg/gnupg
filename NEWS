@@ -5,6 +5,9 @@
 
     * You will be asked for a filename if gpg cannot deduce one.
 
+    * Changes to support libtool which is needed for the development
+      of libgcrypt.
+
 Noteworthy changes in version 0.9.8
 -----------------------------------
 

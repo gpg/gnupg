@@ -109,8 +109,18 @@ AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
 AC_ARG_ENABLE(libgcrypt,
     [  --enable-libgcrypt      compile the libgcrypt [default=no]],
 [compile_libgcrypt="$enableval"],[compile_libgcrypt=no])
-AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
 AC_MSG_RESULT($compile_libgcrypt)
+if test x$compile_libgcrypt = xyes ; then
+    if test -f $srcdir/gcrypt/gcrypt.h; then
+        :
+    else
+        compile_libgcrypt=no
+        AC_MSG_WARN([[
+*** LIBGCRYPT is not yet ready for public testing.
+*** Maybe you have more luck with the next release of GnuPG]])
+    fi
+fi
+AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
 
 
 dnl
@@ -122,6 +132,8 @@ AC_ARG_WITH(capabilities,
 [use_capabilities="$withval"],[use_capabilities=no])
 AC_MSG_RESULT($use_capabilities)
 
+
+AM_MAINTAINER_MODE
 
 dnl Checks for programs.
 
@@ -139,15 +151,17 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_ISC_POSIX
 AC_PROG_INSTALL
-AC_PROG_RANLIB
+AC_PROG_AWK
 AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
 AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
 
 
 dnl
-dnl Don't default to build shared libs
+dnl Build shared libraries only when compilation of libgcrypt
+dnl has been requested
 dnl
 AM_DISABLE_SHARED
+enable_shared="$compile_libgcrypt"
 AM_PROG_LIBTOOL
 
 
@@ -486,7 +500,7 @@ for name in $MODULES_IN_CIPHER; do
     done;
     if test $x = yes; then
         STATIC_CIPHER_NAMES="$STATIC_CIPHER_NAMES $name"
-        STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.o"
+        STATIC_CIPHER_OBJS="$STATIC_CIPHER_OBJS $name.lo"
     else
         DYNAMIC_CIPHER_MODS="$DYNAMIC_CIPHER_MODS $name"
         GNUPG_MSG_PRINT([$name])
@@ -556,7 +570,7 @@ if test "$ac_cv_mpi_extra_asm_modules" != ""; then
 GNUPG_MSG_PRINT([mpi extra asm functions:])
 for i in $ac_cv_mpi_extra_asm_modules; do
     GNUPG_MSG_PRINT([$i])
-    MPI_EXTRA_ASM_OBJS="$MPI_EXTRA_ASM_OBJS $i.o"
+    MPI_EXTRA_ASM_OBJS="$MPI_EXTRA_ASM_OBJS $i.lo"
 done
 AC_MSG_RESULT()
 fi

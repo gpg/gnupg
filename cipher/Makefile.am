@@ -3,7 +3,7 @@
 
 INCLUDES =  -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
-noinst_LIBRARIES = libcipher.a
+noinst_LTLIBRARIES = libcipher.la
 
 # The configure script greps the module names from the following lines.
 # You must also add all these names to EXTRA_PROGRAMS some lines below
@@ -33,7 +33,8 @@ endif
 
 DYNLINK_MOD_CFLAGS = -DIS_MODULE @DYNLINK_MOD_CFLAGS@
 
-libcipher_a_SOURCES = cipher.c	\
+libcipher_la_LDFLAGS =
+libcipher_la_SOURCES = cipher.c  \
 		 pubkey.c	\
 		 md.c		\
 		 dynload.c	\
@@ -62,8 +63,8 @@ libcipher_a_SOURCES = cipher.c	\
 BUILT_SOURCES = construct.c
 
 
-libcipher_a_DEPENDENCIES = @STATIC_CIPHER_OBJS@
-libcipher_a_LIBADD =	   @STATIC_CIPHER_OBJS@
+libcipher_la_DEPENDENCIES = @STATIC_CIPHER_OBJS@
+libcipher_la_LIBADD =	    @STATIC_CIPHER_OBJS@
 
 
 # If I remember it correct, automake 1.4 has a feature to set

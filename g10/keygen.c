@@ -519,13 +519,25 @@ ask_expire_interval(void)
     answer = NULL;
     for(;;) {
 	int mult;
+	u32 abs_date=0;
+	u32 curtime=0;;
 
 	m_free(answer);
 	answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
 	cpr_kill_prompt();
 	trim_spaces(answer);
+	curtime = make_timestamp();
 	if( !*answer )
 	    valid_days = 0;
+	else if( (abs_date = scan_isodatestr(answer)) && abs_date > curtime ) {
+	    /* This calculation is not perfectly okay because we
+	     * are later going to simply multiply by 86400 and don't
+	     * correct for leapseconds.  A solution would be to change
+	     * the whole implemenation to work with dates and not intervals
+	     * which are required for v3 keys.
+	     */
+	    valid_days = abs_date/86400-curtime/86400+1;
+	}
 	else if( (mult=check_valid_days(answer)) ) {
 	    valid_days = atoi(answer) * mult;
 	    if( valid_days < 0 || valid_days > 32767 )
@@ -544,7 +556,7 @@ ask_expire_interval(void)
 	    interval = valid_days * 86400L;
 	    /* print the date when the key expires */
 	    tty_printf(_("Key expires at %s\n"),
-			asctimestamp(make_timestamp() + interval ) );
+			asctimestamp(curtime + interval ) );
 	}
 
 	if( !cpr_enabled()

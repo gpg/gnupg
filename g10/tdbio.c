@@ -56,8 +56,8 @@ struct cache_ctrl_struct {
     char data[TRUST_RECORD_LEN];
 };
 
-#define MAX_CACHE_ENTRIES_SOFT	200   /* may be increased while in a */
-#define MAX_CACHE_ENTRIES_HARD	1000  /* transaction to this one */
+#define MAX_CACHE_ENTRIES_SOFT	200    /* may be increased while in a */
+#define MAX_CACHE_ENTRIES_HARD	10000  /* transaction to this one */
 static CACHE_CTRL cache_list;
 static int cache_entries;
 static int cache_is_dirty;
