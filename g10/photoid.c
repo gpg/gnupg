@@ -90,7 +90,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 	{
 	  printf("This JPEG is really large (%d bytes) !\n",len);
 	  if(!cpr_get_answer_is_yes("photoid.jpeg.size",
-			    _("Are you sure you want to use it (y/n)? ")))
+			    _("Are you sure you want to use it (y/N)? ")))
 	  {
 	    iobuf_close(file);
 	    continue;
@@ -118,7 +118,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 
       show_photo(uid->attribs,pk);
       switch(cpr_get_answer_yes_no_quit("photoid.jpeg.okay",
-					_("Is this photo correct (y/n/q)? ")))
+					_("Is this photo correct (y/N/q)? ")))
 	{
 	case -1:
 	  goto scram;
@@ -131,6 +131,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
     }
 
   error=0;
+  uid->ref=1;
 
  scram:
   m_free(filename);

@@ -1,3 +1,27 @@
+2002-03-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (list_keyblock_colon): Fix ownertrust display with
+	--with-colons.
+
+	* keygen.c (generate_user_id), photoid.c (generate_photo_id):
+	Properly initialize the user ID refcount.  A few more "y/n" ->
+	"y/N" in photoid.c.
+
+	* keyedit.c (ask_revoke_sig): Warn the user if they are about to
+	revoke an expired sig (not a problem, but they should know).  Also
+	tweak a few prompts to change "y/n" to "y/N", which is how most
+	other prompts are written.
+
+	* keyserver.c (keyserver_search_prompt): Control-d escapes the
+	keyserver search prompt.
+
+	* pkclist.c (show_revocation_reason & callers): If a subkey is
+	considered revoked solely because the parent key is revoked, print
+	the revocation reason from the parent key.
+
+	* trustdb.c (get_validity): Allow revocation/expiration to apply
+	to a uid/key with no entry in the trustdb.
+
 2002-03-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (printunquoted): unquote backslashes from keyserver

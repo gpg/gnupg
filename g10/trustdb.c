@@ -759,6 +759,7 @@ get_validity (PKT_public_key *pk, const byte *namehash)
   if ( (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED) )
     validity |= TRUST_FLAG_DISABLED;
 
+ leave:
   /* set some flags direct from the key */
   if (main_pk->is_revoked)
     validity |= TRUST_FLAG_REVOKED;
@@ -769,7 +770,6 @@ get_validity (PKT_public_key *pk, const byte *namehash)
   if (main_pk->has_expired || pk->has_expired)
     validity = (validity & ~TRUST_MASK) | TRUST_EXPIRED;
 
- leave:
   if (main_pk != pk)
     free_public_key (main_pk);
   return validity;

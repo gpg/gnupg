@@ -144,7 +144,8 @@ parse_keyserver_uri(char *uri)
 	return G10ERR_BAD_URI;
     }
 
-  /* (any path part of the URI is discarded for now) */
+  /* (any path part of the URI is discarded for now as no keyserver
+     uses it) */
 
   if(opt.keyserver_scheme[0]=='\0' || opt.keyserver_host[0]=='\0')
     return G10ERR_BAD_URI;
@@ -152,7 +153,7 @@ parse_keyserver_uri(char *uri)
   return 0;
 }
 
-/* Unquote only the delimiter character and backslash */
+/* Unquote only the delimiter character and backslashes (\x5C) */
 static void 
 printunquoted(char *string,char delim)
 {
@@ -943,6 +944,13 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 	{
 	  answer=cpr_get_no_help("keysearch.prompt",
 				 _("Enter number(s), N)ext, or Q)uit > "));
+	  /* control-d */
+	  if(answer[0]=='\x04')
+	    {
+	      printf("Q\n");
+	      answer[0]='q';
+	    }
+
 	  if(answer[0]=='q' || answer[0]=='Q')
 	    {
 	      m_free(answer);

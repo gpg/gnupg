@@ -561,8 +561,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
         if( pk->local_id )
             printf("%lu", pk->local_id );
         putchar(':');
-        if( pk->local_id && !opt.fast_list_mode
-            && !opt.no_expensive_trust_checks  )
+        if( !opt.fast_list_mode && !opt.no_expensive_trust_checks  )
             putchar( get_ownertrust_info(pk) );
 	    putchar(':');
     }

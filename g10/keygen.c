@@ -1280,6 +1280,7 @@ generate_user_id()
     uid = m_alloc_clear( sizeof *uid + n - 1 );
     uid->len = n;
     strcpy(uid->name, p);
+    uid->ref = 1;
     return uid;
 }
 

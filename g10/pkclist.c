@@ -96,18 +96,20 @@ do_show_revocation_reason( PKT_signature *sig )
     }
 }
 
+/* Mode 0: try and find the revocation based on the pk (i.e. check
+   subkeys, etc.)  Mode 1: use only the revocation on the main pk */
 
 static void
-show_revocation_reason( PKT_public_key *pk )
+show_revocation_reason( PKT_public_key *pk, int mode )
 {
     /* Hmmm, this is not so easy becuase we have to duplicate the code
      * used in the trustbd to calculate the keyflags.  We need to find
-     * a clean way to check revocation certificates on keys and signatures.
-     * And there should be no duplicate code.  Because we enter this function
-     * only when the trustdb toldus, taht we have a revoked key, we could
-     * simplylook for a revocation cert and display this one, when there is
-     * only one. Let's try to do this until we have a better solution.
-     */
+     * a clean way to check revocation certificates on keys and
+     * signatures.  And there should be no duplicate code.  Because we
+     * enter this function only when the trustdb told us that we have
+     * a revoked key, we could simply look for a revocation cert and
+     * display this one, when there is only one. Let's try to do this
+     * until we have a better solution.  */
     KBNODE node, keyblock = NULL;
     byte fingerprint[MAX_FINGERPRINT_LEN];
     size_t fingerlen;
@@ -122,9 +124,10 @@ show_revocation_reason( PKT_public_key *pk )
     }
 
     for( node=keyblock; node; node = node->next ) {
-	if( ( node->pkt->pkttype == PKT_PUBLIC_KEY
+        if( (mode && node->pkt->pkttype == PKT_PUBLIC_KEY) ||
+	  ( ( node->pkt->pkttype == PKT_PUBLIC_KEY
 	      || node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
-	    && !cmp_public_keys( node->pkt->pkt.public_key, pk ) )
+	    && !cmp_public_keys( node->pkt->pkt.public_key, pk ) ) )
 	    break;
     }
     if( !node ) {
@@ -141,8 +144,13 @@ show_revocation_reason( PKT_public_key *pk )
 		|| node->pkt->pkt.signature->sig_class == 0x28 ) ) {
 		/* FIXME: we should check the signature here */
 		do_show_revocation_reason ( node->pkt->pkt.signature );
+		break;
 	}
     }
+
+    /* We didn't find it, so check if the whole key is revoked */
+    if(!node && !mode)
+      show_revocation_reason(pk,1);
 
     release_kbnode( keyblock );
 }
@@ -390,7 +398,7 @@ do_we_trust( PKT_public_key *pk, unsigned int *trustlevel )
     if( (*trustlevel & TRUST_FLAG_REVOKED) ) {
 	log_info(_("key %08lX: key has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
-	show_revocation_reason( pk );
+	show_revocation_reason( pk, 0 );
 	if( opt.batch )
           return 0; /* no */
 
@@ -402,7 +410,7 @@ do_we_trust( PKT_public_key *pk, unsigned int *trustlevel )
     if( (*trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
 	log_info(_("key %08lX: subkey has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
-	show_revocation_reason( pk );
+	show_revocation_reason( pk, 0 );
 	if( opt.batch )
 	    return 0;
 
@@ -553,13 +561,13 @@ check_signatures_trust( PKT_signature *sig )
       write_status( STATUS_KEYREVOKED );
       log_info(_("WARNING: This key has been revoked by its owner!\n"));
       log_info(_("         This could mean that the signature is forgery.\n"));
-      show_revocation_reason( pk );
+      show_revocation_reason( pk, 0 );
     }
   else if ((trustlevel & TRUST_FLAG_SUB_REVOKED) ) 
     {
       write_status( STATUS_KEYREVOKED );
       log_info(_("WARNING: This subkey has been revoked by its owner!\n"));
-      show_revocation_reason( pk );
+      show_revocation_reason( pk, 0 );
     }
   
   if ((trustlevel & TRUST_FLAG_DISABLED))

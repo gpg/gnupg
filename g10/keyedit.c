@@ -355,7 +355,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 				     "exportable signature?\n"),
 				   uidnode->pkt->pkt.user_id->name);
 			if(cpr_get_answer_is_yes("sign_uid.promote",
-						 "Promote? (y/n) "))
+						 "Promote? (y/N) "))
 			  {
 			    /* Mark these for later deletion.  We
                                don't want to delete them here, just in
@@ -406,7 +406,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		    tty_printf(_("  Are you sure you still "
 				 "want to sign it?\n"));
 		    if(!cpr_get_answer_is_yes("sign_uid.okay",
-					      _("Really sign? ")))
+					      _("Really sign? (y/N) ")))
 		      continue;
 		  }
 		else
@@ -419,7 +419,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	      {
 		tty_printf(_("This key is due to expire on %s.\n"),
 			   expirestr_from_pk(primary_pk));
-		if(cpr_get_answer_is_yes("sign_uid.expire",_("Do you want your signature to expire at the same time? (y/n) ")))
+		/* Should this default to yes? -ds */
+		if(cpr_get_answer_is_yes("sign_uid.expire",_("Do you want your signature to expire at the same time? (y/N) ")))
 		  {
 		    /* This fixes the signature timestamp we're going
 		       to make as now.  This is so the expiration date
@@ -1591,7 +1592,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 			     "some versions of PGP.\n"));
 		if(!cpr_get_answer_is_yes("keyedit.multi_photo.okay",
 					  _("Are you sure you still want "
-					    "to add it? (y/n) ")))
+					    "to add it? (y/N) ")))
 		  return 0;
 		else
 		  break;
@@ -1618,7 +1619,7 @@ menu_adduid( KBNODE pub_keyblock, KBNODE sec_keyblock, int photo)
 
 	      if(!cpr_get_answer_is_yes("keyedit.v3_photo.okay",
 					_("Are you sure you still want "
-					  "to add it? (y/n) ")))
+					  "to add it? (y/N) ")))
 		return 0;
 	    }
 	  else
@@ -2317,6 +2318,7 @@ count_selected_keys( KBNODE keyblock )
 static void
 ask_revoke_sig( KBNODE keyblock, KBNODE node )
 {
+    int doit=0;
     PKT_signature *sig = node->pkt->pkt.signature;
     KBNODE unode = find_prev_kbnode( keyblock, node, PKT_USER_ID );
 
@@ -2336,8 +2338,19 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
       tty_printf(_("\"\nlocally signed with your key %08lX at %s\n"),
 		 (ulong)sig->keyid[1], datestr_from_sig(sig) );
 
-    if( cpr_get_answer_is_yes("ask_revoke_sig.one",
-       _("Create a revocation certificate for this signature? (y/N)")) ) {
+    if(sig->flags.expired)
+      {
+	tty_printf(_("This signature expired on %s.\n"),
+		   expirestr_from_sig(sig));
+	/* Use a different question so we can have different help text */
+	doit=cpr_get_answer_is_yes("ask_revoke_sig.expired",
+			_("Are you sure you still want to revoke it? (y/N) "));
+      }
+    else
+      doit=cpr_get_answer_is_yes("ask_revoke_sig.one",
+	      _("Create a revocation certificate for this signature? (y/N) "));
+
+    if(doit) {
       node->flag |= NODFLG_MARK_A;
       unode->flag |= NODFLG_MARK_A;
     }
@@ -2422,7 +2435,7 @@ menu_revsig( KBNODE keyblock )
 	return 0; /* none selected */
 
     if( !cpr_get_answer_is_yes("ask_revoke_sig.okay",
-	 _("Really create the revocation certificates? (y/N)")) )
+	 _("Really create the revocation certificates? (y/N) ")) )
 	return 0; /* forget it */
 
     reason = ask_revocation_reason( 0, 1, 0 );
