@@ -1,5 +1,15 @@
 2002-06-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* packet.h, parse-packet.c (enum_sig_subpkt): Report back from
+	enum_sig_subpkt when a subpacket is critical and change all
+	callers in keylist.c (show_policy_url, show_notation), mainproc.c
+	(print_notation_data), and pkclist.c (do_show_revocation_reason).
+
+	* keylist.c (show_policy_url, show_notation): Display if the
+	policy or notation is critical.
+	
+2002-06-03  David Shaw  <dshaw@jabberwocky.com>
+
 	* main.h, g10.c (main), keylist.c (dump_attribs, set_attrib_fd,
 	list_keyblock_print, list_keyblock_colon), status.h, status.c
 	(get_status_string): New --attribute-fd feature to dump the
