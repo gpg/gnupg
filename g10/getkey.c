@@ -779,11 +779,12 @@ skip_unusable(void *dummy,u32 *keyid,PKT_user_id *uid)
 
 /****************
  * Try to get the pubkey by the userid. This function looks for the
- * first pubkey certificate which has the given name in a user_id.
- * if pk/sk has the pubkey algo set, the function will only return
- * a pubkey with that algo.
- * The caller should provide storage for either the pk or the sk.
- * If ret_kb is not NULL the function will return the keyblock there.
+ * first pubkey certificate which has the given name in a user_id.  if
+ * pk/sk has the pubkey algo set, the function will only return a
+ * pubkey with that algo.  If namelist is NULL, the first key is
+ * returned.  The caller should provide storage for either the pk or
+ * the sk.  If ret_kb is not NULL the function will return the
+ * keyblock there.
  */
 
 static int
@@ -806,29 +807,43 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     if (ret_kdbhd)
         *ret_kdbhd = NULL;
 
-    /* build the search context */
-    for(n=0, r=namelist; r; r = r->next )
-	n++;
-    ctx = m_alloc_clear (sizeof *ctx + (n-1)*sizeof ctx->items );
-    ctx->nitems = n;
+    if(!namelist)
+      {
+	ctx = m_alloc_clear (sizeof *ctx);
+	ctx->nitems = 1;
+	ctx->items[0].mode=KEYDB_SEARCH_MODE_FIRST;
+	if(!include_unusable)
+	  ctx->items[0].skipfnc=skip_unusable;
+      }
+    else
+      {
+	/* build the search context */
+	for(n=0, r=namelist; r; r = r->next )
+	  n++;
 
-    for(n=0, r=namelist; r; r = r->next, n++ ) {
-	classify_user_id (r->d, &ctx->items[n]);
+	ctx = m_alloc_clear (sizeof *ctx + (n-1)*sizeof ctx->items );
+	ctx->nitems = n;
+
+	for(n=0, r=namelist; r; r = r->next, n++ )
+	  {
+	    classify_user_id (r->d, &ctx->items[n]);
         
-        if (ctx->items[n].exact)
-            ctx->exact = 1;
-        if (!ctx->items[n].mode) {
-	    m_free (ctx);
-	    return G10ERR_INV_USER_ID;
-	}
-	if(!include_unusable
- 	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_SHORT_KID
- 	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_LONG_KID
- 	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR16
-	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR20
-	   && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR)
- 	  ctx->items[n].skipfnc=skip_unusable;
-    }
+	    if (ctx->items[n].exact)
+	      ctx->exact = 1;
+	    if (!ctx->items[n].mode)
+	      {
+		m_free (ctx);
+		return G10ERR_INV_USER_ID;
+	      }
+	    if(!include_unusable
+	       && ctx->items[n].mode!=KEYDB_SEARCH_MODE_SHORT_KID
+	       && ctx->items[n].mode!=KEYDB_SEARCH_MODE_LONG_KID
+	       && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR16
+	       && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR20
+	       && ctx->items[n].mode!=KEYDB_SEARCH_MODE_FPR)
+	      ctx->items[n].skipfnc=skip_unusable;
+	  }
+      }
 
     ctx->kr_handle = keydb_new (secmode);
     if ( !ret_kb ) 
@@ -909,7 +924,6 @@ get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
     return rc;
 }
 
-
 void
 get_pubkey_end( GETKEY_CTX ctx )
 {
@@ -920,8 +934,6 @@ get_pubkey_end( GETKEY_CTX ctx )
 	    m_free( ctx );
     }
 }
-
-
 
 
 /****************
