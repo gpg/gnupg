@@ -710,7 +710,7 @@ start_server()
 static int
 connect_server( const char *server, ushort port, unsigned int flags )
 {
-  int sock=-1,srv,srvcount=0,connected=0;
+  int sock=-1,srv,srvcount=0,connected=0,hostfound=0;
   struct srventry *srvlist=NULL;
 
 #ifdef _WIN32
@@ -778,7 +778,9 @@ connect_server( const char *server, ushort port, unsigned int flags )
       sprintf(portstr,"%u",srvlist[srv].port);
       memset(&hints,0,sizeof(hints));
       hints.ai_socktype=SOCK_STREAM;
-      if(getaddrinfo(srvlist[srv].target,portstr,&hints,&res)!=0)
+      if(getaddrinfo(srvlist[srv].target,portstr,&hints,&res)==0)
+	hostfound=1;
+      else
 	continue;
 
       for(ai=res;ai;ai=ai->ai_next)
@@ -849,9 +851,15 @@ connect_server( const char *server, ushort port, unsigned int flags )
   if(!connected)
     {
 #ifdef _WIN32
-      log_error("%s: host not found: ec=%d\n",server,(int)WSAGetLastError());
+      if(hostfound)
+	log_error("%s: Unable to connect: ec=%d\n",server,(int)WSAGetLastError());
+      else
+	log_error("%s: Host not found: ec=%d\n",server,(int)WSAGetLastError());
 #else
-      log_error("%s: host not found\n",server);
+      if(hostfound)
+	log_error("%s: %s\n",server,strerror(errno));
+      else
+	log_error("%s: Host not found\n",server);
 #endif
       if(sock!=-1)
 	sock_close(sock);
