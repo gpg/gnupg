@@ -1,3 +1,8 @@
+2004-03-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c (retrieve_options_from_file): Quote each string
+	in the list, not only the first.
+
 2004-02-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgconf-comp.c (gc_component_list_options): Do not print empty

@@ -1172,11 +1172,11 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 	  while (*(end - 1) == ' ' || *(end - 1) == '\t')
 	    end--;
 	  *end = '\0';
-	  /* FIXME: Oh, no!  This is so lame!  Use realloc and really
-	     append.  */
+	  /* FIXME: Oh, no!  This is so lame!  Should use realloc and
+	     really append.  */
 	  if (list)
 	    {
-	      new_list = xasprintf ("%s,%s", list, percent_escape (start));
+	      new_list = xasprintf ("%s,\"%s", list, percent_escape (start));
 	      xfree (list);
 	      list = new_list;
 	    }
