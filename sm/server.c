@@ -42,6 +42,32 @@ struct server_local_s {
   CERTLIST recplist;
 };
 
+
+
+/* note, that it is sufficient to allocate the target string D as
+   long as the source string S, i.e.: strlen(s)+1; */
+static void
+strcpy_escaped_plus (char *d, const unsigned char *s)
+{
+  while (*s)
+    {
+      if (*s == '%' && s[1] && s[2])
+        { 
+          s++;
+          *d++ = xtoi_2 ( s);
+          s += 2;
+        }
+      else if (*s == '+')
+        *d++ = ' ', s++;
+      else
+        *d++ = *s++;
+    }
+  *d = 0; 
+}
+
+
+
+
 /* Check whether the option NAME appears in LINE */
 static int
 has_option (const char *line, const char *name)
@@ -370,35 +396,56 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-/* Note that the line contains a space separated list of pappern where
-   each pappern is percent escaped and spaces may be replaced by
-   '+'. */
 static int 
-cmd_listkeys (ASSUAN_CONTEXT ctx, char *line)
+do_listkeys (ASSUAN_CONTEXT ctx, char *line, int mode)
 {
   CTRL ctrl = assuan_get_pointer (ctx);
   FILE *fp = assuan_get_data_fp (ctx);
+  char *p;
+  STRLIST list, sl;
 
   if (!fp)
     return set_error (General_Error, "no data stream");
-  ctrl->with_colons = 1;
-  gpgsm_list_keys (assuan_get_pointer (ctx), NULL, fp, 3);
+  
+  /* break the line down into an STRLIST */
+  list = NULL;
+  for (p=line; *p; line = p)
+    {
+      while (*p && *p != ' ')
+        p++;
+      if (*p)
+        *p++ = 0;
+      if (*line)
+        {
+          sl = xtrymalloc (sizeof *sl + strlen (line));
+          if (!sl)
+            {
+              free_strlist (list);
+              return ASSUAN_Out_Of_Core;
+            }
+          sl->flags = 0;
+          strcpy_escaped_plus (sl->d, line);
+          sl->next = list;
+          list = sl;
+        }
+    }
 
+  ctrl->with_colons = 1;
+  gpgsm_list_keys (assuan_get_pointer (ctx), list, fp, 3);
+  free_strlist (list);
   return 0;
+}
+
+static int 
+cmd_listkeys (ASSUAN_CONTEXT ctx, char *line)
+{
+  return do_listkeys (ctx, line, 3);
 }
 
 static int 
 cmd_listsecretkeys (ASSUAN_CONTEXT ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
-  FILE *fp = assuan_get_data_fp (ctx);
-
-  ctrl->with_colons = 1;
-  if (!fp)
-    return set_error (General_Error, "no data stream");
-  gpgsm_list_keys (assuan_get_pointer (ctx), NULL, fp, 2);
-
-  return 0;
+  return do_listkeys (ctx, line, 2);
 }
 
 

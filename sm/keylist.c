@@ -227,28 +227,68 @@ void
 gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
 {
   KEYDB_HANDLE hd;
+  KEYDB_SEARCH_DESC *desc = NULL;
+  STRLIST sl;
+  int ndesc;
   KsbaCert cert = NULL;
   int rc=0;
   const char *lastresname, *resname;
   int have_secret;
 
-#warning there is no key selection yet
-  /* We must take care of quoting here */
   hd = keydb_new (0);
   if (!hd)
-    rc = GNUPG_General_Error;
-  else
-    rc = keydb_search_first (hd);
-  if (rc)
     {
-      if (rc != -1)
-        log_error ("keydb_search_first failed: %s\n", gnupg_strerror (rc) );
+      log_error ("keydb_new failed\n");
       goto leave;
     }
 
-  lastresname = NULL;
-  do
+  if (!names)
+    ndesc = 1;
+  else
     {
+      for (sl=names, ndesc=0; sl; sl = sl->next, ndesc++) 
+        ;
+    }
+
+  desc = xtrycalloc (ndesc, sizeof *desc);
+  if (!ndesc)
+    {
+      log_error ("out of core\n");
+      goto leave;
+    }
+
+  if (!names)
+    desc[0].mode = KEYDB_SEARCH_MODE_FIRST;
+  else 
+    {
+      for (ndesc=0, sl=names; sl; sl = sl->next) 
+        {
+          rc = keydb_classify_name (sl->d, desc+ndesc);
+          if (rc)
+            {
+              log_error ("key `%s' not found: %s\n",
+                         sl->d, gnupg_strerror (rc));
+              rc = 0;
+            }
+          else
+            ndesc++;
+        }
+      
+    }
+
+  /* it would be nice to see which of the given users did actually
+     match one in the keyring.  To implement this we need to have a
+     found flag for each entry in desc and to set this we must check
+     all those entries after a match to mark all matched one -
+     currently we stop at the first match.  To do this we need an
+     extra flag to enable this feature so */
+
+  lastresname = NULL;
+  while (!(rc = keydb_search (hd, desc, ndesc)))
+    {
+      if (!names) 
+        desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
+
       rc = keydb_get_cert (hd, &cert);
       if (rc) 
         {
@@ -296,12 +336,14 @@ gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
       ksba_cert_release (cert); 
       cert = NULL;
     }
-  while (!(rc = keydb_search_next (hd)));
   if (rc && rc != -1)
-    log_error ("keydb_search_next failed: %s\n", gnupg_strerror (rc));
+    log_error ("keydb_search failed: %s\n", gnupg_strerror (rc));
   
  leave:
   ksba_cert_release (cert);
+  xfree (desc);
   keydb_release (hd);
 }
+
+
 

@@ -1,5 +1,10 @@
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
+	* server.c (cmd_listkeys, cmd_listsecretkeys): Divert to
+	(do_listkeys): new.  Add pattern parsing.
+
+	* keylist.c (gpgsm_list_keys): Handle selection pattern.
+
 	* gpgsm.c: New command --learn-card
 	* call-agent.c (learn_cb,gpgsm_agent_learn): New.
 
