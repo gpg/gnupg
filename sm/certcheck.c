@@ -50,7 +50,7 @@ do_encode_md (GCRY_MD_HD md, int algo,  unsigned int nbits,
   if (gcry_md_algo_info (algo, GCRYCTL_GET_ASNOID, asn, &asnlen))
     {
       log_error ("No object identifier for algo %d\n", algo);
-      return GPGSM_Internal_Error;
+      return GNUPG_Internal_Error;
     }
 
   len = gcry_md_get_algo_dlen (algo);
@@ -59,7 +59,7 @@ do_encode_md (GCRY_MD_HD md, int algo,  unsigned int nbits,
     {
       log_error ("can't encode a %d bit MD into a %d bits frame\n",
                  (int)(len*8), (int)nbits);
-      return GPGSM_Internal_Error;
+      return GNUPG_Internal_Error;
     }
   
   /* We encode the MD in this way:
@@ -70,7 +70,7 @@ do_encode_md (GCRY_MD_HD md, int algo,  unsigned int nbits,
    */
   frame = xtrymalloc (nframe);
   if (!frame)
-    return GPGSM_Out_Of_Core;
+    return GNUPG_Out_Of_Core;
   n = 0;
   frame[n++] = 0;
   frame[n++] = 1; /* block type */
@@ -114,13 +114,13 @@ gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert)
   if (!algo)
     {
       log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
-      return GPGSM_General_Error;
+      return GNUPG_General_Error;
     }
   md = gcry_md_open (algo, 0);
   if (!md)
     {
       log_error ("md_open failed: %s\n", gcry_strerror (-1));
-      return GPGSM_General_Error;
+      return GNUPG_General_Error;
     }
 
   rc = ksba_cert_hash (cert, 1, HASH_FNC, md);

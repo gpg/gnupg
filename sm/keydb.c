@@ -97,7 +97,7 @@ keydb_add_resource (const char *url, int force, int secret)
       #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
 	else if (strchr (resname, ':')) {
 	    log_error ("invalid key resource URL `%s'\n", url );
-	    rc = GPGSM_General_Error;
+	    rc = GNUPG_General_Error;
 	    goto leave;
 	}
       #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
@@ -141,7 +141,7 @@ keydb_add_resource (const char *url, int force, int secret)
     switch (rt) {
       case KEYDB_RESOURCE_TYPE_NONE:
 	log_error ("unknown type of key resource `%s'\n", url );
-	rc = GPGSM_General_Error;
+	rc = GNUPG_General_Error;
 	goto leave;
 
       case KEYDB_RESOURCE_TYPE_KEYBOX:
@@ -205,7 +205,7 @@ keydb_add_resource (const char *url, int force, int secret)
           if (!token)
             ; /* already registered - ignore it */
           else if (used_resources >= MAX_KEYDB_RESOURCES)
-              rc = GPGSM_Resource_Limit;
+              rc = GNUPG_Resource_Limit;
           else 
             {
               all_resources[used_resources].type = rt;
@@ -219,7 +219,7 @@ keydb_add_resource (const char *url, int force, int secret)
 
       default:
 	log_error ("resource type of `%s' not supported\n", url);
-	rc = GPGSM_General_Error;
+	rc = GNUPG_General_Error;
 	goto leave;
     }
 
@@ -227,7 +227,7 @@ keydb_add_resource (const char *url, int force, int secret)
 
   leave:
     if (rc)
-      log_error ("keyblock resource `%s': %s\n", filename, gpgsm_strerror(rc));
+      log_error ("keyblock resource `%s': %s\n", filename, gnupg_strerror(rc));
     else if (secret)
 	any_secret = 1;
     else
@@ -520,7 +520,7 @@ keydb_get_cert (KEYDB_HANDLE hd, KsbaCert *r_cert)
   int rc = 0;
 
   if (!hd)
-    return GPGSM_Invalid_Value;
+    return GNUPG_Invalid_Value;
   
   if ( hd->found < 0 || hd->found >= hd->used) 
     return -1; /* nothing found */
@@ -528,7 +528,7 @@ keydb_get_cert (KEYDB_HANDLE hd, KsbaCert *r_cert)
   switch (hd->active[hd->found].type) 
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = GPGSM_General_Error; /* oops */
+      rc = GNUPG_General_Error; /* oops */
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       rc = keybox_get_cert (hd->active[hd->found].u.kr, r_cert);
@@ -549,7 +549,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert)
   char digest[20];
   
   if (!hd) 
-    return GPGSM_Invalid_Value;
+    return GNUPG_Invalid_Value;
 
   if (opt.dry_run)
     return 0;
@@ -559,7 +559,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert)
   else if ( hd->current >= 0 && hd->current < hd->used) 
     idx = hd->current;
   else
-    return GPGSM_General_Error;
+    return GNUPG_General_Error;
 
   rc = lock_all (hd);
   if (rc)
@@ -570,7 +570,7 @@ keydb_insert_cert (KEYDB_HANDLE hd, KsbaCert cert)
   switch (hd->active[idx].type) 
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = GPGSM_General_Error;
+      rc = GNUPG_General_Error;
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       rc = keybox_insert_cert (hd->active[idx].u.kr, cert, digest);
@@ -591,7 +591,7 @@ keydb_update_cert (KEYDB_HANDLE hd, KsbaCert cert)
   char digest[20];
   
   if (!hd)
-    return GPGSM_Invalid_Value;
+    return GNUPG_Invalid_Value;
 
   if ( hd->found < 0 || hd->found >= hd->used) 
     return -1; /* nothing found */
@@ -608,7 +608,7 @@ keydb_update_cert (KEYDB_HANDLE hd, KsbaCert cert)
   switch (hd->active[hd->found].type) 
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = GPGSM_General_Error; /* oops */
+      rc = GNUPG_General_Error; /* oops */
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       rc = keybox_update_cert (hd->active[hd->found].u.kr, cert, digest);
@@ -629,7 +629,7 @@ keydb_delete (KEYDB_HANDLE hd)
   int rc = -1;
   
   if (!hd)
-    return GPGSM_Invalid_Value;
+    return GNUPG_Invalid_Value;
 
   if ( hd->found < 0 || hd->found >= hd->used) 
     return -1; /* nothing found */
@@ -644,7 +644,7 @@ keydb_delete (KEYDB_HANDLE hd)
   switch (hd->active[hd->found].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = GPGSM_General_Error;
+      rc = GNUPG_General_Error;
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       rc = keybox_delete (hd->active[hd->found].u.kr);
@@ -668,7 +668,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
   int rc;
   
   if (!hd)
-    return GPGSM_Invalid_Value;
+    return GNUPG_Invalid_Value;
   
   rc = keydb_search_reset (hd); /* this does reset hd->current */
   if (rc)
@@ -728,7 +728,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
   int i, rc = 0;
   
   if (!hd)
-    return GPGSM_Invalid_Value;
+    return GNUPG_Invalid_Value;
 
   hd->current = 0; 
   hd->found = -1;
@@ -758,7 +758,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
   int rc = -1;
   
   if (!hd)
-    return GPGSM_Invalid_Value;
+    return GNUPG_Invalid_Value;
 
   while (rc == -1 && hd->current >= 0 && hd->current < hd->used) 
     {

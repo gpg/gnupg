@@ -1,3 +1,4 @@
+# Makefile for common gnupg modules
 # Copyright (C) 2001 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
@@ -18,30 +19,17 @@
 
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS = gpgsm
+EXTRA_DIST = mkerrors
+#INCLUDES = 
+BUILT_SOURCES = errors.c
 
-INCLUDES = -I$(top_srcdir)/common -I$(top_srcdir)/intl
-LDFLAGS = @LDFLAGS@ 
-#$(LIBGCRYPT_LIBS)
+noinst_LIBRARIES = libcommon.a
 
-gpgsm_SOURCES = \
-	gpgsm.c	gpgsm.h \
-	misc.c \
-	keydb.c keydb.h \
-	server.c \
-	fingerprint.c \
-	certdump.c \
-	certcheck.c \
-	certpath.c \
-	keylist.c \
-	verify.c \
-	sign.c \
-	import.c 
+libcommon_a_SOURCES = \
+	util.h i18n.h \
+	errors.c errors.h \
+	maperror.c 
 
 
-gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a ../kbx/libkeybox.a \
-              ../common/libcommon.a \
-              ../../libksba/src/.libs/libksba.a \
-              ../../libgcrypt/src/.libs/libgcrypt.so.1 
-
-
+errors.c : errors.h mkerrors
+	$(srcdir)/mkerrors < $(srcdir)/errors.h > errors.c

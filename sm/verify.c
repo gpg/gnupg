@@ -109,12 +109,12 @@ store_cert (KsbaCert cert)
     }
   rc = keydb_locate_writable (kh, 0);
   if (rc)
-      log_error (_("error finding writable keyDB: %s\n"), gpgsm_strerror (rc));
+      log_error (_("error finding writable keyDB: %s\n"), gnupg_strerror (rc));
 
   rc = keydb_insert_cert (kh, cert);
   if (rc)
     {
-      log_error (_("error storing certificate: %s\n"), gpgsm_strerror (rc));
+      log_error (_("error storing certificate: %s\n"), gnupg_strerror (rc));
     }
   keydb_release (kh);               
 }
@@ -190,7 +190,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GPGSM_General_Error;
+      rc = GNUPG_General_Error;
       goto leave;
     }
 
@@ -264,7 +264,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       if (stopreason == KSBA_SR_BEGIN_DATA)
         {
           log_error ("error: only detached signatures are supportted\n");
-          rc = GPGSM_Not_Implemented;
+          rc = GNUPG_Not_Implemented;
           goto leave;
         }
 
@@ -285,7 +285,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
               if (data_fd == -1)
                 {
                   log_error ("detached signature but no data given\n");
-                  rc = GPGSM_Bad_Signature;
+                  rc = GNUPG_Bad_Signature;
                   goto leave;
                 }
               hash_data (data_fd, data_md);  
@@ -297,7 +297,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
   if (data_fd != -1 && !is_detached)
     {
       log_error ("data given for a non-detached signature");
-      rc = GPGSM_Conflict;
+      rc = GNUPG_Conflict;
       goto leave;
     }
 
@@ -357,14 +357,14 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       if (rc)
         {
           log_debug ("failed to find the certificate: %s\n",
-                     gpgsm_strerror(rc));
+                     gnupg_strerror(rc));
           goto next_signer;
         }
 
       rc = keydb_get_cert (kh, &cert);
       if (rc)
         {
-          log_debug ("failed to get cert: %s\n", gpgsm_strerror (rc));
+          log_debug ("failed to get cert: %s\n", gnupg_strerror (rc));
           goto next_signer;
         }
 
@@ -411,7 +411,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
 
       if (rc)
         {
-          log_error ("invalid signature: %s\n", gpgsm_strerror (rc));
+          log_error ("invalid signature: %s\n", gnupg_strerror (rc));
           gpgsm_status (ctrl, STATUS_BADSIG, NULL);
           goto next_signer;
         }
@@ -433,9 +433,9 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd)
       rc = gpgsm_validate_path (cert);
       if (rc)
         {
-          log_error ("invalid certification path: %s\n", gpgsm_strerror (rc));
-          if (rc == GPGSM_Bad_Certificate_Path
-              || rc == GPGSM_Bad_Certificate)
+          log_error ("invalid certification path: %s\n", gnupg_strerror (rc));
+          if (rc == GNUPG_Bad_Certificate_Path
+              || rc == GNUPG_Bad_Certificate)
             gpgsm_status (ctrl, STATUS_TRUST_NEVER, NULL);
           else
             gpgsm_status (ctrl, STATUS_TRUST_UNDEFINED, NULL);

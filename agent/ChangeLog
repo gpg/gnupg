@@ -1,0 +1,26 @@
+2001-11-19  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c: Removed all GUI code, removed code for old
+	protocol.  New code to use the Assuan protocol as a server and
+	also to communicate with a new ask-passphrase utility.
+
+2000-11-22  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): csh support by Dan Winship, new options --sh
+	and --csh and set default by consulting $SHELL.
+
+Mon Aug 21 17:59:17 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * gpg-agent.c (passphrase_dialog): Cleanup the window and added the
+        user supplied text to the window.
+        (main): Fixed segv in gtk_init when used without a command to start.
+
+        * gpg-agent.c: --flush option.
+        (req_flush): New.
+        (req_clear_passphrase): Implemented.
+
+Fri Aug 18 14:27:14 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * gpg-agent.c: New.
+        * Makefile.am: New.
+

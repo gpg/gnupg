@@ -31,7 +31,7 @@
 #include "../jnlib/logging.h"
 #include "../jnlib/argparse.h"
 #include "../jnlib/stringhelp.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "keybox-defs.h"
 
 enum cmd_and_opt_values {

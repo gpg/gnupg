@@ -1,6 +1,6 @@
 #!/bin/sh
-# mkerrors - Extract error strings from gpgsm.h
-#            and create C source for gpgsm_strerror
+# mkerrors - Extract error strings from errors.h
+#            and create C source for gnupg_strerror
 #	Copyright (C) 2001 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
@@ -25,10 +25,10 @@ cat <<EOF
 
 #include <config.h>
 #include <stdio.h>
-#include "gpgsm.h"
+#include "errors.h"
 
 /**
- * gpgsm_strerror:
+ * gnupg_strerror:
  * @err:  Error code 
  * 
  * This function returns a textual representaion of the given
@@ -38,7 +38,7 @@ cat <<EOF
  * Return value: String with the error description.
  **/
 const char *
-gpgsm_strerror (int err)
+gnupg_strerror (int err)
 {
   const char *s;
   static char buf[25];
@@ -48,10 +48,10 @@ gpgsm_strerror (int err)
 EOF
 
 awk '
-/GPGSM_No_Error/  { okay=1 }
+/GNUPG_No_Error/  { okay=1 }
 !okay              {next}
 /}/                { exit 0 }
-/GPGSM_[A-Za-z_]*/ { print_code($1) }
+/GNUPG_[A-Za-z_]*/ { print_code($1) }
 
 
 function print_code( s )

@@ -1,4 +1,4 @@
-/* misc.c - Miscellaneous fucntions
+/* maperror.c - Error mapping
  *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -28,5 +28,58 @@
 
 #include <ksba.h>
 
-#include "gpgsm.h"
+#include "util.h"
+#include "errors.h"
+
+
+/* Note: we might want to wrap this in a macro to get our hands on
+   the line and file where the error occired */
+int
+map_ksba_err (int err)
+{
+  switch (err)
+    {
+    case -1:
+    case 0:
+      break;
+      
+    default:
+      err = seterr (General_Error);
+      break;
+    }
+  return err;
+}
+
+
+int 
+map_gcry_err (int err)
+{
+  switch (err)
+    {
+    case -1:
+    case 0:
+      break;
+      
+    default:
+      err = seterr (General_Error);
+      break;
+    }
+  return err;
+}
+
+int 
+map_kbx_err (int err)
+{
+  switch (err)
+    {
+    case -1:
+    case 0:
+      break;
+      
+    default:
+      err = seterr (General_Error);
+      break;
+    }
+  return err;
+}
 

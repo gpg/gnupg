@@ -136,7 +136,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GPGSM_General_Error;
+      rc = GNUPG_General_Error;
       goto leave;
     }
 
@@ -238,7 +238,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       if (!algo)
         {
           log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
-          rc = GPGSM_Bug;
+          rc = GNUPG_Bug;
           goto leave;
         }
       gcry_md_enable (data_md, algo);
@@ -261,7 +261,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       if ( !digest || !digest_len)
         {
           log_error ("problem getting the hash of the data\n");
-          rc = GPGSM_Bug;
+          rc = GNUPG_Bug;
           goto leave;
         }
       err = ksba_cms_set_message_digest (cms, signer, digest, digest_len);

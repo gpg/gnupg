@@ -251,12 +251,12 @@ store_cert (KsbaCert cert)
     }
   rc = keydb_locate_writable (kh, 0);
   if (rc)
-      log_error (_("error finding writable keyDB: %s\n"), gpgsm_strerror (rc));
+      log_error (_("error finding writable keyDB: %s\n"), gnupg_strerror (rc));
 
   rc = keydb_insert_cert (kh, cert);
   if (rc)
     {
-      log_error (_("error storing certificate: %s\n"), gpgsm_strerror (rc));
+      log_error (_("error storing certificate: %s\n"), gnupg_strerror (rc));
     }
   keydb_release (kh);               
 }

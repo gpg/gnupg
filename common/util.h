@@ -1,4 +1,4 @@
-/* util.h - Utility functions for GpgSM
+/* util.h - Utility functions for Gnupg
  *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -18,15 +18,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef GNUPG_COMMON_UTIL_H
+#define GNUPG_COMMON_UTIL_H
 
 #include <gcrypt.h> /* we need this for the memory function protos */
 
-/* to pass the fucntion to libksba we need to cast it */
+/* to pass hash functions to libksba we need to cast it */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
 
-
+/* get all the stuff from jnlib */
 #include "../jnlib/logging.h"
 #include "../jnlib/argparse.h"
 #include "../jnlib/stringhelp.h"
@@ -34,6 +34,7 @@
 #include "../jnlib/strlist.h"
 #include "../jnlib/dotlock.h"
 
+/* handy malloc macros  - use only them */
 #define xtrymalloc(a)    gcry_malloc ((a))
 #define xtrycalloc(a,b)  gcry_calloc ((a),(b))
 #define xtryrealloc(a,b) gcry_realloc ((a),(b))
@@ -45,14 +46,14 @@
 #define xrealloc(a,b)    gcry_xrealloc ((a),(b))
 #define xstrdup(a)       gcry_xstrdup ((a))
 
+#define seterr(a)  (GNUPG_ ## a)
 
-#define seterr(a)  (GPGSM_ ## a)
-
-/*-- misc.c --*/
+/*-- maperror.c --*/
 int map_ksba_err (int err);
 int map_gcry_err (int err);
 int map_kbx_err (int err);
 
-#endif /*UTIL_H*/
+
+#endif /*GNUPG_COMMON_UTIL_H*/
 
 

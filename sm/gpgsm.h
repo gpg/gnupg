@@ -18,103 +18,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef GPGSM_H
-#define GPGSM_H
+#ifndef GNUPG_H
+#define GNUPG_H
 
 #include <ksba.h>
-#include "util.h"
-
-/* Error numbers */
-enum {
-  GPGSM_EOF = -1,
-  GPGSM_No_Error = 0,
-  GPGSM_General_Error = 1, 
-  GPGSM_Out_Of_Core = 2,
-  GPGSM_Invalid_Value = 3,
-  GPGSM_IO_Error = 4,
-  GPGSM_Resource_Limit = 5,
-  GPGSM_Internal_Error = 6,
-  GPGSM_Bad_Certificate = 7,
-  GPGSM_Bad_Certificate_Path = 8,
-  GPGSM_Missing_Certificate = 9,
-  GPGSM_No_Data = 10,
-  GPGSM_Bad_Signature = 11,
-  GPGSM_Not_Implemented = 12,
-  GPGSM_Conflict = 13,
-  GPGSM_Bug = 14
-};
-
-/* Status codes (shared with gpg) */
-enum {
-  STATUS_ENTER,
-  STATUS_LEAVE,
-  STATUS_ABORT,
-  STATUS_GOODSIG,
-  STATUS_BADSIG,
-  STATUS_ERRSIG,
-  STATUS_BADARMOR,
-  STATUS_RSA_OR_IDEA,
-  STATUS_SIGEXPIRED,
-  STATUS_KEYREVOKED,
-  STATUS_TRUST_UNDEFINED,
-  STATUS_TRUST_NEVER,
-  STATUS_TRUST_MARGINAL,
-  STATUS_TRUST_FULLY,
-  STATUS_TRUST_ULTIMATE,
-  
-  STATUS_SHM_INFO,
-  STATUS_SHM_GET,
-  STATUS_SHM_GET_BOOL,
-  STATUS_SHM_GET_HIDDEN,
-  
-  STATUS_NEED_PASSPHRASE,
-  STATUS_VALIDSIG,
-  STATUS_SIG_ID,
-  STATUS_ENC_TO,
-  STATUS_NODATA,
-  STATUS_BAD_PASSPHRASE,
-  STATUS_NO_PUBKEY,
-  STATUS_NO_SECKEY,
-  STATUS_NEED_PASSPHRASE_SYM,
-  STATUS_DECRYPTION_FAILED,
-  STATUS_DECRYPTION_OKAY,
-  STATUS_MISSING_PASSPHRASE,
-  STATUS_GOOD_PASSPHRASE,
-  STATUS_GOODMDC,
-  STATUS_BADMDC,
-  STATUS_ERRMDC,
-  STATUS_IMPORTED,
-  STATUS_IMPORT_RES,
-  STATUS_FILE_START,
-  STATUS_FILE_DONE,
-  STATUS_FILE_ERROR,
-  
-  STATUS_BEGIN_DECRYPTION,
-  STATUS_END_DECRYPTION,
-  STATUS_BEGIN_ENCRYPTION,
-  STATUS_END_ENCRYPTION,
-  
-  STATUS_DELETE_PROBLEM,
-  STATUS_GET_BOOL,
-  STATUS_GET_LINE,
-  STATUS_GET_HIDDEN,
-  STATUS_GOT_IT,
-  STATUS_PROGRESS,
-  STATUS_SIG_CREATED,
-  STATUS_SESSION_KEY,
-  STATUS_NOTATION_NAME,
-  STATUS_NOTATION_DATA,
-  STATUS_POLICY_URL,
-  STATUS_BEGIN_STREAM,
-  STATUS_END_STREAM,
-  STATUS_KEY_CREATED,
-  STATUS_USERID_HIN,
-  STATUS_UNEXPECTED,
-  STATUS_INV_RECP,
-  STATUS_NO_RECP,
-  STATUS_ALREADY_SIGNED,
-};
-
+#include "../common/util.h"
+#include "../common/errors.h"
 
 #define MAX_DIGEST_LEN 24 
 
@@ -224,7 +133,7 @@ int gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp);
 
 
 /*-- errors.c (built) --*/
-const char *gpgsm_strerror (int err);
+const char *gnupg_strerror (int err);
 
 
-#endif /*GPGSM_H*/
+#endif /*GNUPG_H*/

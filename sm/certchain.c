@@ -46,7 +46,7 @@ gpgsm_validate_path (KsbaCert cert)
   if (!kh)
     {
       log_error (_("failed to allocated keyDB handle\n"));
-      rc = GPGSM_General_Error;
+      rc = GNUPG_General_Error;
       goto leave;
     }
 
@@ -65,7 +65,7 @@ gpgsm_validate_path (KsbaCert cert)
         {
           if (DBG_X509)
             log_debug ("ERROR: issuer missing\n");
-          rc = GPGSM_Bad_Certificate;
+          rc = GNUPG_Bad_Certificate;
           goto leave;
         }
 
@@ -74,7 +74,7 @@ gpgsm_validate_path (KsbaCert cert)
           if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
             {
               log_debug ("selfsigned certificate has a BAD signatures\n");
-              rc = depth? GPGSM_Bad_Certificate_Path : GPGSM_Bad_Certificate;
+              rc = depth? GNUPG_Bad_Certificate_Path : GNUPG_Bad_Certificate;
               goto leave;
             }
           log_debug ("selfsigned certificate is good\n");
@@ -90,7 +90,7 @@ gpgsm_validate_path (KsbaCert cert)
       if (rc)
         {
           log_debug ("failed to find issuer's certificate: rc=%d\n", rc);
-          rc = GPGSM_Missing_Certificate;
+          rc = GNUPG_Missing_Certificate;
           goto leave;
         }
 
@@ -99,7 +99,7 @@ gpgsm_validate_path (KsbaCert cert)
       if (rc)
         {
           log_debug ("failed to get cert: rc=%d\n", rc);
-          rc = GPGSM_General_Error;
+          rc = GNUPG_General_Error;
           goto leave;
         }
 
@@ -109,7 +109,7 @@ gpgsm_validate_path (KsbaCert cert)
       if (gpgsm_check_cert_sig (issuer_cert, subject_cert) )
         {
           log_debug ("certificate has a BAD signatures\n");
-          rc = GPGSM_Bad_Certificate_Path;
+          rc = GNUPG_Bad_Certificate_Path;
           goto leave;
         }
       log_debug ("certificate is good\n");

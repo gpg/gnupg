@@ -131,13 +131,13 @@ gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp)
 
   hd = keydb_new (0);
   if (!hd)
-    rc = GPGSM_General_Error;
+    rc = GNUPG_General_Error;
   else
     rc = keydb_search_first (hd);
   if (rc)
     {
       if (rc != -1)
-        log_error ("keydb_search_first failed: %s\n", gpgsm_strerror (rc) );
+        log_error ("keydb_search_first failed: %s\n", gnupg_strerror (rc) );
       goto leave;
     }
 
@@ -147,7 +147,7 @@ gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp)
       rc = keydb_get_cert (hd, &cert);
       if (rc) 
         {
-          log_error ("keydb_get_cert failed: %s\n", gpgsm_strerror (rc));
+          log_error ("keydb_get_cert failed: %s\n", gnupg_strerror (rc));
           goto leave;
         }
       
@@ -175,7 +175,7 @@ gpgsm_list_keys (CTRL ctrl, STRLIST names, FILE *fp)
     }
   while (!(rc = keydb_search_next (hd)));
   if (rc && rc != -1)
-    log_error ("keydb_search_next failed: %s\n", gpgsm_strerror (rc));
+    log_error ("keydb_search_next failed: %s\n", gnupg_strerror (rc));
   
  leave:
   ksba_cert_release (cert);
