@@ -1,3 +1,9 @@
+2004-04-20  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Remove the fopencookie test.  We don't need the
+	dummy function because we conditionally use fopencookie,
+	fpencookie or a replacement at place.
+
 2004-04-02  Thomas Schwinge  <schwinge@nic-nac-project.de>
 
 	* autogen.sh: Added ACLOCAL_FLAGS.
