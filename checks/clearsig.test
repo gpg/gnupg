@@ -1,5 +1,10 @@
 #!/bin/sh
 
+
+# Fixme: we should not only do a --verify but also the output.
+
+
+
 . $srcdir/defs.inc || exit 3
 
 # I can't compare the out because plain-3 has no LF as last charcater
@@ -31,6 +36,17 @@ echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 --clearsign -o x --yes y
 $srcdir/run-gpg --verify x
 # and one with an empty body
 cat >y <<EOF
+EOF
+echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 --clearsign -o x --yes y
+$srcdir/run-gpg --verify x
+
+# and one with one empty line at the end
+cat >y <<EOF
+line 1
+line 2
+line 3
+there is a blank line after this
+
 EOF
 echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 --clearsign -o x --yes y
 $srcdir/run-gpg --verify x

@@ -57,7 +57,7 @@ sed -e '/^diff.*VERSION/,/^+[0-9][0-9]*/ d'  $tmp_name >> $diff_name
 rm $tmp_name
 
 echo "Signing and compressing patch file"
-../gnupg/g10/gpg --clearsign --not-dash-escaped -u "(gnupg sig)" \
+gpg --clearsign --not-dash-escaped -u "(gnupg sig)" \
     < $diff_name | gzip --best > $diff_name.gz
 
 echo "Checking patch file"
@@ -71,7 +71,7 @@ if ! diff -urN "gnupg-$prev_ver/" "gnupg-$curr_ver/" >/dev/null ; then
    exit 1
 fi
 
-if ! zcat $diff_name.gz | ../gnupg/g10/gpg --batch --verify ; then
+if ! zcat $diff_name.gz | gpg --batch --verify ; then
     exit 1
 fi
 

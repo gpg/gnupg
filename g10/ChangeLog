@@ -1,3 +1,12 @@
+Wed Dec  9 13:41:06 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* misc.c (trap_unaligned) [ALPHA]: Only if UAC_SIGBUS is defined.
+
+	* sign.c (write_dash_escaped): Add the forgotten patch by Brian Moore.
+
+	* compress.c (do_uncompress): Fixed the inflating bug.
+
+
 Tue Dec  8 13:15:16 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* trustdb.c (upd_uid_record): Now uses the newest self-signature

@@ -625,7 +625,7 @@ iobuf_openrw( const char *fname )
 
 /****************
  * You can overwrite the normal iobuf behaviour by using this function.
- * If used, the crwated iobuf is a simple wrapper around stdio.
+ * If used the iobuf is a simple wrapper around stdio.
  * NULL if an error occures and sets errno
  */
 IOBUF

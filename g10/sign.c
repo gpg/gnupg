@@ -512,6 +512,12 @@ write_dash_escaped( IOBUF inp, IOBUF out, MD_HANDLE md )
     }
     if( state == 1 )
 	md_putc(md, '\r');
+    else if( state == 2 ) {  /* file ended with a new line */
+	md_putc(md, '\r');
+	md_putc(md, '\n');
+	iobuf_put( out, '\n');
+    }
+
     if( !lastlf )
 	iobuf_put( out, '\n' );
 

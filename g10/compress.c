@@ -76,8 +76,8 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
 	zs->next_out = zfx->outbuf;
 	zs->avail_out = zfx->outbufsize;
 	if( DBG_FILTER )
-	    log_debug("call deflate: avail_in=%u, avail_out=%u\n",
-		    (unsigned)zs->avail_in, (unsigned)zs->avail_out);
+	    log_debug("enter deflate: avail_in=%u, avail_out=%u, flush=%d\n",
+		    (unsigned)zs->avail_in, (unsigned)zs->avail_out, flush );
 	zrc = deflate( zs, flush );
 	if( zrc == Z_STREAM_END && flush == Z_FINISH )
 	    ;
@@ -89,8 +89,10 @@ do_compress( compress_filter_context_t *zfx, z_stream *zs, int flush, IOBUF a )
 	}
 	n = zfx->outbufsize - zs->avail_out;
 	if( DBG_FILTER )
-	    log_debug("deflate returned: avail_in=%u, avail_out=%u, n=%u\n",
-		(unsigned)zs->avail_in, (unsigned)zs->avail_out, (unsigned)n );
+	    log_debug("leave deflate: "
+		      "avail_in=%u, avail_out=%u, n=%u, zrc=%d\n",
+		(unsigned)zs->avail_in, (unsigned)zs->avail_out,
+					       (unsigned)n, zrc );
 
 	if( iobuf_write( a, zfx->outbuf, n ) ) {
 	    log_debug("deflate: iobuf_write failed\n");
@@ -132,12 +134,14 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
     size_t n;
     byte *p;
     int c;
+    int refill = !zs->avail_in;
 
     if( DBG_FILTER )
-	log_debug("do_uncompress: avail_in=%u, avail_out=%u\n",
-		(unsigned)zs->avail_in, (unsigned)zs->avail_out);
+	log_debug("begin inflate: avail_in=%u, avail_out=%u, inbuf=%u\n",
+		(unsigned)zs->avail_in, (unsigned)zs->avail_out,
+		(unsigned)zfx->inbufsize );
     do {
-	if( zs->avail_in < zfx->inbufsize ) {
+	if( zs->avail_in < zfx->inbufsize && refill ) {
 	    n = zs->avail_in;
 	    if( !n )
 		zs->next_in = zfx->inbuf;
@@ -148,8 +152,9 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	    }
 	    zs->avail_in = n;
 	}
+	refill = 1;
 	if( DBG_FILTER )
-	    log_debug("call inflate: avail_in=%u, avail_out=%u\n",
+	    log_debug("enter inflate: avail_in=%u, avail_out=%u\n",
 		    (unsigned)zs->avail_in, (unsigned)zs->avail_out);
       #ifdef Z_SYNC_FLUSH
 	zrc = inflate( zs, Z_SYNC_FLUSH );
@@ -157,7 +162,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	zrc = inflate( zs, Z_PARTIAL_FLUSH );
       #endif
 	if( DBG_FILTER )
-	    log_debug("inflate returned: avail_in=%u, avail_out=%u, zrc=%d\n",
+	    log_debug("leave inflate: avail_in=%u, avail_out=%u, zrc=%d\n",
 		   (unsigned)zs->avail_in, (unsigned)zs->avail_out, zrc);
 	if( zrc == Z_STREAM_END )
 	    rc = -1; /* eof */
