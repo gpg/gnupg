@@ -1,3 +1,10 @@
+2003-11-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* trustdb.c (validate_keys): Reset the trustdb before checking if
+	we have any ultimately trusted keys.  This ensures that if we
+	lose all our ultimately trusted keys, we don't leave behind the
+	old validity calculations.
+
 2003-11-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* seskey.c (do_encode_md): Comment about earlier (pre-PGP 2.3)
