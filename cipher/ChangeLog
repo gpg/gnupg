@@ -1,3 +1,13 @@
+Tue May  5 21:28:55 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* elgamal.c (elg_generate): choosing x was not correct, could
+	yield 6 bytes which are not from the random pool, tsss, tsss..
+
+Tue May  5 14:09:06 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* primegen.c (generate_elg_prime): Add arg mode, changed all
+	callers and implemented mode 1.
+
 Mon Apr 27 14:41:58 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* cipher.c (cipher_get_keylen): New.

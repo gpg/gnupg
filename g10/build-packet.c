@@ -292,6 +292,29 @@ do_secret_cert( IOBUF out, int ctb, PKT_secret_cert *skc )
 	mpi_write(a, skc->d.elg.x );
 	write_16(a, skc->csum );
     }
+    else if( skc->pubkey_algo == PUBKEY_ALGO_DSA ) {
+	mpi_write(a, skc->d.dsa.p );
+	mpi_write(a, skc->d.dsa.q );
+	mpi_write(a, skc->d.dsa.g );
+	mpi_write(a, skc->d.dsa.y );
+	if( skc->is_protected ) {
+	    iobuf_put(a, 0xff );
+	    iobuf_put(a, skc->protect.algo );
+	    iobuf_put(a, skc->protect.s2k.mode );
+	    iobuf_put(a, skc->protect.s2k.hash_algo );
+	    if( skc->protect.s2k.mode == 1
+		|| skc->protect.s2k.mode == 4 )
+		iobuf_write(a, skc->protect.s2k.salt, 8 );
+	    if( skc->protect.s2k.mode == 4 )
+		write_32(a, skc->protect.s2k.count );
+	    iobuf_write(a, skc->protect.iv, 8 );
+	}
+	else
+	    iobuf_put(a, 0 );
+
+	mpi_write(a, skc->d.dsa.x );
+	write_16(a, skc->csum );
+    }
     else if( is_RSA(skc->pubkey_algo) ) {
 	mpi_write(a, skc->d.rsa.n );
 	mpi_write(a, skc->d.rsa.e );

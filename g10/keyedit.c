@@ -621,6 +621,8 @@ change_passphrase( const char *username )
 	break;
     }
 
+    /* fixme: unprotect all subkeys */
+
     if( rc )
 	tty_printf("Can't edit this key: %s\n", g10_errstr(rc));
     else {
@@ -648,6 +650,7 @@ change_passphrase( const char *username )
 		break;
 	    }
 	    else { /* okay */
+		/* fixme: protect all subkeys too */
 		skc->protect.algo = dek->algo;
 		skc->protect.s2k = *s2k;
 		rc = protect_secret_key( skc, dek );

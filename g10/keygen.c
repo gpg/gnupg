@@ -224,11 +224,84 @@ gen_rsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 #endif /*ENABLE_RSA_KEYGEN*/
 
 
+/****************
+ * Generate a DSA key
+ */
 static int
 gen_dsa(unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
-	 STRING2KEY *s2k, PKT_secret_cert **ret_skc, u16 valid_days )
+	    STRING2KEY *s2k, PKT_secret_cert **ret_skc, u16 valid_days )
 {
-    return G10ERR_GENERAL;
+    int rc;
+    int i;
+    PACKET *pkt;
+    PKT_secret_cert *skc;
+    PKT_public_cert *pkc;
+    DSA_public_key pk;
+    DSA_secret_key sk;
+    MPI *factors;
+
+    if( nbits > 1024 )
+	nbits = 1024;
+
+    dsa_generate( &pk, &sk, nbits, &factors );
+
+    skc = m_alloc_clear( sizeof *skc );
+    pkc = m_alloc_clear( sizeof *pkc );
+    skc->timestamp = pkc->timestamp = make_timestamp();
+    skc->version = pkc->version = 4;
+    /* valid days are not stored in the packet, but it is
+     * used here to put it into the signature.
+     */
+    skc->valid_days = pkc->valid_days = valid_days;
+    skc->pubkey_algo = pkc->pubkey_algo = PUBKEY_ALGO_DSA;
+		       pkc->d.dsa.p = pk.p;
+		       pkc->d.dsa.q = pk.q;
+		       pkc->d.dsa.g = pk.g;
+		       pkc->d.dsa.y = pk.y;
+    skc->d.dsa.p = sk.p;
+    skc->d.dsa.q = sk.q;
+    skc->d.dsa.g = sk.g;
+    skc->d.dsa.y = sk.y;
+    skc->d.dsa.x = sk.x;
+    skc->is_protected = 0;
+    skc->protect.algo = 0;
+
+    skc->csum = checksum_mpi( skc->d.dsa.x );
+    /* return an unprotected version of the skc */
+    *ret_skc = copy_secret_cert( NULL, skc );
+
+    if( dek ) {
+	skc->protect.algo = dek->algo;
+	skc->protect.s2k = *s2k;
+	rc = protect_secret_key( skc, dek );
+	if( rc ) {
+	    log_error("protect_secret_key failed: %s\n", g10_errstr(rc) );
+	    free_public_cert(pkc);
+	    free_secret_cert(skc);
+	    return rc;
+	}
+    }
+
+    pkt = m_alloc_clear(sizeof *pkt);
+    pkt->pkttype = PKT_PUBLIC_CERT;
+    pkt->pkt.public_cert = pkc;
+    add_kbnode(pub_root, new_kbnode( pkt ));
+
+    /* don't know whether it makes sense to have the factors, so for now
+     * we store them in the secret keyring (but they are not secret)
+     * p = 2 * q * f1 * f2 * ... * fn
+     * We store only f1 to f_n-1 - fn can be calculated because p and q
+     * are known.
+     */
+    pkt = m_alloc_clear(sizeof *pkt);
+    pkt->pkttype = PKT_SECRET_CERT;
+    pkt->pkt.secret_cert = skc;
+    add_kbnode(sec_root, new_kbnode( pkt ));
+    for(i=1; factors[i]; i++ )	/* the first one is q */
+	add_kbnode( sec_root,
+		    make_mpi_comment_node("#:DSA_factor:", factors[i] ));
+
+    return 0;
 }
 
 
@@ -312,7 +385,7 @@ generate_keypair()
 	else if( algo == 2 ) {
 	    algo = PUBKEY_ALGO_DSA;
 	    algo_name = "DSA";
-	    tty_printf(_("Sorry; DSA key generation is not yet supported.\n"));
+	    break;
 	}
       #ifdef ENABLE_RSA_KEYGEN
 	else if( algo == 3 ) {
@@ -380,6 +453,10 @@ generate_keypair()
 		 "      <n>w = key expires in n weeks\n"
 		 "      <n>m = key expires in n months\n"
 		 "      <n>y = key expires in n years\n"));
+    /* Note: The elgamal subkey for DSA has no exiration date because
+     * is must be signed with the DSA key and this one has the expiration
+     * date */
+
     answer = NULL;
     for(;;) {
 	int mult;
@@ -578,7 +655,7 @@ generate_keypair()
 	rc = gen_rsa(nbits, pub_root, sec_root, dek, s2k, &skc, valid_days  );
   #endif
     else if( algo == PUBKEY_ALGO_DSA )
-	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, &skc, valid_days  );
+	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, &skc, valid_days);
     else
 	BUG();
     if( !rc ) {
@@ -661,5 +738,15 @@ generate_keypair()
     m_free(s2k);
     m_free(pub_fname);
     m_free(sec_fname);
+}
+
+
+/****************
+ * add a new subkey to an existing key.
+ */
+void
+generate_subkeypair( const char *userid )
+{
+    log_fatal("To be implemented :-)\n");
 }
 

@@ -72,6 +72,7 @@ static ARGPARSE_OPTS opts[] = {
     { 515, "fingerprint", 0, N_("list keys and fingerprints")},
   #ifdef IS_G10
     { 503, "gen-key",   0, N_("generate a new key pair")},
+    { 554, "add-key",   0, N_("add a subkey to a key pair")},
     { 506, "sign-key"  ,0, N_("make a signature on a key in the keyring")},
     { 505, "delete-key",0, N_("remove key from the public keyring")},
     { 524, "edit-key"  ,0, N_("edit a key signature")},
@@ -171,7 +172,7 @@ enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
     aSignKey, aClearsign, aListPackets, aEditSig, aDeleteKey, aDeleteSecretKey,
     aKMode, aKModeC, aChangePass, aImport, aVerify, aDecrypt, aListKeys,
-    aListSigs,
+    aListSigs, aKeyadd,
     aExport, aCheckKeys, aGenRevoke, aPrimegen, aPrintMDs,
     aListTrustDB, aListTrustPath, aDeArmor, aEnArmor, aGenRandom, aTest,
 aNOP };
@@ -574,6 +575,7 @@ main( int argc, char **argv )
 	  case 551: set_cmd( &cmd, aListKeys); break;
 	  case 552: set_cmd( &cmd, aListSigs); break;
 	  case 553: opt.skip_verify=1; break;
+	  case 554: set_cmd( &cmd, aKeyadd); break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -817,6 +819,11 @@ main( int argc, char **argv )
 	    wrong_args("--gen-key");
 	generate_keypair();
 	break;
+      case aKeyadd: /* add a subkey (interactive) */
+	if( argc != 1 )
+	    wrong_args("--add-key userid");
+	generate_subkeypair(*argv);
+	break;
     #endif
 
       case aImport:
@@ -873,18 +880,23 @@ main( int argc, char **argv )
 	    putchar('\n');
 	}
 	else if( argc == 2 ) {
-	    mpi_print( stdout, generate_elg_prime( atoi(argv[0]),
+	    mpi_print( stdout, generate_elg_prime( 0, atoi(argv[0]),
 						   atoi(argv[1]), NULL,NULL ), 1);
 	    putchar('\n');
 	}
 	else if( argc == 3 ) {
 	    MPI g = mpi_alloc(1);
-	    mpi_print( stdout, generate_elg_prime( atoi(argv[0]),
+	    mpi_print( stdout, generate_elg_prime( 0, atoi(argv[0]),
 						   atoi(argv[1]), g, NULL ), 1);
 	    printf("\nGenerator: ");
 	    mpi_print( stdout, g, 1 );
 	    putchar('\n');
 	    mpi_free(g);
+	}
+	else if( argc == 4 ) {
+	    mpi_print( stdout, generate_elg_prime( 1, atoi(argv[0]),
+						   atoi(argv[1]), NULL,NULL ), 1);
+	    putchar('\n');
 	}
 	else
 	    usage(1);

@@ -1,3 +1,8 @@
+Tue May  5 22:11:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keygen.c (gen_dsa): New.
+	* build_packet.c (do_secret_cert): Support for DSA
+
 Mon May  4 19:01:25 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* compress.c: doubled buffer sizes

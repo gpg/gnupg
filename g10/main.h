@@ -70,6 +70,7 @@ int change_passphrase( const char *username );
 
 /*-- keygen.c --*/
 void generate_keypair(void);
+void generate_subkeypair(const char *userid);
 
 /*-- openfile.c --*/
 int overwrite_filep( const char *fname );

@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "util.h"
 #include "mpi.h"
 #include "cipher.h"
@@ -72,6 +73,123 @@ dsa_free_secret_key( DSA_secret_key *sk )
     mpi_free( sk->y ); sk->y = NULL;
     mpi_free( sk->x ); sk->x = NULL;
 }
+
+
+static void
+test_keys( DSA_public_key *pk, DSA_secret_key *sk, unsigned qbits )
+{
+    MPI test = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
+    MPI out1_a = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
+    MPI out1_b = mpi_alloc( qbits / BITS_PER_MPI_LIMB );
+
+    mpi_set_bytes( test, qbits, get_random_byte, 0 );
+
+    dsa_sign( out1_a, out1_b, test, sk );
+    if( !dsa_verify( out1_a, out1_b, test, pk ) )
+	log_fatal("DSA:: sign, verify failed\n");
+
+    mpi_free( test );
+    mpi_free( out1_a );
+    mpi_free( out1_b );
+}
+
+
+
+/****************
+ * Generate a DSA key pair with a key of size NBITS
+ * Returns: 2 structures filled with all needed values
+ *	    and an array with the n-1 factors of (p-1)
+ */
+void
+dsa_generate( DSA_public_key *pk, DSA_secret_key *sk,
+	      unsigned nbits, MPI **ret_factors )
+{
+    MPI p;    /* the prime */
+    MPI q;    /* the 160 bit prime factor */
+    MPI g;    /* the generator */
+    MPI y;    /* g^x mod p */
+    MPI x;    /* the secret exponent */
+    MPI h, e;  /* helper */
+    unsigned qbits;
+    byte *rndbuf;
+
+    assert( nbits >= 512 && nbits <= 1024 );
+
+    qbits = 160;
+    p = generate_elg_prime( 1, nbits, qbits, NULL, ret_factors );
+    /* get q out of factors */
+    q = mpi_copy((*ret_factors)[0]);
+    if( mpi_get_nbits(q) != qbits )
+	BUG();
+
+    /* find a generator g (h and e are helpers)*/
+    /* e = (p-1)/q */
+    e = mpi_alloc( mpi_get_nlimbs(p) );
+    mpi_sub_ui( e, p, 1 );
+    mpi_fdiv_q( e, e, q );
+    g = mpi_alloc( mpi_get_nlimbs(p) );
+    h = mpi_alloc_set_ui( 1 ); /* we start with 2 */
+    do {
+	mpi_add_ui( h, h, 1 );
+	/* g = h^e mod p */
+	mpi_powm( g, h, e, p );
+    } while( !mpi_cmp_ui( g, 1 ) );  /* continue until g != 1 */
+
+    /* select a random number which has these properties:
+     *	 0 < x < q-1
+     * This must be a very good random number because this
+     * is the secret part. */
+    if( DBG_CIPHER )
+	log_debug("choosing a random x ");
+    assert( qbits >= 16 );
+    x = mpi_alloc_secure( mpi_get_nlimbs(q) );
+    mpi_sub_ui( h, q, 1 );  /* put q-1 into h */
+    rndbuf = NULL;
+    do {
+	if( DBG_CIPHER )
+	    fputc('.', stderr);
+	if( !rndbuf )
+	    rndbuf = get_random_bits( qbits, 2, 1 );
+	else { /* change only some of the higher bits (= 2 bytes)*/
+	    char *r = get_random_bits( 16, 2, 1 );
+	    memcpy(rndbuf, r, 16/8 );
+	    m_free(r);
+	}
+	mpi_set_buffer( x, rndbuf, (qbits+7)/8, 0 );
+	mpi_clear_highbit( x, qbits+1 );
+    } while( !( mpi_cmp_ui( x, 0 )>0 && mpi_cmp( x, h )<0 ) );
+    m_free(rndbuf);
+    mpi_free( e );
+    mpi_free( h );
+
+    /* y = g^x mod p */
+    y = mpi_alloc( mpi_get_nlimbs(p) );
+    mpi_powm( y, g, x, p );
+
+    if( DBG_CIPHER ) {
+	fputc('\n', stderr);
+	log_mpidump("dsa  p= ", p );
+	log_mpidump("dsa  q= ", q );
+	log_mpidump("dsa  g= ", g );
+	log_mpidump("dsa  y= ", y );
+	log_mpidump("dsa  x= ", x );
+    }
+
+    /* copy the stuff to the key structures */
+    pk->p = mpi_copy(p);
+    pk->q = mpi_copy(q);
+    pk->g = mpi_copy(g);
+    pk->y = mpi_copy(y);
+    sk->p = p;
+    sk->q = q;
+    sk->g = g;
+    sk->y = y;
+    sk->x = x;
+
+    /* now we can test our keys (this should never fail!) */
+    test_keys( pk, sk, qbits );
+}
+
 
 
 /****************

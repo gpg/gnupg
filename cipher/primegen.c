@@ -63,37 +63,49 @@ generate_public_prime( unsigned  nbits )
  * security from it - The prime number is public and we could also
  * offer the factors for those who are willing to check that it is
  * indeed a strong prime.
+ *
+ * mode 0: Standard
+ *	1: Make sure that at least one factor is of size qbits.
  */
 MPI
-generate_elg_prime( unsigned pbits, unsigned qbits, MPI g, MPI **ret_factors )
+generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
+		    MPI g, MPI **ret_factors )
 {
     int n;  /* number of factors */
     int m;  /* number of primes in pool */
     unsigned fbits; /* length of prime factors */
     MPI *factors; /* current factors */
     MPI *pool;	/* pool of primes */
-    MPI q;	/* first prime factor */
+    MPI q;	/* first prime factor (variable)*/
     MPI prime;	/* prime test value */
+    MPI q_factor; /* used for mode 1 */
     byte *perms = NULL;
     int i, j;
     int count1, count2;
     unsigned nprime;
+    unsigned req_qbits = qbits; /* the requested q bits size */
 
     /* find number of needed prime factors */
     for(n=1; (pbits - qbits - 1) / n  >= qbits; n++ )
 	;
     n--;
-    if( !n )
+    if( !n || (mode==1 && n < 2) )
 	log_fatal("can't gen prime with pbits=%u qbits=%u\n", pbits, qbits );
-    fbits = (pbits - qbits -1) / n;
-    while( qbits + n*fbits < pbits )
-	qbits++;
+    if( mode == 1 ) {
+	n--;
+	fbits = (pbits - 2*req_qbits -1) / n;
+	qbits =  pbits - req_qbits - n*fbits;
+    }
+    else {
+	fbits = (pbits - req_qbits -1) / n;
+	qbits = pbits - n*fbits;
+    }
     if( DBG_CIPHER )
-	log_debug("gen prime: pbits=%u qbits=%u fbits=%u n=%d\n",
-		    pbits, qbits, fbits, n  );
-
+	log_debug("gen prime: pbits=%u qbits=%u fbits=%u/%u n=%d\n",
+		    pbits, req_qbits, qbits, fbits, n  );
     prime = mpi_alloc( (pbits + BITS_PER_MPI_LIMB - 1) /  BITS_PER_MPI_LIMB );
     q = gen_prime( qbits, 0, 1 );
+    q_factor = mode==1? gen_prime( req_qbits, 0, 1 ) : NULL;
 
     /* allocate an array to hold the factors + 2 for later usage */
     factors = m_alloc_clear( (n+2) * sizeof *factors );
@@ -139,6 +151,8 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g, MPI **ret_factors )
 
 	mpi_set( prime, q );
 	mpi_mul_ui( prime, prime, 2 );
+	if( mode == 1 )
+	    mpi_mul( prime, prime, q_factor );
 	for(i=0; i < n; i++ )
 	    mpi_mul( prime, prime, factors[i] );
 	mpi_add_ui( prime, prime, 1 );
@@ -171,18 +185,30 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g, MPI **ret_factors )
 	putc('\n', stderr);
 	log_mpidump( "prime    : ", prime );
 	log_mpidump( "factor  q: ", q );
+	if( mode == 1 )
+	    log_mpidump( "factor q0: ", q_factor );
 	for(i=0; i < n; i++ )
 	    log_mpidump( "factor pi: ", factors[i] );
 	log_debug("bit sizes: prime=%u, q=%u", mpi_get_nbits(prime), mpi_get_nbits(q) );
+	if( mode == 1 )
+	    fprintf(stderr, ", q0=%u", mpi_get_nbits(q_factor) );
 	for(i=0; i < n; i++ )
 	    fprintf(stderr, ", p%d=%u", i, mpi_get_nbits(factors[i]) );
 	putc('\n', stderr);
     }
 
     if( ret_factors ) { /* caller wants the factors */
-	*ret_factors = m_alloc_clear( (n+1) * sizeof **ret_factors );
-	for(i=0; i < n; i++ )
-	    (*ret_factors)[i] = mpi_copy( factors[i] );
+	*ret_factors = m_alloc_clear( (n+2) * sizeof **ret_factors);
+	if( mode == 1 ) {
+	    i = 0;
+	    (*ret_factors)[i++] = mpi_copy( q_factor );
+	    for(; i <= n; i++ )
+		(*ret_factors)[i] = mpi_copy( factors[i] );
+	}
+	else {
+	    for(; i < n; i++ )
+		(*ret_factors)[i] = mpi_copy( factors[i] );
+	}
     }
 
     if( g ) { /* create a generator (start with 3)*/
@@ -190,6 +216,8 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g, MPI **ret_factors )
 	MPI b	  = mpi_alloc( mpi_get_nlimbs(prime) );
 	MPI pmin1 = mpi_alloc( mpi_get_nlimbs(prime) );
 
+	if( mode == 1 )
+	    BUG(); /* not yet implemented */
 	factors[n] = q;
 	factors[n+1] = mpi_alloc_set_ui(2);
 	mpi_sub_ui( pmin1, prime, 1 );
@@ -228,6 +256,7 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g, MPI **ret_factors )
     m_free(perms);
     return prime;
 }
+
 
 
 static MPI

@@ -139,7 +139,7 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
     else
 	qbits = 240;
     g = mpi_alloc(1);
-    p = generate_elg_prime( nbits, qbits, g, ret_factors );
+    p = generate_elg_prime( 0, nbits, qbits, g, ret_factors );
     mpi_sub_ui(p_min1, p, 1);
 
 
@@ -163,7 +163,7 @@ elg_generate( ELG_public_key *pk, ELG_secret_key *sk,
 	    }
 	    else {
 		char *r = get_random_bits( 16, 2, 1 );
-		memcpy(rndbuf, r, 16 );
+		memcpy(rndbuf, r, 16/8 );
 		m_free(r);
 	    }
 	}

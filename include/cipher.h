@@ -114,7 +114,8 @@ extern ushort small_prime_numbers[];
 /*-- primegen.c --*/
 MPI generate_secret_prime( unsigned nbits );
 MPI generate_public_prime( unsigned nbits );
-MPI generate_elg_prime( unsigned pbits, unsigned qbits, MPI g, MPI **factors );
+MPI generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
+					   MPI g, MPI **factors );
 
 
 #endif /*G10_CIPHER_H*/

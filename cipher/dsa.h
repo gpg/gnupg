@@ -41,8 +41,9 @@ typedef struct {
 
 void dsa_free_public_key( DSA_public_key *pk );
 void dsa_free_secret_key( DSA_secret_key *sk );
-void dsa_generate( DSA_public_key *pk, DSA_secret_key *sk, unsigned nbits );
 int  dsa_check_secret_key( DSA_secret_key *sk );
+void dsa_generate( DSA_public_key *pk, DSA_secret_key *sk,
+		   unsigned nbits, MPI **ret_factors );
 void dsa_sign(MPI r, MPI s, MPI input, DSA_secret_key *skey);
 int  dsa_verify(MPI r, MPI s, MPI input, DSA_public_key *pkey);
 

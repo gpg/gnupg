@@ -47,3 +47,5 @@
 
     * add readline support (but how can we allcoate it in secure memory?)
 
+    * add a testcase for --print-mds
+

@@ -702,10 +702,11 @@ transform( TIGER_CONTEXT *hd, byte *data )
     u64 a,b,c,aa,bb,cc;
     u64 x[8];
   #ifdef BIG_ENDIAN_HOST
-    #define MKWORD(d,n) (  (d)[8*(n)+0] << 56 | (d)[8*(n)+1] << 48  \
-			 | (d)[8*(n)+2] << 40 | (d)[8*(n)+3] << 32  \
-			 | (d)[8*(n)+4] << 24 | (d)[8*(n)+5] << 16  \
-			 | (d)[8*(n)+6] << 8  | (d)[8*(n)+7]	   )
+    #define MKWORD(d,n) \
+		(  ((u64)(d)[8*(n)+0]) << 56 | ((u64)(d)[8*(n)+1]) << 48  \
+		 | ((u64)(d)[8*(n)+2]) << 40 | ((u64)(d)[8*(n)+3]) << 32  \
+		 | ((u64)(d)[8*(n)+4]) << 24 | ((u64)(d)[8*(n)+5]) << 16  \
+		 | ((u64)(d)[8*(n)+6]) << 8  | ((u64)(d)[8*(n)+7])	 )
     x[0] = MKWORD(data, 0);
     x[1] = MKWORD(data, 1);
     x[2] = MKWORD(data, 2);
