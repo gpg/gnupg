@@ -1,3 +1,11 @@
+2002-10-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --refresh-keys.
+
+2002-10-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Clarify --force-mdc, and document --disable-mdc.
+
 2002-10-12  Werner Koch  <wk@gnupg.org>
 
 	* DETAILS (KEY_CREATED): Enhanced by fingerprint.
