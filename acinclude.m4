@@ -17,14 +17,6 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
-dnl GNUPG_MSG_PRINT(STRING)
-dnl print a message
-dnl
-define(GNUPG_MSG_PRINT,
-  [ echo $ac_n "$1"" $ac_c" 1>&AC_FD_MSG
-  ])
-
-
 dnl GNUPG_CHECK_TYPEDEF(TYPE, HAVE_NAME)
 dnl Check whether a typedef exists and create a #define $2 if it exists
 dnl
@@ -44,314 +36,94 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
   ])
 
 
-dnl GNUPG_CHECK_GNUMAKE
-dnl
-AC_DEFUN(GNUPG_CHECK_GNUMAKE,
-  [ 
-    if ${MAKE-make} --version 2>/dev/null | grep '^GNU ' >/dev/null 2>&1; then
-        :
-    else
-        AC_MSG_WARN([[
-***
-*** It seems that you are not using GNU make.  Some make tools have serious
-*** flaws and you may not be able to build this software at all. Before you
-*** complain, please try GNU make:  GNU make is easy to build and available
-*** at all GNU archives.  It is always available from ftp.gnu.org:/gnu/make.
-***]])
-    fi
-  ])
-
-
-dnl GNUPG_CHECK_FAQPROG
-dnl
-AC_DEFUN(GNUPG_CHECK_FAQPROG,
-  [ AC_MSG_CHECKING(for faqprog.pl)
-    if faqprog.pl -V 2>/dev/null | grep '^faqprog.pl ' >/dev/null 2>&1; then
-        working_faqprog=yes
-        FAQPROG="faqprog.pl"
-    else 
-	working_faqprog=no
-        FAQPROG=": "
-    fi
-    AC_MSG_RESULT($working_faqprog)
-    AC_SUBST(FAQPROG)
-    AM_CONDITIONAL(WORKING_FAQPROG, test "$working_faqprog" = "yes" )
-
-dnl     if test $working_faqprog = no; then
-dnl         AC_MSG_WARN([[
-dnl ***
-dnl *** It seems that the faqprog.pl program is not installed;
-dnl *** however it is only needed if you want to change the FAQ.
-dnl ***  (faqprog.pl should be available at:
-dnl ***    ftp://ftp.gnupg.org/pub/gcrypt/contrib/faqprog.pl )
-dnl *** No need to worry about this warning.
-dnl ***]])
-dnl     fi
-   ])       
-
-dnl GNUPG_CHECK_DOCBOOK_TO_TEXI
-dnl
-AC_DEFUN(GNUPG_CHECK_DOCBOOK_TO_TEXI,
-  [
-    AC_CHECK_PROG(DOCBOOK_TO_TEXI, docbook2texi, yes, no)
-    AC_MSG_CHECKING(for sgml to texi tools)
-    working_sgmltotexi=no
-    if test "$ac_cv_prog_DOCBOOK_TO_TEXI" = yes; then
-      if sgml2xml -v /dev/null 2>&1 | grep 'SP version' >/dev/null 2>&1 ; then
-            working_sgmltotexi=yes
-      fi
-    fi
-    AC_MSG_RESULT($working_sgmltotexi)
-    AM_CONDITIONAL(HAVE_DOCBOOK_TO_TEXI, test "$working_sgmltotexi" = "yes" )
-   ])       
-
-
-
-dnl GNUPG_CHECK_ENDIAN
-dnl define either LITTLE_ENDIAN_HOST or BIG_ENDIAN_HOST
-dnl
-define(GNUPG_CHECK_ENDIAN,
-  [ if test "$cross_compiling" = yes; then
-        AC_MSG_WARN(cross compiling; assuming little endianess)
-    fi
-    AC_MSG_CHECKING(endianess)
-    AC_CACHE_VAL(gnupg_cv_c_endian,
-      [ gnupg_cv_c_endian=unknown
-        # See if sys/param.h defines the BYTE_ORDER macro.
-        AC_TRY_COMPILE([#include <sys/types.h>
-        #include <sys/param.h>], [
-        #if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
-         bogus endian macros
-        #endif], [# It does; now see whether it defined to BIG_ENDIAN or not.
-        AC_TRY_COMPILE([#include <sys/types.h>
-        #include <sys/param.h>], [
-        #if BYTE_ORDER != BIG_ENDIAN
-         not big endian
-        #endif], gnupg_cv_c_endian=big, gnupg_cv_c_endian=little)])
-        if test "$gnupg_cv_c_endian" = unknown; then
-            AC_TRY_RUN([main () {
-              /* Are we little or big endian?  From Harbison&Steele.  */
-              union
-              {
-                long l;
-                char c[sizeof (long)];
-              } u;
-              u.l = 1;
-              exit (u.c[sizeof (long) - 1] == 1);
-              }],
-              gnupg_cv_c_endian=little,
-              gnupg_cv_c_endian=big,
-              gnupg_cv_c_endian=little
-            )
-        fi
+# Check for the getsockopt SO_PEERCRED
+AC_DEFUN(GNUPG_SYS_SO_PEERCRED,
+  [ AC_MSG_CHECKING(for SO_PEERCRED)
+    AC_CACHE_VAL(gnupg_cv_sys_so_peercred,
+      [AC_TRY_COMPILE([#include <sys/socket.h>], 
+                    [struct ucred cr; 
+                     int cl = sizeof cr;
+                     getsockopt (1, SOL_SOCKET, SO_PEERCRED, &cr, &cl);],
+                    gnupg_cv_sys_so_peercred=yes,
+                    gnupg_cv_sys_so_peercred=no)
       ])
-    AC_MSG_RESULT([$gnupg_cv_c_endian])
-    if test "$gnupg_cv_c_endian" = little; then
-      AC_DEFINE(LITTLE_ENDIAN_HOST,1,
-                [Defined if the host has little endian byte ordering])
-    else
-      AC_DEFINE(BIG_ENDIAN_HOST,1,
-                [Defined if the host has big endian byte ordering])
-    fi
-  ])
-
-dnl GNUPG_CHECK_CACHE
-dnl
-define(GNUPG_CHECK_CACHE,
-  [ AC_MSG_CHECKING(cached information)
-    gnupg_hostcheck="$target"
-    AC_CACHE_VAL(gnupg_cv_hostcheck, [ gnupg_cv_hostcheck="$gnupg_hostcheck" ])
-    if test "$gnupg_cv_hostcheck" != "$gnupg_hostcheck"; then
-        AC_MSG_RESULT(changed)
-        AC_MSG_WARN(config.cache exists!)
-        AC_MSG_ERROR(you must do 'make distclean' first to compile for
-                 different target or different parameters.)
-    else
-        AC_MSG_RESULT(ok)
+    AC_MSG_RESULT($gnupg_cv_sys_so_peercred) 
+    if test $gnupg_cv_sys_so_peercred = yes; then
+         AC_DEFINE(HAVE_SO_PEERCRED, 1,
+                            [Defined if SO_PEERCRED is supported (Linux)])
     fi
   ])
 
 
-######################################################################
-# Check for -fPIC etc (taken from libtool)
-# This sets CFLAGS_PIC to the required flags
-#           NO_PIC to yes if it is not possible to
-#                  generate PIC
-######################################################################
-dnl GNUPG_CHECK_PIC
-dnl
-define(GNUPG_CHECK_PIC,
-  [ AC_MSG_CHECKING(for option to create PIC)
-    CFLAGS_PIC=
-    NO_PIC=no
-    if test "$cross_compiling" = yes; then
-        AC_MSG_RESULT(assume none)
-    else
-        if test "$GCC" = yes; then
-            CFLAGS_PIC="-fPIC"
-        else
-            case "$host_os" in
-              aix3* | aix4*)
-                # All rs/6000 code is PIC
-                # but is there any non-rs/6000 AIX platform?
-                ;;
 
-              hpux9* | hpux10*)
-                CFLAGS_PIC="+Z"
-                ;;
+# GNUPG_BUILD_PROGRAM(NAME,DEFAULT)
+# Add a --enable-NAME option to configure an set the
+# shell variable build_NAME either to "yes" or "no".  DEFAULT must
+# either be "yes" or "no" and decided on the default value for
+# build_NAME and whether --enable-NAME or --disable-NAME is shown with 
+# ./configure --help
+AC_DEFUN(GNUPG_BUILD_PROGRAM,
+  [build_$1=$2
+   m4_if([$2],[yes],[
+      AC_ARG_ENABLE([$1], AC_HELP_STRING([--disable-$1],
+                                         [do not build the $1 program]),
+                           build_$1=$enableval, build_$1=$2)
+    ],[
+      AC_ARG_ENABLE([$1], AC_HELP_STRING([--enable-$1],
+                                         [build the $1 program]),
+                           build_$1=$enableval, build_$1=$2)
+    ])
+   case "$build_$1" in
+         no|yes)
+           ;;
+         *) 
+           AC_MSG_ERROR([only yes or no allowed for feature --enable-$1])
+           ;;
+   esac
+  ])
 
-              irix5* | irix6*)
-                # PIC (with -KPIC) is the default.
-                ;;
 
-              osf3* | osf4*)
-                # FIXME - pic_flag is probably required for
-                # hppa*-osf* and i860-osf*
-                ;;
 
-              sco3.2v5*)
-                CFLAGS_PIC='-Kpic'
-                ;;
-
-              solaris2* | solaris7* )
-                CFLAGS_PIC='-KPIC'
-                ;;
-
-              sunos4*)
-                CFLAGS_PIC='-PIC'
-                ;;
-
-              *)
-                NO_PIC=yes
-                ;;
-            esac
-        fi
-
-        case "$host_cpu" in
-        rs6000 | powerpc | powerpcle)
-          # Yippee! All RS/6000 and PowerPC code is position-independent.
-          CFLAGS_PIC=""
-          ;;
+# GNUPG_PTH_VERSION_CHECK(REQUIRED)
+# 
+# If the version is sufficient, HAVE_PTH will be set to yes.
+#
+# Taken form the m4 macros which come with Pth
+AC_DEFUN(GNUPG_PTH_VERSION_CHECK,
+  [
+    _pth_version=`$PTH_CONFIG --version | awk 'NR==1 {print [$]3}'`
+    _req_version="ifelse([$1],,1.2.0,$1)"
+    for _var in _pth_version _req_version; do
+        eval "_val=\"\$${_var}\""
+        _major=`echo $_val | sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\([[ab.]]\)\([[0-9]]*\)/\1/'`
+        _minor=`echo $_val | sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\([[ab.]]\)\([[0-9]]*\)/\2/'`
+        _rtype=`echo $_val | sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\([[ab.]]\)\([[0-9]]*\)/\3/'`
+        _micro=`echo $_val | sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\([[ab.]]\)\([[0-9]]*\)/\4/'`
+        case $_rtype in
+            "a" ) _rtype=0 ;;
+            "b" ) _rtype=1 ;;
+            "." ) _rtype=2 ;;
         esac
-
-        if test "$NO_PIC" = yes; then
-            AC_MSG_RESULT(not possible)
-        else
-            if test -z "$CFLAGS_PIC"; then
-               AC_MSG_RESULT(none)
-            else
-                AC_MSG_RESULT($CFLAGS_PIC)
+        _hex=`echo dummy | awk '{ printf("%d%02d%1d%02d", major, minor, rtype, micro); }' \
+              "major=$_major" "minor=$_minor" "rtype=$_rtype" "micro=$_micro"`
+        eval "${_var}_hex=\"\$_hex\""
+    done
+    have_pth=no
+    if test ".$_pth_version_hex" != .; then
+        if test ".$_req_version_hex" != .; then
+            if test $_pth_version_hex -ge $_req_version_hex; then
+                have_pth=yes
             fi
         fi
     fi
+    if test $have_pth = no; then
+       AC_MSG_WARN([[
+***
+*** Found Pth version $_pth_version, but require at least
+*** version $_req_version.  Please upgrade Pth first.
+***]])
+    fi    
   ])
-
-
-######################################################################
-# Check for export-dynamic flag
-# This sets CFLAGS_EXPORTDYNAMIC to the required flags
-######################################################################
-dnl GNUPG_CHECK_EXPORTDYNAMIC
-dnl
-define(GNUPG_CHECK_EXPORTDYNAMIC,
-  [ AC_MSG_CHECKING(how to specify -export-dynamic)
-    if test "$cross_compiling" = yes; then
-      AC_MSG_RESULT(assume none)
-      CFLAGS_EXPORTDYNAMIC=""
-    else
-      AC_CACHE_VAL(gnupg_cv_export_dynamic,[
-      if AC_TRY_COMMAND([${CC-cc} $CFLAGS -Wl,--version 2>&1 |
-                                          grep "GNU ld" >/dev/null]); then
-          # using gnu's linker
-          gnupg_cv_export_dynamic="-Wl,-export-dynamic"
-      else
-          case "$host_os" in
-            hpux* )
-              gnupg_cv_export_dynamic="-Wl,-E"
-              ;;
-            * )
-              gnupg_cv_export_dynamic=""
-              ;;
-          esac
-      fi
-      ])
-      AC_MSG_RESULT($gnupg_cv_export_dynamic)
-      CFLAGS_EXPORTDYNAMIC="$gnupg_cv_export_dynamic"
-    fi
-  ])
-
-#####################################################################
-# Check for SysV IPC  (from GIMP)
-#   And see whether we have a SHM_LOCK (FreeBSD does not have it).
-#####################################################################
-dnl GNUPG_CHECK_IPC
-dnl
-define(GNUPG_CHECK_IPC,
-   [ AC_CHECK_HEADERS(sys/ipc.h sys/shm.h)
-     if test "$ac_cv_header_sys_shm_h" = "yes"; then
-       AC_MSG_CHECKING(whether IPC_RMID allowes subsequent attaches)
-       AC_CACHE_VAL(gnupg_cv_ipc_rmid_deferred_release,
-          AC_TRY_RUN([
-             #include <sys/types.h>
-             #include <sys/ipc.h>
-             #include <sys/shm.h>
-             int main()
-             {
-               int id;
-               char *shmaddr;
-             id = shmget (IPC_PRIVATE, 4, IPC_CREAT | 0777);
-             if (id == -1)
-               exit (2);
-               shmaddr = shmat (id, 0, 0);
-               shmctl (id, IPC_RMID, 0);
-               if ((char*) shmat (id, 0, 0) == (char*) -1)
-               {
-                 shmdt (shmaddr);
-                 exit (1);
-               }
-               shmdt (shmaddr);
-               shmdt (shmaddr);
-               exit (0);
-             }
-         ],
-         gnupg_cv_ipc_rmid_deferred_release="yes",
-         gnupg_cv_ipc_rmid_deferred_release="no",
-         gnupg_cv_ipc_rmid_deferred_release="assume-no")
-       )
-       if test "$gnupg_cv_ipc_rmid_deferred_release" = "yes"; then
-           AC_DEFINE(IPC_RMID_DEFERRED_RELEASE,1,
-                     [Defined if we can do a deferred shm release])
-           AC_MSG_RESULT(yes)
-       else
-          if test "$gnupg_cv_ipc_rmid_deferred_release" = "no"; then
-              AC_MSG_RESULT(no)
-          else
-              AC_MSG_RESULT([assuming no])
-          fi
-       fi
-
-       AC_MSG_CHECKING(whether SHM_LOCK is available)
-       AC_CACHE_VAL(gnupg_cv_ipc_have_shm_lock,
-          AC_TRY_COMPILE([#include <sys/types.h>
-             #include <sys/ipc.h>
-             #include <sys/shm.h>],[
-             int shm_id;
-             shmctl(shm_id, SHM_LOCK, 0);
-             ],
-             gnupg_cv_ipc_have_shm_lock="yes",
-             gnupg_cv_ipc_have_shm_lock="no"
-          )
-       )
-       if test "$gnupg_cv_ipc_have_shm_lock" = "yes"; then
-         AC_DEFINE(IPC_HAVE_SHM_LOCK,1,
-                   [Defined if a SysV shared memory supports the LOCK flag])
-         AC_MSG_RESULT(yes)
-       else
-         AC_MSG_RESULT(no)
-       fi
-     fi
-   ])
-
 
 ######################################################################
 # Check whether mlock is broken (hpux 10.20 raises a SIGBUS if mlock
@@ -448,295 +220,206 @@ define(GNUPG_CHECK_MLOCK,
   ])
 
 
-################################################################
-# GNUPG_PROG_NM - find the path to a BSD-compatible name lister
-AC_DEFUN(GNUPG_PROG_NM,
-[AC_MSG_CHECKING([for BSD-compatible nm])
-AC_CACHE_VAL(ac_cv_path_NM,
-[if test -n "$NM"; then
-  # Let the user override the test.
-  ac_cv_path_NM="$NM"
-else
-  IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
-  for ac_dir in /usr/ucb /usr/ccs/bin $PATH /bin; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/nm; then
-      # Check to see if the nm accepts a BSD-compat flag.
-      # Adding the `sed 1q' prevents false positives on HP-UX, which says:
-      #   nm: unknown option "B" ignored
-      if ($ac_dir/nm -B /dev/null 2>&1 | sed '1q'; exit 0) | egrep /dev/null >/dev/null; then
-        ac_cv_path_NM="$ac_dir/nm -B"
-      elif ($ac_dir/nm -p /dev/null 2>&1 | sed '1q'; exit 0) | egrep /dev/null >/dev/null; then
-        ac_cv_path_NM="$ac_dir/nm -p"
-      else
-        ac_cv_path_NM="$ac_dir/nm"
-      fi
-      break
-    fi
-  done
-  IFS="$ac_save_ifs"
-  test -z "$ac_cv_path_NM" && ac_cv_path_NM=nm
-fi])
-NM="$ac_cv_path_NM"
-AC_MSG_RESULT([$NM])
-AC_SUBST(NM)
-])
 
-# GNUPG_SYS_NM_PARSE - Check for command ro grab the raw symbol name followed
-# by C symbol name from nm.
-AC_DEFUN(GNUPG_SYS_NM_PARSE,
-[AC_REQUIRE([AC_CANONICAL_HOST])dnl
-AC_REQUIRE([GNUPG_PROG_NM])dnl
-# Check for command to grab the raw symbol name followed by C symbol from nm.
-AC_MSG_CHECKING([command to parse $NM output])
-AC_CACHE_VAL(ac_cv_sys_global_symbol_pipe,
-[# These are sane defaults that work on at least a few old systems.
-# {They come from Ultrix.  What could be older than Ultrix?!! ;)}
+dnl [copied from libgcrypt]
+dnl AM_PATH_LIBGCRYPT([MINIMUM-VERSION,
+dnl                   [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
+dnl Test for liblibgcrypt and define LIBGCRYPT_CFLAGS and LIBGCRYPT_LIBS
+dnl
+AC_DEFUN(AM_PATH_LIBGCRYPT,
+[ AC_ARG_WITH(libgcrypt-prefix,
+            AC_HELP_STRING([--with-libgcrypt-prefix=PFX],
+                           [prefix where LIBGCRYPT is installed (optional)]),
+     libgcrypt_config_prefix="$withval", libgcrypt_config_prefix="")
+  if test x$libgcrypt_config_prefix != x ; then
+     libgcrypt_config_args="$libgcrypt_config_args --prefix=$libgcrypt_config_prefix"
+     if test x${LIBGCRYPT_CONFIG+set} != xset ; then
+        LIBGCRYPT_CONFIG=$libgcrypt_config_prefix/bin/libgcrypt-config
+     fi
+  fi
 
-changequote(,)dnl
-# Character class describing NM global symbol codes.
-ac_symcode='[BCDEGRSTU]'
-
-# Regexp to match symbols that can be accessed directly from C.
-ac_sympat='\([_A-Za-z][_A-Za-z0-9]*\)'
-
-# Transform the above into a raw symbol and a C symbol.
-ac_symxfrm='\1 \1'
-
-# Define system-specific variables.
-case "$host_os" in
-aix*)
-  ac_symcode='[BCDTU]'
-  ;;
-freebsd* | netbsd* | openbsd* | bsdi* | sunos* | cygwin32* | mingw32*)
-  ac_sympat='_\([_A-Za-z][_A-Za-z0-9]*\)'
-  ac_symxfrm='_\1 \1'
-  ;;
-irix*)
-  # Cannot use undefined symbols on IRIX because inlined functions mess us up.
-  ac_symcode='[BCDEGRST]'
-  ;;
-solaris*)
-  ac_symcode='[BDTU]'
-  ;;
-esac
-
-# If we're using GNU nm, then use its standard symbol codes.
-if $NM -V 2>&1 | egrep '(GNU|with BFD)' > /dev/null; then
-  ac_symcode='[ABCDGISTUW]'
-fi
-
-case "$host_os" in
-cygwin32* | mingw32*)
-  # We do not want undefined symbols on cygwin32.  The user must
-  # arrange to define them via -l arguments.
-  ac_symcode='[ABCDGISTW]'
-  ;;
-esac
-changequote([,])dnl
-
-# Write the raw and C identifiers.
-ac_cv_sys_global_symbol_pipe="sed -n -e 's/^.* $ac_symcode $ac_sympat$/$ac_symxfrm/p'"
-
-# Check to see that the pipe works correctly.
-ac_pipe_works=no
-cat > conftest.$ac_ext <<EOF
-#ifdef __cplusplus
-extern "C" {
-#endif
-char nm_test_var;
-void nm_test_func(){}
-#ifdef __cplusplus
-}
-#endif
-int main(){nm_test_var='a';nm_test_func;return 0;}
-EOF
-if AC_TRY_EVAL(ac_compile); then
-  # Now try to grab the symbols.
-  ac_nlist=conftest.nm
-  if AC_TRY_EVAL(NM conftest.$ac_objext \| $ac_cv_sys_global_symbol_pipe \> $ac_nlist) && test -s "$ac_nlist"; then
-
-    # Try sorting and uniquifying the output.
-    if sort "$ac_nlist" | uniq > "$ac_nlist"T; then
-      mv -f "$ac_nlist"T "$ac_nlist"
-      ac_wcout=`wc "$ac_nlist" 2>/dev/null`
-changequote(,)dnl
-      ac_count=`echo "X$ac_wcout" | sed -e 's,^X,,' -e 's/^[    ]*\([0-9][0-9]*\).*$/\1/'`
-changequote([,])dnl
-      (test "$ac_count" -ge 0) 2>/dev/null || ac_count=-1
-    else
-      rm -f "$ac_nlist"T
-      ac_count=-1
-    fi
-
-    # Make sure that we snagged all the symbols we need.
-    if egrep ' nm_test_var$' "$ac_nlist" >/dev/null; then
-      if egrep ' nm_test_func$' "$ac_nlist" >/dev/null; then
-        cat <<EOF > conftest.c
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-EOF
-        # Now generate the symbol file.
-        sed 's/^.* \(.*\)$/extern char \1;/' < "$ac_nlist" >> conftest.c
-
-        cat <<EOF >> conftest.c
-#if defined (__STDC__) && __STDC__
-# define __ptr_t void *
-#else
-# define __ptr_t char *
-#endif
-
-/* The number of symbols in dld_preloaded_symbols, -1 if unsorted. */
-int dld_preloaded_symbol_count = $ac_count;
-
-/* The mapping between symbol names and symbols. */
-struct {
-  char *name;
-  __ptr_t address;
-}
-changequote(,)dnl
-dld_preloaded_symbols[] =
-changequote([,])dnl
-{
-EOF
-        sed 's/^\(.*\) \(.*\)$/  {"\1", (__ptr_t) \&\2},/' < "$ac_nlist" >> conftest.c
-        cat <<\EOF >> conftest.c
-  {0, (__ptr_t) 0}
-};
-
-#ifdef __cplusplus
-}
-#endif
-EOF
-        # Now try linking the two files.
-        mv conftest.$ac_objext conftestm.$ac_objext
-        ac_save_LIBS="$LIBS"
-        ac_save_CFLAGS="$CFLAGS"
-        LIBS="conftestm.$ac_objext"
-        CFLAGS="$CFLAGS$no_builtin_flag"
-        if AC_TRY_EVAL(ac_link) && test -s conftest; then
-          ac_pipe_works=yes
-        else
-          echo "configure: failed program was:" >&AC_FD_CC
-          cat conftest.c >&AC_FD_CC
+  AC_PATH_PROG(LIBGCRYPT_CONFIG, libgcrypt-config, no)
+  min_libgcrypt_version=ifelse([$1], ,0.4.4,$1)
+  AC_MSG_CHECKING(for LIBGCRYPT - version >= $min_libgcrypt_version)
+  ok=no
+  if test "$LIBGCRYPT_CONFIG" != "no" ; then
+    req_major=`echo $min_libgcrypt_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+    req_minor=`echo $min_libgcrypt_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+    req_micro=`echo $min_libgcrypt_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+    libgcrypt_config_version=`$LIBGCRYPT_CONFIG $libgcrypt_config_args --version`
+    major=`echo $libgcrypt_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+    minor=`echo $libgcrypt_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+    micro=`echo $libgcrypt_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+    if test "$major" -gt "$req_major"; then
+        ok=yes
+    else 
+        if test "$major" -eq "$req_major"; then
+            if test "$minor" -gt "$req_minor"; then
+               ok=yes
+            else
+               if test "$minor" -eq "$req_minor"; then
+                   if test "$micro" -ge "$req_micro"; then
+                     ok=yes
+                   fi
+               fi
+            fi
         fi
-        LIBS="$ac_save_LIBS"
-        CFLAGS="$ac_save_CFLAGS"
-      else
-        echo "cannot find nm_test_func in $ac_nlist" >&AC_FD_CC
-      fi
-    else
-      echo "cannot find nm_test_var in $ac_nlist" >&AC_FD_CC
     fi
-  else
-    echo "cannot run $ac_cv_sys_global_symbol_pipe" >&AC_FD_CC
   fi
-else
-  echo "$progname: failed program was:" >&AC_FD_CC
-  cat conftest.c >&AC_FD_CC
-fi
-rm -rf conftest*
-
-# Do not use the global_symbol_pipe unless it works.
-test "$ac_pipe_works" = yes || ac_cv_sys_global_symbol_pipe=
+  if test $ok = yes; then
+    LIBGCRYPT_CFLAGS=`$LIBGCRYPT_CONFIG $libgcrypt_config_args --cflags`
+    LIBGCRYPT_LIBS=`$LIBGCRYPT_CONFIG $libgcrypt_config_args --libs`
+    AC_MSG_RESULT(yes)
+    ifelse([$2], , :, [$2])
+  else
+    LIBGCRYPT_CFLAGS=""
+    LIBGCRYPT_LIBS=""
+    AC_MSG_RESULT(no)
+    ifelse([$3], , :, [$3])
+  fi
+  AC_SUBST(LIBGCRYPT_CFLAGS)
+  AC_SUBST(LIBGCRYPT_LIBS)
 ])
 
-ac_result=yes
-if test -z "$ac_cv_sys_global_symbol_pipe"; then
-   ac_result=no
-fi
-AC_MSG_RESULT($ac_result)
-])
 
-# GNUPG_SYS_LIBTOOL_CYGWIN32 - find tools needed on cygwin32
-AC_DEFUN(GNUPG_SYS_LIBTOOL_CYGWIN32,
-[AC_CHECK_TOOL(DLLTOOL, dlltool, false)
-AC_CHECK_TOOL(AS, as, false)
-])
+dnl [Copied from libksba]
+dnl AM_PATH_KSBA([MINIMUM-VERSION,
+dnl              [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
+dnl Test for libksba and define KSBA_CFLAGS and KSBA_LIBS
+dnl
+AC_DEFUN(AM_PATH_KSBA,
+[ AC_ARG_WITH(ksba-prefix,
+            AC_HELP_STRING([--with-ksba-prefix=PFX],
+                           [prefix where KSBA is installed (optional)]),
+     ksba_config_prefix="$withval", ksba_config_prefix="")
+  if test x$ksba_config_prefix != x ; then
+     ksba_config_args="$ksba_config_args --prefix=$ksba_config_prefix"
+     if test x${KSBA_CONFIG+set} != xset ; then
+        KSBA_CONFIG=$ksba_config_prefix/bin/ksba-config
+     fi
+  fi
 
-# GNUPG_SYS_SYMBOL_UNDERSCORE - does the compiler prefix global symbols
-#                              with an underscore?
-AC_DEFUN(GNUPG_SYS_SYMBOL_UNDERSCORE,
-[tmp_do_check="no"
-case "${target}" in
-    i386-emx-os2 | i[3456]86-pc-os2*emx | i386-pc-msdosdjgpp | *-*-cygwin)
-        ac_cv_sys_symbol_underscore=yes
-        ;;
-    *)
-      if test "$cross_compiling" = yes; then
-         ac_cv_sys_symbol_underscore=yes
-      else
-         tmp_do_check="yes"
-      fi
-       ;;
-esac
-
-if test "$tmp_do_check" = "yes"; then
-AC_REQUIRE([GNUPG_PROG_NM])dnl
-AC_REQUIRE([GNUPG_SYS_NM_PARSE])dnl
-AC_MSG_CHECKING([for _ prefix in compiled symbols])
-AC_CACHE_VAL(ac_cv_sys_symbol_underscore,
-[ac_cv_sys_symbol_underscore=no
-cat > conftest.$ac_ext <<EOF
-void nm_test_func(){}
-int main(){nm_test_func;return 0;}
-EOF
-if AC_TRY_EVAL(ac_compile); then
-  # Now try to grab the symbols.
-  ac_nlist=conftest.nm
-  if AC_TRY_EVAL(NM conftest.$ac_objext \| $ac_cv_sys_global_symbol_pipe \> $ac_nlist) && test -s "$ac_nlist"; then
-    # See whether the symbols have a leading underscore.
-    if egrep '^_nm_test_func' "$ac_nlist" >/dev/null; then
-      ac_cv_sys_symbol_underscore=yes
-    else
-      if egrep '^nm_test_func ' "$ac_nlist" >/dev/null; then
-        :
-      else
-        echo "configure: cannot find nm_test_func in $ac_nlist" >&AC_FD_CC
-      fi
+  AC_PATH_PROG(KSBA_CONFIG, ksba-config, no)
+  min_ksba_version=ifelse([$1], ,0.4.4,$1)
+  AC_MSG_CHECKING(for KSBA - version >= $min_ksba_version)
+  ok=no
+  if test "$KSBA_CONFIG" != "no" ; then
+    req_major=`echo $min_ksba_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+    req_minor=`echo $min_ksba_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+    req_micro=`echo $min_ksba_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+    ksba_config_version=`$KSBA_CONFIG $ksba_config_args --version`
+    major=`echo $ksba_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+    minor=`echo $ksba_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+    micro=`echo $ksba_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+    if test "$major" -gt "$req_major"; then
+        ok=yes
+    else 
+        if test "$major" -eq "$req_major"; then
+            if test "$minor" -gt "$req_minor"; then
+               ok=yes
+            else
+               if test "$minor" -eq "$req_minor"; then
+                   if test "$micro" -ge "$req_micro"; then
+                     ok=yes
+                   fi
+               fi
+            fi
+        fi
     fi
-  else
-    echo "configure: cannot run $ac_cv_sys_global_symbol_pipe" >&AC_FD_CC
   fi
-else
-  echo "configure: failed program was:" >&AC_FD_CC
-  cat conftest.c >&AC_FD_CC
-fi
-rm -rf conftest*
-])
-else
-AC_MSG_CHECKING([for _ prefix in compiled symbols])
-fi
-AC_MSG_RESULT($ac_cv_sys_symbol_underscore)
-if test x$ac_cv_sys_symbol_underscore = xyes; then
-  AC_DEFINE(WITH_SYMBOL_UNDERSCORE,1,
-            [Defined if compiled symbols have a leading underscore])
-fi
+  if test $ok = yes; then
+    KSBA_CFLAGS=`$KSBA_CONFIG $ksba_config_args --cflags`
+    KSBA_LIBS=`$KSBA_CONFIG $ksba_config_args --libs`
+    AC_MSG_RESULT(yes)
+    ifelse([$2], , :, [$2])
+  else
+    KSBA_CFLAGS=""
+    KSBA_LIBS=""
+    AC_MSG_RESULT(no)
+    ifelse([$3], , :, [$3])
+  fi
+  AC_SUBST(KSBA_CFLAGS)
+  AC_SUBST(KSBA_LIBS)
 ])
 
-dnl Stolen from gcc
-dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
-dnl of the usual 2.
-AC_DEFUN(GNUPG_FUNC_MKDIR_TAKES_ONE_ARG,
-[AC_CHECK_HEADERS(sys/stat.h unistd.h direct.h)
-AC_CACHE_CHECK([if mkdir takes one argument], gnupg_cv_mkdir_takes_one_arg,
-[AC_TRY_COMPILE([
-#include <sys/types.h>
-#ifdef HAVE_SYS_STAT_H
-# include <sys/stat.h>
-#endif
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-#ifdef HAVE_DIRECT_H
-# include <direct.h>
-#endif], [mkdir ("foo", 0);],
-        gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
-if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
-  AC_DEFINE(MKDIR_TAKES_ONE_ARG,1,
-            [Defined if mkdir() does not take permission flags])
-fi
+
+
+dnl AM_PATH_OPENSC([MINIMUM-VERSION,
+dnl               [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
+dnl Test for OpenSC and define OPENSC_CFLAGS and OPENSC_LIBS
+dnl
+AC_DEFUN(AM_PATH_OPENSC,
+[ AC_ARG_WITH(opensc-prefix,
+            AC_HELP_STRING([--with-opensc-prefix=PFX],
+                           [prefix where OpenSC is installed (optional)]),
+     opensc_config_prefix="$withval", opensc_config_prefix="")
+  if test x$opensc_config_prefix != x ; then
+     opensc_config_args="$opensc_config_args --prefix=$opensc_config_prefix"
+     if test x${OPENSC_CONFIG+set} != xset ; then
+        OPENSC_CONFIG=$opensc_config_prefix/bin/opensc-config
+     fi
+  fi
+
+  AC_PATH_PROG(OPENSC_CONFIG, opensc-config, no)
+  min_opensc_version=ifelse([$1], ,0.7.0,$1)
+  AC_MSG_CHECKING(for OpenSC - version >= $min_opensc_version)
+  ok=no
+  if test "$OPENSC_CONFIG" != "no" ; then
+    req_major=`echo $min_opensc_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+    req_minor=`echo $min_opensc_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+    req_micro=`echo $min_opensc_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+    opensc_config_version=`$OPENSC_CONFIG $opensc_config_args --version`
+    major=`echo $opensc_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+    minor=`echo $opensc_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+    micro=`echo $opensc_config_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+    if test "$major" -gt "$req_major"; then
+        ok=yes
+    else 
+        if test "$major" -eq "$req_major"; then
+            if test "$minor" -gt "$req_minor"; then
+               ok=yes
+            else
+               if test "$minor" -eq "$req_minor"; then
+                   if test "$micro" -ge "$req_micro"; then
+                     ok=yes
+                   fi
+               fi
+            fi
+        fi
+    fi
+  fi
+  if test $ok = yes; then
+    OPENSC_CFLAGS=`$OPENSC_CONFIG $opensc_config_args --cflags`
+    OPENSC_LIBS=`$OPENSC_CONFIG $opensc_config_args --libs`
+    OPENSC_LIBS="$OPENSC_LIBS -lpcsclite -lpthread"
+    AC_MSG_RESULT(yes)
+    ifelse([$2], , :, [$2])
+  else
+    OPENSC_CFLAGS=""
+    OPENSC_LIBS=""
+    AC_MSG_RESULT(no)
+    ifelse([$3], , :, [$3])
+  fi
+  AC_SUBST(OPENSC_CFLAGS)
+  AC_SUBST(OPENSC_LIBS)
 ])
+
 

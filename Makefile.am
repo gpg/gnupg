@@ -1,7 +1,8 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
-#
+# Makefile.am - main makefile for NewPG/GnuPG
+#     	Copyright (C) 2001 Free Software Foundation, Inc.
+# 
 # This file is part of GnuPG.
-#
+# 
 # GnuPG is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -18,37 +19,29 @@
 
 ## Process this file with automake to produce Makefile.in
 
-if CROSS_COMPILING
-checks =
+EXTRA_DIST = autogen.sh
+
+if BUILD_GPGSM
+sm = sm
 else
-checks = checks
+sm =
+endif
+if BUILD_AGENT
+agent = agent
+else
+agent =
+endif
+if BUILD_SCDAEMON
+scd = scd
+else
+scd =
 endif
 
-SUBDIRS = intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
-EXTRA_DIST = PROJECTS BUGS config.h.in
-DISTCLEANFILES = g10defs.h 
+SUBDIRS = intl jnlib assuan common kbx ${sm} ${agent} ${scd} po doc tests
 
-# Add all the files listed in "distfiles" files to the distribution,
-# apply version numbers to some files and create a VERSION file which
-# we need for the Prereq: patch file trick.
+
 dist-hook:
-	@set -e; \
-	 for file in `cd $(top_srcdir); \
-		     find scripts mpi include -type f -name distfiles`; do \
-	    dir=`dirname $$file` ; $(mkinstalldirs) $(distdir)/$$dir ; \
-	    for i in distfiles `cat $(top_srcdir)/$$file` ; do \
-		ln $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i 2> /dev/null \
-		|| cp -p $(top_srcdir)/$$dir/$$i $(distdir)/$$dir/$$i; \
-	    done ; \
-	done
-	@set -e; \
-	sed -e 's/@pkg_version@/$(VERSION)/g' \
-	    $(top_srcdir)/scripts/gnupg.spec.in \
-	    > $(distdir)/scripts/gnupg.spec
-	echo "$(VERSION)" > $(distdir)/VERSION
-
-
-
+	@set -e; echo "$(VERSION)" > $(distdir)/VERSION
 
 
 
