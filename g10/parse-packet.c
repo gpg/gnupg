@@ -1221,7 +1221,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 	if( n ) {
             /* we add 8 extra bytes so that we have space for the signature
-             * status cache.  Well we are wastin this if there is a cache
+             * status cache.  Well we are wasting this if there is a cache
              * packet already, but in the other case it avoids an realloc */
 	    sig->unhashed = m_alloc (sizeof(*sig->unhashed) + n + 8 - 1 );
             sig->unhashed->size = n + 8;
