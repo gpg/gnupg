@@ -44,6 +44,7 @@ int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=0;
 char *basekeyspacedn=NULL;
 char host[80];
 char portstr[10];
+char *pgpkeystr="pgpKey";
 FILE *input=NULL,*output=NULL,*console=NULL;
 LDAP *ldap=NULL;
 
@@ -62,12 +63,12 @@ int send_key(void)
   char *key[2]={0,0};
   char keyid[17];
 #ifndef __riscos__
-  LDAPMod mod={LDAP_MOD_ADD,"pgpKeyV2",{key}},*attrs[2]={&mod,NULL};
+  LDAPMod mod={LDAP_MOD_ADD,pgpkeystr,{key}},*attrs[2]={&mod,NULL};
 #else
   LDAPMod mod, *attrs[2];
   
   mod.mod_op      = LDAP_MOD_ADD;
-  mod.mod_type    = "pgpKeyV2";
+  mod.mod_type    = pgpkeystr;
   mod.mod_values  = 0;
   mod.mod_bvalues = 0;
   
@@ -169,9 +170,16 @@ int get_key(char *getkey)
   int ret=-1,err,count;
   struct keylist *dupelist=NULL;
   char search[62];
-  char *attrs[]={"pgpKeyV2","pgpuserid","pgpkeyid","pgpcertid","pgprevoked",
+#ifndef __riscos__
+  char *attrs[]={pgpkeystr,"pgpuserid","pgpkeyid","pgpcertid","pgprevoked",
 		 "pgpdisabled","pgpkeycreatetime","modifytimestamp",
 		 "pgpkeysize","pgpkeytype",NULL};
+#else
+  char *attrs[]={"foobar","pgpuserid","pgpkeyid","pgpcertid","pgprevoked",
+		 "pgpdisabled","pgpkeycreatetime","modifytimestamp",
+		 "pgpkeysize","pgpkeytype",NULL};
+  attrs[0]=pgpkeystr;
+#endif
 
   /* Build the search string */
 
@@ -380,7 +388,7 @@ int get_key(char *getkey)
 		    }
 		}
 
-	      vals=ldap_get_values(ldap,each,"pgpKeyV2");
+	      vals=ldap_get_values(ldap,each,pgpkeystr);
 	      if(vals==NULL)
 		{
 		  fprintf(console,"gpgkeys: unable to retrieve key %s "
@@ -858,13 +866,23 @@ int main(int argc,char *argv[])
 	  fprintf(console,"Server: \t%s\n",vals[0]);
 	  ldap_value_free(vals);
 	}
+    }
 
-      vals=ldap_get_values(ldap,res,"version");
-      if(vals!=NULL)
-	{
-	  fprintf(console,"Version:\t%s\n",vals[0]);
-	  ldap_value_free(vals);
-	}
+  vals=ldap_get_values(ldap,res,"version");
+  if(vals!=NULL)
+    {
+      if(verbose>1)
+	fprintf(console,"Version:\t%s\n",vals[0]);
+
+      /* If the version is high enough, use the new pgpKeyV2
+	 attribute.  This design if iffy at best, but it matches how
+	 PGP does it.  I figure the NAI folks assumed that there would
+	 never be a LDAP keyserver vendor with a different numbering
+	 scheme. */
+      if(atoi(vals[0])>1)
+	pgpkeystr="pgpKeyV2";
+
+      ldap_value_free(vals);
     }
 
   /* This is always "OU=ACTIVE,O=PGP KEYSPACE,C=US", but it might not
