@@ -1,3 +1,11 @@
+2002-06-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Move -lsocket and -lnsl checks before LDAP link
+	tests so they work properly on Solaris.  Noted by David Champion.
+	Also, check for the Mozilla LDAP library if the OpenLDAP library
+	check fails.  Put -lsocket and -lnsl in NETLIBS rather than LIBS
+	so not all programs are forced to link to them.
+	
 2002-06-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add a switch for the experimental external HKP

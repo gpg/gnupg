@@ -295,41 +295,55 @@ if test "$NO_PIC" = yes; then
     try_dynload=no
 fi
 
-# Try and link a LDAP test program to weed out unusable LDAP libraries
+dnl Must check for network library requirements before doing link tests
+dnl for ldap, for example. If ldap libs are static (or dynamic and without
+dnl ELF runtime link paths), then link will fail and LDAP support won't
+dnl be detected.
+
+AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname,
+	[NETLIBS="-lnsl $NETLIBS"]))
+AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
+	[NETLIBS="-lsocket $NETLIBS"]))
+
+# Try and link a LDAP test program to weed out unusable LDAP
+# libraries.  -lldap -llber -lresolv is for OpenLDAP.  -lldapssl41 is
+# for Mozilla LDAP.
 
 if test "$try_ldap" = yes ; then
-  _ldap_save_libs=$LIBS
-  LIBS="-lldap -llber -lresolv $LIBS"
+  for LDAPLIBS in "-lldap -llber -lresolv" "-lldapssl41"; do
+    _ldap_save_libs=$LIBS
+    LIBS="$LDAPLIBS $NETLIBS $LIBS"
 
-  AC_CACHE_CHECK([whether LDAP is sane],
-	         [gnupg_cv_func_ldap_init],
-                 [AC_TRY_LINK([#include <ldap.h>],
-                  [ldap_open("foobar",1234);],
-                  [gnupg_cv_func_ldap_init=yes],
-                  [gnupg_cv_func_ldap_init=no])])
+    AC_MSG_CHECKING([whether LDAP via \"$LDAPLIBS\" is present and sane])
+    AC_TRY_LINK([#include <ldap.h>],[ldap_open("foobar",1234);],
+                [gnupg_cv_func_ldap_init=yes],[gnupg_cv_func_ldap_init=no])
+    AC_MSG_RESULT([$gnupg_cv_func_ldap_init])
 
-  if test $gnupg_cv_func_ldap_init = no; then
-    AC_CACHE_CHECK([whether I can make LDAP be sane with lber.h],
-		         [gnupg_cv_func_ldaplber_init],
-                	 [AC_TRY_LINK([#include <lber.h>
-#include <ldap.h>],
-                  	  [ldap_open("foobar",1234);],
-  		          [gnupg_cv_func_ldaplber_init=yes],
-                          [gnupg_cv_func_ldaplber_init=no])])
-  fi
+    if test $gnupg_cv_func_ldap_init = no; then
+      AC_MSG_CHECKING([whether I can make LDAP be sane with lber.h])
+      AC_TRY_LINK([#include <lber.h>
+#include <ldap.h>],[ldap_open("foobar",1234);],
+         [gnupg_cv_func_ldaplber_init=yes],[gnupg_cv_func_ldaplber_init=no])
+      AC_MSG_RESULT([$gnupg_cv_func_ldaplber_init])
+    fi
 
-  if test "$gnupg_cv_func_ldaplber_init" = yes ; then
-     AC_DEFINE(NEED_LBER_H,1,[Define if the LDAP library requires including lber.h before ldap.h])
-  fi
+    if test "$gnupg_cv_func_ldaplber_init" = yes ; then
+       AC_DEFINE(NEED_LBER_H,1,[Define if the LDAP library requires including lber.h before ldap.h])
+    fi
 
-  if test "$gnupg_cv_func_ldap_init" = yes || \
-	test "$gnupg_cv_func_ldaplber_init" = yes ; then
-     GPGKEYS_LDAP="gpgkeys_ldap"
-  fi
+    if test "$gnupg_cv_func_ldap_init" = yes || \
+  	test "$gnupg_cv_func_ldaplber_init" = yes ; then
+       GPGKEYS_LDAP="gpgkeys_ldap"
+    fi
 
-  LIBS=$_ldap_save_libs
+    LIBS=$_ldap_save_libs
+
+    if test "$GPGKEYS_LDAP" != "" ; then break; fi
+  done
 fi
+
 AC_SUBST(GPGKEYS_LDAP)
+AC_SUBST(LDAPLIBS)
 
 if test "$try_mailto" = yes ; then
   AC_PATH_PROG(SENDMAIL,sendmail,,$PATH:/usr/sbin:/usr/libexec:/usr/lib)
@@ -444,10 +458,6 @@ AC_SUBST(USE_NLS)
 AC_SUBST(USE_INCLUDED_LIBINTL)
 AC_SUBST(BUILD_INCLUDED_LIBINTL)
 fi
-
-
-AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
-AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt))
 
 
 if test "$try_dynload" = yes ; then
@@ -888,6 +898,8 @@ if test "$GCC" = yes; then
         CFLAGS="$CFLAGS -Wall"
     fi
 fi
+
+AC_SUBST(NETLIBS)
 
 # Note the \\\\ for backslashes.  Autoconf eats one layer, leaving \\
 
