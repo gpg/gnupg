@@ -35,6 +35,7 @@
 #include "../jnlib/mischelp.h"
 #include "../jnlib/strlist.h"
 #include "../jnlib/dotlock.h"
+#include "../jnlib/utf8conv.h"
 
 /* handy malloc macros  - use only them */
 #define xtrymalloc(a)    gcry_malloc ((a))
@@ -44,11 +45,11 @@
 #define xfree(a)         gcry_free ((a))
 
 #define xmalloc(a)       gcry_xmalloc ((a))
+#define xmalloc_secure(a)  gcry_xmalloc_secure ((a))
 #define xcalloc(a,b)     gcry_xcalloc ((a),(b))
+#define xcalloc_secure(a,b) gcry_xcalloc_secure ((a),(b))
 #define xrealloc(a,b)    gcry_xrealloc ((a),(b))
 #define xstrdup(a)       gcry_xstrdup ((a))
-
-#define seterr(a)  (GNUPG_ ## a)
 
 /*-- maperror.c --*/
 int map_ksba_err (int err);
@@ -61,12 +62,34 @@ int map_to_assuan_status (int rc);
 time_t gnupg_get_time (void);
 void   gnupg_set_time (time_t newtime, int freeze);
 int    gnupg_faked_time_p (void);
+u32    make_timestamp (void);
+u32    scan_isodatestr (const char *string);
+u32    add_days_to_timestamp (u32 stamp, u16 days);
+const char *strtimevalue (u32 stamp);
+const char *strtimestamp (u32 stamp); /* GMT */
+const char *asctimestamp (u32 stamp); /* localized */
 
 /*-- signal.c --*/
 void gnupg_init_signals (int mode, void (*fast_cleanup)(void));
 void gnupg_pause_on_sigusr (int which);
 void gnupg_block_all_signals (void);
 void gnupg_unblock_all_signals (void);
+
+/*-- yesno.c --*/
+int answer_is_yes (const char *s);
+int answer_is_yes_no_default (const char *s, int def_answer);
+int answer_is_yes_no_quit (const char *s);
+
+
+/*-- miscellaneous.c --*/
+const char *print_fname_stdout (const char *s);
+const char *print_fname_stdin (const char *s);
+void print_string (FILE *fp, const byte *p, size_t n, int delim);
+void print_utf8_string2 ( FILE *fp, const byte *p, size_t n, int delim);
+void print_utf8_string (FILE *fp, const byte *p, size_t n);
+char *make_printable_string (const byte *p, size_t n, int delim);
+
+int is_file_compressed (const char *s, int *ret_rc);
 
 
 /*-- replacement functions from funcname.c --*/

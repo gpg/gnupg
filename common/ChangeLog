@@ -1,5 +1,40 @@
-2003-06-04  Werner Koch  <wk@gnupg.org>
+2003-06-17  Werner Koch  <wk@gnupg.org>
 
+	* gettime.c (scan_isodatestr,add_days_to_timestamp,strtimevalue)
+	(strtimestamp,asctimestamp): New.  Code taken from gnupg 1.3.2
+	mischelp.c.
+
+	* yesno.c: New.  Code taken from gnupg 1.3.2 mischelp.c
+
+	* miscellaneous.c: New.
+
+	* util.h: Include utf8conf.h
+
+2003-06-16  Werner Koch  <wk@gnupg.org>
+
+	* gettime.c (make_timestamp): New.
+
+	* ttyio.c: New. Taken from gnupg 1.2.
+	* ttyio.h: Move from ../include.
+
+2003-06-13  Werner Koch  <wk@gnupg.org>
+
+	* util.h (seterr): Removed macro.
+	(xmalloc_secure,xcalloc_secure): New.
+
+2003-06-11  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (iobuf_writebyte,iobuf_write): Return error code from
+	iobuf_flush.
+	(iobuf_writestr): Ditto.
+
+2003-06-10  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c, iobuf.h: New. Taken from current gnupg 1.3 CVS.  Run
+	indent on it and adjusted error handling to libgpg-error style.
+	Replaced IOBUF by iobuf_t. Renamed malloc functions.
+
+2003-06-04  Werner Koch  <wk@gnupg.org>
 
 	* errors.h: Removed all error codes.  We keep the status codes for
 	now.

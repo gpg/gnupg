@@ -1,5 +1,5 @@
 /* gettime.c - Wrapper for time functions
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -21,6 +21,9 @@
 #include <config.h>
 #include <stdlib.h>
 #include <time.h>
+#ifdef HAVE_LANGINFO_H
+#include <langinfo.h>
+#endif
 
 #include "util.h"
 
@@ -81,6 +84,166 @@ gnupg_faked_time_p (void)
 {
   return timemode;
 }
+
+
+/* This function is used by gpg because OpenPGP defines the timestamp
+   as an unsigned 32 bit value. */
+u32 
+make_timestamp (void)
+{
+  time_t t = gnupg_get_time ();
+
+  if (t == (time_t)-1)
+    log_fatal ("gnupg_get_time() failed\n");
+  return (u32)t;
+}
+
+
+
+/****************
+ * Scan a date string and return a timestamp.
+ * The only supported format is "yyyy-mm-dd"
+ * Returns 0 for an invalid date.
+ */
+u32
+scan_isodatestr( const char *string )
+{
+    int year, month, day;
+    struct tm tmbuf;
+    time_t stamp;
+    int i;
+
+    if( strlen(string) != 10 || string[4] != '-' || string[7] != '-' )
+	return 0;
+    for( i=0; i < 4; i++ )
+	if( !digitp (string+i) )
+	    return 0;
+    if( !digitp (string+5) || !digitp(string+6) )
+	return 0;
+    if( !digitp(string+8) || !digitp(string+9) )
+	return 0;
+    year = atoi(string);
+    month = atoi(string+5);
+    day = atoi(string+8);
+    /* some basic checks */
+    if( year < 1970 || month < 1 || month > 12 || day < 1 || day > 31 )
+	return 0;
+    memset( &tmbuf, 0, sizeof tmbuf );
+    tmbuf.tm_mday = day;
+    tmbuf.tm_mon = month-1;
+    tmbuf.tm_year = year - 1900;
+    tmbuf.tm_isdst = -1;
+    stamp = mktime( &tmbuf );
+    if( stamp == (time_t)-1 )
+	return 0;
+    return stamp;
+}
+
+
+u32
+add_days_to_timestamp( u32 stamp, u16 days )
+{
+    return stamp + days*86400L;
+}
+
+
+/****************
+ * Return a string with a time value in the form: x Y, n D, n H
+ */
+
+const char *
+strtimevalue( u32 value )
+{
+    static char buffer[30];
+    unsigned int years, days, hours, minutes;
+
+    value /= 60;
+    minutes = value % 60;
+    value /= 60;
+    hours = value % 24;
+    value /= 24;
+    days = value % 365;
+    value /= 365;
+    years = value;
+
+    sprintf(buffer,"%uy%ud%uh%um", years, days, hours, minutes );
+    if( years )
+	return buffer;
+    if( days )
+	return strchr( buffer, 'y' ) + 1;
+    return strchr( buffer, 'd' ) + 1;
+}
+
+
+/****************
+ * Note: this function returns GMT
+ */
+const char *
+strtimestamp( u32 stamp )
+{
+    static char buffer[11+5];
+    struct tm *tp;
+    time_t atime = stamp;
+    
+    if (atime < 0) {
+        strcpy (buffer, "????" "-??" "-??");
+    }
+    else {
+        tp = gmtime( &atime );
+        sprintf(buffer,"%04d-%02d-%02d",
+                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    }
+    return buffer;
+}
+
+/****************
+ * Note: this function returns local time
+ */
+const char *
+asctimestamp( u32 stamp )
+{
+    static char buffer[50];
+#if defined (HAVE_STRFTIME) && defined (HAVE_NL_LANGINFO)
+      static char fmt[50];
+#endif
+    struct tm *tp;
+    time_t atime = stamp;
+
+    if (atime < 0) {
+        strcpy (buffer, "????" "-??" "-??");
+        return buffer;
+    }
+
+    tp = localtime( &atime );
+#ifdef HAVE_STRFTIME
+#if defined(HAVE_NL_LANGINFO)
+      mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt)-3 );
+      if( strstr( fmt, "%Z" ) == NULL )
+	strcat( fmt, " %Z");
+      strftime( buffer, DIM(buffer)-1, fmt, tp );
+#else
+      /* fixme: we should check whether the locale appends a " %Z"
+       * These locales from glibc don't put the " %Z":
+       * fi_FI hr_HR ja_JP lt_LT lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN
+       */
+      strftime( buffer, DIM(buffer)-1, "%c %Z", tp );
+#endif
+    buffer[DIM(buffer)-1] = 0;
+#else
+    mem2str( buffer, asctime(tp), DIM(buffer) );
+#endif
+    return buffer;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -34,7 +34,11 @@ libcommon_a_SOURCES = \
 	sysutils.c sysutils.h \
 	cryptmiss.c \
 	gettime.c \
+	yesno.c \
+	miscellaneous.c \
 	membuf.c membuf.h \
+	iobuf.c iobuf.h \
+	ttyio.c ttyio.h \
 	signal.c
 
 

@@ -52,7 +52,7 @@ map_sc_err (int rc)
 #endif
     default: e = GPG_ERR_CARD; break;
     }
-  return gpg_make_error (GPG_ERR_SOURCE_UNKNOWN, e);
+  return gpg_err_make (GPG_ERR_SOURCE_UNKNOWN, e);
 }
 
 /* Get the keygrip from CERT, return 0 on success */
@@ -443,7 +443,7 @@ card_enum_keypairs (CARD card, int idx,
   rc = card->fnc.enum_keypairs (card, idx, keygrip, keyid);
   if (opt.verbose)
     log_info ("card operation enum_keypairs result: %s\n",
-              gnupg_strerror (rc));
+              gpg_strerror (rc));
   return rc;
 }
 
@@ -475,7 +475,7 @@ card_enum_certs (CARD card, int idx, char **certid, int *certtype)
   rc = card->fnc.enum_certs (card, idx, certid, certtype);
   if (opt.verbose)
     log_info ("card operation enum_certs result: %s\n",
-              gnupg_strerror (rc));
+              gpg_strerror (rc));
   return rc;
 }
 
@@ -499,7 +499,7 @@ card_read_cert (CARD card, const char *certidstr,
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
   rc = card->fnc.read_cert (card, certidstr, cert, ncert);
   if (opt.verbose)
-    log_info ("card operation read_cert result: %s\n", gnupg_strerror (rc));
+    log_info ("card operation read_cert result: %s\n", gpg_strerror (rc));
   return rc;
 }
 
@@ -527,7 +527,7 @@ card_sign (CARD card, const char *keyidstr, int hashalgo,
                         indata, indatalen,
                         outdata, outdatalen);
   if (opt.verbose)
-    log_info ("card operation sign result: %s\n", gnupg_strerror (rc));
+    log_info ("card operation sign result: %s\n", gpg_strerror (rc));
   return rc;
 }
 
@@ -555,6 +555,6 @@ card_decipher (CARD card, const char *keyidstr,
                             indata, indatalen,
                             outdata, outdatalen);
   if (opt.verbose)
-    log_info ("card operation decipher result: %s\n", gnupg_strerror (rc));
+    log_info ("card operation decipher result: %s\n", gpg_strerror (rc));
   return rc;
 }

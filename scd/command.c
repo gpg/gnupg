@@ -317,7 +317,7 @@ cmd_readcert (ASSUAN_CONTEXT ctx, char *line)
   rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
   if (rc)
     {
-      log_error ("card_read_cert failed: %s\n", gnupg_strerror (rc));
+      log_error ("card_read_cert failed: %s\n", gpg_strerror (rc));
     }
   if (!rc)
     {
@@ -351,7 +351,7 @@ cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
   rc = card_read_cert (ctrl->card_ctx, line, &cert, &ncert);
   if (rc)
     {
-      log_error ("card_read_cert failed: %s\n", gnupg_strerror (rc));
+      log_error ("card_read_cert failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
       
@@ -488,7 +488,7 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
   free (keyidstr);
   if (rc)
     {
-      log_error ("card_sign failed: %s\n", gnupg_strerror (rc));
+      log_error ("card_sign failed: %s\n", gpg_strerror (rc));
     }
   else
     {
@@ -527,7 +527,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
   free (keyidstr);
   if (rc)
     {
-      log_error ("card_create_signature failed: %s\n", gnupg_strerror (rc));
+      log_error ("card_create_signature failed: %s\n", gpg_strerror (rc));
     }
   else
     {
