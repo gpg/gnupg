@@ -546,3 +546,50 @@ check_compress_algo(int algo)
 
   return G10ERR_COMPR_ALGO;
 }
+
+const char *
+compliance_option_string(void)
+{
+  switch(opt.compliance)
+    {
+    case CO_RFC2440:
+      return "--openpgp";
+    case CO_PGP2:
+      return "--pgp2";
+    case CO_PGP6:
+      return "--pgp6";
+    case CO_PGP7:
+      return "--pgp7";
+    case CO_PGP8:
+      return "--pgp8";
+    default:
+      return "???";
+    }
+}
+
+static const char *
+compliance_string(void)
+{
+  switch(opt.compliance)
+    {
+    case CO_RFC2440:
+      return "OpenPGP";
+    case CO_PGP2:
+      return "PGP 2.x";
+    case CO_PGP6:
+      return "PGP 6.x";
+    case CO_PGP7:
+      return "PGP 7.x";
+    case CO_PGP8:
+      return "PGP 8.x";
+    default:
+      return "???";
+    }
+}
+
+void
+compliance_failure(void)
+{
+  log_info(_("this message may not be usable by %s\n"),compliance_string());
+  opt.compliance=CO_GNUPG;
+}

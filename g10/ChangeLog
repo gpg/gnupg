@@ -1,10 +1,26 @@
 2003-05-02  David Shaw  <dshaw@jabberwocky.com>
 
+	* sign.c (sign_file): Fix bug that causes spurious compression
+	preference warning.
+
+	* sign.c (clearsign_file): Fix bug that prevents proper warning
+	message from appearing when clearsigning in --pgp2 mode with a
+	non-v3 RSA key.
+
+	* main.h, misc.c (compliance_option_string, compliance_string,
+	compliance_failure), sign.c (sign_file, clearsign_file), encode.c
+	(encode_crypt, write_pubkey_enc_from_list): New functions to put
+	the "this message may not be usable...." warning in one place.
+
 	* options.h, armor.c, cipher.c, g10.c, keyedit.c, pkclist.c,
 	sign.c, encode.c, getkey.c, revoke.c: The current flags for
 	different levels of PGP-ness are massively complex.  This is step
 	one in simplifying them.  No functional change yet, just use a
 	macro to check for compliance level.
+
+	* options.h, g10.c (main): Part two of the simplification.  Use a
+	single enum to indicate what we are compliant to (1991, 2440,
+	PGPx, etc.)
 
 2003-05-01  David Shaw  <dshaw@jabberwocky.com>
 

@@ -647,8 +647,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
       {
 	log_info(_("you can only detach-sign with PGP 2.x style keys "
 		   "while in --pgp2 mode\n"));
-	log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
-	opt.xpgp2=0;
+	compliance_failure();
       }
 
     if(encryptflag && (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )))
@@ -764,9 +763,9 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,-1,NULL))==-1)
 	      compr_algo=DEFAULT_COMPRESS_ALGO;
 	  }
- 	else if(!opt.expert &&
- 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,
- 				       compr_algo,NULL)!=compr_algo)
+ 	else if(!opt.expert && pk_list
+ 		&& select_algo_from_prefs(pk_list,PREFTYPE_ZIP,
+					  compr_algo,NULL)!=compr_algo)
  	  log_info(_("forcing compression algorithm %s (%d) "
  		     "violates recipient preferences\n"),
  		   compress_algo_to_string(compr_algo),compr_algo);
@@ -890,12 +889,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     if( !old_style && !duration )
 	old_style = only_old_style( sk_list );
 
-    if(!old_style && PGP2)
+    if(PGP2 && !only_old_style(sk_list))
       {
 	log_info(_("you can only clearsign with PGP 2.x style keys "
 		   "while in --pgp2 mode\n"));
-	log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
-	opt.xpgp2=0;
+	compliance_failure();
       }
 
     /* prepare iobufs */

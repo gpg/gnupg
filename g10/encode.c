@@ -415,8 +415,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	  {
 	    log_info(_("you can only encrypt to RSA keys of 2048 bits or "
 		       "less in --pgp2 mode\n"));
-	    log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
-	    opt.xpgp2=0;
+	    compliance_failure();
 	    break;
 	  }
     }
@@ -467,8 +466,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    if( PGP2 ) {
 	      log_info(_("unable to use the IDEA cipher for all of the keys "
 			 "you are encrypting to.\n"));
-	      log_info(_("this message may not be usable by %s\n"),"PGP 2.x");
-	      opt.xpgp2=0;
+	      compliance_failure();
 	    }
 	}
     }
@@ -719,13 +717,8 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	if(opt.throw_keyid && (PGP2 || PGP6 || PGP7 || PGP8))
 	  {
 	    log_info(_("you may not use %s while in %s mode\n"),
-		     "--throw-keyid",
-		     PGP2?"--pgp2":PGP6?"--pgp6":PGP7?"--pgp7":"--pgp8");
-
-	    log_info(_("this message may not be usable by %s\n"),
-		     PGP2?"PGP 2.x":PGP6?"PGP 6.x":PGP7?"PGP 7.x":"PGP 8.x");
-
-	    opt.xpgp2=opt.xpgp6=opt.xpgp7=opt.xpgp8=0;
+		     "--throw-keyid",compliance_option_string());
+	    compliance_failure();
 	  }
 
 	/* Okay, what's going on: We have the session key somewhere in

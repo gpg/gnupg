@@ -1437,8 +1437,7 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
 	    break;
 	  case oRFC1991:
-	    opt.xrfc1991 = 1;
-	    opt.xrfc2440 = 0;
+	    opt.compliance = CO_RFC1991;
 	    opt.force_v4_certs = 0;
 	    opt.disable_mdc = 1;
 	    opt.escape_from = 1;
@@ -1446,8 +1445,7 @@ main( int argc, char **argv )
 	  case oOpenPGP:
 	    /* TODO: When 2440bis becomes a RFC, these may need
                changing. */
-	    opt.xrfc1991 = 0;
-	    opt.xrfc2440 = 1;
+	    opt.compliance = CO_RFC2440;
 	    opt.disable_mdc = 1;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
@@ -1464,19 +1462,17 @@ main( int argc, char **argv )
             opt.s2k_mode = 3; /* iterated+salted */
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
-	    opt.xpgp2 = 0;
-	    opt.xpgp6 = 0;
-	    opt.xpgp7 = 0;
-	    opt.xpgp8 = 0;
 	    break;
-	  case oPGP2: opt.xpgp2 = 1; break;
-	  case oNoPGP2: opt.xpgp2 = 0; break;
-	  case oPGP6: opt.xpgp6 = 1; break;
-	  case oNoPGP6: opt.xpgp6 = 0; break;
-	  case oPGP7: opt.xpgp7 = 1; break;
-	  case oNoPGP7: opt.xpgp7 = 0; break;
-	  case oPGP8: opt.xpgp8 = 1; break;
-	  case oNoPGP8: opt.xpgp8 = 0; break;
+	  case oPGP2: opt.compliance = CO_PGP2; break;
+	  case oPGP6: opt.compliance = CO_PGP6; break;
+	  case oPGP7: opt.compliance = CO_PGP7; break;
+	  case oPGP8: opt.compliance = CO_PGP8; break;
+	  case oNoPGP2:
+	  case oNoPGP6:
+	  case oNoPGP7:
+	  case oNoPGP8:
+	    opt.compliance = CO_GNUPG;
+	    break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:
@@ -1770,112 +1766,100 @@ main( int argc, char **argv )
     set_debug();
 
     /* Do these after the switch(), so they can override settings. */
-    if(PGP2 && (PGP6 || PGP7 || PGP8))
-      log_error(_("%s not allowed with %s!\n"),
-		"--pgp2",PGP6?"--pgp6":PGP7?"--pgp7":"--pgp8");
-    else
+    if(PGP2)
       {
-	if(PGP2)
-	  {
-	    int unusable=0;
+	int unusable=0;
 
-	    if(cmd==aSign && !detached_sig)
+	if(cmd==aSign && !detached_sig)
+	  {
+	    log_info(_("you can only make detached or clear signatures "
+		       "while in --pgp2 mode\n"));
+	    unusable=1;
+	  }
+	else if(cmd==aSignEncr || cmd==aSignSym)
+	  {
+	    log_info(_("you can't sign and encrypt at the "
+		       "same time while in --pgp2 mode\n"));
+	    unusable=1;
+	  }
+	else if(argc==0 && (cmd==aSign || cmd==aEncr || cmd==aSym))
+	  {
+	    log_info(_("you must use files (and not a pipe) when "
+		       "working with --pgp2 enabled.\n"));
+	    unusable=1;
+	  }
+	else if(cmd==aEncr || cmd==aSym)
+	  {
+	    /* Everything else should work without IDEA (except using
+	       a secret key encrypted with IDEA and setting an IDEA
+	       preference, but those have their own error
+	       messages). */
+
+	    if(check_cipher_algo(CIPHER_ALGO_IDEA))
 	      {
-		log_info(_("you can only make detached or clear signatures "
-			   "while in --pgp2 mode\n"));
+		log_info(_("encrypting a message in --pgp2 mode requires "
+			   "the IDEA cipher\n"));
+		idea_cipher_warn(1);
 		unusable=1;
 	      }
-	    else if(cmd==aSignEncr || cmd==aSignSym)
+	    else if(cmd==aSym)
 	      {
-		log_info(_("you can't sign and encrypt at the "
-			   "same time while in --pgp2 mode\n"));
-		unusable=1;
-	      }
-	    else if(argc==0 && (cmd==aSign || cmd==aEncr || cmd==aSym))
-	      {
-		log_info(_("you must use files (and not a pipe) when "
-			   "working with --pgp2 enabled.\n"));
-		unusable=1;
-	      }
-	    else if(cmd==aEncr || cmd==aSym)
-	      {
-		/* Everything else should work without IDEA (except using
-		   a secret key encrypted with IDEA and setting an IDEA
-		   preference, but those have their own error
-		   messages). */
-
-		if(check_cipher_algo(CIPHER_ALGO_IDEA))
-		  {
-		    log_info(_("encrypting a message in --pgp2 mode requires "
-			       "the IDEA cipher\n"));
-		    idea_cipher_warn(1);
-		    unusable=1;
-		  }
-		else if(cmd==aSym)
-		  {
-		    /* This only sets IDEA for symmetric encryption
-		       since it is set via select_algo_from_prefs for
-		       pk encryption. */
-		    m_free(def_cipher_string);
-		    def_cipher_string = m_strdup("idea");
-		  }
-
-		/* PGP2 can't handle the output from the textmode
-		   filter, so we disable it for anything that could
-		   create a literal packet (only encryption and
-		   symmetric encryption, since we disable signing
-		   above). */
-		if(!unusable)
-		  opt.textmode=0;
+		/* This only sets IDEA for symmetric encryption
+		   since it is set via select_algo_from_prefs for
+		   pk encryption. */
+		m_free(def_cipher_string);
+		def_cipher_string = m_strdup("idea");
 	      }
 
-	    if(unusable)
-	      {
-		log_info(_("this message may not be usable by %s\n"),
-			 "PGP 2.x");
-		opt.xpgp2=0;
-	      }
-	    else
-	      {
-		opt.xrfc1991 = 1;
-		opt.xrfc2440 = 0;
-		opt.force_mdc = 0;
-		opt.disable_mdc = 1;
-		opt.force_v4_certs = 0;
-		opt.sk_comments = 0;
-		opt.escape_from = 1;
-		opt.force_v3_sigs = 1;
-		opt.pgp2_workarounds = 1;
-		opt.ask_sig_expire = 0;
-		opt.ask_cert_expire = 0;
-		m_free(def_digest_string);
-		def_digest_string = m_strdup("md5");
-		opt.def_compress_algo = 1;
-	      }
+	    /* PGP2 can't handle the output from the textmode
+	       filter, so we disable it for anything that could
+	       create a literal packet (only encryption and
+	       symmetric encryption, since we disable signing
+	       above). */
+	    if(!unusable)
+	      opt.textmode=0;
 	  }
-	else if(PGP6)
+
+	if(unusable)
+	  compliance_failure();
+	else
 	  {
-	    opt.sk_comments=0;
-	    opt.escape_from=1;
-	    opt.force_v3_sigs=1;
-	    opt.ask_sig_expire=0;
-	    opt.def_compress_algo=1;
-	    opt.force_mdc=0;
-	    opt.disable_mdc=1;
+	    opt.force_mdc = 0;
+	    opt.disable_mdc = 1;
+	    opt.force_v4_certs = 0;
+	    opt.sk_comments = 0;
+	    opt.escape_from = 1;
+	    opt.force_v3_sigs = 1;
+	    opt.pgp2_workarounds = 1;
+	    opt.ask_sig_expire = 0;
+	    opt.ask_cert_expire = 0;
+	    m_free(def_digest_string);
+	    def_digest_string = m_strdup("md5");
+	    opt.def_compress_algo = 1;
 	  }
-	else if(PGP7)
-	  {
-	    opt.sk_comments=0;
-	    opt.escape_from=1;
-	    opt.force_v3_sigs=1;
-	    opt.ask_sig_expire=0;
-	    opt.def_compress_algo=1;
-	  }
-	else if(PGP8)
-	  {
-	    opt.escape_from=1;
-	    opt.def_compress_algo=1;
-	  }
+      }
+    else if(PGP6)
+      {
+	opt.sk_comments=0;
+	opt.escape_from=1;
+	opt.force_v3_sigs=1;
+	opt.ask_sig_expire=0;
+	opt.def_compress_algo=1;
+	opt.force_mdc=0;
+	opt.disable_mdc=1;
+      }
+    else if(PGP7)
+      {
+	opt.sk_comments=0;
+	opt.escape_from=1;
+	opt.force_v3_sigs=1;
+	opt.ask_sig_expire=0;
+	opt.def_compress_algo=1;
+      }
+    else if(PGP8)
+      {
+	opt.escape_from=1;
+	opt.def_compress_algo=1;
       }
 
     /* must do this after dropping setuid, because string_to...

@@ -90,13 +90,10 @@ struct {
     int compress_keys;
     int compress_sigs;
     int always_trust;
-    /* TODO: change these to an emulate_pgp variable */
-    int xpgp2;
-    int xpgp6;
-    int xpgp7;
-    int xpgp8;
-    int xrfc1991;
-    int xrfc2440;
+    enum
+      {
+	CO_GNUPG=0, CO_RFC2440, CO_RFC1991, CO_PGP2, CO_PGP6, CO_PGP7, CO_PGP8
+      } compliance;
     int pgp2_workarounds;
     unsigned int emulate_bugs; /* bug emulation flags EMUBUG_xxxx */
     int shm_coprocess;
@@ -207,11 +204,11 @@ struct {
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 
-#define RFC1991 (opt.xrfc1991)
-#define RFC2440 (opt.xrfc2440)
-#define PGP2 (opt.xpgp2)
-#define PGP6 (opt.xpgp6)
-#define PGP7 (opt.xpgp7)
-#define PGP8 (opt.xpgp8)
+#define RFC1991 (opt.compliance==CO_RFC1991 || opt.compliance==CO_PGP2)
+#define RFC2440 (opt.compliance==CO_RFC2440)
+#define PGP2 (opt.compliance==CO_PGP2)
+#define PGP6 (opt.compliance==CO_PGP6)
+#define PGP7 (opt.compliance==CO_PGP7)
+#define PGP8 (opt.compliance==CO_PGP8)
 
 #endif /*G10_OPTIONS_H*/
