@@ -185,8 +185,7 @@ int pubkey_check_secret_key( int algo, MPI *skey );
 int pubkey_encrypt( int algo, MPI *resarr, MPI data, MPI *pkey );
 int pubkey_decrypt( int algo, MPI *result, MPI *data, MPI *skey );
 int pubkey_sign( int algo, MPI *resarr, MPI hash, MPI *skey );
-int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey,
-		      int (*cmp)(void *, MPI), void *opaque );
+int pubkey_verify( int algo, MPI hash, MPI *data, MPI *pkey );
 
 /*-- smallprime.c --*/
 extern ushort small_prime_numbers[];
