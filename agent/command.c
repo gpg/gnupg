@@ -522,6 +522,55 @@ cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
   return 0;
 }
 
+
+/* GET_CONFIRMATION <description>
+
+   This command may be used to ask for a simple confirmation.
+   DESCRIPTION is displayed along with a Okay and Cancel button.  This
+   command uses a syntax which helps clients to use the agent with
+   minimum effort.  The agent either returns with an error or with a
+   OK.  Note, that the length of DESCRIPTION is implicitly limited by
+   the maximum length of a command. DESCRIPTION should not conmtain
+   ant spaces, those must be encoded either percent escaped or simply
+   as '+'.
+*/
+
+static int
+cmd_get_confirmation (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int rc;
+  char *desc = NULL;
+  char *p;
+
+  /* parse the stuff */
+  for (p=line; *p == ' '; p++)
+    ;
+  desc = p;
+  p = strchr (desc, ' ');
+  if (p)
+    *p = 0; /* We ignore any garbage -may be later used for other args. */
+
+  if (!desc || !*desc)
+    return set_error (Parameter_Error, "no description given");
+
+  if (!strcmp (desc, "X"))
+    desc = NULL;
+
+  /* Note, that we only need to replace the + characters and should
+     leave the other escaping in place because the escaped string is
+     send verbatim to the pinentry which does the unescaping (but not
+     the + replacing) */
+  if (desc)
+    plus_to_blank (desc);
+
+  rc = agent_get_confirmation (ctrl, desc, NULL, NULL);
+  if (rc)
+    log_error ("command get_confirmation failed: %s\n", gpg_strerror (rc));
+  return map_to_assuan_status (rc);
+}
+
+
 
 /* LEARN [--send]
 
@@ -671,6 +720,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "GENKEY",         cmd_genkey },
     { "GET_PASSPHRASE", cmd_get_passphrase },
     { "CLEAR_PASSPHRASE", cmd_clear_passphrase },
+    { "GET_CONFIRMATION", cmd_get_confirmation },
     { "LISTTRUSTED",    cmd_listtrusted },
     { "MARKTRUSTED",    cmd_marktrusted },
     { "LEARN",          cmd_learn },
