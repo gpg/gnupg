@@ -37,7 +37,7 @@ case "${target}" in
 	;;
     hppa7000*-*-*)
 	echo '/* configured for HPPA (pa7000) */' >>./mpi/asm-syntax.h
-	path="hppa1_1 hppa"
+	path="hppa1.1 hppa"
 	mpi_extra_modules="udiv-qrnnd"
 	;;
     hppa1.0*-*-*)
@@ -47,7 +47,7 @@ case "${target}" in
 	;;
     hppa*-*-*)	# assume pa7100
 	echo '/* configured for HPPA (pa7100) */' >>./mpi/asm-syntax.h
-	path="pa7100 hppa1_1 hppa"
+	path="pa7100 hppa1.1 hppa"
 	mpi_extra_modules="udiv-qrnnd"
 	;;
     sparc9*-*-* | sparc64*-*-* | ultrasparc*-*-*)
