@@ -19,7 +19,18 @@
 
 ## Process this file with automake to produce Makefile.in
 
+
+if RUN_PKITS_TESTS
+pkits = pkits
+else
+pkits =
+endif
+
+SUBDIRS = . ${pkits}
+
+
 GPGSM = ../sm/gpgsm
+
 
 TESTS_ENVIRONMENT = GNUPGHOME=`pwd` GPG_AGENT_INFO= LC_ALL=C GPGSM=$(GPGSM) \
 		    LD_LIBRARY_PATH=$$(seen=0; \
@@ -56,7 +67,7 @@ EXTRA_DIST = runtest inittests $(testscripts) \
 
 TESTS = $(testscripts)
 
-CLEANFILES = inittests.stamp x y y z out err 
+CLEANFILES = inittests.stamp x y y z out err \
 	     *.lock .\#lk* 
 
 DISTCLEANFILES = pubring.kbx~ random_seed
