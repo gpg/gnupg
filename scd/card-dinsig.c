@@ -77,6 +77,7 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef HAVE_OPENSC
 #include <opensc/pkcs15.h>
 #include <ksba.h>
 
@@ -254,3 +255,4 @@ card_dinsig_bind (CARD card)
   card->fnc.read_cert     = dinsig_read_cert;
 
 }
+#endif /*HAVE_OPENSC*/

@@ -25,7 +25,9 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef HAVE_OPENSC
 #include <opensc/pkcs15.h>
+#endif
 #include <ksba.h>
 
 #include "scdaemon.h"
@@ -38,12 +40,14 @@ map_sc_err (int rc)
   switch (rc)
     {
     case 0: rc = 0; break;
+#ifdef HAVE_OPENSC
     case SC_ERROR_NOT_SUPPORTED:         rc = GNUPG_Not_Supported; break;
     case SC_ERROR_PKCS15_APP_NOT_FOUND:  rc = GNUPG_No_PKCS15_App; break;
     case SC_ERROR_OUT_OF_MEMORY:         rc = GNUPG_Out_Of_Core; break;
     case SC_ERROR_CARD_NOT_PRESENT:      rc = GNUPG_Card_Not_Present; break;
     case SC_ERROR_CARD_REMOVED:          rc = GNUPG_Card_Removed; break;
     case SC_ERROR_INVALID_CARD:          rc = GNUPG_Invalid_Card; break;
+#endif
     default: rc = GNUPG_Card_Error; break;
     }
   return rc;
@@ -89,6 +93,7 @@ card_help_get_keygrip (KsbaCert cert, unsigned char *array)
 int
 card_open (CARD *rcard)
 {
+#ifdef HAVE_OPENSC
   CARD card;
   int rc;
 
@@ -147,7 +152,11 @@ card_open (CARD *rcard)
     card_close (card);
   else
     *rcard = card;
+
   return rc;
+#else
+  return GNUPG_Not_Supported;
+#endif
 }
 
 
@@ -157,6 +166,7 @@ card_close (CARD card)
 {
   if (card)
     {
+#ifdef HAVE_OPENSC
       if (card->p15card)
         {
           sc_pkcs15_unbind (card->p15card);
@@ -175,6 +185,7 @@ card_close (CARD card)
           sc_release_context (card->ctx);
           card->ctx = NULL;
         }
+#endif
       xfree (card);
     }      
 }
@@ -270,11 +281,13 @@ find_iccsn (const unsigned char *buffer, size_t length, char **serial)
 int 
 card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
 {
+#ifdef HAVE_OPENSC
   int rc;
   struct sc_path path;
   struct sc_file *file;
   unsigned char buf[256];
   int buflen;
+#endif
 
   if (!card || !serial || !stamp)
     return GNUPG_Invalid_Value;
@@ -282,6 +295,7 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
   *serial = NULL;
   *stamp = 0; /* not available */
 
+#ifdef HAVE_OPENSC
   if (!card->fnc.initialized)
     {
       card->fnc.initialized = 1;
@@ -389,6 +403,9 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
         }
     }
   return rc;
+#else
+  return GNUPG_Not_Supported;
+#endif
 }
 
 

@@ -1,5 +1,10 @@
 2003-04-29  Werner Koch  <wk@gnupg.org>
 
+	* scdaemon.c: New options --print-atr and --reader-port
+	* apdu.c, apdu.h: New
+
+	* card.c, card-p15.c, card-dinsig.c: Allow build without OpenSC.
+	
 	* Makefile.am (LDFLAGS): Removed.
 
 	* command.c (register_commands): Adjusted for new Assuan semantics.

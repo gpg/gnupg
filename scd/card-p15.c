@@ -25,6 +25,7 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef HAVE_OPENSC
 #include <opensc/pkcs15.h>
 #include <ksba.h>
 
@@ -496,3 +497,4 @@ card_p15_bind (CARD card)
   card->fnc.sign          = p15_sign;
   card->fnc.decipher      = p15_decipher;
 }
+#endif /*HAVE_OPENSC*/

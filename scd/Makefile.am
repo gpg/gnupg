@@ -24,18 +24,14 @@ INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 bin_PROGRAMS = scdaemon
 
 AM_CPPFLAGS = -I$(top_srcdir)/common $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
-	      $(KSBA_CFLAGS)
+	      $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 scdaemon_SOURCES = \
 	scdaemon.c scdaemon.h \
 	command.c card.c \
 	card-common.h \
-	card-p15.c card-dinsig.c
+	card-p15.c card-dinsig.c \
+	apdu.c apdu.h
 
-scdaemon_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
-		../common/libcommon.a \
-		$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) 
-
-
-
-
+scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
+	  $(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) -ldl
