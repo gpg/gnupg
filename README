@@ -591,11 +591,7 @@
 
     Random devices are available in Linux, FreeBSD and OpenBSD.
     Operating systems without a random devices must use another
-    entropy collector.  One entropy collector called rndunix and
-    available as an extension module. You should put the line:
-       load-extension rndunix
-    into your  ~/.gnupg/options file unless you have used the proper
-    configure option.
+    entropy collector. 
 
     This collector works by running a lot of commands that yield more
     or less unpredictable output and feds this as entropy into the
