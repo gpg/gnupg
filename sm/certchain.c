@@ -65,6 +65,22 @@ do_list (int is_error, int listmode, FILE *fp, const char *format, ...)
   va_end (arg_ptr);
 }
 
+/* Return 0 if A and B are equal. */
+static int
+compare_certs (ksba_cert_t a, ksba_cert_t b)
+{
+  const unsigned char *img_a, *img_b;
+  size_t len_a, len_b;
+
+  img_a = ksba_cert_get_image (a, &len_a);
+  if (!img_a)
+    return 1;
+  img_b = ksba_cert_get_image (b, &len_b);
+  if (!img_b)
+    return 1;
+  return !(len_a == len_b && !memcmp (img_a, img_b, len_a));
+}
+
 
 static int
 unknown_criticals (ksba_cert_t cert, int listmode, FILE *fp)
@@ -700,7 +716,6 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           goto leave;
         }
 
-    try_another_cert:
       ksba_cert_release (issuer_cert); issuer_cert = NULL;
       rc = keydb_get_cert (kh, &issuer_cert);
       if (rc)
@@ -710,6 +725,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           goto leave;
         }
 
+    try_another_cert:
       if (DBG_X509)
         {
           log_debug ("got issuer's certificate:\n");
@@ -722,12 +738,32 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           do_list (0, lm, fp, _("certificate has a BAD signature"));
           if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE)
             {
+              /* We now try to find other issuer certificates which
+                 might have been used.  This is rquired because some
+                 CAs are reusing the issuer and subject DN for new
+                 root certificates. */
               rc = find_up (kh, subject_cert, issuer, 1);
               if (!rc)
                 {
-                  do_list (0, lm, fp, _("found another possible matching "
-                                        "CA certificate - trying again"));
-                  goto try_another_cert;
+                  ksba_cert_t tmp_cert;
+
+                  rc = keydb_get_cert (kh, &tmp_cert);
+                  if (rc || !compare_certs (issuer_cert, tmp_cert))
+                    {
+                      /* The find next did not work or returned an
+                         identical certificate.  We better stop here
+                         to avoid infinite checks. */
+                      rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
+                      ksba_cert_release (tmp_cert);
+                    }
+                  else
+                    {
+                      do_list (0, lm, fp, _("found another possible matching "
+                                            "CA certificate - trying again"));
+                      ksba_cert_release (issuer_cert); 
+                      issuer_cert = tmp_cert;
+                      goto try_another_cert;
+                    }
                 }
             }
 

@@ -1,3 +1,9 @@
+2004-02-26  Werner Koch  <wk@gnupg.org>
+
+	* certchain.c (compare_certs): New.
+	(gpgsm_validate_chain): Fixed infinite certificate checks after
+	bad signatures.
+
 2004-02-24  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (list_cert_colon): Print the fingerprint as the
