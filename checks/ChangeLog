@@ -1,3 +1,7 @@
+2000-10-18  Werner Koch  <wk@gnupg.org>
+
+	* conventional-mdc.test: Add Rijndael and fix for empty plain texts.
+
 Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* mkdemodirs: Fixed the --clean loop.

@@ -234,8 +234,8 @@ print_cipher_algo_note( int algo )
 
 	if( !did_note ) {
 	    did_note = 1;
-	    log_info(_("this cipher algorithm is depreciated; "
-		       "please use a more standard one!\n"));
+	    log_info(_("this cipher algorithm is deprecated; "
+		       "please use a more standard one!x\n"));
 	}
     }
 }

@@ -1,6 +1,7 @@
 2000-10-18  Werner Koch  <wk@gnupg.org>
 
-	* misc.c (print_cipher_algo_note): Don't print the nore for AES.
+	* misc.c (print_cipher_algo_note): Don't print the note for AES.
+	Changed wording.
 
 2000-10-16  Werner Koch  <wk@gnupg.org>
 
