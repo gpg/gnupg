@@ -1,3 +1,8 @@
+2004-10-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note gpgkeys_finger, keyserver timeouts, and the direct
+	trust model.
+
 2004-10-15  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): New.
