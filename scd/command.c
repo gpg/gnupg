@@ -437,8 +437,8 @@ cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
   int rc;
   unsigned char *cert = NULL;
   size_t ncert, n;
-  KsbaCert kc = NULL;
-  KsbaSexp p;
+  ksba_cert_t kc = NULL;
+  ksba_sexp_t p;
 
   if ((rc = open_card (ctrl)))
     return rc;

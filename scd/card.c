@@ -58,11 +58,11 @@ map_sc_err (int rc)
 
 /* Get the keygrip from CERT, return 0 on success */
 int
-card_help_get_keygrip (KsbaCert cert, unsigned char *array)
+card_help_get_keygrip (ksba_cert_t cert, unsigned char *array)
 {
   gcry_sexp_t s_pkey;
   int rc;
-  KsbaSexp p;
+  ksba_sexp_t p;
   size_t n;
   
   p = ksba_cert_get_public_key (cert);

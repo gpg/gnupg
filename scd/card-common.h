@@ -60,7 +60,7 @@ struct card_ctx_s {
 
 /*-- card.c --*/
 gpg_error_t map_sc_err (int rc);
-int card_help_get_keygrip (KsbaCert cert, unsigned char *array);
+int card_help_get_keygrip (ksba_cert_t cert, unsigned char *array);
 
 /*-- card-15.c --*/
 void p15_release_private_data (CARD card);

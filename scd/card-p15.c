@@ -109,14 +109,13 @@ p15_enum_keypairs (CARD card, int idx,
                    unsigned char *keygrip, char **keyid)
 {
   int rc;
-  KsbaError krc;
   struct p15private_s *priv;
   struct sc_pkcs15_object *tmpobj;
   int nobjs;
   struct sc_pkcs15_prkey_info *pinfo;
   struct sc_pkcs15_cert_info *certinfo;
   struct sc_pkcs15_cert      *certder;
-  KsbaCert cert;
+  ksba_cert_t cert;
 
   rc = init_private_data (card);
   if (rc) 
@@ -154,14 +153,14 @@ p15_enum_keypairs (CARD card, int idx,
       sc_pkcs15_free_certificate (certder);
       return rc;
     }
-  krc = ksba_cert_init_from_mem (cert, certder->data, certder->data_len);
+  rc = ksba_cert_init_from_mem (cert, certder->data, certder->data_len);
   sc_pkcs15_free_certificate (certder);
-  if (krc)
+  if (rc)
     {
       log_error ("failed to parse the certificate for private key %d: %s\n",
-                 idx, gpg_strerror (krc));
+                 idx, gpg_strerror (rc));
       ksba_cert_release (cert);
-      return krc;
+      return rc;
     }
   if (card_help_get_keygrip (cert, keygrip))
     {

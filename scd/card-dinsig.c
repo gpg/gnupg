@@ -99,8 +99,7 @@ dinsig_enum_keypairs (CARD card, int idx,
   int rc;
   unsigned char *buf;
   size_t buflen;
-  KsbaError krc;
-  KsbaCert cert;
+  ksba_cert_t cert;
 
   /* fixme: We should locate the application via the EF(DIR) and not
      assume a Netkey card */
@@ -120,14 +119,14 @@ dinsig_enum_keypairs (CARD card, int idx,
       return rc;
     }
 
-  krc = ksba_cert_init_from_mem (cert, buf, buflen); 
+  rc = ksba_cert_init_from_mem (cert, buf, buflen); 
   xfree (buf);
-  if (krc)
+  if (rc)
     {
       log_error ("failed to parse the certificate at idx %d: %s\n",
-                 idx, gpg_strerror (krc));
+                 idx, gpg_strerror (rc));
       ksba_cert_release (cert);
-      return krc;
+      return rc;
     }
   if (card_help_get_keygrip (cert, keygrip))
     {

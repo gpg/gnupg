@@ -133,7 +133,7 @@
 
 
 /* Define to print information pertaining the T=1 protocol. */
-#undef DEBUG_T1 1
+#undef DEBUG_T1 
 
 
 
