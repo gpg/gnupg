@@ -1,3 +1,11 @@
+2002-07-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* sig-check.c (signature_check2): Signatures made by invalid
+	subkeys (bad/missing binding sig) are also invalid.
+
+	* keylist.c (print_fingerprint): Show the primary as well as the
+	secondary key fingerprint in modes 1 & 2.
+
 2002-07-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, main.h, g10.c (main), import.c

@@ -65,6 +65,11 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest,
     *r_expiredate = 0;
     if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
+    else if(!pk->is_valid &&
+	    (pk->main_keyid[0]!=pk->keyid[0] ||
+	     pk->main_keyid[1]!=pk->keyid[1]))
+        rc=G10ERR_BAD_PUBKEY; /* you cannot have a good sig from an
+				 invalid subkey */
     else {
 	*r_expiredate = pk->expiredate;
 	rc = do_check( pk, sig, digest, r_expired );

@@ -938,6 +938,7 @@ list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque )
  * mode 0: as used in key listings, opt.with_colons is honored
  *      1: print using log_info ()
  *      2: direct use of tty
+ * modes 1 and 2 will try and print both subkey and primary key fingerprints
  */
 void
 print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
@@ -946,20 +947,65 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
     size_t i, n;
     FILE *fp;
     const char *text;
+    int primary=0;
+
+    if(sk)
+      {
+	if(sk->main_keyid[0]==sk->keyid[0] && sk->main_keyid[1]==sk->keyid[1])
+	  primary=1;
+      }
+    else
+      {
+	if(pk->main_keyid[0]==pk->keyid[0] && pk->main_keyid[1]==pk->keyid[1])
+	  primary=1;
+      }
+
+    /* Just to be safe */
+    if(mode&0x80 && !primary)
+      {
+	log_error("primary key is not really primary!\n");
+	return;
+      }
+
+    mode&=~0x80;
+
+    if(!primary && (mode==1 || mode==2))
+      {
+	if(sk)
+	  {
+	    PKT_secret_key *primary_sk=m_alloc_clear(sizeof(*primary_sk));
+	    get_seckey(primary_sk,sk->main_keyid);
+	    print_fingerprint(NULL,primary_sk,mode|0x80);
+	    free_secret_key(primary_sk);
+	  }
+	else
+	  {
+	    PKT_public_key *primary_pk=m_alloc_clear(sizeof(*primary_pk));
+	    get_pubkey(primary_pk,pk->main_keyid);
+	    print_fingerprint(primary_pk,NULL,mode|0x80);
+	    free_public_key(primary_pk);
+	  }
+      }
 
     if (mode == 1) {
         fp = log_stream ();
-        text = _("Fingerprint:");
+	if(primary)
+	  text = _("Primary key fingerprint:");
+	else
+	  text = _("     Subkey fingerprint:");
     }
     else if (mode == 2) {
         fp = NULL; /* use tty */
         /* Translators: this should fit into 24 bytes to that the fingerprint
          * data is properly aligned with the user ID */
-        text = _("             Fingerprint:");
+	if(primary)
+	  text = _(" Primary key fingerprint:");
+	else
+	  text = _("      Subkey fingerprint:");
     }
     else {
         fp = stdout;
-        text = _("     Key fingerprint =");
+	text = _("     Key fingerprint =");
     }
   
     if (sk)
