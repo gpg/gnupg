@@ -616,68 +616,6 @@ do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 }
 
 
-
-/****************
- * Find a subpacket of type REQTYPE in AREA and a return a pointer
- * to the first byte of that subpacket data.
- * And return the length of the packet in RET_N and the number of
- * header bytes in RET_HLEN (length header and type byte).
- */
-static byte *
-find_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype,
-	     size_t *ret_hlen, size_t *ret_n )
-{
-    byte *buffer;
-    int buflen;
-    sigsubpkttype_t type;
-    byte *bufstart;
-    size_t n;
-
-    if( !area )
-	return NULL;
-    buflen = area->len;
-    buffer = area->data;
-    for(;;) {
-	if( !buflen )
-	    return NULL; /* end of packets; not found */
-	bufstart = buffer;
-	n = *buffer++; buflen--;
-	if( n == 255 ) {
-	    if( buflen < 4 )
-		break;
-	    n = (buffer[0] << 24) | (buffer[1] << 16)
-                | (buffer[2] << 8) | buffer[3];
-	    buffer += 4;
-	    buflen -= 4;
-	}
-	else if( n >= 192 ) {
-	    if( buflen < 2 )
-		break;
-	    n = (( n - 192 ) << 8) + *buffer + 192;
-	    buffer++;
-	    buflen--;
-	}
-	if( buflen < n )
-	    break;
-	type = *buffer & 0x7f;
-	if( type == reqtype ) {
-	    buffer++;
-	    n--;
-	    if( n > buflen )
-		break;
-	    if( ret_hlen )
-		*ret_hlen = buffer - bufstart;
-	    if( ret_n )
-		*ret_n = n;
-	    return buffer;
-	}
-	buffer += n; buflen -=n;
-    }
-
-    log_error("find_subpkt: buffer shorter than subpacket\n");
-    return NULL;
-}
-
 /****************
  * Delete all subpackets of type REQTYPE and return a bool whether a packet
  * was deleted.
@@ -767,33 +705,19 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 
     critical = (type & SIGSUBPKT_FLAG_CRITICAL);
     type &= ~SIGSUBPKT_FLAG_CRITICAL;
-    
-    if( type == SIGSUBPKT_NOTATION )
-	; /* we allow multiple packets */
-    else if (find_subpkt (sig->hashed, type, NULL, NULL) ) {
-        switch (type) {
-          case SIGSUBPKT_SIG_CREATED:
-          case SIGSUBPKT_PREF_SYM:
-          case SIGSUBPKT_PREF_HASH:
-          case SIGSUBPKT_PREF_COMPR:
-          case SIGSUBPKT_FEATURES:
-          case SIGSUBPKT_SIG_EXPIRE:
-            delete_sig_subpkt (sig->hashed, type);
-            break;
-          default:
-            log_bug("build_sig_packet: update of hashed type %d nyi\n", type);
-        }
-    }
-    else if (find_subpkt (sig->unhashed, type, NULL, NULL)) {
-        switch (type) {
-          case SIGSUBPKT_PRIV_VERIFY_CACHE:
-          case SIGSUBPKT_ISSUER:
-            delete_sig_subpkt (sig->unhashed, type);
-            break;
-          default:
-            log_bug("build_sig_packet: update of unhashed type %d nyi\n",type);
-        }
-    }
+
+    switch(type)
+      {
+      case SIGSUBPKT_NOTATION:
+	/* we do allow multiple subpackets */
+	break;
+
+      default:
+	/* we don't allow multiple subpackets */
+	delete_sig_subpkt(sig->hashed,type);
+	delete_sig_subpkt(sig->unhashed,type);
+	break;
+      }
 
     if( (buflen+1) >= 8384 )
 	nlen = 5; /* write 5 byte length header */

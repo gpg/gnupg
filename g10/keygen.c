@@ -328,15 +328,26 @@ keygen_upd_std_prefs( PKT_signature *sig, void *opaque )
     if (nsym_prefs) 
         build_sig_subpkt (sig, SIGSUBPKT_PREF_SYM, sym_prefs, nsym_prefs);
     else
+      {
         delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_SYM);
+        delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_SYM);
+      }
+
     if (nhash_prefs)
         build_sig_subpkt (sig, SIGSUBPKT_PREF_HASH, hash_prefs, nhash_prefs);
     else
-        delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_HASH);
+      {
+	delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_HASH);
+	delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_HASH);
+      }
+
     if (nzip_prefs)
         build_sig_subpkt (sig, SIGSUBPKT_PREF_COMPR, zip_prefs, nzip_prefs);
     else
+      {
         delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_COMPR);
+        delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_COMPR);
+      }
 
     /* Make sure that the MDC feature flag is set */
     add_feature_mdc (sig);

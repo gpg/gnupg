@@ -1,3 +1,18 @@
+2002-04-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (build_sig_subpkt): Delete subpackets from both
+	hashed and unhashed area on update.  (find_subpkt): No longer
+	needed.
+
+	* keyedit.c (sign_uids): With --pgp2 on, refuse to sign a v3 key
+	with a v4 signature.  As usual, --expert overrides.  Try to tweak
+	some strings to a closer match so they can all be translated in
+	one place.  Use different helptext keys to allow different help
+	text for different questions.
+
+	* keygen.c (keygen_upd_std_prefs): Remove preferences from both
+	hashed and unhashed areas if they are not going to be used.
+
 2002-04-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* misc.c (pct_expando), options.skel: Use %t to indicate type of a

@@ -273,7 +273,14 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
     KBNODE node, uidnode;
     PKT_public_key *primary_pk=NULL;
     int select_all = !count_selected_uids(keyblock);
-    int upd_trust = 0, force_v4=0;
+    int upd_trust = 0, force_v4=0, all_v3=1;
+
+    /* Are there any non-v3 sigs on this key already? */
+    if(opt.pgp2)
+      for(node=keyblock;node;node=node->next)
+	if(node->pkt->pkttype==PKT_SIGNATURE &&
+	   node->pkt->pkt.signature->version>3)
+	  all_v3=0;
 
     if(local || opt.cert_policy_url || opt.notation_data)
       force_v4=1;
@@ -322,21 +329,23 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		uidnode = (node->flag & NODFLG_MARK_A)? node : NULL;
 		if(uidnode && uidnode->pkt->pkt.user_id->is_revoked)
 		  {
-		    tty_printf(_("User ID \"%s\" is revoked.\n"),
+		    tty_printf(_("User ID \"%s\" is revoked."),
 			       uidnode->pkt->pkt.user_id->name);
 
 		    if(opt.expert)
 		      {
-			tty_printf(_("Are you sure you still "
-				     "want to sign it?\n"));
-
+			tty_printf("\n");
 			/* No, so remove the mark and continue */
-			if(!cpr_get_answer_is_yes("sign_uid.okay",
-						  _("Really sign? ")))
+			if(!cpr_get_answer_is_yes("sign_uid.revoke_okay",
+						 _("Are you sure you still "
+						   "want to sign it? (y/N) ")))
 			  uidnode->flag &= ~NODFLG_MARK_A;
 		      }
 		    else
-		      uidnode->flag &= ~NODFLG_MARK_A;
+		      {
+			uidnode->flag &= ~NODFLG_MARK_A;
+			tty_printf(_("  Unable to sign.\n"));
+		      }
 		  }
 	    }
 	    else if( uidnode && node->pkt->pkttype == PKT_SIGNATURE
@@ -350,12 +359,12 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			/* It's a local sig, and we want to make a
                            exportable sig. */
 			tty_printf(_("Your current signature on \"%s\"\n"
-				     "is a local signature.\n\n"
-				     "Do you want to promote it to a full "
-				     "exportable signature?\n"),
+				     "is a local signature.\n"),
 				   uidnode->pkt->pkt.user_id->name);
-			if(cpr_get_answer_is_yes("sign_uid.promote",
-						 "Promote? (y/N) "))
+			if(cpr_get_answer_is_yes("sign_uid.promote_okay",
+						 _("Do you want to promote "
+						   "it to a full exportable "
+						   "signature? (y/N) ")))
 			  {
 			    /* Mark these for later deletion.  We
                                don't want to delete them here, just in
@@ -409,15 +418,15 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 		if(opt.expert)
 		  {
-		    tty_printf(_("  Are you sure you still "
-				 "want to sign it?\n"));
-		    if(!cpr_get_answer_is_yes("sign_uid.okay",
-					      _("Really sign? (y/N) ")))
+		    tty_printf("  ");
+		    if(!cpr_get_answer_is_yes("sign_uid.expired_okay",
+					      _("Are you sure you still "
+						"want to sign it? (y/N) ")))
 		      continue;
 		  }
 		else
 		  {
-		    tty_printf("\n");
+		    tty_printf(_("  Unable to sign.\n"));
 		    continue;
 		  }
 	      }
@@ -426,7 +435,9 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		tty_printf(_("This key is due to expire on %s.\n"),
 			   expirestr_from_pk(primary_pk));
 		/* Should this default to yes? -ds */
-		if(cpr_get_answer_is_yes("sign_uid.expire",_("Do you want your signature to expire at the same time? (y/N) ")))
+		if(cpr_get_answer_is_yes("sign_uid.expire",
+					 _("Do you want your signature to "
+					   "expire at the same time? (y/N) ")))
 		  {
 		    /* This fixes the signature timestamp we're going
 		       to make as now.  This is so the expiration date
@@ -447,6 +458,29 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	if(duration)
 	  force_v4=1;
+
+	/* Is --pgp2 on, it's a v3 key, all the sigs on the key are
+	   currently v3 and we're about to sign it with a v4 sig?  If
+	   so, danger! */
+	if(opt.pgp2 && all_v3 &&
+	   (sk->version>3 || force_v4) && primary_pk->version<=3)
+	  {
+	    tty_printf(_("You may not make an OpenPGP signature on a "
+			 "PGP 2.x key while in --pgp2 mode.\n"));
+	    tty_printf(_("This would make the key unusable in PGP 2.x.\n"));
+
+	    if(opt.expert)
+	      {
+		if(!cpr_get_answer_is_yes("sign_uid.v4_on_v3_okay",
+					  _("Are you sure you still "
+					    "want to sign it? (y/N) ")))
+		  continue;
+
+		all_v3=0;
+	      }
+	    else
+	      continue;
+	  }
 
 	if(opt.batch)
 	  class=0x10+opt.def_check_level;
@@ -1004,18 +1038,21 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	  case cmdNRLSIGN: /* sign (only the public key) */
 	    if( pk->is_revoked )
 	      {
-		tty_printf(_("Key is revoked.\n"));
+		tty_printf(_("Key is revoked."));
 
 		if(opt.expert)
 		  {
-		    tty_printf(_("Are you sure you still want to sign it?\n"));
-
+		    tty_printf("  ");
 		    if(!cpr_get_answer_is_yes("keyedit.sign_revoked.okay",
-					      _("Really sign? ")))
+					      _("Are you sure you still want "
+						"to sign it? (y/N) ")))
 		      break;
 		  }
 		else
-		  break;
+		  {
+		    tty_printf("\n");
+		    break;
+		  }
 	      }
 
 	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) ) {
