@@ -1,6 +1,6 @@
 /* import.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -509,7 +509,7 @@ print_import_ok (PKT_public_key *pk, PKT_secret_key *sk, unsigned int reason)
   write_status_text (STATUS_IMPORT_OK, buf);
 }
 
-void
+static void
 print_import_check (PKT_public_key * pk, PKT_user_id * id)
 {
     char * buf;
@@ -785,10 +785,13 @@ import_one( const char *fname, KBNODE keyblock,
     }
 
   leave:
+    if(mod_key)
+      revocation_present(keyblock_orig);
+    else if(new_key)
+      revocation_present(keyblock);
+
     release_kbnode( keyblock_orig );
     free_public_key( pk_orig );
-
-    revocation_present(keyblock);
 
     return rc;
 }
@@ -1458,8 +1461,8 @@ collapse_uids( KBNODE *keyblock )
 }
 
 /* Check for a 0x20 revocation from a revocation key that is not
-   present.  This gets called without the benefit of merge_xxxx so you
-   can't rely on pk->revkey and friends. */
+   present.  This may be called without the benefit of merge_xxxx so
+   you can't rely on pk->revkey and friends. */
 static void
 revocation_present(KBNODE keyblock)
 {
