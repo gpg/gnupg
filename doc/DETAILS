@@ -39,7 +39,7 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 		       17 = DSA (sometimes called DH, sign only)
 		       20 = ElGamal (sign and encrypt)
 	    (for other id's see include/cipher.h)
- 5. Field:  KeyID
+ 5. Field:  KeyID either of 
  6. Field:  Creation Date (in UTC)
  7. Field:  Key expiration date or empty if none.
  8. Field:  Used for serial number in crt records (used to be the Local-ID)
@@ -50,6 +50,7 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 	    control characters (the colon is quoted "\x3a").
             This is not used with --fixed-list-mode in gpg. 
             In gpgsm the issuer name does here
+            An FPR record stores the fingerprint here.
 11. Field:  Signature class.  This is a 2 digit hexnumber followed by
             either the letter 'x' for an exportable signature or the
             letter 'l' for a local-only signature.
@@ -60,6 +61,15 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
             A key may have any combination of them.  The primary key has in
             addition to these letters, uppercase version of the letter to
             denote the _usable_ capabilities of the entire key.  
+13. Field:  Used in FPR records for S/MIME keys to store the fingerprint of
+            the issuer certificate.  This is useful to build the
+            certificate path based on certificates stored in the local
+            keyDB; it is only filled if the issue certificate is
+            available. The advantage of using this value is that it is
+            guaranteed to have been been build by the same lookup
+            algorithm as gpgsm uses.
+        
+
 
 All dates are displayed in the format yyyy-mm-dd unless you use the
 option --fixed-list-mode in which case they are displayed as seconds
