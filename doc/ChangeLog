@@ -1,3 +1,7 @@
+2002-11-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --trust-model.
+
 2002-11-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Clarify meaning of 'u'.  Noted by Timo.

@@ -955,13 +955,30 @@ recipient's or signator's key.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--trust-model <parameter>classic|always</parameter></term>
+<listitem><para>
+
+Set what trust model GnuPG should follow.  The models are:
+
+<variablelist>
+
+<varlistentry><term>classic</term><listitem><para>
+This is the regular web-of-trust as used in PGP and GnuPG.
+</para></listitem></varlistentry>
+<varlistentry><term>always</term><listitem><para>
+Skip key validation and assume that used keys are always fully
+trusted.  You won't use this unless you have installed some external
+validation scheme.  This option also suppresses the "[uncertain]" tag
+printed with signature checks when there is no evidence that the user
+ID is bound to the key.
+</para></listitem></varlistentry>
+
+</variablelist></para></listitem></varlistentry>
+
+<varlistentry>
 <term>--always-trust</term>
 <listitem><para>
-Skip key validation and assume that used keys are always fully trusted.
-You won't use this unless you have installed some external validation
-scheme.  This option also suppresses the "[uncertain]" tag printed
-with signature checks when there is no evidence that the user ID
-is bound to the key.
+Identical to `--trust-model always'
 </para></listitem></varlistentry>
 
 
