@@ -35,6 +35,7 @@
 #include "trustdb.h"
 #include "ttyio.h"
 #include "status.h"
+#include "photoid.h"
 #include "i18n.h"
 
 
@@ -255,6 +256,8 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
       {
         if( !mode ) 
           {
+            KBNODE keyblock, un;
+
             tty_printf(_("No trust value assigned to:\n"
                          "%4u%c/%08lX %s \""),
                        nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
@@ -263,6 +266,32 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
             tty_print_utf8_string( p, n ),
               m_free(p);
             tty_printf("\"\n");
+
+            keyblock = get_pubkeyblock (keyid);
+            if (!keyblock)
+                BUG ();
+            for (un=keyblock; un; un = un->next) {
+                if (un->pkt->pkttype != PKT_USER_ID )
+                    continue;
+                if (un->pkt->pkt.user_id->is_revoked )
+                    continue;
+                if (un->pkt->pkt.user_id->is_expired )
+                    continue;
+		/* Only skip textual primaries */
+                if (un->pkt->pkt.user_id->is_primary &&
+		    !un->pkt->pkt.user_id->attrib_data )
+		    continue;
+                
+		if(opt.show_photos && un->pkt->pkt.user_id->attrib_data)
+                    show_photos(un->pkt->pkt.user_id->attribs,
+                                un->pkt->pkt.user_id->numattribs,pk,NULL);
+                
+		tty_printf ("      %s", _("                aka \""));
+                tty_print_utf8_string (un->pkt->pkt.user_id->name,
+                                       un->pkt->pkt.user_id->len );
+                tty_printf("\"\n");
+            }
+        
             print_fingerprint (pk, NULL, 2);
             tty_printf("\n");
           }
