@@ -141,17 +141,19 @@ free_keyserver_spec(struct keyserver_spec *keyserver)
   m_free(keyserver->uri);
   m_free(keyserver->host);
   m_free(keyserver->port);
+  m_free(keyserver->path);
   m_free(keyserver->opaque);
   m_free(keyserver);
 }
 
 struct keyserver_spec *
-parse_keyserver_uri(char *uri,int require_scheme,
+parse_keyserver_uri(const char *uri,int require_scheme,
 		    const char *configname,unsigned int configlineno)
 {
   int assume_hkp=0;
   struct keyserver_spec *keyserver;
-  char *scheme;
+  const char *idx;
+  int count;
 
   assert(uri!=NULL);
 
@@ -161,91 +163,103 @@ parse_keyserver_uri(char *uri,int require_scheme,
 
   /* Get the scheme */
 
-  scheme=strsep(&uri,":");
-  if(uri==NULL)
+  for(idx=uri,count=0;*idx && *idx!=':';*idx++)
+    count++;
+
+  if(count==0)
+    goto fail;
+
+  if(*idx=='\0')
     {
       if(require_scheme)
 	return NULL;
 
       /* Assume HKP if there is no scheme */
       assume_hkp=1;
-      uri=scheme;
-      scheme="hkp";
+      keyserver->scheme=m_strdup("hkp");
     }
   else
     {
-      /* Force to lowercase */
-      char *i;
+      int i;
 
-      for(i=scheme;*i!='\0';i++)
-	*i=ascii_tolower(*i);
+      keyserver->scheme=m_alloc(count+1);
+
+      /* Force to lowercase */
+      for(i=0;i<count;i++)
+	keyserver->scheme[i]=ascii_tolower(uri[i]);
+
+      keyserver->scheme[i]='\0';
+
+      /* Skip past the scheme and colon */
+      uri+=count+1;
     }
 
-  if(ascii_strcasecmp(scheme,"x-broken-hkp")==0)
+  if(ascii_strcasecmp(keyserver->scheme,"x-broken-hkp")==0)
     {
       deprecated_warning(configname,configlineno,"x-broken-hkp",
 			 "--keyserver-options ","broken-http-proxy");
-      scheme="hkp";
+      m_free(keyserver->scheme);
+      keyserver->scheme=m_strdup("hkp");
       add_to_strlist(&opt.keyserver_options.other,"broken-http-proxy");
     }
-  else if(ascii_strcasecmp(scheme,"x-hkp")==0)
+  else if(ascii_strcasecmp(keyserver->scheme,"x-hkp")==0)
     {
       /* Canonicalize this to "hkp" so it works with both the internal
 	 and external keyserver interface. */
-      scheme="hkp";
+      m_free(keyserver->scheme);
+      keyserver->scheme=m_strdup("hkp");
     }
-
-  if(scheme[0]=='\0')
-    goto fail;
-
-  keyserver->scheme=m_strdup(scheme);
 
   if(assume_hkp || (uri[0]=='/' && uri[1]=='/'))
     {
-      char *host,*port;
-
       /* Two slashes means network path. */
 
       /* Skip over the "//", if any */
       if(!assume_hkp)
 	uri+=2;
 
-      /* Get the host */
-      host=strsep(&uri,":/");
-      if(host[0]=='\0')
+      for(idx=uri,count=0;*idx && *idx!=':' && *idx!='/';*idx++)
+	count++;
+
+      if(count==0)
 	goto fail;
 
-      keyserver->host=m_strdup(host);
+      keyserver->host=m_alloc(count+1);
+      strncpy(keyserver->host,uri,count);
+      keyserver->host[count]='\0';
 
-      if(uri==NULL || uri[0]=='\0')
-	port=NULL;
-      else
+      /* Skip past the host */
+      uri+=count;
+
+      if(*uri==':')
 	{
-	  char *ch;
-
-	  /* Get the port */
-	  port=strsep(&uri,"/");
-
-	  /* Ports are digits only */
-	  ch=port;
-	  while(*ch!='\0')
-	    {
-	      if(!digitp(ch))
-		goto fail;
-
-	      ch++;
-	    }
-
 	  /* It would seem to be reasonable to limit the range of the
 	     ports to values between 1-65535, but RFC 1738 and 1808
 	     imply there is no limit.  Of course, the real world has
 	     limits. */
 
-	  keyserver->port=m_strdup(port);
+	  for(idx=uri+1,count=0;*idx && *idx!='/';*idx++)
+	    {
+	      count++;
+
+	      /* Ports are digits only */
+	      if(!digitp(idx))
+		goto fail;
+	    }
+
+	  keyserver->port=m_alloc(count+1);
+	  strncpy(keyserver->port,uri+1,count);
+	  keyserver->port[count]='\0';
+
+	  /* Skip past the colon and port number */
+	  uri+=1+count;
 	}
 
-      /* (any path part of the URI is discarded for now as no keyserver
-	 uses it yet) */
+      /* Everything else is the path */
+      if(*uri)
+	keyserver->path=m_strdup(uri);
+      else
+	keyserver->path=m_strdup("/");
     }
   else if(uri[0]!='/')
     {
@@ -783,6 +797,9 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
       if(keyserver->port)
 	fprintf(spawn->tochild,"PORT %s\n",keyserver->port);
+
+      if(keyserver->path)
+	fprintf(spawn->tochild,"PATH %s\n",keyserver->path);
     }
 
   /* Write options */

@@ -10,7 +10,7 @@
 
 int parse_keyserver_options(char *options);
 void free_keyserver_spec(struct keyserver_spec *keyserver);
-struct keyserver_spec *parse_keyserver_uri(char *uri,int require_scheme,
+struct keyserver_spec *parse_keyserver_uri(const char *uri,int require_scheme,
 					   const char *configname,
 					   unsigned int configlineno);
 int keyserver_export(STRLIST users);

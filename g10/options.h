@@ -131,6 +131,7 @@ struct
     char *scheme;
     char *host;
     char *port;
+    char *path;
     char *opaque;
   } *keyserver;
   struct

@@ -1,3 +1,10 @@
+2004-05-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, keyserver-internal.h, keyserver.c
+	(parse_keyserver_uri): Improved URI parser that keeps track of the
+	path information and doesn't modify the input string.
+	(keyserver_spawn): Tell keyserver plugins about the path.
+
 2004-05-11  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (show_policy_url, show_keyserver_url, show_notation) 
