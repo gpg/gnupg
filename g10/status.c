@@ -365,7 +365,7 @@ do_get_from_fd( const char *keyword, int hidden, int bool )
 		i=0;
 	}
 	/* Hmmm: why not use our read_line function here */
-	if( read( fd, string+i, 1) != 1 || string[i] == '\n' )
+	if( read( opt.command_fd, string+i, 1) != 1 || string[i] == '\n' )
 	    break;
     }
     string[i] = 0;

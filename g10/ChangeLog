@@ -1,3 +1,8 @@
+Fri Aug  4 14:23:05 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * status.c (do_get_from_fd): Ooops, we used fd instead of opt.command_fd.
+  Thanks to Michael Tokarev.
+
 Tue Aug  1 20:06:23 CEST 2000  Werner Koch  <wk@openit.de>
 
   * g10.c: New opttion --try-all-secrets on suggestion from Matthias Urlichs.
