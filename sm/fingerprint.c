@@ -102,7 +102,7 @@ gpgsm_get_fingerprint_string (KsbaCert cert, int algo)
   return buf;
 }
 
-/* Return an allocated buffer with the formatted fungerprint as one
+/* Return an allocated buffer with the formatted fingerprint as one
    large hexnumber */
 char *
 gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo)
@@ -122,6 +122,17 @@ gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo)
   for (i=0; i < len; i++ )
     sprintf (buf+strlen(buf), "%02X", digest[i]);
   return buf;
+}
+
+/* Return a certificate ID.  These are the last 4 bytes of the SHA-1
+   fingerprint. */
+unsigned long
+gpgsm_get_short_fingerprint (KsbaCert cert)
+{
+  unsigned char digest[20];
+
+  gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, digest, NULL);
+  return ((digest[16]<<24)|(digest[17]<<16)|(digest[18]<< 8)|digest[19]);
 }
 
 

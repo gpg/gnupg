@@ -149,6 +149,7 @@ void gpgsm_status2 (CTRL ctrl, int no, ...);
 char *gpgsm_get_fingerprint (KsbaCert cert, int algo, char *array, int *r_len);
 char *gpgsm_get_fingerprint_string (KsbaCert cert, int algo);
 char *gpgsm_get_fingerprint_hexstring (KsbaCert cert, int algo);
+unsigned long gpgsm_get_short_fingerprint (KsbaCert cert);
 char *gpgsm_get_keygrip (KsbaCert cert, char *array);
 char *gpgsm_get_keygrip_hexstring (KsbaCert cert);
 char *gpgsm_get_certid (KsbaCert cert);

@@ -116,9 +116,9 @@ gpgsm_dump_time (time_t t)
 {
 
   if (!t)
-    log_printf ("none");
+    log_printf (_("[none]"));
   else if ( t == (time_t)(-1) )
-    log_printf ("error");
+    log_printf (_("[error]"));
   else
     {
       struct tm *tp;

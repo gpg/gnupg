@@ -151,6 +151,7 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
   int idx, trustletter = 0;
   char *p;
   KsbaSexp sexp;
+  char *fpr;
 
   fputs (have_secret? "crs:":"crt:", fp);
   trustletter = 0;
@@ -168,9 +169,11 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
       putc (trustletter, fp);
     }
 
-  fprintf (fp, ":%u:%d::",
+  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+  fprintf (fp, ":%u:%d:%s:",
            /*keylen_of_cert (cert)*/1024,
-           /* pubkey_algo_of_cert (cert)*/1);
+           /* pubkey_algo_of_cert (cert)*/1,
+           fpr+24);
 
   /* we assume --fixed-list-mode for gpgsm */
   print_time ( ksba_cert_get_validity (cert, 0), fp);
@@ -212,9 +215,8 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
   putc ('\n', fp);
 
   /* FPR record */
-  p = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-  fprintf (fp, "fpr:::::::::%s:::", p);
-  xfree (p);
+  fprintf (fp, "fpr:::::::::%s:::", fpr);
+  xfree (fpr); fpr = NULL;
   /* print chaining ID (field 13)*/
   {
     KsbaCert next;

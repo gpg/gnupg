@@ -108,6 +108,7 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
   int algo;
   int is_detached;
   FILE *fp = NULL;
+  char *p;
 
   kh = keydb_new (0);
   if (!kh)
@@ -285,12 +286,8 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           log_error ("error getting signing time: %s\n", ksba_strerror (err));
           sigtime = (time_t)-1;
         }
-      if (DBG_X509)
-        {
-          log_debug ("signer %d - sigtime: ", signer);
-          gpgsm_dump_time (sigtime);  
-          log_printf ("\n");
-        }
+
+                  
 
       err = ksba_cms_get_message_digest (cms, signer,
                                          &msgdigest, &msgdigestlen);
@@ -342,6 +339,15 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
           log_error ("failed to get cert: %s\n", gnupg_strerror (rc));
           goto next_signer;
         }
+
+      log_info (_("Signature made "));
+      if (sigtime)
+        gpgsm_dump_time (sigtime);
+      else
+        log_printf (_("[date not given]"));
+      log_printf (_(" using certificate ID %08lX\n"),
+                  gpgsm_get_short_fingerprint (cert));
+
 
       if (msgdigest)
         { /* Signed attributes are available. */
@@ -446,7 +452,17 @@ gpgsm_verify (CTRL ctrl, int in_fd, int data_fd, FILE *out_fp)
             gpgsm_status (ctrl, STATUS_TRUST_UNDEFINED, gnupg_error_token (rc));
           goto next_signer;
         }
-      log_info ("signature is good\n");
+
+      for (i=0; (p = ksba_cert_get_subject (cert, i)); i++)
+        {
+          log_info (!i? _("Good signature from")
+                      : _("                aka"));
+          log_printf (" \"");
+          gpgsm_print_name (log_get_stream (), p);
+          log_printf ("\"\n");
+          ksba_free (p);
+        }
+
       gpgsm_status (ctrl, STATUS_TRUST_FULLY, NULL);
           
 
