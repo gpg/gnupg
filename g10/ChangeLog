@@ -1,3 +1,8 @@
+2002-05-02  Werner Koch  <wk@gnupg.org>
+
+	* options.skel: Removed the comment on trusted-keys because this
+	option is now deprecated.
+
 2002-05-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_adduid): 2440bis04 says that multiple attribute

@@ -8,10 +8,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6\n"
-"POT-Creation-Date: 2002-04-29 17:09+0200\n"
-"PO-Revision-Date: 2002-02-08 08:47+0900\n"
+"POT-Creation-Date: 2002-04-19 11:22+0200\n"
+"PO-Revision-Date: 2002-04-20 23:43+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
-"Language-Team: Japanese <ja@li.org>\n"
+"Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=EUC-JP\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,7 +22,7 @@ msgstr "警告: やばいメモリーを使用しています!\n"
 
 #: util/secmem.c:89
 msgid "please see http://www.gnupg.org/faq.html for more information\n"
-msgstr ""
+msgstr "詳細はhttp://www.gnupg.org/faq.htmlをご覧ください\n"
 
 #: util/secmem.c:326
 msgid "operation is not possible without initialized secure memory\n"
@@ -32,27 +32,27 @@ msgstr "初期化済みの安全なメモリーがない場合には実行できません\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(この目的には誤ったプログラムを用いたのでしょう)\n"
 
-#: util/miscutil.c:296 util/miscutil.c:331
+#: util/miscutil.c:297 util/miscutil.c:327
 msgid "yes"
 msgstr "yes"
 
-#: util/miscutil.c:297 util/miscutil.c:334
+#: util/miscutil.c:298 util/miscutil.c:330
 msgid "yY"
 msgstr "yY"
 
-#: util/miscutil.c:298 util/miscutil.c:332
+#: util/miscutil.c:299 util/miscutil.c:328
 msgid "no"
 msgstr "no"
 
-#: util/miscutil.c:299 util/miscutil.c:335
+#: util/miscutil.c:300 util/miscutil.c:331
 msgid "nN"
 msgstr "nN"
 
-#: g10/keyedit.c:815 util/miscutil.c:333
+#: g10/keyedit.c:810 util/miscutil.c:329
 msgid "quit"
 msgstr "quit"
 
-#: util/miscutil.c:336
+#: util/miscutil.c:332
 msgid "qQ"
 msgstr "qQ"
 
@@ -262,9 +262,8 @@ msgid "unusable secret key"
 msgstr "使用できない秘密鍵です"
 
 #: util/errors.c:107
-#, fuzzy
 msgid "keyserver error"
-msgstr "一般的なエラー"
+msgstr "鍵サーバーのエラー"
 
 #: util/logger.c:249
 #, c-format
@@ -352,7 +351,7 @@ msgstr ""
 "十分な長さの乱数が得られません。OSがもっと乱雑さを収集\n"
 "できるよう、何かしてください! (あと%dバイトいります)\n"
 
-#: g10/g10.c:287
+#: g10/g10.c:281
 msgid ""
 "@Commands:\n"
 " "
@@ -360,172 +359,165 @@ msgstr ""
 "@コマンド:\n"
 " "
 
-#: g10/g10.c:289
+#: g10/g10.c:283
 msgid "|[file]|make a signature"
 msgstr "|[ファイル]|署名を作成"
 
-#: g10/g10.c:290
+#: g10/g10.c:284
 msgid "|[file]|make a clear text signature"
 msgstr "|[ファイル]|クリア署名を作成"
 
-#: g10/g10.c:291
+#: g10/g10.c:285
 msgid "make a detached signature"
 msgstr "分離署名を作成"
 
-#: g10/g10.c:292
+#: g10/g10.c:286
 msgid "encrypt data"
 msgstr "データを暗号化"
 
-#: g10/g10.c:293
+#: g10/g10.c:287
 msgid "|[files]|encrypt files"
-msgstr ""
+msgstr "|[ファイル群]|ファイル群を暗号化"
 
-#: g10/g10.c:294
+#: g10/g10.c:288
 msgid "encryption only with symmetric cipher"
 msgstr "暗号化には対称暗号法のみを使用"
 
-#: g10/g10.c:295
+#: g10/g10.c:289
 msgid "store only"
 msgstr "保存のみ"
 
-#: g10/g10.c:296
+#: g10/g10.c:290
 msgid "decrypt data (default)"
 msgstr "データを復号 (既定)"
 
-#: g10/g10.c:297
+#: g10/g10.c:291
 msgid "|[files]|decrypt files"
-msgstr ""
+msgstr "|[ファイル群]|ファイル群を復号"
 
-#: g10/g10.c:298
+#: g10/g10.c:292
 msgid "verify a signature"
 msgstr "署名を検証"
 
-#: g10/g10.c:300
+#: g10/g10.c:294
 msgid "list keys"
 msgstr "鍵の一覧"
 
-#: g10/g10.c:302
+#: g10/g10.c:296
 msgid "list keys and signatures"
 msgstr "鍵と署名の一覧"
 
-#: g10/g10.c:303
+#: g10/g10.c:297
 msgid "check key signatures"
 msgstr "鍵の署名を検証"
 
-#: g10/g10.c:304
+#: g10/g10.c:298
 msgid "list keys and fingerprints"
 msgstr "鍵と指紋の一覧"
 
-#: g10/g10.c:305
+#: g10/g10.c:299
 msgid "list secret keys"
 msgstr "秘密鍵の一覧"
 
-#: g10/g10.c:306
+#: g10/g10.c:300
 msgid "generate a new key pair"
 msgstr "新しい鍵対を生成"
 
-#: g10/g10.c:307
-#, fuzzy
+#: g10/g10.c:301
 msgid "remove keys from the public keyring"
-msgstr "公開鍵輪から鍵を削除"
+msgstr "公開鍵輪から鍵群を削除"
 
-#: g10/g10.c:309
-#, fuzzy
+#: g10/g10.c:303
 msgid "remove keys from the secret keyring"
-msgstr "秘密鍵輪から鍵を削除"
+msgstr "秘密鍵輪から鍵群を削除"
 
-#: g10/g10.c:310
+#: g10/g10.c:304
 msgid "sign a key"
 msgstr "鍵に署名"
 
-#: g10/g10.c:311
+#: g10/g10.c:305
 msgid "sign a key locally"
 msgstr "鍵へ内部的に署名"
 
-#: g10/g10.c:312
-#, fuzzy
+#: g10/g10.c:306
 msgid "sign a key non-revocably"
-msgstr "鍵へ内部的に署名"
+msgstr "破棄できないよう鍵に署名"
 
-#: g10/g10.c:313
-#, fuzzy
+#: g10/g10.c:307
 msgid "sign a key locally and non-revocably"
-msgstr "鍵へ内部的に署名"
+msgstr "破棄できないよう鍵へ内部的に署名"
 
-#: g10/g10.c:314
+#: g10/g10.c:308
 msgid "sign or edit a key"
 msgstr "鍵への署名や編集"
 
-#: g10/g10.c:315
+#: g10/g10.c:309
 msgid "generate a revocation certificate"
 msgstr "破棄証明書を生成"
 
-#: g10/g10.c:316
+#: g10/g10.c:310
 msgid "export keys"
 msgstr "鍵を書き出す"
 
-#: g10/g10.c:317
+#: g10/g10.c:311
 msgid "export keys to a key server"
 msgstr "鍵サーバーに鍵を書き出す"
 
-#: g10/g10.c:318
+#: g10/g10.c:312
 msgid "import keys from a key server"
 msgstr "鍵サーバーから鍵を読み込む"
 
-#: g10/g10.c:320
-#, fuzzy
+#: g10/g10.c:314
 msgid "search for keys on a key server"
-msgstr "鍵サーバーに鍵を書き出す"
+msgstr "鍵サーバーの鍵を検索する"
 
-#: g10/g10.c:322
-#, fuzzy
+#: g10/g10.c:316
 msgid "update all keys from a keyserver"
-msgstr "鍵サーバーから鍵を読み込む"
+msgstr "鍵サーバーから鍵を全部更新する"
 
-#: g10/g10.c:326
+#: g10/g10.c:320
 msgid "import/merge keys"
 msgstr "鍵の読込み/併合"
 
-#: g10/g10.c:328
+#: g10/g10.c:322
 msgid "list only the sequence of packets"
 msgstr "パケット列のみの一覧"
 
-#: g10/g10.c:330
+#: g10/g10.c:324
 msgid "export the ownertrust values"
 msgstr "所有者を信用した値を書き出す"
 
-#: g10/g10.c:332
+#: g10/g10.c:326
 msgid "import ownertrust values"
 msgstr "所有者を信用した値を読み込む"
 
-#: g10/g10.c:334
+#: g10/g10.c:328
 msgid "update the trust database"
 msgstr "信用データベースを更新"
 
-#: g10/g10.c:336
-#, fuzzy
+#: g10/g10.c:330
 msgid "unattended trust database update"
-msgstr "信用データベースを更新"
+msgstr "手当てしてない信用データベースを更新"
 
-#: g10/g10.c:337
+#: g10/g10.c:331
 msgid "fix a corrupted trust database"
 msgstr "壊れた信用データベースを修復"
 
-#: g10/g10.c:338
+#: g10/g10.c:332
 msgid "De-Armor a file or stdin"
 msgstr ""
 "ファイルまたは標準入力の\n"
 "包装除去"
 
-#: g10/g10.c:340
+#: g10/g10.c:334
 msgid "En-Armor a file or stdin"
 msgstr "ファイルまたは標準入力の包装化"
 
-#: g10/g10.c:342
+#: g10/g10.c:336
 msgid "|algo [files]|print message digests"
 msgstr "|アルゴリズム [ファイル]|メッセージ要約を出力"
 
-#: g10/g10.c:346
+#: g10/g10.c:340
 msgid ""
 "@\n"
 "Options:\n"
@@ -535,242 +527,238 @@ msgstr ""
 "オプション:\n"
 " "
 
-#: g10/g10.c:348
+#: g10/g10.c:342
 msgid "create ascii armored output"
 msgstr "ASCII形式の包装を作成"
 
-#: g10/g10.c:350
+#: g10/g10.c:344
 msgid "|NAME|encrypt for NAME"
 msgstr "|名前|「名前」用に暗号化"
 
-#: g10/g10.c:353
+#: g10/g10.c:347
 msgid "|NAME|use NAME as default recipient"
 msgstr ""
 "|名前|既定の受信者として\n"
 "「名前」を使用"
 
-#: g10/g10.c:355
+#: g10/g10.c:349
 msgid "use the default key as default recipient"
 msgstr "既定の受信者に既定の鍵を使用"
 
-#: g10/g10.c:361
+#: g10/g10.c:355
 msgid "use this user-id to sign or decrypt"
 msgstr ""
 "署名や復号にこのユーザーid\n"
 "を使用"
 
-#: g10/g10.c:362
+#: g10/g10.c:356
 msgid "|N|set compress level N (0 disables)"
 msgstr ""
 "|N|圧縮レベルをNに設定\n"
 "(0は非圧縮)"
 
-#: g10/g10.c:364
+#: g10/g10.c:358
 msgid "use canonical text mode"
 msgstr "正準テキスト・モードを使用"
 
-#: g10/g10.c:371
+#: g10/g10.c:365
 msgid "use as output file"
 msgstr "出力ファイルとして使用"
 
-#: g10/g10.c:372
+#: g10/g10.c:366
 msgid "verbose"
 msgstr "冗長"
 
-#: g10/g10.c:373
+#: g10/g10.c:367
 msgid "be somewhat more quiet"
 msgstr "やや静か"
 
-#: g10/g10.c:374
+#: g10/g10.c:368
 msgid "don't use the terminal at all"
 msgstr "端末を不使用"
 
-#: g10/g10.c:375
+#: g10/g10.c:369
 msgid "force v3 signatures"
 msgstr "強制的にv3署名"
 
-#: g10/g10.c:376
-#, fuzzy
+#: g10/g10.c:370
 msgid "do not force v3 signatures"
-msgstr "強制的にv3署名"
+msgstr "v3署名を強制しない"
 
-#: g10/g10.c:377
-#, fuzzy
+#: g10/g10.c:371
 msgid "force v4 key signatures"
-msgstr "強制的にv3署名"
+msgstr "強制的にv4署名"
 
-#: g10/g10.c:378
-#, fuzzy
+#: g10/g10.c:372
 msgid "do not force v4 key signatures"
-msgstr "強制的にv3署名"
+msgstr "v4署名を強制しない"
 
-#: g10/g10.c:379
+#: g10/g10.c:373
 msgid "always use a MDC for encryption"
 msgstr "暗号化には常にMDCを使用"
 
-#: g10/g10.c:381
-#, fuzzy
+#: g10/g10.c:375
 msgid "never use a MDC for encryption"
-msgstr "暗号化には常にMDCを使用"
+msgstr "暗号化には絶対にMDCを使用しない"
 
-#: g10/g10.c:383
+#: g10/g10.c:377
 msgid "do not make any changes"
 msgstr "無変更"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-#: g10/g10.c:385
+#: g10/g10.c:379
 msgid "use the gpg-agent"
 msgstr "gpgエージェントを使用"
 
-#: g10/g10.c:388
+#: g10/g10.c:382
 msgid "batch mode: never ask"
 msgstr "バッチ・モード: 確認省略"
 
-#: g10/g10.c:389
+#: g10/g10.c:383
 msgid "assume yes on most questions"
 msgstr ""
 "たいていの質問の答えはyes\n"
 "とみなす"
 
-#: g10/g10.c:390
+#: g10/g10.c:384
 msgid "assume no on most questions"
 msgstr ""
 "たいていの質問の答えはno\n"
 "とみなす"
 
-#: g10/g10.c:391
+#: g10/g10.c:385
 msgid "add this keyring to the list of keyrings"
 msgstr "鍵輪の一覧にこの鍵輪を追加"
 
-#: g10/g10.c:392
+#: g10/g10.c:386
 msgid "add this secret keyring to the list"
 msgstr "一覧にこの秘密鍵輪を追加"
 
-#: g10/g10.c:393
+#: g10/g10.c:387
 msgid "show which keyring a listed key is on"
-msgstr ""
+msgstr "一覧の鍵がある鍵輪を表示"
 
-#: g10/g10.c:394
+#: g10/g10.c:388
 msgid "|NAME|use NAME as default secret key"
 msgstr ""
 "|名前|既定の秘密鍵として\n"
 "「名前」を使用"
 
-#: g10/g10.c:395
+#: g10/g10.c:389
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|ホスト|鍵の検索にこの鍵サーバーを使用"
 
-#: g10/g10.c:397
+#: g10/g10.c:391
 msgid "|NAME|set terminal charset to NAME"
 msgstr ""
 "|CHARSET名|端末のcharsetを「CHARSET名」\n"
 "に設定"
 
-#: g10/g10.c:398
+#: g10/g10.c:392
 msgid "read options from file"
 msgstr ""
 "ファイルからオプションを\n"
 "読み込む"
 
-#: g10/g10.c:402
+#: g10/g10.c:396
 msgid "|FD|write status info to this FD"
 msgstr ""
 "|ファイル記述子|このファイル記述子に状態を\n"
 "書き出す"
 
-#: g10/g10.c:404
-#, fuzzy
+#: g10/g10.c:398
 msgid "|[file]|write status info to file"
 msgstr ""
-"|ファイル記述子|このファイル記述子に状態を\n"
+"|ファイル|ステータス情報をファイルに\n"
 "書き出す"
 
-#: g10/g10.c:410
+#: g10/g10.c:404
 msgid "|KEYID|ultimately trust this key"
 msgstr "|鍵ID|この鍵を究極的に信用する"
 
-#: g10/g10.c:411
+#: g10/g10.c:405
 msgid "|FILE|load extension module FILE"
 msgstr ""
 "|ファイル|拡張モジュールのファイルを\n"
 "読み込む"
 
-#: g10/g10.c:412
+#: g10/g10.c:406
 msgid "emulate the mode described in RFC1991"
 msgstr ""
 "RFC1991に記述されたモードを\n"
 "使用"
 
-#: g10/g10.c:413
+#: g10/g10.c:407
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
 msgstr ""
 "パケットと暗号と署名のオプショ\n"
 "ンを全てOpenPGPの振舞に設定"
 
-#: g10/g10.c:414
-#, fuzzy
+#: g10/g10.c:408
 msgid "set all packet, cipher and digest options to PGP 2.x behavior"
 msgstr ""
-"パケットと暗号と署名のオプショ\n"
-"ンを全てOpenPGPの振舞に設定"
+"パケットと暗号と要約のオプショ\n"
+"ンを全てPGP 2.xの振舞に設定"
 
-#: g10/g10.c:418
+#: g10/g10.c:412
 msgid "|N|use passphrase mode N"
 msgstr "|N|パスフレーズ・モードNを使用"
 
-#: g10/g10.c:420
+#: g10/g10.c:414
 msgid "|NAME|use message digest algorithm NAME for passphrases"
 msgstr ""
 "|名前|パスフレーズに「名前」のメッ\n"
 "セージ要約アルゴリズムを使用"
 
-#: g10/g10.c:422
+#: g10/g10.c:416
 msgid "|NAME|use cipher algorithm NAME for passphrases"
 msgstr ""
 "|名前|パスフレーズに「名前」の暗号\n"
 "アルゴリズムを使用"
 
-#: g10/g10.c:424
+#: g10/g10.c:418
 msgid "|NAME|use cipher algorithm NAME"
 msgstr ""
 "|名前|「名前」の暗号アルゴリズムを\n"
 "使用"
 
-#: g10/g10.c:425
+#: g10/g10.c:419
 msgid "|NAME|use message digest algorithm NAME"
 msgstr ""
 "|名前|「名前」のメッセージ要約\n"
 "アルゴリズムを使用"
 
-#: g10/g10.c:426
+#: g10/g10.c:420
 msgid "|N|use compress algorithm N"
 msgstr ""
 "|名前|「名前」の圧縮アルゴリズムを\n"
 "使用"
 
-#: g10/g10.c:427
+#: g10/g10.c:421
 msgid "throw keyid field of encrypted packets"
 msgstr ""
 "暗号パケットの鍵IDフィールド\n"
 "を送出"
 
-#: g10/g10.c:428
+#: g10/g10.c:422
 msgid "Show Photo IDs"
-msgstr ""
+msgstr "フォトIDを表示"
 
-#: g10/g10.c:429
+#: g10/g10.c:423
 msgid "Don't show Photo IDs"
-msgstr ""
+msgstr "フォトIDを表示しない"
 
-#: g10/g10.c:430
+#: g10/g10.c:424
 msgid "Set command line to view Photo IDs"
 msgstr ""
+"フォトIDを閲覧するコマンド行\n"
+"を設定"
 
-#: g10/g10.c:431
+#: g10/g10.c:425
 msgid "|NAME=VALUE|use this notation data"
 msgstr "|名前=値|この注釈データを使用"
 
-#: g10/g10.c:434
+#: g10/g10.c:428
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
@@ -779,7 +767,7 @@ msgstr ""
 "(コマンドとオプション全部の一覧は、\n"
 "マニュアル・ページをご覧ください)\n"
 
-#: g10/g10.c:437
+#: g10/g10.c:431
 msgid ""
 "@\n"
 "Examples:\n"
@@ -799,15 +787,15 @@ msgstr ""
 " --list-keys [名前]         鍵を表示\n"
 " --fingerprint [名前]       指紋を表示\n"
 
-#: g10/g10.c:579
+#: g10/g10.c:567
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr "バグを見つけたら <gnupg-bugs@gnu.org> までご報告ください。\n"
 
-#: g10/g10.c:583
+#: g10/g10.c:571
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "使い方: gpg [オプション] [ファイル] (ヘルプは -h)"
 
-#: g10/g10.c:586
+#: g10/g10.c:574
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -817,7 +805,7 @@ msgstr ""
 "署名、検証、暗号化や復号\n"
 "既定の動作は、入力データに依存\n"
 
-#: g10/g10.c:597
+#: g10/g10.c:585
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -825,255 +813,248 @@ msgstr ""
 "\n"
 "サポートしているアルゴリズム:\n"
 
-#: g10/g10.c:671
+#: g10/g10.c:659
 msgid "usage: gpg [options] "
 msgstr "使い方: gpg [オプション] "
 
-#: g10/g10.c:728
+#: g10/g10.c:716
 msgid "conflicting commands\n"
 msgstr "コマンドの衝突\n"
 
-#: g10/g10.c:903
+#: g10/g10.c:891
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "注意: 既定のオプション・ファイル`%s'がありません\n"
 
-#: g10/g10.c:907
+#: g10/g10.c:895
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "オプション・ファイル`%s': %s\n"
 
-#: g10/g10.c:914
+#: g10/g10.c:902
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "`%s'からオプションを読み込みます\n"
 
-#: g10/g10.c:1197
+#: g10/g10.c:1185
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%sは正しい文字集合ではありません\n"
 
-#: g10/g10.c:1214
+#: g10/g10.c:1202
 msgid "could not parse keyserver URI\n"
-msgstr ""
+msgstr "鍵サーバーのURIを解析不能\n"
 
-#: g10/g10.c:1228
+#: g10/g10.c:1216
 #, c-format
 msgid "unable to set exec-path to %s\n"
-msgstr ""
+msgstr "exec-pathを%sに設定不能\n"
 
-#: g10/g10.c:1251 g10/g10.c:1267
-#, fuzzy, c-format
+#: g10/g10.c:1239 g10/g10.c:1255
+#, c-format
 msgid "WARNING: %s is a deprecated option.\n"
-msgstr "警告: `%s'は空のファイルです\n"
+msgstr "警告: %sは反対されているオプションです。\n"
 
-#: g10/g10.c:1253 g10/g10.c:1270
+#: g10/g10.c:1241 g10/g10.c:1258
 #, c-format
 msgid "please use \"--keyserver-options %s\" instead\n"
-msgstr ""
+msgstr "\"--keyserver-options %s\"を代わりに使ってください\n"
 
-#: g10/g10.c:1347
+#: g10/g10.c:1329
 msgid "WARNING: program may create a core file!\n"
 msgstr "警告: プログラムのコア・ファイルができることがあります!\n"
 
-#: g10/g10.c:1351
+#: g10/g10.c:1333
 #, c-format
 msgid "WARNING: %s overrides %s\n"
-msgstr ""
+msgstr "警告: %sは%sより優先\n"
 
-#: g10/g10.c:1358 g10/g10.c:1369
+#: g10/g10.c:1340 g10/g10.c:1351
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "注意: 普通%sは用いません!\n"
 
-#: g10/g10.c:1360 g10/g10.c:1380
+#: g10/g10.c:1342 g10/g10.c:1362
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%sは%sとともに用いることはできません!\n"
 
-#: g10/g10.c:1363
+#: g10/g10.c:1345
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%sは%sとともに用いても無意味です!\n"
 
-#: g10/g10.c:1389
+#: g10/g10.c:1371
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr ""
+msgstr "--pgp2モードでは分離署名かクリア署名だけしかできません\n"
 
-#: g10/g10.c:1395
+#: g10/g10.c:1377
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr ""
+msgstr "--pgp2モードでは署名と暗号を同時にできません\n"
 
-#: g10/g10.c:1401
+#: g10/g10.c:1383
 msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr ""
+msgstr "--pgp2を指定したら、(パイプでなく) ファイルを指定せねばなりません。\n"
 
-#: g10/g10.c:1414
+#: g10/g10.c:1396
 msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr ""
+msgstr "--pgp2モードのメッセージ暗号化ではIDEA暗号が要求されます \n"
 
-#: g10/encode.c:287 g10/encode.c:349 g10/g10.c:1428 g10/sign.c:620
+#: g10/encode.c:287 g10/encode.c:349 g10/g10.c:1410 g10/sign.c:620
 #: g10/sign.c:798
 msgid "this message may not be usable by PGP 2.x\n"
-msgstr ""
+msgstr "このメッセージはPGP 2.xでは使用できないかもしれません\n"
 
-#: g10/g10.c:1470 g10/g10.c:1482
+#: g10/g10.c:1451 g10/g10.c:1463
 msgid "selected cipher algorithm is invalid\n"
 msgstr "選択された暗号アルゴリズムは無効です\n"
 
-#: g10/g10.c:1476 g10/g10.c:1488
+#: g10/g10.c:1457 g10/g10.c:1469
 msgid "selected digest algorithm is invalid\n"
 msgstr "選択された要約アルゴリズムは無効です\n"
 
-#: g10/g10.c:1492
-#, fuzzy
+#: g10/g10.c:1473
 msgid "the given signature policy URL is invalid\n"
-msgstr "あたえられたポリシーURLは無効です\n"
+msgstr "あたえられた署名ポリシーURLは無効です\n"
 
-#: g10/g10.c:1496
-#, fuzzy
+#: g10/g10.c:1477
 msgid "the given certification policy URL is invalid\n"
-msgstr "あたえられたポリシーURLは無効です\n"
+msgstr "あたえられた証明書ポリシーURLは無効です\n"
 
-#: g10/g10.c:1499
+#: g10/g10.c:1480
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "圧縮アルゴリズムは%d..%dの範囲でなければなりません\n"
 
-#: g10/g10.c:1501
+#: g10/g10.c:1482
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-neededは正の値が必要です\n"
 
-#: g10/g10.c:1503
+#: g10/g10.c:1484
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-neededは1より大きな値が必要です\n"
 
-#: g10/g10.c:1505
+#: g10/g10.c:1486
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depthは1から255の範囲でなければなりません\n"
 
-#: g10/g10.c:1508
+#: g10/g10.c:1489
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "注意: 単純なS2Kモード(0)の使用には強く反対します\n"
 
-#: g10/g10.c:1512
+#: g10/g10.c:1493
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "無効なS2Kモード。0か1か3でなければなりません\n"
 
-#: g10/g10.c:1516
-#, fuzzy
+#: g10/g10.c:1497
 msgid "invalid default-check-level; must be 0, 1, 2, or 3\n"
-msgstr "無効なS2Kモード。0か1か3でなければなりません\n"
+msgstr "無効なdefault-check-level。0か1か2か3でなければなりません\n"
 
-#: g10/g10.c:1519
-#, fuzzy
+#: g10/g10.c:1500
 msgid "invalid preferences\n"
-msgstr "優先順位の一覧"
+msgstr "無効な優先順位\n"
 
-#: g10/g10.c:1613
+#: g10/g10.c:1594
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "信用データベースの初期化に失敗しました: %s\n"
 
-#: g10/g10.c:1633
+#: g10/g10.c:1614
 msgid "--store [filename]"
 msgstr "--store [ファイル名]"
 
-#: g10/g10.c:1640
+#: g10/g10.c:1621
 msgid "--symmetric [filename]"
 msgstr "--symmetric [ファイル名]"
 
-#: g10/g10.c:1648
+#: g10/g10.c:1629
 msgid "--encrypt [filename]"
 msgstr "--encrypt [ファイル名]"
 
-#: g10/g10.c:1665
+#: g10/g10.c:1646
 msgid "--sign [filename]"
 msgstr "--sign [ファイル名]"
 
-#: g10/g10.c:1678
+#: g10/g10.c:1659
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [ファイル名]"
 
-#: g10/g10.c:1692
-#, fuzzy
+#: g10/g10.c:1673
 msgid "--sign --symmetric [filename]"
-msgstr "--symmetric [ファイル名]"
+msgstr "--sign --symmetric [ファイル名]"
 
-#: g10/g10.c:1701
+#: g10/g10.c:1682
 msgid "--clearsign [filename]"
 msgstr "--clearsign [ファイル名]"
 
-#: g10/g10.c:1719
+#: g10/g10.c:1700
 msgid "--decrypt [filename]"
 msgstr "--decrypt [ファイル名]"
 
-#: g10/g10.c:1730
+#: g10/g10.c:1711
 msgid "--sign-key user-id"
 msgstr "--sign-key ユーザーid"
 
-#: g10/g10.c:1738
+#: g10/g10.c:1719
 msgid "--lsign-key user-id"
 msgstr "--lsign-key ユーザーid"
 
-#: g10/g10.c:1746
-#, fuzzy
+#: g10/g10.c:1727
 msgid "--nrsign-key user-id"
-msgstr "--sign-key ユーザーid"
+msgstr "--nrsign-key ユーザーid"
 
-#: g10/g10.c:1754
-#, fuzzy
+#: g10/g10.c:1735
 msgid "--nrlsign-key user-id"
-msgstr "--lsign-key ユーザーid"
+msgstr "--nrlsign-key ユーザーid"
 
-#: g10/g10.c:1762
+#: g10/g10.c:1743
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key ユーザーid [コマンド]"
 
-#: g10/encode.c:307 g10/g10.c:1818 g10/sign.c:709
+#: g10/encode.c:307 g10/g10.c:1799 g10/sign.c:709
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "%sが開けません: %s\n"
 
-#: g10/g10.c:1833
+#: g10/g10.c:1814
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [ユーザーid] [鍵輪]"
 
-#: g10/g10.c:1916
+#: g10/g10.c:1897
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "包装除去に失敗しました: %s\n"
 
-#: g10/g10.c:1924
+#: g10/g10.c:1905
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "包装に失敗しました: %s\n"
 
-#: g10/g10.c:2011
+#: g10/g10.c:1992
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "無効なハッシュ・アルゴリズム`%s'です\n"
 
-#: g10/g10.c:2097
+#: g10/g10.c:2078
 msgid "[filename]"
 msgstr "[ファイル名]"
 
-#: g10/g10.c:2101
+#: g10/g10.c:2082
 msgid "Go ahead and type your message ...\n"
 msgstr "開始します。メッセージをタイプしてください ...\n"
 
-#: g10/decrypt.c:60 g10/decrypt.c:106 g10/g10.c:2104 g10/verify.c:94
+#: g10/decrypt.c:60 g10/decrypt.c:106 g10/g10.c:2085 g10/verify.c:94
 #: g10/verify.c:139
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "`%s'が開けません\n"
 
-#: g10/g10.c:2313
+#: g10/g10.c:2294
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr "注釈名の先頭は文字かアンダースコア(_)でなければなりません\n"
 
-#: g10/g10.c:2319
+#: g10/g10.c:2300
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -1081,11 +1062,11 @@ msgstr ""
 "注釈名には文字、数字、ドット、アンダースコアのみを用い、\n"
 "'='で終わらなければなりません\n"
 
-#: g10/g10.c:2325
+#: g10/g10.c:2306
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr "注釈名のドットは他の文字で囲まなければなりません\n"
 
-#: g10/g10.c:2333
+#: g10/g10.c:2314
 msgid "a notation value must not use any control characters\n"
 msgstr "注釈名の値に制御文字を用いてはいけません\n"
 
@@ -1195,19 +1176,18 @@ msgstr "適用: "
 #. a string with valid answers
 #: g10/pkclist.c:252
 msgid "iImMqQsS"
-msgstr ""
+msgstr "iImMqQsS"
 
 #: g10/pkclist.c:258
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "No trust value assigned to:\n"
 "%4u%c/%08lX %s \""
 msgstr ""
-"%luに信用度が指定されていません:\n"
+"信用度が指定されていません:\n"
 "%4u%c/%08lX %s \""
 
 #: g10/pkclist.c:270
-#, fuzzy
 msgid ""
 "Please decide how far you trust this user to correctly\n"
 "verify other users' keys (by looking at passports,\n"
@@ -1217,40 +1197,35 @@ msgstr ""
 "他のユーザーの鍵を正しく検証するために、このユーザーの信用度を決めて\n"
 "ください(パスポートを見せてもらったり、他から得た指紋と照合したり...)?\n"
 "\n"
-" 1 = 未知\n"
-" 2 = 信用し ない\n"
-" 3 = ある程度信用する\n"
-" 4 = 完全に信用する\n"
-" s = より詳しい情報を見る\n"
 
 #: g10/pkclist.c:273
 #, c-format
 msgid " %d = Don't know\n"
-msgstr ""
+msgstr " %d = 未知\n"
 
 #: g10/pkclist.c:274
-#, fuzzy, c-format
+#, c-format
 msgid " %d = I do NOT trust\n"
-msgstr "%08lX: この鍵は信用できま せん\n"
+msgstr " %d = 信用し ない\n"
 
 #: g10/pkclist.c:275
 #, c-format
 msgid " %d = I trust marginally\n"
-msgstr ""
+msgstr " %d = ある程度信用する\n"
 
 #: g10/pkclist.c:276
-#, fuzzy, c-format
+#, c-format
 msgid " %d = I trust fully\n"
-msgstr "%s: 信用データベース・ファイルではありません\n"
+msgstr " %d = 完全に信用する\n"
 
 #: g10/pkclist.c:278
 #, c-format
 msgid " %d = I trust ultimately\n"
-msgstr ""
+msgstr " %d = 絶対的に信用する\n"
 
 #: g10/pkclist.c:279
 msgid " i = please show me more information\n"
-msgstr ""
+msgstr " i = より詳しい情報を見る\n"
 
 #: g10/pkclist.c:281
 msgid " m = back to the main menu\n"
@@ -1258,7 +1233,7 @@ msgstr " m = メーン・メニューに戻る\n"
 
 #: g10/pkclist.c:284
 msgid " s = skip this key\n"
-msgstr ""
+msgstr " s = この鍵はとばす\n"
 
 #: g10/pkclist.c:285
 msgid " q = quit\n"
@@ -1269,9 +1244,8 @@ msgid "Your decision? "
 msgstr "あなたの決定は? "
 
 #: g10/pkclist.c:313
-#, fuzzy
 msgid "Do you really want to set this key to ultimate trust? "
-msgstr "この鍵を本当に削除しますか? "
+msgstr "本当にこの鍵を絶対的に信用しますか? "
 
 #: g10/pkclist.c:325
 msgid "Certificates leading to an ultimately trusted key:\n"
@@ -1297,10 +1271,10 @@ msgid "%08lX: key has expired\n"
 msgstr "鍵%08lX: 鍵は期限切れです\n"
 
 #: g10/pkclist.c:442
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%08lX: There is no indication that this key really belongs to the owner\n"
-msgstr "      この署名が本人のものかどうかの検証手段がありません。\n"
+msgstr "%08lX: この鍵が本人のものかどうかの検証手段がありません\n"
 
 #: g10/pkclist.c:448
 #, c-format
@@ -1353,9 +1327,8 @@ msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "警告: この副鍵は本人によって破棄されています!\n"
 
 #: g10/pkclist.c:574
-#, fuzzy
 msgid "Note: This key has been disabled.\n"
-msgstr "この鍵は使用禁止に設定されています"
+msgstr "注意: この鍵は使用禁止に設定されています。\n"
 
 #: g10/pkclist.c:579
 msgid "Note: This key has expired!\n"
@@ -1398,17 +1371,14 @@ msgid "%s: skipped: public key already present\n"
 msgstr "%s: スキップ: 公開鍵は既にあります\n"
 
 #: g10/pkclist.c:752
-#, fuzzy
 msgid "You did not specify a user ID. (you may use \"-r\")\n"
-msgstr ""
-"ユーザーIDが指定されていません (「-r」を用いましょう) 。\n"
-"\n"
+msgstr "ユーザーIDを指定していません (「-r」を用いましょう) 。\n"
 
 #: g10/pkclist.c:762
 msgid ""
 "\n"
 "Enter the user ID.  End with an empty line: "
-msgstr ""
+msgstr "\nユーザーIDを入力。空行で終了: "
 
 #: g10/pkclist.c:776
 msgid "No such user ID.\n"
@@ -1423,9 +1393,8 @@ msgid "Public key is disabled.\n"
 msgstr "公開鍵は使用禁止です。\n"
 
 #: g10/pkclist.c:806
-#, fuzzy
 msgid "skipped: public key already set\n"
-msgstr "%s: スキップ: 公開鍵は既にあります\n"
+msgstr "スキップ: 公開鍵は設定済みです\n"
 
 #: g10/pkclist.c:849
 #, c-format
@@ -1435,7 +1404,7 @@ msgstr "既定の受信者`%s'が見つかりません\n"
 #: g10/pkclist.c:893
 #, c-format
 msgid "%s: skipped: public key is disabled\n"
-msgstr "%s: スキップ: 公開鍵は使用禁止\n"
+msgstr "%s: スキップ: 公開鍵は使用禁止です\n"
 
 #: g10/pkclist.c:943
 msgid "no valid addressees\n"
@@ -1444,22 +1413,21 @@ msgstr "有効なアドレスがありません\n"
 #: g10/keygen.c:180
 #, c-format
 msgid "preference %c%lu is not valid\n"
-msgstr ""
+msgstr "選好%c%luは有効ではありません\n"
 
 #: g10/keygen.c:187
-#, fuzzy, c-format
+#, c-format
 msgid "preference %c%lu duplicated\n"
-msgstr "`%s'をスキップ: 重複\n"
+msgstr "選好%c%luの重複\n"
 
 #: g10/keygen.c:192
-#, fuzzy, c-format
+#, c-format
 msgid "too many `%c' preferences\n"
-msgstr "優先順位の一覧"
+msgstr "多すぎる`%c'選好\n"
 
 #: g10/keygen.c:257
-#, fuzzy
 msgid "invalid character in preference string\n"
-msgstr "名前に無効な文字があります\n"
+msgstr "選好文字列に無効な文字があります\n"
 
 #: g10/keygen.c:399
 msgid "writing self signature\n"
@@ -1504,16 +1472,16 @@ msgid "   (%d) ElGamal (sign and encrypt)\n"
 msgstr "   (%d) ElGamal (署名と暗号化)\n"
 
 #: g10/keygen.c:784
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) RSA (sign only)\n"
-msgstr "   (%d) DSA (署名のみ)\n"
+msgstr "   (%d) RSA (署名のみ)\n"
 
 #: g10/keygen.c:786
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) RSA (encrypt only)\n"
-msgstr "   (%d) ElGamal (暗号化のみ)\n"
+msgstr "   (%d) RSA (暗号化のみ)\n"
 
-#: g10/keyedit.c:516 g10/keygen.c:789
+#: g10/keyedit.c:508 g10/keygen.c:789
 msgid "Your selection? "
 msgstr "どれにしますか? "
 
@@ -1521,7 +1489,7 @@ msgstr "どれにしますか? "
 msgid "The use of this algorithm is deprecated - create anyway? "
 msgstr "このアルゴリズムは反対されています - それでも作りますか? "
 
-#: g10/keyedit.c:529 g10/keygen.c:823
+#: g10/keyedit.c:521 g10/keygen.c:823
 msgid "Invalid selection.\n"
 msgstr "無効な選択です。\n"
 
@@ -1614,7 +1582,6 @@ msgstr ""
 "      <n>y = 有効期限 n 年間\n"
 
 #: g10/keygen.c:951
-#, fuzzy
 msgid ""
 "Please specify how long the signature should be valid.\n"
 "         0 = signature does not expire\n"
@@ -1623,7 +1590,7 @@ msgid ""
 "      <n>m = signature expires in n months\n"
 "      <n>y = signature expires in n years\n"
 msgstr ""
-"鍵の期限を決めてください。\n"
+"署名の期限を決めてください。\n"
 "         0 = 無期限\n"
 "      <n>  = 有効期限 n 日間\n"
 "      <n>w = 有効期限 n 週間\n"
@@ -1635,24 +1602,23 @@ msgid "Key is valid for? (0) "
 msgstr "鍵の有効期間は? (0)"
 
 #: g10/keygen.c:975
-#, fuzzy
 msgid "Signature is valid for? (0) "
-msgstr "鍵の有効期間は? (0)"
+msgstr "署名の有効期間は? (0)"
 
 #: g10/keygen.c:980
 msgid "invalid value\n"
 msgstr "無効な値\n"
 
 #: g10/keygen.c:985
-#, fuzzy, c-format
+#, c-format
 msgid "%s does not expire at all\n"
-msgstr "鍵は無期限です\n"
+msgstr "%sは無期限です\n"
 
 #. print the date when the key expires
 #: g10/keygen.c:992
-#, fuzzy, c-format
+#, c-format
 msgid "%s expires at %s\n"
-msgstr "鍵は%sにて期限切れになります\n"
+msgstr "%sは%sにて期限切れになります\n"
 
 #: g10/keygen.c:998
 msgid ""
@@ -1758,15 +1724,14 @@ msgstr ""
 "秘密鍵を保護するためにパスフレーズがいります。\n"
 "\n"
 
-#: g10/keyedit.c:701 g10/keygen.c:1218
-#, fuzzy
+#: g10/keyedit.c:696 g10/keygen.c:1218
 msgid "passphrase not correctly repeated; try again"
-msgstr "パスフレーズが異なります。もう一度設定してください。\n"
+msgstr "パスフレーズをちゃんと繰り返していません。再入力してください"
 
 #: g10/keygen.c:1219
 #, c-format
 msgid "%s.\n"
-msgstr ""
+msgstr "%s.\n"
 
 #: g10/keygen.c:1225
 msgid ""
@@ -1810,35 +1775,34 @@ msgid "writing secret key to `%s'\n"
 msgstr "`%s'へ秘密鍵を書き込みます\n"
 
 #: g10/keygen.c:1952
-#, fuzzy, c-format
+#, c-format
 msgid "no writable public keyring found: %s\n"
-msgstr "鍵%08lX: 公開鍵が見つかりません: %s\n"
+msgstr "書込み可能な公開鍵輪が見つかりません: %s\n"
 
 #: g10/keygen.c:1958
-#, fuzzy, c-format
+#, c-format
 msgid "no writable secret keyring found: %s\n"
-msgstr "鍵%08lX: 秘密鍵が見つかりません: %s\n"
+msgstr "書込み可能な秘密鍵輪が見つかりません: %s\n"
 
 #: g10/keygen.c:1972
-#, fuzzy, c-format
+#, c-format
 msgid "error writing public keyring `%s': %s\n"
-msgstr "鍵輪`%s'の書込みエラー: %s\n"
+msgstr "公開鍵輪`%s'の書込みエラー: %s\n"
 
 #: g10/keygen.c:1979
-#, fuzzy, c-format
+#, c-format
 msgid "error writing secret keyring `%s': %s\n"
-msgstr "鍵輪`%s'の書込みエラー: %s\n"
+msgstr "秘密鍵輪`%s'の書込みエラー: %s\n"
 
 #: g10/keygen.c:1999
 msgid "public and secret key created and signed.\n"
 msgstr "公開鍵と秘密鍵を作り、署名しました。\n"
 
 #: g10/keygen.c:2000
-#, fuzzy
 msgid "key marked as ultimately trusted.\n"
-msgstr "絶対的に信用した鍵への証明書:\n"
+msgstr "絶対的に信用した鍵として記録しました。\n"
 
-#: g10/keygen.c:2011
+#: g10/keygen.c:2009
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
@@ -1846,39 +1810,39 @@ msgstr ""
 "この鍵は暗号化には使用できないことに注意してください。暗号化を行うには、\n"
 "「--edit-key」コマンドを用いて副鍵を生成してください。\n"
 
-#: g10/keygen.c:2023 g10/keygen.c:2131
+#: g10/keygen.c:2021 g10/keygen.c:2127
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "鍵の生成に失敗しました: %s\n"
 
-#: g10/keygen.c:2067 g10/sig-check.c:223 g10/sign.c:228
+#: g10/keygen.c:2065 g10/sig-check.c:223 g10/sign.c:228
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "鍵は%lu秒未来にできました (時間旅行か時計のくるいでしょう)\n"
 
-#: g10/keygen.c:2069 g10/sig-check.c:225 g10/sign.c:230
+#: g10/keygen.c:2067 g10/sig-check.c:225 g10/sign.c:230
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr "鍵は%lu秒未来にできました (時間旅行か時計のくるいでしょう)\n"
 
-#: g10/keygen.c:2078
+#: g10/keygen.c:2076
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "注意: v3鍵の副鍵の作成は、OpenPGPに適合しません\n"
 
-#: g10/keygen.c:2107
+#: g10/keygen.c:2103
 msgid "Really create? "
 msgstr "本当に作りますか? "
 
 #: g10/decrypt.c:92 g10/encode.c:590
 msgid "--output doesn't work for this command\n"
-msgstr ""
+msgstr "このコマンドで--outputは機能しません\n"
 
 #: g10/encode.c:92 g10/encode.c:296
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' already compressed\n"
-msgstr "%lu鍵を処理しました\n"
+msgstr "`%s'は既に圧縮済みです\n"
 
 #: g10/encode.c:100 g10/openfile.c:180 g10/openfile.c:300 g10/tdbio.c:492
 #: g10/tdbio.c:552
@@ -1898,7 +1862,7 @@ msgstr "%s: 警告: 空のファイルです\n"
 
 #: g10/encode.c:285
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr ""
+msgstr "--pgp2モードでは2048ビット以下のRSA鍵で暗号化しかできません\n"
 
 #: g10/encode.c:313
 #, c-format
@@ -1908,7 +1872,7 @@ msgstr "`%s'から読み込みます\n"
 #: g10/encode.c:347
 msgid ""
 "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr ""
+msgstr "暗号化しようとしている鍵は全部IDEA暗号を使えません。\n"
 
 #: g10/encode.c:563
 #, c-format
@@ -1916,14 +1880,14 @@ msgid "%s/%s encrypted for: %s\n"
 msgstr "%s/%s暗号化 受信者: %s\n"
 
 #: g10/delkey.c:69 g10/export.c:141
-#, fuzzy, c-format
+#, c-format
 msgid "key `%s' not found: %s\n"
-msgstr "ユーザー'%s'が見つかりません: %s\n"
+msgstr "鍵`%s'が見つかりません: %s\n"
 
 #: g10/delkey.c:77 g10/export.c:161
-#, fuzzy, c-format
+#, c-format
 msgid "error reading keyblock: %s\n"
-msgstr "`%s'の読込みエラー: %s\n"
+msgstr "鍵ブロックの読込みエラー: %s\n"
 
 #: g10/export.c:169
 #, c-format
@@ -1936,11 +1900,11 @@ msgid "key %08lX: not protected - skipped\n"
 msgstr "鍵 %08lX: 保護されていません - スキップ\n"
 
 #: g10/export.c:188
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: PGP 2.x style key - skipped\n"
-msgstr "鍵 %08lX: 新しい鍵です - スキップ\n"
+msgstr "鍵 %08lX: PGP 2.x形式の鍵です - スキップ\n"
 
-#: g10/export.c:255
+#: g10/export.c:254
 msgid "WARNING: nothing exported\n"
 msgstr "警告: 何も書き出していません\n"
 
@@ -1950,21 +1914,21 @@ msgstr "pkキャッシュのエントリーが多すぎます - 使用禁止\n"
 
 #. fixme: returning translatable constants instead of a user ID is
 #. * not good because they are probably not utf-8 encoded.
-#: g10/getkey.c:187 g10/getkey.c:2272
+#: g10/getkey.c:187 g10/getkey.c:2271
 msgid "[User id not found]"
 msgstr "[ユーザーidが見つかりません]"
 
 #: g10/getkey.c:1360
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
-msgstr ""
+msgstr "--allow-non-selfsigned-uidで有効にされた無効な鍵%08lXです\n"
 
-#: g10/getkey.c:1989
+#: g10/getkey.c:1988
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "副鍵%08lXを主鍵%08lXに代用します\n"
 
-#: g10/getkey.c:2036
+#: g10/getkey.c:2035
 #, c-format
 msgid "key %08lX: secret key without public key - skipped\n"
 msgstr "鍵%08lX: 公開鍵のない秘密鍵です。スキップ\n"
@@ -2044,15 +2008,15 @@ msgstr "       秘密鍵の読込み: %lu\n"
 msgid " secret keys unchanged: %lu\n"
 msgstr "       無変更の秘密鍵: %lu\n"
 
-#: g10/import.c:438 g10/import.c:657
+#: g10/import.c:438 g10/import.c:654
 #, c-format
 msgid "key %08lX: no user ID\n"
 msgstr "鍵%08lX: ユーザーIDがありません\n"
 
 #: g10/import.c:455
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: accepted non self-signed user ID '%s'\n"
-msgstr "鍵%08lX: 受理した未自己署名のユーザーID '"
+msgstr "鍵%08lX: 受理した未自己署名のユーザーID '%s'\n"
 
 #: g10/import.c:462
 #, c-format
@@ -2063,158 +2027,158 @@ msgstr "鍵%08lX: 信用できるユーザーIDがありません\n"
 msgid "this may be caused by a missing self-signature\n"
 msgstr "自己署名のないせいでしょう\n"
 
-#: g10/import.c:474 g10/import.c:726
+#: g10/import.c:475 g10/import.c:723
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
 msgstr "鍵%08lX: 公開鍵が見つかりません: %s\n"
 
-#: g10/import.c:479
+#: g10/import.c:480
 #, c-format
 msgid "key %08lX: new key - skipped\n"
 msgstr "鍵 %08lX: 新しい鍵です - スキップ\n"
 
-#: g10/import.c:489
-#, fuzzy, c-format
+#: g10/import.c:490
+#, c-format
 msgid "no writable keyring found: %s\n"
-msgstr "鍵輪`%s'の書込みエラー: %s\n"
+msgstr "書込み可能な鍵輪が見つかりません: %s\n"
 
-#: g10/import.c:494 g10/openfile.c:244 g10/sign.c:648 g10/sign.c:817
+#: g10/import.c:495 g10/openfile.c:244 g10/sign.c:648 g10/sign.c:817
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "`%s'への書出し\n"
 
-#: g10/import.c:497 g10/import.c:571 g10/import.c:677 g10/import.c:786
+#: g10/import.c:498 g10/import.c:569 g10/import.c:674 g10/import.c:783
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "鍵輪`%s'の書込みエラー: %s\n"
 
-#: g10/import.c:505
+#: g10/import.c:503
 #, c-format
 msgid "key %08lX: public key imported\n"
 msgstr "鍵%08lX: 公開鍵を読み込みました\n"
 
-#: g10/import.c:524
+#: g10/import.c:522
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
 msgstr "鍵%08lX: こちらの複製と合いません\n"
 
-#: g10/import.c:542 g10/import.c:743
+#: g10/import.c:540 g10/import.c:740
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
 msgstr "鍵%08lX: 元の鍵ブロックに位置づけできません: %s\n"
 
-#: g10/import.c:549 g10/import.c:749
+#: g10/import.c:547 g10/import.c:746
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
 msgstr "鍵%08lX: 元の鍵ブロックを読み込めません: %s\n"
 
-#: g10/import.c:579
+#: g10/import.c:574
 #, c-format
 msgid "key %08lX: 1 new user ID\n"
 msgstr "鍵%08lX: 新しいユーザーIDを1個\n"
 
-#: g10/import.c:582
+#: g10/import.c:577
 #, c-format
 msgid "key %08lX: %d new user IDs\n"
 msgstr "鍵%08lX: 新しいユーザーIDを%d個\n"
 
-#: g10/import.c:585
+#: g10/import.c:580
 #, c-format
 msgid "key %08lX: 1 new signature\n"
 msgstr "鍵%08lX: 新しい署名を1個\n"
 
-#: g10/import.c:588
+#: g10/import.c:583
 #, c-format
 msgid "key %08lX: %d new signatures\n"
 msgstr "鍵%08lX: 新しい署名を%d個\n"
 
-#: g10/import.c:591
+#: g10/import.c:586
 #, c-format
 msgid "key %08lX: 1 new subkey\n"
 msgstr "鍵%08lX: 新しい副鍵を1個\n"
 
-#: g10/import.c:594
+#: g10/import.c:589
 #, c-format
 msgid "key %08lX: %d new subkeys\n"
 msgstr "鍵%08lX: 新しい副鍵を%d個\n"
 
-#: g10/import.c:604
+#: g10/import.c:599
 #, c-format
 msgid "key %08lX: not changed\n"
 msgstr "鍵%08lX: 変更なし\n"
 
-#: g10/import.c:671
-#, fuzzy, c-format
+#: g10/import.c:668
+#, c-format
 msgid "no default secret keyring: %s\n"
-msgstr "既定の公開鍵輪がありません\n"
+msgstr "既定の秘密鍵輪がありません: %s\n"
 
-#: g10/import.c:682
+#: g10/import.c:679
 #, c-format
 msgid "key %08lX: secret key imported\n"
 msgstr "鍵%08lX: 秘密鍵を読み込みました\n"
 
 #. we can't merge secret keys
-#: g10/import.c:686
+#: g10/import.c:683
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
 msgstr "鍵%08lX: 既に秘密鍵輪にあります\n"
 
-#: g10/import.c:691
+#: g10/import.c:688
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
 msgstr "鍵%08lX: 秘密鍵が見つかりません: %s\n"
 
-#: g10/import.c:720
+#: g10/import.c:717
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
 msgstr "鍵%08lX: 公開鍵がありません - 破棄証明書を適用できません\n"
 
-#: g10/import.c:760
+#: g10/import.c:757
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
 msgstr "鍵%08lX: 無効な破棄証明書: %s - 拒否\n"
 
-#: g10/import.c:791
+#: g10/import.c:788
 #, c-format
 msgid "key %08lX: revocation certificate imported\n"
 msgstr "鍵%08lX: 破棄証明書を読み込みました\n"
 
-#: g10/import.c:826
+#: g10/import.c:823
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
 msgstr "鍵%08lX: 署名に対応するユーザーIDがありません\n"
 
-#: g10/import.c:839
-#, fuzzy, c-format
+#: g10/import.c:836
+#, c-format
 msgid "key %08lX: unsupported public key algorithm on user id \"%s\"\n"
-msgstr "鍵%08lX: サポートしていない公開鍵アルゴリズムです\n"
+msgstr "鍵%08lX: ユーザーid \"%s\" のサポートしていない公開鍵アルゴリズムです\n"
 
-#: g10/import.c:841
-#, fuzzy, c-format
+#: g10/import.c:838
+#, c-format
 msgid "key %08lX: invalid self-signature on user id \"%s\"\n"
-msgstr "鍵%08lX: 無効な自己署名です\n"
+msgstr "鍵%08lX: ユーザーid \"%s\" の自己署名が無効です\n"
 
-#: g10/import.c:858
+#: g10/import.c:855
 #, c-format
 msgid "key %08lX: no subkey for key binding\n"
 msgstr "鍵%08lX: 鍵に対応する副鍵がありません\n"
 
-#: g10/import.c:868
+#: g10/import.c:865
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
 msgstr "鍵%08lX: サポートしていない公開鍵アルゴリズムです\n"
 
-#: g10/import.c:869
+#: g10/import.c:866
 #, c-format
 msgid "key %08lX: invalid subkey binding\n"
 msgstr "鍵%08lX: 無効な副鍵の対応です\n"
 
-#: g10/import.c:899
+#: g10/import.c:896
 #, c-format
 msgid "key %08lX: skipped user ID '"
 msgstr "鍵%08lX: スキップしたユーザーID '"
 
-#: g10/import.c:922
+#: g10/import.c:919
 #, c-format
 msgid "key %08lX: skipped subkey\n"
 msgstr "鍵%08lX: スキップした副鍵\n"
@@ -2223,252 +2187,248 @@ msgstr "鍵%08lX: スキップした副鍵\n"
 #. * to import non-exportable signature when we have the
 #. * the secret key used to create this signature - it
 #. * seems that this makes sense
-#: g10/import.c:945
+#: g10/import.c:942
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
 msgstr "鍵%08lX: 書出し不可な署名 (クラス%02x) - スキップ\n"
 
-#: g10/import.c:954
+#: g10/import.c:951
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
 msgstr "鍵%08lX: 破棄証明書が誤って設定されています - スキップ\n"
 
-#: g10/import.c:971
+#: g10/import.c:968
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
 msgstr "鍵%08lX: 無効な破棄証明書: %s - スキップ\n"
 
-#: g10/import.c:1072
+#: g10/import.c:1069
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
 msgstr "鍵%08lX: 重複したユーザーIDの検出 - 併合\n"
 
-#: g10/import.c:1131
+#: g10/import.c:1128
 #, c-format
 msgid "Warning: key %08lX may be revoked: fetching revocation key %08lX\n"
-msgstr ""
+msgstr "警告: 鍵%08lXは破棄されたようです: 破棄鍵%08lXの引き出し\n"
 
-#: g10/import.c:1145
+#: g10/import.c:1142
 #, c-format
 msgid "Warning: key %08lX may be revoked: revocation key %08lX not present.\n"
-msgstr ""
+msgstr "警告: 鍵%08lXは破棄されたようです: 破棄鍵%08lXは不在。\n"
 
-#: g10/import.c:1201
+#: g10/import.c:1198
 #, c-format
 msgid "key %08lX: revocation certificate added\n"
 msgstr "鍵%08lX: 破棄証明書の追加\n"
 
-#: g10/import.c:1231
-#, fuzzy, c-format
+#: g10/import.c:1228
+#, c-format
 msgid "key %08lX: direct key signature added\n"
-msgstr "鍵%08lX: 新しい署名を%d個\n"
+msgstr "鍵%08lX: 直接鍵署名を追加\n"
 
-#: g10/keyedit.c:142
+#: g10/keyedit.c:140
 msgid "[revocation]"
 msgstr "[破棄]"
 
-#: g10/keyedit.c:143
+#: g10/keyedit.c:141
 msgid "[self-signature]"
 msgstr "[自己署名]"
 
-#: g10/keyedit.c:214 g10/keylist.c:139
+#: g10/keyedit.c:212
 msgid "1 bad signature\n"
 msgstr "無効な署名1個\n"
 
-#: g10/keyedit.c:216 g10/keylist.c:141
+#: g10/keyedit.c:214
 #, c-format
 msgid "%d bad signatures\n"
 msgstr "無効な署名%d個\n"
 
-#: g10/keyedit.c:218 g10/keylist.c:143
+#: g10/keyedit.c:216
 msgid "1 signature not checked due to a missing key\n"
 msgstr "鍵がないため1個の署名を検証しません\n"
 
-#: g10/keyedit.c:220 g10/keylist.c:145
+#: g10/keyedit.c:218
 #, c-format
 msgid "%d signatures not checked due to missing keys\n"
 msgstr "鍵がないため%d個の署名を検証しません\n"
 
-#: g10/keyedit.c:222 g10/keylist.c:147
+#: g10/keyedit.c:220
 msgid "1 signature not checked due to an error\n"
 msgstr "エラーのため1個の署名を検証しません\n"
 
-#: g10/keyedit.c:224 g10/keylist.c:149
+#: g10/keyedit.c:222
 #, c-format
 msgid "%d signatures not checked due to errors\n"
 msgstr "エラーのため%d個の署名を検証しません\n"
 
-#: g10/keyedit.c:226
+#: g10/keyedit.c:224
 msgid "1 user ID without valid self-signature detected\n"
 msgstr "有効な自己署名のないユーザーIDを1個検出\n"
 
-#: g10/keyedit.c:228
+#: g10/keyedit.c:226
 #, c-format
 msgid "%d user IDs without valid self-signatures detected\n"
 msgstr "有効な自己署名のないユーザーIDを%d個検出\n"
 
-#: g10/keyedit.c:335
-#, fuzzy, c-format
+#: g10/keyedit.c:333
+#, c-format
 msgid "User ID \"%s\" is revoked."
-msgstr "鍵は保護されています。\n"
+msgstr "ユーザーID \"%s\" は破棄されています。"
 
-#: g10/keyedit.c:343 g10/keyedit.c:426 g10/keyedit.c:484 g10/keyedit.c:1053
-#, fuzzy
+#: g10/keyedit.c:341 g10/keyedit.c:424 g10/keyedit.c:476 g10/keyedit.c:1048
 msgid "Are you sure you still want to sign it? (y/N) "
-msgstr "この鍵長で本当にいいですか? "
+msgstr "それでもこの鍵に署名したいですか? (y/N) "
 
-#: g10/keyedit.c:350 g10/keyedit.c:432 g10/keyedit.c:1059
+#: g10/keyedit.c:348 g10/keyedit.c:430 g10/keyedit.c:1054
 msgid "  Unable to sign.\n"
-msgstr ""
+msgstr "  署名不能。\n"
 
 #. It's a local sig, and we want to make a
 #. exportable sig.
-#: g10/keyedit.c:364
+#: g10/keyedit.c:362
 #, c-format
 msgid ""
 "Your current signature on \"%s\"\n"
 "is a local signature.\n"
 msgstr ""
+"\"%s\" にたいする今のあなたの署名は\n"
+"内部署名です。\n"
 
-#: g10/keyedit.c:368
+#: g10/keyedit.c:366
 msgid "Do you want to promote it to a full exportable signature? (y/N) "
-msgstr ""
+msgstr "書出し可能な署名に格上げしたいですか? (y/N) "
 
-#: g10/keyedit.c:388
-#, fuzzy, c-format
+#: g10/keyedit.c:386
+#, c-format
 msgid "\"%s\" was already locally signed by key %08lX\n"
-msgstr "鍵%08lXでもう署名してあります\n"
+msgstr "\"%s\" は鍵%08lXでもう内部署名してあります\n"
 
-#: g10/keyedit.c:393
-#, fuzzy, c-format
+#: g10/keyedit.c:391
+#, c-format
 msgid "\"%s\" was already signed by key %08lX\n"
-msgstr "鍵%08lXでもう署名してあります\n"
+msgstr "\"%s\" は鍵%08lXでもう署名してあります\n"
 
-#: g10/keyedit.c:405
+#: g10/keyedit.c:403
 #, c-format
 msgid "Nothing to sign with key %08lX\n"
 msgstr "鍵%08lXで署名するものはありません\n"
 
-#: g10/keyedit.c:420
-#, fuzzy
+#: g10/keyedit.c:418
 msgid "This key has expired!"
-msgstr "注意: この鍵は期限切れです!\n"
+msgstr "この鍵は期限切れです!"
+
+#: g10/keyedit.c:436
+#, c-format
+msgid "This key is due to expire on %s.\n"
+msgstr "この鍵は%sで期限が切れます。\n"
 
 #: g10/keyedit.c:440
-#, fuzzy, c-format
-msgid "This key is due to expire on %s.\n"
-msgstr "この鍵は保護されていません。\n"
+msgid "Do you want your signature to expire at the same time? (y/N) "
+msgstr "同時に署名も期限切れにしたいですか? (y/N) "
 
-#: g10/keyedit.c:444
-msgid "Do you want your signature to expire at the same time? (Y/n) "
-msgstr ""
-
-#: g10/keyedit.c:477
+#: g10/keyedit.c:469
 msgid ""
 "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
 "mode.\n"
-msgstr ""
+msgstr "--pgp2モードではPGP 2.x鍵でOpenPGP署名ができないかもしれません。\n"
 
-#: g10/keyedit.c:479
+#: g10/keyedit.c:471
 msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr ""
+msgstr "この鍵はPGP 2.xで使用できなくなります。\n"
 
-#: g10/keyedit.c:500
+#: g10/keyedit.c:492
 msgid ""
 "How carefully have you verified the key you are about to sign actually "
 "belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
 msgstr ""
+"署名しようとしている鍵が実際に上記の名前の人のものかどうか、どの程度\n"
+"注意して検証しましたか? 答がわからなければ\"0\"を入力してください。\n"
 
-#: g10/keyedit.c:504
+#: g10/keyedit.c:496
 #, c-format
 msgid "   (0) I will not answer.%s\n"
-msgstr ""
+msgstr "   (0) 答えません。%s\n"
 
-#: g10/keyedit.c:506
+#: g10/keyedit.c:498
 #, c-format
 msgid "   (1) I have not checked at all.%s\n"
-msgstr ""
+msgstr "   (1) 全然、確認していません。%s\n"
 
-#: g10/keyedit.c:508
+#: g10/keyedit.c:500
 #, c-format
 msgid "   (2) I have done casual checking.%s\n"
-msgstr ""
+msgstr "   (2) 一応、確認しました。%s\n"
 
-#: g10/keyedit.c:510
+#: g10/keyedit.c:502
 #, c-format
 msgid "   (3) I have done very careful checking.%s\n"
-msgstr ""
+msgstr "   (3) かなり注意して確認しました。%s\n"
 
-#: g10/keyedit.c:535
+#: g10/keyedit.c:527
 msgid ""
 "Are you really sure that you want to sign this key\n"
 "with your key: \""
 msgstr "本当にこの鍵にあなたの鍵で署名してよいですか: \""
 
-#: g10/keyedit.c:544
-#, fuzzy
+#: g10/keyedit.c:536
 msgid ""
 "\n"
 "The signature will be marked as non-exportable.\n"
-msgstr ""
-"署名は書出し不可に設定されます。\n"
-"\n"
+msgstr "\n署名は書出し不可に設定されます。\n"
 
-#: g10/keyedit.c:548
-#, fuzzy
+#: g10/keyedit.c:540
 msgid ""
 "\n"
 "The signature will be marked as non-revocable.\n"
-msgstr ""
-"署名は書出し不可に設定されます。\n"
+msgstr "\n署名は破棄不可に設定されます。\n"
+
+#: g10/keyedit.c:545
+msgid ""
 "\n"
+"I have not checked this key at all.\n"
+msgstr "\nこの鍵は全然、確認していません。\n"
+
+#: g10/keyedit.c:549
+msgid ""
+"\n"
+"I have checked this key casually.\n"
+msgstr "\nこの鍵は一応、確認しました。\n"
 
 #: g10/keyedit.c:553
 msgid ""
 "\n"
-"I have not checked this key at all.\n"
-msgstr ""
-
-#: g10/keyedit.c:557
-msgid ""
-"\n"
-"I have checked this key casually.\n"
-msgstr ""
+"I have checked this key very carefully.\n"
+msgstr "\nこの鍵は、かなり注意して確認しました。\n"
 
 #: g10/keyedit.c:561
-msgid ""
-"\n"
-"I have checked this key very carefully.\n"
-msgstr ""
-
-#: g10/keyedit.c:569
 msgid "Really sign? "
 msgstr "本当に署名しますか? "
 
-#: g10/keyedit.c:602 g10/keyedit.c:2593 g10/keyedit.c:2652 g10/sign.c:279
+#: g10/keyedit.c:594 g10/keyedit.c:2570 g10/keyedit.c:2632 g10/sign.c:279
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "署名に失敗しました: %s\n"
 
-#: g10/keyedit.c:658
+#: g10/keyedit.c:653
 msgid "This key is not protected.\n"
 msgstr "この鍵は保護されていません。\n"
 
-#: g10/keyedit.c:662
+#: g10/keyedit.c:657
 msgid "Secret parts of primary key are not available.\n"
 msgstr "主鍵の秘密部分が得られません。\n"
 
-#: g10/keyedit.c:666
+#: g10/keyedit.c:661
 msgid "Key is protected.\n"
 msgstr "鍵は保護されています。\n"
 
-#: g10/keyedit.c:686
+#: g10/keyedit.c:681
 #, c-format
 msgid "Can't edit this key: %s\n"
 msgstr "この鍵は編集できません: %s\n"
 
-#: g10/keyedit.c:692
+#: g10/keyedit.c:687
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
@@ -2476,7 +2436,7 @@ msgstr ""
 "この秘密鍵の新しいパスフレーズを入力してください。\n"
 "\n"
 
-#: g10/keyedit.c:706
+#: g10/keyedit.c:701
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
@@ -2485,564 +2445,554 @@ msgstr ""
 "おそらくそれはろくな考えではありません!\n"
 "\n"
 
-#: g10/keyedit.c:709
+#: g10/keyedit.c:704
 msgid "Do you really want to do this? "
 msgstr "本当に実行しますか? "
 
-#: g10/keyedit.c:773
+#: g10/keyedit.c:768
 msgid "moving a key signature to the correct place\n"
 msgstr "鍵の署名を正しい場所に移動します\n"
 
-#: g10/keyedit.c:815
+#: g10/keyedit.c:810
 msgid "quit this menu"
 msgstr "このメニューを終了"
 
-#: g10/keyedit.c:816
+#: g10/keyedit.c:811
 msgid "q"
 msgstr "q"
 
-#: g10/keyedit.c:817
+#: g10/keyedit.c:812
 msgid "save"
 msgstr "save"
 
-#: g10/keyedit.c:817
+#: g10/keyedit.c:812
 msgid "save and quit"
 msgstr "保存して終了"
 
-#: g10/keyedit.c:818
+#: g10/keyedit.c:813
 msgid "help"
 msgstr "help"
 
-#: g10/keyedit.c:818
+#: g10/keyedit.c:813
 msgid "show this help"
 msgstr "このヘルプを見る"
 
-#: g10/keyedit.c:820
+#: g10/keyedit.c:815
 msgid "fpr"
 msgstr "fpr"
 
-#: g10/keyedit.c:820
+#: g10/keyedit.c:815
 msgid "show fingerprint"
 msgstr "指紋を見る"
 
-#: g10/keyedit.c:821
+#: g10/keyedit.c:816
 msgid "list"
 msgstr "list"
 
-#: g10/keyedit.c:821
+#: g10/keyedit.c:816
 msgid "list key and user IDs"
 msgstr "鍵とユーザーIDの一覧"
 
-#: g10/keyedit.c:822
+#: g10/keyedit.c:817
 msgid "l"
 msgstr "l"
 
-#: g10/keyedit.c:823
+#: g10/keyedit.c:818
 msgid "uid"
 msgstr "uid"
 
-#: g10/keyedit.c:823
+#: g10/keyedit.c:818
 msgid "select user ID N"
 msgstr "ユーザーID Nの選択"
 
-#: g10/keyedit.c:824
+#: g10/keyedit.c:819
 msgid "key"
 msgstr "key"
 
-#: g10/keyedit.c:824
+#: g10/keyedit.c:819
 msgid "select secondary key N"
 msgstr "副鍵Nの選択"
 
-#: g10/keyedit.c:825
+#: g10/keyedit.c:820
 msgid "check"
 msgstr "check"
 
-#: g10/keyedit.c:825
+#: g10/keyedit.c:820
 msgid "list signatures"
 msgstr "署名の一覧"
 
-#: g10/keyedit.c:826
+#: g10/keyedit.c:821
 msgid "c"
 msgstr "c"
 
-#: g10/keyedit.c:827
+#: g10/keyedit.c:822
 msgid "sign"
 msgstr "sign"
 
-#: g10/keyedit.c:827
+#: g10/keyedit.c:822
 msgid "sign the key"
 msgstr "鍵へ署名"
 
-#: g10/keyedit.c:828
+#: g10/keyedit.c:823
 msgid "s"
 msgstr "s"
 
-#: g10/keyedit.c:829
+#: g10/keyedit.c:824
 msgid "lsign"
 msgstr "lsign"
 
-#: g10/keyedit.c:829
+#: g10/keyedit.c:824
 msgid "sign the key locally"
 msgstr "鍵へ内部的に署名"
 
-#: g10/keyedit.c:830
-#, fuzzy
+#: g10/keyedit.c:825
 msgid "nrsign"
-msgstr "sign"
+msgstr "nrsign"
 
-#: g10/keyedit.c:830
-#, fuzzy
+#: g10/keyedit.c:825
 msgid "sign the key non-revocably"
-msgstr "鍵へ内部的に署名"
+msgstr "破棄できないよう鍵へ署名"
 
-#: g10/keyedit.c:831
-#, fuzzy
+#: g10/keyedit.c:826
 msgid "nrlsign"
-msgstr "lsign"
+msgstr "nrlsign"
 
-#: g10/keyedit.c:831
-#, fuzzy
+#: g10/keyedit.c:826
 msgid "sign the key locally and non-revocably"
-msgstr "鍵へ内部的に署名"
+msgstr "破棄できないよう鍵へ内部的に署名"
 
-#: g10/keyedit.c:832
+#: g10/keyedit.c:827
 msgid "debug"
 msgstr "debug"
 
-#: g10/keyedit.c:833
+#: g10/keyedit.c:828
 msgid "adduid"
 msgstr "adduid"
 
-#: g10/keyedit.c:833
+#: g10/keyedit.c:828
 msgid "add a user ID"
 msgstr "ユーザーIDの追加"
 
-#: g10/keyedit.c:834
+#: g10/keyedit.c:829
 msgid "addphoto"
-msgstr ""
+msgstr "addphoto"
 
-#: g10/keyedit.c:834
-#, fuzzy
+#: g10/keyedit.c:829
 msgid "add a photo ID"
-msgstr "ユーザーIDの追加"
+msgstr "フォトIDの追加"
 
-#: g10/keyedit.c:835
+#: g10/keyedit.c:830
 msgid "deluid"
 msgstr "deluid"
 
-#: g10/keyedit.c:835
+#: g10/keyedit.c:830
 msgid "delete user ID"
 msgstr "ユーザーIDの削除"
 
 #. delphoto is really deluid in disguise
-#: g10/keyedit.c:837
+#: g10/keyedit.c:832
 msgid "delphoto"
-msgstr ""
+msgstr "delphoto"
 
-#: g10/keyedit.c:838
+#: g10/keyedit.c:833
 msgid "addkey"
 msgstr "addkey"
 
-#: g10/keyedit.c:838
+#: g10/keyedit.c:833
 msgid "add a secondary key"
 msgstr "副鍵の追加"
 
-#: g10/keyedit.c:839
+#: g10/keyedit.c:834
 msgid "delkey"
 msgstr "delkey"
 
-#: g10/keyedit.c:839
+#: g10/keyedit.c:834
 msgid "delete a secondary key"
 msgstr "副鍵の削除"
 
-#: g10/keyedit.c:840
+#: g10/keyedit.c:835
 msgid "delsig"
 msgstr "delsig"
 
-#: g10/keyedit.c:840
+#: g10/keyedit.c:835
 msgid "delete signatures"
 msgstr "署名の削除"
 
-#: g10/keyedit.c:841
+#: g10/keyedit.c:836
 msgid "expire"
 msgstr "expire"
 
-#: g10/keyedit.c:841
+#: g10/keyedit.c:836
 msgid "change the expire date"
 msgstr "有効期限の変更"
 
-#: g10/keyedit.c:842
+#: g10/keyedit.c:837
 msgid "primary"
-msgstr ""
+msgstr "primary"
 
-#: g10/keyedit.c:842
+#: g10/keyedit.c:837
 msgid "flag user ID as primary"
-msgstr ""
+msgstr "ユーザーIDを主にする"
 
-#: g10/keyedit.c:843
+#: g10/keyedit.c:838
 msgid "toggle"
 msgstr "toggle"
 
-#: g10/keyedit.c:843
+#: g10/keyedit.c:838
 msgid "toggle between secret and public key listing"
 msgstr "秘密鍵と公開鍵の一覧の切替え"
 
-#: g10/keyedit.c:845
+#: g10/keyedit.c:840
 msgid "t"
 msgstr "t"
 
-#: g10/keyedit.c:846
+#: g10/keyedit.c:841
 msgid "pref"
 msgstr "pref"
 
-#: g10/keyedit.c:846
-#, fuzzy
+#: g10/keyedit.c:841
 msgid "list preferences (expert)"
-msgstr "優先順位の一覧"
+msgstr "選好の一覧 (エキスパート)"
 
-#: g10/keyedit.c:847
+#: g10/keyedit.c:842
 msgid "showpref"
 msgstr "showpref"
 
-#: g10/keyedit.c:847
-#, fuzzy
+#: g10/keyedit.c:842
 msgid "list preferences (verbose)"
-msgstr "優先順位の一覧"
+msgstr "選好の一覧 (冗長)"
 
-#: g10/keyedit.c:848
-#, fuzzy
+#: g10/keyedit.c:843
 msgid "setpref"
-msgstr "pref"
+msgstr "setpref"
 
-#: g10/keyedit.c:848
-#, fuzzy
+#: g10/keyedit.c:843
 msgid "set preference list"
-msgstr "優先順位の一覧"
+msgstr "選好の一覧を設定"
 
-#: g10/keyedit.c:849
-#, fuzzy
+#: g10/keyedit.c:844
 msgid "updpref"
-msgstr "pref"
+msgstr "updpref"
 
-#: g10/keyedit.c:849
-#, fuzzy
+#: g10/keyedit.c:844
 msgid "updated preferences"
-msgstr "優先順位の一覧"
+msgstr "選好の一覧を更新"
 
-#: g10/keyedit.c:850
+#: g10/keyedit.c:845
 msgid "passwd"
 msgstr "passwd"
 
-#: g10/keyedit.c:850
+#: g10/keyedit.c:845
 msgid "change the passphrase"
 msgstr "パスフレーズの変更"
 
-#: g10/keyedit.c:851
+#: g10/keyedit.c:846
 msgid "trust"
 msgstr "trust"
 
-#: g10/keyedit.c:851
+#: g10/keyedit.c:846
 msgid "change the ownertrust"
 msgstr "所有者信用の変更"
 
-#: g10/keyedit.c:852
+#: g10/keyedit.c:847
 msgid "revsig"
 msgstr "revsig"
 
-#: g10/keyedit.c:852
+#: g10/keyedit.c:847
 msgid "revoke signatures"
 msgstr "署名の破棄"
 
-#: g10/keyedit.c:853
+#: g10/keyedit.c:848
 msgid "revkey"
 msgstr "revkey"
 
-#: g10/keyedit.c:853
+#: g10/keyedit.c:848
 msgid "revoke a secondary key"
 msgstr "副鍵の破棄"
 
-#: g10/keyedit.c:854
+#: g10/keyedit.c:849
 msgid "disable"
 msgstr "disable"
 
-#: g10/keyedit.c:854
+#: g10/keyedit.c:849
 msgid "disable a key"
 msgstr "鍵の使用を禁止する"
 
-#: g10/keyedit.c:855
+#: g10/keyedit.c:850
 msgid "enable"
 msgstr "enable"
 
-#: g10/keyedit.c:855
+#: g10/keyedit.c:850
 msgid "enable a key"
 msgstr "鍵の使用を許可する"
 
-#: g10/keyedit.c:856
+#: g10/keyedit.c:851
 msgid "showphoto"
-msgstr ""
+msgstr "showphoto"
 
-#: g10/keyedit.c:856
+#: g10/keyedit.c:851
 msgid "show photo ID"
-msgstr ""
+msgstr "フォトIDを表示"
 
-#: g10/delkey.c:112 g10/keyedit.c:876
+#: g10/delkey.c:112 g10/keyedit.c:871
 msgid "can't do that in batchmode\n"
 msgstr "それはバッチモードではできません\n"
 
-#: g10/keyedit.c:913
-#, fuzzy, c-format
+#: g10/keyedit.c:908
+#, c-format
 msgid "error reading secret keyblock `%s': %s\n"
-msgstr "`%s'の読込みエラー: %s\n"
+msgstr "秘密鍵ブロック`%s'の読込みエラー: %s\n"
 
-#: g10/keyedit.c:931
+#: g10/keyedit.c:926
 msgid "Secret key is available.\n"
 msgstr "秘密鍵が使用できます。\n"
 
-#: g10/keyedit.c:962
+#: g10/keyedit.c:957
 msgid "Command> "
 msgstr "コマンド> "
 
-#: g10/keyedit.c:994
+#: g10/keyedit.c:989
 msgid "Need the secret key to do this.\n"
 msgstr "この実行には秘密鍵がいります。\n"
 
-#: g10/keyedit.c:998
+#: g10/keyedit.c:993
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "まず「toggle」コマンドを使ってください\n"
 
-#: g10/keyedit.c:1047
-#, fuzzy
+#: g10/keyedit.c:1042
 msgid "Key is revoked."
-msgstr "鍵は保護されています。\n"
+msgstr "鍵は破棄されています。"
 
-#: g10/keyedit.c:1066
+#: g10/keyedit.c:1061
 msgid "Really sign all user IDs? "
 msgstr "本当に全ユーザーIDに署名しますか? "
 
-#: g10/keyedit.c:1067
+#: g10/keyedit.c:1062
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "コツ: まず署名するユーザーIDを選択します\n"
 
-#: g10/keyedit.c:1092
+#: g10/keyedit.c:1087
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
-msgstr ""
+msgstr "%sモードでこのコマンドを用いることはできません。\n"
 
-#: g10/keyedit.c:1112 g10/keyedit.c:1133
+#: g10/keyedit.c:1107 g10/keyedit.c:1128
 msgid "You must select at least one user ID.\n"
 msgstr "ユーザーIDを少なくともひとつ選択してください。\n"
 
-#: g10/keyedit.c:1114
+#: g10/keyedit.c:1109
 msgid "You can't delete the last user ID!\n"
 msgstr "最後のユーザーIDは削除できません!\n"
 
-#: g10/keyedit.c:1117
+#: g10/keyedit.c:1112
 msgid "Really remove all selected user IDs? "
 msgstr "選択した全ユーザーIDを本当に削除しますか? "
 
-#: g10/keyedit.c:1118
+#: g10/keyedit.c:1113
 msgid "Really remove this user ID? "
 msgstr "このユーザーIDを本当に削除しますか? "
 
-#: g10/keyedit.c:1156 g10/keyedit.c:1178
+#: g10/keyedit.c:1151 g10/keyedit.c:1173
 msgid "You must select at least one key.\n"
 msgstr "鍵を少なくともひとつ選択してください。\n"
 
-#: g10/keyedit.c:1160
+#: g10/keyedit.c:1155
 msgid "Do you really want to delete the selected keys? "
 msgstr "選択した鍵を本当に削除しますか? "
 
-#: g10/keyedit.c:1161
+#: g10/keyedit.c:1156
 msgid "Do you really want to delete this key? "
 msgstr "この鍵を本当に削除しますか? "
 
-#: g10/keyedit.c:1182
+#: g10/keyedit.c:1177
 msgid "Do you really want to revoke the selected keys? "
 msgstr "選択した鍵を本当に破棄しますか? "
 
-#: g10/keyedit.c:1183
+#: g10/keyedit.c:1178
 msgid "Do you really want to revoke this key? "
 msgstr "この鍵を本当に破棄しますか? "
 
-#: g10/keyedit.c:1252
-#, fuzzy
+#: g10/keyedit.c:1244
 msgid "Really update the preferences for the selected user IDs? "
-msgstr "選択した全ユーザーIDを本当に削除しますか? "
+msgstr "選択したユーザーIDの選好を本当に更新しますか? "
 
-#: g10/keyedit.c:1254
-#, fuzzy
+#: g10/keyedit.c:1246
 msgid "Really update the preferences? "
-msgstr "破棄証明書を本当に作りますか? (y/N)"
+msgstr "選好を本当に更新しますか? "
 
-#: g10/keyedit.c:1292
+#: g10/keyedit.c:1284
 msgid "Save changes? "
 msgstr "変更を保存しますか? "
 
-#: g10/keyedit.c:1295
+#: g10/keyedit.c:1287
 msgid "Quit without saving? "
 msgstr "保存せずに終了しますか? "
 
-#: g10/keyedit.c:1306
+#: g10/keyedit.c:1298
 #, c-format
 msgid "update failed: %s\n"
 msgstr "更新に失敗しました: %s\n"
 
-#: g10/keyedit.c:1313
+#: g10/keyedit.c:1305
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "秘密鍵の更新に失敗しました: %s\n"
 
-#: g10/keyedit.c:1320
+#: g10/keyedit.c:1312
 msgid "Key not changed so no update needed.\n"
 msgstr "鍵は無変更なので更新はいりません。\n"
 
-#: g10/keyedit.c:1332
+#: g10/keyedit.c:1323
 msgid "Invalid command  (try \"help\")\n"
 msgstr "無効なコマンド (「help」を参照)\n"
 
-#: g10/keyedit.c:1489
-#, fuzzy, c-format
+#: g10/keyedit.c:1480
+#, c-format
 msgid "This key may be revoked by %s key %s%s\n"
-msgstr "警告: この鍵は本人によって破棄されています!\n"
+msgstr "この鍵は%s鍵%s%sによって破棄されたようです\n"
 
-#: g10/keyedit.c:1492
+#: g10/keyedit.c:1483
 msgid " (sensitive)"
-msgstr ""
+msgstr " (デリケート)"
 
-#: g10/keyedit.c:1497 g10/keyedit.c:1523
+#: g10/keyedit.c:1488 g10/keyedit.c:1514
 #, c-format
 msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
 msgstr "%s%c %4u%c/%08lX  作成: %s 期限: %s"
 
-#: g10/keyedit.c:1506
+#: g10/keyedit.c:1497
 #, c-format
 msgid " trust: %c/%c"
 msgstr " trust: %c/%c"
 
-#: g10/keyedit.c:1510
+#: g10/keyedit.c:1501
 msgid "This key has been disabled"
 msgstr "この鍵は使用禁止に設定されています"
 
-#: g10/keyedit.c:1539
+#: g10/keyedit.c:1530
 #, c-format
 msgid "rev! subkey has been revoked: %s\n"
 msgstr "rev! 副鍵は破棄済みです: %s\n"
 
-#: g10/keyedit.c:1542
+#: g10/keyedit.c:1533
 msgid "rev- faked revocation found\n"
 msgstr "rev- でっちあげの破棄を発見\n"
 
-#: g10/keyedit.c:1544
+#: g10/keyedit.c:1535
 #, c-format
 msgid "rev? problem checking revocation: %s\n"
 msgstr "rev? 破棄確認障害: %s\n"
 
-#: g10/keyedit.c:1574
+#: g10/keyedit.c:1565
 msgid ""
 "Please note that the shown key validity is not necessary correct\n"
 "unless you restart the program.\n"
 msgstr ""
+"プログラムを再起動するまで、表示された鍵の有効性は正しくないかもしれない、\n"
+"ということを念頭に置いてください。\n"
 
-#: g10/keyedit.c:1660
+#: g10/keyedit.c:1651
 msgid ""
 "WARNING: This key already has a photo ID.\n"
 "         Adding another photo ID may confuse some versions of PGP.\n"
 msgstr ""
+"警告: この鍵にはもうフォトIDがあります。\n"
+"      違うフォトIDを追加すると、一部の版のPGPは混乱するかもしれません。\n"
 
-#: g10/keyedit.c:1664 g10/keyedit.c:1691
-#, fuzzy
+#: g10/keyedit.c:1655 g10/keyedit.c:1682
 msgid "Are you sure you still want to add it? (y/N) "
-msgstr "この鍵長で本当にいいですか? "
+msgstr "それでも追加したいですか? (y/N) "
 
-#: g10/keyedit.c:1672
+#: g10/keyedit.c:1663
 msgid "You may only have one photo ID on a key.\n"
-msgstr ""
+msgstr "1本の鍵にはフォトIDをひとつ付けられるだけです。\n"
 
-#: g10/keyedit.c:1686
+#: g10/keyedit.c:1677
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
 "         of PGP to reject this key.\n"
 msgstr ""
+"警告: これはPGP2形式の鍵です。フォトIDの追加で、一部の版のPGPは、\n"
+"      この鍵を拒否するかもしれません。\n"
 
-#: g10/keyedit.c:1697
+#: g10/keyedit.c:1688
 msgid "You may not add a photo ID to a PGP2-style key.\n"
-msgstr ""
+msgstr "PGP2形式の鍵にはフォトIDを追加できないかもしれません。\n"
 
-#: g10/keyedit.c:1832
+#: g10/keyedit.c:1819
 msgid "Delete this good signature? (y/N/q)"
 msgstr "この正しい署名を削除しますか? (y/N/q)"
 
-#: g10/keyedit.c:1842
+#: g10/keyedit.c:1823
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "この無効な署名を削除しますか? (y/N/q)"
 
-#: g10/keyedit.c:1846
+#: g10/keyedit.c:1827
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "この未知の署名を削除しますか? (y/N/q)"
 
-#: g10/keyedit.c:1852
+#: g10/keyedit.c:1833
 msgid "Really delete this self-signature? (y/N)"
 msgstr "この自己署名を本当に削除しますか? (y/N)"
 
-#: g10/keyedit.c:1866
+#: g10/keyedit.c:1847
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "%d個の署名を削除しました。\n"
 
-#: g10/keyedit.c:1867
+#: g10/keyedit.c:1848
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "%d個の署名を削除しました。\n"
 
-#: g10/keyedit.c:1870
+#: g10/keyedit.c:1851
 msgid "Nothing deleted.\n"
 msgstr "何も削除していません。\n"
 
-#: g10/keyedit.c:1943
+#: g10/keyedit.c:1920
 msgid "Please remove selections from the secret keys.\n"
 msgstr "秘密鍵の選択をといてください。\n"
 
-#: g10/keyedit.c:1949
+#: g10/keyedit.c:1926
 msgid "Please select at most one secondary key.\n"
 msgstr "高々1個の副鍵を選択してください。\n"
 
-#: g10/keyedit.c:1953
+#: g10/keyedit.c:1930
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "副鍵の有効期限を変更します。\n"
 
-#: g10/keyedit.c:1955
+#: g10/keyedit.c:1932
 msgid "Changing expiration time for the primary key.\n"
 msgstr "主鍵の有効期限を変更します。\n"
 
-#: g10/keyedit.c:1997
+#: g10/keyedit.c:1974
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "v3鍵の有効期限は変更できません\n"
 
-#: g10/keyedit.c:2013
+#: g10/keyedit.c:1990
 msgid "No corresponding signature in secret ring\n"
 msgstr "秘密鍵輪に対応する署名がありません\n"
 
-#: g10/keyedit.c:2096
-#, fuzzy
+#: g10/keyedit.c:2072
 msgid "Please select exactly one user ID.\n"
-msgstr "ユーザーIDを少なくともひとつ選択してください。\n"
+msgstr "ユーザーIDをきっかりひとつ選択してください。\n"
 
-#: g10/keyedit.c:2284
+#: g10/keyedit.c:2260
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "%d番のユーザーIDはありません\n"
 
-#: g10/keyedit.c:2330
+#: g10/keyedit.c:2306
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "%d番の副鍵はありません\n"
 
-#: g10/keyedit.c:2444
+#: g10/keyedit.c:2420
 msgid "user ID: \""
 msgstr "ユーザーID: \""
 
-#: g10/keyedit.c:2449
+#: g10/keyedit.c:2425
 #, c-format
 msgid ""
 "\"\n"
@@ -3051,117 +3001,111 @@ msgstr ""
 "\"\n"
 "あなたの鍵%08lXで%sに署名されています\n"
 
-#: g10/keyedit.c:2452
-#, fuzzy, c-format
+#: g10/keyedit.c:2428
+#, c-format
 msgid ""
 "\"\n"
 "locally signed with your key %08lX at %s\n"
 msgstr ""
 "\"\n"
-"あなたの鍵%08lXで%sに署名されています\n"
+"あなたの鍵%08lXで%sに内部的に署名されています\n"
 
-#: g10/keyedit.c:2457
-#, fuzzy, c-format
+#: g10/keyedit.c:2433
+#, c-format
 msgid "This signature expired on %s.\n"
-msgstr "%s署名。署名者: %s\n"
+msgstr "この署名は%sで期限切れです。\n"
 
-#: g10/keyedit.c:2461
-#, fuzzy
+#: g10/keyedit.c:2437
 msgid "Are you sure you still want to revoke it? (y/N) "
-msgstr "この鍵を本当に破棄しますか? "
+msgstr "それでも破棄したいですか? (y/N) "
 
-#: g10/keyedit.c:2465
-#, fuzzy
+#: g10/keyedit.c:2441
 msgid "Create a revocation certificate for this signature? (y/N) "
-msgstr "この署名にたいする破棄証明書を作りますか? (y/N)"
+msgstr "この署名にたいする破棄証明書を作りますか? (y/N) "
 
 #. FIXME: detect duplicates here
-#: g10/keyedit.c:2490
+#: g10/keyedit.c:2467
 msgid "You have signed these user IDs:\n"
 msgstr "これらのユーザーIDに署名しました:\n"
 
-#: g10/keyedit.c:2504
-#, fuzzy, c-format
+#: g10/keyedit.c:2481
+#, c-format
 msgid "   signed by %08lX at %s%s%s\n"
-msgstr "   %08lXで%sに署名されています\n"
+msgstr "   %08lXで%s%s%sに署名されています\n"
 
-#: g10/keyedit.c:2512
+#: g10/keyedit.c:2489
 #, c-format
 msgid "   revoked by %08lX at %s\n"
 msgstr "   %08lXで%sに破棄されています\n"
 
-#: g10/keyedit.c:2532
+#: g10/keyedit.c:2509
 msgid "You are about to revoke these signatures:\n"
 msgstr "これらの署名を破棄しようとしています:\n"
 
-#: g10/keyedit.c:2542
-#, fuzzy, c-format
+#: g10/keyedit.c:2519
+#, c-format
 msgid "   signed by %08lX at %s%s\n"
-msgstr "   %08lXで%sに署名されています\n"
+msgstr "   %08lXで%s%sに署名されています\n"
 
-#: g10/keyedit.c:2544
+#: g10/keyedit.c:2521
 msgid " (non-exportable)"
-msgstr ""
+msgstr " (書出し不可)"
 
-#: g10/keyedit.c:2551
-#, fuzzy
+#: g10/keyedit.c:2528
 msgid "Really create the revocation certificates? (y/N) "
-msgstr "破棄証明書を本当に作りますか? (y/N)"
+msgstr "破棄証明書を本当に作りますか? (y/N) "
 
-#: g10/keyedit.c:2581
+#: g10/keyedit.c:2558
 msgid "no secret key\n"
 msgstr "秘密鍵がありません\n"
 
-#: g10/keyedit.c:2730
+#: g10/keyedit.c:2710
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key 0x%08lX (uid %d)\n"
-msgstr ""
+msgstr "%sをサイズ%ldの鍵0x%08lX (uid %d) のフォトIDとして表示\n"
 
 #. This isn't UTF8 as it is a URL(?)
-#: g10/keylist.c:87
-#, fuzzy
+#: g10/keylist.c:82
 msgid "Signature policy: "
-msgstr "%s署名。署名者: %s\n"
+msgstr "署名ポリシー: "
 
-#: g10/keylist.c:112 g10/keylist.c:132 g10/mainproc.c:721 g10/mainproc.c:730
+#: g10/keylist.c:107 g10/keylist.c:127 g10/mainproc.c:721 g10/mainproc.c:730
 msgid "WARNING: invalid notation data found\n"
 msgstr "警告: 無効な注釈データがあります\n"
 
 #. This is UTF8
-#: g10/keylist.c:120
-#, fuzzy
+#: g10/keylist.c:115
 msgid "Signature notation: "
-msgstr "注釈: "
+msgstr "署名注釈: "
 
-#: g10/keylist.c:127
+#: g10/keylist.c:122
 msgid "not human readable"
-msgstr ""
+msgstr "人には読めません"
 
-#: g10/keylist.c:216
+#: g10/keylist.c:187
 msgid "Keyring"
-msgstr ""
+msgstr "鍵輪"
 
 #. of subkey
-#: g10/keylist.c:423 g10/mainproc.c:856
+#: g10/keylist.c:387 g10/mainproc.c:856
 #, c-format
 msgid " [expires: %s]"
 msgstr " [有効期限: %s]"
 
-#: g10/keylist.c:889
+#: g10/keylist.c:852
 msgid "Fingerprint:"
 msgstr "指紋:"
 
 #. use tty
 #. Translators: this should fit into 24 bytes to that the fingerprint
 #. * data is properly aligned with the user ID
-#: g10/keylist.c:895
+#: g10/keylist.c:858
 msgid "             Fingerprint:"
 msgstr "                    指紋:"
 
-#: g10/keylist.c:899
-#, fuzzy
+#: g10/keylist.c:862
 msgid "     Key fingerprint ="
-msgstr "                    指紋:"
+msgstr "                指紋 ="
 
 #: g10/encr-data.c:66 g10/mainproc.c:255
 #, c-format
@@ -3198,14 +3142,14 @@ msgid "public key decryption failed: %s\n"
 msgstr "公開鍵の復号に失敗しました: %s\n"
 
 #: g10/mainproc.c:429 g10/mainproc.c:448
-#, fuzzy, c-format
+#, c-format
 msgid "assuming %s encrypted data\n"
-msgstr "%s暗号化されたデータ\n"
+msgstr "%s暗号化されたデータを仮定\n"
 
 #: g10/mainproc.c:436
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
-msgstr ""
+msgstr "IDEA暗号は利用不能なので、楽天的ですが%sで代用しようとしています\n"
 
 #: g10/mainproc.c:466
 msgid "decryption okay\n"
@@ -3260,9 +3204,8 @@ msgid "BAD signature from \""
 msgstr "不正な 署名: \""
 
 #: g10/mainproc.c:1306 g10/mainproc.c:1328
-#, fuzzy
 msgid "Expired signature from \""
-msgstr "正しい署名: \""
+msgstr "期限切れの署名: \""
 
 #: g10/mainproc.c:1307 g10/mainproc.c:1329
 msgid "Good signature from \""
@@ -3270,7 +3213,7 @@ msgstr "正しい署名: \""
 
 #: g10/mainproc.c:1331
 msgid "[uncertain]"
-msgstr ""
+msgstr "[不確定]"
 
 #: g10/mainproc.c:1351
 msgid "                aka \""
@@ -3316,21 +3259,21 @@ msgstr ""
 #: g10/misc.c:378
 #, c-format
 msgid "Warning: unsafe ownership on %s \"%s\"\n"
-msgstr ""
+msgstr "警告: %s \"%s\" の安全でない所有者\n"
 
 #: g10/misc.c:410
 #, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgstr ""
+msgstr "警告: %s \"%s\" の安全でない許可\n"
 
 #: g10/misc.c:435
 msgid "the IDEA cipher plugin is not present\n"
-msgstr ""
+msgstr "IDEA暗号のプラグインがありません\n"
 
 #: g10/misc.c:436
 msgid ""
 "please see http://www.gnupg.org/why-not-idea.html for more information\n"
-msgstr ""
+msgstr "詳細は、http://www.gnupg.org/why-not-idea.htmlをご覧ください\n"
 
 #: g10/parse-packet.c:119
 #, c-format
@@ -3342,51 +3285,46 @@ msgstr "公開鍵のアルゴリズム%dは使用できません\n"
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "タイプ%dの下位パケットにクリティカル・ビットを発見\n"
 
-#: g10/passphrase.c:442 g10/passphrase.c:489
+#: g10/passphrase.c:330 g10/passphrase.c:377
 msgid "gpg-agent is not available in this session\n"
 msgstr "このセッションでgpgエージェントは無効です\n"
 
-#: g10/passphrase.c:450
+#: g10/passphrase.c:338
 msgid "can't set client pid for the agent\n"
-msgstr ""
+msgstr "エージェントのクライアントpidを設定できません\n"
 
-#: g10/passphrase.c:458
+#: g10/passphrase.c:346
 msgid "can't get server read FD for the agent\n"
-msgstr ""
+msgstr "エージェント用のサーバー読出しFDを取得できません\n"
 
-#: g10/passphrase.c:465
+#: g10/passphrase.c:353
 msgid "can't get server write FD for the agent\n"
-msgstr ""
+msgstr "エージェント用のサーバー書込みFDを取得できません\n"
 
-#: g10/passphrase.c:498
+#: g10/passphrase.c:386
 msgid "malformed GPG_AGENT_INFO environment variable\n"
 msgstr "GPG_AGENT_INFO環境変数の書式が正しくありません\n"
 
-#: g10/passphrase.c:511
-#, fuzzy, c-format
+#: g10/passphrase.c:399
+#, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "保護アルゴリズム%dはサポートしていません\n"
+msgstr "gpg-agentプロトコル・バージョン%dはサポートしていません\n"
 
-#: g10/hkp.c:147 g10/passphrase.c:532
+#: g10/hkp.c:148 g10/passphrase.c:420
 #, c-format
 msgid "can't connect to `%s': %s\n"
 msgstr "`%s'へ接続できません: %s\n"
 
-#: g10/passphrase.c:554
+#: g10/passphrase.c:442
 msgid "communication problem with gpg-agent\n"
-msgstr ""
+msgstr "gpg-agentとの通信障害\n"
 
-#: g10/passphrase.c:561 g10/passphrase.c:811 g10/passphrase.c:919
-#, fuzzy
-msgid "problem with the agent - disabling agent use\n"
-msgstr "エージェントに障害: エージェントが0x%lxを返却\n"
-
-#: g10/passphrase.c:631 g10/passphrase.c:1017
+#: g10/passphrase.c:511 g10/passphrase.c:897
 #, c-format
 msgid " (main key ID %08lX)"
 msgstr " (主鍵ID %08lX)"
 
-#: g10/passphrase.c:641
+#: g10/passphrase.c:521
 #, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for user:\n"
@@ -3397,32 +3335,36 @@ msgstr ""
 "\"%.*s\"\n"
 "%uビット%s鍵, ID %08lX作成日付は%s%s\n"
 
-#: g10/passphrase.c:662
+#: g10/passphrase.c:542
 msgid "Enter passphrase\n"
 msgstr "パスフレーズを入力\n"
 
-#: g10/passphrase.c:664
+#: g10/passphrase.c:544
 msgid "Repeat passphrase\n"
 msgstr "パスフレーズを再入力\n"
 
-#: g10/passphrase.c:705
+#: g10/passphrase.c:585
 msgid "passphrase too long\n"
 msgstr "パスフレーズが長過ぎます\n"
 
-#: g10/passphrase.c:718
+#: g10/passphrase.c:598
 msgid "invalid response from agent\n"
 msgstr "エージェントからの無効な応答\n"
 
-#: g10/passphrase.c:727 g10/passphrase.c:808
+#: g10/passphrase.c:607 g10/passphrase.c:688
 msgid "cancelled by user\n"
 msgstr "ユーザーによる取消し\n"
 
-#: g10/passphrase.c:729 g10/passphrase.c:890
+#: g10/passphrase.c:609 g10/passphrase.c:770
 #, c-format
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "エージェントに障害: エージェントが0x%lxを返却\n"
 
-#: g10/passphrase.c:1003
+#: g10/passphrase.c:691 g10/passphrase.c:799
+msgid "problem with the agent - disabling agent use\n"
+msgstr "エージェントに障害: エージェント利用禁止\n"
+
+#: g10/passphrase.c:883
 msgid ""
 "\n"
 "You need a passphrase to unlock the secret key for\n"
@@ -3432,20 +3374,20 @@ msgstr ""
 "次のユーザーの秘密鍵のロックを解除するには\n"
 "パスフレーズがいります: \""
 
-#: g10/passphrase.c:1012
+#: g10/passphrase.c:892
 #, c-format
 msgid "%u-bit %s key, ID %08lX, created %s"
 msgstr "%uビット%s鍵, ID %08lX作成日付は%s"
 
-#: g10/passphrase.c:1063
+#: g10/passphrase.c:943
 msgid "can't query password in batchmode\n"
 msgstr "バッチモードではパスワードの問合せができません\n"
 
-#: g10/passphrase.c:1067
+#: g10/passphrase.c:947
 msgid "Enter passphrase: "
 msgstr "パスフレーズを入力: "
 
-#: g10/passphrase.c:1071
+#: g10/passphrase.c:951
 msgid "Repeat passphrase: "
 msgstr "パスフレーズを再入力: "
 
@@ -3456,33 +3398,33 @@ msgstr ""
 "保存するには「--output」オプションを使用してください\n"
 
 #: g10/plaintext.c:108
-#, fuzzy, c-format
+#, c-format
 msgid "error creating `%s': %s\n"
-msgstr "`%s'の読込みエラー: %s\n"
+msgstr "`%s'の作成エラー: %s\n"
 
-#: g10/plaintext.c:337
+#: g10/plaintext.c:336
 msgid "Detached signature.\n"
 msgstr "分離署名。\n"
 
-#: g10/plaintext.c:341
+#: g10/plaintext.c:340
 msgid "Please enter name of data file: "
 msgstr "データ・ファイルの名前を入力: "
 
-#: g10/plaintext.c:362
+#: g10/plaintext.c:361
 msgid "reading stdin ...\n"
 msgstr "標準入力より読込み中 ...\n"
 
-#: g10/plaintext.c:396
+#: g10/plaintext.c:395
 msgid "no signed data\n"
 msgstr "署名されたデータがありません\n"
 
-#: g10/plaintext.c:404
+#: g10/plaintext.c:403
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "署名されたデータ`%s'が開けません\n"
 
 #: g10/pubkey-enc.c:100
-#, fuzzy, c-format
+#, c-format
 msgid "anonymous recipient; trying secret key %08lX ...\n"
 msgstr "匿名の受信者用です。秘密鍵%08lXを用います ...\n"
 
@@ -3495,9 +3437,9 @@ msgid "old encoding of the DEK is not supported\n"
 msgstr "DEKによる旧式の暗号はサポートしていません\n"
 
 #: g10/pubkey-enc.c:177
-#, fuzzy, c-format
+#, c-format
 msgid "cipher algorithm %d%s is unknown or disabled\n"
-msgstr "保護アルゴリズム%dは未知か使用不可です\n"
+msgstr "保護アルゴリズム%d%sは未知か使用不可です\n"
 
 #: g10/pubkey-enc.c:220
 #, c-format
@@ -3511,58 +3453,57 @@ msgstr "注意: 秘密鍵%08lXは%sで期限切れです\n"
 
 #. HKP does not support v3 fingerprints
 #: g10/hkp.c:70
-#, fuzzy, c-format
+#, c-format
 msgid "requesting key %08lX from HKP keyserver %s\n"
-msgstr "鍵%08lXを%sに要求 ...\n"
+msgstr "鍵%08lXをHKP鍵サーバー%sに要求\n"
 
 #: g10/hkp.c:94
 #, c-format
 msgid "can't get key from keyserver: %s\n"
 msgstr "鍵サーバーから鍵を読み込めません: %s\n"
 
-#: g10/hkp.c:171
+#: g10/hkp.c:172
 #, c-format
 msgid "error sending to `%s': %s\n"
 msgstr "`%s'への送信エラー: %s\n"
 
-#: g10/hkp.c:186
+#: g10/hkp.c:187
 #, c-format
 msgid "success sending to `%s' (status=%u)\n"
 msgstr "`%s'への送信に成功 (状態=%u)\n"
 
-#: g10/hkp.c:189
+#: g10/hkp.c:190
 #, c-format
 msgid "failed sending to `%s': status=%u\n"
 msgstr "`%s'への送信に失敗しました: 状態=%u\n"
 
-#: g10/hkp.c:471
+#: g10/hkp.c:472
 #, c-format
 msgid "searching for \"%s\" from HKP server %s\n"
-msgstr ""
+msgstr "\"%s\"をHKPサーバー%sから検索\n"
 
-#: g10/hkp.c:521
-#, fuzzy, c-format
+#: g10/hkp.c:522
+#, c-format
 msgid "can't search keyserver: %s\n"
-msgstr "鍵サーバーから鍵を読み込めません: %s\n"
+msgstr "鍵サーバーを検索できません: %s\n"
 
 #: g10/seckey-cert.c:53
 msgid "secret key parts are not available\n"
 msgstr "秘密部分が得られません\n"
 
 #: g10/seckey-cert.c:59
-#, fuzzy, c-format
+#, c-format
 msgid "protection algorithm %d%s is not supported\n"
-msgstr "保護アルゴリズム%dはサポートしていません\n"
+msgstr "保護アルゴリズム%d%sはサポートしていません\n"
 
 #: g10/seckey-cert.c:215
-#, fuzzy
 msgid "Invalid passphrase; please try again"
-msgstr "無効なパスフレーズです。再入力してください ...\n"
+msgstr "無効なパスフレーズです。再入力してください"
 
 #: g10/seckey-cert.c:216
 #, c-format
 msgid "%s ...\n"
-msgstr ""
+msgstr "%s ...\n"
 
 #: g10/seckey-cert.c:273
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
@@ -3570,7 +3511,7 @@ msgstr "警告: 弱い鍵を検出しました。パスフレーズを変更してください。\n"
 
 #: g10/seckey-cert.c:311
 msgid "generating the deprecated 16-bit checksum for secret key protection\n"
-msgstr ""
+msgstr "反対された16ビットのチェックサムを秘密鍵の保護に生成\n"
 
 #: g10/sig-check.c:205
 msgid ""
@@ -3602,7 +3543,7 @@ msgstr "未知のクリティカル・ビットがあったので、署名は不正だとみなします\n"
 #, c-format
 msgid ""
 "WARNING: unable to %%-expand policy url (too large).  Using unexpanded.\n"
-msgstr ""
+msgstr "警告: ポリシーurlを%%拡張不能 (大きすぎ)。未拡張を使用。\n"
 
 #: g10/sign.c:274
 #, c-format
@@ -3621,12 +3562,12 @@ msgstr "警告: `%s'は空のファイルです\n"
 
 #: g10/sign.c:618
 msgid "you can only sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
+msgstr "--pgp2モードではPGP 2.x形式の鍵で署名できるだけです\n"
 
 #: g10/sign.c:643 g10/sign.c:812
 #, c-format
 msgid "can't create %s: %s\n"
-msgstr "%sができません: %s\n"
+msgstr "%sを作成できません: %s\n"
 
 #: g10/sign.c:704
 msgid "signing:"
@@ -3634,12 +3575,12 @@ msgstr "署名:"
 
 #: g10/sign.c:796
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
+msgstr "--pgp2モードではPGP 2.x形式の鍵でクリア署名しかできません\n"
 
 #: g10/sign.c:953
-#, fuzzy, c-format
+#, c-format
 msgid "%s encryption will be used\n"
-msgstr "復号に失敗しました: %s\n"
+msgstr "%s暗号化を使用します\n"
 
 #: g10/textfilter.c:134
 #, c-format
@@ -3681,7 +3622,7 @@ msgid "%s: can't create lock\n"
 msgstr "%s: ロックができません\n"
 
 #: g10/tdbio.c:480 g10/tdbio.c:544
-#, fuzzy, c-format
+#, c-format
 msgid "%s: can't make lock\n"
 msgstr "%s: ロックができません\n"
 
@@ -3782,19 +3723,19 @@ msgstr ""
 "信用データベースが壊れています。「gpg --fix-trustdb」を実行してください。\n"
 
 #: g10/trustdb.c:200
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not a valid long keyID\n"
-msgstr "'%s' は正しい大型鍵IDでありません\n"
+msgstr "`%s' は正しい大型鍵IDでありません\n"
 
 #: g10/trustdb.c:235
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: accepted as trusted key\n"
-msgstr "鍵%08lX: 信用する鍵として受理しました。\n"
+msgstr "鍵%08lX: 信用する鍵として受理しました\n"
 
 #: g10/trustdb.c:274
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX occurs more than once in the trustdb\n"
-msgstr "鍵%08lX: 信用データベースに登録できません\n"
+msgstr "鍵%08lXが信用データベースに複数あります\n"
 
 #: g10/trustdb.c:290
 #, c-format
@@ -3807,9 +3748,9 @@ msgid "trust record %lu, req type %d: read failed: %s\n"
 msgstr "信用レコード%lu, リクエスト・タイプ%d: 読出しに失敗しました: %s\n"
 
 #: g10/trustdb.c:338
-#, fuzzy, c-format
+#, c-format
 msgid "trust record %lu is not of requested type %d\n"
-msgstr "信用レコード%lu: 削除に失敗しました: %s\n"
+msgstr "信用レコード%luが要求された型%dではありません\n"
 
 #: g10/trustdb.c:353
 #, c-format
@@ -3822,34 +3763,32 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "信用データベース: 同期に失敗しました: %s\n"
 
 #: g10/trustdb.c:468
-#, fuzzy
 msgid "no need for a trustdb check\n"
-msgstr "%s: 信用データベース・ファイルではありません\n"
+msgstr "信用データベースの検証は不要です\n"
 
-#: g10/trustdb.c:474 g10/trustdb.c:1641
-#, fuzzy, c-format
+#: g10/trustdb.c:474 g10/trustdb.c:1638
+#, c-format
 msgid "next trustdb check due at %s\n"
-msgstr "信用データベース レコード%lu: シークに失敗しました: %s\n"
+msgstr "信用データベースの次回の検証は%sです\n"
 
-#: g10/trustdb.c:779
-#, fuzzy
+#: g10/trustdb.c:776
 msgid "checking the trustdb\n"
-msgstr "所有者信用の変更"
+msgstr "信用データベースの検証\n"
 
-#: g10/trustdb.c:933
-#, fuzzy, c-format
+#: g10/trustdb.c:930
+#, c-format
 msgid "public key %08lX not found: %s\n"
-msgstr "公開鍵が見つかりません"
+msgstr "公開鍵%08lXが見つかりません: %s\n"
 
-#: g10/trustdb.c:1515
+#: g10/trustdb.c:1512
 #, c-format
 msgid "public key of ultimately trusted key %08lX not found\n"
-msgstr ""
+msgstr "絶対的に信用する鍵%08lXの公開鍵が見つかりません\n"
 
-#: g10/trustdb.c:1593
+#: g10/trustdb.c:1590
 #, c-format
 msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
-msgstr ""
+msgstr "深さ%dで検証、署名済み=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 
 #: g10/verify.c:108
 msgid ""
@@ -3962,7 +3901,7 @@ msgstr "対称暗号法の弱い鍵を回避することができません。%d回試みました!\n"
 
 #: g10/seskey.c:200
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr ""
+msgstr "DSAでは160ビットのハッシュ・アルゴリズムの使用が必要です\n"
 
 #: g10/delkey.c:116
 msgid "can't do that in batchmode without \"--yes\"\n"
@@ -3977,23 +3916,22 @@ msgid "This is a secret key! - really delete? "
 msgstr "これは秘密鍵です! 本当に削除しますか? "
 
 #: g10/delkey.c:156
-#, fuzzy, c-format
+#, c-format
 msgid "deleting keyblock failed: %s\n"
-msgstr "鍵ブロックの一覧に失敗しました: %s\n"
+msgstr "鍵ブロックの削除に失敗しました: %s\n"
 
-#: g10/delkey.c:166
+#: g10/delkey.c:161
 msgid "ownertrust information cleared\n"
-msgstr ""
+msgstr "所有者信用情報をクリアしました\n"
 
-#: g10/delkey.c:194
-#, fuzzy, c-format
+#: g10/delkey.c:189
+#, c-format
 msgid "there is a secret key for public key \"%s\"!\n"
-msgstr "この公開鍵にたいする秘密鍵があります!\n"
+msgstr "この公開鍵にたいする秘密鍵 \"%s\" があります!\n"
 
-#: g10/delkey.c:196
-#, fuzzy
+#: g10/delkey.c:191
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
-msgstr "まず「--delete-secret-key」オプションでこれを削除してください。\n"
+msgstr "まず「--delete-secret-keys」オプションでこれを削除してください。\n"
 
 #: g10/helptext.c:47
 msgid ""
@@ -4012,6 +3950,10 @@ msgid ""
 "access to the secret key.  Answer \"yes\" to set this key to\n"
 "ultimately trusted\n"
 msgstr ""
+"Web-of-Trustを構築するためGnuPGは、どの鍵を絶対的に信用する\n"
+"のかを知る必要があります。それはふつう、秘密鍵にアクセスでき\n"
+"る鍵のことです。この鍵を絶対的に信用することにするなら、\n"
+"\"yes\"とおこたえください。\n"
 
 #: g10/helptext.c:60
 msgid "If you want to use this revoked key anyway, answer \"yes\"."
@@ -4163,6 +4105,34 @@ msgid ""
 "\n"
 "If you don't know what the right answer is, answer \"0\"."
 msgstr ""
+"鍵のユーザーIDに署名するときは、鍵のユーザーIDの名前の人が鍵\n"
+"を所有している、ということを確認するべきです。あなたがどの程\n"
+"度注意深く確認したのかを他の人たちに知らせると、便利です。\n"
+"\n"
+"\"0\" は、あなたがどの程度注意深く確認したのかを、特に主張しな\n"
+"    いという意味です。\n"
+"\n"
+"\"1\" は、鍵の所有者と主張している人がその鍵を所有している、と\n"
+"    あなたは信じてはいるものの、確認は全然してなかった、また\n"
+"    はできなかった、という意味です。これは、ペンネームを使う\n"
+"    ユーザーの鍵に署名する場合の、「ペルソナ」確認に便利です。\n"
+"\n"
+"\"2\" は、あなたが一応鍵の確認をした、という意味です。たとえば\n"
+"    鍵の指紋を検証し、フォトIDにたいして鍵のユーザーIDを確認\n"
+"    した場合がそうです。\n"
+"\n"
+"\"3\" は、あなたが広範囲にわたり鍵を検証した、という意味です。\n"
+"    たとえば、鍵の所有者本人と鍵の指紋を検証し、(パスポート\n"
+"    のような) 偽造のむつかしい、フォトIDつきの手段で、鍵の所\n"
+"    有者の名前が、鍵のユーザーIDの名前と一致することを確認し\n"
+"    て、(電子メールの交換などで) 鍵の電子メール・アドレスが\n"
+"    鍵の所有者に属していることを検証した場合がそうです。\n"
+"\n"
+"上記2と3の例は、*単なる*例にすぎない、ということを念頭に置い\n"
+"てください。他の鍵に署名する際、「一応」や「広範囲」が何を意\n"
+"味するかを最終的に決めるのは、あなたです。\n"
+"\n"
+"正しい答のわからない場合は、「0」で答えてください。"
 
 #: g10/helptext.c:194
 msgid "Answer \"yes\" is you want to sign ALL the user IDs"
@@ -4229,13 +4199,12 @@ msgid ""
 "to the current list of preferences.  The timestamp of all affected\n"
 "self-signatures will be advanced by one second.\n"
 msgstr ""
+"全部 (または選択した) ユーザーIDの選好を、現在の選好一覧に変更\n"
+"します。関係する自己署名のタイムスタンプは、1秒すすみます。\n"
 
 #: g10/helptext.c:238
-#, fuzzy
 msgid "Please enter the passhrase; this is a secret sentence \n"
-msgstr ""
-"パスフレーズを入力してください。これは秘密の文章のことです。\n"
-"  かくかくしかじか、あれこれ… "
+msgstr "パスフレーズを入力してください。これは秘密の文章のことです \n"
 
 #: g10/helptext.c:244
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
@@ -4306,24 +4275,24 @@ msgid "No help available for `%s'"
 msgstr "`%s'のヘルプはありません"
 
 #: g10/keydb.c:177
-#, fuzzy, c-format
+#, c-format
 msgid "error creating keyring `%s': %s\n"
-msgstr "鍵輪`%s'の書込みエラー: %s\n"
+msgstr "鍵輪`%s'の作成エラー: %s\n"
 
 #: g10/keydb.c:188
 #, c-format
 msgid "changing permission of  `%s' failed: %s\n"
-msgstr ""
+msgstr "`%s' への許可の変更に失敗: %s\n"
 
 #: g10/keydb.c:197
-#, fuzzy, c-format
+#, c-format
 msgid "keyring `%s' created\n"
-msgstr "%s: 鍵輪ができました\n"
+msgstr "鍵輪 `%s' ができました\n"
 
 #: g10/keydb.c:587
-#, fuzzy, c-format
+#, c-format
 msgid "failed to rebuild keyring cache: %s\n"
-msgstr "%s: ハッシュ表の作成に失敗しました: %s\n"
+msgstr "鍵輪キャッシュの再構築に失敗しました: %s\n"
 
 #: g10/keyring.c:1235
 msgid "WARNING: 2 files with confidential information exists.\n"
@@ -4344,286 +4313,274 @@ msgid "Please fix this possible security flaw\n"
 msgstr "この安全上の欠陥を修正してください\n"
 
 #: g10/keyring.c:1337
-#, fuzzy, c-format
+#, c-format
 msgid "checking keyring `%s'\n"
-msgstr "鍵輪`%s'をロックできません: %s\n"
+msgstr "鍵輪`%s'を検証しています\n"
 
 #: g10/keyring.c:1368
-#, fuzzy, c-format
+#, c-format
 msgid "%lu keys so far checked (%lu signatures)\n"
-msgstr "%lu鍵まで処理\n"
+msgstr "これまでに%lu個の鍵まで検証 (%lu個の署名)\n"
 
 #: g10/keyring.c:1379
-#, fuzzy, c-format
+#, c-format
 msgid "%lu keys checked (%lu signatures)\n"
-msgstr "鍵と署名の一覧"
+msgstr "%lu個の鍵まで検証 (%lu個の署名)\n"
 
 #: g10/keyring.c:1441
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: 鍵輪ができました\n"
 
-#, fuzzy
-#~ msgid "Are you sure you still want to sign it?\n"
-#~ msgstr "この鍵長で本当にいいですか? "
+msgid "too many random bits requested; the limit is %d\n"
+msgstr "ランダム・ビットをたくさん要求し過ぎです。限界は %d\n"
 
-#, fuzzy
-#~ msgid "  Are you sure you still want to sign it?\n"
-#~ msgstr "この鍵長で本当にいいですか? "
+msgid "|[NAMES]|check the trust database"
+msgstr "|[名前]|信用データベースをチェック"
 
-#, fuzzy
-#~ msgid "Really sign? (y/N) "
-#~ msgstr "本当に署名しますか? "
+msgid "--delete-secret-key user-id"
+msgstr "--delete-secret-key ユーザーid"
 
-#~ msgid "too many random bits requested; the limit is %d\n"
-#~ msgstr "ランダム・ビットをたくさん要求し過ぎです。限界は %d\n"
+msgid "--delete-key user-id"
+msgstr "--delete-key ユーザーid"
 
-#~ msgid "|[NAMES]|check the trust database"
-#~ msgstr "|[名前]|信用データベースをチェック"
+msgid "--delete-secret-and-public-key user-id"
+msgstr "--delete-secret-and-public-key ユーザーid"
 
-#~ msgid "--delete-secret-key user-id"
-#~ msgstr "--delete-secret-key ユーザーid"
+msgid "For info see http://www.gnupg.org"
+msgstr "KUWASIKU WA http://www.gnupg.org/ WO GORANKUDASAI"
 
-#~ msgid "--delete-key user-id"
-#~ msgstr "--delete-key ユーザーid"
+msgid "sSmMqQ"
+msgstr "sSmMqQ"
 
-#~ msgid "--delete-secret-and-public-key user-id"
-#~ msgstr "--delete-secret-and-public-key ユーザーid"
+msgid ""
+"Could not find a valid trust path to the key.  Let's see whether we\n"
+"can assign some missing owner trust values.\n"
+"\n"
+msgstr ""
+"鍵への有効な信用の経路が見つかりません。\n"
+"いない人の信用度が設定できないかどうか、調べましょう。\n"
+"\n"
 
-#~ msgid "For info see http://www.gnupg.org"
-#~ msgstr "KUHASIKU WA http://www.gnupg.org/ WO GORANKUDASAI"
+msgid ""
+"No path leading to one of our keys found.\n"
+"\n"
+msgstr ""
+"こちらの鍵へ至る経路がありません。\n"
+"\n"
 
-#~ msgid "sSmMqQ"
-#~ msgstr "sSmMqQ"
+msgid ""
+"No certificates with undefined trust found.\n"
+"\n"
+msgstr ""
+"信用度が未定義の証明書はありません。\n"
+"\n"
 
-#~ msgid ""
-#~ "Could not find a valid trust path to the key.  Let's see whether we\n"
-#~ "can assign some missing owner trust values.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "鍵への有効な信用の経路が見つかりません。\n"
-#~ "いない人の信用度が設定できないかどうか、調べましょう。\n"
-#~ "\n"
+msgid ""
+"No trust values changed.\n"
+"\n"
+msgstr ""
+"信用度の変更はありません。\n"
+"\n"
 
-#~ msgid ""
-#~ "No path leading to one of our keys found.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "こちらの鍵へ至る経路がありません。\n"
-#~ "\n"
+msgid "%08lX: no info to calculate a trust probability\n"
+msgstr "%08lX: 信用度を計算する情報がありません\n"
 
-#~ msgid ""
-#~ "No certificates with undefined trust found.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "信用度が未定義の証明書はありません。\n"
-#~ "\n"
+msgid "Enter the user ID: "
+msgstr "ユーザーIDを入力: "
 
-#~ msgid ""
-#~ "No trust values changed.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "信用度の変更はありません。\n"
-#~ "\n"
+msgid "skipped: public key already set with --encrypt-to\n"
+msgstr "スキップ: 公開鍵は既に --encrypt-to で設定済みです\n"
 
-#~ msgid "%08lX: no info to calculate a trust probability\n"
-#~ msgstr "%08lX: 信用度を計算する情報がありません\n"
+msgid "%s: error checking key: %s\n"
+msgstr "%s: 鍵の検証エラー: %s\n"
 
-#~ msgid "Enter the user ID: "
-#~ msgstr "ユーザーIDを入力: "
+msgid "   (%d) RSA (sign and encrypt)\n"
+msgstr "   (%d) RSA (署名と暗号化)\n"
 
-#~ msgid "skipped: public key already set with --encrypt-to\n"
-#~ msgstr "スキップ: 公開鍵は既に --encrypt-to で設定済みです\n"
+msgid "Do you really want to create a sign and encrypt key? "
+msgstr "本当に署名と暗号用の鍵を作りますか? "
 
-#~ msgid "%s: error checking key: %s\n"
-#~ msgstr "%s: 鍵の検証エラー: %s\n"
+msgid "Do you really need such a large keysize? "
+msgstr "こんなに長い鍵が本当にいりますか? "
 
-#~ msgid "   (%d) RSA (sign and encrypt)\n"
-#~ msgstr "   (%d) RSA (署名と暗号化)\n"
+msgid "%s: user not found: %s\n"
+msgstr "%s: ユーザーが見つかりません: %s\n"
 
-#~ msgid "Do you really want to create a sign and encrypt key? "
-#~ msgstr "本当に署名と暗号用の鍵を作りますか? "
+msgid "certificate read problem: %s\n"
+msgstr "証明書の読込み障害: %s\n"
 
-#~ msgid "Do you really need such a large keysize? "
-#~ msgstr "こんなに長い鍵が本当にいりますか? "
+msgid "too many entries in unk cache - disabled\n"
+msgstr "unkキャッシュのエントリーが多すぎます - 使用禁止\n"
 
-#~ msgid "%s: user not found: %s\n"
-#~ msgstr "%s: ユーザーが見つかりません: %s\n"
+msgid "secret key %08lX not imported (use %s to allow for it)\n"
+msgstr "秘密鍵%08lXは読み込まれません (有効にするには%sを使います)\n"
 
-#~ msgid "certificate read problem: %s\n"
-#~ msgstr "証明書の読込み障害: %s\n"
+msgid "key %08lX: our copy has no self-signature\n"
+msgstr "鍵%08lX: こちらの複製には自己署名がありません\n"
 
-#~ msgid "too many entries in unk cache - disabled\n"
-#~ msgstr "unkキャッシュのエントリーが多すぎます - 使用禁止\n"
+msgid "%s: user not found\n"
+msgstr "%s: ユーザーが見つかりません\n"
 
-#~ msgid "secret key %08lX not imported (use %s to allow for it)\n"
-#~ msgstr "秘密鍵%08lXは読み込まれません (有効にするには%sを使います)\n"
+msgid "update of trustdb failed: %s\n"
+msgstr "信用データベースの更新に失敗しました: %s\n"
 
-#~ msgid "key %08lX: our copy has no self-signature\n"
-#~ msgstr "鍵%08lX: こちらの複製には自己署名がありません\n"
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+"既知の鍵サーバーはありません (--keyserverオプションを使いましょう)\n"
 
-#~ msgid "%s: user not found\n"
-#~ msgstr "%s: ユーザーが見つかりません\n"
+msgid "%s: not a valid key ID\n"
+msgstr "%s: 正しい鍵IDでありません\n"
 
-#~ msgid "update of trustdb failed: %s\n"
-#~ msgstr "信用データベースの更新に失敗しました: %s\n"
+msgid "assuming bad MDC due to an unknown critical bit\n"
+msgstr "未知のクリティカル・ビットがあったので、不正なMDCとみなします\n"
 
-#~ msgid "no keyserver known (use option --keyserver)\n"
-#~ msgstr ""
-#~ "既知の鍵サーバーはありません (--keyserverオプションを使いましょう)\n"
+msgid "error reading dir record for LID %lu: %s\n"
+msgstr "LID %luのディレクトリー・レコードの読出しエラー: %s\n"
 
-#~ msgid "%s: not a valid key ID\n"
-#~ msgstr "%s: 正しい鍵IDでありません\n"
+msgid "lid %lu: expected dir record, got type %d\n"
+msgstr "lid %lu: 期待されたディレクトリー・レコード、タイプ%d\n"
 
-#~ msgid "assuming bad MDC due to an unknown critical bit\n"
-#~ msgstr "未知のクリティカル・ビットがあったので、不正なMDCとみなします\n"
+msgid "no primary key for LID %lu\n"
+msgstr "LID %luの主鍵がありません\n"
 
-#~ msgid "error reading dir record for LID %lu: %s\n"
-#~ msgstr "LID %luのディレクトリー・レコードの読出しエラー: %s\n"
+msgid "error reading primary key for LID %lu: %s\n"
+msgstr "LID %luの主鍵の読出しエラー: %s\n"
 
-#~ msgid "lid %lu: expected dir record, got type %d\n"
-#~ msgstr "lid %lu: 期待されたディレクトリー・レコード、タイプ%d\n"
+msgid "get_dir_record: search_record failed: %s\n"
+msgstr "get_dir_record: search_record に失敗しました: %s\n"
 
-#~ msgid "no primary key for LID %lu\n"
-#~ msgstr "LID %luの主鍵がありません\n"
+msgid "key %08lX: query record failed\n"
+msgstr "鍵%08lX: レコードの問合せに失敗\n"
 
-#~ msgid "error reading primary key for LID %lu: %s\n"
-#~ msgstr "LID %luの主鍵の読出しエラー: %s\n"
+msgid "key %08lX: already in trusted key table\n"
+msgstr "鍵%08lX: 既に信用する鍵の表にあります\n"
 
-#~ msgid "get_dir_record: search_record failed: %s\n"
-#~ msgstr "get_dir_record: search_record に失敗しました: %s\n"
+msgid "NOTE: secret key %08lX is NOT protected.\n"
+msgstr "注意: 秘密鍵%08lXは保護されていま せん。\n"
 
-#~ msgid "key %08lX: query record failed\n"
-#~ msgstr "鍵%08lX: レコードの問合せに失敗\n"
+msgid "key %08lX: secret and public key don't match\n"
+msgstr "鍵%08lX: 秘密鍵と公開鍵が対応していません\n"
 
-#~ msgid "key %08lX: already in trusted key table\n"
-#~ msgstr "鍵%08lX: 既に信用する鍵の表にあります\n"
+msgid "enumerate secret keys failed: %s\n"
+msgstr "秘密鍵の列挙に失敗しました: %s\n"
 
-#~ msgid "NOTE: secret key %08lX is NOT protected.\n"
-#~ msgstr "注意: 秘密鍵%08lXは保護されていま せん。\n"
+msgid "key %08lX.%lu: Good subkey binding\n"
+msgstr "鍵%08lX.%lu: 副鍵の対応は有効です\n"
 
-#~ msgid "key %08lX: secret and public key don't match\n"
-#~ msgstr "鍵%08lX: 秘密鍵と公開鍵が対応していません\n"
+msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
+msgstr "鍵%08lX.%lu: 副鍵の対応が無効です: %s\n"
 
-#~ msgid "enumerate secret keys failed: %s\n"
-#~ msgstr "秘密鍵の列挙に失敗しました: %s\n"
+msgid "key %08lX.%lu: Valid key revocation\n"
+msgstr "鍵%08lX.%lu: 有効な鍵の破棄\n"
 
-#~ msgid "key %08lX.%lu: Good subkey binding\n"
-#~ msgstr "鍵%08lX.%lu: 副鍵の対応は有効です\n"
+msgid "key %08lX.%lu: Invalid key revocation: %s\n"
+msgstr "鍵%08lX.%lu: 無効な鍵の破棄: %s\n"
 
-#~ msgid "key %08lX.%lu: Invalid subkey binding: %s\n"
-#~ msgstr "鍵%08lX.%lu: 副鍵の対応が無効です: %s\n"
+msgid "key %08lX.%lu: Valid subkey revocation\n"
+msgstr "鍵%08lX.%lu: 有効な副鍵の破棄\n"
 
-#~ msgid "key %08lX.%lu: Valid key revocation\n"
-#~ msgstr "鍵%08lX.%lu: 有効な鍵の破棄\n"
+msgid "Good self-signature"
+msgstr "有効な自己署名"
 
-#~ msgid "key %08lX.%lu: Invalid key revocation: %s\n"
-#~ msgstr "鍵%08lX.%lu: 無効な鍵の破棄: %s\n"
+msgid "Invalid self-signature"
+msgstr "無効な自己署名"
 
-#~ msgid "key %08lX.%lu: Valid subkey revocation\n"
-#~ msgstr "鍵%08lX.%lu: 有効な副鍵の破棄\n"
+msgid "Valid user ID revocation skipped due to a newer self signature"
+msgstr "新しく自己署名されているので、有効なユーザーIDの破棄は行いません"
 
-#~ msgid "Good self-signature"
-#~ msgstr "有効な自己署名"
+msgid "Valid user ID revocation"
+msgstr "有効なユーザーIDの破棄"
 
-#~ msgid "Invalid self-signature"
-#~ msgstr "無効な自己署名"
+msgid "Invalid user ID revocation"
+msgstr "無効なユーザーIDの破棄"
 
-#~ msgid "Valid user ID revocation skipped due to a newer self signature"
-#~ msgstr "新しく自己署名されているので、有効なユーザーIDの破棄は行いません"
+msgid "Valid certificate revocation"
+msgstr "有効な証明書の破棄"
 
-#~ msgid "Valid user ID revocation"
-#~ msgstr "有効なユーザーIDの破棄"
+msgid "Good certificate"
+msgstr "有効な証明書"
 
-#~ msgid "Invalid user ID revocation"
-#~ msgstr "無効なユーザーIDの破棄"
+msgid "Invalid certificate revocation"
+msgstr "無効な証明書の破棄"
 
-#~ msgid "Valid certificate revocation"
-#~ msgstr "有効な証明書の破棄"
+msgid "Invalid certificate"
+msgstr "無効な証明書"
 
-#~ msgid "Good certificate"
-#~ msgstr "有効な証明書"
+msgid "sig record %lu[%d] points to wrong record.\n"
+msgstr "署名レコード%lu[%d] は誤ったレコードを指しています。\n"
 
-#~ msgid "Invalid certificate revocation"
-#~ msgstr "無効な証明書の破棄"
+msgid "duplicated certificate - deleted"
+msgstr "重複した証明書 - 削除"
 
-#~ msgid "Invalid certificate"
-#~ msgstr "無効な証明書"
+msgid "tdbio_search_dir failed: %s\n"
+msgstr "tdbio_search_dir に失敗しました: %s\n"
 
-#~ msgid "sig record %lu[%d] points to wrong record.\n"
-#~ msgstr "署名レコード%lu[%d] は誤ったレコードを指しています。\n"
+msgid "lid ?: insert failed: %s\n"
+msgstr "lid ?: 挿入に失敗しました: %s\n"
 
-#~ msgid "duplicated certificate - deleted"
-#~ msgstr "重複した証明書 - 削除"
+msgid "lid %lu: insert failed: %s\n"
+msgstr "lid %lu: 挿入に失敗しました: %s\n"
 
-#~ msgid "tdbio_search_dir failed: %s\n"
-#~ msgstr "tdbio_search_dir に失敗しました: %s\n"
+msgid "lid %lu: inserted\n"
+msgstr "lid %lu: 挿入しました\n"
 
-#~ msgid "lid ?: insert failed: %s\n"
-#~ msgstr "lid ?: 挿入に失敗しました: %s\n"
+msgid "error reading dir record: %s\n"
+msgstr "ディレクトリー・レコードの読出しエラー: %s\n"
 
-#~ msgid "lid %lu: insert failed: %s\n"
-#~ msgstr "lid %lu: 挿入に失敗しました: %s\n"
+msgid "\t%lu keys with errors\n"
+msgstr "\t%lu鍵にはエラーがあります\n"
 
-#~ msgid "lid %lu: inserted\n"
-#~ msgstr "lid %lu: 挿入しました\n"
+msgid "\t%lu keys inserted\n"
+msgstr "\t%lu鍵を挿入しました\n"
 
-#~ msgid "error reading dir record: %s\n"
-#~ msgstr "ディレクトリー・レコードの読出しエラー: %s\n"
+msgid "lid %lu: dir record w/o key - skipped\n"
+msgstr "lid %lu: 鍵なしのディレクトリー・レコード - スキップ\n"
 
-#~ msgid "\t%lu keys with errors\n"
-#~ msgstr "\t%lu鍵にはエラーがあります\n"
+msgid "\t%lu due to new pubkeys\n"
+msgstr "\t%lu新しい公開鍵\n"
 
-#~ msgid "\t%lu keys inserted\n"
-#~ msgstr "\t%lu鍵を挿入しました\n"
+msgid "\t%lu keys skipped\n"
+msgstr "\t%lu鍵をスキップしました\n"
 
-#~ msgid "lid %lu: dir record w/o key - skipped\n"
-#~ msgstr "lid %lu: 鍵なしのディレクトリー・レコード - スキップ\n"
+msgid "\t%lu keys updated\n"
+msgstr "\t%lu鍵を更新しました\n"
 
-#~ msgid "\t%lu due to new pubkeys\n"
-#~ msgstr "\t%lu新しい公開鍵\n"
+msgid "Ooops, no keys\n"
+msgstr "おっと、鍵がありません\n"
 
-#~ msgid "\t%lu keys skipped\n"
-#~ msgstr "\t%lu鍵をスキップしました\n"
+msgid "Ooops, no user IDs\n"
+msgstr "おっと、ユーザーIDがありません\n"
 
-#~ msgid "\t%lu keys updated\n"
-#~ msgstr "\t%lu鍵を更新しました\n"
+msgid "check_trust: search dir record failed: %s\n"
+msgstr "check_trust: ディレクトリー・レコードの検索に失敗しました: %s\n"
 
-#~ msgid "Ooops, no keys\n"
-#~ msgstr "おっと、鍵がありません\n"
+msgid "key %08lX: insert trust record failed: %s\n"
+msgstr "鍵%08lX: 信用レコードの挿入に失敗しました: %s\n"
 
-#~ msgid "Ooops, no user IDs\n"
-#~ msgstr "おっと、ユーザーIDがありません\n"
+msgid "key %08lX.%lu: inserted into trustdb\n"
+msgstr "鍵%08lX.%lu: 信用レコードに挿入しました\n"
 
-#~ msgid "check_trust: search dir record failed: %s\n"
-#~ msgstr "check_trust: ディレクトリー・レコードの検索に失敗しました: %s\n"
+msgid "key %08lX.%lu: created in future (time warp or clock problem)\n"
+msgstr "鍵%08lX.%lu: 未来にできています (時間旅行か時計のくるいでしょう)\n"
 
-#~ msgid "key %08lX: insert trust record failed: %s\n"
-#~ msgstr "鍵%08lX: 信用レコードの挿入に失敗しました: %s\n"
+msgid "key %08lX.%lu: expired at %s\n"
+msgstr "鍵%08lX.%lu: %sで期限切れです\n"
 
-#~ msgid "key %08lX.%lu: inserted into trustdb\n"
-#~ msgstr "鍵%08lX.%lu: 信用レコードに挿入しました\n"
+msgid "key %08lX.%lu: trust check failed: %s\n"
+msgstr "鍵%08lX.%lu: 信用の検証に失敗しました: %s\n"
 
-#~ msgid "key %08lX.%lu: created in future (time warp or clock problem)\n"
-#~ msgstr "鍵%08lX.%lu: 未来にできています (時間旅行か時計のくるいでしょう)\n"
+msgid "problem finding '%s' in trustdb: %s\n"
+msgstr "信用データベースから'%s'の検索に障害: %s\n"
 
-#~ msgid "key %08lX.%lu: expired at %s\n"
-#~ msgstr "鍵%08lX.%lu: %sで期限切れです\n"
+msgid "user '%s' not in trustdb - inserting\n"
+msgstr "ユーザー'%s'は信用データベースに登録されていません - 挿入\n"
 
-#~ msgid "key %08lX.%lu: trust check failed: %s\n"
-#~ msgstr "鍵%08lX.%lu: 信用の検証に失敗しました: %s\n"
+msgid "failed to put '%s' into trustdb: %s\n"
+msgstr "'%s'の信用データベースへの登録に失敗しました: %s\n"
 
-#~ msgid "problem finding '%s' in trustdb: %s\n"
-#~ msgstr "信用データベースから'%s'の検索に障害: %s\n"
+msgid "WARNING: can't yet handle long pref records\n"
+msgstr "警告: まだ long pref レコードは取り扱えません\n"
 
-#~ msgid "user '%s' not in trustdb - inserting\n"
-#~ msgstr "ユーザー'%s'は信用データベースに登録されていません - 挿入\n"
-
-#~ msgid "failed to put '%s' into trustdb: %s\n"
-#~ msgstr "'%s'の信用データベースへの登録に失敗しました: %s\n"
-
-#~ msgid "WARNING: can't yet handle long pref records\n"
-#~ msgstr "警告: まだ long pref レコードは取り扱えません\n"
-
-#~ msgid "%s: can't create keyring: %s\n"
-#~ msgstr "%s: 鍵輪ができません: %s\n"
+msgid "%s: can't create keyring: %s\n"
+msgstr "%s: 鍵輪ができません: %s\n"

@@ -1,3 +1,7 @@
+2002-05-02  Werner Koch  <wk@gnupg.org>
+
+	* memory.c (alloc): Malloc at least 1 byte.  Noted by Winona Brown. 
+
 2002-04-23  David Shaw  <dshaw@jabberwocky.com>
 
  	* miscutil.c: New function answer_is_yes_no_default() to give a

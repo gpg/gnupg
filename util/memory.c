@@ -415,6 +415,8 @@ FNAME(alloc)( size_t n FNAMEPRT )
     char *p;
 
   #ifdef M_GUARD
+    if(!n)
+      out_of_core(n,0); /* should never happen */
     if( !(p = malloc( n + EXTRA_ALIGN+5 )) )
 	out_of_core(n,0);
     store_len(p,n,0);
@@ -422,6 +424,10 @@ FNAME(alloc)( size_t n FNAMEPRT )
     p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
     return p+EXTRA_ALIGN+4;
   #else
+    /* mallocing zero bytes is undefined by ISO-C, so we better make
+       sure that it won't happen */
+    if (!n)
+      n = 1;
     if( !(p = malloc( n )) )
 	out_of_core(n,0);
     return p;

@@ -823,7 +823,7 @@ msgstr "WARNUNG: %s ist eine miﬂbilligte Option.\n"
 #: g10/g10.c:1253 g10/g10.c:1270
 #, c-format
 msgid "please use \"--keyserver-options %s\" instead\n"
-msgstr "Bitte benutzen Sie stattdessen \"--keyserver-option %s\".\n"
+msgstr "Bitte benutzen Sie stattdessen \"--keyserver-options %s\".\n"
 
 #: g10/g10.c:1347
 msgid "WARNING: program may create a core file!\n"
