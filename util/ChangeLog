@@ -1,3 +1,11 @@
+2004-01-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* miscutil.c (print_string2): New variation on print_string that
+	allows two delimiters.
+	(print_string): Call print_string2 to do work.
+
+	* argparse.c (default_strusage): Update copyright date.
+
 2003-12-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* iobuf.c (block_filter): Properly handle a partial body stream
