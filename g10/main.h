@@ -1,5 +1,6 @@
 /* main.h
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -119,6 +120,8 @@ int sign_symencrypt_file (const char *fname, STRLIST locusr);
 
 /*-- sig-check.c --*/
 int check_revocation_keys (PKT_public_key *pk, PKT_signature *sig);
+int check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
+		  PKT_signature *backsig);
 int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
 int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 			  int *is_selfsig, u32 *r_expiredate, int *r_expired );

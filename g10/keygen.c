@@ -531,10 +531,12 @@ make_backsig(PKT_signature *sig, PKT_public_key *pk,
   PKT_signature *backsig;
   int rc;
 
+#ifndef DO_BACKSIGS
   /* This is not enabled yet, as I want to get a bit closer to RFC day
      before enabling this.  I've been burned before :) */
 
   return 0;
+#endif
 
   cache_public_key (sub_pk);
 

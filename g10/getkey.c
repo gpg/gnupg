@@ -1923,8 +1923,51 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
         key_expire = 0;
     subpk->has_expired = key_expire >= curtime? 0 : key_expire;
     subpk->expiredate = key_expire;
-}
 
+#ifndef DO_BACKSIGS
+    /* Pretend the backsig is present and accounted for. */
+    subpk->backsig=2;
+#else
+    /* Find the first 0x19 embedded signature on our self-sig. */
+    if(subpk->backsig==0)
+      {
+	int seq=0;
+
+	while((p=enum_sig_subpkt(sig->hashed,
+				 SIGSUBPKT_SIGNATURE,&n,&seq,NULL)))
+	  if(n>3 && ((p[0]==3 && p[2]==0x19) || (p[0]==4 && p[1]==0x19)))
+	    break;
+
+	if(p==NULL)
+	  {
+	    seq=0;
+	    /* It is safe to have this in the unhashed area since the
+	       0x19 is located here for convenience, not security. */
+	    while((p=enum_sig_subpkt(sig->unhashed,SIGSUBPKT_SIGNATURE,
+				     &n,&seq,NULL)))
+	      if(n>3 && ((p[0]==3 && p[2]==0x19) || (p[0]==4 && p[1]==0x19)))
+		break;
+	  }
+
+	if(p)
+	  {
+	    PKT_signature *backsig=m_alloc_clear(sizeof(PKT_signature));
+	    IOBUF backsig_buf=iobuf_temp_with_content(p,n);
+
+	    if(parse_signature(backsig_buf,PKT_SIGNATURE,n,backsig)==0)
+	      {
+		if(check_backsig(mainpk,subpk,backsig)==0)
+		  subpk->backsig=2;
+		else
+		  subpk->backsig=1;
+	      }
+
+	    iobuf_close(backsig_buf);
+	    free_seckey_enc(backsig);
+	  }
+      }
+#endif
+}
 
 
 /* 
