@@ -1,3 +1,7 @@
+2005-02-03  Werner Koch  <wk@g10code.com>
+
+	Released 1.4.1rc1.
+
 2005-01-22  David Shaw  <dshaw@grover.jabberwocky.com>
 
 	* configure.ac: Define FTPS flag if we're using curl, and FTPS is

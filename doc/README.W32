@@ -14,7 +14,7 @@ Installation directory:
 =======================
 
 The installation directory of GnuPG is stored in the Registry under
-the key HKEY_LCOAL_MACHINE\Software\GNU\GnuPG with the name "Install
+the key HKEY_LOCAL_MACHINE\Software\GNU\GnuPG with the name "Install
 Directory".  The installer does not change the PATH environment
 variable to include this directory.  You might want to do this
 manually.
