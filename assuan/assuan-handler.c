@@ -88,8 +88,9 @@ parse_cmd_input_output (ASSUAN_CONTEXT ctx, char *line, int *rfd)
   if (!digitp (*line))
     return set_error (ctx, Syntax_Error, "number required");
   *rfd = strtoul (line, &endp, 10);
-  if (*endp)
-    return set_error (ctx, Syntax_Error, "garbage found");
+  /* remove that argument so that a notify handler won't see it */
+  memset (line, ' ', endp? (endp-line):strlen(line));
+
   if (*rfd == ctx->inbound.fd)
     return set_error (ctx, Parameter_Conflict, "fd same as inbound fd");
   if (*rfd == ctx->outbound.fd)
@@ -381,7 +382,7 @@ process_request (ASSUAN_CONTEXT ctx)
     }
   else if (rc == -1)
     { /* No error checking because the peer may have already disconnect */ 
-      assuan_write_line (ctx, "OK  Hope to meet you again");
+      assuan_write_line (ctx, "OK closing connection");
     }
   else 
     {
