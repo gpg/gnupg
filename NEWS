@@ -50,12 +50,34 @@ Noteworthy changes in version 1.3.2 (unreleased)
       This is a simpler interface to the old method (which still
       works) of revoking the user ID self-signature.
 
-    * Status VALIDSIG does now also print the primary key's fngerprint.
+    * Status VALIDSIG does now also print the primary key's
+      fingerprint, as well as the signature version, pubkey algorithm,
+      hash algorithm, and signature class.
 
     * Add read-only support for the SHA-256 hash, and optional
       read-only support for the SHA-384 and SHA-512 hashes.
 
     * New option --enable-progress-filter for use with frontends.
+
+    * DNS SRV records are used in HKP keyserver lookups to allow
+      administrators to load balance and select keyserver port
+      automatically.  This is as specified in
+      draft-shaw-openpgp-hkp-00.txt.
+
+    * When using the "keyid!" syntax during a key export, only that
+      specified key is exported.  If the key in question is a subkey,
+      the primary key plus only that subkey is exported.
+
+    * configure --disable-xxx options to disable individual algorithms
+      at build time.  This can be used to build a smaller gpg binary
+      for embedded uses where space is tight.  See the README file for
+      the algorithms that can be used with this option, or use
+      --enable-minimal to build the smallest gpg possible (disables
+      all optional algorithms, disables keyserver access, and disables
+      photo IDs).
+
+    * The keyserver no-modify flag on a key can now be displayed and
+      modified.
 
 
 Noteworthy changes in version 1.3.1 (2002-11-12)
@@ -81,6 +103,7 @@ Noteworthy changes in version 1.3.1 (2002-11-12)
     * Full algorithm names (e.g. "3DES", "SHA1", "ZIP") can now be
       used interchangeably with the short algorithm names (e.g. "S2",
       "H2", "Z1") anywhere algorithm names are used in GnuPG.
+
 
 Noteworthy changes in version 1.3.0 (2002-10-18)
 ------------------------------------------------
@@ -119,6 +142,7 @@ Noteworthy changes in version 1.3.0 (2002-10-18)
       development branch.  This is due to the frequent text changes
       during development, which cause the translations to rapidly go
       out of date.
+
 
 Noteworthy changes in version 1.1.92 (2002-09-11)
 -------------------------------------------------
