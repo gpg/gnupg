@@ -51,9 +51,15 @@ int
 encode_symmetric( const char *filename )
 {
     int compat = 1;
-    
+
+#if 0    
+    /* We don't want to use it because older gnupg version can't
+       handle it and we can presume that a lot of scripts are running
+       with the expert mode set.  Some time in the future we might
+       want to allow for it. */
     if ( opt.expert )
         compat = 0; /* PGP knows how to handle this mode. */
+#endif
     return encode_simple( filename, 1, compat );
 }
 

@@ -1,3 +1,7 @@
+2002-07-01  Werner Koch  <wk@gnupg.org>
+
+	* encode.c (encode_symmetric): Do not use the new encryption code.
+
 2002-06-30  Werner Koch  <wk@gnupg.org>
 
 	* photoid.c: Use __MINGW32__ to include windows because
