@@ -150,6 +150,38 @@ blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr)
   return 0; /* not found */
 }
 
+static int
+blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
+                   int fproff, int fprlen)
+{
+  const unsigned char *buffer;
+  size_t length;
+  size_t pos, off;
+  size_t nkeys, keyinfolen;
+  int idx;
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 40)
+    return 0; /* blob too short */
+
+  /*keys*/
+  nkeys = get16 (buffer + 16);
+  keyinfolen = get16 (buffer + 18 );
+  if (keyinfolen < 28)
+    return 0; /* invalid blob */
+  pos = 20;
+  if (pos + keyinfolen*nkeys > length)
+    return 0; /* out of bounds */
+
+  for (idx=0; idx < nkeys; idx++)
+    {
+      off = pos + idx*keyinfolen;
+      if (!memcmp (buffer + off + fproff, fpr, fprlen))
+        return 1; /* found */
+    }
+  return 0; /* not found */
+}
+
 
 static int
 blob_cmp_name (KEYBOXBLOB blob, int idx,
@@ -321,19 +353,17 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
 /*
   The has_foo functions are used as helpers for search 
 */
-#if 0
 static int
-has_short_kid (KEYBOXBLOB blob, u32 kid)
+has_short_kid (KEYBOXBLOB blob, const unsigned char *kid)
 {
-  return 0;
+  return blob_cmp_fpr_part (blob, kid+4, 16, 4);
 }
 
 static int
-has_long_kid (KEYBOXBLOB blob, u32 *kid)
+has_long_kid (KEYBOXBLOB blob, const unsigned char *kid)
 {
-  return 0;
+  return blob_cmp_fpr_part (blob, kid, 12, 8);
 }
-#endif
 
 static int
 has_fingerprint (KEYBOXBLOB blob, const unsigned char *fpr)
@@ -652,12 +682,12 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SHORT_KID: 
-/*                if (has_short_kid (blob, desc[n].u.kid[1])) */
-/*                  goto found; */
+              if (has_short_kid (blob, desc[n].u.kid))
+                goto found;
               break;
             case KEYDB_SEARCH_MODE_LONG_KID:
-/*                if (has_long_kid (blob, desc[n].u.kid)) */
-/*                  goto found; */
+              if (has_long_kid (blob, desc[n].u.kid))
+                goto found;
               break;
             case KEYDB_SEARCH_MODE_FPR:
             case KEYDB_SEARCH_MODE_FPR20:
