@@ -1,3 +1,9 @@
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* README: Updated.
+
+	* configure.ac: Require libksba 0.9.2 due to bug fixes.
+
 2004-01-24  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: Now requires libassuan 0.6.3.

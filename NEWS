@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.9.4 (unreleased)
 ------------------------------------------------
 
+ * Added support for the Telesec NKS 2.0 card application.
+
+ * Various minor bug fixes and cleanups; mainly gpgsm and gpg-agent
+   related.
 
 Noteworthy changes in version 1.9.3 (2003-12-23)
 ------------------------------------------------

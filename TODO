@@ -59,6 +59,9 @@ might want to have an agent context for each service request
 * agent/pkdecrypt.c, agent/pksign.c
 ** Don't use stdio to return results.
 
+* agent/divert-scd.c
+ Remove the agent_reset_scd kludge.
+
 * agent/protect-tool.c
 ** Export and import certificates along with the secret key.
 ** Make it more comfortable; i.e. copy files to the correct place.
