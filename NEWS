@@ -1,6 +1,30 @@
 Noteworthy changes in version 1.1.91
 -------------------------------------------------
 
+    * There are now various ways to restrict the ability GnuPG has to
+      exec external programs (for the keyserver helpers or photo ID
+      viewers).  Read the README file for the complete list.
+
+    * New export option to leave off attribute packets (photo IDs)
+      during export.  This is useful when exporting to HKP keyservers
+      which do not understand attribute packets.
+
+    * New import option to repair during import the HKP keyserver
+      mangling multiple subkeys bug.  Note that this cannot completely
+      repair the damaged key as some crucial data is removed by the
+      keyserver, but it does at least give you back one subkey.  This
+      is on by default for keyserver --recv-keys, and off by default
+      for regular --import.
+
+    * The keyserver helper programs now live in
+      /usr/[local/]libexec/gnupg by default.  If you are upgrading
+      from 1.0.7, you might want to delete your old copies in
+      /usr/[local/]bin.  If you use an OS that does not use libexec
+      for whatever reason, use --libexecdir=/usr/local/lib to place
+      the keyserver helpers there.
+
+    * The LDAP keyserver handler now works properly with very old
+      (version 1) LDAP keyservers.
 
 Noteworthy changes in version 1.1.90 (2002-07-01)
 -------------------------------------------------
