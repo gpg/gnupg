@@ -88,12 +88,14 @@ parse_import_options(char *str,unsigned int *options,int noisy)
 {
   struct parse_options import_opts[]=
     {
-      {"allow-local-sigs",IMPORT_ALLOW_LOCAL_SIGS,NULL},
-      {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
+      {"import-local-sigs",IMPORT_LOCAL_SIGS,NULL},
       {"repair-pks-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
-      {"fast-import",IMPORT_FAST_IMPORT,NULL},
+      {"fast-import",IMPORT_FAST,NULL},
       {"convert-sk-to-pk",IMPORT_SK2PK,NULL},
       {"merge-only",IMPORT_MERGE_ONLY,NULL},
+      /* Aliases for backward compatibility */
+      {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL},
+      {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL},
       {NULL,0,NULL}
     };
 
@@ -195,7 +197,7 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
        that was other than a selfsig, or any revocation), then
        update/check the trustdb if the user specified by setting
        interactive or by not setting no-auto-check-trustdb */
-    if (!(options&IMPORT_FAST_IMPORT) && trustdb_pending_check())
+    if (!(options&IMPORT_FAST) && trustdb_pending_check())
       {
 	if (opt.interactive)
 	  update_trustdb();
@@ -1493,7 +1495,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 	    delete_kbnode( node ); /* build_packet() can't handle this */
 	else if( node->pkt->pkttype == PKT_SIGNATURE &&
 		 !node->pkt->pkt.signature->flags.exportable &&
-		 !(options&IMPORT_ALLOW_LOCAL_SIGS) &&
+		 !(options&IMPORT_LOCAL_SIGS) &&
 		 seckey_available( node->pkt->pkt.signature->keyid ) )
 	  {
 	    /* here we violate the rfc a bit by still allowing

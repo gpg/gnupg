@@ -45,10 +45,14 @@ parse_export_options(char *str,unsigned int *options,int noisy)
 {
   struct parse_options export_opts[]=
     {
-      {"include-local-sigs",EXPORT_INCLUDE_LOCAL_SIGS,NULL},
-      {"include-attributes",EXPORT_INCLUDE_ATTRIBUTES,NULL},
-      {"include-sensitive-revkeys",EXPORT_INCLUDE_SENSITIVE_REVKEYS,NULL},
+      {"export-local-sigs",EXPORT_LOCAL_SIGS,NULL},
+      {"export-attributes",EXPORT_ATTRIBUTES,NULL},
+      {"export-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL},
       {"export-minimal",EXPORT_MINIMAL,NULL},
+      /* Aliases for backward compatibility */
+      {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL},
+      {"include-attributes",EXPORT_ATTRIBUTES,NULL},
+      {"include-sensitive-revkeys",EXPORT_SENSITIVE_REVKEYS,NULL},
       {NULL,0,NULL}
       /* add tags for include revoked and disabled? */
     };
@@ -318,7 +322,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		  continue;
 
 		/* do not export packets which are marked as not exportable */
-		if(!(options&EXPORT_INCLUDE_LOCAL_SIGS)
+		if(!(options&EXPORT_LOCAL_SIGS)
 		   && !node->pkt->pkt.signature->flags.exportable)
 		  continue; /* not exportable */
 
@@ -326,7 +330,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		   key unless the user wants us to.  Note that we do
 		   export these when issuing the actual revocation
 		   (see revoke.c). */
-		if(!(options&EXPORT_INCLUDE_SENSITIVE_REVKEYS)
+		if(!(options&EXPORT_SENSITIVE_REVKEYS)
 		   && node->pkt->pkt.signature->revkey)
 		  {
 		    int i;
@@ -341,7 +345,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	      }
 
 	    /* Don't export attribs? */
-	    if( !(options&EXPORT_INCLUDE_ATTRIBUTES) &&
+	    if( !(options&EXPORT_ATTRIBUTES) &&
 		node->pkt->pkttype == PKT_USER_ID &&
 		node->pkt->pkt.user_id->attrib_data ) {
 	      /* Skip until we get to something that is not an attrib
