@@ -1,3 +1,9 @@
+2004-02-03  Werner Koch  <wk@gnupg.org>
+
+	* contrib.texi (Contributors): Updated from the gpg 1.2.3 thanks
+	list.
+	* gpgsm.texi, gpg-agent.texi, scdaemon.texi: Language cleanups.
+
 2003-12-01  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.texi (Certificate Options): Add --{enable,disable}-ocsp.

@@ -648,7 +648,7 @@ import_p12_file (const char *fname)
     log_printf ("%02X", grip[i]);
   log_printf ("\n");
 
-  /* convert to canonical encoding */
+  /* Convert to canonical encoding. */
   buflen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (buflen);
   key = gcry_xmalloc_secure (buflen);

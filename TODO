@@ -48,6 +48,7 @@ might want to have an agent context for each service request
 ** Check that all error code mapping is done.
 ** Remove the inter-module dependencies between gpgsm and keybox
 ** Add an source_of_key field
+** We need an error code GPG_ERR_NOT_LOCKED
 
 * agent/gpg-agent.c
 ** A SIGHUP should also restart the scdaemon

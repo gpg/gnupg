@@ -112,7 +112,7 @@ Boston, MA 02111-1307 USA
 @cindex introduction
 
 This manual documents how to use the GNU Privay Guard system as well as
-the administartion and the architecture.
+the administration and the architecture.
 
 @c * Gpg::             Using the OpenPGP protocol.
 @menu

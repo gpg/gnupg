@@ -76,7 +76,9 @@ This is mainly a debugging command, used to print the ATR
 @item --options @var{file}
 @opindex options
 Reads configuration from @var{file} instead of from the default
-per-user configuration file.
+per-user configuration file.  The default configuration file is named
+@file{scdaemon.conf} and expected in the @file{.gnupg} directory directly
+below the home directory of the user.
 
 @item -v
 @item --verbose

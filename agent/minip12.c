@@ -91,8 +91,12 @@ static unsigned char const oid_encryptedData[9] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x07, 0x06 };
 static unsigned char const oid_pkcs_12_pkcs_8ShroudedKeyBag[11] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x0A, 0x01, 0x02 };
+static unsigned char const oid_pkcs_12_CertBag[11] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x0A, 0x01, 0x03 };
 static unsigned char const oid_pbeWithSHAAnd3_KeyTripleDES_CBC[10] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x03 };
+static unsigned char const oid_pbeWithSHAAnd40BitRC2_CBC[10] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x06 };
 
 static unsigned char const oid_rsaEncryption[9] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };
@@ -402,11 +406,62 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   p += DIM(oid_data);
   n -= DIM(oid_data);
 
-  /* fixme: continue parsing */
+#if 0
+  where = "bag.encryptedData.keyinfo"
+  if (parse_tag (&p, &n, &ti))
+    goto bailout;
+  if (ti.class || ti.tag != TAG_SEQUENCE)
+    goto bailout;
+  if (parse_tag (&p, &n, &ti))
+    goto bailout;
+  if (!ti.class && ti.tag == TAG_OBJECT_ID
+      && ti.length == DIM(oid_pbeWithSHAAnd40BitRC2_CBC)
+      && memcmp (p, oid_pbeWithSHAAnd40BitRC2_CBC,
+                 DIM(oid_pbeWithSHAAnd40BitRC2_CBC)))
+    {
+      p += DIM(oid_pbeWithSHAAnd40BitRC2_CBC);
+      n -= DIM(oid_pbeWithSHAAnd40BitRC2_CBC);
+    }
+  else
+    goto bailout;
+
+  where = "rc2-params";
+  if (parse_tag (&p, &n, &ti))
+    goto bailout;
+  if (ti.class || ti.tag != TAG_SEQUENCE)
+    goto bailout;
+  if (parse_tag (&p, &n, &ti))
+    goto bailout;
+  if (ti.class || ti.tag != TAG_OCTET_STRING || ti.length != 8 )
+    goto bailout;
+  memcpy (salt, p, 8);
+  p += 8;
+  n -= 8;
+  if (parse_tag (&p, &n, &ti))
+    goto bailout;
+  if (ti.class || ti.tag != TAG_INTEGER || !ti.length )
+    goto bailout;
+  for (iter=0; ti.length; ti.length--)
+    {
+      iter <<= 8;
+      iter |= (*p++) & 0xff; 
+      n--;
+    }
+  
+  where = "rc2-ciphertext";
+  if (parse_tag (&p, &n, &ti))
+    goto bailout;
+  if (ti.class || ti.tag != TAG_OCTET_STRING || !ti.length )
+    goto bailout;
+  
+  log_info ("%lu bytes of RC2 encrypted text\n", ti.length);
+#endif
+
+
 
   return 0;
  bailout:
-  log_error ("encrptedData error at \"%s\", offset %u\n",
+  log_error ("encryptedData error at \"%s\", offset %u\n",
              where, (p - buffer)+startoffset);
   return -1;
 }
@@ -615,8 +670,8 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
 
 
 /* Parse a PKCS12 object and return an array of MPI representing the
-   secret key parameters.  This is a very limited inplementation in
-   that it is only able to look for 3DES encoded enctyptedData and
+   secret key parameters.  This is a very limited implementation in
+   that it is only able to look for 3DES encoded encryptedData and
    tries to extract the first private key object it finds.  In case of
    an error NULL is returned. */
 gcry_mpi_t *

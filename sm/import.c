@@ -214,7 +214,7 @@ import_one (CTRL ctrl, struct stats_s *stats, int in_fd)
     {
       rc = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("fdopen() failed: %s\n", strerror (errno));
-  q    goto leave;
+      goto leave;
     }
 
   rc = gpgsm_create_reader (&b64reader, ctrl, fp, &reader);

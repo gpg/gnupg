@@ -98,11 +98,12 @@ Run in server mode and wait for commands on the @code{stdin}.
 @opindex call-dirmngr
 Behave as a Dirmngr client issuing the request @var{command} with the
 optional list of @var{args}.  The output of the Dirmngr is printed
-stdout.  Please note that filenames given as arguments should have an
-absulte path because they are passed verbatim to the Dirmngr and the
-working directory of the Dirmngr might not be the same as the one of
-this client.  Currently it is not possible to pass data via stdin to the
-Dirmngr.  @var{command} should not contain spaces.
+stdout.  Please note that file names given as arguments should have an
+absulte file name (i.e. commencing with @code{/} because they are
+passed verbatim to the Dirmngr and the working directory of the
+Dirmngr might not be the same as the one of this client.  Currently it
+is not possible to pass data via stdin to the Dirmngr.  @var{command}
+should not contain spaces.
 
 This is command is required for certain maintaining tasks of the dirmngr
 where a dirmngr must be able to call back to gpgsm.  See the Dirmngr
@@ -193,7 +194,9 @@ in the option file.
 @item --options @var{file}
 @opindex options
 Reads configuration from @var{file} instead of from the default
-per-user configuration file.
+per-user configuration file.  The default configuration file is named
+@file{gpgsm.conf} and expected in the @file{.gnupg} directory directly
+below the home directory of the user.
 
 @item -v
 @item --verbose
@@ -299,7 +302,7 @@ secret key found in the database.
 @opindex with-key-data
 Displays extra information with the @code{--list-keys} commands.  Especially
 a line tagged @code{grp} is printed which tells you the keygrip of a
-key.  This string is for example used as the filename of the
+key.  This string is for example used as the file name of the
 secret key.
 
 @end table
@@ -360,10 +363,10 @@ usual C-Syntax. The currently defined bits are:
 @opindex debug-all
 Same as @code{--debug=0xffffffff}
 
-@item --debug-no-path-validation
-@opindex debug-no-path-validation
+@item --debug-no-chain-validation
+@opindex debug-no-chain-validation
 This is actually not a debugging option but only useful as such.  It
-lets gpgsm bypass all certificate path validation checks.
+lets gpgsm bypass all certificate chain validation checks.
 
 @end table
 

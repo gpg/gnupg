@@ -5,7 +5,7 @@
 @node Assuan
 @chapter Description of the Assuan protocol.
 
-The architecture of the modula GnuPG system is based on a couple of
+The architecture of the modular GnuPG system is based on a couple of
 highly specialized modules which make up a network of client server
 communication.  A common framework for intermodule communication is
 therefore needed and should be implemented in a library.
