@@ -1,3 +1,7 @@
+2003-08-21  Werner Koch  <wk@gnupg.org>
+
+	* pl.po, hu.po: Updated from upstream. 
+
 2003-07-30  Werner Koch  <wk@gnupg.org>
 
 	* de.po: Fixed fuzzies and translated a few new strings.

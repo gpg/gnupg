@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.1\n"
-"POT-Creation-Date: 2003-07-30 18:22+0200\n"
+"POT-Creation-Date: 2003-08-21 18:22+0200\n"
 "PO-Revision-Date: 2003-05-07 22:57+0900\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -1114,7 +1114,7 @@ msgstr "--nrlsign-key ユーザーid"
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key ユーザーid [コマンド]"
 
-#: g10/g10.c:2286 g10/encode.c:426 g10/sign.c:802
+#: g10/g10.c:2286 g10/encode.c:426 g10/sign.c:801
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "%sが開けません: %s\n"
@@ -1992,13 +1992,13 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "鍵の生成に失敗しました: %s\n"
 
-#: g10/keygen.c:2375 g10/sign.c:262
+#: g10/keygen.c:2375 g10/sign.c:261
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr "鍵は%lu秒未来にできました (時間旅行か時計のくるいでしょう)\n"
 
-#: g10/keygen.c:2377 g10/sign.c:264
+#: g10/keygen.c:2377 g10/sign.c:263
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -2022,7 +2022,7 @@ msgstr "このコマンドで--outputは機能しません\n"
 msgid "%s: can't open: %s\n"
 msgstr "%s: 開けません: %s\n"
 
-#: g10/encode.c:209 g10/sign.c:1056
+#: g10/encode.c:209 g10/sign.c:1055
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "パスフレーズの作成エラー: %s\n"
@@ -2060,7 +2060,7 @@ msgstr "暗号化しようとしている鍵は全部IDEA暗号を使えません。\n"
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "対称暗号アルゴリズム %s (%d) の強制が、受取人の選好と対立します\n"
 
-#: g10/encode.c:576 g10/sign.c:771
+#: g10/encode.c:576 g10/sign.c:770
 #, c-format
 msgid "forcing compression algorithm %s (%d) violates recipient preferences\n"
 msgstr "圧縮アルゴリズム %s (%d) の強制が、受取人の選好と対立します\n"
@@ -2225,17 +2225,17 @@ msgid ""
 "NOTE: Elgamal primary key detected - this may take some time to import\n"
 msgstr "注意: ElGamalの主鍵を検出 - 往々にして読込みに時間がかかります\n"
 
-#: g10/import.c:565 g10/import.c:827
+#: g10/import.c:565 g10/import.c:826
 #, c-format
 msgid "key %08lX: no user ID\n"
 msgstr "鍵%08lX: ユーザーIDがありません\n"
 
-#: g10/import.c:586
+#: g10/import.c:587
 #, c-format
 msgid "key %08lX: HKP subkey corruption repaired\n"
 msgstr "鍵%08lX: HKPの副鍵変造を修復\n"
 
-#: g10/import.c:601
+#: g10/import.c:602
 #, c-format
 msgid "key %08lX: accepted non self-signed user ID '%s'\n"
 msgstr "鍵%08lX: 受理した未自己署名のユーザーID '%s'\n"
@@ -2249,243 +2249,233 @@ msgstr "鍵%08lX: 有効なユーザーIDがありません\n"
 msgid "this may be caused by a missing self-signature\n"
 msgstr "自己署名のないせいでしょう\n"
 
-#: g10/import.c:620 g10/import.c:907
+#: g10/import.c:619 g10/import.c:906
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
 msgstr "鍵%08lX: 公開鍵が見つかりません: %s\n"
 
-#: g10/import.c:625
+#: g10/import.c:624
 #, c-format
 msgid "key %08lX: new key - skipped\n"
 msgstr "鍵 %08lX: 新しい鍵です - スキップ\n"
 
-#: g10/import.c:635
+#: g10/import.c:634
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "書込み可能な鍵輪が見つかりません: %s\n"
 
-#: g10/import.c:640 g10/sign.c:678 g10/sign.c:917 g10/openfile.c:254
+#: g10/import.c:639 g10/sign.c:677 g10/sign.c:916 g10/openfile.c:254
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "「%s」への書出し\n"
 
-#: g10/import.c:643 g10/import.c:728 g10/import.c:854 g10/import.c:967
+#: g10/import.c:642 g10/import.c:727 g10/import.c:853 g10/import.c:966
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "鍵輪「%s」の書込みエラー: %s\n"
 
-#: g10/import.c:660
+#: g10/import.c:659
 #, c-format
 msgid "key %08lX: public key \"%s\" imported\n"
 msgstr "鍵%08lX: 公開鍵「%s」を読み込みました\n"
 
-#: g10/import.c:682
+#: g10/import.c:681
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
 msgstr "鍵%08lX: こちらの複製と合いません\n"
 
-#: g10/import.c:699 g10/import.c:924
+#: g10/import.c:698 g10/import.c:923
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
 msgstr "鍵%08lX: 元の鍵ブロックに位置づけできません: %s\n"
 
-#: g10/import.c:706 g10/import.c:930
+#: g10/import.c:705 g10/import.c:929
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
 msgstr "鍵%08lX: 元の鍵ブロックを読み込めません: %s\n"
 
-#: g10/import.c:737
+#: g10/import.c:736
 #, c-format
 msgid "key %08lX: \"%s\" 1 new user ID\n"
 msgstr "鍵%08lX: 「%s」新しいユーザーIDを1個\n"
 
-#: g10/import.c:740
+#: g10/import.c:739
 #, c-format
 msgid "key %08lX: \"%s\" %d new user IDs\n"
 msgstr "鍵%08lX: 「%s」新しいユーザーIDを%d個\n"
 
-#: g10/import.c:743
+#: g10/import.c:742
 #, c-format
 msgid "key %08lX: \"%s\" 1 new signature\n"
 msgstr "鍵%08lX: 「%s」新しい署名を1個\n"
 
-#: g10/import.c:746
+#: g10/import.c:745
 #, c-format
 msgid "key %08lX: \"%s\" %d new signatures\n"
 msgstr "鍵%08lX: 「%s」新しい署名を%d個\n"
 
-#: g10/import.c:749
+#: g10/import.c:748
 #, c-format
 msgid "key %08lX: \"%s\" 1 new subkey\n"
 msgstr "鍵%08lX: 「%s」新しい副鍵を1個\n"
 
-#: g10/import.c:752
+#: g10/import.c:751
 #, c-format
 msgid "key %08lX: \"%s\" %d new subkeys\n"
 msgstr "鍵%08lX: 「%s」新しい副鍵を%d個\n"
 
-#: g10/import.c:771
+#: g10/import.c:770
 #, c-format
 msgid "key %08lX: \"%s\" not changed\n"
 msgstr "鍵%08lX: 「%s」変更なし\n"
 
-#: g10/import.c:833
+#: g10/import.c:832
 #, c-format
 msgid "key %08lX: secret key with invalid cipher %d - skipped\n"
 msgstr "鍵%08lX: 無効な暗号%dの秘密鍵です - スキップ\n"
 
-#: g10/import.c:848
+#: g10/import.c:847
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "既定の秘密鍵輪がありません: %s\n"
 
-#: g10/import.c:859
+#: g10/import.c:858
 #, c-format
 msgid "key %08lX: secret key imported\n"
 msgstr "鍵%08lX: 秘密鍵を読み込みました\n"
 
 #. we can't merge secret keys
-#: g10/import.c:865
+#: g10/import.c:864
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
 msgstr "鍵%08lX: 既に秘密鍵輪にあります\n"
 
-#: g10/import.c:872
+#: g10/import.c:871
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
 msgstr "鍵%08lX: 秘密鍵が見つかりません: %s\n"
 
-#: g10/import.c:901
+#: g10/import.c:900
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
 msgstr "鍵%08lX: 公開鍵がありません - 失効証明書を適用できません\n"
 
-#: g10/import.c:941
+#: g10/import.c:940
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
 msgstr "鍵%08lX: 無効な失効証明書: %s - 拒否\n"
 
-#: g10/import.c:973
+#: g10/import.c:972
 #, c-format
 msgid "key %08lX: \"%s\" revocation certificate imported\n"
 msgstr "鍵%08lX: 「%s」失効証明書を読み込みました\n"
 
-#: g10/import.c:1036
+#: g10/import.c:1035
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
 msgstr "鍵%08lX: 署名に対応するユーザーIDがありません\n"
 
-#: g10/import.c:1049
+#: g10/import.c:1050
 #, c-format
 msgid "key %08lX: unsupported public key algorithm on user id \"%s\"\n"
 msgstr "鍵%08lX: ユーザーid「%s」のサポートしていない公開鍵アルゴリズムです\n"
 
-#: g10/import.c:1051
+#: g10/import.c:1052
 #, c-format
 msgid "key %08lX: invalid self-signature on user id \"%s\"\n"
 msgstr "鍵%08lX: ユーザーid「%s」の自己署名が、無効です\n"
 
-#: g10/import.c:1066
+#: g10/import.c:1069
 #, c-format
 msgid "key %08lX: no subkey for key binding\n"
 msgstr "鍵%08lX: 鍵に対応する副鍵がありません\n"
 
-#: g10/import.c:1074 g10/import.c:1115
+#: g10/import.c:1078 g10/import.c:1122
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
 msgstr "鍵%08lX: サポートしていない公開鍵アルゴリズムです\n"
 
-#: g10/import.c:1075
+#: g10/import.c:1079
 #, c-format
 msgid "key %08lX: invalid subkey binding\n"
 msgstr "鍵%08lX: 無効な副鍵の対応です\n"
 
-#. Delete the last binding
-#. sig since this one is
-#. newer
-#: g10/import.c:1087
+#: g10/import.c:1092
 #, c-format
 msgid "key %08lX: removed multiple subkey binding\n"
 msgstr "鍵%08lX: 多重副鍵の対応を削除します\n"
 
-#: g10/import.c:1107
+#: g10/import.c:1113
 #, c-format
 msgid "key %08lX: no subkey for key revocation\n"
 msgstr "鍵%08lX: 鍵失効にたいする副鍵がありません\n"
 
-#: g10/import.c:1116
+#: g10/import.c:1123
 #, c-format
 msgid "key %08lX: invalid subkey revocation\n"
 msgstr "鍵%08lX: 無効な副鍵失効です\n"
 
-#. Delete the last revocation
-#. sig since this one is
-#. newer
-#: g10/import.c:1127
+#: g10/import.c:1136
 #, c-format
 msgid "key %08lX: removed multiple subkey revocation\n"
 msgstr "鍵%08lX: 無効な副鍵の失効を削除します\n"
 
-#: g10/import.c:1164
+#: g10/import.c:1173
 #, c-format
 msgid "key %08lX: skipped user ID '"
 msgstr "鍵%08lX: スキップしたユーザーID '"
 
-#: g10/import.c:1187
+#: g10/import.c:1196
 #, c-format
 msgid "key %08lX: skipped subkey\n"
 msgstr "鍵%08lX: スキップした副鍵\n"
 
-#. here we violate the rfc a bit by still allowing
-#. * to import non-exportable signature when we have the
-#. * the secret key used to create this signature - it
-#. * seems that this makes sense
-#: g10/import.c:1213
+#: g10/import.c:1223
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
 msgstr "鍵%08lX: 書出し不可な署名 (クラス%02x) - スキップ\n"
 
-#: g10/import.c:1222
+#: g10/import.c:1232
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
 msgstr "鍵%08lX: 失効証明書が誤って設定されています - スキップ\n"
 
-#: g10/import.c:1239
+#: g10/import.c:1249
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
 msgstr "鍵%08lX: 無効な失効証明書: %s - スキップ\n"
 
-#: g10/import.c:1251
+#: g10/import.c:1262
 #, c-format
 msgid "key %08lX: subkey signature in wrong place - skipped\n"
 msgstr "鍵%08lX: 副鍵署名の場所が、誤っています - スキップ\n"
 
-#: g10/import.c:1259
+#: g10/import.c:1270
 #, c-format
 msgid "key %08lX: unexpected signature class (0x%02X) - skipped\n"
 msgstr "鍵%08lX: 予期せぬ署名クラス (0x%02X) - スキップ\n"
 
-#: g10/import.c:1357
+#: g10/import.c:1369
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
 msgstr "鍵%08lX: 重複したユーザーIDの検出 - 併合\n"
 
-#: g10/import.c:1416
+#: g10/import.c:1428
 #, c-format
 msgid "WARNING: key %08lX may be revoked: fetching revocation key %08lX\n"
 msgstr "警告: 鍵%08lXは失効されたようです: 失効鍵%08lXの引き出し\n"
 
-#: g10/import.c:1430
+#: g10/import.c:1442
 #, c-format
 msgid "WARNING: key %08lX may be revoked: revocation key %08lX not present.\n"
 msgstr "警告: 鍵%08lXは失効されたようです: 失効鍵%08lXは不在。\n"
 
-#: g10/import.c:1486
+#: g10/import.c:1500
 #, c-format
 msgid "key %08lX: \"%s\" revocation certificate added\n"
 msgstr "鍵%08lX: 「%s」失効証明書の追加\n"
 
-#: g10/import.c:1517
+#: g10/import.c:1533
 #, c-format
 msgid "key %08lX: direct key signature added\n"
 msgstr "鍵%08lX: 直接鍵署名を追加\n"
@@ -2754,7 +2744,7 @@ msgid "Really sign? "
 msgstr "本当に署名しますか? "
 
 #: g10/keyedit.c:765 g10/keyedit.c:3261 g10/keyedit.c:3352 g10/keyedit.c:3425
-#: g10/sign.c:313
+#: g10/sign.c:312
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "署名に失敗しました: %s\n"
@@ -4094,71 +4084,71 @@ msgstr "鍵%08lX: 鍵失効パケットにたいする副鍵がありません\n"
 msgid "key %08lX: no subkey for subkey binding signature\n"
 msgstr "鍵%08lX: 鍵に対応する副鍵がありません\n"
 
-#: g10/sign.c:79
+#: g10/sign.c:84
 msgid "can't put notation data into v3 (PGP 2.x style) signatures\n"
 msgstr "注釈データは、(PGP 2.x形式の) v3署名には入りません\n"
 
-#: g10/sign.c:87
+#: g10/sign.c:92
 msgid "can't put notation data into v3 (PGP 2.x style) key signatures\n"
 msgstr "注釈データは、(PGP 2.x形式の) v3鍵署名には入りません\n"
 
-#: g10/sign.c:106
+#: g10/sign.c:111
 #, c-format
 msgid "WARNING: unable to %%-expand notation (too large).  Using unexpanded.\n"
 msgstr "警告: 表記を%%拡張不能 (大きすぎ)。非拡張を使用。\n"
 
-#: g10/sign.c:135
+#: g10/sign.c:137
 msgid "can't put a policy URL into v3 (PGP 2.x style) signatures\n"
 msgstr "ポリシーURLは、(PGP 2.x形式の) v3署名には入りません\n"
 
-#: g10/sign.c:143
+#: g10/sign.c:145
 msgid "can't put a policy URL into v3 key (PGP 2.x style) signatures\n"
 msgstr "ポリシーURLは、(PGP 2.x形式の) v3鍵署名には入りません\n"
 
-#: g10/sign.c:156
+#: g10/sign.c:158
 #, c-format
 msgid ""
 "WARNING: unable to %%-expand policy url (too large).  Using unexpanded.\n"
 msgstr "警告: ポリシーurlを%%拡張不能 (大きすぎ)。非拡張を使用。\n"
 
-#: g10/sign.c:308
+#: g10/sign.c:307
 #, c-format
 msgid "checking created signature failed: %s\n"
 msgstr "作成された署名の検査に失敗: %s\n"
 
-#: g10/sign.c:317
+#: g10/sign.c:316
 #, c-format
 msgid "%s signature from: \"%s\"\n"
 msgstr "%s署名。署名者: \"%s\"\n"
 
-#: g10/sign.c:466
+#: g10/sign.c:465
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "警告: `%s'は空のファイルです\n"
 
-#: g10/sign.c:649
+#: g10/sign.c:648
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "--pgp2モードでは、PGP 2.x形式の鍵で分離署名できるだけです\n"
 
-#: g10/sign.c:673 g10/sign.c:912
+#: g10/sign.c:672 g10/sign.c:911
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "%sを作成できません: %s\n"
 
-#: g10/sign.c:702
+#: g10/sign.c:701
 #, c-format
 msgid "forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr "要約アルゴリズム %s (%d) の強制が、受取人の選好と対立します\n"
 
-#: g10/sign.c:797
+#: g10/sign.c:796
 msgid "signing:"
 msgstr "署名:"
 
-#: g10/sign.c:896
+#: g10/sign.c:895
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "--pgp2モードではPGP 2.x形式の鍵でクリア署名しかできません\n"
 
-#: g10/sign.c:1050
+#: g10/sign.c:1049
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "%s暗号化を使用します\n"
@@ -4207,7 +4197,7 @@ msgstr "%s: ロックができません\n"
 msgid "%s: can't make lock\n"
 msgstr "%s: ロックができません\n"
 
-#: g10/tdbio.c:504 g10/openfile.c:250 g10/openfile.c:325 g10/keyring.c:1453
+#: g10/tdbio.c:504 g10/openfile.c:250 g10/openfile.c:325 g10/keyring.c:1460
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: 作成できません: %s\n"
@@ -4933,17 +4923,17 @@ msgstr "この安全上の欠陥を修正してください\n"
 msgid "checking keyring `%s'\n"
 msgstr "鍵輪「%s」を検査しています\n"
 
-#: g10/keyring.c:1381
+#: g10/keyring.c:1388
 #, c-format
 msgid "%lu keys so far checked (%lu signatures)\n"
 msgstr "これまでに%lu個の鍵まで検査 (%lu個の署名)\n"
 
-#: g10/keyring.c:1392
+#: g10/keyring.c:1399
 #, c-format
 msgid "%lu keys checked (%lu signatures)\n"
 msgstr "%lu個の鍵まで検査 (%lu個の署名)\n"
 
-#: g10/keyring.c:1458
+#: g10/keyring.c:1465
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: 鍵輪ができました\n"

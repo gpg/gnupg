@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"POT-Creation-Date: 2003-07-30 18:22+0200\n"
+"POT-Creation-Date: 2003-08-21 18:22+0200\n"
 "PO-Revision-Date: 2002-09-13 18:26+0100\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
@@ -1090,7 +1090,7 @@ msgstr "--nrlsign-key id-utilizador"
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id-utilizador [comandos]"
 
-#: g10/g10.c:2286 g10/encode.c:426 g10/sign.c:802
+#: g10/g10.c:2286 g10/encode.c:426 g10/sign.c:801
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "impossível abrir %s: %s\n"
@@ -1978,7 +1978,7 @@ msgstr ""
 msgid "Key generation failed: %s\n"
 msgstr "A geração de chaves falhou: %s\n"
 
-#: g10/keygen.c:2375 g10/sign.c:262
+#: g10/keygen.c:2375 g10/sign.c:261
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -1986,7 +1986,7 @@ msgstr ""
 "a chave foi criada %lu segundo no futuro\n"
 "(viagem no tempo ou problema no relógio)\n"
 
-#: g10/keygen.c:2377 g10/sign.c:264
+#: g10/keygen.c:2377 g10/sign.c:263
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -2012,7 +2012,7 @@ msgstr "--output não funciona para este comando\n"
 msgid "%s: can't open: %s\n"
 msgstr "%s: impossível abrir: %s\n"
 
-#: g10/encode.c:209 g10/sign.c:1056
+#: g10/encode.c:209 g10/sign.c:1055
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "erro na criação da frase secreta: %s\n"
@@ -2053,7 +2053,7 @@ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
 "ao forçar a cifra simétrica %s (%d) viola as preferências do destinatário\n"
 
-#: g10/encode.c:576 g10/sign.c:771
+#: g10/encode.c:576 g10/sign.c:770
 #, c-format
 msgid "forcing compression algorithm %s (%d) violates recipient preferences\n"
 msgstr ""
@@ -2222,17 +2222,17 @@ msgstr ""
 "NOTA: Chave primária Elgamal detectada - pode demorar algum tempo a "
 "importar\n"
 
-#: g10/import.c:565 g10/import.c:827
+#: g10/import.c:565 g10/import.c:826
 #, c-format
 msgid "key %08lX: no user ID\n"
 msgstr "chave %08lX: sem ID de utilizador\n"
 
-#: g10/import.c:586
+#: g10/import.c:587
 #, c-format
 msgid "key %08lX: HKP subkey corruption repaired\n"
 msgstr "chave %08lX: subchave HKP corrompida foi reparada\n"
 
-#: g10/import.c:601
+#: g10/import.c:602
 #, c-format
 msgid "key %08lX: accepted non self-signed user ID '%s'\n"
 msgstr "chave %08lX: aceite ID de utilizador sem auto-assinatura '%s'\n"
@@ -2246,250 +2246,240 @@ msgstr "chave %08lX: sem IDs de utilizadores válidos\n"
 msgid "this may be caused by a missing self-signature\n"
 msgstr "isto pode ser causado por falta de auto-assinatura\n"
 
-#: g10/import.c:620 g10/import.c:907
+#: g10/import.c:619 g10/import.c:906
 #, c-format
 msgid "key %08lX: public key not found: %s\n"
 msgstr "chave %08lX: chave pública não encontrada: %s\n"
 
-#: g10/import.c:625
+#: g10/import.c:624
 #, c-format
 msgid "key %08lX: new key - skipped\n"
 msgstr "chave %08lX: chave nova - ignorada\n"
 
-#: g10/import.c:635
+#: g10/import.c:634
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "não foi encontrada nenhum porta-chaves onde escrever: %s\n"
 
-#: g10/import.c:640 g10/sign.c:678 g10/sign.c:917 g10/openfile.c:254
+#: g10/import.c:639 g10/sign.c:677 g10/sign.c:916 g10/openfile.c:254
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "a escrever para `%s'\n"
 
-#: g10/import.c:643 g10/import.c:728 g10/import.c:854 g10/import.c:967
+#: g10/import.c:642 g10/import.c:727 g10/import.c:853 g10/import.c:966
 #, c-format
 msgid "error writing keyring `%s': %s\n"
 msgstr "erro na escrita do porta-chaves `%s': %s\n"
 
-#: g10/import.c:660
+#: g10/import.c:659
 #, c-format
 msgid "key %08lX: public key \"%s\" imported\n"
 msgstr "chave %08lX: chave pública \"%s\" importada\n"
 
-#: g10/import.c:682
+#: g10/import.c:681
 #, c-format
 msgid "key %08lX: doesn't match our copy\n"
 msgstr "chave %08lX: não corresponde à nossa cópia\n"
 
-#: g10/import.c:699 g10/import.c:924
+#: g10/import.c:698 g10/import.c:923
 #, c-format
 msgid "key %08lX: can't locate original keyblock: %s\n"
 msgstr "chave %08lX: impossível localizar bloco de chaves original: %s\n"
 
-#: g10/import.c:706 g10/import.c:930
+#: g10/import.c:705 g10/import.c:929
 #, c-format
 msgid "key %08lX: can't read original keyblock: %s\n"
 msgstr "chave %08lX: impossível ler bloco de chaves original: %s\n"
 
-#: g10/import.c:737
+#: g10/import.c:736
 #, c-format
 msgid "key %08lX: \"%s\" 1 new user ID\n"
 msgstr "chave %8lX: \"%s\" 1 novo ID de utilizador\n"
 
-#: g10/import.c:740
+#: g10/import.c:739
 #, c-format
 msgid "key %08lX: \"%s\" %d new user IDs\n"
 msgstr "chave %08lX: \"%s\" %d novos IDs de utilizadores\n"
 
-#: g10/import.c:743
+#: g10/import.c:742
 #, c-format
 msgid "key %08lX: \"%s\" 1 new signature\n"
 msgstr "chave %08lX: \"%s\" 1 nova assinatura\n"
 
-#: g10/import.c:746
+#: g10/import.c:745
 #, c-format
 msgid "key %08lX: \"%s\" %d new signatures\n"
 msgstr "chave %08lX: \"%s\" %d novas assinaturas\n"
 
-#: g10/import.c:749
+#: g10/import.c:748
 #, c-format
 msgid "key %08lX: \"%s\" 1 new subkey\n"
 msgstr "chave %08lX: \"%s\" 1 nova subchave\n"
 
-#: g10/import.c:752
+#: g10/import.c:751
 #, c-format
 msgid "key %08lX: \"%s\" %d new subkeys\n"
 msgstr "chave %08lX: \"%s\" %d novas subchaves\n"
 
-#: g10/import.c:771
+#: g10/import.c:770
 #, c-format
 msgid "key %08lX: \"%s\" not changed\n"
 msgstr "chave %08lX: \"%s\" não modificada\n"
 
-#: g10/import.c:833
+#: g10/import.c:832
 #, c-format
 msgid "key %08lX: secret key with invalid cipher %d - skipped\n"
 msgstr "chave %08lX: chave secreta com cifra inválida %d - ignorada\n"
 
-#: g10/import.c:848
+#: g10/import.c:847
 #, c-format
 msgid "no default secret keyring: %s\n"
 msgstr "sem porta-chaves público por omissão: %s\n"
 
-#: g10/import.c:859
+#: g10/import.c:858
 #, c-format
 msgid "key %08lX: secret key imported\n"
 msgstr "chave %08lX: chave secreta importada\n"
 
 #. we can't merge secret keys
-#: g10/import.c:865
+#: g10/import.c:864
 #, c-format
 msgid "key %08lX: already in secret keyring\n"
 msgstr "chave %08lX: já está no porta-chaves secreto\n"
 
-#: g10/import.c:872
+#: g10/import.c:871
 #, c-format
 msgid "key %08lX: secret key not found: %s\n"
 msgstr "chave %08lX: chave secreta não encontrada: %s\n"
 
-#: g10/import.c:901
+#: g10/import.c:900
 #, c-format
 msgid "key %08lX: no public key - can't apply revocation certificate\n"
 msgstr ""
 "chave %08lX: sem chave pública - impossível aplicar certificado\n"
 "de revogação\n"
 
-#: g10/import.c:941
+#: g10/import.c:940
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - rejected\n"
 msgstr "chave %08lX: certificado de revogação inválido: %s - rejeitado\n"
 
-#: g10/import.c:973
+#: g10/import.c:972
 #, c-format
 msgid "key %08lX: \"%s\" revocation certificate imported\n"
 msgstr "chave %08lX: \"%s\" certificado de revogação importado\n"
 
-#: g10/import.c:1036
+#: g10/import.c:1035
 #, c-format
 msgid "key %08lX: no user ID for signature\n"
 msgstr "chave %08lX: nenhum ID de utilizador para assinatura\n"
 
-#: g10/import.c:1049
+#: g10/import.c:1050
 #, c-format
 msgid "key %08lX: unsupported public key algorithm on user id \"%s\"\n"
 msgstr ""
 "chave %08lX: algoritmo de chave pública não suportado no utilizador \"%s\"\n"
 
-#: g10/import.c:1051
+#: g10/import.c:1052
 #, c-format
 msgid "key %08lX: invalid self-signature on user id \"%s\"\n"
 msgstr "chave %08lX: auto-assinatura inválida do utilizador \"%s\"\n"
 
-#: g10/import.c:1066
+#: g10/import.c:1069
 #, c-format
 msgid "key %08lX: no subkey for key binding\n"
 msgstr "chave %08lX: sem subchave para ligação de chaves\n"
 
-#: g10/import.c:1074 g10/import.c:1115
+#: g10/import.c:1078 g10/import.c:1122
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
 msgstr "chave %08lX: algoritmo de chave pública não suportado\n"
 
-#: g10/import.c:1075
+#: g10/import.c:1079
 #, c-format
 msgid "key %08lX: invalid subkey binding\n"
 msgstr "chave %08lX: ligação de subchave inválida\n"
 
-#. Delete the last binding
-#. sig since this one is
-#. newer
-#: g10/import.c:1087
+#: g10/import.c:1092
 #, c-format
 msgid "key %08lX: removed multiple subkey binding\n"
 msgstr "chave %08lX: apagada ligação múltipla de subchave \n"
 
-#: g10/import.c:1107
+#: g10/import.c:1113
 #, c-format
 msgid "key %08lX: no subkey for key revocation\n"
 msgstr "chave %08lX: sem subchave para revocação de chave\n"
 
-#: g10/import.c:1116
+#: g10/import.c:1123
 #, c-format
 msgid "key %08lX: invalid subkey revocation\n"
 msgstr "chave %08lX: revocação de subchave inválida\n"
 
-#. Delete the last revocation
-#. sig since this one is
-#. newer
-#: g10/import.c:1127
+#: g10/import.c:1136
 #, c-format
 msgid "key %08lX: removed multiple subkey revocation\n"
 msgstr "chave %08lX: removida revogação múltiplace de subchaves\n"
 
-#: g10/import.c:1164
+#: g10/import.c:1173
 #, c-format
 msgid "key %08lX: skipped user ID '"
 msgstr "chave %08lX: ignorado ID de utilizador '"
 
-#: g10/import.c:1187
+#: g10/import.c:1196
 #, c-format
 msgid "key %08lX: skipped subkey\n"
 msgstr "chave %08lX: subchave ignorada\n"
 
-#. here we violate the rfc a bit by still allowing
-#. * to import non-exportable signature when we have the
-#. * the secret key used to create this signature - it
-#. * seems that this makes sense
-#: g10/import.c:1213
+#: g10/import.c:1223
 #, c-format
 msgid "key %08lX: non exportable signature (class %02x) - skipped\n"
 msgstr "chave %08lX: assinatura não exportável (classe %02x) - ignorada\n"
 
-#: g10/import.c:1222
+#: g10/import.c:1232
 #, c-format
 msgid "key %08lX: revocation certificate at wrong place - skipped\n"
 msgstr "chave %08lX: certificado de revogação no local errado - ignorado\n"
 
-#: g10/import.c:1239
+#: g10/import.c:1249
 #, c-format
 msgid "key %08lX: invalid revocation certificate: %s - skipped\n"
 msgstr "chave %08lX: certificado de revogação inválido: %s - ignorado\n"
 
-#: g10/import.c:1251
+#: g10/import.c:1262
 #, c-format
 msgid "key %08lX: subkey signature in wrong place - skipped\n"
 msgstr "chave %08lX: assintura da subchave no local errado - ignorado\n"
 
-#: g10/import.c:1259
+#: g10/import.c:1270
 #, c-format
 msgid "key %08lX: unexpected signature class (0x%02X) - skipped\n"
 msgstr "chave %08lX: classe de assinatura inesperada (%02x) - ignorada\n"
 
-#: g10/import.c:1357
+#: g10/import.c:1369
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
 msgstr "chave %08lX: detectado ID de utilizador duplicado - fundido\n"
 
-#: g10/import.c:1416
+#: g10/import.c:1428
 #, c-format
 msgid "WARNING: key %08lX may be revoked: fetching revocation key %08lX\n"
 msgstr ""
 "AVISO: a chave %08lX pode estar revocada: a transferir a chave de revocação %"
 "08lX\n"
 
-#: g10/import.c:1430
+#: g10/import.c:1442
 #, c-format
 msgid "WARNING: key %08lX may be revoked: revocation key %08lX not present.\n"
 msgstr ""
 "AVISO: a chave %08lX pode estar revocada: chave de revocação %08lX não "
 "presente.\n"
 
-#: g10/import.c:1486
+#: g10/import.c:1500
 #, c-format
 msgid "key %08lX: \"%s\" revocation certificate added\n"
 msgstr "chave %08lX: certificado de revogação \"%s\" adicionado\n"
 
-#: g10/import.c:1517
+#: g10/import.c:1533
 #, c-format
 msgid "key %08lX: direct key signature added\n"
 msgstr "chave %08lX: assinatura directa de chave adicionada\n"
@@ -2764,7 +2754,7 @@ msgid "Really sign? "
 msgstr "Realmente assinar? "
 
 #: g10/keyedit.c:765 g10/keyedit.c:3261 g10/keyedit.c:3352 g10/keyedit.c:3425
-#: g10/sign.c:313
+#: g10/sign.c:312
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "assinatura falhou: %s\n"
@@ -4122,33 +4112,33 @@ msgstr "chave %08lX: sem subchave para o pacote revocação de subchave\n"
 msgid "key %08lX: no subkey for subkey binding signature\n"
 msgstr "chave %08lX: sem subchave para ligação de chaves\n"
 
-#: g10/sign.c:79
+#: g10/sign.c:84
 #, fuzzy
 msgid "can't put notation data into v3 (PGP 2.x style) signatures\n"
 msgstr "não pode escolher uma chave do tipo PGP 2.x como revogadora\n"
 
-#: g10/sign.c:87
+#: g10/sign.c:92
 #, fuzzy
 msgid "can't put notation data into v3 (PGP 2.x style) key signatures\n"
 msgstr "não pode escolher uma chave do tipo PGP 2.x como revogadora\n"
 
-#: g10/sign.c:106
+#: g10/sign.c:111
 #, c-format
 msgid "WARNING: unable to %%-expand notation (too large).  Using unexpanded.\n"
 msgstr ""
 "AVISO: impossível expandir-%% a url de política (demasiado grande).  A "
 "utilizar não expandida.\n"
 
-#: g10/sign.c:135
+#: g10/sign.c:137
 #, fuzzy
 msgid "can't put a policy URL into v3 (PGP 2.x style) signatures\n"
 msgstr "não pode escolher uma chave do tipo PGP 2.x como revogadora\n"
 
-#: g10/sign.c:143
+#: g10/sign.c:145
 msgid "can't put a policy URL into v3 key (PGP 2.x style) signatures\n"
 msgstr ""
 
-#: g10/sign.c:156
+#: g10/sign.c:158
 #, c-format
 msgid ""
 "WARNING: unable to %%-expand policy url (too large).  Using unexpanded.\n"
@@ -4156,46 +4146,46 @@ msgstr ""
 "AVISO: impossível expandir-%% a url de política (demasiado grande).\n"
 "A utilizar não expandida.\n"
 
-#: g10/sign.c:308
+#: g10/sign.c:307
 #, c-format
 msgid "checking created signature failed: %s\n"
 msgstr "verificação da assinatura criada falhou: %s\n"
 
-#: g10/sign.c:317
+#: g10/sign.c:316
 #, c-format
 msgid "%s signature from: \"%s\"\n"
 msgstr "assinatura %s de: \"%s\"\n"
 
-#: g10/sign.c:466
+#: g10/sign.c:465
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
 msgstr "AVISO: `%s' é um ficheiro vazio\n"
 
-#: g10/sign.c:649
+#: g10/sign.c:648
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "só pode assinar-desligar com chaves do tipo PGP 2.x no modo --pgp2\n"
 
-#: g10/sign.c:673 g10/sign.c:912
+#: g10/sign.c:672 g10/sign.c:911
 #, c-format
 msgid "can't create %s: %s\n"
 msgstr "impossível criar %s: %s\n"
 
-#: g10/sign.c:702
+#: g10/sign.c:701
 #, c-format
 msgid "forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr ""
 "forçar o algoritmo de 'digest' %s (%d) viola as preferências do "
 "destinatário\n"
 
-#: g10/sign.c:797
+#: g10/sign.c:796
 msgid "signing:"
 msgstr "a assinar:"
 
-#: g10/sign.c:896
+#: g10/sign.c:895
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "só pode assinar à vista com chaves do tipo PGP 2.x no modo --pgp2\n"
 
-#: g10/sign.c:1050
+#: g10/sign.c:1049
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "será utilizada a cifragem %s\n"
@@ -4244,7 +4234,7 @@ msgstr "%s: impossível criar tranca\n"
 msgid "%s: can't make lock\n"
 msgstr "%s: impossível criar tranca\n"
 
-#: g10/tdbio.c:504 g10/openfile.c:250 g10/openfile.c:325 g10/keyring.c:1453
+#: g10/tdbio.c:504 g10/openfile.c:250 g10/openfile.c:325 g10/keyring.c:1460
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: impossível criar: %s\n"
@@ -4991,17 +4981,17 @@ msgstr "Por favor conserte esta possível falha de segurança\n"
 msgid "checking keyring `%s'\n"
 msgstr "a verificar o porta chaves `%s'\n"
 
-#: g10/keyring.c:1381
+#: g10/keyring.c:1388
 #, c-format
 msgid "%lu keys so far checked (%lu signatures)\n"
 msgstr "%lu chaves verificadas até agora (%lu assinaturas)\n"
 
-#: g10/keyring.c:1392
+#: g10/keyring.c:1399
 #, c-format
 msgid "%lu keys checked (%lu signatures)\n"
 msgstr "%lu chave verificadas (%lu assinaturas)\n"
 
-#: g10/keyring.c:1458
+#: g10/keyring.c:1465
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: porta-chaves criado\n"
