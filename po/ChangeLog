@@ -1,3 +1,7 @@
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	* de.po: Updated.
+
 2004-04-06  Werner Koch  <wk@gnupg.org>
 
 	* Makevars (DOMAIN): Init from PACKAGE_GT

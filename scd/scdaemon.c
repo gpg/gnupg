@@ -603,7 +603,7 @@ main (int argc, char **argv )
  
       tattr = pth_attr_new();
       pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-      pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
+      pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 512*1024);
       pth_attr_set (tattr, PTH_ATTR_NAME, "ticker");
 
       if (!pth_spawn (tattr, ticker_thread, NULL))

@@ -32,15 +32,16 @@
 #include <assuan.h> /* fixme: need a way to avoid assuan calls here */
 
 static const char headerblurb[] =
-"# This is the list of trusted keys.  Comments like this one and empty\n"
-"# lines are allowed but keep in mind that the entire file is integrity\n"
+"# This is the list of trusted keys.  Comment lines, like this one, as\n"
+"# well as empty lines are ignored. The entire file may be integrity\n"
 "# protected by the use of a MAC, so changing the file does not make\n"
-"# much sense without the knowledge of the MAC key.  Lines do have a\n"
-"# length limit but this is not serious limitation as the format of the\n"
+"# sense without the knowledge of the MAC key.  Lines do have a length\n"
+"# limit but this is not serious limitation as the format of the\n"
 "# entries is fixed and checked by gpg-agent: A non-comment line starts\n"
-"# with optional white spaces, followed by exactly 40 hex character,\n"
-"# optioanlly followed by a flag character which my either be 'P', 'S'\n"
-"# or '*'. Additional data delimited with by a white space is ignored.\n"
+"# with optional white spaces, followed by the SHA-1 fingerpint in hex,\n"
+"# optionally followed by a flag character which my either be 'P', 'S'\n"
+"# or '*'. Additional data, delimited by white space, is ignored.\n"
+"#\n"
 "# NOTE: You should give the gpg-agent a HUP after editing this file.\n"
 "\n";
 
@@ -97,7 +98,7 @@ static int
 read_list (char *key, int *keyflag)
 {
   int rc;
-  int c, i;
+  int c, i, j;
   char *p, line[256];
   
   if (!trustfp)
@@ -125,16 +126,17 @@ read_list (char *key, int *keyflag)
                                  : GPG_ERR_INCOMPLETE_LINE);
         }
       
-      /* Allow for emty lines and spaces */
+      /* Allow for empty lines and spaces */
       for (p=line; spacep (p); p++)
         ;
     }
   while (!*p || *p == '\n' || *p == '#');
   
-  for (i=0; hexdigitp (p+i) && i < 40; i++)
-    key[i] = p[i] >= 'a'? (p[i] & 0xdf): p[i];
-  key[i] = 0;
-  if (i!=40 || !(spacep (p+i) || p[i] == '\n'))
+  for (i=j=0; (p[i] == ':' || hexdigitp (p+i)) && j < 40; i++)
+    if ( p[i] != ':' )
+      key[j++] = p[i] >= 'a'? (p[i] & 0xdf): p[i];
+  key[j] = 0;
+  if (j!=40 || !(spacep (p+i) || p[i] == '\n'))
     {
       log_error ("invalid formatted fingerprint in trustlist\n");
       return gpg_error (GPG_ERR_BAD_DATA);

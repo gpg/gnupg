@@ -1,3 +1,7 @@
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	* keylist.c (list_cert_raw): Print the keygrip.
+
 2004-07-20  Werner Koch  <wk@gnupg.org>
 
 	* certchain.c (gpgsm_validate_chain): The trust check didn't

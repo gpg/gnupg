@@ -9,6 +9,10 @@ GnuPG 2.0 release.  Note that GnuPG 1.3 and 1.9 are not always in sync
 and thus features and bug fixes done in 1.3 are not necessary
 available in 1.9.
 
+You should use this GnuPG version if you want to use the gpg-agent or
+gpgsm (the S/MIME variant of gpg).  Note that the gpg-agent is also
+helpful when using the standard gpg versions (1.2.x or 1.3.x).
+
 
 BUILD INSTRUCTIONS
 ==================
@@ -20,7 +24,10 @@ GnuPG 1.9 depends on the following packages:
   libassuan    (ftp://ftp.gnupg.org/gcrypt/alpha/libassuan/)
   libksba      (ftp://ftp.gnupg.org/gcrypt/alpha/libksba/)
   
-You also need the pinentry package for most function of GnupG; however
+If you use the configure option --enable-agent-only, libksba is not
+required.
+
+You also need the pinentry package for most function of GnuPG; however
 it is not a build requirement.  pinentry is available at
 ftp://ftp.gnupg.org/gcrypt/pinentry/ .
 
@@ -28,7 +35,7 @@ You should get the latest versions of course, the GnuPG configure
 script complains if a version is not sufficient.
 
 After building and installing the above packages in the order as given
-above, you may now continue with GnupG installation (you may also just
+above, you may now continue with GnuPG installation (you may also just
 try to build GnuPG to see whether your already installed versions are
 sufficient).
 
@@ -42,9 +49,9 @@ As with all packages, you just have to do
 
 If everything succeeds, you have a working GnuPG with support for
 S/MIME and smartcards.  Note that there is no binary gpg but a gpg2 so
-that this package won't confict with a GnuPG 1.2 or1.3
-installation. gpg2 behaves just like gpg and it is possible to symlink
-oto gpg if you want to use gpg 1.9.
+that this package won't confict with a GnuPG 1.2 or 1.3
+installation. gpg2 behaves just like gpg; it is however suggested to
+keep using gpg 1.2.x or 1.3.x.
 
 In case of problem please ask on gpa-dev@gnupg.org for advise.  Note
 that this release is only expected to build on GNU and *BSD systems.
@@ -71,7 +78,7 @@ gpgsm:
    prepended before each block.
 
 
-gpg2:
+gpg2: (Note that these card commands are also available with gpg 1.3.x)
 -----
 
 --card-status
@@ -268,9 +275,10 @@ policies.txt
 
 trustlist.txt
 
-        A list of trusted certificates usually maintained by
-        gpg-agent.  It can however be edited manually.  The file will
-        be created automagically with some explaining comments.
+        A list of trusted certificates. The file will be created
+        automagically with some explaining comments.  By using
+        gpg-agent's option --allow-mark-trusted, gpg-agent may add new
+        entries after user confirmation.
 
 random_seed
 
@@ -436,7 +444,7 @@ modes for gpgsm, here is the entire list of ways to specify a key:
         *Heine
 
 
-Please note that we have reused the hash mark indentifier which was
+Please note that we have reused the hash mark identifier which was
 used in old GnuPG versions to indicate the so called local-id.  It is
 not anymore used and there should be no conflict when used with X.509
 stuff.
@@ -456,7 +464,7 @@ file.
 
  gpgsm --import  foo.p12
 
-This require that the gpg-agent is running.
+This requires that the gpg-agent is running.
 
 
 HOW TO EXPORT A PRIVATE KEY
@@ -482,8 +490,8 @@ however you must have build GnuPG with support for the OpenSC library.
 The build process automagically detects the presence of this library
 and will include support for these cards.
 
-The other card we currently support is the Telesec NetKey card with
-the NKS 2.0 card application.
+The other cards we currently support are the Telesec NetKey card with
+the NKS 2.0 card application and all generic DINSIG cards.
 
 Before GPGSM can make use of a new card it must gather some
 information, like the card's serial number, the public keys and the

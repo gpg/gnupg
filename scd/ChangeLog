@@ -1,3 +1,7 @@
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	* scdaemon.c (main): Bumbed thread stack size up to 512k.
+
 2004-07-16  Werner Koch  <wk@gnupg.org>
 
 	* apdu.c (reader_table_s):  Add function pointers for the backends.

@@ -1,12 +1,5 @@
                                                               -*- outline -*-
 
-* Keylisting
-Add the keygrip to the dump output
-Explain how to setup a root CA key as trusted
-Look for new system-wide certificates
-Explain how trustlist.txt might be managed.
-
-
 
 * src/base64
 ** Make parsing more robust
@@ -83,4 +76,6 @@ might want to have an agent context for each service request
 
 ** Add a test to check the extkeyusage.
 
-
+* doc/
+** Explain how to setup a root CA key as trusted
+** Explain how trustlist.txt might be managed.

@@ -1,3 +1,12 @@
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	Released 1.9.10.
+
+2004-07-21  Werner Koch  <wk@g10code.de>
+
+	* configure.ac: Don't set DIE to no after it might has been set to
+	yes.
+
 2004-07-20  Werner Koch  <wk@g10code.de>
 
 	* Makefile.am (sm): Build kbx only if gpgsm is to be build.

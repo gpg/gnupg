@@ -500,7 +500,7 @@ print_names_raw (FILE *fp, int indent, ksba_name_t name)
 
 
 /* List one certificate in raw mode useful to have a closer look at
-   the certificate.  This one does not beautification and only minimal
+   the certificate.  This one does no beautification and only minimal
    output sanitation.  It is mainly useful for debugging. */
 static void
 list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
@@ -557,6 +557,10 @@ list_cert_raw (ctrl_t ctrl, ksba_cert_t cert, FILE *fp, int have_secret,
 
   dn = gpgsm_get_fingerprint_string (cert, GCRY_MD_MD5);
   fprintf (fp, "      md5_fpr: %s\n", dn?dn:"error");
+  xfree (dn);
+
+  dn = gpgsm_get_keygrip_hexstring (cert);
+  fprintf (fp, "      keygrip: %s\n", dn?dn:"error");
   xfree (dn);
 
   ksba_cert_get_validity (cert, 0, t);

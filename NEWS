@@ -1,5 +1,12 @@
-Noteworthy changes in version 1.9.10
-------------------------------------------------
+Noteworthy changes in version 1.9.10 (2004-07-22)
+-------------------------------------------------
+
+ * Fixed a serious bug in the checking of trusted root certificates.
+
+ * New configure option --enable-agent-pnly allows to build and
+   install just the agent.
+
+ * Fixed a problem with the log file handling.
 
 
 Noteworthy changes in version 1.9.9 (2004-06-08)

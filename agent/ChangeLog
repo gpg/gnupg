@@ -1,3 +1,10 @@
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	* trustlist.c (read_list): Allow colons in the fingerprint.
+	(headerblurb): Rephrased.
+
+	* gpg-agent.c (handle_connections): Increase the stack size ot 256k.
+
 2004-06-20  Moritz Schulte  <moritz@g10code.com>
 
 	* gpg-agent.c: Include <sys/stat.h> (build fix for BSD).
