@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 [H pre]
-Version: 0.3
-Last-Modified: Oct 19, 2000
+Version: 0.31
+Last-Modified: Oct 24, 2000
 Maintained-by: [$maintainer]
 [H/pre]
 
@@ -431,15 +431,32 @@ it?
 
     On many systems this program should be installed as
     setuid(root). This is necessary to lock memory pages.  Locking
-    memory pages prevents the operating system from writing memory pages
+    memory pages prevents the operating system from writing them
     to disk and thereby keeping your secret keys really secret. If you
     get no warning message about insecure memory your operating system
     supports locking without being root. The program drops root
     privileges as soon as locked memory is allocated.
 
+    On UnixWare 2.x and 7.x you should install GnuPG with the
+    'plock' priviledge to get the same effect:
+    [H pre]
+	filepriv -f plock /path/to/gpg
+    [H /pre]
+
     If you can't or don't want to install GnuPG setuid(root), you can
     use the option "--no-secmem-warning" or put [H pre]
-    no-secmem-warning [H /pre] in your ~/.gnupg/options file.
+    no-secmem-warning [H /pre] in your ~/.gnupg/options file (this
+    disables the warning).
+
+    On systems without memory locking (e.g., Windows), older GnuPG
+    versions (<=1.0.4) issue the warning
+    [H pre]
+    gpg: Please note that you don't have secure memory
+    [H /pre]
+    This warning can't be switched off by the above option because it
+    was thought to be a too serious issue. However, it confused users
+    too much so the warning was eventually removed.
+
 
 <Q> In the edit menu the trust values is not displayed correctly after
 signing uids - why?
