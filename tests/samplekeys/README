@@ -6,6 +6,11 @@ opensc-tests.p12   PKCS#12 key and certificates taken from OpenSC.
 ov-user.p12        Private tests keys from www.openvalidation.org.
 ov-server.p12      Passphrase for both is "start"
 
+ossl-rentec-user.pem  An OpenSSL generated user certificate using a
+                      bunch of attributes and DC RDNs.
+
+webderoot.der      trust.web.de Root CA certificate [2004-02-17]
+webdeca.der        trust.web.de CA certificate [2004-02-17]
 
 
 
