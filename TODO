@@ -112,6 +112,9 @@
     given with an indication of the surname and the usable characters
     are also restricted.
 
+  * We status lines at least for bad PINs.  BAD_PASSPHARSE requires a
+    keyID though.
+
 
 Things we won't do
 ------------------
