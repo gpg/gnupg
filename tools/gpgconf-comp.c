@@ -336,7 +336,10 @@ static struct
     { "group" },
     { "optional arg" },
     { "list" },
-    { "runtime" }
+    { "runtime" },
+    { "default" },
+    { "default desc" },
+    { "no arg desc" }
   };
 
 
