@@ -218,6 +218,7 @@ enum cmd_and_opt_values { aNull = 0,
     oS2KMode,
     oS2KDigest,
     oS2KCipher,
+    oSimpleSKChecksum,                          
     oCharset,
     oNotDashEscaped,
     oEscapeFrom,
@@ -412,6 +413,7 @@ static ARGPARSE_OPTS opts[] = {
 		N_("|NAME|use message digest algorithm NAME for passphrases")},
     { oS2KCipher, "s2k-cipher-algo",2,
 		N_("|NAME|use cipher algorithm NAME for passphrases")},
+    { oSimpleSKChecksum, "simple-sk-checksum", 0, "@"},
     { oCipherAlgo, "cipher-algo", 2 , N_("|NAME|use cipher algorithm NAME")},
     { oDigestAlgo, "digest-algo", 2 , N_("|NAME|use message digest algorithm NAME")},
     { oCompressAlgo, "compress-algo", 1 , N_("|N|use compress algorithm N")},
@@ -1132,7 +1134,7 @@ main( int argc, char **argv )
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;
-
+          case oSimpleSKChecksum: opt.simple_sk_checksum = 1; break;
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );

@@ -581,6 +581,9 @@ The second form of the command has the special property to
 render the secret part of the primary key useless; this is
 a GNU extension to OpenPGP and other implementations can
 not be expected to successfully import such a key.
+
+See the option --simple-sk-checksum if you want to import such an
+exported key with an older OpenPGP implementation.
 </para></listitem></varlistentry>
 
 
@@ -1321,6 +1324,18 @@ a 1 (default) adds a salt to the passphrase and
 a 3 iterates the whole process a couple of times.
 Unless --rfc1991 is used, this mode is also used
 for conventional encryption.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--simple-sk-checksum</term>
+<listitem><para>
+Secret keys are integrity protected by using a SHA-1 checksum.  This
+method will be part of an enhanced OpenPGP specification but GnuPG
+already uses it as a countermeasure against certain attacks.  Old
+applications don't understand this new format, so this option may be
+used to switch back to the old behaviour.  Using this this option
+bears a security risk.
 </para></listitem></varlistentry>
 
 

@@ -389,7 +389,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	}
 	else {
           /* OpenPGP protection according to rfc2440 */
-	    iobuf_put(a, 0xff );
+	    iobuf_put(a, sk->protect.sha1chk? 0xfe : 0xff );
 	    iobuf_put(a, sk->protect.algo );
 	    if( sk->protect.s2k.mode >= 1000 ) {
                 /* These modes are not possible in OpenPGP, we use them

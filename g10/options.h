@@ -94,6 +94,8 @@ struct {
     int s2k_mode;
     int s2k_digest_algo;
     int s2k_cipher_algo;
+    int simple_sk_checksum; /* create the deprecated rfc2440 secret
+                               key protection*/
     int not_dash_escaped;
     int escape_from;
     int lock_once;

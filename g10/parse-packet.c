@@ -1494,14 +1494,16 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
         if (rc) /* one of the MPIs were bad */
             goto leave;
 	sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
+        sk->protect.sha1chk = 0;
 	if( sk->protect.algo ) {
 	    sk->is_protected = 1;
 	    sk->protect.s2k.count = 0;
-	    if( sk->protect.algo == 255 ) {
+	    if( sk->protect.algo == 254 || sk->protect.algo == 255 ) {
 		if( pktlen < 3 ) {
 		    rc = G10ERR_INVALID_PACKET;
 		    goto leave;
 		}
+                sk->protect.sha1chk = (sk->protect.algo == 254);
 		sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
 		sk->protect.s2k.mode  = iobuf_get_noeof(inp); pktlen--;
 		sk->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
@@ -1550,8 +1552,10 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 		}
 
 		if( list_mode ) {
-		    printf(", algo: %d, hash: %d",
+		    printf(", algo: %d,%s hash: %d",
 				     sk->protect.algo,
+                                     sk->protect.sha1chk? ""
+                                                        :" simple checksum,",
 				     sk->protect.s2k.hash_algo );
 		    if( sk->protect.s2k.mode == 1
 			|| sk->protect.s2k.mode == 3 ) {

@@ -1,3 +1,16 @@
+2002-04-17  Werner Koch  <wk@gnupg.org>
+
+
+2002-04-16  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_key): Support a SHA1 checksum as per
+	draft-rfc2440-bis04.
+	* packet.h (PKT_secret_key): Add field sha1chk.
+	* seckey-cert.c (do_check): Check the SHA1 checksum
+	(protect_secret_key): And create it.
+	* build-packet.c (do_secret_key): Mark it as sha-1 protected.
+	* g10.c, options.h: New option --simple-sk-checksum.
+
 2002-04-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_signature): Minor fix - signatures should

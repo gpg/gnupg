@@ -90,31 +90,54 @@ do_check( PKT_secret_key *sk, const char *tryagain_text )
 	    cipher_decrypt( cipher_hd, data, p, ndata );
 	    mpi_free( sk->skey[i] ); sk->skey[i] = NULL ;
 	    p = data;
-	    if( ndata < 2 ) {
-		log_error("not enough bytes for checksum\n");
-		sk->csum = 0;
-		csum = 1;
-	    }
-	    else {
-		csum = checksum( data, ndata-2);
-		sk->csum = data[ndata-2] << 8 | data[ndata-1];
-                if ( sk->csum != csum ) {
-                    /* This is a PGP 7.0.0 workaround */
-                    sk->csum = csumc; /* take the encrypted one */
+            if (sk->protect.sha1chk) {
+                /* This is the new SHA1 checksum method to detect
+                   tampering with the key as used by the Klima/Rosa
+                   attack */
+                sk->csum = 0;
+                csum = 1;
+                if( ndata < 20 ) 
+                    log_error("not enough bytes for SHA-1 checksum\n");
+                else {
+                    MD_HANDLE h = md_open (DIGEST_ALGO_SHA1, 1);
+                    if (!h)
+                        BUG(); /* algo not available */
+                    md_write (h, data, ndata - 20);
+                    md_final (h);
+                    if (!memcmp (md_read (h, DIGEST_ALGO_SHA1),
+                                 data + ndata - 20, 20) )
+                        csum = 0; /* digest does match */
+                    md_close (h);
                 }
-	    }
-            
-	    /* must check it here otherwise the mpi_read_xx would fail
-	     * because the length may have an arbitrary value */
-	    if( sk->csum == csum ) {
-		for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-		    nbytes = ndata;
-		    sk->skey[i] = mpi_read_from_buffer(p, &nbytes, 1 );
-		    ndata -= nbytes;
-		    p += nbytes;
-		}
-                /* at this point ndata should be equal to 2 (the checksum) */
-	    }
+            }
+            else {
+                if( ndata < 2 ) {
+                    log_error("not enough bytes for checksum\n");
+                    sk->csum = 0;
+                    csum = 1;
+                }
+                else {
+                    csum = checksum( data, ndata-2);
+                    sk->csum = data[ndata-2] << 8 | data[ndata-1];
+                    if ( sk->csum != csum ) {
+                        /* This is a PGP 7.0.0 workaround */
+                        sk->csum = csumc; /* take the encrypted one */
+                    }
+                }
+            }
+                
+            /* must check it here otherwise the mpi_read_xx would fail
+               because the length may have an arbitrary value */
+            if( sk->csum == csum ) {
+                for( ; i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
+                    nbytes = ndata;
+                    sk->skey[i] = mpi_read_from_buffer(p, &nbytes, 1 );
+                    ndata -= nbytes;
+                    p += nbytes;
+                }
+                /* Note: at this point ndata should be 2 for a simple
+                   checksum or 20 for the sha1 digest */
+            }
 	    m_free(data);
 	}
 	else {
@@ -265,7 +288,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		}
 		for( ; j < PUBKEY_MAX_NSKEY; j++ )
 		    bufarr[j] = NULL;
-		ndata += 2; /* for checksum */
+		ndata += opt.simple_sk_checksum? 2 : 20; /* for checksum */
 
 		data = m_alloc_secure( ndata );
 		p = data;
@@ -277,11 +300,30 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    p += narr[j];
 		    m_free(bufarr[j]);
 		}
-		csum = checksum( data, ndata-2);
-		sk->csum = csum;
-		*p++ =	csum >> 8;
-		*p++ =	csum;
-		assert( p == data+ndata );
+                
+                if (opt.simple_sk_checksum) {
+                    log_info (_("generating the deprecated 16-bit checksum"
+                              " for secret key protection\n")); 
+                    csum = checksum( data, ndata-2);
+                    sk->csum = csum;
+                    *p++ =	csum >> 8;
+                    *p++ =	csum;
+                    sk->protect.sha1chk = 0;
+                }
+                else {
+                    MD_HANDLE h = md_open (DIGEST_ALGO_SHA1, 1);
+                    if (!h)
+                        BUG(); /* algo not available */
+                    md_write (h, data, ndata - 20);
+                    md_final (h);
+                    memcpy (p, md_read (h, DIGEST_ALGO_SHA1), 20);
+                    p += 20;
+                    md_close (h);
+                    sk->csum = csum = 0;
+                    sk->protect.sha1chk = 1;
+                }
+                assert( p == data+ndata );
+
 		cipher_encrypt( cipher_hd, data, data, ndata );
 		for(i = pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {

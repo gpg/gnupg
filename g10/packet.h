@@ -232,6 +232,7 @@ typedef struct {
 			/* and should never be passed to a mpi_xxx() */
     struct {
 	byte algo;  /* cipher used to protect the secret information*/
+        byte sha1chk;  /* SHA1 is used instead of a 16 bit checksum */ 
 	STRING2KEY s2k;
 	byte ivlen;  /* used length of the iv */
 	byte iv[16]; /* initialization vector for CFB mode */
