@@ -3,6 +3,10 @@
 	* gpg.sgml: Document delsig.  Clarify that --refresh-keys
 	arguments are optional.  Document --bzip2-decompress-lowmem.
 
+2004-04-05  Werner Koch  <wk@gnupg.org>
+
+	* DETAILS (NEWSIG): Documented.
+
 2004-02-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document --ask-cert-level, --max-output, and

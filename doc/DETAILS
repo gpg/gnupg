@@ -163,6 +163,11 @@ type (maybe none); an application should always be prepared to see
 more arguments in future versions.
 
 
+    NEWSIG
+        May be issued right before a signature verification starts.  This
+        is useful to define a context for parsing ERROR status
+        messages.  No arguments are currently defined.
+
     GOODSIG	<long keyid>  <username>
 	The signature with the keyid is good.  For each signature only
         one of the three codes GOODSIG, BADSIG or ERRSIG will be
@@ -396,7 +401,21 @@ more arguments in future versions.
 	done and "total" is amount to be done; a "total" of 0 indicates that
 	the total amount is not known.	100/100 may be used to detect the
 	end of operation.
+        Well known values for WHAT:
+             "pk_dsa"   - DSA key generation
+             "pk_elg"   - Elgamal key generation
+             "primegen" - Prime generation
+             "need_entropy" - Waiting for new entropy in the RNG
+             "file:XXX" - processing file XXX
+                          (note that current gpg versions leave out the
+                           "file:" prefix).
+             "tick"     - generic tick without any special meaning - useful
+                          for letting clients know that the server is
+                          still working.
+             "starting_agent" - A gpg-agent was started because it is not
+                          running as a daemon.
 
+        
     SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
 	A signature has been created using these parameters.
 	    type:  'D' = detached
