@@ -1,3 +1,8 @@
+2002-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --pgp8.  Clarify that --pgp6 and --pgp7
+	disable --throw-keyid.
+
 2002-11-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Point out that if the user absolutely must, it's

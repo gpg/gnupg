@@ -1753,9 +1753,9 @@ Resets the --pgp2 option.
 Set up all options to be as PGP 6 compliant as possible.  This
 restricts you to the ciphers IDEA (if the IDEA plugin is installed),
 3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
-compression algorithms none and ZIP.  This also disables making
-signatures with signing subkeys as PGP 6 does not understand
-signatures made by signing subkeys.
+compression algorithms none and ZIP.  This also disables
+--throw-keyid, and making signatures with signing subkeys as PGP 6
+does not understand signatures made by signing subkeys.
 </para><para>
 This option implies `--disable-mdc --no-comment --escape-from-lines
 --force-v3-sigs --no-ask-sig-expire --compress-algo 1'
@@ -1780,6 +1780,21 @@ TWOFISH.
 <term>--no-pgp7</term>
 <listitem><para>
 Resets the --pgp7 option.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--pgp8</term>
+<listitem><para>
+Set up all options to be as PGP 8 compliant as possible.  PGP 8 is a
+lot closer to the OpenPGP standard than previous versions of PGP, so
+all this does is disable --throw-keyid and set --escape-from-lines and
+--compress-algo 1.  The allowed algorithms list is the same as --pgp7.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-pgp8</term>
+<listitem><para>
+Resets the --pgp8 option.
 </para></listitem></varlistentry>
 
 <varlistentry>
