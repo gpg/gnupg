@@ -2474,15 +2474,21 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
       answer=cpr_get_utf8("keyedit.add_revoker",
 			  _("Enter the user ID of the designated revoker: "));
       if(answer[0]=='\0' || answer[0]=='\004')
-	goto fail;
+	{
+	  m_free(answer);
+	  goto fail;
+	}
 
       rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL,1);
 
       if(rc)
 	{
 	  log_error (_("key `%s' not found: %s\n"),answer,g10_errstr(rc));
+	  m_free(answer);
 	  continue;
 	}
+
+      m_free(answer);
 
       fingerprint_from_pk(revoker_pk,revkey.fpr,&fprlen);
       if(fprlen!=20)
