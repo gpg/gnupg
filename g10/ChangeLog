@@ -1,8 +1,10 @@
 2005-01-20  Werner Koch  <wk@g10code.com>
 
+	* cardglue.c (open_card): Issue new CARDCTRL(4) status.
+
 	* gpgv.c (tty_fprintf): New stub.
 
-	* card-util.c (card_status): Create asecret key stub on the fly
+	* card-util.c (card_status): Create a secret key stub on the fly
 	and print more information about a card key.
 	* import.c (pub_to_sec_keyblock, auto_create_card_key_stub): New.
 	* getkey.c (get_seckeyblock_byfprint): New.

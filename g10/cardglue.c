@@ -295,6 +295,7 @@ open_card (void)
     }
   if (rc)
     {
+      write_status_text (STATUS_CARDCTRL, "4");
       log_info ("selecting openpgp failed: %s\n", gpg_strerror (rc));
       apdu_close_reader (slot);
       xfree (app);
