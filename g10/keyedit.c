@@ -2485,6 +2485,13 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 	  continue;
 	}
 
+      if(!revoker_pk->is_primary)
+	{
+	  log_error(_("cannot appoint a subkey as a designated revoker\n"));
+	  m_free(answer);
+	  continue;
+	}
+
       m_free(answer);
 
       fingerprint_from_pk(revoker_pk,revkey.fpr,&fprlen);

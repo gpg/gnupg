@@ -1,3 +1,8 @@
+2004-02-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (menu_addrevoker): Do not allow appointing a subkey as
+	a designated revoker.
+
 2004-02-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* delkey.c (do_delete_key): Allow deleting a public key with a
