@@ -1,7 +1,10 @@
 
+  * Replace --trusted-keys by a local certificate (which does not get
+    exported).
+
   * Finish the EGD module.
 
-  * Implement 256 bit key Twofish.
+  * Implement 256 bit key Twofish (wait until the 2nd AES conference).
 
   * Check revocation and expire stuff.	[I'm currently working on this.]
 
@@ -19,7 +22,6 @@
   * when decryptiong multiple key: print a warning only if no usable pubkey
     encrypt package was found.	Extension: display a list of all recipients.
 
-  * describe the Lim-Lee algorithms
 
 Nice to have
 ------------
@@ -28,7 +30,8 @@ Nice to have
   * preferences of hash algorithms are not yet used.
   * new menu to delete signatures and list signature in menu
   * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
-    or use POSIX.4 realtime signals.
+    or use POSIX.4 realtime signals.  Overhaul the interface and the
+    test program.  Use it with the test suite?
   * add test cases for invalid data (scrambled armor or other random data)
   * add checking of armor trailers
   * Burn the buffers used by fopen(), or use read(2). Does this

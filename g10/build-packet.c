@@ -549,7 +549,7 @@ find_subpkt( byte *buffer, sigsubpkttype_t reqtype,
 
 /****************
  * Create or update a signature subpacket for SIG of TYPE.
- * This functions know, where to put the data (hashed or unhashed).
+ * This functions knows where to put the data (hashed or unhashed).
  * The function may move data from the unhased part to the hashed one.
  * Note: All pointers into sig->[un]hashed are not valid after a call
  * to this function.  The data to but into the subpaket should be

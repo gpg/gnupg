@@ -33,6 +33,7 @@ common_source =  \
 	      keyid.c		\
 	      trustdb.c 	\
 	      trustdb.h 	\
+	      tdbdump.c 	\
 	      tdbio.c		\
 	      tdbio.h		\
 	      hkp.h		\

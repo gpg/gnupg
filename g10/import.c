@@ -1,5 +1,5 @@
 /* import.c
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -750,6 +750,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 {
     KBNODE node;
     int nvalid=0, uid_seen=0;
+    const char *p;
 
     for(node=keyblock->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID ) {
@@ -792,6 +793,16 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 		 && check_pubkey_algo( node->pkt->pkt.signature->pubkey_algo)
 		 && node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
 	    delete_kbnode( node ); /* build_packet() can't handle this */
+	else if( node->pkt->pkttype == PKT_SIGNATURE
+		 && (p = parse_sig_subpkt2( node->pkt->pkt.signature,
+					    SIGSUBPKT_EXPORTABLE, NULL ))
+		 && !*p ) {
+	    log_info_f(fname, _("key %08lX: non exportable signature "
+				    "(class %02x) - skipped\n"),
+				    (ulong)keyid[1],
+				     node->pkt->pkt.signature->sig_class );
+	    delete_kbnode( node );
+	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE
 		 && node->pkt->pkt.signature->sig_class == 0x20 )  {
 	    if( uid_seen ) {

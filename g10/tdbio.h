@@ -52,7 +52,6 @@
 			/* one uid with a selfsignature or an revocation */
 #define DIRF_EXPIRED  4 /* the complete key has expired */
 #define DIRF_REVOKED  8 /* the complete key has been revoked */
-#define DIRF_VALVALID 16 /* The validity field is valid */
 
 #define KEYF_CHECKED  1 /* This key has been checked */
 #define KEYF_VALID    2 /* This is a valid (sub)key */
@@ -62,7 +61,6 @@
 #define UIDF_CHECKED  1  /* user id has been checked - other bits are valid */
 #define UIDF_VALID    2  /* this is a valid user id */
 #define UIDF_REVOKED  8  /* this user id has been revoked */
-#define UIDF_VALVALID 16 /* the validity field is valid */
 
 #define SIGF_CHECKED  1 /* signature has been checked - bits 0..6 are valid */
 #define SIGF_VALID    2 /* the signature is valid */
@@ -83,8 +81,8 @@ struct trust_record {
 	    byte  completes;
 	    byte  cert_depth;
 	    ulong created;   /* timestamp of trustdb creation  */
-	    ulong modified;  /* timestamp of last modification */
-	    ulong validated; /* timestamp of last validation   */
+	    ulong mod_down;  /* timestamp of last modification downward */
+	    ulong mod_up;    /* timestamp of last modification upward */
 	    ulong keyhashtbl;
 	    ulong firstfree;
 	    ulong sdirhashtbl;
@@ -99,7 +97,8 @@ struct trust_record {
 	    ulong cacherec; /* the cache record */
 	    byte ownertrust;
 	    byte dirflags;
-	    byte validity; /* calculated trustlevel over all uids */
+	    byte validity;  /* calculated trustlevel over all uids */
+	    ulong valcheck; /* timestamp of last validation check */
 	} dir;
 	struct {	    /* primary public key record */
 	    ulong lid;
@@ -176,6 +175,8 @@ void tdbio_dump_record( TRUSTREC *rec, FILE *fp );
 int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
 int tdbio_write_record( TRUSTREC *rec );
 int tdbio_db_matches_options(void);
+ulong tdbio_read_modify_stamp( int modify_down );
+void tdbio_write_modify_stamp( int down, int up );
 int tdbio_is_dirty(void);
 int tdbio_sync(void);
 int tdbio_begin_transaction(void);
@@ -188,5 +189,6 @@ int tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
 					int pubkey_algo, TRUSTREC *rec );
 int tdbio_search_sdir( u32 *keyid, int pubkey_algo, TRUSTREC *rec );
 
+void tdbio_invalid(void);
 
 #endif /*G10_TDBIO_H*/

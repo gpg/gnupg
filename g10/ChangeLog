@@ -1,3 +1,31 @@
+Thu Mar 11 16:39:46 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* tdbdump.c: New
+
+	* trustdb.c (walk_sigrecs,do_list_sigs,list_sigs,
+	list_records,list_trustdb,export_ownertrust,import_ownertrust): Moved
+	to tdbdump.c
+	(init_trustdb): renamed to setup_trustdb.  Changed all callers.
+	(do_init_trustdb): renamed to init_trustdb().
+	* trustdb.c (die_invalid_db): replaced by tdbio_invalid.
+	* tdbio.c (tdbio_invalid): New.
+
+	* import.c (delete_inv_parts): Skip non exportable signatures.
+	* keyedit.c (sign_uid_mk_attrib): New.
+	(sign_uids): Add the local argument.
+	(keyedit_menu): New "lsign" command.
+	* trustdb.c (register_trusted_key): Removed this and all related stuff.
+	* g10.c (oTrustedKey): Removed option.
+
+	* tdbio.h (dir.valcheck): New trustdb field.
+	* tdbio.c: Add support for this field
+	(tdbio_read_modify_stamp): New.
+	(tdbio_write_modify_stamp): New.
+	* trustdb.c (do_check): Check against this field. Removed cache update.
+	(verify_key): Add cache update.
+	(upd_uid_record): Some functional changes.
+	(upd_cert_record): Ditto
+
 Wed Mar 10 11:26:18 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* keylist.c (list_keyblock): Fixed segv in uid. Print 'u' as

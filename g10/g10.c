@@ -35,10 +35,10 @@
 #include "main.h"
 #include "options.h"
 #include "keydb.h"
+#include "trustdb.h"
 #include "mpi.h"
 #include "cipher.h"
 #include "filter.h"
-#include "trustdb.h"
 #include "ttyio.h"
 #include "i18n.h"
 #include "status.h"
@@ -111,7 +111,6 @@ enum cmd_and_opt_values { aNull = 0,
     oKeyring,
     oSecretKeyring,
     oDefaultKey,
-    oTrustedKey,
     oOptions,
     oDebug,
     oDebugAll,
@@ -250,7 +249,6 @@ static ARGPARSE_OPTS opts[] = {
     { oCompletesNeeded, "completes-needed", 1, N_("(default is 1)")},
     { oMarginalsNeeded, "marginals-needed", 1, N_("(default is 3)")},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
-    { oTrustedKey, "trusted-key", 2, N_("|KEYID|ulimately trust this key")},
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
     { oS2KMode, "s2k-mode",  1, N_("|N|use passphrase mode N")},
@@ -730,7 +728,6 @@ main( int argc, char **argv )
 	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;
 	  case oTrustDBName: trustdb_name = pargs.r.ret_str; break;
 	  case oDefaultKey: opt.def_secret_key = pargs.r.ret_str; break;
-	  case oTrustedKey: register_trusted_key( pargs.r.ret_str ); break;
 	  case oNoOptions: break; /* no-options */
 	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
 	  case oNoBatch: opt.batch = 0; break;
@@ -938,11 +935,11 @@ main( int argc, char **argv )
       case aListSecretKeys:
       case aCheckKeys:
 	if( opt.with_colons ) /* need this to list the trust */
-	    rc = init_trustdb(1, trustdb_name );
+	    rc = setup_trustdb(1, trustdb_name );
 	break;
-      case aExportOwnerTrust: rc = init_trustdb( 0, trustdb_name ); break;
-      case aListTrustDB: rc = init_trustdb( argc? 1:0, trustdb_name ); break;
-      default: rc = init_trustdb(1, trustdb_name ); break;
+      case aExportOwnerTrust: rc = setup_trustdb( 0, trustdb_name ); break;
+      case aListTrustDB: rc = setup_trustdb( argc? 1:0, trustdb_name ); break;
+      default: rc = setup_trustdb(1, trustdb_name ); break;
     }
     if( rc )
 	log_error(_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));

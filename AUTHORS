@@ -74,12 +74,8 @@ Torbjorn Granlund <tege@noisy.tmg.se>.
 
 The keybox implementation is based on GDBM 1.7.3 by Philip A. Nelson.
 
-The file cipher/rndunix.c is based on Peter Gutmann's rndunix.c from
-cryptlib. - He promised to add the GPL as an alternative license to
-this and some other files.  We don't have a disclaimer yet, but due
-to the fact that this is only needed for non-free systems we can
-easily remove this from the distribution and put it as an extra module
-on the FTP server.
+The file cipher/rndunix.c is based on rndunix.c from cryptlib.
+Copyright Peter Gutmann, Paul Kendall, and Chris Wedgwood 1996-1999.
 
 The files in debian/ are by James Troup who is the Debian maintainer
 for GnuPG.

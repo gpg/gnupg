@@ -69,6 +69,13 @@ static int count_selected_keys( KBNODE keyblock );
 #define NODFLG_SELKEY (1<<9)  /* indicate the selected key */
 
 
+struct sign_uid_attrib {
+    int non_exportable;
+};
+
+
+
+
 static int
 get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
 {
@@ -200,15 +207,31 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 }
 
 
+
+
+int
+sign_uid_mk_attrib( PKT_signature *sig, void *opaque )
+{
+    struct sign_uid_attrib *attrib = opaque;
+    byte buf[8];
+
+    if( attrib->non_exportable ) {
+	buf[0] = 0; /* not exportable */
+	build_sig_subpkt( sig, SIGSUBPKT_EXPORTABLE, buf, 1 );
+    }
+
+    return 0;
+}
+
+
+
 /****************
  * Loop over all locusr and and sign the uids after asking.
  * If no user id is marked, all user ids will be signed;
  * if some user_ids are marked those will be signed.
- *
- * fixme: Add support for our proposed sign-all scheme
  */
 static int
-sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
+sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 {
     int rc = 0;
     SK_LIST sk_list = NULL;
@@ -279,6 +302,10 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 	m_free(p); p = NULL;
 	tty_printf("\"\n\n");
 
+	if( local )
+	    tty_printf(
+		  _("The signature will be marked as non-exportable.\n\n"));
+
 	if( !cpr_get_answer_is_yes("sign_uid.okay", _("Really sign? ")) )
 	    continue;;
 	/* now we can sign the user ids */
@@ -291,14 +318,19 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified )
 		     && (node->flag & NODFLG_MARK_A) ) {
 		PACKET *pkt;
 		PKT_signature *sig;
+		struct sign_uid_attrib attrib;
 
 		assert( primary_pk );
+		memset( &attrib, 0, sizeof attrib );
+		attrib.non_exportable = local;
 		node->flag &= ~NODFLG_MARK_A;
 		rc = make_keysig_packet( &sig, primary_pk,
 					       node->pkt->pkt.user_id,
 					       NULL,
 					       sk,
-					       0x10, 0, NULL, NULL );
+					       0x10, 0,
+					       sign_uid_mk_attrib,
+					       &attrib );
 		if( rc ) {
 		    log_error(_("signing failed: %s\n"), g10_errstr(rc));
 		    goto leave;
@@ -479,6 +511,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 {
     enum cmdids { cmdNONE = 0,
 	   cmdQUIT, cmdHELP, cmdFPR, cmdLIST, cmdSELUID, cmdCHECK, cmdSIGN,
+	   cmdLSIGN,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
 	   cmdNOP };
@@ -501,6 +534,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	{ N_("c")       , cmdCHECK  , 0, NULL },
 	{ N_("sign")    , cmdSIGN   , 0, N_("sign the key") },
 	{ N_("s")       , cmdSIGN   , 0, NULL },
+	{ N_("lsign")   , cmdLSIGN  , 0, N_("sign the key locally") },
 	{ N_("debug")   , cmdDEBUG  , 0, NULL },
 	{ N_("adduid")  , cmdADDUID , 1, N_("add a user id") },
 	{ N_("deluid")  , cmdDELUID , 0, N_("delete user id") },
@@ -696,6 +730,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	    break;
 
 	  case cmdSIGN: /* sign (only the public key) */
+	  case cmdLSIGN: /* sign (only the public key) */
 	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) ) {
 		if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
 					   _("Really sign all user ids? ")) ) {
@@ -703,7 +738,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		    break;
 		}
 	    }
-	    sign_uids( keyblock, locusr, &modified );
+	    sign_uids( keyblock, locusr, &modified, cmd == cmdLSIGN );
 	    break;
 
 	  case cmdDEBUG:

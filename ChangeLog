@@ -1,3 +1,7 @@
+Thu Mar 11 16:39:46 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* configure.in: Remmoved the need for libtool
+
 Mon Mar  8 20:47:17 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in (DLSYM_NEEDS_UNDERSCORE): Replaced.

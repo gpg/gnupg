@@ -1,10 +1,49 @@
 /****************************************************************************
  *									    *
- *   BeOS Randomness-Gathering Code					    *
- *   Copyright Peter Gutmann, Paul Kendall, and Chris Wedgwood 1996-1998    *
- *   Copyright (C) 1998, 1999  Werner Koch
+ *									    *
+ *   Unix Randomness-Gathering Code					    *
+ *									    *
+ *   Copyright Peter Gutmann, Paul Kendall, and Chris Wedgwood 1996-1999.   *
+ *   Heavily modified for GnuPG by Werner Koch				    *
+ *									    *
  *									    *
  ****************************************************************************/
+
+/* This module is part of the cryptlib continuously seeded pseudorandom
+   number generator.  For usage conditions, see lib_rand.c
+
+   [Here is the notice from lib_rand.c:]
+
+   This module and the misc/rnd*.c modules represent the cryptlib
+   continuously seeded pseudorandom number generator (CSPRNG) as described in
+   my 1998 Usenix Security Symposium paper "The generation of random numbers
+   for cryptographic purposes".
+
+   The CSPRNG code is copyright Peter Gutmann (and various others) 1996,
+   1997, 1998, 1999, all rights reserved.  Redistribution of the CSPRNG
+   modules and use in source and binary forms, with or without modification,
+   are permitted provided that the following conditions are met:
+
+   1. Redistributions of source code must retain the above copyright notice
+      and this permission notice in its entirety.
+
+   2. Redistributions in binary form must reproduce the copyright notice in
+      the documentation and/or other materials provided with the distribution.
+
+   3. A copy of any bugfixes or enhancements made must be provided to the
+      author, <pgut001@cs.auckland.ac.nz> to allow them to be added to the
+      baseline version of the code.
+
+  ALTERNATIVELY, the code may be distributed under the terms of the GNU
+  General Public License, version 2 or any later version published by the
+  Free Software Foundation, in which case the provisions of the GNU GPL are
+  required INSTEAD OF the above restrictions.
+
+  Although not required under the terms of the GPL, it would still be nice if
+  you could make any changes available to the author to allow a consistent
+  code base to be maintained */
+
+
 
 /* General includes */
 

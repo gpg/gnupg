@@ -75,7 +75,7 @@ B<-k> [I<username>] [I<keyring>]
     B<-kvc>   List fingerprints
     B<-kvvc>  List fingerprints and signatures
 
-B<--list-keys>	[I<names>]
+B<--list-keys>  [I<names>]
     List all keys from the public keyrings, or just the
     ones given on the command line.
 
@@ -83,7 +83,7 @@ B<--list-secret-keys> [I<names>]
     List all keys from the secret keyrings, or just the
     ones given on the command line.
 
-B<--list-sigs>	[I<names>]
+B<--list-sigs>  [I<names>]
     Same as B<--list-keys>, but the signatures are listed
     too.
 
@@ -117,6 +117,11 @@ B<--edit-key> I<name>
       asks whether it should be signed. This
       question is repeated for all users specified
       with B<-u>.
+    B<lsign>
+      Same as B<sign> but the signature is marked as
+      non-exportbale and will therefore never be used
+      by others.  This may be used to make keys valid
+      only in the local environment.
     B<trust>
       Change the owner trust value. This updates the
       trust-db immediately and no save is required.
@@ -129,7 +134,7 @@ B<--edit-key> I<name>
     B<delkey>
        Remove a subkey.
     B<expire>
-       Change the key expiration time.	If a key is
+       Change the key expiration time.  If a key is
        selected, the time of this key will be changed.
        With no selection the key expiration of the
        primary key is changed.
@@ -200,7 +205,7 @@ B<--export-secret-keys> [I<names>]
     This is normally not very useful.
 
 B<--import>, B<--fast-import>
-    Import/merge keys.	The fast version does not build
+    Import/merge keys.  The fast version does not build
     the trustdb; this can be done at any time with the
     command B<--update-trustdb>.
 
@@ -217,7 +222,7 @@ B<--import-ownertrust> [I<filename>]
 
 Long options can be put in an options file (default F<~/.gnupg/options>).
 Do not write the 2 dashes, but simply the name of the option and any
-required arguments.	Lines with a hash as the first non-white-space
+required arguments.     Lines with a hash as the first non-white-space
 character are ignored. Commands may be put in this file too, but that
 does not make sense.
 
@@ -240,20 +245,7 @@ B<--default-key>  I<name>
     is not used the default user-id is the first user-id
     from the secret keyring.
 
-B<--trusted-key>  I<keyid>
-    Assume that the key with the I<keyid> (which must be
-    a full (8 byte) keyid) is as trustworthy as one of
-    your own secret keys.  This may be used to make keys
-    valid which are not directly certified by you but
-    by a CA you trust.	The advantage of this option is
-    that it shortens the path of certification.
-
-    You may also use this option to skip the verification
-    of your own secret keys which is normally done every
-    time GnuPG starts up by using the I<keyid> of
-    your key.
-
-B<-r>  I<name>, B<--recipient>	I<name>
+B<-r>  I<name>, B<--recipient>  I<name>
     Encrypt for user id I<name>.  If this option is not
     specified, GnuPG asks for the user id.
 
@@ -523,11 +515,11 @@ a signature was bad, and other error codes for fatal errors.
 
 =head1 EXAMPLES
 
-  -se -r Bob [file]	     sign and encrypt for user Bob
-  -sat [file]		     make a clear text signature
-  -sb  [file]		     make a detached signature
-  -k   [userid] 	     show keys
-  -kc  [userid] 	     show fingerprint
+  -se -r Bob [file]          sign and encrypt for user Bob
+  -sat [file]                make a clear text signature
+  -sb  [file]                make a detached signature
+  -k   [userid]              show keys
+  -kc  [userid]              show fingerprint
 
 =head1 ENVIRONMENT
 
@@ -545,14 +537,14 @@ F<~/.gnupg/pubring.gpg.lock> and the lock file
 F<~/.gnupg/trustdb.gpg>      The trust database
 F<~/.gnupg/trustdb.gpg.lock> and the lock file
 
-F<~/.gnupg/options>	    May contain options
+F<~/.gnupg/options>         May contain options
 F</usr[/local]/share/gnupg/options.skel> Skeleton file
 
 F</usr[/local]/lib/gnupg/>  Default location for extensions
 
 =head1 SEE ALSO
 
-gpg(1)	gpgm(1)
+gpg(1)  gpgm(1)
 
 
 =head1 WARNINGS

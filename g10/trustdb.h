@@ -41,14 +41,12 @@
 
 
 /*-- trustdb.c --*/
-void list_trustdb(const char *username);
 void list_trust_path( const char *username );
-void export_ownertrust(void);
-void import_ownertrust(const char *fname);
 void register_trusted_key( const char *string );
 void check_trustdb( const char *username );
 void update_trustdb( void );
-int init_trustdb( int level, const char *dbname );
+int setup_trustdb( int level, const char *dbname );
+void init_trustdb( void );
 int check_trust( PKT_public_key *pk, unsigned *r_trustlevel, const byte* nh );
 int query_trust_info( PKT_public_key *pk, const byte *nh );
 int enum_cert_paths( void **context, ulong *lid,
@@ -66,6 +64,12 @@ int clear_trust_checked_flag( PKT_public_key *pk );
 int insert_trust_record( PKT_public_key *pk );
 int update_trust_record( KBNODE keyblock, int fast, int *modified );
 int update_ownertrust( ulong lid, unsigned new_trust );
+int trust_letter( unsigned value );
+
+/*-- tdbdump.c --*/
+void list_trustdb(const char *username);
+void export_ownertrust(void);
+void import_ownertrust(const char *fname);
 
 /*-- pkclist.c --*/
 int edit_ownertrust( ulong lid, int mode );

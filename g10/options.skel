@@ -52,9 +52,11 @@ escape-from-lines
 # every time it is needed - normally this is not needed.
 lock-once
 
-# If you are not running one of the free operation systems
-# you probably have to uncomment the next line:
+# If you have configured GnuPG without a random gatherer,
+# you have to uncomment one of the following lines.
+#load-extension rndlinux
 #load-extension rndunix
+#load-extension rndegd
 
 
 # GnuPG can import a key from a HKP keyerver if one is missing

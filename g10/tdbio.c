@@ -82,7 +82,6 @@ static int is_locked;
 static int  db_fd = -1;
 static int in_transaction;
 
-
 static void open_db(void);
 
 
@@ -317,6 +316,7 @@ tdbio_sync()
 	if( !release_dotlock( lockhandle ) )
 	    is_locked = 0;
     }
+
     return 0;
 }
 
@@ -605,6 +605,55 @@ tdbio_db_matches_options()
 		 && vr.r.ver.cert_depth == opt.max_cert_depth;
     }
     return yes_no;
+}
+
+
+/****************
+ * Return the modifiy stamp.
+ * if modify_down is true, the modify_down stamp will be
+ * returned, otherwise the modify_up stamp.
+ */
+ulong
+tdbio_read_modify_stamp( int modify_down )
+{
+    TRUSTREC vr;
+    int rc;
+    ulong mod;
+
+    rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+    if( rc )
+	log_fatal( _("%s: error reading version record: %s\n"),
+						    db_name, g10_errstr(rc) );
+
+    mod = modify_down? vr.r.ver.mod_down : vr.r.ver.mod_up;
+
+    /* Always return at least 1 to make comparison easier;
+     * this is still far back in history (before Led Zeppelin III :-) */
+    return mod ? mod : 1;
+}
+
+void
+tdbio_write_modify_stamp( int down, int up )
+{
+    TRUSTREC vr;
+    int rc;
+    ulong stamp;
+
+    rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
+    if( rc )
+	log_fatal( _("%s: error reading version record: %s\n"),
+				       db_name, g10_errstr(rc) );
+
+    stamp = make_timestamp();
+    if( down )
+	vr.r.ver.mod_down = stamp;
+    if( up )
+	vr.r.ver.mod_up = stamp;
+
+    rc = tdbio_write_record( &vr );
+    if( !rc )
+	log_fatal( _("%s: error writing version record: %s\n"),
+				       db_name, g10_errstr(rc) );
 }
 
 
@@ -936,12 +985,14 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
       case 0: fprintf(fp, "blank\n");
 	break;
       case RECTYPE_VER: fprintf(fp,
-	    "version, kd=%lu, sd=%lu, free=%lu, m/c/d=%d/%d/%d\n",
+	    "version, kd=%lu, sd=%lu, free=%lu, m/c/d=%d/%d/%d down=%s",
 	    rec->r.ver.keyhashtbl, rec->r.ver.sdirhashtbl,
 				   rec->r.ver.firstfree,
 				   rec->r.ver.marginals,
 				   rec->r.ver.completes,
-				   rec->r.ver.cert_depth );
+				   rec->r.ver.cert_depth,
+				   strtimestamp(rec->r.ver.mod_down) );
+	    fprintf(fp, ", up=%s\n", strtimestamp(rec->r.ver.mod_up) );
 	break;
       case RECTYPE_FREE: fprintf(fp, "free, next=%lu\n", rec->r.free.next );
 	break;
@@ -951,8 +1002,9 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		    rec->r.dir.keylist,
 		    rec->r.dir.uidlist,
 		    rec->r.dir.ownertrust );
-	if( rec->r.dir.dirflags & DIRF_VALVALID )
-	    fprintf( fp, ", v=%02x", rec->r.dir.validity );
+	if( rec->r.dir.valcheck )
+	    fprintf( fp, ", v=%02x/%s", rec->r.dir.validity,
+					strtimestamp(rec->r.dir.valcheck) );
 	if( rec->r.dir.dirflags & DIRF_CHECKED ) {
 	    if( rec->r.dir.dirflags & DIRF_VALID )
 		fputs(", valid", fp );
@@ -987,8 +1039,7 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		    rec->r.uid.prefrec,
 		    rec->r.uid.siglist,
 		    rec->r.uid.namehash[18], rec->r.uid.namehash[19]);
-	if( rec->r.uid.uidflags & UIDF_VALVALID )
-	    fprintf( fp, ", v=%02x", rec->r.uid.validity );
+	fprintf( fp, ", v=%02x", rec->r.uid.validity );
 	if( rec->r.uid.uidflags & UIDF_CHECKED ) {
 	    if( rec->r.uid.uidflags & UIDF_VALID )
 		fputs(", valid", fp );
@@ -1113,8 +1164,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.ver.cert_depth = *p++;
 	p += 4; /* lock flags */
 	rec->r.ver.created  = buftoulong(p); p += 4;
-	rec->r.ver.modified = buftoulong(p); p += 4;
-	rec->r.ver.validated= buftoulong(p); p += 4;
+	rec->r.ver.mod_down = buftoulong(p); p += 4;
+	rec->r.ver.mod_up   = buftoulong(p); p += 4;
 	rec->r.ver.keyhashtbl=buftoulong(p); p += 4;
 	rec->r.ver.firstfree =buftoulong(p); p += 4;
 	rec->r.ver.sdirhashtbl =buftoulong(p); p += 4;
@@ -1140,6 +1191,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.dir.ownertrust = *p++;
 	rec->r.dir.dirflags   = *p++;
 	rec->r.dir.validity   = *p++;
+	rec->r.dir.valcheck   = buftoulong(p); p += 4;
 	switch( rec->r.dir.validity ) {
 	  case 0:
 	  case TRUST_UNDEFINED:
@@ -1270,8 +1322,8 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.ver.cert_depth;
 	p += 4; /* skip lock flags */
 	ulongtobuf(p, rec->r.ver.created); p += 4;
-	ulongtobuf(p, rec->r.ver.modified); p += 4;
-	ulongtobuf(p, rec->r.ver.validated); p += 4;
+	ulongtobuf(p, rec->r.ver.mod_down); p += 4;
+	ulongtobuf(p, rec->r.ver.mod_up); p += 4;
 	ulongtobuf(p, rec->r.ver.keyhashtbl); p += 4;
 	ulongtobuf(p, rec->r.ver.firstfree ); p += 4;
 	ulongtobuf(p, rec->r.ver.sdirhashtbl ); p += 4;
@@ -1289,6 +1341,7 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.dir.ownertrust;
 	*p++ = rec->r.dir.dirflags;
 	*p++ = rec->r.dir.validity;
+	ulongtobuf(p, rec->r.dir.valcheck); p += 4;
 	assert( rec->r.dir.lid == recnum );
 	break;
 
@@ -1563,6 +1616,15 @@ tdbio_search_sdir( u32 *keyid, int pubkey_algo, TRUSTREC *rec )
     rc = lookup_hashtable( get_sdirhashrec(), key, 8,
 			   cmp_sdir, &cmpdata, rec );
     return rc;
+}
+
+
+void
+tdbio_invalid(void)
+{
+    log_error(_(
+	"The trustdb is corrupted; please run \"gpgm --fix-trustdb\".\n") );
+    g10_exit(2);
 }
 
 
