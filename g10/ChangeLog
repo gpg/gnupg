@@ -1,3 +1,10 @@
+Thu Feb 10 11:39:41 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* keylist.c (list_keyblock): Don't print warnings in the middle of
+	regulat output lines.  By Rémi.
+
+	* sig-check.c: Include options.h
+
 Wed Feb  9 15:33:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* gpg.c: New option --ignore-time-conflict

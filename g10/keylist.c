@@ -351,6 +351,7 @@ list_keyblock( KBNODE keyblock, int secret )
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    int sigrc;
+           char *sigstr;
 
 	    if( !any ) { /* no user id, (maybe a revocation follows)*/
 		if( sig->sig_class == 0x20 )
@@ -368,11 +369,11 @@ list_keyblock( KBNODE keyblock, int secret )
 
 	    if( sig->sig_class == 0x20 || sig->sig_class == 0x28
 				       || sig->sig_class == 0x30 )
-		fputs("rev", stdout);
+               sigstr = "rev";
 	    else if( (sig->sig_class&~3) == 0x10 )
-		fputs("sig", stdout);
+               sigstr = "sig";
 	    else if( sig->sig_class == 0x18 )
-		fputs("sig", stdout);
+               sigstr = "sig";
 	    else {
 		if( opt.with_colons )
 		    printf("sig::::::::::%02x:\n",sig->sig_class );
@@ -395,6 +396,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		rc = 0;
 		sigrc = ' ';
 	    }
+           fputs( sigstr, stdout );
 	    if( opt.with_colons ) {
 		putchar(':');
 		if( sigrc != ' ' )

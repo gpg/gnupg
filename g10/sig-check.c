@@ -32,6 +32,7 @@
 #include "main.h"
 #include "status.h"
 #include "i18n.h"
+#include "options.h"
 
 struct cmp_help_context_s {
     PKT_signature *sig;
