@@ -65,6 +65,15 @@ typedef struct {
 
 typedef struct {
     u32     keyid[2];	    /* 64 bit keyid */
+    byte    sig_class;	    /* sig classification */
+    byte    digest_algo;    /* algorithm used for digest */
+    byte    pubkey_algo;    /* algorithm used for public key scheme */
+    byte    last;	    /* a stupid flag */
+} PKT_onepass_sig;
+
+
+typedef struct {
+    u32     keyid[2];	    /* 64 bit keyid */
     u32     timestamp;	    /* signature made */
     byte    sig_class;	    /* sig classification, append for MD calculation*/
     byte    pubkey_algo;    /* algorithm used for public key scheme */
@@ -182,12 +191,10 @@ typedef struct {
 /* combine all packets into a union */
 struct packet_struct {
     pkttype_t pkttype;
-    PKT_public_cert *pkc_parent;     /* the pubkey to which it belongs */
-    PKT_secret_cert *skc_parent;      /* the seckey to which it belongs */
-    PKT_user_id     *user_parent;     /* the user_id to which it belongs */
     union {
 	void *generic;
 	PKT_pubkey_enc	*pubkey_enc;	/* PKT_PUBKEY_ENC */
+	PKT_onepass_sig *onepass_sig;	/* PKT_ONEPASS_SIG */
 	PKT_signature	*signature;	/* PKT_SIGNATURE */
 	PKT_public_cert *public_cert;	/* PKT_PUBLIC_CERT */
 	PKT_secret_cert *secret_cert;	/* PKT_SECRET_CERT */
@@ -200,9 +207,6 @@ struct packet_struct {
 };
 
 #define init_packet(a) do { (a)->pkttype = 0;		\
-			    (a)->pkc_parent = NULL;	\
-			    (a)->skc_parent = NULL;	\
-			    (a)->user_parent = NULL;	\
 			    (a)->pkt.generic = NULL;	\
 		       } while(0)
 

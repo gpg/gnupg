@@ -42,6 +42,8 @@ static int  parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen,
 							     PACKET *packet );
 static int  parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 							 PKT_signature *sig );
+static int  parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
+							PKT_onepass_sig *ops );
 static int  parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 				      byte *hdr, int hdrlen, PACKET *packet );
 static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -158,6 +160,10 @@ parse_packet( IOBUF inp, PACKET *pkt )
       case PKT_SIGNATURE:
 	pkt->pkt.signature = m_alloc_clear(sizeof *pkt->pkt.signature );
 	rc = parse_signature(inp, pkttype, pktlen, pkt->pkt.signature );
+	break;
+      case PKT_ONEPASS_SIG:
+	pkt->pkt.onepass_sig = m_alloc_clear(sizeof *pkt->pkt.onepass_sig );
+	rc = parse_onepass_sig(inp, pkttype, pktlen, pkt->pkt.onepass_sig );
 	break;
       case PKT_USER_ID:
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
@@ -332,6 +338,42 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     }
     else if( list_mode )
 	printf("\tunknown algorithm %d\n", sig->pubkey_algo );
+
+
+  leave:
+    skip_rest(inp, pktlen);
+    return 0;
+}
+
+
+static int
+parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
+					     PKT_onepass_sig *ops )
+{
+    int version;
+    unsigned n;
+
+    if( pktlen < 13 ) {
+	log_error("packet(%d) too short\n", pkttype);
+	goto leave;
+    }
+    version = iobuf_get_noeof(inp); pktlen--;
+    if( version != 3 ) {
+	log_error("onepass_sig with unknown version %d\n", version);
+	goto leave;
+    }
+    ops->sig_class = iobuf_get_noeof(inp); pktlen--;
+    ops->digest_algo = iobuf_get_noeof(inp); pktlen--;
+    ops->pubkey_algo = iobuf_get_noeof(inp); pktlen--;
+    ops->keyid[0] = read_32(inp); pktlen -= 4;
+    ops->keyid[1] = read_32(inp); pktlen -= 4;
+    ops->last = iobuf_get_noeof(inp); pktlen--;
+    if( list_mode )
+	printf(":onepass_sig packet: keyid %08lX%08lX\n"
+	       "\tversion %d, sigclass %02x, digest %d, pubkey %d, last=%d\n",
+		ops->keyid[0], ops->keyid[1],
+		version, ops->sig_class,
+		ops->digest_algo, ops->pubkey_algo, ops->last );
 
 
   leave:

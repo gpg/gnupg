@@ -75,6 +75,7 @@ typedef struct {
 
 
 static void list_node( CTX c, NODE node );
+static void proc_tree( CTX c, NODE node );
 
 static int
 pubkey_letter( int algo )
@@ -142,11 +143,30 @@ release_cert( CTX c )
 {
     if( !c->cert )
 	return;
-  list_node(c, c->cert );
+    proc_tree(c, c->cert );
     release_node( c->cert );
     c->cert = NULL;
 }
 
+
+static int
+add_onepass_sig( CTX c, PACKET *pkt )
+{
+    if( c->cert ) { /* add another packet */
+	NODE node;
+
+	if( c->cert->pkt->pkttype != PKT_ONEPASS_SIG ) {
+	   log_error("add_onepass_sig: another packet is in the way\n");
+	   release_cert( c );
+	}
+	node = new_node( pkt );
+	node->next = c->cert;
+	c->cert = node;
+    }
+    else /* insert the first one */
+	c->cert = new_node( pkt );
+    return 1;
+}
 
 
 static int
@@ -205,10 +225,24 @@ add_signature( CTX c, PACKET *pkt )
     NODE node, n1, n2;
 
     if( !c->cert ) {
-	log_error("orphaned signature (no certificate)\n" );
+	/* orphaned signature (no certificate)
+	 * this is the first signature for a following datafile
+	 */
 	return 0;
     }
     assert( c->cert->pkt );
+    if( c->cert->pkt->pkttype == PKT_ONEPASS_SIG ) {
+	/* The root is a onepass signature, so we are signing data
+	 * The childs direct under the root are the signatures
+	 * (there is no need to keep the correct sequence of packets)
+	 */
+	node = new_node( pkt );
+	node->next = c->cert->child;
+	c->cert->child = node;
+	return 1;
+    }
+
+
     if( !c->cert->child ) {
 	log_error("orphaned signature (no userid)\n" );
 	return 0;
@@ -531,6 +565,7 @@ proc_packets( IOBUF a )
 	  case PKT_ENCRYPTED:	proc_encrypted( c, pkt ); break;
 	  case PKT_PLAINTEXT:	proc_plaintext( c, pkt ); break;
 	  case PKT_COMPRESSED:	proc_compressed( c, pkt ); break;
+	  case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
 	  default: newpkt = 0; break;
 	}
 	if( newpkt == -1 )
@@ -551,5 +586,63 @@ proc_packets( IOBUF a )
     m_free( c );
     return 0;
 }
+
+
+static void
+print_keyid( FILE *fp, u32 *keyid )
+{
+    size_t n;
+    char *p = get_user_id( keyid, &n );
+    print_string( fp, p, n );
+    m_free(p);
+}
+
+/****************
+ * Preocess the tree which starts at node
+ */
+static void
+proc_tree( CTX c, NODE node )
+{
+    NODE n1;
+    int rc;
+
+    if( node->pkt->pkttype == PKT_PUBLIC_CERT )
+	list_node( c, node );
+    else if( node->pkt->pkttype == PKT_SECRET_CERT )
+	list_node( c, node );
+    else if( node->pkt->pkttype == PKT_ONEPASS_SIG ) {
+	if( !node->child )
+	    log_error("proc_tree: onepass_sig without followin data\n");
+	else if( node->child->pkt->pkttype != PKT_SIGNATURE )
+	    log_error("proc_tree: onepass_sig not followed by signature\n");
+	else {	/* check all signature */
+	    for(n1=node->child; n1; n1 = n1->next ) {
+		PKT_signature *sig = n1->pkt->pkt.signature;
+
+		rc = do_check_sig(c, n1 );
+		if( !rc ) {
+		    log_info("Good signature from ");
+		    print_keyid( stderr, sig->keyid );
+		    putc('\n', stderr);
+		}
+		else if( rc == G10ERR_BAD_SIGN ) {
+		    log_error("BAD signature from ");
+		    print_keyid( stderr, sig->keyid );
+		    putc('\n', stderr);
+		}
+		else
+		    log_error("Can't check signature made by %08lX: %s\n",
+			       sig->keyid[1], g10_errstr(rc) );
+	    }
+	}
+    }
+    else if( node->pkt->pkttype == PKT_SIGNATURE ) {
+	log_info("proc_tree: old style signature\n");
+    }
+    else
+	log_error("proc_tree: invalid root packet\n");
+
+}
+
 
 

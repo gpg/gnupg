@@ -44,6 +44,7 @@ static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
 static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
+static int do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops );
 
 static int calc_header_length( u32 len );
 static int write_16(IOBUF inp, u16 a);
@@ -95,6 +96,9 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_SIGNATURE:
 	rc = do_signature( out, ctb, pkt->pkt.signature );
 	break;
+      case PKT_ONEPASS_SIG:
+	rc = do_onepass_sig( out, ctb, pkt->pkt.onepass_sig );
+	break;
       case PKT_RING_TRUST:
       default:
 	log_bug("invalid packet type in build_packet()");
@@ -124,6 +128,7 @@ calc_packet_length( PACKET *pkt )
       case PKT_PUBKEY_ENC:
       case PKT_ENCRYPTED:
       case PKT_SIGNATURE:
+      case PKT_ONEPASS_SIG:
       case PKT_RING_TRUST:
       case PKT_COMPRESSED:
       default:
@@ -387,6 +392,30 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 	rc = G10ERR_PUBKEY_ALGO;
 	goto leave;
     }
+
+    write_header(out, ctb, iobuf_get_temp_length(a) );
+    if( iobuf_write_temp( out, a ) )
+	rc = G10ERR_WRITE_FILE;
+
+  leave:
+    iobuf_close(a);
+    return rc;
+}
+
+
+static int
+do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
+{
+    int rc = 0;
+    IOBUF a = iobuf_temp();
+
+    write_version( a, ctb );
+    iobuf_put(a, ops->sig_class );
+    iobuf_put(a, ops->digest_algo );
+    iobuf_put(a, ops->pubkey_algo );
+    write_32(a, ops->keyid[0] );
+    write_32(a, ops->keyid[1] );
+    iobuf_put(a, ops->last );
 
     write_header(out, ctb, iobuf_get_temp_length(a) );
     if( iobuf_write_temp( out, a ) )

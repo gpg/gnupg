@@ -6,7 +6,6 @@
       function of iobuf.
     * filter all output read from the input when displaying it to the user.
     * keyring editing
-    * remove some debugging stuff (e.g. the listing mode in mainproc)
     * add trust stuff
     * make ttyio.c work (hide passwords etc..)
     * add detached signatures
@@ -23,4 +22,12 @@
     * speed up the RIPE-MD-160
     * add signal handling
     * enable a SIGSEGV handler while using zlib functions
+
+    * PGP writes the signature and then the file, this is not
+      a good idea, we can't write such files if we take input rom stdin.
+      So the solution will: accept such packet, but write
+      signature the corret way: first the data and then the signature[s]
+      this is much easier to check, also we must read the entire data
+      before we can check wether we have the pubkey or not.  The one-pass
+      signature packets should be implemented to avoid this.
 

@@ -283,7 +283,7 @@ iobuf_cancel( IOBUF a )
 {
     const char *s;
 
-    if( a->usage == 2 ) {
+    if( a && a->usage == 2 ) {
 	s = iobuf_get_fname(a);
 	if( s && *s )
 	    remove(s);	/* remove the file. Fixme: this will fail for MSDOZE*/

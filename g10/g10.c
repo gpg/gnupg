@@ -230,7 +230,7 @@ main( int argc, char **argv )
       case aSign: /* sign the given file */
 	if( argc > 1 )
 	    usage(1);
-	if( (rc = sign_file(fname, 0, locusr)) )
+	if( (rc = sign_file(fname, opt.detached_sig, locusr)) )
 	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
 	break;
 
