@@ -1,3 +1,8 @@
+2001-12-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* Add an acconfig.h to define EXEC_TEMPFILE_ONLY on platforms that
+	can't do fork/exec.
+
 2001-12-21  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (dist-hook): We should also look in include for
