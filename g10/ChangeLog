@@ -1,3 +1,12 @@
+2004-03-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, free-packet.c (free_encrypted, free_plaintext),
+	parse-packet.c (copy_packet, skip_packet, skip_rest, read_rest,
+	parse_plaintext, parse_encrypted, parse_gpg_control): Use a flag
+	to indicate partial or indeterminate encoding.  This is the first
+	step in some minor surgery to remove the old gpg partial length
+	encoding.
+
 2004-03-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse): Only data-type packets are allowed to

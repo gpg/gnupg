@@ -279,6 +279,7 @@ typedef struct {
     u32  len;		  /* length of encrypted data */
     int  extralen;        /* this is (blocksize+2) */
     byte new_ctb;	  /* uses a new CTB */
+    byte is_partial;      /* partial length encoded */
     byte mdc_method;	  /* > 0: integrity protected encrypted data packet */
     IOBUF buf;		  /* IOBUF reference */
 } PKT_encrypted;

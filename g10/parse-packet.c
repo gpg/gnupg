@@ -47,10 +47,11 @@ static int  parse( IOBUF inp, PACKET *pkt, int onlykeypkts,
 #endif
 		 );
 static int  copy_packet( IOBUF inp, IOBUF out, int pkttype,
-					       unsigned long pktlen );
-static void skip_packet( IOBUF inp, int pkttype, unsigned long pktlen );
-static void skip_rest( IOBUF inp, unsigned long pktlen );
-static void *read_rest( IOBUF inp, size_t pktlen );
+			 unsigned long pktlen, int partial );
+static void skip_packet( IOBUF inp, int pkttype,
+			 unsigned long pktlen, int partial );
+static void skip_rest( IOBUF inp, unsigned long pktlen, int partial );
+static void *read_rest( IOBUF inp, size_t pktlen, int partial );
 static int  parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
 							     PACKET *packet );
 static int  parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -70,15 +71,15 @@ static int  parse_comment( IOBUF inp, int pkttype, unsigned long pktlen,
 static void parse_trust( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static int  parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
-					       PACKET *packet, int new_ctb);
+			     PACKET *packet, int new_ctb, int partial);
 static int  parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
 					       PACKET *packet, int new_ctb );
 static int  parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
-					       PACKET *packet, int new_ctb);
+			     PACKET *packet, int new_ctb, int partial);
 static int  parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
 					       PACKET *packet, int new_ctb);
 static int  parse_gpg_control( IOBUF inp, int pkttype, unsigned long pktlen,
-                               PACKET *packet );
+                               PACKET *packet, int partial );
 
 static unsigned short
 read_16(IOBUF inp)
@@ -297,7 +298,7 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
     unsigned long pktlen;
     byte hdr[8];
     int hdrlen;
-    int new_ctb = 0;
+    int new_ctb = 0, partial=0;
     int with_uid = (onlykeypkts == 2);
 
     *skip = 0;
@@ -328,6 +329,7 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
         if (pkttype == PKT_COMPRESSED) {
              iobuf_set_partial_block_mode(inp, c & 0xff);
              pktlen = 0;/* to indicate partial length */
+	     partial=1;
         }
         else {
              hdr[hdrlen++] = c;
@@ -369,6 +371,7 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 		   {
 		     iobuf_set_partial_block_mode(inp, c & 0xff);
 		     pktlen = 0;/* to indicate partial length */
+		     partial=1;
 		   }
 		 else
 		   {
@@ -385,6 +388,7 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
 	if( !lenbytes ) {
 	    pktlen = 0; /* don't know the value */
+	    partial=1;
             switch (pkttype) {
               case PKT_ENCRYPTED:
               case PKT_PLAINTEXT:
@@ -428,7 +432,7 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	if( iobuf_write( out, hdr, hdrlen ) == -1 )
 	    rc = G10ERR_WRITE_FILE;
 	else
-	    rc = copy_packet(inp, out, pkttype, pktlen );
+	    rc = copy_packet(inp, out, pkttype, pktlen, partial );
 	goto leave;
     }
 
@@ -440,7 +444,7 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
                         && pkttype != PKT_PUBLIC_KEY
                         && pkttype != PKT_SECRET_SUBKEY
                         && pkttype != PKT_SECRET_KEY  ) ) {
-	skip_rest(inp, pktlen);
+	skip_rest(inp, pktlen, partial);
 	*skip = 1;
 	rc = 0;
 	goto leave;
@@ -499,23 +503,23 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
 	rc = 0;
 	break;
       case PKT_PLAINTEXT:
-	rc = parse_plaintext(inp, pkttype, pktlen, pkt, new_ctb );
+	rc = parse_plaintext(inp, pkttype, pktlen, pkt, new_ctb, partial );
 	break;
       case PKT_COMPRESSED:
 	rc = parse_compressed(inp, pkttype, pktlen, pkt, new_ctb );
 	break;
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC:
-	rc = parse_encrypted(inp, pkttype, pktlen, pkt, new_ctb );
+	rc = parse_encrypted(inp, pkttype, pktlen, pkt, new_ctb, partial );
 	break;
       case PKT_MDC:
 	rc = parse_mdc(inp, pkttype, pktlen, pkt, new_ctb );
 	break;
       case PKT_GPG_CONTROL:
-        rc = parse_gpg_control(inp, pkttype, pktlen, pkt );
+        rc = parse_gpg_control(inp, pkttype, pktlen, pkt, partial );
         break;
       default:
-	skip_packet(inp, pkttype, pktlen);
+	skip_packet(inp, pkttype, pktlen, partial);
 	break;
     }
 
@@ -543,12 +547,13 @@ dump_hex_line( int c, int *i )
 
 
 static int
-copy_packet( IOBUF inp, IOBUF out, int pkttype, unsigned long pktlen )
+copy_packet( IOBUF inp, IOBUF out, int pkttype,
+	     unsigned long pktlen, int partial )
 {
     int n;
     char buf[100];
 
-    if( iobuf_in_block_mode(inp) ) {
+    if( partial ) {
 	while( (n = iobuf_read( inp, buf, 100 )) != -1 )
 	    if( iobuf_write(out, buf, n ) )
 		return G10ERR_WRITE_FILE; /* write error */
@@ -575,7 +580,7 @@ copy_packet( IOBUF inp, IOBUF out, int pkttype, unsigned long pktlen )
 
 
 static void
-skip_packet( IOBUF inp, int pkttype, unsigned long pktlen )
+skip_packet( IOBUF inp, int pkttype, unsigned long pktlen, int partial )
 {
     if( list_mode ) {
 	if( pkttype == PKT_MARKER )
@@ -586,7 +591,7 @@ skip_packet( IOBUF inp, int pkttype, unsigned long pktlen )
 	    int c, i=0 ;
 	    if( pkttype != PKT_MARKER )
 		fputs("dump:", stdout );
-	    if( iobuf_in_block_mode(inp) ) {
+	    if( partial ) {
 		while( (c=iobuf_get(inp)) != -1 )
 		    dump_hex_line(c, &i);
 	    }
@@ -598,13 +603,13 @@ skip_packet( IOBUF inp, int pkttype, unsigned long pktlen )
 	    return;
 	}
     }
-    skip_rest(inp,pktlen);
+    skip_rest(inp,pktlen,partial);
 }
 
 static void
-skip_rest( IOBUF inp, unsigned long pktlen )
+skip_rest( IOBUF inp, unsigned long pktlen, int partial )
 {
-    if( iobuf_in_block_mode(inp) ) {
+    if( partial ) {
 	while( iobuf_get(inp) != -1 )
 		;
     }
@@ -617,12 +622,12 @@ skip_rest( IOBUF inp, unsigned long pktlen )
 
 
 static void *
-read_rest( IOBUF inp, size_t pktlen )
+read_rest( IOBUF inp, size_t pktlen, int partial )
 {
     byte *p;
     int i;
 
-    if( iobuf_in_block_mode(inp) ) {
+    if( partial ) {
 	log_error("read_rest: can't store stream data\n");
 	p = NULL;
     }
@@ -727,7 +732,7 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     }
 
   leave:
-    skip_rest(inp, pktlen);
+    skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -781,7 +786,7 @@ parse_pubkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     }
 
   leave:
-    skip_rest(inp, pktlen);
+    skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -1401,7 +1406,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	unknown_pubkey_warning( sig->pubkey_algo );
 	/* we store the plain material in data[0], so that we are able
 	 * to write it back with build_packet() */
-	sig->data[0] = mpi_set_opaque(NULL, read_rest(inp, pktlen), pktlen );
+	sig->data[0]= mpi_set_opaque(NULL, read_rest(inp, pktlen, 0), pktlen );
 	pktlen = 0;
     }
     else {
@@ -1420,7 +1425,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
   leave:
-    skip_rest(inp, pktlen);
+    skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -1458,7 +1463,7 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 
 
   leave:
-    skip_rest(inp, pktlen);
+    skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -1537,7 +1542,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	    printf("\"\n");
 	}
-	skip_rest(inp, pktlen);
+	skip_rest(inp, pktlen, 0);
 	return 0;
     }
     else if( version == 4 )
@@ -1625,7 +1630,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	if( !npkey ) {
 	    sk->skey[0] = mpi_set_opaque( NULL,
-					  read_rest(inp, pktlen), pktlen );
+					  read_rest(inp, pktlen, 0), pktlen );
 	    pktlen = 0;
 	    goto leave;
 	}
@@ -1808,7 +1813,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	     * stuff up to the end of the packet into the first
 	     * skey element */
 	    sk->skey[npkey] = mpi_set_opaque(NULL,
-					     read_rest(inp, pktlen), pktlen );
+					     read_rest(inp, pktlen, 0),pktlen);
 	    pktlen = 0;
 	    if( list_mode ) {
 		printf("\tencrypted stuff follows\n");
@@ -1849,7 +1854,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	if( !npkey ) {
 	    pk->pkey[0] = mpi_set_opaque( NULL,
-					  read_rest(inp, pktlen), pktlen );
+					  read_rest(inp, pktlen, 0), pktlen );
 	    pktlen = 0;
 	    goto leave;
 	}
@@ -1869,7 +1874,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
   leave:
-    skip_rest(inp, pktlen);
+    skip_rest(inp, pktlen, 0);
     return rc;
 }
 
@@ -2104,30 +2109,25 @@ parse_trust( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
       if( list_mode )
 	printf(":trust packet: empty\n");
     }
-  skip_rest (inp, pktlen);
+  skip_rest (inp, pktlen, 0);
 }
 
 
 static int
 parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
-					PACKET *pkt, int new_ctb )
+		 PACKET *pkt, int new_ctb, int partial )
 {
     int rc = 0;
-    int mode, namelen, partial=0;
+    int mode, namelen;
     PKT_plaintext *pt;
     byte *p;
     int c, i;
 
-    if( pktlen && pktlen < 6 ) {
+    if( !partial && pktlen < 6 ) {
 	log_error("packet(%d) too short (%lu)\n", pkttype, (ulong)pktlen);
         rc = G10ERR_INVALID_PACKET;
 	goto leave;
     }
-    /* A packet length of zero indicates partial body length.  A zero
-       data length isn't a zero length packet due to the header (mode,
-       name, etc), so this is accurate. */
-    if(pktlen==0)
-      partial=1;
     mode = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     namelen = iobuf_get_noeof(inp); if( pktlen ) pktlen--;
     pt = pkt->pkt.plaintext = m_alloc(sizeof *pkt->pkt.plaintext + namelen -1);
@@ -2162,7 +2162,11 @@ parse_plaintext( IOBUF inp, int pkttype, unsigned long pktlen,
 	    else
 		printf("\\x%02x", *p );
 	}
-	printf("\",\n\traw data: %lu bytes\n", (ulong)pt->len );
+	printf("\",\n\traw data: ");
+	if(partial)
+	  printf("unknown length\n");
+	else
+	  printf("%lu bytes\n", (ulong)pt->len );
     }
 
   leave:
@@ -2193,7 +2197,7 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
 
 static int
 parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
-				       PACKET *pkt, int new_ctb )
+		 PACKET *pkt, int new_ctb, int partial )
 {
     int rc = 0;
     PKT_encrypted *ed;
@@ -2209,6 +2213,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     ed->extralen = 0;
     ed->buf = NULL;
     ed->new_ctb = new_ctb;
+    ed->is_partial = partial;
     ed->mdc_method = 0;
     if( pkttype == PKT_ENCRYPTED_MDC ) {
 	/* fixme: add some pktlen sanity checks */
@@ -2229,7 +2234,7 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     if( orig_pktlen && pktlen < 10 ) { /* actually this is blocksize+2 */
 	log_error("packet(%d) too short\n", pkttype);
         rc = G10ERR_INVALID_PACKET;
-	skip_rest(inp, pktlen);
+	skip_rest(inp, pktlen, partial);
 	goto leave;
     }
     if( list_mode ) {
@@ -2242,7 +2247,6 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
     ed->buf = inp;
-    pktlen = 0;
 
   leave:
     return rc;
@@ -2286,8 +2290,8 @@ parse_mdc( IOBUF inp, int pkttype, unsigned long pktlen,
  */
 
 static int
-parse_gpg_control( IOBUF inp,
-                   int pkttype, unsigned long pktlen, PACKET *packet )
+parse_gpg_control( IOBUF inp, int pkttype,
+		   unsigned long pktlen, PACKET *packet, int partial )
 {
     byte *p;
     const byte *sesmark;
@@ -2323,7 +2327,7 @@ parse_gpg_control( IOBUF inp,
 
         i=0;
         printf("- private (rest length %lu)\n",  pktlen);
-        if( iobuf_in_block_mode(inp) ) {
+        if( partial ) {
             while( (c=iobuf_get(inp)) != -1 )
                 dump_hex_line(c, &i);
         }
@@ -2333,7 +2337,7 @@ parse_gpg_control( IOBUF inp,
         }
         putchar('\n');
     }
-    skip_rest(inp,pktlen);
+    skip_rest(inp,pktlen, 0);
     return G10ERR_INVALID_PACKET;
 }
 

@@ -319,7 +319,7 @@ void
 free_encrypted( PKT_encrypted *ed )
 {
     if( ed->buf ) { /* have to skip some bytes */
-	if( iobuf_in_block_mode(ed->buf) ) {
+	if( ed->is_partial ) {
 	    while( iobuf_read( ed->buf, NULL, 1<<30 ) != -1 )
 		;
 	}
@@ -341,7 +341,7 @@ void
 free_plaintext( PKT_plaintext *pt )
 {
     if( pt->buf ) { /* have to skip some bytes */
-	if( iobuf_in_block_mode(pt->buf) ) {
+	if( pt->is_partial ) {
 	    while( iobuf_read( pt->buf, NULL, 1<<30 ) != -1 )
 		;
 	}
