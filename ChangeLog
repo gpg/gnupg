@@ -1,3 +1,8 @@
+2004-06-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: --ask-cert-level actually defaults to on for the stable
+	branch.
+
 2004-06-16  Werner Koch  <wk@gnupg.org>
 
 	Released 1.2.5rc2.

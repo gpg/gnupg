@@ -3,7 +3,7 @@ Noteworthy changes in version 1.2.5 (unreleased)
 
     * New --ask-cert-level/--no-ask-cert-level option to turn on and
       off the prompt for signature level when signing a key.  Defaults
-      to off.
+      to on.
 
     * New --min-cert-level option to disregard key signatures that are
       under a specified level.  Defaults to 1 (i.e. don't disregard
