@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1998-09-14 14:17+0200\n"
+"POT-Creation-Date: 1998-09-18 17:16+0200\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Werner Koch <wk@frodo>\n"
@@ -12,18 +12,18 @@ msgstr ""
 "g10/mainproc.c g10/passphrase.c g10/plaintext.c g10/pref.c g10/seckey-cert.c "
 "g10/sig-check.c g10/sign.c g10/trustdb.c g10/verify.c\n"
 
-#: util/secmem.c:215
+#: util/secmem.c:226
 msgid "Warning: using insecure memory!\n"
 msgstr ""
 "Achtung: Sensible Daten könnten auf Platte ausgelagert werden.\n"
 "Um dies zu vermeiden, kann das Programm suid(root) installiert werden.\n"
 "Bitte wenden Sie sich hierzu an den Systemadministrator.\n"
 
-#: util/miscutil.c:87
+#: util/miscutil.c:110
 msgid "yes"
 msgstr "ja"
 
-#: util/miscutil.c:88
+#: util/miscutil.c:111
 msgid "yY"
 msgstr "jJ"
 
@@ -348,133 +348,133 @@ msgid ""
 "Supported algorithms:\n"
 msgstr ""
 
-#: g10/g10.c:397
+#: g10/g10.c:398
 msgid "usage: gpgm [options] "
 msgstr "Aufruf: gpgm [Optionen] "
 
-#: g10/g10.c:399
+#: g10/g10.c:400
 msgid "usage: gpg [options] "
 msgstr "Aufruf: gpg [Optionen] "
 
-#: g10/g10.c:440
+#: g10/g10.c:441
 msgid "conflicting commands\n"
 msgstr "Widersprüchliche Kommandos\n"
 
-#: g10/g10.c:546
+#: g10/g10.c:547
 #, c-format
 msgid "note: no default option file '%s'\n"
 msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
 
-#: g10/g10.c:550
+#: g10/g10.c:551
 #, c-format
 msgid "option file '%s': %s\n"
 msgstr "Optionendatei '%s': %s\n"
 
-#: g10/g10.c:557
+#: g10/g10.c:558
 #, c-format
 msgid "reading options from '%s'\n"
 msgstr "Optionen werden von '%s' gelesen\n"
 
-#: g10/g10.c:736
+#: g10/g10.c:737
 msgid "selected cipher algorithm is invalid\n"
 msgstr "Die ausgewählte Verschlüsslungsmethode ist ungültig\n"
 
-#: g10/g10.c:742
+#: g10/g10.c:743
 msgid "selected digest algorithm is invalid\n"
 msgstr "Die ausgewählte Message-Digest-Methode ist ungültig\n"
 
-#: g10/g10.c:745
+#: g10/g10.c:746
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "Die Kompressionsmethode muß im Bereich %d bis %d liegen\n"
 
-#: g10/g10.c:747
+#: g10/g10.c:748
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed müssen größer als 0 sein\n"
 
-#: g10/g10.c:749
+#: g10/g10.c:750
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed müssen größer als 1 sein\n"
 
-#: g10/g10.c:832
+#: g10/g10.c:833
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "Die Trust-DB kann nicht initialisiert werden: %s\n"
 
-#: g10/g10.c:838
+#: g10/g10.c:839
 msgid "--store [filename]"
 msgstr "--store [Dateiname]"
 
-#: g10/g10.c:846
+#: g10/g10.c:847
 msgid "--symmetric [filename]"
 msgstr "--symmetric [Dateiname]"
 
-#: g10/g10.c:854
+#: g10/g10.c:855
 msgid "--encrypt [filename]"
 msgstr "--encrypt [Dateiname]"
 
-#: g10/g10.c:867
+#: g10/g10.c:868
 msgid "--sign [filename]"
 msgstr "--sign [Dateiname]"
 
-#: g10/g10.c:880
+#: g10/g10.c:881
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [Dateiname]"
 
-#: g10/g10.c:894
+#: g10/g10.c:895
 msgid "--clearsign [filename]"
 msgstr "--clearsign [Dateiname]"
 
-#: g10/g10.c:906
+#: g10/g10.c:907
 msgid "--decrypt [filename]"
 msgstr "--decrypt [Dateiname]"
 
-#: g10/g10.c:915
+#: g10/g10.c:916
 msgid "--edit-key username"
 msgstr "--edit-key Benutzername"
 
-#: g10/g10.c:923
+#: g10/g10.c:924
 msgid "--delete-secret-key username"
 msgstr "--delete-secret-key Benutzername"
 
-#: g10/g10.c:926
+#: g10/g10.c:927
 msgid "--delete-key username"
 msgstr "--delete-key Benutzername"
 
-#: g10/encode.c:211 g10/g10.c:949 g10/keylist.c:79
+#: g10/encode.c:211 g10/g10.c:950 g10/keylist.c:79
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "Datei '%s' kann nicht geöffnet werden: %s\n"
 
-#: g10/g10.c:960
+#: g10/g10.c:961
 msgid "-k[v][v][v][c] [userid] [keyring]"
 msgstr "-k[v][v][v][c] [Benutzername] [Keyring]"
 
-#: g10/g10.c:1015
+#: g10/g10.c:1016
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "De-Armor fehlgeschlagen: %s\n"
 
-#: g10/g10.c:1023
+#: g10/g10.c:1024
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "En-Armor fehlgeschlagen: %s\n"
 
-#: g10/g10.c:1084
+#: g10/g10.c:1085
 #, c-format
 msgid "invalid hash algorithm '%s'\n"
 msgstr "Ungültige Hashmethode '%s'\n"
 
-#: g10/g10.c:1154
+#: g10/g10.c:1155
 msgid "[filename]"
 msgstr "[Dateiname]"
 
-#: g10/decrypt.c:59 g10/g10.c:1156 g10/verify.c:66
+#: g10/decrypt.c:59 g10/g10.c:1157 g10/verify.c:66
 #, c-format
 msgid "can't open '%s'\n"
 msgstr "Datei '%s' kann nicht geöffnet werden\n"
 
-#: g10/g10.c:1201
+#: g10/g10.c:1202
 msgid ""
 "RSA keys are deprecated; please consider creating a new key and use this key "
 "in the future\n"
@@ -921,7 +921,7 @@ msgstr ""
 "Sie benötigen eine \"passphrase\", um den geheimen Schlüssel zu schützen.\n"
 "\n"
 
-#: g10/keyedit.c:376 g10/keygen.c:694
+#: g10/keyedit.c:379 g10/keygen.c:694
 msgid "passphrase not correctly repeated; try again.\n"
 msgstr "\"passphrase\" nicht richtig wiederholt; noch einmal.\n"
 
@@ -1232,95 +1232,95 @@ msgstr "Schlüssel %08lX: Unser Kopie hat keine Selbst-Signatur\n"
 msgid "%s: user not found\n"
 msgstr "%s: Benutzer nicht gefunden\n"
 
-#: g10/keyedit.c:160
+#: g10/keyedit.c:163
 #, fuzzy
 msgid "[self-signature]"
 msgstr "Selbst-Signatur übergangen\n"
 
-#: g10/keyedit.c:178
+#: g10/keyedit.c:181
 #, fuzzy
 msgid "1 bad signature\n"
 msgstr "%d schlechte Signaturen\n"
 
-#: g10/keyedit.c:180
+#: g10/keyedit.c:183
 #, c-format
 msgid "%d bad signatures\n"
 msgstr "%d schlechte Signaturen\n"
 
-#: g10/keyedit.c:182
+#: g10/keyedit.c:185
 #, fuzzy
 msgid "1 signature not checked due to a missing key\n"
 msgstr "%s Signaturen aufgrund von Fehlern nicht geprüft\n"
 
-#: g10/keyedit.c:184
+#: g10/keyedit.c:187
 #, fuzzy, c-format
 msgid "%d signatures not checked due to missing keys\n"
 msgstr "%s Signaturen aufgrund von Fehlern nicht geprüft\n"
 
-#: g10/keyedit.c:186
+#: g10/keyedit.c:189
 #, fuzzy
 msgid "1 signature not checked due to an error\n"
 msgstr "%s Signaturen aufgrund von Fehlern nicht geprüft\n"
 
-#: g10/keyedit.c:188
+#: g10/keyedit.c:191
 #, c-format
 msgid "%d signatures not checked due to errors\n"
 msgstr "%s Signaturen aufgrund von Fehlern nicht geprüft\n"
 
-#: g10/keyedit.c:190
+#: g10/keyedit.c:193
 #, fuzzy
 msgid "1 user id without valid self-signature detected\n"
 msgstr "Schlüssel %08lX: Ungültige Selbst-Signatur\n"
 
-#: g10/keyedit.c:192
+#: g10/keyedit.c:195
 #, c-format
 msgid "%d user ids without valid self-signatures detected\n"
 msgstr ""
 
-#: g10/keyedit.c:247
+#: g10/keyedit.c:250
 #, fuzzy, c-format
 msgid "Already signed by key %08lX\n"
 msgstr "Ist bereits mit Schlüssel %08lX signiert.\n"
 
-#: g10/keyedit.c:255
+#: g10/keyedit.c:258
 #, fuzzy, c-format
 msgid "Nothing to sign with key %08lX\n"
 msgstr "Nichts zu signieren.\n"
 
-#: g10/keyedit.c:264
+#: g10/keyedit.c:267
 #, fuzzy
 msgid ""
 "Are you really sure that you want to sign this key\n"
 "with your key: \""
 msgstr "Sind Sie wirklich sicher, daß Sie diesen Schlüssel signieren wollen:\n"
 
-#: g10/keyedit.c:271
+#: g10/keyedit.c:274
 msgid "sign_uid.okay"
 msgstr ""
 
-#: g10/keyedit.c:271
+#: g10/keyedit.c:274
 msgid "Really sign? "
 msgstr ""
 
-#: g10/keyedit.c:292
+#: g10/keyedit.c:295
 #, fuzzy, c-format
 msgid "signing failed: %s\n"
 msgstr "En-Armor fehlgeschlagen: %s\n"
 
-#: g10/keyedit.c:343
+#: g10/keyedit.c:346
 msgid "This key is not protected.\n"
 msgstr "Dieser Schlüssel ist nicht geschützt.\n"
 
-#: g10/keyedit.c:346
+#: g10/keyedit.c:349
 msgid "Key is protected.\n"
 msgstr "Schlüssel ist geschützt.\n"
 
-#: g10/keyedit.c:363
+#: g10/keyedit.c:366
 #, c-format
 msgid "Can't edit this key: %s\n"
 msgstr "Dieser Schlüssel kann nicht editiert werden: %s\n"
 
-#: g10/keyedit.c:368
+#: g10/keyedit.c:371
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
@@ -1328,7 +1328,7 @@ msgstr ""
 "Geben Sie die neue \"passphrase\" für diesen privaten Schlüssel ein.\n"
 "\n"
 
-#: g10/keyedit.c:380
+#: g10/keyedit.c:383
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
@@ -1337,303 +1337,303 @@ msgstr ""
 "Idee!\n"
 "\n"
 
-#: g10/keyedit.c:382
+#: g10/keyedit.c:385
 msgid "change_passwd.empty.okay"
 msgstr ""
 
-#: g10/keyedit.c:383
+#: g10/keyedit.c:386
 msgid "Do you really want to do this? "
 msgstr "Möchten Sie dies wirklich tun? "
 
-#: g10/keyedit.c:438
+#: g10/keyedit.c:441
 msgid "quit"
 msgstr ""
 
-#: g10/keyedit.c:438
+#: g10/keyedit.c:441
 msgid "quit this menu"
 msgstr ""
 
-#: g10/keyedit.c:439
+#: g10/keyedit.c:442
 msgid "q"
 msgstr ""
 
-#: g10/keyedit.c:440
+#: g10/keyedit.c:443
 msgid "save"
 msgstr ""
 
-#: g10/keyedit.c:440
+#: g10/keyedit.c:443
 msgid "save and quit"
 msgstr ""
 
-#: g10/keyedit.c:441
+#: g10/keyedit.c:444
 msgid "help"
 msgstr ""
 
-#: g10/keyedit.c:441
+#: g10/keyedit.c:444
 msgid "show this help"
 msgstr ""
 
-#: g10/keyedit.c:443
+#: g10/keyedit.c:446
 msgid "fpr"
 msgstr ""
 
-#: g10/keyedit.c:443
+#: g10/keyedit.c:446
 #, fuzzy
 msgid "show fingerprint"
 msgstr "Liste der Schlüssel und ihrer \"Fingerabdrücke\""
 
-#: g10/keyedit.c:444
+#: g10/keyedit.c:447
 #, fuzzy
 msgid "list"
 msgstr "Liste der Schlüssel"
 
-#: g10/keyedit.c:444
+#: g10/keyedit.c:447
 #, fuzzy
 msgid "list key and user ids"
 msgstr "Liste der Schlüssel und ihrer \"Fingerabdrücke\""
 
-#: g10/keyedit.c:445
+#: g10/keyedit.c:448
 msgid "l"
 msgstr ""
 
-#: g10/keyedit.c:446
+#: g10/keyedit.c:449
 msgid "uid"
 msgstr ""
 
-#: g10/keyedit.c:446
+#: g10/keyedit.c:449
 msgid "select user id N"
 msgstr ""
 
-#: g10/keyedit.c:447
+#: g10/keyedit.c:450
 msgid "key"
 msgstr ""
 
-#: g10/keyedit.c:447
+#: g10/keyedit.c:450
 msgid "select secondary key N"
 msgstr ""
 
-#: g10/keyedit.c:448
+#: g10/keyedit.c:451
 msgid "check"
 msgstr ""
 
-#: g10/keyedit.c:448
+#: g10/keyedit.c:451
 #, fuzzy
 msgid "list signatures"
 msgstr "Liste der Schlüssel und ihrer Signaturen"
 
-#: g10/keyedit.c:449
+#: g10/keyedit.c:452
 msgid "c"
 msgstr ""
 
-#: g10/keyedit.c:450
+#: g10/keyedit.c:453
 msgid "sign"
 msgstr ""
 
-#: g10/keyedit.c:450
+#: g10/keyedit.c:453
 #, fuzzy
 msgid "sign the key"
 msgstr "Signieren? "
 
-#: g10/keyedit.c:451
+#: g10/keyedit.c:454
 msgid "s"
 msgstr ""
 
-#: g10/keyedit.c:452
+#: g10/keyedit.c:455
 msgid "debug"
 msgstr ""
 
-#: g10/keyedit.c:453
+#: g10/keyedit.c:456
 msgid "adduid"
 msgstr ""
 
-#: g10/keyedit.c:453
+#: g10/keyedit.c:456
 msgid "add a user id"
 msgstr ""
 
-#: g10/keyedit.c:454
+#: g10/keyedit.c:457
 msgid "deluid"
 msgstr ""
 
-#: g10/keyedit.c:454
+#: g10/keyedit.c:457
 #, fuzzy
 msgid "delete user id"
 msgstr "--delete-key Benutzername"
 
-#: g10/keyedit.c:455
+#: g10/keyedit.c:458
 msgid "addkey"
 msgstr ""
 
-#: g10/keyedit.c:455
+#: g10/keyedit.c:458
 #, fuzzy
 msgid "add a secondary key"
 msgstr "Einen Sekundärschlüssel dem Primärschlüssel hinzufügen"
 
-#: g10/keyedit.c:456
+#: g10/keyedit.c:459
 msgid "delkey"
 msgstr ""
 
-#: g10/keyedit.c:456
+#: g10/keyedit.c:459
 msgid "delete a secondary key"
 msgstr ""
 
-#: g10/keyedit.c:457
+#: g10/keyedit.c:460
 msgid "toggle"
 msgstr ""
 
-#: g10/keyedit.c:457
+#: g10/keyedit.c:460
 msgid "toggle between secret and public key listing"
 msgstr ""
 
-#: g10/keyedit.c:459
+#: g10/keyedit.c:462
 msgid "t"
 msgstr ""
 
-#: g10/keyedit.c:460
+#: g10/keyedit.c:463
 msgid "pref"
 msgstr ""
 
-#: g10/keyedit.c:460
+#: g10/keyedit.c:463
 #, fuzzy
 msgid "list preferences"
 msgstr "Liste der geheimen Schlüssel"
 
-#: g10/keyedit.c:461
+#: g10/keyedit.c:464
 msgid "passwd"
 msgstr ""
 
-#: g10/keyedit.c:461
+#: g10/keyedit.c:464
 #, fuzzy
 msgid "change the passphrase"
 msgstr "Die \"Passphrase\" des geheimen Schlüssels ändern"
 
-#: g10/keyedit.c:462
+#: g10/keyedit.c:465
 msgid "trust"
 msgstr ""
 
-#: g10/keyedit.c:462
+#: g10/keyedit.c:465
 msgid "change the ownertrust"
 msgstr ""
 
-#: g10/keyedit.c:480
+#: g10/keyedit.c:483
 msgid "can't do that in batchmode\n"
 msgstr "Dies kann im Batchmodus nicht durchgeführt werden.\n"
 
 #. check that they match
 #. FIXME: check that they both match
-#: g10/keyedit.c:502
+#: g10/keyedit.c:506
 #, fuzzy
 msgid "Secret key is available.\n"
 msgstr "Öffentlicher Schlüssel ist nicht verfügbar.\n"
 
-#: g10/keyedit.c:518
+#: g10/keyedit.c:522
 msgid "keyedit.cmd"
 msgstr "Geben Sie bitte \"help\" ein."
 
-#: g10/keyedit.c:518
+#: g10/keyedit.c:522
 #, fuzzy
 msgid "Command> "
 msgstr ""
 "@Kommandos:\n"
 " "
 
-#: g10/keyedit.c:543
+#: g10/keyedit.c:547
 #, fuzzy
 msgid "Need the secret key to to this.\n"
 msgstr "Als geheimen Schlüsselring mitbenutzen"
 
-#: g10/keyedit.c:562
+#: g10/keyedit.c:566
 msgid "keyedit.save.okay"
 msgstr ""
 
-#: g10/keyedit.c:563
+#: g10/keyedit.c:567
 msgid "Save changes? "
 msgstr ""
 
-#: g10/keyedit.c:565
+#: g10/keyedit.c:569
 #, fuzzy
 msgid "keyedit.cancel.okay"
 msgstr "Geben Sie bitte \"help\" ein."
 
-#: g10/keyedit.c:566
+#: g10/keyedit.c:570
 msgid "Quit without saving? "
 msgstr ""
 
-#: g10/keyedit.c:576
+#: g10/keyedit.c:580
 #, fuzzy, c-format
 msgid "update failed: %s\n"
 msgstr "De-Armor fehlgeschlagen: %s\n"
 
-#: g10/keyedit.c:583
+#: g10/keyedit.c:587
 #, fuzzy, c-format
 msgid "update secret failed: %s\n"
 msgstr "Enschlüsselung fehlgeschlagen: %s\n"
 
-#: g10/keyedit.c:591
+#: g10/keyedit.c:595
 msgid "Key not changed so no update needed.\n"
 msgstr ""
 
-#: g10/keyedit.c:621
+#: g10/keyedit.c:625
 msgid "keyedit.sign_all.okay"
 msgstr ""
 
-#: g10/keyedit.c:622
+#: g10/keyedit.c:626
 msgid "Really sign all user ids? "
 msgstr ""
 
-#: g10/keyedit.c:623
+#: g10/keyedit.c:627
 msgid "Hint: Select the user ids to sign\n"
 msgstr ""
 
-#: g10/keyedit.c:651
+#: g10/keyedit.c:655
 msgid "You must select at least one user id.\n"
 msgstr ""
 
-#: g10/keyedit.c:653
+#: g10/keyedit.c:657
 msgid "You can't delete the last user id!\n"
 msgstr ""
 
-#: g10/keyedit.c:655
+#: g10/keyedit.c:659
 msgid "keyedit.remove.uid.okay"
 msgstr ""
 
-#: g10/keyedit.c:656
+#: g10/keyedit.c:660
 #, fuzzy
 msgid "Really remove all selected user ids? "
 msgstr "Möchten Sie die ausgewählten Signaturen wirklich entfernen? "
 
-#: g10/keyedit.c:657
+#: g10/keyedit.c:661
 #, fuzzy
 msgid "Really remove this user id? "
 msgstr "Die Signatur entfernen? "
 
-#: g10/keyedit.c:680
+#: g10/keyedit.c:684
 msgid "You must select at least one key.\n"
 msgstr ""
 
-#: g10/keyedit.c:682
+#: g10/keyedit.c:686
 msgid "keyedit.remove.subkey.okay"
 msgstr ""
 
-#: g10/keyedit.c:684
+#: g10/keyedit.c:688
 #, fuzzy
 msgid "Do you really want to delete the selected keys? "
 msgstr "Möchten Sie die ausgewählten Signaturen wirklich entfernen? "
 
-#: g10/keyedit.c:685
+#: g10/keyedit.c:689
 #, fuzzy
 msgid "Do you really want to delete this key? "
 msgstr "Möchten Sie dies wirklich tun? "
 
-#: g10/keyedit.c:722
+#: g10/keyedit.c:726
 msgid "Invalid command  (try \"help\")\n"
 msgstr ""
 
-#: g10/keyedit.c:1102
+#: g10/keyedit.c:1106
 #, c-format
 msgid "No user id with index %d\n"
 msgstr ""
 
-#: g10/keyedit.c:1147
+#: g10/keyedit.c:1151
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr ""
@@ -1648,20 +1648,20 @@ msgstr "Entschlüsselung mit öffentlichem Schlüssel fehlgeschlagen: %s\n"
 msgid "decryption failed: %s\n"
 msgstr "Enschlüsselung fehlgeschlagen: %s\n"
 
-#: g10/mainproc.c:843
+#: g10/mainproc.c:842
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Signatur am %.*s mit %s Schlüssel %08lX erzeugt\n"
 
-#: g10/mainproc.c:849
+#: g10/mainproc.c:848
 msgid "BAD signature from \""
 msgstr "FALSCHE Signatur von \""
 
-#: g10/mainproc.c:850
+#: g10/mainproc.c:849
 msgid "Good signature from \""
 msgstr "Gültige Signatur von \""
 
-#: g10/mainproc.c:861
+#: g10/mainproc.c:860
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Signatur kann nicht geprüft werden: %s\n"
@@ -1859,16 +1859,16 @@ msgstr "Geben Sie \"ja\" ein, wenn Sie die Datei überschreiben möchten"
 msgid "Overwrite (y/N)? "
 msgstr "Überschreiben (j/N)? "
 
-#: g10/encr-data.c:73
+#: g10/encr-data.c:74
 msgid ""
 "Warning: Message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
 
-#: g10/seskey.c:51
+#: g10/seskey.c:52
 msgid "weak key created - retrying\n"
 msgstr ""
 
-#: g10/seskey.c:56
+#: g10/seskey.c:57
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
