@@ -330,15 +330,15 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    /* remove quotes if they totally enclose the
                        string, and do not occur within the string */
 		    if( *p == '"' && p[strlen(p)-1]=='"') {
-		        char *i=p;
+		        char *p2=p;
 
-			while(*(++i))
-			  if(*i=='"')
+			while(*(++p2))
+			  if(*p2=='"')
 			    break;
 
-			if(*i=='"' && *(i+1)=='\0') {
-			  p[strlen(p)-1] = 0;
-			  p++;
+			if(*p2=='"' && *(p2+1)=='\0') {
+			  p2[strlen(p2)-1] = 0;
+			  p2++;
 			}
 		    }
 		    if( !set_opt_arg(arg, opts[idx].flags, p) )

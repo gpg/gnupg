@@ -1,3 +1,8 @@
+2002-06-29  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (optfile_parse): Renamed an auto I to P2 to avoid
+	shadowing warning.
+
 2002-06-21  Stefan Bellon  <sbellon@sbellon.de>
 
 	* riscos.c (riscos_global_defaults): New.
