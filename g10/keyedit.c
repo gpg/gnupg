@@ -161,11 +161,11 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	}
 	tty_printf("\n");
 
-	if(sig->flags.policy_url && opt.show_policy_url)
-	  show_policy_url(sig,3);
+	if(sig->flags.policy_url && (opt.list_options&LIST_SHOW_POLICY))
+	  show_policy_url(sig,3,0);
 
-	if(sig->flags.notation && opt.show_notation)
-	  show_notation(sig,3);
+	if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATION))
+	  show_notation(sig,3,0);
     }
 
     return (sigrc == '!');

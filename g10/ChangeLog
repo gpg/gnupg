@@ -1,5 +1,22 @@
 2003-05-31  David Shaw  <dshaw@jabberwocky.com>
 
+	* mainproc.c (check_sig_and_print), main.h, keylist.c
+	(show_policy, show_notation): Collapse the old print_notation_data
+	into show_policy() and show_notation() so there is only one
+	function to print notations and policy URLs.
+
+	* options.h, main.h, g10.c (main), keyedit.c
+	(print_and_check_one_sig), keylist.c (list_one,
+	list_keyblock_print), pkclist.c (do_edit_ownertrust), sign.c
+	(mk_notation_and_policy): New "list-options" and "verify-options"
+	commands.  These replace the existing
+	--show-photos/--no-show-photos,
+	--show-notation/--no-show-notation,
+	--show-policy-url/--no-show-policy-url, and --show-keyring
+	options.  The new method is more flexible since a user can specify
+	(for example) showing photos during sig verification, but not in
+	key listings.  The old options are emulated.
+
 	* main.h, misc.c (parse_options): New general option line
 	parser. Fix the bug in the old version that did not handle report
 	syntax errors after a valid entry.

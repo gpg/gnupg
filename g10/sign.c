@@ -123,8 +123,8 @@ mk_notation_and_policy( PKT_signature *sig,
 	m_free(buf);
     }
 
-    if(opt.show_notation)
-      show_notation(sig,0);
+    if(opt.list_options&LIST_SHOW_NOTATION)
+      show_notation(sig,0,0);
 
     /* set policy URL */
     if( IS_SIG(sig) && opt.sig_policy_url )
@@ -161,8 +161,8 @@ mk_notation_and_policy( PKT_signature *sig,
 	m_free(s);
       }
 
-    if(opt.show_policy_url)
-      show_policy_url(sig,0);
+    if(opt.list_options&LIST_SHOW_POLICY)
+      show_policy_url(sig,0,0);
 }
 
 

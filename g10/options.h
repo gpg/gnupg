@@ -103,7 +103,6 @@ struct {
     const char *set_filename;
     const char *comment_string;
     int throw_keyid;
-    int show_photos;
     const char *photo_viewer;
     int s2k_mode;
     int s2k_digest_algo;
@@ -139,6 +138,8 @@ struct {
     int exec_path_set;
     unsigned int import_options;
     unsigned int export_options;
+    unsigned int list_options;
+    unsigned int verify_options;
     char *def_preference_list;
     prefitem_t *personal_cipher_prefs;
     prefitem_t *personal_digest_prefs;
@@ -150,10 +151,8 @@ struct {
     int interactive;
     STRLIST sig_notation_data;
     STRLIST cert_notation_data;
-    int show_notation;
     STRLIST sig_policy_url;
     STRLIST cert_policy_url;
-    int show_policy_url;
     int use_embedded_filename;
     int allow_non_selfsigned_uid;
     int allow_freeform_uid;
@@ -178,7 +177,6 @@ struct {
     int no_auto_check_trustdb;
     int preserve_permissions;
     int no_homedir_creation;
-    int show_keyring;
     struct groupitem *grouplist;
     int strict;
     int mangle_dos_filenames; 

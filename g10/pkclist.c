@@ -294,7 +294,8 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 		    !un->pkt->pkt.user_id->attrib_data )
 		    continue;
                 
-		if(opt.show_photos && un->pkt->pkt.user_id->attrib_data)
+		if((opt.verify_options&VERIFY_SHOW_PHOTOS)
+		   && un->pkt->pkt.user_id->attrib_data)
                     show_photos(un->pkt->pkt.user_id->attribs,
                                 un->pkt->pkt.user_id->numattribs,pk,NULL);
                 

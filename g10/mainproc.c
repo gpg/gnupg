@@ -757,52 +757,6 @@ print_userid( PACKET *pkt )
 }
 
 
-static void
-print_notation_data( PKT_signature *sig )
-{
-    size_t n, n1, n2;
-    const byte *p;
-    int seq = 0;
-
-    while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&n,&seq,NULL))) {
-	if( n < 8 ) {
-	    log_info(_("WARNING: invalid notation data found\n"));
-	    return;
-	}
-	if( !(*p & 0x80) )
-	    return; /* not human readable */
-	n1 = (p[4] << 8) | p[5];
-	n2 = (p[6] << 8) | p[7];
-	p += 8;
-	if( 8+n1+n2 != n ) {
-	    log_info(_("WARNING: invalid notation data found\n"));
-	    return;
-	}
-	log_info(_("Notation: ") );
-	print_string( log_stream(), p, n1, 0 );
-	putc( '=', log_stream() );
-	print_string( log_stream(), p+n1, n2, 0 );
-	putc( '\n', log_stream() );
-        write_status_buffer ( STATUS_NOTATION_NAME, p   , n1, 0 );
-        write_status_buffer ( STATUS_NOTATION_DATA, p+n1, n2, 50 );
-    }
-
-    seq=0;
-
-    while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&n,&seq,NULL))) {
-	log_info(_("Policy: ") );
-	print_string( log_stream(), p, n, 0 );
-	putc( '\n', log_stream() );
-        write_status_buffer ( STATUS_POLICY_URL, p, n, 0 );
-    }
-
-    /* Now check whether the key of this signature has some
-     * notation data */
-
-    /* TODO */
-}
-
-
 /****************
  * List the certificate in a user friendly way
  */
@@ -1433,7 +1387,7 @@ check_sig_and_print( CTX c, KBNODE node )
 		  {
 		    dump_attribs(un->pkt->pkt.user_id,pk,NULL);
 
-		    if(opt.show_photos)
+		    if(opt.verify_options&VERIFY_SHOW_PHOTOS)
 		      show_photos(un->pkt->pkt.user_id->attribs,
 				  un->pkt->pkt.user_id->numattribs,pk,NULL);
 		  }
@@ -1447,7 +1401,10 @@ check_sig_and_print( CTX c, KBNODE node )
 	release_kbnode( keyblock );
 
 	if( !rc )
-	    print_notation_data( sig );
+	  {
+	    show_notation(sig,0,1);
+	    show_policy_url(sig,0,1);
+	  }
 
 	if( !rc && is_status_enabled() ) {
 	    /* print a status response with the fingerprint */

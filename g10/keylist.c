@@ -116,35 +116,43 @@ print_pubkey_info (PKT_public_key *pk)
 
 
 void
-show_policy_url(PKT_signature *sig,int indent)
+show_policy_url(PKT_signature *sig,int indent,int mode)
 {
   const byte *p;
   size_t len;
   int seq=0,crit;
+  FILE *fp=mode?log_stream():stdout;
 
   while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len,&seq,&crit)))
     {
       int i;
+      char *str;
 
       for(i=0;i<indent;i++)
 	putchar(' ');
 
       /* This isn't UTF8 as it is a URL(?) */
       if(crit)
-	printf(_("Critical signature policy: "));
+	str=_("Critical signature policy: ");
       else
-	printf(_("Signature policy: "));
-      print_string(stdout,p,len,0);
-      printf("\n");
+	str=_("Signature policy: ");
+      if(mode)
+	log_info("%s",str);
+      else
+	printf("%s",str);
+      print_string(fp,p,len,0);
+      fprintf(fp,"\n");
+      write_status_buffer ( STATUS_POLICY_URL, p, len, 0 );
     }
 }
 
 void
-show_notation(PKT_signature *sig,int indent)
+show_notation(PKT_signature *sig,int indent,int mode)
 {
   const byte *p;
   size_t len;
   int seq=0,crit;
+  FILE *fp=mode?log_stream():stdout;
 
   /* There may be multiple notations in the same sig. */
 
@@ -152,6 +160,7 @@ show_notation(PKT_signature *sig,int indent)
     if(len>=8)
       {
 	int n1,n2,i;
+	char *str;
 
 	n1=(p[4]<<8)|p[5];
 	n2=(p[6]<<8)|p[7];
@@ -167,18 +176,28 @@ show_notation(PKT_signature *sig,int indent)
 
 	/* This is UTF8 */
 	if(crit)
-	  printf(_("Critical signature notation: "));
+	  str=_("Critical signature notation: ");
 	else
-	  printf(_("Signature notation: "));
-	print_utf8_string(stdout,p+8,n1);
-	printf("=");
+	  str=_("Signature notation: ");
+	if(mode)
+	  log_info("%s",str);
+	else
+	  printf("%s",str);
+	print_utf8_string(fp,p+8,n1);
+	fprintf(fp,"=");
 
 	if(*p&0x80)
-	  print_utf8_string(stdout,p+8+n1,n2);
+	  print_utf8_string(fp,p+8+n1,n2);
 	else
-	  printf("[ %s ]",_("not human readable"));
+	  fprintf(fp,"[ %s ]",_("not human readable"));
 
-	printf("\n");
+	fprintf(fp,"\n");
+
+	if(mode)
+	  {
+	    write_status_buffer ( STATUS_NOTATION_NAME, p+8   , n1, 0 );
+	    write_status_buffer ( STATUS_NOTATION_DATA, p+8+n1, n2, 50 );
+	  }
       }
   else
     log_info(_("WARNING: invalid notation data found\n"));
@@ -292,7 +311,7 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
-	    if (opt.show_keyring && !opt.with_colons) {
+	    if ((opt.list_options&LIST_SHOW_KEYRING) && !opt.with_colons) {
 		resname = keydb_get_resource_name (get_ctx_handle(ctx));
 		printf("%s: %s\n", keyring_str, resname);
 		for(i = strlen(resname) + strlen(keyring_str) + 2; i; i-- )
@@ -312,7 +331,7 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
-	  if (opt.show_keyring && !opt.with_colons) {
+	  if ((opt.list_options&LIST_SHOW_KEYRING) && !opt.with_colons) {
 		resname = keydb_get_resource_name (get_ctx_handle(ctx));
 		printf("%s: %s\n", keyring_str, resname);
 		for(i = strlen(resname) + strlen(keyring_str) + 2; i; i-- )
@@ -525,7 +544,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		any = 1;
 	    }
 
-	    if(opt.show_photos && node->pkt->pkt.user_id->attribs!=NULL)
+	    if((opt.list_options&LIST_SHOW_PHOTOS)
+	       && node->pkt->pkt.user_id->attribs!=NULL)
 	      show_photos(node->pkt->pkt.user_id->attribs,
 			  node->pkt->pkt.user_id->numattribs,pk,sk);
 	}
@@ -656,11 +676,11 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    }
 	    putchar('\n');
 
-	    if(sig->flags.policy_url && opt.show_policy_url)
-	      show_policy_url(sig,3);
+	    if(sig->flags.policy_url && (opt.list_options&LIST_SHOW_POLICY))
+	      show_policy_url(sig,3,0);
 
-	    if(sig->flags.notation && opt.show_notation)
-	      show_notation(sig,3);
+	    if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATION))
+	      show_notation(sig,3,0);
 
 	    /* fixme: check or list other sigs here */
 	}

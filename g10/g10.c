@@ -250,6 +250,8 @@ enum cmd_and_opt_values { aNull = 0,
     oKeyServerOptions,
     oImportOptions,
     oExportOptions,
+    oListOptions,
+    oVerifyOptions,
     oTempDir,
     oExecPath,
     oEncryptTo,
@@ -434,6 +436,7 @@ static ARGPARSE_OPTS opts[] = {
     { oKeyServerOptions, "keyserver-options",2,"@"},
     { oImportOptions, "import-options",2,"@"},
     { oExportOptions, "export-options",2,"@"},
+    { oListOptions, "list-options",2,"@"},
     { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 
@@ -478,9 +481,9 @@ static ARGPARSE_OPTS opts[] = {
     { oCompressAlgo,"compress-algo",2,N_("|NAME|use compression algorithm NAME")},
     { oThrowKeyid, "throw-keyid", 0, N_("throw keyid field of encrypted packets")},
     { oNoThrowKeyid, "no-throw-keyid", 0, "@" },
-    { oShowPhotos,   "show-photos", 0, N_("Show Photo IDs")},
-    { oNoShowPhotos, "no-show-photos", 0, N_("Don't show Photo IDs")},
-    { oPhotoViewer,  "photo-viewer", 2, N_("Set command line to view Photo IDs")},
+    { oShowPhotos,   "show-photos", 0, "@" },
+    { oNoShowPhotos, "no-show-photos", 0, "@" },
+    { oPhotoViewer,  "photo-viewer", 2, "@" },
     { oNotation,   "notation-data", 2, "@" },
     { oSigNotation,   "sig-notation", 2, "@" },
     { oCertNotation,  "cert-notation", 2, "@" },
@@ -1403,7 +1406,7 @@ main( int argc, char **argv )
 	    sl=append_to_strlist( &nrings, pargs.r.ret_str);
 	    sl->flags=2;
 	    break;
-	  case oShowKeyring: opt.show_keyring = 1; break;
+	  case oShowKeyring: opt.list_options|=LIST_SHOW_KEYRING; break;
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
 	  case oStatusFD:
@@ -1576,15 +1579,27 @@ main( int argc, char **argv )
 	    break;
 	  case oSigPolicyURL: add_policy_url(pargs.r.ret_str,0); break;
 	  case oCertPolicyURL: add_policy_url(pargs.r.ret_str,1); break;
-          case oShowPolicyURL: opt.show_policy_url=1; break;
-    	  case oNoShowPolicyURL: opt.show_policy_url=0; break;
+          case oShowPolicyURL:
+	    opt.list_options|=LIST_SHOW_POLICY;
+	    opt.verify_options|=VERIFY_SHOW_POLICY;
+	    break;
+	  case oNoShowPolicyURL:
+	    opt.list_options&=~LIST_SHOW_POLICY;
+	    opt.verify_options&=~VERIFY_SHOW_POLICY;
+	    break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oDefaultComment: opt.comment_string = NULL; break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oNoThrowKeyid: opt.throw_keyid = 0; break;
-	  case oShowPhotos: opt.show_photos = 1; break;
-	  case oNoShowPhotos: opt.show_photos = 0; break;
+	  case oShowPhotos: 
+	    opt.list_options|=LIST_SHOW_PHOTOS;
+	    opt.verify_options|=VERIFY_SHOW_PHOTOS;
+	    break;
+	  case oNoShowPhotos:
+	    opt.list_options&=~LIST_SHOW_PHOTOS;
+	    opt.verify_options&=~VERIFY_SHOW_PHOTOS;
+	    break;
 	  case oPhotoViewer: opt.photo_viewer = pargs.r.ret_str; break;
 	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
 	  case oNoForceV3Sigs: opt.force_v3_sigs = 0; break;
@@ -1720,6 +1735,47 @@ main( int argc, char **argv )
 		  log_error(_("invalid export options\n"));
 	      }
 	    break;
+	  case oListOptions:
+	    {
+	      struct parse_options lopts[]=
+		{
+		  {"show-photos",LIST_SHOW_PHOTOS},
+		  {"show-policy-url",LIST_SHOW_POLICY},
+		  {"show-notation",LIST_SHOW_NOTATION},
+		  {"show-keyring",LIST_SHOW_KEYRING},
+		  {NULL,0}
+		};
+
+	      if(!parse_options(pargs.r.ret_str,&opt.list_options,lopts))
+		{
+		  if(configname)
+		    log_error(_("%s:%d: invalid list options\n"),
+			      configname,configlineno);
+		  else
+		    log_error(_("invalid list options\n"));
+		}
+	    }
+	    break;
+	  case oVerifyOptions:
+	    {
+	      struct parse_options vopts[]=
+		{
+		  {"show-photos",VERIFY_SHOW_PHOTOS},
+		  {"show-policy-url",VERIFY_SHOW_POLICY},
+		  {"show-notation",VERIFY_SHOW_NOTATION},
+		  {NULL,0}
+		};
+
+	      if(!parse_options(pargs.r.ret_str,&opt.verify_options,vopts))
+		{
+		  if(configname)
+		    log_error(_("%s:%d: invalid verify options\n"),
+			      configname,configlineno);
+		  else
+		    log_error(_("invalid verify options\n"));
+		}
+	    }
+	    break;
 	  case oTempDir: opt.temp_dir=pargs.r.ret_str; break;
 	  case oExecPath:
 	    if(set_exec_path(pargs.r.ret_str,0))
@@ -1733,8 +1789,14 @@ main( int argc, char **argv )
 	    break;
 	  case oSigNotation: add_notation_data( pargs.r.ret_str, 0 ); break;
 	  case oCertNotation: add_notation_data( pargs.r.ret_str, 1 ); break;
-	  case oShowNotation: opt.show_notation=1; break;
-	  case oNoShowNotation: opt.show_notation=0; break;
+	  case oShowNotation:
+	    opt.list_options|=LIST_SHOW_NOTATION;
+	    opt.verify_options|=VERIFY_SHOW_NOTATION;
+	    break;
+	  case oNoShowNotation:
+	    opt.list_options&=~LIST_SHOW_NOTATION;
+	    opt.verify_options&=~VERIFY_SHOW_NOTATION;
+	    break;
 	  case oUtf8Strings: utf8_strings = 1; break;
 	  case oNoUtf8Strings: utf8_strings = 0; break;
 	  case oDisableCipherAlgo:

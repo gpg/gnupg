@@ -213,13 +213,18 @@ struct revocation_reason_info *
 void release_revocation_reason_info( struct revocation_reason_info *reason );
 
 /*-- keylist.c --*/
+#define LIST_SHOW_PHOTOS   1
+#define LIST_SHOW_POLICY   2
+#define LIST_SHOW_NOTATION 4
+#define LIST_SHOW_KEYRING  8
+
 void public_key_list( STRLIST list );
 void secret_key_list( STRLIST list );
 void reorder_keyblock (KBNODE keyblock);
 void list_keyblock( KBNODE keyblock, int secret, int fpr, void *opaque );
 void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
-void show_policy_url(PKT_signature *sig,int indent);
-void show_notation(PKT_signature *sig,int indent);
+void show_policy_url(PKT_signature *sig,int indent,int mode);
+void show_notation(PKT_signature *sig,int indent,int mode);
 void dump_attribs(const PKT_user_id *uid,
 		  PKT_public_key *pk,PKT_secret_key *sk);
 void set_attrib_fd(int fd);
@@ -227,6 +232,10 @@ void print_seckey_info (PKT_secret_key *sk);
 void print_pubkey_info (PKT_public_key *pk);
 
 /*-- verify.c --*/
+#define VERIFY_SHOW_PHOTOS   1
+#define VERIFY_SHOW_POLICY   2
+#define VERIFY_SHOW_NOTATION 4
+
 void print_file_status( int status, const char *name, int what );
 int verify_signatures( int nfiles, char **files );
 int verify_files( int nfiles, char **files );
