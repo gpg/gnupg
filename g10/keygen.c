@@ -1,6 +1,6 @@
 /* keygen.c - generate a key pair
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ *               2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -2452,7 +2452,7 @@ do_generate_keypair (struct para_data_s *para,
 	  outctrl->pub.stream = iobuf_create (outctrl->pub.fname);
 	  if (!outctrl->pub.stream)
 	    {
-	      log_error ("can't create `%s': %s\n", outctrl->pub.newfname,
+	      log_error ("can't create `%s': %s\n", outctrl->pub.fname,
 			 strerror (errno));
 	      return;
 	    }
