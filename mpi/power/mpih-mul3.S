@@ -24,7 +24,7 @@
 #include "asm-syntax.h"
 
 
-
+/*
 
 # INPUT PARAMETERS
 # res_ptr	r3
@@ -41,6 +41,7 @@
 # iteration, so we have to compute the compensation carefully (the natural,
 # srai+and doesn't work).  Since the POWER architecture has a branch unit
 # we can branch in zero cycles, so that's how we perform the additions.
+ */
 
 	.toc
 	.csect .mpihelp_submul_1[PR]

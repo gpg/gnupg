@@ -1,3 +1,8 @@
+Sun Dec 19 15:22:26 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* power/ : Converted more comments to C comments because some AS
+	complain about ' in comments.
+
 Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* Makefile.am: c/SFLAGS/ASFLAGS/. This has only been used by the

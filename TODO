@@ -1,4 +1,7 @@
 
+  * don't allow certain commands in the edit menu when the secret key is
+    selected.
+
 Scheduled for 1.1
 -----------------
   * With option -i prompt before adding a key to the keyring and show some

@@ -1491,9 +1491,9 @@ is *very* easy to spy out your passphrase!
 On many systems this program should be installed as setuid(root). This
 is necessary to lock memory pages. Locking memory pages prevents the
 operating system from writing memory pages to disk. If you get no
-warning message about insecure memory your operating system supports
+warning message about insecure memory then your operating system supports
 locking without being root. The program drops root privileges as soon
-as locked memory is allocated.
+as the locked memory is allocated.
 </para>
 </refsect1>
 

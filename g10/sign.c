@@ -39,6 +39,12 @@
 #include "i18n.h"
 
 
+#ifdef HAVE_DOSISH_SYSTEM
+  #define LF "\r\n"
+#else
+  #define LF "\n"
+#endif
+
 
 /****************
  * Create a notation.  It is assumed that the stings in STRLIST
@@ -582,7 +588,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     else if( (rc = open_outfile( fname, 1, &out )) )
 	goto leave;
 
-    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----\n" );
+    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----" LF );
 
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	PKT_secret_key *sk = sk_rover->sk;

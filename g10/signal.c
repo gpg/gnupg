@@ -53,7 +53,6 @@ static RETSIGTYPE
 got_fatal_signal( int sig )
 {
     const char *s;
-    struct sigaction nact;
 
     if( caught_fatal_sig )
 	raise( sig );
@@ -67,11 +66,15 @@ got_fatal_signal( int sig )
     s = get_signal_name(sig); write(2, s, strlen(s) );
     write(2, " caught ... exiting\n", 21 );
 
-    /* reset action to default action and raise signal again */
-    nact.sa_handler = SIG_DFL;
-    sigemptyset( &nact.sa_mask );
-    nact.sa_flags = 0;
-    sigaction( sig, &nact, NULL);
+  #ifndef HAVE_DOSISH_SYSTEM
+    {	/* reset action to default action and raise signal again */
+	struct sigaction nact;
+	nact.sa_handler = SIG_DFL;
+	sigemptyset( &nact.sa_mask );
+	nact.sa_flags = 0;
+	sigaction( sig, &nact, NULL);
+    }
+  #endif
     raise( sig );
 }
 

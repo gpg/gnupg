@@ -23,12 +23,13 @@
 #include "asm-syntax.h"
 
 
-
+/*
 # INPUT PARAMETERS
 # res_ptr	r3
 # s_ptr 	r4
 # size		r5
 # cnt		r6
+*/
 
 	.toc
 	.extern mpihelp_rshift[DS]

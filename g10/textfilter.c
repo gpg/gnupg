@@ -32,6 +32,11 @@
 #include "filter.h"
 #include "i18n.h"
 
+#ifdef HAVE_DOSISH_SYSTEM
+  #define LF "\r\n"
+#else
+  #define LF "\n"
+#endif
 
 #define MAX_LINELEN 19995 /* a little bit smaller than in armor.c */
 			  /* to make sure that a warning is displayed while */
@@ -183,7 +188,14 @@ copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 	    iobuf_put( out, '-' );
 	    iobuf_put( out, ' ' );
 	}
-      #ifdef __MINGW32__
+
+      #if  0 /*defined(HAVE_DOSISH_SYSTEM)*/
+	/* We don't use this anymore because my interpretation of rfc2440 7.1
+	 * is that there is no conversion needed.  If one decides to
+	 * clearsign a unix file on a DOS box he will get a mixed line endings.
+	 * If at some point it turns out, that a conversion is a nice feature
+	 * we can make an option out of it.
+	 */
 	/* make sure the lines do end in CR,LF */
 	if( n > 1 && ( (buffer[n-2] == '\r' && buffer[n-1] == '\n' )
 			    || (buffer[n-2] == '\n' && buffer[n-1] == '\r'))) {
@@ -206,10 +218,7 @@ copy_clearsig_text( IOBUF out, IOBUF inp, MD_HANDLE md,
 
     /* at eof */
     if( !pending_lf ) { /* make sure that the file ends with a LF */
-      #ifndef __MINGW32__
-	iobuf_put( out, '\r');
-      #endif
-	iobuf_put( out, '\n');
+	iobuf_writestr( out, LF );
 	if( !escape_dash )
 	    md_putc( md, '\n' );
     }

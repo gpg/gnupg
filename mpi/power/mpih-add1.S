@@ -22,12 +22,13 @@
 #include "sysdep.h"
 #include "asm-syntax.h"
 
-
+/*
 # INPUT PARAMETERS
 # res_ptr	r3
 # s1_ptr	r4
 # s2_ptr	r5
 # size		r6
+ */
 
 	.toc
 	.extern mpihelp_add_n[DS]

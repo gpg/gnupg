@@ -1,3 +1,20 @@
+Sun Dec 19 15:22:26 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* armor.c (LF): Use this new macro at all places where a line LF
+	is needed.  This way DOSish textfiles should be created when the
+	input data is also in dos mode.
+	* sign.c (LF): Ditto.
+	* textfilter.c (LF): Ditto.
+	(copy_clearsig_text): Disabled the forcing of CR,LF sequences
+	for DOS systems.
+
+	* plaintext.c (handle_plaintext): Fixes for line endings on DOS.
+	and react on a LF in cleartext.
+	* armor.c (fake_packet): Restore the original line ending after
+	removing trailing spaces.
+
+	* signal.c (got_fatal_signal): DOS fix.
+
 Thu Dec 16 10:07:58 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* mainproc.c (print_failed_pkenc): Fix for unknown algorithm.
