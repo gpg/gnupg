@@ -1700,7 +1700,8 @@ available, but the MIT release is a good common baseline.
 This option implies `--rfc1991 --no-openpgp --disable-mdc
 --no-force-v4-certs --no-comment --escape-from-lines --force-v3-sigs
 --no-ask-sig-expire --no-ask-cert-expire --cipher-algo IDEA
---digest-algo MD5 --compress-algo 1'
+--digest-algo MD5 --compress-algo 1'.  It also disables --textmode
+when encrypting.
 </para></listitem></varlistentry>
 
 <varlistentry>
