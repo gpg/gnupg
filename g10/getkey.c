@@ -2137,7 +2137,7 @@ finish_lookup( GETKEY_CTX ctx,  KBNODE foundk )
 
     ctx->found_key = latest_key;
 
-    if ( latest_key != keyblock ) {
+    if (latest_key != keyblock && opt.verbose) {
         log_info(_("using secondary key %08lX "
                    "instead of primary key %08lX\n"),
                  (ulong)keyid_from_pk( latest_key->pkt->pkt.public_key, NULL),

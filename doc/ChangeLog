@@ -1,3 +1,7 @@
+2001-03-06  Werner Koch  <wk@gnupg.org>
+
+	* gpgv.sgml: Changed some gpg to gpgv. Thanks to John A. Murdie.
+
 2001-03-03  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Tell something about the 0x12345678! key ID syntax.

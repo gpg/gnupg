@@ -1,3 +1,18 @@
+2001-03-07  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c: Made the old stdio file handling cpp conditional
+	controlled by FILE_FILTER_USES_STDIO and added a new
+	open/read/close based one.  We don't need the stdio buffering
+	becuase we are doing our own buffering anyway.  And it is a
+	prerequesite to allow the use of ReadFile et al for W32 which in
+	turn is needed to make the http stuff work there. The new W32
+	stuff has also been implemented. Minor changes to all open functions.
+	(direct_open): New.
+	(file_filter): Core of the new read/write handling.
+	(iobuf_get_filelength): Use W32 API function here. But it is
+	currently limited to 2GB files.
+	(iobuf_seek): Ditto.
+
 2001-03-01  Werner Koch  <wk@gnupg.org>
 
 	* errors.c (g10_errstr): New codes UNU_SECKEY and UNU_PUBKEY.

@@ -27,21 +27,56 @@
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h> 
 #include <unistd.h>
 #ifdef HAVE_DOSISH_SYSTEM
-  #include <fcntl.h> /* for setmode() */
+ #include <windows.h>
 #endif
 
 #include "memory.h"
 #include "util.h"
 #include "iobuf.h"
 
+#undef FILE_FILTER_USES_STDIO
 
-typedef struct {
-    FILE *fp;	   /* open file handle */
-    int  print_only_name; /* flags indicating that fname is not a real file*/
-    char fname[1]; /* name of the file */
-} file_filter_ctx_t ;
+#ifdef HAVE_DOSISH_SYSTEM
+ #define USE_SETMODE 1
+#endif
+
+#ifdef FILE_FILTER_USES_STDIO
+ #define my_fileno(a)  fileno ((a))
+ #define my_fopen(a,b) fopen ((a),(b))
+ typedef FILE *FILEP_OR_FD;
+ #define INVALID_FP    NULL
+ #define FILEP_OR_FD_FOR_STDIN  (stdin)
+ #define FILEP_OR_FD_FOR_STDOUT  (stdout)
+ typedef struct {
+     FILE *fp;	   /* open file handle */
+     int  print_only_name; /* flags indicating that fname is not a real file*/
+     char fname[1]; /* name of the file */
+ } file_filter_ctx_t ;
+#else
+ #define my_fileno(a)  (a)
+ #define my_fopen(a,b) direct_open ((a),(b)) 
+ #ifdef HAVE_DOSISH_SYSTEM
+   typedef HANDLE FILEP_OR_FD;
+   #define INVALID_FP  ((HANDLE)-1)
+   #define FILEP_OR_FD_FOR_STDIN  (GetStdHandle (STD_INPUT_HANDLE))
+   #define FILEP_OR_FD_FOR_STDOUT (GetStdHandle (STD_OUTPUT_HANDLE))
+   #undef USE_SETMODE
+ #else
+   typedef int FILEP_OR_FD;
+   #define INVALID_FP  (-1)
+   #define FILEP_OR_FD_FOR_STDIN  (0)
+   #define FILEP_OR_FD_FOR_STDOUT (1)
+ #endif
+ typedef struct {
+     FILEP_OR_FD  fp;	   /* open file handle */
+     int eof_seen;
+     int  print_only_name; /* flags indicating that fname is not a real file*/
+     char fname[1]; /* name of the file */
+ } file_filter_ctx_t ;
+#endif
 
 
 /* The first partial length header block must be of size 512
@@ -64,6 +99,55 @@ typedef struct {
 static int special_names_enabled;
 
 static int underflow(IOBUF a);
+
+#ifndef FILE_FILTER_USES_STDIO
+static FILEP_OR_FD
+direct_open (const char *fname, const char *mode)
+{
+#ifdef HAVE_DOSISH_SYSTEM
+    unsigned long da, cd, sm;
+    HANDLE hfile;
+
+    /* Note, that we do not handle all mode combinations */
+
+    /* According to the ReactOS source it seems that open() of the
+     * standard MSW32 crt does open the file in share mode which is
+     * something new for MS applications ;-)
+     */
+    if ( strchr (mode, '+') ) {
+        da = GENERIC_READ|GENERIC_WRITE;
+        cd = OPEN_EXISTING;
+        sm = FILE_SHARE_READ | FILE_SHARE_WRITE;
+    }
+    else if ( strchr (mode, 'w') ) {
+        da = GENERIC_WRITE;
+        cd = CREATE_ALWAYS;
+        sm = FILE_SHARE_WRITE;
+    }
+    else {
+        da = GENERIC_READ;
+        cd = OPEN_EXISTING;
+        sm = FILE_SHARE_READ;
+    }
+
+    hfile = CreateFile (fname, da, sm, NULL, cd, FILE_ATTRIBUTE_NORMAL, NULL);
+    return hfile;
+#else
+    int oflag;
+    int cflag = S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH;
+
+    /* Note, that we do not handle all mode combinations */
+    if ( strchr (mode, '+') )
+        oflag = O_RDWR;
+    else if ( strchr (mode, 'w') )
+        oflag = O_WRONLY | O_CREAT | O_TRUNC;
+    else
+        oflag = O_RDONLY;
+    return open (fname, oflag, cflag );
+#endif
+}
+#endif /*FILE_FILTER_USES_STDIO*/
+
 
 /****************
  * Read data from a file into buf which has an allocated length of *LEN.
@@ -93,24 +177,25 @@ static int
 file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 {
     file_filter_ctx_t *a = opaque;
-    FILE *fp = a->fp;
+    FILEP_OR_FD f = a->fp;
     size_t size = *ret_len;
     size_t nbytes = 0;
     int rc = 0;
 
+#ifdef FILE_FILTER_USES_STDIO
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert( size ); /* need a buffer */
-	if ( feof(fp)) {	/* On terminals you could easiely read as many EOFs as you call 	*/
+	if ( feof(f)) {	/* On terminals you could easiely read as many EOFs as you call 	*/
 	    rc = -1;		/* fread() or fgetc() repeatly. Every call will block until you press	*/
 	    *ret_len = 0;	/* CTRL-D. So we catch this case before we call fread() again.		*/
 	}
 	else {
-	    clearerr( fp );
-	    nbytes = fread( buf, 1, size, fp );
-	    if( feof(fp) && !nbytes ) {
+	    clearerr( f );
+	    nbytes = fread( buf, 1, size, f );
+	    if( feof(f) && !nbytes ) {
 		rc = -1; /* okay: we can return EOF now. */
             }
-	    else if( ferror(fp) && errno != EPIPE  ) {
+	    else if( ferror(f) && errno != EPIPE  ) {
 		log_error("%s: read error: %s\n",
 			  a->fname, strerror(errno));
 		rc = G10ERR_READ_FILE;
@@ -120,9 +205,9 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     }
     else if( control == IOBUFCTRL_FLUSH ) {
 	if( size ) {
-	    clearerr( fp );
-	    nbytes = fwrite( buf, 1, size, fp );
-	    if( ferror(fp) ) {
+	    clearerr( f );
+	    nbytes = fwrite( buf, 1, size, f );
+	    if( ferror(f) ) {
 		log_error("%s: write error: %s\n", a->fname, strerror(errno));
 		rc = G10ERR_WRITE_FILE;
 	    }
@@ -135,15 +220,133 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	*(char**)buf = "file_filter";
     }
     else if( control == IOBUFCTRL_FREE ) {
-	if( fp != stdin && fp != stdout ) {
+	if( f != stdin && f != stdout ) {
 	    if( DBG_IOBUF )
-		log_debug("%s: close fd %d\n", a->fname, fileno(fp) );
-	    fclose(fp);
+		log_debug("%s: close fd %d\n", a->fname, fileno(f) );
+	    fclose(f);
 	}
-	fp = NULL;
+	f = NULL;
 	m_free(a); /* we can free our context now */
     }
+#else /* !stdio implementation */
 
+    if( control == IOBUFCTRL_UNDERFLOW ) {
+	assert( size ); /* need a buffer */
+	if ( a->eof_seen) {
+	    rc = -1;		
+	    *ret_len = 0;	
+	}
+	else {
+          #ifdef HAVE_DOSISH_SYSTEM
+            unsigned long nread;
+
+            nbytes = 0;
+            if ( !ReadFile ( f, buf, size, &nread, NULL ) ) {
+                int ec = (int)GetLastError ();
+                if ( ec != ERROR_BROKEN_PIPE ) {
+                    log_error("%s: read error: ec=%d\n", a->fname, ec);
+                    rc = G10ERR_READ_FILE;
+                }
+            }
+            else if ( !nread ) {
+                a->eof_seen = 1;
+                rc = -1;
+            }
+            else {
+                nbytes = nread;
+            }
+
+          #else
+
+            int n;
+
+            nbytes = 0;
+            do {
+                n = read ( f, buf, size );
+            } while (n == -1 && errno == EINTR );
+            if ( n == -1 ) { /* error */
+                if (errno != EPIPE) {
+                    log_error("%s: read error: %s\n",
+                              a->fname, strerror(errno));
+                    rc = G10ERR_READ_FILE;
+                }
+            }
+            else if ( !n ) { /* eof */
+                a->eof_seen = 1;
+                rc = -1;
+            }
+            else {
+                nbytes = n;
+            }
+          #endif
+	    *ret_len = nbytes;
+	}
+    }
+    else if( control == IOBUFCTRL_FLUSH ) {
+	if( size ) {
+          #ifdef HAVE_DOSISH_SYSTEM
+            byte *p = buf;
+            unsigned long n;
+
+            nbytes = size;
+            do {
+                if ( size && !WriteFile ( f,  p, nbytes, &n, NULL) ) {
+                    int ec = (int)GetLastError ();
+                    log_error("%s: write error: ec=%d\n", a->fname, ec);
+                    rc = G10ERR_WRITE_FILE;
+                    break;
+                }
+                p += n;
+                nbytes -= n;
+            } while ( nbytes );
+            nbytes = p - buf;
+          #else
+            byte *p = buf;
+            int n;
+
+            nbytes = size;
+            do {
+                do {
+                    n = write ( f, p, nbytes );
+                } while ( n == -1 && errno == EINTR );
+                if ( n > 0 ) {
+                    p += n;
+                    nbytes -= n;
+                }
+            } while ( n != -1 && nbytes );
+	    if( n == -1 ) {
+		log_error("%s: write error: %s\n", a->fname, strerror(errno));
+		rc = G10ERR_WRITE_FILE;
+	    }
+            nbytes = p - buf;
+          #endif
+	}
+	*ret_len = nbytes;
+    }
+    else if ( control == IOBUFCTRL_INIT ) {
+        a->eof_seen = 0;
+    }
+    else if ( control == IOBUFCTRL_DESC ) {
+	*(char**)buf = "file_filter(fd)";
+    }
+    else if ( control == IOBUFCTRL_FREE ) {
+      #ifdef HAVE_DOSISH_SYSTEM
+        if ( f != FILEP_OR_FD_FOR_STDIN && f != FILEP_OR_FD_FOR_STDOUT ) {
+	    if( DBG_IOBUF )
+		log_debug("%s: close handle %p\n", a->fname, f );
+            CloseHandle (f);
+        }
+      #else
+	if ( (int)f != 0 && (int)f != 1 ) {
+	    if( DBG_IOBUF )
+		log_debug("%s: close fd %d\n", a->fname, f );
+	    close(f);
+	}
+	f = INVALID_FP;
+      #endif
+	m_free (a); /* we can free our context now */
+    }
+#endif /* !stdio implementation */
     return rc;
 }
 
@@ -606,23 +809,23 @@ IOBUF
 iobuf_open( const char *fname )
 {
     IOBUF a;
-    FILE *fp;
+    FILEP_OR_FD fp;
     file_filter_ctx_t *fcx;
     size_t len;
     int print_only = 0;
     int fd;
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
-	fp = stdin;
-      #ifdef HAVE_DOSISH_SYSTEM
-	setmode ( fileno(fp) , O_BINARY );
+	fp = FILEP_OR_FD_FOR_STDIN;
+      #ifdef USE_SETMODE
+	setmode ( my_fileno(fp) , O_BINARY );
       #endif
 	fname = "[stdin]";
 	print_only = 1;
     }
     else if ( (fd = check_special_filename ( fname )) != -1 )
         return iobuf_fdopen ( iobuf_translate_file_handle (fd,0), "rb" );
-    else if( !(fp = fopen(fname, "rb")) )
+    else if( (fp = my_fopen(fname, "rb")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
     fcx = m_alloc( sizeof *fcx + strlen(fname) );
@@ -637,7 +840,7 @@ iobuf_open( const char *fname )
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: open `%s' fd=%d\n",
-		   a->no, a->subno, fname, fileno(fcx->fp) );
+		   a->no, a->subno, fname, (int)my_fileno(fcx->fp) );
 
     return a;
 }
@@ -650,12 +853,16 @@ IOBUF
 iobuf_fdopen( int fd, const char *mode )
 {
     IOBUF a;
-    FILE *fp;
+    FILEP_OR_FD fp;
     file_filter_ctx_t *fcx;
     size_t len;
 
+#ifdef FILE_FILTER_USES_STDIO
     if( !(fp = fdopen(fd, mode)) )
 	return NULL;
+#else
+    fp = (FILEP_OR_FD)fd;
+#endif
     a = iobuf_alloc( strchr( mode, 'w')? 2:1, 8192 );
     fcx = m_alloc( sizeof *fcx + 20 );
     fcx->fp = fp;
@@ -678,23 +885,23 @@ IOBUF
 iobuf_create( const char *fname )
 {
     IOBUF a;
-    FILE *fp;
+    FILEP_OR_FD fp;
     file_filter_ctx_t *fcx;
     size_t len;
     int print_only = 0;
     int fd;
 
     if( !fname || (*fname=='-' && !fname[1]) ) {
-	fp = stdout;
-      #ifdef HAVE_DOSISH_SYSTEM
-	setmode ( fileno(fp) , O_BINARY );
+	fp = FILEP_OR_FD_FOR_STDOUT;
+      #ifdef USE_SETMODE
+	setmode ( my_fileno(fp) , O_BINARY );
       #endif
 	fname = "[stdout]";
 	print_only = 1;
     }
     else if ( (fd = check_special_filename ( fname )) != -1 )
         return iobuf_fdopen ( iobuf_translate_file_handle (fd, 1), "wb" );
-    else if( !(fp = fopen(fname, "wb")) )
+    else if( (fp = my_fopen(fname, "wb")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
     fcx = m_alloc( sizeof *fcx + strlen(fname) );
@@ -718,6 +925,7 @@ iobuf_create( const char *fname )
  * cannot be used for stdout.
  * Note: This is not used.
  */
+#if 0 /* not used */
 IOBUF
 iobuf_append( const char *fname )
 {
@@ -728,7 +936,7 @@ iobuf_append( const char *fname )
 
     if( !fname )
 	return NULL;
-    else if( !(fp = fopen(fname, "ab")) )
+    else if( !(fp = my_fopen(fname, "ab")) )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
     fcx = m_alloc( sizeof *fcx + strlen(fname) );
@@ -744,18 +952,19 @@ iobuf_append( const char *fname )
 
     return a;
 }
+#endif
 
 IOBUF
 iobuf_openrw( const char *fname )
 {
     IOBUF a;
-    FILE *fp;
+    FILEP_OR_FD fp;
     file_filter_ctx_t *fcx;
     size_t len;
 
     if( !fname )
 	return NULL;
-    else if( !(fp = fopen(fname, "r+b")) )
+    else if( (fp = my_fopen(fname, "r+b")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(2, 8192 );
     fcx = m_alloc( sizeof *fcx + strlen(fname) );
@@ -788,7 +997,7 @@ iobuf_fopen( const char *fname, const char *mode )
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
 	fp = stdin;
-      #ifdef HAVE_DOSISH_SYSTEM
+      #ifdef HAVE_DOSISH_SYSTEM /* We can't use USE_SETMODE here */
 	setmode ( fileno(fp) , O_BINARY );
       #endif
 	fname = "[stdin]";
@@ -1363,11 +1572,20 @@ iobuf_get_filelength( IOBUF a )
     for( ; a; a = a->chain )
 	if( !a->chain && a->filter == file_filter ) {
 	    file_filter_ctx_t *b = a->filter_ov;
-	    FILE *fp = b->fp;
+	    FILEP_OR_FD fp = b->fp;
 
-           if( !fstat(fileno(fp), &st) )
+          #if defined(HAVE_DOSISH_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
+            ulong size;
+
+            if ( (size=GetFileSize (fp, NULL)) != 0xffffffff ) 
+                return size;
+            log_error ("GetFileSize for handle %p failed: ec=%d\n",
+                       fp, (int)GetLastError () );
+          #else
+            if( !fstat(my_fileno(fp), &st) )
 		return st.st_size;
 	    log_error("fstat() failed: %s\n", strerror(errno) );
+          #endif
 	    break;
 	}
 
@@ -1424,8 +1642,8 @@ iobuf_seek( IOBUF a, off_t newpos )
 
     if( a->directfp ) {
 	FILE *fp = a->directfp;
-       if( fseeko( fp, newpos, SEEK_SET ) ) {
-           log_error("can't seek: %s\n", strerror(errno) );
+        if( fseeko( fp, newpos, SEEK_SET ) ) {
+            log_error("can't seek: %s\n", strerror(errno) );
 	    return -1;
 	}
 	clearerr(fp);
@@ -1439,10 +1657,25 @@ iobuf_seek( IOBUF a, off_t newpos )
 	}
 	if( !a )
 	    return -1;
+#ifdef FILE_FILTER_USES_STDIO
        if( fseeko( b->fp, newpos, SEEK_SET ) ) {
-           log_error("can't seek: %s\n", strerror(errno) );
-	    return -1;
-	}
+           log_error("can't fseek: %s\n", strerror(errno) );
+           return -1;
+       }
+#else
+    #ifdef HAVE_DOSISH_SYSTEM
+       if (SetFilePointer (b->fp, newpos, NULL, FILE_BEGIN) == 0xffffffff ) {
+           log_error ("SetFilePointer failed on handle %p: ec=%d\n",
+                      b->fp, (int)GetLastError () );
+           return -1;
+       }
+    #else
+       if ( lseek (b->fp, newpos, SEEK_SET) == (off_t)-1 ) {
+           log_error("can't lseek: %s\n", strerror(errno) );
+           return -1;
+       }
+    #endif
+#endif
     }
     a->d.len = 0;   /* discard buffer */
     a->d.start = 0;
@@ -1626,13 +1859,14 @@ int
 iobuf_translate_file_handle ( int fd, int for_write )
 {
   #ifdef __MINGW32__
+   #ifdef FILE_FILTER_USES_STDIO  
     {
         int x;
             
         if  ( fd <= 2 )
             return fd; /* do not do this for error, stdin, stdout, stderr */
 
-        x = _open_osfhandle ( (void*)fd, for_write? 1:0 );
+        x = _open_osfhandle ( fd, for_write? 1:0 );
         if (x==-1 )
             log_error ("failed to translate osfhandle %p\n", (void*)fd );
         else {
@@ -1641,7 +1875,28 @@ iobuf_translate_file_handle ( int fd, int for_write )
             fd = x;
         }
     }
+   #else
+    {
+        int x;
+
+        if  ( fd == 0 ) 
+            x = (int)GetStdHandle (STD_INPUT_HANDLE);
+        else if (fd == 1)    
+            x = (int)GetStdHandle (STD_OUTPUT_HANDLE);
+        else if (fd == 2)    
+            x = (int)GetStdHandle (STD_ERROR_HANDLE);
+        else
+            x = fd;
+
+        if (x == -1)
+            log_debug ("GetStdHandle(%d) failed: ec=%d\n",
+                       fd, (int)GetLastError () );
+
+        fd = x;
+    }
+   #endif
   #endif
     return fd;
 }
+
 

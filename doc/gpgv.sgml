@@ -45,19 +45,19 @@
 <!entity ParmNameValue	"<parameter>name=value</parameter>">
 ]>
 
-<refentry id="gpgb">
+<refentry id="gpgv">
 <refmeta>
   <refentrytitle>gpgv</refentrytitle>
   <manvolnum>1</manvolnum>
   <refmiscinfo class="gnu">GNU Tools</refmiscinfo>
 </refmeta>
 <refnamediv>
-  <refname/gpg/
+  <refname/gpgv/
   <refpurpose>signature verification tool</>
 </refnamediv>
 <refsynopsisdiv>
   <synopsis>
-<command>gpg</>
+<command>gpgv</>
  <optional><parameter/options/</optional>
  <optional><parameter/signed files/</optional>
   </synopsis>

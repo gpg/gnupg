@@ -1,8 +1,6 @@
 
   * Dlopen does not yet work under W32.
 
-  * key selection is far too slow (due to all the signature checks)
-
   * check whether we can remove all the expire stuff in trustdb because this
     is now done in getkey.  
 
