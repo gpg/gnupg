@@ -1,3 +1,11 @@
+2004-01-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* sig-check.c (check_key_signature2): Comments.
+
+	* keyring.c (keyring_rebuild_cache): Clear sig cache for any
+	signatures that we can no longer process (say, if the user removed
+	support for a necessary pubkey or digest algorithm).
+
 2004-01-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* misc.c (print_cipher_algo_note): May as well call Rijndael AES

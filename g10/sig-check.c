@@ -428,7 +428,10 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
     sig = node->pkt->pkt.signature;
     algo = sig->digest_algo;
 
-    /* check whether we have cached the result of a previous signature check.*/
+    /* Check whether we have cached the result of a previous signature
+       check.  Note that we may no longer have the pubkey or hash
+       needed to verify a sig, but can still use the cached value.  A
+       cache refresh detects and clears these cases. */
     if ( !opt.no_sig_cache ) {
         if (sig->flags.checked) { /*cached status available*/
 	    if( is_selfsig ) {	
