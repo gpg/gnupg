@@ -96,8 +96,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	    if( sk->pubkey_algo != k->pubkey_algo )
 		continue;
 	    keyid_from_sk( sk, keyid );
-	    log_info(_("anonymous receiver; trying secret key %08lX ...\n"),
-				     (ulong)keyid[1] );
+	    log_info(_("anonymous recipient; trying secret key %08lX ...\n"),
+                     (ulong)keyid[1] );
 	    rc = check_secret_key( sk, 1 ); /* ask only once */
 	    if( !rc )
 		rc = get_it( k, dek, sk, keyid );
