@@ -11,7 +11,8 @@ TESTS = version.test mds.test \
 	signencrypt.test signencrypt-dsa.test \
 	armsignencrypt.test armdetach.test \
 	armdetachm.test detachm.test genkey1024.test \
-	conventional.test conventional-mdc.test
+	conventional.test conventional-mdc.test \
+	multisig.test
 
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
