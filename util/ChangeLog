@@ -1,3 +1,7 @@
+2004-10-31  Werner Koch  <wk@g10code.com>
+
+	* simple-gettext.c (get_string): Removed debugging hack.
+
 2004-10-27  Werner Koch  <wk@g10code.com>
 
 	* simple-gettext.c: Removed windows.h.

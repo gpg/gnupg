@@ -306,14 +306,13 @@ get_string( struct loaded_domain *domain, u32 idx )
     {
       size_t plen, buflen;
       char *buf;
-      static int debug_hack;
 
       domain->mapped[idx] = 1;
 
       plen = strlen (p);
       buf = utf8_to_native (p, plen, -1);
       buflen = strlen (buf);
-      if (buflen <= plen && (++debug_hack %3))
+      if (buflen <= plen)
         strcpy (p, buf);
       else
         {
