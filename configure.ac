@@ -353,7 +353,7 @@ AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 # libgpg-error is a library with error codes shared between GnuPG
 # related projects.
 #
-AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION"
+AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
                   have_gpg_error=yes,have_gpg_error=no)
 
 
