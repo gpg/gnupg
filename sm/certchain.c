@@ -701,6 +701,9 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                          gpg_strerror (rc));
             }
           
+          if (rc)
+            goto leave;
+
           /* Check for revocations etc. */
           if ((flags & 1))
             rc = 0;

@@ -1,3 +1,8 @@
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* certchain.c (gpgsm_validate_chain): The trust check didn't
+	worked anymore, probably due to the changes at 2003-03-04.  Fixed.
+
 2004-06-06  Werner Koch  <wk@gnupg.org>
 
 	* certreqgen.c (get_parameter_uint, create_request): Create
