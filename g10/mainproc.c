@@ -1333,8 +1333,13 @@ check_sig_and_print( CTX c, KBNODE node )
 	        continue;
             if ( un->pkt->pkt.user_id->is_revoked )
                 continue;
-            if ( !un->pkt->pkt.user_id->is_primary )
+            if ( un->pkt->pkt.user_id->is_expired )
                 continue;
+	    if ( !un->pkt->pkt.user_id->is_primary )
+	        continue;
+	    /* We want the textual user ID here */
+	    if ( un->pkt->pkt.user_id->attrib_data )
+	        continue;
             
             keyid_str[17] = 0; /* cut off the "[uncertain]" part */
             write_status_text_and_buffer (statno, keyid_str,
@@ -1350,11 +1355,22 @@ check_sig_and_print( CTX c, KBNODE node )
 	    fputs("\"\n", log_stream() );
             count++;
 	}
-	if( !count ) {	/* just in case that we have no userid */
+	if( !count ) {	/* just in case that we have no valid textual
+                           userid */
+	    /* Try for an invalid textual userid */
             for( un=keyblock; un; un = un->next ) {
-                if( un->pkt->pkttype == PKT_USER_ID )
+                if( un->pkt->pkttype == PKT_USER_ID &&
+		    !un->pkt->pkt.user_id->attrib_data )
                     break;
             }
+
+	    /* Try for any userid at all */
+	    if(!un) {
+	        for( un=keyblock; un; un = un->next ) {
+                    if( un->pkt->pkttype == PKT_USER_ID )
+                        break;
+		}
+	    }
 
             if (opt.always_trust || !un)
                 keyid_str[17] = 0; /* cut off the "[uncertain]" part */
@@ -1384,9 +1400,13 @@ check_sig_and_print( CTX c, KBNODE node )
                 if( un->pkt->pkttype != PKT_USER_ID )
                     continue;
                 if ( un->pkt->pkt.user_id->is_revoked )
-                    continue; 
-                if ( un->pkt->pkt.user_id->is_primary )
                     continue;
+                if ( un->pkt->pkt.user_id->is_expired )
+                    continue;
+		/* Only skip textual primaries */
+                if ( un->pkt->pkt.user_id->is_primary &&
+		     !un->pkt->pkt.user_id->attrib_data )
+		    continue;
 
 		log_info(    _("                aka \""));
                 print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,

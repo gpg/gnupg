@@ -1,3 +1,15 @@
+2002-07-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), keyserver.c (keyserver_refresh):
+	Maintain and use the original keyserver URI for cosmetics rather
+	than trying to recreate it when needed.
+
+	* mainproc.c (check_sig_and_print): Properly disregard expired
+	uids.  Make sure that the first uid listed is a real uid and not
+	an attribute (attributes should only be listed in the "aka"
+	section).  When there are no valid textual userids, try for an
+	invalid textual userid before using any attribute uid.
+
 2002-07-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.skel: Fix a few typos, clarify "group", and remove

@@ -905,9 +905,9 @@ keyserver_refresh(STRLIST users)
     return rc;
 
   if(count==1)
-    log_info(_("%d key to refresh\n"),count);
+    log_info(_("refreshing 1 key from %s\n"),opt.keyserver_uri);
   else
-    log_info(_("%d keys to refresh\n"),count);
+    log_info(_("refreshing %d keys from %s\n"),count,opt.keyserver_uri);
 
   if(count>0)
     rc=keyserver_work(GET,NULL,desc,count);
