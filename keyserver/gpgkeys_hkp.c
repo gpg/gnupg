@@ -76,11 +76,10 @@ urlencode_filter( void *opaque, int control,
     return rc;
 }
 
-/* Returns 0 on success, -1 on failure, and 1 on eof */
 int
-send_key(void)
+send_key(int *eof)
 {
-  int rc,gotit=0,ret=-1;
+  int rc,gotit=0,ret=KEYSERVER_INTERNAL_ERROR;
   char keyid[17];
   char *request;
   struct http_context hd;
@@ -92,7 +91,7 @@ send_key(void)
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
-      return -1;
+      return KEYSERVER_NO_MEMORY;
     }
 
   iobuf_push_filter(temp,urlencode_filter,NULL);
@@ -108,8 +107,10 @@ send_key(void)
 
   if(!gotit)
     {
-      /* i.e. eof before the KEY BEGIN was found */
-      ret=1;
+      /* i.e. eof before the KEY BEGIN was found.  This isn't an
+	 error. */
+      *eof=1;
+      ret=KEYSERVER_OK;
       goto fail;
     }
 
@@ -133,6 +134,8 @@ send_key(void)
   if(!gotit)
     {
       fprintf(console,"gpgkeys: no KEY %s END found\n",keyid);
+      *eof=1;
+      ret=KEYSERVER_KEY_INCOMPLETE;
       goto fail;
     }
 
@@ -173,11 +176,13 @@ send_key(void)
   if((status/100)!=2)
     {
       fprintf(console,"gpgkeys: remote server returned error %d\n",status);
-      fprintf(output,"KEY %s FAILED\n",keyid);
+      fprintf(output,"KEY %s FAILED %d\n",keyid,ret);
       goto fail;
     }
 
-  ret=0;
+  fprintf(output,"KEY %s SENT\n",keyid);
+
+  ret=KEYSERVER_OK;
 
  fail:
   free(request);
@@ -205,8 +210,8 @@ get_key(char *getkey)
       fprintf(console,
 	      "gpgkeys: HKP keyservers do not support v3 fingerprints\n");
       fprintf(output,"KEY 0x%s BEGIN\n",getkey);
-      fprintf(output,"KEY 0x%s FAILED\n",getkey);
-      return -1;
+      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,KEYSERVER_NOT_SUPPORTED);
+      return KEYSERVER_NOT_SUPPORTED;
     }
 
  if(strlen(getkey)>8)
@@ -235,7 +240,7 @@ get_key(char *getkey)
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
-      return -1;
+      return KEYSERVER_NO_MEMORY;
     }
 
   sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=get&search=%s",
@@ -249,7 +254,7 @@ get_key(char *getkey)
     {
       fprintf(console,"gpgkeys: HKP fetch error: %s\n",
 	      rc==G10ERR_NETWORK?strerror(errno):g10_errstr(rc));
-      fprintf(output,"KEY 0x%s FAILED\n",getkey);
+      fprintf(output,"KEY 0x%s FAILED %d\n",getkey,KEYSERVER_INTERNAL_ERROR);
     }
   else
     {
@@ -279,7 +284,8 @@ get_key(char *getkey)
       else
 	{
 	  fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
-	  fprintf(output,"KEY 0x%s FAILED\n",getkey);
+	  fprintf(output,"KEY 0x%s FAILED %d\n",
+		  getkey,KEYSERVER_KEY_NOT_FOUND);
 	}
 
       m_free(line);
@@ -287,7 +293,7 @@ get_key(char *getkey)
 
   free(request);
 
-  return 0;
+  return KEYSERVER_OK;
 }
 
 /* Remove anything <between brackets> and de-urlencode in place.  Note
@@ -576,15 +582,15 @@ handle_old_hkp_index(IOBUF inp)
 int
 search_key(char *searchkey)
 {
-  int max=0,len=0,ret=-1,rc;
+  int max=0,len=0,ret=KEYSERVER_INTERNAL_ERROR,rc;
   struct http_context hd;
-  char *search=NULL,*request=searchkey;
+  char *search=NULL,*request=NULL,*skey=searchkey;
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
   /* Build the search string.  It's going to need url-encoding. */
 
-  while(*request!='\0')
+  while(*skey!='\0')
     {
       if(max-len<3)
 	{
@@ -593,21 +599,22 @@ search_key(char *searchkey)
           if (!search)
             {
               fprintf(console,"gpgkeys: out of memory\n");
-              return -1;
+              ret=KEYSERVER_NO_MEMORY;
+	      goto fail;
             }
 	}
 
-      if(isalnum(*request) || *request=='-')
-	search[len++]=*request;
-      else if(*request==' ')
+      if(isalnum(*skey) || *skey=='-')
+	search[len++]=*skey;
+      else if(*skey==' ')
 	search[len++]='+';
       else
 	{
-	  sprintf(&search[len],"%%%02X",*request);
+	  sprintf(&search[len],"%%%02X",*skey);
 	  len+=3;
 	}
 
-      request++;
+      skey++;
     }
 
   search[len]='\0';
@@ -619,7 +626,8 @@ search_key(char *searchkey)
   if(!request)
     {
       fprintf(console,"gpgkeys: out of memory\n");
-      return -1;
+      ret=KEYSERVER_NO_MEMORY;
+      goto fail;
     }
 
   sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&options=mr&search=%s",
@@ -660,11 +668,16 @@ search_key(char *searchkey)
 
       fprintf(output,"SEARCH %s END\n",searchkey);
 
-      ret=0;
+      ret=KEYSERVER_OK;
     }
+
+ fail:
 
   free(request);
   free(search);
+
+  if(ret!=KEYSERVER_OK)
+    fprintf(output,"SEARCH %s FAILED %d\n",searchkey,ret);
 
   return ret;
 }
@@ -910,7 +923,7 @@ main(int argc,char *argv[])
 
       while(keyptr!=NULL)
 	{
-	  if(get_key(keyptr->str)==-1)
+	  if(get_key(keyptr->str)!=KEYSERVER_OK)
 	    failed++;
 
 	  keyptr=keyptr->next;
@@ -919,15 +932,14 @@ main(int argc,char *argv[])
 
     case SEND:
       {
-	int ret2;
+	int eof=0;
 
 	do
 	  {
-	    ret2=send_key();
-	    if(ret2==-1)
+	    if(send_key(&eof)!=KEYSERVER_OK)
 	      failed++;
 	  }
-	while(ret2!=1);
+	while(!eof);
       }
       break;
 
@@ -963,11 +975,8 @@ main(int argc,char *argv[])
 	/* Nail that last space */
 	searchkey[strlen(searchkey)-1]='\0';
 
-	if(search_key(searchkey)==-1)
-	  {
-	    fprintf(output,"SEARCH %s FAILED\n",searchkey);
-	    failed++;
-	  }
+	if(search_key(searchkey)!=KEYSERVER_OK)
+	  failed++;
 
 	free(searchkey);
       }
