@@ -2344,7 +2344,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	      {
 		if(opt.trust_model!=TM_ALWAYS)
 		  {
-		    tty_printf("%*s",keystrlen()+13,"");
+		    tty_printf("%*s", (int)keystrlen()+13,"");
 		    /* Ownertrust is only meaningful for the PGP or
 		       classic trust models */
 		    if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)

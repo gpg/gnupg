@@ -787,7 +787,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		printf("uid%*s%s ",indent,"",validity);
 	      }
 	    else
-	      printf("uid%*s",keystrlen()+10,"");
+	      printf("uid%*s", (int)keystrlen()+10,"");
 
             print_utf8_string( stdout, uid->name, uid->len );
 	    putchar('\n');

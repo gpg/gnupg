@@ -1,3 +1,11 @@
+2004-12-17  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (agent_get_passphrase): Define NREAD locally as
+	size_t or int.
+
+	* keylist.c (list_keyblock_print): Make field width an int.
+	* keyedit.c (show_key_with_all_names): Ditto.
+
 2004-12-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Add --require-secmem/--no-require-secmem to cause

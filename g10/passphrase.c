@@ -643,7 +643,6 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   char *atext = NULL;
   char buf[50];
   int fd = -1;
-  int nread;
   u32 reply;
   char *pw = NULL;
   PKT_public_key *pk = m_alloc_clear( sizeof *pk );
@@ -742,6 +741,8 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
                 
   if (!prot)
     { /* old style protocol */
+      size_t nread;
+
       n = 4 + 20 + strlen (atext);
       u32tobuf (buf, n );
       u32tobuf (buf+4, GPGA_PROT_GET_PASSPHRASE );
@@ -814,6 +815,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
     }
   else
     { /* The new Assuan protocol */
+      int nread;
       char *line, *p;
       const unsigned char *s;
       int i; 
