@@ -1,5 +1,10 @@
 2004-10-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (sign_uids, ask_revoke_sig): Improve translatability
+	of user ID prompts.
+	(ask_revoke_sig, menu_revsig): Try and use common strings for
+	these two functions so they don't need to be translated twice.
+
 	* keyedit.c, keylist.c, keyserver.c, mainproc.c: The
 	revoked/expired/expires string change of 2004-09-29 was too
 	simple.  Use two styles for each tag.

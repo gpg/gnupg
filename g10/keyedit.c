@@ -530,7 +530,6 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
     /* loop over all signators */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
         u32 sk_keyid[2],pk_keyid[2];
-	size_t n;
 	char *p,*trust_regexp=NULL;
 	int force_v4=0,class=0,selfsig=0;
 	u32 duration=0,timestamp=0;
@@ -916,12 +915,10 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	      trustsig_prompt(&trust_value,&trust_depth,&trust_regexp);
 	  }
 
+	p=get_user_id_native(sk_keyid);
 	tty_printf(_("Are you really sure that you want to sign this key\n"
-		     "with your key: \""));
-	p = get_user_id( sk_keyid, &n );
-	tty_print_utf8_string( p, n );
-	m_free(p); p = NULL;
-	tty_printf("\" (%s)\n",keystr_from_sk(sk));
+		     "with your key \"%s\" (%s)\n"),p,keystr_from_sk(sk));
+	m_free(p);
 
 	if(selfsig)
 	  {
@@ -3682,6 +3679,7 @@ static void
 ask_revoke_sig( KBNODE keyblock, KBNODE node )
 {
     int doit=0;
+    char *p;
     PKT_signature *sig = node->pkt->pkt.signature;
     KBNODE unode = find_prev_kbnode( keyblock, node, PKT_USER_ID );
 
@@ -3690,16 +3688,14 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
 	return;
     }
 
-    tty_printf(_("user ID: \""));
-    tty_print_utf8_string( unode->pkt->pkt.user_id->name,
-			   unode->pkt->pkt.user_id->len );
+    p=utf8_to_native(unode->pkt->pkt.user_id->name,
+		     unode->pkt->pkt.user_id->len,0);
+    tty_printf(_("user ID: \"%s\"\n"),p);
+    m_free(p);
 
-    if(sig->flags.exportable)
-      tty_printf(_("\"\nsigned with your key %s at %s\n"),
-		 keystr(sig->keyid), datestr_from_sig(sig) );
-    else
-      tty_printf(_("\"\nlocally signed with your key %s at %s\n"),
-		 keystr(sig->keyid), datestr_from_sig(sig) );
+    tty_printf(_("signed by your key %s on %s%s%s\n"),
+	       keystr(sig->keyid),datestr_from_sig(sig),
+	       sig->flags.exportable?"":_(" (non-exportable)"),"");
 
     if(sig->flags.expired)
       {
@@ -3735,8 +3731,11 @@ menu_revsig( KBNODE keyblock )
     int rc, any, skip=1, all=!count_selected_uids(keyblock);
     struct revocation_reason_info *reason = NULL;
 
+    assert(keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+
     /* FIXME: detect duplicates here  */
-    tty_printf(_("You have signed these user IDs:\n"));
+    tty_printf(_("You have signed these user IDs on key %s:\n"),
+	       keystr_from_pk(keyblock->pkt->pkt.public_key));
     for( node = keyblock; node; node = node->next ) {
 	node->flag &= ~(NODFLG_SELSIG | NODFLG_MARK_A);
 	if( node->pkt->pkttype == PKT_USER_ID ) {
@@ -3757,20 +3756,24 @@ menu_revsig( KBNODE keyblock )
 	  {
 	    if( (sig->sig_class&~3) == 0x10 )
 	      {
-		tty_printf(_("   signed by %s on %s%s%s\n"),
+		tty_printf("   ");
+		tty_printf(_("signed by your key %s on %s%s%s\n"),
 			   keystr(sig->keyid), datestr_from_sig(sig),
-			   sig->flags.exportable?"":" (non-exportable)",
-			   sig->flags.revocable?"":" (non-revocable)");
+			   sig->flags.exportable?"":_(" (non-exportable)"),
+			   sig->flags.revocable?"":_(" (non-revocable)"));
 		if(sig->flags.revocable)
 		  node->flag |= NODFLG_SELSIG;
 	      }
 	    else if( sig->sig_class == 0x30 )
 	      {
-		tty_printf(_("   revoked by %s on %s\n"),
-			   keystr(sig->keyid), datestr_from_sig(sig) );
+		tty_printf("   ");
+		tty_printf(_("revoked by your key %s on %s\n"),
+			   keystr(sig->keyid),datestr_from_sig(sig));
 	      }
 	  }
     }
+
+    tty_printf("\n");
 
     /* ask */
     for( node = keyblock; node; node = node->next ) {
@@ -3796,8 +3799,9 @@ menu_revsig( KBNODE keyblock )
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	    sig = node->pkt->pkt.signature;
-	    tty_printf(_("   signed by %s on %s%s\n"),
- 		       keystr(sig->keyid), datestr_from_sig(sig),
+	    tty_printf("   ");
+	    tty_printf(_("signed by your key %s on %s%s%s\n"),
+ 		       keystr(sig->keyid), datestr_from_sig(sig),"",
 		       sig->flags.exportable?"":_(" (non-exportable)") );
 	}
     }
