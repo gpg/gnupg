@@ -327,7 +327,7 @@ create_db( const char *fname )
 
     fp =fopen( fname, "w" );
     if( !fp )
-	log_fatal("can't create %s: %s\n", fname, strerror(errno) );
+	log_fatal(_("can't create %s: %s\n"), fname, strerror(errno) );
     fwrite_8( fp, 1 );
     fwrite_8( fp, 'g' );
     fwrite_8( fp, 'p' );
@@ -354,9 +354,9 @@ open_db()
 
     db_fd = open( db_name, O_RDWR );
     if( db_fd == -1 )
-	log_fatal("can't open %s: %s\n", db_name, strerror(errno) );
+	log_fatal(_("can't open %s: %s\n"), db_name, strerror(errno) );
     if( read_record( 0, &rec, RECTYPE_VER ) )
-	log_fatal("TrustDB %s is invalid\n", db_name );
+	log_fatal(_("TrustDB %s is invalid\n"), db_name );
     /* fixme: check ->locked and other stuff */
 }
 
@@ -429,7 +429,7 @@ read_record( ulong recnum, TRUSTREC *rec, int expected )
     if( db_fd == -1 )
 	open_db();
     if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
-	log_error("trustdb: lseek failed: %s\n", strerror(errno) );
+	log_error(_("trustdb: lseek failed: %s\n"), strerror(errno) );
 	return G10ERR_READ_FILE;
     }
     n = read( db_fd, buf, TRUST_RECORD_LEN);
@@ -437,7 +437,7 @@ read_record( ulong recnum, TRUSTREC *rec, int expected )
 	return -1; /* eof */
     }
     else if( n != TRUST_RECORD_LEN ) {
-	log_error("trustdb: read failed (n=%d): %s\n", n, strerror(errno) );
+	log_error(_("trustdb: read failed (n=%d): %s\n"), n, strerror(errno) );
 	return G10ERR_READ_FILE;
     }
     p = buf;
@@ -454,7 +454,7 @@ read_record( ulong recnum, TRUSTREC *rec, int expected )
       case RECTYPE_VER: /* version record */
 	/* g10 was the original name */
 	if( memcmp(buf+1, "gpg", 3 ) && memcmp(buf+1, "g10", 3 ) ) {
-	    log_error("%s: not a trustdb file\n", db_name );
+	    log_error(_("%s: not a trustdb file\n"), db_name );
 	    rc = G10ERR_TRUSTDB;
 	}
 	p += 2; /* skip magic */
@@ -586,12 +586,12 @@ write_record( ulong recnum, TRUSTREC *rec )
     }
 
     if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
-	log_error("trustdb: lseek failed: %s\n", strerror(errno) );
+	log_error(_("trustdb: lseek failed: %s\n"), strerror(errno) );
 	return G10ERR_WRITE_FILE;
     }
     n = write( db_fd, buf, TRUST_RECORD_LEN);
     if( n != TRUST_RECORD_LEN ) {
-	log_error("trustdb: write failed (n=%d): %s\n", n, strerror(errno) );
+	log_error(_("trustdb: write failed (n=%d): %s\n"), n, strerror(errno) );
 	return G10ERR_WRITE_FILE;
     }
 
@@ -623,7 +623,7 @@ new_recnum()
     rec.rectype = 0; /* free record */
     rc = write_record(recnum, &rec );
     if( rc )
-	log_fatal("%s: failed to append a record: %s\n",
+	log_fatal(_("%s: failed to append a record: %s\n"),
 					    db_name, g10_errstr(rc));
     return recnum ;
 }
@@ -670,7 +670,7 @@ search_record( PKT_public_cert *pkc, TRUSTREC *rec )
 	}
     }
     if( rc != -1 )
-	log_error("%s: search_db failed: %s\n",db_name, g10_errstr(rc) );
+	log_error(_("%s: search_db failed: %s\n"),db_name, g10_errstr(rc) );
     return rc;
 }
 
@@ -714,12 +714,12 @@ keyid_from_local_id( ulong lid, u32 *keyid )
 
     rc = read_record( lid, &rec, RECTYPE_DIR );
     if( rc ) {
-	log_error("error reading record with local_id %lu: %s\n",
+	log_error(_("error reading record with local_id %lu: %s\n"),
 						    lid, g10_errstr(rc));
 	return G10ERR_TRUSTDB;
     }
     if( rec.rectype != RECTYPE_DIR ) {
-	log_error("record with local_id %lu is not a dir record\n", lid);
+	log_error(_("record with local_id %lu is not a dir record\n"), lid);
 	return G10ERR_TRUSTDB;
     }
     keyid[0] = rec.r.dir.keyid[0];
@@ -752,7 +752,7 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
 	if( !c->sigrec ) {
 	    rc = read_record( c->local_id, r, RECTYPE_DIR );
 	    if( rc ) {
-		log_error("%lu: error reading dir record: %s\n",
+		log_error(_("%lu: error reading dir record: %s\n"),
 					c->local_id, g10_errstr(rc));
 		return rc;
 	    }
@@ -763,14 +763,14 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
 		    if( rc == G10ERR_BAD_CERT )
 			rc = -1;  /* maybe no selcficnature */
 		    if( rc != -1 )
-			log_info("%lu: error building sigs on the fly: %s\n",
+			log_info(_("%lu: error building sigs on the fly: %s\n"),
 			       c->local_id, g10_errstr(rc) );
 		    c->ctl.eof = 1;
 		    return rc;
 		}
 		rc = read_record( c->local_id, r, RECTYPE_DIR );
 		if( rc ) {
-		    log_error("%lu: error re-reading dir record: %s\n",
+		    log_error(_("%lu: error re-reading dir record: %s\n"),
 					    c->local_id, g10_errstr(rc));
 		    return rc;
 		}
@@ -797,12 +797,12 @@ walk_sigrecs( SIGREC_CONTEXT *c, int create )
 	    }
 	    rc = read_record( rnum, r, RECTYPE_SIG );
 	    if( rc ) {
-		log_error("error reading sigrec: %s\n", g10_errstr(rc));
+		log_error(_("error reading sigrec: %s\n"), g10_errstr(rc));
 		c->ctl.eof = 1;
 		return rc;
 	    }
 	    if( r->r.sig.owner != c->local_id ) {
-		log_error("chained sigrec %lu has a wrong owner\n", rnum );
+		log_error(_("chained sigrec %lu has a wrong owner\n"), rnum );
 		c->ctl.eof = 1;
 		return G10ERR_TRUSTDB;
 	    }
@@ -852,12 +852,12 @@ verify_own_certs()
 	memset( pkc, 0, sizeof *pkc );
 	rc = get_pubkey( pkc, keyid );
 	if( rc ) {
-	    log_error("keyid %08lX: secret key without public key\n",
+	    log_error(_("keyid %08lX: secret key without public key\n"),
 							    (ulong)keyid[1] );
 	    goto leave;
 	}
 	if( cmp_public_secret_cert( pkc, skc ) ) {
-	    log_error("keyid %08lX: secret and public key don't match\n",
+	    log_error(_("keyid %08lX: secret and public key don't match\n"),
 							    (ulong)keyid[1] );
 	    rc = G10ERR_GENERAL;
 	    goto leave;
@@ -868,13 +868,13 @@ verify_own_certs()
 	if( rc == -1 ) { /* put it into the trustdb */
 	    rc = insert_trust_record( pkc );
 	    if( rc ) {
-		log_error("keyid %08lX: can't put it into the trustdb\n",
+		log_error(_("keyid %08lX: can't put it into the trustdb\n"),
 							    (ulong)keyid[1] );
 		goto leave;
 	    }
 	}
 	else if( rc ) {
-	    log_error("keyid %08lX: query record failed\n", (ulong)keyid[1] );
+	    log_error(_("keyid %08lX: query record failed\n"), (ulong)keyid[1] );
 	    goto leave;
 
 	}
@@ -883,7 +883,7 @@ verify_own_certs()
 	    log_debug("putting %08lX(%lu) into ultikey_table\n",
 				    (ulong)keyid[1], pkc->local_id );
 	if( ins_lid_table_item( ultikey_table, pkc->local_id, 0 ) )
-	    log_error("keyid %08lX: already in ultikey_table\n",
+	    log_error(_("keyid %08lX: already in ultikey_table\n"),
 							(ulong)keyid[1]);
 
 
@@ -891,7 +891,7 @@ verify_own_certs()
 	release_public_cert_parts( pkc );
     }
     if( rc != -1 )
-	log_error("enum_secret_keys failed: %s\n", g10_errstr(rc) );
+	log_error(_("enum_secret_keys failed: %s\n"), g10_errstr(rc) );
     else
 	rc = 0;
 
@@ -1159,32 +1159,32 @@ build_sigrecs( ulong pubkeyid )
 
     /* get the keyblock */
     if( (rc=read_record( pubkeyid, &rec, RECTYPE_DIR )) ) {
-	log_error("%lu: build_sigrecs: can't read dir record\n", pubkeyid );
+	log_error(_("%lu: build_sigrecs: can't read dir record\n"), pubkeyid );
 	goto leave;
     }
     if( (rc=read_record( rec.r.dir.keyrec, &krec, RECTYPE_KEY )) ) {
-	log_error("%lu: build_sigrecs: can't read key record\n", pubkeyid);
+	log_error(_("%lu: build_sigrecs: can't read key record\n"), pubkeyid);
 	goto leave;
     }
     rc = get_keyblock_byfprint( &keyblock, krec.r.key.fingerprint );
     if( rc ) {
-	log_error("build_sigrecs: get_keyblock_byfprint failed\n" );
+	log_error(_("build_sigrecs: get_keyblock_byfprint failed\n") );
 	goto leave;
     }
     /* check all key signatures */
     rc = check_sigs( keyblock, &selfsig, &revoked );
     if( rc ) {
-	log_error("build_sigrecs: check_sigs failed\n" );
+	log_error(_("build_sigrecs: check_sigs failed\n") );
 	goto leave;
     }
     if( !selfsig ) {
-	log_error("build_sigrecs: self-certificate missing\n" );
+	log_error(_("build_sigrecs: self-certificate missing\n") );
 	update_no_sigs( pubkeyid, 2 );
 	rc = G10ERR_BAD_CERT;
 	goto leave;
     }
     if( revoked ) {
-	log_info("build_sigrecs: key has been revoked\n" );
+	log_info(_("build_sigrecs: key has been revoked\n") );
 	update_no_sigs( pubkeyid, 3 );
     }
     else
@@ -1209,7 +1209,7 @@ build_sigrecs( ulong pubkeyid )
 		 * not disturb us, because we have to chance them anyway. */
 		rc = set_signature_packets_local_id( node->pkt->pkt.signature );
 		if( rc )
-		    log_fatal("set_signature_packets_local_id failed: %s\n",
+		    log_fatal(_("set_signature_packets_local_id failed: %s\n"),
 							      g10_errstr(rc));
 	    }
 	    if( i == SIGS_PER_RECORD ) {
@@ -1220,7 +1220,7 @@ build_sigrecs( ulong pubkeyid )
 		    rec2.r.sig.chain = rnum; /* the next record number */
 		    rc = write_record( rnum2, &rec2 );
 		    if( rc ) {
-			log_error("build_sigrecs: write_record failed\n" );
+			log_error(_("build_sigrecs: write_record failed\n") );
 			goto leave;
 		    }
 		    if( !first_sigrec )
@@ -1245,7 +1245,7 @@ build_sigrecs( ulong pubkeyid )
 	    rec2.r.sig.chain = rnum;
 	    rc = write_record( rnum2, &rec2 );
 	    if( rc ) {
-		log_error("build_sigrecs: write_record failed\n" );
+		log_error(_("build_sigrecs: write_record failed\n") );
 		goto leave;
 	    }
 	    if( !first_sigrec )
@@ -1256,7 +1256,7 @@ build_sigrecs( ulong pubkeyid )
 	    rec.r.sig.chain = 0;
 	    rc = write_record( rnum, &rec );
 	    if( rc ) {
-		log_error("build_sigrecs: write_record failed\n" );
+		log_error(_("build_sigrecs: write_record failed\n") );
 		goto leave;
 	    }
 	    if( !first_sigrec )
@@ -1266,12 +1266,12 @@ build_sigrecs( ulong pubkeyid )
     if( first_sigrec ) {
 	/* update the dir record */
 	if( (rc =read_record( pubkeyid, &rec, RECTYPE_DIR )) ) {
-	    log_error("update_dir_record: read failed\n");
+	    log_error(_("update_dir_record: read failed\n"));
 	    goto leave;
 	}
 	rec.r.dir.sigrec = first_sigrec;
 	if( (rc=write_record( pubkeyid, &rec )) ) {
-	    log_error("update_dir_record: write failed\n");
+	    log_error(_("update_dir_record: write failed\n"));
 	    goto leave;
 	}
     }
@@ -1281,7 +1281,7 @@ build_sigrecs( ulong pubkeyid )
   leave:
     release_kbnode( keyblock );
     if( DBG_TRUST )
-	log_debug("trustdb: build_sigrecs: %s\n", g10_errstr(rc) );
+	log_debug(_("trustdb: build_sigrecs: %s\n"), g10_errstr(rc) );
     return rc;
 }
 
@@ -1479,7 +1479,7 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 
 
 /***********************************************
- ****************  API  ************************
+ ****************  API	************************
  ***********************************************/
 
 /****************
@@ -1500,7 +1500,7 @@ init_trustdb( int level, const char *dbname )
 			    : make_filename(opt.homedir, "trustdb.gpg", NULL );
 	if( access( fname, R_OK ) ) {
 	    if( errno != ENOENT ) {
-		log_error("can't access %s: %s\n", fname, strerror(errno) );
+		log_error(_("can't access %s: %s\n"), fname, strerror(errno) );
 		m_free(fname);
 		return G10ERR_TRUSTDB;
 	    }
@@ -1516,11 +1516,11 @@ init_trustdb( int level, const char *dbname )
 		      #else
 			if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
 		      #endif
-			    log_fatal("can't create directory '%s': %s\n",
+			    log_fatal(_("can't create directory '%s': %s\n"),
 					fname, strerror(errno) );
 		    }
 		    else
-			log_fatal("directory '%s' does not exist!\n", fname );
+			log_fatal(_("directory '%s' does not exist!\n"), fname );
 		}
 		*p = '/';
 		create_db( fname );
@@ -1705,30 +1705,30 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
     /* get the pubkey record */
     if( pkc->local_id ) {
 	if( read_record( pkc->local_id, &rec, RECTYPE_DIR ) ) {
-	    log_error("check_trust: read record failed\n");
+	    log_error(_("check_trust: read record failed\n"));
 	    return G10ERR_TRUSTDB;
 	}
     }
     else { /* no local_id: scan the trustdb */
 	if( (rc=search_record( pkc, &rec )) && rc != -1 ) {
-	    log_error("check_trust: search_record failed: %s\n",
+	    log_error(_("check_trust: search_record failed: %s\n"),
 							    g10_errstr(rc));
 	    return rc;
 	}
 	else if( rc == -1 ) {
 	    rc = insert_trust_record( pkc );
 	    if( rc ) {
-		log_error("failed to insert pubkey into trustdb: %s\n",
+		log_error(_("failed to insert pubkey into trustdb: %s\n"),
 							    g10_errstr(rc));
 		goto leave;
 	    }
-	    log_info("pubkey not in trustdb - inserted as %lu\n",
+	    log_info(_("pubkey not in trustdb - inserted as %lu\n"),
 				    pkc->local_id );
 	}
     }
     cur_time = make_timestamp();
     if( pkc->timestamp > cur_time ) {
-	log_info("public key created in future (time warp or clock problem)\n");
+	log_info(_("public key created in future (time warp or clock problem)\n"));
 	return G10ERR_TIME_CONFLICT;
     }
 
@@ -1742,7 +1742,7 @@ check_trust( PKT_public_cert *pkc, unsigned *r_trustlevel )
     else {
 	rc = do_check( pkc->local_id, &rec, &trustlevel );
 	if( rc ) {
-	    log_error("check_trust: do_check failed: %s\n", g10_errstr(rc));
+	    log_error(_("check_trust: do_check failed: %s\n"), g10_errstr(rc));
 	    return rc;
 	}
     }

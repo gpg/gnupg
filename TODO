@@ -44,3 +44,5 @@
 
     * replace getkey.c#enum_secret_keys
 
+    * add readline support.
+
