@@ -1637,7 +1637,8 @@ keyedit_menu( const char *username, STRLIST locusr,
 		    }
 		}
 
-	      if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) )
+	      if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock)
+		  && !have_commands )
 		{
 		  if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
 					     _("Really sign all user IDs?"
