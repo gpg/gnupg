@@ -163,7 +163,7 @@ start_agent (void)
       argv[2] = NULL;
 
       /* connect to the agent and perform initial handshaking */
-      rc = assuan_pipe_connect (&ctx, opt.agent_program, (char**)argv);
+      rc = assuan_pipe_connect (&ctx, opt.agent_program, (char**)argv, 0);
       if (rc)
         {
           log_error ("can't connect to the agent: %s\n", assuan_strerror (rc));

@@ -84,7 +84,7 @@ start_pinentry (void)
   argv[1] = NULL;
 
   /* connect to the pinentry and perform initial handshaking */
-  rc = assuan_pipe_connect (&ctx, opt.pinentry_program, (char**)argv);
+  rc = assuan_pipe_connect (&ctx, opt.pinentry_program, (char**)argv, 0);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module: %s\n",

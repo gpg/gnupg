@@ -71,9 +71,11 @@ writen ( int fd, const char *buffer, size_t length )
 
 /* Connect to a server over a pipe, creating the assuan context and
    returning it in CTX.  The server filename is NAME, the argument
-   vector in ARGV.  */
+   vector in ARGV.  FD_CHILD_LIST is a -1 terminated list of file
+   descriptors not to close in the child.  */
 AssuanError
-assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[])
+assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[],
+		     int *fd_child_list)
 {
   static int fixed_signals = 0;
   AssuanError err;
@@ -149,7 +151,16 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[])
         n = MAX_OPEN_FDS;
       for (i=0; i < n; i++)
         {
-          if (i != fileno (stderr) 
+	  int *fdp = fd_child_list;
+
+	  if (fdp)
+	    {
+	      while (*fdp != -1 && *fdp != i)
+		fdp++;
+	    }
+
+          if (!(fdp && *fdp != -1)
+	      && i != fileno (stderr) 
 #ifdef HAVE_JNLIB_LOGGING
               && i != log_fd
 #endif
