@@ -1,3 +1,24 @@
+2004-12-09  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (agent_get_passphrase): New args CUSTOM_PROMPT and
+	CUSTOM_DESCRIPTION. 	Changed all callers.
+
+	* app-openpgp.c (do_getattr, do_learn_status, do_setattr): Support
+	the new private DOs.
+	(do_change_pin): Add a "N" prefix to the strings so that the
+	callback can act accordingly for a new PIN.  Unfortunately this
+	breaks existing translations but I see no wother way to overvome
+	this.
+
+	* cardglue.c (learn_status_cb): Ditto.
+	(agent_release_card_info): Ditto.
+	(struct pin_cb_info_s): Removed and changed all users.
+	(pin_cb): Reworked.
+
+	* card-util.c (card_status): Print them
+	(card_edit): New command PRIVATEDO.
+	(change_private_do): New.
+
 2004-12-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (ask_algo): Add a choose-your-own-capabilities option

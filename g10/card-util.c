@@ -377,6 +377,14 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
                    info.disp_sex == 2? _("female") : _("unspecified"));
       print_name (fp, "URL of public key : ", info.pubkey_url);
       print_name (fp, "Login data .......: ", info.login_data);
+      if (info.private_do[0])
+        print_name (fp, "Private DO 1 .....: ", info.private_do[0]);
+      if (info.private_do[1])
+        print_name (fp, "Private DO 2 .....: ", info.private_do[1]);
+      if (info.private_do[2])
+        print_name (fp, "Private DO 3 .....: ", info.private_do[2]);
+      if (info.private_do[3])
+        print_name (fp, "Private DO 4 .....: ", info.private_do[3]);
       if (info.cafpr1valid)
         {
           tty_fprintf (fp, "CA fingerprint %d .:", 1);
@@ -627,6 +635,75 @@ change_login (const char *args)
   rc = agent_scd_setattr ("LOGIN-DATA", data, n );
   if (rc)
     log_error ("error setting login data: %s\n", gpg_strerror (rc));
+  xfree (data);
+  return rc;
+}
+
+static int
+change_private_do (const char *args, int nr)
+{
+  char do_name[] = "PRIVATE-DO-X";
+  char *data;
+  int n;
+  int rc; 
+
+  assert (nr >= 1 && nr <= 4);
+  do_name[11] = '0' + nr;
+
+  if (args && (args = strchr (args, '<')))  /* Read it from a file */
+    {
+      FILE *fp;
+
+      /* Fixme: Factor this duplicated code out. */
+      for (args++; spacep (args); args++)
+        ;
+      fp = fopen (args, "rb");
+#if GNUPG_MAJOR_VERSION == 1
+      if (fp && is_secured_file (fileno (fp)))
+        {
+          fclose (fp);
+          fp = NULL;
+          errno = EPERM;
+        }
+#endif
+      if (!fp)
+        {
+          tty_printf (_("can't open `%s': %s\n"), args, strerror (errno));
+          return -1;
+        }
+          
+      data = xmalloc (254);
+      n = fread (data, 1, 254, fp);
+      fclose (fp);
+      if (n < 0)
+        {
+          tty_printf (_("error reading `%s': %s\n"), args, strerror (errno));
+          xfree (data);
+          return -1;
+        }
+    }
+  else
+    {
+      data = cpr_get ("cardedit.change_private_do",
+                      _("Private DO data: "));
+      if (!data)
+        return -1;
+      trim_spaces (data);
+      cpr_kill_prompt ();
+      n = strlen (data);
+    }
+
+  if (n > 254 )
+    {
+      tty_printf (_("Error: Private DO too long "
+                    "(limit is %d characters).\n"), 254);    
+      xfree (data);
+      return -1;
+    }
+
+  rc = agent_scd_setattr (do_name, data, n );
+  if (rc)
+    log_error ("error setting private DO: %s\n", gpg_strerror (rc));
   xfree (data);
   return rc;
 }
@@ -1149,7 +1226,7 @@ card_edit (STRLIST commands)
     cmdNOP = 0,
     cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
-    cmdFORCESIG, cmdGENERATE, cmdPASSWD,
+    cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO,
     cmdINVCMD
   };
 
@@ -1180,6 +1257,8 @@ card_edit (STRLIST commands)
     { N_("generate"),
                   cmdGENERATE, 1, N_("generate new keys") },
     { N_("passwd"), cmdPASSWD, 0, N_("menu to change or unblock the PIN") },
+    /* Note, that we do not announce this command yet. */
+    { N_("privatedo"), cmdPRIVATEDO, 0, NULL },
     { NULL, cmdINVCMD, 0, NULL } 
   };
  
@@ -1333,6 +1412,14 @@ card_edit (STRLIST commands)
                         "       1 <= N <= 3\n");
           else
             change_cafpr (arg_number);
+          break;
+
+        case cmdPRIVATEDO:
+          if ( arg_number < 1 || arg_number > 4 )
+            tty_printf ("usage: privatedo N\n"
+                        "       1 <= N <= 4\n");
+          else
+            change_private_do (arg_string, arg_number);
           break;
 
         case cmdFORCESIG:

@@ -81,6 +81,10 @@ static struct {
   { 0x00C6, 0, 0x6E, 1, 0, 0, 0, "CA Fingerprints" },
   { 0x007A, 1,    0, 1, 0, 0, 0, "Security Support Template" },
   { 0x0093, 0, 0x7A, 1, 1, 0, 0, "Digital Signature Counter" },
+  { 0x0101, 0,    0, 0, 0, 0, 0, "Private DO 1"},
+  { 0x0102, 0,    0, 0, 0, 0, 0, "Private DO 2"},
+  { 0x0103, 0,    0, 0, 0, 0, 0, "Private DO 3"},
+  { 0x0104, 0,    0, 0, 0, 0, 0, "Private DO 4"},
   { 0 }
 };
 
@@ -613,6 +617,10 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "SERIALNO",     0x004F, -1 },
     { "AID",          0x004F },
     { "EXTCAP",       0x0000, -2 },
+    { "PRIVATE-DO-1", 0x0101 },
+    { "PRIVATE-DO-2", 0x0102 },
+    { "PRIVATE-DO-3", 0x0103 },
+    { "PRIVATE-DO-4", 0x0104 },
     { NULL, 0 }
   };
   int idx, i;
@@ -708,6 +716,15 @@ do_learn_status (app_t app, ctrl_t ctrl)
   do_getattr (app, ctrl, "CA-FPR");
   do_getattr (app, ctrl, "CHV-STATUS");
   do_getattr (app, ctrl, "SIG-COUNTER");
+  if (app->app_local->extcap.private_dos)
+    {
+      do_getattr (app, ctrl, "PRIVATE-DO-1");
+      do_getattr (app, ctrl, "PRIVATE-DO-2");
+      if (app->did_chv2)
+        do_getattr (app, ctrl, "PRIVATE-DO-3");
+      if (app->did_chv3)
+        do_getattr (app, ctrl, "PRIVATE-DO-4");
+    }
 
   return 0;
 }
@@ -867,17 +884,22 @@ do_setattr (app_t app, const char *name,
   static struct {
     const char *name;
     int tag;
+    int need_chv;
     int special;
   } table[] = {
-    { "DISP-NAME",    0x005B },
-    { "LOGIN-DATA",   0x005E, 2 },
-    { "DISP-LANG",    0x5F2D },
-    { "DISP-SEX",     0x5F35 },
-    { "PUBKEY-URL",   0x5F50 },
-    { "CHV-STATUS-1", 0x00C4, 1 },
-    { "CA-FPR-1",     0x00CA },
-    { "CA-FPR-2",     0x00CB },
-    { "CA-FPR-3",     0x00CC },
+    { "DISP-NAME",    0x005B, 3 },
+    { "LOGIN-DATA",   0x005E, 3, 2 },
+    { "DISP-LANG",    0x5F2D, 3 },
+    { "DISP-SEX",     0x5F35, 3 },
+    { "PUBKEY-URL",   0x5F50, 3 },
+    { "CHV-STATUS-1", 0x00C4, 3, 1 },
+    { "CA-FPR-1",     0x00CA, 3 },
+    { "CA-FPR-2",     0x00CB, 3 },
+    { "CA-FPR-3",     0x00CC, 3 },
+    { "PRIVATE-DO-1", 0x0101, 2 },
+    { "PRIVATE-DO-2", 0x0102, 3 },
+    { "PRIVATE-DO-3", 0x0103, 2 },
+    { "PRIVATE-DO-4", 0x0104, 3 },
     { NULL, 0 }
   };
 
@@ -887,7 +909,17 @@ do_setattr (app_t app, const char *name,
   if (!table[idx].name)
     return gpg_error (GPG_ERR_INV_NAME); 
 
-  rc = verify_chv3 (app, pincb, pincb_arg);
+  switch (table[idx].need_chv)
+    {
+    case 2:
+      rc = verify_chv2 (app, pincb, pincb_arg);
+      break;
+    case 3:
+      rc = verify_chv3 (app, pincb, pincb_arg);
+      break;
+    default:
+      rc = 0;
+    }
   if (rc)
     return rc;
 
@@ -956,10 +988,10 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr, int reset_mode,
   else
     app->did_chv1 = app->did_chv2 = 0;
 
-  /* Note to translators: Do not translate the "|A|" prefix but
+  /* Note to translators: Do not translate the "|*|" prefixes but
      keep it at the start of the string.  We need this elsewhere
      to get some infos on the string. */
-  rc = pincb (pincb_arg, chvno == 3? _("|A|New Admin PIN") : _("New PIN"), 
+  rc = pincb (pincb_arg, chvno == 3? _("|AN|New Admin PIN") : _("|N|New PIN"), 
               &pinvalue); 
   if (rc)
     {

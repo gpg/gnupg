@@ -630,7 +630,8 @@ agent_close ( int fd )
  */
 static char *
 agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
-                       int *canceled)
+                       const char *custom_description,
+                       const char *custom_prompt, int *canceled)
 {
 #if defined(__riscos__)
   return NULL;
@@ -648,6 +649,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   int prot;
   char *orig_codeset = NULL;
 
+  log_debug ("agent_get_passphrase tryagin='%s' prompt='%s'\n", tryagain_text, custom_prompt);
   if (canceled)
     *canceled = 0;
 
@@ -663,7 +665,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
     }
   
 #ifdef ENABLE_NLS
-  /* The Assuan agent protol requires us to trasnmit utf-8 strings */
+  /* The Assuan agent protol requires us to transmit utf-8 strings */
   orig_codeset = bind_textdomain_codeset (PACKAGE, NULL);
 #ifdef HAVE_LANGINFO_CODESET
   if (!orig_codeset)
@@ -680,7 +682,9 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   if ( (fd = agent_open (&prot)) == -1 ) 
     goto failure;
 
-  if ( !mode && pk && keyid )
+  if (custom_description)
+    atext = native_to_utf8 (custom_description);
+  else if ( !mode && pk && keyid )
     { 
       char *uid;
       size_t uidlen;
@@ -818,9 +822,12 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
         tryagain_text = _(tryagain_text);
 
       /* We allocate 2 time the needed space for atext so that there
-         is nenough space for escaping */
+         is enough space for escaping */
       line = m_alloc (15 + 46 
-                      +  3*strlen (tryagain_text) + 3*strlen (atext) + 2);
+                      + 3*strlen (tryagain_text)
+                      + 3*strlen (atext)
+                      + 3*strlen (custom_prompt? custom_prompt:"")
+                      + 2);
       strcpy (line, "GET_PASSPHRASE ");
       p = line+15;
       if (!mode && have_fpr)
@@ -844,7 +851,28 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
             *p++ = *s;
         }
       *p++ = ' ';
-      *p++ = 'X'; /* Use the standard prompt */
+
+      /* The prompt.  */
+      if (custom_prompt)
+        {
+          char *tmp = native_to_utf8 (custom_prompt);
+          for (i=0, s=tmp; *s; s++)
+            {
+              if (*s < ' ' || *s == '+')
+                {
+                  sprintf (p, "%%%02X", *s);
+                  p += 3;
+                }
+              else if (*s == ' ')
+                *p++ = '+';
+              else
+                *p++ = *s;
+            }
+          xfree (tmp);
+        }
+      else
+        *p++ = 'X'; /* Use the standard prompt */
+
       *p++ = ' ';
       /* copy description */
       for (i=0, s= atext; *s; s++)
@@ -1047,7 +1075,7 @@ ask_passphrase (const char *description,
   if ( opt.use_agent ) 
     {
       pw = agent_get_passphrase (NULL, 0,
-                                 tryagain_text? tryagain_text :description,
+                                 tryagain_text, description, prompt,
                                  canceled );
       if (!pw)
         {
@@ -1188,9 +1216,9 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	next_pw = NULL;
     }
     else if ( opt.use_agent ) {
-      /* Divert to teh gpg-agent. */
+      /* Divert to the gpg-agent. */
 	pw = agent_get_passphrase ( keyid, mode == 2? 1: 0,
-                                    tryagain_text, canceled );
+                                    tryagain_text, NULL, NULL, canceled );
         if (!pw)
           {
             if (!opt.use_agent)
@@ -1198,7 +1226,8 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
             pw = m_strdup ("");
           }
         if( *pw && mode == 2 ) {
-	    char *pw2 = agent_get_passphrase ( keyid, 2, NULL, canceled );
+          char *pw2 = agent_get_passphrase ( keyid, 2, NULL, NULL,
+                                               NULL, canceled );
             if (!pw2)
               {
                 if (!opt.use_agent)

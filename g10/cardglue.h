@@ -37,6 +37,7 @@ struct agent_card_info_s {
   int  disp_sex;     /* 0 = unspecified, 1 = male, 2 = female */
   char *pubkey_url;  /* malloced. */
   char *login_data;  /* malloced. */
+  char *private_do[4]; /* malloced. */
   char cafpr1valid;
   char cafpr2valid;
   char cafpr3valid;
