@@ -363,7 +363,7 @@ open_ct_reader (int port)
 static int
 close_ct_reader (int slot)
 {
-  /* FIXME: Implement. */
+  CT_close (slot);
   reader_table[slot].used = 0;
   return 0;
 }
@@ -594,7 +594,7 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 static int
 close_pcsc_reader (int slot)
 {
-  /* FIXME: Implement. */
+  pcsc_release_context (reader_table[slot].pcsc.context);
   reader_table[slot].used = 0;
   return 0;
 }
@@ -607,6 +607,15 @@ close_pcsc_reader (int slot)
 /* 
      Internal CCID driver interface.
  */
+
+static const char *
+get_ccid_error_string (long err)
+{
+  if (!err)
+    return "okay";
+  else
+    return "unknown CCID error";
+}
 
 static int
 open_ccid_reader (void)
@@ -1062,7 +1071,7 @@ error_string (int slot, long rc)
     return ct_error_string (rc);
 #ifdef HAVE_LIBUSB
   else if (reader_table[slot].is_ccid)
-    return "no CCID driver error strings yet";
+    return get_ccid_error_string (rc);
 #endif
 #ifdef HAVE_OPENSC
   else if (reader_table[slot].is_osc)
