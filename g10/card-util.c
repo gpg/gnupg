@@ -34,6 +34,7 @@
 #include "status.h"
 #include "options.h"
 #include "main.h"
+#include "keyserver-internal.h"
 #if GNUPG_MAJOR_VERSION == 1
 #include "cardglue.h"
 #else
@@ -46,7 +47,7 @@
 /* Change the PIN of a an OpenPGP card.  This is an interactive
    function. */
 void
-change_pin (int chvno)
+change_pin (int chvno, int allow_admin)
 {
   struct agent_card_info_s info;
   int rc;
@@ -70,52 +71,61 @@ change_pin (int chvno)
       return;
     }
 
-  for (;;)
+  if(!allow_admin)
     {
-      char *answer;
-
-      tty_printf ("\n");
-      tty_printf ("1 - change PIN\n"
-                  "2 - unblock PIN\n"
-                  "3 - change Admin PIN\n"
-                  "Q - quit\n");
-      tty_printf ("\n");
-
-      answer = cpr_get("cardutil.change_pin.menu",_("Your selection? "));
-      cpr_kill_prompt();
-      if (strlen (answer) != 1)
-        continue;
-
-      rc = 0;
-      if (*answer == '1')
-        {
-          rc = agent_scd_change_pin (1);
-          if (rc)
-            tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
-          else
-            tty_printf ("PIN changed.\n");
-        }
-      else if (*answer == '2')
-        {
-          rc = agent_scd_change_pin (101);
-          if (rc)
-            tty_printf ("Error unblocking the PIN: %s\n", gpg_strerror (rc));
-          else
-            tty_printf ("PIN unblocked and new PIN set.\n");
-        }
-      else if (*answer == '3')
-        {
-          rc = agent_scd_change_pin (3);
-          if (rc)
-            tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
-          else
-            tty_printf ("PIN changed.\n");
-        }
-      else if (*answer == 'q' || *answer == 'Q')
-        {
-          break;
-        }
+      rc = agent_scd_change_pin (1);
+      if (rc)
+	tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
+      else
+	tty_printf ("PIN changed.\n");
     }
+  else
+    for (;;)
+      {
+	char *answer;
+
+	tty_printf ("\n");
+	tty_printf ("1 - change PIN\n"
+		    "2 - unblock PIN\n"
+		    "3 - change Admin PIN\n"
+		    "Q - quit\n");
+	tty_printf ("\n");
+
+	answer = cpr_get("cardutil.change_pin.menu",_("Your selection? "));
+	cpr_kill_prompt();
+	if (strlen (answer) != 1)
+	  continue;
+
+	rc = 0;
+	if (*answer == '1')
+	  {
+	    rc = agent_scd_change_pin (1);
+	    if (rc)
+	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
+	    else
+	      tty_printf ("PIN changed.\n");
+	  }
+	else if (*answer == '2')
+	  {
+	    rc = agent_scd_change_pin (101);
+	    if (rc)
+	      tty_printf ("Error unblocking the PIN: %s\n", gpg_strerror (rc));
+	    else
+	      tty_printf ("PIN unblocked and new PIN set.\n");
+	  }
+	else if (*answer == '3')
+	  {
+	    rc = agent_scd_change_pin (3);
+	    if (rc)
+	      tty_printf ("Error changing the PIN: %s\n", gpg_strerror (rc));
+	    else
+	      tty_printf ("PIN changed.\n");
+	  }
+	else if (*answer == 'q' || *answer == 'Q')
+	  {
+	    break;
+	  }
+      }
 }
 
 static const char *
@@ -511,6 +521,49 @@ change_url (void)
 }
 
 static int
+fetch_url(void)
+{
+  int rc;
+  struct agent_card_info_s info;
+
+  memset(&info,0,sizeof(info));
+
+  rc=agent_scd_getattr("PUBKEY-URL",&info);
+  if(rc)
+    log_error("error retrieving URL from card: %s\n",gpg_strerror(rc));
+  else if(info.pubkey_url)
+    {
+      struct keyserver_spec *spec=NULL;
+
+      rc=agent_scd_getattr("KEY-FPR",&info);
+      if(rc)
+	log_error("error retrieving key fingerprint from card: %s\n",
+		  gpg_strerror(rc));
+      else
+	{
+	  spec=parse_keyserver_uri(info.pubkey_url,0,NULL,0);
+	  if(spec && info.fpr1valid)
+	    {
+	      /* This is not perfectly right.  Currently, all card
+		 fingerprints are 20 digits, but what about
+		 fingerprints for a future v5 key?  We should get the
+		 length from somewhere lower in the code.  In any
+		 event, the fpr/keyid is not meaningful for straight
+		 HTTP fetches, but using it allows the card to point
+		 to HKP and LDAP servers as well. */
+	      rc=keyserver_import_fprint(info.fpr1,20,spec);
+	      free_keyserver_spec(spec);
+	    }
+	}
+    }
+  else
+    log_error("no URL set on card\n");
+
+  return rc;
+}
+
+
+static int
 change_login (const char *args)
 {
   char *data;
@@ -524,17 +577,24 @@ change_login (const char *args)
       for (args++; spacep (args); args++)
         ;
       fp = fopen (args, "rb");
+      if (fp && is_secured_file (fileno (fp)))
+        {
+          fclose (fp);
+          fp = NULL;
+          errno = EPERM;
+        }
       if (!fp)
         {
-          tty_printf ("can't open `%s': %s\n", args, strerror (errno));
+          tty_printf (_("can't open `%s': %s\n"), args, strerror (errno));
           return -1;
         }
+          
       data = xmalloc (254);
       n = fread (data, 1, 254, fp);
       fclose (fp);
       if (n < 0)
         {
-          tty_printf ("error reading `%s': %s\n", args, strerror (errno));
+          tty_printf (_("error reading `%s': %s\n"), args, strerror (errno));
           xfree (data);
           return -1;
         }
@@ -705,26 +765,142 @@ toggle_forcesig (void)
 }
 
 
+/* Helper for the key generation/edit functions.  */
+static int
+get_info_for_key_operation (struct agent_card_info_s *info)
+{
+  int rc;
+
+  memset (info, 0, sizeof *info);
+  rc = agent_scd_getattr ("SERIALNO", info);
+  if (rc || !info->serialno || strncmp (info->serialno, "D27600012401", 12) 
+      || strlen (info->serialno) != 32 )
+    {
+      log_error (_("key operation not possible: %s\n"),
+                 rc ? gpg_strerror (rc) : _("not an OpenPGP card"));
+      return rc? rc: -1;
+    }
+  rc = agent_scd_getattr ("KEY-FPR", info);
+  if (!rc)
+    rc = agent_scd_getattr ("CHV-STATUS", info);
+  if (!rc)
+    rc = agent_scd_getattr ("DISP-NAME", info);
+  if (rc)
+    log_error (_("error getting current key info: %s\n"), gpg_strerror (rc));
+  return rc;
+}
+
+
+/* Helper for the key generation/edit functions.  */
+static int
+check_pin_for_key_operation (struct agent_card_info_s *info, int *forced_chv1)
+{     
+  int rc = 0;
+
+  *forced_chv1 = !info->chv1_cached;
+  if (*forced_chv1)
+    { /* Switch of the forced mode so that during key generation we
+         don't get bothered with PIN queries for each
+         self-signature. */
+      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1);
+      if (rc)
+        {
+          log_error ("error clearing forced signature PIN flag: %s\n",
+                     gpg_strerror (rc));
+          *forced_chv1 = 0;
+        }
+    }
+
+  if (!rc)
+    {
+      /* Check the PIN now, so that we won't get asked later for each
+         binding signature. */
+      rc = agent_scd_checkpin (info->serialno);
+      if (rc)
+        log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
+    }
+  return rc;
+}
+
+/* Helper for the key generation/edit functions.  */
+static void 
+restore_forced_chv1 (int *forced_chv1)
+{
+  int rc;
+
+  if (*forced_chv1)
+    { /* Switch back to forced state. */
+      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1);
+      if (rc)
+        {
+          log_error ("error setting forced signature PIN flag: %s\n",
+                     gpg_strerror (rc));
+        }
+    }
+}
+
+/* Helper for the key generation/edit functions.  */
+static void
+show_card_key_info (struct agent_card_info_s *info)
+{
+  tty_fprintf (NULL, "Signature key ....:");
+  print_sha1_fpr (NULL, info->fpr1valid? info->fpr1:NULL);
+  tty_fprintf (NULL, "Encryption key....:");
+  print_sha1_fpr (NULL, info->fpr2valid? info->fpr2:NULL);
+  tty_fprintf (NULL, "Authentication key:");
+  print_sha1_fpr (NULL, info->fpr3valid? info->fpr3:NULL);
+  tty_printf ("\n");
+}
+
+
+/* Helper for the key generation/edit functions.  */
+static int
+replace_existing_key_p (struct agent_card_info_s *info, int keyno)
+{
+  assert (keyno >= 0 && keyno <= 3);
+
+  if ((keyno == 1 && info->fpr1valid)
+      || (keyno == 2 && info->fpr2valid)
+      || (keyno == 3 && info->fpr3valid))
+    {
+      tty_printf ("\n");
+      log_info ("WARNING: such a key has already been stored on the card!\n");
+      tty_printf ("\n");
+      if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_key",
+                                  _("Replace existing key? (y/N) ")))
+        return -1;
+    }
+  return 0;
+}
+
+
+
 static void
 generate_card_keys (const char *serialno)
 {
   struct agent_card_info_s info;
-  int rc;
   int forced_chv1;
+  int want_backup;
 
-  memset (&info, 0, sizeof info);
-  rc = agent_scd_getattr ("KEY-FPR", &info);
-  if (!rc)
-    rc = agent_scd_getattr ("SERIALNO", &info);
-  if (!rc)
-    rc = agent_scd_getattr ("CHV-STATUS", &info);
-  if (!rc)
-    rc = agent_scd_getattr ("DISP-NAME", &info);
-  if (rc)
-    {
-      log_error ("error getting current key info: %s\n", gpg_strerror (rc));
-      return;
-    }
+  if (get_info_for_key_operation (&info))
+    return;
+
+#if GNUPG_MAJOR_VERSION == 1
+  {
+    char *answer=cpr_get("cardedit.genkeys.backup_enc",
+			 _("Make off-card backup of encryption key? (Y/n) "));
+
+    want_backup=answer_is_yes_no_default(answer,1);
+    cpr_kill_prompt();
+    m_free(answer);
+  }
+#else
+  /* Does 1.9 have answer_is_yes_no_default() ? */
+  want_backup = !(cpr_get_answer_is_yes 
+                  ( "cardedit.genkeys.backup_enc",
+		    _("Inhibit off-card backup of encryption key? (y/N) ")));
+#endif
+
   if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
        || (info.fpr2valid && !fpr_is_zero (info.fpr2))
        || (info.fpr3valid && !fpr_is_zero (info.fpr3)))
@@ -733,7 +909,7 @@ generate_card_keys (const char *serialno)
       log_info ("NOTE: keys are already stored on the card!\n");
       tty_printf ("\n");
       if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_keys",
-                                  _("Replace existing keys? ")))
+                                  _("Replace existing keys? (y/N) ")))
         {
           agent_release_card_info (&info);
           return;
@@ -743,46 +919,206 @@ generate_card_keys (const char *serialno)
     {
       tty_printf ("\n");
       tty_printf (_("Please note that the factory settings of the PINs are\n"
-                    "   PIN = \"%s\"     Admin PIN = \"%s\"\n"
+                    "   PIN = `%s'     Admin PIN = `%s'\n"
                     "You should change them using the command --change-pin\n"),
                   "123456", "12345678");
       tty_printf ("\n");
     }
 
-  forced_chv1 = !info.chv1_cached;
-  if (forced_chv1)
-    { /* Switch of the forced mode so that during key generation we
-         don't get bothered with PIN queries for each
-         self-signature. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "\x01", 1);
-      if (rc)
-        {
-          log_error ("error clearing forced signature PIN flag: %s\n",
-                     gpg_strerror (rc));
-          return;
-        }
-    }
+  if (check_pin_for_key_operation (&info, &forced_chv1))
+    goto leave;
+  
+  generate_keypair (NULL, info.serialno,
+                    want_backup? opt.homedir:NULL);
 
-  /* Check the PIN now, so that we won't get asked later for each
-     binding signature. */
-  rc = agent_scd_checkpin (serialno);
-  if (rc)
-    log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
-  else
-    generate_keypair (NULL, info.serialno);
-
+ leave:
   agent_release_card_info (&info);
-  if (forced_chv1)
-    { /* Switch back to forced state. */
-      rc = agent_scd_setattr ("CHV-STATUS-1", "", 1);
-      if (rc)
-        {
-          log_error ("error setting forced signature PIN flag: %s\n",
-                     gpg_strerror (rc));
-          return;
-        }
-    }
+  restore_forced_chv1 (&forced_chv1);
 }
+
+
+/* This fucntion is used by the key edit menu to generate an arbitrary
+   subkey. */
+int
+card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
+{
+  struct agent_card_info_s info;
+  int okay = 0;
+  int forced_chv1 = 0;
+  int keyno;
+
+  if (get_info_for_key_operation (&info))
+    return 0;
+
+  show_card_key_info (&info);
+
+  tty_printf (_("Please select the type of key to generate:\n"));
+
+  tty_printf (_("   (1) Signature key\n"));
+  tty_printf (_("   (2) Encryption key\n"));
+  tty_printf (_("   (3) Authentication key\n"));
+
+  for (;;) 
+    {
+      char *answer = cpr_get ("cardedit.genkeys.subkeytype",
+                              _("Your selection? "));
+      cpr_kill_prompt();
+      if (*answer == CONTROL_D)
+        {
+          xfree (answer);
+          goto leave;
+        }
+      keyno = *answer? atoi(answer): 0;
+      xfree(answer);
+      if (keyno >= 1 && keyno <= 3)
+        break; /* Okay. */
+      tty_printf(_("Invalid selection.\n"));
+    }
+
+  if (replace_existing_key_p (&info, keyno))
+    goto leave;
+
+  if (check_pin_for_key_operation (&info, &forced_chv1))
+    goto leave;
+
+  okay = generate_card_subkeypair (pub_keyblock, sec_keyblock,
+                                   keyno, info.serialno);
+
+ leave:
+  agent_release_card_info (&info);
+  restore_forced_chv1 (&forced_chv1);
+  return okay;
+}
+
+
+/* Store the subkey at NODE into the smartcard and modify NODE to
+   carry the serrialno stuff instead of the actual secret key
+   parameters. */
+int 
+card_store_subkey (KBNODE node, int use)
+{
+  struct agent_card_info_s info;
+  int okay = 0;
+  int rc;
+  int keyno, i;
+  PKT_secret_key *copied_sk = NULL;
+  PKT_secret_key *sk;
+  size_t n;
+  const char *s;
+  int allow_keyno[3];
+
+  assert (node->pkt->pkttype == PKT_SECRET_KEY
+          || node->pkt->pkttype == PKT_SECRET_SUBKEY);
+  sk = node->pkt->pkt.secret_key;
+
+  if (get_info_for_key_operation (&info))
+    return 0;
+
+  show_card_key_info (&info);
+
+  if (!is_RSA (sk->pubkey_algo) || nbits_from_sk (sk) != 1024 )
+    {
+      tty_printf ("You may only store a 1024 bit RSA key on the card\n");
+      tty_printf ("\n");
+      goto leave;
+    }
+
+  allow_keyno[0] = (!use || (use & (PUBKEY_USAGE_SIG)));
+  allow_keyno[1] = (!use || (use & (PUBKEY_USAGE_ENC)));
+  allow_keyno[2] = (!use || (use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH)));
+
+  tty_printf (_("Please select where to store the key:\n"));
+
+  if (allow_keyno[0])
+    tty_printf (_("   (1) Signature key\n"));
+  if (allow_keyno[1])
+    tty_printf (_("   (2) Encryption key\n"));
+  if (allow_keyno[2])
+    tty_printf (_("   (3) Authentication key\n"));
+
+  for (;;) 
+    {
+      char *answer = cpr_get ("cardedit.genkeys.storekeytype",
+                              _("Your selection? "));
+      cpr_kill_prompt();
+      if (*answer == CONTROL_D || !*answer)
+        {
+          xfree (answer);
+          goto leave;
+        }
+      keyno = *answer? atoi(answer): 0;
+      xfree(answer);
+      if (keyno >= 1 && keyno <= 3 && allow_keyno[keyno-1])
+        break; /* Okay. */
+      tty_printf(_("Invalid selection.\n"));
+    }
+
+  if (replace_existing_key_p (&info, keyno))
+    goto leave;
+
+  /* Unprotect key.  */
+  switch (is_secret_key_protected (sk) )
+    {
+    case 0: /* Not protected. */
+      break;
+    case -1:
+      log_error (_("unknown key protection algorithm\n"));
+      goto leave;
+    default:
+      if (sk->protect.s2k.mode == 1001)
+        {
+          log_error (_("secret parts of key are not available\n"));
+          goto leave;
+	}
+      if (sk->protect.s2k.mode == 1002)
+        {
+          log_error (_("secret key already stored on a card\n"));
+          goto leave;
+	}
+      /* We better copy the key before we unprotect it.  */
+      copied_sk = sk = copy_secret_key (NULL, sk);
+      rc = check_secret_key (sk, 0);
+      if (rc)
+        goto leave;
+    }
+
+  rc = save_unprotected_key_to_card (sk, keyno);
+  if (rc)
+    goto leave;
+
+  /* Get back to the maybe protected original secret key.  */
+  if (copied_sk)
+    {
+      free_secret_key (copied_sk);
+      copied_sk = NULL; 
+    }
+  sk = node->pkt->pkt.secret_key;
+
+  /* Get rid of the secret key parameters and store the serial numer. */
+  n = pubkey_get_nskey (sk->pubkey_algo);
+  for (i=pubkey_get_npkey (sk->pubkey_algo); i < n; i++)
+    {
+      mpi_free (sk->skey[i]);
+      sk->skey[i] = NULL;
+    }
+  i = pubkey_get_npkey (sk->pubkey_algo);
+  sk->skey[i] = mpi_set_opaque (NULL, xstrdup ("dummydata"), 10);
+  sk->is_protected = 1;
+  sk->protect.s2k.mode = 1002;
+  s = info.serialno;
+  for (sk->protect.ivlen=0; sk->protect.ivlen < 16 && *s && s[1];
+       sk->protect.ivlen++, s += 2)
+    sk->protect.iv[sk->protect.ivlen] = xtoi_2 (s);
+
+  okay = 1;
+
+ leave:
+  if (copied_sk)
+    free_secret_key (copied_sk);
+  agent_release_card_info (&info);
+  return okay;
+}
+
 
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
@@ -791,8 +1127,8 @@ card_edit (STRLIST commands)
 {
   enum cmdids {
     cmdNOP = 0,
-    cmdQUIT, cmdHELP, cmdLIST, cmdDEBUG,
-    cmdNAME, cmdURL, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
+    cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG,
+    cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD,
     cmdINVCMD
   };
@@ -800,34 +1136,38 @@ card_edit (STRLIST commands)
   static struct {
     const char *name;
     enum cmdids id;
+    int admin_only;
     const char *desc;
   } cmds[] = {
-    { N_("quit")  , cmdQUIT  , N_("quit this menu") },
-    { N_("q")     , cmdQUIT  , NULL   },
-    { N_("help")  , cmdHELP  , N_("show this help") },
-    {    "?"      , cmdHELP  , NULL   },
-    { N_("list")  , cmdLIST  , N_("list all available data") },
-    { N_("l")     , cmdLIST  , NULL   },
-    { N_("debug") , cmdDEBUG , NULL },
-    { N_("name")  , cmdNAME  , N_("change card holder's name") },
-    { N_("url")   , cmdURL   , N_("change URL to retrieve key") },
-    { N_("login") , cmdLOGIN , N_("change the login name") },
-    { N_("lang")  , cmdLANG  , N_("change the language preferences") },
-    { N_("sex")   , cmdSEX   , N_("change card holder's sex") },
-    { N_("cafpr"),  cmdCAFPR,  N_("change a CA fingerprint") },
+    { N_("quit")  , cmdQUIT  , 0, N_("quit this menu") },
+    { N_("q")     , cmdQUIT  , 0, NULL   },
+    { N_("admin") , cmdADMIN , 0, N_("show admin commands") },
+    { N_("help")  , cmdHELP  , 0, N_("show this help") },
+    {    "?"      , cmdHELP  , 0, NULL   },
+    { N_("list")  , cmdLIST  , 0, N_("list all available data") },
+    { N_("l")     , cmdLIST  , 0, NULL   },
+    { N_("debug") , cmdDEBUG , 0, NULL },
+    { N_("name")  , cmdNAME  , 1, N_("change card holder's name") },
+    { N_("url")   , cmdURL   , 1, N_("change URL to retrieve key") },
+    { N_("fetch") , cmdFETCH , 0,
+                               N_("fetch the key specified in the card URL") },
+    { N_("login") , cmdLOGIN , 1, N_("change the login name") },
+    { N_("lang")  , cmdLANG  , 1, N_("change the language preferences") },
+    { N_("sex")   , cmdSEX   , 1, N_("change card holder's sex") },
+    { N_("cafpr"),  cmdCAFPR,  1, N_("change a CA fingerprint") },
     { N_("forcesig"),
-                  cmdFORCESIG, N_("toggle the signature force PIN flag") },
+                  cmdFORCESIG, 1, N_("toggle the signature force PIN flag") },
     { N_("generate"),
-                  cmdGENERATE, N_("generate new keys") },
-    { N_("passwd"), cmdPASSWD, N_("menu to change or unblock the PIN") },
-    { NULL, cmdINVCMD } 
+                  cmdGENERATE, 1, N_("generate new keys") },
+    { N_("passwd"), cmdPASSWD, 0, N_("menu to change or unblock the PIN") },
+    { NULL, cmdINVCMD, 0, NULL } 
   };
  
   enum cmdids cmd = cmdNOP;
   int have_commands = !!commands;
   int redisplay = 1;
   char *answer = NULL;
-  int did_checkpin = 0;
+  int did_checkpin = 0, allow_admin=0;
   char serialnobuf[50];
 
 
@@ -845,6 +1185,7 @@ card_edit (STRLIST commands)
       const char *arg_string = "";
       char *p;
       int i;
+      int cmd_admin_only;
       
       tty_printf("\n");
       if (redisplay )
@@ -887,61 +1228,79 @@ card_edit (STRLIST commands)
 	    }
 	    trim_spaces(answer);
 	}
-      while( *answer == '#' );
+      while ( *answer == '#' );
 
       arg_number = 0; /* Yes, here is the init which egcc complains about */
+      cmd_admin_only = 0;
       if (!*answer)
         cmd = cmdLIST; /* Default to the list command */
       else if (*answer == CONTROL_D)
         cmd = cmdQUIT;
-      else {
-        if ((p=strchr (answer,' ')))
-          {
-            *p++ = 0;
-            trim_spaces (answer);
-            trim_spaces (p);
-            arg_number = atoi(p);
-            arg_string = p;
-          }
+      else 
+        {
+          if ((p=strchr (answer,' ')))
+            {
+              *p++ = 0;
+              trim_spaces (answer);
+              trim_spaces (p);
+              arg_number = atoi(p);
+              arg_string = p;
+            }
+          
+          for (i=0; cmds[i].name; i++ )
+            if (!ascii_strcasecmp (answer, cmds[i].name ))
+              break;
 
-        for (i=0; cmds[i].name; i++ )
-          if (!ascii_strcasecmp (answer, cmds[i].name ))
-            break;
+          cmd = cmds[i].id;
+          cmd_admin_only = cmds[i].admin_only;
+        }
 
-        cmd = cmds[i].id;
-      }
-      
+      if (!allow_admin && cmd_admin_only)
+	{
+          tty_printf ("\n");
+          tty_printf (_("Admin-only command\n"));
+          continue;
+        }
 
       switch (cmd)
         {
         case cmdHELP:
           for (i=0; cmds[i].name; i++ )
-            if (cmds[i].desc)
+            if(cmds[i].desc
+	       && (!cmds[i].admin_only || (cmds[i].admin_only && allow_admin)))
               tty_printf("%-10s %s\n", cmds[i].name, _(cmds[i].desc) );
           break;
+
+	case cmdADMIN:
+	  allow_admin=!allow_admin;
+	  break;
 
         case cmdLIST:
           redisplay = 1;
           break;
 
         case cmdNAME:
-          change_name ();
+	  change_name ();
           break;
 
         case cmdURL:
-          change_url ();
+	  change_url ();
           break;
 
+	case cmdFETCH:
+	  fetch_url();
+	  break;
+
         case cmdLOGIN:
-          change_login (arg_string);
+	  change_login (arg_string);
           break;
 
         case cmdLANG:
-          change_lang ();
+	  change_lang ();
           break;
 
         case cmdSEX:
-          change_sex ();
+	  change_sex ();
           break;
 
         case cmdCAFPR:
@@ -961,7 +1320,7 @@ card_edit (STRLIST commands)
           break;
 
         case cmdPASSWD:
-          change_pin (0);
+          change_pin (0, allow_admin);
           did_checkpin = 0; /* Need to reset it of course. */
           break;
 
