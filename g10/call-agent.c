@@ -456,7 +456,6 @@ learn_status_cb (void *opaque, const char *line)
   const char *keyword = line;
   int keywordlen;
 
-  log_debug ("got status line `%s'\n", line);
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
   while (spacep (line))
@@ -470,7 +469,7 @@ learn_status_cb (void *opaque, const char *line)
     {
       parm->disp_name = unescape_status_string (line);
     }
-  else if (keywordlen == 10 && !memcmp (keyword, "PUBKEY_URL", keywordlen))
+  else if (keywordlen == 10 && !memcmp (keyword, "PUBKEY-URL", keywordlen))
     {
       parm->pubkey_url = unescape_status_string (line);
     }
@@ -670,7 +669,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
     sprintf (p, "%02X", indata[i]);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return rc;
+    return map_assuan_err (rc);
 
   init_membuf (&data, 1024);
   snprintf (line, DIM(line)-1, "SCD PKSIGN %s", serialno);
@@ -680,9 +679,62 @@ agent_scd_pksign (const char *serialno, int hashalgo,
   if (rc)
     {
       xfree (get_membuf (&data, &len));
-      return rc;
+      return map_assuan_err (rc);
     }
   *r_buf = get_membuf (&data, r_buflen);
 
   return 0;
 }
+
+
+/* Decrypt INDATA of length INDATALEN using the card identified by
+   SERIALNO.  Return the plaintext in a nwly allocated buffer stored
+   at the address of R_BUF. 
+
+   Note, we currently support only RSA or more exactly algorithms
+   taking one input data element. */
+int
+agent_scd_pkdecrypt (const char *serialno,
+                     const unsigned char *indata, size_t indatalen,
+                     char **r_buf, size_t *r_buflen)
+{
+  int rc, i;
+  char *p, line[ASSUAN_LINELENGTH];
+  membuf_t data;
+  size_t len;
+
+  *r_buf = NULL;
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  /* FIXME: use secure memory where appropriate */
+  if (indatalen*2 + 50 > DIM(line))
+    return gpg_error (GPG_ERR_GENERAL);
+
+  sprintf (line, "SCD SETDATA ");
+  p = line + strlen (line);
+  for (i=0; i < indatalen ; i++, p += 2 )
+    sprintf (p, "%02X", indata[i]);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  init_membuf (&data, 1024);
+  snprintf (line, DIM(line)-1, "SCD PKDECRYPT %s", serialno);
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (agent_ctx, line,
+                        membuf_data_cb, &data,
+                        NULL, NULL, NULL, NULL);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return map_assuan_err (rc);
+    }
+  *r_buf = get_membuf (&data, r_buflen);
+  if (!*r_buf)
+    return gpg_error (GPG_ERR_ENOMEM);
+
+  return 0;
+}
+

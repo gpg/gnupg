@@ -177,6 +177,12 @@ pk_encrypt (int algo, gcry_mpi_t * resarr, gcry_mpi_t data, gcry_mpi_t * pkey)
 			    "(public-key(elg(p%m)(g%m)(y%m)))",
 			    pkey[0], pkey[1], pkey[2]);
     }
+  else if (algo == GCRY_PK_RSA)
+    {
+      rc = gcry_sexp_build (&s_pkey, NULL,
+			    "(public-key(rsa(n%m)(e%m)))",
+			    pkey[0], pkey[1]);
+    }
   else
     return GPG_ERR_PUBKEY_ALGO;
 
@@ -202,11 +208,14 @@ pk_encrypt (int algo, gcry_mpi_t * resarr, gcry_mpi_t data, gcry_mpi_t * pkey)
       assert (resarr[0]);
       gcry_sexp_release (list);
 
-      list = gcry_sexp_find_token (s_ciph, "b", 0);
-      assert (list);
-      resarr[1] = gcry_sexp_nth_mpi (list, 1, 0);
-      assert (resarr[1]);
-      gcry_sexp_release (list);
+      if (algo != GCRY_PK_RSA)
+        {
+          list = gcry_sexp_find_token (s_ciph, "b", 0);
+          assert (list);
+          resarr[1] = gcry_sexp_nth_mpi (list, 1, 0);
+          assert (resarr[1]);
+          gcry_sexp_release (list);
+        }
     }
 
   gcry_sexp_release (s_ciph);
@@ -276,3 +285,10 @@ pk_decrypt (int algo, gcry_mpi_t * result, gcry_mpi_t * data,
 
   return 0;
 }
+
+
+
+
+
+
+

@@ -30,7 +30,7 @@
 #include "mpi.h"
 #include "main.h"
 #include "i18n.h"
-
+#include "options.h"
 
 /****************
  * Make a session key and put it into DEK
@@ -143,7 +143,11 @@ encode_session_key (DEK *dek, unsigned int nbits)
     memcpy( frame+n, dek->key, dek->keylen ); n += dek->keylen;
     frame[n++] = csum >>8;
     frame[n++] = csum;
-    assert( n == nframe );
+    assert (n == nframe);
+
+    if (DBG_CIPHER)
+      log_printhex ("encoded session key:", frame, nframe );
+
     if (gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, &nframe))
       BUG();
     xfree (frame);

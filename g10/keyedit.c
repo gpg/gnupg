@@ -923,7 +923,7 @@ change_passphrase( KBNODE keyblock )
 	}
 	else if( sk->protect.s2k.mode == 1002 ) {
 	    tty_printf(_("Secret key is actually stored on a card.\n"));
-	    no_primary_secrets = 1;
+	    goto leave;
 	}
 	else {
 	    tty_printf(_("Key is protected.\n"));

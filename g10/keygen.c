@@ -2096,8 +2096,6 @@ generate_keypair( const char *fname )
       card = check_smartcard (&serialno);
       if (card < 0)
         return;
-      if (card > 1)
-        log_error (_("can't generate subkey here\n"));
     }
   while (card > 1);
 
@@ -2114,55 +2112,75 @@ generate_keypair( const char *fname )
   if (card)
     {
       algo = PUBKEY_ALGO_RSA;
-      use = PUBKEY_USAGE_SIG;
-    }
-  else
-    algo = ask_algo (0, &use);
 
-  if (!algo)
-    { /* default: DSA with ElG subkey of the specified size */
-      both = 1;
       r = xcalloc (1, sizeof *r + 20 );
       r->key = pKEYTYPE;
-      sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
+      sprintf( r->u.value, "%d", algo );
       r->next = para;
       para = r;
-      tty_printf(_("DSA keypair will have 1024 bits.\n"));
       r = xcalloc (1, sizeof *r + 20 );
-      r->key = pKEYLENGTH;
-      strcpy( r->u.value, "1024" );
+      r->key = pKEYUSAGE;
+      strcpy (r->u.value, "sign");
       r->next = para;
       para = r;
-      
-      algo = PUBKEY_ALGO_ELGAMAL_E;
+
       r = xcalloc (1, sizeof *r + 20 );
       r->key = pSUBKEYTYPE;
       sprintf( r->u.value, "%d", algo );
       r->next = para;
       para = r;
-    }
-  else 
-    {
       r = xcalloc (1, sizeof *r + 20 );
-      r->key = pKEYTYPE;
-      sprintf( r->u.value, "%d", algo );
+      r->key = pSUBKEYUSAGE;
+      strcpy (r->u.value, "encrypt");
       r->next = para;
       para = r;
+    }
+  else
+    {
+      algo = ask_algo (0, &use);
       
-      if (use)
-        {
+      if (!algo)
+        { /* default: DSA with ElG subkey of the specified size */
+          both = 1;
           r = xcalloc (1, sizeof *r + 20 );
-          r->key = pKEYUSAGE;
-          sprintf( r->u.value, "%s%s",
-                   (use & PUBKEY_USAGE_SIG)? "sign ":"",
-                   (use & PUBKEY_USAGE_ENC)? "encrypt ":"" );
+          r->key = pKEYTYPE;
+          sprintf( r->u.value, "%d", PUBKEY_ALGO_DSA );
+          r->next = para;
+          para = r;
+          tty_printf(_("DSA keypair will have 1024 bits.\n"));
+          r = xcalloc (1, sizeof *r + 20 );
+          r->key = pKEYLENGTH;
+          strcpy( r->u.value, "1024" );
+          r->next = para;
+          para = r;
+          
+          algo = PUBKEY_ALGO_ELGAMAL_E;
+          r = xcalloc (1, sizeof *r + 20 );
+          r->key = pSUBKEYTYPE;
+          sprintf( r->u.value, "%d", algo );
           r->next = para;
           para = r;
         }
-    }
+      else 
+        {
+          r = xcalloc (1, sizeof *r + 20 );
+          r->key = pKEYTYPE;
+          sprintf( r->u.value, "%d", algo );
+          r->next = para;
+          para = r;
+          
+          if (use)
+            {
+              r = xcalloc (1, sizeof *r + 20 );
+              r->key = pKEYUSAGE;
+              sprintf( r->u.value, "%s%s",
+                       (use & PUBKEY_USAGE_SIG)? "sign ":"",
+                       (use & PUBKEY_USAGE_ENC)? "encrypt ":"" );
+              r->next = para;
+              para = r;
+            }
+        }
 
-  if (!card)
-    {
       nbits = ask_keysize( algo );
       r = xcalloc (1, sizeof *r + 20 );
       r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
@@ -2367,12 +2385,21 @@ do_generate_keypair (struct para_data_s *para,
 
   if (get_parameter (para, pSUBKEYTYPE))
     {
-      rc = do_create (get_parameter_algo (para, pSUBKEYTYPE),
-		      get_parameter_uint (para, pSUBKEYLENGTH),
-		      pub_root, sec_root,
-		      get_parameter_dek (para, pPASSPHRASE_DEK),
-		      get_parameter_s2k (para, pPASSPHRASE_S2K),
-		      NULL, get_parameter_u32 (para, pSUBKEYEXPIRE));
+      if (!card)
+        {
+          rc = do_create (get_parameter_algo (para, pSUBKEYTYPE),
+                          get_parameter_uint (para, pSUBKEYLENGTH),
+                          pub_root, sec_root,
+                          get_parameter_dek (para, pPASSPHRASE_DEK),
+                          get_parameter_s2k (para, pPASSPHRASE_S2K),
+                          NULL, get_parameter_u32 (para, pSUBKEYEXPIRE));
+        }
+      else
+        {
+          rc = gen_card_key (PUBKEY_ALGO_RSA, 2, pub_root, sec_root,
+                             get_parameter_u32 (para, pKEYEXPIRE), para);
+        }
+
       if (!rc)
 	rc = write_keybinding (pub_root, pub_root, sk,
 			       get_parameter_uint (para, pSUBKEYUSAGE));
@@ -2642,13 +2669,15 @@ show_sha1_fpr (const unsigned char *fpr)
         }
     }
   else
-    tty_printf ("[none]");
+    tty_printf (" [none]");
   tty_printf ("\n");
 }
 
 static void
 show_smartcard (struct agent_card_info_s *info)
 {
+  PKT_public_key *pk = xcalloc (1, sizeof *pk);
+
   /* FIXME: Sanitize what we show. */
   tty_printf ("Name of cardholder: %s\n",
               info->disp_name && *info->disp_name? info->disp_name 
@@ -2656,12 +2685,17 @@ show_smartcard (struct agent_card_info_s *info)
   tty_printf ("URL of public key : %s\n",
               info->pubkey_url && *info->pubkey_url? info->pubkey_url 
                                                  : "[not set]");
-  tty_printf ("Signature key ....: ");
+  tty_printf ("Signature key ....:");
   show_sha1_fpr (info->fpr1valid? info->fpr1:NULL);
-  tty_printf ("Encryption key....: ");
+  tty_printf ("Encryption key....:");
   show_sha1_fpr (info->fpr2valid? info->fpr2:NULL);
-  tty_printf ("Authentication key: ");
+  tty_printf ("Authentication key:");
   show_sha1_fpr (info->fpr3valid? info->fpr3:NULL);
+
+  if (info->fpr1valid && !get_pubkey_byfprint (pk, info->fpr1, 20))
+    print_pubkey_info (pk);
+
+  free_public_key( pk );
 }
 
 
@@ -2726,17 +2760,48 @@ smartcard_change_name (const char *current_name)
   if (rc)
     log_error ("error setting Name: %s\n", gpg_strerror (rc));
 
+  xfree (isoname);
   return rc;
 }
 
+
+static int
+smartcard_change_url (const char *current_url)
+{
+  char *url;
+  int rc;
+
+  url = cpr_get ("keygen.smartcard.url", _("URL to retrieve public key: "));
+  if (!url)
+    return -1;
+  trim_spaces (url);
+  cpr_kill_prompt ();
+
+  rc = agent_scd_setattr ("PUBKEY-URL", url, strlen (url) );
+  if (rc)
+    log_error ("error setting URL: %s\n", gpg_strerror (rc));
+  xfree (url);
+  return rc;
+}
+
+
+/* Return true if the SHA1 fingerprint FPR consists only of zeroes. */
+static int
+fpr_is_zero (const char *fpr)
+{
+  int i;
+
+  for (i=0; i < 20 && !fpr[i]; i++)
+    ;
+  return (i == 20);
+}
 
 /* Check whether a smartcatrd is available and alow to select it as
    the target for key generation. 
    
    Return values: -1 = Quit generation
                    0 = No smartcard
-                   1 = Generate primary key
-                   2 = generate subkey
+                   1 = Generate keypair
 */
 static int
 check_smartcard (char **r_serialno)
@@ -2767,9 +2832,8 @@ check_smartcard (char **r_serialno)
       tty_printf ("\n"
                   "N - change cardholder name\n"
                   "U - change public key URL\n"
-                  "1 - generate signature key\n"
-                  "2 - generate encryption key\n"
-                  "3 - generate authentication key\n"
+                  "K - generate signature and encryption key\n"
+                  "A - generate authentication key\n"
                   "Q - quit\n"
                   "\n");
 
@@ -2786,13 +2850,31 @@ check_smartcard (char **r_serialno)
         }
       else if ( *answer == 'U' || *answer == 'u')
         {
+          if (!smartcard_change_url (info.pubkey_url))
+            reread = 1;
         }
-      else if ( *answer == '1' || *answer == '2')
+      else if ( *answer == 'K' || *answer == 'k')
         {
-          rc = *answer - '0';
-          break;
+          if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
+               || (info.fpr2valid && !fpr_is_zero (info.fpr2)))
+            {
+              tty_printf ("\n");
+              log_error ("WARNING: key does already exists!\n");
+              tty_printf ("\n");
+              if ( cpr_get_answer_is_yes( "keygen.card.replace_key",
+                                          _("Replace existing key? ")))
+                {
+                  rc = 1;
+                  break;
+                }
+            }
+          else
+            {
+              rc = 1;
+              break;
+            }
         }
-      else if ( *answer == '3' )
+      else if ( *answer == 'A' || *answer == 'a' )
         {
           tty_printf (_("Generation of authentication key"
                         " not yet implemented\n"));
@@ -2844,16 +2926,16 @@ gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
 
   assert (algo == PUBKEY_ALGO_RSA);
 
-  rc = agent_scd_genkey (&info, keyno, 0);
-  if (gpg_err_code (rc) == GPG_ERR_EEXIST)
-    {
-      tty_printf ("\n");
-      log_error ("WARNING: key does already exists!\n");
-      tty_printf ("\n");
-      if ( cpr_get_answer_is_yes( "keygen.card.replace_key",
-                                  _("Replace existing key? ")))
-        rc = agent_scd_genkey (&info, keyno, 1);
-    }
+  rc = agent_scd_genkey (&info, keyno, 1);
+/*    if (gpg_err_code (rc) == GPG_ERR_EEXIST) */
+/*      { */
+/*        tty_printf ("\n"); */
+/*        log_error ("WARNING: key does already exists!\n"); */
+/*        tty_printf ("\n"); */
+/*        if ( cpr_get_answer_is_yes( "keygen.card.replace_key", */
+/*                                    _("Replace existing key? "))) */
+/*          rc = agent_scd_genkey (&info, keyno, 1); */
+/*      } */
 
   if (rc)
     {

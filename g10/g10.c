@@ -1228,6 +1228,7 @@ main( int argc, char **argv )
     opt.verify_options=VERIFY_SHOW_POLICY|VERIFY_SHOW_NOTATION;
     opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames = 1;
+    opt.use_agent = 1;
 
 #if defined (__MINGW32__)
     set_homedir ( read_w32_registry_string( NULL,
@@ -1983,6 +1984,9 @@ main( int argc, char **argv )
 	log_info("used in a production environment or with production keys!\n");
     }
 #endif
+
+#warning locking does not work - disabled
+    disable_dotlock ();
 
     if (opt.verbose > 2)
         log_info ("using character set `%s'\n", get_native_charset ());

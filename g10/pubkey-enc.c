@@ -38,6 +38,7 @@
 #include "main.h"
 #include "i18n.h"
 #include "pkglue.h"
+#include "call-agent.h"
 
 static int get_it( PKT_pubkey_enc *k,
 		   DEK *dek, PKT_secret_key *sk, u32 *keyid );
@@ -136,146 +137,181 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 static int
 get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 {
-    int rc;
-    gcry_mpi_t plain_dek  = NULL;
-    byte *frame = NULL;
-    unsigned n, nframe;
-    u16 csum, csum2;
+  int rc;
+  gcry_mpi_t plain_dek = NULL;
+  byte *frame = NULL;
+  unsigned n, nframe;
+  u16 csum, csum2;
+  int card = 0;
 
-    rc = pk_decrypt (sk->pubkey_algo, &plain_dek, enc->data, sk->skey);
-    if( rc )
-      goto leave;
-    if ( gcry_mpi_aprint (GCRYMPI_FMT_USG, &frame, &nframe, plain_dek))
-      BUG();
-    gcry_mpi_release (plain_dek); plain_dek = NULL;
+  if (sk->is_protected && sk->protect.s2k.mode == 1002)
+    { /* FIXME: Note that we do only support RSA for now. */
+      char *rbuf;
+      size_t rbuflen;
+      char *snbuf;
+      void *indata = NULL;
+      unsigned int indatalen;
 
-    /* Now get the DEK (data encryption key) from the frame
-     *
-     * Old versions encode the DEK in in this format (msb is left):
-     *
-     *	   0  1  DEK(16 bytes)	CSUM(2 bytes)  0  RND(n bytes) 2
-     *
-     * Later versions encode the DEK like this:
-     *
-     *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
-     *
-     * (mpi_get_buffer already removed the leading zero).
-     *
-     * RND are non-zero randow bytes.
-     * A   is the cipher algorithm
-     * DEK is the encryption key (session key) with length k
-     * CSUM
-     */
-    if( DBG_CIPHER )
-	log_printhex ("DEK frame:", frame, nframe );
-    n=0;
-    if( n + 7 > nframe )
-	{ rc = GPG_ERR_WRONG_SECKEY; goto leave; }
-    if( frame[n] == 1 && frame[nframe-1] == 2 ) {
-	log_info(_("old encoding of the DEK is not supported\n"));
-	rc = GPG_ERR_CIPHER_ALGO;
-	goto leave;
-    }
-    if( frame[n] != 2 )  /* somethink is wrong */
-	{ rc = GPG_ERR_WRONG_SECKEY; goto leave; }
-    for(n++; n < nframe && frame[n]; n++ ) /* skip the random bytes */
-	;
-    n++; /* and the zero byte */
-    if( n + 4 > nframe )
-	{ rc = GPG_ERR_WRONG_SECKEY; goto leave; }
+      snbuf = serialno_and_fpr_from_sk (sk->protect.iv, sk->protect.ivlen, sk);
 
-    dek->keylen = nframe - (n+1) - 2;
-    dek->algo = frame[n++];
-    if( dek->algo ==  CIPHER_ALGO_IDEA )
-	write_status(STATUS_RSA_OR_IDEA);
-    rc = openpgp_cipher_test_algo (dek->algo);
-    if( rc ) {
-	if( !opt.quiet && gpg_err_code (rc) == GPG_ERR_CIPHER_ALGO ) {
-	    log_info(_("cipher algorithm %d%s is unknown or disabled\n"),
-                     dek->algo, dek->algo == CIPHER_ALGO_IDEA? " (IDEA)":"");
-	    if(dek->algo==CIPHER_ALGO_IDEA)
-	      idea_cipher_warn(0);
-	}
-	dek->algo = 0;
-	goto leave;
-    }
-    if( dek->keylen != gcry_cipher_get_algo_keylen (dek->algo) ) {
-	rc = GPG_ERR_WRONG_SECKEY;
-	goto leave;
-    }
+      if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &indata, &indatalen,
+                           enc->data[0]))
+        BUG();
 
-    /* copy the key to DEK and compare the checksum */
-    csum  = frame[nframe-2] << 8;
-    csum |= frame[nframe-1];
-    memcpy( dek->key, frame+n, dek->keylen );
-    for( csum2=0, n=0; n < dek->keylen; n++ )
-	csum2 += dek->key[n];
-    if( csum != csum2 ) {
-	rc = GPG_ERR_WRONG_SECKEY;
-	goto leave;
+      rc = agent_scd_pkdecrypt (snbuf, indata, indatalen, &rbuf, &rbuflen);
+      xfree (snbuf);
+      xfree (indata);
+      if (rc)
+        goto leave;
+
+      frame = rbuf;
+      nframe = rbuflen;
+      card = 1;
     }
-    if( DBG_CIPHER )
-	log_printhex ("DEK is:", dek->key, dek->keylen );
-    /* check that the algo is in the preferences and whether it has expired */
+  else
     {
-	PKT_public_key *pk = NULL;
-        KBNODE pkb = get_pubkeyblock (keyid);
+      void *indata;
 
-	if( !pkb ) {
-            rc = -1;
-	    log_error("oops: public key not found for preference check\n");
-        }
-	else if( pkb->pkt->pkt.public_key->selfsigversion > 3
-            && dek->algo != CIPHER_ALGO_3DES
-	    && !is_algo_in_prefs( pkb, PREFTYPE_SYM, dek->algo ) ) {
-	    /* Don't print a note while we are not on verbose mode,
-	     * the cipher is blowfish and the preferences have twofish
-	     * listed */
-	    if( opt.verbose || dek->algo != CIPHER_ALGO_BLOWFISH
-		|| !is_algo_in_prefs( pkb, PREFTYPE_SYM, CIPHER_ALGO_TWOFISH))
-		log_info(_(
-		    "NOTE: cipher algorithm %d not found in preferences\n"),
-								 dek->algo );
-	}
-
-        if (!rc) {
-            KBNODE k;
-            
-            for (k=pkb; k; k = k->next) {
-                if (k->pkt->pkttype == PKT_PUBLIC_KEY 
-                    || k->pkt->pkttype == PKT_PUBLIC_SUBKEY){
-                    u32 aki[2];
-        	    keyid_from_pk(k->pkt->pkt.public_key, aki);
-
-                    if (aki[0]==keyid[0] && aki[1]==keyid[1]) {
-                        pk = k->pkt->pkt.public_key;
-                        break;
-                    }
-                }
-            }
-            if (!pk)
-                BUG ();
-            if ( pk->expiredate && pk->expiredate <= make_timestamp() ) {
-                log_info(_("NOTE: secret key %08lX expired at %s\n"),
-                         (ulong)keyid[1], asctimestamp( pk->expiredate) );
-            }
-        }
-
-        if ( pk &&  pk->is_revoked ) {
-            log_info( _("NOTE: key has been revoked") );
-            putc( '\n', log_get_stream() );
-            show_revocation_reason( pk, 1 );
-        }
-
-	release_kbnode (pkb);
-	rc = 0;
+      rc = pk_decrypt (sk->pubkey_algo, &plain_dek, enc->data, sk->skey);
+      if( rc )
+        goto leave;
+      if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &indata, &nframe, plain_dek))
+        BUG();
+      frame = indata;
+      gcry_mpi_release (plain_dek); plain_dek = NULL;
     }
 
 
-  leave:
-    gcry_mpi_release (plain_dek);
-    xfree (frame);
-    return rc;
+  /* Now get the DEK (data encryption key) from the frame
+   *
+   * Old versions encode the DEK in in this format (msb is left):
+   *
+   *	   0  1  DEK(16 bytes)	CSUM(2 bytes)  0  RND(n bytes) 2
+   *
+   * Later versions encode the DEK like this:
+   *
+   *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
+   *
+   * (mpi_get_buffer already removed the leading zero).
+   *
+   * RND are non-zero randow bytes.
+   * A   is the cipher algorithm
+   * DEK is the encryption key (session key) with length k
+   * CSUM
+   */
+  if( DBG_CIPHER )
+    log_printhex ("DEK frame:", frame, nframe );
+  n=0;
+  if (!card)
+    {
+      if( n + 7 > nframe )
+        { rc = GPG_ERR_WRONG_SECKEY; goto leave; }
+      if( frame[n] == 1 && frame[nframe-1] == 2 ) {
+        log_info(_("old encoding of the DEK is not supported\n"));
+        rc = GPG_ERR_CIPHER_ALGO;
+        goto leave;
+      }
+      if( frame[n] != 2 )  /* somethink is wrong */
+        { rc = GPG_ERR_WRONG_SECKEY; goto leave; }
+      for(n++; n < nframe && frame[n]; n++ ) /* skip the random bytes */
+        ;
+      n++; /* and the zero byte */
+    }
+
+  if( n + 4 > nframe )
+    { rc = GPG_ERR_WRONG_SECKEY; goto leave; }
+  dek->keylen = nframe - (n+1) - 2;
+  dek->algo = frame[n++];
+  if( dek->algo ==  CIPHER_ALGO_IDEA )
+    write_status(STATUS_RSA_OR_IDEA);
+  rc = openpgp_cipher_test_algo (dek->algo);
+  if( rc ) {
+    if( !opt.quiet && gpg_err_code (rc) == GPG_ERR_CIPHER_ALGO ) {
+      log_info(_("cipher algorithm %d%s is unknown or disabled\n"),
+               dek->algo, dek->algo == CIPHER_ALGO_IDEA? " (IDEA)":"");
+      if(dek->algo==CIPHER_ALGO_IDEA)
+        idea_cipher_warn(0);
+    }
+    dek->algo = 0;
+    goto leave;
+  }
+  if( dek->keylen != gcry_cipher_get_algo_keylen (dek->algo) ) {
+    rc = GPG_ERR_WRONG_SECKEY;
+    goto leave;
+  }
+
+  /* copy the key to DEK and compare the checksum */
+  csum  = frame[nframe-2] << 8;
+  csum |= frame[nframe-1];
+  memcpy( dek->key, frame+n, dek->keylen );
+  for( csum2=0, n=0; n < dek->keylen; n++ )
+    csum2 += dek->key[n];
+  if( csum != csum2 ) {
+    rc = GPG_ERR_WRONG_SECKEY;
+    goto leave;
+  }
+  if( DBG_CIPHER )
+    log_printhex ("DEK is:", dek->key, dek->keylen );
+  /* check that the algo is in the preferences and whether it has expired */
+  {
+    PKT_public_key *pk = NULL;
+    KBNODE pkb = get_pubkeyblock (keyid);
+
+    if( !pkb ) {
+      rc = -1;
+      log_error("oops: public key not found for preference check\n");
+    }
+    else if( pkb->pkt->pkt.public_key->selfsigversion > 3
+             && dek->algo != CIPHER_ALGO_3DES
+             && !is_algo_in_prefs( pkb, PREFTYPE_SYM, dek->algo ) ) {
+      /* Don't print a note while we are not on verbose mode,
+       * the cipher is blowfish and the preferences have twofish
+       * listed */
+      if( opt.verbose || dek->algo != CIPHER_ALGO_BLOWFISH
+          || !is_algo_in_prefs( pkb, PREFTYPE_SYM, CIPHER_ALGO_TWOFISH))
+        log_info(_(
+                   "NOTE: cipher algorithm %d not found in preferences\n"),
+                 dek->algo );
+    }
+
+    if (!rc) {
+      KBNODE k;
+            
+      for (k=pkb; k; k = k->next) {
+        if (k->pkt->pkttype == PKT_PUBLIC_KEY 
+            || k->pkt->pkttype == PKT_PUBLIC_SUBKEY){
+          u32 aki[2];
+          keyid_from_pk(k->pkt->pkt.public_key, aki);
+
+          if (aki[0]==keyid[0] && aki[1]==keyid[1]) {
+            pk = k->pkt->pkt.public_key;
+            break;
+          }
+        }
+      }
+      if (!pk)
+        BUG ();
+      if ( pk->expiredate && pk->expiredate <= make_timestamp() ) {
+        log_info(_("NOTE: secret key %08lX expired at %s\n"),
+                 (ulong)keyid[1], asctimestamp( pk->expiredate) );
+      }
+    }
+
+    if ( pk &&  pk->is_revoked ) {
+      log_info( _("NOTE: key has been revoked") );
+      putc( '\n', log_get_stream() );
+      show_revocation_reason( pk, 1 );
+    }
+
+    release_kbnode (pkb);
+    rc = 0;
+  }
+
+
+ leave:
+  gcry_mpi_release (plain_dek);
+  xfree (frame);
+  return rc;
 }
 
 

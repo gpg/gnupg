@@ -1,3 +1,25 @@
+2003-07-03  Werner Koch  <wk@gnupg.org>
+
+	* options.h (DBG_CIPHER): Reintroduced it. 
+	* seskey.c (encode_session_key): Debug output of the session key.
+
+	* pubkey-enc.c (get_it): Handle card case.
+	* call-agent.c (agent_scd_pkdecrypt): New.
+	* pkglue.c (pk_encrypt): Add RSA support.
+
+	* g10.c (main): Default to --use-agent.
+
+	* keygen.c (show_smartcard): Print info about the public key.
+	(check_smartcard): Check for existing key here.
+	(gen_card_key): And not anymore here.
+	(fpr_is_zero): New.
+	(generate_keypair): Generate both keys for a card.
+	(smartcard_change_url): Nw.
+
+2003-07-02  Werner Koch  <wk@gnupg.org>
+
+	* seckey-cert.c (is_secret_key_protected): Let it handle mode 1002.
+
 2003-07-01  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (gen_card_key): Obviously we should use the creation

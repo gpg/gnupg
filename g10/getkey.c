@@ -898,7 +898,7 @@ get_pubkey_end( GETKEY_CTX ctx )
 /****************
  * Search for a key with the given fingerprint.
  * FIXME:
- * We should replace this with the _byname function.  Thiscsan be done
+ * We should replace this with the _byname function.  This can be done
  * by creating a userID conforming to the unified fingerprint style. 
  */
 int

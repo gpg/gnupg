@@ -61,12 +61,10 @@ int agent_scd_pksign (const char *keyid, int hashalgo,
                       const unsigned char *indata, size_t indatalen,
                       char **r_buf, size_t *r_buflen);
 
-/* Ask the agent to let the user change the passphrase of the secret
-   key identified by HEXKEYGRIP. */
-int agent_passwd (const char *hexkeygrip);
-
-
-
+/* Send a PKDECRYPT command to the SCdaemon. */
+int agent_scd_pkdecrypt (const char *serialno,
+                         const unsigned char *indata, size_t indatalen,
+                         char **r_buf, size_t *r_buflen);
 
 
 

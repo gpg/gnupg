@@ -41,6 +41,8 @@
 #include "status.h"
 #include "i18n.h"
 #include "pkglue.h"
+#include "call-agent.h"
+
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define LF "\r\n"
