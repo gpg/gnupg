@@ -1,3 +1,7 @@
+    * Symmetric encrypted messages now use a fixed file size if
+      possible.  This is a tradeoff: it breaks PGP 5, but fixes PGP 2,
+      6, and 7.  Note this was only an issue with RFC-1991 style
+      symmetric messages.
 
     * A lot of new features like photo ID support, better keyserver
       support, non-revcable signatures and more things we need to list
