@@ -812,12 +812,12 @@ log_set_strict (int yesno)
 static char *
 make_username( const char *string )
 {
-    char *p;
-    if( utf8_strings )
-	p = xstrdup (string);
-    else
-	p = native_to_utf8( string );
-    return p;
+  char *p;
+  if( utf8_strings )
+    p = xstrdup (string);
+  else
+    p = native_to_utf8( string );
+  return p;
 }
 
 
@@ -884,7 +884,7 @@ set_debug (const char *level)
 /* We need the home directory also in some other directories, so make
    sure that both variables are always in sync. */
 static void
-set_homedir (char *dir)
+set_homedir (const char *dir)
 {
   if (!dir)
     dir = "";
