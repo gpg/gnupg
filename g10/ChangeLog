@@ -1,3 +1,8 @@
+2002-06-05  Timo Schulz  <ts@winpt.org>
+
+	* mainproc.c (symkey_decrypt_sesskey): New.
+	(proc_symkey_enc): Support for encrypted session keys.
+	
 2002-06-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* sign.c (hash_for, sign_file): When encrypting and signing at the

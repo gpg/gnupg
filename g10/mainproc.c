@@ -237,6 +237,31 @@ add_signature( CTX c, PACKET *pkt )
     return 1;
 }
 
+static void
+symkey_decrypt_sesskey( DEK *dek, byte *sesskey, size_t slen )
+{
+    CIPHER_HANDLE hd;
+
+    if ( slen > 33 ) {
+        log_error( "weird size for an encrypted session key" );
+        return;   
+    }
+    hd = cipher_open( dek->algo, CIPHER_MODE_CFB, 1 );
+    cipher_setkey( hd, dek->key, dek->keylen );
+    cipher_setiv( hd, NULL, 0 );
+    cipher_decrypt( hd, sesskey, sesskey, slen );
+    cipher_close( hd );
+    /* check first byte (the cipher algo) */
+    if ( sesskey[0] > 10 ) {
+        log_error( "invalid symkey algorithm detected\n" );
+        return;
+    }
+    /* now we replace the dek components with the real session key
+       to decrypt the contents of the sequencing packet. */
+    dek->keylen = cipher_get_keylen( sesskey[0] );
+    dek->algo = sesskey[0];
+    memcpy( dek->key, sesskey + 1, dek->keylen );    
+}   
 
 static void
 proc_symkey_enc( CTX c, PACKET *pkt )
@@ -264,6 +289,8 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 	c->dek = passphrase_to_dek( NULL, 0, algo, &enc->s2k, 0, NULL );
         if (c->dek)
             c->dek->algo_info_printed = 1;
+        if ( c->dek && enc->seskeylen )
+            symkey_decrypt_sesskey( c->dek, enc->seskey, enc->seskeylen );
     }
 leave:
     free_packet(pkt);
