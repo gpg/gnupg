@@ -270,7 +270,7 @@ read_parameters (FILE *fp, KsbaWriter writer)
       keyword = p;
       if (*keyword == '%')
         {
-          for (; !spacep (p); p++)
+          for (; *p && !spacep (p); p++)
             ;
           if (*p)
             *p++ = 0;
