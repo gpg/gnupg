@@ -1,6 +1,6 @@
 #! /bin/sh
 # Attempt to guess a canonical system name.
-#   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1992, 93, 94, 95, 96, 97, 1999 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     atari*:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
-    atari*:[Mm]i[Nn][Tt]:*:*)
+    atari*:MiNT:*:*)
 	echo m68k-atari-mint
 	exit 0 ;;
     sun3*:NetBSD:*:*)

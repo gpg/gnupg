@@ -51,6 +51,7 @@ static struct {
 } stats;
 
 
+static int import( IOBUF inp, int fast, const char* fname );
 static int read_block( IOBUF a, compress_filter_context_t *cfx,
 			     PACKET **pending_pkt, KBNODE *ret_root );
 static int import_one( const char *fname, KBNODE keyblock, int fast );
@@ -106,10 +107,35 @@ static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
 int
 import_keys( const char *fname, int fast )
 {
+    IOBUF inp = NULL;
+    int rc;
+
+    inp = iobuf_open(fname);
+    if( !fname )
+	fname = "[stdin]";
+    if( !inp ) {
+	log_error_f(fname, _("can't open file: %s\n"), strerror(errno) );
+	return G10ERR_OPEN_FILE;
+    }
+
+    rc = import( inp, fast, fname );
+
+    iobuf_close(inp);
+    return rc;
+}
+
+int
+import_keys_stream( IOBUF inp, int fast )
+{
+    return import( inp, fast, "[stream]" );
+}
+
+static int
+import( IOBUF inp, int fast, const char* fname )
+{
     armor_filter_context_t afx;
     compress_filter_context_t cfx;
     PACKET *pending_pkt = NULL;
-    IOBUF inp = NULL;
     KBNODE keyblock;
     int rc = 0;
     ulong count=0;
@@ -120,15 +146,6 @@ import_keys( const char *fname, int fast )
 
     /* fixme: don't use static variables */
     memset( &stats, 0, sizeof( stats ) );
-
-    /* open file */
-    inp = iobuf_open(fname);
-    if( !fname )
-	fname = "[stdin]";
-    if( !inp ) {
-	log_error_f(fname, _("can't open file: %s\n"), strerror(errno) );
-	return G10ERR_OPEN_FILE;
-    }
 
 
     getkey_disable_caches();
@@ -185,8 +202,6 @@ import_keys( const char *fname, int fast )
     if( stats.secret_dups )
 	log_info(_(" secret keys unchanged: %lu\n"), stats.secret_dups );
 
-
-    iobuf_close(inp);
     return rc;
 }
 

@@ -31,7 +31,7 @@ g10/parse-packet.c
 g10/passphrase.c
 g10/plaintext.c
 g10/pubkey-enc.c
-g10/pref.c
+g10/hkp.c
 g10/seckey-cert.c
 g10/sig-check.c
 g10/sign.c

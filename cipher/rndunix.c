@@ -58,6 +58,9 @@
 #include "dynload.h"
 #endif
 
+#ifndef EAGAIN
+  #define EAGAIN  EWOULDBLOCK
+#endif
 
 #define GATHER_BUFSIZE		49152	/* Usually about 25K are filled */
 
@@ -426,7 +429,11 @@ slow_poll(FILE *dbgfp, int dbgall, size_t *nbytes )
 	    dataSources[i].pipeFD = fileno(dataSources[i].pipe);
 	    if (dataSources[i].pipeFD > maxFD)
 		maxFD = dataSources[i].pipeFD;
+	  #ifdef O_NONBLOCK /* Ohhh what a hack (used for Atari) */
 	    fcntl(dataSources[i].pipeFD, F_SETFL, O_NONBLOCK);
+	  #else
+	    #warning O_NONBLOCK is missing
+	  #endif
 	    FD_SET(dataSources[i].pipeFD, &fds);
 	    dataSources[i].length = 0;
 

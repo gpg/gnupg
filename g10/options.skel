@@ -56,3 +56,11 @@ lock-once
 # you probably have to uncomment the next line:
 #load-extension rndunix
 
+
+# GnuPG can import a key from a HKP keyerver if one is missing
+# for sercain operations. Is you set this option to a keyserver
+# you will be asked in such a case whether GnuPG should try to
+# import the key from that server (server do syncronize with each
+# others and DNS Round-Robin may give you a random server each time).
+#keyserver keys.pgp.net
+

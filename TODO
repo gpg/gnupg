@@ -44,6 +44,9 @@ Needed
       -Wl,-export-dynamic flag from my Makefile and it linked and seems to
       be working OK so far.
 
+    * text_filter.c: use iobuf_readline for cleartext signatures.
+
+
 Minor Bugs
 ----------
 

@@ -35,8 +35,8 @@ common_source =  \
 	      trustdb.h 	\
 	      tdbio.c		\
 	      tdbio.h		\
-	      pref.h		\
-	      pref.c		\
+	      hkp.h		\
+	      hkp.c		\
 	      packet.h		\
 	      parse-packet.c	\
 	      passphrase.c	\

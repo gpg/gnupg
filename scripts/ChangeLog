@@ -1,3 +1,8 @@
+Sat Jan 16 09:27:30 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* config.guess (m68k-atari-mint): New.
+	* config.sub: Add support for atarist-MiNT
+
 Wed Jan 13 12:49:36 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* gnupg.spec.in: New

@@ -231,7 +231,7 @@ hash_datafiles( MD_HANDLE md, STRLIST files,
     STRLIST sl=NULL;
 
     if( !files ) {
-	/* check whether we can opne the signed material */
+	/* check whether we can open the signed material */
 	fp = open_sigfile( sigfilename );
 	if( fp ) {
 	    do_hash( md, fp, textmode );

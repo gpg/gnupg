@@ -152,6 +152,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNotDashEscaped,
     oEscapeFrom,
     oLockOnce,
+    oKeyServer,
 aTest };
 
 
@@ -229,6 +230,7 @@ static ARGPARSE_OPTS opts[] = {
     { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
     { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
+    { oKeyServer, "keyserver",2, N_("|HOST|use this keyserver to lookup keys")},
     { oCharset, "charset"   , 2, N_("|NAME|set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 
@@ -785,6 +787,7 @@ main( int argc, char **argv )
 	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
 	  case oEscapeFrom: opt.escape_from = 1; break;
 	  case oLockOnce: opt.lock_once = 1; break;
+	  case oKeyServer: opt.keyserver_name = pargs.r.ret_str; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}

@@ -1,5 +1,5 @@
-/* pref.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+/* hkp.h  -  Horrowitz Keyserver Protocol
+ *	Copyright (C) 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -18,25 +18,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef G10_PREF_H
-#define G10_PREF_H 1
-
-/* a structure to hold information abopu preferred algorithms */
-typedef struct pref_list_s *PREF_LIST;
-#ifndef DEFINES_PREF_LIST
-struct pref_list_s { char preference_stuff[1]; };
-#endif
+#ifndef G10_HKP_H
+#define G10_HKP_H 1
 
 
-PREF_LIST new_pref_list(void);
-void release_pref_list( PREF_LIST pref );
+int hkp_ask_import( u32 *keyid );
 
 
-
-
-
-
-
-
-
-#endif /*G10_PREF_H*/
+#endif /*G10_HKP_H*/

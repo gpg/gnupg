@@ -67,6 +67,7 @@ struct {
     int not_dash_escaped;
     int escape_from;
     int lock_once;
+    const char *keyserver_name;
 } opt;
 
 

@@ -68,6 +68,7 @@
 #define G10ERR_BAD_URI	      46  /* syntax error in URI */
 #define G10ERR_INVALID_URI    47  /* e.g. unsupported scheme */
 #define G10ERR_NETWORK	      48  /* general network error */
+#define G10ERR_UNKNOWN_HOST   49
 
 
 #ifndef HAVE_STRERROR

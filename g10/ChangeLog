@@ -1,3 +1,14 @@
+Sat Jan 16 09:27:30 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* import.c (import_key_stream): New
+	(import): New, moved most of import_keys here.
+	* g10.c: New option --keyserver
+	* mainproc.c (check_sig_and_print): Hook to import a pubkey.
+
+	* pref.c pref.h : Removed
+
+	* hkp.c hkp.h: New
+
 Wed Jan 13 14:10:15 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* armor.c (radix64_read): Print an error if a bad armor was detected.
