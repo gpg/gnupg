@@ -587,10 +587,10 @@ extern "C" {
 #endif
 
 EOF
-        # Now generate the symbol file.
-        sed 's/^.* _\?\(.*\)$/extern char \1;/' < "$ac_nlist" >> conftest.c
+      # Now generate the symbol file.
+      sed 's/^.* _\{0,1\}\(.*\)$/extern char \1;/' < "$ac_nlist" >> conftest.c
 
-        cat <<EOF >> conftest.c
+      cat <<EOF >> conftest.c
 #if defined (__STDC__) && __STDC__
 # define __ptr_t void *
 #else
@@ -610,7 +610,7 @@ dld_preloaded_symbols[] =
 changequote([,])dnl
 {
 EOF
-        sed 's/^_\?\(.*\) _\?\(.*\)$/  {"\1", (__ptr_t) \&\2},/' < "$ac_nlist" >> conftest.c
+        sed 's/^_\{0,1\}/\(.*\) _\{0,1\}\(.*\)$/  {"\1", (__ptr_t) \&\2},/' < "$ac_nlist" >> conftest.c
         cat <<\EOF >> conftest.c
   {0, (__ptr_t) 0}
 };
