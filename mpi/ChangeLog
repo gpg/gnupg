@@ -1,3 +1,9 @@
+2002-09-20  Werner Koch  <wk@gnupg.org>
+
+	* mpicoder.c (do_get_buffer): Avoid zero length allocation.
+	Checked that all callers behave properly when NBYTES returns 0 as
+	the length of the allocated buffer.
+
 2002-09-10  Werner Koch  <wk@gnupg.org>
 
 	* mpi-bit.c (mpi_normalize): Replaced the check for protected by
