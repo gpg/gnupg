@@ -53,6 +53,7 @@ command			Befehl
 comment			Bemerkung
 compress algorithm      Komprimierverfahren,*Komprimierungsverfahren ?   
 compressed		komprimiert
+compression 		Komprimierung
 compromised             nicht mehr sicher
 core dump		core-dump-Datei
 , (Speicherauszug?)
@@ -70,8 +71,10 @@ default option file 	--voreingestellte Optionendatei
 DEK 			???
 delete  		entfernen, *>löschen 
 depend on   		>sich verlassen auf,>angewiesen sein auf,>abhängen von
-deprecated              mißbilligte
+deprecated              - mißbilligte
+designated revoker      vorgesehener Widerrufer
 detached [sign]		abgetrennte [Unterschrift]
+detected            (vor)gefunden 
 determined attacker 	>zielbewusster,>entschlossener Angreifer
 digest algorithm	Hashmethode
 direct [key sig]        -"direct key"
@@ -85,9 +88,11 @@ expiration date 	<Verfalldatum
 expire  		<verfallen
 expires			verfällt
 expire date		Verfallsdatum
+extension   		Erweiterung (Modul)
 failed			fehlgeschlagen
 faked [RNG]             - *manipulierter Zufallszahlengenerator
 faked [certificate]     gefälscht
+features            	Eigenschaften
 fingerprint  		Fingerabdruck
 flag [verb]  		-kennzeichnen
 found [xyz found]       entdeckt [xyz entdeckt]
@@ -97,6 +102,7 @@ generated		erzeugter
 good certificate	Korrektes Zertifikat
 handle [verb]		benutzen, behandeln, mit ... umgehen
 hint			Tip
+homedir         	Home-Verzeichnis
 human readable          -nicht als Klartext darstellbar 
 ignored			unbeachtet
 include 		<enthalten
@@ -104,8 +110,8 @@ init    		*initialisieren
 invalid ...		falsche ...
 is adequate 		>ist angemessen, manchmal: <reicht völlig aus
 issue
+item 
 key-ID                  Schlüssel-ID, *Schlüsselkennung ?
-
 key binding		Schlüsselanbindung
 keyblock		Schlüsselblock
 keyserver   		Schlüsselserver, Schlü.server, -*Schlüssel-Server 
@@ -120,8 +126,8 @@ main key		Hauptschlüssel
 maintenance utility	-Wartungs-Hilfsprogramm
 making signatures       >Unterschreiben <Unterzeichnen, <Leisten von 
 malformed   		ungünstig aufgebaute,  *fehlerhaft aufgebaute
-master key  		>Universalschlüssel
-, Generalschlüssel
+marginally		gering    (Trust)
+master key  		>Universalschlüssel, Generalschlüssel
 match			Treffer
 MDC			Manipulation detection code (Siegel ?)
 merge  (to) 		>zusammenführen, >vermischen ??
@@ -130,6 +136,7 @@ mode			Modus, Methode   *
 move    		schieben, *verschieben
 multiple signature	Mehrfachunterschriften
 NAI
+			
 network error		Netzwerkfehler
 non-revocably           nicht-widerrufbar, unwiderruflich??
 note			Hinweis
@@ -143,9 +150,10 @@ ownertrust  		\"Owner trust\"  *Vertrauenswürdigkeit des Besitzers
 packet			Paket
 packet type		Pakettyp
 parse 			-zerlegen
-passphrase		Mantra
+passphrase		Passphrase (bis zum 1.4.03 war das Mantra)
 permission [file]       Zugriffsrechte
-Photo-ID                Foto-ID
+personal        	privat
+photo-ID                Foto-ID
 policy			Richtlinie
 policy URL		Richtlinien-URL
 preference items	????
@@ -166,6 +174,7 @@ random bytes		Zufallswerte
 reason			Grund (für revocation)
 [xyz] rebuild           [xyz]-Neuaufbau, neu erzeugt
 regular file		normale Datei
+-related		-verwandte
 response		Antwort (Reaktion?)
 retry			???? (Wiederholung?, Wiederaufnahme?)
 returns			gibt zurück / antwortet
@@ -191,6 +200,7 @@ signed			unterschriebene
 signature (files)	Unterschrift          *
 signature (keys)	Beglaubigung          *
 simple S2K mode		????
+site map		Übersichtsseite
 skipped			übergangen, übersprungen, ignoriert
 so far 			bislang
 specify 		>spezifizieren, <angeben, ?festlegen
@@ -200,10 +210,16 @@ string			Zeichenkette
 subkey			Unterschlüssel
 superseeded		überholt, veraltet
 terminal charset        - Terminalzeichensatz *Terminal-Zeichensatz(s.o.)
+this is probably a *bad* idea
+			Dies ist *nicht* zu empfehlen
+			
 throw			verwerfe
 Timestamp conflict	Zeitangaben differieren
 trust			Vertrauen
-Trust-DB    		'Trust'-Datenbank, *Vertrauensdatenbank ?
+trust DB    		'Trust'-Datenbank, *Vertrauensdatenbank ?
+trust level         	'Trust'-Ebene
+trust model         	'Trust'-Modell 
+trust signature     	'Trust'-Unterschrift
 trusted			- vertrauenswürdig
 trustvalues		- trustvalues >Vertrauensniveaus?? *Vertrauensmaß? >Vertrauenswerte?
 trying			Versuch
@@ -211,8 +227,10 @@ type [message]		[Botschaft] eintippen
 ulimately [trust]	uneingeschränkt [vertrauen]
 ultimate trust          uneingeschränktes Vertrauen
 unable
+			kann nicht ..., ... nicht möglich
 unattended              unbeaufsichtigt
 unavailble
+undefined		unbestimmt
 untrusted               - nichtvertrauenswürdig, *nicht vertrauenswürdig
 unusable		unbrauchbar
 update                  Ändern, Änderung >Aktualisieren, >Aktualisierung *auf den 
@@ -233,6 +251,8 @@ verbose			ausführlich
 verify  		< überprüfen
 warning			Warnung
 weak key		unsicherer Schlüssel
-writeable		schreibbarer 
+web site		Webseiten
 wisely                  >klug, vernünftig(erweise), >gescheit; möglichst sinnvoll
+write failed		
+writeable		schreibbarer 
 
