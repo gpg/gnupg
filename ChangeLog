@@ -1,3 +1,11 @@
+2003-07-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note %g and %p, the "tru" --with-colons record, and the
+	REVKEYSIG --status-fd tag.
+
+	* README: Add a note about the SunOS symbol underscore problem and
+	how to fix it.
+
 2003-06-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Include wsock32 in W32LIBS.  This is different

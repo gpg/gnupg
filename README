@@ -600,6 +600,9 @@
         Due to problems with the ESIX as, you probably want to do
             CFLAGS="-O -K pentium" ./configure --disable-asm
 
+    * SunOS 4.1.4
+
+         ./configure ac_cv_sys_symbol_underscore=yes
 
     The Random Device
     -----------------

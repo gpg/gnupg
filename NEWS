@@ -11,6 +11,18 @@ Noteworthy changes in version 1.2.3 (unreleased)
 
     * Romanian translation.
 
+    * Two new %-expandos for use in notation and policy URLs.  "%g"
+      expands to the fingerprint of the key making the signature
+      (which might be a subkey), and "%p" expands to the fingerprint
+      of the primary key that owns the key making the signature.
+
+    * New "tru" record in --with-colons --list-keys listings.  It
+      shows the status of the trust database that was used to
+      calculate the key validity in the listings.
+
+    * New REVKEYSIG status tag for --status-fd.  It indicates a valid
+      signature that was issued by a revoked key.
+
 
 Noteworthy changes in version 1.2.2 (2003-05-01)
 ------------------------------------------------
