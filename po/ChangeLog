@@ -1,3 +1,11 @@
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* fr.po, cs.po, et.po, el.po, id.po, pl.po, ro.po, sk.po, tr.po
+	* zh_CN.po, ru.po, es.po, fi.po, hu.po: Updated.
+	* zh_CN.po: Hack to fix a format string mismatch.
+	* sk.po: Corrrected a format string.
+	* de.po: Fixed a few fuzzys and 1 untranslated messages
+
 2004-06-16  Werner Koch  <wk@gnupg.org>
 
 	* it.po: Updated. That is the fasted update I've ever seen;

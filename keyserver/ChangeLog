@@ -1,3 +1,8 @@
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* gpgkeys_ldap.c [_WIN32]: Include Windows specific header files.
+	Suggested by Brian Gladman.
+
 2004-01-13  Werner Koch  <wk@gnupg.org>
 
 	* gpgkeys_hkp.c (send_key): Send a content-type.

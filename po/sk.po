@@ -1,12 +1,12 @@
 # GnuPG Slovak translation
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
-# Michal Majer <mmajer@econ.umb.sk>, 2002, 2003
+# Copyright (C) 1998 - 2004 Free Software Foundation, Inc.
+# Michal Majer <mmajer@econ.umb.sk>, 2002 - 2004
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.2.4\n"
+"Project-Id-Version: gnupg 1.2.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-06-16 12:05+0200\n"
-"PO-Revision-Date: 2003-12-06 00:00+0200\n"
+"POT-Creation-Date: 2004-07-20 14:26+0200\n"
+"PO-Revision-Date: 2004-07-20 15:52+0200\n"
 "Last-Translator: Michal Majer <mmajer@econ.umb.sk>\n"
 "Language-Team: Slovak <sk-i18n@lists.linux.sk>\n"
 "MIME-Version: 1.0\n"
@@ -48,7 +48,7 @@ msgid "nN"
 msgstr "nN"
 
 #. NOTE TO TRANSLATOR: See doc/TRANSLATE about this string.
-#: util/miscutil.c:348 g10/keyedit.c:980
+#: util/miscutil.c:348 g10/keyedit.c:996
 msgid "quit"
 msgstr "ukonèi»"
 
@@ -279,7 +279,7 @@ msgstr "nájdená chyba v programe ... (%s:%d)\n"
 msgid "no entropy gathering module detected\n"
 msgstr "nebol detekovaný ¾iadny modul na získanie entropie\n"
 
-#: cipher/random.c:387 g10/keygen.c:1927 g10/import.c:163
+#: cipher/random.c:387 g10/keygen.c:1931 g10/import.c:163
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "nemô¾em otvori» `%s': %s\n"
@@ -828,7 +828,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "Verejné kµúèe: "
 
-#: g10/g10.c:706 g10/keyedit.c:1572
+#: g10/g10.c:706 g10/keyedit.c:1588
 msgid "Cipher: "
 msgstr "©ifry: "
 
@@ -836,7 +836,7 @@ msgstr "©ifry: "
 msgid "Hash: "
 msgstr "Hash: "
 
-#: g10/g10.c:718 g10/keyedit.c:1618
+#: g10/g10.c:718 g10/keyedit.c:1634
 msgid "Compression: "
 msgstr "Kompresia: "
 
@@ -875,9 +875,9 @@ msgstr ""
 "VAROVANIE: prístupové práva adresára %s nie sú nastavené bezpeène \"%s\"\n"
 
 #: g10/g10.c:1223
-#, fuzzy, c-format
+#, c-format
 msgid "unknown configuration item \"%s\"\n"
-msgstr "vytvorený nový konfiguraèný súbor `%s'\n"
+msgstr "neznáma polo¾ka konfigurácie \"%s\"\n"
 
 #: g10/g10.c:1437
 #, c-format
@@ -1015,14 +1015,12 @@ msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "polo¾ka max-cert-depth musí by» v rozmedzí od 1 do 255\n"
 
 #: g10/g10.c:2201
-#, fuzzy
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
-msgstr "neplatná implicitná úroveò kontroly; musí by» 0, 1, 2 alebo 3\n"
+msgstr "neplatná implicitná úroveò certifikácie; musí by» 0, 1, 2 alebo 3\n"
 
 #: g10/g10.c:2203
-#, fuzzy
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
-msgstr "neplatná implicitná úroveò kontroly; musí by» 0, 1, 2 alebo 3\n"
+msgstr "neplatná minimálna úroveò certifikácie; musí by» 0, 1, 2 alebo 3\n"
 
 #: g10/g10.c:2206
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
@@ -1354,7 +1352,7 @@ msgstr ""
 "Nie je priradená ¾iadna hodnota dôvery k:\n"
 "%4u%c/%08lX %s \""
 
-#: g10/pkclist.c:290 g10/mainproc.c:1496
+#: g10/pkclist.c:290 g10/mainproc.c:1503
 msgid "                aka \""
 msgstr "                alias \""
 
@@ -1489,15 +1487,12 @@ msgid "WARNING: Using untrusted key!\n"
 msgstr "VAROVANIE: Je pou¾itý nedôveryhodný kµúè!\n"
 
 #: g10/pkclist.c:602
-#, fuzzy
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
-msgstr ""
-"VAROVANIE: kµúè %08lX mô¾e by» revokovaný: revokaèný kµúè %08lX nenájdený.\n"
+msgstr "VAROVANIE: kµúè mô¾e by» revokovaný (revokaèný kµúè neexistuje)\n"
 
 #: g10/pkclist.c:611
-#, fuzzy
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
-msgstr "VAROVANIE: Tento kµúè bol revokovaný jeho vlastníkom!\n"
+msgstr "VAROVANIE: Tento kµúè bol revokovaný jeho urèeným revokátorom/!\n"
 
 #: g10/pkclist.c:614
 msgid "WARNING: This key has been revoked by its owner!\n"
@@ -1620,71 +1615,71 @@ msgstr "príli¹ veµa `%c' predvolieb\n"
 msgid "invalid character in preference string\n"
 msgstr "neplatný znak v re»azci s predvoµbami\n"
 
-#: g10/keygen.c:634
+#: g10/keygen.c:638
 msgid "writing direct signature\n"
 msgstr "zapisujem podpis kµúèa ním samým (direct signature)\n"
 
-#: g10/keygen.c:673
+#: g10/keygen.c:677
 msgid "writing self signature\n"
 msgstr "zapisujem podpis kµúèa sebou samým\n"
 
-#: g10/keygen.c:719
+#: g10/keygen.c:723
 msgid "writing key binding signature\n"
 msgstr "zapisujem \"key-binding\" podpis\n"
 
-#: g10/keygen.c:781 g10/keygen.c:865 g10/keygen.c:956
+#: g10/keygen.c:785 g10/keygen.c:869 g10/keygen.c:960
 #, c-format
 msgid "keysize invalid; using %u bits\n"
 msgstr "neplatná då¾ka kµúèa; pou¾ijem %u bitov\n"
 
-#: g10/keygen.c:786 g10/keygen.c:870 g10/keygen.c:961
+#: g10/keygen.c:790 g10/keygen.c:874 g10/keygen.c:965
 #, c-format
 msgid "keysize rounded up to %u bits\n"
 msgstr "då¾ka kµúèa zaokrúhlená na %u bitov\n"
 
-#: g10/keygen.c:1061
+#: g10/keygen.c:1065
 msgid "Please select what kind of key you want:\n"
 msgstr "Prosím, vyberte druh kµúèa, ktorý chcete:\n"
 
-#: g10/keygen.c:1063
+#: g10/keygen.c:1067
 #, c-format
 msgid "   (%d) DSA and ElGamal (default)\n"
 msgstr "   (%d) DSA a ElGamal (implicitný)\n"
 
-#: g10/keygen.c:1064
+#: g10/keygen.c:1068
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
 msgstr "   (%d) DSA (len na podpis)\n"
 
-#: g10/keygen.c:1066
+#: g10/keygen.c:1070
 #, c-format
 msgid "   (%d) ElGamal (encrypt only)\n"
 msgstr "   (%d) ElGamal (len na ¹ifrovanie)\n"
 
-#: g10/keygen.c:1067
+#: g10/keygen.c:1071
 #, c-format
 msgid "   (%d) RSA (sign only)\n"
 msgstr "   (%d) RSA (len na podpis)\n"
 
-#: g10/keygen.c:1069
+#: g10/keygen.c:1073
 #, c-format
 msgid "   (%d) RSA (encrypt only)\n"
 msgstr "   (%d) RSA (len na ¹ifrovanie)\n"
 
-#: g10/keygen.c:1071
+#: g10/keygen.c:1075
 #, c-format
 msgid "   (%d) RSA (sign and encrypt)\n"
 msgstr "   (%d) RSA (pro ¹ifrování a podpis)\n"
 
-#: g10/keygen.c:1074
+#: g10/keygen.c:1078
 msgid "Your selection? "
 msgstr "Vá¹ výber? "
 
-#: g10/keygen.c:1108 g10/keyedit.c:666 g10/revoke.c:665
+#: g10/keygen.c:1112 g10/keyedit.c:682 g10/revoke.c:665
 msgid "Invalid selection.\n"
 msgstr "Neplatný výber.\n"
 
-#: g10/keygen.c:1121
+#: g10/keygen.c:1125
 #, c-format
 msgid ""
 "About to generate a new %s keypair.\n"
@@ -1697,21 +1692,21 @@ msgstr ""
 "                      implicitná veµkos» kµúèa je 1024 bitov\n"
 "            najvy¹¹ia navrhovaná veµkos» kµúèa je 2048 bitov\n"
 
-#: g10/keygen.c:1130
+#: g10/keygen.c:1134
 msgid "What keysize do you want? (1024) "
 msgstr "Akú veµkos» kµúèa si prajete? (1024) "
 
-#: g10/keygen.c:1135
+#: g10/keygen.c:1139
 msgid "DSA only allows keysizes from 512 to 1024\n"
 msgstr "kµúè DSA musí ma» veµkos» od 512 do 1024 bitov.\n"
 
-#: g10/keygen.c:1137
+#: g10/keygen.c:1141
 msgid "keysize too small; 1024 is smallest value allowed for RSA.\n"
 msgstr ""
 "veµkos» kµúèa je príli¹ malá; minimálna povolená veµkos» pre RSA je 1024 "
 "bitov.\n"
 
-#: g10/keygen.c:1140
+#: g10/keygen.c:1144
 msgid "keysize too small; 768 is smallest value allowed.\n"
 msgstr ""
 "veµkos» kµúèa je príli¹ malá; minimálna povolená veµkos» je 768 bitov.\n"
@@ -1724,12 +1719,12 @@ msgstr ""
 #. * So, before you complain about this limitation, I suggest that
 #. * you start a discussion with Marvin about this theme and then
 #. * do whatever you want.
-#: g10/keygen.c:1151
+#: g10/keygen.c:1155
 #, c-format
 msgid "keysize too large; %d is largest value allowed.\n"
 msgstr "veµkos» kµúèa je príli¹ veµká; maximálna povolená hodnota je %d.\n"
 
-#: g10/keygen.c:1156
+#: g10/keygen.c:1160
 msgid ""
 "Keysizes larger than 2048 are not suggested because\n"
 "computations take REALLY long!\n"
@@ -1737,11 +1732,11 @@ msgstr ""
 "Veµkosti kµúèov väè¹ie ako 2048 bitov se neodporúèajú, preto¾e\n"
 "výpoèty potom trvajú VE¥MI dlho!\n"
 
-#: g10/keygen.c:1159
+#: g10/keygen.c:1163
 msgid "Are you sure that you want this keysize? "
 msgstr "Skutoène chcete vytvori» kµúè tejto då¾ky? "
 
-#: g10/keygen.c:1160
+#: g10/keygen.c:1164
 msgid ""
 "Okay, but keep in mind that your monitor and keyboard radiation is also very "
 "vulnerable to attacks!\n"
@@ -1749,17 +1744,17 @@ msgstr ""
 "Dobre, ale nezabúdajte, ¾e informácie mô¾u by» vyzradené z poèítaèa aj "
 "elektromagnetickým vy¾arovaním monitora alebo klávesnice!\n"
 
-#: g10/keygen.c:1169
+#: g10/keygen.c:1173
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Po¾adovaná då¾ka kµúèa je %u bitov.\n"
 
-#: g10/keygen.c:1172 g10/keygen.c:1176
+#: g10/keygen.c:1176 g10/keygen.c:1180
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "zaokrúhlené na %u bitov\n"
 
-#: g10/keygen.c:1227
+#: g10/keygen.c:1231
 msgid ""
 "Please specify how long the key should be valid.\n"
 "         0 = key does not expire\n"
@@ -1775,7 +1770,7 @@ msgstr ""
 "      <n>m = doba platnosti kµúèa skonèí za n mesiacov\n"
 "      <n>y = doba platnosti kµúèa skonèí za n rokov\n"
 
-#: g10/keygen.c:1236
+#: g10/keygen.c:1240
 msgid ""
 "Please specify how long the signature should be valid.\n"
 "         0 = signature does not expire\n"
@@ -1791,30 +1786,30 @@ msgstr ""
 "      <n>m = doba platnosti podpisu skonèí za n mesiacov\n"
 "      <n>y = doba platnosti podpisu skonèí za n rokov\n"
 
-#: g10/keygen.c:1258
+#: g10/keygen.c:1262
 msgid "Key is valid for? (0) "
 msgstr "Kµúè je platný na? (0) "
 
-#: g10/keygen.c:1260
+#: g10/keygen.c:1264
 msgid "Signature is valid for? (0) "
 msgstr "Podpis je platný na? (0) "
 
-#: g10/keygen.c:1265
+#: g10/keygen.c:1269
 msgid "invalid value\n"
 msgstr "neplatná hodnota\n"
 
-#: g10/keygen.c:1270
+#: g10/keygen.c:1274
 #, c-format
 msgid "%s does not expire at all\n"
 msgstr "platnos» %s neskonèí\n"
 
 #. print the date when the key expires
-#: g10/keygen.c:1277
+#: g10/keygen.c:1281
 #, c-format
 msgid "%s expires at %s\n"
 msgstr "platnos» %s skonèí %s\n"
 
-#: g10/keygen.c:1283
+#: g10/keygen.c:1287
 msgid ""
 "Your system can't display dates beyond 2038.\n"
 "However, it will be correctly handled up to 2106.\n"
@@ -1822,11 +1817,11 @@ msgstr ""
 "Vá¹ systém nevie zobrazi» dátumy po roku 2038.\n"
 "V ka¾dom prípade budú dátumy korektne spracovávané do roku 2106.\n"
 
-#: g10/keygen.c:1288
+#: g10/keygen.c:1292
 msgid "Is this correct (y/n)? "
 msgstr "Je to správne (a/n)? "
 
-#: g10/keygen.c:1331
+#: g10/keygen.c:1335
 msgid ""
 "\n"
 "You need a User-ID to identify your key; the software constructs the user "
@@ -1842,44 +1837,44 @@ msgstr ""
 "    \"Jozko Mrkvicka (student) <jozko@mrkvicka.sk>\"\n"
 "\n"
 
-#: g10/keygen.c:1343
+#: g10/keygen.c:1347
 msgid "Real name: "
 msgstr "Meno a priezvisko: "
 
-#: g10/keygen.c:1351
+#: g10/keygen.c:1355
 msgid "Invalid character in name\n"
 msgstr "Neplatný znak ve mene\n"
 
-#: g10/keygen.c:1353
+#: g10/keygen.c:1357
 msgid "Name may not start with a digit\n"
 msgstr "Meno nemô¾e zaèína» èíslicou\n"
 
-#: g10/keygen.c:1355
+#: g10/keygen.c:1359
 msgid "Name must be at least 5 characters long\n"
 msgstr "Meno musí by» dlhé aspoò 5 znakov\n"
 
-#: g10/keygen.c:1363
+#: g10/keygen.c:1367
 msgid "Email address: "
 msgstr "E-mailová adresa: "
 
-#: g10/keygen.c:1374
+#: g10/keygen.c:1378
 msgid "Not a valid email address\n"
 msgstr "Neplatná e-mailová adresa\n"
 
-#: g10/keygen.c:1382
+#: g10/keygen.c:1386
 msgid "Comment: "
 msgstr "Komentár: "
 
-#: g10/keygen.c:1388
+#: g10/keygen.c:1392
 msgid "Invalid character in comment\n"
 msgstr "Neplatný znak v komentári\n"
 
-#: g10/keygen.c:1411
+#: g10/keygen.c:1415
 #, c-format
 msgid "You are using the `%s' character set.\n"
 msgstr "Pou¾ívate znakovú sadu `%s'.\n"
 
-#: g10/keygen.c:1417
+#: g10/keygen.c:1421
 #, c-format
 msgid ""
 "You selected this USER-ID:\n"
@@ -1890,27 +1885,27 @@ msgstr ""
 "    \"%s\"\n"
 "\n"
 
-#: g10/keygen.c:1423
+#: g10/keygen.c:1427
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Do poµa meno alebo komentár nepí¹te, prosím, e-mailovú adresu.\n"
 
-#: g10/keygen.c:1428
+#: g10/keygen.c:1432
 msgid "NnCcEeOoQq"
 msgstr "mMkKeEPpUu"
 
-#: g10/keygen.c:1438
+#: g10/keygen.c:1442
 msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgstr "Zmeni» (M)eno, (K)omentár, (E)-mail alebo (U)konèi»? "
 
-#: g10/keygen.c:1439
+#: g10/keygen.c:1443
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Zmeni» (M)eno, (K)omentár, (E)-mail alebo (P)okraèova»/(U)konèi»? "
 
-#: g10/keygen.c:1458
+#: g10/keygen.c:1462
 msgid "Please correct the error first\n"
 msgstr "Najskôr, prosím, opravte chybu\n"
 
-#: g10/keygen.c:1497
+#: g10/keygen.c:1501
 msgid ""
 "You need a Passphrase to protect your secret key.\n"
 "\n"
@@ -1918,16 +1913,16 @@ msgstr ""
 "Na ochranu Vá¹ho tajného kµúèa musíte zada» heslo.\n"
 "\n"
 
-#: g10/keygen.c:1506 g10/keyedit.c:864
+#: g10/keygen.c:1510 g10/keyedit.c:880
 msgid "passphrase not correctly repeated; try again"
 msgstr "heslo nie je zopakované správne; skúste to znovu"
 
-#: g10/keygen.c:1507
+#: g10/keygen.c:1511
 #, c-format
 msgid "%s.\n"
 msgstr "%s.\n"
 
-#: g10/keygen.c:1513
+#: g10/keygen.c:1517
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "I will do it anyway.  You can change your passphrase at any time,\n"
@@ -1939,7 +1934,7 @@ msgstr ""
 "tohto programu s parametrom \"--edit-key\".\n"
 "\n"
 
-#: g10/keygen.c:1535
+#: g10/keygen.c:1539
 msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
@@ -1951,53 +1946,53 @@ msgstr ""
 "pou¾íva» disky); vïaka tomu má generátor lep¹iu ¹ancu získa» dostatok "
 "entropie.\n"
 
-#: g10/keygen.c:2110
+#: g10/keygen.c:2114
 msgid "DSA keypair will have 1024 bits.\n"
 msgstr "Pár kµúèov DSA bude ma» då¾ku 1024 bitov.\n"
 
-#: g10/keygen.c:2174
+#: g10/keygen.c:2178
 msgid "Key generation canceled.\n"
 msgstr "Vytváranie kµúèa bolo zru¹ené.\n"
 
-#: g10/keygen.c:2289 g10/keygen.c:2377
+#: g10/keygen.c:2293 g10/keygen.c:2381
 #, c-format
 msgid "writing public key to `%s'\n"
 msgstr "zapisujem verejný kµúè do `%s'\n"
 
-#: g10/keygen.c:2290 g10/keygen.c:2379
+#: g10/keygen.c:2294 g10/keygen.c:2383
 #, c-format
 msgid "writing secret key to `%s'\n"
 msgstr "zapisujem tajný kµúè do `%s'\n"
 
-#: g10/keygen.c:2366
+#: g10/keygen.c:2370
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "nenájdený zapisovateµný súbor verejných kµúèov (pubring): %s\n"
 
-#: g10/keygen.c:2372
+#: g10/keygen.c:2376
 #, c-format
 msgid "no writable secret keyring found: %s\n"
 msgstr "nenájdený zapisovateµný súbor tajných kµúèov (secring): %s\n"
 
-#: g10/keygen.c:2386
+#: g10/keygen.c:2390
 #, c-format
 msgid "error writing public keyring `%s': %s\n"
 msgstr "chyba pri zápise do súboru verejných kµúèov `%s': %s\n"
 
-#: g10/keygen.c:2393
+#: g10/keygen.c:2397
 #, c-format
 msgid "error writing secret keyring `%s': %s\n"
 msgstr "chyba pri zápise do súboru tajných kµúèov `%s': %s\n"
 
-#: g10/keygen.c:2413
+#: g10/keygen.c:2417
 msgid "public and secret key created and signed.\n"
 msgstr "verejný a tajný kµúè boli vytvorené a podpísané.\n"
 
-#: g10/keygen.c:2414
+#: g10/keygen.c:2418
 msgid "key marked as ultimately trusted.\n"
 msgstr "kµúè oznaèený ako absolútne dôveryhodný.\n"
 
-#: g10/keygen.c:2425
+#: g10/keygen.c:2429
 msgid ""
 "Note that this key cannot be used for encryption.  You may want to use\n"
 "the command \"--edit-key\" to generate a secondary key for this purpose.\n"
@@ -2005,12 +2000,12 @@ msgstr ""
 "Tento kµúè nemô¾e by» pou¾itý na ¹ifrovanie. Pre vytvorenie\n"
 "sekundárneho kµúèa na tento úèel mô¾ete pou¾i» príkaz \"--edit-key\".\n"
 
-#: g10/keygen.c:2437 g10/keygen.c:2559
+#: g10/keygen.c:2441 g10/keygen.c:2563
 #, c-format
 msgid "Key generation failed: %s\n"
 msgstr "Vytvorenie kµúèa sa nepodarilo: %s\n"
 
-#: g10/keygen.c:2487 g10/sign.c:261
+#: g10/keygen.c:2491 g10/sign.c:261
 #, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
@@ -2018,7 +2013,7 @@ msgstr ""
 "kµúè bol vytvorený %lu sekund v budúcnosti (do¹lo k zmene èasu alebo\n"
 "je problém so systémovým èasom)\n"
 
-#: g10/keygen.c:2489 g10/sign.c:263
+#: g10/keygen.c:2493 g10/sign.c:263
 #, c-format
 msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
@@ -2026,11 +2021,11 @@ msgstr ""
 "kµúè bol vytvorený %lu sekund v budúcnosti (do¹lo k zmene èasu alebo\n"
 "je problém so systémovým èasom)\n"
 
-#: g10/keygen.c:2498
+#: g10/keygen.c:2502
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "POZNÁMKA: vytvorenie podkµúèa pre kµúèe v3 nie je v súlade s OpenPGP\n"
 
-#: g10/keygen.c:2526
+#: g10/keygen.c:2530
 msgid "Really create? "
 msgstr "Skutoène vytvori»? "
 
@@ -2054,9 +2049,9 @@ msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "v móde S2K nemo¾no pou¾i» symetrický ESK paket\n"
 
 #: g10/encode.c:223
-#, fuzzy, c-format
+#, c-format
 msgid "using cipher %s\n"
-msgstr "podpisovanie zlyhalo: %s\n"
+msgstr "pou¾itá ¹ifra %s\n"
 
 #: g10/encode.c:233 g10/encode.c:494
 #, c-format
@@ -2106,7 +2101,7 @@ msgstr ""
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s za¹ifrovaný pre: %s\n"
 
-#: g10/export.c:157 g10/keyedit.c:2485 g10/delkey.c:74 g10/revoke.c:224
+#: g10/export.c:157 g10/keyedit.c:2501 g10/delkey.c:74 g10/revoke.c:224
 #, c-format
 msgid "key `%s' not found: %s\n"
 msgstr "kµúè `%s' nebol nájdený: %s\n"
@@ -2161,7 +2156,7 @@ msgstr ""
 #: g10/getkey.c:2160
 #, c-format
 msgid "no secret subkey for public subkey %08lX - ignoring\n"
-msgstr "existuje tajný kµúè pre tento verejný kµúè \"%s\"!\n"
+msgstr "existuje tajný kµúè pre tento verejný kµúè %08lX!\n"
 
 #: g10/getkey.c:2388
 #, c-format
@@ -2572,27 +2567,27 @@ msgstr ""
 msgid "User ID \"%s\" is revoked."
 msgstr "U¾ívateµské ID \"%s\" je revokované."
 
-#: g10/keyedit.c:369 g10/keyedit.c:389 g10/keyedit.c:410 g10/keyedit.c:560
-#: g10/keyedit.c:618 g10/keyedit.c:1221
+#: g10/keyedit.c:371 g10/keyedit.c:397 g10/keyedit.c:422 g10/keyedit.c:576
+#: g10/keyedit.c:634 g10/keyedit.c:1237
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Ste si istý, ¾e stále chcete podpísa» tento kµúè? (a/N) "
 
-#: g10/keyedit.c:377 g10/keyedit.c:397 g10/keyedit.c:418 g10/keyedit.c:566
-#: g10/keyedit.c:1227
+#: g10/keyedit.c:383 g10/keyedit.c:409 g10/keyedit.c:434 g10/keyedit.c:582
+#: g10/keyedit.c:1243
 msgid "  Unable to sign.\n"
 msgstr "  Nemo¾no podpísa».\n"
 
-#: g10/keyedit.c:382
+#: g10/keyedit.c:388
 #, c-format
 msgid "User ID \"%s\" is expired."
 msgstr "U¾ívateµské ID \"%s\" je revokované."
 
-#: g10/keyedit.c:402
+#: g10/keyedit.c:414
 #, c-format
 msgid "User ID \"%s\" is not self-signed."
 msgstr "ID u¾ívateµa \"%s\" nie je podpísané ním samým."
 
-#: g10/keyedit.c:437
+#: g10/keyedit.c:453
 #, c-format
 msgid ""
 "The self-signature on \"%s\"\n"
@@ -2601,11 +2596,11 @@ msgstr ""
 "Podpis kµúèa \"%s\" ním samým je\n"
 "podpis vo formáte PGP 2.x.\n"
 
-#: g10/keyedit.c:446
+#: g10/keyedit.c:462
 msgid "Do you want to promote it to an OpenPGP self-signature? (y/N) "
 msgstr "Prajete si ho zmeni» na formát OpenPGP? (a/N) "
 
-#: g10/keyedit.c:460
+#: g10/keyedit.c:476
 #, c-format
 msgid ""
 "Your current signature on \"%s\"\n"
@@ -2615,13 +2610,13 @@ msgstr ""
 "je len lokálny.\n"
 "\n"
 
-#: g10/keyedit.c:464
+#: g10/keyedit.c:480
 msgid "Do you want to issue a new signature to replace the expired one? (y/N) "
 msgstr "Chcete, aby platnos» Vá¹ho podpisu vypr¹ala v rovnakom èase? (A/n) "
 
 #. It's a local sig, and we want to make a
 #. exportable sig.
-#: g10/keyedit.c:485
+#: g10/keyedit.c:501
 #, c-format
 msgid ""
 "Your current signature on \"%s\"\n"
@@ -2631,54 +2626,54 @@ msgstr ""
 "je len lokálny.\n"
 "\n"
 
-#: g10/keyedit.c:489
+#: g10/keyedit.c:505
 msgid "Do you want to promote it to a full exportable signature? (y/N) "
 msgstr "Prajete si ho zmeni» na plne exportovateµný podpis? (a/N) "
 
-#: g10/keyedit.c:510
+#: g10/keyedit.c:526
 #, c-format
 msgid "\"%s\" was already locally signed by key %08lX\n"
 msgstr "\"%s\" je u¾ lokálne podpísaný kµúèom %08lX\n"
 
-#: g10/keyedit.c:514
+#: g10/keyedit.c:530
 #, c-format
 msgid "\"%s\" was already signed by key %08lX\n"
 msgstr "\"%s\" je u¾ podpísaný kµúèom %08lX\n"
 
-#: g10/keyedit.c:519
+#: g10/keyedit.c:535
 msgid "Do you want to sign it again anyway? (y/N) "
 msgstr "Ste si istý, ¾e stále chcete podpísa» tento kµúè? (a/N) "
 
-#: g10/keyedit.c:539
+#: g10/keyedit.c:555
 #, c-format
 msgid "Nothing to sign with key %08lX\n"
 msgstr "Niè na podpísanie kµúèom %08lX\n"
 
-#: g10/keyedit.c:554
+#: g10/keyedit.c:570
 msgid "This key has expired!"
 msgstr "Platnos» kµúèa vypr¹ala!"
 
-#: g10/keyedit.c:574
+#: g10/keyedit.c:590
 #, c-format
 msgid "This key is due to expire on %s.\n"
 msgstr "Platnos» kµúèa vypr¹í %s.\n"
 
-#: g10/keyedit.c:578
+#: g10/keyedit.c:594
 msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "Chcete, aby platnos» Vá¹ho podpisu vypr¹ala v rovnakom èase? (A/n) "
 
-#: g10/keyedit.c:611
+#: g10/keyedit.c:627
 msgid ""
 "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
 "mode.\n"
 msgstr ""
 "Nemô¾ete vytvori» OpenPGP podpis kµúèa typu PGP 2.x, keï ste v --pgp2 móde.\n"
 
-#: g10/keyedit.c:613
+#: g10/keyedit.c:629
 msgid "This would make the key unusable in PGP 2.x.\n"
 msgstr "To by spôsobilo nepou¾itelnos» kµúèa v PGP 2.x.\n"
 
-#: g10/keyedit.c:636
+#: g10/keyedit.c:652
 msgid ""
 "How carefully have you verified the key you are about to sign actually "
 "belongs\n"
@@ -2688,35 +2683,35 @@ msgstr ""
 "patrí vy¹¹ie uvedenej osobe?\n"
 "Pokiaµ nepoznáte odpoveï, zadajte \"0\".\n"
 
-#: g10/keyedit.c:640
+#: g10/keyedit.c:656
 #, c-format
 msgid "   (0) I will not answer.%s\n"
 msgstr "   (0) Neodpoviem.%s\n"
 
-#: g10/keyedit.c:641 g10/keyedit.c:643 g10/keyedit.c:645 g10/keyedit.c:647
+#: g10/keyedit.c:657 g10/keyedit.c:659 g10/keyedit.c:661 g10/keyedit.c:663
 msgid " (default)"
 msgstr "de¹ifrova» dáta (implicitne)"
 
-#: g10/keyedit.c:642
+#: g10/keyedit.c:658
 #, c-format
 msgid "   (1) I have not checked at all.%s\n"
 msgstr "   (1) Vôbec som to nekontroloval(a).%s\n"
 
-#: g10/keyedit.c:644
+#: g10/keyedit.c:660
 #, c-format
 msgid "   (2) I have done casual checking.%s\n"
 msgstr "   (2) Èiastoène som to overil(a).%s\n"
 
-#: g10/keyedit.c:646
+#: g10/keyedit.c:662
 #, c-format
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) Veµmi dôkladne som to overil(a).%s\n"
 
-#: g10/keyedit.c:652
+#: g10/keyedit.c:668
 msgid "Your selection? (enter '?' for more information): "
 msgstr "Vá¹ výber? ('?' - viac informácií): "
 
-#: g10/keyedit.c:672
+#: g10/keyedit.c:688
 msgid ""
 "Are you really sure that you want to sign this key\n"
 "with your key: \""
@@ -2724,7 +2719,7 @@ msgstr ""
 "Ste si istý, ¾e chcete podpísa» tento kµúè\n"
 "svojím kµúèom: \""
 
-#: g10/keyedit.c:681
+#: g10/keyedit.c:697
 msgid ""
 "\n"
 "This will be a self-signature.\n"
@@ -2732,7 +2727,7 @@ msgstr ""
 "\n"
 "Ide o podpis kµúèa ním samým\n"
 
-#: g10/keyedit.c:685
+#: g10/keyedit.c:701
 msgid ""
 "\n"
 "WARNING: the signature will not be marked as non-exportable.\n"
@@ -2740,7 +2735,7 @@ msgstr ""
 "\n"
 "VAROVANIE: podpis nebude oznaèený ako neexportovateµný.\n"
 
-#: g10/keyedit.c:690
+#: g10/keyedit.c:706
 msgid ""
 "\n"
 "WARNING: the signature will not be marked as non-revocable.\n"
@@ -2748,7 +2743,7 @@ msgstr ""
 "\n"
 "VAROVANIE: podpis nebude oznaèený ako neodvolateµný (non-revocable).\n"
 
-#: g10/keyedit.c:697
+#: g10/keyedit.c:713
 msgid ""
 "\n"
 "The signature will be marked as non-exportable.\n"
@@ -2757,7 +2752,7 @@ msgstr ""
 "Podpis bude oznaèený ako neexportovateµný.\n"
 "\n"
 
-#: g10/keyedit.c:701
+#: g10/keyedit.c:717
 msgid ""
 "\n"
 "The signature will be marked as non-revocable.\n"
@@ -2765,7 +2760,7 @@ msgstr ""
 "\n"
 "Podpis bude oznaèený ako neodvolateµný (non-revocable).\n"
 
-#: g10/keyedit.c:706
+#: g10/keyedit.c:722
 msgid ""
 "\n"
 "I have not checked this key at all.\n"
@@ -2773,7 +2768,7 @@ msgstr ""
 "\n"
 "Vôbec som tento kµúè neoveril.\n"
 
-#: g10/keyedit.c:710
+#: g10/keyedit.c:726
 msgid ""
 "\n"
 "I have checked this key casually.\n"
@@ -2781,7 +2776,7 @@ msgstr ""
 "\n"
 "Èiastoène som overil tento kµúè.\n"
 
-#: g10/keyedit.c:714
+#: g10/keyedit.c:730
 msgid ""
 "\n"
 "I have checked this key very carefully.\n"
@@ -2789,34 +2784,34 @@ msgstr ""
 "\n"
 "Velmi dôkladne som overil tento kµúè.\n"
 
-#: g10/keyedit.c:723
+#: g10/keyedit.c:739
 msgid "Really sign? "
 msgstr "Skutoène podpísa»? "
 
-#: g10/keyedit.c:765 g10/keyedit.c:3273 g10/keyedit.c:3364 g10/keyedit.c:3437
+#: g10/keyedit.c:781 g10/keyedit.c:3289 g10/keyedit.c:3380 g10/keyedit.c:3453
 #: g10/sign.c:318
 #, c-format
 msgid "signing failed: %s\n"
 msgstr "podpisovanie zlyhalo: %s\n"
 
-#: g10/keyedit.c:821
+#: g10/keyedit.c:837
 msgid "This key is not protected.\n"
 msgstr "Tento kµúè nie je chránený.\n"
 
-#: g10/keyedit.c:825
+#: g10/keyedit.c:841
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Tajné èasti primárneho kµúèa nie sú dostupné.\n"
 
-#: g10/keyedit.c:829
+#: g10/keyedit.c:845
 msgid "Key is protected.\n"
 msgstr "kµúè je chránený.\n"
 
-#: g10/keyedit.c:849
+#: g10/keyedit.c:865
 #, c-format
 msgid "Can't edit this key: %s\n"
 msgstr "Nie je mo¾né editova» tento kµúè: %s\n"
 
-#: g10/keyedit.c:855
+#: g10/keyedit.c:871
 msgid ""
 "Enter the new passphrase for this secret key.\n"
 "\n"
@@ -2824,7 +2819,7 @@ msgstr ""
 "Vlo¾te nové heslo (passphrase) pre tento tajný kµúè.\n"
 "\n"
 
-#: g10/keyedit.c:869
+#: g10/keyedit.c:885
 msgid ""
 "You don't want a passphrase - this is probably a *bad* idea!\n"
 "\n"
@@ -2832,492 +2827,492 @@ msgstr ""
 "Nechcete heslo - to je *zlý* nápad!\n"
 "\n"
 
-#: g10/keyedit.c:872
+#: g10/keyedit.c:888
 msgid "Do you really want to do this? "
 msgstr "Skutoène to chcete urobi»? "
 
-#: g10/keyedit.c:938
+#: g10/keyedit.c:954
 msgid "moving a key signature to the correct place\n"
 msgstr "presúvam podpis kµúèa na správne miesto\n"
 
-#: g10/keyedit.c:980
+#: g10/keyedit.c:996
 msgid "quit this menu"
 msgstr "ukonèi» toto menu"
 
-#: g10/keyedit.c:981
+#: g10/keyedit.c:997
 msgid "q"
 msgstr "u"
 
-#: g10/keyedit.c:982
+#: g10/keyedit.c:998
 msgid "save"
 msgstr "ulo¾i»"
 
-#: g10/keyedit.c:982
+#: g10/keyedit.c:998
 msgid "save and quit"
 msgstr "ulo¾i» a ukonèi»"
 
-#: g10/keyedit.c:983
+#: g10/keyedit.c:999
 msgid "help"
 msgstr "help"
 
-#: g10/keyedit.c:983
+#: g10/keyedit.c:999
 msgid "show this help"
 msgstr "ukáza» túto pomoc"
 
-#: g10/keyedit.c:985
+#: g10/keyedit.c:1001
 msgid "fpr"
 msgstr "fpr"
 
-#: g10/keyedit.c:985
+#: g10/keyedit.c:1001
 msgid "show fingerprint"
 msgstr "vypísa» fingerprint"
 
-#: g10/keyedit.c:986
+#: g10/keyedit.c:1002
 msgid "list"
 msgstr "list"
 
-#: g10/keyedit.c:986
+#: g10/keyedit.c:1002
 msgid "list key and user IDs"
 msgstr "vypísa» zoznam kµúèov a id u¾ívateµov"
 
-#: g10/keyedit.c:987
+#: g10/keyedit.c:1003
 msgid "l"
 msgstr "l"
 
-#: g10/keyedit.c:988
+#: g10/keyedit.c:1004
 msgid "uid"
 msgstr "uid"
 
-#: g10/keyedit.c:988
+#: g10/keyedit.c:1004
 msgid "select user ID N"
 msgstr "vyberte identifikátor u¾ívateµa N"
 
-#: g10/keyedit.c:989
+#: g10/keyedit.c:1005
 msgid "key"
 msgstr "key"
 
-#: g10/keyedit.c:989
+#: g10/keyedit.c:1005
 msgid "select secondary key N"
 msgstr "vyberte sekundárny kµúè N"
 
-#: g10/keyedit.c:990
+#: g10/keyedit.c:1006
 msgid "check"
 msgstr "check"
 
-#: g10/keyedit.c:990
+#: g10/keyedit.c:1006
 msgid "list signatures"
 msgstr "vypísa» zoznam podpisov"
 
-#: g10/keyedit.c:991
+#: g10/keyedit.c:1007
 msgid "c"
 msgstr "c"
 
-#: g10/keyedit.c:992
+#: g10/keyedit.c:1008
 msgid "sign"
 msgstr "sign"
 
-#: g10/keyedit.c:992
+#: g10/keyedit.c:1008
 msgid "sign the key"
 msgstr "podpísa» kµúè"
 
-#: g10/keyedit.c:993
+#: g10/keyedit.c:1009
 msgid "s"
 msgstr "s"
 
-#: g10/keyedit.c:994
+#: g10/keyedit.c:1010
 msgid "lsign"
 msgstr "lsign"
 
-#: g10/keyedit.c:994
+#: g10/keyedit.c:1010
 msgid "sign the key locally"
 msgstr "podpísa» kµúè lokálne"
 
-#: g10/keyedit.c:995
+#: g10/keyedit.c:1011
 msgid "nrsign"
 msgstr "nrsign"
 
-#: g10/keyedit.c:995
+#: g10/keyedit.c:1011
 msgid "sign the key non-revocably"
 msgstr "podpísa» kµúè bez mo¾nosti odvola» podpis (non-revocably)"
 
-#: g10/keyedit.c:996
+#: g10/keyedit.c:1012
 msgid "nrlsign"
 msgstr "nrlsign"
 
-#: g10/keyedit.c:996
+#: g10/keyedit.c:1012
 msgid "sign the key locally and non-revocably"
 msgstr "podpísa» kµúè lokálne a bez mo¾nosti odvola» podpis (non-revocably)"
 
-#: g10/keyedit.c:997
+#: g10/keyedit.c:1013
 msgid "debug"
 msgstr "debug"
 
-#: g10/keyedit.c:998
+#: g10/keyedit.c:1014
 msgid "adduid"
 msgstr "adduid"
 
-#: g10/keyedit.c:998
+#: g10/keyedit.c:1014
 msgid "add a user ID"
 msgstr "prida» identifikátor u¾ívateµa"
 
-#: g10/keyedit.c:999
+#: g10/keyedit.c:1015
 msgid "addphoto"
 msgstr "addphoto"
 
-#: g10/keyedit.c:999
+#: g10/keyedit.c:1015
 msgid "add a photo ID"
 msgstr "prida» fotografické ID"
 
-#: g10/keyedit.c:1000
+#: g10/keyedit.c:1016
 msgid "deluid"
 msgstr "deluid"
 
-#: g10/keyedit.c:1000
+#: g10/keyedit.c:1016
 msgid "delete user ID"
 msgstr "zmaza» identifikátor u¾ívateµa"
 
 #. delphoto is really deluid in disguise
-#: g10/keyedit.c:1002
+#: g10/keyedit.c:1018
 msgid "delphoto"
 msgstr "delphoto"
 
-#: g10/keyedit.c:1003
+#: g10/keyedit.c:1019
 msgid "addkey"
 msgstr "addkey"
 
-#: g10/keyedit.c:1003
+#: g10/keyedit.c:1019
 msgid "add a secondary key"
 msgstr "prida» sekundárny kµúè"
 
-#: g10/keyedit.c:1004
+#: g10/keyedit.c:1020
 msgid "delkey"
 msgstr "delkey"
 
-#: g10/keyedit.c:1004
+#: g10/keyedit.c:1020
 msgid "delete a secondary key"
 msgstr "zmaza» sekundárny kµúè"
 
-#: g10/keyedit.c:1005
+#: g10/keyedit.c:1021
 msgid "addrevoker"
 msgstr "addrevoker"
 
-#: g10/keyedit.c:1005
+#: g10/keyedit.c:1021
 msgid "add a revocation key"
 msgstr "prida» revokaèný kµúè"
 
-#: g10/keyedit.c:1006
+#: g10/keyedit.c:1022
 msgid "delsig"
 msgstr "delsig"
 
-#: g10/keyedit.c:1006
+#: g10/keyedit.c:1022
 msgid "delete signatures"
 msgstr "zmaza» podpisy"
 
-#: g10/keyedit.c:1007
+#: g10/keyedit.c:1023
 msgid "expire"
 msgstr "expire"
 
-#: g10/keyedit.c:1007
+#: g10/keyedit.c:1023
 msgid "change the expire date"
 msgstr "zmeni» dobu platnosti"
 
-#: g10/keyedit.c:1008
+#: g10/keyedit.c:1024
 msgid "primary"
 msgstr "primary"
 
-#: g10/keyedit.c:1008
+#: g10/keyedit.c:1024
 msgid "flag user ID as primary"
 msgstr "oznaèi» u¾ívateµské ID ako primárne"
 
-#: g10/keyedit.c:1009
+#: g10/keyedit.c:1025
 msgid "toggle"
 msgstr "toggle"
 
-#: g10/keyedit.c:1009
+#: g10/keyedit.c:1025
 msgid "toggle between secret and public key listing"
 msgstr "prepnú» medzi vypísaním zoznamu tajných a verejných kµúèov"
 
-#: g10/keyedit.c:1011
+#: g10/keyedit.c:1027
 msgid "t"
 msgstr "t"
 
-#: g10/keyedit.c:1012
+#: g10/keyedit.c:1028
 msgid "pref"
 msgstr "pref"
 
-#: g10/keyedit.c:1012
+#: g10/keyedit.c:1028
 msgid "list preferences (expert)"
 msgstr "vypísa» zoznam predvolieb (pre expertov)"
 
-#: g10/keyedit.c:1013
+#: g10/keyedit.c:1029
 msgid "showpref"
 msgstr "showpref"
 
-#: g10/keyedit.c:1013
+#: g10/keyedit.c:1029
 msgid "list preferences (verbose)"
 msgstr "vypísa» zoznam predvolieb (podrobne)"
 
-#: g10/keyedit.c:1014
+#: g10/keyedit.c:1030
 msgid "setpref"
 msgstr "setpref"
 
-#: g10/keyedit.c:1014
+#: g10/keyedit.c:1030
 msgid "set preference list"
 msgstr "nastavi» zoznam predvolieb"
 
-#: g10/keyedit.c:1015
+#: g10/keyedit.c:1031
 msgid "updpref"
 msgstr "updpref"
 
-#: g10/keyedit.c:1015
+#: g10/keyedit.c:1031
 msgid "updated preferences"
 msgstr "aktualizova» predvoµby"
 
-#: g10/keyedit.c:1016
+#: g10/keyedit.c:1032
 msgid "passwd"
 msgstr "passwd"
 
-#: g10/keyedit.c:1016
+#: g10/keyedit.c:1032
 msgid "change the passphrase"
 msgstr "zmeni» heslo"
 
-#: g10/keyedit.c:1017
+#: g10/keyedit.c:1033
 msgid "trust"
 msgstr "trust"
 
-#: g10/keyedit.c:1017
+#: g10/keyedit.c:1033
 msgid "change the ownertrust"
 msgstr "zmeni» dôveryhodnos» vlastníka kµúèa"
 
-#: g10/keyedit.c:1018
+#: g10/keyedit.c:1034
 msgid "revsig"
 msgstr "revsig"
 
-#: g10/keyedit.c:1018
+#: g10/keyedit.c:1034
 msgid "revoke signatures"
 msgstr "revokova» podpisy"
 
-#: g10/keyedit.c:1019
+#: g10/keyedit.c:1035
 msgid "revuid"
 msgstr "revsig"
 
-#: g10/keyedit.c:1019
+#: g10/keyedit.c:1035
 msgid "revoke a user ID"
 msgstr "revokova» identifikátor u¾ívateµa"
 
-#: g10/keyedit.c:1020
+#: g10/keyedit.c:1036
 msgid "revkey"
 msgstr "revkey"
 
-#: g10/keyedit.c:1020
+#: g10/keyedit.c:1036
 msgid "revoke a secondary key"
 msgstr "revokova» sekundárny kµúè"
 
-#: g10/keyedit.c:1021
+#: g10/keyedit.c:1037
 msgid "disable"
 msgstr "disable"
 
-#: g10/keyedit.c:1021
+#: g10/keyedit.c:1037
 msgid "disable a key"
 msgstr "nastavi» kµúè ako neplatný (disable)"
 
-#: g10/keyedit.c:1022
+#: g10/keyedit.c:1038
 msgid "enable"
 msgstr "enable"
 
-#: g10/keyedit.c:1022
+#: g10/keyedit.c:1038
 msgid "enable a key"
 msgstr "nastavi» kµúè ako platný (enable)"
 
-#: g10/keyedit.c:1023
+#: g10/keyedit.c:1039
 msgid "showphoto"
 msgstr "showphoto"
 
-#: g10/keyedit.c:1023
+#: g10/keyedit.c:1039
 msgid "show photo ID"
 msgstr "ukáza» fotografické ID"
 
-#: g10/keyedit.c:1043 g10/delkey.c:120
+#: g10/keyedit.c:1059 g10/delkey.c:120
 msgid "can't do that in batchmode\n"
 msgstr "nemo¾no previes» v dávkovom móde\n"
 
-#: g10/keyedit.c:1081
+#: g10/keyedit.c:1097
 #, c-format
 msgid "error reading secret keyblock `%s': %s\n"
 msgstr "chyba pri èítaní bloku tajného kµúèa `%s': %s\n"
 
-#: g10/keyedit.c:1099
+#: g10/keyedit.c:1115
 msgid "Secret key is available.\n"
 msgstr "Tajný kµúè je dostupný.\n"
 
-#: g10/keyedit.c:1130
+#: g10/keyedit.c:1146
 msgid "Command> "
 msgstr "Príkaz> "
 
-#: g10/keyedit.c:1162
+#: g10/keyedit.c:1178
 msgid "Need the secret key to do this.\n"
 msgstr "Na vykonanie tejto operácie je potrebný tajný kµúè.\n"
 
-#: g10/keyedit.c:1166
+#: g10/keyedit.c:1182
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "Prosím, najskôr pou¾ite príkaz \"toggle\" (prepnú»).\n"
 
-#: g10/keyedit.c:1215
+#: g10/keyedit.c:1231
 msgid "Key is revoked."
 msgstr "Kµúè revokovaný."
 
-#: g10/keyedit.c:1234
+#: g10/keyedit.c:1250
 msgid "Really sign all user IDs? "
 msgstr "Skutoène podpísa» v¹etky id u¾ívateµa? "
 
-#: g10/keyedit.c:1235
+#: g10/keyedit.c:1251
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Nápoveda: Vyberte id u¾ívateµa na podpísanie\n"
 
-#: g10/keyedit.c:1260
+#: g10/keyedit.c:1276
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Tento príkaz nie je v módoch %s dovolený.\n"
 
-#: g10/keyedit.c:1282 g10/keyedit.c:1303 g10/keyedit.c:1363
+#: g10/keyedit.c:1298 g10/keyedit.c:1319 g10/keyedit.c:1379
 msgid "You must select at least one user ID.\n"
 msgstr "Musíte vybra» aspoò jedno id u¾ívateµa.\n"
 
-#: g10/keyedit.c:1284
+#: g10/keyedit.c:1300
 msgid "You can't delete the last user ID!\n"
 msgstr "Nemô¾ete zmaza» posledné id u¾ívateµa!\n"
 
-#: g10/keyedit.c:1287
+#: g10/keyedit.c:1303
 msgid "Really remove all selected user IDs? "
 msgstr "Skutoène odstráni» v¹etky vybrané id u¾ívateµa? "
 
-#: g10/keyedit.c:1288
+#: g10/keyedit.c:1304
 msgid "Really remove this user ID? "
 msgstr "Skutoène odstráni» toto id u¾ívateµa? "
 
-#: g10/keyedit.c:1326 g10/keyedit.c:1382
+#: g10/keyedit.c:1342 g10/keyedit.c:1398
 msgid "You must select at least one key.\n"
 msgstr "Musíte vybra» aspoò jeden kµúè.\n"
 
-#: g10/keyedit.c:1330
+#: g10/keyedit.c:1346
 msgid "Do you really want to delete the selected keys? "
 msgstr "Skutoène chcete zmaza» vybrané kµúèe? "
 
-#: g10/keyedit.c:1331
+#: g10/keyedit.c:1347
 msgid "Do you really want to delete this key? "
 msgstr "Skutoène chcete zmaza» tento kµúè? "
 
-#: g10/keyedit.c:1366
+#: g10/keyedit.c:1382
 msgid "Really revoke all selected user IDs? "
 msgstr "Skutoène revokova» v¹etky vybrané id u¾ívateµa? "
 
-#: g10/keyedit.c:1367
+#: g10/keyedit.c:1383
 msgid "Really revoke this user ID? "
 msgstr "Skutoène revokova» toto id u¾ívateµa? "
 
-#: g10/keyedit.c:1386
+#: g10/keyedit.c:1402
 msgid "Do you really want to revoke the selected keys? "
 msgstr "Skutoène chcete revokova» vybrané kµúèe? "
 
-#: g10/keyedit.c:1387
+#: g10/keyedit.c:1403
 msgid "Do you really want to revoke this key? "
 msgstr "Skutoène chcete revokova» tento kµúè? "
 
-#: g10/keyedit.c:1456
+#: g10/keyedit.c:1472
 msgid "Really update the preferences for the selected user IDs? "
 msgstr "Skutoène aktualizova» predvoµby pre vybrané id u¾ívateµa? "
 
-#: g10/keyedit.c:1458
+#: g10/keyedit.c:1474
 msgid "Really update the preferences? "
 msgstr "Skutoène aktualizova» predvoµby? "
 
-#: g10/keyedit.c:1496
+#: g10/keyedit.c:1512
 msgid "Save changes? "
 msgstr "Ulo¾i» zmeny? "
 
-#: g10/keyedit.c:1499
+#: g10/keyedit.c:1515
 msgid "Quit without saving? "
 msgstr "Ukonèi» bez ulo¾enia? "
 
-#: g10/keyedit.c:1510
+#: g10/keyedit.c:1526
 #, c-format
 msgid "update failed: %s\n"
 msgstr "aktualizácia zlyhala: %s\n"
 
-#: g10/keyedit.c:1517
+#: g10/keyedit.c:1533
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "aktualizácia tajného kµúèa zlyhala: %s\n"
 
-#: g10/keyedit.c:1524
+#: g10/keyedit.c:1540
 msgid "Key not changed so no update needed.\n"
 msgstr "kµúè nebol zmenený, tak¾e nie je potrebné ho aktualizova».\n"
 
-#: g10/keyedit.c:1536
+#: g10/keyedit.c:1552
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Neplatný príkaz (skúste \"help\")\n"
 
-#: g10/keyedit.c:1595
+#: g10/keyedit.c:1611
 msgid "Digest: "
 msgstr "Digest: "
 
-#: g10/keyedit.c:1647
+#: g10/keyedit.c:1663
 msgid "Features: "
 msgstr "Charakteristiky: "
 
-#: g10/keyedit.c:1881
+#: g10/keyedit.c:1897
 #, c-format
 msgid "This key may be revoked by %s key "
 msgstr "Tento kµúè mô¾e by» revokovaný kµúèom %s "
 
-#: g10/keyedit.c:1885
+#: g10/keyedit.c:1901
 msgid " (sensitive)"
 msgstr "(citlivá informácia)"
 
 #. Note, we use the same format string as in other show
 #. functions to make the translation job easier.
-#: g10/keyedit.c:1891 g10/keyedit.c:1917 g10/keyedit.c:2002 g10/keyedit.c:2017
+#: g10/keyedit.c:1907 g10/keyedit.c:1933 g10/keyedit.c:2018 g10/keyedit.c:2033
 #, c-format
 msgid "%s%c %4u%c/%08lX  created: %s expires: %s"
 msgstr "%s%c %4u%c/%08lX  vytvorený: %s platnos» do: %s"
 
-#: g10/keyedit.c:1900
+#: g10/keyedit.c:1916
 #, c-format
 msgid " trust: %c/%c"
 msgstr " dôvera: %c/%c"
 
-#: g10/keyedit.c:1904
+#: g10/keyedit.c:1920
 msgid "This key has been disabled"
 msgstr "Tento kµúè bol oznaèený za neplatný (disabled)"
 
-#: g10/keyedit.c:1933
+#: g10/keyedit.c:1949
 #, c-format
 msgid "rev! subkey has been revoked: %s\n"
 msgstr "rev! podkµúè bol revokovaný: %s\n"
 
-#: g10/keyedit.c:1936
+#: g10/keyedit.c:1952
 msgid "rev- faked revocation found\n"
 msgstr "rev- nájdená falo¹ná revokácia\n"
 
-#: g10/keyedit.c:1938
+#: g10/keyedit.c:1954
 #, c-format
 msgid "rev? problem checking revocation: %s\n"
 msgstr "rev? problém overenia revokácie: %s\n"
 
-#: g10/keyedit.c:1958 g10/keyedit.c:2041 g10/keylist.c:492 g10/keylist.c:532
-#: g10/mainproc.c:939
+#: g10/keyedit.c:1974 g10/keyedit.c:2057 g10/keylist.c:492 g10/keylist.c:532
+#: g10/mainproc.c:946
 msgid "[revoked] "
 msgstr "[revokované]"
 
-#: g10/keyedit.c:1960 g10/keyedit.c:2043
+#: g10/keyedit.c:1976 g10/keyedit.c:2059
 msgid "[expired] "
 msgstr "[expirované]"
 
-#: g10/keyedit.c:1968
+#: g10/keyedit.c:1984
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "U¾ívateµské ID vo formáte PGP 2.x nemá ¾iadne predvoµby\n"
 
-#: g10/keyedit.c:1976
+#: g10/keyedit.c:1992
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3325,7 +3320,7 @@ msgstr ""
 "Prosím nezabúdajte, ¾e zobrazované údaje o platnosti kµúèov nemusia\n"
 "by» správne, pokiaµ znovu nespustíte program.\n"
 
-#: g10/keyedit.c:2105
+#: g10/keyedit.c:2121
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3333,7 +3328,7 @@ msgstr ""
 "VAROVANIE: ¾iadne ID u¾ívateµa nebolo oznaèené ako primárne. Tento príkaz\n"
 "spôsobí, ¾e iné ID u¾ívateµa sa bude pova¾ova» primárne.\n"
 
-#: g10/keyedit.c:2165
+#: g10/keyedit.c:2181
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3342,45 +3337,45 @@ msgstr ""
 "VAROVANIE: Toto je PGP2 kµúè. Pridanie fotografického ID mô¾e v niektorých\n"
 "           verziách PGP vies» k odmietnutiu tohto kµúèa.\n"
 
-#: g10/keyedit.c:2170 g10/keyedit.c:2443
+#: g10/keyedit.c:2186 g10/keyedit.c:2459
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Ste si istý, ¾e ho chcete stále prida»? (a/N) "
 
-#: g10/keyedit.c:2176
+#: g10/keyedit.c:2192
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Nemali by ste pridáva» fotografické ID k PGP2 kµúèu.\n"
 
-#: g10/keyedit.c:2311
+#: g10/keyedit.c:2327
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Zmaza» tento dobrý podpis? (a/N/u)"
 
-#: g10/keyedit.c:2321
+#: g10/keyedit.c:2337
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Zmaza» tento neplatný podpis? (a/N/u)"
 
-#: g10/keyedit.c:2325
+#: g10/keyedit.c:2341
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Zmaza» tento neznámy podpis? (a/N/u)"
 
-#: g10/keyedit.c:2331
+#: g10/keyedit.c:2347
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Skutoène zmaza» tento podpis podpísaný sebou samým? (a/N)"
 
-#: g10/keyedit.c:2345
+#: g10/keyedit.c:2361
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "Zmazaný %d podpis.\n"
 
-#: g10/keyedit.c:2346
+#: g10/keyedit.c:2362
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "Zmazaných %d podpisov.\n"
 
-#: g10/keyedit.c:2349
+#: g10/keyedit.c:2365
 msgid "Nothing deleted.\n"
 msgstr "Niè nebolo zmaznané.\n"
 
-#: g10/keyedit.c:2438
+#: g10/keyedit.c:2454
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3389,82 +3384,82 @@ msgstr ""
 "VAROVANIE: Toto je PGP2 kµúè. Pridanie fotografického ID mô¾e v niektorých\n"
 "           verziách PGP vies» k odmietnutiu tohoto kµúèa.\n"
 
-#: g10/keyedit.c:2449
+#: g10/keyedit.c:2465
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "Nemali by ste pridáva» fotografické ID k PGP2 kµúèu.\n"
 
-#: g10/keyedit.c:2472
+#: g10/keyedit.c:2488
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Vlo¾te identifikátor u¾ívateµa povereného revokáciou: "
 
-#: g10/keyedit.c:2495
+#: g10/keyedit.c:2511
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "kµúè vo formáte PGP 2.x nemo¾no poveri» revokáciou\n"
 
 #. This actually causes no harm (after all, a key that
 #. designates itself as a revoker is the same as a
 #. regular key), but it's easy enough to check.
-#: g10/keyedit.c:2505
+#: g10/keyedit.c:2521
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "kµúè nemo¾no poveri» revokáciou ním samým\n"
 
-#: g10/keyedit.c:2524
+#: g10/keyedit.c:2540
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "VAROVANIE: oznaèenie kµúèa ako revokovací u¾ nemô¾e by» zru¹ené!\n"
 
-#: g10/keyedit.c:2530
+#: g10/keyedit.c:2546
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N): "
 msgstr "Ste si istý, ¾e chcete oznaèi» tento kµúè ako revokovací? (a/N): "
 
-#: g10/keyedit.c:2595
+#: g10/keyedit.c:2611
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Prosím, odstráòte výber z tajných kµúèov.\n"
 
-#: g10/keyedit.c:2601
+#: g10/keyedit.c:2617
 msgid "Please select at most one secondary key.\n"
 msgstr "Prosím, vyberte najviac jeden sekundárny kµúè.\n"
 
-#: g10/keyedit.c:2605
+#: g10/keyedit.c:2621
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "Mením dobu platnosti sekundárneho kµúèa.\n"
 
-#: g10/keyedit.c:2608
+#: g10/keyedit.c:2624
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Mením dobu platnosti primárneho kµúèa.\n"
 
-#: g10/keyedit.c:2654
+#: g10/keyedit.c:2670
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Nemô¾ete zmeni» dobu platnosti kµúèa verzie 3\n"
 
-#: g10/keyedit.c:2670
+#: g10/keyedit.c:2686
 msgid "No corresponding signature in secret ring\n"
 msgstr "V súbore tajných kµúèov chýba zodpovedajúci podpis\n"
 
-#: g10/keyedit.c:2750
+#: g10/keyedit.c:2766
 msgid "Please select exactly one user ID.\n"
 msgstr "Prosím, vyberte práve jedno id u¾ívateµa.\n"
 
-#: g10/keyedit.c:2789 g10/keyedit.c:2899
+#: g10/keyedit.c:2805 g10/keyedit.c:2915
 #, c-format
 msgid "skipping v3 self-signature on user id \"%s\"\n"
 msgstr "preskoèený v3 podpis kµúèa ním samým u u¾ívateµského id \"%s\"\n"
 
-#: g10/keyedit.c:2959
+#: g10/keyedit.c:2975
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Neexistuje identifikátor u¾ívateµa s indexom %d\n"
 
-#: g10/keyedit.c:3005
+#: g10/keyedit.c:3021
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Neexistuje sekundárny kµúè s indexom %d\n"
 
-#: g10/keyedit.c:3119
+#: g10/keyedit.c:3135
 msgid "user ID: \""
 msgstr "id u¾ívateµa: \""
 
-#: g10/keyedit.c:3124
+#: g10/keyedit.c:3140
 #, c-format
 msgid ""
 "\"\n"
@@ -3473,7 +3468,7 @@ msgstr ""
 "\"\n"
 "podpísané Va¹ím kµúèom %08lX v %s\n"
 
-#: g10/keyedit.c:3127
+#: g10/keyedit.c:3143
 #, c-format
 msgid ""
 "\"\n"
@@ -3482,56 +3477,56 @@ msgstr ""
 "\"\n"
 "lokálne podpísané Va¹ím kµúèom %08lX v %s\n"
 
-#: g10/keyedit.c:3132
+#: g10/keyedit.c:3148
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Platnos» podpisu vypr¹í %s.\n"
 
-#: g10/keyedit.c:3136
+#: g10/keyedit.c:3152
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Ste si istý, ¾e ho chcete stále revokova»? (a/N) "
 
-#: g10/keyedit.c:3140
+#: g10/keyedit.c:3156
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Vytvori» pre tento podpis revokaèný certifikát? (a/N)"
 
 #. FIXME: detect duplicates here
-#: g10/keyedit.c:3165
+#: g10/keyedit.c:3181
 msgid "You have signed these user IDs:\n"
 msgstr "Podpísali ste nasledujúce identifikátory u¾ívateµa:\n"
 
-#: g10/keyedit.c:3184
+#: g10/keyedit.c:3200
 #, c-format
 msgid "   signed by %08lX at %s%s%s\n"
 msgstr "   podpísané %08lX v %s%s%s\n"
 
-#: g10/keyedit.c:3192
+#: g10/keyedit.c:3208
 #, c-format
 msgid "   revoked by %08lX at %s\n"
 msgstr "   revokované %08lX v %s\n"
 
-#: g10/keyedit.c:3212
+#: g10/keyedit.c:3228
 msgid "You are about to revoke these signatures:\n"
 msgstr "Chystáte sa revokova» tieto podpisy:\n"
 
-#: g10/keyedit.c:3222
+#: g10/keyedit.c:3238
 #, c-format
 msgid "   signed by %08lX at %s%s\n"
 msgstr "   podpísané %08lX v %s%s\n"
 
-#: g10/keyedit.c:3224
+#: g10/keyedit.c:3240
 msgid " (non-exportable)"
 msgstr " (nexeportovateµné)"
 
-#: g10/keyedit.c:3231
+#: g10/keyedit.c:3247
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Skutoène vytvori» revokaèné certifikáty? (a/N) "
 
-#: g10/keyedit.c:3261
+#: g10/keyedit.c:3277
 msgid "no secret key\n"
 msgstr "neexistuje tajný kµúè\n"
 
-#: g10/keyedit.c:3331
+#: g10/keyedit.c:3347
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "u¾ívateµské ID \"%s\" je u¾ revokované\n"
@@ -3540,12 +3535,12 @@ msgstr "u¾ívateµské ID \"%s\" je u¾ revokované\n"
 #. created in the future, so we need to warn the user and
 #. set our revocation timestamp one second after that so
 #. everything comes out clean.
-#: g10/keyedit.c:3348
+#: g10/keyedit.c:3364
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "VAROVANIE: podpis pou¾ivateµkého ID vznikol %d sekund v budúcnosti\n"
 
-#: g10/keyedit.c:3521
+#: g10/keyedit.c:3537
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key 0x%08lX (uid %d)\n"
 msgstr ""
@@ -3561,7 +3556,7 @@ msgstr "Kritická podpisová politika: "
 msgid "Signature policy: "
 msgstr "Podpisová politika: "
 
-#: g10/keylist.c:139 g10/keylist.c:162 g10/mainproc.c:804 g10/mainproc.c:813
+#: g10/keylist.c:139 g10/keylist.c:162 g10/mainproc.c:811 g10/mainproc.c:820
 msgid "WARNING: invalid notation data found\n"
 msgstr "VAROVANIE: nájdený neplatný formát zápisu dátumu\n"
 
@@ -3583,7 +3578,7 @@ msgstr "nie je v priamo èitateµnom formáte"
 msgid "Keyring"
 msgstr "súbor kµúèov (keyring)"
 
-#: g10/keylist.c:534 g10/mainproc.c:941
+#: g10/keylist.c:534 g10/mainproc.c:948
 #, c-format
 msgid " [expires: %s]"
 msgstr " [platnos» skonèí: %s]"
@@ -3636,104 +3631,109 @@ msgstr "%s za¹ifrované dáta\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "za¹ifrované neznámym algoritmom %d\n"
 
-#: g10/mainproc.c:351
+#: g10/mainproc.c:309
+#, fuzzy, c-format
+msgid "passphrase generated with unknown digest algorithm %d\n"
+msgstr "za¹ifrované neznámym algoritmom %d\n"
+
+#: g10/mainproc.c:358
 #, c-format
 msgid "public key is %08lX\n"
 msgstr "verejný kµúè je %08lX\n"
 
-#: g10/mainproc.c:397
+#: g10/mainproc.c:404
 msgid "public key encrypted data: good DEK\n"
 msgstr "dáta za¹ifrované verejným kµúèom: správny DEK\n"
 
-#: g10/mainproc.c:449
+#: g10/mainproc.c:456
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
 msgstr "za¹ifrované %u-bitovým %s kµúèom, ID %08lX, vytvoreným %s\n"
 
 # Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
 # [kw]
-#: g10/mainproc.c:459
+#: g10/mainproc.c:466
 #, c-format
 msgid "encrypted with %s key, ID %08lX\n"
 msgstr "za¹ifrovaná %s kµúèom, ID %08lX\n"
 
-#: g10/mainproc.c:473
+#: g10/mainproc.c:480
 #, c-format
 msgid "public key decryption failed: %s\n"
 msgstr "de¹ifrovanie verejným kµúèom zlyhalo: %s\n"
 
-#: g10/mainproc.c:487
+#: g10/mainproc.c:494
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "za¹ifrované s %lu heslami\n"
 
-#: g10/mainproc.c:489
+#: g10/mainproc.c:496
 msgid "encrypted with 1 passphrase\n"
 msgstr "za¹ifrované jedným heslom\n"
 
-#: g10/mainproc.c:505 g10/mainproc.c:524
+#: g10/mainproc.c:512 g10/mainproc.c:531
 #, c-format
 msgid "assuming %s encrypted data\n"
 msgstr "predpokladám %s ¹ifrovaných dát\n"
 
-#: g10/mainproc.c:512
+#: g10/mainproc.c:519
 #, c-format
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "algoritmus IDEA nie je dostupný; optimisticky sa ho pokúsime nahradi» "
 "algoritmom %s\n"
 
-#: g10/mainproc.c:542
+#: g10/mainproc.c:549
 msgid "decryption okay\n"
 msgstr "de¹ifrovanie o.k.\n"
 
-#: g10/mainproc.c:546
+#: g10/mainproc.c:553
 msgid "WARNING: message was not integrity protected\n"
 msgstr "VAROVANIE: správa nemá ochranu integrity\n"
 
-#: g10/mainproc.c:549
+#: g10/mainproc.c:556
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "VAROVANIE: so za¹ifrovanou správou bolo manipulované!\n"
 
-#: g10/mainproc.c:555
+#: g10/mainproc.c:562
 #, c-format
 msgid "decryption failed: %s\n"
 msgstr "de¹ifrovanie zlyhalo: %s\n"
 
-#: g10/mainproc.c:574
+#: g10/mainproc.c:581
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgstr "POZNÁMKA: odosielateµ po¾adoval (\"for-your-eyes-only\")\n"
 
-#: g10/mainproc.c:576
+#: g10/mainproc.c:583
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "pôvodné meno súboru='%.*s'\n"
 
-#: g10/mainproc.c:748
+#: g10/mainproc.c:755
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
 "samostatný revokaèný certifikát -  pou¾ite \"gpg --import\", ak ho chcete "
 "vyu¾i»\n"
 
-#: g10/mainproc.c:816
+#: g10/mainproc.c:823
 msgid "Notation: "
 msgstr "Notácie: "
 
-#: g10/mainproc.c:828
+#: g10/mainproc.c:835
 msgid "Policy: "
 msgstr "Politika: "
 
-#: g10/mainproc.c:1284
+#: g10/mainproc.c:1291
 msgid "signature verification suppressed\n"
 msgstr "verifikácia podpisu potlaèená\n"
 
 #. plaintext before signatures but no one-pass packets
-#: g10/mainproc.c:1326 g10/mainproc.c:1336
+#: g10/mainproc.c:1333 g10/mainproc.c:1343
 msgid "can't handle these multiple signatures\n"
 msgstr "neviem pracova» s týmito násobnými podpismi\n"
 
 # Scripte scannen lt. dl1bke auf "ID (0-9A-F)+" deswegen muß "ID" rein :-(
-#: g10/mainproc.c:1345
+#: g10/mainproc.c:1352
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Podpis vytvorený %.*s pomocou %s kµúèa ID %08lX\n"
@@ -3742,77 +3742,77 @@ msgstr "Podpis vytvorený %.*s pomocou %s kµúèa ID %08lX\n"
 #. grammar, you say "at" if the key is located on a web
 #. page, but "from" if it is located on a keyserver.  I'm
 #. not going to even try to make two strings here :)
-#: g10/mainproc.c:1374
+#: g10/mainproc.c:1381
 msgid "Key available at: "
 msgstr "Kµúè k dispozícii na: "
 
-#: g10/mainproc.c:1423 g10/mainproc.c:1456
+#: g10/mainproc.c:1430 g10/mainproc.c:1463
 msgid "BAD signature from \""
 msgstr "ZLÝ podpis od \""
 
-#: g10/mainproc.c:1424 g10/mainproc.c:1457
+#: g10/mainproc.c:1431 g10/mainproc.c:1464
 msgid "Expired signature from \""
 msgstr "Podpis s vypr¹anou platnos»ou od \""
 
-#: g10/mainproc.c:1425 g10/mainproc.c:1458
+#: g10/mainproc.c:1432 g10/mainproc.c:1465
 msgid "Good signature from \""
 msgstr "Dobrý podpis od \""
 
-#: g10/mainproc.c:1460
+#: g10/mainproc.c:1467
 msgid "[uncertain]"
 msgstr "[neistý]  "
 
-#: g10/mainproc.c:1559
+#: g10/mainproc.c:1566
 #, c-format
 msgid "Signature expired %s\n"
 msgstr "Platnos» podpisu vypr¹ala %s\n"
 
-#: g10/mainproc.c:1564
+#: g10/mainproc.c:1571
 #, c-format
 msgid "Signature expires %s\n"
 msgstr "Platnos» podpisu vypr¹í %s\n"
 
-#: g10/mainproc.c:1567
+#: g10/mainproc.c:1574
 #, c-format
 msgid "%s signature, digest algorithm %s\n"
 msgstr "%s podpis, hashovací algoritmus %s\n"
 
-#: g10/mainproc.c:1568
+#: g10/mainproc.c:1575
 msgid "binary"
 msgstr "binárne"
 
-#: g10/mainproc.c:1569
+#: g10/mainproc.c:1576
 msgid "textmode"
 msgstr "textový mód"
 
-#: g10/mainproc.c:1569
+#: g10/mainproc.c:1576
 msgid "unknown"
 msgstr "neznáme"
 
-#: g10/mainproc.c:1589
+#: g10/mainproc.c:1596
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nemô¾em overi» podpis: %s\n"
 
-#: g10/mainproc.c:1657 g10/mainproc.c:1673 g10/mainproc.c:1759
+#: g10/mainproc.c:1664 g10/mainproc.c:1680 g10/mainproc.c:1766
 msgid "not a detached signature\n"
 msgstr "toto nie je podpis oddelený od dokumentu\n"
 
-#: g10/mainproc.c:1700
+#: g10/mainproc.c:1707
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr "VAROVANIE: Nájdené viacnásobne podpisy. Skontrolovaný bude len prvý.\n"
 
-#: g10/mainproc.c:1708
+#: g10/mainproc.c:1715
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
 msgstr "samostatný podpis triedy 0x%02x\n"
 
-#: g10/mainproc.c:1765
+#: g10/mainproc.c:1772
 msgid "old style (PGP 2.x) signature\n"
 msgstr "podpis starého typu (PGP 2.x)\n"
 
-#: g10/mainproc.c:1775
+#: g10/mainproc.c:1782
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr "nájdený neplatný koreòový paket v proc_tree()\n"
 
@@ -3858,7 +3858,7 @@ msgstr "pou¾ite namiesto neho \"%s%s\" \n"
 
 #: g10/misc.c:551
 msgid "Uncompressed"
-msgstr "Nedekomprimované"
+msgstr "Nekomprimované"
 
 #: g10/misc.c:629
 #, c-format
@@ -3966,7 +3966,7 @@ msgid ""
 "user: \""
 msgstr ""
 "\n"
-"Musíte pozna» heslo, abyste odomkli tajný kµúè pre\n"
+"Musíte pozna» heslo, aby ste odomkli tajný kµúè pre\n"
 "u¾ívateµa: \""
 
 #: g10/passphrase.c:1093
@@ -3986,32 +3986,32 @@ msgstr "Vlo¾te heslo: "
 msgid "Repeat passphrase: "
 msgstr "Opakujte heslo: "
 
-#: g10/plaintext.c:69
+#: g10/plaintext.c:87
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "dáta neboli ulo¾ené; na ich ulo¾enie pou¾ite prepínaè \"--output\"\n"
 
-#: g10/plaintext.c:110
+#: g10/plaintext.c:128
 #, c-format
 msgid "error creating `%s': %s\n"
 msgstr "chyba pri vytváraní `%s': %s\n"
 
-#: g10/plaintext.c:387
+#: g10/plaintext.c:405
 msgid "Detached signature.\n"
 msgstr "Podpis oddelený od dokumentu.\n"
 
-#: g10/plaintext.c:391
+#: g10/plaintext.c:409
 msgid "Please enter name of data file: "
 msgstr "Prosím, vlo¾te názov dátového súboru: "
 
-#: g10/plaintext.c:412
+#: g10/plaintext.c:430
 msgid "reading stdin ...\n"
 msgstr "èítam ¹tandardný vstup (stdin) ...\n"
 
-#: g10/plaintext.c:446
+#: g10/plaintext.c:464
 msgid "no signed data\n"
 msgstr "chýbajú podpísané dáta\n"
 
-#: g10/plaintext.c:454
+#: g10/plaintext.c:472
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "nemô¾em otvori» podpísané dáta '%s'\n"
@@ -4096,20 +4096,25 @@ msgstr "tajné èasti kµúèa nie sú dostupné\n"
 msgid "protection algorithm %d%s is not supported\n"
 msgstr "ochranný algoritmus %d%s nie je podporováný\n"
 
-#: g10/seckey-cert.c:233
+#: g10/seckey-cert.c:70
+#, fuzzy, c-format
+msgid "protection digest %d is not supported\n"
+msgstr "ochranný algoritmus %d%s nie je podporováný\n"
+
+#: g10/seckey-cert.c:239
 msgid "Invalid passphrase; please try again"
 msgstr "Neplatné heslo; prosím, skúste to znovu"
 
-#: g10/seckey-cert.c:234
+#: g10/seckey-cert.c:240
 #, c-format
 msgid "%s ...\n"
 msgstr "%s ...\n"
 
-#: g10/seckey-cert.c:291
+#: g10/seckey-cert.c:297
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
 msgstr "VAROVANIE: Zistený slabý kµúè - zmeòte, prosím, znovu heslo.\n"
 
-#: g10/seckey-cert.c:329
+#: g10/seckey-cert.c:335
 msgid "generating the deprecated 16-bit checksum for secret key protection\n"
 msgstr ""
 "generujem zastaralý 16 bitový kontrolný súèet na ochranu tajného kµúèa\n"
@@ -4121,12 +4126,13 @@ msgstr "VAROVANIE: konflikt hashu podpisu v správe\n"
 #: g10/sig-check.c:93
 #, c-format
 msgid "WARNING: signing subkey %08lX is not cross-certified\n"
-msgstr ""
+msgstr "VAROVANIE: podpisovací podkµúè %08lX nie je krí¾ovo certifikovaný\n"
 
 #: g10/sig-check.c:96
 #, c-format
 msgid "WARNING: signing subkey %08lX has an invalid cross-certification\n"
 msgstr ""
+"VAROVANIE: podpisovací podkµúè %08lX má neplatnú krí¾ovú certifikáciu\n"
 
 #: g10/sig-check.c:233
 #, c-format
@@ -4236,8 +4242,7 @@ msgstr "VAROVANIE: súbor `%s' je prázdny\n"
 #: g10/sign.c:659
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
-"v móde --pgp2 mô¾ete vytvori» len oddelený podpis (detach-sign)s kµúèa vo "
-"formáte PGP-2.x\n"
+"v móde --pgp2 mô¾ete vytvori» len oddelený podpis kµúèa vo formáte PGP-2.x\n"
 
 #: g10/sign.c:683 g10/sign.c:919
 #, c-format

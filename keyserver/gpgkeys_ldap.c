@@ -31,7 +31,14 @@
 #ifdef NEED_LBER_H
 #include <lber.h>
 #endif
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <winldap.h>
+#else
 #include <ldap.h>
+#endif
+
 #include "keyserver.h"
 
 #ifdef __riscos__
