@@ -1,5 +1,9 @@
 2004-10-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (ask_key_flags): New.
+	(ask_algo): Call it here in --expert mode so we don't need to
+	specify each possible variation of RSA capabilities.
+
 	* keygen.c (do_add_key_flags): The spec says that all primary keys
 	MUST be able to certify.  Force the certify flag on for primaries
 	(and off for subkeys).

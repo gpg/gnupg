@@ -1196,6 +1196,100 @@ check_valid_days( const char *s )
 }
 
 
+static void
+print_key_flags(int flags)
+{
+  if(flags&PUBKEY_USAGE_SIG)
+    tty_printf("%s ",_("Sign"));
+
+  if(flags&PUBKEY_USAGE_ENC)
+    tty_printf("%s ",_("Encrypt"));
+
+  if(flags&PUBKEY_USAGE_AUTH)
+    tty_printf("%s ",_("Authenticate"));
+}
+
+
+/* Returns the key flags */
+static unsigned int
+ask_key_flags(int algo)
+{
+  const char *togglers=_("SsEeAaQq");
+  char *answer=NULL;
+  unsigned int current=0;
+  unsigned int possible=openpgp_pk_algo_usage(algo);
+
+  if(strlen(togglers)!=8)
+    BUG();
+
+  /* Preload the current set with the possible set, minus
+     authentication, since nobody really uses auth yet. */
+  current=possible&~PUBKEY_USAGE_AUTH;
+
+  for(;;)
+    {
+      tty_printf("\n");
+      tty_printf(_("Possible actions for a %s key: "),
+		 pubkey_algo_to_string(algo));
+      print_key_flags(possible);
+      tty_printf("\n");
+      tty_printf(_("Current allowed actions: "));
+      print_key_flags(current);
+      tty_printf("\n\n");
+
+      if(possible&PUBKEY_USAGE_SIG)
+	tty_printf(_("   (%c) Toggle the sign capability\n"),
+		   togglers[0]);
+      if(possible&PUBKEY_USAGE_ENC)
+	tty_printf(_("   (%c) Toggle the encrypt capability\n"),
+		   togglers[2]);
+      if(possible&PUBKEY_USAGE_AUTH)
+	tty_printf(_("   (%c) Toggle the authenticate capability\n"),
+		   togglers[4]);
+
+      tty_printf(_("   (%c) Finished\n"),togglers[6]);
+      tty_printf("\n");
+
+      m_free(answer);
+      answer = cpr_get("keygen.flags",_("Your selection? "));
+      cpr_kill_prompt();
+
+      if(strlen(answer)>1)
+	continue;
+      else if(*answer=='\0' || *answer==togglers[6] || *answer==togglers[7])
+	break;
+      else if((*answer==togglers[0] || *answer==togglers[1])
+	      && possible&PUBKEY_USAGE_SIG)
+	{
+	  if(current&PUBKEY_USAGE_SIG)
+	    current&=~PUBKEY_USAGE_SIG;
+	  else
+	    current|=PUBKEY_USAGE_SIG;
+	}
+      else if((*answer==togglers[2] || *answer==togglers[3])
+	      && possible&PUBKEY_USAGE_ENC)
+	{
+	  if(current&PUBKEY_USAGE_ENC)
+	    current&=~PUBKEY_USAGE_ENC;
+	  else
+	    current|=PUBKEY_USAGE_ENC;
+	}
+      else if((*answer==togglers[4] || *answer==togglers[5])
+	      && possible&PUBKEY_USAGE_AUTH)
+	{
+	  if(current&PUBKEY_USAGE_AUTH)
+	    current&=~PUBKEY_USAGE_AUTH;
+	  else
+	    current|=PUBKEY_USAGE_AUTH;
+	}
+    }
+
+  m_free(answer);
+
+  return current;
+}
+
+
 /****************
  * Returns: 0 to create both a DSA and a Elgamal key.
  *          and only if key flags are to be written the desired usage.
@@ -1217,15 +1311,7 @@ ask_algo (int addmode, unsigned int *r_usage)
     if (addmode)
         tty_printf(    _("   (%d) RSA (encrypt only)\n"), 5 );
     if (opt.expert)
-      tty_printf(    _("   (%d) RSA (sign and encrypt)\n"), 6 );
-    if (opt.expert && addmode)
-      tty_printf(    _("   (%d) RSA (auth only)\n"), 7 );
-    if (opt.expert)
-      tty_printf(    _("   (%d) RSA (sign and auth)\n"), 8 );
-    if (opt.expert && addmode)
-      tty_printf(    _("   (%d) RSA (encrypt and auth)\n"), 9 );
-    if (opt.expert)
-      tty_printf(    _("  (%d) RSA (sign, encrypt and auth)\n"), 10 );
+      tty_printf(    _("   (%d) RSA (set your own capabilities)\n"), 6 );
 
     for(;;) {
 	answer = cpr_get("keygen.algo",_("Your selection? "));
@@ -1236,29 +1322,9 @@ ask_algo (int addmode, unsigned int *r_usage)
 	    algo = 0;	/* create both keys */
 	    break;
 	}
-	else if( algo == 10 && opt.expert ) {
-	    algo = PUBKEY_ALGO_RSA;
-	    *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
-	    break;
-	}
-	else if( algo == 9 && opt.expert && addmode) {
-	    algo = PUBKEY_ALGO_RSA;
-	    *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
-	    break;
-	}
-	else if( algo == 8 && opt.expert ) {
-	    algo = PUBKEY_ALGO_RSA;
-	    *r_usage = PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
-	    break;
-	}
-	else if( algo == 7 && opt.expert && addmode) {
-	    algo = PUBKEY_ALGO_RSA;
-	    *r_usage = PUBKEY_USAGE_AUTH;
-	    break;
-	}
 	else if( algo == 6 && opt.expert ) {
 	    algo = PUBKEY_ALGO_RSA;
-	    *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG;
+	    *r_usage=ask_key_flags(algo);
 	    break;
 	}
 	else if( algo == 5 && addmode ) {
@@ -1284,6 +1350,7 @@ ask_algo (int addmode, unsigned int *r_usage)
 	else
 	    tty_printf(_("Invalid selection.\n"));
     }
+
     return algo;
 }
 
