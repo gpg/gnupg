@@ -143,12 +143,18 @@ modify_description (const char *description,
 		    const char *comment, size_t comment_length,
 		    char **description_modified)
 {
-  size_t description_length = strlen (description);
+  size_t description_length = description ? strlen (description) : 0;
   size_t description_new_length = description_length;
   gpg_error_t err = GPG_ERR_NO_ERROR;
   char *description_new = NULL;
   unsigned int i = 0, j = 0;
   unsigned int special = 0;
+
+  if (! description)
+    {
+      *description_modified = NULL;
+      return err;
+    }
 
   /* Calculate length.  */
   for (i = 0; i < description_length; i++)

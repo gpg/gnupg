@@ -1,3 +1,7 @@
+2004-08-09  Moritz Schulte  <moritz@g10code.com>
+
+	* findkey.c (modify_description): Accept description being NULL.
+
 2004-08-07  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_key_to_sexp_buffer): New argument: comment;
