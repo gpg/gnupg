@@ -1,3 +1,7 @@
+2004-01-13  Werner Koch  <wk@gnupg.org>
+
+	* hkp.c (hkp_export): Send a content-type line.
+
 2004-01-09  David Shaw  <dshaw@localhost.localdomain>
 
 	* packet.h, getkey.c (merge_selfsigs, merge_selfsigs_main),
