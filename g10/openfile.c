@@ -83,7 +83,7 @@ overwrite_filep( const char *fname )
 
     tty_printf(_("File `%s' exists. "), fname);
     if( cpr_get_answer_is_yes("openfile.overwrite.okay",
-			       _("Overwrite (y/N)? ")) )
+			       _("Overwrite? (y/N) ")) )
 	return 1;
     return 0;
 }

@@ -1400,12 +1400,13 @@ ask_keysize( int algo )
 		_("Keysizes larger than 2048 are not suggested because\n"
 		  "computations take REALLY long!\n"));
 	    if( cpr_get_answer_is_yes("keygen.size.huge.okay",_(
-			"Are you sure that you want this keysize? ")) ) {
+			"Are you sure that you want this keysize? (y/N) ")) )
+	      {
 		tty_printf(_("Okay, but keep in mind that your monitor "
 			     "and keyboard radiation is also very vulnerable "
 			     "to attacks!\n"));
 		break;
-	    }
+	      }
 	}
 	else
 	    break;
@@ -1529,7 +1530,7 @@ ask_expire_interval(int object)
 	}
 
 	if( cpr_enabled() || cpr_get_answer_is_yes("keygen.valid.okay",
-					    _("Is this correct (y/n)? ")) )
+					    _("Is this correct? (y/N) ")) )
 	    break;
     }
     m_free(answer);
@@ -2974,7 +2975,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     nbits = ask_keysize( algo );
     expire = ask_expire_interval(0);
     if( !cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
-						  _("Really create? ") ) )
+						  _("Really create? (y/N) ")))
 	goto leave;
 
     if( passphrase ) {
@@ -3096,7 +3097,7 @@ generate_card_subkeypair (KBNODE pub_keyblock, KBNODE sec_keyblock,
   else
     use = PUBKEY_USAGE_AUTH;
   if (!cpr_enabled() && !cpr_get_answer_is_yes("keygen.cardsub.okay",
-                                               _("Really create? ") ) )
+                                               _("Really create? (y/N) ")))
     goto leave;
 
   if (passphrase)

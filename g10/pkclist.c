@@ -294,7 +294,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
         if (trust == TRUST_ULTIMATE
             && !cpr_get_answer_is_yes ("edit_ownertrust.set_ultimate.okay",
                                        _("Do you really want to set this key"
-                                         " to ultimate trust? ")))
+                                         " to ultimate trust? (y/N) ")))
           ; /* no */
         else
           {
@@ -441,7 +441,7 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
       tty_printf("\n");
 
       if( cpr_get_answer_is_yes("untrusted_key.override",
-				_("Use this key anyway? "))  )
+				_("Use this key anyway? (y/N) "))  )
 	rc = 1;
 
       /* Hmmm: Should we set a flag to tell the user about

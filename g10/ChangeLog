@@ -1,5 +1,9 @@
 2004-10-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* card-util.c, keyedit.c, openfile.c, pkclist.c, delkey.c,
+	keygen.c, photoid.c, revoke.c: Some yes-or-no prompts end in
+	"(y/n)".  Some don't.  Consistently use y/n everywhere.
+
 	* keygen.c (ask_key_flags): New.
 	(ask_algo): Call it here in --expert mode so we don't need to
 	specify each possible variation of RSA capabilities.

@@ -860,7 +860,7 @@ replace_existing_key_p (struct agent_card_info_s *info, int keyno)
       log_info ("WARNING: such a key has already been stored on the card!\n");
       tty_printf ("\n");
       if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_key",
-                                  _("Replace existing key? ")))
+                                  _("Replace existing key? (y/N) ")))
         return -1;
     }
   return 0;
@@ -878,9 +878,21 @@ generate_card_keys (const char *serialno)
   if (get_info_for_key_operation (&info))
     return;
 
+#if GNUPG_MAJOR_VERSION == 1
+  {
+    char *answer=cpr_get("cardedit.genkeys.backup_enc",
+			 _("Make off-card backup of encryption key? (Y/n) "));
+
+    want_backup=answer_is_yes_no_default(answer,1);
+    cpr_kill_prompt();
+    m_free(answer);
+  }
+#else
+  /* Does 1.9 have answer_is_yes_no_default() ? */
   want_backup = !(cpr_get_answer_is_yes 
                   ( "cardedit.genkeys.backup_enc",
-                    _("Inhibit creation of encryption key backup? ")));
+		    _("Inhibit off-card backup of encryption key? (y/N) ")));
+#endif
 
   if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
        || (info.fpr2valid && !fpr_is_zero (info.fpr2))
@@ -890,7 +902,7 @@ generate_card_keys (const char *serialno)
       log_info ("NOTE: keys are already stored on the card!\n");
       tty_printf ("\n");
       if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_keys",
-                                  _("Replace existing keys? ")))
+                                  _("Replace existing keys? (y/N) ")))
         {
           agent_release_card_info (&info);
           return;

@@ -964,7 +964,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	if( opt.batch && opt.answer_yes )
 	  ;
-	else if( !cpr_get_answer_is_yes("sign_uid.okay", _("Really sign? ")) )
+	else if( !cpr_get_answer_is_yes("sign_uid.okay",
+					_("Really sign? (y/N) ")) )
 	    continue;
 
 	/* now we can sign the user ids */
@@ -1116,7 +1117,7 @@ change_passphrase( KBNODE keyblock )
 		tty_printf(_( "You don't want a passphrase -"
 			    " this is probably a *bad* idea!\n\n"));
 		if( cpr_get_answer_is_yes("change_passwd.empty.okay",
-			       _("Do you really want to do this? ")))
+			       _("Do you really want to do this? (y/N) ")))
 		  {
 		    changed++;
 		    break;
@@ -1474,13 +1475,15 @@ keyedit_menu( const char *username, STRLIST locusr,
 		  }
 	      }
 
-	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) ) {
+	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) )
+	      {
 		if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
-					   _("Really sign all user IDs? ")) ) {
+					_("Really sign all user IDs? (y/N) ")))
+		  {
 		    tty_printf(_("Hint: Select the user IDs to sign\n"));
 		    break;
-		}
-	    }
+		  }
+	      }
 
 	    sign_uids( keyblock, locusr, &modified,
 		       (cmd == cmdLSIGN) || (cmd == cmdNRLSIGN),
@@ -1527,10 +1530,9 @@ keyedit_menu( const char *username, STRLIST locusr,
 		    tty_printf(_("You must select at least one user ID.\n"));
 		else if( real_uids_left(keyblock) < 1 )
 		    tty_printf(_("You can't delete the last user ID!\n"));
-		else if( cpr_get_answer_is_yes(
-			    "keyedit.remove.uid.okay",
-			n1 > 1? _("Really remove all selected user IDs? ")
-			      : _("Really remove this user ID? ")
+		else if( cpr_get_answer_is_yes("keyedit.remove.uid.okay",
+	       	n1 > 1? _("Really remove all selected user IDs? (y/N) ")
+			    : _("Really remove this user ID? (y/N) ")
 		       ) ) {
 		    menu_deluid( keyblock, sec_keyblock );
 		    redisplay = 1;
@@ -1580,7 +1582,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 	      {
 	      case 0:
 		if (cpr_get_answer_is_yes("keyedit.keytocard.use_primary",
-					  _("Really move the primary key? ")))
+				     _("Really move the primary key? (y/N) ")))
 		  node = sec_keyblock;
 		break;
 	      case 1:
@@ -1615,8 +1617,8 @@ keyedit_menu( const char *username, STRLIST locusr,
 		    tty_printf(_("You must select at least one key.\n"));
 		else if( !cpr_get_answer_is_yes( "keyedit.remove.subkey.okay",
 		       n1 > 1?
-			_("Do you really want to delete the selected keys? "):
-			_("Do you really want to delete this key? ")
+		   _("Do you really want to delete the selected keys? (y/N) "):
+			_("Do you really want to delete this key? (y/N) ")
 		       ))
 		    ;
 		else {
@@ -1651,8 +1653,8 @@ keyedit_menu( const char *username, STRLIST locusr,
 		    tty_printf(_("You must select at least one user ID.\n"));
 		else if( cpr_get_answer_is_yes(
 			    "keyedit.revoke.uid.okay",
-			n1 > 1? _("Really revoke all selected user IDs? ")
-			      : _("Really revoke this user ID? ")
+		       n1 > 1? _("Really revoke all selected user IDs? (y/N) ")
+		             : _("Really revoke this user ID? (y/N) ")
 		       ) ) {
 		  if(menu_revuid(keyblock,sec_keyblock))
 		    {
@@ -1671,8 +1673,8 @@ keyedit_menu( const char *username, STRLIST locusr,
 		else if( sec_keyblock && !cpr_get_answer_is_yes(
 			    "keyedit.revoke.subkey.okay",
 		       n1 > 1?
-			_("Do you really want to revoke the selected keys? "):
-			_("Do you really want to revoke this key? ")
+		   _("Do you really want to revoke the selected keys? (y/N) "):
+		   _("Do you really want to revoke this key? (y/N) ")
 		       ))
 		    ;
 		else {
@@ -1749,16 +1751,18 @@ keyedit_menu( const char *username, STRLIST locusr,
             }
             if (cpr_get_answer_is_yes ("keyedit.updpref.okay",
                                         count_selected_uids (keyblock)?
-                                        _("Really update the preferences"
-                                          " for the selected user IDs? "):
-                                       _("Really update the preferences? "))){
+                                       _("Really update the preferences"
+					 " for the selected user IDs? (y/N) "):
+                                   _("Really update the preferences? (y/N) ")))
+	      {
 
-                if ( menu_set_preferences (keyblock, sec_keyblock) ) {
-                    merge_keys_and_selfsig (keyblock);
-                    modified = 1;
-                    redisplay = 1;
-                }
-            }
+                if ( menu_set_preferences (keyblock, sec_keyblock) )
+		  {
+		    merge_keys_and_selfsig (keyblock);
+		    modified = 1;
+		    redisplay = 1;
+		  }
+	      }
 	    break;
 
 	  case cmdPREFKS:
@@ -1799,10 +1803,10 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    if( !modified && !sec_modified )
 		goto leave;
 	    if( !cpr_get_answer_is_yes("keyedit.save.okay",
-					_("Save changes? ")) ) {
+					_("Save changes? (y/N) ")) ) {
 		if( cpr_enabled()
 		    || cpr_get_answer_is_yes("keyedit.cancel.okay",
-					     _("Quit without saving? ")) )
+					     _("Quit without saving? (y/N) ")))
 		    goto leave;
 		break;
 	    }
@@ -2960,7 +2964,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
 
       if(!cpr_get_answer_is_yes("keyedit.add_revoker.okay",
 				_("Are you sure you want to appoint this "
-				  "key as a designated revoker? (y/N): ")))
+				  "key as a designated revoker? (y/N) ")))
 	continue;
 
       free_public_key(revoker_pk);

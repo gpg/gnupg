@@ -276,7 +276,7 @@ gen_desig_revoke( const char *uname )
 	    tty_printf("\n");
 
 	    if( !cpr_get_answer_is_yes("gen_desig_revoke.okay",
-		       _("Create a revocation certificate for this key? ")) )
+         _("Create a designated revocation certificate for this key? (y/N) ")))
 	      continue;
 
 	    /* get the reason for the revocation (this is always v4) */
@@ -473,10 +473,11 @@ gen_revoke( const char *uname )
 
     tty_printf("\n");
     if( !cpr_get_answer_is_yes("gen_revoke.okay",
-			_("Create a revocation certificate for this key? ")) ){
+		  _("Create a revocation certificate for this key? (y/N) ")) )
+      {
 	rc = 0;
 	goto leave;
-    }
+      }
 
     if(sk->version>=4 || opt.force_v4_certs) {
       /* get the reason for the revocation */
@@ -673,7 +674,7 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
 	    tty_printf("%s\n", description );
 
     } while( !cpr_get_answer_is_yes("ask_revocation_reason.okay",
-					    _("Is this okay? "))  );
+					    _("Is this okay? (y/N) "))  );
 
     reason = m_alloc( sizeof *reason );
     reason->code = code;

@@ -95,7 +95,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 	{
 	  tty_printf( _("This JPEG is really large (%d bytes) !\n"),len);
 	  if(!cpr_get_answer_is_yes("photoid.jpeg.size",
-			    _("Are you sure you want to use it (y/N)? ")))
+			    _("Are you sure you want to use it? (y/N) ")))
 	  {
 	    iobuf_close(file);
 	    continue;

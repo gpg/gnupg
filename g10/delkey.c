@@ -136,7 +136,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 
 	yes = cpr_get_answer_is_yes( secret? "delete_key.secret.okay"
 					   : "delete_key.okay",
-			      _("Delete this key from the keyring? "));
+			      _("Delete this key from the keyring? (y/N) "));
 	if( !cpr_enabled() && secret && yes ) {
 	    /* I think it is not required to check a passphrase; if
 	     * the user is so stupid as to let others access his secret keyring
@@ -144,7 +144,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 	     * basic texts about security.
 	     */
 	    yes = cpr_get_answer_is_yes("delete_key.secret.okay",
-			 _("This is a secret key! - really delete? "));
+			 _("This is a secret key! - really delete? (y/N) "));
 	}
 	if( yes )
 	    okay++;
