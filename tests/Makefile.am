@@ -24,17 +24,23 @@ GPGSM = ../sm/gpgsm
 # We can't unset a variable here so we unset GPG_AGENT_INFO in runtest
 TESTS_ENVIRONMENT = GNUPGHOME=`pwd` LC_ALL=C GPGSM=$(GPGSM) $(srcdir)/runtest
 
-EXTRA_DIST = runtest inittests \
+testscripts = sm-sign+verify sm-verify
+
+EXTRA_DIST = runtest inittests $(testscripts) \
 	     text-1.txt text-2.txt text-3.txt \
 	     text-1.osig.pem text-1.dsig.pem text-1.osig-bad.pem \
-	     text-2.osig.pem text-2.osig-bad.pem
+	     text-2.osig.pem text-2.osig-bad.pem \
+             samplekeys/32100C27173EF6E9C4E9A25D3D69F86D37A4F939.key \
+             samplekeys/cert_g10code_pete1.pem \
+             samplekeys/cert_g10code_test1.pem \
+             samplekeys/cert_g10code_theo1.pem
 
-TESTS = sm-sign+verify sm-verify
+TESTS = $(testscripts)
 
 CLEANFILES = inittests.stamp x y y z out err 
 	     *.lock .\#lk* 
 
-DISTCLEANFILES = keyring.kbx~ random_seed
+DISTCLEANFILES = pubring.kbx~ random_seed
 
 noinst_PROGRAMS = asschk
 
@@ -44,22 +50,9 @@ asschk_SOURCES = asschk.c
 all-local: inittests.stamp
 
 clean-local:
-	$(TESTS_ENVIRONMENT) $(srcdir)/inittests --clean
+	srcdir=$(srcdir) $(TESTS_ENVIRONMENT) $(srcdir)/inittests --clean
 
 inittests.stamp: inittests
-	$(TESTS_ENVIRONMENT) $(srcdir)/inittests
+	srcdir=$(srcdir) $(TESTS_ENVIRONMENT) $(srcdir)/inittests
 	echo timestamp >./inittests.stamp
-
-# Include all files listed in the samplekeys/distfiles
-dist-hook:
-	@set -e; \
-         dir=$(srcdir)/samplekeys ; \
-         $(mkinstalldirs) $(distdir)/$$dir ; \
-         for i in distfiles `cat $$dir/distfiles` ; do \
-		ln $(srcdir)/$$dir/$$i $(distdir)/$$dir/$$i 2> /dev/null \
-		|| cp -p $(srcdir)/$$dir/$$i $(distdir)/$$dir/$$i; \
-	 done
-
-
-
 

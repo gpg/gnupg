@@ -3,7 +3,8 @@
 # Creating a signature and verifying it
 # Requirements: a plain file "text-1.txt" 
 
-plaintext = text-1.txt
+srcdir = getenv srcdir
+plaintext = let $srcdir/text-1.txt
 
 in  = openfile $plaintext
 out = createfile msg.sig

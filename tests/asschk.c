@@ -30,8 +30,8 @@
    a line is processed but after comment processing.  Macros are only
    expanded once and non existing macros expand to the empty string.
    A macro is dereferenced by prefixing its name with a dollar sign;
-   the end of the name is currently indicated by a white space.  To
-   use a dollor sign verbatim, double it. 
+   the end of the name is currently indicated by a white space, a
+   dollar sign or a slash.  To use a dollor sign verbatim, double it.
 
    A macro is assigned by prefixing a statement with the macro name
    and an equal sign.  The value is assigned verbatim if it does not
@@ -95,6 +95,9 @@
 
    cmpfiles <first> <second>
       Returns true when the content of the files FIRST and SECOND match.
+
+   getenv <name>
+      Return the value of the environment variable NAME.
 
 */
 
@@ -571,7 +574,8 @@ expand_line (char *buffer)
           line = p + 1;
           continue;
         }
-      for (pend=p+1; *pend && !spacep (pend) && *pend != '$'; pend++)
+      for (pend=p+1; *pend && !spacep (pend)
+           && *pend != '$' && *pend != '/'; pend++)
         ;
       if (*pend)
         {
@@ -854,6 +858,17 @@ cmd_cmpfiles (const char *assign_to, char *arg)
   fclose (fp2);
 }
 
+static void
+cmd_getenv (const char *assign_to, char *arg)
+{
+  const char *s;
+  s = *arg? getenv (arg):"";
+  set_var (assign_to, s? s:"");
+}
+
+
+
+
 /* Process the current script line LINE. */
 static int
 interpreter (char *line)
@@ -875,6 +890,7 @@ interpreter (char *line)
     { "quit-if"   , cmd_quit_if },
     { "fail-if"   , cmd_fail_if },
     { "cmpfiles"  , cmd_cmpfiles },
+    { "getenv"    , cmd_getenv },
     { NULL }
   };
   char *p, *save_p;

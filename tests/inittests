@@ -11,7 +11,7 @@
 
 set -e
 
-sample_cert='
+sample_certs='
 cert_g10code_test1.pem
 cert_g10code_pete1.pem
 cert_g10code_theo1.pem
@@ -22,7 +22,7 @@ private_keys='
 '
 
 clean_files='
-gpgsm.conf gpg-agent.conf trustlist.txt keyring.kbx
+gpgsm.conf gpg-agent.conf trustlist.txt pubring.kbx
 msg msg.sig msg.unsig
 '
 
@@ -34,8 +34,12 @@ if [ -d $srcdir/samplekeys ] \
    && grep TESTS_ENVIRONMENT Makefile >/dev/null 2>&1; then
  :
 else
-    echo "inittests: please cd to the tests directory first" >&2
-    exit 1
+   # During make distclean the Makefile has already been removed,
+   # so we need this extra test.
+   if ! grep gnupg-test-directory testdir.stamp >/dev/null 2>&1; then
+      echo "inittests: please cd to the tests directory first" >&2
+      exit 1
+   fi
 fi
 
 if [ "$1" = "--clean" ]; then
@@ -43,7 +47,7 @@ if [ "$1" = "--clean" ]; then
        rm private-keys-v1.d/* 2>/dev/null || true
        rmdir private-keys-v1.d
     fi
-    rm ${clean_files} 2>/dev/null || true
+    rm ${clean_files} testdir.stamp 2>/dev/null || true
     exit 0
 fi
 
@@ -57,13 +61,15 @@ if [ -n "$GPG_AGENT_INFO" ]; then
     exit 1
 fi
 
+# A stamp file used with --clean
+echo gnupg-test-directory > testdir.stamp
 
 
 # Create the private key directy if it does not exists and copy 
 # the sample keys.
 [ -d private-keys-v1.d ] || mkdir private-keys-v1.d
 for i in ${private_keys}; do 
-    cp ${srcdir}/samplekeys/$i.key private-keys-v1.d/$i.key
+    cat ${srcdir}/samplekeys/$i.key >private-keys-v1.d/$i.key
 done
 
 # Create the configuration scripts
@@ -83,7 +89,8 @@ cat > trustlist.txt <<EOF
 3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E S
 EOF
 
-# Make sure that the sample certs are available
+# Make sure that the sample certs are available but ignore errors here
+# because we are not a test script.
 for i in ${sample_certs}; do 
-    $GPGSM --import ${srcdir}/samplekeys/$i.pem 
+    $GPGSM --import ${srcdir}/samplekeys/$i || true
 done

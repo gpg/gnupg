@@ -4,8 +4,10 @@
 # Requirements: 
 #
 
+srcdir = getenv srcdir
+
 # Check an opaque signature
-sig = openfile text-1.osig.pem
+sig = openfile $srcdir/text-1.osig.pem
 out = createfile msg.unsig
 pipeserver $GPGSM
 send INPUT FD=$sig
@@ -26,12 +28,12 @@ expect-ok
 
 sig =
 out =
-cmpfiles text-1.txt msg.unsig
+cmpfiles $srcdir/text-1.txt msg.unsig
 fail-if !$?
 
 # Check a detached signature.
-sig = openfile text-1.dsig.pem
-plain = openfile text-1.txt
+sig = openfile $srcdir/text-1.dsig.pem
+plain = openfile $srcdir/text-1.txt
 pipeserver $GPGSM
 send INPUT FD=$sig
 expect-ok
@@ -50,7 +52,7 @@ send BYE
 expect-ok
 
 # Check a tampered opaque message
-sig = openfile text-1.osig-bad.pem
+sig = openfile $srcdir/text-1.osig-bad.pem
 out = createfile msg.unsig
 
 pipeserver $GPGSM
@@ -71,7 +73,7 @@ send BYE
 expect-ok
 
 # Check another opaque signature but without asking for the output.
-sig = openfile text-2.osig.pem
+sig = openfile $srcdir/text-2.osig.pem
 
 pipeserver $GPGSM
 send INPUT FD=$sig
@@ -89,7 +91,7 @@ send BYE
 expect-ok
 
 # We als have tampered version.
-sig = openfile text-2.osig-bad.pem
+sig = openfile $srcdir/text-2.osig-bad.pem
 
 pipeserver $GPGSM
 send INPUT FD=$sig
