@@ -1,3 +1,12 @@
+2003-07-24  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New command --card-status.
+	* card-util.c (card_status): New.
+	* call-agent.c (learn_status_cb): Parse more information.
+
+	* keylist.c (print_pubkey_info): Add FP arg for optinal printing
+	to a stream.  Changed all callers.
+
 2003-07-23  Werner Koch  <wk@gnupg.org>
 
 	* keygen.c (generate_keypair): Create an AUTHKEYTYPE entry for cards.

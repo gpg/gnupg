@@ -25,13 +25,22 @@ struct agent_card_info_s {
   int error;         /* private. */
   char *serialno;    /* malloced hex string. */
   char *disp_name;   /* malloced. */
+  char *disp_lang;   /* malloced. */
+  int  disp_sex;     /* 0 = unspecified, 1 = male, 2 = female */
   char *pubkey_url;  /* malloced. */
+  char *login_data;  /* malloced. */
   char fpr1valid;
   char fpr2valid;
   char fpr3valid;
   char fpr1[20];
   char fpr2[20];
   char fpr3[20];
+  unsigned long sig_counter;
+  int chv1_cached;   /* True if a PIN is not required for each
+                        signing.  Note that the gpg-agent might cache
+                        it anyway. */
+  int chvmaxlen[3];  /* Maximum allowed length of a CHV. */
+  int chvretry[3];   /* Allowed retries for the CHV; 0 = blocked. */
 };
 
 struct agent_card_genkey_s {

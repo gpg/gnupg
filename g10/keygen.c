@@ -2712,7 +2712,7 @@ show_smartcard (struct agent_card_info_s *info)
   show_sha1_fpr (info->fpr3valid? info->fpr3:NULL);
 
   if (info->fpr1valid && !get_pubkey_byfprint (pk, info->fpr1, 20))
-    print_pubkey_info (pk);
+    print_pubkey_info (NULL, pk);
 
   free_public_key( pk );
 }

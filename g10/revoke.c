@@ -264,7 +264,7 @@ gen_desig_revoke( const char *uname )
 
 	    any = 1;
 
-            print_pubkey_info (pk);
+            print_pubkey_info (NULL, pk);
 	    tty_printf ("\n");
 
 	    tty_printf (_("To be revoked by:\n"));

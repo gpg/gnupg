@@ -128,6 +128,7 @@ enum cmd_and_opt_values { aNull = 0,
     aPipeMode,
     aRebuildKeydbCaches,
     aRefreshKeys,
+    aCardStatus,
     aChangePIN,
 
     oTextmode,
@@ -363,6 +364,7 @@ static ARGPARSE_OPTS opts[] = {
     { aExportSecretSub, "export-secret-subkeys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
     { aFastImport, "fast-import",  256 , "@"},
+    { aCardStatus,  "card-status", 256, N_("print the card status")},
     { aChangePIN,  "change-pin", 256, N_("change a card's PIN")},
 
     { aListPackets, "list-packets",256,N_("list only the sequence of packets")},
@@ -1444,6 +1446,7 @@ main( int argc, char **argv )
           case aPipeMode: set_cmd( &cmd, aPipeMode); break;
           case aRebuildKeydbCaches: set_cmd( &cmd, aRebuildKeydbCaches); break;
 
+          case aCardStatus: set_cmd (&cmd, aCardStatus); break;
           case aChangePIN: set_cmd (&cmd, aChangePIN); break;
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
@@ -2346,6 +2349,7 @@ main( int argc, char **argv )
       case aDeArmor:
       case aEnArmor:
       case aFixTrustDB:
+      case aCardStatus:
       case aChangePIN:
 	break;
       case aExportOwnerTrust: rc = setup_trustdb( 0, trustdb_name ); break;
@@ -2866,6 +2870,12 @@ main( int argc, char **argv )
             wrong_args ("--rebuild-keydb-caches");
         keydb_rebuild_caches ();
         break;
+
+    case aCardStatus:
+      if (argc)
+        wrong_args ("--card-status");
+      card_status (stdout);
+      break;
 
     case aChangePIN:
       if (!argc)

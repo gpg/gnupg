@@ -28,6 +28,8 @@
 #include "gpg.h"
 #include "util.h"
 #include "i18n.h"
+#include "ttyio.h"
+#include "status.h"
 #include "options.h"
 #include "main.h"
 #include "call-agent.h"
@@ -64,7 +66,6 @@ change_pin (int chvno)
   for (;;)
     {
       char *answer;
-      int reread = 0;
 
       tty_printf ("\n");
       tty_printf ("1 - change signature PIN\n"
@@ -110,6 +111,149 @@ change_pin (int chvno)
     }
 
 }
+
+static const char *
+get_manufacturer (unsigned int no)
+{
+  switch (no)
+    {
+    case 0:
+    case 0xffff: return "test card";
+    case 0x0001: return "PPC Card Systems";
+    default: return "unknown";
+    }
+}
+
+
+static void
+print_sha1_fpr (FILE *fp, const unsigned char *fpr)
+{
+  int i;
+
+  if (fpr)
+    {
+      for (i=0; i < 20 ; i+=2, fpr += 2 )
+        {
+          if (i == 10 )
+            putc (' ', fp);
+          fprintf (fp, " %02X%02X", *fpr, fpr[1]);
+        }
+    }
+  else
+    fputs (" [none]", fp);
+  putc ('\n', fp);
+}
+
+
+static void
+print_name (FILE *fp, const char *text, const char *name)
+{
+  fputs (text, fp);
+
+  if (name && *name)
+    print_utf8_string2 (fp, name, strlen (name), '\n');
+  else
+    fputs (_("[not set]"), fp);
+  putc ('\n', fp);
+}
+
+static void
+print_isoname (FILE *fp, const char *text, const char *name)
+{
+  fputs (text, fp);
+
+  if (name && *name)
+    {
+      char *p, *given, *buf = xstrdup (name);
+
+      given = strstr (buf, "<<");
+      for (p=buf; *p; p++)
+        if (*p == '<')
+          *p = ' ';
+      if (given && given[2])
+        {
+          *given = 0;
+          given += 2;
+          print_utf8_string2 (fp, given, strlen (given), '\n');
+          if (*buf)
+            putc (' ', fp);
+        }
+      print_utf8_string2 (fp, buf, strlen (buf), '\n');
+      xfree (buf);
+    }
+  else
+    fputs (_("[not set]"), fp);
+  putc ('\n', fp);
+}
+
+
+/* Print all available information about the current card. */
+void
+card_status (FILE *fp)
+{
+  struct agent_card_info_s info;
+  PKT_public_key *pk = xcalloc (1, sizeof *pk);
+  int rc;
+
+  rc = agent_learn (&info);
+  if (rc)
+    {
+      log_error (_("OpenPGP card not available: %s\n"),
+                  gpg_strerror (rc));
+      return;
+    }
+  
+  fprintf (fp, "Application ID ...: %s\n",
+         info.serialno? info.serialno : "[none]");
+  if (!info.serialno || strncmp (info.serialno, "D27600012401", 12) 
+      || strlen (info.serialno) != 32 )
+    {
+      log_info ("not an OpenPGP card\n");
+      agent_release_card_info (&info);
+    }
+  fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n",
+           info.serialno[12] == '0'?"":info.serialno+12,
+           info.serialno[13],
+           info.serialno[14] == '0'?"":info.serialno+14,
+           info.serialno[15]);
+  fprintf (fp, "Manufacturer .....: %s\n", 
+           get_manufacturer (xtoi_2(info.serialno+16)*256
+                             + xtoi_2 (info.serialno+18)));
+  fprintf (fp, "Serial number ....: %.8s\n", info.serialno+20);
+  
+  print_isoname (fp, "Name of cardholder: ", info.disp_name);
+  print_name (fp, "Language prefs ...: ", info.disp_lang);
+  fprintf (fp,    "Sex ..............: %s\n", info.disp_sex == 1? _("male"):
+           info.disp_sex == 2? _("female") : _("unspecified"));
+  print_name (fp, "URL of public key : ", info.pubkey_url);
+  print_name (fp, "Login data .......: ", info.login_data);
+  fprintf (fp,    "Signature PIN ....: %s\n",
+           info.chv1_cached? _("cached"): _("not cached"));
+  fprintf (fp,    "Max. PIN lengths .: %d %d %d\n",
+           info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
+  fprintf (fp,    "PIN retry counter : %d %d %d\n",
+           info.chvretry[0], info.chvretry[1], info.chvretry[2]);
+  fputs ("Signature key ....:", fp);
+  print_sha1_fpr (fp, info.fpr1valid? info.fpr1:NULL);
+  fputs ("Encryption key....:", fp);
+  print_sha1_fpr (fp, info.fpr2valid? info.fpr2:NULL);
+  fputs ("Authentication key:", fp);
+  print_sha1_fpr (fp, info.fpr3valid? info.fpr3:NULL);
+  fputs ("General key info..: ", fp); 
+  if (info.fpr1valid && !get_pubkey_byfprint (pk, info.fpr1, 20))
+    print_pubkey_info (fp, pk);
+  else
+    fputs ("[none]\n", fp);
+  fprintf (fp,    "Signature counter : %lu\n", info.sig_counter);
+  
+  free_public_key (pk);
+  agent_release_card_info (&info);
+}
+
+
+
+
+
 
 
 

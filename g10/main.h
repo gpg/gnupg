@@ -236,7 +236,7 @@ void dump_attribs(const PKT_user_id *uid,
 		  PKT_public_key *pk,PKT_secret_key *sk);
 void set_attrib_fd(int fd);
 void print_seckey_info (PKT_secret_key *sk);
-void print_pubkey_info (PKT_public_key *pk);
+void print_pubkey_info (FILE *fp, PKT_public_key *pk);
 
 /*-- verify.c --*/
 void print_file_status( int status, const char *name, int what );
@@ -256,6 +256,8 @@ void run_in_pipemode (void);
 
 /*-- card-util.c --*/
 void change_pin (int no);
+void card_status (FILE *fp);
+
 
 /*-- signal.c --*/
 void init_signals(void);

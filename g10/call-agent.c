@@ -458,7 +458,9 @@ agent_release_card_info (struct agent_card_info_s *info)
 
   xfree (info->serialno); info->serialno = NULL;
   xfree (info->disp_name); info->disp_name = NULL;
+  xfree (info->disp_lang); info->disp_lang = NULL;
   xfree (info->pubkey_url); info->pubkey_url = NULL;
+  xfree (info->login_data); info->login_data = NULL;
   info->fpr1valid = info->fpr2valid = info->fpr3valid = 0;
 }
 
@@ -468,6 +470,7 @@ learn_status_cb (void *opaque, const char *line)
   struct agent_card_info_s *parm = opaque;
   const char *keyword = line;
   int keywordlen;
+  int i;
 
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
@@ -482,9 +485,58 @@ learn_status_cb (void *opaque, const char *line)
     {
       parm->disp_name = unescape_status_string (line);
     }
+  else if (keywordlen == 9 && !memcmp (keyword, "DISP-LANG", keywordlen))
+    {
+      parm->disp_lang = unescape_status_string (line);
+    }
+  else if (keywordlen == 8 && !memcmp (keyword, "DISP-SEX", keywordlen))
+    {
+      parm->disp_sex = *line == '1'? 1 : *line == '2' ? 2: 0;
+    }
   else if (keywordlen == 10 && !memcmp (keyword, "PUBKEY-URL", keywordlen))
     {
       parm->pubkey_url = unescape_status_string (line);
+    }
+  else if (keywordlen == 10 && !memcmp (keyword, "LOGIN-DATA", keywordlen))
+    {
+      parm->login_data = unescape_status_string (line);
+    }
+  else if (keywordlen == 11 && !memcmp (keyword, "SIG-COUNTER", keywordlen))
+    {
+      parm->sig_counter = strtoul (line, NULL, 0);
+    }
+  else if (keywordlen == 10 && !memcmp (keyword, "CHV-STATUS", keywordlen))
+    {
+      char *p, *buf;
+
+      buf = p = unescape_status_string (line);
+      if (buf)
+        {
+          while (spacep (p))
+            p++;
+          parm->chv1_cached = atoi (p);
+          while (!spacep (p))
+            p++;
+          while (spacep (p))
+            p++;
+          for (i=0; *p && i < 3; i++)
+            {
+              parm->chvmaxlen[i] = atoi (p);
+              while (!spacep (p))
+                p++;
+              while (spacep (p))
+                p++;
+            }
+          for (i=0; *p && i < 3; i++)
+            {
+              parm->chvretry[i] = atoi (p);
+              while (!spacep (p))
+                p++;
+              while (spacep (p))
+                p++;
+            }
+          xfree (buf);
+        }
     }
   else if (keywordlen == 7 && !memcmp (keyword, "KEY-FPR", keywordlen))
     {

@@ -130,7 +130,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
         if( secret )
             print_seckey_info( sk );
         else
-            print_pubkey_info( pk );
+            print_pubkey_info (NULL, pk );
 	tty_printf( "\n" );
 
 	yes = cpr_get_answer_is_yes( secret? "delete_key.secret.okay"
