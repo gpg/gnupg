@@ -1,3 +1,7 @@
+2004-11-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document export-minimal.
+
 2004-10-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Document SIG_SUBPACKET status tag.

@@ -1307,7 +1307,7 @@ opposite meaning.  The options are:
 <variablelist>
 
 <varlistentry>
-<term>allow-local-sigs</term>
+<term>import-local-sigs</term>
 <listitem><para>
 Allow importing key signatures marked as "local".  This is not
 generally useful unless a shared keyring scheme is being used.
@@ -1344,7 +1344,7 @@ opposite meaning.  The options are:
 <variablelist>
 
 <varlistentry>
-<term>include-local-sigs</term>
+<term>export-local-sigs</term>
 <listitem><para>
 Allow exporting key signatures marked as "local".  This is not
 generally useful unless a shared keyring scheme is being used.
@@ -1352,7 +1352,7 @@ Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>include-attributes</term>
+<term>export-attributes</term>
 <listitem><para>
 Include attribute user IDs (photo IDs) while exporting.  This is
 useful to export keys if they are going to be used by an OpenPGP
@@ -1360,10 +1360,17 @@ program that does not accept attribute user IDs.  Defaults to yes.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>include-sensitive-revkeys</term>
+<term>export-sensitive-revkeys</term>
 <listitem><para>
 Include designated revoker information that was marked as
 "sensitive".  Defaults to no.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>export-minimal</term>
+<listitem><para>
+Export the smallest key possible.  Currently this is done by leaving
+out any signatures that are not self-signatures.  Defaults to no.
 </para></listitem></varlistentry>
 
 </variablelist>
