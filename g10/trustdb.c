@@ -2082,8 +2082,12 @@ verify_key( int max_depth, TRUSTREC *drec, const char *namehash,
     if( !tree )
 	return TRUST_UNDEFINED;
     pv_result = propagate_validity( tree, tree, add_fnc, retflgs );
-    if( namehash ) {
+    if( namehash && tree->n.k.validity != TRUST_ULTIMATE ) {
 	/* find the matching user id.
+	 * We don't do this here if the key is ultimately trusted; in
+	 * this case there will be no lits od user IDs and frankly
+	 * it doe not make sense to compare by the name if we do
+	 * have the secret key.
 	 * fixme: the way we handle this is too inefficient */
 	TN ur;
 	TRUSTREC rec;

@@ -1,3 +1,7 @@
+Sat Dec  4 15:32:20 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* trustdb.c (verify_key): Shortcut for ultimately trusted keys.
+
 Sat Dec  4 12:30:28 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* pkclist.c (build_pk_list): Validate the trust using the namehash
