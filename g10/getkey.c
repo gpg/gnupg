@@ -2383,6 +2383,18 @@ get_user_id( u32 *keyid, size_t *rn )
     return p;
 }
 
+char*
+get_user_id_native( u32 *keyid )
+{
+    size_t rn;
+
+    char *p = get_user_id( keyid, &rn );
+    char *p2 = utf8_to_native( p, rn, 0 );
+
+    m_free(p);
+    return p2;
+}
+
 KEYDB_HANDLE
 get_ctx_handle(GETKEY_CTX ctx)
 {

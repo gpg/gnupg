@@ -394,6 +394,8 @@ int exec_write(struct exec_info **info,const char *program,
 		    args_in==NULL?program:shell,
 		    strerror(errno));
 
+	  /* This mimics the POSIX sh behavior - 127 means "not found"
+             from the shell. */
 	  if(errno==ENOENT)
 	    _exit(127);
 
@@ -537,7 +539,10 @@ int exec_finish(struct exec_info *info)
 	 WIFEXITED(info->progreturn))
 	ret=WEXITSTATUS(info->progreturn);
       else
-	ret=127;
+	{
+	  log_error(_("unnatural exit of external program\n"));
+	  ret=127;
+	}
     }
 #endif
 

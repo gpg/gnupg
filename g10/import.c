@@ -501,8 +501,12 @@ import_one( const char *fname, KBNODE keyblock, int fast,
         keydb_release (hd);
 
 	/* we are ready */
-	if( !opt.quiet )
-	    log_info( _("key %08lX: public key imported\n"), (ulong)keyid[1]);
+	if( !opt.quiet ) {
+	    char *p=get_user_id_native(keyid);
+	    log_info( _("key %08lX: public key \"%s\" imported\n"),
+		      (ulong)keyid[1],p);
+	    m_free(p);
+	}
 	if( is_status_enabled() ) {
 	    char *us = get_long_user_id_string( keyid );
 	    write_status_text( STATUS_IMPORTED, us );
@@ -573,24 +577,26 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 
 	    /* we are ready */
 	    if( !opt.quiet ) {
+	        char *p=get_user_id_native(keyid);
 		if( n_uids == 1 )
-		    log_info( _("key %08lX: 1 new user ID\n"),
-					     (ulong)keyid[1]);
+		    log_info( _("key %08lX: \"%s\" 1 new user ID\n"),
+					     (ulong)keyid[1], p);
 		else if( n_uids )
-		    log_info( _("key %08lX: %d new user IDs\n"),
-					     (ulong)keyid[1], n_uids );
+		    log_info( _("key %08lX: \"%s\" %d new user IDs\n"),
+					     (ulong)keyid[1], p, n_uids );
 		if( n_sigs == 1 )
-		    log_info( _("key %08lX: 1 new signature\n"),
-					     (ulong)keyid[1]);
+		    log_info( _("key %08lX: \"%s\" 1 new signature\n"),
+					     (ulong)keyid[1], p);
 		else if( n_sigs )
-		    log_info( _("key %08lX: %d new signatures\n"),
-					     (ulong)keyid[1], n_sigs );
+		    log_info( _("key %08lX: \"%s\" %d new signatures\n"),
+					     (ulong)keyid[1], p, n_sigs );
 		if( n_subk == 1 )
-		    log_info( _("key %08lX: 1 new subkey\n"),
-					     (ulong)keyid[1]);
+		    log_info( _("key %08lX: \"%s\" 1 new subkey\n"),
+					     (ulong)keyid[1], p);
 		else if( n_subk )
-		    log_info( _("key %08lX: %d new subkeys\n"),
-					     (ulong)keyid[1], n_subk );
+		    log_info( _("key %08lX: \"%s\" %d new subkeys\n"),
+					     (ulong)keyid[1], p, n_subk );
+		m_free(p);
 	    }
 
 	    stats->n_uids +=n_uids;
@@ -598,8 +604,12 @@ import_one( const char *fname, KBNODE keyblock, int fast,
 	    stats->n_subk +=n_subk;
 	}
 	else {
-	    if( !opt.quiet )
-		log_info( _("key %08lX: not changed\n"), (ulong)keyid[1] );
+	    if( !opt.quiet ) {
+	        char *p=get_user_id_native(keyid);
+		log_info( _("key %08lX: \"%s\" not changed\n"),
+			  (ulong)keyid[1],p);
+		m_free(p);
+	    }
 	    stats->unchanged++;
 	}
         keydb_release (hd); hd = NULL;
