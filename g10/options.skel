@@ -74,14 +74,9 @@
 
 #group mynames = paige 0x12345678 joe patti
 
-# Some old Windows platforms require 8.3 filenames.  If your system
-# can handle long filenames, uncomment this.
-
-#no-mangle-dos-filenames
-
 # Lock the file only once for the lifetime of a process.  If you do
 # not define this, the lock will be obtained and released every time
-# it is needed - normally this is not needed.
+# it is needed, which is usually preferable.
 
 #lock-once
 
@@ -155,10 +150,14 @@ keyserver hkp://subkeys.pgp.net
 
 #keyserver-options auto-key-retrieve
 
-# Uncomment this line to display photo user IDs in key listings and
-# when a signature from a key with a photo is verified.
+# Display photo user IDs in key listings
 
-#show-photos
+# list-options show-photos
+
+# Display photo user IDs when a signature from a key with a photo is
+# verified
+
+# verify-options show-photos
 
 # Use this program to display photo user IDs
 #

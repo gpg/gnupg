@@ -1,3 +1,15 @@
+2003-10-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Give a deprecated option warning for
+	--show-keyring, --show-photos, --show-policy-url, --show-notation,
+	and their respective no- forms.
+
+	* options.skel: Remove show-photos and replace with
+	list/verify-options show-photos.  Remove no-mangle-dos-filenames.
+
+	* misc.c (parse_options): Allow for incomplete (but unambiguous)
+	options.
+
 2003-10-09  Werner Koch  <wk@gnupg.org>
 
 	* ccid-driver.c (ccid_transceive): Add T=1 chaining for sending.

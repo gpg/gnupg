@@ -672,6 +672,7 @@ parse_options(char *str,unsigned int *options,struct parse_options *opts)
   while((tok=strsep(&str," ,")))
     {
       int i,rev=0;
+      char *otok=tok;
 
       if(tok[0]=='\0')
 	continue;
@@ -684,8 +685,25 @@ parse_options(char *str,unsigned int *options,struct parse_options *opts)
 
       for(i=0;opts[i].name;i++)
 	{
-	  if(ascii_strcasecmp(opts[i].name,tok)==0)
+	  size_t toklen=strlen(tok);
+
+	  if(ascii_strncasecmp(opts[i].name,tok,toklen)==0)
 	    {
+	      /* We have a match, but it might be incomplete */
+	      if(toklen!=strlen(opts[i].name))
+		{
+		  int j;
+
+		  for(j=i+1;opts[j].name;j++)
+		    {
+		      if(ascii_strncasecmp(opts[j].name,tok,toklen)==0)
+			{
+			  log_info(_("ambiguous option `%s'\n"),otok);
+			  return 0;
+			}
+		    }
+		}
+
 	      if(rev)
 		*options&=~opts[i].bit;
 	      else
@@ -695,7 +713,10 @@ parse_options(char *str,unsigned int *options,struct parse_options *opts)
 	}
 
       if(!opts[i].name)
-	return 0;
+	{
+	  log_info(_("unknown option `%s'\n"),otok);
+	  return 0;
+	}
     }
 
   return 1;

@@ -1464,7 +1464,11 @@ main( int argc, char **argv )
 	    sl=append_to_strlist( &nrings, pargs.r.ret_str);
 	    sl->flags=2;
 	    break;
-	  case oShowKeyring: opt.list_options|=LIST_SHOW_KEYRING; break;
+	  case oShowKeyring:
+	    deprecated_warning(configname,configlineno,"--show-keyring",
+			       "--list-options ","show-keyring");
+	    opt.list_options|=LIST_SHOW_KEYRING;
+	    break;
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
 	  case oStatusFD:
@@ -1637,10 +1641,18 @@ main( int argc, char **argv )
 	  case oSigPolicyURL: add_policy_url(pargs.r.ret_str,0); break;
 	  case oCertPolicyURL: add_policy_url(pargs.r.ret_str,1); break;
           case oShowPolicyURL:
+	    deprecated_warning(configname,configlineno,"--show-policy-url",
+			       "--list-options ","show-policy-url");
+	    deprecated_warning(configname,configlineno,"--show-policy-url",
+			       "--verify-options ","show-policy-url");
 	    opt.list_options|=LIST_SHOW_POLICY;
 	    opt.verify_options|=VERIFY_SHOW_POLICY;
 	    break;
 	  case oNoShowPolicyURL:
+	    deprecated_warning(configname,configlineno,"--no-show-policy-url",
+			       "--list-options ","no-show-policy-url");
+	    deprecated_warning(configname,configlineno,"--no-show-policy-url",
+			       "--verify-options ","no-show-policy-url");
 	    opt.list_options&=~LIST_SHOW_POLICY;
 	    opt.verify_options&=~VERIFY_SHOW_POLICY;
 	    break;
@@ -1657,11 +1669,19 @@ main( int argc, char **argv )
 	    break;
 	  case oThrowKeyid: opt.throw_keyid = 1; break;
 	  case oNoThrowKeyid: opt.throw_keyid = 0; break;
-	  case oShowPhotos: 
+	  case oShowPhotos:
+	    deprecated_warning(configname,configlineno,"--show-photos",
+			       "--list-options ","show-photos");
+	    deprecated_warning(configname,configlineno,"--show-photos",
+			       "--verify-options ","show-photos");
 	    opt.list_options|=LIST_SHOW_PHOTOS;
 	    opt.verify_options|=VERIFY_SHOW_PHOTOS;
 	    break;
 	  case oNoShowPhotos:
+	    deprecated_warning(configname,configlineno,"--no-show-photos",
+			       "--list-options ","no-show-photos");
+	    deprecated_warning(configname,configlineno,"--no-show-photos",
+			       "--verify-options ","no-show-photos");
 	    opt.list_options&=~LIST_SHOW_PHOTOS;
 	    opt.verify_options&=~VERIFY_SHOW_PHOTOS;
 	    break;
@@ -1865,10 +1885,18 @@ main( int argc, char **argv )
 	  case oSigNotation: add_notation_data( pargs.r.ret_str, 0 ); break;
 	  case oCertNotation: add_notation_data( pargs.r.ret_str, 1 ); break;
 	  case oShowNotation:
+	    deprecated_warning(configname,configlineno,"--show-notation",
+			       "--list-options ","show-notation");
+	    deprecated_warning(configname,configlineno,"--show-notation",
+			       "--verify-options ","show-notation");
 	    opt.list_options|=LIST_SHOW_NOTATION;
 	    opt.verify_options|=VERIFY_SHOW_NOTATION;
 	    break;
 	  case oNoShowNotation:
+	    deprecated_warning(configname,configlineno,"--no-show-notation",
+			       "--list-options ","no-show-notation");
+	    deprecated_warning(configname,configlineno,"--no-show-notation",
+			       "--verify-options ","no-show-notation");
 	    opt.list_options&=~LIST_SHOW_NOTATION;
 	    opt.verify_options&=~VERIFY_SHOW_NOTATION;
 	    break;
