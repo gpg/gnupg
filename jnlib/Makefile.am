@@ -1,4 +1,4 @@
-# Copyright (C) 1999, 2000, 2001 Feee Software Soundation, Inc.
+# Copyright (C) 1999, 2000, 2001, 2004 Feee Software Soundation, Inc.
 # 
 # This file is part of GnuPG
 # 
@@ -20,8 +20,10 @@
 
 EXTRA_DIST = README
 
-# We need libgcrypt becuase libjnlib-confilig includes gcrypt.h
-INCLUDES = -I$(top_srcdir)/intl $(LIBGCRYPT_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/intl
+
+# We need libgcrypt because libjnlib-config includes gcrypt.h
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS)
 
 noinst_LIBRARIES = libjnlib.a
 
