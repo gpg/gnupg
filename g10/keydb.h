@@ -21,6 +21,10 @@
 #ifndef G10_KEYDB_H
 #define G10_KEYDB_H
 
+#ifdef HAVE_LIBGDBM
+  #include <gdbm.h>
+#endif
+
 #include "types.h"
 #include "packet.h"
 #include "cipher.h"
@@ -44,16 +48,28 @@ struct kbnode_struct {
     int private_flag;
 };
 
+
+enum resource_type {
+    rt_UNKNOWN = 0,
+    rt_RING = 1,
+    rt_GDBM = 2
+};
+
+
 /****************
  * A data structre to hold information about the external position
  * of a keyblock.
  */
 struct keyblock_pos_struct {
     int   resno;     /* resource number */
+    enum resource_type rt;
     ulong offset;    /* position information */
     unsigned count;  /* length of the keyblock in packets */
     IOBUF  fp;	     /* used by enum_keyblocks */
     int secret;      /* working on a secret keyring */
+  #ifdef HAVE_LIBGDBM
+    GDBM_FILE dbf;
+  #endif
     PACKET *pkt;     /* ditto */
 };
 typedef struct keyblock_pos_struct KBPOS;

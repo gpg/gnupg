@@ -7,7 +7,8 @@ Noteworthy changes in version 0.4.2
       keyring into your trustdb
 
     * Fixed a bug in the armor code, leading to invalid packet errors.
-      (a workaround for this was to use --no-armor).
+      (a workaround for this was to use --no-armor).  The shorten line
+      length (64 instead of 72) fixes a problem with pgp5 and keyservers.
 
     * comment packets are not anymore generated. "--export" filters
       them out.  One Exception:  The comment packets in a secret keyring
@@ -20,6 +21,10 @@ Noteworthy changes in version 0.4.2
 
     * --with-colons now lists the key expiration time and not anymore
       the valid period.
+
+    * Some keyblocks created with old releases have a wrong sequence
+      of packets, so that the keyservers don't accept these keys.
+      Simply using "--edit-key" fixes the problem.
 
 
 Noteworthy changes in version 0.4.1

@@ -5,4 +5,5 @@ mkinstalldirs
 mkdiff
 missing
 gnupg.spec
+autogen.sh
 ChangeLog

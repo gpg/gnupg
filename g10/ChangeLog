@@ -1,3 +1,9 @@
+Sat Oct 17 10:22:39 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c: changed output line length from 72 to 64.
+
+	* keyedit.c (fix_keyblock): New.
+
 Fri Oct 16 10:24:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* trustdb.c: Rewrote most.

@@ -124,6 +124,7 @@ AC_DEFINE_UNQUOTED(NAME_OF_DEV_URANDOM, "$NAME_OF_DEV_URANDOM")
 
 dnl Checks for libraries.
 
+AC_CHECK_LIB(gdbm,gdbm_firstkey)
 
 if test "$try_dynload" = yes ; then
 AC_CHECK_LIB(dl,dlopen)

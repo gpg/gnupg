@@ -34,3 +34,15 @@ dist-hook:
 	    > $(distdir)/scripts/gnupg-$(VERSION).spec
 
 
+# maintainer only
+cvs-get:
+	rsync -avuzb --exclude '*~' koch@ftp.guug.de:work/gnupg .
+
+cvs-put:
+	rsync -Cavuzb . koch@ftp.guug.de:work/gnupg
+
+cvs-sync: cvs-get cvs-put
+
+
+.PHONY: cvs-get cvs-put cvs-sync
+

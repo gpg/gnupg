@@ -1059,7 +1059,7 @@ armor_filter( void *opaque, int control,
 		iobuf_put(a, c);
 		c = bintoasc[radbuf[2]&077];
 		iobuf_put(a, c);
-		if( ++idx2 >= (72/4) ) {
+		if( ++idx2 >= (64/4) ) { /* pgp doesn't like 72 here */
 		    iobuf_put(a, '\n');
 		    idx2=0;
 		}
@@ -1098,7 +1098,7 @@ armor_filter( void *opaque, int control,
 		    iobuf_put(a, c);
 		    iobuf_put(a, '=');
 		}
-		if( ++idx2 >= (72/4) ) {
+		if( ++idx2 >= (64/4) ) { /* pgp doesn't like 72 here */
 		    iobuf_put(a, '\n');
 		    idx2=0;
 		}

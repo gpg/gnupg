@@ -426,7 +426,45 @@ change_passphrase( KBNODE keyblock )
 }
 
 
+/****************
+ * There are some keys out (due to a bug in gnupg), where the sequence
+ * of the packets is wrong.  This function fixes that.
+ * Returns: true if the keyblock has fixed.
+ */
+static int
+fix_keyblock( KBNODE keyblock )
+{
+    KBNODE node, last, subkey;
+    int fixed=0;
 
+    /* locate key signatures of class 0x10..0x13 behind sub key packets */
+    for( subkey=last=NULL, node = keyblock; node;
+					    last=node, node = node->next ) {
+	switch( node->pkt->pkttype ) {
+	  case PKT_PUBLIC_SUBKEY:
+	  case PKT_SECRET_SUBKEY:
+	    if( !subkey )
+		subkey = last; /* actually it is the one before the subkey */
+	    break;
+	  case PKT_SIGNATURE:
+	    if( subkey ) {
+		PKT_signature *sig = node->pkt->pkt.signature;
+		if( sig->sig_class >= 0x10 && sig->sig_class <= 0x13 ) {
+		    log_info("moving a key signature to the correct place\n");
+		    last->next = node->next;
+		    node->next = subkey->next;
+		    subkey->next = node;
+		    node = last;
+		    fixed=1;
+		}
+	    }
+	    break;
+	  default: break;
+	}
+    }
+
+    return fixed;
+}
 
 /****************
  * Menu driven key editor
@@ -503,12 +541,16 @@ keyedit_menu( const char *username, STRLIST locusr )
 	    goto leave;
 	}
 	merge_keys_and_selfsig( sec_keyblock );
+	if( fix_keyblock( sec_keyblock ) )
+	    sec_modified++;
     }
 
     /* and now get the public key */
     rc = get_keyblock_byname( &keyblock, &keyblockpos, username );
     if( rc )
 	goto leave;
+    if( fix_keyblock( keyblock ) )
+	modified++;
 
     if( sec_keyblock ) { /* check that they match */
 	/* FIXME: check that they both match */
