@@ -1,3 +1,10 @@
+Tue May  4 15:47:53 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* primegen.c (gen_prime): Readded the Fermat test. Fixed the bug
+	that we didn't correct for step when passing the prime to the
+	Rabin-Miller test which led to bad performance (Stefan Keller).
+	(check_prime): Add a first Fermat test.
+
 Sun Apr 18 10:11:28 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* cipher.c (cipher_setiv): Add ivlen arg, changed all callers.

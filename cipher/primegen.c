@@ -34,7 +34,7 @@
 
 static int no_of_small_prime_numbers;
 static MPI gen_prime( unsigned	nbits, int mode, int randomlevel );
-static int check_prime( MPI prime );
+static int check_prime( MPI prime, MPI val_2 );
 static int is_prime( MPI n, int steps, int *count );
 static void m_out_of_n( char *array, int m, int n );
 
@@ -89,6 +89,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
     int count1, count2;
     unsigned nprime;
     unsigned req_qbits = qbits; /* the requested q bits size */
+    MPI val_2  = mpi_alloc_set_ui( 2 );
 
     /* find number of needed prime factors */
     for(n=1; (pbits - qbits - 1) / n  >= qbits; n++ )
@@ -186,7 +187,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	}
 	else
 	    count2 = 0;
-    } while( !(nprime == pbits && check_prime( prime )) );
+    } while( !(nprime == pbits && check_prime( prime, val_2 )) );
 
     if( DBG_CIPHER ) {
 	putc('\n', stderr);
@@ -261,6 +262,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	mpi_free( pool[i] );
     m_free( pool );
     m_free(perms);
+    mpi_free(val_2);
     return prime;
 }
 
@@ -270,7 +272,7 @@ static MPI
 gen_prime( unsigned  nbits, int secret, int randomlevel )
 {
     unsigned  nlimbs;
-    MPI prime, val_2, val_3, result;
+    MPI prime, ptest, pminus1, val_2, val_3, result;
     int i;
     unsigned x, step;
     unsigned count1, count2;
@@ -286,19 +288,17 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
     mods = m_alloc( no_of_small_prime_numbers * sizeof *mods );
     /* make nbits fit into MPI implementation */
     nlimbs = (nbits + BITS_PER_MPI_LIMB - 1) /	BITS_PER_MPI_LIMB;
-    val_2  = mpi_alloc( nlimbs );
-    mpi_set_ui(val_2, 2);
-    val_3  = mpi_alloc( nlimbs );
-    mpi_set_ui(val_3, 3);
-    result = mpi_alloc( nlimbs );
+    val_2  = mpi_alloc_set_ui( 2 );
+    val_3 = mpi_alloc_set_ui( 3);
     prime  = secret? mpi_alloc_secure( nlimbs ): mpi_alloc( nlimbs );
+    result = mpi_alloc_like( prime );
+    pminus1= mpi_alloc_like( prime );
+    ptest  = mpi_alloc_like( prime );
     count1 = count2 = 0;
-    /* enter (endless) loop */
-    for(;;) {
+    for(;;) {  /* try forvever */
 	int dotcount=0;
 
 	/* generate a random number */
-	/*mpi_set_bytes( prime, nbits, get_random_byte, randomlevel );*/
 	{   char *p = get_random_bits( nbits, randomlevel, secret );
 	    mpi_set_buffer( prime, p, (nbits+7)/8, 0 );
 	    m_free(p);
@@ -312,6 +312,7 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 	for(i=0; (x = small_prime_numbers[i]); i++ )
 	    mods[i] = mpi_fdiv_r_ui(NULL, prime, x);
 
+	/* now try some primes starting with prime */
 	for(step=0; step < 20000; step += 2 ) {
 	    /* check against all the small primes we have in mods */
 	    count1++;
@@ -322,40 +323,31 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 		    break;
 	    }
 	    if( x )
-		continue;   /* found a multiple of a already known prime */
+		continue;   /* found a multiple of an already known prime */
 
-	    mpi_add_ui( prime, prime, step );
+	    mpi_add_ui( ptest, prime, step );
 
-	   #if 0
-	    /* do a Fermat test */
+	    /* do a faster Fermat test */
 	    count2++;
-	    mpi_powm( result, val_2, prime, prime );
-	    if( mpi_cmp_ui(result, 2) )
-		continue;  /* stepping (fermat test failed) */
-	    fputc('+', stderr);
-	   #endif
-
-	    /* perform stronger tests */
-	    if( is_prime(prime, 5, &count2 ) ) {
-		if( !mpi_test_bit( prime, nbits-1 ) ) {
-		    if( 0 && DBG_CIPHER ) {
+	    mpi_sub_ui( pminus1, ptest, 1);
+	    mpi_powm( result, val_2, pminus1, ptest );
+	    if( !mpi_cmp_ui( result, 1 ) ) { /* not composite */
+		/* perform stronger tests */
+		if( is_prime(ptest, 5, &count2 ) ) {
+		    if( !mpi_test_bit( ptest, nbits-1 ) ) {
 			fputc('\n', stderr);
 			log_debug("overflow in prime generation\n");
-			break; /* step loop, cont with a new prime */
+			break; /* step loop, continue with a new prime */
 		    }
-		}
 
-		if( 0 && DBG_CIPHER ) {
-		    log_debug("performed %u simple and %u stronger tests\n",
-					count1, count2 );
-		    log_mpidump("found prime: ", prime );
+		    mpi_free(val_2);
+		    mpi_free(val_3);
+		    mpi_free(result);
+		    mpi_free(pminus1);
+		    mpi_free(prime);
+		    m_free(mods);
+		    return ptest;
 		}
-
-		mpi_free(val_2);
-		mpi_free(val_3);
-		mpi_free(result);
-		m_free(mods);
-		return prime;
 	    }
 	    if( ++dotcount == 10 ) {
 		fputc('.', stderr);
@@ -370,7 +362,7 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
  * Returns: true if this may be a prime
  */
 static int
-check_prime( MPI prime )
+check_prime( MPI prime, MPI val_2 )
 {
     int i;
     unsigned x;
@@ -382,19 +374,20 @@ check_prime( MPI prime )
 	    return 0;
     }
 
-  #if 0
-    result = mpi_alloc( mpi_get_nlimbs(prime) );
-    val_2  = mpi_alloc_set_ui( 2 );
-    mpi_powm( result, val_2, prime, prime );
-    if( mpi_cmp_ui(result, 2) ) {
-	mpi_free(result);
-	mpi_free(val_2);
-	return 0;
+    /* a quick fermat test */
+    {
+	MPI result = mpi_alloc_like( prime );
+	MPI pminus1 = mpi_alloc_like( prime );
+	mpi_sub_ui( pminus1, prime, 1);
+	mpi_powm( result, val_2, pminus1, prime );
+	mpi_free( pminus1 );
+	if( mpi_cmp_ui( result, 1 ) ) { /* if composite */
+	    mpi_free( result );
+	    fputc('.', stderr);
+	    return 0;
+	}
+	mpi_free( result );
     }
-    mpi_free(result);
-    mpi_free(val_2);
-    fputc('+', stderr);
-  #endif
 
     /* perform stronger tests */
     if( is_prime(prime, 5, &count ) )

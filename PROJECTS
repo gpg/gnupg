@@ -26,8 +26,6 @@
 
     * Split key support (n-out-of-m)
 
-    * Check Berkeley DB - it is in glibc - any licensing problems?
-
     * add an option to re-create a public key from a secret key; we
       can do this in trustdb.c:verify_own_keys.
       (special tool?)

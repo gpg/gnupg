@@ -323,6 +323,36 @@ mpi_copy( MPI a )
 }
 
 
+/****************
+ * This function allocates an MPI which is optimized to hold
+ * a value as large as the one given in the arhgument and allocates it
+ * with the same flags as A.
+ */
+MPI
+mpi_alloc_like( MPI a )
+{
+    MPI b;
+
+    if( a && (a->flags & 4) ) {
+	void *p = m_is_secure(a->d)? m_alloc_secure( a->nbits )
+				   : m_alloc( a->nbits );
+	memcpy( p, a->d, a->nbits );
+	b = mpi_set_opaque( NULL, p, a->nbits );
+    }
+    else if( a ) {
+	b = mpi_is_secure(a)? mpi_alloc_secure( a->nlimbs )
+			    : mpi_alloc( a->nlimbs );
+	b->nlimbs = 0;
+	b->sign = 0;
+	b->flags = a->flags;
+	b->nbits = 0;
+    }
+    else
+	b = NULL;
+    return b;
+}
+
+
 void
 mpi_set( MPI w, MPI u)
 {

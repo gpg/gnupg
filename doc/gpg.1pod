@@ -93,6 +93,8 @@ B<--fingerprint> [I<names>]
     same output as B<list-keys> but with the additional output
     of a line with the fingerprint. May also be combined
     with B<--list-sigs> or B<--check-sigs>.
+    If this command is given twice, the fingerprints of all
+    secondary keys are listed too.
 
 B<--list-packets>
     List only the sequence of packets. This is mainly

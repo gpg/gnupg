@@ -92,6 +92,7 @@ void *mpi_get_opaque( MPI a, int *len );
 #define mpi_is_secure(a) ((a) && ((a)->flags&1))
 void mpi_set_secure( MPI a );
 void mpi_clear( MPI a );
+MPI  mpi_alloc_like( MPI a );
 void mpi_set( MPI w, MPI u);
 void mpi_set_ui( MPI w, ulong u);
 MPI  mpi_alloc_set_ui( unsigned long u);

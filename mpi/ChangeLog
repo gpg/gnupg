@@ -1,3 +1,7 @@
+Tue May  4 15:47:53 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* mpiutil.c (mpi_alloc_like): New.
+
 Mon Apr 26 17:48:15 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* mpih-add.c, mpih-sub.c: Removed
