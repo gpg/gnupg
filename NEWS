@@ -1,3 +1,13 @@
+Noteworthy changes in the current CVS branch STABLE-BRANCH-1-0
+--------------------------------------------------------------
+
+    * Fixed problems with piping to/from other MS-Windows software
+
+    * Expiration time of the primary key can be changed again.
+
+    * Revoked user IDs are now marked in the output of --list-key
+
+
 Noteworthy changes in version 1.0.2 (2000-07-12)
 ----------------------------------------------
 

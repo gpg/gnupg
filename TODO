@@ -1,4 +1,9 @@
 
+  * setmode(BINARY) is missing
+
+  * Don't get the ultimately trusted keys from the secring but store
+    it permanently in the trustdb.  This way we don't need a secring at all.
+
   * Use DSA keys with the test suite.
 
   * g10/trustdb.c (make_sig_records): fix the fixme.

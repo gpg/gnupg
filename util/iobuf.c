@@ -27,6 +27,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef HAVE_DOSISH_SYSTEM
+  #include <fcntl.h> /* for setmode() */
+#endif
 
 #include "memory.h"
 #include "util.h"
@@ -467,7 +470,7 @@ int
 iobuf_close( IOBUF a )
 {
     IOBUF a2;
-    size_t dummy_len;
+    size_t dummy_len=0;
     int rc=0;
 
     if( a && a->directfp ) {
@@ -579,7 +582,10 @@ iobuf_open( const char *fname )
     int print_only = 0;
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
-	fp = stdin; /* fixme: set binary mode for msdoze */
+	fp = stdin;
+      #ifdef HAVE_DOSISH_SYSTEM
+	setmode ( fileno(fp) , O_BINARY );
+      #endif
 	fname = "[stdin]";
 	print_only = 1;
     }
@@ -646,6 +652,9 @@ iobuf_create( const char *fname )
 
     if( !fname || (*fname=='-' && !fname[1]) ) {
 	fp = stdout;
+      #ifdef HAVE_DOSISH_SYSTEM
+	setmode ( fileno(fp) , O_BINARY );
+      #endif
 	fname = "[stdout]";
 	print_only = 1;
     }
@@ -741,7 +750,10 @@ iobuf_fopen( const char *fname, const char *mode )
     int print_only = 0;
 
     if( !fname || (*fname=='-' && !fname[1])  ) {
-	fp = stdin; /* fixme: set binary mode for msdoze */
+	fp = stdin;
+      #ifdef HAVE_DOSISH_SYSTEM
+	setmode ( fileno(fp) , O_BINARY );
+      #endif
 	fname = "[stdin]";
 	print_only = 1;
     }
@@ -985,7 +997,7 @@ underflow(IOBUF a)
 
 	}
 	if( a->use == 1 && rc == -1 ) { /* EOF: we can remove the filter */
-	    size_t dummy_len;
+	    size_t dummy_len=0;
 
 	    /* and tell the filter to free itself */
 	    if( (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE, a->chain,

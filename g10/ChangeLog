@@ -1,30 +1,36 @@
+Thu Jul 27 10:02:38 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * g10.c (main): Use setmode(O_BINARY) for MSDOS while generating random bytes
+  (print_mds): Likewise for stdin.
+  * plaintext.c (handle_plaintext): Likewise for stdout.
+
 Mon Jul 24 10:30:17 CEST 2000  Werner Koch  <wk@openit.de>
 
   * keyedit.c (menu_expire): expire date for primary key can be set again.
 
-Wed Jul 19 11:26:43 CEST 2000  Werner Koch  <wk@>
+Wed Jul 19 11:26:43 CEST 2000  Werner Koch  <wk@openit.de>
 
   * keylist.c (is_uid_valid): New.
   (list_keyblock): Print validity information for all user IDs.  Note, this
   has to be done at other places too; for now we have only minimal support.
 
-Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
+Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@openit.de>
 
   * helptext.c, pkclist.c: s/superseeded/superseded/
 
-Mon Jul 10 16:08:57 CEST 2000  Werner Koch  <wk@>
+Mon Jul 10 16:08:57 CEST 2000  Werner Koch  <wk@openit.de>
 
   * parse-packet.c (enum_sig_subpkt): Fixed testing on crtitical bit in case
   of a NULL buffer.  Reported by Peter Marschall.
 
-Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@>
+Wed Jul  5 13:28:45 CEST 2000  Werner Koch  <wk@openit.de>
 
   * keyedit.c, keyid.c: Add some _()
 
   * argparse.c:  Changed the flag to suppress --version handling to also
   suppress --help.
 
-Wed Jun 28 11:54:44 CEST 2000  Werner Koch  <wk@>
+Wed Jun 28 11:54:44 CEST 2000  Werner Koch  <wk@openit.de>
 
   * armor.c (armor_filter): Set sigclass to 0 in case of non-dash-escaped
   clearsig.  This makes this mode work again.

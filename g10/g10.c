@@ -25,6 +25,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#ifdef HAVE_DOSISH_SYSTEM
+  #include <fcntl.h> /* for setmode() */
+#endif
 
 
 #include "packet.h"
@@ -1392,6 +1395,9 @@ main( int argc, char **argv )
 		size_t n = !endless && count < 100? count : 100;
 
 		p = get_random_bits( n*8, level, 0);
+	      #ifdef HAVE_DOSISH_SYSTEM
+		setmode ( fileno(stdout), O_BINARY );
+	      #endif
 		fwrite( p, n, 1, stdout );
 		m_free(p);
 		if( !endless )
@@ -1590,6 +1596,9 @@ print_mds( const char *fname, int algo )
 
     if( !fname ) {
 	fp = stdin;
+      #ifdef HAVE_DOSISH_SYSTEM
+	setmode ( fileno(fp) , O_BINARY );
+      #endif
 	pname = m_strdup("[stdin]: ");
     }
     else {

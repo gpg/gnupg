@@ -899,8 +899,8 @@ Write log output to file descriptor &ParmN; and not to stderr.
 <term>--no-comment</term>
 <listitem><para>
 Do not write comment packets.  This option affects only
-the generation of secret keys.	Output of option packets
-is disabled since version 0.4.2.
+the generation of secret keys.	Please note, that this has nothing
+to do with the comments in clear text signatures.
 </para></listitem></varlistentry>
 
 
@@ -908,6 +908,7 @@ is disabled since version 0.4.2.
 <term>--comment &ParmString;</term>
 <listitem><para>
 Use &ParmString; as comment string in clear text signatures.
+To suppress those comment strings entirely, use an empty string here.
 </para></listitem></varlistentry>
 
 
