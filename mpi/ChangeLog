@@ -1,5 +1,10 @@
 2004-01-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* config.links: OpenBSD 3.4 is now ELF, so use the proper
+	assembler code for that.  Use the portable C MPI code for OpenBSD
+	before 3.4, and remove the special i386-openbsd assembly
+	directory.
+
 	* Makefile.am: Add the portable C links to DISTCLEANFILES.  Noted
 	by Nelson H. F. Beebe.
 
