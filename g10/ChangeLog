@@ -1,3 +1,14 @@
+2003-08-07  Werner Koch  <wk@gnupg.org>
+
+	* pkglue.c (pk_sign): Fix last change.
+	(pk_verify): Check for valid DATA array so that we don't segv in
+	Libgcrypt.
+	(pk_verify): Ditto.
+
+2003-08-06  Werner Koch  <wk@gnupg.org>
+
+	* pkglue.c (pk_sign): Allow signing using RSA.
+
 2003-08-05  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (install-data-local): Dropped check for the ancient

@@ -48,6 +48,13 @@ pk_sign (int algo, gcry_mpi_t * data, gcry_mpi_t hash, gcry_mpi_t * skey)
 			    "(private-key(dsa(p%m)(q%m)(g%m)(y%m)(x%m)))",
 			    skey[0], skey[1], skey[2], skey[3], skey[4]);
     }
+  else if (algo == GCRY_PK_RSA)
+    {
+      rc = gcry_sexp_build (&s_skey, NULL,
+			    "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
+			    skey[0], skey[1], skey[2], skey[3], skey[4],
+			    skey[5]);
+    }
   else if (algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E)
     {
       rc = gcry_sexp_build (&s_skey, NULL,
@@ -70,6 +77,14 @@ pk_sign (int algo, gcry_mpi_t * data, gcry_mpi_t hash, gcry_mpi_t * skey)
 
   if (rc)
     ;
+  else if (algo == GCRY_PK_RSA)
+    {
+      list = gcry_sexp_find_token (s_sig, "s", 0);
+      assert (list);
+      data[0] = gcry_sexp_nth_mpi (list, 1, 0);
+      assert (data[0]);
+      gcry_sexp_release (list);
+    }
   else
     {
       list = gcry_sexp_find_token (s_sig, "r", 0);
@@ -131,17 +146,26 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t * data, gcry_mpi_t * pkey)
   /* put data into a S-Exp s_sig */
   if (algo == GCRY_PK_DSA)
     {
-      rc = gcry_sexp_build (&s_sig, NULL,
-			    "(sig-val(dsa(r%m)(s%m)))", data[0], data[1]);
+      if (!data[0] || !data[1])
+        rc = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        rc = gcry_sexp_build (&s_sig, NULL,
+                              "(sig-val(dsa(r%m)(s%m)))", data[0], data[1]);
     }
   else if (algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E)
     {
-      rc = gcry_sexp_build (&s_sig, NULL,
-			    "(sig-val(elg(r%m)(s%m)))", data[0], data[1]);
+      if (!data[0] || !data[1])
+        rc = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        rc = gcry_sexp_build (&s_sig, NULL,
+                              "(sig-val(elg(r%m)(s%m)))", data[0], data[1]);
     }
   else if (algo == GCRY_PK_RSA)
     {
-      rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%m)))", data[0]);
+      if (!data[0])
+        rc = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%m)))", data[0]);
     }
   else
     BUG ();
@@ -259,12 +283,18 @@ pk_decrypt (int algo, gcry_mpi_t * result, gcry_mpi_t * data,
   /* put data into a S-Exp s_data */
   if (algo == GCRY_PK_ELG || algo == GCRY_PK_ELG_E)
     {
-      rc = gcry_sexp_build (&s_data, NULL,
-			    "(enc-val(elg(a%m)(b%m)))", data[0], data[1]);
+      if (!data[0] || !data[1])
+        rc = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        rc = gcry_sexp_build (&s_data, NULL,
+                              "(enc-val(elg(a%m)(b%m)))", data[0], data[1]);
     }
   else if (algo == GCRY_PK_RSA)
     {
-      rc = gcry_sexp_build (&s_data, NULL, "(enc-val(rsa(a%m)))", data[0]);
+      if (!data[0])
+        rc = gpg_error (GPG_ERR_BAD_MPI);
+      else
+        rc = gcry_sexp_build (&s_data, NULL, "(enc-val(rsa(a%m)))", data[0]);
     }
   else
     BUG ();
