@@ -428,10 +428,12 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
 	    if(attrib_fp && node->pkt->pkt.user_id->attrib_data!=NULL)
 	      dump_attribs(node->pkt->pkt.user_id,pk,sk);
-            /* don't list revoked UIDS unless we are in verbose mode and 
-             * signature listing has not been requested */
-            if ( !opt.verbose && !opt.list_sigs
-                 && node->pkt->pkt.user_id->is_revoked )
+            /* don't list revoked or expired UIDS unless we are in
+             * verbose mode and signature listing has not been
+             * requested */
+            if ( !opt.verbose && !opt.list_sigs &&
+                 (node->pkt->pkt.user_id->is_revoked ||
+		  node->pkt->pkt.user_id->is_expired ))
                 continue; 
 
 	    if( any ) 

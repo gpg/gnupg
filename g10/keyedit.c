@@ -2878,7 +2878,7 @@ menu_revsig( KBNODE keyblock )
     PKT_public_key *primary_pk;
     KBNODE node;
     int changed = 0;
-    int rc, any;
+    int rc, any, skip=1, all=!count_selected_uids(keyblock);
     struct revocation_reason_info *reason = NULL;
 
     /* FIXME: detect duplicates here  */
@@ -2886,13 +2886,18 @@ menu_revsig( KBNODE keyblock )
     for( node = keyblock; node; node = node->next ) {
 	node->flag &= ~(NODFLG_SELSIG | NODFLG_MARK_A);
 	if( node->pkt->pkttype == PKT_USER_ID ) {
-	    PKT_user_id *uid = node->pkt->pkt.user_id;
-	    /* Hmmm: Should we show only UIDs with a signature? */
-	    tty_printf("     ");
-	    tty_print_utf8_string( uid->name, uid->len );
-	    tty_printf("\n");
+	    if( node->flag&NODFLG_SELUID || all ) {
+	      PKT_user_id *uid = node->pkt->pkt.user_id;
+	      /* Hmmm: Should we show only UIDs with a signature? */
+	      tty_printf("     ");
+	      tty_print_utf8_string( uid->name, uid->len );
+	      tty_printf("\n");
+	      skip=0;
+	    }
+	    else
+	      skip=1;
 	}
-	else if( node->pkt->pkttype == PKT_SIGNATURE
+	else if( !skip && node->pkt->pkttype == PKT_SIGNATURE
 		&& ((sig = node->pkt->pkt.signature),
                      !seckey_available(sig->keyid)  ) ) {
 	    if( (sig->sig_class&~3) == 0x10 ) {
