@@ -3,3 +3,4 @@ no-secmem-warning
 load-extension ../cipher/tiger
 batch
 emulate-md-encode-bug
+no-auto-check-trustdb

@@ -11,9 +11,9 @@ for i in 0 1 2 3 9 10 11 19 20 21 22 23 39 40 41 8192 32000 ; do
     else
         dd if=data-80000 of=z bs=1 count=$i 2>/dev/null
     fi
-    echo "Hier spricht HAL" | $srcdir/run-gpg --passphrase-fd 0 \
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 \
 	--force-mdc --cipher $ciph -c -o x --yes z
-    echo "Hier spricht HAL" | $srcdir/run-gpg --passphrase-fd 0 \
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 \
 	-o y --yes x
     cmp z y || error "$ciph/$i: mismatch"
   done

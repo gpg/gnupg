@@ -1,3 +1,17 @@
+2001-09-28  Werner Koch  <wk@gnupg.org>
+
+	* defs.inc: Write a log file for each test. 
+	* run-gpg, run-gpgm, run-gpg.patterns: Removed.  Replaced in all
+	tests by a simple macro from defs.inc.
+	* Makefile.am (CLEANFILES): Remove log files.
+	(./gpg_dearmor): create it and use it instead of the macro.
+	This is needed in multisig.test due to IFS tricks.
+
+	* armsignencrypt.test, signencrypt-dsa.test, signencrypt.test,
+	armencryptp.test, armencrypt.test, encryptp.test, seat.test,
+	encrypt-dsa.test, encrypt.test: Use --always-trust because the
+	test are not designed to check the validity.
+	
 2001-09-06  Werner Koch  <wk@gnupg.org>
 
 	* genkey1024.test: Simplified by using a parameter file.

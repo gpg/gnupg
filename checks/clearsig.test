@@ -14,17 +14,17 @@
 # it is clear text and not binary text.
 # ======================================
 for i in $plain_files plain-large ; do
-    echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 -sat -o x --yes $i
-    $srcdir/run-gpg --verify x
+    echo "$usrpass1" | $GPG --passphrase-fd 0 -sat -o x --yes $i
+    $GPG --verify x
 done
 
 # ======================================
 # and once more to check rfc1991
 # ======================================
 for i in $plain_files plain-large ; do
-    echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 \
+    echo "$usrpass1" | $GPG --passphrase-fd 0 \
 			 --rfc1991 --digest-algo md5 -sat -o x --yes $i
-    $srcdir/run-gpg --verify x
+    $GPG --verify x
 done
 
 # ======================================
@@ -35,8 +35,8 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 EOF
-echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 --clearsign -o x --yes y
-$srcdir/run-gpg --verify x
+echo "$usrpass1" | $GPG --passphrase-fd 0 --clearsign -o x --yes y
+$GPG --verify x
 
 # ======================================
 # and one with only one long lines
@@ -44,15 +44,15 @@ $srcdir/run-gpg --verify x
 cat >y <<EOF
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyx
 EOF
-echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 --clearsign -o x --yes y
-$srcdir/run-gpg --verify x
+echo "$usrpass1" | $GPG --passphrase-fd 0 --clearsign -o x --yes y
+$GPG --verify x
 # ======================================
 # and one with an empty body
 # ======================================
 cat >y <<EOF
 EOF
-echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 --clearsign -o x --yes y
-$srcdir/run-gpg --verify x
+echo "$usrpass1" | $GPG --passphrase-fd 0 --clearsign -o x --yes y
+$GPG --verify x
 
 # ======================================
 # and one with one empty line at the end
@@ -64,8 +64,8 @@ line 3
 there is a blank line after this
 
 EOF
-echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 --clearsign -o x --yes y
-$srcdir/run-gpg --verify x
+echo "$usrpass1" | $GPG --passphrase-fd 0 --clearsign -o x --yes y
+$GPG --verify x
 
 
 # ======================================
@@ -74,8 +74,8 @@ $srcdir/run-gpg --verify x
 # ======================================
 echo "this is a sig test" >y
 echo_n " " >>y
-echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 --clearsign -o x --yes y
-$srcdir/run-gpg --verify x
+echo "$usrpass1" | $GPG --passphrase-fd 0 --clearsign -o x --yes y
+$GPG --verify x
 
 
 # ======================================
@@ -94,9 +94,9 @@ cat >y <<EOF
 				     c->signed_data, c->sigfilename,
 			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );
 EOF
-echo "$usrpass1" | $srcdir/run-gpg --passphrase-fd 0 \
+echo "$usrpass1" | $GPG --passphrase-fd 0 \
 				   --not-dash-escaped --clearsign -o x --yes y
-$srcdir/run-gpg --verify x
+$GPG --verify x
 
 
 

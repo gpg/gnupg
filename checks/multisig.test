@@ -122,27 +122,24 @@ cnksIEkgY2FuJ3QgZG8gdGhhdAo=
 save_IFS="${IFS}"
 IFS=""
 for i in "$sig_1ls1ls_valid" "$sig_ls_valid" "$sig_sl_valid"; do
-    echo "$i" | $srcdir/run-gpg --dearmor >x
+    echo "$i" | ./gpg_dearmor >x
     IFS="${save_IFS}"
-    ../g10/gpg --homedir . --verify x 2>/dev/null || error "valid is invalid"
+    $GPG --verify x 2>/dev/null || error "valid is invalid"
     IFS=""
 done
 #for i in "$sig_11lss_valid_but_is_not" "$sig_11lss11lss_valid_but_is_not" \
 #         "$sig_ssl_valid_but_is_not"; do
-#    echo "$i" | $srcdir/run-gpg --dearmor >x
-#    ../g10/gpg --homedir . --verify <x 2>/dev/null || error "valid is invalid"
+#    echo "$i" | $GPG --dearmor >x
+#    $GPG --verify <x 2>/dev/null || error "valid is invalid"
 #done
 
 # without the +e ksh seems to terminate the for loop
 set +e
 for i in "$sig_1lsls_invalid" "$sig_lsls_invalid" \
          "$sig_lss_invalid" "$sig_slsl_invalid" ; do
-    echo "$i" | $srcdir/run-gpg --dearmor >x
+    echo "$i" | ./gpg_dearmor >x
     IFS="${save_IFS}"
-    ../g10/gpg --homedir . --verify <x 2>/dev/null && error "invalid is valid"
+    $GPG --verify <x 2>/dev/null && error "invalid is valid"
     IFS=""
 done
 IFS="${save_IFS}"
-
-
-
