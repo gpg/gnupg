@@ -1,5 +1,5 @@
 /* pkclist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -156,74 +156,6 @@ show_revocation_reason( PKT_public_key *pk, int mode )
 
     release_kbnode( keyblock );
 }
-
-
-static void
-show_paths (const PKT_public_key *pk, int only_first )
-{
-    log_debug("not yet implemented\n");
-#if 0    
-    void *context = NULL;
-    unsigned otrust, validity;
-    int last_level, level;
-
-    last_level = 0;
-    while( (level=enum_cert_paths( &context, &lid, &otrust, &validity)) != -1){
-	char *p;
-	int c, rc;
-	size_t n;
-	u32 keyid[2];
-	PKT_public_key *pk ;
-
-	if( level < last_level && only_first )
-	    break;
-	last_level = level;
-
-	rc = keyid_from_lid( lid, keyid );
-
-	if( rc ) {
-	    log_error("ooops: can't get keyid for lid %lu\n", lid);
-	    return;
-	}
-
-	pk = m_alloc_clear( sizeof *pk );
-	rc = get_pubkey( pk, keyid );
-	if( rc ) {
-	    log_error("key %08lX: public key not found: %s\n",
-				    (ulong)keyid[1], g10_errstr(rc) );
-	    return;
-	}
-
-	tty_printf("%*s%4u%c/%08lX.%lu %s \"",
-		  level*2, "",
-		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
-		  (ulong)keyid[1], lid, datestr_from_pk( pk ) );
-
-	c = trust_letter(otrust);
-	if( c )
-	    putchar( c );
-	else
-	    printf( "%02x", otrust );
-	putchar('/');
-	c = trust_letter(validity);
-	if( c )
-	    putchar( c );
-	else
-	    printf( "%02x", validity );
-	putchar(' ');
-
-	p = get_user_id( keyid, &n );
-	tty_print_utf8_string( p, n ),
-	m_free(p);
-	tty_printf("\"\n");
-	free_public_key( pk );
-    }
-    enum_cert_paths( &context, NULL, NULL, NULL ); /* release context */
-#endif
-    tty_printf("\n");
-}
-
-
 
 
 /****************
@@ -419,7 +351,6 @@ edit_ownertrust (PKT_public_key *pk, int mode )
         case -1: /* quit */
           return -1;
         case -2: /* show info */
-          show_paths(pk, 1);
           no_help = 1;
           break;
         case 1: /* trust value set */

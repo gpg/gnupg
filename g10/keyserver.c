@@ -1152,7 +1152,7 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 {
   int rc=0,ret=0;
 
-  if(!opt.keyserver)
+  if(!keyserver)
     {
       log_error(_("no keyserver known (use option --keyserver)\n"));
       return G10ERR_BAD_URI;

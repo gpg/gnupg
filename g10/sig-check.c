@@ -1,6 +1,6 @@
 /* sig-check.c -  Check a signature
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -160,44 +160,37 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
       *r_expired = 0;
     if(r_revoked)
       *r_revoked = 0;
-    if( pk->version == 4 && pk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
-	log_info(_("key %08lX: this is a PGP generated "
-		   "Elgamal key which is NOT secure for signatures!\n"),
- 		  (ulong)keyid_from_pk(pk,NULL));
-	return G10ERR_PUBKEY_ALGO;
-    }
 
-    if( pk->timestamp > sig->timestamp ) {
+    if( pk->timestamp > sig->timestamp )
+      {
 	ulong d = pk->timestamp - sig->timestamp;
-	log_info( d==1
-	     ? _("public key %08lX is %lu second newer than the signature\n")
-	     : _("public key %08lX is %lu seconds newer than the signature\n"),
-	        (ulong)keyid_from_pk(pk,NULL),d );
+	log_info(d==1
+		 ?_("public key %s is %lu second newer than the signature\n")
+		 :_("public key %s is %lu seconds newer than the signature\n"),
+		 keystr_from_pk(pk),d );
 	if( !opt.ignore_time_conflict )
-	    return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
-    }
+	  return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
+      }
 
     cur_time = make_timestamp();
-    if( pk->timestamp > cur_time ) {
+    if( pk->timestamp > cur_time )
+      {
 	ulong d = pk->timestamp - cur_time;
-	log_info( d==1 ? _("key %08lX has been created %lu second "
-			   "in future (time warp or clock problem)\n")
-		       : _("key %08lX has been created %lu seconds "
-			   "in future (time warp or clock problem)\n"),
-		       (ulong)keyid_from_pk(pk,NULL),d );
+	log_info( d==1
+		  ? _("key %s was created %lu second"
+		      " in the future (time warp or clock problem)\n")
+		  : _("key %s was created %lu seconds"
+		      " in the future (time warp or clock problem)\n"),
+		  keystr_from_pk(pk),d );
 	if( !opt.ignore_time_conflict )
-	    return G10ERR_TIME_CONFLICT;
-    }
+	  return G10ERR_TIME_CONFLICT;
+      }
 
     if( pk->expiredate && pk->expiredate < cur_time ) {
         char buf[11];
-        if (opt.verbose) {
-	    u32 tmp_kid[2];
-
-	    keyid_from_pk( pk, tmp_kid );
-            log_info(_("NOTE: signature key %08lX expired %s\n"),
-                     (ulong)tmp_kid[1], asctimestamp( pk->expiredate ) );
-        }
+        if (opt.verbose)
+	  log_info(_("NOTE: signature key %s expired %s\n"),
+		   keystr_from_pk(pk), asctimestamp( pk->expiredate ) );
 	/* SIGEXPIRED is deprecated.  Use KEYEXPIRED. */
 	sprintf(buf,"%lu",(ulong)pk->expiredate);
 	write_status_text(STATUS_KEYEXPIRED,buf);
@@ -277,10 +270,12 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
     mpi_free( result );
 
-    if( !rc && sig->flags.unknown_critical ) {
-      log_info(_("assuming bad signature from key %08lX due to an unknown critical bit\n"),(ulong)keyid_from_pk(pk,NULL));
+    if( !rc && sig->flags.unknown_critical )
+      {
+	log_info(_("assuming bad signature from key %s"
+		   " due to an unknown critical bit\n"),keystr_from_pk(pk));
 	rc = G10ERR_BAD_SIGN;
-    }
+      }
 
     if(!rc && ret_pk)
       copy_public_key(ret_pk,pk);
@@ -531,13 +526,13 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
             cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
-	else {
+	else
+	  {
             if (opt.verbose)
-                log_info (_("key %08lX: no subkey for subkey "
-			    "revocation signature\n"),
-                          (ulong)keyid_from_pk (pk, NULL));
+	      log_info (_("key %s: no subkey for subkey"
+			  " revocation signature\n"),keystr_from_pk(pk));
 	    rc = G10ERR_SIG_CLASS;
-	}
+	  }
     }
     else if( sig->sig_class == 0x18 ) { /* key binding */
 	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBLIC_SUBKEY );
@@ -557,13 +552,13 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
             cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
-	else {
+	else
+	  {
             if (opt.verbose)
-                log_info(_("key %08lX: no subkey for subkey "
-			   "binding signature\n"),
-			 (ulong)keyid_from_pk (pk, NULL));
+	      log_info(_("key %s: no subkey for subkey"
+			 " binding signature\n"),keystr_from_pk(pk));
 	    rc = G10ERR_SIG_CLASS;
-	}
+	  }
     }
     else if( sig->sig_class == 0x1f ) { /* direct key signature */
 	md = md_open( algo, 0 );
@@ -596,13 +591,13 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
             cache_sig_result ( sig, rc );
 	    md_close(md);
 	}
-	else {
+	else
+	  {
             if (!opt.quiet)
-                log_info ("key %08lX: no user ID for key signature packet "
-                          "of class %02x\n",
-                          (ulong)keyid_from_pk (pk, NULL), sig->sig_class );
+	      log_info ("key %s: no user ID for key signature packet"
+			" of class %02x\n",keystr_from_pk(pk),sig->sig_class);
 	    rc = G10ERR_SIG_CLASS;
-	}
+	  }
     }
 
     return rc;

@@ -1,5 +1,17 @@
 2004-05-20  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (keyserver_work): Allow --refresh-keys with a
+	preferred keyserver to happen even if there is no global keyserver
+	set.
+
+	* sig-check.c (do_check_messages): No need to check for Elgamal
+	signatures any longer.
+	(do_check_messages, do_check, check_key_signature2):
+	--keyid-format conversion.
+
+	* pkclist.c (show_paths, edit_ownertrust): Remove some unused
+	code.
+
 	* options.h (ctrl): New for member IN_AUTO_KEY_RETRIEVE.
 
 	* mainproc.c (check_sig_and_print): track whether we are
