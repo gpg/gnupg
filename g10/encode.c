@@ -319,6 +319,8 @@ encode_simple( const char *filename, int mode, int compat )
     /* register the compress filter */
     if( do_compress )
       {
+        if (cfx.dek && cfx.dek->use_mdc)
+          zfx.new_ctb = 1;
 	zfx.algo=opt.def_compress_algo;
 	if(zfx.algo==-1)
 	  zfx.algo=DEFAULT_COMPRESS_ALGO;
@@ -554,6 +556,8 @@ encode_crypt( const char *filename, STRLIST remusr )
 	/* algo 0 means no compression */
 	if( compr_algo )
 	  {
+            if (cfx.dek && cfx.dek->use_mdc)
+              zfx.new_ctb = 1;
 	    zfx.algo = compr_algo;
 	    iobuf_push_filter( out, compress_filter, &zfx );
 	  }
@@ -565,13 +569,15 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    log_error("build_packet failed: %s\n", g10_errstr(rc) );
     }
     else {
-	/* user requested not to create a literal packet, so we copy the plain data */
+	/* user requested not to create a literal packet, so we copy
+           the plain data */
 	byte copy_buffer[4096];
 	int  bytes_copied;
 	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
 	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
 		rc = G10ERR_WRITE_FILE;
-		log_error("copying input to output failed: %s\n", g10_errstr(rc) );
+		log_error("copying input to output failed: %s\n",
+                          g10_errstr(rc) );
 		break;
 	    }
 	memset(copy_buffer, 0, 4096); /* burn buffer */

@@ -171,11 +171,11 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	if( DBG_FILTER )
 	    log_debug("enter inflate: avail_in=%u, avail_out=%u\n",
 		    (unsigned)zs->avail_in, (unsigned)zs->avail_out);
-      #ifdef Z_SYNC_FLUSH
+#ifdef Z_SYNC_FLUSH
 	zrc = inflate( zs, Z_SYNC_FLUSH );
-      #else
+#else
 	zrc = inflate( zs, Z_PARTIAL_FLUSH );
-      #endif
+#endif
 	if( DBG_FILTER )
 	    log_debug("leave inflate: avail_in=%u, avail_out=%u, zrc=%d\n",
 		   (unsigned)zs->avail_in, (unsigned)zs->avail_out, zrc);

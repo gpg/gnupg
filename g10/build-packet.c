@@ -44,7 +44,6 @@ static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed );
 static int do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed );
-static int do_mdc( IOBUF out, PKT_mdc *mdc );
 static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 static int do_signature( IOBUF out, int ctb, PKT_signature *sig );
 static int do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops );
@@ -122,9 +121,6 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_ENCRYPTED_MDC:
 	rc = do_encrypted_mdc( out, ctb, pkt->pkt.encrypted );
 	break;
-      case PKT_MDC:
-	rc = do_mdc( out, pkt->pkt.mdc );
-	break;
       case PKT_COMPRESSED:
 	rc = do_compressed( out, ctb, pkt->pkt.compressed );
 	break;
@@ -136,6 +132,7 @@ build_packet( IOBUF out, PACKET *pkt )
 	break;
       case PKT_RING_TRUST:
 	break; /* ignore it (keyring.c does write it directly)*/
+      case PKT_MDC: /* we write it directly, so we should never see it here. */
       default:
 	log_bug("invalid packet type in build_packet()\n");
 	break;
@@ -580,7 +577,8 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
 
     assert( ed->mdc_method );
 
-    n = ed->len ? (ed->len + ed->extralen) : 0;
+    /* Take version number and the following MDC packet in account. */
+    n = ed->len ? (ed->len + ed->extralen + 1 + 22) : 0;
     write_header(out, ctb, n );
     iobuf_put(out, 1 );  /* version */
 
@@ -591,22 +589,15 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
 
 
 static int
-do_mdc( IOBUF out, PKT_mdc *mdc )
-{
-    /* This packet requires a fixed header encoding */
-    iobuf_put( out, 0xd3 ); /* packet ID and 1 byte length */
-    iobuf_put( out, 0x14 ); /* length = 20 */
-    if( iobuf_write( out, mdc->hash, sizeof(mdc->hash) ) )
-	return G10ERR_WRITE_FILE;
-    return 0;
-}
-
-static int
 do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 {
     int rc = 0;
 
-    /* we must use the old convention and don't use blockmode */
+    /* We must use the old convention and don't use blockmode for tyhe
+       sake of PGP 2 compatibility.  However if the new_ctb flag was
+       set, CTB is already formatted as new style and write_header2
+       does create a partial length encoding using new the new
+       style. */
     write_header2(out, ctb, 0, 0, 0 );
     iobuf_put(out, cd->algorithm );
 

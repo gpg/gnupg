@@ -318,39 +318,47 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
     pktlen = 0;
     new_ctb = !!(ctb & 0x40);
     if( new_ctb ) {
-	pkttype =  ctb & 0x3f;
+        pkttype = ctb & 0x3f;
 	if( (c = iobuf_get(inp)) == -1 ) {
 	    log_error("%s: 1st length byte missing\n", iobuf_where(inp) );
 	    rc = G10ERR_INVALID_PACKET;
 	    goto leave;
 	}
-	hdr[hdrlen++] = c;
-	if( c < 192 )
-	    pktlen = c;
-	else if( c < 224 ) {
-	    pktlen = (c - 192) * 256;
-	    if( (c = iobuf_get(inp)) == -1 ) {
-		log_error("%s: 2nd length byte missing\n", iobuf_where(inp) );
-		rc = G10ERR_INVALID_PACKET;
-		goto leave;
-	    }
-	    hdr[hdrlen++] = c;
-	    pktlen += c + 192;
-	}
-	else if( c == 255 ) {
-	    pktlen  = (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 24;
-	    pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 16;
-	    pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 8;
-	    if( (c = iobuf_get(inp)) == -1 ) {
-		log_error("%s: 4 byte length invalid\n", iobuf_where(inp) );
-		rc = G10ERR_INVALID_PACKET;
-		goto leave;
-	    }
-	    pktlen |= (hdr[hdrlen++] = c );
-	}
-	else { /* partial body length */
-	    iobuf_set_partial_block_mode(inp, c & 0xff);
-	    pktlen = 0;/* to indicate partial length */
+        if (pkttype == PKT_COMPRESSED) {
+             iobuf_set_partial_block_mode(inp, c & 0xff);
+             pktlen = 0;/* to indicate partial length */
+        }
+        else {
+             hdr[hdrlen++] = c;
+             if( c < 192 )
+                  pktlen = c;
+             else if( c < 224 ) {
+                  pktlen = (c - 192) * 256;
+                  if( (c = iobuf_get(inp)) == -1 ) {
+                       log_error("%s: 2nd length byte missing\n",
+                                 iobuf_where(inp) );
+                       rc = G10ERR_INVALID_PACKET;
+                       goto leave;
+                  }
+                  hdr[hdrlen++] = c;
+                  pktlen += c + 192;
+             }
+             else if( c == 255 ) {
+                  pktlen  = (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 24;
+                  pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 16;
+                  pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 8;
+                  if( (c = iobuf_get(inp)) == -1 ) {
+                       log_error("%s: 4 byte length invalid\n",
+                                 iobuf_where(inp) );
+                       rc = G10ERR_INVALID_PACKET;
+                       goto leave;
+                  }
+                  pktlen |= (hdr[hdrlen++] = c );
+             }
+             else { /* partial body length */
+                  iobuf_set_partial_block_mode(inp, c & 0xff);
+                  pktlen = 0;/* to indicate partial length */
+             }
 	}
     }
     else {
@@ -400,14 +408,14 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
     }
 
     if( DBG_PACKET ) {
-      #ifdef DEBUG_PARSE_PACKET
+#ifdef DEBUG_PARSE_PACKET
 	log_debug("parse_packet(iob=%d): type=%d length=%lu%s (%s.%s.%d)\n",
 		   iobuf_id(inp), pkttype, pktlen, new_ctb?" (new_ctb)":"",
 		    dbg_w, dbg_f, dbg_l );
-      #else
+#else
 	log_debug("parse_packet(iob=%d): type=%d length=%lu%s\n",
 		   iobuf_id(inp), pkttype, pktlen, new_ctb?" (new_ctb)":"" );
-      #endif
+#endif
     }
     pkt->pkttype = pkttype;
     rc = G10ERR_UNKNOWN_PACKET; /* default error */
@@ -2014,8 +2022,8 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen,
      *	the compress algorithm should know the length)
      */
     zd = pkt->pkt.compressed =	m_alloc(sizeof *pkt->pkt.compressed );
-    zd->len = 0; /* not yet used */
     zd->algorithm = iobuf_get_noeof(inp);
+    zd->len = 0; /* not used */ 
     zd->new_ctb = new_ctb;
     zd->buf = inp;
     if( list_mode )
@@ -2036,8 +2044,8 @@ parse_encrypted( IOBUF inp, int pkttype, unsigned long pktlen,
     ed->len = pktlen;
     /* we don't know the extralen which is (cipher_blocksize+2)
        because the algorithm ist not specified in this packet.
-       However, it is only important to know this for somesanity
-       checks on the pkacet length - it doesn't matter that we can't
+       However, it is only important to know this for some sanity
+       checks on the packet length - it doesn't matter that we can't
        do it */
     ed->extralen = 0;
     ed->buf = NULL;

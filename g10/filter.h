@@ -77,6 +77,7 @@ struct compress_filter_context_s {
     unsigned outbufsize;
     int algo;	 /* compress algo */
     int algo1hack;
+    int new_ctb;
     void (*release)(struct compress_filter_context_s*);
 };
 typedef struct compress_filter_context_s compress_filter_context_t;

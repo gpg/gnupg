@@ -510,9 +510,9 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 	tty_printf("\n");
 
 	tty_printf(_(
-"It is NOT certain that the key belongs to its owner.\n"
-"If you *really* know what you are doing, you may answer\n"
-"the next question with yes\n\n") );
+"It is NOT certain that the key belongs to the person named\n"
+"in the user ID.  If you *really* know what you are doing,\n"
+"you may answer the next question with yes\n\n"));
 
 	if( cpr_get_answer_is_yes("untrusted_key.override",
 				  _("Use this key anyway? "))  )
