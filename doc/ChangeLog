@@ -1,3 +1,8 @@
+2005-02-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Note that level 0 signatures are always accepted
+	regardless of --min-cert-level.
+
 2005-02-03  Werner Koch  <wk@g10code.com>
 
 	* README.W32: Updated to match the switch to the NSIS installer.

@@ -1063,13 +1063,6 @@ specific levels and how they are used. --no-ask-cert-level disables
 this option.  This option defaults to no.
 </para></listitem></varlistentry>
 
-<varlistentry>
-<term>--min-cert-level</term>
-<listitem><para>
-When building the trust database, disregard any signatures with a
-certification level below this.  Defaults to 2, which disregards level
-1 signatures.
-</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--default-cert-level &ParmN;</term>
@@ -1101,6 +1094,16 @@ examples.  In the end, it is up to you to decide just what "casual"
 and "extensive" mean to you.
 </para><para>
 This option defaults to 0 (no particular claim).
+</para></listitem></varlistentry>
+
+
+<varlistentry>
+<term>--min-cert-level</term>
+<listitem><para>
+When building the trust database, disregard any signatures with a
+certification level below this.  Defaults to 2, which disregards level
+1 signatures.  Note that level 0 "no particular claim" signatures are
+always accepted.
 </para></listitem></varlistentry>
 
 
