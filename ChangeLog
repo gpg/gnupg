@@ -2,7 +2,7 @@
 
 	Released 1.9.1.
 	
-	* configure.ac: Required newer versions of some libraries.
+	* configure.ac: Require newer versions of some libraries.
 
 2003-09-02  Werner Koch  <wk@gnupg.org>
 
