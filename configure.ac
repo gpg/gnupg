@@ -220,12 +220,11 @@ if test "$use_exec" = yes ; then
     AC_MSG_RESULT($enableval)
   fi
 
-AC_MSG_CHECKING([whether included zlib is requested])
+AC_MSG_CHECKING([whether the included zlib is requested])
 AC_ARG_WITH(included-zlib,
     [  --with-included-zlib    use the zlib code included here],
 [g10_force_zlib=yes], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
-
 
 dnl
 dnl Check whether we want to use Linux capabilities
@@ -358,7 +357,7 @@ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 # libraries.  -lldap [-llber [-lresolv]] is for OpenLDAP.  OpenLDAP in
 # general is terrible with creating weird dependencies.  If all else
 # fails, the user can play guess-the-dependency by using something
-# like LDAPLIBS="-lfoo" ./configure
+# like ./configure LDAPLIBS="-Lfoo -lbar"
 
 if test "$try_ldap" = yes ; then
   for MY_LDAPLIBS in ${LDAPLIBS+"$LDAPLIBS"} "-lldap" "-lldap -llber" "-lldap -llber -lresolv"; do
@@ -767,6 +766,39 @@ fi
 AC_SUBST(MPI_EXTRA_ASM_OBJS)
 MPI_SFLAGS="$ac_cv_mpi_sflags"
 AC_SUBST(MPI_SFLAGS)
+
+# Sanity check regex.  Tests adapted from mutt.
+
+AC_MSG_CHECKING([whether the included regex lib is requested])
+AC_ARG_WITH(included-regex,
+    [  --with-included-regex   use the included GNU regex library],
+    [gnupg_cv_regex=yes],[gnupg_cv_regex=no])
+AC_MSG_RESULT($gnupg_cv_regex)
+
+if test $gnupg_cv_regex = no ; then
+   # Does the system have regex functions at all?
+   AC_CHECK_FUNC(regcomp,gnupg_cv_regex=no,gnupg_cv_regex=yes)
+fi
+
+if test $gnupg_cv_regex = no ; then
+   AC_CACHE_CHECK([whether your system's regexp library is broken],
+     [gnupg_cv_regex_broken],
+     AC_TRY_RUN([
+#include <unistd.h>
+#include <regex.h>
+main() { regex_t blah ; regmatch_t p; p.rm_eo = p.rm_eo; return regcomp(&blah, "foo.*bar", REG_NOSUB) || regexec (&blah, "foobar", 0, NULL, 0); }],
+     gnupg_cv_regex_broken=no, gnupg_cv_regex_broken=yes, gnupg_cv_regex_broken=yes))
+
+     if test $gnupg_cv_regex_broken = yes ; then
+      AC_MSG_WARN(your regex is broken - using the included GNU regex instead.)
+      gnupg_cv_regex=yes
+     fi
+fi
+
+if test $gnupg_cv_regex = yes; then
+   AC_DEFINE(USE_GNU_REGEX,1,[ Define if you want to use the included regex lib ])
+   AC_SUBST(REGEX_O,regex.o)
+fi
 
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
