@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.0.5 (2001-04-??)
+Noteworthy changes in version 1.0.5 (2001-04-29)
 ------------------------------------------------
 
     * WARNING: The semantics of --verify have changed to address a
@@ -40,9 +40,11 @@ Noteworthy changes in version 1.0.5 (2001-04-??)
 
     * Keyserver support for the W32 version.
 
-    * A lot of bug fixes, rewritten key selection code so that GnuPG
-      can better cope with multiple sub keys, expire dates and so.
-      The drawback is that it is slower.
+    * Rewritten key selection code so that GnuPG can better cope with
+      multiple subkeys, expire dates and so.  The drawback is that it
+      is slower.
+
+    * A whole lot of bug fixes.
 
     * The verification status of self-signatures are now cached. To
       increase the speed of key list operations for existing keys you
