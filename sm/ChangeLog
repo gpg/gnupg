@@ -1,3 +1,12 @@
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	* import.c (print_imported_summary): Cleaned up.  Print new
+	not_imported value.
+	(check_and_store): Update non_imported counter.
+	(print_import_problem): New.
+	(check_and_store): Print error status message.
+	* server.c (get_status_string): Added STATUS_IMPORT_PROBLEM.
+
 2002-08-20  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main): Use the log file only in server mode.

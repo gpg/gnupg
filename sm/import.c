@@ -36,9 +36,9 @@
 
 struct stats_s {
   unsigned long count;
-  unsigned long skipped_new_keys;
   unsigned long imported;
   unsigned long unchanged;
+  unsigned long not_imported;
 };
 
 
@@ -54,16 +54,46 @@ print_imported_status (CTRL ctrl, KsbaCert cert)
 }
 
 
+/* Print an IMPORT_PROBLEM status.  REASON is one of:
+   0 := "No specific reason given".
+   1 := "Invalid Certificate".
+   2 := "Issuer Certificate missing".
+   3 := "Certificate Chain too long".
+   4 := "Error storing certificate".
+*/
+static void
+print_import_problem (CTRL ctrl, KsbaCert cert, int reason)
+{
+  char *fpr = NULL;
+  char buf[25];
+  int i;
+
+  sprintf (buf, "%d", reason);
+  if (cert)
+    {
+      fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+      /* detetect an error (all high) value */
+      for (i=0; fpr[i] == 'F'; i++)
+        ;
+      if (!fpr[i])
+        {
+          xfree (fpr);
+          fpr = NULL;
+        }
+    }
+  gpgsm_status2 (ctrl, STATUS_IMPORT_PROBLEM, buf, fpr, NULL);
+  xfree (fpr);
+}
+
+
 void
 print_imported_summary (CTRL ctrl, struct stats_s *stats)
 {
-  char buf[13*25];
+  char buf[14*25];
 
   if (!opt.quiet)
     {
       log_info (_("total number processed: %lu\n"), stats->count);
-      if (stats->skipped_new_keys)
-        log_info(_("      skipped new keys: %lu\n"), stats->skipped_new_keys );
       if (stats->imported) 
         {
           log_info (_("              imported: %lu"), stats->imported );
@@ -71,22 +101,15 @@ print_imported_summary (CTRL ctrl, struct stats_s *stats)
 	}
       if (stats->unchanged)
         log_info (_("             unchanged: %lu\n"), stats->unchanged);
+      if (stats->not_imported)
+        log_info (_("          not imported: %lu\n"), stats->not_imported);
     }
 
-  sprintf (buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+  sprintf (buf, "%lu 0 %lu 0 %lu 0 0 0 0 0 0 0 0 %lu",
            stats->count,
-           0l, /*stats->no_user_id*/
            stats->imported,
-           0l, /*stats->imported_rsa*/
            stats->unchanged,
-           0l, /*stats->n_uids*/
-           0l, /*stats->n_subk*/
-           0l, /*stats->n_sigs*/
-           0l, /*stats->n_revoc*/
-           0l, /*stats->secret_read*/
-           0l, /*stats->secret_imported*/
-           0l, /*stats->secret_dups*/
-           stats->skipped_new_keys 
+           stats->not_imported
            );
   gpgsm_status (ctrl, STATUS_IMPORT_RES, buf);
 }
@@ -96,8 +119,19 @@ print_imported_summary (CTRL ctrl, struct stats_s *stats)
 static void
 check_and_store (CTRL ctrl, struct stats_s *stats, KsbaCert cert, int depth)
 {
+  int rc;
+
   stats->count++;
-  if ( !gpgsm_basic_cert_check (cert) )
+  if ( depth >= 50 )
+    {
+      log_error (_("certificate chain too long\n"));
+      stats->not_imported++;
+      print_import_problem (ctrl, cert, 3);
+      return;
+    }
+
+  rc = gpgsm_basic_cert_check (cert);
+  if (!rc)
     {
       int existed;
 
@@ -129,8 +163,6 @@ check_and_store (CTRL ctrl, struct stats_s *stats, KsbaCert cert, int depth)
             }
           /* Now lets walk up the chain and import all certificates up
              the chain.*/
-          if ( depth >= 50 )
-            log_error (_("certificate chain too long\n"));
           else if (!gpgsm_walk_cert_chain (cert, &next))
             {
               check_and_store (ctrl, stats, next, depth+1);
@@ -138,10 +170,20 @@ check_and_store (CTRL ctrl, struct stats_s *stats, KsbaCert cert, int depth)
             }
         }
       else
-        log_error (_("error storing certificate\n"));
+        {
+          log_error (_("error storing certificate\n"));
+          stats->not_imported++;
+          print_import_problem (ctrl, cert, 4);
+        }
     }
   else
-    log_error (_("basic certificate checks failed - not imported\n"));
+    {
+      log_error (_("basic certificate checks failed - not imported\n"));
+      stats->not_imported++;
+      print_import_problem (ctrl, cert,
+                            rc == GNUPG_Missing_Certificate? 2 :
+                            rc == GNUPG_Bad_Certificate?     1 : 0);
+    }
 }
 
 

@@ -904,6 +904,7 @@ get_status_string ( int no )
     case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
     case STATUS_TRUNCATED      : s = "TRUNCATED"; break;
     case STATUS_ERROR          : s = "ERROR"; break;
+    case STATUS_IMPORT_PROBLEM : s = "IMPORT_PROBLEM"; break;
     default: s = "?"; break;
     }
   return s;
