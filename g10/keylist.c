@@ -67,7 +67,7 @@ void
 show_policy_url(PKT_signature *sig)
 {
   const byte *p;
-  int len;
+  size_t len;
 
   p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len);
   if(p)
@@ -83,7 +83,8 @@ void
 show_notation(PKT_signature *sig)
 {
   const byte *p;
-  int len,seq=0;
+  size_t len;
+  int seq=0;
 
   /* There may be multiple notations in the same sig. */
 

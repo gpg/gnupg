@@ -1,3 +1,7 @@
+2001-12-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* Fixed some types for portability.  Noted by Stefan Bellon.
+
 2001-12-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c, options.h: New option --pgp2.  This is identical to
