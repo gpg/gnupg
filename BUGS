@@ -53,3 +53,17 @@ an "info standards" to find out why a disclaimer is needed for GNU.)
     "The keyring contains a bad (corrupted) PGP packet".  The resulting
     file is missing information from the front.
 
+[  *] #8 1999-02-25 <kazu@iijlab.net>
+    %gpg --encrypt -r kazu@iijlab.net --batch foo
+    gpg: Warning: using insecure memory!
+    gpg: 11C23F61: no info to calculate a trust probability
+
+    This creates a symmetrically encrypted message WITHOUT a session key
+    encrypted with public cryptographic(i.e. foo.gpg). This is probably
+    because GNUPG encrypted a message with a random session key first then
+    tries to find public keys specified with the -r option. I don't like
+    this.
+
+
+
+
