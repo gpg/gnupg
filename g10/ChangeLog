@@ -1,3 +1,19 @@
+2002-05-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* photoid.c (show_photos): Use the long keyid as the filename for
+	the photo.  Use the short keyid as the filename on 8.3 systems.
+
+	* exec.h, exec.c (make_tempdir, exec_write, exec_finish): Allow
+	caller to specify filename.  This should make things easier on
+	windows and macs where the file extension is required, but a whole
+	filename is even better.
+
+	* keyedit.c (show_key_with_all_names, show_prefs): Show proper
+	prefs for a v4 key uid with no selfsig at all.
+
+	* misc.c (check_permissions): Don't check permissions on
+	non-normal files (pipes, character devices, etc.)
+
 2002-05-11  Werner Koch  <wk@gnupg.org>
 
 	* mainproc.c (proc_symkey_enc): Avoid segv in case the parser

@@ -1424,7 +1424,7 @@ show_prefs (PKT_user_id *uid, int verbose)
 
     if( uid->prefs )
         prefs=uid->prefs;
-    else if(uid->selfsigversion>=4 && verbose)
+    else if(verbose)
         prefs=&fake;
     else
       return;
@@ -1544,6 +1544,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
     KBNODE node;
     int i, rc;
     int do_warn = 0;
+    byte pk_version=0;
 
     /* the keys */
     for( node = keyblock; node; node = node->next ) {
@@ -1566,6 +1567,8 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                     did_warn = 1;
                     do_warn = 1;
                 }
+
+		pk_version=pk->version;
 	    }
 
 	    if(with_revoker) {
@@ -1660,7 +1663,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                     tty_printf ("[revoked] ");
 		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
-		if( with_prefs )
+		if( with_prefs && (pk_version>3 || uid->selfsigversion>3))
 		    show_prefs (uid, with_prefs == 2);
 	    }
 	}
@@ -1668,7 +1671,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 
     if (do_warn)
         tty_printf (_("Please note that the shown key validity "
-                      "is not necessary correct\n"
+                      "is not necessarily correct\n"
                       "unless you restart the program.\n")); 
 
 }

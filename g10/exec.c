@@ -61,10 +61,10 @@ char *mkdtemp(char *template);
 /* Makes a temp directory and filenames */
 static int make_tempdir(struct exec_info *info)
 {
-  char *tmp=opt.temp_dir,*ext=info->ext;
+  char *tmp=opt.temp_dir,*name=info->name;
 
-  if(!ext)
-    ext=info->binary?"bin":"txt";
+  if(!name)
+    name=info->binary?"tempfile.bin":"tempfile.txt";
 
   /* Make up the temp dir and files in case we need them */
 
@@ -118,17 +118,15 @@ static int make_tempdir(struct exec_info *info)
     {
       info->madedir=1;
 
-      info->tempfile_in=m_alloc(strlen(info->tempdir)+strlen(DIRSEP_S)+6+
-				strlen(EXTSEP_S)+strlen(ext)+1);
-      sprintf(info->tempfile_in,"%s" DIRSEP_S "datain" EXTSEP_S "%s",
-	      info->tempdir,ext);
+      info->tempfile_in=m_alloc(strlen(info->tempdir)+
+				strlen(DIRSEP_S)+strlen(name)+1);
+      sprintf(info->tempfile_in,"%s" DIRSEP_S "%s",info->tempdir,name);
 
       if(!info->writeonly)
 	{
-	  info->tempfile_out=m_alloc(strlen(info->tempdir)+strlen(DIRSEP_S)+7+
-				     strlen(EXTSEP_S)+strlen(ext)+1);
-	  sprintf(info->tempfile_out,"%s" DIRSEP_S "dataout" EXTSEP_S "%s",
-		  info->tempdir,ext);
+	  info->tempfile_out=m_alloc(strlen(info->tempdir)+
+				     strlen(DIRSEP_S)+strlen(name)+1);
+	  sprintf(info->tempfile_out,"%s" DIRSEP_S "%s",info->tempdir,name);
 	}
     }
 
@@ -239,7 +237,7 @@ static int expand_args(struct exec_info *info,const char *args_in)
    shell -c.  If there are tempfiles, then it's a system. */
 
 int exec_write(struct exec_info **info,const char *program,
-	       const char *args_in,const char *ext,int writeonly,int binary)
+	       const char *args_in,const char *name,int writeonly,int binary)
 {
   int ret=G10ERR_GENERAL;
 
@@ -263,8 +261,8 @@ int exec_write(struct exec_info **info,const char *program,
 
   *info=m_alloc_clear(sizeof(struct exec_info));
 
-  if(ext)
-    (*info)->ext=m_strdup(ext);
+  if(name)
+    (*info)->name=m_strdup(name);
   (*info)->binary=binary;
   (*info)->writeonly=writeonly;
 
@@ -508,7 +506,7 @@ int exec_finish(struct exec_info *info)
     }
 
   m_free(info->command);
-  m_free(info->ext);
+  m_free(info->name);
   m_free(info->tempdir);
   m_free(info->tempfile_in);
   m_free(info->tempfile_out);

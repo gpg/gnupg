@@ -220,23 +220,20 @@ void show_photos(const struct user_attribute *attrs,
   int i;
   struct expando_args args;
   u32 len;
+  u32 kid[2];
 
   memset(&args,0,sizeof(args));
   args.pk=pk;
+
+  keyid_from_pk(pk,kid);
 
   for(i=0;i<count;i++)
     if(attrs[i].type==ATTRIB_IMAGE &&
        parse_image_header(&attrs[i],&args.imagetype,&len))
       {
-	char *command;
+	char *command,*name;
 	struct exec_info *spawn;
 	int offset=attrs[i].len-len;
-
-	/* Notice we are not using the byte for image encoding type
-           for more than cosmetics.  Most external image viewers can
-           handle a multitude of types, and even if one cannot
-           understand a partcular type, we have no way to know which.
-           The spec specifically permits this, by the way. -dms */
 
 	/* make command grow */
 	command=pct_expando(opt.photo_viewer?
@@ -244,9 +241,30 @@ void show_photos(const struct user_attribute *attrs,
 	if(!command)
 	  goto fail;
 
-	if(exec_write(&spawn,NULL,command,
-		      image_type_to_string(args.imagetype,0),1,1)!=0)
-	  goto fail;
+	name=m_alloc(16+strlen(EXTSEP_S)+
+		     strlen(image_type_to_string(args.imagetype,0))+1);
+
+	/* Make the filename.  Notice we are not using the image
+           encoding type for more than cosmetics.  Most external image
+           viewers can handle a multitude of types, and even if one
+           cannot understand a partcular type, we have no way to know
+           which.  The spec permits this, by the way. -dms */
+
+#ifdef USE_ONLY_8DOT3
+	sprintf(name,"%08lX" EXTSEP_S "%s",(ulong)kid[1],
+		image_type_to_string(args.imagetype,0));
+#else
+	sprintf(name,"%08lX%08lX" EXTSEP_S "%s",(ulong)kid[0],(ulong)kid[1],
+		image_type_to_string(args.imagetype,0));
+#endif
+
+	if(exec_write(&spawn,NULL,command,name,1,1)!=0)
+	  {
+	    m_free(name);
+	    goto fail;
+	  }
+
+	m_free(name);
 
 	fwrite(&attrs[i].data[offset],attrs[i].len-offset,1,spawn->tochild);
 

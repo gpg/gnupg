@@ -11,11 +11,11 @@ struct exec_info
   pid_t child;
   FILE *tochild;
   IOBUF fromchild;
-  char *command,*ext,*tempdir,*tempfile_in,*tempfile_out;
+  char *command,*name,*tempdir,*tempfile_in,*tempfile_out;
 };
 
 int exec_write(struct exec_info **info,const char *program,
-	       const char *args_in,const char *ext,int writeonly,int binary);
+	       const char *args_in,const char *name,int writeonly,int binary);
 int exec_read(struct exec_info *info);
 int exec_finish(struct exec_info *info);
 
