@@ -86,7 +86,7 @@ do_encode_md (const unsigned char *digest, size_t digestlen, int algo,
 /* SIGN whatever information we have accumulated in CTRL and write it
    back to OUTFP. */
 int
-agent_pksign (CTRL ctrl, FILE *outfp) 
+agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache) 
 {
   GCRY_SEXP s_skey = NULL, s_hash = NULL, s_sig = NULL;
   GCRY_MPI frame = NULL;
@@ -98,7 +98,7 @@ agent_pksign (CTRL ctrl, FILE *outfp)
   if (!ctrl->have_keygrip)
     return seterr (No_Secret_Key);
 
-  s_skey = agent_key_from_file (ctrl->keygrip, &shadow_info);
+  s_skey = agent_key_from_file (ctrl->keygrip, &shadow_info, ignore_cache);
   if (!s_skey && !shadow_info)
     {
       log_error ("failed to read the secret key\n");

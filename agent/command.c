@@ -48,6 +48,7 @@
 struct server_local_s {
   ASSUAN_CONTEXT assuan_ctx;
   int message_fd;
+  int use_cache_for_signing;
 };
 
 
@@ -286,9 +287,15 @@ static int
 cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc;
+  int ignore_cache = 0;
   CTRL ctrl = assuan_get_pointer (ctx);
 
-  rc = agent_pksign (ctrl, assuan_get_data_fp (ctx));
+  if (opt.ignore_cache_for_signing)
+    ignore_cache = 1;
+  else if (!ctrl->server_local->use_cache_for_signing)
+    ignore_cache = 1;
+
+  rc = agent_pksign (ctrl, assuan_get_data_fp (ctx), ignore_cache);
   if (rc)
     log_error ("command pksign failed: %s\n", gnupg_strerror (rc));
   return map_to_assuan_status (rc);
@@ -516,7 +523,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
-/*    CTRL ctrl = assuan_get_pointer (ctx); */
+   CTRL ctrl = assuan_get_pointer (ctx);
 
   /* FIXME: We should not change opt. here.  It is not a problem right
      now but as soon as we are allowing concurrent connections we mess
@@ -561,6 +568,8 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
       if (!opt.lc_messages)
         return ASSUAN_Out_Of_Core;
     }
+  else if (!strcmp (key, "use-cache-for-signing"))
+    ctrl->server_local->use_cache_for_signing = *value? atoi (value) : 0;
   else
     return ASSUAN_Invalid_Option;
 
@@ -656,6 +665,7 @@ start_command_handler (int listen_fd, int fd)
   ctrl.server_local = xcalloc (1, sizeof *ctrl.server_local);
   ctrl.server_local->assuan_ctx = ctx;
   ctrl.server_local->message_fd = -1;
+  ctrl.server_local->use_cache_for_signing = 1;
 
   if (DBG_ASSUAN)
     assuan_set_log_stream (ctx, log_get_stream ());

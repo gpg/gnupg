@@ -47,6 +47,8 @@ struct {
 
   int running_detached; /* we are running detached from the tty. */
 
+  int ignore_cache_for_signing;
+
 } opt;
 
 
@@ -115,7 +117,7 @@ void start_command_handler (int, int);
 int agent_write_private_key (const unsigned char *grip,
                              const void *buffer, size_t length, int force);
 GCRY_SEXP agent_key_from_file (const unsigned char *grip,
-                               unsigned char **shadow_info);
+                               unsigned char **shadow_info, int ignore_cache);
 int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/
@@ -133,7 +135,7 @@ void agent_unlock_cache_entry (void **cache_id);
 
 
 /*-- pksign.c --*/
-int agent_pksign (CTRL ctrl, FILE *outfp);
+int agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache);
 
 /*-- pkdecrypt.c --*/
 int agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,

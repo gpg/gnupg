@@ -1,3 +1,13 @@
+2002-07-26  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (main): New option --ignore-cache-for-signing.
+	* command.c (option_handler): New server option
+	use-cache-for-signing defaulting to true.
+	(cmd_pksign): handle global and per session option.
+	* findkey.c (agent_key_from_file, unprotect): New arg
+	ignore_cache.  Changed all callers.
+	* pksign.c (agent_pksign): Likewise.
+
 2002-06-29  Werner Koch  <wk@gnupg.org>
 
 	* query.c (start_pinentry): Use GNUPG_DERAULT_PINENTRY.
@@ -25,7 +35,7 @@
 	(import_p12_file): Store the new file if requested.
 	(main): New options --force and --store.
 
-	* gpg-agent.c (main): Set a global flag when runing detached.
+	* gpg-agent.c (main): Set a global flag when running detached.
 	* query.c (start_pinentry): Pass the list of FD to keep in the
 	child when not running detached.
 	* call-scd.c (start_scd): Ditto.

@@ -114,7 +114,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
    should be the hex encoded keygrip of that key to be used with the
    cahing mechanism. */
 static int
-unprotect (unsigned char **keybuf, const unsigned char *grip)
+unprotect (unsigned char **keybuf, const unsigned char *grip, int ignore_cache)
 {
   struct pin_entry_info_s *pi;
   struct try_unprotect_arg_s arg;
@@ -129,22 +129,23 @@ unprotect (unsigned char **keybuf, const unsigned char *grip)
 
   /* first try to get it from the cache - if there is none or we can't
      unprotect it, we fall back to ask the user */
-  {
-    void *cache_marker;
-    const char *pw = agent_get_cache (hexgrip, &cache_marker);
-    if (pw)
-      {
-        rc = agent_unprotect (*keybuf, pw, &result, &resultlen);
-        agent_unlock_cache_entry (&cache_marker);
-        if (!rc)
-          {
-            xfree (*keybuf);
-            *keybuf = result;
-            return 0;
-          }
-        rc  = 0;
-      }
-  }
+  if (!ignore_cache)
+    {
+      void *cache_marker;
+      const char *pw = agent_get_cache (hexgrip, &cache_marker);
+      if (pw)
+        {
+          rc = agent_unprotect (*keybuf, pw, &result, &resultlen);
+          agent_unlock_cache_entry (&cache_marker);
+          if (!rc)
+            {
+              xfree (*keybuf);
+              *keybuf = result;
+              return 0;
+            }
+          rc  = 0;
+        }
+    }
   
   pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
   pi->max_length = 100;
@@ -173,10 +174,12 @@ unprotect (unsigned char **keybuf, const unsigned char *grip)
 /* Return the secret key as an S-Exp after locating it using the grip.
    Returns NULL if key is not available or the operation should be
    diverted to a token.  In the latter case shadow_info will point to
-   an allocated S-Expression with the shadow_info part from the
-   file. */
+   an allocated S-Expression with the shadow_info part from the file.
+   With IGNORE_CACHE passed as true the passphrase is not taken from
+   the cache.*/
 GCRY_SEXP
-agent_key_from_file (const unsigned char *grip, unsigned char **shadow_info)
+agent_key_from_file (const unsigned char *grip, unsigned char **shadow_info,
+                     int ignore_cache)
 {
   int i, rc;
   char *fname;
@@ -249,7 +252,7 @@ agent_key_from_file (const unsigned char *grip, unsigned char **shadow_info)
     case PRIVATE_KEY_CLEAR:
       break; /* no unprotection needed */
     case PRIVATE_KEY_PROTECTED:
-      rc = unprotect (&buf, grip);
+      rc = unprotect (&buf, grip, ignore_cache);
       if (rc)
         log_error ("failed to unprotect the secret key: %s\n",
                    gnupg_strerror (rc));

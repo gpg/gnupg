@@ -81,6 +81,8 @@ enum cmd_and_opt_values
   oDefCacheTTL,
   oDisablePth,
 
+  oIgnoreCacheForSigning,
+
 aTest };
 
 
@@ -113,6 +115,8 @@ static ARGPARSE_OPTS opts[] = {
   { oScdaemonProgram, "scdaemon-program", 2 , "path to SCdaemon program" },
   { oDefCacheTTL, "default-cache-ttl", 4,
                                  "|N|expire cached PINs after N seconds"},
+  { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
+                                 "do not use the PIN cache when signing"},
 
   {0}
 };
@@ -406,6 +410,8 @@ main (int argc, char **argv )
         case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
         case oScdaemonProgram: opt.scdaemon_program = pargs.r.ret_str; break;
         case oDefCacheTTL: opt.def_cache_ttl = pargs.r.ret_ulong; break;
+
+        case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
 
         default : pargs.err = configfp? 1:2; break;
 	}
