@@ -101,7 +101,10 @@ parse_import_options(char *str,unsigned int *options)
       int i,rev=0;
 
       if(ascii_memcasecmp("no-",tok,3)==0)
-	rev=1;
+	{
+	  rev=1;
+	  tok+=3;
+	}
 
       for(i=0;import_opts[i].name;i++)
 	{

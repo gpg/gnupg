@@ -1,5 +1,9 @@
 2002-07-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* import.c (parse_import_options), export.c
+	(parse_export_options): Fix offset problem with reversed ("no-")
+	meanings.
+
 	* import.c (delete_inv_parts): Discard subkey signatures (0x18 and
 	0x28) if found in the userid section of the key.
 
