@@ -24,10 +24,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if GNUPG_MAJOR_VERSION == 1
+/* This is used with GnuPG version < 1.9.  The code has been source
+   copied from the current GnuPG >= 1.9  and is maintained over
+   there. */
+#include "options.h"
+#include "errors.h"
+#include "memory.h"
+#include "util.h"
+#include "i18n.h"
+#else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"
+#endif /* GNUPG_MAJOR_VERSION != 1 */
+
 #include "iso7816.h"
 #include "apdu.h"
-#include "dynload.h"
+
 
 #define CMD_SELECT_FILE 0xA4
 #define CMD_VERIFY      0x20
@@ -290,7 +302,7 @@ iso7816_internal_authenticate (int slot,
 
 
 static gpg_error_t
-generate_keypair (int slot, int readonly,
+do_generate_keypair (int slot, int readonly,
                   const unsigned char *data, size_t datalen,
                   unsigned char **result, size_t *resultlen)
 {
@@ -321,7 +333,7 @@ iso7816_generate_keypair (int slot,
                           const unsigned char *data, size_t datalen,
                           unsigned char **result, size_t *resultlen)
 {
-  return generate_keypair (slot, 0, data, datalen, result, resultlen);
+  return do_generate_keypair (slot, 0, data, datalen, result, resultlen);
 }
 
 
@@ -330,7 +342,7 @@ iso7816_read_public_key (int slot,
                           const unsigned char *data, size_t datalen,
                           unsigned char **result, size_t *resultlen)
 {
-  return generate_keypair (slot, 1, data, datalen, result, resultlen);
+  return do_generate_keypair (slot, 1, data, datalen, result, resultlen);
 }
 
 

@@ -25,14 +25,20 @@
 #include <errno.h>
 #include <assert.h>
 
+#if GNUPG_MAJOR_VERSION != 1
 #include "gpg.h"
+#endif
 #include "util.h"
 #include "i18n.h"
 #include "ttyio.h"
 #include "status.h"
 #include "options.h"
 #include "main.h"
+#if GNUPG_MAJOR_VERSION == 1
+#include "cardglue.h"
+#else
 #include "call-agent.h"
+#endif
 
 #define CONTROL_D ('D' - 'A' + 1)
 

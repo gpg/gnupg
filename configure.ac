@@ -238,6 +238,11 @@ AH_BOTTOM([
 /* Tell libgcrypt not to use its own libgpg-error implementation. */
 #define USE_LIBGPG_ERROR 1
 
+/* This is the major version number of GnuPG so that
+   source included files can test for this.  Note, that\
+   we use 2 here even for GnuPG 1.9.x. */
+#define GNUPG_MAJOR_VERSION 2
+
 #include "g10defs.h"
 
 ])

@@ -70,6 +70,10 @@ struct app_ctx_s {
 
 };
 
+#if GNUPG_MAJOR_VERSION == 1
+int app_select_openpgp (APP app, unsigned char **sn, size_t *snlen);
+int app_get_serial_and_stamp (APP app, char **serial, time_t *stamp);
+#else
 /*-- app.c --*/
 void app_set_default_reader_port (const char *portstr);
 APP select_application (void);
@@ -124,6 +128,8 @@ int app_openpgp_storekey (APP app, int keyno,
 int app_openpgp_readkey (APP app, int keyno,
                          unsigned char **m, size_t *mlen,
                          unsigned char **e, size_t *elen);
+#endif
+
 
 
 #endif /*GNUPG_SCD_APP_COMMON_H*/

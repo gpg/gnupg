@@ -1,3 +1,7 @@
+2003-10-01  Werner Koch  <wk@gnupg.org>
+
+	* card-util.c: Tweaked to use this source also under 1.3. 
+
 2003-09-30  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (print_card_serialno): New.
@@ -407,7 +411,7 @@
 	* card-util.c (card_status): New.
 	* call-agent.c (learn_status_cb): Parse more information.
 
-	* keylist.c (print_pubkey_info): Add FP arg for optinal printing
+	* keylist.c (print_pubkey_info): Add FP arg for optional printing
 	to a stream.  Changed all callers.
 
 2003-07-23  Werner Koch  <wk@gnupg.org>

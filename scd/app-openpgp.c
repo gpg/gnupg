@@ -24,10 +24,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
+#if GNUPG_MAJOR_VERSION == 1
+/* This is used with GnuPG version < 1.9.  The code has been source
+   copied from the current GnuPG >= 1.9  and is maintained over
+   there. */
+#include "options.h"
+#include "errors.h"
+#include "memory.h"
+#include "util.h"
+#include "i18n.h"
+#include "cardglue.h"
+#else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"
-#include "app-common.h"
+#endif /* GNUPG_MAJOR_VERSION != 1 */
+
 #include "iso7816.h"
+#include "app-common.h"
 
 
 
