@@ -1,3 +1,11 @@
+2001-12-21  Werner Koch  <wk@gnupg.org>
+
+	* distfiles: Removed those files which which automake installs by
+	default.
+
+	* autogen.sh: Replaced $() by backticks for system without a posix
+	shell.  Removed gawk specific quoting. By David Champion.
+
 2001-10-22  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh (aclocal_vers): Require automalke 1.5.

@@ -20,7 +20,8 @@ aclocal_vers=1.5
 
 DIE=no
 if test "$1" = "--build-w32"; then
-    tsdir=$(cd `dirname $0`; cd ..; pwd)
+    tmp=`dirname $0`
+    tsdir=`cd "$tmp"`; cd ..; pwd)
     shift
     host=i386--mingw32
     if [ ! -f $tsdir/scripts/config.guess ]; then
@@ -116,7 +117,7 @@ else
 fi
 
 
-if (gettext --version </dev/null 2>/dev/null | awk 'NR==1 { split($4,A,"\."); \
+if (gettext --version </dev/null 2>/dev/null | awk 'NR==1 { split($4,A,"."); \
     X=10000*A[1]+100*A[2]+A[3]; echo X; if( X >= 1038 ) exit 1; exit 0}')
     then
     echo "**Error**: You must have "\`gettext\'" installed to compile $PGM."
