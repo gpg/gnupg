@@ -780,6 +780,7 @@ connect_server( const char *server, ushort port, unsigned int flags )
 
       addr.sin_family=AF_INET; 
       addr.sin_port=htons(port);
+      memcpy(&addr.sin_addr,&inaddr,sizeof(inaddr));      
 
       if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
 	return sock;
@@ -797,7 +798,6 @@ connect_server( const char *server, ushort port, unsigned int flags )
     {
       /* We're using SRV, so append the tags */
       char srvname[MAXDNAME];
-
       strcpy(srvname,"_hkp._tcp.");
       strncat(srvname,server,MAXDNAME-11);
       srvname[MAXDNAME-1]='\0';
@@ -872,11 +872,23 @@ connect_server( const char *server, ushort port, unsigned int flags )
 	}
 
       addr.sin_family=host->h_addrtype;
+      if(addr.sin_family!=AF_INET)
+	{
+	  log_error("%s: unknown address family\n",srvlist[srv].target);
+	  return -1;
+	}
+
       addr.sin_port=htons(srvlist[srv].port);
 
       /* Try all A records until one responds. */
       while(host->h_addr_list[i])
 	{
+	  if(host->h_length!=4)
+	    {
+	      log_error("%s: illegal address length\n",srvlist[srv].target);
+	      return -1;
+	    }
+
 	  memcpy(&addr.sin_addr,host->h_addr_list[i],host->h_length);
 
 	  if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
