@@ -1,3 +1,11 @@
+2003-02-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* armor.c (parse_hash_header, armor_filter): Accept the new SHAs
+	in the armor Hash: header.
+
+	* g10.c (print_hex): Print long hash strings a little neater.
+	(print_mds): Add the new SHAs to the hash list.
+
 2003-02-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_revuid): Properly handle a nonselfsigned uid on
