@@ -457,16 +457,13 @@ print_pkenc_list( struct kidlist_item *list, int failed )
 	pk->pubkey_algo = list->pubkey_algo;
 	if( !get_pubkey( pk, list->kid ) )
 	  {
-	    size_t n;
 	    char *p;
 	    log_info( _("encrypted with %u-bit %s key, ID %s, created %s\n"),
 		      nbits_from_pk( pk ), algstr, keystr_from_pk(pk),
 		      strtimestamp(pk->timestamp) );
-	    fputs("      \"", log_stream() );
-	    p = get_user_id( list->kid, &n );
-	    print_utf8_string2 ( log_stream(), p, n, '"' );
+	    p=get_user_id_native(list->kid);
+	    fprintf(log_stream(),_("      \"%s\"\n"),p);
 	    m_free(p);
-	    fputs("\"\n", log_stream() );
 	  }
 	else
 	  log_info(_("encrypted with %s key, ID %s\n"),
@@ -579,7 +576,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	    sprintf ( buf, "%d:", c->dek->algo );
 	    for(i=0; i < c->dek->keylen; i++ )
 	      sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
-	    log_info( "session key: \"%s\"\n", buf );
+	    log_info( "session key: `%s'\n", buf );
 	    write_status_text ( STATUS_SESSION_KEY, buf );
 	  }
     }

@@ -204,7 +204,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 		       pubkey_letter( pk->pubkey_algo ),
                        keystr(keyid), datestr_from_pk( pk ) );
 	    p=get_user_id_native(keyid);
-	    tty_printf(_("          \"%s\"\n"),p);
+	    tty_printf(_("      \"%s\"\n"),p);
 	    m_free(p);
 
             keyblock = get_pubkeyblock (keyid);
@@ -231,7 +231,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 		p=utf8_to_native(un->pkt->pkt.user_id->name,
 				 un->pkt->pkt.user_id->len,0);
 
-		tty_printf(_("      aka \"%s\"\n"),p);
+		tty_printf(_("  aka \"%s\"\n"),p);
 	      }
         
             print_fingerprint (pk, NULL, 2);

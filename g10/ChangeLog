@@ -1,3 +1,17 @@
+2004-10-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* pkclist.c (do_edit_ownertrust): Use the same translated string
+	for showing the user ID as mainproc.c:print_pkenc_list.
+
+	* mainproc.c (print_pkenc_list): Allow translating the quotes
+	around the user ID.
+
+	* card-util.c, g10.c, photoid.c, trustdb.c: The last of the \"%s\"
+	-> `%s' quoting for things that aren't user IDs.
+
+	* keyserver.c (keyserver_spawn): If there is no keyserver host,
+	print the whole URI since it is self-contained.
+
 2004-10-11  Werner Koch  <wk@g10code.com>
 
 	* keyserver.c (keyserver_spawn): Print an empty string in log_info

@@ -892,9 +892,13 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	    else
 	      BUG();
 
-	    log_info(_("requesting key %s from %s server %s\n"),
-		     keystr_from_desc(&desc[i]),
-		     keyserver->scheme,keyserver->host?keyserver->host:"");
+	    if(keyserver->host)
+	      log_info(_("requesting key %s from %s server %s\n"),
+		       keystr_from_desc(&desc[i]),
+		       keyserver->scheme,keyserver->host);
+	    else
+	      log_info(_("requesting key %s from %s\n"),
+		       keystr_from_desc(&desc[i]),keyserver->uri);
 	  }
 
 	fprintf(spawn->tochild,"\n");
@@ -1037,9 +1041,14 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
 		iobuf_close(buffer);
 
-		log_info(_("sending key %s to %s server %s\n"),
-			 keystr(block->pkt->pkt.public_key->keyid),
-			 keyserver->scheme,keyserver->host?keyserver->host:"");
+		if(keyserver->host)
+		  log_info(_("sending key %s to %s server %s\n"),
+			   keystr(block->pkt->pkt.public_key->keyid),
+			   keyserver->scheme,keyserver->host);
+		else
+		  log_info(_("sending key %s to %s\n"),
+			   keystr(block->pkt->pkt.public_key->keyid),
+			   keyserver->uri);
 
 		release_kbnode(block);
 	      }
@@ -1079,8 +1088,12 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
 	fprintf(spawn->tochild,"\n");
 
-	log_info(_("searching for \"%s\" from %s server %s\n"),
-               searchstr,keyserver->scheme,keyserver->host?keyserver->host:"");
+	if(keyserver->host)
+	  log_info(_("searching for \"%s\" from %s server %s\n"),
+		   searchstr,keyserver->scheme,keyserver->host);
+	else
+	  log_info(_("searching for \"%s\" from %s\n"),
+		   searchstr,keyserver->uri);
 
 	break;
       }

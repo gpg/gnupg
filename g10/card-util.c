@@ -912,7 +912,7 @@ generate_card_keys (const char *serialno)
     {
       tty_printf ("\n");
       tty_printf (_("Please note that the factory settings of the PINs are\n"
-                    "   PIN = \"%s\"     Admin PIN = \"%s\"\n"
+                    "   PIN = `%s'     Admin PIN = `%s'\n"
                     "You should change them using the command --change-pin\n"),
                   "123456", "12345678");
       tty_printf ("\n");

@@ -556,7 +556,7 @@ check_trustdb ()
       validate_keys (0);
     }
   else
-    log_info (_("no need for a trustdb check with \"%s\" trust model\n"),
+    log_info (_("no need for a trustdb check with `%s' trust model\n"),
 	      trust_model_string());
 }
 
@@ -571,7 +571,7 @@ update_trustdb()
   if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
     validate_keys (1);
   else
-    log_info (_("no need for a trustdb update with \"%s\" trust model\n"),
+    log_info (_("no need for a trustdb update with `%s' trust model\n"),
 	      trust_model_string());
 }
 
@@ -1527,7 +1527,7 @@ check_regexp(const char *expr,const char *string)
   regfree(&pat);
 
   if(DBG_TRUST)
-    log_debug("regexp \"%s\" on \"%s\": %s\n",expr,string,ret==0?"YES":"NO");
+    log_debug("regexp `%s' on `%s': %s\n",expr,string,ret==0?"YES":"NO");
 
   return (ret==0);
 #endif
@@ -1987,7 +1987,7 @@ validate_keys (int interactive)
 	    {
 	      if(DBG_TRUST)
 		log_debug("key %08lX%08lX:"
-			  " overriding ownertrust \"%s\" with \"%s\"\n",
+			  " overriding ownertrust `%s' with `%s'\n",
 			  (ulong)k->kid[0],(ulong)k->kid[1],
 			  trust_value_to_string(k->ownertrust),
 			  trust_value_to_string(min));

@@ -971,7 +971,7 @@ add_group(char *string)
   name=strsep(&string,"=");
   if(string==NULL)
     {
-      log_error(_("no = sign found in group definition \"%s\"\n"),name);
+      log_error(_("no = sign found in group definition `%s'\n"),name);
       return;
     }
 
@@ -2002,7 +2002,7 @@ main( int argc, char **argv )
 	    else if(ascii_strcasecmp(pargs.r.ret_str,"auto")==0)
 	      opt.trust_model=TM_AUTO;
 	    else
-	      log_error("unknown trust model \"%s\"\n",pargs.r.ret_str);
+	      log_error("unknown trust model `%s'\n",pargs.r.ret_str);
 	    break;
 	  case oForceOwnertrust:
 	    log_info(_("NOTE: %s is not for normal use!\n"),
@@ -2010,7 +2010,7 @@ main( int argc, char **argv )
 	    opt.force_ownertrust=string_to_trust_value(pargs.r.ret_str);
 	    if(opt.force_ownertrust==-1)
 	      {
-		log_error("invalid ownertrust \"%s\"\n",pargs.r.ret_str);
+		log_error("invalid ownertrust `%s'\n",pargs.r.ret_str);
 		opt.force_ownertrust=0;
 	      }
 	    break;
@@ -2452,7 +2452,7 @@ main( int argc, char **argv )
 	    else if(ascii_strcasecmp(pargs.r.ret_str,"0xlong")==0)
 	      opt.keyid_format=KF_0xLONG;
 	    else
-	      log_error("unknown keyid-format \"%s\"\n",pargs.r.ret_str);
+	      log_error("unknown keyid-format `%s'\n",pargs.r.ret_str);
 	    break;
 
 	  default : pargs.err = configfp? 1:2; break;

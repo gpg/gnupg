@@ -85,7 +85,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
       file=iobuf_open(filename);
       if(!file)
 	{
-	  log_error(_("Unable to open photo \"%s\": %s\n"),
+	  log_error(_("Unable to open JPEG file `%s': %s\n"),
 		    filename,strerror(errno));
 	  continue;
 	}
@@ -110,7 +110,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
       if(photo[0]!=0xFF || photo[1]!=0xD8 ||
 	 photo[6]!='J' || photo[7]!='F' || photo[8]!='I' || photo[9]!='F')
 	{
-	  log_error(_("\"%s\" is not a JPEG file\n"),filename);
+	  log_error(_("`%s' is not a JPEG file\n"),filename);
 	  m_free(photo);
 	  photo=NULL;
 	  continue;
