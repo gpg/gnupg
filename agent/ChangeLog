@@ -1,3 +1,8 @@
+2002-06-29  Werner Koch  <wk@gnupg.org>
+
+	* query.c (start_pinentry): Use GNUPG_DERAULT_PINENTRY.
+	* call-scd.c (start_scd): Use GNUPG_DEFAULT_SCDAEMON.
+
 2002-06-28  Werner Koch  <wk@gnupg.org>
 
 	* protect-tool.c (export_p12_file): New.

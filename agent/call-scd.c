@@ -181,9 +181,8 @@ start_scd (void)
       return unlock_scd (seterr (Write_Error));
     }
 
-  /* FIXME: change the default location of the program */
   if (!opt.scdaemon_program || !*opt.scdaemon_program)
-    opt.scdaemon_program = "../scd/scdaemon";
+    opt.scdaemon_program = GNUPG_DEFAULT_SCDAEMON;
   if ( !(pgmname = strrchr (opt.scdaemon_program, '/')))
     pgmname = opt.scdaemon_program;
   else

@@ -103,9 +103,8 @@ start_pinentry (void)
       return unlock_pinentry (seterr (Write_Error));
     }
 
-  /* FIXME: change the default location of the program */
   if (!opt.pinentry_program || !*opt.pinentry_program)
-    opt.pinentry_program = "../../pinentry/kpinentry/kpinentry";
+    opt.pinentry_program = GNUPG_DEFAULT_PINENTRY;
   if ( !(pgmname = strrchr (opt.pinentry_program, '/')))
     pgmname = opt.pinentry_program;
   else
