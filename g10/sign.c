@@ -246,6 +246,8 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     sig->digest_start[1] = dp[1];
     frame = encode_md_value( sk->pubkey_algo, md,
 			     digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
+    if (!frame)
+        return G10ERR_GENERAL;
     rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_free(frame);
     if (!rc && !opt.no_sig_create_check) {
@@ -260,8 +262,12 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
             frame = encode_md_value (pk->pubkey_algo, md,
                                      sig->digest_algo,
                                      mpi_get_nbits(pk->pkey[0]), 0);
-            rc = pubkey_verify (pk->pubkey_algo, frame, sig->data, pk->pkey,
-                                NULL, NULL );
+            if (!frame)
+                rc = G10ERR_GENERAL;
+            else
+                rc = pubkey_verify (pk->pubkey_algo, frame,
+                                    sig->data, pk->pkey,
+                                    NULL, NULL );
             mpi_free (frame);
         }
         if (rc)

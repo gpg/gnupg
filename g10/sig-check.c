@@ -291,6 +291,8 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 
     result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
 			      mpi_get_nbits(pk->pkey[0]), 0 );
+    if (!result)
+        return G10ERR_GENERAL;
     ctx.sig = sig;
     ctx.md = digest;
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
@@ -302,10 +304,14 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 	 * the hash right. There is no problem with DSA however  */
 	result = encode_md_value( pk->pubkey_algo, digest, sig->digest_algo,
 			      mpi_get_nbits(pk->pkey[0]), (sig->version < 5) );
-	ctx.sig = sig;
-	ctx.md = digest;
-	rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
-			    cmp_help, &ctx );
+        if (!result)
+            rc = G10ERR_GENERAL;
+        else {
+            ctx.sig = sig;
+            ctx.md = digest;
+            rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey,
+                                cmp_help, &ctx );
+        }
     }
 
     if( !rc && sig->flags.unknown_critical ) {

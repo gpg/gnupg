@@ -195,6 +195,12 @@ encode_md_value( int pubkey_algo, MD_HANDLE md, int hash_algo,
     MPI frame;
 
     if( pubkey_algo == PUBKEY_ALGO_DSA ) {
+        mdlen = md_digest_length (hash_algo);
+        if (mdlen != 20) {
+            log_error (_("DSA requires the use of a 160 bit hash algorithm\n"));
+            return NULL;
+        }
+
 	frame = md_is_secure(md)? mpi_alloc_secure((md_digest_length(hash_algo)
 				 +BYTES_PER_MPI_LIMB-1) / BYTES_PER_MPI_LIMB )
 				: mpi_alloc((md_digest_length(hash_algo)
