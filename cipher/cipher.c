@@ -85,10 +85,9 @@ dummy_decrypt_block( void *c, byte *outbuf, byte *inbuf ) { BUG(); }
 static void
 setup_cipher_table(void)
 {
+    int i=0;
 
-    int i;
-
-    i = 0;
+#ifdef USE_AES
     cipher_table[i].algo = CIPHER_ALGO_RIJNDAEL;
     cipher_table[i].name = rijndael_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
@@ -122,6 +121,9 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
+#endif
+
+#ifdef USE_TWOFISH
     cipher_table[i].algo = CIPHER_ALGO_TWOFISH;
     cipher_table[i].name = twofish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
@@ -133,6 +135,9 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
+#endif
+
+#ifdef USE_BLOWFISH
     cipher_table[i].algo = CIPHER_ALGO_BLOWFISH;
     cipher_table[i].name = blowfish_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
@@ -144,6 +149,9 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
+#endif
+
+#ifdef USE_CAST5
     cipher_table[i].algo = CIPHER_ALGO_CAST5;
     cipher_table[i].name = cast5_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,
@@ -155,6 +163,8 @@ setup_cipher_table(void)
     if( !cipher_table[i].name )
 	BUG();
     i++;
+#endif
+
     cipher_table[i].algo = CIPHER_ALGO_3DES;
     cipher_table[i].name = des_get_info( cipher_table[i].algo,
 					 &cipher_table[i].keylen,

@@ -1,3 +1,9 @@
+2003-02-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.c (setup_cipher_table): #ifdef all optional ciphers.
+
+	* md.c (load_digest_module): #ifdef all optional digests.
+
 2003-02-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am, md.c (load_digest_module): Only build in SHA384/512
