@@ -1,3 +1,8 @@
+2001-12-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c: Add advisory --for-your-eyes-only option as per section
+	5.9 of 2440.
+
 2001-12-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* Force a V4 sig if the user has a notation or policy URL set.

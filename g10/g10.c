@@ -178,6 +178,8 @@ enum cmd_and_opt_values { aNull = 0,
     oEmuChecksumBug,
     oRunAsShmCP,
     oSetFilename,
+    oForYourEyesOnly,
+    oNoForYourEyesOnly,
     oSetPolicyURL,
     oShowPolicyURL,
     oNoShowPolicyURL,
@@ -419,6 +421,8 @@ static ARGPARSE_OPTS opts[] = {
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
     { oSetFilename, "set-filename", 2, "@" },
+    { oForYourEyesOnly, "for-your-eyes-only", 0, "@" },
+    { oNoForYourEyesOnly, "no-for-your-eyes-only", 0, "@" },
     { oSetPolicyURL, "set-policy-url", 2, "@" },
     { oShowPolicyURL, "show-policy-url", 0, "@" },
     { oNoShowPolicyURL, "no-show-policy-url", 0, "@" },
@@ -691,6 +695,7 @@ main( int argc, char **argv )
     char *s2k_cipher_string = NULL;
     char *s2k_digest_string = NULL;
     char *preference_list = NULL;
+    int eyes_only=0;
     int pwfd = -1;
     int with_fpr = 0; /* make an option out of --fingerprint */
     int any_explicit_recipient = 0;
@@ -1020,6 +1025,8 @@ main( int argc, char **argv )
 #endif /* __riscos__ */
 	    break;
 	  case oSetFilename: opt.set_filename = pargs.r.ret_str; break;
+	  case oForYourEyesOnly: eyes_only = 1; break;
+	  case oNoForYourEyesOnly: eyes_only = 0; break;
 	  case oSetPolicyURL: opt.set_policy_url = pargs.r.ret_str; break;
           case oShowPolicyURL: opt.show_policy_url=1; break;
     	  case oNoShowPolicyURL: opt.show_policy_url=0; break;
@@ -1171,6 +1178,13 @@ main( int argc, char **argv )
     if( may_coredump && !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));
 
+    if (eyes_only) {
+      if (opt.set_filename)
+	  log_info(_("WARNING: %s overrides %s\n"),
+		   "--for-your-eyes-only","--set-filename");
+
+      opt.set_filename="_CONSOLE";
+    }
 
     if (opt.no_literal) {
 	log_info(_("NOTE: %s is not for normal use!\n"), "--no-literal");
@@ -1179,8 +1193,10 @@ main( int argc, char **argv )
 		       "--textmode", "--no-literal" );
 	if (opt.set_filename)
 	    log_error(_("%s makes no sense with %s!\n"),
-			"--set-filename", "--no-literal" );
+			eyes_only?"--for-your-eyes-only":"--set-filename",
+		        "--no-literal" );
     }
+
     if (opt.set_filesize)
 	log_info(_("NOTE: %s is not for normal use!\n"), "--set-filesize");
     if( opt.batch )
