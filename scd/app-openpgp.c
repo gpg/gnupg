@@ -341,6 +341,25 @@ dump_all_do (int slot)
     }
 }
 
+
+/* Count the number of bits, assuming the A represents an unsigned big
+   integer of length LEN bytes. */
+static unsigned int
+count_bits (const unsigned char *a, size_t len)
+{
+  unsigned int n = len * 8;
+  int i;
+
+  for (; len && !*a; len--, a++, n -=8)
+    ;
+  if (len)
+    {
+      for (i=7; i && !(*a & (1<<i)); i--)
+        n--;
+    }
+  return n;
+}
+
 /* Note, that FPR must be at least 20 bytes. */
 static int 
 store_fpr (int slot, int keynumber, u32 timestamp,
@@ -348,10 +367,15 @@ store_fpr (int slot, int keynumber, u32 timestamp,
            const unsigned char *e, size_t elen, 
            unsigned char *fpr)
 {
-  unsigned int n;
+  unsigned int n, nbits;;
   unsigned char *buffer, *p;
   int rc;
   
+  for (; mlen && !*m; mlen--, m++) /* strip leading zeroes */
+    ;
+  for (; elen && !*e; elen--, e++) /* strip leading zeroes */
+    ;
+
   n = 6 + 2 + mlen + 2 + elen;
   p = buffer = xtrymalloc (3 + n);
   if (!buffer)
@@ -366,13 +390,16 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   *p++ = timestamp >>  8;
   *p++ = timestamp;
   *p++ = 1; /* RSA */
-  *p++ = (mlen*8) >> 8; /* (we want number of bits here) */
-  *p++ = (mlen*8);
+  nbits = count_bits (m, mlen);
+  *p++ = nbits >> 8;
+  *p++ = nbits;
   memcpy (p, m, mlen); p += mlen;
-  *p++ = (elen*8) >> 8;
-  *p++ = (elen*8);
+  nbits = count_bits (e, elen);
+  *p++ = nbits >> 8;
+  *p++ = nbits;
   memcpy (p, e, elen); p += elen;
     
+  log_printhex ("fprbuf:", buffer, n+3);
   gcry_md_hash_buffer (GCRY_MD_SHA1, fpr, buffer, n+3);
 
   xfree (buffer);
@@ -603,7 +630,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
     }
 
   xfree (buffer); buffer = NULL;
-#if 1
+#if 0
   log_info ("please wait while key is being generated ...\n");
   start_at = time (NULL);
   rc = iso7816_generate_keypair 
@@ -627,6 +654,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
   keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen, 0);
   if (!keydata)
     {
+      rc = gpg_error (GPG_ERR_CARD);
       log_error ("response does not contain the public key data\n");
       goto leave;
     }
@@ -634,6 +662,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
   m = find_tlv (keydata, keydatalen, 0x0081, &mlen, 0);
   if (!m)
     {
+      rc = gpg_error (GPG_ERR_CARD);
       log_error ("response does not contain the RSA modulus\n");
       goto leave;
     }
@@ -643,6 +672,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
   e = find_tlv (keydata, keydatalen, 0x0082, &elen, 0);
   if (!e)
     {
+      rc = gpg_error (GPG_ERR_CARD);
       log_error ("response does not contain the RSA public exponent\n");
       goto leave;
     }
@@ -996,4 +1026,218 @@ leave:
 
 
 
+/* This function is a hack to retrieve essential information about the
+   card to be displayed by simple tools.  It mostly resembles what the
+   LEARN command returns. All parameters return allocated strings or
+   buffers or NULL if the data object is not available.  All returned
+   values are sanitized. */
+int
+app_openpgp_cardinfo (APP app,
+                      char **serialno,
+                      char **disp_name,
+                      char **pubkey_url,
+                      unsigned char **fpr1,
+                      unsigned char **fpr2,
+                      unsigned char **fpr3)
+{
+  int rc;
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
 
+  if (serialno)
+    {
+      time_t dummy;
+
+      *serialno = NULL;
+      rc = app_get_serial_and_stamp (app, serialno, &dummy);
+      if (rc)
+        {
+          log_error ("error getting serial number: %s\n", gpg_strerror (rc));
+          return rc;
+        }
+    }
+      
+  if (disp_name)
+    {
+      *disp_name = NULL;
+      relptr = get_one_do (app->slot, 0x005B, &value, &valuelen);
+      if (relptr)
+        {
+          *disp_name = make_printable_string (value, valuelen, 0);
+          xfree (relptr);
+        }
+    }
+
+  if (pubkey_url)
+    {
+      *pubkey_url = NULL;
+      relptr = get_one_do (app->slot, 0x5F50, &value, &valuelen);
+      if (relptr)
+        {
+          *pubkey_url = make_printable_string (value, valuelen, 0);
+          xfree (relptr);
+        }
+    }
+
+  if (fpr1)
+    *fpr1 = NULL;
+  if (fpr2)
+    *fpr2 = NULL;
+  if (fpr3)
+    *fpr3 = NULL;
+  relptr = get_one_do (app->slot, 0x00C5, &value, &valuelen);
+  if (relptr && valuelen >= 60)
+    {
+      if (fpr1)
+        {
+          *fpr1 = xmalloc (20);
+          memcpy (*fpr1, value +  0, 20);
+        }
+      if (fpr2)
+        {
+          *fpr2 = xmalloc (20);
+          memcpy (*fpr2, value + 20, 20);
+        }
+      if (fpr3)
+        {
+          *fpr3 = xmalloc (20);
+          memcpy (*fpr3, value + 40, 20);
+        }
+    }
+  xfree (relptr);
+
+  return 0;
+}
+
+
+
+/* This function is currently only used by the sc-copykeys program to
+   store a key on the smartcard.  APP ist the application handle,
+   KEYNO is the number of the key and PINCB, PINCB_ARG are used to ask
+   for the SO PIN.  TEMPLATE and TEMPLATE_LEN describe a buffer with
+   the key template to store. CREATED_AT is the timestamp used to
+   create the fingerprint. M, MLEN is the RSA modulus and E, ELEN the
+   RSA public exponent. This function silently overwrites an existing
+   key.*/
+int 
+app_openpgp_storekey (APP app, int keyno,
+                      unsigned char *template, size_t template_len,
+                      time_t created_at,
+                      const unsigned char *m, size_t mlen,
+                      const unsigned char *e, size_t elen,
+                      int (*pincb)(void*, const char *, char **),
+                      void *pincb_arg)
+{
+  int rc;
+  unsigned char fprbuf[20];
+
+  if (keyno < 1 || keyno > 3)
+    return gpg_error (GPG_ERR_INV_ID);
+  keyno--;
+
+  {
+    char *pinvalue;
+    rc = pincb (pincb_arg, "Admin PIN", &pinvalue); 
+    if (rc)
+      {
+        log_error ("error getting PIN: %s\n", gpg_strerror (rc));
+        return rc;
+      }
+    rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
+    xfree (pinvalue);
+  }
+  if (rc)
+    {
+      log_error ("verify CHV3 failed: rc=%04X\n", rc);
+      goto leave;
+    }
+
+  rc = iso7816_put_data (app->slot, 0xE9 + keyno, template, template_len);
+  if (rc)
+    {
+      log_error ("failed to store the key: rc=%04X\n", rc);
+      rc = gpg_error (GPG_ERR_CARD);
+      goto leave;
+    }
+ 
+  log_printhex ("RSA n:", m, mlen); 
+  log_printhex ("RSA e:", e, elen); 
+
+  rc = store_fpr (app->slot, keyno, (u32)created_at,
+                  m, mlen, e, elen, fprbuf);
+
+ leave:
+  return rc;
+}
+
+
+/* Utility function for external tools: Read the public RSA key at
+   KEYNO and return modulus and exponent in (M,MLEN) and (E,ELEN). */
+int 
+app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
+                     unsigned char **e, size_t *elen)
+{
+  int rc;
+  const unsigned char *keydata, *a;
+  unsigned char *buffer;
+  size_t buflen, keydatalen, alen;
+
+  *m = NULL;
+  *e = NULL;
+
+  if (keyno < 1 || keyno > 3)
+    return gpg_error (GPG_ERR_INV_ID);
+  keyno--;
+
+  rc = iso7816_read_public_key(app->slot, 
+                               keyno == 0? "\xB6" :
+                               keyno == 1? "\xB8" : "\xA4",
+                               2,
+                               &buffer, &buflen);
+  if (rc)
+    {
+      rc = gpg_error (GPG_ERR_CARD);
+      log_error ("reading key failed\n");
+      goto leave;
+    }
+
+  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen, 0);
+  if (!keydata)
+    {
+      log_error ("response does not contain the public key data\n");
+      rc = gpg_error (GPG_ERR_CARD);
+      goto leave;
+    }
+ 
+  a = find_tlv (keydata, keydatalen, 0x0081, &alen, 0);
+  if (!a)
+    {
+      log_error ("response does not contain the RSA modulus\n");
+      rc = gpg_error (GPG_ERR_CARD);
+      goto leave;
+    }
+  *mlen = alen;
+  *m = xmalloc (alen);
+  memcpy (*m, a, alen);
+  
+  a = find_tlv (keydata, keydatalen, 0x0082, &alen, 0);
+  if (!e)
+    {
+      log_error ("response does not contain the RSA public exponent\n");
+      rc = gpg_error (GPG_ERR_CARD);
+      goto leave;
+    }
+  *elen = alen;
+  *e = xmalloc (alen);
+  memcpy (*e, a, alen);
+
+ leave:
+  xfree (buffer);
+  if (rc)
+    { 
+      xfree (*m); *m = NULL;
+      xfree (*e); *e = NULL;
+    }
+  return rc;
+}

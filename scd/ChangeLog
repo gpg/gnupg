@@ -1,3 +1,12 @@
+2003-07-15  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Add sc-copykeys program.
+	* sc-copykeys.c: New.
+	* app-openpgp.c (app_openpgp_storekey): New.
+	(app_openpgp_cardinfo): New.
+	(count_bits): New.
+	(store_fpr): And use it here to get the actual length in bit.
+
 2003-07-03  Werner Koch  <wk@gnupg.org>
 
 	* app-openpgp.c (do_setattr): Add setting of the URL.

@@ -83,6 +83,24 @@ int app_genkey (APP app, CTRL ctrl, const char *keynostr, unsigned int flags,
 /*-- app-openpgp.c --*/
 int app_select_openpgp (APP app, unsigned char **sn, size_t *snlen);
 
+int app_openpgp_cardinfo (APP app,
+                          char **serialno,
+                          char **disp_name,
+                          char **pubkey_url,
+                          unsigned char **fpr1,
+                          unsigned char **fpr2,
+                          unsigned char **fpr3);
+int app_openpgp_storekey (APP app, int keyno,
+                          unsigned char *template, size_t template_len,
+                          time_t created_at,
+                          const unsigned char *m, size_t mlen,
+                          const unsigned char *e, size_t elen,
+                          int (*pincb)(void*, const char *, char **),
+                          void *pincb_arg);
+int app_openpgp_readkey (APP app, int keyno,
+                         unsigned char **m, size_t *mlen,
+                         unsigned char **e, size_t *elen);
+
 
 #endif /*GNUPG_SCD_APP_COMMON_H*/
 
