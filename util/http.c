@@ -149,6 +149,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 void
 http_start_data( HTTP_HD hd )
 {
+    iobuf_flush ( hd->fp_write );
     if( !hd->in_data ) {
         write_server (hd->sock, "\r\n", 2);
 	hd->in_data = 1;
@@ -162,7 +163,6 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
     int rc;
 
     http_start_data( hd ); /* make sure that we are in the data */
-    iobuf_flush( hd->fp_write );
 
   #if 0
     hd->sock = dup( hd->sock ); 

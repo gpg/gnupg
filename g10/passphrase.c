@@ -158,7 +158,7 @@ static int
 writen ( int fd, const void *buf, size_t nbytes )
 {
     size_t nleft = nbytes;
-    ssize_t nwritten;
+    int nwritten;
 
     while( nleft > 0 ) {
         nwritten = write( fd, buf, nleft );
@@ -435,13 +435,17 @@ passphrase_clear_cache ( u32 *keyid, int algo )
     int fd = -1;
     int nread;
     u32 reply;
-    PKT_public_key *pk = m_alloc_clear ( sizeof *pk );
+    PKT_public_key *pk;
     byte fpr[MAX_FINGERPRINT_LEN];
     
 #if MAX_FINGERPRINT_LEN < 20
 #error agent needs a 20 byte fingerprint
 #endif
     
+    if (!opt.use_agent)
+        return;
+
+    pk = m_alloc_clear ( sizeof *pk );
     memset (fpr, 0, MAX_FINGERPRINT_LEN );
     if( !keyid || get_pubkey( pk, keyid ) ) {
         log_debug ("oops, no key in passphrase_clear_cache\n");

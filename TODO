@@ -1,4 +1,6 @@
 
+  * check all mpi_read() for error returns.
+
   * --preserve-perms so that permissions set on a secring don't get changed.
 
   * Check that no secret temporary results are stored in the result parameter

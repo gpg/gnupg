@@ -1,3 +1,13 @@
+2001-05-04  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (passphrase_clear_cache): Shortcut if agent usage
+	is not enabled.
+
+2001-05-01  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (writen): Replaced ssize_t by int.  Thanks to 
+	to Robert Joop for reporting that SunOS 4.1.4 does not have it.
+
 2001-04-28  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c (merge_public_with_secret): pkttype was not set to subkey.
