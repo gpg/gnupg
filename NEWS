@@ -1,6 +1,15 @@
 Noteworthy changes in version 1.1.92
 -------------------------------------------------
 
+    * The file permission and ownership checks on files have been
+      clarified.  Specifically, the homedir (usually ~/.gnupg) is
+      checked to protect everything within it.  If the user specifies
+      keyrings outside this homedir, they are presumed to be shared
+      keyrings and therefore *not* checked.  Configuration files
+      specified with the --options option and the IDEA cipher
+      extension specified with --load-extension are checked, along
+      with their enclosing directories.
+
     * The default configuration file is now ~/.gnupg/gpg.conf.  If an
       old ~/.gnupg/options is found it will still be used.  This
       change is required to have more consistent naming scheme with
