@@ -72,20 +72,25 @@ mk_notation_and_policy( PKT_signature *sig,
     args.pk=pk;
     args.sk=sk;
 
+    /* It is actually impossible to get here when making a v3 key
+       signature since keyedit.c:sign_uids will automatically bump a
+       signature with a notation or policy url up to v4, but it is
+       good to do these checks anyway. */
+
     /* notation data */
     if(IS_SIG(sig) && opt.sig_notation_data)
       {
 	if(sig->version<4)
-	  log_info(_("can't put notation data into v3 (PGP 2.x style) "
-		     "signatures\n"));
+	  log_error(_("can't put notation data into v3 (PGP 2.x style) "
+		      "signatures\n"));
 	else
 	  nd=opt.sig_notation_data;
       }
     else if( IS_CERT(sig) && opt.cert_notation_data )
       {
 	if(sig->version<4)
-	  log_info(_("can't put notation data into v3 (PGP 2.x style) "
-		     "key signatures\n"));
+	  log_error(_("can't put notation data into v3 (PGP 2.x style) "
+		      "key signatures\n"));
 	else
 	  nd=opt.cert_notation_data;
       }
@@ -125,23 +130,20 @@ mk_notation_and_policy( PKT_signature *sig,
 	m_free(buf);
     }
 
-    if(opt.show_notation)
-      show_notation(sig,0);
-
     /* set policy URL */
     if( IS_SIG(sig) && opt.sig_policy_url )
       {
 	if(sig->version<4)
-	  log_info(_("can't put a policy URL into v3 (PGP 2.x style) "
-		     "signatures\n"));
+	  log_error(_("can't put a policy URL into v3 (PGP 2.x style) "
+		      "signatures\n"));
 	else
 	  pu=opt.sig_policy_url;
       }
     else if( IS_CERT(sig) && opt.cert_policy_url )
       {
 	if(sig->version<4)
-	  log_info(_("can't put a policy URL into v3 key (PGP 2.x style) "
-		     "signatures\n"));
+	  log_error(_("can't put a policy URL into v3 key (PGP 2.x style) "
+		      "signatures\n"));
 	else
 	  pu=opt.cert_policy_url;
       }
@@ -164,9 +166,6 @@ mk_notation_and_policy( PKT_signature *sig,
 
 	m_free(s);
       }
-
-    if(opt.show_policy_url)
-      show_policy_url(sig,0);
 }
 
 

@@ -1,3 +1,13 @@
+2003-08-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyring.c (keyring_rebuild_cache): Comment.
+
+	* sign.c (mk_notation_and_policy): Making a v3 signature with
+	notations or policy urls is an error, not an info (i.e. increment
+	the errorcount).  Don't print the notation or policy url to stdout
+	since it can be mixed into the output stream when piping and munge
+	the stream.
+
 2003-08-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_signature): Don't give "signature packet
