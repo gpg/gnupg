@@ -1,3 +1,8 @@
+2003-10-25  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (learn_status_cb, scd_genkey_cb): Fixed faulty use
+	of !spacep().
+
 2003-10-20  Werner Koch  <wk@gnupg.org>
 
 	* card-util.c (card_edit): New command "passwd".  Add logic to
