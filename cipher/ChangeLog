@@ -1,5 +1,9 @@
 2003-05-09  David Shaw  <dshaw@jabberwocky.com>
 
+	* sha512.c: Use the U64_C() macro rather than blindly suffixing
+	with LL.  U64_C is defined in include/types.h and uses the correct
+	suffix depending on the underlying type of u64.
+
 	* sha512.c: Suffix all 64-bit constants with LL.  Note this makes
 	this file non-c89 compliant.  That is okay since we have an
 	autoconf check for this, and many c89 compilers support LL anyway.
@@ -1055,7 +1059,6 @@ Mon Feb 16 10:08:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	(digest_algo_to_string): New.
 
 
-
  Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
@@ -1065,5 +1068,3 @@ Mon Feb 16 10:08:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-
