@@ -2780,6 +2780,36 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 	}
     }
 
+    /* is a subkey has been requested, we have to check its keyflags */
+    if( !rc ) {
+	TRUSTREC krec;
+	byte fpr[MAX_FINGERPRINT_LEN] = {0}; /* to avoid compiler warnings */
+	size_t fprlen = 0;
+	ulong recno;
+	int kcount=0;
+
+	for( recno = rec.r.dir.keylist; recno; recno = krec.r.key.next ) {
+	    read_record( recno, &krec, RECTYPE_KEY );
+	    if( ++kcount == 1 )
+		continue; /* skip the primary key */
+	    if( kcount == 2 ) /* now we need the fingerprint */
+		fingerprint_from_pk( pk, fpr, &fprlen );
+
+	    if( krec.r.key.fingerprint_len == fprlen
+		&& !memcmp( krec.r.key.fingerprint, fpr, fprlen ) ) {
+		/* found the subkey */
+		if( (krec.r.key.keyflags & KEYF_REVOKED) )
+		    trustlevel |= TRUST_FLAG_SUB_REVOKED;
+		/* should we check for keybinding here??? */
+		/* Hmmm: Maybe this whole checking stuff should not go
+		 * into the trustdb, but be done direct from the keyblock.
+		 * Chnage this all when we add an abstarction layer around
+		 * the way certificates are handled by different standards */
+		break;
+	    }
+	}
+    }
+
 
   leave:
     if( DBG_TRUST )

@@ -41,7 +41,6 @@ libcipher_a_SOURCES = cipher.c	\
 		 des.c		\
 		 des.h		\
 		 twofish.c	\
-		 twofish.h	\
 		 blowfish.c	\
 		 blowfish.h	\
 		 cast5.c	\

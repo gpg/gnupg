@@ -33,6 +33,7 @@
 #define TRUST_ULTIMATE	  6  /* u: ultimately trusted */
 /* trust values not covered by the mask */
 #define TRUST_FLAG_REVOKED 32 /* r: revoked */
+#define TRUST_FLAG_SUB_REVOKED 64
 
 
 #define PREFTYPE_SYM	  1

@@ -77,6 +77,9 @@ more arguments in future versions.
     NODATA  <what>
 	No data has been found. Codes for what are:
 	    1 - No armored data.
+	    2 - Expected a packet but did not found one.
+	    3 - Invalid packet found, this may indicate a non OpenPGP message.
+	You may see more than one of these status lines.
 
     TRUST_UNDEFINED
     TRUST_NEVER

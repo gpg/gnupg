@@ -287,6 +287,16 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 				    _("Use this key anyway? ")) )
 	    return 0;
     }
+    else if( (trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
+	log_info(_("key %08lX: subkey has been revoked!\n"),
+					(ulong)keyid_from_pk( pk, NULL) );
+	if( opt.batch )
+	    return 0;
+
+	if( !cpr_get_answer_is_yes("revoked_key.override",
+				    _("Use this key anyway? ")) )
+	    return 0;
+    }
 
 
     switch( (trustlevel & TRUST_MASK) ) {
@@ -368,6 +378,8 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 
     if( (trustlevel & TRUST_FLAG_REVOKED) && !rc )
 	return 0;
+    if( (trustlevel & TRUST_FLAG_SUB_REVOKED) && !rc )
+	return 0;
     else if( !opt.batch && !rc ) {
 	char *p;
 	u32 keyid[2];
@@ -434,6 +446,10 @@ check_signatures_trust( PKT_signature *sig )
 	write_status( STATUS_KEYREVOKED );
 	log_info(_("WARNING: This key has been revoked by its owner!\n"));
 	log_info(_("         This could mean that the signature is forgery.\n"));
+    }
+    else if( (trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
+	write_status( STATUS_KEYREVOKED );
+	log_info(_("WARNING: This subkey has been revoked by its owner!\n"));
     }
 
 

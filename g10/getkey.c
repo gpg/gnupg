@@ -1438,7 +1438,8 @@ find_by_fpr( KBNODE keyblock, PKT_public_key *pk, const char *name, int mode )
 		keyid_from_pk( k->pkt->pkt.public_key, aki );
 		log_debug("         aki=%08lx%08lx algo=%d mode=%d an=%u\n",
 				(ulong)aki[0], (ulong)aki[1],
-			k->pkt->pkt.public_key->pubkey_algo, mode, an );
+			k->pkt->pkt.public_key->pubkey_algo, mode,
+							    (unsigned)an );
 	    }
 
 	    if( an == mode
@@ -1470,7 +1471,8 @@ find_by_fpr_sk( KBNODE keyblock, PKT_secret_key *sk,
 		keyid_from_sk( k->pkt->pkt.secret_key, aki );
 		log_debug("         aki=%08lx%08lx algo=%d mode=%d an=%u\n",
 				(ulong)aki[0], (ulong)aki[1],
-			k->pkt->pkt.secret_key->pubkey_algo, mode, an );
+			k->pkt->pkt.secret_key->pubkey_algo, mode,
+							(unsigned)an );
 	    }
 
 	    if( an == mode

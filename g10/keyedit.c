@@ -122,8 +122,6 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
     int anyuid = 0;
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
-	int is_rev = 0;
-
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 
@@ -140,10 +138,11 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 	    }
 	}
 	else if( selected && node->pkt->pkttype == PKT_SIGNATURE
-		 && (node->pkt->pkt.signature->sig_class&~3) == 0x10
-		 && (is_rev = node->pkt->pkt.signature->sig_class == 0x30) ) {
+		 && ( (node->pkt->pkt.signature->sig_class&~3) == 0x10
+		     || node->pkt->pkt.signature->sig_class == 0x30 )  ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    int sigrc, selfsig;
+	    int is_rev = sig->sig_class == 0x30;
 
 	    switch( (rc = check_key_signature( keyblock, node, &selfsig)) ) {
 	      case 0:
@@ -956,7 +955,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 			 int with_fpr, int with_subkeys, int with_prefs )
 {
     KBNODE node;
-    int i;
+    int i, rc;
 
     /* the keys */
     for( node = keyblock; node; node = node->next ) {
@@ -1000,6 +999,20 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 			  (ulong)keyid_from_sk(sk,NULL),
 			  datestr_from_sk(sk),
 			  expirestr_from_sk(sk) );
+	}
+	else if( with_subkeys && node->pkt->pkttype == PKT_SIGNATURE
+		 && node->pkt->pkt.signature->sig_class == 0x28       ) {
+	    PKT_signature *sig = node->pkt->pkt.signature;
+
+	    rc = check_key_signature( keyblock, node, NULL );
+	    if( !rc )
+		tty_printf( "rev! subkey has been revoked: %s\n",
+			    datestr_from_sig( sig ) );
+	    else if( rc == G10ERR_BAD_SIGN )
+		tty_printf( "rev- faked revocation found\n" );
+	    else if( rc )
+		tty_printf( "rev? problem checking revocation: %s\n",
+							 g10_errstr(rc) );
 	}
     }
     /* the user ids */
@@ -1677,7 +1690,7 @@ menu_revsig( KBNODE keyblock )
 	pkt = m_alloc_clear( sizeof *pkt );
 	pkt->pkttype = PKT_SIGNATURE;
 	pkt->pkt.signature = sig;
-	insert_kbnode( unode, new_kbnode(pkt), PKT_SIGNATURE );
+	insert_kbnode( unode, new_kbnode(pkt), 0 );
 	goto reloop;
     }
 
@@ -1701,7 +1714,7 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     int upd_trust = 0;
     int rc;
 
-  reloop: /* (better this way becuase we are modifing the keyring) */
+  reloop: /* (better this way because we are modifing the keyring) */
     mainpk = pub_keyblock->pkt->pkt.public_key;
     for( node = pub_keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
@@ -1726,7 +1739,7 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    pkt = m_alloc_clear( sizeof *pkt );
 	    pkt->pkttype = PKT_SIGNATURE;
 	    pkt->pkt.signature = sig;
-	    insert_kbnode( node, new_kbnode(pkt), PKT_SIGNATURE );
+	    insert_kbnode( node, new_kbnode(pkt), 0 );
 	    goto reloop;
 	}
     }

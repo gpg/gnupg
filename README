@@ -1,13 +1,8 @@
-Please note that this is only a bug fix release and some things
-do not yet work - see TODO for parts which are problematic
-
-
-
 -----BEGIN PGP SIGNED MESSAGE-----
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			    Version 0.9
+			   Version 0.9.6
 
     GnuPG is now in Beta test and you should report all bugs to the
     mailing list (see below).  The 0.9.x versions are released mainly
@@ -17,29 +12,28 @@ do not yet work - see TODO for parts which are problematic
 
     GnuPG works best on GNU/Linux or *BSD.  Other Unices are
     also supported but are not as well tested as the Free Unices.
-    Please verify the tar file with the PGP2 or GnuPG/PGP5
+    Please verify the tar file with the PGP2 or OpenPGP
     signatures provided.  My PGP2 key is well known and published in
     the "Global Trust Register for 1998", ISBN 0-9532397-0-5.
 
     I have included my pubring as "g10/pubring.asc", which contains
     the key used to make GnuPG signatures:
+
     "pub  1024D/57548DCD 1998-07-07 Werner Koch (gnupg sig) <dd9jn@gnu.org>"
     "Key fingerprint = 6BD9 050F D8FC 941B 4341  2DCC 68B7 AB89 5754 8DCD"
 
-    My new DSA key is:
-    "pub  1024D/621CC013 1998-07-07 Werner Koch <werner.koch@guug.de>"
-    "Key fingerprint = ECAF 7590 EB34 43B5 C7CF  3ACB 6C7E E1B8 621C C013"
-
-    You may want add my new DSA key to your GnuPG pubring and use it in
+    You may want to add this DSA key to your GnuPG pubring and use it in
     the future to verify new releases.	Because you verified this README
     file and _checked_that_it_is_really_my PGP2 key 0C9857A5, you can be
-    sure that the above fingerprints are correct.
+    quite sure that the above fingerprint is correct.
 
-    Please subscribe to g10@net.lut.ac.uk by sending a mail with
-    the word "subscribe" in the body to "g10-request@net.lut.ac.uk".
-    This mailing list is closed (only subscribers are allowed to post)
-    to avoid misuse by folks who don't know the Netiquette and trash
-    your mailspool with commercial junk.
+    Please subscribe to announce@gnupg.org by sending a mail with
+    a subject of "subscribe" to "announce-request@gnupg.org".  If you
+    have problems, please subscribe to "gnupg-users@gnupg.org" by sending
+    mail with the subject "subscribe" to "gnupg-users-request@gnupg.org"
+    and ask there.  The gnupg.org domain is hosted in Germany to avoid
+    possible legal problems with gnu.org (technical advices may count
+    as a violation of ITAR).
 
     See the file COPYING for copyright and warranty information.
 
@@ -72,9 +66,11 @@ do not yet work - see TODO for parts which are problematic
 
     3) "make install"
 
-    4) You end up with the binaries "gpg" and "gpgm" in /usr/local/bin.
+    4) You end up with a "gpg" binray in /usr/local/bin.
 
-    5) Optional, but suggested, install the binary "gpg" as suid root.
+    5) To avoid swapping out of sensitive data, you can install "gpg" as
+       suid root.  If you don't do so, you may want to add the option
+       "no-secmem-warning" to ~/.gnupg/options
 
 
 
@@ -230,7 +226,8 @@ do not yet work - see TODO for parts which are problematic
     key - different keys will always have different fingerprints.
     It is easy to compare fingerprints by phone and I suggest
     that you print your fingerprint on the back of your business
-    card.
+    card.  To see the fingerprints of the secondary keys, you can
+    give the command twice; but this is normally not needed.
 
     If you don't know the owner of the public key you are in trouble.
     Suppose however that friend of yours knows someone who knows someone
@@ -442,11 +439,11 @@ do not yet work - see TODO for parts which are problematic
     Have fun and remember: Echelon is looking at you kid.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v0.9.2 (GNU/Linux)
+Version: GnuPG v0.9.5 (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iQB1AwUBNr2fPh0Z9MEMmFelAQHqNAL/e7pApR0CGUJ/zuIsjaVhNGPEgKAglcEd
-YuVdB+RCN0wq7ZfI0AHU2FdVISRACmSN3xituTTgeiOUsczM40EZ4l1XNfyRF768
-fglui6XxEeYHFY7mSQMgzzFWDG0Squx0
-=enRo
+iQB1AwUBNzFgoB0Z9MEMmFelAQG1EgL/UlmBc7X9UoSh0ge1FNSNncHQGIX8wHkG
+0BHOkcHS9XNxZokgkxoUTSRDFlXxW9auWpYKYeNkkck8S9ExtOJK6FABme6Daof0
+Hfe4E7TA82T73gvsMMlN6wyys3k5gTRt
+=FP1e
 -----END PGP SIGNATURE-----

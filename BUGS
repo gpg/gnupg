@@ -32,7 +32,7 @@ and after about half a day in the rsync snapshots.
        5. key has expiration date from 1. and gpg reports that pubkey
 	  and seckey differ.
      The for loop the exp.date is set before v3 detection?
-     [is this bug still there?]
+     [is this bug still alive?]
 
 [  *] #5
     /home/jam/.gnupg/pubring.gpg: can't open gdbm file: Can't be writer
@@ -48,22 +48,5 @@ and after about half a day in the rsync snapshots.
     --> IRIX bug still there
 
 
-[  *] #13 1999-04-05
-    Trying to generate very large keys fails with a BUG in read_pool()
-    FIX: 1999-04-06
-
-
-[  *] #14 1999-04-05 <anonymous>
-    If you use --s2k-cipher-algo twofish, the the program crashes with
-    a BUG at line 226 of passphrase.c.
-    FIX: 1999-04-06
-
-
-[ **] #15 1999-04-05
-    Hash calculation for subkey bindings is not according to rfc2440 if
-    a 4 byte length header is used for the subkey.
-    FIX: 1999-04-06
-
-
-Next #16
+Next #17
 

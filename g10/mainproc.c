@@ -215,7 +215,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     else {
 	/* fixme: defer this message until we have parsed all packets of
 	 * this type - do this by building a list of keys with their stati
-	 * and store it with the conetxt.  do_proc_packets can then use
+	 * and store it with the context.  do_proc_packets can then use
 	 * this list to display some information */
 	log_error(_("public key decryption failed: %s\n"), g10_errstr(result));
     }
@@ -307,7 +307,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     }
-  #if 1
+  #if 0
     #warning md_start_debug is enabled
     md_start_debug( c->mfx.md, "verify" );
   #endif
@@ -753,12 +753,13 @@ do_proc_packets( CTX c, IOBUF a )
 {
     PACKET *pkt = m_alloc( sizeof *pkt );
     int rc=0;
+    int any_data=0;
     int newpkt;
 
     c->iobuf = a;
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
-
+	any_data = 1;
 	if( rc ) {
 	    free_packet(pkt);
 	    if( rc == G10ERR_INVALID_PACKET )
@@ -844,7 +845,13 @@ do_proc_packets( CTX c, IOBUF a )
 	else
 	    free_packet(pkt);
     }
-    rc = 0;
+    if( rc == G10ERR_INVALID_PACKET )
+	write_status_text( STATUS_NODATA, "3" );
+    if( any_data )
+	rc = 0;
+    else if( rc == -1 )
+	write_status_text( STATUS_NODATA, "2" );
+
 
   leave:
     release_list( c );

@@ -1,3 +1,15 @@
+Thu May  6 14:18:17 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* trustdb.c (check_trust): Check for revoked subkeys.
+	* pkclist.c (do_we_trust): Handled revoked subkeys.
+	(do_we_trust_pre): Ditto.
+	(check_signatures_trust): Ditto.
+
+	* build-packet.c (hash_public_key): Fix for ancient g10 keys.
+
+	* mainproc.c (do_proc_packets): Return EOF if no data has been read.
+	* g10.c (main): Catch errors for default operation.
+
 Thu Apr 29 12:29:22 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* sign.c (sign_file): Fixed hashing in case of no subpackets.

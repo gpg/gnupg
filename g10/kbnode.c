@@ -302,7 +302,8 @@ dump_kbnode( KBNODE node )
 	    fputs("\"\n", stderr);
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
-	    fprintf(stderr, "  keyid=%08lX\n",
+	    fprintf(stderr, "  class=%02x keyid=%08lX\n",
+		   node->pkt->pkt.signature->sig_class,
 		   (ulong)node->pkt->pkt.signature->keyid[1] );
 	}
 	else if( node->pkt->pkttype == PKT_PUBLIC_KEY

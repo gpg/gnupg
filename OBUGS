@@ -44,4 +44,24 @@
     gpg --list-secret-keys --with-colon SEGVs
     FIX: 1999-03-10
 
+[  *] #13 1999-04-05
+    Trying to generate very large keys fails with a BUG in read_pool()
+    FIX: 1999-04-06
+
+
+[  *] #14 1999-04-05 <anonymous>
+    If you use --s2k-cipher-algo twofish, the the program crashes with
+    a BUG at line 226 of passphrase.c.
+    FIX: 1999-04-06
+
+
+[ **] #15 1999-04-05
+    Hash calculation for subkey bindings is not according to rfc2440 if
+    a 4 byte length header is used for the subkey.
+    FIX: 1999-04-06
+
+[***] #16 1999-03-23 <jafo@tummy.com>
+    Verifying detached signatures with an empty file yields a rc of 0.
+    FIX: 1999-05-06
+
 

@@ -60,7 +60,7 @@ chdir () {
 
 
 have_hash_algo () {
-  if  ../g10/gpgm --homedir .  --version | grep "Hash:.*$1" >/dev/null
+  if  ../g10/gpg --homedir .  --version | grep "Hash:.*$1" >/dev/null
   then
 	true
   else
