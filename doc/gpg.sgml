@@ -269,6 +269,12 @@ certificate should be generated.</para></listitem></varlistentry>
 Change the owner trust value. This updates the
 trust-db immediately and no save is required.</para></listitem></varlistentry>
     <varlistentry>
+    <term>disable</term>
+    <term>enable</term>
+    <listitem><para>
+Disable or enable an entire key. A disabled key can normally not be used
+for encryption.</para></listitem></varlistentry>
+    <varlistentry>
     <term>adduid</term>
     <listitem><para>
 Create an alternate user id.</para></listitem></varlistentry>
@@ -537,7 +543,8 @@ in the options file and may be used together with
 an own user-id as an "encrypt-to-self".  These keys
 are only used when there are other recipients given
 either by use of --recipient or by the asked user id.
-No trust checking is performed for these user ids.
+No trust checking is performed for these user ids and
+even disabled keys can be used.
 </para></listitem></varlistentry>
 
 
@@ -696,6 +703,18 @@ Valid values for &ParmName; are:</para>
 </varlistentry>
 </variablelist>
 </listitem></varlistentry>
+
+
+<varlistentry>
+<term>--utf8-strings</term>
+<term>--no-utf8-strings</term>
+<listitem><para>
+Assume that the arguments are already given as UTF8 strings.  The default
+(--no-utf8-strings)
+is to assume that arguments are encoded in the character set as specified
+by --charset. These options effects all following arguments.  Both options may
+used multiple times.
+</para></listitem></varlistentry>
 
 
 <varlistentry>

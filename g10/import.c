@@ -376,10 +376,10 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    log_info( _("writing to `%s'\n"),
 				keyblock_resource_name(&kbpos) );
 	if( (rc=lock_keyblock( &kbpos )) )
-           log_error(_("can't lock keyring `%s': %s\n"),
+	   log_error(_("can't lock keyring `%s': %s\n"),
 		       keyblock_resource_name(&kbpos), g10_errstr(rc) );
 	else if( (rc=insert_keyblock( &kbpos, keyblock )) )
-           log_error( _("error writing keyring `%s': %s\n"),
+	   log_error( _("error writing keyring `%s': %s\n"),
 		       keyblock_resource_name(&kbpos), g10_errstr(rc) );
 	unlock_keyblock( &kbpos );
 	/* we are ready */
@@ -401,9 +401,6 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    rc = G10ERR_GENERAL;
 	    goto leave;
 	}
-
-	/* See whether we have only non-self-signature on one user id; if not
-	 * ask the user what to do. <--- fixme */
 
 	/* now read the original keyblock */
 	rc = find_keyblock_bypk( &kbpos, pk_orig );
@@ -432,7 +429,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    mod_key = 1;
 	    /* keyblock_orig has been updated; write */
 	    if( (rc=lock_keyblock( &kbpos )) )
-               log_error( _("can't lock keyring `%s': %s\n"),
+	       log_error( _("can't lock keyring `%s': %s\n"),
 			  keyblock_resource_name(&kbpos), g10_errstr(rc) );
 	    else if( (rc=update_keyblock( &kbpos, keyblock_orig )) )
 		log_error( _("error writing keyring `%s': %s\n"),
@@ -475,7 +472,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	if( rc && rc != -1 )
 	    log_error("trustdb error: %s\n", g10_errstr(rc) );
 	else if( rc == -1 ) { /* not found trustdb */
-	    rc = insert_trust_record( new_key? pk : pk_orig );
+	    rc = insert_trust_record( new_key? keyblock : keyblock_orig );
 	    if( rc )
 		log_error("key %08lX: trustdb insert failed: %s\n",
 					(ulong)keyid[1], g10_errstr(rc) );

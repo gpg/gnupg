@@ -57,6 +57,13 @@ static int  verify(MPI a, MPI b, MPI input, ELG_public_key *pkey);
 
 
 static void
+progress( int c )
+{
+    fputc( c, stderr );
+}
+
+
+static void
 test_keys( ELG_secret_key *sk, unsigned nbits )
 {
     ELG_public_key pk;
@@ -108,7 +115,7 @@ gen_k( MPI p )
     mpi_sub_ui( p_1, p, 1);
     for(;;) {
 	if( DBG_CIPHER )
-	    fputc('.', stderr);
+	    progress('.');
 	{   char *pp = get_random_bits( nbits, 1, 1 );
 	    mpi_set_buffer( k, pp, (nbits+7)/8, 0 );
 	    m_free(pp);
@@ -128,7 +135,7 @@ gen_k( MPI p )
 	    break;  /* okay, k is relatively prime to (p-1) */
     }
     if( DBG_CIPHER )
-	fputc('\n', stderr);
+	progress('\n');
     mpi_free(p_1);
     mpi_free(temp);
 
@@ -179,7 +186,7 @@ generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
     rndbuf = NULL;
     do {
 	if( DBG_CIPHER )
-	    fputc('.', stderr);
+	    progress('.');
 	if( rndbuf ) { /* change only some of the higher bits */
 	    if( nbits < 16 ) {/* should never happen ... */
 		m_free(rndbuf);
@@ -202,7 +209,7 @@ generate(  ELG_secret_key *sk, unsigned nbits, MPI **ret_factors )
     mpi_powm( y, g, x, p );
 
     if( DBG_CIPHER ) {
-	fputc('\n', stderr);
+	progress('\n');
 	log_mpidump("elg  p= ", p );
 	log_mpidump("elg  g= ", g );
 	log_mpidump("elg  y= ", y );

@@ -153,6 +153,7 @@ const char *strtimevalue( u32 stamp );
 const char *strtimestamp( u32 stamp ); /* GMT */
 const char *asctimestamp( u32 stamp ); /* localized */
 void print_string( FILE *fp, const byte *p, size_t n, int delim );
+char *make_printable_string( const byte *p, size_t n, int delim );
 int answer_is_yes( const char *s );
 int answer_is_yes_no_quit( const char *s );
 
@@ -160,7 +161,9 @@ int answer_is_yes_no_quit( const char *s );
 void free_strlist( STRLIST sl );
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 STRLIST add_to_strlist( STRLIST *list, const char *string );
+STRLIST add_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
 STRLIST append_to_strlist( STRLIST *list, const char *string );
+STRLIST append_to_strlist2( STRLIST *list, const char *string, int is_utf8 );
 STRLIST strlist_prev( STRLIST head, STRLIST node );
 STRLIST strlist_last( STRLIST node );
 const char *memistr( const char *buf, size_t buflen, const char *sub );

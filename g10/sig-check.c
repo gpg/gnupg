@@ -412,6 +412,11 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
     pk = root->pkt->pkt.public_key;
     sig = node->pkt->pkt.signature;
     algo = sig->digest_algo;
+
+    if( sig->flags.checked )
+	log_debug("check_key_signature: already checked: %s\n",
+		      sig->flags.valid? "good":"bad" );
+
     if( (rc=check_digest_algo(algo)) )
 	return rc;
 

@@ -94,6 +94,25 @@ add_to_strlist( STRLIST *list, const char *string )
     return sl;
 }
 
+/****************
+ * ame as add_to_strlist() but if is_utf8 is *not* set a conversion
+ * to UTF8 is done
+ */
+STRLIST
+add_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
+{
+    STRLIST sl;
+
+    if( is_utf8 )
+	sl = add_to_strlist( list, string );
+    else {
+	char *p = native_to_utf8( string );
+	sl = add_to_strlist( list, p );
+	m_free( p );
+    }
+    return sl;
+}
+
 STRLIST
 append_to_strlist( STRLIST *list, const char *string )
 {
@@ -113,6 +132,20 @@ append_to_strlist( STRLIST *list, const char *string )
     return sl;
 }
 
+STRLIST
+append_to_strlist2( STRLIST *list, const char *string, int is_utf8 )
+{
+    STRLIST sl;
+
+    if( is_utf8 )
+	sl = append_to_strlist( list, string );
+    else {
+	char *p = native_to_utf8( string );
+	sl = append_to_strlist( list, p );
+	m_free( p );
+    }
+    return sl;
+}
 
 
 STRLIST

@@ -208,8 +208,15 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "Give the name fo the file to which the signature applies"
 },
 
+/* openfile.c (overwrite_filep) */
 { N_("openfile.overwrite.okay"),
  "Answer \"yes\" if it is okay to overwrite the file"
+},
+
+/* openfile.c (ask_outfile_name) */
+{ N_("openfile.askoutname"),
+ "Please enter a new filename. If you just hit RETURN the default\n"
+ "file (which is shown in brackets) will be used."
 },
 
 /* end of list */

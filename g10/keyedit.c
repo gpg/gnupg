@@ -451,7 +451,7 @@ change_passphrase( KBNODE keyblock )
 	for(;;) {
 	    s2k->mode = opt.s2k_mode;
 	    s2k->hash_algo = opt.s2k_digest_algo;
-	    dek = passphrase_to_dek( NULL, opt.s2k_cipher_algo, s2k, 2 );
+	    dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2 );
 	    if( !dek ) {
 		tty_printf(_("passphrase not correctly repeated; try again.\n"));
 	    }
@@ -1033,6 +1033,12 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 			  expirestr_from_pk(pk) );
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY ) {
 		tty_printf(" trust: %c/%c", otrust, trust );
+		if( node->pkt->pkttype == PKT_PUBLIC_KEY
+		    && (get_ownertrust( pk->local_id )&TRUST_FLAG_DISABLED)) {
+		    tty_printf("\n*** ");
+		    tty_printf(_("This key has been disabled"));
+		}
+
 		if( with_fpr  ) {
 		    tty_printf("\n");
 		    show_fingerprint( pk );
@@ -1872,12 +1878,20 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 static int
 enable_disable_key( KBNODE keyblock, int disable )
 {
-    int entire;
-    int changed = 0;
+    ulong lid = find_kbnode( keyblock, PKT_PUBLIC_KEY )
+			    ->pkt->pkt.public_key->local_id;
+    unsigned int trust, newtrust;
 
-
-    entire = !count_selected_keys( keyblock );
-
-    return changed;
+    /* Note: Because the keys have beed displayed, we have
+     * ensured that local_id has been set */
+    trust = newtrust = get_ownertrust( lid );
+    newtrust &= ~TRUST_FLAG_DISABLED;
+    if( disable )
+	newtrust |= TRUST_FLAG_DISABLED;
+    if( trust == newtrust )
+	return 0; /* already in that state */
+    if( !update_ownertrust( lid, newtrust ) )
+	return 1;
+    return 0;
 }
 

@@ -149,6 +149,60 @@ print_string( FILE *fp, const byte *p, size_t n, int delim )
 	    putc(*p, fp);
 }
 
+/****************
+ * This function returns a string which is suitable for printing
+ * Caller must release it with m_free()
+ */
+char *
+make_printable_string( const byte *p, size_t n, int delim )
+{
+    size_t save_n, buflen;
+    const byte *save_p;
+    char *buffer, *d;
+
+    /* first count length */
+    for(save_n = n, save_p = p, buflen=1 ; n; n--, p++ ) {
+	if( iscntrl( *p ) || *p == delim ) {
+	    if( *p=='\n' || *p=='\r' || *p=='\f'
+		|| *p=='\v' || *p=='\b' || !*p )
+		buflen += 2;
+	    else
+		buflen += 3;
+	}
+	else
+	    buflen++;
+    }
+    p = save_p;
+    n = save_n;
+    /* and now make the string */
+    d = buffer = m_alloc( buflen );
+    for( ; n; n--, p++ ) {
+	if( iscntrl( *p ) || *p == delim ) {
+	    *d++ = '\\';
+	    if( *p == '\n' )
+		*d++ = 'n';
+	    else if( *p == '\r' )
+		*d++ = 'r';
+	    else if( *p == '\f' )
+		*d++ = 'f';
+	    else if( *p == '\v' )
+		*d++ = 'v';
+	    else if( *p == '\b' )
+		*d++ = 'b';
+	    else if( !*p )
+		*d++ = '0';
+	    else {
+		sprintf(d, "x%02x", *p );
+		d += 2;
+	    }
+	}
+	else
+	    *d++ = *p;
+    }
+    *d = 0;
+    return buffer;
+}
+
 
 int
 answer_is_yes( const char *s )

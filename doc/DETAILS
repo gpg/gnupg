@@ -85,8 +85,11 @@ more arguments in future versions.
 	unique ids - others may yield duplicated ones when they
 	have been created in the same second.
 
-    ENC_TO  <long keyid>
+    ENC_TO  <long keyid>  <keytype>  <keylength>
 	The message is encrypted to this keyid.
+	keytype is the numerical value of the public key algorithm,
+	kenlength is the length of the key or 0 if it is not known
+	(which is currently always the case).
 
     NODATA  <what>
 	No data has been found. Codes for what are:
@@ -122,8 +125,11 @@ more arguments in future versions.
     SHM_GET_BOOL
     SHM_GET_HIDDEN
 
-    NEED_PASSPHRASE <long keyid>
+    NEED_PASSPHRASE <long keyid>  <keytype>  <keylength>
 	Issued whenever a passphrase is needed.
+	keytype is the numerical value of the public key algorithm
+	or 0 if this is not applicable, keylength is the length
+	of the key or 0 if it is not known (this is currently always the case).
 
     NEED_PASSPHRASE_SYM <cipher_algo> <s2k_mode> <s2k_hash>
 	Issued whenever a passphrase for symmetric encryption is needed.

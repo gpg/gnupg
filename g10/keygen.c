@@ -743,7 +743,7 @@ ask_passphrase( STRING2KEY **ret_s2k )
     for(;;) {
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;
-	dek = passphrase_to_dek( NULL, opt.s2k_cipher_algo, s2k, 2 );
+	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2 );
 	if( !dek ) {
 	    tty_printf(_("passphrase not correctly repeated; try again.\n"));
 	}
@@ -1045,7 +1045,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	s2k->mode = opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;
 	set_next_passphrase( passphrase );
-	dek = passphrase_to_dek( NULL, opt.s2k_cipher_algo, s2k, 2 );
+	dek = passphrase_to_dek( NULL, 0, opt.s2k_cipher_algo, s2k, 2 );
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,

@@ -1,6 +1,9 @@
 
-    *
+    * New options --[no-]utf8-strings.
 
+    * New edit-menu commands "enable" and "disable" for entire keys.
+
+    * You will be asked for a filename if gpg cannot deduce one.
 
 Noteworthy changes in version 0.9.8
 -----------------------------------

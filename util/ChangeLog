@@ -1,3 +1,10 @@
+Thu Jul  1 12:47:31 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* miscutil.c (make_printable_string): New.
+
+	* strgutil.c (add_to_strlist2,append_to_strlist2): New.
+
 Tue Jun 29 21:44:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

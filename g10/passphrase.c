@@ -114,9 +114,11 @@ read_passphrase_from_fd( int fd )
  *	    (only for mode 2)
  *	    a dek->keylen of 0 means: no passphrase entered.
  *	    (only for mode 2)
+ * pubkey_algo is only informational.
  */
 DEK *
-passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
+passphrase_to_dek( u32 *keyid, int pubkey_algo,
+		   int cipher_algo, STRING2KEY *s2k, int mode )
 {
     char *pw = NULL;
     DEK *dek;
@@ -139,8 +141,8 @@ passphrase_to_dek( u32 *keyid, int cipher_algo, STRING2KEY *s2k, int mode )
 	    sprintf( buf, "%08lX%08lX", (ulong)keyid[0], (ulong)keyid[1] );
 	    if( keyid[2] && keyid[3] && keyid[0] != keyid[2]
 				     && keyid[1] != keyid[3] )
-		sprintf( buf+strlen(buf), " %08lX%08lX",
-					  (ulong)keyid[2], (ulong)keyid[3] );
+		sprintf( buf+strlen(buf), " %08lX%08lX %d 0",
+			   (ulong)keyid[2], (ulong)keyid[3], pubkey_algo );
 	    write_status_text( STATUS_NEED_PASSPHRASE, buf );
 	}
 	else {

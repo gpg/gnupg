@@ -39,6 +39,13 @@ static int is_prime( MPI n, int steps, int *count );
 static void m_out_of_n( char *array, int m, int n );
 
 
+static void
+progress( int c )
+{
+    fputc( c, stderr );
+}
+
+
 /****************
  * Generate a prime number (stored in secure memory)
  */
@@ -48,7 +55,7 @@ generate_secret_prime( unsigned  nbits )
     MPI prime;
 
     prime = gen_prime( nbits, 1, 2 );
-    fputc('\n', stderr);
+    progress('\n');
     return prime;
 }
 
@@ -58,7 +65,7 @@ generate_public_prime( unsigned  nbits )
     MPI prime;
 
     prime = gen_prime( nbits, 0, 2 );
-    fputc('\n', stderr);
+    progress('\n');
     return prime;
 }
 
@@ -152,7 +159,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		}
 	    if( i == n ) {
 		m_free(perms); perms = NULL;
-		fputc('!', stderr);
+		progress('!');
 		goto next_try;	/* allocate new primes */
 	    }
 	}
@@ -169,7 +176,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	    if( ++count1 > 20 ) {
 		count1 = 0;
 		qbits++;
-		fputc('>', stderr);
+		progress('>');
 		q = gen_prime( qbits, 0, 1 );
 		goto next_try;
 	    }
@@ -180,7 +187,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	    if( ++count2 > 20 ) {
 		count2 = 0;
 		qbits--;
-		fputc('<', stderr);
+		progress('<');
 		q = gen_prime( qbits, 0, 1 );
 		goto next_try;
 	    }
@@ -190,7 +197,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
     } while( !(nprime == pbits && check_prime( prime, val_2 )) );
 
     if( DBG_CIPHER ) {
-	putc('\n', stderr);
+	progress('\n');
 	log_mpidump( "prime    : ", prime );
 	log_mpidump( "factor  q: ", q );
 	if( mode == 1 )
@@ -202,7 +209,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	    fprintf(stderr, ", q0=%u", mpi_get_nbits(q_factor) );
 	for(i=0; i < n; i++ )
 	    fprintf(stderr, ", p%d=%u", i, mpi_get_nbits(factors[i]) );
-	putc('\n', stderr);
+	progress('\n');
     }
 
     if( ret_factors ) { /* caller wants the factors */
@@ -237,7 +244,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		mpi_print( stderr, g, 1 );
 	    }
 	    else
-		fputc('^', stderr);
+		progress('^');
 	    for(i=0; i < n+2; i++ ) {
 		/*fputc('~', stderr);*/
 		mpi_fdiv_q(tmp, pmin1, factors[i] );
@@ -247,7 +254,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 		    break;
 	    }
 	    if( DBG_CIPHER )
-		fputc('\n', stderr);
+		progress('\n');
 	} while( i < n+2 );
 	mpi_free(factors[n+1]);
 	mpi_free(tmp);
@@ -255,7 +262,7 @@ generate_elg_prime( int mode, unsigned pbits, unsigned qbits,
 	mpi_free(pmin1);
     }
     if( !DBG_CIPHER )
-	putc('\n', stderr);
+	progress('\n');
 
     m_free( factors );	/* (factors are shallow copies) */
     for(i=0; i < m; i++ )
@@ -335,7 +342,7 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 		/* perform stronger tests */
 		if( is_prime(ptest, 5, &count2 ) ) {
 		    if( !mpi_test_bit( ptest, nbits-1 ) ) {
-			fputc('\n', stderr);
+			progress('\n');
 			log_debug("overflow in prime generation\n");
 			break; /* step loop, continue with a new prime */
 		    }
@@ -350,11 +357,11 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
 		}
 	    }
 	    if( ++dotcount == 10 ) {
-		fputc('.', stderr);
+		progress('.');
 		dotcount = 0;
 	    }
 	}
-	fputc(':', stderr); /* restart with a new random value */
+	progress(':'); /* restart with a new random value */
     }
 }
 
@@ -383,7 +390,7 @@ check_prime( MPI prime, MPI val_2 )
 	mpi_free( pminus1 );
 	if( mpi_cmp_ui( result, 1 ) ) { /* if composite */
 	    mpi_free( result );
-	    fputc('.', stderr);
+	    progress('.');
 	    return 0;
 	}
 	mpi_free( result );
@@ -392,7 +399,7 @@ check_prime( MPI prime, MPI val_2 )
     /* perform stronger tests */
     if( is_prime(prime, 5, &count ) )
 	return 1; /* is probably a prime */
-    fputc('.', stderr);
+    progress('.');
     return 0;
 }
 
@@ -452,7 +459,7 @@ is_prime( MPI n, int steps, int *count )
 	    if( mpi_cmp( y, nminus1 ) )
 		goto leave; /* not a prime */
 	}
-	fputc('+', stderr);
+	progress('+');
     }
     rc = 1; /* may be a prime */
 

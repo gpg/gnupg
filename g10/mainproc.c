@@ -163,7 +163,7 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 	log_error( "symkey_enc packet with session keys are not supported!\n");
     else {
 	c->last_was_session_key = 2;
-	c->dek = passphrase_to_dek( NULL, enc->cipher_algo, &enc->s2k, 0 );
+	c->dek = passphrase_to_dek( NULL, 0, enc->cipher_algo, &enc->s2k, 0 );
     }
     free_packet(pkt);
 }
@@ -185,7 +185,8 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 
     if( is_status_enabled() ) {
 	char buf[50];
-	sprintf(buf, "%08lX%08lX", (ulong)enc->keyid[0], (ulong)enc->keyid[1]);
+	sprintf(buf, "%08lX%08lX %d 0",
+		(ulong)enc->keyid[0], (ulong)enc->keyid[1], enc->pubkey_algo );
 	write_status_text( STATUS_ENC_TO, buf );
     }
 
@@ -230,7 +231,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     /*log_debug("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
     if( !c->dek && !c->last_was_session_key ) {
 	/* assume this is old conventional encrypted data */
-	c->dek = passphrase_to_dek( NULL,
+	c->dek = passphrase_to_dek( NULL, 0,
 		    opt.def_cipher_algo ? opt.def_cipher_algo
 					: DEFAULT_CIPHER_ALGO, NULL, 0 );
     }

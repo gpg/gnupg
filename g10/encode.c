@@ -102,7 +102,7 @@ encode_simple( const char *filename, int mode )
 	s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
 	s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
 					     : opt.s2k_digest_algo;
-	cfx.dek = passphrase_to_dek( NULL,
+	cfx.dek = passphrase_to_dek( NULL, 0,
 		       opt.def_cipher_algo ? opt.def_cipher_algo
 					   : opt.s2k_cipher_algo , s2k, 2 );
 	if( !cfx.dek || !cfx.dek->keylen ) {

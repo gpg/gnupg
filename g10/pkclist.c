@@ -206,7 +206,7 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust )
 int
 edit_ownertrust( ulong lid, int mode )
 {
-    unsigned trust;
+    unsigned int trust;
 
     for(;;) {
 	switch( do_edit_ownertrust( lid, mode, &trust ) ) {
@@ -216,6 +216,8 @@ edit_ownertrust( ulong lid, int mode )
 	    show_paths( lid, 1	);
 	    break;
 	  case 1:
+	    trust &= ~TRUST_FLAG_DISABLED;
+	    trust |= get_ownertrust( lid ) & TRUST_FLAG_DISABLED;
 	    if( !update_ownertrust( lid, trust ) )
 		return 1;
 	    return 0;
@@ -301,7 +303,7 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 
     switch( (trustlevel & TRUST_MASK) ) {
       case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
-	rc = insert_trust_record( pk );
+	rc = insert_trust_record_by_pk( pk );
 	if( rc ) {
 	    log_error("failed to insert it into the trustdb: %s\n",
 						      g10_errstr(rc) );
@@ -462,7 +464,7 @@ check_signatures_trust( PKT_signature *sig )
 
     switch( (trustlevel & TRUST_MASK) ) {
       case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
-	rc = insert_trust_record( pk );
+	rc = insert_trust_record_by_pk( pk );
 	if( rc ) {
 	    log_error("failed to insert it into the trustdb: %s\n",
 						      g10_errstr(rc) );
@@ -633,6 +635,9 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		    log_error("error checking pk of `%s': %s\n",
 						      answer, g10_errstr(rc) );
 		}
+		else if( (trustlevel & TRUST_FLAG_DISABLED) ) {
+		    tty_printf(_("Public key is disabled.\n") );
+		}
 		else if( do_we_trust_pre( pk, trustlevel ) ) {
 		    PK_LIST r;
 
@@ -672,6 +677,11 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 		    free_public_key( pk ); pk = NULL;
 		    log_error(_("%s: error checking key: %s\n"),
 						      remusr->d, g10_errstr(rc) );
+		}
+		else if( (trustlevel & TRUST_FLAG_DISABLED) ) {
+		    free_public_key(pk); pk = NULL;
+		    log_info(_("%s: skipped: public key is disabled\n"),
+								    remusr->d);
 		}
 		else if( do_we_trust_pre( pk, trustlevel ) ) {
 		    /* note: do_we_trust may have changed the trustlevel */

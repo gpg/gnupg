@@ -1,3 +1,28 @@
+Thu Jul  1 12:47:31 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* keyedit.c (show_key_with_all_names): Print a notice for disabled keys.
+	(enable_disable_keys): Add functionality
+	* pkclist.c (edit_ownertrust): preserve disabled state.
+	(build_pk_list): Skip disabled keys.
+	* trustdb.c (upd_one_ownertrust): Ditto.
+	(build_cert_tree): Mask the ownertrust.
+	(trust_letter): Mask the value.
+	(do_check): Take disabled flag into account.
+
+	* passphrase.c (passphrase_to_dek): Add a pubkey_alfo arg and changed
+	all callers.
+
+	* g10.c (utf8_strings): 2 new options.
+
+	* trustdb.c (insert_trust_record_by_pk): New, replaces the next one.
+	(insert_trust_record): Now takes a keyblock as arg.  Changed all
+	callers to use the appropritae function.
+
+	* openfile.c (ask_outfile_name): New.
+	* plaintext.c (handle_plaintext): Ask for filename if there is
+	no valid syntax. Don't use fname varbatim but filter it.
+
 Tue Jun 29 21:44:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -503,7 +503,7 @@ import_ownertrust( const char *fname )
 		if( rc != -1 )
 		    log_error_f(fname, _("Oops: key is now in trustdb???\n"));
 		else {
-		    rc = insert_trust_record( pk );
+		    rc = insert_trust_record_by_pk( pk );
 		    if( !rc )
 			goto repeat; /* update the ownertrust */
 		    log_error_f(fname, _("insert trust record failed: %s\n"),

@@ -65,15 +65,15 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     }
     else if( !opt.use_embedded_filename ) {
 	fname = make_outfile_name( iobuf_get_real_fname(pt->buf) );
+	if( !fname )
+	    fname = ask_outfile_name( pt->name, pt->namelen );
 	if( !fname ) {
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
     }
     else {
-	fname = m_alloc( pt->namelen +1 );
-	memcpy( fname, pt->name, pt->namelen );
-	fname[pt->namelen] = 0;
+	fname = make_printable_string( pt->name, pt->namelen, 0 );
     }
 
     if( nooutput )

@@ -166,6 +166,8 @@ enum cmd_and_opt_values { aNull = 0,
     oEncryptTo,
     oNoEncryptTo,
     oLoggerFD,
+    oUtf8Strings,
+    oNoUtf8Strings,
 aTest };
 
 
@@ -315,13 +317,15 @@ static ARGPARSE_OPTS opts[] = {
     { oLockMultiple, "lock-multiple", 0, "@" },
     { oLoggerFD, "logger-fd",1, "@" },
     { oUseEmbeddedFilename, "use-embedded-filename", 0, "@" },
+    { oUtf8Strings, "utf8-strings", 0, "@" },
+    { oNoUtf8Strings, "no-utf8-strings", 0, "@" },
 {0} };
 
 
 
 int g10_errors_seen = 0;
 
-
+static int utf8_strings = 0;
 static int maybe_setuid = 1;
 
 static char *build_list( const char *text,
@@ -761,16 +765,16 @@ main( int argc, char **argv )
 
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */
-	    sl = add_to_strlist( &remusr, pargs.r.ret_str );
+	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
 	    sl->flags = 1;
 	    break;
 	  case oRecipient: /* store the recipient */
-	    add_to_strlist( &remusr, pargs.r.ret_str );
+	    add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
 	    break;
 	  case oTextmodeShort: opt.textmode = 2; break;
 	  case oTextmode: opt.textmode=1;  break;
 	  case oUser: /* store the local users */
-	    add_to_strlist( &locusr, pargs.r.ret_str );
+	    add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
 	    break;
 	  case oCompress: opt.compress = pargs.r.ret_int; break;
 	  case oPasswdFD: pwfd = pargs.r.ret_int; break;
@@ -788,6 +792,8 @@ main( int argc, char **argv )
 	  case oLockMultiple: opt.lock_once = 0; break;
 	  case oKeyServer: opt.keyserver_name = pargs.r.ret_str; break;
 	  case oNotation: add_notation_data( pargs.r.ret_str ); break;
+	  case oUtf8Strings: utf8_strings = 1; break;
+	  case oNoUtf8Strings: utf8_strings = 0; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -1025,7 +1031,7 @@ main( int argc, char **argv )
 	if( argc > 1 ) {
 	    sl = NULL;
 	    for( argc--, argv++ ; argc; argc--, argv++ )
-		append_to_strlist( &sl, *argv );
+		append_to_strlist2( &sl, *argv, utf8_strings );
 	    keyedit_menu( fname, locusr, sl );
 	    free_strlist(sl);
 	}
@@ -1040,6 +1046,7 @@ main( int argc, char **argv )
 	if( argc != 1 )
 	    wrong_args(_("--delete-key username"));
 	/* note: fname is the user id! */
+	/* fixme: do utf8 conversion */
 	if( (rc = delete_key(fname, cmd==aDeleteSecretKey)) )
 	    log_error("%s: delete key failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
 	break;
@@ -1482,11 +1489,8 @@ add_notation_data( const char *string )
 	    highbit = 1;
     }
 
-    if( highbit ) {  /* must use UTF8 encoding */
-	char *p = native_to_utf8( string );
-	sl = add_to_strlist( &opt.notation_data, p );
-	m_free( p );
-    }
+    if( highbit )   /* must use UTF8 encoding */
+	sl = add_to_strlist2( &opt.notation_data, string, utf8_strings );
     else
 	sl = add_to_strlist( &opt.notation_data, string );
 

@@ -1,3 +1,9 @@
+Thu Jul  1 12:47:31 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* primegen.c, elgamal.c, dsa.c (progess): New and replaced all
+	fputc with a call to this function.
+
 Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

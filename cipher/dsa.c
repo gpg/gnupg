@@ -52,6 +52,13 @@ static void generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors );
 static void sign(MPI r, MPI s, MPI input, DSA_secret_key *skey);
 static int  verify(MPI r, MPI s, MPI input, DSA_public_key *pkey);
 
+static void
+progress( int c )
+{
+    fputc( c, stderr );
+}
+
+
 /****************
  * Generate a random secret exponent k less than q
  */
@@ -65,7 +72,7 @@ gen_k( MPI q )
 	log_debug("choosing a random k ");
     for(;;) {
 	if( DBG_CIPHER )
-	    fputc('.', stderr);
+	    progress('.');
 	{   char *p = get_random_bits( nbits, 1, 1 );
 	    mpi_set_buffer( k, p, (nbits+7)/8, 0 );
 	    m_free(p);
@@ -84,7 +91,7 @@ gen_k( MPI q )
 	break;	/* okay */
     }
     if( DBG_CIPHER )
-	fputc('\n', stderr);
+	progress('\n');
 
     return k;
 }
@@ -170,7 +177,7 @@ generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
     rndbuf = NULL;
     do {
 	if( DBG_CIPHER )
-	    fputc('.', stderr);
+	    progress('.');
 	if( !rndbuf )
 	    rndbuf = get_random_bits( qbits, 2, 1 );
 	else { /* change only some of the higher bits (= 2 bytes)*/
@@ -190,7 +197,7 @@ generate( DSA_secret_key *sk, unsigned nbits, MPI **ret_factors )
     mpi_powm( y, g, x, p );
 
     if( DBG_CIPHER ) {
-	fputc('\n', stderr);
+	progress('\n');
 	log_mpidump("dsa  p= ", p );
 	log_mpidump("dsa  q= ", q );
 	log_mpidump("dsa  g= ", g );

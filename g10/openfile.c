@@ -99,6 +99,44 @@ make_outfile_name( const char *iname )
 }
 
 
+/****************
+ * Ask for a outputfilename and use the given one as default.
+ * Return NULL if no file has been given or it is not possible to
+ * ask the user.
+ */
+char *
+ask_outfile_name( const char *name, size_t namelen )
+{
+    size_t n;
+    const char *s;
+    char *prompt;
+    char *fname;
+    char *defname;
+
+    if( opt.batch )
+	return NULL;
+
+    s = _("Enter new filename");
+
+    n = strlen(s) + namelen + 10;
+    defname = name && namelen? make_printable_string( name, namelen, 0): NULL;
+    prompt = m_alloc(n);
+    if( defname )
+	sprintf(prompt, "%s [%s]: ", s, defname );
+    else
+	sprintf(prompt, "%s: ", s );
+    fname = cpr_get("openfile.askoutname", prompt );
+    cpr_kill_prompt();
+    m_free(prompt);
+    if( !*fname ) {
+	m_free( fname ); fname = NULL;
+	fname = defname; defname = NULL;
+    }
+    m_free(defname);
+    return fname;
+}
+
+
 
 /****************
  * Make an output filename for the inputfile INAME.

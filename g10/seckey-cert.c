@@ -64,7 +64,7 @@ do_check( PKT_secret_key *sk )
 		keyid_from_sk( sk2, keyid+2 );
 	    free_secret_key( sk2 );
 	}
-	dek = passphrase_to_dek( keyid, sk->protect.algo,
+	dek = passphrase_to_dek( keyid, sk->pubkey_algo, sk->protect.algo,
 				 &sk->protect.s2k, 0 );
 	cipher_hd = cipher_open( sk->protect.algo,
 				 CIPHER_MODE_AUTO_CFB, 1);

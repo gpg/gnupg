@@ -513,7 +513,7 @@ verify_own_keys(void)
 	/* make sure that the pubkey is in the trustdb */
 	rc = query_trust_record( pk );
 	if( rc == -1 ) { /* put it into the trustdb */
-	    rc = insert_trust_record( pk );
+	    rc = insert_trust_record_by_pk( pk );
 	    if( rc ) {
 		log_error(_("key %08lX: can't put it into the trustdb\n"),
 							    (ulong)keyid[1] );
@@ -633,10 +633,14 @@ print_user_id( FILE *fp, const char *text, u32 *keyid )
 
 
 
+/****************
+ * This function returns a letter for a trustvalue  Trust flags
+ * are ignore.
+ */
 int
 trust_letter( unsigned value )
 {
-    switch( value ) {
+    switch( (value & TRUST_MASK) ) {
       case TRUST_UNKNOWN:   return '-';
       case TRUST_EXPIRED:   return 'e';
       case TRUST_UNDEFINED: return 'q';
@@ -994,6 +998,10 @@ check_keybinding( KBNODE keyblock, KBNODE keynode, u32 *mainkid,
     int is_main = (keynode->pkt->pkttype == PKT_PUBLIC_KEY);
     int rc;
 
+    if( DBG_TRUST )
+	log_debug("check_keybinding: %08lX.%lu\n",
+			    (ulong)mainkid[1], lid );
+
     if( is_main ) {
 	/* a primary key is always valid (user IDs are handled elsewhere)*/
 	keyflags = KEYF_CHECKED | KEYF_VALID;
@@ -1134,6 +1142,10 @@ check_uidsigs( KBNODE keyblock, KBNODE keynode, u32 *mainkid, ulong lid )
     PKT_signature *selfsig = NULL; /* the latest valid self signature */
     int rc;
 
+    if( DBG_TRUST )
+	log_debug("check_uidsigs: %08lX.%lu\n",
+			    (ulong)mainkid[1], lid );
+
     /* first we check only the selfsignatures */
     for( node=keynode->next; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_USER_ID
@@ -1216,6 +1228,10 @@ check_sig_record( KBNODE keyblock, KBNODE signode,
     unsigned int sigflag = 0;
     TRUSTREC tmp;
     int revocation=0, rc;
+
+    if( DBG_TRUST )
+	log_debug("check_sig_record: %08lX.%lu %lu[%d]\n",
+			    (ulong)keyid[1], lid, siglid, sigidx );
 
     if( (sig->sig_class&~3) == 0x10 ) /* regular certification */
 	;
@@ -1447,6 +1463,8 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
 	primary_pk->local_id = drec.recnum;
 
     keyid_from_pk( primary_pk, keyid );
+    if( DBG_TRUST )
+	log_debug("update_trust_record: %08lX.%lu\n", (ulong)keyid[1], drec.recnum );
 
     rc = tdbio_begin_transaction();
     if( rc )
@@ -1512,14 +1530,11 @@ update_trust_record( KBNODE keyblock, int recheck, int *modified )
  * This function assumes that the record does not yet exist.
  */
 int
-insert_trust_record( PKT_public_key *orig_pk )
+insert_trust_record( KBNODE keyblock )
 {
     TRUSTREC dirrec;
     TRUSTREC shadow;
-    KBNODE keyblock = NULL;
     KBNODE node;
-    byte fingerprint[MAX_FINGERPRINT_LEN];
-    size_t fingerlen;
     int rc = 0;
     PKT_public_key *pk;
 
@@ -1529,39 +1544,11 @@ insert_trust_record( PKT_public_key *orig_pk )
 
     init_trustdb();
 
-    fingerprint_from_pk( orig_pk, fingerprint, &fingerlen );
-
-    /* fixme: assert that we do not have this record.
-     * we can do this by searching for the primary keyid
-     *
-     * fixme: If there is no such key we should look whether one
-     * of the subkeys has been used to sign another key and in this case
-     * we got the key anyway - this is because a secondary key can't be used
-     * without a primary key (it is needed to bind the secondary one
-     * to the primary one which has the user ids etc.)
-     */
-
-    if( orig_pk->local_id )
-	log_debug("insert_trust_record with pk->local_id=%lu (1)\n",
-						   orig_pk->local_id );
-
-    /* get the keyblock which has the key */
-    rc = get_keyblock_byfprint( &keyblock, fingerprint, fingerlen );
-    if( rc ) { /* that should never happen */
-	log_error( _("insert_trust_record: keyblock not found: %s\n"),
-							  g10_errstr(rc) );
-	goto leave;
-    }
-
-    /* make sure that we use the primary key */
     pk = find_kbnode( keyblock, PKT_PUBLIC_KEY )->pkt->pkt.public_key;
-
     if( pk->local_id ) {
-	orig_pk->local_id = pk->local_id;
 	log_debug("insert_trust_record with pk->local_id=%lu (2)\n",
 							pk->local_id );
 	rc = update_trust_record( keyblock, 1, NULL );
-	release_kbnode( keyblock );
 	return rc;
     }
 
@@ -1581,9 +1568,8 @@ insert_trust_record( PKT_public_key *orig_pk )
     dirrec.r.dir.lid = dirrec.recnum;
     write_record( &dirrec );
 
-    /* put the LID into the in-memory copy of the keyblock */
+    /* put the LID into the keyblock */
     pk->local_id = dirrec.r.dir.lid;
-    orig_pk->local_id = dirrec.r.dir.lid;
     for( node=keyblock; node; node = node->next ) {
 	if( node->pkt->pkttype == PKT_PUBLIC_KEY
 	    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
@@ -1602,11 +1588,39 @@ insert_trust_record( PKT_public_key *orig_pk )
     /* and put all the other stuff into the keydb */
     rc = update_trust_record( keyblock, 1, NULL );
 
-  leave:
-    release_kbnode( keyblock );
     do_sync();
     return rc;
 }
+
+/****************
+ * Insert a trust record indentified by a PK into the TrustDB
+ */
+int
+insert_trust_record_by_pk( PKT_public_key *pk )
+{
+    KBNODE keyblock = NULL;
+    byte fingerprint[MAX_FINGERPRINT_LEN];
+    size_t fingerlen;
+    int rc;
+
+    /* get the keyblock */
+    fingerprint_from_pk( pk, fingerprint, &fingerlen );
+    rc = get_keyblock_byfprint( &keyblock, fingerprint, fingerlen );
+    if( rc ) { /* that should never happen */
+	log_debug( "insert_trust_record_by_pk: keyblock not found: %s\n",
+							  g10_errstr(rc) );
+    }
+    else {
+	rc = insert_trust_record( keyblock );
+	if( !rc ) /* copy the LID into the PK */
+	    pk->local_id = find_kbnode( keyblock, PKT_PUBLIC_KEY )
+					    ->pkt->pkt.public_key->local_id;
+    }
+
+    release_kbnode( keyblock );
+    return rc;
+}
+
 
 
 /****************
@@ -1633,8 +1647,9 @@ update_trustdb()
 
 	    rc = update_trust_record( keyblock, 1, &modified );
 	    if( rc == -1 ) { /* not yet in trustdb: insert */
-		PKT_public_key *pk = keyblock->pkt->pkt.public_key;
-		rc = insert_trust_record( pk );
+		PKT_public_key *pk;
+		rc = insert_trust_record( keyblock );
+		pk = keyblock->pkt->pkt.public_key;
 		if( rc && !pk->local_id ) {
 		    log_error(_("lid ?: insert failed: %s\n"),
 						     g10_errstr(rc) );
@@ -1782,7 +1797,7 @@ build_cert_tree( ulong lid, int depth, int max_depth, TN helproot )
 	m_free(keynode);
 	return NULL;
     }
-    keynode->n.k.ownertrust = dirrec.r.dir.ownertrust;
+    keynode->n.k.ownertrust = dirrec.r.dir.ownertrust & TRUST_MASK;
 
     /* loop over all user ids */
     for( uidrno = dirrec.r.dir.uidlist; uidrno; uidrno = uidrec.r.uid.next ) {
@@ -1872,12 +1887,17 @@ upd_one_ownertrust( ulong lid, unsigned new_trust, unsigned *retflgs )
 	log_debug("upd_one_ownertrust of %lu from %u to %u\n",
 			   lid, (unsigned)rec.r.dir.ownertrust, new_trust );
     if( retflgs ) {
-	if( new_trust > rec.r.dir.ownertrust )
+	if( (new_trust & TRUST_MASK) > (rec.r.dir.ownertrust & TRUST_MASK) )
 	    *retflgs |= 16; /* modified up */
 	else
 	    *retflgs |= 32; /* modified down */
     }
-    rec.r.dir.ownertrust = new_trust;
+
+    /* we preserve the disabled state here */
+    if( (rec.r.dir.ownertrust & TRUST_FLAG_DISABLED) )
+	rec.r.dir.ownertrust = new_trust | TRUST_FLAG_DISABLED;
+    else
+	rec.r.dir.ownertrust = new_trust & ~TRUST_FLAG_DISABLED;
     write_record( &rec );
 }
 
@@ -2072,8 +2092,9 @@ do_check( TRUSTREC *dr, unsigned *validity,
     if( retflgs )
 	*retflgs &= ~(16|32);  /* reset the 2 special flags */
 
-
-    if( namehash ) {
+    if( (dr->r.dir.ownertrust & TRUST_FLAG_DISABLED) )
+	*validity = 0; /* no need to check further */
+    else if( namehash ) {
 	/* Fixme: use the cache */
 	*validity = verify_key( opt.max_cert_depth, dr, namehash,
 							add_fnc, retflgs );
@@ -2090,6 +2111,9 @@ do_check( TRUSTREC *dr, unsigned *validity,
 
     if( !(*validity & TRUST_MASK) )
 	*validity = TRUST_UNDEFINED;
+
+    if( (dr->r.dir.ownertrust & TRUST_FLAG_DISABLED) )
+	*validity |= TRUST_FLAG_DISABLED;
 
     if( dr->r.dir.dirflags & DIRF_REVOKED )
 	*validity |= TRUST_FLAG_REVOKED;
@@ -2223,7 +2247,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 	    return rc;
 	}
 	else if( rc == -1 ) { /* not found - insert */
-	    rc = insert_trust_record( pk );
+	    rc = insert_trust_record_by_pk( pk );
 	    if( rc ) {
 		log_error(_("key %08lX: insert trust record failed: %s\n"),
 					  (ulong)keyid[1], g10_errstr(rc));
@@ -2247,7 +2271,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel,
 	log_info(_("key %08lX.%lu: expired at %s\n"),
 			(ulong)keyid[1], pk->local_id,
 			     asctimestamp( pk->expiredate) );
-	 trustlevel = TRUST_EXPIRED;
+	trustlevel = TRUST_EXPIRED;
     }
     else {
 	rc = do_check( &rec, &trustlevel, namehash, add_fnc, retflgs );
@@ -2364,7 +2388,7 @@ list_trust_path( const char *username )
 					    username, g10_errstr(rc));
     else if( rc == -1 ) {
 	log_info(_("user '%s' not in trustdb - inserting\n"), username);
-	rc = insert_trust_record( pk );
+	rc = insert_trust_record_by_pk( pk );
 	if( rc )
 	    log_error(_("failed to put '%s' into trustdb: %s\n"),
 						    username, g10_errstr(rc));

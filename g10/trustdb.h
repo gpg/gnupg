@@ -64,8 +64,9 @@ int keyid_from_lid( ulong lid, u32 *keyid );
 ulong lid_from_keyblock( KBNODE keyblock );
 int query_trust_record( PKT_public_key *pk );
 int clear_trust_checked_flag( PKT_public_key *pk );
-int insert_trust_record( PKT_public_key *pk );
 int update_trust_record( KBNODE keyblock, int fast, int *modified );
+int insert_trust_record( KBNODE keyblock );
+int insert_trust_record_by_pk( PKT_public_key *pk );
 int update_ownertrust( ulong lid, unsigned new_trust );
 int trust_letter( unsigned value );
 
