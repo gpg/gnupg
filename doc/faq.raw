@@ -13,8 +13,8 @@ The most recent version of the FAQ is available from
 [H H1]GNUPG FREQUENTLY ASKED QUESTIONS[H /H1]
 
 
-Version: 0.37[H p]
-Last-Modified: Jan 25, 2001[H p]
+Version: 1.0[H p]
+Last-Modified: Feb 20, 2001[H p]
 Maintained-by: [$maintainer]
 
 
@@ -30,7 +30,7 @@ most convenient if you could provide the answer to be included
 here. Your help is very much appreciated.
 
 Please, don't send message like "This should be a FAQ - what's the
-answer?". If it hasn't been asked before, it isn't a FAQ. In that case,
+answer?". If it hasn't been asked before, it isn't a FAQ. In that case
 you could search in the mailing list archive.
 
 
@@ -58,7 +58,7 @@ you could search in the mailing list archive.
     the OpenPGP standard. But there are some interoperability
     problems. See questions <Rcompat>ff. for details.
 
-<S> SOURCES OF INFORMATION
+<S> SOURCES of INFORMATION
 
 <Q> Where can I find more information?
 
@@ -404,16 +404,36 @@ messages?
 
 <Dcompat>
 
-<Q> How can I encrypt a message so that PGP 2.x is able to decrypt it?
+<Q> How can I encrypt a message with GnuPG so that PGP is able to decrypt it?
+
+    It depends on the PGP version.[H UL]
+
+    [H LI] PGP 2.x 
 
     You can't do that because PGP 2.x normally uses IDEA which is not
-    supported by GnuPG because it is patented (see <Ridea>), but if you
+    supported by GnuPG as it is patented (see <Ridea>), but if you
     have a modified version of PGP you can try this:
 
     [H pre] gpg --rfc1991 --cipher-algo 3des ...  [H/pre]
 
-    Please don't pipe the data to encrypt to gpg but give it as a
+    Please don't pipe the data to encrypt to gpg but provide it using a
     filename; otherwise, PGP 2 will not be able to handle it.
+
+    As for conventional encryption, you can't do this for PGP 2.  
+
+    
+    [H LI] PGP 5.x and higher
+
+    You need to provide two additional options: 
+    [H pre]--compress-algo 1 --cipher-algo cast5 [H/pre] 
+
+    You may also use "3des" instead of "cast5", "blowfish" does not
+    work with all versions of pgp5.  You may also want to put [H pre]
+    compress-algo 1 [H/pre] into your ~/.gnupg/options file - this does
+    not affect normal gnupg operation.
+
+    This applies to conventional encryption as well.
+    [H /UL]
 
 <Q> How do I migrate from PGP 2.x to GnuPG?
 
@@ -426,20 +446,9 @@ messages?
     to perform the migration. 
     
 
-<Q> How can I conventional encrypt a message, so that PGP can decrypt
-it?
+<Q> (removed)
 
-    You can't do this for PGP 2.  For PGP 5 you should use this: 
-
-    [H pre]
-    gpg -c --cipher-algo 3des --compress-algo 1 myfile 
-    [H/pre] 
-
-    You may replace "3des" by "cast5". "blowfish" does not work with all
-    versions of pgp5.  You may also want to put [H pre] compress-algo 1
-    [H/pre] into your ~/.gnupg/options file - this does not affect
-    normal gnupg operation.
-
+    (empty)
 
 <Q> Why is PGP 5.x not able to encrypt messages with some keys?
 
@@ -469,9 +478,9 @@ it?
     where pgpkeyring is the original keyring and not the GnuPG one you
     might have created in the first step.
 
-<Q> Older PGPs do not like my secret key.
+<Q> PGP does not like my secret key.
 
-    PGP probably bails out on some private comment packets used by
+    Older PGPs probably bail out on some private comment packets used by
     GnuPG.  These packets are fully in compliance with OpenPGP; however
     PGP is not really OpenPGP aware.  A workaround is to export the
     secret keys with this command: 
@@ -485,7 +494,7 @@ it?
 
     [H pre]
      $ gpg --s2k-cipher-algo=CAST5 --s2k-digest-algo=SHA1 \
-          --compress-algo=1  --edit-key username
+          --compress-algo=1  --edit-key <username>
     [H /pre]
 
     Then use passwd to change the password (just change it to the same
@@ -493,7 +502,11 @@ it?
 
     Now you can export it and PGP should be able to handle it.
 
-
+    For PGP 6.x the following options work to export a key:
+    [H pre]
+     $ gpg --s2k-cipher-algo 3des --compress-algo 1 --rfc1991 \
+           --export-secret-keys <Key-ID>
+    [H /pre]
 
 <S> PROBLEMS and ERROR MESSAGES
 
