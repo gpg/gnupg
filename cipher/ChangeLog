@@ -1,3 +1,8 @@
+2003-08-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* random.c (getfnc_gather_random): Don't check NAME_OF_DEV_RANDOM
+	twice.  Use NAME_OF_DEV_URANDOM.
+
 2003-05-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* bithelp.h, des.c, random.c, rndlinux.c, sha1.c, blowfish.c,

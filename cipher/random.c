@@ -139,7 +139,7 @@ getfnc_gather_random (void))(void (*)(const void*, size_t, int), int,
     return fnc;
 # ifdef USE_RNDLINUX
   if ( !access (NAME_OF_DEV_RANDOM, R_OK)
-       && !access (NAME_OF_DEV_RANDOM, R_OK))
+       && !access (NAME_OF_DEV_URANDOM, R_OK))
     {
       fnc = rndlinux_gather_random;
       return fnc;
