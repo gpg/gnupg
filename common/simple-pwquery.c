@@ -466,9 +466,15 @@ simple_pwquery (const char *cacheid,
       result = pw;
       pw = NULL;
     }
-  else if (nread > 7 && !memcmp (pw, "ERR 111", 7)
-      && (pw[7] == ' ' || pw[7] == '\n') )
+  else if ((nread > 7 && !memcmp (pw, "ERR 111", 7)
+            && (pw[7] == ' ' || pw[7] == '\n') )
+           || ((nread > 4 && !memcmp (pw, "ERR ", 4)
+                && (strtoul (pw+4, NULL, 0) & 0xffff) == 99)) ) 
     {
+      /* 111 is the old Assuan code for canceled which might still
+         be in use by old installations. 99 is GPG_ERR_CANCELED as
+         used by modern gpg-agents; 0xffff is used to mask out the
+         error source.  */
 #ifdef SPWQ_USE_LOGGING
       log_info (_("canceled by user\n") );
 #endif

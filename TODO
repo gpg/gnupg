@@ -22,6 +22,10 @@ might want to have an agent context for each service request
 ** figure out how to auto retrieve a key by serialno+issuer.
    Dirmngr is currently not able to parse more than the CN.
 
+* sm/certlist.c
+** ocspSigning usage is not fully implemented
+   We should review the entire CRL and OCSP validation system.
+
 * sm/decrypt.c
 ** replace leading zero in integer hack by a cleaner solution
 
