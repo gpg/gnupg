@@ -62,7 +62,25 @@ for i in README.W32 gnupg-w32.reg; do
   todos $i
 done
 
-for i in ${srcdir}/po/*.gmo; do ln $i "$(basename $i .gmo).mo" ; done
+
+for i in ${srcdir}/po/*.po; do
+   lang=$(basename $i .po)
+   fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
+   case $lang in 
+     cs|pl) toset="CP1250" ;;
+     el|eo|et|ja|tr) toset="" ;;
+      *) toset="CP850" ;;
+   esac
+   if [ -n "$toset" ]; then
+       echo "$lang: converting from $fromset to $toset" >&2 
+       iconv --silent --from-code=$fromset --to-code=$toset < $i | \
+         sed "/^\"Content-Type:/ s/charset=[a-zA-Z0-9_-]*/charset=$toset/" | \
+         msgfmt --output-file=$lang.mo -
+   else
+       echo "$lang: keeping $fromset" >&2 
+       msgfmt --output-file=$lang.mo $i
+   fi
+done
 zip -9 "gnupg-w32cli-${version}.zip" *
 
 

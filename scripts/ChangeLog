@@ -1,3 +1,7 @@
+2002-09-11  Werner Koch  <wk@gnupg.org>
+
+	* mk-w32-dist: Convert the character sets on a per language base.
+
 2002-09-02  Werner Koch  <wk@gnupg.org>
 
 	* mk-w32-dist: Include more man pages and gpg split.  Changed name
