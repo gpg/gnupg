@@ -1,3 +1,7 @@
+2003-10-28  Werner Koch  <wk@gnupg.org>
+
+	* DETAILS: Add the 'a' value for field 12 and the new field 15.
+
 2003-10-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* samplekeys.asc: Update 99242560.

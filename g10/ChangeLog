@@ -1,3 +1,10 @@
+2003-10-28  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_keyblock_print): Denote secrets keys stored on a
+	card with an '>'. Print the '#' also for subkeys.
+	(list_keyblock_colon): Introduce new field 15 for sec/ssb to print
+	the serial number.
+
 2003-10-26  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Enhance the version-specific config file code to

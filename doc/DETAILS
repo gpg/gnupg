@@ -94,6 +94,7 @@ record.
                 e = encrypt
                 s = sign
                 c = certify
+                a = authentication
 	    A key may have any combination of them in any order.  In
 	    addition to these letters, the primary key has uppercase
 	    versions of the letters to denote the _usable_
@@ -116,6 +117,9 @@ record.
 
 14. Field   Flag field used in the --edit menu output:
 
+15. Field   Used in sec/sbb to print the serial number of a token
+            (internal protect mode 1002) or a '#' if that key is a
+            simple stub (internal protect mode 1001)
 
 All dates are displayed in the format yyyy-mm-dd unless you use the
 option --fixed-list-mode in which case they are displayed as seconds

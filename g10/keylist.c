@@ -621,7 +621,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
 
-        printf("sec%c  %4u%c/",(sk->protect.s2k.mode==1001)?'#':' ',
+        printf("sec%c  %4u%c/",(sk->protect.s2k.mode==1001)?'#':
+                               (sk->protect.s2k.mode==1002)?'>':' ',
 	       nbits_from_sk( sk ),pubkey_letter( sk->pubkey_algo ));
 
 	if(opt.list_options&LIST_SHOW_LONG_KEYID)
@@ -769,7 +770,9 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    }
 
 	    keyid_from_sk( sk2, keyid2 );
-            printf("ssb   %4u%c/",
+            printf("ssb%c  %4u%c/",
+                   (sk->protect.s2k.mode==1001)?'#':
+                   (sk->protect.s2k.mode==1002)?'>':' ',
 		   nbits_from_sk( sk2 ),pubkey_letter( sk2->pubkey_algo ));
 	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
 	      printf("%08lX%08lX",(ulong)keyid2[0],(ulong)keyid2[1]);
@@ -902,6 +905,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
     int any=0;
     int trustletter = 0;
     int ulti_hack = 0;
+    int i;
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
@@ -961,6 +965,20 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
         putchar(':');
         putchar(':');
         print_capabilities (pk, sk, keyblock);
+        if (secret) {
+          putchar(':'); /* End of field 13. */
+          putchar(':'); /* End of field 14. */
+          if (sk->protect.s2k.mode == 1001)
+            putchar('#'); /* Key is just a stub. */
+          else if (sk->protect.s2k.mode == 1002) {
+            /* Key is stored on an external token (card) or handled by
+               the gpg-agent.  Print the serial number of that token
+               here. */
+            for (i=0; i < sk->protect.ivlen; i++)
+              printf ("%02X", sk->protect.iv[i]);
+          }
+          putchar(':'); /* End of field 15. */
+        }
         putchar('\n');
         if( fpr )
             print_fingerprint( pk, sk, 0 );
@@ -979,7 +997,6 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
              * Fixme: We need a is_valid flag here too 
              */
 	    if( any ) {
-	        int i;
 	        char *str=uid->attrib_data?"uat":"uid";
 		/* If we're listing a secret key, leave out the
 		   validity values for now.  This is handled better in
@@ -1103,9 +1120,27 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 			colon_strtime (sk2->expiredate)
                    /* fixme: add LID */ );
             print_capabilities (NULL, sk2, NULL);
+            if (opt.fixed_list_mode) {
+              /* We print the serial number only in fixed list mode
+                 for the primary key so, so avoid questions we print
+                 it for subkeys also only in this mode.  There is no
+                 technical reason, though. */
+              putchar(':'); /* End of field 13. */
+              putchar(':'); /* End of field 14. */
+              if (sk2->protect.s2k.mode == 1001)
+                putchar('#'); /* Key is just a stub. */
+              else if (sk2->protect.s2k.mode == 1002) {
+                /* Key is stored on an external token (card) or handled by
+                   the gpg-agent.  Print the serial number of that token
+                   here. */
+                for (i=0; i < sk2->protect.ivlen; i++)
+                  printf ("%02X", sk2->protect.iv[i]);
+              }
+              putchar(':'); /* End of field 15. */
+            }
             putchar ('\n');
 	    if( fpr > 1 )
-		print_fingerprint( NULL, sk2, 0 );
+              print_fingerprint( NULL, sk2, 0 );
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
@@ -1208,8 +1243,6 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 
 	    if(opt.no_sig_cache && opt.check_sigs && fprokay)
 	      {
-		size_t i;
-
 		printf(":");
 
 		for (i=0; i < fplen ; i++ )
