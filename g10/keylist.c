@@ -551,6 +551,51 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
     putchar(':');
 }
 
+/* Flags = 0x01 hashed 0x02 critical */
+static void
+print_one_subpacket(sigsubpkttype_t type,size_t len,int flags,const byte *buf)
+{
+  size_t i;
+
+  printf("spk:%d:%u:%u:",type,flags,len);
+
+  for(i=0;i<len;i++)
+    {
+      /* printable ascii other than : and % */
+      if(buf[i]>=32 && buf[i]<=126 && buf[i]!=':' && buf[i]!='%')
+	printf("%c",buf[i]);
+      else
+	printf("%%%02X",buf[i]);
+    }
+
+  printf("\n");
+}
+
+static void
+print_subpackets_colon(PKT_signature *sig)
+{
+  byte *i;
+
+  assert(opt.show_subpackets);
+
+  for(i=opt.show_subpackets;*i;i++)
+    {
+      const byte *p;
+      size_t len;
+      int seq,crit;
+
+      seq=0;
+
+      while((p=enum_sig_subpkt(sig->hashed,*i,&len,&seq,&crit)))
+	print_one_subpacket(*i,len,0x01|(crit?0x02:0),p);
+
+      seq=0;
+
+      while((p=enum_sig_subpkt(sig->unhashed,*i,&len,&seq,&crit)))
+	print_one_subpacket(*i,len,0x00|(crit?0x02:0),p);
+    }
+}
+
 void
 dump_attribs(const PKT_user_id *uid,PKT_public_key *pk,PKT_secret_key *sk)
 {
@@ -1231,6 +1276,9 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	      }
 
 	    printf("\n");
+
+	    if(opt.show_subpackets)
+	      print_subpackets_colon(sig);
 
 	    /* fixme: check or list other sigs here */
 	}

@@ -1358,6 +1358,113 @@ gpgconf_list (const char *configfile)
 }
 
 
+static int
+parse_subpacket_list(char *list)
+{
+  char *tok;
+  byte subpackets[128],i;
+  int count=0;
+
+  if(!list)
+    {
+      /* No arguments means all subpackets */
+      memset(subpackets+1,1,sizeof(subpackets)-1);
+      count=127;
+    }
+  else
+    {
+      memset(subpackets,0,sizeof(subpackets));
+
+      /* Merge with earlier copy */
+      if(opt.show_subpackets)
+	{
+	  byte *in;
+
+	  for(in=opt.show_subpackets;*in;in++)
+	    {
+	      if(*in>127 || *in<1)
+		BUG();
+
+	      if(!subpackets[*in])
+		count++;
+	      subpackets[*in]=1;
+	    }
+	}
+
+      while((tok=strsep(&list," ,")))
+	{
+	  if(!*tok)
+	    continue;
+
+	  i=atoi(tok);
+	  if(i>127 || i<1)
+	    return 0;
+
+	  if(!subpackets[i])
+	    count++;
+	  subpackets[i]=1;
+	}
+    }
+
+  m_free(opt.show_subpackets);
+  opt.show_subpackets=m_alloc(count+1);
+  opt.show_subpackets[count--]=0;
+
+  for(i=1;i<128 && count>=0;i++)
+    if(subpackets[i])
+      opt.show_subpackets[count--]=i;
+
+  return 1;
+}
+
+
+static int
+parse_list_options(char *str)
+{
+  char *subpackets=""; /* something that isn't NULL */
+  struct parse_options lopts[]=
+    {
+      {"show-photos",LIST_SHOW_PHOTOS,NULL},
+      {"show-policy-urls",LIST_SHOW_POLICY_URLS,NULL},
+      {"show-notations",LIST_SHOW_NOTATIONS,NULL},
+      {"show-std-notations",LIST_SHOW_STD_NOTATIONS,NULL},
+      {"show-standard-notations",LIST_SHOW_STD_NOTATIONS,NULL},
+      {"show-user-notations",LIST_SHOW_USER_NOTATIONS,NULL},
+      {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL},
+      {"show-uid-validity",LIST_SHOW_UID_VALIDITY,NULL},
+      {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS,NULL},
+      {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL},
+      {"show-keyring",LIST_SHOW_KEYRING,NULL},
+      {"show-sig-expire",LIST_SHOW_SIG_EXPIRE,NULL},
+      {"show-sig-subpackets",LIST_SHOW_SIG_SUBPACKETS,&subpackets},
+      {NULL,0,NULL}
+    };
+
+  /* this is wrong since the show-sig-subpackets could have been set
+     from a previous incarnation of list-options */
+
+  if(parse_options(str,&opt.list_options,lopts,1))
+    {
+      if(opt.list_options&LIST_SHOW_SIG_SUBPACKETS)
+	{
+	  /* Unset so users can pass multiple lists in. */
+	  opt.list_options&=~LIST_SHOW_SIG_SUBPACKETS;
+	  if(!parse_subpacket_list(subpackets))
+	    return 0;
+	}
+      else if(subpackets==NULL && opt.show_subpackets)
+	{
+	  /* User did 'no-show-subpackets' */
+	  m_free(opt.show_subpackets);
+	  opt.show_subpackets=NULL;
+	}
+
+      return 1;
+    }
+  else
+    return 0;
+}
+
 
 /* Collapses argc/argv into a single string that must be freed */
 static char *
@@ -2150,33 +2257,14 @@ main( int argc, char **argv )
 	      }
 	    break;
 	  case oListOptions:
-	    {
-	      struct parse_options lopts[]=
-		{
-		  {"show-photos",LIST_SHOW_PHOTOS,NULL},
-		  {"show-policy-urls",LIST_SHOW_POLICY_URLS,NULL},
-		  {"show-notations",LIST_SHOW_NOTATIONS,NULL},
-		  {"show-std-notations",LIST_SHOW_STD_NOTATIONS,NULL},
-		  {"show-standard-notations",LIST_SHOW_STD_NOTATIONS,NULL},
-		  {"show-user-notations",LIST_SHOW_USER_NOTATIONS,NULL},
-		  {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL},
-		  {"show-uid-validity",LIST_SHOW_UID_VALIDITY,NULL},
-		  {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS,NULL},
-		  {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL},
-		  {"show-keyring",LIST_SHOW_KEYRING,NULL},
-		  {"show-sig-expire",LIST_SHOW_SIG_EXPIRE,NULL},
-		  {NULL,0,NULL}
-		};
-
-	      if(!parse_options(pargs.r.ret_str,&opt.list_options,lopts,1))
-		{
-		  if(configname)
-		    log_error(_("%s:%d: invalid list options\n"),
-			      configname,configlineno);
-		  else
-		    log_error(_("invalid list options\n"));
-		}
-	    }
+	    if(!parse_list_options(pargs.r.ret_str))
+	      {
+		if(configname)
+		  log_error(_("%s:%d: invalid list options\n"),
+			    configname,configlineno);
+		else
+		  log_error(_("invalid list options\n"));
+	      }
 	    break;
 	  case oVerifyOptions:
 	    {

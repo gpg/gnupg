@@ -1,3 +1,14 @@
+2004-09-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, keylist.c (print_one_subpacket,
+	print_subpackets_colon): Print a spk record for each request
+	subpacket.
+	(list_keyblock_colon): Call them here.
+
+	* g10.c (parse_subpacket_list, parse_list_options): New.  Make the
+	list of subpackets we are going to print.
+	(main): Call them here.
+
 2004-09-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* card-util.c (fetch_url, card_edit): Use the pubkey URL stored on

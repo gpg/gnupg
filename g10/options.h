@@ -191,6 +191,7 @@ struct
   int enable_progress_filter;
   unsigned int screen_columns;
   unsigned int screen_lines;
+  byte *show_subpackets;
 
 #ifdef ENABLE_CARD_SUPPORT
   const char *ctapi_driver; /* Library to access the ctAPI. */
@@ -264,6 +265,7 @@ struct {
 #define LIST_SHOW_UNUSABLE_SUBKEYS       (1<<7)
 #define LIST_SHOW_KEYRING                (1<<8)
 #define LIST_SHOW_SIG_EXPIRE             (1<<9)
+#define LIST_SHOW_SIG_SUBPACKETS         (1<<10)
 
 #define VERIFY_SHOW_PHOTOS               (1<<0)
 #define VERIFY_SHOW_POLICY_URLS          (1<<1)
