@@ -1,3 +1,8 @@
+2002-03-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Add a few notes about --pgp2 meaning MIT PGP 2.6.2,
+	and keyserver details about HKP and NAI HKP.
+
 2002-03-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Change meaning of --allow-non-selfsigned-uid to match
