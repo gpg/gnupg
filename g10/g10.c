@@ -300,6 +300,8 @@ enum cmd_and_opt_values { aNull = 0,
     oLCctype,
     oLCmessages,
     oGroup,
+    oStrict,
+    oNoStrict,
 aTest };
 
 
@@ -588,6 +590,8 @@ static ARGPARSE_OPTS opts[] = {
     { oLCctype,    "lc-ctype",    2, "@" },
     { oLCmessages, "lc-messages", 2, "@" },
     { oGroup,      "group",       2, "@" },
+    { oStrict,     "strict",      0, "@" },
+    { oNoStrict,   "no-strict",   0, "@" },
 {0} };
 
 
@@ -1693,6 +1697,8 @@ main( int argc, char **argv )
           case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
           case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
 	  case oGroup: add_group(pargs.r.ret_str); break;
+	  case oStrict: opt.strict=1; log_set_strict(1); break;
+	  case oNoStrict: opt.strict=0; log_set_strict(0); break;
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }

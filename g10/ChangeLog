@@ -1,5 +1,8 @@
 2002-10-03  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.h, g10.c (main): Add --strict and --no-strict to switch
+	the log_warning severity level from info to error.
+
 	* keylist.c (print_capabilities): Secret-parts-missing keys should
 	show that fact in the capabilities, and only primary signing keys
 	can certify other keys.
