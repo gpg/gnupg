@@ -298,7 +298,7 @@ sign_mk_attrib( PKT_signature *sig, void *opaque )
 }
 
 static void
-trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
+trustsig_prompt(byte *trust_value, byte *trust_depth, char **regexp)
 {
   char *p;
 
@@ -344,7 +344,7 @@ trustsig_prompt(byte *trust_value,byte *trust_depth,char **regexp)
       cpr_kill_prompt();
       *trust_depth=atoi(p);
       xfree (p);
-      if(*trust_depth<1 || *trust_depth>255)
+      if(*trust_depth < 1 )
 	*trust_depth=0;
     }
 

@@ -169,8 +169,7 @@ print_sha1_fpr_colon (FILE *fp, const unsigned char *fpr)
 static void
 print_name (FILE *fp, const char *text, const char *name)
 {
-  tty_fprintf (fp, text);
-
+  tty_fprintf (fp, "%s", text);
 
   /* FIXME: tty_printf_utf8_string2 eats everything after and
      including an @ - e.g. when printing an url. */
@@ -192,7 +191,7 @@ print_isoname (FILE *fp, const char *text, const char *tag, const char *name)
   if (opt.with_colons)
     fprintf (fp, "%s:", tag);
   else
-    tty_fprintf (fp, text);
+    tty_fprintf (fp, "%s", text);
 
   if (name && *name)
     {

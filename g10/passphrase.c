@@ -673,32 +673,26 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
       const char *algo_name = gcry_pk_algo_name ( pk->pubkey_algo );
       const char *timestr;
       char *maink;
-      const char *fmtstr;
       
       if ( !algo_name )
         algo_name = "?";
       
-      fmtstr = _(" (main key ID %08lX)");
-      maink = xmalloc ( strlen (fmtstr) + 20 );
       if( keyid[2] && keyid[3] && keyid[0] != keyid[2] 
           && keyid[1] != keyid[3] )
-        sprintf( maink, fmtstr, (ulong)keyid[3] );
+         maink = xasprintf ( _(" (main key ID %08lX)"), (ulong)keyid[3] );
       else
-        *maink = 0;
+         maink = NULL;
       
       uid = get_user_id ( keyid, &uidlen ); 
       timestr = strtimestamp (pk->timestamp);
-      fmtstr = _("You need a passphrase to unlock the"
+      atext = xasprintf (
+               _("You need a passphrase to unlock the"
                  " secret key for user:\n"
                  "\"%.*s\"\n"
-                 "%u-bit %s key, ID %08lX, created %s%s\n" );
-      atext = xmalloc ( 100 + strlen (fmtstr)  
-                        + uidlen + 15 + strlen(algo_name) + 8
-                        + strlen (timestr) + strlen (maink) );
-      sprintf (atext, fmtstr,
+                 "%u-bit %s key, ID %08lX, created %s%s\n" ),
                uidlen, uid,
                nbits_from_pk (pk), algo_name, (ulong)keyid[1], timestr,
-               maink  );
+               maink?maink:"" );
       xfree (uid);
       xfree (maink);
       

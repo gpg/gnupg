@@ -1,3 +1,21 @@
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* card-util.c (print_name): Fixed bad format string usage.
+	(print_isoname): Ditto.
+
+	* trustdb.c (check_regexp): s/exp/expr/.
+
+	* keyedit.c (trustsig_prompt): Removed a "> 255" term; it is
+	always false due to the data type.
+	
+	* passphrase.c (agent_get_passphrase): Use xasprintf and avoid
+	non-literal format strings.
+
+	* tdbio.c (upd_hashtable, drop_from_hashtable, lookup_hashtable):
+	Fixed log_error format string bugs.  Kudos to the now working
+	gcc-3.3 -Wformat-nonliteral and Florian Weimer's investigations in
+	gnupg 1.2.3.
+
 2003-12-15  Werner Koch  <wk@gnupg.org>
 
 	* seckey-cert.c (protect_secret_key): Use gry_create_nonce for the

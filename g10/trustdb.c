@@ -1539,19 +1539,19 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
    signature.  Returns 1 for match, and 0 for no match or regex
    error. */
 static int
-check_regexp(const char *exp,const char *string)
+check_regexp(const char *expr,const char *string)
 {
 #ifdef DISABLE_REGEX
   /* When DISABLE_REGEX is defined, assume all regexps do not
      match. */
   return 0;
 #elif defined(__riscos__)
-  return riscos_check_regexp(exp, string, DBG_TRUST);
+  return riscos_check_regexp(expr, string, DBG_TRUST);
 #else
   int ret;
   regex_t pat;
 
-  if(regcomp(&pat,exp,REG_ICASE|REG_NOSUB|REG_EXTENDED)!=0)
+  if(regcomp(&pat,expr,REG_ICASE|REG_NOSUB|REG_EXTENDED)!=0)
     return 0;
 
   ret=regexec(&pat,string,0,NULL,0);
@@ -1559,7 +1559,7 @@ check_regexp(const char *exp,const char *string)
   regfree(&pat);
 
   if(DBG_TRUST)
-    log_debug("regexp \"%s\" on \"%s\": %s\n",exp,string,ret==0?"YES":"NO");
+    log_debug("regexp \"%s\" on \"%s\": %s\n",expr,string,ret==0?"YES":"NO");
 
   return (ret==0);
 #endif
