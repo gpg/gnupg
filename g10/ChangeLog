@@ -1,3 +1,10 @@
+2003-08-02  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (parse_signature): Don't give "signature packet
+	without xxxx" warnings for experimental pk algorithms.  An
+	experimental algorithm may not have a notion of (for example) a
+	keyid (i.e. PGP's x.509 stuff).
+
 2003-07-31  Stefan Bellon  <sbellon@sbellon.de>
 
 	* gpgv.c [read_trust_options]: Removed trailing semicolon to avoid

@@ -1273,17 +1273,19 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 
 	p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_CREATED, NULL );
-	if( !p )
-	    log_error("signature packet without timestamp\n");
-	else
-	    sig->timestamp = buffer_to_u32(p);
+	if(p)
+	  sig->timestamp = buffer_to_u32(p);
+	else if(!(sig->pubkey_algo>=100 && sig->pubkey_algo<=110))
+	  log_error("signature packet without timestamp\n");
+
 	p = parse_sig_subpkt2( sig, SIGSUBPKT_ISSUER, NULL );
-	if( !p )
-	    log_error("signature packet without keyid\n");
-	else {
+	if(p)
+	  {
 	    sig->keyid[0] = buffer_to_u32(p);
 	    sig->keyid[1] = buffer_to_u32(p+4);
-	}
+	  }
+	else if(!(sig->pubkey_algo>=100 && sig->pubkey_algo<=110))
+	  log_error("signature packet without keyid\n");
 
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_SIG_EXPIRE,NULL);
 	if(p)
