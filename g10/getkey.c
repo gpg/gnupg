@@ -40,6 +40,11 @@
 #define MAX_PK_CACHE_ENTRIES   200
 #define MAX_UID_CACHE_ENTRIES  200
 
+#if MAX_PK_CACHE_ENTRIES < 2
+  #error We need the cache for key creation
+#endif
+
+
 /* A map of the all characters valid used for word_match()
  * Valid characters are in in this table converted to uppercase.
  * because the upper 128 bytes have special meaning, we assume
@@ -177,7 +182,7 @@ print_stats()
 #endif
 
 
-static void
+void
 cache_public_key( PKT_public_key *pk )
 {
   #if MAX_PK_CACHE_ENTRIES

@@ -13,7 +13,7 @@ fi
 LANG=
 LANGUAGE=
 
-expect  - <<EOF >/dev/null
+expect - <<EOF >/dev/null
 #set timeout -1
 set timeout 8
 match_max 100000

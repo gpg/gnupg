@@ -1,3 +1,7 @@
+2001-03-27  Werner Koch  <wk@gnupg.org>
+
+	* run-gpg.patterns (gpg): Add some more patterns.
+
 2001-03-20  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am: Import the pubdemo.asc file 

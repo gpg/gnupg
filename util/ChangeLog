@@ -1,3 +1,10 @@
+2001-03-26  Werner Koch  <wk@gnupg.org>
+
+	* ttyio.c: Define TERMDEVICE depending on OS.
+
+	* http.c (http_start_data): send a CRLF and not just a LF.
+	Pointed out by Steven Murdoch.
+
 2001-03-13  Werner Koch  <wk@gnupg.org>
 
 	* iobuf.c (iobuf_sockopen): New.

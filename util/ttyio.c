@@ -50,7 +50,11 @@
 #include "ttyio.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
-
+#ifdef __VMS
+  #define TERMDEVICE "/dev/tty"
+#else
+  #define TERMDEVICE "/dev/tty"
+#endif
 
 #ifdef __MINGW32__ /* use the odd Win32 functions */
 static struct {
@@ -120,7 +124,7 @@ init_ttyfp(void)
   #elif defined(__EMX__)
     ttyfp = stdout; /* Fixme: replace by the real functions: see wklib */
   #else
-    ttyfp = batchmode? stderr : fopen("/dev/tty", "r+");
+    ttyfp = batchmode? stderr : fopen(TERMDEVICE, "r+");
     if( !ttyfp ) {
 	log_error("cannot open /dev/tty: %s\n", strerror(errno) );
 	exit(2);

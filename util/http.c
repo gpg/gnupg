@@ -150,6 +150,7 @@ void
 http_start_data( HTTP_HD hd )
 {
     if( !hd->in_data ) {
+	iobuf_put( hd->fp_write, '\r' );
 	iobuf_put( hd->fp_write, '\n' );
 	hd->in_data = 1;
     }

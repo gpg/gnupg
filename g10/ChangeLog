@@ -1,5 +1,8 @@
 2001-03-27  Werner Koch  <wk@gnupg.org>
 
+	* getkey.c (cache_public_key): Made global.
+	* keygen.c (write_selfsig, write_keybinding): Cache the new key.
+
 	* getkey.c (key_byname): Add new arg secmode and changed all
 	callers to request explicitly the mode.  Deriving this information
 	from the other supplied parameters does not work if neither pk nor

@@ -142,6 +142,7 @@ char *get_last_passphrase(void);
 /*-- getkey.c --*/
 int classify_user_id( const char *name, u32 *keyid, byte *fprint,
 		      const char **retstr, size_t *retlen );
+void cache_public_key( PKT_public_key *pk );
 void getkey_disable_caches(void);
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
 KBNODE get_pubkeyblock( u32 *keyid );

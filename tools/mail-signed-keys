@@ -2,6 +2,12 @@
 
 # FIXME: Add --dry-run,  use only valid email addreses, extract only given keys
 
+dryrun=0
+if [ "$1" = "--dry-run" ]; then
+   dryrun=1
+   shift
+fi
+
 if [ -z "$1" -o -z "$2" ]; then
    echo "usage: mail-signed-keys keyring signedby" >&2
    exit 1
@@ -13,7 +19,7 @@ if [ ! -f $1 ]; then
 fi
 
 [ -f '.#tdb.tmp' ] && rm '.#tdb.tmp'
-ro="--trustdb-name=./.#tdb.tmp --dry-run --lock-never --no-default-keyring --keyring $1"
+ro="--homedir . --no-options --trustdb-name=./.#tdb.tmp --dry-run --lock-never --no-default-keyring --keyring $1"
 
 signedby=`gpg $ro --fast-list-mode --list-keys --with-colons $2 \
 	  2>/dev/null | awk -F: '$1=="pub" {print $5; exit 0}'`
@@ -23,14 +29,15 @@ if [ -z "$signedby" ]; then
     exit 1
 fi
 
-echo "About to send the the keys signed by $signedby" >&2
-echo -n "to their owners.  Do you really want to do this? (y/N)" >&2
-read
-[ "$REPLY" != "y" -a "$REPLY" != "Y" ] && exit 0
-
+if [ "$dryrun" = "0" ]; then
+  echo "About to send the the keys signed by $signedby" >&2
+  echo -n "to their owners.  Do you really want to do this? (y/N)" >&2
+  read
+  [ "$REPLY" != "y" -a "$REPLY" != "Y" ] && exit 0
+fi
 
 gpg $ro --check-sigs --with-colons 2>/dev/null \
-     | awk -F: -v signedby="$signedby" -v gpgopt="$ro" '
+     | awk -F: -v signedby="$signedby" -v gpgopt="$ro" -v dryrun="$dryrun" '
 BEGIN	      { sendmail="/usr/lib/sendmail -oi -t " }
 $1 == "pub"   { nextkid=$5; nextuid=$10
 		if( uidcount > 0 ) { myflush() }
@@ -46,30 +53,34 @@ function myflush()
        print "sending key " substr(kid,9) " to" | "cat >&2"
        for(i=0; i < uidcount; i++ ) {
 	   print "    " uids[i] | "cat >&2"
-	   if( i == 0 ) {
-		printf "To: %s", uids[i]   | sendmail
-	   }
-	   else {
-		printf ",\n    %s", uids[i]   | sendmail
-	   }
+           if( dryrun == 0 ) {
+	      if( i == 0 ) {
+		 printf "To: %s", uids[i]   | sendmail
+	      }
+	      else {
+		 printf ",\n    %s", uids[i]   | sendmail
+	      }
+           }
        }
-       printf "\n"                                        | sendmail
-       print "Subject: I signed your key " substr(kid,9)  | sendmail
-       print ""                                           | sendmail
-       print "Hi,"                                        | sendmail
-       print ""                                           | sendmail
-       print "Here you get back the signed key."          | sendmail
-       print ""                                           | sendmail
-       print "ciao,"                                      | sendmail
-       print "     your Key Signator"                     | sendmail
-       print ""                                           | sendmail
-       cmd = "gpg " gpgopt " --export -a " kid " 2>/dev/null"
-       while( (cmd | getline) > 0 ) {
-	   print | sendmail
+       if(dryrun == 0) {  
+         printf "\n"                                        | sendmail
+         print "Subject: I signed your key " substr(kid,9)  | sendmail
+         print ""                                           | sendmail
+         print "Hi,"                                        | sendmail
+         print ""                                           | sendmail
+         print "Here you get back the signed key."          | sendmail
+         print ""                                           | sendmail
+         print "ciao,"                                      | sendmail
+         print "     your Key Signator"                     | sendmail
+         print ""                                           | sendmail
+         cmd = "gpg " gpgopt " --export -a " kid " 2>/dev/null"
+         while( (cmd | getline) > 0 ) {
+             print | sendmail
+         }
+         print ""                                           | sendmail
+         close(cmd)
+         close( sendmail )
        }
-       print ""                                           | sendmail
-       close(cmd)
-       close( sendmail )
        uidcount=0
 }
 '

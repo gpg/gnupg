@@ -185,6 +185,9 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
     if( !node )
 	BUG();
     pk = node->pkt->pkt.public_key;
+    /* we have to cache the key, so that the verification of the signature
+     * creation is able to retrieve the public key */
+    cache_public_key (pk);
 
     /* and make the signature */
     rc = make_keysig_packet( &sig, pk, uid, NULL, sk, 0x13, 0,
@@ -218,6 +221,10 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk )
     if( !node )
 	BUG();
     pk = node->pkt->pkt.public_key;
+    /* we have to cache the key, so that the verification of the signature
+     * creation is able to retrieve the public key */
+    cache_public_key (pk);
+ 
     /* find the last subkey */
     subpk = NULL;
     for(node=pub_root; node; node = node->next ) {
