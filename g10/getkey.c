@@ -1787,21 +1787,6 @@ merge_selfsigs( KBNODE keyblock )
     }
 
     merge_selfsigs_main ( keyblock, &revoked );
-    main_pk = keyblock->pkt->pkt.public_key;
-    if ( revoked ) {
-        /* if the primary key has been revoked we better set the revoke
-         * flag on that key and all subkeys */
-        for(k=keyblock; k; k = k->next ) {
-            if ( k->pkt->pkttype == PKT_PUBLIC_KEY
-                || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-                PKT_public_key *pk = k->pkt->pkt.public_key;
-                pk->is_revoked = 1;
-                pk->main_keyid[0] = main_pk->main_keyid[0];
-                pk->main_keyid[1] = main_pk->main_keyid[1];
-            }
-	}
-        return;
-    }
 
     /* now merge in the data from each of the subkeys */
     for(k=keyblock; k; k = k->next ) {
@@ -1810,12 +1795,25 @@ merge_selfsigs( KBNODE keyblock )
         }
     }
 
-    /* If the main key is not valid, then the subkeys aren't either,
-       even if they have binding sigs. */
-    if(!main_pk->is_valid)
-      for(k=keyblock; k; k=k->next)
-	if(k->pkt->pkttype==PKT_PUBLIC_SUBKEY)
-	  k->pkt->pkt.public_key->is_valid=0;
+    main_pk = keyblock->pkt->pkt.public_key;
+    if ( revoked || main_pk->has_expired || !main_pk->is_valid ) {
+        /* if the primary key is revoked, expired, or invalid we
+         * better set the appropriate flags on that key and all
+         * subkeys */
+        for(k=keyblock; k; k = k->next ) {
+            if ( k->pkt->pkttype == PKT_PUBLIC_KEY
+                || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+                PKT_public_key *pk = k->pkt->pkt.public_key;
+		if(!main_pk->is_valid)
+		  pk->is_valid = 0;
+		if(revoked)
+		  pk->is_revoked = 1;
+                if(main_pk->has_expired)
+		  pk->has_expired = main_pk->has_expired;
+            }
+	}
+	return;
+    }
 
     /* set the preference list of all keys to those of the primary real
      * user ID.  Note: we use these preferences when we don't know by

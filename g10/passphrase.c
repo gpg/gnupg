@@ -346,7 +346,7 @@ static int
 agent_send_all_options (int fd)
 {
   char *dft_display = NULL;
-  char *dft_ttyname = NULL;
+  const char *dft_ttyname = NULL;
   char *dft_ttytype = NULL;
   char *old_lc = NULL;
   char *dft_lc = NULL;

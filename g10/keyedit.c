@@ -1698,8 +1698,9 @@ static void
 show_key_with_all_names_colon (KBNODE keyblock)
 {
   KBNODE node;
-  int i, j;
+  int i, j, ulti_hack=0;
   byte pk_version=0;
+  PKT_public_key *primary=NULL;
 
   /* the keys */
   for ( node = keyblock; node; node = node->next )
@@ -1708,14 +1709,12 @@ show_key_with_all_names_colon (KBNODE keyblock)
           || (node->pkt->pkttype == PKT_PUBLIC_SUBKEY) )
         {
           PKT_public_key *pk = node->pkt->pkt.public_key;
-          int otrust=0, trust=0;
           u32 keyid[2];
 
           if (node->pkt->pkttype == PKT_PUBLIC_KEY)
             {
-              trust = get_validity_info (pk, NULL);
-              otrust = get_ownertrust_info (pk);
               pk_version = pk->version;
+	      primary=pk;
 	    }
 
           keyid_from_pk (pk, keyid);
@@ -1727,8 +1726,14 @@ show_key_with_all_names_colon (KBNODE keyblock)
             putchar ('r');
           else if (pk->has_expired)
             putchar ('e');
-          else 
-            putchar (trust);
+          else if (!(opt.fast_list_mode || opt.no_expensive_trust_checks ))
+	    {
+	      int trust = get_validity_info (pk, NULL);
+	      if(trust=='u')
+		ulti_hack=1;
+	      putchar (trust);
+	    }
+
           printf (":%u:%d:%08lX%08lX:%lu:%lu:",
                   nbits_from_pk (pk),
                   pk->pubkey_algo,
@@ -1738,7 +1743,9 @@ show_key_with_all_names_colon (KBNODE keyblock)
           if (pk->local_id)
             printf ("%lu", pk->local_id);
           putchar (':');
-          putchar (otrust);
+          if (node->pkt->pkttype==PKT_PUBLIC_KEY
+	      && !(opt.fast_list_mode || opt.no_expensive_trust_checks ))
+	    putchar(get_ownertrust_info (pk));
           putchar(':');
           putchar('\n');
           
@@ -1771,19 +1778,44 @@ show_key_with_all_names_colon (KBNODE keyblock)
 	if ( node->pkt->pkttype == PKT_USER_ID )
           {
             PKT_user_id *uid = node->pkt->pkt.user_id;
-            int trustletter = '?';
 
 	    ++i;
+
 	    if(uid->attrib_data)
-	      {
-		printf ("uat:%c::::::::%u %lu", trustletter,
-			uid->numattribs,uid->attrib_len);
-	      }
+	      printf("uat:");
+	    else
+	      printf("uid:");
+
+	    if ( uid->is_revoked )
+	      printf("r::::::::");
+	    else if ( uid->is_expired )
+	      printf("e::::::::");
+	    else if ( opt.fast_list_mode || opt.no_expensive_trust_checks )
+	      printf("::::::::");
 	    else
 	      {
-		printf ("uid:%c::::::::", trustletter);
-		print_string (stdout, uid->name, uid->len, ':');
+		byte namehash[20];
+		int uid_validity;
+
+		if( primary && !ulti_hack )
+		  {
+		    if( uid->attrib_data )
+		      rmd160_hash_buffer(namehash,
+					 uid->attrib_data, uid->attrib_len);
+		    else
+		      rmd160_hash_buffer( namehash, uid->name, uid->len  );
+		    uid_validity = get_validity_info( primary, namehash );
+		  }
+		else
+		  uid_validity = 'u';
+		printf("%c::::::::",uid_validity);
 	      }
+
+	    if(uid->attrib_data)
+	      printf ("%u %lu",uid->numattribs,uid->attrib_len);
+	    else
+	      print_string (stdout, uid->name, uid->len, ':');
+
             putchar (':');
             /* signature class */
             putchar (':');

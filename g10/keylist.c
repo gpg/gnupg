@@ -694,7 +694,6 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	sk = NULL;
 	keyid_from_pk( pk, keyid );
         fputs( "pub:", stdout );
-        trustletter = 0;
         if ( !pk->is_valid )
             putchar ('i');
         else if ( pk->is_revoked )
@@ -755,6 +754,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	        }
                 else {
 		    byte namehash[20];
+		    int uid_validity;
 
 		    if( pk && !ulti_hack ) {
 			if( node->pkt->pkt.user_id->attrib_data )
@@ -765,11 +765,11 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 			    rmd160_hash_buffer( namehash,
 					    node->pkt->pkt.user_id->name,
 					    node->pkt->pkt.user_id->len  );
-			trustletter = get_validity_info( pk, namehash );
+			uid_validity = get_validity_info( pk, namehash );
 		    }
 		    else
-			trustletter = 'u';
-		    printf("%s:%c::::::::",str,trustletter);
+			uid_validity = 'u';
+		    printf("%s:%c::::::::",str,uid_validity);
                 }
 	    }
 	    if(node->pkt->pkt.user_id->attrib_data)
@@ -818,7 +818,9 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
             else if ( opt.fast_list_mode || opt.no_expensive_trust_checks )
                 ;
             else {
-                printf("%c", trustletter );
+	        /* trustletter should always be defined here */
+	        if(trustletter)
+		  printf("%c", trustletter );
             }
             printf(":%u:%d:%08lX%08lX:%s:%s:",
 			nbits_from_pk( pk2 ),
