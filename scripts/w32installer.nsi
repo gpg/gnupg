@@ -74,7 +74,6 @@ Var STARTMENU_FOLDER
 !define MUI_LANGDLL_REGISTRY_KEY "Software\GNU\GnuPG" 
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
-
 ; -----
 ; Pages      
 ; -----
@@ -135,6 +134,11 @@ Page custom CustomPageOptions
 ; Installer Sections
 ; ------------------
 
+!insertmacro MUI_RESERVEFILE_LANGDLL
+!insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
+ReserveFile "opt.ini" 
+ReserveFile "COPYING.txt"
+
 ${StrStr} # Supportable for Install Sections and Functions
 ${StrTok} # Supportable for Install Sections and Functions
 
@@ -142,11 +146,6 @@ ${StrTok} # Supportable for Install Sections and Functions
 
 ;InstType "full"
 ;InstType "minimal"
-
-!insertmacro MUI_RESERVEFILE_LANGDLL
-ReserveFile "COPYING.txt"
-ReserveFile "opt.ini" 
-!insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
 
 ;----------------------
@@ -312,23 +311,26 @@ Section "-Finish"
   ;;-----------------
   SectionGetFlags ${SecNLS} $R0 
   IntOp $R0 $R0 & ${SF_SELECTED} 
-  IntCmp $R0 ${SF_SELECTED} 0 no_lang_set
-
+  IntCmp $R0 ${SF_SELECTED} 0 lang_none
+  
   !insertmacro MUI_INSTALLOPTIONS_READ $R0 "opt.ini" "Field 1" "ListItems"
   DetailPrint "Available languages: $R0"
   !insertmacro MUI_INSTALLOPTIONS_READ $R1 "opt.ini" "Field 1" "State"
   DetailPrint "Selected language: $R1"
 
+  StrCmp $R1 "" lang_none +1
   ${StrStr} $R2 $R0 $R1 
-  StrCmp $R2 "" +1 +3
-  DetailPrint "No language selected - using default"
-  StrCpy $R2 "en - English"
+  StrCmp $R2 "" lang_none +1
   ${StrTok} $R3 $R2 " " "0" "1"
+  goto lang_set_finish
+ lang_none:
+  DetailPrint "No language selected - using default"
+  StrCpy $R3 ""
+ lang_set_finish:
   DetailPrint "Setting language to: $R3"
   WriteRegStr HKCU "Software\GNU\GnuPG" "Lang" $R3
-
- no_lang_set:
   ;;
+
 
 SectionEnd ; "-Finish"
 
@@ -415,7 +417,13 @@ SectionEnd ; Uninstall
 ; ---------
 
 Function .onInit
+  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "GnuPGInst") i .r1 ?e'
+  Pop $R0
+  StrCmp $R0 0 +3
+    MessageBox MB_OK "An instance of the installer is already running."
+    Abort
 
+  ;;!define MUI_LANGDLL_ALWAYSSHOW
   !insertmacro MUI_LANGDLL_DISPLAY
 
   !insertmacro MUI_INSTALLOPTIONS_EXTRACT "opt.ini"
@@ -423,7 +431,7 @@ Function .onInit
 FunctionEnd 
 
 
-Function un.onInit
+Function un.onInit 
 
   !insertmacro MUI_UNGETLANGUAGE
   
@@ -439,19 +447,16 @@ Function CustomPageOptions
   Abort 
  
  show: 
- 
   !insertmacro MUI_HEADER_TEXT "$(T_InstallOptions)" "$(T_SelectLanguage)"
-
   !insertmacro MUI_INSTALLOPTIONS_READ $R0 "opt.ini" "Field 1" "ListItems"
-  ;;DetailPrint "Available languages: $R0"
   ReadRegStr $R1 HKCU "Software\GNU\GnuPG" "Lang" 
-  ;;DetailPrint "Currently configured language: $R1"
+  StrCmp $R1 "" use_default +1
   ${StrStr} $R2 $R0 "$R1 - " 
-  StrCmp $R2 "" +1 +3
-  DetailPrint "Configured language not avalailbe - using default"
-  StrCpy $R2 "en - English"
+  StrCmp $R2 "" +1 set_lang
+ use_default:
+  StrCpy $R2 "$(T_langid) - $(T_langname)"
+ set_lang:
   ${StrTok} $R3 $R2 "|" "0" "1"
-  ;;DetailPrint "Setting selection to: $R3"
   !insertmacro MUI_INSTALLOPTIONS_WRITE "opt.ini" "Field 1" "State" $R3
 
   !insertmacro MUI_INSTALLOPTIONS_DISPLAY "opt.ini"
@@ -501,7 +506,16 @@ FunctionEnd
 ; Descriptions
 ; ------------
 
+; The list of language IDs and corresponding Latin-1 names.  Note that
+; this mapping needs to match the one in the mk-w32-dist script, so
+; that they are usable to get a default value for then ListItems of
+; opt.ini.
+LangString T_langid   ${LANG_ENGLISH} "en"
+LangString T_langname ${LANG_ENGLISH} "English"
+LangString T_langid   ${LANG_GERMAN}  "de"
+LangString T_langname ${LANG_GERMAN}  "Deutsch"
 
+; The About string as displayed on the first page.
 LangString T_About ${LANG_ENGLISH} \
   "GnuPG is GNU's tool for secure communication and data storage. \
   It can be used to encrypt data and to create digital signatures. \
@@ -511,21 +525,24 @@ LangString T_About ${LANG_ENGLISH} \
   \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION}\r\n\
   built on $%BUILDINFO%"
 LangString T_About ${LANG_GERMAN} \
-  "GnuPG is das Werzeug aus dem GNU Projekt zur sicheren Kommunikation \
+  "GnuPG is das Werkzeug aus dem GNU Projekt zur sicheren Kommunikation \
    sowie zum sicheren Speichern von Daten. \
    \r\n\r\n$_CLICK \
    \r\n\r\n\r\n\r\n\r\nDies ist GnuPG version ${VERSION}\r\n\
    erstellt am $%BUILDINFO%"
+
+; Installation options like language used for GnuPG
 LangString T_InstallOptions ${LANG_ENGLISH} "Install Options"
 LangString T_InstallOptions ${LANG_GERMAN}  "Installationsoptionen"
 
 LangString T_SelectLanguage ${LANG_ENGLISH} "GnuPG Language Selection"
 LangString T_SelectLanguage ${LANG_German}  "Auswahl der Sprache für GnuPG"
 
+; This text is used on the finish page.
 LangString T_ShowReadme ${LANG_ENGLISH} "Show the README file"
 LangString T_ShowReadme ${LANG_GERMAN} "Die README Datei anzeigen"
 
-
+; Section names
 LangString DESC_SecBase ${LANG_ENGLISH} \
       "The basic files used for the standard OpenPGP protocol"
 LangString DESC_SecBase ${LANG_GERMAN} \
@@ -553,6 +570,11 @@ LangString DESC_SecDoc ${LANG_ENGLISH} \
 LangString DESC_SecDoc ${LANG_GERMAN} \
       "Handbuchseiten und eine FAQ"
 
+
+
+;-------------------------------------
+; Associate section names with strings
+;--------------------------------------
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SecBase} $(DESC_SecBase)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecNLS} $(DESC_SecNLS)

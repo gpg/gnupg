@@ -566,6 +566,9 @@ change_url (void)
   return rc;
 }
 
+
+/* Fetch the key from the URL given on teh card or try to get it from
+   the default keyserver.  */
 static int
 fetch_url(void)
 {
@@ -578,7 +581,7 @@ fetch_url(void)
   rc=agent_scd_getattr("PUBKEY-URL",&info);
   if(rc)
     log_error("error retrieving URL from card: %s\n",gpg_strerror(rc));
-  else if(info.pubkey_url)
+  else
     {
       struct keyserver_spec *spec=NULL;
 
@@ -586,7 +589,7 @@ fetch_url(void)
       if(rc)
 	log_error("error retrieving key fingerprint from card: %s\n",
 		  gpg_strerror(rc));
-      else
+      else if (info.pubkey_url && *info.pubkey_url)
 	{
 	  spec=parse_keyserver_uri(info.pubkey_url,0,NULL,0);
 	  if(spec && info.fpr1valid)
@@ -602,9 +605,11 @@ fetch_url(void)
 	      free_keyserver_spec(spec);
 	    }
 	}
+      else if (info.fpr1valid)
+	{
+          rc = keyserver_import_fprint (info.fpr1, 20, opt.keyserver);
+	}
     }
-  else
-    log_error("no URL set on card\n");
 
   return rc;
 #else

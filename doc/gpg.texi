@@ -257,6 +257,17 @@ to store the key. Note that it is not possible to get that key back
 from the card - if the card gets broken your secret key will be lost
 unless you have a backup somewhere.
 
+@item bkuptocard @code{file}
+Restore the given file to a card. This command
+may be used to restore a backup key (as generated during card
+initialization) to a new card. In almost all cases this will be the
+encryption key. You should use this command only
+with the corresponding public key and make sure that the file
+given as argument is indeed the backup to restore. You should
+then select 2 to restore as encryption key.
+You will first be asked to enter the passphrase of the backup key and
+then for the Admin PIN of the card.
+
 @item delkey
 Remove a subkey.
 
@@ -691,11 +702,6 @@ this option is not specified, the certification level used is set via
 specific levels and how they are used. --no-ask-cert-level disables
 this option. This option defaults to no.
 
-@item --min-cert-level
-When building the trust database, disregard any signatures with a
-certification level below this. Defaults to 2, which disregards level
-1 signatures.
-
 @item --default-cert-level @code{n}
 The default to use for the check level when signing a key.
 
@@ -724,6 +730,12 @@ examples. In the end, it is up to you to decide just what "casual"
 and "extensive" mean to you.
 
 This option defaults to 0 (no particular claim).
+
+@item --min-cert-level
+When building the trust database, disregard any signatures with a
+certification level below this. Defaults to 2, which disregards level
+1 signatures. Note that level 0 "no particular claim" signatures are
+always accepted.
 
 @item --trusted-key @code{long key ID}
 Assume that the specified key (which must be given

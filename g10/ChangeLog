@@ -1,3 +1,8 @@
+2005-02-16  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (fetch_url): Fetch the key from the default
+	keyserver if no URL is available.
+
 2005-02-15  Werner Koch  <wk@g10code.com>
 
 	* passphrase.c (agent_get_passphrase): Don't call free_public_key

@@ -50,6 +50,9 @@ Noteworthy changes in version 1.4.1
     * Add new --edit-key command "bkuptocard" to allow restoring a
       card key from a backup.
 
+    * The "fetch" command of --card-edit now retrieves the key using
+      the default keyserver if no URL has been stored on the card.
+
 
 Noteworthy changes in version 1.4.0 (2004-12-16)
 ------------------------------------------------

@@ -1,5 +1,12 @@
 2005-02-15  Werner Koch  <wk@g10code.com>
 
+	* faq.raw: Add htmlcharset header line as suggested by Maxim
+	Britov. s/ElGamal/Elgamal/.  Replaced reference to NAI by PGP
+	Corp.
+
+	* gpg.ru.sgml: Updated from upstream.  Added a closing PARA.
+	
+
 	* gpg.sgml: Add bkuptocard command for --edit-key.
 
 2005-02-05  David Shaw  <dshaw@jabberwocky.com>

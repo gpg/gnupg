@@ -1,3 +1,7 @@
+2005-02-15  Werner Koch  <wk@g10code.com>
+
+	* ca.po: Updated using a patch provided by Jordi Mallach.
+
 2005-02-03  Werner Koch  <wk@g10code.com>
 
 	* zh_TW.po, ro.po: Updated.
