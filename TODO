@@ -54,6 +54,8 @@ might want to have an agent context for each service request
 ** A SIGHUP should also restart the scdaemon
    But do this only after all connections terminated.  As of now we
    only send a RESET.
+** Watch the child process if not invoked as a daemon
+   and terminate after the child has terminated
 
 * agent/command.c
 ** Make sure that secure memory is used where appropriate

@@ -190,6 +190,12 @@ a few informational lines are prepended to the output.  Note, that the
 PKCS#12 format is higly insecure and this command is only provided if
 there is no other way to exchange the private key.
 
+@item --import [@var{files}]
+@opindex import
+Import the certificates from the PEM or binary encoded files as well as
+from signed-only messages.  This command may also be used to import a
+secret key from a PKCS#12 file.
+
 @item --learn-card
 @opindex learn-card
 Read information about the private keys from the smartcard and import

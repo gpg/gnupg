@@ -215,15 +215,12 @@ static ssh_key_type_spec_t ssh_key_types[] =
 
 
 
-
-
-
 /*
    General utility functions. 
  */
 
 /* A secure realloc, i.e. it makes sure to allocate secure memory if A
-   is NULL.  This is required becuase the standard gcry_realloc does
+   is NULL.  This is required because the standard gcry_realloc does
    not know whether to allocate secure or normal if NULL is passed as
    existing buffer.  */
 static void *
@@ -419,9 +416,7 @@ stream_read_string (estream_t stream, unsigned int secure,
     buffer = xtrymalloc (length + 1);
   if (! buffer)
     {
-      /* FIXME: xtrymalloc_secure does not set errno, does it?  */
       err = gpg_error_from_errno (errno);
-      abort ();
       goto out;
     }
 
@@ -1530,6 +1525,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
   free (key_directory);
   xfree (key_path);
   xfree (buffer);
+  /* FIXME: Ist is for sure is a Bad Thing to use the const qualifier
+     and later cast it away.  You can't do that!!! */
   xfree ((void *) key_type);		/* FIXME? */
 
   return ret_err;
@@ -2159,7 +2156,7 @@ ssh_lock (void)
   gpg_error_t err;
 
   /* FIXME */
-  log_error (_("lock command is not implemented\n"));
+  log_error ("ssh-agent's lock command is not implemented\n");
   err = 0;
 
   return err;
@@ -2170,7 +2167,7 @@ ssh_unlock (void)
 {
   gpg_error_t err;
 
-  log_error (_("unlock command is not implemented\n"));
+  log_error ("ssh-agent's unlock command is not implemented\n");
   err = 0;
 
   return err;

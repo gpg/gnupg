@@ -1,3 +1,10 @@
+2005-02-22  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (stream_read_string): Removed call to abort on
+	memory error because the CVS version of libgcrypt makes sure
+	that ERRNO gets always set on error even with a faulty user
+	supplied function.
+
 2005-02-19  Moritz Schulte  <moritz@g10code.com>
 
 	* command-ssh.c (ssh_receive_mpint_list): Slightly rewritten, do

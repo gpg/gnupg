@@ -296,7 +296,7 @@ learn_status_cb (void *opaque, const char *line)
   return 0;
 }
 
-/* Perform the learn command and return a list of all private keys
+/* Perform the LEARN command and return a list of all private keys
    stored on the card. */
 int
 agent_card_learn (ctrl_t ctrl,

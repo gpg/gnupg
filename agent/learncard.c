@@ -31,11 +31,16 @@
 #include "agent.h"
 #include <assuan.h>
 
+/* Structures used by the callback mechanism to convey information
+   pertaining to key pairs.  */
 struct keypair_info_s {
   struct keypair_info_s *next;
   int no_cert;
-  char *id;  /* points into grip */
-  char hexgrip[1];
+  char *id;          /* points into grip */
+  char hexgrip[1];   /* The keygrip (i.e. a hash over the public key
+                        parameters) formatted as a hex string.
+                        Allocated somewhat large to also act as
+                        memeory for the above ID field. */
 };
 typedef struct keypair_info_s *KEYPAIR_INFO;
 
@@ -45,6 +50,9 @@ struct kpinfo_cb_parm_s {
 };
 
 
+
+/* Structures used by the callback mechanism to convey information
+   pertaining to certificates.  */
 struct certinfo_s {
   struct certinfo_s *next;
   int type;  
@@ -59,6 +67,8 @@ struct certinfo_cb_parm_s {
 };
 
 
+/* Structures used by the callback mechanism to convey assuan status
+   lines.  */
 struct sinfo_s {
   struct sinfo_s *next;
   char *data;       /* Points into keyword. */
@@ -72,7 +82,7 @@ struct sinfo_cb_parm_s {
 };
 
 
-
+/* Destructor for key information objects. */
 static void
 release_keypair_info (KEYPAIR_INFO info)
 {
@@ -84,6 +94,7 @@ release_keypair_info (KEYPAIR_INFO info)
     }
 }
 
+/* Destructor for certificate information objects. */
 static void
 release_certinfo (CERTINFO info)
 {
@@ -95,6 +106,7 @@ release_certinfo (CERTINFO info)
     }
 }
 
+/* Destructor for status information objects. */
 static void
 release_sinfo (SINFO info)
 {
@@ -285,7 +297,7 @@ send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
 }
 
 /* Perform the learn operation.  If ASSUAN_CONTEXT is not NULL all new
-   certificates are send via Assuan */
+   certificates are send back via Assuan.  */
 int
 agent_handle_learn (ctrl_t ctrl, void *assuan_context)
 {
@@ -317,7 +329,7 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
   if (rc)
     goto leave;
 
-  /* now gather all the available info */
+  /* Now gather all the available info. */
   rc = agent_card_learn (ctrl, kpinfo_cb, &parm, certinfo_cb, &cparm,
                          sinfo_cb, &sparm);
   if (!rc && (parm.error || cparm.error || sparm.error))
@@ -371,15 +383,15 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
         log_info ("          id: %s    (grip=%s)\n", item->id, item->hexgrip);
 
       if (item->no_cert)
-        continue; /* no public key yet available */
+        continue; /* No public key yet available. */
 
       for (p=item->hexgrip, i=0; i < 20; p += 2, i++)
         grip[i] = xtoi_2 (p);
       
       if (!agent_key_available (grip))
-        continue;
+        continue; /* The key is already available. */
       
-      /* unknown - store it */
+      /* Unknown key - store it. */
       rc = agent_card_readkey (ctrl, item->id, &pubkey);
       if (rc)
         {
