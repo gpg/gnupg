@@ -262,10 +262,14 @@ static int expand_args(struct exec_info *info,const char *args_in)
 
 	  if(append)
 	    {
-              /* FIXME: Why do we need a loop? -wk */
-	      while(strlen(append)+len>size-1)
+	      size_t applen=strlen(append);
+
+	      if(applen+len>size-1)
 		{
-		  size+=100;
+		  if(applen<100)
+		    applen=100;
+
+		  size+=applen;
 		  info->command=m_realloc(info->command,size);
 		}
 
@@ -471,7 +475,7 @@ int exec_write(struct exec_info **info,const char *program,
   (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
-      log_error(_("can't create '%s': %s\n"),
+      log_error(_("can't create `%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
       ret=G10ERR_WRITE_FILE;
       goto fail;

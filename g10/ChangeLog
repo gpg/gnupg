@@ -1,3 +1,8 @@
+2002-09-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* exec.c (expand_args): Remove loop left over from earlier
+	implementation.  (exec_write): Missed one tick.
+
 2002-09-10  Werner Koch  <wk@gnupg.org>
 
 	* encode.c (encode_simple): Make sure we don't use an ESK packet
