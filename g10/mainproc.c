@@ -39,6 +39,16 @@
 #include "trustdb.h"
 #include "hkp.h"
 
+
+struct kidlist_item {
+    struct kidlist_item *next;
+    u32 kid[2];
+    int pubkey_algo;
+    int reason;
+};
+
+
+
 /****************
  * Structure to hold the context
  */
@@ -60,6 +70,8 @@ struct mainproc_context {
     IOBUF iobuf;    /* used to get the filename etc. */
     int trustletter; /* temp usage in list_node */
     ulong local_id;    /* ditto */
+    struct kidlist_item *failed_pkenc;	/* list of packets for which
+					   we do not have a secret key */
 };
 
 
@@ -76,6 +88,12 @@ release_list( CTX c )
 	return;
     proc_tree(c, c->list );
     release_kbnode( c->list );
+    while( c->failed_pkenc ) {
+	struct kidlist_item *tmp = c->failed_pkenc->next;
+	m_free( c->failed_pkenc );
+	c->failed_pkenc = tmp;
+    }
+    c->failed_pkenc = NULL;
     c->list = NULL;
 }
 
@@ -213,6 +231,8 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 		m_free(c->dek); c->dek = NULL;
 	    }
 	}
+	else
+	    result = G10ERR_NO_SECKEY;
     }
     else
 	result = G10ERR_PUBKEY_ALGO;
@@ -223,14 +243,56 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	if( opt.verbose > 1 )
 	    log_info( _("public key encrypted data: good DEK\n") );
     }
-    else {
-	/* fixme: defer this message until we have parsed all packets of
-	 * this type - do this by building a list of keys with their stati
-	 * and store it with the context.  do_proc_packets can then use
-	 * this list to display some information */
-	log_error(_("public key decryption failed: %s\n"), g10_errstr(result));
+    else { /* store it for later display */
+	struct kidlist_item *x = m_alloc( sizeof *x );
+	x->kid[0] = enc->keyid[0];
+	x->kid[1] = enc->keyid[1];
+	x->pubkey_algo = enc->pubkey_algo;
+	x->reason = result;
+	x->next = c->failed_pkenc;
+	c->failed_pkenc = x;
     }
     free_packet(pkt);
+}
+
+
+
+/****************
+ * Print the list of public key encrypted packets which we could
+ * not decrypt.
+ */
+static void
+print_failed_pkenc( struct kidlist_item *list )
+{
+    for( ; list; list = list->next ) {
+	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+	const char *algstr = pubkey_algo_to_string( list->pubkey_algo );
+
+	pk->pubkey_algo = list->pubkey_algo;
+	if( !get_pubkey( pk, list->kid ) ) {
+	    size_t n;
+	    char *p;
+	    log_info( _("encrypted with %u-bit %s key, ID %08lX, created %s\n"),
+		       nbits_from_pk( pk ), algstr, (ulong)list->kid[1],
+		       strtimestamp(pk->timestamp) );
+	    fputs("      \"", log_stream() );
+	    p = get_user_id( list->kid, &n );
+	    print_string( log_stream(), p, n, '"' );
+	    m_free(p);
+	    fputs("\"\n", log_stream() );
+	}
+	else {
+	    log_info(_("encrypted with %s key, ID %08lX\n"),
+			algstr, (ulong) list->kid[1] );
+	}
+	free_public_key( pk );
+
+	if( list->reason == G10ERR_NO_SECKEY )
+	    log_info(_("no secret key for decryption available\n"));
+	else
+	    log_error(_("public key decryption failed: %s\n"),
+						g10_errstr(list->reason));
+    }
 }
 
 
@@ -238,6 +300,8 @@ static void
 proc_encrypted( CTX c, PACKET *pkt )
 {
     int result = 0;
+
+    print_failed_pkenc( c->failed_pkenc );
 
     /*log_debug("dat: %sencrypted data\n", c->dek?"":"conventional ");*/
     if( !c->dek && !c->last_was_session_key ) {
@@ -267,8 +331,8 @@ proc_encrypted( CTX c, PACKET *pkt )
     else {
 	write_status( STATUS_DECRYPTION_FAILED );
 	log_error(_("decryption failed: %s\n"), g10_errstr(result));
-	/* FIXME: if this is secret key not available, try with
-	 * other keys */
+	/* Hmmm: does this work when we have encrypted using a multiple
+	 * ways to specify the session key (symmmetric and PK)*/
     }
     free_packet(pkt);
     c->last_was_session_key = 0;
@@ -452,7 +516,6 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig )
 }
 
 
-
 static void
 print_userid( PACKET *pkt )
 {
@@ -543,6 +606,7 @@ print_notation_data( PKT_signature *sig )
 
     /* TODO */
 }
+
 
 /****************
  * List the certificate in a user friendly way

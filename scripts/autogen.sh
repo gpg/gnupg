@@ -87,6 +87,8 @@ fi
 
 echo "Running gettextize...  Ignore non-fatal messages."
 echo "no" | gettextize --force
+echo "Running libtoolize...  Ignore non-fatal messages."
+echo "no" | libtoolize
 
 
 echo "Running aclocal..."

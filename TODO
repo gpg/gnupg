@@ -6,11 +6,6 @@
 
   * print a warning when a revoked/expired _secret_ key is used.
 
-  * remove more "Fixmes"
-
-  * when decryptiong multiple key: print a warning only if no usable pubkey
-    encrypt package was found.	Extension: display a list of all recipients.
-
   * Add NO_PUBKEY and NO_SECKEY status lines.
 
   * Solaris make has problems with the generated POTFILES - seems to be a
@@ -19,12 +14,9 @@
   * find a way to allow the import of non-self-signed keys.  This is needed
     for the IN ENCR/SIGN hack.
 
-  * Not all user names are correctly converted to UTF8.
-
 
 Nice to have
 ------------
-  * Let take --help an option to select some topics.
   * Offcial test vectors for 3DES-EDE3
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
     or better readline.
@@ -43,7 +35,7 @@ Nice to have
     stuff?
   * the pubkey encrypt functions should do some sanity checks.
   * dynload: implement the hint stuff.
-  * "gpg filename.tar.gz.asc" sollte wie mit --verify funktionieren (-sab).
+  * "gpg filename.tar.gz.asc" should work like --verify (-sab).
   * for messages created with "-t", it might make sense to append the
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.

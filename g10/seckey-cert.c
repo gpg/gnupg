@@ -164,7 +164,7 @@ check_secret_key( PKT_secret_key *sk, int n )
     int i;
 
     if( n < 1 )
-	n = 3; /* use the default value */
+	n = opt.batch? 1 : 3; /* use the default value */
 
     for(i=0; i < n && rc == G10ERR_BAD_PASS; i++ ) {
 	if( i )

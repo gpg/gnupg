@@ -215,3 +215,10 @@ Probably more things but this keyserver is not a goal for the
 of the existing key servers (I think they bail out on some rfc2440
 packet formats).
 
+
+Suggested things which I will not do:
+=====================================
+  * Let take --help an option to select some topics.
+    Using grep is much easier
+
+

@@ -94,7 +94,7 @@ make_outfile_name( const char *iname )
 	return buf;
     }
 
-    log_error(_("%s: unknown suffix\n"), iname );
+    log_info(_("%s: unknown suffix\n"), iname );
     return NULL;
 }
 

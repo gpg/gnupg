@@ -155,6 +155,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 	    log_bug("Invalid argument for ArgParse\n");
     }
 
+
     if( arg->err ) { /* last option was erroneous */
 	const char *s;
 
@@ -194,6 +195,10 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 	    exit(2);
 	arg->err = 0;
     }
+
+    /* clearout the return value union */
+    arg->r.ret_str = NULL;
+    arg->r.ret_long= 0;
 }
 
 
@@ -309,6 +314,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		else if( !(opts[idx].flags & 7) )  /* does not take an arg */
 		    arg->r_opt = -6;	    /* error */
 		else {
+		    char *p;
 		    if( !buffer ) {
 			keyword[i] = 0;
 			buffer = m_strdup(keyword);
@@ -317,7 +323,13 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			buffer[i] = 0;
 
 		    trim_spaces( buffer );
-		    if( !set_opt_arg(arg, opts[idx].flags, buffer) )
+		    p = buffer;
+		    if( *p == '"' ) { /* remove quotes */
+			p++;
+			if( *p && p[strlen(p)-1] == '"' )
+			    p[strlen(p)-1] = 0;
+		    }
+		    if( !set_opt_arg(arg, opts[idx].flags, p) )
 			m_free(buffer);
 		}
 		break;

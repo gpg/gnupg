@@ -187,8 +187,8 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
 	strcpy( pw, fd_passwd );
     }
     else if( opt.batch ) {
-	write_status( STATUS_MISSING_PASSPHRASE );
-	log_fatal("Can't query password in batchmode\n");
+	log_error(_("can't query password in batchmode\n"));
+	pw = m_strdup( "" ); /* return an empty passphrase */
     }
     else {
 	pw = cpr_get_hidden("passphrase.enter", _("Enter passphrase: ") );

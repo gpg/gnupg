@@ -1,3 +1,8 @@
+Mon Jul 12 14:55:34 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* autogen.sh: Run libtoolize
+
 Sat May 22 22:47:26 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* autogen.sh: Fixed the error message for a missing libtool.

@@ -442,6 +442,19 @@ wrong_args( const char *text)
     g10_exit(2);
 }
 
+
+static char *
+make_username( const char *string )
+{
+    char *p;
+    if( utf8_strings )
+	p = native_to_utf8( string );
+    else
+	p = m_strdup(string);
+    return p;
+}
+
+
 static void
 set_debug(void)
 {
@@ -494,6 +507,7 @@ main( int argc, char **argv )
     int orig_argc;
     char **orig_argv;
     const char *fname;
+    char *username;
     STRLIST sl, remusr= NULL, locusr=NULL;
     STRLIST nrings=NULL, sec_nrings=NULL;
     armor_filter_context_t afx;
@@ -1050,10 +1064,10 @@ main( int argc, char **argv )
       case aDeleteKey:
 	if( argc != 1 )
 	    wrong_args(_("--delete-key username"));
-	/* note: fname is the user id! */
-	/* fixme: do utf8 conversion */
-	if( (rc = delete_key(fname, cmd==aDeleteSecretKey)) )
-	    log_error("%s: delete key failed: %s\n", print_fname_stdin(fname), g10_errstr(rc) );
+	username = make_username( fname );
+	if( (rc = delete_key(username, cmd==aDeleteSecretKey)) )
+	    log_error("%s: delete key failed: %s\n", username, g10_errstr(rc) );
+	m_free(username);
 	break;
 
 
@@ -1068,7 +1082,7 @@ main( int argc, char **argv )
 	secret_key_list( argc, argv );
 	break;
 
-      case aKMode: /* list keyring */
+      case aKMode: /* list keyring -- NOTE: This will be removed soon */
 	if( argc < 2 )	/* -kv [userid] */
 	    public_key_list( (argc && **argv)? 1:0, argv );
 	else if( argc == 2 ) { /* -kv userid keyring */
@@ -1114,7 +1128,7 @@ main( int argc, char **argv )
       case aRecvKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
-	    add_to_strlist( &sl, *argv );
+	    add_to_strlist2( &sl, *argv, utf8_strings );
 	if( cmd == aSendKeys )
 	    hkp_export( sl );
 	else if( cmd == aRecvKeys )
@@ -1127,7 +1141,7 @@ main( int argc, char **argv )
       case aExportSecret:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
-	    add_to_strlist( &sl, *argv );
+	    add_to_strlist2( &sl, *argv, utf8_strings );
 	export_seckeys( sl );
 	free_strlist(sl);
 	break;
@@ -1135,7 +1149,9 @@ main( int argc, char **argv )
       case aGenRevoke:
 	if( argc != 1 )
 	    wrong_args("--gen-revoke user-id");
-	gen_revoke( *argv );
+	username =  make_username(*argv);
+	gen_revoke( username );
+	m_free( username );
 	break;
 
       case aDeArmor:
@@ -1258,8 +1274,11 @@ main( int argc, char **argv )
 	if( !argc )
 	    check_trustdb(NULL);
 	else {
-	    for( ; argc; argc--, argv++ )
-		check_trustdb( *argv );
+	    for( ; argc; argc--, argv++ ) {
+		username = make_username( *argv );
+		check_trustdb( username );
+		m_free(username);
+	    }
 	}
 	break;
 
@@ -1272,8 +1291,11 @@ main( int argc, char **argv )
       case aListTrustPath:
 	if( !argc )
 	    wrong_args("--list-trust-path <usernames>");
-	for( ; argc; argc--, argv++ )
-	    list_trust_path( *argv );
+	for( ; argc; argc--, argv++ ) {
+	    username = make_username( *argv );
+	    list_trust_path( username );
+	    m_free(username);
+	}
 	break;
 
       case aExportOwnerTrust:
