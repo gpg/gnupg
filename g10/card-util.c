@@ -1293,6 +1293,10 @@ card_edit (STRLIST commands)
 
 	case cmdADMIN:
 	  allow_admin=!allow_admin;
+	  if(allow_admin)
+	    tty_printf(_("Admin commands are allowed\n"));
+	  else
+	    tty_printf(_("Admin commands are not allowed\n"));
 	  break;
 
         case cmdLIST:

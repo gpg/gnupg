@@ -1,5 +1,15 @@
 2004-10-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* keylist.c (status_one_subpacket): New.  Send the subpacket data
+	to the --status interface.
+
+	* card-util.c (card_edit): Show when admin is enabled or not.
+
+	* status.h, status.c: New STATUS_SIG_SUBPACKET type.
+
+	* build-packet.c (build_sig_subpkt): Multiple keyserver URLs are
+	allowed.
+
 	* keyring.c: Make some strings translatable.
 
 	* exec.c, sign.c: Change "can't open file" to "can't open" and

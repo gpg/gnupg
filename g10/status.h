@@ -105,6 +105,7 @@
 #define STATUS_PLAINTEXT_LENGTH 74
 #define STATUS_KEY_NOT_CREATED  75
 #define STATUS_NEED_PASSPHRASE_PIN 76
+#define STATUS_SIG_SUBPACKET    77
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

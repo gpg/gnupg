@@ -78,88 +78,90 @@ progress_cb ( void *ctx, int c )
 static const char *
 get_status_string ( int no ) 
 {
-    const char *s;
+  const char *s;
 
-    switch( no ) {
-      case STATUS_ENTER  : s = "ENTER"; break;
-      case STATUS_LEAVE  : s = "LEAVE"; break;
-      case STATUS_ABORT  : s = "ABORT"; break;
-      case STATUS_NEWSIG : s = "NEWSIG"; break;
-      case STATUS_GOODSIG: s = "GOODSIG"; break;
-      case STATUS_KEYEXPIRED: s = "KEYEXPIRED"; break;
-      case STATUS_KEYREVOKED: s = "KEYREVOKED"; break;
-      case STATUS_BADSIG : s = "BADSIG"; break;
-      case STATUS_ERRSIG : s = "ERRSIG"; break;
-      case STATUS_BADARMOR : s = "BADARMOR"; break;
-      case STATUS_RSA_OR_IDEA : s= "RSA_OR_IDEA"; break;
-      case STATUS_TRUST_UNDEFINED: s = "TRUST_UNDEFINED"; break;
-      case STATUS_TRUST_NEVER	 : s = "TRUST_NEVER"; break;
-      case STATUS_TRUST_MARGINAL : s = "TRUST_MARGINAL"; break;
-      case STATUS_TRUST_FULLY	 : s = "TRUST_FULLY"; break;
-      case STATUS_TRUST_ULTIMATE : s = "TRUST_ULTIMATE"; break;
-      case STATUS_GET_BOOL	 : s = "GET_BOOL"; break;
-      case STATUS_GET_LINE	 : s = "GET_LINE"; break;
-      case STATUS_GET_HIDDEN	 : s = "GET_HIDDEN"; break;
-      case STATUS_GOT_IT	 : s = "GOT_IT"; break;
-      case STATUS_SHM_INFO	 : s = "SHM_INFO"; break;
-      case STATUS_SHM_GET	 : s = "SHM_GET"; break;
-      case STATUS_SHM_GET_BOOL	 : s = "SHM_GET_BOOL"; break;
-      case STATUS_SHM_GET_HIDDEN : s = "SHM_GET_HIDDEN"; break;
-      case STATUS_NEED_PASSPHRASE: s = "NEED_PASSPHRASE"; break;
-      case STATUS_VALIDSIG	 : s = "VALIDSIG"; break;
-      case STATUS_SIG_ID	 : s = "SIG_ID"; break;
-      case STATUS_ENC_TO	 : s = "ENC_TO"; break;
-      case STATUS_NODATA	 : s = "NODATA"; break;
-      case STATUS_BAD_PASSPHRASE : s = "BAD_PASSPHRASE"; break;
-      case STATUS_NO_PUBKEY	 : s = "NO_PUBKEY"; break;
-      case STATUS_NO_SECKEY	 : s = "NO_SECKEY"; break;
-      case STATUS_NEED_PASSPHRASE_SYM: s = "NEED_PASSPHRASE_SYM"; break;
-      case STATUS_NEED_PASSPHRASE_PIN: s = "NEED_PASSPHRASE_PIN"; break;
-      case STATUS_DECRYPTION_FAILED: s = "DECRYPTION_FAILED"; break;
-      case STATUS_DECRYPTION_OKAY: s = "DECRYPTION_OKAY"; break;
-      case STATUS_MISSING_PASSPHRASE: s = "MISSING_PASSPHRASE"; break;
-      case STATUS_GOOD_PASSPHRASE : s = "GOOD_PASSPHRASE"; break;
-      case STATUS_GOODMDC	 : s = "GOODMDC"; break;
-      case STATUS_BADMDC	 : s = "BADMDC"; break;
-      case STATUS_ERRMDC	 : s = "ERRMDC"; break;
-      case STATUS_IMPORTED	 : s = "IMPORTED"; break;
-      case STATUS_IMPORT_OK	 : s = "IMPORT_OK"; break;
-      case STATUS_IMPORT_CHECK   : s = "IMPORT_CHECK"; break;
-      case STATUS_IMPORT_RES	 : s = "IMPORT_RES"; break;
-      case STATUS_FILE_START	 : s = "FILE_START"; break;
-      case STATUS_FILE_DONE	 : s = "FILE_DONE"; break;
-      case STATUS_FILE_ERROR	 : s = "FILE_ERROR"; break;
-      case STATUS_BEGIN_DECRYPTION:s = "BEGIN_DECRYPTION"; break;
-      case STATUS_END_DECRYPTION : s = "END_DECRYPTION"; break;
-      case STATUS_BEGIN_ENCRYPTION:s = "BEGIN_ENCRYPTION"; break;
-      case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION"; break;
-      case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM"; break;
-      case STATUS_PROGRESS	 : s = "PROGRESS"; break;
-      case STATUS_SIG_CREATED	 : s = "SIG_CREATED"; break;
-      case STATUS_SESSION_KEY	 : s = "SESSION_KEY"; break;
-      case STATUS_NOTATION_NAME  : s = "NOTATION_NAME" ; break;
-      case STATUS_NOTATION_DATA  : s = "NOTATION_DATA" ; break;
-      case STATUS_POLICY_URL     : s = "POLICY_URL" ; break;
-      case STATUS_BEGIN_STREAM   : s = "BEGIN_STREAM"; break;
-      case STATUS_END_STREAM     : s = "END_STREAM"; break;
-      case STATUS_KEY_CREATED    : s = "KEY_CREATED"; break;
-      case STATUS_KEY_NOT_CREATED: s = "KEY_NOT_CREATED"; break;
-      case STATUS_USERID_HINT    : s = "USERID_HINT"; break;
-      case STATUS_UNEXPECTED     : s = "UNEXPECTED"; break;
-      case STATUS_INV_RECP       : s = "INV_RECP"; break;
-      case STATUS_NO_RECP        : s = "NO_RECP"; break;
-      case STATUS_ALREADY_SIGNED : s = "ALREADY_SIGNED"; break;
-      case STATUS_SIGEXPIRED     : s = "SIGEXPIRED deprecated-use-keyexpired-instead"; break;
-      case STATUS_EXPSIG         : s = "EXPSIG"; break;
-      case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
-      case STATUS_REVKEYSIG      : s = "REVKEYSIG"; break;
-      case STATUS_ATTRIBUTE      : s = "ATTRIBUTE"; break;
-      case STATUS_CARDCTRL       : s = "CARDCTRL"; break;
-      case STATUS_PLAINTEXT      : s = "PLAINTEXT"; break;
-      case STATUS_PLAINTEXT_LENGTH:s = "PLAINTEXT_LENGTH"; break;
-      default: s = "?"; break;
+  switch( no )
+    {
+    case STATUS_ENTER  : s = "ENTER"; break;
+    case STATUS_LEAVE  : s = "LEAVE"; break;
+    case STATUS_ABORT  : s = "ABORT"; break;
+    case STATUS_NEWSIG : s = "NEWSIG"; break;
+    case STATUS_GOODSIG: s = "GOODSIG"; break;
+    case STATUS_KEYEXPIRED: s = "KEYEXPIRED"; break;
+    case STATUS_KEYREVOKED: s = "KEYREVOKED"; break;
+    case STATUS_BADSIG : s = "BADSIG"; break;
+    case STATUS_ERRSIG : s = "ERRSIG"; break;
+    case STATUS_BADARMOR : s = "BADARMOR"; break;
+    case STATUS_RSA_OR_IDEA : s= "RSA_OR_IDEA"; break;
+    case STATUS_TRUST_UNDEFINED: s = "TRUST_UNDEFINED"; break;
+    case STATUS_TRUST_NEVER	 : s = "TRUST_NEVER"; break;
+    case STATUS_TRUST_MARGINAL : s = "TRUST_MARGINAL"; break;
+    case STATUS_TRUST_FULLY	 : s = "TRUST_FULLY"; break;
+    case STATUS_TRUST_ULTIMATE : s = "TRUST_ULTIMATE"; break;
+    case STATUS_GET_BOOL	 : s = "GET_BOOL"; break;
+    case STATUS_GET_LINE	 : s = "GET_LINE"; break;
+    case STATUS_GET_HIDDEN	 : s = "GET_HIDDEN"; break;
+    case STATUS_GOT_IT	 : s = "GOT_IT"; break;
+    case STATUS_SHM_INFO	 : s = "SHM_INFO"; break;
+    case STATUS_SHM_GET	 : s = "SHM_GET"; break;
+    case STATUS_SHM_GET_BOOL	 : s = "SHM_GET_BOOL"; break;
+    case STATUS_SHM_GET_HIDDEN : s = "SHM_GET_HIDDEN"; break;
+    case STATUS_NEED_PASSPHRASE: s = "NEED_PASSPHRASE"; break;
+    case STATUS_VALIDSIG	 : s = "VALIDSIG"; break;
+    case STATUS_SIG_ID	 : s = "SIG_ID"; break;
+    case STATUS_ENC_TO	 : s = "ENC_TO"; break;
+    case STATUS_NODATA	 : s = "NODATA"; break;
+    case STATUS_BAD_PASSPHRASE : s = "BAD_PASSPHRASE"; break;
+    case STATUS_NO_PUBKEY	 : s = "NO_PUBKEY"; break;
+    case STATUS_NO_SECKEY	 : s = "NO_SECKEY"; break;
+    case STATUS_NEED_PASSPHRASE_SYM: s = "NEED_PASSPHRASE_SYM"; break;
+    case STATUS_NEED_PASSPHRASE_PIN: s = "NEED_PASSPHRASE_PIN"; break;
+    case STATUS_DECRYPTION_FAILED: s = "DECRYPTION_FAILED"; break;
+    case STATUS_DECRYPTION_OKAY: s = "DECRYPTION_OKAY"; break;
+    case STATUS_MISSING_PASSPHRASE: s = "MISSING_PASSPHRASE"; break;
+    case STATUS_GOOD_PASSPHRASE : s = "GOOD_PASSPHRASE"; break;
+    case STATUS_GOODMDC	 : s = "GOODMDC"; break;
+    case STATUS_BADMDC	 : s = "BADMDC"; break;
+    case STATUS_ERRMDC	 : s = "ERRMDC"; break;
+    case STATUS_IMPORTED	 : s = "IMPORTED"; break;
+    case STATUS_IMPORT_OK	 : s = "IMPORT_OK"; break;
+    case STATUS_IMPORT_CHECK   : s = "IMPORT_CHECK"; break;
+    case STATUS_IMPORT_RES	 : s = "IMPORT_RES"; break;
+    case STATUS_FILE_START	 : s = "FILE_START"; break;
+    case STATUS_FILE_DONE	 : s = "FILE_DONE"; break;
+    case STATUS_FILE_ERROR	 : s = "FILE_ERROR"; break;
+    case STATUS_BEGIN_DECRYPTION:s = "BEGIN_DECRYPTION"; break;
+    case STATUS_END_DECRYPTION : s = "END_DECRYPTION"; break;
+    case STATUS_BEGIN_ENCRYPTION:s = "BEGIN_ENCRYPTION"; break;
+    case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION"; break;
+    case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM"; break;
+    case STATUS_PROGRESS       : s = "PROGRESS"; break;
+    case STATUS_SIG_CREATED    : s = "SIG_CREATED"; break;
+    case STATUS_SESSION_KEY    : s = "SESSION_KEY"; break;
+    case STATUS_NOTATION_NAME  : s = "NOTATION_NAME" ; break;
+    case STATUS_NOTATION_DATA  : s = "NOTATION_DATA" ; break;
+    case STATUS_POLICY_URL     : s = "POLICY_URL" ; break;
+    case STATUS_BEGIN_STREAM   : s = "BEGIN_STREAM"; break;
+    case STATUS_END_STREAM     : s = "END_STREAM"; break;
+    case STATUS_KEY_CREATED    : s = "KEY_CREATED"; break;
+    case STATUS_KEY_NOT_CREATED: s = "KEY_NOT_CREATED"; break;
+    case STATUS_USERID_HINT    : s = "USERID_HINT"; break;
+    case STATUS_UNEXPECTED     : s = "UNEXPECTED"; break;
+    case STATUS_INV_RECP       : s = "INV_RECP"; break;
+    case STATUS_NO_RECP        : s = "NO_RECP"; break;
+    case STATUS_ALREADY_SIGNED : s = "ALREADY_SIGNED"; break;
+    case STATUS_SIGEXPIRED     : s = "SIGEXPIRED deprecated-use-keyexpired-instead"; break;
+    case STATUS_EXPSIG         : s = "EXPSIG"; break;
+    case STATUS_EXPKEYSIG      : s = "EXPKEYSIG"; break;
+    case STATUS_REVKEYSIG      : s = "REVKEYSIG"; break;
+    case STATUS_ATTRIBUTE      : s = "ATTRIBUTE"; break;
+    case STATUS_CARDCTRL       : s = "CARDCTRL"; break;
+    case STATUS_PLAINTEXT      : s = "PLAINTEXT"; break;
+    case STATUS_PLAINTEXT_LENGTH:s = "PLAINTEXT_LENGTH"; break;
+    case STATUS_SIG_SUBPACKET  : s = "SIG_SUBPACKET"; break;
+    default: s = "?"; break;
     }
-    return s;
+  return s;
 }
 
 
@@ -329,7 +331,6 @@ write_status_buffer ( int no, const char *buffer, size_t len, int wrap )
 {
     write_status_text_and_buffer (no, NULL, buffer, len, wrap);
 }
-
 
 
 #ifdef USE_SHM_COPROCESSING
@@ -778,4 +779,3 @@ cpr_get_answer_okay_cancel (const char *keyword,
 	}
     }
 }
-

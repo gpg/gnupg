@@ -158,6 +158,21 @@ print_pubkey_info (FILE *fp, PKT_public_key *pk)
   m_free (p);
 }
 
+/* Flags = 0x01 hashed 0x02 critical */
+static void
+status_one_subpacket(sigsubpkttype_t type,size_t len,int flags,const byte *buf)
+{
+  char status[40];
+
+  /* Don't print these. */
+  if(len>256)
+    return;
+
+  sprintf(status,"%d %u %u ",type,flags,len);
+
+  write_status_text_and_buffer(STATUS_SIG_SUBPACKET,status,buf,len,0);
+}
+
 /*
   mode=0 for stdout.
   mode=1 for log_info + status messages
@@ -235,7 +250,8 @@ show_keyserver_url(PKT_signature *sig,int indent,int mode)
 	  fprintf(fp,"\n");
 	}
 
-      /* TODO: put in a status-fd tag for preferred keyservers */
+      if(mode)
+	status_one_subpacket(SIGSUBPKT_PREF_KS,len,(crit?0x02:0)|0x01,p);
     }
 }
 
