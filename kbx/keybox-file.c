@@ -23,13 +23,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 #include "keybox-defs.h"
 
 /* Read a block at the current postion and return it in r_blob.
    r_blob may be NULL to simply skip the current block */
 int
-_keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
+_keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
 {
   char *image;
   size_t imagelen = 0;
@@ -37,6 +38,7 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
   int rc;
   off_t off;
 
+  *skipped_deleted = 0;
  again:
   *r_blob = NULL;
   off = ftello (fp);
@@ -55,7 +57,7 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
     }
 
   imagelen = (c1 << 24) | (c2 << 16) | (c3 << 8 ) | c4;
-  if (imagelen > 500000) /* sanity check */
+  if (imagelen > 500000) /* Sanity check. */
     return gpg_error (GPG_ERR_TOO_LARGE);
   
   if (imagelen < 5) 
@@ -63,9 +65,10 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
 
   if (!type)
     {
-      /* special treatment for empty blobs. */
+      /* Special treatment for empty blobs. */
       if (fseek (fp, imagelen-5, SEEK_CUR))
         return gpg_error (gpg_err_code_from_errno (errno));
+      *skipped_deleted = 1;
       goto again;
     }
 
@@ -87,6 +90,13 @@ _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
   return rc;
 }
 
+int
+_keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
+{
+  int dummy;
+  return _keybox_read_blob2 (r_blob, fp, &dummy);
+}
+
 
 /* Write the block to the current file position */
 int
@@ -100,3 +110,37 @@ _keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
     return gpg_error (gpg_err_code_from_errno (errno));
   return 0;
 }
+
+
+/* Write a fresh header type blob. */
+int
+_keybox_write_header_blob (FILE *fp)
+{
+  unsigned char image[32];
+  u32 val;
+
+  memset (image, 0, sizeof image);
+  /* Length of this blob. */
+  image[3] = 32;
+
+  image[4] = BLOBTYPE_HEADER;
+  image[5] = 1; /* Version */
+  
+  memcpy (image+8, "KBXf", 4);
+  val = time (NULL);
+  /* created_at and last maintenance run. */
+  image[16]   = (val >> 24);
+  image[16+1] = (val >> 16);
+  image[16+2] = (val >>  8);
+  image[16+3] = (val      );
+  image[20]   = (val >> 24);
+  image[20+1] = (val >> 16);
+  image[20+2] = (val >>  8);
+  image[20+3] = (val      );
+
+  if (fwrite (image, 32, 1, fp) != 1)
+    return gpg_error (gpg_err_code_from_errno (errno));
+  return 0;
+}
+
+

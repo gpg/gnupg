@@ -130,17 +130,36 @@ use @samp{--help} to get a list of supported operations.
 Generate a new key and a certificate request.
 
 @item --list-keys
+@itemx -k 
 @opindex list-keys
 List all available certificates stored in the local key database.
 
 @item --list-secret-keys
+@itemx -K
 @opindex list-secret-keys
-List all available keys whenre a secret key is available.
+List all available certificates for which a corresponding a secret key
+is available.
 
 @item --list-external-keys @var{pattern}
 @opindex list-keys
 List certificates matching @var{pattern} using an external server.  This
-utilies the @code{dirmngr} service.  
+utilizes the @code{dirmngr} service.  
+
+@item --dump-keys
+@opindex dump-keys
+List all available certificates stored in the local key database using a
+format useful mainly for debugging.
+
+@item --dump-secret-keys
+@opindex dump-secret-keys
+List all available certificates for which a corresponding a secret key
+is available using a format useful mainly for debugging.
+
+@item --dump-external-keys @var{pattern}
+@opindex dump-keys
+List certificates matching @var{pattern} using an external server.
+This utilizes the @code{dirmngr} service.  It uses a format useful
+mainly for debugging.
 
 @item --delete-keys @var{pattern}
 @opindex delete-keys

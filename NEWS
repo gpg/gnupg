@@ -6,6 +6,12 @@ Noteworthy changes in version 1.9.8
  * [scdaemon] Status files named ~/.gnupg/reader_<n>.status are now
    written when using the internal CCID driver.
 
+ * [gpgsm] New commands --dump-{,secret,external}-keys to show a very
+   detailed view of the certificates.
+
+ * The keybox gets now compressed after 3 hours and ephemeral
+   stored certificates are deleted after about a day.
+
 
 Noteworthy changes in version 1.9.7 (2004-04-06)
 ------------------------------------------------

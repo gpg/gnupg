@@ -1,3 +1,27 @@
+2004-04-23  Werner Koch  <wk@gnupg.org>
+
+	* keybox-blob.c (_keybox_update_header_blob): New.
+	* keybox-update.c (blob_filecopy): Handle header blob.
+	* keybox-file.c (_keybox_read_blob2): New. Moved code from
+	_keybox_read_blob to there. 
+	* keybox-dump.c (dump_header_blob): Print header info.
+
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	* keybox-search.c (_keybox_get_flag_location): Add flag
+	KEYBOX_FLAG_CREATED_AT.
+	* keybox-update.c (keybox_compress): New.
+
+	* keybox-search.c (get32, get16, blob_get_type) 
+	(blob_get_blob_flags, has_short_kid, has_long_kid) 
+	(has_fingerprint, has_issuer, has_issuer_sn, has_sn, has_subject) 
+	(has_subject_or_alt, has_mail): inline them.
+	
+	* keybox-update.c (blob_filecopy): Fixed an error/eof check
+	(s/if(fread)/if(nread)/).
+
+	* keybox-dump.c (_keybox_dump_blob): Really print the timestamps.
+
 2004-04-20  Werner Koch  <wk@gnupg.org>
 
 	* keybox-defs.h: Include jnlib/types.h and remove our own

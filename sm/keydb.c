@@ -218,10 +218,25 @@ keydb_add_resource (const char *url, int force, int secret)
                 = create_dotlock (filename);
               if (!all_resources[used_resources].lockhandle)
                 log_fatal ( _("can't create lock for `%s'\n"), filename);
+
+              /* Do a compress run if needed and the file is not locked. */
+              if (!make_dotlock (all_resources[used_resources].lockhandle, 0))
+                {
+                  KEYBOX_HANDLE kbxhd = keybox_new (token, secret);
+                  
+                  if (kbxhd)
+                    {
+                      keybox_compress (kbxhd);
+                      keybox_release (kbxhd);
+                    }
+                  release_dotlock (all_resources[used_resources].lockhandle);
+                }
                   
               used_resources++;
             }
         }
+
+
 	break;
     default:
       log_error ("resource type of `%s' not supported\n", url);

@@ -52,9 +52,10 @@ typedef enum
     KEYBOX_FLAG_OWNERTRUST, /* The assigned ownertrust. */
     KEYBOX_FLAG_KEY,        /* The key flags; requires a key index. */
     KEYBOX_FLAG_UID,        /* The user ID flags; requires an uid index. */
-    KEYBOX_FLAG_UID_VALIDITY/* The validity of a specific uid, requires
+    KEYBOX_FLAG_UID_VALIDITY,/* The validity of a specific uid, requires
                                an uid index. */
-  } keyxox_flag_t;
+    KEYBOX_FLAG_CREATED_AT  /* The date the block was created. */
+  } keybox_flag_t;
 
 
 /*-- keybox-init.c --*/
@@ -87,6 +88,7 @@ int keybox_update_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
 int keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value);
 
 int keybox_delete (KEYBOX_HANDLE hd);
+int keybox_compress (KEYBOX_HANDLE hd);
 
 
 /*--  --*/

@@ -78,9 +78,22 @@ print_string (FILE *fp, const byte *p, size_t n, int delim)
 static int
 dump_header_blob (const byte *buffer, size_t length, FILE *fp)
 {
+  unsigned long n;
+
+  if (length < 32)
+    {
+      fprintf (fp, "[blob too short]\n");
+      return -1;
+    }
   fprintf (fp, "Version: %d\n", buffer[5]);
   if ( memcmp (buffer+8, "KBXf", 4))
     fprintf (fp, "[Error: invalid magic number]\n");
+
+  n = get32 (buffer+16); 
+  fprintf( fp, "created-at: %lu\n", n );
+  n = get32 (buffer+20); 
+  fprintf( fp, "last-maint: %lu\n", n );
+
   return 0;
 }
 
@@ -101,7 +114,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
 
   buffer = _keybox_get_blob_image (blob, &length);
   
-  if (length < 40)
+  if (length < 32)
     {
       fprintf (fp, "[blob too short]\n");
       return -1;
@@ -136,6 +149,12 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       return 0;
     }
   fprintf (fp, "Version: %d\n", buffer[5]);
+
+  if (length < 40)
+    {
+      fprintf (fp, "[blob too short]\n");
+      return -1;
+    }
   
   n = get16 (buffer + 6);
   fprintf( fp, "Blob-Flags: %04lX", n);
@@ -290,11 +309,11 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   fprintf (fp, "All-Validity: %d\n", p[1] );
   p += 4;
   n = get32 (p); p += 4;
-  fprintf (fp, "Recheck-After: %s\n", /*n? strtimestamp(n) :*/ "0" );
+  fprintf (fp, "Recheck-After: %lu\n", n );
   n = get32 (p ); p += 4;
-  fprintf( fp, "Latest-Timestamp: %s\n", "0"/*strtimestamp(n)*/ );
+  fprintf( fp, "Latest-Timestamp: %lu\n", n );
   n = get32 (p ); p += 4;
-  fprintf (fp, "Created-At: %s\n", "0"/*strtimestamp(n)*/ );
+  fprintf (fp, "Created-At: %lu\n", n );
   n = get32 (p ); p += 4;
   fprintf (fp, "Reserved-Space: %lu\n", n );
 

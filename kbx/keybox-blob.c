@@ -35,9 +35,11 @@ The first record of a plain KBX file has a special format:
  byte reserved
  byte reserved
  u32  magic 'KBXf'
- byte pgp_marginals  used for validity calculation of this file
- byte pgp_completes  ditto.
- byte pgp_cert_depth ditto.
+ u32  reserved
+ u32  file_created_at
+ u32  last_maintenance_run
+ u32  reserved
+ u32  reserved
 
 The OpenPGP and X.509 blob are very similiar, things which are
 X.509 specific are noted like [X.509: xxx]
@@ -85,7 +87,7 @@ X.509 specific are noted like [X.509: xxx]
  u8	assigned ownertrust [X509: not used]
  u8	all_validity 
            OpenPGP:  see ../g10/trustdb/TRUST_* [not yet used]
-           X509: Bit 4 set := key has been revoked.  nOte that this value
+           X509: Bit 4 set := key has been revoked.  Note that this value
                               matches TRUST_FLAG_REVOKED
  u16	reserved
  u32	recheck_after
@@ -978,6 +980,7 @@ _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen, off_t off)
   return 0;
 }
 
+
 void
 _keybox_release_blob (KEYBOXBLOB blob)
 {
@@ -1010,3 +1013,19 @@ _keybox_get_blob_fileoffset (KEYBOXBLOB blob)
   return blob->fileoffset;
 }
 
+
+
+void
+_keybox_update_header_blob (KEYBOXBLOB blob)
+{
+  if (blob->bloblen >= 32 && blob->blob[4] == BLOBTYPE_HEADER)
+    {
+      u32 val = make_timestamp ();
+
+      /* Update the last maintenance run times tamp. */
+      blob->blob[20]   = (val >> 24);
+      blob->blob[20+1] = (val >> 16);
+      blob->blob[20+2] = (val >>  8);
+      blob->blob[20+3] = (val      );
+    }
+}

@@ -42,7 +42,7 @@ struct sn_array_s {
 
 
 
-static ulong
+static inline ulong
 get32 (const byte *buffer)
 {
   ulong a;
@@ -53,7 +53,7 @@ get32 (const byte *buffer)
   return a;
 }
 
-static ulong
+static inline ulong
 get16 (const byte *buffer)
 {
   ulong a;
@@ -64,20 +64,20 @@ get16 (const byte *buffer)
 
 
 
-static int
+static inline int
 blob_get_type (KEYBOXBLOB blob)
 {
   const unsigned char *buffer;
   size_t length;
 
   buffer = _keybox_get_blob_image (blob, &length);
-  if (length < 40)
+  if (length < 32)
     return -1; /* blob too short */
 
   return buffer[4];
 }
 
-static unsigned int
+static inline unsigned int
 blob_get_blob_flags (KEYBOXBLOB blob)
 {
   const unsigned char *buffer;
@@ -113,8 +113,9 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
       *flag_size = 2;
       break;
     
-    case KEYBOX_FLAG_VALIDITY:
     case KEYBOX_FLAG_OWNERTRUST:
+    case KEYBOX_FLAG_VALIDITY:
+    case KEYBOX_FLAG_CREATED_AT:
       if (length < 20)
         return GPG_ERR_INV_OBJ;
       /* Key info. */
@@ -148,8 +149,18 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
         return GPG_ERR_INV_OBJ ; /* Out of bounds. */
       *flag_size = 1;
       *flag_off = pos;
-      if (what == KEYBOX_FLAG_VALIDITY)
-        ++*flag_off;
+      switch (what)
+        {
+        case KEYBOX_FLAG_VALIDITY:
+          *flag_off += 1;
+          break;
+        case KEYBOX_FLAG_CREATED_AT:
+          *flag_size = 4;
+          *flag_off += 1+2+4+4+4;
+          break;
+        default:
+          break;
+        }
       break;
 
     default:
@@ -157,6 +168,8 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
     }
   return 0;
 }
+
+
 
 /* Return one of the flags WHAT in VALUE from teh blob BUFFER of
    LENGTH bytes.  Return 0 on success or an raw error code. */
@@ -447,26 +460,26 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
 /*
   The has_foo functions are used as helpers for search 
 */
-static int
+static inline int
 has_short_kid (KEYBOXBLOB blob, const unsigned char *kid)
 {
   return blob_cmp_fpr_part (blob, kid+4, 16, 4);
 }
 
-static int
+static inline int
 has_long_kid (KEYBOXBLOB blob, const unsigned char *kid)
 {
   return blob_cmp_fpr_part (blob, kid, 12, 8);
 }
 
-static int
+static inline int
 has_fingerprint (KEYBOXBLOB blob, const unsigned char *fpr)
 {
   return blob_cmp_fpr (blob, fpr);
 }
 
 
-static int
+static inline int
 has_issuer (KEYBOXBLOB blob, const char *name)
 {
   size_t namelen;
@@ -480,7 +493,7 @@ has_issuer (KEYBOXBLOB blob, const char *name)
   return blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0);
 }
 
-static int
+static inline int
 has_issuer_sn (KEYBOXBLOB blob, const char *name,
                const unsigned char *sn, int snlen)
 {
@@ -498,7 +511,7 @@ has_issuer_sn (KEYBOXBLOB blob, const char *name,
           && blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0));
 }
 
-static int
+static inline int
 has_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
 {
   return_val_if_fail (sn, 0);
@@ -508,7 +521,7 @@ has_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
   return blob_cmp_sn (blob, sn, snlen);
 }
 
-static int
+static inline int
 has_subject (KEYBOXBLOB blob, const char *name)
 {
   size_t namelen;
@@ -522,7 +535,7 @@ has_subject (KEYBOXBLOB blob, const char *name)
   return blob_cmp_name (blob, 1 /* subject */, name, namelen, 0);
 }
 
-static int
+static inline int
 has_subject_or_alt (KEYBOXBLOB blob, const char *name, int substr)
 {
   size_t namelen;
@@ -538,7 +551,7 @@ has_subject_or_alt (KEYBOXBLOB blob, const char *name, int substr)
 }
 
 
-static int
+static inline int
 has_mail (KEYBOXBLOB blob, const char *name, int substr)
 {
   size_t namelen;
@@ -728,6 +741,10 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
       if (rc)
         break;
 
+      if (blob_get_type (blob) == BLOBTYPE_HEADER)
+        continue;
+
+
       blobflags = blob_get_blob_flags (blob);
       if (!hd->ephemeral && (blobflags & 2))
         continue; /* not in ephemeral mode but blob is flagged ephemeral */
@@ -906,7 +923,7 @@ keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *r_cert)
 
 #endif /*KEYBOX_WITH_X509*/
 
-/* Return the flags named WHAT iat the address of VALUE. IDX is used
+/* Return the flags named WHAT at the address of VALUE. IDX is used
    only for certain flags and should be 0 if not required. */
 int
 keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value)

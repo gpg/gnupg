@@ -41,7 +41,6 @@ might want to have an agent context for each service request
 
 * sm/keydb.c
 ** Check file permissions
-** Write a keybox header and check for that magic value.
 ** Check that all error code mapping is done.
 ** Remove the inter-module dependencies between gpgsm and keybox
 ** Add an source_of_key field

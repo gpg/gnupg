@@ -1,5 +1,7 @@
 2004-04-23  Werner Koch  <wk@gnupg.org>
 
+	* keydb.c (keydb_add_resource): Try to compress the file on init.
+
 	* keylist.c (oidtranstbl): New.  OIDs collected from several sources.
 	(print_name_raw, print_names_raw, list_cert_raw): New.
 	(gpgsm_list_keys): Check the dump mode and pass it down as
