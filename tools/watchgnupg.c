@@ -354,7 +354,7 @@ main (int argc, char **argv)
             int n;
             
             n = read (client->fd, line, sizeof line - 1);
-            if (n == 1)
+            if (n < 0)
               {
                 int save_errno = errno;
                 print_line (client, NULL); /* flush */

@@ -43,7 +43,7 @@ fi
 @end smallexample
 
 @noindent
-You should aleays add the following lines to your @code{.bashrc} or
+You should aleways add the following lines to your @code{.bashrc} or
 whatever initialization file is used for all shell invocations:
 
 @smallexample

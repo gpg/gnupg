@@ -1,3 +1,8 @@
+2004-11-23  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c: New option --prefer-system-dirmngr.
+	* call-dirmngr.c (start_dirmngr): Implement this option.
+
 2004-10-22  Werner Koch  <wk@g10code.com>
 
 	* certreqgen.c (gpgsm_genkey): Remove the NEW from the certificate

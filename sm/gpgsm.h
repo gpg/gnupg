@@ -55,6 +55,7 @@ struct {
   char *lc_messages;
 
   const char *dirmngr_program;
+  int prefer_system_dirmngr;  /* Prefer using a system wide drimngr.  */
   const char *protect_tool_program;
   char *outfile;    /* name of output file */
 

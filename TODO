@@ -25,6 +25,8 @@ might want to have an agent context for each service request
 * sm/certlist.c
 ** ocspSigning usage is not fully implemented
    We should review the entire CRL and OCSP validation system.
+   Okay.  This has been fixed in dirmngr when running it in system
+   daemon mode.
 
 * sm/decrypt.c
 ** replace leading zero in integer hack by a cleaner solution
@@ -92,13 +94,4 @@ might want to have an agent context for each service request
 ** Support authorityKeyIdentifier.keyIdentifier
    This needs support in libksba/src/cert.c as well as in sm/*.c.
    Need test certs as well.  Same goes for CRL authorityKeyIdentifier.
-
-** Dirmngr:  name subordination (nameRelativeToCRLIssuer) 
-   is not yet supported by Dirmngr.
-
-** Dirmngr: CRL DP URI
-  The CRL DP shall use an URI for LDAP without a host name.  The host
-  name shall be looked by using the DN in the URI.  We don't implement
-  this yet.  Solution is to have a mapping DN->host in our ldapservers
-  configuration file.
 

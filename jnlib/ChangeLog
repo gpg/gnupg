@@ -1,3 +1,12 @@
+2004-11-22  Werner Koch  <wk@g10code.com>
+
+	* logging.c (log_test_fd): Add test on LOGSTREAM.  Reported by
+	Barry Schwartz.
+
+2004-11-18  Werner Koch  <wk@g10code.com>
+
+	* logging.c: Explicitly include sys/stat.h for the S_I* constants.
+
 2004-10-21  Werner Koch  <wk@g10code.com>
 
 	* logging.c (do_logv): Use set_log_stream to setup a default.

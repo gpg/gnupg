@@ -35,6 +35,8 @@
 #include "i18n.h"
 #include "keydb.h"
 
+/* The name of the socket for a system daemon.  */
+#define DEFAULT_SOCKET_NAME "/var/run/dirmngr/socket"
 
 struct membuf {
   size_t len;
@@ -145,6 +147,7 @@ start_dirmngr (void)
   int rc;
   char *infostr, *p;
   ASSUAN_CONTEXT ctx;
+  int try_default = 0;
 
   if (dirmngr_ctx)
     return 0; /* fixme: We need a context for each thread or serialize
@@ -153,6 +156,12 @@ start_dirmngr (void)
      to take care of the implicit option sending caching. */
 
   infostr = force_pipe_server? NULL : getenv ("DIRMNGR_INFO");
+  if (opt.prefer_system_dirmngr && !force_pipe_server
+      &&(!infostr || !*infostr))
+    {
+      infostr = DEFAULT_SOCKET_NAME;
+      try_default = 1;
+    }
   if (!infostr || !*infostr)
     {
       const char *pgmname;
@@ -197,26 +206,31 @@ start_dirmngr (void)
       int pid;
 
       infostr = xstrdup (infostr);
-      if ( !(p = strchr (infostr, ':')) || p == infostr)
+      if (!try_default && *infostr)
         {
-          log_error (_("malformed DIRMNGR_INFO environment variable\n"));
-          xfree (infostr);
-          force_pipe_server = 1;
-          return start_dirmngr ();
+          if ( !(p = strchr (infostr, ':')) || p == infostr)
+            {
+              log_error (_("malformed DIRMNGR_INFO environment variable\n"));
+              xfree (infostr);
+              force_pipe_server = 1;
+              return start_dirmngr ();
+            }
+          *p++ = 0;
+          pid = atoi (p);
+          while (*p && *p != ':')
+            p++;
+          prot = *p? atoi (p+1) : 0;
+          if (prot != 1)
+            {
+              log_error (_("dirmngr protocol version %d is not supported\n"),
+                         prot);
+              xfree (infostr);
+              force_pipe_server = 1;
+              return start_dirmngr ();
+            }
         }
-      *p++ = 0;
-      pid = atoi (p);
-      while (*p && *p != ':')
-        p++;
-      prot = *p? atoi (p+1) : 0;
-      if (prot != 1)
-        {
-          log_error (_("dirmngr protocol version %d is not supported\n"),
-                     prot);
-          xfree (infostr);
-          force_pipe_server = 1;
-          return start_dirmngr ();
-        }
+      else
+        pid = -1;
 
       rc = assuan_socket_connect (&ctx, infostr, pid);
       xfree (infostr);

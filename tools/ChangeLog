@@ -1,3 +1,12 @@
+2004-11-23  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c <dirmngr>: Add the proxy options.
+	<gpgsm>: Add --prefer-system-daemon.
+
+2004-11-11  Werner Koch  <wk@g10code.com>
+
+	* watchgnupg.c (main): Fixed test for read error.
+
 2004-10-22  Werner Koch  <wk@g10code.com>
 
 	* Makefile.am (bin_SCRIPTS): Add gpgsm-gencert.sh

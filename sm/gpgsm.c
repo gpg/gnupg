@@ -107,6 +107,7 @@ enum cmd_and_opt_values {
   oLCctype,
   oLCmessages,
 
+  oPreferSystemDirmngr,
   oDirmngrProgram,
   oProtectToolProgram,
   oFakedSystemTime,
@@ -272,7 +273,8 @@ static ARGPARSE_OPTS opts[] = {
 
     { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
 
-
+    { oPreferSystemDirmngr,"prefer-system-dirmngr", 0,
+      N_("use system's dirmngr if available")},
     { oDisableCRLChecks, "disable-crl-checks", 0, N_("never consult a CRL")},
     { oEnableCRLChecks, "enable-crl-checks", 0, "@"},
     { oForceCRLRefresh, "force-crl-refresh", 0, "@"},
@@ -1047,6 +1049,7 @@ main ( int argc, char **argv)
         case oLCctype: opt.lc_ctype = xstrdup (pargs.r.ret_str); break;
         case oLCmessages: opt.lc_messages = xstrdup (pargs.r.ret_str); break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
+        case oPreferSystemDirmngr: opt.prefer_system_dirmngr = 1; break;
         case oProtectToolProgram:
           opt.protect_tool_program = pargs.r.ret_str; 
           break;
@@ -1332,6 +1335,8 @@ main ( int argc, char **argv)
         printf ("disable-policy-checks:%lu:\n",
                 GC_OPT_FLAG_NONE );
         printf ("auto-issuer-key-retrieve:%lu:\n",
+                GC_OPT_FLAG_NONE );
+        printf ("prefer-system-dirmngr:%lu:\n",
                 GC_OPT_FLAG_NONE );
 
       }

@@ -35,6 +35,7 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -411,9 +412,12 @@ log_get_prefix (unsigned int *flags)
 int
 log_test_fd (int fd)
 {
-  int tmp = fileno (logstream);
-  if ( tmp != -1 && tmp == fd)
-    return 1;
+  if (logstream)
+    {
+      int tmp = fileno (logstream);
+      if ( tmp != -1 && tmp == fd)
+        return 1;
+    }
   if (log_socket != -1 && log_socket == fd)
     return 1;
   return 0;
