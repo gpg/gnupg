@@ -499,7 +499,8 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	else {
 	    while( len < size && afx->buffer_pos < afx->buffer_len )
 		buf[len++] = afx->buffer[afx->buffer_pos++];
-	    if( afx->buffer_pos >= afx->buffer_len ) {
+	    if( afx->buffer_pos >= afx->buffer_len
+		&& !afx->not_dash_escaped ) {
 		buf[len++] = '\r';
 		buf[len++] = '\n';
 	    }
@@ -518,7 +519,9 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	}
 	if( !maxlen )
 	    afx->truncated++;
-	afx->buffer_len = trim_trailing_spaces( afx->buffer, afx->buffer_len );
+	if( !afx->not_dash_escaped )
+	    afx->buffer_len = trim_trailing_spaces( afx->buffer,
+						    afx->buffer_len );
 	p = afx->buffer;
 	n = afx->buffer_len;
 
@@ -540,7 +543,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 		    putc('\n', stderr);
 		}
 		lastline = 1;
-		if( len >= 2 )
+		if( len >= 2 && !afx->not_dash_escaped )
 		    len -= 2; /* remove the last CR,LF */
 		rc = -1;
 	    }
@@ -726,7 +729,7 @@ armor_filter( void *opaque, int control,
     int  idx, idx2;
     size_t n=0;
     u32 crc;
-  #if 0
+  #if 1
     static FILE *fp ;
 
     if( !fp ) {
@@ -824,7 +827,7 @@ armor_filter( void *opaque, int control,
 	}
 	else
 	    rc = radix64_read( afx, a, &n, buf, size );
-      #if 0
+      #if 1
 	if( n )
 	    if( fwrite(buf, n, 1, fp ) != 1 )
 		BUG();

@@ -25,6 +25,10 @@ Important
     * Allow the use of a the faked RNG only for keys which are
       flagged as INSECURE.
 
+> 0.9.1: I get some occasional segfaults during 'make check' unless I use
+> --with-included-zlib. It's strange, I have zlib-1.1.2 on one machine, and
+> zlib-1.1.3 on another, and both of them fail on occasion (maybe half of the
+
 
 Needed
 ------
