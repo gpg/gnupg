@@ -453,7 +453,7 @@
     --enable-static-rnd=<name> 
                      Force the use of the random byte gathering
 		     module <name>.  Default is either to use /dev/random
-		     or the standard Unix module.  Value for name:
+		     or the auto mode.  Value for name:
 		       egd - Use the module which accesses the
 			     Entropy Gathering Daemon. See the webpages
 			     for more information about it.

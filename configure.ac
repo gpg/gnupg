@@ -658,15 +658,16 @@ if test "$use_static_rnd" = default; then
                 :
                 ;;
             *)
-                random_modules="rndunix"
+                random_modules="rndlinux rndegd rndunix"
+                AC_DEFINE(USE_ALL_RANDOM_MODULES, 1, 
+                          [Allow to select random modules at runtime.])
                 ;;
          esac
      fi
 else
   if test "$use_static_rnd" = auto; then
      random_modules="rndlinux rndegd rndunix"
-     AC_DEFINE(USE_ALL_RANDOM_MODULES, 1, 
-                  [Allow to select random modules at runtime.])
+     AC_DEFINE(USE_ALL_RANDOM_MODULES, 1)
   else
      random_modules="rnd$use_static_rnd";
   fi

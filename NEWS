@@ -35,11 +35,15 @@ Noteworthy changes in version 1.1.92
     * The configure option --with-static-rnd=auto allows to build gpg
       with all available entropy gathering modules included.  At
       runtime the best usable one will be selected from the list
-      linux, egd, unix. 
+      linux, egd, unix.  This is also the default for systems lacking
+      a /dev/random device.
 
     * The default character set is now taken from the current locale;
       it can still be overridden by the --charset option.  Using the
       option -vvv shows the used character set.
+
+    * --emulate-checksum-bug and --emulate-3des-s2k-bug have been
+      removed.
 
 
 Noteworthy changes in version 1.1.91 (2002-08-04)
