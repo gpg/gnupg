@@ -2,6 +2,8 @@
 
 	Released 1.9.10.
 
+	* configure.ac: Define AM conditional HAVE_OPENSC.
+
 2004-07-21  Werner Koch  <wk@g10code.de>
 
 	* configure.ac: Don't set DIE to no after it might has been set to

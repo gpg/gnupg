@@ -90,12 +90,12 @@ static ARGPARSE_OPTS opts[] = {
   {0}
 };
 
-
+#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
 #endif /*USE_GNU_PTH*/
-
+#endif /*!HAVE_OPENSC*/
 
 static void interactive_shell (int slot);
 static void dump_other_cards (int slot);
@@ -160,8 +160,10 @@ main (int argc, char **argv )
   /* Try to auto set the character set.  */
   set_native_charset (NULL); 
 
-  /* Libgcrypt requires us to register the threading model first.
-     Note that this will also do the pth_init. */
+  /* Libgcrypt requires us to register the threading model first.  We
+     can't use pth at all if we are using OpenSC becuase OpenSC uses
+     ptreads.  Note that this will also do the pth_init. */
+#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
   rc = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (rc)
@@ -170,6 +172,7 @@ main (int argc, char **argv )
                  gpg_strerror (rc));
     }
 #endif /*USE_GNU_PTH*/
+#endif /*!HAVE_OPENSC*/
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */

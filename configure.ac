@@ -471,6 +471,7 @@ if test $have_opensc = yes; then
   AC_DEFINE(HAVE_OPENSC,1,
             [defined if the OpenSC library is available])
 fi
+AM_CONDITIONAL(HAVE_OPENSC, test "$have_opensc" = "yes")
 
 #
 # Check whether the (highly desirable) GNU Pth library is available

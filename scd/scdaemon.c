@@ -144,13 +144,14 @@ static int maybe_setuid = 1;
 static char socket_name[128];
 
 
+#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
 
 static void *ticker_thread (void *arg);
 #endif /*USE_GNU_PTH*/
-
+#endif /*!HAVE_OPENSC*/
 
 static const char *
 my_strusage (int level)
@@ -336,6 +337,7 @@ main (int argc, char **argv )
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
+#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
@@ -344,6 +346,7 @@ main (int argc, char **argv )
                  gpg_strerror (err));
     }
 #endif /*USE_GNU_PTH*/
+#endif /*!HAVE_OPENSC*/
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
@@ -598,6 +601,7 @@ main (int argc, char **argv )
 
   if (pipe_server)
     { /* This is the simple pipe based server */
+#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
       pth_attr_t tattr;
  
@@ -612,6 +616,7 @@ main (int argc, char **argv )
           scd_exit (2);
         }
 #endif /*USE_GNU_PTH*/
+#endif /*!HAVE_OPENSC*/
       scd_command_handler (-1);
     }
   else if (!is_daemon)
@@ -827,6 +832,7 @@ scd_init_default_ctrl (CTRL ctrl)
 }
 
 
+#ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
 
 static void
@@ -931,3 +937,4 @@ ticker_thread (void *dummy_arg)
   pth_event_free (sigs_ev, PTH_FREE_ALL);
 }
 #endif /*USE_GNU_PTH*/
+#endif /*!HAVE_OPENSC*/

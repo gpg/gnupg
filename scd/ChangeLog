@@ -1,5 +1,10 @@
 2004-07-22  Werner Koch  <wk@g10code.de>
 
+	* Makefile.am: Make OpenSC lib link after libgcrypt. Do not link
+	to pth.
+	* apdu.c: Don't use Pth if we use OpenSC.
+	* sc-investigate.c, scdaemon.c: Disable use of pth if OpenSC is used. 
+
 	* scdaemon.c (main): Bumbed thread stack size up to 512k.
 
 2004-07-16  Werner Koch  <wk@gnupg.org>

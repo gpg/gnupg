@@ -19,6 +19,7 @@
  */
 
 #include <config.h>
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +32,9 @@
 #endif
 #ifdef HAVE_OPENSC
 # include <opensc/opensc.h>
+# ifdef USE_GNU_PTH
+# undef USE_GNU_PTH
+# endif
 #endif
 
 /* If requested include the definitions for the remote APDU protocol

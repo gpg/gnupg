@@ -25,6 +25,13 @@ AM_CPPFLAGS = -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 
+# avoid linking against Pth if we are using OpenSC.
+if HAVE_OPENSC
+pth_libs = 
+else
+pth_libs = $(PTH_LIBS)
+endif
+
 AM_CFLAGS =  $(OPENSC_CFLAGS) $(LIBGCRYPT_CFLAGS) \
 	      $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
@@ -44,9 +51,9 @@ scdaemon_SOURCES = \
 
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
-	  $(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(PTH_LIBS) \
+	   $(LIBGCRYPT_LIBS) $(pth_libs) \
           $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-	  $(LIBUSB_LIBS) -lgpg-error @INTLLIBS@ -ldl
+	  $(LIBUSB_LIBS) $(OPENSC_LIBS) -lgpg-error @INTLLIBS@ -ldl
 
 sc_investigate_SOURCES = \
 	sc-investigate.c scdaemon.h \
@@ -59,8 +66,8 @@ sc_investigate_SOURCES = \
 
 sc_investigate_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
-	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(PTH_LIBS) \
-	$(KSBA_LIBS) $(LIBUSB_LIBS) \
+	$(LIBGCRYPT_LIBS) $(pth_libs) \
+	$(KSBA_LIBS) $(LIBUSB_LIBS) $(OPENSC_LIBS) \
          @INTLLIBS@  -lgpg-error -ldl
 
 
@@ -76,8 +83,8 @@ sc_copykeys_SOURCES = \
 sc_copykeys_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
 	../common/libsimple-pwquery.a \
-	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(PTH_LIBS) \
-	$(KSBA_LIBS) $(LIBUSB_LIBS) \
+	$(LIBGCRYPT_LIBS) $(pth_libs) \
+	$(KSBA_LIBS) $(LIBUSB_LIBS) $(OPENSC_LIBS) \
         -lgpg-error @INTLLIBS@ -ldl
 
 pcsc_wrapper_SOURCES = pcsc-wrapper.c
