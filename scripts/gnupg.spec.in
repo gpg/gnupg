@@ -24,13 +24,18 @@ Provides: gpg openpgp
 BuildRoot: /tmp/rpmbuild_%{name}
 
 %changelog
+* Sat Nov 30 2002 David Shaw <dshaw@jabberwocky.com>
+- Add convert-from-106 script
+
 * Sat Oct 26 2002 David Shaw <dshaw@jabberwocky.com>
 - Use new path for keyserver helpers.
 - /usr/lib is no longer used for cipher/hash plugins.
 - Include gpgv, gpgsplit, and the new gnupg.7 man page.
+
 * Fri Apr 19 2002 David Shaw <dshaw@jabberwocky.com>
 - Removed OPTIONS and pubring.asc - no longer used
 - Added doc/samplekeys.asc
+
 * Sun Mar 31 2002 David Shaw <dshaw@jabberwocky.com>
 - Added the gpgkeys_xxx keyserver helpers.
 - Added a * to catch variations on the basic gpg man page (gpg, gpgv).
@@ -165,6 +170,7 @@ make install-strip prefix=$RPM_BUILD_ROOT/usr
 %doc %attr (-,root,root) doc/HACKING
 %doc %attr (-,root,root) doc/OpenPGP
 %doc %attr (-,root,root) doc/samplekeys.asc
+%doc %attr (0755,root,root) scripts/convert-from-106
 
 %attr (-,root,root) /usr/man/man1/gpg*.1*
 %attr (-,root,root) /usr/man/man7/gnupg.7*

@@ -1,5 +1,7 @@
 2002-11-30  David Shaw  <dshaw@jabberwocky.com>
 
+	* distfiles, gnupg.spec.in: Include convert-from-106.
+
 	* convert-from-106: Script to automate the 1.0.6->later
 	conversion.  It marks all secret keys as ultimately trusted, adds
 	the signature caches, and checks the trustdb.
