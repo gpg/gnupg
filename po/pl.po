@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.9.2\n"
-"POT-Creation-Date: 1999-03-20 12:42+0100\n"
+"POT-Creation-Date: 1999-03-20 13:40+0100\n"
 "PO-Revision-Date: 1999-01-26 01:30+01:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -783,50 +783,50 @@ msgstr "zagnie¿d¿one podpisy na czytelnym dokumencie\n"
 msgid "invalid dash escaped line: "
 msgstr "niepoprawne oznaczenie linii minusami:"
 
-#: g10/armor.c:507
+#: g10/armor.c:511
 msgid "unexpected armor:"
 msgstr "nieoczekiwane opakowanie:"
 
-#: g10/armor.c:623
+#: g10/armor.c:628
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "niew³a¶ciwy znak formatu radix64 %02x zosta³ pominiêty\n"
 
-#: g10/armor.c:666
+#: g10/armor.c:671
 msgid "premature eof (no CRC)\n"
 msgstr "przewczesny koniec pliku (brak CRC)\n"
 
-#: g10/armor.c:700
+#: g10/armor.c:705
 msgid "premature eof (in CRC)\n"
 msgstr "przedwczesny koniec pliku (w CRC)\n"
 
-#: g10/armor.c:704
+#: g10/armor.c:709
 msgid "malformed CRC\n"
 msgstr "b³±d formatu CRC\n"
 
-#: g10/armor.c:708
+#: g10/armor.c:713
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "B³±d sumy CRC; %06lx - %06lx\n"
 
-#: g10/armor.c:725
+#: g10/armor.c:730
 msgid "premature eof (in Trailer)\n"
 msgstr "przedwczesny koniec pliku (w linii koñcz±cej)\n"
 
-#: g10/armor.c:729
+#: g10/armor.c:734
 msgid "error in trailer line\n"
 msgstr "b³±d w linii koñcz±cej\n"
 
-#: g10/armor.c:993
+#: g10/armor.c:998
 msgid "no valid OpenPGP data found.\n"
 msgstr "nie odnaleziono poprawnych danych w formacie OpenPGP.\n"
 
-#: g10/armor.c:997
+#: g10/armor.c:1002
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "b³±d opakowania: linia d³u¿sza ni¿ %d znaków\n"
 
-#: g10/armor.c:1001
+#: g10/armor.c:1006
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""

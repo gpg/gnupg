@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.4.3\n"
-"POT-Creation-Date: 1999-03-20 12:42+0100\n"
+"POT-Creation-Date: 1999-03-20 13:40+0100\n"
 "PO-Revision-Date: 1998-11-09 16:19+01:00\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -820,52 +820,52 @@ msgstr "|[file]|fai una firma mantenendo il testo in chiaro"
 msgid "invalid dash escaped line: "
 msgstr "riga protetta con il trattino non valida: "
 
-#: g10/armor.c:507
+#: g10/armor.c:511
 #, fuzzy
 msgid "unexpected armor:"
 msgstr "Dati inaspettati"
 
-#: g10/armor.c:623
+#: g10/armor.c:628
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Carattere radix64 non valido %02x saltato\n"
 
-#: g10/armor.c:666
+#: g10/armor.c:671
 msgid "premature eof (no CRC)\n"
 msgstr "eof prematura (nessun CRC)\n"
 
-#: g10/armor.c:700
+#: g10/armor.c:705
 msgid "premature eof (in CRC)\n"
 msgstr "eof prematura (nel CRC)\n"
 
-#: g10/armor.c:704
+#: g10/armor.c:709
 msgid "malformed CRC\n"
 msgstr "CRC malformato\n"
 
-#: g10/armor.c:708
+#: g10/armor.c:713
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "errore nel CRC; %06lx - %06lx\n"
 
-#: g10/armor.c:725
+#: g10/armor.c:730
 msgid "premature eof (in Trailer)\n"
 msgstr "eof prematura (nella coda)\n"
 
-#: g10/armor.c:729
+#: g10/armor.c:734
 msgid "error in trailer line\n"
 msgstr "errore nella riga della coda\n"
 
-#: g10/armor.c:993
+#: g10/armor.c:998
 #, fuzzy
 msgid "no valid OpenPGP data found.\n"
 msgstr "Non sono stati trovati dati RFC1991 o OpenPGP validi.\n"
 
-#: g10/armor.c:997
+#: g10/armor.c:1002
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr ""
 
-#: g10/armor.c:1001
+#: g10/armor.c:1006
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""

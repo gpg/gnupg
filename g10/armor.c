@@ -503,13 +503,18 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 		afx->buffer_pos = 2; /* skip */
 	    }
 	    else if( n >= 15 &&  p[1] == '-' && p[2] == '-' && p[3] == '-' ) {
-		if( is_armor_header( p, n ) != BEGIN_SIGNATURE ) {
-		    log_info(_("unexpected armor:"));
-		    print_string( stderr, p, n, 0 );
-		    putc('\n', stderr);
+		int type = is_armor_header( p, n );
+		if( afx->not_dash_escaped && type != BEGIN_SIGNATURE )
+		    ; /* this is okay */
+		else {
+		    if( type != BEGIN_SIGNATURE ) {
+			log_info(_("unexpected armor:"));
+			print_string( stderr, p, n, 0 );
+			putc('\n', stderr);
+		    }
+		    lastline = 1;
+		    rc = -1;
 		}
-		lastline = 1;
-		rc = -1;
 	    }
 	}
     }

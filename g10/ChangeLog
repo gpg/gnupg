@@ -1,3 +1,7 @@
+Sat Mar 20 13:59:47 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* armor.c (fake_packet): Fix for not not-dash-escaped
+
 Sat Mar 20 11:44:21 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* g10.c (main): Added command --recv-keys
