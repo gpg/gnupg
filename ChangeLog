@@ -1,5 +1,7 @@
 2003-04-15  Werner Koch  <wk@gnupg.org>
 
+	* configure.ac (ALL_LINGUAS): Add Slovak translation.
+
 	* configure.ac (HAVE_DOSISH_SYSTEM): New automake conditional.
 
 	* acinclude.m4 (GNUPG_CHECK_ENDIAN): Fixed quoting of r.e. using
