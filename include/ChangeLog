@@ -1,3 +1,9 @@
+2002-02-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.h: Add KEYSERVER_NOT_SUPPORTED for unsupported actions
+	(say, a keyserver that has no way to search, or a readonly
+	keyserver that has no way to add).
+
 2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
 	* util.h [__riscos__]: Updated prototype list.

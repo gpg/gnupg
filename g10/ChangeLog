@@ -1,3 +1,14 @@
+2002-02-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (parse_hkp_index): Catch corruption in HKP index lines
+	(can be caused by broken or malicious keyservers).
+
+	* keyserver.c (keyserver_work): Add KEYSERVER_NOT_SUPPORTED for
+	unsupported actions (say, a keyserver that has no way to search,
+	or a readonly keyserver that has no way to add).  Also add a
+	USE_EXTERNAL_HKP define to disable the internal HKP keyserver
+	code.
+
 2002-02-14  Werner Koch  <wk@gnupg.org>
 
 	* g10.c: New option --no-use-agent. 

@@ -538,6 +538,7 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
       return G10ERR_BAD_URI;
     }
 
+#ifndef USE_EXTERNAL_HKP
   /* Use the internal HKP code */
   if(strcasecmp(opt.keyserver_scheme,"x-hkp")==0 ||
      strcasecmp(opt.keyserver_scheme,"hkp")==0 ||
@@ -563,6 +564,7 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
       return 0;
     }
+#endif
 
   /* It's not the internal HKP code, so try and spawn a handler for it */
 
@@ -575,6 +577,13 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	  log_error(_("no handler for keyserver scheme \"%s\"\n"),
 		    opt.keyserver_scheme);
 	  break;
+
+	case KEYSERVER_NOT_SUPPORTED:
+	  log_error(_("action \"%s\" not supported with keyserver "
+		      "scheme \"%s\"\n"),
+		    action==GET?"get":action==SEND?"send":
+		    action==SEARCH?"search":"unknown",
+		    opt.keyserver_scheme);
 
 	case KEYSERVER_INTERNAL_ERROR:
 	default:

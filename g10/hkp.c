@@ -337,6 +337,12 @@ parse_hkp_index(IOBUF buffer,char *line)
     {
       int uidindex=0;
 
+      if(line==NULL)
+	{
+	  uid=m_strdup("Key index corrupted");
+	  return ret;
+	}
+
       /* All that's left is the user name.  Strip off anything
 	 <between brackets> and de-urlencode it. */
 
