@@ -1,5 +1,6 @@
 /* keyid.c - key ID and fingerprint handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -392,6 +393,18 @@ expirestr_from_sig( PKT_signature *sig )
     if(!sig->expiredate)
       return _("never     ");
     atime=sig->expiredate;
+    return mk_datestr (buffer, atime);
+}
+
+const char *
+revokestr_from_pk( PKT_public_key *pk )
+{
+    static char buffer[11+5];
+    time_t atime;
+
+    if(!pk->revokedate)
+      return _("never     ");
+    atime=pk->revokedate;
     return mk_datestr (buffer, atime);
 }
 

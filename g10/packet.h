@@ -196,6 +196,7 @@ typedef struct {
     u32     timestamp;	    /* key made */
     u32     expiredate;     /* expires at this date or 0 if not at all */
     u32     max_expiredate; /* must not expire past this date */
+    u32     revokedate;     /* revoked at this date */
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
     byte    selfsigversion; /* highest version of all of the self-sigs */

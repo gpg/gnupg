@@ -662,8 +662,15 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
 	/* We didn't include this before in the key listing, but there
 	   is room in the new format, so why not? */
-	if(newformat && pk->expiredate)
-	  printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
+	if(newformat)
+	  {
+	    if(pk->is_revoked)
+	      printf(_(" [revoked: %s]"), revokestr_from_pk( pk ) );
+	    else if(pk->has_expired)
+	      printf(_(" [expired: %s]"), expirestr_from_pk( pk ) );
+	    else if(pk->expiredate)
+	      printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
+	  }
 
 #if 0
 	/* I need to think about this some more.  It's easy enough to
@@ -697,7 +704,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    if(uid->is_revoked || uid->is_expired)
 	      printf("uid%*s[%s] ",
 		     (opt.list_options&LIST_SHOW_LONG_KEYIDS)?16:8,"",
-		     uid->is_revoked?"revoked":"expired");
+		     uid->is_revoked?_("revoked"):_("expired"));
 	    else if((opt.list_options&LIST_SHOW_VALIDITY) && pk)
 	      {
 		const char *validity=
@@ -750,14 +757,11 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    else
 	      printf("%08lX",(ulong)keyid2[1]);
 	    printf(" %s",datestr_from_pk(pk2));
-	    /* Yes, this is an odd way to print the revoked string,
-	       but we already have translations for "[revoked] " (with
-	       the trailing space) and this is a simple way to take
-	       advantage of it.  In devel, this will be done rather
-	       more elegantly. */
 	    if( pk2->is_revoked )
-	        printf(" %s",_("[revoked] "));
-            else if( pk2->expiredate )
+	      printf(_(" [revoked: %s]"), revokestr_from_pk(pk2));
+	    else if( pk2->has_expired )
+                printf(_(" [expired: %s]"), expirestr_from_pk( pk2 ) );
+	    else if( pk2->expiredate )
                 printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
             putchar('\n');
 	    if( fpr > 1 )

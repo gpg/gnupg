@@ -1,5 +1,18 @@
 2004-02-10  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (keyedit_menu): Prompt for subkey removal for both
+	secret and public subkeys.
+
+	* keylist.c (list_keyblock_print), keyedit.c
+	(show_key_with_all_names): Show the revocation date of a
+	key/subkey, and general formatting work.
+
+	* packet.h, getkey.c (merge_selfsigs_main, merge_selfsigs_subkey,
+	merge_selfsigs): Keep track of the revocation date of a key.
+
+	* keydb.h, keyid.c (revokestr_from_pk): New function to print the
+	revocation date of a key.
+
 	* keygen.c (keygen_set_std_prefs): Build the default preferences
 	list at runtime as it properly handles algorithms disabled at
 	build or run time.

@@ -1468,8 +1468,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 		if( !(n1=count_selected_keys( keyblock )) )
 		    tty_printf(_("You must select at least one key.\n"));
-		else if( sec_keyblock && !cpr_get_answer_is_yes(
-			    "keyedit.remove.subkey.okay",
+		else if( !cpr_get_answer_is_yes( "keyedit.remove.subkey.okay",
 		       n1 > 1?
 			_("Do you really want to delete the selected keys? "):
 			_("Do you really want to delete this key? ")
@@ -2076,9 +2075,14 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	      tty_printf("%08lX",(ulong)pk->keyid[0]);
 
 	    tty_printf("%08lX  ",(ulong)pk->keyid[1]);
-	    tty_printf(_("created: %s expires: %s"),
-		       datestr_from_pk(pk),
-		       expirestr_from_pk(pk) );
+	    tty_printf(_("created: %s"),datestr_from_pk(pk));
+	    tty_printf("  ");
+	    if(pk->is_revoked)
+	      tty_printf(_("revoked: %s"),revokestr_from_pk(pk));
+	    else if(pk->has_expired)
+	      tty_printf(_("expired: %s"),expirestr_from_pk(pk));
+	    else
+	      tty_printf(_("expires: %s"),expirestr_from_pk(pk));
 	    tty_printf("\n");
 
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY )
@@ -2091,7 +2095,14 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		    /* Ownertrust is only meaningful for the PGP or
 		       classic trust models */
 		    if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
-		      tty_printf(_("trust: %-13s"), otrust);
+		      {
+			int width=14-strlen(otrust);
+			if(width<=0)
+			  width=1;
+			tty_printf(_("trust: %s"), otrust);
+			tty_printf("%*s",width,"");
+		      }
+		    
 		    tty_printf(_("validity: %s"), trust );
 		    tty_printf("\n");
 		  }

@@ -1,5 +1,6 @@
 /* keydb.h - Key database
- * Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -251,6 +252,7 @@ const char *datestr_from_sig( PKT_signature *sig );
 const char *expirestr_from_pk( PKT_public_key *pk );
 const char *expirestr_from_sk( PKT_secret_key *sk );
 const char *expirestr_from_sig( PKT_signature *sig );
+const char *revokestr_from_pk( PKT_public_key *pk );
 const char *colon_strtime (u32 t);
 const char *colon_datestr_from_pk (PKT_public_key *pk);
 const char *colon_datestr_from_sk (PKT_secret_key *sk);
