@@ -26,6 +26,9 @@
 #include <ctype.h>
 #include <errno.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "util.h"
 #include "main.h"
 #include "packet.h"
@@ -2152,6 +2155,13 @@ read_parameter_file( const char *fname )
     if( outctrl.use_files ) { /* close open streams */
 	iobuf_close( outctrl.pub.stream );
 	iobuf_close( outctrl.sec.stream );
+
+        /* Must invalidate that ugly cache to actually close it.  */
+        if (outctrl.pub.fname)
+          iobuf_ioctl (NULL, 2, 0, (char*)outctrl.pub.fname);
+        if (outctrl.sec.fname)
+          iobuf_ioctl (NULL, 2, 0, (char*)outctrl.sec.fname);
+
 	m_free( outctrl.pub.fname );
 	m_free( outctrl.pub.newfname );
 	m_free( outctrl.sec.fname );
@@ -2388,6 +2398,8 @@ do_generate_keypair( struct para_data_s *para,
 	if( outctrl->pub.newfname ) {
 	    iobuf_close(outctrl->pub.stream);
 	    outctrl->pub.stream = NULL;
+            if (outctrl->pub.fname)
+              iobuf_ioctl (NULL, 2, 0, (char*)outctrl->pub.fname);
 	    m_free( outctrl->pub.fname );
 	    outctrl->pub.fname =  outctrl->pub.newfname;
 	    outctrl->pub.newfname = NULL;
@@ -2405,13 +2417,19 @@ do_generate_keypair( struct para_data_s *para,
 	    }
 	}
 	if( outctrl->sec.newfname ) {
+            mode_t oldmask;
+
 	    iobuf_close(outctrl->sec.stream);
 	    outctrl->sec.stream = NULL;
+            if (outctrl->sec.fname)
+              iobuf_ioctl (NULL, 2, 0, (char*)outctrl->sec.fname);
 	    m_free( outctrl->sec.fname );
 	    outctrl->sec.fname =  outctrl->sec.newfname;
 	    outctrl->sec.newfname = NULL;
 
+	    oldmask = umask (077);
 	    outctrl->sec.stream = iobuf_create( outctrl->sec.fname );
+            umask (oldmask);
 	    if( !outctrl->sec.stream ) {
 		log_error("can't create `%s': %s\n", outctrl->sec.newfname,
 						     strerror(errno) );

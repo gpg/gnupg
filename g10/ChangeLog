@@ -1,3 +1,13 @@
+2004-05-11  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (show_policy_url, show_keyserver_url, show_notation) 
+	(list_one): Use const char* for i18n string helpers.
+
+	* keygen.c (do_generate_keypair, read_parameter_file): Really
+	close the files.
+	(do_generate_keypair): Create the secret key file using safe
+	permissions.  Noted by Atom Smasher.
+
 2004-05-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, mainproc.c (symkey_decrypt_seskey), keyserver.c

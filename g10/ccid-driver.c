@@ -513,6 +513,9 @@ ccid_open_reader (ccid_driver_t *handle, int readerno)
           if (rc)
             {
               DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
+
+              XXXXX;
+
               free (*handle);
               *handle = NULL;
               goto leave;

@@ -170,7 +170,7 @@ show_policy_url(PKT_signature *sig,int indent,int mode)
       if(mode!=2)
 	{
 	  int i;
-	  char *str;
+	  const char *str;
 
 	  for(i=0;i<indent;i++)
 	    putchar(' ');
@@ -211,7 +211,7 @@ show_keyserver_url(PKT_signature *sig,int indent,int mode)
       if(mode!=2)
 	{
 	  int i;
-	  char *str;
+	  const char *str;
 
 	  for(i=0;i<indent;i++)
 	    putchar(' ');
@@ -276,7 +276,7 @@ show_notation(PKT_signature *sig,int indent,int mode,int which)
 	    if((which&1 && !has_at) || (which&2 && has_at))
 	      {
 		int i;
-		char *str;
+		const char *str;
 
 		for(i=0;i<indent;i++)
 		  putchar(' ');
@@ -397,7 +397,7 @@ list_one( STRLIST names, int secret )
     KBNODE keyblock = NULL;
     GETKEY_CTX ctx;
     const char *resname;
-    char *keyring_str = _("Keyring");
+    const char *keyring_str = _("Keyring");
     int i;
     struct sig_stats stats;
 
