@@ -491,6 +491,7 @@ AC_CHECK_FUNCS(strerror stpcpy strsep strlwr stricmp tcgetattr strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
 AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand pipe stat)
+AC_REPLACE_FUNCS(mkdtemp)
 
 #
 # check for gethrtime and run a testprogram to see whether
