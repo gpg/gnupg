@@ -1,3 +1,8 @@
+2001-12-14  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (search_key): Use unsigned int rather than uint
+	for portability.
+
 2001-12-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* Initial version of gpgkeys_ldap (LDAP keyserver helper) and

@@ -427,7 +427,7 @@ int search_key(LDAP *ldap,char *searchkey)
 	  vals=ldap_get_values(ldap,each,"pgpkeycreatetime");
 	  if(vals!=NULL && strlen(vals[0])==15)
 	    {
-	      fprintf(output,"%u:",(uint)ldap2epochtime(vals[0]));
+	      fprintf(output,"%u:",(unsigned int)ldap2epochtime(vals[0]));
 	      ldap_value_free(vals);
 	    }
 	  else
@@ -436,7 +436,7 @@ int search_key(LDAP *ldap,char *searchkey)
 	  vals=ldap_get_values(ldap,each,"pgpkeyexpiretime");
 	  if(vals!=NULL && strlen(vals[0])==15)
 	    {
-	      fprintf(output,"%u:",(uint)ldap2epochtime(vals[0]));
+	      fprintf(output,"%u:",(unsigned int)ldap2epochtime(vals[0]));
 	      ldap_value_free(vals);
 	    }
 	  else
@@ -445,7 +445,7 @@ int search_key(LDAP *ldap,char *searchkey)
 	  vals=ldap_get_values(ldap,each,"modifytimestamp");
 	  if(vals!=NULL && strlen(vals[0])==15)
 	    {
-	      fprintf(output,"%u:",(uint)ldap2epochtime(vals[0]));
+	      fprintf(output,"%u:",(unsigned int)ldap2epochtime(vals[0]));
 	      ldap_value_free(vals);
 	    }
 	  else
