@@ -405,20 +405,23 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
     {
       unsigned int use = pk? pk->pubkey_usage : sk->pubkey_usage;
     
-      if ( use & PUBKEY_USAGE_ENC )
+      if ( (use & PUBKEY_USAGE_ENC) )
         putchar ('e');
 
-      if ( use & PUBKEY_USAGE_SIG )
+      if ( (use & PUBKEY_USAGE_SIG) )
 	{
 	  putchar ('s');
 	  if( pk? pk->is_primary : sk->is_primary )
 	    putchar ('c');
 	}
+
+      if ( (use & PUBKEY_USAGE_AUTH) )
+        putchar ('a');
     }
 
     if ( keyblock ) { /* figure out the usable capabilities */
         KBNODE k;
-        int enc=0, sign=0, cert=0, disabled=0;
+        int enc=0, sign=0, cert=0, auth=0, disabled=0;
 
         for (k=keyblock; k; k = k->next ) {
             if ( k->pkt->pkttype == PKT_PUBLIC_KEY 
@@ -429,14 +432,16 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 		  disabled=pk_is_disabled(pk);
 
                 if ( pk->is_valid && !pk->is_revoked && !pk->has_expired ) {
-                    if ( pk->pubkey_usage & PUBKEY_USAGE_ENC )
+                    if ( (pk->pubkey_usage & PUBKEY_USAGE_ENC) )
                         enc = 1;
-                    if ( pk->pubkey_usage & PUBKEY_USAGE_SIG )
+                    if ( (pk->pubkey_usage & PUBKEY_USAGE_SIG) )
 		      {
 			sign = 1;
 			if(pk->is_primary)
 			  cert = 1;
 		      }
+                    if ( (pk->pubkey_usage & PUBKEY_USAGE_AUTH) )
+                      auth = 1;
                 }
             }
             else if ( k->pkt->pkttype == PKT_SECRET_KEY 
@@ -444,14 +449,16 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
                 sk = k->pkt->pkt.secret_key;
                 if ( sk->is_valid && !sk->is_revoked && !sk->has_expired
 		     && sk->protect.s2k.mode!=1001 ) {
-                    if ( sk->pubkey_usage & PUBKEY_USAGE_ENC )
+                    if ( (sk->pubkey_usage & PUBKEY_USAGE_ENC) )
                         enc = 1;
-                    if ( sk->pubkey_usage & PUBKEY_USAGE_SIG )
+                    if ( (sk->pubkey_usage & PUBKEY_USAGE_SIG) )
 		      {
 			sign = 1;
 			if(sk->is_primary)
 			  cert = 1;
 		      }
+                    if ( (sk->pubkey_usage & PUBKEY_USAGE_AUTH) )
+                        auth = 1;
                 }
             }
         }
@@ -461,6 +468,8 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
             putchar ('S');
         if (cert)
             putchar ('C');
+        if (auth)
+            putchar ('A');
         if (disabled)
             putchar ('D');
     }

@@ -1,3 +1,7 @@
+2003-09-04  Werner Koch  <wk@gnupg.org>
+
+	* cipher.h (PUBKEY_USAGE_AUTH): Added.
+
 2003-07-03  Werner Koch  <wk@gnupg.org>
 
 	* cipher.h (DBG_CIPHER,g10c_debug_mode): Removed.

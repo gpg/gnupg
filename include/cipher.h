@@ -48,6 +48,7 @@
 #define PUBKEY_USAGE_SIG     GCRY_PK_USAGE_SIGN	 
 #define PUBKEY_USAGE_ENC     GCRY_PK_USAGE_ENCR
 #define PUBKEY_USAGE_CERT    4      /* key is also good to certify other keys*/
+#define PUBKEY_USAGE_AUTH    8
 
 #define DIGEST_ALGO_MD5       GCRY_MD_MD5
 #define DIGEST_ALGO_SHA1      GCRY_MD_SHA1

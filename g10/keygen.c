@@ -150,6 +150,8 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
         buf[0] |= 0x01 | 0x02;
     if (use & PUBKEY_USAGE_ENC)
         buf[0] |= 0x04 | 0x08;
+    if (use & PUBKEY_USAGE_AUTH)
+        buf[0] |= 0x20;
     build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, 1);
 }
 
@@ -1784,6 +1786,8 @@ parse_parameter_usage (const char *fname,
             use |= PUBKEY_USAGE_SIG;
         else if ( !ascii_strcasecmp (p, "encrypt") )
             use |= PUBKEY_USAGE_ENC;
+        else if ( !ascii_strcasecmp (p, "auth") )
+            use |= PUBKEY_USAGE_AUTH;
         else {
             log_error("%s:%d: invalid usage list\n", fname, r->lnr );
             return -1; /* error */
@@ -2552,11 +2556,10 @@ do_generate_keypair (struct para_data_s *para,
       rc = gen_card_key (PUBKEY_ALGO_RSA, 3, pub_root, sec_root,
                          get_parameter_u32 (para, pKEYEXPIRE), para);
 
-      /* FIXME: Change the usage to AUTH. */
       if (!rc)
-	rc = write_keybinding (pub_root, pub_root, sk, PUBKEY_USAGE_SIG);
+	rc = write_keybinding (pub_root, pub_root, sk, PUBKEY_USAGE_AUTH);
       if (!rc)
-	rc = write_keybinding (sec_root, pub_root, sk, PUBKEY_USAGE_SIG);
+	rc = write_keybinding (sec_root, pub_root, sk, PUBKEY_USAGE_AUTH);
     }
 
 

@@ -1,3 +1,11 @@
+2003-09-04  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (do_add_key_flags, parse_parameter_usage) 
+	(do_generate_keypair): Add support the proposed AUTH key flag.
+	* getkey.c (fixup_uidnode, merge_selfsigs_main) 
+	(merge_selfsigs_subkey, premerge_public_with_secret): Ditto.
+	* keylist.c (print_capabilities): Ditto.
+
 2003-08-25  Timo Schulz  <twoaday@freakmail.de>
 
 	* pkglue.c (mpi_from_sexp): New. Used to factor out
