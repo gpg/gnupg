@@ -1,5 +1,6 @@
 /* pkclist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *                                             Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1027,7 +1028,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned use )
 	    else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use )) ) {
 		int trustlevel;
 
-		trustlevel = get_validity (pk, pk->namehash);
+		trustlevel = get_validity (pk, NULL);
 		if( (trustlevel & TRUST_FLAG_DISABLED) ) {
 		    free_public_key(pk); pk = NULL;
 		    log_info(_("%s: skipped: public key is disabled\n"),

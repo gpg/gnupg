@@ -1,5 +1,6 @@
 /* trustdb.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *                                             Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -439,7 +440,7 @@ init_trustdb()
  * This function returns a letter for a trustvalue  Trust flags
  * are ignore.
  */
-int
+static int
 trust_letter (unsigned int value)
 {
   switch( (value & TRUST_MASK) ) 
@@ -649,7 +650,7 @@ get_ownertrust_info (PKT_public_key *pk)
 	otrust=otrust_min;
       }
 
-    c = trust_letter( (otrust & TRUST_MASK) );
+    c = trust_letter( otrust );
     if( !c )
 	c = '?';
     return c;
@@ -803,7 +804,7 @@ update_validity (PKT_public_key *pk, PKT_user_id *uid,
   ulong recno;
   byte namehash[20];
 
-  if( uid->attrib_data )
+  if(uid->attrib_data)
     rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
   else
     rmd160_hash_buffer (namehash, uid->name, uid->len );
@@ -943,7 +944,7 @@ is_disabled(void *dummy,u32 *keyid)
  * otherwise, a reasonable value for the entire key is returned. 
  */
 unsigned int
-get_validity (PKT_public_key *pk, const byte *namehash)
+get_validity (PKT_public_key *pk, PKT_user_id *uid)
 {
   static int did_nextcheck;
   TRUSTREC trec, vrec;
@@ -952,7 +953,16 @@ get_validity (PKT_public_key *pk, const byte *namehash)
   unsigned int validity;
   u32 kid[2];
   PKT_public_key *main_pk;
+  byte namehash[20];
 
+  if(uid)
+    {
+      if(uid->attrib_data)
+	rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
+      else
+	rmd160_hash_buffer (namehash, uid->name, uid->len );
+    }
+  
   init_trustdb ();
   if (!did_nextcheck)
     {
@@ -1011,7 +1021,7 @@ get_validity (PKT_public_key *pk, const byte *namehash)
       read_record (recno, &vrec, RECTYPE_VALID);
       if ( validity < (vrec.r.valid.validity & TRUST_MASK) )
         validity = (vrec.r.valid.validity & TRUST_MASK);
-      if ( namehash && !memcmp (vrec.r.valid.namehash, namehash, 20) )
+      if ( uid && !memcmp (vrec.r.valid.namehash, namehash, 20) )
         break;
       recno = vrec.r.valid.next;
     }
@@ -1042,15 +1052,15 @@ get_validity (PKT_public_key *pk, const byte *namehash)
 }
 
 int
-get_validity_info (PKT_public_key *pk, const byte *namehash)
+get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
 {
     int trustlevel;
     int c;
 
-    trustlevel = get_validity (pk, namehash);
+    trustlevel = get_validity (pk, uid);
     if( trustlevel & TRUST_FLAG_REVOKED )
 	return 'r';
-    c = trust_letter ( (trustlevel & TRUST_MASK) );
+    c = trust_letter ( trustlevel );
     if( !c )
 	c = '?';
     return c;
@@ -1066,7 +1076,7 @@ get_validity_counts (PKT_public_key *pk, PKT_user_id *uid)
   if(pk==NULL || uid==NULL)
     BUG();
 
-  if( uid->attrib_data )
+  if(uid->attrib_data)
     rmd160_hash_buffer (namehash,uid->attrib_data,uid->attrib_len);
   else
     rmd160_hash_buffer (namehash, uid->name, uid->len );

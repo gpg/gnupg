@@ -1,3 +1,22 @@
+2003-01-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* armor.c (armor_filter): Comment about PGP's end of line tab
+	problem.
+
+	* trustdb.h, trustdb.c (trust_letter): Make
+	static. (get_ownertrust_info, get_validity_info): Don't mask the
+	trust level twice.
+
+	* trustdb.h, gpgv.c, trustdb.c (get_validity, get_validity_info),
+	keylist.c (list_keyblock_colon), keyedit.c
+	(show_key_with_all_names_colon, menu_revuid): Pass a user ID in
+	rather than a namehash, so we only have to do the hashing in one
+	place.
+
+	* packet.h, pkclist.c (build_pk_list), free-packet.c
+	(release_public_key_parts): Remove unused namehash element for
+	public keys.
+
 2003-01-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (keygen_set_std_prefs): Warn when setting an IDEA

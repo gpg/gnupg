@@ -1,5 +1,6 @@
 /* free-packet.c - cleanup stuff for packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *                                             Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -68,7 +69,6 @@ free_seckey_enc( PKT_signature *sig )
 }
 
 
-
 void
 release_public_key_parts( PKT_public_key *pk )
 {
@@ -83,10 +83,6 @@ release_public_key_parts( PKT_public_key *pk )
     if (pk->prefs) {
         m_free (pk->prefs);
         pk->prefs = NULL;
-    }
-    if( pk->namehash ) {
-	m_free(pk->namehash);
-	pk->namehash = NULL;
     }
     if (pk->user_id) {
         free_user_id (pk->user_id);

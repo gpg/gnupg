@@ -1,5 +1,6 @@
 /* packet.h - packet definitions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *                                             Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -210,7 +211,6 @@ typedef struct {
     byte    is_primary;
     prefitem_t *prefs;      /* list of preferences (may be NULL) */
     int     mdc_feature;    /* mdc feature set */
-    byte    *namehash;	    /* if != NULL: found by this name */
     PKT_user_id *user_id;   /* if != NULL: found by that uid */
     struct revocation_key *revkey;
     int     numrevkeys;

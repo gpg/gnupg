@@ -1,5 +1,6 @@
 /* keyedit.c - keyedit stuff
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ *                                             Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1816,18 +1817,10 @@ show_key_with_all_names_colon (KBNODE keyblock)
 	      printf("::::::::");
 	    else
 	      {
-		byte namehash[20];
 		int uid_validity;
 
 		if( primary && !ulti_hack )
-		  {
-		    if( uid->attrib_data )
-		      rmd160_hash_buffer(namehash,
-					 uid->attrib_data, uid->attrib_len);
-		    else
-		      rmd160_hash_buffer( namehash, uid->name, uid->len  );
-		    uid_validity = get_validity_info( primary, namehash );
-		  }
+		  uid_validity = get_validity_info( primary, uid );
 		else
 		  uid_validity = 'u';
 		printf("%c::::::::",uid_validity);
@@ -3407,8 +3400,6 @@ menu_revuid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	      }
 	    else
 	      {
-		byte namehash[20];
-
 		pkt = m_alloc_clear( sizeof *pkt );
 		pkt->pkttype = PKT_SIGNATURE;
 		pkt->pkt.signature = sig;
@@ -3418,13 +3409,7 @@ menu_revuid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		  {
 		    /* If the trustdb has an entry for this key+uid then the
 		       trustdb needs an update. */
-		    if( uid->attrib_data )
-		      rmd160_hash_buffer(namehash,
-					 uid->attrib_data, uid->attrib_len);
-		    else
-		      rmd160_hash_buffer( namehash, uid->name, uid->len  );
-
-		    if((get_validity(pk,namehash)&TRUST_MASK)>=TRUST_UNDEFINED)
+		    if((get_validity(pk,uid)&TRUST_MASK)>=TRUST_UNDEFINED)
 		      update_trust=1;
 		  }
 
