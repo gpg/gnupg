@@ -1,3 +1,25 @@
+2003-08-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, sig-check.c (signature_check2, do_check,
+	do_check_messages): Provide a signing-key-is-revoked flag.  Change
+	all callers.
+
+	* status.h, status.c (get_status_string): New REVKEYSIG status tag
+	for a good signature from a revoked key.
+
+	* mainproc.c (do_check_sig, check_sig_and_print): Use it here.
+
+	* import.c (import_revoke_cert, merge_blocks, merge_sigs): Compare
+	actual signatures on import rather than using keyid or class
+	matching.  This does not change actual behavior with a key, but
+	does mean that all sigs are imported whether they will be used or
+	not.
+
+	* parse-packet.c (parse_signature): Don't give "signature packet
+	without xxxx" warnings for experimental pk algorithms.  An
+	experimental algorithm may not have a notion of (for example) a
+	keyid (i.e. PGP's x.509 stuff).
+
 2003-08-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), keylist.c (list_keyblock_print),

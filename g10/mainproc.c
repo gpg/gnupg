@@ -660,14 +660,12 @@ proc_compressed( CTX c, PACKET *pkt )
  * Returns: 0 = valid signature or an error code
  */
 static int
-do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
+do_check_sig( CTX c, KBNODE node, int *is_selfsig,
+	      int *is_expkey, int *is_revkey )
 {
     PKT_signature *sig;
     MD_HANDLE md = NULL, md2 = NULL;
-    int algo, rc, dum2;
-
-    if(!is_expkey)
-      is_expkey=&dum2;
+    int algo, rc;
 
     assert( node->pkt->pkttype == PKT_SIGNATURE );
     if( is_selfsig )
@@ -721,9 +719,9 @@ do_check_sig( CTX c, KBNODE node, int *is_selfsig, int *is_expkey )
     }
     else
 	return G10ERR_SIG_CLASS;
-    rc = signature_check2( sig, md, NULL, is_expkey, NULL );
+    rc = signature_check2( sig, md, NULL, is_expkey, is_revkey, NULL );
     if( rc == G10ERR_BAD_SIGN && md2 )
-	rc = signature_check2( sig, md2, NULL, is_expkey, NULL );
+	rc = signature_check2( sig, md2, NULL, is_expkey, is_revkey, NULL );
     md_close(md);
     md_close(md2);
 
@@ -946,7 +944,7 @@ list_node( CTX c, KBNODE node )
 	    fputs("sig", stdout);
 	if( opt.check_sigs ) {
 	    fflush(stdout);
-	    switch( (rc2=do_check_sig( c, node, &is_selfsig, NULL )) ) {
+	    switch( (rc2=do_check_sig( c, node, &is_selfsig, NULL, NULL )) ) {
 	      case 0:		       sigrc = '!'; break;
 	      case G10ERR_BAD_SIGN:    sigrc = '-'; break;
 	      case G10ERR_NO_PUBKEY: 
@@ -1205,7 +1203,7 @@ check_sig_and_print( CTX c, KBNODE node )
 {
     PKT_signature *sig = node->pkt->pkt.signature;
     const char *astr, *tstr;
-    int rc, is_expkey=0;
+    int rc, is_expkey=0, is_revkey=0;
 
     if( opt.skip_verify ) {
 	log_info(_("signature verification suppressed\n"));
@@ -1280,10 +1278,10 @@ check_sig_and_print( CTX c, KBNODE node )
 	       (int)strlen(tstr), tstr, astr? astr: "?",
 	       (ulong)sig->keyid[1] );
 
-    rc = do_check_sig(c, node, NULL, &is_expkey );
+    rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
     if( rc == G10ERR_NO_PUBKEY && opt.keyserver_scheme && opt.keyserver_options.auto_key_retrieve) {
 	if( keyserver_import_keyid ( sig->keyid )==0 )
-	    rc = do_check_sig(c, node, NULL, &is_expkey );
+	    rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
     }
 
     /* If the key still isn't found, try to inform the user where it
@@ -1319,6 +1317,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	  statno=STATUS_EXPSIG;
 	else if(is_expkey)
 	  statno=STATUS_EXPKEYSIG;
+	else if(is_revkey)
+	  statno=STATUS_REVKEYSIG;
 	else
 	  statno=STATUS_GOODSIG;
 

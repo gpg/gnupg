@@ -461,7 +461,7 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 /*-- sig-check.c --*/
 int signature_check( PKT_signature *sig, MD_HANDLE digest );
 int signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
-		      int *r_expired, PKT_public_key *ret_pk );
+		      int *r_expired, int *r_revoked, PKT_public_key *ret_pk );
 
 /*-- seckey-cert.c --*/
 int is_secret_key_protected( PKT_secret_key *sk );
