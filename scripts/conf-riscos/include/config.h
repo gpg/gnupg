@@ -84,16 +84,16 @@
 #define PRINTABLE_OS_NAME "RISC OS"
 
 /* Define if your locale.h file contains LC_MESSAGES.  */
-#undef HAVE_LC_MESSAGES
+#define HAVE_LC_MESSAGES
 
 /* Define to 1 if NLS is requested.  */
 #define ENABLE_NLS 1
 
 /* Define as 1 if you have catgets and don't want to use GNU gettext.  */
-#undef HAVE_CATGETS
+#define HAVE_CATGETS 0
 
 /* Define as 1 if you have gettext and don't want to use GNU gettext.  */
-#undef HAVE_GETTEXT
+#define HAVE_GETTEXT 0
 
 #undef BIG_ENDIAN_HOST
 #define LITTLE_ENDIAN_HOST 1
@@ -175,7 +175,7 @@
 #undef HAVE_CLOCK_GETTIME
 
 /* Define if you have the dcgettext function.  */
-#undef HAVE_DCGETTEXT
+#define HAVE_DCGETTEXT 0
 
 /* Define if you have the dlopen function.  */
 #undef HAVE_DLOPEN
@@ -367,9 +367,13 @@
   #define M_GUARD
 #endif
 
+#define USE_RNDRISCOS
 
 /* RISC OS specifica */
 #if (__CC_NORCROFT == 1) /* Norcroft */
+# undef __GNUC__
+# define __GNUC_MINOR__ 0
+# define __GLIBC__ 0
 # define __attribute__(x) 
 # if (__CC_NORCROFT_VERSION < 544) /* old version of Norcroft */
 #  define inline __inline

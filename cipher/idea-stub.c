@@ -148,6 +148,13 @@ load_module (const char *name)
   return NULL;
 }
 
+#ifdef __riscos__
+typedef
+const char *(*INFO_CAST)(int, size_t*, size_t*, size_t*,
+                         int  (**)( void *, byte *, unsigned),
+                         void (**)( void *, byte *, byte *),
+                         void (**)( void *, byte *, byte *));
+#endif /* __riscos__ */
 
 const char *
 idea_get_info( int algo, size_t *keylen,
@@ -170,7 +177,11 @@ idea_get_info( int algo, size_t *keylen,
       initialized = 1;
       for (i=0; (rstr = dynload_enum_module_names (i)); i++)
         {
+#ifndef __riscos__
           info_fnc = load_module (rstr);
+#else /* __riscos__ */
+          info_fnc = (INFO_CAST) load_module (rstr);
+#endif /* __riscos__ */
           if (info_fnc)
             break;
         }

@@ -5,13 +5,12 @@ AS=objasm
 MAKE=amu
 DEPEND=-depend !Depend
 LIBLDAP=^.^.openldap-2/0/18
-CC_FLAGS=-Wp -apcs 3/26bit/fpe2 -throwback -Otime -IUnix:,include,mpi,intl,zlib,$(LIBLDAP).include -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
-AS_FLAGS=-apcs 3/26bit/fpe2 -throwback -predefine "ARMv4 SETA 0"
+CC_FLAGS=-Wpc -apcs 3/26bit/fpe2 -throwback -Otime -IUnix:,include,mpi,intl,zlib,$(LIBLDAP).include -JUnix: -D__riscos__ -DHAVE_CONFIG_H -DNO_ASM -UIS_MODULE -DVERSION="\"$(GnuPG$Version)\"" $(GnuPG$DevDefine)
+AS_FLAGS=-apcs 3/26bit -throwback -predefine "ARMv4 SETA 0"
 LD_FLAGS=Unix:o.unixlib
 CIPHER_OBJS=cipher.o.blowfish \
 	cipher.o.cast5 \
 	cipher.o.cipher \
-	cipher.o.construct \
 	cipher.o.des \
 	cipher.o.dsa \
 	cipher.o.dynload \
@@ -170,15 +169,17 @@ GPGV_OBJS=g10.o.armor \
 	util.o.secmem \
 	util.o.strgutil \
 	util.o.riscos \
-	cipher.o.constructv \
 	cipher.o.dsa \
 	cipher.o.dynload \
 	cipher.o.elgamal \
 	cipher.o.g10c \
 	cipher.o.md \
+	cipher.o.md5 \
 	cipher.o.pubkey \
 	cipher.o.rmd160 \
 	cipher.o.rsa \
+	cipher.o.sha1 \
+	cipher.o.tiger32 \
 	mpi.mpi \
 	zlib.zlib
 GPGKEYS_OBJS=util.o.riscos \
@@ -375,7 +376,7 @@ clean-g10:
 	-ifthere g10.o.* then wipe g10.o.* ~CFR~V
 
 clean-keyserver:
-	-ifthere keyserver.gpgkeys_* then wipe keyserver.gpgkeys_* ~CFR~V
+	-ifthere keyserver.gpgkeys_ldap then wipe keyserver.gpgkeys_ldap ~CFR~V
 	-ifthere keyserver.o.* then wipe keyserver.o.* ~CFR~V
 
 clean-tools:

@@ -32,7 +32,7 @@
 #include "keyserver.h"
 
 #ifdef __riscos__
-#include <unixlib/local.h>
+#include "util.h"
 #endif
 
 #define GET    0
@@ -53,6 +53,10 @@ struct keylist
   char str[MAX_LINE];
   struct keylist *next;
 };
+
+#ifdef __riscos__
+RISCOS_GLOBAL_STATICS("LDAP Keyfetcher Heap")
+#endif /* __riscos__ */
 
 /* Returns 0 on success, -1 on failure, and 1 on eof */
 int send_key(void)
@@ -621,7 +625,7 @@ int main(int argc,char *argv[])
   struct keylist *keylist=NULL,*keyptr=NULL;
 
 #ifdef __riscos__
-    __riscosify_control = __RISCOSIFY_NO_PROCESS;
+  riscos_global_defaults();
 #endif
 
   console=stderr;

@@ -1,3 +1,11 @@
+2002-08-03  Stefan Bellon  <sbellon@sbellon.de>
+
+	* idea-stub.c (idea_get_info): RISC OS' Norcroft C needs a cast.
+
+	* random.c (getfnc_gather_random): Added RISC OS support.
+
+	* rndriscos.c: Removed dynload code.
+
 2002-08-03  Werner Koch  <wk@gnupg.org>
 
 	* rndegd.c (do_read): Handle case when read returns 0 to avoid

@@ -96,7 +96,7 @@ riscos_set_filetype_by_number(const char *filename, int type)
 /* exported RISC OS functions */
 
 void
-riscos_global_defaults()
+riscos_global_defaults(void)
 {
     __riscosify_control = __RISCOSIFY_NO_PROCESS;
     __feature_imagefs_is_file = 1;

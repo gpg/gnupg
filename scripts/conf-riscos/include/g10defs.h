@@ -21,6 +21,7 @@
 /* Path variables and filing system constants for RISC OS */
 #define G10_LOCALEDIR     "<GnuPG$Dir>.locale"
 #define GNUPG_LIBDIR      "<GnuPG$Dir>"
+#define GNUPG_LIBEXECDIR  "<GnuPG$Dir>"
 #define GNUPG_DATADIR     "<GnuPG$Dir>"
 #define GNUPG_HOMEDIR     "<GnuPGUser$Dir>"
 #define LOCALE_ALIAS_PATH "<GnuPG$Dir>.locale"

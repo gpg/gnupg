@@ -19,6 +19,9 @@
  */
 
 #include <config.h>
+
+#ifdef USE_RNDRISCOS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -26,11 +29,9 @@
 #include <kernel.h>
 #include <swis.h>
 #include "util.h"
-#include "dynload.h"
+#include "algorithms.h"
 
 static int init_device(void);
-static int gather_random(void (*add)(const void*, size_t, int), int requester,
-			 size_t length, int level);
 
 #define CryptRandom_Byte 0x51980
 
@@ -67,9 +68,9 @@ init_device(void)
 
 /****************
  */
-static int
-gather_random(void (*add)(const void*, size_t, int), int requester,
-	      size_t length, int level)
+int
+rndriscos_gather_random(void (*add)(const void*, size_t, int), int requester,
+	                size_t length, int level)
 {
     static int initialized = 0;
     int n;
@@ -97,51 +98,4 @@ gather_random(void (*add)(const void*, size_t, int), int requester,
     return 0; /* success */
 }
 
-
-
-#ifndef IS_MODULE
-static
-#endif
-const char * const gnupgext_version = "RNDRISCOS ($Revision$)";
-
-static struct {
-    int class;
-    int version;
-    int (*func)(void);
-} func_table[] = {
-    { 40, 1, (int (*)(void))gather_random },
-};
-
-
-#ifndef IS_MODULE
-static
-#endif
-void *
-gnupgext_enum_func( int what, int *sequence, int *class, int *vers )
-{
-    void *ret;
-    int i = *sequence;
-
-    do {
-	if ( i >= DIM(func_table) || i < 0 ) {
-	    return NULL;
-	}
-	*class = func_table[i].class;
-	*vers  = func_table[i].version;
-	ret = (void*) func_table[i].func;
-	i++;
-    } while ( what && what != *class );
-
-    *sequence = i;
-    return ret;
-}
-
-#ifndef IS_MODULE
-void
-rndriscos_constructor(void)
-{
-    register_internal_cipher_extension( gnupgext_version,
-					gnupgext_enum_func );
-}
-#endif
-
+#endif /*USE_RNDRISCOS */
