@@ -1,5 +1,5 @@
 <!-- gpg.sgml - the man page for GnuPG
-    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
     This file is part of GnuPG.
 
@@ -73,9 +73,9 @@
 <command/gpg/ is the main program for the GnuPG system.
     </para>
     <para>
-This man page only lists the commands and options available.
-For more verbose documentation get the GNU Privacy Handbook (GPH) or
-one of the other documents at http://www.gnupg.org/docs.html .
+This man page only lists the commands and options available.  For more
+verbose documentation get the GNU Privacy Handbook (GPH) or one of the
+other documents at http://www.gnupg.org/documentation/ .
 </para>
 <para>
 Please remember that option parsing stops as soon as a non option is
@@ -373,7 +373,7 @@ Add a subkey to this key.</para></listitem></varlistentry>
     <listitem><para>
 Remove a subkey.</para></listitem></varlistentry>
     <varlistentry>
-    <term>addrevoker</term>
+    <term>addrevoker <optional>sensitive</optional></term>
     <listitem><para>
 Add a designated revoker.  This takes one optional argument:
 "sensitive".  If a designated revoker is marked as sensitive, it will
@@ -1227,13 +1227,15 @@ effect when listing all keys.
 <varlistentry>
 <term>--keyring &ParmFile;</term>
 <listitem><para>
-Add &ParmFile; to the list of keyrings.  If &ParmFile; begins with a
-tilde and a slash, these are replaced by the HOME directory. If the
-filename does not contain a slash, it is assumed to be in the GnuPG
-home directory ("~/.gnupg" if --homedir is not used).  The filename
-may be prefixed with a scheme:</para>
-<para>"gnupg-ring:" is the default one.</para>
-<para>It might make sense to use it together with --no-default-keyring.
+Add &ParmFile; to the current list of keyrings.  If &ParmFile; begins
+with a tilde and a slash, these are replaced by the $HOME
+directory. If the filename does not contain a slash, it is assumed to
+be in the GnuPG home directory ("~/.gnupg" if --homedir or $GNUPGHOME
+is not used).
+</para><para>
+Note that this adds a keyring to the current list.  If the intent is
+to use the specified keyring alone, use --keyring along with
+--no-default-keyring.
 </para></listitem></varlistentry>
 
 
@@ -1247,32 +1249,32 @@ Same as --keyring but for the secret keyrings.
 <varlistentry>
 <term>--trustdb-name &ParmFile;</term>
 <listitem><para>
-
 Use &ParmFile; instead of the default trustdb.  If &ParmFile; begins
-with a tilde and a slash, these are replaced by the HOME directory. If
-the filename does not contain a slash, it is assumed to be in the
-GnuPG home directory ("~/.gnupg" if --homedir is not used).
-
+with a tilde and a slash, these are replaced by the $HOME
+directory. If the filename does not contain a slash, it is assumed to
+be in the GnuPG home directory ("~/.gnupg" if --homedir or $GNUPGHOME
+is not used).
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--homedir &ParmDir;</term>
 <listitem><para>
-Set the name of the home directory to &ParmDir; If this
-option is not used it defaults to "~/.gnupg". It does
-not make sense to use this in a options file. This
-also overrides the environment variable "GNUPGHOME".
+Set the name of the home directory to &ParmDir; If this option is not
+used it defaults to "~/.gnupg". It does not make sense to use this in
+a options file. This also overrides the environment variable
+$GNUPGHOME.
 </para></listitem></varlistentry>
 
 
 <varlistentry>
 <term>--charset &ParmName;</term>
 <listitem><para>
-Set the name of the native character set.  This is used
-to convert some strings to proper UTF-8 encoding. If this option is not used, the default character set is determined
-from the current locale.  A verbosity level of 3 shows the used one.
-Valid values for &ParmName; are:</para>
+Set the name of the native character set.  This is used to convert
+some strings to proper UTF-8 encoding. If this option is not used, the
+default character set is determined from the current locale.  A
+verbosity level of 3 shows the used one.  Valid values for &ParmName;
+are:</para>
 <variablelist>
 <varlistentry>
 <term>iso-8859-1</term><listitem><para>This is the Latin 1 set.</para></listitem>
@@ -1473,17 +1475,16 @@ as well as when verifying a signature with a notation in it.
 --no-show-notation disables this option.
 </para></listitem></varlistentry>
 
-
 <varlistentry>
 <term>--sig-policy-url &ParmString;</term>
 <term>--cert-policy-url &ParmString;</term>
 <term>--set-policy-url &ParmString;</term>
 <listitem><para>
-Use &ParmString; as Policy URL for signatures (rfc2440:5.2.3.19).  If
-you prefix it with an exclamation mark (!), the policy URL packet will
-be flagged as critical.  --sig-policy-url sets a a policy url for data
-signatures.  --cert-policy-url sets a policy url for key signatures
-(certifications).  --set-policy-url sets both.
+Use &ParmString; as a Policy URL for signatures (rfc2440:5.2.3.19).
+If you prefix it with an exclamation mark (!), the policy URL packet
+will be flagged as critical.  --sig-policy-url sets a a policy url for
+data signatures.  --cert-policy-url sets a policy url for key
+signatures (certifications).  --set-policy-url sets both.
 </para><para>
 The same %-expandos used for notation data are available here as well.
 </para></listitem></varlistentry>
@@ -2000,7 +2001,6 @@ Suppress the warning about "using insecure memory".
 <varlistentry>
 <term>--no-permission-warning</term>
 <listitem><para>
-
 Suppress the warning about unsafe file and home directory (--homedir)
 permissions.  Note that the permission checks that GnuPG performs are
 not intended to be authoritative, but rather they simply warn about
@@ -2031,8 +2031,11 @@ Assume the input data is not in ASCII armored format.
 <varlistentry>
 <term>--no-default-keyring</term>
 <listitem><para>
-Do not add the default keyrings to the list of
-keyrings.
+Do not add the default keyrings to the list of keyrings.  Note that
+GnuPG will not operate without any keyrings, so if you use this option
+and do not provide alternate keyrings via --keyring or
+--secret-keyring, then GnuPG will still use the default public or
+secret keyrings.
 </para></listitem></varlistentry>
 
 
@@ -2111,10 +2114,10 @@ This is not for normal use.  Use the source to see for what it might be useful.
 <varlistentry>
 <term>--emulate-md-encode-bug</term>
 <listitem><para>
-GnuPG versions prior to 1.0.2 had a bug in the way a signature was encoded.
-This options enables a workaround by checking faulty signatures again with
-the encoding used in old versions.  This may only happen for ElGamal signatures
-which are not widely used.
+GnuPG versions prior to 1.0.2 had a bug in the way a signature was
+encoded.  This options enables a workaround by checking faulty
+signatures again with the encoding used in old versions.  This may
+only happen for Elgamal signatures which are not widely used.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2361,10 +2364,10 @@ in front.
     </variablelist>
 
     <para>
-Note that you can append an exclamation mark (!) to key IDs or
-fingerprints.  This flag tells GnuPG to use exactly the given primary
-or secondary key and not to try to figure out which secondary or
-primary key to use.
+Note that you can append an exclamation point (!) to key IDs or
+fingerprints.  This flag tells GnuPG to use the specified primary or
+secondary key and not to try and calculate which primary or secondary
+key to use.
     </para>
 
 </refsect1>
@@ -2555,22 +2558,23 @@ cannot be read by the intended recipient.
 </para>
 
 <para>
-For example, as of this writing, no version of official PGP supports
+For example, as of this writing, no (unhacked) version of PGP supports
 the BLOWFISH cipher algorithm.  If you use it, no PGP user will be
 able to decrypt your message.  The same thing applies to the ZLIB
-compression algorithm.  By default, GnuPG uses the OpenPGP preferences
-system that will always do the right thing and create messages that
-are usable by all recipients, regardless of which OpenPGP program they
-use.  Only override this safe default if you know what you are doing.
+compression algorithm.  By default, GnuPG uses the standard OpenPGP
+preferences system that will always do the right thing and create
+messages that are usable by all recipients, regardless of which
+OpenPGP program they use.  Only override this safe default if you know
+what you are doing.
 </para>
 
 <para>
 If you absolutely must override the safe default, or if the
 preferences on a given key are invalid for some reason, you are far
-better off using the --pgp2, --pgp6, --pgp7, or --pgp8 options.  These
-options are safe as they do not force any particular algorithms in
-violation of OpenPGP, but rather reduce the available algorithms to a
-"PGP-safe" list.
+better off using the --pgp6, --pgp7, or --pgp8 options.  These options
+are safe as they do not force any particular algorithms in violation
+of OpenPGP, but rather reduce the available algorithms to a "PGP-safe"
+list.
 </para>
 
 </refsect1>
@@ -2580,10 +2584,11 @@ violation of OpenPGP, but rather reduce the available algorithms to a
     <title>BUGS</title>
     <para>
 On many systems this program should be installed as setuid(root). This
-is necessary to lock memory pages. Locking memory pages prevents the
-operating system from writing memory pages to disk. If you get no
+is necessary to lock memory pages.  Locking memory pages prevents the
+operating system from writing memory pages (which may contain
+passphrases or other sensitive material) to disk.  If you get no
 warning message about insecure memory your operating system supports
-locking without being root. The program drops root privileges as soon
+locking without being root.  The program drops root privileges as soon
 as locked memory is allocated.
 </para>
 </refsect1>
