@@ -1,3 +1,7 @@
+2002-09-15  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Add rebuild-keydb-caches.
+
 2002-09-12  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (EXTRA_DIST): Include gnupg-32.reg
