@@ -700,7 +700,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
                         + uidlen + 15 + strlen(algo_name) + keystrlen()
                         + strlen (timestr) + strlen (maink) );
       sprintf (atext, PROMPTSTRING,
-               uidlen, uid,
+               (int)uidlen, uid,
                nbits_from_pk (pk), algo_name, keystr(&keyid[0]), timestr,
                maink  );
       m_free (uid);

@@ -1,3 +1,8 @@
+2004-10-17  Werner Koch  <wk@g10code.com>
+
+	* passphrase.c (agent_get_passphrase): Cast UIDLEN to int.  Noted
+	by Christian Cornelssen.
+
 2004-10-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_one_sig_subpkt, enum_sig_subpkt): Don't
@@ -3154,8 +3159,8 @@
 	(import_one): Use it here.
         Use merge_keys_and_selfsig in the interactive mode to avoid
         wrong key information.
-        * status.h: Add new status code.
-        * status.c: Ditto.
+	* status.h: Add new status code.
+	* status.c: Ditto.
 	
 2002-12-13  David Shaw  <dshaw@jabberwocky.com>
 
