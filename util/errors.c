@@ -104,6 +104,7 @@ g10_errstr( int err )
       /* the key cannot be used for a specific usage */
       X(UNU_PUBKEY     ,N_("unusable public key"))
       X(UNU_SECKEY     ,N_("unusable secret key"))
+      X(KEYSERVER      ,N_("keyserver error"))
       default: p = buf; sprintf(buf, "g10err=%d", err); break;
     }
   #undef X

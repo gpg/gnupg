@@ -1,3 +1,10 @@
+2001-12-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* KEYSERVER_SCHEME_NOT_FOUND should be 127 to match the POSIX
+	system() (via /bin/sh) way of signaling this.
+	
+	* Added G10ERR_KEYSERVER
+
 2001-12-27  Werner Koch  <wk@gnupg.org>
 
 	* util.h [MINGW32]: Fixed name of include file.

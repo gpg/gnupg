@@ -1,3 +1,20 @@
+2001-12-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* exec.c (exec_finish): Show errors when temp files cannot be
+	deleted for whatever reason.
+
+	* exec.c (exec_read): Don't rely on WEXITSTATUS being present.
+
+	* exec.c (make_tempdir): Add temp file creator for win32.  Don't
+	create an incoming temp file if the exec is write-only.
+
+	* keyserver.c (keyserver_spawn): Clean up error handling, for when
+	the spawn fails.
+
+	* photoid.c (show_photo): Clean up error handling.
+
+	* misc.c (check_permissions): Neaten.
+
 2001-12-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* mkdtemp.c (mkdtemp): Add copyleft info and tweak the 'X' counter

@@ -74,6 +74,7 @@
 #define G10ERR_NOT_PROCESSED  52
 #define G10ERR_UNU_PUBKEY     53
 #define G10ERR_UNU_SECKEY     54
+#define G10ERR_KEYSERVER      55
 
 
 #ifndef HAVE_STRERROR

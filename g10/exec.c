@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifndef HAVE_DOSISH_SYSTEM
+#ifndef EXEC_TEMPFILE_ONLY
 #include <sys/wait.h>
 #endif
 #include <fcntl.h>
@@ -58,9 +58,21 @@ static int make_tempdir(struct exec_info *info)
 	    {
 #ifdef __riscos__
 	      tmp="<Wimp$ScrapDir>";
-#elsif HAVE_DOSISH_SYSTEM
-	      tmp=m_alloc(1024);
-	      GetTempPath(1023,tmp);
+#elif defined (__MINGW32__) || defined (__CYGWIN32__)
+	      tmp=m_alloc(256);
+	      if(GetTempPath(256,tmp)==0)
+		strcpy(tmp,"c:\temp");
+	      else
+		{
+		  int len=strlen(tmp);
+
+		  /* GetTempPath may return with \ on the end */
+		  while(len>0 && tmp[len-1]=='\\')
+		    {
+		      tmp[len-1]='\0';
+		      len--;
+		    }
+		}
 #else
 	      tmp="/tmp";
 #endif
@@ -72,7 +84,7 @@ static int make_tempdir(struct exec_info *info)
 
   sprintf(info->tempdir,"%s" DIRSEP_S "gpg-XXXXXX",tmp);
 
-#ifdef HAVE_DOSISH_SYSTEM
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
   m_free(tmp);
 #endif
 
@@ -87,16 +99,19 @@ static int make_tempdir(struct exec_info *info)
       sprintf(info->tempfile_in,"%s" DIRSEP_S "datain" EXTSEP_S "%s",
 	      info->tempdir,info->binary?"bin":"txt");
 
-      info->tempfile_out=m_alloc(strlen(info->tempdir)+1+11+1);
-      sprintf(info->tempfile_out,"%s" DIRSEP_S "dataout" EXTSEP_S "%s",
-	      info->tempdir,info->binary?"bin":"txt");
+      if(!info->writeonly)
+	{
+	  info->tempfile_out=m_alloc(strlen(info->tempdir)+1+11+1);
+	  sprintf(info->tempfile_out,"%s" DIRSEP_S "dataout" EXTSEP_S "%s",
+		  info->tempdir,info->binary?"bin":"txt");
+	}
     }
 
   return info->madedir?0:G10ERR_GENERAL;
 }
 
-/* Expands %i and %o in the args to the full temp files (within the
-   temp directory */
+/* Expands %i and %o in the args to the full temp files within the
+   temp directory. */
 static int expand_args(struct exec_info *info,const char *args_in)
 {
   const char *ch=args_in;
@@ -193,10 +208,8 @@ static int expand_args(struct exec_info *info,const char *args_in)
 }
 
 /* Either handles the tempfile creation, or the fork/exec.  If it
-   returns ok, then info->tochild is a FILE * that can be written
-   to. */
-
-/* The rules are: if there are no args, then it's a fork/exec/pipe.
+   returns ok, then info->tochild is a FILE * that can be written to.
+   The rules are: if there are no args, then it's a fork/exec/pipe.
    If there are args, but no tempfiles, then it's a fork/exec/pipe via
    shell -c.  If there are tempfiles, then it's a system. */
 
@@ -355,10 +368,9 @@ int exec_write(struct exec_info **info,const char *program,
       goto fail;
     }
 
-  return 0;
+  ret=0;
 
  fail:
-  exec_finish(*info);
   return ret;
 }
 
@@ -379,12 +391,21 @@ int exec_read(struct exec_info *info)
 	{
 	  log_error(_("system error while calling external program: %s\n"),
 		    strerror(errno));
+	  info->progreturn=127;
 	  goto fail;
 	}
+      else
+	{
+#ifdef WEXITSTATUS
+	  info->progreturn=WEXITSTATUS(info->progreturn);
+#else
+	  info->progreturn/=256;
+#endif
+	}
 
-    #ifndef HAVE_DOSISH_SYSTEM
-      info->progreturn=WEXITSTATUS(info->progreturn);
-    #endif      
+      /* 127 is the magic value returned from system() to indicate
+         that the shell could not be executed, or from /bin/sh to
+         indicate that the program could not be executed. */
 
       if(info->progreturn==127)
 	{
@@ -405,10 +426,9 @@ int exec_read(struct exec_info *info)
 	}
     }
 
-  return 0;
+  ret=0;
 
  fail:
-  exec_finish(info);
   return ret;
 }
 
@@ -436,12 +456,22 @@ int exec_finish(struct exec_info *info)
   if(info->madedir && !info->keep_temp_files)
     {
       if(info->tempfile_in)
-	unlink(info->tempfile_in);
+	{
+	  if(unlink(info->tempfile_in)==-1)
+	    log_info(_("Warning: unable to remove tempfile (%s) \"%s\": %s\n"),
+		     "in",info->tempfile_in,strerror(errno));
+	}
   
       if(info->tempfile_out)
-	unlink(info->tempfile_out);
+	{
+	  if(unlink(info->tempfile_out)==-1)
+	    log_info(_("Warning: unable to remove tempfile (%s) \"%s\": %s\n"),
+		     "out",info->tempfile_out,strerror(errno));
+	}
 
-      rmdir(info->tempdir);
+      if(rmdir(info->tempdir)==-1)
+	log_info(_("Warning: unable to remove temp directory \"%s\": %s\n"),
+		 info->tempdir,strerror(errno));
     }
 
   m_free(info->command);

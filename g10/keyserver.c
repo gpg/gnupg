@@ -452,7 +452,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
 
   if(!gotversion)
     {
-      log_error(_("keyserver communications error\n"));
+      log_error(_("keyserver did not send VERSION\n"));
       goto fail;
     }
 
@@ -510,9 +510,8 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
       break;
     }
 
-  *prog=exec_finish(spawn);
-
  fail:
+  *prog=exec_finish(spawn);
 
   return ret;
 }
@@ -558,13 +557,11 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
   /* It's not the internal HKP code, so try and spawn a handler for it */
 
-  if((rc=keyserver_spawn(action,list,kidlist,count,&ret))==0)
+  rc=keyserver_spawn(action,list,kidlist,count,&ret);
+  if(ret)
     {
       switch(ret)
 	{
-	case KEYSERVER_OK:
-	  break;
-
 	case KEYSERVER_SCHEME_NOT_FOUND:
 	  log_error(_("no handler for keyserver scheme \"%s\"\n"),
 		    opt.keyserver_scheme);
@@ -576,12 +573,12 @@ keyserver_work(int action,STRLIST list,u32 (*kidlist)[2],int count)
 	  break;
 	}
 
-      /* This is not the best error code for this */
-      return G10ERR_INVALID_URI;
+      return G10ERR_KEYSERVER;
     }
-  else
+
+  if(rc)
     {
-      log_error(_("keyserver communications error\n"));
+      log_error(_("keyserver communications error: %s\n"),g10_errstr(rc));
 
       return rc;
     }

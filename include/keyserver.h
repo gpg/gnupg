@@ -23,8 +23,8 @@
 
 /* Return codes */
 #define KEYSERVER_OK               0
-#define KEYSERVER_SCHEME_NOT_FOUND 1
-#define KEYSERVER_INTERNAL_ERROR   2
-#define KEYSERVER_VERSION_ERROR    3
+#define KEYSERVER_INTERNAL_ERROR   1
+#define KEYSERVER_VERSION_ERROR    2
+#define KEYSERVER_SCHEME_NOT_FOUND 127
 
 #endif /* !_KEYSERVER_H_ */

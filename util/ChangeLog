@@ -1,3 +1,7 @@
+2001-12-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* errors.c (g10_errstr): Added G10ERR_KEYSERVER
+
 2001-12-27  Werner Koch  <wk@gnupg.org>
 
 	* simple-gettext.c [MINGW32]: Fixed last changed.
