@@ -162,6 +162,7 @@ int keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
 
 
 /*-- pkclist.c --*/
+void show_revocation_reason( PKT_public_key *pk, int mode );
 int  check_signatures_trust( PKT_signature *sig );
 void release_pk_list( PK_LIST pk_list );
 int  build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use );

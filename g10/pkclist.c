@@ -70,7 +70,7 @@ do_show_revocation_reason( PKT_signature *sig )
 	else
 	    text = NULL;
 
-	log_info( _("Reason for revocation: ") );
+	log_info( _("reason for revocation: ") );
 	if( text )
 	    fputs( text, log_stream() );
 	else
@@ -87,7 +87,7 @@ do_show_revocation_reason( PKT_signature *sig )
 	    if( n ) {
 		pp = memchr( p, '\n', n );
 		nn = pp? pp - p : n;
-		log_info( _("Revocation comment: ") );
+		log_info( _("revocation comment: ") );
 		print_string( log_stream(), p, nn, 0 );
 		putc( '\n', log_stream() );
 		p += nn; n -= nn;
@@ -99,7 +99,7 @@ do_show_revocation_reason( PKT_signature *sig )
 /* Mode 0: try and find the revocation based on the pk (i.e. check
    subkeys, etc.)  Mode 1: use only the revocation on the main pk */
 
-static void
+void
 show_revocation_reason( PKT_public_key *pk, int mode )
 {
     /* Hmmm, this is not so easy becuase we have to duplicate the code
