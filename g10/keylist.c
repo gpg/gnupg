@@ -178,7 +178,7 @@ list_keyblock( KBNODE keyblock, int secret )
 	sk = node->pkt->pkt.secret_key;
 	keyid_from_sk( sk, keyid );
 	if( opt.with_colons )
-	    printf("sec::%u:%d:%08lX%08lX:%s:%s:::",
+	    printf("sec:u:%u:%d:%08lX%08lX:%s:%s:::",
 		    nbits_from_sk( sk ),
 		    sk->pubkey_algo,
 		    (ulong)keyid[0],(ulong)keyid[1],
@@ -225,10 +225,14 @@ list_keyblock( KBNODE keyblock, int secret )
 		if( opt.with_colons ) {
 		    byte namehash[20];
 
-		    rmd160_hash_buffer( namehash,
+		    if( pk ) {
+			rmd160_hash_buffer( namehash,
 					node->pkt->pkt.user_id->name,
 					node->pkt->pkt.user_id->len  );
-		    trustletter = query_trust_info( pk, namehash );
+			trustletter = query_trust_info( pk, namehash );
+		    }
+		    else
+			trustletter = 'u';
 		    printf("uid:%c::::::::", trustletter);
 		}
 		else

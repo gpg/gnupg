@@ -1,3 +1,8 @@
+Wed Mar 10 11:26:18 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* keylist.c (list_keyblock): Fixed segv in uid. Print 'u' as
+	validity of sks.
+
 Mon Mar  8 20:47:17 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* getkey.c (classify_user_id): Add new mode 12 (#<lid>).

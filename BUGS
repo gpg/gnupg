@@ -47,3 +47,9 @@ and after about half a day in the rsync snapshots.
     --> I hope I've fixed this: Please, can someone check this.
 	I can't reproduce it on the alpha I have access to.
 
+[ **] #12 1999-03-10
+    gpg --list-secret-keys --with-colon SEGVs
+    FIX: 1999-03-10
+
+Next #13
+

@@ -19,6 +19,7 @@
   * when decryptiong multiple key: print a warning only if no usable pubkey
     encrypt package was found.	Extension: display a list of all recipients.
 
+  * describe the Lim-Lee algorithms
 
 Nice to have
 ------------
