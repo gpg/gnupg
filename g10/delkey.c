@@ -156,6 +156,11 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
 	    log_error (_("deleting keyblock failed: %s\n"), g10_errstr(rc) );
 	    goto leave;
 	}
+
+	/* Note that the ownertrust being cleared will trigger a
+           revalidation_mark().  This makes sense - only deleting keys
+           that have ownertrust set should trigger this. */
+
         if (!secret && pk && clear_ownertrust (pk)) {
           if (opt.verbose)
             log_info (_("ownertrust information cleared\n"));

@@ -1,5 +1,20 @@
 2002-04-19  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (menu_deluid): Only cause a trust update if we delete
+	a non-revoked user id.
+
+	* hkp.c (hkp_ask_import), keyserver.c (parse_keyserver_options,
+	keyserver_spawn), options.h: Remove fast-import keyserver option
+	(no longer meaningful).
+
+	* g10.c (main), keyedit.c (sign_uids), options.h: Change
+	--default-check-level to --default-cert-check-level as it makes
+	clear what it operates on.
+
+	* g10.c (main): --pgp6 also implies --no-ask-sig-expire.
+
+	* delkey.c (do_delete_key): Comment.
+
 	* keyedit.c (sign_uids, keyedit_menu, menu_deluid, menu_delsig,
 	menu_expire, menu_revsig, menu_revkey): Only force a trustdb check
 	if we did something that changes it.

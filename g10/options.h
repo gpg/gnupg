@@ -68,7 +68,7 @@ struct {
     const char *def_secret_key;
     char *def_recipient;
     int def_recipient_self;
-    int def_check_level;
+    int def_cert_check_level;
     int no_comment;
     int no_version;
     int marginals_needed;
@@ -105,7 +105,6 @@ struct {
     struct
     {
       int verbose;
-      int fast_import:1;
       int include_revoked:1;
       int include_disabled:1;
       int use_temp_files:1;

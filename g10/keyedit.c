@@ -486,7 +486,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	  }
 
 	if(opt.batch)
-	  class=0x10+opt.def_check_level;
+	  class=0x10+opt.def_cert_check_level;
 	else
 	  {
 	    char *answer;
@@ -496,13 +496,13 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			 "above?  If you don't know what to answer, enter \"0\".\n"));
 	    tty_printf("\n");
 	    tty_printf(_("   (0) I will not answer.%s\n"),
-		       opt.def_check_level==0?" (default)":"");
+		       opt.def_cert_check_level==0?" (default)":"");
 	    tty_printf(_("   (1) I have not checked at all.%s\n"),
-		       opt.def_check_level==1?" (default)":"");
+		       opt.def_cert_check_level==1?" (default)":"");
 	    tty_printf(_("   (2) I have done casual checking.%s\n"),
-		       opt.def_check_level==2?" (default)":"");
+		       opt.def_cert_check_level==2?" (default)":"");
 	    tty_printf(_("   (3) I have done very careful checking.%s\n"),
-		       opt.def_check_level==3?" (default)":"");
+		       opt.def_cert_check_level==3?" (default)":"");
 	    tty_printf("\n");
 
 	    while(class==0)
@@ -510,7 +510,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		answer = cpr_get("sign_uid.class",_("Your selection? "));
 
 		if(answer[0]=='\0')
-		  class=0x10+opt.def_check_level; /* Default */
+		  class=0x10+opt.def_cert_check_level; /* Default */
 		else if(strcasecmp(answer,"0")==0)
 		  class=0x10; /* Generic */
 		else if(strcasecmp(answer,"1")==0)
@@ -1758,8 +1758,11 @@ menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    selected = node->flag & NODFLG_SELUID;
 	    if( selected ) {
+		/* Only cause a trust update if we delete a
+                   non-revoked user id */
+		if(!node->pkt->pkt.user_id->is_revoked)
+		  update_trust=1;
 		delete_kbnode( node );
-		update_trust=1;
 		if( sec_keyblock ) {
 		    KBNODE snode;
 		    int s_selected = 0;

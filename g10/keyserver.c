@@ -51,11 +51,7 @@ parse_keyserver_options(char *options)
 
   do
     {
-      if(strcasecmp(tok,"fast-import")==0)
-	opt.keyserver_options.fast_import=1;
-      else if(strcasecmp(tok,"no-fast-import")==0)
-	opt.keyserver_options.fast_import=0;
-      else if(strcasecmp(tok,"include-revoked")==0)
+      if(strcasecmp(tok,"include-revoked")==0)
 	opt.keyserver_options.include_revoked=1;
       else if(strcasecmp(tok,"no-include-revoked")==0)
 	opt.keyserver_options.include_revoked=0;
@@ -518,8 +514,7 @@ keyserver_spawn(int action,STRLIST list,
 	     do this could be to continue parsing this line-by-line and
 	     make a temp iobuf for each key. */
 
-	  import_keys_stream(spawn->fromchild,
-			     opt.keyserver_options.fast_import,stats_handle);
+	  import_keys_stream(spawn->fromchild,0,stats_handle);
 
 	  import_print_stats(stats_handle);
 	  import_release_stats_handle(stats_handle);

@@ -133,7 +133,7 @@ enum cmd_and_opt_values { aNull = 0,
     oWithFingerprint,
     oAnswerYes,
     oAnswerNo,
-    oDefCheckLevel,
+    oDefCertCheckLevel,
     oKeyring,
     oSecretKeyring,
     oShowKeyring,
@@ -471,7 +471,7 @@ static ARGPARSE_OPTS opts[] = {
     { oSkipVerify, "skip-verify",0, "@" },
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
-    { oDefCheckLevel, "default-check-level", 1, "@"},
+    { oDefCertCheckLevel, "default-cert-check-level", 1, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
     { oRunAsShmCP, "run-as-shm-coprocess", 4, "@" },
@@ -1026,7 +1026,7 @@ main( int argc, char **argv )
 	    break;
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
-          case oDefCheckLevel: opt.def_check_level=pargs.r.ret_int; break;
+          case oDefCertCheckLevel: opt.def_cert_check_level=pargs.r.ret_int; break;
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
@@ -1439,6 +1439,7 @@ main( int argc, char **argv )
 	    opt.no_comment=1;
 	    opt.escape_from=1;
 	    opt.force_v3_sigs=1;
+	    opt.ask_sig_expire=0;
 	    opt.def_compress_algo=1;
 	  }
       }
@@ -1496,7 +1497,7 @@ main( int argc, char **argv )
 	log_error(_("invalid S2K mode; must be 0, 1 or 3\n"));
     }
 
-    if(opt.def_check_level<0 || opt.def_check_level>3)
+    if(opt.def_cert_check_level<0 || opt.def_cert_check_level>3)
       log_error(_("invalid default-check-level; must be 0, 1, 2, or 3\n"));
 
     if (preference_list && keygen_set_std_prefs (preference_list))
