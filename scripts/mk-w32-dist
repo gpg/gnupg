@@ -40,6 +40,10 @@ cp ${bindir}/g10/gpg.exe gpg.exe
 mingw32 strip gpg.exe
 cp ${bindir}/g10/gpgv.exe gpgv.exe
 mingw32 strip gpgv.exe
+cp ${bindir}/keyserver/gpgkeys_ldap.exe gpgkeys_ldap.exe
+mingw32 strip gpgkeys_ldap.exe
+cp ${bindir}/keyserver/gpgkeys_hkp.exe gpgkeys_hkp.exe
+mingw32 strip gpgkeys_hkp.exe
 cp ${bindir}/tools/gpgsplit.exe gpgsplit.exe
 mingw32 strip gpgsplit.exe
 
@@ -66,11 +70,12 @@ done
 for i in ${srcdir}/po/*.po; do
    lang=$(basename $i .po)
    fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
+   # pl is also cp1250 but the current PO file can't be converted.
    case $lang in 
-     cs|pl) toset="CP1250" ;;
+     cs) toset="CP1250" ;;  
      tr) toset="CP1254" ;;   # DOS: CP857
      el) toset="CP1253" ;;   # same as latin-7?
-     el|eo|et|ja) toset="" ;;
+     el|eo|et|ja|pl) toset="" ;;
       *) toset="CP850" ;;
    esac
    if [ -n "$toset" ]; then

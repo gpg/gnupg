@@ -1,3 +1,10 @@
+2002-11-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* mk-w32-dist: Don't use iconv for pl.po.  From Werner on stable
+	branch.
+
+	* mk-w32-dist: Include gpgkeys_ldap and gpgkeys_hkp.
+
 2002-11-12  Werner Koch  <wk@gnupg.org>
 
 	* config.sub, config.guess: Updated from ftp.gnu.org/gnu/config
