@@ -50,6 +50,7 @@
 #define PUBKEY_USAGE_ENC     2	    /* key is good for encryption */
 #define PUBKEY_USAGE_CERT    4      /* key is also good to certify other keys*/
 #define PUBKEY_USAGE_AUTH    8      /* key is good for authentication */
+#define PUBKEY_USAGE_UNKNOWN 128    /* key has an unknown usage bit */
 
 #define DIGEST_ALGO_MD5       1
 #define DIGEST_ALGO_SHA1      2
