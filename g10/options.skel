@@ -59,6 +59,7 @@ $Id$
 # Meta data and not for the actual message which does not undergo any
 # translation.  Note that future version of GnuPG will change to UTF-8
 # as default character set.
+
 #charset utf-8
 
 # Group names may be defined like this:
@@ -67,9 +68,11 @@ $Id$
 # Any time "mynames" is a recipient (-r or --recipient), it will be
 # expanded to the names "paige", "joe", and "patti", and the key ID
 # "0x12345678".  Note there is only one level of expansion - you
-# cannot make an group that points to another group.  Note if there
-# are spaces in the recipient name, this will appear as two
+# cannot make an group that points to another group.  Note also that
+# if there are spaces in the recipient name, this will appear as two
 # recipients.  In these cases it is better to use the key ID.
+
+#group mynames paige 0x12345678 joe patti
 
 # Lock the file only once for the lifetime of a process.  If you do
 # not define this, the lock will be obtained and released every time
@@ -103,11 +106,11 @@ lock-once
 # Most servers do synchronize with each other and DNS round-robin may
 # give you a quasi-random server each time.
 
-#keyserver x-hkp://keyserver.cryptnet.net
+#keyserver x-hkp://pgp.mit.edu
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
 #keyserver ldap://pgp.surfnet.nl:11370
 
-# Options for keyserver functions
+# Common options for keyserver functions:
 #
 # include-disabled = when searching, include keys marked as "disabled"
 #                    on the keyserver (not all keyservers support this).
@@ -131,10 +134,13 @@ lock-once
 #
 # broken-http-proxy = try to work around a buggy HTTP proxy
 #
-# auto-key-retrieve = automatically fetch keys as needed from the
-#                     keyserver when verifying signatures or when importing
-#                     keys that have been revoked by a revocation key that
-#                     is not present on the keyring.
+# auto-key-retrieve = automatically fetch keys as needed from the keyserver
+#                     when verifying signatures or when importing keys that
+#                     have been revoked by a revocation key that is not
+#                     present on the keyring.
+#
+# no-include-attributes = do not include attribute IDs (aka "photo IDs")
+#                         when sending keys to the keyserver.
 
 #keyserver-options auto-key-retrieve include-disabled include-revoked
 
