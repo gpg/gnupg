@@ -89,10 +89,10 @@ make_dirname(const char *filepath)
 
 
 
-/****************
- * Construct a filename from the NULL terminated list of parts.
- * Tilde expansion is done here.
- */
+/*
+  Construct a filename from the NULL terminated list of parts.  Tilde
+  expansion is done here.  Note that FIRST_PART must never be NULL and
+  that this function is guaranteed to return an allocated string.  */
 char *
 make_filename( const char *first_part, ... )
 {
