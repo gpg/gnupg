@@ -1570,18 +1570,21 @@ ask_expire_interval(int object)
 	}
 
 	if( !valid_days ) {
-	    tty_printf(_("%s does not expire at all\n"),
-		       object==0?"Key":"Signature");
+            tty_printf((object==0)
+                       ? _("Key does not expire at all\n") :
+                       : _("Signature does not expire at all\n"));
 	    interval = 0;
 	}
 	else {
 	    interval = valid_days * 86400L;
-	    /* print the date when the key expires */
-	    tty_printf(_("%s expires at %s\n"),
-		        object==0?"Key":"Signature",
+
+	    tty_printf(object==0
+                       ? _("Key expires at %s\n")
+		       : _("Signature expires at %s\n"),
 			asctimestamp((ulong)(curtime + interval) ) );
-            /* FIXME: This check yields warning on alhas:
-               write a configure check and to this check here only for 32 bit machines */
+            /* FIXME: This check yields warning on alhas: Write a
+               configure check and to this check here only for 32 bit
+               machines */
 	    if( (time_t)((ulong)(curtime+interval)) < 0 )
 		tty_printf(_("Your system can't display dates beyond 2038.\n"
 		    "However, it will be correctly handled up to 2106.\n"));

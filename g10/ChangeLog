@@ -1,5 +1,8 @@
 2004-12-20  Werner Koch  <wk@g10code.com>
 
+	* keygen.c (ask_expire_interval): For better translations chnage 2
+	strings.
+
 	* seckey-cert.c (do_check): Handle case when checksum was okay but
 	passphrase still wrong.  Roman Pavlik found such a case.
 
