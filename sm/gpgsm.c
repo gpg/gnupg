@@ -1480,7 +1480,7 @@ open_fwrite (const char *filename)
 static void
 run_protect_tool (int argc, char **argv)
 {
-  char *pgm = GNUPG_PROTECT_TOOL;
+  char *pgm = GNUPG_DEFAULT_PROTECT_TOOL;
   char **av;
   int i;
 
