@@ -55,7 +55,7 @@ overwrite_filep( const char *fname )
     if( opt.answer_no || opt.batch )
 	return 0;  /* do not overwrite */
 
-    tty_printf(_("File '%s' exists. "), fname);
+    tty_printf(_("File `%s' exists. "), fname);
     if( cpr_get_answer_is_yes("openfile.overwrite.okay",
 			       _("Overwrite (y/N)? ")) )
 	return 1;
@@ -102,7 +102,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 		rc = G10ERR_CREATE_FILE;
 	    }
 	    else if( opt.verbose )
-		log_info(_("writing to '%s'\n"), name );
+		log_info(_("writing to `%s'\n"), name );
 	}
 	else
 	    rc = G10ERR_FILE_EXISTS;
@@ -131,7 +131,7 @@ open_sigfile( const char *iname )
 	    buf[len-4] = 0 ;
 	    a = iobuf_open( buf );
 	    if( opt.verbose )
-		log_info(_("assuming signed data in '%s'\n"), buf );
+		log_info(_("assuming signed data in `%s'\n"), buf );
 	    m_free(buf);
 	}
     }

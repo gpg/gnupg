@@ -195,18 +195,18 @@ main( int argc, char **argv )
 	if( !configfp ) {
 	    if( default_config ) {
 		if( parse_debug )
-		    log_info("note: no default option file '%s'\n",
+		    log_info("note: no default option file `%s'\n",
 							    configname );
 	    }
 	    else {
-		log_error("option file '%s': %s\n",
+		log_error("option file `%s': %s\n",
 				    configname, strerror(errno) );
 		g10_exit(1);
 	    }
 	    m_free(configname); configname = NULL;
 	}
 	if( parse_debug && configname )
-	    log_info("reading options from '%s'\n", configname );
+	    log_info("reading options from `%s'\n", configname );
 	default_config = 0;
     }
 

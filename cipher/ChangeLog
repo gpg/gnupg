@@ -1,3 +1,8 @@
+Tue Dec 29 14:41:47 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* random.c: add unistd.h for getpid().
+	(RAND_MAX): Fallback value for Sun.
+
 Wed Dec 23 17:12:24 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* md.c (md_copy): Reset debug.

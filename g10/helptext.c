@@ -213,7 +213,7 @@ display_online_help( const char *keyword )
 	    for(i=0; (p=helptexts[i].key) && strcmp( p, keyword ); i++ )
 		;
 	    if( !p || !*helptexts[i].help )
-		tty_printf(_("No help available for '%s'"), keyword );
+		tty_printf(_("No help available for `%s'"), keyword );
 	    else
 		tty_printf("%s", helptexts[i].help );
 	}

@@ -15,11 +15,10 @@ Important
 
     * It has been reported that lockfiles are not removed in all cases.
       cleanup is done with atexit() and all signals trigger exit() -
-      anything wrong with this?
+      anything wrong with this?  - ah yes: a signal while still in
+      dotlock_make
 
-    * I noticed, that we sometimes have only 3 items in a trustrecord, but
-      a next pointer ro more records - check wehther the reuse code really
-      works. Maybe this is the reason for the "Hmmm public key lost"
+    * See why we always get this "Hmmm public key lost"
 
 Needed
 ------
@@ -44,4 +43,5 @@ Nice to have
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
     * change the fake_data stuff to mpi_set_opaque
+    * rewrite the ugly armor code.
 

@@ -444,7 +444,7 @@ iobuf_close( IOBUF a )
 	    log_error("iobuf_flush failed on close: %s\n", g10_errstr(rc));
 
 	if( DBG_IOBUF )
-	    log_debug("iobuf-%d.%d: close '%s'\n", a->no, a->subno, a->desc );
+	    log_debug("iobuf-%d.%d: close `%s'\n", a->no, a->subno, a->desc );
 	if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE,
 					 a->chain, NULL, &dummy_len)) )
 	    log_error("IOBUFCTRL_FREE failed on close: %s\n", g10_errstr(rc) );
@@ -526,7 +526,7 @@ iobuf_open( const char *fname )
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
-	log_debug("iobuf-%d.%d: open '%s'\n", a->no, a->subno, fname );
+	log_debug("iobuf-%d.%d: open `%s'\n", a->no, a->subno, fname );
 
     return a;
 }
@@ -560,7 +560,7 @@ iobuf_create( const char *fname )
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
-	log_debug("iobuf-%d.%d: create '%s'\n", a->no, a->subno, a->desc );
+	log_debug("iobuf-%d.%d: create `%s'\n", a->no, a->subno, a->desc );
 
     return a;
 }
@@ -590,7 +590,7 @@ iobuf_append( const char *fname )
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
-	log_debug("iobuf-%d.%d: append '%s'\n", a->no, a->subno, a->desc );
+	log_debug("iobuf-%d.%d: append `%s'\n", a->no, a->subno, a->desc );
 
     return a;
 }
@@ -616,7 +616,7 @@ iobuf_openrw( const char *fname )
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
-	log_debug("iobuf-%d.%d: openrw '%s'\n", a->no, a->subno, a->desc );
+	log_debug("iobuf-%d.%d: openrw `%s'\n", a->no, a->subno, a->desc );
 
     return a;
 }
@@ -708,9 +708,9 @@ iobuf_push_filter( IOBUF a,
     f( ov, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &dummy_len );
 
     if( DBG_IOBUF ) {
-	log_debug("iobuf-%d.%d: push '%s'\n", a->no, a->subno, a->desc );
+	log_debug("iobuf-%d.%d: push `%s'\n", a->no, a->subno, a->desc );
 	for(b=a; b; b = b->chain )
-	    log_debug("\tchain: %d.%d '%s'\n", b->no, b->subno, b->desc );
+	    log_debug("\tchain: %d.%d `%s'\n", b->no, b->subno, b->desc );
     }
 
     /* now we can initialize the new function if we have one */
@@ -735,7 +735,7 @@ iobuf_pop_filter( IOBUF a, int (*f)(void *opaque, int control,
 	BUG();
 
     if( DBG_IOBUF )
-	log_debug("iobuf-%d.%d: pop '%s'\n", a->no, a->subno, a->desc );
+	log_debug("iobuf-%d.%d: pop `%s'\n", a->no, a->subno, a->desc );
     if( !a->filter ) { /* this is simple */
 	b = a->chain;
 	assert(b);
@@ -872,9 +872,9 @@ iobuf_clear_eof(IOBUF a)
     assert(a->usage == 1);
 
     if( a->filter )
-	log_info("iobuf-%d.%d: clear_eof '%s' with enabled filter\n", a->no, a->subno, a->desc );
+	log_info("iobuf-%d.%d: clear_eof `%s' with enabled filter\n", a->no, a->subno, a->desc );
     if( !a->filter_eof )
-	log_info("iobuf-%d.%d: clear_eof '%s' with no EOF pending\n", a->no, a->subno, a->desc );
+	log_info("iobuf-%d.%d: clear_eof `%s' with no EOF pending\n", a->no, a->subno, a->desc );
     iobuf_pop_filter(a, NULL, NULL);
 }
 
@@ -1104,6 +1104,7 @@ iobuf_unget_and_close_temp( IOBUF a, IOBUF temp )
     a->unget.buf = m_alloc( a->unget.size );
     a->nofast |= 2;
     a->unget.len = temp->d.len;
+    a->unget.start = 0;
     memcpy( a->unget.buf, temp->d.buf, a->unget.len );
     iobuf_close(temp);
 }

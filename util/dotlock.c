@@ -66,7 +66,10 @@ make_dotlock( const char *file_to_lock, long timeout )
     /* fixme: add the hostname to the second line (FQDN or IP addr?) */
 
     /* create a temporary file */
-  #if SYS_NMLN < 8
+  #if defined(SYS_NMLN) && SYS_NMLN < 8
+    #error Aiiih
+  #elif !defined(SYS_NMLN) && MAXHOSTNAMELEN < 8
+    /* (SunOS uses a structure of size MAXHOSTNAMELEN) */
     #error Aiiih
   #endif
     if( uname( &uts ) )
@@ -96,17 +99,17 @@ make_dotlock( const char *file_to_lock, long timeout )
 			  S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR );
     } while( fd == -1 && errno == EINTR );
     if( fd == -1 ) {
-	log_error( "failed to create temporary file '%s': %s\n",
+	log_error( "failed to create temporary file `%s': %s\n",
 					      tname, strerror(errno));
 	goto leave;
     }
     have_tfile = 1;
     if( write(fd, pidstr, 11 ) != 11 ) {
-	log_fatal( "error writing to '%s': %s\n", tname, strerror(errno) );
+	log_fatal( "error writing to `%s': %s\n", tname, strerror(errno) );
 	goto leave;
     }
     if( close(fd) ) {
-	log_error( "error closing '%s': %s\n", tname, strerror(errno));
+	log_error( "error closing `%s': %s\n", tname, strerror(errno));
 	goto leave;
     }
     fd = -1;
@@ -197,7 +200,7 @@ release_dotlock( const char *lockfile )
 	return -1;
     }
     if( remove( lockfile ) ) {
-	log_error( "release_dotlock: error removing lockfile '%s'",
+	log_error( "release_dotlock: error removing lockfile `%s'",
 							    lockfile);
 	return -1;
     }
@@ -217,12 +220,12 @@ read_lockfile( const char *name )
 
     if( (fd = open(name, O_RDONLY)) == -1 ) {
 	int e = errno;
-	log_debug("error opening lockfile '%s': %s\n", name, strerror(errno) );
+	log_debug("error opening lockfile `%s': %s\n", name, strerror(errno) );
 	errno = e;
 	return -1;
     }
     if( read(fd, pidstr, 10 ) != 10 ) {
-	log_debug("error reading lockfile '%s'", name );
+	log_debug("error reading lockfile `%s'", name );
 	close(fd);
 	errno = 0;
 	return -1;
@@ -230,7 +233,7 @@ read_lockfile( const char *name )
     close(fd);
     pid = atoi(pidstr);
     if( !pid || pid == -1 ) {
-	log_error("invalid pid %d in lockfile '%s'", pid, name );
+	log_error("invalid pid %d in lockfile `%s'", pid, name );
 	errno = 0;
 	return -1;
     }

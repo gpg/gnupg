@@ -24,8 +24,8 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <unistd.h>
 #if defined(HAVE_MLOCK) || defined(HAVE_MMAP)
-  #include <unistd.h>
   #include <sys/mman.h>
   #include <sys/types.h>
   #include <fcntl.h>

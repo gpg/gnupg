@@ -71,7 +71,7 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
     rc = cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen );
     if( rc == G10ERR_WEAK_KEY )
-	log_info(_("WARNING: Message was encrypted with "
+	log_info(_("WARNING: message was encrypted with "
 		    "a weak key in the symmetric cipher.\n"));
     else if( rc )
 	log_error("key setup failed: %s\n", g10_errstr(rc) );

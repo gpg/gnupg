@@ -139,7 +139,7 @@ static void
 die_invalid_db()
 {
     log_error(_(
-	"The trust DB is corrupted; please run \"gpgm --fix-trust-db\".\n") );
+	"The trustdb is corrupted; please run \"gpgm --fix-trustdb\".\n") );
     g10_exit(2);
 }
 
@@ -195,7 +195,7 @@ do_sync( )
     int rc = tdbio_sync();
     if( !rc )
 	return;
-    log_error(_("trust db: sync failed: %s\n"), g10_errstr(rc) );
+    log_error(_("trustdb: sync failed: %s\n"), g10_errstr(rc) );
     g10_exit(2);
 }
 
@@ -1220,10 +1220,10 @@ import_ownertrust( const char *fname )
 	rc = tdbio_search_dir_byfpr( line, fprlen, 0, &rec );
 	if( !rc ) { /* found: update */
 	    if( rec.r.dir.ownertrust )
-		log_info(_("LID %lu: changing trust from %u to %u\n"),
+		log_info("LID %lu: changing trust from %u to %u\n",
 			  rec.r.dir.lid, rec.r.dir.ownertrust, otrust );
 	    else
-		log_info(_("LID %lu: setting trust to %u\n"),
+		log_info("LID %lu: setting trust to %u\n",
 				   rec.r.dir.lid, otrust );
 	    rec.r.dir.ownertrust = otrust;
 	    write_record( &rec );

@@ -229,7 +229,7 @@ put_record_into_cache( ulong recno, const char *data )
 	    cache_entries++;
 	    return 0;
 	}
-	log_info(_("trustdb transaction to large\n"));
+	log_info(_("trustdb transaction too large\n"));
 	return G10ERR_RESOURCE_LIMIT;
     }
     if( dirty_count ) {
@@ -460,9 +460,9 @@ tdbio_set_dbname( const char *new_dbname, int create )
 						   fname, g10_errstr(rc));
 	    /* and read again to check that we are okay */
 	    if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
-		log_fatal( _("%s: invalid trust-db created\n"), db_name );
+		log_fatal( _("%s: invalid trustdb created\n"), db_name );
 
-	    log_info(_("%s: trust-db created\n"), db_name);
+	    log_info(_("%s: trustdb created\n"), db_name);
 
 	    return 0;
 	}
@@ -503,7 +503,7 @@ open_db()
     if( db_fd == -1 )
 	log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
     if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
-	log_fatal( _("%s: invalid trust-db\n"), db_name );
+	log_fatal( _("%s: invalid trustdb\n"), db_name );
     atexit( cleanup );
 }
 

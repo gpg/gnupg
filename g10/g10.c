@@ -615,18 +615,18 @@ main( int argc, char **argv )
 	if( !configfp ) {
 	    if( default_config ) {
 		if( parse_debug )
-		    log_info(_("NOTE: no default option file '%s'\n"),
+		    log_info(_("NOTE: no default option file `%s'\n"),
 							    configname );
 	    }
 	    else {
-		log_error(_("option file '%s': %s\n"),
+		log_error(_("option file `%s': %s\n"),
 				    configname, strerror(errno) );
 		g10_exit(2);
 	    }
 	    m_free(configname); configname = NULL;
 	}
 	if( parse_debug && configname )
-	    log_info(_("reading options from '%s'\n"), configname );
+	    log_info(_("reading options from `%s'\n"), configname );
 	default_config = 0;
     }
 
@@ -855,7 +855,7 @@ main( int argc, char **argv )
 	for( ; *p && (isdigit(*p) || *p=='.'); p++ )
 	    ;
 	if( *p )
-	    log_info("NOTE: This is a development version!\n");
+	    log_info("NOTE: this is a development version!\n");
     }
 
     if( log_get_errorcount(0) )
@@ -1088,7 +1088,7 @@ main( int argc, char **argv )
 	for( ; argc; argc--, argv++ ) {
 	    rc = import_keys( *argv, (cmd == aFastImport) );
 	    if( rc )
-		log_error("import from '%s' failed: %s\n",
+		log_error("import from `%s' failed: %s\n",
 						*argv, g10_errstr(rc) );
 	}
 	break;
@@ -1198,7 +1198,7 @@ main( int argc, char **argv )
 	    int algo = string_to_digest_algo(*argv);
 
 	    if( !algo )
-		log_error(_("invalid hash algorithm '%s'\n"), *argv );
+		log_error(_("invalid hash algorithm `%s'\n"), *argv );
 	    else {
 		argc--; argv++;
 		if( !argc )
@@ -1284,7 +1284,7 @@ main( int argc, char **argv )
 	    log_info(_("Go ahead and type your message ...\n"));
 
 	if( !(a = iobuf_open(fname)) )
-	    log_error(_("can't open '%s'\n"), print_fname_stdin(fname));
+	    log_error(_("can't open `%s'\n"), print_fname_stdin(fname));
 	else {
 
 	    if( !opt.no_armor ) {

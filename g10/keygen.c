@@ -848,8 +848,8 @@ generate_keypair()
     pub_fname = make_filename(opt.homedir, "pubring.gpg", NULL );
     sec_fname = make_filename(opt.homedir, "secring.gpg", NULL );
     if( opt.verbose ) {
-	tty_printf(_("writing public certificate to '%s'\n"), pub_fname );
-	tty_printf(_("writing secret certificate to '%s'\n"), sec_fname );
+	tty_printf(_("writing public certificate to `%s'\n"), pub_fname );
+	tty_printf(_("writing secret certificate to `%s'\n"), sec_fname );
     }
 
     /* we create the packets as a tree of kbnodes. Because the structure
@@ -894,11 +894,11 @@ generate_keypair()
 	/* we can now write the certificates */
 	if( get_keyblock_handle( pub_fname, 0, &pub_kbpos ) ) {
 	    if( add_keyblock_resource( pub_fname, 1, 0 ) ) {
-		log_error("can add keyblock file '%s'\n", pub_fname );
+		log_error("can add keyblock file `%s'\n", pub_fname );
 		rc = G10ERR_CREATE_FILE;
 	    }
 	    else if( get_keyblock_handle( pub_fname, 0, &pub_kbpos ) ) {
-		log_error("can get keyblock handle for '%s'\n", pub_fname );
+		log_error("can get keyblock handle for `%s'\n", pub_fname );
 		rc = G10ERR_CREATE_FILE;
 	    }
 	}
@@ -906,11 +906,11 @@ generate_keypair()
 	    ;
 	else if( get_keyblock_handle( sec_fname, 1, &sec_kbpos ) ) {
 	    if( add_keyblock_resource( sec_fname, 1, 1 ) ) {
-		log_error("can add keyblock file '%s'\n", sec_fname );
+		log_error("can add keyblock file `%s'\n", sec_fname );
 		rc = G10ERR_CREATE_FILE;
 	    }
 	    else if( get_keyblock_handle( sec_fname, 1, &sec_kbpos ) ) {
-		log_error("can get keyblock handle for '%s'\n", sec_fname );
+		log_error("can get keyblock handle for `%s'\n", sec_fname );
 		rc = G10ERR_CREATE_FILE;
 	    }
 	}

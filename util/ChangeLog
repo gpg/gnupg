@@ -1,3 +1,11 @@
+Tue Dec 29 14:41:47 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* secmem.c: Moved unistd.h out of the #ifdef
+
+	* dotlock.c (make_dotlock): Sun has no SYS_NMLN
+
+	* iobuf.c (iobuf_unget_and_close_temp): Reset .start
+
 Sat Dec 12 18:40:32 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* argparse.c (arg_pars): fixed opts[i] with negative index.

@@ -56,7 +56,7 @@ decrypt_message( const char *filename )
     /* open the message file */
     fp = iobuf_open(filename);
     if( !fp ) {
-	log_error(_("can't open '%s'\n"), print_fname_stdin(filename));
+	log_error(_("can't open `%s'\n"), print_fname_stdin(filename));
 	return G10ERR_OPEN_FILE;
     }
 

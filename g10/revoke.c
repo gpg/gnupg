@@ -70,7 +70,7 @@ gen_revoke( const char *uname )
     /* search the userid */
     rc = find_secret_keyblock_byname( &kbpos, uname );
     if( rc ) {
-	log_error(_("secret key for user '%s' not found\n"), uname );
+	log_error(_("secret key for user `%s' not found\n"), uname );
 	goto leave;
     }
 

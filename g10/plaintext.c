@@ -123,7 +123,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     if( fp || nooutput )
 	;
     else if( !(fp = fopen(fname,"wb")) ) {
-	log_error("Error creating '%s': %s\n", fname, strerror(errno) );
+	log_error("Error creating `%s': %s\n", fname, strerror(errno) );
 	rc = G10ERR_CREATE_FILE;
 	goto leave;
     }
@@ -146,7 +146,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		continue; /* fixme: this hack might be too simple */
 	    if( fp ) {
 		if( putc( c, fp ) == EOF ) {
-		    log_error("Error writing to '%s': %s\n",
+		    log_error("Error writing to `%s': %s\n",
 					    fname, strerror(errno) );
 		    rc = G10ERR_WRITE_FILE;
 		    goto leave;
@@ -166,7 +166,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		continue; /* fixme: this hack might be too simple */
 	    if( fp ) {
 		if( putc( c, fp ) == EOF ) {
-		    log_error("Error writing to '%s': %s\n",
+		    log_error("Error writing to `%s': %s\n",
 						fname, strerror(errno) );
 		    rc = G10ERR_WRITE_FILE;
 		    goto leave;
@@ -179,7 +179,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	special_md_putc(mfx->md, -1, &special_state  ); /* flush */
 
     if( fp && fp != stdout && fclose(fp) ) {
-	log_error("Error closing '%s': %s\n", fname, strerror(errno) );
+	log_error("Error closing `%s': %s\n", fname, strerror(errno) );
 	fp = NULL;
 	rc = G10ERR_WRITE_FILE;
 	goto leave;
@@ -225,7 +225,7 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
 		any++;
 	    }
 	    else if( !fp ) {
-		log_error("can't open '%s': %s\n", answer, strerror(errno) );
+		log_error("can't open `%s': %s\n", answer, strerror(errno) );
 		rc = G10ERR_READ_FILE;
 		goto leave;
 	    }
@@ -297,7 +297,7 @@ hash_datafiles( MD_HANDLE md, STRLIST files,
     for( ; sl; sl = sl->next ) {
 	fp = iobuf_open( sl->d );
 	if( !fp ) {
-	    log_error(_("can't open signed data '%s'\n"),
+	    log_error(_("can't open signed data `%s'\n"),
 						print_fname_stdin(sl->d));
 	    if( !files )
 		free_strlist(sl);

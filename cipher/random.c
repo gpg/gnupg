@@ -35,6 +35,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #ifdef	HAVE_GETHRTIME
   #include <sys/times.h>
 #endif
@@ -51,6 +52,11 @@
 #include "random.h"
 #include "rand-internal.h"
 #include "dynload.h"
+
+
+#ifndef RAND_MAX   /* for SunOS */
+  #define RAND_MAX 32767
+#endif
 
 
 #if SIZEOF_UNSIGNED_LONG == 8

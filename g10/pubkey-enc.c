@@ -81,7 +81,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	    if( !rc )
 		rc = get_it( k, dek, sk, keyid );
 	    if( !rc ) {
-		log_info(_("okay, we are the anonymous receiver.\n") );
+		log_info(_("okay, we are the anonymous recipient.\n") );
 		break;
 	    }
 	}

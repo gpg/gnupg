@@ -84,11 +84,13 @@ disable_core_dumps()
 
     limit.rlim_cur = 0;
     limit.rlim_max = 0;
-    if( setrlimit( RLIMIT_CORE, &limit ) )
+    if( !setrlimit( RLIMIT_CORE, &limit ) )
+	return;
+    if( errno != EINVAL )
 	log_fatal(_("can't disable core dumps: %s\n"), strerror(errno) );
-  #else
-    log_info(_("WARNING: Program may create a core file!\n"));
   #endif
+    if( !opt.quiet )
+	log_info(_("WARNING: program may create a core file!\n"));
 }
 
 
@@ -230,7 +232,7 @@ print_cipher_algo_note( int algo )
 
 	if( !did_note ) {
 	    did_note = 1;
-	    log_info(_("This cipher algorithm is depreciated; "
+	    log_info(_("this cipher algorithm is depreciated; "
 		       "please use a more standard one!\n"));
 	}
     }

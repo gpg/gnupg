@@ -126,7 +126,7 @@ register_cipher_extension( const char *mainpgm, const char *fname )
     intex = NULL;
     for(r = extensions; r; r = r->next ) {
 	if( !compare_filenames(r->name, el->name) ) {
-	    log_info("extension '%s' already registered\n", el->name );
+	    log_info("extension `%s' already registered\n", el->name );
 	    m_free(el);
 	    return;
 	}
@@ -162,7 +162,7 @@ register_internal_cipher_extension(
     /* check that it is not already registered */
     for(r = extensions; r; r = r->next ) {
 	if( !compare_filenames(r->name, el->name) ) {
-	    log_info("extension '%s' already registered\n", el->name );
+	    log_info("extension `%s' already registered\n", el->name );
 	    m_free(el);
 	    return;
 	}

@@ -723,7 +723,8 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
  */
 
 static void
-merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
+merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode,
+			  PKT_public_key *orig_pk )
 {
     PKT_public_key *pk = knode->pkt->pkt.public_key;
     PKT_signature *sig;
@@ -737,6 +738,7 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
     if( pk->version < 4 )
 	return; /* this is only needed for version >=4 packets */
 
+
     /* find the selfsignature */
     if( knode->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	k = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -747,7 +749,7 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
     else
 	keyid_from_pk( pk, kid );
 
-    for(k=keyblock; k; k = k->next ) {
+    for(k=knode->next; k; k = k->next ) {
 	if( k->pkt->pkttype == PKT_SIGNATURE
 	    && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
 	    && sig->sig_class <= 0x30
@@ -765,12 +767,16 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode )
 
 	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
 	    ed = p? pk->timestamp + buffer_to_u32(p):0;
+	    /* use the latest self signature */
 	    if( sig->timestamp > sigdate ) {
 		pk->expiredate = ed;
+		orig_pk->expiredate = ed;
 		sigdate = sig->timestamp;
 	    }
 	    /* fixme: add usage etc. to pk */
 	}
+	else if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	    break; /* stop here */
     }
 }
 
@@ -796,6 +802,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
 		pk = NULL; /* not needed for old keys */
 	    else if( k->pkt->pkttype == PKT_PUBLIC_KEY )
 		keyid_from_pk( pk, kid );
+	    sigdate = 0;
 	}
 	else if( k->pkt->pkttype == PKT_SECRET_KEY
 	    || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
@@ -804,6 +811,7 @@ merge_keys_and_selfsig( KBNODE keyblock )
 		sk = NULL;
 	    else if( k->pkt->pkttype == PKT_SECRET_KEY )
 		keyid_from_sk( sk, kid );
+	    sigdate = 0;
 	}
 	else if( (pk || sk ) && k->pkt->pkttype == PKT_SIGNATURE
 		 && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
@@ -982,7 +990,7 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
     if( primary && !pk->pubkey_usage ) {
 	copy_public_key_new_namehash( pk, keyblock->pkt->pkt.public_key,
 				      use_namehash? namehash:NULL);
-	merge_one_pk_and_selfsig( keyblock, keyblock );
+	merge_one_pk_and_selfsig( keyblock, keyblock, pk );
     }
     else {
 	if( primary && pk->pubkey_usage
@@ -1027,7 +1035,7 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 
 	copy_public_key_new_namehash( pk, k->pkt->pkt.public_key,
 				      use_namehash? namehash:NULL);
-	merge_one_pk_and_selfsig( keyblock, k );
+	merge_one_pk_and_selfsig( keyblock, k, pk );
     }
 }
 
@@ -1395,7 +1403,7 @@ enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys )
     for( ; c->name; c->name = enum_keyblock_resources( &c->sequence, 1 ) ) {
 	if( !c->iobuf ) {
 	    if( !(c->iobuf = iobuf_open( c->name ) ) ) {
-		log_error("enum_secret_keys: can't open '%s'\n", c->name );
+		log_error("enum_secret_keys: can't open `%s'\n", c->name );
 		continue; /* try next file */
 	    }
 	}

@@ -560,7 +560,7 @@ start_gatherer( int pipefd )
 	if( s ) {
 	    dbgfp = (*s=='-' && !s[1])? stdout : fopen(s, "a");
 	    if( !dbgfp )
-		g10_log_info("can't open debug file '%s': %s\n",
+		g10_log_info("can't open debug file `%s': %s\n",
 			     s, strerror(errno) );
 	    else
 		fprintf(dbgfp,"\nSTART RNDUNIX DEBUG pid=%d\n", (int)getpid());

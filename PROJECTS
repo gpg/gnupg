@@ -45,3 +45,5 @@
 
     * Work on the library
 
+    * Keep a list of duplicate, faked or unwanted keyids.
+

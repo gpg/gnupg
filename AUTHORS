@@ -56,14 +56,18 @@ TRANSLATIONS	Thiago Jung Bauermann ????????????????
 pt_BR.po
 
 
+TRANSLATIONS	Janusz A. Urbanowicz  ???????????
+pl.po
+
+
 
 Other notes:
 ============
 This program uses the zlib compression library written by
 Jean-loup Gailly and Mark Adler.
 
-Most of the stuff in mpi has been taken from the GMP library.
-[Who is the author??]
+Most of the stuff in mpi has been taken from the GMP library by
+Torbjorn Granlund <tege@noisy.tmg.se>.
 
 The keybox implementation is based on GDBM 1.7.3 by Philip A. Nelson.
 

@@ -354,7 +354,7 @@ cmp_public_keys( PKT_public_key *a, PKT_public_key *b )
 
     if( a->timestamp != b->timestamp )
 	return -1;
-    if( a->expiredate != b->expiredate )
+    if( a->version < 4 && a->expiredate != b->expiredate )
 	return -1;
     if( a->pubkey_algo != b->pubkey_algo )
 	return -1;
@@ -381,7 +381,7 @@ cmp_secret_keys( PKT_secret_key *a, PKT_secret_key *b )
 
     if( a->timestamp != b->timestamp )
 	return -1;
-    if( a->expiredate != b->expiredate )
+    if( a->version < 4 && a->expiredate != b->expiredate )
 	return -1;
     if( a->pubkey_algo != b->pubkey_algo )
 	return -1;
@@ -407,7 +407,7 @@ cmp_public_secret_key( PKT_public_key *pk, PKT_secret_key *sk )
 
     if( pk->timestamp != sk->timestamp )
 	return -1;
-    if( pk->expiredate != sk->expiredate )
+    if( pk->version < 4 && pk->expiredate != sk->expiredate )
 	return -1;
     if( pk->pubkey_algo != sk->pubkey_algo )
 	return -1;

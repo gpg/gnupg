@@ -541,7 +541,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 
 		rc = check_trust( pk, &trustlevel );
 		if( rc ) {
-		    log_error("error checking pk of '%s': %s\n",
+		    log_error("error checking pk of `%s': %s\n",
 						      answer, g10_errstr(rc) );
 		}
 		else if( do_we_trust_pre( pk, trustlevel ) ) {

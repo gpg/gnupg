@@ -5,4 +5,4 @@ gpg: NOTE: cipher algorithm 4 not found in preferences
 gpg: NOTE: secret key 2E5FA4F4 is NOT protected.
 gpg: NOTE: secret key 439F02CA is NOT protected.
 gpg: WARNING: using insecure random number generator
-gpg: NOTE: This is a development version!
+gpg: NOTE: this is a development version!

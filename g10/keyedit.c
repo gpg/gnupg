@@ -666,7 +666,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		tty_printf(_("Key not changed so no update needed.\n"));
 	    rc = update_trust_record( keyblock, 0, NULL );
 	    if( rc )
-		log_error(_("update of trust db failed: %s\n"),
+		log_error(_("update of trustdb failed: %s\n"),
 			    g10_errstr(rc) );
 	    goto leave;
 
@@ -724,7 +724,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		 * get listed correctly */
 		rc = update_trust_record( keyblock, 0, NULL );
 		if( rc ) {
-		    log_error(_("update of trust db failed: %s\n"),
+		    log_error(_("update of trustdb failed: %s\n"),
 				g10_errstr(rc) );
 		    rc = 0;
 		}

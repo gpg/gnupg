@@ -75,11 +75,11 @@ pgmname=`basename $0`
 
 [ -z "$srcdir" ] && fatal "not called from make"
 
+# Note don't use lock-once here because we call gpg in a pipe
 cat <<EOF  >./options
 no-greeting
 no-secmem-warning
 load-extension ../cipher/tiger
-lock-once
 batch
 EOF
 

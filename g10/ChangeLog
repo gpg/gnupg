@@ -1,3 +1,14 @@
+Tue Dec 29 14:41:47 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* misc.c (disable_core_dumps): Check for EINVAL (Atari)
+
+	* getkey (merge_one_pk_and_selfsig): Fixed search of expiredate.
+	(merge_keys_and_selfsig): Ditto.
+
+	* free-packet.c (cmp_public_keys): cmp expire only for v3 packets
+	(cmp_secret_keys): Ditto.
+	(cmp_public_secret_key): Ditto.
+
 Wed Dec 23 17:12:24 CET 1998  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* armor.c (find_header): Reset not_dashed at every header

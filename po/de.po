@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1998-12-23 15:55+0100\n"
+"POT-Creation-Date: 1998-12-23 16:53+0100\n"
 "PO-Revision-Date: 1998-12-13 22:34+0100\n"
 "Last-Translator: Walter Koch <walterk@mail.dip.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -36,175 +36,175 @@ msgid "yY"
 msgstr "jJ"
 
 #: util/errors.c:54
-msgid "General error"
+msgid "general error"
 msgstr "Allgemeiner Fehler"
 
 #: util/errors.c:55
-msgid "Unknown packet type"
+msgid "unknown packet type"
 msgstr "Unbekannter Pakettyp"
 
 #: util/errors.c:56
-msgid "Unknown version"
+msgid "unknown version"
 msgstr "Unbekannte Version"
 
 #: util/errors.c:57
-msgid "Unknown pubkey algorithm"
+msgid "unknown pubkey algorithm"
 msgstr "Unbekanntes Public-Key Verfahren"
 
 #: util/errors.c:58
-msgid "Unknown digest algorithm"
+msgid "unknown digest algorithm"
 msgstr "Unbekanntes Hashverfahren"
 
 #: util/errors.c:59
-msgid "Bad public key"
+msgid "bad public key"
 msgstr "Falscher öffentlicher Schüssel"
 
 #: util/errors.c:60
-msgid "Bad secret key"
+msgid "bad secret key"
 msgstr "Falscher geheimer Schlüssel"
 
 #: util/errors.c:61
-msgid "Bad signature"
+msgid "bad signature"
 msgstr "Falsche Unterschrift"
 
 #: util/errors.c:62
-msgid "Checksum error"
+msgid "checksum error"
 msgstr "Prüfsummen-Fehler"
 
 #: util/errors.c:63
-msgid "Bad passphrase"
+msgid "bad passphrase"
 msgstr "Falsches Mantra"
 
 #: util/errors.c:64
-msgid "Public key not found"
+msgid "public key not found"
 msgstr "Öffentlicher Schlüssel nicht gefunden"
 
 #: util/errors.c:65
-msgid "Unknown cipher algorithm"
+msgid "unknown cipher algorithm"
 msgstr "Unbekanntes Verschlüsselungsverfahren"
 
 #: util/errors.c:66
-msgid "Can't open the keyring"
+msgid "can't open the keyring"
 msgstr "Der Schlüsselbund kann nicht geöffnet werden"
 
 #: util/errors.c:67
-msgid "Invalid packet"
+msgid "invalid packet"
 msgstr "Ungültiges Paket"
 
 #: util/errors.c:68
-msgid "Invalid armor"
+msgid "invalid armor"
 msgstr "Ungültige ASCII-Hülle"
 
 #: util/errors.c:69
-msgid "No such user id"
+msgid "no such user id"
 msgstr "Keine User-ID"
 
 #: util/errors.c:70
-msgid "Secret key not available"
+msgid "secret key not available"
 msgstr "Geheimer Schlüssel ist nicht vorhanden"
 
 #: util/errors.c:71
-msgid "Wrong secret key used"
+msgid "wrong secret key used"
 msgstr "Falscher geheimer Schlüssel benutzt"
 
 #: util/errors.c:72
-msgid "Not supported"
+msgid "not supported"
 msgstr "Wird nicht unterstützt"
 
 #: util/errors.c:73
-msgid "Bad key"
+msgid "bad key"
 msgstr "Falscher Schlüssel"
 
 #: util/errors.c:74
-msgid "File read error"
+msgid "file read error"
 msgstr "Dateilesefehler"
 
 #: util/errors.c:75
-msgid "File write error"
+msgid "file write error"
 msgstr "Dateischreibfehler"
 
 #: util/errors.c:76
-msgid "Unknown compress algorithm"
+msgid "unknown compress algorithm"
 msgstr "Unbekanntes Komprimierverfahren"
 
 #: util/errors.c:77
-msgid "File open error"
+msgid "file open error"
 msgstr "Fehler beim Öffnen der Datei"
 
 #: util/errors.c:78
-msgid "File create error"
+msgid "file create error"
 msgstr "Fehler beim Erzeugen der Datei"
 
 #: util/errors.c:79
-msgid "Invalid passphrase"
+msgid "invalid passphrase"
 msgstr "Ungültiges Mantra"
 
 #: util/errors.c:80
-msgid "Unimplemented pubkey algorithm"
+msgid "unimplemented pubkey algorithm"
 msgstr "Öffentliches Schlüsselverfahren ist nicht implementiert."
 
 #: util/errors.c:81
-msgid "Unimplemented cipher algorithm"
+msgid "unimplemented cipher algorithm"
 msgstr "Verschlüsselungsverfahren ist nicht implementiert"
 
 #: util/errors.c:82
-msgid "Unknown signature class"
+msgid "unknown signature class"
 msgstr "Unbekannte Unterschriftenklasse"
 
 #: util/errors.c:83
-msgid "Trust database error"
+msgid "trust database error"
 msgstr "Fehler in der Trust-DB"
 
 #: util/errors.c:84
-msgid "Bad MPI"
+msgid "bad MPI"
 msgstr "Falsche MPI"
 
 #: util/errors.c:85
-msgid "Resource limit"
+msgid "resource limit"
 msgstr "Zu wenig Resourcen"
 
 #: util/errors.c:86
-msgid "Invalid keyring"
+msgid "invalid keyring"
 msgstr "Ungültiger Schlüsselbund"
 
 #: util/errors.c:87
-msgid "Bad certificate"
+msgid "bad certificate"
 msgstr "Falsches Zertifikat"
 
 #: util/errors.c:88
-msgid "Malformed user id"
+msgid "malformed user id"
 msgstr "Ungünstig aufgebaute User-ID"
 
 #: util/errors.c:89
-msgid "File close error"
+msgid "file close error"
 msgstr "Fehler beim Schließen der Datei"
 
 #: util/errors.c:90
-msgid "File rename error"
+msgid "file rename error"
 msgstr "Fehler beim Umbenennen einer Datei"
 
 #: util/errors.c:91
-msgid "File delete error"
+msgid "file delete error"
 msgstr "Fehler beim Löschen einer Datei"
 
 #: util/errors.c:92
-msgid "Unexpected data"
+msgid "unexpected data"
 msgstr "Unerwartete Daten"
 
 #: util/errors.c:93
-msgid "Timestamp conflict"
+msgid "timestamp conflict"
 msgstr "Zeitangaben differieren"
 
 #: util/errors.c:94
-msgid "Unusable pubkey algorithm"
+msgid "unusable pubkey algorithm"
 msgstr "Unbenutzbares öffentliches Schlüsselverfahren"
 
 #: util/errors.c:95
-msgid "File exists"
+msgid "file exists"
 msgstr "Datei existiert bereits"
 
 #: util/errors.c:96
-msgid "Weak key"
+msgid "weak key"
 msgstr "Unsicherer Schlüssel"
 
 #: util/logger.c:178
@@ -587,18 +587,18 @@ msgstr "Widersprüchliche Kommandos\n"
 
 #: g10/g10.c:618
 #, c-format
-msgid "NOTE: no default option file '%s'\n"
-msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
+msgid "NOTE: no default option file `%s'\n"
+msgstr "Hinweis: Keine voreingestellte Optionendatei `%s' vorhanden\n"
 
 #: g10/g10.c:622
 #, c-format
-msgid "option file '%s': %s\n"
-msgstr "Optionendatei '%s': %s\n"
+msgid "option file `%s': %s\n"
+msgstr "Optionendatei `%s': %s\n"
 
 #: g10/g10.c:629
 #, c-format
-msgid "reading options from '%s'\n"
-msgstr "Optionen werden aus '%s' gelesen\n"
+msgid "reading options from `%s'\n"
+msgstr "Optionen werden aus `%s' gelesen\n"
 
 #: g10/g10.c:782
 #, c-format
@@ -686,7 +686,7 @@ msgstr "--delete-key Benutzername"
 #: g10/encode.c:216 g10/g10.c:1059 g10/sign.c:301
 #, c-format
 msgid "can't open %s: %s\n"
-msgstr "'%s' kann nicht geöffnet werden: %s\n"
+msgstr "`%s' kann nicht geöffnet werden: %s\n"
 
 #: g10/g10.c:1070
 msgid "-k[v][v][v][c] [userid] [keyring]"
@@ -704,8 +704,8 @@ msgstr "Anbringen der ASCII-Hülle ist fehlgeschlagen: %s\n"
 
 #: g10/g10.c:1201
 #, c-format
-msgid "invalid hash algorithm '%s'\n"
-msgstr "Ungültiges Hashverfahren '%s'\n"
+msgid "invalid hash algorithm `%s'\n"
+msgstr "Ungültiges Hashverfahren `%s'\n"
 
 #: g10/g10.c:1280
 msgid "[filename]"
@@ -717,8 +717,8 @@ msgstr "Auf geht's - Botschaft eintippen ...\n"
 
 #: g10/decrypt.c:59 g10/g10.c:1287 g10/verify.c:66
 #, c-format
-msgid "can't open '%s'\n"
-msgstr "'%s' kann nicht geöffnet werden\n"
+msgid "can't open `%s'\n"
+msgstr "`%s' kann nicht geöffnet werden\n"
 
 #: g10/armor.c:344 g10/armor.c:391
 msgid "armor header: "
@@ -732,50 +732,50 @@ msgstr "Ungültige Klartextsignatur-Einleitung\n"
 msgid "invalid armor header: "
 msgstr "Ungültige ASCII-Hülle"
 
-#: g10/armor.c:460
+#: g10/armor.c:461
 #, c-format
 msgid "armor: %s\n"
 msgstr "ASCII-Hülle: %s\n"
 
-#: g10/armor.c:533
+#: g10/armor.c:534
 msgid "invalid dash escaped line: "
 msgstr "Ungültige mit Bindestrich \"escapte\" Zeile: "
 
-#: g10/armor.c:602
+#: g10/armor.c:603
 msgid "invalid clear text header: "
 msgstr "ungültige Klartexteinleitung"
 
-#: g10/armor.c:845
+#: g10/armor.c:846
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Ungültiges \"radix64\" Zeichen %02x ignoriert\n"
 
-#: g10/armor.c:878
+#: g10/armor.c:879
 msgid "premature eof (no CRC)\n"
 msgstr "vorzeitiges Dateiende (keine Prüfsumme)\n"
 
-#: g10/armor.c:897
+#: g10/armor.c:898
 msgid "premature eof (in CRC)\n"
 msgstr "vorzeitiges Dateiende (innerhalb der Prüfsumme)\n"
 
-#: g10/armor.c:901
+#: g10/armor.c:902
 msgid "malformed CRC\n"
 msgstr "Falsch aufgebaute Prüfsumme\n"
 
-#: g10/armor.c:905
+#: g10/armor.c:906
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "Prüfsummenfehler; %06lx - %06lx\n"
 
-#: g10/armor.c:924
+#: g10/armor.c:925
 msgid "premature eof (in Trailer)\n"
 msgstr "vorzeitiges Dateiende (im Nachsatz)\n"
 
-#: g10/armor.c:928
+#: g10/armor.c:929
 msgid "error in trailer line\n"
 msgstr "Fehler in der Nachsatzzeile\n"
 
-#: g10/armor.c:1182
+#: g10/armor.c:1183
 #, fuzzy
 msgid "no valid OpenPGP data found.\n"
 msgstr "Keine gültigen RFC1991- oder OpenPGP-Daten gefunden.\n"
@@ -1271,13 +1271,13 @@ msgstr "Schlüsselerzeugung abgebrochen.\n"
 
 #: g10/keygen.c:851
 #, c-format
-msgid "writing public certificate to '%s'\n"
-msgstr "schreiben des öffentlichen Schlüssels nach '%s'\n"
+msgid "writing public certificate to `%s'\n"
+msgstr "schreiben des öffentlichen Schlüssels nach `%s'\n"
 
 #: g10/keygen.c:852
 #, c-format
-msgid "writing secret certificate to '%s'\n"
-msgstr "schreiben des geheimen Schlüssels nach '%s'\n"
+msgid "writing secret certificate to `%s'\n"
+msgstr "schreiben des geheimen Schlüssels nach `%s'\n"
 
 #: g10/keygen.c:929
 msgid "public and secret key created and signed.\n"
@@ -1319,8 +1319,8 @@ msgstr "%s: WARNUNG: Leere Datei\n"
 
 #: g10/encode.c:222
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "Lesen von '%s'\n"
+msgid "reading from `%s'\n"
+msgstr "Lesen von `%s'\n"
 
 #: g10/encode.c:397
 #, fuzzy, c-format
@@ -1335,7 +1335,7 @@ msgstr "%s: Benutzer nicht gefunden\n"
 #: g10/export.c:123
 #, fuzzy, c-format
 msgid "certificate read problem: %s\n"
-msgstr "User '%s' Leseproblem: %s\n"
+msgstr "User `%s' Leseproblem: %s\n"
 
 #: g10/export.c:132
 #, fuzzy, c-format
@@ -1462,8 +1462,8 @@ msgstr "Kein voreingestellter öffentlicher Schlüsselbund\n"
 
 #: g10/import.c:362 g10/openfile.c:105 g10/sign.c:205 g10/sign.c:592
 #, c-format
-msgid "writing to '%s'\n"
-msgstr "Schreiben nach '%s'\n"
+msgid "writing to `%s'\n"
+msgstr "Schreiben nach `%s'\n"
 
 #: g10/import.c:366 g10/import.c:426 g10/import.c:642
 #, c-format
@@ -2153,8 +2153,8 @@ msgstr "lese stdin ...\n"
 
 #: g10/plaintext.c:300
 #, c-format
-msgid "can't open signed data '%s'\n"
-msgstr "kann signierte Datei '%s' nicht öffnen.\n"
+msgid "can't open signed data `%s'\n"
+msgstr "kann signierte Datei `%s' nicht öffnen.\n"
 
 #: g10/pubkey-enc.c:78
 #, c-format
@@ -2227,8 +2227,8 @@ msgstr "unterschreibe:"
 
 #: g10/sign.c:336
 #, c-format
-msgid "WARNING: '%s' is an empty file\n"
-msgstr "WARNUNG: '%s' ist eine leere Datei.\n"
+msgid "WARNING: `%s' is an empty file\n"
+msgstr "WARNUNG: `%s' ist eine leere Datei.\n"
 
 #: g10/tdbio.c:116 g10/tdbio.c:1413
 #, c-format
@@ -2408,8 +2408,8 @@ msgstr "Verketteter Signatursatz %lu hat einen falschen Besitzer\n"
 
 #: g10/trustdb.c:463
 #, c-format
-msgid "'%s' is not a valid long keyID\n"
-msgstr "'%s' ist keine gültige lange Schlüssel-ID\n"
+msgid "`%s' is not a valid long keyID\n"
+msgstr "`%s' ist keine gültige lange Schlüssel-ID\n"
 
 #: g10/trustdb.c:498
 #, c-format
@@ -2496,28 +2496,28 @@ msgstr "Huch, keine User-IDs\n"
 
 #: g10/trustdb.c:1088 g10/trustdb.c:1106
 #, c-format
-msgid "user '%s' read problem: %s\n"
-msgstr "User '%s' Leseproblem: %s\n"
+msgid "user `%s' read problem: %s\n"
+msgstr "User `%s' Leseproblem: %s\n"
 
 #: g10/trustdb.c:1091 g10/trustdb.c:1109
 #, c-format
-msgid "user '%s' list problem: %s\n"
-msgstr "User '%s' Listenproblem: %s\n"
+msgid "user `%s' list problem: %s\n"
+msgstr "User `%s' Listenproblem: %s\n"
 
 #: g10/trustdb.c:1099 g10/trustdb.c:1346
 #, c-format
-msgid "user '%s' not found: %s\n"
-msgstr "Benutzer '%s' nicht gefunden: %s\n"
+msgid "user `%s' not found: %s\n"
+msgstr "Benutzer `%s' nicht gefunden: %s\n"
 
 #: g10/trustdb.c:1101 g10/trustdb.c:1348
 #, c-format
-msgid "problem finding '%s' in trustdb: %s\n"
-msgstr "Problem, '%s' in der Trust-DB zu finden: %s\n"
+msgid "problem finding `%s' in trustdb: %s\n"
+msgstr "Problem, `%s' in der Trust-DB zu finden: %s\n"
 
 #: g10/trustdb.c:1104
 #, c-format
-msgid "user '%s' not in trustdb\n"
-msgstr "User '%s' ist nicht in der trustdb\n"
+msgid "user `%s' not in trustdb\n"
+msgstr "User `%s' ist nicht in der trustdb\n"
 
 #: g10/trustdb.c:1139
 #, c-format
@@ -2590,13 +2590,13 @@ msgstr "Fehler beim Auffinden des Verz.Satzes: %s\n"
 
 #: g10/trustdb.c:1351
 #, c-format
-msgid "user '%s' not in trustdb - inserting\n"
-msgstr "User '%s' ist nich in der 'Trust'-Datenbank - wird eingefügt\n"
+msgid "user `%s' not in trustdb - inserting\n"
+msgstr "User `%s' ist nich in der 'Trust'-Datenbank - wird eingefügt\n"
 
 #: g10/trustdb.c:1354
 #, c-format
-msgid "failed to put '%s' into trustdb: %s\n"
-msgstr "konnte '%s' nicht in die 'Trust'-Datenbank hineintun: %s\n"
+msgid "failed to put `%s' into trustdb: %s\n"
+msgstr "konnte `%s' nicht in die 'Trust'-Datenbank hineintun: %s\n"
 
 #: g10/trustdb.c:1404
 #, c-format
@@ -2920,13 +2920,13 @@ msgstr "Bitte diesen potentiellen Sicherheitsmangel beseitigen\n"
 
 #: g10/skclist.c:94
 #, c-format
-msgid "skipped '%s': %s\n"
-msgstr "übersprungen '%s': %s\n"
+msgid "skipped `%s': %s\n"
+msgstr "übersprungen `%s': %s\n"
 
 #: g10/skclist.c:100
 #, c-format
 msgid ""
-"skipped '%s': this is a PGP generated ElGamal key which is not secure for "
+"skipped `%s': this is a PGP generated ElGamal key which is not secure for "
 "signatures!\n"
 msgstr ""
 "'%s übersprungen: Dies ist ein durch PGP erzeugter ElGamal-Schlüssel. Das "
@@ -2935,8 +2935,8 @@ msgstr ""
 #. do not overwrite
 #: g10/openfile.c:58
 #, c-format
-msgid "File '%s' exists. "
-msgstr "Datei '%s' existiert bereits. "
+msgid "File `%s' exists. "
+msgstr "Datei `%s' existiert bereits. "
 
 #: g10/openfile.c:60
 msgid "Overwrite (y/N)? "
@@ -2948,8 +2948,8 @@ msgstr "Schreiben auf die Standardausgabe\n"
 
 #: g10/openfile.c:134
 #, c-format
-msgid "assuming signed data in '%s'\n"
-msgstr "die unterzeichneten Daten sind wohl in '%s'\n"
+msgid "assuming signed data in `%s'\n"
+msgstr "die unterzeichneten Daten sind wohl in `%s'\n"
 
 #: g10/openfile.c:181
 #, c-format
@@ -3231,8 +3231,8 @@ msgstr "Keine Hilfe vorhanden."
 
 #: g10/helptext.c:216
 #, c-format
-msgid "No help available for '%s'"
-msgstr "Keine Hilfe für '%s' vorhanden."
+msgid "No help available for `%s'"
+msgstr "Keine Hilfe für `%s' vorhanden."
 
 #~ msgid "You will see a list of signators etc. here\n"
 #~ msgstr "Sie sollten hier eigentlich eine Liste der Signierer sehen.\n"

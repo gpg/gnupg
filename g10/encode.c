@@ -219,7 +219,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	goto leave;
     }
     else if( opt.verbose )
-	log_info(_("reading from '%s'\n"), filename? filename: "[stdin]");
+	log_info(_("reading from `%s'\n"), filename? filename: "[stdin]");
 
     if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) )
 	goto leave;

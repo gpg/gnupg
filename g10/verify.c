@@ -63,7 +63,7 @@ verify_signatures( int nfiles, char **files )
     /* open the signature file */
     fp = iobuf_open(sigfile);
     if( !fp ) {
-	log_error(_("can't open '%s'\n"), print_fname_stdin(sigfile));
+	log_error(_("can't open `%s'\n"), print_fname_stdin(sigfile));
 	return G10ERR_OPEN_FILE;
     }
 

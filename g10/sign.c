@@ -202,7 +202,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    goto leave;
 	}
 	else if( opt.verbose )
-	    log_info(_("writing to '%s'\n"), outfile );
+	    log_info(_("writing to `%s'\n"), outfile );
     }
     else if( (rc = open_outfile( fname, opt.armor? 1: detached? 2:0, &out )))
 	goto leave;
@@ -304,7 +304,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		    goto leave;
 		}
 		if( opt.verbose )
-		    fprintf(stderr, " '%s'", sl->d );
+		    fprintf(stderr, " `%s'", sl->d );
 		iobuf_push_filter( inp, md_filter, &mfx );
 		while( iobuf_get(inp) != -1 )
 		    ;
@@ -333,7 +333,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
 	if( fname ) {
 	    if( !(filesize = iobuf_get_filelength(inp)) )
-		log_info(_("WARNING: '%s' is an empty file\n"), fname );
+		log_info(_("WARNING: `%s' is an empty file\n"), fname );
 
 	    /* because the text_filter modifies the length of the
 	     * data, it is not possible to know the used length
@@ -589,7 +589,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	    goto leave;
 	}
 	else if( opt.verbose )
-	    log_info(_("writing to '%s'\n"), outfile );
+	    log_info(_("writing to `%s'\n"), outfile );
     }
     else if( (rc = open_outfile( fname, 1, &out )) )
 	goto leave;
@@ -637,7 +637,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	PKT_secret_key *sk = sk_rover->sk;
 	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
-    /*md_start_debug( textmd, "create" );*/
+    md_start_debug( textmd, "create" );
     if( !opt.not_dash_escaped )
 	iobuf_push_filter( inp, text_filter, &tfx );
     rc = write_dash_escaped( inp, out, textmd );

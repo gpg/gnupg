@@ -279,7 +279,6 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
     buflen = *r_buflen;
     assert(buflen >= 100 );
     buflen -= 4; /* reserved room for CR,LF, and two extra */
-
     do {
 	switch( state ) {
 	  case fhdrHASArmor:
@@ -630,8 +629,9 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	}
     } while( cont );
 
-    if( clearsig && state == fhdrTEXT )
+    if( clearsig && state == fhdrTEXT ) {
 	state = fhdrCLEARSIG;
+    }
     else if( clearsig && state == fhdrTEXTSimple ) {
 	state = fhdrCLEARSIGSimple;
 	buf[n] = '\n';
@@ -1080,7 +1080,7 @@ armor_filter( void *opaque, int control,
 	    }
 	    else
 		iobuf_writestr(a,
-		    "Comment: For info see www.gnupg.org");
+		    "Comment: For info see http://www.gnupg.org\n");
 	    if( afx->hdrlines )
 		iobuf_writestr(a, afx->hdrlines);
 	    iobuf_put(a, '\n');

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 0.4.5a\n"
-"POT-Creation-Date: 1998-12-23 15:55+0100\n"
+"POT-Creation-Date: 1998-12-23 16:53+0100\n"
 "PO-Revision-Date: 1998-12-15 00:35+01:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <fr@li.org>\n"
@@ -580,18 +580,18 @@ msgstr "commandes en conflit\n"
 
 #: g10/g10.c:618
 #, c-format
-msgid "NOTE: no default option file '%s'\n"
-msgstr "NOTE : pas de fichier d'options par défaut '%s'\n"
+msgid "NOTE: no default option file `%s'\n"
+msgstr "NOTE : pas de fichier d'options par défaut `%s'\n"
 
 #: g10/g10.c:622
 #, c-format
-msgid "option file '%s': %s\n"
-msgstr "fichier d'options '%s' : %s\n"
+msgid "option file `%s': %s\n"
+msgstr "fichier d'options `%s' : %s\n"
 
 #: g10/g10.c:629
 #, c-format
-msgid "reading options from '%s'\n"
-msgstr "lire les options de '%s'\n"
+msgid "reading options from `%s'\n"
+msgstr "lire les options de `%s'\n"
 
 #: g10/g10.c:782
 #, c-format
@@ -697,8 +697,8 @@ msgstr "construction d'armure non réussie : %s \n"
 
 #: g10/g10.c:1201
 #, c-format
-msgid "invalid hash algorithm '%s'\n"
-msgstr "algorithme de hachage '%s' invalide\n"
+msgid "invalid hash algorithm `%s'\n"
+msgstr "algorithme de hachage `%s' invalide\n"
 
 #: g10/g10.c:1280
 msgid "[filename]"
@@ -710,8 +710,8 @@ msgstr "Continuez et tapez votre message...\n"
 
 #: g10/decrypt.c:59 g10/g10.c:1287 g10/verify.c:66
 #, c-format
-msgid "can't open '%s'\n"
-msgstr "ne peut ouvrir '%s'\n"
+msgid "can't open `%s'\n"
+msgstr "ne peut ouvrir `%s'\n"
 
 #: g10/armor.c:344 g10/armor.c:391
 msgid "armor header: "
@@ -725,50 +725,50 @@ msgstr "en-tête de signature claire invalide\n"
 msgid "invalid armor header: "
 msgstr "en-tête d'armure invalide : "
 
-#: g10/armor.c:460
+#: g10/armor.c:461
 #, c-format
 msgid "armor: %s\n"
 msgstr "armure : %s\n"
 
-#: g10/armor.c:533
+#: g10/armor.c:534
 msgid "invalid dash escaped line: "
 msgstr "ligne de traits d'échappement invalide : "
 
-#: g10/armor.c:602
+#: g10/armor.c:603
 msgid "invalid clear text header: "
 msgstr "en-tête de texte clair invalide : "
 
-#: g10/armor.c:845
+#: g10/armor.c:846
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "caractère %02x invalide en base 64 ignoré\n"
 
-#: g10/armor.c:878
+#: g10/armor.c:879
 msgid "premature eof (no CRC)\n"
 msgstr "fin de fichier prématurée (pas de CRC)\n"
 
-#: g10/armor.c:897
+#: g10/armor.c:898
 msgid "premature eof (in CRC)\n"
 msgstr "fin de fichier prématurée (dans le CRC)\n"
 
-#: g10/armor.c:901
+#: g10/armor.c:902
 msgid "malformed CRC\n"
 msgstr "CRC malformé\n"
 
-#: g10/armor.c:905
+#: g10/armor.c:906
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "Erreur de CRC ; %06lx - %06lx\n"
 
-#: g10/armor.c:924
+#: g10/armor.c:925
 msgid "premature eof (in Trailer)\n"
 msgstr "fin de fichier prématurée (dans la remorque)\n"
 
-#: g10/armor.c:928
+#: g10/armor.c:929
 msgid "error in trailer line\n"
 msgstr "erreur dans la ligne de remorque\n"
 
-#: g10/armor.c:1182
+#: g10/armor.c:1183
 #, fuzzy
 msgid "no valid OpenPGP data found.\n"
 msgstr "pas de donnée RFC1991 ou OpenPGP valide trouvée.\n"
@@ -1257,13 +1257,13 @@ msgstr "La génération a été annulée.\n"
 
 #: g10/keygen.c:851
 #, c-format
-msgid "writing public certificate to '%s'\n"
-msgstr "écriture d'un certificat public à '%s'\n"
+msgid "writing public certificate to `%s'\n"
+msgstr "écriture d'un certificat public à `%s'\n"
 
 #: g10/keygen.c:852
 #, c-format
-msgid "writing secret certificate to '%s'\n"
-msgstr "écriture d'un certificat secret à '%s'\n"
+msgid "writing secret certificate to `%s'\n"
+msgstr "écriture d'un certificat secret à `%s'\n"
 
 #: g10/keygen.c:929
 msgid "public and secret key created and signed.\n"
@@ -1305,8 +1305,8 @@ msgstr "%s : ATTENTION : fichier vide\n"
 
 #: g10/encode.c:222
 #, c-format
-msgid "reading from '%s'\n"
-msgstr "lecture de '%s'\n"
+msgid "reading from `%s'\n"
+msgstr "lecture de `%s'\n"
 
 #: g10/encode.c:397
 #, c-format
@@ -1447,8 +1447,8 @@ msgstr "pas de porte-clés public par défaut\n"
 
 #: g10/import.c:362 g10/openfile.c:105 g10/sign.c:205 g10/sign.c:592
 #, c-format
-msgid "writing to '%s'\n"
-msgstr "écriture de '%s'\n"
+msgid "writing to `%s'\n"
+msgstr "écriture de `%s'\n"
 
 #: g10/import.c:366 g10/import.c:426 g10/import.c:642
 #, c-format
@@ -2138,8 +2138,8 @@ msgstr "lecture de l'entrée standard...\n"
 
 #: g10/plaintext.c:300
 #, c-format
-msgid "can't open signed data '%s'\n"
-msgstr "ne peut ouvir les données signées '%s'\n"
+msgid "can't open signed data `%s'\n"
+msgstr "ne peut ouvir les données signées `%s'\n"
 
 #: g10/pubkey-enc.c:78
 #, c-format
@@ -2214,8 +2214,8 @@ msgstr "signature :"
 
 #: g10/sign.c:336
 #, c-format
-msgid "WARNING: '%s' is an empty file\n"
-msgstr "ATTENTION : '%s' est un fichier vide\n"
+msgid "WARNING: `%s' is an empty file\n"
+msgstr "ATTENTION : `%s' est un fichier vide\n"
 
 #: g10/tdbio.c:116 g10/tdbio.c:1413
 #, c-format
@@ -2403,8 +2403,8 @@ msgstr "l'enregistrement de signature %lu a un mauvais propriétaire\n"
 
 #: g10/trustdb.c:463
 #, c-format
-msgid "'%s' is not a valid long keyID\n"
-msgstr "'%s' n'est pas une identification longue de clé valide\n"
+msgid "`%s' is not a valid long keyID\n"
+msgstr "`%s' n'est pas une identification longue de clé valide\n"
 
 #: g10/trustdb.c:498
 #, c-format
@@ -2486,28 +2486,28 @@ msgstr "Ooops, pas de nom d'utilisateur\n"
 
 #: g10/trustdb.c:1088 g10/trustdb.c:1106
 #, c-format
-msgid "user '%s' read problem: %s\n"
-msgstr "problème de lecture de l'utilisateur '%s' : %s\n"
+msgid "user `%s' read problem: %s\n"
+msgstr "problème de lecture de l'utilisateur `%s' : %s\n"
 
 #: g10/trustdb.c:1091 g10/trustdb.c:1109
 #, c-format
-msgid "user '%s' list problem: %s\n"
-msgstr "problème de liste à l'utilisateur '%s' : %s\n"
+msgid "user `%s' list problem: %s\n"
+msgstr "problème de liste à l'utilisateur `%s' : %s\n"
 
 #: g10/trustdb.c:1099 g10/trustdb.c:1346
 #, c-format
-msgid "user '%s' not found: %s\n"
-msgstr "l'utilisateur '%s' n'a pas été trouvé : %s\n"
+msgid "user `%s' not found: %s\n"
+msgstr "l'utilisateur `%s' n'a pas été trouvé : %s\n"
 
 #: g10/trustdb.c:1101 g10/trustdb.c:1348
 #, c-format
-msgid "problem finding '%s' in trustdb: %s\n"
-msgstr "problème de recherche de '%s' dans la base de confiance : %s\n"
+msgid "problem finding `%s' in trustdb: %s\n"
+msgstr "problème de recherche de `%s' dans la base de confiance : %s\n"
 
 #: g10/trustdb.c:1104
 #, c-format
-msgid "user '%s' not in trustdb\n"
-msgstr "l'utilisateur '%s' n'est pas dans la base de confiance\n"
+msgid "user `%s' not in trustdb\n"
+msgstr "l'utilisateur `%s' n'est pas dans la base de confiance\n"
 
 #: g10/trustdb.c:1139
 #, c-format
@@ -2580,13 +2580,13 @@ msgstr "erreur pendant la recherche de l'enregistrement de répertoire : %s\n"
 
 #: g10/trustdb.c:1351
 #, c-format
-msgid "user '%s' not in trustdb - inserting\n"
-msgstr "l'utilisateur '%s' n'est pas dans la base de confiance - insertion\n"
+msgid "user `%s' not in trustdb - inserting\n"
+msgstr "l'utilisateur `%s' n'est pas dans la base de confiance - insertion\n"
 
 #: g10/trustdb.c:1354
 #, c-format
-msgid "failed to put '%s' into trustdb: %s\n"
-msgstr "n'a pas pu insérer '%s' dans la base de confiance : %s\n"
+msgid "failed to put `%s' into trustdb: %s\n"
+msgstr "n'a pas pu insérer `%s' dans la base de confiance : %s\n"
 
 #: g10/trustdb.c:1404
 #, c-format
@@ -2924,23 +2924,23 @@ msgstr "Réparez ce problème de sécurité possible\n"
 
 #: g10/skclist.c:94
 #, c-format
-msgid "skipped '%s': %s\n"
-msgstr "'%s' a été ignoré : %s\n"
+msgid "skipped `%s': %s\n"
+msgstr "`%s' a été ignoré : %s\n"
 
 #: g10/skclist.c:100
 #, c-format
 msgid ""
-"skipped '%s': this is a PGP generated ElGamal key which is not secure for "
+"skipped `%s': this is a PGP generated ElGamal key which is not secure for "
 "signatures!\n"
 msgstr ""
-"'%s' a été ignorée : c'est une clé ElGamal générée par PGP qui n'est pas\n"
+"`%s' a été ignorée : c'est une clé ElGamal générée par PGP qui n'est pas\n"
 "sûre pour les signatures !\n"
 
 #. do not overwrite
 #: g10/openfile.c:58
 #, c-format
-msgid "File '%s' exists. "
-msgstr "Le fichier '%s' existe. "
+msgid "File `%s' exists. "
+msgstr "Le fichier `%s' existe. "
 
 #: g10/openfile.c:60
 msgid "Overwrite (y/N)? "
@@ -2952,8 +2952,8 @@ msgstr "écriture vers la sortie standard\n"
 
 #: g10/openfile.c:134
 #, c-format
-msgid "assuming signed data in '%s'\n"
-msgstr "les données signées sont supposées être dans '%s'\n"
+msgid "assuming signed data in `%s'\n"
+msgstr "les données signées sont supposées être dans `%s'\n"
 
 #: g10/openfile.c:181
 #, c-format
@@ -3124,5 +3124,5 @@ msgstr "Pas d'aide disponible"
 
 #: g10/helptext.c:216
 #, c-format
-msgid "No help available for '%s'"
-msgstr "Pas d'aide disponible pour '%s'"
+msgid "No help available for `%s'"
+msgstr "Pas d'aide disponible pour `%s'"

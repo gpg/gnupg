@@ -334,7 +334,7 @@ add_keyblock_resource( const char *url, int force, int secret )
     resource_table[i].rt    = rt;
   leave:
     if( rc )
-	log_error("keyblock resource '%s': %s\n", filename, g10_errstr(rc) );
+	log_error("keyblock resource `%s': %s\n", filename, g10_errstr(rc) );
     else if( secret )
 	any_secret = 1;
     else
@@ -692,7 +692,7 @@ enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
 	  case rt_RING:
 	    kbpos->fp = iobuf_open( rentry->fname );
 	    if( !kbpos->fp ) {
-		log_error("can't open '%s'\n", rentry->fname );
+		log_error("can't open `%s'\n", rentry->fname );
 		return G10ERR_OPEN_FILE;
 	    }
 	    break;
@@ -1089,7 +1089,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 
     a = iobuf_open( rentry->fname );
     if( !a ) {
-	log_error("can't open '%s'\n", rentry->fname );
+	log_error("can't open `%s'\n", rentry->fname );
 	return G10ERR_OPEN_FILE;
     }
 
@@ -1262,7 +1262,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     if( !keyring_lock );
 	keyring_lock = make_dotlock( rentry->fname, -1 );
     if( !keyring_lock )
-	log_fatal("can't lock '%s'\n", rentry->fname );
+	log_fatal("can't lock `%s'\n", rentry->fname );
 
     /* open the source file */
     fp = iobuf_open( rentry->fname );

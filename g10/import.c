@@ -359,7 +359,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 	    return G10ERR_GENERAL;
 	}
 	if( opt.verbose > 1 )
-	    log_info_f( fname, _("writing to '%s'\n"),
+	    log_info_f( fname, _("writing to `%s'\n"),
 				keyblock_resource_name(&kbpos) );
 	if( (rc=lock_keyblock( &kbpos )) )
 	    log_error_f( keyblock_resource_name(&kbpos),
