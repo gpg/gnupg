@@ -1,5 +1,5 @@
 /* gpgkeys_finger.c - fetch a key via finger
- * Copyright (C) 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -55,21 +55,9 @@
 extern char *optarg;
 extern int optind;
 
-#define GET    0
-#define MAX_LINE 80
-#define MAX_COMMAND 7
-#define MAX_OPAQUE 1024
-#define MAX_OPTION 256
-
-#define STRINGIFY(x) #x
-#define MKSTRING(x) STRINGIFY(x)
-
 static int verbose=0;
 static char path[MAX_OPAQUE+1];
 static FILE *input, *output, *console;
-
-#define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
-#define END   "-----END PGP PUBLIC KEY BLOCK-----"
 
 #ifdef _WIN32
 static void

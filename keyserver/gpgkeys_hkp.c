@@ -1,5 +1,5 @@
 /* gpgkeys_hkp.c - talk to an HKP keyserver
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,32 +37,10 @@
 extern char *optarg;
 extern int optind;
 
-#define GET    0
-#define SEND   1
-#define SEARCH 2
-#define MAX_LINE 80
-#define MAX_HOST 80
-#define MAX_PORT 10
-#define MAX_PROXY 80
-#define MAX_COMMAND 7
-#define MAX_OPTION 110
-
-#define STRINGIFY(x) #x
-#define MKSTRING(x) STRINGIFY(x)
-
 static int verbose=0,include_revoked=0,include_disabled=0;
 static unsigned int http_flags=0;
 static char host[MAX_HOST+1]={'\0'},proxy[MAX_PROXY+1]={'\0'},port[MAX_PORT+1]={'\0'};
 static FILE *input=NULL,*output=NULL,*console=NULL;
-
-#define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
-#define END   "-----END PGP PUBLIC KEY BLOCK-----"
-
-struct keylist
-{
-  char str[MAX_LINE];
-  struct keylist *next;
-};
 
 #ifdef __riscos__
 #define HTTP_PROXY_ENV           "GnuPG$HttpProxy"

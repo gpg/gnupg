@@ -1,5 +1,5 @@
 /* ksutil.h
- * Copyright (C) 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -20,6 +20,37 @@
 
 #ifndef _KSUTIL_H_
 #define _KSUTIL_H_
+
+#define GET    0
+#define SEND   1
+#define SEARCH 2
+
+/* MAX_LINE must be 1 larger than the largest item we expect to
+   receive. */
+#define MAX_LINE    1080
+
+#define MAX_COMMAND    6
+#define MAX_OPTION   256
+#define MAX_SCHEME    20
+#define MAX_OPAQUE  1024
+#define MAX_AUTH     128
+#define MAX_HOST      80
+#define MAX_PORT      10
+#define MAX_PATH    1024
+#define MAX_PROXY    128
+#define MAX_URL (MAX_SCHEME+1+3+MAX_AUTH+1+1+MAX_HOST+1+1+MAX_PORT+1+1+MAX_PATH+1+50)
+
+#define STRINGIFY(x) #x
+#define MKSTRING(x) STRINGIFY(x)
+
+#define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
+#define END   "-----END PGP PUBLIC KEY BLOCK-----"
+
+struct keylist
+{
+  char str[MAX_LINE];
+  struct keylist *next;
+};
 
 /* 30 seconds seems reasonable */
 #define DEFAULT_KEYSERVER_TIMEOUT 30

@@ -1,5 +1,5 @@
 /* gpgkeys_ldap.c - talk to a LDAP keyserver
- * Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -47,19 +47,6 @@
 extern char *optarg;
 extern int optind;
 
-#define GET    0
-#define SEND   1
-#define SEARCH 2
-#define MAX_LINE 255
-#define MAX_HOST 80
-#define MAX_SCHEME   20
-#define MAX_PORT 10
-#define MAX_OPTION 255
-#define MAX_COMMAND 7
-
-#define STRINGIFY(x) #x
-#define MKSTRING(x) STRINGIFY(x)
-
 static int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=0;
 static int real_ldap=0;
 static char *basekeyspacedn=NULL;
@@ -72,12 +59,6 @@ static LDAP *ldap=NULL;
 #ifndef HAVE_TIMEGM
 time_t timegm(struct tm *tm);
 #endif
-
-struct keylist
-{
-  char str[MAX_LINE];
-  struct keylist *next;
-};
 
 static int
 ldap_err_to_gpg_err(int err)

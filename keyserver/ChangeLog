@@ -1,5 +1,9 @@
 2005-01-13  David Shaw  <dshaw@jabberwocky.com>
 
+	* ksutil.h, gpgkeys_curl.c, gpgkeys_hkp.c, gpgkeys_ldap.c,
+	gpgkeys_finger.c, gpgkeys_http.c: Part 2 of the cleanup.  Move all
+	the various defines to ksutil.h.
+
 	* gpgkeys_finger.c, gpgkeys_hkp.c, gpgkeys_http.c, gpgkeys_ldap.c:
 	Part 1 of a minor cleanup to use #defines instead of hard-coded
 	sizes.

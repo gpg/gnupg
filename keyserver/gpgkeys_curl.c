@@ -1,5 +1,5 @@
 /* gpgkeys_curl.c - fetch a key via libcurl
- * Copyright (C) 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,20 +33,6 @@
 
 extern char *optarg;
 extern int optind;
-
-#define GET           0
-#define MAX_LINE     80
-
-#define MAX_SCHEME   20
-#define MAX_AUTH    128
-#define MAX_HOST     80
-#define MAX_PORT     10
-#define MAX_PATH   1024
-#define MAX_PROXY   128
-#define MAX_URL (MAX_SCHEME+1+3+MAX_AUTH+1+1+MAX_HOST+1+1+MAX_PORT+1+1+MAX_PATH+1+50)
-
-#define STRINGIFY(x) #x
-#define MKSTRING(x) STRINGIFY(x)
 
 static int verbose=0;
 static char scheme[MAX_SCHEME+1],auth[MAX_AUTH+1],host[MAX_HOST+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'},proxy[MAX_PROXY+1]={'\0'};
@@ -187,8 +173,8 @@ main(int argc,char *argv[])
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
       int version;
-      char commandstr[7];
-      char optionstr[256];
+      char command[MAX_COMMAND+1];
+      char option[MAX_OPTION+1];
       char hash;
 
       if(line[0]=='\n')
@@ -197,11 +183,11 @@ main(int argc,char *argv[])
       if(sscanf(line,"%c",&hash)==1 && hash=='#')
 	continue;
 
-      if(sscanf(line,"COMMAND %6s\n",commandstr)==1)
+      if(sscanf(line,"COMMAND %" MKSTRING(MAX_COMMAND) "s\n",command)==1)
 	{
-	  commandstr[6]='\0';
+	  command[MAX_COMMAND]='\0';
 
-	  if(strcasecmp(commandstr,"get")==0)
+	  if(strcasecmp(command,"get")==0)
 	    action=GET;
 
 	  continue;
@@ -248,17 +234,17 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"OPTION %255s\n",optionstr)==1)
+      if(sscanf(line,"OPTION %" MKSTRING(MAX_OPTION) "s\n",option)==1)
 	{
 	  int no=0;
-	  char *start=&optionstr[0];
+	  char *start=&option[0];
 
-	  optionstr[255]='\0';
+	  option[MAX_OPTION]='\0';
 
-	  if(strncasecmp(optionstr,"no-",3)==0)
+	  if(strncasecmp(option,"no-",3)==0)
 	    {
 	      no=1;
-	      start=&optionstr[3];
+	      start=&option[3];
 	    }
 
 	  if(strcasecmp(start,"verbose")==0)

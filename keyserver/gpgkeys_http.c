@@ -1,5 +1,5 @@
 /* gpgkeys_http.c - fetch a key via HTTP
- * Copyright (C) 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -36,26 +36,10 @@
 extern char *optarg;
 extern int optind;
 
-#define GET    0
-#define MAX_LINE 80
-#define MAX_AUTH 128
-#define MAX_HOST 80
-#define MAX_PROXY 80
-#define MAX_PORT 10
-#define MAX_PATH 1024
-#define MAX_COMMAND 7
-#define MAX_OPTION 256
-
-#define STRINGIFY(x) #x
-#define MKSTRING(x) STRINGIFY(x)
-
 static int verbose=0;
 static unsigned int http_flags=0;
 static char auth[MAX_AUTH+1]={'\0'},host[MAX_HOST+1]={'\0'},proxy[MAX_PROXY+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'};
 static FILE *input=NULL,*output=NULL,*console=NULL;
-
-#define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
-#define END   "-----END PGP PUBLIC KEY BLOCK-----"
 
 #ifdef __riscos__
 #define HTTP_PROXY_ENV           "GnuPG$HttpProxy"
