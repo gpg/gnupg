@@ -1,3 +1,8 @@
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* server.c (option_handler): New.
+	(gpgsm_server): Register it with assuan.
+
 2002-01-19  Werner Koch  <wk@gnupg.org>
 
 	* server.c (gpgsm_server): Use assuan_deinit_server and setup

@@ -53,6 +53,17 @@ close_message_fd (CTRL ctrl)
     }
 }
 
+
+static int
+option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
+{
+  log_debug ("got option key=`%s' value=`%s'\n", key, value);
+  return 0;
+}
+
+
+
+
 static void
 reset_notify (ASSUAN_CONTEXT ctx)
 {
@@ -472,6 +483,7 @@ gpgsm_server (void)
   assuan_register_reset_notify (ctx, reset_notify);
   assuan_register_input_notify (ctx, input_notify);
   assuan_register_output_notify (ctx, output_notify);
+  assuan_register_option_handler (ctx, option_handler);
 
   assuan_set_pointer (ctx, &ctrl);
   ctrl.server_local = xcalloc (1, sizeof *ctrl.server_local);
