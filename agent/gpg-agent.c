@@ -30,6 +30,7 @@
 #include <time.h>
 #include <fcntl.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -84,8 +85,8 @@ enum cmd_and_opt_values
   oAllowMarkTrusted,
   oKeepTTY,
   oKeepDISPLAY,
-
-aTest };
+  aTest,
+  oSSHSupport };
 
 
 
@@ -131,6 +132,8 @@ static ARGPARSE_OPTS opts[] = {
                                N_("do not use the PIN cache when signing")},
   { oAllowMarkTrusted, "allow-mark-trusted", 0,
                              N_("allow clients to mark keys as \"trusted\"")},
+  { oSSHSupport, "ssh-support", 0, "Enable SSH-Agent emulation" },
+
   {0}
 };
 
@@ -148,6 +151,9 @@ static int maybe_setuid = 1;
 
 /* Name of the communication socket */
 static char socket_name[128];
+
+/* Name of the communication socket used for ssh-agent-emulation.  */
+static char socket_name_ssh[128];
 
 /* Default values for options passed to the pinentry. */
 static char *default_display;
@@ -169,7 +175,7 @@ static char *current_logfile;
 /* Local prototypes. */
 static void create_directories (void);
 #ifdef USE_GNU_PTH
-static void handle_connections (int listen_fd);
+static void handle_connections (int listen_fd, int listen_fd_ssh);
 
 /* Pth wrapper function definitions. */
 GCRY_THREAD_OPTION_PTH_IMPL;
@@ -280,25 +286,30 @@ set_debug (void)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 }
- 
+
+static void
+cleanup_do (char *name)
+{
+  char *p = NULL;
+
+  remove (name);
+  p = strrchr (name, '/');
+  if (p)
+    {
+      *p = 0;
+      rmdir (name);
+      *p = '/';
+    }
+  *name = 0;
+}  
 
 static void
 cleanup (void)
 {
   if (*socket_name)
-    {
-      char *p;
-
-      remove (socket_name);
-      p = strrchr (socket_name, '/');
-      if (p)
-        {
-          *p = 0;
-          rmdir (socket_name);
-          *p = '/';
-        }
-      *socket_name = 0;
-    }
+    cleanup_do (socket_name);
+  if (*socket_name_ssh)
+    cleanup_do (socket_name_ssh);
 }
 
 
@@ -382,6 +393,76 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     }
   return 1; /* handled */
 }
+
+static void
+server_socket_create (int *sock,
+		      const char *identifier, char *name, int name_size)
+{
+  struct sockaddr_un serv_addr;
+  char *p = NULL;
+  int fd = -1;
+  socklen_t len;
+
+  *name = 0;
+  snprintf (name, name_size - 1,
+	    "/tmp/gpg-XXXXXX/S.gpg-agent%s",
+	    identifier ? identifier : "");
+  name[name_size - 1] = 0;
+
+  if (strchr (name, ':'))
+    {
+      log_error ("colons are not allowed in the socket name\n");
+      exit (1);
+    }
+
+  p = strrchr (name, '/');
+  if (! p)
+    BUG ();
+  *p = 0;;
+  if (! mkdtemp (name))
+    {
+      log_error ("can't create directory `%s': %s\n",
+		 name, strerror (errno));
+      exit (1);
+    }
+  *p = '/';
+
+  if (strlen (name) + 1 >= sizeof (serv_addr.sun_path))
+    {
+      log_error ("name of socket too long\n");
+      exit (1);
+    }
+
+  fd = socket (AF_UNIX, SOCK_STREAM, 0);
+  if (fd == -1)
+    {
+      log_error ("can't create socket: %s\n", strerror (errno));
+      exit (1);
+    }
+
+  memset (&serv_addr, 0, sizeof serv_addr);
+  serv_addr.sun_family = AF_UNIX;
+  strcpy (serv_addr.sun_path, name);
+  len = (offsetof (struct sockaddr_un, sun_path)
+	 + strlen (serv_addr.sun_path) + 1);
+
+  if (bind (fd, (struct sockaddr*) &serv_addr, len) == -1)
+    {
+      log_error ("error binding socket to `%s': %s\n",
+		 serv_addr.sun_path, strerror (errno));
+      close (fd);
+      exit (1);
+    }
+  
+  if (listen (fd, 5) == -1)
+    {
+      log_error ("listen() failed: %s\n", strerror (errno));
+      close (fd);
+      exit (1);
+    }
+
+  *sock = fd;
+}  
 
 
 int
@@ -568,6 +649,12 @@ main (int argc, char **argv )
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
 
+	case oSSHSupport:
+	  opt.ssh_support = 1;
+	  opt.keep_tty  = 1;
+	  opt.keep_display = 1;
+	  break;
+
         default : pargs.err = configfp? 1:2; break;
 	}
     }
@@ -702,12 +789,10 @@ main (int argc, char **argv )
   else if (!is_daemon)
     ;
   else
-    { /* regular server mode */
-      int fd;
+    { /* regular server mode */ 
+      int fd = -1, fd_ssh = -1;
       pid_t pid;
-      int len;
-      struct sockaddr_un serv_addr;
-      char *p;
+      //char *p;
 
       /* Remove the DISPLAY variable so that a pinentry does not
          default to a specific display.  There is still a default
@@ -716,65 +801,18 @@ main (int argc, char **argv )
       if (!opt.keep_display)
         unsetenv ("DISPLAY");
 
-      *socket_name = 0;
-      snprintf (socket_name, DIM(socket_name)-1,
-                "/tmp/gpg-XXXXXX/S.gpg-agent");
-      socket_name[DIM(socket_name)-1] = 0;
-      p = strrchr (socket_name, '/');
-      if (!p)
-        BUG ();
-      *p = 0;;
-      if (!mkdtemp(socket_name))
-        {
-          log_error ("can't create directory `%s': %s\n",
-	             socket_name, strerror(errno) );
-          exit (1);
-        }
-      *p = '/';
+      server_socket_create (&fd, "", socket_name, sizeof (socket_name));
+      if (opt.ssh_support)
+	server_socket_create (&fd_ssh, "-ssh",
+			      socket_name_ssh, sizeof (socket_name_ssh));
 
-      if (strchr (socket_name, ':') )
-        {
-          log_error ("colons are not allowed in the socket name\n");
-          exit (1);
-        }
-      if (strlen (socket_name)+1 >= sizeof serv_addr.sun_path ) 
-        {
-          log_error ("name of socket too long\n");
-          exit (1);
-        }
-   
-
-      fd = socket (AF_UNIX, SOCK_STREAM, 0);
-      if (fd == -1)
-        {
-          log_error ("can't create socket: %s\n", strerror(errno) );
-          exit (1);
-        }
-
-      memset (&serv_addr, 0, sizeof serv_addr);
-      serv_addr.sun_family = AF_UNIX;
-      strcpy (serv_addr.sun_path, socket_name);
-      len = (offsetof (struct sockaddr_un, sun_path)
-             + strlen(serv_addr.sun_path) + 1);
-
-      if (bind (fd, (struct sockaddr*)&serv_addr, len) == -1)
-        {
-          log_error ("error binding socket to `%s': %s\n",
-                     serv_addr.sun_path, strerror (errno) );
-          close (fd);
-          exit (1);
-        }
-  
-      if (listen (fd, 5 ) == -1)
-        {
-          log_error ("listen() failed: %s\n", strerror (errno));
-          close (fd);
-          exit (1);
-        }
 
       if (opt.verbose)
-        log_info ("listening on socket `%s'\n", socket_name );
-
+	{
+	  log_info ("listening on socket `%s'\n", socket_name);
+	  if (opt.ssh_support)
+	    log_info ("listening on socket `%s'\n", socket_name_ssh);
+	}
 
       fflush (NULL);
       pid = fork ();
@@ -785,9 +823,11 @@ main (int argc, char **argv )
         }
       else if (pid) 
         { /* We are the parent */
-          char *infostr;
+          char *infostr, *infostr_ssh_sock, *infostr_ssh_pid;
           
           close (fd);
+	  if (opt.ssh_support)
+	    close (fd_ssh);
           
           /* create the info string: <name>:<pid>:<protocol_version> */
           if (asprintf (&infostr, "GPG_AGENT_INFO=%s:%lu:1",
@@ -797,11 +837,45 @@ main (int argc, char **argv )
               kill (pid, SIGTERM);
               exit (1);
             }
+	  if (opt.ssh_support)
+	    {
+	      if (asprintf (&infostr_ssh_sock, "SSH_AUTH_SOCK=%s",
+			    socket_name_ssh) < 0)
+		{
+		  log_error ("out of core\n");
+		  kill (pid, SIGTERM);
+		  exit (1);
+		}
+	      if (asprintf (&infostr_ssh_pid, "SSH_AGENT_PID=%u",
+			    pid) < 0)
+		{
+		  log_error ("out of core\n");
+		  kill (pid, SIGTERM);
+		  exit (1);
+		}
+	    }
+	  
           *socket_name = 0; /* don't let cleanup() remove the socket -
                                the child should do this from now on */
+	  *socket_name_ssh = 0;
+
           if (argc) 
             { /* run the program given on the commandline */
               if (putenv (infostr))
+                {
+                  log_error ("failed to set environment: %s\n",
+                             strerror (errno) );
+                  kill (pid, SIGTERM );
+                  exit (1);
+                }
+              if (putenv (infostr_ssh_sock))
+                {
+                  log_error ("failed to set environment: %s\n",
+                             strerror (errno) );
+                  kill (pid, SIGTERM );
+                  exit (1);
+                }
+              if (putenv (infostr_ssh_pid))
                 {
                   log_error ("failed to set environment: %s\n",
                              strerror (errno) );
@@ -821,12 +895,29 @@ main (int argc, char **argv )
                 {
                   *strchr (infostr, '=') = ' ';
                   printf ( "setenv %s\n", infostr);
+		  if (opt.ssh_support)
+		    {
+		      *strchr (infostr_ssh_sock, '=') = ' ';
+		      printf ( "setenv %s\n", infostr_ssh_sock);
+		      *strchr (infostr_ssh_pid, '=') = ' ';
+		      printf ( "setenv %s\n", infostr_ssh_pid);
+		    }
                 }
               else
                 {
                   printf ( "%s; export GPG_AGENT_INFO;\n", infostr);
+		  if (opt.ssh_support)
+		    {
+		      printf ( "%s; export SSH_AUTH_SOCK;\n", infostr_ssh_sock);
+		      printf ( "%s; export SSH_AGENT_PID;\n", infostr_ssh_pid);
+		    }
                 }
               free (infostr);
+	      if (opt.ssh_support)
+		{
+		  free (infostr_ssh_sock);
+		  free (infostr_ssh_pid);
+		}
               exit (0); 
             }
           /*NEVER REACHED*/
@@ -877,7 +968,7 @@ main (int argc, char **argv )
 	  sigemptyset (&sa.sa_mask);
 	  sa.sa_flags = 0;
 	  sigaction (SIGPIPE, &sa, NULL);
-          handle_connections (fd);
+          handle_connections (fd, opt.ssh_support ? fd_ssh : -1);
         }
       else
 #endif /*!USE_GNU_PTH*/
@@ -903,7 +994,7 @@ main (int argc, char **argv )
         }
       close (fd);
     }
-  
+   
   return 0;
 }
 
@@ -1144,30 +1235,56 @@ start_connection_thread (void *arg)
   return NULL;
 }
 
+static void *
+start_connection_thread_ssh (void *arg)
+{
+  int fd = (int)arg;
+
+  if (opt.verbose)
+    log_info ("ssh handler for fd %d started\n", fd);
+
+  /* FIXME: Move this housekeeping into a ticker function.  Calling it
+     for each connection should work but won't work anymore if our
+     cleints start to keep connections. */
+  agent_trustlist_housekeeping ();
+
+  start_command_handler_ssh (fd);
+  if (opt.verbose)
+    log_info ("ssh handler for fd %d terminated\n", fd);
+  
+  return NULL;
+}
 
 static void
-handle_connections (int listen_fd)
+handle_connections (int listen_fd, int listen_fd_ssh)
 {
-  pth_attr_t tattr;
   pth_event_t ev;
   sigset_t sigs;
   int signo;
   struct sockaddr_un paddr;
   socklen_t plen = sizeof( paddr );
+  pth_attr_t tattr;
+  fd_set fdset, read_fdset;
+  int ret = -1;
   int fd;
 
-  tattr = pth_attr_new();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 32*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "gpg-agent");
-
-  sigemptyset (&sigs );
+  sigemptyset (&sigs);
   sigaddset (&sigs, SIGHUP);
   sigaddset (&sigs, SIGUSR1);
   sigaddset (&sigs, SIGUSR2);
   sigaddset (&sigs, SIGINT);
   sigaddset (&sigs, SIGTERM);
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+
+  tattr = pth_attr_new();
+  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
+  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 32*1024);
+  pth_attr_set (tattr, PTH_ATTR_NAME, "gpg-agent");
+
+  FD_ZERO (&fdset);
+  FD_SET (listen_fd, &fdset);
+  if (listen_fd_ssh != -1)
+    FD_SET (listen_fd_ssh, &fdset);
 
   for (;;)
     {
@@ -1185,28 +1302,67 @@ handle_connections (int listen_fd)
           continue;
 	}
 
-      fd = pth_accept_ev (listen_fd, (struct sockaddr *)&paddr, &plen, ev);
-      if (fd == -1)
-        {
-#ifdef PTH_STATUS_OCCURRED     /* This is Pth 2 */
-          if (pth_event_status (ev) == PTH_STATUS_OCCURRED)
-#else
-          if (pth_event_occurred (ev))
-#endif
-            {
-              handle_signal (signo);
-              continue;
-	    }
-          log_error ("accept failed: %s - waiting 1s\n", strerror (errno));
-          pth_sleep(1);
-          continue;
+      read_fdset = fdset;
+      ret = pth_select (FD_SETSIZE, &read_fdset, NULL, NULL, NULL);
+      if (ret == -1)
+	{
+	  log_error ("pth_select failed: %s - waiting 1s\n",
+		     strerror (errno));
+	  pth_sleep (1);
+	  continue;
 	}
 
-      if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
-        {
-          log_error ("error spawning connection handler: %s\n",
-                     strerror (errno) );
-          close (fd);
+      if (FD_ISSET (listen_fd, &read_fdset))
+	{
+	  fd = pth_accept_ev (listen_fd, (struct sockaddr *)&paddr, &plen, ev);
+	  if (fd == -1)
+	    {
+#ifdef PTH_STATUS_OCCURRED     /* This is Pth 2 */
+	      if (pth_event_status (ev) == PTH_STATUS_OCCURRED)
+#else
+		if (pth_event_occurred (ev))
+#endif
+		  {
+		    handle_signal (signo);
+		    continue;
+		  }
+	      log_error ("accept failed: %s - waiting 1s\n", strerror (errno));
+	      pth_sleep(1);
+	      continue;
+	    }
+
+	  if (!pth_spawn (tattr, start_connection_thread, (void*)fd))
+	    {
+	      log_error ("error spawning connection handler: %s\n",
+			 strerror (errno) );
+	      close (fd);
+	    }
+	}
+      else if ((listen_fd_ssh != -1) && FD_ISSET (listen_fd_ssh, &read_fdset))
+	{
+	  fd = pth_accept_ev (listen_fd_ssh, (struct sockaddr *)&paddr, &plen, ev);
+	  if (fd == -1)
+	    {
+#ifdef PTH_STATUS_OCCURRED     /* This is Pth 2 */
+	      if (pth_event_status (ev) == PTH_STATUS_OCCURRED)
+#else
+		if (pth_event_occurred (ev))
+#endif
+		  {
+		    handle_signal (signo);
+		    continue;
+		  }
+	      log_error ("accept failed: %s - waiting 1s\n", strerror (errno));
+	      pth_sleep(1);
+	      continue;
+	    }
+
+	  if (!pth_spawn (tattr, start_connection_thread_ssh, (void*)fd))
+	    {
+	      log_error ("error spawning connection handler: %s\n",
+			 strerror (errno) );
+	      close (fd);
+	    }
 	}
     }
 

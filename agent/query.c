@@ -132,7 +132,7 @@ start_pinentry (CTRL ctrl)
     pgmname++;
 
   argv[0] = pgmname;
-  if (ctrl->display && !opt.keep_display)
+  if ((ctrl && ctrl->display) && !opt.keep_display)
     {
       argv[1] = "--display";
       argv[2] = ctrl->display;
@@ -169,7 +169,7 @@ start_pinentry (CTRL ctrl)
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (map_assuan_err (rc));
-  if (ctrl->ttyname)
+  if (ctrl && ctrl->ttyname)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttyname=%s", ctrl->ttyname) < 0 )
@@ -180,7 +180,7 @@ start_pinentry (CTRL ctrl)
       if (rc)
 	return unlock_pinentry (map_assuan_err (rc));
     }
-  if (ctrl->ttytype)
+  if (ctrl && ctrl->ttytype)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s", ctrl->ttytype) < 0 )
@@ -190,7 +190,7 @@ start_pinentry (CTRL ctrl)
       if (rc)
 	return unlock_pinentry (map_assuan_err (rc));
     }
-  if (ctrl->lc_ctype)
+  if (ctrl && ctrl->lc_ctype)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-ctype=%s", ctrl->lc_ctype) < 0 )
@@ -200,7 +200,7 @@ start_pinentry (CTRL ctrl)
       if (rc)
 	return unlock_pinentry (map_assuan_err (rc));
     }
-  if (ctrl->lc_messages)
+  if (ctrl && ctrl->lc_messages)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-messages=%s", ctrl->lc_messages) < 0 )

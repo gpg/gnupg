@@ -29,7 +29,9 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
-	command.c \
+	gpg-stream.c gpg-stream.h gpg-stream-config.h \
+	buffer.c buffer.h \
+	command.c command-ssh.c \
 	query.c \
 	cache.c \
 	trans.c \

@@ -61,6 +61,7 @@ struct {
   int allow_mark_trusted;
   int keep_tty;  /* don't switch the TTY (for pinentry) on request */
   int keep_display;  /* don't switch the DISPLAY (for pinentry) on request */
+  int ssh_support;  /* enable SSH-Agent emulation.  */
 } opt;
 
 
@@ -130,6 +131,9 @@ void agent_init_default_ctrl (struct server_control_s *ctrl);
 /*-- command.c --*/
 void start_command_handler (int, int);
 
+/*-- command-ssh.c --*/
+void start_command_handler_ssh (int);
+
 /*-- findkey.c --*/
 int agent_write_private_key (const unsigned char *grip,
                              const void *buffer, size_t length, int force);
@@ -158,6 +162,8 @@ void agent_unlock_cache_entry (void **cache_id);
 
 
 /*-- pksign.c --*/
+int agent_pksign_do (CTRL ctrl, const char *desc_text,
+		     gcry_sexp_t *signature_sexp, int ignore_cache);
 int agent_pksign (ctrl_t ctrl, const char *desc_text,
                   FILE *outfp, int ignore_cache);
 
