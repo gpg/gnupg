@@ -1,3 +1,8 @@
+2004-04-26  Werner Koch  <wk@gnupg.org>
+
+	* scdaemon.c (main): Do the last change the usual way. This is so
+	that we can easily test for versioned config files above.
+
 2004-04-26  Marcus Brinkmann  <marcus@g10code.de>
 
 	* scdaemon.c (main): For now, always print default filename for

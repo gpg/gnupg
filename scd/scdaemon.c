@@ -539,8 +539,6 @@ main (int argc, char **argv )
   
   if (gpgconf_list)
     {
-      char *filename;
-
       /* List options and default values in the GPG Conf format.  */
 
       /* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
@@ -559,11 +557,11 @@ main (int argc, char **argv )
       /* The NO_ARG_DESC flag for an option indicates that the argument has
          a default, which is described by the value of the ARGDEF field.  */
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
+      if (!config_filename)
+        config_filename = make_filename (opt.homedir, "scdaemon.conf", NULL );
 
-      filename = make_filename (opt.homedir, "scdaemon.conf", NULL);
       printf ("gpgconf-scdaemon.conf:%lu:\"%s\n",
-              GC_OPT_FLAG_DEFAULT, filename);
-      xfree (filename);
+              GC_OPT_FLAG_DEFAULT, config_filename);
         
       printf ("verbose:%lu:\n"
               "quiet:%lu:\n"

@@ -1294,9 +1294,11 @@ main ( int argc, char **argv)
            a default, which is described by the value of the ARGDEF field.  */
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
+        if (!config_filename)
+          config_filename = make_filename (opt.homedir, "gpgsm.conf", NULL);
+
         printf ("gpgconf-gpgsm.conf:%lu:\"%s\n",
-                GC_OPT_FLAG_DEFAULT,
-                config_filename?config_filename:"/dev/null");
+                GC_OPT_FLAG_DEFAULT, config_filename);
         
         printf ("verbose:%lu:\n"
                 "quiet:%lu:\n"
