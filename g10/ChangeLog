@@ -1,3 +1,9 @@
+2002-04-10  Werner Koch  <wk@gnupg.org>
+
+	* tdbio.c (migrate_from_v2): Fixed the offset to read the old
+	ownertrust value and only add entries to the table if we really
+	have a value.
+
 2002-04-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* status.h, status.c (get_status_string): Add KEYEXPIRED, EXPSIG,

@@ -1496,10 +1496,10 @@ migrate_from_v2 ()
           ottable = m_realloc (ottable, ottable_size * sizeof *ottable);
         }
       ottable[ottable_used].keyrecno = buftoulong (oldbuf+6);
-      ottable[ottable_used].ot = oldbuf[17];
+      ottable[ottable_used].ot = oldbuf[18];
       ottable[ottable_used].okay = 0;
       memset (ottable[ottable_used].fpr,0, 20);
-      if (ottable[ottable_used].keyrecno)
+      if (ottable[ottable_used].keyrecno && ottable[ottable_used].ot)
         ottable_used++;
     }
   log_info ("found %d ownertrust records\n", ottable_used);
