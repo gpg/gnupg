@@ -415,18 +415,20 @@ get_key(char *getkey)
 		  /* YYYYMMDDHHmmssZ */
 
 		  vals=ldap_get_values(ldap,each,"pgpkeycreatetime");
-		  if(vals!=NULL && strlen(vals[0])==15)
+		  if(vals!=NULL)
 		    {
-		      fprintf(console,"Key created:\t%.2s/%.2s/%.4s\n",
-			      &vals[0][4],&vals[0][6],vals[0]);
+		      if(strlen(vals[0])==15)
+			fprintf(console,"Key created:\t%.2s/%.2s/%.4s\n",
+				&vals[0][4],&vals[0][6],vals[0]);
 		      ldap_value_free(vals);
 		    }
 
 		  vals=ldap_get_values(ldap,each,"modifytimestamp");
-		  if(vals!=NULL && strlen(vals[0])==15)
+		  if(vals!=NULL)
 		    {
-		      fprintf(console,"Key modified:\t%.2s/%.2s/%.4s\n",
-			      &vals[0][4],&vals[0][6],vals[0]);
+		      if(strlen(vals[0])==15)
+			fprintf(console,"Key modified:\t%.2s/%.2s/%.4s\n",
+				&vals[0][4],&vals[0][6],vals[0]);
 		      ldap_value_free(vals);
 		    }
 
