@@ -837,7 +837,14 @@ gc_component_list_options (int component, FILE *out)
       fprintf (out, ":%s", option->default_arg ? option->default_arg : "");
 
       /* The value field.  */
-      fprintf (out, ":%s", option->value ? option->value : "");
+      if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_NONE
+	  && (option->flags & GC_OPT_FLAG_LIST)
+	  && option->value)
+	/* The special format "1,1,1,1,...,1" is converted to a number
+	   here.  */
+	fprintf (out, ":%u", (strlen (option->value) + 1) / 2);
+      else
+	fprintf (out, ":%s", option->value ? option->value : "");
 
       /* ADD NEW FIELDS HERE.  */
 
