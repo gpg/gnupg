@@ -185,13 +185,13 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
         return;
 
     buf[0] = 0;
+
+    /* The spec says that all primary keys MUST be able to certify. */
+    if(sig->sig_class!=0x18)
+      buf[0] |= 0x01;
+
     if (use & PUBKEY_USAGE_SIG)
-      {
-	if(sig->sig_class==0x18)
-	  buf[0] |= 0x02; /* Don't set the certify flag for subkeys */
-	else
-	  buf[0] |= 0x01 | 0x02;
-      }
+      buf[0] |= 0x02;
     if (use & PUBKEY_USAGE_ENC)
         buf[0] |= 0x04 | 0x08;
     if (use & PUBKEY_USAGE_AUTH)
