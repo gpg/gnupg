@@ -45,6 +45,7 @@
 #include "i18n.h"
 #include "status.h"
 #include "g10defs.h"
+#include "cardglue.h"
 
 
 enum cmd_and_opt_values { aNull = 0,
@@ -338,6 +339,8 @@ void free_keyserver_spec(struct keyserver_spec *keyserver) {}
 void show_photos(const struct user_attribute *attrs,int count,PKT_public_key *pk) {}
 int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len) {return 0;}
 char *image_type_to_string(byte type,int string) {return NULL;}
+
+int agent_scd_getattr (const char *name, struct agent_card_info_s *info) {return 0;}
 
 /* Stubs to void linking to ../cipher/cipher.c */
 int string_to_cipher_algo( const char *string ) { return 0; }

@@ -1,3 +1,16 @@
+2004-09-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgv.c (agent_scd_getattr): Stub.
+
+	* misc.c (get_signature_count): New.  Get the signature count from
+	a smartcard.
+	(pct_expando): Call it here so the %c expando becomes the number
+	of signatures issued.  This allows for notations or the like with
+	an automatic signature count.
+
+	* ccid-driver.c (usb_get_string_simple): Replacement function to
+	work with older libusb.
+
 2004-09-15  Werner Koch  <wk@g10code.com>
 
 	* g10.c [HAVE_LIBUSB]: New option --debug-ccid-driver.

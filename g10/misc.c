@@ -39,6 +39,7 @@
 #include "photoid.h"
 #include "options.h"
 #include "i18n.h"
+#include "cardglue.h"
 
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
 static int
@@ -287,6 +288,22 @@ idea_cipher_warn(int show)
 }
 #endif
 
+static unsigned long get_signature_count(PKT_secret_key *sk)
+{
+#ifdef ENABLE_CARD_SUPPORT
+  if(sk && sk->is_protected && sk->protect.s2k.mode==1002)
+    {
+      struct agent_card_info_s info;
+      if(agent_scd_getattr("SIG-COUNTER",&info)==0)
+	return info.sig_counter;
+    }  
+#endif
+
+  /* How to do this without a card? */
+
+  return 0;
+}
+
 /* Expand %-strings.  Returns a string which must be m_freed.  Returns
    NULL if the string cannot be expanded (too large). */
 char *
@@ -364,6 +381,15 @@ pct_expando(const char *string,struct expando_args *args)
 		  idx+=16;
 		  done=1;
 		}
+	      break;
+
+	    case 'c': /* signature count from card, if any. */
+	      if(idx+10<maxlen)
+		{
+		  sprintf(&ret[idx],"%lu",get_signature_count(args->sk));
+		  idx+=strlen(&ret[idx]);
+		  done=1;
+		}	      
 	      break;
 
 	    case 'p': /* primary pk fingerprint of a sk */

@@ -214,7 +214,63 @@ static int bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen);
 static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                     size_t *nread, int expected_type, int seqno);
 
+#ifndef HAVE_USB_GET_STRING_SIMPLE
 
+/* This function adapted from the libusb 0.1.8 sources.  It's here so
+   that systems with an older libusb can still use smartcards. */
+
+static int usb_get_string_simple(usb_dev_handle *dev, int indx, char *buf,
+				 size_t buflen)
+{
+  char tbuf[256];
+  int ret, langid, si, di;
+
+  /*
+   * Asking for the zero'th index is special - it returns a string
+   * descriptor that contains all the language IDs supported by the
+   * device. Typically there aren't many - often only one. The
+   * language IDs are 16 bit numbers, and they start at the third byte
+   * in the descriptor. See USB 2.0 specification, section 9.6.7, for
+   * more information on this. */
+
+  ret=usb_control_msg(dev, USB_ENDPOINT_IN, USB_REQ_GET_DESCRIPTOR,
+		      (USB_DT_STRING << 8), 0, tbuf, sizeof(tbuf), 1000);
+
+  if (ret < 0)
+    return ret;
+
+  if (ret < 4)
+    return -EIO;
+
+  langid = tbuf[2] | (tbuf[3] << 8);
+
+  ret=usb_control_msg(dev, USB_ENDPOINT_IN, USB_REQ_GET_DESCRIPTOR,
+		      (USB_DT_STRING << 8)+indx,langid,tbuf,sizeof(tbuf),1000);
+  if (ret < 0)
+    return ret;
+
+  if (tbuf[1] != USB_DT_STRING)
+    return -EIO;
+
+  if (tbuf[0] > ret)
+    return -EFBIG;
+
+  for (di = 0, si = 2; si < tbuf[0]; si += 2) {
+    if (di >= (buflen - 1))
+      break;
+
+    if (tbuf[si + 1])	/* high byte */
+      buf[di++] = '?';
+    else
+      buf[di++] = tbuf[si];
+  }
+
+  buf[di] = 0;
+
+  return di;
+}
+
+#endif /* !HAVE_USB_GET_STRING_SIMPLE */
 
 /* Convert a little endian stored 4 byte value into an unsigned
    integer. */
