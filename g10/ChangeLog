@@ -1,3 +1,8 @@
+Fri Oct  8 20:40:50 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* ringedit.c (enum_keyblocks): The last fix way really stupid;
+	reverted and set rt to Unknown.
+
 Fri Oct  8 20:32:01 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* ringedit.c (enum_keyblocks): Zero the entire kbpos out on open.
