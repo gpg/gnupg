@@ -165,35 +165,37 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 
 	if( filename ) {
 	    if( arg->r_opt == -6 )
-		s = "%s:%u: argument not expected\n";
+		s = "argument not expected\n";
 	    else if( arg->r_opt == -5 )
-		s = "%s:%u: read error\n";
+		s = "read error\n";
 	    else if( arg->r_opt == -4 )
-		s = "%s:%u: keyword too long\n";
+		s = "keyword too long\n";
 	    else if( arg->r_opt == -3 )
-		s = "%s:%u: missing argument\n";
+		s = "missing argument\n";
 	    else if( arg->r_opt == -7 )
-		s = "%s:%u: invalid command\n";
+		s = "invalid command\n";
 	    else if( arg->r_opt == -10 )
-		s = "%s:%u: invalid alias definition\n";
+		s = "invalid alias definition\n";
 	    else
-		s = "%s:%u: invalid option\n";
-	    jnlib_log_error(s, filename, *lineno );
+		s = "invalid option\n";
+	    jnlib_log_error("%s:%u: %s\n", filename, *lineno, s);
 	}
 	else {
+            s = arg->internal.last? arg->internal.last:"[??]";
+            
 	    if( arg->r_opt == -3 )
-		s = "Missing argument for option \"%.50s\"\n";
+              jnlib_log_error ("Missing argument for option \"%.50s\"\n", s);
 	    else if( arg->r_opt == -6 )
-		s = "Option \"%.50s\" does not expect an argument\n";
+              jnlib_log_error ("Option \"%.50s\" does not expect an argument\n",
+                               s );
 	    else if( arg->r_opt == -7 )
-		s = "Invalid command \"%.50s\"\n";
+              jnlib_log_error ("Invalid command \"%.50s\"\n", s);
 	    else if( arg->r_opt == -8 )
-		s = "Option \"%.50s\" is ambiguous\n";
+              jnlib_log_error ("Option \"%.50s\" is ambiguous\n", s);
 	    else if( arg->r_opt == -9 )
-		s = "Command \"%.50s\" is ambiguous\n";
+              jnlib_log_error ("Command \"%.50s\" is ambiguous\n",s );
 	    else
-		s = "Invalid option \"%.50s\"\n";
-	    jnlib_log_error(s, arg->internal.last? arg->internal.last:"[??]" );
+              jnlib_log_error ("Invalid option \"%.50s\"\n", s);
 	}
 	if( arg->err != 1 )
 	    exit(2);

@@ -1,3 +1,8 @@
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (initialize): Replaced use of non-literal forma
+	args.  Suggested by Florian Weimer.
+
 2003-12-16  Werner Koch  <wk@gnupg.org>
 
 	* logging.c (writen, fun_writer, fun_closer): New.
