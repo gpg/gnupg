@@ -308,26 +308,41 @@ proc_symkey_enc( CTX c, PACKET *pkt )
 	c->last_was_session_key = 2;
 	if(!s || opt.list_only)
 	  goto leave;
-	c->dek = passphrase_to_dek( NULL, 0, algo, &enc->s2k, 0, NULL, NULL );
-	if(c->dek)
+
+	if(opt.override_session_key)
 	  {
-	    /* FIXME: This doesn't work perfectly if a symmetric key
-	       comes before a public key in the message - if the user
-	       doesn't know the passphrase, then there is a chance
-	       that the "decrypted" algorithm will happen to be a
-	       valid one, which will make the returned dek appear
-	       valid, so we won't try any public keys that come
-	       later. */
-	    if(enc->seskeylen)
+	    c->dek = m_alloc_clear( sizeof *c->dek );
+	    if(get_override_session_key(c->dek, opt.override_session_key))
 	      {
-		if(symkey_decrypt_seskey(c->dek, enc->seskey, enc->seskeylen))
-		  {
-		    m_free(c->dek);
-		    c->dek=NULL;
-		  }
+		m_free(c->dek);
+		c->dek = NULL;
 	      }
-	    else
-	      c->dek->algo_info_printed = 1;
+	  }
+	else
+	  {
+	    c->dek=passphrase_to_dek(NULL, 0, algo, &enc->s2k, 0, NULL, NULL);
+
+	    if(c->dek)
+	      {
+		/* FIXME: This doesn't work perfectly if a symmetric
+		   key comes before a public key in the message - if
+		   the user doesn't know the passphrase, then there is
+		   a chance that the "decrypted" algorithm will happen
+		   to be a valid one, which will make the returned dek
+		   appear valid, so we won't try any public keys that
+		   come later. */
+		if(enc->seskeylen)
+		  {
+		    if(symkey_decrypt_seskey(c->dek, enc->seskey,
+					     enc->seskeylen))
+		      {
+			m_free(c->dek);
+			c->dek=NULL;
+		      }
+		  }
+		else
+		  c->dek->algo_info_printed = 1;
+	      }
 	  }
       }
 
@@ -392,31 +407,21 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 
     if( result == -1 )
 	;
-    else {
-        if( !result ) {
-            if( opt.verbose > 1 )
-                log_info( _("public key encrypted data: good DEK\n") );
-            if ( opt.show_session_key ) {
-                int i;
-                char *buf = m_alloc ( c->dek->keylen*2 + 20 );
-                sprintf ( buf, "%d:", c->dek->algo );
-                for(i=0; i < c->dek->keylen; i++ )
-                    sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
-                log_info( "session key: \"%s\"\n", buf );
-                write_status_text ( STATUS_SESSION_KEY, buf );
-            }
-        }
+    else
+      {
         /* store it for later display */
-        {
-            struct kidlist_item *x = m_alloc( sizeof *x );
-            x->kid[0] = enc->keyid[0];
-            x->kid[1] = enc->keyid[1];
-            x->pubkey_algo = enc->pubkey_algo;
-            x->reason = result;
-            x->next = c->pkenc_list;
-            c->pkenc_list = x;
-        }
-    }
+	struct kidlist_item *x = m_alloc( sizeof *x );
+	x->kid[0] = enc->keyid[0];
+	x->kid[1] = enc->keyid[1];
+	x->pubkey_algo = enc->pubkey_algo;
+	x->reason = result;
+	x->next = c->pkenc_list;
+	c->pkenc_list = x;
+
+        if( !result && opt.verbose > 1 )
+	  log_info( _("public key encrypted data: good DEK\n") );
+      }
+
     free_packet(pkt);
 }
 
@@ -501,40 +506,55 @@ proc_encrypted( CTX c, PACKET *pkt )
         int algo;
         STRING2KEY s2kbuf, *s2k = NULL;
 
-	/* assume this is old style conventional encrypted data */
-        if ( (algo = opt.def_cipher_algo))
-            log_info (_("assuming %s encrypted data\n"),
+	if(opt.override_session_key)
+	  {
+	    c->dek = m_alloc_clear( sizeof *c->dek );
+	    result=get_override_session_key(c->dek, opt.override_session_key);
+	    if(result)
+	      {
+		m_free(c->dek);
+		c->dek = NULL;
+	      }
+	  }
+	else
+	  {
+	    /* assume this is old style conventional encrypted data */
+	    if ( (algo = opt.def_cipher_algo))
+	      log_info (_("assuming %s encrypted data\n"),
                         cipher_algo_to_string(algo));
-        else if ( check_cipher_algo(CIPHER_ALGO_IDEA) ) {
-            algo = opt.def_cipher_algo;
-            if (!algo)
-                algo = opt.s2k_cipher_algo;
-	    idea_cipher_warn(1);
-            log_info (_("IDEA cipher unavailable, "
-                        "optimistically attempting to use %s instead\n"),
-                       cipher_algo_to_string(algo));
-        }
-        else {
-            algo = CIPHER_ALGO_IDEA;
-            if (!opt.s2k_digest_algo) {
-                /* If no digest is given we assume MD5 */
-                s2kbuf.mode = 0;
-                s2kbuf.hash_algo = DIGEST_ALGO_MD5;
-                s2k = &s2kbuf;
-            }
-            log_info (_("assuming %s encrypted data\n"), "IDEA");
-        }
+	    else if ( check_cipher_algo(CIPHER_ALGO_IDEA) )
+	      {
+		algo = opt.def_cipher_algo;
+		if (!algo)
+		  algo = opt.s2k_cipher_algo;
+		idea_cipher_warn(1);
+		log_info (_("IDEA cipher unavailable, "
+			    "optimistically attempting to use %s instead\n"),
+			  cipher_algo_to_string(algo));
+	      }
+	    else
+	      {
+		algo = CIPHER_ALGO_IDEA;
+		if (!opt.s2k_digest_algo)
+		  {
+		    /* If no digest is given we assume MD5 */
+		    s2kbuf.mode = 0;
+		    s2kbuf.hash_algo = DIGEST_ALGO_MD5;
+		    s2k = &s2kbuf;
+		  }
+		log_info (_("assuming %s encrypted data\n"), "IDEA");
+	      }
 
-	c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 0, NULL, NULL );
-        if (c->dek)
-            c->dek->algo_info_printed = 1;
+	    c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 0, NULL, NULL );
+	    if (c->dek)
+	      c->dek->algo_info_printed = 1;
+	  }
     }
     else if( !c->dek )
 	result = G10ERR_NO_SECKEY;
     if( !result )
 	result = decrypt_data( c, pkt->pkt.encrypted, c->dek );
 
-    m_free(c->dek); c->dek = NULL;
     if( result == -1 )
 	;
     else if( !result || (result==G10ERR_BAD_SIGN && opt.ignore_mdc_error)) {
@@ -545,6 +565,16 @@ proc_encrypted( CTX c, PACKET *pkt )
 	    write_status( STATUS_GOODMDC );
 	else if(!opt.no_mdc_warn)
 	    log_info (_("WARNING: message was not integrity protected\n"));
+	if(opt.show_session_key)
+	  {
+	    int i;
+	    char *buf = m_alloc ( c->dek->keylen*2 + 20 );
+	    sprintf ( buf, "%d:", c->dek->algo );
+	    for(i=0; i < c->dek->keylen; i++ )
+	      sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
+	    log_info( "session key: \"%s\"\n", buf );
+	    write_status_text ( STATUS_SESSION_KEY, buf );
+	  }
     }
     else if( result == G10ERR_BAD_SIGN ) {
 	log_error(_("WARNING: encrypted message has been manipulated!\n"));
@@ -557,6 +587,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	/* Hmmm: does this work when we have encrypted using multiple
 	 * ways to specify the session key (symmmetric and PK)*/
     }
+    m_free(c->dek); c->dek = NULL;
     free_packet(pkt);
     c->last_was_session_key = 0;
     write_status( STATUS_END_DECRYPTION );

@@ -1,3 +1,12 @@
+2003-11-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (proc_symkey_enc, proc_encrypted): Add ability to use
+	--override-session-key on --symmetric messages (new-style or
+	old-style).
+	(proc_pubkey_enc): Move code to show session key from here to
+	proc_encrypted() so it can work with any type of message.
+	Suggested by Michael Young.
+
 2003-11-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* trustdb.c (validate_keys): Reset the trustdb before checking if
