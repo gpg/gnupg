@@ -1,3 +1,11 @@
+Fri Jun 26 10:38:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* ttyio.c (do_get): all iso8859-1 characters are now allowed.
+
+Thu Jun 25 15:57:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* secmem.c (lock_pool): Removed left over test code.
+
 Wed Jun 10 07:39:41 1998  Werner Koch,mobil,,,	(wk@tobold)
 
 	* fileutil.c (compare_filenames): New.

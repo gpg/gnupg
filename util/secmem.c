@@ -71,7 +71,7 @@ lock_pool( void *p, size_t n )
     uid_t uid;
     int err;
 
-    err = -1; mlock( p, n );
+    err = mlock( p, n );
     if( err && errno )
 	err = errno;
 

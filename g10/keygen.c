@@ -519,6 +519,7 @@ ask_valid_days()
 	if( !valid_days )
 	    tty_printf(_("Key does not expire at all\n"));
 	else {
+	    /* print the date when the key expires */
 	    tty_printf(_("Key expires at %s\n"), strtimestamp(
 		       add_days_to_timestamp( make_timestamp(), valid_days )));
 	}
@@ -531,6 +532,19 @@ ask_valid_days()
     }
     m_free(answer);
     return valid_days;
+}
+
+
+static int
+has_invalid_email_chars( const char *s )
+{
+    for( ; *s; s++ ) {
+	if( *s & 0x80 )
+	    return 1;
+	if( !strchr("01234567890abcdefghijklmnopqrstuvwxyz_-.@", *s ) )
+	    return 1;
+    }
+    return 0;
 }
 
 
@@ -573,7 +587,7 @@ ask_user_id()
 		tty_kill_prompt();
 		if( !*amail )
 		    break;   /* no email address is okay */
-		else if( strcspn( amail, "abcdefghijklmnopqrstuvwxyz_-.@" )
+		else if( has_invalid_email_chars(amail)
 			 || string_count_chr(amail,'@') != 1
 			 || *amail == '@'
 			 || amail[strlen(amail)-1] == '@'

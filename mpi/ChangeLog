@@ -1,3 +1,9 @@
+Fri Jun 26 11:19:06 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* mpiutil.c (mpi_alloc): set nbits to 0.
+	(mpi_alloc_secure): Ditto.
+	(mpi_clear): Ditto.
+
 Thu Jun 25 11:50:01 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* mips3/*.S: New

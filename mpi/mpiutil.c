@@ -64,6 +64,7 @@ mpi_alloc( unsigned nlimbs )
     a->nlimbs = 0;
     a->sign = 0;
     a->flags = 0;
+    a->nbits = 0;
     return a;
 }
 
@@ -96,6 +97,7 @@ mpi_alloc_secure( unsigned nlimbs )
     a->flags |= 1;
     a->nlimbs = 0;
     a->sign = 0;
+    a->nbits = 0;
     return a;
 }
 
@@ -175,6 +177,7 @@ void
 mpi_clear( MPI a )
 {
     a->nlimbs = 0;
+    a->nbits = 0;
 }
 
 

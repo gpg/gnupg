@@ -1,3 +1,7 @@
+Fri Jun 26 10:37:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keygen.c (has_invalid_email_chars): New.
+
 Wed Jun 24 16:40:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* armor.c (armor_filter): Now creates valid onepass_sig packets

@@ -230,6 +230,9 @@ do_get( const char *prompt, int hidden )
 	c = *cbuf;
 	if( c == '\t' )
 	    c = ' ';
+	else if( c > 0xa0 )
+	    ; /* we don't allow 0xa0, as this is a protected blank which may
+	       * confuse the user */
 	else if( iscntrl(c) )
 	    continue;
 	if( !(i < n-1) ) {
@@ -264,6 +267,9 @@ do_get( const char *prompt, int hidden )
 	c = *cbuf;
 	if( c == '\t' )
 	    c = ' ';
+	else if( c > 0xa0 )
+	    ; /* we don't allow 0xa0, as this is a protected blank which may
+	       * confuse the user */
 	else if( iscntrl(c) )
 	    continue;
 	if( !(i < n-1) ) {
