@@ -2057,7 +2057,7 @@ gc_component_change_options (int component, FILE *in)
     {
       int i;
 
-      for (i = 0; i < GC_COMPONENT_NR; i++)
+      for (i = 0; i < GC_BACKEND_NR; i++)
 	{
 	  if (src_pathname[i])
 	    {
@@ -2089,7 +2089,7 @@ gc_component_change_options (int component, FILE *in)
       int saved_errno = errno;
 
       /* An error occured.  */
-      for (i = 0; i < GC_COMPONENT_NR; i++)
+      for (i = 0; i < GC_BACKEND_NR; i++)
 	{
 	  if (src_pathname[i])
 	    {

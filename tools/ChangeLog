@@ -2,6 +2,7 @@
 
 	* gpgconf-comp.c (gc_component_change_options): Set the filenames
 	of the option's backend, not of the component.
+	Also use GC_BACKEND_NR, not GC_COMPONENT_NR.
 
 2004-03-09  Werner Koch  <wk@gnupg.org>
 
