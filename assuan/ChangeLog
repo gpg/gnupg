@@ -1,3 +1,12 @@
+2002-07-30  Werner Koch  <wk@gnupg.org>
+
+	Changed the license from GPL to LGPL.
+
+2002-07-23  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (_IO_cookie_io_functions_t): Define it here if
+	it does not exists.
+
 2002-06-27  Werner Koch  <wk@gnupg.org>
 
 	* assuan-pipe-connect.c (assuan_pipe_connect): No special handling

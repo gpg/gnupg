@@ -1,21 +1,21 @@
 /* assuan-handler.c - dispatch commands 
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
- * This file is part of GnuPG.
+ * This file is part of Assuan.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Assuan is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- * GnuPG is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Assuan is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA 
  */
 
 #include <config.h>
@@ -27,6 +27,26 @@
 
 #define spacep(p)  (*(p) == ' ' || *(p) == '\t')
 #define digitp(a) ((a) >= '0' && (a) <= '9')
+
+
+#if !HAVE_FOPENCOOKIE
+/* Provide structure for our dummy replacement function.  Usually this
+   is defined in ../common/util.h but assuan should be self
+   contained. */
+/* Fixme: Remove fopencoookie :-(( */
+typedef struct
+{
+  ssize_t (*read)(void*,char*,size_t);
+  ssize_t (*write)(void*,const char*,size_t);
+  int (*seek)(void*,off_t*,int);
+  int (*close)(void*);
+} _IO_cookie_io_functions_t;
+typedef _IO_cookie_io_functions_t cookie_io_functions_t;
+FILE *fopencookie (void *cookie, const char *opentype,
+                   cookie_io_functions_t funclist);
+#endif /*!HAVE_FOPENCOOKIE*/
+
+
 
 
 static int
