@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -19,27 +19,15 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = lspgpot ring-a-party mail-signed-keys convert-from-106
-INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
-needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a @CAPLIBS@
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/intl
+needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 
 bin_PROGRAMS    = gpgsplit
 noinst_PROGRAMS = mpicalc bftest clean-sat mk-tdata shmtest
 
-mpicalc_SOURCES = mpicalc.c
+gpgsplit_LDADD  = $(needed_libs) @INTLLIBS@ @CAPLIBS@ @ZLIBS@
+mpicalc_LDADD   = $(needed_libs) @INTLLIBS@ @CAPLIBS@
+bftest_LDADD    = $(needed_libs) @INTLLIBS@ @CAPLIBS@ @DLLIBS@ @EGDLIBS@
+shmtest_LDADD   = $(needed_libs) @INTLLIBS@ @CAPLIBS@
 
-bftest_SOURCES = bftest.c
-
-clean_sat_SOURCES  = clean-sat.c
-mk_tdata_SOURCES = mk-tdata.c
-shmtest_SOURCES = shmtest.c
-
-gpgsplit_SOURCES = gpgsplit.c
-
-
-mpicalc_LDADD =  $(needed_libs) @INTLLIBS@
-bftest_LDADD =	$(needed_libs) @EGDLIBS@ @INTLLIBS@
-
-shmtest_LDADD =  $(needed_libs) @INTLLIBS@
-gpgsplit_LDADD = @ZLIBS@ $(needed_libs) @INTLLIBS@
-
-mpicalc bftest shmtest gpgsplit: $(needed_libs)
+gpgsplit mpicalc bftest shmtest: $(needed_libs)
