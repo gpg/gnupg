@@ -934,6 +934,17 @@ dump_sig_subpkt( int hashed, int type, int critical,
         for( i=0; i < length; i++ )
             printf(" %02x", buffer[i] );
 	break;
+      case SIGSUBPKT_SIGNATURE:
+	fputs("signature: ",stdout);
+	if(length<17)
+	  p="[too short]";
+	else
+	  printf("v%d, class 0x%02X, algo %d, digest algo %d",
+		 buffer[0],
+		 buffer[0]==3?buffer[2]:buffer[1],
+		 buffer[0]==3?buffer[15]:buffer[2],
+		 buffer[0]==3?buffer[16]:buffer[3]);
+	break;
       default:
 	if(type>=100 && type<=110)
 	  p="experimental / private subpacket";
@@ -954,82 +965,83 @@ dump_sig_subpkt( int hashed, int type, int critical,
 int
 parse_one_sig_subpkt( const byte *buffer, size_t n, int type )
 {
-    switch( type ) {
-      case SIGSUBPKT_REV_KEY:
-	if(n < 22)
-	  break;
-	return 0;
-      case SIGSUBPKT_SIG_CREATED:
-      case SIGSUBPKT_SIG_EXPIRE:
-      case SIGSUBPKT_KEY_EXPIRE:
-	if( n < 4 )
-	    break;
-	return 0;
-      case SIGSUBPKT_KEY_FLAGS:
-      case SIGSUBPKT_KS_FLAGS:
-      case SIGSUBPKT_PREF_SYM:
-      case SIGSUBPKT_PREF_HASH:
-      case SIGSUBPKT_PREF_COMPR:
-      case SIGSUBPKT_POLICY:
-      case SIGSUBPKT_PREF_KS:
-      case SIGSUBPKT_FEATURES:
-	return 0;
-      case SIGSUBPKT_EXPORTABLE:
-      case SIGSUBPKT_REVOCABLE:
-	if( !n )
-	    break;
-	return 0;
-      case SIGSUBPKT_ISSUER: /* issuer key ID */
-	if( n < 8 )
-	    break;
-	return 0;
-      case SIGSUBPKT_NOTATION:
-	if( n < 8 ) /* minimum length needed */
-	    break;
-	return 0;
-      case SIGSUBPKT_REVOC_REASON:
-	if( !n	)
-	    break;
-	return 0;
-      case SIGSUBPKT_PRIMARY_UID:
-          if ( n != 1 )
-              break;
-          return 0;   
-      default: return -1;
+  switch( type )
+    {
+    case SIGSUBPKT_REV_KEY:
+      if(n < 22)
+	break;
+      return 0;
+    case SIGSUBPKT_SIG_CREATED:
+    case SIGSUBPKT_SIG_EXPIRE:
+    case SIGSUBPKT_KEY_EXPIRE:
+      if( n < 4 )
+	break;
+      return 0;
+    case SIGSUBPKT_KEY_FLAGS:
+    case SIGSUBPKT_KS_FLAGS:
+    case SIGSUBPKT_PREF_SYM:
+    case SIGSUBPKT_PREF_HASH:
+    case SIGSUBPKT_PREF_COMPR:
+    case SIGSUBPKT_POLICY:
+    case SIGSUBPKT_PREF_KS:
+    case SIGSUBPKT_FEATURES:
+      return 0;
+    case SIGSUBPKT_SIGNATURE:
+    case SIGSUBPKT_EXPORTABLE:
+    case SIGSUBPKT_REVOCABLE:
+    case SIGSUBPKT_REVOC_REASON:
+      if( !n )
+	break;
+      return 0;
+    case SIGSUBPKT_ISSUER: /* issuer key ID */
+      if( n < 8 )
+	break;
+      return 0;
+    case SIGSUBPKT_NOTATION:
+      if( n < 8 ) /* minimum length needed */
+	break;
+      return 0;
+    case SIGSUBPKT_PRIMARY_UID:
+      if ( n != 1 )
+	break;
+      return 0;   
+    default: return -1;
     }
-    return -3;
+  return -3;
 }
 
 
 static int
 can_handle_critical( const byte *buffer, size_t n, int type )
 {
-    switch( type ) {
-      case SIGSUBPKT_NOTATION:
-	if( n >= 8 && (*buffer & 0x80) )
-	    return 1; /* human readable is handled */
-	return 0;
+  switch( type )
+    {
+    case SIGSUBPKT_NOTATION:
+      if( n >= 8 && (*buffer & 0x80) )
+	return 1; /* human readable is handled */
+      return 0;
 
-      case SIGSUBPKT_SIG_CREATED:
-      case SIGSUBPKT_SIG_EXPIRE:
-      case SIGSUBPKT_KEY_EXPIRE:
-      case SIGSUBPKT_EXPORTABLE:
-      case SIGSUBPKT_REVOCABLE:
-      case SIGSUBPKT_REV_KEY:
-      case SIGSUBPKT_ISSUER:/* issuer key ID */
-      case SIGSUBPKT_PREF_SYM:
-      case SIGSUBPKT_PREF_HASH:
-      case SIGSUBPKT_PREF_COMPR:
-      case SIGSUBPKT_KEY_FLAGS:
-      case SIGSUBPKT_PRIMARY_UID:
-      case SIGSUBPKT_FEATURES:
-	/* Is it enough to show the policy or keyserver? */
-      case SIGSUBPKT_POLICY:
-      case SIGSUBPKT_PREF_KS:
-	return 1;
+    case SIGSUBPKT_SIGNATURE:
+    case SIGSUBPKT_SIG_CREATED:
+    case SIGSUBPKT_SIG_EXPIRE:
+    case SIGSUBPKT_KEY_EXPIRE:
+    case SIGSUBPKT_EXPORTABLE:
+    case SIGSUBPKT_REVOCABLE:
+    case SIGSUBPKT_REV_KEY:
+    case SIGSUBPKT_ISSUER:/* issuer key ID */
+    case SIGSUBPKT_PREF_SYM:
+    case SIGSUBPKT_PREF_HASH:
+    case SIGSUBPKT_PREF_COMPR:
+    case SIGSUBPKT_KEY_FLAGS:
+    case SIGSUBPKT_PRIMARY_UID:
+    case SIGSUBPKT_FEATURES:
+      /* Is it enough to show the policy or keyserver? */
+    case SIGSUBPKT_POLICY:
+    case SIGSUBPKT_PREF_KS:
+      return 1;
 
-      default:
-	return 0;
+    default:
+      return 0;
     }
 }
 

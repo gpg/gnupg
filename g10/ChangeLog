@@ -1,3 +1,8 @@
+2004-04-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* parse-packet.c (dump_sig_subpkt, parse_one_sig_subpkt,
+	can_handle_critical): Parse and display 0x19 signatures.
+
 2004-04-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (parse_keyserver_uri): Do not accept "http" as an
