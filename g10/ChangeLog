@@ -1,5 +1,9 @@
 2004-03-18  David Shaw  <dshaw@jabberwocky.com>
 
+	* keygen.c (write_keybinding, do_generate_keypair,
+	generate_subkeypair): Keep track of the unprotected subkey secret
+	key so we can make a backsig with it.
+
 	* keygen.c (gen_elg, gen_dsa, gen_rsa, do_create,
 	do_generate_keypair, generate_subkeypair): New is_subkey argument
 	to set whether a generated key is a subkey.  Do not overload the

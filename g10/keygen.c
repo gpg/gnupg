@@ -1,5 +1,6 @@
 /* keygen.c - generate a key pair
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -37,7 +38,6 @@
 #include "i18n.h"
 
 #define MAX_PREFS 30 
-
 
 enum para_name {
   pKEYTYPE,
@@ -606,8 +606,10 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
     return rc;
 }
 
+/* sub_sk is currently unused (reserved for backsigs) */
 static int
-write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
+write_keybinding( KBNODE root, KBNODE pub_root,
+		  PKT_secret_key *pri_sk, PKT_secret_key *sub_sk,
                   unsigned int use )
 {
     PACKET *pkt;
@@ -641,7 +643,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
     /* and make the signature */
     oduap.usage = use;
     oduap.pk = subpk;
-    rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0, 0, 0, 0,
+    rc = make_keysig_packet( &sig, pk, NULL, subpk, pri_sk, 0x18, 0, 0, 0, 0,
         		     keygen_add_key_flags_and_expire, &oduap );
     if( rc ) {
 	log_error("make_keysig_packet failed: %s\n", g10_errstr(rc) );
@@ -2111,7 +2113,7 @@ do_generate_keypair( struct para_data_s *para,
 {
     KBNODE pub_root = NULL;
     KBNODE sec_root = NULL;
-    PKT_secret_key *sk = NULL;
+    PKT_secret_key *pri_sk = NULL, *sub_sk = NULL;
     const char *s;
     struct revocation_key *revkey;
     int rc;
@@ -2184,14 +2186,14 @@ do_generate_keypair( struct para_data_s *para,
 		    pub_root, sec_root,
 		    get_parameter_dek( para, pPASSPHRASE_DEK ),
 		    get_parameter_s2k( para, pPASSPHRASE_S2K ),
-		    &sk,
+		    &pri_sk,
 		    get_parameter_u32( para, pKEYEXPIRE ), 0 );
 
     if(!rc && (revkey=get_parameter_revkey(para,pREVOKER)))
       {
-	rc=write_direct_sig(pub_root,pub_root,sk,revkey);
+	rc=write_direct_sig(pub_root,pub_root,pri_sk,revkey);
 	if(!rc)
-	  write_direct_sig(sec_root,pub_root,sk,revkey);
+	  write_direct_sig(sec_root,pub_root,pri_sk,revkey);
       }
 
     if( !rc && (s=get_parameter_value(para, pUSERID)) ) {
@@ -2199,10 +2201,10 @@ do_generate_keypair( struct para_data_s *para,
 	if( !rc )
 	    write_uid(sec_root, s );
 	if( !rc )
-	    rc = write_selfsig(pub_root, pub_root, sk,
+	    rc = write_selfsig(pub_root, pub_root, pri_sk,
                                get_parameter_uint (para, pKEYUSAGE));
 	if( !rc )
-	    rc = write_selfsig(sec_root, pub_root, sk,
+	    rc = write_selfsig(sec_root, pub_root, pri_sk,
                                get_parameter_uint (para, pKEYUSAGE));
     }
 
@@ -2212,14 +2214,14 @@ do_generate_keypair( struct para_data_s *para,
 			pub_root, sec_root,
 			get_parameter_dek( para, pPASSPHRASE_DEK ),
 			get_parameter_s2k( para, pPASSPHRASE_S2K ),
-			NULL,
+			&sub_sk,
 			get_parameter_u32( para, pSUBKEYEXPIRE ), 1 );
 	if( !rc )
-	    rc = write_keybinding(pub_root, pub_root, sk,
-               			  get_parameter_uint (para, pSUBKEYUSAGE));
+	  rc = write_keybinding(pub_root, pub_root, pri_sk, sub_sk,
+				get_parameter_uint (para, pSUBKEYUSAGE));
 	if( !rc )
-	    rc = write_keybinding(sec_root, pub_root, sk,
-               			  get_parameter_uint (para, pSUBKEYUSAGE));
+	  rc = write_keybinding(sec_root, pub_root, pri_sk, sub_sk,
+				get_parameter_uint (para, pSUBKEYUSAGE));
         did_sub = 1;
     }
 
@@ -2322,8 +2324,12 @@ do_generate_keypair( struct para_data_s *para,
     }
     release_kbnode( pub_root );
     release_kbnode( sec_root );
-    if( sk ) /* the unprotected  secret key */
-	free_secret_key(sk);
+
+    /* the unprotected secret keys */
+    if( pri_sk )
+	free_secret_key(pri_sk);
+    if( sub_sk )
+	free_secret_key(sub_sk);
 }
 
 
@@ -2336,7 +2342,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 {
     int okay=0, rc=0;
     KBNODE node;
-    PKT_secret_key *sk = NULL; /* this is the primary sk */
+    PKT_secret_key *pri_sk = NULL, *sub_sk = NULL;
     int algo;
     unsigned int use;
     u32 expire;
@@ -2354,11 +2360,11 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     /* make a copy of the sk to keep the protected one in the keyblock */
-    sk = copy_secret_key( NULL, node->pkt->pkt.secret_key );
+    pri_sk = copy_secret_key( NULL, node->pkt->pkt.secret_key );
 
     cur_time = make_timestamp();
-    if( sk->timestamp > cur_time ) {
-	ulong d = sk->timestamp - cur_time;
+    if( pri_sk->timestamp > cur_time ) {
+	ulong d = pri_sk->timestamp - cur_time;
 	log_info( d==1 ? _("key has been created %lu second "
 			   "in future (time warp or clock problem)\n")
 		       : _("key has been created %lu seconds "
@@ -2369,14 +2375,14 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	}
     }
 
-    if (sk->version < 4) {
+    if (pri_sk->version < 4) {
         log_info (_("NOTE: creating subkeys for v3 keys "
                     "is not OpenPGP compliant\n"));
 	goto leave;
     }
 
     /* unprotect to get the passphrase */
-    switch( is_secret_key_protected( sk ) ) {
+    switch( is_secret_key_protected( pri_sk ) ) {
       case -1:
 	rc = G10ERR_PUBKEY_ALGO;
 	break;
@@ -2385,14 +2391,13 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	break;
       default:
 	tty_printf("Key is protected.\n");
-	rc = check_secret_key( sk, 0 );
+	rc = check_secret_key( pri_sk, 0 );
 	if( !rc )
 	    passphrase = get_last_passphrase();
 	break;
     }
     if( rc )
 	goto leave;
-
 
     algo = ask_algo( 1, &use );
     assert(algo);
@@ -2412,11 +2417,11 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
-				      dek, s2k, NULL, expire, 1 );
+				      dek, s2k, &sub_sk, expire, 1 );
     if( !rc )
-	rc = write_keybinding(pub_keyblock, pub_keyblock, sk, use);
+	rc = write_keybinding(pub_keyblock, pub_keyblock, pri_sk, sub_sk, use);
     if( !rc )
-	rc = write_keybinding(sec_keyblock, pub_keyblock, sk, use);
+	rc = write_keybinding(sec_keyblock, pub_keyblock, pri_sk, sub_sk, use);
     if( !rc ) {
         PKT_public_key *subpk = NULL;
 
@@ -2436,8 +2441,11 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     m_free( passphrase );
     m_free( dek );
     m_free( s2k );
-    if( sk ) /* release the copy of the (now unprotected) secret key */
-	free_secret_key(sk);
+    /* release the copy of the (now unprotected) secret keys */
+    if( pri_sk )
+	free_secret_key(pri_sk);
+    if( sub_sk )
+	free_secret_key(sub_sk);
     set_next_passphrase( NULL );
     return okay;
 }
