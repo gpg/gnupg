@@ -1,3 +1,8 @@
+2003-02-11  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am, md.c (load_digest_module): Only build in SHA384/512
+	if specifically enabled.
+
 2003-02-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* sha256.c, sha512.c: New.
