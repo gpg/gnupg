@@ -1332,10 +1332,10 @@ $GNUPGHOME.
 <term>--charset &ParmName;</term>
 <listitem><para>
 Set the name of the native character set.  This is used to convert
-some strings to proper UTF-8 encoding. If this option is not used, the
-default character set is determined from the current locale.  A
-verbosity level of 3 shows the used one.  Valid values for &ParmName;
-are:</para>
+some informational strings like user IDs to the proper UTF-8
+encoding. If this option is not used, the default character set is
+determined from the current locale.  A verbosity level of 3 shows the
+used one.  Valid values for &ParmName; are:</para>
 <variablelist>
 <varlistentry>
 <term>iso-8859-1</term><listitem><para>This is the Latin 1 set.</para></listitem>
@@ -1471,8 +1471,8 @@ soon.
 <varlistentry>
 <term>--comment &ParmString;</term>
 <listitem><para>
-Use &ParmString; as the comment string in clear text signatures.  The
-default behavior is not to use a comment string.
+Use &ParmString; as the comment string in ASCII armored or clearsigned
+messages.  The default behavior is to not use a comment string.
 </para></listitem></varlistentry>
 
 
