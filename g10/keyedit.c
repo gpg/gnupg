@@ -2109,18 +2109,20 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	      }
 	}
 	else if( node->pkt->pkttype == PKT_SECRET_KEY
-	    || (with_subkeys && node->pkt->pkttype == PKT_SECRET_SUBKEY) ) {
+	    || (with_subkeys && node->pkt->pkttype == PKT_SECRET_SUBKEY) )
+	  {
 	    PKT_secret_key *sk = node->pkt->pkt.secret_key;
-	    tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
-			  node->pkt->pkttype == PKT_SECRET_KEY? "sec":"ssb",
-			  (node->flag & NODFLG_SELKEY)? '*':' ',
-			  nbits_from_sk( sk ),
-			  pubkey_letter( sk->pubkey_algo ),
-			  (ulong)keyid_from_sk(sk,NULL),
-			  datestr_from_sk(sk),
-			  expirestr_from_sk(sk) );
+	    tty_printf("%s%c %4u%c/%s  ",
+		       node->pkt->pkttype == PKT_SECRET_KEY? "sec":"ssb",
+		       (node->flag & NODFLG_SELKEY)? '*':' ',
+		       nbits_from_sk( sk ),
+		       pubkey_letter( sk->pubkey_algo ),
+		       keystr_from_sk(sk));
+	    tty_printf(_("created: %s"),datestr_from_sk(sk));
+	    tty_printf("  ");
+	    tty_printf(_("expires: %s"),expirestr_from_sk(sk));
 	    tty_printf("\n");
-	}
+	  }
 	else if( with_subkeys && node->pkt->pkttype == PKT_SIGNATURE
 		 && node->pkt->pkt.signature->sig_class == 0x28       ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
@@ -2214,14 +2216,14 @@ show_basic_key_info ( KBNODE keyblock )
           
           /* Note, we use the same format string as in other show
              functions to make the translation job easier. */
-          tty_printf (_("%s%c %4u%c/%08lX  created: %s expires: %s"),
+          tty_printf ("%s  %4u%c/%s  ",
                       node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
-                      ' ',
                       nbits_from_pk( pk ),
                       pubkey_letter( pk->pubkey_algo ),
-                      (ulong)keyid_from_pk(pk,NULL),
-                      datestr_from_pk(pk),
-                      expirestr_from_pk(pk) );
+                      keystr_from_pk(pk));
+	  tty_printf(_("created: %s"),datestr_from_pk(pk));
+	  tty_printf("  ");
+	  tty_printf(_("expires: %s"),expirestr_from_pk(pk));
           tty_printf("\n");
           print_fingerprint ( pk, NULL, 3 );
           tty_printf("\n");
@@ -2229,14 +2231,14 @@ show_basic_key_info ( KBNODE keyblock )
       else if (node->pkt->pkttype == PKT_SECRET_KEY)
         {
           PKT_secret_key *sk = node->pkt->pkt.secret_key;
-          tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
+          tty_printf("%s  %4u%c/%s",
                      node->pkt->pkttype == PKT_SECRET_KEY? "sec":"ssb",
-                     ' ',
                      nbits_from_sk( sk ),
                      pubkey_letter( sk->pubkey_algo ),
-                     (ulong)keyid_from_sk(sk,NULL),
-                     datestr_from_sk(sk),
-                     expirestr_from_sk(sk) );
+                     keystr_from_sk(sk));
+	  tty_printf(_("created: %s"),datestr_from_sk(sk));
+	  tty_printf("  ");
+	  tty_printf(_("expires: %s"),expirestr_from_sk(sk));
           tty_printf("\n");
           print_fingerprint (NULL, sk, 3 );
           tty_printf("\n");
