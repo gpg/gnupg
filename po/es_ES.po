@@ -2694,7 +2694,7 @@ msgid "Experimental algorithms should not be used!\n"
 msgstr "¡No se deberían usar algoritmos experimentales!\n"
 
 #: g10/misc.c:234
-msgid "this cipher algorithm is depreciated; please use a more standard one!\n"
+msgid "this cipher algorithm is deprecated; please use a more standard one!\n"
 msgstr ""
 "este algoritmo de cifrado está en desuso, considere el uso de uno más "
 "estándar.\n"

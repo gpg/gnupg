@@ -1193,8 +1193,9 @@ This option might not be implemented yet.
 <varlistentry>
 <term>--allow-non-selfsigned-uid</term>
 <listitem><para>
-Allow the import of keys with user IDs which are not self-signed.
-This is only allows the import - key validation will fail and you
+Allow the import of keys with user IDs which are not self-signed, but
+have at least one signature.
+This only allows the import - key validation will fail and you
 have to check the validity of the key my other means.  This hack is
 needed for some German keys generated with pgp 2.6.3in. You should really
 avoid using it, because OpenPGP has better mechanics to do separate signing
@@ -1217,6 +1218,17 @@ GnuPG normally checks that the timestamps associated with keys and
 signatures have plausible values.  However, sometimes a signature seems to
 be older than the key due to clock problems.  This option makes these
 checks just a warning.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--ignore-crc-error</term>
+<listitem><para>
+The ASCII armor used by OpenPG is protected by a CRC checksum against
+transmission errors.  Sometimes it happens that the CRC gets mangled
+somewhere on the transmission channel 
+but the actual content (which is anyway protected by
+the OpenPGP protocol) is still okay.  This options will let gpg ignore
+CRC errors.
 </para></listitem></varlistentry>
 
 

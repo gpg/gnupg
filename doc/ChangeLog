@@ -1,3 +1,12 @@
+2000-10-19  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Fixed doc for --allow-non-selfsigned-uid.
+	Add entry for --ignore-crc-error.
+
+2000-10-18  Werner Koch  <wk@gnupg.org>
+
+	* OpenPGP: Dropped the paragraph that RSA is not implemented.
+
 2000-10-14  Werner Koch  <wk@gnupg.org>
 
 	* faq.raw: Add an answer to the problem of multiple signatures.

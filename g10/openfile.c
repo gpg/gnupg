@@ -329,7 +329,7 @@ try_make_homedir( const char *fname )
 
     if ( ( *defhome == '~'
            && ( strlen(fname) >= strlen (defhome+1)
-                && !strcmp(fname+strlen(defhome+1)-strlen(defhome+1),
+                && !strcmp(fname+strlen(fname)-strlen(defhome+1),
                            defhome+1 ) ))
          || ( *defhome != '~'
               && !compare_filenames( fname, defhome ) )
@@ -345,7 +345,3 @@ try_make_homedir( const char *fname )
 	g10_exit(1);
     }
 }
-
-
-
-

@@ -590,6 +590,15 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 }
 
 
+static int
+invalid_crc(void)
+{
+    if ( opt.ignore_crc_error )
+        return 0;
+    log_inc_errorcount();
+    return G10ERR_INVALID_ARMOR;
+}
+
 
 static int
 radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
@@ -728,17 +737,17 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    break; /* eof */
 	    } while( ++idx < 4 );
 	    if( c == -1 ) {
-		log_error(_("premature eof (in CRC)\n"));
-		rc = G10ERR_INVALID_ARMOR;
-	    }
+		log_info(_("premature eof (in CRC)\n"));
+		rc = invalid_crc();
+                	    }
 	    else if( idx != 4 ) {
-		log_error(_("malformed CRC\n"));
-		rc = G10ERR_INVALID_ARMOR;
+		log_info(_("malformed CRC\n"));
+		rc = invalid_crc();
 	    }
 	    else if( mycrc != afx->crc ) {
-		log_error(_("CRC error; %06lx - %06lx\n"),
+                log_info (_("CRC error; %06lx - %06lx\n"),
 				    (ulong)afx->crc, (ulong)mycrc);
-		rc = G10ERR_INVALID_ARMOR;
+                rc = invalid_crc();
 	    }
 	    else {
 		rc = 0;

@@ -1,3 +1,12 @@
+2000-10-19  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New option --ignore-crc-error
+	* armor.c (invalid_crc): New.
+	(radix64_read): Act on new option.
+
+	* openfile.c (try_make_homedir): Klaus Singvogel fixed a stupid
+	error introduced on Sep 6th. 
+
 2000-10-18  Werner Koch  <wk@gnupg.org>
 
 	* misc.c (print_cipher_algo_note): Don't print the note for AES.

@@ -8,11 +8,7 @@
 
   Compatibility Notes
   ===================
-   GnuPG (>0.4.5) is in compliance with RFC2440 despite these exceptions:
-
-    * (9.1) states that RSA SHOULD be implemented.  This is not done
-      (except with an extension, usable outside the U.S.) due to
-      patent problems.
+   GnuPG (>=1.0.3) is in compliance with RFC2440 despite these exceptions:
 
     * (9.2) states that IDEA SHOULD be implemented.  This is not done
       due to patent problems.
@@ -21,7 +17,7 @@
    All MAY features are implemented with this exception:
 
     * multi-part armored messages are not supported.
-      MIME should be used instead.
+      MIME (rfc2015) should be used instead.
 
    Most of the OPTIONAL stuff is implemented.
 

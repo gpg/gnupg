@@ -90,6 +90,7 @@ struct {
     int honor_http_proxy;
     int fast_list_mode;
     int ignore_time_conflict;
+    int ignore_crc_error;
     int command_fd;
     int auto_key_retrieve;
     const char *override_session_key;
