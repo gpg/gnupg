@@ -1,4 +1,11 @@
+2002-06-28  Werner Koch  <wk@gnupg.org>
+
+	* server.c (cmd_recipient): Add more reason codes.
+
 2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (gpgsm_basic_cert_check): Use
+	--debug-no-path-validation to also bypass this basic check.
 
 	* gpgsm.c (main): Use GNUPG_DEFAULT_HOMEDIR constant.
 

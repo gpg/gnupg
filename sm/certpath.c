@@ -612,7 +612,7 @@ gpgsm_basic_cert_check (KsbaCert cert)
   KEYDB_HANDLE kh = keydb_new (0);
   KsbaCert issuer_cert = NULL;
 
-  if ((opt.debug & 4096))
+  if (opt.no_path_validation)
     {
       log_info ("WARNING: bypassing basic certificate checks\n");
       return 0;

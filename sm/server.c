@@ -243,7 +243,14 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     gpgsm_status2 (ctrl, STATUS_INV_RECP,
                    rc == -1? "1":
-                   rc == GNUPG_Ambiguous_Name? "2 ": "0 ",
+                   rc == GNUPG_Ambiguous_Name?      "2 ":
+                   rc == GNUPG_Wrong_Key_Usage?     "3 ":
+                   rc == GNUPG_Certificate_Revoked? "4 ":
+                   rc == GNUPG_Certificate_Expired? "5 ":
+                   rc == GNUPG_No_CRL_Known?        "6 ":
+                   rc == GNUPG_CRL_Too_Old?         "8 ":
+                   rc == GNUPG_No_Policy_Match?     "8 ":
+                   "0 ",
                    line, NULL);
 
   return map_to_assuan_status (rc);
