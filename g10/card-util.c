@@ -117,6 +117,7 @@ change_pin (int chvno)
 static const char *
 get_manufacturer (unsigned int no)
 {
+  /* Note:  Make sure that there is no colon or linefeed in the string. */
   switch (no)
     {
     case 0:
@@ -148,12 +149,26 @@ print_sha1_fpr (FILE *fp, const unsigned char *fpr)
 
 
 static void
+print_sha1_fpr_colon (FILE *fp, const unsigned char *fpr)
+{
+  int i;
+
+  if (fpr)
+    {
+      for (i=0; i < 20 ; i++, fpr++)
+        fprintf (fp, "%02X", *fpr);
+    }
+  putc (':', fp);
+}
+
+
+static void
 print_name (FILE *fp, const char *text, const char *name)
 {
   tty_fprintf (fp, text);
 
 
-  /* FIXME: tty_printf_utf8_string2 east everything after and
+  /* FIXME: tty_printf_utf8_string2 eats everything after and
      including an @ - e.g. when printing an url. */
   if (name && *name)
     {
@@ -168,9 +183,12 @@ print_name (FILE *fp, const char *text, const char *name)
 }
 
 static void
-print_isoname (FILE *fp, const char *text, const char *name)
+print_isoname (FILE *fp, const char *text, const char *tag, const char *name)
 {
-  tty_fprintf (fp, text);
+  if (opt.with_colons)
+    fprintf (fp, "%s:", tag);
+  else
+    tty_fprintf (fp, text);
 
   if (name && *name)
     {
@@ -184,22 +202,39 @@ print_isoname (FILE *fp, const char *text, const char *name)
         {
           *given = 0;
           given += 2;
-          if (fp)
+          if (opt.with_colons)
+            print_string (fp, given, strlen (given), ':');
+          else if (fp)
             print_utf8_string2 (fp, given, strlen (given), '\n');
           else
             tty_print_utf8_string2 (given, strlen (given), '\n');
-          if (*buf)
+
+          if (opt.with_colons)
+            putc (':', fp);
+          else if (*buf)
             tty_fprintf (fp, " ");
         }
-      if (fp)
+
+      if (opt.with_colons)
+        print_string (fp, buf, strlen (buf), ':');
+      else if (fp)
         print_utf8_string2 (fp, buf, strlen (buf), '\n');
       else
         tty_print_utf8_string2 (buf, strlen (buf), '\n');
       xfree (buf);
     }
   else
-    tty_fprintf (fp, _("[not set]"));
-  tty_fprintf (fp, "\n");
+    {
+      if (opt.with_colons)
+        putc (':', fp);
+      else
+        tty_fprintf (fp, _("[not set]"));
+    }
+
+  if (opt.with_colons)
+    fputs (":\n", fp);
+  else
+    tty_fprintf (fp, "\n");
 }
 
 
@@ -210,62 +245,119 @@ card_status (FILE *fp)
   struct agent_card_info_s info;
   PKT_public_key *pk = xcalloc (1, sizeof *pk);
   int rc;
+  unsigned int uval;
 
   rc = agent_learn (&info);
   if (rc)
     {
+      if (opt.with_colons)
+        fputs ("AID:::\n", fp);
       log_error (_("OpenPGP card not available: %s\n"),
                   gpg_strerror (rc));
       xfree (pk);
       return;
     }
-  
-  tty_fprintf (fp, "Application ID ...: %s\n",
-               info.serialno? info.serialno : "[none]");
+
+  if (opt.with_colons)
+    fprintf (fp, "AID:%s:", info.serialno? info.serialno : "");
+  else
+    tty_fprintf (fp, "Application ID ...: %s\n",
+                 info.serialno? info.serialno : "[none]");
   if (!info.serialno || strncmp (info.serialno, "D27600012401", 12) 
       || strlen (info.serialno) != 32 )
     {
+      if (opt.with_colons)
+        fputs ("unknown:\n", fp);
       log_info ("not an OpenPGP card\n");
       agent_release_card_info (&info);
       xfree (pk);
       return;
     }
-  tty_fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n",
-               info.serialno[12] == '0'?"":info.serialno+12,
-               info.serialno[13],
-               info.serialno[14] == '0'?"":info.serialno+14,
-               info.serialno[15]);
-  tty_fprintf (fp, "Manufacturer .....: %s\n", 
-               get_manufacturer (xtoi_2(info.serialno+16)*256
-                                 + xtoi_2 (info.serialno+18)));
-  tty_fprintf (fp, "Serial number ....: %.8s\n", info.serialno+20);
-  
-  print_isoname (fp, "Name of cardholder: ", info.disp_name);
-  print_name (fp, "Language prefs ...: ", info.disp_lang);
-  tty_fprintf (fp,    "Sex ..............: %s\n",
-               info.disp_sex == 1? _("male"):
-               info.disp_sex == 2? _("female") : _("unspecified"));
-  print_name (fp, "URL of public key : ", info.pubkey_url);
-  print_name (fp, "Login data .......: ", info.login_data);
-  tty_fprintf (fp,    "Signature PIN ....: %s\n",
-               info.chv1_cached? _("cached"): _("not cached"));
-  tty_fprintf (fp,    "Max. PIN lengths .: %d %d %d\n",
-               info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
-  tty_fprintf (fp,    "PIN retry counter : %d %d %d\n",
-               info.chvretry[0], info.chvretry[1], info.chvretry[2]);
-  tty_fprintf (fp, "Signature key ....:");
-  print_sha1_fpr (fp, info.fpr1valid? info.fpr1:NULL);
-  tty_fprintf (fp, "Encryption key....:");
-  print_sha1_fpr (fp, info.fpr2valid? info.fpr2:NULL);
-  tty_fprintf (fp, "Authentication key:");
-  print_sha1_fpr (fp, info.fpr3valid? info.fpr3:NULL);
-  tty_fprintf (fp, "General key info..: "); 
-  if (info.fpr1valid && !get_pubkey_byfprint (pk, info.fpr1, 20))
-    print_pubkey_info (fp, pk);
-  else
-    fputs ("[none]\n", fp);
-  tty_fprintf (fp,    "Signature counter : %lu\n", info.sig_counter);
-  
+
+  if (opt.with_colons)
+    fputs ("openpgp-card:\n", fp);
+
+
+  if (opt.with_colons)
+    {
+      fprintf (fp, "version:%.4s:\n", info.serialno+12);
+      uval = xtoi_2(info.serialno+16)*256 + xtoi_2 (info.serialno+18);
+      fprintf (fp, "vendor:%04x:%s:\n", uval, get_manufacturer (uval));
+      fprintf (fp, "serial:%.8s:\n", info.serialno+20);
+      
+      print_isoname (fp, "Name of cardholder: ", "name", info.disp_name);
+
+      fputs ("lang:", fp);
+      if (info.disp_lang)
+        print_string (fp, info.disp_lang, strlen (info.disp_lang), ':');
+      fputs (":\n", fp);
+
+      fprintf (fp, "sex:%c:\n", (info.disp_sex == 1? 'm':
+                                 info.disp_sex == 2? 'f' : 'u'));
+
+      fputs ("url:", fp);
+      if (info.pubkey_url)
+        print_string (fp, info.pubkey_url, strlen (info.pubkey_url), ':');
+      fputs (":\n", fp);
+
+      fputs ("login:", fp);
+      if (info.login_data)
+        print_string (fp, info.login_data, strlen (info.login_data), ':');
+      fputs (":\n", fp);
+
+      fprintf (fp, "forcepin:%d:::\n", !info.chv1_cached);
+      fprintf (fp, "maxpinlen:%d:%d:%d:\n",
+                   info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
+      fprintf (fp, "pinretry:%d:%d:%d:\n",
+                   info.chvretry[0], info.chvretry[1], info.chvretry[2]);
+      fprintf (fp, "sigcount:%lu:::\n", info.sig_counter);
+
+      fputs ("fpr:", fp);
+      print_sha1_fpr_colon (fp, info.fpr1valid? info.fpr1:NULL);
+      print_sha1_fpr_colon (fp, info.fpr2valid? info.fpr2:NULL);
+      print_sha1_fpr_colon (fp, info.fpr3valid? info.fpr3:NULL);
+      putc ('\n', fp);
+
+    }
+  else 
+    {
+      tty_fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n",
+                   info.serialno[12] == '0'?"":info.serialno+12,
+                   info.serialno[13],
+                   info.serialno[14] == '0'?"":info.serialno+14,
+                   info.serialno[15]);
+      tty_fprintf (fp, "Manufacturer .....: %s\n", 
+                   get_manufacturer (xtoi_2(info.serialno+16)*256
+                                     + xtoi_2 (info.serialno+18)));
+      tty_fprintf (fp, "Serial number ....: %.8s\n", info.serialno+20);
+      
+      print_isoname (fp, "Name of cardholder: ", "name", info.disp_name);
+      print_name (fp, "Language prefs ...: ", info.disp_lang);
+      tty_fprintf (fp,    "Sex ..............: %s\n",
+                   info.disp_sex == 1? _("male"):
+                   info.disp_sex == 2? _("female") : _("unspecified"));
+      print_name (fp, "URL of public key : ", info.pubkey_url);
+      print_name (fp, "Login data .......: ", info.login_data);
+      tty_fprintf (fp,    "Signature PIN ....: %s\n",
+                   info.chv1_cached? _("cached"): _("not cached"));
+      tty_fprintf (fp,    "Max. PIN lengths .: %d %d %d\n",
+                   info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
+      tty_fprintf (fp,    "PIN retry counter : %d %d %d\n",
+                   info.chvretry[0], info.chvretry[1], info.chvretry[2]);
+      tty_fprintf (fp,    "Signature counter : %lu\n", info.sig_counter);
+      tty_fprintf (fp, "Signature key ....:");
+      print_sha1_fpr (fp, info.fpr1valid? info.fpr1:NULL);
+      tty_fprintf (fp, "Encryption key....:");
+      print_sha1_fpr (fp, info.fpr2valid? info.fpr2:NULL);
+      tty_fprintf (fp, "Authentication key:");
+      print_sha1_fpr (fp, info.fpr3valid? info.fpr3:NULL);
+      tty_fprintf (fp, "General key info..: "); 
+      if (info.fpr1valid && !get_pubkey_byfprint (pk, info.fpr1, 20))
+        print_pubkey_info (fp, pk);
+      else
+        fputs ("[none]\n", fp);
+    }
+      
   free_public_key (pk);
   agent_release_card_info (&info);
 }
@@ -506,8 +598,16 @@ card_edit (STRLIST commands)
       tty_printf("\n");
       if (redisplay )
         {
-          card_status (NULL);
-          tty_printf("\n");
+          if (opt.with_colons)
+            {
+              card_status (stdout);
+              fflush (stdout);
+            }
+          else
+            {
+              card_status (NULL);
+              tty_printf("\n");
+            }
           redisplay = 0;
 	}
 
