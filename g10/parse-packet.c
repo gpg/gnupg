@@ -687,13 +687,17 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 	   with no salt.  The RFC says that using salt for this is a
 	   MUST. */
 	if(s2kmode!=1 && s2kmode!=3)
-	  log_info(_("WARNING: potentially insecure session key decryption key\n"));
+	  log_info(_("WARNING: potentially insecure symmetrically"
+		     " encrypted session key\n"));
       }
     assert( !pktlen );
 
     if( list_mode ) {
-	printf(":symkey enc packet: version %d, cipher %d, s2k %d, hash %d\n",
-			    version, cipher_algo, s2kmode, hash_algo);
+	printf(":symkey enc packet: version %d, cipher %d, s2k %d, hash %d",
+	       version, cipher_algo, s2kmode, hash_algo);
+	if(seskeylen)
+	  printf(", seskey %d bits",(seskeylen-1)*8);
+	printf("\n");
 	if( s2kmode == 1 || s2kmode == 3 ) {
 	    printf("\tsalt ");
 	    for(i=0; i < 8; i++ )
@@ -702,9 +706,6 @@ parse_symkeyenc( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 		printf(", count %lu", (ulong)k->s2k.count );
 	    printf("\n");
 	}
-	if(seskeylen)
-	  printf("\tsession key decryption key present (%d bytes)\n",
-		 seskeylen-1);
     }
 
   leave:

@@ -210,17 +210,11 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	    log_error("oops: public key not found for preference check\n");
         }
 	else if( pkb->pkt->pkt.public_key->selfsigversion > 3
-            && dek->algo != CIPHER_ALGO_3DES
-	    && !is_algo_in_prefs( pkb, PREFTYPE_SYM, dek->algo ) ) {
-	    /* Don't print a note while we are not on verbose mode,
-	     * the cipher is blowfish and the preferences have twofish
-	     * listed */
-	    if( opt.verbose || dek->algo != CIPHER_ALGO_BLOWFISH
-		|| !is_algo_in_prefs( pkb, PREFTYPE_SYM, CIPHER_ALGO_TWOFISH))
-		log_info(_(
-		    "NOTE: cipher algorithm %d not found in preferences\n"),
-								 dek->algo );
-	}
+		 && dek->algo != CIPHER_ALGO_3DES
+		 && !opt.quiet
+		 && !is_algo_in_prefs( pkb, PREFTYPE_SYM, dek->algo ))
+	  log_info(_("NOTE: cipher algorithm %d not found in preferences\n"),
+		   dek->algo );
 
         if (!rc) {
             KBNODE k;

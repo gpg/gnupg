@@ -1,3 +1,20 @@
+2003-10-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Add --no-groups to zero --group list.
+
+	* encode.c (encode_simple): Allow for 32 bytes (256 bits) of
+	symmetrically encrypted session key.  Use --s2k-cipher-algo to
+	choose cipher, rather than --cipher-algo.  This code is never
+	actually called in stable, but better to fix it here in case we
+	branch in the future.
+
+	* parse-packet.c (parse_subkeyenc): Call it a "symmetrically
+	encrypted session key" since "session key decryption key" is just
+	baffling.  Neaten --list-packets output.
+
+	* pubkey-enc.c (get_it): Always show cipher-not-in-prefs warning
+	unless --quiet is set.
+
 2003-09-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* parse-packet.c (parse_symkeyenc): Give a warning if a session
