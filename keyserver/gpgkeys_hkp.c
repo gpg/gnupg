@@ -378,12 +378,7 @@ static int
 parse_hkp_index(IOBUF buffer,char *line)
 {
   static int open=0,revoked=0;
-  static char *key=NULL,*type=NULL;
-#ifdef __riscos__
-  static char *uid=NULL;
-#else
-  static unsigned char *uid=NULL;
-#endif
+  static char *key=NULL,*type=NULL,*uid=NULL;
   static u32 bits,createtime;
   int ret=0;
 

@@ -1,5 +1,9 @@
 2002-08-28  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_hkp.c: (parse_hkp_index): Use same types on all
+	platforms.  This was probably leftover from earlier code where the
+	typing mattered.
+
 	* gpgkeys_hkp.c: Overall cleanup from iobuf conversion.  Be
 	consistent in m_alloc and malloc usage.  Remove include-disabled
 	(meaningless on HKP).  RISC OS tweak.
