@@ -1,3 +1,12 @@
+2005-02-18  Moritz Schulte  <moritz@g10code.com>
+
+	* command-ssh.c (ssh_sexp_construct): Rewritten generation of sexp
+	template, clarified.
+	(ssh_sexp_extract): Support shadowed-private-key-sexp; treat
+	protected-private key and shadowed-private-key as public keys.
+	(key_secret_to_public): Rewritten: simply use ssh_sexp_extract()
+	and ssh_sexp_construct().
+
 2005-02-15  Werner Koch  <wk@g10code.com>
 
 	* findkey.c (modify_description): Don't increment OUT_LEN during

@@ -780,11 +780,14 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
    S-Expressions. 
  */
 
+
+
 static gpg_error_t
 ssh_sexp_construct (gcry_sexp_t *sexp,
 		    ssh_key_type_spec_t key_spec, int secret,
 		    gcry_mpi_t *mpis, const char *comment)
 {
+  const char *key_identifier[] = { "public-key", "private-key" };
   gcry_sexp_t sexp_new;
   char *sexp_template;
   size_t sexp_template_n;
@@ -804,9 +807,15 @@ ssh_sexp_construct (gcry_sexp_t *sexp,
     elems = key_spec.elems_key_public;
   elems_n = strlen (elems);
 
-  /* FIXME: Why 33? -wk */
-  sexp_template_n = (33 + strlen (key_spec.identifier)
-                     + (elems_n * 6) - (!secret));
+  /*
+    Calculate size for sexp_template_n:
+
+    "(%s(%s<mpis>)(comment%s))" -> 20 + sizeof (<mpis>).
+
+    mpi: (X%m) -> 5.
+
+  */
+  sexp_template_n = 20 + (elems_n * 5);
   sexp_template = xtrymalloc (sexp_template_n);
   if (! sexp_template)
     {
@@ -814,18 +823,25 @@ ssh_sexp_construct (gcry_sexp_t *sexp,
       goto out;
     }
 
-  arg_list = xtrymalloc (sizeof (*arg_list) * (elems_n + 1));
+  /* Key identifier, algorithm identifier, mpis, comment.  */
+  arg_list = xtrymalloc (sizeof (*arg_list) * (2 + elems_n + 1));
   if (! arg_list)
     {
       err = gpg_error_from_errno (errno);
       goto out;
     }
 
-  sprintf (sexp_template, "(%s-key (%s ",
-	   secret ? "private" : "public", key_spec.identifier);
+  i = 0;
+  arg_list[i++] = &key_identifier[secret];
+  arg_list[i++] = &key_spec.identifier;
+
+  *sexp_template = 0;
+  sexp_template_n = 0;
+  sexp_template_n = sprintf (sexp_template + sexp_template_n, "(%%s(%%s");
   for (i = 0; i < elems_n; i++)
     {
-      sprintf (strchr (sexp_template, 0), "(%c %%m)", elems[i]);
+      sexp_template_n += sprintf (sexp_template + sexp_template_n, "(%c%%m)",
+				  elems[i]);
       if (secret)
 	{
 	  for (j = 0; j < elems_n; j++)
@@ -834,10 +850,12 @@ ssh_sexp_construct (gcry_sexp_t *sexp,
 	}
       else
 	j = i;
-      arg_list[i] = &mpis[j];
+      arg_list[i + 2] = &mpis[j];
     }
-  arg_list[i] = &comment;
-  sprintf (strchr (sexp_template, 0), ") (comment %%s))");
+  sexp_template_n += sprintf (sexp_template + sexp_template_n,
+			      ")(comment%%s))");
+
+  arg_list[i + 2] = &comment;
 
   err = gcry_sexp_build_array (&sexp_new, NULL, sexp_template, arg_list);
   if (err)
@@ -886,13 +904,14 @@ ssh_sexp_extract (gcry_sexp_t sexp,
       goto out;
     }
 
-  if (data_n == 10 && !strncmp (data, "public-key", 10))
+  if ((data_n == 10 && !strncmp (data, "public-key", 10))
+      || (data_n == 21 && !strncmp (data, "protected-private-key", 21))
+      || (data_n == 20 && !strncmp (data, "shadowed-private-key", 20)))
     {
       is_secret = 0;
       elems = key_spec.elems_key_public;
     }
-  else if ((data_n == 11 && !strncmp (data, "private-key", 11))
-	   || (data_n == 21 && !strncmp (data, "protected-private-key", 21)))
+  else if (data_n == 11 && !strncmp (data, "private-key", 11))
     {
       is_secret = 1;
       elems = key_spec.elems_key_secret;
@@ -1276,115 +1295,24 @@ static gpg_error_t
 key_secret_to_public (gcry_sexp_t *key_public,
 		      ssh_key_type_spec_t spec, gcry_sexp_t key_secret)
 {
-  gpg_error_t err;
-  gcry_sexp_t value_pair;
-  unsigned int i;
+  const char *comment;
   gcry_mpi_t *mpis;
-  gcry_mpi_t mpi;
-  void **arglist;
-  size_t elems_n;
-  char *template;
-  size_t template_n;
-  const char *elems;
-  char *comment;
-  const char *data;
-  size_t data_n;
+  gpg_error_t err;
+  int is_secret;
 
-  err = 0;
-  mpis = NULL;
-  arglist = NULL;
   comment = NULL;
-  template = NULL;
-  value_pair = NULL;
+  mpis = NULL;
 
-  elems = spec.elems_key_public;
-  elems_n = strlen (elems);
-
-  data = NULL;
-  value_pair  = gcry_sexp_find_token (key_secret, "comment", 0);
-  if (value_pair)
-    data = gcry_sexp_nth_data (value_pair, 1, &data_n);
-  if (! data)
-    {
-      data = "";
-      data_n = 0;
-    }
-
-  comment = xtrymalloc (data_n + 1);
-  if (! comment)
-    {
-      err = gpg_error_from_errno (errno);
-      goto out;
-    }
-  strncpy (comment, data, data_n);
-  comment[data_n] = 0;
-
-  gcry_sexp_release (value_pair);
-  value_pair = NULL;
-  
-  template_n = 29 + strlen (spec.identifier) + (elems_n * 7) + 1;
-  template = xtrymalloc (template_n);
-  if (! template)
-    {
-      err = gpg_error_from_errno (errno);
-      goto out;
-    }
-
-  mpis = xtrymalloc (sizeof (*mpis) * (elems_n + 1));
-  if (! mpis)
-    {
-      err = gpg_error_from_errno (errno);	/* FIXME: errno.  */
-      goto out;
-    }
-  memset (mpis, 0, sizeof (*mpis) * (elems_n + 1));
-
-  arglist = xtrymalloc (sizeof (*arglist) * (elems_n + 1));
-  if (! arglist)
-    {
-      err = gpg_error_from_errno (errno);
-      goto out;
-    }
-
-  for (i = 0; i < elems_n; i++)
-    {
-      value_pair = gcry_sexp_find_token (key_secret, elems + i, 1);
-      if (! value_pair)
-	{
-	  err = gpg_error (GPG_ERR_INV_SEXP);
-	  break;
-	}
-      mpi = gcry_sexp_nth_mpi (value_pair, 1, GCRYMPI_FMT_USG);
-      if (! mpi)
-	{
-	  err = gpg_error (GPG_ERR_INV_SEXP);
-	  break;
-	}
-      gcry_sexp_release (value_pair);
-      value_pair = NULL;
-
-      mpis[i] = mpi;
-      arglist[i] = &mpis[i];
-      mpi = NULL;
-    }
+  err = ssh_sexp_extract (key_secret, spec, &is_secret, &mpis, &comment);
   if (err)
     goto out;
 
-  /* FIXME: write better.  */
-  sprintf (template, "(public-key (%s", spec.identifier);
-  for (i = 0; i < elems_n; i++)
-    sprintf (strchr (template, 0)," (%c %%m)", elems[i]);
-  sprintf (strchr (template, 0), ") (comment %%s))");
-  arglist[i] = &comment;
+  err = ssh_sexp_construct (key_public, spec, 0, mpis, comment);
 
-  err = gcry_sexp_build_array (key_public, NULL, template, arglist);
-  
  out:
 
-  gcry_sexp_release (value_pair);
-  xfree (template);
   mpint_list_free (mpis);
-  xfree (arglist);
-  xfree (comment);
+  xfree ((char *) comment);
 
   return err;
 }
