@@ -111,8 +111,17 @@ dnl GNUPG_CHECK_ENDIAN
 dnl define either LITTLE_ENDIAN_HOST or BIG_ENDIAN_HOST
 dnl
 define(GNUPG_CHECK_ENDIAN,
-  [ if test "$cross_compiling" = yes; then
-        AC_MSG_WARN(cross compiling; assuming little endianess)
+  [
+    tmp_assumed_endian=big
+    if test "$cross_compiling" = yes; then
+      case "$host_cpu" in
+         i[345678]* )
+            tmp_assumed_endian=little
+            ;;
+         *)
+            ;;
+      esac
+      AC_MSG_WARN(cross compiling; assuming $tmp_assumed_endian endianess)
     fi
     AC_MSG_CHECKING(endianess)
     AC_CACHE_VAL(gnupg_cv_c_endian,
@@ -141,7 +150,7 @@ define(GNUPG_CHECK_ENDIAN,
               }],
               gnupg_cv_c_endian=little,
               gnupg_cv_c_endian=big,
-              gnupg_cv_c_endian=little
+              gnupg_cv_c_endian=$tmp_assumed_endian
             )
         fi
       ])

@@ -1,5 +1,6 @@
 dnl Configure.ac script for GnuPG
-dnl Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+dnl Copyright (C) 1998,1999,2000,2001,2002,
+dnl               2003 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
 dnl
@@ -283,6 +284,8 @@ AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
 AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_RANLIB
+AC_CHECK_TOOL(AR, ar, :)
 AC_PATH_PROG(PERL,"perl")
 AC_ISC_POSIX
 AC_SYS_LARGEFILE
@@ -466,6 +469,7 @@ dnl let that after linux to avoid gnu-linux problems
         ;;
     *)
         PRINTABLE_OS_NAME=`uname -s || echo "Unknown"`
+        test "$PRINTABLE_OS_NAME" = "Linux" && PRINTABLE_OS_NAME="GNU/Linux"
         ;;
 esac
 AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",

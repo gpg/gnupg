@@ -1,3 +1,12 @@
+2003-03-24  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Test for ranlib and ar.
+
+2003-03-12  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_CHECK_ENDIAN): When crosscompiling assume
+	little only for Intel CPUs.
+
 2003-02-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Define @CAPLIBS@ to link in -lcap if we are using
@@ -1133,7 +1142,7 @@ Fri Feb 13 19:43:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	* Makefile.am: Likewise
 
 
- Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

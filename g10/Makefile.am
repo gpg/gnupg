@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -22,9 +22,8 @@ INCLUDES = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
 EXTRA_DIST = options.skel
 # it seems that we can't use this with automake 1.5
 #OMIT_DEPENDENCIES = zlib.h zconf.h
-LDFLAGS = @LDFLAGS@
 libexecdir = @libexecdir@/@PACKAGE@
-CFLAGS = @CFLAGS@ -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
+AM_CFLAGS =  -DGNUPG_LIBEXECDIR="\"$(libexecdir)\""
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a @CAPLIBS@
 
 #noinst_PROGRAMS = gpgd

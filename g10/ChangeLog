@@ -1,3 +1,7 @@
+2003-03-24  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Make use of AM_CFLAGS and AM_LDFLAGS.
+
 2003-03-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* status.c (do_get_from_fd): Accept 'y' as well as 'Y' for
