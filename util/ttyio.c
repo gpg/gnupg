@@ -28,7 +28,7 @@
   #include <termios.h>
   #ifdef __riscos__
     #include <kernel.h>
-    #include <sys/swis.h>
+    #include <swis.h>
     #undef HAVE_TCGETATTR
   #endif /* __riscos__ */
 #else

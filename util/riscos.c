@@ -29,12 +29,12 @@
 #include <unistd.h>
 #include <errno.h>
 #include <kernel.h>
-#include <sys/swis.h>
+#include <swis.h>
 #include "util.h"
 #include "memory.h"
 
 #define __UNIXLIB_INTERNALS
-#include <sys/unix.h>
+#include <unixlib/unix.h>
 #undef __UNIXLIB_INTERNALS
 
 /* RISC OS file open descriptor control list */
@@ -47,7 +47,43 @@ static struct fds_item *fds_list = NULL;
 static int initialized = 0;
 
 
-/* RISC OS functions */
+/* local RISC OS functions */
+
+static int
+is_read_only(const char *filename)
+{
+    _kernel_swi_regs r;
+    
+    r.r[0] = 17;
+    r.r[1] = (int) filename;
+    
+    if (_kernel_swi(OS_File, &r, &r))
+        log_fatal("Can't get file attributes for %s!\n", filename);
+    
+    if (r.r[0] == 0)
+        log_fatal("Can't find file %s!\n", filename);
+
+    r.r[0] = 4;
+    if (_kernel_swi(OS_File, &r, &r))
+        return 1;
+
+    return 0;
+}
+
+static void
+set_filetype(const char *filename, const int type)
+{
+    _kernel_swi_regs r;
+
+    r.r[0] = 18;
+    r.r[1] = (int) filename;
+    r.r[2] = type;
+    
+    if (_kernel_swi(OS_File, &r, &r))
+        log_fatal("Can't set filetype for file %s!\nIs the file on a read-only file system?\n", filename);
+}        
+
+/* exported RISC OS functions */
 
 pid_t
 riscos_getpid(void)
@@ -56,14 +92,14 @@ riscos_getpid(void)
 
     r.r[0] = 3;
     if (_kernel_swi(Wimp_ReadSysInfo, &r, &r))
-        log_fatal("Wimp_ReadSysInfo failed: Couldn't get WimpState (R0=3)!\n");
+        log_fatal("Wimp_ReadSysInfo failed: Can't get WimpState (R0=3)!\n");
 
     if (!r.r[0])
         return (pid_t) 0;
 
     r.r[0] = 5;
     if (_kernel_swi(Wimp_ReadSysInfo, &r, &r))
-        log_fatal("Wimp_ReadSysInfo failed: Couldn't get task handle (R0=5)!\n");
+        log_fatal("Wimp_ReadSysInfo failed: Can't get task handle (R0=5)!\n");
 
     return (pid_t) r.r[0];
 }
@@ -101,7 +137,7 @@ riscos_fopen(const char *filename, const char *mode)
     r.r[0] = 17;
     r.r[1] = (int) filename;
     if (e =_kernel_swi(OS_File, &r, &r))
-        log_fatal("Can't retrieve object information for %s\n", filename);
+        log_fatal("Can't retrieve object information for %s!\n", filename);
     if (r.r[0] == 2) {
         errno = EISDIR;
         return NULL;
@@ -112,7 +148,8 @@ riscos_fopen(const char *filename, const char *mode)
         set_filetype(filename, 0xfff);
         fp = fopen(filename, mode);
         set_filetype(filename, filetype);
-    } else {
+    }
+    else {
       fp = fopen(filename, mode);
     }
     return fp;
@@ -129,7 +166,7 @@ riscos_open(const char *filename, int oflag, ...)
     r.r[0] = 17;
     r.r[1] = (int) filename;
     if (e =_kernel_swi(OS_File, &r, &r))
-        log_fatal("Can't retrieve object information for %s\n", filename);
+        log_fatal("Can't retrieve object information for %s!\n", filename);
     if (r.r[0] == 2) {
         errno = EISDIR;
         return NULL;
@@ -148,7 +185,8 @@ riscos_open(const char *filename, int oflag, ...)
         else
             fd = open(filename, oflag, mode);
         set_filetype(filename, filetype);
-    } else {
+    }
+    else {
         if (!mode)
             fd = open(filename, oflag);
         else
@@ -171,7 +209,7 @@ riscos_fstat(int fildes, struct stat *buf)
     r.r[2] = 0;
     r.r[5] = 0;
     if (e = _kernel_swi(OS_Args, &r, &r))
-        log_fatal("Can't convert from file handle to name\n");
+        log_fatal("Can't convert from file handle to name!\n");
 
     filename = m_alloc(1 - r.r[5]);
 
@@ -180,12 +218,12 @@ riscos_fstat(int fildes, struct stat *buf)
     r.r[2] = (int) filename;
     r.r[5] = 1-r.r[5];
     if (e = _kernel_swi(OS_Args, &r, &r))
-        log_fatal("Can't convert from file handle to name\n");
+        log_fatal("Can't convert from file handle to name!\n");
 
     r.r[0] = 17;
     r.r[1] = (int) filename;
     if (e =_kernel_swi(OS_File, &r, &r))
-        log_fatal("Can't retrieve object information for %s\n", filename);
+        log_fatal("Can't retrieve object information for %s!\n", filename);
     if (r.r[0] == 2) {
         errno = EISDIR;
         return NULL;
@@ -196,7 +234,8 @@ riscos_fstat(int fildes, struct stat *buf)
         set_filetype(filename, 0xfff);
         rc = fstat(fildes, buf);
         set_filetype(filename, filetype);
-    } else {
+    }
+    else {
         rc = fstat(fildes, buf);
     }
 
@@ -205,12 +244,21 @@ riscos_fstat(int fildes, struct stat *buf)
     return rc;
 }
 
+int
+riscos_access(const char *path, int amode)
+{
+    /* Do additional check, i.e. whether path is on write-protected floppy */
+    if ((amode & W_OK) && is_read_only(path))
+        return 1;
+    return access(path, amode);
+}
+
 #ifdef DEBUG
 void
 dump_fdlist(void)
 {
     struct fds_item *iter = fds_list;
-    printf("list of open file descriptors:\n");
+    printf("List of open file descriptors:\n");
     while (iter) {
         printf("  %i\n", iter->fd);
         iter = iter->next;
@@ -228,7 +276,7 @@ fdopenfile(const char *filename, const int allow_write)
     else
         fd = open(filename, O_RDONLY);
     if (fd == -1)
-        log_error("can't open file %s: %i, %s\n", filename, errno, strerror(errno));
+        log_error("Can't open file %s: %i, %s!\n", filename, errno, strerror(errno));
 
     if (!initialized) {
         atexit (close_fds);
@@ -273,7 +321,8 @@ renamefile(const char *old, const char *new)
             return __set_errno(ENOENT);
         if (e->errnum == 176)
             return __set_errno(EEXIST);
-        printf("Error during renaming: %i, %s\n", e->errnum, e->errmess);
+        printf("Error during renaming: %i, %s!\n", e->errnum, e->errmess);
+        return __set_errno(EOPSYS);
     }
     return 0;
 }
@@ -287,6 +336,8 @@ gstrans(const char *old)
     char *buf, *tmp;
 
     buf = (char *) m_alloc(size);
+    if (!buf)
+        log_fatal("Can't claim memory for OS_GSTrans buffer!\n");
     do {
         r.r[0] = (int) old;
         r.r[1] = (int) buf;
@@ -304,23 +355,54 @@ gstrans(const char *old)
     buf[r.r[2]] = '\0';
     tmp = (char *) m_realloc(buf, r.r[2] + 1);
     if (!tmp)
-        log_fatal("Couldn't realloc memory after OS_GSTrans!\n");
+        log_fatal("Can't realloc memory after OS_GSTrans!\n");
 
     return tmp;
 }
 
+#ifdef DEBUG
 void
-set_filetype(const char *filename, const int type)
+list_openfiles(void)
 {
     _kernel_swi_regs r;
-
-    r.r[0] = 18;
-    r.r[1] = (int) filename;
-    r.r[2] = type;
+    char *name;
+    int i;
     
-    if (_kernel_swi(OS_File, &r, &r))
-        log_fatal("Can't set filetype for %s\n", filename);
-}        
+    for (i = 255; i >= 0; --i) {
+        r.r[0] = 7;
+        r.r[1] = i;
+        r.r[2] = 0;
+        r.r[5] = 0;
+        if (_kernel_swi(OS_Args, &r, &r))
+            continue;
+
+        name = (char *) m_alloc(1-r.r[5]);
+        if (!name)
+            log_fatal("Can't claim memory for OS_Args buffer!\n");
+
+        r.r[0] = 7;
+        r.r[1] = i;
+        r.r[2] = (int) name;
+        r.r[5] = 1-r.r[5];
+        if (_kernel_swi(OS_Args, &r, &r)) {
+            m_free(name);
+            log_fatal("Error when calling OS_Args(7)!\n");
+        }
+        
+        r.r[0] = 254;
+        r.r[1] = i;
+        if (_kernel_swi(OS_Args, &r, &r)) {
+            m_free(name);
+            log_fatal("Error when calling OS_Args(254)!\n");
+        }
+        
+        printf("%3i: %s (%c%c)\n", i, name,
+                                   (r.r[0] & 0x40) ? 'R' : 0,
+                                   (r.r[0] & 0x80) ? 'W' : 0);
+        m_free(name);
+    }
+}
+#endif
 
 void
 not_implemented(const char *feature)

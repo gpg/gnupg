@@ -24,7 +24,7 @@
 #include <errno.h>
 #include <string.h>
 #include <kernel.h>
-#include <sys/swis.h>
+#include <swis.h>
 #include "util.h"
 #include "dynload.h"
 

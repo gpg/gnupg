@@ -27,7 +27,7 @@
 #include <unistd.h>
 #ifdef __riscos__
 #include <kernel.h>
-#include <sys/swis.h>
+#include <swis.h>
 #endif /* __riscos__ */
 #include "util.h"
 #include "memory.h"

@@ -1,3 +1,7 @@
+2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
+
+	* rndriscos.c [__riscos__]: Updated include file name.
+
 2001-12-21  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (DISCLEANFILES): Add construct.c

@@ -34,7 +34,7 @@
 #endif
 #ifdef __riscos__
 #include <kernel.h>
-#include <sys/swis.h>
+#include <swis.h>
 #endif /* __riscos__ */
 
 #include "memory.h"
