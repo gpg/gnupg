@@ -1931,7 +1931,9 @@ parse_gpg_control( IOBUF inp,
 
  skipit:
     if ( list_mode ) {
-        int c, i=0 ;
+        int c;
+
+        i=0;
         printf("- private (rest length %lu)\n",  pktlen);
         if( iobuf_in_block_mode(inp) ) {
             while( (c=iobuf_get(inp)) != -1 )

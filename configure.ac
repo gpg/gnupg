@@ -21,7 +21,7 @@ dnl (Process this file with autoconf to produce a configure script.)
 AC_REVISION($Revision$)dnl
 
 AC_PREREQ(2.52)
-AC_INIT(gnupg,1.0.6a)
+AC_INIT(gnupg,1.0.6b)
 AC_CONFIG_SRCDIR(g10/g10.c)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_HEADERS(config.h)
@@ -449,10 +449,10 @@ fi
 dnl Checks for library functions.
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(strerror stpcpy strlwr stricmp tcgetattr rand strtoul mmap)
+AC_CHECK_FUNCS(strerror stpcpy strsep strlwr stricmp tcgetattr strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage setrlimit clock_gettime)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
-AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask)
+AC_CHECK_FUNCS(waitpid wait4 sigaction sigprocmask rand)
 
 #
 # check for gethrtime and run a testprogram to see whether
@@ -794,7 +794,7 @@ esac
 
 
 if test "$GCC" = yes; then
-    if test "$MAINTAINER_MODE" = "yes"; then
+    if test "$USE_MAINTAINER_MODE" = "yes"; then
         CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
     else
         CFLAGS="$CFLAGS -Wall"

@@ -795,7 +795,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
                        && desc[n].u.kid[1] == aki[1])
                     goto found;
                 break;
-              case KEYDB_SEARCH_MODE_FPR16: break;
+              case KEYDB_SEARCH_MODE_FPR16:
                 if ((pk||sk) && !memcmp (desc[n].u.fpr, afp, 16))
                     goto found;
                 break;

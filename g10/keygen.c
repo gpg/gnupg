@@ -124,17 +124,17 @@ write_uid( KBNODE root, const char *s )
 }
 
 static void
-do_add_key_flags (PKT_signature *sig, unsigned int usage)
+do_add_key_flags (PKT_signature *sig, unsigned int use)
 {
     byte buf[1];
 
-    if (!usage) 
+    if (!use) 
         return;
 
     buf[0] = 0;
-    if (usage & PUBKEY_USAGE_SIG)
+    if (use & PUBKEY_USAGE_SIG)
         buf[0] |= 0x01 | 0x02;
-    if (usage & PUBKEY_USAGE_ENC)
+    if (use & PUBKEY_USAGE_ENC)
         buf[0] |= 0x04 | 0x08;
     build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, 1);
 }
@@ -292,7 +292,7 @@ add_feature_mdc (PKT_signature *sig)
         return; /* already set */
     if (!s || !n) { /* create a new one */
         n = 1;
-        buf = m_alloc (n);
+        buf = m_alloc_clear (n);
     }
     else {
         buf = m_alloc (n);
@@ -358,7 +358,7 @@ keygen_add_std_prefs( PKT_signature *sig, void *opaque )
 
 static int
 write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
-               unsigned int usage )
+               unsigned int use )
 {
     PACKET *pkt;
     PKT_signature *sig;
@@ -380,7 +380,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
     if( !node )
 	BUG();
     pk = node->pkt->pkt.public_key;
-    pk->pubkey_usage = usage;
+    pk->pubkey_usage = use;
     /* we have to cache the key, so that the verification of the signature
      * creation is able to retrieve the public key */
     cache_public_key (pk);
@@ -402,7 +402,7 @@ write_selfsig( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
 
 static int
 write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
-                  unsigned int usage )
+                  unsigned int use )
 {
     PACKET *pkt;
     PKT_signature *sig;
@@ -433,7 +433,7 @@ write_keybinding( KBNODE root, KBNODE pub_root, PKT_secret_key *sk,
 	BUG();
 
     /* and make the signature */
-    oduap.usage = usage;
+    oduap.usage = use;
     oduap.pk = subpk;
     rc = make_keysig_packet( &sig, pk, NULL, subpk, sk, 0x18, 0, 0,
         		     keygen_add_key_flags_and_expire, &oduap );
@@ -1296,26 +1296,26 @@ parse_parameter_usage (const char *fname,
 {
     struct para_data_s *r = get_parameter( para, key );
     char *p, *pn;
-    unsigned int usage;
+    unsigned int use;
 
     if( !r )
 	return 0; /* none (this is an optional parameter)*/
     
-    usage = 0;
+    use = 0;
     pn = r->u.value;
     while ( (p = strsep (&pn, " \t,")) ) {
         if ( !*p)
             ;
         else if ( !ascii_strcasecmp (p, "sign") )
-            usage |= PUBKEY_USAGE_SIG;
+            use |= PUBKEY_USAGE_SIG;
         else if ( !ascii_strcasecmp (p, "encrypt") )
-            usage |= PUBKEY_USAGE_ENC;
+            use |= PUBKEY_USAGE_ENC;
         else {
             log_error("%s:%d: invalid usage list\n", fname, r->lnr );
             return -1; /* error */
         }
     }
-    r->u.usage = usage;
+    r->u.usage = use;
     return 0;
 }
 
@@ -1662,7 +1662,7 @@ generate_keypair( const char *fname )
     DEK *dek;
     STRING2KEY *s2k;
     int algo;
-    unsigned int usage;
+    unsigned int use;
     int both = 0;
     u32 expire;
     struct para_data_s *para = NULL;
@@ -1676,7 +1676,7 @@ generate_keypair( const char *fname )
 	return;
     }
 
-    algo = ask_algo( 0, &usage );
+    algo = ask_algo( 0, &use );
     if( !algo ) { /* default: DSA with ElG subkey of the specified size */
 	both = 1;
 	r = m_alloc_clear( sizeof *r + 20 );
@@ -1705,12 +1705,12 @@ generate_keypair( const char *fname )
 	r->next = para;
 	para = r;
 
-        if (usage) {
+        if (use) {
             r = m_alloc_clear( sizeof *r + 20 );
             r->key = pKEYUSAGE;
             sprintf( r->u.value, "%s%s",
-                     (usage & PUBKEY_USAGE_SIG)? "sign ":"",
-                     (usage & PUBKEY_USAGE_ENC)? "encrypt ":"" );
+                     (use & PUBKEY_USAGE_SIG)? "sign ":"",
+                     (use & PUBKEY_USAGE_ENC)? "encrypt ":"" );
             r->next = para;
             para = r;
         }
@@ -1977,7 +1977,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     KBNODE node;
     PKT_secret_key *sk = NULL; /* this is the primary sk */
     int algo;
-    unsigned int usage;
+    unsigned int use;
     u32 expire;
     unsigned nbits;
     char *passphrase = NULL;
@@ -2031,7 +2031,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	goto leave;
 
 
-    algo = ask_algo( 1, &usage );
+    algo = ask_algo( 1, &use );
     assert(algo);
     nbits = ask_keysize( algo );
     expire = ask_expire_interval();
@@ -2050,9 +2050,9 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     rc = do_create( algo, nbits, pub_keyblock, sec_keyblock,
 				      dek, s2k, NULL, expire );
     if( !rc )
-	rc = write_keybinding(pub_keyblock, pub_keyblock, sk, usage);
+	rc = write_keybinding(pub_keyblock, pub_keyblock, sk, use);
     if( !rc )
-	rc = write_keybinding(sec_keyblock, pub_keyblock, sk, usage);
+	rc = write_keybinding(sec_keyblock, pub_keyblock, sk, use);
     if( !rc ) {
 	okay = 1;
         write_status_text (STATUS_KEY_CREATED, "S");

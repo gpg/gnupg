@@ -296,7 +296,7 @@ set_random_seed_file( const char *name )
  * and return true if this was successful
  */
 static int
-read_seed_file()
+read_seed_file(void)
 {
     int fd;
     struct stat sb;

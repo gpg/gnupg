@@ -1,3 +1,7 @@
+2001-09-07  Werner Koch  <wk@gnupg.org>
+
+	* util.h: Add strsep().
+
 2001-08-30  Werner Koch  <wk@gnupg.org>
 
 	* cipher.h (DEK): Added use_mdc.

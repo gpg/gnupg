@@ -1,3 +1,7 @@
+2001-09-09  Werner Koch  <wk@gnupg.org>
+
+	* rsa.c (rsa_get_info): s/usage/r_usage/ to avoid shadow warnings.
+
 2001-08-24  Werner Koch  <wk@gnupg.org>
 
 	* md.c (md_write): Made buf arg const.

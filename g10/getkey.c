@@ -911,7 +911,8 @@ get_pubkey_byfprint( PKT_public_key *pk,
 	ctx.not_allocated = 1;
         ctx.kr_handle = keydb_new (0);
 	ctx.nitems = 1;
-	ctx.items[0].mode = fprint_len;
+	ctx.items[0].mode = fprint_len==16? KEYDB_SEARCH_MODE_FPR16
+                                          : KEYDB_SEARCH_MODE_FPR20;
 	memcpy( ctx.items[0].u.fpr, fprint, fprint_len );
 	rc = lookup( &ctx, &kb, 0 );
         if (!rc && pk )

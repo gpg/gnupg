@@ -166,12 +166,12 @@ print_key_data( PKT_public_key *pk, u32 *keyid )
 static void
 print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
 {
-    unsigned int usage = pk? pk->pubkey_usage : sk->pubkey_usage;
+    unsigned int use = pk? pk->pubkey_usage : sk->pubkey_usage;
     
-    if ( usage & PUBKEY_USAGE_ENC ) {
+    if ( use & PUBKEY_USAGE_ENC ) {
         putchar ('e');
     }
-    if ( usage & PUBKEY_USAGE_SIG ) {
+    if ( use & PUBKEY_USAGE_SIG ) {
         putchar ('s');
         putchar ('c');
     }

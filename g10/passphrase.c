@@ -211,7 +211,7 @@ readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
  */
 
 static int
-agent_open ()
+agent_open (void)
 {
     int fd;
     char *infostr, *p;

@@ -1,3 +1,13 @@
+2001-09-09  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: autoconf changed the name of the maintainer mode
+	flag, so that not all warnings where enabled. Fixed that.
+	Reported by Dirk Meyer.
+
+2001-09-07  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Test for strsep().
+
 2001-09-03  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: Removed GDBM tests.

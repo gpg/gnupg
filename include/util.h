@@ -203,6 +203,9 @@ char *stpcpy(char *a,const char *b);
 #ifndef HAVE_STRLWR
 char *strlwr(char *a);
 #endif
+#ifndef HAVE_STRSEP
+char *strsep (char **stringp, const char *delim);
+#endif
 #ifndef HAVE_STRCASECMP
 int strcasecmp( const char *, const char *b);
 #endif

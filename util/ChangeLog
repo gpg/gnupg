@@ -1,3 +1,7 @@
+2001-09-07  Werner Koch  <wk@gnupg.org>
+
+	* strgutil.c (strsep): New, taken from glibc 2.2.1.
+
 2001-09-03  Werner Koch  <wk@gnupg.org>
 
 	* miscutil.c (strtimestamp,asctimestamp): Avoid trigraphs.

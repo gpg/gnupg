@@ -446,7 +446,7 @@ rsa_get_nbits( int algo, MPI *pkey )
  */
 const char *
 rsa_get_info( int algo,
-	      int *npkey, int *nskey, int *nenc, int *nsig, int *usage )
+	      int *npkey, int *nskey, int *nenc, int *nsig, int *r_usage )
 {
     *npkey = 2;
     *nskey = 6;
@@ -454,10 +454,12 @@ rsa_get_info( int algo,
     *nsig = 1;
 
     switch( algo ) {
-      case 1: *usage = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC; return "RSA";
-      case 2: *usage = PUBKEY_USAGE_ENC; return "RSA-E";
-      case 3: *usage = PUBKEY_USAGE_SIG; return "RSA-S";
-      default:*usage = 0; return NULL;
+      case 1: *r_usage = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC; return "RSA";
+      case 2: *r_usage = PUBKEY_USAGE_ENC; return "RSA-E";
+      case 3: *r_usage = PUBKEY_USAGE_SIG; return "RSA-S";
+      default:*r_usage = 0; return NULL;
     }
 }
+
+
 

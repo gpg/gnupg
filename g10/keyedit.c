@@ -955,7 +955,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 	  case cmdUPDPREF: 
             {
-                char *p = keygen_get_std_prefs ();
+                p = keygen_get_std_prefs ();
                 tty_printf (("Current preference list: %s\n"), p);
                 m_free (p);
             }

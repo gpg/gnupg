@@ -117,7 +117,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 
 
 static int
-get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
+get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 {
     int rc;
     MPI plain_dek  = NULL;
@@ -125,7 +125,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     unsigned n, nframe;
     u16 csum, csum2;
 
-    rc = pubkey_decrypt(sk->pubkey_algo, &plain_dek, k->data, sk->skey );
+    rc = pubkey_decrypt(sk->pubkey_algo, &plain_dek, enc->data, sk->skey );
     if( rc )
 	goto leave;
     frame = mpi_get_buffer( plain_dek, &nframe, NULL );

@@ -495,7 +495,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
  * make a detached signature.  If FILENAMES->d is NULL read from stdin
  * and ignore the detached mode.  Sign the file with all secret keys
  * which can be taken from LOCUSR, if this is NULL, use the default one
- * If ENCRYPT is true, use REMUSER (or ask if it is NULL) to encrypt the
+ * If ENCRYPTFLAG is true, use REMUSER (or ask if it is NULL) to encrypt the
  * signed data for these users.
  * If OUTFILE is not NULL; this file is used for output and the function
  * does not ask for overwrite permission; output is then always
@@ -503,7 +503,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
  */
 int
 sign_file( STRLIST filenames, int detached, STRLIST locusr,
-	   int encrypt, STRLIST remusr, const char *outfile )
+	   int encryptflag, STRLIST remusr, const char *outfile )
 {
     const char *fname;
     armor_filter_context_t afx;
@@ -536,7 +536,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     else
 	fname = NULL;
 
-    if( fname && filenames->next && (!detached || encrypt) )
+    if( fname && filenames->next && (!detached || encryptflag) )
 	log_bug("multiple files can only be detached signed");
 
     if( (rc=build_sk_list( locusr, &sk_list, 1, PUBKEY_USAGE_SIG )) )
@@ -544,7 +544,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( !old_style )
 	old_style = only_old_style( sk_list );
 
-    if( encrypt ) {
+    if( encryptflag ) {
 	if( (rc=build_pk_list( remusr, &pk_list, PUBKEY_USAGE_ENC )) )
 	    goto leave;
 	if( !old_style )
@@ -586,13 +586,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
     if( !multifile )
 	iobuf_push_filter( inp, md_filter, &mfx );
 
-    if( detached && !encrypt && !opt.rfc1991 )
+    if( detached && !encryptflag && !opt.rfc1991 )
 	afx.what = 2;
 
     if( opt.armor && !outfile  )
 	iobuf_push_filter( out, armor_filter, &afx );
 
-    if( encrypt ) {
+    if( encryptflag ) {
 	efx.pk_list = pk_list;
 	/* fixme: set efx.cfx.datalen if known */
 	iobuf_push_filter( out, encrypt_filter, &efx );
@@ -604,7 +604,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	else {
 	    if( old_style
 		|| compr_algo == 1
-		|| (compr_algo == -1 && !encrypt) )
+		|| (compr_algo == -1 && !encryptflag) )
 		zfx.algo = 1; /* use the non optional algorithm */
 	    iobuf_push_filter( out, compress_filter, &zfx );
 	}
@@ -672,7 +672,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_cancel(out);
     else {
 	iobuf_close(out);
-        if (encrypt)
+        if (encryptflag)
             write_status( STATUS_END_ENCRYPTION );
     }
     iobuf_close(inp);

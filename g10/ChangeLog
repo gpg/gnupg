@@ -1,3 +1,23 @@
+2001-09-09  Werner Koch  <wk@gnupg.org>
+
+	* keyedit.c (keyedit_menu): No need to define another p.
+
+	* keylist.c (print_capabilities): s/used/use/ so that it
+	does not shadow a global.
+	* sign.c (sign_file): Renamed arg encrypt to encryptflag
+	* keygen.c: Replaced all "usage" by "use".
+	* misc.c (openpgp_pk_algo_usage): Ditto.
+
+	* pubkey-enc.c (get_it): Renamed arg k to enc so that the later
+	defined k does not shadow it.
+
+	* parse-packet.c (parse_gpg_control): No need to define another i.
+
+	* getkey.c (get_pubkey_byfprint): Must use the enum values and not
+	the fprint_len.
+	* keyring.c (keyring_search): Removed a non-sense break.  Both
+	bugs pointed out by Stefan.
+
 2001-09-07  Werner Koch  <wk@gnupg.org>
 
 	* status.c, status.h: Added NO_RECP and ALREADY_SIGNED.

@@ -299,33 +299,32 @@ openpgp_pk_test_algo( int algo, unsigned int usage_flags )
 int 
 openpgp_pk_algo_usage ( int algo )
 {
-    int usage = 0; 
+    int use = 0; 
     
     /* they are hardwired in gpg 1.0 */
     switch ( algo ) {    
       case PUBKEY_ALGO_RSA:
-          usage = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_RSA_E:
-          usage = PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_RSA_S:
-          usage = PUBKEY_USAGE_SIG;
+          use = PUBKEY_USAGE_SIG;
           break;
       case PUBKEY_ALGO_ELGAMAL_E:
-          usage = PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_DSA:  
-          usage = PUBKEY_USAGE_SIG;
+          use = PUBKEY_USAGE_SIG;
           break;
       case PUBKEY_ALGO_ELGAMAL:
-          usage = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC;
+          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC;
           break;
       default:
           break;
     }
-    return usage;
-
+    return use;
 }
 
 
