@@ -132,18 +132,20 @@ void start_command_handler (int, int);
 /*-- findkey.c --*/
 int agent_write_private_key (const unsigned char *grip,
                              const void *buffer, size_t length, int force);
-gpg_error_t agent_key_from_file (CTRL ctrl, const unsigned char *grip,
+gpg_error_t agent_key_from_file (ctrl_t ctrl, 
+                                 const char *desc_text,
+                                 const unsigned char *grip,
                                  unsigned char **shadow_info,
                                  int ignore_cache, gcry_sexp_t *result);
 int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/
-int agent_askpin (CTRL ctrl,
+int agent_askpin (ctrl_t ctrl,
                   const char *desc_text, struct pin_entry_info_s *pininfo);
-int agent_get_passphrase (CTRL ctrl, char **retpass,
+int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext);
-int agent_get_confirmation (CTRL ctrl, const char *desc, const char *ok,
+int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
 			    const char *cancel);
 
 /*-- cache.c --*/
@@ -154,16 +156,18 @@ void agent_unlock_cache_entry (void **cache_id);
 
 
 /*-- pksign.c --*/
-int agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache);
+int agent_pksign (ctrl_t ctrl, const char *desc_text,
+                  FILE *outfp, int ignore_cache);
 
 /*-- pkdecrypt.c --*/
-int agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
+int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+                     const unsigned char *ciphertext, size_t ciphertextlen,
                      FILE *outfp);
 
 /*-- genkey.c --*/
-int agent_genkey (CTRL ctrl,
+int agent_genkey (ctrl_t ctrl, 
                   const char *keyparam, size_t keyparmlen, FILE *outfp);
-int agent_protect_and_store (CTRL ctrl, gcry_sexp_t s_skey);
+int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);
 
 /*-- protect.c --*/
 int agent_protect (const unsigned char *plainkey, const char *passphrase,
@@ -181,18 +185,20 @@ int agent_get_shadow_info (const unsigned char *shadowkey,
 /*-- trustlist.c --*/
 int agent_istrusted (const char *fpr);
 int agent_listtrusted (void *assuan_context);
-int agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag);
+int agent_marktrusted (ctrl_t ctrl, const char *name,
+                       const char *fpr, int flag);
 
 
 /*-- divert-scd.c --*/
-int divert_pksign (CTRL ctrl, 
+int divert_pksign (ctrl_t ctrl, 
                    const unsigned char *digest, size_t digestlen, int algo,
                    const unsigned char *shadow_info, unsigned char **r_sig);
-int divert_pkdecrypt (CTRL ctrl,
+int divert_pkdecrypt (ctrl_t ctrl,
                       const unsigned char *cipher,
                       const unsigned char *shadow_info,
                       char **r_buf, size_t *r_len);
-int divert_generic_cmd (CTRL ctrl, const char *cmdline, void *assuan_context);
+int divert_generic_cmd (ctrl_t ctrl,
+                        const char *cmdline, void *assuan_context);
 
 
 /*-- call-scd.c --*/

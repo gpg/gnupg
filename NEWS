@@ -5,8 +5,11 @@ Noteworthy changes in version 1.9.5
    Cleaned up the build system to better comply with the coding
    standards.
 
- * The --import command is now able to autodetect pkcs#12 files and
-   import secret and private keys from this file format.
+ * [gpgsm] The --import command is now able to autodetect pkcs#12
+   files and import secret and private keys from this file format.
+
+ * [gpgsm] The pinentry will no present a description of the key for
+   whom the passphrase is requests.
 
 
 Noteworthy changes in version 1.9.4 (2004-01-30)

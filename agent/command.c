@@ -1,5 +1,5 @@
 /* command.c - gpg-agent command handler
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -50,6 +50,8 @@ struct server_local_s {
   ASSUAN_CONTEXT assuan_ctx;
   int message_fd;
   int use_cache_for_signing;
+  char *keydesc;  /* Allocated description fro the next key
+                     operation. */
 };
 
 
@@ -59,11 +61,14 @@ struct server_local_s {
 static void
 reset_notify (ASSUAN_CONTEXT ctx)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   memset (ctrl->keygrip, 0, 20);
   ctrl->have_keygrip = 0;
   ctrl->digest.valuelen = 0;
+
+  xfree (ctrl->server_local->keydesc);
+  ctrl->server_local->keydesc = NULL;
 }
 
 
@@ -77,6 +82,18 @@ has_option (const char *line, const char *name)
   s = strstr (line, name);
   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
 }
+
+/* Replace all '+' by a blank. */
+static void
+plus_to_blank (char *s)
+{
+  for (; *s; s++)
+    {
+      if (*s == '+')
+        *s = ' ';
+    }
+}
+
 
 /* Parse a hex string.  Return an Assuan error code or 0 on success and the
    length of the parsed string in LEN. */
@@ -179,7 +196,7 @@ cmd_listtrusted (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc, n, i;
   char *p;
   char fpr[41];
@@ -245,12 +262,56 @@ static int
 cmd_sigkey (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc;
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   rc = parse_keygrip (ctx, line, ctrl->keygrip);
   if (rc)
     return rc;
   ctrl->have_keygrip = 1;
+  return 0;
+}
+
+
+/* SETKEYDESC plus_percent_escaped_string:
+
+   Set a description to be used for the next PKSIGN or PKDECRYPT
+   operation if this operation requires the entry of a passphrase.  If
+   this command is not used a default text will be used.  Note, that
+   this description implictly selects the label used for the entry
+   box; if the string contains the string PIN (which in general will
+   not be translated), "PIN" is used, other wiese the translation of
+   'passphrase" is used.  The description string should not contain
+   blanks unless they are percent or '+' escaped.
+
+   The descrition is only valid for the next PKSIGN or PKDECRYPT
+   operation.
+*/
+static int
+cmd_setkeydesc (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  char *desc, *p;
+
+  for (p=line; *p == ' '; p++)
+    ;
+  desc = p;
+  p = strchr (desc, ' ');
+  if (p)
+    *p = 0; /* We ignore any garbage; we might late use it for other args. */
+
+  if (!desc || !*desc)
+    return set_error (Parameter_Error, "no description given");
+
+  /* Note, that we only need to replace the + characters and should
+     leave the other escaping in place because the escaped string is
+     send verbatim to the pinentry which does the unescaping (but not
+     the + replacing) */
+  plus_to_blank (desc);
+
+  xfree (ctrl->server_local->keydesc);
+  ctrl->server_local->keydesc = xtrystrdup (desc);
+  if (!ctrl->server_local->keydesc)
+    return map_to_assuan_status (gpg_error_from_errno (errno));
   return 0;
 }
 
@@ -265,7 +326,7 @@ cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
   int rc;
   size_t n;
   char *p;
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   unsigned char *buf;
   char *endp;
   int algo;
@@ -307,16 +368,19 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc;
   int ignore_cache = 0;
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   if (opt.ignore_cache_for_signing)
     ignore_cache = 1;
   else if (!ctrl->server_local->use_cache_for_signing)
     ignore_cache = 1;
 
-  rc = agent_pksign (ctrl, assuan_get_data_fp (ctx), ignore_cache);
+  rc = agent_pksign (ctrl, ctrl->server_local->keydesc,
+                     assuan_get_data_fp (ctx), ignore_cache);
   if (rc)
     log_error ("command pksign failed: %s\n", gpg_strerror (rc));
+  xfree (ctrl->server_local->keydesc);
+  ctrl->server_local->keydesc = NULL;
   return map_to_assuan_status (rc);
 }
 
@@ -328,7 +392,7 @@ static int
 cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc;
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   unsigned char *value;
   size_t valuelen;
 
@@ -338,10 +402,13 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     return rc;
 
-  rc = agent_pkdecrypt (ctrl, value, valuelen, assuan_get_data_fp (ctx));
+  rc = agent_pkdecrypt (ctrl, ctrl->server_local->keydesc,
+                        value, valuelen, assuan_get_data_fp (ctx));
   xfree (value);
   if (rc)
     log_error ("command pkdecrypt failed: %s\n", gpg_strerror (rc));
+  xfree (ctrl->server_local->keydesc);
+  ctrl->server_local->keydesc = NULL;
   return map_to_assuan_status (rc);
 }
 
@@ -363,7 +430,7 @@ cmd_pkdecrypt (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char *value;
   size_t valuelen;
@@ -381,16 +448,6 @@ cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static void
-plus_to_blank (char *s)
-{
-  for (; *s; s++)
-    {
-      if (*s == '+')
-        *s = ' ';
-    }
-}
-
 /* GET_PASSPHRASE <cache_id> [<error_message> <prompt> <description>]
 
    This function is usually used to ask for a passphrase to be used
@@ -405,7 +462,7 @@ plus_to_blank (char *s)
 static int
 cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   const char *pw;
   char *response;
@@ -530,15 +587,15 @@ cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
    command uses a syntax which helps clients to use the agent with
    minimum effort.  The agent either returns with an error or with a
    OK.  Note, that the length of DESCRIPTION is implicitly limited by
-   the maximum length of a command. DESCRIPTION should not conmtain
-   ant spaces, those must be encoded either percent escaped or simply
+   the maximum length of a command. DESCRIPTION should not contain
+   any spaces, those must be encoded either percent escaped or simply
    as '+'.
 */
 
 static int
 cmd_get_confirmation (ASSUAN_CONTEXT ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   char *desc = NULL;
   char *p;
@@ -596,7 +653,7 @@ cmd_learn (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char grip[20];
   gcry_sexp_t s_skey = NULL;
@@ -607,7 +664,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
     return rc; /* we can't jump to leave because this is already an
                   Assuan error code. */
 
-  rc = agent_key_from_file (ctrl, grip, &shadow_info, 1, &s_skey);
+  rc = agent_key_from_file (ctrl, NULL, grip, &shadow_info, 1, &s_skey);
   if (rc)
     ;
   else if (!s_skey)
@@ -633,7 +690,7 @@ cmd_passwd (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_scd (ASSUAN_CONTEXT ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
 
   rc = divert_generic_cmd (ctrl, line, ctx);
@@ -646,7 +703,7 @@ cmd_scd (ASSUAN_CONTEXT ctx, char *line)
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
-   CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
   if (!strcmp (key, "display"))
     {
@@ -715,6 +772,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "HAVEKEY",        cmd_havekey },
     { "SIGKEY",         cmd_sigkey },
     { "SETKEY",         cmd_sigkey },
+    { "SETKEYDESC",     cmd_setkeydesc },
     { "SETHASH",        cmd_sethash },
     { "PKSIGN",         cmd_pksign },
     { "PKDECRYPT",      cmd_pkdecrypt },

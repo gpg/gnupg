@@ -1,5 +1,5 @@
 /* findkey.c - locate the secret key
- *	Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -138,9 +138,10 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 
 /* Unprotect the canconical encoded S-expression key in KEYBUF.  GRIP
    should be the hex encoded keygrip of that key to be used with the
-   caching mechanism. */
+   caching mechanism. DESC_TEXT may be set to override the default
+   description used for the pinentry. */
 static int
-unprotect (CTRL ctrl,
+unprotect (CTRL ctrl, const char *desc_text,
            unsigned char **keybuf, const unsigned char *grip, int ignore_cache)
 {
   struct pin_entry_info_s *pi;
@@ -184,7 +185,7 @@ unprotect (CTRL ctrl,
   arg.unprotected_key = NULL;
   pi->check_cb_arg = &arg;
 
-  rc = agent_askpin (ctrl, NULL, pi);
+  rc = agent_askpin (ctrl, desc_text, pi);
   if (!rc)
     {
       assert (arg.unprotected_key);
@@ -203,9 +204,10 @@ unprotect (CTRL ctrl,
    diverted to a token; SHADOW_INFO will point then to an allocated
    S-Expression with the shadow_info part from the file.  With
    IGNORE_CACHE passed as true the passphrase is not taken from the
-   cache.*/
+   cache.  DESC_TEXT may be set to present a custom description for the
+   pinentry. */
 gpg_error_t
-agent_key_from_file (CTRL ctrl,
+agent_key_from_file (CTRL ctrl, const char *desc_text,
                      const unsigned char *grip, unsigned char **shadow_info,
                      int ignore_cache, gcry_sexp_t *result)
 {
@@ -286,7 +288,7 @@ agent_key_from_file (CTRL ctrl,
     case PRIVATE_KEY_CLEAR:
       break; /* no unprotection needed */
     case PRIVATE_KEY_PROTECTED:
-      rc = unprotect (ctrl, &buf, grip, ignore_cache);
+      rc = unprotect (ctrl, desc_text, &buf, grip, ignore_cache);
       if (rc)
         log_error ("failed to unprotect the secret key: %s\n",
                    gpg_strerror (rc));

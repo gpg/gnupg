@@ -1,5 +1,15 @@
 2004-02-13  Werner Koch  <wk@gnupg.org>
 
+	* command.c (cmd_setkeydesc): New.
+	(register_commands): Add command SETKEYDESC.
+	(cmd_pksign, cmd_pkdecrypt): Use the key description.
+	(reset_notify): Reset the description.
+	* findkey.c (unprotect): Add arg DESC_TEXT.
+	(agent_key_from_file): Ditto.
+	* pksign.c (agent_pksign): Ditto.
+	* pkdecrypt.c (agent_pkdecrypt): Ditto. Made CIPHERTEXT an
+	unsigned char*.
+
 	* protect-tool.c (main): New options --no-fail-on-exist, --homedir.
 	(store_private_key): Use them here.
 

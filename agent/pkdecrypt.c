@@ -35,7 +35,8 @@
    Try to get the key from CTRL and write the decoded stuff back to
    OUTFP. */
 int
-agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
+agent_pkdecrypt (CTRL ctrl, const char *desc_text,
+                 const unsigned char *ciphertext, size_t ciphertextlen,
                  FILE *outfp) 
 {
   gcry_sexp_t s_skey = NULL, s_cipher = NULL, s_plain = NULL;
@@ -64,7 +65,8 @@ agent_pkdecrypt (CTRL ctrl, const char *ciphertext, size_t ciphertextlen,
       log_printhex ("keygrip:", ctrl->keygrip, 20);
       log_printhex ("cipher: ", ciphertext, ciphertextlen);
     }
-  rc = agent_key_from_file (ctrl, ctrl->keygrip, &shadow_info, 0, &s_skey);
+  rc = agent_key_from_file (ctrl, desc_text,
+                            ctrl->keygrip, &shadow_info, 0, &s_skey);
   if (rc)
     {
       log_error ("failed to read the secret key\n");

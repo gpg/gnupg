@@ -70,7 +70,7 @@ do_encode_md (const byte * md, size_t mdlen, int algo, gcry_sexp_t * r_hash)
 /* SIGN whatever information we have accumulated in CTRL and write it
    back to OUTFP. */
 int
-agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache) 
+agent_pksign (CTRL ctrl, const char *desc_text, FILE *outfp, int ignore_cache) 
 {
   gcry_sexp_t s_skey = NULL, s_hash = NULL, s_sig = NULL;
   unsigned char *shadow_info = NULL;
@@ -81,7 +81,7 @@ agent_pksign (CTRL ctrl, FILE *outfp, int ignore_cache)
   if (!ctrl->have_keygrip)
     return gpg_error (GPG_ERR_NO_SECKEY);
 
-  rc = agent_key_from_file (ctrl, ctrl->keygrip,
+  rc = agent_key_from_file (ctrl, desc_text, ctrl->keygrip,
                             &shadow_info, ignore_cache, &s_skey);
   if (rc)
     {
