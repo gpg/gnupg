@@ -1,3 +1,10 @@
+2005-03-30  Werner Koch  <wk@g10code.com>
+
+	* w32installer.nsi: Allow including of WINPT source.  Include
+	libiconv source. 
+	* mk-w32-dist: Add code to detect presence of source.  Calculate a
+	build number; add option --build-number to overide.
+
 2005-03-14  Werner Koch  <wk@g10code.com>
 
 	* mk-w32-dist: Check for patch files.

@@ -3,7 +3,7 @@ below should be applied to a stock bzip2-1.0.2 source.  The Build as
 usual using the mingw32 cross compiler package from Debian and install
 the library and header file on top of the cross compiler installation
 (/usr/i586-mingw32msvc/lib/).  Note that for ease of maintenance we
-don't used a DLL.                                      [wk 2005-03-14]
+don't use a DLL.                                      [wk 2005-03-14]
 
 
 diff -u orig/bzip2-1.0.2/Makefile bzip2-1.0.2/Makefile

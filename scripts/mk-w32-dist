@@ -36,6 +36,20 @@ else
     exit 1
 fi
 
+# Windows uses an internal build number.  We use the last day of the
+# year concatenated with the hour. for it.  If it happens that a new
+# release of the same version is to be made in the next year, the
+# build number must be given manually by adding the appropriate number
+# of days.
+if [ "$1" = "--build-number" -a -n "$2" ]; then
+   build_number="$2"
+   shift 
+   shift
+else
+   build_number=$(date -u '+%j%k' | sed 's/^0*\(.*\)/\1/')
+fi
+
+
 if i586-mingw32msvc-strip --version >/dev/null 2>&1 ; then
    STRIP=i586-mingw32msvc-strip
 else
@@ -92,7 +106,8 @@ get_langname () {
 
 # Figure out the version
 version=$(sed -n 's/^#[ ]*define[ ][ ]*VERSION[ ][ ]*\"\([0-9.a-z-]*\)\"/\1/p' $bindir/config.h)
-prod_version=$(echo "$version"|awk -F'[^0-9]' '{print $1 "." $2 "." $3 ".1"}')
+prod_version=$(echo "$version"|awk -F'[^0-9]' '{print $1 "." $2 "." $3 }')
+prod_version="${prod_version}.${build_number}"
 echo "building version $version ($prod_version)"
 
 rm * >/dev/null 2>/dev/null || true
@@ -189,7 +204,7 @@ if [ -n "$topdir" ]; then
 
   # iconv.dll is a hard requirement
   if [ ! -f "$topdir/iconv/iconv.dll" ]; then
-    echo "iconv.dll not availavle" >&2
+    echo "iconv.dll not available" >&2
     exit 1
   fi
   ln "$topdir/iconv/iconv.dll" iconv.dll
@@ -208,19 +223,74 @@ if [ -n "$topdir" ]; then
      winpt_defs="-DWITH_WINPT"
   fi
 
-  # See whether we should include the source.
-  if [ ! -d "$topdir/tarballs" ]; then
-      # FIXME
-      :
+  # See whether we should include the source and figure out the
+  # version numbers of the source files.
+  if [ -d "$topdir/tarballs" ]; then
+    have_gnupg_src=no
+    have_libiconv_src=no
+    have_winpt_src=no
+    for i in `find "$topdir/tarballs" -type f -name '*.tar.gz'`; do
+       fname=$(basename "$i" .gz)
+       zcat "$i" > "$fname"
+       case "$fname" in
+           gnupg-*)
+               tmp=$(echo "$fname" | \
+                     sed -n 's/^[^-]*-\([0-9.a-z-]*\)\.tar$/\1/p')
+               echo "gnupg source version is $tmp" >&2
+               if [ "$version" != "$tmp" ]; then
+                   echo "gnupg source version does not match" >&2
+                   exit 1
+               fi
+               have_gnupg_src=yes
+               ;;
+           libiconv-*)
+               tmp=$(echo "$fname" | \
+                     sed -n 's/^[^-]*-\([0-9.a-z-]*\)\.tar$/\1/p')
+               echo "libiconv source version is $tmp" >&2
+               src_defs="$src_defs -DLIBICONV_VERSION=$tmp"
+               have_libiconv_src=yes
+               ;;
+           winpt-*)
+               tmp=$(echo "$fname" | \
+                     sed -n 's/^[^-]*-\([0-9.a-z-]*\)\.tar$/\1/p')
+               echo "winpt source version is $tmp" >&2
+               src_defs="$src_defs -DWINPT_VERSION=$tmp"
+               have_winpt_src=yes
+               ;;
+               
+           *) 
+               echo "WARNING: unknown source file $fname ignored" >&2
+               ;;
+       esac
+    done
+    if [ -n "$src_defs" ]; then
+        if [ $have_gnupg_src = "no" ]; then
+            echo "gnupg source missing" >&2
+            exit 1
+        fi
+        if [ $have_libiconv_src = "no" ]; then
+            echo "libiconv source missing" >&2
+            exit 1
+        fi
+        if [ -n "$winpt_defs" ]; then
+            if [ $have_winpt_src = "no" ]; then
+                echo "winpt source missing" >&2
+                exit 1
+            fi
+        fi
+
+        src_defs="$src_defs -DWITH_SOURCE"
+    fi
+
   fi
 
   # Now run the installer
   echo "invoking installer as:"
-  echo makensis -v2 -nocd -DVERSION="${version}" \
+  echo makensis  -nocd -DVERSION="${version}" \
            -DPROD_VERSION="${prod_version}" \
            -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
            ${patches_defs} ${srcdir}/scripts/w32installer.nsi
-  BUILDINFO=$buildinfo makensis -v2 -nocd -DVERSION="${version}" \
+  BUILDINFO=$buildinfo makensis  -nocd -DVERSION="${version}" \
            -DPROD_VERSION="${prod_version}" \
            -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
            ${patches_defs} ${srcdir}/scripts/w32installer.nsi

@@ -37,7 +37,6 @@ InstallDirRegKey HKLM "Software\GNU\GnuPG" "Install Directory"
 
 SetCompressor lzma
 
-
 VIProductVersion "${PROD_VERSION}"
 VIAddVersionKey "ProductName" "GNU Privacy Guard (${VERSION})"
 VIAddVersionKey "Comments" \
@@ -132,6 +131,8 @@ Page custom CustomPageOptions
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 ReserveFile "opt.ini" 
 ReserveFile "COPYING.txt"
+ReserveFile "README-W32.txt"
+ReserveFile "${NSISDIR}/Plugins/System.dll"
 ReserveFile "${NSISDIR}/Plugins/UserInfo.dll"
 
 
@@ -236,14 +237,21 @@ SectionEnd ; Section Documentation
 
 ;------------------
 !ifdef WITH_SOURCE
-Section "Source" SecSource
+Section /o "Source" SecSource
 
   SetOutPath "$INSTDIR\Src"
 
-  ; Note that we include the uncompressed tarball because this allows
+  ; Note that we include the uncompressed tarballs because this allows
   ; far better compression results for the distribution.  We might
   ; want to compress it again after installation.
+
   File "gnupg-${VERSION}.tar"
+
+  File "libiconv-${LIBICONV_VERSION}.tar"
+
+!ifdef WITH_WINPT
+  File "winpt-$(WINPT_VERSION}.tar"
+!endif ; WITH_WINPT
 
 SectionEnd ; Section Source
 !endif
@@ -388,6 +396,11 @@ Section "Uninstall"
   Delete "$INSTDIR\Doc\gpgv.man"
   Delete "$INSTDIR\Doc\NEWS.txt"
   Delete "$INSTDIR\Doc\FAQ.txt"
+
+  Delete "$INSTDIR\Src\gnupg-${VERSION}.tar"
+  Delete "$INSTDIR\Src\libiconv-${LIBICONV_VERSION}.tar"
+  Delete "$INSTDIR\Src\winpt-$(WINPT_VERSION}.tar"
+  Delete "$INSTDIR\Src\*.diff"
 
   Delete "$INSTDIR\uninst-gnupg.exe"
 
@@ -553,13 +566,15 @@ LangString T_About ${LANG_ENGLISH} \
   with the proposed OpenPGP Internet standard as described in RFC2440. \
   \r\n\r\n$_CLICK \
   \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION}\r\n\
-  built on $%BUILDINFO%"
+  built on $%BUILDINFO%\r\n\
+  file version ${PROD_VERSION}"
 LangString T_About ${LANG_GERMAN} \
   "GnuPG is das Werkzeug aus dem GNU Projekt zur sicheren Kommunikation \
    sowie zum sicheren Speichern von Daten. \
    \r\n\r\n$_CLICK \
-   \r\n\r\n\r\n\r\n\r\nDies ist GnuPG version ${VERSION}\r\n\
-   erstellt am $%BUILDINFO%"
+   \r\n\r\n\r\n\r\n\r\nDies ist GnuPG Version ${VERSION}\r\n\
+   erstellt am $%BUILDINFO%\r\n\
+   Dateiversion ${PROD_VERSION}"
 
 ; Startup page
 LangString T_GPLHeader ${LANG_ENGLISH} \
@@ -633,6 +648,11 @@ LangString DESC_SecDoc ${LANG_ENGLISH} \
       "Manual pages and a FAQ"
 LangString DESC_SecDoc ${LANG_GERMAN} \
       "Handbuchseiten und eine FAQ"
+
+LangString DESC_SecSource ${LANG_ENGLISH} \
+      "Quelltextdateien"
+LangString DESC_SecSource ${LANG_GERMAN} \
+      "Source files"
 
 
 
