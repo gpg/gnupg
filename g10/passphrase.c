@@ -772,7 +772,11 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
           return pw;
         }
       else if ( reply == GPGA_PROT_CANCELED ) 
-        log_info ( _("cancelled by user\n") );
+        {
+          log_info ( _("cancelled by user\n") );
+          if (canceled)
+            *canceled = 1;
+        }
       else 
         log_error ( _("problem with the agent: agent returns 0x%lx\n"),
                     (ulong)reply );
