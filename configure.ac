@@ -1,5 +1,5 @@
 dnl Configure.ac script for GnuPG
-dnl Copyright (C) 1998,1999,2000,2001,2002,
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2002,
 dnl               2003 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GnuPG.
@@ -847,6 +847,10 @@ AC_ARG_WITH(bzip2,
     fi
     ],withval="")
 
+# Checking alongside stdio.h as an early version of bzip2 (1.0)
+# required stdio.h to be included before bzlib.h, and Solaris 9 is
+# woefully out of date.
+
 if test "$withval" != no ; then
    AC_CHECK_HEADER(bzlib.h,
       AC_CHECK_LIB(bz2,BZ2_bzCompressInit,
@@ -857,7 +861,7 @@ if test "$withval" != no ; then
 		[Defined if the bz2 compression library is available])
 	],
 	CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
-	CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
+	CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags},[#include <stdio.h>])
 fi
 
 AM_CONDITIONAL(ENABLE_BZIP2_SUPPORT,test x"$have_bz2" = "xyes")

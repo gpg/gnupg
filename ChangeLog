@@ -1,3 +1,9 @@
+2003-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Include stdio.h when checking for bzlib.h.
+	Solaris 9 has a very old bzip2 library and we can at least
+	guarantee that it won't fail because of the lack of stdio.h.
+
 2003-12-23  Werner Koch  <wk@gnupg.org>
 
 	Released 1.2.4.
