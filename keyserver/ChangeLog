@@ -1,3 +1,14 @@
+2003-12-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Avoid possible pre-string write.
+
+	* gpgkeys_hkp.c (parse_hkp_index, dehtmlize): Fix memory
+	corruption bug on some platforms.  From devel.
+	(search_key): Catch a mangled input file (useful if something
+	other than GnuPG is calling the program).
+	(main): Avoid possible pre-string write.  Noted by Christian
+	Biere.
+
 2003-11-27  Werner Koch  <wk@gnupg.org>
 
 	* gpgkeys_hkp.c (get_key): Fixed bad use of fprintf w/o format

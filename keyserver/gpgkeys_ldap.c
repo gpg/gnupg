@@ -467,7 +467,7 @@ int search_key(char *searchkey)
   char **vals;
   LDAPMessage *res,*each;
   int err,count;
-  /* The maxium size of the search, including the optional stuff and
+  /* The maximum size of the search, including the optional stuff and
      the trailing \0 */
   char search[2+12+MAX_LINE+2+15+14+1+1];
   char *attrs[]={"pgpcertid","pgpuserid","pgprevoked","pgpdisabled",
@@ -782,7 +782,7 @@ int main(int argc,char *argv[])
 	    break;
 	  else
 	    {
-	      if(line[0]=='\n')
+	      if(line[0]=='\n' || line[0]=='\0')
 		break;
 
 	      work=malloc(sizeof(struct keylist));
@@ -968,7 +968,8 @@ int main(int argc,char *argv[])
 	  }
 
 	/* Nail that last "*" */
-	searchkey[strlen(searchkey)-1]='\0';
+	if(*searchkey)
+	  searchkey[strlen(searchkey)-1]='\0';
 
 	if(search_key(searchkey)==-1)
 	  {

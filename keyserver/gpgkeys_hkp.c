@@ -362,6 +362,8 @@ dehtmlize(char *line)
       while(isspace(((unsigned char *)parsed)[parsedindex]))
 	{
 	  parsed[parsedindex]='\0';
+	  if(parsedindex==0)
+	    break;
 	  parsedindex--;
 	}
     }
@@ -479,7 +481,7 @@ parse_hkp_index(IOBUF buffer,char *line)
       line+=4;
 
       tok=strsep(&line,"/");
-      if(tok==NULL)
+      if(tok==NULL || strlen(tok)==0)
 	return ret;
 
       if(tok[strlen(tok)-1]=='R')
@@ -574,6 +576,12 @@ int search_key(char *searchkey)
 	}
 
       request++;
+    }
+
+  if(!search)
+    {
+      fprintf(console,"gpgkeys: corrupt input?\n");
+      return -1;
     }
 
   search[len]='\0';
@@ -827,7 +835,7 @@ int main(int argc,char *argv[])
 	    break;
 	  else
 	    {
-	      if(line[0]=='\n')
+	      if(line[0]=='\n' || line[0]=='\0')
 		break;
 
 	      work=malloc(sizeof(struct keylist));
@@ -953,7 +961,8 @@ int main(int argc,char *argv[])
 	  }
 
 	/* Nail that last space */
-	searchkey[strlen(searchkey)-1]='\0';
+	if(*searchkey)
+	  searchkey[strlen(searchkey)-1]='\0';
 
 	if(search_key(searchkey)==-1)
 	  {
