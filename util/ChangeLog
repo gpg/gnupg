@@ -1,3 +1,8 @@
+2004-10-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (connect_server, send_request): Use the URI scheme as the
+	SRV tag rather than hard-coding _hkp.
+
 2004-10-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (connect_server): [_WIN32] actually fill in the sin_addr

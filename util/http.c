@@ -72,7 +72,8 @@ static int send_request( HTTP_HD hd, const char *proxy );
 static byte *build_rel_path( PARSED_URI uri );
 static int parse_response( HTTP_HD hd );
 
-static int connect_server(const char *server, ushort port, unsigned int flags);
+static int connect_server( const char *server, ushort port, unsigned int flags,
+			   const char *srvtag );
 static int write_server( int sock, const char *data, size_t length );
 
 #ifdef _WIN32
@@ -309,13 +310,12 @@ do_parse_uri( PARSED_URI uri, int only_local_part )
 	*p2++ = 0;
 	strlwr( p );
 	uri->scheme = p;
-        uri->port = 80;
-	if( !strcmp( uri->scheme, "http" ) )
-	    ;
-	else if( !strcmp( uri->scheme, "x-hkp" ) ) /* same as HTTP */
-	    uri->port = 11371;
+	if(strcmp(uri->scheme,"http")==0)
+	  uri->port = 80;
+	else if(strcmp(uri->scheme,"hkp")==0)
+	  uri->port = 11371;
 	else
-	    return G10ERR_INVALID_URI; /* Unsupported scheme */
+	  return G10ERR_INVALID_URI; /* Unsupported scheme */
 
 	p = p2;
 
@@ -525,7 +525,7 @@ send_request( HTTP_HD hd, const char *proxy )
 	    return G10ERR_NETWORK;
 	  }
 	hd->sock = connect_server( *uri->host? uri->host : "localhost",
-				   uri->port? uri->port : 80, 0 );
+				   uri->port? uri->port : 80, 0, NULL );
 	if(uri->auth)
 	  {
 	    char *x=make_radix64_string(uri->auth,strlen(uri->auth));
@@ -538,7 +538,7 @@ send_request( HTTP_HD hd, const char *proxy )
       }
     else
       {
-	hd->sock = connect_server( server, port, hd->flags );
+	hd->sock = connect_server( server, port, hd->flags, hd->uri->scheme );
 	if(hd->uri->auth)
 	  {
 	    char *x=make_radix64_string(hd->uri->auth,strlen(hd->uri->auth));
@@ -755,7 +755,8 @@ start_server()
 
 
 static int
-connect_server( const char *server, ushort port, unsigned int flags )
+connect_server( const char *server, ushort port, unsigned int flags,
+		const char *srvtag )
 {
   int sock=-1,srv,srvcount=0,connected=0,hostfound=0;
   struct srventry *srvlist=NULL;
@@ -794,14 +795,19 @@ connect_server( const char *server, ushort port, unsigned int flags )
 
 #ifdef USE_DNS_SRV
   /* Do the SRV thing */
-  if(flags&HTTP_FLAG_TRY_SRV)
+  if(flags&HTTP_FLAG_TRY_SRV && srvtag)
     {
       /* We're using SRV, so append the tags */
-      char srvname[MAXDNAME];
-      strcpy(srvname,"_hkp._tcp.");
-      strncat(srvname,server,MAXDNAME-11);
-      srvname[MAXDNAME-1]='\0';
-      srvcount=getsrv(srvname,&srvlist);
+      if(1+strlen(srvtag)+6+strlen(server)+1<=MAXDNAME)
+	{
+	  char srvname[MAXDNAME];
+
+	  strcpy(srvname,"_");
+	  strcat(srvname,srvtag);
+	  strcat(srvname,"._tcp.");
+	  strcat(srvname,server);
+	  srvcount=getsrv(srvname,&srvlist);
+	}
     }
 #endif
 
