@@ -147,33 +147,43 @@ get_last_passphrase()
 void
 read_passphrase_from_fd( int fd )
 {
-    int i, len;
-    char *pw;
+  int i, len;
+  char *pw;
 
-    if ( opt.use_agent ) 
-        return;  /* not used here */
+  if (opt.use_agent) 
+    { /* Not used but we have to do a dummy read, so that it won't end
+         up at the begin of the message if the quite usual trick to
+         prepend the passphtrase to the message is used. */
+      char buf[1];
 
-    if( !opt.batch )
-	tty_printf("Reading passphrase from file descriptor %d ...", fd );
-    for( pw = NULL, i = len = 100; ; i++ ) {
-	if( i >= len-1 ) {
-	    char *pw2 = pw;
-	    len += 100;
-	    pw = m_alloc_secure( len );
-	    if( pw2 )
-		memcpy(pw, pw2, i );
-	    else
-		i=0;
-	}
-	if( read( fd, pw+i, 1) != 1 || pw[i] == '\n' )
-	    break;
+      while (!(read (fd, buf, 1) != 1 || *buf == '\n' ))
+        ;
+      *buf = 0;
+      return; 
     }
-    pw[i] = 0;
-    if( !opt.batch )
-	tty_printf("\b\b\b   \n" );
 
-    m_free( fd_passwd );
-    fd_passwd = pw;
+  if( !opt.batch )
+    tty_printf("Reading passphrase from file descriptor %d ...", fd );
+  for (pw = NULL, i = len = 100; ; i++ )
+    {
+      if( i >= len-1 ) {
+        char *pw2 = pw;
+        len += 100;
+        pw = m_alloc_secure( len );
+        if( pw2 )
+          memcpy(pw, pw2, i );
+        else
+          i=0;
+      }
+      if (read( fd, pw+i, 1) != 1 || pw[i] == '\n' )
+        break;
+    }
+  pw[i] = 0;
+  if (!opt.batch)
+    tty_printf ("\b\b\b   \n" );
+
+  m_free( fd_passwd );
+  fd_passwd = pw;
 }
 
 static int
@@ -614,6 +624,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
   char *pw = NULL;
   PKT_public_key *pk = m_alloc_clear( sizeof *pk );
   byte fpr[MAX_FINGERPRINT_LEN];
+  int have_fpr = 0;
   int prot;
   char *orig_codeset = NULL;
 
@@ -635,21 +646,15 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
 #ifdef ENABLE_NLS
   /* The Assuan agent protol requires us to trasnmit utf-8 strings */
   orig_codeset = bind_textdomain_codeset (PACKAGE, NULL);
-  log_debug ("old codeset: `%s'\n", orig_codeset);
 #ifdef HAVE_LANGINFO_CODESET
   if (!orig_codeset)
-    {
-      orig_codeset = nl_langinfo (CODESET);
-      log_debug ("assuming `%s'\n", orig_codeset);
-    }
+    orig_codeset = nl_langinfo (CODESET);
 #endif
   if (orig_codeset)
     { /* We only switch when we are able to restore the codeset later. */
       orig_codeset = m_strdup (orig_codeset);
       if (!bind_textdomain_codeset (PACKAGE, "utf-8"))
         orig_codeset = NULL; 
-      log_debug ("switched to: `%s'\n",
-                 bind_textdomain_codeset (PACKAGE, NULL));
     }
 #endif
 
@@ -695,6 +700,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
       { 
         size_t dummy;
         fingerprint_from_pk( pk, fpr, &dummy );
+        have_fpr = 1;
       }
       
     }
@@ -783,12 +789,12 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
         tryagain_text = _(tryagain_text);
 
       /* We allocate 2 time the needed space for atext so that there
-         is nenough space for escaping */
+         is enough space for escaping */
       line = m_alloc (15 + 46 
                       +  3*strlen (tryagain_text) + 3*strlen (atext) + 2);
       strcpy (line, "GET_PASSPHRASE ");
       p = line+15;
-      if (!mode)
+      if (!mode && have_fpr)
         {
           for (i=0; i < 20; i++, p +=2 )
             sprintf (p, "%02X", fpr[i]);
@@ -872,7 +878,6 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *tryagain_text,
 #ifdef ENABLE_NLS
   if (orig_codeset)
     bind_textdomain_codeset (PACKAGE, orig_codeset);
-  log_debug ("restored to: `%s'\n", bind_textdomain_codeset (PACKAGE, NULL));
 #endif
   m_free (atext);
   if ( fd != -1 )

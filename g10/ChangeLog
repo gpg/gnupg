@@ -1,3 +1,11 @@
+2003-04-10  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c (read_passphrase_from_fd): Do a dummy read if the
+	agent is to be used.  Noted by Ingo Klöcker.
+	(agent_get_passphrase): Inhibit caching when we have no
+	fingerprint.  This is required for key generation as well as for
+	symmetric only encryption.
+
 2003-04-09  Werner Koch  <wk@gnupg.org>
 
 	* passphrase .c (agent_get_passphrase): New arg CANCELED.
