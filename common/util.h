@@ -99,6 +99,11 @@ int answer_is_yes (const char *s);
 int answer_is_yes_no_default (const char *s, int def_answer);
 int answer_is_yes_no_quit (const char *s);
 
+/*-- xreadline.c --*/
+ssize_t read_line (FILE *fp, 
+                   char **addr_of_buffer, size_t *length_of_buffer,
+                   size_t *max_length);
+
 
 /*-- b64enc.c --*/
 struct b64state 

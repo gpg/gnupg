@@ -1,3 +1,12 @@
+2004-06-14  Werner Koch  <wk@gnupg.org>
+
+	* no-libgcrypt.c (gcry_realloc, gcry_xmalloc, gcry_xcalloc): New.
+
+	* gpgconf-comp.c (retrieve_options_from_program) 
+	(retrieve_options_from_file, change_options_file) 
+	(change_options_program, gc_component_change_options): Replaced
+	getline by read_line and test for allocation failure.
+
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgconf-comp.c (gc_options_dirmngr): Remove CRL group, put its

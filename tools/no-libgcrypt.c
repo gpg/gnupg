@@ -39,12 +39,25 @@ out_of_core (void)
 
 
 void *
+gcry_malloc (size_t n)
+{
+  return malloc (n);
+}
+
+void *
 gcry_xmalloc (size_t n)
 {
   void *p = malloc (n);
   if (!p)
     out_of_core ();
   return p;
+}
+
+
+void *
+gcry_realloc (void *a, size_t n)
+{
+  return realloc (a, n);
 }
 
 void *
@@ -56,6 +69,14 @@ gcry_xrealloc (void *a, size_t n)
   return p;
 }
 
+
+
+void *
+gcry_calloc (size_t n, size_t m)
+{
+  return calloc (n, m);
+}
+
 void *
 gcry_xcalloc (size_t n, size_t m)
 {
@@ -64,6 +85,7 @@ gcry_xcalloc (size_t n, size_t m)
     out_of_core ();
   return p;
 }
+
 
 char *
 gcry_xstrdup (const char *string)

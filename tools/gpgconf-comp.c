@@ -42,13 +42,6 @@
 
 
 /* TODO:
-   Portability - Add gnulib replacements for getline, etc.
- 
-XXX Marcus: Please use the read_line code from dirmngr/src/http.c - it
-has been in use for may years and provides the ability to limit the
-length of the line and thus thwart DoS (not a issue here but at many
-other places).
-
    Components: Add more components and their options.
    Robustness: Do more validation.  Call programs to do validation for us.
    Don't use popen, as this will not tell us if the program had a
@@ -1252,7 +1245,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   if (!config)
     gc_error (1, errno, "could not gather active options from %s", cmd_line);
 
-  while ((length = getline (&line, &line_len, config)) > 0)
+  while ((length = read_line (config, &line, &line_len, NULL)) > 0)
     {
       gc_option_t *option;
       char *linep;
@@ -1319,7 +1312,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	    option->default_value = xstrdup (default_value);
 	}
     }
-  if (ferror (config))
+  if (length < 0 || ferror (config))
     gc_error (1, errno, "error reading from %s", cmd_line);
   if (fclose (config) && ferror (config))
     gc_error (1, errno, "error closing %s", cmd_line);
@@ -1334,7 +1327,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	      config_pathname);
   else
     {
-      while ((length = getline (&line, &line_len, config)) > 0)
+      while ((length = read_line (config, &line, &line_len, NULL)) > 0)
 	{
 	  char *name;
 	  char *value;
@@ -1415,14 +1408,13 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	    }
 	}
 
-      if (ferror (config))
+      if (length < 0 || ferror (config))
 	gc_error (1, errno, "error reading from %s", config_pathname);
       if (fclose (config) && ferror (config))
 	gc_error (1, errno, "error closing %s", config_pathname);
     }
 
-  if (line)
-    free (line);
+  xfree (line);
 }
 
 
@@ -1451,7 +1443,7 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
   else
     {
 
-      while ((length = getline (&line, &line_len, list_file)) > 0)
+      while ((length = read_line (list_file, &line, &line_len, NULL)) > 0)
 	{
 	  char *start;
 	  char *end;
@@ -1484,15 +1476,14 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 	  else
 	    list = xasprintf ("\"%s", percent_escape (start));
 	}
-      if (ferror (list_file))
+      if (length < 0 || ferror (list_file))
 	gc_error (1, errno, "can not read list file %s", list_pathname);
     }
 
   list_option->active = 1;
   list_option->value = list;
 
-  if (line)
-    free (line);
+  xfree (line);
 }
 
 
@@ -1735,7 +1726,7 @@ change_options_file (gc_component_t component, gc_backend_t backend,
       if (!dest_file)
 	goto change_file_one_err;
 
-      while ((length = getline (&line, &line_len, dest_file)) > 0)
+      while ((length = read_line (dest_file, &line, &line_len, NULL)) > 0)
 	{
 	  int disable = 0;
 	  char *start;
@@ -1823,7 +1814,7 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 		goto change_file_one_err;
 	    }
 	}
-      if (ferror (dest_file))
+      if (length < 0 || ferror (dest_file))
 	goto change_file_one_err;
     }
 
@@ -1889,17 +1880,18 @@ change_options_file (gc_component_t component, gc_backend_t backend,
     }
   if (dest_file)
     {
-      while ((length = getline (&line, &line_len, dest_file)) > 0)
+      while ((length = read_line (dest_file, &line, &line_len, NULL)) > 0)
 	{
 	  fprintf (src_file, "%s", line);
 	  if (ferror (src_file))
 	    goto change_file_one_err;
 	}
-      if (ferror (dest_file))
+      if (length < 0 || ferror (dest_file))
 	goto change_file_one_err;
     }
-  if (line)
-    free (line);
+  xfree (line);
+  line = NULL;
+
   res = fclose (src_file);
   if (res)
     {
@@ -1920,8 +1912,7 @@ change_options_file (gc_component_t component, gc_backend_t backend,
   return 0;
 
  change_file_one_err:
-  if (line)
-    free (line);
+  xfree (line);
   res = errno;
   if (src_file)
     {
@@ -1999,7 +1990,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
       if (!dest_file)
 	goto change_one_err;
 
-      while ((length = getline (&line, &line_len, dest_file)) > 0)
+      while ((length = read_line (dest_file, &line, &line_len, NULL)) > 0)
 	{
 	  int disable = 0;
 	  char *start;
@@ -2054,7 +2045,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 		goto change_one_err;
 	    }
 	}
-      if (ferror (dest_file))
+      if (length < 0 || ferror (dest_file))
 	goto change_one_err;
     }
 
@@ -2172,17 +2163,18 @@ change_options_program (gc_component_t component, gc_backend_t backend,
     }
   if (dest_file)
     {
-      while ((length = getline (&line, &line_len, dest_file)) > 0)
+      while ((length = read_line (dest_file, &line, &line_len, NULL)) > 0)
 	{
 	  fprintf (src_file, "%s", line);
 	  if (ferror (src_file))
 	    goto change_one_err;
 	}
-      if (ferror (dest_file))
+      if (length < 0 || ferror (dest_file))
 	goto change_one_err;
     }
-  if (line)
-    free (line);
+  xfree (line);
+  line = NULL;
+
   res = fclose (src_file);
   if (res)
     {
@@ -2203,8 +2195,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   return 0;
 
  change_one_err:
-  if (line)
-    free (line);
+  xfree (line);
   res = errno;
   if (src_file)
     {
@@ -2241,7 +2232,7 @@ gc_component_change_options (int component, FILE *in)
       orig_pathname[backend] = NULL;
     }
 
-  while ((length = getline (&line, &line_len, in)) > 0)
+  while ((length = read_line (in, &line, &line_len, NULL)) > 0)
     {
       char *linep;
       unsigned long flags = 0;
@@ -2439,6 +2430,5 @@ gc_component_change_options (int component, FILE *in)
 	rename (orig_pathname[backend], backup_pathname);
       }
 
-  if (line)
-    free (line);
+  xfree (line);
 }

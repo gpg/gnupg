@@ -36,6 +36,7 @@ libcommon_a_SOURCES = \
 	b64enc.c \
 	miscellaneous.c \
 	xasprintf.c \
+	xreadline.c \
 	membuf.c membuf.h \
 	iobuf.c iobuf.h \
 	ttyio.c ttyio.h \
