@@ -924,7 +924,7 @@ extern USItype __udiv_qrnnd ();
 /* Powerpc 64 bit support taken from gmp-4.1.2. */
 /* We should test _IBMR2 here when we add assembly support for the system
    vendor compilers.  */
-#if 0 /* Not yet enabled becuase we don't have hardware for a test. */
+#if 0 /* Not yet enabled because we don't have hardware for a test. */
 #if (defined (_ARCH_PPC) || defined (__powerpc__)) && W_TYPE_SIZE == 64
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   do {									\
