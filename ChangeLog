@@ -1,3 +1,9 @@
+2002-08-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Clarify that --libexecdir is a configure option.
+
+	* configure.ac: Check for hstrerror.
+
 2002-08-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Document new ways to enable MDC, and change in automatic
