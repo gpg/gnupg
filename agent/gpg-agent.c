@@ -133,7 +133,7 @@ static int maybe_setuid = 1;
 /* Name of the communication socket */
 static char socket_name[128];
 
-
+static void create_directories (void);
 #ifdef USE_GNU_PTH
 static void handle_connections (int listen_fd);
 #endif
@@ -450,6 +450,8 @@ main (int argc, char **argv )
       exit (1);
     }
 
+  create_directories ();
+
   if (debug_wait && pipe_server)
     {
       log_debug ("waiting for debugger - my pid is %u .....\n",
@@ -699,6 +701,76 @@ reread_configuration (void)
 {
   /* FIXME: Move parts of the option parsing to here. */
 }
+
+
+static void
+create_private_keys_directory (const char *home)
+{
+  char *fname;
+  struct stat statbuf;
+
+  fname = make_filename (home, GNUPG_PRIVATE_KEYS_DIR, NULL);
+  if (stat (fname, &statbuf) && errno == ENOENT)
+    {
+      if (mkdir (fname, S_IRUSR|S_IWUSR|S_IXUSR ))
+        log_error (_("can't create directory `%s': %s\n"),
+                   fname,	strerror(errno) );
+      else if (!opt.quiet)
+        log_info (_("directory `%s' created\n"), fname);
+    }
+  xfree (fname);
+}
+
+/* Create the directory only if the supplied directory name is the
+   same as the default one.  This way we avoid to create arbitrary
+   directories when a non-default home directory is used.  To cope
+   with HOME, we compare only the suffix if we see that the default
+   homedir does start with a tilde.  We don't stop here in case of
+   problems because other functions will throw an error anyway.*/
+static void
+create_directories (void)
+{
+  struct stat statbuf;
+  const char *defhome = GNUPG_DEFAULT_HOMEDIR;
+  char *home;
+
+  home  = make_filename (opt.homedir, NULL);
+  if ( stat (home, &statbuf) )
+    {
+      if (errno == ENOENT)
+        {
+          if ( (*defhome == '~'
+                && (strlen (home) >= strlen (defhome+1)
+                    && !strcmp (home + strlen(home)
+                                - strlen (defhome+1), defhome+1)))
+               || (*defhome != '~' && !strcmp (home, defhome) )
+               )
+            {
+              if (mkdir (home, S_IRUSR|S_IWUSR|S_IXUSR ))
+                log_error (_("can't create directory `%s': %s\n"),
+                           home, strerror(errno) );
+              else 
+                {
+                  if (!opt.quiet)
+                    log_info (_("directory `%s' created\n"), home);
+                  create_private_keys_directory (home);
+                }
+            }
+        }
+      else
+        log_error ("error stat-ing `%s': %s\n", home, strerror (errno));
+    }
+  else if ( !S_ISDIR(statbuf.st_mode))
+    {
+      log_error ("can't use `%s' as home directory\n", home);
+    }
+  else /* exists and is a directory. */
+    {
+      create_private_keys_directory (home);
+    }
+  xfree (home);
+}
+
 
 
 #ifdef USE_GNU_PTH

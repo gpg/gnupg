@@ -1,3 +1,9 @@
+2002-09-09  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (create_private_keys_directory)
+	(create_directories): New.
+	(main): Try to create a home directory.
+
 2002-09-04  Neal H. Walfield  <neal@g10code.de>
 
 	* gpg-agent.c (main): Use sigaction, not signal.
@@ -12,7 +18,7 @@
 
 	* query.c (agent_askpin): Provide the default desc text depending
 	on the pininfo.  Do the basic PIN verification only when
-	min_digist is set.
+	min_digits is set.
 
 2002-08-21  Werner Koch  <wk@gnupg.org>
 
