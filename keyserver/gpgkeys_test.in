@@ -20,12 +20,28 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 use Getopt::Std;
+$Getopt::Std::STANDARD_HELP_VERSION=1;
 
 $|=1;
 
-print STDERR "gpgkeys_test starting\n";
+sub VERSION_MESSAGE ()
+{
+    print STDOUT "gpgkeys_test (GnuPG) 1.3.91-cvs\n";
+}
+
+sub HELP_MESSAGE ()
+{
+    print STDOUT <<EOT
+
+--help     Print this help
+--version  Print the version
+EOT
+}
+
 
 getopts('o:');
+
+print STDERR "gpgkeys_test starting\n";
 
 if(defined($opt_o))
 {
@@ -77,3 +93,7 @@ if($command eq "SEND")
 }
 
 printf STDERR "gpgkeys_test finished\n";
+
+# Local Variables: 
+# mode:perl
+# End:

@@ -357,6 +357,14 @@ get_key (char *getkey)
 }
 
 
+static void 
+show_help (FILE *fp)
+{
+  fprintf (fp,"-h\thelp\n");
+  fprintf (fp,"-V\tversion\n");
+  fprintf (fp,"-o\toutput to this file\n");
+}
+
 int
 main(int argc,char *argv[])
 {
@@ -367,14 +375,24 @@ main(int argc,char *argv[])
 
   console=stderr;
 
+  /* Kludge to implement standard GNU options.  */
+  if (argc > 1 && !strcmp (argv[1], "--version"))
+    {
+      fputs ("gpgkeys_ldap (GnuPG) " VERSION"\n", stdout);
+      return 0;
+    }
+  else if (argc > 1 && !strcmp (argv[1], "--help"))
+    {
+      show_help (stdout);
+      return 0;
+    }
+
   while((arg=getopt(argc,argv,"hVo:"))!=-1)
     switch(arg)
       {
       default:
       case 'h':
-	fprintf(console,"-h\thelp\n");
-	fprintf(console,"-V\tversion\n");
-	fprintf(console,"-o\toutput to this file\n");
+        show_help (console);
 	return KEYSERVER_OK;
 
       case 'V':

@@ -1,6 +1,6 @@
 #!@PERL@ -w
 
-# gpgkeys_mailto - talk to a email keyserver
+# gpgkeys_mailto - talk to a email keyserver 
 # Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
@@ -20,9 +20,27 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 use Getopt::Std;
+$Getopt::Std::STANDARD_HELP_VERSION=1;
 $sendmail="@SENDMAIL@ -t";
 
 ###
+
+sub VERSION_MESSAGE ()
+{
+    print STDOUT "gpgkeys_mailto (GnuPG) 1.3.91-cvs\n";
+}
+
+sub HELP_MESSAGE ()
+{
+    print STDOUT <<EOT
+
+--help     Print this help
+--version  Print the version
+-o FILE    Write output to FILE
+EOT
+}
+
+
 
 getopts('o:');
 
@@ -200,3 +218,8 @@ if($command=~/send/i)
 	}
     }
 }
+
+
+# Local Variables: 
+# mode:perl
+# End:
