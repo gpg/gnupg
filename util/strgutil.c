@@ -28,19 +28,27 @@
 #include <langinfo.h>
 #endif
 
-#ifndef HAVE_ICONV
-#undef USE_GNUPG_ICONV
+/* For W32 we use dynamic loading of the iconv dll and don't need any
+ * iconv headers at all. */
+#ifndef _WIN32
+# ifndef HAVE_ICONV
+#  undef USE_GNUPG_ICONV
+# endif
 #endif
 
 #ifdef USE_GNUPG_ICONV
-#include <limits.h>
-#include <iconv.h>
+# include <limits.h>
+# ifndef _WIN32
+#  include <iconv.h>
+# endif
 #endif
 
 #include "types.h"
 #include "util.h"
 #include "memory.h"
 #include "i18n.h"
+#include "dynload.h"
+
 
 #ifndef USE_GNUPG_ICONV
 static ushort koi8_unicode[128] = {
@@ -92,6 +100,63 @@ static const char *active_charset_name = "iso-8859-1";
 static ushort *active_charset = NULL;
 static int no_translation = 0;
 static int use_iconv = 0;
+
+
+#ifdef _WIN32
+typedef void* iconv_t;
+#ifndef ICONV_CONST
+#define ICONV_CONST const 
+#endif
+
+iconv_t (* __stdcall iconv_open) (const char *tocode, const char *fromcode);
+size_t  (* __stdcall iconv) (iconv_t cd,
+                             const char **inbuf, size_t *inbytesleft,
+                             char **outbuf, size_t *outbytesleft);
+int     (* __stdcall iconv_close) (iconv_t cd);
+
+#endif /*_WIN32*/
+
+
+
+#ifdef _WIN32
+static int 
+load_libiconv (void)
+{
+  static int done;
+  
+  if (!done)
+    {
+      void *handle;
+
+      done = 1; /* Do it right now because we might get called recursivly
+                   through gettext.  */
+    
+      handle = dlopen ("iconv.dll", RTLD_LAZY);
+      if (handle)
+        {
+          iconv_open  = dlsym (handle, "libiconv_open");
+          if (iconv_open)
+            iconv      = dlsym (handle, "libiconv");
+          if (iconv)    
+            iconv_close = dlsym (handle, "libiconv_close");
+        }
+      if (!handle || !iconv_close)
+        {
+          log_error (_("error loading `%s': %s\n"),
+                     "iconv.dll",  dlerror ());
+          iconv_open = NULL;
+          iconv = NULL;
+          iconv_close = NULL;
+          if (handle)
+              dlclose (handle);
+        }
+    }
+  return iconv_open? 0: -1;
+}    
+#endif /* _WIN32 */
+
+
+
 
 void
 free_strlist( STRLIST sl )
@@ -383,11 +448,11 @@ string_count_chr( const char *string, int c )
 
 #ifdef USE_GNUPG_ICONV
 static void
-handle_iconv_error (const char *from, const char *to, int use_fallback)
+handle_iconv_error (const char *to, const char *from, int use_fallback)
 {
   if (errno == EINVAL)
     log_error (_("conversion from `%s' to `%s' not available\n"),
-               from, "utf-8");
+               from, to);
   else
     log_error (_("iconv_open failed: %s\n"), strerror (errno));
 
@@ -411,14 +476,26 @@ set_native_charset( const char *newset )
 {
     const char *full_newset;
 
-    if (!newset) 
-      {
+    if (!newset) {
+#ifdef _WIN32
+        static char codepage[30];
+
+        sprintf (codepage, "CP%u", (unsigned int)GetACP ());
+
+        /* If it is the Windows name for Latin-1 we use the
+         * standard name instead to avoid loading of iconv.dll.  */
+        if (!strcmp (codepage, "CP1252"))
+            newset = "iso-8859-1";
+        else
+            newset = codepage;
+#else
 #ifdef HAVE_LANGINFO_CODESET
         newset = nl_langinfo (CODESET);
 #else
         newset = "iso-8859-1";
 #endif
-      }
+#endif
+    }
 
     full_newset = newset;
     if (strlen (newset) > 3 && !ascii_memcasecmp (newset, "iso", 3)) {
@@ -446,19 +523,22 @@ set_native_charset( const char *newset )
     else {
       iconv_t cd;
 
+#ifdef _WIN32
+      if (load_libiconv ())
+          return G10ERR_GENERAL;
+#endif /*_WIN32*/      
+
       cd = iconv_open (full_newset, "utf-8");
-      if (cd == (iconv_t)-1)
-        {
+      if (cd == (iconv_t)-1) {
           handle_iconv_error (full_newset, "utf-8", 0);
           return G10ERR_GENERAL;
-        }
+      }
       iconv_close (cd);
       cd = iconv_open ("utf-8", full_newset);
-      if (cd == (iconv_t)-1)
-        {
+      if (cd == (iconv_t)-1) {
           handle_iconv_error ("utf-8", full_newset, 0);
           return G10ERR_GENERAL;
-        }
+      }
       iconv_close (cd);
       active_charset_name = full_newset;
       no_translation = 0;
@@ -536,10 +616,10 @@ native_to_utf8( const char *string )
       char *outptr;
       size_t inbytes, outbytes;
      
-      cd = iconv_open (active_charset_name, "utf-8");
+      cd = iconv_open ("utf-8", active_charset_name);
       if (cd == (iconv_t)-1)
         {
-          handle_iconv_error (active_charset_name, "utf-8", 1);
+          handle_iconv_error ("utf-8", active_charset_name, 1);
           return native_to_utf8 (string);
         }
 
@@ -811,10 +891,10 @@ utf8_to_native( const char *string, size_t length, int delim )
             
             *p = 0;  /* Terminate the buffer. */
 
-            cd = iconv_open ("utf-8", active_charset_name);
+            cd = iconv_open (active_charset_name, "utf-8");
             if (cd == (iconv_t)-1)
                 {
-                    handle_iconv_error ("utf-8", active_charset_name, 1);
+                    handle_iconv_error (active_charset_name, "utf-8", 1);
                     m_free (buffer);
                     return utf8_to_native (string, length, delim);
                 }
