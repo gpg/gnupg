@@ -1,3 +1,10 @@
+2002-08-04  Werner Koch  <wk@gnupg.org>
+
+	* de.po: Fixed fuzzys and translated new strings.
+	* es.po, et.po, fr.po, gl.po, id.po, it.po, ja.po, tr.po: Updated
+	from TP site.
+	* ca.po: New from TP site.
+
 2002-04-30  Werner Koch  <wk@gnupg.org>
 
 	* ja.po: Updated, also a bit too late for the release.
