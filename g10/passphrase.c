@@ -956,12 +956,9 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
     if( !s2k ) {
         /* This is used for the old rfc1991 mode 
          * Note: This must match the code in encode.c with opt.rfc1991 set */
-        int algo = opt.def_digest_algo ? opt.def_digest_algo
-                                       : opt.s2k_digest_algo;
-
 	s2k = &help_s2k;
 	s2k->mode = 0;
-	s2k->hash_algo = algo;
+	s2k->hash_algo = opt.s2k_digest_algo;
     }
 
     if( !next_pw && is_status_enabled() ) {

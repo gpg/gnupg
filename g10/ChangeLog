@@ -1,3 +1,9 @@
+2002-11-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* encode.c (encode_simple), passphrase.c (passphrase_to_dek),
+	sign.c (sign_symencrypt_file): Use --s2k-digest-algo for
+	passphrase mangling rather than --digest-algo.
+
 2002-11-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (keygen_set_std_prefs): Properly handle an empty

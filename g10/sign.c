@@ -1022,8 +1022,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     /* prepare key */
     s2k = m_alloc_clear( sizeof *s2k );
     s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
-    s2k->hash_algo = opt.def_digest_algo ? opt.def_digest_algo
-	                                 : opt.s2k_digest_algo;
+    s2k->hash_algo = opt.s2k_digest_algo;
 
     algo = opt.def_cipher_algo ? opt.def_cipher_algo : opt.s2k_cipher_algo;
     if (!opt.quiet || !opt.batch)
