@@ -1,3 +1,12 @@
+2004-12-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_typemap): New.  Map certain keyserver
+	types to a common type (e.g. ldaps -> ldap).  If we are building
+	with curl, map both http and ftp to curl.
+
+	* build-packet.c (build_sig_subpkt): Only allow one preferred
+	keyserver subpacket at a time.
+
 2004-12-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_set_keyserver_url): Make sure we only operate on

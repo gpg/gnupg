@@ -759,6 +759,24 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
   m_free(line);
 }
 
+/* We sometimes want to use a different gpgkeys_xxx for a given
+   protocol (for example, ldaps is handled by gpgkeys_ldap).  Map
+   these here. */
+static const char *
+keyserver_typemap(const char *type)
+{
+  if(strcmp(type,"ldaps")==0)
+    return "ldap";
+#ifdef HAVE_LIBCURL
+  else if(strcmp(type,"ftp")==0)
+    return "curl";
+  else if(strcmp(type,"http")==0)
+    return "curl";
+#endif /* HAVE_LIBCURL */
+  else
+    return type;
+}
+
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
@@ -773,6 +791,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   byte *line=NULL;
   struct parse_options *kopts;
   struct exec_info *spawn;
+  const char *scheme;
 
   assert(keyserver);
 
@@ -789,14 +808,10 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 #endif
 
   /* Build the filename for the helper to execute */
-  /* Note that we don't use a symlink for "ldaps" anymore because this
-     won't work under MS Windows. */
-  command=m_alloc(strlen("gpgkeys_")+strlen(keyserver->scheme)+1);
+  scheme=keyserver_typemap(keyserver->scheme);
+  command=m_alloc(strlen("gpgkeys_")+strlen(scheme)+1);
   strcpy(command,"gpgkeys_"); 
-  if (!strcmp (keyserver->scheme, "ldaps"))
-    strcat(command, "ldap");
-  else
-    strcat(command,keyserver->scheme);
+  strcat(command,scheme);
   
   if(opt.keyserver_options.options&KEYSERVER_USE_TEMP_FILES)
     {
@@ -1252,9 +1267,8 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
 	case KEYSERVER_VERSION_ERROR:
 	  log_error(_("gpgkeys_%s does not support handler version %d\n"),
-		    !strcmp (keyserver->scheme,"ldaps")?
-                    "ldap": keyserver->scheme, 
-                    KEYSERVER_PROTO_VERSION);
+		    keyserver_typemap(keyserver->scheme),
+		    KEYSERVER_PROTO_VERSION);
 	  break;
 
 	case KEYSERVER_TIMEOUT:

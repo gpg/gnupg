@@ -658,7 +658,6 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_POLICY:
       case SIGSUBPKT_REV_KEY:
       case SIGSUBPKT_SIGNATURE:
-      case SIGSUBPKT_PREF_KS:
 	/* we do allow multiple subpackets */
 	break;
 
