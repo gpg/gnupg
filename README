@@ -1,18 +1,19 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			    Version 1.2.3
+			    Version 1.2.4
 
 	     Copyright 1998, 1999, 2000, 2001, 2002, 2003
 		    Free Software Foundation, Inc.
 
-    This file is free software; as a special exception the author gives
-    unlimited permission to copy and/or distribute it, with or without
-    modifications, as long as this notice is preserved.
+    This file is free software; as a special exception the author
+    gives unlimited permission to copy and/or distribute it, with or
+    without modifications, as long as this notice is preserved.
 
     This file is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    WITHOUT ANY WARRANTY, to the extent permitted by law; without even
+    the implied warranty of MERCHANTABILITY or FITNESS FOR A
+    PARTICULAR PURPOSE.
 
 
     Intro
@@ -36,14 +37,12 @@
     more information on this subject, including what to do if you are
     legally entitled to use IDEA.
 
-    The default algorithms are DSA and ElGamal, but RSA is also
-    supported.  ElGamal for signing is available, but because of the
-    larger size of such signatures it is strongly deprecated (Please
-    note that the GnuPG implementation of ElGamal signatures is *not*
-    insecure).  Symmetric algorithms are: AES, 3DES, Blowfish, CAST5
-    and Twofish.  Digest algorithms available are MD5, RIPEMD/160,
-    SHA-1, SHA-256, SHA-384, and SHA-512.  Compression algorithms
-    available are ZIP and ZLIB.
+    The default public key algorithms are DSA and ElGamal, but RSA is
+    also supported.  Symmetric algorithms available are AES (with 128,
+    192, and 256 bit keys), 3DES, Blowfish, CAST5 and Twofish.  Digest
+    algorithms available are MD5, RIPEMD/160, SHA-1, SHA-256, SHA-384,
+    and SHA-512.  Compression algorithms available are ZIP, ZLIB, and
+    BZIP2 (with libbz2 installed).
 
 
     Installation
