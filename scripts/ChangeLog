@@ -1,3 +1,7 @@
+2002-09-20  Werner Koch  <wk@gnupg.org>
+
+	* mk-w32-dist: Don't use iconv for pl.po.
+
 2002-09-11  Werner Koch  <wk@gnupg.org>
 
 	* distfiles: Include mk-w32-dist.

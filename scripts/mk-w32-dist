@@ -66,11 +66,12 @@ done
 for i in ${srcdir}/po/*.po; do
    lang=$(basename $i .po)
    fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
+   # pl is also cp1250 but the current PO file can't be converted.
    case $lang in 
-     cs|pl) toset="CP1250" ;;
+     cs) toset="CP1250" ;;  
      tr) toset="CP1254" ;;   # DOS: CP857
      el) toset="CP1253" ;;   # same as latin-7?
-     el|eo|et|ja) toset="" ;;
+     el|eo|et|ja|pl) toset="" ;;
       *) toset="CP850" ;;
    esac
    if [ -n "$toset" ]; then
