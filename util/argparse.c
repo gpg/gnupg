@@ -27,101 +27,101 @@
 
 #include "util.h"
 
-#ifdef DOCUMENTATION
-@Summary arg_parse
- #include <wk/lib.h>
 
- typedef struct {
-     char *argc;	    /* pointer to argc (value subject to change) */
-     char ***argv;	    /* pointer to argv (value subject to change) */
-     unsigned flags;	    /* Global flags (DO NOT CHANGE) */
-     int err;		    /* print error about last option */
-			    /* 1 = warning, 2 = abort */
-     int r_opt; 	    /* return option */
-     int r_type;	    /* type of return value (0 = no argument found)*/
-     union {
-	 int   ret_int;
-	 long  ret_long
-	 ulong ret_ulong;
-	 char *ret_str;
-     } r;		    /* Return values */
-     struct {
-	 int index;
-	 const char *last;
-     } internal;	    /* DO NOT CHANGE */
- } ARGPARSE_ARGS;
-
- typedef struct {
-     int	 short_opt;
-     const char *long_opt;
-     unsigned flags;
- } ARGPARSE_OPTS;
-
- int arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts );
-
-@Description
- This is my replacement for getopt(). See the example for a typical usage.
- Global flags are:
-    Bit 0 : Do not remove options form argv
-    Bit 1 : Do not stop at last option but return other args
-	    with r_opt set to -1.
-    Bit 2 : Assume options and real args are mixed.
-    Bit 3 : Do not use -- to stop option processing.
-    Bit 4 : Do not skip the first arg.
-    Bit 5 : allow usage of long option with only one dash
-    all other bits must be set to zero, this value is modified by the function
-    so assume this is write only.
- Local flags (for each option):
-    Bit 2-0 : 0 = does not take an argument
-	      1 = takes int argument
-	      2 = takes string argument
-	      3 = takes long argument
-	      4 = takes ulong argument
-    Bit 3 : argument is optional (r_type will the be set to 0)
-    Bit 4 : allow 0x etc. prefixed values.
- If can stop the option processing by setting opts to NULL, the function will
- then return 0.
-@Return Value
-  Returns the args.r_opt or 0 if ready
-  r_opt may be -2 to indicate an unknown option.
-@See Also
-  ArgExpand
-@Notes
- You do not need to process the options 'h', '--help' or '--version'
- because this function includes standard help processing; but if you
- specify '-h', '--help' or '--version' you have to do it yourself.
- The option '--' stops argument processing; if bit 1 is set the function
- continues to return normal arguments.
- To process float args or unsigned args you must use a string args and do
- the conversion yourself.
-@Example
-
-    ARGPARSE_OPTS opts[] = {
-    { 'v', "verbose",   0 },
-    { 'd', "debug",     0 },
-    { 'o', "output",    2 },
-    { 'c', "cross-ref", 2|8 },
-    { 'm', "my-option", 1|8 },
-    { 500, "have-no-short-option-for-this-long-option", 0 },
-    {0} };
-    ARGPARSE_ARGS pargs = { &argc, &argv, 0 }
-
-    while( ArgParse( &pargs, &opts) ) {
-	switch( pargs.r_opt ) {
-	  case 'v': opt.verbose++; break;
-	  case 'd': opt.debug++; break;
-	  case 'o': opt.outfile = pargs.r.ret_str; break;
-	  case 'c': opt.crf = pargs.r_type? pargs.r.ret_str:"a.crf"; break;
-	  case 'm': opt.myopt = pargs.r_type? pargs.r.ret_int : 1; break;
-	  case 500: opt.a_long_one++;  break
-	  default : pargs.err = 1; break; /* force warning output */
-	}
-    }
-    if( argc > 1 )
-	log_fatal( "Too many args");
-
-#endif /*DOCUMENTATION*/
-
+/*********************************
+ * @Summary arg_parse
+ *  #include <wk/lib.h>
+ *
+ *  typedef struct {
+ *	char *argc;		  pointer to argc (value subject to change)
+ *	char ***argv;		  pointer to argv (value subject to change)
+ *	unsigned flags; 	  Global flags (DO NOT CHANGE)
+ *	int err;		  print error about last option
+ *				  1 = warning, 2 = abort
+ *	int r_opt;		  return option
+ *	int r_type;		  type of return value (0 = no argument found)
+ *	union {
+ *	    int   ret_int;
+ *	    long  ret_long
+ *	    ulong ret_ulong;
+ *	    char *ret_str;
+ *	} r;			  Return values
+ *	struct {
+ *	    int index;
+ *	    const char *last;
+ *	} internal;		  DO NOT CHANGE
+ *  } ARGPARSE_ARGS;
+ *
+ *  typedef struct {
+ *	int	    short_opt;
+ *	const char *long_opt;
+ *	unsigned flags;
+ *  } ARGPARSE_OPTS;
+ *
+ *  int arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts );
+ *
+ * @Description
+ *  This is my replacement for getopt(). See the example for a typical usage.
+ *  Global flags are:
+ *     Bit 0 : Do not remove options form argv
+ *     Bit 1 : Do not stop at last option but return other args
+ *	       with r_opt set to -1.
+ *     Bit 2 : Assume options and real args are mixed.
+ *     Bit 3 : Do not use -- to stop option processing.
+ *     Bit 4 : Do not skip the first arg.
+ *     Bit 5 : allow usage of long option with only one dash
+ *     all other bits must be set to zero, this value is modified by the function
+ *     so assume this is write only.
+ *  Local flags (for each option):
+ *     Bit 2-0 : 0 = does not take an argument
+ *		 1 = takes int argument
+ *		 2 = takes string argument
+ *		 3 = takes long argument
+ *		 4 = takes ulong argument
+ *     Bit 3 : argument is optional (r_type will the be set to 0)
+ *     Bit 4 : allow 0x etc. prefixed values.
+ *  If can stop the option processing by setting opts to NULL, the function will
+ *  then return 0.
+ * @Return Value
+ *   Returns the args.r_opt or 0 if ready
+ *   r_opt may be -2 to indicate an unknown option.
+ * @See Also
+ *   ArgExpand
+ * @Notes
+ *  You do not need to process the options 'h', '--help' or '--version'
+ *  because this function includes standard help processing; but if you
+ *  specify '-h', '--help' or '--version' you have to do it yourself.
+ *  The option '--' stops argument processing; if bit 1 is set the function
+ *  continues to return normal arguments.
+ *  To process float args or unsigned args you must use a string args and do
+ *  the conversion yourself.
+ * @Example
+ *
+ *     ARGPARSE_OPTS opts[] = {
+ *     { 'v', "verbose",   0 },
+ *     { 'd', "debug",     0 },
+ *     { 'o', "output",    2 },
+ *     { 'c', "cross-ref", 2|8 },
+ *     { 'm', "my-option", 1|8 },
+ *     { 500, "have-no-short-option-for-this-long-option", 0 },
+ *     {0} };
+ *     ARGPARSE_ARGS pargs = { &argc, &argv, 0 }
+ *
+ *     while( ArgParse( &pargs, &opts) ) {
+ *	   switch( pargs.r_opt ) {
+ *	     case 'v': opt.verbose++; break;
+ *	     case 'd': opt.debug++; break;
+ *	     case 'o': opt.outfile = pargs.r.ret_str; break;
+ *	     case 'c': opt.crf = pargs.r_type? pargs.r.ret_str:"a.crf"; break;
+ *	     case 'm': opt.myopt = pargs.r_type? pargs.r.ret_int : 1; break;
+ *	     case 500: opt.a_long_one++;  break
+ *	     default : pargs.err = 1; break; -- force warning output --
+ *	   }
+ *     }
+ *     if( argc > 1 )
+ *	   log_fatal( "Too many args");
+ *
+ */
 
 
 static void set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s);
@@ -394,6 +394,10 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 	if( flags & 32 )
 	    puts("\n(A single dash may be used instead of the double ones)");
     }
+    if( *(s=strusage(26)) ) {  /* bug reports to ... */
+	putchar('\n');
+	fputs(s, stdout);
+    }
     fflush(stdout);
     exit(0);
 }
@@ -487,6 +491,7 @@ default_strusage( int level )
       case 15:	p = "[Untitled]"; break;
       case 23:	p = "[unknown]"; break;
       case 24:	p = ""; break;
+      case 26:	p = ""; break;
       case 12:	p =
    "This is free software; you can redistribute it and/or modify\n"
    "it under the terms of the GNU General Public License as published by\n"

@@ -54,6 +54,7 @@ g10_SOURCES = g10.c		\
 	      keygen.c		\
 	      main.h		\
 	      mainproc.c	\
+	      armor.c		\
 	      mdfilter.c	\
 	      options.h 	\
 	      overwrite.c	\
@@ -85,9 +86,9 @@ LIBS = @LIBS@
 COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(LDFLAGS) -o $@
 g10_OBJECTS = g10.o build-packet.o compressed.o encode.o encr-data.o \
-free-packet.o getkey.o keygen.o mainproc.o mdfilter.o overwrite.o \
-parse-packet.o passphrase.o plaintext.o pubkey-enc.o seckey-cert.o \
-seskey.o sig-check.o
+free-packet.o getkey.o keygen.o mainproc.o armor.o mdfilter.o \
+overwrite.o parse-packet.o passphrase.o plaintext.o pubkey-enc.o \
+seckey-cert.o seskey.o sig-check.o
 EXTRA_g10_SOURCES =
 g10_LDADD = $(LDADD)
 DIST_COMMON = Makefile.am Makefile.in
@@ -102,10 +103,10 @@ DEP_DISTFILES = $(DIST_COMMON) $(SOURCES) $(BUILT_SOURCES) $(HEADERS) \
 	$(TEXINFOS) $(INFO_DEPS) $(MANS) $(EXTRA_DIST) $(DATA)
 
 TAR = tar
-DEP_FILES = $(srcdir)/.deps/build-packet.P $(srcdir)/.deps/compressed.P \
-$(srcdir)/.deps/encode.P $(srcdir)/.deps/encr-data.P \
-$(srcdir)/.deps/free-packet.P $(srcdir)/.deps/g10.P \
-$(srcdir)/.deps/getkey.P $(srcdir)/.deps/keygen.P \
+DEP_FILES = $(srcdir)/.deps/armor.P $(srcdir)/.deps/build-packet.P \
+$(srcdir)/.deps/compressed.P $(srcdir)/.deps/encode.P \
+$(srcdir)/.deps/encr-data.P $(srcdir)/.deps/free-packet.P \
+$(srcdir)/.deps/g10.P $(srcdir)/.deps/getkey.P $(srcdir)/.deps/keygen.P \
 $(srcdir)/.deps/mainproc.P $(srcdir)/.deps/mdfilter.P \
 $(srcdir)/.deps/overwrite.P $(srcdir)/.deps/parse-packet.P \
 $(srcdir)/.deps/passphrase.P $(srcdir)/.deps/plaintext.P \

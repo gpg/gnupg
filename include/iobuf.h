@@ -58,6 +58,8 @@ struct iobuf_struct {
     IOBUF chain;	/* next iobuf used for i/o if any (passed to filter) */
     int no, subno;
     const char *desc;
+    void *opaque;      /* can be used to old any information	*/
+		       /* this value is copied to all instances */
 };
 
 int iobuf_debug_mode;
@@ -91,6 +93,7 @@ void iobuf_push_recorder( IOBUF a, int c );
 char *iobuf_stop_recorder( IOBUF a, size_t *n );
 
 u32 iobuf_get_filelength( IOBUF a );
+const char *iobuf_get_fname( IOBUF a );
 
 void iobuf_set_block_mode( IOBUF a, size_t n );
 int  iobuf_in_block_mode( IOBUF a );

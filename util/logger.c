@@ -25,6 +25,19 @@
 
 #include "util.h"
 
+static char pidstring[15];
+
+
+void
+set_log_pid( int pid )
+{
+    if( pid )
+	sprintf(pidstring,"[%u]", (unsigned)pid );
+    else
+	*pidstring = 0;
+}
+
+
 /****************
  * General interface for printing a line
  * level 0 := print to /dev/null
@@ -62,7 +75,7 @@ log_info( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "info: " ) ;
+    fprintf(stderr, "info%s: ", pidstring ) ;
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -73,7 +86,7 @@ log_error( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "error: " ) ;
+    fprintf(stderr, "error%s: ", pidstring  ) ;
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -84,7 +97,7 @@ log_fatal( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "Fatal: " ) ;
+    fprintf(stderr, "Fatal%s: ", pidstring  ) ;
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -96,7 +109,7 @@ log_bug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "\nInternal Error: " ) ;
+    fprintf(stderr, "\nInternal Error%s: ", pidstring  ) ;
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -109,7 +122,7 @@ log_debug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "DBG: " ) ;
+    fprintf(stderr, "DBG%s: ", pidstring  ) ;
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -122,7 +135,7 @@ log_hexdump( const char *text, char *buf, size_t len )
 {
     int i;
 
-    fprintf(stderr, "DBG: %s", text );
+    fprintf(stderr, "DBG%s: %s", pidstring,  text );
     for(i=0; i < len; i++ )
 	fprintf(stderr, " %02X", ((byte*)buf)[i] );
     fputc('\n', stderr);
@@ -132,7 +145,7 @@ log_hexdump( const char *text, char *buf, size_t len )
 void
 log_mpidump( const char *text, MPI a )
 {
-    fprintf(stderr, "DBG: %s", text );
+    fprintf(stderr, "DBG%s: %s", pidstring, text );
     mpi_print(stderr, a, 1 );
     fputc('\n', stderr);
 }

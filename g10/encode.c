@@ -33,14 +33,13 @@
 #include "memory.h"
 #include "util.h"
 #include "main.h"
+#include "filter.h"
 
 
 
 
 static int encode_simple( const char *filename, int mode );
 static IOBUF open_outfile( const char *iname );
-static int armor_filter( void *opaque, int control,
-			 IOBUF chain, byte *buf, size_t *ret_len);
 static int compress_filter( void *opaque, int control,
 			    IOBUF chain, byte *buf, size_t *ret_len);
 static int cipher_filter( void *opaque, int control,
@@ -55,51 +54,6 @@ typedef struct {
     int header;
 } cipher_filter_context_t;
 
-
-typedef struct {
-    int status;
-    int what;
-    byte buf[3];
-    int  idx, idx2;
-    u32 crc;
-} armor_filter_context_t;
-
-
-
-#define CRCINIT 0xB704CE
-#define CRCPOLY 0X864CFB
-#define CRCUPDATE(a,c) do {						    \
-			a = ((a) << 8) ^ crc_table[((a)&0xff >> 16) ^ (c)]; \
-			a &= 0x00ffffff;				    \
-		    } while(0)
-static u32 crc_table[256];
-static int crc_table_initialized;
-
-
-
-static void
-init_crc_table(void)
-{
-    int i, j;
-    u32 t;
-
-    crc_table[0] = 0;
-    for(i=j=0; j < 128; j++ ) {
-	t = crc_table[j];
-	if( t & 0x00800000 ) {
-	    t <<= 1;
-	    crc_table[i++] = t ^ CRCPOLY;
-	    crc_table[i++] = t;
-	}
-	else {
-	    t <<= 1;
-	    crc_table[i++] = t;
-	    crc_table[i++] = t ^ CRCPOLY;
-	}
-    }
-
-    crc_table_initialized=1;
-}
 
 
 
@@ -434,125 +388,6 @@ open_outfile( const char *iname )
     return a;
 }
 
-static int
-armor_filter( void *opaque, int control,
-	      IOBUF a, byte *buffer, size_t *ret_len)
-{
-    static byte bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-			     "abcdefghijklmnopqrstuvwxyz"
-			     "0123456789+/";
-    size_t size = *ret_len;
-    armor_filter_context_t *afx = opaque;
-    int rc=0, i, c;
-    byte buf[3];
-    int  idx, idx2;
-    u32 crc;
-
-
-    if( control == IOBUFCTRL_FLUSH ) {
-	if( !afx->status ) { /* write the header line */
-	    if( !afx->what )
-		iobuf_writestr(a, "-----BEGIN PGP MESSAGE-----\n");
-	    else
-		iobuf_writestr(a, "-----BEGIN PGP PUBLIC KEY BLOCK-----\n");
-	    iobuf_writestr(a, "Version: G10 pre-release "  VERSION "\n");
-	    iobuf_writestr(a, "Comment: This is a alpha test version!\n\n");
-	    afx->status++;
-	    afx->idx = 0;
-	    afx->idx2 = 0;
-	    afx->crc = CRCINIT;
-	}
-	crc = afx->crc;
-	idx = afx->idx;
-	idx2 = afx->idx2;
-	for(i=0; i < idx; i++ )
-	    buf[i] = afx->buf[i];
-
-	for(i=0; i < size; i++ )
-	    crc = (crc << 8) ^ crc_table[(crc >> 16)&0xff ^ buffer[i]];
-	crc &= 0x00ffffff;
-
-	for( ; size; buffer++, size-- ) {
-	    buf[idx++] = *buffer;
-	    if( idx > 2 ) {
-		idx = 0;
-		c = bintoasc[(*buf >> 2) & 077];
-		iobuf_put(a, c);
-		c = bintoasc[(((*buf<<4)&060)|((buf[1] >> 4)&017))&077];
-		iobuf_put(a, c);
-		c = bintoasc[(((buf[1]<<2)&074)|((buf[2]>>6)&03))&077];
-		iobuf_put(a, c);
-		c = bintoasc[buf[2]&077];
-		iobuf_put(a, c);
-		if( ++idx2 > (72/4) ) {
-		    iobuf_put(a, '\n');
-		    idx2=0;
-		}
-	    }
-	}
-	for(i=0; i < idx; i++ )
-	    afx->buf[i] = buf[i];
-	afx->idx = idx;
-	afx->idx2 = idx2;
-	afx->crc  = crc;
-    }
-    else if( control == IOBUFCTRL_INIT ) {
-	if( !crc_table_initialized )
-	    init_crc_table();
-    }
-    else if( control == IOBUFCTRL_FREE ) {
-	if( afx->status ) { /* pad, write cecksum, and bottom line */
-	    crc = afx->crc;
-	    idx = afx->idx;
-	    idx2 = afx->idx2;
-	    for(i=0; i < idx; i++ )
-		buf[i] = afx->buf[i];
-	    if( idx ) {
-		c = bintoasc[(*buf>>2)&077];
-		iobuf_put(a, c);
-		if( idx == 1 ) {
-		    c = bintoasc[((*buf << 4) & 060) & 077];
-		    iobuf_put(a, c);
-		    iobuf_put(a, '=');
-		    iobuf_put(a, '=');
-		}
-		else { /* 2 */
-		    c = bintoasc[(((*buf<<4)&060)|((buf[1]>>4)&017))&077];
-		    iobuf_put(a, c);
-		    c = bintoasc[((buf[1] << 2) & 074) & 077];
-		    iobuf_put(a, c);
-		    iobuf_put(a, '=');
-		}
-		++idx2;
-	    }
-	    /* may need a linefeed */
-	    if( idx2 < (72/4) )
-		iobuf_put(a, '\n');
-	    /* write the CRC */
-	    iobuf_put(a, '=');
-	    buf[0] = crc >>16;
-	    buf[1] = crc >> 8;
-	    buf[2] = crc;
-	    c = bintoasc[(*buf >> 2) & 077];
-	    iobuf_put(a, c);
-	    c = bintoasc[(((*buf<<4)&060)|((buf[1] >> 4)&017))&077];
-	    iobuf_put(a, c);
-	    c = bintoasc[(((buf[1]<<2)&074)|((buf[2]>>6)&03))&077];
-	    iobuf_put(a, c);
-	    c = bintoasc[buf[2]&077];
-	    iobuf_put(a, c);
-	    iobuf_put(a, '\n');
-	    /* and the the trailer */
-	    if( !afx->what )
-		iobuf_writestr(a, "-----END PGP MESSAGE-----\n");
-	    else
-		iobuf_writestr(a, "-----END PGP PUBLIC KEY BLOCK-----\n");
-	}
-    }
-    else if( control == IOBUFCTRL_DESC )
-	*(char**)buf = "armor_filter";
-    return 0;
-}
 
 static int
 compress_filter( void *opaque, int control,

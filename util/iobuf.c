@@ -249,6 +249,7 @@ iobuf_alloc(int usage, size_t bufsize)
     a->d.size = bufsize;
     a->no = ++number;
     a->subno = 0;
+    a->opaque = NULL;
     return a;
 }
 
@@ -280,7 +281,13 @@ iobuf_close( IOBUF a )
 int
 iobuf_cancel( IOBUF a )
 {
-    /* FIXME: do an unlink if usage is 2 */
+    const char *s;
+
+    if( a->usage == 2 ) {
+	s = iobuf_get_fname(a);
+	if( s && *s )
+	    remove(s);	/* remove the file. Fixme: this will fail for MSDOZE*/
+    }			/* because the file is still open */
     return iobuf_close(a);
 }
 
@@ -404,6 +411,7 @@ iobuf_push_filter( IOBUF a,
     b->recorder.buf = NULL;
     /* make a link from the new stream to the original stream */
     a->chain = b;
+    a->opaque = b->opaque;
 
     /* setup the function on the new stream */
     a->filter = f;
@@ -731,6 +739,23 @@ iobuf_get_filelength( IOBUF a )
 	}
 
     return 0;
+}
+
+/****************
+ * Retrieve the filename
+ */
+const char *
+iobuf_get_fname( IOBUF a )
+{
+    struct stat st;
+
+    for( ; a; a = a->chain )
+	if( !a->chain && a->filter == file_filter ) {
+	    file_filter_ctx_t *b = a->filter_ov;
+	    return b->fname;
+	}
+
+    return NULL;
 }
 
 /****************

@@ -31,6 +31,7 @@
 #include "keydb.h"
 #include "mpi.h"
 #include "cipher.h"
+#include "filter.h"
 
 
 const char *
@@ -51,10 +52,14 @@ strusage( int level )
     "\nSyntax: g10 [options] [files]\n"
     "sign, check, encrypt or decrypt\n"
     "default operation depends on the input data\n"
-  #ifndef HAVE_RSA_CIPHER
-    "This version does not support RSA!\n"
+  #ifdef HAVE_RSA_CIPHER
+    "WARNING: This version has RSA support! Your are not allowed to\n"
+    "         use it inside the Unites States until Sep 30, 2000!\n"
   #endif
 	;
+	break;
+      case 26:
+	p = "Please report bugs to <g10-bugs@isil.d.shuttle.de>.\n";
 	break;
       default:	p = default_strusage(level);
     }
@@ -73,6 +78,7 @@ set_debug(void)
     if( opt.debug & DBG_CIPHER_VALUE )
 	cipher_debug_mode = 1;
 }
+
 
 
 int
@@ -115,6 +121,7 @@ main( int argc, char **argv )
     const char *fname, *fname_print;
     STRLIST sl, remusr= NULL;
     int nrings=0;
+    armor_filter_context_t afx;
 
     opt.compress = -1; /* defaults to default compression level */
     while( arg_parse( &pargs, opts) ) {
@@ -210,6 +217,9 @@ main( int argc, char **argv )
 	    usage(1);
 	if( !(a = iobuf_open(fname)) )
 	    log_fatal("can't open '%s'\n", fname_print);
+	/* push the armor filter, so it can peek at the input data */
+	memset( &afx, 0, sizeof afx);
+	iobuf_push_filter( a, armor_filter, &afx );
 	proc_packets( a );
 	iobuf_close(a);
 	break;

@@ -16,6 +16,7 @@ g10_SOURCES = g10.c		\
 	      keygen.c		\
 	      main.h		\
 	      mainproc.c	\
+	      armor.c		\
 	      mdfilter.c	\
 	      options.h 	\
 	      overwrite.c	\

@@ -28,8 +28,23 @@ typedef struct {
     size_t maxbuf_size;
 } md_filter_context_t;
 
+typedef struct {
+    int status;
+    int what;
+    byte radbuf[4];
+    int  idx, idx2;
+    u32 crc;
+    int inp_checked;   /* set if inp has been checked */
+    int inp_bypass;    /* set if the input is not armored */
+    int inp_eof;
+} armor_filter_context_t;
+
 
 /*-- mdfilter.c --*/
 int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);
+
+/*-- armor.c --*/
+int armor_filter( void *opaque, int control,
+		  IOBUF chain, byte *buf, size_t *ret_len);
 
 #endif /*G10_FILTER_H*/

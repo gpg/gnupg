@@ -57,7 +57,7 @@ else
 fi
 
 AC_OUTPUT([ Makefile util/Makefile mpi/Makefile cipher/Makefile \
-	    g10/Makefile tools/Makefile ],
+	    g10/Makefile tools/Makefile psst/Makefile ],
 	  [echo timestamp > stamp-h ])
 
 

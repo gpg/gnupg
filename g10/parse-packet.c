@@ -432,12 +432,12 @@ parse_certificate( IOBUF inp, int pkttype, unsigned long pktlen,
 		X(q);
 		X(u);
 	      #undef X
-		log_mpidump("rsa n=", cert->d.rsa.rsa_n );
+	     /* log_mpidump("rsa n=", cert->d.rsa.rsa_n );
 		log_mpidump("rsa e=", cert->d.rsa.rsa_e );
 		log_mpidump("rsa d=", cert->d.rsa.rsa_d );
 		log_mpidump("rsa p=", cert->d.rsa.rsa_p );
 		log_mpidump("rsa q=", cert->d.rsa.rsa_q );
-		log_mpidump("rsa u=", cert->d.rsa.rsa_u );
+		log_mpidump("rsa u=", cert->d.rsa.rsa_u ); */
 	    }
 	}
     }

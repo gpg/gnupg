@@ -38,7 +38,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 transform = @program_transform_name@
 
-SUBDIRS = util mpi cipher tools g10
+SUBDIRS = util mpi cipher tools g10 psst
 EXTRA_DIST =
 ACCONFIG = acconfig.h
 CONFIG_HEADER_IN = config.h.in
