@@ -128,6 +128,15 @@ do_export( STRLIST users, int secret )
 	     * secret keyring */
 	    if( !secret && node->pkt->pkttype == PKT_COMMENT )
 		continue;
+	    /* do not export packets which are marked as not exportable */
+	    if( node->pkt->pkttype == PKT_SIGNATURE ) {
+		const char *p;
+		p = parse_sig_subpkt2( node->pkt->pkt.signature,
+				       SIGSUBPKT_EXPORTABLE, NULL );
+		if( p && !*p )
+		    continue; /* not exportable */
+	    }
+
 	    if( (rc = build_packet( out, node->pkt )) ) {
 		log_error("build_packet(%d) failed: %s\n",
 			    node->pkt->pkttype, g10_errstr(rc) );

@@ -1,13 +1,13 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
  *	Copyright (C) 1998 Free Software Foundation, Inc.
- *  This file is part of WkLib.
+ *  This file is part of GnuPG.
  *
- *  WkLib is free software; you can redistribute it and/or modify
+ *  GnuPG is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  WkLib is distributed in the hope that it will be useful,
+ *  GnuPG is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -73,8 +73,8 @@
  *     Bit 4 : Do not skip the first arg.
  *     Bit 5 : allow usage of long option with only one dash
  *     Bit 6 : ignore --version
- *     all other bits must be set to zero, this value is modified by the function
- *     so assume this is write only.
+ *     all other bits must be set to zero, this value is modified by the
+ *     function, so assume this is write only.
  *  Local flags (for each option):
  *     Bit 2-0 : 0 = does not take an argument
  *		 1 = takes int argument
@@ -83,8 +83,8 @@
  *		 4 = takes ulong argument
  *     Bit 3 : argument is optional (r_type will the be set to 0)
  *     Bit 4 : allow 0x etc. prefixed values.
- *     Bit 7 : this is an command and not an option
- *  If can stop the option processing by setting opts to NULL, the function will
+ *     Bit 7 : this is a command and not an option
+ *  You stop the option processing by setting opts to NULL, the function will
  *  then return 0.
  * @Return Value
  *   Returns the args.r_opt or 0 if ready
@@ -167,8 +167,14 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 	else {
 	    if( arg->r_opt == -3 )
 		s = "Missing argument for option \"%.50s\"\n";
+	    else if( arg->r_opt == -6 )
+		s = "Option \"%.50s\" does not expect an argument\n";
 	    else if( arg->r_opt == -7 )
 		s = "Invalid command \"%.50s\"\n";
+	    else if( arg->r_opt == -8 )
+		s = "Option \"%.50s\" is ambiguous\n";
+	    else if( arg->r_opt == -9 )
+		s = "Command \"%.50s\" is ambiguous\n";
 	    else
 		s = "Invalid option \"%.50s\"\n";
 	    log_error(s, arg->internal.last? arg->internal.last:"[??]" );
@@ -186,10 +192,15 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
  * Lines starting with '#' are comment lines.
  * Syntax is simply a keyword and the argument.
  * Valid keywords are all keywords from the long_opt list without
- * the leading dashes. The special keywords help, warranty and version
+ * the leading dashes. The special keywords "help", "warranty" and "version"
  * are not valid here.
  * Caller must free returned strings.
  * If called with FP set to NULL command line args are parse instead.
+ *
+ * Q: Should we allow the syntax
+ *     keyword = value
+ *    and accept for boolean options a value of 1/0, yes/no or true/false?
+ * Note: Abbreviation of options is here not allowed.
  */
 int
 optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
@@ -229,7 +240,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    arg->r_opt = (opts[index].flags & 256)? -7:-2;
 		else if( (opts[index].flags & 8) ) /* no argument */
 		    arg->r_opt = -3;	       /* error */
-		else			       /* no or optiona argument */
+		else			       /* no or optional argument */
 		    arg->r_type = 0;	       /* okay */
 		break;
 	    }
@@ -253,6 +264,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    else
 			buffer[i] = 0;
 
+		    trim_spaces( buffer );
 		    if( !set_opt_arg(arg, opts[index].flags, buffer) )
 			m_free(buffer);
 		}
@@ -331,6 +343,37 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 
 
 
+static int
+find_long_option( ARGPARSE_OPTS *opts, const char *keyword )
+{
+    int i;
+    size_t n;
+
+    /* Would be better if we can do a binary search, but it is not
+       possible to reorder our option table because we would mess
+       up our help strings - What we can do is: Build a nice option
+       lookup table wehn this function is first invoked */
+    if( !*keyword )
+	return -1;
+    for(i=0; opts[i].short_opt; i++ )
+	if( opts[i].long_opt && !strcmp( opts[i].long_opt, keyword) )
+	    return i;
+    /* not found, see whether it is an abbreviation */
+    n = strlen( keyword );
+    for(i=0; opts[i].short_opt; i++ ) {
+	if( opts[i].long_opt && !strncmp( opts[i].long_opt, keyword, n ) ) {
+	    int j;
+	    for(j=i+1; opts[j].short_opt; j++ ) {
+		if( opts[j].long_opt
+		    && !strncmp( opts[j].long_opt, keyword, n ) )
+		    return -2;	/* abbreviation is ambiguous */
+	    }
+	    return i;
+	}
+    }
+    return -1;
+}
+
 int
 arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 {
@@ -369,6 +412,8 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	goto leave;
     }
     else if( *s == '-' && s[1] == '-' ) { /* long option */
+	char *argpos;
+
 	arg->internal.inarg = 0;
 	if( !s[2] && !(arg->flags & (1<<3)) ) { /* stop option processing */
 	    arg->internal.stopped = 1;
@@ -376,37 +421,57 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	    goto next_one;
 	}
 
-	for(i=0; opts[i].short_opt; i++ )
-	    if( opts[i].long_opt && !strcmp( opts[i].long_opt, s+2) )
-		break;
+	argpos = strchr( s+2, '=' );
+	if( argpos )
+	    *argpos = 0;
+	i = find_long_option( opts, s+2 );
+	if( argpos )
+	    *argpos = '=';
 
-	if( !opts[i].short_opt && !strcmp( "help", s+2) )
+	if( i < 0 && !strcmp( "help", s+2) )
 	    show_help(opts, arg->flags);
-	else if( !opts[i].short_opt && !strcmp( "version", s+2) ) {
+	else if( i < 0 && !strcmp( "version", s+2) ) {
 	    if( !(arg->flags & (1<<6)) ) {
 		show_version();
 		exit(0);
 	    }
 	}
-	else if( !opts[i].short_opt && !strcmp( "warranty", s+2) ) {
+	else if( i < 0 && !strcmp( "warranty", s+2) ) {
 	    puts( strusage(16) );
 	    exit(0);
 	}
+	else if( i < 0 && !strcmp( "dump-options", s+2) ) {
+	    for(i=0; opts[i].short_opt; i++ )
+		if( opts[i].long_opt )
+		    printf( "--%s\n", opts[i].long_opt );
+	    exit(0);
+	}
 
-	arg->r_opt = opts[i].short_opt;
-	if( !opts[i].short_opt ) {
+	if( i == -2 ) /* ambiguous option */
+	    arg->r_opt = (opts[i].flags & 256)? -9:-8;
+	else if( i == -1 ) {
 	    arg->r_opt = (opts[i].flags & 256)? -7:-2;
 	    arg->r.ret_str = s+2;
 	}
+	else
+	    arg->r_opt = opts[i].short_opt;
+	if( i < 0 )
+	    ;
 	else if( (opts[i].flags & 7) ) {
-	    s2 = argv[1];
+	    if( argpos ) {
+		s2 = argpos+1;
+		if( !*s2 )
+		    s2 = NULL;
+	    }
+	    else
+		s2 = argv[1];
 	    if( !s2 && (opts[i].flags & 8) ) { /* no argument but it is okay*/
 		arg->r_type = 0;	       /* because it is optional */
 	    }
 	    else if( !s2 ) {
 		arg->r_opt = -3; /* missing argument */
 	    }
-	    else if( *s2 == '-' && (opts[i].flags & 8) ) {
+	    else if( !argpos && *s2 == '-' && (opts[i].flags & 8) ) {
 		/* the argument is optional and the next seems to be
 		 * an option. We do not check this possible option
 		 * but assume no argument */
@@ -414,11 +479,16 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	    }
 	    else {
 		set_opt_arg(arg, opts[i].flags, s2);
-		argc--; argv++; index++; /* skip one */
+		if( !argpos ) {
+		    argc--; argv++; index++; /* skip one */
+		}
 	    }
 	}
 	else { /* does not take an argument */
-	    arg->r_type = 0;
+	    if( argpos )
+		arg->r_type = -6; /* argument not expected */
+	    else
+		arg->r_type = 0;
 	}
 	argc--; argv++; index++; /* set to next one */
     }

@@ -1,3 +1,17 @@
+Tue Nov  3 16:17:56 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* strgutil.c (native_to_utf8): New.
+	(utf8_to_native): New, but only as a stub.
+
+	* argparse.c (optfile_parse): Trimmed spaces from args.
+
+
+Wed Oct 28 08:01:49 1998  me,,,  (wk@tobold)
+
+	* argparse.c (find_long_option): New.
+	(arg_parse): option=value is now allowed. Add a new internal
+	option "--dump-options".
+
 Thu Oct 22 16:25:49 1998  Michael Roth	(mroth@nessie.de)
 
 	* fileutil.c (make_basename): New.

@@ -689,6 +689,11 @@ ask_user_id( int mode )
 	    break;
 	m_free(uid); uid = NULL;
     }
+    if( uid ) {
+	char *p = native_to_utf8( uid );
+	m_free( uid );
+	uid = p;
+    }
     return uid;
 }
 

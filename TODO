@@ -1,4 +1,27 @@
 
+    * rmove assert in random.c:160 4096 bit keys need more random.
+
+    * list all matching user ids
+
+    * use zlib 1.1.13 to avoid a bug with 13 bit windows
+
+    * FreeBSD:
+#define USE_DYNAMIC_LINKING
+#define HAVE_DL_DLOPEN
+
+and the ld option -export-dynamic.
+
+    *
+Well, there was one thing extra I needed to do.  While configure found the
+gdbm library, it didn't add the path the the include file list.  I had to
+re-run configure with CPPFLAGS set:
+
+    env CPPFLAGS='-I/usr/local/include' configure ...
+
+
+    * clearsig: keep lineendings as they are. Remember that trailings
+      blanks are not hashed.
+
     * Fix ;) revocation and expire stuff.
 
     * check preferences (cipher and compress)
@@ -11,12 +34,8 @@
     * prefer a type 16 subkey for encryption because pgp cannot handle
       type 20?
 
-    * calculation of marginals never yields a completely trusted key.
-
     * The critical bit of signature subpackets is not yet supported; i.e.
       it is ignored.
-
-    * Exportable Certification Flag is ignored
 
     * We need a maintainence pass over the trustdb which flags
       signatures as expired if the key used to make the signature has
@@ -57,6 +76,15 @@
 
     * add an option to re-create a public key from a secret key; we
       can do this in trustdb.c:verify_own_keys.
+
+    * signature verification is done duplicated on import: in import.c and
+      tehn in trustdb.c too.  Maybe we can use a flag to skip the actual
+      verification process (this should work if we use the same keyblock,
+      but I'm not sure how to accomplish that).  Another way is to allow
+      the import of bogus data and let trustdb mark these keys as invalid;
+      I see an advantage in this that it may help to prevent a DoS on a
+      keyserver by sending him a lot of bogus signatures which he has
+      to check - Needs further investigation.
 
     * change the fake_data stuff to mpi_set_opaque
 

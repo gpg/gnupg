@@ -44,9 +44,9 @@ else
 fi
 if test "$use_m_guard" = yes ; then
     AC_DEFINE(M_GUARD)
-    CFLAGS="-g -Wall"
+    CFLAGS="$CFLAGS -g -Wall"
 else
-    CFLAGS="-O2 -Wall"
+    CFLAGS="$CFLAGS -O2 -Wall"
 fi
 
 

@@ -633,7 +633,8 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	    printf("sig expires %s", strtimestamp( buffer_to_u32(buffer) ) );
 	break;
       case SIGSUBPKT_EXPORTABLE:
-	p = "exportable";
+	if( length )
+	    printf("%sexportable", *buffer? "":"not ");
 	break;
       case SIGSUBPKT_TRUST:
 	p = "trust signature";
@@ -757,6 +758,10 @@ parse_sig_subpkt( const byte *buffer, sigsubpkttype_t reqtype, size_t *ret_n )
       case SIGSUBPKT_SIG_EXPIRE:
       case SIGSUBPKT_KEY_EXPIRE:
 	if( n < 4 )
+	    break;
+	return buffer;
+      case SIGSUBPKT_EXPORTABLE:
+	if( !n )
 	    break;
 	return buffer;
       case SIGSUBPKT_ISSUER:/* issuer key ID */

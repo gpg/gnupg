@@ -1,3 +1,30 @@
+Tue Nov  3 16:19:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keygen.c (ask_user_id): Now converted to UTF-8
+
+	* g10.c (main): Kludge for pgp clearsigs and textmode.
+
+Fri Oct 30 16:40:39 1998  me,,,  (wk@tobold)
+
+	* signal.c (block_all_signals): New.
+	(unblock_all_signals): New
+	* tdbio.c (tdbio_end_transaction): Now blocks all signals.
+
+	* trustdb.c (new_lid_table): Changed the represenation of the
+	former local_lid_info stuff.
+
+	* trustdb.c (update_trust_record): Reorganized the whole thing.
+	* sig-check.c (check_key_signature): Now handles class 0x28
+
+
+Wed Oct 28 18:56:33 1998  me,,,  (wk@tobold)
+
+	* export.c (do_export): Takes care of the exportable sig flag.
+
+Tue Oct 27 14:53:04 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* trustdb.c (update_trust_record): New "fast" parameter.
+
 Sun Oct 25 19:32:05 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* openfile.c (copy_options_File): New.

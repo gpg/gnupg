@@ -60,7 +60,7 @@ ulong lid_from_keyblock( KBNODE keyblock );
 int query_trust_record( PKT_public_key *pk );
 int clear_trust_checked_flag( PKT_public_key *pk );
 int insert_trust_record( PKT_public_key *pk );
-int update_trust_record( KBNODE keyblock, int *modified );
+int update_trust_record( KBNODE keyblock, int fast, int *modified );
 int update_ownertrust( ulong lid, unsigned new_trust );
 
 /*-- pkclist.c --*/

@@ -53,7 +53,7 @@ tobold-get:
 		      tobold:gnupg/ .
 
 tobold-put:
-	rsync -Cavuzb --excude scratch --exclude .deps \
+	rsync -Cavuzb --exclude scratch --exclude .deps \
 		      . tobold:gnupg/
 
 

@@ -121,3 +121,42 @@ pause_on_sigusr( int which )
   #endif
 }
 
+
+static void
+do_block( int block )
+{
+  #ifndef __MINGW32__
+    static int is_blocked;
+    static sigset_t oldmask;
+
+    if( block ) {
+	sigset_t newmask;
+
+	if( is_blocked )
+	    log_bug("signals are already blocked\n");
+	sigfillset( &newmask );
+	sigprocmask( SIG_BLOCK, &newmask, &oldmask );
+	is_blocked = 1;
+    }
+    else {
+	if( !is_blocked )
+	    log_bug("signals are not blocked\n");
+	sigprocmask( SIG_SETMASK, &oldmask, NULL );
+	is_blocked = 0;
+    }
+  #endif /*__MINGW32__*/
+}
+
+
+void
+block_all_signals()
+{
+    do_block(1);
+}
+
+void
+unblock_all_signals()
+{
+    do_block(0);
+}
+

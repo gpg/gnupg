@@ -320,10 +320,15 @@ tdbio_begin_transaction()
 int
 tdbio_end_transaction()
 {
+    int rc;
+
     if( !in_transaction )
 	log_bug("tdbio: no active transaction\n");
+    block_all_signals();
     in_transaction = 0;
-    return tdbio_sync();
+    rc = tdbio_sync();
+    unblock_all_signals();
+    return rc;
 }
 
 int

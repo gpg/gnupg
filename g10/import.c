@@ -465,7 +465,7 @@ import_one( const char *fname, KBNODE keyblock, int fast )
 					(ulong)keyid[1], g10_errstr(rc) );
 	}
 	else if( mod_key )
-	    rc = update_trust_record( keyblock_orig, NULL );
+	    rc = update_trust_record( keyblock_orig, 1, NULL );
 	else
 	    rc = clear_trust_checked_flag( new_key? pk : pk_orig );
     }

@@ -179,6 +179,52 @@ string_count_chr( const char *string, int c )
     return count;
 }
 
+
+/****************
+ * Convert string, which is in native encoding to UTF8 and return the
+ * new allocated UTF8 string.
+ * This code assumes that native is iso-8859-1.
+ */
+char *
+native_to_utf8( const char *string )
+{
+    const byte *s;
+    char *buffer;
+    byte *p;
+    size_t length=0;
+
+    for(s=string; *s; s++ ) {
+	length++;
+	if( *s & 0x80 )
+	    length++;
+    }
+    buffer = m_alloc( length + 1 );
+    for(p=buffer, s=string; *s; s++ ) {
+	if( *s & 0x80 ) {
+	    *p++ = 0xc0 | ((*s >> 6) & 3);
+	    *p++ = 0x80 | ( *s & 0x3f );
+	}
+	else
+	    *p++ = *s;
+    }
+    *p = 0;
+    return buffer;
+}
+
+
+/****************
+ * Convert string, which is in UTF8 to native encoding.  Replace
+ * illegal encodings by some "\xnn".
+ * This code assumes that native is iso-8859-1.
+ */
+char *
+utf8_to_native( const char *string )
+{
+    /* FIXME: Not yet done */
+    return m_strdup(string);
+}
+
+
 /*********************************************
  ********** missing string functions *********
  *********************************************/

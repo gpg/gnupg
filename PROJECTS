@@ -8,3 +8,7 @@
     of other keys (processing of the sdir hintlist).  The signatures
     may then be verified by a maintainence pass.
 
+  * Not GnupG replated:  What about option completion in bash?
+    Can "--dump-options" be used for this or should we place the
+    options in a special ELF segment?
+

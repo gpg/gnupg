@@ -75,7 +75,7 @@ B<-k> [I<username>] [I<keyring>]
     B<-kvc>   List fingerprints
     B<-kvvc>  List fingerprints and signatures
 
-B<--list-keys>	[I<names>]
+B<--list-keys>  [I<names>]
     List all keys from the public keyrings, or just the
     ones given on the command line.
 
@@ -83,7 +83,7 @@ B<--list-secret-keys> [I<names>]
     List all keys from the secret keyrings, or just the
     ones given on the command line.
 
-B<--list-sigs>	[I<names>]
+B<--list-sigs>  [I<names>]
     Same as B<--list-keys>, but the signatures are listed
     too.
 
@@ -129,7 +129,7 @@ B<--edit-key> I<name>
     B<delkey>
        Remove a subkey.
     B<expire>
-       Change the key expiration time.	If a key is
+       Change the key expiration time.  If a key is
        select, the time of this key will be changed.
        With no selection the key expiration of the
        primary key is changed.
@@ -191,7 +191,7 @@ B<--export-secret-keys> [I<names>
     This is normally not very useful.
 
 B<--import>, B<--fast-import>
-    Import/merge keys.	The fast version does not build
+    Import/merge keys.  The fast version does not build
     the trustdb; this can be deon at anytime with the
     command B<--update-trustdb>.
 
@@ -208,7 +208,7 @@ B<--import-ownertrust> [I<filename>]
 
 Long options can be put in an options file (default F<~/.gnupg/options>);
 do not write the 2 dashes, but simply the name of the option and any
-arguments if required.	Lines with a hash as the first non-white-space
+arguments if required.  Lines with a hash as the first non-white-space
 character are ignored. Commands may be put in this file too, but that
 does not make sense.
 
@@ -249,8 +249,12 @@ B<-z> I<n>
     compression level of zlib (which is 6).
 
 B<-t>, B<--textmode>
-    Use canonical text mode.  Used to make clear-text
-    signatures.
+    Use canonical text mode.  If B<-t> (but not
+    B<--textmode>) is used together with armoring
+    and signing, this enables clearsigned messages.
+    This kludge is needed for PGP compatibility;
+    normally you would use B<--sign> or b<--clearsign>
+    to selected the type os signatures.
 
 B<-n>, B<--dry-run>
     Don't make any changes (not yet implemented).
@@ -443,11 +447,11 @@ a signature was bad and other errorcode for fatal errors.
 
 =head1 EXAMPLES
 
-  -se -r Bob [file]	     sign and encrypt for user Bob
-  -sat [file]		     make a clear text signature
-  -sb  [file]		     make a detached signature
-  -k   [userid] 	     show keys
-  -kc  [userid] 	     show fingerprint
+  -se -r Bob [file]          sign and encrypt for user Bob
+  -sat [file]                make a clear text signature
+  -sb  [file]                make a detached signature
+  -k   [userid]              show keys
+  -kc  [userid]              show fingerprint
 
 =head1 ENVIRONMENT
 
@@ -462,13 +466,13 @@ F<~/.gnupg/pubring.gpg>     The public keyring
 
 F<~/.gnupg/trustdb.gpg>     The trust database
 
-F<~/.gnupg/options>	    May contain options
+F<~/.gnupg/options>         May contain options
 
 F</usr[/local]/lib/gnupg/>  Default location for extensions
 
 =head1 SEE ALSO
 
-gpg(1)	gpgm(1)
+gpg(1)  gpgm(1)
 
 
 =head1 WARNINGS

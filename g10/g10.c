@@ -60,7 +60,7 @@ enum cmd_and_opt_values { aNull = 0,
     oQuiet	  = 'q',
     oRemote	  = 'r',
     aSign	  = 's',
-    oTextmode	  = 't',
+    oTextmodeShort= 't',
     oUser	  = 'u',
     oVerbose	  = 'v',
     oCompress	  = 'z',
@@ -100,6 +100,7 @@ enum cmd_and_opt_values { aNull = 0,
     aEnArmor,
     aGenRandom,
 
+    oTextmode,
     oFingerprint,
     oAnswerYes,
     oAnswerNo,
@@ -205,6 +206,7 @@ static ARGPARSE_OPTS opts[] = {
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
     { oRemote, "remote-user", 2, N_("use this user-id for encryption")},
     { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
+    { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
   #endif
     { oOutput, "output",    2, N_("use as output file")},
@@ -734,6 +736,7 @@ main( int argc, char **argv )
 	    sl->next = remusr;
 	    remusr = sl;
 	    break;
+	  case oTextmodeShort: opt.textmode = 2; break;
 	  case oTextmode: opt.textmode=1;  break;
 	  case oUser: /* store the local users */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
@@ -839,7 +842,7 @@ main( int argc, char **argv )
 
 
     /* kludge to let -sat generate a clear text signature */
-    if( opt.textmode && !detached_sig && opt.armor && cmd == aSign )
+    if( opt.textmode == 2 && !detached_sig && opt.armor && cmd == aSign )
 	cmd = aClearsign;
 
     if( opt.verbose > 1 )

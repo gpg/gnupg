@@ -278,12 +278,27 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 	rc = do_check( pk, sig, md );
 	md_close(md);
     }
+    else if( sig->sig_class == 0x28 ) { /* subkey revocation */
+	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBLIC_SUBKEY );
+
+	if( snode ) {
+	    md = md_open( algo, 0 );
+	    hash_public_key( md, pk );
+	    hash_public_key( md, snode->pkt->pkt.public_key );
+	    rc = do_check( pk, sig, md );
+	    md_close(md);
+	}
+	else {
+	    log_error("no subkey for subkey revocation packet\n");
+	    rc = G10ERR_SIG_CLASS;
+	}
+    }
     else if( sig->sig_class == 0x18 ) {
 	KBNODE snode = find_prev_kbnode( root, node, PKT_PUBLIC_SUBKEY );
 
 	if( snode ) {
-	    if( is_selfsig ) {
-		u32 keyid[2];
+	    if( is_selfsig ) {	/* does this make sense????? */
+		u32 keyid[2];	/* it should always be a selfsig */
 
 		keyid_from_pk( pk, keyid );
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
