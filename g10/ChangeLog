@@ -1,5 +1,16 @@
 2000-10-13  Werner Koch  <wk@gnupg.org>
 
+	* mainproc.c (add_gpg_control): New.
+	(do_proc_packets): use it.
+	(proc_plaintext): Changed logic to detect clearsigns.
+	(proc_tree): Check the cleartext sig with some new code.
+
+	* packet.h: New packet PKT_GPG_CONTROL.
+	* parse-packet.c (parse_gpg_control): New.
+	* misc.c (get_session_marker): New.
+	* armor.c (armor_filter): Replaced the faked 1-pass packet by the
+	new control packet.
+
 	* keyedit.c (keyedit_menu): Allow batchmode with a command_fd. 
 	* status.c (my_read): New.
 	(do_get_from_fd): use it.

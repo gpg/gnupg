@@ -50,6 +50,7 @@ typedef enum {
 	PKT_ENCRYPTED_MDC =18, /* integrity protected encrypted data */
 	PKT_MDC 	  =19, /* manipulaion detection code packet */
 	PKT_COMMENT	  =61, /* new comment packet (private) */
+        PKT_GPG_CONTROL   =63  /* internal control packet */
 } pkttype_t;
 
 typedef struct packet_struct PACKET;
@@ -194,6 +195,11 @@ typedef struct {
     char name[1];
 } PKT_plaintext;
 
+typedef struct {
+    int  control;
+    size_t datalen;
+    char data[1];
+} PKT_gpg_control;
 
 /* combine all packets into a union */
 struct packet_struct {
@@ -213,6 +219,7 @@ struct packet_struct {
 	PKT_mdc 	*mdc;		/* PKT_MDC */
 	PKT_ring_trust	*ring_trust;	/* PKT_RING_TRUST */
 	PKT_plaintext	*plaintext;	/* PKT_PLAINTEXT */
+        PKT_gpg_control *gpg_control;   /* PKT_GPG_CONTROL */
     } pkt;
 };
 

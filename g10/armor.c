@@ -502,7 +502,7 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    /* the buffer is always allocated with enough space to append
 	     * the removed [CR], LF and a Nul
 	     * The reason for this complicated procedure is to keep at least
-	     * the original tupe of lineending - handling of the removed
+	     * the original type of lineending - handling of the removed
 	     * trailing spaces seems to be impossible in our method
 	     * of faking a packet; either we have to use a temporary file
 	     * or calculate the hash here in this module and somehow find
@@ -815,7 +815,9 @@ armor_filter( void *opaque, int control,
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_UNDERFLOW ) {
-	if( size < 15+(4*15) )	/* need space for up to 4 onepass_sigs */
+        /* We need some space for the faked packet.  The minmum required
+         * size is ~18 + length of the session marker */
+	if( size < 50 ) 
 	    BUG(); /* supplied buffer too short */
 
 	if( afx->faked )
@@ -831,7 +833,14 @@ armor_filter( void *opaque, int control,
 		    rc = -1;
 	    }
 	    else if( afx->faked ) {
-		unsigned hashes = afx->hashes;
+		unsigned int hashes = afx->hashes;
+                const byte *sesmark;
+                size_t sesmarklen;
+                
+                sesmark = get_session_marker( &sesmarklen );
+                if ( sesmarklen > 20 )
+                    BUG();
+
 		/* the buffer is at least 15+n*15 bytes long, so it
 		 * is easy to construct the packets */
 
@@ -842,36 +851,21 @@ armor_filter( void *opaque, int control,
 			afx->pgp2mode = 1;
 		}
 		n=0;
-		do {
-		    /* first some onepass signature packets */
-		    buf[n++] = 0x90; /* old format, type 4, 1 length byte */
-		    buf[n++] = 13;   /* length */
-		    buf[n++] = 3;    /* version */
-		    buf[n++] = afx->not_dash_escaped? 0:1; /* sigclass */
-		    if( hashes & 1 ) {
-			hashes &= ~1;
-			buf[n++] = DIGEST_ALGO_RMD160;
-		    }
-		    else if( hashes & 2 ) {
-			hashes &= ~2;
-			buf[n++] = DIGEST_ALGO_SHA1;
-		    }
-		    else if( hashes & 4 ) {
-			hashes &= ~4;
-			buf[n++] = DIGEST_ALGO_MD5;
-		    }
-		    else if( hashes & 8 ) {
-			hashes &= ~8;
-			buf[n++] = DIGEST_ALGO_TIGER;
-		    }
-		    else
-			buf[n++] = 0;	 /* (don't know) */
-
-		    buf[n++] = 0;    /* public key algo (don't know) */
-		    memset(buf+n, 0, 8); /* don't know the keyid */
-		    n += 8;
-		    buf[n++] = !hashes;   /* last one */
-		} while( hashes );
+                /* first a gpg control packet */
+                buf[n++] = 0xff; /* new format, type 63, 1 length byte */
+                n++;   /* see below */
+                memcpy(buf+n, sesmark, sesmarklen ); n+= sesmarklen;
+                buf[n++] = 1;    /* control type */
+                buf[n++] = afx->not_dash_escaped? 0:1; /* sigclass */
+                if( hashes & 1 ) 
+                    buf[n++] = DIGEST_ALGO_RMD160;
+                if( hashes & 2 ) 
+                    buf[n++] = DIGEST_ALGO_SHA1;
+                if( hashes & 4 ) 
+                    buf[n++] = DIGEST_ALGO_MD5;
+                if( hashes & 8 ) 
+                    buf[n++] = DIGEST_ALGO_TIGER;
+                buf[1] = n - 2;
 
 		/* followed by a plaintext packet */
 		buf[n++] = 0xaf; /* old packet format, type 11, var length */

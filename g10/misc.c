@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <errno.h>
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
   #include <asm/sysinfo.h>
@@ -244,6 +245,32 @@ print_digest_algo_note( int algo )
 }
 
 
+/* Return a string which is used as a kind of process ID */
+const byte *
+get_session_marker( size_t *rlen )
+{
+    static byte marker[SIZEOF_UNSIGNED_LONG*2];
+    static int initialized;
+
+    if ( !initialized ) {
+        volatile ulong aa, bb; /* we really want the unitialized value */
+        ulong a, b;
+
+        initialized = 1;
+        /* also this marker is guessable it is not easy to use this 
+         * for a faked control packet because an attacker does not
+         * have enough control about the time the verification does 
+         * take place.  Of course, we can add just more random but 
+         * than we need the random generator even for verification
+         * tasks - which does not make sense. */
+        a = aa ^ (ulong)getpid();
+        b = bb ^ (ulong)time(NULL);
+        memcpy( marker, &a, SIZEOF_UNSIGNED_LONG );
+        memcpy( marker+SIZEOF_UNSIGNED_LONG, &b, SIZEOF_UNSIGNED_LONG );
+    }
+    *rlen = sizeof(marker);
+    return marker;
+}
 
 
 

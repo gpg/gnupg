@@ -3,7 +3,9 @@
       be used to verify signatures against a list of trusted keys.
 
     * Rijndael (AES) is now supported and listed as first preference.
-   
+
+    * Fixed a serious bug which could lead to false signature verification
+      results when more than one clearsigned signatures are in one file.
 
 Noteworthy changes in version 1.0.3 (2000-09-18)
 ------------------------------------------------

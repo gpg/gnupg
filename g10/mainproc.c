@@ -119,6 +119,24 @@ add_onepass_sig( CTX c, PACKET *pkt )
 }
 
 
+static int
+add_gpg_control( CTX c, PACKET *pkt )
+{
+    if ( pkt->pkt.gpg_control->control == 1 ) {
+        /* New clear text signature.
+         * Process the last one and reset everything */
+        release_list(c);
+    }   
+
+    if( c->list )  /* add another packet */
+        add_kbnode( c->list, new_kbnode( pkt ));
+    else /* insert the first one */
+	c->list = new_kbnode( pkt );
+
+    return 1;
+}
+
+
 
 static int
 add_user_id( CTX c, PACKET *pkt )
@@ -412,20 +430,23 @@ proc_plaintext( CTX c, PACKET *pkt )
 	    }
 	    if( n->pkt->pkt.onepass_sig->sig_class != 0x01 )
 		only_md5 = 0;
-
-	    /* Check whether this is a cleartext signature.  We assume that
-	     * we have one if the sig_class is 1 and the keyid is 0, that
-	     * are the faked packets produced by armor.c.  There is a
-	     * possibility that this fails, but there is no other easy way
-	     * to do it. (We could use a special packet type to indicate
-	     * this, but this may also be faked - it simply can't be verified
-	     * and is _no_ security issue)
-	     */
-	    if( n->pkt->pkt.onepass_sig->sig_class == 0x01
-		&& !n->pkt->pkt.onepass_sig->keyid[0]
-		&& !n->pkt->pkt.onepass_sig->keyid[1] )
-		clearsig = 1;
 	}
+	else if( n->pkt->pkttype == PKT_GPG_CONTROL
+                 && n->pkt->pkt.gpg_control->control == 1 ) {
+            size_t datalen = n->pkt->pkt.gpg_control->datalen;
+            const byte *data = n->pkt->pkt.gpg_control->data;
+
+            /* check that we have at least the sigclass and one hash */
+            if ( datalen < 2 )
+                log_fatal("invalid control packet of type 1\n"); 
+            /* Note that we don't set the clearsig flag for not-dash-escaped
+             * documents */
+            clearsig = (*data == 0x01);
+            for( data++, datalen--; datalen; datalen--, data++ )
+                md_enable( c->mfx.md, *data );
+            any = 1;
+            break;  /* no pass signature pakets are expected */
+        }
     }
 
     if( !any && !opt.skip_verify ) {
@@ -993,6 +1014,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
 	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
+              case PKT_GPG_CONTROL: newpkt = add_gpg_control(c, pkt); break;
 	      default: newpkt = 0; break;
 	    }
 	}
@@ -1011,6 +1033,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
 	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
+	      case PKT_GPG_CONTROL: newpkt = add_gpg_control(c, pkt); break;
 	      default: newpkt = 0; break;
 	    }
 	}
@@ -1035,6 +1058,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
 	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
 	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
+              case PKT_GPG_CONTROL: newpkt = add_gpg_control(c, pkt); break;
 	      case PKT_RING_TRUST:  newpkt = add_ring_trust( c, pkt ); break;
 	      default: newpkt = 0; break;
 	    }
@@ -1225,6 +1249,17 @@ proc_tree( CTX c, KBNODE node )
 	    }
 	}
 
+	for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); )
+	    check_sig_and_print( c, n1 );
+    }
+    else if( node->pkt->pkttype == PKT_GPG_CONTROL
+             && node->pkt->pkt.gpg_control->control == 1 ) {
+        /* clear text signed message */
+	if( !c->have_data ) {
+            log_error("cleartext signature without data\n" );
+            return;
+        }
+	
 	for( n1 = node; (n1 = find_next_kbnode(n1, PKT_SIGNATURE )); )
 	    check_sig_and_print( c, n1 );
     }
