@@ -1251,12 +1251,15 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     sig->sig_class = sigclass;
     if( sig->version >= 4 )
 	build_sig_subpkt_from_sig( sig );
+    mk_notation_and_policy( sig, pk, sk );
 
+    /* Crucial that the call to mksubpkt comes LAST before the calls
+       to finalize the sig as that makes it possible for the mksubpkt
+       function to get a reliable pointer to the subpacket area. */
     if( sig->version >= 4 && mksubpkt )
 	rc = (*mksubpkt)( sig, opaque );
 
     if( !rc ) {
-	mk_notation_and_policy( sig, pk, sk );
         hash_sigversion_to_magic (md, sig);
 	md_final(md);
 

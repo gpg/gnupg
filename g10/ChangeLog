@@ -1,3 +1,33 @@
+2003-04-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* build-packet.c (build_sig_subpkt): Comments.
+
+	* exec.c (exec_write): Cast NULL to void* to properly terminate
+	varargs list.
+
+	* keyedit.c (show_key_with_all_names): Just for safety, catch an
+	invalid pk algorithm.
+
+	* sign.c (make_keysig_packet): Crucial that the call to mksubpkt
+	comes LAST before the calls to finalize the sig as that makes it
+	possible for the mksubpkt function to get a reliable pointer to
+	the subpacket area.
+
+	* pkclist.c (do_we_trust_pre): If an untrusted key was chosen by a
+	particular user ID, use that ID as the one to ask about when
+	prompting whether to use the key anyway.
+	(build_pk_list): Similar change here when adding keys to the
+	recipient list.
+
+	* trustdb.c (update_validity): Fix bug that prevented more than
+	one validity record per trust record.
+	(get_validity): When retrieving validity for a (user) supplied
+	user ID, return the validity for that user ID only, and do not
+	fall back to the general key validity.
+	(validate_one_keyblock): Some commentary on whether
+	non-self-signed user IDs belong in the web of trust (arguably,
+	they do).
+
 2003-04-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Add --no-textmode.

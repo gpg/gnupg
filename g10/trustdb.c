@@ -873,13 +873,13 @@ update_validity (PKT_public_key *pk, PKT_user_id *uid,
       vrec.rectype = RECTYPE_VALID;
       memcpy (vrec.r.valid.namehash, uid->namehash, 20);
       vrec.r.valid.next = trec.r.trust.validlist;
+      trec.r.trust.validlist = vrec.recnum;
     }
   vrec.r.valid.validity = validity;
   vrec.r.valid.full_count = uid->help_full_count;
   vrec.r.valid.marginal_count = uid->help_marginal_count;
   write_record (&vrec);
   trec.r.trust.depth = depth;
-  trec.r.trust.validlist = vrec.recnum;
   write_record (&trec);
 }
 
@@ -985,7 +985,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
 
   if(uid)
     namehash_from_uid(uid);
-  
+
   init_trustdb ();
   if (!did_nextcheck
       && (opt.trust_model==TM_CLASSIC || opt.trust_model==TM_OPENPGP))
@@ -1043,16 +1043,30 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
   while (recno)
     {
       read_record (recno, &vrec, RECTYPE_VALID);
-      if ( validity < (vrec.r.valid.validity & TRUST_MASK) )
-        validity = (vrec.r.valid.validity & TRUST_MASK);
-      if ( uid && !memcmp (vrec.r.valid.namehash, uid->namehash, 20) )
-        break;
+
+      if(uid)
+	{
+	  /* If a user ID is given we return the validity for that
+	     user ID ONLY.  If the namehash is not found, then there
+	     is no validity at all (i.e. the user ID wasn't
+	     signed). */
+	  if(memcmp(vrec.r.valid.namehash,uid->namehash,20)==0)
+	    {
+	      validity=(vrec.r.valid.validity & TRUST_MASK);
+	      break;
+	    }
+	}
+      else
+	{
+	  /* If no namehash is given, we take the maximum validity
+	     over all user IDs */
+	  if ( validity < (vrec.r.valid.validity & TRUST_MASK) )
+	    validity = (vrec.r.valid.validity & TRUST_MASK);
+	}
+
       recno = vrec.r.valid.next;
     }
   
-  if (recno) /* okay, use the user ID associated one */
-    validity = (vrec.r.valid.validity & TRUST_MASK);
-
   if ( (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED) )
     validity |= TRUST_FLAG_DISABLED;
 
@@ -1528,6 +1542,16 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
   keyid_from_pk(pk, main_kid);
   for (node=kb; node; node = node->next)
     {
+      /* A bit of discussion here: is it better for the web of trust
+	 to be built among only self-signed uids?  On the one hand, a
+	 self-signed uid is a statement that the key owner definitely
+	 intended that uid to be there, but on the other hand, a
+	 signed (but not self-signed) uid does carry trust, of a sort,
+	 even if it is a statement being made by people other than the
+	 key owner "through" the uids on the key owner's key.  I'm
+	 going with the latter. -dshaw */
+
+      /* && node->pkt->pkt.user_id->created) */
       if (node->pkt->pkttype == PKT_USER_ID)
         {
           if (uidnode && issigned)
@@ -1542,13 +1566,19 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
             }
           uidnode = node;
 	  uid=uidnode->pkt->pkt.user_id;
+#if 0
+	  /* If the selfsig is going to expire...  This is disabled as
+	     we do count un-self-signed uids in the web of trust. */
+	  if(uid->expiredate && uid->expiredate<*next_expire)
+	    *next_expire = uid->expiredate;
+#endif
           issigned = 0;
 	  get_validity_counts(pk,uid);
           mark_usable_uid_certs (kb, uidnode, main_kid, klist, 
                                  curtime, next_expire);
         }
-      else if (node->pkt->pkttype == PKT_SIGNATURE 
-               && (node->flag & (1<<8)) && uid)
+      else if (node->pkt->pkttype == PKT_SIGNATURE
+	       && (node->flag & (1<<8)) && uid)
         {
 	  /* Note that we are only seeing unrevoked sigs here */
           PKT_signature *sig = node->pkt->pkt.signature;

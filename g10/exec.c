@@ -417,14 +417,14 @@ int exec_write(struct exec_info **info,const char *program,
 	      if(DBG_EXTPROG)
 		log_debug("execlp: %s\n",program);
 
-	      execlp(program,program,NULL);
+	      execlp(program,program,(void *)NULL);
 	    }
 	  else
 	    {
 	      if(DBG_EXTPROG)
 		log_debug("execlp: %s -c %s\n",shell,(*info)->command);
 
-	      execlp(shell,shell,"-c",(*info)->command,NULL);
+	      execlp(shell,shell,"-c",(*info)->command,(void *)NULL);
 	    }
 
 	  /* If we get this far the exec failed.  Clean up and return. */
@@ -617,4 +617,3 @@ int exec_finish(struct exec_info *info)
   return ret;
 }
 #endif /* ! NO_EXEC */
-

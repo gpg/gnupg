@@ -1983,13 +1983,15 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                     for(i=0;i<pk->numrevkeys;i++) {
                         u32 r_keyid[2];
                         char *user;
-           
+			const char *algo=
+			  pubkey_algo_to_string(pk->revkey[i].algid);
+
                         keyid_from_fingerprint(pk->revkey[i].fpr,
                                                MAX_FINGERPRINT_LEN,r_keyid);
                         
                         user=get_user_id_string (r_keyid);
                         tty_printf (_("This key may be revoked by %s key "),
-                                 pubkey_algo_to_string (pk->revkey[i].algid));
+				    algo?algo:"?");
                         tty_print_utf8_string (user, strlen (user));
                         if ((pk->revkey[i].class&0x40))
                           tty_printf (_(" (sensitive)"));
