@@ -1,3 +1,9 @@
+2003-05-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* sha512.c: Suffix all 64-bit constants with LL.  Note this makes
+	this file non-c89 compliant.  That is okay since we have an
+	autoconf check for this, and many c89 compilers support LL anyway.
+
 2003-05-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.c (fast_random_poll): Only use times() if we HAVE_TIMES.
