@@ -1,3 +1,12 @@
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* gettime.c (asctimestamp): Add a note on a non-avoidable gcc warning.
+
+	* util.h [!HAVE_VASPRINTF]: Add printf format attribute to the
+	replacement function.
+
+	* miscellaneous.c (xasprintf): New.
+
 2003-11-14  Werner Koch  <wk@gnupg.org>
 
 	* mkdtemp.c (mkdtemp): Use gcry_create_nonce.

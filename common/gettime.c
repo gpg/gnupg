@@ -246,9 +246,11 @@ asctimestamp( u32 stamp )
       mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt)-3 );
       if( strstr( fmt, "%Z" ) == NULL )
 	strcat( fmt, " %Z");
-      strftime( buffer, DIM(buffer)-1, fmt, tp );
+      /* NOTE: gcc -Wformat-noliteral will complain here.  I have
+         found no way to suppress this warning .*/
+      strftime (buffer, DIM(buffer)-1, fmt, tp);
 #else
-      /* fixme: we should check whether the locale appends a " %Z"
+      /* FIXME: we should check whether the locale appends a " %Z"
        * These locales from glibc don't put the " %Z":
        * fi_FI hr_HR ja_JP lt_LT lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN
        */

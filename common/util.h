@@ -99,6 +99,12 @@ int answer_is_yes_no_quit (const char *s);
 
 
 /*-- miscellaneous.c --*/
+
+/* Same as asprintf but return an allocated buffer suitable to be
+   freed using xfree.  This function simply dies on memory failure,
+   thus no extra check is required. */
+char *xasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
+
 const char *print_fname_stdout (const char *s);
 const char *print_fname_stdin (const char *s);
 void print_string (FILE *fp, const byte *p, size_t n, int delim);
@@ -113,7 +119,7 @@ int is_file_compressed (const char *s, int *ret_rc);
 #if !HAVE_VASPRINTF
 #include <stdarg.h>
 int vasprintf (char **result, const char *format, va_list args);
-int asprintf (char **result, const char *format, ...);
+int asprintf (char **result, const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
 #endif
 
 
