@@ -1629,6 +1629,14 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
            	if ( check_key_signature( keyblock, k, NULL ) )
                     ; /* signature did not verify */
                 else if ( IS_SUBKEY_REV (sig) ) {
+		  /* Note that this means that the date on a
+                     revocation sig does not matter - even if the
+                     binding sig is dated after the revocation sig,
+                     the subkey is still marked as revoked.  This
+                     seems ok, as it is just as easy to make new
+                     subkeys rather than re-sign old ones as the
+                     problem is in the distribution.  Plus, PGP (7)
+                     does this the same way.  */
                     subpk->is_revoked = 1;
                     /* although we could stop now, we continue to 
                      * figure out other information like the old expiration

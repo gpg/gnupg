@@ -1,3 +1,18 @@
+2002-08-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (clean_subkeys, chk_self_sigs): Merge clean_subkeys
+	into chk_self_sigs.  This improves efficiency as the same
+	signatures are not checked multiple times.  Clarify when a subkey
+	is revoked (any revocation signature, even if it is dated before
+	the binding signature).
+
+	* getkey.c (merge_selfsigs_subkey): Subkey revocation comments.
+
+	* keylist.c (list_one): Stats are only for public key listings.
+
+	* g10.c (main), options.skel: Default should be include-revoked
+	for keyserver operations.
+
 2002-08-21  Werner Koch  <wk@gnupg.org>
 
 	* import.c (import_print_stats): Print new non_imported counter

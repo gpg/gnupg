@@ -252,7 +252,7 @@ list_one( STRLIST names, int secret )
 		    putchar('-');
 		putchar('\n');
 	    }
-	    list_keyblock( keyblock, 1, opt.fingerprint, &stats );
+	    list_keyblock( keyblock, 1, opt.fingerprint, NULL );
 	    release_kbnode( keyblock );
 	} while( !get_seckey_next( ctx, NULL, &keyblock ) );
 	get_seckey_end( ctx );

@@ -115,8 +115,8 @@ lock-once
 # include-disabled = when searching, include keys marked as "disabled"
 #                    on the keyserver (not all keyservers support this).
 #
-# include-revoked = when searching, include keys marked as "revoked"
-#                   on the keyserver.
+# no-include-revoked = when searching, do not include keys marked as
+#                      "revoked" on the keyserver.
 #
 # verbose = show more information as the keys are fetched.
 #           Can be used more than once to increase the amount
@@ -142,7 +142,7 @@ lock-once
 # no-include-attributes = do not include attribute IDs (aka "photo IDs")
 #                         when sending keys to the keyserver.
 
-#keyserver-options auto-key-retrieve include-disabled include-revoked
+#keyserver-options auto-key-retrieve
 
 # Uncomment this line to display photo user IDs in key listings and
 # when a signature from a key with a photo is verified.
