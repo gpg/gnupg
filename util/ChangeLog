@@ -1,3 +1,11 @@
+2003-11-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* miscutil.c (match_multistr): New.  Match against each segment in
+	a string with tokens separated by |.
+	(answer_is_yes_no_default, answer_is_yes_no_quit,
+	answer_is_okay_cancel): Use it here to enable alternate
+	translations.
+
 2003-11-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (connect_server): Differentiate between generic "can't
