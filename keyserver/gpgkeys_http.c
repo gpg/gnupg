@@ -92,14 +92,14 @@ get_key(char *getkey)
 
 	  if(gotit)
 	    {
-	      fputs(line,output);
+	      print_nocr(output,line);
 	      if(strncmp(line,END,strlen(END))==0)
 		break;
 	    }
 	  else
 	    if(strncmp(line,BEGIN,strlen(BEGIN))==0)
 	      {
-		fputs(line,output);
+		print_nocr(output,line);
 		gotit=1;
 	      }
 	}

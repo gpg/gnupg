@@ -294,3 +294,21 @@ ks_action_to_string(enum ks_action action)
 
   return "?";
 }
+
+/* Canonicalize CRLF to just LF by stripping CRs.  This actually makes
+   sense, since on Unix-like machines LF is correct, and on win32-like
+   machines, our output buffer is opened in textmode and will
+   re-canonicalize line endings back to CRLF.  Since we only need to
+   handle armored keys, we don't have to worry about odd cases like
+   CRCRCR and the like. */
+
+void
+print_nocr(FILE *stream,const char *str)
+{
+  while(*str)
+    {
+      if(*str!='\r')
+	fputc(*str,stream);
+      str++;
+    }
+}

@@ -323,13 +323,13 @@ get_key (char *getkey)
       
       if(gotit)
         {
-          fputs (line, output);
+	  print_nocr(output,line);
           if (!strncmp(line,END,strlen(END)))
             break;
         }
       else if(!strncmp(line,BEGIN,strlen(BEGIN)))
         {
-          fputs (line,output);
+	  print_nocr(output,line);
           gotit=1;
         }
     }

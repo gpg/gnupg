@@ -87,5 +87,6 @@ struct ks_options *init_ks_options(void);
 void free_ks_options(struct ks_options *opt);
 int parse_ks_options(char *line,struct ks_options *opt);
 const char *ks_action_to_string(enum ks_action action);
+void print_nocr(FILE *stream,const char *str);
 
 #endif /* !_KSUTIL_H_ */

@@ -953,17 +953,6 @@ build_info(const char *certid,LDAPMessage *each)
   fprintf(output,"INFO %s END\n",certid);
 }
 
-static void
-print_nocr(FILE *stream,const char *str)
-{
-  while(*str)
-    {
-      if(*str!='\r')
-	fputc(*str,stream);
-      str++;
-    }
-}
-
 /* Note that key-not-found is not a fatal error */
 static int
 get_key(char *getkey)

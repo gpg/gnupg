@@ -1,3 +1,12 @@
+2005-03-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c, ksutil.h, ksutil.c (print_nocr): Moved from
+	gpgkeys_ldap.c.  Print a string, but strip out any CRs.
+
+	* gpgkeys_finger.c (get_key), gpgkeys_hkp.c (get_key),
+	gpgkeys_http.c (get_key): Use it here when outputting key material
+	to canonicalize line endings.
+
 2005-03-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_ldap.c (main): Fix three wrong calls to fail_all().
