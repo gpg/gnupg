@@ -732,7 +732,7 @@ handle_signal (int signo)
           cleanup ();
           agent_exit (0);
 	}
-	break;
+      break;
         
     case SIGINT:
       log_info ("SIGINT received - immediate shutdown\n");

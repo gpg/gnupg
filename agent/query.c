@@ -236,15 +236,18 @@ agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
   const char *errtext = NULL;
-  int is_pin;
+  int is_pin = 0;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
 
   if (!pininfo || pininfo->max_length < 1)
     return seterr (Invalid_Value);
-  if (!desc_text)
-    desc_text = _("Please enter you PIN, so that the secret key "
+  if (!desc_text && pininfo->min_digits)
+    desc_text = _("Please enter your PIN, so that the secret key "
+                  "can be unlocked for this session");
+  else if (!desc_text)
+    desc_text = _("Please enter your passphrase, so that the secret key "
                   "can be unlocked for this session");
 
   is_pin = desc_text && strstr (desc_text, "PIN");
@@ -292,7 +295,7 @@ agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
       else if (rc)
         return unlock_pinentry (map_assuan_err (rc));
 
-      if (!errtext && is_pin)
+      if (!errtext && pininfo->min_digits)
         {
           /* do some basic checks on the entered PIN. */
           if (!all_digitsp (pininfo->pin))
