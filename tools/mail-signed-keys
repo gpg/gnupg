@@ -63,7 +63,7 @@ function myflush()
 {
        if ( kid == signedby ) { uidcount=0; return }
        print "sending key " substr(kid,9) " to" | "cat >&2"
-       for(i=0; i < uidcount; i++ ) {
+       for(i=0; i < 1; i++ ) {  
 	   print "    " uids[i] | "cat >&2"
            if( dryrun == 0 ) {
 	      if( i == 0 ) {
