@@ -1,3 +1,10 @@
+2003-02-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (print_hex, print_mds): Print long hash strings a lot
+	neater.  This assumes at least an 80-character display, as there
+	are a few other similar assumptions here and there.  Users who
+	need unformatted hashes can still use with-colons.
+
 2003-02-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* armor.c (parse_hash_header, armor_filter): Accept the new SHAs
