@@ -1924,7 +1924,8 @@ msgstr "[User-ID nicht gefunden]"
 #: g10/getkey.c:1363
 #, c-format
 msgid "Invalid key %08lX made valid by --allow-non-selfsigned-uid\n"
-msgstr "Ungültiger Schlüssel %08lX, gültig gemacht per --allow-non-selfsigned-uid\n"
+msgstr ""
+"Ungültiger Schlüssel %08lX, gültig gemacht per --allow-non-selfsigned-uid\n"
 
 #: g10/getkey.c:1983
 #, c-format
@@ -2162,7 +2163,9 @@ msgstr "Schlüssel %08lX: Keine User-ID für Signatur\n"
 #: g10/import.c:836
 #, c-format
 msgid "key %08lX: unsupported public key algorithm on user id \"%s\"\n"
-msgstr "Schlüssel %08lX: Nicht unterstütztes Public-Key-Verfahren für User-ID \"%s\"\n"
+msgstr ""
+"Schlüssel %08lX: Nicht unterstütztes Public-Key-Verfahren für User-ID \"%s"
+"\"\n"
 
 #: g10/import.c:838
 #, c-format
@@ -2222,12 +2225,15 @@ msgstr "Schlüssel %08lX: Doppelte User-ID entdeckt - zusammengeführt\n"
 #: g10/import.c:1128
 #, c-format
 msgid "Warning: key %08lX may be revoked: fetching revocation key %08lX\n"
-msgstr "Warnung: Schlüssel %08lX ist u.U. widerrufen: hole Widerrufschlüssel %08lX\n"
+msgstr ""
+"Warnung: Schlüssel %08lX ist u.U. widerrufen: hole Widerrufschlüssel %08lX\n"
 
 #: g10/import.c:1142
 #, c-format
 msgid "Warning: key %08lX may be revoked: revocation key %08lX not present.\n"
-msgstr "Warnung: Schlüssel %08lX ist u.U. widerrufen: Widerrufschlüssel %08lX ist nicht vorhanden\n"
+msgstr ""
+"Warnung: Schlüssel %08lX ist u.U. widerrufen: Widerrufschlüssel %08lX ist "
+"nicht vorhanden\n"
 
 #: g10/import.c:1198
 #, c-format

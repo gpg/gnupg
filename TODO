@@ -95,7 +95,15 @@
 
   * for messages created with "-t", it might make sense to append the
     verification status of the message to the output (i.e. write something to
-    the --output file and not only to stderr.
+    the --output file and not only to stderr.  However the problem is
+    that we consider the message transpatrent and don't have any
+    indication of the used character set.  To implement this feature
+    we need to make sure that all output is plain 7 bit ascii but
+    given that we need to print a user name, this does not make sense
+    at all.  The only way this can be implemented is by assuming that
+    the message is encoded in utf8 and hope tht everyone starts to use
+    utf8 instead of latin-1 or whatever RSN.  Hmmm, I myself should
+    start with this.
 
   * keyflags don't distinguish between {certify,signature}-only.
 

@@ -1,4 +1,10 @@
+2002-04-10  Werner Koch  <wk@gnupg.org>
+
+	* pl.po: Updated.
+
 2002-04-09  Werner Koch  <wk@gnupg.org>
+
+	* pt_BR.po: Updated the info entry 
 
 	* es.po: Fixed a c-format problem; for unknown reasons msgfmt -c
 	can't cope with swapped arguments.

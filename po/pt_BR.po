@@ -1,21 +1,19 @@
-# Portuguese messages for gnupg
+# Portuguese (Brazilian) messages for gnupg
+# Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 # Thiago Jung Bauermann <jungmann@cwb.matrix.com.br>, 1999.
 # Revised by Rafael Caetano dos Santos <rcaetano@linux.ime.usp.br>.
 # I tried to make this one close to es_ES by Urko Lusa
 #
 msgid ""
 msgstr ""
+"Project-Id-Version: GNU gnupg 1.0\n"
 "POT-Creation-Date: 2002-04-09 19:04+0200\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
-"Date: 1998-11-20 23:46:36-0200\n"
-"From: Thiago Jung Bauermann <jungmann@usa.net>\n"
-"Xgettext-Options: --default-domain=gnupg --directory=.. --add-comments --"
-"keyword=_ --keyword=N_ --files-from=./POTFILES.in\n"
-"Files: util/secmem.c util/argparse.c cipher/random.c cipher/rand-dummy.c "
-"cipher/rand-unix.c cipher/rand-w32.c g10/g10.c g10/pkclist.c g10/keygen.c "
-"g10/decrypt.c g10/encode.c g10/import.c g10/keyedit.c g10/keylist.c g10/"
-"mainproc.c g10/passphrase.c g10/plaintext.c g10/pref.c g10/seckey-cert.c g10/"
-"sig-check.c g10/sign.c g10/trustdb.c g10/verify.c\n"
+"PO-Revision-Date: 1998-11-20 23:46:36-0200\n"
+"Last-Translator: Rafael Caetano dos Santos <rcaetano@linux.ime.usp.br>\n"
+"Language-Team: ?\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: util/secmem.c:88
 msgid "Warning: using insecure memory!\n"
