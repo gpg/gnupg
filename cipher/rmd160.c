@@ -171,59 +171,11 @@ rol(int n, u32 x)
 static void
 transform( RMD160_CONTEXT *hd, byte *data )
 {
-    static int r[80] = {
-	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-	7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8,
-	3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13, 11, 5, 12,
-	1, 9, 11, 10, 0, 8, 12, 4, 13, 3, 7, 15, 14, 5, 6, 2,
-	4, 0, 5, 9, 7, 12, 2, 10, 14, 1, 3, 8, 11, 6, 15, 13 };
-    static int rr[80] = {
-	5, 14, 7, 0, 9, 2, 11, 4, 13, 6, 15, 8, 1, 10, 3, 12,
-	6, 11, 3, 7, 0, 13, 5, 10, 14, 15, 8, 12, 4, 9, 1, 2,
-	15, 5, 1, 3, 7, 14, 6, 9, 11, 8, 12, 2, 10, 0, 4, 13,
-	8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14,
-	12, 15, 10, 4, 1, 5, 8, 7, 6, 2, 13, 14, 0, 3, 9, 11 };
-    static int s[80] = {
-	11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8,
-	7, 6, 8, 13, 11, 9, 7, 15, 7, 12, 15, 9, 11, 7, 13, 12,
-	11, 13, 6, 7, 14, 9, 13, 15, 14, 8, 13, 6, 5, 12, 7, 5,
-	11, 12, 14, 15, 14, 15, 9, 8, 9, 14, 5, 6, 8, 6, 5, 12,
-	9, 15, 5, 11, 6, 8, 13, 12, 5, 12, 13, 14, 11, 8, 5, 6	};
-    static int ss[80] = {
-	8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14, 12, 6,
-	9, 13, 15, 7, 12, 8, 9, 11, 7, 7, 12, 7, 6, 15, 13, 11,
-	9, 7, 15, 11, 8, 6, 6, 14, 12, 13, 5, 14, 13, 13, 7, 5,
-	15, 5, 8, 11, 14, 14, 6, 14, 6, 9, 12, 9, 12, 5, 15, 8,
-	8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11	};
+
+
     u32 a,b,c,d,e,aa,bb,cc,dd,ee,t;
-    int rbits, j;
   #ifdef BIG_ENDIAN_HOST
     u32 x[16];
-  #else
-    u32 *x;
-  #endif
-
-#define K(a)   ( (a) < 16 ? 0x00000000 :	      \
-		 (a) < 32 ? 0x5A827999 :	      \
-		 (a) < 48 ? 0x6ED9EBA1 :	      \
-		 (a) < 64 ? 0x8F1BBCDC : 0xA953FD4E )
-#define KK(a)  ( (a) < 16 ? 0x50A28BE6 :	      \
-		 (a) < 32 ? 0x5C4DD124 :	      \
-		 (a) < 48 ? 0x6D703EF3 :	      \
-		 (a) < 64 ? 0x7A6D76E9 : 0x00000000 )
-
-#define F0(x,y,z)   ( (x) ^ (y) ^ (z) )
-#define F1(x,y,z)   ( ((x) & (y)) | (~(x) & (z)) )
-#define F2(x,y,z)   ( ((x) | ~(y)) ^ (z) )
-#define F3(x,y,z)   ( ((x) & (z)) | ((y) & ~(z)) )
-#define F4(x,y,z)   ( (x) ^ ((y) | ~(z)) )
-#define F(a,x,y,z)  ( (a) < 16 ? F0((x),(y),(z)) : \
-		      (a) < 32 ? F1((x),(y),(z)) : \
-		      (a) < 48 ? F2((x),(y),(z)) : \
-		      (a) < 64 ? F3((x),(y),(z)) : \
-				 F4((x),(y),(z)) )
-
-  #ifdef BIG_ENDIAN_HOST
     { int i;
       byte *p2, *p1;
       for(i=0, p1=data, p2=(byte*)x; i < 16; i++, p2 += 4 ) {
@@ -234,34 +186,212 @@ transform( RMD160_CONTEXT *hd, byte *data )
       }
     }
   #else
-    x = (u32*)data;
+    u32 *x = (u32*)data;
   #endif
 
-    a = aa = hd->h0;
-    b = bb = hd->h1;
-    c = cc = hd->h2;
-    d = dd = hd->h3;
-    e = ee = hd->h4;
 
-    for(j=0; j < 80; j++ ) {
-	t = a + F( j, b, c, d ) + x[ r[j] ] + K(j);
-	rbits = s[j];
-	a = rol(rbits, t) + e;
-	c = rol(10,c);
-	t = a; a = e; e = d; d = c; c = b; b = t;
+#define K0  0x00000000
+#define K1  0x5A827999
+#define K2  0x6ED9EBA1
+#define K3  0x8F1BBCDC
+#define K4  0xA953FD4E
+#define KK0 0x50A28BE6
+#define KK1 0x5C4DD124
+#define KK2 0x6D703EF3
+#define KK3 0x7A6D76E9
+#define KK4 0x00000000
+#define F0(x,y,z)   ( (x) ^ (y) ^ (z) )
+#define F1(x,y,z)   ( ((x) & (y)) | (~(x) & (z)) )
+#define F2(x,y,z)   ( ((x) | ~(y)) ^ (z) )
+#define F3(x,y,z)   ( ((x) & (z)) | ((y) & ~(z)) )
+#define F4(x,y,z)   ( (x) ^ ((y) | ~(z)) )
+#define R(a,b,c,d,e,f,k,r,s) do { t = a + f(b,c,d) + k + x[r]; \
+				  a = rol(s,t) + e;	       \
+				  c = rol(10,c);	       \
+				} while(0)
 
-	t = aa + F(79-j, bb, cc, dd ) + x[ rr[j] ] + KK(j);
-	rbits = ss[j];
-	aa = rol(rbits, t) + ee;
-	cc = rol(10,cc);
-	t = aa; aa = ee; ee = dd; dd = cc; cc = bb; bb = t;
-    }
+    /* left lane */
+    a = hd->h0;
+    b = hd->h1;
+    c = hd->h2;
+    d = hd->h3;
+    e = hd->h4;
+    R( a, b, c, d, e, F0, K0,  0, 11 );
+    R( e, a, b, c, d, F0, K0,  1, 14 );
+    R( d, e, a, b, c, F0, K0,  2, 15 );
+    R( c, d, e, a, b, F0, K0,  3, 12 );
+    R( b, c, d, e, a, F0, K0,  4,  5 );
+    R( a, b, c, d, e, F0, K0,  5,  8 );
+    R( e, a, b, c, d, F0, K0,  6,  7 );
+    R( d, e, a, b, c, F0, K0,  7,  9 );
+    R( c, d, e, a, b, F0, K0,  8, 11 );
+    R( b, c, d, e, a, F0, K0,  9, 13 );
+    R( a, b, c, d, e, F0, K0, 10, 14 );
+    R( e, a, b, c, d, F0, K0, 11, 15 );
+    R( d, e, a, b, c, F0, K0, 12,  6 );
+    R( c, d, e, a, b, F0, K0, 13,  7 );
+    R( b, c, d, e, a, F0, K0, 14,  9 );
+    R( a, b, c, d, e, F0, K0, 15,  8 );
+    R( e, a, b, c, d, F1, K1,  7,  7 );
+    R( d, e, a, b, c, F1, K1,  4,  6 );
+    R( c, d, e, a, b, F1, K1, 13,  8 );
+    R( b, c, d, e, a, F1, K1,  1, 13 );
+    R( a, b, c, d, e, F1, K1, 10, 11 );
+    R( e, a, b, c, d, F1, K1,  6,  9 );
+    R( d, e, a, b, c, F1, K1, 15,  7 );
+    R( c, d, e, a, b, F1, K1,  3, 15 );
+    R( b, c, d, e, a, F1, K1, 12,  7 );
+    R( a, b, c, d, e, F1, K1,  0, 12 );
+    R( e, a, b, c, d, F1, K1,  9, 15 );
+    R( d, e, a, b, c, F1, K1,  5,  9 );
+    R( c, d, e, a, b, F1, K1,  2, 11 );
+    R( b, c, d, e, a, F1, K1, 14,  7 );
+    R( a, b, c, d, e, F1, K1, 11, 13 );
+    R( e, a, b, c, d, F1, K1,  8, 12 );
+    R( d, e, a, b, c, F2, K2,  3, 11 );
+    R( c, d, e, a, b, F2, K2, 10, 13 );
+    R( b, c, d, e, a, F2, K2, 14,  6 );
+    R( a, b, c, d, e, F2, K2,  4,  7 );
+    R( e, a, b, c, d, F2, K2,  9, 14 );
+    R( d, e, a, b, c, F2, K2, 15,  9 );
+    R( c, d, e, a, b, F2, K2,  8, 13 );
+    R( b, c, d, e, a, F2, K2,  1, 15 );
+    R( a, b, c, d, e, F2, K2,  2, 14 );
+    R( e, a, b, c, d, F2, K2,  7,  8 );
+    R( d, e, a, b, c, F2, K2,  0, 13 );
+    R( c, d, e, a, b, F2, K2,  6,  6 );
+    R( b, c, d, e, a, F2, K2, 13,  5 );
+    R( a, b, c, d, e, F2, K2, 11, 12 );
+    R( e, a, b, c, d, F2, K2,  5,  7 );
+    R( d, e, a, b, c, F2, K2, 12,  5 );
+    R( c, d, e, a, b, F3, K3,  1, 11 );
+    R( b, c, d, e, a, F3, K3,  9, 12 );
+    R( a, b, c, d, e, F3, K3, 11, 14 );
+    R( e, a, b, c, d, F3, K3, 10, 15 );
+    R( d, e, a, b, c, F3, K3,  0, 14 );
+    R( c, d, e, a, b, F3, K3,  8, 15 );
+    R( b, c, d, e, a, F3, K3, 12,  9 );
+    R( a, b, c, d, e, F3, K3,  4,  8 );
+    R( e, a, b, c, d, F3, K3, 13,  9 );
+    R( d, e, a, b, c, F3, K3,  3, 14 );
+    R( c, d, e, a, b, F3, K3,  7,  5 );
+    R( b, c, d, e, a, F3, K3, 15,  6 );
+    R( a, b, c, d, e, F3, K3, 14,  8 );
+    R( e, a, b, c, d, F3, K3,  5,  6 );
+    R( d, e, a, b, c, F3, K3,  6,  5 );
+    R( c, d, e, a, b, F3, K3,  2, 12 );
+    R( b, c, d, e, a, F4, K4,  4,  9 );
+    R( a, b, c, d, e, F4, K4,  0, 15 );
+    R( e, a, b, c, d, F4, K4,  5,  5 );
+    R( d, e, a, b, c, F4, K4,  9, 11 );
+    R( c, d, e, a, b, F4, K4,  7,  6 );
+    R( b, c, d, e, a, F4, K4, 12,  8 );
+    R( a, b, c, d, e, F4, K4,  2, 13 );
+    R( e, a, b, c, d, F4, K4, 10, 12 );
+    R( d, e, a, b, c, F4, K4, 14,  5 );
+    R( c, d, e, a, b, F4, K4,  1, 12 );
+    R( b, c, d, e, a, F4, K4,  3, 13 );
+    R( a, b, c, d, e, F4, K4,  8, 14 );
+    R( e, a, b, c, d, F4, K4, 11, 11 );
+    R( d, e, a, b, c, F4, K4,  6,  8 );
+    R( c, d, e, a, b, F4, K4, 15,  5 );
+    R( b, c, d, e, a, F4, K4, 13,  6 );
 
-    t	   = hd->h1 + c + dd;
-    hd->h1 = hd->h2 + d + ee;
-    hd->h2 = hd->h3 + e + aa;
-    hd->h3 = hd->h4 + a + bb;
-    hd->h4 = hd->h0 + b + cc;
+    aa = a; bb = b; cc = c; dd = d; ee = e;
+
+    /* right lane */
+    a = hd->h0;
+    b = hd->h1;
+    c = hd->h2;
+    d = hd->h3;
+    e = hd->h4;
+    R( a, b, c, d, e, F4, KK0,	5,  8);
+    R( e, a, b, c, d, F4, KK0, 14,  9);
+    R( d, e, a, b, c, F4, KK0,	7,  9);
+    R( c, d, e, a, b, F4, KK0,	0, 11);
+    R( b, c, d, e, a, F4, KK0,	9, 13);
+    R( a, b, c, d, e, F4, KK0,	2, 15);
+    R( e, a, b, c, d, F4, KK0, 11, 15);
+    R( d, e, a, b, c, F4, KK0,	4,  5);
+    R( c, d, e, a, b, F4, KK0, 13,  7);
+    R( b, c, d, e, a, F4, KK0,	6,  7);
+    R( a, b, c, d, e, F4, KK0, 15,  8);
+    R( e, a, b, c, d, F4, KK0,	8, 11);
+    R( d, e, a, b, c, F4, KK0,	1, 14);
+    R( c, d, e, a, b, F4, KK0, 10, 14);
+    R( b, c, d, e, a, F4, KK0,	3, 12);
+    R( a, b, c, d, e, F4, KK0, 12,  6);
+    R( e, a, b, c, d, F3, KK1,	6,  9);
+    R( d, e, a, b, c, F3, KK1, 11, 13);
+    R( c, d, e, a, b, F3, KK1,	3, 15);
+    R( b, c, d, e, a, F3, KK1,	7,  7);
+    R( a, b, c, d, e, F3, KK1,	0, 12);
+    R( e, a, b, c, d, F3, KK1, 13,  8);
+    R( d, e, a, b, c, F3, KK1,	5,  9);
+    R( c, d, e, a, b, F3, KK1, 10, 11);
+    R( b, c, d, e, a, F3, KK1, 14,  7);
+    R( a, b, c, d, e, F3, KK1, 15,  7);
+    R( e, a, b, c, d, F3, KK1,	8, 12);
+    R( d, e, a, b, c, F3, KK1, 12,  7);
+    R( c, d, e, a, b, F3, KK1,	4,  6);
+    R( b, c, d, e, a, F3, KK1,	9, 15);
+    R( a, b, c, d, e, F3, KK1,	1, 13);
+    R( e, a, b, c, d, F3, KK1,	2, 11);
+    R( d, e, a, b, c, F2, KK2, 15,  9);
+    R( c, d, e, a, b, F2, KK2,	5,  7);
+    R( b, c, d, e, a, F2, KK2,	1, 15);
+    R( a, b, c, d, e, F2, KK2,	3, 11);
+    R( e, a, b, c, d, F2, KK2,	7,  8);
+    R( d, e, a, b, c, F2, KK2, 14,  6);
+    R( c, d, e, a, b, F2, KK2,	6,  6);
+    R( b, c, d, e, a, F2, KK2,	9, 14);
+    R( a, b, c, d, e, F2, KK2, 11, 12);
+    R( e, a, b, c, d, F2, KK2,	8, 13);
+    R( d, e, a, b, c, F2, KK2, 12,  5);
+    R( c, d, e, a, b, F2, KK2,	2, 14);
+    R( b, c, d, e, a, F2, KK2, 10, 13);
+    R( a, b, c, d, e, F2, KK2,	0, 13);
+    R( e, a, b, c, d, F2, KK2,	4,  7);
+    R( d, e, a, b, c, F2, KK2, 13,  5);
+    R( c, d, e, a, b, F1, KK3,	8, 15);
+    R( b, c, d, e, a, F1, KK3,	6,  5);
+    R( a, b, c, d, e, F1, KK3,	4,  8);
+    R( e, a, b, c, d, F1, KK3,	1, 11);
+    R( d, e, a, b, c, F1, KK3,	3, 14);
+    R( c, d, e, a, b, F1, KK3, 11, 14);
+    R( b, c, d, e, a, F1, KK3, 15,  6);
+    R( a, b, c, d, e, F1, KK3,	0, 14);
+    R( e, a, b, c, d, F1, KK3,	5,  6);
+    R( d, e, a, b, c, F1, KK3, 12,  9);
+    R( c, d, e, a, b, F1, KK3,	2, 12);
+    R( b, c, d, e, a, F1, KK3, 13,  9);
+    R( a, b, c, d, e, F1, KK3,	9, 12);
+    R( e, a, b, c, d, F1, KK3,	7,  5);
+    R( d, e, a, b, c, F1, KK3, 10, 15);
+    R( c, d, e, a, b, F1, KK3, 14,  8);
+    R( b, c, d, e, a, F0, KK4, 12,  8);
+    R( a, b, c, d, e, F0, KK4, 15,  5);
+    R( e, a, b, c, d, F0, KK4, 10, 12);
+    R( d, e, a, b, c, F0, KK4,	4,  9);
+    R( c, d, e, a, b, F0, KK4,	1, 12);
+    R( b, c, d, e, a, F0, KK4,	5,  5);
+    R( a, b, c, d, e, F0, KK4,	8, 14);
+    R( e, a, b, c, d, F0, KK4,	7,  6);
+    R( d, e, a, b, c, F0, KK4,	6,  8);
+    R( c, d, e, a, b, F0, KK4,	2, 13);
+    R( b, c, d, e, a, F0, KK4, 13,  6);
+    R( a, b, c, d, e, F0, KK4, 14,  5);
+    R( e, a, b, c, d, F0, KK4,	0, 15);
+    R( d, e, a, b, c, F0, KK4,	3, 13);
+    R( c, d, e, a, b, F0, KK4,	9, 11);
+    R( b, c, d, e, a, F0, KK4, 11, 11);
+
+
+    t	   = hd->h1 + d + cc;
+    hd->h1 = hd->h2 + e + dd;
+    hd->h2 = hd->h3 + a + ee;
+    hd->h3 = hd->h4 + b + aa;
+    hd->h4 = hd->h0 + c + bb;
     hd->h0 = t;
 }
 

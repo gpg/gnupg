@@ -20,52 +20,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-/* I took the code for transform() from the Linux kernel
- * (/usr/src/linux/drivers/char/random.c) which has
- *
- * a) This notice:
- * ---------------
- * SHA transform algorithm, taken from code written by Peter Gutman,
- * and apparently in the public domain.
- *
- * b) This copyright notice:
- * -------------------------
- * Version 1.00, last modified 26-May-96
- *
- * Copyright Theodore Ts'o, 1994, 1995, 1996.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, and the entire permission notice in its entirety,
- *    including the disclaimer of warranties.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote
- *    products derived from this software without specific prior
- *    written permission.
- *
- * ALTERNATIVELY, this product may be distributed under the terms of
- * the GNU Public License, in which case the provisions of the GPL are
- * required INSTEAD OF the above restrictions.	(This clause is
- * necessary due to a potential bad interaction between the GPL and
- * the restrictions contained in a BSD-style copyright.)
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED.	IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 
 /*  Test vectors:
  *
@@ -87,17 +41,6 @@
 #include "sha1.h"
 
 
-/* The SHA f()-functions.  */
-#define f1(x,y,z)   ( z ^ ( x & ( y ^ z ) ) )		/* Rounds  0-19 */
-#define f2(x,y,z)   ( x ^ y ^ z )			/* Rounds 20-39 */
-#define f3(x,y,z)   ( ( x & y ) | ( z & ( x | y ) ) )	/* Rounds 40-59 */
-#define f4(x,y,z)   ( x ^ y ^ z )			/* Rounds 60-79 */
-
-/* The SHA Mysterious Constants */
-#define K1  0x5A827999L 				/* Rounds  0-19 */
-#define K2  0x6ED9EBA1L 				/* Rounds 20-39 */
-#define K3  0x8F1BBCDCL 				/* Rounds 40-59 */
-#define K4  0xCA62C1D6L 				/* Rounds 60-79 */
 
 
 #if defined(__GNUC__) && defined(__i386__)
@@ -114,15 +57,6 @@ rol(int n, u32 x)
 #endif
 
 
-
-
-
-#define expand(W,i) ( W[ i & 15 ] = \
-		     rol( 1, ( W[ i & 15 ] ^ W[ (i - 14) & 15 ] ^ \
-				W[ (i - 8) & 15 ] ^ W[ (i - 3) & 15 ] ) ) )
-
-#define subRound(a, b, c, d, e, f, k, data) \
-    ( e += rol( 5, a ) + f( b, c, d ) + k + data, b = rol( 30, b ) )
 
 
 void
@@ -144,22 +78,22 @@ sha1_init( SHA1_CONTEXT *hd )
 static void
 transform( SHA1_CONTEXT *hd, byte *data )
 {
-    u32 A, B, C, D, E;	   /* Local vars */
-    u32 eData[ 16 ];	   /* Expanded data */
+    u32 a,b,c,d,e,tm;
+    u32 x[16];
 
-    /* Set up first buffer and local data buffer */
-    A = hd->h0;
-    B = hd->h1;
-    C = hd->h2;
-    D = hd->h3;
-    E = hd->h4;
+    /* get values from the chaining vars */
+    a = hd->h0;
+    b = hd->h1;
+    c = hd->h2;
+    d = hd->h3;
+    e = hd->h4;
 
   #ifdef BIG_ENDIAN_HOST
-    memcpy( eData, data, 64 );
+    memcpy( x, data, 64 );
   #else
     { int i;
       byte *p2;
-      for(i=0, p2=(byte*)eData; i < 16; i++, p2 += 4 ) {
+      for(i=0, p2=(byte*)x; i < 16; i++, p2 += 4 ) {
 	p2[3] = *data++;
 	p2[2] = *data++;
 	p2[1] = *data++;
@@ -168,97 +102,114 @@ transform( SHA1_CONTEXT *hd, byte *data )
     }
   #endif
 
-    /* Heavy mangling, in 4 sub-rounds of 20 iterations each. */
-    subRound( A, B, C, D, E, f1, K1, eData[  0 ] );
-    subRound( E, A, B, C, D, f1, K1, eData[  1 ] );
-    subRound( D, E, A, B, C, f1, K1, eData[  2 ] );
-    subRound( C, D, E, A, B, f1, K1, eData[  3 ] );
-    subRound( B, C, D, E, A, f1, K1, eData[  4 ] );
-    subRound( A, B, C, D, E, f1, K1, eData[  5 ] );
-    subRound( E, A, B, C, D, f1, K1, eData[  6 ] );
-    subRound( D, E, A, B, C, f1, K1, eData[  7 ] );
-    subRound( C, D, E, A, B, f1, K1, eData[  8 ] );
-    subRound( B, C, D, E, A, f1, K1, eData[  9 ] );
-    subRound( A, B, C, D, E, f1, K1, eData[ 10 ] );
-    subRound( E, A, B, C, D, f1, K1, eData[ 11 ] );
-    subRound( D, E, A, B, C, f1, K1, eData[ 12 ] );
-    subRound( C, D, E, A, B, f1, K1, eData[ 13 ] );
-    subRound( B, C, D, E, A, f1, K1, eData[ 14 ] );
-    subRound( A, B, C, D, E, f1, K1, eData[ 15 ] );
-    subRound( E, A, B, C, D, f1, K1, expand( eData, 16 ) );
-    subRound( D, E, A, B, C, f1, K1, expand( eData, 17 ) );
-    subRound( C, D, E, A, B, f1, K1, expand( eData, 18 ) );
-    subRound( B, C, D, E, A, f1, K1, expand( eData, 19 ) );
 
-    subRound( A, B, C, D, E, f2, K2, expand( eData, 20 ) );
-    subRound( E, A, B, C, D, f2, K2, expand( eData, 21 ) );
-    subRound( D, E, A, B, C, f2, K2, expand( eData, 22 ) );
-    subRound( C, D, E, A, B, f2, K2, expand( eData, 23 ) );
-    subRound( B, C, D, E, A, f2, K2, expand( eData, 24 ) );
-    subRound( A, B, C, D, E, f2, K2, expand( eData, 25 ) );
-    subRound( E, A, B, C, D, f2, K2, expand( eData, 26 ) );
-    subRound( D, E, A, B, C, f2, K2, expand( eData, 27 ) );
-    subRound( C, D, E, A, B, f2, K2, expand( eData, 28 ) );
-    subRound( B, C, D, E, A, f2, K2, expand( eData, 29 ) );
-    subRound( A, B, C, D, E, f2, K2, expand( eData, 30 ) );
-    subRound( E, A, B, C, D, f2, K2, expand( eData, 31 ) );
-    subRound( D, E, A, B, C, f2, K2, expand( eData, 32 ) );
-    subRound( C, D, E, A, B, f2, K2, expand( eData, 33 ) );
-    subRound( B, C, D, E, A, f2, K2, expand( eData, 34 ) );
-    subRound( A, B, C, D, E, f2, K2, expand( eData, 35 ) );
-    subRound( E, A, B, C, D, f2, K2, expand( eData, 36 ) );
-    subRound( D, E, A, B, C, f2, K2, expand( eData, 37 ) );
-    subRound( C, D, E, A, B, f2, K2, expand( eData, 38 ) );
-    subRound( B, C, D, E, A, f2, K2, expand( eData, 39 ) );
+#define K1  0x5A827999L
+#define K2  0x6ED9EBA1L
+#define K3  0x8F1BBCDCL
+#define K4  0xCA62C1D6L
+#define F1(x,y,z)   ( z ^ ( x & ( y ^ z ) ) )
+#define F2(x,y,z)   ( x ^ y ^ z )
+#define F3(x,y,z)   ( ( x & y ) | ( z & ( x | y ) ) )
+#define F4(x,y,z)   ( x ^ y ^ z )
 
-    subRound( A, B, C, D, E, f3, K3, expand( eData, 40 ) );
-    subRound( E, A, B, C, D, f3, K3, expand( eData, 41 ) );
-    subRound( D, E, A, B, C, f3, K3, expand( eData, 42 ) );
-    subRound( C, D, E, A, B, f3, K3, expand( eData, 43 ) );
-    subRound( B, C, D, E, A, f3, K3, expand( eData, 44 ) );
-    subRound( A, B, C, D, E, f3, K3, expand( eData, 45 ) );
-    subRound( E, A, B, C, D, f3, K3, expand( eData, 46 ) );
-    subRound( D, E, A, B, C, f3, K3, expand( eData, 47 ) );
-    subRound( C, D, E, A, B, f3, K3, expand( eData, 48 ) );
-    subRound( B, C, D, E, A, f3, K3, expand( eData, 49 ) );
-    subRound( A, B, C, D, E, f3, K3, expand( eData, 50 ) );
-    subRound( E, A, B, C, D, f3, K3, expand( eData, 51 ) );
-    subRound( D, E, A, B, C, f3, K3, expand( eData, 52 ) );
-    subRound( C, D, E, A, B, f3, K3, expand( eData, 53 ) );
-    subRound( B, C, D, E, A, f3, K3, expand( eData, 54 ) );
-    subRound( A, B, C, D, E, f3, K3, expand( eData, 55 ) );
-    subRound( E, A, B, C, D, f3, K3, expand( eData, 56 ) );
-    subRound( D, E, A, B, C, f3, K3, expand( eData, 57 ) );
-    subRound( C, D, E, A, B, f3, K3, expand( eData, 58 ) );
-    subRound( B, C, D, E, A, f3, K3, expand( eData, 59 ) );
 
-    subRound( A, B, C, D, E, f4, K4, expand( eData, 60 ) );
-    subRound( E, A, B, C, D, f4, K4, expand( eData, 61 ) );
-    subRound( D, E, A, B, C, f4, K4, expand( eData, 62 ) );
-    subRound( C, D, E, A, B, f4, K4, expand( eData, 63 ) );
-    subRound( B, C, D, E, A, f4, K4, expand( eData, 64 ) );
-    subRound( A, B, C, D, E, f4, K4, expand( eData, 65 ) );
-    subRound( E, A, B, C, D, f4, K4, expand( eData, 66 ) );
-    subRound( D, E, A, B, C, f4, K4, expand( eData, 67 ) );
-    subRound( C, D, E, A, B, f4, K4, expand( eData, 68 ) );
-    subRound( B, C, D, E, A, f4, K4, expand( eData, 69 ) );
-    subRound( A, B, C, D, E, f4, K4, expand( eData, 70 ) );
-    subRound( E, A, B, C, D, f4, K4, expand( eData, 71 ) );
-    subRound( D, E, A, B, C, f4, K4, expand( eData, 72 ) );
-    subRound( C, D, E, A, B, f4, K4, expand( eData, 73 ) );
-    subRound( B, C, D, E, A, f4, K4, expand( eData, 74 ) );
-    subRound( A, B, C, D, E, f4, K4, expand( eData, 75 ) );
-    subRound( E, A, B, C, D, f4, K4, expand( eData, 76 ) );
-    subRound( D, E, A, B, C, f4, K4, expand( eData, 77 ) );
-    subRound( C, D, E, A, B, f4, K4, expand( eData, 78 ) );
-    subRound( B, C, D, E, A, f4, K4, expand( eData, 79 ) );
+#define M(i) ( tm =   x[i&0x0f] ^ x[(i-14)&0x0f] \
+		    ^ x[(i-8)&0x0f] ^ x[(i-3)&0x0f] \
+	       , (x[i&0x0f] = (tm << 1) | (tm >> 31)) )
 
-    /* Build message digest */
-    hd->h0 += A;
-    hd->h1 += B;
-    hd->h2 += C;
-    hd->h3 += D;
-    hd->h4 += E;
+#define R(a,b,c,d,e,f,k,m)  do { e += rol( 5, a )     \
+				      + f( b, c, d )  \
+				      + k	      \
+				      + m;	      \
+				 b = rol( 30, b );    \
+			       } while(0)
+    R( a, b, c, d, e, F1, K1, x[ 0] );
+    R( e, a, b, c, d, F1, K1, x[ 1] );
+    R( d, e, a, b, c, F1, K1, x[ 2] );
+    R( c, d, e, a, b, F1, K1, x[ 3] );
+    R( b, c, d, e, a, F1, K1, x[ 4] );
+    R( a, b, c, d, e, F1, K1, x[ 5] );
+    R( e, a, b, c, d, F1, K1, x[ 6] );
+    R( d, e, a, b, c, F1, K1, x[ 7] );
+    R( c, d, e, a, b, F1, K1, x[ 8] );
+    R( b, c, d, e, a, F1, K1, x[ 9] );
+    R( a, b, c, d, e, F1, K1, x[10] );
+    R( e, a, b, c, d, F1, K1, x[11] );
+    R( d, e, a, b, c, F1, K1, x[12] );
+    R( c, d, e, a, b, F1, K1, x[13] );
+    R( b, c, d, e, a, F1, K1, x[14] );
+    R( a, b, c, d, e, F1, K1, x[15] );
+    R( e, a, b, c, d, F1, K1, M(16) );
+    R( d, e, a, b, c, F1, K1, M(17) );
+    R( c, d, e, a, b, F1, K1, M(18) );
+    R( b, c, d, e, a, F1, K1, M(19) );
+    R( a, b, c, d, e, F2, K2, M(20) );
+    R( e, a, b, c, d, F2, K2, M(21) );
+    R( d, e, a, b, c, F2, K2, M(22) );
+    R( c, d, e, a, b, F2, K2, M(23) );
+    R( b, c, d, e, a, F2, K2, M(24) );
+    R( a, b, c, d, e, F2, K2, M(25) );
+    R( e, a, b, c, d, F2, K2, M(26) );
+    R( d, e, a, b, c, F2, K2, M(27) );
+    R( c, d, e, a, b, F2, K2, M(28) );
+    R( b, c, d, e, a, F2, K2, M(29) );
+    R( a, b, c, d, e, F2, K2, M(30) );
+    R( e, a, b, c, d, F2, K2, M(31) );
+    R( d, e, a, b, c, F2, K2, M(32) );
+    R( c, d, e, a, b, F2, K2, M(33) );
+    R( b, c, d, e, a, F2, K2, M(34) );
+    R( a, b, c, d, e, F2, K2, M(35) );
+    R( e, a, b, c, d, F2, K2, M(36) );
+    R( d, e, a, b, c, F2, K2, M(37) );
+    R( c, d, e, a, b, F2, K2, M(38) );
+    R( b, c, d, e, a, F2, K2, M(39) );
+    R( a, b, c, d, e, F3, K3, M(40) );
+    R( e, a, b, c, d, F3, K3, M(41) );
+    R( d, e, a, b, c, F3, K3, M(42) );
+    R( c, d, e, a, b, F3, K3, M(43) );
+    R( b, c, d, e, a, F3, K3, M(44) );
+    R( a, b, c, d, e, F3, K3, M(45) );
+    R( e, a, b, c, d, F3, K3, M(46) );
+    R( d, e, a, b, c, F3, K3, M(47) );
+    R( c, d, e, a, b, F3, K3, M(48) );
+    R( b, c, d, e, a, F3, K3, M(49) );
+    R( a, b, c, d, e, F3, K3, M(50) );
+    R( e, a, b, c, d, F3, K3, M(51) );
+    R( d, e, a, b, c, F3, K3, M(52) );
+    R( c, d, e, a, b, F3, K3, M(53) );
+    R( b, c, d, e, a, F3, K3, M(54) );
+    R( a, b, c, d, e, F3, K3, M(55) );
+    R( e, a, b, c, d, F3, K3, M(56) );
+    R( d, e, a, b, c, F3, K3, M(57) );
+    R( c, d, e, a, b, F3, K3, M(58) );
+    R( b, c, d, e, a, F3, K3, M(59) );
+    R( a, b, c, d, e, F4, K4, M(60) );
+    R( e, a, b, c, d, F4, K4, M(61) );
+    R( d, e, a, b, c, F4, K4, M(62) );
+    R( c, d, e, a, b, F4, K4, M(63) );
+    R( b, c, d, e, a, F4, K4, M(64) );
+    R( a, b, c, d, e, F4, K4, M(65) );
+    R( e, a, b, c, d, F4, K4, M(66) );
+    R( d, e, a, b, c, F4, K4, M(67) );
+    R( c, d, e, a, b, F4, K4, M(68) );
+    R( b, c, d, e, a, F4, K4, M(69) );
+    R( a, b, c, d, e, F4, K4, M(70) );
+    R( e, a, b, c, d, F4, K4, M(71) );
+    R( d, e, a, b, c, F4, K4, M(72) );
+    R( c, d, e, a, b, F4, K4, M(73) );
+    R( b, c, d, e, a, F4, K4, M(74) );
+    R( a, b, c, d, e, F4, K4, M(75) );
+    R( e, a, b, c, d, F4, K4, M(76) );
+    R( d, e, a, b, c, F4, K4, M(77) );
+    R( c, d, e, a, b, F4, K4, M(78) );
+    R( b, c, d, e, a, F4, K4, M(79) );
+
+    /* update chainig vars */
+    hd->h0 += a;
+    hd->h1 += b;
+    hd->h2 += c;
+    hd->h3 += d;
+    hd->h4 += e;
 }
 
 
