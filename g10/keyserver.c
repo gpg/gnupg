@@ -811,8 +811,9 @@ keyserver_search(STRLIST tokens)
     return 0;
 }
 
-/* Count is just for cosmetics.  If it is too small, it will grow
-   safely.  If negative it disables the "Key x-y of z" messages. */
+/* Count and searchstr are just for cosmetics.  If the count is too
+   small, it will grow safely.  If negative it disables the "Key x-y
+   of z" messages. */
 void 
 keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 {
@@ -823,13 +824,7 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
   char *answer;
 
   if(count==0)
-    {
-      if(searchstr)
-	log_info(_("key \"%s\" not found on keyserver\n"),searchstr);
-      else
-	log_info(_("key not found on keyserver\n"));
-      return;
-    }
+    goto notfound;
 
   if(count<0)
     {
@@ -857,7 +852,8 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
       if(validcount && (i-1)%10==0)
 	{
 	  printf("Keys %d-%d of %d",i,(i+9<count)?i+9:count,count);
-	  printf(" for \"%s\"",searchstr);
+	  if(searchstr)
+	    printf(" for \"%s\"",searchstr);
 	  printf("\n");
 	}
 
@@ -870,6 +866,12 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 	}
       else
 	i--;
+
+      if(rl==0 && i==1)
+	{
+	  count=0;
+	  break;
+	}
 
       if(i%10==0 || rl==0)
 	{
@@ -896,4 +898,14 @@ keyserver_search_prompt(IOBUF buffer,int count,const char *searchstr)
 
   m_free(keyids);
   m_free(line);
+
+ notfound:
+  if(count==0)
+    {
+      if(searchstr)
+	log_info(_("key \"%s\" not found on keyserver\n"),searchstr);
+      else
+	log_info(_("key not found on keyserver\n"));
+      return;
+    }
 }

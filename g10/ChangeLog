@@ -1,3 +1,12 @@
+2002-03-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_search_prompt): Detect a "no keys found"
+	case even if the helper program does not explicitly say how many
+	keys were found.
+
+	* hkp.c (parse_hkp_index): Bug fix - don't report non-revoked keys
+	as revoked in HKP key searches.
+
 2002-02-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* hkp.c (parse_hkp_index): Catch corruption in HKP index lines

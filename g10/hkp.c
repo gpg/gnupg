@@ -281,6 +281,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 
       if(strncmp(line,"     ",5)!=0)
 	{
+	  revoked=0;
 	  m_free(key);
 	  m_free(uid);
 	  uid=NULL;
