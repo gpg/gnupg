@@ -1,5 +1,5 @@
 /* gpgsplit.c - An OpenPGP packet splitting tool
- * Copyright (C) 2001 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
