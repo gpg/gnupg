@@ -472,7 +472,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 {
   char *answer;
 
-  if(count)
+  if(count && opt.command_fd==-1)
     {
       static int from=1;
       tty_printf("Keys %d-%d of %d for \"%s\".  ",from,numdesc,count,search);
@@ -514,7 +514,7 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 static void
 keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 {
-  int i=0,validcount=0,started=0,count=1;
+  int i=0,validcount=0,started=0,header=0,count=1;
   unsigned int maxlen,buflen;
   KEYDB_SEARCH_DESC *desc;
   byte *line=NULL;
@@ -530,6 +530,21 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 
       maxlen=1024;
       rl=iobuf_read_line(buffer,&line,&buflen,&maxlen);
+
+      if(opt.with_colons)
+	{
+	  if(!header && ascii_strncasecmp("SEARCH ",line,7)==0
+	     && ascii_strncasecmp(" BEGIN",&line[strlen(line)-7],6)==0)
+	    {
+	      header=1;
+	      continue;
+	    }
+	  else if(ascii_strncasecmp("SEARCH ",line,7)==0
+		  && ascii_strncasecmp(" END",&line[strlen(line)-5],4)==0)
+	    continue;
+
+	  printf("%s",line);
+	}
 
       /* Look for an info: line.  The only current info: values
 	 defined are the version and key count. */
@@ -617,7 +632,9 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 		numlines=0;
 	    }
 
-	  print_keyrec(i+1,keyrec);
+
+	  if(!opt.with_colons)
+	    print_keyrec(i+1,keyrec);
 	  numlines+=keyrec->lines;
 	  iobuf_close(keyrec->uidbuf);
 	  m_free(keyrec);

@@ -1,5 +1,12 @@
 2002-11-04  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (keyserver_search_prompt): When --with-colons is
+	enabled, just dump the raw keyserver protocol to stdout and don't
+	print the menu.
+
+	* keyserver.c (show_prompt): Don't show a prompt when command-fd
+	is being used.
+
 	* trustdb.c (trust_model_string, check_trustdb, update_trustdb,
 	validate_one_keyblock): It's not clear what a trustdb rebuild or
 	check means with a trust model other than "classic" or "openpgp",
