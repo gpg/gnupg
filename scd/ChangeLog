@@ -1,5 +1,18 @@
 2004-04-26  Werner Koch  <wk@gnupg.org>
 
+	* app-common.h: New members FNC.DEINIT and APP_LOCAL.
+	* app.c (release_application): Call new deconstructor.
+	* app-openpgp.c (do_deinit): New.
+	(get_cached_data, flush_cache_item, flush_cache_after_error)
+	(flush_cache): New.
+	(get_one_do): Replaced arg SLOT by APP.  Make used of cached data.
+	(verify_chv2, verify_chv3): Flush some cache item after error.
+	(do_change_pin): Ditto.
+	(do_sign): Ditto.
+	(do_setattr): Flush cache item.
+	(do_genkey): Flush the entire cache.
+	(compare_fingerprint): Use cached data.
+
 	* scdaemon.c (main): Do the last change the usual way. This is so
 	that we can easily test for versioned config files above.
 

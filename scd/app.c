@@ -116,6 +116,12 @@ release_application (app_t app)
   if (!app)
     return;
 
+  if (app->fnc.deinit)
+    {
+      app->fnc.deinit (app);
+      app->fnc.deinit = NULL;
+    }
+
   xfree (app->serialno);
   xfree (app);
 }

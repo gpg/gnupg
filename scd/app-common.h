@@ -23,6 +23,8 @@
 
 #include <ksba.h>
 
+struct app_local_s;  /* Defined by all app-*.c.  */
+
 struct app_ctx_s {
   int initialized;  /* The application has been initialied and the
                        function pointers may be used.  Note that for
@@ -37,7 +39,9 @@ struct app_ctx_s {
   int force_chv1;   /* True if the card does not cache CHV1. */
   int did_chv2;
   int did_chv3;
+  struct app_local_s *app_local;  /* Local to the application. */
   struct {
+    void (*deinit) (app_t app);
     int (*learn_status) (app_t app, ctrl_t ctrl);
     int (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
@@ -74,7 +78,6 @@ struct app_ctx_s {
                       int (pincb)(void*, const char *, char **),
                       void *pincb_arg);
   } fnc;
-
 
 };
 
