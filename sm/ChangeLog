@@ -9,6 +9,8 @@
 	* keylist.c (list_cert_colon): Really print the algorithm and key
 	length.
 	(list_cert_raw, list_cert_std): Ditto.
+	(list_cert_colon): Reorganized to be able to tell whether a root
+	certificate is trusted.
 
 	* gpgsm.c: New option --debug-allow-core-dump.
 

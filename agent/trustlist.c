@@ -1,5 +1,5 @@
 /* trustlist.c - Maintain the list of trusted keys
- *	Copyright (C) 2002 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -41,10 +41,13 @@ static const char headerblurb[] =
 "# with optional white spaces, followed by exactly 40 hex character,\n"
 "# optioanlly followed by a flag character which my either be 'P', 'S'\n"
 "# or '*'. Additional data delimited with by a white space is ignored.\n"
+"# NOTE: You should give the gpg-agent a HUP after editing this file.\n"
 "\n";
 
 
 static FILE *trustfp;
+static int   trustfp_used; /* Counter to track usage of TRUSTFP. */
+static int   reload_trustlist_pending;
 
 
 static int
@@ -164,7 +167,7 @@ read_list (char *key, int *keyflag)
   return 0;
 }
 
-/* check whether the given fpr is in our trustdb.  We expect FPR to be
+/* Check whether the given fpr is in our trustdb.  We expect FPR to be
    an all uppercase hexstring of 40 characters. */
 int 
 agent_istrusted (const char *fpr)
@@ -173,25 +176,31 @@ agent_istrusted (const char *fpr)
   static char key[41];
   int keyflag;
 
+  trustfp_used++;
   if (trustfp)
     rewind (trustfp);
   while (!(rc=read_list (key, &keyflag)))
     {
       if (!strcmp (key, fpr))
-        return 0;
+        {
+          trustfp_used--;
+          return 0;
+        }
     }
   if (rc != -1)
     {
-      /* error in the trustdb - close it to give the user a chance for
+      /* Error in the trustdb - close it to give the user a chance for
          correction */
-      fclose (trustfp);
+      if (trustfp)
+        fclose (trustfp);
       trustfp = NULL;
     }
+  trustfp_used--;
   return rc;
 }
 
 
-/* write all trust entries to FP */
+/* Write all trust entries to FP. */
 int 
 agent_listtrusted (void *assuan_context)
 {
@@ -199,6 +208,7 @@ agent_listtrusted (void *assuan_context)
   static char key[51];
   int keyflag;
 
+  trustfp_used++;
   if (trustfp)
     rewind (trustfp);
   while (!(rc=read_list (key, &keyflag)))
@@ -213,11 +223,13 @@ agent_listtrusted (void *assuan_context)
     rc = 0;
   if (rc)
     {
-      /* error in the trustdb - close it to give the user a chance for
+      /* Error in the trustdb - close it to give the user a chance for
          correction */
-      fclose (trustfp);
+      if (trustfp)
+        fclose (trustfp);
       trustfp = NULL;
     }
+  trustfp_used--;
   return rc;
 }
 
@@ -252,7 +264,7 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
     }    
   xfree (fname);
 
-
+  trustfp_used++;
   if (trustfp)
     rewind (trustfp);
   while (!(rc=read_list (key, &keyflag)))
@@ -260,14 +272,21 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
       if (!strcmp (key, fpr))
         return 0;
     }
-  fclose (trustfp);
+  if (trustfp)
+    fclose (trustfp);
   trustfp = NULL;
   if (rc != -1)
-    return rc;   /* error in the trustdb */
+    {
+      trustfp_used--;
+      return rc;   /* Error in the trustlist. */
+    }
 
   /* This feature must explicitly been enabled. */
   if (!opt.allow_mark_trusted)
-    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    {
+      trustfp_used--;
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    }
 
   /* insert a new one */
   if (asprintf (&desc,
@@ -275,42 +294,62 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
                 "  \"%s\"%%0A"
                 "has the fingerprint:%%0A"
                 "  %s", name, fpr) < 0 )
-    return out_of_core ();
+    {
+      trustfp_used--;
+      return out_of_core ();
+    }
   rc = agent_get_confirmation (ctrl, desc, "Correct", "No");
   free (desc);
   if (rc)
-    return rc;
+    {
+      trustfp_used--;
+      return rc;
+    }
 
   if (asprintf (&desc,
                 "Do you ultimately trust%%0A"
                 "  \"%s\"%%0A"
                 "to correctly certify user certificates?",
                 name) < 0 )
-    return out_of_core ();
+    {
+      trustfp_used--;
+      return out_of_core ();
+    }
   rc = agent_get_confirmation (ctrl, desc, "Yes", "No");
   free (desc);
   if (rc)
-    return rc;
+    {
+      trustfp_used--;
+      return rc;
+    }
 
-  /* now check again to avoid duplicates.  Also open in append mode now */
+  /* Now check again to avoid duplicates.  Also open in append mode now. */
   rc = open_list (1);
   if (rc)
-    return rc;
+    {
+      trustfp_used--;
+      return rc;
+    }
   rewind (trustfp);
   while (!(rc=read_list (key, &keyflag)))
     {
       if (!strcmp (key, fpr))
-        return 0;
+        {
+          trustfp_used--;
+          return 0;
+        }
     }
   if (rc != -1)
     {
-      fclose (trustfp);
+      if (trustfp)
+        fclose (trustfp);
       trustfp = NULL;
-      return rc;   /* error in the trustdb */
+      trustfp_used--;
+      return rc;   /* Error in the trustlist. */
     }
   rc = 0;
 
-  /* append the key */
+  /* Append the key. */
   fflush (trustfp);
   fputs ("\n# ", trustfp);
   print_sanitized_string (trustfp, name, 0);
@@ -322,5 +361,33 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
   if (fclose (trustfp))
     rc = gpg_error (gpg_err_code_from_errno (errno));
   trustfp = NULL;
+  trustfp_used--;
   return rc;
+}
+
+
+void
+agent_trustlist_housekeeping (void)
+{
+  if (reload_trustlist_pending && !trustfp_used)
+    {
+      if (trustfp)
+        {
+          fclose (trustfp);
+          trustfp = NULL;
+        }
+      reload_trustlist_pending = 0;
+    }
+}
+
+
+/* Not all editors are editing files in place, thus a changes
+   trustlist.txt won't be recognozed if we keep the file descriptor
+   open. This function may be used to explicitly close that file
+   descriptor, which will force a reopen in turn. */
+void
+agent_reload_trustlist (void)
+{
+  reload_trustlist_pending = 1;
+  agent_trustlist_housekeeping ();
 }

@@ -189,6 +189,8 @@ int agent_istrusted (const char *fpr);
 int agent_listtrusted (void *assuan_context);
 int agent_marktrusted (ctrl_t ctrl, const char *name,
                        const char *fpr, int flag);
+void agent_trustlist_housekeeping (void);
+void agent_reload_trustlist (void);
 
 
 /*-- divert-scd.c --*/

@@ -289,6 +289,7 @@ static void
 list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
                  FILE *fp, int have_secret)
 {
+  int rc;
   int idx;
   char truststring[2];
   char *p;
@@ -298,11 +299,38 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   gpg_error_t valerr;
   int algo;
   unsigned int nbits;
+  const char *chain_id;
+  char *chain_id_buffer = NULL;
+  int is_root = 0;
 
   if (ctrl->with_validation)
     valerr = gpgsm_validate_chain (ctrl, cert, NULL, 1, NULL, 0);
   else
     valerr = 0;
+
+
+  /* We need to get the fingerprint and the chaining ID in advance. */
+  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+  {
+    ksba_cert_t next;
+
+    rc = gpgsm_walk_cert_chain (cert, &next);
+    if (!rc) /* We known the issuer's certificate. */
+      {
+        p = gpgsm_get_fingerprint_hexstring (next, GCRY_MD_SHA1);
+        chain_id_buffer = p;
+        chain_id = chain_id_buffer;
+        ksba_cert_release (next);
+      }
+    else if (rc == -1)  /* We have reached the root certificate. */
+      {
+        chain_id = fpr;
+        is_root = 1;
+      }
+    else
+      chain_id = NULL;
+  }
+
 
   fputs (have_secret? "crs:":"crt:", fp);
   truststring[0] = 0;
@@ -327,11 +355,23 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
           && *not_after && strcmp (current_time, not_after) > 0 )
         *truststring = 'e';
     }
+
+  /* Is we have no truststring yet (i.e. the certificate might be
+     good) and this is a root certificate, we ask the agent whether
+     this is a trusted root certificate. */
+  if (!*truststring && is_root)
+    {
+      rc = gpgsm_agent_istrusted (ctrl, cert);
+      if (!rc)
+        *truststring = 'u';  /* Yes, we trust this one (ultimately). */
+      else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
+        *truststring = 'n';  /* No, we do not trust this one. */
+      /* (in case of an error we can't tell anything.) */
+    }
   
   if (*truststring)
     fputs (truststring, fp);
 
-  fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
   algo = gpgsm_get_key_algo_info (cert, &nbits);
   fprintf (fp, ":%u:%d:%s:", nbits, algo, fpr+24);
 
@@ -379,27 +419,12 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   /* FPR record */
   fprintf (fp, "fpr:::::::::%s:::", fpr);
   /* Print chaining ID (field 13)*/
-  {
-    ksba_cert_t next;
-    int rc;
-    
-    rc = gpgsm_walk_cert_chain (cert, &next);
-    if (!rc) /* We known the issuer's certificate. */
-      {
-        p = gpgsm_get_fingerprint_hexstring (next, GCRY_MD_SHA1);
-        fputs (p, fp);
-        xfree (p);
-        ksba_cert_release (next);
-      }
-    else if (rc == -1)  /* We reached the root certificate. */
-      {
-        fputs (fpr, fp);
-      }
-  }
+  if (chain_id)
+    fputs (chain_id, fp);
   putc (':', fp);
   putc ('\n', fp);
-  xfree (fpr); fpr = NULL;
-
+  xfree (fpr); fpr = NULL; chain_id = NULL;
+  xfree (chain_id_buffer); chain_id_buffer = NULL;
 
   if (opt.with_key_data)
     {

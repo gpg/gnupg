@@ -1083,6 +1083,7 @@ handle_signal (int signo)
                 "re-reading configuration and flushing cache\n");
       agent_flush_cache ();
       reread_configuration ();
+      agent_reload_trustlist ();
       break;
       
     case SIGUSR1:
@@ -1129,6 +1130,12 @@ start_connection_thread (void *arg)
 
   if (opt.verbose)
     log_info ("handler for fd %d started\n", fd);
+
+  /* FIXME: Move this housekeeping into a ticker function.  Calling it
+     for each connection should work but won't work anymore if our
+     cleints start to keep connections. */
+  agent_trustlist_housekeeping ();
+
   start_command_handler (-1, fd);
   if (opt.verbose)
     log_info ("handler for fd %d terminated\n", fd);

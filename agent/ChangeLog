@@ -1,3 +1,11 @@
+2004-05-11  Werner Koch  <wk@gnupg.org>
+
+	* gpg-agent.c (handle_signal): Reload the trustlist on SIGHUP.
+	(start_connection_thread): Hack to simulate a ticker.
+	* trustlist.c (agent_trustlist_housekeeping) 
+	(agent_reload_trustlist): New.  Protected all global functions
+	here with a simple counter which is sufficient for Pth.
+
 2004-05-03  Werner Koch  <wk@gnupg.org>
 
 	* gpg-agent.c: Remove help texts for options lile --lc-ctype.
