@@ -231,6 +231,13 @@ check_signatures_trust( PKT_signature *sig )
  * We don't have the trustdb , so we have to provide some stub functions
  * instead
  */
+
+int
+is_disabled(void *dummy,u32 *keyid)
+{
+  return 0;
+}
+
 int
 get_validity_info (PKT_public_key *pk, const byte *namehash )
 {

@@ -1105,7 +1105,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
     }
 
     /* get the public key */
-    rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd);
+    rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd, 1);
     if( rc )
 	goto leave;
     if( fix_keyblock( keyblock ) )
@@ -2478,7 +2478,7 @@ menu_addrevoker( KBNODE pub_keyblock, KBNODE sec_keyblock, int sensitive )
       if(answer[0]=='\0' || answer[0]=='\004')
 	goto fail;
 
-      rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL);
+      rc=get_pubkey_byname(revoker_pk,answer,NULL,NULL,1);
 
       if(rc)
 	{
@@ -3376,7 +3376,10 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     return changed;
 }
 
-
+/* Note that update_ownertrust is going to mark the trustdb dirty when
+   enabling or disabling a key.  This is arguably sub-optimal as
+   disabled keys are still counted in the web of trust, but perhaps
+   not worth adding extra complexity to change. -ds */
 static int
 enable_disable_key( KBNODE keyblock, int disable )
 {

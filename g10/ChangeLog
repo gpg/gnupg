@@ -1,3 +1,30 @@
+2002-12-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* keydb.h, getkey.c (key_byname): Flag to enable or disable
+	including disabled keys.  Keys specified via keyid (i.e. 0x...)
+	are always included.
+
+	* getkey.c (get_pubkey_byname, get_seckey_byname2,
+	get_seckey_bynames), keyedit.c (keyedit_menu, menu_addrevoker):
+	Include disabled keys in these functions.
+
+	* pkclist.c (build_pk_list): Do not include disabled keys for -r
+	or the key prompt.  Do include disabled keys for the default key
+	and --encrypt-to.
+
+	* trustdb.h, trustdb.c (is_disabled): New skipfnc for skipping
+	disabled keys.
+
+	* gpgv.c (is_disabled): Stub.
+
+	* keygen.c (keygen_add_key_expire): Properly handle updating a key
+	expiration to a no-expiration value.
+
+	* keyedit.c (enable_disable_key): Comment.
+
+	* import.c (import_one): When in interactive mode and --verbose,
+	don't repeat some key information twice.
+
 2002-12-22  Timo Schulz  <ts@winpt.org>
 	
 	* import.c (print_import_check): New.
