@@ -1,85 +1,7 @@
-2001-12-21  David Shaw  <dshaw@jabberwocky.com>
+2001-12-22  Timo Schulz <ts@winpt.org>
 
-	* Makefile.am: add exec.c, exec.h, photoid.c, and photoid.h
-
-	* build-packet.c (build_attribute_subpkt): new function to build
-	the raw attribute subpacket.  Note that attribute subpackets have
-	the same format as signature subpackets.
-
-	* exec.c: new file with generic exec-a-program functionality.
-	Used by both photo IDs and keyserver helpers.  This is pretty much
-	the same code that used to be keyserver specific, with some
-	changes to be usable generically.
-
-	* free-packet.c (free_attributes (new)): function to free an
-	attribute packet.
-	
-	* gpgv.c: added stub show_photo
-	
-	* keyedit.c (keyedit_menu, menu_adduid, menu_showphoto): can add a
-	photo (calls generate_photo_id), or display a photo (calls
-	show_photo) from the --edit menu.  New commands are "addphoto",
-	and "delphoto" (same as "deluid").
-
-	* keylist.c (list_keyblock_print): show photos during key list if
-	--show-photos enabled.
-	
-	* keyserver.c (keyserver_spawn): use the generic exec_xxx
-	functions to call keyserver helper.
-
-	* g10.c, options.h: three new options - --{no-}show-photos, and
-	--photo-viewer to give the command line to display a picture.
-
-	* options.skel: instructions for the photo viewer
-	
-	* parse-packet.c (parse_user_id, setup_user_id (new)): common code
-	for both user IDs and attribute IDs moved to setup_user_id.
-
-	* parse-packet.c (make_attribute_uidname (new)): constructs a fake
-	"name" for attribute packets (e.g. "[image of size ...]")
-
-	* parse-packet.c (parse_attribute (replaces parse_photo_id),
-	parse_attribute_subpkts): Builds an array of individual
-	attributes.  Currently only handles attribute image / type jpeg
-	subpackets.
-
-	* sign.c (hash_uid): Fix bug in signing attribute (formerly
-	photo_id) packets.
-
-	* packet.h, and callers: globally change "photo_id" to "attribute"
-	and add structures for attributes.  The packet format is generic
-	attributes, even though the only attribute type thus far defined
-	is jpeg.
-
-2001-12-21  David Shaw  <dshaw@jabberwocky.com>
-
-	* parse-packet.c (can_handle_critical): Can handle critical
-	revocation subpackets now.
-
-	* trustdb.c (mark_usable_uid_certs): Disregard revocations for
-	nonrevocable sigs.  Note that this allows a newer revocable
-	signature to override an older nonrevocable signature.
-
-	* sign.c (make_keysig_packet): add a duration field and change all
-	callers.  This makes make_keysig_packet closer to
-	write_signature_packets and removes some duplicated expiration
-	code.
-
-	* keyedit.c (keyedit_menu, menu_revsig, sign_uids,
-	sign_mk_attrib): Add nrsign command, don't allow revoking a
-	nonrevocable signature,
-
-	* g10.c (main): Add --nrsign option to nonrevocably sign a key
-	from the command line.
-
-	* build-packet.c (build_sig_subpkt_from_sig): Comment to explain
-	the use of CRITICAL.
-
-2001-12-21  Werner Koch  <wk@gnupg.org>
-
-	* g10.c. options.h : New option --show-keyring
-	* getkey.c (get_ctx_handle): New.
-	* keylist.c (list_one): Implement option here.  By David Champion. 
+    * encode.c (encode_simple, encode_crypt): Use is_file_compressed
+    to avoid to compress compressed files.
 
 2001-12-20  David Shaw  <dshaw@jabberwocky.com>
 
@@ -115,8 +37,7 @@
 
 2001-12-19  Werner Koch  <wk@gnupg.org>
 
-	* g10.c, passphrase.c, gpgv.c [CYGWIN32]: Allow this as an alias
-	for MINGW32.
+	* g10.c, passphrase.c [CYGWIN32]: Allow this as an alias for MINGW32.
 
 2001-12-18  David Shaw  <dshaw@jabberwocky.com>
 

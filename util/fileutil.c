@@ -184,4 +184,46 @@ print_fname_stdin( const char *s )
     return s;
 }
 
+/**
+ * Check if the file is compressed.
+ **/
+int
+is_file_compressed(const char *s, int *r_status)
+{
+    IOBUF a;
+    int i, rc = 0;
+    byte buf[4];
 
+    const byte sigs[4][4] = {
+    {0x42, 0x5a, 0x68, 0x39}, /* bzip2 */
+    {0x1f, 0x8b, 0x08, 0x08}, /* gzip */
+    {0x50, 0x4b, 0x03, 0x04} /* (pk)zip */
+    };
+    
+    if (!s || *s == '-' || !r_status)
+        return 0; /* We can't check stdin or no file was given */
+    
+    if ( (a = iobuf_open(s)) == NULL ) {
+        *r_status = G10ERR_OPEN_FILE;
+        return 0;
+    }
+    
+    if (iobuf_get_filelength(a) < 4) {        
+        *r_status = 0;
+        goto leave;
+    }
+            
+    iobuf_read(a, buf, 4);
+    
+    for (i=0; i<DIM(sigs); i++) {
+        if (!memcmp(buf, sigs[i], 4)) {
+            *r_status = 0;
+            rc = 1;
+            break;
+        }            
+    }
+
+leave:    
+    iobuf_close(a);
+    return rc;
+}

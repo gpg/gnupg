@@ -1,3 +1,7 @@
+2001-12-22  Timo Schulz <ts@winpt.org>
+
+    * fileutil.c (is_file_compressed): New.
+
 2001-12-19  Werner Koch  <wk@gnupg.org>
 
 	* simple-gettext.c, w32reg.c [CYGWIN32]: Allow to use this file

@@ -85,6 +85,14 @@ encode_simple( const char *filename, int mode )
     memset( &zfx, 0, sizeof zfx);
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
+    
+    if (is_file_compressed(filename, &rc)) {
+    if (opt.verbose)
+        log_info("`%s' already compressed\n", filename);
+    do_compress = 0;        
+    }
+    if (rc)
+        return rc;
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {
@@ -244,7 +252,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     PKT_plaintext *pt = NULL;
-    int rc = 0;
+    int rc = 0, rc2 = 0;
     u32 filesize;
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
@@ -276,6 +284,16 @@ encode_crypt( const char *filename, STRLIST remusr )
 	  }
     }
 
+    if (is_file_compressed(filename, &rc2)) {
+    if (opt.verbose)
+        log_info("`%s' already compressed\n", filename);
+    do_compress = 0;        
+    }
+    if (rc2) {
+    rc = rc2;
+    goto leave;
+    }
+    
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {
 	log_error(_("can't open %s: %s\n"), filename? filename: "[stdin]",
