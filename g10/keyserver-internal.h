@@ -8,7 +8,7 @@
 #include "iobuf.h"
 #include "types.h"
 
-void parse_keyserver_options(char *options);
+int parse_keyserver_options(char *options);
 struct keyserver_spec *parse_keyserver_uri(char *uri,
 					   const char *configname,
 					   unsigned int configlineno);

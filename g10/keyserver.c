@@ -70,12 +70,13 @@ static struct parse_options keyserver_opts[]=
 static int keyserver_work(int action,STRLIST list,
 			  KEYDB_SEARCH_DESC *desc,int count);
 
-void 
+int
 parse_keyserver_options(char *options)
 {
-  char *tok,*arg;
+  int ret=1;
+  char *tok;
 
-  while((tok=argsep(&options,&arg)))
+  while((tok=optsep(&options)))
     {
       if(tok[0]=='\0')
 	continue;
@@ -108,6 +109,7 @@ parse_keyserver_options(char *options)
 	{
 	  /* All of the standard options have failed, so the option is
 	     destined for a keyserver plugin. */
+	  char *arg=argsplit(tok);
 
 	  if(arg)
 	    {
@@ -126,6 +128,8 @@ parse_keyserver_options(char *options)
 	    add_to_strlist(&opt.keyserver_options.other,tok);
 	}
     }
+
+  return ret;
 }
 
 struct keyserver_spec *

@@ -644,10 +644,10 @@ compliance_failure(void)
   opt.compliance=CO_GNUPG;
 }
 
-/* Break a string into option pieces.  Accepts single word options and
-   key=value argument options. */
+/* Break a string into successive option pieces.  Accepts single word
+   options and key=value argument options. */
 char *
-argsplit(char **stringp)
+optsep(char **stringp)
 {
   char *tok,*end;
 
@@ -692,47 +692,59 @@ argsplit(char **stringp)
   return tok;
 }
 
-/* Break an option or key=value option into key and value */
+/* Breaks an option value into key and value.  Returns NULL if there
+   is no value.  Note that "string" is modified to remove the =value
+   part. */
 char *
-argsep(char **stringp,char **arg)
+argsplit(char *string)
 {
-  char *tok;
+  char *equals,*arg=NULL;
 
-  *arg=NULL;
-
-  tok=argsplit(stringp);
-  if(tok)
+  equals=strchr(string,'=');
+  if(equals)
     {
-      char *equals;
-      equals=strchr(tok,'=');
-      if(equals)
+      char *space;
+
+      space=strchr(string,' ');
+      if(space)
 	{
-	  char *space;
-
-	  space=strchr(tok,' ');
-	  if(space)
-	    *space='\0';
-	  else
-	    *equals='\0';
-
-	  space=strrchr(equals+1,' ');
-	  if(space)
-	    *arg=space+1;
-	  else
-	    *arg=NULL;
+	  *space='\0';
+	  arg=space+1;
 	}
+      else
+	{
+	  *equals='\0';
+	  arg=equals+1;
+	}
+
+      space=strrchr(arg,' ');
+      if(space)
+	arg=space+1;
     }
 
-  return tok;
+  return arg;
+}
+
+/* Return the length of the initial token, leaving off any
+   argument. */
+static size_t
+optlen(const char *s)
+{
+  char *end=strpbrk(s," =");
+
+  if(end)
+    return end-s;
+  else
+    return strlen(s);
 }
 
 int
 parse_options(char *str,unsigned int *options,
 	      struct parse_options *opts,int noisy)
 {
-  char *tok,*arg;
+  char *tok;
 
-  while((tok=argsep(&str,&arg)))
+  while((tok=optsep(&str)))
     {
       int i,rev=0;
       char *otok=tok;
@@ -748,7 +760,7 @@ parse_options(char *str,unsigned int *options,
 
       for(i=0;opts[i].name;i++)
 	{
-	  size_t toklen=strlen(tok);
+	  size_t toklen=optlen(tok);
 
 	  if(ascii_strncasecmp(opts[i].name,tok,toklen)==0)
 	    {
@@ -778,7 +790,7 @@ parse_options(char *str,unsigned int *options,
 		{
 		  *options|=opts[i].bit;
 		  if(opts[i].value)
-		    *opts[i].value=arg?m_strdup(arg):NULL;
+		    *opts[i].value=argsplit(tok);
 		}
 	      break;
 	    }

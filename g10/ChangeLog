@@ -1,3 +1,12 @@
+2004-04-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* main.h, misc.c (optsep, argsplit, optlen, parse_options):
+	Simplify code and properly handle a partial match against an
+	option with an argument.
+
+	* keyserver-internal.h, keyserver.c (parse_keyserver_options): Use
+	new optsep and argsplit functions.
+
 2004-04-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, misc.c (argsplit): Refactor argsep into argsplit and
