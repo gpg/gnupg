@@ -1,5 +1,8 @@
 2004-04-27  Werner Koch  <wk@gnupg.org>
 
+	* keyserver.c (keyserver_spawn) [EXEC_TEMPFILE_ONLY]: Removed
+	setting use_temp_file because this option has been removed.
+
 	* g10.c: New commands --allow-admin and --deny-admin.
 	* options.h (opt): Add member ALLOW_ADMIN.
 
