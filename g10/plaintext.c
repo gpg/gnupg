@@ -109,14 +109,17 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	/* no filename or "-" given; write to stdout */
 	fp = stdout;
     }
-    else if( overwrite_filep( fname ) )
+    else if( (rc=overwrite_filep( fname )) ) {
+	if( rc == -1 )
+	    rc = G10ERR_CREATE_FILE;
 	goto leave;
+    }
 
     if( fp || nooutput )
 	;
     else if( !(fp = fopen(fname,"wb")) ) {
 	log_error("Error creating '%s': %s\n", fname, strerror(errno) );
-	rc = G10ERR_WRITE_FILE;
+	rc = G10ERR_CREATE_FILE;
 	goto leave;
     }
 
@@ -245,20 +248,43 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
 }
 
 
+static void
+do_hash( MD_HANDLE md, IOBUF fp, int textmode )
+{
+    text_filter_context_t tfx;
+    int c;
+
+    if( textmode ) {
+	memset( &tfx, 0, sizeof tfx);
+	iobuf_push_filter( fp, text_filter, &tfx );
+    }
+    while( (c = iobuf_get(fp)) != -1 )
+	md_putc(md, c );
+}
+
+
 /****************
  * Hash the given files and append the hash to hash context md.
  * If FILES is NULL, hash stdin.
  */
 int
-hash_datafiles( MD_HANDLE md, STRLIST files, int textmode )
+hash_datafiles( MD_HANDLE md, STRLIST files,
+		const char *sigfilename, int textmode )
 {
     IOBUF fp;
     STRLIST sl=NULL;
-    text_filter_context_t tfx;
-    int c;
 
-    if( !files )
+    if( !files ) {
+	/* check whether we can opne the signed material */
+	fp = open_sigfile( sigfilename );
+	if( fp ) {
+	    do_hash( md, fp, textmode );
+	    iobuf_close(fp);
+	    return 0;
+	}
+	/* no we can't (no sigfile) - read signed stuff from stdin */
 	add_to_strlist( &sl, "-");
+    }
     else
 	sl = files;
 
@@ -271,12 +297,7 @@ hash_datafiles( MD_HANDLE md, STRLIST files, int textmode )
 		free_strlist(sl);
 	    return G10ERR_OPEN_FILE;
 	}
-	if( textmode ) {
-	    memset( &tfx, 0, sizeof tfx);
-	    iobuf_push_filter( fp, text_filter, &tfx );
-	}
-	while( (c = iobuf_get(fp)) != -1 )
-	    md_putc(md, c );
+	do_hash( md, fp, textmode );
 	iobuf_close(fp);
     }
 

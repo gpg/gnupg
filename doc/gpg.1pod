@@ -55,7 +55,10 @@ B<--verify> [[I<sigfile>] {I<signed-files>}]
     detached signature when not used in batch mode). If
     only a sigfile is given, it may be a complete signature
     or a detached signature, in which case the signed stuff
-    is expected from stdin. With more than 1 argument, the
+    is expected in a file without the I<.sig> or I<.asc>
+    extension (if such a file does not exist it is expected
+    at stdin - use B<-> as filename to force a read from
+    stdin). With more than 1 argument, the
     first should be a detached signature and the remaining
     files are the signed stuff.
 

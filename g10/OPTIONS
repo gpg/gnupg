@@ -17,15 +17,7 @@
 #-----------------------------------------------
 #------------------- Commands ------------------
 #-----------------------------------------------
-# With some expections, these cannot be combined
-
-gen-prime
-# Generate a prime.
-# With one argument:  take it as the bitsize and make a simple prime of
-#		      this size
-# With two arguments: Generate a prime, usable for DL algorithms.
-# With three arguments: same as above, but a third argument indicates
-#			that a generator should also be calculated.
+# With some exceptions, these cannot be combined
 
 print-md algo
 # print the message digest of algorithm ALGO for stdin or all
@@ -53,4 +45,7 @@ compress-keys
 # algorithm with --compress-algo" - Default is to not compress keys, as
 # this is better for interoperability.
 
+compress-sigs
+# Normally, compressing of signatures does not make sense; so this
+# is disabled for detached signatures unless this option is used.
 

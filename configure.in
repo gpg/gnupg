@@ -182,7 +182,7 @@ fi
 dnl Checks for library functions.
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr rand strtoul mlock mmap)
-AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime)
+AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit)
 
 
 dnl check whether we have a random device

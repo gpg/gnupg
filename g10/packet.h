@@ -222,7 +222,7 @@ typedef enum {
 
 /*-- mainproc.c --*/
 int proc_packets( IOBUF a );
-int proc_signature_packets( IOBUF a, STRLIST signedfiles );
+int proc_signature_packets( IOBUF a, STRLIST signedfiles, const char *sigfile );
 int proc_encryption_packets( IOBUF a );
 int list_packets( IOBUF a );
 

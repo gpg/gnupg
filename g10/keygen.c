@@ -442,9 +442,9 @@ ask_keysize( int algo )
 	else if( nbits < 768 )
 	    tty_printf(_("keysize too small; 768 is smallest value allowed.\n"));
 	else if( nbits > 2048 ) {
-	    tty_printf(_("Keysizes larger than 2048 are not suggested, because "
+	    tty_printf(_("Keysizes larger than 2048 are not suggested because "
 			 "computations take REALLY long!\n"));
-	    answer = tty_get(_("Are you sure, that you want this keysize? "));
+	    answer = tty_get(_("Are you sure that you want this keysize? "));
 	    tty_kill_prompt();
 	    if( answer_is_yes(answer) ) {
 		m_free(answer);
@@ -685,7 +685,7 @@ ask_passphrase( STRING2KEY **ret_s2k )
 	    tty_printf(_(
 	    "You don't want a passphrase - this is probably a *bad* idea!\n"
 	    "I will do it anyway.  You can change your passphrase at any time,\n"
-	    "using this program with the option \"--change-passphrase\"\n\n"));
+	    "using this program with the option \"--change-passphrase\".\n\n"));
 	    break;
 	}
 	else

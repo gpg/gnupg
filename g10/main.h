@@ -47,6 +47,7 @@ void do_not_use_RSA(void);
 
 /*-- misc.c --*/
 void trap_unaligned(void);
+void disable_core_dumps(void);
 u16 checksum_u16( unsigned n );
 u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( MPI a );
@@ -119,7 +120,8 @@ int verify_signatures( int nfiles, char **files );
 int decrypt_message( const char *filename );
 
 /*-- plaintext.c --*/
-int hash_datafiles( MD_HANDLE md, STRLIST files, int textmode );
+int hash_datafiles( MD_HANDLE md, STRLIST files, const char *sigfilename,
+		    int textmode );
 
 /*-- signal.c --*/
 void init_signals(void);

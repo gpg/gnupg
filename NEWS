@@ -1,3 +1,13 @@
+Noteworthy changes in version 0.3.3
+-----------------------------------
+    * Removed options --gen-prime and --gen-random.
+
+    * Signatures are now checked even if the output file could not
+      be created. Command "--verify" tries to find the detached data.
+
+    * gpg now disables core dumps.
+
+
 Noteworthy changes in version 0.3.2
 -----------------------------------
     * Fixed some bugs when using --textmode (-seat)

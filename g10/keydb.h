@@ -25,6 +25,7 @@
 #include "packet.h"
 #include "cipher.h"
 
+#define MAX_FINGERPRINT_LEN 20
 
 
 /****************
@@ -80,9 +81,10 @@ struct pubkey_find_info {
     u32  keyid[2];
     unsigned nbits;
     byte pubkey_algo;
-    byte fingerprint[20];
+    byte fingerprint[MAX_FINGERPRINT_LEN];
     char userid[1];
 };
+
 
 
 /*-- pkclist.c --*/
@@ -128,8 +130,8 @@ unsigned nbits_from_sk( PKT_secret_key *sk );
 const char *datestr_from_pk( PKT_public_key *pk );
 const char *datestr_from_sk( PKT_secret_key *sk );
 const char *datestr_from_sig( PKT_signature *sig );
-byte *fingerprint_from_sk( PKT_secret_key *sk, size_t *ret_len );
-byte *fingerprint_from_pk( PKT_public_key *pk, size_t *ret_len );
+byte *fingerprint_from_sk( PKT_secret_key *sk, byte *buf. size_t *ret_len );
+byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
 
 /*-- kbnode.c --*/
 KBNODE new_kbnode( PACKET *pkt );

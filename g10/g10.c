@@ -25,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 
+/* #define MAINTAINER_OPTIONS */
 
 #include "packet.h"
 #include "iobuf.h"
@@ -85,8 +86,10 @@ static ARGPARSE_OPTS opts[] = {
     { 547, "enarmor", 0, N_("En-Armor a file or stdin") },
     { 555, "print-md" , 0, N_("|algo [files]|print message digests")},
     { 516, "print-mds" , 0, N_("print all message digests")},
+    #ifdef MAINTAINER_OPTIONS
     { 513, "gen-prime" , 0, "@" },
     { 548, "gen-random" , 0, "@" },
+    #endif
   #endif
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
@@ -165,6 +168,7 @@ static ARGPARSE_OPTS opts[] = {
     { 508, "check-sig",0, "@" }, /* alias */
     { 553, "skip-verify",0, "@" },
     { 557, "compress-keys",0, "@"},
+    { 566, "compress-sigs",0, "@"},
     { 559, "always-trust", 0, "@"},
     { 562, "emulate-checksum-bug", 0, "@"},
 
@@ -413,6 +417,7 @@ main( int argc, char **argv )
      */
     log_set_name("gpg");
     secure_random_alloc(); /* put random number into secure memory */
+    disable_core_dumps();
     init_signals();
   #endif
     i18n_init();
@@ -529,15 +534,17 @@ main( int argc, char **argv )
 	#endif /* !IS_G10 */
 
 	#ifdef IS_G10MAINT
-	  case 513: set_cmd( &cmd, aPrimegen); break;
-	  case 514: set_cmd( &cmd, aTest); break;
+	  #ifdef MAINTAINER_OPTIONS
+	    case 513: set_cmd( &cmd, aPrimegen); break;
+	    case 514: set_cmd( &cmd, aTest); break;
+	    case 548: set_cmd( &cmd, aGenRandom); break;
+	  #endif
 	  case 516: set_cmd( &cmd, aPrintMDs); break;
 	  case 531: set_cmd( &cmd, aListTrustDB); break;
 	  case 533: set_cmd( &cmd, aListTrustPath); break;
 	  case 540: break; /* dummy */
 	  case 546: set_cmd( &cmd, aDeArmor); break;
 	  case 547: set_cmd( &cmd, aEnArmor); break;
-	  case 548: set_cmd( &cmd, aGenRandom); break;
 	  case 555: set_cmd( &cmd, aPrintMD); break;
 	  case 564: set_cmd( &cmd, aListOwnerTrust); break;
 	#endif /* IS_G10MAINT */
@@ -596,6 +603,7 @@ main( int argc, char **argv )
 	  case 562: opt.emulate_bugs |= 1; break;
 	  case 563: set_cmd( &cmd, aExportSecret); break;
 	  case 565: opt.do_not_export_rsa = 1; break;
+	  case 566: opt.compress_sigs = 1; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -725,16 +733,16 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("--store [filename]"));
 	if( (rc = encode_store(fname)) )
-	    log_error("%s: store failed: %s\n",
-				 print_fname_stdin(fname), g10_errstr(rc) );
+	    log_error_f( print_fname_stdin(fname),
+			"store failed: %s\n", g10_errstr(rc) );
 	break;
     #ifdef IS_G10
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
 	    wrong_args(_("--symmetric [filename]"));
 	if( (rc = encode_symmetric(fname)) )
-	    log_error("%s: symmetric encryption failed: %s\n",
-			    print_fname_stdin(fname), g10_errstr(rc) );
+	    log_error_f(print_fname_stdin(fname),
+			"symmetric encryption failed: %s\n",g10_errstr(rc) );
 	break;
 
       case aEncr: /* encrypt the given file */
@@ -933,6 +941,7 @@ main( int argc, char **argv )
 	break;
 
 
+     #ifdef MAINTAINER_OPTIONS
       case aPrimegen:
 	if( argc == 1 ) {
 	    mpi_print( stdout, generate_public_prime( atoi(argv[0]) ), 1);
@@ -960,7 +969,9 @@ main( int argc, char **argv )
 	else
 	    usage(1);
 	break;
+      #endif /* MAINTAINER OPTIONS */
 
+      #ifdef MAINTAINER_OPTIONS
       case aGenRandom:
 	if( argc < 1 || argc > 2 )
 	    wrong_args("--gen-random level [hex]");
@@ -977,6 +988,7 @@ main( int argc, char **argv )
 	    }
 	}
 	break;
+      #endif /* MAINTAINER OPTIONS */
 
       case aPrintMD:
 	if( argc < 1)
@@ -1007,7 +1019,9 @@ main( int argc, char **argv )
 	}
 	break;
 
+     #ifdef MAINTAINER_OPTIONS
       case aTest: do_test( argc? atoi(*argv): 1 ); break;
+      #endif /* MAINTAINER OPTIONS */
 
       case aListTrustDB:
 	if( !argc )
@@ -1085,7 +1099,7 @@ do_not_use_RSA()
 
     if( !did_rsa_note ) {
 	did_rsa_note = 1;
-	log_info(_("RSA keys are depreciated; please consider "
+	log_info(_("RSA keys are deprecated; please consider "
 		   "creating a new key and use this key in the future\n"));
     }
 }
@@ -1194,10 +1208,12 @@ print_mds( const char *fname, int algo )
 
 
 
+#ifdef MAINTAINER_OPTIONS
 static void
 do_test(int times)
 {
     m_check(NULL);
 }
+#endif /* MAINTAINER OPTIONS */
 #endif /* IS_G10MAINT */
 

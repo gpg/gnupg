@@ -1,3 +1,8 @@
+Mon Jul 13 21:30:52 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* random.c (read_pool): Simple alloc if secure_alloc is not set.
+	(get_random_bits): Ditto.
+
 Thu Jul  9 13:01:14 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* dynload.c (load_extension): Function now nbails out if

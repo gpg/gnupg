@@ -47,6 +47,7 @@ struct {
     const char *homedir;
     int skip_verify;
     int compress_keys;
+    int compress_sigs;
     int always_trust;
     int rfc1991;
     unsigned emulate_bugs; /* bug emulation flags */

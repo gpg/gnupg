@@ -262,13 +262,13 @@ datestr_from_sig( PKT_signature *sig )
 /**************** .
  * Return a byte array with the fingerprint for the given PK/SK
  * The length of the array is returned in ret_len. Caller must free
- * the array.
+ * the array or provide array as buffer of length MAX_FINGERPRINT_LEN
  */
 
 byte *
-fingerprint_from_pk( PKT_public_key *pk, size_t *ret_len )
+fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 {
-    byte *p, *buf, *array;
+    byte *p, *buf;
     const char *dp;
     size_t len;
     unsigned n;
@@ -287,7 +287,8 @@ fingerprint_from_pk( PKT_public_key *pk, size_t *ret_len )
 	    m_free(buf);
 	}
 	md_final(md);
-	array = m_alloc( 16 );
+	if( !array )
+	    array = m_alloc( 16 );
 	len = 16;
 	memcpy(array, md_read(md, DIGEST_ALGO_MD5), 16 );
 	md_close(md);
@@ -297,7 +298,9 @@ fingerprint_from_pk( PKT_public_key *pk, size_t *ret_len )
 	md = do_fingerprint_md(pk);
 	dp = md_read( md, 0 );
 	len = md_digest_length( md_get_algo( md ) );
-	array = m_alloc( len );
+	assert( len <= MAX_FINGERPRINT_LEN );
+	if( !array )
+	    array = m_alloc( len );
 	memcpy(array, dp, len );
 	md_close(md);
     }
@@ -307,9 +310,9 @@ fingerprint_from_pk( PKT_public_key *pk, size_t *ret_len )
 }
 
 byte *
-fingerprint_from_sk( PKT_secret_key *sk, size_t *ret_len )
+fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
 {
-    byte *p, *buf, *array;
+    byte *p, *buf;
     const char *dp;
     size_t len;
     unsigned n;
@@ -328,7 +331,8 @@ fingerprint_from_sk( PKT_secret_key *sk, size_t *ret_len )
 	    m_free(buf);
 	}
 	md_final(md);
-	array = m_alloc( 16 );
+	if( !array )
+	    array = m_alloc( 16 );
 	len = 16;
 	memcpy(array, md_read(md, DIGEST_ALGO_MD5), 16 );
 	md_close(md);
@@ -338,7 +342,9 @@ fingerprint_from_sk( PKT_secret_key *sk, size_t *ret_len )
 	md = do_fingerprint_md_sk(sk);
 	dp = md_read( md, 0 );
 	len = md_digest_length( md_get_algo( md ) );
-	array = m_alloc( len );
+	assert( len <= MAX_FINGERPRINT_LEN );
+	if( !array )
+	    array = m_alloc( len );
 	memcpy(array, dp, len );
 	md_close(md);
     }

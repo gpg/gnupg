@@ -153,7 +153,7 @@ get_random_bits( size_t nbits, int level, int secure )
     size_t nbytes = (nbits+7)/8;
 
     MASK_LEVEL(level);
-    buf = secure? m_alloc_secure( nbytes ) : m_alloc( nbytes );
+    buf = secure && secure_alloc ? m_alloc_secure( nbytes ) : m_alloc( nbytes );
     read_pool( buf, nbytes, level );
     return buf;
 }
@@ -222,7 +222,7 @@ read_pool( byte *buffer, size_t length, int level )
 	needed = length - pool_balance;
 	if( needed > POOLSIZE )
 	    BUG();
-	p = m_alloc_secure( needed );
+	p = secure_alloc ? m_alloc_secure( needed ) : m_alloc(needed);
 	read_random_source( p, needed, 2 ); /* read /dev/random */
 	add_randomness( p, needed, 3);
 	m_free(p);

@@ -77,7 +77,7 @@ verify_signatures( int nfiles, char **files )
     sl = NULL;
     for(i=1 ; i < nfiles; i++ )
 	add_to_strlist( &sl, files[i] );
-    rc = proc_signature_packets( fp, sl );
+    rc = proc_signature_packets( fp, sl, sigfile );
     free_strlist(sl);
     iobuf_close(fp);
     return rc;

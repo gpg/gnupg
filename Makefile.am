@@ -17,5 +17,8 @@ dist-hook:
 		|| cp -p $(srcdir)/$$dir/$$i $(distdir)/$$dir/$$i; \
 	    done ; \
 	done
+	for file in po/cat-id-tbl.c po/gnupg.pot; do \
+	    rm $(distdir)/$$file || true ; \
+	done
 
 

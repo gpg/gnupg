@@ -339,8 +339,8 @@ fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
     byte *array, *p;
     size_t i, n;
 
-    p = array = pk? fingerprint_from_pk( pk, &n )
-		   : fingerprint_from_sk( sk, &n );
+    p = array = pk? fingerprint_from_pk( pk, NULL, &n )
+		   : fingerprint_from_sk( sk, NULL, &n );
     if( opt.with_colons ) {
 	printf("fpr:::::::::");
 	for(i=0; i < n ; i++, p++ )

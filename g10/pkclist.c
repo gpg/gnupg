@@ -63,7 +63,7 @@ query_ownertrust( ulong lid )
 	return 0;
     }
 
-    tty_printf(_("No ownertrust defined for %lu:\n"
+    tty_printf(_("No owner trust defined for %lu:\n"
 	       "%4u%c/%08lX %s \""), lid,
 	      nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
 	      (ulong)keyid[1], datestr_from_pk( pk ) );
@@ -143,7 +143,7 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
     while( !(rc=enum_trust_web( &context, &lid )) ) {
 	rc = get_ownertrust( lid, &trust );
 	if( rc )
-	    log_fatal("Ooops: couldn't get ownertrust for %lu\n", lid);
+	    log_fatal("Ooops: couldn't get owner trust for %lu\n", lid);
 	if( trust == TRUST_UNDEFINED || trust == TRUST_EXPIRED ||
 	    trust == TRUST_UNKNOWN ) {
 	    if( query_ownertrust( lid ) )
@@ -155,7 +155,7 @@ _("Could not find a valid trust path to the key.  Let's see whether we\n"
     enum_trust_web( &context, NULL ); /* close */
 
     if( !any )
-	tty_printf(_("No ownertrust values changed.\n\n") );
+	tty_printf(_("No owner trust values changed.\n\n") );
 
     return rc? rc : any? 0:-1;
 }
@@ -366,7 +366,7 @@ check_signatures_trust( PKT_signature *sig )
       case TRUST_MARGINAL:
 	write_status( STATUS_TRUST_MARGINAL );
 	log_info(_(
-	 "WARNING: This key is not certified with enough trusted signatures!\n"
+	 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 		));
 	log_info(_(
 	 "         It is not certain that the signature belongs to the owner.\n"

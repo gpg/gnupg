@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 
-EXTRA_DIST = DETAILS rfcs gpg.1pod gpg.1
+EXTRA_DIST = DETAILS rfcs gpg.1pod gpg.1 FAQ
 
 man_MANS = gpg.1
 

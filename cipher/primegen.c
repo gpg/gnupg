@@ -281,7 +281,6 @@ gen_prime( unsigned  nbits, int secret, int randomlevel )
     mods = m_alloc( no_of_small_prime_numbers * sizeof *mods );
     /* make nbits fit into MPI implementation */
     nlimbs = (nbits + BITS_PER_MPI_LIMB - 1) /	BITS_PER_MPI_LIMB;
-    assert( nlimbs );
     val_2  = mpi_alloc( nlimbs );
     mpi_set_ui(val_2, 2);
     val_3  = mpi_alloc( nlimbs );

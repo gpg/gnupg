@@ -86,6 +86,7 @@ encode_session_key( DEK *dek, unsigned nbits )
     frame[n++] = 2;
     i = nframe - 6 - dek->keylen;
     assert( i > 0 );
+    /* FIXME: replace the loop by a call to get_random_bits() */
     for( ; i ; i-- ) {
 	while( !(c = get_random_byte(1)) )
 	    ;

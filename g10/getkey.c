@@ -758,7 +758,7 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 		    else if( mode == 16 || mode == 20 ) {
 			size_t an;
 			byte *afp = fingerprint_from_pk(
-					k->pkt->pkt.public_key, &an );
+					k->pkt->pkt.public_key, NULL, &an );
 
 			if( DBG_CACHE ) {
 			    u32 aki[2];
@@ -897,7 +897,7 @@ lookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name )
 		    else if( mode == 16 || mode == 20 ) {
 			size_t an;
 			byte *afp = fingerprint_from_sk(
-					k->pkt->pkt.secret_key, &an );
+					k->pkt->pkt.secret_key, NULL, &an );
 			if( an == mode && !memcmp( afp, name, an)
 			    && ( !sk->pubkey_algo
 				 || sk->pubkey_algo

@@ -147,7 +147,7 @@ create_db( const char *fname )
     fp =fopen( fname, "w" );
     if( !fp )
 	log_fatal_f( fname, _("can't create %s: %s\n"), strerror(errno) );
-    fwrite_8( fp, 1 );
+    fwrite_8( fp, 2 );
     fwrite_8( fp, 'g' );
     fwrite_8( fp, 'p' );
     fwrite_8( fp, 'g' );
@@ -195,54 +195,66 @@ tdbio_dump_record( ulong rnum, TRUSTREC *rec, FILE *fp	)
       case RECTYPE_VER: fprintf(fp, "version\n");
 	break;
       case RECTYPE_DIR:
-	fprintf(fp, "dir keyid=%08lX, key=%lu, ctl=%lu, sig=%lu",
-		    (ulong)rec->r.dir.keyid[1],
-		    rec->r.dir.keyrec, rec->r.dir.ctlrec, rec->r.dir.sigrec );
-	if( rec->r.dir.no_sigs == 1 )
+	fprintf(fp, "dir %lu, keys=%lu, uids=%lu, cach=%lu, ot=%02x",
+		    rec->r.dir.lid,
+		    rec->r.dir.keylist,
+		    rec->r.dir.uidlist,
+		    rec->r.dir.cacherec,
+		    rec->r.dir.ownertrust );
+	if( rec->r.dir.sigflag == 1 )
 	    fputs(", (none)", fp );
-	else if( rec->r.dir.no_sigs == 2 )
+	else if( rec->r.dir.sigflag == 2 )
 	    fputs(", (invalid)", fp );
-	else if( rec->r.dir.no_sigs == 3 )
+	else if( rec->r.dir.sigflag == 3 )
 	    fputs(", (revoked)", fp );
-	else if( rec->r.dir.no_sigs )
+	else if( rec->r.dir.sigflag )
 	    fputs(", (??)", fp );
 	putc('\n', fp);
 	break;
-      case RECTYPE_KEY: fprintf(fp,
-		    "key %08lX, own=%lu, ownertrust=%02x, fl=%d\n",
-		   (ulong)rec->r.key.keyid[1],
-		   rec->r.key.owner, rec->r.key.ownertrust,
+      case RECTYPE_KEY:
+	fprintf(fp, "key %lu, next=%lu, algo=%d, flen=%d\n",
+		   rec->r.key.lid,
+		   rec->r.key.next,
+		   rec->r.key.pubkey_algo,
 		   rec->r.key.fingerprint_len );
 	break;
       case RECTYPE_UID:
-	if( !rec->r.uid.subtype )
-	    fprintf(fp,
-		    "uid %02x%02x, owner=%lu, chain=%lu, pref=%lu, otr=%02x\n",
-		   rec->r.uid.namehash[18], rec->r.uid.namehash[19],
-		   rec->r.uid.owner, rec->r.uid.chain, (ulong)rec->r.uid.prefrec,
-		   rec->r.uid.ownertrust );
-	else
-	    fprintf(fp,
-		    "uid subtype%d, owner=%lu, chain=%lu\n",
-		   rec->r.uid.subtype, rec->r.uid.owner, rec->r.uid.chain);
+	fprintf(fp, "uid %lu, next=%lu, pref=%lu, sig=%lu, hash=%02X%02X\n",
+		    rec->r.uid.lid,
+		    rec->r.uid.next,
+		    rec->r.uid.prefrec,
+		    rec->r.uid.siglist,
+		    rec->r.uid.namehash[18], rec->r.uid.namehash[19]);
 	break;
-      case RECTYPE_CTL: fprintf(fp, "ctl\n");
+      case RECTYPE_PREF:
+	fprintf(fp, "pref %lu, next=%lu\n",
+		    rec->r.uid.lid,
+		    rec->r.uid.next);
 	break;
       case RECTYPE_SIG:
-	fprintf(fp, "sigrec, owner=%lu, chain=%lu\n",
-			 rec->r.sig.owner, rec->r.sig.chain );
+	fprintf(fp, "sig %lu, next=%lu\n",
+			 rec->r.sig.lid, rec->r.sig.next );
 	for(i=any=0; i < SIGS_PER_RECORD; i++ ) {
-	    if( rec->r.sig.sig[i].local_id ) {
+	    if( rec->r.sig.sig[i].lid ) {
 		if( !any ) {
 		    putc('\t', fp);
 		    any++;
 		}
-		fprintf(fp, "  %lu:%02x", rec->r.sig.sig[i].local_id,
-					      rec->r.sig.sig[i].flag );
+		fprintf(fp, "  %lu:%02x", rec->r.sig.sig[i].lid,
+					  rec->r.sig.sig[i].flag );
 	    }
 	}
 	if( any )
 	    putc('\n', fp);
+	break;
+      case RECTYPE_CACH:
+	fprintf(fp, "cach\n");
+	break;
+      case RECTYPE_HTBL:
+	fprintf(fp, "htbl\n");
+	break;
+      case RECTYPE_HTBL:
+	fprintf(fp, "hlst\n");
 	break;
       default:
 	fprintf(fp, "%d (unknown)\n", rec->rectype );
@@ -287,8 +299,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
       case 0:  /* unused record */
 	break;
       case RECTYPE_VER: /* version record */
-	/* g10 was the original name */
-	if( memcmp(buf+1, "gpg", 3 ) && memcmp(buf+1, "g10", 3 ) ) {
+	if( memcmp(buf+1, "gpg", 3 ) ) {
 	    log_error_f( db_name, _("not a trustdb file\n") );
 	    rc = G10ERR_TRUSTDB;
 	}
@@ -306,50 +317,59 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 							     (ulong)recnum );
 	    rc = G10ERR_TRUSTDB;
 	}
-	if( rec->r.ver.version != 1 ) {
+	if( rec->r.ver.version != 2 ) {
 	    log_error_f( db_name, "invalid file version %d\n",
 							rec->r.ver.version );
 	    rc = G10ERR_TRUSTDB;
 	}
 	break;
       case RECTYPE_DIR:   /*directory record */
-	rec->r.dir.local_id = buftoulong(p); p += 4;
-	rec->r.dir.keyid[0] = buftou32(p); p += 4;
-	rec->r.dir.keyid[1] = buftou32(p); p += 4;
-	rec->r.dir.keyrec   = buftoulong(p); p += 4;
-	rec->r.dir.ctlrec   = buftoulong(p); p += 4;
-	rec->r.dir.sigrec   = buftoulong(p); p += 4;
-	rec->r.dir.no_sigs = *p++;
-	if( rec->r.dir.local_id != recnum ) {
-	    log_error_f( db_name, "dir local_id != recnum (%lu,%lu)\n",
-					(ulong)rec->r.dir.local_id,
-					(ulong)recnum );
+	rec->r.dir.lid	    = buftoulong(p); p += 4;
+	rec->r.dir.keylist  = buftoulong(p); p += 4;
+	rec->r.dir.uidlist  = buftoulong(p); p += 4;
+	rec->r.dir.cacherec = buftoulong(p); p += 4;
+	rec->r.dir.ownertrust = *p++;
+	rec->r.dir.sigflag    = *p++;
+	if( rec->r.dir.lid != recnum ) {
+	    log_error_f( db_name, "dir LID != recnum (%lu,%lu)\n",
+					 rec->r.dir.lid, (ulong)recnum );
 	    rc = G10ERR_TRUSTDB;
 	}
 	break;
       case RECTYPE_KEY:   /* public key record */
-	rec->r.key.owner    = buftoulong(p); p += 4;
-	rec->r.dir.keyid[0] = buftou32(p); p += 4;
-	rec->r.dir.keyid[1] = buftou32(p); p += 4;
+	rec->r.key.lid	    = buftoulong(p); p += 4;
+	rec->r.key.next     = buftoulong(p); p += 4;
+	p += 8;
 	rec->r.key.pubkey_algo = *p++;
 	rec->r.key.fingerprint_len = *p++;
 	if( rec->r.key.fingerprint_len < 1 || rec->r.key.fingerprint_len > 20 )
 	    rec->r.key.fingerprint_len = 20;
-	memcpy( rec->r.key.fingerprint, p, 20); p += 20;
-	rec->r.key.ownertrust = *p++;
+	memcpy( rec->r.key.fingerprint, p, 20);
 	break;
-      case RECTYPE_CTL:   /* control record */
-	rec->r.ctl.owner    = buftoulong(p); p += 4;
-	memcpy(rec->r.ctl.blockhash, p, 20); p += 20;
-	rec->r.ctl.trustlevel = *p++;
+      case RECTYPE_UID:   /* user id record */
+	rec->r.uid.lid	    = buftoulong(p); p += 4;
+	rec->r.uid.next     = buftoulong(p); p += 4;
+	rec->r.uid.prefrec  = buftoulong(p); p += 4;
+	rec->r.uid.siglist  = buftoulong(p); p += 4;
+	p += 2;
+	memcpy( rec->r.uid.namehash, p, 20);
+	break;
+      case RECTYPE_PREF:  /* preference record */
+	rec->r.pref.lid     = buftoulong(p); p += 4;
+	rec->r.pref.next    = buftoulong(p); p += 4;
 	break;
       case RECTYPE_SIG:
-	rec->r.sig.owner   = buftoulong(p); p += 4;
-	rec->r.sig.chain   = buftoulong(p); p += 4;
+	rec->r.sig.lid	   = buftoulong(p); p += 4;
+	rec->r.sig.next    = buftoulong(p); p += 4;
 	for(i=0; i < SIGS_PER_RECORD; i++ ) {
-	    rec->r.sig.sig[i].local_id = buftoulong(p); p += 4;
+	    rec->r.sig.sig[i].lid  = buftoulong(p); p += 4;
 	    rec->r.sig.sig[i].flag = *p++;
 	}
+	break;
+      case RECTYPE_CACH:   /* cache record (FIXME)*/
+	rec->r.cache.lid    = buftoulong(p); p += 4;
+	memcpy(rec->r.cache.blockhash, p, 20); p += 20;
+	rec->r.cache.trustlevel = *p++;
 	break;
       default:
 	log_error_f( db_name, "invalid record type %d at recnum %lu\n",
@@ -385,40 +405,53 @@ tdbio_write_record( ulong recnum, TRUSTREC *rec )
 	break;
 
       case RECTYPE_DIR:   /*directory record */
-	ulongtobuf(p, rec->r.dir.local_id); p += 4;
-	u32tobuf(p, rec->r.key.keyid[0]); p += 4;
-	u32tobuf(p, rec->r.key.keyid[1]); p += 4;
-	ulongtobuf(p, rec->r.dir.keyrec); p += 4;
-	ulongtobuf(p, rec->r.dir.ctlrec); p += 4;
-	ulongtobuf(p, rec->r.dir.sigrec); p += 4;
-	*p++ = rec->r.dir.no_sigs;
-	assert( rec->r.dir.local_id == recnum );
+	ulongtobuf(p, rec->r.dir.lid); p += 4;
+	ulongtobuf(p, rec->r.dir.keylist); p += 4;
+	ulongtobuf(p, rec->r.dir.uidlist); p += 4;
+	ulongtobuf(p, rec->r.dir.cacherec); p += 4;
+	*p++ = rec->r.dir.ownertrust;
+	*p++ = rec->r.dir.sigflag;
+	assert( rec->r.dir.lid == recnum );
 	break;
 
       case RECTYPE_KEY:
-	ulongtobuf(p, rec->r.key.owner); p += 4;
-	u32tobuf(p, rec->r.key.keyid[0]); p += 4;
-	u32tobuf(p, rec->r.key.keyid[1]); p += 4;
+	ulongtobuf(p, rec->r.key.lid); p += 4;
+	ulongtobuf(p, rec->r.key.next); p += 4;
+	p += 8;
 	*p++ = rec->r.key.pubkey_algo;
 	*p++ = rec->r.key.fingerprint_len;
 	memcpy( p, rec->r.key.fingerprint, 20); p += 20;
-	*p++ = rec->r.key.ownertrust;
 	break;
 
-      case RECTYPE_CTL:   /* control record */
-	ulongtobuf(p, rec->r.ctl.owner); p += 4;
-	memcpy(p, rec->r.ctl.blockhash, 20); p += 20;
-	*p++ = rec->r.ctl.trustlevel;
+      case RECTYPE_UID:   /* user id record */
+	ulongtobuf(p, rec->r.uid.lid); p += 4;
+	ulongtobuf(p, rec->r.uid.next); p += 4;
+	ulongtobuf(p, rec->r.uid.prefrec); p += 4;
+	ulongtobuf(p, rec->r.uid.siglist); p += 4;
+	p += 2;
+	memcpy( p, rec->r.uid.namehash, 20 ); p += 20;
+	break;
+
+      case RECTYPE_PREF:
+	ulongtobuf(p, rec->r.pref.lid); p += 4;
+	ulongtobuf(p, rec->r.pref.next); p += 4;
 	break;
 
       case RECTYPE_SIG:
-	ulongtobuf(p, rec->r.sig.owner); p += 4;
-	ulongtobuf(p, rec->r.sig.chain); p += 4;
+	ulongtobuf(p, rec->r.sig.lid); p += 4;
+	ulongtobuf(p, rec->r.sig.next); p += 4;
 	for(i=0; i < SIGS_PER_RECORD; i++ ) {
-	    ulongtobuf(p, rec->r.sig.sig[i].local_id); p += 4;
+	    ulongtobuf(p, rec->r.sig.sig[i].lid); p += 4;
 	    *p++ = rec->r.sig.sig[i].flag;
 	}
 	break;
+
+      case RECTYPE_CACH:   /* FIXME*/
+	ulongtobuf(p, rec->r.cache.lid); p += 4;
+	memcpy(p, rec->r.cache.blockhash, 20); p += 20;
+	*p++ = rec->r.cache.trustlevel;
+	break;
+
       default:
 	BUG();
     }
@@ -475,7 +508,7 @@ tdbio_new_recnum()
  * Note: To increase performance, we could use a index search here.
  */
 int
-tdbio_search_record( PKT_public_key *pk, TRUSTREC *rec )
+tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec )
 {
     ulong recnum;
     u32 keyid[2];
@@ -484,30 +517,26 @@ tdbio_search_record( PKT_public_key *pk, TRUSTREC *rec )
     int rc;
 
     keyid_from_pk( pk, keyid );
-    fingerprint = fingerprint_from_pk( pk, &fingerlen );
+    fingerprint = fingerprint_from_pk( pk, NULL, &fingerlen );
     assert( fingerlen == 20 || fingerlen == 16 );
 
     for(recnum=1; !(rc=tdbio_read_record( recnum, rec, 0)); recnum++ ) {
-	if( rec->rectype != RECTYPE_DIR )
+	if( rec->rectype != RECTYPE_KEY )
 	    continue;
-	if( rec->r.dir.keyid[0] == keyid[0]
-	    && rec->r.dir.keyid[1] == keyid[1]){
-	    TRUSTREC keyrec;
-
-	    if( tdbio_read_record( rec->r.dir.keyrec, &keyrec, RECTYPE_KEY ) ) {
-		log_error("%lu: ooops: invalid key record\n", recnum );
+	if( rec->r.key.pubkey_algo == pk->pubkey_algo
+	    && !memcmp(rec->r.key.fingerprint, fingerprint, fingerlen) ) {
+	    /* found: read the dir record for this key */
+	    rc = tdbio_read_record( rec->r.key.lid, rec, RECTYPE_DIR);
+	    if( rc )
 		break;
-	    }
-	    if( keyrec.r.key.pubkey_algo == pk->pubkey_algo
-		&& !memcmp(keyrec.r.key.fingerprint, fingerprint, fingerlen) ){
-		if( pk->local_id && pk->local_id != recnum )
-		    log_error_f(db_name,
-			       "found record, but local_id from memory does "
-			       "not match recnum (%lu,%lu)\n",
-				     (ulong)pk->local_id, (ulong)recnum );
-		pk->local_id = recnum;
-		return 0;
-	    }
+
+	    if( pk->local_id && pk->local_id != recnum )
+		log_error_f(db_name,
+			   "found record, but LID from memory does "
+			   "not match recnum (%lu,%lu)\n",
+						pk->local_id, recnum );
+	    pk->local_id = recnum;
+	    return 0;
 	}
     }
     if( rc != -1 )
@@ -515,4 +544,23 @@ tdbio_search_record( PKT_public_key *pk, TRUSTREC *rec )
     return rc;
 }
 
+
+int
+tdbio_update_sigflag( ulong lid, int sigflag )
+{
+    TRUSTREC rec;
+
+    if( tdbio_read_record( lid, &rec, RECTYPE_DIR ) ) {
+	log_error("update_sigflag: read failed\n");
+	return G10ERR_TRUSTDB;
+    }
+
+    rec.r.dir.sigflag = sigflag;
+    if( tdbio_write_record( lid, &rec ) ) {
+	log_error("update_sigflag: write failed\n");
+	return G10ERR_TRUSTDB;
+    }
+
+    return 0;
+}
 

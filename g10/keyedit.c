@@ -45,7 +45,7 @@ show_fingerprint( PKT_public_key *pk )
     byte *array, *p;
     size_t i, n;
 
-    p = array = fingerprint_from_pk( pk, &n );
+    p = array = fingerprint_from_pk( pk, NULL, &n );
     tty_printf("             Fingerprint:");
     if( n == 20 ) {
 	for(i=0; i < n ; i++, i++, p += 2 ) {
@@ -292,7 +292,7 @@ sign_key( const char *username, STRLIST locusr )
 	if( !opt.batch ) {
 	    /* ask whether we really should do anything */
 	    answer = tty_get(
-			_("To you want to remove some of the invalid sigs? "));
+		_("Do you want to remove some of the invalid signatures? "));
 	    tty_kill_prompt();
 	    if( answer_is_yes(answer) )
 		remove_keysigs( keyblock, pk_keyid, 0 );

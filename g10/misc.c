@@ -22,9 +22,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #if defined(__linux__) && defined(__alpha__)
   #include <asm/sysinfo.h>
   #include <asm/unistd.h>
+#endif
+#ifdef HAVE_SETRLIMIT
+  #include <sys/time.h>
+  #include <sys/resource.h>
 #endif
 #include "util.h"
 #include "main.h"
@@ -68,6 +73,23 @@ trap_unaligned(void)
 {  /* dummy */
 }
 #endif
+
+
+void
+disable_core_dumps()
+{
+  #ifdef HAVE_SETRLIMIT
+    struct rlimit limit;
+
+    limit.rlim_cur = 0;
+    limit.rlim_max = 0;
+    if( setrlimit( RLIMIT_CORE, &limit ) )
+	log_fatal("can't disable core dumps: %s\n", strerror(errno) );
+  #else
+    log_info("WARNING: Program may create a core file!\n");
+  #endif
+}
+
 
 
 u16

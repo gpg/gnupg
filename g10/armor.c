@@ -62,6 +62,7 @@ typedef enum {
     fhdrSKIPHeader,
     fhdrCLEARSIG,
     fhdrREADClearsig,
+    fhdrNullClearsig,
     fhdrEMPTYClearsig,
     fhdrCHECKClearsig,
     fhdrCHECKClearsig2,
@@ -343,6 +344,8 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 				*r_hashes |= hashes;
 			}
 		    }
+		    else if( clearsig && n > 15 && !memcmp(buf, "-----", 5 ) )
+			state = fhdrNullClearsig;
 		    else
 			state = fhdrCHECKDashEscaped3;
 		}
@@ -386,7 +389,10 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		buf[n++] = c;
 	    if( n < buflen || c == '\n' ) {
 		buf[n] = 0;
-		state = fhdrCHECKDashEscaped3;
+		if( n > 15 && !memcmp(buf, "-----", 5 ) )
+		    state = fhdrNullClearsig;
+		else
+		    state = fhdrCHECKDashEscaped3;
 	    }
 	    else {
 		/* fixme: we should check whether this line continues
@@ -394,6 +400,10 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 		 *   and more stuff is to come */
 		state = fhdrEOF;
 	    }
+	    break;
+
+	  case fhdrNullClearsig: /* zero length cleartext */
+	    state = fhdrENDClearsig;
 	    break;
 
 	  case fhdrENDClearsig:
@@ -587,9 +597,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    buf[1] = '\n';
 	    n = 2;
 	}
-
     }
-
 
     *r_buflen = n;
     *r_empty = empty;
@@ -627,6 +635,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	rc = -1;
 	break;
 
+      case fhdrNullClearsig:
       case fhdrCLEARSIG: /* start fake package mode (for clear signatures) */
 	afx->helplen = n;
 	afx->helpidx = 0;
@@ -679,7 +688,8 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	    rc = -1;
 	    continue;
 	}
-	if( afx->helpidx < afx->helplen ) { /* flush the last buffer */
+	if( state != fhdrNullClearsig
+	    && afx->helpidx < afx->helplen ) { /* flush the last buffer */
 	    n = afx->helplen;
 	    for(nn=afx->helpidx; len < size && nn < n ; nn++ )
 		buf[len++] = afx->helpbuf[nn];
@@ -693,7 +703,8 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 	/* read a new one */
 	n = DIM(afx->helpbuf);
 	afx->helpidx = 0;
-	state = find_header( state, afx->helpbuf, &n, a, 0,
+	state = find_header( state, afx->helpbuf, &n, a,
+			      state == fhdrNullClearsig? afx->helplen:0,
 						&emplines, &afx->hashes );
 	switch( state) {
 	  case fhdrERROR:
@@ -723,8 +734,10 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
     buf[0] = (len-2) >> 8;
     buf[1] = (len-2);
     if( state == fhdrENDClearsig ) { /* write last (ending) length header */
-	buf[len++] = 0;
-	buf[len++] = 0;
+	if( buf[0] || buf[1] ) { /* write only if length of text is > 0 */
+	    buf[len++] = 0;
+	    buf[len++] = 0;
+	}
 	rc = 0;
     }
 

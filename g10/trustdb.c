@@ -42,6 +42,10 @@
 #include "tdbio.h"
 
 
+#if MAX_FINGERPRINT_LEN > 20
+  #error Must change structure of trustdb
+#endif
+
 typedef struct local_id_info *LOCAL_ID_INFO;
 struct local_id_info {
     LOCAL_ID_INFO next;
@@ -85,11 +89,10 @@ static int do_list_path( TRUST_INFO *stack, int depth, int max_depth,
 			 LOCAL_ID_INFO *lids, TRUST_SEG_LIST *tslist );
 
 static int list_sigs( ulong pubkey_id );
-static int build_sigrecs( ulong pubkeyid );
+static int build_sigrecs( ulong local_id );
 static int propagate_trust( TRUST_SEG_LIST tslist );
-static int do_check( ulong pubkeyid, TRUSTREC *drec, unsigned *trustlevel );
+static int do_check( TRUSTREC *drec, unsigned *trustlevel );
 
-static int update_no_sigs( ulong lid, int no_sigs );
 
 /* a table used to keep track of ultimately trusted keys
  * which are the ones from our secrings */
@@ -186,12 +189,11 @@ set_signature_packets_local_id( PKT_signature *sig )
     if( rc)
 	goto leave;
     if( !pk->local_id ) {
-	rc = tdbio_search_record( pk, &rec );
+	rc = tdbio_search_dir_record( pk, &rec );
 	if( rc == -1 )
 	    rc = insert_trust_record( pk );
 	if( rc )
 	    goto leave;
-	/* fixme: we should propagate the local_id to all copies of the PK */
     }
     sig->local_id = pk->local_id;
 
@@ -666,35 +668,36 @@ check_sigs( KBNODE keyblock, int *selfsig_okay, int *revoked )
  * to the trustdb
  */
 static int
-build_sigrecs( ulong pubkeyid )
+build_sigrecs( ulong lid )
 {
     TRUSTREC rec, krec, rec2;
-    KBNODE keyblock = NULL;
-    KBNODE node;
+   KBNODE keyblock = NULL;
+   KBNODE node;
     int rc=0;
     int i, selfsig, revoked;
     ulong rnum, rnum2;
     ulong first_sigrec = 0;
 
     if( DBG_TRUST )
-	log_debug("trustdb: build_sigrecs for pubkey %lu\n", (ulong)pubkeyid );
+	log_debug("trustdb: build_sigrecs for LID %lu\n", lid );
 
     /* get the keyblock */
-    if( (rc=tdbio_read_record( pubkeyid, &rec, RECTYPE_DIR )) ) {
-	log_error(_("%lu: build_sigrecs: can't read dir record\n"), pubkeyid );
+    if( (rc=tdbio_read_record( lid, &rec, RECTYPE_DIR )) ) {
+	log_error( "build_sigrecs: can't read dir record %lu\n"), lid );
 	goto leave;
     }
-    if( (rc=tdbio_read_record( rec.r.dir.keyrec, &krec, RECTYPE_KEY )) ) {
-	log_error(_("%lu: build_sigrecs: can't read key record\n"), pubkeyid);
+    if( (rc=tdbio_read_record( rec.r.dir.keylist, &krec, RECTYPE_KEY )) ) {
+	log_error("build_sigrecs: can't read primary key record %lu\n"), lid);
 	goto leave;
     }
     rc = get_keyblock_byfprint( &keyblock, krec.r.key.fingerprint,
 					   krec.r.key.fingerprint_len );
     if( rc ) {
-	log_error(_("build_sigrecs: get_keyblock_byfprint failed: %s\n"),
-							    g10_errstr(rc) );
+	log_error( "build_sigrecs: keyblock for %lu not found: %s\n",
+						    lid, g10_errstr(rc) );
 	goto leave;
     }
+
     /* check all key signatures */
     rc = check_sigs( keyblock, &selfsig, &revoked );
     if( rc ) {
@@ -703,19 +706,18 @@ build_sigrecs( ulong pubkeyid )
     }
     if( !selfsig ) {
 	log_error(_("build_sigrecs: self-signature missing\n") );
-	update_no_sigs( pubkeyid, 2 );
+	tdbio_update_sigflag( lid, 2 );
 	rc = G10ERR_BAD_CERT;
 	goto leave;
     }
     if( revoked ) {
 	log_info(_("build_sigrecs: key has been revoked\n") );
-	update_no_sigs( pubkeyid, 3 );
+	tdbio_update_sigflag( lid, 3 );
     }
     else
-	update_no_sigs( pubkeyid, 0 ); /* assume we have sigs */
+	tdbio_update_sigflag( lid, 0 ); /* assume we have sigs */
 
-    /* valid key signatures are now marked; we can now build the
-     * sigrecs */
+    /* valid key signatures are now marked; we can now build the sigrecs */
     memset( &rec, 0, sizeof rec );
     rec.rectype = RECTYPE_SIG;
     i = 0;
@@ -740,8 +742,8 @@ build_sigrecs( ulong pubkeyid )
 		/* write the record */
 		rnum = tdbio_new_recnum();
 		if( rnum2 ) { /* write the stored record */
-		    rec2.r.sig.owner = pubkeyid;
-		    rec2.r.sig.chain = rnum; /* the next record number */
+		    rec2.r.sig.lid  = lid;
+		    rec2.r.sig.next = rnum; /* the next record number */
 		    rc = tdbio_write_record( rnum2, &rec2 );
 		    if( rc ) {
 			log_error(_("build_sigrecs: write_record failed\n") );
@@ -756,7 +758,7 @@ build_sigrecs( ulong pubkeyid )
 		rec.rectype = RECTYPE_SIG;
 		i = 0;
 	    }
-	    rec.r.sig.sig[i].local_id = node->pkt->pkt.signature->local_id;
+	    rec.r.sig.sig[i].lid  = node->pkt->pkt.signature->local_id;
 	    rec.r.sig.sig[i].flag = 0;
 	    i++;
 	}
@@ -765,8 +767,8 @@ build_sigrecs( ulong pubkeyid )
 	/* write the record */
 	rnum = tdbio_new_recnum();
 	if( rnum2 ) { /* write the stored record */
-	    rec2.r.sig.owner = pubkeyid;
-	    rec2.r.sig.chain = rnum;
+	    rec2.r.sig.lid  = lid;
+	    rec2.r.sig.next = rnum;
 	    rc = tdbio_write_record( rnum2, &rec2 );
 	    if( rc ) {
 		log_error(_("build_sigrecs: write_record failed\n") );
@@ -776,8 +778,8 @@ build_sigrecs( ulong pubkeyid )
 		first_sigrec = rnum2;
 	}
 	if( i ) { /* write the pending record */
-	    rec.r.sig.owner = pubkeyid;
-	    rec.r.sig.chain = 0;
+	    rec.r.sig.lid = lid;
+	    rec.r.sig.next = 0;
 	    rc = tdbio_write_record( rnum, &rec );
 	    if( rc ) {
 		log_error(_("build_sigrecs: write_record failed\n") );
@@ -787,8 +789,7 @@ build_sigrecs( ulong pubkeyid )
 		first_sigrec = rnum;
 	}
     }
-    if( first_sigrec ) {
-	/* update the dir record */
+    if( first_sigrec ) { /* update the uid records */
 	if( (rc =tdbio_read_record( pubkeyid, &rec, RECTYPE_DIR )) ) {
 	    log_error(_("update_dir_record: read failed\n"));
 	    goto leave;
@@ -800,7 +801,7 @@ build_sigrecs( ulong pubkeyid )
 	}
     }
     else
-	update_no_sigs( pubkeyid, revoked? 3:1 ); /* no signatures */
+	tdbio_update_sigflag( lid, revoked? 3:1 ); /* no signatures */
 
   leave:
     release_kbnode( keyblock );
@@ -900,12 +901,24 @@ propagate_trust( TRUST_SEG_LIST tslist )
 }
 
 
+
 /****************
- * we have the pubkey record but nothing more is known.
- * (function may re-read dr)
+ * check whether we already build signature records
+ * Return: true if we have.
  */
 static int
-do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
+do_we_have_sigs( TRUSTREC *dr )
+{
+}
+
+
+/****************
+ * we have the pubkey record and all needed informations are in the trustdb
+ * but nothing more is known.
+ * (this function may re-read the dir record dr)
+ */
+static int
+do_check( TRUSTREC *dr, unsigned *trustlevel )
 {
     int i, rc=0;
     TRUST_SEG_LIST tsl, tsl2, tslist;
@@ -919,15 +932,26 @@ do_check( ulong pubkeyid, TRUSTREC *dr, unsigned *trustlevel )
 
     *trustlevel = TRUST_UNDEFINED;
 
+    if( !dr->r.dir.keylist ) {
+	log_error("Ooops, no keys\n");
+	return G10ERR_TRUSTDB
+    }
+    if( !dr->r.dir.uidlist ) {
+	log_error("Ooops, no user ids\n");
+	return G10ERR_TRUSTDB
+    }
+
     /* verify the cache */
 
     /* do we have sigrecs */
-    if( !dr->r.dir.sigrec && !dr->r.dir.no_sigs) {
-	/* no sigrecs, so build them */
-	rc = build_sigrecs( pubkeyid );
+    if( !do_we_have_sigs( dr ) ) { /* no sigrecs, so build them */
+	rc = build_sigrecs( dr->lid );
 	if( !rc ) /* and read again */
-	    rc = tdbio_read_record( pubkeyid, dr, RECTYPE_DIR );
+	    rc = tdbio_read_record( dr->lid, dr, RECTYPE_DIR );
     }
+
+
+   !!!!WORK!!!!
 
     if( dr->r.dir.no_sigs == 3 )
 	tflags |= TRUST_FLAG_REVOKED;
@@ -1199,9 +1223,7 @@ list_trust_path( int max_depth, const char *username )
  *		yes: return trustlevel from cache
  *		no:  make a cache record and all the other stuff
  *	not found:
- *	    Return with a trustlevel, saying that we do not have
- *	    a trust record for it. The caller may use insert_trust_record()
- *	    and then call this function here again.
+ *	    try to insert the pubkey into the trustdb and check again
  *
  * Problems: How do we get the complete keyblock to check that the
  *	     cache record is actually valid?  Think we need a clever
@@ -1225,17 +1247,17 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
     /* get the pubkey record */
     if( pk->local_id ) {
 	if( tdbio_read_record( pk->local_id, &rec, RECTYPE_DIR ) ) {
-	    log_error(_("check_trust: read dir record failed\n"));
+	    log_error("check_trust: read dir record failed\n");
 	    return G10ERR_TRUSTDB;
 	}
     }
     else { /* no local_id: scan the trustdb */
-	if( (rc=tdbio_search_record( pk, &rec )) && rc != -1 ) {
-	    log_error(_("check_trust: search_record failed: %s\n"),
+	if( (rc=tdbio_search_dir_record( pk, &rec )) && rc != -1 ) {
+	    log_error("check_trust: search dir record failed: %s\n",
 							    g10_errstr(rc));
 	    return rc;
 	}
-	else if( rc == -1 ) {
+	else if( rc == -1 ) { /* not found - insert */
 	    rc = insert_trust_record( pk );
 	    if( rc ) {
 		log_error(_("key %08lX: insert trust record failed: %s\n"),
@@ -1263,7 +1285,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
 	 trustlevel = TRUST_EXPIRED;
     }
     else {
-	rc = do_check( pk->local_id, &rec, &trustlevel );
+	rc = do_check( &rec, &trustlevel );
 	if( rc ) {
 	    log_error(_("key %08lX.%lu: trust check failed: %s\n"),
 			    keyid[1], pk->local_id, g10_errstr(rc));
@@ -1424,24 +1446,119 @@ query_trust_record( PKT_public_key *pk )
  * This function fails if this record already exists.
  */
 int
-insert_trust_record( PKT_public_key *pk )
+insert_trust_record( PKT_public_key *orig_pk )
 {
-    TRUSTREC rec;
+    TRUSTREC dirrec, *rec;
+    TRUSTREC **keylist_tail, *keylist;
+    TRUSTREC **uidlist_tail, *uidlist;
+    KBNODE keyblock = NULL;
+    KBNODE node;
     u32 keyid[2];
     ulong knum, dnum;
     byte *fingerprint;
     size_t fingerlen;
+    int rc = 0;
 
 
-    if( pk->local_id )
+    if( orig_pk->local_id )
 	log_bug("pk->local_id=%lu\n", (ulong)pk->local_id );
 
-    keyid_from_pk( pk, keyid );
-    fingerprint = fingerprint_from_pk( pk, &fingerlen );
+    fingerprint = fingerprint_from_pk( orig_pk, &fingerlen );
 
-    /* fixme: assert that we do not have this record. */
+    /* fixme: assert that we do not have this record.
+     * we can do this by searching for the primary keyid
+     */
 
-    dnum = tdbio_new_recnum();
+    /* get the keyblock which has the key */
+    rc = get_keyblock_byfprint( &keyblock, fingerprint, fingerlen );
+    if( rc ) { /* that should never happen */
+	log_error( "insert_trust_record: keyblock not found: %s\n",
+							  g10_errstr(rc) );
+	return rc;
+    }
+
+    /* prepare dir record */
+    memset( &dirrec, 0, sizeof dirrec );
+    dirrec.rectype = RECTYPE_DIR;
+    dirrec.r.dir.lid = tdbio_new_recnum();
+
+    keylist = NULL;
+    keylist_tail = &dirrec.r.dir.keylist;
+    uidlist = NULL;
+    uidlist_tail = &dirrec.r.dir.uidlist;
+    /* loop over the keyblock */
+    for( node=keyblock; node; node = node->next ) {
+	if( node->pkt->pkttype == PKT_PUBLIC_KEY
+	    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+	    PKT_public_key *pk = node->pkt->pkt.public_key;
+
+	    if( keylist && node->pkt->pkttype == PKT_PUBLIC_KEY )
+		BUG();	/* more than one primary key */
+	    fingerprint = fingerprint_from_pk( orig_pk, &fingerlen );
+	    rec = m_alloc_clear( sizeof *rec );
+	    rec->r.key.pubkey_algo = pk->pubkey_algo;
+	    rec->r.key.fingerprint_len = fingerlen;
+	    memcpy(rec->r.key.fingerprint, fingerprint, fingerlen );
+
+	    if( keylist )
+		keylist_tail = &keylist->next;
+	    *keylist_tail = keylist = rec;
+	}
+	else if( node->pkt->pkttype == PKT_USER_ID ) {
+	    PKT_user_id *uid = node->pkt->pkt.user_id;
+
+	    rec = m_alloc_clear( sizeof *rec );
+	    rmd160_hash_buffer( rec->r.uid.namehash, uid->name, uid->len );
+
+	    if( uidlist )
+		uidlist_tail = &uidlist->next;
+	    *uidlist_tail = uidlist = rec;
+	}
+	if( node->pkt->pkttype == PKT_SIGNATURE
+	    && ( (node->pkt->pkt.signature->sig_class&~3) == 0x10
+		  || node->pkt->pkt.signature->sig_class == 0x20
+		  || node->pkt->pkt.signature->sig_class == 0x30) ) {
+	    int selfsig;
+	    rc = check_key_signature( keyblock, node, &selfsig );
+	    if( !rc ) {
+		rc = set_signature_packets_local_id( node->pkt->pkt.signature );
+		if( rc )
+		    log_fatal("set_signature_packets_local_id failed: %s\n",
+							      g10_errstr(rc));
+		if( selfsig ) {
+		    node->flag |= 2; /* mark signature valid */
+		    *selfsig_okay = 1;
+		}
+		else if( node->pkt->pkt.signature->sig_class == 0x20 )
+		    *revoked = 1;
+		else
+		    node->flag |= 1; /* mark signature valid */
+
+		if( node->pkt->pkt.signature->sig_class != 0x20 ) {
+		    if( !dups )
+			dups = new_lid_table();
+		    if( ins_lid_table_item( dups,
+					node->pkt->pkt.signature->local_id, 0) )
+			node->flag |= 4; /* mark as duplicate */
+		}
+	    }
+	    if( DBG_TRUST )
+		log_debug("trustdb: sig from %08lX.%lu: %s%s\n",
+				(ulong)node->pkt->pkt.signature->keyid[1],
+				node->pkt->pkt.signature->local_id,
+				g10_errstr(rc), (node->flag&4)?"  (dup)":"" );
+	}
+    }
+
+
+
+
+
+
+
+
+
+
     knum = tdbio_new_recnum();
     /* build dir record */
     memset( &rec, 0, sizeof rec );
@@ -1451,10 +1568,6 @@ insert_trust_record( PKT_public_key *pk )
     rec.r.dir.keyid[1] = keyid[1];
     rec.r.dir.keyrec   = knum;
     rec.r.dir.no_sigs = 0;
-    if( tdbio_write_record( dnum, &rec ) ) {
-	log_error("writing dir record failed\n");
-	return G10ERR_TRUSTDB;
-    }
     /* and the key record */
     memset( &rec, 0, sizeof rec );
     rec.rectype = RECTYPE_KEY;
@@ -1469,8 +1582,14 @@ insert_trust_record( PKT_public_key *pk )
 	log_error("wrinting key record failed\n");
 	return G10ERR_TRUSTDB;
     }
+
+    if( tdbio_write_record( dirrec.r.dir.lid, &dirrec ) ) {
+	log_error("writing dir record failed\n");
+	return G10ERR_TRUSTDB;
+    }
+
     /* and store the LID */
-    pk->local_id = dnum;
+    orig_pk->local_id = dnum;
 
     return 0;
 }
@@ -1504,27 +1623,5 @@ update_ownertrust( ulong lid, unsigned new_trust )
 
 
 
-/****************
- * Kludge to prevent duplicate build_sigrecs() due to an invalid
- * certificate (no selfsignature or something like this)
- */
-static int
-update_no_sigs( ulong lid, int no_sigs )
-{
-    TRUSTREC rec;
-
-    if( tdbio_read_record( lid, &rec, RECTYPE_DIR ) ) {
-	log_error("update_no_sigs: read failed\n");
-	return G10ERR_TRUSTDB;
-    }
-
-    rec.r.dir.no_sigs = no_sigs;
-    if( tdbio_write_record( lid, &rec ) ) {
-	log_error("update_no_sigs: write failed\n");
-	return G10ERR_TRUSTDB;
-    }
-
-    return 0;
-}
 
 

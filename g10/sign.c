@@ -226,7 +226,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( out, encrypt_filter, &efx );
     }
 
-    if( opt.compress && !outfile ) {
+    if( opt.compress && !outfile && ( !detached || opt.compress_sigs) ) {
 	if( old_style )
 	    zfx.algo = 1;
 	iobuf_push_filter( out, compress_filter, &zfx );

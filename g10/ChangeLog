@@ -1,3 +1,35 @@
+Tue Jul 14 18:09:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* keyid.c (fingerprint_from_pk): Add argument and changed all callers.
+	(fingerprint_from_sk): Ditto.
+
+Tue Jul 14 10:10:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* plaintext.c (handle_plaintext): Now returns create error if
+	the file could not be created or the user responded not to overwrite
+	the file.
+	* mainproc.c (proc_plaintext): Tries again if the file could not
+	be created to check the signature without output.
+
+	* misc.c (disable_core_dumps): New.
+	* g10.c (main): disable coredumps for gpg
+
+	* g10.c (MAINTAINER_OPTIONS): New to disable some options
+
+Mon Jul 13 16:47:54 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* plaintext.c (hash_datafiles): New arg for better support of
+	detached sigs. Changed all callers.
+	* mainproc.c (proc_signature_packets): Ditto.
+
+	* g10.c (main): New option "compress-sigs"
+	* sig.c (sign_file): detached signatures are not anymore compressed
+	unless the option --compress-sigs is used.
+
+Thu Jul  9 19:54:54 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c: Fixes to allow zero length cleartext signatures
+
 Thu Jul  9 14:52:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* g10.c (build_list): Now drops setuid.

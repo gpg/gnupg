@@ -32,15 +32,17 @@
 #define RECTYPE_VER  1
 #define RECTYPE_DIR  2
 #define RECTYPE_KEY  3
-#define RECTYPE_CTL  4
-#define RECTYPE_SIG  5
-#define RECTYPE_HTBL 6
-#define RECTYPE_HLST 7
-#define RECTYPE_UID  8
+#define RECTYPE_UID  4
+#define RECTYPE_PREF 5
+#define RECTYPE_SIG  6
+#define RECTYPE_CACH 9
+#define RECTYPE_HTBL 10
+#define RECTYPE_HLST 11
 
 
 struct trust_record {
     int  rectype;
+    struct trust_record *next;
     union {
 	struct {	    /* version record: */
 	    byte version;   /* should be 1 */
@@ -53,49 +55,50 @@ struct trust_record {
 	    byte max_cert_depth;
 	} ver;
 	struct {	    /* directory record */
-	    ulong local_id;
-	    u32  keyid[2];
-	    ulong keyrec;   /* recno of primary public key record */
-	    ulong ctlrec;   /* recno of control record */
-	    ulong sigrec;   /* recno of first signature record (osolete) */
-	    ulong uidrec;   /* recno of first user-id record */
-	    ulong link;     /* to next dir record */
-	    byte no_sigs;   /* does not have sigature and checked */
+	    ulong lid;
+	    ulong keylist;  /* List of keys (the first is the primary key)*/
+	    ulong uidlist;  /* list of uid records */
+	    ulong cacherec; /* the cache record */
+	    byte ownertrust;
+	    byte sigflag;
 	} dir;
 	struct {	    /* primary public key record */
-	    ulong owner;
-	    u32  keyid[2];
+	    ulong lid;
+	    ulong next;    /* next key */
 	    byte pubkey_algo;
 	    byte fingerprint_len;
 	    byte fingerprint[20];
-	    byte ownertrust;
 	} key;
 	struct {	    /* user id reord */
-	    ulong owner;    /* point back to the directory record */
-	    ulong chain;    /* points to next user id record */
-	    byte  subtype;  /* must be 0 */
-	    byte  namehash[20]; /* ripemd hash of the username */
-	    byte ownertrust;
-	    u32  prefrec;   /* recno of reference record */
+	    ulong lid;	    /* point back to the directory record */
+	    ulong next;    /* points to next user id record */
+	    ulong prefrec;   /* recno of reference record */
+	    ulong siglist;   /* list of valid signatures (w/o self-sig)*/
+	    byte namehash[20]; /* ripemd hash of the username */
 	} uid;
-	struct {	    /* control record */
-	    ulong owner;
-	    byte blockhash[20];
-	    byte trustlevel;   /* calculated trustlevel */
-	} ctl;
+	struct {	    /* preference reord */
+	    ulong lid;	    /* point back to the directory record */
+			    /* or 0 for a glocal pref record */
+	    ulong next;    /* points to next pref record */
+	} pref;
 	struct {	    /* signature record */
-	    ulong owner;  /* local_id of record owner (pubkey record) */
-	    ulong chain;  /* offset of next record or NULL for last one */
+	    ulong lid;
+	    ulong next;   /* recnno of next record or NULL for last one */
 	    struct {
-		ulong  local_id; /* of pubkey record of signator (0=unused) */
-		byte flag;     /* reserved */
+		ulong lid;	 /* of pubkey record of signator (0=unused) */
+		byte flag;	 /* reserved */
 	    } sig[SIGS_PER_RECORD];
 	} sig;
+	struct {	    /* cache record */
+	    ulong lid;
+	    byte blockhash[20];
+	    byte trustlevel;   /* calculated trustlevel */
+	} cache;
 	struct {
 	    ulong item[ITEMS_PER_HTBL_RECORD];
 	} htbl;
 	struct {
-	    ulong chain;
+	    ulong next;
 	    struct {
 		byte hash;
 		ulong rnum;
@@ -126,7 +129,8 @@ void tdbio_dump_record( ulong rnum, TRUSTREC *rec, FILE *fp );
 int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
 int tdbio_write_record( ulong recnum, TRUSTREC *rec );
 ulong tdbio_new_recnum(void);
-int tdbio_search_record( PKT_public_key *pk, TRUSTREC *rec );
+int tdbio_search_dir_record( PKT_public_key *pk, TRUSTREC *rec );
+int tdbio_update_sigflag( ulong lid, int sigflag );
 
 
 #define buftoulong( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \

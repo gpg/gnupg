@@ -56,7 +56,7 @@ Record type 1:
 --------------
     Version information for this TrustDB.  This is always the first
     record of the DB and the only one with type 1.
-     1 byte value 1
+     1 byte value 2
      3 bytes 'gpg'  magic value
      1 byte Version of the TrustDB
      3 byte reserved
@@ -81,42 +81,79 @@ Record type 2: (directory record)
     These are static values which are never changed without user interaction.
 
      1 byte value 2
-     1 byte   reserved
-     8 bytes keyid (We keep it here to speed up searching by keyid)
-     1 u32   Local-Id.	This is simply the record number of this record.
-     1 u32   primary public key (record number of it)
+     1 byte  reserved
+     1 u32   LID     .	(This is simply the record number of this record.)
+     1 u32   List of key-records (the first one is the primary key)
+     1 u32   List of uid-records
      1 u32   cache record
-     1 u32   sigrecord
-     1 byte  No signatures flag  (used to avoid duplicate building).
-     3 byte  reserved
-     1 u32   userid record
-     6 byte reserved
+     1 byte  ownertrust
+     1 byte  sigflag
+    20 byte reserved
 
 
-Record type 3:
+Record type 3:	(key record)
 --------------
     Informations about a primary public key.
-    These are static values which are never changed without user interaction.
+    (This is mainly used to lookup a trust record)
 
      1 byte value 3
-     1 byte   reserved
-     1 u32   owner  This is used to bind all records for
-	     a given certificate together. It is valid only in this TrustDB
-	     and useful if we have duplicate keyids
-	     It points back to the directory node.
-     1 byte pubkey algorithm
-     1 byte length of the fingerprint (in bytes)
+     1 byte  reserved
+     1 u32   LID
+     1 u32   next   - next key record
+     8 bytes reserved
+     1 byte  pubkey algorithm
+     1 byte  length of the fingerprint (in bytes)
      20 bytes fingerprint of the public key
-     1 byte ownertrust if there is no trust defined for the userid:
-     3 byte reserved
+	      (This is the value we use to identify a key)
+
+Record type 4: (uid record)
+--------------
+    Informations about a userid
+    We do not store the userid but the hash value of the userid because that
+    is sufficient.
+
+     1 byte value 4
+     1 byte reserved
+     1 u32  LID  points to the directory record.
+     1 u32  next   next userid
+     1 u32  pointer to preference record
+     1 u32  siglist  list of valid signatures
+     2 byte reserved
+     20 bytes ripemd160 hash of the username.
 
 
-Record type 4:	(cache record)
+Record type 5: (pref record)
+--------------
+    Informations about preferences
+
+     1 byte value 5
+     1 byte   reserved
+     1 u32  LID; points to the directory record (and not to the uid record!).
+	    (or 0 for standard preference record)
+     1 u32  next
+
+Record type 6  (sigrec)
+-------------
+    Used to keep track of valid key signatures. Self-signatures are not
+    stored.
+
+     1 byte   value 6
+     1 byte   reserved
+     1 u32    LID	    points back to the dir record
+     1 u32    next   next sigrec of this owner or 0 to indicate the
+		     last sigrec.
+     6 times
+	1 u32  Local_id of signators dir record
+	1 byte reserved
+
+
+
+Record type 9:	(cache record)
 --------------
     Used to bind the trustDB to the concrete instance of keyblock in
     a pubring. This is used to cache information.
 
-     1 byte   value 4
+     1 byte   value 9
      1 byte   reserved
      1 u32    Local-Id.
      8 bytes  keyid of the primary key (needed?)
@@ -141,23 +178,9 @@ Record type 4:	(cache record)
 		4 = fully trusted
 		5 = ultimately trusted (have secret key too).
 
-Record type 5  (sigrec)
--------------
-    Used to keep track of valid key signatures. Self-signatures are not
-    stored.
 
-     1 byte   value 5
-     1 byte   reserved
-     1 u32    For Local-Id (points back to the directory record)
-     1 u32    chain: next sigrec of this owner or 0 to indicate the
-	      last sigrec.
-     6 times
-	1 u32  Local_id of signators pubkey record
-	1 byte reserved
-
-
-Record Type 6 (hash table)
--------------
+Record Type 10 (hash table)
+--------------
     Due to the fact that we use the keyid to lookup keys, we can
     implement quick access by some simple hash methods, and avoid
     the overhead of gdbm.  A property of keyids is that they can be
@@ -171,7 +194,7 @@ Record Type 6 (hash table)
     big table. The hash value is simple the 1st, 2nd, ... byte of
     the keyid (depending on the indirection level).
 
-     1 byte value 5
+     1 byte value 10
      1 byte reserved
      n u32  recnum; n depends on th record length:
 	    n = (reclen-2)/4  which yields 9 for the current record length
@@ -194,37 +217,18 @@ Record Type 6 (hash table)
 	 if this is not the correct dir record, we look at the next
 	 dir record which is linked by the link field.
 
-Record type 7  (hash list)
--------------
+Record type 11 (hash list)
+--------------
     see hash table for an explanation.
 
-    1 byte value 6
+    1 byte value 11
     1 byte reserved
-    1 u32  chain	 next hash list record
+    1 u32  next 	 next hash list record
     n times		 n = (reclen-6)/5
 	1 byte hash
 	1 u32  recnum
 
     For the current record length of 40, n is 6
-
-Record type 8: (userid)
---------------
-    Informations about a userid
-    We do not store the userid but the hash value of the userid because that
-    is sufficient.
-
-     1 byte value 8
-     1 byte   reserved
-     1 u32  owner; points to the directory record.
-     1 u32  next userid
-     1 byte subtype: 0 = a real user id
-		     1 = not a real userid, but a "dummy" user of length 0
-			 which is used to represent stuff that is directly
-			 bound to the key.
-     20 bytes ripemd160 hash of the username.
-     1 u32  pointer to preference record
-     1 byte ownertrust
-     4 byte reserved
 
 
 

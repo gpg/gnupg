@@ -1,24 +1,20 @@
+    * Change the internal represenation of keyid into a struct which
+      can also hold the localid and extend the localid to hold information
+      of the subkey number because two subkeys may have the same keyid.
 
+    * invalid packets (Marco)
 
-    * clearsig of zero length files does not work
-
-    * Change the inernal represenation of keyid into a struct which
-      can also hold the localid
+    * what about the CR,LF in cleartext singatures?
 
     * add option --restore-ownertrust
 
     * always put key signatures before the first subkey.
-
-    * Change the formatting of log_xxxx to GNU standards
-      ("name:filename:line: text")
 
     * add a way to delete subkeys (in edit-keys?)
 
     * make preferences work
 
     * rewrite --list-packets or put it into another tool.
-
-    * add field to PKT_user_id to hold the hash context
 
     * add usage arguments to get_key_byname or return a PKC_LIST with
       all keys and add a selection.
@@ -28,14 +24,9 @@
     * Burn the buffers used by fopen(), or use read(2). Does this
       really make sense?
 
-
     * enable a SIGSEGV handler while using zlib functions
 
-    * improve iobuf by reading more than one byte at once,
-      this shoud espceially done for the buffer in the chain.
-      Change the buffering to a mbuf like scheme? Need it for PSST anyway.
-    * add a way to distinguish between errors and eof in the underflow/flush
-      function of iobuf.
+    * Change the buffering to a mbuf like scheme? Need it for PSST anyway.
     * add checking of armor trailers
     * remove all "Fixmes"
 
@@ -50,10 +41,5 @@
     * add an option to re-create a public key from a secret key. Think about
       a backup system of only the secret part of the secret key.
 
-    * add fingerprint/keyid hashing. We need a new field in PKC to
-      flag that we may have a cached signature for this (and use the address
-      of PKC to lookup the hash).
-
     * replace getkey.c#enum_secret_keys
-
 

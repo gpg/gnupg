@@ -51,6 +51,7 @@ typedef struct {
     int sigs_only;   /* process only signatures and reject all other stuff */
     int encrypt_only; /* process only encrytion messages */
     STRLIST signed_data;
+    const char *sigfilename;
     DEK *dek;
     int last_was_session_key;
     KBNODE list;   /* the current list of packets */
@@ -262,7 +263,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 		clearsig = 1;
 	}
     }
-    if( !any ) { /* no onepass sig packet: enable all algos */
+    if( !any ) { /* no onepass sig packet: enable all standard algos */
 	md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
@@ -273,13 +274,13 @@ proc_plaintext( CTX c, PACKET *pkt )
 	    m_check( c->mfx.md->list );
     }
     rc = handle_plaintext( pt, &c->mfx, c->sigs_only, clearsig );
+    if( rc == G10ERR_CREATE_FILE && !c->sigs_only) {
+	/* can't write output but we hash it anyway to
+	 * check the signature */
+	rc = handle_plaintext( pt, &c->mfx, 1, clearsig );
+    }
     if( rc )
 	log_error( "handle plaintext failed: %s\n", g10_errstr(rc));
-    if( c->mfx.md ) {
-	m_check(c->mfx.md);
-	if( c->mfx.md->list )
-	    m_check( c->mfx.md->list );
-    }
     free_packet(pkt);
     c->last_was_session_key = 0;
 }
@@ -288,7 +289,8 @@ proc_plaintext( CTX c, PACKET *pkt )
 static int
 proc_compressed_cb( IOBUF a, void *info )
 {
-    return proc_signature_packets( a, ((CTX)info)->signed_data );
+    return proc_signature_packets( a, ((CTX)info)->signed_data,
+				      ((CTX)info)->sigfilename );
 }
 
 static int
@@ -405,8 +407,8 @@ print_fingerprint( PKT_public_key *pk, PKT_secret_key *sk )
     byte *array, *p;
     size_t i, n;
 
-    p = array = sk? fingerprint_from_sk( sk, &n )
-		   : fingerprint_from_pk( pk, &n );
+    p = array = sk? fingerprint_from_sk( sk, NULL, &n )
+		   : fingerprint_from_pk( pk, NULL, &n );
     if( opt.with_colons ) {
 	printf("fpr:::::::::");
 	for(i=0; i < n ; i++, p++ )
@@ -665,12 +667,13 @@ proc_packets( IOBUF a )
 }
 
 int
-proc_signature_packets( IOBUF a, STRLIST signedfiles )
+proc_signature_packets( IOBUF a, STRLIST signedfiles, const char *sigfilename )
 {
     CTX c = m_alloc_clear( sizeof *c );
     int rc;
     c->sigs_only = 1;
     c->signed_data = signedfiles;
+    c->sigfilename = sigfilename;
     rc = do_proc_packets( c, a );
     m_free( c );
     return rc;
@@ -881,7 +884,7 @@ proc_tree( CTX c, KBNODE node )
 	    }
 	    /* ask for file and hash it */
 	    if( c->sigs_only )
-		rc = hash_datafiles( c->mfx.md, c->signed_data,
+		rc = hash_datafiles( c->mfx.md, c->signed_data, c->sigfilename,
 			    n1->pkt->pkt.onepass_sig->sig_class == 0x01 );
 	    else
 		rc = ask_for_detached_datafile( &c->mfx,
@@ -902,7 +905,7 @@ proc_tree( CTX c, KBNODE node )
 	    free_md_filter_context( &c->mfx );
 	    c->mfx.md = md_open(sig->digest_algo, 0);
 	    if( c->sigs_only )
-		rc = hash_datafiles( c->mfx.md, c->signed_data,
+		rc = hash_datafiles( c->mfx.md, c->signed_data, c->sigfilename,
 				     sig->sig_class == 0x01 );
 	    else
 		rc = ask_for_detached_datafile( &c->mfx,
