@@ -39,8 +39,15 @@ vasprintf (char **result, const char *format, va_list *args)
   int total_width = strlen (format) + 1;
   va_list ap;
 
-  /* FIXME: use va_copy() */
+#ifdef va_copy
+  va_copy (ap, args);
+#else
+#ifdef __va_copy
+  __va_copy (ap, args);
+#else
   memcpy (&ap, args, sizeof (va_list));
+#endif /* __va_copy */
+#endif /* va_copy */
 
   while (*p != '\0')
     {
