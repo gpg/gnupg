@@ -1,5 +1,5 @@
 /* gpg-agent.c  -  The GnuPG Agent
- *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -243,10 +243,10 @@ main (int argc, char **argv )
 
   /* check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
-  if (!gcry_check_version ( "1.1.4" ) )
+  if (!gcry_check_version ( "1.1.5" ) )
     {
       log_fatal( _("libgcrypt is too old (need %s, have %s)\n"),
-                 VERSION, gcry_check_version (NULL) );
+                 "1.1.5", gcry_check_version (NULL) );
     }
 
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
