@@ -25,31 +25,15 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
-#ifdef USE_GNU_PTH
-# include <pth.h>
-#endif
 
 #include "assuan-defs.h"
 
 static int
-accept_connection (ASSUAN_CONTEXT ctx)
+accept_connection_bottom (ASSUAN_CONTEXT ctx)
 {
-  int fd;
-  struct sockaddr_un clnt_addr;
-  size_t len = sizeof clnt_addr;
+  int fd = ctx->connected_fd;
 
   ctx->client_pid = (pid_t)-1;
-#ifdef USE_GNU_PTH
-  fd = pth_accept (ctx->listen_fd, (struct sockaddr*)&clnt_addr, &len );
-#else
-  fd = accept (ctx->listen_fd, (struct sockaddr*)&clnt_addr, &len );
-#endif
-  if (fd == -1)
-    {
-      ctx->os_errno = errno;
-      return ASSUAN_Accept_Failed;
-    }
-
 #ifdef HAVE_SO_PEERCRED
   {
     struct ucred cr; 
@@ -73,6 +57,26 @@ accept_connection (ASSUAN_CONTEXT ctx)
   ctx->confidential = 0;
 
   return 0;
+}
+
+
+static int
+accept_connection (ASSUAN_CONTEXT ctx)
+{
+  int fd;
+  struct sockaddr_un clnt_addr;
+  size_t len = sizeof clnt_addr;
+
+  ctx->client_pid = (pid_t)-1;
+  fd = accept (ctx->listen_fd, (struct sockaddr*)&clnt_addr, &len );
+  if (fd == -1)
+    {
+      ctx->os_errno = errno;
+      return ASSUAN_Accept_Failed;
+    }
+
+  ctx->connected_fd = fd;
+  return accept_connection_bottom (ctx);
 }
 
 static int
@@ -116,6 +120,7 @@ assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd)
   ctx->outbound.fd = -1;
 
   ctx->listen_fd = listen_fd;
+  ctx->connected_fd = -1;
   ctx->deinit_handler = deinit_socket_server;
   ctx->accept_handler = accept_connection;
   ctx->finish_handler = finish_connection;
@@ -128,12 +133,37 @@ assuan_init_socket_server (ASSUAN_CONTEXT *r_ctx, int listen_fd)
   return rc;
 }
 
+/* Initialize a server using the already accepted socket FD. */
+int
+assuan_init_connected_socket_server (ASSUAN_CONTEXT *r_ctx, int fd)
+{
+  ASSUAN_CONTEXT ctx;
+  int rc;
 
+  *r_ctx = NULL;
+  ctx = xtrycalloc (1, sizeof *ctx);
+  if (!ctx)
+    return ASSUAN_Out_Of_Core;
+  ctx->is_server = 1;
+  ctx->pipe_mode = 1; /* we wan't a second accept to indicate EOF */
+  ctx->input_fd = -1;
+  ctx->output_fd = -1;
 
+  ctx->inbound.fd = -1;
+  ctx->outbound.fd = -1;
 
+  ctx->listen_fd = -1;
+  ctx->connected_fd = fd;
+  ctx->deinit_handler = deinit_socket_server;
+  ctx->accept_handler = accept_connection_bottom;
+  ctx->finish_handler = finish_connection;
 
-
-
-
+  rc = _assuan_register_std_commands (ctx);
+  if (rc)
+    xfree (ctx);
+  else
+    *r_ctx = ctx;
+  return rc;
+}
 
 

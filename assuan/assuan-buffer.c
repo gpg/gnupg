@@ -25,9 +25,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
-#ifdef USE_GNU_PTH
-# include <pth.h>
-#endif
 #include "assuan-defs.h"
 
 #ifdef HAVE_JNLIB_LOGGING
@@ -51,11 +48,9 @@ writen ( int fd, const char *buffer, size_t length )
 {
   while (length)
     {
-#ifdef USE_GNU_PTH
-      int nwritten = pth_write (fd, buffer, length);
-#else
-      int nwritten = write (fd, buffer, length);
-#endif
+      int nwritten = _assuan_write_wrapper?
+        _assuan_write_wrapper (fd, buffer, length):
+        write (fd, buffer, length);
       
       if (nwritten < 0)
         {
@@ -80,11 +75,10 @@ readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
   *r_nread = 0;
   while (nleft > 0)
     {
-#ifdef USE_GNU_PTH
-      int n = pth_read (fd, buf, nleft);
-#else
-      int n = read (fd, buf, nleft);
-#endif
+      int n = _assuan_read_wrapper?
+        _assuan_read_wrapper (fd, buf, nleft):
+        read (fd, buf, nleft);
+
       if (n < 0)
         {
           if (errno == EINTR)

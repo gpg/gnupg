@@ -29,6 +29,9 @@
 #include "../jnlib/logging.h"
 #endif
 
+ssize_t (*_assuan_read_wrapper)(int,void*,size_t) = NULL;
+ssize_t (*_assuan_write_wrapper)(int,const void*,size_t) = NULL;
+
 
 static void *(*alloc_func)(size_t n) = malloc;
 static void *(*realloc_func)(void *p, size_t n) = realloc;
@@ -72,6 +75,17 @@ _assuan_free (void *p)
 {
   if (p)
     free_func (p);
+}
+
+/* For use with Pth it is required to have special read and write
+   functions.  We can't assume an ELF based system so we have to
+   explicitly set them if we are going to use Pth. */
+void
+assuan_set_io_func (ssize_t (*r)(int,void*,size_t),
+                    ssize_t (*w)(int,const void*,size_t))
+{
+  _assuan_read_wrapper = r;
+  _assuan_write_wrapper = w;
 }
 
 

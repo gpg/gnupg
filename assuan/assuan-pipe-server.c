@@ -46,7 +46,7 @@ finish_connection (ASSUAN_CONTEXT ctx)
 
 
 /* Create a new context.  Note that the handlers are set up for a pipe
-   server/client - this wau we don't need extra dummy functions */
+   server/client - this way we don't need extra dummy functions */
 int
 _assuan_new_context (ASSUAN_CONTEXT *r_ctx)
 {

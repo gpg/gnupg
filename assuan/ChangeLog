@@ -1,3 +1,18 @@
+2002-05-23  Werner Koch  <wk@gnupg.org>
+
+	* assuan-util.c (assuan_set_io_func): New.
+	* assuan-buffer.c (writen, readline): Use the new functions
+	instead of pth.
+	* assuan-socket-server.c (accept_connection): Don't use the
+	pth_accept - using the assuan included accept code would be a bad
+	idea within Pth so we don't need a replacement function.
+
+2002-05-22  Werner Koch  <wk@gnupg.org>
+
+	* assuan-socket-server.c (assuan_init_connected_socket_server): New.
+	(accept_connection): Factored most code out to..
+	(accept_connection_bottom): .. new function.
+
 2002-04-04  Werner Koch  <wk@gnupg.org>
 
 	* assuan-buffer.c (my_log_prefix): New.  Use it for all i/o debug

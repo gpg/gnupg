@@ -76,6 +76,7 @@ struct assuan_context_s {
   pid_t pid;	  /* In pipe mode, the pid of the child server process.  
                      In socket mode, the pid of the server */
   int listen_fd;  /* The fd we are listening on (used by socket servers) */
+  int connected_fd; /* helper */
 
   pid_t client_pid; /* for a socket server the PID of the client or -1
                        if not available */
@@ -101,6 +102,7 @@ struct assuan_context_s {
 };
 
 
+
 /*-- assuan-pipe-server.c --*/
 int _assuan_new_context (ASSUAN_CONTEXT *r_ctx);
 void _assuan_release_context (ASSUAN_CONTEXT ctx);
@@ -119,6 +121,9 @@ AssuanError _assuan_read_from_server (ASSUAN_CONTEXT ctx, int *okay, int *off);
 
 
 /*-- assuan-util.c --*/
+extern ssize_t (*_assuan_read_wrapper)(int,void*,size_t);
+extern ssize_t (*_assuan_write_wrapper)(int,const void*,size_t);
+
 void *_assuan_malloc (size_t n);
 void *_assuan_calloc (size_t n, size_t m);
 void *_assuan_realloc (void *p, size_t n);
