@@ -517,6 +517,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDigestAlgo, "digest-algo", 2, "@"},
     { oCertDigestAlgo, "cert-digest-algo", 2 , "@" },
     { oCompressAlgo,"compress-algo", 2, "@"},
+    { oCompressAlgo, "compression-algo", 2, "@"}, /* Alias */
     { oThrowKeyids, "throw-keyid", 0, "@"},
     { oThrowKeyids, "throw-keyids", 0, "@"},
     { oNoThrowKeyids, "no-throw-keyid", 0, "@" },
@@ -542,7 +543,6 @@ static ARGPARSE_OPTS opts[] = {
 
   /* hidden options */
     { aListOwnerTrust, "list-ownertrust", 256, "@"}, /* deprecated */
-    { oCompressAlgo, "compression-algo", 1, "@"}, /* alias */
     { aPrintMDs, "print-mds" , 256, "@"}, /* old */
     { aListTrustDB, "list-trustdb",0 , "@"},
     /* Not yet used */

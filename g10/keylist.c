@@ -168,7 +168,7 @@ status_one_subpacket(sigsubpkttype_t type,size_t len,int flags,const byte *buf)
   if(len>256)
     return;
 
-  sprintf(status,"%d %u %u ",type,flags,len);
+  sprintf(status,"%d %u %u ",type,flags,(unsigned int)len);
 
   write_status_text_and_buffer(STATUS_SIG_SUBPACKET,status,buf,len,0);
 }
@@ -580,7 +580,7 @@ print_one_subpacket(sigsubpkttype_t type,size_t len,int flags,const byte *buf)
 {
   size_t i;
 
-  printf("spk:%d:%u:%u:",type,flags,len);
+  printf("spk:%d:%u:%u:",type,flags,(unsigned int)len);
 
   for(i=0;i<len;i++)
     {

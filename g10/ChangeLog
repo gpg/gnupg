@@ -1,3 +1,14 @@
+2004-12-15  David Shaw  <dshaw@jabberwocky.com>
+
+	* apdu.c (apdu_send_le, apdu_send_direct), keylist.c
+	(status_one_subpacket, print_one_subpacket): Fix some compiler
+	warnings.
+
+	* g10.c (main): Fix --compression-algo to take a string argument
+	like --compress-algo.
+
+	* trustdb.c (uid_trust_string_fixed): For safety, check for a pk.
+
 2004-12-14  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (keyedit_menu): Re-remove the N_() markers.

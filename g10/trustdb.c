@@ -502,11 +502,11 @@ uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
 {
   if(!key && !uid)
     return _("10 translator see trustdb.c:uid_trust_string_fixed");
-  else if(uid->is_revoked || key->is_revoked)
+  else if(uid->is_revoked || (key && key->is_revoked))
     return                         _("[ revoked]");
   else if(uid->is_expired)
     return                         _("[ expired]");
-  else
+  else if(key)
     switch(get_validity(key,uid)&TRUST_MASK)
       {
       case TRUST_UNKNOWN:   return _("[ unknown]");
