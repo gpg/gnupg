@@ -11,6 +11,7 @@
 
 	* gpgconf-comp.c (gc_options_gpg): New.
 	(gc_component_t, gc_component): Add GC_BACKEND_GPG.
+	(gc_options_dirmngr): Add allow-ocsp.
 
 2004-03-23  Marcus Brinkmann  <marcus@g10code.de>
 
