@@ -1,3 +1,8 @@
+2002-10-12  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (NAME_OF_DEV_URANDOM): Use /dev/urandom for
+	NetBSD.  Reported by Christian Biere.
+
 2002-10-07  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: OpenLDAP 2.0.27 changed the dependencies again.

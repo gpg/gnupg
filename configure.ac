@@ -493,7 +493,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 NAME_OF_DEV_RANDOM="/dev/random"
 NAME_OF_DEV_URANDOM="/dev/urandom"
 case "${target}" in
-    *-openbsd* | *-netbsd*)
+    *-openbsd*)
         NAME_OF_DEV_RANDOM="/dev/srandom"
         NAME_OF_DEV_URANDOM="/dev/urandom"
         ;;
