@@ -266,7 +266,9 @@ a running dirmngr can't be connected.
 @opindex no-secmem-warning
 Don't print a warning when the so called "secure memory" can't be used.
 
-
+@item --log-file @var{file}
+@opindex log-file
+When running in server mode, append all logging output to @var{file}.
 
 @end table
 

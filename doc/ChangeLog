@@ -1,5 +1,7 @@
 2004-09-29  Werner Koch  <wk@g10code.com>
 
+	* gpgsm.texi (Configuration Options): Add --log-file.
+
 	* gpg-agent.texi (Invoking GPG-AGENT): Add a few words about the
 	expected pinentry filename.
 

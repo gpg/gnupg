@@ -23,8 +23,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-/* FIXME use gettext.h */
-#include <libintl.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -37,8 +35,10 @@
 /* For log_logv(), asctimestamp(), gnupg_get_time ().  */
 #define JNLIB_NEED_LOG_LOGV
 #include "util.h"
+#include "i18n.h"
 
 #include "gpgconf.h"
+
 
 
 /* TODO:
@@ -361,12 +361,19 @@ struct gc_option
 
   /* A gettext domain in which the following description can be found.
      If this is NULL, then DESC is not translated.  Valid for groups
-     and options.  */
+     and options.
+     
+     Note that we try to keep the description of groups within the
+     gnupg domain.  */
   const char *desc_domain;
 
   /* A gettext description for this group or option.  If it starts
      with a '|', then the string up to the next '|' describes the
-     argument, and the description follows the second '|'.  */
+     argument, and the description follows the second '|'. 
+
+     In general enclosing these description in N_() is not required
+     because the description should be identical to the one in the
+     help menu of the respective program. */
   const char *desc;
 
   /* The following fields are only valid for options.  */
@@ -422,7 +429,7 @@ static gc_option_t gc_options_gpg_agent[] =
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the diagnostic output" },
+     "gnupg", N_("Options controlling the diagnostic output") },
    { "verbose", GC_OPT_FLAG_LIST|GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "verbose",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
@@ -435,14 +442,14 @@ static gc_option_t gc_options_gpg_agent[] =
 
    { "Configuration",
      GC_OPT_FLAG_GROUP, GC_LEVEL_EXPERT,
-     NULL, "Options controlling the configuration" },
+     "gnupg", N_("Options controlling the configuration") },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
-     "gnupg", "Options useful for debugging" },
+     "gnupg", N_("Options useful for debugging") },
    { "debug-level", GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG_AGENT },
@@ -455,7 +462,7 @@ static gc_option_t gc_options_gpg_agent[] =
 
    { "Security",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the security" },
+     "gnupg", N_("Options controlling the security") },
    { "default-cache-ttl", GC_OPT_FLAG_RUNTIME, GC_LEVEL_BASIC,
      "gnupg", "|N|expire cached PINs after N seconds",
      GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
@@ -483,7 +490,7 @@ static gc_option_t gc_options_scdaemon[] =
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the diagnostic output" },
+     "gnupg", N_("Options controlling the diagnostic output") },
    { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
      "gnupg", "verbose",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
@@ -496,7 +503,7 @@ static gc_option_t gc_options_scdaemon[] =
 
    { "Configuration",
      GC_OPT_FLAG_GROUP, GC_LEVEL_EXPERT,
-     NULL, "Options controlling the configuration" },
+     "gnupg", N_("Options controlling the configuration") },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_SCDAEMON },
@@ -519,7 +526,7 @@ static gc_option_t gc_options_scdaemon[] =
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
-     "gnupg", "Options useful for debugging" },
+     "gnupg", N_("Options useful for debugging") },
    { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_SCDAEMON },
@@ -529,7 +536,7 @@ static gc_option_t gc_options_scdaemon[] =
 
    { "Security",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the security" },
+     "gnupg", N_("Options controlling the security") },
    { "allow-admin", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", "allow the use of admin card commands",
      GC_ARG_TYPE_NONE, GC_BACKEND_SCDAEMON },
@@ -548,7 +555,7 @@ static gc_option_t gc_options_gpg[] =
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the diagnostic output" },
+     "gnupg", N_("Options controlling the diagnostic output") },
    { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
      "gnupg", "verbose",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG },
@@ -561,14 +568,14 @@ static gc_option_t gc_options_gpg[] =
 
    { "Configuration",
      GC_OPT_FLAG_GROUP, GC_LEVEL_EXPERT,
-     NULL, "Options controlling the configuration" },
+     "gnupg", N_("Options controlling the configuration") },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
-     "gnupg", "Options useful for debugging" },
+     "gnupg", N_("Options useful for debugging") },
    { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
@@ -581,7 +588,7 @@ static gc_option_t gc_options_gpg[] =
 
    { "Keyserver",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Configuration for Keyservers" },
+     "gnupg", N_("Configuration for Keyservers") },
    { "keyserver", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", "|URL|use keyserver at URL",
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
@@ -601,7 +608,7 @@ static gc_option_t gc_options_gpgsm[] =
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the diagnostic output" },
+     "gnupg", N_("Options controlling the diagnostic output") },
    { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
      "gnupg", "verbose",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
@@ -614,14 +621,14 @@ static gc_option_t gc_options_gpgsm[] =
 
    { "Configuration",
      GC_OPT_FLAG_GROUP, GC_LEVEL_EXPERT,
-     NULL, "Options controlling the configuration" },
+     "gnupg", N_("Options controlling the configuration") },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", "|FILE|read options from FILE",
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPGSM },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
-     "gnupg", "Options useful for debugging" },
+     "gnupg", N_("Options useful for debugging") },
    { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
@@ -634,7 +641,7 @@ static gc_option_t gc_options_gpgsm[] =
 
    { "Security",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the security" },
+     "gnupg", N_("Options controlling the security") },
    { "disable-crl-checks", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", "never consult a CRL",
      GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
@@ -664,7 +671,7 @@ static gc_option_t gc_options_dirmngr[] =
 
    { "Monitor",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the diagnostic output" },
+     "gnupg", N_("Options controlling the diagnostic output") },
    { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
      "dirmngr", "verbose",
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
@@ -677,7 +684,7 @@ static gc_option_t gc_options_dirmngr[] =
 
    { "Format",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the format of the output" },
+     "gnupg", N_("Options controlling the format of the output") },
    { "sh", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "dirmngr", "sh-style command output",
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
@@ -687,14 +694,14 @@ static gc_option_t gc_options_dirmngr[] =
    
    { "Configuration",
      GC_OPT_FLAG_GROUP, GC_LEVEL_EXPERT,
-     NULL, "Options controlling the configuration" },
+     "gnupg", N_("Options controlling the configuration") },
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "dirmngr", "|FILE|read options from FILE",
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_DIRMNGR },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
-     "dirmngr", "Options useful for debugging" },
+     "gnupg", N_("Options useful for debugging") },
    { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
      "dirmngr", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
@@ -713,7 +720,7 @@ static gc_option_t gc_options_dirmngr[] =
 
    { "Enforcement",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Options controlling the interactivity and enforcement" },
+     "gnupg", N_("Options controlling the interactivity and enforcement") },
    { "batch", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "dirmngr", "run without asking a user",
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
@@ -723,7 +730,7 @@ static gc_option_t gc_options_dirmngr[] =
 
    { "LDAP",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
-     NULL, "Configuration of LDAP servers to use" },
+     "gnupg", N_("Configuration of LDAP servers to use") },
    { "add-servers", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "dirmngr", "add new servers discovered in CRL distribution points"
      " to serverlist", GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
@@ -748,7 +755,7 @@ static gc_option_t gc_options_dirmngr[] =
 
    { "OCSP",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
-     NULL, "Configuration for OCSP" },
+     "gnupg", N_("Configuration for OCSP") },
    { "allow-ocsp", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "dirmngr", "allow sending OCSP requests",
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
@@ -850,8 +857,8 @@ gpg_agent_runtime_change (void)
 }
 
 
-/* More or less Robust version of dgettext.  It has the sidefeect of
-   switching the codeset to utf-8 becuase this is what we want to
+/* More or less Robust version of dgettext.  It has the side effect of
+   switching the codeset to utf-8 because this is what we want to
    output.  In theory it is posible to keep the orginal code set and
    switch back for regular disgnostic output (redefine "_(" for that)
    but given the natur of this tool, being something invoked from
@@ -870,6 +877,13 @@ my_dgettext (const char *domain, const char *msgid)
           bind_textdomain_codeset (PACKAGE_GT, "utf-8");
           switched_codeset = 1;
         }
+
+      /* Note: This is a hack to actually use the gnupg2 domain as
+         long we are in a transition phase where gnupg 1.x and 1.9 may
+         coexist. */
+      if (!strcmp (domain, "gnupg"))
+        domain = PACKAGE_GT;
+
       text = dgettext (domain, msgid);
       return text ? text : msgid;
     }
