@@ -1,5 +1,5 @@
 /* status.c
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -124,6 +124,7 @@ write_status_text ( int no, const char *text)
       case STATUS_END_DECRYPTION : s = "END_DECRYPTION\n"; break;
       case STATUS_BEGIN_ENCRYPTION:s = "BEGIN_ENCRYPTION\n"; break;
       case STATUS_END_ENCRYPTION : s = "END_ENCRYPTION\n"; break;
+      case STATUS_DELETE_PROBLEM : s = "DELETE_PROBLEM\n"; break;
       default: s = "?\n"; break;
     }
 

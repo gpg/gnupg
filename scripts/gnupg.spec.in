@@ -4,9 +4,10 @@
 #
 %define version @pkg_version@
 %define name gnupg
-Summary: GPL public key crypto
+Summary: GNU Utility for data encryption and digital signatures
 Summary(it): Utility GNU per la sicurezza nelle comunicazioni e nell'archiviazione dei dati.
 Summary(cs): GNU nástroj pro ¹ifrovanou komunikaci a bezpeèné ukládání dat
+Summary(fr): Utilitaire GNU de chiffrement et d'authentification des communications et des données
 Vendor: GNU Privacy Guard Project
 Name: %{name}
 Version: %{version}
@@ -14,12 +15,17 @@ Release: 1
 Copyright: GPL
 Group: Applications/Cryptography
 Group(cs): Aplikace/©ifrování
+Group(fr): Applications/Cryptographie
 Source: ftp://ftp.gnupg.org/pub/gcrypt/%{name}-%{version}.tar.gz
 URL: http://www.gnupg.org
 Provides: gpg openpgp
 BuildRoot: /tmp/rpmbuild_%{name}
 
 %changelog
+* Mon May 01 2000 Fabio Coatti <cova@ferrara.linux.it>
+- Some corrections in French description, thanks to Gaël Quéri
+<gqueri@mail.dotcom.fr>; Some corrections to Italian descriptions.
+
 * Tue Apr 25 2000 Fabio Coatti <cova@ferrara.linux.it>
 - Removed the no longer needed patch for man page by Keith Owens
 
@@ -66,14 +72,22 @@ only IDEA, patented worldwide, and RSA, which is patented in the US
 until 9/20/00).
 
 %description -l it
-GnuPG è un sostituto completo e gratuito per il PGP. Non utilizzando
-IDEA o RSA può essere utilizzato senza restrizioni. GnuPG è conforme
-alle specifiche OpenPGP (RFC2440).
+GnuPG (GNU Privacy Guard) è una utility GNU per la cifratura di dati e
+la creazione di firme digitali. Possiede una gestione avanzata delle
+chiavi ed è conforme allo standard Internet OpenPGP, descritto nella
+RFC 2440. Non utilizzando algoritmi brevettati, non è compatibile con
+PGP2 (PGP2.x usa solo IDEA, coperto da brevetto mondiale, ed RSA,
+brevettato negli USA con scadenza 20/09/2000). Questi algoritmi sono
+utilizzabili da GnuPG tramite moduli esterni.
 
 %description -l fr
-GnuPG est un remplacement complet et « libre » de PGP. Comme il n'utilise
-ni IDEA ni RSA il peut être utilisé sans restriction. GnuPG est conforme
-à la spécification OpenPGP (RFC2440).                         
+GnuPG est un utilitaire GNU destiné à chiffrer des données et à créer
+des signatures électroniques. Il a des capacités avancées de gestion de
+clés et il est conforme à la norme proposée OpenPGP décrite dans la
+RFC2440. Comme GnuPG n'utilise pas d'algorithme breveté, il n'est
+compatible avec aucune version de PGP2 (PGP2.x ne sait utiliser que
+l'IDEA breveté dans le monde entier et RSA, breveté aux États-Unis
+jusqu'au 20 septembre 2000). 
 
 %description -l cs
 GnuPG je GNU nástroj pro bezpeènou komunikaci a ukládání dat. Mù¾e být

@@ -1,5 +1,5 @@
 /* delkey.c - delete keys
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -62,6 +62,7 @@ delete_key( const char *username, int secret )
 	       : find_keyblock_byname( &kbpos, username );
     if( rc ) {
 	log_error(_("%s: user not found\n"), username );
+	write_status_text( STATUS_DELETE_PROBLEM, "1" );
 	goto leave;
     }
 
@@ -93,10 +94,12 @@ delete_key( const char *username, int secret )
 	    "there is a secret key for this public key!\n"));
 	    log_info(_(
 	    "use option \"--delete-secret-key\" to delete it first.\n"));
+	    write_status_text( STATUS_DELETE_PROBLEM, "2" );
 	    rc = -1;
 	}
-	else if( rc != G10ERR_NO_SECKEY )
+	else if( rc != G10ERR_NO_SECKEY ) {
 	    log_error("%s: get secret key: %s\n", username, g10_errstr(rc) );
+	}
 	else
 	    rc = 0;
     }

@@ -199,6 +199,12 @@ more arguments in future versions.
     END_ENCRYPTION
 	Mark the start and end of the actual encryption process.
 
+    DELETE_PROBLEM reason_code
+	Deleting a key failed.	Reason codes are:
+	    1 - No such key
+	    2 - Must delete secret key first
+
+
 
 Key generation
 ==============

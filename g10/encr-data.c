@@ -1,5 +1,5 @@
 /* encr-data.c -  process an encrypted data packet
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -165,7 +165,7 @@ mdc_decode_filter( void *opaque, int control, IOBUF a,
 	}
 	if( n == 40 ) {
 	    /* we have enough stuff - flush the deferred stuff */
-	    /* (we have asserted that the buffer is large enough */
+	    /* (we have asserted that the buffer is large enough) */
 	    if( !dfx->defer_filled ) /* the first time */
 		memcpy(buf, buf+20, 20 );
 	    else

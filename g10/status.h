@@ -1,5 +1,5 @@
 /* status.h
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -74,6 +74,7 @@
 #define STATUS_BEGIN_ENCRYPTION 43
 #define STATUS_END_ENCRYPTION	44
 
+#define STATUS_DELETE_PROBLEM	45
 
 /*-- status.c --*/
 void set_status_fd ( int fd );

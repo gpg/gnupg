@@ -9,6 +9,10 @@
 
   * INFO Kommand um z.B. default-recipients herauszufinden.
 
+  * export sollte exit(1) machen bei einem Fehler - testen! Es wird ein
+    leerer File erzeugt.
+
+
 Scheduled for 1.1
 -----------------
   * Rework the whole key selection stuff: Compile a list of valid

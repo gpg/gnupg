@@ -695,6 +695,14 @@ Use batch mode.  Never ask, do not allow interactive
 commands.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-tty</term>
+<listitem><para>
+Make sure that the TTY (terminal) is never used for any output.
+This option is needed in some cases because GnuPG sometimes prints
+warnings to the TTY if if --batch is used.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--no-batch</term>

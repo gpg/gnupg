@@ -1,3 +1,10 @@
+Fri May 12 14:01:20 CEST 2000  Werner Koch  <wk@openit.de>
+
+	* delkey.c (delete_key): Add 2 new status messages
+	* status.c, status.h (STATUS_DELETE_PROBLEM): New.
+
+	Fixed years of copyright in all source files.
+
 Mon May  1 17:08:14 CEST 2000  Werner Koch  <wk@openit.de>
 
 	* trustdb.c (propagate_validity): Fixed the bug that only one uid

@@ -1,3 +1,7 @@
+2000-05-12 10:57:21  Werner Koch  (wk@habibti.openit.de)
+
+	* gpg.sgml: Documented --no-tty.
+
 2000-03-09 15:01:51  Werner Koch  (wk@habibti.openit.de)
 
 	* DETAILS: Ad a short blurb about unattended key generation.
