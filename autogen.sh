@@ -90,7 +90,8 @@ if test "$1" = "--build-w32"; then
 	     --with-libgcrypt-prefix=${w32root} \
 	     --with-libassuan-prefix=${w32root} \
 	     --with-zlib=${w32root} \
-             --with-pth-prefix=${w32root}
+             --with-pth-prefix=${w32root} \
+             --disable-gpg
     rc=$?
     # Ugly hack to overcome a gettext problem.  Someone should look into
     # gettext to figure out why the po directory is not ignored as it used

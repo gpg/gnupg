@@ -24,12 +24,12 @@ min_automake_version="1.9.3"
 
 # Version number: Remember to change it immediately *after* a release.
 #                 Add a "-cvs" prefix for non-released code.
-AC_INIT(gnupg, 1.9.15-cvs, gnupg-devel@gnupg.org)
+AC_INIT(gnupg, 1.9.15, gnupg-devel@gnupg.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
 development_version=yes
-NEED_GPG_ERROR_VERSION=0.7
+NEED_GPG_ERROR_VERSION=1.0
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.1.94
@@ -131,6 +131,7 @@ AM_CONDITIONAL(GNUPG_PROTECT_TOOL_PGM, test -n "$GNUPG_PROTECT_TOOL_PGM")
 show_gnupg_protect_tool_pgm="(default)"
 test -n "$GNUPG_PROTECT_TOOL_PGM" \
       && show_gnupg_protect_tool_pgm="$GNUPG_PROTECT_TOOL_PGM"
+
 
 
 # Some folks want to use only the agent form this packet.  Make it
@@ -528,9 +529,8 @@ AC_SUBST(PTH_CFLAGS)
 AC_SUBST(PTH_LIBS)
 
 AC_ARG_ENABLE(threads,
-    AC_HELP_STRING([--disable-threads],[allow building without Pth support]);
-    
-)
+    AC_HELP_STRING([--disable-threads],[allow building without Pth support])
+             )
 
 
 dnl Must check for network library requirements before doing link tests
@@ -1034,18 +1034,12 @@ if test "$build_scdaemon" = "yes"; then
   fi
 fi
 
+
 if test "$build_agent_only" = "yes" ; then
   build_gpg=no
   build_gpgsm=no
   build_scdaemon=no
 fi
-
-# We don't yet want to build some parts for W32
-case "${host}" in 
-    *-mingw32*) 
-      build_gpg=no
-      ;;
-esac
 
 
 AM_CONDITIONAL(BUILD_GPG,   test "$build_gpg" = "yes")

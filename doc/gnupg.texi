@@ -1,23 +1,8 @@
 \input texinfo                      @c -*-texinfo-*-
 @c %**start of header
 @setfilename gnupg.info
-
 @include version.texi
-
-@macro copyrightnotice
-Copyright @copyright{} 2002, 2004 Free Software Foundation, Inc.
-@end macro
-@macro permissionnotice
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2 of the License, or (at your
-option) any later version. The text of the license can be found in the
-section entitled ``Copying''.
-@end macro
-
-
 @settitle Using the GNU Privacy Guard
-
 @c Create a separate index for command line options.
 @defcodeindex op
 @c Merge the standard indexes into a single one.
@@ -26,8 +11,39 @@ section entitled ``Copying''.
 @syncodeindex ky cp
 @syncodeindex pg cp
 @syncodeindex tp cp
+@c %**end of header
+@copying
+This is the @cite{The GNU Privacy Guard Manual}
+(version @value{VERSION}, @value{UPDATED}).
 
-@c printing stuff taken from gcc.
+@iftex
+Published by the Free Software Foundation@*
+59 Temple Place - Suite 330@*
+Boston, MA 02111-1307 USA
+@end iftex
+
+Copyright @copyright{} 2002, 2004 Free Software Foundation, Inc.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version. The text of the license can be found in the
+section entitled ``Copying''.
+@end quotation
+@end copying
+
+
+@dircategory GNU Utilities
+@direntry
+* gpg: (gnupg).            OpenPGP encryption and signing tool.
+* gpgsm: (gnupg).          S/MIME encryption and signing tool.
+@end direntry
+
+
+@c
+@c Printing stuff taken from gcc.
+@c
 @macro gnupgtabopt{body}
 @code{\body\}
 @end macro
@@ -48,36 +64,10 @@ section entitled ``Copying''.
 @end ifnottex
 
 
-@c Change the font used for @def... commands, since the default
-@c proportional one used is bad for names starting __.
-@tex
-\global\setfont\defbf\ttbshape{10}{\magstep1}
-@end tex
-
-@c %**end of header
-
-@ifnottex
-@dircategory GNU Utilities
-@direntry
-* gpg: (gnupg).            OpenPGP encryption and signing tool.
-* gpgsm: (gnupg).          S/MIME encryption and signing tool.
-@end direntry
-This file documents the use and the internals of the GNU Privacy Guard.
-
-This is Edition @value{EDITION}, last updated @value{UPDATED}, of
-@cite{The `GNU Privacy Guard' Manual}, for Version @value{VERSION}.
-@sp 1
-Published by the Free Software Foundation@*
-59 Temple Place - Suite 330@*
-Boston, MA 02111-1307 USA
-@sp 1
-@copyrightnotice{}
-@sp 1
-@permissionnotice{}
-@end ifnottex
-
+@c
+@c Titlepage
+@c
 @setchapternewpage odd
-
 @titlepage
 @title Using the GNU Privacy Guard
 @subtitle Version @value{VERSION}
@@ -89,26 +79,26 @@ Boston, MA 02111-1307 USA
 
 @sp 6
 
-@author Werner Koch @code{(wk@@gnupg.org)}
-
+@author Werner Koch (@email{wk@@gnupg.org})
 
 @page
 @vskip 0pt plus 1filll
-@copyrightnotice{}
-@sp 2
-@permissionnotice{}
+@insertcopying
 @end titlepage
+
+
 @summarycontents
 @contents
 @page
 
-
+@ifnottex
 @node Top
-@top Introduction
-@cindex introduction
+@top The GNU Privacy Guard
+@insertcopying
 
 This manual documents how to use the GNU Privacy Guard system as well as
 the administration and the architecture.
+@end ifnottex
 
 @menu
 * Invoking GPG::        Using the OpenPGP protocol.

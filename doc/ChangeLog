@@ -1,3 +1,7 @@
+2005-01-04  Werner Koch  <wk@g10code.com>
+
+	* gnupg.texi: Updated to use @copying.
+
 2004-12-22  Werner Koch  <wk@g10code.com>
 
 	* gnupg.texi: Reordered.

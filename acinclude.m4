@@ -214,6 +214,8 @@ AC_DEFUN([GNUPG_PTH_VERSION_CHECK],
   [
     _pth_version=`$PTH_CONFIG --version | awk 'NR==1 {print [$]3}'`
     _req_version="ifelse([$1],,1.2.0,$1)"
+
+    AC_MSG_CHECKING(for PTH - version >= $_req_version)
     for _var in _pth_version _req_version; do
         eval "_val=\"\$${_var}\""
         _major=`echo $_val | sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\([[ab.]]\)\([[0-9]]*\)/\1/'`
@@ -237,14 +239,35 @@ AC_DEFUN([GNUPG_PTH_VERSION_CHECK],
             fi
         fi
     fi
-    if test $have_pth = no; then
-       AC_MSG_WARN([[
-***
-*** Found Pth version $_pth_version, but require at least
-*** version $_req_version.  Please upgrade Pth first.
-***]])
+    if test $have_pth = yes; then
+       AC_MSG_RESULT(yes)
+       AC_MSG_CHECKING([whether PTH installation is sane])
+       AC_CACHE_VAL(gnupg_cv_pth_is_sane,[
+         _gnupg_pth_save_cflags=$CFLAGS
+         _gnupg_pth_save_ldflags=$LDFLAGS
+         _gnupg_pth_save_libs=$LIBS
+         CFLAGS="$CFLAGS `$PTH_CONFIG --ldflags`"
+         LDFLAGS="$LDFLAGS `$PTH_CONFIG --ldflags`"
+         LIBS="$LIBS `$PTH_CONFIG --libs`"
+         AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <pth.h>
+                                         ],
+                                         [[ pth_init ();]])],
+                        gnupg_cv_pth_is_sane=yes,
+                        gnupg_cv_pth_is_sane=no)
+         CFLAGS=$_gnupg_pth_save_cflags
+         LDFLAGS=$_gnupg_pth_save_ldflags
+         LIBS=$_gnupg_pth_save_libs
+       ])
+       if test $gnupg_cv_pth_is_sane != yes; then
+          have_pth=no
+       fi
+       AC_MSG_RESULT($gnupg_cv_pth_is_sane)
+    else
+       AC_MSG_RESULT(no)
     fi    
   ])
+
+
 
 
 # Check whether mlock is broken (hpux 10.20 raises a SIGBUS if mlock

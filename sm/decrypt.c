@@ -333,7 +333,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, FILE *out_fp)
                                numbuf, algoid?algoid:"?", NULL);
               }
 
-              /* If it seems that this is not an ecrypted message we
+              /* If it seems that this is not an encrypted message we
                  return a more sensible error code. */
               if (!algoid)
                 rc = gpg_error (GPG_ERR_NO_DATA);

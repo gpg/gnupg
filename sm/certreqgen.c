@@ -493,7 +493,7 @@ proc_parameters (ctrl_t ctrl,
 
   sprintf (numbuf, "%u", nbits);
   snprintf (keyparms, DIM (keyparms)-1, 
-            "(6:genkey(3:rsa(5:nbits%d:%s)))", strlen (numbuf), numbuf);
+            "(6:genkey(3:rsa(5:nbits%d:%s)))", (int)strlen (numbuf), numbuf);
   rc = gpgsm_agent_genkey (ctrl, keyparms, &public);
   if (rc)
     {

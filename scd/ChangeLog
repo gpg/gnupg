@@ -9,6 +9,7 @@
 	(ccid_transceive_apdu_level): New.
 	(ccid_transceive): Divert to above.
 	(parse_ccid_descriptor): Allow APDU level exchange mode.
+	(do_close_reader): Pass the interface number to usb_release_interface.
 
 2004-12-21  Werner Koch  <wk@g10code.com>
 

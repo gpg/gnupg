@@ -1,3 +1,19 @@
+2005-01-13  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.15.
+
+	* acinclude.m4 (GNUPG_PTH_VERSION_CHECK): Link a simple test
+	program to see whether the installation is sane.
+
+2005-01-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require gpg-error 1.0.
+
+2005-01-04  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Remove hack not to build gpg2 for W32.
+	* autogen.sh <build-w32>: Pass option --disable-gpg instead.
+
 2004-12-22  Werner Koch  <wk@g10code.com>
 
 	Released 1.9.14.

@@ -30,6 +30,7 @@
 
 #include "agent.h"
 #include <assuan.h> /* fixme: need a way to avoid assuan calls here */
+#include "i18n.h"
 
 static const char headerblurb[] =
 "# This is the list of trusted keys.  Comment lines, like this one, as\n"
@@ -290,17 +291,30 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
 
-  /* insert a new one */
+  /* Insert a new one. */
   if (asprintf (&desc,
-                "Please verify that the certificate identified as:%%0A"
-                "  \"%s\"%%0A"
-                "has the fingerprint:%%0A"
-                "  %s", name, fpr) < 0 )
+                /* TRANSLATORS: This prompt is shown by the Pinentry
+                   and has one special property: A "%%0A" is used by
+                   Pinentry to insert a line break.  The double
+                   percent sign is actually needed because it is also
+                   a printf format string.  If you need to insert a
+                   plain % sign, you need to encode it as "%%25".  The
+                   second "%s" gets replaced by a hexdecimal
+                   fingerprint string whereas the first one receives
+                   the name as store in the certificate. */
+                _("Please verify that the certificate identified as:%%0A"
+                  "  \"%s\"%%0A"
+                  "has the fingerprint:%%0A"
+                  "  %s"), name, fpr) < 0 )
     {
       trustfp_used--;
       return out_of_core ();
     }
-  rc = agent_get_confirmation (ctrl, desc, "Correct", "No");
+
+  /* TRANSLATORS: "Correct" is the label of a button and intended to
+     be hit if the fingerprint matches the one of the CA.  The other
+     button is "the default "Cancel" of the Pinentry. */
+  rc = agent_get_confirmation (ctrl, desc, _("Correct"), NULL);
   free (desc);
   if (rc)
     {
@@ -309,15 +323,23 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
     }
 
   if (asprintf (&desc,
-                "Do you ultimately trust%%0A"
-                "  \"%s\"%%0A"
-                "to correctly certify user certificates?",
+                /* TRANSLATORS: This prompt is shown by the Pinentry
+                   and has one special property: A "%%0A" is used by
+                   Pinentry to insert a line break.  The double
+                   percent sign is actually needed because it is also
+                   a printf format string.  If you need to insert a
+                   plain % sign, you need to encode it as "%%25".  The
+                   "%s" gets replaced by the name as store in the
+                   certificate. */
+                _("Do you ultimately trust%%0A"
+                  "  \"%s\"%%0A"
+                  "to correctly certify user certificates?"),
                 name) < 0 )
     {
       trustfp_used--;
       return out_of_core ();
     }
-  rc = agent_get_confirmation (ctrl, desc, "Yes", "No");
+  rc = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"));
   free (desc);
   if (rc)
     {

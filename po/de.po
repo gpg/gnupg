@@ -317,7 +317,9 @@ msgstr "Mantra"
 msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
-msgstr "Bitte prüfen Sie, daß das Zertifikat mit dem Namen:%%0A  \"%s\"%%0Afolgenden Fingerabdruck hat:%%0A  %s"
+msgstr ""
+"Bitte prüfen Sie, daß das Zertifikat mit dem Namen:%%0A  \"%s\"%%0Afolgenden "
+"Fingerabdruck hat:%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended to
 #. be hit if the fingerprint matches the one of the CA.  The other
@@ -339,7 +341,9 @@ msgstr "Korrekt"
 msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
-msgstr "Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s\"%%0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja\""
+msgstr ""
+"Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s\"%%"
+"0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja\""
 
 #: agent/trustlist.c:342
 msgid "Yes"

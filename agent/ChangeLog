@@ -1,5 +1,8 @@
 2005-01-04  Werner Koch  <wk@g10code.com>
 
+	* trustlist.c (agent_marktrusted): Use "Cancel" for the first
+	confirmation and made the strings translatable.
+
 	* cache.c (agent_put_cache): Fix the test for using the default
 	TTL.
 

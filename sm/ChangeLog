@@ -1,3 +1,7 @@
+2005-01-13  Werner Koch  <wk@g10code.com>
+
+	* certreqgen.c (proc_parameters): Cast printf arg.
+
 2004-12-22  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (set_binary): New.

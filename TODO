@@ -67,15 +67,13 @@ might want to have an agent context for each service request
 
 * Move pkcs-1 encoding into libgcrypt.
 
-* Use a MAC to protect some files.
+* Use a MAC to protect sensitive files.
+  The problem here is that we need yet another key and it is unlikely
+  that users are willing to remember that key too.  It is possible to
+  do this with a smartcard, though.
 
 * sm/export.c
 ** Return an error code or a status info per user ID.
-
-* Where is http.c, regcomp.c, srv.c, w32reg.c  ?
-
-* scd/sc-investigate
-** Enhance with card compatibility check
 
 * tests
 ** Makefile.am

@@ -198,6 +198,7 @@ struct ccid_driver_s
   unsigned short id_vendor;
   unsigned short id_product;
   unsigned short bcd_device;
+  int ifc_no;
   int ep_bulk_out;
   int ep_bulk_in;
   int ep_intr;
@@ -914,6 +915,7 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
   (*handle)->id_vendor = dev->descriptor.idVendor;
   (*handle)->id_product = dev->descriptor.idProduct;
   (*handle)->bcd_device = dev->descriptor.bcdDevice;
+  (*handle)->ifc_no = ifc_no;
   (*handle)->ep_bulk_out = ep_bulk_out;
   (*handle)->ep_bulk_in = ep_bulk_in;
   (*handle)->ep_intr = ep_intr;
@@ -977,7 +979,7 @@ do_close_reader (ccid_driver_t handle)
     }
   if (handle->idev)
     {
-      usb_release_interface (handle->idev, 0);
+      usb_release_interface (handle->idev, handle->ifc_no);
       usb_close (handle->idev);
       handle->idev = NULL;
     }
@@ -1018,6 +1020,7 @@ ccid_shutdown_reader (ccid_driver_t handle)
 
 
   handle->idev = idev;
+  handle->ifc_no = ifc_no;
   handle->ep_bulk_out = ep_bulk_out;
   handle->ep_bulk_in = ep_bulk_in;
   handle->ep_intr = ep_intr;
@@ -2115,6 +2118,7 @@ main (int argc, char **argv)
   int no_pinpad = 0;
   int verify_123456 = 0;
   int did_verify = 0;
+  int no_poll = 0;
 
   if (argc)
     {
@@ -2139,6 +2143,11 @@ main (int argc, char **argv)
           ccid_set_debug_level (1);
           argc--; argv++;
         }
+      else if ( !strcmp (*argv, "--no-poll"))
+        {
+          no_poll = 1;
+          argc--; argv++;
+        }
       else if ( !strcmp (*argv, "--no-pinpad"))
         {
           no_pinpad = 1;
@@ -2157,7 +2166,8 @@ main (int argc, char **argv)
   if (rc)
     return 1;
 
-  ccid_poll (ccid);
+  if (!no_poll)
+    ccid_poll (ccid);
   fputs ("getting ATR ...\n", stderr);
   rc = ccid_get_atr (ccid, NULL, 0, NULL);
   if (rc)
@@ -2166,7 +2176,8 @@ main (int argc, char **argv)
       return 1;
     }
 
-  ccid_poll (ccid);
+  if (!no_poll)
+    ccid_poll (ccid);
   fputs ("getting slot status ...\n", stderr);
   rc = ccid_slot_status (ccid, &slotstat);
   if (rc)
@@ -2175,7 +2186,8 @@ main (int argc, char **argv)
       return 1;
     }
 
-  ccid_poll (ccid);
+  if (!no_poll)
+    ccid_poll (ccid);
 
   fputs ("selecting application OpenPGP ....\n", stderr);
   {
@@ -2188,7 +2200,8 @@ main (int argc, char **argv)
   }
   
 
-  ccid_poll (ccid);
+  if (!no_poll)
+    ccid_poll (ccid);
 
   fputs ("getting OpenPGP DO 0x65 ....\n", stderr);
   {

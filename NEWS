@@ -1,5 +1,10 @@
-Noteworthy changes in version 1.9.15
+Noteworthy changes in version 1.9.15 (2005-01-13)
 -------------------------------------------------
+
+ * Fixed passphrase caching bug.
+
+ * Better support for CCID readers; the reader from Cherry RS 6700 USB
+   does now work.
 
 
 Noteworthy changes in version 1.9.14 (2004-12-22)
