@@ -38,6 +38,7 @@ struct list_external_parm_s {
   FILE *fp;
   int print_header;
   int with_colons;
+  int with_chain;
 };
 
 
@@ -269,6 +270,146 @@ list_cert_colon (KsbaCert cert, FILE *fp, int have_secret)
 }
 
 
+/* List one certificate in standard mode */
+static void
+list_cert_std (KsbaCert cert, FILE *fp, int have_secret)
+{
+  KsbaError kerr;
+  KsbaSexp sexp;
+  char *dn;
+  time_t t;
+  int idx;
+  int is_ca, pathlen;
+  unsigned int kusage;
+  char *string, *p;
+
+  sexp = ksba_cert_get_serial (cert);
+  fputs ("Serial number: ", fp);
+  gpgsm_print_serial (fp, sexp);
+  ksba_free (sexp);
+  putc ('\n', fp);
+
+  dn = ksba_cert_get_issuer (cert, 0);
+  fputs ("       Issuer: ", fp);
+  gpgsm_print_name (fp, dn);
+  ksba_free (dn);
+  putc ('\n', fp);
+  for (idx=1; (dn = ksba_cert_get_issuer (cert, idx)); idx++)
+    {
+      fputs ("          aka: ", fp);
+      gpgsm_print_name (fp, dn);
+      ksba_free (dn);
+      putc ('\n', fp);
+    }
+
+  dn = ksba_cert_get_subject (cert, 0);
+  fputs ("      Subject: ", fp);
+  gpgsm_print_name (fp, dn);
+  ksba_free (dn);
+  putc ('\n', fp);
+  for (idx=1; (dn = ksba_cert_get_subject (cert, idx)); idx++)
+    {
+      fputs ("          aka: ", fp);
+      gpgsm_print_name (fp, dn);
+      ksba_free (dn);
+      putc ('\n', fp);
+    }
+
+  t = ksba_cert_get_validity (cert, 0);
+  fputs ("     validity: ", fp);
+  gpgsm_print_time (fp, t);
+  fputs (" through ", fp);
+  t = ksba_cert_get_validity (cert, 1);
+  gpgsm_print_time (fp, t);
+  putc ('\n', fp);
+
+  kerr = ksba_cert_get_key_usage (cert, &kusage);
+  if (kerr != KSBA_No_Data)
+    {
+      fputs ("    key usage:", fp);
+      if (kerr)
+        fprintf (fp, " [error: %s]", ksba_strerror (kerr));
+      else
+        {
+          if ( (kusage & KSBA_KEYUSAGE_DIGITAL_SIGNATURE))
+            fputs (" digitalSignature", fp);
+          if ( (kusage & KSBA_KEYUSAGE_NON_REPUDIATION))  
+            fputs (" nonRepudiation", fp);
+          if ( (kusage & KSBA_KEYUSAGE_KEY_ENCIPHERMENT)) 
+            fputs (" keyEncipherment", fp);
+          if ( (kusage & KSBA_KEYUSAGE_DATA_ENCIPHERMENT))
+            fputs (" dataEncripherment", fp);
+          if ( (kusage & KSBA_KEYUSAGE_KEY_AGREEMENT))    
+            fputs (" keyAgreement", fp);
+          if ( (kusage & KSBA_KEYUSAGE_KEY_CERT_SIGN))
+            fputs (" certSign", fp);
+          if ( (kusage & KSBA_KEYUSAGE_CRL_SIGN))  
+            fputs (" crlSign", fp);
+          if ( (kusage & KSBA_KEYUSAGE_ENCIPHER_ONLY))
+            fputs (" encipherOnly", fp);
+          if ( (kusage & KSBA_KEYUSAGE_DECIPHER_ONLY))  
+            fputs (" decipherOnly", fp);
+        }
+      putc ('\n', fp);
+    }
+
+  kerr = ksba_cert_get_cert_policies (cert, &string);
+  if (kerr != KSBA_No_Data)
+    {
+      fputs ("     policies: ", fp);
+      if (kerr)
+        fprintf (fp, "[error: %s]", ksba_strerror (kerr));
+      else
+        {
+          for (p=string; *p; p++)
+            {
+              if (*p == '\n')
+                *p = ',';
+            }
+          print_sanitized_string (fp, string, 0);
+          xfree (string);
+        }
+      putc ('\n', fp);
+    }
+
+  kerr = ksba_cert_is_ca (cert, &is_ca, &pathlen);
+  if (kerr || is_ca)
+    {
+      fputs ("  path length: ", fp);
+      if (kerr)
+        fprintf (fp, "[error: %s]", ksba_strerror (kerr));
+      else if (pathlen == -1)
+        fputs ("unlimited", fp);
+      else
+        fprintf (fp, "%d", pathlen);
+      putc ('\n', fp);
+    }
+
+
+  dn = gpgsm_get_fingerprint_string (cert, 0);
+  fprintf (fp, "  fingerprint: %s\n", dn?dn:"error");
+  xfree (dn);
+}
+
+/* Same as standard mode mode list all certifying certts too */
+static void
+list_cert_chain (KsbaCert cert, FILE *fp)
+{
+  KsbaCert next = NULL;
+
+  list_cert_std (cert, fp, 0);
+  ksba_cert_ref (cert);
+  while (!gpgsm_walk_cert_chain (cert, &next))
+    {
+      ksba_cert_release (cert);
+      fputs ("Certified by\n", fp);
+      list_cert_std (next, fp, 0);
+      cert = next;
+    }
+  ksba_cert_release (cert);
+  putc ('\n', fp);
+}
+
 
 
 /* List all internal keys or just the key given as NAMES.
@@ -380,8 +521,13 @@ list_internal_keys (CTRL ctrl, STRLIST names, FILE *fp, unsigned int mode)
         {
           if (ctrl->with_colons)
             list_cert_colon (cert, fp, have_secret);
+          else if (ctrl->with_chain)
+            list_cert_chain (cert, fp);
           else
-            list_cert_colon (cert, fp, have_secret);
+            {
+              list_cert_std (cert, fp, have_secret);
+              putc ('\n', fp);
+            }
         }
       ksba_cert_release (cert); 
       cert = NULL;
@@ -416,8 +562,13 @@ list_external_cb (void *cb_value, KsbaCert cert)
 
   if (parm->with_colons)
     list_cert_colon (cert, parm->fp, 0);
+  else if (parm->with_chain)
+    list_cert_chain (cert, parm->fp);
   else
-    list_cert_colon (cert, parm->fp, 0);
+    {
+      list_cert_std (cert, parm->fp, 0);
+      putc ('\n', parm->fp);
+    }
 }
 
 
@@ -433,6 +584,7 @@ list_external_keys (CTRL ctrl, STRLIST names, FILE *fp)
   parm.fp = fp;
   parm.print_header = ctrl->no_server;
   parm.with_colons = ctrl->with_colons;
+  parm.with_chain = ctrl->with_chain;
 
   rc = gpgsm_dirmngr_lookup (names, list_external_cb, &parm);
   if (rc)

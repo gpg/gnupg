@@ -107,6 +107,7 @@ struct server_control_s {
   int  status_fd;    /* only for non-server mode */
   struct server_local_s *server_local;
   int with_colons;  /* use column delimited output format */
+  int with_chain;   /* include the certifying certs in a listing */
 
   int autodetect_encoding; /* try to detect the input encoding */
   int is_pem;         /* Is in PEM format */
@@ -162,10 +163,16 @@ void gpgsm_destroy_writer (Base64Context ctx);
 
 
 /*-- certdump.c --*/
+void gpgsm_print_serial (FILE *fp, KsbaConstSexp p);
+void gpgsm_print_time (FILE *fp, time_t t);
+void gpgsm_print_name (FILE *fp, const char *string);
+
 void gpgsm_dump_cert (const char *text, KsbaCert cert);
 void gpgsm_dump_serial (KsbaConstSexp p);
 void gpgsm_dump_time (time_t t);
 void gpgsm_dump_string (const char *string);
+
+
 
 /*-- certcheck.c --*/
 int gpgsm_check_cert_sig (KsbaCert issuer_cert, KsbaCert cert);

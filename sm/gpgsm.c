@@ -213,8 +213,8 @@ static ARGPARSE_OPTS opts[] = {
     { aListKeys, "list-keys", 256, N_("list keys")},
     { aListKeys, "list-public-keys", 256, "@" },
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
-    { aDummy,    "list-sigs", 256, "@"}, 
-    { aDummy,    "check-sigs",256, "@"},
+    { aListSigs,   "list-sigs", 256, N_("list certificate chain")}, 
+    { aListSigs,   "check-sigs",256, "@"},
     { oFingerprint, "fingerprint", 256, N_("list keys and fingerprints")},
     { aListSecretKeys, "list-secret-keys", 256, N_("list secret keys")},
     { aKeygen,	   "gen-key",  256, N_("generate a new key pair")},
@@ -360,7 +360,7 @@ static ARGPARSE_OPTS opts[] = {
     { oWithKeyData,"with-key-data", 0, "@"},
     { aListKeys, "list-key", 0, "@" }, /* alias */
     { aListSigs, "list-sig", 0, "@" }, /* alias */
-    { aCheckKeys, "check-sig",0, "@" }, /* alias */
+    { aListSigs, "check-sig",0, "@" }, /* alias */
     { oSkipVerify, "skip-verify",0, "@" },
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
@@ -727,6 +727,7 @@ main ( int argc, char **argv)
         case aExport: set_cmd (&cmd, aExport); break;
         case aListKeys: set_cmd (&cmd, aListKeys); break;
         case aListSecretKeys: set_cmd (&cmd, aListSecretKeys); break;
+        case aListSigs: set_cmd (&cmd, aListSigs); break;
 
         case aLearnCard: set_cmd (&cmd, aLearnCard); break;
 
@@ -1179,6 +1180,8 @@ main ( int argc, char **argv)
 /*        xfree(username); */
       break;
 
+    case aListSigs:
+      ctrl.with_chain = 1;
     case aListKeys:
       for (sl=NULL; argc; argc--, argv++)
         add_to_strlist (&sl, *argv);
