@@ -1,0 +1,27 @@
+#!/bin/sh
+#          Convert A BER or DER encoding to PEM format.
+#
+# Copyright 20032 Free Software Foundation, Inc.
+#
+# This program is Free Software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+PGM="der-to-pem"
+if [ $# == 0 ]; then
+  input=""
+elif [ $# == 1 ]; then
+  input="$1"
+else
+  echo "usage: $PGM [<inputfile>]" >&2
+  exit 1
+fi
+
+echo "-----BEGIN CERTIFICATE-----"
+mimencode $input
+echo "-----END CERTIFICATE-----"
+
