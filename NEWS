@@ -33,6 +33,10 @@ Noteworthy changes in version 1.2.2 (unreleased)
       This is a simpler interface to the old method (which still
       works) of revoking the user ID self-signature.
 
+    * Fixed a compatibility problem with CryptoEx by increasing the
+      window size of the uncompressor.
+
+
 Noteworthy changes in version 1.2.1 (2002-10-25)
 ------------------------------------------------
 
