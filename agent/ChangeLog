@@ -1,3 +1,8 @@
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am: Include cmacros.am for common flags.
+	(libexec_PROGRAMS): Put gpg-protect-tool there.
+
 2004-02-10  Werner Koch  <wk@gnupg.org>
 
 	* minip12.c (parse_bag_encrypted_data): Finished implementation.

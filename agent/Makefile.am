@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -18,14 +18,14 @@
 
 ## Process this file with automake to produce Makefile.in
 
-localedir = $(datadir)/locale
-INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
-
 bin_PROGRAMS = gpg-agent
-pkglib_PROGRAMS = gpg-protect-tool
+libexec_PROGRAMS = gpg-protect-tool
 
-AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBGCRYPT_CFLAGS) \
-              $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/intl
+
+include $(top_srcdir)/am/cmacros.am
+
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \

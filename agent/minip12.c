@@ -98,6 +98,9 @@ static unsigned char const oid_pkcs_12_pkcs_8ShroudedKeyBag[11] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x0A, 0x01, 0x02 };
 static unsigned char const oid_pkcs_12_CertBag[11] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x0A, 0x01, 0x03 };
+static unsigned char const oid_pkcs_12_CrlBag[11] = {
+  0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x0A, 0x01, 0x04 };
+
 static unsigned char const oid_pbeWithSHAAnd3_KeyTripleDES_CBC[10] = {
   0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x0C, 0x01, 0x03 };
 static unsigned char const oid_pbeWithSHAAnd40BitRC2_CBC[10] = {
@@ -490,6 +493,8 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   /* Loop over all certificates inside the bab. */
   while (n)
     {
+      int isbag = 0;
+
       where = "certbag.nextcert";
       if (ti.class || ti.tag != TAG_SEQUENCE)
         goto bailout;
@@ -497,59 +502,78 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
       where = "certbag.objectidentifier";
       if (parse_tag (&p, &n, &ti))
         goto bailout;
-      if (ti.class || ti.tag != TAG_OBJECT_ID
-          || ti.length != DIM(oid_pkcs_12_CertBag)
-          || memcmp (p, oid_pkcs_12_CertBag,
-                     DIM(oid_pkcs_12_CertBag)))
+      if (ti.class || ti.tag != TAG_OBJECT_ID)
         goto bailout;
-      p += DIM(oid_pkcs_12_CertBag);
-      n -= DIM(oid_pkcs_12_CertBag);
+      if ( ti.length == DIM(oid_pkcs_12_CertBag)
+           && !memcmp (p, oid_pkcs_12_CertBag, DIM(oid_pkcs_12_CertBag)))
+        {
+          p += DIM(oid_pkcs_12_CertBag);
+          n -= DIM(oid_pkcs_12_CertBag);
+        }
+      else if ( ti.length == DIM(oid_pkcs_12_CrlBag)
+           && !memcmp (p, oid_pkcs_12_CrlBag, DIM(oid_pkcs_12_CrlBag)))
+        {
+          p += DIM(oid_pkcs_12_CrlBag);
+          n -= DIM(oid_pkcs_12_CrlBag);
+          isbag = 1;
+        }
+      else
+        goto bailout;
 
       where = "certbag.before.certheader";
       if (parse_tag (&p, &n, &ti))
         goto bailout;
       if (ti.class != CONTEXT || ti.tag)
         goto bailout;
-      if (parse_tag (&p, &n, &ti))
-        goto bailout;
-      if (ti.class || ti.tag != TAG_SEQUENCE)
-        goto bailout;
-      if (parse_tag (&p, &n, &ti))
-        goto bailout;
-      if (ti.class || ti.tag != TAG_OBJECT_ID
-          || ti.length != DIM(oid_x509Certificate_for_pkcs_12)
-          || memcmp (p, oid_x509Certificate_for_pkcs_12,
-                     DIM(oid_x509Certificate_for_pkcs_12)))
-        goto bailout;
-      p += DIM(oid_x509Certificate_for_pkcs_12);
-      n -= DIM(oid_x509Certificate_for_pkcs_12);
-
-      where = "certbag.before.octetstring";
-      if (parse_tag (&p, &n, &ti))
-        goto bailout;
-      if (ti.class != CONTEXT || ti.tag)
-        goto bailout;
-      if (parse_tag (&p, &n, &ti))
-        goto bailout;
-      if (ti.class || ti.tag != TAG_OCTET_STRING || ti.ndef)
-        goto bailout;
-
-      /* Return the certificate. */
-      if (certcb)
-        certcb (certcbarg, p, ti.length);
+      if (isbag)
+        {
+          log_info ("skipping unsupported crlBag\n");
+          p += ti.length;
+          n -= ti.length;
+        }
+      else
+        {
+          if (parse_tag (&p, &n, &ti))
+            goto bailout;
+          if (ti.class || ti.tag != TAG_SEQUENCE)
+            goto bailout;
+          if (parse_tag (&p, &n, &ti))
+            goto bailout;
+          if (ti.class || ti.tag != TAG_OBJECT_ID
+              || ti.length != DIM(oid_x509Certificate_for_pkcs_12)
+              || memcmp (p, oid_x509Certificate_for_pkcs_12,
+                         DIM(oid_x509Certificate_for_pkcs_12)))
+            goto bailout;
+          p += DIM(oid_x509Certificate_for_pkcs_12);
+          n -= DIM(oid_x509Certificate_for_pkcs_12);
+          
+          where = "certbag.before.octetstring";
+          if (parse_tag (&p, &n, &ti))
+            goto bailout;
+          if (ti.class != CONTEXT || ti.tag)
+            goto bailout;
+          if (parse_tag (&p, &n, &ti))
+            goto bailout;
+          if (ti.class || ti.tag != TAG_OCTET_STRING || ti.ndef)
+            goto bailout;
+          
+          /* Return the certificate. */
+          if (certcb)
+            certcb (certcbarg, p, ti.length);
    
-      p += ti.length;
-      n -= ti.length;
+          p += ti.length;
+          n -= ti.length;
+        }
 
-      /* Ugly hack to cope with the padding: Forget about a rest of
-         sie les than the cipher's block length. */
+      /* Ugly hack to cope with the padding: Forget about the rest if
+         that it is less than the cipher's block length. */
       if (n < 8)
         n = 0;  
 
       /* Skip the optional SET with the pkcs12 cert attributes. */
       if (n)
         {
-          where = "certbag.attributes";
+          where = "bag.attributes";
           if (parse_tag (&p, &n, &ti))
             goto bailout;
           if (!ti.class && ti.tag == TAG_SEQUENCE)
@@ -690,6 +714,13 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   n = ti.length;
   startoffset = 0;
   buffer = p = plain;
+
+  {
+    FILE *fp = fopen ("tmp-3des-plain.der", "wb");
+    if (!fp || fwrite (p, n, 1, fp) != 1)
+      exit (2);
+    fclose (fp);
+  }
 
   where = "decrypted-text";
   if (parse_tag (&p, &n, &ti) || ti.class || ti.tag != TAG_SEQUENCE)
