@@ -699,7 +699,7 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   /* Albeit cleartext has been allocated in secure memory and thus
      xfree will wipe it out, we do an extra wipe just in case
      somethings goes badly wrong. */
-  wipememory (cleartext, prot_begin-protectedkey);
+  wipememory (cleartext, n);
   xfree (cleartext);
   if (rc)
     return rc;
