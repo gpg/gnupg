@@ -73,6 +73,7 @@ typedef enum {
   ASSUAN_Inquire_Unknown = 120,
   ASSUAN_Inquire_Error = 121,
   ASSUAN_Invalid_Option = 122,
+  ASSUAN_Invalid_Index = 123,
 
   ASSUAN_Not_Confirmed = 128,
 
@@ -94,7 +95,8 @@ typedef enum {
   ASSUAN_Card_Error = 401,
   ASSUAN_Invalid_Card = 402,
   ASSUAN_No_PKCS15_App = 403,
-  ASSUAN_Card_Not_Present = 404
+  ASSUAN_Card_Not_Present = 404,
+  ASSUAN_Invalid_Id = 405
 
 } AssuanError;
 
@@ -185,7 +187,9 @@ assuan_transact (ASSUAN_CONTEXT ctx,
                  AssuanError (*data_cb)(void *, const void *, size_t),
                  void *data_cb_arg,
                  AssuanError (*inquire_cb)(void*, const char *),
-                 void *inquire_cb_arg);
+                 void *inquire_cb_arg,
+                 AssuanError (*status_cb)(void*, const char *),
+                 void *status_cb_arg);
 
 
 /*-- assuan-inquire.c --*/

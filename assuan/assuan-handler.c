@@ -464,6 +464,12 @@ process_request (ASSUAN_CONTEXT ctx)
       if (!rc && ctx->outbound.data.error)
         rc = ctx->outbound.data.error;
     }
+  else /* flush any data send w/o using the data fp */
+    {
+      assuan_send_data (ctx, NULL, 0);
+      if (!rc && ctx->outbound.data.error)
+        rc = ctx->outbound.data.error;
+    }
   /* Error handling */
   if (!rc)
     {
@@ -478,7 +484,7 @@ process_request (ASSUAN_CONTEXT ctx)
     {
       char errline[256];
 
-        if (rc < 100)
+      if (rc < 100)
         sprintf (errline, "ERR %d server fault (%.50s)",
                  ASSUAN_Server_Fault, assuan_strerror (rc));
       else

@@ -1,3 +1,11 @@
+2002-02-27  Werner Koch  <wk@gnupg.org>
+
+	* assuan-client.c (assuan_transact): Add 2 more arguments to
+	support status lines. Passing NULL yields the old behaviour.
+
+	* assuan-handler.c (process_request): Flush data lines send
+	without using the data fp.
+
 2002-02-14  Werner Koch  <wk@gnupg.org>
 
 	* assuan-inquire.c (assuan_inquire): Check for a cancel command
