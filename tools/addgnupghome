@@ -14,6 +14,7 @@
 PGM=addgnupghome
 any_error=0
 
+
 error () {
   echo "$PGM: $*" >&2
   any_error=1
@@ -26,9 +27,9 @@ info () {
 # Do it for one user
 one_user () {
     user="$1"
-    home=$(awk -F: -v n="$user" '$1 == n {print $6}' /etc/passwd )
+    home=$(${cat_passwd} | awk -F: -v n="$user" '$1 == n {print $6}')
     if [ -z "$home" ]; then
-        if awk -F: -v n="$user" '$1 == n {exit 1}' /etc/passwd; then
+        if ${cat_passwd} | awk -F: -v n="$user" '$1 == n {exit 1}'; then
             error "no such user \`$user'"
         else
             error "no home directory for user \`$user'"
@@ -93,13 +94,20 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
+# Check whether we can use getent
+if getent --help </dev/null >/dev/null 2>&1 ; then
+    cat_passwd='getent passwd'
+else
+    cat_passwd='cat /etc/passwd'
+    info "please note that only users from /etc/passwd are checked"
+fi
+
 if [ ! -d /etc/skel/.gnupg ]; then
     error "skeleton directory \`/etc/skel/.gnupg' does not exist"
     exit 1
 fi
 cd "/etc/skel/.gnupg" || (error "error cd-ing to \`/etc/skel/.gnupg'"; exit 1)
 filelist=$(find . \( -type f -or -type d \) -not -name '*~' -not -name . -print)
-
 
 
 if ! umask 0077 ; then

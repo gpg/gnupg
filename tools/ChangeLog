@@ -1,3 +1,8 @@
+2004-02-03  Werner Koch  <wk@gnupg.org>
+
+	* addgnupghome: Try to use getent, so that it also works for NIS
+	setups.
+
 2004-01-31  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgconf-comp.c: Some bug fixes, parse only defaults from the
