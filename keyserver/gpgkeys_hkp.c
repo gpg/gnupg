@@ -512,10 +512,13 @@ int parse_hkp_index(char *line,char **buffer)
 		      +1
 		      +2
 		      +10
-		      +4
+		      +3
+		      +3
+		      +1
 		      +10
 		      +1
-		      +1);
+		      +1
+		      +20);
 
 	  if(buf)
 	    *buffer=buf;
@@ -831,8 +834,7 @@ int main(int argc,char *argv[])
 		include_revoked=1;
 	    }
 	  else if(strcasecmp(start,"honor-http-proxy")==0 ||
-		  strcasecmp(start,"broken-http-proxy")==0 ||
-		  strcasecmp(start,"include-subkeys")==0)
+		  strcasecmp(start,"broken-http-proxy")==0)
 	    {
 	      fprintf(stderr,"gpgkeys: HKP does not currently support %s\n",
 		      start);
