@@ -1,3 +1,9 @@
+2002-07-05  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (initialize): We better exit after a read error so
+	that we don't run into an endless loop when reading a directory.
+	Noted by Andrew Suffield.
+
 2002-07-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* argparse.c (optfile_parse): Fix variable typo - 'p2' should be
