@@ -1,3 +1,15 @@
+2003-12-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* sig-check.c (do_check): Move the signing algo and hash checks
+	from here...
+	(signature_check2): ... to here.
+	(check_key_signature2): ... and here.  This is a minor
+	optimization to avoid fetching a key (which can be expensive,
+	especially if it is not self-signed, and there are many key
+	signatures on it which need to be checked for ultimate trust) if
+	the signature would have failed anyway because of algorithm or
+	hash problems.
+
 2003-12-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, build-packet.c (hash_public_key): Remove function ...

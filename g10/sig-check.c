@@ -1,6 +1,6 @@
 /* sig-check.c -  Check a signature
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
- *               Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -61,15 +61,20 @@ signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
     int rc=0;
 
-    /* Sanity check that the md has a context for the hash that the
-       sig is expecting.  This can happen if a onepass sig header does
-       not match the actual sig, and also if the clearsign "Hash:"
-       header is missing or does not match the actual sig. */
+    if( (rc=check_digest_algo(sig->digest_algo)) )
+      ; /* we don't have this digest */
+    else if((rc=check_pubkey_algo(sig->pubkey_algo)))
+      ; /* we don't have this pubkey algo */
+    else if(!md_algo_present(digest,sig->digest_algo))
+      {
+	/* Sanity check that the md has a context for the hash that the
+	   sig is expecting.  This can happen if a onepass sig header does
+	   not match the actual sig, and also if the clearsign "Hash:"
+	   header is missing or does not match the actual sig. */
 
-    if(!md_algo_present(digest,sig->digest_algo)) {
         log_info(_("WARNING: signature digest conflict in message\n"));
 	rc=G10ERR_GENERAL;
-    }
+      }
     else if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
     else if(!pk->is_valid && !pk->is_primary)
@@ -274,10 +279,6 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 
     if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
         return rc;
-    if( (rc=check_digest_algo(sig->digest_algo)) )
-	return rc;
-    if( (rc=check_pubkey_algo(sig->pubkey_algo)) )
-	return rc;
 
     /* make sure the digest algo is enabled (in case of a detached signature)*/
     md_enable( digest, sig->digest_algo );
@@ -518,6 +519,8 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
         }
     }
 
+    if( (rc=check_pubkey_algo(sig->pubkey_algo)) )
+	return rc;
     if( (rc=check_digest_algo(algo)) )
 	return rc;
 
