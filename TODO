@@ -93,6 +93,9 @@
   * cat foo | gpg --sign | gpg --list-packets
     Does not list the signature packet.
 
+  * See po/ca.po for remarks on the used strings. 
+
+
 Things we won't do
 ------------------
 

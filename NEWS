@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.2.2 (unreleased)
+Noteworthy changes in version 1.2.2 (2003-05-01)
 ------------------------------------------------
 
     * A bug in key validation has been fixed.  This bug only affects
