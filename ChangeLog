@@ -1,3 +1,7 @@
+Fri Jul 14 10:17:30 CEST 2000  Werner Koch  <wk@>
+
+  * acinclude.m4 (GNUPG_CHECK_MLOCK): Fixed syntax error in C code.
+
 Wed Jul 12 13:32:06 CEST 2000  Werner Koch  <wk@>
 
   Version 1.0.2
