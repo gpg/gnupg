@@ -109,11 +109,16 @@ gpgsm_import (CTRL ctrl, int in_fd)
                   if (opt.verbose)
                     log_info ("certificate imported\n");
                 }
+              else
+                log_error (_("error storing certificate\n"));
             }
+          else
+            log_error (_("basic certificate checks failed - not imported\n"));
           ksba_cert_release (cert); 
           cert = NULL;
         }
-
+      if (!i)
+        log_error ("no certificate found\n");
     }
   else if (ct == KSBA_CT_NONE)
     { /* Failed to identify this message - assume a certificate */
@@ -139,7 +144,11 @@ gpgsm_import (CTRL ctrl, int in_fd)
               if (opt.verbose)
                 log_info ("certificate imported\n");
             }
+          else
+            log_error (_("error storing certificate\n"));
         }
+      else
+        log_error (_("basic certificate checks failed - not imported\n"));
     }
   else
     {
@@ -154,6 +163,11 @@ gpgsm_import (CTRL ctrl, int in_fd)
   gpgsm_destroy_reader (b64reader);
   if (fp)
     fclose (fp);
+  /* If we never printed an error message do it now so that a command
+     line invocation will return with an error (log_error keeps a
+     global errorcount) */
+  if (rc && !log_get_errorcount (0))
+    log_error (_("error importing certificate: %s\n"), gnupg_strerror (rc));
   return rc;
 }
 

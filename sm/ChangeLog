@@ -1,3 +1,7 @@
+2002-05-23  Werner Koch  <wk@gnupg.org>
+
+	* import.c (gpgsm_import): Add error messages.
+
 2002-05-21  Werner Koch  <wk@gnupg.org>
 
 	* keylist.c (list_internal_keys): Renamed from gpgsm_list_keys.
