@@ -25,10 +25,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
-#include "iobuf.h"
-#include "http.h"
-#include "memory.h"
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "util.h"
+#include "http.h"
 #include "keyserver.h"
 
 #define GET    0
@@ -36,11 +35,10 @@
 #define SEARCH 2
 #define MAX_LINE 80
 
-int verbose=0,include_disabled=0,include_revoked=0;
+int verbose=0,include_revoked=0;
 unsigned int http_flags=0;
-char host[80]={'\0'};
-char portstr[10]={'\0'};
-FILE *input=NULL,*output=NULL,*console=NULL,*server=NULL;
+char host[80]={'\0'},port[10]={'\0'};
+FILE *input=NULL,*output=NULL,*console=NULL;
 
 struct keylist
 {
@@ -85,11 +83,11 @@ int send_key(void)
   IOBUF temp = iobuf_temp();
   char line[MAX_LINE];
 
-  request=m_alloc(strlen(host)+100);
+  request=malloc(strlen(host)+100);
 
   iobuf_push_filter(temp,urlencode_filter,NULL);
 
-  /* Read and throw away stdin until we see the BEGIN */
+  /* Read and throw away input until we see the BEGIN */
 
   while(fgets(line,MAX_LINE,input)!=NULL)
     if(sscanf(line,"KEY %16s BEGIN\n",keyid)==1)
@@ -116,9 +114,11 @@ int send_key(void)
 	break;
       }
     else
-      {
-	iobuf_writestr(temp,line);
-      }
+      if(iobuf_writestr(temp,line))
+	{
+	  fprintf(console,"gpgkeys: internal iobuf error\n");
+	  goto fail;
+	}
 
   if(!gotit)
     {
@@ -129,7 +129,10 @@ int send_key(void)
   iobuf_flush_temp(temp);
 
   sprintf(request,"x-hkp://%s%s%s/pks/add",
-	  host,portstr[0]?":":"",portstr[0]?portstr:"");
+	  host,port[0]?":":"",port[0]?port:"");
+
+  if(verbose>2)
+    fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
 
   rc=http_open(&hd,HTTP_REQ_POST,request,http_flags);
   if(rc)
@@ -167,7 +170,7 @@ int send_key(void)
   ret=0;
 
  fail:
-  m_free(request);
+  free(request);
   iobuf_close(temp);
   http_close(&hd);
 
@@ -215,21 +218,17 @@ int get_key(char *getkey)
 
   fprintf(output,"KEY 0x%s BEGIN\n",getkey);
 
-  if(verbose>2)
-    fprintf(console,"gpgkeys: HKP fetch for: %s\n",search);
-
   if(verbose)
     fprintf(console,"gpgkeys: requesting key 0x%s from hkp://%s%s%s\n",
-	    getkey,host,portstr[0]?":":"",portstr[0]?portstr:"");
+	    getkey,host,port[0]?":":"",port[0]?port:"");
 
-  request=m_alloc(strlen(host)+100);
+  request=malloc(strlen(host)+100);
 
   sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=get&search=%s",
-	  host,
-	  portstr[0]?":":"",
-	  portstr[0]?portstr:"", search);
+	  host,port[0]?":":"",port[0]?port:"", search);
 
-  fprintf(console,"request is \"%s\"\n",request);
+  if(verbose>2)
+    fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
 
   rc=http_open_document(&hd,request,http_flags);
   if(rc!=0)
@@ -261,7 +260,8 @@ int get_key(char *getkey)
 	}
     }
 
-  m_free(request);
+  m_free(line);
+  free(request);
 
   return 0;
 }
@@ -401,9 +401,9 @@ parse_hkp_index(IOBUF buffer,char *line)
      ascii_memcasecmp(line,"pub ",4)!=0 &&
      ascii_memcasecmp(line,"    ",4)!=0)
     {
-      m_free(key);
-      m_free(uid);
-      fprintf(console,"gpgkeys: this keyserver is not fully HKP compatible\n");
+      free(key);
+      free(uid);
+      fprintf(console,"gpgkeys: this keyserver does not support searching\n");
       return -1;
     }
 
@@ -438,8 +438,8 @@ parse_hkp_index(IOBUF buffer,char *line)
       if(strncmp(line,"    ",4)!=0)
 	{
 	  revoked=0;
-	  m_free(key);
-	  m_free(uid);
+	  free(key);
+	  free(uid);
 	  uid=NULL;
 	  open=0;
 	}
@@ -470,7 +470,7 @@ parse_hkp_index(IOBUF buffer,char *line)
       if(tok==NULL)
 	return ret;
 
-      key=m_strdup(tok);
+      key=strdup(tok);
 
       tok=strsep(&line," ");
       if(tok==NULL)
@@ -493,7 +493,7 @@ parse_hkp_index(IOBUF buffer,char *line)
     {
       if(line==NULL)
 	{
-	  uid=m_strdup("Key index corrupted");
+	  uid=strdup("Key index corrupted");
 	  return ret;
 	}
 
@@ -509,7 +509,7 @@ parse_hkp_index(IOBUF buffer,char *line)
 	  return ret;
 	}
 
-      uid=m_strdup(line);
+      uid=strdup(line);
     }
 
   return ret;
@@ -549,16 +549,16 @@ int search_key(char *searchkey)
 
   search[len]='\0';
 
-  request=m_alloc(strlen(host)+100+strlen(search));
-
-  sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&search=%s",
-	  host,portstr[0]?":":"",portstr[0]?portstr:"",search);
-
-  if(verbose>2)
-    fprintf(console,"gpgkeys: HKP search for: %s\n",search);
-
   fprintf(console,("gpgkeys: searching for \"%s\" from HKP server %s\n"),
 	  searchkey,host);
+
+  request=malloc(strlen(host)+100+strlen(search));
+
+  sprintf(request,"x-hkp://%s%s%s/pks/lookup?op=index&search=%s",
+	  host,port[0]?":":"",port[0]?port:"",search);
+
+ if(verbose>2)
+    fprintf(console,"gpgkeys: HTTP URL is \"%s\"\n",request);
 
   rc=http_open_document(&hd,request,http_flags);
   if(rc)
@@ -570,7 +570,6 @@ int search_key(char *searchkey)
     {
       unsigned int maxlen=1024,buflen=0;
       int count=1;
-      int ret;
       IOBUF buffer;
 
       buffer=iobuf_temp();
@@ -612,7 +611,7 @@ int search_key(char *searchkey)
       ret=0;
     }
 
-  m_free(request);
+  free(request);
   free(search);
 
   return ret;
@@ -620,9 +619,9 @@ int search_key(char *searchkey)
 
 int main(int argc,char *argv[])
 {
-  int port=0,arg,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
+  int arg,action=-1,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
-  int version,failed=0;
+  int failed=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
 
   console=stderr;
@@ -672,6 +671,7 @@ int main(int argc,char *argv[])
 
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
+      int version;
       char commandstr[7];
       char optionstr[30];
       char hash;
@@ -702,10 +702,9 @@ int main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"PORT %9s\n",portstr)==1)
+      if(sscanf(line,"PORT %9s\n",port)==1)
 	{
-	  portstr[9]='\0';
-	  port=atoi(portstr);
+	  port[9]='\0';
 	  continue;
 	}
 
@@ -739,13 +738,6 @@ int main(int argc,char *argv[])
 		verbose--;
 	      else
 		verbose++;
-	    }
-	  else if(strcasecmp(start,"include-disabled")==0)
-	    {
-	      if(no)
-		include_disabled=0;
-	      else
-		include_disabled=1;
 	    }
 	  else if(strcasecmp(start,"include-revoked")==0)
 	    {
@@ -832,8 +824,8 @@ int main(int argc,char *argv[])
   if(verbose>1)
     {
       fprintf(console,"Host:\t\t%s\n",host);
-      if(port)
-	fprintf(console,"Port:\t\t%d\n",port);
+      if(port[0])
+	fprintf(console,"Port:\t\t%s\n",port);
       fprintf(console,"Command:\t%s\n",action==GET?"GET":
 	      action==SEND?"SEND":"SEARCH");
     }
