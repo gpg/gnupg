@@ -40,7 +40,7 @@ struct reader_cb_parm_s {
 
 
 /* FIXME: Move this to jnlib */
-char *
+static char *
 strtimestamp (time_t atime)
 {
   char *buffer = xmalloc (15);

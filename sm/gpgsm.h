@@ -41,6 +41,7 @@ enum {
   GPGSM_Bad_Signature = 11,
   GPGSM_Not_Implemented = 12,
   GPGSM_Conflict = 13,
+  GPGSM_Bug = 14
 };
 
 /* Status codes (shared with gpg) */
@@ -214,6 +215,8 @@ int gpgsm_import (CTRL ctrl, int in_fd);
 /*-- verify.c --*/
 int gpgsm_verify (CTRL ctrl, int in_fd, int data_fd);
 
+/*-- sign.c --*/
+int gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp);
 
 
 

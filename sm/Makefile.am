@@ -36,7 +36,9 @@ gpgsm_SOURCES = \
 	certpath.c \
 	keylist.c \
 	verify.c \
+	sign.c \
 	import.c 
+
 
 gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a ../kbx/libkeybox.a \
               ../../libksba/src/.libs/libksba.a \
