@@ -192,6 +192,7 @@ enum cmd_and_opt_values
     oCompressAlgo,
     oCompressLevel,
     oBZ2CompressLevel,
+    oBZ2CompressLowmem,
     oPasswdFD,
 #ifdef __riscos__
     oPasswdFile,
@@ -423,6 +424,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompress, NULL, 1, N_("|N|set compress level N (0 disables)") },
     { oCompressLevel, "compress-level", 1, "@" },
     { oBZ2CompressLevel, "bzip2-compress-level", 1, "@" },
+    { oBZ2CompressLowmem, "bzip2-compress-lowmem", 0, "@" },
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
     { oNoTextmode, "no-textmode",  0, "@"},
@@ -1790,6 +1792,7 @@ main( int argc, char **argv )
 	    break;
 	  case oCompressLevel: opt.compress_level = pargs.r.ret_int; break;
 	  case oBZ2CompressLevel: opt.bz2_compress_level = pargs.r.ret_int; break;
+	  case oBZ2CompressLowmem: opt.bz2_compress_lowmem=1; break;
 	  case oPasswdFD:
             pwfd = iobuf_translate_file_handle (pargs.r.ret_int, 0);
             opt.use_agent = 0;

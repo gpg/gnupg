@@ -100,7 +100,7 @@ init_uncompress( compress_filter_context_t *zfx, bz_stream *bzs )
 {
   int rc;
 
-  if((rc=BZ2_bzDecompressInit(bzs,0,0))!=BZ_OK)
+  if((rc=BZ2_bzDecompressInit(bzs,0,opt.bz2_compress_lowmem))!=BZ_OK)
     log_fatal("bz2lib problem: %d\n",rc);
 
   zfx->inbufsize = 2048;
