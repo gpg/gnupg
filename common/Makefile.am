@@ -25,7 +25,7 @@ BUILT_SOURCES = errors.c
 
 noinst_LIBRARIES = libcommon.a
 
-AM_CPPFLAGS =  $(LIBGCRYPT_CFLAGS) $(LIBKSBA_CFLAGS)
+AM_CPPFLAGS =  $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
 libcommon_a_SOURCES = \
 	util.h i18n.h \

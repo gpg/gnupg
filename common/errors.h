@@ -34,7 +34,7 @@ enum {
   GNUPG_Resource_Limit = 5,
   GNUPG_Internal_Error = 6,
   GNUPG_Bad_Certificate = 7,
-  GNUPG_Bad_Certificate_Path = 8,
+  GNUPG_Bad_Certificate_Chain = 8,
   GNUPG_Missing_Certificate = 9,
   GNUPG_No_Data = 10,
   GNUPG_Bad_Signature = 11,
