@@ -1,5 +1,5 @@
 /* http.c  -  HTTP protocol handler
- *	Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -411,7 +411,7 @@ insert_escapes( byte *buffer, const byte *string, const byte *special )
 	}
 	else {
 	    if( buffer ) {
-		sprintf( buffer, "%02X", *string );
+		sprintf( buffer, "%%%02X", *string );
 		buffer += 3;
 	    }
 	    n += 3;

@@ -1,3 +1,8 @@
+2004-08-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (insert_escapes): Fix encoding problem for non-URI-safe
+	characters.  Noted by Vladimir Novak.
+
 2004-05-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* timegm.c: New replacement function.  Removes the need for
