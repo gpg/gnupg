@@ -1,5 +1,7 @@
 2002-07-01  Werner Koch  <wk@gnupg.org>
 
+	* configure.ac: Set version number to 1.1.91.
+
         Released 1.1.90.
 	
 	* INSTALL: Replaced by generic install file.
