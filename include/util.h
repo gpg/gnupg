@@ -148,6 +148,7 @@ typedef struct dotlock_handle *DOTLOCK;
 
 void disable_dotlock(void);
 DOTLOCK create_dotlock( const char *file_to_lock );
+void destroy_dotlock ( DOTLOCK h );
 int make_dotlock( DOTLOCK h, long timeout );
 int release_dotlock( DOTLOCK h );
 void remove_lockfiles (void);
