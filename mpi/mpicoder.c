@@ -339,8 +339,8 @@ do_get_buffer( MPI a, unsigned *nbytes, int *sign, int force_secure )
     *nbytes = n = a->nlimbs * BYTES_PER_MPI_LIMB;
     if (!n)
       n++; /* avoid zero length allocation */
-    p = buffer = force_secure || mpi_is_secure(a) ? m_alloc_secure( *nbytes)
-						  : m_alloc( *nbytes );
+    p = buffer = force_secure || mpi_is_secure(a) ? m_alloc_secure(n)
+						  : m_alloc(n);
 
     for(i=a->nlimbs-1; i >= 0; i-- ) {
 	alimb = a->d[i];
