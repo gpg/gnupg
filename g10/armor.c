@@ -518,8 +518,6 @@ fake_packet( armor_filter_context_t *afx, IOBUF a,
 		    putc('\n', stderr);
 		}
 		lastline = 1;
-		if( len >= 2 && !afx->not_dash_escaped )
-		    len -= 2; /* remove the last CR,LF */
 		rc = -1;
 	    }
 	}

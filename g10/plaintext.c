@@ -89,6 +89,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
     }
 
     if( pt->len ) {
+	assert( !clearsig );
 	for( ; pt->len; pt->len-- ) {
 	    if( (c = iobuf_get(pt->buf)) == -1 ) {
 		log_error("Problem reading source (%u bytes remaining)\n",
@@ -98,7 +99,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    }
 	    if( mfx->md )
 		md_putc(mfx->md, c );
-	    if( convert && !clearsig && c == '\r' )
+	    if( convert && c == '\r' )
 		continue; /* fixme: this hack might be too simple */
 	    if( fp ) {
 		if( putc( c, fp ) == EOF ) {
@@ -110,11 +111,11 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	    }
 	}
     }
-    else {
+    else if( !clearsig ) {
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
 	    if( mfx->md )
 		md_putc(mfx->md, c );
-	    if( convert && !clearsig && c == '\r' )
+	    if( convert && c == '\r' )
 		continue; /* fixme: this hack might be too simple */
 	    if( fp ) {
 		if( putc( c, fp ) == EOF ) {
@@ -122,6 +123,47 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 						fname, strerror(errno) );
 		    rc = G10ERR_WRITE_FILE;
 		    goto leave;
+		}
+	    }
+	}
+	pt->buf = NULL;
+    }
+    else {  /* clear text signature - don't hash the last cr,lf  */
+	int state = 0;
+
+	while( (c = iobuf_get(pt->buf)) != -1 ) {
+	    if( fp ) {
+		if( putc( c, fp ) == EOF ) {
+		    log_error("Error writing to `%s': %s\n",
+						fname, strerror(errno) );
+		    rc = G10ERR_WRITE_FILE;
+		    goto leave;
+		}
+	    }
+	    if( !mfx->md )
+		continue;
+	    if( state == 2 ) {
+		md_putc(mfx->md, '\r' );
+		md_putc(mfx->md, '\n' );
+		state = 0;
+	    }
+	    if( !state ) {
+		if( c == '\r'  )
+		    state = 1;
+		else
+		    md_putc(mfx->md, c );
+	    }
+	    else if( state == 1 ) {
+		if( c == '\n'  )
+		    state = 2;
+		else {
+		    md_putc(mfx->md, '\r' );
+		    if( c == '\r'  )
+			state = 1;
+		    else {
+			state = 0;
+			md_putc(mfx->md, c );
+		    }
 		}
 	    }
 	}

@@ -90,7 +90,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 	}
     }
 
-    if( !hd->fp_read && !hd->fp_write )
+    if( !hd->fp_read && !hd->fp_write && hd->socket != -1 )
 	close( hd->socket );
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write);
@@ -102,7 +102,7 @@ http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 
 
 void
-ttp_start_data( HTTP_HD hd )
+http_start_data( HTTP_HD hd )
 {
     if( !hd->in_data ) {
 	iobuf_put( hd->fp_write, '\n' );
@@ -166,7 +166,7 @@ http_close( HTTP_HD hd )
 {
     if( !hd || !hd->initialized )
 	return;
-    if( !hd->fp_read && !hd->fp_write )
+    if( !hd->fp_read && !hd->fp_write && hd->socket != -1 )
 	close( hd->socket );
     iobuf_close( hd->fp_read );
     iobuf_close( hd->fp_write );
@@ -433,7 +433,7 @@ send_request( HTTP_HD hd )
 
     p = build_rel_path( hd->uri );
     request = m_alloc( strlen(p) + 20 );
-    sprintf( request, "%s %s%s HTTP/1.0\r\n\r\n",
+    sprintf( request, "%s %s%s HTTP/1.0\r\n",
 			  hd->req_type == HTTP_REQ_GET ? "GET" :
 			  hd->req_type == HTTP_REQ_HEAD? "HEAD":
 			  hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
@@ -553,12 +553,77 @@ parse_response( HTTP_HD hd )
     return 0;
 }
 
+#if 0
+static int
+start_server()
+{
+    struct sockaddr_in mya;
+    struct sockaddr_in peer;
+    int fd, client;
+    fd_set rfds;
+    int addrlen;
+    int i;
+
+    if( (fd=socket(AF_INET,SOCK_STREAM, 0)) == -1 ) {
+	log_error("socket() failed: %s\n", strerror(errno));
+	return -1;
+    }
+    i = 1;
+    if( setsockopt( fd, SOL_SOCKET, SO_REUSEADDR, (byte*)&i, sizeof(i) ) )
+	log_info("setsockopt(SO_REUSEADDR) failed: %s\n", strerror(errno) );
+
+    mya.sin_family=AF_INET;
+    memset(&mya.sin_addr, 0, sizeof(mya.sin_addr));
+    mya.sin_port=htons(11371);
+
+    if( bind( fd, (struct sockaddr *)&mya, sizeof(mya)) ) {
+	log_error("bind to port 11371 failed: %s\n", strerror(errno) );
+	close( fd );
+	return -1;
+    }
+
+    if( listen( fd, 5 ) ) {
+	log_error("listen failed: %s\n", strerror(errno) );
+	close( fd );
+	return -1;
+    }
+
+    for(;;) {
+	FD_ZERO(&rfds);
+	FD_SET( fd, &rfds );
+
+	if( select( fd+1, &rfds, NULL, NULL, NULL) <= 0 )
+	    continue; /* ignore any errors */
+
+	if( !FD_ISSET( fd, &rfds ) )
+	    continue;
+
+	addrlen = sizeof peer;
+	client = accept( fd, (struct sockaddr *)&peer, &addrlen);
+	if( client == -1 )
+	    continue; /* oops */
+
+	log_info("connect from %s\n", inet_ntoa( peer.sin_addr ) );
+
+	fflush(stdout);
+	fflush(stderr);
+	if( !fork() ) {
+	    int c;
+	    FILE *fp;
+
+	    fp = fdopen( client , "r" );
+	    while( (c=getc(fp)) != EOF )
+		putchar(c);
+	    fclose(fp);
+	    exit(0);
+	}
+	close( client );
+    }
 
 
-
-
-
-
+    return 0;
+}
+#endif
 
 
 
@@ -632,6 +697,11 @@ main(int argc, char **argv)
     int c;
 
     log_set_name("http-test");
+    if( argc == 1 ) {
+	start_server();
+	return 0;
+    }
+
     if( argc != 2 ) {
 	fprintf(stderr,"usage: http-test uri\n");
 	return 1;
@@ -663,7 +733,7 @@ main(int argc, char **argv)
     }
     release_parsed_uri( uri ); uri = NULL;
 
-    rc = open_http_document( &hd, *argv, 0 );
+    rc = http_open_document( &hd, *argv, 0 );
     if( rc ) {
 	log_error("can't get `%s': %s\n", *argv, g10_errstr(rc));
 	return 1;
@@ -671,7 +741,7 @@ main(int argc, char **argv)
     log_info("open_http_document succeeded; status=%u\n", hd.status_code );
     while( (c=iobuf_get( hd.fp_read)) != -1 )
 	putchar(c);
-    close_http_document( &hd );
+    http_close( &hd );
     return 0;
 }
 #endif /*TEST*/

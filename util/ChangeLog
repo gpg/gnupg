@@ -1,3 +1,7 @@
+Wed Jan 20 18:59:49 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* http.c (send_request): Removed double LF
+
 Tue Jan 19 19:34:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* * iobuf.c (iobuf_push_filter): Allow filters for temp streams

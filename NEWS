@@ -5,6 +5,8 @@
 
     * Upgraded to zlib 1.1.3
 
+    * More cleanup on the cleartext signatures.
+
 
 Noteworthy changes in version 0.9.1
 -----------------------------------

@@ -86,6 +86,12 @@ typedef struct {
     unsigned buffer_len;    /* used length of the buffer */
     unsigned buffer_pos;    /* read position */
     int truncated;	    /* number of truncated lines */
+    int clearsign;
+    int not_dash_escaped;
+    int escape_from;
+    MD_HANDLE md;
+    int pending_lf;
+    int pending_esc;
 } text_filter_context_t;
 
 

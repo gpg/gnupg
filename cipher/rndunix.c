@@ -709,6 +709,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     /* now read from the gatherer */
     while( length ) {
 	int goodness;
+	ulong subtract;
 
 	if( read_a_msg( pipedes[0], &msg ) ) {
 	    g10_log_error("reading from gatherer pipe failed: %s\n",
@@ -742,7 +743,9 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	(*add)( msg.data, n, requester );
 
 	/* this is the trick how e cope with the goodness */
-	length -= (ulong)n * goodness / 100;
+	subtract = (ulong)n * goodness / 100;
+	/* subtract at least 1 byte to avoid infinite loops */
+	length -= subtract ? subtract : 1;
     }
 
     return 0;

@@ -1,3 +1,8 @@
+Wed Jan 20 18:59:49 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* textfilter.c: Mostly rewritten
+	* plaintext.c (handle_plaintext): Use now text_filter semantics.
+
 Tue Jan 19 19:34:58 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* export.c (export_pubkeys_stream): New.

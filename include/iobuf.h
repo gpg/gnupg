@@ -104,6 +104,7 @@ int  iobuf_writebyte(IOBUF a, unsigned c);
 int  iobuf_write(IOBUF a, byte *buf, unsigned buflen );
 int  iobuf_writestr(IOBUF a, const char *buf );
 
+void iobuf_flush_temp( IOBUF temp );
 int  iobuf_write_temp( IOBUF a, IOBUF temp );
 size_t iobuf_temp_to_buffer( IOBUF a, byte *buffer, size_t buflen );
 void iobuf_unget_and_close_temp( IOBUF a, IOBUF temp );

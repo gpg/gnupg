@@ -455,7 +455,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 }
 
 
-
+#if 0
 /****************
  * Note: We do not calculate the hash over the last CR,LF
  */
@@ -554,7 +554,7 @@ write_dash_escaped( IOBUF inp, IOBUF out, MD_HANDLE md )
 
     return 0; /* fixme: add error handling */
 }
-
+#endif
 
 /****************
  * make a clear signature. note that opt.armor is not needed
@@ -572,6 +572,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
     SK_LIST sk_rover = NULL;
     int old_style = opt.rfc1991;
     int only_md5 = 0;
+    int c;
 
     memset( &afx, 0, sizeof afx);
     memset( &tfx, 0, sizeof tfx);
@@ -645,13 +646,23 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	PKT_secret_key *sk = sk_rover->sk;
 	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
-    /*md_start_debug( textmd, "create" );*/
-    if( !opt.not_dash_escaped )
-	iobuf_push_filter( inp, text_filter, &tfx );
-    rc = write_dash_escaped( inp, out, textmd );
-    if( rc )
-	goto leave;
+    md_start_debug( textmd, "sign" );
+    tfx.clearsign = 1;
+    tfx.not_dash_escaped = opt.not_dash_escaped;
+    tfx.escape_from = opt.escape_from;
+    tfx.md = textmd;
+    iobuf_push_filter( inp, text_filter, &tfx );
+    /* read input and write it to the output.  The textfilter handles
+     * the calculation of the hash and the dash escaping */
+    while( (c=iobuf_get(inp)) != -1 )  {
+	if( iobuf_put(out, c) == -1 ) {
+	    rc = G10ERR_WRITE_FILE;
+	    goto leave;
+	}
+    }
+    /* fixme: check for read errors */
 
+    /* now write the armor */
     afx.what = 2;
     iobuf_push_filter( out, armor_filter, &afx );
 
