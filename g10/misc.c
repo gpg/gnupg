@@ -543,8 +543,6 @@ string_to_compress_algo(const char *string)
 {
   if(ascii_strcasecmp(string,"uncompressed")==0)
     return 0;
-  else if(ascii_strcasecmp(string,"none")==0)
-    return 0;
   else if(ascii_strcasecmp(string,"zip")==0)
     return 1;
   else if(ascii_strcasecmp(string,"zlib")==0)

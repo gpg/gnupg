@@ -215,7 +215,6 @@ keygen_set_std_prefs (const char *string,int personal)
 {
     byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
     int  nsym=0, nhash=0, nzip=0, mdc=1; /* mdc defaults on */
-    char *tok,*prefstring;
     int val,rc = 0;
 
     if (!string || !ascii_strcasecmp (string, "default")) {
@@ -237,37 +236,42 @@ keygen_set_std_prefs (const char *string,int personal)
     else if (!ascii_strcasecmp (string, "none"))
         string = "";
 
-    prefstring=m_strdup(string); /* need a writable string! */
-
-    while((tok=strsep(&prefstring," ,")))
+    if(strlen(string))
       {
-	if((val=string_to_cipher_algo(tok)))
-	  {
-	    if(set_one_pref(val,1,tok,sym,&nsym))
-	      rc=-1;
-	  }
-        else if((val=string_to_digest_algo(tok)))
-	  {
-	    if(set_one_pref(val,2,tok,hash,&nhash))
-	      rc=-1;
-	  }
-        else if((val=string_to_compress_algo(tok))>-1)
-	  {
-	    if(set_one_pref(val,3,tok,zip,&nzip))
-	      rc=-1;
-	  }
-	else if (ascii_strcasecmp(tok,"mdc")==0)
-	  mdc=1;
-	else if (ascii_strcasecmp(tok,"no-mdc")==0)
-	  mdc=0;
-        else
-	  {
-	    log_info (_("invalid item `%s' in preference string\n"),tok);
-	    rc=-1;
-	  }
-      }
+	char *tok,*prefstring;
 
-    m_free(prefstring);
+	prefstring=m_strdup(string); /* need a writable string! */
+
+	while((tok=strsep(&prefstring," ,")))
+	  {
+	    if((val=string_to_cipher_algo(tok)))
+	      {
+		if(set_one_pref(val,1,tok,sym,&nsym))
+		  rc=-1;
+	      }
+	    else if((val=string_to_digest_algo(tok)))
+	      {
+		if(set_one_pref(val,2,tok,hash,&nhash))
+		  rc=-1;
+	      }
+	    else if((val=string_to_compress_algo(tok))>-1)
+	      {
+		if(set_one_pref(val,3,tok,zip,&nzip))
+		  rc=-1;
+	      }
+	    else if (ascii_strcasecmp(tok,"mdc")==0)
+	      mdc=1;
+	    else if (ascii_strcasecmp(tok,"no-mdc")==0)
+	      mdc=0;
+	    else
+	      {
+		log_info (_("invalid item `%s' in preference string\n"),tok);
+		rc=-1;
+	      }
+	  }
+
+	m_free(prefstring);
+      }
 
     if(!rc)
       {
