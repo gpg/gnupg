@@ -81,6 +81,8 @@ g10_SOURCES = g10.c		\
 	      import.c		\
 	      export.c		\
 	      comment.c 	\
+	      status.c		\
+	      status.h		\
 	      sig-check.c
 
 LDADD = -L ../cipher -L ../mpi -L ../util \
@@ -107,7 +109,7 @@ free-packet.o getkey.o pkclist.o skclist.o ringedit.o kbnode.o keygen.o \
 mainproc.o armor.o mdfilter.o textfilter.o cipher.o elg.o rsa.o \
 openfile.o keyid.o trustdb.o parse-packet.o passphrase.o plaintext.o \
 pubkey-enc.o seckey-cert.o seskey.o sign.o import.o export.o comment.o \
-sig-check.o
+status.o sig-check.o
 EXTRA_g10_SOURCES =
 g10_LDADD = $(LDADD)
 DIST_COMMON = Makefile.am Makefile.in
@@ -137,7 +139,8 @@ $(srcdir)/.deps/pubkey-enc.P $(srcdir)/.deps/ringedit.P \
 $(srcdir)/.deps/rsa.P $(srcdir)/.deps/seckey-cert.P \
 $(srcdir)/.deps/seskey.P $(srcdir)/.deps/sig-check.P \
 $(srcdir)/.deps/sign.P $(srcdir)/.deps/skclist.P \
-$(srcdir)/.deps/textfilter.P $(srcdir)/.deps/trustdb.P
+$(srcdir)/.deps/status.P $(srcdir)/.deps/textfilter.P \
+$(srcdir)/.deps/trustdb.P
 SOURCES = $(g10_SOURCES)
 OBJECTS = $(g10_OBJECTS)
 

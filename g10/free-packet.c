@@ -56,6 +56,25 @@ free_seckey_enc( PKT_signature *enc )
     m_free(enc);
 }
 
+
+/****************
+ * Return the digest algorith from the signature packet.
+ * We need this function because the digeste algo depends on the
+ * used pubkey algorithm.
+ */
+int
+digest_algo_from_sig( PKT_signature *sig )
+{
+    switch( sig->pubkey_algo ) {
+      case PUBKEY_ALGO_ELGAMAL: return sig->d.elg.digest_algo;
+      case PUBKEY_ALGO_RSA:	return sig->d.rsa.digest_algo;
+      default: return 0;
+    }
+}
+
+
+
+
 void
 release_public_cert_parts( PKT_public_cert *cert )
 {

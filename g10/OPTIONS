@@ -192,6 +192,13 @@ remote-user
 secret-keyring filename
 # add filename to the list of secret keyrings
 
+status-fd n
+# Write status informations to this file descriptor. If this option
+# is not used, no status information is writte.  This option is for the
+# sake of a calling programm (e.g. a MUA) to ease up parsing of output
+# and providing a defined set of status messages.
+# FIXME: use a format ala "100 Blabla"?
+
 verbose
 # Give more informations suring processing. If used 2 times, the input data
 # is listed in detail.

@@ -38,6 +38,7 @@
 #include "trustdb.h"
 #include "ttyio.h"
 #include "i18n.h"
+#include "status.h"
 
 
 enum cmd_values { aNull = 0,
@@ -187,7 +188,7 @@ main( int argc, char **argv )
     { 'k', NULL      , 0, N_("list keys")},
     { 510, "debug"     ,4|16, N_("set debugging flags")},
     { 511, "debug-all" ,0, N_("enable full debugging")},
- /* { 512 unused */
+    { 512, "status-fd" ,1, N_("write status info to this fd") },
     { 513, "gen-prime" , 0, "\r" },
     { 514, "test"      , 0, "\r" },
     { 515, "fingerprint", 0, N_("show the fingerprints")},
@@ -329,7 +330,7 @@ main( int argc, char **argv )
 	  case 509: add_keyring(pargs.r.ret_str); nrings++; break;
 	  case 510: opt.debug |= pargs.r.ret_ulong; break;
 	  case 511: opt.debug = ~0; break;
-	/*  case 512: */
+	  case 512: set_status_fd( pargs.r.ret_int ); break;
 	  case 513: set_cmd( &cmd, aPrimegen); break;
 	  case 514: set_cmd( &cmd, aTest); break;
 	  case 515: opt.fingerprint = 1; break;
@@ -401,6 +402,7 @@ main( int argc, char **argv )
     if( errors )
 	g10_exit(2);
 
+    write_status( STATUS_ENTER );
 
     set_debug();
     if( cmd == aKMode || cmd == aKModeC ) { /* kludge to be compatible to pgp */
@@ -685,7 +687,9 @@ g10_exit( int rc )
     if( opt.verbose )
 	secmem_dump_stats();
     secmem_term();
-    exit( rc? rc : log_get_errorcount(0)? 2:0 );
+    rc = rc? rc : log_get_errorcount(0)? 2:0;
+    write_status( STATUS_LEAVE );
+    exit(rc );
 }
 
 

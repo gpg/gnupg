@@ -43,6 +43,8 @@ g10_SOURCES = g10.c		\
 	      import.c		\
 	      export.c		\
 	      comment.c 	\
+	      status.c		\
+	      status.h		\
 	      sig-check.c
 
 

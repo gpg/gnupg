@@ -1,4 +1,7 @@
 
+    * added option "--status-fd": see g10/OPTIONS
+
+
     * We have secure memeory on systems which support mlock().
       It is not complete yet, because we do not have signal handler
       which does a cleanup in very case.

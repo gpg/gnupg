@@ -33,6 +33,7 @@
 #include "filter.h"
 #include "cipher.h"
 #include "main.h"
+#include "status.h"
 
 
 /****************
@@ -46,7 +47,7 @@ typedef struct {
     md_filter_context_t mfx;
     DEK *dek;
     int last_was_pubkey_enc;
-    KBNODE cert;     /* the current certificate */
+    KBNODE cert;     /* the current certificate / or signature */
     int have_data;
     IOBUF iobuf;    /* used to get the filename etc. */
 } *CTX;
@@ -74,7 +75,6 @@ add_onepass_sig( CTX c, PACKET *pkt )
     KBNODE node;
 
     if( c->cert ) { /* add another packet */
-
 	if( c->cert->pkt->pkttype != PKT_ONEPASS_SIG ) {
 	   log_error("add_onepass_sig: another packet is in the way\n");
 	   release_cert( c );
@@ -143,29 +143,36 @@ add_signature( CTX c, PACKET *pkt )
 {
     KBNODE node, n1, n2;
 
-    if( !c->cert ) {
-	/* orphaned signature (no certificate)
-	 * this is the first signature for a following datafile
-	 */
-	return 0;
+    if( pkt->pkttype == PKT_SIGNATURE && !c->cert ) {
+	/* This is the first signature for a following datafile.
+	 * G10 does not write such packets, instead it always uses
+	 * onepass-sig packets.  The drawback of PGP's method
+	 * of writing prepending the signtaure to the data is,
+	 * that it is not possible to make a signature from data
+	 * read from stdin.  But we are able to read these stuff. */
+	node = new_kbnode( pkt );
+	node->next = c->cert;
+	c->cert = node;
+	return 1;
     }
-    assert( c->cert->pkt );
-    if( c->cert->pkt->pkttype == PKT_ONEPASS_SIG ) {
+    else if( !c->cert )
+	return 0;
+    else if( !c->cert->pkt )
+	BUG();
+    else if( c->cert->pkt->pkttype == PKT_ONEPASS_SIG ) {
 	/* The root is a onepass signature, so we are signing data
 	 * The childs direct under the root are the signatures
-	 * (there is no need to keep the correct sequence of packets)
-	 */
+	 * (there is no need to keep the correct sequence of packets) */
 	node = new_kbnode( pkt );
 	node->next = c->cert->child;
 	c->cert->child = node;
 	return 1;
     }
-
-
-    if( !c->cert->child ) {
+    else if( !c->cert->child ) {
 	log_error("orphaned signature (no userid)\n" );
 	return 0;
     }
+
     /* goto the last user id */
     for(n1=c->cert->child; n1->next; n1 = n1->next )
 	;
@@ -564,6 +571,38 @@ print_keyid( FILE *fp, u32 *keyid )
     m_free(p);
 }
 
+
+
+static int
+check_sig_and_print( CTX c, KBNODE node )
+{
+    PKT_signature *sig = node->pkt->pkt.signature;
+    int rc;
+
+    rc = do_check_sig(c, node );
+    if( !rc ) {
+	write_status( STATUS_GOODSIG );
+	log_info("Good signature from ");
+	print_keyid( stderr, sig->keyid );
+	putc('\n', stderr);
+    }
+    else if( rc == G10ERR_BAD_SIGN ) {
+	write_status( STATUS_BADSIG );
+	log_error("BAD signature from ");
+	print_keyid( stderr, sig->keyid );
+	putc('\n', stderr);
+	if( opt.batch )
+	    g10_exit(1);
+    }
+    else {
+	write_status( STATUS_ERRSIG );
+	log_error("Can't check signature made by %08lX: %s\n",
+		   sig->keyid[1], g10_errstr(rc) );
+    }
+    return rc;
+}
+
+
 /****************
  * Process the tree which starts at node
  */
@@ -588,9 +627,13 @@ proc_tree( CTX c, KBNODE node )
 	else {	/* check all signatures */
 	    if( !c->have_data ) {
 		free_md_filter_context( &c->mfx );
-		/* fixme: take the digest algo to use from the
-		 * onepass_sig packet (if we have these) */
-		c->mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
+		/* prepare to create all requested message digests */
+		c->mfx.md = md_open(0, 0);
+		for(n1=node->child; n1; n1 = n1->next ) {
+		    md_enable( c->mfx.md,
+			       digest_algo_from_sig(n1->pkt->pkt.signature));
+		}
+		/* ask for file and hash it */
 		rc = ask_for_detached_datafile( &c->mfx,
 						iobuf_get_fname(c->iobuf));
 		if( rc ) {
@@ -599,30 +642,26 @@ proc_tree( CTX c, KBNODE node )
 		}
 	    }
 
-	    for(n1=node->child; n1; n1 = n1->next ) {
-		PKT_signature *sig = n1->pkt->pkt.signature;
-
-		rc = do_check_sig(c, n1 );
-		if( !rc ) {
-		    log_info("Good signature from ");
-		    print_keyid( stderr, sig->keyid );
-		    putc('\n', stderr);
-		}
-		else if( rc == G10ERR_BAD_SIGN ) {
-		    log_error("BAD signature from ");
-		    print_keyid( stderr, sig->keyid );
-		    putc('\n', stderr);
-		    if( opt.batch )
-			g10_exit(1);
-		}
-		else
-		    log_error("Can't check signature made by %08lX: %s\n",
-			       sig->keyid[1], g10_errstr(rc) );
-	    }
+	    for(n1=node->child; n1; n1 = n1->next )
+		check_sig_and_print( c, n1 );
 	}
     }
     else if( node->pkt->pkttype == PKT_SIGNATURE ) {
+	PKT_signature *sig = node->pkt->pkt.signature;
+
 	log_info("proc_tree: old style signature\n");
+	if( !c->have_data ) {
+	    free_md_filter_context( &c->mfx );
+	    c->mfx.md = md_open(digest_algo_from_sig(sig), 0);
+	    rc = ask_for_detached_datafile( &c->mfx,
+					    iobuf_get_fname(c->iobuf));
+	    if( rc ) {
+		log_error("can't hash datafile: %s\n", g10_errstr(rc));
+		return;
+	    }
+	}
+
+	check_sig_and_print( c, node );
     }
     else
 	log_error("proc_tree: invalid root packet\n");

@@ -230,6 +230,7 @@ void hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc );
 /*-- free-packet.c --*/
 void free_pubkey_enc( PKT_pubkey_enc *enc );
 void free_seckey_enc( PKT_signature *enc );
+int  digest_algo_from_sig( PKT_signature *sig );
 void release_public_cert_parts( PKT_public_cert *cert );
 void free_public_cert( PKT_public_cert *cert );
 void release_secret_cert_parts( PKT_secret_cert *cert );

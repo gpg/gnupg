@@ -244,14 +244,21 @@ mpi_print( FILE *fp, MPI a, int mode )
 u32
 mpi_get_keyid( MPI a, u32 *keyid )
 {
-#if BYTES_PER_MPI_LIMB != 4
-  #error Make this function work with other LIMB sizes
-#endif
+#if BYTES_PER_MPI_LIMB == 4
     if( keyid ) {
 	keyid[0] = a->nlimbs >= 2? a->d[1] : 0;
 	keyid[1] = a->nlimbs >= 1? a->d[0] : 0;
     }
     return a->nlimbs >= 1? a->d[0] : 0;
+#elif BYTES_PER_MPI_LIMB == 8
+    if( keyid ) {
+	keyid[0] = a->nlimbs? (u32)(a->d[0] >> 32) : 0;
+	keyid[1] = a->nlimbs? (u32)(a->d[0] & 0xffffffff) : 0;
+    }
+    return a->nlimbs? (u32)(a->d[0] & 0xffffffff) : 0;
+#else
+  #error Make this function work with other LIMB sizes
+#endif
 }
 
 
