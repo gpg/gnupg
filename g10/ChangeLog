@@ -1,3 +1,7 @@
+2000-11-24  Werner Koch  <wk@gnupg.org>
+
+	* passphrase.c [HAVE_DOSISH_SYSTEM]: Disabled all the agent stuff.
+
 2000-11-16  Werner Koch  <wk@gnupg.org>
 
         * g10.c: New option --use-agent
