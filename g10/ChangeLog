@@ -1,3 +1,8 @@
+2004-10-12  Werner Koch  <wk@g10code.com>
+
+	* keygen.c (read_parameter_file): Changed to use iobuf based file
+	reading to allow the special file name feature to work.
+
 2004-10-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* pkclist.c (do_edit_ownertrust): Use the same translated string

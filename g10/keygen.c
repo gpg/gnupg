@@ -2154,8 +2154,10 @@ read_parameter_file( const char *fname )
 	{ "Revoker",        pREVOKER },
 	{ NULL, 0 }
     };
-    FILE *fp;
-    char line[1024], *p;
+    IOBUF fp;
+    unsigned char *line;
+    unsigned int maxlen, nline;
+    char *p;
     int lnr;
     const char *err = NULL;
     struct para_data_s *para, *r;
@@ -2164,26 +2166,26 @@ read_parameter_file( const char *fname )
 
     memset( &outctrl, 0, sizeof( outctrl ) );
 
-    if( !fname || !*fname || !strcmp(fname,"-") ) {
-	fp = stdin;
-	fname = "-";
+    if( !fname || !*fname)
+      fname = "-";
+
+    fp = iobuf_open (fname);
+    if (!fp) {
+      log_error (_("can't open `%s': %s\n"), fname, strerror(errno) );
+      return;
     }
-    else {
-	fp = fopen( fname, "r" );
-	if( !fp ) {
-	    log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
-	    return;
-	}
-    }
+    iobuf_ioctl (fp, 3, 1, NULL); /* No file caching. */
 
     lnr = 0;
     err = NULL;
     para = NULL;
-    while( fgets( line, DIM(line)-1, fp ) ) {
+    maxlen = 1024;
+    line = NULL;
+    while ( iobuf_read_line (fp, &line, &nline, &maxlen) ) {
 	char *keyword, *value;
 
 	lnr++;
-	if( *line && line[strlen(line)-1] != '\n' ) {
+	if( !maxlen ) {
 	    err = "line too long";
 	    break;
 	}
@@ -2290,8 +2292,8 @@ read_parameter_file( const char *fname )
     }
     if( err )
 	log_error("%s:%d: %s\n", fname, lnr, err );
-    else if( ferror(fp) ) {
-	log_error("%s:%d: read error: %s\n", fname, lnr, strerror(errno) );
+    else if( iobuf_error (fp) ) {
+	log_error("%s:%d: read error\n", fname, lnr);
     }
     else if( para ) {
 	outctrl.lnr = lnr;
@@ -2315,8 +2317,7 @@ read_parameter_file( const char *fname )
     }
 
     release_parameter_list( para );
-    if( strcmp( fname, "-" ) )
-	fclose(fp);
+    iobuf_close (fp);
 }
 
 
