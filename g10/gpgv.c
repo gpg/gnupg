@@ -240,6 +240,12 @@ get_ownertrust_info (PKT_public_key *pk)
     return '?';
 }
 
+unsigned int
+get_ownertrust (PKT_public_key *pk)
+{
+    return TRUST_UNKNOWN;
+}
+
 
 /* Stub:
  * Because we only work with trusted keys, it does not make sense to

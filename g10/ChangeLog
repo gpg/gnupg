@@ -1,3 +1,18 @@
+2002-05-17  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgv.c: Add stub for get_ownertrust().
+
+	* g10.c (main): --allow-freeform-uid should be implied by
+	OpenPGP.  Add --no-allow-freeform-uid.
+
+	* keyedit.c (sign_uids): Issue a warning when signing a
+	non-selfsigned uid.
+
+	* getkey.c (merge_selfsigs_main): If a key has no selfsigs, and
+	allow-non-selfsigned-uid is not set, still try and make the key
+	valid by checking all uids for a signature from an ultimately
+	trusted key.
+
 2002-05-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, keygen.c (keygen_add_revkey): Add revocation key

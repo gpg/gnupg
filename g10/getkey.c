@@ -1440,8 +1440,40 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
 	pk->is_valid = 1;
       }
 
-    if ( sigdate > uiddate )
-        uiddate = sigdate;
+    /* The key STILL isn't valid, so try and find an ultimately
+       trusted signature. */
+    if(!pk->is_valid)
+      {
+	uidnode=NULL;
+
+	for(k=keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k=k->next)
+	  {
+	    if ( k->pkt->pkttype == PKT_USER_ID )
+	      uidnode = k;
+	    else if ( k->pkt->pkttype == PKT_SIGNATURE && uidnode )
+	      {
+		PKT_signature *sig = k->pkt->pkt.signature;
+
+		if(sig->keyid[0] != kid[0] || sig->keyid[1]!=kid[1])
+		  {
+		    PKT_public_key *ultimate_pk;
+
+		    ultimate_pk=m_alloc_clear(sizeof(*ultimate_pk));
+
+		    if(get_pubkey(ultimate_pk,sig->keyid)==0 &&
+		       check_key_signature(keyblock,k,NULL)==0 &&
+		       get_ownertrust(ultimate_pk)==TRUST_ULTIMATE)
+		      {
+			free_public_key(ultimate_pk);
+			pk->is_valid=1;
+			break;
+		      }
+
+		    free_public_key(ultimate_pk);
+		  }
+	      }
+	  }
+      }
 
     /* Record the highest selfsigversion so we know if this is a v3
        key through and through, or a v3 key with a v4 selfsig, which

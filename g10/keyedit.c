@@ -339,30 +339,39 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	    }
 	    else if( node->pkt->pkttype == PKT_USER_ID ) {
 		uidnode = (node->flag & NODFLG_MARK_A)? node : NULL;
-		if(uidnode && uidnode->pkt->pkt.user_id->is_revoked)
+		if(uidnode)
 		  {
 		    char *user=utf8_to_native(uidnode->pkt->pkt.user_id->name,
 					      uidnode->pkt->pkt.user_id->len,
 					      0);
 
-		    tty_printf(_("User ID \"%s\" is revoked."),user);
+		    if(uidnode->pkt->pkt.user_id->is_revoked)
+		      {
+			tty_printf(_("User ID \"%s\" is revoked."),user);
+
+			if(opt.expert)
+			  {
+			    tty_printf("\n");
+			    /* No, so remove the mark and continue */
+			    if(!cpr_get_answer_is_yes("sign_uid.revoke_okay",
+						      _("Are you sure you "
+							"still want to sign "
+							"it? (y/N) ")))
+			      uidnode->flag &= ~NODFLG_MARK_A;
+			  }
+			else
+			  {
+			    uidnode->flag &= ~NODFLG_MARK_A;
+			    tty_printf(_("  Unable to sign.\n"));
+			  }
+		      }
+		    else if(!uidnode->pkt->pkt.user_id->created)
+		      {
+			tty_printf(_("Warning: user ID \"%s\" is not "
+				     "self-signed.\n"),user);
+		      }
 
 		    m_free(user);
-
-		    if(opt.expert)
-		      {
-			tty_printf("\n");
-			/* No, so remove the mark and continue */
-			if(!cpr_get_answer_is_yes("sign_uid.revoke_okay",
-						 _("Are you sure you still "
-						   "want to sign it? (y/N) ")))
-			  uidnode->flag &= ~NODFLG_MARK_A;
-		      }
-		    else
-		      {
-			uidnode->flag &= ~NODFLG_MARK_A;
-			tty_printf(_("  Unable to sign.\n"));
-		      }
 		  }
 	    }
 	    else if( uidnode && node->pkt->pkttype == PKT_SIGNATURE

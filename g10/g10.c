@@ -249,6 +249,7 @@ enum cmd_and_opt_values { aNull = 0,
     oAllowNonSelfsignedUID,
     oNoAllowNonSelfsignedUID,
     oAllowFreeformUID,
+    oNoAllowFreeformUID,
     oAllowSecretKeyImport,                      
     oEnableSpecialFilenames,
     oNoLiteral,
@@ -526,6 +527,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAllowNonSelfsignedUID, "allow-non-selfsigned-uid", 0, "@" },
     { oNoAllowNonSelfsignedUID, "no-allow-non-selfsigned-uid", 0, "@" },
     { oAllowFreeformUID, "allow-freeform-uid", 0, "@" },
+    { oNoAllowFreeformUID, "no-allow-freeform-uid", 0, "@" },
     { oNoLiteral, "no-literal", 0, "@" },
     { oSetFilesize, "set-filesize", 20, "@" },
     { oHonorHttpProxy,"honor-http-proxy", 0, "@" },
@@ -1108,6 +1110,7 @@ main( int argc, char **argv )
 	    opt.rfc1991 = 0;
 	    opt.rfc2440 = 1;
 	    opt.allow_non_selfsigned_uid = 1;
+	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 0;
 	    opt.force_v3_sigs = 0;
@@ -1272,6 +1275,7 @@ main( int argc, char **argv )
 	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
 	  case oNoAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid=0; break;
 	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;
+	  case oNoAllowFreeformUID: opt.allow_freeform_uid = 0; break;
 	  case oNoLiteral: opt.no_literal = 1; break;
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy:
