@@ -62,7 +62,7 @@ static KsbaCert
 get_default_recipient (void)
 {
   const char key[] =
-    "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=#44FC7373656C646F7266#,C=DE";
+    "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE";
 
   KEYDB_SEARCH_DESC desc;
   KsbaCert cert = NULL;

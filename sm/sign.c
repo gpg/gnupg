@@ -66,7 +66,7 @@ get_default_signer (void)
 {
   //  const char key[] = "1.2.840.113549.1.9.1=#7472757374407765622E6465#,CN=WEB.DE TrustCenter,OU=TrustCenter,O=WEB.DE AG,L=D-76227 Karlsruhe,C=DE";
   const char key[] =
-    "CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE";
+    "/CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Düsseldorf,C=DE";
 
   KsbaCert cert = NULL;
   KEYDB_HANDLE kh = NULL;
