@@ -1,3 +1,20 @@
+2002-07-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* photoid.c (get_default_photo_command, show_photos): Honor
+	FIXED_PHOTO_VIEWER and DISABLE_PHOTO_VIEWER.
+
+	* mainproc.c (check_sig_and_print): Use --show-photos to show
+	photos when verifying a sig made by a key with a photo.
+
+	* keyserver.c (parse_keyserver_uri): Properly parse a URI with no
+	:port section and an empty file path, but with a terminating '/'.
+	(keyserver_work): Honor DISABLE_KEYSERVER_HELPERS.
+
+	* hkp.c (hkp_ask_import): Display keyserver URI as a URI, but only
+	if verbose.
+
+	* exec.c, g10.c: USE_EXEC_PATH -> FIXED_EXEC_PATH
+
 2002-07-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* exec.h, exec.c (set_exec_path, exec_write), g10.c (main): If

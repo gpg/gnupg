@@ -312,8 +312,8 @@ int exec_write(struct exec_info **info,const char *program,
   if(program==NULL && args_in==NULL)
     BUG();
 
-#ifdef USE_EXEC_PATH
-  set_exec_path(USE_EXEC_PATH);
+#ifdef FIXED_EXEC_PATH
+  set_exec_path(FIXED_EXEC_PATH);
 #endif
 
   *info=m_alloc_clear(sizeof(struct exec_info));

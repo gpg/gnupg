@@ -67,8 +67,10 @@ hkp_ask_import( KEYDB_SEARCH_DESC *desc, void *stats_handle)
     else
       return -1; /* HKP does not support v3 fingerprints */
 
-    log_info(_("requesting key %08lX from HKP keyserver %s\n"),
-	     (ulong)key[1],opt.keyserver_host );
+    if(opt.keyserver_options.verbose)
+      log_info(_("requesting key %08lX from %s\n"),
+	       (ulong)key[1],opt.keyserver_uri);
+
     request = m_alloc( strlen( opt.keyserver_host ) + 100 );
     /* hkp does not accept the long keyid - we should really write a
      * nicer one :-)

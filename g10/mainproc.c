@@ -38,6 +38,7 @@
 #include "i18n.h"
 #include "trustdb.h"
 #include "keyserver-internal.h"
+#include "photoid.h"
 
 
 struct kidlist_item {
@@ -1396,7 +1397,10 @@ check_sig_and_print( CTX c, KBNODE node )
         /* If we have a good signature and already printed 
          * the primary user ID, print all the other user IDs */
         if ( count && !rc ) {
+	    PKT_public_key *pk=NULL;
             for( un=keyblock; un; un = un->next ) {
+	        if(un->pkt->pkttype==PKT_PUBLIC_KEY)
+  		    pk=un->pkt->pkt.public_key;
                 if( un->pkt->pkttype != PKT_USER_ID )
                     continue;
                 if ( un->pkt->pkt.user_id->is_revoked )
@@ -1407,6 +1411,10 @@ check_sig_and_print( CTX c, KBNODE node )
                 if ( un->pkt->pkt.user_id->is_primary &&
 		     !un->pkt->pkt.user_id->attrib_data )
 		    continue;
+
+		if(opt.show_photos && un->pkt->pkt.user_id->attrib_data)
+		  show_photos(un->pkt->pkt.user_id->attribs,
+			      un->pkt->pkt.user_id->numattribs,pk,NULL);
 
 		log_info(    _("                aka \""));
                 print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,

@@ -148,7 +148,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 
   /* Get the host */
   opt.keyserver_host=strsep(&uri,":/");
-  if(uri==NULL)
+  if(uri==NULL || uri[0]=='\0')
     opt.keyserver_port="0";
   else
     {
@@ -636,6 +636,11 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 
       return 0;
     }
+#endif
+
+#ifdef DISABLE_KEYSERVER_HELPERS
+  log_error(_("external keyserver calls are not supported in this build\n"));
+  return G10ERR_KEYSERVER;
 #endif
 
   /* It's not the internal HKP code, so try and spawn a handler for it */

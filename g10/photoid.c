@@ -218,6 +218,7 @@ char *image_type_to_string(byte type,int style)
   return string;
 }
 
+#if !defined(FIXED_PHOTO_VIEWER) && !defined(DISABLE_PHOTO_VIEWER)
 static const char *get_default_photo_command(void)
 {
 #if defined(HAVE_DOSISH_SYSTEM)
@@ -240,10 +241,12 @@ static const char *get_default_photo_command(void)
   return "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin";
 #endif
 }
+#endif
 
 void show_photos(const struct user_attribute *attrs,
 		 int count,PKT_public_key *pk,PKT_secret_key *sk)
 {
+#ifndef DISABLE_PHOTO_VIEWER
   int i;
   struct expando_args args;
   u32 len;
@@ -266,8 +269,12 @@ void show_photos(const struct user_attribute *attrs,
 	struct exec_info *spawn;
 	int offset=attrs[i].len-len;
 
+#ifdef FIXED_PHOTO_VIEWER
+	opt.photo_viewer=FIXED_PHOTO_VIEWER;
+#else
 	if(!opt.photo_viewer)
 	  opt.photo_viewer=get_default_photo_command();
+#endif
 
 	/* make command grow */
 	command=pct_expando(opt.photo_viewer,&args);
@@ -320,4 +327,5 @@ void show_photos(const struct user_attribute *attrs,
 
  fail:
   log_error("unable to display photo ID!\n");
+#endif
 }
