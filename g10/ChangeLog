@@ -1,3 +1,11 @@
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* sig-check.c (check_key_signature2): Made "no subkey for subkey
+	binding packet" a verbose item instead of a !quiet one.  There are
+	too many garbled keys out in the wild.
+	* getkey.c (premerge_public_with_secret): Made "no secret subkey
+	for" warning a verbose item and translatable.
+
 2003-04-28  Werner Koch  <wk@gnupg.org>
 
 	* filter.h: Remove const from WHAT.
