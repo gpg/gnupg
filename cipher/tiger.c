@@ -860,12 +860,12 @@ tiger_final( TIGER_CONTEXT *hd )
 
     p = hd->buf;
   #ifdef BIG_ENDIAN_HOST
-    #define X(a) do { *(u64*)p = hd->##a ; p += 8; } while(0)
+    #define X(a) do { *(u64*)p = hd-> a ; p += 8; } while(0)
   #else /* little endian */
-    #define X(a) do { *p++ = hd->##a >> 56; *p++ = hd->##a >> 48; \
-		      *p++ = hd->##a >> 40; *p++ = hd->##a >> 32; \
-		      *p++ = hd->##a >> 24; *p++ = hd->##a >> 16; \
-		      *p++ = hd->##a >>  8; *p++ = hd->##a; } while(0)
+    #define X(a) do { *p++ = hd-> a >> 56; *p++ = hd-> a >> 48; \
+		      *p++ = hd-> a >> 40; *p++ = hd-> a >> 32; \
+		      *p++ = hd-> a >> 24; *p++ = hd-> a >> 16; \
+		      *p++ = hd-> a >>  8; *p++ = hd-> a; } while(0)
   #endif
     X(a);
     X(b);
