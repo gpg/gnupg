@@ -1,3 +1,13 @@
+2004-02-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), trustdb.c (mark_usable_uid_certs): Add
+	--min-cert-check-level option to specify minimum cert check
+	level. Defaults to 1 (so no sigs are ignored).  0x10 sigs cannot
+	be ignored.
+
+	* options.h, g10.c (main), plaintext.c (handle_plaintext): Add
+	--max-output option to help people deal with decompression bombs.
+
 2004-02-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (do_user_id): Do not force a header for attribute

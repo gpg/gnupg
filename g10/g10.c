@@ -74,6 +74,7 @@ enum cmd_and_opt_values
     oCompress	  = 'z',
     oSetNotation  = 'N',
     oBatch	  = 500,
+    oMaxOutput,
     oSigNotation,
     oCertNotation,
     oShowNotation,
@@ -145,6 +146,7 @@ enum cmd_and_opt_values
     oAnswerYes,
     oAnswerNo,
     oDefCertCheckLevel,
+    oMinCertCheckLevel,
     oKeyring,
     oSecretKeyring,
     oShowKeyring,
@@ -401,6 +403,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAskCertExpire, "ask-cert-expire",   0, "@"},
     { oNoAskCertExpire, "no-ask-cert-expire",   0, "@"},
     { oOutput, "output",    2, N_("use as output file")},
+    { oMaxOutput, "max-output", 16|4, "@" },
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
     { oNoTTY, "no-tty", 0, N_("don't use the terminal at all") },
@@ -530,6 +533,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
     { oDefCertCheckLevel, "default-cert-check-level", 1, "@"},
+    { oMinCertCheckLevel, "min-cert-check-level", 1, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oTrustModel, "trust-model", 2, "@"},
     { oEmuChecksumBug, "emulate-checksum-bug", 0, "@"},
@@ -1320,6 +1324,7 @@ main( int argc, char **argv )
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
     opt.mangle_dos_filenames = 1;
+    opt.min_cert_check_level=1;
 #if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
@@ -1525,6 +1530,7 @@ main( int argc, char **argv )
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
+	  case oMaxOutput: opt.max_output = pargs.r.ret_ulong; break;
 	  case oQuiet: opt.quiet = 1; break;
 	  case oNoTTY: tty_no_terminal(1); break;
 	  case oDryRun: opt.dry_run = 1; break;
@@ -1592,6 +1598,7 @@ main( int argc, char **argv )
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
           case oDefCertCheckLevel: opt.def_cert_check_level=pargs.r.ret_int; break;
+          case oMinCertCheckLevel: opt.min_cert_check_level=pargs.r.ret_int; break;
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
@@ -2124,13 +2131,15 @@ main( int argc, char **argv )
 	       "BZIP2");
 #endif
     if( opt.def_compress_algo < -1 || opt.def_compress_algo > 2 )
-	log_error(_("compress algorithm must be in range %d..%d\n"), 0, 2);
+      log_error(_("compress algorithm must be in range %d..%d\n"), 0, 2);
     if( opt.completes_needed < 1 )
-	log_error(_("completes-needed must be greater than 0\n"));
+      log_error(_("completes-needed must be greater than 0\n"));
     if( opt.marginals_needed < 2 )
-	log_error(_("marginals-needed must be greater than 1\n"));
+      log_error(_("marginals-needed must be greater than 1\n"));
     if( opt.max_cert_depth < 1 || opt.max_cert_depth > 255 )
-	log_error(_("max-cert-depth must be in range 1 to 255\n"));
+      log_error(_("max-cert-depth must be in range 1 to 255\n"));
+    if( opt.min_cert_check_level < 1 || opt.min_cert_check_level > 3 )
+      log_error(_("min-cert-check-level must be in the range from 1 to 3\n"));
     switch( opt.s2k_mode ) {
       case 0:
 	log_info(_("NOTE: simple S2K mode (0) is strongly discouraged\n"));

@@ -1,5 +1,6 @@
 /* plaintext.c -  process plaintext packets
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +25,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <sys/types.h>
 #ifdef HAVE_DOSISH_SYSTEM
 #include <fcntl.h> /* for setmode() */
 #endif
@@ -52,6 +54,7 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 {
     char *fname = NULL;
     FILE *fp = NULL;
+    off_t count=0;
     int rc = 0;
     int c;
     int convert = pt->mode == 't';
@@ -131,14 +134,23 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( c == '\r' )  /* convert to native line ending */
 		    continue;	 /* fixme: this hack might be too simple */
 #endif
-		if( fp ) {
-		    if( putc( c, fp ) == EOF ) {
+		if( fp )
+		  {
+		    if(opt.max_output && (count++)>opt.max_output)
+		      {
+			log_error("Error writing to `%s': %s\n",
+				  fname,"exceeded --max-output limit\n");
+			rc = G10ERR_WRITE_FILE;
+			goto leave;
+		      }
+		    else if( putc( c, fp ) == EOF )
+		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
 			rc = G10ERR_WRITE_FILE;
 			goto leave;
-		    }
-		}
+		      }
+		  }
 	    }
 	}
 	else { /* binary mode */
@@ -155,15 +167,25 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		}
 		if( mfx->md )
 		    md_write( mfx->md, buffer, len );
-		if( fp ) {
-		    if( fwrite( buffer, 1, len, fp ) != len ) {
+		if( fp )
+		  {
+		    if(opt.max_output && (count+=len)>opt.max_output)
+		      {
+			log_error("Error writing to `%s': %s\n",
+				  fname,"exceeded --max-output limit\n");
+			rc = G10ERR_WRITE_FILE;
+			m_free( buffer );
+			goto leave;
+		      }
+		    else if( fwrite( buffer, 1, len, fp ) != len )
+		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
 			rc = G10ERR_WRITE_FILE;
 			m_free( buffer );
 			goto leave;
-		    }
-		}
+		      }
+		  }
 		pt->len -= len;
 	    }
 	    m_free( buffer );
@@ -178,14 +200,23 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		if( convert && c == '\r' )
 		    continue; /* fixme: this hack might be too simple */
 #endif
-		if( fp ) {
-		    if( putc( c, fp ) == EOF ) {
+		if( fp )
+		  {
+		    if(opt.max_output && (count++)>opt.max_output)
+		      {
+			log_error("Error writing to `%s': %s\n",
+				  fname,"exceeded --max-output limit\n");
+			rc = G10ERR_WRITE_FILE;
+			goto leave;
+		      }
+		    else if( putc( c, fp ) == EOF )
+		      {
 			log_error("Error writing to `%s': %s\n",
 				  fname, strerror(errno) );
 			rc = G10ERR_WRITE_FILE;
 			goto leave;
-		    }
-		}
+		      }
+		  }
 	    }
 	}
 	else { /* binary mode */
@@ -205,15 +236,24 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 		    eof = 1;
 		if( mfx->md )
 		    md_write( mfx->md, buffer, len );
-		if( fp ) {
-		    if( fwrite( buffer, 1, len, fp ) != len ) {
+		if( fp )
+		  {
+		    if(opt.max_output && (count+=len)>opt.max_output)
+		      {
 			log_error("Error writing to `%s': %s\n",
-				  fname, strerror(errno) );
+				  fname,"exceeded --max-output limit\n");
 			rc = G10ERR_WRITE_FILE;
 			m_free( buffer );
 			goto leave;
+		      }
+		    else if( fwrite( buffer, 1, len, fp ) != len ) {
+		      log_error("Error writing to `%s': %s\n",
+				fname, strerror(errno) );
+		      rc = G10ERR_WRITE_FILE;
+		      m_free( buffer );
+		      goto leave;
 		    }
-		}
+		  }
 	    }
 	    m_free( buffer );
 	}
@@ -223,14 +263,23 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 	int state = 0;
 
 	while( (c = iobuf_get(pt->buf)) != -1 ) {
-	    if( fp ) {
-		if( putc( c, fp ) == EOF ) {
+	    if( fp )
+	      {
+		if(opt.max_output && (count++)>opt.max_output)
+		  {
 		    log_error("Error writing to `%s': %s\n",
-						fname, strerror(errno) );
+			      fname,"exceeded --max-output limit\n");
 		    rc = G10ERR_WRITE_FILE;
 		    goto leave;
-		}
-	    }
+		  }
+		else if( putc( c, fp ) == EOF )
+		  {
+		    log_error("Error writing to `%s': %s\n",
+			      fname, strerror(errno) );
+		    rc = G10ERR_WRITE_FILE;
+		    goto leave;
+		  }
+	      }
 	    if( !mfx->md )
 		continue;
 	    if( state == 2 ) {
