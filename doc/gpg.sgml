@@ -39,6 +39,7 @@
 <!entity ParmName  "<parameter>name</parameter>">
 <!entity OptParmName  "<optional>&ParmName;</optional>">
 <!entity ParmKeyIDs "<parameter>key IDs</parameter>">
+<!entity OptParmKeyIDs "<optional>&ParmKeyIDs</optional>">
 <!entity ParmN	    "<parameter>n</parameter>">
 <!entity ParmFlags  "<parameter>flags</parameter>">
 <!entity ParmString "<parameter>string</parameter>">
@@ -387,13 +388,17 @@ Create an alternate user id.</para></listitem></varlistentry>
     <term>addphoto</term>
     <listitem><para>
 Create a photographic user id.  This will prompt for a JPEG file that
-will be embedded into the user ID.  A very large JPEG will make for a
-very large key.
+will be embedded into the user ID.  Note that a very large JPEG will
+make for a very large key.
 </para></listitem></varlistentry>
     <varlistentry>
     <term>deluid</term>
     <listitem><para>
 Delete a user id.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>delsig</term>
+    <listitem><para>
+Delete a signature.</para></listitem></varlistentry>
     <varlistentry>
     <term>revuid</term>
     <listitem><para>
@@ -646,11 +651,12 @@ Import the keys with the given key IDs from a keyserver. Option
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>--refresh-keys &ParmKeyIDs;</term>
+<term>--refresh-keys &OptParmKeyIDs;</term>
 <listitem><para>
 Request updates from a keyserver for keys that already exist on the
 local keyring.  This is useful for updating a key with the latest
-signatures, user IDs, etc.  Option --keyserver must be used to give
+signatures, user IDs, etc.  Calling this with no arguments will
+refresh the entire keyring.  Option --keyserver must be used to give
 the name of this keyserver.
 </para></listitem></varlistentry>
 
@@ -944,8 +950,9 @@ significant amount of memory for each additional compression level.
 -z sets both.  A value of 0 for &ParmN; disables compression.
 </para></listitem></varlistentry>
 
+
 <varlistentry>
-<term>--bzip2-compress-lowmem</term>
+<term>--bzip2-decompress-lowmem</term>
 <listitem><para>
 Use a different decompression method for BZIP2 compressed files.  This
 alternate method uses a bit more than half the memory, but also runs
