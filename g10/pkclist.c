@@ -371,91 +371,52 @@ edit_ownertrust (PKT_public_key *pk, int mode )
  * Returns: true if we trust.
  */
 static int
-do_we_trust( PKT_public_key *pk, unsigned int *trustlevel )
+do_we_trust( PKT_public_key *pk, unsigned int trustlevel )
 {
-    unsigned int trustmask = 0;
+  /* We should not be able to get here with a revoked or expired
+     key */
+  if(trustlevel & TRUST_FLAG_REVOKED
+     || trustlevel & TRUST_FLAG_SUB_REVOKED
+     || (trustlevel & TRUST_MASK) == TRUST_EXPIRED)
+    BUG();
 
-    /* FIXME: get_pubkey_byname already checks the validity and won't
-     * return keys which are either expired or revoked - so these
-     * question here won't get triggered.  We have to find a solution
-     * for this.  It might make sense to have a function in getkey.c
-     * which does only the basic checks and returns even revoked and
-     * expired keys.  This fnction could then also returhn a list of
-     * keys if the speicified name is ambiguous
-     */
-    if( (*trustlevel & TRUST_FLAG_REVOKED) ) {
-	log_info(_("key %08lX: key has been revoked!\n"),
-					(ulong)keyid_from_pk( pk, NULL) );
-	show_revocation_reason( pk, 0 );
-	if( opt.batch )
-          return 0; /* no */
-
-	if( !cpr_get_answer_is_yes("revoked_key.override",
-				    _("Use this key anyway? ")) )
-          return 0; /* no */
-	trustmask |= TRUST_FLAG_REVOKED;
-    }
-    if( (*trustlevel & TRUST_FLAG_SUB_REVOKED) ) {
-	log_info(_("key %08lX: subkey has been revoked!\n"),
-					(ulong)keyid_from_pk( pk, NULL) );
-	show_revocation_reason( pk, 0 );
-	if( opt.batch )
-	    return 0;
-
-	if( !cpr_get_answer_is_yes("revoked_key.override",
-				    _("Use this key anyway? ")) )
-	    return 0;
-	trustmask |= TRUST_FLAG_SUB_REVOKED;
-    }
-    *trustlevel &= ~trustmask;
-
-    if( opt.trust_model==TM_ALWAYS ) {
-	if( opt.verbose )
-	    log_info("No trust check due to --trust-model always option\n");
-	return 1;
+  if( opt.trust_model==TM_ALWAYS )
+    {
+      if( opt.verbose )
+	log_info("No trust check due to `--trust-model always' option\n");
+      return 1;
     }
 
-    switch( (*trustlevel & TRUST_MASK) ) {
-      case TRUST_EXPIRED:
-	log_info(_("%08lX: key has expired\n"),
-				    (ulong)keyid_from_pk( pk, NULL) );
-	return 0; /* no */
+  switch(trustlevel & TRUST_MASK)
+    {
+    default:
+      log_error ("invalid trustlevel %u returned from validation layer\n",
+		 trustlevel);
+      /* fall thru */
+    case TRUST_UNKNOWN: 
+    case TRUST_UNDEFINED:
+      log_info(_("%s: There is no assurance this key belongs"
+		 " to the named user\n"),keystr_from_pk(pk));
+      return 0; /* no */
 
-      default:
-         log_error ("invalid trustlevel %u returned from validation layer\n",
-                    *trustlevel);
-         /* fall thru */
-      case TRUST_UNKNOWN: 
-      case TRUST_UNDEFINED:
-        log_info(_("%08lX: There is no assurance this key belongs "
-		   "to the named user\n"),(ulong)keyid_from_pk( pk, NULL) );
-	return 0; /* no */
+    case TRUST_MARGINAL:
+      log_info(_("%s: There is limited assurance this key belongs"
+		 " to the named user\n"),keystr_from_pk(pk));
+      return 1; /* yes */
 
-	/* No way to get here? */
-      case TRUST_NEVER:
-	log_info(_("%08lX: We do NOT trust this key\n"),
-					(ulong)keyid_from_pk( pk, NULL) );
-	return 0; /* no */
+    case TRUST_FULLY:
+      if( opt.verbose )
+	log_info(_("This key probably belongs to the named user\n"));
+      return 1; /* yes */
 
-      case TRUST_MARGINAL:
-	log_info(_("%08lX: There is limited assurance this key belongs "
-		   "to the named user\n"),(ulong)keyid_from_pk(pk,NULL));
-	return 1; /* yes */
-
-      case TRUST_FULLY:
-	if( opt.verbose )
-	    log_info(_("This key probably belongs to the named user\n"));
-	return 1; /* yes */
-
-      case TRUST_ULTIMATE:
-	if( opt.verbose )
-	    log_info(_("This key belongs to us\n"));
-	return 1; /* yes */
+    case TRUST_ULTIMATE:
+      if( opt.verbose )
+	log_info(_("This key belongs to us\n"));
+      return 1; /* yes */
     }
 
-    return 1; /* yes */
+  return 1; /* yes */
 }
-
 
 
 /****************
@@ -465,58 +426,34 @@ do_we_trust( PKT_public_key *pk, unsigned int *trustlevel )
 static int
 do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 {
-    int rc;
+  int rc;
 
-    rc = do_we_trust( pk, &trustlevel );
+  rc = do_we_trust( pk, trustlevel );
 
-    if( (trustlevel & TRUST_FLAG_REVOKED) && !rc )
-	return 0;
-    if( (trustlevel & TRUST_FLAG_SUB_REVOKED) && !rc )
-	return 0;
+  if( !opt.batch && !rc )
+    {
+      print_pubkey_info(NULL,pk);
+      print_fingerprint (pk, NULL, 2);
+      tty_printf("\n");
 
-    if( !opt.batch && !rc ) {
-	u32 keyid[2];
+      tty_printf(
+	       _("It is NOT certain that the key belongs to the person named\n"
+		 "in the user ID.  If you *really* know what you are doing,\n"
+		 "you may answer the next question with yes.\n"));
 
-	keyid_from_pk( pk, keyid);
-	tty_printf( "%4u%c/%08lX %s \"",
-		  nbits_from_pk( pk ), pubkey_letter( pk->pubkey_algo ),
-		  (ulong)keyid[1], datestr_from_pk( pk ) );
-	/* If the pk was chosen by a particular user ID, this is the
-	   one to ask about. */
-	if(pk->user_id)
-	  tty_print_utf8_string(pk->user_id->name,pk->user_id->len);
-	else
-	  {
-	    size_t n;
-	    char *p = get_user_id( keyid, &n );
-	    tty_print_utf8_string( p, n );
-	    m_free(p);
-	  }
-	tty_printf("\"\n");
-        print_fingerprint (pk, NULL, 2);
-	tty_printf("\n");
+      tty_printf("\n");
 
-	tty_printf(_(
-"It is NOT certain that the key belongs to the person named\n"
-"in the user ID.  If you *really* know what you are doing,\n"
-"you may answer the next question with yes\n\n"));
-
-	if( cpr_get_answer_is_yes("untrusted_key.override",
-				  _("Use this key anyway? "))  )
-	    rc = 1;
-
-	/* Hmmm: Should we set a flag to tell the user about
-	 *	 his decision the next time he encrypts for this recipient?
-	 */
-    }
-    else if( opt.trust_model==TM_ALWAYS && !rc ) {
-	if( !opt.quiet )
-	    log_info(_("WARNING: Using untrusted key!\n"));
+      if( cpr_get_answer_is_yes("untrusted_key.override",
+				_("Use this key anyway? "))  )
 	rc = 1;
-    }
-    return rc;
-}
 
+      /* Hmmm: Should we set a flag to tell the user about
+       *	 his decision the next time he encrypts for this recipient?
+       */
+    }
+
+  return rc;
+}
 
 
 /****************

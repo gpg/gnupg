@@ -1,5 +1,18 @@
 2004-10-06  David Shaw  <dshaw@jabberwocky.com>
 
+	* helptext.c, pkclist.c (do_we_trust): It is not possible to get
+	here with a revoked or expired key, so BUG() that case.  Remove
+	question about overriding revoked/expired.  Also
+	--keyid-format-ify.
+	(do_we_trust_pre): Use print_pubkey_info() instead of printing the
+	info ourselves.
+
+	* passphrase.c (passphrase_to_dek): Improve translatability of
+	user ID prompts.
+
+	* keylist.c (print_pubkey_info): Use the user ID the pk was
+	selected by, if any.
+
 	* keyedit.c (sign_uids, ask_revoke_sig): Improve translatability
 	of user ID prompts.
 	(ask_revoke_sig, menu_revsig): Try and use common strings for

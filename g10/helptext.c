@@ -57,10 +57,6 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
  "ultimately trusted\n"
 )},
 
-{ "revoked_key.override", N_(
-"If you want to use this revoked key anyway, answer \"yes\"."
-)},
-
 { "untrusted_key.override", N_(
 "If you want to use this untrusted key anyway, answer \"yes\"."
 )},

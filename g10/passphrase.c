@@ -1133,15 +1133,13 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
        information on that key. */
     if( keyid && !opt.batch && !next_pw && mode!=1 ) {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
-	size_t n;
 	char *p;
 
-	tty_printf(_("\nYou need a passphrase to unlock the secret key for\n"
-		     "user: \"") );
-	p = get_user_id( keyid, &n );
-	tty_print_utf8_string( p, n );
+	p=get_user_id_native(keyid);
+	tty_printf("\n");
+	tty_printf(_("You need a passphrase to unlock the secret key for\n"
+		     "user: \"%s\"\n"),p);
 	m_free(p);
-	tty_printf("\"\n");
 
 	if( !get_pubkey( pk, keyid ) ) {
 	    const char *s = pubkey_algo_to_string( pk->pubkey_algo );

@@ -119,7 +119,7 @@ print_seckey_info (PKT_secret_key *sk)
   keyid_from_sk (sk, keyid);
   p=get_user_id_native(keyid);
 
-  tty_printf ("\nsec  %4u%c/%s %s   %s\n",
+  tty_printf ("\nsec  %4u%c/%s %s %s\n",
 	      nbits_from_sk (sk),
 	      pubkey_letter (sk->pubkey_algo),
 	      keystr(keyid), datestr_from_sk (sk), p);
@@ -137,15 +137,21 @@ print_pubkey_info (FILE *fp, PKT_public_key *pk)
   char *p;
 
   keyid_from_pk (pk, keyid);
-  p=get_user_id_native(keyid);
+
+  /* If the pk was chosen by a particular user ID, that is the one to
+     print. */
+  if(pk->user_id)
+    p=utf8_to_native(pk->user_id->name,pk->user_id->len,0);
+  else
+    p=get_user_id_native(keyid);
 
   if (fp)
-    fprintf (fp, "pub  %4u%c/%s %s   %s\n",
+    fprintf (fp, "pub  %4u%c/%s %s %s\n",
              nbits_from_pk (pk),
              pubkey_letter (pk->pubkey_algo),
              keystr(keyid), datestr_from_pk (pk), p);
   else
-    tty_printf ("\npub  %4u%c/%s %s   %s\n",
+    tty_printf ("\npub  %4u%c/%s %s %s\n",
                 nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
                 keystr(keyid), datestr_from_pk (pk), p);
 
