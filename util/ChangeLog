@@ -1,3 +1,10 @@
+2004-03-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* iobuf.c (block_filter): Remove the old gpg indeterminate length
+	mode.
+	(iobuf_set_block_mode, iobuf_in_block_mode): Removed as
+	superfluous.
+
 2004-03-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* iobuf.c (block_filter): Properly handle a partial body stream

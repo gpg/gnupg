@@ -679,22 +679,8 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    }
 	    /*	log_debug("partial: ctx=%p c=%02x size=%u\n", a, c, a->size);*/
 		}
-		else { /* the gnupg partial length scheme - much better :-) */
-		    c = iobuf_get(chain);
-		    a->size = c << 8;
-		    c = iobuf_get(chain);
-		    a->size |= c;
-		    if( c == -1 ) {
-			log_error("block_filter: error reading length info\n");
-			rc = G10ERR_READ_FILE;
-		    }
-		    if( !a->size ) {
-			a->eof = 1;
-			if( !n )
-			    rc = -1;
-			break;
-		    }
-		}
+		else
+		  BUG();
 	    }
 
 	    while( !rc && size && a->size ) {
@@ -768,35 +754,8 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		}
 	    }
 	}
-	else { /* the gnupg scheme (which is not openpgp compliant) */
-	    size_t avail, n;
-
-	    for(p=buf; !rc && size; ) {
-		n = size;
-		avail = a->size - a->count;
-		if( !avail ) {
-		    if( n > a->size ) {
-			iobuf_put( chain, (a->size >> 8) & 0xff );
-			iobuf_put( chain, a->size & 0xff );
-			avail = a->size;
-			a->count = 0;
-		    }
-		    else {
-			iobuf_put( chain, (n >> 8) & 0xff );
-			iobuf_put( chain, n & 0xff );
-			avail = n;
-			a->count = a->size - n;
-		    }
-		}
-		if( n > avail )
-		    n = avail;
-		if( iobuf_write(chain, p, n ) )
-		    rc = G10ERR_WRITE_FILE;
-		a->count += n;
-		p += n;
-		size -= n;
-	    }
-	}
+	else
+	  BUG();
     }
     else if( control == IOBUFCTRL_INIT ) {
 	if( DBG_IOBUF )
@@ -852,10 +811,8 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		}
 		m_free( a->buffer ); a->buffer = NULL; a->buflen = 0;
 	    }
-	    else {
-		iobuf_writebyte(chain, 0);
-		iobuf_writebyte(chain, 0);
-	    }
+	    else
+	      BUG();
 	}
 	else if( a->size ) {
 	    log_error("block_filter: pending bytes!\n");
@@ -2024,28 +1981,6 @@ iobuf_get_fname( IOBUF a )
     return NULL;
 }
 
-/****************
- * Start the block write mode, see rfc1991.new for details.
- * A value of 0 for N stops this mode (flushes and writes
- * the end marker)
- */
-void
-iobuf_set_block_mode( IOBUF a, size_t n )
-{
-    block_filter_ctx_t *ctx = m_alloc_clear( sizeof *ctx );
-
-    assert( a->use == 1 || a->use == 2 );
-    ctx->use = a->use;
-    if( !n ) {
-	if( a->use == 1 )
-	    log_debug("pop_filter called in set_block_mode - please report\n");
-	pop_filter(a, block_filter, NULL );
-    }
-    else {
-	ctx->size = n; /* only needed for use 2 */
-	iobuf_push_filter(a, block_filter, ctx );
-    }
-}
 
 /****************
  * enable partial block mode as described in the OpenPGP draft.
@@ -2070,19 +2005,6 @@ iobuf_set_partial_block_mode( IOBUF a, size_t len )
 	ctx->first_c = len;
 	iobuf_push_filter(a, block_filter, ctx );
     }
-}
-
-
-/****************
- * Checks whether the stream is in block mode
- * Note: This does not work if other filters are pushed on the stream.
- */
-int
-iobuf_in_block_mode( IOBUF a )
-{
-    if( a && a->filter == block_filter )
-	return 1; /* yes */
-    return 0; /* no */
 }
 
 
