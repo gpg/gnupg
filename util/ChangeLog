@@ -1,3 +1,8 @@
+2004-08-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* http.c (insert_escapes): Fix encoding problem for non-URI-safe
+	characters.  Noted by Vladimir Novak.
+
 2004-08-11  Werner Koch  <wk@g10code.de>
 
 	* dotlock.c (destroy_dotlock): New.
