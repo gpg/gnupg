@@ -385,18 +385,6 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
       return rc;
     }
 
-  comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
-  if (comment_sexp)
-    {
-      comment = gcry_sexp_nth_data (comment_sexp, 1, &comment_length);
-      if (! comment)
-	{
-	  rc = GPG_ERR_INV_SEXP;
-	  gcry_sexp_release (s_skey);
-	  return rc;
-	}
-    }
-
   len = gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
   assert (len);
   buf = xtrymalloc (len);
@@ -415,8 +403,13 @@ agent_key_from_file (CTRL ctrl, const char *desc_text,
     case PRIVATE_KEY_CLEAR:
       break; /* no unprotection needed */
     case PRIVATE_KEY_PROTECTED:
+      comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+      if (comment_sexp)
+	comment = gcry_sexp_nth_data (comment_sexp, 1, &comment_length);
+
       rc = modify_description (desc_text,
 			       comment, comment_length, &desc_text_modified);
+      gcry_sexp_release (comment_sexp);
       if (rc)
 	log_error ("failed to modify description: %s\n", gpg_strerror (rc));
       else
