@@ -930,13 +930,13 @@ connect_server( const char *server, ushort port, unsigned int flags,
 
   if(!connected)
     {
+      int err=errno;
 #ifdef _WIN32
       if(hostfound)
 	log_error("%s: Unable to connect: ec=%d\n",server,(int)WSAGetLastError());
       else
 	log_error("%s: Host not found: ec=%d\n",server,(int)WSAGetLastError());
 #else
-      int err=errno;
       if(hostfound)
 	log_error("%s: %s\n",server,strerror(err));
       else

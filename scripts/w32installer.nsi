@@ -60,7 +60,9 @@ Var MYTMP
 Var STARTMENU_FOLDER
 
 Var DOC_INSTALLED
+!ifdef WITH_WINPT
 Var WINPT_INSTALLED
+!endif
 
 ; ------------------
 ; Interface Settings
@@ -113,7 +115,7 @@ Var WINPT_INSTALLED
 
 !insertmacro MUI_PAGE_INSTFILES
 
-!define MUI_FINISHPAGE_SHOWREADME "README.txt"
+!define MUI_FINISHPAGE_SHOWREADME "README.W32.txt"
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "$(T_ShowReadme)"
 !define MUI_FINISHPAGE_LINK \
   "Visit the GnuPG website for latest news and support"
@@ -163,7 +165,7 @@ Section "Base" SecBase
   SetOutPath "$INSTDIR\Doc"
 
   File "README.txt"
-  File "README.W32"
+  File "README.W32.txt"
   File "COPYING.txt"
 
   Call InstallIconv
@@ -272,6 +274,8 @@ Section "-Finish"
 
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG README.lnk" \
                  "$INSTDIR\Doc\README.txt"
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG README.Windows.lnk" \
+                 "$INSTDIR\Doc\README.W32.txt"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG NEWS.lnk" \
                  "$INSTDIR\Doc\NEWS.txt"
 
@@ -280,6 +284,7 @@ Section "-Finish"
                  "$INSTDIR\Doc\gpg.man"
 
 
+!ifdef WITH_WINPT
   IntCmp $WINPT_INSTALLED 1 0 no_winpt_menu no_winpt_menu
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\winpt.lnk" \
                  "$INSTDIR\winpt.exe"
@@ -290,6 +295,7 @@ Section "-Finish"
                  "$INSTDIR\Doc\NEWS.winpt.txt"
 
  no_winpt_menu:
+!endif
 
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\uninst-gnupg.lnk" \
                  "$INSTDIR\uninst-gnupg.exe"
@@ -319,7 +325,7 @@ Section "Uninstall"
   Delete "$INSTDIR\gpgkeys_ldap.exe"
 
   Delete "$INSTDIR\Doc\README.txt"
-  Delete "$INSTDIR\Doc\README.W32"
+  Delete "$INSTDIR\Doc\README.W32.txt"
   Delete "$INSTDIR\Doc\COPYING.txt"
   Delete "$INSTDIR\Doc\COPYING.LIB.txt"
   Delete "$INSTDIR\Doc\README.iconv.txt"

@@ -1,3 +1,7 @@
+2005-02-03  Werner Koch  <wk@g10code.com>
+
+	* http.c (connect_server): Define ERR outside of the !W32 block.
+
 2005-02-01  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (connect_server): Fix fd leak when connecting to a

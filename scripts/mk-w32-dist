@@ -79,7 +79,11 @@ for i in README COPYING NEWS; do
   cp ${srcdir}/$i $i.txt
   todos $i.txt
 done
-for i in README.W32 gnupg-w32.reg; do
+for i in README.W32 ; do
+  cp ${srcdir}/doc/$i $i.txt
+  todos $i.txt
+done
+for i in gnupg-w32.reg; do
   cp ${srcdir}/doc/$i .
   todos $i
 done
