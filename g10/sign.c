@@ -411,8 +411,11 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		md_write( md, sig->hashed_data, n+2 );
 		n += 6;
 	    }
-	    else
+	    else {
+		md_putc( md, 0 );  /* always hash the length of the subpacket*/
+		md_putc( md, 0 );
 		n = 6;
+	    }
 	    /* add some magic */
 	    buf[0] = sig->version;
 	    buf[1] = 0xff;
@@ -594,8 +597,11 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 		md_write( md, sig->hashed_data, n+2 );
 		n += 6;
 	    }
-	    else
+	    else {
+		md_putc( md, 0 );  /* always hash the length of the subpacket*/
+		md_putc( md, 0 );
 		n = 6;
+	    }
 	    /* add some magic */
 	    buf[0] = sig->version;
 	    buf[1] = 0xff;
@@ -721,8 +727,11 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 		md_write( md, sig->hashed_data, n+2 );
 		n += 6;
 	    }
-	    else
+	    else {
+		md_putc( md, 0 );  /* always hash the length of the subpacket*/
+		md_putc( md, 0 );
 		n = 6;
+	    }
 	    /* add some magic */
 	    buf[0] = sig->version;
 	    buf[1] = 0xff;

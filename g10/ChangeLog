@@ -1,3 +1,9 @@
+Thu Apr 29 12:29:22 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* sign.c (sign_file): Fixed hashing in case of no subpackets.
+	(clearsign_file): Ditto.
+	(make_keysig_packet): Ditto.
+
 Wed Apr 28 13:03:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* keyedit.c (keyedit_menu): Add new command revkey.
