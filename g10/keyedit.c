@@ -1272,8 +1272,8 @@ keyedit_menu( const char *username, STRLIST locusr,
       cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
       cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
       cmdEXPIRE, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF, cmdSETPREF,
-      cmdUPDPREF, cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
-      cmdCHKTRUST, cmdADDCARDKEY, cmdKEYTOCARD,
+      cmdPREFKS, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST, cmdCHKTRUST,
+      cmdADDCARDKEY, cmdKEYTOCARD,
       cmdNOP };
   static struct
   {
@@ -1298,7 +1298,8 @@ keyedit_menu( const char *username, STRLIST locusr,
       { "sign"    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH, N_("sign the key") },
       { "s"       , cmdSIGN      , KEYEDIT_NOT_SK, NULL },
       /* "lsign" will never match since "sign" comes first and it is a
-	 tail match.  It is here so it shows up in the help menu. */
+	 tail match.  It is just here so it shows up in the help
+	 menu. */
       { "lsign"   , cmdNOP       , 0, N_("sign the key locally") },
       { "debug"   , cmdDEBUG     , 0, NULL },
       { "adduid"  , cmdADDUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a user ID") },
@@ -1321,12 +1322,15 @@ keyedit_menu( const char *username, STRLIST locusr,
       { "pref"    , cmdPREF      , KEYEDIT_NOT_SK, N_("list preferences (expert)")},
       { "showpref", cmdSHOWPREF  , KEYEDIT_NOT_SK, N_("list preferences (verbose)") },
       { "setpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preference list") },
-      { "updpref" , cmdUPDPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("updated preferences") },
+      /* Alias */
+      { "updpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
       { "keyserver",cmdPREFKS    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preferred keyserver URL")},
       { "passwd"  , cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the passphrase") },
       { "trust"   , cmdTRUST     , KEYEDIT_NOT_SK, N_("change the ownertrust") },
       { "revsig"  , cmdREVSIG    , KEYEDIT_NOT_SK, N_("revoke signatures") },
       { "revuid"  , cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke a user ID") },
+      /* Alias */
+      { "revphoto", cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
       { "revkey"  , cmdREVKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke a secondary key") },
       { "disable" , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable a key") },
       { "enable"  , cmdENABLEKEY , KEYEDIT_NOT_SK, N_("enable a key") },
@@ -1784,13 +1788,14 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    break;
 
 	  case cmdEXPIRE:
-	    if( menu_expire( keyblock, sec_keyblock ) ) {
+	    if( menu_expire( keyblock, sec_keyblock ) )
+	      {
 		merge_keys_and_selfsig( sec_keyblock );
 		merge_keys_and_selfsig( keyblock );
 		sec_modified = 1;
 		modified = 1;
 		redisplay = 1;
-	    }
+	      }
 	    break;
 
 	  case cmdPRIMARY:
@@ -1835,30 +1840,30 @@ keyedit_menu( const char *username, STRLIST locusr,
 	    break;
 
           case cmdSETPREF:
-            keygen_set_std_prefs ( !*arg_string? "default" : arg_string, 0);
-            break;
+	    {
+	      PKT_user_id *tempuid;
 
-	  case cmdUPDPREF: 
-            {
-	      PKT_user_id *temp=keygen_get_std_prefs();
+	      keygen_set_std_prefs(!*arg_string?"default" : arg_string, 0);
+
+	      tempuid=keygen_get_std_prefs();
 	      tty_printf(_("Set preference list to:\n"));
-	      show_prefs(temp,NULL,1);
-	      m_free(temp);
-            }
-            if (cpr_get_answer_is_yes ("keyedit.updpref.okay",
-                                        count_selected_uids (keyblock)?
-                                       _("Really update the preferences"
-					 " for the selected user IDs? (y/N) "):
-                                   _("Really update the preferences? (y/N) ")))
-	      {
+	      show_prefs(tempuid,NULL,1);
+	      free_user_id(tempuid);
 
-                if ( menu_set_preferences (keyblock, sec_keyblock) )
-		  {
-		    merge_keys_and_selfsig (keyblock);
-		    modified = 1;
-		    redisplay = 1;
-		  }
-	      }
+	      if(cpr_get_answer_is_yes("keyedit.setpref.okay",
+				       count_selected_uids (keyblock)?
+				       _("Really update the preferences"
+					 " for the selected user IDs? (y/N) "):
+				       _("Really update the preferences? (y/N) ")))
+		{
+		  if ( menu_set_preferences (keyblock, sec_keyblock) )
+		    {
+		      merge_keys_and_selfsig (keyblock);
+		      modified = 1;
+		      redisplay = 1;
+		    }
+		}
+	    }
 	    break;
 
 	  case cmdPREFKS:
@@ -4093,6 +4098,12 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
   PACKET *pkt;
   PKT_signature *sig;
 
+  if(pk->is_revoked)
+    {
+      tty_printf(_("Key %s is already revoked.\n"),keystr_from_pk(pk));
+      return 0;
+    }
+
   reason = ask_revocation_reason( 1, 0, 0 );
   /* user decided to cancel */
   if( !reason )
@@ -4117,7 +4128,7 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
   insert_kbnode( pub_keyblock, new_kbnode(pkt), 0 );
   commit_kbnode( &pub_keyblock );
 
-  /* TODO: set update_trust here? */
+  update_trust=1;
 
  scram:
   release_revocation_reason_info( reason );
@@ -4148,6 +4159,13 @@ menu_revsubkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    PKT_secret_key *sk;
 	    PKT_public_key *subpk = node->pkt->pkt.public_key;
 	    struct sign_attrib attrib;
+
+	    if(subpk->is_revoked)
+	      {
+		tty_printf(_("Subkey %s is already revoked.\n"),
+			   keystr_from_pk(subpk));
+		continue;
+	      }
 
 	    memset( &attrib, 0, sizeof attrib );
 	    attrib.reason = reason;

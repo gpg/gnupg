@@ -1,3 +1,16 @@
+2004-12-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (keygen_get_std_prefs): Set reference count when
+	creating the temporary user ID.
+
+	* keyedit.c (keyedit_menu): Merge updpref and setpref.  Keep
+	updpref as an invisible alias.  Add invisible alias for revphoto.
+	Fix small memory leak when using "setpref" (not all of the uid was
+	freed).
+	(menu_revkey): Trigger a trust rebuild after revoking a key.
+	Don't allow revoking an already-revoked whole key.
+	(menu_revsubkey): Don't allow revoking an already-revoked subkey.
+
 2004-12-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (menu_revkey): Rename to menu_revsubkey.

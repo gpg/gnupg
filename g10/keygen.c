@@ -510,6 +510,8 @@ PKT_user_id *keygen_get_std_prefs(void)
   if(!prefs_initialized)
     keygen_set_std_prefs(NULL,0);
 
+  uid->ref=1;
+
   uid->prefs=m_alloc((sizeof(prefitem_t *)*
 		      (nsym_prefs+nhash_prefs+nzip_prefs+1)));
 
