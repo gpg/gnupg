@@ -1482,6 +1482,7 @@ open_pcsc_reader (const char *portstr)
     }
   strcpy (reader_table[slot].rdrname, portstr? portstr : list);
   xfree (list);
+  list = NULL;
 
   err = pcsc_connect (reader_table[slot].pcsc.context,
                       reader_table[slot].rdrname,
@@ -1495,11 +1496,11 @@ open_pcsc_reader (const char *portstr)
     {
       log_error ("pcsc_connect failed: %s (0x%lx)\n",
                   pcsc_error_string (err), err);
-      pcsc_release_context (reader_table[slot].pcsc.context);
+  
+    pcsc_release_context (reader_table[slot].pcsc.context);
       xfree (reader_table[slot].rdrname);
       reader_table[slot].rdrname = NULL;
       reader_table[slot].used = 0;
-      xfree (list);
       return -1;
     }      
 

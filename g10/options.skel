@@ -58,7 +58,8 @@
 # for supported character sets.  This character set is only used for
 # metadata and not for the actual message which does not undergo any
 # translation.  Note that future version of GnuPG will change to UTF-8
-# as default character set.
+# as default character set.  In most cases this option is not required 
+# GnuPG is able to figure out the correct charset and use that.
 
 #charset utf-8
 

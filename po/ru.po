@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 1.2.4\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2004-10-26 18:05+0200\n"
+"POT-Creation-Date: 2004-10-28 10:59+0200\n"
 "PO-Revision-Date: 2003-12-23 19:24+0100\n"
 "Last-Translator: Maxim Britov <maxbritov@tut.by>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -36,9 +36,10 @@ msgstr "не найден модуль накопления энтропии\n"
 
 #: cipher/random.c:387 g10/card-util.c:594 g10/dearmor.c:60 g10/dearmor.c:109
 #: g10/encode.c:181 g10/encode.c:488 g10/g10.c:3194 g10/import.c:175
-#: g10/keygen.c:2236 g10/openfile.c:180 g10/openfile.c:333 g10/sign.c:761
-#: g10/sign.c:1020 g10/sign.c:1165 g10/tdbdump.c:140 g10/tdbdump.c:148
-#: g10/tdbio.c:539 g10/tdbio.c:600
+#: g10/keygen.c:2236 g10/keyring.c:1524 g10/openfile.c:180 g10/openfile.c:333
+#: g10/plaintext.c:468 g10/sign.c:761 g10/sign.c:912 g10/sign.c:1020
+#: g10/sign.c:1164 g10/tdbdump.c:140 g10/tdbdump.c:148 g10/tdbio.c:539
+#: g10/tdbio.c:600
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "не могу открыть `%s': %s\n"
@@ -70,8 +71,9 @@ msgstr "не могу прочитать `%s': %s\n"
 msgid "note: random_seed file not updated\n"
 msgstr "замечание: файл random_seed не обновлен\n"
 
-#: cipher/random.c:473 g10/keygen.c:2704 g10/keygen.c:2734 g10/keyring.c:1496
-#: g10/openfile.c:257 g10/openfile.c:348 g10/tdbio.c:535
+#: cipher/random.c:473 g10/exec.c:489 g10/keygen.c:2704 g10/keygen.c:2734
+#: g10/keyring.c:1200 g10/keyring.c:1500 g10/openfile.c:257 g10/openfile.c:348
+#: g10/sign.c:778 g10/sign.c:1035 g10/tdbio.c:535
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "не могу создать `%s': %s\n"
@@ -297,9 +299,11 @@ msgstr "секретный ключ не найден"
 msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
-#: g10/card-util.c:70 g10/keygen.c:2420 g10/revoke.c:215 g10/revoke.c:415
-msgid "sorry, can't do this in batch mode\n"
-msgstr "извините, но это невозможно выполнить в пакетном режиме\n"
+#: g10/card-util.c:70 g10/card-util.c:1198 g10/delkey.c:120 g10/keyedit.c:1314
+#: g10/keygen.c:2420 g10/revoke.c:216 g10/revoke.c:417
+#, fuzzy
+msgid "can't do this in batch mode\n"
+msgstr "не могу делать это в пакетном режиме\n"
 
 #: g10/card-util.c:94 g10/card-util.c:977 g10/card-util.c:1059
 #: g10/keyedit.c:412 g10/keyedit.c:433 g10/keyedit.c:447 g10/keygen.c:1298
@@ -473,7 +477,7 @@ msgid "   (3) Authentication key\n"
 msgstr ""
 
 #: g10/card-util.c:988 g10/card-util.c:1070 g10/keyedit.c:907
-#: g10/keygen.c:1395 g10/revoke.c:639
+#: g10/keygen.c:1395 g10/revoke.c:642
 msgid "Invalid selection.\n"
 msgstr "Неправильный выбор.\n"
 
@@ -632,11 +636,7 @@ msgstr "passwd"
 msgid "menu to change or unblock the PIN"
 msgstr ""
 
-#: g10/card-util.c:1198 g10/delkey.c:120 g10/keyedit.c:1313
-msgid "can't do that in batchmode\n"
-msgstr "не могу делать это в пакетном режиме\n"
-
-#: g10/card-util.c:1246 g10/keyedit.c:1393
+#: g10/card-util.c:1246 g10/keyedit.c:1397
 msgid "Command> "
 msgstr "Команда> "
 
@@ -645,7 +645,17 @@ msgstr "Команда> "
 msgid "Admin-only command\n"
 msgstr "несовместимые команды\n"
 
-#: g10/card-util.c:1356 g10/keyedit.c:1860
+#: g10/card-util.c:1297
+#, fuzzy
+msgid "Admin commands are allowed\n"
+msgstr "несовместимые команды\n"
+
+#: g10/card-util.c:1299
+#, fuzzy
+msgid "Admin commands are not allowed\n"
+msgstr "сохранение секретного ключа в `%s'\n"
+
+#: g10/card-util.c:1360 g10/keyedit.c:1864
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Недопустимая команда  (список команд: \"help\")\n"
 
@@ -672,8 +682,8 @@ msgstr ""
 msgid "Enter PIN: "
 msgstr ""
 
-#: g10/decrypt.c:68 g10/decrypt.c:157 g10/g10.c:3544 g10/verify.c:101
-#: g10/verify.c:154
+#: g10/decrypt.c:68 g10/decrypt.c:157 g10/g10.c:3544 g10/keyring.c:376
+#: g10/keyring.c:662 g10/verify.c:101 g10/verify.c:154
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "не могу открыть `%s'\n"
@@ -682,13 +692,14 @@ msgstr "не могу открыть `%s'\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output не работает для данной команды\n"
 
-#: g10/delkey.c:74 g10/export.c:162 g10/keyedit.c:2917 g10/revoke.c:225
-#, c-format
-msgid "key `%s' not found: %s\n"
+#: g10/delkey.c:74 g10/export.c:162 g10/keyedit.c:2921 g10/keyserver.c:1414
+#: g10/revoke.c:226
+#, fuzzy, c-format
+msgid "key \"%s\" not found: %s\n"
 msgstr "ключ `%s' не найден: %s\n"
 
-#: g10/delkey.c:82 g10/export.c:192 g10/keyserver.c:1428 g10/revoke.c:231
-#: g10/revoke.c:436
+#: g10/delkey.c:82 g10/export.c:192 g10/keyserver.c:1428 g10/revoke.c:232
+#: g10/revoke.c:439
 #, c-format
 msgid "error reading keyblock: %s\n"
 msgstr "ошибка чтения блока ключей: %s\n"
@@ -698,7 +709,8 @@ msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(если только Вы не задали ключ отпечатком)\n"
 
 #: g10/delkey.c:127
-msgid "can't do that in batchmode without \"--yes\"\n"
+#, fuzzy
+msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "не могу выполнять в пакетном режиме без \"--yes\"\n"
 
 #: g10/delkey.c:139
@@ -729,7 +741,7 @@ msgstr "имеется секретный ключ для открытого к�
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "сначала используйте опцию \"--delete-secret-keys\".\n"
 
-#: g10/encode.c:210 g10/sign.c:1185
+#: g10/encode.c:210 g10/sign.c:1184
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "ошибка при создании ключевой фразы (пароля): %s\n"
@@ -773,7 +785,7 @@ msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "использование шифра %s (%d) нарушает предпочтения получателя\n"
 
-#: g10/encode.c:648 g10/sign.c:877
+#: g10/encode.c:648 g10/sign.c:876
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -845,11 +857,6 @@ msgstr "не могу запустить %s \"%s\": %s\n"
 #, fuzzy, c-format
 msgid "unable to execute shell `%s': %s\n"
 msgstr "не могу запустить %s \"%s\": %s\n"
-
-#: g10/exec.c:489 g10/sign.c:778 g10/sign.c:1035
-#, fuzzy, c-format
-msgid "can't create file `%s': %s\n"
-msgstr "не могу создать `%s': %s\n"
 
 #: g10/exec.c:521
 #, c-format
@@ -1147,7 +1154,7 @@ msgstr ""
 msgid "Pubkey: "
 msgstr "С открытым ключом: "
 
-#: g10/g10.c:766 g10/keyedit.c:1897
+#: g10/g10.c:766 g10/keyedit.c:1901
 msgid "Cipher: "
 msgstr "Симметричные шифры: "
 
@@ -1155,7 +1162,7 @@ msgstr "Симметричные шифры: "
 msgid "Hash: "
 msgstr "Хэш-функции: "
 
-#: g10/g10.c:778 g10/keyedit.c:1943
+#: g10/g10.c:778 g10/keyedit.c:1947
 msgid "Compression: "
 msgstr "Алгоритмы сжатия: "
 
@@ -1275,7 +1282,7 @@ msgstr ""
 msgid "`%s' is not a valid character set\n"
 msgstr "%s недопустимая таблица символов\n"
 
-#: g10/g10.c:2279 g10/keyedit.c:3433
+#: g10/g10.c:2279 g10/keyedit.c:3437
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "не могу проанализировать URI сервера ключей\n"
@@ -2404,29 +2411,29 @@ msgstr "[отозван]"
 msgid "[self-signature]"
 msgstr "[самоподпись]"
 
-#: g10/keyedit.c:332 g10/keylist.c:326
+#: g10/keyedit.c:332 g10/keylist.c:342
 msgid "1 bad signature\n"
 msgstr "1 плохая подпись\n"
 
-#: g10/keyedit.c:334 g10/keylist.c:328
+#: g10/keyedit.c:334 g10/keylist.c:344
 #, c-format
 msgid "%d bad signatures\n"
 msgstr "%d плохих подписей\n"
 
-#: g10/keyedit.c:336 g10/keylist.c:330
+#: g10/keyedit.c:336 g10/keylist.c:346
 msgid "1 signature not checked due to a missing key\n"
 msgstr "1 подпись не проверена за отсутствием ключа\n"
 
-#: g10/keyedit.c:338 g10/keylist.c:332
+#: g10/keyedit.c:338 g10/keylist.c:348
 #, c-format
 msgid "%d signatures not checked due to missing keys\n"
 msgstr "%d подписей не проверено за отсутствием ключей\n"
 
-#: g10/keyedit.c:340 g10/keylist.c:334
+#: g10/keyedit.c:340 g10/keylist.c:350
 msgid "1 signature not checked due to an error\n"
 msgstr "1 подпись не проверена из-за ошибки\n"
 
-#: g10/keyedit.c:342 g10/keylist.c:336
+#: g10/keyedit.c:342 g10/keylist.c:352
 #, c-format
 msgid "%d signatures not checked due to errors\n"
 msgstr "%d подписей не проверено из-за ошибок\n"
@@ -2480,12 +2487,12 @@ msgid "User ID \"%s\" is revoked."
 msgstr "User ID \"%s\" отозван."
 
 #: g10/keyedit.c:593 g10/keyedit.c:619 g10/keyedit.c:644 g10/keyedit.c:799
-#: g10/keyedit.c:857 g10/keyedit.c:1482
+#: g10/keyedit.c:857 g10/keyedit.c:1486
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Вы уверены, что хотите это подписать? (y/N) "
 
 #: g10/keyedit.c:605 g10/keyedit.c:631 g10/keyedit.c:656 g10/keyedit.c:805
-#: g10/keyedit.c:1488
+#: g10/keyedit.c:1492
 msgid "  Unable to sign.\n"
 msgstr "  Не могу подписать.\n"
 
@@ -2686,7 +2693,7 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Действительно подписать? "
 
-#: g10/keyedit.c:1028 g10/keyedit.c:3881 g10/keyedit.c:3972 g10/keyedit.c:4045
+#: g10/keyedit.c:1028 g10/keyedit.c:3885 g10/keyedit.c:3976 g10/keyedit.c:4049
 #: g10/sign.c:369
 #, c-format
 msgid "signing failed: %s\n"
@@ -3039,240 +3046,240 @@ msgstr "showphoto"
 msgid "show photo ID"
 msgstr "показать фото ID"
 
-#: g10/keyedit.c:1344
-#, c-format
-msgid "error reading secret keyblock `%s': %s\n"
+#: g10/keyedit.c:1347
+#, fuzzy, c-format
+msgid "error reading secret keyblock \"%s\": %s\n"
 msgstr "ошибка чтения секретного блока ключа `%s': %s\n"
 
-#: g10/keyedit.c:1361
+#: g10/keyedit.c:1365
 msgid "Secret key is available.\n"
 msgstr "Секретный ключ доступен.\n"
 
-#: g10/keyedit.c:1423
+#: g10/keyedit.c:1427
 msgid "Need the secret key to do this.\n"
 msgstr "Для данного действия нужен секретный ключ.\n"
 
-#: g10/keyedit.c:1428
+#: g10/keyedit.c:1432
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "Сначала воспользуйтесь командой \"toggle\".\n"
 
-#: g10/keyedit.c:1476
+#: g10/keyedit.c:1480
 msgid "Key is revoked."
 msgstr "Ключ отозван."
 
-#: g10/keyedit.c:1496
+#: g10/keyedit.c:1500
 #, fuzzy
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Вы действительно хотите подписать ВСЕ User ID? "
 
-#: g10/keyedit.c:1498
+#: g10/keyedit.c:1502
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Подсказка: Выберите User IDs для подписи\n"
 
-#: g10/keyedit.c:1523
+#: g10/keyedit.c:1527
 #, c-format
 msgid "This command is not allowed while in %s mode.\n"
 msgstr "Данная команда не допустима в режиме %s.\n"
 
-#: g10/keyedit.c:1545 g10/keyedit.c:1565 g10/keyedit.c:1668
+#: g10/keyedit.c:1549 g10/keyedit.c:1569 g10/keyedit.c:1672
 msgid "You must select at least one user ID.\n"
 msgstr "Вы должны выбрать хотя бы один User ID.\n"
 
-#: g10/keyedit.c:1547
+#: g10/keyedit.c:1551
 msgid "You can't delete the last user ID!\n"
 msgstr "Вы не можете удалить последний User ID!\n"
 
-#: g10/keyedit.c:1549
+#: g10/keyedit.c:1553
 #, fuzzy
 msgid "Really remove all selected user IDs? (y/N) "
 msgstr "Вы действительно хотите удалить ВСЕ выбранные User IDs? "
 
-#: g10/keyedit.c:1550
+#: g10/keyedit.c:1554
 #, fuzzy
 msgid "Really remove this user ID? (y/N) "
 msgstr "Вы действительно хотите удалить данный User ID? "
 
-#: g10/keyedit.c:1600
+#: g10/keyedit.c:1604
 #, fuzzy
 msgid "Really move the primary key? (y/N) "
 msgstr "Вы действительно хотите удалить данный User ID? "
 
-#: g10/keyedit.c:1612
+#: g10/keyedit.c:1616
 #, fuzzy
 msgid "You must select exactly one key.\n"
 msgstr "Вы должны выбрать хотя бы один ключ.\n"
 
-#: g10/keyedit.c:1632 g10/keyedit.c:1687
+#: g10/keyedit.c:1636 g10/keyedit.c:1691
 msgid "You must select at least one key.\n"
 msgstr "Вы должны выбрать хотя бы один ключ.\n"
 
-#: g10/keyedit.c:1635
+#: g10/keyedit.c:1639
 #, fuzzy
 msgid "Do you really want to delete the selected keys? (y/N) "
 msgstr "Вы действительно хотите удалить выбранные ключи? "
 
-#: g10/keyedit.c:1636
+#: g10/keyedit.c:1640
 #, fuzzy
 msgid "Do you really want to delete this key? (y/N) "
 msgstr "Вы действительно хотите удалить данный ключ? "
 
-#: g10/keyedit.c:1671
+#: g10/keyedit.c:1675
 #, fuzzy
 msgid "Really revoke all selected user IDs? (y/N) "
 msgstr "Действительно отозвать ВСЕ выбранные User ID? "
 
-#: g10/keyedit.c:1672
+#: g10/keyedit.c:1676
 #, fuzzy
 msgid "Really revoke this user ID? (y/N) "
 msgstr "Действительно отозвать данный User ID? "
 
-#: g10/keyedit.c:1691
+#: g10/keyedit.c:1695
 #, fuzzy
 msgid "Do you really want to revoke the selected keys? (y/N) "
 msgstr "Вы действительно хотите отозвать выбранные ключи? "
 
-#: g10/keyedit.c:1692
+#: g10/keyedit.c:1696
 #, fuzzy
 msgid "Do you really want to revoke this key? (y/N) "
 msgstr "Вы действительно хотите отозвать данный ключ? "
 
-#: g10/keyedit.c:1731
+#: g10/keyedit.c:1735
 msgid ""
 "Owner trust may not be set while using an user provided trust database\n"
 msgstr ""
 
-#: g10/keyedit.c:1763
+#: g10/keyedit.c:1767
 #, fuzzy
 msgid "Set preference list to:\n"
 msgstr "установить предпочтения"
 
-#: g10/keyedit.c:1769
+#: g10/keyedit.c:1773
 #, fuzzy
 msgid "Really update the preferences for the selected user IDs? (y/N) "
 msgstr "Действительно обновить предпочтения для выбранных User ID? "
 
-#: g10/keyedit.c:1771
+#: g10/keyedit.c:1775
 #, fuzzy
 msgid "Really update the preferences? (y/N) "
 msgstr "Действительно обновить предпочтения? "
 
-#: g10/keyedit.c:1821
+#: g10/keyedit.c:1825
 #, fuzzy
 msgid "Save changes? (y/N) "
 msgstr "Сохранить изменения? "
 
-#: g10/keyedit.c:1824
+#: g10/keyedit.c:1828
 #, fuzzy
 msgid "Quit without saving? (y/N) "
 msgstr "Выйти без сохранения? "
 
-#: g10/keyedit.c:1834
+#: g10/keyedit.c:1838
 #, c-format
 msgid "update failed: %s\n"
 msgstr "сбой при обновлении: %s\n"
 
-#: g10/keyedit.c:1841
+#: g10/keyedit.c:1845
 #, c-format
 msgid "update secret failed: %s\n"
 msgstr "сбой при обновлений секретного ключа: %s\n"
 
-#: g10/keyedit.c:1848
+#: g10/keyedit.c:1852
 msgid "Key not changed so no update needed.\n"
 msgstr "ключ не изменялся - обновление не нужно.\n"
 
-#: g10/keyedit.c:1920
+#: g10/keyedit.c:1924
 msgid "Digest: "
 msgstr "Хэш-функции: "
 
-#: g10/keyedit.c:1972
+#: g10/keyedit.c:1976
 msgid "Features: "
 msgstr "Опции: "
 
-#: g10/keyedit.c:1983
+#: g10/keyedit.c:1987
 msgid "Keyserver no-modify"
 msgstr ""
 
-#: g10/keyedit.c:1998 g10/keylist.c:229
+#: g10/keyedit.c:2002 g10/keylist.c:244
 msgid "Preferred keyserver: "
 msgstr ""
 
-#: g10/keyedit.c:2239
+#: g10/keyedit.c:2243
 #, c-format
 msgid "This key may be revoked by %s key "
 msgstr "Данный ключ может быть отозван ключом %s "
 
-#: g10/keyedit.c:2243
+#: g10/keyedit.c:2247
 msgid " (sensitive)"
 msgstr " (sensitive)"
 
-#: g10/keyedit.c:2257 g10/keyedit.c:2313 g10/keyedit.c:2434 g10/keyedit.c:2449
+#: g10/keyedit.c:2261 g10/keyedit.c:2317 g10/keyedit.c:2438 g10/keyedit.c:2453
 #: g10/keyserver.c:366
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "не могу создать %s: %s\n"
 
-#: g10/keyedit.c:2260 g10/keylist.c:707 g10/keylist.c:807 g10/mainproc.c:929
+#: g10/keyedit.c:2264 g10/keylist.c:723 g10/keylist.c:823 g10/mainproc.c:929
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[отозван]"
 
-#: g10/keyedit.c:2262 g10/keylist.c:678 g10/keylist.c:813
+#: g10/keyedit.c:2266 g10/keylist.c:694 g10/keylist.c:829
 #, fuzzy, c-format
 msgid "expired: %s"
 msgstr " [годен до: %s]"
 
-#: g10/keyedit.c:2264 g10/keyedit.c:2315 g10/keyedit.c:2436 g10/keyedit.c:2451
-#: g10/keylist.c:684 g10/keylist.c:719 g10/keylist.c:819 g10/keylist.c:840
+#: g10/keyedit.c:2268 g10/keyedit.c:2319 g10/keyedit.c:2440 g10/keyedit.c:2455
+#: g10/keylist.c:700 g10/keylist.c:735 g10/keylist.c:835 g10/keylist.c:856
 #: g10/keyserver.c:372 g10/mainproc.c:935
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [годен до: %s]"
 
-#: g10/keyedit.c:2266
+#: g10/keyedit.c:2270
 #, fuzzy, c-format
 msgid "usage: %s"
 msgstr " доверие: %c/%c"
 
-#: g10/keyedit.c:2281
+#: g10/keyedit.c:2285
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " доверие: %c/%c"
 
-#: g10/keyedit.c:2285
+#: g10/keyedit.c:2289
 #, c-format
 msgid "validity: %s"
 msgstr ""
 
-#: g10/keyedit.c:2292
+#: g10/keyedit.c:2296
 msgid "This key has been disabled"
 msgstr "Данный ключ отключен"
 
-#: g10/keyedit.c:2320
+#: g10/keyedit.c:2324
 msgid "card-no: "
 msgstr ""
 
-#: g10/keyedit.c:2355 g10/keyedit.c:2357 g10/keyedit.c:2359
+#: g10/keyedit.c:2359 g10/keyedit.c:2361 g10/keyedit.c:2363
 #, c-format
 msgid "[%8.8s] "
 msgstr ""
 
-#: g10/keyedit.c:2355 g10/keyedit.c:2468 g10/keylist.c:766 g10/keyserver.c:376
+#: g10/keyedit.c:2359 g10/keyedit.c:2472 g10/keylist.c:782 g10/keyserver.c:376
 #: g10/mainproc.c:1575 g10/trustdb.c:1133
 #, fuzzy
 msgid "revoked"
 msgstr "[отозван]"
 
-#: g10/keyedit.c:2357 g10/keyedit.c:2470 g10/keylist.c:768 g10/keyserver.c:380
+#: g10/keyedit.c:2361 g10/keyedit.c:2474 g10/keylist.c:784 g10/keyserver.c:380
 #: g10/mainproc.c:1577 g10/trustdb.c:500
 #, fuzzy
 msgid "expired"
 msgstr "expire"
 
-#: g10/keyedit.c:2396
+#: g10/keyedit.c:2400
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Не может быть предпочтений в PGP 2.x-стиле User ID.\n"
 
-#: g10/keyedit.c:2404
+#: g10/keyedit.c:2408
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3280,7 +3287,7 @@ msgstr ""
 "Заметьте, что показанные степени достоверности могут быть неверными,\n"
 "пока Вы не перезапустите программу.\n"
 
-#: g10/keyedit.c:2535
+#: g10/keyedit.c:2539
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3288,7 +3295,7 @@ msgstr ""
 "ВНИМАНИЕ: нет User ID отмеченного как главный.  Данная команда может\n"
 "              использовать другой User ID в качестве главного.\n"
 
-#: g10/keyedit.c:2595
+#: g10/keyedit.c:2599
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3297,45 +3304,45 @@ msgstr ""
 "ВНИМАНИЕ: Это ключ PGP2.  Добавление фото ID может в некоторых версиях\n"
 "         PGP вызвать выбраковку ключа.\n"
 
-#: g10/keyedit.c:2600 g10/keyedit.c:2878
+#: g10/keyedit.c:2604 g10/keyedit.c:2882
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Вы уверены, что хотите добавить это? (y/N) "
 
-#: g10/keyedit.c:2606
+#: g10/keyedit.c:2610
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Вы можете не добавлять фото ID в ключ PGP2-типа.\n"
 
-#: g10/keyedit.c:2746
+#: g10/keyedit.c:2750
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Удалить данную действительную подпись? (y/N/q)"
 
-#: g10/keyedit.c:2756
+#: g10/keyedit.c:2760
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Удалить данную недействительную подпись? (y/N/q)"
 
-#: g10/keyedit.c:2760
+#: g10/keyedit.c:2764
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Удалить данную неизвестную подпись? (y/N/q)"
 
-#: g10/keyedit.c:2766
+#: g10/keyedit.c:2770
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Действительно удалить данную самоподпись? (y/N)"
 
-#: g10/keyedit.c:2780
+#: g10/keyedit.c:2784
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "Удалена %d подпись.\n"
 
-#: g10/keyedit.c:2781
+#: g10/keyedit.c:2785
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "Удалено %d подписи.\n"
 
-#: g10/keyedit.c:2784
+#: g10/keyedit.c:2788
 msgid "Nothing deleted.\n"
 msgstr "Ничего не удалено.\n"
 
-#: g10/keyedit.c:2873
+#: g10/keyedit.c:2877
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3344,159 +3351,159 @@ msgstr ""
 "ВНИМАНИЕ: Это ключ PGP 2.x. Добавление назначенного отзывающим ключа\n"
 "          может в некоторых версиях PGP вызвать выбраковку ключа.\n"
 
-#: g10/keyedit.c:2884
+#: g10/keyedit.c:2888
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "Вы не можете добавить назначенный отзывающим ключ в PGP 2.x ключ.\n"
 
-#: g10/keyedit.c:2904
+#: g10/keyedit.c:2908
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Укажите User ID ключа, назначенного отзывающим: "
 
-#: g10/keyedit.c:2927
+#: g10/keyedit.c:2931
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "нельзя назначить PGP 2.x ключ, как назначенный отзывающим\n"
 
-#: g10/keyedit.c:2942
+#: g10/keyedit.c:2946
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "ключ не может быть назначен отзывающим сам себя\n"
 
-#: g10/keyedit.c:2964
+#: g10/keyedit.c:2968
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "ВНИМАНИЕ: Данный ключ отозван отзывающим ключом!\n"
 
-#: g10/keyedit.c:2983
+#: g10/keyedit.c:2987
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr "ВНИМАНИЕ: назначение ключа отзывающим не возможно будет отменить!\n"
 
-#: g10/keyedit.c:2989
+#: g10/keyedit.c:2993
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Вы уверены, что хотите назначить данный ключ отзывающим? (y/N): "
 
-#: g10/keyedit.c:3050
+#: g10/keyedit.c:3054
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Снимите выделение с секретного ключа.\n"
 
-#: g10/keyedit.c:3056
+#: g10/keyedit.c:3060
 msgid "Please select at most one secondary key.\n"
 msgstr "Выделите не более одного вторичного ключа.\n"
 
-#: g10/keyedit.c:3060
+#: g10/keyedit.c:3064
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "Смена срока действия вторичного ключа.\n"
 
-#: g10/keyedit.c:3063
+#: g10/keyedit.c:3067
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Смена срока действия главного ключа\n"
 
-#: g10/keyedit.c:3109
+#: g10/keyedit.c:3113
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Вы не можете изменить срок действия v3 ключа\n"
 
-#: g10/keyedit.c:3125
+#: g10/keyedit.c:3129
 msgid "No corresponding signature in secret ring\n"
 msgstr "Нет соответствующей подписи в связке секретных\n"
 
-#: g10/keyedit.c:3205
+#: g10/keyedit.c:3209
 msgid "Please select exactly one user ID.\n"
 msgstr "Выберите только один User ID.\n"
 
-#: g10/keyedit.c:3244 g10/keyedit.c:3354 g10/keyedit.c:3473
+#: g10/keyedit.c:3248 g10/keyedit.c:3358 g10/keyedit.c:3477
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "пропуск v3 самоподписи на User ID \"%s\"\n"
 
-#: g10/keyedit.c:3415
+#: g10/keyedit.c:3419
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:3494
+#: g10/keyedit.c:3498
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Вы действительно хотите использовать его? (y/N)"
 
-#: g10/keyedit.c:3495
+#: g10/keyedit.c:3499
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Вы действительно хотите использовать его? (y/N)"
 
-#: g10/keyedit.c:3557
+#: g10/keyedit.c:3561
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Нет User ID с индексом %d\n"
 
-#: g10/keyedit.c:3603
+#: g10/keyedit.c:3607
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Нет вторичного ключа с индексом %d\n"
 
-#: g10/keyedit.c:3720
+#: g10/keyedit.c:3724
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "User ID: \""
 
-#: g10/keyedit.c:3723 g10/keyedit.c:3787 g10/keyedit.c:3830
+#: g10/keyedit.c:3727 g10/keyedit.c:3791 g10/keyedit.c:3834
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   подписан %08lX  %s%s%s\n"
 
-#: g10/keyedit.c:3725 g10/keyedit.c:3789 g10/keyedit.c:3832
+#: g10/keyedit.c:3729 g10/keyedit.c:3793 g10/keyedit.c:3836
 msgid " (non-exportable)"
 msgstr " (не экспортируемая)"
 
-#: g10/keyedit.c:3729
+#: g10/keyedit.c:3733
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Срок подписи закончился %s.\n"
 
-#: g10/keyedit.c:3733
+#: g10/keyedit.c:3737
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Вы уверены, что хотите отозвать? (y/N) "
 
-#: g10/keyedit.c:3737
+#: g10/keyedit.c:3741
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Создать сертификат отзыва для данной подписи? (y/N) "
 
-#: g10/keyedit.c:3764
+#: g10/keyedit.c:3768
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Вы подписали данные User ID:\n"
 
-#: g10/keyedit.c:3790
+#: g10/keyedit.c:3794
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (не экспортируемая)"
 
-#: g10/keyedit.c:3797
+#: g10/keyedit.c:3801
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   отозван %08lX  %s\n"
 
-#: g10/keyedit.c:3819
+#: g10/keyedit.c:3823
 msgid "You are about to revoke these signatures:\n"
 msgstr "Вы отзываете следующие подписи:\n"
 
-#: g10/keyedit.c:3839
+#: g10/keyedit.c:3843
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Действительно создать сертификат отзыва? (y/N) "
 
-#: g10/keyedit.c:3869
+#: g10/keyedit.c:3873
 msgid "no secret key\n"
 msgstr "нет секретного ключа\n"
 
-#: g10/keyedit.c:3939
+#: g10/keyedit.c:3943
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "User ID \"%s\" уже отозван\n"
 
-#: g10/keyedit.c:3956
+#: g10/keyedit.c:3960
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "ВНИМАНИЕ: User ID подпись датирована %d секундами в будущем\n"
 
-#: g10/keyedit.c:4125
+#: g10/keyedit.c:4129
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Показ %s фото ID размера %ld для ключа 0x%08lX (uid %d)\n"
@@ -4001,107 +4008,107 @@ msgstr ""
 msgid "never     "
 msgstr "никогда   "
 
-#: g10/keylist.c:186
+#: g10/keylist.c:201
 msgid "Critical signature policy: "
 msgstr "Критические правила для подписи: "
 
-#: g10/keylist.c:188
+#: g10/keylist.c:203
 msgid "Signature policy: "
 msgstr "Правила для подписи: "
 
-#: g10/keylist.c:227
+#: g10/keylist.c:242
 msgid "Critical preferred keyserver: "
 msgstr ""
 
-#: g10/keylist.c:275 g10/keylist.c:319
+#: g10/keylist.c:291 g10/keylist.c:335
 msgid "WARNING: invalid notation data found\n"
 msgstr "ВНИМАНИЕ: найдена недопустимая форма записи данных\n"
 
-#: g10/keylist.c:293
+#: g10/keylist.c:309
 msgid "Critical signature notation: "
 msgstr "Критическое примечание к подписи: "
 
-#: g10/keylist.c:295
+#: g10/keylist.c:311
 msgid "Signature notation: "
 msgstr "Примечание к подписи"
 
-#: g10/keylist.c:306
+#: g10/keylist.c:322
 msgid "not human readable"
 msgstr "нечитаемо для человека"
 
-#: g10/keylist.c:407
+#: g10/keylist.c:423
 msgid "Keyring"
 msgstr "Таблица ключей"
 
-#: g10/keylist.c:713
+#: g10/keylist.c:729
 #, fuzzy, c-format
 msgid "expired: %s)"
 msgstr " [годен до: %s]"
 
-#: g10/keylist.c:1415
+#: g10/keylist.c:1431
 msgid "Primary key fingerprint:"
 msgstr " Отпечаток главного ключа:"
 
-#: g10/keylist.c:1417
+#: g10/keylist.c:1433
 msgid "     Subkey fingerprint:"
 msgstr "         Отпечаток подключа:"
 
-#: g10/keylist.c:1424
+#: g10/keylist.c:1440
 msgid " Primary key fingerprint:"
 msgstr " Отпечаток главного ключа:"
 
-#: g10/keylist.c:1426
+#: g10/keylist.c:1442
 msgid "      Subkey fingerprint:"
 msgstr "         Отпечаток подключа:"
 
-#: g10/keylist.c:1430 g10/keylist.c:1434
+#: g10/keylist.c:1446 g10/keylist.c:1450
 #, fuzzy
 msgid "      Key fingerprint ="
 msgstr "     Отпечаток ключа ="
 
-#: g10/keylist.c:1501
+#: g10/keylist.c:1517
 msgid "      Card serial no. ="
 msgstr ""
 
-#: g10/keyring.c:1242
+#: g10/keyring.c:1245
 #, fuzzy, c-format
 msgid "renaming `%s' to `%s' failed: %s\n"
 msgstr "ошибка преобразования в ASCII формат: %s\n"
 
-#: g10/keyring.c:1248
+#: g10/keyring.c:1251
 msgid "WARNING: 2 files with confidential information exists.\n"
 msgstr "ВНИМАНИЕ: Существуют 2 файла с конфиденциальной информацией.\n"
 
-#: g10/keyring.c:1250
+#: g10/keyring.c:1253
 #, c-format
 msgid "%s is the unchanged one\n"
 msgstr "%s осталось без изменений\n"
 
-#: g10/keyring.c:1251
+#: g10/keyring.c:1254
 #, c-format
 msgid "%s is the new one\n"
 msgstr "%s новых\n"
 
-#: g10/keyring.c:1252
+#: g10/keyring.c:1255
 msgid "Please fix this possible security flaw\n"
 msgstr "Исправьте эту прореху безопасности\n"
 
-#: g10/keyring.c:1372
+#: g10/keyring.c:1375
 #, fuzzy, c-format
 msgid "caching keyring `%s'\n"
 msgstr "проверка таблицы ключей `%s'\n"
 
-#: g10/keyring.c:1418
+#: g10/keyring.c:1421
 #, fuzzy, c-format
 msgid "%lu keys cached so far (%lu signatures)\n"
 msgstr "%lu ключей проверено (%lu подписей)\n"
 
-#: g10/keyring.c:1430
+#: g10/keyring.c:1433
 #, fuzzy, c-format
 msgid "%lu keys cached (%lu signatures)\n"
 msgstr "%lu ключей проверено (%lu подписей)\n"
 
-#: g10/keyring.c:1501
+#: g10/keyring.c:1504
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: таблица ключей создана\n"
@@ -4223,11 +4230,6 @@ msgstr "неудача при получении с сервера ключей:
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
-
-#: g10/keyserver.c:1414
-#, fuzzy, c-format
-msgid "key \"%s\" not found: %s\n"
-msgstr "ключ `%s' не найден: %s\n"
 
 #: g10/keyserver.c:1578
 #, fuzzy, c-format
@@ -4658,7 +4660,8 @@ msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "проблема с агентом: агент вернул 0x%lx\n"
 
 #: g10/passphrase.c:1053 g10/passphrase.c:1211
-msgid "can't query password in batchmode\n"
+#, fuzzy
+msgid "can't query password in batch mode\n"
 msgstr "не могу получить пароль в пакетном режиме\n"
 
 #: g10/passphrase.c:1058 g10/passphrase.c:1216
@@ -4735,23 +4738,23 @@ msgstr "Данное фото правильное (y/N/q)? "
 msgid "unable to display photo ID!\n"
 msgstr "не могу отобразить Фото ID!\n"
 
-#: g10/pkclist.c:61 g10/revoke.c:577
+#: g10/pkclist.c:61 g10/revoke.c:580
 msgid "No reason specified"
 msgstr "Без указания причины"
 
-#: g10/pkclist.c:63 g10/revoke.c:579
+#: g10/pkclist.c:63 g10/revoke.c:582
 msgid "Key is superseded"
 msgstr "Ключ заменён другим"
 
-#: g10/pkclist.c:65 g10/revoke.c:578
+#: g10/pkclist.c:65 g10/revoke.c:581
 msgid "Key has been compromised"
 msgstr "Ключ был скомпрометирован"
 
-#: g10/pkclist.c:67 g10/revoke.c:580
+#: g10/pkclist.c:67 g10/revoke.c:583
 msgid "Key is no longer used"
 msgstr "Ключ больше не используется"
 
-#: g10/pkclist.c:69 g10/revoke.c:581
+#: g10/pkclist.c:69 g10/revoke.c:584
 msgid "User ID is no longer valid"
 msgstr "User ID больше не действителен"
 
@@ -4822,7 +4825,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: g10/pkclist.c:298 g10/revoke.c:606
+#: g10/pkclist.c:298 g10/revoke.c:609
 msgid "Your decision? "
 msgstr "Ваше решение (?-подробнее)? "
 
@@ -4973,8 +4976,8 @@ msgid "skipped: public key already set\n"
 msgstr "пропущено: открытый ключ уже установлен\n"
 
 #: g10/pkclist.c:903
-#, c-format
-msgid "unknown default recipient `%s'\n"
+#, fuzzy, c-format
+msgid "unknown default recipient \"%s\"\n"
 msgstr "неизвестный получатель по умолчанию `%s'\n"
 
 #: g10/pkclist.c:948
@@ -5003,15 +5006,15 @@ msgstr "Отделенная подпись.\n"
 msgid "Please enter name of data file: "
 msgstr "Введите имя файла с данными: "
 
-#: g10/plaintext.c:476
+#: g10/plaintext.c:477
 msgid "reading stdin ...\n"
 msgstr "читаю stdin ...\n"
 
-#: g10/plaintext.c:510
+#: g10/plaintext.c:511
 msgid "no signed data\n"
 msgstr "нет подписанных данных\n"
 
-#: g10/plaintext.c:524
+#: g10/plaintext.c:525
 #, c-format
 msgid "can't open signed data `%s'\n"
 msgstr "не могу открыть подписанные данные `%s'\n"
@@ -5049,7 +5052,7 @@ msgid "NOTE: key has been revoked"
 msgstr "ЗАМЕТЬТЕ: ключ был отозван"
 
 #: g10/revoke.c:103 g10/revoke.c:117 g10/revoke.c:129 g10/revoke.c:175
-#: g10/revoke.c:187 g10/revoke.c:542
+#: g10/revoke.c:187 g10/revoke.c:545
 #, c-format
 msgid "build_packet failed: %s\n"
 msgstr "build_packet failed: %s\n"
@@ -5059,65 +5062,65 @@ msgstr "build_packet failed: %s\n"
 msgid "key %s has no user IDs\n"
 msgstr "ключ %08lX: не имеет User ID\n"
 
-#: g10/revoke.c:271
+#: g10/revoke.c:272
 msgid "To be revoked by:\n"
 msgstr "Будет отозван:\n"
 
-#: g10/revoke.c:275
+#: g10/revoke.c:276
 msgid "(This is a sensitive revocation key)\n"
 msgstr "(Это отзывающий ключ с sensitive)\n"
 
-#: g10/revoke.c:279
+#: g10/revoke.c:280
 #, fuzzy
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "Создать сертификат отзыва данного ключа? (y/n)"
 
-#: g10/revoke.c:292 g10/revoke.c:508
+#: g10/revoke.c:293 g10/revoke.c:511
 msgid "ASCII armored output forced.\n"
 msgstr "Для вывода использован ASCII формат.\n"
 
-#: g10/revoke.c:306 g10/revoke.c:522
+#: g10/revoke.c:307 g10/revoke.c:525
 #, c-format
 msgid "make_keysig_packet failed: %s\n"
 msgstr "make_keysig_packet failed: %s\n"
 
-#: g10/revoke.c:369
+#: g10/revoke.c:370
 msgid "Revocation certificate created.\n"
 msgstr "Сертификат отзыва создан.\n"
 
-#: g10/revoke.c:375
-#, c-format
-msgid "no revocation keys found for `%s'\n"
+#: g10/revoke.c:376
+#, fuzzy, c-format
+msgid "no revocation keys found for \"%s\"\n"
 msgstr "ключи отзыва для `%s' не найдены\n"
 
-#: g10/revoke.c:429
-#, c-format
-msgid "secret key `%s' not found: %s\n"
+#: g10/revoke.c:432
+#, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
 msgstr "секретный ключ `%s' не найден: %s\n"
 
-#: g10/revoke.c:458
+#: g10/revoke.c:461
 #, c-format
 msgid "no corresponding public key: %s\n"
 msgstr "нет соотвествующего открытого ключа: %s\n"
 
-#: g10/revoke.c:469
+#: g10/revoke.c:472
 msgid "public key does not match secret key!\n"
 msgstr "открытый ключ не соотвествует секретному!\n"
 
-#: g10/revoke.c:476
+#: g10/revoke.c:479
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Создать сертификат отзыва данного ключа? (y/n)"
 
-#: g10/revoke.c:493
+#: g10/revoke.c:496
 msgid "unknown protection algorithm\n"
 msgstr "неизвестный алгоритм защиты\n"
 
-#: g10/revoke.c:497
+#: g10/revoke.c:500
 msgid "NOTE: This key is not protected!\n"
 msgstr "ЗАМЕЧАНИЕ: Данный ключ не защищен!\n"
 
-#: g10/revoke.c:548
+#: g10/revoke.c:551
 msgid ""
 "Revocation certificate created.\n"
 "\n"
@@ -5136,33 +5139,33 @@ msgstr ""
 "носитель будет повреждён, но будьте осторожны: система печати\n"
 "Вашей машины может сохранить данные и сделать их доступными для других!\n"
 
-#: g10/revoke.c:589
+#: g10/revoke.c:592
 msgid "Please select the reason for the revocation:\n"
 msgstr "Выберите причину отзыва:\n"
 
-#: g10/revoke.c:599
+#: g10/revoke.c:602
 msgid "Cancel"
 msgstr "Отмена"
 
-#: g10/revoke.c:601
+#: g10/revoke.c:604
 #, c-format
 msgid "(Probably you want to select %d here)\n"
 msgstr "(Возможно Вы хотите выбрать здесь %d)\n"
 
-#: g10/revoke.c:642
+#: g10/revoke.c:645
 msgid "Enter an optional description; end it with an empty line:\n"
 msgstr "Введите необязательное пояснение; закончите пустой строкой:\n"
 
-#: g10/revoke.c:670
+#: g10/revoke.c:673
 #, c-format
 msgid "Reason for revocation: %s\n"
 msgstr "Причина отзыва: %s\n"
 
-#: g10/revoke.c:672
+#: g10/revoke.c:675
 msgid "(No description given)\n"
 msgstr "(Пояснения отсутствуют)\n"
 
-#: g10/revoke.c:677
+#: g10/revoke.c:680
 #, fuzzy
 msgid "Is this okay? (y/N) "
 msgstr "Все правильно? "
@@ -5325,59 +5328,52 @@ msgstr "%s подпись от: \"%s\"\n"
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "только отделенная подпись доступна с PGP 2.x ключом в режиме --pgp2\n"
 
-#: g10/sign.c:784 g10/sign.c:1041
+#: g10/sign.c:783 g10/sign.c:1040
 #, fuzzy, c-format
 msgid "writing to file `%s'\n"
 msgstr "сохраняю в `%s'\n"
 
-#: g10/sign.c:808
+#: g10/sign.c:807
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr "использование хэш-функции %s (%d) нарушает предпочтения получателя\n"
 
-#: g10/sign.c:900
+#: g10/sign.c:899
 msgid "signing:"
 msgstr "подписывание:"
-
-#: g10/sign.c:912
-#, fuzzy, c-format
-msgid "can't open file `%s': %s\n"
-msgstr "не могу открыть файл: %s\n"
 
 #: g10/sign.c:1006
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr "только прозрачная подпись доступна с PGP 2.x ключом в режиме --pgp2\n"
 
-#: g10/sign.c:1179
+#: g10/sign.c:1178
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "будет использовано %s шифрование\n"
 
-#: g10/skclist.c:129 g10/skclist.c:185
+#: g10/skclist.c:129 g10/skclist.c:191
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr ""
 "ключ не помечен как ненадежный - не могу использовать его с ненадёжным RNG!\n"
 
-#: g10/skclist.c:157
-#, c-format
-msgid "skipped `%s': duplicated\n"
+#: g10/skclist.c:158
+#, fuzzy, c-format
+msgid "skipped \"%s\": duplicated\n"
 msgstr "пропущено `%s': дубликат\n"
 
-#: g10/skclist.c:164 g10/skclist.c:172
-#, c-format
-msgid "skipped `%s': %s\n"
+#: g10/skclist.c:166 g10/skclist.c:176 g10/skclist.c:185
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
 msgstr "пропущено `%s': %s\n"
 
-#: g10/skclist.c:168
+#: g10/skclist.c:171
 msgid "skipped: secret key already present\n"
 msgstr "пропущено: секретный ключ уже имеется\n"
 
-#: g10/skclist.c:179
-#, fuzzy, c-format
-msgid ""
-"skipped `%s': this is a PGP generated Elgamal key which is not secure for "
-"signatures!\n"
+#: g10/skclist.c:186
+#, fuzzy
+msgid "this is a PGP generated Elgamal key which is not secure for signatures!"
 msgstr ""
 "пропущено `%s': это созданный PGP - ElGamal ключ, не обеспечивающий\n"
 "безопасность подписи\n"
@@ -6006,6 +6002,20 @@ msgid "(you may have used the wrong program for this task)\n"
 msgstr ""
 "(возможно, Вы используете неподходящее программное обеспечение\n"
 "для данной задачи)\n"
+
+#~ msgid "sorry, can't do this in batch mode\n"
+#~ msgstr "извините, но это невозможно выполнить в пакетном режиме\n"
+
+#~ msgid "key `%s' not found: %s\n"
+#~ msgstr "ключ `%s' не найден: %s\n"
+
+#, fuzzy
+#~ msgid "can't create file `%s': %s\n"
+#~ msgstr "не могу создать `%s': %s\n"
+
+#, fuzzy
+#~ msgid "can't open file `%s': %s\n"
+#~ msgstr "не могу открыть файл: %s\n"
 
 #, fuzzy
 #~ msgid "          \""

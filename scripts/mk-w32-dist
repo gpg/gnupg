@@ -47,7 +47,7 @@ cp ${bindir}/g10/gpg.exe gpg.exe
 $STRIP gpg.exe
 cp ${bindir}/g10/gpgv.exe gpgv.exe
 $STRIP gpgv.exe
-for name in hkp http finger; do 
+for name in hkp http ldap finger; do 
   cp ${bindir}/keyserver/gpgkeys_$name.exe gpgkeys_$name.exe
   $STRIP gpgkeys_$name.exe
 done

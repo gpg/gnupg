@@ -1,7 +1,15 @@
-Noteworthy changes in version 1.3.92
+Noteworthy changes in version 1.3.92 (2004-10-28)
 -------------------------------------------------
     
     * Added Russian man page. Thanks to Pawel I. Shajdo.
+
+    * libiconv is now used to support other character sets other than
+      UTF-8, Latin-1,-2 and KOI8-2.  The W32 version will only work
+      correctly when iconv.dll is installed on the system.  A binary
+      version is available at all GNU mirror sites under libiconv.
+     
+    * gettext for Windows has been simplified.  The MO files are now
+      distributed UTF-8 encoded and gpg translates on the fly.
 
 
 Noteworthy changes in version 1.3.91 (2004-10-15)
