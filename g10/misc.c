@@ -438,3 +438,111 @@ idea_cipher_warn(int show)
       warned=1;
     }
 }
+
+/* The largest string we have an expando for, times two. */
+#define LARGEST_EXPANDO ((MAX_FINGERPRINT_LEN*2)*2)
+
+/* Expand %-strings */
+char *
+pct_expando(const char *string,PKT_public_key *pk)
+{
+  const char *ch=string;
+  int idx=0,maxlen;
+  u32 keyid[2]={0,0};
+  char *ret;
+
+  keyid_from_pk(pk,keyid);
+
+  maxlen=LARGEST_EXPANDO;
+  ret=m_alloc(maxlen+1);  /* one more to leave room for the trailing \0 */
+
+  ret[0]='\0';
+
+  while(*ch!='\0')
+    {
+      /* 8192 is way bigger than we'll need here */
+      if(maxlen-idx<LARGEST_EXPANDO && maxlen<8192)
+	{
+	  maxlen+=LARGEST_EXPANDO;
+	  ret=m_realloc(ret,maxlen+1);
+	}
+
+      if(*ch=='%')
+	{
+	  ch++;
+
+	  switch(*ch)
+	    {
+	    case 'k': /* short key id */
+	      if(idx+8>maxlen)
+		goto fail;
+
+	      sprintf(&ret[idx],"%08lX",(ulong)keyid[1]);
+	      idx+=8;
+	      break;
+
+	    case 'K': /* long key id */
+	      if(idx+16>maxlen)
+		goto fail;
+
+	      sprintf(&ret[idx],"%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+	      idx+=16;
+	      break;
+
+	    case 'f': /* fingerprint */
+	      {
+		byte array[MAX_FINGERPRINT_LEN];
+		size_t len;
+		int i;
+
+		fingerprint_from_pk(pk,array,&len);
+
+		if(idx+(len*2)>maxlen)
+		  goto fail;
+
+		for(i=0;i<len;i++)
+		  {
+		    sprintf(&ret[idx],"%02X",array[i]);
+		    idx+=2;
+		  }
+	      }
+	      break;
+		
+	    case '%':
+	      if(idx+1>maxlen)
+		goto fail;
+
+	      ret[idx++]='%';
+	      ret[idx]='\0';
+	      break;
+
+	      /* Any unknown %-keys (like %i, %o, %I, and %O) are
+		 passed through for later expansion. */
+	    default:
+	      if(idx+2>maxlen)
+		goto fail;
+
+	      ret[idx++]='%';
+	      ret[idx++]=*ch;
+	      ret[idx]='\0';
+	      break;
+	    }
+	}
+      else
+	{
+	  if(idx+1>maxlen)
+	    goto fail;
+
+	  ret[idx++]=*ch;
+	  ret[idx]='\0';
+	}
+
+      ch++;
+    }
+
+  return ret;
+
+ fail:
+  m_free(ret);
+  return NULL;
+}

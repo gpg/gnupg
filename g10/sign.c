@@ -56,9 +56,10 @@
  * NAME=VALUE format.
  */
 static void
-mk_notation_and_policy( PKT_signature *sig )
+mk_notation_and_policy( PKT_signature *sig, PKT_public_key *pk )
 {
-    const char *string, *s=NULL;
+    const char *string;
+    char *s=NULL;
     byte *buf;
     unsigned n1, n2;
 
@@ -88,6 +89,9 @@ mk_notation_and_policy( PKT_signature *sig )
 	    build_sig_subpkt( sig, SIGSUBPKT_NOTATION
 			      | ((nd->flags & 1)? SIGSUBPKT_FLAG_CRITICAL:0),
 			      buf, 8+n1+n2 );
+
+	    if(opt.show_notation)
+	      show_notation(sig,0);
 	}
     }
 
@@ -97,14 +101,25 @@ mk_notation_and_policy( PKT_signature *sig )
 	if(sig->version<4)
 	  log_info("can't put a policy URL into v3 signatures\n");
 	else
-	  s=opt.sig_policy_url;
+	  s=m_strdup(opt.sig_policy_url);
       }
     else if( !(sig->sig_class==0 || sig->sig_class==1) && opt.cert_policy_url )
       {
 	if(sig->version<4)
 	  log_info("can't put a policy URL into v3 key signatures\n");
 	else
-	  s=opt.cert_policy_url;
+	  if(pk)
+	    {
+	      s=pct_expando(opt.cert_policy_url,pk);
+	      if(!s)
+		{
+		  log_error(_("WARNING: unable to %%-expand policy url "
+			      "(too large).  Using unexpanded.\n"));
+		  s=m_strdup(opt.cert_policy_url);
+		}
+	    }
+	  else
+	    s=m_strdup(opt.cert_policy_url);
       }
 
     if( s ) {
@@ -113,7 +128,12 @@ mk_notation_and_policy( PKT_signature *sig )
 			      s+1, strlen(s+1) );
 	else
 	    build_sig_subpkt( sig, SIGSUBPKT_POLICY, s, strlen(s) );
+
+	if(opt.show_policy_url)
+	  show_policy_url(sig,0);
     }
+
+    m_free(s);
 }
 
 
@@ -499,7 +519,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 
 	if (sig->version >= 4)
 	    build_sig_subpkt_from_sig (sig);
-	mk_notation_and_policy (sig);
+	mk_notation_and_policy (sig, NULL);
 
         hash_sigversion_to_magic (md, sig);
 	md_final (md);
@@ -1115,7 +1135,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	rc = (*mksubpkt)( sig, opaque );
 
     if( !rc ) {
-	mk_notation_and_policy( sig );
+	mk_notation_and_policy( sig, pk );
         hash_sigversion_to_magic (md, sig);
 	md_final(md);
 

@@ -32,9 +32,9 @@
 #include "iobuf.h"
 #include "memory.h"
 #include "options.h"
+#include "main.h"
 #include "photoid.h"
 
-#define PHOTO_COMMAND_MAXLEN 1024
 #define DEFAULT_PHOTO_COMMAND "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
 
 /* Generate a new photo id packet, or return NULL if canceled */
@@ -148,92 +148,15 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
 
 void show_photo(const struct user_attribute *attr,PKT_public_key *pk)
 {
-  const char *ch;
-  char command[PHOTO_COMMAND_MAXLEN]={'\0'};
-  int size=0;
-  u32 keyid[2]={0,0};
+  char *command;
   struct exec_info *spawn;
 
-  keyid_from_pk(pk,keyid);
-
-  ch=opt.photo_viewer?opt.photo_viewer:DEFAULT_PHOTO_COMMAND;
-
-  /* %-expandos */
-
   /* make command grow */
+  command=
+    pct_expando(opt.photo_viewer?opt.photo_viewer:DEFAULT_PHOTO_COMMAND,pk);
 
-  while(*ch!='\0')
-    {
-      if(*ch=='%')
-	{
-	  ch++;
-
-	  switch(*ch)
-	    {
-	    case 'k': /* short key id */
-	      if(size+8>PHOTO_COMMAND_MAXLEN-1)
-		goto fail;
-
-	      sprintf(&command[size],"%08lX",(ulong)keyid[1]);
-	      size+=8;
-	      break;
-
-	    case 'K': /* long key id */
-	      if(size+16>PHOTO_COMMAND_MAXLEN-1)
-		goto fail;
-
-	      sprintf(&command[size],"%08lX%08lX",
-		      (ulong)keyid[0],(ulong)keyid[1]);
-	      size+=16;
-	      break;
-
-	    case 'f': /* fingerprint */
-	      {
-		byte array[MAX_FINGERPRINT_LEN];
-		size_t len;
-		int i;
-
-		fingerprint_from_pk(pk,array,&len);
-
-		if(size+(len*2)>PHOTO_COMMAND_MAXLEN-1)
-		  goto fail;
-
-		for(i=0;i<len;i++)
-		  {
-		    sprintf(&command[size],"%02X",array[i]);
-		    size+=2;
-		  }
-	      }
-	      break;
-		
-	      case '%':
-		size++;
-		if(size>PHOTO_COMMAND_MAXLEN-1)
-		  goto fail;
-
-		strcat(command,"%");
-		break;
-
-	      default:
-		if(size+2>PHOTO_COMMAND_MAXLEN-1)
-		  goto fail;
-
-		command[size++]='%';
-		command[size++]=*ch;
-		break;
-	      }
-	}
-      else
-	{
-	  command[size++]=*ch;
-	  if(size>PHOTO_COMMAND_MAXLEN-1)
-	    goto fail;
-	}
-
-      ch++;
-    }
-
-  command[PHOTO_COMMAND_MAXLEN-1]='\0';
+  if(!command)
+    goto fail;
 
   if(exec_write(&spawn,NULL,command,1,1)!=0)
     goto fail;

@@ -67,6 +67,7 @@ int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
 int check_permissions(const char *path,int extension,int checkonly);
 void idea_cipher_warn( int show );
+char *pct_expando(const char *string,PKT_public_key *pk);
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );
@@ -159,8 +160,8 @@ void release_revocation_reason_info( struct revocation_reason_info *reason );
 void public_key_list( STRLIST list );
 void secret_key_list( STRLIST list );
 void print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode);
-void show_policy_url(PKT_signature *sig);
-void show_notation(PKT_signature *sig);
+void show_policy_url(PKT_signature *sig,int indent);
+void show_notation(PKT_signature *sig,int indent);
 
 /*-- verify.c --*/
 void print_file_status( int status, const char *name, int what );

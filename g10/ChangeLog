@@ -1,5 +1,23 @@
 2002-02-04  David Shaw  <dshaw@jabberwocky.com>
 
+	* main.h, misc.c (pct_expando): New function to generalize
+	%-expando processing in any arbitrary string.
+
+	* photoid.c (show_photo): Call the new pct_expando function rather
+	than expand strings internally.
+	
+	* sign.c (mk_notation_and_policy): Show policy URLs and notations
+	when making a signature if show-policy/show-notation is on.
+	%-expand policy URLs during generation.  This lets the user have
+	policy URLs of the form "http://notary.jabberwocky.com/keysign/%K"
+	which will generate a per-signature policy URL.
+
+	* main.h, keylist.c (show_policy_url, show_notation): Add amount
+	to indent so the same function can be used in key listings as well
+	as during sig generation.  Change all callers.
+
+2002-02-04  David Shaw  <dshaw@jabberwocky.com>
+
 	* keyserver.c, options.h (parse_keyserver_options, keyidlist):
 	Workaround for the pksd and OKS keyserver bug that calculates v4
 	RSA keyids as if they were v3.  The workaround/hack is to fetch

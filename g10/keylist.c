@@ -65,7 +65,7 @@ secret_key_list( STRLIST list )
 }
 
 void
-show_policy_url(PKT_signature *sig)
+show_policy_url(PKT_signature *sig,int indent)
 {
   const byte *p;
   size_t len;
@@ -73,15 +73,20 @@ show_policy_url(PKT_signature *sig)
   p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_POLICY,&len);
   if(p)
     {
+      int i;
+
+      for(i=0;i<indent;i++)
+	putchar(' ');
+
       /* This isn't UTF8 as it is a URL(?) */
-      printf("           %s: ",_("Signature policy"));
+      printf(_("Signature policy: "));
       print_string(stdout,p,len,0);
       printf("\n");
     }
 }
 
 void
-show_notation(PKT_signature *sig)
+show_notation(PKT_signature *sig,int indent)
 {
   const byte *p;
   size_t len;
@@ -92,7 +97,8 @@ show_notation(PKT_signature *sig)
   while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq)))
     if(len>=8)
       {
-	int n1,n2;
+	int n1,n2,i;
+
 	n1=(p[4]<<8)|p[5];
 	n2=(p[6]<<8)|p[7];
 
@@ -102,8 +108,11 @@ show_notation(PKT_signature *sig)
 	    return;
 	  }
 
+	for(i=0;i<indent;i++)
+	  putchar(' ');
+
 	/* This is UTF8 */
-	printf("           %s: ",_("Signature notation"));
+	printf(_("Signature notation: "));
 	print_utf8_string(stdout,p+8,n1);
 	printf("=");
 
@@ -472,10 +481,10 @@ list_keyblock_print ( KBNODE keyblock, int secret )
 	    putchar('\n');
 
 	    if(sig->flags.policy_url && opt.show_policy_url)
-	      show_policy_url(sig);
+	      show_policy_url(sig,3);
 
 	    if(sig->flags.notation && opt.show_notation)
-	      show_notation(sig);
+	      show_notation(sig,3);
 
 	    /* fixme: check or list other sigs here */
 	}
