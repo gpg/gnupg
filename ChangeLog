@@ -7,6 +7,10 @@
 	* THANKS: Added Phong Nguyen, who found the Elgamal signing key
 	problem.
 
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Use -Wformat-nonliteral in maintainer-mode.
+
 2003-11-30  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note --disable-rsa.

@@ -1118,6 +1118,7 @@ AC_SUBST(W32LIBS)
 if test "$GCC" = yes; then
     if test "$USE_MAINTAINER_MODE" = "yes"; then
         CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+        CFLAGS="$CFLAGS -Wformat-nonliteral"
     else
         CFLAGS="$CFLAGS -Wall"
     fi
