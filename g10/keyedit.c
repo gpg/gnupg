@@ -26,7 +26,10 @@
 #include <errno.h>
 #include <assert.h>
 #include <ctype.h>
-
+#ifdef HAVE_LIBREADLINE
+#include <stdio.h>
+#include <readline/readline.h>
+#endif
 #include "options.h"
 #include "packet.h"
 #include "errors.h"
@@ -1405,6 +1408,49 @@ static struct
     { NULL, cmdNONE, 0, NULL }
   };
 
+#ifdef HAVE_LIBREADLINE
+
+/* These two functions are used by readline for command completion. */
+
+static char *command_generator(const char *text,int state)
+{
+  static int list_index,len;
+  const char *name;
+
+  /* If this is a new word to complete, initialize now.  This includes
+     saving the length of TEXT for efficiency, and initializing the
+     index variable to 0. */
+  if(!state)
+    {
+      list_index=0;
+      len=strlen(text);
+    }
+
+  /* Return the next partial match */
+  while((name=cmds[list_index].name))
+    {
+      /* Only complete commands that have help text */
+      if(cmds[list_index++].desc && strncmp(name,text,len)==0)
+	return strdup(name);
+    }
+
+  return NULL;
+}
+
+static char **keyedit_completion(const char *text, int start, int end)
+{
+  /* If we are at the start of a line, we try and command-complete.
+     If not, just do nothing for now. */
+
+  if(start==0)
+    return rl_completion_matches(text,command_generator);
+
+  rl_attempted_completion_over=1;
+
+  return NULL;
+}
+#endif
+
 void
 keyedit_menu( const char *username, STRLIST locusr,
 	      STRLIST commands, int quiet, int seckey_check )
@@ -1522,10 +1568,13 @@ keyedit_menu( const char *username, STRLIST locusr,
 		else
 		    have_commands = 0;
 	    }
-	    if( !have_commands ) {
+	    if( !have_commands )
+	      {
+		tty_enable_completion(keyedit_completion);
 		answer = cpr_get_no_help("keyedit.prompt", _("Command> "));
 		cpr_kill_prompt();
-	    }
+		tty_disable_completion();
+	      }
 	    trim_spaces(answer);
 	} while( *answer == '#' );
 

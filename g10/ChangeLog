@@ -1,3 +1,10 @@
+2005-03-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (command_generator, keyedit_completion)
+	[HAVE_LIBREADLINE]: New functions to enable command completion in
+	the --edit-key menu.
+	(keyedit_menu): Call them here.
+
 2005-03-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (get_seckey_byname2): If no explicit default key is
