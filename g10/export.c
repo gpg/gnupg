@@ -315,7 +315,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		 node->pkt->pkt.secret_key->protect.sha1chk)
 		{
 		  /* I hope this warning doesn't confuse people. */
-		  log_info("Warning: secret key %08lX does not have a "
+		  log_info("WARNING: secret key %08lX does not have a "
 			   "simple SK checksum\n",(ulong)sk_keyid[1]);
 
 		  sha1_warned=1;

@@ -1362,7 +1362,7 @@ revocation_present(KBNODE keyblock)
 			  if(opt.keyserver_scheme &&
 			     opt.keyserver_options.auto_key_retrieve)
 			    {
-			      log_info(_("Warning: key %08lX may be revoked: "
+			      log_info(_("WARNING: key %08lX may be revoked: "
 					 "fetching revocation key %08lX\n"),
 				       (ulong)keyid_from_pk(pk,NULL),
 				       (ulong)keyid[1]);
@@ -1376,7 +1376,7 @@ revocation_present(KBNODE keyblock)
 			    }
 
 			  if(rc==G10ERR_NO_PUBKEY || rc==G10ERR_UNU_PUBKEY)
-			    log_info(_("Warning: key %08lX may be revoked: "
+			    log_info(_("WARNING: key %08lX may be revoked: "
 				       "revocation key %08lX not present.\n"),
 				     (ulong)keyid_from_pk(pk,NULL),
 				     (ulong)keyid[1]);

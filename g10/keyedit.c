@@ -374,7 +374,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		      }
 		    else if(!uidnode->pkt->pkt.user_id->created)
 		      {
-			tty_printf(_("Warning: user ID \"%s\" is not "
+			tty_printf(_("WARNING: user ID \"%s\" is not "
 				     "self-signed.\n"),user);
 		      }
 
@@ -602,12 +602,12 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	    if( local )
 	      tty_printf(
-			 _("\nWarning: the signature will not be marked "
+			 _("\nWARNING: the signature will not be marked "
 			   "as non-exportable.\n"));
 
 	    if( nonrevocable )
 	      tty_printf(
-			 _("\nWarning: the signature will not be marked "
+			 _("\nWARNING: the signature will not be marked "
 			   "as non-revocable.\n"));
 	  }
 	else

@@ -1,3 +1,8 @@
+2002-07-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* exec.c, export.c, import.c, keyedit.c, keyserver.c, misc.c:
+	"Warning" -> "WARNING"
+
 2002-07-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* main.h, import.c (parse_import_options, fix_hkp_corruption,

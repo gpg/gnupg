@@ -383,7 +383,7 @@ check_permissions(const char *path,int extension,int checkonly)
      (extension && statbuf.st_uid!=0 && statbuf.st_uid!=getuid()))
     {
       if(!checkonly)
-	log_info(_("Warning: unsafe ownership on %s \"%s\"\n"),
+	log_info(_("WARNING: unsafe ownership on %s \"%s\"\n"),
 		 isdir?"directory":extension?"extension":"file",path);
       goto end;
     }
@@ -415,7 +415,7 @@ check_permissions(const char *path,int extension,int checkonly)
       m_free(dir);
 
       if(!checkonly)
-	log_info(_("Warning: unsafe permissions on %s \"%s\"\n"),
+	log_info(_("WARNING: unsafe permissions on %s \"%s\"\n"),
 		 isdir?"directory":extension?"extension":"file",path);
       goto end;
     }

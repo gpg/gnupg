@@ -587,19 +587,19 @@ int exec_finish(struct exec_info *info)
       if(info->tempfile_in)
 	{
 	  if(unlink(info->tempfile_in)==-1)
-	    log_info(_("Warning: unable to remove tempfile (%s) \"%s\": %s\n"),
+	    log_info(_("WARNING: unable to remove tempfile (%s) \"%s\": %s\n"),
 		     "in",info->tempfile_in,strerror(errno));
 	}
   
       if(info->tempfile_out)
 	{
 	  if(unlink(info->tempfile_out)==-1)
-	    log_info(_("Warning: unable to remove tempfile (%s) \"%s\": %s\n"),
+	    log_info(_("WARNING: unable to remove tempfile (%s) \"%s\": %s\n"),
 		     "out",info->tempfile_out,strerror(errno));
 	}
 
       if(rmdir(info->tempdir)==-1)
-	log_info(_("Warning: unable to remove temp directory \"%s\": %s\n"),
+	log_info(_("WARNING: unable to remove temp directory \"%s\": %s\n"),
 		 info->tempdir,strerror(errno));
     }
 

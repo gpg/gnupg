@@ -101,7 +101,7 @@ parse_keyserver_options(char *options)
 #ifdef EXEC_TEMPFILE_ONLY
 	  else if(ascii_strcasecmp(tok,"use-temp-files")==0 ||
 		  ascii_strcasecmp(tok,"no-use-temp-files")==0)
-	    log_info(_("Warning: keyserver option \"%s\" is not used "
+	    log_info(_("WARNING: keyserver option \"%s\" is not used "
 		       "on this platform\n"),tok);
 #else
 	  else if(ascii_strcasecmp(tok,"use-temp-files")==0)
@@ -567,7 +567,7 @@ keyserver_spawn(int action,STRLIST list,
       else if(ascii_memcasecmp(ptr,"PROGRAM ",8)==0)
 	{
 	  if(ascii_memcasecmp(&ptr[8],VERSION,strlen(VERSION))!=0)
-	    log_info(_("Warning: keyserver handler from a different "
+	    log_info(_("WARNING: keyserver handler from a different "
 		       "version of GnuPG (%s)\n"),&ptr[8]);
 	}
       else if(ascii_memcasecmp(ptr,"OPTION OUTOFBAND",16)==0)
