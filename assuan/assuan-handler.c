@@ -107,6 +107,8 @@ std_handler_input (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     return rc;
   ctx->input_fd = fd;
+  if (ctx->input_notify_fnc)
+    ctx->input_notify_fnc (ctx, line);
   return 0;
 }
 
@@ -120,6 +122,8 @@ std_handler_output (ASSUAN_CONTEXT ctx, char *line)
   if (rc)
     return rc;
   ctx->output_fd = fd;
+  if (ctx->output_notify_fnc)
+    ctx->output_notify_fnc (ctx, line);
   return 0;
 }
 
@@ -250,6 +254,26 @@ assuan_register_cancel_notify (ASSUAN_CONTEXT ctx, void (*fnc)(ASSUAN_CONTEXT))
   if (!ctx)
     return ASSUAN_Invalid_Value;
   ctx->cancel_notify_fnc = fnc;
+  return 0;
+}
+
+int
+assuan_register_input_notify (ASSUAN_CONTEXT ctx,
+                              void (*fnc)(ASSUAN_CONTEXT, const char *))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->input_notify_fnc = fnc;
+  return 0;
+}
+
+int
+assuan_register_output_notify (ASSUAN_CONTEXT ctx,
+                              void (*fnc)(ASSUAN_CONTEXT, const char *))
+{
+  if (!ctx)
+    return ASSUAN_Invalid_Value;
+  ctx->output_notify_fnc = fnc;
   return 0;
 }
 

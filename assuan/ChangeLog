@@ -1,3 +1,8 @@
+2001-11-27  Werner Koch  <wk@gnupg.org>
+
+	* assuan-handler.c (assuan_register_input_notify): New.
+	(assuan_register_output_notify): New.
+
 2001-11-26  Werner Koch  <wk@gnupg.org>
 
 	* assuan.h: Added more status codes.

@@ -104,6 +104,10 @@ int assuan_register_reset_notify (ASSUAN_CONTEXT ctx,
                                   void (*fnc)(ASSUAN_CONTEXT));
 int assuan_register_cancel_notify (ASSUAN_CONTEXT ctx,
                                    void (*fnc)(ASSUAN_CONTEXT));
+int assuan_register_input_notify (ASSUAN_CONTEXT ctx,
+                                  void (*fnc)(ASSUAN_CONTEXT, const char *));
+int assuan_register_output_notify (ASSUAN_CONTEXT ctx,
+                                  void (*fnc)(ASSUAN_CONTEXT, const char *));
 int assuan_process (ASSUAN_CONTEXT ctx);
 int assuan_process_next (ASSUAN_CONTEXT ctx);
 int assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
