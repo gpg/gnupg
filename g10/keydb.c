@@ -147,6 +147,7 @@ keydb_add_resource (const char *url, int force, int secret)
       case KEYDB_RESOURCE_TYPE_KEYRING:
         if (access(filename, F_OK))
           { /* file does not exist */
+	    mode_t oldmask;
 	    char *last_slash_in_filename;
 
             if (!force) 
@@ -169,7 +170,9 @@ keydb_add_resource (const char *url, int force, int secret)
               }
 	    *last_slash_in_filename = DIRSEP_C;
 
+	    oldmask=umask(077);
 	    iobuf = iobuf_create (filename);
+	    umask(oldmask);
 	    if (!iobuf) 
               {
 		log_error ( _("error creating keyring `%s': %s\n"),
@@ -178,19 +181,6 @@ keydb_add_resource (const char *url, int force, int secret)
 		goto leave;
               }
 
-#ifndef HAVE_DOSISH_SYSTEM
-            if (secret && !opt.preserve_permissions) 
-              {
-                if (chmod (filename, S_IRUSR | S_IWUSR) ) 
-                  {
-                    log_error (_("changing permission of "
-                                 " `%s' failed: %s\n"),
-                               filename, strerror(errno) );
-                    rc = G10ERR_WRITE_FILE;
-                    goto leave;
-                  }
-              }
-#endif
             if (!opt.quiet)
               log_info (_("keyring `%s' created\n"), filename);
             iobuf_close (iobuf);

@@ -1,5 +1,18 @@
 2002-08-08  David Shaw  <dshaw@jabberwocky.com>
 
+	* options.skel: Some language tweaks, and remove the
+	load-extension section for random gatherers.
+
+	* keyring.c (create_tmp_file, rename_tmp_file): Create tmp files
+	with user-only permissions, but restore the original permissions
+	if the user has something special set.
+
+	* openfile.c (copy_options_file): Create new options file
+	(gpg.conf) with user-only permissions.
+
+	* keydb.c (keydb_add_resource): Create new keyrings with user-only
+	permissions.
+
 	* tdbio.c (tdbio_set_dbname): Create new trustdbs with user-only
 	permissions.
 

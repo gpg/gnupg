@@ -1132,6 +1132,7 @@ create_tmp_file (const char *template,
                  char **r_bakfname, char **r_tmpfname, IOBUF *r_fp)
 {  
   char *bakfname, *tmpfname;
+  mode_t oldmask;
 
   *r_bakfname = NULL;
   *r_tmpfname = NULL;
@@ -1169,7 +1170,10 @@ create_tmp_file (const char *template,
     strcpy (stpcpy(tmpfname,template), EXTSEP_S "tmp");
 # endif /* Posix filename */
 
+    /* Create the temp file with limited access */
+    oldmask=umask(077);
     *r_fp = iobuf_create (tmpfname);
+    umask(oldmask);
     if (!*r_fp) {
 	log_error ("can't create `%s': %s\n", tmpfname, strerror(errno) );
         m_free (tmpfname);
@@ -1188,19 +1192,6 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
                  const char *fname, int secret )
 {
   int rc=0;
-
-  /* restrict the permissions for secret keyrings */
-#ifndef HAVE_DOSISH_SYSTEM
-  if (secret && !opt.preserve_permissions)
-    {
-      if (chmod (tmpfname, S_IRUSR | S_IWUSR) ) 
-        {
-          log_error ("chmod of `%s' failed: %s\n",
-                     tmpfname, strerror(errno) );
-          return G10ERR_WRITE_FILE;
-	}
-    }
-#endif
 
   /* invalidate close caches*/
   iobuf_ioctl (NULL, 2, 0, (char*)tmpfname );
@@ -1240,6 +1231,24 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 	}
       return rc;
     }
+
+  /* Now make sure the file has the same permissions as the original */
+
+#ifndef HAVE_DOSISH_SYSTEM
+  {
+    struct stat statbuf;
+
+    statbuf.st_mode=S_IRUSR | S_IWUSR;
+
+    if(((secret && !opt.preserve_permissions) ||
+	(stat(bakfname,&statbuf)==0)) &&
+       (chmod(fname,statbuf.st_mode)==0))
+      ;
+    else
+      log_error("WARNING: unable to restore permissions to `%s': %s",
+		fname,strerror(errno));
+  }
+#endif
 
   return 0;
 }
@@ -1430,8 +1439,11 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
     if (mode == 1 && !fp && errno == ENOENT) { 
 	/* insert mode but file does not exist: create a new file */
 	KBNODE kbctx, node;
+	mode_t oldmask;
 
+	oldmask=umask(077);
 	newfp = iobuf_create (fname);
+	umask(oldmask);
 	if( !newfp ) {
 	    log_error (_("%s: can't create: %s\n"),
                        fname, strerror(errno));
@@ -1452,10 +1464,6 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	if( iobuf_close(newfp) ) {
 	    log_error ("%s: close failed: %s\n", fname, strerror(errno));
 	    return G10ERR_CLOSE_FILE;
-	}
-	if (chmod( fname, S_IRUSR | S_IWUSR )) {
-	    log_error("%s: chmod failed: %s\n", fname, strerror(errno) );
-	    return G10ERR_WRITE_FILE;
 	}
 	return 0; /* ready */
     }

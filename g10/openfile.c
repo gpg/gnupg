@@ -289,6 +289,7 @@ copy_options_file( const char *destdir )
     FILE *src, *dst;
     int linefeeds=0;
     int c;
+    mode_t oldmask;
 
     if( opt.dry_run )
 	return;
@@ -302,7 +303,9 @@ copy_options_file( const char *destdir )
 	return;
     }
     strcpy(stpcpy(fname, destdir), DIRSEP_S "gpg" EXTSEP_S "conf" );
+    oldmask=umask(077);
     dst = fopen( fname, "w" );
+    umask(oldmask);
     if( !dst ) {
 	log_error(_("%s: can't create: %s\n"), fname, strerror(errno) );
 	fclose( src );

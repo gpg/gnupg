@@ -12,43 +12,45 @@ $Id$
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Unless you you specify which option file to use (with the
-# command line option "--options filename"), GnuPG uses the
-# file ~/.gnupg/gpg.conf by default.
+# Unless you specify which option file to use (with the command line
+# option "--options filename"), GnuPG uses the file ~/.gnupg/gpg.conf
+# by default.
 #
-# An option file can contain all long options which are
-# available in GnuPG. If the first non white space character of
-# a line is a '#', this line is ignored.  Empty lines are also
-# ignored.
+# An options file can contain any long options which are available in
+# GnuPG. If the first non white space character of a line is a '#',
+# this line is ignored.  Empty lines are also ignored.
 #
 # See the man page for a list of options.
 
-# Uncomment the next line to get rid of the copyright notice
+# Uncomment the following option to get rid of the copyright notice
+
 #no-greeting
 
-# If you have more than 1 secret key in your keyring, you may want
-# to uncomment the following option and set your preferred keyid
+# If you have more than 1 secret key in your keyring, you may want to
+# uncomment the following option and set your preferred keyid.
 
 #default-key 621CC013
 
-
-# If you do not pass a recipient to gpg, it will ask for one.
-# Using this option you can encrypt to a default key.  key validation
-# will not be done in this case.
-# The second form uses the default key as default recipient.
+# If you do not pass a recipient to gpg, it will ask for one.  Using
+# this option you can encrypt to a default key.  Key validation will
+# not be done in this case.  The second form uses the default key as
+# default recipient.
 
 #default-recipient some-user-id
 #default-recipient-self
 
 # By default GnuPG creates version 3 signatures for data files.  This
-# is not OpenPGP compliant but PGP 6 requires them.  To disable it,
-# you may use this option or --openpgp.
+# is not strictly OpenPGP compliant but PGP 6 and most versions of PGP
+# 7 require them.  To disable this behavior, you may use this option
+# or --openpgp.
+
 #no-force-v3-sigs
 
 # Because some mailers change lines starting with "From " to ">From "
 # it is good to handle such lines in a special way when creating
 # cleartext signatures; all other PGP versions do it this way too.
 # To enable full OpenPGP compliance you may want to use this option.
+
 #no-escape-from-lines
 
 # If you do not use the Latin-1 (ISO-8859-1) charset, you should tell
@@ -67,21 +69,13 @@ $Id$
 # "0x12345678".  Note there is only one level of expansion - you
 # cannot make an group that points to another group.  Note if there
 # are spaces in the recipient name, this will appear as two
-# recipients.  In this case, it is better to use the key ID.
+# recipients.  In these cases it is better to use the key ID.
 
-# lock the file only once for the lifetime of a process.
-# if you do not define this, the lock will be obtained and released
-# every time it is needed - normally this is not needed.
+# Lock the file only once for the lifetime of a process.  If you do
+# not define this, the lock will be obtained and released every time
+# it is needed - normally this is not needed.
+
 lock-once
-
-# If you have configured GnuPG without a random gatherer
-# (./configure --enable-static-rnd=none), you have to
-# uncomment _one_ of the following lines.  These
-# extensions won't get used if you have a random gatherer
-# compiled in (which is the default for GNU and xxxBSD systems)
-#load-extension rndlinux
-#load-extension rndunix
-#load-extension rndegd
 
 # GnuPG can send and receive keys to and from a keyserver.  These
 # servers can be HKP, email, or LDAP (if GnuPG is built with LDAP
@@ -144,7 +138,9 @@ lock-once
 
 #keyserver-options auto-key-retrieve include-disabled include-revoked
 
-# Uncomment this line to display photo user IDs in key listings
+# Uncomment this line to display photo user IDs in key listings and
+# when a signature from a key with a photo is verified.
+
 #show-photos
 
 # Use this program to display photo user IDs
