@@ -216,7 +216,8 @@ print_keyinfo(int count,char *keystring,u32 *keyid)
 
   printf("(%d)\t",count);
 
-#warning Hmmm, do we need to check for non-printable characters?  (wk)
+  /* No need to check for control characters, as utf8_to_native does
+     this for us. */
   printunquoted(userid,':');
 
   if(flags&1)

@@ -1,5 +1,8 @@
 2001-12-17  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (print_keyinfo): No need to check for
+	control/illegal characters, as utf8_to_native does this for us.
+
 	* mainproc.c (proc_encrypted): Use generic IDEA warning.
 
 	* gpgv.c: add stub for idea_cipher_warn
