@@ -1,3 +1,10 @@
+2004-05-10  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, mainproc.c (symkey_decrypt_seskey), keyserver.c
+	(struct keyrec, parse_keyrec, keyserver_search_prompt), keyedit.c
+	(keyedit_menu), g10.c (add_keyserver_url, add_policy_url): Fix
+	some compiler warnings.
+
 2004-05-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (keyedit_menu, menu_set_keyserver_url): Allow passing

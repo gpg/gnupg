@@ -45,11 +45,11 @@
 struct keyrec
 {
   KEYDB_SEARCH_DESC desc;
-  time_t createtime,expiretime;
+  u32 createtime,expiretime;
   int size,flags;
   byte type;
   IOBUF uidbuf;
-  int lines;
+  unsigned int lines;
 };
 
 /* Tell remote processes about these options */
@@ -427,12 +427,18 @@ parse_keyrec(char *keystring)
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
 
-      work->createtime=atoi(tok);
+      if(atoi(tok)<0)
+	work->createtime=0;
+      else
+	work->createtime=atoi(tok);
 
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
 
-      work->expiretime=atoi(tok);
+      if(atoi(tok)<0)
+	work->expiretime=0;
+      else
+	work->expiretime=atoi(tok);
 
       if((tok=strsep(&keystring,":"))==NULL)
 	return ret;
@@ -561,8 +567,8 @@ show_prompt(KEYDB_SEARCH_DESC *desc,int numdesc,int count,const char *search)
 static void
 keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 {
-  int i=0,validcount=0,started=0,header=0,count=1,numlines=0;
-  unsigned int maxlen,buflen;
+  int i=0,validcount=0,started=0,header=0,count=1;
+  unsigned int maxlen,buflen,numlines=0;
   KEYDB_SEARCH_DESC *desc;
   byte *line=NULL;
 

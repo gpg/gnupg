@@ -679,8 +679,8 @@ static ARGPARSE_OPTS opts[] = {
     { opcscDriver, "pcsc-driver",    2, "@"},
     { oDisableCCID, "disable-ccid", 0, "@"},
 
-{0} };
-
+    {0,NULL,0,NULL}
+};
 
 int g10_errors_seen = 0;
 
@@ -3649,7 +3649,7 @@ add_notation_data( const char *string, int which )
 static void
 add_policy_url( const char *string, int which )
 {
-  int i,critical=0;
+  unsigned int i,critical=0;
   STRLIST sl;
 
   if(*string=='!')
@@ -3682,7 +3682,7 @@ add_policy_url( const char *string, int which )
 static void
 add_keyserver_url( const char *string, int which )
 {
-  int i,critical=0;
+  unsigned int i,critical=0;
   STRLIST sl;
 
   if(*string=='!')

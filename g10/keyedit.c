@@ -1167,8 +1167,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 	{ N_("disable") , cmdDISABLEKEY, 0,1, N_("disable a key") },
 	{ N_("enable")  , cmdENABLEKEY , 0,1, N_("enable a key") },
 	{ N_("showphoto"),cmdSHOWPHOTO , 0,0, N_("show photo ID") },
-
-    { NULL, cmdNONE } };
+	{ NULL, cmdNONE, 0, 0, NULL } };
     enum cmdids cmd = 0;
     int rc = 0;
     KBNODE keyblock = NULL;
