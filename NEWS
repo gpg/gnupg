@@ -1,6 +1,29 @@
 Noteworthy changes in version 1.3.3 (unreleased)
 ------------------------------------------------
 
+    * IPv6 support for HKP keyserver access.  IPv6 for LDAP keyserver
+      access is also supported, but is dependent on the LDAP library
+      used.
+
+    * To simplify running both the stable (1.2.x) and development
+      (1.3.x) versions of GnuPG, the development version will try to
+      load the options file gpg.conf-VERSION before falling back to
+      the regular gpg.conf file.
+
+    * Two new %-expandos for use in notation and policy URLs.  "%g"
+      expands to the fingerprint of the key making the signature
+      (which might be a subkey), and "%p" expands to the fingerprint
+      of the primary key that owns the key making the signature.
+ 
+    * New "tru" record in --with-colons --list-keys listings.  It
+      shows the status of the trust database that was used to
+      calculate the key validity in the listings.  See doc/DETAILS for
+      the specifics of this.
+ 
+    * New REVKEYSIG status tag for --status-fd.  It indicates a valid
+      signature that was issued by a revoked key.  See doc/DETAILS for
+      the specifics of this.
+
     * A number of portability changes to make building GnuPG on
       less-common platforms easier.
 
