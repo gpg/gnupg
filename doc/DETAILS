@@ -36,7 +36,7 @@ Record type 1:
 	     against the pubring)
      1 u32  Local-Id-Counter.  Used to keep track of Local-IDs.
 	    32 bits are enough numbers for all practial purposes; if this
-	    counter rolls over (due to deleted keyblock,an d new ones),
+	    counter rolls over (due to deleted keyblock and new ones),
 	    the software should reassign new Local-Ids to the whole
 	    database (not expected to ever occur).
      1 byte marginals needed
@@ -49,6 +49,7 @@ Record type 1:
 Record type 2:
 --------------
     Informations about a public key certificate.
+    These are static values which are never changed without user interaction.
 
      1 byte value 2
      1 byte   reserved
@@ -57,7 +58,7 @@ Record type 2:
 	     and usefull if we have duplicate keyids
 	     It is not defined, how an implementaion selects such
 	     a Local-Id, but it may use the local-ID counter from
-	     record type 1
+	     record type 1, or simply use the offset of Record type 2
      8 bytes keyid (of the primary key)
      1 byte pubkey algorithm
      1 byte reserved
@@ -67,9 +68,9 @@ Record type 2:
 	       0 = undefined (not yet initialized)
 	       1 = unknown owner (could not initialize it)
 	       2 = do not trust this owner
-	       3 = usually trust this owner
-	       4 = always trust this owner
-	       5 = ultimately trust this owner.  This can only be set if
+	       4 = usually trust this owner
+	       5 = always trust this owner
+	       7 = ultimately trust this owner.  This can only be set if
 		   we have control over the secret key too.
 	      Bit 3: set if key is revoked; do not use it.
 	      Bit 7-4: reserved

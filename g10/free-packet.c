@@ -57,18 +57,24 @@ free_seckey_enc( PKT_signature *enc )
 }
 
 void
-free_public_cert( PKT_public_cert *cert )
+release_public_cert_parts( PKT_public_cert *cert )
 {
     if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	mpi_free( cert->d.elg.p );
-	mpi_free( cert->d.elg.g );
-	mpi_free( cert->d.elg.y );
+	mpi_free( cert->d.elg.p ); cert->d.elg.p = NULL;
+	mpi_free( cert->d.elg.g ); cert->d.elg.g = NULL;
+	mpi_free( cert->d.elg.y ); cert->d.elg.y = NULL;
     }
     else if( cert->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	mpi_free( cert->d.rsa.rsa_n );
-	mpi_free( cert->d.rsa.rsa_e );
+	mpi_free( cert->d.rsa.rsa_n ); cert->d.rsa.rsa_n = NULL;
+	mpi_free( cert->d.rsa.rsa_e ); cert->d.rsa.rsa_e = NULL;
     }
-    md_close( cert->mfx.md );
+    md_close( cert->mfx.md ); cert->mfx.md = NULL;
+}
+
+void
+free_public_cert( PKT_public_cert *cert )
+{
+    release_public_cert_parts( cert );
     m_free(cert);
 }
 
@@ -92,22 +98,28 @@ copy_public_cert( PKT_public_cert *d, PKT_public_cert *s )
 }
 
 void
-free_secret_cert( PKT_secret_cert *cert )
+release_secret_cert_parts( PKT_secret_cert *cert )
 {
     if( cert->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	mpi_free( cert->d.elg.p );
-	mpi_free( cert->d.elg.g );
-	mpi_free( cert->d.elg.y );
-	mpi_free( cert->d.elg.x );
+	mpi_free( cert->d.elg.p ); cert->d.elg.p = NULL;
+	mpi_free( cert->d.elg.g ); cert->d.elg.g = NULL;
+	mpi_free( cert->d.elg.y ); cert->d.elg.y = NULL;
+	mpi_free( cert->d.elg.x ); cert->d.elg.x = NULL;
     }
     else if( cert->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	mpi_free( cert->d.rsa.rsa_n );
-	mpi_free( cert->d.rsa.rsa_e );
-	mpi_free( cert->d.rsa.rsa_d );
-	mpi_free( cert->d.rsa.rsa_p );
-	mpi_free( cert->d.rsa.rsa_q );
-	mpi_free( cert->d.rsa.rsa_u );
+	mpi_free( cert->d.rsa.rsa_n ); cert->d.rsa.rsa_n = NULL;
+	mpi_free( cert->d.rsa.rsa_e ); cert->d.rsa.rsa_e = NULL;
+	mpi_free( cert->d.rsa.rsa_d ); cert->d.rsa.rsa_d = NULL;
+	mpi_free( cert->d.rsa.rsa_p ); cert->d.rsa.rsa_p = NULL;
+	mpi_free( cert->d.rsa.rsa_q ); cert->d.rsa.rsa_q = NULL;
+	mpi_free( cert->d.rsa.rsa_u ); cert->d.rsa.rsa_u = NULL;
     }
+}
+
+void
+free_secret_cert( PKT_secret_cert *cert )
+{
+    release_secret_cert_parts( cert );
     m_free(cert);
 }
 
@@ -240,4 +252,34 @@ free_packet( PACKET *pkt )
     pkt->pkt.generic = NULL;
 }
 
+/****************
+ * Returns 0 if they match.
+ */
+int
+cmp_public_secret_cert( PKT_public_cert *pkc, PKT_secret_cert *skc )
+{
+    if( pkc->timestamp != skc->timestamp )
+	return -1;
+    if( pkc->valid_days != skc->valid_days )
+	return -1;
+    if( pkc->pubkey_algo != skc->pubkey_algo )
+	return -1;
+
+    if( pkc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
+	if( mpi_cmp( pkc->d.elg.p , skc->d.elg.p ) )
+	    return -1;
+	if( mpi_cmp( pkc->d.elg.g , skc->d.elg.g ) )
+	    return -1;
+	if( mpi_cmp( pkc->d.elg.y , skc->d.elg.y ) )
+	    return -1;
+    }
+    else if( pkc->pubkey_algo == PUBKEY_ALGO_RSA ) {
+	if( mpi_cmp( pkc->d.rsa.rsa_n , skc->d.rsa.rsa_n ) )
+	    return -1;
+	if( mpi_cmp( pkc->d.rsa.rsa_e , skc->d.rsa.rsa_e ) )
+	    return -1;
+    }
+
+    return 0;
+}
 

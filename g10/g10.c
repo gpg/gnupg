@@ -424,17 +424,36 @@ main( int argc, char **argv )
 	break;
 
       case aSign: /* sign the given file */
-	if( argc > 1 )
-	    usage(1);
-	if( (rc = sign_file(fname, detached_sig, locusr, 0, NULL)) )
-	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
+	sl = NULL;
+	if( detached_sig ) { /* sign all files */
+	    for( ; argc; argc--, argv++ )
+		add_to_strlist( &sl, *argv );
+	}
+	else {
+	    if( argc > 1 )
+		usage(1);
+	    if( argc ) {
+		sl = m_alloc_clear( sizeof *sl + strlen(fname));
+		strcpy(sl->d, fname);
+	    }
+	}
+	if( (rc = sign_file( sl, detached_sig, locusr, 0, NULL, NULL)) )
+	    log_error("sign_file: %s\n", g10_errstr(rc) );
+	free_strlist(sl);
 	break;
 
       case aSignEncr: /* sign and encrypt the given file */
 	if( argc > 1 )
 	    usage(1);
-	if( (rc = sign_file(fname, detached_sig, locusr, 1, remusr)) )
+	if( argc ) {
+	    sl = m_alloc_clear( sizeof *sl + strlen(fname));
+	    strcpy(sl->d, fname);
+	}
+	else
+	    sl = NULL;
+	if( (rc = sign_file(sl, detached_sig, locusr, 1, remusr, NULL)) )
 	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
+	free_strlist(sl);
 	break;
 
 

@@ -97,6 +97,7 @@ int get_pubkey( PKT_public_cert *pkc, u32 *keyid );
 int get_pubkey_byname( PKT_public_cert *pkc, const char *name );
 int get_seckey( PKT_secret_cert *skc, u32 *keyid );
 int get_seckey_byname( PKT_secret_cert *skc, const char *name, int unlock );
+int enum_secret_keys( void **context, PKT_secret_cert *skc );
 char*get_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
 

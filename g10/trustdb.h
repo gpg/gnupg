@@ -21,8 +21,22 @@
 #ifndef G10_TRUSTDB_H
 #define G10_TRUSTDB_H
 
+
+
+#define TRUST_MASK	0x07 /* for the trust leveles */
+#define TRUST_UNKNOWN	  1  /* unknown 	   */
+#define TRUST_NO_TRUST	  2  /* not trusted	   */
+#define TRUST_MARG_TRUST  4  /* marginally trusted */
+#define TRUST_FULL_TRUST  5  /* fully trusted	   */
+#define TRUST_ULT_TRUST   7  /* ultimately trusted */
+ /* other bits used with the trustlevel */
+#define TRUST_NO_PUBKEY 0x10 /* we do not have the pubkey in out trustDB */
+
+
 /*-- trustdb.c --*/
 int check_trustdb( int level );
 int check_pkc_trust( PKT_public_cert *pkc, int *r_trustlevel );
+int verify_private_data(void);
+int sign_private_data(void);
 
 #endif /*G10_TRUSTDB_H*/

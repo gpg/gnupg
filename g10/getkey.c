@@ -51,6 +51,13 @@ typedef struct pkc_cache_entry {
     PKT_public_cert *pkc;
 } *pkc_cache_entry_t;
 
+typedef struct enum_seckey_context {
+    int eof;
+    STRLIST sl;
+    IOBUF iobuf;
+} enum_seckey_context_t;
+
+
 static STRLIST keyrings;
 static STRLIST secret_keyrings;
 
@@ -351,6 +358,9 @@ get_seckey_byname( PKT_secret_cert *skc, const char *name, int unprotect )
 }
 
 
+
+
+
 /****************
  * scan the keyring and look for either the keyid or the name.
  */
@@ -581,6 +591,69 @@ scan_secret_keyring( PKT_secret_cert *skc, u32 *keyid,
     iobuf_close(a);
     set_packet_list_mode(save_mode);
     return rc;
+}
+
+
+/****************
+ * Enumerate all secret keys.  Caller must use these procedure:
+ *  1) create a void pointer and initialize it to NULL
+ *  2) pass this void pointer by reference to this function
+ *     and provide space for the secret key (pass a buffer for skc)
+ *  3) call this function as long as it does not return -1
+ *     to indicate EOF.
+ *  4) Always call this function a last time with SKC set to NULL,
+ *     so that can free it's context.
+ *
+ * Return
+ */
+int
+enum_secret_keys( void **context, PKT_secret_cert *skc )
+{
+    int rc=0;
+    PACKET pkt;
+    int save_mode;
+    enum_seckey_context_t *c = *context;
+
+    if( !c ) { /* make a new context */
+	c = m_alloc_clear( sizeof *c );
+	*context = c;
+	c->sl = secret_keyrings;
+    }
+
+    if( !skc ) { /* free the context */
+	m_free( c );
+	*context = NULL;
+	return 0;
+    }
+
+    if( c->eof )
+	return -1;
+
+    for( ; c->sl; c->sl = c->sl->next ) {
+	if( !c->iobuf ) {
+	    if( !(c->iobuf = iobuf_open( c->sl->d ) ) ) {
+		log_error("enum_secret_keys: can't open '%s'\n", c->sl->d );
+		continue; /* try next file */
+	    }
+	}
+
+	save_mode = set_packet_list_mode(0);
+	init_packet(&pkt);
+	while( (rc=parse_packet(c->iobuf, &pkt)) != -1 ) {
+	    if( rc )
+		; /* e.g. unknown packet */
+	    else if( pkt.pkttype == PKT_SECRET_CERT ) {
+		copy_secret_cert( skc, pkt.pkt.secret_cert );
+		set_packet_list_mode(save_mode);
+		return 0; /* found */
+	    }
+	    free_packet(&pkt);
+	}
+	set_packet_list_mode(save_mode);
+	iobuf_close(c->iobuf); c->iobuf = NULL;
+    }
+    c->eof = 1;
+    return -1;
 }
 
 

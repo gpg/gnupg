@@ -64,17 +64,22 @@ complete_sig( PKT_signature *sig, PKT_secret_cert *skc, MD_HANDLE md )
 
 
 /****************
- * Sign the file with name FILENAME.  If DETACHED has the value true,
- * make a detached signature.  If FILENAME is NULL read from stdin
+ * Sign the files whose names are in FILENAME.
+ * If DETACHED has the value true,
+ * make a detached signature.  If FILENAMES->d is NULL read from stdin
  * and ignore the detached mode.  Sign the file with all secret keys
  * which can be taken from LOCUSR, if this is NULL, use the default one
  * If ENCRYPT is true, use REMUSER (or ask if it is NULL) to encrypt the
  * signed data for these users.
+ * If OUTFILE is not NULL; this file is used for output and the function
+ * does not ask for overwrite permission; output is then always
+ * uncompressed, non-armored and in binary mode.
  */
 int
-sign_file( const char *filename, int detached, STRLIST locusr,
-	   int encrypt, STRLIST remusr )
+sign_file( STRLIST filenames, int detached, STRLIST locusr,
+	   int encrypt, STRLIST remusr, const char *outfile )
 {
+    const char *fname;
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
     md_filter_context_t mfx;
@@ -88,6 +93,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
     PKC_LIST pkc_list = NULL;
     SKC_LIST skc_list = NULL;
     SKC_LIST skc_rover = NULL;
+    int multifile = 0;
 
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
@@ -95,6 +101,16 @@ sign_file( const char *filename, int detached, STRLIST locusr,
     memset( &tfx, 0, sizeof tfx);
     memset( &efx, 0, sizeof efx);
     init_packet( &pkt );
+
+    if( filenames ) {
+	fname = filenames->d;
+	multifile = !!filenames->next;
+    }
+    else
+	fname = NULL;
+
+    if( fname && filenames->next && (!detached || encrypt) )
+	log_bug("multiple files can only be detached signed");
 
     if( (rc=build_skc_list( locusr, &skc_list, 1 )) )
 	goto leave;
@@ -104,28 +120,40 @@ sign_file( const char *filename, int detached, STRLIST locusr,
     }
 
     /* prepare iobufs */
-    if( !(inp = iobuf_open(filename)) ) {
-	log_error("can't open %s: %s\n", filename? filename: "[stdin]",
+    if( multifile )  /* have list of filenames */
+	inp = NULL; /* we do it later */
+    else if( !(inp = iobuf_open(fname)) ) {
+	log_error("can't open %s: %s\n", fname? fname: "[stdin]",
 					strerror(errno) );
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
     }
 
-    if( !(out = open_outfile( filename, opt.armor? 1: detached? 2:0 )) ) {
+    if( outfile ) {
+	if( !(out = iobuf_create( outfile )) ) {
+	    log_error("can't create %s: %s\n", outfile, strerror(errno) );
+	    rc = G10ERR_CREATE_FILE;
+	    goto leave;
+	}
+	else if( opt.verbose )
+	    log_info("writing to '%s'\n", outfile );
+    }
+    else if( !(out = open_outfile( fname, opt.armor? 1: detached? 2:0 )) ) {
 	rc = G10ERR_CREATE_FILE;
 	goto leave;
     }
 
     /* prepare to calculate the MD over the input */
-    if( opt.textmode && opt.armor )
+    if( opt.textmode && opt.armor && !outfile )
 	iobuf_push_filter( inp, text_filter, &tfx );
     mfx.md = md_open(DIGEST_ALGO_RMD160, 0);
-    iobuf_push_filter( inp, md_filter, &mfx );
+    if( !multifile )
+	iobuf_push_filter( inp, md_filter, &mfx );
 
-    if( opt.armor )
+    if( opt.armor && !outfile  )
 	iobuf_push_filter( out, armor_filter, &afx );
     write_comment( out, "#Created by G10 pre-release " VERSION );
-    if( opt.compress )
+    if( opt.compress && !outfile )
 	iobuf_push_filter( out, compress_filter, &zfx );
 
     if( encrypt ) {
@@ -141,7 +169,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
 
 	skc = skc_rover->skc;
 	ops = m_alloc_clear( sizeof *ops );
-	ops->sig_class = opt.textmode? 0x01 : 0x00;
+	ops->sig_class = opt.textmode && !outfile ? 0x01 : 0x00;
 	ops->digest_algo = DIGEST_ALGO_RMD160;
 	ops->pubkey_algo = skc->pubkey_algo;
 	keyid_from_skc( skc, ops->keyid );
@@ -161,17 +189,40 @@ sign_file( const char *filename, int detached, STRLIST locusr,
 
     /* setup the inner packet */
     if( detached ) {
-	/* read, so that the filter can calculate the digest */
-	while( iobuf_get(inp) != -1 )
-	    ;
+	if( multifile ) {
+	    STRLIST sl = filenames;
+
+	    if( opt.verbose )
+		log_info("signing:" );
+	    for(; sl; sl = sl->next ) {
+		if( !(inp = iobuf_open(sl->d)) ) {
+		    log_error("can't open %s: %s\n", sl->d, strerror(errno) );
+		    rc = G10ERR_OPEN_FILE;
+		    goto leave;
+		}
+		if( opt.verbose )
+		    fprintf(stderr, " '%s'", sl->d );
+		iobuf_push_filter( inp, md_filter, &mfx );
+		while( iobuf_get(inp) != -1 )
+		    ;
+		iobuf_close(inp); inp = NULL;
+	    }
+	    if( opt.verbose )
+		putc( '\n', stderr );
+	}
+	else {
+	    /* read, so that the filter can calculate the digest */
+	    while( iobuf_get(inp) != -1 )
+		;
+	}
     }
     else {
-	if( filename ) {
-	    pt = m_alloc( sizeof *pt + strlen(filename) - 1 );
-	    pt->namelen = strlen(filename);
-	    memcpy(pt->name, filename, pt->namelen );
+	if( fname ) {
+	    pt = m_alloc( sizeof *pt + strlen(fname) - 1 );
+	    pt->namelen = strlen(fname);
+	    memcpy(pt->name, fname, pt->namelen );
 	    if( !(filesize = iobuf_get_filelength(inp)) )
-		log_info("warning: '%s' is an empty file\n", filename );
+		log_info("warning: '%s' is an empty file\n", fname );
 	}
 	else { /* no filename */
 	    pt = m_alloc( sizeof *pt - 1 );
@@ -179,7 +230,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
 	    filesize = 0; /* stdin */
 	}
 	pt->timestamp = make_timestamp();
-	pt->mode = opt.textmode? 't':'b';
+	pt->mode = opt.textmode && !outfile ? 't':'b';
 	pt->len = filesize;
 	pt->buf = inp;
 	pkt.pkttype = PKT_PLAINTEXT;
@@ -203,7 +254,7 @@ sign_file( const char *filename, int detached, STRLIST locusr,
 	sig = m_alloc_clear( sizeof *sig );
 	sig->pubkey_algo = skc->pubkey_algo;
 	sig->timestamp = make_timestamp();
-	sig->sig_class = opt.textmode? 0x01 : 0x00;
+	sig->sig_class = opt.textmode && !outfile? 0x01 : 0x00;
 
 	md = md_copy( mfx.md );
 	md_putc( md, sig->sig_class );

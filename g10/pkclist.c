@@ -41,6 +41,25 @@
 static int
 do_we_trust( PKT_public_cert *pkc, int trustlevel )
 {
+    int rc;
+
+    if( trustlevel & TRUST_NO_PUBKEY ) {
+	/* No pubkey in trustDB: Insert and check again */
+	rc = insert_trust_record( pkc );
+	if( rc ) {
+	    log_error("failed to insert it into the trustdb: %s\n",
+						      g10_errstr(rc) );
+	    return 0; /* no */
+	}
+	rc = check_pkc_trust( pkc, &trustlevel );
+	if( rc )
+	    log_fatal("trust check after insert failed: %s\n",
+						      g10_errstr(rc) );
+	if( trustlevel & TRUST_NO_PUBKEY )
+	    log_bug(NULL);
+    }
+
+
     /* Eventuell fragen falls der trustlevel nicht ausreichend ist */
 
 
@@ -90,6 +109,7 @@ build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list )
 						      remusr->d, g10_errstr(rc) );
 		}
 		else if( do_we_trust( pkc, trustlevel ) ) {
+		    /* note: do_we_trust may have changed the trustlevel */
 		    PKC_LIST r;
 
 		    r = m_alloc( sizeof *r );

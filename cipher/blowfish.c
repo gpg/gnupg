@@ -26,6 +26,7 @@
  * key	  "abcdefghijklmnopqrstuvwxyz";
  * plain  "BLOWFISH"
  * cipher 32 4E D0 FE F4 13 A2 03
+ *
  */
 
 #include <config.h>
@@ -385,6 +386,9 @@ selftest()
     BLOWFISH_context c;
     byte plain[] = "BLOWFISH";
     byte buffer[8];
+    byte plain3[] = { 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10 };
+    byte key3[] = { 0x41, 0x79, 0x6E, 0xA0, 0x52, 0x61, 0x6E, 0xE4 };
+    byte cipher3[] = { 0xE1, 0x13, 0xF4, 0x10, 0x2C, 0xFC, 0xCE, 0x43 };
 
     blowfish_setkey( &c, "abcdefghijklmnopqrstuvwxyz", 26 );
     encrypt_block( &c, buffer, plain );
@@ -393,6 +397,14 @@ selftest()
     decrypt_block( &c, buffer, buffer );
     if( memcmp( buffer, plain, 8 ) )
 	log_bug("blowfish failed\n");
+
+    blowfish_setkey( &c, key3, 8 );
+    encrypt_block( &c, buffer, plain3 );
+    if( memcmp( buffer, cipher3, 8 ) )
+	log_error("wrong blowfish encryption (3)\n");
+    decrypt_block( &c, buffer, buffer );
+    if( memcmp( buffer, plain3, 8 ) )
+	log_bug("blowfish failed (3)\n");
 }
 
 

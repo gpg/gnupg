@@ -98,6 +98,7 @@ typedef struct {
     u16     valid_days;     /* valid for this number of days */
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     md_filter_context_t mfx;
+    u32     local_id;	    /* internal use, valid if > 0 */
     union {
       struct {
 	MPI p;		    /* prime */
@@ -225,13 +226,16 @@ void hash_public_cert( MD_HANDLE md, PKT_public_cert *pkc );
 /*-- free-packet.c --*/
 void free_pubkey_enc( PKT_pubkey_enc *enc );
 void free_seckey_enc( PKT_signature *enc );
+void release_public_cert_parts( PKT_public_cert *cert );
 void free_public_cert( PKT_public_cert *cert );
+void release_secret_cert_parts( PKT_secret_cert *cert );
 void free_secret_cert( PKT_secret_cert *cert );
 void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
 void free_packet( PACKET *pkt );
 PKT_public_cert *copy_public_cert( PKT_public_cert *d, PKT_public_cert *s );
 PKT_secret_cert *copy_secret_cert( PKT_secret_cert *d, PKT_secret_cert *s );
+int cmp_public_secret_cert( PKT_public_cert *pkc, PKT_secret_cert *skc );
 
 
 /*-- sig-check.c --*/

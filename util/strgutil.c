@@ -37,6 +37,18 @@ free_strlist( STRLIST sl )
     }
 }
 
+
+void
+add_to_strlist( STRLIST *list, const char *string )
+{
+    STRLIST sl;
+
+    sl = m_alloc( sizeof *sl + strlen(string));
+    strcpy(sl->d, string);
+    sl->next = *list;
+    *list = sl;
+}
+
 /****************
  * look for the substring SUB in buffer and return a pointer to that
  * substring in BUF or NULL if not found.

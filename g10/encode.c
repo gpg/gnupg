@@ -159,7 +159,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 {
     IOBUF inp = NULL, out = NULL;
     PACKET pkt;
-    PKT_plaintext *pt;
+    PKT_plaintext *pt = NULL;
     int rc = 0;
     u32 filesize;
     cipher_filter_context_t cfx;
@@ -244,7 +244,8 @@ encode_crypt( const char *filename, STRLIST remusr )
 	iobuf_cancel(out);
     else
 	iobuf_close(out); /* fixme: check returncode */
-    pt->buf = NULL;
+    if( pt )
+	pt->buf = NULL;
     free_packet(&pkt);
     m_free(cfx.dek);
     release_pkc_list( pkc_list );
