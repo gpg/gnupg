@@ -102,6 +102,52 @@ encode_sesskey( DEK *dek, DEK **ret_dek, byte *enckey )
     *ret_dek = c;
 }
 
+/* We try very hard to use a MDC */
+static int
+use_mdc(PK_LIST pk_list,int algo)
+{
+  /* --force-mdc overrides --disable-mdc */
+  if(opt.force_mdc)
+    return 1;
+
+  if(opt.disable_mdc)
+    return 0;
+
+  /* Do the keys really support MDC? */
+
+  if(select_mdc_from_pklist(pk_list))
+    return 1;
+  
+  /* The keys don't support MDC, so now we do a bit of a hack - if any
+     of the AESes or TWOFISH are in the prefs, we assume that the user
+     can handle a MDC.  This is valid for PGP 7, which can handle MDCs
+     though it will not generate them.  2440bis allows this, by the
+     way. */
+
+  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
+			    CIPHER_ALGO_AES,NULL)==CIPHER_ALGO_AES)
+    return 1;
+
+  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
+			    CIPHER_ALGO_AES192,NULL)==CIPHER_ALGO_AES192)
+    return 1;
+
+  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
+			    CIPHER_ALGO_AES256,NULL)==CIPHER_ALGO_AES256)
+    return 1;
+
+  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
+			    CIPHER_ALGO_TWOFISH,NULL)==CIPHER_ALGO_TWOFISH)
+    return 1;
+
+  /* Last try.  Use MDC for the modern ciphers. */
+
+  if(cipher_get_blocksize(algo)!=8)
+    return 1;
+
+  return 0; /* No MDC */
+}
+
 static int
 encode_simple( const char *filename, int mode, int compat )
 {
@@ -126,15 +172,6 @@ encode_simple( const char *filename, int mode, int compat )
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
     
-    if (opt.compress == -1 && is_file_compressed(filename, &rc))
-      {
-        if (opt.verbose)
-          log_info(_("`%s' already compressed\n"), filename);
-        do_compress = 0;        
-      }
-    if (rc)
-        return rc;
-
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {
 	log_error(_("%s: can't open: %s\n"), filename? filename: "[stdin]",
@@ -175,9 +212,19 @@ encode_simple( const char *filename, int mode, int compat )
             encode_sesskey( cfx.dek, &dek, enckey );
             m_free( cfx.dek ); cfx.dek = dek;
         }
+
+	cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
     }
 
-    if( (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
+    if (opt.compress == -1 && cfx.dek && cfx.dek->use_mdc &&
+	is_file_compressed(filename, &rc))
+      {
+        if (opt.verbose)
+          log_info(_("`%s' already compressed\n"), filename);
+        do_compress = 0;        
+      }
+
+    if( rc || (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
 	iobuf_cancel(inp);
 	m_free(cfx.dek);
 	m_free(s2k);
@@ -271,7 +318,12 @@ encode_simple( const char *filename, int mode, int compat )
 	iobuf_push_filter( out, cipher_filter, &cfx );
     /* register the compress filter */
     if( do_compress )
+      {
+	zfx.algo=opt.def_compress_algo;
+	if(zfx.algo==-1)
+	  zfx.algo=DEFAULT_COMPRESS_ALGO;
 	iobuf_push_filter( out, compress_filter, &zfx );
+      }
 
     /* do the work */
     if (!opt.no_literal) {
@@ -351,18 +403,6 @@ encode_crypt( const char *filename, STRLIST remusr )
 	  }
     }
 
-    if (opt.compress == -1 && is_file_compressed(filename, &rc2))
-      {
-        if (opt.verbose)
-          log_info(_("`%s' already compressed\n"), filename);
-        do_compress = 0;        
-      }
-    if (rc2)
-      {
-        rc = rc2;
-        goto leave;
-      }
-    
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {
 	log_error(_("can't open %s: %s\n"), filename? filename: "[stdin]",
@@ -423,7 +463,26 @@ encode_crypt( const char *filename, STRLIST remusr )
 
       cfx.dek->algo = opt.def_cipher_algo;
     }
-    cfx.dek->use_mdc = select_mdc_from_pklist (pk_list);
+
+    cfx.dek->use_mdc=use_mdc(pk_list,cfx.dek->algo);
+
+    /* Only do the is-file-already-compressed check if we are using a
+       MDC.  This forces compressed files to be re-compressed if we do
+       not have a MDC to give some protection against chosen
+       ciphertext attacks. */
+
+    if (opt.compress == -1 && cfx.dek->use_mdc &&
+	is_file_compressed(filename, &rc2) )
+      {
+        if (opt.verbose)
+          log_info(_("`%s' already compressed\n"), filename);
+        do_compress = 0;        
+      }
+    if (rc2)
+      {
+        rc = rc2;
+        goto leave;
+      }
 
     make_session_key( cfx.dek );
     if( DBG_CIPHER )
@@ -578,7 +637,7 @@ encrypt_filter( void *opaque, int control,
 	      efx->cfx.dek->algo = opt.def_cipher_algo;
 	    }
 
-            efx->cfx.dek->use_mdc = select_mdc_from_pklist (efx->pk_list);
+            efx->cfx.dek->use_mdc = use_mdc(efx->pk_list,efx->cfx.dek->algo);
 
 	    make_session_key( efx->cfx.dek );
 	    if( DBG_CIPHER )

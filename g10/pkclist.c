@@ -1159,6 +1159,11 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
     i = -1;
     any = 0;
 
+    /* Can we use the requested algorithm? */
+    if(request>-1 && (bits[request/32] & (1<<(request%32))) &&
+       algo_available(preftype,request,hint))
+      return request;
+
     /* If we have personal prefs set, use them instead of the last key */
     if(preftype==PREFTYPE_SYM && opt.personal_cipher_prefs)
       prefs=opt.personal_cipher_prefs;
@@ -1189,10 +1194,6 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype, int request, void *hint)
 		}
 	    }
     }
-
-    /* Can we use the requested algorithm? */
-    if(request>-1 && request==i)
-      return i;
 
   #if 0
     log_debug("prefs of type %d: selected %d\n", preftype, i );

@@ -47,31 +47,16 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     byte temp[18];
     unsigned blocksize;
     unsigned nprefix;
-    int use_mdc;
 
     blocksize = cipher_get_blocksize( cfx->dek->algo );
     if( blocksize < 8 || blocksize > 16 )
 	log_fatal("unsupported blocksize %u\n", blocksize );
 
-    use_mdc = cfx->dek->use_mdc;
-
-    if( blocksize != 8 )
-	use_mdc = 1;  /* Hack: enable it for all modern ciphers */
-    /* Note: We should remove this hack as soon as a reasonable number of keys
-       are carrying the MDC flag.  But always keep the hack for conventional
-       encryption */
-
-    if (opt.force_mdc)
-        use_mdc = 1;
-        
-    if( opt.rfc2440 || opt.rfc1991 || opt.disable_mdc )
-	use_mdc = 0;  /* override - rfc2440 does not know about MDC */
-
     memset( &ed, 0, sizeof ed );
     ed.len = cfx->datalen;
     ed.extralen = blocksize+2;
     ed.new_ctb = !ed.len && !opt.rfc1991;
-    if( use_mdc ) {
+    if( cfx->dek->use_mdc ) {
 	ed.mdc_method = DIGEST_ALGO_SHA1;
 	cfx->mdc_hash = md_open( DIGEST_ALGO_SHA1, 0 );
 	if ( DBG_HASHING )
@@ -86,7 +71,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     }
 
     init_packet( &pkt );
-    pkt.pkttype = use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;
+    pkt.pkttype = cfx->dek->use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;
     pkt.pkt.encrypted = &ed;
     if( build_packet( a, &pkt ))
 	log_bug("build_packet(ENCR_DATA) failed\n");
@@ -96,7 +81,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     temp[nprefix+1] = temp[nprefix-1];
     print_cipher_algo_note( cfx->dek->algo );
     cfx->cipher_hd = cipher_open( cfx->dek->algo,
-				  use_mdc? CIPHER_MODE_CFB
+				  cfx->dek->use_mdc? CIPHER_MODE_CFB
 					 : CIPHER_MODE_AUTO_CFB, 1 );
 /*   log_hexdump( "thekey", cfx->dek->key, cfx->dek->keylen );*/
     cipher_setkey( cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen );

@@ -1400,12 +1400,15 @@ main( int argc, char **argv )
 	    opt.rfc1991 = 1;
 	    opt.rfc2440 = 0;
 	    opt.force_v4_certs = 0;
-	    opt.sk_comments = 0;
+	    opt.disable_mdc = 1;
 	    opt.escape_from = 1;
 	    break;
 	  case oOpenPGP:
+	    /* TODO: When 2440bis becomes a RFC, these may need
+               changing. */
 	    opt.rfc1991 = 0;
 	    opt.rfc2440 = 1;
+	    opt.disable_mdc = 1;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;
