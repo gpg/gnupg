@@ -1,10 +1,10 @@
 Please see
 
-    http://www.gnupg.org/buglist.html
+    http://bugs.gnupg.org/
 
-for a list of know bugs in GnuPG.  We don't distribute this list anymore
-with the package because a more current one with notes in which version
-the bug is fixed can be found online.
+for a list of known bugs in GnuPG.  We don't distribute this list with
+the package any longer because a more current one with notes in which
+version the bug is fixed can be found online.
 
 For security related bugs, please contact <security@gnupg.org> which
 directs mails only to the core developers.  If you need to encrypt the

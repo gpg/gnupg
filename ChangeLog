@@ -1,3 +1,10 @@
+2003-04-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Add sig version, pk algo, hash algo, and sig class to
+	VALIDSIG.
+
+	* BUGS: Fix bug reporting URL.
+
 2003-04-24  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (ALL_LINGUAS): Added Hungarian translation by Nagy

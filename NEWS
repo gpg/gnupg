@@ -36,7 +36,9 @@ Noteworthy changes in version 1.2.2 (unreleased)
     * Fixed a compatibility problem with CryptoEx by increasing the
       window size of the uncompressor.
 
-    * Status VALIDSIG does now also print the primary key's fingerprint.
+    * Status VALIDSIG does now also print the primary key's
+      fingerprint, as well as the signature version, pubkey algorithm,
+      hash algorithm, and signature class.
 
     * Add read-only support for the SHA-256 hash, and optional
       read-only support for the SHA-384 and SHA-512 hashes.
