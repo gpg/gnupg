@@ -9,7 +9,8 @@
 #include "types.h"
 
 void parse_keyserver_options(char *options);
-int parse_keyserver_uri(char *uri);
+int parse_keyserver_uri(char *uri,
+			const char *configname,unsigned int configlineno);
 int keyserver_export(STRLIST users);
 int keyserver_import(STRLIST users);
 int keyserver_import_fprint(const byte *fprint,size_t fprint_len);

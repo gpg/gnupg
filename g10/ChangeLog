@@ -1,3 +1,16 @@
+2002-06-12  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyserver.c (keyserver_spawn): Handle CRLF endings from
+	keyserver helpers.  Also don't leak the last line worth of memory
+	from the keyserver response.
+
+	* main.h, misc.c (deprecated_warning): New function to warn about
+	deprecated options and commands.
+
+	* g10.c (main), keyserver-internal.h, keyserver.c
+	(parse_keyserver_uri): Use new deprecated function to warn about
+	honor-http-proxy, auto-key-retrieve, and x-broken-hkp.
+
 2002-06-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: link gpg with NETLIBS for the built-in HKP access.

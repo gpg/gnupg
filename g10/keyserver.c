@@ -117,7 +117,7 @@ parse_keyserver_options(char *options)
 }
 
 int 
-parse_keyserver_uri(char *uri)
+parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
 {
   /* Get the scheme */
 
@@ -130,10 +130,8 @@ parse_keyserver_uri(char *uri)
 
   if(ascii_strcasecmp(opt.keyserver_scheme,"x-broken-hkp")==0)
     {
-      log_info(_("WARNING: %s is a deprecated option.\n"),
-	       "x-broken-hkp");
-      log_info(_("please use \"--keyserver-options %s\" instead\n"),
-	       "broken-http-proxy");
+      deprecated_warning(configname,configlineno,"x-broken-hkp",
+			 "--keyserver-options ","broken-http-proxy");
       opt.keyserver_scheme="hkp";
       opt.keyserver_options.broken_http_proxy=1;
     }
@@ -491,39 +489,50 @@ keyserver_spawn(int action,STRLIST list,
 
   /* Now handle the response */
 
-  do
+  for(;;)
     {
+      char *ptr;
+
       if(iobuf_read_line(spawn->fromchild,&line,&buflen,&maxlen)==0)
 	{
 	  ret=G10ERR_READ_FILE;
 	  goto fail; /* i.e. EOF */
 	}
 
-      if(ascii_memcasecmp(line,"VERSION ",8)==0)
+      ptr=line;
+
+      if(*ptr=='\r')
+	ptr++;
+
+      if(*ptr=='\n')
+	ptr++;
+
+      if(*ptr=='\0')
+	break;
+
+      if(ascii_memcasecmp(ptr,"VERSION ",8)==0)
 	{
 	  gotversion=1;
 
-	  if(atoi(&line[8])!=KEYSERVER_PROTO_VERSION)
+	  if(atoi(&ptr[8])!=KEYSERVER_PROTO_VERSION)
 	    {
 	      log_error(_("invalid keyserver protocol (us %d!=handler %d)\n"),
-			KEYSERVER_PROTO_VERSION,atoi(&line[8]));
+			KEYSERVER_PROTO_VERSION,atoi(&ptr[8]));
 	      goto fail;
 	    }
 	}
-
-      if(ascii_memcasecmp(line,"PROGRAM ",8)==0)
+      else if(ascii_memcasecmp(ptr,"PROGRAM ",8)==0)
 	{
-	  line[strlen(line)-1]='\0';
-	  if(ascii_strcasecmp(&line[8],VERSION)!=0)
+	  ptr[strlen(ptr)-1]='\0';
+	  if(ascii_strcasecmp(&ptr[8],VERSION)!=0)
 	    log_info(_("Warning: keyserver handler from a different "
-		       "version of GnuPG (%s)\n"),&line[8]);
+		       "version of GnuPG (%s)\n"),&ptr[8]);
 	}
-
-      /* Currently the only OPTION */
-      if(ascii_memcasecmp(line,"OPTION OUTOFBAND",16)==0)
-	outofband=1;
+      else if(ascii_memcasecmp(ptr,"OPTION OUTOFBAND",16)==0)
+	outofband=1; /* Currently the only OPTION */
     }
-  while(line[0]!='\n');
+
+  m_free(line);
 
   if(!gotversion)
     {
