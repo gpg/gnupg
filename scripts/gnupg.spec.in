@@ -24,6 +24,12 @@ Provides: gpg openpgp
 BuildRoot: /tmp/rpmbuild_%{name}
 
 %changelog
+* Sun Mar 31 2002 David Shaw <dshaw@jabberwocky.com>
+- Added the gpgkeys_xxx keyserver helpers.
+- Added a * to catch variations on the basic gpg man page (gpg, gpgv).
+- Mark options.skel as a config file.
+- Do not include the FAQ/faq.html twice (in /doc/ and /share/).
+
 * Wed Sep 06 2000 Fabio Coatti <cova@ferrara.linux.it>
 - Added Polish description and summary (Kindly provided by  
   Lukasz Stelmach <stelmacl@ee.pw.edu.pl>)
@@ -148,18 +154,21 @@ make install-strip prefix=$RPM_BUILD_ROOT/usr
 %doc %attr (-,root,root) PROJECTS
 %doc %attr (-,root,root) doc/DETAILS
 %doc %attr (-,root,root) doc/FAQ
+%doc %attr (-,root,root) doc/faq.html
 %doc %attr (-,root,root) doc/HACKING
 %doc %attr (-,root,root) doc/OpenPGP
 %doc %attr (-,root,root) g10/pubring.asc
 %doc %attr (-,root,root) g10/OPTIONS
 
-%attr (-,root,root) /usr/man/man1/gpg.1*
+%attr (-,root,root) /usr/man/man1/gpg*.1*
 %attr (4755,root,root) /usr/bin/gpg
+%attr (-,root,root) /usr/bin/gpgkeys_*
 
 %attr (-,root,root) /usr/share/locale/*/*/%{name}.mo
 
 %attr (-,root,root) /usr/lib/%{name}
-%attr (-,root,root) /usr/share/%{name}
+
+%config %attr (-,root,root) /usr/share/%{name}/options.skel
 
 %clean
 rm -rf $RPM_BUILD_ROOT

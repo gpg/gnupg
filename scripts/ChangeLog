@@ -1,3 +1,10 @@
+2002-03-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* gnupg.spec.in: Added the gpgkeys_xxx keyserver helpers.  Added a
+	* to catch variations on the basic gpg man page (gpg, gpgv).  Mark
+	options.skel as a config file.  Do not include the FAQ/faq.html
+	twice (in /doc/ and /share/).
+	
 2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
 	* build-riscos [__riscos__]: Set filetype of Makefile correctly.
