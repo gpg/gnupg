@@ -1,3 +1,9 @@
+2005-01-11  Werner Koch  <wk@g10code.com>
+
+	* w32installer.nsi: New.
+	* mk-w32-dist: Append ".txt" to some files.  Call makensis if
+	available.
+
 2004-12-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* autogen.sh: automake needs --add-missing for conditional
