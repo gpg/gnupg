@@ -1,3 +1,7 @@
+2003-10-25  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Updated required versions and add -I m4 to aclocal.
+
 2003-08-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* autogen.sh: Touch po/all for --build-w32.  From Werner on stable
