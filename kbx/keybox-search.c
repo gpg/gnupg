@@ -1,5 +1,5 @@
 /* keybox-search.c - Search operations
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -71,6 +71,19 @@ blob_get_type (KEYBOXBLOB blob)
     return -1; /* blob too short */
 
   return buffer[4];
+}
+
+static unsigned int
+blob_get_blob_flags (KEYBOXBLOB blob)
+{
+  const unsigned char *buffer;
+  size_t length;
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 8)
+    return 0; /* oops */
+
+  return get16 (buffer + 6);
 }
 
 
@@ -457,6 +470,9 @@ keybox_search_reset (KEYBOX_HANDLE hd)
   return 0;   
 }
 
+
+/* Note: When in ephemeral mode the search function does visit all
+   blobs but in standard mode, blobs flagged as ephemeral are ignored.  */
 int 
 keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 {
@@ -578,10 +594,16 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 
   for (;;)
     {
+      unsigned int blobflags;
+
       _keybox_release_blob (blob); blob = NULL;
       rc = _keybox_read_blob (&blob, hd->fp);
       if (rc)
         break;
+
+      blobflags = blob_get_blob_flags (blob);
+      if (!hd->ephemeral && (blobflags & 2))
+        continue; /* not in ephemeral mode but blob is flagged ephemeral */
 
       for (n=0; n < ndesc; n++) 
         {

@@ -134,8 +134,28 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   fprintf (fp, "Version: %d\n", buffer[5]);
   
   n = get16 (buffer + 6);
-  fprintf( fp, "Blob-Flags: %04lX\n", n);
-  
+  fprintf( fp, "Blob-Flags: %04lX", n);
+  if (n)
+    {
+      int any = 0;
+
+      fputs (" (", fp);
+      if ((n & 1))
+        {
+          fputs ("secret", fp);
+          any++;
+        }
+      if ((n & 2))
+        {
+          if (any)
+            putc (',', fp);
+          fputs ("ephemeral", fp);
+          any++;
+        }
+      putc (')', fp);
+    }
+  putc ('\n', fp);
+
   rawdata_off = get32 (buffer + 8);
   rawdata_len = get32 (buffer + 12);
 

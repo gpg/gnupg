@@ -116,5 +116,12 @@ keybox_get_resource_name (KEYBOX_HANDLE hd)
   return hd->kb->fname;
 }
 
-
+int
+keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes)
+{
+  if (!hd)
+    return KEYBOX_Invalid_Handle; 
+  hd->ephemeral = yes;
+  return 0;
+}
 

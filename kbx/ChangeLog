@@ -1,3 +1,14 @@
+2002-06-19  Werner Koch  <wk@gnupg.org>
+
+	* keybox-init.c (keybox_set_ephemeral): New.
+	* keybox-blob.c (create_blob_header): Store epheermal flag.
+	(_keybox_create_x509_blob): Pass epheermal flag on.
+	* keybox-update.c (keybox_insert_cert): Ditto.
+	* keybox-search.c (blob_get_blob_flags): New.
+	(keybox_search): Ignore ephemeral blobs when not in ephemeral mode.
+
+	* keybox-dump.c (_keybox_dump_blob): Print blob flags as strings.
+
 2002-02-25  Werner Koch  <wk@gnupg.org>
 
 	* keybox-search.c (blob_cmp_mail): Use case-insensitive compare

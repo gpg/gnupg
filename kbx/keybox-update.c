@@ -357,7 +357,7 @@ keybox_insert_cert (KEYBOX_HANDLE hd, KsbaCert cert,
       hd->fp = NULL;
     }
 
-  rc = _keybox_create_x509_blob (&blob, cert, sha1_digest);
+  rc = _keybox_create_x509_blob (&blob, cert, sha1_digest, hd->ephemeral);
   if (!rc)
     {
       rc = blob_filecopy (1, fname, blob, hd->secret, 0, 0 );

@@ -63,6 +63,7 @@ struct keybox_handle {
   FILE *fp;
   int eof;
   int error;
+  int ephemeral;  
   struct {
     KEYBOXBLOB blob;
     off_t offset;
@@ -93,7 +94,7 @@ struct keybox_handle {
 #endif /*KEYBOX_WITH_OPENPGP*/
 #ifdef KEYBOX_WITH_X509
 int _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
-                              unsigned char *sha1_digest);
+                              unsigned char *sha1_digest, int as_ephemeral);
 #endif /*KEYBOX_WITH_X509*/
 
 int  _keybox_new_blob (KEYBOXBLOB *r_blob, char *image, size_t imagelen);

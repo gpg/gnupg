@@ -1,5 +1,5 @@
 /* keybox-blob.c - KBX Blob handling
- *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -47,9 +47,10 @@ X.509 specific are noted like [X.509: xxx]
  byte version number of this blob type (1)
  u16  Blob flags
 	bit 0 = contains secret key material
+        bit 1 = ephemeral blob (e.g. used while quering external resources)
 
  u32  offset to the OpenPGP keyblock or X509 DER encoded certificate
- u32  ant its length
+ u32  and its length
  u16  number of keys (at least 1!) [X509: always 1]
  u16  size of additional key information
  n times:
@@ -529,7 +530,7 @@ release_kid_list (struct keyid_list *kl)
 
 
 static int
-create_blob_header (KEYBOXBLOB blob, int blobtype)
+create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral)
 {
   struct membuf *a = blob->buf;
   int i;
@@ -537,7 +538,7 @@ create_blob_header (KEYBOXBLOB blob, int blobtype)
   put32 ( a, 0 ); /* blob length, needs fixup */
   put8 ( a, blobtype);  
   put8 ( a, 1 );  /* blob type version */
-  put16 ( a, 0 ); /* blob flags */
+  put16 ( a, as_ephemeral? 2:0 ); /* blob flags */
 
   put32 ( a, 0 ); /* offset to the raw data, needs fixup */
   put32 ( a, 0 ); /* length of the raw data, needs fixup */
@@ -688,7 +689,7 @@ create_blob_finish (KEYBOXBLOB blob)
 #ifdef KEYBOX_WITH_OPENPGP
 
 int
-_keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock)
+_keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock, int as_ephemeral)
 {
   int rc = 0;
   KBNODE node;
@@ -737,7 +738,7 @@ _keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock)
   
   init_membuf (&blob->bufbuf, 1024);
   blob->buf = &blob->bufbuf;
-  rc = create_blob_header (blob, BLOBTYPE_OPENPGP);
+  rc = create_blob_header (blob, BLOBTYPE_OPENPGP, as_ephemeral);
   if (rc)
     goto leave;
   rc = pgp_create_blob_keyblock (blob, keyblock);
@@ -805,7 +806,7 @@ x509_email_kludge (const char *name)
    remove that parameter */
 int
 _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
-                          unsigned char *sha1_digest)
+                          unsigned char *sha1_digest, int as_ephemeral)
 {
   int i, rc = 0;
   KEYBOXBLOB blob;
@@ -916,7 +917,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   init_membuf (&blob->bufbuf, 1024);
   blob->buf = &blob->bufbuf;
   /* write out what we already have */
-  rc = create_blob_header (blob, BLOBTYPE_X509);
+  rc = create_blob_header (blob, BLOBTYPE_X509, as_ephemeral);
   if (rc)
     goto leave;
   rc = x509_create_blob_cert (blob, cert);

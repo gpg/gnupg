@@ -25,7 +25,8 @@
 
 #include "keybox-defs.h"
 
-/* Read a block at the current postion ant return it in r_blocb.  r_blob may be NULL sto simply skip the current block */
+/* Read a block at the current postion and return it in r_blob.
+   r_blob may be NULL to simply skip the current block */
 int
 _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
 {
