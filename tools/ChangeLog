@@ -1,3 +1,8 @@
+2002-04-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Do not list libraries in -lxxx format in a
+	dependency line.
+
 2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
 	* gpgsplit.c [__riscos__]: Added RISC OS specific file name
