@@ -1,3 +1,8 @@
+2004-12-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --require-secmem/--no-require-secmem.  Note
+	that the sign flags (l, t, nr) can be mixed.  Remove --nrsign-key.
+
 2004-12-12  Werner Koch  <wk@g10code.com>
 
 	* samplekeys.asc, mksamplekeys (keys): Removed my old 621CC013 key

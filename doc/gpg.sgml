@@ -271,11 +271,12 @@ For each signature listed, there are several flags in between the
 each signature.  From left to right, they are the numbers 1-3 for
 certificate check level (see --ask-cert-level), "L" for a local or
 non-exportable signature (see --lsign-key), "R" for a nonRevocable
-signature (see --nrsign-key), "P" for a signature that contains a
-policy URL (see --cert-policy-url), "N" for a signature that contains
-a notation (see --cert-notation), "X" for an eXpired signature (see
---ask-cert-expire), and the numbers 1-9 or "T" for 10 and above to
-indicate trust signature levels (see the --edit-key command "tsign").
+signature (see the --edit-key command "nrsign"), "P" for a signature
+that contains a policy URL (see --cert-policy-url), "N" for a
+signature that contains a notation (see --cert-notation), "X" for an
+eXpired signature (see --ask-cert-expire), and the numbers 1-9 or "T"
+for 10 and above to indicate trust signature levels (see the
+--edit-key command "tsign").
 </para></listitem></varlistentry>
 
 
@@ -328,32 +329,23 @@ related tasks:</para>
     <varlistentry>
     <term>sign</term>
     <listitem><para>
-Make a signature on key of user &ParmName;
-If the key is not yet signed by the default
-user (or the users given with -u), the
-program displays the information of the key
-again, together with its fingerprint and
-asks whether it should be signed. This
-question is repeated for all users specified
-with -u.</para></listitem></varlistentry>
+Make a signature on key of user &ParmName; If the key is not yet
+signed by the default user (or the users given with -u), the program
+displays the information of the key again, together with its
+fingerprint and asks whether it should be signed. This question is
+repeated for all users specified with
+-u.</para></listitem></varlistentry>
     <varlistentry>
     <term>lsign</term>
     <listitem><para>
-Same as --sign but the signature is marked as
-non-exportable and will therefore never be used
-by others.  This may be used to make keys valid
-only in the local environment.</para></listitem></varlistentry>
+Same as "sign" but the signature is marked as non-exportable and will
+therefore never be used by others.  This may be used to make keys
+valid only in the local environment.</para></listitem></varlistentry>
     <varlistentry>
     <term>nrsign</term>
     <listitem><para>
-Same as --sign but the signature is marked as non-revocable and can
+Same as "sign" but the signature is marked as non-revocable and can
 therefore never be revoked.</para></listitem></varlistentry>
-    <varlistentry>
-    <term>nrlsign</term>
-    <listitem><para>
-Combines the functionality of nrsign and lsign to make a signature
-that is both non-revocable and
-non-exportable.</para></listitem></varlistentry>
     <varlistentry>
     <term>tsign</term>
     <listitem><para>
@@ -362,6 +354,15 @@ of certification (like a regular signature), and trust (like the
 "trust" command).  It is generally only useful in distinct communities
 or groups.
 </para></listitem></varlistentry>
+</variablelist>
+
+<para>
+Note that "l" (for local / non-exportable), "nr" (for non-revocable,
+and "t" (for trust) may be freely mixed and prefixed to "sign" to
+create a signature of any type desired.
+</para>
+
+<variablelist>
     <varlistentry>
     <term>revsig</term>
     <listitem><para>
@@ -571,13 +572,6 @@ the subcommand "sign" from --edit.
 Signs a public key with your secret key but marks it as
 non-exportable.  This is a shortcut version of the subcommand "lsign"
 from --edit.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--nrsign-key &ParmName;</term>
-<listitem><para>
-Signs a public key with your secret key but marks it as non-revocable.
-This is a shortcut version of the subcommand "nrsign" from --edit.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -2382,6 +2376,13 @@ supressed on the command line.
 Suppress the warning about missing MDC integrity protection.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--require-secmem</term>
+<term>--no-require-secmem</term>
+<listitem><para>
+Refuse to run if GnuPG cannot get secure memory.  Defaults to no
+(i.e. run, but give a warning).
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--no-armor</term>
