@@ -32,6 +32,58 @@
 #include "memory.h"
 #include "util.h"
 #include "trustdb.h"
+#include "ttyio.h"
+
+static int
+query_ownertrust( PKT_public_cert *pkc )
+{
+    char *p;
+    size_t n;
+    u32 keyid[2];
+
+    keyid_from_pkc( pkc, keyid );
+    tty_printf("No ownertrust specified for:\n"
+	       "%4u%c/%08lX %s \"",
+	      nbits_from_pkc( pkc ), pubkey_letter( pkc->pubkey_algo ),
+	      (ulong)keyid[1], datestr_from_pkc( pkc ) );
+    p = get_user_id( keyid, &n );
+    tty_print_string( p, n ),
+    m_free(p);
+    tty_printf("\"\n\n"
+"Please decide in how far do you trust this user to\n"
+"correctly sign other users keys (looking at his passport,\n"
+"checking the fingerprints from different sources ...)?\n\n"
+" 1 = Don't know\n"
+" 2 = I do NOT trust\n"
+" 3 = I trust marginally\n"
+" 4 = I trust fully\n"
+" s = please show me more informations\n\n" );
+
+    for(;;) {
+	p = tty_get("Your decision? ");
+	trim_spaces(p);
+	tty_kill_prompt();
+	if( *p && p[1] )
+	    ;
+	else if( *p == '?' ) {
+	    tty_printf(
+"It's up to you to assign a value here; this value will never be exported\n"
+"to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
+"to do with the (implicitly created) web-of-certificates.\n");
+	}
+	else if( !p[1] && (*p >= '1' && *p <= '4') ) {
+	    /* okay */
+	    break;
+	}
+	else if( *p == 's' || *p == 'S' ) {
+	    tty_printf("You will see a list of signators etc. here\n");
+	}
+	m_free(p); p = NULL;
+    }
+    m_free(p);
+    return 0;
+}
+
 
 
 /****************
@@ -43,20 +95,52 @@ do_we_trust( PKT_public_cert *pkc, int trustlevel )
 {
     int rc;
 
-    if( trustlevel & TRUST_NO_PUBKEY ) {
-	/* No pubkey in trustDB: Insert and check again */
+    switch( trustlevel ) {
+      case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
 	rc = insert_trust_record( pkc );
 	if( rc ) {
 	    log_error("failed to insert it into the trustdb: %s\n",
 						      g10_errstr(rc) );
 	    return 0; /* no */
 	}
-	rc = check_pkc_trust( pkc, &trustlevel );
+	rc = check_trust( pkc, &trustlevel );
 	if( rc )
 	    log_fatal("trust check after insert failed: %s\n",
 						      g10_errstr(rc) );
-	if( trustlevel & TRUST_NO_PUBKEY )
+	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED )
 	    BUG();
+	return do_we_trust( pkc, trustlevel );
+
+      case TRUST_EXPIRED:
+	log_error("trust has expired: NOT yet implemented\n");
+	return 0; /* no */
+
+      case TRUST_UNDEFINED:
+	if( opt.batch || opt.answer_no )
+	    log_info("no info to calculate a trust probability\n");
+	else {
+	    query_ownertrust( pkc );
+	}
+	return 0; /* no */
+
+      case TRUST_NEVER:
+	log_info("We do NOT trust this key\n");
+	return 0; /* no */
+
+      case TRUST_MARGINAL:
+	log_info("I'm not sure wether this keys really belongs to the owner\n"
+		 "but I proceed anyway\n");
+	return 1; /* yes */
+
+      case TRUST_FULLY:
+	log_info("This key probably belongs to the owner\n");
+	return 1; /* yes */
+
+      case TRUST_ULTIMATE:
+	log_info("Our own key is always good.\n");
+	return 1; /* yes */
+
+      default: BUG();
     }
 
 
@@ -101,7 +185,7 @@ build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list )
 	    else if( !(rc=check_pubkey_algo(pkc->pubkey_algo)) ) {
 		int trustlevel;
 
-		rc = check_pkc_trust( pkc, &trustlevel );
+		rc = check_trust( pkc, &trustlevel );
 		if( rc ) {
 		    free_public_cert( pkc ); pkc = NULL;
 		    log_error("error checking pkc of '%s': %s\n",

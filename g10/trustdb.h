@@ -23,21 +23,20 @@
 
 
 
-#define TRUST_MASK	0x07 /* for the trust leveles */
-#define TRUST_UNKNOWN	  1  /* unknown 	   */
-#define TRUST_NO_TRUST	  2  /* not trusted	   */
-#define TRUST_MARG_TRUST  4  /* marginally trusted */
-#define TRUST_FULL_TRUST  5  /* fully trusted	   */
-#define TRUST_ULT_TRUST   7  /* ultimately trusted */
- /* other bits used with the trustlevel */
-#define TRUST_NO_PUBKEY 0x10 /* we do not have the pubkey in out trustDB */
+#define TRUST_UNKNOWN	  0  /* not yet calculated */
+#define TRUST_EXPIRED	  1  /* calculation may be invalid */
+#define TRUST_UNDEFINED   2  /* not enough informations for calculation */
+#define TRUST_NEVER	  3  /* never trusted this pubkey */
+#define TRUST_MARGINAL	  4  /* marginally trusted */
+#define TRUST_FULLY	  5  /* fully trusted	   */
+#define TRUST_ULTIMATE	  6  /* ultimately trusted */
 
 
 /*-- trustdb.c --*/
 void list_trustdb(const char *username);
 void list_trust_path( int max_depth, const char *username );
 int init_trustdb( int level );
-int check_pkc_trust( PKT_public_cert *pkc, int *r_trustlevel );
+int check_trust( PKT_public_cert *pkc, int *r_trustlevel );
 int get_ownertrust( PKT_public_cert *pkc, int *r_otrust );
 int insert_trust_record( PKT_public_cert *pkc );
 int verify_private_data(void);

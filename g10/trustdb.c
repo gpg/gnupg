@@ -110,6 +110,14 @@ struct local_id_info {
 };
 
 
+typedef struct trust_seg_list *TRUST_SEG_LIST;
+struct trust_seg_list {
+    TRUST_SEG_LIST next;
+    int   nseg;     /* number of segmens */
+    int   dup;
+    ulong seg[1];   /* segment list */
+};
+
 
 static void create_db( const char *fname );
 static void open_db(void);
@@ -121,18 +129,20 @@ static int walk_sigrecs( SIGREC_CONTEXT *c );
 
 static LOCAL_ID_INFO *new_lid_table(void);
 static void release_lid_table( LOCAL_ID_INFO *tbl );
-static int get_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned *flag );
+static int ins_lid_table_item( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag );
+static int qry_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned *flag );
+static void upd_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag );
 
 static void print_user_id( const char *text, u32 *keyid );
-static int do_list_path( ulong pubkey, int depth, int max_depth,
-			 LOCAL_ID_INFO *lids, ulong *stack );
+static int do_list_path( ulong *stack, int depth, int max_depth,
+			 LOCAL_ID_INFO *lids, TRUST_SEG_LIST *tslist );
 
 static int list_sigs( ulong pubkey_id );
+static int do_check( ulong pubkeyid, int *trustlevel );
 
 
 static char *db_name;
 static int  db_fd = -1;
-static int no_io_dbg = 0;
 /* a table used to keep track of ultimately trusted keys
  * which are the ones from our secrings */
 static LOCAL_ID_INFO *ultikey_table;
@@ -247,16 +257,12 @@ read_record( ulong recnum, TRUSTREC *rec )
 
     if( db_fd == -1 )
 	open_db();
-    if( DBG_TRUST && !no_io_dbg )
-	log_debug("trustdb: read_record(%lu)\n", (ulong)recnum);
     if( lseek( db_fd, recnum * TRUST_RECORD_LEN, SEEK_SET ) == -1 ) {
 	log_error("trustdb: lseek failed: %s\n", strerror(errno) );
 	return G10ERR_READ_FILE;
     }
     n = read( db_fd, buf, TRUST_RECORD_LEN);
     if( !n ) {
-	if( DBG_TRUST )
-	    log_debug("trustdb: no record at %lu\n", (ulong)recnum );
 	return -1; /* eof */
     }
     else if( n != TRUST_RECORD_LEN ) {
@@ -341,10 +347,6 @@ read_record( ulong recnum, TRUSTREC *rec )
 	rc = G10ERR_TRUSTDB;
 	break;
     }
-    if( DBG_TRUST && !rc && !no_io_dbg ) {
-	log_debug("trustdb: ");
-	dump_record( recnum, rec, stderr);
-    }
 
     return rc;
 }
@@ -362,8 +364,6 @@ write_record( ulong recnum, TRUSTREC *rec )
     if( db_fd == -1 )
 	open_db();
 
-    if( DBG_TRUST && !no_io_dbg )
-	log_debug("trustdb: write_record(%lu)\n", (ulong)recnum);
     memset(buf, 0, TRUST_RECORD_LEN);
     p = buf;
     *p++ = rec->rectype;
@@ -468,13 +468,10 @@ scan_record_by_pkc( PKT_public_cert *pkc, TRUSTREC *rec, int rectype )
 
     assert( rectype == 2 || rectype == 3 );
 
-    if( DBG_TRUST )
-	log_debug("trustdb: scan_record_by_pkc\n");
     keyid_from_pkc( pkc, keyid );
     fingerprint = fingerprint_from_pkc( pkc, &fingerlen );
     assert( fingerlen == 20 || fingerlen == 16 );
 
-    no_io_dbg = 1;
     for(recnum=1; !(rc=read_record( recnum, rec)); recnum++ ) {
 	if( rec->rectype != rectype )
 	    continue;
@@ -490,16 +487,12 @@ scan_record_by_pkc( PKT_public_cert *pkc, TRUSTREC *rec, int rectype )
 			      "not match recnum (%lu,%lu)\n", db_name,
 					 (ulong)pkc->local_id, (ulong)recnum );
 		pkc->local_id = recnum;
-		no_io_dbg = 0;
 		return 0;
 	    }
 	}
 	else
 	    log_bug("not yet implemented\n");
     }
-    no_io_dbg = 0;
-    if( DBG_TRUST )
-	log_debug("trustdb: scan_record_by_pkc: %s\n", rc==-1?"eof": g10_errstr(rc));
     if( rc != -1 )
 	log_error("%s: scan_record_by_pkc failed: %s\n",db_name, g10_errstr(rc) );
     return rc;
@@ -517,33 +510,24 @@ scan_record( ulong local_id, TRUSTREC *rec, int rectype, ulong *r_recnum )
 
     assert( rectype == 3 || rectype == 4 );
 
-    if( DBG_TRUST )
-	log_debug("trustdb: scan_record type %d local_id %lu\n",
-						rectype, (ulong)local_id);
-    no_io_dbg = 1;
     for(recnum=1; !(rc=read_record( recnum, rec)); recnum++ ) {
 	if( rec->rectype != rectype )
 	    continue;
 	if( rec->rectype == 34 ) {
 	    if( rec->r.cache.owner == local_id ) { /* found */
 		*r_recnum = recnum;
-		no_io_dbg = 0;
 		return 0;
 	    }
 	}
 	else if( rec->rectype == 4 ) {
 	    if( rec->r.sigrec.owner == local_id ) { /* found */
 		*r_recnum = recnum;
-		no_io_dbg = 0;
 		return 0;
 	    }
 	}
 	else
 	    log_bug("not yet implemented\n");
     }
-    no_io_dbg = 0;
-    if( DBG_TRUST )
-	log_debug("trustdb: scan_record: %s\n", rc==-1?"eof": g10_errstr(rc));
     if( rc != -1 )
 	log_error("%s: scan_record failed: %s\n",db_name, g10_errstr(rc) );
     return rc;
@@ -649,10 +633,8 @@ list_trustdb( const char *username )
 	for(i=9+strlen(db_name); i > 0; i-- )
 	    putchar('-');
 	putchar('\n');
-	no_io_dbg = 1;
 	for(recnum=0; !read_record( recnum, &rec); recnum++ )
 	    dump_record( recnum, &rec, stdout );
-	no_io_dbg = 0;
     }
 }
 
@@ -660,10 +642,11 @@ void
 list_trust_path( int max_depth, const char *username )
 {
     int rc;
+    int i;
     TRUSTREC rec;
     PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
 
-    if( max_depth < 1 )
+    if( max_depth < 0 )
 	max_depth = MAX_LIST_SIGS_DEPTH+1;
 
 
@@ -676,16 +659,38 @@ list_trust_path( int max_depth, const char *username )
 	log_error("user '%s' not in trustdb\n", username);
     else {
 	LOCAL_ID_INFO *lids;
+	LOCAL_ID_INFO *work;
 	ulong stack[MAX_LIST_SIGS_DEPTH];
+	TRUST_SEG_LIST tsl, tslist = NULL;
 
 	lids = new_lid_table();
 	stack[0] = pkc->local_id;
-	rc = do_list_path( pkc->local_id, 1, max_depth, lids, stack );
-	putchar('\n');
+	rc = do_list_path( stack, 1, max_depth, lids, &tslist );
+	/* wipe out duplicates */
+	work = new_lid_table();
+	for( tsl=tslist; tsl; tsl = tsl->next ) {
+	    for(i=1; i < tsl->nseg-1; i++ ) {
+		if( ins_lid_table_item( work, tsl->seg[i], 0 ) ) {
+		    tsl->dup = 1; /* mark as duplicate */
+		    break;
+		}
+	    }
+	}
+	release_lid_table(work);
 
 	release_lid_table(lids);
 	if( rc )
 	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
+	for(tsl = tslist; tsl; tsl = tsl->next ) {
+	    int i;
+
+	    if( tsl->dup )
+		continue;
+	    printf("tslist segs:" );
+	    for(i=0; i < tsl->nseg; i++ )
+		printf("  %lu", tsl->seg[i]);
+	    putchar('\n');
+	}
     }
 
     free_public_cert( pkc );
@@ -782,7 +787,7 @@ release_lid_table( LOCAL_ID_INFO *tbl )
  * fixme: maybe its a good idea to tage items from an unused item list.
  */
 static int
-add_lid_table_item( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag )
+ins_lid_table_item( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag )
 {
     LOCAL_ID_INFO a;
 
@@ -798,7 +803,7 @@ add_lid_table_item( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag )
 }
 
 static int
-get_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned *flag )
+qry_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned *flag )
 {
     LOCAL_ID_INFO a;
 
@@ -809,6 +814,19 @@ get_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned *flag )
 	    return 0;
 	}
     return -1;
+}
+
+static void
+upd_lid_table_flag( LOCAL_ID_INFO *tbl, ulong lid, unsigned flag )
+{
+    LOCAL_ID_INFO a;
+
+    for( a = tbl[lid & 0x0f]; a; a = a->next )
+	if( a->lid == lid ) {
+	    a->flag = flag;
+	    return;
+	}
+    BUG();
 }
 
 
@@ -878,14 +896,13 @@ verify_own_certs()
 	    goto leave;
 	}
 	/* look into the trustdb */
-	rc = check_pkc_trust( pkc, &trust );
+	rc = check_trust( pkc, &trust );
 	if( rc ) {
 	    log_info("keyid %08lX: problem in trustdb: %s\n", (ulong)keyid[1],
 							      g10_errstr(rc) );
 	    goto leave;
 	}
-	if( trust & TRUST_NO_PUBKEY ) {
-	    log_info("keyid %08lX: not yet in trustdb\n", (ulong)keyid[1] );
+	if( trust == TRUST_UNKNOWN ) {
 	    rc = insert_trust_record( pkc );
 	    if( rc )
 		log_error("keyid %08lX: insert failed: %s\n",
@@ -893,20 +910,16 @@ verify_own_certs()
 	    else
 		log_info("keyid %08lX: inserted\n", (ulong)keyid[1] );
 	}
-	else if( (trust & TRUST_MASK) != TRUST_ULT_TRUST )  {
-	  /*log_error("keyid %08lX: not marked as ultimately trusted\n",
-							   (ulong)keyid[1] );
-	       FIXME: mark */
+	else {
+	    /* FIXME: we should chek the other values */
 	}
 
-	if( !(trust & TRUST_NO_PUBKEY) ) {
-	    if( DBG_TRUST )
-		log_debug("putting %08lX(%lu) into ultikey_table\n",
-					(ulong)keyid[1], pkc->local_id );
-	    if( add_lid_table_item( ultikey_table, pkc->local_id, 0 ) )
-		log_error("keyid %08lX: already in ultikey_table\n",
-							    (ulong)keyid[1]);
-	}
+	if( DBG_TRUST )
+	    log_debug("putting %08lX(%lu) into ultikey_table\n",
+				    (ulong)keyid[1], pkc->local_id );
+	if( ins_lid_table_item( ultikey_table, pkc->local_id, 0 ) )
+	    log_error("keyid %08lX: already in ultikey_table\n",
+							(ulong)keyid[1]);
 
 	release_secret_cert_parts( skc );
 	release_public_cert_parts( pkc );
@@ -965,7 +978,7 @@ do_list_sigs( ulong root, ulong pubkey, int depth,
 	    printf("%6u: %*s%08lX(%lu:%02x) ", *lineno, depth*4, "",
 			      (ulong)keyid[1], sx.sig_id, sx.sig_flag );
 	    /* check wether we already checked this pubkey */
-	    if( !get_lid_table_flag( ultikey_table, sx.sig_id, NULL ) ) {
+	    if( !qry_lid_table_flag( ultikey_table, sx.sig_id, NULL ) ) {
 		print_user_id("[ultimately trusted]", keyid);
 		++*lineno;
 	    }
@@ -977,9 +990,9 @@ do_list_sigs( ulong root, ulong pubkey, int depth,
 		printf("[closed]\n");
 		++*lineno;
 	    }
-	    else if( add_lid_table_item( lids, sx.sig_id, *lineno ) ) {
+	    else if( ins_lid_table_item( lids, sx.sig_id, *lineno ) ) {
 		unsigned refline;
-		get_lid_table_flag( lids, sx.sig_id, &refline );
+		qry_lid_table_flag( lids, sx.sig_id, &refline );
 		printf("[see line %u]\n", refline);
 		++*lineno;
 	    }
@@ -1028,49 +1041,70 @@ list_sigs( ulong pubkey_id )
 
 
 
-
-
 static int
-do_list_path( ulong pubkey, int depth, int max_depth,
-	      LOCAL_ID_INFO *lids, ulong *stack )
+do_list_path( ulong *stack, int depth, int max_depth,
+	      LOCAL_ID_INFO *lids, TRUST_SEG_LIST *tslist )
 {
     SIGREC_CONTEXT sx;
+    unsigned last_depth;
     int rc;
 
-    if( depth > max_depth || depth >= MAX_LIST_SIGS_DEPTH  )
-	return 0;
-    if( !get_lid_table_flag( ultikey_table, pubkey, NULL ) ) {
-	/* found a path */
-	int i;
-	u32 keyid[2];
+    assert(depth);
 
-	for(i=0; i < depth; i++ ) {
-	    if( keyid_from_local_id( stack[i], keyid ) )
-		printf("%*s????????(%lu) ", i*4,"", stack[i] );
-	    else {
-		printf("%*s%08lX(%lu) ", i*4,"", keyid[1], stack[i] );
-		print_user_id("", keyid );
-	    }
-	}
-	putchar('\n');
+    /*printf("%2lu/%d: scrutinizig\n", stack[depth-1], depth);*/
+    if( depth >= max_depth || depth >= MAX_LIST_SIGS_DEPTH-1 ) {
+	/*printf("%2lu/%d: to deeply nested\n", stack[depth-1], depth);*/
 	return 0;
     }
-
-    if( add_lid_table_item( lids, pubkey, 0 ) )
-	return 0;
-
     memset( &sx, 0, sizeof sx );
-    sx.pubkey_id = pubkey;
-    do {
-	rc = walk_sigrecs( &sx );
-	if( !rc ) {
-	    stack[depth] = sx.sig_id;
-	    rc = do_list_path( sx.sig_id, depth+1, max_depth, lids, stack );
+    sx.pubkey_id = stack[depth-1];
+    while( !(rc = walk_sigrecs( &sx )) ) {
+	TRUST_SEG_LIST tsl, t2, tl;
+	int i;
+
+	stack[depth] = sx.sig_id;
+	if( qry_lid_table_flag( lids, sx.sig_id, &last_depth) ) {
+	    /*printf("%2lu/%d: marked\n", sx.sig_id, depth );*/
+	    ins_lid_table_item( lids, sx.sig_id, depth);
+	    last_depth = depth;
 	}
-    } while( !rc );
+	else if( depth	< last_depth ) {
+	    /*printf("%2lu/%d: last_depth=%u - updated\n", sx.sig_id, depth, last_depth);*/
+	    last_depth = depth;
+	    upd_lid_table_flag( lids, sx.sig_id, depth);
+	}
+
+	if( last_depth < depth )
+	    /*printf("%2lu/%d: already visited\n", sx.sig_id, depth)*/;
+	else if( !qry_lid_table_flag( ultikey_table, sx.sig_id, NULL ) ) {
+	    /* found end of path; store it, ordered by path length */
+	    tsl = m_alloc( sizeof *tsl + depth*sizeof(ulong) );
+	    tsl->nseg = depth+1;
+	    tsl->dup = 0;
+	    for(i=0; i <= depth; i++ )
+		tsl->seg[i] = stack[i];
+	    for(t2=*tslist,tl=NULL; t2; tl=t2, t2 = t2->next )
+		if( depth < t2->nseg )
+		    break;
+	    if( !tl ) {
+		tsl->next = t2;
+		*tslist = tsl;
+	    }
+	    else {
+		tsl->next = t2;
+		tl->next = tsl;
+	    }
+	    /*putchar('.'); fflush(stdout);*/
+	    /*printf("%2lu/%d: found\n", sx.sig_id, depth);*/
+	}
+	else {
+	    rc = do_list_path( stack, depth+1, max_depth, lids, tslist);
+	    if( rc && rc != -1 )
+		break;
+	}
+    }
     return rc==-1? 0 : rc;
 }
-
 
 
 
@@ -1237,38 +1271,12 @@ build_sigrecs( ulong pubkeyid )
 
 
 
-/****************
- * Recursive check the signatures.
- */
- #if 0
-static int
-walk( KBNODE keyblock, int levels )
-{
-    KBNODE kbctx, node;
-
-    check_sigs( keyblock );
-    if( levels ) { /* check the next level */
-	for( kbctx=NULL; (node=walk_kbtree( keyblock, &kbctx)) ; ) {
-	    if( node->pkt->pkttype == PKT_SIGNATURE && (node->flag & 1) ) {
-		/* read the keyblock for this signator */
-
-		/* and check his signatures */
-		/*walk( his_keyblock, levels-1)*/
-	    }
-	}
-    }
-    return -1;
-}
-#endif
-
-
-
 
 /****************
  *
  */
 static int
-check_trust( ulong pubkeyid )
+do_check( ulong pubkeyid, int *trustlevel )
 {
     int rc=0;
     ulong rnum;
@@ -1367,46 +1375,49 @@ init_trustdb( int level )
  *	     is not necessary to check this if we use a local pubring. Hmmmm.
  */
 int
-check_pkc_trust( PKT_public_cert *pkc, int *r_trustlevel )
+check_trust( PKT_public_cert *pkc, int *r_trustlevel )
 {
     TRUSTREC rec;
-    int trustlevel = 0;
+    int trustlevel = TRUST_UNKNOWN;
     int rc=0;
 
-    if( opt.verbose )
-	log_info("check_pkc_trust() called.\n");
+    if( DBG_TRUST )
+	log_info("check_trust() called.\n");
 
     /* get the pubkey record */
     if( pkc->local_id ) {
 	if( read_record( pkc->local_id, &rec ) ) {
-	    log_error("check_pkc_trust: read record failed\n");
+	    log_error("check_trust: read record failed\n");
 	    return G10ERR_TRUSTDB;
 	}
     }
     else { /* no local_id: scan the trustdb */
 	if( (rc=scan_record_by_pkc( pkc, &rec, 2 )) && rc != -1 ) {
-	    log_error("check_pkc_trust: scan_record_by_pkc(2) failed: %s\n",
+	    log_error("check_trust: scan_record_by_pkc(2) failed: %s\n",
 							    g10_errstr(rc));
 	    return rc;
 	}
 	else if( rc == -1 ) {
-	    log_error("check_pkc_trust: pubkey not in TrustDB\n");
-	    trustlevel = TRUST_NO_PUBKEY;
+	    log_error("check_trust: pubkey not in TrustDB\n");
 	    goto leave;
 	}
     }
     /* fixme: do some additional checks on the pubkey record */
 
-    rc = check_trust( pkc->local_id );
+    rc = do_check( pkc->local_id, &trustlevel );
     if( rc ) {
-	log_error("check_pkc_trust: check_trust failed: %s\n", g10_errstr(rc));
+	log_error("check_trust: do_check failed: %s\n", g10_errstr(rc));
 	return rc;
     }
+    if( !rec.r.pubkey.ownertrust )
+	trustlevel = TRUST_UNDEFINED;
+    else
+	trustlevel = TRUST_EXPIRED;
 
 
   leave:
-    if( opt.verbose )
-	log_info("check_pkc_trust() returns trustlevel %04x.\n", trustlevel);
+    if( DBG_TRUST )
+	log_info("check_trust() returns trustlevel %04x.\n", trustlevel);
     *r_trustlevel = trustlevel;
     return 0;
 }
@@ -1453,9 +1464,6 @@ insert_trust_record( PKT_public_cert *pkc )
     size_t fingerlen;
 
 
-    if( DBG_TRUST )
-	log_debug("trustdb: insert_record\n");
-
     if( pkc->local_id )
 	log_bug("pkc->local_id=%lu\n", (ulong)pkc->local_id );
 
@@ -1491,8 +1499,6 @@ update_trust_record( PKT_public_cert *pkc, int new_trust )
     TRUSTREC rec;
     ulong recnum;
 
-    if( DBG_TRUST )
-	log_debug("trustdb: update_record\n");
 
     assert( pkc->local_id );
 
