@@ -55,6 +55,7 @@ struct resource_item {
 
 static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
 static int used_resources;
+static void *default_keyring=NULL;
 
 struct keydb_handle {
   int locked;
@@ -75,14 +76,17 @@ static void unlock_all (KEYDB_HANDLE hd);
  * created if it does not exist.
  * Note: this function may be called before secure memory is
  * available.
+ * Flag 1 == force
+ * Flag 2 == default
  */
 int
-keydb_add_resource (const char *url, int force, int secret)
+keydb_add_resource (const char *url, int flags, int secret)
 {
     static int any_secret, any_public;
     const char *resname = url;
     IOBUF iobuf = NULL;
     char *filename = NULL;
+    int force=(flags&1);
     int rc = 0;
     KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
     void *token;
@@ -189,19 +193,29 @@ keydb_add_resource (const char *url, int force, int secret)
             iobuf_ioctl (NULL, 2, 0, (char*)filename);
           } /* end file creation */
 
-        token = keyring_register_filename (filename, secret);
-        if (!token)
-          ; /* already registered - ignore it */
-        else if (used_resources >= MAX_KEYDB_RESOURCES)
-          rc = G10ERR_RESOURCE_LIMIT;
-        else 
-          {
-            all_resources[used_resources].type = rt;
-            all_resources[used_resources].u.kr = NULL; /* Not used here */
-            all_resources[used_resources].token = token;
-            all_resources[used_resources].secret = secret;
-            used_resources++;
-          }
+        if(keyring_register_filename (filename, secret, &token))
+	  {
+	    if (used_resources >= MAX_KEYDB_RESOURCES)
+	      rc = G10ERR_RESOURCE_LIMIT;
+	    else 
+	      {
+		if(flags&2)
+		  default_keyring=token;
+		all_resources[used_resources].type = rt;
+		all_resources[used_resources].u.kr = NULL; /* Not used here */
+		all_resources[used_resources].token = token;
+		all_resources[used_resources].secret = secret;
+		used_resources++;
+	      }
+	  }
+	else
+	  {
+	    /* This keyring was already registered, so ignore it.
+	       However, we can still mark it as default even if it was
+	       already registered. */
+	    if(flags&2)
+	      default_keyring=token;
+	  }
 	break;
 
       default:
@@ -535,6 +549,25 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
   rc = keydb_search_reset (hd); /* this does reset hd->current */
   if (rc)
     return rc;
+
+  /* If we have a default set, try that one first */
+  if(default_keyring)
+    {
+      for ( ; hd->current >= 0 && hd->current < hd->used; hd->current++)
+	{
+	  if(hd->active[hd->current].token==default_keyring)
+	    {
+	      if(keyring_is_writable (hd->active[hd->current].token))
+		return 0;
+	      else
+		break;
+	    }
+	}
+
+      rc = keydb_search_reset (hd); /* this does reset hd->current */
+      if (rc)
+	return rc;
+    }
 
   for ( ; hd->current >= 0 && hd->current < hd->used; hd->current++) 
     {

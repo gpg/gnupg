@@ -26,7 +26,7 @@
 
 typedef struct keyring_handle *KEYRING_HANDLE;
 
-void *keyring_register_filename (const char *fname, int secret);
+int keyring_register_filename (const char *fname, int secret, void **ptr);
 int keyring_is_writable (void *token);
 
 KEYRING_HANDLE keyring_new (void *token, int secret);

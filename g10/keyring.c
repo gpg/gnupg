@@ -190,25 +190,28 @@ update_offset_hash_table_from_kb (OffsetHashTable tbl, KBNODE node, off_t off)
     }
 }
 
-
-
-
 /* 
- * Register a filename for plain keyring files.  Returns a pointer to
- * be used to create a handles etc or NULL to indicate that it has
- * already been registered */
-void *
-keyring_register_filename (const char *fname, int secret)
+ * Register a filename for plain keyring files.  ptr is set to a
+ * pointer to be used to create a handles etc, or the already-issued
+ * pointer if it has already been registered.  The function returns 1
+ * if a new keyring was registered.
+*/
+int
+keyring_register_filename (const char *fname, int secret, void **ptr)
 {
     KR_NAME kr;
 
     if (active_handles)
         BUG (); /* We don't allow that */
 
-    for (kr=kr_names; kr; kr = kr->next) {
+    for (kr=kr_names; kr; kr = kr->next)
+      {
         if ( !compare_filenames (kr->fname, fname) )
-            return NULL; /* already registered */
-    }
+	  {
+            *ptr=kr;
+	    return 0; /* already registered */
+	  }
+      }
 
     kr = m_alloc (sizeof *kr + strlen (fname));
     strcpy (kr->fname, fname);
@@ -224,7 +227,9 @@ keyring_register_filename (const char *fname, int secret)
     if (!kr_offtbl)
       kr_offtbl = new_offset_hash_table ();
 
-    return kr;
+    *ptr=kr;
+
+    return 1;
 }
 
 int

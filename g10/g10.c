@@ -141,6 +141,7 @@ enum cmd_and_opt_values { aNull = 0,
     oAnswerNo,
     oDefCertCheckLevel,
     oKeyring,
+    oDefaultKeyring,
     oSecretKeyring,
     oShowKeyring,
     oDefaultKey,
@@ -420,6 +421,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAnswerYes, "yes",       0, N_("assume yes on most questions")},
     { oAnswerNo,  "no",        0, N_("assume no on most questions")},
     { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
+    { oDefaultKeyring, "default-keyring",2, "@" },
     { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
     { oShowKeyring, "show-keyring", 0, N_("show which keyring a listed key is on")},
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
@@ -1368,6 +1370,10 @@ main( int argc, char **argv )
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
 	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
+	  case oDefaultKeyring:
+	    sl=append_to_strlist( &nrings, pargs.r.ret_str);
+	    sl->flags=2;
+	    break;
 	  case oShowKeyring: opt.show_keyring = 1; break;
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
@@ -2052,7 +2058,7 @@ main( int argc, char **argv )
 	if( !nrings || default_keyring )  /* add default ring */
 	    keydb_add_resource ("pubring" EXTSEP_S "gpg", 0, 0);
 	for(sl = nrings; sl; sl = sl->next )
-	    keydb_add_resource ( sl->d, 0, 0 );
+	    keydb_add_resource ( sl->d, sl->flags, 0 );
       }
     FREE_STRLIST(nrings);
     FREE_STRLIST(sec_nrings);

@@ -143,7 +143,12 @@ struct keydb_search_desc {
 };
 
 /*-- keydb.c --*/
-int keydb_add_resource (const char *url, int force, int secret);
+
+/*
+  Flag 1 == force
+  Flag 2 == default
+*/
+int keydb_add_resource (const char *url, int flags, int secret);
 KEYDB_HANDLE keydb_new (int secret);
 void keydb_release (KEYDB_HANDLE hd);
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);

@@ -1,3 +1,14 @@
+2002-11-07  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyring.h, keyring.c (keyring_register_filename): Return the
+	pointer if a given keyring is registered twice.
+
+	* keydb.h, keydb.c (keydb_add_resource): Use flags to indicate a
+	default keyring.
+	(keydb_locate_writable): Prefer the default keyring if possible.
+
+	* g10.c (main): Add --default-keyring option.
+
 2002-11-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), trustdb.c (ask_ownertrust): Add
