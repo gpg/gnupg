@@ -1,3 +1,11 @@
+2004-07-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_ldap.c (main): Don't try and error out before making a
+	ldaps connection to the NAI keyserver since we cannot tell if it
+	is a NAI keyserver until we connect.  Fail if we cannot find a
+	base keyspace DN.  Fix a false success message for TLS being
+	enabled.
+
 2004-07-20  Werner Koch  <wk@gnupg.org>
 
 	* gpgkeys_ldap.c [_WIN32]: Include Windows specific header files.

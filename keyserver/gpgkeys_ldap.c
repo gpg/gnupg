@@ -1699,38 +1699,28 @@ main(int argc,char *argv[])
 
   if(use_ssl)
     {
-      if(!real_ldap)
-      	{
-      	  fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
-      		  "not supported by the NAI LDAP keyserver");
-      	  fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
-      	  goto fail;
-      	}
-      else
-      	{
 #if defined(LDAP_OPT_X_TLS_HARD) && defined(HAVE_LDAP_SET_OPTION)
-	  int ssl=LDAP_OPT_X_TLS_HARD;
-	  err=ldap_set_option(ldap,LDAP_OPT_X_TLS,&ssl);
-	  if(err!=LDAP_SUCCESS)
-	    {
-	      fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
-		      ldap_err2string(err));
-	      fail_all(keylist,action,ldap_err_to_gpg_err(err));
-	      goto fail;
-	    }
-#else
+      int ssl=LDAP_OPT_X_TLS_HARD;
+      err=ldap_set_option(ldap,LDAP_OPT_X_TLS,&ssl);
+      if(err!=LDAP_SUCCESS)
+	{
 	  fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
-		  "not built with LDAPS support");
-	  fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+		  ldap_err2string(err));
+	  fail_all(keylist,action,ldap_err_to_gpg_err(err));
 	  goto fail;
-#endif
 	}
+#else
+      fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
+	      "not built with LDAPS support");
+      fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+      goto fail;
+#endif
     }
 
-  if((err=find_basekeyspacedn()))
+  if((err=find_basekeyspacedn()) || !basekeyspacedn)
     {
       fprintf(console,"gpgkeys: unable to retrieve LDAP base: %s\n",
-	      ldap_err2string(err));
+	      err?ldap_err2string(err):"not found");
       fail_all(keylist,action,ldap_err_to_gpg_err(err));
       goto fail;
     }
@@ -1761,10 +1751,11 @@ main(int argc,char *argv[])
 	  if(err==LDAP_SUCCESS)
 	    err=ldap_start_tls_s(ldap,NULL,NULL);
 
-	  if(err!=LDAP_SUCCESS && use_tls>=2)
+	  if(err!=LDAP_SUCCESS)
 	    {
-	      fprintf(console,"gpgkeys: unable to start TLS: %s\n",
-		      ldap_err2string(err));
+	      if(use_tls==2 || verbose>2)
+		fprintf(console,"gpgkeys: unable to start TLS: %s\n",
+			ldap_err2string(err));
 	      /* Are we forcing it? */
 	      if(use_tls==3)
 		{
@@ -1772,7 +1763,7 @@ main(int argc,char *argv[])
 		  goto fail;
 		}
 	    }
-	  else if(verbose>1)
+	  else if(err==LDAP_SUCCESS && verbose>1)
 	    fprintf(console,"gpgkeys: TLS started successfully.\n");
 #else
 	  if(use_tls>=2)
