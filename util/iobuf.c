@@ -619,7 +619,6 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 		    if( a->first_c ) {
 			c = a->first_c;
 			a->first_c = 0;
-			assert( c >= 224 && c < 255 );
 		    }
 		    else if( (c = iobuf_get(chain)) == -1 ) {
 			log_error("block_filter: 1st length byte missing\n");
@@ -1472,7 +1471,7 @@ underflow(IOBUF a)
 	return -1; /* EOF because a temp buffer can't do an underflow */
 
     if( a->filter_eof ) {
-	if( a->chain && a->filter_eof == 1 ) {
+	if( a->chain ) {
 	    IOBUF b = a->chain;
 	    if( DBG_IOBUF )
 		log_debug("iobuf-%d.%d: pop `%s' in underflow\n",
@@ -1484,7 +1483,7 @@ underflow(IOBUF a)
 	    print_chain(a);
 	}
 	else
-	    a->filter_eof = 0;
+             a->filter_eof = 0;  /* for the top level filter */
 	if( DBG_IOBUF )
 	    log_debug("iobuf-%d.%d: underflow: eof (due to filter eof)\n",
 						    a->no, a->subno );
@@ -1512,18 +1511,16 @@ underflow(IOBUF a)
 
     if( a->filter ) {
 	len = a->d.size;
+	if( DBG_IOBUF )
+	    log_debug("iobuf-%d.%d: underflow: req=%lu\n",
+                      a->no, a->subno, (ulong)len );
 	rc = a->filter( a->filter_ov, IOBUFCTRL_UNDERFLOW, a->chain,
 			a->d.buf, &len );
 	if( DBG_IOBUF ) {
-	    log_debug("iobuf-%d.%d: underflow: req=%lu got=%lu rc=%d\n",
-		    a->no, a->subno, (ulong)a->d.size, (ulong)len, rc );
-	  #if 0
-	    if( a->no == 7 ) {
-		print_string(stderr, a->d.buf, len, 0 );
-		putc('\n', stderr );
-	    }
-	  #endif
-
+	    log_debug("iobuf-%d.%d: underflow: got=%lu rc=%d\n",
+		    a->no, a->subno, (ulong)len, rc );
+/*  	    if( a->no == 1 ) */
+/*                   log_hexdump ("     data:", a->d.buf, len); */
 	}
 	if( a->use == 1 && rc == -1 ) { /* EOF: we can remove the filter */
 	    size_t dummy_len=0;
@@ -1545,7 +1542,6 @@ underflow(IOBUF a)
 		if( DBG_IOBUF )
 		    log_debug("iobuf-%d.%d: pop `%s' in underflow (!len)\n",
 					       a->no, a->subno, a->desc );
-		print_chain(a);
 		m_free(a->d.buf);
 		m_free(a->real_fname);
 		memcpy(a,b, sizeof *a);

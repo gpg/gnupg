@@ -1,3 +1,9 @@
+2002-08-30  Werner Koch  <wk@gnupg.org>
+
+	* iobuf.c (block_filter): Removed the assert, so that one can pass
+	the first character of a message and use the block filter for
+	non partial length encoded packets.
+
 2002-08-06  Stefan Bellon  <sbellon@sbellon.de>
 
 	* ttyio.c [__riscos__]: Moved low-level RISC OS stuff to riscos.c.
