@@ -110,7 +110,7 @@ static ARGPARSE_OPTS opts[] = {
   { oPassphrase, "passphrase", 2, "|STRING|use passphrase STRING" },
   { oProtect, "protect",     256, "protect a private key"},
   { oUnprotect, "unprotect", 256, "unprotect a private key"},
-  { oShadow,  "shadow", 256, "create a shadow entry for a priblic key"},
+  { oShadow,  "shadow", 256, "create a shadow entry for a public key"},
   { oShowShadowInfo,  "show-shadow-info", 256, "return the shadow info"},
   { oShowKeygrip, "show-keygrip", 256, "show the \"keygrip\""},
 

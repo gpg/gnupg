@@ -1,3 +1,12 @@
+2005-02-25  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (get_public_key): Make sure not to return negative
+	numbers.
+	(do_sign): Allow passing of indata with algorithm prefix.
+	(do_auth): Allow OPENPGP.3 as an alternative ID.
+
+	* app.c (app_getattr): Return just the S/N but not the timestamp.
+
 2005-02-24  Werner Koch  <wk@g10code.com>
 
 	* app.c (app_getattr): Return APPTYPE or SERIALNO type even if the

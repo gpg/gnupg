@@ -314,7 +314,6 @@ app_getattr (APP app, CTRL ctrl, const char *name)
     }
   if (name && !strcmp (name, "SERIALNO"))
     {
-      char *serial_and_stamp;
       char *serial;
       time_t stamp;
       int rc;
@@ -322,15 +321,8 @@ app_getattr (APP app, CTRL ctrl, const char *name)
       rc = app_get_serial_and_stamp (app, &serial, &stamp);
       if (rc)
         return rc;
-      rc = asprintf (&serial_and_stamp, "%s %lu",
-                     serial, (unsigned long)stamp);
-      rc = (rc < 0)? gpg_error_from_errno (errno) : 0;
+      send_status_info (ctrl, "SERIALNO", serial, strlen (serial), NULL, 0);
       xfree (serial);
-      if (rc)
-        return rc;
-      send_status_info (ctrl, "SERIALNO",
-                        serial_and_stamp, strlen (serial_and_stamp), NULL, 0);
-      free (serial_and_stamp);
       return 0;
     }
 

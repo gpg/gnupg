@@ -225,15 +225,16 @@ start_scd (ctrl_t ctrl)
   /* Tell the scdaemon that we want him to send us an event signal.
      But only do this if we are running as a regular sever and not
      simply as a pipe server. */
-  if (ctrl->connection_fd != -1)
-  {
-#ifndef HAVE_W32_SYSTEM
-    char buf[100];
+  /* Fixme: gpg-agent does not use this signal yet.  */
+/*   if (ctrl->connection_fd != -1) */
+/*   { */
+/* #ifndef HAVE_W32_SYSTEM */
+/*     char buf[100]; */
 
-    sprintf (buf, "OPTION event-signal=%d", SIGUSR2);
-    assuan_transact (scd_ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL);
-#endif
-  }
+/*     sprintf (buf, "OPTION event-signal=%d", SIGUSR2); */
+/*     assuan_transact (scd_ctx, buf, NULL, NULL, NULL, NULL, NULL, NULL); */
+/* #endif */
+/*   } */
 
   return 0;
 }
@@ -505,7 +506,8 @@ agent_card_pksign (ctrl_t ctrl,
   inqparm.ctx = scd_ctx;
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
-  snprintf (line, DIM(line)-1, "PKSIGN %s", keyid);
+  snprintf (line, DIM(line)-1, 
+            ctrl->use_auth_call? "PKAUTH %s":"PKSIGN %s", keyid);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (scd_ctx, line,
                         membuf_data_cb, &data,
@@ -518,7 +520,7 @@ agent_card_pksign (ctrl_t ctrl,
     }
   sigbuf = get_membuf (&data, &sigbuflen);
 
-  /* create an S-expression from it which is formatted like this:
+  /* Create an S-expression from it which is formatted like this:
      "(7:sig-val(3:rsa(1:sSIGBUFLEN:SIGBUF)))" */
   *r_buflen = 21 + 11 + sigbuflen + 4;
   *r_buf = xtrymalloc (*r_buflen);

@@ -116,6 +116,8 @@ struct server_control_s {
   char keygrip[20];
   int have_keygrip;
 
+  int use_auth_call; /* Hack to send the PKAUTH command instead of the
+                        PKSIGN command tro scdaemon.  */
 };
 typedef struct server_control_s *CTRL;
 typedef struct server_control_s *ctrl_t;
@@ -204,6 +206,7 @@ int agent_protect (const unsigned char *plainkey, const char *passphrase,
 int agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
                      unsigned char **result, size_t *resultlen);
 int agent_private_key_type (const unsigned char *privatekey);
+unsigned char *make_shadow_info (const char *serialno, const char *idstring);
 int agent_shadow_key (const unsigned char *pubkey,
                       const unsigned char *shadow_info,
                       unsigned char **result);

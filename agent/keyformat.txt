@@ -161,9 +161,9 @@ term secret key because it can be visually be better distinguished
 from the term public key.
 
 [2] The keygrip is a unique identifier for a key pair, it is
-independent of any protocol, so that the same key can be ised with
+independent of any protocol, so that the same key can be used with
 different protocols.  PKCS-15 calls this a subjectKeyHash; it can be
-calculate using Libgcrypt's gcry_pk_get_keygrip().
+calculated using Libgcrypt's gcry_pk_get_keygrip ().
 
 [3] Even when canonical representation are required we will show the
 S-expression here in a more readable representation.

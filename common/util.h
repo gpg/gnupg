@@ -131,6 +131,10 @@ const char *default_homedir (void);
    freed using xfree.  This function simply dies on memory failure,
    thus no extra check is required. */
 char *xasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
+/* Same as asprintf but return an allocated buffer suitable to be
+   freed using xfree.  This function returns NULL on memory failure and
+   sets errno. */
+char *xtryasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
 
 const char *print_fname_stdout (const char *s);
 const char *print_fname_stdin (const char *s);

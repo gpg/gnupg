@@ -794,6 +794,8 @@ get_public_key (app_t app, int keyno)
   const unsigned char *keydata, *m, *e;
   size_t buflen, keydatalen, mlen, elen;
   gcry_sexp_t sexp;
+  unsigned char *mbuf = NULL;
+  unsigned char *ebuf = NULL;
 
   if (keyno < 1 || keyno > 3)
     return gpg_error (GPG_ERR_INV_ID);
@@ -835,6 +837,7 @@ get_public_key (app_t app, int keyno)
           log_error (_("response does not contain the RSA modulus\n"));
           goto leave;
         }
+      
 
       e = find_tlv (keydata, keydatalen, 0x0082, &elen);
       if (!e)
@@ -844,10 +847,38 @@ get_public_key (app_t app, int keyno)
           goto leave;
         }
 
+      /* Prepend numbers with a 0 if needed.  */
+      if (mlen && (*m & 0x80))
+        {
+          mbuf = xtrymalloc ( mlen + 1);
+          if (!mbuf)
+            {
+              err = gpg_error_from_errno (errno);
+              goto leave;
+            }
+          *mbuf = 0;
+          memcpy (mbuf+1, m, mlen);
+          mlen++;
+          m = mbuf;
+        }
+      if (elen && (*e & 0x80))
+        {
+          ebuf = xtrymalloc ( elen + 1);
+          if (!ebuf)
+            {
+              err = gpg_error_from_errno (errno);
+              goto leave;
+            }
+          *ebuf = 0;
+          memcpy (ebuf+1, e, elen);
+          elen++;
+          e = ebuf;
+        }
+
+
       err = gcry_sexp_build (&sexp, NULL,
                              "(public-key (rsa (n %b) (e %b)))",
                              (int)mlen, m,(int)elen, e);
-
       if (err)
         {
           log_error ("error formatting the key into an S-expression: %s\n",
@@ -874,6 +905,8 @@ get_public_key (app_t app, int keyno)
   app->app_local->pk[keyno].read_done = 1;
 
   xfree (buffer);
+  xfree (mbuf);
+  xfree (ebuf);
   return 0;
 }
 #endif /* GNUPG_MAJOR_VERSION > 1 */
@@ -1557,7 +1590,15 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (indatalen != 20)
+  if (indatalen == 20)
+    ;
+  else if (indatalen == (15 + 20) && hashalgo == GCRY_MD_SHA1
+           && !memcmp (indata, sha1_prefix, 15))
+    ;
+  else if (indatalen == (15 + 20) && hashalgo == GCRY_MD_RMD160
+           && !memcmp (indata, rmd160_prefix, 15))
+    ;
+  else
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check whether an OpenPGP card of any version has been requested. */
@@ -1668,7 +1709,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 /* Compute a digital signature using the INTERNAL AUTHENTICATE command
    on INDATA which is expected to be the raw message digest. For this
    application the KEYIDSTR consists of the serialnumber and the
-   fingerprint delimited by a slash.
+   fingerprint delimited by a slash.  Optionally the id OPENPGP.3 may
+   be given.
 
    Note that this fucntion may return the error code
    GPG_ERR_WRONG_CARD to indicate that the card currently present does
@@ -1693,27 +1735,31 @@ do_auth (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check whether an OpenPGP card of any version has been requested. */
-  if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
-    return gpg_error (GPG_ERR_INV_ID);
-  
-  for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+  if (!strcmp (keyidstr, "OPENPGP.3"))
     ;
-  if (n != 32)
+  else if (strlen (keyidstr) < 32 || strncmp (keyidstr, "D27600012401", 12))
     return gpg_error (GPG_ERR_INV_ID);
-  else if (!*s)
-    ; /* no fingerprint given: we allow this for now. */
-  else if (*s == '/')
-    fpr = s + 1; 
   else
-    return gpg_error (GPG_ERR_INV_ID);
+    {
+      for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
+        ;
+      if (n != 32)
+        return gpg_error (GPG_ERR_INV_ID);
+      else if (!*s)
+        ; /* no fingerprint given: we allow this for now. */
+      else if (*s == '/')
+        fpr = s + 1; 
+      else
+        return gpg_error (GPG_ERR_INV_ID);
 
-  for (s=keyidstr, n=0; n < 16; s += 2, n++)
-    tmp_sn[n] = xtoi_2 (s);
-
-  if (app->serialnolen != 16)
-    return gpg_error (GPG_ERR_INV_CARD);
-  if (memcmp (app->serialno, tmp_sn, 16))
-    return gpg_error (GPG_ERR_WRONG_CARD);
+      for (s=keyidstr, n=0; n < 16; s += 2, n++)
+        tmp_sn[n] = xtoi_2 (s);
+      
+      if (app->serialnolen != 16)
+        return gpg_error (GPG_ERR_INV_CARD);
+      if (memcmp (app->serialno, tmp_sn, 16))
+        return gpg_error (GPG_ERR_WRONG_CARD);
+    }
 
   /* If a fingerprint has been specified check it against the one on
      the card.  This is allows for a meaningful error message in case

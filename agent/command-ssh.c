@@ -659,7 +659,9 @@ open_control_file (FILE **r_fp, int append)
      (i.e. where Pth might switch threads) we need to employ a
      mutex.  */
   *r_fp = NULL;
-  fname = make_filename (opt.homedir, "sshcontrol.txt", NULL);
+  fname = make_filename (opt.homedir, "sshcontrol", NULL);
+  /* FIXME: With "a+" we are not able to check whether this will will
+     be created and thus the blurb needs to be written first.  */
   fp = fopen (fname, append? "a+":"r");
   if (!fp && errno == ENOENT)
     {
@@ -1146,7 +1148,9 @@ sexp_key_extract (gcry_sexp_t sexp,
 	  break;
 	}
 
-      mpi = gcry_sexp_nth_mpi (value_pair, 1, GCRYMPI_FMT_USG);
+      /* Note that we need to use STD format; i.e. prepend a 0x00 to
+         indicate a positive number if the high bit is set. */
+      mpi = gcry_sexp_nth_mpi (value_pair, 1, GCRYMPI_FMT_STD);
       if (! mpi)
 	{
 	  err = gpg_error (GPG_ERR_INV_SEXP);
@@ -1404,9 +1408,12 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
 }
 			      
 
-/* Write the public key KEY_PUBLIC to STREAM in SSH key format. */
+/* Write the public key KEY_PUBLIC to STREAM in SSH key format.  If
+   OVERRIDE_COMMENT is not NULL, it will be used instead of the
+   comment stored in the key.  */
 static gpg_error_t
-ssh_send_key_public (estream_t stream, gcry_sexp_t key_public)
+ssh_send_key_public (estream_t stream, gcry_sexp_t key_public,
+                     const char *override_comment)
 {
   ssh_key_type_spec_t spec;
   gcry_mpi_t *mpi_list;
@@ -1442,7 +1449,8 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public)
   if (err)
     goto out;
 
-  err = stream_write_cstring (stream, comment);
+  err = stream_write_cstring (stream,
+                              override_comment? override_comment : comment);
   
  out:
 
@@ -1520,17 +1528,23 @@ key_secret_to_public (gcry_sexp_t *key_public,
 
 /* Chec whether a smartcard is available and whether it has a usable
    key.  Store a copy of that key at R_PK and return 0.  If no key is
-   available store NULL at R_PK and return an error code.  */
+   available store NULL at R_PK and return an error code.  If CARDSN
+   is no NULL, a string with the serial number of the card will be
+   amalloced and stored there. */
 static gpg_error_t
-card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk)
+card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
 {
   gpg_error_t err;
   char *appname;
-  unsigned char *sbuf;
-  size_t sbuflen;
-  gcry_sexp_t pk;
+  char *serialno = NULL;
+  unsigned char *pkbuf;
+  size_t pkbuflen;
+  gcry_sexp_t s_pk;
+  unsigned char grip[20];
 
   *r_pk = NULL;
+  if (cardsn)
+    *cardsn = NULL;
 
   /* First see whether a card is available and whether the application
      is supported.  */
@@ -1538,53 +1552,135 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk)
   if ( gpg_err_code (err) == GPG_ERR_CARD_REMOVED )
     {
       /* Ask for the serial number to reset the card.  */
-      err = agent_card_serialno (ctrl, &appname);
+      err = agent_card_serialno (ctrl, &serialno);
       if (err)
         {
           if (opt.verbose)
-            log_info (_("can't get serial number of card: %s\n"),
+            log_info (_("error getting serial number of card: %s\n"),
                       gpg_strerror (err));
           return err;
         }
-      log_info (_("detected card with S/N: %s\n"), appname);
-      xfree (appname);
+      log_info (_("detected card with S/N: %s\n"), serialno);
       err = agent_card_getattr (ctrl, "APPTYPE", &appname);
     }
   if (err)
     {
       log_error (_("error getting application type of card: %s\n"),
                  gpg_strerror (err));
+      xfree (serialno);
       return err;
     }
   if (strcmp (appname, "OPENPGP"))
     {
       log_info (_("card application `%s' is not supported\n"), appname);
       xfree (appname);
+      xfree (serialno);
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
   xfree (appname);
   appname = NULL;
 
+  /* Get the S/N if we don't have it yet.  Use the fast getattr method.  */
+  if (!serialno && (err = agent_card_getattr (ctrl, "SERIALNO", &serialno)) )
+    {
+      log_error (_("error getting serial number of card: %s\n"),
+                 gpg_strerror (err));
+      return err;
+    }
+
   /* Read the public key.  */
-  err = agent_card_readkey (ctrl, "OPENPGP.3", &sbuf);
+  err = agent_card_readkey (ctrl, "OPENPGP.3", &pkbuf);
   if (err)
     {
       if (opt.verbose)
         log_info (_("no suitable card key found: %s\n"), gpg_strerror (err));
+      xfree (serialno);
       return err;
     }
 
-  sbuflen = gcry_sexp_canon_len (sbuf, 0, NULL, NULL);
-  err = gcry_sexp_sscan (&pk, NULL, sbuf, sbuflen);
-  xfree (sbuf);
+  pkbuflen = gcry_sexp_canon_len (pkbuf, 0, NULL, NULL);
+  err = gcry_sexp_sscan (&s_pk, NULL, pkbuf, pkbuflen);
   if (err)
     {
       log_error ("failed to build S-Exp from received card key: %s\n",
                  gpg_strerror (err));
+      xfree (pkbuf);
+      xfree (serialno);
       return err;
     }
   
-  *r_pk = pk;
+  if ( !gcry_pk_get_keygrip (s_pk, grip) )
+    {
+      log_debug ("error computing keygrip from received card key\n");
+      xfree (pkbuf);
+      gcry_sexp_release (s_pk);
+      xfree (serialno);
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
+
+  if ( agent_key_available (grip) )
+    {
+      /* (Shadow)-key is not available in our key storage.  */
+      unsigned char *shadow_info;
+      unsigned char *tmp;
+      
+      shadow_info = make_shadow_info (serialno, "OPENPGP.3");
+      if (!shadow_info)
+        {
+          err = gpg_error_from_errno (errno);
+          xfree (pkbuf);
+          gcry_sexp_release (s_pk);
+          xfree (serialno);
+          return err;
+        }
+      err = agent_shadow_key (pkbuf, shadow_info, &tmp);
+      xfree (shadow_info);
+      if (err)
+        {
+          log_error (_("shadowing the key failed: %s\n"), gpg_strerror (err));
+          xfree (pkbuf);
+          gcry_sexp_release (s_pk);
+          xfree (serialno);
+          return err;
+        }
+      xfree (pkbuf);
+      pkbuf = tmp;
+      pkbuflen = gcry_sexp_canon_len (pkbuf, 0, NULL, NULL);
+      assert (pkbuflen);
+
+      err = agent_write_private_key (grip, pkbuf, pkbuflen, 0);
+      if (err)
+        {
+          log_error (_("error writing key: %s\n"), gpg_strerror (err));
+          xfree (pkbuf);
+          gcry_sexp_release (s_pk);
+          xfree (serialno);
+          return err;
+        }
+    }
+
+  if (cardsn)
+    {
+      size_t snlen = strlen (serialno);
+
+      if (snlen == 32
+          && !memcmp (serialno, "D27600012401", 12)) /* OpenPGP card. */
+        *cardsn = xtryasprintf ("cardno:%.12s", serialno+16);
+      else /* Something is wrong: Print all. */
+        *cardsn = xtryasprintf ("cardno:%s", serialno);
+      if (!*cardsn)
+        {
+          err = gpg_error_from_errno (errno);
+          xfree (pkbuf);
+          gcry_sexp_release (s_pk);
+          xfree (serialno);
+          return err;
+        }
+    }
+
+  xfree (pkbuf);
+  xfree (serialno);
+  *r_pk = s_pk;
   return 0;
 }
 
@@ -1615,6 +1711,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   gpg_error_t ret_err;
   int ret;
   FILE *ctrl_fp = NULL;
+  char *cardsn;
 
   /* Prepare buffer stream.  */
 
@@ -1665,13 +1762,14 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   /* First check whether a key is currently available in the card
      reader - this should be allowed even without being listed in
-     sshcontrol.txt. */
+     sshcontrol. */
 
-  if (!card_key_available (ctrl, &key_public))
+  if (!card_key_available (ctrl, &key_public, &cardsn))
     {
-      err = ssh_send_key_public (key_blobs, key_public);
+      err = ssh_send_key_public (key_blobs, key_public, cardsn);
       gcry_sexp_release (key_public);
       key_public = NULL;
+      xfree (cardsn);
       if (err)
         goto out;
       
@@ -1740,7 +1838,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
           gcry_sexp_release (key_secret);
           key_secret = NULL;
 	      
-          err = ssh_send_key_public (key_blobs, key_public);
+          err = ssh_send_key_public (key_blobs, key_public, NULL);
           if (err)
             goto out;
 
@@ -1845,9 +1943,11 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   sig_value = NULL;
   mpis = NULL;
 
+  ctrl->use_auth_call = 1;
   err = agent_pksign_do (ctrl,
-                         _("Please provide the passphrase "
-                           "for the ssh key `%c':"), &signature_sexp, 0);
+                         _("Please enter the passphrase "
+                           "for the ssh key%0A  %c"), &signature_sexp, 0);
+  ctrl->use_auth_call = 0;
   if (err)
     goto out;
 
@@ -2189,7 +2289,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
 
   key_grip_raw[sizeof (key_grip_raw) - 1] = 0; /* FIXME:  Why?? */
 
-  /* Check whether the key is alread in our key storage.  Don't do
+  /* Check whether the key is already in our key storage.  Don't do
      anything then.  */
   if ( !agent_key_available (key_grip_raw) )
     goto out; /* Yes, key is available.  */
@@ -2200,8 +2300,8 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
     goto out;
 
   if ( asprintf (&description,
-                 _("Please enter a passphrase to protect%%0A"
-                   "the received secret key%%0A"
+                 _("Please enter a passphrase to protect"
+                   " the received secret key%%0A"
                    "   %s%%0A"
                    "within gpg-agent's key storage"),
                  comment ? comment : "?") < 0)

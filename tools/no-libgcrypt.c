@@ -53,6 +53,12 @@ gcry_xmalloc (size_t n)
   return p;
 }
 
+char *
+gcry_strdup (const char *string)
+{
+  return malloc (strlen (string)+1);
+}
+
 
 void *
 gcry_realloc (void *a, size_t n)

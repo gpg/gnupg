@@ -831,10 +831,43 @@ hash_passphrase (const char *passphrase, int hashalgo,
 
 
 
+
+/* Create an canonical encoded S-expression with the shadow info from
+   a card's SERIALNO and the IDSTRING.  */
+unsigned char *
+make_shadow_info (const char *serialno, const char *idstring)
+{
+  const char *s;
+  unsigned char *info, *p;
+  char numbuf[21];
+  int n;
+
+  for (s=serialno, n=0; *s && s[1]; s += 2)
+    n++;
+
+  info = p = xtrymalloc (1 + 21 + n
+                           + 21 + strlen (idstring) + 1 + 1);
+  if (!info)
+    return NULL;
+  *p++ = '(';
+  sprintf (numbuf, "%d:", n);
+  p = stpcpy (p, numbuf);
+  for (s=serialno; *s && s[1]; s += 2)
+    *p++ = xtoi_2 (s);
+  sprintf (numbuf, "%d:", strlen (idstring));
+  p = stpcpy (p, numbuf);
+  p = stpcpy (p, idstring);
+  *p++ = ')';
+  *p = 0;
+  return info;
+}
+
+
+
 /* Create a shadow key from a public key.  We use the shadow protocol
   "ti-v1" and insert the S-expressionn SHADOW_INFO.  The resulting
   S-expression is returned in an allocated buffer RESULT will point
-  to. The input parameters are expected to be valid canonilized
+  to. The input parameters are expected to be valid canonicalized
   S-expressions */
 int 
 agent_shadow_key (const unsigned char *pubkey,
@@ -894,7 +927,7 @@ agent_shadow_key (const unsigned char *pubkey,
   s++;
   assert (depth == 1);
 
-  /* calculate required length by taking in account: the "shadowed-"
+  /* Calculate required length by taking in account: the "shadowed-"
      prefix, the "shadowed", "t1-v1" as well as some parenthesis */
   n = 12 + pubkey_len + 1 + 3+8 + 2+5 + shadow_info_len + 1;
   *result = p = xtrymalloc (n);

@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 #include <assuan.h>
 
 #include "i18n.h"
@@ -40,7 +41,8 @@ enum cmd_and_opt_values
     oVerbose	= 'v',
 
     oNoVerbose	= 500,
-    oHomedir
+    oHomedir,
+    oHex
 
   };
 
@@ -52,6 +54,7 @@ static ARGPARSE_OPTS opts[] =
     
     { oVerbose, "verbose",  0, N_("verbose") },
     { oQuiet, "quiet",      0, N_("quiet") },
+    { oHex,   "hex",        0, N_("print data out hex encoded") },
 
     /* hidden options */
     { oNoVerbose, "no-verbose",  0, "@"},
@@ -66,7 +69,7 @@ struct
   int verbose;		/* Verbosity level.  */
   int quiet;		/* Be extra quiet.  */
   const char *homedir;  /* Configuration directory name */
-
+  int hex;              /* Print data lines in hex format. */
 } opt;
 
 
@@ -155,6 +158,7 @@ main (int argc, char **argv)
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
         case oHomedir:   opt.homedir = pargs.r.ret_str; break;
+        case oHex:       opt.hex = 1; break;
 
         default: pargs.err = 2; break;
 	}
@@ -220,6 +224,7 @@ read_and_print_response (assuan_context_t ctx)
   char *line;
   int linelen;
   assuan_error_t rc;
+  int i, j;
 
   for (;;)
     {
@@ -234,8 +239,42 @@ read_and_print_response (assuan_context_t ctx)
       if (linelen >= 1
           && line[0] == 'D' && line[1] == ' ')
         {
-          fwrite (line, linelen, 1, stdout);
-          putchar ('\n');
+          if (opt.hex)
+            {
+              for (i=2; i < linelen; )
+                {
+                  int save_i = i;
+
+                  printf ("D[%04X] ", i-2);
+                  for (j=0; j < 16 ; j++, i++)
+                    {
+                      if (j == 8)
+                        putchar (' ');
+                      if (i < linelen)
+                        printf (" %02X", ((unsigned char*)line)[i]);
+                      else
+                        fputs ("   ", stdout);
+                    }
+                  fputs ("   ", stdout);
+                  i= save_i;
+                  for (j=0; j < 16; j++, i++)
+                    {
+                      unsigned int c = ((unsigned char*)line)[i];
+                      if ( i >= linelen )
+                        putchar (' ');
+                      else if (isascii (c) && isprint (c) && !iscntrl (c))
+                        putchar (c);
+                      else
+                        putchar ('.');
+                    }
+                  putchar ('\n');
+                }
+            }
+          else
+            {
+              fwrite (line, linelen, 1, stdout);
+              putchar ('\n');
+            }
         }
       else if (linelen >= 1
                && line[0] == 'S' 

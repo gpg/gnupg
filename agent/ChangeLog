@@ -1,3 +1,22 @@
+2005-02-25  Werner Koch  <wk@g10code.com>
+
+	* findkey.c (modify_description): Keep invalid % escapes, so that
+	%0A may pass through.
+
+	* agent.h (server_control_s): New field USE_AUTH_CALL.
+	* call-scd.c (agent_card_pksign): Make use of it.
+	* command-ssh.c (data_sign): Set the flag.
+	(ssh_send_key_public): New arg OVERRIDE_COMMENT.
+	(card_key_available): Add new arg CARDSN.
+	(ssh_handler_request_identities): Use the card s/n as comment.
+	(sexp_key_extract): Use GCRYMPI_FMT_STD.
+	(data_sign): Ditto.
+
+	* learncard.c (make_shadow_info): Moved to ..
+	* protect.c (make_shadow_info): .. here. Return NULL on malloc
+	failure. Made global.
+	* agent.h: Add prototype.
+
 2005-02-24  Werner Koch  <wk@g10code.com>
 
 	* call-scd.c (unescape_status_string): New. Actual a copy of

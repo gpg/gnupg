@@ -1,5 +1,5 @@
 /* learncard.c - Handle the LEARN command
- *	Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -239,32 +239,6 @@ sinfo_cb (void *opaque, const char *keyword, size_t keywordlen,
 }
 
 
-/* Create an S-expression with the shadow info.  */
-static unsigned char *
-make_shadow_info (const char *serialno, const char *idstring)
-{
-  const char *s;
-  unsigned char *info, *p;
-  char numbuf[21];
-  int n;
-
-  for (s=serialno, n=0; *s && s[1]; s += 2)
-    n++;
-
-  info = p = xtrymalloc (1 + 21 + n
-                           + 21 + strlen (idstring) + 1 + 1);
-  *p++ = '(';
-  sprintf (numbuf, "%d:", n);
-  p = stpcpy (p, numbuf);
-  for (s=serialno; *s && s[1]; s += 2)
-    *p++ = xtoi_2 (s);
-  sprintf (numbuf, "%d:", strlen (idstring));
-  p = stpcpy (p, numbuf);
-  p = stpcpy (p, idstring);
-  *p++ = ')';
-  *p = 0;
-  return info;
-}
 
 static int
 send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)

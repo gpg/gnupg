@@ -1,5 +1,5 @@
 /* xasprintf.c
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -39,6 +39,24 @@ xasprintf (const char *fmt, ...)
     log_fatal ("asprintf failed: %s\n", strerror (errno));
   va_end (ap);
   p = xstrdup (buf);
+  free (buf);
+  return p;
+}
+
+/* Same as above bit return NULL on memory failure.  */
+char *
+xtryasprintf (const char *fmt, ...)
+{
+  int rc;
+  va_list ap;
+  char *buf, *p;
+
+  va_start (ap, fmt);
+  rc = vasprintf (&buf, fmt, ap);
+  va_end (ap);
+  if (rc < 0)
+    return NULL;
+  p = xtrystrdup (buf);
   free (buf);
   return p;
 }

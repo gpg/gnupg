@@ -166,9 +166,7 @@ modify_description (const char *in, const char *comment, char **result)
       special = 0;
       for (i = 0; i < in_len; i++)
         {
-          if (in[i] == '%')
-            special = 1;
-          else if (special)
+          if (special)
             {
               special = 0;
               switch (in[i])
@@ -190,10 +188,19 @@ modify_description (const char *in, const char *comment, char **result)
                     out_len += comment_length;
                   break;
 
-                default: /* Invalid special sequences are ignored.  */
+                default: /* Invalid special sequences are kept as they are. */
+                  if (out)
+                    {
+                      *out++ = '%';
+                      *out++ = in[i];
+                    }
+                  else
+                    out_len+=2;
                   break;
                 }
             }
+          else if (in[i] == '%')
+            special = 1;
           else
             {
               if (out)

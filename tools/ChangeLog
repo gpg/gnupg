@@ -1,3 +1,7 @@
+2005-02-25  Werner Koch  <wk@g10code.com>
+
+	* no-libgcrypt.c (gcry_strdup): New.
+
 2005-02-24  Werner Koch  <wk@g10code.com>
 
 	* gpg-connect-agent.c: New.
