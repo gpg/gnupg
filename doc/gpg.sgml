@@ -585,14 +585,6 @@ or changed by you.
 
 
 <varlistentry>
-<term>--export-all &OptParmNames;</term>
-<listitem><para>
-Same as --export, but also exports keys which
-are not compatible with OpenPGP.
-</para></listitem></varlistentry>
-
-
-<varlistentry>
 <term>--export-secret-keys &OptParmNames;</term>
 <term>--export-secret-subkeys &OptParmNames;</term>
 <listitem><para>
@@ -905,7 +897,7 @@ Try to be as quiet as possible.
 
 
 <varlistentry>
-<term>-z &ParmN;, --compress &ParmN;</term>
+<term>-z &ParmN;, --compress-level &ParmN;</term>
 <listitem><para>
 Set compression level to &ParmN;. A value of 0 for &ParmN;
 disables compression. Default is to use the default
@@ -1045,7 +1037,7 @@ ID is bound to the key.
 <varlistentry>
 <term>--always-trust</term>
 <listitem><para>
-Identical to `--trust-model always'
+Identical to `--trust-model always'.  This option is deprecated.
 </para></listitem></varlistentry>
 
 
@@ -1056,11 +1048,11 @@ Use &ParmName as your keyserver.  This is the server that --recv-keys,
 --send-keys, and --search-keys will communicate with to receive keys
 from, send keys to, and search for keys on.  The format of the
 &ParmName is a URI: `scheme:[//]keyservername[:port]' The scheme is
-the type of keyserver: "hkp" for the Horowitz (or compatible)
-keyservers, "ldap" for the NAI LDAP keyserver, or "mailto" for the
-Horowitz email keyserver.  Note that your particular installation of
-GnuPG may have other keyserver types available as well.  Keyserver
-schemes are case-insensitive.
+the type of keyserver: "hkp" for the HTTP (or compatible) keyservers,
+"ldap" for the NAI LDAP keyserver, or "mailto" for the Graff email
+keyserver.  Note that your particular installation of GnuPG may have
+other keyserver types available as well.  Keyserver schemes are
+case-insensitive.
 </para><para>
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server.  Using the command "host -l
@@ -2047,7 +2039,7 @@ the SHA-256 digest algorithm.
 <term>--no-force-v3-sigs</term>
 <listitem><para>
 OpenPGP states that an implementation should generate v4 signatures
-but PGP versions 5 and higher only recognize v4 signatures on key
+but PGP versions 5 through 7 only recognize v4 signatures on key
 material.  This option forces v3 signatures for signatures on data.
 Note that this option overrides --ask-sig-expire, as v3 signatures
 cannot have expiration dates.  --no-force-v3-sigs disables this
