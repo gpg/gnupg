@@ -1,3 +1,11 @@
+2002-02-18  Werner Koch  <wk@gnupg.org>
+
+	* command.c (cmd_marktrusted): Implemented.
+	* trustlist.c (agent_marktrusted): New.
+	(open_list): Add APPEND arg.
+
+	* query.c (agent_get_confirmation): New.
+
 2002-02-06  Werner Koch  <wk@gnupg.org>
 
 	* cache.c (housekeeping): Fixed linking in the remove case.

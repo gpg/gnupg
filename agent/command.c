@@ -108,13 +108,42 @@ cmd_listtrusted (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-/* MARKTRUSTED <hexstring_with_fingerprint> <flag>
+/* MARKTRUSTED <hexstring_with_fingerprint> <flag> <display_name>
 
    Store a new key in into the trustlist*/
 static int
 cmd_marktrusted (ASSUAN_CONTEXT ctx, char *line)
 {
-  return ASSUAN_Not_Implemented;
+  int rc, n, i;
+  char *p;
+  char fpr[41];
+  int flag;
+
+  /* parse the fingerprint value */
+  for (p=line,n=0; hexdigitp (p); p++, n++)
+    ;
+  if (!spacep (p) || !(n == 40 || n == 32))
+    return set_error (Parameter_Error, "invalid fingerprint");
+  i = 0;
+  if (n==32)
+    {
+      strcpy (fpr, "00000000");
+      i += 8;
+    }
+  for (p=line; i < 40; p++, i++)
+    fpr[i] = *p >= 'a'? (*p & 0xdf): *p;
+  fpr[i] = 0;
+  
+  while (spacep (p))
+    p++;
+  flag = *p++;
+  if ( (flag != 'S' && flag != 'P') || !spacep (p) )
+    return set_error (Parameter_Error, "invalid flag - must be P or S");
+  while (spacep (p))
+    p++;
+
+  rc = agent_marktrusted (p, fpr, flag);
+  return map_to_assuan_status (rc);
 }
 
 
@@ -476,7 +505,7 @@ register_commands (ASSUAN_CONTEXT ctx)
 }
 
 
-/* Startup the server.  If LISTEN_FD is given as -1, this is simple
+/* Startup the server.  If LISTEN_FD is given as -1, this is a simple
    piper server, otherwise it is a regular server */
 void
 start_command_handler (int listen_fd)

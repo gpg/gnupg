@@ -40,7 +40,7 @@ static const char headerblurb[] =
 "# length limit but this is not serious limitation as the format of the\n"
 "# entries is fixed and checked by gpg-agent: A non-comment line starts\n"
 "# with optional white spaces, followed by exactly 40 hex character,\n"
-"# optioanlly followed by a flag charcter which my either be 'P', 'S'\n"
+"# optioanlly followed by a flag character which my either be 'P', 'S'\n"
 "# or '*'. Additional data delimited with by a white space is ignored.\n"
 "\n";
 
@@ -49,12 +49,12 @@ static FILE *trustfp;
 
 
 static int
-open_list (void)
+open_list (int append)
 {
   char *fname;
 
   fname = make_filename (opt.homedir, "trustlist.txt", NULL);
-  trustfp = fopen (fname, "r");
+  trustfp = fopen (fname, append? "a+":"r");
   if (!trustfp && errno == ENOENT)
     {
       trustfp = fopen (fname, "wx");
@@ -66,7 +66,7 @@ open_list (void)
         }
       fputs (headerblurb, trustfp);
       fclose (trustfp);
-      trustfp = fopen (fname, "r");
+      trustfp = fopen (fname, append? "a+":"r");
     }
 
   if (!trustfp)
@@ -98,7 +98,7 @@ read_list (char *key, int *keyflag)
   
   if (!trustfp)
     {
-      rc = open_list ();
+      rc = open_list (0);
       if (rc)
         return rc;
     }
@@ -162,7 +162,7 @@ read_list (char *key, int *keyflag)
   return 0;
 }
 
-/* check whether the given fr is in our trustdb.  We expect FPR to be
+/* check whether the given fpr is in our trustdb.  We expect FPR to be
    an all uppercase hexstring of 40 characters. */
 int 
 agent_istrusted (const char *fpr)
@@ -220,8 +220,85 @@ agent_listtrusted (void *assuan_context)
 }
 
 
+/* Insert the given fpr into our trustdb.  We expect FPR to be an all
+   uppercase hexstring of 40 characters. FLAG is either 'P' or 'C'.
+   This function does first check whether that key has alreay ben put
+   into the trustdb and returns success in this case.  Before a FPR
+   actually gets inserted, the user is asked by means of the pin-entry
+   whether this is actual wants he want to do.
+*/
+int 
+agent_marktrusted (const char *name, const char *fpr, int flag)
+{
+  int rc;
+  static char key[41];
+  int keyflag;
+  char *desc;
 
+  if (trustfp)
+    rewind (trustfp);
+  while (!(rc=read_list (key, &keyflag)))
+    {
+      if (!strcmp (key, fpr))
+        return 0;
+    }
+  fclose (trustfp);
+  trustfp = NULL;
+  if (rc != -1)
+    return rc;   /* error in the trustdb */
 
+  /* insert a new one */
+  if (asprintf (&desc,
+                "Please verify that the certificate identified as:%%0A"
+                "  \"%s\"%%0A"
+                "has the fingerprint:%%0A"
+                "  %s", name, fpr) < 0 )
+    return GNUPG_Out_Of_Core;
+  rc = agent_get_confirmation (desc, "Correct|No");
+  free (desc);
+  if (rc)
+    return rc;
 
+  if (asprintf (&desc,
+                "Do you ultimately trust%%0A"
+                "  \"%s\"%%0A"
+                "to correctly certify user certificates?",
+                name) < 0 )
+    return GNUPG_Out_Of_Core;
+  rc = agent_get_confirmation (desc, "Yes|No");
+  free (desc);
+  if (rc)
+    return rc;
 
+  /* now check again to avoid duplicates.  Also open in append mode now */
+  rc = open_list (1);
+  if (rc)
+    return rc;
+  rewind (trustfp);
+  while (!(rc=read_list (key, &keyflag)))
+    {
+      if (!strcmp (key, fpr))
+        return 0;
+    }
+  if (rc != -1)
+    {
+      fclose (trustfp);
+      trustfp = NULL;
+      return rc;   /* error in the trustdb */
+    }
+  rc = 0;
 
+  /* append the key */
+  fflush (trustfp);
+  fputs ("\n# ", trustfp);
+  print_sanitized_string (trustfp, name, 0);
+  fprintf (trustfp, "\n%s %c\n", fpr, flag);
+  if (ferror (trustfp))
+    rc = GNUPG_Write_Error;
+  
+  /* close because we are in append mode */
+  if (fclose (trustfp))
+    rc = GNUPG_File_Error;
+  trustfp = NULL;
+  return rc;
+}

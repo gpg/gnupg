@@ -297,6 +297,42 @@ agent_get_passphrase (char **retpass, const char *desc, const char *prompt,
 }
 
 
+
+/* Pop up the PIN-entry, display the text and the prompt and ask the
+   user to confirm this.  We return 0 for success, ie. the used
+   confirmed it, GNUPG_Not_Confirmed for what the text says or an
+   other error. */
+int 
+agent_get_confirmation (const char *desc, const char *prompt)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  rc = start_pinentry ();
+  if (rc)
+    return rc;
+
+  if (desc)
+    snprintf (line, DIM(line)-1, "SETDESC %s", desc);
+  else
+    snprintf (line, DIM(line)-1, "RESET");
+  line[DIM(line)-1] = 0;
+  rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  if (prompt)
+    {
+      snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt);
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL);
+      if (rc)
+        return map_assuan_err (rc);
+    }
+
+  rc = assuan_transact (entry_ctx, "CONFIRM", NULL, NULL, NULL, NULL);
+  return map_assuan_err (rc);
+}
 
 
 

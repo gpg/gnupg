@@ -110,6 +110,7 @@ int agent_askpin (const char *desc_text, const char *err_text,
 int agent_get_passphrase (char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext);
+int agent_get_confirmation (const char *desc, const char *prompt);
 
 /*-- cache.c --*/
 int agent_put_cache (const char *key, const char *data, int ttl);
@@ -139,7 +140,7 @@ int agent_private_key_type (const unsigned char *privatekey);
 /*-- trustlist.c --*/
 int agent_istrusted (const char *fpr);
 int agent_listtrusted (void *assuan_context);
-
+int agent_marktrusted (const char *name, const char *fpr, int flag);
 
 
 #endif /*AGENT_H*/
