@@ -1338,6 +1338,21 @@ list_config(char *items)
 	  any=1;
 	}
 
+      if(show_all || ascii_strcasecmp(name,"ccid-reader-id")==0)
+	{
+#if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
+          char *p, *p2, *list = ccid_get_reader_list ();
+
+          for (p=list; p && (p2 = strchr (p, '\n')); p = p2+1)
+            {
+              *p2 = 0;
+              printf("cfg:ccid-reader-id:%s\n", p);
+            }
+          free (list);
+#endif
+	  any=1;
+	}
+
       if(show_all)
 	break;
 
@@ -1364,6 +1379,7 @@ gpgconf_list (const char *configfile)
   printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);
   printf ("quiet:%lu:\n",   GC_OPT_FLAG_NONE);
   printf ("keyserver:%lu:\n", GC_OPT_FLAG_NONE);
+  printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE);
 }
 
 

@@ -1,3 +1,22 @@
+2004-09-17  Werner Koch  <wk@g10code.com>
+
+	* g10.c (list_config): New config option ccid-reader-id.
+	(gpgconf_list): Add "reader-port".
+
+	* apdu.c (open_ccid_reader): New arg PORTSTR.  Pass it to
+	ccid_open_reader.
+	(apdu_open_reader): Pass portstr to open_ccid_reader.
+
+	* ccid-driver.c (ccid_get_reader_list): New.
+	(ccid_open_reader): Changed API to take a string for the reader.
+	Removed al the cruft for the libusb development vesion which seems
+	not to be maintained anymore and there are no packages anyway.
+	The stable library works just fine.
+	(struct ccid_reader_id_s): Deleted and replaced everywhere by a
+	simple string.
+	(usb_get_string_simple): Removed.
+	(bulk_in): Do valgrind hack here and not just everywhere.
+
 2004-09-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (show_key_with_all_names, show_prefs): Show preferred

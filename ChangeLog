@@ -1,3 +1,8 @@
+2004-09-17  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Don't check for usb_create_match or
+	use_get_string_simple anymore.
+
 2004-09-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Give warning when using capabilities.  Check for

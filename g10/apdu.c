@@ -1273,7 +1273,7 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
 
 /* Open the reader and try to read an ATR.  */
 static int
-open_ccid_reader (void)
+open_ccid_reader (const char *portstr)
 {
   int err;
   int slot;
@@ -1284,7 +1284,7 @@ open_ccid_reader (void)
     return -1;
   slotp = reader_table + slot;
 
-  err = ccid_open_reader (&slotp->ccid.handle, 0);
+  err = ccid_open_reader (&slotp->ccid.handle, portstr);
   if (err)
     {
       slotp->used = 0;
@@ -1881,10 +1881,11 @@ apdu_open_reader (const char *portstr)
     {
       int slot;
 
-      slot = open_ccid_reader ();
+      slot = open_ccid_reader (portstr);
       if (slot != -1)
         return slot; /* got one */
     }
+
 #endif /* HAVE_LIBUSB */
 
 #ifdef HAVE_OPENSC
