@@ -1,3 +1,8 @@
+2002-06-21  Stefan Bellon  <sbellon@sbellon.de>
+
+	* conf-riscos/Makefile: Changes due to moving around RISC OS
+	specific stuff in the code.
+
 2002-06-07  Stefan Bellon  <sbellon@sbellon.de>
 
 	* conf-riscos/include/config.h [__riscos__]: Fixed macro bug.

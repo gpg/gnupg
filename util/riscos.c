@@ -96,6 +96,13 @@ riscos_set_filetype_by_number(const char *filename, int type)
 /* exported RISC OS functions */
 
 void
+riscos_global_defaults()
+{
+    __riscosify_control = __RISCOSIFY_NO_PROCESS;
+    __feature_imagefs_is_file = 1;
+}
+
+void
 riscos_set_filetype(const char *filename, const char *mimetype)
 {
     _kernel_swi_regs r;

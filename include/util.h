@@ -260,6 +260,12 @@ int vasprintf ( char **result, const char *format, va_list args);
 #ifdef __riscos__
 /* needed for strcasecmp() */
 #include <strings.h>
+/* needed for filename munging */
+#include <unixlib/local.h>
+/* needed for image file system feature */
+#include <unixlib/features.h>
+void riscos_global_defaults();
+#define RISCOS_GLOBAL_STATICS(a) const char *__dynamic_da_name = (a);
 void riscos_set_filetype(const char *filename, const char *mimetype);
 pid_t riscos_getpid(void);
 int riscos_kill(pid_t pid, int sig);

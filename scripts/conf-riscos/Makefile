@@ -181,7 +181,7 @@ GPGV_OBJS=g10.o.armor \
 	cipher.o.rsa \
 	mpi.mpi \
 	zlib.zlib
-GPGKEYS_OBJS=keyserver.o.gpgkeys_ldap \
+GPGKEYS_OBJS=util.o.riscos \
 	util.o.strgutil \
 	util.o.memory \
 	util.o.logger \
@@ -220,8 +220,8 @@ tools.gpgsplit: tools.o.gpgsplit util.util intl.gettext zlib.zlib
 	-squeeze tools.gpgsplit
 	-copy tools.gpgsplit ADFS::A5.$.tmp.!GnuPG.gpgsplit ~CF~V
 
-keyserver.gpgkeys_ldap: $(GPGKEYS_OBJS) $(LIBLDAP).libraries.libldap.libldap
-	$(LINK) $(LD_FLAGS) $(GPGKEYS_OBJS) $(LIBLDAP).libraries.libldap.libldap -o keyserver.gpgkeys_ldap
+keyserver.gpgkeys_ldap: keyserver.o.gpgkeys_ldap $(GPGKEYS_OBJS) $(LIBLDAP).libraries.libldap.libldap
+	$(LINK) $(LD_FLAGS) keyserver.o.gpgkeys_ldap $(GPGKEYS_OBJS) $(LIBLDAP).libraries.libldap.libldap -o keyserver.gpgkeys_ldap
 	-squeeze keyserver.gpgkeys_ldap
 	-copy keyserver.gpgkeys_ldap ADFS::A5.$.tmp.!GnuPG.gpgkeys_ldap ~CF~V
 
@@ -375,7 +375,7 @@ clean-g10:
 	-ifthere g10.o.* then wipe g10.o.* ~CFR~V
 
 clean-keyserver:
-	-ifthere keyserver.gpgkeys_ldap then wipe keyserver.gpgkeys_ldap ~CFR~V
+	-ifthere keyserver.gpgkeys_* then wipe keyserver.gpgkeys_* ~CFR~V
 	-ifthere keyserver.o.* then wipe keyserver.o.* ~CFR~V
 
 clean-tools:

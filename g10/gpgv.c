@@ -28,10 +28,6 @@
 #ifdef HAVE_DOSISH_SYSTEM
   #include <fcntl.h> /* for setmode() */
 #endif
-#ifdef __riscos__
-#include <unixlib/local.h>
-#include <unixlib/features.h>
-#endif /* __riscos__ */
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "packet.h"
@@ -83,8 +79,7 @@ static ARGPARSE_OPTS opts[] = {
 int g10_errors_seen = 0;
 
 #ifdef __riscos__
-/* This enables better dynamic memory management on RISC OS */
-const char *__dynamic_da_name = "GnuPG (gpgv) Heap";
+RISCOS_GLOBAL_STATICS("GnuPG (gpgv) Heap")
 #endif /* __riscos__ */
 
 const char *
@@ -144,9 +139,9 @@ main( int argc, char **argv )
     STRLIST sl;
     STRLIST nrings=NULL;
     unsigned configlineno;
+
   #ifdef __riscos__
-    __riscosify_control = __RISCOSIFY_NO_PROCESS;
-    __feature_imagefs_is_file = 1;
+    riscos_global_defaults();
   #endif /* __riscos__ */
 
     log_set_name("gpgv");

@@ -1,3 +1,8 @@
+2002-06-21  Stefan Bellon  <sbellon@sbellon.de>
+
+	* util.h [__riscos__]: Further moving away of RISC OS specific
+	stuff from general code.
+
 2002-06-20  Stefan Bellon  <sbellon@sbellon.de>
 
 	* util.h [__riscos__]: Added riscos_set_filetype().

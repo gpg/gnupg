@@ -28,10 +28,6 @@
 #ifdef HAVE_DOSISH_SYSTEM
   #include <fcntl.h> /* for setmode() */
 #endif
-#ifdef __riscos__
-#include <unixlib/local.h>
-#include <unixlib/features.h>
-#endif /* __riscos__ */
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "packet.h"
@@ -600,8 +596,7 @@ static void add_notation_data( const char *string, int which );
 static void add_policy_url( const char *string, int which );
 
 #ifdef __riscos__
-/* This enables better dynamic memory management on RISC OS */
-const char *__dynamic_da_name = "GnuPG Heap";
+RISCOS_GLOBAL_STATICS("GnuPG Heap")
 #endif /* __riscos__ */
 
 const char *
@@ -872,10 +867,9 @@ main( int argc, char **argv )
   #ifdef USE_SHM_COPROCESSING
     ulong requested_shm_size=0;
   #endif
+
   #ifdef __riscos__
-    /* set global RISC OS specific properties */
-    __riscosify_control = __RISCOSIFY_NO_PROCESS;
-    __feature_imagefs_is_file = 1;
+    riscos_global_defaults();
     opt.lock_once = 1;
   #endif /* __riscos__ */
 
