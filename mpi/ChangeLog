@@ -1,3 +1,8 @@
+2004-01-09  David Shaw  <dshaw@jabberwocky.com>
+
+	* Makefile.am: Add the portable C links to DISTCLEANFILES.  Noted
+	by Nelson H. F. Beebe.
+
 2003-12-23  Werner Koch  <wk@gnupg.org>
 
 	* mpi-mpow.c (build_index): s/index/idx/ to avoid gcc warning.
