@@ -236,6 +236,22 @@ agent_marktrusted (CTRL ctrl, const char *name, const char *fpr, int flag)
   static char key[41];
   int keyflag;
   char *desc;
+  char *fname;
+
+  /* Check whether we are at all allowed to modify the trustlist.
+     This is useful so that the trustlist may be a symlink to a global
+     trustlist with only admin priviliges to modify it.  Of course
+     this is not a secure way of denying access, but it avoids the
+     usual clicking on an Okay buttun thing most users are used to. */
+  fname = make_filename (opt.homedir, "trustlist.txt", NULL);
+  rc = access (fname, W_OK);
+  if (rc && errno != ENOENT)
+    {
+      xfree (fname);
+      return gpg_error (GPG_ERR_EPERM);
+    }    
+  xfree (fname);
+
 
   if (trustfp)
     rewind (trustfp);

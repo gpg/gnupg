@@ -303,6 +303,7 @@ agent_handle_learn (void *assuan_context)
     101, /* trusted */
     102, /* useful */
     100, /* regular */
+    /* We don't include 110 here because gpgsm can't handle it. */
     -1 /* end of list */
   };
 

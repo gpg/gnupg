@@ -134,7 +134,7 @@ ask_for_card (CTRL ctrl, const unsigned char *shadow_info, char **r_kid)
 }
 
 
-/* Put the DIGEST into an DER encoded comtainer and return it in R_VAL. */
+/* Put the DIGEST into an DER encoded container and return it in R_VAL. */
 static int
 encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
                     unsigned char **r_val, size_t *r_len)

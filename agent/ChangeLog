@@ -1,3 +1,8 @@
+2004-01-28  Werner Koch  <wk@gnupg.org>
+
+	* trustlist.c (agent_marktrusted): Check whether the trustlist is
+	writable.
+
 2004-01-27  Werner Koch  <wk@gnupg.org>
 
 	* sexp-parse.h: Moved to ../common.
