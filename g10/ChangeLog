@@ -1,3 +1,8 @@
+2002-12-23  Timo Schulz  <ts@winpt.org>
+
+	* import.c (import_one): Use merge_keys_and_selfsig in the
+	interactive mode to avoid wrong key information.
+	
 2002-12-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* keydb.h, getkey.c (key_byname): Flag to enable or disable

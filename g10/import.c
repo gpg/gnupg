@@ -591,6 +591,7 @@ import_one( const char *fname, KBNODE keyblock, int fast,
     }
     
     if (opt.interactive) {
+        merge_keys_and_selfsig (keyblock);
         tty_printf ("\n");
         show_basic_key_info (keyblock);
         tty_printf ("\n");
