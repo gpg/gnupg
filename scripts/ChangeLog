@@ -1,3 +1,8 @@
+2003-08-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* autogen.sh: Touch po/all for --build-w32.  From Werner on stable
+	branch.
+
 2003-08-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* gnupg.spec.in: Rework much of the spec to use %-macros
