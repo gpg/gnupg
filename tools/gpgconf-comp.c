@@ -543,6 +543,52 @@ static gc_option_t gc_options_scdaemon[] =
  };
 
 
+/* The options of the GC_COMPONENT_GPG component.  */
+static gc_option_t gc_options_gpg[] =
+ {
+   /* The configuration file to which we write the changes.  */
+   { "gpgconf-gpg.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+     NULL, NULL, GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG },
+
+   { "Monitor",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
+     NULL, "Options controlling the diagnostic output" },
+   { "verbose", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
+     "gnupg", "verbose",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG },
+   { "quiet", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", "be somewhat more quiet",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG },
+   { "no-greeting", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG },
+
+   { "Configuration",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_EXPERT,
+     NULL, "Options controlling the configuration" },
+   { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", "|FILE|read options from FILE",
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG },
+
+   { "Debug",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
+     "gnupg", "Options useful for debugging" },
+   { "debug-level", GC_OPT_FLAG_ARG_OPT, GC_LEVEL_ADVANCED,
+     "gnupg", "|LEVEL|set the debugging level to LEVEL",
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
+   { "log-file", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
+     "gnupg", "|FILE|write logs to FILE",
+     GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG },
+/*    { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE, */
+/*      NULL, NULL, */
+/*      GC_ARG_TYPE_UINT32, GC_BACKEND_GPG }, */
+
+
+   GC_OPTION_NULL
+ };
+
+
+
 /* The options of the GC_COMPONENT_GPGSM component.  */
 static gc_option_t gc_options_gpgsm[] =
  {
@@ -724,6 +770,9 @@ typedef enum
     /* The Smardcard Daemon.  */
     GC_COMPONENT_SCDAEMON,
 
+    /* The classic GPG for OpenPGP.  */
+    GC_COMPONENT_GPG
+
     /* GPG for S/MIME.  */
     GC_COMPONENT_GPGSM,
 
@@ -756,6 +805,7 @@ static struct
   {
     { "gpg-agent", NULL, "GPG Agent", gc_options_gpg_agent },
     { "scdaemon", NULL, "Smartcard Daemon", gc_options_scdaemon },
+    { "gpg", NULL,   "GPG for OpenPGP", gc_options_gpg },
     { "gpgsm", NULL, "GPG for S/MIME", gc_options_gpgsm },
     { "dirmngr", NULL, "CRL Manager", gc_options_dirmngr }
   };

@@ -1,3 +1,8 @@
+2004-03-23  Werner Koch  <wk@gnupg.org>
+
+	* gpgconf-comp.c (gc_options_gpg): New.
+	(gc_component_t, gc_component): Add GC_BACKEND_GPG.
+
 2004-03-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgconf-comp.c (gc_flag): Add missing flags.
