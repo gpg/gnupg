@@ -1,3 +1,8 @@
+2003-04-08  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (dehtmlize, parse_hkp_index): Fix memory
+	corruption bug on some platforms.
+
 2003-03-11  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpgkeys_hkp.c (get_key): Properly handle CRLF line endings in

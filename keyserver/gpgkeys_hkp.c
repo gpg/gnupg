@@ -368,6 +368,8 @@ dehtmlize(char *line)
       while(isspace(((unsigned char *)parsed)[parsedindex]))
 	{
 	  parsed[parsedindex]='\0';
+	  if(parsedindex==0)
+	    break;
 	  parsedindex--;
 	}
     }
@@ -441,7 +443,7 @@ parse_hkp_index(IOBUF buffer,char *line)
       line++;
 
       tok=strsep(&line,"/");
-      if(tok==NULL)
+      if(tok==NULL || strlen(tok)==0)
 	return ret;
 
       if(tok[strlen(tok)-1]=='R')
