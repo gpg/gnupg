@@ -172,7 +172,8 @@ B<--secret-keyring> I<file>
 B<--homedir> I<dir>
     Set the name of the home directory to I<dir>. If this
     option is not used it defaults to F<~/.gnupg>. It does
-    not make sense to use this in a options file.
+    not make sense to use this in a options file. This
+    also overrides the environment variable C<GNUPGHOME>.
 
 B<--options> I<file>
     Read options from I<file> and do not try to read
@@ -266,7 +267,8 @@ a signature was bad and other errorcode for fatal errors.
 
 =head1 ENVIRONMENT
 
-C<HOME>   Used to locate the default home directory.
+C<HOME>       Used to locate the default home directory.
+C<GNUPGHOME>  If set, direcory used instead of F<~/.gnupg>.
 
 =head1 FILES
 

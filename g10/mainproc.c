@@ -272,12 +272,18 @@ do_check_sig( CTX c, KBNODE node )
 	return rc;
 
     if( sig->sig_class == 0x00 ) {
-	md = md_copy( c->mfx.md );
+	if( c->mfx.md )
+	    md = md_copy( c->mfx.md );
+	else /* detached signature */
+	    md = md_open( 0, 0 ); /* signature_check() will enable the md*/
     }
     else if( sig->sig_class == 0x01 ) {
 	/* how do we know that we have to hash the (already hashed) text
 	 * in canonical mode ??? (calculating both modes???) */
-	md = md_copy( c->mfx.md );
+	if( c->mfx.md )
+	    md = md_copy( c->mfx.md );
+	else /* detached signature */
+	    md = md_open( 0, 0 ); /* signature_check() will enable the md*/
     }
     else if( (sig->sig_class&~3) == 0x10
 	     || sig->sig_class == 0x20
@@ -620,19 +626,18 @@ proc_tree( CTX c, KBNODE node )
     else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
 
-	if( !c->have_data && (sig->sig_class&~3) == 0x10 ) {
-	    log_info("old style signature\n");
-	    if( !c->have_data ) {
-		free_md_filter_context( &c->mfx );
-		c->mfx.md = md_open(digest_algo_from_sig(sig), 0);
-		rc = ask_for_detached_datafile( &c->mfx,
-						iobuf_get_fname(c->iobuf));
-		if( rc ) {
-		    log_error("can't hash datafile: %s\n", g10_errstr(rc));
-		    return;
-		}
+	if( !c->have_data ) {
+	    free_md_filter_context( &c->mfx );
+	    c->mfx.md = md_open(digest_algo_from_sig(sig), 0);
+	    rc = ask_for_detached_datafile( &c->mfx,
+					    iobuf_get_fname(c->iobuf));
+	    if( rc ) {
+		log_error("can't hash datafile: %s\n", g10_errstr(rc));
+		return;
 	    }
 	}
+	else
+	    log_info("old style signature\n");
 
 	check_sig_and_print( c, node );
     }

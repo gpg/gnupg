@@ -1,3 +1,25 @@
+Noteworthy changes in version 0.2.10
+------------------------------------
+
+    * Code for the alpha is much faster (about 20 times); the data
+      was misaligned and the kernel traps this, so nearly all time
+      was used by system to trap the misalignments and to write
+      syslog messages. Shame on me and thanks to Ralph for
+      pointing me at this while drinking some beer yesterday.
+
+    * Changed some configure options and add an option
+      --disable-m-guard to remove the memory checking code
+      and to compile everthing with optimization on.
+
+    * New environment variable GNUPGHOME, which can be used to set
+      another homedir than ~/.gnupg.  Changed default homedir for
+      Windoze version to c:/gnupg.
+
+    * Fixed detached signatures; detached PGP signatures caused a SEGV.
+
+    * The Windoze version works (as usual w/o a strong RNG).
+
+
 Noteworthy changes in version 0.2.9
 -----------------------------------
 

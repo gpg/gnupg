@@ -73,7 +73,8 @@ static RESTBL resource_table[MAX_RESOURCES];
 static int search( PACKET *pkt, KBPOS *kbpos, int secret );
 
 
-static int keyring_search( PACKET *pkt, KBPOS *kbpos, IOBUF iobuf );
+static int keyring_search( PACKET *pkt, KBPOS *kbpos, IOBUF iobuf,
+						const char *fname );
 static int keyring_search2( PUBKEY_FIND_INFO info, KBPOS *kbpos,
 						   const char *fname);
 static int keyring_read( KBPOS *kbpos, KBNODE *ret_root );
@@ -113,9 +114,13 @@ add_keyblock_resource( const char *filename, int force, int secret )
     if( i == MAX_RESOURCES )
 	return G10ERR_RESOURCE_LIMIT;
 
+  #if __MINGW32__
+    iobuf = NULL;
+  #else
     iobuf = iobuf_open( filename );
     if( !iobuf && !force )
 	return G10ERR_OPEN_FILE;
+  #endif
     resource_table[i].used = 1;
     resource_table[i].secret = !!secret;
     resource_table[i].fname = m_strdup(filename);
@@ -211,7 +216,8 @@ search( PACKET *pkt, KBPOS *kbpos, int secret )
 	if( resource_table[i].used && !resource_table[i].secret == !secret ) {
 	    /* note: here we have to add different search functions,
 	     * depending on the type of the resource */
-	    rc = keyring_search( pkt, kbpos, resource_table[i].iobuf );
+	    rc = keyring_search( pkt, kbpos, resource_table[i].iobuf,
+					     resource_table[i].fname );
 	    if( !rc ) {
 		kbpos->resno = i;
 		kbpos->fp = NULL;
@@ -469,7 +475,7 @@ update_keyblock( KBPOS *kbpos, KBNODE root )
  * search one keyring, return 0 if found, -1 if not found or an errorcode.
  */
 static int
-keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf )
+keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf, const char *fname )
 {
     int rc;
     PACKET pkt;
@@ -482,11 +488,21 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf )
     init_packet(&pkt);
     save_mode = set_packet_list_mode(0);
 
+  #if __MINGW32__
+    assert(!iobuf);
+    iobuf = iobuf_open( fname );
+    if( !iobuf ) {
+	log_error("%s: can't open keyring file\n", fname);
+	rc = G10ERR_KEYRING_OPEN;
+	goto leave;
+    }
+  #else
     if( iobuf_seek( iobuf, 0 ) ) {
 	log_error("can't rewind keyring file\n");
 	rc = G10ERR_KEYRING_OPEN;
 	goto leave;
     }
+  #endif
 
     while( !(rc=search_packet(iobuf, &pkt, pkttype, &offset)) ) {
 	if( pkt.pkttype == PKT_SECRET_CERT ) {
@@ -539,6 +555,9 @@ keyring_search( PACKET *req, KBPOS *kbpos, IOBUF iobuf )
   leave:
     free_packet(&pkt);
     set_packet_list_mode(save_mode);
+  #if __MINGW32__
+    iobuf_close(iobuf);
+  #endif
     return rc;
 }
 
@@ -872,7 +891,11 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
     }
 
     /* close both files */
-    iobuf_close(fp);
+    if( iobuf_close(fp) ) {
+	log_error("%s: close failed: %s\n", rentry->fname, strerror(errno) );
+	rc = G10ERR_CLOSE_FILE;
+	goto leave;
+    }
     if( iobuf_close(newfp) ) {
 	log_error("%s: close failed: %s\n", tmpfname, strerror(errno) );
 	rc = G10ERR_CLOSE_FILE;

@@ -1,3 +1,7 @@
+Fri Feb 27 16:39:34 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* md.c (md_enable): No init if called twice.
+
 Thu Feb 26 07:57:02 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* primegen.c (generate_elg_prime): Changed the progress printing.

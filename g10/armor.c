@@ -318,6 +318,8 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	    if( n < buflen || c == '\n' ) {
 		if( n && buf[0] != '\r') { /* maybe a header */
 		    if( strchr( buf, ':') ) { /* yes */
+			if( buf[n-1] == '\r' )
+			    buf[--n] = 0;
 			if( opt.verbose ) {
 			    log_info("armor header: ");
 			    print_string( stderr, buf, n );

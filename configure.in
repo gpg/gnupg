@@ -27,18 +27,34 @@ AC_SUBST(PACKAGE)
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 
+AC_MSG_CHECKING([whether memory debugging is requested])
 AC_ARG_ENABLE(m-debug,
-[  --enable-m-debug	  Enable debugging of memory allocation])
-if test "$enableval" = y || test "$enableval" = yes; then
+[  --enable-m-debug	  enable debugging of memory allocation],
+use_m_debug=$enableval, use_m_debug=no)
+AC_MSG_RESULT($use_m_debug)
+if test "$use_m_debug" = yes; then
     AC_DEFINE(M_DEBUG)
+    use_m_guard=yes
+else
+    AC_MSG_CHECKING([whether memory guard is requested])
+    AC_ARG_ENABLE(m-guard,
+    [  --disable-m-guard       disable memory guard facility],
+    use_m_guard=$enableval, use_m_guard=yes)
+    AC_MSG_RESULT($use_m_guard)
+fi
+if test "$use_m_guard" = yes ; then
+    AC_DEFINE(M_GUARD)
+    CFLAGS="-g -Wall"
+else
+    CFLAGS="-O2 -Wall"
 fi
 
-AC_ARG_WITH(zlib,
-[  --with-zlib		  link against static zlib],
+
+AC_MSG_CHECKING([whether included zlib is requested])
+AC_ARG_WITH(included-zlib,
+    [  --with-included-zlib    use the zlib code included here],
 [g10_force_zlib=yes], [g10_force_zlib=no] )
-
-CFLAGS="-g -Wall"
-
+AC_MSG_RESULT($g10_force_zlib)
 
 
 AC_CANONICAL_SYSTEM

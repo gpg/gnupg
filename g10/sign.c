@@ -163,27 +163,30 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	iobuf_push_filter( out, encrypt_filter, &efx );
     }
 
-    /* loop over the secret certificates and build headers */
-    for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	PKT_secret_cert *skc;
-	PKT_onepass_sig *ops;
+    if( !detached ) {
+	/* loop over the secret certificates and build headers */
+	for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
+	    PKT_secret_cert *skc;
+	    PKT_onepass_sig *ops;
 
-	skc = skc_rover->skc;
-	ops = m_alloc_clear( sizeof *ops );
-	ops->sig_class = opt.textmode && !outfile ? 0x01 : 0x00;
-	ops->digest_algo = DIGEST_ALGO_RMD160;
-	ops->pubkey_algo = skc->pubkey_algo;
-	keyid_from_skc( skc, ops->keyid );
-	ops->last = !skc_rover->next;
+	    skc = skc_rover->skc;
+	    ops = m_alloc_clear( sizeof *ops );
+	    ops->sig_class = opt.textmode && !outfile ? 0x01 : 0x00;
+	    ops->digest_algo = DIGEST_ALGO_RMD160;
+	    ops->pubkey_algo = skc->pubkey_algo;
+	    keyid_from_skc( skc, ops->keyid );
+	    ops->last = !skc_rover->next;
 
-	init_packet(&pkt);
-	pkt.pkttype = PKT_ONEPASS_SIG;
-	pkt.pkt.onepass_sig = ops;
-	rc = build_packet( out, &pkt );
-	free_packet( &pkt );
-	if( rc ) {
-	    log_error("build onepass_sig packet failed: %s\n", g10_errstr(rc));
-	    goto leave;
+	    init_packet(&pkt);
+	    pkt.pkttype = PKT_ONEPASS_SIG;
+	    pkt.pkt.onepass_sig = ops;
+	    rc = build_packet( out, &pkt );
+	    free_packet( &pkt );
+	    if( rc ) {
+		log_error("build onepass_sig packet failed: %s\n",
+							g10_errstr(rc));
+		goto leave;
+	    }
 	}
     }
 

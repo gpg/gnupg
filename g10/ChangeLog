@@ -1,3 +1,23 @@
+Fri Feb 27 18:14:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* armor.c (find_header): Removed trailing CR on headers.
+
+Fri Feb 27 18:02:48 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* ringedit.c (keyring_search) [MINGW32]: Open and close file here
+	because rename does not work on open files. Chnaged callers.
+
+Fri Feb 27 16:43:11 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* sig-check.c (do_check): Add an md_enable.
+	* mainproc.c (do_check_sig): Use md_open in case of detached sig
+	(proc_tree): Take detached sigs into account.
+
+Fri Feb 27 15:22:46 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): Make use of GNUPGHOME envvar.
+	* g10main.c (main): Ditto.
+
 Wed Feb 25 11:40:04 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* plaintext.c (ask_for_detached_datafile): add opt.verbose to

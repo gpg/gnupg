@@ -219,6 +219,25 @@ secmem_malloc( size_t size )
 }
 
 
+void *
+secmem_realloc( void *p, size_t newsize )
+{
+    MEMBLOCK *mb;
+    size_t size;
+    void *a;
+
+    mb = (MEMBLOCK*)((char*)p - ((size_t) &((MEMBLOCK*)0)->u.d));
+    size = mb->size;
+    if( newsize < size )
+	return p; /* it is easier not to shrink the memory */
+    a = secmem_malloc( newsize );
+    memcpy(a, p, size);
+    memset(a+size, 0, newsize-size);
+    secmem_free(p);
+    return a;
+}
+
+
 void
 secmem_free( void *a )
 {
@@ -239,6 +258,12 @@ secmem_free( void *a )
     unused_blocks = mb;
     cur_blocks--;
     cur_alloced -= size;
+}
+
+int
+m_is_secure( const void *p )
+{
+    return p >= pool && p < (pool+poolsize);
 }
 
 void

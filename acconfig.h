@@ -28,6 +28,7 @@
 @TOP@
 
 #undef M_DEBUG
+#undef M_GUARD
 #undef VERSION
 #undef PACKAGE
 #undef G10_LOCALEDIR

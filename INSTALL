@@ -4,10 +4,10 @@ Please read the Basic Installation section somewhere below.
 Configure options for GNUPG
 ===========================
 
---with-zlib	    Forces usage of the local zlib sources. Default is
-		    to use the (sahred) library of the system.
+--with-included-zlib Forces usage of the local zlib sources. Default is
+		     to use the (shared) library of the system.
 
---disable-nls	    Disable NLS support
+--disable-nls	    Disable NLS support (See ABOUT-NLS)
 
 --enable-m-debug    Compile with the integrated malloc debugging stuff.
 		    This makes the program slower but is checks every
@@ -18,13 +18,18 @@ Configure options for GNUPG
 		    option "--debug 128" displays a memory statistic after
 		    the program run.
 
+--disable-m-guard   Disable the integrated malloc checking code. As a
+		    side-effect, this removes all debugging code and uses
+		    the -O2 flag for all C files.
+
+
 Problems
 ========
 
 If you have compile problems, use the configure options "--with-zlib" and
-"--disable-nls".
+"--disable-nls" (See ABOUT-NLS).
 
-I cant check alls assembles files; so if you have problems assembling them
+I cant check all assembler files; so if you have problems assembling them
 (or the program crashes), simply delete the files in the mpi/<cpu> directory.
 The configure scripts may consider several subdirectories to get all
 available assembler files; be sure to delete the correct ones. The

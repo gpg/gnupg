@@ -1,3 +1,11 @@
+Fri Feb 27 10:20:03 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* memory.c (m_is_secure): Removed.
+	* secmem.c (m_is_secure): Moved to here.
+
+	* secmem.c (secmem_realloc): New.
+	* memory.c (M_GUARD,EXTRA_ALIGN): New (all functions).
+
 Thu Feb 26 14:36:51 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* secmem.c (lock_pool): No error if EAGAIN is returned instead

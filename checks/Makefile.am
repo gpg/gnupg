@@ -12,7 +12,7 @@ TEST_FILES = pubring.asc secring.asc gnupg.asc plain-1 plain-2 plain-3o.asc \
 
 DATA_FILES = data-500 data-9000 data-32000 data-80000
 
-EXTRA_DIST = $(TESTS) $(TEST_FILES)
+EXTRA_DIST = defs.inc $(TESTS) $(TEST_FILES)
 CLEANFILES = prepared.stamp x y z out err  $(DATA_FILES)
 
 check: prepared.stamp

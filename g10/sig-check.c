@@ -68,6 +68,9 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 
 	if( (rc=check_digest_algo(sig->d.elg.digest_algo)) )
 	    goto leave;
+	/* make sure the digest algo is enabled (in case of a detached
+	 * signature */
+	md_enable( digest, sig->d.elg.digest_algo );
 	/* complete the digest */
 	md_putc( digest, sig->sig_class );
 	{   u32 a = sig->timestamp;
@@ -124,6 +127,7 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 
 	if( (rc=check_digest_algo(sig->d.rsa.digest_algo)) )
 	    goto leave; /* unsupported algo */
+	md_enable( digest, sig->d.rsa.digest_algo );
 	asn = md_asn_oid( sig->d.rsa.digest_algo, &asnlen, &mdlen );
 
 	for(i=mdlen,j=asnlen-1; (c=mpi_getbyte(result, i)) != -1 && j >= 0;

@@ -4,13 +4,11 @@
  * We use our own memory allocation functions instead of plain malloc(),
  * so that we can provide some special enhancements:
  *  a) functions to provide memory from a secure memory.
- *     Don't know how to handle it yet, but it may be possible to
- *     use memory which can't be swapped out.
  *  b) By looking at the requested allocation size we
  *     can reuse memory very quickly (e.g. MPI storage)
- *  c) A controlbyte gives us the opportunity to use only one
- *     free() function and do some overflow checking.
- *  d) memory checking and reporting if compiled with M_DEBUG
+ *     (really needed?)
+ *  c) memory usage reporting if compiled with M_DEBUG
+ *  d) memory checking if compiled with M_GUARD
  *
  * This file is part of GNUPG.
  *
@@ -44,9 +42,18 @@
 #define MAGIC_SEC_BYTE 0xcc
 #define MAGIC_END_BYTE 0xaa
 
+#if SIZEOF_UNSIGNED_LONG == 8
+  #define EXTRA_ALIGN 4
+#else
+  #define EXTRA_ALIGN 0
+#endif
+
 const void membug( const char *fmt, ... );
 
 #ifdef M_DEBUG
+  #ifndef M_GUARD
+    #define M_GUARD 1
+  #endif
   #undef m_alloc
   #undef m_alloc_clear
   #undef m_alloc_secure
@@ -64,10 +71,10 @@ const void membug( const char *fmt, ... );
   #define FNAME(a)  m_ ##a
   #define FNAMEPRT
   #define FNAMEARG
-  #define store_len(p,n,m) do { ((byte*)p)[0] = n;		    \
-				((byte*)p)[1] = n >> 8 ;	    \
-				((byte*)p)[2] = n >> 16 ;	    \
-				((byte*)p)[3] = m? MAGIC_SEC_BYTE   \
+  #define store_len(p,n,m) do { ((byte*)p)[EXTRA_ALIGN+0] = n;		      \
+				((byte*)p)[EXTRA_ALIGN+1] = n >> 8 ;	      \
+				((byte*)p)[EXTRA_ALIGN+2] = n >> 16 ;	      \
+				((byte*)p)[EXTRA_ALIGN+3] = m? MAGIC_SEC_BYTE \
 						 : MAGIC_NOR_BYTE;  \
 			      } while(0)
 #endif
@@ -196,24 +203,29 @@ check_mem( const byte *p, const char *info )
     unsigned n;
     struct memtbl_entry *e;
 
-    n  = p[0];
-    n |= p[1] << 8;
-    n |= p[2] << 16;
+    n  = p[EXTRA_ALIGN+0];
+    n |= p[EXTRA_ALIGN+1] << 8;
+    n |= p[EXTRA_ALIGN+2] << 16;
 
     if( n >= memtbl_len )
 	membug("memory at %p corrupted: index=%u table_len=%u (%s)\n",
-						 p+4, n, memtbl_len, info );
+				      p+EXTRA_ALIGN+4, n, memtbl_len, info );
     e = memtbl+n;
 
-    if( e->user_p != p+4 )
-	membug("memory at %p corrupted: reference mismatch (%s)\n", p+4, info );
+    if( e->user_p != p+EXTRA_ALIGN+4 )
+	membug("memory at %p corrupted: reference mismatch (%s)\n",
+							p+EXTRA_ALIGN+4, info );
     if( !e->inuse )
-	membug("memory at %p corrupted: marked as free (%s)\n", p+4, info );
+	membug("memory at %p corrupted: marked as free (%s)\n",
+							p+EXTRA_ALIGN+4, info );
 
-    if( !(p[3] == MAGIC_NOR_BYTE || p[3] == MAGIC_SEC_BYTE) )
-	membug("memory at %p corrupted: underflow=%02x (%s)\n", p+4, p[3], info );
-    if( p[4+e->user_n] != MAGIC_END_BYTE )
-	membug("memory at %p corrupted: overflow=%02x (%s)\n", p+4, p[4+e->user_n], info );
+    if( !(p[EXTRA_ALIGN+3] == MAGIC_NOR_BYTE
+	|| p[EXTRA_ALIGN+3] == MAGIC_SEC_BYTE) )
+	membug("memory at %p corrupted: underflow=%02x (%s)\n",
+				 p+EXTRA_ALIGN+4, p[EXTRA_ALIGN+3], info );
+    if( p[EXTRA_ALIGN+4+e->user_n] != MAGIC_END_BYTE )
+	membug("memory at %p corrupted: overflow=%02x (%s)\n",
+		     p+EXTRA_ALIGN+4, p[EXTRA_ALIGN+4+e->user_n], info );
     return e;
 }
 
@@ -233,10 +245,10 @@ free_entry( byte *p, const char *info )
 	log_debug( "%s frees %u bytes alloced by %s\n",
 				info, e->user_n, e->info->info );
     if( !e->inuse ) {
-	if( e->user_p == p + 4 )
-	    membug("freeing an already freed pointer at %p\n", p+4 );
+	if( e->user_p == p + EXTRA_ALIGN+ 4 )
+	    membug("freeing an already freed pointer at %p\n", p+EXTRA_ALIGN+4 );
 	else
-	    membug("freeing pointer %p which is flagged as freed\n", p+4 );
+	    membug("freeing pointer %p which is flagged as freed\n", p+EXTRA_ALIGN+4 );
     }
 
     e->inuse = 0;
@@ -298,7 +310,7 @@ check_allmem( const char *info )
 
     for( e = memtbl, n = 0; n < memtbl_len; n++, e++ )
 	if( e->inuse )
-	    check_mem(e->user_p-4, info);
+	    check_mem(e->user_p-4-EXTRA_ALIGN, info);
 }
 
 #endif /* M_DEBUG */
@@ -337,11 +349,17 @@ FNAME(alloc)( size_t n FNAMEPRT )
 {
     char *p;
 
-    if( !(p = malloc( n + 5 )) )
+  #ifdef M_GUARD
+    if( !(p = malloc( n + EXTRA_ALIGN+5 )) )
 	out_of_core(n,0);
     store_len(p,n,0);
-    p[4+n] = MAGIC_END_BYTE; /* need to add the length somewhere */
-    return p+4;
+    p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
+    return p+EXTRA_ALIGN+4;
+  #else
+    if( !(p = malloc( n )) )
+	out_of_core(n,0);
+    return p;
+  #endif
 }
 
 /****************
@@ -353,11 +371,17 @@ FNAME(alloc_secure)( size_t n FNAMEPRT )
 {
     char *p;
 
-    if( !(p = secmem_malloc( n + 5 )) )
+  #ifdef M_GUARD
+    if( !(p = secmem_malloc( n +EXTRA_ALIGN+ 5 )) )
 	out_of_core(n,1);
     store_len(p,n,1);
-    p[4+n] = MAGIC_END_BYTE;
-    return p+4;
+    p[4+EXTRA_ALIGN+n] = MAGIC_END_BYTE;
+    return p+EXTRA_ALIGN+4;
+  #else
+    if( !(p = secmem_malloc( n )) )
+	out_of_core(n,1);
+    return p;
+  #endif
 }
 
 void *
@@ -384,7 +408,8 @@ FNAME(alloc_secure_clear)( size_t n FNAMEPRT)
  */
 void *
 FNAME(realloc)( void *a, size_t n FNAMEPRT )
-{   /* FIXME: should be optimized :-) */
+{
+  #ifdef M_GUARD
     unsigned char *p = a;
     void *b;
     size_t len = m_size(a);
@@ -398,6 +423,18 @@ FNAME(realloc)( void *a, size_t n FNAMEPRT )
     FNAME(check)(NULL FNAMEARG);
     memcpy(b, a, len );
     FNAME(free)(p FNAMEARG);
+  #else
+    void *b;
+
+    if( m_is_secure(a) ) {
+	if( !(b = secmem_realloc( a, n )) )
+	    out_of_core(n,1);
+    }
+    else {
+	if( !(b = realloc( a, n )) )
+	    out_of_core(n,0);
+    }
+  #endif
     return b;
 }
 
@@ -414,13 +451,18 @@ FNAME(free)( void *a FNAMEPRT )
     if( !p )
 	return;
   #ifdef M_DEBUG
-    free_entry(p-4, info);
-  #else
+    free_entry(p-EXTRA_ALIGN-4, info);
+  #elif  M_GUARD
     m_check(p);
     if( m_is_secure(a) )
-	secmem_free(p-4);
+	secmem_free(p-EXTRA_ALIGN-4);
     else
-	free(p-4);
+	free(p-EXTRA_ALIGN-4);
+  #else
+    if( m_is_secure(a) )
+	secmem_free(p);
+    else
+	free(p);
   #endif
 }
 
@@ -428,11 +470,12 @@ FNAME(free)( void *a FNAMEPRT )
 void
 FNAME(check)( const void *a FNAMEPRT )
 {
+  #ifdef M_GUARD
     const byte *p = a;
 
   #ifdef M_DEBUG
     if( p )
-	check_mem(p-4, info);
+	check_mem(p-EXTRA_ALIGN-4, info);
     else
 	check_allmem(info);
   #else
@@ -443,33 +486,33 @@ FNAME(check)( const void *a FNAMEPRT )
     else if( p[m_size(p)] != MAGIC_END_BYTE )
 	membug("memory at %p corrupted (overflow=%02x)\n", p, p[-1] );
   #endif
+  #endif
 }
 
 
 size_t
 m_size( const void *a )
 {
+  #ifndef M_GUARD
+    log_debug("Ooops, m_size called\n");
+    return 0;
+  #else
     const byte *p = a;
     size_t n;
 
   #ifdef M_DEBUG
-    n = check_mem(p-4, "m_size")->user_n;
+    n = check_mem(p-EXTRA_ALIGN-4, "m_size")->user_n;
   #else
     n  = ((byte*)p)[-4];
     n |= ((byte*)p)[-3] << 8;
     n |= ((byte*)p)[-2] << 16;
   #endif
     return n;
+  #endif
 }
 
 
-int
-m_is_secure( const void *p )
-{
-    return p && ((byte*)p)[-1] == MAGIC_SEC_BYTE;
-}
-
-
+#if 0 /* not used */
 /****************
  * Make a copy of the memory block at a
  */
@@ -482,7 +525,7 @@ FNAME(copy)( const void *a FNAMEPRT )
     if( !a )
 	return NULL;
 
-    n = m_size(a);
+    n = m_size(a); Aiiiih woher nehmen
     if( m_is_secure(a) )
 	b = FNAME(alloc_secure)(n FNAMEARG);
     else
@@ -490,7 +533,7 @@ FNAME(copy)( const void *a FNAMEPRT )
     memcpy(b, a, n );
     return b;
 }
-
+#endif
 
 char *
 FNAME(strdup)( const char *a FNAMEPRT )

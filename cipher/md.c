@@ -49,15 +49,18 @@ void
 md_enable( MD_HANDLE h, int algo )
 {
     if( algo == DIGEST_ALGO_MD5 ) {
-	md5_init( &h->md5 );
+	if( !h->use_md5 )
+	    md5_init( &h->md5 );
 	h->use_md5 = 1;
     }
     else if( algo == DIGEST_ALGO_RMD160 ) {
-	rmd160_init( &h->rmd160 );
+	if( !h->use_rmd160 )
+	    rmd160_init( &h->rmd160 );
 	h->use_rmd160 = 1;
     }
     else if( algo == DIGEST_ALGO_SHA1 ) {
-	sha1_init( &h->sha1 );
+	if( !h->use_sha1 )
+	    sha1_init( &h->sha1 );
 	h->use_sha1 = 1;
     }
     else

@@ -326,7 +326,14 @@ main( int argc, char **argv )
     opt.def_digest_algo = DIGEST_ALGO_RMD160;
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
-    opt.homedir = "~/.gnupg";
+    opt.homedir = getenv("GNUPGHOME");
+    if( !opt.homedir || !*opt.homedir ) {
+      #ifdef __MINGW32__
+	opt.homedir = "c:/gnupg";
+      #else
+	opt.homedir = "~/.gnupg";
+      #endif
+    }
 
     /* check wether we have a config file on the commandline */
     orig_argc = argc;
