@@ -965,12 +965,9 @@ ask_algo (int addmode, unsigned int *r_usage)
 	    break;
 	}
 	else if( algo == 7 && opt.expert ) {
-	    if (cpr_get_answer_is_yes ("keygen.algo.rsa_se",_(
-		"The use of this algorithm is deprecated - create anyway? "))){
-              algo = PUBKEY_ALGO_RSA;
-              *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG;
-              break;
-            }
+	    algo = PUBKEY_ALGO_RSA;
+	    *r_usage = PUBKEY_USAGE_ENC | PUBKEY_USAGE_SIG;
+	    break;
 	}
 	else if( algo == 6 && addmode ) {
 	    algo = PUBKEY_ALGO_RSA;
@@ -982,12 +979,19 @@ ask_algo (int addmode, unsigned int *r_usage)
             *r_usage = PUBKEY_USAGE_SIG;
 	    break;
 	}
-	else if( algo == 4 && opt.expert) {
-	    if( cpr_get_answer_is_yes("keygen.algo.elg_se",_(
-		"The use of this algorithm is deprecated - create anyway? "))){
+	else if( algo == 4 && opt.expert)
+	  {
+	    tty_printf(_(
+"The use of this algorithm is only supported by GnuPG.  You will not be\n"
+"able to use this key to communicate with PGP users.  This algorithm is also\n"
+"very slow, and may not be as secure as the other choices.\n"));
+
+	    if( cpr_get_answer_is_yes("keygen.algo.elg_se",
+				      _("Create anyway? ")))
+	      {
 		algo = PUBKEY_ALGO_ELGAMAL;
 		break;
-	    }
+	      }
 	}
 	else if( algo == 3 && addmode ) {
 	    algo = PUBKEY_ALGO_ELGAMAL_E;

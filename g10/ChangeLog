@@ -1,3 +1,13 @@
+2002-12-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* keygen.c (ask_algo): Make the Elgamal sign+encrypt warning
+	stronger, and remove the RSA sign+encrypt warning.
+
+	* import.c (import_one): Warn when importing an Elgamal primary
+	that this may take some time (to verify self-sigs).
+	(chk_self_sigs): Try and cache all self-sigs so the keyblock is
+	written to the keyring with a good rich cache.
+
 2002-12-05  Werner Koch  <wk@gnupg.org>
 
 	* g10.c: New options --[no-]mangle-dos-filenames.

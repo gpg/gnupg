@@ -571,6 +571,10 @@ import_one( const char *fname, KBNODE keyblock, int fast,
     keyid_from_pk( pk, keyid );
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
+    if(pk->pubkey_algo==PUBKEY_ALGO_ELGAMAL)
+      log_info(_("NOTE: Elgamal primary key detected - "
+		 "this may take some time to import\n"));
+
     if( opt.verbose ) {
 	log_info( "pub  %4u%c/%08lX %s   ",
 		  nbits_from_pk( pk ),
@@ -1038,6 +1042,12 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 	    continue;
 	sig = n->pkt->pkt.signature;
 	if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
+
+	  /* This just caches the sigs for later use.  That way we
+	     import a fully-cached key which speeds things up. */
+	  if(!opt.no_sig_cache)
+	    check_key_signature(keyblock,n,NULL);
+
 	    if( (sig->sig_class&~3) == 0x10 ) {
 		KBNODE unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
 		if( !unode )  {
