@@ -1,5 +1,6 @@
 /* hkp.c  -  Horowitz Keyserver Protocol
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -486,11 +487,9 @@ int hkp_search(STRLIST tokens)
 {
   int rc=0,len=0,max,first=1;
 #ifndef __riscos__
-  unsigned char *searchstr=NULL,*searchurl;
-  unsigned char *request;
+  unsigned char *searchstr=NULL,*searchstr_printable,*searchurl,*request;
 #else
-  char *searchstr=NULL,*searchurl;
-  char *request;
+  char *searchstr=NULL,*searchstr_printable,*searchurl,*request;
 #endif
   struct http_context hd;
   unsigned int hflags=opt.keyserver_options.honor_http_proxy?HTTP_FLAG_TRY_PROXY:0;
@@ -520,8 +519,10 @@ int hkp_search(STRLIST tokens)
 
   searchstr[len-1]='\0';
 
+  searchstr_printable=utf8_to_native(searchstr,len-1,0);
+
   log_info(_("searching for \"%s\" from HKP server %s\n"),
-	   searchstr,opt.keyserver_host);
+	   searchstr_printable,opt.keyserver_host);
 
   /* Now make it url-ish */
 
@@ -616,7 +617,7 @@ int hkp_search(STRLIST tokens)
       count--;
 
       if(ret>-1)
-	keyserver_search_prompt(buffer,count,searchstr);
+	keyserver_search_prompt(buffer,count,searchstr_printable);
 
       iobuf_close(buffer);
       m_free(line);
@@ -625,6 +626,7 @@ int hkp_search(STRLIST tokens)
   m_free(request);
   m_free(searchurl);
   m_free(searchstr);
+  m_free(searchstr_printable);
 
   return rc;
 }

@@ -1,3 +1,10 @@
+2004-08-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* hkp.c (hkp_search): Translate string to search for from utf8 to
+	native before displaying it.
+
+	* keyserver.c (keyserver_search_prompt): Comments.
+
 2004-08-19  Werner Koch  <wk@g10code.de>
 
 	* seskey.c (encode_session_key): Changed the zero random byte

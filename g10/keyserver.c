@@ -1,5 +1,5 @@
 /* keyserver.c - generic keyserver code
- * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1020,7 +1020,8 @@ keyserver_search(STRLIST tokens)
 
 /* Count and searchstr are just for cosmetics.  If the count is too
    small, it will grow safely.  If negative it disables the "Key x-y
-   of z" messages. */
+   of z" messages.  searchstr should be native (rather than utf8)
+   encoding since we're going to printf it. */
 
 /* TODO: do this as a list sent to keyserver_work rather than calling
    it once for each key to get the correct counts after the import
