@@ -172,7 +172,8 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
     }
   else if (!strcmp (key, "with-validation"))
     {
-      ctrl->with_validation = !!*value;
+      int i = *value? atoi (value) : 0;
+      ctrl->with_validation = i;
     }
   else
     return ASSUAN_Invalid_Option;

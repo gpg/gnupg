@@ -1,5 +1,9 @@
 2004-02-17  Werner Koch  <wk@gnupg.org>
 
+	* gpgsm.c: Fixed value parsing for --with-validation.
+	* call-agent.c (start_agent): Ignore an empty GPG_AGENT_INFO.
+	* call-dirmngr.c (start_dirmngr): Likewise for DIRMNGR_INFO.
+
 	* gpgsm.c: New option --with-md5-fingerprint.
 	* keylist.c (list_cert_std): Print MD5 fpr.
 

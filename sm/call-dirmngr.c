@@ -142,7 +142,7 @@ start_dirmngr (void)
                  the access to the dirmngr */
 
   infostr = force_pipe_server? NULL : getenv ("DIRMNGR_INFO");
-  if (!infostr)
+  if (!infostr || !*infostr)
     {
       const char *pgmname;
       const char *argv[3];

@@ -78,10 +78,10 @@ start_agent (void)
   if (agent_ctx)
     return 0; /* fixme: We need a context for each thread or serialize
                  the access to the agent (which is suitable given that
-                 the agent is not MT */
+                 the agent is not MT. */
 
   infostr = force_pipe_server? NULL : getenv ("GPG_AGENT_INFO");
-  if (!infostr)
+  if (!infostr || !*infostr)
     {
       const char *pgmname;
       const char *argv[3];
