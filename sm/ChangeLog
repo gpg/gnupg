@@ -1,15 +1,11 @@
 2003-10-31  Werner Koch  <wk@gnupg.org>
 
-
-	* verify.c (strtimestamp_r, gpgsm_verify): 
-
-	* sign.c (gpgsm_sign): 
-
-	* keylist.c (print_time, list_cert_std, list_cert_colon): 
-
-	* certdump.c (gpgsm_print_time, gpgsm_dump_time, gpgsm_dump_cert): 
-
 	* certchain.c (gpgsm_validate_chain): Changed to use ksba_isotime_t.
+	* verify.c (strtimestamp_r, gpgsm_verify): Ditto.
+	* sign.c (gpgsm_sign): Ditto.
+	* keylist.c (print_time, list_cert_std, list_cert_colon): Ditto.
+	* certdump.c (gpgsm_print_time, gpgsm_dump_time, gpgsm_dump_cert):
+	Ditto.
 
 2003-10-25  Werner Koch  <wk@gnupg.org>
 
