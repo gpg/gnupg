@@ -154,7 +154,8 @@ pause_on_sigusr( int which )
 #endif
 }
 
-
+/* Disabled - see comment in tdbio.c:tdbio_begin_transaction() */
+#if 0
 static void
 do_block( int block )
 {
@@ -211,7 +212,6 @@ do_block( int block )
 #endif /*HAVE_DOSISH_SYSTEM*/
 }
 
-
 void
 block_all_signals()
 {
@@ -223,3 +223,4 @@ unblock_all_signals()
 {
     do_block(0);
 }
+#endif

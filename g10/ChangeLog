@@ -1,3 +1,9 @@
+2003-06-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* signal.c, tdbio.c: Comment out the transaction code.  It was not
+	used in this version, and was causing some build problems on
+	quasi-posix platforms (Solaris and Forte c89).
+
 2003-06-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Include W32LIBS where appropriate.
