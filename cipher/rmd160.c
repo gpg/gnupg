@@ -26,7 +26,7 @@
 #include "util.h"
 #include "memory.h"
 #include "rmd.h"
-
+#include "cipher.h" /* only used for the rmd160_hash_buffer() prototype */
 
 /*********************************
  * RIPEMD-160 is not patented, see (as of 25.10.97)
@@ -529,6 +529,24 @@ rmd160_read( RMD160_CONTEXT *hd )
 {
     return hd->buf;
 }
+
+
+
+/****************
+ * Shortcut functions which puts the hash value of the supplied buffer
+ * into outbuf which must have a size of 20 bytes.
+ */
+void
+rmd160_hash_buffer( char *outbuf, const char *buffer, size_t length )
+{
+    RMD160_CONTEXT hd;
+
+    rmd160_init( &hd );
+    rmd160_write( &hd, (byte*)buffer, length );
+    rmd160_final( &hd );
+    memcpy( outbuf, hd.buf, 20 );
+}
+
 
 /****************
  * Return some information about the algorithm.  We need algo here to

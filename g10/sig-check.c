@@ -158,7 +158,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
     }
 
     if( pk->timestamp > sig->timestamp )
-	return G10ERR_TIME_CONFLICT; /* pubkey newer that signature */
+	return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
 
     cur_time = make_timestamp();
     if( pk->timestamp > cur_time ) {

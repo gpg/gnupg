@@ -54,10 +54,16 @@ write_status_text( int no, const char *text)
       case STATUS_ABORT  : s = "ABORT\n"; break;
       case STATUS_GOODSIG: s = "GOODSIG\n"; break;
       case STATUS_SIGEXPIRED: s = "SIGEXPIRED\n"; break;
+      case STATUS_KEYREVOKED: s = "KEYREVOKED\n"; break;
       case STATUS_BADSIG : s = "BADSIG\n"; break;
       case STATUS_ERRSIG : s = "ERRSIG\n"; break;
       case STATUS_BADARMOR : s = "BADARMOR\n"; break;
       case STATUS_RSA_OR_IDEA : s= "RSA_OR_IDEA\n"; break;
+      case STATUS_TRUST_UNDEFINED: s = "TRUST_UNDEFINED\n"; break;
+      case STATUS_TRUST_NEVER	 : s = "TRUST_NEVER\n"; break;
+      case STATUS_TRUST_MARGINAL : s = "TRUST_MARGINAL\n"; break;
+      case STATUS_TRUST_FULLY	 : s = "TRUST_FULLY\n"; break;
+      case STATUS_TRUST_ULTIMATE : s = "TRUST_ULTIMATE\n"; break;
       default: s = "?\n"; break;
     }
 

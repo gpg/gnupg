@@ -34,6 +34,15 @@
 
 #define STATUS_RSA_OR_IDEA 8
 #define STATUS_SIGEXPIRED  9
+#define STATUS_KEYREVOKED  10
+
+#define STATUS_TRUST_UNDEFINED 11
+#define STATUS_TRUST_NEVER     12
+#define STATUS_TRUST_MARGINAL  13
+#define STATUS_TRUST_FULLY     14
+#define STATUS_TRUST_ULTIMATE  15
+
+
 
 /*-- status.c --*/
 void set_status_fd( int fd );

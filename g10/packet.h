@@ -111,6 +111,7 @@ typedef struct {
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    pubkey_usage;   /* for now only used to pass it to getkey() */
     ulong   local_id;	    /* internal use, valid if > 0 */
+    u32     keyid[2];	    /* calculated by keyid_from_pk() */
     MPI     pkey[PUBKEY_MAX_NPKEY];
 } PKT_public_key;
 

@@ -33,6 +33,7 @@
 #include "util.h"
 #include "trustdb.h"
 #include "ttyio.h"
+#include "status.h"
 #include "i18n.h"
 
 /****************
@@ -57,7 +58,7 @@ query_ownertrust( ulong lid )
     pk = m_alloc_clear( sizeof *pk );
     rc = get_pubkey( pk, keyid );
     if( rc ) {
-	log_error("keyid %08lX: pubkey not found: %s\n",
+	log_error("key %08lX: public key not found: %s\n",
 				(ulong)keyid[1], g10_errstr(rc) );
 	return 0;
     }
@@ -278,6 +279,114 @@ do_we_trust_pre( PKT_public_key *pk, int trustlevel )
 	log_info(_("WARNING: Using untrusted key!\n"));
 	rc = 1;
     }
+    return rc;
+}
+
+
+
+/****************
+ * Check whether we can trust this signature.
+ * Returns: Error if we shall not trust this signatures.
+ */
+int
+check_signatures_trust( PKT_signature *sig )
+{
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
+    int trustlevel;
+    int dont_try = 0;
+    int rc=0;
+
+    rc = get_pubkey( pk, sig->keyid );
+    if( rc ) { /* this should not happen */
+	log_error("Ooops; the key vanished  - can't check the trust\n");
+	rc = G10ERR_NO_PUBKEY;
+	goto leave;
+    }
+
+  retry:
+    rc = check_trust( pk, &trustlevel );
+    if( rc ) {
+	log_error("check trust failed: %s\n", g10_errstr(rc));
+	goto leave;
+    }
+
+    if( (trustlevel & TRUST_FLAG_REVOKED) ) {
+	write_status( STATUS_KEYREVOKED );
+	log_info(_("WARNING: This key has been revoked by its owner!\n"));
+	log_info(_("         This could mean that the signature is forgery.\n"));
+    }
+
+
+    switch( (trustlevel & TRUST_MASK) ) {
+      case TRUST_UNKNOWN: /* No pubkey in trustDB: Insert and check again */
+	rc = insert_trust_record( pk );
+	if( rc ) {
+	    log_error("failed to insert it into the trustdb: %s\n",
+						      g10_errstr(rc) );
+	    goto leave;
+	}
+	rc = check_trust( pk, &trustlevel );
+	if( rc )
+	    log_fatal("trust check after insert failed: %s\n",
+						      g10_errstr(rc) );
+	if( trustlevel == TRUST_UNKNOWN || trustlevel == TRUST_EXPIRED )
+	    BUG();
+	goto retry;
+
+      case TRUST_EXPIRED:
+	log_info(_("Note: This key has expired!\n"));
+	break;
+
+      case TRUST_UNDEFINED:
+	if( dont_try || opt.batch || opt.answer_no ) {
+	    write_status( STATUS_TRUST_UNDEFINED );
+	    log_info(_(
+	    "WARNING: This key is not certified with a trusted signature!\n"));
+	    log_info(_(
+	    "         There is no indication that the "
+				    "signature belongs to the owner.\n" ));
+	}
+	else {
+	    rc = add_ownertrust( pk );
+	    if( rc ) {
+		dont_try = 1;
+		rc = 0;
+	    }
+	    goto retry;
+	}
+	break;
+
+      case TRUST_NEVER:
+	write_status( STATUS_TRUST_NEVER );
+	log_info(_("WARNING: We do NOT trust this key!\n"));
+	log_info(_("         The signature is probably a FORGERY.\n"));
+	rc = G10ERR_BAD_SIGN;
+	break;
+
+      case TRUST_MARGINAL:
+	write_status( STATUS_TRUST_MARGINAL );
+	log_info(_(
+	 "WARNING: This key is not certified with enough trusted signatures!\n"
+		));
+	log_info(_(
+	 "         It is not certain that the signature belongs to the owner.\n"
+		 ));
+	break;
+
+      case TRUST_FULLY:
+	write_status( STATUS_TRUST_FULLY );
+	break;
+
+      case TRUST_ULTIMATE:
+	write_status( STATUS_TRUST_ULTIMATE );
+	break;
+
+      default: BUG();
+    }
+
+
+  leave:
+    free_public_key( pk );
     return rc;
 }
 

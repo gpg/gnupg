@@ -182,6 +182,7 @@ enum cmd_values { aNull = 0,
     aDeArmor, aEnArmor, aGenRandom,
 aTest };
 
+static int maybe_setuid = 1;
 
 static char *build_list( const char *text,
 			 const char *(*mapf)(int), int (*chkf)(int) );
@@ -263,6 +264,9 @@ build_list( const char *text, const char * (*mapf)(int), int (*chkf)(int) )
     const char *s;
     size_t n=strlen(text)+2;
     char *list, *p;
+
+    if( maybe_setuid )
+	secmem_init( 0 );    /* drop setuid */
 
     for(i=1; i < 110; i++ )
 	if( !chkf(i) && (s=mapf(i)) )
@@ -381,7 +385,7 @@ main( int argc, char **argv )
     char **orig_argv;
     const char *fname;
     STRLIST sl, remusr= NULL, locusr=NULL;
-    int nrings=0, sec_nrings=0;
+    STRLIST nrings=NULL, sec_nrings=NULL;
     armor_filter_context_t afx;
     int detached_sig = 0;
     FILE *configfp = NULL;
@@ -394,10 +398,13 @@ main( int argc, char **argv )
     int greeting = 1;
     enum cmd_values cmd = 0;
     const char *trustdb_name = NULL;
+    char *def_cipher_string = NULL;
+    char *def_digest_string = NULL;
 
     trap_unaligned();
   #ifdef IS_G10MAINT
     secmem_init( 0 );	   /* disable use of secmem */
+    maybe_setuid = 0;
     log_set_name("gpgm");
   #else
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
@@ -509,12 +516,8 @@ main( int argc, char **argv )
 	  case 523: set_passphrase_fd( pargs.r.ret_int ); break;
 	  case 524: set_cmd( &cmd, aEditKey); break;
 	  case 525: set_cmd( &cmd, aChangePass); break;
-	  case 527:
-	    opt.def_cipher_algo = string_to_cipher_algo(pargs.r.ret_str);
-	    break;
-	  case 529:
-	    opt.def_digest_algo = string_to_digest_algo(pargs.r.ret_str);
-	    break;
+	  case 527: def_cipher_string = m_strdup(pargs.r.ret_str); break;
+	  case 529: def_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case 539: set_cmd( &cmd, aClearsign); break;
 	  case 540: secmem_set_flags( secmem_get_flags() | 1 ); break;
 	  case 542: set_cmd( &cmd, aGenRevoke); break;
@@ -548,12 +551,12 @@ main( int argc, char **argv )
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
 	  case 508: set_cmd( &cmd, aCheckKeys); break;
-	  case 509: add_keyring(pargs.r.ret_str); nrings++; break;
+	  case 509: append_to_strlist( &nrings, pargs.r.ret_str); break;
 	  case 510: opt.debug |= pargs.r.ret_ulong; break;
 	  case 511: opt.debug = ~0; break;
 	  case 512: set_status_fd( pargs.r.ret_int ); break;
 	  case 515: opt.fingerprint = 1; break;
-	  case 517: add_secret_keyring(pargs.r.ret_str); sec_nrings++; break;
+	  case 517: append_to_strlist( &sec_nrings, pargs.r.ret_str); break;
 	  case 518:
 	    /* config files may not be nested (silently ignore them) */
 	    if( !configfp ) {
@@ -603,7 +606,6 @@ main( int argc, char **argv )
 	goto next_pass;
     }
     m_free( configname ); configname = NULL;
-    check_opts();
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
@@ -615,12 +617,28 @@ main( int argc, char **argv )
   #ifdef IS_G10
     /* initialize the secure memory. */
     secmem_init( 16384 );
+    maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
   #endif
 
     /*write_status( STATUS_ENTER );*/
 
     set_debug();
+
+    /* must do this after dropping setuid, because string_to...
+     * may try to load an module */
+    if( def_cipher_string ) {
+	opt.def_cipher_algo = string_to_cipher_algo(def_cipher_string);
+	m_free(def_cipher_string); def_cipher_string = NULL;
+    }
+    if( def_digest_string ) {
+	opt.def_digest_algo = string_to_digest_algo(def_digest_string);
+	m_free(def_digest_string); def_digest_string = NULL;
+    }
+    check_opts();
+    if( log_get_errorcount(0) )
+	g10_exit(2);
+
     if( !cmd && opt.fingerprint )
 	set_cmd( &cmd, aListKeys);
 
@@ -651,11 +669,18 @@ main( int argc, char **argv )
      * not in case of "-kvv userid keyring" */
     if( cmd != aDeArmor && cmd != aEnArmor
 	&& !(cmd == aKMode && argc == 2 ) ) {
+
 	if( !sec_nrings || default_keyring )  /* add default secret rings */
 	    add_secret_keyring("secring.gpg");
+	for(sl = sec_nrings; sl; sl = sl->next )
+	    add_secret_keyring( sl->d );
 	if( !nrings || default_keyring )  /* add default ring */
 	    add_keyring("pubring.gpg");
+	for(sl = nrings; sl; sl = sl->next )
+	    add_keyring( sl->d );
     }
+    FREE_STRLIST(nrings);
+    FREE_STRLIST(sec_nrings);
 
     if( argc )
 	fname = *argv;

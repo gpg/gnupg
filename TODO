@@ -1,4 +1,10 @@
 
+
+    * clearsig of zero length files does not work
+
+    * Change the inernal represenation of keyid into a struct which
+      can also hold the localid
+
     * add option --restore-ownertrust
 
     * always put key signatures before the first subkey.

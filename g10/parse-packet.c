@@ -946,6 +946,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	pk->version	= version;
 	pk->pubkey_algo = algorithm;
 	pk->pubkey_usage = 0; /* not yet used */
+	pk->keyid[0] = 0;
+	pk->keyid[1] = 0;
     }
     nskey = pubkey_get_nskey( algorithm );
     npkey = pubkey_get_npkey( algorithm );

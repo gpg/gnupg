@@ -161,9 +161,16 @@ keyid_from_pk( PKT_public_key *pk, u32 *keyid )
     if( !keyid )
 	keyid = dummy_keyid;
 
-    if( pk->version < 4 && is_RSA(pk->pubkey_algo) ) {
+    if( pk->keyid[0] || pk->keyid[1] ) {
+	keyid[0] = pk->keyid[0];
+	keyid[1] = pk->keyid[1];
+	lowbits = keyid[1];
+    }
+    else if( pk->version < 4 && is_RSA(pk->pubkey_algo) ) {
 	lowbits = pubkey_get_npkey(pk->pubkey_algo) ?
 		     mpi_get_keyid( pk->pkey[0], keyid ) : 0 ; /* from n */
+	pk->keyid[0] = keyid[0];
+	pk->keyid[1] = keyid[1];
     }
     else {
 	const byte *dp;
@@ -174,6 +181,8 @@ keyid_from_pk( PKT_public_key *pk, u32 *keyid )
 	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
 	lowbits = keyid[1];
 	md_close(md);
+	pk->keyid[0] = keyid[0];
+	pk->keyid[1] = keyid[1];
     }
 
     return lowbits;

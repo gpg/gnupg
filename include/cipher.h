@@ -121,6 +121,8 @@ void md_stop_debug( MD_HANDLE a );
 		    md_write( (h), NULL, 0 );		    \
 		(h)->buffer[(h)->bufcount++] = (c) & 0xff;  \
 	    } while(0)
+/*-- rmd160.c --*/
+void rmd160_hash_buffer( char *outbuf, const char *buffer, size_t length );
 
 
 /*-- cipher.c --*/

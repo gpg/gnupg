@@ -84,18 +84,18 @@ Record type 2: (directory record)
      1 byte   reserved
      8 bytes keyid (We keep it here to speed up searching by keyid)
      1 u32   Local-Id.	This is simply the record number of this record.
-     1 u32   pubkey (record number of it)
+     1 u32   primary public key (record number of it)
      1 u32   cache record
      1 u32   sigrecord
      1 byte  No signatures flag  (used to avoid duplicate building).
      3 byte  reserved
-     1 u32   preference record
+     1 u32   userid record
      6 byte reserved
 
 
 Record type 3:
 --------------
-    Informations about a public key certificate.
+    Informations about a primary public key.
     These are static values which are never changed without user interaction.
 
      1 byte value 3
@@ -107,7 +107,7 @@ Record type 3:
      1 byte pubkey algorithm
      1 byte length of the fingerprint (in bytes)
      20 bytes fingerprint of the public key
-     1 byte ownertrust:
+     1 byte ownertrust if there is no trust defined for the userid:
      3 byte reserved
 
 
@@ -206,6 +206,25 @@ Record type 7  (hash list)
 	1 u32  recnum
 
     For the current record length of 40, n is 6
+
+Record type 8: (userid)
+--------------
+    Informations about a userid
+    We do not store the userid but the hash value of the userid because that
+    is sufficient.
+
+     1 byte value 8
+     1 byte   reserved
+     1 u32  owner; points to the directory record.
+     1 u32  next userid
+     1 byte subtype: 0 = a real user id
+		     1 = not a real userid, but a "dummy" user of length 0
+			 which is used to represent stuff that is directly
+			 bound to the key.
+     20 bytes ripemd160 hash of the username.
+     1 u32  pointer to preference record
+     1 byte ownertrust
+     4 byte reserved
 
 
 

@@ -1,3 +1,15 @@
+Noteworthy changes in version 0.3.2
+-----------------------------------
+    * Fixed some bugs when using --textmode (-seat)
+
+    * Now displays the trust status of a positive verified message.
+
+    * Keyrings are now scanned in the sequence they are added with
+      --[secret-]keyring.  Note that the default keyring is implictly
+      added as the very first one unless --no-default-keyring is used.
+
+    * Fixed setuid and dlopen bug.
+
 Noteworthy changes in version 0.3.1
 -----------------------------------
     * Partial headers are now written in the OpenPGP format if

@@ -837,6 +837,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	print_keyid( stderr, sig->keyid );
 	putc('\"', stderr);
 	putc('\n', stderr);
+	if( !rc )
+	    rc = check_signatures_trust( sig );
 	if( opt.batch && rc )
 	    g10_exit(1);
     }

@@ -86,6 +86,7 @@ struct pubkey_find_info {
 
 
 /*-- pkclist.c --*/
+int  check_signatures_trust( PKT_signature *sig );
 void release_pk_list( PK_LIST pk_list );
 int  build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage );
 

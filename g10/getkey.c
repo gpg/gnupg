@@ -759,6 +759,15 @@ lookup( PKT_public_key *pk, int mode,  u32 *keyid,
 			size_t an;
 			byte *afp = fingerprint_from_pk(
 					k->pkt->pkt.public_key, &an );
+
+			if( DBG_CACHE ) {
+			    u32 aki[2];
+			    keyid_from_pk( k->pkt->pkt.public_key, aki );
+			    log_debug("         aki=%08lx%08lx algo=%d mode=%d an=%u\n",
+					    (ulong)aki[0], (ulong)aki[1],
+				    k->pkt->pkt.public_key->pubkey_algo,
+							mode, an );
+			}
 			if( an == mode && !memcmp( afp, name, an)
 			    && ( !pk->pubkey_algo
 				 || pk->pubkey_algo

@@ -153,8 +153,16 @@ secmem_get_flags(void)
 void
 secmem_init( size_t n )
 {
-    if( !n )
+    if( !n ) {
+	uid_t uid;
+
 	disable_secmem=1;
+	uid = getuid();
+	if( uid != geteuid() ) {
+	    if( setuid( uid ) )
+		log_fatal("failed to drop setuid\n" );
+	}
+    }
     else {
 	if( n < DEFAULT_POOLSIZE )
 	    n = DEFAULT_POOLSIZE;

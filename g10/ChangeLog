@@ -1,3 +1,20 @@
+Thu Jul  9 14:52:47 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (build_list): Now drops setuid.
+	(main): Changed the way keyrings  and algorithms are registered .
+
+Wed Jul  8 14:17:30 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* packet.h (PKT_public_key): Add field keyid.
+	* parse-packet.c (parse_key): Reset the above field.
+	* keyid.c (keyid_from_pk): Use above field as cache.
+
+	* tdbio.c, tdbio.h: New
+	* trustdb.c: Moved some functions to tdbio.c.
+	(print_keyid): New.
+
+	* pkclist.c (check_signatures_trust): New.
+
 Wed Jul  8 10:45:28 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* plaintext.c (special_md_putc): New.

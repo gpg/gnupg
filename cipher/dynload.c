@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #ifdef HAVE_DL_DLOPEN
   #include <dlfcn.h>
 #endif
@@ -109,7 +110,11 @@ load_extension( EXTLIST el )
     int seq = 0;
     int class, vers;
 
+    /* make sure we are not setuid */
+    if( getuid() != geteuid() )
+	log_bug("trying to load an extension while still setuid\n");
 
+    /* now that we are not setuid anymore, we can safely load modules */
     el->handle = dlopen(el->name, RTLD_NOW);
     if( !el->handle ) {
 	log_error("%s: error loading extension: %s\n", el->name, dlerror() );

@@ -1,3 +1,12 @@
+Thu Jul  9 13:01:14 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* dynload.c (load_extension): Function now nbails out if
+	the program is run setuid.
+
+Wed Jul  8 18:58:23 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* rmd160.c (rmd160_hash_buffer): New.
+
 Thu Jul  2 10:50:30 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* cipher.c (cipher_open): algos >=100 use standard CFB
