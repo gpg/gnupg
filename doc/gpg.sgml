@@ -1190,6 +1190,18 @@ Same as the command --fingerprint but changes only the format of the output
 and may be used together with another command.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-literal</term>
+<listitem><para>
+This is not for normal use.  Use the source to see for it might be used for.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--set-filesize</term>
+<listitem><para>
+This is not for normal use.  Use the source to see for it might be used for.
+</para></listitem></varlistentry>
+
 
 </variablelist>
 </refsect1>

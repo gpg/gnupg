@@ -575,7 +575,6 @@ case "${target}" in
 esac
 
 if test "$tmp_do_check" = "yes"; then
-ac_cv_sys_symbol_underscore=""
 AC_REQUIRE([GNUPG_PROG_NM])dnl
 AC_REQUIRE([GNUPG_SYS_NM_PARSE])dnl
 AC_MSG_CHECKING([for _ prefix in compiled symbols])

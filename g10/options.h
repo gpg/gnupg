@@ -81,6 +81,8 @@ struct {
     const char *set_policy_url;
     int use_embedded_filename;
     int allow_non_selfsigned_uid;
+    int no_literal;
+    ulong set_filesize;
 } opt;
 
 

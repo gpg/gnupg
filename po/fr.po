@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 0.9.7\n"
-"POT-Creation-Date: 1999-07-23 12:13+0200\n"
+"POT-Creation-Date: 1999-07-23 14:25+0200\n"
 "PO-Revision-Date: 1999-05-24 21:48+02:00\n"
 "Last-Translator: Gaël Quéri <gqueri@mail.dotcom.fr>\n"
 "Language-Team: French <traduc@Linux.EU.ORG>\n"

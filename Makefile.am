@@ -2,13 +2,18 @@
 
 if COMPILE_LIBGCRYPT
 gcrypt = gcrypt
+my_clean_gcrypt =
 else
 gcrypt =
+my_clean_gcrypt = gcrypt/Makefile
 endif
 
 SUBDIRS = intl zlib util mpi cipher tools g10 po doc checks ${gcrypt}
 EXTRA_DIST = VERSION  PROJECTS BUGS
-
+# gettext never gets it right, so we take here care of deleting the
+# symlink.  my_clean_gcrypt is just a kludge until we can include
+# libgcrypt.
+DISTCLEANFILES = g10defs.h intl/libintl.h ${my_clean_gcrypt}
 
 dist-hook:
 	@set -e; \

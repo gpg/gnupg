@@ -799,7 +799,7 @@ create_shadow_dir( PKT_signature *sig )
     /* first see whether we already have such a record */
     rc = tdbio_search_sdir( sig->keyid, sig->pubkey_algo, &sdir );
     if( rc && rc != -1 ) {
-	log_error(_("tdbio_search_sdir failed: %s\n"), g10_errstr(rc));
+	log_error("tdbio_search_sdir failed: %s\n", g10_errstr(rc));
 	tdbio_invalid();
     }
     if( rc == -1 ) { /* not found: create */

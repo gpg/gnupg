@@ -175,6 +175,8 @@ enum cmd_and_opt_values { aNull = 0,
     oDisableCipherAlgo,
     oDisablePubkeyAlgo,
     oAllowNonSelfsignedUID,
+    oNoLiteral,
+    oSetFilesize,
 aTest };
 
 
@@ -334,6 +336,8 @@ static ARGPARSE_OPTS opts[] = {
     { oDisableCipherAlgo,  "disable-cipher-algo", 2, "@" },
     { oDisablePubkeyAlgo,  "disable-pubkey-algo", 2, "@" },
     { oAllowNonSelfsignedUID, "allow-non-selfsigned-uid", 0, "@" },
+    { oNoLiteral, "no-literal", 0, "@" },
+    { oSetFilesize, "set-filesize", 20, "@" },
 {0} };
 
 
@@ -848,6 +852,12 @@ main( int argc, char **argv )
 	  case oAllowNonSelfsignedUID:
 		opt.allow_non_selfsigned_uid = 1;
 		break;
+	  case oNoLiteral:
+		opt.no_literal = 1;
+		break;
+	  case oSetFilesize:
+		opt.set_filesize = pargs.r.ret_ulong;
+		break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -878,6 +888,17 @@ main( int argc, char **argv )
 		 " the OpenPGP WG has not yet aggreed on MDCs\n");
 	opt.force_mdc = 0;
     }
+    if (opt.no_literal) {
+	log_info(_("NOTE: %s is not for normal use!\n"), "--no-literal");
+	if (opt.textmode)
+	    log_error(_("%s not allowed with %s!\n"),
+		       "--textmode", "--no-literal" );
+	if (opt.set_filename)
+	    log_error(_("%s makes no sense with %s!\n"),
+			"--set-filename", "--no-literal" );
+    }
+    if (opt.set_filesize)
+	log_info(_("NOTE: %s is not for normal use!\n"), "--set-filesize");
     if( opt.batch )
 	tty_batchmode( 1 );
 
@@ -1158,7 +1179,7 @@ main( int argc, char **argv )
 	    }
 	}
 	else
-	    wrong_args(_("-k[v][v][v][c] [userid] [keyring]") );
+	    wrong_args(_("-k[v][v][v][c] [user-id] [keyring]") );
 	break;
 
       case aKeygen: /* generate a key (interactive) */

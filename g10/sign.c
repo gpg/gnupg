@@ -385,17 +385,19 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
     }
     else {
-	if( fname || opt.set_filename ) {
-	    char *s = make_basename( opt.set_filename ? opt.set_filename : fname );
-	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
-	    pt->namelen = strlen(s);
-	    memcpy(pt->name, s, pt->namelen );
-	    m_free(s);
-	}
-	else { /* no filename */
-	    pt = m_alloc( sizeof *pt - 1 );
-	    pt->namelen = 0;
-	}
+	if (!opt.no_literal)
+	    if( fname || opt.set_filename ) {
+		char *s = make_basename( opt.set_filename ? opt.set_filename : fname );
+		pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+		pt->namelen = strlen(s);
+		memcpy(pt->name, s, pt->namelen );
+		m_free(s);
+	    }
+	    else { /* no filename */
+		pt = m_alloc( sizeof *pt - 1 );
+		pt->namelen = 0;
+	    }
+
 	if( fname ) {
 	    if( !(filesize = iobuf_get_filelength(inp)) )
 		log_info(_("WARNING: `%s' is an empty file\n"), fname );
@@ -409,19 +411,37 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 		filesize = 0;
 	}
 	else
-	    filesize = 0; /* stdin */
-	pt->timestamp = make_timestamp();
-	pt->mode = opt.textmode && !outfile ? 't':'b';
-	pt->len = filesize;
-	pt->new_ctb = !pt->len && !opt.rfc1991;
-	pt->buf = inp;
-	pkt.pkttype = PKT_PLAINTEXT;
-	pkt.pkt.plaintext = pt;
-	/*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
-	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build_packet(PLAINTEXT) failed: %s\n", g10_errstr(rc) );
-	pt->buf = NULL;
+	    filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
+	
+	if (!opt.no_literal) {
+	    pt->timestamp = make_timestamp();
+	    pt->mode = opt.textmode && !outfile ? 't':'b';
+	    pt->len = filesize;
+	    pt->new_ctb = !pt->len && !opt.rfc1991;
+	    pt->buf = inp;
+	    pkt.pkttype = PKT_PLAINTEXT;
+	    pkt.pkt.plaintext = pt;
+	    /*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
+	    if( (rc = build_packet( out, &pkt )) )
+		log_error("build_packet(PLAINTEXT) failed: %s\n", g10_errstr(rc) );
+	    pt->buf = NULL;
+	}
+	else {
+	    byte copy_buffer[4096];
+	    int  bytes_copied;
+	    while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
+		if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
+		    rc = G10ERR_WRITE_FILE;
+		    log_error("copying input to output failed: %s\n", g10_errstr(rc));
+		    break;
+		}
+	    memset(copy_buffer, 0, 4096); /* burn buffer */
+	}
     }
+
+    /* catch errors from above blocks */
+    if (rc)
+        goto leave;
 
     /* loop over the secret certificates */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {

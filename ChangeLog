@@ -1,3 +1,10 @@
+Mon Jul 26 09:34:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): remove init of ac_cv_...
+
+	* Makefile.am (DISCLEANFILES): New
+
 Fri Jul 23 13:53:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

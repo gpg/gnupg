@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.9.7\n"
-"POT-Creation-Date: 1999-07-23 12:13+0200\n"
-"PO-Revision-Date: 1999-06-28 19:49+02:00\n"
+"POT-Creation-Date: 1999-07-23 14:25+0200\n"
+"PO-Revision-Date: 1999-07-25 14:36+02:00\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <it@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -340,14 +340,12 @@ msgid "remove key from the public keyring"
 msgstr "rimuove una chiave dal portachiavi pubblico"
 
 #: g10/g10.c:201
-#, fuzzy
 msgid "sign a key"
-msgstr "firma la chiave"
+msgstr "firma una chiave"
 
 #: g10/g10.c:202
-#, fuzzy
 msgid "sign a key locally"
-msgstr "firma la chiave localmente"
+msgstr "firma localmente una chiave"
 
 #: g10/g10.c:203
 msgid "sign or edit a key"
@@ -386,9 +384,8 @@ msgid "import ownertrust values"
 msgstr "importa i valori di fiducia"
 
 #: g10/g10.c:218
-#, fuzzy
 msgid "update the trust database"
-msgstr "|[NOMI]|controlla il database della fiducia"
+msgstr "aggiorna il database della fiducia"
 
 #: g10/g10.c:220
 msgid "|[NAMES]|check the trust database"
@@ -429,13 +426,12 @@ msgid "|NAME|encrypt for NAME"
 msgstr "|NOME|cifra per NOME"
 
 #: g10/g10.c:234
-#, fuzzy
 msgid "|NAME|use NAME as default recipient"
-msgstr "|NAME|usa NAME come chiave segreta predefinita"
+msgstr "|NOME|usa NOME come destinatario predefinito"
 
 #: g10/g10.c:236
 msgid "use the default key as default recipient"
-msgstr ""
+msgstr "usa la chiave predefinita come destinatario predefinito"
 
 #: g10/g10.c:240
 msgid "use this user-id to sign or decrypt"
@@ -443,7 +439,7 @@ msgstr "usa questo user-id per firmare o decifrare"
 
 #: g10/g10.c:241
 msgid "|N|set compress level N (0 disables)"
-msgstr "|N|imposta il livello di compressione (0 disabilita)"
+msgstr "|N|imposta il livello di compressione (0 disab.)"
 
 #: g10/g10.c:243
 msgid "use canonical text mode"
@@ -500,7 +496,7 @@ msgstr "aggiungi questo portachiavi segreto alla lista"
 
 #: g10/g10.c:257
 msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|usa NAME come chiave segreta predefinita"
+msgstr "|NOME|usa NOME come chiave segreta predefinita"
 
 #: g10/g10.c:258
 msgid "|HOST|use this keyserver to lookup keys"
@@ -508,7 +504,7 @@ msgstr "|HOST|cerca le chiavi in questo keyserver"
 
 #: g10/g10.c:259
 msgid "|NAME|set terminal charset to NAME"
-msgstr "|NAME|imposta il set di caratteri del terminale NOME"
+msgstr "|NOME|imposta il set di caratteri del terminale NOME"
 
 #: g10/g10.c:260
 msgid "read options from file"
@@ -548,7 +544,7 @@ msgstr "emula il modo descritto in RFC 1991"
 
 #: g10/g10.c:271
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
-msgstr "imposta per OpenPGP le opzioni di pacchetto, cifrario e digest"
+msgstr "imposta tutte le opzioni di pacchetto,\ncifrario e digest per OpenPGP"
 
 #: g10/g10.c:272
 msgid "|N|use passphrase mode N"
@@ -556,19 +552,19 @@ msgstr "|N|usa il modo N per la passphrase"
 
 #: g10/g10.c:274
 msgid "|NAME|use message digest algorithm NAME for passphrases"
-msgstr "|NAME|usa l'algoritmo di message digest NOME"
+msgstr "|NOME|usa l'algoritmo di message digest NOME"
 
 #: g10/g10.c:276
 msgid "|NAME|use cipher algorithm NAME for passphrases"
-msgstr "|NAME|usa l'alg. di cifratura NOME per le passphrase"
+msgstr "|NOME|usa l'alg. di cifratura NOME per le passphrase"
 
 #: g10/g10.c:277
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|usa l'algoritmo di cifratura NOME"
+msgstr "|NOME|usa l'algoritmo di cifratura NOME"
 
 #: g10/g10.c:278
 msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAME|usa l'algoritmo di message digest NOME"
+msgstr "|NOME|usa l'algoritmo di message digest NOME"
 
 #: g10/g10.c:279
 msgid "|N|use compress algorithm N"
@@ -728,27 +724,23 @@ msgstr "--decrypt [nomefile]"
 
 #: g10/g10.c:1091
 msgid "--sign-key user-id"
-msgstr ""
+msgstr "--sign-key user-id"
 
 #: g10/g10.c:1099
-#, fuzzy
 msgid "--lsign-key user-id"
-msgstr "--delete-key nomeutente"
+msgstr "--lsign-key user-id"
 
 #: g10/g10.c:1107
-#, fuzzy
 msgid "--edit-key user-id [commands]"
-msgstr "--edit-key nomeutente [comandi]"
+msgstr "--edit-key user-id [comandi]"
 
 #: g10/g10.c:1123
-#, fuzzy
 msgid "--delete-secret-key user-id"
-msgstr "--delete-secret-key nomeutente"
+msgstr "--delete-secret-key user-id"
 
 #: g10/g10.c:1126
-#, fuzzy
 msgid "--delete-key user-id"
-msgstr "--delete-key nomeutente"
+msgstr "--delete-key user-id"
 
 #: g10/encode.c:231 g10/g10.c:1150 g10/sign.c:366
 #, c-format
@@ -888,9 +880,8 @@ msgstr ""
 #. Translators: this shoud fit into 24 bytes to that the fingerprint
 #. * data is properly aligned with the user ID
 #: g10/pkclist.c:53
-#, fuzzy
 msgid "             Fingerprint:"
-msgstr "importate: %lu"
+msgstr "             Fingerprint:"
 
 # valid user replies (not including 1..4)
 # [Marco, you can change 'm' and 's' to whatever letters you like]
@@ -1111,13 +1102,12 @@ msgid "No such user ID.\n"
 msgstr "User ID inesistente.\n"
 
 #: g10/pkclist.c:739
-#, fuzzy
 msgid "Public key is disabled.\n"
-msgstr "la chiave pubblica è %08lX\n"
+msgstr "La chiave pubblica è disabilitata.\n"
 
 #: g10/pkclist.c:768
 msgid "unknown default recipient `s'\n"
-msgstr ""
+msgstr "destinatario predefinito sconosciuto `s'\n"
 
 #: g10/pkclist.c:801
 #, c-format
@@ -1125,9 +1115,9 @@ msgid "%s: error checking key: %s\n"
 msgstr "%s: errore nel controllare la chiave: %s\n"
 
 #: g10/pkclist.c:806
-#, fuzzy, c-format
+#, c-format
 msgid "%s: skipped: public key is disabled\n"
-msgstr "%s: saltato: chiave pubblica già presente\n"
+msgstr "%s: saltato: chiave pubblica disabilitata\n"
 
 #: g10/pkclist.c:844
 msgid "no valid addressees\n"
@@ -1744,9 +1734,9 @@ msgid "key %08lX: invalid subkey binding\n"
 msgstr "chiave %08lX: legame con la subchiave non valido:\n"
 
 #: g10/import.c:769
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: accepted non self-signed userid '"
-msgstr "chiave %08lX: saltato l'user id '"
+msgstr "chiave %08lX: accettato l'userid non autofirmato '"
 
 #: g10/import.c:798
 #, c-format
@@ -2113,21 +2103,19 @@ msgstr "revoca una chiave secondaria"
 
 #: g10/keyedit.c:594
 msgid "disable"
-msgstr ""
+msgstr "disable"
 
 #: g10/keyedit.c:594
-#, fuzzy
 msgid "disable a key"
-msgstr "chiave sbagliata"
+msgstr "disabilita una chiave"
 
 #: g10/keyedit.c:595
 msgid "enable"
-msgstr ""
+msgstr "abilita"
 
 #: g10/keyedit.c:595
-#, fuzzy
 msgid "enable a key"
-msgstr "chiave sbagliata"
+msgstr "abilita una chiave"
 
 #: g10/keyedit.c:614
 msgid "can't do that in batchmode\n"
@@ -2223,9 +2211,8 @@ msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando non valido  (prova \"help\")\n"
 
 #: g10/keyedit.c:1065
-#, fuzzy
 msgid "This key has been disabled"
-msgstr "Nota: questa chiave è scaduta!\n"
+msgstr "Questa chiave è stata disabilitata"
 
 #: g10/keyedit.c:1336
 msgid "Delete this good signature? (y/N/q)"
@@ -2327,19 +2314,18 @@ msgid "public key encrypted data: good DEK\n"
 msgstr "dati cifrati con la chiave pubblica: DEK corretto\n"
 
 #: g10/mainproc.c:275
-#, fuzzy, c-format
+#, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
-msgstr "chiave %2$s di %1$u bit, ID %3$08lX, creata il %4$s"
+msgstr "cifrato con la chiave %2$s di %1$u bit, ID %3$08lX, creata il %4$s\n"
 
 #: g10/mainproc.c:285
-#, fuzzy, c-format
+#, c-format
 msgid "encrypted with %s key, ID %08lX\n"
-msgstr "Firma fatta %.*s usando la chiave %s con ID %08lX\n"
+msgstr "Firma fatta con la chiave %s con ID %08lX\n"
 
 #: g10/mainproc.c:291
-#, fuzzy
 msgid "no secret key for decryption available\n"
-msgstr "la chiave segreta non è disponibile"
+msgstr "nessuna chiave disponibile per decifrare\n"
 
 #: g10/mainproc.c:300
 #, c-format
@@ -2472,9 +2458,8 @@ msgid " (main key ID %08lX)"
 msgstr " (key ID principale %08lX)"
 
 #: g10/passphrase.c:190
-#, fuzzy
 msgid "can't query password in batchmode\n"
-msgstr "impossibile fare questo in batch mode\n"
+msgstr "impossibile chiedere la password in batch mode\n"
 
 #: g10/passphrase.c:194
 msgid "Enter passphrase: "
@@ -2817,9 +2802,9 @@ msgid "enumerate secret keys failed: %s\n"
 msgstr "enumerate secret keys fallito: %s\n"
 
 #: g10/trustdb.c:802
-#, fuzzy, c-format
+#, c-format
 msgid "tdbio_search_sdir failed: %s\n"
-msgstr "tdbio_search_dir fallita: %s\n"
+msgstr "tdbio_search_sdir fallita: %s\n"
 
 #: g10/trustdb.c:877
 #, c-format
@@ -2855,15 +2840,12 @@ msgid "Invalid self-signature"
 msgstr "Autofirma non valida"
 
 #: g10/trustdb.c:1060
-#, fuzzy
 msgid "Valid user ID revocation skipped due to a newer self signature"
-msgstr ""
-"Evitata la revoca dell'user ID valida a causa di una autofirma più recente\n"
+msgstr "Saltata una revoca dell'user ID valida a causa di una autofirma più recente"
 
 #: g10/trustdb.c:1066
-#, fuzzy
 msgid "Valid user ID revocation"
-msgstr "Revoca dell'user ID valida\n"
+msgstr "Revoca dell'user ID valida"
 
 #: g10/trustdb.c:1071
 msgid "Invalid user ID revocation"
@@ -2915,9 +2897,9 @@ msgid "lid %lu: inserted\n"
 msgstr "lid %lu: inserito\n"
 
 #: g10/trustdb.c:1652
-#, fuzzy, c-format
+#, c-format
 msgid "error reading dir record: %s\n"
-msgstr "%s: errore durante la lettura del record libero: %s\n"
+msgstr "errore durante la lettura del dir record: %s\n"
 
 #: g10/trustdb.c:1660 g10/trustdb.c:1714
 #, c-format
@@ -3082,9 +3064,8 @@ msgid "%s: unknown suffix\n"
 msgstr "%s: suffisso sconosciuto\n"
 
 #: g10/openfile.c:119
-#, fuzzy
 msgid "Enter new filename"
-msgstr "--store [nomefile]"
+msgstr "Inserire il nome del nuovo file"
 
 #: g10/openfile.c:160
 msgid "writing to stdout\n"
@@ -3257,7 +3238,7 @@ msgstr "openfile.overwrite.okay"
 #. openfile.c (ask_outfile_name)
 #: g10/helptext.c:220
 msgid "openfile.askoutname"
-msgstr ""
+msgstr "openfile.askoutname"
 
 #: g10/helptext.c:235
 msgid "No help available"
@@ -3267,83 +3248,3 @@ msgstr "Non è disponibile un aiuto"
 #, c-format
 msgid "No help available for `%s'"
 msgstr "Non è disponibile un aiuto per `%s'"
-
-#~ msgid "print all message digests"
-#~ msgstr "stampa tutti i message digests"
-
-#~ msgid "NOTE: sig rec %lu[%d] in hintlist of %lu but marked as checked\n"
-#~ msgstr ""
-#~ "NOTA: rec di %lu[%d] nella hintlist di %lu ma marcato come verificato\n"
-
-#~ msgid "NOTE: sig rec %lu[%d] in hintlist of %lu but not marked\n"
-#~ msgstr "NOTA: rec di %lu[%d] nella hintlist di %lu ma non marcato\n"
-
-#~ msgid "sig rec %lu[%d] in hintlist of %lu does not point to a dir record\n"
-#~ msgstr "Il rec di %lu[%d] nella hintlist di %lu non punta a un record dir\n"
-
-#~ msgid "lid %lu: no primary key\n"
-#~ msgstr "lid %lu: manca la chiave primaria\n"
-
-#~ msgid "lid %lu: user id not found in keyblock\n"
-#~ msgstr "lid %lu: user id non trovato nel keyblock\n"
-
-#~ msgid "lid %lu: user id without signature\n"
-#~ msgstr "chiave %08lX: user id senza firma\n"
-
-#~ msgid "lid %lu: self-signature in hintlist\n"
-#~ msgstr "lid %lu: autofirma nella hintlist\n"
-
-#~ msgid "very strange: no public key\n"
-#~ msgstr "molto strano: non ci sono chiavi pubbliche\n"
-
-#~ msgid "hintlist %lu[%d] of %lu does not point to a dir record\n"
-#~ msgstr "hintlist %lu[%d] di %lu non punta a un record dir\n"
-
-#~ msgid "lid %lu does not have a key\n"
-#~ msgstr "Il lid %lu non ha una chiave\n"
-
-#~ msgid "lid %lu: can't get keyblock: %s\n"
-#~ msgstr "lid %lu: impossibile ottenere il keyblock: %s\n"
-
-#~ msgid "Too many preferences"
-#~ msgstr "Troppe preferenze"
-
-#~ msgid "Too many preference items"
-#~ msgstr "Troppi elementi di preferenza"
-
-#~ msgid "public key not anymore available"
-#~ msgstr "chiave pubblica non più disponibile"
-
-#~ msgid "uid %08lX.%lu/%02X%02X: has shadow dir %lu but is not yet marked.\n"
-#~ msgstr ""
-#~ "uid %08lX.%lu/%02X%02X: ha shadow dir %lu ma non è ancora marcato.\n"
-
-#~ msgid "insert_trust_record: keyblock not found: %s\n"
-#~ msgstr "insert_trust_record: keyblock non trovato: %s\n"
-
-#~ msgid "lid %lu: update failed: %s\n"
-#~ msgstr "lid %lu: aggiornamento fallito: %s\n"
-
-#~ msgid "lid %lu: updated\n"
-#~ msgstr "lid %lu: aggiornato\n"
-
-#~ msgid "lid %lu: okay\n"
-#~ msgstr "lid %lu: corretto\n"
-
-#~ msgid "%s: keyblock read problem: %s\n"
-#~ msgstr "%s: il keyblock ha problemi di lettura: %s\n"
-
-#~ msgid "%s: update failed: %s\n"
-#~ msgstr "%s: aggiornamento fallito: %s\n"
-
-#~ msgid "%s: updated\n"
-#~ msgstr "%s: aggiornato\n"
-
-#~ msgid "%s: okay\n"
-#~ msgstr "%s: va bene\n"
-
-#~ msgid "lid %lu: keyblock not found: %s\n"
-#~ msgstr "lid %lu: keyblock non trovato: %s\n"
-
-#~ msgid "keyedit.cmd"
-#~ msgstr "keyedit.cmd"

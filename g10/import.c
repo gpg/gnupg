@@ -766,7 +766,7 @@ mark_non_selfsigned_uids_valid( KBNODE keyblock, u32 *kid )
 	if( node->pkt->pkttype == PKT_USER_ID && !(node->flag & 1) ) {
 	    if( node->next && node->next->pkt->pkttype == PKT_SIGNATURE ) {
 		node->flag |= 1;
-		log_info( _("key %08lX: accepted non self-signed userid '"),
+		log_info( _("key %08lX: accepted non self-signed user-id '"),
 							 (ulong)kid[1]);
 		print_string( log_stream(), node->pkt->pkt.user_id->name,
 					    node->pkt->pkt.user_id->len, 0 );
@@ -795,7 +795,7 @@ delete_inv_parts( const char *fname, KBNODE keyblock, u32 *keyid )
 	    uid_seen = 1;
 	    if( (node->flag & 2) || !(node->flag & 1) ) {
 		if( opt.verbose ) {
-		    log_info( _("key %08lX: skipped userid '"),
+		    log_info( _("key %08lX: skipped user-id '"),
 							 (ulong)keyid[1]);
 		    print_string( stderr, node->pkt->pkt.user_id->name,
 				      node->pkt->pkt.user_id->len, 0 );

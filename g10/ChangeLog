@@ -1,3 +1,25 @@
+Mon Jul 26 09:34:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* pkclist.c (build_pk_list): Fixed typo in format string.
+
+	* trustdb.c (create_shadow_dir): Don't translate the error string.
+
+	* g10.c (main): Fixed spelling of user-id.
+	* getkey.c (find_by_name_pk,find_by_name_sk,
+	find_by_keyid,find_by_keyid_sk): Ditto and translate it.
+	* import.c (mark_non_selfsigned_uids_valid,delete_inv_parts): Ditto.
+
+
+Mon Jul 26 01:01:39 CEST 1999  Michael Roth <mroth@nessie.de>
+
+	* g10.c, options.h: New options --no-literal and --set-filesize
+
+	* encode.c (encode_simple, encode_crypt): Support for the options
+	--no-literal and --set-filesize.
+
+	* sign.c (sign_file): ditto.
+
 Fri Jul 23 13:53:03 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

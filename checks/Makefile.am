@@ -23,7 +23,7 @@ EXTRA_DIST = defs.inc run-gpg run-gpg.patterns $(TESTS) $(TEST_FILES) \
 CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
 	     plain-1 plain-2 plain-3 options trustdb.gpg *.lock .\#lk* \
 	     pubring.gpg secring.gpg pubring.pkr secring.skr
-
+DISTCLEANFILES = pubring.gpg~
 
 
 all-local: prepared.stamp

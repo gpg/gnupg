@@ -1,3 +1,8 @@
+Mon Jul 26 09:34:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* md5.c (md5_final): Fix for a SCO cpp bug.
+
 Thu Jul 15 10:15:35 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

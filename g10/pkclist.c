@@ -765,7 +765,7 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned use )
 	pk->pubkey_usage = use;
 	rc = get_pubkey_byname( NULL, pk, def_rec, NULL );
 	if( rc )
-	    log_error(_("unknown default recipient `s'\n"), def_rec );
+	    log_error(_("unknown default recipient `%s'\n"), def_rec );
 	else if( !(rc=check_pubkey_algo2(pk->pubkey_algo, use)) ) {
 	    PK_LIST r = m_alloc( sizeof *r );
 	    r->pk = pk; pk = NULL;

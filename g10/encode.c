@@ -70,7 +70,7 @@ encode_simple( const char *filename, int mode )
 {
     IOBUF inp, out;
     PACKET pkt;
-    PKT_plaintext *pt;
+    PKT_plaintext *pt = NULL;
     STRING2KEY *s2k = NULL;
     int rc = 0;
     u32 filesize;
@@ -144,18 +144,22 @@ encode_simple( const char *filename, int mode )
 	m_free(enc);
     }
 
-    /* setup the inner packet */
-    if( filename || opt.set_filename ) {
-	char *s = make_basename( opt.set_filename ? opt.set_filename : filename );
-	pt = m_alloc( sizeof *pt + strlen(s) - 1 );
-	pt->namelen = strlen(s);
-	memcpy(pt->name, s, pt->namelen );
-	m_free(s);
+    if (!opt.no_literal) {
+	/* setup the inner packet */
+	if( filename || opt.set_filename ) {
+	    char *s = make_basename( opt.set_filename ? opt.set_filename
+						      : filename );
+	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+	    pt->namelen = strlen(s);
+	    memcpy(pt->name, s, pt->namelen );
+	    m_free(s);
+	}
+	else { /* no filename */
+	    pt = m_alloc( sizeof *pt - 1 );
+	    pt->namelen = 0;
+	}
     }
-    else { /* no filename */
-	pt = m_alloc( sizeof *pt - 1 );
-	pt->namelen = 0;
-    }
+
     /* pgp5 has problems to decrypt symmetrically encrypted data from
      * GnuPG if the filelength is in the inner packet.	It works
      * when only partial length headers are use.  Until we have
@@ -167,14 +171,19 @@ encode_simple( const char *filename, int mode )
 	    log_info(_("%s: WARNING: empty file\n"), filename );
     }
     else
-	filesize = 0; /* stdin */
-    pt->timestamp = make_timestamp();
-    pt->mode = opt.textmode? 't' : 'b';
-    pt->len = filesize;
-    pt->buf = inp;
-    pkt.pkttype = PKT_PLAINTEXT;
-    pkt.pkt.plaintext = pt;
-    cfx.datalen = filesize && !do_compress ? calc_packet_length( &pkt ) : 0;
+	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
+
+    if (!opt.no_literal) {
+	pt->timestamp = make_timestamp();
+	pt->mode = opt.textmode? 't' : 'b';
+	pt->len = filesize;
+	pt->buf = inp;
+	pkt.pkttype = PKT_PLAINTEXT;
+	pkt.pkt.plaintext = pt;
+	cfx.datalen = filesize && !do_compress ? calc_packet_length( &pkt ) : 0;
+    }
+    else
+	cfx.datalen = filesize && !do_compress ? filesize : 0;
 
     /* register the cipher filter */
     if( mode )
@@ -184,13 +193,32 @@ encode_simple( const char *filename, int mode )
 	iobuf_push_filter( out, compress_filter, &zfx );
 
     /* do the work */
-    if( (rc = build_packet( out, &pkt )) )
-	log_error("build_packet failed: %s\n", g10_errstr(rc) );
+    if (!opt.no_literal) {
+	if( (rc = build_packet( out, &pkt )) )
+	    log_error("build_packet failed: %s\n", g10_errstr(rc) );
+    }
+    else {
+	/* user requested not to create a literal packet,
+	 * so we copy the plain data */
+	byte copy_buffer[4096];
+	int  bytes_copied;
+	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
+	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
+		rc = G10ERR_WRITE_FILE;
+		log_error("copying input to output failed: %s\n", g10_errstr(rc) );
+		break;
+	    }
+	memset(copy_buffer, 0, 4096); /* burn buffer */
+    }
 
     /* finish the stuff */
     iobuf_close(inp);
-    iobuf_close(out); /* fixme: check returncode */
-    pt->buf = NULL;
+    if (rc)
+	iobuf_cancel(out);
+    else
+	iobuf_close(out); /* fixme: check returncode */
+    if (pt)
+	pt->buf = NULL;
     free_packet(&pkt);
     m_free(cfx.dek);
     m_free(s2k);
@@ -270,35 +298,43 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( rc  )
 	goto leave;
 
-    /* setup the inner packet */
-    if( filename || opt.set_filename ) {
-	char *s = make_basename( opt.set_filename ? opt.set_filename : filename );
-	pt = m_alloc( sizeof *pt + strlen(s) - 1 );
-	pt->namelen = strlen(s);
-	memcpy(pt->name, s, pt->namelen );
-	m_free(s);
-    }
-    else { /* no filename */
-	pt = m_alloc( sizeof *pt - 1 );
-	pt->namelen = 0;
-    }
+    if (!opt.no_literal)
+	/* setup the inner packet */
+	if( filename || opt.set_filename ) {
+	    char *s = make_basename( opt.set_filename ? opt.set_filename : filename );
+	    pt = m_alloc( sizeof *pt + strlen(s) - 1 );
+	    pt->namelen = strlen(s);
+	    memcpy(pt->name, s, pt->namelen );
+	    m_free(s);
+	}
+	else { /* no filename */
+	    pt = m_alloc( sizeof *pt - 1 );
+	    pt->namelen = 0;
+	}
+
     if( filename && !opt.textmode ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )
 	    log_info(_("%s: WARNING: empty file\n"), filename );
     }
     else
-	filesize = 0; /* stdin */
-    pt->timestamp = make_timestamp();
-    pt->mode = opt.textmode ? 't' : 'b';
-    pt->len = filesize;
-    pt->new_ctb = !pt->len && !opt.rfc1991;
-    pt->buf = inp;
-    pkt.pkttype = PKT_PLAINTEXT;
-    pkt.pkt.plaintext = pt;
-    cfx.datalen = filesize && !do_compress? calc_packet_length( &pkt ) : 0;
+	filesize = opt.set_filesize ? opt.set_filesize : 0; /* stdin */
+
+    if (!opt.no_literal) {
+	pt->timestamp = make_timestamp();
+	pt->mode = opt.textmode ? 't' : 'b';
+	pt->len = filesize;
+	pt->new_ctb = !pt->len && !opt.rfc1991;
+	pt->buf = inp;
+	pkt.pkttype = PKT_PLAINTEXT;
+	pkt.pkt.plaintext = pt;
+	cfx.datalen = filesize && !do_compress? calc_packet_length( &pkt ) : 0;
+    }
+    else
+	cfx.datalen = filesize && !do_compress ? filesize : 0;
 
     /* register the cipher filter */
     iobuf_push_filter( out, cipher_filter, &cfx );
+
     /* register the compress filter */
     if( do_compress ) {
 	int compr_algo = select_algo_from_prefs( pk_list, PREFTYPE_COMPR );
@@ -312,8 +348,22 @@ encode_crypt( const char *filename, STRLIST remusr )
     }
 
     /* do the work */
-    if( (rc = build_packet( out, &pkt )) )
-	log_error("build_packet failed: %s\n", g10_errstr(rc) );
+    if (!opt.no_literal) {
+	if( (rc = build_packet( out, &pkt )) )
+	    log_error("build_packet failed: %s\n", g10_errstr(rc) );
+    }
+    else {
+	/* user requested not to create a literal packet, so we copy the plain data */
+	byte copy_buffer[4096];
+	int  bytes_copied;
+	while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
+	    if (iobuf_write(out, copy_buffer, bytes_copied) == -1) {
+		rc = G10ERR_WRITE_FILE;
+		log_error("copying input to output failed: %s\n", g10_errstr(rc) );
+		break;
+	    }
+	memset(copy_buffer, 0, 4096); /* burn buffer */
+    }
 
     /* finish the stuff */
   leave:
