@@ -988,3 +988,4 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
  ********** Functions which operates on databases ***************
  ****************************************************************/
 /* ... */
+
