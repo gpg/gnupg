@@ -1080,10 +1080,23 @@ proc_tree( CTX c, KBNODE node )
 		/* enable a workaround for a pgp2 bug */
 		c->mfx.md2 = md_open( DIGEST_ALGO_MD5, 0 );
 	    }
+	  #if 0
+	    #warning md_start_debug enabled
+	    md_start_debug( c->mfx.md, "det1" );
+	    if( c->mfx.md2 )
+		md_start_debug( c->mfx.md2, "det2" );
+	  #endif
+	    /* Here we have another hack to work around a pgp 2 bug
+	     * It works by not using the textmode for detached signatures;
+	     * this will let the first signazure check (on md) fail
+	     * but the second one (on md2) which adds an extra CR should
+	     * then produce the "correct" hash.  This is very, very ugly
+	     * hack but it may help in some cases (and break others)
+	     */
 	    if( c->sigs_only )
 		rc = hash_datafiles( c->mfx.md, c->mfx.md2,
 				     c->signed_data, c->sigfilename,
-				     sig->sig_class == 0x01 );
+				  c->mfx.md2? 0 :(sig->sig_class == 0x01) );
 	    else
 		rc = ask_for_detached_datafile( &c->mfx,
 					    iobuf_get_fname(c->iobuf));

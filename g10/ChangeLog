@@ -1,3 +1,8 @@
+Wed Jun  2 14:17:19 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* mainproc.c (proc_tree): Yet another bad hack to cope with
+	broken pgp2 created detached messages in textmode.
+
 Tue Jun  1 16:01:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* openfile.c (make_outfile_name): New.

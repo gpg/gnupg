@@ -6,9 +6,10 @@
 msgid ""
 msgstr ""
 "POT-Creation-Date: 1999-05-23 15:36+0200\n"
+"PO-Revision-Date: 1999-05-29 13:16+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
-"From: Urko Lusa <ulusa@lacueva.ddns.org>\n"
+"From: Urko Lusa <ulusa@lacueva.dhis.org>\n"
 "Updated: 1998-01-12\n"
 "By: Luca Olivetti <luca@luca.ddns.org>\n"
 "Xgettext-Options: --default-domain=gnupg --directory=.. --add-comments "
@@ -21,15 +22,15 @@ msgstr ""
 
 #: util/secmem.c:76
 msgid "Warning: using insecure memory!\n"
-msgstr "Aviso: ¡se está usando memoria insegura!\n"
+msgstr "ATENCIÓN: ¡se está usando memoria insegura!\n"
 
 #: util/secmem.c:249
 msgid "operation is not possible without initialized secure memory\n"
-msgstr ""
+msgstr "operación imposible sin memoria segura inicializada\n"
 
 #: util/secmem.c:250
 msgid "(you may have used the wrong program for this task)\n"
-msgstr ""
+msgstr "(es posible que haya usado el programa incorrecto para esta tarea)\n"
 
 #: util/miscutil.c:156
 msgid "yes"
@@ -248,7 +249,7 @@ msgstr "Ha encontrado Vd. un bug... (%s:%d)\n"
 
 #: cipher/random.c:412
 msgid "WARNING: using insecure random number generator!!\n"
-msgstr "Aviso: ¡se está usando un generador de números aleatorios inseguro!\n"
+msgstr "ATENCIÓN: ¡se está usando un generador de números aleatorios inseguro!\n"
 
 #: cipher/random.c:413
 msgid ""
@@ -622,7 +623,7 @@ msgstr "comandos incompatibles\n"
 #: g10/g10.c:580
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
-msgstr "nota: no existe fichero de opciones predefinido `%s'\n"
+msgstr "NOTA: no existe fichero de opciones predefinido `%s'\n"
 
 #: g10/g10.c:584
 #, c-format
@@ -666,7 +667,7 @@ msgstr "max-cert-depth debe estar en el rango 1-255\n"
 
 #: g10/g10.c:810
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
-msgstr "nota: el modo S2K simple (0) no es nada recomendable\n"
+msgstr "NOTA: el modo S2K simple (0) no es nada recomendable\n"
 
 #: g10/g10.c:814
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
@@ -825,7 +826,7 @@ msgstr "armadura inválida: línea más larga de %d caracteres\n"
 #: g10/armor.c:1009
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
-msgstr ""
+msgstr "caracter \"quoted printable\" en la armadura - probablemente se usó un MTA defectuoso\n"
 
 #: g10/pkclist.c:137
 #, c-format
@@ -1013,7 +1014,7 @@ msgstr "         La firma es probablemente una FALSIFICACIÓN.\n"
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
-"AVISO: ¡Esta clave no está certificada con suficientes firmas de confianza!\n"
+"ATENCIÓN: ¡Esta clave no está certificada con suficientes firmas de confianza!\n"
 
 #: g10/pkclist.c:516
 msgid "         It is not certain that the signature belongs to the owner.\n"
@@ -1262,7 +1263,7 @@ msgstr "Caracter no válido en el comentario\n"
 #: g10/keygen.c:669
 #, c-format
 msgid "You are using the `%s' character set.\n"
-msgstr ""
+msgstr "Está usando el juego de caracteres `%s'.\n"
 
 #: g10/keygen.c:675
 #, c-format
@@ -1396,7 +1397,7 @@ msgstr "error creando contraseña: %s\n"
 #: g10/encode.c:167 g10/encode.c:287
 #, c-format
 msgid "%s: WARNING: empty file\n"
-msgstr "%s: atención: fichero vacío\n"
+msgstr "%s: ATENCIÓN: fichero vacío\n"
 
 #: g10/encode.c:237
 #, c-format
@@ -1546,7 +1547,7 @@ msgstr "escribiendo en `%s'\n"
 #: g10/import.c:379 g10/import.c:435
 #, fuzzy
 msgid "can't lock keyring `%': %s\n"
-msgstr "no puede bloquearse el anillo público: %s\n"
+msgstr "no puede bloquearse el anillo público `%s': %s\n"
 
 #: g10/import.c:382
 #, fuzzy
@@ -1616,7 +1617,7 @@ msgstr "clave %08lX: sin cambios\n"
 #: g10/import.c:544 g10/import.c:645
 #, fuzzy, c-format
 msgid "can't lock keyring `%s': %s\n"
-msgstr "no puede bloquearse el anillo público: %s\n"
+msgstr "no puede bloquearse el anillo público `%s': %s\n"
 
 #: g10/import.c:552
 #, c-format
@@ -1659,7 +1660,7 @@ msgstr "clave %08lX: no hay identificativo de usuario para la firma\n"
 #: g10/import.c:693 g10/import.c:717
 #, c-format
 msgid "key %08lX: unsupported public key algorithm\n"
-msgstr "clave %08lX: algoritmo da clave pública no soportado\n"
+msgstr "clave %08lX: algoritmo de clave pública no soportado\n"
 
 #: g10/import.c:694
 #, c-format
@@ -1729,7 +1730,7 @@ msgstr "%s: usuario no encontrado\n"
 
 #: g10/keyedit.c:177
 msgid "[revocation]"
-msgstr ""
+msgstr "[revocación]"
 
 #: g10/keyedit.c:178
 msgid "[self-signature]"
@@ -1795,7 +1796,7 @@ msgstr ""
 msgid ""
 "The signature will be marked as non-exportable.\n"
 "\n"
-msgstr ""
+msgstr "La firma se marcará como no exportable.\n"
 
 #: g10/keyedit.c:321
 msgid "Really sign? "
@@ -2219,7 +2220,7 @@ msgstr "descifrado correcto\n"
 
 #: g10/mainproc.c:252
 msgid "WARNING: encrypted message has been manipulated!\n"
-msgstr ""
+msgstr "ATENCIÓN: ¡el mensaje cifrado ha sido manipulado!\n"
 
 #: g10/mainproc.c:257
 #, c-format
@@ -2228,7 +2229,7 @@ msgstr "descifrado fallido: %s\n"
 
 #: g10/mainproc.c:275
 msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
-msgstr "nota: el remitente solicitó \"sólo-para-tus-ojos\"\n"
+msgstr "NOTA: el remitente solicitó \"sólo-para-tus-ojos\"\n"
 
 #: g10/mainproc.c:277
 #, c-format
@@ -2369,7 +2370,7 @@ msgstr "la codificación vieja de DEK no está soportada\n"
 #: g10/pubkey-enc.c:191
 #, c-format
 msgid "NOTE: cipher algorithm %d not found in preferences\n"
-msgstr "nota: algoritmo de cifrado %d no encontrado en las preferencias\n"
+msgstr "NOTA: algoritmo de cifrado %d no encontrado en las preferencias\n"
 
 #: g10/seckey-cert.c:55
 #, c-format
@@ -2382,7 +2383,7 @@ msgstr "Contraseña incorrecta, inténtelo de nuevo...\n"
 
 #: g10/seckey-cert.c:227
 msgid "WARNING: Weak key detected - please change passphrase again.\n"
-msgstr "Aviso: detectada clave débil - por favor cambie la contraseña.\n"
+msgstr "ATENCIÓN: detectada clave débil - por favor cambie la contraseña.\n"
 
 #: g10/sig-check.c:187
 #, fuzzy
@@ -2409,7 +2410,7 @@ msgstr "lid %lu: identificativo de usuario sin firma\n"
 #: g10/sig-check.c:308
 #, c-format
 msgid "NOTE: signature key expired %s\n"
-msgstr "atención: clave de la firma caducada el %s\n"
+msgstr "ATENCIÓN clave de la firma caducada el %s\n"
 
 #: g10/sig-check.c:365
 msgid "assuming bad signature due to an unknown critical bit\n"
@@ -2432,7 +2433,7 @@ msgstr "firmando:"
 #: g10/sign.c:346
 #, c-format
 msgid "WARNING: `%s' is an empty file\n"
-msgstr "atención: '%s' es un fichero vacío\n"
+msgstr "ATENCIÓN `%s' es un fichero vacío\n"
 
 #: g10/textfilter.c:128
 #, fuzzy, c-format
@@ -2780,7 +2781,7 @@ msgstr "autofirma no válida"
 #: g10/trustdb.c:1403
 msgid "Valid user ID revocation skipped due to a newer self signature\n"
 msgstr ""
-"Revocación válida de identificativo de usuario ignorada debido auna "
+"Revocación válida de identificativo de usuario ignorada debido a una "
 "autofirma más reciente\n"
 
 #: g10/trustdb.c:1410
@@ -3023,7 +3024,7 @@ msgstr ""
 #: g10/skclist.c:113
 #, c-format
 msgid "skipped `%s': %s\n"
-msgstr "'%s' ignorado: %s\n"
+msgstr "`%s' ignorado: %s\n"
 
 #: g10/skclist.c:119
 #, c-format
@@ -3031,7 +3032,7 @@ msgid ""
 "skipped `%s': this is a PGP generated ElGamal key which is not secure for "
 "signatures!\n"
 msgstr ""
-"'%s' ignorada: ¡esta es una clave ElGamal generada por PGP\n"
+"`%s' ignorada: ¡esta es una clave ElGamal generada por PGP\n"
 " que NO es segura para las firmas!\n"
 
 #. do not overwrite

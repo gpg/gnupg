@@ -8,6 +8,9 @@
       the extension stripped.  To revert to the old behaviour you can
       use the option --use-embedded-filename.
 
+    * Another hack to cope with pgp2 generated detached signatures.
+
+
 Noteworthy changes in version 0.9.7
 -----------------------------------
 
