@@ -1,5 +1,13 @@
 2004-08-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyserver.c (keyserver_spawn): Show log line for what keyserver
+	action we are taking.
+
+	* keyid.c (keystr): If printing a keyid that lacks the high 4
+	bytes, print the low 4 alone.
+	(keystr_from_desc): Handle short keyids and warn on v3
+	fingerprints.
+
 	* keydb.h, getkey.c (get_user_id_printable): Rename to
 	get_user_id_native and remove the printable stuff since we're
 	print-ifying valid utf8 characters.  Change all callers in

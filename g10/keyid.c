@@ -178,7 +178,10 @@ keystr(u32 *keyid)
       break;
 
     case KF_LONG:
-      sprintf(keyid_str,"%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+      if(keyid[0])
+	sprintf(keyid_str,"%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+      else
+	sprintf(keyid_str,"%08lX",(ulong)keyid[1]);
       break;
 
     case KF_0xSHORT:
@@ -186,7 +189,10 @@ keystr(u32 *keyid)
       break;
 
     case KF_0xLONG:
-      sprintf(keyid_str,"0x%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+      if(keyid[0])
+	sprintf(keyid_str,"0x%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+      else
+	sprintf(keyid_str,"0x%08lX",(ulong)keyid[1]);
       break;
 
     default:
@@ -215,25 +221,34 @@ keystr_from_sk(PKT_secret_key *sk)
 const char *
 keystr_from_desc(KEYDB_SEARCH_DESC *desc)
 {
-  if(desc->mode==KEYDB_SEARCH_MODE_LONG_KID)
-    return keystr(desc->u.kid);
-  else if(desc->mode==KEYDB_SEARCH_MODE_FPR20)
+  switch(desc->mode)
     {
-      u32 keyid[2];
+    case KEYDB_SEARCH_MODE_LONG_KID:
+    case KEYDB_SEARCH_MODE_SHORT_KID:
+      return keystr(desc->u.kid);
 
-      keyid[0] = (unsigned char)desc->u.fpr[12] << 24
-	| (unsigned char)desc->u.fpr[13] << 16
-	| (unsigned char)desc->u.fpr[14] << 8
-	| (unsigned char)desc->u.fpr[15] ;
-      keyid[1] = (unsigned char)desc->u.fpr[16] << 24
-	| (unsigned char)desc->u.fpr[17] << 16
-	| (unsigned char)desc->u.fpr[18] << 8
-	| (unsigned char)desc->u.fpr[19] ;
+    case KEYDB_SEARCH_MODE_FPR20:
+      {
+	u32 keyid[2];
 
-      return keystr(keyid);
+	keyid[0] = (unsigned char)desc->u.fpr[12] << 24
+	  | (unsigned char)desc->u.fpr[13] << 16
+	  | (unsigned char)desc->u.fpr[14] << 8
+	  | (unsigned char)desc->u.fpr[15] ;
+	keyid[1] = (unsigned char)desc->u.fpr[16] << 24
+	  | (unsigned char)desc->u.fpr[17] << 16
+	  | (unsigned char)desc->u.fpr[18] << 8
+	  | (unsigned char)desc->u.fpr[19] ;
+
+	return keystr(keyid);
+      }
+
+    case KEYDB_SEARCH_MODE_FPR16:
+      return "?v3 fpr?";
+
+    default:
+      BUG();
     }
-  else
-    BUG();
 }
 
 /****************

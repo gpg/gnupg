@@ -878,6 +878,10 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	    else if(desc[i].mode==KEYDB_SEARCH_MODE_SHORT_KID)
 	      fprintf(spawn->tochild,"0x%08lX\n",
 		      (ulong)desc[i].u.kid[1]);
+
+	    log_info(_("requesting key %s from %s server %s\n"),
+		     keystr_from_desc(&desc[i]),
+		     keyserver->scheme,keyserver->host);
 	  }
 
 	fprintf(spawn->tochild,"\n");
@@ -1019,6 +1023,11 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 		fprintf(spawn->tochild,"KEY %s END\n",key->d);
 
 		iobuf_close(buffer);
+
+		log_info(_("sending key %s to %s server %s\n"),
+			 keystr(block->pkt->pkt.public_key->keyid),
+			 keyserver->scheme,keyserver->host);
+
 		release_kbnode(block);
 	      }
 
@@ -1056,6 +1065,9 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	  }
 
 	fprintf(spawn->tochild,"\n");
+
+	log_info(_("searching for \"%s\" from %s server %s\n"),
+		 searchstr,keyserver->scheme,keyserver->host);
 
 	break;
       }
@@ -1152,11 +1164,8 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	break;
 
       case SEARCH:
-	{
-	  keyserver_search_prompt(spawn->fromchild,searchstr);
-
-	  break;
-	}
+	keyserver_search_prompt(spawn->fromchild,searchstr);
+	break;
 
       default:
 	log_fatal(_("no keyserver action!\n"));
@@ -1165,6 +1174,7 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 
  fail:
   m_free(line);
+  m_free(searchstr);
 
   *prog=exec_finish(spawn);
 
