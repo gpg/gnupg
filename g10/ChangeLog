@@ -1,5 +1,9 @@
 2004-10-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* card-util.c, delkey.c, keygen.c, plaintext.c, keyedit.c,
+	passphrase.c, revoke.c: Collapse the two different "can't do that
+	in batch mode" strings into one.
+
 	* keylist.c (status_one_subpacket): New.  Send the subpacket data
 	to the --status interface.
 

@@ -2417,7 +2417,7 @@ generate_keypair (const char *fname, const char *card_serialno,
   if (opt.batch && card_serialno)
     {
       /* We don't yet support unattended key generation. */
-      log_error (_("sorry, can't do this in batch mode\n"));
+      log_error (_("can't do this in batch mode\n"));
       return;
     }
   

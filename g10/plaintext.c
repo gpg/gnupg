@@ -463,11 +463,12 @@ ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
 		tty_printf("No such file, try again or hit enter to quit.\n");
 		any++;
 	    }
-	    else if( !fp ) {
-		log_error("can't open `%s': %s\n", answer, strerror(errno) );
+	    else if( !fp )
+	      {
+		log_error(_("can't open `%s': %s\n"), answer, strerror(errno));
 		rc = G10ERR_READ_FILE;
 		goto leave;
-	    }
+	      }
 	} while( !fp );
     }
 

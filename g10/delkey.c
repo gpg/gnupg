@@ -117,14 +117,14 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
         okay++;
     else if( opt.batch && secret )
       {
-	log_error(_("can't do that in batchmode\n"));
+	log_error(_("can't do this in batch mode\n"));
         log_info (_("(unless you specify the key by fingerprint)\n"));
       }
     else if( opt.batch && opt.answer_yes )
 	okay++;
     else if( opt.batch )
       {
-	log_error(_("can't do that in batchmode without \"--yes\"\n"));
+	log_error(_("can't do this in batch mode without \"--yes\"\n"));
         log_info (_("(unless you specify the key by fingerprint)\n"));
       }
     else {

@@ -1309,10 +1309,11 @@ keyedit_menu( const char *username, STRLIST locusr,
 
     if ( opt.command_fd != -1 )
         ;
-    else if( opt.batch && !have_commands  ) {
-	log_error(_("can't do that in batchmode\n"));
+    else if( opt.batch && !have_commands  )
+      {
+	log_error(_("can't do this in batch mode\n"));
 	goto leave;
-    }
+      }
 
     /* get the public key */
     rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd, 1);

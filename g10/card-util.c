@@ -67,7 +67,7 @@ change_pin (int chvno, int allow_admin)
 
   if (opt.batch)
     {
-      log_error (_("sorry, can't do this in batch mode\n"));
+      log_error (_("can't do this in batch mode\n"));
       return;
     }
 
@@ -1195,7 +1195,7 @@ card_edit (STRLIST commands)
     ;
   else if (opt.batch && !have_commands)
     {
-      log_error(_("can't do that in batchmode\n"));
+      log_error(_("can't do this in batch mode\n"));
       goto leave;
     }
 

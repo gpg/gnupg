@@ -211,10 +211,11 @@ gen_desig_revoke( const char *uname )
     u32 keyid[2];
     int i,any=0;
 
-    if( opt.batch ) {
-	log_error(_("sorry, can't do this in batch mode\n"));
+    if( opt.batch )
+      {
+	log_error(_("can't do this in batch mode\n"));
 	return G10ERR_GENERAL;
-    }
+      }
 
     memset( &afx, 0, sizeof afx);
 
@@ -411,10 +412,11 @@ gen_revoke( const char *uname )
     struct revocation_reason_info *reason = NULL;
     KEYDB_SEARCH_DESC desc;
 
-    if( opt.batch ) {
-	log_error(_("sorry, can't do this in batch mode\n"));
+    if( opt.batch )
+      {
+	log_error(_("can't do this in batch mode\n"));
 	return G10ERR_GENERAL;
-    }
+      }
 
     memset( &afx, 0, sizeof afx);
     init_packet( &pkt );
