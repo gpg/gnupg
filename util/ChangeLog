@@ -1,3 +1,9 @@
+2002-10-28  Werner Koch  <wk@gnupg.org>
+
+	* w32reg.c (read_w32_registry_string): Fixed expanding of the
+	environment buffer; didn't worked at all.  Reported by Thijmen
+	Klok.
+
 2002-10-28  Stefan Bellon  <sbellon@sbellon.de>
 
 	* fileutil.c (make_basename) [__riscos__]: Cut off RISC OS' filing

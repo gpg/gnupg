@@ -103,6 +103,7 @@ read_w32_registry_string( const char *root, const char *dir, const char *name )
         nbytes = ExpandEnvironmentStrings (result, tmp, n1);
         if (nbytes && nbytes > n1) {
             free (tmp);
+            n1 = nbytes;
             tmp = malloc (n1 + 1);
             if (!tmp)
                 goto leave;
