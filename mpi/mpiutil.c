@@ -35,6 +35,13 @@
   #undef mpi_free
 #endif
 
+/****************
+ * fixme: It was a bad idea to use the number of limbs to allocate
+ *	  because on a alpha the limbs are large but we normally need
+ *	  integers of n bits - So we should chnage this to bits (or bytes).
+ *
+ *	  But mpi_alloc is used in a lot of places :-)
+ */
 MPI
 #ifdef M_DEBUG
 mpi_debug_alloc( unsigned nlimbs, const char *info )

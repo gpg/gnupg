@@ -23,4 +23,15 @@
       we have a self-signature -> put this stuff into a kind of directory
       record, as it does not belong to the pubkey record?
 
+    * add an option to create a new user id and to reorder the sequence of
+      them, so that the preferred emal address comes first.  We need to
+      add some logic, which guarantees, that only one user-id can be signed by
+      others.  This prevents extensive growing of the public key certificate
+      due to the bad usage of signing every user id.  You get no extra
+      security by key signatures for every user id.  I consider this
+      behaviour of PGP a bug, introduced, becaus PGP does't require a
+      self-signature. New user ids will only have your self signature to bind
+      them to your key and because the user id which is signed by others has
+      also be signed by you, all user-ids are bound together.
+
 

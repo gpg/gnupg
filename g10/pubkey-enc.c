@@ -38,8 +38,10 @@
 int
 get_session_key( PKT_pubkey_enc *k, DEK *dek )
 {
-    int i, j, c, rc = 0;
-    MPI dek_frame = mpi_alloc_secure(40);
+    int rc = 0;
+    MPI plain_dek  = NULL;
+    byte *frame = NULL;
+    unsigned n, nframe;
     u16 csum, csum2;
     PKT_secret_cert *skc = m_alloc_clear( sizeof *skc );
 
@@ -58,7 +60,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	skey.g = skc->d.elg.g;
 	skey.y = skc->d.elg.y;
 	skey.x = skc->d.elg.x;
-	elg_decrypt( dek_frame, k->d.elg.a, k->d.elg.b, &skey );
+	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skey.p) );
+	elg_decrypt( plain_dek, k->d.elg.a, k->d.elg.b, &skey );
 	memset( &skey, 0, sizeof skey );
     }
   #ifdef HAVE_RSA_CIPHER
@@ -74,7 +77,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	skey.q = skc->d.rsa.rsa_q;
 	skey.d = skc->d.rsa.rsa_d;
 	skey.u = skc->d.rsa.rsa_u;
-	rsa_secret( dek_frame, k->d.rsa.rsa_integer, &skey );
+	plain_dek = mpi_alloc_secure( mpi_get_nlimbs(skey.n) );
+	rsa_secret( plain_dek, k->d.rsa.rsa_integer, &skey );
 	memset( &skey, 0, sizeof skey );
     }
   #endif/*HAVE_RSA_CIPHER*/
@@ -83,9 +87,10 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	goto leave;
     }
     free_secret_cert( skc ); skc = NULL;
+    frame = mpi_get_buffer( plain_dek, &nframe, NULL );
+    mpi_free( plain_dek ); plain_dek = NULL;
 
-
-    /* Now get the DEK (data encryption key) from the dek_frame
+    /* Now get the DEK (data encryption key) from the frame
      *
      * Old versions encode the DEK in in this format (msb is left):
      *
@@ -101,51 +106,53 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
      * CSUM
      */
     if( DBG_CIPHER )
-	log_mpidump("DEK frame:", dek_frame );
-    for(i=0; mpi_getbyte(dek_frame, i) != -1; i++ )
+	log_hexdump("DEK frame:", frame, nframe );
+    for(n=0; n < nframe && !frame[n]; n++ ) /* skip leading zeroes */
 	;
-    for(i--; i >= 0 && !(c=mpi_getbyte(dek_frame, i)); i--)
-	; /* Skip leading zeroes */
-    if( i < 16 )
+    if( n + 7 > nframe )
 	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
-    if( c == 1 && mpi_getbyte(dek_frame,0) == 2 ) {
+    if( frame[n] == 1 && frame[nframe-1] == 2 ) {
 	log_error("old encoding of DEK is not supported\n");
 	rc = G10ERR_CIPHER_ALGO;
 	goto leave;
     }
-    if( c != 2 )  /* somethink is wrong */
+    if( frame[n] != 2 )  /* somethink is wrong */
 	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
-    /* look for the zero byte */
-    for(i--; i > 4 ; i-- )
-	if( !mpi_getbyte(dek_frame,i) )
-	    break;
-    if( i <= 4 ) /* zero byte not found */
+    for(n++; n < nframe && frame[n]; n++ ) /* skip the random bytes */
+	;
+    n++; /* and the zero byte */
+    if( n + 4 > nframe )
 	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
-    /* next byte indicates the used cipher */
-    switch( mpi_getbyte(dek_frame, --i ) ) {
+
+    dek->keylen = nframe - (n+1) - 2;
+    dek->algo = frame[n++];
+    switch( dek->algo ) {
       case CIPHER_ALGO_IDEA:
 	rc = G10ERR_NI_CIPHER;
 	goto leave;
       case CIPHER_ALGO_BLOWFISH:
-	if( i != 22 ) /* length of blowfish is 20 (+2 bytes checksum) */
+	if( dek->keylen != 20 )
 	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
-	dek->algo = CIPHER_ALGO_BLOWFISH;
 	break;
       case CIPHER_ALGO_BLOWFISH128:
-	if( i != 18 ) /* length of blowfish-128 is 16 (+2 bytes checksum) */
+	if( dek->keylen != 16 )
 	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
-	dek->algo = CIPHER_ALGO_BLOWFISH128;
+	break;
+      case CIPHER_ALGO_CAST:
+	if( dek->keylen < 5 || dek->keylen > 16 )
+	    { rc = G10ERR_WRONG_SECKEY; goto leave; }
 	break;
       default:
+	dek->algo = 0;
 	rc = G10ERR_CIPHER_ALGO;
 	goto leave;
     }
     /* copy the key to DEK and compare the checksum */
-    csum  = mpi_getbyte(dek_frame, 1) << 8;
-    csum |= mpi_getbyte(dek_frame, 0);
-    dek->keylen = i - 2;
-    for( i--, csum2=0, j=0; i > 1; i-- )
-	csum2 += dek->key[j++] = mpi_getbyte(dek_frame, i);
+    csum  = frame[nframe-2] << 8;
+    csum |= frame[nframe-1];
+    memcpy( dek->key, frame+n, dek->keylen );
+    for( csum2=0, n=0; n < dek->keylen; n++ )
+	csum2 += dek->key[n];
     if( csum != csum2 ) {
 	rc = G10ERR_WRONG_SECKEY;
 	goto leave;
@@ -154,7 +161,8 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	log_hexdump("DEK is:", dek->key, dek->keylen );
 
   leave:
-    mpi_free(dek_frame);
+    mpi_free(plain_dek);
+    m_free(frame);
     if( skc )
 	free_secret_cert( skc );
     return rc;

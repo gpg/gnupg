@@ -44,11 +44,9 @@ cleanup () {
 
 
 run_g10 () {
-    eval HOME=. ../g10/g10 $*
-    if [ $? != 0 ] ; then
-	g10_err=$?
+    if ! eval HOME=. ../g10/g10 $* ; then
 	echo "(HOME=. ../g10/g10 $*) failed" >&2
-	error "g10 failed: $g10_err" >&2
+	exit 1
     fi
 }
 
@@ -58,7 +56,7 @@ run_g10 () {
 
 set -e
 pgmname=$(basename $0)
-#trap cleanup EXIT SIGHUP SIGINT SIGQUIT
+trap cleanup SIGHUP SIGINT SIGQUIT
 
 
 # some checks
@@ -79,7 +77,7 @@ EOF
 
 # print the G10 version
 run_g10 --version
-# intialize the trustdb
+
 
 info Checking decryption
 for i in $plain_files ; do
@@ -87,21 +85,21 @@ for i in $plain_files ; do
     cmp $i y || error "$i: mismatch"
 done
 
-#info Checking cleartext signatures
-## There is a minor glitch, which appends a lf to the cleartext.
-## I do not consider that a bug, but I have to use the head .. mimic.
-## It is not clear what should happen to leading LFs, we must
-## change the defintion of cleartext, so that only 1 empty line
-## must follow the headers, but some specs say: any number of empty lines ..
-## clean-sat removes leading LFs
-## I know that this does not work for random data files (due to large lines
-## or what ever) - I hope we can live with it.
-#for i in $plain_files; do
-#    echo "$usrpass1" | run_g10 --passphrase-fd 0 -sat -o x --yes $i
-#    run_g10 -o y --yes x
-#    ../tools/clean-sat < $i > z
-#    head -c $[ $(cat y | wc -c) - 1 ] y | diff - z || error "$i: mismatch"
-#done
+info Checking cleartext signatures
+# There is a minor glitch, which appends a lf to the cleartext.
+# I do not consider that a bug, but I have to use the head .. mimic.
+# It is not clear what should happen to leading LFs, we must
+# change the defintion of cleartext, so that only 1 empty line
+# must follow the headers, but some specs say: any number of empty lines ..
+# clean-sat removes leading LFs
+# I know that this does not work for random data files (due to large lines
+# or what ever) - I hope we can live with it.
+for i in $plain_files; do
+    echo "$usrpass1" | run_g10 --passphrase-fd 0 -sat -o x --yes $i
+    run_g10 -o y --yes x
+    ../tools/clean-sat < $i > z
+    head -c $[ $(cat y | wc -c) - 1 ] y | diff - z || error "$i: mismatch"
+done
 
 info Creating some random data files
 for i in 500 9000 32000 80000; do
@@ -109,26 +107,25 @@ for i in 500 9000 32000 80000; do
     data_files="$data_files data-$i"
 done
 
-#info Checking armored signatures
-#for i in $plain_files $data_files ; do
-#    echo "$usrpass1" | run_g10 --passphrase-fd 0 -sa -o x --yes $i
-#    run_g10 -o y --yes x
-#    cmp $i y || error "$i: mismatch"
-#done
-#
-#info Checking signatures
-#for i in $plain_files $data_files; do
-#    echo "$usrpass1" | run_g10 --passphrase-fd 0 -s -o x --yes $i
-#    run_g10 -o y --yes x
-#    cmp $i y || error "$i: mismatch"
-#done
+info Checking armored signatures
+for i in $plain_files $data_files ; do
+    echo "$usrpass1" | run_g10 --passphrase-fd 0 -sa -o x --yes $i
+    run_g10 -o y --yes x
+    cmp $i y || error "$i: mismatch"
+done
+
+info Checking signatures
+for i in $plain_files $data_files; do
+    echo "$usrpass1" | run_g10 --passphrase-fd 0 -s -o x --yes $i
+    run_g10 -o y --yes x
+    cmp $i y || error "$i: mismatch"
+done
 
 
 info Checking armored encryption
 for i in $plain_files $data_files ; do
-    info "file $i"
-    run_g10 -v -ea -o x --yes -r "$usrname2" $i
-    run_g10 -v -o y --yes x
+    run_g10 -ea -o x --yes -r "$usrname2" $i
+    run_g10 -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
 

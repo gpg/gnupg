@@ -51,6 +51,8 @@ struct keyblock_pos_struct {
     int   resno;     /* resource number */
     ulong offset;    /* position information */
     unsigned count;  /* length of the keyblock in packets */
+    IOBUF  fp;	     /* used by enum_keyblocks */
+    PACKET *pkt;     /* ditto */
 };
 typedef struct keyblock_pos_struct KBPOS;
 
@@ -144,6 +146,7 @@ int find_secret_keyblock_byname( KBPOS *kbpos, const char *username );
 int lock_keyblock( KBPOS *kbpos );
 void unlock_keyblock( KBPOS *kbpos );
 int read_keyblock( KBPOS *kbpos, KBNODE *ret_root );
+int enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root );
 int insert_keyblock( KBPOS *kbpos, KBNODE root );
 int delete_keyblock( KBPOS *kbpos );
 int update_keyblock( KBPOS *kbpos, KBNODE root );

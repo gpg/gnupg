@@ -437,6 +437,7 @@ parse_publickey( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     if( k->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
 	n = pktlen;
 	k->d.elg.a = mpi_read(inp, &n, 0); pktlen -=n;
+	n = pktlen;
 	k->d.elg.b = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
 	    printf("\telg a: ");
@@ -502,6 +503,7 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	sig->d.elg.digest_start[1] = iobuf_get_noeof(inp); pktlen--;
 	n = pktlen;
 	sig->d.elg.a = mpi_read(inp, &n, 0 ); pktlen -=n;
+	n = pktlen;
 	sig->d.elg.b = mpi_read(inp, &n, 0 ); pktlen -=n;
 	if( list_mode ) {
 	    printf("\tdigest algo %d, begin of digest %02x %02x\n",

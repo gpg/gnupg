@@ -867,6 +867,11 @@ iobuf_tell( IOBUF a )
 }
 
 
+
+/****************
+ * This is a very limited implementation. It simply discards all internal
+ * buffering and remove all filters but the first one.
+ */
 int
 iobuf_seek( IOBUF a, ulong newpos )
 {
@@ -885,6 +890,10 @@ iobuf_seek( IOBUF a, ulong newpos )
 	log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
 	return -1;
     }
+    a->d.len = 0;   /* discard buffer */
+    a->d.start = 0;
+    a->nbytes = 0;
+    a->nlimit = 0;
     a->ntotal = newpos;
     /* remove filters, but the last */
     while( a->chain )

@@ -535,11 +535,11 @@ generate_keypair()
 
     /* we create the packets as a tree of kbnodes. Because the structure
      * we create is known in advance we simply generate a linked list
-     * The first packet is a comment packet, followed by the userid and
-     * the self signature.
+     * The first packet is a dummy comment packet which we flag
+     * as deleted.  The very first packet must always be a CERT packet.
      */
-    pub_root = make_comment_node("#created by G10 pre-release " VERSION );
-    sec_root = make_comment_node("#created by G10 pre-release " VERSION );
+    pub_root = make_comment_node("#"); delete_kbnode(pub_root, pub_root);
+    sec_root = make_comment_node("#"); delete_kbnode(sec_root, sec_root);
 
     tty_printf(_(
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
@@ -557,6 +557,12 @@ generate_keypair()
 	rc = gen_dsa(nbits, pub_root, sec_root, dek, &skc );
     else
 	BUG();
+    if( !rc ) {
+	add_kbnode( pub_root,
+		make_comment_node("#created by G10 release " VERSION ));
+	add_kbnode( sec_root,
+		make_comment_node("#created by G10 release " VERSION ));
+    }
     if( !rc )
 	write_uid(pub_root, uid );
     if( !rc )

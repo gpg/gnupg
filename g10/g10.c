@@ -41,11 +41,85 @@
 #include "status.h"
 
 
+static ARGPARSE_OPTS opts[] = {
+
+    { 300, NULL, 0, N_("\vCommands:\n ") },
+
+    { 's', "sign",      0, N_("make a signature")},
+    { 539, "clearsign", 0, N_("make a clear text signature") },
+    { 'b', "detach-sign", 0, N_("make a detached signature")},
+    { 'e', "encrypt",   0, N_("encrypt data")},
+    { 'c', "symmetric", 0, N_("encryption only with symmetric cipher")},
+    { 507, "store",     0, N_("store only")},
+    { 'd', "decrypt",   0, N_("decrypt data (default)")},
+    { 'k', "list-keys", 0, N_("list keys")},
+    { 508, "check-keys",0, N_("check signatures on a key in the keyring")},
+    { 515, "fingerprint", 0, N_("show the fingerprints")},
+    { 521, "list-packets",0,N_("list only the sequence of packets")},
+    { 503, "gen-key",   0, N_("generate a new key pair")},
+    { 506, "sign-key"  ,0, N_("make a signature on a key in the keyring")},
+    { 505, "delete-key",0, N_("remove key from the public keyring")},
+    { 524, "edit-sig"  ,0, N_("edit a key signature")},
+    { 525, "change-passphrase", 0, N_("change the passphrase of your secret keyring")},
+    { 537, "export"          , 0, N_("export keys") },
+    { 530, "import",      0     , N_("import/merge keys")},
+
+    { 301, NULL, 0, N_("\v\nOptions:\n ") },
+
+    { 'a', "armor",     0, N_("create ascii armored output")},
+    { 'o', "output",    2, N_("use as output file")},
+    { 'u', "local-user",2, N_("use this user-id to sign or decrypt")},
+    { 'r', "remote-user", 2, N_("use this user-id for encryption")},
+    { 'v', "verbose",   0, N_("verbose") },
+    { 'z', NULL,        1, N_("set compress level (0 disables)") },
+    { 't', "textmode",  0, N_("use canonical text mode")},
+    { 'n', "dry-run",   0, N_("don't make any changes") },
+    { 500, "batch",     0, N_("batch mode: never ask")},
+    { 501, "yes",       0, N_("assume yes on most questions")},
+    { 502, "no",        0, N_("assume no on most questions")},
+    { 509, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
+    { 517, "secret-keyring" ,2, N_("add this secret keyring to the list")},
+    { 518, "options"   , 2, N_("read options from file")},
+
+    { 510, "debug"     ,4|16, N_("set debugging flags")},
+    { 511, "debug-all" ,0, N_("enable full debugging")},
+    { 512, "status-fd" ,1, N_("write status info to this fd") },
+    { 534, "no-comment", 0,   N_("do not write comment packets")},
+    { 535, "completes-needed", 1, N_("(default is 1)")},
+    { 536, "marginals-needed", 1, N_("(default is 3)")},
+    { 527, "cipher-algo", 2 , N_("select default cipher algorithm")},
+    { 528, "pubkey-algo", 2 , N_("select default puplic key algorithm")},
+    { 529, "digest-algo", 2 , N_("select default message digest algorithm")},
+
+    { 302, NULL, 0, N_("\v\nExamples:\n\n"
+    " -se -r Bob [file]          sign and encrypt for user Bob\n"
+    " -sat [file]                make a clear text signature\n"
+    " -sb  [file]                make a detached signature\n"
+    " -k   [userid]              show keys\n"
+    " -kc  [userid]              show fingerprint\n"  ) },
+
+  /* hidden options */
+    { 532, "quick-random", 0, "\r"},
+    { 526, "no-verbose", 0, "\r"},
+    { 538, "trustdb-name", 2, "\r" },
+    { 540, "no-secmem-warning", 0, "\r" }, /* used only by regression tests */
+    { 519, "no-armor",   0, "\r"},
+    { 520, "no-default-keyring", 0, "\r" },
+    { 522, "no-greeting", 0, "\r" },
+    { 523, "passphrase-fd",1, "\r" },
+    { 541, "no-operation", 0, "\r" },      /* used by regression tests */
+
+
+{0} };
+
+
+
+
 enum cmd_values { aNull = 0,
     aSym, aStore, aEncr, aKeygen, aSign, aSignEncr,
     aSignKey, aClearsign, aListPackets, aEditSig,
     aKMode, aKModeC, aChangePass, aImport,
-    aExport,
+    aExport, aCheckKeys,
 aNOP };
 
 
@@ -59,7 +133,7 @@ strusage( int level )
     switch( level ) {
       case 10:
       case 0:	p = "g10 - v" VERSION "; "
-		    "Copyright 1997 Werner Koch (dd9jn)\n" ; break;
+		    "Copyright 1998 Werner Koch (dd9jn)\n" ; break;
       case 13:	p = "g10"; break;
       case 14:	p = VERSION; break;
       case 1:
@@ -105,7 +179,7 @@ i18n_init(void)
 static void
 wrong_args( const char *text)
 {
-    fputs(_("Usage: g10 [options] "),stderr);
+    fputs(_("usage: g10 [options] "),stderr);
     fputs(text,stderr);
     putc('\n',stderr);
     g10_exit(2);
@@ -152,63 +226,28 @@ set_cmd( enum cmd_values *ret_cmd, enum cmd_values new_cmd )
 }
 
 
+
+static void
+check_opts(void)
+{
+    if( !opt.def_cipher_algo || check_cipher_algo(opt.def_cipher_algo) )
+	log_error(_("selected cipher algorithm is invalid\n"));
+    if( !opt.def_pubkey_algo || check_pubkey_algo(opt.def_pubkey_algo) )
+	log_error(_("selected pubkey algorithm is invalid\n"));
+    if( !opt.def_digest_algo || check_digest_algo(opt.def_digest_algo) )
+	log_error(_("selected digest algorithm is invalid\n"));
+    if( opt.completes_needed < 1 )
+	log_error(_("completes-needed must be greater than 0\n"));
+    if( opt.marginals_needed < 2 )
+	log_error(_("marginals-needed must be greater than 1\n"));
+}
+
+
+
+
 void
 main( int argc, char **argv )
 {
-    static ARGPARSE_OPTS opts[] = {
-    { 'a', "armor",     0, N_("create ascii armored output")},
-    { 'v', "verbose",   0, N_("verbose") },
-    { 'z', NULL,        1, N_("set compress level (0 disables)") },
-    { 'n', "dry-run",   0, N_("don't make any changes") },
-    { 'c', "symmetric", 0, N_("do only a symmetric encryption")},
-    { 'o', "output",    2, N_("use as output file")},
-    { 500, "batch",     0, N_("batch mode: never ask")},
-    { 501, "yes",       0, N_("assume yes on most questions")},
-    { 502, "no",        0, N_("assume no on most questions")},
-    { 503, "gen-key",   0, N_("generate a new key pair")},
-    { 504, "add-key",   0, N_("add key to the public keyring")},
-    { 505, "delete-key",0, N_("remove key from public keyring")},
-    { 506, "sign-key"  ,0, N_("make a signature on a key in the keyring")},
-    { 507, "store",     0, N_("store only")},
-    { 508, "check-key" ,0, N_("check signatures on a key in the keyring")},
-    { 509, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
-    { 's', "sign",      0, N_("make a signature")},
-    { 't', "textmode",  0, N_("use canonical text mode")},
-    { 'b', "detach-sign", 0, N_("make a detached signature")},
-    { 'e', "encrypt",   0, N_("encrypt data")},
-    { 'd', "decrypt",   0, N_("decrypt data (default)")},
-    { 'u', "local-user",2, N_("use this user-id to sign or decrypt")},
-    { 'r', "remote-user", 2, N_("use this user-id for encryption")},
-    { 'k', NULL      , 0, N_("list keys")},
-    { 510, "debug"     ,4|16, N_("set debugging flags")},
-    { 511, "debug-all" ,0, N_("enable full debugging")},
-    { 512, "status-fd" ,1, N_("write status info to this fd") },
-    { 515, "fingerprint", 0, N_("show the fingerprints")},
-    { 517, "secret-keyring" ,2, N_("add this secret keyring to the list")},
-    { 518, "options"   , 2, N_("read options from file")},
-    { 519, "no-armor",   0, "\r"},
-    { 520, "no-default-keyring", 0, "\r" },
-    { 521, "list-packets",0,N_("list only the sequence of packets")},
-    { 522, "no-greeting", 0, "\r" },
-    { 523, "passphrase-fd",1, "\r" },
-    { 524, "edit-sig"  ,0, N_("edit a key signature")},
-    { 525, "change-passphrase", 0, N_("change the passphrase of your secret keyring")},
-    { 526, "no-verbose", 0, "\r"},
-    { 527, "cipher-algo", 2 , N_("select default cipher algorithm")},
-    { 528, "pubkey-algo", 2 , N_("select default puplic key algorithm")},
-    { 529, "digest-algo", 2 , N_("select default message digest algorithm")},
-    { 530, "import",      0 , N_("put public keys into the trustdb")},
-    { 532, "quick-random", 0, "\r"},
-    { 534, "no-comment", 0,   N_("do not write comment packets")},
-    { 535, "completes-needed", 1, N_("(default is 1)")},
-    { 536, "marginals-needed", 1, N_("(default is 3)")},
-    { 537, "export", 0, N_("export all or the given keys") },
-    { 538, "trustdb-name", 2, "\r" },
-    { 539, "clearsign", 0, N_("make a clear text signature") },
-    { 540, "no-secmem-warning", 0, "\r" }, /* used only by regression tests */
-    { 541, "no-operation", 0, "\r" },      /* used by regression tests */
-
-    {0} };
     ARGPARSE_ARGS pargs;
     IOBUF a;
     int rc=0;
@@ -236,6 +275,7 @@ main( int argc, char **argv )
      * secmem_init()  somewhere after the option parsing
      */
 
+    log_set_name("g10");
     i18n_init();
     opt.compress = -1; /* defaults to standard compress level */
     opt.def_cipher_algo = CIPHER_ALGO_BLOWFISH;
@@ -278,9 +318,11 @@ main( int argc, char **argv )
 		if( parse_debug )
 		log_info(_("note: no default option file '%s'\n"), configname );
 	    }
-	    else
-		log_fatal(_("option file '%s': %s\n"),
+	    else {
+		log_error(_("option file '%s': %s\n"),
 				    configname, strerror(errno) );
+		g10_exit(1);
+	    }
 	    m_free(configname); configname = NULL;
 	}
 	if( parse_debug && configname )
@@ -291,9 +333,7 @@ main( int argc, char **argv )
     while( optfile_parse( configfp, configname, &configlineno,
 						&pargs, opts) ) {
 	switch( pargs.r_opt ) {
-	  case 'v': opt.verbose++;
-		    opt.list_sigs=1;
-		    break;
+	  case 'v': opt.verbose++; opt.list_sigs=1; break;
 	  case 'z': opt.compress = pargs.r.ret_int; break;
 	  case 'a': opt.armor = 1; opt.no_armor=0; break;
 	  case 'd': break; /* it is default */
@@ -322,7 +362,8 @@ main( int argc, char **argv )
 	  case 503: set_cmd( &cmd, aKeygen); break;
 	  case 506: set_cmd( &cmd, aSignKey); break;
 	  case 507: set_cmd( &cmd, aStore); break;
-	  case 508: opt.check_sigs = 1; opt.list_sigs = 1; break;
+	  case 508: set_cmd( &cmd, aCheckKeys);
+		    opt.check_sigs = 1; opt.list_sigs = 1; break;
 	  case 509: add_keyring(pargs.r.ret_str); nrings++; break;
 	  case 510: opt.debug |= pargs.r.ret_ulong; break;
 	  case 511: opt.debug = ~0; break;
@@ -374,27 +415,8 @@ main( int argc, char **argv )
 	goto next_pass;
     }
     m_free( configname ); configname = NULL;
-    if( !opt.def_cipher_algo || check_cipher_algo(opt.def_cipher_algo) ) {
-	log_error(_("selected cipher algorithm is invalid\n"));
-	errors++;
-    }
-    if( !opt.def_pubkey_algo || check_pubkey_algo(opt.def_pubkey_algo) ) {
-	log_error(_("selected pubkey algorithm is invalid\n"));
-	errors++;
-    }
-    if( !opt.def_digest_algo || check_digest_algo(opt.def_digest_algo) ) {
-	log_error(_("selected digest algorithm is invalid\n"));
-	errors++;
-    }
-    if( opt.completes_needed < 1 ) {
-	log_error(_("completes-needed must be greater than 0\n"));
-	errors++;
-    }
-    if( opt.marginals_needed < 2 ) {
-	log_error(_("marginals-needed must be greater than 1\n"));
-	errors++;
-    }
-    if( errors )
+    check_opts();
+    if( log_get_errorcount(0) )
 	g10_exit(2);
 
     if( greeting ) {
@@ -541,6 +563,7 @@ main( int argc, char **argv )
 						       g10_errstr(rc) );
 	break;
 
+      case aCheckKeys:
       case aKMode: /* list keyring */
 	if( !argc ) { /* list the default public keyrings */
 	    int i, seq=0;
@@ -563,14 +586,23 @@ main( int argc, char **argv )
 	    }
 
 	}
+	else if( cmd == aCheckKeys ) {
+	    log_error("will be soon: --check-keys user-ids\n");
+	}
 	else if( argc == 1) { /* list the given keyring */
 	    if( !(a = iobuf_open(fname)) )
-		log_fatal(_("can't open '%s'\n"), fname_print);
-	    proc_packets( a );
-	    iobuf_close(a);
+		log_error(_("can't open '%s'\n"), fname_print);
+	    else {
+		if( !opt.no_armor ) {
+		    memset( &afx, 0, sizeof afx);
+		    iobuf_push_filter( a, armor_filter, &afx );
+		}
+		proc_packets( a );
+		iobuf_close(a);
+	    }
 	}
 	else
-	    wrong_args(_("-k[v][v][v][c] [keyring]"));
+	    wrong_args(_("-k[v][v][v][c] [keyring]") );
 	break;
 
       case aKeygen: /* generate a key (interactive) */
@@ -607,18 +639,20 @@ main( int argc, char **argv )
 	if( argc > 1 )
 	    wrong_args(_("[filename]"));
 	if( !(a = iobuf_open(fname)) )
-	    log_fatal(_("can't open '%s'\n"), fname_print);
-	if( !opt.no_armor ) {
-	    /* push the armor filter, so it can peek at the input data */
-	    memset( &afx, 0, sizeof afx);
-	    iobuf_push_filter( a, armor_filter, &afx );
+	    log_error(_("can't open '%s'\n"), fname_print);
+	else {
+	    if( !opt.no_armor ) {
+		/* push the armor filter, so it can peek at the input data */
+		memset( &afx, 0, sizeof afx);
+		iobuf_push_filter( a, armor_filter, &afx );
+	    }
+	    if( cmd == aListPackets ) {
+		set_packet_list_mode(1);
+		opt.list_packets=1;
+	    }
+	    proc_packets( a );
+	    iobuf_close(a);
 	}
-	if( cmd == aListPackets ) {
-	    set_packet_list_mode(1);
-	    opt.list_packets=1;
-	}
-	proc_packets( a );
-	iobuf_close(a);
 	break;
     }
 

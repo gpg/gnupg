@@ -56,14 +56,14 @@ typedef struct {
 } ARGPARSE_OPTS;
 
 /*-- logger.c --*/
+void log_set_name( const char *name );
+const char *log_get_name(void);
 void log_set_pid( int pid );
 int  log_get_errorcount( int clear );
 void log_hexdump( const char *text, char *buf, size_t len );
 void log_mpidump( const char *text, MPI a );
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
-  void printstr( int level, const char *fmt, ... )
-			    __attribute__ ((format (printf,2,3)));
   void log_bug( const char *fmt, ... )
 			    __attribute__ ((noreturn, format (printf,1,2)));
   void log_bug0( const char *, int, const char * ) __attribute__ ((noreturn));
@@ -74,7 +74,6 @@ void log_mpidump( const char *text, MPI a );
   void log_debug( const char *fmt, ... ) __attribute__ ((format (printf,1,2)));
   #define BUG() log_bug0(  __FILE__ , __LINE__, __FUNCTION__ )
 #else
-  void printstr( int level, const char *fmt, ... );
   void log_bug( const char *fmt, ... );
   void log_bug0( const char *, int );
   void log_fatal( const char *fmt, ... );

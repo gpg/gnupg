@@ -118,7 +118,7 @@ mpi_read(IOBUF inp, unsigned *ret_nread, int secure)
 
   leave:
     if( nread > *ret_nread )
-	log_error("Ooops: mpi crosses packet border");
+	log_bug("mpi crosses packet border");
     else
 	*ret_nread = nread;
     return val;

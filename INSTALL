@@ -1,3 +1,50 @@
+
+Please read the Basic Installation section somewhere below.
+
+Configure options for G10
+=========================
+
+--with-zlib	    Forces usage of the local zlib sources. Default is
+		    to use the (sahred) library of the system.
+
+--without-nls	    Disable NLS support
+
+--enable-m-debug    Compile with the integrated malloc debugging stuff.
+		    This makes the program slower but is checks every
+		    free operation and can be used to create statistics
+		    of memory usage. If this option is used the program
+		    option "--debug 32" displays every call to a a malloc
+		    function (this makes the program *really* slow), the
+		    option "--debug 128" displays a memory statistic after
+		    the program run.
+
+Problems
+========
+
+If you have compile problems, use the configure options "--with-zlib" and
+"--without-nls".
+
+I cant check alls assembles files; so if you have problems assembling them
+(or the program crashes), simply delete the files in the mpi/<cpu> directory.
+The configure scripts may consider several subdirectories to get all
+available assembler files; be sure to delete the correct ones. The
+assembler replacements are in C and in mpi/generic; never delete udiv-qrnnd.S
+in any CPU directory, because there maybe no C substitute.
+Don't forget to delete "config.cache" and run "./config.status --recheck".
+
+
+
+
+Installation
+============
+G10 is not installed as suid:root; if you want to use it, do it manually
+(only g10, not g10maint).
+
+You have to create the ~/.g10 directory manually.  Your first action after
+this should be to create a key pair: "g10 --gen-key".
+
+
+
 Basic Installation
 ==================
 

@@ -77,6 +77,7 @@ static int keyring_search( PACKET *pkt, KBPOS *kbpos, IOBUF iobuf );
 static int keyring_search2( PUBKEY_FIND_INFO info, KBPOS *kbpos,
 						   const char *fname);
 static int keyring_read( KBPOS *kbpos, KBNODE *ret_root );
+static int keyring_enum( KBPOS *kbpos, KBNODE *ret_root );
 static int keyring_copy( KBPOS *kbpos, int mode, KBNODE root );
 
 
@@ -296,6 +297,78 @@ read_keyblock( KBPOS *kbpos, KBNODE *ret_root )
 	return G10ERR_GENERAL;
     return keyring_read( kbpos, ret_root );
 }
+
+
+/****************
+ * This functions can be used to read trough a complete keyring.
+ * Mode is: 0 = open
+ *	    1 = read
+ *	    2 = close
+ *	    all others are reserved!
+ * Note that you do not need a search prior to call this function,
+ * only handle is needed.
+ * NOTE: It is not alloed to do an insert/update/delte with this
+ *	 keyblock, if you want to do this, user search/read!
+ */
+int
+enum_keyblocks( int mode, KBPOS *kbpos, KBNODE *ret_root )
+{
+    int rc = 0;
+    RESTBL *rentry;
+
+    if( !mode || mode == 100 ) {
+	int i;
+	kbpos->fp = NULL;
+	if( !mode )
+	    i = 0;
+	else
+	    i = kbpos->resno+1;
+	for(; i < MAX_RESOURCES; i++ )
+	    if( resource_table[i].used && !resource_table[i].secret )
+		break;
+	if( i == MAX_RESOURCES )
+	    return -1; /* no resources */
+	kbpos->resno = i;
+	rentry = check_pos( kbpos );
+	kbpos->fp = iobuf_open( rentry->fname );
+	if( !kbpos->fp ) {
+	    log_error("can't open '%s'\n", rentry->fname );
+	    return G10ERR_OPEN_FILE;
+	}
+	kbpos->pkt = NULL;
+    }
+    else if( mode == 1 ) {
+	int cont;
+	do {
+	    cont = 0;
+	    if( !kbpos->fp )
+		return G10ERR_GENERAL;
+	    rc = keyring_enum( kbpos, ret_root );
+	    if( rc == -1 ) {
+		assert( !kbpos->pkt );
+		rentry = check_pos( kbpos );
+		assert(rentry);
+		/* close */
+		enum_keyblocks(2, kbpos, ret_root );
+		/* and open the next one */
+		rc = enum_keyblocks(100, kbpos, ret_root );
+		if( !rc )
+		    cont = 1;
+	    }
+	} while(cont);
+    }
+    else if( kbpos->fp ) {
+	iobuf_close( kbpos->fp );
+	kbpos->fp = NULL;
+	/* release pending packet */
+	free_packet( kbpos->pkt );
+	m_free( kbpos->pkt );
+    }
+    return rc;
+}
+
+
+
 
 /****************
  * Insert the keyblock described by ROOT into the keyring described
@@ -551,12 +624,74 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 
     if( rc )
 	release_kbnode( root );
-    else {
+    else
 	*ret_root = root;
-    }
     free_packet( pkt );
     m_free( pkt );
     iobuf_close(a);
+    return rc;
+}
+
+
+static int
+keyring_enum( KBPOS *kbpos, KBNODE *ret_root )
+{
+    PACKET *pkt;
+    int rc;
+    RESTBL *rentry;
+    KBNODE root = NULL;
+    int in_cert = 0;
+
+    if( !(rentry=check_pos(kbpos)) )
+	return G10ERR_GENERAL;
+
+    if( kbpos->pkt ) {
+	root = new_kbnode( kbpos->pkt );
+	kbpos->pkt = NULL;
+    }
+
+    pkt = m_alloc( sizeof *pkt );
+    init_packet(pkt);
+    while( (rc=parse_packet(kbpos->fp, pkt)) != -1 ) {
+	if( rc ) {  /* ignore errors */
+	    if( rc != G10ERR_UNKNOWN_PACKET ) {
+		log_error("read_keyblock: read error: %s\n", g10_errstr(rc) );
+		rc = G10ERR_INV_KEYRING;
+		goto ready;
+	    }
+	    free_packet( pkt );
+	    continue;
+	}
+	/* make a linked list of all packets */
+	switch( pkt->pkttype ) {
+	  case PKT_PUBLIC_CERT:
+	  case PKT_SECRET_CERT:
+	    if( in_cert ) { /* store this packet */
+		kbpos->pkt = pkt;
+		pkt = NULL;
+		goto ready;
+	    }
+	    in_cert = 1;
+	  default:
+	    if( !root )
+		root = new_kbnode( pkt );
+	    else
+		add_kbnode( root, new_kbnode( pkt ) );
+	    pkt = m_alloc( sizeof *pkt );
+	    init_packet(pkt);
+	    break;
+	}
+    }
+  ready:
+    if( rc == -1 && root )
+	rc = 0;
+
+    if( rc )
+	release_kbnode( root );
+    else
+	*ret_root = root;
+    free_packet( pkt );
+    m_free( pkt );
     return rc;
 }
 
@@ -579,6 +714,8 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 
     if( !(rentry = check_pos( kbpos )) )
 	return G10ERR_GENERAL;
+    if( kbpos->fp )
+	BUG(); /* not allowed with such a handle */
 
     /* open the source file */
     fp = iobuf_open( rentry->fname );

@@ -1,0 +1,18 @@
+Fri Feb 13 19:34:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* iobuf.c (iobuf_seek): Set counters to new offset.
+
+Fri Feb 13 17:13:04 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* logger.c (log_set_name, log_get_name): New.
+	(print_prefix, pgm_name): New, changed all function to make use it.
+	(log_mpidump): Removed the "DBG" prefix.
+	(log_hexdump): Ditto.
+
+	* logger.c (printstr): Removed.
+
+Fri Feb 13 15:14:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* argparse.c (show_help): New '\v' kludge.
+
+

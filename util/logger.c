@@ -26,7 +26,25 @@
 #include "util.h"
 
 static char pidstring[15];
+static char *pgm_name;
 static int errorcount;
+
+void
+log_set_name( const char *name )
+{
+    m_free(pgm_name);
+    if( name )
+	pgm_name = m_strdup(name);
+    else
+	pgm_name = NULL;
+}
+
+const char *
+log_get_name(void)
+{
+    return pgm_name? pgm_name : "";
+}
+
 
 void
 log_set_pid( int pid )
@@ -46,45 +64,21 @@ log_get_errorcount( int clear)
     return n;
 }
 
-
-/****************
- * General interface for printing a line
- * level 0 := print to /dev/null
- *	 1 := print to stdout
- *	 2 := print as info to stderr
- *	 3 := ditto but as error
- */
-void
-printstr( int level, const char *fmt, ... )
+static void
+print_prefix(const char *text)
 {
-    va_list arg_ptr ;
-
-    if( !level )
-	return;
-
-    if( !fmt ) {
-	putc('\n', level? stderr: stdout);
-	return;
-    }
-
-    va_start( arg_ptr, fmt ) ;
-    if( level < 2 ) {
-	vfprintf(stdout,fmt,arg_ptr) ;
-    }
-    else {
-	fprintf(stderr, level==2? "%s: ": "%s: error: ", strusage(13) ) ;
-	vfprintf(stderr,fmt,arg_ptr) ;
-    }
-    va_end(arg_ptr);
+    if( pgm_name )
+	fprintf(stderr, "%s%s: %s", pgm_name, pidstring, text );
+    else
+	fprintf(stderr, "?%s: %s", pidstring, text );
 }
-
 
 void
 log_info( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "info%s: ", pidstring ) ;
+    print_prefix("");
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -95,7 +89,7 @@ log_error( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "error%s: ", pidstring  ) ;
+    print_prefix("");
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -107,7 +101,7 @@ log_fatal( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "Fatal%s: ", pidstring  ) ;
+    print_prefix("fatal: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -120,7 +114,8 @@ log_bug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "\nInternal Error%s: ", pidstring  ) ;
+    putc('\n', stderr );
+    print_prefix("Ooops: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -148,7 +143,7 @@ log_debug( const char *fmt, ... )
 {
     va_list arg_ptr ;
 
-    fprintf(stderr, "DBG%s: ", pidstring  ) ;
+    print_prefix("DBG: ");
     va_start( arg_ptr, fmt ) ;
     vfprintf(stderr,fmt,arg_ptr) ;
     va_end(arg_ptr);
@@ -161,7 +156,7 @@ log_hexdump( const char *text, char *buf, size_t len )
 {
     int i;
 
-    fprintf(stderr, "DBG%s: %s", pidstring,  text );
+    print_prefix(text);
     for(i=0; i < len; i++ )
 	fprintf(stderr, " %02X", ((byte*)buf)[i] );
     fputc('\n', stderr);
@@ -171,7 +166,7 @@ log_hexdump( const char *text, char *buf, size_t len )
 void
 log_mpidump( const char *text, MPI a )
 {
-    fprintf(stderr, "DBG%s: %s", pidstring, text );
+    print_prefix(text);
     mpi_print(stderr, a, 1 );
     fputc('\n', stderr);
 }

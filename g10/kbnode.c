@@ -177,11 +177,12 @@ walk_kbnode( KBNODE root, KBNODE *context, int all )
     do {
 	if( !*context ) {
 	    *context = root;
-	    return root;
+	    n = root;
 	}
-
-	n = (*context)->next;
-	*context = n;
+	else {
+	    n = (*context)->next;
+	    *context = n;
+	}
     } while( !all && n && (n->private_flag & 1) );
 
     return n;

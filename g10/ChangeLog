@@ -1,0 +1,27 @@
+Fri Feb 13 20:18:14 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* ringedit.c (enum_keyblocks, keyring_enum): New.
+
+Fri Feb 13 19:33:40 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* export.c: Add functionality.
+
+	* keygen.c (generate_keypair): Moved the leading comment behind the
+	key packet.
+	* kbnode.c (walk_kbnode): Fixed.
+
+	* g10.c (main): listing armored keys now work.
+
+Fri Feb 13 16:17:43 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* parse-packet.c (parse_publickey, parse_signature): Fixed calls
+	to mpi_read used for ELG b.
+
+Fri Feb 13 15:13:23 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (main): changed formatting of help output.
+
+Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
+
+	* pubkey-enc.c (get_session_key): rewritten
+

@@ -6,7 +6,13 @@
 CFLAGS = -O -Wall
 
 EXTRA_DIST = README algorithm.doc ChangeLog example.c
+
+# I found no other easy way to use this only if zlib is neede
+# doing this with SUBDIR = @xxx@  in the top Makefile.am does not
+# work because automake doesn't scan this Makefile.am here.
+if ENABLE_LOCAL_ZLIB
 noinst_LIBRARIES = libzlib.a
+endif
 
 
 libzlib_a_SOURCES = adler32.c compress.c crc32.c gzio.c \
@@ -18,5 +24,6 @@ libzlib_a_SOURCES = adler32.c compress.c crc32.c gzio.c \
 
 
 CLEANFILES = example foo.gz
+
 
 

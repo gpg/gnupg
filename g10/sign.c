@@ -796,14 +796,14 @@ edit_keysigs( const char *username )
     /* search the userid */
     rc = find_keyblock_byname( &kbpos, username );
     if( rc ) {
-	log_error("user '%s' not found\n", username );
+	log_error("%s: user not found\n", username );
 	goto leave;
     }
 
     /* read the keyblock */
     rc = read_keyblock( &kbpos, &keyblock );
     if( rc ) {
-	log_error("error reading the certificate: %s\n", g10_errstr(rc) );
+	log_error("%s: certificate read problem: %s\n", username, g10_errstr(rc) );
 	goto leave;
     }
 

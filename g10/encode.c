@@ -182,7 +182,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	goto leave;
     }
     else if( opt.verbose )
-	log_error("reading from '%s'\n", filename? filename: "[stdin]");
+	log_info("reading from '%s'\n", filename? filename: "[stdin]");
 
     if( !(out = open_outfile( filename, opt.armor? 1:0 )) ) {
 	rc = G10ERR_CREATE_FILE;  /* or user said: do not overwrite */

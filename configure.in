@@ -162,26 +162,26 @@ AC_SUBST(MPI_EXTRA_ASM_OBJS)
 
 dnl Do we have zlib? Must do it here because Solaris failed
 dnl when compiling a conftest (due to the "-lz" from LIBS).
-ZLIBS=
-ZLIB_SUBDIR=
 if test "$g10_force_zlib" = "yes"; then
-    ZLIBS="\${top_srcdir}/zlib/libzlib.a"
-    ZLIB_SUBDIR=zlib
+    ZLIBS="-L\${top_srcdir}/zlib -lzlib"
+    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
     WK_LINK_FILES(zlib/zlib.h, zlib.h )
     WK_LINK_FILES(zlib/zconf.h, zconf.h )
 else
 AC_CHECK_HEADERS(zlib.h)
 if test "$ac_cv_header_zlib_h" = yes ; then
     LIBS="$LIBS -lz"
+    ZLIBS=
+    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, false)
 else
-    ZLIBS="\${top_srcdir}/zlib/libzlib.a"
-    ZLIB_SUBDIR=zlib
+    ZLIBS="-L\${top_srcdir}/zlib -lzlib"
+    AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
     WK_LINK_FILES(zlib/zlib.h, zlib.h )
     WK_LINK_FILES(zlib/zconf.h, zconf.h )
 fi
 fi
 AC_SUBST(ZLIBS)
-AC_SUBST(ZLIB_SUBDIR)
+
 
 dnl checking whether we have other cipher source files
 CIPHER_EXTRA_OBJS=""

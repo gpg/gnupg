@@ -3,9 +3,9 @@
 set -e
 
 curr_ver=$(ls g10-*.tar.gz | sort -r -t '.' -n +0.4 -1 +1 -2 +2 \
-           | head -1 | sed -e 's/g10-\(.*\).tar.gz/\1/' )
+	   | head -1 | sed -e 's/g10-\(.*\).tar.gz/\1/' )
 prev_ver=$(ls g10-*.tar.gz | sort -r -t '.' -n +0.4 -1 +1 -2 +2 \
-           | head -2 | tail -1 | sed -e 's/g10-\(.*\).tar.gz/\1/' )
+	   | head -2 | tail -1 | sed -e 's/g10-\(.*\).tar.gz/\1/' )
 
 echo "Current  is: $curr_ver"
 echo "Previous is: $prev_ver"
@@ -13,10 +13,12 @@ echo "Previous is: $prev_ver"
 echo "Removing old directories"
 [ -d "g10-$curr_ver" ] && rm -rf "g10-$curr_ver"
 [ -d "g10-$prev_ver" ] && rm -rf "g10-$prev_ver"
- 
-echo "Unpacking previous and current tar" 
+
+echo "Unpacking previous and current tar"
 tar xzf "g10-$curr_ver.tar.gz"
 tar xzf "g10-$prev_ver.tar.gz"
+
+read
 
 echo "Diffing"
 tmp_name="g10-$curr_ver.diff.tmp"
@@ -44,6 +46,7 @@ Prereq: $prev_ver
 EOF
 
 sed -ne '/^diff.*VERSION/,/^+[0-9][0-9]*/ p' $tmp_name >> $diff_name
+echo  >> $diff_name
 sed -e '/^diff.*VERSION/,/^+[0-9][0-9]*/ d'  $tmp_name >> $diff_name
 
 rm $tmp_name
@@ -53,7 +56,7 @@ gzip -9 $diff_name
 
 echo "Checking patch file"
 cd g10-$prev_ver
-zcat ../$diff_name.gz | patch -s -p1 
+zcat ../$diff_name.gz | patch -s -p1
 rm $(find . -name "*.orig")
 cd ..
 

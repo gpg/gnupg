@@ -2,13 +2,24 @@
 	     G10 - The GNU Encryption and Signing Tool
 	    ------------------------------------------
 
+    THIS IS ALPHA SOFTWARE, EXPECT BUGS AND UNIMPLEMENTED STUFF.
+    IT MAY HAPPEN THAT SOME DATA FORMATS OR PROGRAMM OPTIONS
+    CHANGE WITH THE NEXT VERSION.
 
-    THIS IS VERSION IS ONLY A TEST VERSION !  YOU SHOULD NOT
-    USE IT FOR OTHER PURPOSES THAN EVALUATING THE CURRENT CODE.
+    On a Linux box (version 2.x.x, alpha or x86 CPU) it should
+    work reliable. You may create your key on such a machine and
+    use it.  Please verify the tar file; there is a PGP and a G10
+    signature available. My PGP key is well known and published in
+    the "Global Trust Register for 1998", ISBN 0-9532397-0-5.
 
-    * The data format may change in the next version!
+    I have included my pubring as "g10/pubring.10", which contains
+    the key used to make G10 signatures:
+    "pub  1312G/FF3EAA0B 1998-02-09 Werner Koch <wk@isil.d.shuttle.de>"
+    "Key fingerprint = 8489 6CD0 1851 0E33 45DA  CD67 036F 11B8 FF3E AA0B"
 
-    * Some features are not yet implemented
+    You may add it to your G10 pubring and use it in the future to
+    verify new releases.  Because you verified the tar file containing
+    this file here, you can be sure that the above fingerprint is correct.
 
 
     Please subscribe to g10@net.lut.ac.uk by sending a mail with
@@ -42,11 +53,9 @@
     Installation
     ------------
 
+    See the file INSTALL.  Here is a quick summary:
+
     1)	"./configure"
-
-       to enable the integrated malloc debugging stuff, use:
-
-	"./configure --enable-m-debug"
 
     2) "make"
 
@@ -54,7 +63,10 @@
 
     4) You end up with a binary "g10" in /usr/local/bin
 
-    5) create a directory ".g10" under your hoem directory ("mkdir ~/.g10")
+    5) Optional, but suggested: install the program "g10" as suid root.
+
+    6) Create a directory ".g10" under your home directory ("mkdir ~/.g10")
+
 
 
 
@@ -241,20 +253,20 @@
     you are asked for the passphrase, so that G10 is able to look at the
     inner structure of a encrypted packet.
 
-	--quick-random
+	g10maint --quick-random
 
     Do not use the stroing random generator but a faster one.  This can be
     used to generate keys for tests; those are marked as insecure.
 
-	--list-trustdb
+	g10maint --list-trustdb
 
     List the contents of the trustdb in a human readable format
 
-	--list-trustdb	<usernames>
+	g10maint --list-trustdb  <usernames>
 
     List the tree of certificates for the given usernames
 
-	--list-trust-path  depth  username
+	g10maint --list-trust-path  depth  username
 
     List the possible trust paths for the given username, up to the specified
     depth.  If depth is negative, duplicate introducers are not listed,
@@ -263,25 +275,25 @@
      using a negative number). This option may create new entries in the
     trustdb.
 
-	--print-mds  filenames
+	g10maint --print-mds  filenames
 
     List all available message digest values for the fiven filenames
 
-	--gen-prime n
+	g10maint --gen-prime n
 
     Generate and print a simple prime number of size n
 
-	--gen-prime n q
+	g10maint --gen-prime n q
 
     Generate a prime number suitable for ElGamal signatures of size n with
     a q as largest primefactor of n-1.
 
-	--gen-prime n q 1
+	g10maint --gen-prime n q 1
 
     Ditto, but calculate a generator too.
 
 
-    For more options/commands see the file g10/OPTIONS.
+    For more options/commands see the file g10/OPTIONS, or use "g10 --help"
 
 
     Debug Flags
@@ -311,7 +323,10 @@
     but for now I stick to my own formatting rules.
 
     The primary FTP site is "ftp://ftp.guug.de/pub/gcrypt/"
-    The primary WWW page is "http://www.d.shuttle.de/isil/g10.html"
+    The primary WWW page is "http://www.d.shuttle.de/isil/crypt/g10.html"
+
+    If you like, send your keys to <g10-keys@isil.d.shuttle.de>; use
+    "g10 --export --armor | mail g10-keys@isil.d.shuttle.de" to do this.
 
     Please direct bug reports to <g10-bugs@isil.d.shuttle.de> or better
     post them to the mailing list <g10@net.lut.ac.uk>.

@@ -31,17 +31,109 @@
 #include "keydb.h"
 #include "memory.h"
 #include "util.h"
+#include "main.h"
 
 
 /****************
- * Make a new keyring from all internal keyrings (if no user is given)
- * or for all selected users.
+ * Export the public keys (to standard out or --outout).
+ * Depending on opt.armor the output is armored.
+ * If USERS is NULL, the complete ring wil. be exported.
  */
 int
 export_pubkeys( STRLIST users )
 {
-    log_fatal("Not yet implemented");
-    return 0;
+    int rc = 0;
+    armor_filter_context_t afx;
+    compress_filter_context_t zfx;
+    IOBUF out = NULL;
+    PACKET pkt;
+    KBNODE keyblock = NULL;
+    KBNODE kbctx, node;
+    KBPOS kbpos;
+    STRLIST sl;
+    int all = !users;
+    int any=0;
+
+    memset( &afx, 0, sizeof afx);
+    memset( &zfx, 0, sizeof zfx);
+    init_packet( &pkt );
+
+    if( !(out = open_outfile( NULL, 0 )) ) {
+	rc = G10ERR_CREATE_FILE;
+	goto leave;
+    }
+
+    if( opt.armor ) {
+	afx.what = 1;
+	iobuf_push_filter( out, armor_filter, &afx );
+    }
+    if( opt.compress )
+	iobuf_push_filter( out, compress_filter, &zfx );
+
+    if( all ) {
+	rc = enum_keyblocks( 0, &kbpos, &keyblock );
+	if( rc ) {
+	    if( rc != -1 )
+		log_error("enum_keyblocks(open) failed: %s\n", g10_errstr(rc) );
+	    goto leave;
+	}
+	all = 2;
+    }
+
+    /* use the correct sequence. strlist_last,prev do work correct with
+     * NULL pointers :-) */
+    for( sl=strlist_last(users); sl || all ; sl=strlist_prev( users, sl )) {
+	if( all ) { /* get the next user */
+	    rc = enum_keyblocks( 1, &kbpos, &keyblock );
+	    if( rc == -1 )  /* EOF */
+		break;
+	    if( rc ) {
+		log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
+		break;
+	    }
+	}
+	else {
+	    /* search the userid */
+	    rc = find_keyblock_byname( &kbpos, sl->d );
+	    if( rc ) {
+		log_error("%s: user not found: %s\n", sl->d, g10_errstr(rc) );
+		rc = 0;
+		continue;
+	    }
+	    /* read the keyblock */
+	    rc = read_keyblock( &kbpos, &keyblock );
+	}
+
+	if( rc ) {
+	    log_error("certificate read problem: %s\n", g10_errstr(rc));
+	    goto leave;
+	}
+
+	/* and write it */
+	for( kbctx=NULL; (node = walk_kbnode( keyblock, &kbctx, 0 )); ) {
+	    if( (rc = build_packet( out, node->pkt )) ) {
+		log_error("build_packet(%d) failed: %s\n",
+			    node->pkt->pkttype, g10_errstr(rc) );
+		rc = G10ERR_WRITE_FILE;
+		goto leave;
+	    }
+	}
+	any++;
+    }
+    if( rc == -1 )
+	rc = 0;
+
+  leave:
+    if( all == 2 )
+	enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+    release_kbnode( keyblock );
+    if( rc || !any )
+	iobuf_cancel(out);
+    else
+	iobuf_close(out);
+    if( !any )
+	log_info("warning: nothing exported\n");
+    return rc;
 }
 
 

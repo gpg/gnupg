@@ -1,8 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS =  intl po util mpi cipher @ZLIB_SUBDIR@ tools g10
+SUBDIRS =  intl po zlib util mpi cipher tools g10
 EXTRA_DIST = VERSION
-
 
 
 tar:	clean

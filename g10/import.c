@@ -35,15 +35,34 @@
 
 
 /****************
- * Import the public keys from the given filename.
- * Import is a somewhat misleading name, as we (only) add informations
- * about the public keys into aout trustdb.
+ * Import the public keys from the given filename. Input may be armored.
+ * This function rejects alls keys which are not valid self signed on at
+ * least one userid. Only user ids which are self signed will be imported.
+ * Other signatures are not not checked.
  *
- * NOTE: this function is not really needed and will be changed to
- *	a function which reads a plain textfile, describing a public
- *	key and its associated ownertrust.  This can be used (together
- *	with the export function) to make a backup of the assigned
- *	ownertrusts.
+ * Actually this functtion does a merge, it works like this:
+ *   FIXME: add handling for revocation certs
+ *
+ *  - get the keyblock
+ *  - check self-signatures and remove all userids and their isgnatures
+ *    without/invalid self-signatures.
+ *  - reject the keyblock, if we have no valid userid.
+ *  - See wether we have this key already in one of our pubrings.
+ *    If not, simply add it to the default keyring.
+ *  - Compare the key and the self-signatures of the new and the one in
+ *    our keyring.  If they are differen something weird is going on;
+ *    ask what to do.
+ *  - See wether we have only non-self-signature on one user id; if not
+ *    ask the user what to do.
+ *  - compare the signatures: If we already have this signature, check
+ *    that they compare okay, if not issue a warning and ask the user.
+ *    (consider to look at the timestamp and use the newest?)
+ *  - Simply add the signature.  Can't verify here because we may not have
+ *    the signatures public key yet; verification is done when putting it
+ *    into the trustdb, which is done automagically as soon as this pubkey
+ *    is used.
+ *  - Proceed with next signature.
+ *
  */
 int
 import_pubkeys( const char *filename )

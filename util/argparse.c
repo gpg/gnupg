@@ -538,16 +538,31 @@ show_help( ARGPARSE_OPTS *opts, unsigned flags )
 	/* get max. length of long options */
 	for(i=indent=0; opts[i].short_opt; i++ ) {
 	    if( opts[i].long_opt )
-		if( (j=strlen(opts[i].long_opt)) > indent && j < 35 )
-		    indent = j;
+		if( !opts[i].description || *opts[i].description != '\v' )
+		    if( (j=strlen(opts[i].long_opt)) > indent && j < 35 )
+			 indent = j;
 	}
 	/* example: " -v, --verbose   Viele Sachen ausgeben" */
 	indent += 10;
-	puts("Options:");
+	if( *opts[0].description != '\v' )
+	    puts("Options:");
 	for(i=0; opts[i].short_opt; i++ ) {
 	    s = _( opts[i].description );
 	    if( s && *s== '\r' ) /* hide this line */
 		continue;
+	    if( s && *s == '\v' ) { /* unindented comment only line */
+		for(s++; *s; s++ ) {
+		    if( *s == '\n' ) {
+			if( s[1] )
+			    putchar('\n');
+		    }
+		    else
+			putchar(*s);
+		}
+		putchar('\n');
+		continue;
+	    }
+
 	    if( opts[i].short_opt < 256 )
 		printf(" -%c", opts[i].short_opt );
 	    else
