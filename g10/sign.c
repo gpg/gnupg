@@ -1245,7 +1245,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     MD_HANDLE md;
 
     assert( (sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
-	    || sigclass == 0x20 || sigclass == 0x18
+	    || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
 	    || sigclass == 0x30 || sigclass == 0x28 );
 
     if (opt.force_v4_certs)
@@ -1284,14 +1284,19 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 
     md = md_open( digest_algo, 0 );
 
-    /* hash the public key certificate and the user id */
+    /* hash the public key certificate */
     hash_public_key( md, pk );
-    if( sigclass == 0x18 || sigclass == 0x28 ) { /* subkey binding/revocation*/
+
+    if( sigclass == 0x18 || sigclass == 0x19 || sigclass == 0x28 )
+      {
+	/* hash the subkey binding/backsig/revocation */
 	hash_public_key( md, subpk );
-    }
-    else if( sigclass != 0x1F && sigclass != 0x20 ) {
+      }
+    else if( sigclass != 0x1F && sigclass != 0x20 )
+      {
+	/* hash the user id */
         hash_uid (md, sigversion, uid);
-    }
+      }
     /* and make the signature packet */
     sig = m_alloc_clear( sizeof *sig );
     sig->version = sigversion;
@@ -1347,8 +1352,7 @@ update_keysig_packet( PKT_signature **ret_sig,
                       PKT_public_key *subpk,
                       PKT_secret_key *sk,
                       int (*mksubpkt)(PKT_signature *, void *),
-                      void *opaque
-		   )
+                      void *opaque )
 {
     PKT_signature *sig;
     int rc=0;

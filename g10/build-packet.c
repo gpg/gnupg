@@ -656,6 +656,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_NOTATION:
       case SIGSUBPKT_POLICY:
       case SIGSUBPKT_REV_KEY:
+      case SIGSUBPKT_SIGNATURE:
 	/* we do allow multiple subpackets */
 	break;
 
@@ -725,18 +726,20 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
     else
 	nlen = 1; /* just a 1 byte length header */
 
-    switch( type ) {
+    switch( type )
+      {
 	/* The issuer being unhashed is a historical oddity.  It
 	   should work equally as well hashed.  Of course, if even an
 	   unhashed issuer is tampered with, it makes it awfully hard
 	   to verify the sig... */
       case SIGSUBPKT_ISSUER:
+      case SIGSUBPKT_SIGNATURE:
         hashed = 0;
         break;
       default: 
         hashed = 1;
         break;
-    }
+      }
 
     if( critical )
 	type |= SIGSUBPKT_FLAG_CRITICAL;
