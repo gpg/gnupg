@@ -34,10 +34,10 @@
 #include "longlong.h"
 
 #ifndef UMUL_TIME
-  #define UMUL_TIME 1
+#define UMUL_TIME 1
 #endif
 #ifndef UDIV_TIME
-  #define UDIV_TIME UMUL_TIME
+#define UDIV_TIME UMUL_TIME
 #endif
 
 /* FIXME: We should be using invert_limb (or invert_normalized_limb)
@@ -533,5 +533,3 @@ mpihelp_divmod_1( mpi_ptr_t quot_ptr,
 	return r;
     }
 }
-
-

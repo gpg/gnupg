@@ -32,7 +32,7 @@
 void
 mpi_invm( MPI x, MPI a, MPI n )
 {
-  #if 0
+#if 0
     MPI u, v, u1, u2, u3, v1, v2, v3, q, t1, t2, t3;
     MPI ta, tb, tc;
 
@@ -76,7 +76,7 @@ mpi_invm( MPI x, MPI a, MPI n )
     mpi_free(t3);
     mpi_free(u);
     mpi_free(v);
-  #elif 0
+#elif 0
     /* Extended Euclid's algorithm (See TAOPC Vol II, 4.5.2, Alg X)
      * modified according to Michael Penk's solution for Exercice 35 */
 
@@ -157,7 +157,7 @@ mpi_invm( MPI x, MPI a, MPI n )
     mpi_free(t1);
     mpi_free(t2);
     mpi_free(t3);
-  #else
+#else
     /* Extended Euclid's algorithm (See TAOPC Vol II, 4.5.2, Alg X)
      * modified according to Michael Penk's solution for Exercice 35
      * with further enhancement */
@@ -263,8 +263,5 @@ mpi_invm( MPI x, MPI a, MPI n )
 
     mpi_free(u);
     mpi_free(v);
-  #endif
+#endif
 }
-
-
-

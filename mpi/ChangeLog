@@ -1,3 +1,10 @@
+2003-05-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* mpicoder.c, mpi-inline.h, mpi-inv.c, mpiutil.c, mpih-div.c,
+	mpi-internal.h, mpi-scan.c: Edit all preprocessor instructions to
+	remove whitespace before the '#'.  This is not required by C89,
+	but there are some compilers out there that don't like it.
+
 2003-04-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* config.links: Re-disable assembler on Darwin.  Darwin 6.5 broke

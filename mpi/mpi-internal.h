@@ -39,13 +39,13 @@
  * checking a 768 and a 1024 bit ElGamal signature.
  * (wk 22.12.97) */
 #ifndef KARATSUBA_THRESHOLD
-    #define KARATSUBA_THRESHOLD 16
+#define KARATSUBA_THRESHOLD 16
 #endif
 
 /* The code can't handle KARATSUBA_THRESHOLD smaller than 2.  */
 #if KARATSUBA_THRESHOLD < 2
-    #undef KARATSUBA_THRESHOLD
-    #define KARATSUBA_THRESHOLD 2
+#undef KARATSUBA_THRESHOLD
+#define KARATSUBA_THRESHOLD 2
 #endif
 
 
@@ -151,8 +151,8 @@ typedef int mpi_size_t;        /* (must be a signed type) */
 
 /*-- mpiutil.c --*/
 #ifdef M_DEBUG
-  #define mpi_alloc_limb_space(n,f)  mpi_debug_alloc_limb_space((n),(f), M_DBGINFO( __LINE__ ) )
-  #define mpi_free_limb_space(n)  mpi_debug_free_limb_space((n),  M_DBGINFO( __LINE__ ) )
+#define mpi_alloc_limb_space(n,f)  mpi_debug_alloc_limb_space((n),(f), M_DBGINFO( __LINE__ ) )
+#define mpi_free_limb_space(n)  mpi_debug_free_limb_space((n),  M_DBGINFO( __LINE__ ) )
   mpi_ptr_t mpi_debug_alloc_limb_space( unsigned nlimbs, int sec, const char *info  );
   void mpi_debug_free_limb_space( mpi_ptr_t a, const char *info );
 #else
@@ -253,7 +253,7 @@ mpi_limb_t mpihelp_rshift( mpi_ptr_t wp, mpi_ptr_t up, mpi_size_t usize,
 #endif
 
 #ifdef __GNUC__
-  #include "mpi-inline.h"
+#include "mpi-inline.h"
 #endif
 
 #endif /*G10_MPI_INTERNAL_H*/

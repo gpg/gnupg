@@ -67,7 +67,7 @@ mpi_putbyte( MPI a, unsigned idx, int xc )
 	limb = ap[i];
 	for( j=0; j < BYTES_PER_MPI_LIMB; j++, n++ )
 	    if( n == idx ) {
-	      #if BYTES_PER_MPI_LIMB == 4
+#if BYTES_PER_MPI_LIMB == 4
 		if( j == 0 )
 		    limb = (limb & 0xffffff00) | c;
 		else if( j == 1 )
@@ -76,7 +76,7 @@ mpi_putbyte( MPI a, unsigned idx, int xc )
 		    limb = (limb & 0xff00ffff) | (c<<16);
 		else
 		    limb = (limb & 0x00ffffff) | (c<<24);
-	      #elif BYTES_PER_MPI_LIMB == 8
+#elif BYTES_PER_MPI_LIMB == 8
 		if( j == 0 )
 		    limb = (limb & 0xffffffffffffff00) | c;
 		else if( j == 1 )
@@ -93,9 +93,9 @@ mpi_putbyte( MPI a, unsigned idx, int xc )
 		    limb = (limb & 0xff00ffffffffffff) | (c<<48);
 		else
 		    limb = (limb & 0x00ffffffffffffff) | (c<<56);
-	      #else
-		 #error please enhance this function, its ugly - i know.
-	      #endif
+#else
+#error please enhance this function, its ugly - i know.
+#endif
 		if( a->nlimbs <= i )
 		    a->nlimbs = i+1;
 		ap[i] = limb;
