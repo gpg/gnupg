@@ -1,3 +1,8 @@
+2004-09-11  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (app_select_openpgp): Its app_munge_serialno and
+	not app_number_serialno.
+
 2004-08-20  Werner Koch  <wk@g10code.de>
 
 	* app.c (select_application): Fixed serial number extraction and

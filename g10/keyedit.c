@@ -2121,6 +2121,27 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 			  datestr_from_sk(sk),
 			  expirestr_from_sk(sk) );
 	    tty_printf("\n");
+            if (sk->is_protected && sk->protect.s2k.mode == 1002)
+              {
+		tty_printf("                     ");
+                tty_printf(_("card-no: ")); 
+                if (sk->protect.ivlen == 16
+                    && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6))
+                  { /* This is an OpenPGP card. */
+                    for (i=8; i < 14; i++)
+                      {
+                        if (i == 10)
+                          tty_printf (" ");
+                        tty_printf ("%02X", sk->protect.iv[i]);
+                      }
+                  }
+                else
+                  { /* Something is wrong: Print all. */
+                    for (i=0; i < sk->protect.ivlen; i++)
+                      tty_printf ("%02X", sk->protect.iv[i]);
+                  }
+                tty_printf ("\n");
+              }
 	}
 	else if( with_subkeys && node->pkt->pkttype == PKT_SIGNATURE
 		 && node->pkt->pkt.signature->sig_class == 0x28       ) {

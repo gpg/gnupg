@@ -1,3 +1,7 @@
+2004-09-20  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (show_key_with_all_names): Print the card S/N.
+
 2004-09-11  Moritz Schulte  <moritz@g10code.com>
 
 	* openfile.c (copy_options_file): Fixed last commit (added a `+').

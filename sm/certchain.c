@@ -672,7 +672,12 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
             {
               do_list (0, lm, fp, _("root certificate is not marked trusted"));
-              if (!lm)
+              /* If we already figured out that the certificate is
+                 expired it does not make much sense to ask the user
+                 whether we wants to trust the root certificate.  He
+                 should do this only if the certificate under question
+                 will then be usable. */
+              if (!lm && !any_expired)
                 {
                   int rc2;
                   char *fpr = gpgsm_get_fingerprint_string (subject_cert,
@@ -707,6 +712,8 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           /* Check for revocations etc. */
           if ((flags & 1))
             rc = 0;
+          else if (any_expired)
+            ; /* Don't bother to run the expensive CRL check then. */
           else
             rc = is_cert_still_valid (ctrl, lm, fp,
                                       subject_cert, subject_cert,
@@ -835,6 +842,8 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       /* Check for revocations etc. */
       if ((flags & 1))
         rc = 0;
+      else if (any_expired)
+        ; /* Don't bother to run the expensive CRL check then. */
       else
         rc = is_cert_still_valid (ctrl, lm, fp,
                                   subject_cert, issuer_cert,
@@ -866,14 +875,14 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
          the error code to the most critical one */
       if (any_revoked)
         rc = gpg_error (GPG_ERR_CERT_REVOKED);
+      else if (any_expired)
+        rc = gpg_error (GPG_ERR_CERT_EXPIRED);
       else if (any_no_crl)
         rc = gpg_error (GPG_ERR_NO_CRL_KNOWN);
       else if (any_crl_too_old)
         rc = gpg_error (GPG_ERR_CRL_TOO_OLD);
       else if (any_no_policy_match)
         rc = gpg_error (GPG_ERR_NO_POLICY_MATCH);
-      else if (any_expired)
-        rc = gpg_error (GPG_ERR_CERT_EXPIRED);
     }
   
  leave:

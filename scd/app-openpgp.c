@@ -1397,7 +1397,7 @@ app_select_openpgp (APP app)
 #if GNUPG_MAJOR_VERSION != 1
       /* A valid OpenPGP card should never need this but well the test
          is cheap. */
-      rc = app_number_serialno (app);
+      rc = app_munge_serialno (app);
       if (rc)
         goto leave;
 #endif
