@@ -598,6 +598,74 @@ percent_escape (const char *src)
 }
 
 
+/* Convert two hexadecimal digits from STR to the value they
+   represent.  Returns -1 if one of the characters is not a
+   hexadecimal digit.  */
+static int
+hextobyte (const char *str)
+{
+  int val = 0;
+  int i;
+
+#define NROFHEXDIGITS 2
+  for (i = 0; i < NROFHEXDIGITS; i++)
+    {
+      if (*str >= '0' && *str <= '9')
+	val += *str - '0';
+      else if (*str >= 'A' && *str <= 'F')
+	val += 10 + *str - 'A';
+      else if (*str >= 'a' && *str <= 'f')
+	val += 10 + *str - 'a';
+      else
+	return -1;
+      if (i < NROFHEXDIGITS - 1)
+	val *= 16;
+      str++;
+    }
+  return val;
+}
+
+
+
+/* Percent-Deescape special characters.  The string is valid until the
+   next invocation of the function.  */
+static char *
+percent_deescape (const char *src)
+{
+  static char *str;
+  static int str_len;
+  int new_len = 3 * strlen (src) + 1;
+  char *dst;
+
+  if (str_len < new_len)
+    {
+      char *new_str = realloc (str, new_len);
+      if (!new_str)
+	gc_error (1, errno, "can not deescape string");
+      str = new_str;
+      str_len = new_len;
+    }
+
+  dst = str;
+  while (*src)
+    {
+      if (*src == '%')
+	{
+	  int val = hextobyte (src + 1);
+
+	  if (val < 0)
+	    gc_error (1, 0, "malformed end of string %s", src);
+
+	  *(dst++) = (char) val;
+	  src += 3;
+	}	  
+      else
+	*(dst++) = *(src++);
+    }
+  *dst = '\0';
+  return str;
+}
+
 
 /* List all components that are available.  */
 void
@@ -642,7 +710,8 @@ gc_component_list_options (int component, FILE *out)
       char *arg_name = NULL;
 
       /* Do not output unknown or internal options.  */
-      if (!option->active || option->level == GC_LEVEL_INTERNAL)
+      if (!(option->flags & GC_OPT_FLAG_GROUP)
+	  && (!option->active || option->level == GC_LEVEL_INTERNAL))
 	{
 	  option++;
 	  continue;
@@ -779,16 +848,18 @@ get_config_pathname (gc_component_t component, gc_backend_t backend)
 	      gc_backend[backend].name);
 
   if (option->value && *option->value)
-    pathname = option->value;
+    pathname = percent_deescape (&option->value[1]);
+  else if (option->default_value && *option->default_value)
+    pathname = percent_deescape (&option->default_value[1]);
   else
-    pathname = option->default_value;
+    pathname = "";
 
-  if (pathname[1] != '/')
+  if (pathname[0] != '/')
     gc_error (1, 0, "Option %s, needed by backend %s, is not absolute",
 	      gc_backend[backend].option_config_filename,
 	      gc_backend[backend].name);
 
-  return &pathname[1];
+  return pathname;
 }
 
 
@@ -1234,13 +1305,15 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   option = gc_component[component].options;
   while (option->name)
     {
+      /* FIXME: Add support for lists.  */
       if (!(option->flags & GC_OPT_FLAG_GROUP)
 	  && option->backend == backend
 	  && option->new_value
 	  && *option->new_value)
 	{
 	  if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_STRING)
-	    fprintf (src_file, "%s %s\n", option->name, &option->new_value[1]);
+	    fprintf (src_file, "%s %s\n", option->name,
+		     percent_deescape (&option->new_value[1]));
 	  else if (option->arg_type == GC_ARG_TYPE_NONE)
 	    fprintf (src_file, "%s\n", option->name);
 	  else
@@ -1250,11 +1323,11 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 	}
       option++;
     }
-  {
-    fprintf (src_file, "%s %s\n", marker, asctimestamp (gnupg_get_time ()));
-    if (ferror (src_file))
-      goto change_one_err;
-  }
+
+  fprintf (src_file, "%s %s\n", marker, asctimestamp (gnupg_get_time ()));
+  if (ferror (src_file))
+    goto change_one_err;
+
   if (!in_marker)
     {
       fprintf (src_file, "# GPGConf edited this configuration file.\n");

@@ -1,3 +1,17 @@
+2004-02-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c (hextobyte): New function.
+	(percent_deescape): New function.
+	(get_config_pathname): Percent deescape pathname if taken from
+	option (default) value.  Use default value only if it exists and
+	is not empty.  Use empty string otherwise.  Don't include leading
+	quote in pathname.
+	(change_options_program): Percent deescape string before writing
+	it out.
+	
+	* gpgconf-comp.c (gc_component_list_options): Do not skip groups
+	on output.
+
 2004-02-18  Werner Koch  <wk@gnupg.org>
 
 	* gpgconf-comp.c: Added empty components for gpgsm and scdaemon.
