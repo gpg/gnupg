@@ -1,3 +1,12 @@
+2003-11-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Note the new combinations with --symmetric and
+	--encrypt.  Document --bzip2-compress-level, and
+	--bzip2-compress-lowmem.  Clarify the plurarility (or not) of
+	various list and verify options.  Document BZIP2 in the
+	--compress-algo section.  Warn about compatibility issues with
+	ZLIB and BZIP2.
+
 2003-11-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Document --compress-level.  Some minor tweaks to other

@@ -96,8 +96,11 @@ special option "--".
 <varlistentry>
 <term>-s, --sign</term>
 <listitem><para>
-Make a signature. This command may be combined
-with --encrypt.
+Make a signature. This command may be combined with --encrypt (for a
+signed and encrypted message), --symmetric (for a signed and
+symmetrically encrypted message), or --encrypt and --symmetric
+together (for a signed message that may be decrypted via a secret key
+or a passphrase).
 </para></listitem></varlistentry>
 
 
@@ -118,7 +121,11 @@ Make a detached signature.
 <varlistentry>
 <term>-e, --encrypt</term>
 <listitem><para>
-Encrypt data. This option may be combined with --sign.
+Encrypt data. This option may be combined with --sign (for a signed
+and encrypted message), --symmetric (for a message that may be
+decrypted via a secret key or a passphrase), or --sign and --symmetric
+together (for a signed message that may be decrypted via a secret key
+or a passphrase).
 </para></listitem></varlistentry>
 
 
@@ -127,7 +134,11 @@ Encrypt data. This option may be combined with --sign.
 <listitem><para>
 Encrypt with a symmetric cipher using a passphrase.  The default
 symmetric cipher used is CAST5, but may be chosen with the
---cipher-algo option.
+--cipher-algo option.  This option may be combined with --sign (for a
+signed and symmetrically encrypted message), --encrypt (for a message
+that may be decrypted via a secret key or a passphrase), or --sign and
+--encrypt together (for a signed message that may be decrypted via a
+secret key or a passphrase).
 </para></listitem></varlistentry>
 
 
@@ -898,10 +909,24 @@ Try to be as quiet as possible.
 
 <varlistentry>
 <term>-z &ParmN;, --compress-level &ParmN;</term>
+<term>--bzip2-compress-level &ParmN;</term>
 <listitem><para>
-Set compression level to &ParmN;. A value of 0 for &ParmN;
-disables compression. Default is to use the default
-compression level of zlib (normally 6).
+Set compression level to &ParmN; for the ZIP and ZLIB compression
+algorithms.  The default is to use the default compression level of
+zlib (normally 6).  --bzip2-compress-level sets the compression level
+for the BZIP2 compression algorithm.  This is a different option since
+BZIP2 uses a significant amount of memory for each additional
+compression level.  -z sets both.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--bzip2-compress-lowmem</term>
+<listitem><para>
+Use a different decompression method for BZIP2 compressed files.  This
+alternate method uses a bit more than half the memory, but also runs
+at half the speed.  This is useful under extreme low memory
+circumstances when the file was originally compressed at a high
+--bzip2-compress-level.
 </para></listitem></varlistentry>
 
 
@@ -1236,21 +1261,21 @@ Defaults to no.  See also --photo-viewer.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-policy-url</term>
+<term>show-policy-urls</term>
 <listitem><para>
 Show policy URLs in the --list-sigs or --check-sigs listings.
 Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-notation</term>
+<term>show-notations</term>
 <listitem><para>
 Show signature notations in the --list-sigs or --check-sigs listings.
 Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-keyserver-url</term>
+<term>show-keyserver-urls</term>
 <listitem><para>
 Show any preferred keyserver URL in the --list-sigs or --check-sigs
 listings.  Defaults to no.
@@ -1264,7 +1289,7 @@ listings.  Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-long-keyid</term>
+<term>show-long-keyids</term>
 <listitem><para>
 Display all 64 bits (16 digits) of key IDs during key listings, rather
 than the more common 32 bit (8 digit) IDs.  Defaults to no.
@@ -1309,20 +1334,20 @@ Defaults to no.  See also --photo-viewer.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-policy-url</term>
+<term>show-policy-urls</term>
 <listitem><para>
 Show policy URLs in the signature being verified.  Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-notation</term>
+<term>show-notations</term>
 <listitem><para>
 Show signature notations in the signature being verified.  Defaults to
 no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-keyserver-url</term>
+<term>show-keyserver-urls</term>
 <listitem><para>
 Show any preferred keyserver URL in the signature being verified.
 Defaults to no.
@@ -1336,7 +1361,7 @@ the signature.  Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
-<term>show-long-keyid</term>
+<term>show-long-keyids</term>
 <listitem><para>
 Display all 64 bits (16 digits) of key IDs during signature
 verification, rather than the more common 32 bit (8 digit) IDs.
@@ -1748,14 +1773,23 @@ with the command --version yields a list of supported algorithms.
 <varlistentry>
 <term>--compress-algo &ParmName;</term>
 <listitem><para>
-Use compression algorithm &ParmName;.  "zlib" is RFC1950 ZLIB
+Use compression algorithm &ParmName;.  "zlib" is RFC-1950 ZLIB
 compression.  "zip" is RFC-1951 ZIP compression which is used by PGP.
-"uncompressed" or "none" disables compression.  If this option is not
-used, the default behavior is to examine the recipient key preferences
-to see which algorithms the recipient supports.  If all else fails,
-ZIP is used for maximum compatibility.  Note, however, that ZLIB may
-give better compression results if that is more important, as the
-compression window size is not limited to 8k.
+"bzip2" is a more modern compression scheme that can compress some
+things better than zip or zlib, but at the cost of more memory used
+during compression and decompression.  "uncompressed" or "none"
+disables compression.  If this option is not used, the default
+behavior is to examine the recipient key preferences to see which
+algorithms the recipient supports.  If all else fails, ZIP is used for
+maximum compatibility.
+</para><para>
+ZLIB may give better compression results than ZIP, as the compression
+window size is not limited to 8k.  BZIP2 may give even better
+compression results than that, but will use a significantly larger
+amount of memory while compressing and decompressing.  This may be
+significant in low memory situations.  Note, however, that PGP (all
+versions) only supports ZIP compression.  Using any algorithm other
+than ZIP or "none" will make the message unreadable with PGP.
 </para></listitem></varlistentry>
 
 
