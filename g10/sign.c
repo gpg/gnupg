@@ -131,14 +131,16 @@ mk_notation_and_policy( PKT_signature *sig,
     if( IS_SIG(sig) && opt.sig_policy_url )
       {
 	if(sig->version<4)
-	  log_info("can't put a policy URL into v3 signatures\n");
+	  log_info(_("can't put a policy URL into v3 (PGP 2.x style) "
+		     "signatures\n"));
 	else
 	  pu=opt.sig_policy_url;
       }
     else if( IS_CERT(sig) && opt.cert_policy_url )
       {
 	if(sig->version<4)
-	  log_info("can't put a policy URL into v3 key signatures\n");
+	  log_info(_("can't put a policy URL into v3 key (PGP 2.x style) "
+		     "signatures\n"));
 	else
 	  pu=opt.cert_policy_url;
       }
