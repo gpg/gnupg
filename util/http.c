@@ -787,8 +787,9 @@ write_server( int sock, const char *data, size_t length )
     while( nleft > 0 ) {
       #ifdef __MINGW32__  
         unsigned long nwritten;
+        HANDLE sock_fd = (HANDLE)sock;
 
-        if ( !WriteFile ( sock, data, nleft, &nwritten, NULL)) {
+        if ( !WriteFile ( sock_fd, data, nleft, &nwritten, NULL)) {
 	    log_info ("write failed: ec=%d\n", (int)GetLastError ());
 	    return G10ERR_NETWORK;
         }
