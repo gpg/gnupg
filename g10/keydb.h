@@ -1,5 +1,5 @@
 /* keydb.h - Key database
- * Copyright (C) 1998, 1999, 2000, 2001, 2003,
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -230,10 +230,10 @@ int enum_secret_keys( void **context, PKT_secret_key *sk,
 		      int with_subkeys, int with_spm );
 void merge_keys_and_selfsig( KBNODE keyblock );
 char*get_user_id_string( u32 *keyid );
-char*get_user_id_string_printable( u32 *keyid );
+char*get_user_id_string_native( u32 *keyid );
 char*get_long_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
-char*get_user_id_printable( u32 *keyid );
+char*get_user_id_native( u32 *keyid );
 KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
 
 /*-- keyid.c --*/

@@ -369,7 +369,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	log_error(_("signing failed: %s\n"), g10_errstr(rc) );
     else {
 	if( opt.verbose ) {
-	    char *ustr = get_user_id_string_printable (sig->keyid);
+	    char *ustr = get_user_id_string_native (sig->keyid);
 	    log_info(_("%s/%s signature from: \"%s\"\n"),
 		     pubkey_algo_to_string(sk->pubkey_algo),
 		     digest_algo_to_string(sig->digest_algo),

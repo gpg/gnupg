@@ -1,5 +1,10 @@
 2004-08-23  David Shaw  <dshaw@jabberwocky.com>
 
+	* keydb.h, getkey.c (get_user_id_printable): Rename to
+	get_user_id_native and remove the printable stuff since we're
+	print-ifying valid utf8 characters.  Change all callers in
+	import.c, sign.c, keylist.c, and encode.c.
+
 	* keyserver.c (keyserver_search_prompt): Make sure the search
 	string is converted from UTF-8 before display.
 

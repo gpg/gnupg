@@ -1,5 +1,5 @@
 /* getkey.c -  Get a key from the database
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -2632,14 +2632,12 @@ get_user_id_string( u32 *keyid )
 
 
 char*
-get_user_id_string_printable ( u32 *keyid )
+get_user_id_string_native ( u32 *keyid )
 {
-    char *p = get_user_id_string( keyid );
-    char *p2 = utf8_to_native( p, strlen(p), 0 );
-    m_free(p);
-    p = make_printable_string (p2, strlen (p2), 0);
-    m_free (p2);
-    return p;
+  char *p = get_user_id_string( keyid );
+  char *p2 = utf8_to_native( p, strlen(p), 0 );
+  m_free(p);
+  return p2;
 }
 
 
@@ -2696,15 +2694,13 @@ get_user_id( u32 *keyid, size_t *rn )
 }
 
 char*
-get_user_id_printable( u32 *keyid )
+get_user_id_native( u32 *keyid )
 {
-    size_t rn;
-    char *p = get_user_id( keyid, &rn );
-    char *p2 = utf8_to_native( p, rn, 0 );
-    m_free(p);
-    p = make_printable_string (p2, strlen (p2), 0);
-    m_free (p2);
-    return p;
+  size_t rn;
+  char *p = get_user_id( keyid, &rn );
+  char *p2 = utf8_to_native( p, rn, 0 );
+  m_free(p);
+  return p2;
 }
 
 KEYDB_HANDLE

@@ -814,7 +814,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	    log_error("pubkey_encrypt failed: %s\n", g10_errstr(rc) );
 	else {
 	    if( opt.verbose ) {
-		char *ustr = get_user_id_string_printable (enc->keyid);
+		char *ustr = get_user_id_string_native (enc->keyid);
 		log_info(_("%s/%s encrypted for: \"%s\"\n"),
 		    pubkey_algo_to_string(enc->pubkey_algo),
 		    cipher_algo_to_string(dek->algo), ustr );

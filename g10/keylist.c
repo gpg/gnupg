@@ -1,5 +1,5 @@
 /* keylist.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -116,7 +116,7 @@ print_seckey_info (PKT_secret_key *sk)
   char *p;
 
   keyid_from_sk (sk, keyid);
-  p=get_user_id_printable(keyid);
+  p=get_user_id_native(keyid);
 
   tty_printf ("\nsec  %4u%c/%s %s   %s\n",
 	      nbits_from_sk (sk),
@@ -136,7 +136,7 @@ print_pubkey_info (FILE *fp, PKT_public_key *pk)
   char *p;
 
   keyid_from_pk (pk, keyid);
-  p=get_user_id_printable(keyid);
+  p=get_user_id_native(keyid);
 
   if (fp)
     fprintf (fp, "pub  %4u%c/%s %s   %s\n",

@@ -1,5 +1,5 @@
 /* import.c
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -781,7 +781,7 @@ import_one( const char *fname, KBNODE keyblock,
 	/* we are ready */
 	if( !opt.quiet )
 	  {
-	    char *p=get_user_id_printable (keyid);
+	    char *p=get_user_id_native (keyid);
 	    log_info( _("key %s: public key \"%s\" imported\n"),
 		      keystr(keyid),p);
 	    m_free(p);
@@ -861,7 +861,7 @@ import_one( const char *fname, KBNODE keyblock,
 	    /* we are ready */
 	    if( !opt.quiet )
 	      {
-	        char *p=get_user_id_printable(keyid);
+	        char *p=get_user_id_native(keyid);
 		if( n_uids == 1 )
 		  log_info( _("key %s: \"%s\" 1 new user ID\n"),
 			   keystr(keyid),p);
@@ -898,7 +898,7 @@ import_one( const char *fname, KBNODE keyblock,
 
 	    if( !opt.quiet )
 	      {
-		char *p=get_user_id_printable(keyid);
+		char *p=get_user_id_native(keyid);
 		log_info( _("key %s: \"%s\" not changed\n"),keystr(keyid),p);
 		m_free(p);
 	      }
@@ -1215,7 +1215,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     /* we are ready */
     if( !opt.quiet )
       {
-        char *p=get_user_id_printable (keyid);
+        char *p=get_user_id_native (keyid);
 	log_info( _("key %s: \"%s\" revocation certificate imported\n"),
 		  keystr(keyid),p);
 	m_free(p);
@@ -1766,7 +1766,7 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
                 ++*n_sigs;
 		if(!opt.quiet)
 		  {
-		    char *p=get_user_id_printable (keyid);
+		    char *p=get_user_id_native (keyid);
 		    log_info(_("key %s: \"%s\" revocation"
 			       " certificate added\n"), keystr(keyid),p);
 		    m_free(p);
