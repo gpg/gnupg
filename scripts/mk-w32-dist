@@ -73,7 +73,7 @@ for i in ${srcdir}/po/*.po; do
      cs|hu|ro) toset="CP852" ;;  
      tr) toset="CP1254" ;;   # DOS: CP857
      el) toset="CP1253" ;;   # same as latin-7?
-     ru|be) toset="CP1252" ;;   # same as latin-7?
+     ru|be) toset="CP1251" ;;   # same as latin-7?
      el|eo|et|ja|pl|sk|zh_TW) toset="" ;;
       *) toset="CP850" ;;
    esac
