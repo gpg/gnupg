@@ -201,7 +201,7 @@ int check_secret_key( PKT_seckey_cert *cert );
 /*-- pubkey-enc.c --*/
 int get_session_key( PKT_pubkey_enc *k, DEK *dek );
 
-/*-- compressed.c --*/
+/*-- compress.c --*/
 int handle_compressed( PKT_compressed *zd );
 
 /*-- encr-data.c --*/

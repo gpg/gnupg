@@ -40,21 +40,6 @@
 
 static int encode_simple( const char *filename, int mode );
 static IOBUF open_outfile( const char *iname );
-static int compress_filter( void *opaque, int control,
-			    IOBUF chain, byte *buf, size_t *ret_len);
-static int cipher_filter( void *opaque, int control,
-			  IOBUF chain, byte *buf, size_t *ret_len);
-
-
-
-typedef struct {
-    DEK *dek;
-    PKT_encr_data ed;
-    BLOWFISH_context *bf_ctx;
-    int header;
-} cipher_filter_context_t;
-
-
 
 
 /****************
@@ -104,9 +89,11 @@ encode_simple( const char *filename, int mode )
     u32 filesize;
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
+    compress_filter_context_t zfx;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
+    memset( &zfx, 0, sizeof zfx);
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {
@@ -139,7 +126,7 @@ encode_simple( const char *filename, int mode )
     write_comment( out, "#Created by G10 pre-release " VERSION );
 
     if( opt.compress )
-	iobuf_push_filter( out, compress_filter, NULL );
+	iobuf_push_filter( out, compress_filter, &zfx );
 
 
     /* setup the inner packet */
@@ -161,8 +148,7 @@ encode_simple( const char *filename, int mode )
     pt->buf = inp;
     pkt.pkttype = PKT_PLAINTEXT;
     pkt.pkt.plaintext = pt;
-    cfx.ed.len = filesize? calc_packet_length( &pkt ) : 0;
-    cfx.ed.buf = NULL; /* not used! */
+    cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;
 
     /* register the cipher filter */
     if( mode )
@@ -197,12 +183,14 @@ encode_crypt( const char *filename, STRLIST remusr )
     u32 filesize;
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
+    compress_filter_context_t zfx;
     int any_names = 0;
     STRLIST local_remusr = NULL;
     char *ustr;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
+    memset( &zfx, 0, sizeof zfx);
 
     if( !remusr ) {
 	remusr = NULL; /* fixme: ask */
@@ -231,7 +219,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     write_comment( out, "#Created by G10 pre-release " VERSION );
 
     if( opt.compress )
-	iobuf_push_filter( out, compress_filter, NULL );
+	iobuf_push_filter( out, compress_filter, &zfx );
 
     /* create a session key */
     cfx.dek = m_alloc_secure( sizeof *cfx.dek );
@@ -327,8 +315,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     init_packet(&pkt);
     pkt.pkttype = PKT_PLAINTEXT;
     pkt.pkt.plaintext = pt;
-    cfx.ed.len = filesize? calc_packet_length( &pkt ) : 0;
-    cfx.ed.buf = NULL; /* not used! */
+    cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;
 
     /* register the cipher filter */
     iobuf_push_filter( out, cipher_filter, &cfx );
@@ -388,75 +375,4 @@ open_outfile( const char *iname )
     return a;
 }
 
-
-static int
-compress_filter( void *opaque, int control,
-		 IOBUF a, byte *buf, size_t *ret_len)
-{
-    size_t size = *ret_len;
-    int rc=0;
-
-    if( control == IOBUFCTRL_FLUSH ) {
-	assert(a);
-	if( iobuf_write( a, buf, size ) )
-	    rc = G10ERR_WRITE_FILE;
-    }
-    else if( control == IOBUFCTRL_DESC ) {
-	*(char**)buf = "compress_filter";
-    }
-    return rc;
-}
-
-
-/****************
- * The filter is used to encipher data.
- */
-static int
-cipher_filter( void *opaque, int control,
-	       IOBUF a, byte *buf, size_t *ret_len)
-{
-    size_t size = *ret_len;
-    cipher_filter_context_t *cfx = opaque;
-    int rc=0;
-
-    if( control == IOBUFCTRL_FLUSH ) {
-	assert(a);
-	if( !cfx->header ) {
-	    PACKET pkt;
-	    byte temp[10];
-
-	    pkt.pkttype = PKT_ENCR_DATA;
-	    pkt.pkt.encr_data = &cfx->ed;
-	    if( build_packet( a, &pkt ))
-		log_bug("build_packet(ENCR_DATA) failed\n");
-	    randomize_buffer( temp, 8, 1 );
-	    temp[8] = temp[6];
-	    temp[9] = temp[7];
-	    if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH ) {
-		cfx->bf_ctx = m_alloc_secure( sizeof *cfx->bf_ctx );
-		blowfish_setkey( cfx->bf_ctx, cfx->dek->key, cfx->dek->keylen );
-		blowfish_setiv( cfx->bf_ctx, NULL );
-		blowfish_encode_cfb( cfx->bf_ctx, temp, temp, 10);
-	    }
-	    else
-		log_bug("no cipher algo %d\n", cfx->dek->algo);
-
-	    iobuf_write(a, temp, 10);
-	    cfx->header=1;
-	}
-
-	if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH )
-	    blowfish_encode_cfb( cfx->bf_ctx, buf, buf, size);
-	if( iobuf_write( a, buf, size ) )
-	    rc = G10ERR_WRITE_FILE;
-    }
-    else if( control == IOBUFCTRL_FREE ) {
-	if( cfx->dek->algo == CIPHER_ALGO_BLOWFISH )
-	    m_free(cfx->bf_ctx);
-    }
-    else if( control == IOBUFCTRL_DESC ) {
-	*(char**)buf = "cipher_filter";
-    }
-    return rc;
-}
 

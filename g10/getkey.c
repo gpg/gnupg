@@ -319,7 +319,9 @@ scan_keyring( PKT_pubkey_cert *pkc, u32 *keyid,
 	return G10ERR_KEYRING_OPEN;
     }
 
-    if( name )
+    if( !DBG_CACHE )
+	;
+    else if( name )
 	log_debug("scan_keyring %s for '%s'\n",  filename, name );
     else if( keyid )
 	log_debug("scan_keyring %s for %08lx %08lx\n",  filename,

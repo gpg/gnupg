@@ -15,7 +15,6 @@
     * add writing of signatures and checking of detached signatures.
     * add option file handling.
     * use correct ASN values for DEK encoding
-    * add compress handling
     * add checking of armor trailers
     * fix the memory stuff (secure memory)
     * add real secure memory
@@ -27,4 +26,5 @@
     * remove all "Fixmes"
     * add credits for the MPI lib.
     * speed up the RIPE-MD-160
+    * enable a SIGSEGV handler while using zlib functions
 

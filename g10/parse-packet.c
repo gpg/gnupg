@@ -127,7 +127,8 @@ parse_packet( IOBUF inp, PACKET *pkt )
     pktlen = 0;
     if( !lenbytes ) {
 	pktlen = 0; /* don't know the value */
-	iobuf_set_block_mode(inp, 1);
+	if( pkttype != PKT_COMPR_DATA )
+	    iobuf_set_block_mode(inp, 1);
     }
     else {
 	for( ; lenbytes; lenbytes-- ) {
@@ -626,7 +627,6 @@ parse_compressed( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *pkt )
     zd->len = 0; /* not yet used */
     zd->algorithm = iobuf_get_noeof(inp);
     zd->buf = inp;
-    algorithm = iobuf_get_noeof(inp);
     if( list_mode )
 	printf(":compressed packet: algo=%d\n", zd->algorithm);
     return 0;

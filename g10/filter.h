@@ -40,11 +40,40 @@ typedef struct {
 } armor_filter_context_t;
 
 
+typedef struct {
+    int status;
+    void *opaque;   /* (used for z_stream) */
+    byte *inbuf;
+    unsigned inbufsize;
+    byte *outbuf;
+    unsigned outbufsize;
+} compress_filter_context_t;
+
+
+typedef struct {
+    DEK *dek;
+    u32 datalen;
+    BLOWFISH_context *bf_ctx;
+    int header;
+} cipher_filter_context_t;
+
+
+
 /*-- mdfilter.c --*/
 int md_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len);
 
 /*-- armor.c --*/
 int armor_filter( void *opaque, int control,
 		  IOBUF chain, byte *buf, size_t *ret_len);
+
+/*-- compress.c --*/
+int compress_filter( void *opaque, int control,
+		     IOBUF chain, byte *buf, size_t *ret_len);
+
+/*-- cipher.c --*/
+int cipher_filter( void *opaque, int control,
+		   IOBUF chain, byte *buf, size_t *ret_len);
+
+
 
 #endif /*G10_FILTER_H*/

@@ -42,11 +42,13 @@ static int do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc );
 static u32 calc_plaintext( PKT_plaintext *pt );
 static int do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt );
 static int do_encr_data( IOBUF out, int ctb, PKT_encr_data *ed );
+static int do_compressed( IOBUF out, int ctb, PKT_compressed *cd );
 
 static int calc_header_length( u32 len );
 static int write_16(IOBUF inp, u16 a);
 static int write_32(IOBUF inp, u32 a);
 static int write_header( IOBUF out, int ctb, u32 len );
+static int write_header2( IOBUF out, int ctb, u32 len, int blkmode );
 static int write_version( IOBUF out, int ctb );
 
 /****************
@@ -86,9 +88,11 @@ build_packet( IOBUF out, PACKET *pkt )
       case PKT_ENCR_DATA:
 	rc = do_encr_data( out, ctb, pkt->pkt.encr_data );
 	break;
+      case PKT_COMPR_DATA:
+	rc = do_compressed( out, ctb, pkt->pkt.compressed );
+	break;
       case PKT_SIGNATURE:
       case PKT_RING_TRUST:
-      case PKT_COMPR_DATA:
       default:
 	log_bug("invalid packet type in build_packet()");
 	break;
@@ -304,6 +308,20 @@ do_encr_data( IOBUF out, int ctb, PKT_encr_data *ed )
     return rc;
 }
 
+static int
+do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
+{
+    int rc = 0;
+
+    /* we must use the old convention and don't use blockmode */
+    write_header2(out, ctb, 0, 0 );
+    iobuf_put(out, cd->algorithm );
+
+    /* This is all. The caller has to write the real data */
+
+    return rc;
+}
+
 
 
 
@@ -350,6 +368,12 @@ calc_header_length( u32 len )
 static int
 write_header( IOBUF out, int ctb, u32 len )
 {
+    return write_header2( out, ctb, len, 1 );
+}
+
+static int
+write_header2( IOBUF out, int ctb, u32 len, int blkmode )
+{
     if( !len )
 	ctb |= 3;
     else if( len < 256 )
@@ -361,7 +385,8 @@ write_header( IOBUF out, int ctb, u32 len )
     if( iobuf_put(out, ctb ) )
 	return -1;
     if( !len ) {
-	iobuf_set_block_mode(out, 8196 );
+	if( blkmode )
+	    iobuf_set_block_mode(out, 8196 );
     }
     else {
 	if( ctb & 2 ) {

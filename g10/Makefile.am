@@ -6,7 +6,7 @@ bin_PROGRAMS = g10
 
 g10_SOURCES = g10.c		\
 	      build-packet.c	\
-	      compressed.c	\
+	      compress.c	\
 	      encode.c		\
 	      encr-data.c	\
 	      filter.h		\
@@ -18,6 +18,7 @@ g10_SOURCES = g10.c		\
 	      mainproc.c	\
 	      armor.c		\
 	      mdfilter.c	\
+	      cipher.c		\
 	      options.h 	\
 	      overwrite.c	\
 	      packet.h		\
@@ -30,7 +31,7 @@ g10_SOURCES = g10.c		\
 	      sig-check.c
 
 
-LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil
+LDADD = -L ../cipher -L ../mpi -L ../util -lcipher -lmpi -lutil -lz
 
 
 $(PROGRAMS): ../cipher/libcipher.a ../mpi/libmpi.a
