@@ -102,6 +102,7 @@ blob_cmp_sn (KEYBOXBLOB blob, const unsigned char *sn)
   return nserial == snlen && !memcmp (buffer+off, sn, snlen);
 }
 
+
 static int
 blob_cmp_name (KEYBOXBLOB blob, int idx, const char *name, size_t namelen)
 {
@@ -139,18 +140,105 @@ blob_cmp_name (KEYBOXBLOB blob, int idx, const char *name, size_t namelen)
   if (pos + uidinfolen*nuids > length)
     return 0; /* out of bounds */
 
-  if (idx > nuids)
-    return 0; /* no user ID with that idx */
-  pos += idx*uidinfolen;
-  off = get32 (buffer+pos);
-  len = get32 (buffer+pos+4);
-  if (off+len > length)
+  if (idx < 0)
+    { /* compare all names starting with that (negated) index */
+      idx = -idx;
+      
+      for ( ;idx < nuids; idx++)
+        {
+          size_t mypos = pos;
+
+          mypos += idx*uidinfolen;
+          off = get32 (buffer+mypos);
+          len = get32 (buffer+mypos+4);
+          if (off+len > length)
+            return 0; /* error: better stop here out of bounds */
+          if (len < 2)
+            continue; /* empty name or 0 not stored */
+          len--;
+          if (len == namelen && !memcmp (buffer+off, name, len))
+            return 1; /* found */
+        }
+      return 0; /* not found */
+    }
+  else
+    {
+      if (idx > nuids)
+        return 0; /* no user ID with that idx */
+      pos += idx*uidinfolen;
+      off = get32 (buffer+pos);
+      len = get32 (buffer+pos+4);
+      if (off+len > length)
+        return 0; /* out of bounds */
+      if (len < 2)
+        return 0; /* empty name or 0 not stored */
+      len--;
+      
+      return len == namelen && !memcmp (buffer+off, name, len);
+    }
+}
+
+
+/* compare all email addresses of the subject */
+static int
+blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen)
+{
+  const unsigned char *buffer;
+  size_t length;
+  size_t pos, off, len;
+  size_t nkeys, keyinfolen;
+  size_t nuids, uidinfolen;
+  size_t nserial;
+  int idx;
+
+  /* fixme: this code is common to blob_cmp_mail */
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 40)
+    return 0; /* blob too short */
+
+  /*keys*/
+  nkeys = get16 (buffer + 16);
+  keyinfolen = get16 (buffer + 18 );
+  if (keyinfolen < 28)
+    return 0; /* invalid blob */
+  pos = 20 + keyinfolen*nkeys;
+  if (pos+2 > length)
     return 0; /* out of bounds */
-  if (len < 2)
-    return 0; /* empty name or 0 not stored */
-  len--;
-  
-  return len == namelen && !memcmp (buffer+off, name, len);
+
+  /*serial*/
+  nserial = get16 (buffer+pos); 
+  pos += 2 + nserial;
+  if (pos+4 > length)
+    return 0; /* out of bounds */
+
+  /* user ids*/
+  nuids = get16 (buffer + pos);  pos += 2;
+  uidinfolen = get16 (buffer + pos);  pos += 2;
+  if (uidinfolen < 12 /* should add a: || nuidinfolen > MAX_UIDINFOLEN */)
+    return 0; /* invalid blob */
+  if (pos + uidinfolen*nuids > length)
+    return 0; /* out of bounds */
+
+  for (idx=1 ;idx < nuids; idx++)
+    {
+      size_t mypos = pos;
+      
+      mypos += idx*uidinfolen;
+      off = get32 (buffer+mypos);
+      len = get32 (buffer+mypos+4);
+      if (off+len > length)
+        return 0; /* error: better stop here out of bounds */
+      if (len < 2 || buffer[off] != '<')
+        continue; /* empty name or trailing 0 not stored */
+      len--; /* remove the null */
+      if ( len < 3 || buffer[off+len-1] != '>')
+        continue; /* not a prober email address */
+      off++; len--;   /* skip the leading angle bracket */
+      len--;          /* don't compare the trailing one */
+      if (len == namelen && !memcmp (buffer+off, name, len))
+        return 1; /* found */
+    }
+  return 0; /* not found */
 }
 
 
@@ -233,6 +321,35 @@ has_subject (KEYBOXBLOB blob, const char *name)
 
   namelen = strlen (name);
   return blob_cmp_name (blob, 1 /* subject */, name, namelen);
+}
+
+static int
+has_subject_or_alt (KEYBOXBLOB blob, const char *name)
+{
+  size_t namelen;
+
+  return_val_if_fail (name, 0);
+
+  if (blob_get_type (blob) != BLOBTYPE_X509)
+    return 0;
+
+  namelen = strlen (name);
+  return blob_cmp_name (blob, -1 /* all subject names*/, name, namelen);
+}
+
+
+static int
+has_mail (KEYBOXBLOB blob, const char *name)
+{
+  size_t namelen;
+
+  return_val_if_fail (name, 0);
+
+  if (blob_get_type (blob) != BLOBTYPE_X509)
+    return 0;
+
+  namelen = strlen (name);
+  return blob_cmp_mail (blob, name, namelen);
 }
 
 
@@ -413,8 +530,14 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               never_reached ();
               break;
             case KEYDB_SEARCH_MODE_EXACT: 
-            case KEYDB_SEARCH_MODE_SUBSTR:
+              if (has_subject_or_alt (blob, desc[n].u.name))
+                goto found;
+              break;
             case KEYDB_SEARCH_MODE_MAIL:
+              if (has_mail (blob, desc[n].u.name))
+                goto found;
+              break;
+            case KEYDB_SEARCH_MODE_SUBSTR:
             case KEYDB_SEARCH_MODE_MAILSUB:
             case KEYDB_SEARCH_MODE_MAILEND:
             case KEYDB_SEARCH_MODE_WORDS: 

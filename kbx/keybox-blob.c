@@ -774,9 +774,11 @@ int
 _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
                           unsigned char *sha1_digest)
 {
-  int rc = 0;
+  int i, rc = 0;
   KEYBOXBLOB blob;
   unsigned char *p;
+  unsigned char **names = NULL;
+  size_t max_names;
 
   *r_blob = NULL;
   blob = xtrycalloc (1, sizeof *blob);
@@ -790,10 +792,43 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
       blob->seriallen = n;
       blob->serial = p;
     }
-      
 
   blob->nkeys = 1;
-  blob->nuids = 2; /* issuer and subject - fixme: count alternate names */
+
+  /* create list of names */
+  blob->nuids = 0;
+  max_names = 100;
+  names = xtrymalloc (max_names * sizeof *names);
+  if (!names)
+    {
+      rc = KEYBOX_Out_Of_Core;
+      goto leave;
+    }
+  p = ksba_cert_get_issuer (cert, 0);
+  if (!p)
+    {
+      rc =  KEYBOX_Missing_Value;
+      goto leave;
+    }
+  names[blob->nuids++] = p;
+  for (i=0; (p = ksba_cert_get_subject (cert, i)); i++)
+    {
+      if (blob->nuids >= max_names)
+        {
+          unsigned char **tmp;
+          
+          max_names += 100;
+          tmp = xtryrealloc (names, max_names * sizeof *names);
+          if (!tmp)
+            {
+              rc = KEYBOX_Out_Of_Core;
+              goto leave;
+            }
+        }
+      names[blob->nuids++] = p;
+    }
+  
+  /* space for signature information */
   blob->nsigs = 1; 
 
   blob->keys = xtrycalloc (blob->nkeys, sizeof *blob->keys );
@@ -809,21 +844,17 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
   blob->keys[0].off_kid = 0; /* We don't have keyids */
   blob->keys[0].flags = 0;
 
-  /* issuer */
-  p = ksba_cert_get_issuer (cert);
-  blob->uids[0].name = p;
-  blob->uids[0].len = p? (strlen(p)+1):0;
-  blob->uids[0].flags = 0;
-  blob->uids[0].validity = 0;
-
-  /* subject */
-  p = ksba_cert_get_subject (cert);
-  blob->uids[1].name = p;
-  blob->uids[1].len = p? (strlen(p)+1):0;
-  blob->uids[1].flags = 0;
-  blob->uids[1].validity = 0;
-
-  /* fixme: add alternate names */
+  /* issuer and subject names */
+  for (i=0; i < blob->nuids; i++)
+    {
+      blob->uids[i].name = names[i];
+      blob->uids[i].len = strlen(names[i]);
+      names[i] = NULL;
+      blob->uids[i].flags = 0;
+      blob->uids[i].validity = 0;
+    }
+  xfree (names);
+  names = NULL;
 
   /* signatures */
   blob->sigs[0] = 0;	/* not yet checked */
@@ -849,6 +880,12 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
  leave:
   release_kid_list (blob->temp_kids);
   blob->temp_kids = NULL;
+  if (blob && names)
+    {
+      for (i=0; i < blob->nuids; i++)
+        xfree (names[i]); 
+    }
+  xfree (names);
   if (rc)
     {
       _keybox_release_blob (blob);

@@ -60,6 +60,7 @@ typedef enum {
   KEYBOX_File_Close_Error = 13,
   KEYBOX_Nothing_Found = 14,
   KEYBOX_Wrong_Blob_Type = 15,
+  KEYBOX_Missing_Value = 16,
 } KeyboxError;
 
 

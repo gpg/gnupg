@@ -1,0 +1,23 @@
+2001-12-13  Werner Koch  <wk@gnupg.org>
+
+	* keybox-search.c (blob_cmp_name): Kludge to allow searching for
+	more than one name.
+	(has_subject_or_alt): New.
+	(blob_cmp_mail): New.
+	(has_mail): New.
+	(keybox_search): Implemented exact search and exact mail search.
+
+	* kbx/keybox-blob.c (_keybox_create_x509_blob): Insert alternate
+	names.
+
+
+ Copyright 2001 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	

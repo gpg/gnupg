@@ -38,6 +38,7 @@ keybox_strerror (KeyboxError err)
     case KEYBOX_File_Close_Error: s="file close error"; break;
     case KEYBOX_Nothing_Found: s="nothing found"; break;
     case KEYBOX_Wrong_Blob_Type: s="wrong blob type"; break;
+    case KEYBOX_Missing_Value: s="missing value"; break;
     default:  sprintf (buf, "ec=%d", err ); s=buf; break;
     }
 
