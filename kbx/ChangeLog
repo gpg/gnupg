@@ -1,3 +1,8 @@
+2002-01-15  Werner Koch  <wk@gnupg.org>
+
+	* keybox-search.c (blob_cmp_fpr): New.
+	(has_fingerprint): Implemented;
+
 2001-12-20  Werner Koch  <wk@gnupg.org>
 
 	* keybox-blob.c (_keybox_create_x509_blob): Skip the leading

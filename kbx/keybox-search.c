@@ -106,6 +106,38 @@ blob_cmp_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
 
 
 static int
+blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr)
+{
+  const unsigned char *buffer;
+  size_t length;
+  size_t pos, off;
+  size_t nkeys, keyinfolen;
+  int idx;
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 40)
+    return 0; /* blob too short */
+
+  /*keys*/
+  nkeys = get16 (buffer + 16);
+  keyinfolen = get16 (buffer + 18 );
+  if (keyinfolen < 28)
+    return 0; /* invalid blob */
+  pos = 20;
+  if (pos + keyinfolen*nkeys > length)
+    return 0; /* out of bounds */
+
+  for (idx=0; idx < nkeys; idx++)
+    {
+      off = pos + idx*keyinfolen;
+      if (!memcmp (buffer + off, fpr, 20))
+        return 1; /* found */
+    }
+  return 0; /* not found */
+}
+
+
+static int
 blob_cmp_name (KEYBOXBLOB blob, int idx, const char *name, size_t namelen)
 {
   const unsigned char *buffer;
@@ -267,7 +299,7 @@ has_long_kid (KEYBOXBLOB blob, u32 *kid)
 static int
 has_fingerprint (KEYBOXBLOB blob, const unsigned char *fpr)
 {
-  return 0;
+  return blob_cmp_fpr (blob, fpr);
 }
 
 
