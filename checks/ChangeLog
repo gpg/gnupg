@@ -1,3 +1,8 @@
+2001-12-19  Werner Koch  <wk@gnupg.org>
+
+	* options.in: Remove load-extension tiger
+	* Makefile.am (./options): append it if there is such a module.
+
 2001-10-23  Werner Koch  <wk@gnupg.org>
 
 	* defs.inc, Makefile.am: Do not use $srcdir when invoking gpg.

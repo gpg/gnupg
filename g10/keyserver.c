@@ -295,6 +295,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count)
 
   filename=m_alloc(strlen("gpgkeys_")+strlen(opt.keyserver_scheme)+1);
 
+
   strcpy(filename,"gpgkeys_");
   strcat(filename,opt.keyserver_scheme);
 

@@ -61,6 +61,8 @@ prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 
 ./options: $(srcdir)/options.in
 	cat $(srcdir)/options.in >./options
+	@set -e; if echo "@DYNAMIC_CIPHER_MODS@" |grep tiger >/dev/null ;then \
+	  echo load-extension ../cipher/tiger >>./options; fi
 
 ./gpg_dearmor:
 	echo '#!/bin/sh' >./gpg_dearmor

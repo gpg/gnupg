@@ -151,7 +151,7 @@ main( int argc, char **argv )
     opt.always_trust = 1;
     opt.batch = 1;
 
-  #ifdef __MINGW32__
+  #if defined (__MINGW32__) || defined (__CYGWIN32__)
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
   #else
     opt.homedir = getenv("GNUPGHOME");

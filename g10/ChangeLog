@@ -32,7 +32,8 @@
 
 2001-12-19  Werner Koch  <wk@gnupg.org>
 
-	* g10.c, passphrase.c [CYGWIN32]: Allow this as an alias for MINGW32.
+	* g10.c, passphrase.c, gpgv.c [CYGWIN32]: Allow this as an alias
+	for MINGW32.
 
 2001-12-18  David Shaw  <dshaw@jabberwocky.com>
 
