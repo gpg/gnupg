@@ -38,6 +38,7 @@ struct {
   int dry_run;      /* don't change any persistent data */
 
   const char *homedir; /* configuration directory name */
+  const char *agent_program; 
   char *outfile;    /* name of output file */
 
   int with_key_data;/* include raw key in the column delimted output */

@@ -77,7 +77,7 @@ enum cmd_and_opt_values {
   aServer,                        
 
   oEnableSpecialFilenames,
-
+  oAgentProgram,
 
   oTextmode,
   oFingerprint,
@@ -279,6 +279,8 @@ static ARGPARSE_OPTS opts[] = {
     { oNoGreeting, "no-greeting", 0, "@" },
     { oNoOptions, "no-options", 0, "@" }, /* shortcut for --options /dev/null */
     { oHomedir, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
+    { oAgentProgram, "agent-program", 2 , "@" },
+
     { oNoBatch, "no-batch", 0, "@" },
     { oWithColons, "with-colons", 0, "@"},
     { oWithKeyData,"with-key-data", 0, "@"},
@@ -707,6 +709,7 @@ main ( int argc, char **argv)
           break;
         case oNoOptions: break; /* no-options */
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
           
         case oNoDefKeyring: default_keyring = 0; break;
         case oNoGreeting: nogreeting = 1; break;

@@ -1,5 +1,9 @@
 2001-11-26  Werner Koch  <wk@gnupg.org>
 
+	* gpgsm.c: New option --agent-program
+	* call-agent.c (start_agent): Allow to override the default path
+	to the agent.
+
 	* keydb.c (keydb_add_resource): Create keybox
 
 	* keylist.c (gpgsm_list_keys): Fixed non-server keylisting.

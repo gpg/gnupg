@@ -335,8 +335,9 @@ start_agent (void)
       if (!pid)
         { /* child */
           int i, n;
-          char errbuf[100];
+          char errbuf[512];
           int log_fd = log_get_fd ();
+          const char *pgmname;
 
           /* close all files which will not be duped but keep stderr
              and log_stream for now */
@@ -371,10 +372,17 @@ start_agent (void)
             }
 
           /* and start it */
-          execl ("../agent/gpg-agent", "gpg-agent", "--server", NULL); 
+          if (!opt.agent_program || !*opt.agent_program)
+            opt.agent_program = "../agent/gpg-agent";
+          if ( !(pgmname = strrchr (opt.agent_program, '/')))
+            pgmname = opt.agent_program;
+          else
+            pgmname++;
+          execl (opt.agent_program, pgmname, "--server", NULL); 
           /* oops - tell the parent about it */
-          snprintf (errbuf, DIM(errbuf)-1, "ERR %d execl failed: %.50s\n",
-                    ASSUAN_Problem_Starting_Server, strerror (errno));
+          snprintf (errbuf, DIM(errbuf)-1, "ERR %d can't exec `%s': %.50s\n",
+                    ASSUAN_Problem_Starting_Server, opt.agent_program,
+                    strerror (errno));
           errbuf[DIM(errbuf)-1] = 0;
           writen (1, errbuf, strlen (errbuf));
           _exit (4);
