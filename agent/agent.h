@@ -55,10 +55,11 @@ struct server_local_s;
 struct server_control_s {
   struct server_local_s *server_local;
   struct {
+    int algo;
     unsigned char value[MAX_DIGEST_LEN];
     int valuelen;
   } digest;
-
+  char keygrip[20];
 
 };
 typedef struct server_control_s *CTRL;

@@ -44,13 +44,55 @@
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 
+#if MAX_DIGEST_LEN < 20
+#error MAX_DIGEST_LEN shorter than keygrip
+#endif
+
 /* Data used to associate an Assuan context with local server data */
 struct server_local_s {
   ASSUAN_CONTEXT assuan_ctx;
   int message_fd;
 };
 
-/* SETHASH <hexstring>
+
+static void
+reset_notify (ASSUAN_CONTEXT ctx)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+
+  memset (ctrl->keygrip, 0, 20);
+  ctrl->digest.valuelen = 0;
+}
+
+/* SIGKEY <hexstring_with_keygrip>
+
+   Set the  key used for a sign operation */
+static int
+cmd_sigkey (ASSUAN_CONTEXT ctx, char *line)
+{
+  int n;
+  char *p;
+  CTRL ctrl = assuan_get_pointer (ctx);
+  unsigned char *buf;
+
+  /* parse the hash value */
+  for (p=line,n=0; hexdigitp (*p); p++, n++)
+    ;
+  if (*p)
+    return set_error (Parameter_Error, "invalid hexstring");
+  if ((n&1))
+    return set_error (Parameter_Error, "odd number of digits");
+  n /= 2;
+  if (n != 20)
+    return set_error (Parameter_Error, "invalid length of keygrip");
+
+  buf = ctrl->keygrip;
+  for (p=line, n=0; n < 20; p += 2, n++)
+    buf[n] = xtoi_2 (p);
+  return 0;
+}
+
+/* SETHASH <algonumber> <hexstring> 
 
   The client can use this command to tell the server about the data
   (which usually is a hash) to be signed. */
@@ -61,6 +103,16 @@ cmd_sethash (ASSUAN_CONTEXT ctx, char *line)
   char *p;
   CTRL ctrl = assuan_get_pointer (ctx);
   unsigned char *buf;
+  char *endp;
+  int algo;
+
+  /* parse the algo number and check it */
+  algo = (int)strtoul (line, &endp, 10);
+  for (line = endp; *line == ' ' || *line == '\t'; line++)
+    ;
+  if (!algo || gcry_md_test_algo (algo))
+    return set_error (Unsupported_Algorithm, NULL);
+  ctrl->digest.algo = algo;
 
   /* parse the hash value */
   for (p=line,n=0; hexdigitp (*p); p++, n++)
@@ -102,36 +154,6 @@ cmd_pksign (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-/* MESSAGE FD=<n>
-
-   Set the file descriptor to read a message which is used with
-   detached signatures */
-static int 
-cmd_message (ASSUAN_CONTEXT ctx, char *line)
-{
-#if 0
-  char *endp;
-  int fd;
-  CTRL ctrl = assuan_get_pointer (ctx);
-
-  if (strncmp (line, "FD=", 3))
-    return set_error (Syntax_Error, "FD=<n> expected");
-  line += 3;
-  if (!digitp (*line))
-    return set_error (Syntax_Error, "number required");
-  fd = strtoul (line, &endp, 10);
-  if (*endp)
-    return set_error (Syntax_Error, "garbage found");
-  if (fd == -1)
-    return set_error (No_Input, NULL);
-
-  ctrl->server_local->message_fd = fd;
-  return 0;
-#endif
-  return set_error (Not_Implemented, NULL);
-}
-
-
 
 /* Tell the assuan library about our commands */
 static int
@@ -142,11 +164,11 @@ register_commands (ASSUAN_CONTEXT ctx)
     int cmd_id;
     int (*handler)(ASSUAN_CONTEXT, char *line);
   } table[] = {
+    { "SIGKEY",     0,  cmd_sigkey },
     { "SETHASH",    0,  cmd_sethash },
     { "PKSIGN",     0,  cmd_pksign },
     { "",     ASSUAN_CMD_INPUT, NULL }, 
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
-    { "MESSAGE",    0,  cmd_message },
     { NULL }
   };
   int i, j, rc;
@@ -160,6 +182,7 @@ register_commands (ASSUAN_CONTEXT ctx)
       if (rc)
         return rc;
     } 
+  assuan_register_reset_notify (ctx, reset_notify);
   return 0;
 }
 

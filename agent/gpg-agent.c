@@ -102,8 +102,12 @@ typedef struct {
 #define MAX_CACHE_AGE  1000 /* should fit into an integer */
 static volatile int caught_fatal_sig = 0;
 static volatile int shut_me_down = 0;
-static CACHE_SLOT the_cache[MAX_CACHE_ENTRIES];
+/*  static CACHE_SLOT the_cache[MAX_CACHE_ENTRIES]; */
 static char *socket_name = NULL;
+
+/* It is possible that we are currently running under setuid permissions */
+static int maybe_setuid = 1;
+
 
 #define buftou32( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \
 		       (*((byte*)(p)+2) << 8) | (*((byte*)(p)+3)))
@@ -116,10 +120,7 @@ static char *socket_name = NULL;
 
 
 static int start_listening ( const char *name );
-static int writen ( int fd, const void *buf, size_t nbytes );
-static int readn ( int fd, void *buf, size_t buflen, size_t *ret_nread );
 
-static void process_request ( int fd );
 
 
 static const char *
@@ -204,6 +205,7 @@ main (int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
   int orig_argc;
+  int may_coredump;
   char **orig_argv;
   FILE *configfp = NULL;
   char *configname = NULL;
@@ -223,6 +225,10 @@ main (int argc, char **argv )
   char *logfile = NULL;
 
   set_strusage( my_strusage );
+  gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
+  /* Please note that we may running SUID(ROOT), so be very CAREFUL
+     when adding any stuff between here and the call to INIT_SECMEM()
+     somewhere after the option parsing */
   /*   log_set_name ("gpg-agent"); */
   srand (time (NULL)); /* the about dialog uses rand() */
   i18n_init ();
@@ -236,10 +242,13 @@ main (int argc, char **argv )
     }
 
   assuan_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
+  gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
+
+  may_coredump = 0/* FIXME: disable_core_dumps()*/;
 
 
-  shell = getenv("SHELL");
-  if (shell && strlen(shell) >= 3 && !strcmp(shell+strlen(shell)-3, "csh") )
+  shell = getenv ("SHELL");
+  if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
   
   opt.homedir = getenv("GNUPGHOME");
@@ -274,6 +283,15 @@ main (int argc, char **argv )
 	else if (pargs.r_opt == oHomedir)
           opt.homedir = pargs.r.ret_str;
     }
+
+  /* initialize the secure memory. */
+  gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
+  maybe_setuid = 0;
+
+  /* 
+     Now we are now working under our real uid 
+  */
+
 
   if (default_config)
     configname = make_filename (opt.homedir, "gpg-agent.conf", NULL );
@@ -648,6 +666,7 @@ start_listening (const char *name)
   return -1;
 }
 
+#if 0
 /* Look for the passprase as given by the 20 bytes DATA and return it's
   slot number.  If this passphrase is not in the cache, return -1 */
 static int
@@ -749,7 +768,6 @@ passphrase_dialog ( const byte *fpr, const char *user_string )
 
   return 0;
 }
-
 
 
 static int
@@ -993,6 +1011,6 @@ process_request ( int fd )
   return;
 #endif
 }
-
+#endif
 
 

@@ -29,6 +29,7 @@ gpg_agent_SOURCES = \
 	pksign.c 
 
 gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
+		../common/libcommon.a \
               ../../libgcrypt/src/.libs/libgcrypt.so.1 
 
 
