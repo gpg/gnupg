@@ -99,6 +99,7 @@ enum {
   GNUPG_No_Scdaemon = 70,
   GNUPG_Scdaemon_Error = 71,
   GNUPG_Unsupported_Protocol = 72,
+  GNUPG_Bad_PIN_Method = 73,
 };
 
 /* Status codes - fixme: should go into another file */
