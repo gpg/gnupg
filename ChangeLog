@@ -1,3 +1,9 @@
+2004-12-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Better implementation for the SRV check.  We don't
+	need to actually check all the header files individually since the
+	SRV test compile uses them together.
+
 2004-12-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Use new LIBCURL_CHECK_CONFIG macro for

@@ -572,9 +572,8 @@ if (test x"$try_hkp" = xyes || test x"$try_http" = xyes) && test x"$use_dns_srv"
   if test x"$use_dns_srv" = xyes ; then
      AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
      SRVLIBS=$LIBS
-  else
-     AC_MSG_NOTICE([Resolver functions not found or not usable.  Disabling DNS SRV.])
   fi
+
   LIBS=$_srv_save_libs
 fi
 
@@ -804,12 +803,11 @@ AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([unistd.h langinfo.h termio.h locale.h getopt.h arpa/nameser.h])
+AC_CHECK_HEADERS([unistd.h langinfo.h termio.h locale.h getopt.h])
 
 # Note that we do not check for iconv here because this is done anyway
 # by the gettext checks and thus it allows us to disable the use of
 # iconv by using --disable-nls.
-
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
