@@ -63,13 +63,7 @@ do_delete_key( const char *username, int secret, int *r_sec_avail )
     *r_sec_avail = 0;
 
     /* search the userid */
-    memset (&desc, 0, sizeof desc);
-    desc.mode = classify_user_id (username,
-                                  desc.u.kid,
-                                  desc.u.fpr,
-                                  &desc.u.name,
-                                  NULL);
-
+    classify_user_id (username, &desc);
     rc = desc.mode? keydb_search (hd, &desc, 1):G10ERR_INV_USER_ID;
     if (rc) {
 	log_error (_("key `%s' not found: %s\n"), username, g10_errstr (rc));

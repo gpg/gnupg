@@ -104,17 +104,19 @@ hkp_import( STRLIST users )
     }
 
     for( ; users; users = users->next ) {
-	u32 kid[2];
-	int type = classify_user_id( users->d, kid, NULL, NULL, NULL );
-	if( type != 10 && type != 11 ) {
-	    log_info(_("%s: not a valid key ID\n"), users->d );
+        KEYDB_SEARCH_DESC desc;
+
+	classify_user_id (users->d, &desc);
+	if(    desc.mode != KEYDB_SEARCH_MODE_SHORT_KID
+            && desc.mode != KEYDB_SEARCH_MODE_LONG_KID ) {
+	    log_error (_("%s: not a valid key ID\n"), users->d );
 	    continue;
 	}
 	/* because the function may use log_info in some situations, the
 	 * errorcounter ist not increaed and the program will return
 	 * with success - which is not good when this function is used.
 	 */
-	if( hkp_ask_import( kid ) )
+	if( hkp_ask_import( desc.u.kid ) )
 	    log_inc_errorcount();
     }
     return 0;

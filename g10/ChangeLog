@@ -1,3 +1,13 @@
+2001-09-07  Werner Koch  <wk@gnupg.org>
+
+	* hkp.c (hkp_import): Use log_error. Bug reported by Neal H
+	Walfield. 
+
+	* getkey.c (classify_user_id2): Change args to take the desc union
+	direct.  It was a stupid idea to pass the individual fields of an
+	union to this function. Changed all callers.
+	(classify_user_id): Ditto and allow to pass NULL as the description.
+
 2001-09-06  Werner Koch  <wk@gnupg.org>
 
 	* getkey.c (fixup_uidnode): Features flag is now a bit vector.

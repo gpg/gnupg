@@ -143,9 +143,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 	else {
             KEYDB_SEARCH_DESC desc;
 
-            memset (&desc, 0, sizeof desc);
-            desc.mode = classify_user_id (sl->d, desc.u.kid, desc.u.fpr,
-                                          &desc.u.name, NULL);
+            classify_user_id (sl->d, &desc);
             rc = desc.mode? keydb_search (kdbhd, &desc, 1):G10ERR_INV_USER_ID;
 	    if( rc ) {
                 log_error (_("key `%s' not found: %s\n"),

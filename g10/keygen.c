@@ -945,6 +945,8 @@ ask_expire_interval(void)
 	    /* print the date when the key expires */
 	    tty_printf(_("Key expires at %s\n"),
 			asctimestamp((ulong)(curtime + interval) ) );
+            /* FIXME: This check yields warning on alhas:
+               write a configure check and to this check here only for 32 bit machines */
 	    if( (time_t)((ulong)(curtime+interval)) < 0 )
 		tty_printf(_("Your system can't display dates beyond 2038.\n"
 		    "However, it will be correctly handled up to 2106.\n"));

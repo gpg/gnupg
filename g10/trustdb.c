@@ -467,20 +467,20 @@ lid_from_keyid_no_sdir( u32 *keyid )
 void
 register_trusted_key( const char *string )
 {
-    u32 keyid[2];
+    KEYDB_SEARCH_DESC desc;
     struct keyid_list *r;
 
-    if( classify_user_id( string, keyid, NULL, NULL, NULL ) != 11 ) {
-        log_error(_("'%s' is not a valid long keyID\n"), string );
+    if (classify_user_id (string, &desc) != KEYDB_SEARCH_MODE_LONG_KID ) {
+        log_error(_("`%s' is not a valid long keyID\n"), string );
         return;
     }
 
     for( r = trusted_key_list; r; r = r->next )
-        if( r->keyid[0] == keyid[0] && r->keyid[1] == keyid[1] )
+        if( r->keyid[0] == desc.u.kid[0] && r->keyid[1] == desc.u.kid[1] )
             return;
     r = m_alloc( sizeof *r );
-    r->keyid[0] = keyid[0];
-    r->keyid[1] = keyid[1];
+    r->keyid[0] = desc.u.kid[0];
+    r->keyid[1] = desc.u.kid[1];
     r->next = trusted_key_list;
     trusted_key_list = r;
 }

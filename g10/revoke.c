@@ -104,12 +104,7 @@ gen_revoke( const char *uname )
      * We don't want the whole getkey stuff here but the entire keyblock
      */
     kdbhd = keydb_new (1);
-    memset (&desc, 0, sizeof desc);
-    desc.mode = classify_user_id (uname,
-                                  desc.u.kid,
-                                  desc.u.fpr,
-                                  &desc.u.name,
-                                  NULL);
+    classify_user_id (uname, &desc);
     rc = desc.mode? keydb_search (kdbhd, &desc, 1) : G10ERR_INV_USER_ID;
     if (rc) {
 	log_error (_("secret key `%s' not found: %s\n"),

@@ -543,8 +543,6 @@ hextobyte( const byte *s )
  * 21 = Unified fingerprint :fpr:pk_algo:
  *      (We don't use pk_algo yet)
  *
- * if fprint is not NULL, it should be an array of at least 20 bytes.
- *
  * Rules used:
  * - If the username starts with 8,9,16 or 17 hex-digits (the first one
  *   must be in the range 0..9), this is considered a keyid; depending
@@ -570,16 +568,20 @@ hextobyte( const byte *s )
  */
 
 static int
-classify_user_id2( const char *name, u32 *keyid, byte *fprint,
-		  const char **retstr, size_t *retlen, int *force_exact )
+classify_user_id2( const char *name, 
+                   KEYDB_SEARCH_DESC *desc,
+                   int *force_exact )
 {
-    const char *	s;
-    int 		mode = 0;
-    int 		hexprefix = 0;
-    int 		hexlength;
+    const char *s;
+    int hexprefix = 0;
+    int hexlength;
+    int mode = 0;   
     
+    /* clear the structure so that the mode field is set to zero unless
+     * we set it to the correct value right at the end of this function */
+    memset (desc, 0, sizeof *desc);
     *force_exact = 0;
-    /* skip leading spaces.   FIXME: what is with leading spaces? */
+    /* skip leading spaces.  Fixme: what is with trailing spaces? */
     for(s = name; *s && isspace(*s); s++ )
 	;
 
@@ -590,39 +592,43 @@ classify_user_id2( const char *name, u32 *keyid, byte *fprint,
 	case '.':  /* an email address, compare from end */
 	    mode = KEYDB_SEARCH_MODE_MAILEND;
 	    s++;
+            desc->u.name = s;
 	    break;
 
 	case '<':  /* an email address */
 	    mode = KEYDB_SEARCH_MODE_MAIL;
+            desc->u.name = s;
 	    break;
 
 	case '@':  /* part of an email address */
 	    mode = KEYDB_SEARCH_MODE_MAILSUB;
 	    s++;
+            desc->u.name = s;
 	    break;
 
 	case '=':  /* exact compare */
 	    mode = KEYDB_SEARCH_MODE_EXACT;
 	    s++;
+            desc->u.name = s;
 	    break;
 
 	case '*':  /* case insensitive substring search */
 	    mode = KEYDB_SEARCH_MODE_SUBSTR;
 	    s++;
+            desc->u.name = s;
 	    break;
 
 	case '+':  /* compare individual words */
 	    mode = KEYDB_SEARCH_MODE_WORDS;
 	    s++;
+            desc->u.name = s;
 	    break;
 
 	case '#':  /* local user id */
 	    mode = KEYDB_SEARCH_MODE_TDBIDX;
 	    s++;
-	    if (keyid) {
-		if (keyid_from_lid(strtoul(s, NULL, 10), keyid))
-		    keyid[0] = keyid[1] = 0;
-	    }
+            if (keyid_from_lid(strtoul(s, NULL, 10), desc->u.kid))
+                desc->u.kid[0] = desc->u.kid[1] = 0;
 	    break;
         
         case ':': /*Unified fingerprint */
@@ -639,12 +645,10 @@ classify_user_id2( const char *name, u32 *keyid, byte *fprint,
                 }
                 if (i != 32 && i != 40)
                     return 0; /* invalid length of fpr*/
-		if (fprint) {
-		    for (i=0,si=s; si < se; i++, si +=2) 
-			fprint[i] = hextobyte(si);
-                    for ( ; i < 20; i++)
-                        fprint[i]= 0;
-		}
+                for (i=0,si=s; si < se; i++, si +=2) 
+                    desc->u.fpr[i] = hextobyte(si);
+                for ( ; i < 20; i++)
+                    desc->u.fpr[i]= 0;
                 s = se + 1;
                 mode = KEYDB_SEARCH_MODE_FPR;
             } 
@@ -678,10 +682,8 @@ classify_user_id2( const char *name, u32 *keyid, byte *fprint,
 		/* short keyid */
 		if (hexlength == 9)
 		    s++;
-		if (keyid) {
-		    keyid[0] = 0;
-		    keyid[1] = strtoul( s, NULL, 16 );
-		}
+                desc->u.kid[0] = 0;
+                desc->u.kid[1] = strtoul( s, NULL, 16 );
 		mode = KEYDB_SEARCH_MODE_SHORT_KID;
 	    }
 	    else if (hexlength == 16
@@ -691,8 +693,8 @@ classify_user_id2( const char *name, u32 *keyid, byte *fprint,
 		if (hexlength == 17)
 		    s++;
 		mem2str(buf, s, 9 );
-		keyid[0] = strtoul( buf, NULL, 16 );
-		keyid[1] = strtoul( s+8, NULL, 16 );
+		desc->u.kid[0] = strtoul( buf, NULL, 16 );
+		desc->u.kid[1] = strtoul( s+8, NULL, 16 );
 		mode = KEYDB_SEARCH_MODE_LONG_KID;
 	    }
 	    else if (hexlength == 32 || (!hexprefix && hexlength == 33
@@ -701,15 +703,13 @@ classify_user_id2( const char *name, u32 *keyid, byte *fprint,
 		int i;
 		if (hexlength == 33)
 		    s++;
-		if (fprint) {
-		    memset(fprint+16, 0, 4); 
-		    for (i=0; i < 16; i++, s+=2) {
-			int c = hextobyte(s);
-			if (c == -1)
-			    return 0;
-			fprint[i] = c;
-		    }
-		}
+                memset(desc->u.fpr+16, 0, 4); 
+                for (i=0; i < 16; i++, s+=2) {
+                    int c = hextobyte(s);
+                    if (c == -1)
+                        return 0;
+                    desc->u.fpr[i] = c;
+                }
 		mode = KEYDB_SEARCH_MODE_FPR16;
 	    }
 	    else if (hexlength == 40 || (!hexprefix && hexlength == 41
@@ -718,14 +718,12 @@ classify_user_id2( const char *name, u32 *keyid, byte *fprint,
 		int i;
 		if (hexlength == 41)
 		    s++;
-		if (fprint) {
-		    for (i=0; i < 20; i++, s+=2) {
-			int c = hextobyte(s);
-			if (c == -1)
-			    return 0;
-			fprint[i] = c;
-		    }
-		}
+                for (i=0; i < 20; i++, s+=2) {
+                    int c = hextobyte(s);
+                    if (c == -1)
+                        return 0;
+                    desc->u.fpr[i] = c;
+                }
 		mode = KEYDB_SEARCH_MODE_FPR20;
 	    }
 	    else {
@@ -733,24 +731,24 @@ classify_user_id2( const char *name, u32 *keyid, byte *fprint,
 		    return 0;	/* and a wrong length */
 
                 *force_exact = 0;
+                desc->u.name = s;
 		mode = KEYDB_SEARCH_MODE_SUBSTR;   /* default mode */
 	    }
     }
 
-    if( retstr )
-	*retstr = s;
-    if( retlen )
-	*retlen = strlen(s);
-
+    desc->mode = mode;
     return mode;
 }
 
 int
-classify_user_id( const char *name, u32 *keyid, byte *fprint,
-		  const char **retstr, size_t *retlen )
+classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc)
 {
     int dummy;
-    return classify_user_id2 (name, keyid, fprint, retstr, retlen, &dummy);
+    KEYDB_SEARCH_DESC dummy_desc;
+
+    if (!desc)
+        desc = &dummy_desc;
+    return classify_user_id2 (name, desc, &dummy);
 }
 
 /****************
@@ -789,17 +787,12 @@ key_byname( GETKEY_CTX *retctx, STRLIST namelist,
     ctx->nitems = n;
 
     for(n=0, r=namelist; r; r = r->next, n++ ) {
-	int mode = classify_user_id2 ( r->d,
-                                       ctx->items[n].u.kid,
-                                       ctx->items[n].u.fpr,
-                                       &ctx->items[n].u.name,
-                                       NULL, &exact );
+	classify_user_id2 (r->d, &ctx->items[n], &exact);
         
-        if ( exact )
+        if (exact)
             ctx->exact = 1;
-	ctx->items[n].mode = mode;
-        if( !ctx->items[n].mode ) {
-	    m_free( ctx );
+        if (!ctx->items[n].mode) {
+	    m_free (ctx);
 	    return G10ERR_INV_USER_ID;
 	}
     }
