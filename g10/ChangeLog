@@ -1,5 +1,7 @@
 2002-10-07  David Shaw  <dshaw@jabberwocky.com>
 
+	* mainproc.c (symkey_decrypt_sesskey): Fix compiler warning.
+
 	* keylist.c (print_capabilities): Properly indicate per-key
 	capabilities of sign&encrypt primary keys that have
 	secret-parts-missing (i.e. no capabilities at all).
