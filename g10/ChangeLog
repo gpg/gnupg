@@ -1,5 +1,11 @@
 2004-10-27  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyring.c: Make some strings translatable.
+
+	* exec.c, sign.c: Change "can't open file" to "can't open" and
+	"can't create file" to "can't create" to be consistent with other
+	strings so we don't have to translate both.
+
 	* delkey.c, export.c, keyedit.c, pkclist.c, revoke.c, skclist.c:
 	Fix a few missed possible \"username\" quotes.
 

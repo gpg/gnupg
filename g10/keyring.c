@@ -371,10 +371,11 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
         return -1; /* no successful search */
 
     a = iobuf_open (hd->found.kr->fname);
-    if (!a) {
-	log_error ("can't open `%s'\n", hd->found.kr->fname);
+    if (!a)
+      {
+	log_error(_("can't open `%s'\n"), hd->found.kr->fname);
 	return G10ERR_KEYRING_OPEN;
-    }
+      }
 
     if (iobuf_seek (a, hd->found.offset) ) {
         log_error ("can't seek `%s'\n", hd->found.kr->fname);
@@ -656,10 +657,11 @@ prepare_search (KEYRING_HANDLE hd)
 
     hd->current.eof = 0;
     hd->current.iobuf = iobuf_open (hd->current.kr->fname);
-    if (!hd->current.iobuf) {
-        log_error ("can't open `%s'\n", hd->current.kr->fname );
+    if (!hd->current.iobuf)
+      {
+        log_error(_("can't open `%s'\n"), hd->current.kr->fname );
         return (hd->current.error = G10ERR_OPEN_FILE);
-    }
+      }
 
     return 0;
 }
@@ -1193,12 +1195,13 @@ create_tmp_file (const char *template,
     else
       *r_fp = iobuf_create (tmpfname);
     umask(oldmask);
-    if (!*r_fp) {
-	log_error ("can't create `%s': %s\n", tmpfname, strerror(errno) );
+    if (!*r_fp)
+      {
+	log_error(_("can't create `%s': %s\n"), tmpfname, strerror(errno) );
         m_free (tmpfname);
         m_free (bakfname);
 	return G10ERR_OPEN_FILE;
-    }
+      }
     
     *r_bakfname = bakfname;
     *r_tmpfname = tmpfname;
@@ -1492,11 +1495,11 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
         else
             newfp = iobuf_create (fname);
 	umask(oldmask);
-	if( !newfp ) {
-	    log_error (_("can't create `%s': %s\n"),
-                       fname, strerror(errno));
+	if( !newfp )
+	  {
+	    log_error (_("can't create `%s': %s\n"), fname, strerror(errno));
 	    return G10ERR_OPEN_FILE;
-	}
+	  }
 	if( !opt.quiet )
 	    log_info(_("%s: keyring created\n"), fname );
 
@@ -1516,11 +1519,12 @@ do_copy (int mode, const char *fname, KBNODE root, int secret,
 	return 0; /* ready */
     }
 
-    if( !fp ) {
-	log_error ("can't open `%s': %s\n", fname, strerror(errno) );
+    if( !fp )
+      {
+	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	rc = G10ERR_OPEN_FILE;
 	goto leave;
-    }
+      }
 
     /* Create the new file.  */
     rc = create_tmp_file (fname, &bakfname, &tmpfname, &newfp);

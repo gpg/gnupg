@@ -775,8 +775,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
         else
             out = iobuf_create( outfile );
 	if( !out ) {
-	    log_error(_("can't create file `%s': %s\n"),
-		      outfile, strerror(errno) );
+	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
@@ -908,12 +907,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
                     inp = NULL;
                     errno = EPERM;
                   }
-		if( !inp ) {
-		    log_error(_("can't open file `%s': %s\n"),
-					    sl->d, strerror(errno) );
+		if( !inp )
+		  {
+		    log_error(_("can't open `%s': %s\n"),
+			      sl->d, strerror(errno) );
 		    rc = G10ERR_OPEN_FILE;
 		    goto leave;
-		}
+		  }
                 handle_progress (&pfx, inp, sl->d);
 		if( opt.verbose )
 		    fprintf(stderr, " `%s'", sl->d );
@@ -1032,8 +1032,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
         else 
             out = iobuf_create( outfile );
 	if( !out ) {
-	    log_error(_("can't create file `%s': %s\n"),
-		      outfile, strerror(errno) );
+	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}

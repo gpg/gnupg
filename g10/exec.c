@@ -486,7 +486,7 @@ int exec_write(struct exec_info **info,const char *program,
     (*info)->tochild=fopen((*info)->tempfile_in,binary?"wb":"w");
   if((*info)->tochild==NULL)
     {
-      log_error(_("can't create file `%s': %s\n"),
+      log_error(_("can't create `%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
       ret=G10ERR_WRITE_FILE;
       goto fail;
