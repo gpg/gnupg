@@ -146,8 +146,6 @@ main (int argc, char **argv)
         case oDryRun:    opt.dry_run = 1; break;
         case oRuntime:
 	  opt.runtime = 1;
-	  /* FIXME */
-	  fputs ("gpgconf: warning: option --runtime not supported yet\n", stderr);
 	  break;
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
