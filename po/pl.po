@@ -2332,7 +2332,8 @@ msgstr "Wa¿no¶æ tego klucza wygasa %s.\n"
 
 #: g10/keyedit.c:444
 msgid "Do you want your signature to expire at the same time? (Y/n) "
-msgstr "Czy chcesz ¿eby wa¿no¶æ Twojego podpisu wygasa³a w tej samej chwili? (T/n) "
+msgstr ""
+"Czy chcesz ¿eby wa¿no¶æ Twojego podpisu wygasa³a w tej samej chwili? (T/n) "
 
 #: g10/keyedit.c:477
 msgid ""
