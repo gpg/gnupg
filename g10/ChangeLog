@@ -1,3 +1,8 @@
+2001-10-06  Stefan Bellon  <sbellon@sbellon.de>
+
+	* passphrase.c [__riscos__]: Disabled agent specific stuff.
+	* g10.c: New option --no-force-v3-sigs.
+
 2001-09-28  Werner Koch  <wk@gnupg.org>
 
 	* keyedit.c (sign_uids): Always use the primary key to sign keys.
