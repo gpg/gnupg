@@ -1910,7 +1910,9 @@ show_prefs (PKT_user_id *uid, PKT_signature *selfsig, int verbose)
 	if(pref_ks && pref_ks_len)
 	  {
 	    tty_printf ("     ");
-	    tty_printf("Preferred keyserver: %.*s\n",pref_ks_len,pref_ks);
+	    tty_printf(_("Preferred keyserver: "));
+	    tty_print_utf8_string(pref_ks,pref_ks_len);
+	    tty_printf("\n");
 	  }
     }
     else {
@@ -3170,7 +3172,7 @@ menu_set_primary_uid ( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	      if(sig->version < 4) {
 		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
 
-		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+		log_info(_("skipping v3 self-signature on user ID \"%s\"\n"),
 			 user);
 		m_free(user);
 	      }
@@ -3280,7 +3282,7 @@ menu_set_preferences (KBNODE pub_keyblock, KBNODE sec_keyblock )
 	      if( sig->version < 4 ) {
 		char *user=utf8_to_native(uid->name,strlen(uid->name),0);
 
-		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+		log_info(_("skipping v3 self-signature on user ID \"%s\"\n"),
 			 user);
 		m_free(user);
 	      }
@@ -3399,7 +3401,7 @@ menu_set_keyserver_url (const char *url,
 	    {
 	      char *user=utf8_to_native(uid->name,strlen(uid->name),0);
 	      if( sig->version < 4 )
-		log_info(_("skipping v3 self-signature on user id \"%s\"\n"),
+		log_info(_("skipping v3 self-signature on user ID \"%s\"\n"),
 			 user);
 	      else
 		{
@@ -3416,7 +3418,9 @@ menu_set_keyserver_url (const char *url,
 		  if(p && plen)
 		    {
 		      tty_printf("Current preferred keyserver for user"
-				 " ID \"%s\": %.*s\n",user,plen,p);
+				 " ID \"%s\": ",user);
+		      tty_print_utf8_string(p,plen);
+		      tty_printf("\n");
 		      if(!cpr_get_answer_is_yes("keyedit.confirm_keyserver",
 			 uri?_("Are you sure you want to replace it? (y/N) "):
 			     _("Are you sure you want to delete it? (y/N) ")))

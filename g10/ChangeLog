@@ -1,5 +1,10 @@
 2004-09-21  David Shaw  <dshaw@jabberwocky.com>
 
+	* mainproc.c (check_sig_and_print), keyedit.c (show_prefs,
+	menu_set_keyserver_url): Make sure that keyserver URLs with
+	control characters inside are printed properly.  In fact, handle
+	them as UTF8.
+
 	* keyedit.c (keyedit_menu): Don't show "addcardkey" in the menu if
 	we do not have card support.
 

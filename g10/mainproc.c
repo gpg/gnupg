@@ -1368,7 +1368,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	       page, but "from" if it is located on a keyserver.  I'm
 	       not going to even try to make two strings here :) */
 	    log_info(_("Key available at: ") );
-	    print_string( log_stream(), p, n, 0 );
+	    print_utf8_string( log_stream(), p, n );
 	    putc( '\n', log_stream() );
 
 	    if(opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE
