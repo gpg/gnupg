@@ -1,3 +1,11 @@
+2004-11-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (print_digest_algo_note): The latest 2440bis drafts
+	deprecates MD5, so give a warning.
+	(print_pubkey_algo_note, print_cipher_algo_note,
+	print_digest_algo_note): Give the algorithm name in the
+	experimental algo warning.
+
 2004-11-03  Timo Schulz  <twoaday@g10code.com>
 
         * passphrase.c (readn, writen): Use w32_strerror instead

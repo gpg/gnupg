@@ -287,46 +287,32 @@ buffer_to_u32( const byte *buffer )
     return a;
 }
 
-
-static void
-no_exp_algo(void)
-{
-    static int did_note = 0;
-
-    if( !did_note ) {
-	did_note = 1;
-	log_info(_("Experimental algorithms should not be used!\n"));
-    }
-}
-
 void
 print_pubkey_algo_note( int algo )
 {
-    if( algo >= 100 && algo <= 110 )
-	no_exp_algo();
+  if(algo >= 100 && algo <= 110)
+    {
+      static int warn=0;
+      if(!warn)
+	{
+	  warn=1;
+	  log_info(_("WARNING: using experimental public key algorithm %s\n"),
+		   pubkey_algo_to_string(algo));
+	}
+    }
 }
 
 void
 print_cipher_algo_note( int algo )
 {
-    if( algo >= 100 && algo <= 110 )
-	no_exp_algo();
-    else if(	algo == CIPHER_ALGO_3DES
-	     || algo == CIPHER_ALGO_CAST5
-	     || algo == CIPHER_ALGO_BLOWFISH
-	     || algo == CIPHER_ALGO_TWOFISH
-	     || algo == CIPHER_ALGO_AES
-	     || algo == CIPHER_ALGO_AES192
-	     || algo == CIPHER_ALGO_AES256
-	   )
-	;
-    else {
-	static int did_note = 0;
-
-	if( !did_note ) {
-	    did_note = 1;
-	    log_info(_("this cipher algorithm is deprecated; "
-		       "please use a more standard one!\n"));
+  if(algo >= 100 && algo <= 110)
+    {
+      static int warn=0;
+      if(!warn)
+	{
+	  warn=1;
+	  log_info(_("WARNING: using experimental cipher algorithm %s\n"),
+		   cipher_algo_to_string(algo));
 	}
     }
 }
@@ -334,10 +320,20 @@ print_cipher_algo_note( int algo )
 void
 print_digest_algo_note( int algo )
 {
-    if( algo >= 100 && algo <= 110 )
-	no_exp_algo();
+  if(algo >= 100 && algo <= 110)
+    {
+      static int warn=0;
+      if(!warn)
+	{
+	  warn=1;
+	  log_info(_("WARNING: using experimental digest algorithm %s\n"),
+		   digest_algo_to_string(algo));
+	}
+    }
+  else if(algo==DIGEST_ALGO_MD5)
+    log_info(_("WARNING: digest algorithm %s is deprecated\n"),
+	     digest_algo_to_string(algo));
 }
-
 
 /* Return a string which is used as a kind of process ID */
 const byte *
