@@ -182,6 +182,7 @@ typedef struct {
     u32     expiredate;     /* expires at this date or 0 if not at all */
     byte    hdrbytes;	    /* number of header bytes */
     byte    version;
+    byte    selfsigversion; /* highest version of all of the self-sigs */
     byte    pubkey_algo;    /* algorithm used for public key scheme */
     byte    pubkey_usage;   /* for now only used to pass it to getkey() */
     byte    req_usage;      /* hack to pass a request to getkey() */

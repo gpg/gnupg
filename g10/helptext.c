@@ -165,9 +165,14 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 "    mean that you verified the key fingerprint and checked the user ID on the\n"
 "    key against a photo ID.\n\n"
 "\"3\" means you did extensive verification of the key.  For example, this could\n"
-"    mean that you verified the key fingerprint and checked the user ID on the\n"
-"    key against a photo ID, and also verified the email address on the key\n"
-"    belongs to the key owner.\n\n"
+"    mean that you verified the key fingerprint with the owner of the key in\n"
+"    person, and that you checked, by means of a hard to forge document with a\n"
+"    photo ID (such as a passport) that the name of the key owner matches the\n"
+"    name in the user ID on the key, and finally that you verified (by exchange\n"
+"    of email) that the email address on the key belongs to the key owner.\n\n"
+"Note that the examples given above for levels 2 and 3 are *only* examples.\n"
+"In the end, it is up to you to decide just what \"casual\" and \"extensive\"\n"
+"mean to you when you sign other keys.\n\n"
 "If you don't know what the right answer is, answer \"0\"."
 )},
 
@@ -301,5 +306,3 @@ display_online_help( const char *keyword )
     }
     tty_printf("\n");
 }
-
-

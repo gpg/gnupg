@@ -284,7 +284,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	  {
 	    log_info(_("you can only encrypt to RSA keys of 2048 bits or "
 		       "less in --pgp2 mode\n"));
-	    log_info(_("this message will not be usable by PGP 2.x\n"));
+	    log_info(_("this message may not be usable by PGP 2.x\n"));
 	    opt.pgp2=0;
 	    break;
 	  }
@@ -333,8 +333,23 @@ encode_crypt( const char *filename, STRLIST remusr )
     cfx.dek = m_alloc_secure_clear (sizeof *cfx.dek);
     if( !opt.def_cipher_algo ) { /* try to get it from the prefs */
 	cfx.dek->algo = select_algo_from_prefs( pk_list, PREFTYPE_SYM );
-	if( cfx.dek->algo == -1 )
-	    cfx.dek->algo = DEFAULT_CIPHER_ALGO;
+	/* The only way select_algo_from_prefs can fail here is when
+           mixing v3 and v4 keys, as v4 keys have an implicit
+           preference entry for 3DES, and the pk_list cannot be empty.
+           In this case, use 3DES anyway as it's the safest choice -
+           perhaps the v3 key is being used in an OpenPGP
+           implementation and we know that the implementation behind
+           any v4 key can handle 3DES. */
+	if( cfx.dek->algo == -1 ) {
+	    cfx.dek->algo = CIPHER_ALGO_3DES;
+
+	    if( opt.pgp2 ) {
+	      log_info(_("unable to use the IDEA cipher for all of the keys "
+			 "you are encrypting to.\n"));
+	      log_info(_("this message may not be usable by PGP 2.x\n"));
+	      opt.pgp2=0;
+	    }
+	}
     }
     else
 	cfx.dek->algo = opt.def_cipher_algo;

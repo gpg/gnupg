@@ -217,8 +217,15 @@ keygen_set_std_prefs (const char *string)
     const char *s, *s2;
     int rc = 0;
 
-    if (!string || !ascii_strcasecmp (string, "default"))
-        string = "S7 S10 S3 S4 H3 H2 Z2 Z1";
+    if (!string || !ascii_strcasecmp (string, "default")) {
+      if ( !check_cipher_algo(CIPHER_ALGO_IDEA) )
+        string = "S7 S10 S3 S4 S2 S1 H3 H2 Z2 Z1";
+      else
+        string = "S7 S10 S3 S4 S2 H3 H2 Z2 Z1";
+
+      /* If we have it, IDEA goes *after* 3DES so it won't be used
+         unless we're encrypting along with a V3 key. */
+    }
     else if (!ascii_strcasecmp (string, "none"))
         string = "";
 

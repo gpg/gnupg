@@ -966,8 +966,15 @@ select_algo_from_prefs( PK_LIST pk_list, int preftype )
 	u32 mask[8];
 
 	memset( mask, 0, 8 * sizeof *mask );
-	if( preftype == PREFTYPE_SYM )
-	    mask[0] |= (1<<2); /* 3DES is implicitly there */
+	if( preftype == PREFTYPE_SYM ) {
+	  if( pkr->pk->version < 4 && pkr->pk->selfsigversion < 4 )
+	    mask[0] |= (1<<1); /* IDEA is implicitly there for v3 keys
+				  with v3 selfsigs (rfc2440:12.1).
+				  This doesn't mean it's actually
+				  available, of course. */
+	  else
+	    mask[0] |= (1<<2); /* 3DES is implicitly there for everyone else */
+	}
         
         if (pkr->pk->user_id) /* selected by user ID */
             prefs = pkr->pk->user_id->prefs;

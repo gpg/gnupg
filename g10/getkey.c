@@ -1190,6 +1190,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     u32 keytimestamp = 0;
     u32 key_expire = 0;
     int key_expire_seen = 0;
+    byte sigversion = 0;
 
     *r_revoked = 0;
     if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY )
@@ -1242,6 +1243,7 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                     else {
                         sigdate = sig->timestamp;
                         signode = k;
+			sigversion = sig->version;
                     }
                 }
             }
@@ -1316,6 +1318,8 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                     else {
                         sigdate = sig->timestamp;
                         signode = k;
+			if( sig->version > sigversion )
+			  sigversion = sig->version;
                     }
                 }
             }
@@ -1328,6 +1332,10 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     if ( sigdate > uiddate )
         uiddate = sigdate;
 
+    /* Record the highest selfsigversion so we know if this is a v3
+       key through and through, or a v3 key with a v4 selfsig, which
+       means we can trust the preferences (if any). */
+    pk->selfsigversion=sigversion;
 
     /* Now that we had a look at all user IDs we can now get some information
      * from those user IDs.

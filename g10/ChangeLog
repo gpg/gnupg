@@ -1,3 +1,39 @@
+2002-01-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* packet.h, getkey.c (merge_selfsigs_main), pkclist.c
+	(select_algo_from_prefs): Implement the fake IDEA preference as
+	per RFC2440:12.1.  This doesn't mean that IDEA will be used (the
+	plugin may not be present), but it does mean that a v3 key with a
+	v3 selfsig has an implicit IDEA preference instead of 3DES.  v3
+	keys with v4 selfsigs use preferences as normal.
+
+	* encode.c (encode_crypt): if select_algo_from_prefs fails, this
+	means that we could not find a cipher that both keys like.  Since
+	all v4 keys have an implicit 3DES preference, this means there is
+	a v3 key with a v3 selfsig in the list.  Use 3DES in this case as
+	it is the safest option (we know the v4 key can handle it, and
+	we'll just hope the v3 key is being used in an implementation that
+	can handle it).  If --pgp2 is on, warn the user what we're doing
+	since it'll probably break PGP2 compatibility.
+
+	* g10.c (main): Do not force using IDEA for encrypted files in
+	--pgp2 mode - let the fake IDEA preference choose this for us for
+	better compatibility when encrypting to multiple keys, only some
+	of which are v3.
+
+	* keygen.c (keygen_set_std_prefs): Put 3DES on the end of the
+	default cipher pref list (RFC2440: "...it is good form to place it
+	there explicitly.").  If the user has the IDEA plugin installed,
+	put a preference for IDEA *after* 3DES to effectively disable its
+	use for everything except encrypting along with v3 keys.
+
+	* encode.c, g10.c, sign.c: Change the PGP2 warning line from
+	"... will not be usable ..." to "... may not be usable ..." as the
+	user could be using one of the enhanced PGP2 variations.
+
+	* helptext.c: Revise the sign_uid.class help text as suggested by
+	Stefan.
+	
 2002-01-20  Werner Koch  <wk@gnupg.org>
 
 	* passphrase.c (passphrase_to_dek): Add tryagain_text arg to be

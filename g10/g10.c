@@ -1303,7 +1303,7 @@ main( int argc, char **argv )
 		       "while in --pgp2 mode\n"));
 	    unusable=1;
 	  }
-	else if(cmd==aSignEncr)
+	else if(cmd==aSignEncr || cmd==aSignSym)
 	  {
 	    log_info(_("you can't sign and encrypt at the "
 		       "same time while in --pgp2 mode\n"));
@@ -1329,7 +1329,7 @@ main( int argc, char **argv )
 		idea_cipher_warn(1);
 		unusable=1;
 	      }
-	    else
+	    else if(cmd==aSym)
 	      {
 		m_free(def_cipher_string);
 		def_cipher_string = m_strdup("idea");
@@ -1338,7 +1338,7 @@ main( int argc, char **argv )
 
 	if(unusable)
 	  {
-	    log_info(_("this message will not be usable by PGP 2.x\n"));
+	    log_info(_("this message may not be usable by PGP 2.x\n"));
 	    opt.pgp2=0;
 	  }
 	else
