@@ -1,3 +1,9 @@
+2004-12-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (main): Add --require-secmem/--no-require-secmem to cause
+	gpg to exit if it cannot lock memory.  Also remove --nrsign-key
+	and --nrlsign-key since this can better be done via --edit-key.
+
 2004-12-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* apdu.c (apdu_send_le, apdu_send_direct), keylist.c

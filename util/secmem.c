@@ -88,8 +88,8 @@ print_warn(void)
   if (!no_warning)
     {
       log_info(_("WARNING: using insecure memory!\n"));
-      log_info(_("please see http://www.gnupg.org/faq.html "
-		 "for more information\n"));
+      log_info(_("please see http://www.gnupg.org/faq.html"
+		 " for more information\n"));
     }
 }
 
@@ -297,7 +297,8 @@ secmem_get_flags(void)
     return flags;
 }
 
-void
+/* Returns 1 if memory was locked, 0 if not. */
+int
 secmem_init( size_t n )
 {
     if( !n ) {
@@ -326,6 +327,8 @@ secmem_init( size_t n )
 	else
 	    log_error("Oops, secure memory pool already initialized\n");
     }
+
+    return !show_warning;
 }
 
 

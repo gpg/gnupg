@@ -66,7 +66,7 @@ size_t m_size( const void *a );
 void m_print_stats(const char *prefix);
 
 /*-- secmem.c --*/
-void secmem_init( size_t npool );
+int secmem_init( size_t npool );
 void secmem_term( void );
 void *secmem_malloc( size_t size );
 void *secmem_realloc( void *a, size_t newsize );

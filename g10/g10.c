@@ -108,8 +108,6 @@ enum cmd_and_opt_values
     aSignSym,
     aSignKey,
     aLSignKey,
-    aNRSignKey,
-    aNRLSignKey,
     aListConfig,
     aGPGConfList,
     aListPackets,
@@ -218,6 +216,8 @@ enum cmd_and_opt_values
     oNoVerbose,
     oTrustDBName,
     oNoSecmemWarn,
+    oRequireSecmem,
+    oNoRequireSecmem,
     oNoPermissionWarn,
     oNoMDCWarn,
     oNoArmor,
@@ -380,8 +380,6 @@ static ARGPARSE_OPTS opts[] = {
 				    N_("remove keys from the secret keyring")},
     { aSignKey,  "sign-key"   ,256, N_("sign a key")},
     { aLSignKey, "lsign-key"  ,256, N_("sign a key locally")},
-    { aNRSignKey, "nrsign-key"  ,256, "@"},
-    { aNRLSignKey, "nrlsign-key"  ,256, "@"},
     { aEditKey,  "edit-key"   ,256, N_("sign or edit a key")},
     { aGenRevoke, "gen-revoke",256, N_("generate a revocation certificate")},
     { aDesigRevoke, "desig-revoke",256, "@" },
@@ -557,6 +555,8 @@ static ARGPARSE_OPTS opts[] = {
     { oNoVerbose, "no-verbose", 0, "@"},
     { oTrustDBName, "trustdb-name", 2, "@" },
     { oNoSecmemWarn, "no-secmem-warning", 0, "@" },
+    { oRequireSecmem,"require-secmem", 0, "@" },
+    { oNoRequireSecmem,"no-require-secmem", 0, "@" },
     { oNoPermissionWarn, "no-permission-warning", 0, "@" },
     { oNoMDCWarn, "no-mdc-warning", 0, "@" },
     { oNoArmor, "no-armor",   0, "@"},
@@ -1614,6 +1614,7 @@ main( int argc, char **argv )
     int pwfd = -1;
     int with_fpr = 0; /* make an option out of --fingerprint */
     int any_explicit_recipient = 0;
+    int require_secmem=0,got_secmem=0;
 #ifdef USE_SHM_COPROCESSING
     ulong requested_shm_size=0;
 #endif
@@ -1746,7 +1747,7 @@ main( int argc, char **argv )
     }
 #endif
     /* initialize the secure memory. */
-    secmem_init( 32768 );
+    got_secmem=secmem_init( 32768 );
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
 
@@ -1899,8 +1900,6 @@ main( int argc, char **argv )
 	  case aKeygen: set_cmd( &cmd, aKeygen); greeting=1; break;
 	  case aSignKey: set_cmd( &cmd, aSignKey); break;
 	  case aLSignKey: set_cmd( &cmd, aLSignKey); break;
-	  case aNRSignKey: set_cmd( &cmd, aNRSignKey); break;
-	  case aNRLSignKey: set_cmd( &cmd, aNRLSignKey); break;
 	  case aStore: set_cmd( &cmd, aStore); break;
 	  case aEditKey: set_cmd( &cmd, aEditKey); greeting=1; break;
 	  case aClearsign: set_cmd( &cmd, aClearsign); break;
@@ -2284,6 +2283,8 @@ main( int argc, char **argv )
 	    break;
 	  case oCertDigestAlgo: cert_digest_string = m_strdup(pargs.r.ret_str); break;
 	  case oNoSecmemWarn: secmem_set_flags( secmem_get_flags() | 1 ); break;
+	  case oRequireSecmem: require_secmem=1; break;
+	  case oNoRequireSecmem: require_secmem=0; break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
 	  case oNoMDCWarn: opt.no_mdc_warn=1; break;
           case oDisplayCharset:
@@ -2595,6 +2596,13 @@ main( int argc, char **argv )
 	tty_batchmode( 1 );
 
     secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
+
+    if(require_secmem && !got_secmem)
+      {
+	log_info(_("will not run with insecure memory due to %s"),
+		 "--require-secmem\n");
+	g10_exit(2);
+      }
 
     set_debug();
 
@@ -3136,13 +3144,6 @@ main( int argc, char **argv )
 	if( argc != 1 )
 	  wrong_args(_("--lsign-key user-id"));
 	/* fall through */
-      case aNRSignKey:
-	if( argc != 1 )
-	  wrong_args(_("--nrsign-key user-id"));
-	/* fall through */
-      case aNRLSignKey:
-	if( argc != 1 )
-	  wrong_args(_("--nrlsign-key user-id"));
 
 	sl=NULL;
 
@@ -3150,10 +3151,6 @@ main( int argc, char **argv )
 	  append_to_strlist(&sl,"sign");
 	else if(cmd==aLSignKey)
 	  append_to_strlist(&sl,"lsign");
-	else if(cmd==aNRSignKey)
-	  append_to_strlist(&sl,"nrsign");
-	else if(cmd==aNRLSignKey)
-	  append_to_strlist(&sl,"nrlsign");
 	else
 	  BUG();
 
