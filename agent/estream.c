@@ -160,6 +160,8 @@ es_list_add (estream_t estream)
       list_obj->car = estream;
       list_obj->cdr = estream_list;
       list_obj->prev_cdr = &estream_list;
+      if (estream_list)
+	estream_list->prev_cdr = &list_obj->cdr;
       estream_list = list_obj;
       ESTREAM_LIST_UNLOCK;
       ret = 0;
