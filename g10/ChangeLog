@@ -1,5 +1,8 @@
 2003-08-29  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (show_key_with_all_names): Use list-option
+	show-long-keyid in main --edit-key display.
+
 	* keyedit.c (print_and_check_one_sig): Use list-option
 	show-long-keyid in --edit-key "check" function.
 

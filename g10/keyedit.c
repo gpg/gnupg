@@ -2047,19 +2047,27 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
                       }
             }
 
-	    tty_printf(_("%s%c %4u%c/%08lX  created: %s expires: %s"),
-			  node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
-			  (node->flag & NODFLG_SELKEY)? '*':' ',
-			  nbits_from_pk( pk ),
-			  pubkey_letter( pk->pubkey_algo ),
-			  (ulong)keyid_from_pk(pk,NULL),
-			  datestr_from_pk(pk),
-			  expirestr_from_pk(pk) );
+	    keyid_from_pk(pk,NULL);
+	    tty_printf("%s%c %4u%c/",
+		       node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
+		       (node->flag & NODFLG_SELKEY)? '*':' ',
+		       nbits_from_pk( pk ),
+		       pubkey_letter( pk->pubkey_algo ));
+
+	    if(opt.list_options&LIST_SHOW_LONG_KEYID)
+	      tty_printf("%08lX",(ulong)pk->keyid[0]);
+
+	    tty_printf("%08lX  ",(ulong)pk->keyid[1]);
+	    tty_printf(_("created: %s expires: %s"),
+		       datestr_from_pk(pk),
+		       expirestr_from_pk(pk) );
 	    tty_printf("\n");
 
 	    if( node->pkt->pkttype == PKT_PUBLIC_KEY )
 	      {
 		tty_printf("                     ");
+		if(opt.list_options&LIST_SHOW_LONG_KEYID)
+		  tty_printf("        ");
 		tty_printf(_("trust: %-13s"), otrust);
 		tty_printf(_("validity: %s"), trust );
 		tty_printf("\n");
