@@ -19,29 +19,24 @@
  */
 
 #include <config.h>
+#include <ctype.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <ctype.h>
-#include <sys/types.h>
-#ifndef HAVE_DOSISH_SYSTEM
-#include <sys/wait.h>
-#endif
-#include <sys/stat.h>
-#include <fcntl.h>
-#include "keyserver-internal.h"
-#include "types.h"
-#include "options.h"
-#include "memory.h"
+
+#include "util.h"
+#include "filter.h"
 #include "keydb.h"
 #include "status.h"
 #include "exec.h"
-#include "i18n.h"
-#include "util.h"
 #include "main.h"
+#include "i18n.h"
 #include "hkp.h"
+#include "iobuf.h"
+#include "memory.h"
+#include "options.h"
+#include "packet.h"
+#include "keyserver-internal.h"
 
 #define KEYSERVER_PROTO_VERSION 0
 

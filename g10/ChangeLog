@@ -1,3 +1,11 @@
+2001-12-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* mkdtemp.c (mkdtemp): Add copyleft info and tweak the 'X' counter
+	to be a bit simpler.
+
+	* keyserver.c, photoid.c: Remove unused headers left over from
+	when the exec functions lived there.
+
 2001-12-23  Timo Schulz <ts@winpt.org>
 
     * misc.c (check_permissions): Do not use it for W32 systems.

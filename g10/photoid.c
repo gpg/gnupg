@@ -19,30 +19,23 @@
  */
 
 #include <config.h>
-#include <unistd.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#ifndef HAVE_DOSISH_SYSTEM
-#include <sys/wait.h>
-#endif
-#include <errno.h>
-#include <limits.h>
-#include "keydb.h"
-#include "i18n.h"
-#include "options.h"
-#include "memory.h"
-#include "status.h"
-#include "util.h"
+
 #include "packet.h"
-#include "iobuf.h"
+#include "status.h"
 #include "exec.h"
+#include "keydb.h"
+#include "util.h"
+#include "i18n.h"
+#include "iobuf.h"
+#include "memory.h"
+#include "options.h"
 #include "photoid.h"
 
 #define PHOTO_COMMAND_MAXLEN 1024
 #define DEFAULT_PHOTO_COMMAND "xloadimage -fork -quiet -title 'KeyID 0x%k' stdin"
-#define PHOTO_FILENAME_TEMPLATE "gnupg-photo-id-XXXXXX"
 
 /* Generate a new photo id packet, or return NULL if canceled */
 PKT_user_id *generate_photo_id(PKT_public_key *pk)
