@@ -1,3 +1,13 @@
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* signal.c (got_fatal_signal, got_usr_signal)
+	(got_fatal_signal) [DOSISH]: Don't build.
+	* simple-gettext.c: Include sysutils.h 
+
+	* homedir.c: New.
+	* Makefile.am (libcommon_a_SOURCES): Add it.
+	(EXTRA_DIST): Removed mkerror and mkerrtok.
+
 2004-12-20  Werner Koch  <wk@g10code.com>
 
 	* sysutils.h [W32]: Define sleep.

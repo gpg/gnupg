@@ -351,17 +351,12 @@ main (int argc, char **argv )
      Note that this will also do the pth_init. */
 #ifndef HAVE_OPENSC
 #ifdef USE_GNU_PTH
-#ifdef HAVE_W32_SYSTEM
-  /* For W32 we need pth.  */
-  pth_init ();
-#else
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
-#endif
 #endif /*USE_GNU_PTH*/
 #endif /*!HAVE_OPENSC*/
 
@@ -392,14 +387,9 @@ main (int argc, char **argv )
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
   
-  /* FIXME: Using this homedir option does only make sense when not
-     running as a system service.  We might want to check for this by
-     looking at the uid or ebtter use an explict option for this */
-  opt.homedir = getenv("GNUPGHOME");
-  if (!opt.homedir || !*opt.homedir)
-    opt.homedir = GNUPG_DEFAULT_HOMEDIR;
+  opt.homedir = default_homedir ();
 
-  /* check whether we have a config file on the commandline */
+  /* Check whether we have a config file on the commandline */
   orig_argc = argc;
   orig_argv = argv;
   pargs.argc = &argc;

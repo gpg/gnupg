@@ -121,6 +121,10 @@ gpg_error_t b64enc_write (struct b64state *state,
 gpg_error_t b64enc_finish (struct b64state *state);
 
 
+/*-- homedir. c --*/
+const char *default_homedir (void);
+
+
 /*-- miscellaneous.c --*/
 
 /* Same as asprintf but return an allocated buffer suitable to be

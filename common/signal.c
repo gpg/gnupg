@@ -30,15 +30,17 @@
 #include "util.h"
 
 
+#ifndef HAVE_DOSISH_SYSTEM
 static volatile int caught_fatal_sig;
 static volatile int caught_sigusr1;
+#endif
 static void (*cleanup_fnc)(void);
 
 
+#ifndef HAVE_DOSISH_SYSTEM
 static void
 init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
 {
-#ifndef HAVE_DOSISH_SYSTEM
 # ifdef HAVE_SIGACTION
   struct sigaction oact, nact;
   
@@ -64,9 +66,10 @@ init_one_signal (int sig, RETSIGTYPE (*handler)(int), int check_ign )
       signal (sig, SIG_IGN);
     }
 # endif
-#endif /*!HAVE_DOSISH_SYSTEM*/
 }
+#endif /*!HAVE_DOSISH_SYSTEM*/
 
+#ifndef HAVE_DOSISH_SYSTEM
 static const char *
 get_signal_name( int signum )
 {
@@ -76,7 +79,9 @@ get_signal_name( int signum )
   return "some signal";
 #endif
 }
+#endif /*!HAVE_DOSISH_SYSTEM*/
 
+#ifndef HAVE_DOSISH_SYSTEM
 static RETSIGTYPE
 got_fatal_signal (int sig)
 {
@@ -106,14 +111,15 @@ got_fatal_signal (int sig)
 #endif /* __riscos__ */
   raise( sig );
 }
+#endif /*!HAVE_DOSISH_SYSTEM*/
 
-
+#ifndef HAVE_DOSISH_SYSTEM
 static RETSIGTYPE
 got_usr_signal (int sig)
 {
   caught_sigusr1 = 1;
 }
-
+#endif /*!HAVE_DOSISH_SYSTEM*/
 
 void
 gnupg_init_signals (int mode, void (*fast_cleanup)(void))

@@ -756,16 +756,9 @@ main ( int argc, char **argv)
 
   opt.def_cipher_algoid = "1.2.840.113549.3.7";  /*des-EDE3-CBC*/
 
-#ifdef HAVE_W32_SYSTEM
-  opt.homedir = read_w32_registry_string ( NULL,
-                                           "Software\\GNU\\GnuPG", "HomeDir" );
-#else
-  opt.homedir = getenv ("GNUPGHOME");
-#endif
-  if (!opt.homedir || !*opt.homedir ) 
-    opt.homedir = GNUPG_DEFAULT_HOMEDIR;
+  opt.homedir = default_homedir ();
 
-  /* first check whether we have a config file on the commandline */
+  /* First check whether we have a config file on the commandline */
   orig_argc = argc;
   orig_argv = argv;
   pargs.argc = &argc;

@@ -1261,9 +1261,7 @@ scd_update_reader_status_file (void)
 
                 log_info ("client pid is %d, sending signal %d\n", pid, signo);
 
-#ifdef HAVE_W32_SYSTEM
-#warning  Need to implement a notification service                
-#else
+#ifndef HAVE_W32_SYSTEM
                 if (pid != (pid_t)(-1) && pid && signo > 0)
                   kill (pid, signo);
 #endif

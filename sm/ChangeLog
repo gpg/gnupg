@@ -1,3 +1,7 @@
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* gpgsm.c (main): Use default_homedir().
+
 2004-12-20  Werner Koch  <wk@g10code.com>
 
 	* call-agent.c (start_agent): Before starting a pipe server start

@@ -1,3 +1,9 @@
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* gpg-agent.c (main): Use default_homedir().
+	* protect-tool.c (main): Ditto.
+	
+
 2004-12-20  Werner Koch  <wk@g10code.com>
 
 	* gpg-agent.c (main) [W32]: Now that Mutexes work we can remove

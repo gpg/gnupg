@@ -19,8 +19,6 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = mkerrors mkerrtok
-
 noinst_LIBRARIES = libcommon.a libsimple-pwquery.a
 
 AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
@@ -31,6 +29,7 @@ libcommon_a_SOURCES = \
 	sexp-parse.h \
 	maperror.c \
 	sysutils.c sysutils.h \
+	homedir.c \
 	gettime.c \
 	yesno.c \
 	b64enc.c \

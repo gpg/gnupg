@@ -150,15 +150,8 @@ main( int argc, char **argv )
     opt.trust_model = TM_ALWAYS;
     opt.batch = 1;
 
-#if defined (_WIN32)
-    opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG",
-                                            "HomeDir" );
-#else
-    opt.homedir = getenv("GNUPGHOME");
-#endif
-    if( !opt.homedir || !*opt.homedir ) {
-	opt.homedir = GNUPG_DEFAULT_HOMEDIR;
-    }
+    opt.homedir = default_homedir ();
+
     tty_no_terminal(1);
     tty_batchmode(1);
     disable_dotlock();

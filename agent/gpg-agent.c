@@ -478,15 +478,8 @@ main (int argc, char **argv )
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
 
+  opt.homedir = default_homedir ();
 
-  opt.homedir = getenv("GNUPGHOME");
-#ifdef HAVE_W32_SYSTEM
-  if (!opt.homedir || !*opt.homedir)
-    opt.homedir = read_w32_registry_string (NULL,
-                                            "Software\\GNU\\GnuPG", "HomeDir");
-#endif /*HAVE_W32_SYSTEM*/
-  if (!opt.homedir || !*opt.homedir)
-    opt.homedir = GNUPG_DEFAULT_HOMEDIR;
 
   /* Check whether we have a config file on the commandline */
   orig_argc = argc;

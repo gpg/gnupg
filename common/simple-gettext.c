@@ -40,7 +40,7 @@
 #include <sys/stat.h>
 
 #include "util.h"
-
+#include "sysutils.h"
 
 /* The magic number of the GNU message catalog format.	*/
 #define MAGIC	      0x950412de

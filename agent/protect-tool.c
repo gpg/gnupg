@@ -84,7 +84,7 @@ struct rsa_secret_key_s
   };
 
 
-static char *opt_homedir;
+static const char *opt_homedir;
 static int opt_armor;
 static int opt_store;
 static int opt_force;
@@ -1067,14 +1067,7 @@ main (int argc, char **argv )
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
 
 
-  opt_homedir = getenv ("GNUPGHOME");
-#ifdef HAVE_W32_SYSTEM
-  if (!opt_homedir || !*opt_homedir)
-    opt_homedir = read_w32_registry_string (NULL,
-                                            "Software\\GNU\\GnuPG", "HomeDir");
-#endif /*HAVE_W32_SYSTEM*/
-  if (!opt_homedir || !*opt_homedir)
-    opt_homedir = GNUPG_DEFAULT_HOMEDIR;
+  opt_homedir = default_homedir ();
 
 
   pargs.argc = &argc;

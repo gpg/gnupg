@@ -1264,16 +1264,9 @@ main( int argc, char **argv )
     opt.mangle_dos_filenames = 1;
     opt.use_agent = 1;
 
-#if defined (_WIN32)
-    set_homedir ( read_w32_registry_string( NULL,
-                                    "Software\\GNU\\GnuPG", "HomeDir" ));
-#else
-    set_homedir ( getenv("GNUPGHOME") );
-#endif
-    if( !*opt.homedir )
-	set_homedir ( GNUPG_DEFAULT_HOMEDIR );
+    set_homedir ( default_homedir () );
 
-    /* check whether we have a config file on the commandline */
+    /* Check whether we have a config file on the commandline */
     orig_argc = argc;
     orig_argv = argv;
     pargs.argc = &argc;

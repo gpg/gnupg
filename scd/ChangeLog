@@ -1,3 +1,7 @@
+2004-12-21  Werner Koch  <wk@g10code.com>
+
+	* scdaemon.c (main): Use default_homedir().
+
 2004-12-18  Werner Koch  <wk@g10code.com>
 
 	* scdaemon.c (main) [W32]: Remove special Pth initialize..
