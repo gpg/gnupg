@@ -29,6 +29,12 @@
 #include <assert.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+#ifdef HAVE_LANGINFO_CODESET
+#include <langinfo.h>
+#endif
 
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
@@ -1138,9 +1144,28 @@ get_passphrase (int promptno)
   char *pw;
   int err;
   const char *desc;
+  char *orig_codeset = NULL;
 
   if (opt_passphrase)
     return xstrdup (opt_passphrase);
+
+#ifdef ENABLE_NLS
+  /* The Assuan agent protocol requires us to transmit utf-8 strings */
+  orig_codeset = bind_textdomain_codeset (PACKAGE_GT, NULL);
+#ifdef HAVE_LANGINFO_CODESET
+  if (!orig_codeset)
+    orig_codeset = nl_langinfo (CODESET);
+#endif
+  if (orig_codeset && !strcmp (orig_codeset, "UTF-8"))
+    orig_codeset = NULL;
+  if (orig_codeset)
+    {
+      /* We only switch when we are able to restore the codeset later. */
+      orig_codeset = xstrdup (orig_codeset);
+      if (!bind_textdomain_codeset (PACKAGE_GT, "utf-8"))
+        orig_codeset = NULL; 
+    }
+#endif
 
   if (promptno == 1 && opt_prompt)
     desc = opt_prompt;
@@ -1149,6 +1174,15 @@ get_passphrase (int promptno)
              "needed to complete this operation.");
 
   pw = simple_pwquery (NULL,NULL, _("Passphrase:"), desc, &err);
+
+#ifdef ENABLE_NLS
+  if (orig_codeset)
+    {
+      bind_textdomain_codeset (PACKAGE_GT, orig_codeset);
+      xfree (orig_codeset);
+    }
+#endif
+
   if (!pw)
     {
       if (err)

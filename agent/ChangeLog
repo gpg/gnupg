@@ -1,3 +1,8 @@
+2004-08-18  Werner Koch  <wk@g10code.de>
+
+	* protect-tool.c (get_passphrase): Make sure that the default
+	prompts passed to gpg-agent are utf-8 encoded.
+
 2004-07-22  Werner Koch  <wk@g10code.de>
 
 	* trustlist.c (read_list): Allow colons in the fingerprint.
