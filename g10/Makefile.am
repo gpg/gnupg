@@ -78,7 +78,7 @@ card_support_source_scd = \
 	iso7816.c iso7816.h \
 	apdu.c apdu.h \
 	ccid-driver.c ccid-driver.h
-card_support_source_local = cardglue.c cardglue.h
+card_support_source_local = cardglue.c cardglue.h tlv.c tlv.h
 else
 card_support_source_g10 =
 card_support_source_scd = 

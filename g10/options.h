@@ -195,6 +195,7 @@ struct
   const char *ctapi_driver; /* Library to access the ctAPI. */
   const char *pcsc_driver;  /* Library to access the PC/SC system. */
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
+  int allow_admin;     /* Allow the use of Admin commands. */
 #endif /*ENABLE_CARD_SUPPORT*/
 
 } opt;

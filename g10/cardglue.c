@@ -262,7 +262,7 @@ open_card (void)
 
   app = xcalloc (1, sizeof *app);
   app->slot = slot;
-  rc = app_select_openpgp (app, &app->serialno, &app->serialnolen);
+  rc = app_select_openpgp (app);
   if (rc && !opt.batch)
     {
       write_status_text (STATUS_CARDCTRL, "1");

@@ -63,8 +63,10 @@ struct agent_card_genkey_s {
 struct app_ctx_s;
 struct ctrl_ctx_s;
 
-typedef struct app_ctx_s *APP;
-typedef struct ctrl_ctx_s *CTRL;
+typedef struct app_ctx_s *APP; /* deprecated. */
+typedef struct app_ctx_s *app_t;
+typedef struct ctrl_ctx_s *CTRL; /* deprecated. */
+typedef struct ctrl_ctx_s *ctrl_t;
 
 
 #define GPG_ERR_GENERAL           G10ERR_GENERAL
@@ -86,6 +88,15 @@ typedef struct ctrl_ctx_s *CTRL;
 #define GPG_ERR_WRONG_CARD        G10ERR_GENERAL
 #define GPG_ERR_WRONG_SECKEY      G10ERR_WRONG_SECKEY
 #define GPG_ERR_PIN_NOT_SYNCED    G10ERR_GENERAL
+#define GPG_ERR_NOT_FOUND         G10ERR_GENERAL
+#define GPG_ERR_BUG               G10ERR_GENERAL
+#define GPG_ERR_NOT_IMPLEMENTED   G10ERR_GENERAL
+#define GPG_ERR_BAD_BER           G10ERR_GENERAL
+#define GPG_ERR_EOF               (-1)
+
+#define GPG_ERR_EBUSY             G10ERR_GENERAL
+#define GPG_ERR_ENOENT            G10ERR_OPEN_FILE
+#define GPG_ERR_EACCES            G10ERR_UNSUPPORTED
 
 typedef int gpg_error_t;
 typedef int gpg_err_code_t;
@@ -94,7 +105,7 @@ typedef int gpg_err_code_t;
 #define gpg_err_code(n) (n)
 #define gpg_strerror(n) g10_errstr ((n))
 #define gpg_error_from_errno(n) (G10ERR_GENERAL) /*FIXME*/
-
+#define gpg_err_code_from_errno(n) (G10ERR_GENERAL)
 
 /* We are not using it in a library, so we even let xtrymalloc
    abort. Because we won't never return from these malloc functions,

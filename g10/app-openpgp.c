@@ -1,5 +1,5 @@
 /* app-openpgp.c - The OpenPGP card application.
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -42,7 +42,7 @@
 
 #include "iso7816.h"
 #include "app-common.h"
-
+#include "tlv.h"
 
 
 static struct {
@@ -50,28 +50,42 @@ static struct {
   int constructed;
   int get_from;  /* Constructed DO with this DO or 0 for direct access. */
   int binary;
+  int dont_cache;
+  int flush_on_error;
   char *desc;
 } data_objects[] = {
-  { 0x005E, 0,    0, 1, "Login Data" },
-  { 0x5F50, 0,    0, 0, "URL" },
-  { 0x0065, 1,    0, 1, "Cardholder Related Data"},
-  { 0x005B, 0, 0x65, 0, "Name" },
-  { 0x5F2D, 0, 0x65, 0, "Language preferences" },
-  { 0x5F35, 0, 0x65, 0, "Sex" },
-  { 0x006E, 1,    0, 1, "Application Related Data" },
-  { 0x004F, 0, 0x6E, 1, "AID" },
-  { 0x0073, 1,    0, 1, "Discretionary Data Objects" },
-  { 0x0047, 0, 0x6E, 1, "Card Capabilities" },
-  { 0x00C0, 0, 0x6E, 1, "Extended Card Capabilities" },
-  { 0x00C1, 0, 0x6E, 1, "Algorithm Attributes Signature" },
-  { 0x00C2, 0, 0x6E, 1, "Algorithm Attributes Decryption" },
-  { 0x00C3, 0, 0x6E, 1, "Algorithm Attributes Authentication" },
-  { 0x00C4, 0, 0x6E, 1, "CHV Status Bytes" },
-  { 0x00C5, 0, 0x6E, 1, "Fingerprints" },
-  { 0x00C6, 0, 0x6E, 1, "CA Fingerprints" },
-  { 0x007A, 1,    0, 1, "Security Support Template" },
-  { 0x0093, 0, 0x7A, 1, "Digital Signature Counter" },
+  { 0x005E, 0,    0, 1, 0, 0, "Login Data" },
+  { 0x5F50, 0,    0, 0, 0, 0, "URL" },
+  { 0x0065, 1,    0, 1, 0, 0, "Cardholder Related Data"},
+  { 0x005B, 0, 0x65, 0, 0, 0, "Name" },
+  { 0x5F2D, 0, 0x65, 0, 0, 0, "Language preferences" },
+  { 0x5F35, 0, 0x65, 0, 0, 0, "Sex" },
+  { 0x006E, 1,    0, 1, 0, 0, "Application Related Data" },
+  { 0x004F, 0, 0x6E, 1, 0, 0, "AID" },
+  { 0x0073, 1,    0, 1, 0, 0, "Discretionary Data Objects" },
+  { 0x0047, 0, 0x6E, 1, 0, 0, "Card Capabilities" },
+  { 0x00C0, 0, 0x6E, 1, 0, 0, "Extended Card Capabilities" },
+  { 0x00C1, 0, 0x6E, 1, 0, 0, "Algorithm Attributes Signature" },
+  { 0x00C2, 0, 0x6E, 1, 0, 0, "Algorithm Attributes Decryption" },
+  { 0x00C3, 0, 0x6E, 1, 0, 0, "Algorithm Attributes Authentication" },
+  { 0x00C4, 0, 0x6E, 1, 0, 1, "CHV Status Bytes" },
+  { 0x00C5, 0, 0x6E, 1, 0, 0, "Fingerprints" },
+  { 0x00C6, 0, 0x6E, 1, 0, 0, "CA Fingerprints" },
+  { 0x007A, 1,    0, 1, 0, 0, "Security Support Template" },
+  { 0x0093, 0, 0x7A, 1, 1, 0, "Digital Signature Counter" },
   { 0 }
+};
+
+
+struct cache_s {
+  struct cache_s *next;
+  int tag;
+  size_t length;
+  unsigned char data[1];
+};
+
+struct app_local_s {
+  struct cache_s *cache;
 };
 
 
@@ -79,92 +93,153 @@ static unsigned long convert_sig_counter_value (const unsigned char *value,
                                                 size_t valuelen);
 static unsigned long get_sig_counter (APP app);
 
-
-/* Locate a TLV encoded data object in BUFFER of LENGTH and
-   return a pointer to value as well as its length in NBYTES.  Return
-   NULL if it was not found.  Note, that the function does not check
-   whether the value fits into the provided buffer. 
-
-   FIXME: Move this to an extra file, it is mostly duplicated from card.c.
-*/
-static const unsigned char *
-find_tlv (const unsigned char *buffer, size_t length,
-          int tag, size_t *nbytes, int nestlevel)
+/* Deconstructor. */
+static void
+do_deinit (app_t app)
 {
-  const unsigned char *s = buffer;
-  size_t n = length;
-  size_t len;
-  int this_tag;
-  int composite;
-    
-  for (;;)
+  if (app && app->app_local)
     {
-      buffer = s;
-      if (n < 2)
-        return NULL; /* buffer definitely too short for tag and length. */
-      if (!*s || *s == 0xff)
-        { /* Skip optional filler between TLV objects. */
-          s++;
-          n--;
-          continue;
-        }
-      composite = !!(*s & 0x20);
-      if ((*s & 0x1f) == 0x1f)
-        { /* more tag bytes to follow */
-          s++;
-          n--;
-          if (n < 2)
-            return NULL; /* buffer definitely too short for tag and length. */
-          if ((*s & 0x1f) == 0x1f)
-            return NULL; /* We support only up to 2 bytes. */
-          this_tag = (s[-1] << 8) | (s[0] & 0x7f);
-        }
-      else
-        this_tag = s[0];
-      len = s[1];
-      s += 2; n -= 2;
-      if (len < 0x80)
-        ;
-      else if (len == 0x81)
-        { /* One byte length follows. */
-          if (!n)
-            return NULL; /* we expected 1 more bytes with the length. */
-          len = s[0];
-          s++; n--;
-        }
-      else if (len == 0x82)
-        { /* Two byte length follows. */
-          if (n < 2)
-            return NULL; /* we expected 2 more bytes with the length. */
-          len = (s[0] << 8) | s[1];
-          s += 2; n -= 2;
-        }
-      else
-        return NULL; /* APDU limit is 65535, thus it does not make
-                        sense to assume longer length fields. */
+      struct cache_s *c, *c2;
 
-      if (composite && nestlevel < 100)
-        { /* Dive into this composite DO after checking for too deep
-             nesting. */
-          const unsigned char *tmp_s;
-          size_t tmp_len;
-          
-          tmp_s = find_tlv (s, len, tag, &tmp_len, nestlevel+1);
-          if (tmp_s)
-            {
-              *nbytes = tmp_len;
-              return tmp_s;
-            }
-        }
-
-      if (this_tag == tag)
+      for (c = app->app_local->cache; c; c = c2)
         {
-          *nbytes = len;
-          return s;
+          c2 = c->next;
+          xfree (c);
         }
-      if (len > n)
-        return NULL; /* buffer too short to skip to the next tag. */
-      s += len; n -= len;
+      xfree (app->app_local);
+      app->app_local = NULL;
+    }
+}
+
+
+/* Wrapper around iso7816_get_data which first tries to get the data
+   from the cache. */
+static gpg_error_t
+get_cached_data (app_t app, int tag, 
+                 unsigned char **result, size_t *resultlen)
+{
+  gpg_error_t err;
+  int i;
+  unsigned char *p;
+  size_t len;
+  struct cache_s *c;
+
+
+  *result = NULL;
+  *resultlen = 0;
+
+  if (app->app_local)
+    {
+      for (c=app->app_local->cache; c; c = c->next)
+        if (c->tag == tag)
+          {
+              p = xtrymalloc (c->length);
+              if (!p)
+                return gpg_error (gpg_err_code_from_errno (errno));
+              memcpy (p, c->data, c->length);
+              *resultlen = c->length;
+              *result = p;
+              return 0;
+          }
+    }
+  
+  err = iso7816_get_data (app->slot, tag, &p, &len);
+  if (err)
+    return err;
+  *result = p;
+  *resultlen = len;
+
+  /* Check whether we should cache this object. */
+  for (i=0; data_objects[i].tag; i++)
+    if (data_objects[i].tag == tag)
+      {
+        if (data_objects[i].dont_cache)
+          return 0;
+        break;
+      }
+
+  /* No, cache it. */
+  if (!app->app_local)
+    app->app_local = xtrycalloc (1, sizeof *app->app_local);
+
+  /* Note that we can safely ignore out of core errors. */
+  if (app->app_local)
+    {
+      for (c=app->app_local->cache; c; c = c->next)
+        assert (c->tag != tag);
+      
+      c = xtrymalloc (sizeof *c + len);
+      if (c)
+        {
+          memcpy (c->data, p, len);
+          c->length = len;
+          c->tag = tag;
+          c->next = app->app_local->cache;
+          app->app_local->cache = c;
+        }
+    }
+
+  return 0;
+}
+
+/* Remove DO at TAG from the cache. */
+static void
+flush_cache_item (app_t app, int tag)
+{
+  struct cache_s *c, *cprev;
+  int i;
+
+  if (!app->app_local)
+    return;
+
+  for (c=app->app_local->cache, cprev=NULL; c ; cprev=c, c = c->next)
+    if (c->tag == tag)
+      {
+        if (cprev)
+          cprev->next = c->next;
+        else
+          app->app_local->cache = c->next;
+        xfree (c);
+
+        for (c=app->app_local->cache; c ; c = c->next)
+          assert (c->tag != tag); /* Oops: duplicated entry. */
+        return;
+      }
+
+  /* Try again if we have an outer tag. */
+  for (i=0; data_objects[i].tag; i++)
+    if (data_objects[i].tag == tag && data_objects[i].get_from
+        && data_objects[i].get_from != tag)
+      flush_cache_item (app, data_objects[i].get_from);
+}
+
+/* Flush all entries from the cache which might be out of sync after
+   an error. */
+static void
+flush_cache_after_error (app_t app)
+{
+  int i;
+
+  for (i=0; data_objects[i].tag; i++)
+    if (data_objects[i].flush_on_error)
+      flush_cache_item (app, data_objects[i].tag);
+}
+
+
+/* Flush the entire cache. */
+static void
+flush_cache (app_t app)
+{
+  if (app && app->app_local)
+    {
+      struct cache_s *c, *c2;
+
+      for (c = app->app_local->cache; c; c = c2)
+        {
+          c2 = c->next;
+          xfree (c);
+        }
+      app->app_local->cache = NULL;
     }
 }
 
@@ -174,7 +249,7 @@ find_tlv (const unsigned char *buffer, size_t length,
    NULL if not found or a pointer which must be used to release the
    buffer holding value. */
 static void *
-get_one_do (int slot, int tag, unsigned char **result, size_t *nbytes)
+get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes)
 {
   int rc, i;
   unsigned char *buffer;
@@ -191,13 +266,13 @@ get_one_do (int slot, int tag, unsigned char **result, size_t *nbytes)
   rc = -1;
   if (data_objects[i].tag && data_objects[i].get_from)
     {
-      rc = iso7816_get_data (slot, data_objects[i].get_from,
-                             &buffer, &buflen);
+      rc = get_cached_data (app, data_objects[i].get_from,
+                            &buffer, &buflen);
       if (!rc)
         {
           const unsigned char *s;
 
-          s = find_tlv (buffer, buflen, tag, &valuelen, 0);
+          s = find_tlv (buffer, buflen, tag, &valuelen);
           if (!s)
             value = NULL; /* not found */
           else if (valuelen > buflen - (s - buffer))
@@ -213,7 +288,7 @@ get_one_do (int slot, int tag, unsigned char **result, size_t *nbytes)
 
   if (!value) /* Not in a constructed DO, try simple. */
     {
-      rc = iso7816_get_data (slot, tag, &buffer, &buflen);
+      rc = get_cached_data (app, tag, &buffer, &buflen);
       if (!rc)
         {
           value = buffer;
@@ -271,7 +346,7 @@ dump_all_do (int slot)
                   if (j==i || data_objects[i].tag != data_objects[j].get_from)
                     continue;
                   value = find_tlv (buffer, buflen,
-                                    data_objects[j].tag, &valuelen, 0);
+                                    data_objects[j].tag, &valuelen);
                   if (!value)
                     ; /* not found */
                   else if (valuelen > buflen - (value - buffer))
@@ -333,7 +408,7 @@ store_fpr (int slot, int keynumber, u32 timestamp,
   n = 6 + 2 + mlen + 2 + elen;
   p = buffer = xtrymalloc (3 + n);
   if (!buffer)
-    return out_of_core ();
+    return gpg_error (gpg_err_code_from_errno (errno));
   
   *p++ = 0x99;     /* ctb */
   *p++ = n >> 8;   /* 2 byte length header */
@@ -443,7 +518,7 @@ do_getattr (APP app, CTRL ctrl, const char *name)
     {
       /* The serial number is very special.  We could have used the
          AID DO to retrieve it, but we have it already in the app
-         context and the stanmp argument is required anyway which we
+         context and the stamp argument is required anyway which we
          can't by other means. The AID DO is available anyway but not
          hex formatted. */
       char *serial;
@@ -462,7 +537,7 @@ do_getattr (APP app, CTRL ctrl, const char *name)
       return 0;
     }
 
-  relptr = get_one_do (app->slot, table[idx].tag, &value, &valuelen);
+  relptr = get_one_do (app, table[idx].tag, &value, &valuelen);
   if (relptr)
     {
       if (table[idx].special == 1)
@@ -517,7 +592,7 @@ do_learn_status (APP app, CTRL ctrl)
 /* Verify CHV2 if required.  Depending on the configuration of the
    card CHV1 will also be verified. */
 static int
-verify_chv2 (APP app,
+verify_chv2 (app_t app,
              int (*pincb)(void*, const char *, char **),
              void *pincb_arg)
 {
@@ -534,11 +609,19 @@ verify_chv2 (APP app,
           return rc;
         }
 
+      if (strlen (pinvalue) < 6)
+        {
+          log_error ("prassphrase (CHV2) is too short; minimum length is 6\n");
+          xfree (pinvalue);
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+
       rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));
       if (rc)
         {
           log_error ("verify CHV2 failed: %s\n", gpg_strerror (rc));
           xfree (pinvalue);
+          flush_cache_after_error (app);
           return rc;
         }
       app->did_chv2 = 1;
@@ -552,6 +635,7 @@ verify_chv2 (APP app,
             {
               log_error ("verify CHV1 failed: %s\n", gpg_strerror (rc));
               xfree (pinvalue);
+              flush_cache_after_error (app);
               return rc;
             }
           app->did_chv1 = 1;
@@ -569,6 +653,12 @@ verify_chv3 (APP app,
 {
   int rc = 0;
 
+  if (!opt.allow_admin)
+    {
+      log_info ("access to admin commands is not configured\n");
+      return gpg_error (GPG_ERR_EACCES);
+    }
+      
   if (!app->did_chv3) 
     {
       char *pinvalue;
@@ -580,11 +670,19 @@ verify_chv3 (APP app,
           return rc;
         }
 
+      if (strlen (pinvalue) < 6)
+        {
+          log_error ("prassphrase (CHV3) is too short; minimum length is 6\n");
+          xfree (pinvalue);
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+
       rc = iso7816_verify (app->slot, 0x83, pinvalue, strlen (pinvalue));
       xfree (pinvalue);
       if (rc)
         {
           log_error ("verify CHV3 failed: %s\n", gpg_strerror (rc));
+          flush_cache_after_error (app);
           return rc;
         }
       app->did_chv3 = 1;
@@ -629,6 +727,10 @@ do_setattr (APP app, const char *name,
   if (rc)
     return rc;
 
+  /* Flush the cache before writing it, so that the next get operation
+     will reread the data from the card and thus get synced in case of
+     errors (e.g. data truncated by the card). */
+  flush_cache_item (app, table[idx].tag);
   rc = iso7816_put_data (app->slot, table[idx].tag, value, valuelen);
   if (rc)
     log_error ("failed to set `%s': %s\n", table[idx].name, gpg_strerror (rc));
@@ -715,7 +817,8 @@ do_change_pin (APP app, CTRL ctrl,  const char *chvnostr, int reset_mode,
                                             pinvalue, strlen (pinvalue));
     }
   xfree (pinvalue);
-
+  if (rc)
+    flush_cache_after_error (app);
 
  leave:
   return rc;
@@ -746,13 +849,17 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
     return gpg_error (GPG_ERR_INV_ID);
   keyno--;
 
+  /* We flush the cache to increase the traffic before a key
+     generation.  This _might_ help a card to gather more entropy. */
+  flush_cache (app);
+
   rc = iso7816_get_data (app->slot, 0x006E, &buffer, &buflen);
   if (rc)
     {
       log_error ("error reading application data\n");
       return gpg_error (GPG_ERR_GENERAL);
     }
-  fpr = find_tlv (buffer, buflen, 0x00C5, &n, 0);
+  fpr = find_tlv (buffer, buflen, 0x00C5, &n);
   if (!fpr || n != 60)
     {
       rc = gpg_error (GPG_ERR_GENERAL);
@@ -779,6 +886,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
     goto leave;
 
   xfree (buffer); buffer = NULL;
+
 #if 1
   log_info ("please wait while key is being generated ...\n");
   start_at = time (NULL);
@@ -800,7 +908,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
     }
   log_info ("key generation completed (%d seconds)\n",
             (int)(time (NULL) - start_at));
-  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen, 0);
+  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
       rc = gpg_error (GPG_ERR_CARD);
@@ -808,7 +916,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
       goto leave;
     }
  
-  m = find_tlv (keydata, keydatalen, 0x0081, &mlen, 0);
+  m = find_tlv (keydata, keydatalen, 0x0081, &mlen);
   if (!m)
     {
       rc = gpg_error (GPG_ERR_CARD);
@@ -818,7 +926,7 @@ do_genkey (APP app, CTRL ctrl,  const char *keynostr, unsigned int flags,
 /*    log_printhex ("RSA n:", m, mlen); */
   send_key_data (ctrl, "n", m, mlen);
 
-  e = find_tlv (keydata, keydatalen, 0x0082, &elen, 0);
+  e = find_tlv (keydata, keydatalen, 0x0082, &elen);
   if (!e)
     {
       rc = gpg_error (GPG_ERR_CARD);
@@ -869,7 +977,7 @@ get_sig_counter (APP app)
   size_t valuelen;
   unsigned long ul;
 
-  relptr = get_one_do (app->slot, 0x0093, &value, &valuelen);
+  relptr = get_one_do (app, 0x0093, &value, &valuelen);
   if (!relptr)
     return 0;
   ul = convert_sig_counter_value (value, valuelen);
@@ -887,13 +995,13 @@ compare_fingerprint (APP app, int keyno, unsigned char *sha1fpr)
   
   assert (keyno >= 1 && keyno <= 3);
 
-  rc = iso7816_get_data (app->slot, 0x006E, &buffer, &buflen);
+  rc = get_cached_data (app, 0x006E, &buffer, &buflen);
   if (rc)
     {
       log_error ("error reading application data\n");
       return gpg_error (GPG_ERR_GENERAL);
     }
-  fpr = find_tlv (buffer, buflen, 0x00C5, &n, 0);
+  fpr = find_tlv (buffer, buflen, 0x00C5, &n);
   if (!fpr || n != 60)
     {
       xfree (buffer);
@@ -1035,11 +1143,19 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
           return rc;
         }
 
+      if (strlen (pinvalue) < 6)
+        {
+          log_error ("prassphrase (CHV1) is too short; minimum length is 6\n");
+          xfree (pinvalue);
+          return gpg_error (GPG_ERR_BAD_PIN);
+        }
+
       rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
       if (rc)
         {
           log_error ("verify CHV1 failed\n");
           xfree (pinvalue);
+          flush_cache_after_error (app);
           return rc;
         }
       app->did_chv1 = 1;
@@ -1053,6 +1169,7 @@ do_sign (APP app, const char *keyidstr, int hashalgo,
             {
               log_error ("verify CHV2 failed\n");
               xfree (pinvalue);
+              flush_cache_after_error (app);
               return rc;
             }
           app->did_chv2 = 1;
@@ -1182,7 +1299,8 @@ do_decipher (APP app, const char *keyidstr,
 
   rc = verify_chv2 (app, pincb, pincb_arg);
   if (!rc)
-    rc = iso7816_decipher (app->slot, indata, indatalen, outdata, outdatalen);
+    rc = iso7816_decipher (app->slot, indata, indatalen, 0,
+                           outdata, outdatalen);
   return rc;
 }
 
@@ -1241,7 +1359,7 @@ do_check_pin (APP app, const char *keyidstr,
 /* Select the OpenPGP application on the card in SLOT.  This function
    must be used before any other OpenPGP application functions. */
 int
-app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
+app_select_openpgp (APP app)
 {
   static char const aid[] = { 0xD2, 0x76, 0x00, 0x01, 0x24, 0x01 };
   int slot = app->slot;
@@ -1253,10 +1371,17 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
   rc = iso7816_select_application (slot, aid, sizeof aid);
   if (!rc)
     {
+      app->apptype = "OPENPGP";
+
       app->did_chv1 = 0;
       app->did_chv2 = 0;
       app->did_chv3 = 0;
 
+      /* The OpenPGP card returns the serial number as part of the
+         AID; because we prefer to use OpenPGP serial numbers, we
+         replace a possibly already set one from a EF.GDO with this
+         one.  Note, that for current OpenPGP cards, no EF.GDO exists
+         and thus it won't matter at all. */
       rc = iso7816_get_data (slot, 0x004F, &buffer, &buflen);
       if (rc)
         goto leave;
@@ -1266,17 +1391,14 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
           log_printhex ("", buffer, buflen);
         }
 
-      if (sn)
-        {
-          *sn = buffer;
-          *snlen = buflen;
-          app->card_version = buffer[6] << 8;
-          app->card_version |= buffer[7];
-        }
-      else
-        xfree (buffer);
+      app->card_version = buffer[6] << 8;
+      app->card_version |= buffer[7];
+      xfree (app->serialno);
+      app->serialno = buffer;
+      app->serialnolen = buflen;
+      buffer = NULL;
 
-      relptr = get_one_do (app->slot, 0x00C4, &buffer, &buflen);
+      relptr = get_one_do (app, 0x00C4, &buffer, &buflen);
       if (!relptr)
         {
           log_error ("can't access CHV Status Bytes - invalid OpenPGP card?\n");
@@ -1288,7 +1410,9 @@ app_select_openpgp (APP app, unsigned char **sn, size_t *snlen)
       if (opt.verbose > 1)
         dump_all_do (slot);
 
+      app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
+      app->fnc.readcert = NULL;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = do_setattr;
       app->fnc.genkey = do_genkey;
@@ -1340,7 +1464,7 @@ app_openpgp_cardinfo (APP app,
   if (disp_name)
     {
       *disp_name = NULL;
-      relptr = get_one_do (app->slot, 0x005B, &value, &valuelen);
+      relptr = get_one_do (app, 0x005B, &value, &valuelen);
       if (relptr)
         {
           *disp_name = make_printable_string (value, valuelen, 0);
@@ -1351,7 +1475,7 @@ app_openpgp_cardinfo (APP app,
   if (pubkey_url)
     {
       *pubkey_url = NULL;
-      relptr = get_one_do (app->slot, 0x5F50, &value, &valuelen);
+      relptr = get_one_do (app, 0x5F50, &value, &valuelen);
       if (relptr)
         {
           *pubkey_url = make_printable_string (value, valuelen, 0);
@@ -1365,7 +1489,7 @@ app_openpgp_cardinfo (APP app,
     *fpr2 = NULL;
   if (fpr3)
     *fpr3 = NULL;
-  relptr = get_one_do (app->slot, 0x00C5, &value, &valuelen);
+  relptr = get_one_do (app, 0x00C5, &value, &valuelen);
   if (relptr && valuelen >= 60)
     {
       if (fpr1)
@@ -1471,7 +1595,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
       goto leave;
     }
 
-  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen, 0);
+  keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
       log_error ("response does not contain the public key data\n");
@@ -1479,7 +1603,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
       goto leave;
     }
  
-  a = find_tlv (keydata, keydatalen, 0x0081, &alen, 0);
+  a = find_tlv (keydata, keydatalen, 0x0081, &alen);
   if (!a)
     {
       log_error ("response does not contain the RSA modulus\n");
@@ -1490,7 +1614,7 @@ app_openpgp_readkey (APP app, int keyno, unsigned char **m, size_t *mlen,
   *m = xmalloc (alen);
   memcpy (*m, a, alen);
   
-  a = find_tlv (keydata, keydatalen, 0x0082, &alen, 0);
+  a = find_tlv (keydata, keydatalen, 0x0082, &alen);
   if (!e)
     {
       log_error ("response does not contain the RSA public exponent\n");

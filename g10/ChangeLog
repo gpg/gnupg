@@ -1,3 +1,63 @@
+2004-04-27  Werner Koch  <wk@gnupg.org>
+
+	* g10.c: New commands --allow-admin and --deny-admin.
+	* options.h (opt): Add member ALLOW_ADMIN.
+
+	* tlv.h, tlv.c: New.  Copied from gnupg-1.9. 
+	* cardglue.c (open_card): The serialno is now set internally by
+	app_select_openpgp; changed invocation.
+	* cardglue.h (app_t, ctrl_t): New.
+	(GPG_ERR_EBUSY, GPG_ERR_ENOENT, GPG_ERR_NOT_FOUND, GPG_ERR_BUG) 
+	(GPG_ERR_NOT_IMPLEMENTED, GPG_ERR_EACCESS): New.
+	(gpg_err_code_from_errno): New.
+
+	* app-common.h, app-openpgp.c, iso7816.c, iso7816.h
+	* apdu.c, apdu.h, ccid-driver.c, ccid-driver.h
+	* card-util.c: Updated from current gnupg-1.9.
+
+	Changes are:
+
+	* app-common.h: New members FNC.DEINIT and APP_LOCAL.
+	* app-openpgp.c (do_deinit): New.
+	(get_cached_data, flush_cache_item, flush_cache_after_error)
+	(flush_cache): New.
+	(get_one_do): Replaced arg SLOT by APP.  Make used of cached data.
+	(verify_chv2, verify_chv3): Flush some cache item after error.
+	(do_change_pin): Ditto.
+	(do_sign): Ditto.
+	(do_setattr): Flush cache item.
+	(do_genkey): Flush the entire cache.
+	(compare_fingerprint): Use cached data.
+
+	* apdu.c (apdu_send_le): Reinitialize RESULTLEN.  Handle
+	SW_EOF_REACHED like SW_SUCCESS.
+
+	* ccid-driver.c (parse_ccid_descriptor): Store some of the reader
+	features away.  New arg HANDLE
+	(read_device_info): New arg HANDLE. Changed caller.
+	(bulk_in): Handle time extension requests.
+	(ccid_get_atr): Setup parameters and the IFSD.
+	(compute_edc): New. Factored out code.
+	(ccid_transceive): Use default NADs when required.
+
+	* apdu.h: New pseudo stati SW_HOST_NOT_SUPPORTED,
+	SW_HOST_LOCKING_FAILED and SW_HOST_BUSY.
+	* iso7816.c (map_sw): Map it.
+	
+	* ccid-driver.c (ccid_slot_status): Add arg STATUSBITS.
+	* apdu.c (apdu_get_status): New.
+	(ct_get_status, pcsc_get_status, ocsc_get_status): New stubs.
+	(get_status_ccid): New.
+	(apdu_reset): New.
+	(reset_ct_reader, reset_pcsc_reader, reset_osc_reader): New stubs.
+	(reset_ccid_reader): New.
+	(apdu_enum_reader): New.
+	
+	* apdu.c (lock_slot, trylock_slot, unlock_slot): New helpers.
+	(new_reader_slot) [USE_GNU_PTH]: Init mutex.
+	(apdu_reset, apdu_get_status, apdu_send_le): Run functions
+	in locked mode.
+	
 2004-04-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (get_seckey_byname2): Significantly simplify this
@@ -130,6 +190,11 @@
 	well as refreshing via a preferred keyserver subpacket.
 
 	* options.h: Encapsulate keyserver details.  Change all callers.
+
+2004-04-05  Werner Koch  <wk@gnupg.org>
+
+	* status.h (STATUS_NEWSIG): New.
+	* status.c (get_status_string): Add it. 
 
 2004-03-27  David Shaw  <dshaw@jabberwocky.com>
 

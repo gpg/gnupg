@@ -27,6 +27,10 @@
 
 gpg_error_t iso7816_select_application (int slot,
                                         const char *aid, size_t aidlen);
+gpg_error_t iso7816_select_file (int slot, int tag, int is_dir,
+                                 unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_list_directory (int slot, int list_dirs,
+                                    unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_verify (int slot,
                             int chvno, const char *chv, size_t chvlen);
 gpg_error_t iso7816_change_reference_data (int slot, int chvno,
@@ -38,11 +42,15 @@ gpg_error_t iso7816_get_data (int slot, int tag,
                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_put_data (int slot, int tag,
                               const unsigned char *data, size_t datalen);
+gpg_error_t iso7816_manage_security_env (int slot, int p1, int p2,
+                                         const unsigned char *data,
+                                         size_t datalen);
 gpg_error_t iso7816_compute_ds (int slot,
                                 const unsigned char *data, size_t datalen,
                                 unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_decipher (int slot,
                               const unsigned char *data, size_t datalen,
+                              int padind,
                               unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_internal_authenticate (int slot,
                                    const unsigned char *data, size_t datalen,
@@ -56,5 +64,10 @@ gpg_error_t iso7816_read_public_key (int slot,
 gpg_error_t iso7816_get_challenge (int slot,
                                    int length, unsigned char *buffer);
 
+gpg_error_t iso7816_read_binary (int slot, size_t offset, size_t nmax,
+                                 unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_read_record (int slot, int recno, int reccount,
+                                 int short_ef,
+                                 unsigned char **result, size_t *resultlen);
 
 #endif /*ISO7816_H*/

@@ -101,6 +101,7 @@
 #define STATUS_IMPORT_CHECK     69
 #define STATUS_REVKEYSIG        70
 #define STATUS_CARDCTRL         71
+#define STATUS_NEWSIG           72
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
