@@ -1,6 +1,11 @@
 Noteworthy changes in version 1.2.2 (unreleased)
 ------------------------------------------------
 
+    * A bug in key validation has been fixed.  This bug only affects
+      keys with more than one user ID (photo IDs do not count here),
+      and results in all user IDs on a given key being treated with
+      the validity of the most-valid user ID on that key.
+
     * A "convert-from-106" script has been added.  This is a simple
       script that automates the conversion from a 1.0.6 or earlier
       version of GnuPG to a 1.0.7 or later version.
@@ -27,7 +32,8 @@ Noteworthy changes in version 1.2.2 (unreleased)
     * Minor trustdb changes to make the trust calculations match
       common usage.
 
-    * New translations: Finnish, Hungarian, Slovak, Traditional Chinese.
+    * New translations: Finnish, Hungarian, Slovak, and Traditional
+      Chinese.
 
     * New command "revuid" in the --edit-key menu to revoke a user ID.
       This is a simpler interface to the old method (which still
@@ -36,9 +42,9 @@ Noteworthy changes in version 1.2.2 (unreleased)
     * Fixed a compatibility problem with CryptoEx by increasing the
       window size of the uncompressor.
 
-    * Status VALIDSIG does now also print the primary key's
-      fingerprint, as well as the signature version, pubkey algorithm,
-      hash algorithm, and signature class.
+    * Status VALIDSIG now also contains the primary key fingerprint,
+      as well as the signature version, public key algorithm, hash
+      algorithm, and signature class.
 
     * Add read-only support for the SHA-256 hash, and optional
       read-only support for the SHA-384 and SHA-512 hashes.

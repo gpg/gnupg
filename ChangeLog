@@ -1,3 +1,7 @@
+2003-04-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Note trust bug fix.
+
 2003-04-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Add note about TIGER being dropped from OpenPGP.
