@@ -629,7 +629,7 @@ search_key(char *searchkey)
   int max=0,len=0,ret=KEYSERVER_INTERNAL_ERROR,rc;
   struct http_context hd;
   char *search=NULL,*request=NULL;
-  char *skey=searchkey;
+  unsigned char *skey=(unsigned char*) searchkey;
 
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 

@@ -1,4 +1,7 @@
-2004-08-27  Stefan Bellon  <sbellon@roma>
+2004-08-27  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpgkeys_hkp.c (search_key): Fix the prior faulty fix by
+	introducing a cast but leaving skey unsigned.
 
 	* gpgkeys_hkp.c (search_key): Change type of variable skey from
 	unsigned char* to char* to fix type incompatibility.
