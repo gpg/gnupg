@@ -1,8 +1,20 @@
+2002-06-25  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (rsa_key_check): New.
+	(import_p12_file): New.
+	(main): New command --p12-import.
+	* minip12.c, minip12.h: New.
+
+2002-06-24  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (read_file): New.
+	(read_key): Factored most code out to read_file.
+
 2002-06-17  Werner Koch  <wk@gnupg.org>
 
 	* agent.h: Add a callback function to the pin_entry_info structure.
 	* query.c (agent_askpin): Use the callback to check for a correct
-	PIN.  Removed the start_err_text argument becuase it is not
+	PIN.  Removed the start_err_text argument because it is not
 	anymore needed; changed callers.
 	* findkey.c (unprotect): Replace our own check loop by a callback.
 	(try_unprotect_cb): New.

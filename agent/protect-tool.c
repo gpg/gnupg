@@ -1,4 +1,4 @@
-/* protect-tool.c - A tool to text the secret key protection
+/* protect-tool.c - A tool to test the secret key protection
  *	Copyright (C) 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -34,6 +34,7 @@
 
 #define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
+#include "minip12.h"
 
 #define N_(a) a
 #define _(a) a
@@ -53,7 +54,19 @@ enum cmd_and_opt_values
   oShowShadowInfo,
   oShowKeygrip,
 
+  oP12Import,
+
 aTest };
+
+struct rsa_secret_key_s 
+  {
+    MPI n;	    /* public modulus */
+    MPI e;	    /* public exponent */
+    MPI d;	    /* exponent */
+    MPI p;	    /* prime  p. */
+    MPI q;	    /* prime  q. */
+    MPI u;	    /* inverse of p mod q. */
+  };
 
 
 static int opt_armor;
@@ -65,13 +78,14 @@ static ARGPARSE_OPTS opts[] = {
 
   { oVerbose, "verbose",   0, "verbose" },
   { oArmor,   "armor",     0, "write output in advanced format" },
-  { oPassphrase, "passphrase", 2, "|STRING| Use passphrase STRING" },
+  { oPassphrase, "passphrase", 2, "|STRING|use passphrase STRING" },
   { oProtect, "protect",     256, "protect a private key"},
   { oUnprotect, "unprotect", 256, "unprotect a private key"},
   { oShadow,  "shadow", 256, "create a shadow entry for a priblic key"},
   { oShowShadowInfo,  "show-shadow-info", 256, "return the shadow info"},
-  { oShowKeygrip, "show-keygrip", 256, " show the \"keygrip\""},
+  { oShowKeygrip, "show-keygrip", 256, "show the \"keygrip\""},
 
+  { oP12Import, "p12-import", 256, "import a PKCS-12 encoded private key"},
   {0}
 };
 
@@ -135,6 +149,25 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
   log_logv (level, fmt, arg_ptr);
 }
 
+
+/*  static void */
+/*  print_mpi (const char *text, GcryMPI a) */
+/*  { */
+/*    char *buf; */
+/*    void *bufaddr = &buf; */
+/*    int rc; */
+
+/*    rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, bufaddr, NULL, a); */
+/*    if (rc) */
+/*      log_info ("%s: [error printing number: %s]\n", text, gcry_strerror (rc)); */
+/*    else */
+/*      { */
+/*        log_info ("%s: %s\n", text, buf); */
+/*        gcry_free (buf); */
+/*      } */
+/*  } */
+
+
 
 static unsigned char *
 make_canonical (const char *fname, const char *buf, size_t buflen)
@@ -185,14 +218,13 @@ make_advanced (const unsigned char *buf, size_t buflen)
 }
 
 
-static unsigned char *
-read_key (const char *fname)
+static char *
+read_file (const char *fname, size_t *r_length)
 {
   FILE *fp;
   struct stat st;
   char *buf;
   size_t buflen;
-  unsigned char *key;
   
   fp = fopen (fname, "rb");
   if (!fp)
@@ -219,6 +251,19 @@ read_key (const char *fname)
     }
   fclose (fp);
 
+  *r_length = buflen;
+  return buf;
+}
+
+
+static unsigned char *
+read_key (const char *fname)
+{
+  char *buf;
+  size_t buflen;
+  unsigned char *key;
+  
+  buf = read_file (fname, &buflen);
   key = make_canonical (fname, buf, buflen);
   xfree (buf);
   return key;
@@ -422,9 +467,211 @@ show_keygrip (const char *fname)
   putchar ('\n');
 }
 
+
+static int
+rsa_key_check (struct rsa_secret_key_s *skey)
+{
+  int err = 0;
+  MPI t = gcry_mpi_snew (0);
+  MPI t1 = gcry_mpi_snew (0);
+  MPI t2 = gcry_mpi_snew (0);
+  MPI phi = gcry_mpi_snew (0);
+
+  /* check that n == p * q */
+  gcry_mpi_mul (t, skey->p, skey->q);
+  if (gcry_mpi_cmp( t, skey->n) )
+    {
+      log_error ("RSA oops: n != p * q\n");
+      err++;
+    }
+
+  /* check that p is less than q */
+  if (gcry_mpi_cmp (skey->p, skey->q) > 0)
+    {
+      GcryMPI tmp;
+
+      log_info ("swapping secret primes\n");
+      tmp = gcry_mpi_copy (skey->p);
+      gcry_mpi_set (skey->p, skey->q);
+      gcry_mpi_set (skey->q, tmp);
+      gcry_mpi_release (tmp);
+      /* and must recompute u of course */
+      gcry_mpi_invm (skey->u, skey->p, skey->q);
+    }
+
+  /* check that e divides neither p-1 nor q-1 */
+  gcry_mpi_sub_ui (t, skey->p, 1 );
+  gcry_mpi_div (NULL, t, t, skey->e, 0);
+  if (!gcry_mpi_cmp_ui( t, 0) )
+    {
+      log_error ("RSA oops: e divides p-1\n");
+      err++;
+    }
+  gcry_mpi_sub_ui (t, skey->q, 1);
+  gcry_mpi_div (NULL, t, t, skey->e, 0);
+  if (!gcry_mpi_cmp_ui( t, 0))
+    {
+      log_info ( "RSA oops: e divides q-1\n" );
+      err++;
+    }
+
+  /* check that d is correct. */
+  gcry_mpi_sub_ui (t1, skey->p, 1);
+  gcry_mpi_sub_ui (t2, skey->q, 1);
+  gcry_mpi_mul (phi, t1, t2);
+  gcry_mpi_invm (t, skey->e, phi);
+  if (gcry_mpi_cmp (t, skey->d))
+    { /* no: try universal exponent. */
+      gcry_mpi_gcd (t, t1, t2);
+      gcry_mpi_div (t, NULL, phi, t, 0);
+      gcry_mpi_invm (t, skey->e, t);
+      if (gcry_mpi_cmp (t, skey->d))
+        {
+          log_error ("RSA oops: bad secret exponent\n");
+          err++;
+        }
+    }
+
+  /* check for correctness of u */
+  gcry_mpi_invm (t, skey->p, skey->q);
+  if (gcry_mpi_cmp (t, skey->u))
+    {
+      log_info ( "RSA oops: bad u parameter\n");
+      err++;
+    }
+
+  if (err)
+    log_info ("RSA secret key check failed\n");
+
+  gcry_mpi_release (t);
+  gcry_mpi_release (t1);
+  gcry_mpi_release (t2);
+  gcry_mpi_release (phi);
+
+  return err? -1:0;
+}
 
 
+static void
+import_p12_file (const char *fname)
+{
+  char *buf;
+  unsigned char *result;
+  size_t buflen, resultlen;
+  int i;
+  int rc;
+  GcryMPI *kparms;
+  struct rsa_secret_key_s sk;
+  GcrySexp s_key;
+  unsigned char *key;
 
+  /* fixme: we should release some stuff on error */
+  
+  buf = read_file (fname, &buflen);
+  if (!buf)
+    return;
+
+  kparms = p12_parse (buf, buflen, passphrase);
+  xfree (buf);
+  if (!kparms)
+    {
+      log_error ("error parsing or decrypting the PKCS-1 file\n");
+      return;
+    }
+  for (i=0; kparms[i]; i++)
+    ;
+  if (i != 8)
+    {
+      log_error ("invalid structure of private key\n");
+      return;
+    }
+
+
+/*    print_mpi ("   n", kparms[0]); */
+/*    print_mpi ("   e", kparms[1]); */
+/*    print_mpi ("   d", kparms[2]); */
+/*    print_mpi ("   p", kparms[3]); */
+/*    print_mpi ("   q", kparms[4]); */
+/*    print_mpi ("dmp1", kparms[5]); */
+/*    print_mpi ("dmq1", kparms[6]); */
+/*    print_mpi ("   u", kparms[7]); */
+
+  sk.n = kparms[0];
+  sk.e = kparms[1];
+  sk.d = kparms[2];
+  sk.q = kparms[3];
+  sk.p = kparms[4];
+  sk.u = kparms[7];
+  if (rsa_key_check (&sk))
+    return;
+/*    print_mpi ("   n", sk.n); */
+/*    print_mpi ("   e", sk.e); */
+/*    print_mpi ("   d", sk.d); */
+/*    print_mpi ("   p", sk.p); */
+/*    print_mpi ("   q", sk.q); */
+/*    print_mpi ("   u", sk.u); */
+
+  /* Create an S-expresion from the parameters. */
+  rc = gcry_sexp_build (&s_key, NULL,
+                        "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
+                        sk.n, sk.e, sk.d, sk.p, sk.q, sk.u, NULL);
+  for (i=0; i < 8; i++)
+    gcry_mpi_release (kparms[i]);
+  gcry_free (kparms);
+  if (rc)
+    {
+      log_error ("failed to created S-expression from key: %s\n",
+                 gcry_strerror (rc));
+      return;
+    }
+
+  /* Compute the keygrip. */
+  {
+    unsigned char grip[20];
+    if (!gcry_pk_get_keygrip (s_key, grip))
+      {
+        log_error ("can't calculate keygrip\n");
+        return;
+      }
+    log_info ("keygrip: ");
+    for (i=0; i < 20; i++)
+      log_printf ("%02X", grip[i]);
+    log_printf ("\n");
+  }
+
+  /* convert to canonical encoding */
+  buflen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_CANON, NULL, 0);
+  assert (buflen);
+  key = gcry_xmalloc_secure (buflen);
+  buflen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_CANON, key, buflen);
+  assert (buflen);
+  gcry_sexp_release (s_key);
+
+
+  rc = agent_protect (key, passphrase, &result, &resultlen);
+  xfree (key);
+  if (rc)
+    {
+      log_error ("protecting the key failed: %s\n", gnupg_strerror (rc));
+      return;
+    }
+  
+  if (opt_armor)
+    {
+      char *p = make_advanced (result, resultlen);
+      xfree (result);
+      if (!p)
+        return;
+      result = p;
+      resultlen = strlen (p);
+    }
+
+  fwrite (result, resultlen, 1, stdout);
+  xfree (result);
+}
+
+
+
 int
 main (int argc, char **argv )
 {
@@ -461,6 +708,7 @@ main (int argc, char **argv )
         case oShadow: cmd = oShadow; break;
         case oShowShadowInfo: cmd = oShowShadowInfo; break;
         case oShowKeygrip: cmd = oShowKeygrip; break;
+        case oP12Import: cmd = oP12Import; break;
 
         case oPassphrase: passphrase = pargs.r.ret_str; break;
 
@@ -483,6 +731,8 @@ main (int argc, char **argv )
     show_shadow_info (*argv);
   else if (cmd == oShowKeygrip)
     show_keygrip (*argv);
+  else if (cmd == oP12Import)
+    import_p12_file (*argv);
   else
     show_file (*argv);
 

@@ -75,7 +75,7 @@ The only available protection mode for now is
 
   openpgp-s2k3-sha1-aes-cbc
 
-which describesan algorithm using using AES in CBC mode for
+which describes an algorithm using using AES in CBC mode for
 encryption, SHA-1 for integrity protection and the String to Key
 algorithm 3 from OpenPGP (rfc2440).
 
@@ -159,5 +159,5 @@ independent of any protocol, so that the same key can be ised with
 different protocols.  PKCS-15 calls this a subjectKeyHash; it can be
 calculate using Libgcrypt's gcry_pk_get_keygrip().
 
-[3] Even when canonical representation is required we will show the
+[3] Even when canonical representation are required we will show the
 S-expression here in a more readable representation.

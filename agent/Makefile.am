@@ -47,8 +47,13 @@ gpg_agent_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a  \
 
 protect_tool_SOURCES = \
 	protect-tool.c \
-	protect.c
+	protect.c \
+	minip12.c minip12.h
+
 
 protect_tool_LDADD = ../jnlib/libjnlib.a \
 		     ../common/libcommon.a $(LIBGCRYPT_LIBS)
+
+
+
 
