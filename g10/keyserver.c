@@ -166,12 +166,26 @@ parse_keyserver_uri(const char *uri,int require_scheme,
   /* Get the scheme */
 
   for(idx=uri,count=0;*idx && *idx!=':';idx++)
-    count++;
+    {
+      count++;
+
+      /* Do we see the start of an RFC-2732 ipv6 address here?  If so,
+	 there clearly isn't a scheme so get out early. */
+      if(*idx=='[')
+	{
+	  /* Was the '[' the first thing in the string?  If not, we
+	     have a mangled scheme with a [ in it so fail. */
+	  if(count==1)
+	    break;
+	  else
+	    goto fail;
+	}
+    }
 
   if(count==0)
     goto fail;
 
-  if(*idx=='\0')
+  if(*idx=='\0' || *idx=='[')
     {
       if(require_scheme)
 	return NULL;
@@ -237,8 +251,22 @@ parse_keyserver_uri(const char *uri,int require_scheme,
 	  uri+=count+1;
 	}
 
-      for(idx=uri,count=0;*idx && *idx!=':' && *idx!='/';idx++)
-	count++;
+      /* Is it an RFC-2732 ipv6 [literal address] ? */
+      if(*uri=='[')
+	{
+	  for(idx=uri+1,count=1;*idx
+		&& (isxdigit(*idx) || *idx==':' || *idx=='.');idx++)
+	    count++;
+
+	  /* Is the ipv6 literal address terminated? */
+	  if(*idx==']')
+	    count++;
+	  else
+	    goto fail;
+	}
+      else
+	for(idx=uri,count=0;*idx && *idx!=':' && *idx!='/';idx++)
+	  count++;
 
       if(count==0)
 	goto fail;
@@ -788,6 +816,10 @@ keyserver_typemap(const char *type)
     return "ldap";
 #ifdef FTP_VIA_LIBCURL
   else if(strcmp(type,"ftp")==0)
+    return "curl";
+#endif
+#ifdef FTPS_VIA_LIBCURL
+  else if(strcmp(type,"ftps")==0)
     return "curl";
 #endif
 #ifdef HTTP_VIA_LIBCURL
