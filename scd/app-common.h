@@ -21,6 +21,8 @@
 #ifndef GNUPG_SCD_APP_COMMON_H
 #define GNUPG_SCD_APP_COMMON_H
 
+#include <ksba.h>
+
 struct app_ctx_s {
   int initialized;  /* The application has been initialied and the
                        function pointers may be used.  Note that for
@@ -80,6 +82,11 @@ struct app_ctx_s {
 int app_select_openpgp (app_t app);
 int app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
 #else
+/*-- app-help.c --*/
+gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip);
+size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
+
+
 /*-- app.c --*/
 app_t select_application (ctrl_t ctrl, int slot, const char *name);
 void release_application (app_t app);

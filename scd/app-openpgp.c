@@ -1201,7 +1201,7 @@ app_select_openpgp (APP app)
 
       /* The OpenPGP card returns the serial number as part of the
          AID; because we prefer to use OpenPGP serial numbers, we
-         repalce a possibly already set one from a EF.GDO with this
+         replace a possibly already set one from a EF.GDO with this
          one.  Note, that for current OpenPGP cards, no EF.GDO exists
          and thus it won't matter at all. */
       rc = iso7816_get_data (slot, 0x004F, &buffer, &buflen);

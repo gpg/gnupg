@@ -488,6 +488,8 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
   int sw;
   unsigned char *buffer;
   size_t bufferlen;
+  int read_all = !nmax;
+  size_t n;
 
   if (!result || !resultlen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -496,18 +498,22 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
 
   /* We can only encode 15 bits in p0,p1 to indicate an offset. Thus
      we check for this limit. */
-  if (offset > 32767 || nmax > 254)
+  if (offset > 32767)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   do
     {
       buffer = NULL;
       bufferlen = 0;
-      /* Fixme: Either the ccid driver of the TCOS cards have problems
+      /* Fixme: Either the ccid driver or the TCOS cards have problems
          with an Le of 0. */
+      if (read_all || nmax > 254)
+        n = 254;
+      else
+        n = nmax;
       sw = apdu_send_le (slot, 0x00, CMD_READ_BINARY,
-                      ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
-                      nmax? nmax : 254, &buffer, &bufferlen);
+                         ((offset>>8) & 0xff), (offset & 0xff) , -1, NULL,
+                         n, &buffer, &bufferlen);
 
       if (sw != SW_SUCCESS && sw != SW_EOF_REACHED)
         {
@@ -545,8 +551,12 @@ iso7816_read_binary (int slot, size_t offset, size_t nmax,
       if (offset > 32767)
         break; /* We simply truncate the result for too large
                   files. */
+      if (nmax > bufferlen)
+        nmax -= bufferlen;
+      else
+        nmax = 0;
     }
-  while (!nmax && sw != SW_EOF_REACHED);
+  while ((read_all && sw != SW_EOF_REACHED) || (!read_all && nmax));
   
   return 0;
 }

@@ -1,3 +1,17 @@
+2004-03-16  Werner Koch  <wk@gnupg.org>
+
+	* app-dinsig.c: Implemented. Based on app-nks.c and card-dinsig.c
+	* app-nks.c (get_length_of_cert): Removed.
+	* app-help.c: New.
+	(app_help_read_length_of_cert): New.  Code taken from above.  New
+	optional arg R_CERTOFF.
+
+	* card-dinsig.c: Removed.
+	* card.c (card_get_serial_and_stamp): Do not bind to the old and
+	never finsiged card-dinsig.c.
+
+	* iso7816.c (iso7816_read_binary): Allow for an NMAX > 254.
+
 2004-03-11  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.h (out_of_core): Removed.  Replaced callers by standard

@@ -103,8 +103,8 @@ static ARGPARSE_OPTS opts[] = {
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oLogFile,  "log-file"   ,2, N_("use a log file for the server")},
   { oReaderPort, "reader-port", 2, N_("|N|connect to reader at port N")},
-  { octapiDriver, "ctapi-driver", 2, N_("NAME|use NAME as ct-API driver")},
-  { opcscDriver, "pcsc-driver", 2, N_("NAME|use NAME as PC/SC driver")},
+  { octapiDriver, "ctapi-driver", 2, N_("|NAME|use NAME as ct-API driver")},
+  { opcscDriver, "pcsc-driver", 2, N_("|NAME|use NAME as PC/SC driver")},
   { oDisableCCID, "disable-ccid", 0,
 #ifdef HAVE_LIBUSB
                                     N_("do not use the internal CCID driver")
@@ -124,6 +124,9 @@ static ARGPARSE_OPTS opts[] = {
 
   {0}
 };
+
+
+#define DEFAULT_PCSC_DRIVER "libpcsclite.so"
 
 
 static volatile int caught_fatal_sig = 0;
@@ -302,6 +305,7 @@ main (int argc, char **argv )
   char *logfile = NULL;
   int debug_wait = 0;
   int gpgconf_list = 0;
+  const char *config_filename = NULL;
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
@@ -334,7 +338,7 @@ main (int argc, char **argv )
   may_coredump = disable_core_dumps ();
 
   /* Set default options. */
-  opt.pcsc_driver = "libpcsclite.so"; 
+  opt.pcsc_driver = DEFAULT_PCSC_DRIVER; 
 
 
   shell = getenv ("SHELL");
@@ -466,7 +470,8 @@ main (int argc, char **argv )
     {
       fclose( configfp );
       configfp = NULL;
-      xfree(configname);
+      /* Keep a copy of the config name for use by --gpgconf-list. */
+      config_filename = configname;
       configname = NULL;
       goto next_pass;
     }
@@ -507,19 +512,49 @@ main (int argc, char **argv )
   
   if (gpgconf_list)
     { /* List options and default values in the GPG Conf format.  */
-      char *filename;
 
-      filename = make_filename (opt.homedir, "scdaemon.conf", NULL);
-      printf ("gpgconf-scdaemon.conf:\"%s\n", filename);
-      xfree (filename);
-      
-      printf ("verbose:\n"
-              "quiet:\n"
-              "debug-level:none\n"
-              "log-file:\n"
-              "force:\n"
-              "faked-system-time:\n"
-              "no-greeting:\n");
+      /* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
+      /* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
+         FLAGS, AS THEY ARE PART OF THE EXTERNAL INTERFACE.  */
+#define GC_OPT_FLAG_NONE	0UL
+      /* The RUNTIME flag for an option indicates that the option can be
+         changed at runtime.  */
+#define GC_OPT_FLAG_RUNTIME	(1UL << 3)
+      /* The DEFAULT flag for an option indicates that the option has a
+         default value.  */
+#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
+      /* The DEF_DESC flag for an option indicates that the option has a
+         default, which is described by the value of the default field.  */
+#define GC_OPT_FLAG_DEF_DESC	(1UL << 5)
+      /* The NO_ARG_DESC flag for an option indicates that the argument has
+         a default, which is described by the value of the ARGDEF field.  */
+#define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
+
+      printf ("gpgconf-scdaemon.conf:%lu:\"%s\"\n",
+              GC_OPT_FLAG_DEFAULT,
+              config_filename?config_filename:"/dev/null");
+        
+      printf ("verbose:%lu:\n"
+              "quiet:%lu:\n"
+              "debug-level:%lu:\"none\":\n"
+              "log-file:%lu:\n",
+              GC_OPT_FLAG_NONE,
+              GC_OPT_FLAG_NONE,
+              GC_OPT_FLAG_DEFAULT,
+              GC_OPT_FLAG_NONE );
+
+      printf ("reader-port:%lu:\n", GC_OPT_FLAG_NONE );
+      printf ("ctapi-driver:%lu:\n", GC_OPT_FLAG_NONE );
+      printf ("pcsc-driver:%lu:\"%s\":\n",
+              GC_OPT_FLAG_DEFAULT, DEFAULT_PCSC_DRIVER );
+#ifdef HAVE_LIBUSB
+      printf ("disable-ccid:%lu:\n", GC_OPT_FLAG_NONE );
+#endif
+#ifdef HAVE_LIBUSB
+      printf ("disable-opensc:%lu:\n", GC_OPT_FLAG_NONE );
+#endif
+      printf ("allow-admin:%lu:\n", GC_OPT_FLAG_NONE );
+
 
       scd_exit (0);
     }

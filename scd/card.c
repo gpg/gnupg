@@ -325,8 +325,6 @@ card_get_serial_and_stamp (CARD card, char **serial, time_t *stamp)
         }
       if (card->p15card)
         card_p15_bind (card);
-      else
-        card_dinsig_bind (card);
       card->fnc.initialized = 1;
     }
       

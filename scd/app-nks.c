@@ -53,68 +53,6 @@ static struct {
 
 
 
-/* Given the slot and the File Id FID, return the length of the
-   certificate contained in that file. Returns 0 if the file does not
-   exists or does not contain a certificate. */
-static size_t
-get_length_of_cert (int slot, int fid)
-{
-  gpg_error_t err;
-  unsigned char *buffer;
-  const unsigned char *p;
-  size_t buflen, n;
-  int class, tag, constructed, ndef;
-  size_t objlen, hdrlen;
-
-  err = iso7816_select_file (slot, fid, 0, NULL, NULL);
-  if (err)
-    {
-      log_info ("error selecting FID 0x%04X: %s\n", fid, gpg_strerror (err));
-      return 0;
-    }
-
-  err = iso7816_read_binary (slot, 0, 32, &buffer, &buflen);
-  if (err)
-    {
-      log_info ("error reading certificate from FID 0x%04X: %s\n",
-                 fid, gpg_strerror (err));
-      return 0;
-    }
-  
-  if (!buflen || *buffer == 0xff)
-    {
-      log_info ("no certificate contained in FID 0x%04X\n", fid);
-      xfree (buffer);
-      return 0;
-    }
-
-  p = buffer;
-  n = buflen;
-  err = parse_ber_header (&p, &n, &class, &tag, &constructed,
-                          &ndef, &objlen, &hdrlen);
-  if (err)
-    {
-      log_info ("error parsing certificate in FID 0x%04X: %s\n",
-                fid, gpg_strerror (err));
-      xfree (buffer);
-      return 0;
-    }
-
-  /* All certificates should commence with a SEQUENCE expect fro the
-     special ROOT CA which are enclosed in a SET. */
-  if ( !(class == CLASS_UNIVERSAL &&  constructed
-         && (tag == TAG_SEQUENCE || tag == TAG_SET)))
-    {
-      log_info ("contents of FID 0x%04X does not look like a certificate\n",
-                fid);
-      return 0;
-    }
- 
-  return objlen + hdrlen;
-}
-
-
-
 /* Read the file with FID, assume it contains a public key and return
    its keygrip in the caller provided 41 byte buffer R_GRIPSTR. */
 static gpg_error_t
@@ -191,8 +129,10 @@ do_learn_status (APP app, CTRL ctrl)
     {
       if (filelist[i].certtype)
         {
-          size_t len = get_length_of_cert (app->slot, filelist[i].fid);
+          size_t len;
 
+          len = app_help_read_length_of_cert (app->slot,
+                                              filelist[i].fid, NULL);
           if (len)
             {
               /* FIXME: We should store the length in the application's

@@ -34,12 +34,12 @@ scdaemon_SOURCES = \
 	scdaemon.c scdaemon.h \
 	command.c card.c \
 	card-common.h \
-	card-p15.c card-dinsig.c \
+	card-p15.c  \
 	apdu.c apdu.h \
 	ccid-driver.c ccid-driver.h \
 	iso7816.c iso7816.h \
 	tlv.c tlv.h \
-	app.c app-common.h $(card_apps)
+	app.c app-common.h app-help.c $(card_apps)
 
 
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
@@ -53,12 +53,12 @@ sc_investigate_SOURCES = \
 	iso7816.c iso7816.h \
 	tlv.c tlv.h \
 	atr.c atr.h \
-	app.c app-common.h $(card_apps) 
+	app.c app-common.h app-help.c $(card_apps) 
 
 sc_investigate_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
-	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(LIBUSB_LIBS) @INTLLIBS@ \
-        -lgpg-error -ldl
+	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBUSB_LIBS) \
+         @INTLLIBS@  -lgpg-error -ldl
 
 
 sc_copykeys_SOURCES = \
@@ -68,10 +68,10 @@ sc_copykeys_SOURCES = \
 	iso7816.c iso7816.h \
 	tlv.c tlv.h \
 	atr.c atr.h \
-	app.c app-common.h $(card_apps)
+	app.c app-common.h app-help.c $(card_apps)
 
 sc_copykeys_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
 	../common/libsimple-pwquery.a \
-	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(LIBUSB_LIBS) \
+	$(OPENSC_LIBS) $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBUSB_LIBS) \
         -lgpg-error @INTLLIBS@ -ldl
