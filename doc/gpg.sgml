@@ -282,6 +282,17 @@ non-exportable and will therefore never be used
 by others.  This may be used to make keys valid
 only in the local environment.</para></listitem></varlistentry>
     <varlistentry>
+    <term>nrsign</term>
+    <listitem><para>
+Same as --sign but the signature is marked as non-revocable and can
+therefore never be revoked.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>nrlsign</term>
+    <listitem><para>
+Combines the functionality of nrsign and lsign to make a signature
+that is both non-revocable and
+non-exportable.</para></listitem></varlistentry>
+    <varlistentry>
     <term>revsig</term>
     <listitem><para>
 Revoke a signature.  GnuPG asks for every
@@ -303,6 +314,10 @@ for encryption.</para></listitem></varlistentry>
     <term>adduid</term>
     <listitem><para>
 Create an alternate user id.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>addphoto</term>
+    <listitem><para>
+Create a photographic user id.</para></listitem></varlistentry>
     <varlistentry>
     <term>deluid</term>
     <listitem><para>
@@ -354,6 +369,11 @@ Use 0 to deselect all.</para></listitem></varlistentry>
     <term>check</term>
     <listitem><para>
 Check all selected user ids.</para></listitem></varlistentry>
+    <varlistentry>
+    <term>showphoto</term>
+    <listitem><para>
+Display the selected photographic user
+id.</para></listitem></varlistentry>
     <varlistentry>
     <term>pref</term>
     <listitem><para>
@@ -991,8 +1011,9 @@ This is the command line that should be run to view a photo ID.  "%i"
 will be expanded to a filename containing the photo.  "%I" does the
 same, except the file will not be deleted once the viewer exits.
 Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
-for the key fingerprint, "%t" for the type of image (e.g. jpeg), and
-"%%" for an actual percent sign.  If neither %i or %I are present,
+for the key fingerprint, "%t" for the extension of the image type
+(e.g. "jpg"), "%T" for the MIME type of the image (e.g. "image/jpeg"),
+and "%%" for an actual percent sign.  If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 </para><para>
 The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'

@@ -1,3 +1,9 @@
+2002-04-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Add some documentation for
+	--edit/{addphoto|showphoto|nrsign|nrlsign}, and difference between
+	%t and %T in photo viewer command lines.
+
 2002-04-23  Stefan Bellon  <sbellon@sbellon.de>
 
 	* gpg.sgml: Moved options from section "COMMANDS" to
