@@ -1,5 +1,10 @@
 2004-03-23  Marcus Brinkmann  <marcus@g10code.de>
 
+	* gpgconf-comp.c (gc_options_dirmngr): Set GC_OPT_FLAG_ARG_OPT for
+	"LDAP Server".
+	(change_options_file): Remove assertion that tests that this flag
+	is not present.  Handle an empty string in OPTION->new_value.
+
 	* gpgconf.c (main): Remove obsolete warning.
 
 2004-03-23  Werner Koch  <wk@gnupg.org>

@@ -743,7 +743,7 @@ static gc_option_t gc_options_dirmngr[] =
    /* This entry must come after at least one entry for
       GC_BACKEND_DIRMNGR in this component, so that the entry for
       "ldapserverlist-file will be initialized before this one.  */
-   { "LDAP Server", GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
+   { "LDAP Server", GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_LIST, GC_LEVEL_BASIC,
      NULL, "LDAP server list",
      GC_ARG_TYPE_LDAP_SERVER, GC_BACKEND_DIRMNGR_LDAP_SERVER_LIST },
 
@@ -1648,7 +1648,6 @@ change_options_file (gc_component_t component, gc_backend_t backend,
   assert (option);
   assert (option->active);
   assert (gc_arg_type[option->arg_type].fallback != GC_ARG_TYPE_NONE);
-  assert (!(option->flags & GC_OPT_FLAG_ARG_OPT));
 
   /* FIXME.  Throughout the function, do better error reporting.  */
   /* Note that get_config_pathname() calls percent_deescape(), so we
@@ -1658,7 +1657,9 @@ change_options_file (gc_component_t component, gc_backend_t backend,
   orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename, getpid ());
 
   arg = option->new_value;
-  if (arg)
+  if (arg && arg[0] == '\0')
+    arg = NULL;
+  else if (arg)
     {
       char *end;
 
