@@ -1,3 +1,8 @@
+2002-05-11  Werner Koch  <wk@gnupg.org>
+
+	* keyserver.c (keyserver_export): Get confirmation before sending
+	all keys.
+
 2002-05-10  Stefan Bellon  <sbellon@sbellon.de>
 
 	* g10.c, hkp.c, keyedit.c, keyserver.c: Replaced all occurrances

@@ -640,6 +640,17 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,int count)
 int 
 keyserver_export(STRLIST users)
 {
+  /* We better ask for confirmation when the user entered --send-keys
+     without arguments.  Sending all keys might not be the thing he
+     intended to do */
+  if (users || opt.batch || opt.answer_yes)
+    ;
+  else if ( !cpr_get_answer_is_yes
+            ("keyserver_export.send_all",
+             _("Do you really want to send all your "
+               "public keys to the keyserver? (y/N) ")))
+    return -1;
+
   return keyserver_work(SEND,users,NULL,0);
 }
 
