@@ -1,3 +1,8 @@
+2000-12-28  Werner Koch  <wk@gnupg.org>
+
+	* dotlock.c: Made all_lockfiles volatile.
+	(remove_lockfiles): Made public.
+
 2000-11-30  Werner Koch  <wk@gnupg.org>
 
 	* iobuf.c (iobuf_translate_file_handle): New.

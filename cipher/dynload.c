@@ -67,6 +67,25 @@ dlsym(void *handle, char *name)
 }
 #endif /*HAVE_DL_SHL_LOAD*/
 
+#ifdef __MINGW32__
+#warning Needs some more work. Based on Disastry@saiknes.lv patch.
+
+#define dlopen(PATHNAME,MODE) ((void *)LoadLibrary(PATHNAME))
+#define dlclose(HANDLE) FreeLibrary(HANDLE)
+char *dlerror(void)
+{
+    static char dlerrstr[10];
+    int err=GetLastError();
+    if (!err)
+      return NULL;
+    sprintf(dlerrstr, "%u", err);
+    return dlerrstr;
+}
+#define dlsym(HANDLE,NAME) GetProcAddress(HANDLE,NAME)
+#endif /*__MINGW32__*/
+
+
+
 
 
 typedef struct ext_list {

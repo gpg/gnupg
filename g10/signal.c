@@ -75,6 +75,9 @@ got_fatal_signal( int sig )
 	sigaction( sig, &nact, NULL);
     }
   #endif
+    
+    remove_lockfiles ();
+
     raise( sig );
 }
 

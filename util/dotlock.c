@@ -46,11 +46,10 @@ struct dotlock_handle {
 };
 
 
-static DOTLOCK all_lockfiles;
+static volatile DOTLOCK all_lockfiles;
 static int never_lock;
 
 static int read_lockfile( const char *name );
-static void remove_lockfiles(void);
 
 void
 disable_dotlock(void)
@@ -349,7 +348,7 @@ read_lockfile( const char *name )
 }
 
 
-static void
+void
 remove_lockfiles()
 {
   #ifndef HAVE_DOSISH_SYSTEM
