@@ -332,34 +332,52 @@ parse( IOBUF inp, PACKET *pkt, int onlykeypkts, off_t *retpos,
         else {
              hdr[hdrlen++] = c;
              if( c < 192 )
-                  pktlen = c;
-             else if( c < 224 ) {
-                  pktlen = (c - 192) * 256;
-                  if( (c = iobuf_get(inp)) == -1 ) {
-                       log_error("%s: 2nd length byte missing\n",
-                                 iobuf_where(inp) );
-                       rc = G10ERR_INVALID_PACKET;
-                       goto leave;
-                  }
-                  hdr[hdrlen++] = c;
-                  pktlen += c + 192;
-             }
-             else if( c == 255 ) {
-                  pktlen  = (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 24;
-                  pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 16;
-                  pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 8;
-                  if( (c = iobuf_get(inp)) == -1 ) {
-                       log_error("%s: 4 byte length invalid\n",
-                                 iobuf_where(inp) );
-                       rc = G10ERR_INVALID_PACKET;
-                       goto leave;
-                  }
-                  pktlen |= (hdr[hdrlen++] = c );
-             }
-             else { /* partial body length */
-                  iobuf_set_partial_block_mode(inp, c & 0xff);
-                  pktlen = 0;/* to indicate partial length */
-             }
+	       pktlen = c;
+             else if( c < 224 )
+	       {
+		 pktlen = (c - 192) * 256;
+		 if( (c = iobuf_get(inp)) == -1 )
+		   {
+		     log_error("%s: 2nd length byte missing\n",
+			       iobuf_where(inp) );
+		     rc = G10ERR_INVALID_PACKET;
+		     goto leave;
+		   }
+		 hdr[hdrlen++] = c;
+		 pktlen += c + 192;
+	       }
+             else if( c == 255 )
+	       {
+		 pktlen  = (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 24;
+		 pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 16;
+		 pktlen |= (hdr[hdrlen++] = iobuf_get_noeof(inp)) << 8;
+		 if( (c = iobuf_get(inp)) == -1 )
+		   {
+		     log_error("%s: 4 byte length invalid\n",
+			       iobuf_where(inp) );
+		     rc = G10ERR_INVALID_PACKET;
+		     goto leave;
+		   }
+		 pktlen |= (hdr[hdrlen++] = c );
+	       }
+             else
+	       {
+		 /* Partial body length.  Note that we handled
+		    PKT_COMPRESSED earlier. */
+		 if(pkttype==PKT_PLAINTEXT || pkttype==PKT_ENCRYPTED
+		    || pkttype==PKT_ENCRYPTED_MDC)
+		   {
+		     iobuf_set_partial_block_mode(inp, c & 0xff);
+		     pktlen = 0;/* to indicate partial length */
+		   }
+		 else
+		   {
+		     log_error("%s: partial length for invalid"
+			       " packet type %d\n",iobuf_where(inp),pkttype);
+		     rc=G10ERR_INVALID_PACKET;
+		     goto leave;
+		   }
+	       }
 	}
     }
     else {
