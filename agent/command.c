@@ -281,20 +281,74 @@ static int
 cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
 {
   int rc;
+  const char *pw;
   char *response;
-  char *desc, *prompt, *errtext;
+  char *cacheid = NULL, *desc = NULL, *prompt = NULL, *errtext = NULL;
+  char *p;
 
-  /* FIXME: Parse that stuff */
-  desc = "We need a passphrase";
-  prompt = NULL;
-  errtext = NULL;
+  /* parse the stuff */
+  for (p=line; *p == ' '; p++)
+    ;
+  cacheid = p;
+  p = strchr (cacheid, ' ');
+  if (p)
+    {
+      *p++ = 0;
+      while (*p == ' ')
+        p++;
+      errtext = p;
+      p = strchr (errtext, ' ');
+      if (p)
+        {
+          *p++ = 0;
+          while (*p == ' ')
+            p++;
+          prompt = p;
+          p = strchr (prompt, ' ');
+          if (p)
+            {
+              *p++ = 0;
+              while (*p == ' ')
+                p++;
+              desc = p;
+              p = strchr (desc, ' ');
+              if (p)
+                *p = 0; /* ignore garbage */
+            }
+        }
+    }
+  if (!cacheid || !*cacheid || strlen (cacheid) > 50)
+    return set_error (Parameter_Error, "invalid length of cacheID");
+  if (!desc)
+    return set_error (Parameter_Error, "no description given");
 
-  rc = agent_get_passphrase (&response, desc, prompt, errtext);
-  if (!rc)
+  if (!strcmp (cacheid, "X"))
+    cacheid = NULL;
+  if (!strcmp (errtext, "X"))
+    errtext = NULL;
+  if (!strcmp (prompt, "X"))
+    prompt = NULL;
+  if (!strcmp (desc, "X"))
+    desc = NULL;
+
+  /* Note: we store the hexified versions in the cache. */
+  pw = cacheid ? agent_get_cache (cacheid) : NULL;
+  if (pw)
     {
       assuan_begin_confidential (ctx);
-      rc = assuan_set_okay_line (ctx, response);
-      xfree (response);
+      rc = assuan_set_okay_line (ctx, pw);
+    }
+  else
+    {
+      rc = agent_get_passphrase (&response, desc, prompt, errtext);
+      if (!rc)
+        {
+          if (cacheid)
+            agent_put_cache (cacheid, response, 0);
+          assuan_begin_confidential (ctx);
+          rc = assuan_set_okay_line (ctx, response);
+          xfree (response);
+        }
     }
 
   return map_to_assuan_status (rc);
@@ -310,12 +364,21 @@ cmd_get_passphrase (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
 {
-  int rc;
+  char *cacheid = NULL;
+  char *p;
 
-  /* fixme: no caching yet. so return with OK */
-  rc = 0;
+  /* parse the stuff */
+  for (p=line; *p == ' '; p++)
+    ;
+  cacheid = p;
+  p = strchr (cacheid, ' ');
+  if (p)
+    *p = 0; /* ignore garbage */
+  if (!cacheid || !*cacheid || strlen (cacheid) > 50)
+    return set_error (Parameter_Error, "invalid length of cacheID");
 
-  return map_to_assuan_status (rc);
+  agent_put_cache (cacheid, NULL, 0);
+  return 0;
 }
 
 

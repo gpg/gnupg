@@ -100,6 +100,12 @@ int agent_get_passphrase (char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext);
 
+/*-- cache.c --*/
+int agent_put_cache (const char *key, const char *data, int ttl);
+const char *agent_get_cache (const char *key);
+
+
+
 /*-- pksign.c --*/
 int agent_pksign (CTRL ctrl, FILE *outfp);
 

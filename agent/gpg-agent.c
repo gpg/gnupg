@@ -40,6 +40,8 @@
 #include "agent.h"
 #include "../assuan/assuan.h" /* malloc hooks */
 
+#include "sysutils.h"
+
 
 #define N_(a) a
 #define _(a) a
@@ -252,7 +254,7 @@ main (int argc, char **argv )
   gcry_set_log_handler (my_gcry_logger, NULL);
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
-  may_coredump = 0/* FIXME: disable_core_dumps()*/;
+  may_coredump = disable_core_dumps ();
 
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )

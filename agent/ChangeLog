@@ -1,5 +1,11 @@
 2002-01-19  Werner Koch  <wk@gnupg.org>
 
+	* gpg-agent.c (main): Disable core dumps.
+
+	* cache.c: New.
+	* command.c (cmd_get_passphrase): Use the cache.
+	(cmd_clear_passphrase): Ditto.
+
 	* gpg-agent.c:  Removed unused cruft and implement the socket
 	based server.
 	(my_strusage): Take bug report address from configure.ac.
