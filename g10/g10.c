@@ -220,6 +220,7 @@ enum cmd_and_opt_values { aNull = 0,
     oCertPolicyURL,
     oShowPolicyURL,
     oNoShowPolicyURL,
+    oSigKeyserverURL,
     oUseEmbeddedFilename,
     oComment,
     oDefaultComment,
@@ -555,6 +556,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCertPolicyURL, "cert-policy-url", 2, "@" },
     { oShowPolicyURL, "show-policy-url", 0, "@" },
     { oNoShowPolicyURL, "no-show-policy-url", 0, "@" },
+    { oSigKeyserverURL, "sig-preferred-keyserver", 2, "@" },
     { oShowNotation, "show-notation", 0, "@" },
     { oNoShowNotation, "no-show-notation", 0, "@" },
     { oComment, "comment", 2, "@" },
@@ -641,6 +643,7 @@ static void set_cmd( enum cmd_and_opt_values *ret_cmd,
 static void print_mds( const char *fname, int algo );
 static void add_notation_data( const char *string, int which );
 static void add_policy_url( const char *string, int which );
+static void add_keyserver_url( const char *string, int which );
 
 #ifdef __riscos__
 RISCOS_GLOBAL_STATICS("GnuPG Heap")
@@ -1602,6 +1605,7 @@ main( int argc, char **argv )
 	    opt.list_options&=~LIST_SHOW_POLICY;
 	    opt.verify_options&=~VERIFY_SHOW_POLICY;
 	    break;
+	  case oSigKeyserverURL: add_keyserver_url(pargs.r.ret_str,0); break;
 	  case oUseEmbeddedFilename: opt.use_embedded_filename = 1; break;
 	  case oComment: opt.comment_string = pargs.r.ret_str; break;
 	  case oDefaultComment: opt.comment_string = NULL; break;
@@ -1757,9 +1761,9 @@ main( int argc, char **argv )
 		  {"show-photos",LIST_SHOW_PHOTOS},
 		  {"show-policy-url",LIST_SHOW_POLICY},
 		  {"show-notation",LIST_SHOW_NOTATION},
+		  {"show-keyring",LIST_SHOW_KEYRING},
 		  {"show-validity",LIST_SHOW_VALIDITY},
 		  {"show-long-keyid",LIST_SHOW_LONG_KEYID},
-		  {"show-keyring",LIST_SHOW_KEYRING},
 		  {NULL,0}
 		};
 
@@ -3111,7 +3115,6 @@ add_notation_data( const char *string, int which )
 	sl->flags |= 1;
 }
 
-
 static void
 add_policy_url( const char *string, int which )
 {
@@ -3140,6 +3143,40 @@ add_policy_url( const char *string, int which )
     sl=add_to_strlist( &opt.cert_policy_url, string );
   else
     sl=add_to_strlist( &opt.sig_policy_url, string );
+
+  if(critical)
+    sl->flags |= 1;    
+}
+
+static void
+add_keyserver_url( const char *string, int which )
+{
+  int i,critical=0;
+  STRLIST sl;
+
+  if(*string=='!')
+    {
+      string++;
+      critical=1;
+    }
+
+  for(i=0;i<strlen(string);i++)
+    if(string[i]&0x80 || iscntrl(string[i]))
+      break;
+
+  if(i==0 || i<strlen(string))
+    {
+      if(which)
+	BUG();
+      else
+	log_error(_("the given signature preferred keyserver "
+		    "URL is invalid\n"));
+    }
+
+  if(which)
+    BUG();
+  else
+    sl=add_to_strlist( &opt.sig_keyserver_url, string );
 
   if(critical)
     sl->flags |= 1;    

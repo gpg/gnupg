@@ -153,6 +153,7 @@ struct {
     STRLIST cert_notation_data;
     STRLIST sig_policy_url;
     STRLIST cert_policy_url;
+    STRLIST sig_keyserver_url;
     int use_embedded_filename;
     int allow_non_selfsigned_uid;
     int allow_freeform_uid;

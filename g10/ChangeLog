@@ -1,3 +1,13 @@
+2003-07-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main, add_keyserver_url): Add
+	--sig-preferred-keyserver to implant a "where to get my key"
+	subpacket into a signature.
+
+	* sign.c (mk_notation_and_policy): Rename to
+	mk_notation_policy_etc and add preferred keyserver support for
+	signatures.
+
 2003-07-21  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (do_add_key_flags): Don't set the certify flag for

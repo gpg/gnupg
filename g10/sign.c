@@ -58,7 +58,7 @@ static int recipient_digest_algo=0;
  * NAME=VALUE format.
  */
 static void
-mk_notation_and_policy( PKT_signature *sig,
+mk_notation_policy_etc( PKT_signature *sig,
 			PKT_public_key *pk, PKT_secret_key *sk )
 {
     const char *string;
@@ -163,6 +163,34 @@ mk_notation_and_policy( PKT_signature *sig,
 
     if(opt.list_options&LIST_SHOW_POLICY)
       show_policy_url(sig,0,0);
+
+    /* preferred keyserver URL */
+    if( IS_SIG(sig) && opt.sig_keyserver_url )
+      {
+	if(sig->version<4)
+	  log_info("can't put a preferred keyserver URL into v3 signatures\n");
+	else
+	  pu=opt.sig_keyserver_url;
+      }
+
+    for(;pu;pu=pu->next)
+      {
+        string = pu->d;
+
+	s=pct_expando(string,&args);
+	if(!s)
+	  {
+	    log_error(_("WARNING: unable to %%-expand preferred keyserver url "
+			"(too large).  Using unexpanded.\n"));
+	    s=m_strdup(string);
+	  }
+
+	build_sig_subpkt(sig,SIGSUBPKT_PREF_KS|
+			 ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0),
+			 s,strlen(s));
+
+	m_free(s);
+      }
 }
 
 
@@ -564,7 +592,8 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 	sig = m_alloc_clear (sizeof *sig);
 	if(opt.force_v3_sigs || RFC1991)
 	  sig->version=3;
-	else if(duration || opt.sig_policy_url || opt.sig_notation_data)
+	else if(duration || opt.sig_policy_url
+		|| opt.sig_notation_data || opt.sig_keyserver_url)
 	  sig->version=4;
 	else
 	  sig->version=sk->version;
@@ -583,7 +612,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, MD_HANDLE hash,
 
 	if (sig->version >= 4)
 	    build_sig_subpkt_from_sig (sig);
-	mk_notation_and_policy (sig, NULL, sk);
+	mk_notation_policy_etc (sig, NULL, sk);
 
         hash_sigversion_to_magic (md, sig);
 	md_final (md);
@@ -1251,7 +1280,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     sig->sig_class = sigclass;
     if( sig->version >= 4 )
 	build_sig_subpkt_from_sig( sig );
-    mk_notation_and_policy( sig, pk, sk );
+    mk_notation_policy_etc( sig, pk, sk );
 
     /* Crucial that the call to mksubpkt comes LAST before the calls
        to finalize the sig as that makes it possible for the mksubpkt
