@@ -45,6 +45,7 @@ struct {
     int dry_run;
     int list_only;
     int textmode;
+    int expert;
     int batch;	    /* run in batch mode */
     int answer_yes; /* answer yes on most questions */
     int answer_no;  /* answer no on most questions */

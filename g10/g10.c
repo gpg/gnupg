@@ -119,6 +119,8 @@ enum cmd_and_opt_values { aNull = 0,
     aRefreshKeys,
 
     oTextmode,
+    oExpert,
+    oNoExpert,
     oFingerprint,
     oWithFingerprint,
     oAnswerYes,
@@ -322,6 +324,8 @@ static ARGPARSE_OPTS opts[] = {
     { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
+    { oExpert, "expert",   0, "@"},
+    { oNoExpert, "no-expert",   0, "@"},
     { oOutput, "output",    2, N_("use as output file")},
     { oVerbose, "verbose",   0, N_("verbose") },
     { oQuiet,	"quiet",   0, N_("be somewhat more quiet") },
@@ -1054,6 +1058,8 @@ main( int argc, char **argv )
 	    break;
 	  case oTextmodeShort: opt.textmode = 2; break;
 	  case oTextmode: opt.textmode=1;  break;
+	  case oExpert: opt.expert = 1; break;
+	  case oNoExpert: opt.expert = 0; break;
 	  case oUser: /* store the local users */
 	    add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
 	    break;

@@ -275,14 +275,14 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
      *    
      * We use the CERT flag to request the primary which must always
      * be one which is capable of signing keys.  I can't see a reason
-     * why to sign keys using a subkey.  Implementation of SUAGE_CERT
+     * why to sign keys using a subkey.  Implementation of USAGE_CERT
      * is just a hack in getkey.c and does not mean that a subkey
      * marked as certification capable will be used */
     rc=build_sk_list( locusr, &sk_list, 0, PUBKEY_USAGE_SIG|PUBKEY_USAGE_CERT);
     if( rc )
 	goto leave;
 
-    /* loop over all signaturs */
+    /* loop over all signators */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
 	u32 sk_keyid[2];
 	size_t n;
@@ -308,6 +308,24 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	for( node=keyblock; node; node = node->next ) {
 	    if( node->pkt->pkttype == PKT_USER_ID ) {
 		uidnode = (node->flag & NODFLG_MARK_A)? node : NULL;
+		if(uidnode && uidnode->pkt->pkt.user_id->is_revoked)
+		  {
+		    tty_printf(_("User ID \"%s\" is revoked.\n"),
+			       uidnode->pkt->pkt.user_id->name);
+
+		    if(opt.expert)
+		      {
+			tty_printf(_("Are you sure you still "
+				     "want to sign it?\n"));
+
+			/* No, so remove the mark and continue */
+			if(!cpr_get_answer_is_yes("sign_uid.okay",
+						  _("Really sign? ")))
+			  uidnode->flag &= ~NODFLG_MARK_A;
+		      }
+		    else
+		      uidnode->flag &= ~NODFLG_MARK_A;
+		  }
 	    }
 	    else if( uidnode && node->pkt->pkttype == PKT_SIGNATURE
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
@@ -317,8 +335,10 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 
 		    /* Fixme: see whether there is a revocation in which
 		     * case we should allow to sign it again. */
-		    tty_printf(_("Already signed by key %08lX\n"),
-							(ulong)sk_keyid[1] );
+		    tty_printf(_("User ID \"%s\" is already signed "
+				 "by key %08lX\n"),
+			       uidnode->pkt->pkt.user_id->name,
+			       (ulong)sk_keyid[1] );
                     sprintf (buf, "%08lX%08lX",
                              (ulong)sk->keyid[0], (ulong)sk->keyid[1] );
                     write_status_text (STATUS_ALREADY_SIGNED, buf);
@@ -764,6 +784,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	int i, arg_number;
         const char *arg_string = "";
 	char *p;
+	PKT_public_key *pk=keyblock->pkt->pkt.public_key;
 
 	tty_printf("\n");
 	if( redisplay ) {
@@ -865,6 +886,22 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 
 	  case cmdSIGN: /* sign (only the public key) */
 	  case cmdLSIGN: /* sign (only the public key) */
+	    if( pk->is_revoked )
+	      {
+		tty_printf(_("Key is revoked.\n"));
+
+		if(opt.expert)
+		  {
+		    tty_printf(_("Are you sure you still want to sign it?\n"));
+
+		    if(!cpr_get_answer_is_yes("keyedit.sign_revoked.okay",
+					      _("Really sign? ")))
+		      break;
+		  }
+		else
+		  break;
+	      }
+
 	    if( count_uids(keyblock) > 1 && !count_selected_uids(keyblock) ) {
 		if( !cpr_get_answer_is_yes("keyedit.sign_all.okay",
 					   _("Really sign all user IDs? ")) ) {

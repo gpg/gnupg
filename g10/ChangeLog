@@ -1,3 +1,13 @@
+2001-12-04  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (keyedit_menu): Do not allow signing a revoked key
+	unless --expert is set, and ask even then.
+
+	* keyedit.c (sign_uids): Do not allow signing a revoked UID unless
+	--expert is set, and ask even then.
+
+	* g10.c, options.h : New option --expert
+
 2001-11-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* Allow the user to select no compression via "--compress-algo 0"
