@@ -1,6 +1,23 @@
 Noteworthy changes in version 1.4.1
 -------------------------------------------------
 
+    * New --rfc2440-text option which controls how text is handled in
+      signatures.  This is in response to some problems seen with
+      certain PGP/MIME mail clients and GnuPG version 1.4.0.  More
+      details about this are available at
+      <http://lists.gnupg.org/pipermail/gnupg-users/2005-January/024408.html>
+
+    * New "import-unusable-sigs" and "export-unusable-sigs" tags for
+      --import-options and --export-options.  These are on by
+      default, and cause GnuPG to not import or export key signatures
+      that are not usable (e.g. expired signatures).
+
+    * New experimental HTTP, HTTPS, and FTP keyserver helper that uses
+      the cURL library (http://curl.haxx.se) to retrieve keys.  This
+      is disabled by default, but may be enabled with the configure
+      option --with-libcurl.  Without this option, the existing HTTP
+      code is used for HTTP, and HTTPS and FTP are not supported.
+
 
 Noteworthy changes in version 1.4.0 (2004-12-16)
 -------------------------------------------------

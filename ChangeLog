@@ -1,3 +1,11 @@
+2005-01-18  David Shaw  <dshaw@grover.jabberwocky.com>
+
+	* NEWS: Note --rfc2440-text import/export-unusable-sigs and
+	gpgkeys_curl.
+
+	* configure.ac: gpgkeys_mailto is disabled by default.  Define
+	HTTPS flag if we're using curl, and HTTPS is available.
+
 2005-01-17  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Make --without-included-zlib work as

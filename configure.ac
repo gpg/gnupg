@@ -332,9 +332,9 @@ dnl LDAP is defined only after we confirm the library is available later
 
     AC_MSG_CHECKING([whether email keyserver support is requested])
     AC_ARG_ENABLE(mailto,
-      AC_HELP_STRING([--disable-mailto],
-	[disable email keyserver interface only]),
-      try_mailto=$enableval, try_mailto=yes)
+      AC_HELP_STRING([--enable-mailto],
+	[enable email keyserver interface only]),
+      try_mailto=$enableval, try_mailto=no)
     AC_MSG_RESULT($try_mailto)
     fi
 
@@ -656,6 +656,9 @@ if test x"$try_http" = xyes ; then
    if test x$libcurl_protocol_HTTP = xyes ; then
       AC_SUBST(GPGKEYS_CURL,"gpgkeys_curl$EXEEXT")
       AC_DEFINE(HTTP_VIA_LIBCURL,1,[Define if HTTP is handled via libcurl])
+      if test x$libcurl_protocol_HTTPS = xyes ; then
+         AC_DEFINE(HTTPS_VIA_LIBCURL,1,[Define if HTTPS is handled via libcurl])
+      fi
    else
       AC_SUBST(GPGKEYS_HTTP,"gpgkeys_http$EXEEXT")
    fi
