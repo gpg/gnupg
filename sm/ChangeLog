@@ -1,5 +1,8 @@
 2002-07-22  Werner Koch  <wk@gnupg.org>
 
+	* keydb.c (keydb_add_resource): Register a lock file.
+	(lock_all, unlock_all): Implemented.
+
 	* delete.c: New.
 	* gpgsm.c: Made --delete-key work.
 	* server.c (cmd_delkeys): New.

@@ -50,6 +50,7 @@ struct resource_item {
   } u;
   void *token;
   int secret;
+  DOTLOCK lockhandle;
 };
 
 static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
@@ -196,8 +197,9 @@ keydb_add_resource (const char *url, int force, int secret)
 	}
 	fclose (fp);
 	fp = NULL;
-        /* now regsiter the file */
+        /* now register the file */
         {
+          
           void *token = keybox_register_file (filename, secret);
           if (!token)
             ; /* already registered - ignore it */
@@ -209,6 +211,12 @@ keydb_add_resource (const char *url, int force, int secret)
               all_resources[used_resources].u.kr = NULL; /* Not used here */
               all_resources[used_resources].token = token;
               all_resources[used_resources].secret = secret;
+
+              all_resources[used_resources].lockhandle
+                = create_dotlock (filename);
+              if (!all_resources[used_resources].lockhandle)
+                log_fatal ( _("can't create lock for `%s'\n"), filename);
+                  
               used_resources++;
             }
         }
@@ -255,11 +263,13 @@ keydb_new (int secret)
           hd->active[j].type   = all_resources[i].type;
           hd->active[j].token  = all_resources[i].token;
           hd->active[j].secret = all_resources[i].secret;
+          hd->active[j].lockhandle = all_resources[i].lockhandle;
           hd->active[j].u.kr = keybox_new (all_resources[i].token, secret);
-          if (!hd->active[j].u.kr) {
-            xfree (hd);
-            return NULL; /* fixme: release all previously allocated handles*/
-          }
+          if (!hd->active[j].u.kr) 
+            {
+              xfree (hd);
+              return NULL; /* fixme: release all previously allocated handles*/
+            }
           j++;
           break;
         }
@@ -369,16 +379,22 @@ lock_all (KEYDB_HANDLE hd)
 {
   int i, rc = 0;
 
-  for (i=0; !rc && i < hd->used; i++) 
+  /* Fixme: This locking scheme may lead to deadlock if the resources
+     are not added in the same sequence by all processes.  We are
+     cuurently only allowing one resource so it is not a problem. */
+  for (i=0; i < hd->used; i++) 
     {
       switch (hd->active[i].type) 
         {
         case KEYDB_RESOURCE_TYPE_NONE:
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          /* FIXME  rc = keybox_lock (hd->active[i].u.kr, 1);*/
+          if (hd->active[i].lockhandle)
+            rc = make_dotlock (hd->active[i].lockhandle, -1);
           break;
         }
+      if (rc)
+        break;
     }
 
     if (rc) 
@@ -391,7 +407,8 @@ lock_all (KEYDB_HANDLE hd)
               case KEYDB_RESOURCE_TYPE_NONE:
                 break;
               case KEYDB_RESOURCE_TYPE_KEYBOX:
-                /* Fixme: keybox_lock (hd->active[i].u.kr, 0);*/
+                if (hd->active[i].lockhandle)
+                  release_dotlock (hd->active[i].lockhandle);
                 break;
               }
           }
@@ -417,7 +434,8 @@ unlock_all (KEYDB_HANDLE hd)
         case KEYDB_RESOURCE_TYPE_NONE:
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          /* fixme: keybox_lock (hd->active[i].u.kr, 0);*/
+          if (hd->active[i].lockhandle)
+            release_dotlock (hd->active[i].lockhandle);
           break;
         }
     }
