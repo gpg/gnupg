@@ -1,3 +1,7 @@
+2002-10-31  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Add a check for volatile.
+
 2002-10-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add --disable-regex in case some platform just
