@@ -107,7 +107,7 @@ Boston, MA 02111-1307 USA
 @top Introduction
 @cindex introduction
 
-This manual documents how to use the GNU Privay Guard system as well as
+This manual documents how to use the GNU Privacy Guard system as well as
 the administration and the architecture.
 
 @menu
@@ -116,20 +116,14 @@ the administration and the architecture.
 * Invoking GPG-AGENT::  How to launch the secret key daemon.
 * Invoking SCDAEMON::   How to handle Smartcards.
 
-Developer information
-
-* Assuan::              Description of the Assuan protocol.
-* System Notes::        Notes pertaining to certain OSes.
-
-Miscellaneous
-
 * Helper Tools::        Description of small helper tools
+
+* System Notes::        Notes pertaining to certain OSes.
 * Debugging::           How to solve problems
+* Assuan::              Description of the Assuan protocol.
 * Copying::             GNU General Public License says
                         how you can copy and share GnuPG
 * Contributors::        People who have contributed to GnuPG.
-
-Indices
 
 * Glossary::            Short descrition of used terms.
 * Option Index::        Index to command line options.
@@ -141,12 +135,13 @@ Indices
 @include gpg-agent.texi
 @include scdaemon.texi
 
-@include assuan.texi
+@include tools.texi
+
 @include sysnotes.texi
 
-@include tools.texi
 @include debugging.texi
 
+@include assuan.texi
 @include gpl.texi
 
 @include contrib.texi

@@ -3,14 +3,15 @@
 @c For copying conditions, see the file gnupg.texi.
 
 @node Assuan
-@chapter Description of the Assuan protocol.
+@appendix Description of the Assuan protocol.
+@cindex Assuan, IPC
 
 The architecture of the modular GnuPG system is based on a couple of
 highly specialized modules which make up a network of client server
 communication.  A common framework for intermodule communication is
 therefore needed and should be implemented in a library.
 
-Goals:
+@appendixsubsec Goals
 
 @itemize @bullet
 @item Common framework for module communication
@@ -22,7 +23,7 @@ Goals:
 @end itemize
 
 
-Design criteria:
+@appendixsubsec Design criteria
 
 @itemize @bullet
 @item Client Server with back channel
@@ -36,8 +37,10 @@ Design criteria:
 @item Subliminal channels are not an issue
 @end itemize
 
-Implementation:
 
+@appendixsubsec Implementation
+
+@noindent
 The implementation is line based with a maximum line size of 1000
 octects.  The default IPC mechanism are Unix Domain Sockets.
 
@@ -57,7 +60,7 @@ state.
 All textual messages are assumed to be in UTF-8 unless otherwise noted.
 
 
-Server responses:
+@appendixsubsec Server responses
 
 @table @code
 @item OK  [<arbitary debugging information>]
@@ -98,7 +101,7 @@ treated as a communication error. (The rationale for having a line
 length limit is to allow for easier multiplexing of multiple channels).
 
 
-Client requests:
+@appendixsubsec Client requests
 
 The server waits for client requests after he sent an Okay or Error.
 The client should not issue a request in other cases with the
@@ -171,7 +174,8 @@ to indicate a partial end of data.
 @end table
 
 
-Error Codes:
+
+@appendixsubsec Error Codes
 
 Here we keep a list of error codes used in any Assuan based
 protocol.  The format is the string @code{ERR}, white space, the error

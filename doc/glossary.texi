@@ -16,6 +16,12 @@ certificates.
       The @emph{Certificate Revocation List} is a list containing
 certificates revoked by the issuer.
 
+@item Keygrip
+      This term is used by GnuPG to describe a 20 byte hash value used
+to identify a certain key without referencing to a concrete protocol.
+It is used internally to access a private key.  Usually it is shown and
+entered as a 40 character hexadecimal formatted string.
+
 @item OCSP
       The @emph{Online Certificate Status Protocol} is used as an
 alternative to a @acronym{CRL}.  It is described in @code{RFC 2560}.

@@ -1,3 +1,8 @@
+2004-12-22  Werner Koch  <wk@g10code.com>
+
+	* gnupg.texi: Reordered.
+	* contrib.texi: Updated.
+
 2004-12-21  Werner Koch  <wk@g10code.com>
 
 	* tools.texi (gpg-preset-passphrase): New section.

@@ -601,10 +601,10 @@ whicl will be printed to stdout.
 @section Put a passphrase into the cache.
 
 The @command{gpg-preset-passphrase} is a utility to seed the internal
-cache of a running @command{gpg-agent} with passphrases.  This is mainly
-useful for unatteneded machines, where a pinentry may not be used and
-the passphrases for the to be used keys should be given at machine
-startup.
+cache of a running @command{gpg-agent} with passphrases.  It is mainly
+useful for unattended machines, where the usual @command{pinentry} tool
+may not be used and the passphrases for the to be used keys are given at
+machine startup.
 
 Passphrases set with this utility don't expire unless the
 @option{--forget} option is used to explicitly clear them from the cache
@@ -630,28 +630,29 @@ gpg-preset-passphrase [options] [command] @var{keygrip}
 
 @var{keygrip} is a 40 character string of hexadecimal characters
 identifying the key for which the passphrase should be set or cleared.
-This @emph{keygrip} is listed along with the key when running the
-command: @code{gpgsm --dump-secret-keys}. One of the following commands
+This keygrip is listed along with the key when running the command:
+@code{gpgsm --dump-secret-keys}. One of the following command options
 must be given:
 
 @table @gnupgtabopt
 @item --preset
 Preset a passphrase. This is what you usually will
-use. @command{gpg-preset-passphrase} will then read the passphrase form
+use. @command{gpg-preset-passphrase} will then read the passphrase from
 @code{stdin}.
 
 @item --forget
-Clear the passphrase for the given keygrip from the cache.
+Flush the passphrase for the given keygrip from the cache.
 
 @end table
 
-The following options may be used:
+@noindent
+The following additional options may be used:
 
 @table @gnupgtabopt
 @item -v
 @itemx --verbose
 @opindex verbose
-Outputs additional information while running.  
+Output additional information while running.  
 
 @item -P @var{string}
 @itemx --passphrase @var{string}
@@ -660,6 +661,7 @@ Instead of reading the passphrase from @code{stdin}, use the supplied
 @var{string} as passphrase.  Note that this makes the passphrase visible
 for other users.
 @end table
+
 
 
 
