@@ -268,6 +268,7 @@ enum cmd_and_opt_values { aNull = 0,
     oFixedListMode,
     oNoSigCache,
     oNoSigCreateCheck,
+    oAutoCheckTrustDB,
     oNoAutoCheckTrustDB,
     oPreservePermissions,
     oPreferenceList,                          
@@ -523,6 +524,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
     { oNoSigCache,         "no-sig-cache", 0, "@" },
     { oNoSigCreateCheck,   "no-sig-create-check", 0, "@" },
+    { oAutoCheckTrustDB, "auto-check-trustdb", 0, "@"},
     { oNoAutoCheckTrustDB, "no-auto-check-trustdb", 0, "@"},
     { oMergeOnly,	  "merge-only", 0, "@" },
     { oAllowSecretKeyImport, "allow-secret-key-import", 0, "@" },
@@ -1271,6 +1273,7 @@ main( int argc, char **argv )
             iobuf_enable_special_filenames (1);
             break;
           case oNoExpensiveTrustChecks: opt.no_expensive_trust_checks=1; break;
+          case oAutoCheckTrustDB: opt.no_auto_check_trustdb=0; break;
           case oNoAutoCheckTrustDB: opt.no_auto_check_trustdb=1; break;
           case oPreservePermissions: opt.preserve_permissions=1; break;
           case oPreferenceList: preference_list = pargs.r.ret_str; break;

@@ -65,6 +65,8 @@ static int menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
 static int enable_disable_key( KBNODE keyblock, int disable );
 static void menu_showphoto( KBNODE keyblock );
 
+static int update_trust=0;
+
 #define CONTROL_D ('D' - 'A' + 1)
 
 #define NODFLG_BADSIG (1<<0)  /* bad signature */
@@ -274,7 +276,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
     KBNODE node, uidnode;
     PKT_public_key *primary_pk=NULL;
     int select_all = !count_selected_uids(keyblock);
-    int upd_trust = 0, force_v4=0, all_v3=1;
+    int force_v4=0, all_v3=1;
 
     /* Are there any non-v3 sigs on this key already? */
     if(opt.pgp2)
@@ -596,7 +598,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 		}
 
 		*ret_modified = 1; /* we changed the keyblock */
-		upd_trust = 1;
+		update_trust = 1;
 
 		pkt = m_alloc_clear( sizeof *pkt );
 		pkt->pkttype = PKT_SIGNATURE;
@@ -611,9 +613,6 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	  if( node->flag & NODFLG_DELSIG)
 	    delete_kbnode(node);
     } /* end loop over signators */
-    if (upd_trust) 
-	revalidation_mark ();
-
 
   leave:
     release_sk_list( sk_list );
@@ -1217,7 +1216,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    if( edit_ownertrust( find_kbnode( keyblock,
                                  PKT_PUBLIC_KEY )->pkt->pkt.public_key, 1 ) ) {
 		redisplay = 1;
-                revalidation_mark ();
+		/* No real need to set update_trust here as
+		   edit_ownertrust() calls revalidation_mark()
+		   anyway. */
+		update_trust=1;
             }
 	    break;
 
@@ -1311,10 +1313,11 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands,
 	    else
 		tty_printf(_("Key not changed so no update needed.\n"));
 
-	    /* TODO: we should keep track whether we have changed
-	     *	     something relevant to the trustdb */
-	    if( !(!modified && sign_mode) )
+	    if( update_trust )
+	      {
 		revalidation_mark ();
+		update_trust=0;
+	      }
 	    goto leave;
 
 	  case cmdINVCMD:
@@ -1756,6 +1759,7 @@ menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	    selected = node->flag & NODFLG_SELUID;
 	    if( selected ) {
 		delete_kbnode( node );
+		update_trust=1;
 		if( sec_keyblock ) {
 		    KBNODE snode;
 		    int s_selected = 0;
@@ -1813,10 +1817,16 @@ menu_delsig( KBNODE pub_keyblock )
 					    &inv_sig, &no_key, &other_err,
 					    &selfsig, 1 );
 
-	   if( valid )
+	   if( valid ) {
 	       okay = cpr_get_answer_yes_no_quit(
 		   "keyedit.delsig.valid",
 		   _("Delete this good signature? (y/N/q)"));
+
+	       /* Only update trust if we delete a good signature.
+                  The other two cases do not affect trust. */
+	       if(okay)
+		 update_trust=1;
+	   }
 	   else if( inv_sig || other_err )
 	       okay = cpr_get_answer_yes_no_quit(
 		   "keyedit.delsig.invalid",
@@ -1900,6 +1910,10 @@ menu_delkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     commit_kbnode( &pub_keyblock );
     if( sec_keyblock )
 	commit_kbnode( &sec_keyblock );
+
+    /* No need to set update_trust here since signing keys no longer
+       are used to certify other keys, so there is no change in trust
+       when revoking/removing them */
 }
 
 
@@ -2025,6 +2039,7 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
     }
 
     free_secret_key( sk );
+    update_trust=1;
     return 1;
 }
 
@@ -2459,7 +2474,6 @@ menu_revsig( KBNODE keyblock )
     PKT_public_key *primary_pk;
     KBNODE node;
     int changed = 0;
-    int upd_trust = 0;
     int rc, any;
     struct revocation_reason_info *reason = NULL;
 
@@ -2572,7 +2586,7 @@ menu_revsig( KBNODE keyblock )
 	    return changed;
 	}
 	changed = 1; /* we changed the keyblock */
-	upd_trust = 1;
+	update_trust = 1;
 
 	pkt = m_alloc_clear( sizeof *pkt );
 	pkt->pkttype = PKT_SIGNATURE;
@@ -2581,8 +2595,6 @@ menu_revsig( KBNODE keyblock )
 	goto reloop;
     }
 
-    if( upd_trust )
-	revalidation_mark ();
     release_revocation_reason_info( reason );
     return changed;
 }
@@ -2598,7 +2610,6 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     PKT_public_key *mainpk;
     KBNODE node;
     int changed = 0;
-    int upd_trust = 0;
     int rc;
     struct revocation_reason_info *reason = NULL;
 
@@ -2634,7 +2645,6 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		return changed;
 	    }
 	    changed = 1; /* we changed the keyblock */
-	    upd_trust = 1;
 
 	    pkt = m_alloc_clear( sizeof *pkt );
 	    pkt->pkttype = PKT_SIGNATURE;
@@ -2646,8 +2656,9 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     commit_kbnode( &pub_keyblock );
     /*commit_kbnode( &sec_keyblock );*/
 
-    if( upd_trust )
-	revalidation_mark ();
+    /* No need to set update_trust here since signing keys no longer
+       are used to certify other keys, so there is no change in trust
+       when revoking/removing them */
 
     release_revocation_reason_info( reason );
     return changed;

@@ -1,3 +1,12 @@
+2002-04-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids, keyedit_menu, menu_deluid, menu_delsig,
+	menu_expire, menu_revsig, menu_revkey): Only force a trustdb check
+	if we did something that changes it.
+
+	* g10.c: add "--auto-check-trustdb" to override a
+	"--no-auto-check-trustdb"
+
 2002-04-19  Werner Koch  <wk@gnupg.org>
 
 	* tdbio.c (tdbio_write_nextcheck): Return a status whether the
