@@ -90,6 +90,7 @@ static struct {
 };
 
 
+/* One cache item for DOs.  */
 struct cache_s {
   struct cache_s *next;
   int tag;
@@ -97,8 +98,20 @@ struct cache_s {
   unsigned char data[1];
 };
 
+
+/* Object with application (i.e. OpenPGP card) specific data.  */
 struct app_local_s {
+  /* A linked list with cached DOs.  */
   struct cache_s *cache;
+  
+  /* Keep track of the public keys.  */
+  struct
+  {
+    int read_done;   /* True if we have at least tried to read them.  */
+    gcry_sexp_t key; /* Might be NULL if key is not available.  */
+  } pk[3];
+
+  /* Keep track of card capabilities.  */
   struct 
   {
     unsigned int get_challenge:1;
@@ -106,6 +119,8 @@ struct app_local_s {
     unsigned int change_force_chv:1;
     unsigned int private_dos:1;
   } extcap;
+
+  /* Flags used to control the application.  */
   struct
   {
     unsigned int no_sync:1;   /* Do not sync CHV1 and CHV2 */
@@ -114,10 +129,16 @@ struct app_local_s {
 };
 
 
+
+/***** Local prototypes  *****/
 static unsigned long convert_sig_counter_value (const unsigned char *value,
                                                 size_t valuelen);
-static unsigned long get_sig_counter (APP app);
+static unsigned long get_sig_counter (app_t app);
 
+
+
+
+
 /* Deconstructor. */
 static void
 do_deinit (app_t app)
@@ -125,11 +146,18 @@ do_deinit (app_t app)
   if (app && app->app_local)
     {
       struct cache_s *c, *c2;
+      int i;
 
       for (c = app->app_local->cache; c; c = c2)
         {
           c2 = c->next;
           xfree (c);
+        }
+
+      for (i=0; i < DIM (app->app_local->pk); i++)
+        {
+          gcry_sexp_release (app->app_local->pk[i].key);
+          app->app_local->pk[i].read_done = 0;
         }
       xfree (app->app_local);
       app->app_local = NULL;
@@ -736,6 +764,156 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 }
 
 
+/* Get the public key for KEYNO and store it as an S-expresion with
+   the APP handle.  On error that field gets cleared.  If we already
+   know about the public key we will just return.  Note that this does
+   not mean a key is available; this is soley indicated by the
+   presence of the app->app_local->pk[KEYNO-1].key field.
+
+   Note that GnuPG 1.x does not need this and it would be too time
+   consuming to send it just for the fun of it.  */
+#if GNUPG_MAJOR_VERSION > 1
+static gpg_error_t
+get_public_key (app_t app, int keyno)
+{
+  gpg_error_t err = 0;
+  unsigned char *buffer;
+  const unsigned char *keydata, *m, *e;
+  size_t buflen, keydatalen, mlen, elen;
+  gcry_sexp_t sexp;
+
+  if (keyno < 1 || keyno > 3)
+    return gpg_error (GPG_ERR_INV_ID);
+  keyno--;
+
+  /* Already cached? */
+  if (app->app_local->pk[keyno].read_done)
+    return 0;
+
+  gcry_sexp_release (app->app_local->pk[keyno].key);
+  app->app_local->pk[keyno].key = NULL;
+
+  if (app->card_version > 0x0100)
+    {
+      /* We may simply read the public key out of these cards.  */
+      err = iso7816_read_public_key (app->slot, 
+                                    keyno == 0? "\xB6" :
+                                    keyno == 1? "\xB8" : "\xA4",
+                                    2,  
+                                    &buffer, &buflen);
+      if (err)
+        {
+          log_error (_("reading public key failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+
+      keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
+      if (!keydata)
+        {
+          err = gpg_error (GPG_ERR_CARD);
+          log_error (_("response does not contain the public key data\n"));
+          goto leave;
+        }
+ 
+      m = find_tlv (keydata, keydatalen, 0x0081, &mlen);
+      if (!m)
+        {
+          err = gpg_error (GPG_ERR_CARD);
+          log_error (_("response does not contain the RSA modulus\n"));
+          goto leave;
+        }
+
+      e = find_tlv (keydata, keydatalen, 0x0082, &elen);
+      if (!e)
+        {
+          err = gpg_error (GPG_ERR_CARD);
+          log_error (_("response does not contain the RSA public exponent\n"));
+          goto leave;
+        }
+
+      err = gcry_sexp_build (&sexp, NULL,
+                             "(public-key (rsa (n %b) (e %b)))",
+                             (int)mlen, m,(int)elen, e);
+
+      if (err)
+        {
+          log_error ("error formatting the key into an S-expression: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+      app->app_local->pk[keyno].key = sexp;
+
+    }
+  else
+    {
+      /* Due to a design problem in v1.0 cards we can't get the public
+         key out of these cards without doing a verify on CHV3.
+         Clearly that is not an option and thus we try to locate the
+         key using an external helper.  */
+
+      buffer = NULL;
+      /* FIXME */
+
+    }
+
+ leave:
+  /* Set a flag to indicate that we tried to read the key.  */
+  app->app_local->pk[keyno].read_done = 1;
+
+  xfree (buffer);
+  return 0;
+}
+#endif /* GNUPG_MAJOR_VERSION > 1 */
+
+
+
+/* Send the KEYPAIRINFO back. KEYNO needs to be in the range [1,3].
+   This is used by the LEARN command. */
+static gpg_error_t
+send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
+{
+  gpg_error_t err = 0;
+  /* Note that GnuPG 1.x does not need this and it would be too time
+     consuming to send it just for the fun of it. */
+#if GNUPG_MAJOR_VERSION > 1
+  gcry_sexp_t sexp;
+  unsigned char grip[20];
+  char gripstr[41];
+  char idbuf[50];
+  int i;
+
+  err = get_public_key (app, keyno);
+  if (err)
+    goto leave;
+  
+  assert (keyno >= 1 && keyno <= 3);
+  sexp = app->app_local->pk[keyno-1].key;
+  if (!sexp)
+    goto leave; /* No such key.  */
+
+  if (!gcry_pk_get_keygrip (sexp, grip))
+    {
+      err = gpg_error (GPG_ERR_INTERNAL); 
+      goto leave;  
+    }
+  
+  for (i=0; i < 20; i++)
+    sprintf (gripstr+i*2, "%02X", grip[i]);
+
+  sprintf (idbuf, "OPENPGP.%d", keyno);
+  send_status_info (ctrl, "KEYPAIRINFO", 
+                    gripstr, 40, 
+                    idbuf, strlen (idbuf), 
+                    NULL, (size_t)0);
+
+ leave:
+#endif /* GNUPG_MAJOR_VERSION > 1 */
+
+  return err; 
+}
+
+
+/* Handle the LEARN command for OpenPGP.  */
 static int
 do_learn_status (app_t app, ctrl_t ctrl)
 {
@@ -760,9 +938,61 @@ do_learn_status (app_t app, ctrl_t ctrl)
       if (app->did_chv3)
         do_getattr (app, ctrl, "PRIVATE-DO-4");
     }
-
+  send_keypair_info (app, ctrl, 1);
+  send_keypair_info (app, ctrl, 2);
+  send_keypair_info (app, ctrl, 3);
   return 0;
 }
+
+
+/* Handle the READKEY command for OpenPGP.  On success a canonical
+   encoded S-expression with the public key will get stored at PK and
+   its length (for assertions) at PKLEN; the caller must release that
+   buffer. On error PK and PKLEN are not changed and an error code is
+   returned.  */
+static int
+do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
+{
+  gpg_error_t err;
+  int keyno;
+  size_t n;
+  unsigned char *buf;
+  gcry_sexp_t sexp;
+
+  if (!strcmp (keyid, "OPENPGP.1"))
+    keyno = 1;
+  else if (!strcmp (keyid, "OPENPGP.2"))
+    keyno = 2;
+  else if (!strcmp (keyid, "OPENPGP.3"))
+    keyno = 3;
+  else
+    return gpg_error (GPG_ERR_INV_ID);
+
+  err = get_public_key (app, keyno);
+  if (err)
+    return err;
+
+  sexp = app->app_local->pk[keyno-1].key;
+  if (!sexp)
+    return gpg_error (GPG_ERR_NO_PUBKEY);
+
+  n = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, NULL, 0);
+  if (!n)
+    return gpg_error (GPG_ERR_BUG);
+  buf = xtrymalloc (n);
+  if (!buf)
+    return gpg_error_from_errno (errno);
+  n = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_CANON, buf, n);
+  if (!n)
+    {
+      xfree (buf);
+      return gpg_error (GPG_ERR_BUG);
+    }
+  *pk = buf;
+  *pklen = n;
+  return 0;
+}
+
 
 
 /* Verify CHV2 if required.  Depending on the configuration of the
@@ -1082,6 +1312,11 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
      generation.  This _might_ help a card to gather more entropy. */
   flush_cache (app);
 
+  /* Obviously we need to remove the cached public key.  */
+  gcry_sexp_release (app->app_local->pk[keyno].key);
+  app->app_local->pk[keyno].read_done = 0;
+
+  /* Check whether a key already exists.  */
   rc = iso7816_get_data (app->slot, 0x006E, &buffer, &buflen);
   if (rc)
     {
@@ -1109,11 +1344,12 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   else
     log_info (_("generating new key\n"));
 
-
+  
+  /* Prepare for key generation by verifying the ADmin PIN.  */
   rc = verify_chv3 (app, pincb, pincb_arg);
   if (rc)
     goto leave;
-
+   
   xfree (buffer); buffer = NULL;
 
 #if 1
@@ -1682,7 +1918,7 @@ app_select_openpgp (app_t app)
 
       app->fnc.deinit = do_deinit;
       app->fnc.learn_status = do_learn_status;
-      app->fnc.readcert = NULL;
+      app->fnc.readkey = do_readkey;
       app->fnc.getattr = do_getattr;
       app->fnc.setattr = do_setattr;
       app->fnc.genkey = do_genkey;
@@ -1817,6 +2053,9 @@ app_openpgp_storekey (app_t app, int keyno,
     goto leave;
 
   flush_cache (app);
+
+  gcry_sexp_release (app->app_local->pk[keyno].key);
+  app->app_local->pk[keyno].read_done = 0;
 
   rc = iso7816_put_data (app->slot,
                          (app->card_version > 0x0007? 0xE0 : 0xE9) + keyno,

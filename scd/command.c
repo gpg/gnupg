@@ -1,5 +1,5 @@
 /* command.c - SCdaemon command handler
- *	Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -494,9 +494,9 @@ cmd_readcert (ASSUAN_CONTEXT ctx, char *line)
    Return the public key for the given cert or key ID as an standard
    S-Expression.  */
 static int
-cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
+cmd_readkey (assuan_context_t ctx, char *line)
 {
-  CTRL ctrl = assuan_get_pointer (ctx);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
   unsigned char *cert = NULL;
   size_t ncert, n;
@@ -509,9 +509,31 @@ cmd_readkey (ASSUAN_CONTEXT ctx, char *line)
   line = xstrdup (line); /* Need a copy of the line. */
   if (ctrl->app_ctx)
     {
-      rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
-      if (rc)
-        log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
+      unsigned char *pk;
+      size_t pklen;
+
+      /* If the application supports the READKEY function we use that.
+         Otherwise we use the old way by extracting it from the
+         certificate.  */
+      rc = app_readkey (ctrl->app_ctx, line, &pk, &pklen);
+      if (!rc)
+        { /* Yeah, got that key - send it back.  */
+          rc = assuan_send_data (ctx, pk, pklen);
+          xfree (pk);
+          rc = map_assuan_err (rc);
+          xfree (line);
+          line = NULL;
+          goto leave;
+        }
+
+      if (gpg_err_code (rc) != GPG_ERR_UNSUPPORTED_OPERATION)
+        log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
+      else  
+        {
+          rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
+          if (rc)
+            log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
+        }
     }
   else
     {

@@ -263,6 +263,32 @@ app_readcert (app_t app, const char *certid,
 }
 
 
+/* Read the key with ID KEYID.  On success a canonical encoded
+   S-expression with the public key will get stored at PK and its
+   length (for assertions) at PKLEN; the caller must release that
+   buffer. On error NULL will be stored at PK and PKLEN and an error
+   code returned.
+
+   This function might not be supported by all applications.  */
+int
+app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
+{
+  if (pk)
+    *pk = NULL;
+  if (pklen)
+    *pklen = 0;
+
+  if (!app || !keyid || !pk || !pklen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!app->initialized)
+    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
+  if (!app->fnc.readkey)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  return app->fnc.readkey (app, keyid, pk, pklen);
+}
+
+
 /* Perform a GETATTR operation.  */
 int 
 app_getattr (APP app, CTRL ctrl, const char *name)

@@ -1,5 +1,5 @@
 /* app-common.h - Common declarations for all card applications
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+ *	Copyright (C) 2003, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -49,6 +49,8 @@ struct app_ctx_s {
     int (*learn_status) (app_t app, ctrl_t ctrl);
     int (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
+    int (*readkey) (app_t app, const char *certid,
+                    unsigned char **pk, size_t *pklen);
     int (*getattr) (app_t app, ctrl_t ctrl, const char *name);
     int (*setattr) (app_t app, const char *name,
                     int (*pincb)(void*, const char *, char **),
@@ -109,6 +111,8 @@ int app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
 int app_write_learn_status (app_t app, ctrl_t ctrl);
 int app_readcert (app_t app, const char *certid,
                   unsigned char **cert, size_t *certlen);
+int app_readkey (app_t app, const char *keyid,
+                 unsigned char **pk, size_t *pklen);
 int app_getattr (app_t app, ctrl_t ctrl, const char *name);
 int app_setattr (app_t app, const char *name,
                  int (*pincb)(void*, const char *, char **),

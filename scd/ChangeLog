@@ -1,3 +1,14 @@
+2005-02-22  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (app_local_s): New field PK.
+	(do_deinit, do_genkey, app_openpgp_storekey): Clear it.
+	(get_public_key, send_keypair_info): New.
+	(do_learn_status): Send KEYPAIR info
+
+	* app-common.h (app_ctx_t): Add function pointer READKEY.
+	* app.c (app_readkey): New.
+	* command.c (cmd_readkey): Use READKEY function if possible.
+
 2005-01-26  Werner Koch  <wk@g10code.com>
 
 	* ccid-driver.c (parse_ccid_descriptor): Need the CSM workaround
@@ -18,7 +29,7 @@
 	side effect of the retrieval of the the C4 DO from the 6E DO the
 	cached fingerprint will get updated to the old value and later
 	when signing the generated key the checking of the fingerprint
-	fails becuase it won't match the new one.  Thanks to Moritz for
+	fails because it won't match the new one.  Thanks to Moritz for
 	analyzing this problem.
 	(verify_chv3): Removed the CHV status reread logic because we
 	won't cache the C4 DO anymore.
@@ -934,7 +945,8 @@
 	* scdaemon.c scdaemon.h, command.c: New. Based on the code from
 	the gpg-agent.
 
- Copyright 2002 Free Software Foundation, Inc.
+	
+ Copyright 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
