@@ -53,7 +53,8 @@ scdaemon_SOURCES = \
 scdaemon_LDADD = ../jnlib/libjnlib.a ../common/libcommon.a \
 	   $(LIBGCRYPT_LIBS) $(pth_libs) \
           $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-	  $(LIBUSB_LIBS) $(OPENSC_LIBS) -lgpg-error @INTLLIBS@ -ldl
+	  $(LIBUSB_LIBS) $(OPENSC_LIBS) -lgpg-error @INTLLIBS@ \
+	  @DL_LIBS@
 
 sc_investigate_SOURCES = \
 	sc-investigate.c scdaemon.h \
@@ -68,7 +69,7 @@ sc_investigate_LDADD = \
 	../jnlib/libjnlib.a ../common/libcommon.a \
 	$(LIBGCRYPT_LIBS) $(pth_libs) \
 	$(KSBA_LIBS) $(LIBUSB_LIBS) $(OPENSC_LIBS) \
-         @INTLLIBS@  -lgpg-error -ldl
+         @INTLLIBS@  -lgpg-error @DL_LIBS@
 
 
 sc_copykeys_SOURCES = \
@@ -85,8 +86,8 @@ sc_copykeys_LDADD = \
 	../common/libsimple-pwquery.a \
 	$(LIBGCRYPT_LIBS) $(pth_libs) \
 	$(KSBA_LIBS) $(LIBUSB_LIBS) $(OPENSC_LIBS) \
-        -lgpg-error @INTLLIBS@ -ldl
+        -lgpg-error @INTLLIBS@ @DL_LIBS@
 
 pcsc_wrapper_SOURCES = pcsc-wrapper.c
-pcsc_wrapper_LDADD = -ldl
+pcsc_wrapper_LDADD = @DL_LIBS@
 pcsc_wrapper_CFLAGS = 
