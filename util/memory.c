@@ -475,23 +475,26 @@ FNAME(alloc_secure_clear)( size_t n FNAMEPRT)
 void *
 FNAME(realloc)( void *a, size_t n FNAMEPRT )
 {
+    void *b;
+
   #ifdef M_GUARD
-    unsigned char *p = a;
-    void *b;
-    size_t len = m_size(a);
+    if( a ) {
+        unsigned char *p = a;
+        size_t len = m_size(a);
 
-    if( len >= n ) /* we don't shrink for now */
-	return a;
-    if( p[-1] == MAGIC_SEC_BYTE )
-	b = FNAME(alloc_secure_clear)(n FNAMEARG);
+        if( len >= n ) /* we don't shrink for now */
+            return a;
+        if( p[-1] == MAGIC_SEC_BYTE )
+            b = FNAME(alloc_secure_clear)(n FNAMEARG);
+        else
+            b = FNAME(alloc_clear)(n FNAMEARG);
+        FNAME(check)(NULL FNAMEARG);
+        memcpy(b, a, len );
+        FNAME(free)(p FNAMEARG);
+    }
     else
-	b = FNAME(alloc_clear)(n FNAMEARG);
-    FNAME(check)(NULL FNAMEARG);
-    memcpy(b, a, len );
-    FNAME(free)(p FNAMEARG);
+        b = FNAME(alloc)(n);
   #else
-    void *b;
-
     if( m_is_secure(a) ) {
 	if( !(b = secmem_realloc( a, n )) )
 	    out_of_core(n,1);
@@ -501,6 +504,7 @@ FNAME(realloc)( void *a, size_t n FNAMEPRT )
 	    out_of_core(n,0);
     }
   #endif
+
     return b;
 }
 

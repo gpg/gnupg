@@ -1,3 +1,8 @@
+2001-12-22  Stefan Bellon  <sbellon@sbellon.de>
+
+	* memory.c (realloc): Fixed realloc not working when M_GUARD is
+	defined and first parameter is NULL.
+
 2001-12-22  Timo Schulz <ts@winpt.org>
 
         * fileutil.c (is_file_compressed): New.
