@@ -1,3 +1,8 @@
+2003-07-28  Werner Koch  <wk@gnupg.org>
+
+	* parse-packet.c (parse_key): Allow to parse the gnu-divert-to-s2k
+	mode.
+
 2003-07-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, sig-check.c (signature_check2, do_check,

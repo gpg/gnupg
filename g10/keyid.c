@@ -60,6 +60,8 @@ do_fingerprint_md( PKT_public_key *pk )
     int npkey = pubkey_get_npkey( pk->pubkey_algo );
 
     md = md_open( pk->version < 4 ? DIGEST_ALGO_RMD160 : DIGEST_ALGO_SHA1, 0);
+    md_start_debug (md,"keyid");
+#warning fffff
     n = pk->version < 4 ? 8 : 6;
     for(i=0; i < npkey; i++ ) {
 	nb[i] = mpi_get_nbits(pk->pkey[i]);
