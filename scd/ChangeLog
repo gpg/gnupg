@@ -1,3 +1,7 @@
+2003-09-28  Werner Koch  <wk@gnupg.org>
+
+	* app-openpgp.c (dump_all_do): Use gpg_err_code and not gpg_error.
+
 2003-09-19  Werner Koch  <wk@gnupg.org>
 
 	* ccid-driver.c (parse_ccid_descriptor): New.

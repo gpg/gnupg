@@ -1,3 +1,7 @@
+2003-09-27  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (do_sign): Removed disabled testcode.
+
 2003-09-26  Timo Schulz  <twoaday@freakmail.de>
 
 	* card_status (card_status): Do not use fputs since the fp

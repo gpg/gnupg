@@ -307,43 +307,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
   sig->digest_algo = digest_algo;
   sig->digest_start[0] = dp[0];
   sig->digest_start[1] = dp[1];
-#if 0
-  if (sk->is_protected && sk->protect.s2k.mode == 1002 && !sk->is_primary)
-    {  /* Temporary hack  to test tey auth command. */
-      char *rbuf;
-      size_t rbuflen;
-      char *snbuf;
-      char *tmpbuf;
-      size_t tmp_n;
-
-      frame = encode_md_value( sk->pubkey_algo, md,
-                               digest_algo, mpi_get_nbits(sk->skey[0]), 0 );
-      if (!frame)
-        return GPG_ERR_GENERAL;
-
-      if (gcry_mpi_aprint (GCRYMPI_FMT_USG, (void **)&tmpbuf, &tmp_n, frame ))
-        BUG ();
-      for (; tmp_n && *tmpbuf; tmp_n--, tmpbuf++)
-        ;
-      assert (tmp_n);
-      tmp_n--;
-      tmpbuf++;
-
-      snbuf = serialno_and_fpr_from_sk (sk->protect.iv, sk->protect.ivlen, sk);
-      rc = agent_scd_pksign (snbuf, 0,
-                             tmpbuf, tmp_n,
-                             &rbuf, &rbuflen);
-      xfree (snbuf);
-      if (!rc)
-        {
-          if (gcry_mpi_scan (&sig->data[0], GCRYMPI_FMT_USG,
-                             rbuf, rbuflen, NULL ))
-            BUG ();
-        }
-    }
-  else
-#endif 
-      if (sk->is_protected && sk->protect.s2k.mode == 1002)
+  if (sk->is_protected && sk->protect.s2k.mode == 1002)
     { /* FIXME: Note that we do only support RSA for now. */
       char *rbuf;
       size_t rbuflen;

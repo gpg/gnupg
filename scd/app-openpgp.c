@@ -228,7 +228,7 @@ dump_all_do (int slot)
         continue;
 
       rc = iso7816_get_data (slot, data_objects[i].tag, &buffer, &buflen);
-      if (gpg_error (rc) == GPG_ERR_NO_OBJ)
+      if (gpg_err_code (rc) == GPG_ERR_NO_OBJ)
         ;
       else if (rc) 
         log_info ("DO `%s' not available: %s\n",
