@@ -117,7 +117,6 @@ static int mdc_available,ks_modify;
 static void do_generate_keypair( struct para_data_s *para,
 				 struct output_control_s *outctrl, int card);
 static int write_keyblock( iobuf_t out, KBNODE node );
-static int check_smartcard (char **);
 static int gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,
                          u32 expireval, struct para_data_s *para);
 
@@ -2219,11 +2218,12 @@ read_parameter_file( const char *fname )
 
 
 /****************
- * Generate a keypair
- * (fname is only used in batch mode)
+ * Generate a keypair (fname is only used in batch mode) If
+ * CARD_SERIALNO is not NULL the fucntion will create the keys on an
+ * OpenPGP Card.
  */
 void
-generate_keypair( const char *fname )
+generate_keypair( const char *fname, const char *card_serialno )
 {
   unsigned int nbits;
   char *uid = NULL;
@@ -2232,14 +2232,19 @@ generate_keypair( const char *fname )
   int algo;
   unsigned int use;
   int both = 0;
-  int card = 0;
   u32 expire;
   struct para_data_s *para = NULL;
   struct para_data_s *r;
   struct output_control_s outctrl;
-  char *serialno = NULL;
 
   memset (&outctrl, 0, sizeof (outctrl));
+
+  if (opt.batch && card_serialno)
+    {
+      /* We don't yet support unattended key generation. */
+      log_error (_("sorry, can't do this in batch mode\n"));
+      return;
+    }
 
   if (opt.batch)
     {
@@ -2247,27 +2252,14 @@ generate_keypair( const char *fname )
       return;
     }
 
-  do
+  if (card_serialno)
     {
-      xfree (serialno); serialno = NULL;
-      card = check_smartcard (&serialno);
-      if (card < 0)
-        return;
-    }
-  while (card > 1);
-
-  if (serialno)
-    {
-      r = xcalloc (1, sizeof *r + strlen (serialno) );
+      r = xcalloc (1, sizeof *r + strlen (card_serialno) );
       r->key = pSERIALNO;
-      strcpy( r->u.value, serialno);
+      strcpy( r->u.value, card_serialno);
       r->next = para;
       para = r;
-      xfree (serialno); serialno = NULL;
-    }
 
-  if (card)
-    {
       algo = PUBKEY_ALGO_RSA;
 
       r = xcalloc (1, sizeof *r + 20 );
@@ -2388,7 +2380,7 @@ generate_keypair( const char *fname )
   r->next = para;
   para = r;
 
-  dek = card? NULL : ask_passphrase( &s2k );
+  dek = card_serialno? NULL : ask_passphrase( &s2k );
   if (dek)
     {
       r = xcalloc (1, sizeof *r );
@@ -2403,7 +2395,7 @@ generate_keypair( const char *fname )
       para = r;
     }
   
-  proc_parameter_file (para, "[internal]", &outctrl, card);
+  proc_parameter_file (para, "[internal]", &outctrl, !!card_serialno);
   release_parameter_list (para);
 }
 
@@ -2719,7 +2711,7 @@ do_generate_keypair (struct para_data_s *para,
   release_kbnode (pub_root);
   release_kbnode (sec_root);
   if (sk && !card)         /* The unprotected secret key unless we have */
-    free_secret_key (sk);  /* shallow copy in card mode. */
+    free_secret_key (sk);  /* a shallow copy in card mode. */
 }
 
 
@@ -2848,158 +2840,6 @@ write_keyblock( iobuf_t out, KBNODE node )
 }
 
 
-static void
-show_sha1_fpr (const unsigned char *fpr)
-{
-  int i;
-
-  if (fpr)
-    {
-      for (i=0; i < 20 ; i+=2, fpr += 2 )
-        {
-          if (i == 10 )
-            tty_printf (" ");
-          tty_printf (" %02X%02X", *fpr, fpr[1]);
-        }
-    }
-  else
-    tty_printf (" [none]");
-  tty_printf ("\n");
-}
-
-static void
-show_smartcard (struct agent_card_info_s *info)
-{
-  PKT_public_key *pk = xcalloc (1, sizeof *pk);
-
-  /* FIXME: Sanitize what we show. */
-  tty_printf ("Name of cardholder: %s\n",
-              info->disp_name && *info->disp_name? info->disp_name 
-                                                 : "[not set]");
-  tty_printf ("URL of public key : %s\n",
-              info->pubkey_url && *info->pubkey_url? info->pubkey_url 
-                                                 : "[not set]");
-  tty_printf ("Signature key ....:");
-  show_sha1_fpr (info->fpr1valid? info->fpr1:NULL);
-  tty_printf ("Encryption key....:");
-  show_sha1_fpr (info->fpr2valid? info->fpr2:NULL);
-  tty_printf ("Authentication key:");
-  show_sha1_fpr (info->fpr3valid? info->fpr3:NULL);
-
-  if (info->fpr1valid && !get_pubkey_byfprint (pk, info->fpr1, 20))
-    print_pubkey_info (NULL, pk);
-
-  free_public_key( pk );
-}
-
-/* Return true if the SHA1 fingerprint FPR consists only of zeroes. */
-static int
-fpr_is_zero (const char *fpr)
-{
-  int i;
-
-  for (i=0; i < 20 && !fpr[i]; i++)
-    ;
-  return (i == 20);
-}
-
-/* Check whether a smartcatrd is available and alow to select it as
-   the target for key generation. 
-   
-   Return values: -1 = Quit generation
-                   0 = No smartcard
-                   1 = Generate keypair
-*/
-static int
-check_smartcard (char **r_serialno)
-{
-  struct agent_card_info_s info;
-  int rc;
-
-  rc = agent_learn (&info);
-  if (rc)
-    {
-      tty_printf (_("OpenPGP card not available: %s\n"),
-                  gpg_strerror (rc));
-      return 0;
-    }
-  
-  tty_printf (_("OpenPGP card no. %s detected\n"),
-              info.serialno? info.serialno : "[none]");
-
-
-  for (;;)
-    {
-      char *answer;
-      int reread = 0;
-
-      tty_printf ("\n");
-      show_smartcard (&info);
-
-      tty_printf ("\n"
-                  "K - generate all keys\n"
-                  "Q - quit\n"
-                  "\n");
-
-      answer = cpr_get("keygen.smartcard.menu",_("Your selection? "));
-      cpr_kill_prompt();
-      if (strlen (answer) != 1)
-        continue;
-
-      rc = 0;
-      if ( *answer == 'K' || *answer == 'k')
-        {
-          if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
-               || (info.fpr2valid && !fpr_is_zero (info.fpr2))
-               || (info.fpr3valid && !fpr_is_zero (info.fpr3)))
-            {
-              tty_printf ("\n");
-              log_error ("WARNING: key does already exists!\n");
-              tty_printf ("\n");
-              if ( cpr_get_answer_is_yes( "keygen.card.replace_key",
-                                          _("Replace existing key? ")))
-                {
-                  rc = 1;
-                  break;
-                }
-            }
-          else
-            {
-              rc = 1;
-              break;
-            }
-        }
-      else if ( *answer == 'q' || *answer == 'Q')
-        {
-          rc = -1;
-          break;
-        }
-
-      if (reread)
-        {
-          agent_release_card_info (&info);
-          rc = agent_learn (&info);
-          if (rc)
-            {
-              tty_printf (_("OpenPGP card not anymore available: %s\n"),
-                          gpg_strerror (rc));
-              g10_exit (1);
-            }
-          reread = 0;
-        }
-    }
-
-  if (r_serialno && rc > 0)
-    {
-      *r_serialno = info.serialno;
-      info.serialno = NULL;
-    }
-  agent_release_card_info (&info);
-
-  return rc;
-}
-
-
 
 static int
 gen_card_key (int algo, int keyno, KBNODE pub_root, KBNODE sec_root,

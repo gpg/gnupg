@@ -600,7 +600,6 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
   if (rc)
     return rc;
 
-  memset (info, 0, sizeof *info);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
                         learn_status_cb, info);
   

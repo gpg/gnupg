@@ -47,6 +47,10 @@ gpg2:
    Offers a menu to change the PIN of OpenPGP smartcards and to reset
    the retry counters.
 
+--card-edit
+
+   Offers a menu to change any data object on the card and to generate
+   the keys. 
 
 
 OPTIONS

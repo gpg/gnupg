@@ -1,3 +1,16 @@
+2003-10-08  Werner Koch  <wk@gnupg.org>
+
+	* call-agent.c (agent_scd_getattr): Don't clear the passed info
+	structure, so that it can indeed be updated.
+
+	* card-util.c (fpr_is_zero): New.
+	(generate_card_keys): New.
+	(card_edit): New command "generate".
+	* keygen.c (generate_keypair): New arg CARD_SERIALNO, removed call
+	to check_smartcard.
+	(check_smartcard,show_smartcard): Removed.
+	(show_sha1_fpr,fpr_is_zero): Removed.
+
 2003-10-01  Werner Koch  <wk@gnupg.org>
 
 	* card-util.c: Tweaked to use this source also under 1.3. 
