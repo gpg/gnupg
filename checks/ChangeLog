@@ -1,3 +1,10 @@
+2003-05-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* defs.inc (pgmname): Make sure there is a valid options
+	file. (From wk on stable branch)
+
+	* mds.test: Note that missing algorithms are not errors.
+
 2003-04-23  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am, options.in: Rename options.in to options since it
