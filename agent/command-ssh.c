@@ -101,9 +101,9 @@ typedef struct ssh_key_secret_rsa
   mpint_t n;
   mpint_t e;
   mpint_t d;
-  mpint_t iqmp;
   mpint_t p;
   mpint_t q;
+  mpint_t u;
 } ssh_key_secret_rsa_t;
 
 /* Public RSA key material.  */
@@ -455,7 +455,8 @@ ssh_receive_key_secret (gpg_stream_t stream, ssh_key_secret_t *key_secret)
   gpg_err_code_t err = GPG_ERR_NO_ERROR;
   ssh_key_secret_t key = { 0 };
   unsigned char *key_type = NULL;
-
+  gcry_mpi_t mpi_iqmp = NULL;
+	
   err = gpg_stream_read_string (stream, &key_type, NULL);
   if (err)
     goto out;
@@ -467,54 +468,49 @@ ssh_receive_key_secret (gpg_stream_t stream, ssh_key_secret_t *key_secret)
   switch (key.type)
     {
     case SSH_KEY_TYPE_RSA:
-      err = gpg_stream_read_mpint (stream, &key.material.rsa.n, 0);
-      if (err)
+      {
+	err = gpg_stream_read_mpint (stream, &key.material.rsa.n, 0);
+	if (err)
+	  break;
+	err = gpg_stream_read_mpint (stream, &key.material.rsa.e, 0);
+	if (err)
+	  break;
+	err = gpg_stream_read_mpint (stream, &key.material.rsa.d, 0);
+	if (err)
+	  break;
+	err = gpg_stream_read_mpint (stream, &mpi_iqmp, 0);
+	if (err)
+	  break;
+	err = gpg_stream_read_mpint (stream, &key.material.rsa.p, 0);
+	if (err)
+	  break;
+	err = gpg_stream_read_mpint (stream, &key.material.rsa.q, 0);
+	if (err)
+	  break;
+
+	if (gcry_mpi_cmp (key.material.rsa.p, key.material.rsa.q))
+	  {
+	    /* P shall be smaller then Q!  Swap primes.  iqmp becomes
+	       u.  */
+	    gcry_mpi_t mpi_tmp = NULL;
+
+	    mpi_tmp = key.material.rsa.p;
+	    key.material.rsa.p = key.material.rsa.q;
+	    key.material.rsa.q = mpi_tmp;
+	    key.material.rsa.u = mpi_iqmp;
+	    mpi_iqmp = NULL;
+	  }
+	else
+	  {
+	    /* u has to be recomputed.  */
+
+	    key.material.rsa.u = gcry_mpi_new (0);
+	    gcry_mpi_invm (key.material.rsa.u,
+			   key.material.rsa.p, key.material.rsa.q);
+	  }
+	
 	break;
-      err = gpg_stream_read_mpint (stream, &key.material.rsa.e, 0);
-      if (err)
-	break;
-      err = gpg_stream_read_mpint (stream, &key.material.rsa.d, 0);
-      if (err)
-	break;
-      err = gpg_stream_read_mpint (stream, &key.material.rsa.iqmp, 0);
-      if (err)
-	break;
-      err = gpg_stream_read_mpint (stream, &key.material.rsa.p, 0);
-      if (err)
-	break;
-      err = gpg_stream_read_mpint (stream, &key.material.rsa.q, 0);
-      if (err)
-	break;
-
-      log_debug ("key->p = ");
-      gcry_mpi_dump (key.material.rsa.p);
-      log_debug ("\n");
-      log_debug ("key->q = ");
-      gcry_mpi_dump (key.material.rsa.q);
-      log_debug ("\n");
-      log_debug ("key->u = ");
-      gcry_mpi_dump (key.material.rsa.iqmp);
-      log_debug ("\n");
-
-      if (gcry_mpi_cmp (key.material.rsa.p, key.material.rsa.q))
-	{
-	  /* P shall be smaller then Q!  */
-	  gcry_mpi_t tmp = NULL;
-
-	  log_debug ("p >= q!  swapping primes.\n");
-
-	  tmp = key.material.rsa.p;
-	  key.material.rsa.p = key.material.rsa.q;
-	  key.material.rsa.q = tmp;
-
-	  gcry_mpi_invm (key.material.rsa.iqmp, key.material.rsa.p, key.material.rsa.q);
-
-	  log_debug ("new key->u = ");
-	  gcry_mpi_dump (key.material.rsa.iqmp);
-	  log_debug ("\n");
-	}
-
-      break;
+      }
 
     case SSH_KEY_TYPE_NONE:
     default:
@@ -527,6 +523,7 @@ ssh_receive_key_secret (gpg_stream_t stream, ssh_key_secret_t *key_secret)
  out:
 
   free (key_type);
+  gcry_mpi_release (mpi_iqmp);
 
   if (! err)
     *key_secret = key;
@@ -535,9 +532,9 @@ ssh_receive_key_secret (gpg_stream_t stream, ssh_key_secret_t *key_secret)
       gcry_mpi_release (key.material.rsa.n);
       gcry_mpi_release (key.material.rsa.e);
       gcry_mpi_release (key.material.rsa.d);
-      gcry_mpi_release (key.material.rsa.iqmp);
       gcry_mpi_release (key.material.rsa.p);
       gcry_mpi_release (key.material.rsa.q);
+      gcry_mpi_release (key.material.rsa.u);
     }
 
   return err;
@@ -1227,7 +1224,7 @@ ssh_key_to_sexp_buffer (ssh_key_secret_t *key, const char *passphrase,
 			 key->material.rsa.d,
 			 key->material.rsa.p,
 			 key->material.rsa.q,
-			 key->material.rsa.iqmp);
+			 key->material.rsa.u);
   if (err)
     goto out;
 

@@ -1,5 +1,7 @@
 2004-07-19  Moritz Schulte  <moritz@g10code.com>
 
+	* command-ssh.c: Fix handling of iqmp vs. u.
+
 	* command-ssh.c (ssh_identity_register): passphrase must not be freed.
 
 	* Makefile.am (gpg_agent_SOURCES): Adding: gpg-stream.c,
