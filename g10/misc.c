@@ -162,9 +162,9 @@ print_cipher_algo_note( int algo )
 	     || algo == CIPHER_ALGO_CAST5
 	     || algo == CIPHER_ALGO_BLOWFISH
 	     || algo == CIPHER_ALGO_TWOFISH
-	     || algo == CIPHER_ALGO_RIJNDAEL
-	     || algo == CIPHER_ALGO_RIJNDAEL192
-	     || algo == CIPHER_ALGO_RIJNDAEL256
+	     || algo == CIPHER_ALGO_AES
+	     || algo == CIPHER_ALGO_AES192
+	     || algo == CIPHER_ALGO_AES256
 	   )
 	;
     else {
@@ -254,9 +254,6 @@ openpgp_pk_algo_usage ( int algo )
           break;
       case PUBKEY_ALGO_DSA:  
           use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
-          break;
-      case PUBKEY_ALGO_ELGAMAL:
-          use = PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
           break;
       default:
           break;

@@ -1523,12 +1523,12 @@ do_create( int algo, unsigned int nbits, KBNODE pub_root, KBNODE sec_root,
 "disks) during the prime generation; this gives the random number\n"
 "generator a better chance to gain enough entropy.\n") );
 
-    if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E )
-	rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
+    if( algo == PUBKEY_ALGO_ELGAMAL_E )
+       rc = gen_elg(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
     else if( algo == PUBKEY_ALGO_DSA )
-	rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
+       rc = gen_dsa(nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
     else if( algo == PUBKEY_ALGO_RSA )
-	rc = gen_rsa(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
+       rc = gen_rsa(algo, nbits, pub_root, sec_root, dek, s2k, sk, expiredate);
     else
 	BUG();
 

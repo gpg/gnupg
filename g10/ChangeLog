@@ -1,3 +1,11 @@
+2004-01-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* misc.c (print_cipher_algo_note): May as well call Rijndael AES
+	at this point.
+
+	* keygen.c (do_create), misc.c (openpgp_pk_algo_usage): Remove the
+	last bits of Elgamal type 20 support.
+
 2004-01-03  Stefan Bellon  <sbellon@sbellon.de>
 
 	* compress.c [__riscos__]: Only use RISC OS' own ZLib module if
@@ -68,7 +76,7 @@
 	* main.h, import.c (import_options), export.c (export_options):
 	Pass the noisy flag through.
 
-2003-12-17  David Shaw  <dshaw@localhost.localdomain>
+2003-12-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* build-packet.c (write_fake_data, do_secret_key), seckey-cert.c
 	(do_check): Use an unsigned length for mpi_get_opaque.
@@ -9148,7 +9156,8 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 	* pubkey-enc.c (get_session_key): rewritten
 
 
- Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003,
+	   2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
