@@ -88,6 +88,8 @@ void deprecated_warning(const char *configname,unsigned int configlineno,
 const char *compress_algo_to_string(int algo);
 int string_to_compress_algo(const char *string);
 int check_compress_algo(int algo);
+int default_cipher_algo(void);
+int default_compress_algo(void);
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );

@@ -194,8 +194,7 @@ encode_simple( const char *filename, int mode, int compat )
 	s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
 	s2k->hash_algo = opt.s2k_digest_algo;
 	cfx.dek = passphrase_to_dek( NULL, 0,
-                  opt.def_cipher_algo ? opt.def_cipher_algo
-		                      : opt.s2k_cipher_algo , s2k, 2, NULL );
+				     default_cipher_algo(), s2k, 2, NULL );
 	if( !cfx.dek || !cfx.dek->keylen ) {
 	    rc = G10ERR_PASSPHRASE;
 	    m_free(cfx.dek);
@@ -211,9 +210,7 @@ encode_simple( const char *filename, int mode, int compat )
         }
 
         if ( !compat ) {            
-            seskeylen = cipher_get_keylen( opt.def_cipher_algo ?
-                                           opt.def_cipher_algo:
-                                           opt.s2k_cipher_algo ) / 8;
+            seskeylen = cipher_get_keylen( default_cipher_algo() ) / 8;
             encode_sesskey( cfx.dek, &dek, enckey );
             m_free( cfx.dek ); cfx.dek = dek;
         }
@@ -332,9 +329,7 @@ encode_simple( const char *filename, int mode, int compat )
       {
         if (cfx.dek && cfx.dek->use_mdc)
           zfx.new_ctb = 1;
-	zfx.algo=opt.def_compress_algo;
-	if(zfx.algo==-1)
-	  zfx.algo=DEFAULT_COMPRESS_ALGO;
+	zfx.algo=default_compress_algo();
 	iobuf_push_filter( out, compress_filter, &zfx );
       }
 
@@ -564,6 +559,8 @@ encode_crypt( const char *filename, STRLIST remusr )
 	    if((compr_algo=
 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,-1,NULL))==-1)
 	      compr_algo=DEFAULT_COMPRESS_ALGO;
+	    /* Theoretically impossible to get here since uncompressed
+	       is implicit. */
 	  }
 	else if(!opt.expert &&
 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,

@@ -565,3 +565,28 @@ check_compress_algo(int algo)
 
   return G10ERR_COMPR_ALGO;
 }
+
+int
+default_cipher_algo(void)
+{
+  if(opt.def_cipher_algo)
+    return opt.def_cipher_algo;
+  else if(opt.personal_cipher_prefs)
+    return opt.personal_cipher_prefs[0].value;
+  else
+    return opt.s2k_cipher_algo;
+}
+
+/* There is no default_digest_algo function, but see
+   sign.c:hash_for */
+
+int
+default_compress_algo(void)
+{
+  if(opt.def_compress_algo!=-1)
+    return opt.def_compress_algo;
+  else if(opt.personal_compress_prefs)
+    return opt.personal_compress_prefs[0].value;
+  else
+    return DEFAULT_COMPRESS_ALGO;
+}

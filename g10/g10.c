@@ -1515,7 +1515,7 @@ main( int argc, char **argv )
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
 	    opt.cert_digest_algo = 0;
-	    opt.def_compress_algo = 1;
+	    opt.def_compress_algo = -1;
             opt.s2k_mode = 3; /* iterated+salted */
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;

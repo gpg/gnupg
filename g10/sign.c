@@ -775,7 +775,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
  
 	    if((compr_algo=
 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,-1,NULL))==-1)
-	      compr_algo=DEFAULT_COMPRESS_ALGO;
+	      compr_algo=default_compress_algo();
 	  }
  	else if(!opt.expert &&
  		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,
@@ -1048,7 +1048,7 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     s2k->mode = opt.rfc1991? 0:opt.s2k_mode;
     s2k->hash_algo = opt.s2k_digest_algo;
 
-    algo = opt.def_cipher_algo ? opt.def_cipher_algo : opt.s2k_cipher_algo;
+    algo = default_cipher_algo();
     if (!opt.quiet || !opt.batch)
         log_info (_("%s encryption will be used\n"),
 		    cipher_algo_to_string(algo) );
@@ -1099,19 +1099,10 @@ sign_symencrypt_file (const char *fname, STRLIST locusr)
     iobuf_push_filter( out, cipher_filter, &cfx );
 
     /* Push the Zip filter */
-    if (opt.compress)
+    if (opt.compress && default_compress_algo())
       {
-	int compr_algo=opt.def_compress_algo;
-
-	/* Default */
-        if(compr_algo==-1)
-	  compr_algo=DEFAULT_COMPRESS_ALGO;
-
-	if (compr_algo)
-	  {
-	    zfx.algo = compr_algo;
-	    iobuf_push_filter( out, compress_filter, &zfx );
-	  }
+	zfx.algo = default_compress_algo();
+	iobuf_push_filter( out, compress_filter, &zfx );
       }
 
     /* Write the one-pass signature packets */

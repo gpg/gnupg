@@ -1,5 +1,17 @@
 2002-11-24  David Shaw  <dshaw@jabberwocky.com>
 
+	* main.h, misc.c (default_cipher_algo, default_compress_algo):
+	New.  Return the default algorithm by trying
+	--cipher-algo/--compress-algo, then the first item in the pref
+	list, then s2k-cipher-algo or ZIP.
+
+	* sign.c (sign_file, sign_symencrypt_file), encode.c
+	(encode_simple, encode_crypt): Call default_cipher_algo and
+	default_compress_algo to get algorithms.
+
+	* g10.c (main): Allow pref selection for compress algo with
+	--openpgp.
+
 	* mainproc.c (proc_encrypted): Use --s2k-digest-algo for
 	passphrase mangling rather than --digest-algo.
 
