@@ -148,12 +148,14 @@ enum cmd_and_opt_values
     oNoAskSigExpire,
     oAskCertExpire,
     oNoAskCertExpire,
+    oAskCertLevel,
+    oNoAskCertLevel,
     oFingerprint,
     oWithFingerprint,
     oAnswerYes,
     oAnswerNo,
-    oDefCertCheckLevel,
-    oMinCertCheckLevel,
+    oDefCertLevel,
+    oMinCertLevel,
     oKeyring,
     oPrimaryKeyring,
     oSecretKeyring,
@@ -437,6 +439,8 @@ static ARGPARSE_OPTS opts[] = {
     { oNoAskSigExpire, "no-ask-sig-expire",   0, "@"},
     { oAskCertExpire, "ask-cert-expire",   0, "@"},
     { oNoAskCertExpire, "no-ask-cert-expire",   0, "@"},
+    { oAskCertLevel, "ask-cert-level",   0, "@"},
+    { oNoAskCertLevel, "no-ask-cert-level",   0, "@"},
     { oOutput, "output",    2, N_("use as output file")},
     { oMaxOutput, "max-output", 16|4, "@" },
     { oVerbose, "verbose",   0, N_("verbose") },
@@ -567,8 +571,9 @@ static ARGPARSE_OPTS opts[] = {
     { oSkipVerify, "skip-verify",0, "@" },
     { oCompressKeys, "compress-keys",0, "@"},
     { oCompressSigs, "compress-sigs",0, "@"},
-    { oDefCertCheckLevel, "default-cert-check-level", 1, "@"},
-    { oMinCertCheckLevel, "min-cert-check-level", 1, "@"},
+    { oDefCertLevel, "default-cert-check-level", 1, "@"}, /* Old option */
+    { oDefCertLevel, "default-cert-level", 1, "@"},
+    { oMinCertLevel, "min-cert-level", 1, "@"},
     { oAlwaysTrust, "always-trust", 0, "@"},
     { oTrustModel, "trust-model", 2, "@"},
     { oForceOwnertrust, "force-ownertrust", 2, "@"},
@@ -1440,7 +1445,7 @@ main( int argc, char **argv )
       VERIFY_SHOW_POLICY_URLS|VERIFY_SHOW_NOTATIONS|VERIFY_SHOW_KEYSERVER_URLS;
     opt.trust_model=TM_AUTO;
     opt.mangle_dos_filenames=0;
-    opt.min_cert_check_level=2;
+    opt.min_cert_level=2;
     set_screen_dimensions();
 #if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
@@ -1781,8 +1786,8 @@ main( int argc, char **argv )
 	    break;
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
 	  case oNoDefKeyring: default_keyring = 0; break;
-          case oDefCertCheckLevel: opt.def_cert_check_level=pargs.r.ret_int; break;
-          case oMinCertCheckLevel: opt.min_cert_check_level=pargs.r.ret_int; break;
+          case oDefCertLevel: opt.def_cert_level=pargs.r.ret_int; break;
+          case oMinCertLevel: opt.min_cert_level=pargs.r.ret_int; break;
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
@@ -1997,6 +2002,8 @@ main( int argc, char **argv )
 	  case oNoAskSigExpire: opt.ask_sig_expire = 0; break;
 	  case oAskCertExpire: opt.ask_cert_expire = 1; break;
 	  case oNoAskCertExpire: opt.ask_cert_expire = 0; break;
+	  case oAskCertLevel: opt.ask_cert_level = 1; break;
+	  case oNoAskCertLevel: opt.ask_cert_level = 0; break;
 	  case oUser: /* store the local users */
 	    add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
 	    break;
@@ -2480,8 +2487,10 @@ main( int argc, char **argv )
       log_error(_("marginals-needed must be greater than 1\n"));
     if( opt.max_cert_depth < 1 || opt.max_cert_depth > 255 )
       log_error(_("max-cert-depth must be in the range from 1 to 255\n"));
-    if( opt.min_cert_check_level < 1 || opt.min_cert_check_level > 3 )
-      log_error(_("min-cert-check-level must be in the range from 1 to 3\n"));
+    if(opt.def_cert_level<0 || opt.def_cert_level>3)
+      log_error(_("invalid default-cert-level; must be 0, 1, 2, or 3\n"));
+    if( opt.min_cert_level < 1 || opt.min_cert_level > 3 )
+      log_error(_("invalid min-cert-level; must be 1, 2, or 3\n"));
     switch( opt.s2k_mode ) {
       case 0:
 	log_info(_("NOTE: simple S2K mode (0) is strongly discouraged\n"));
@@ -2491,16 +2500,14 @@ main( int argc, char **argv )
 	log_error(_("invalid S2K mode; must be 0, 1 or 3\n"));
     }
 
-    if(opt.def_cert_check_level<0 || opt.def_cert_check_level>3)
-      log_error(_("invalid default-check-level; must be 0, 1, 2, or 3\n"));
-
     /* This isn't actually needed, but does serve to error out if the
        string is invalid. */
     if(opt.def_preference_list &&
 	keygen_set_std_prefs(opt.def_preference_list,0))
       log_error(_("invalid default preferences\n"));
 
-    /* We provide defaults for the personal digest list */
+    /* We provide defaults for the personal digest list.  This is
+       SHA-1. */
     if(!pers_digest_list)
       pers_digest_list="h2";
 

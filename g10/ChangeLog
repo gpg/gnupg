@@ -1,3 +1,18 @@
+2004-02-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* plaintext.c: Copyright.
+
+	* encode.c (encode_simple): Show cipher with --verbose.
+
+	* options.h, g10.c (main), keyedit.c (sign_keys): Add
+	--ask-cert-level option to enable cert level prompts during
+	sigs. Defaults to on.  Simplify --default-cert-check-level to
+	--default-cert-level.  If ask-cert-level is off, or batch is on,
+	use the default-cert-level as the cert level.
+
+	* options.h, g10.c (main), trustdb.c (mark_usable_uid_certs):
+	Simplify --min-cert-check-level to --min-cert-level.
+
 2004-02-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* options.h, g10.c (main), trustdb.c (mark_usable_uid_certs): Add

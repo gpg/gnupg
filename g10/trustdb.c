@@ -1382,7 +1382,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
       if (!IS_UID_SIG(sig) && !IS_UID_REV(sig))
         continue; /* we only look at these signature classes */
       if(sig->sig_class>=0x11 && sig->sig_class<=0x13 &&
-	 sig->sig_class-0x10<opt.min_cert_check_level)
+	 sig->sig_class-0x10<opt.min_cert_level)
 	continue;
       if (!is_in_klist (klist, sig))
         continue;  /* no need to check it then */

@@ -1,6 +1,6 @@
 /* encode.c - encode data
- * Copyright (C) 1998, 1999, 2000, 2001, 2002,
- *               2003 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
+ *               2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -216,6 +216,10 @@ encode_simple( const char *filename, int mode, int use_seskey )
             encode_seskey( cfx.dek, &dek, enckey );
             m_free( cfx.dek ); cfx.dek = dek;
 	  }
+
+	if(opt.verbose)
+	  log_info(_("using cipher %s\n"),
+		   cipher_algo_to_string(cfx.dek->algo));
 
 	cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
     }
