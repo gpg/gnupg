@@ -299,6 +299,8 @@ int gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
                                int argc, char **argv);
 
 
+/*-- misc.c --*/
+void setup_pinentry_env (void);
 
 
 

@@ -1,3 +1,9 @@
+2004-04-13  Werner Koch  <wk@gnupg.org>
+
+	* misc.c (setup_pinentry_env): New.
+	* import.c (popen_protect_tool): Call it.
+	* export.c (popen_protect_tool): Call it.
+
 2004-04-08  Werner Koch  <wk@gnupg.org>
 
 	* decrypt.c (gpgsm_decrypt): Return GPG_ERR_NO_DATA if it is not a 

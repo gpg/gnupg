@@ -581,6 +581,8 @@ popen_protect_tool (const char *pgmname,
         close(i);
       errno = 0;
 
+      setup_pinentry_env ();
+
       execlp (pgmname, arg0,
               "--homedir", opt.homedir,
               "--p12-export",
