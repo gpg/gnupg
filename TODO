@@ -1,6 +1,7 @@
 
-  * autogen.sh --build-w32, get that code from mingw32 so we can
-    better maintain it.
+  * add listing of notation data
+
+  * Check the changes to the gpg random agtherer on all W32 platforms.
 
   * Check that a key signature can be revoked and later be signed again.
 
@@ -12,8 +13,9 @@
   * Show more info does not work from edit->trust
 
   * keyedit_menu: We first look for a secret key and then for a public
-  key. This is bad we must match the keys. Better check all places were
-  we match keys.  build_sig_packet: implement update for sig-creation.
+  key. This is bad we must match the keys. Better check all places
+  were we match keys.  build_sig_packet: implement update for
+  sig-creation.
 
   * set default charset from nl_langinfo.
 

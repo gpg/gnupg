@@ -603,11 +603,14 @@ ask_keysize( int algo )
     char *answer;
     unsigned nbits;
 
-    tty_printf(_("About to generate a new %s keypair.\n"
-		 "              minimum keysize is  768 bits\n"
-		 "              default keysize is 1024 bits\n"
-		 "    highest suggested keysize is 2048 bits\n"),
-					pubkey_algo_to_string(algo) );
+    if (algo != PUBKEY_ALGO_DSA) {
+        tty_printf (_("About to generate a new %s keypair.\n"
+                      "              minimum keysize is  768 bits\n"
+                      "              default keysize is 1024 bits\n"
+                      "    highest suggested keysize is 2048 bits\n"),
+                    pubkey_algo_to_string(algo) );
+    }
+
     for(;;) {
 	answer = cpr_get("keygen.size",
 			  _("What keysize do you want? (1024) "));
@@ -885,7 +888,7 @@ ask_user_id( int mode )
 	}
 
 	for(;;) {
-	    char *ansstr = _("NnCcEeOoQq");
+	    const char *ansstr = _("NnCcEeOoQq");
 
 	    if( strlen(ansstr) != 10 )
 		BUG();

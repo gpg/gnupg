@@ -730,7 +730,7 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 					  size_t length, int level )
 {
     static int is_initialized;
-    static int is_windows95;
+    static int is_windowsNT, has_toolhelp;
 
 
     if( !level )
@@ -748,7 +748,9 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 
 	GetVersionEx( &osvi );
 	platform = osvi.dwPlatformId;
-	is_windows95 = platform == VER_PLATFORM_WIN32_WINDOWS;
+        is_windowsNT = platform == VER_PLATFORM_WIN32_NT;
+        has_toolhelp = (platform == VER_PLATFORM_WIN32_WINDOWS
+                        || (is_windowsNT && osvi.dwMajorVersion >= 5));
 
 	if ( platform == VER_PLATFORM_WIN32s ) {
 	    g10_log_fatal("can't run on a W32s platform\n" );
@@ -763,11 +765,11 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 	log_debug ("rndw32#gather_random: req=%d len=%u lvl=%d\n",
 			   requester, (unsigned int)length, level );
 
-    if (is_windows95 ) {
-	slow_gatherer_windows95( add, requester );
+    if ( has_toolhelp ) {
+        slow_gatherer_windows95 ( add, requester );
     }
-    else {
-	slow_gatherer_windowsNT( add, requester );
+    if ( is_windowsNT ) {
+        slow_gatherer_windowsNT ( add, requester );
     }
 
     return 0;

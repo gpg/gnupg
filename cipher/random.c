@@ -423,9 +423,8 @@ read_pool( byte *buffer, size_t length, int level )
     int i;
     ulong *sp, *dp;
 
-    if( length >= POOLSIZE ) {
-	log_fatal(_("too many random bits requested; the limit is %d\n"),
-		  POOLSIZE*8-1 );
+    if( length > POOLSIZE ) {
+	log_bug("too many random bits requested\n");
     }
 
     if( !pool_filled ) {

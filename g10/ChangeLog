@@ -1,3 +1,11 @@
+2001-08-08  Werner Koch  <wk@gnupg.org>
+
+	* keygen.c (ask_keysize): Do not print the notes about suggested
+	key sizes if just a DSA key is generated.
+
+	* trustdb.c (add_ultimate_key): s/log_error/log_info/ for
+	duplicated inserted trusted keys.
+
 2001-08-07  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (sleep): Redefine for W32.

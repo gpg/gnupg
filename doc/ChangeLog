@@ -1,3 +1,11 @@
+2001-08-08  Werner Koch  <wk@gnupg.org>
+
+	* gpg.sgml: Documented --print-mds and marked the --print-md * as
+	deprecated because it does not work in the W32 version.  Suggested
+	by John Kane.
+	(WARNINGS): Typo fix.
+	(--with-colons): Clarified that the output is in UTF-8.
+
 2001-08-01  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Added --ignore-valid-from

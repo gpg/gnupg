@@ -1,3 +1,13 @@
+2001-08-08  Werner Koch  <wk@gnupg.org>
+
+	* rndw32.c (gather_random): Use toolhelp in addition to the NT
+	gatherer for Windows2000.  Suggested by Sami Tolvanen.
+
+	* random.c (read_pool): Fixed length check, this used to be one
+	byte to strict.  Made an assert out of it because the caller has
+	already made sure that only poolsize bytes are requested.
+	Reported by Marcus Brinkmann.
+
 2001-07-18  Werner Koch  <wk@gnupg.org>
 
 	* rndlinux.c (gather_random): casted a size_t arg to int so that

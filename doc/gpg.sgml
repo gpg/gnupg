@@ -522,10 +522,11 @@ values will be overwritten.
 
 <varlistentry>
 <term>--print-md <parameter>algo</parameter> &OptParmFiles;</term>
+<term>--print-mds &OptParmFiles;</term>
 <listitem><para>
-Print message digest of algorithm ALGO for all given files of stdin.
-If "*" is used for the algorithm, digests for all available algorithms
-are printed.
+Print message digest of algorithm ALGO for all given files or stdin.
+With the second form (or a deprecated "*" as algo) digests for all
+available algorithms are printed.
 </para></listitem></varlistentry>
 
 
@@ -1376,7 +1377,8 @@ verification is not needed.
 <varlistentry>
 <term>--with-colons</term>
 <listitem><para>
-Print key listings delimited by colons.
+Print key listings delimited by colons.  Note, that the output will be
+encoded in UTF-8 regardless of any --charset setting.
 </para></listitem></varlistentry>
 
 
@@ -1760,7 +1762,7 @@ is *very* easy to spy out your passphrase!
 </para>
 <para>
 If you are going to verify detached signatures, make sure that the
-program nows about it; either be giving both filenames on the
+program knows about it; either be giving both filenames on the
 commandline or using <literal>-</literal> to specify stdin.
 </para>
 </refsect1>

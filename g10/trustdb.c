@@ -513,7 +513,7 @@ add_ultimate_key( PKT_public_key *pk, u32 *keyid )
                   (ulong)keyid[1], pk->local_id );
 
     if( ins_lid_table_item( ultikey_table, pk->local_id, 0 ) )
-        log_error(_("key %08lX: already in trusted key table\n"),
+        log_info(_("key %08lX: already in trusted key table\n"),
                   (ulong)keyid[1]);
     else if( opt.verbose > 1 )
         log_info(_("key %08lX: accepted as trusted key.\n"),
