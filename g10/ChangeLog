@@ -1,3 +1,14 @@
+2002-11-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (show_key_with_all_names_colon): Make --with-colons
+	--edit display match the validity and trust of --with-colons
+	--list-keys.
+
+	* passphrase.c (agent_send_all_options): Fix compile warning.
+
+	* keylist.c (list_keyblock_colon): Validity for subkeys should
+	match that of the primary key, and not that of the last user ID.
+
 2002-11-12  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs): Revoked/expired/invalid primary keys
