@@ -299,25 +299,27 @@ sign_key( const char *username, STRLIST locusr )
 	}
     }
 
-    /* check whether we have already signed it */
+    /* check whether we it is possible to sign this key */
     for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
 	u32 akeyid[2];
 
 	keyid_from_skc( skc_rover->skc, akeyid );
 	for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
-	    if( node->pkt->pkttype == PKT_SIGNATURE
+	    if( node->pkt->pkttype == PKT_USER_ID )
+		skc_rover->mark = 1;
+	    else if( node->pkt->pkttype == PKT_SIGNATURE
 		&& (node->pkt->pkt.signature->sig_class&~3) == 0x10 ) {
 		if( akeyid[0] == node->pkt->pkt.signature->keyid[0]
 		    && akeyid[1] == node->pkt->pkt.signature->keyid[1] ) {
 		    log_info("Already signed by keyid %08lX\n",
 							(ulong)akeyid[1] );
-		    skc_rover->mark = 1;
+		    skc_rover->mark = 0;
 		}
 	    }
 	}
     }
     for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	if( !skc_rover->mark )
+	if( skc_rover->mark )
 	    break;
     }
     if( !skc_rover ) {
@@ -326,8 +328,16 @@ sign_key( const char *username, STRLIST locusr )
     }
 
     /* Loop over all signers and all user ids and sign */
+    /* FIXME: we have to change it: Present all user-ids and
+     * then ask whether all those ids shall be signed if the user
+     * answers yes, go and make a 0x14 sign class packet and remove
+     * old one-user-id-only-sigs (user should be noted of this
+     * condition while presenting the user-ids); if he had answered
+     * no, present each user-id in turn and ask which one should be signed
+     * (only one) - if there is already a single-user-sig, do nothing.
+     * (this is propably already out in the world) */
     for( skc_rover = skc_list; skc_rover; skc_rover = skc_rover->next ) {
-	if( skc_rover->mark )
+	if( !skc_rover->mark )
 	    continue;
 	for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	    if( node->pkt->pkttype == PKT_USER_ID ) {

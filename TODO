@@ -19,16 +19,17 @@
       we have a self-signature -> put this stuff into a kind of directory
       record, as it does not belong to the pubkey record?
 
-    * add an option to create a new user id and to reorder the sequence of
-      them, so that the preferred emal address comes first.  We need to
-      add some logic, which guarantees, that only one user-id can be signed by
-      others.  This prevents extensive growing of the public key certificate
-      due to the bad usage of signing every user id.  You get no extra
-      security by key signatures for every user id.  I consider this
-      behaviour of PGP a bug, introduced, becaus PGP does't require a
-      self-signature. New user ids will only have your self signature to bind
-      them to your key and because the user id which is signed by others has
-      also be signed by you, all user-ids are bound together.
+    * add an option to create a new user id.
+      Make it possible to chnage the signature class of the self-signatures,
+      which can then be used to chnage the displayed order of user-ids:
+      Put the user-id with a self-signature of class 0x13 always on top
+      of the displayed list (needs changes in the user-id-from-keyid
+      functions).
+
+    * enhance --sign-key, so that multiple-user-ids can be signed
+      (use the new classes 0x14..17)
+
+    * support these multi-user-id-sigs in trustdb.
 
     * add an option to re-create a public key from a secret key. Think about
       a backup system of only the secret part of the secret key.
@@ -44,5 +45,7 @@
 
     * replace getkey.c#enum_secret_keys
 
-    * add readline support.
+    * add readline support (but how can we allcoate it in secure memory?)
+
+    * add multi-user-id-sigs handling to import.c
 

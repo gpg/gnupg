@@ -539,6 +539,7 @@ static int
 compare_name( const char *uid, size_t uidlen, const char *name, int mode )
 {
     int i;
+    const char *s, *se;
 
     if( mode == 1 ) {  /* exact match */
 	for(i=0; name[i] && uidlen; i++, uidlen-- )
@@ -551,20 +552,29 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
 	if( memistr( uid, uidlen, name ) )
 	    return 0;
     }
-    else if( mode == 3 ) { /* case insensitive email address */
-	/* FIXME: not yet implemented */
-	if( memistr( uid, uidlen, name ) )
-	    return 0;
-    }
-    else if( mode == 4 ) { /* email substring */
-	/* FIXME: not yet implemented */
-	if( memistr( uid, uidlen, name ) )
-	    return 0;
-    }
-    else if( mode == 5 ) { /* email from end */
-	/* FIXME: not yet implemented */
-	if( memistr( uid, uidlen, name ) )
-	    return 0;
+    else if( mode >= 3 && mode <= 5 ) { /* look at the email address */
+	for( i=0, s= uid; i < uidlen && *s != '<'; s++, i++ )
+	    ;
+	if( i < uidlen )  {
+	    /* skip opening delim and one char and look for the closing one*/
+	    s++; i++;
+	    for( se=s+1, i++; i < uidlen && *se != '>'; se++, i++ )
+		;
+	    if( i < uidlen ) {
+		i = se - s;
+		if( mode == 3 ) { /* exact email address */
+		    if( strlen(name) == i && !memicmp( s, name, i) )
+			return 0;
+		}
+		else if( mode == 4 ) {	/* email substring */
+		    if( memistr( s, i, name ) )
+			return 0;
+		}
+		else { /* email from end */
+		    /* nyi */
+		}
+	    }
+	}
     }
     else
 	BUG();

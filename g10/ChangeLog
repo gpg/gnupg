@@ -1,3 +1,17 @@
+Fri Apr 24 17:38:48 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* sig-check.c (check_key_signature): Add sig-class 0x14..0x17
+	* keyedit.c (sign-key): Some changes to start with support of
+	the above new sig-classes.
+
+Wed Apr 22 09:01:57 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* getkey.c (compare_name): add email matching
+
+Tue Apr 21 16:17:12 1998  Werner Koch,mobil,,,	(wk@tobold)
+
+	* armor.c (armor_filter): fixed missing last LF before CSUM.
+
 Thu Apr  9 11:35:22 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* seckey-cert.c (do_check): New; combines all the check functions

@@ -510,7 +510,7 @@ find_header( fhdr_state_t state, byte *buf, size_t *r_buflen,
 	  case fhdrTESTSpaces: {
 	    /* but must check whether the rest of the line
 	     * only contains white spaces; this is problematic
-	     * since we may have to restore the stuff.  simply
+	     * since we may have to restore the stuff.	simply
 	     * counting spaces is not enough, because it may be a
 	     * mix of different white space characters */
 	    IOBUF b = iobuf_temp();
@@ -1018,7 +1018,7 @@ armor_filter( void *opaque, int control,
 		++idx2;
 	    }
 	    /* may need a linefeed */
-	    if( idx2 < (72/4) )
+	    if( idx2 <= (72/4) )
 		iobuf_put(a, '\n');
 	    /* write the CRC */
 	    iobuf_put(a, '=');

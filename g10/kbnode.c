@@ -136,7 +136,7 @@ find_prev_kbnode( KBNODE root, KBNODE node, int pkttype )
 }
 
 /****************
- * Ditto, but find the next package.  The behaviour is trivial if
+ * Ditto, but find the next packet.  The behaviour is trivial if
  * PKTTYPE is 0 but if it is specified, the next node with a packet
  * of this type is returned.  The function has some knowledge about
  * the valid ordering of packets: e.g. if the next signature packet

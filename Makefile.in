@@ -61,46 +61,25 @@ host_alias = @host_alias@
 host_triplet = @host@
 target_alias = @target_alias@
 target_triplet = @target@
-CATALOGS = @CATALOGS@
-CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CIPHER_EXTRA_DIST = @CIPHER_EXTRA_DIST@
 CIPHER_EXTRA_OBJS = @CIPHER_EXTRA_OBJS@
 CPP = @CPP@
-DATADIRNAME = @DATADIRNAME@
 G10_LOCALEDIR = @G10_LOCALEDIR@
-GENCAT = @GENCAT@
-GMOFILES = @GMOFILES@
-GMSGFMT = @GMSGFMT@
-GT_NO = @GT_NO@
-GT_YES = @GT_YES@
-INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
-INSTOBJEXT = @INSTOBJEXT@
-INTLDEPS = @INTLDEPS@
-INTLLIBS = @INTLLIBS@
-INTLOBJS = @INTLOBJS@
-MKINSTALLDIRS = @MKINSTALLDIRS@
 MPI_EXTRA_ASM_OBJS = @MPI_EXTRA_ASM_OBJS@
-MSGFMT = @MSGFMT@
 PACKAGE = @PACKAGE@
-POFILES = @POFILES@
-POSUB = @POSUB@
 RANLIB = @RANLIB@
-USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
-USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 ZLIBS = @ZLIBS@
-l = @l@
 
 SUBDIRS =  intl po zlib util mpi cipher tools g10 doc checks
 EXTRA_DIST = VERSION
-ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = 
 DIST_COMMON =  README ABOUT-NLS AUTHORS COPYING ChangeLog INSTALL \
 Makefile.am Makefile.in NEWS THANKS TODO acconfig.h acinclude.m4 \
-aclocal.m4 config.h.in configure configure.in stamp-h.in
+config.h.in configure configure.in stamp-h.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)

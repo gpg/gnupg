@@ -37,9 +37,9 @@ static int do_check( PKT_public_cert *pkc, PKT_signature *sig,
 
 
 /****************
- * Check the signature which is contained in the rsa_integer.
+ * Check the signature which is contained in SIG.
  * The md5handle should be currently open, so that this function
- * is able to append some data, before getting the digest.
+ * is able to append some data, before finalizing the digest.
  */
 int
 signature_check( PKT_signature *sig, MD_HANDLE digest )
@@ -234,6 +234,24 @@ do_check( PKT_public_cert *pkc, PKT_signature *sig, MD_HANDLE digest )
 }
 
 
+static void
+hash_uid_node( KBNODE unode, MD_HANDLE md, PKT_signature *sig )
+{
+    PKT_user_id *uid = unode->pkt->pkt.user_id;
+
+    assert( unode->pkt->pkttype == PKT_USER_ID );
+    if( sig->version >=4 ) {
+	byte buf[5];
+	buf[0] = 0xb4; /* indicates a userid packet */
+	buf[1] = uid->len >> 24;  /* always use 4 length bytes */
+	buf[2] = uid->len >> 16;
+	buf[3] = uid->len >>  8;
+	buf[4] = uid->len;
+	md_write( md, buf, 5 );
+    }
+    md_write( md, uid->name, uid->len );
+}
+
 /****************
  * check the signature pointed to by NODE. This is a key signature.
  * If the function detects a self-signature, it uses the PKC from
@@ -255,15 +273,7 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 
     pkc = root->pkt->pkt.public_cert;
     sig = node->pkt->pkt.signature;
-
-    if( sig->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
-	algo = sig->digest_algo;
-    else if( sig->pubkey_algo == PUBKEY_ALGO_DSA )
-	algo = sig->digest_algo;
-    else if(sig->pubkey_algo == PUBKEY_ALGO_RSA )
-	algo = sig->digest_algo;
-    else
-	return G10ERR_PUBKEY_ALGO;
+    algo = sig->digest_algo;
     if( (rc=check_digest_algo(algo)) )
 	return rc;
 
@@ -288,26 +298,48 @@ check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
 	    rc = G10ERR_SIG_CLASS;
 	}
     }
+    else if( sig->sig_class >= 0x14 && sig->sig_class <= 0x17 ) {
+	/* a gnupg extension: calculate the signature over all
+	 * preceding userids */
+	KBNODE unode = find_prev_kbnode( root, node, PKT_USER_ID );
+	u32 keyid[2];
+	int any = 0;
+
+	keyid_from_pkc( pkc, keyid );
+	md = md_open( algo, 0 );
+	hash_public_cert( md, pkc );
+
+	for( unode=root->next; unode && unode != node; unode = unode->next ) {
+	    if( unode->pkt->pkttype == PKT_USER_ID ) {
+		hash_uid_node( unode, md, sig );
+		any++;
+	    }
+	}
+	if( any ) {
+	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
+		if( is_selfsig )
+		    *is_selfsig = 1;
+		rc = do_check( pkc, sig, md );
+	    }
+	    else
+		rc = signature_check( sig, md );
+	}
+	else {
+	    log_error("no user id for key signature packet\n");
+	    rc = G10ERR_SIG_CLASS;
+	}
+	md_close(md);
+    }
     else {
 	KBNODE unode = find_prev_kbnode( root, node, PKT_USER_ID );
 
 	if( unode ) {
-	    PKT_user_id *uid = unode->pkt->pkt.user_id;
 	    u32 keyid[2];
 
 	    keyid_from_pkc( pkc, keyid );
 	    md = md_open( algo, 0 );
 	    hash_public_cert( md, pkc );
-	    if( sig->version >=4 ) {
-		byte buf[5];
-		buf[0] = 0xb4; /* indicates a userid packet */
-		buf[1] = uid->len >> 24;  /* always use 4 length bytes */
-		buf[2] = uid->len >> 16;
-		buf[3] = uid->len >>  8;
-		buf[4] = uid->len;
-		md_write( md, buf, 5 );
-	    }
-	    md_write( md, uid->name, uid->len );
+	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] ) {
 		if( is_selfsig )
 		    *is_selfsig = 1;

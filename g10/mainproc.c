@@ -307,7 +307,7 @@ do_check_sig( CTX c, KBNODE node )
     else if( (sig->sig_class&~3) == 0x10
 	     || sig->sig_class == 0x18
 	     || sig->sig_class == 0x20
-	     || sig->sig_class == 0x30	) { /* classes 0x10..0x13,0x20,0x30 */
+	     || sig->sig_class == 0x30	) { /* classes 0x10..0x17,0x20,0x30 */
 	if( c->list->pkt->pkttype == PKT_PUBLIC_CERT
 	    || c->list->pkt->pkttype == PKT_PUBKEY_SUBCERT ) {
 	    return check_key_signature( c->list, node, NULL );

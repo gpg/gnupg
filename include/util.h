@@ -116,7 +116,7 @@ void free_strlist( STRLIST sl );
 void add_to_strlist( STRLIST *list, const char *string );
 STRLIST strlist_prev( STRLIST head, STRLIST node );
 STRLIST strlist_last( STRLIST node );
-char *memistr( char *buf, size_t buflen, const char *sub );
+const char *memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
 int string_count_chr( const char *string, int c );
