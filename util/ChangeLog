@@ -1,3 +1,8 @@
+2002-11-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* secmem.c (secmem_free, secmem_term): Use wipememory2() instead
+	of memset() to overwrite secure memory.
+
 2002-10-28  Werner Koch  <wk@gnupg.org>
 
 	* w32reg.c (read_w32_registry_string): Fixed expanding of the
