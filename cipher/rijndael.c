@@ -2128,10 +2128,7 @@ selftest (void)
     return NULL;
 }
 
-#ifdef IS_MODULE
-static
-#endif
-       const char *
+const char *
 rijndael_get_info (int algo, size_t *keylen,
 		  size_t *blocksize, size_t *contextsize,
 		  int  (**r_setkey) (void *c, byte *key, unsigned keylen),
@@ -2158,68 +2155,3 @@ rijndael_get_info (int algo, size_t *keylen,
         return "AES256";
     return NULL;
 }
-
-
-#ifdef IS_MODULE
-static
-const char * const gnupgext_version = "RIJNDAEL ($Revision$)";
-
-static struct {
-    int class;
-    int version;
-    int  value;
-    void (*func)(void);
-} func_table[] = {
-    { 20, 1, 0, (void(*)(void))rijndael_get_info },
-    { 21, 1, 7  },
-    { 21, 1, 8  },
-    { 21, 1, 9  },
-};
-
-
-
-/****************
- * Enumerate the names of the functions together with information about
- * this function. Set sequence to an integer with a initial value of 0 and
- * do not change it.
- * If what is 0 all kind of functions are returned.
- * Return values: class := class of function:
- *			   10 = message digest algorithm info function
- *			   11 = integer with available md algorithms
- *			   20 = cipher algorithm info function
- *			   21 = integer with available cipher algorithms
- *			   30 = public key algorithm info function
- *			   31 = integer with available pubkey algorithms
- *		  version = interface version of the function/pointer
- *			    (currently this is 1 for all functions)
- */
-static
-void *
-gnupgext_enum_func ( int what, int *sequence, int *class, int *vers )
-{
-    void *ret;
-    int i = *sequence;
-
-    do {
-	if ( i >= DIM(func_table) || i < 0 ) {
-	    return NULL;
-	}
-	*class = func_table[i].class;
-	*vers  = func_table[i].version;
-	switch( *class ) {
-	  case 11:
-	  case 21:
-	  case 31:
-	    ret = &func_table[i].value;
-	    break;
-	  default:
-	    ret = func_table[i].func;
-	    break;
-	}
-	i++;
-    } while ( what && what != *class );
-
-    *sequence = i;
-    return ret;
-}
-#endif

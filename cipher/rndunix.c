@@ -100,9 +100,7 @@
 #include <errno.h>
 
 #include "types.h"  /* for byte and u32 typedefs */
-#ifndef IS_MODULE
 #include "algorithms.h"
-#endif
 #include "util.h"
 
 #ifndef EAGAIN

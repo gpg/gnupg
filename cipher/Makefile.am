@@ -42,7 +42,6 @@ libcipher_a_SOURCES = cipher.c	\
 		 rmd.h		\
 		 dsa.h		\
 		 dsa.c		\
-		 g10c.c 	\
 		 smallprime.c	\
 		 algorithms.h   \
 		 rndlinux.c	\
