@@ -56,9 +56,9 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     if( opt.verbose ) {
 	const char *s = cipher_algo_to_string( dek->algo );
 	if( s )
-	    log_info("%s encrypted data\n", s );
+	    log_info(_("%s encrypted data\n"), s );
 	else
-	    log_info("encrypted with unknown algorithm %d\n", dek->algo );
+	    log_info(_("encrypted with unknown algorithm %d\n"), dek->algo );
     }
     if( (rc=check_cipher_algo(dek->algo)) )
 	return rc;
@@ -71,7 +71,7 @@ decrypt_data( PKT_encrypted *ed, DEK *dek )
     dfx.cipher_hd = cipher_open( dek->algo, CIPHER_MODE_AUTO_CFB, 1 );
     rc = cipher_setkey( dfx.cipher_hd, dek->key, dek->keylen );
     if( rc == G10ERR_WEAK_KEY )
-	log_info(_("Warning: Message was encrypted with "
+	log_info(_("WARNING: Message was encrypted with "
 		    "a weak key in the symmetric cipher.\n"));
     else if( rc )
 	log_error("key setup failed: %s\n", g10_errstr(rc) );

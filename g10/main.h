@@ -38,6 +38,8 @@ typedef struct {
 
 
 /*-- g10.c --*/
+extern int g10_errors_seen;
+
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
   void g10_exit(int rc) __attribute__ ((noreturn));
 #else

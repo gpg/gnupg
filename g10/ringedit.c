@@ -274,12 +274,13 @@ add_keyblock_resource( const char *url, int force, int secret )
 
 	    iobuf = iobuf_create( filename );
 	    if( !iobuf ) {
-		log_error("%s: can't create keyring: %s\n", filename, strerror(errno));
+		log_error(_("%s: can't create keyring: %s\n"),
+					    filename, strerror(errno));
 		rc = G10ERR_OPEN_FILE;
 		goto leave;
 	    }
 	    else
-		log_info("%s: keyring created\n", filename );
+		log_info(_("%s: keyring created\n"), filename );
 	}
       #ifdef __MINGW32__
 	/* must close it again */
@@ -512,10 +513,12 @@ locate_keyblock_by_fpr( KBPOS *kbpos, const byte *fpr, int fprlen, int secret )
 	if( rentry->used && !rentry->secret == !secret ) {
 	    kbpos->rt = rentry->rt;
 	    switch( rentry->rt ) {
+	     #ifdef HAVE_LIBGDBM
 	      case rt_GDBM:
 		any = 1;
 		rc = do_gdbm_locate( rentry->dbf, kbpos, fpr, fprlen );
 		break;
+	     #endif
 	      default:
 		rc = G10ERR_UNSUPPORTED;
 		break;
@@ -551,10 +554,12 @@ locate_keyblock_by_keyid( KBPOS *kbpos, u32 *keyid, int shortkid, int secret )
 	if( rentry->used && !rentry->secret == !secret ) {
 	    kbpos->rt = rentry->rt;
 	    switch( rentry->rt ) {
+	     #ifdef HAVE_LIBGDBM
 	      case rt_GDBM:
 		any = 1;
 		rc = do_gdbm_locate_by_keyid( rentry->dbf, kbpos, keyid );
 		break;
+	     #endif
 	      default:
 		rc = G10ERR_UNSUPPORTED;
 		break;
@@ -1049,8 +1054,6 @@ keyring_enum( KBPOS *kbpos, KBNODE *ret_root, int skipsigs )
 	     * a start packet; issue a warning if it is not a comment */
 	    if( !root && pkt->pkttype != PKT_COMMENT
 		      && pkt->pkttype != PKT_OLD_COMMENT ) {
-		log_info("keyring_enum: skipped packet of type %d\n",
-			    pkt->pkttype );
 		break;
 	    }
 	    if( !root || (skipsigs && ( pkt->pkttype == PKT_SIGNATURE
@@ -1108,11 +1111,11 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	/* insert: create a new file */
 	newfp = iobuf_create( rentry->fname );
 	if( !newfp ) {
-	    log_error("%s: can't create: %s\n", rentry->fname, strerror(errno));
+	    log_error(_("%s: can't create: %s\n"), rentry->fname, strerror(errno));
 	    return G10ERR_OPEN_FILE;
 	}
 	else
-	    log_info("%s: keyring created\n", rentry->fname );
+	    log_info(_("%s: keyring created\n"), rentry->fname );
 
 	kbctx=NULL;
 	while( (node = walk_kbnode( root, &kbctx, 0 )) ) {
@@ -1285,7 +1288,7 @@ keyring_copy( KBPOS *kbpos, int mode, KBNODE root )
 	rc = G10ERR_RENAME_FILE;
 	if( rentry->secret ) {
 	    log_info(_(
-		"Warning: 2 files with confidential information exists.\n"));
+		"WARNING: 2 files with confidential information exists.\n"));
 	    log_info(_("%s is the unchanged one\n"), rentry->fname );
 	    log_info(_("%s is the new one\n"), tmpfname );
 	    log_info(_("Please fix this possible security flaw\n"));
@@ -1469,7 +1472,7 @@ do_gdbm_locate_by_keyid( GDBM_FILE dbf, KBPOS *kbpos, u32 *keyid )
 	return G10ERR_INV_KEYRING;
     }
     if( content.dsize > 21 )
-	log_info("gdbm_fetch: warning: more than one fingerprint\n" );
+	log_info("gdbm_fetch: WARNING: more than one fingerprint\n" );
 
     rc = do_gdbm_locate( dbf, kbpos, content.dptr+1, 20 );
     free( content.dptr ); /* can't use m_free() here */

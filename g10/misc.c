@@ -34,6 +34,7 @@
 #include "util.h"
 #include "main.h"
 #include "options.h"
+#include "i18n.h"
 
 
 const char *g10m_revision_string(int);
@@ -84,9 +85,9 @@ disable_core_dumps()
     limit.rlim_cur = 0;
     limit.rlim_max = 0;
     if( setrlimit( RLIMIT_CORE, &limit ) )
-	log_fatal("can't disable core dumps: %s\n", strerror(errno) );
+	log_fatal(_("can't disable core dumps: %s\n"), strerror(errno) );
   #else
-    log_info("WARNING: Program may create a core file!\n");
+    log_info(_("WARNING: Program may create a core file!\n"));
   #endif
 }
 

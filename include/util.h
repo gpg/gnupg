@@ -152,6 +152,7 @@ const char *memistr( const char *buf, size_t buflen, const char *sub );
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
 int string_count_chr( const char *string, int c );
+int  set_native_charset( const char *newset );
 char *native_to_utf8( const char *string );
 char *utf8_to_native( const char *string );
 

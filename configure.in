@@ -2,6 +2,7 @@ dnl
 dnl Configure template for GNUPG
 dnl
 dnl (Process this file with autoconf to produce a configure script.)
+AC_REVISION($Revision$)dnl
 
 dnl Must reset CDPATH so that bash's cd does not print to stdout
 CDPATH=

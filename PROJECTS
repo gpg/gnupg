@@ -1,4 +1,12 @@
 
+  * Urko Lusa <ulusa@lacueva.ddns.org> is working on es.po
+
+
+  * Check if an object (a message, detached sign, public key, or whatever)
+    is signed by definite user, i.e. define user
+    (userid, or any other unique identification) on command line.
+
+
   * abstraction of the MPI
 
   * Add a way to override the current cipher/md implementations

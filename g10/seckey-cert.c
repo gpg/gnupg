@@ -212,7 +212,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 	    cipher_hd = cipher_open( sk->protect.algo,
 				     CIPHER_MODE_AUTO_CFB, 1 );
 	    if( cipher_setkey( cipher_hd, dek->key, dek->keylen ) )
-		log_info(_("Warning: Weak key detected"
+		log_info(_("WARNING: Weak key detected"
 			   " - please change passphrase again.\n"));
 	    cipher_setiv( cipher_hd, NULL );
 	    cipher_encrypt( cipher_hd, sk->protect.iv, sk->protect.iv, 8 );

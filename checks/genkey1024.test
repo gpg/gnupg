@@ -10,6 +10,8 @@ else
   exit 0
 fi
 
+LANG=
+LANGUAGE=
 
 
 expect - <<EOF
@@ -84,13 +86,13 @@ expect {
    -exact "o\r
 \r                                                     \rYou need a Passphrase to protect your secret key.\r
 \r
-Enter pass phrase: " { sleep 1; send -- "abc\r" }
+Enter passphrase: " { sleep 1; send -- "abc\r" }
     timeout { exit 1 } }
 expect {
-  -ex "\r                   \rRepeat pass phrase: " { sleep 1; send -- "abc\r" }
+  -ex "\r                  \rRepeat passphrase: " { sleep 1; send -- "abc\r" }
     timeout { exit 1 } }
 expect { 
-  -ex "\r                    \rWe need to generate a lot of random bytes. It is a good idea to perform\r
+  -ex "\r                   \rWe need to generate a lot of random bytes. It is a good idea to perform\r
 some other action (work in another window, move the mouse, utilize the\r
 network and the disks) during the prime generation; this gives the random\r
 number generator a better chance to gain enough entropy.\r" {}

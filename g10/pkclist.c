@@ -180,7 +180,7 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
     int rc;
 
     if( (trustlevel & TRUST_FLAG_REVOKED) ) {
-	log_info("%08lX: key has been revoked!\n",
+	log_info(_("key %08lX: key has been revoked!\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
 	if( opt.batch )
 	    return 0;
@@ -208,12 +208,13 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	return do_we_trust( pk, trustlevel );
 
       case TRUST_EXPIRED:
-	log_info("%08lX: key has expired\n", (ulong)keyid_from_pk( pk, NULL) );
+	log_info(_("%08lX: key has expired\n"),
+				    (ulong)keyid_from_pk( pk, NULL) );
 	return 0; /* no */
 
       case TRUST_UNDEFINED:
 	if( opt.batch || opt.answer_no )
-	    log_info("%08lX: no info to calculate a trust probability\n",
+	    log_info(_("%08lX: no info to calculate a trust probability\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
 	else {
 	    rc = add_ownertrust( pk );
@@ -229,24 +230,24 @@ do_we_trust( PKT_public_key *pk, int trustlevel )
 	return 0;
 
       case TRUST_NEVER:
-	log_info("%08lX: We do NOT trust this key\n",
+	log_info(_("%08lX: We do NOT trust this key\n"),
 					(ulong)keyid_from_pk( pk, NULL) );
 	return 0; /* no */
 
       case TRUST_MARGINAL:
-	log_info("%08lX: I'm not sure whether this key really belongs to the owner\n"
-		 "but I proceed anyway\n",
-					(ulong)keyid_from_pk( pk, NULL) );
+	log_info(
+       _("%08lX: It is not sure taht this key really belongs to the owner\n"
+	 "but it is accepted anyway\n"), (ulong)keyid_from_pk( pk, NULL) );
 	return 1; /* yes */
 
       case TRUST_FULLY:
 	if( opt.verbose )
-	    log_info("This key probably belongs to the owner\n");
+	    log_info(_("This key probably belongs to the owner\n"));
 	return 1; /* yes */
 
       case TRUST_ULTIMATE:
 	if( opt.verbose )
-	    log_info("This key belongs to us (we have the secret key)\n");
+	    log_info(_("This key belongs to us (we have the secret key)\n"));
 	return 1; /* yes */
 
       default: BUG();
@@ -422,8 +423,8 @@ build_pk_list( STRLIST remusr, PK_LIST *ret_pk_list, unsigned usage )
 	for(;;) {
 	    rc = 0;
 	    m_free(answer);
-	    answer = cpr_get(N_("pklist.user_id.enter"),
-			      _("Enter the user ID: "));
+	    answer = cpr_get_utf8(N_("pklist.user_id.enter"),
+				   _("Enter the user ID: "));
 	    trim_spaces(answer);
 	    cpr_kill_prompt();
 	    if( !*answer )

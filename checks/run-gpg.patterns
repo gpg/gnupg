@@ -1,7 +1,7 @@
 gpg: Good signature from
 gpg: Signature made
-gpg: note: cipher algorithm 3 not found in preferences
-gpg: note: cipher algorithm 4 not found in preferences
-gpg: note: secret key 2E5FA4F4 is NOT protected.
-gpg: note: secret key 439F02CA is NOT protected.
-gpg: warning: using insecure random number generator
+gpg: NOTE: cipher algorithm 3 not found in preferences
+gpg: NOTE: cipher algorithm 4 not found in preferences
+gpg: NOTE: secret key 2E5FA4F4 is NOT protected.
+gpg: NOTE: secret key 439F02CA is NOT protected.
+gpg: WARNING: using insecure random number generator

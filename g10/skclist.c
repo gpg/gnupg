@@ -31,6 +31,7 @@
 #include "keydb.h"
 #include "memory.h"
 #include "util.h"
+#include "i18n.h"
 
 
 void
@@ -90,14 +91,14 @@ build_sk_list( STRLIST locusr, SK_LIST *ret_sk_list, int unlock,
 	    sk->pubkey_usage = usage;
 	    if( (rc = get_seckey_byname( sk, locusr->d, unlock )) ) {
 		free_secret_key( sk ); sk = NULL;
-		log_error("skipped '%s': %s\n", locusr->d, g10_errstr(rc) );
+		log_error(_("skipped '%s': %s\n"), locusr->d, g10_errstr(rc) );
 	    }
 	    else if( !(rc=check_pubkey_algo2(sk->pubkey_algo, usage)) ) {
 		SK_LIST r;
 		if( sk->version == 4 && (usage & PUBKEY_USAGE_SIG)
 		    && sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E ) {
-		    log_info("skipped '%s': this is a PGP generated "
-			"ElGamal key which is not secure for signatures!\n",
+		    log_info(_("skipped '%s': this is a PGP generated "
+			"ElGamal key which is not secure for signatures!\n"),
 			locusr->d );
 		    free_secret_key( sk ); sk = NULL;
 		}

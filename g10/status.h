@@ -60,6 +60,7 @@ void write_status_text ( int no, const char *text );
 
 int cpr_enabled(void);
 char *cpr_get( const char *keyword, const char *prompt );
+char *cpr_get_utf8( const char *keyword, const char *prompt );
 char *cpr_get_hidden( const char *keyword, const char *prompt );
 void cpr_kill_prompt(void);
 int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );

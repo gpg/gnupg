@@ -167,7 +167,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest )
     }
 
     if( pk->expiredate && pk->expiredate < cur_time ) {
-	log_info(_("warning: signature key expired %s\n"),
+	log_info(_("NOTE: signature key expired %s\n"),
 					asctimestamp( pk->expiredate ) );
 	write_status(STATUS_SIGEXPIRED);
     }

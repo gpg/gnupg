@@ -142,7 +142,7 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
     if ( shm_area == (char*)-1 )
 	log_fatal("can't attach %uk shared memory: %s\n",
 				(unsigned)shm_size/1024, strerror(errno));
-    log_info("mapped %uk shared memory at %p, id=%d\n",
+    log_debug("mapped %uk shared memory at %p, id=%d\n",
 			    (unsigned)shm_size/1024, shm_area, shm_id );
     if( lock_mem ) {
       #ifdef IPC_HAVE_SHM_LOCK
@@ -290,6 +290,19 @@ cpr_get( const char *keyword, const char *prompt )
 	else
 	    return p;
     }
+}
+
+char *
+cpr_get_utf8( const char *keyword, const char *prompt )
+{
+    char *p;
+    p = cpr_get( keyword, prompt );
+    if( p ) {
+	char *utf8 = native_to_utf8( p );
+	m_free( p );
+	p = utf8;
+    }
+    return p;
 }
 
 char *

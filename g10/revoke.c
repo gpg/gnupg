@@ -129,7 +129,7 @@ gen_revoke( const char *uname )
 	rc = G10ERR_PUBKEY_ALGO;
 	break;
       case 0:
-	tty_printf(_("note: This key is not protected!\n"));
+	tty_printf(_("NOTE: This key is not protected!\n"));
 	break;
       default:
 	rc = check_secret_key( sk, 0 );

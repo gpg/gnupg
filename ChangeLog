@@ -1,3 +1,8 @@
+Tue Nov 10 13:44:53 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* ABOUT-NLS: New
+	* configure-in (AC_REVISION): New.
+
 Sun Nov  8 18:20:35 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* VERSION: Set to 0.4.3

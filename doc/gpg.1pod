@@ -293,6 +293,13 @@ B<--homedir> I<dir>
     not make sense to use this in a options file. This
     also overrides the environment variable C<GNUPGHOME>.
 
+B<--charset> I<name>
+    Set the name of the native character set.  This is used
+    to convert some strings to proper UTF-8 encoding.
+    Valid values for I<name> are:
+      B<iso-8859-1>  This is the default.
+      B<koi8-r>      The usual Russian set (rfc1489).
+
 B<--options> I<file>
     Read options from I<file> and do not try to read
     them from the default options file in the homedir

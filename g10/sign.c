@@ -62,11 +62,11 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     rc = pubkey_sign( sk->pubkey_algo, sig->data, frame, sk->skey );
     mpi_free(frame);
     if( rc )
-	log_error("pubkey_sign failed: %s\n", g10_errstr(rc) );
+	log_error(_("signing failed: %s\n"), g10_errstr(rc) );
     else {
 	if( opt.verbose ) {
 	    char *ustr = get_user_id_string( sig->keyid );
-	    log_info("%s signature from: %s\n",
+	    log_info(_("%s signature from: %s\n"),
 		      pubkey_algo_to_string(sk->pubkey_algo), ustr );
 	    m_free(ustr);
 	}
@@ -197,12 +197,12 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 
     if( outfile ) {
 	if( !(out = iobuf_create( outfile )) ) {
-	    log_error("can't create %s: %s\n", outfile, strerror(errno) );
+	    log_error(_("can't create %s: %s\n"), outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
 	else if( opt.verbose )
-	    log_info("writing to '%s'\n", outfile );
+	    log_info(_("writing to '%s'\n"), outfile );
     }
     else if( (rc = open_outfile( fname, opt.armor? 1: detached? 2:0, &out )))
 	goto leave;
@@ -293,12 +293,13 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	    STRLIST sl;
 
 	    if( opt.verbose )
-		log_info("signing:" );
+		log_info(_("signing:") );
 	    /* must walk reverse trough this list */
 	    for( sl = strlist_last(filenames); sl;
 			sl = strlist_prev( filenames, sl ) ) {
 		if( !(inp = iobuf_open(sl->d)) ) {
-		    log_error("can't open %s: %s\n", sl->d, strerror(errno) );
+		    log_error(_("can't open %s: %s\n"),
+					    sl->d, strerror(errno) );
 		    rc = G10ERR_OPEN_FILE;
 		    goto leave;
 		}
@@ -332,7 +333,7 @@ sign_file( STRLIST filenames, int detached, STRLIST locusr,
 	}
 	if( fname ) {
 	    if( !(filesize = iobuf_get_filelength(inp)) )
-		log_info("warning: '%s' is an empty file\n", fname );
+		log_info(_("WARNING: '%s' is an empty file\n"), fname );
 
 	    /* because the text_filter modifies the length of the
 	     * data, it is not possible to know the used length
@@ -538,12 +539,12 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 
     if( outfile ) {
 	if( !(out = iobuf_create( outfile )) ) {
-	    log_error("can't create %s: %s\n", outfile, strerror(errno) );
+	    log_error(_("can't create %s: %s\n"), outfile, strerror(errno) );
 	    rc = G10ERR_CREATE_FILE;
 	    goto leave;
 	}
 	else if( opt.verbose )
-	    log_info("writing to '%s'\n", outfile );
+	    log_info(_("writing to '%s'\n"), outfile );
     }
     else if( (rc = open_outfile( fname, 1, &out )) )
 	goto leave;

@@ -195,7 +195,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	;
     else if( !result ) {
 	if( opt.verbose > 1 )
-	    log_info( "pubkey_enc packet: Good DEK\n" );
+	    log_info( _("public key encrypted data: Good DEK\n") );
     }
     else {
 	log_error(_("public key decryption failed: %s\n"), g10_errstr(result));
@@ -225,7 +225,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	;
     else if( !result ) {
 	if( opt.verbose > 1 )
-	    log_info("decryption okay\n");
+	    log_info(_("decryption okay\n"));
     }
     else {
 	log_error(_("decryption failed: %s\n"), g10_errstr(result));
@@ -245,9 +245,9 @@ proc_plaintext( CTX c, PACKET *pkt )
     KBNODE n;
 
     if( pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8 ) )
-	log_info(_("note: sender requested \"for-your-eyes-only\"\n"));
+	log_info(_("NOTE: sender requested \"for-your-eyes-only\"\n"));
     else if( opt.verbose )
-	log_info("original file name='%.*s'\n", pt->namelen, pt->name);
+	log_info(_("original file name='%.*s'\n"), pt->namelen, pt->name);
     free_md_filter_context( &c->mfx );
     c->mfx.md = md_open( 0, 0);
     /* fixme: we may need to push the textfilter if we have sigclass 1
@@ -833,7 +833,7 @@ check_sig_and_print( CTX c, KBNODE node )
     int rc;
 
     if( opt.skip_verify ) {
-	log_info("signature verification suppressed\n");
+	log_info(_("signature verification suppressed\n"));
 	return 0;
     }
 
@@ -854,6 +854,8 @@ check_sig_and_print( CTX c, KBNODE node )
 	putc('\n', stderr);
 	if( !rc )
 	    rc = check_signatures_trust( sig );
+	if( rc )
+	    g10_errors_seen = 1;
 	if( opt.batch && rc )
 	    g10_exit(1);
     }
@@ -932,12 +934,12 @@ proc_tree( CTX c, KBNODE node )
 	    }
 	}
 	else
-	    log_info("old style signature\n");
+	    log_info(_("old style (PGP 2.x) signature\n"));
 
 	check_sig_and_print( c, node );
     }
     else
-	log_error("proc_tree: invalid root packet\n");
+	log_error(_("invalid root packet detected in proc_tree()\n"));
 
 }
 

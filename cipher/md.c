@@ -420,7 +420,7 @@ md_get_algo( MD_HANDLE a )
 
     if( (r=a->list) ) {
 	if( r->next )
-	    log_error("warning: more than algorithm in md_get_algo()\n");
+	    log_error("WARNING: more than algorithm in md_get_algo()\n");
 	return r->algo;
     }
     return 0;
@@ -440,7 +440,7 @@ md_digest_length( int algo )
 		return r->mdlen;
 	}
     } while( !r && load_digest_modules() );
-    log_error("warning: no length for md algo %d\n", algo);
+    log_error("WARNING: no length for md algo %d\n", algo);
     return 0;
 }
 
@@ -463,7 +463,7 @@ md_asn_oid( int algo, size_t *asnlen, size_t *mdlen )
 	    }
 	}
     } while( !r && load_digest_modules() );
-    log_bug("warning: no asn for md algo %d\n", algo);
+    log_bug("no asn for md algo %d\n", algo);
     return NULL;
 }
 

@@ -65,6 +65,7 @@ log_get_errorcount( int clear)
     return n;
 }
 
+
 static void
 print_prefix(const char *text)
 {

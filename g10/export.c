@@ -32,6 +32,7 @@
 #include "memory.h"
 #include "util.h"
 #include "main.h"
+#include "i18n.h"
 
 static int do_export( STRLIST users, int secret );
 
@@ -158,7 +159,7 @@ do_export( STRLIST users, int secret )
     else
 	iobuf_close(out);
     if( !any )
-	log_info("warning: nothing exported\n");
+	log_info(_("WARNING: nothing exported\n"));
     return rc;
 }
 

@@ -451,7 +451,8 @@ fix_keyblock( KBNODE keyblock )
 	    if( subkey ) {
 		PKT_signature *sig = node->pkt->pkt.signature;
 		if( sig->sig_class >= 0x10 && sig->sig_class <= 0x13 ) {
-		    log_info("moving a key signature to the correct place\n");
+		    log_info(_(
+			"moving a key signature to the correct place\n"));
 		    last->next = node->next;
 		    node->next = subkey->next;
 		    subkey->next = node;

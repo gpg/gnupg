@@ -42,6 +42,7 @@
 #include "i18n.h"
 #include "tdbio.h"
 
+#define MAX_CERT_DEPTH 5
 
 #if MAX_FINGERPRINT_LEN > 20
   #error Must change structure of trustdb
@@ -139,7 +140,7 @@ read_record( ulong recno, TRUSTREC *rec, int rectype )
     int rc = tdbio_read_record( recno, rec, rectype );
     if( !rc )
 	return;
-    log_error("trust record %lu, req type %d: read failed: %s\n",
+    log_error(_("trust record %lu, req type %d: read failed: %s\n"),
 				    recno, rectype,  g10_errstr(rc) );
     die_invalid_db();
 }
@@ -154,7 +155,7 @@ write_record( TRUSTREC *rec )
     int rc = tdbio_write_record( rec );
     if( !rc )
 	return;
-    log_error("trust record %lu, type %d: write failed: %s\n",
+    log_error(_("trust record %lu, type %d: write failed: %s\n"),
 			    rec->recnum, rec->rectype, g10_errstr(rc) );
     die_invalid_db();
 }
@@ -168,7 +169,7 @@ delete_record( ulong recno )
     int rc = tdbio_delete_record( recno );
     if( !rc )
 	return;
-    log_error("trust record %lu: delete failed: %s\n",
+    log_error(_("trust record %lu: delete failed: %s\n"),
 					      recno, g10_errstr(rc) );
     die_invalid_db();
 }
@@ -182,7 +183,7 @@ do_sync( )
     int rc = tdbio_sync();
     if( !rc )
 	return;
-    log_error("trust db: sync failed: %s\n", g10_errstr(rc) );
+    log_error(_("trust db: sync failed: %s\n"), g10_errstr(rc) );
     g10_exit(2);
 }
 
@@ -237,7 +238,7 @@ new_lid_table(void)
     a = unused_lid_tables;
     if( a ) {
 	unused_lid_tables = a->next;
-	a->next = NULL;
+	memset( a, 0, sizeof *a );
     }
     else
 	a = m_alloc_clear( sizeof *a );
@@ -311,24 +312,24 @@ keyid_from_lid( ulong lid, u32 *keyid )
 
     rc = tdbio_read_record( lid, &rec, 0 );
     if( rc ) {
-	log_error("error reading dir record for LID %lu: %s\n",
+	log_error(_("error reading dir record for LID %lu: %s\n"),
 						    lid, g10_errstr(rc));
 	return G10ERR_TRUSTDB;
     }
     if( rec.rectype == RECTYPE_SDIR )
 	return 0;
     if( rec.rectype != RECTYPE_DIR ) {
-	log_error("lid %lu: expected dir record, got type %d\n",
+	log_error(_("lid %lu: expected dir record, got type %d\n"),
 						    lid, rec.rectype );
 	return G10ERR_TRUSTDB;
     }
     if( !rec.r.dir.keylist ) {
-	log_error("no primary key for LID %lu\n", lid );
+	log_error(_("no primary key for LID %lu\n"), lid );
 	return G10ERR_TRUSTDB;
     }
     rc = tdbio_read_record( rec.r.dir.keylist, &rec, RECTYPE_KEY );
     if( rc ) {
-	log_error("error reading primary key for LID %lu: %s\n",
+	log_error(_("error reading primary key for LID %lu: %s\n"),
 						    lid, g10_errstr(rc));
 	return G10ERR_TRUSTDB;
     }
@@ -444,7 +445,7 @@ verify_own_keys()
 	    log_debug("key %08lX: checking secret key\n", (ulong)keyid[1] );
 
 	if( is_secret_key_protected( sk ) < 1 )
-	    log_info("note: secret key %08lX is NOT protected.\n",
+	    log_info(_("NOTE: secret key %08lX is NOT protected.\n"),
 							    (ulong)keyid[1] );
 
 	/* see whether we can access the public key of this secret key */
@@ -484,7 +485,7 @@ verify_own_keys()
 	if( ins_lid_table_item( ultikey_table, pk->local_id, 0 ) )
 	    log_error(_("key %08lX: already in secret key table\n"),
 							(ulong)keyid[1]);
-	else if( opt.verbose )
+	else if( opt.verbose > 1 )
 	    log_info(_("key %08lX: accepted as secret key.\n"),
 							(ulong)keyid[1]);
       skip:
@@ -492,7 +493,7 @@ verify_own_keys()
 	release_public_key_parts( pk );
     }
     if( rc != -1 )
-	log_error(_("enum_secret_keys failed: %s\n"), g10_errstr(rc) );
+	log_error(_("enumerate secret keys failed: %s\n"), g10_errstr(rc) );
     else
 	rc = 0;
 
@@ -666,7 +667,8 @@ list_records( ulong lid )
 
     rc = tdbio_read_record( lid, &dr, RECTYPE_DIR );
     if( rc ) {
-	log_error("lid %lu: read dir record failed: %s\n", lid, g10_errstr(rc));
+	log_error(_("lid %lu: read dir record failed: %s\n"),
+						lid, g10_errstr(rc));
 	return rc;
     }
     tdbio_dump_record( &dr, stdout );
@@ -674,7 +676,7 @@ list_records( ulong lid )
     for( recno=dr.r.dir.keylist; recno; recno = rec.r.key.next ) {
 	rc = tdbio_read_record( recno, &rec, 0 );
 	if( rc ) {
-	    log_error("lid %lu: read key record failed: %s\n",
+	    log_error(_("lid %lu: read key record failed: %s\n"),
 						lid, g10_errstr(rc));
 	    return rc;
 	}
@@ -684,7 +686,7 @@ list_records( ulong lid )
     for( recno=dr.r.dir.uidlist; recno; recno = ur.r.uid.next ) {
 	rc = tdbio_read_record( recno, &ur, RECTYPE_UID );
 	if( rc ) {
-	    log_error("lid %lu: read uid record failed: %s\n",
+	    log_error(_("lid %lu: read uid record failed: %s\n"),
 						lid, g10_errstr(rc));
 	    return rc;
 	}
@@ -693,7 +695,7 @@ list_records( ulong lid )
 	for(recno=ur.r.uid.prefrec; recno; recno = rec.r.pref.next ) {
 	    rc = tdbio_read_record( recno, &rec, RECTYPE_PREF );
 	    if( rc ) {
-		log_error("lid %lu: read pref record failed: %s\n",
+		log_error(_("lid %lu: read pref record failed: %s\n"),
 						    lid, g10_errstr(rc));
 		return rc;
 	    }
@@ -703,7 +705,7 @@ list_records( ulong lid )
 	for(recno=ur.r.uid.siglist; recno; recno = rec.r.sig.next ) {
 	    rc = tdbio_read_record( recno, &rec, RECTYPE_SIG );
 	    if( rc ) {
-		log_error("lid %lu: read sig record failed: %s\n",
+		log_error(_("lid %lu: read sig record failed: %s\n"),
 						    lid, g10_errstr(rc));
 		return rc;
 	    }
@@ -893,15 +895,15 @@ static int
 do_check( TRUSTREC *dr, unsigned *trustlevel )
 {
     if( !dr->r.dir.keylist ) {
-	log_error("Ooops, no keys\n");
+	log_error(_("Ooops, no keys\n"));
 	return G10ERR_TRUSTDB;
     }
     if( !dr->r.dir.uidlist ) {
-	log_error("Ooops, no user ids\n");
+	log_error(_("Ooops, no user ids\n"));
 	return G10ERR_TRUSTDB;
     }
 
-    *trustlevel = verify_key( 5, dr );
+    *trustlevel = verify_key( MAX_CERT_DEPTH, dr );
 
     if( dr->r.dir.dirflags & DIRF_REVOKED )
 	*trustlevel |= TRUST_FLAG_REVOKED;
@@ -955,25 +957,29 @@ list_trustdb( const char *username )
 	ulong lid = atoi(username+1);
 
 	if( (rc = list_records( lid)) )
-	    log_error("user '%s' read problem: %s\n", username, g10_errstr(rc));
+	    log_error(_("user '%s' read problem: %s\n"),
+					    username, g10_errstr(rc));
 	else if( (rc = list_sigs( lid )) )
-	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
+	    log_error(_("user '%s' list problem: %s\n"),
+					    username, g10_errstr(rc));
     }
     else if( username ) {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	int rc;
 
 	if( (rc = get_pubkey_byname( NULL, pk, username, NULL )) )
-	    log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
+	    log_error(_("user '%s' not found: %s\n"), username, g10_errstr(rc) );
 	else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
-	    log_error("problem finding '%s' in trustdb: %s\n",
+	    log_error(_("problem finding '%s' in trustdb: %s\n"),
 						username, g10_errstr(rc));
 	else if( rc == -1 )
-	    log_error("user '%s' not in trustdb\n", username);
+	    log_error(_("user '%s' not in trustdb\n"), username);
 	else if( (rc = list_records( pk->local_id)) )
-	    log_error("user '%s' read problem: %s\n", username, g10_errstr(rc));
+	    log_error(_("user '%s' read problem: %s\n"),
+						username, g10_errstr(rc));
 	else if( (rc = list_sigs( pk->local_id )) )
-	    log_error("user '%s' list problem: %s\n", username, g10_errstr(rc));
+	    log_error(_("user '%s' list problem: %s\n"),
+						username, g10_errstr(rc));
 	free_public_key( pk );
     }
     else {
@@ -1002,20 +1008,20 @@ export_ownertrust()
     byte *p;
     int rc;
 
-    printf("# List of assigned trustvalues, created %s\n"
-	   "# (Use \"gpgm --import-ownertrust\" to restore them)\n",
+    printf(_("# List of assigned trustvalues, created %s\n"
+	     "# (Use \"gpgm --import-ownertrust\" to restore them)\n"),
 	   asctimestamp( make_timestamp() ) );
     for(recnum=0; !tdbio_read_record( recnum, &rec, 0); recnum++ ) {
 	if( rec.rectype == RECTYPE_DIR ) {
 	    if( !rec.r.dir.keylist ) {
-		log_error("Oops; directory record w/o primary key\n");
+		log_error(_("directory record w/o primary key\n"));
 		continue;
 	    }
 	    if( !rec.r.dir.ownertrust )
 		continue;
 	    rc = tdbio_read_record( rec.r.dir.keylist, &rec2, RECTYPE_KEY);
 	    if( rc ) {
-		log_error("error reading key record: %s\n", g10_errstr(rc));
+		log_error(_("error reading key record: %s\n"), g10_errstr(rc));
 		continue;
 	    }
 	    p = rec2.r.key.fingerprint;
@@ -1055,7 +1061,7 @@ import_ownertrust( const char *fname )
 	    continue;
 	n = strlen(line);
 	if( line[n-1] != '\n' ) {
-	    log_error_f(fname, "line to long\n" );
+	    log_error_f(fname, _("line to long\n") );
 	    /* ... or last line does not have a LF */
 	    break; /* can't continue */
 	}
@@ -1063,16 +1069,16 @@ import_ownertrust( const char *fname )
 	    if( !isxdigit(*p) )
 		break;
 	if( *p != ':' ) {
-	    log_error_f(fname, "error: missing colon\n" );
+	    log_error_f(fname, _("error: missing colon\n") );
 	    continue;
 	}
 	fprlen = p - line;
 	if( fprlen != 32 && fprlen != 40 ) {
-	    log_error_f(fname, "error: invalid fingerprint\n" );
+	    log_error_f(fname, _("error: invalid fingerprint\n") );
 	    continue;
 	}
 	if( sscanf(p, ":%u:", &otrust ) != 1 ) {
-	    log_error_f(fname, "error: no otrust value\n" );
+	    log_error_f(fname, _("error: no ownertrust value\n") );
 	    continue;
 	}
 	if( !otrust )
@@ -1086,10 +1092,10 @@ import_ownertrust( const char *fname )
 	rc = tdbio_search_dir_byfpr( line, fprlen, 0, &rec );
 	if( !rc ) { /* found: update */
 	    if( rec.r.dir.ownertrust )
-		log_info("LID %lu: changing trust from %u to %u\n",
+		log_info(_("LID %lu: changing trust from %u to %u\n"),
 			  rec.r.dir.lid, rec.r.dir.ownertrust, otrust );
 	    else
-		log_info("LID %lu: setting trust to %u\n",
+		log_info(_("LID %lu: setting trust to %u\n"),
 				   rec.r.dir.lid, otrust );
 	    rec.r.dir.ownertrust = otrust;
 	    write_record( &rec );
@@ -1097,25 +1103,25 @@ import_ownertrust( const char *fname )
 	else if( rc == -1 ) { /* not found; get the key from the ring */
 	    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
-	    log_info_f(fname, "key not in trustdb, searching ring.\n");
+	    log_info_f(fname, _("key not in trustdb, searching ring.\n"));
 	    rc = get_pubkey_byfprint( pk, line, fprlen );
 	    if( rc )
-		log_info_f(fname, "key not in ring: %s\n", g10_errstr(rc));
+		log_info_f(fname, _("key not in ring: %s\n"), g10_errstr(rc));
 	    else {
 		rc = query_trust_record( pk );	/* only as assertion */
 		if( rc != -1 )
-		    log_error_f(fname, "Oops: key is now in trustdb???\n");
+		    log_error_f(fname, _("Oops: key is now in trustdb???\n"));
 		else {
 		    rc = insert_trust_record( pk );
 		    if( !rc )
 			goto repeat; /* update the ownertrust */
-		    log_error_f(fname, "insert trust record failed: %s\n",
+		    log_error_f(fname, _("insert trust record failed: %s\n"),
 							   g10_errstr(rc) );
 		}
 	    }
 	}
 	else /* error */
-	    log_error_f(fname, "error finding dir record: %s\n",
+	    log_error_f(fname, _("error finding dir record: %s\n"),
 						    g10_errstr(rc));
     }
     if( ferror(fp) )
@@ -1166,15 +1172,16 @@ list_trust_path( int max_depth, const char *username )
     }
 
     if( (rc = get_pubkey_byname(NULL, pk, username, NULL )) )
-	log_error("user '%s' not found: %s\n", username, g10_errstr(rc) );
+	log_error(_("user '%s' not found: %s\n"), username, g10_errstr(rc) );
     else if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 )
-	log_error("problem finding '%s' in trustdb: %s\n",
+	log_error(_("problem finding '%s' in trustdb: %s\n"),
 					    username, g10_errstr(rc));
     else if( rc == -1 ) {
-	log_info("user '%s' not in trustdb - inserting\n", username);
+	log_info(_("user '%s' not in trustdb - inserting\n"), username);
 	rc = insert_trust_record( pk );
 	if( rc )
-	    log_error("failed to put '%s' into trustdb: %s\n", username, g10_errstr(rc));
+	    log_error(_("failed to put '%s' into trustdb: %s\n"),
+						    username, g10_errstr(rc));
 	else {
 	    assert( pk->local_id );
 	}
@@ -1217,7 +1224,7 @@ check_trustdb( const char *username )
 	if( !rc )
 	    rc = read_keyblock( &kbpos, &keyblock );
 	if( rc ) {
-	    log_error("%s: keyblock read problem: %s\n",
+	    log_error(_("%s: keyblock read problem: %s\n"),
 				    username, g10_errstr(rc));
 	}
 	else {
@@ -1231,12 +1238,12 @@ check_trustdb( const char *username )
 
 	    }
 	    if( rc )
-		log_error("%s: update failed: %s\n",
+		log_error(_("%s: update failed: %s\n"),
 					   username, g10_errstr(rc) );
 	    else if( modified )
-		log_info("%s: updated\n", username );
+		log_info(_("%s: updated\n"), username );
 	    else
-		log_info("%s: okay\n", username );
+		log_info(_("%s: okay\n"), username );
 
 	}
 	release_kbnode( keyblock ); keyblock = NULL;
@@ -1251,7 +1258,8 @@ check_trustdb( const char *username )
 		int modified;
 
 		if( !rec.r.dir.keylist ) {
-		    log_info("lid %lu: dir record w/o key - skipped\n", recnum);
+		    log_info(_("lid %lu: dir record w/o key - skipped\n"),
+								  recnum);
 		    count++;
 		    skip_count++;
 		    continue;
@@ -1263,7 +1271,7 @@ check_trustdb( const char *username )
 					    tmp.r.key.fingerprint,
 					    tmp.r.key.fingerprint_len );
 		if( rc ) {
-		    log_error("lid %lu: keyblock not found: %s\n",
+		    log_error(_("lid %lu: keyblock not found: %s\n"),
 						 recnum, g10_errstr(rc) );
 		    count++;
 		    skip_count++;
@@ -1272,17 +1280,17 @@ check_trustdb( const char *username )
 
 		rc = update_trust_record( keyblock, 0, &modified );
 		if( rc ) {
-		    log_error("lid %lu: update failed: %s\n",
+		    log_error(_("lid %lu: update failed: %s\n"),
 						 recnum, g10_errstr(rc) );
 		    err_count++;
 		}
 		else if( modified ) {
 		    if( opt.verbose )
-			log_info("lid %lu: updated\n", recnum );
+			log_info(_("lid %lu: updated\n"), recnum );
 		    upd_count++;
 		}
 		else if( opt.verbose > 1 )
-		    log_info("lid %lu: okay\n", recnum );
+		    log_info(_("lid %lu: okay\n"), recnum );
 
 		release_kbnode( keyblock ); keyblock = NULL;
 		if( !(++count % 100) )
@@ -1325,33 +1333,33 @@ update_trustdb( )
 				       ) ->pkt->pkt.public_key;
 		rc = insert_trust_record( pk );
 		if( rc && !pk->local_id ) {
-		    log_error("lid ?: insert failed: %s\n",
+		    log_error(_("lid ?: insert failed: %s\n"),
 						     g10_errstr(rc) );
 		    err_count++;
 		}
 		else if( rc ) {
-		    log_error("lid %lu: insert failed: %s\n",
+		    log_error(_("lid %lu: insert failed: %s\n"),
 				       pk->local_id, g10_errstr(rc) );
 		    err_count++;
 		}
 		else {
 		    if( opt.verbose )
-			log_info("lid %lu: inserted\n", pk->local_id );
+			log_info(_("lid %lu: inserted\n"), pk->local_id );
 		    new_count++;
 		}
 	    }
 	    else if( rc ) {
-		log_error("lid %lu: update failed: %s\n",
+		log_error(_("lid %lu: update failed: %s\n"),
 			 lid_from_keyblock(keyblock), g10_errstr(rc) );
 		err_count++;
 	    }
 	    else if( modified ) {
 		if( opt.verbose )
-		    log_info("lid %lu: updated\n", lid_from_keyblock(keyblock));
+		    log_info(_("lid %lu: updated\n"), lid_from_keyblock(keyblock));
 		upd_count++;
 	    }
 	    else if( opt.verbose > 1 )
-		log_info("lid %lu: okay\n", lid_from_keyblock(keyblock) );
+		log_info(_("lid %lu: okay\n"), lid_from_keyblock(keyblock) );
 
 	    release_kbnode( keyblock ); keyblock = NULL;
 	    if( !(++count % 100) )
@@ -1366,7 +1374,7 @@ update_trustdb( )
 	    log_info(_("\t%lu keys inserted\n"), new_count);
     }
     if( rc && rc != -1 )
-	log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
+	log_error(_("enumerate keyblocks failed: %s\n"), g10_errstr(rc));
 
     enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
     release_kbnode( keyblock );
@@ -1411,7 +1419,7 @@ check_trust( PKT_public_key *pk, unsigned *r_trustlevel )
     }
     else { /* no local_id: scan the trustdb */
 	if( (rc=tdbio_search_dir_bypk( pk, &rec )) && rc != -1 ) {
-	    log_error("check_trust: search dir record failed: %s\n",
+	    log_error(_("check_trust: search dir record failed: %s\n"),
 							    g10_errstr(rc));
 	    return rc;
 	}
@@ -1501,8 +1509,46 @@ query_trust_info( PKT_public_key *pk )
 int
 enum_trust_web( void **context, ulong *lid )
 {
-    /* REPLACE THIS with a BETTER ONE  */
+  #if 0
+    struct {
+       int init;
+    } *ctx;
+    int rc;
+    int wipe=0;
+    TRUSTREC rec;
+    TRUST_INFO *tmppath;
+    TRUST_SEG_LIST trust_seg_list, tsl, tsl2;
+    PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
+    if( !*context ) {
+	asssert( *lid );
+
+	ctx = m_alloc_clear( sizeof *ctx );
+	*context = ctx;
+	/* collect the paths */
+	read_record( *lid, &rec, RECTYPE_DIR );
+	tmppath = m_alloc_clear( (MAX_CERT_DEPTH+1)* sizeof *tmppath );
+	trust_seg_list = NULL;
+	collect_paths( 0, MAX_CERT_DEPTH, 1, &rec, tmppath, &trust_seg_list );
+	m_free( tmppath );
+	/* and now print them */
+	for(tsl = trust_seg_list; tsl; tsl = tsl->next ) {
+	    print_path( tsl->pathlen, tsl->path );
+	}
+    }
+    else
+	ctx = *context;
+
+    if( !lid ) {  /* release the context */
+	if( *
+	 /* release the list */
+	 for(tsl = trust_seg_list; tsl; tsl = tsl2 ) {
+	     tsl2 = tsl->next;
+	     m_free( tsl );
+	 }
+	 trust_seg_list = NULL;
+    }
+   #endif
     return -1; /* eof */
 }
 
@@ -1552,7 +1598,7 @@ get_pref_data( ulong lid, const byte *namehash, size_t *ret_n )
 	    /* found the correct one or the first one */
 	    read_record( rec.r.uid.prefrec, &rec, RECTYPE_PREF );
 	    if( rec.r.pref.next )
-		log_info("warning: can't yet handle long pref records\n");
+		log_info(_("WARNING: can't yet handle long pref records\n"));
 	    buf = m_alloc( ITEMS_PER_PREF_RECORD );
 	    memcpy( buf, rec.r.pref.data, ITEMS_PER_PREF_RECORD );
 	    *ret_n = ITEMS_PER_PREF_RECORD;
@@ -1581,7 +1627,7 @@ is_algo_in_prefs( ulong lid, int preftype, int algo )
 	if( rec.r.uid.prefrec ) {
 	    read_record( rec.r.uid.prefrec, &rec, RECTYPE_PREF );
 	    if( rec.r.pref.next )
-		log_info("warning: can't yet handle long pref records\n");
+		log_info(_("WARNING: can't yet handle long pref records\n"));
 	    pref = rec.r.pref.data;
 	    for(i=0; i+1 < ITEMS_PER_PREF_RECORD; i+=2 ) {
 		if( pref[i] == preftype && pref[i+1] == algo )
@@ -1603,7 +1649,7 @@ get_dir_record( PKT_public_key *pk, TRUSTREC *rec )
     }
     else { /* no local_id: scan the trustdb */
 	if( (rc=tdbio_search_dir_bypk( pk, rec )) && rc != -1 )
-	    log_error("get_dir_record: search_record failed: %s\n",
+	    log_error(_("get_dir_record: search_record failed: %s\n"),
 							    g10_errstr(rc));
     }
     return rc;
@@ -1663,11 +1709,11 @@ check_hint_sig( ulong lid, KBNODE keyblock, u32 *keyid, byte *uidrec_hash,
     int revoke = 0;
 
     if( sigrec->r.sig.sig[sigidx].flag & SIGF_CHECKED )
-	log_info(_("note: sig rec %lu[%d] in hintlist "
+	log_info(_("NOTE: sig rec %lu[%d] in hintlist "
 		   "of %lu but marked as checked\n"),
 		    sigrec->recnum, sigidx, hint_owner );
     if( !(sigrec->r.sig.sig[sigidx].flag & SIGF_NOPUBKEY) )
-	log_info(_("note: sig rec %lu[%d] in hintlist "
+	log_info(_("NOTE: sig rec %lu[%d] in hintlist "
 		   "of %lu but not marked\n"),
 		    sigrec->recnum, sigidx, hint_owner );
 
@@ -1866,7 +1912,7 @@ create_shadow_dir( PKT_signature *sig, ulong lid  )
     /* first see whether we already have such a record */
     rc = tdbio_search_sdir( sig->keyid, sig->pubkey_algo, &sdir );
     if( rc && rc != -1 ) {
-	log_error("tdbio_search_dir failed: %s\n", g10_errstr(rc));
+	log_error(_("tdbio_search_dir failed: %s\n"), g10_errstr(rc));
 	die_invalid_db();
     }
     if( rc == -1 ) { /* not found: create */
@@ -2283,7 +2329,7 @@ upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig )
 	    if( n_prefs_rec >= DIM(prefs_rec)-1 ) {
 		log_info("uid %08lX.%lu/%02X%02X: %s\n",
 			  (ulong)keyid[1], lid, uidhash[18], uidhash[19],
-			  _("Too many preferences items") );
+			  _("Too many preference items") );
 		break;
 	    }
 	    prefs_rec[n_prefs_rec++] = prec.r.pref.data[i];
@@ -2304,7 +2350,7 @@ upd_pref_record( TRUSTREC *urec, u32 *keyid, PKT_signature *sig )
     }
 
     if( n_prefs_sig > ITEMS_PER_PREF_RECORD )
-	log_info("cannot yet handle long preferences");
+	 log_info(_("WARNING: can't yet handle long pref records\n"));
 
     memset( &prec, 0, sizeof prec );
     prec.recnum = tdbio_new_recnum();
@@ -2452,7 +2498,7 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 			log_info("sig %08lX.%lu/%02X%02X/%08lX: %s\n",
 				  (ulong)keyid[1], lid, uidhash[18],
 				 uidhash[19], (ulong)sig->keyid[1],
-				 _("public key lost") );
+				 _("Hmmm, public key lost?") );
 		    rec.r.sig.sig[i].flag = SIGF_NOPUBKEY;
 		    if( revoke )
 			rec.r.sig.sig[i].flag |= SIGF_REVOKED;
@@ -2477,8 +2523,8 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 		    && (!tmp.r.sdir.pubkey_algo
 			 || tmp.r.sdir.pubkey_algo == sig->pubkey_algo )) {
 		    if( !(rec.r.sig.sig[i].flag & SIGF_NOPUBKEY) )
-			log_info("uid %08lX.%lu/%02X%02X: "
-				 "has shadow dir %lu but not yet marked.\n",
+			log_info(_("uid %08lX.%lu/%02X%02X: "
+				"has shadow dir %lu but is not yet marked.\n"),
 				(ulong)keyid[1], lid,
 				uidhash[18], uidhash[19], tmp.recnum );
 		    rec.r.sig.sig[i].flag = SIGF_NOPUBKEY;
@@ -2491,7 +2537,7 @@ upd_cert_record( KBNODE keyblock, KBNODE signode, u32 *keyid,
 		}
 	    }
 	    else {
-		log_error("sig record %lu[%d] points to wrong record.\n",
+		log_error(_("sig record %lu[%d] points to wrong record.\n"),
 			    rec.r.sig.sig[i].lid, i );
 		die_invalid_db();
 	    }
@@ -2733,7 +2779,7 @@ insert_trust_record( PKT_public_key *pk )
     /* get the keyblock which has the key */
     rc = get_keyblock_byfprint( &keyblock, fingerprint, fingerlen );
     if( rc ) { /* that should never happen */
-	log_error( "insert_trust_record: keyblock not found: %s\n",
+	log_error( _("insert_trust_record: keyblock not found: %s\n"),
 							  g10_errstr(rc) );
 	goto leave;
     }
@@ -2751,7 +2797,7 @@ insert_trust_record( PKT_public_key *pk )
 	keyid_from_pk( pk, bkid );
 
 	if( akid[0] != bkid[0] || akid[1] != bkid[1] ) {
-	    log_error("did not use primary key for insert_trust_record()\n");
+	    log_error(_("did not use primary key for insert_trust_record()\n"));
 	    rc = G10ERR_GENERAL;
 	    goto leave;
 	}
@@ -2763,7 +2809,7 @@ insert_trust_record( PKT_public_key *pk )
      */
     rc = tdbio_search_sdir( pk->keyid, pk->pubkey_algo, &shadow );
     if( rc && rc != -1 ) {
-	log_error("tdbio_search_dir failed: %s\n", g10_errstr(rc));
+	log_error(_("tdbio_search_dir failed: %s\n"), g10_errstr(rc));
 	die_invalid_db();
     }
     memset( &dirrec, 0, sizeof dirrec );

@@ -152,7 +152,7 @@ encode_simple( const char *filename, int mode )
     }
     if( filename ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )
-	    log_info(_("%s: warning: empty file\n"), filename );
+	    log_info(_("%s: WARNING: empty file\n"), filename );
     }
     else
 	filesize = 0; /* stdin */
@@ -266,7 +266,7 @@ encode_crypt( const char *filename, STRLIST remusr )
     }
     if( filename ) {
 	if( !(filesize = iobuf_get_filelength(inp)) )
-	    log_info(_("%s: warning: empty file\n"), filename );
+	    log_info(_("%s: WARNING: empty file\n"), filename );
     }
     else
 	filesize = 0; /* stdin */

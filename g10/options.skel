@@ -35,3 +35,9 @@ force-v3-sigs
 
 compress-algo 1
 
+# If you do not use the Latin-1 (ISO-8859-1) charset, you should
+# tell GnuPG which is the native character set.  Please check
+# the man page for supported character sets.
+#charset koi8-r
+
+

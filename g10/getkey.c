@@ -160,7 +160,7 @@ cache_public_key( PKT_public_key *pk )
     if( pk_cache_entries >= MAX_PK_CACHE_ENTRIES ) {
 	/* fixme: use another algorithm to free some cache slots */
 	pk_cache_disabled=1;
-	log_info("too many entries in pk cache - disabled\n");
+	log_info(_("too many entries in pk cache - disabled\n"));
 	return;
     }
     pk_cache_entries++;
@@ -258,7 +258,7 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 	;
     else if( ++unk_cache_entries > MAX_UNK_CACHE_ENTRIES ) {
 	unk_cache_disabled = 1;
-	log_info("too many entries in unk cache - disabled\n");
+	log_info(_("too many entries in unk cache - disabled\n"));
     }
     else {
 	keyid_list_t kl;
@@ -937,12 +937,29 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 	    /* if the usage is not correct, try to use a subkey */
 	    KBNODE save_k = k;
 
-	    for( ; k; k = k->next ) {
-		if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		    && !check_pubkey_algo2(
-			    k->pkt->pkt.public_key->pubkey_algo,
-					     pk->pubkey_usage ) )
-		    break;
+	    k = NULL;
+	    /* kludge for pgp 5: which doesn't accept type 20:
+	     * try to use a type 16 subkey instead */
+	    if( pk->pubkey_usage == PUBKEY_USAGE_ENC ) {
+		for( k = save_k; k; k = k->next ) {
+		    if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
+			&& k->pkt->pkt.public_key->pubkey_algo
+			    == PUBKEY_ALGO_ELGAMAL_E
+			&& !check_pubkey_algo2(
+				k->pkt->pkt.public_key->pubkey_algo,
+						 pk->pubkey_usage ) )
+			break;
+		}
+	    }
+
+	    if( !k ) {
+		for(k = save_k ; k; k = k->next ) {
+		    if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
+			&& !check_pubkey_algo2(
+				k->pkt->pkt.public_key->pubkey_algo,
+						 pk->pubkey_usage ) )
+			break;
+		}
 	    }
 	    if( !k )
 		k = save_k;

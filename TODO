@@ -1,23 +1,23 @@
 
+    * Update the keyring on ftp.ggug.de
+
+    * support for mpi/powerpc  split is still combined or whatever
+
+    * add a note, that gettext 10.35 is needed (for gettext) - and install
+      it on tobold.
+
     * use zlib 1.1.13 to avoid a bug with 13 bit windows
+      but there are more problems with large files
 
     * FreeBSD:
 	#define USE_DYNAMIC_LINKING
 	#define HAVE_DL_DLOPEN
 	and the ld option -export-dynamic.
 
-    *
-     Well, there was one thing extra I needed to do.  While configure found the
-     gdbm library, it didn't add the path the the include file list.  I had to
-     re-run configure with CPPFLAGS set:
-
-     env CPPFLAGS='-I/usr/local/include' configure ...
-
-
     * clearsig: keep lineendings as they are. Remember that trailings
       blanks are not hashed.
 
-    * Fix ;) revocation and expire stuff.
+    * Check revocation and expire stuff.
 
     * check preferences (cipher and compress)
 
@@ -25,9 +25,6 @@
 	OpenBSD binaries are a.out, so every symbol begins with "_"
 
     * should we flush the getkey.c caches while doing an import?
-
-    * prefer a type 16 subkey for encryption because pgp cannot handle
-      type 20?
 
     * The critical bit of signature subpackets is not yet supported; i.e.
       it is ignored.

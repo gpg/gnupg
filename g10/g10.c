@@ -144,6 +144,7 @@ enum cmd_and_opt_values { aNull = 0,
     oS2KMode,
     oS2KDigest,
     oS2KCipher,
+    oCharset,
 aTest };
 
 
@@ -220,6 +221,7 @@ static ARGPARSE_OPTS opts[] = {
     { oKeyring, "keyring"   ,2, N_("add this keyring to the list of keyrings")},
     { oSecretKeyring, "secret-keyring" ,2, N_("add this secret keyring to the list")},
     { oDefaultKey, "default-key" ,2, N_("|NAME|use NAME as default secret key")},
+    { oCharset, "charset"   , 2, N_("|NAME| set terminal charset to NAME") },
     { oOptions, "options"   , 2, N_("read options from file")},
 
     { oDebug, "debug"     ,4|16, N_("set debugging flags")},
@@ -293,6 +295,9 @@ static ARGPARSE_OPTS opts[] = {
     { oComment, "comment", 2, "@" },
 {0} };
 
+
+
+int g10_errors_seen = 0;
 
 
 static int maybe_setuid = 1;
@@ -488,7 +493,6 @@ main( int argc, char **argv )
     unsigned configlineno;
     int parse_debug = 0;
     int default_config =1;
-    int errors=0;
     int default_keyring = 1;
     int greeting = 1;
     enum cmd_and_opt_values cmd = 0;
@@ -599,7 +603,7 @@ main( int argc, char **argv )
 	if( !configfp ) {
 	    if( default_config ) {
 		if( parse_debug )
-		    log_info(_("note: no default option file '%s'\n"),
+		    log_info(_("NOTE: no default option file '%s'\n"),
 							    configname );
 	    }
 	    else {
@@ -755,8 +759,13 @@ main( int argc, char **argv )
 	  case oNoSecmemWarn:
 	    break;  /* dummies */
 	#endif
+	  case oCharset:
+	    if( set_native_charset( pargs.r.ret_str ) )
+		log_error(_("%s is not a valid character set\n"),
+						    pargs.r.ret_str);
+	    break;
 
-	  default : errors++; pargs.err = configfp? 1:2; break;
+	  default : pargs.err = configfp? 1:2; break;
 	}
     }
     if( configfp ) {
@@ -812,7 +821,7 @@ main( int argc, char **argv )
 	log_error(_("marginals-needed must be greater than 1\n"));
     switch( opt.s2k_mode ) {
       case 0:
-	log_info(_("note: simple S2K mode (0) is strongly discouraged\n"));
+	log_info(_("NOTE: simple S2K mode (0) is strongly discouraged\n"));
 	break;
       case 1: case 3: break;
       default:
@@ -1228,9 +1237,15 @@ main( int argc, char **argv )
 	/* fixme: g10maint should do regular maintenace tasks here */
 	if( argc > 1 )
 	    wrong_args(_("[filename]"));
+	/* Issue some output for the unix newbie */
+	if( !fname && !opt.outfile && isatty( fileno(stdin) )
+		&& isatty( fileno(stdout) ) && isatty( fileno(stderr) ) )
+	    log_info(_("Go ahead and type your message ...\n"));
+
 	if( !(a = iobuf_open(fname)) )
 	    log_error(_("can't open '%s'\n"), print_fname_stdin(fname));
 	else {
+
 	    if( !opt.no_armor ) {
 		if( use_armor_filter( a ) ) {
 		    memset( &afx, 0, sizeof afx);
@@ -1263,7 +1278,8 @@ g10_exit( int rc )
     if( opt.debug )
 	secmem_dump_stats();
     secmem_term();
-    rc = rc? rc : log_get_errorcount(0)? 2:0;
+    rc = rc? rc : log_get_errorcount(0)? 2 :
+			g10_errors_seen? 1 : 0;
     /*write_status( STATUS_LEAVE );*/
     exit(rc );
 }

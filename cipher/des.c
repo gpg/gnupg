@@ -5,8 +5,8 @@
  *
  * According to the definition of DES in FIPS PUB 46-2 from December 1993.
  * For a description of triple encryption, see:
- *   Bruce Schneier: Applied Cryptography. Second Edition. John Wiley & Sons, 1996
- *   ISBN 0-471-12845-7. Pages 358 ff.
+ *   Bruce Schneier: Applied Cryptography. Second Edition.
+ *   John Wiley & Sons, 1996. ISBN 0-471-12845-7. Pages 358 ff.
  *
  * This file is part of GNUPG.
  *

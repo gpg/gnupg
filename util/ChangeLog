@@ -1,3 +1,8 @@
+Tue Nov 10 10:01:53 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* strgutil.c (set_native_charset): New.
+	(native_to_utf8): Now handles koi8-r.
+
 Tue Nov  3 16:17:56 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* strgutil.c (native_to_utf8): New.

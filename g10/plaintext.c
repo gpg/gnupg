@@ -233,7 +233,7 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
 
     if( !fp ) {
 	if( opt.verbose )
-	    log_info("reading stdin ...\n");
+	    log_info(_("reading stdin ...\n"));
 	while( (c = getchar()) != EOF ) {
 	    if( mfx->md )
 		md_putc(mfx->md, c );

@@ -81,7 +81,7 @@ get_session_key( PKT_pubkey_enc *k, DEK *dek )
 	    if( !rc )
 		rc = get_it( k, dek, sk, keyid );
 	    if( !rc ) {
-		log_info( _("okay, we are the anonymous receiver.\n") );
+		log_info(_("okay, we are the anonymous receiver.\n") );
 		break;
 	    }
 	}
@@ -133,7 +133,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     if( n + 7 > nframe )
 	{ rc = G10ERR_WRONG_SECKEY; goto leave; }
     if( frame[n] == 1 && frame[nframe-1] == 2 ) {
-	log_info("old encoding of DEK is not supported\n");
+	log_info(_("old encoding of the DEK is not supported\n"));
 	rc = G10ERR_CIPHER_ALGO;
 	goto leave;
     }
@@ -180,7 +180,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 	    log_error("can't check algorithm against preferences\n");
 	else if( dek->algo != CIPHER_ALGO_3DES
 	    && !is_algo_in_prefs( pk->local_id, PREFTYPE_SYM, dek->algo ) )
-	    log_info(_("note: cipher algorithm %d not found in preferences\n"),
+	    log_info(_("NOTE: cipher algorithm %d not found in preferences\n"),
 								 dek->algo );
 	free_public_key( pk );
 	rc = 0;

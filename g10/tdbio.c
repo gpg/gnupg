@@ -215,8 +215,8 @@ put_record_into_cache( ulong recno, const char *data )
 	/* but we can't do this while in a transaction
 	 * we increase the cache size instead */
 	if( cache_entries < MAX_CACHE_ENTRIES_HARD ) { /* no */
-	    if( !(cache_entries % 100) )
-		log_info("increasing tdbio cache size\n");
+	    if( opt.debug && !(cache_entries % 100) )
+		log_debug("increasing tdbio cache size\n");
 	    r = m_alloc( sizeof *r );
 	    r->flags.used = 1;
 	    r->recno = recno;
@@ -228,7 +228,7 @@ put_record_into_cache( ulong recno, const char *data )
 	    cache_entries++;
 	    return 0;
 	}
-	log_info("hard cache size limit reached\n");
+	log_info(_("trustdb transaction to large\n"));
 	return G10ERR_RESOURCE_LIMIT;
     }
     if( dirty_count ) {

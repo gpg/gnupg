@@ -1,3 +1,11 @@
+This is NOT a released version!
+-------------------------------
+
+    * Add option --charset to support "koi8-r" encoding of user ids.
+      (Not yet tested).
+
+
+
 Noteworthy changes in version 0.4.3
 -----------------------------------
 

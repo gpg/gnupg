@@ -1,3 +1,27 @@
+Tue Nov 10 10:08:59 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* g10.c (g10_exit): Now looks at the new g10_errors_seen.
+	* mainproc.c (check_sig_and_print): Sets g10_errors_seen.
+
+	* *.c : i18n many more strings.
+
+	* ringedit.c (locate_keyblock_by_keyid): Add HAVE_LIBGDBM
+	(locate_keyblock_by_fpr): Ditto.
+
+	* g10.c (main): removed unsused "int errors".
+	(main): Add new option --charset.
+
+	* g10.c (main): special message for the unix newbie.
+
+Mon Nov  9 07:17:42 1998  Werner Koch  <werner.koch@guug.de>
+
+	* getkey.c (finish_lookup): Kludge to prefere algo 16.
+
+	* trustdb.c (new_lid_table): Clear cached item.
+
+	* status.c (cpr_get_utf8): New.
+	* pkclist.c (build_pk_list): Uses this.
+
 Sun Nov  8 17:20:39 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* mainproc.c (check_sig_and_print): Why did I use strlen()-1

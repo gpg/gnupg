@@ -33,6 +33,7 @@
 #include "filter.h"
 #include "options.h"
 #include "main.h"
+#include "i18n.h"
 
 static int mpi_print_mode = 0;
 static int list_mode = 0;
@@ -105,7 +106,7 @@ unknown_pubkey_warning( int algo )
     algo &= 0xff;
     if( !unknown_pubkey_algos[algo] ) {
 	if( opt.verbose )
-	    log_info("can't handle public key algorithm %d\n", algo );
+	    log_info(_("can't handle public key algorithm %d\n"), algo );
 	unknown_pubkey_algos[algo] = 1;
     }
 }
