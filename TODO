@@ -102,6 +102,9 @@
 
   * export-secret-subkey where only one of the subkeys gets exported.
 
+  * Add the NEWSIG status.
+
+
 Things we won't do
 ------------------
 
