@@ -50,13 +50,21 @@ extern int optind;
 #define GET    0
 #define SEND   1
 #define SEARCH 2
-#define MAX_LINE 256
+#define MAX_LINE 255
+#define MAX_HOST 80
+#define MAX_SCHEME   20
+#define MAX_PORT 10
+#define MAX_OPTION 255
+#define MAX_COMMAND 7
+
+#define STRINGIFY(x) #x
+#define MKSTRING(x) STRINGIFY(x)
 
 static int verbose=0,include_disabled=0,include_revoked=0,include_subkeys=0;
 static int real_ldap=0;
 static char *basekeyspacedn=NULL;
-static char host[80]={'\0'};
-static char portstr[10]={'\0'};
+static char host[MAX_HOST+1]={'\0'};
+static char portstr[MAX_PORT+1]={'\0'};
 static char *pgpkeystr="pgpKey";
 static FILE *input=NULL,*output=NULL,*console=NULL;
 static LDAP *ldap=NULL;
@@ -1609,9 +1617,9 @@ main(int argc,char *argv[])
 
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
-      char commandstr[7];
-      char optionstr[256];
-      char schemestr[80];
+      char command[MAX_COMMAND+1];
+      char optionstr[MAX_OPTION+1];
+      char scheme[MAX_SCHEME+1];
       char hash;
 
       if(line[0]=='\n')
@@ -1620,37 +1628,37 @@ main(int argc,char *argv[])
       if(sscanf(line,"%c",&hash)==1 && hash=='#')
 	continue;
 
-      if(sscanf(line,"COMMAND %6s\n",commandstr)==1)
+      if(sscanf(line,"COMMAND %" MKSTRING(MAX_COMMAND) "s\n",command)==1)
 	{
-	  commandstr[6]='\0';
+	  command[MAX_COMMAND]='\0';
 
-	  if(strcasecmp(commandstr,"get")==0)
+	  if(strcasecmp(command,"get")==0)
 	    action=GET;
-	  else if(strcasecmp(commandstr,"send")==0)
+	  else if(strcasecmp(command,"send")==0)
 	    action=SEND;
-	  else if(strcasecmp(commandstr,"search")==0)
+	  else if(strcasecmp(command,"search")==0)
 	    action=SEARCH;
 
 	  continue;
 	}
 
-      if(sscanf(line,"HOST %79s\n",host)==1)
+      if(sscanf(line,"HOST %" MKSTRING(MAX_HOST) "s\n",host)==1)
 	{
-	  host[79]='\0';
+	  host[MAX_HOST]='\0';
 	  continue;
 	}
 
-      if(sscanf(line,"PORT %9s\n",portstr)==1)
+      if(sscanf(line,"PORT %" MKSTRING(MAX_PORT) "s\n",portstr)==1)
 	{
-	  portstr[9]='\0';
+	  portstr[MAX_PORT]='\0';
 	  port=atoi(portstr);
 	  continue;
 	}
 
-      if(sscanf(line,"SCHEME %79s\n",schemestr)==1)
+      if(sscanf(line,"SCHEME %" MKSTRING(MAX_SCHEME) "s\n",scheme)==1)
 	{
-	  schemestr[79]='\0';
-	  if(strcasecmp(schemestr,"ldaps")==0)
+	  scheme[MAX_SCHEME]='\0';
+	  if(strcasecmp(scheme,"ldaps")==0)
 	    {
 	      port=636;
 	      use_ssl=1;
@@ -1669,12 +1677,12 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"OPTION %255[^\n]\n",optionstr)==1)
+      if(sscanf(line,"OPTION %" MKSTRING(MAX_OPTION) "[^\n]\n",optionstr)==1)
 	{
 	  int no=0;
 	  char *start=&optionstr[0];
 
-	  optionstr[255]='\0';
+	  optionstr[MAX_OPTION]='\0';
 
 	  if(strncasecmp(optionstr,"no-",3)==0)
 	    {

@@ -57,9 +57,15 @@ extern int optind;
 
 #define GET    0
 #define MAX_LINE 80
+#define MAX_COMMAND 7
+#define MAX_OPAQUE 1024
+#define MAX_OPTION 256
+
+#define STRINGIFY(x) #x
+#define MKSTRING(x) STRINGIFY(x)
 
 static int verbose=0;
-static char path[1024];
+static char path[MAX_OPAQUE+1];
 static FILE *input, *output, *console;
 
 #define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
@@ -433,8 +439,8 @@ main(int argc,char *argv[])
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
       int version;
-      char commandstr[7];
-      char optionstr[256];
+      char command[MAX_COMMAND+1];
+      char option[MAX_OPTION+1];
       char hash;
 
       if(line[0]=='\n')
@@ -443,11 +449,11 @@ main(int argc,char *argv[])
       if(sscanf(line,"%c",&hash)==1 && hash=='#')
 	continue;
 
-      if(sscanf(line,"COMMAND %6s\n",commandstr)==1)
+      if(sscanf(line,"COMMAND %" MKSTRING(MAX_COMMAND) "s\n",command)==1)
 	{
-	  commandstr[6]='\0';
+	  command[MAX_COMMAND]='\0';
 
-	  if(strcasecmp(commandstr,"get")==0)
+	  if(strcasecmp(command,"get")==0)
 	    action=GET;
 
 	  continue;
@@ -461,9 +467,9 @@ main(int argc,char *argv[])
 	  goto fail;
 	}
 
-      if(sscanf(line,"OPAQUE %1023s\n",path)==1)
+      if(sscanf(line,"OPAQUE %" MKSTRING(MAX_OPAQUE) "s\n",path)==1)
 	{
-	  path[1023]='\0';
+	  path[MAX_OPAQUE]='\0';
 	  continue;
 	}
 
@@ -478,17 +484,17 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"OPTION %255s\n",optionstr)==1)
+      if(sscanf(line,"OPTION %" MKSTRING(MAX_OPTION) "s\n",option)==1)
 	{
 	  int no=0;
-	  char *start=&optionstr[0];
+	  char *start=&option[0];
 
-	  optionstr[255]='\0';
+	  option[MAX_OPTION]='\0';
 
-	  if(strncasecmp(optionstr,"no-",3)==0)
+	  if(strncasecmp(option,"no-",3)==0)
 	    {
 	      no=1;
-	      start=&optionstr[3];
+	      start=&option[3];
 	    }
 
 	  if(strcasecmp(start,"verbose")==0)

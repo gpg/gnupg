@@ -38,10 +38,20 @@ extern int optind;
 
 #define GET    0
 #define MAX_LINE 80
+#define MAX_AUTH 128
+#define MAX_HOST 80
+#define MAX_PROXY 80
+#define MAX_PORT 10
+#define MAX_PATH 1024
+#define MAX_COMMAND 7
+#define MAX_OPTION 256
+
+#define STRINGIFY(x) #x
+#define MKSTRING(x) STRINGIFY(x)
 
 static int verbose=0;
 static unsigned int http_flags=0;
-static char auth[128]={'\0'},host[80]={'\0'},proxy[80]={'\0'},port[10]={'\0'},path[1024]={'\0'};
+static char auth[MAX_AUTH+1]={'\0'},host[MAX_HOST+1]={'\0'},proxy[MAX_PROXY+1]={'\0'},port[MAX_PORT+1]={'\0'},path[MAX_PATH+1]={'\0'};
 static FILE *input=NULL,*output=NULL,*console=NULL;
 
 #define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
@@ -199,8 +209,8 @@ main(int argc,char *argv[])
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
       int version;
-      char commandstr[7];
-      char optionstr[256];
+      char command[MAX_COMMAND+1];
+      char option[MAX_OPTION+1];
       char hash;
 
       if(line[0]=='\n')
@@ -209,37 +219,37 @@ main(int argc,char *argv[])
       if(sscanf(line,"%c",&hash)==1 && hash=='#')
 	continue;
 
-      if(sscanf(line,"COMMAND %6s\n",commandstr)==1)
+      if(sscanf(line,"COMMAND %" MKSTRING(MAX_COMMAND) "s\n",command)==1)
 	{
-	  commandstr[6]='\0';
+	  command[MAX_COMMAND]='\0';
 
-	  if(strcasecmp(commandstr,"get")==0)
+	  if(strcasecmp(command,"get")==0)
 	    action=GET;
 
 	  continue;
 	}
 
-      if(sscanf(line,"AUTH %127s\n",auth)==1)
+      if(sscanf(line,"AUTH %" MKSTRING(MAX_AUTH) "s\n",auth)==1)
 	{
-	  auth[127]='\0';
+	  auth[MAX_AUTH]='\0';
 	  continue;
 	}
 
-      if(sscanf(line,"HOST %79s\n",host)==1)
+      if(sscanf(line,"HOST %" MKSTRING(MAX_HOST) "s\n",host)==1)
 	{
-	  host[79]='\0';
+	  host[MAX_HOST]='\0';
 	  continue;
 	}
 
-      if(sscanf(line,"PORT %9s\n",port)==1)
+      if(sscanf(line,"PORT %" MKSTRING(MAX_PORT) "s\n",port)==1)
 	{
-	  port[9]='\0';
+	  port[MAX_PORT]='\0';
 	  continue;
 	}
 
-      if(sscanf(line,"PATH %1023s\n",path)==1)
+      if(sscanf(line,"PATH %" MKSTRING(MAX_PATH) "s\n",path)==1)
 	{
-	  path[1023]='\0';
+	  path[MAX_PATH]='\0';
 	  continue;
 	}
 
@@ -254,17 +264,17 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"OPTION %255s\n",optionstr)==1)
+      if(sscanf(line,"OPTION %" MKSTRING(MAX_OPTION) "s\n",option)==1)
 	{
 	  int no=0;
-	  char *start=&optionstr[0];
+	  char *start=&option[0];
 
-	  optionstr[255]='\0';
+	  option[MAX_OPTION]='\0';
 
-	  if(strncasecmp(optionstr,"no-",3)==0)
+	  if(strncasecmp(option,"no-",3)==0)
 	    {
 	      no=1;
-	      start=&optionstr[3];
+	      start=&option[3];
 	    }
 
 	  if(strcasecmp(start,"verbose")==0)

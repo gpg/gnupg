@@ -41,10 +41,18 @@ extern int optind;
 #define SEND   1
 #define SEARCH 2
 #define MAX_LINE 80
+#define MAX_HOST 80
+#define MAX_PORT 10
+#define MAX_PROXY 80
+#define MAX_COMMAND 7
+#define MAX_OPTION 110
+
+#define STRINGIFY(x) #x
+#define MKSTRING(x) STRINGIFY(x)
 
 static int verbose=0,include_revoked=0,include_disabled=0;
 static unsigned int http_flags=0;
-static char host[80]={'\0'},proxy[80]={'\0'},port[10]={'\0'};
+static char host[MAX_HOST+1]={'\0'},proxy[MAX_PROXY+1]={'\0'},port[MAX_PORT+1]={'\0'};
 static FILE *input=NULL,*output=NULL,*console=NULL;
 
 #define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
@@ -831,8 +839,8 @@ main(int argc,char *argv[])
   while(fgets(line,MAX_LINE,input)!=NULL)
     {
       int version;
-      char commandstr[7];
-      char optionstr[110];
+      char command[MAX_COMMAND+1];
+      char option[MAX_OPTION+1];
       char hash;
 
       if(line[0]=='\n')
@@ -841,29 +849,29 @@ main(int argc,char *argv[])
       if(sscanf(line,"%c",&hash)==1 && hash=='#')
 	continue;
 
-      if(sscanf(line,"COMMAND %6s\n",commandstr)==1)
+      if(sscanf(line,"COMMAND %" MKSTRING(MAX_COMMAND) "s\n",command)==1)
 	{
-	  commandstr[6]='\0';
+	  command[MAX_COMMAND]='\0';
 
-	  if(strcasecmp(commandstr,"get")==0)
+	  if(strcasecmp(command,"get")==0)
 	    action=GET;
-	  else if(strcasecmp(commandstr,"send")==0)
+	  else if(strcasecmp(command,"send")==0)
 	    action=SEND;
-	  else if(strcasecmp(commandstr,"search")==0)
+	  else if(strcasecmp(command,"search")==0)
 	    action=SEARCH;
 
 	  continue;
 	}
 
-      if(sscanf(line,"HOST %79s\n",host)==1)
+      if(sscanf(line,"HOST %" MKSTRING(MAX_HOST) "s\n",host)==1)
 	{
-	  host[79]='\0';
+	  host[MAX_HOST]='\0';
 	  continue;
 	}
 
-      if(sscanf(line,"PORT %9s\n",port)==1)
+      if(sscanf(line,"PORT %" MKSTRING(MAX_PORT) "s\n",port)==1)
 	{
-	  port[9]='\0';
+	  port[MAX_PORT]='\0';
 	  continue;
 	}
 
@@ -878,17 +886,17 @@ main(int argc,char *argv[])
 	  continue;
 	}
 
-      if(sscanf(line,"OPTION %109s\n",optionstr)==1)
+      if(sscanf(line,"OPTION %" MKSTRING(MAX_OPTION) "s\n",option)==1)
 	{
 	  int no=0;
-	  char *start=&optionstr[0];
+	  char *start=&option[0];
 
-	  optionstr[109]='\0';
+	  option[MAX_OPTION]='\0';
 
-	  if(strncasecmp(optionstr,"no-",3)==0)
+	  if(strncasecmp(option,"no-",3)==0)
 	    {
 	      no=1;
-	      start=&optionstr[3];
+	      start=&option[3];
 	    }
 
 	  if(strcasecmp(start,"verbose")==0)
@@ -918,16 +926,16 @@ main(int argc,char *argv[])
 		proxy[0]='\0';
 	      else if(start[10]=='=')
 		{
-		  strncpy(proxy,&start[11],79);
-		  proxy[79]='\0';
+		  strncpy(proxy,&start[11],MAX_PROXY);
+		  proxy[MAX_PROXY]='\0';
 		}
 	      else if(start[10]=='\0')
 		{
 		  char *http_proxy=getenv(HTTP_PROXY_ENV);
 		  if(http_proxy)
 		    {
-		      strncpy(proxy,http_proxy,79);
-		      proxy[79]='\0';
+		      strncpy(proxy,http_proxy,MAX_PROXY);
+		      proxy[MAX_PROXY]='\0';
 		    }
 		}
 	    }
