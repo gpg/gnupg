@@ -2,8 +2,12 @@
   * Print the reason for revocation at certain places.
 
   * at least an option to prefer DSA keys over RSA when selecting the key to
-    use.  Depending on creatin time would be nice too.	I thing this is
+    use.  Depending on creation time would be nice too.  I thing this is
     already done for the subkeys.
+
+  * Rework the whole key selection stuff: Compile a list of valid
+    candidates for a keyblock first and the select one from it.
+    The current code is too ugly (getkey.c).
 
 Scheduled for 1.1
 -----------------

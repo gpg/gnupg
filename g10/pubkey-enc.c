@@ -176,7 +176,7 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
     }
     if( DBG_CIPHER )
 	log_hexdump("DEK is:", dek->key, dek->keylen );
-    /* check that the algo is in the preferences */
+    /* check that the algo is in the preferences and whether it has expired */
     {
 	PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 	if( (rc = get_pubkey( pk, keyid )) )
@@ -195,9 +195,17 @@ get_it( PKT_pubkey_enc *k, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 		    "NOTE: cipher algorithm %d not found in preferences\n"),
 								 dek->algo );
 	}
+
+
+	if( !rc && pk->expiredate && pk->expiredate <= make_timestamp() ) {
+	    log_info(_("NOTE: secret key %08lX expired at %s\n"),
+			   (ulong)keyid[1], asctimestamp( pk->expiredate) );
+	}
+
 	free_public_key( pk );
 	rc = 0;
     }
+
 
   leave:
     mpi_free(plain_dek);

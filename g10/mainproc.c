@@ -689,6 +689,7 @@ list_node( CTX c, KBNODE node )
 				      pubkey_letter( pk->pubkey_algo ),
 				      (ulong)keyid_from_pk( pk, NULL ),
 				      datestr_from_pk( pk )	);
+
 	if( mainkey ) {
 	    /* and now list all userids with their signatures */
 	    for( node = node->next; node; node = node->next ) {
@@ -731,6 +732,10 @@ list_node( CTX c, KBNODE node )
 		}
 	    }
 	}
+	else if( pk->expiredate ) { /* of subkey */
+	    printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
+	}
+
 	if( !any )
 	    putchar('\n');
 	if( !mainkey && opt.fingerprint > 1 )

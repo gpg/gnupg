@@ -1,3 +1,21 @@
+Thu Mar 16 16:20:23 CET 2000  Werner Koch  <wk@openit.de>
+
+	* keylist.c (print_key_data): Handle a NULL pk gracefully.
+
+	* getkey.c (merge_one_pk_and_selfsig): Fixed silly code for
+	getting the primary keys keyID but kept using the one from the
+	subkey.
+	* pubkey-enc.c (get_it): Print a note for expired subkeys.
+
+	* getkey.c (has_expired): New.
+	(subkeys_expiretime): New.
+	(finish_lookup): Check for expired subkeys needed for encryption.
+	(merge_keys_and_selfsig): Fixed expiration date merging for subkeys.
+
+	* keylist.c (list_keyblock): Print expiration time for "sub".
+	(list_one): Add missing merging for public keys.
+	* mainproc.c (list_node): Ditto.
+
 2000-03-14 13:49:38  Werner Koch  (wk@habibti.openit.de)
 
 	* keygen.c (keyedit_menu): Do not allow to use certain commands

@@ -135,6 +135,7 @@ list_one( STRLIST names, int secret )
 	    return;
 	}
 	do {
+	    merge_keys_and_selfsig( keyblock );
 	    list_keyblock( keyblock, 0 );
 	    release_kbnode( keyblock );
 	} while( !get_pubkey_next( ctx, NULL, &keyblock ) );
@@ -145,7 +146,7 @@ list_one( STRLIST names, int secret )
 static void
 print_key_data( PKT_public_key *pk, u32 *keyid )
 {
-    int n = pubkey_get_npkey( pk->pubkey_algo );
+    int n = pk ? pubkey_get_npkey( pk->pubkey_algo ) : 0;
     int i;
 
     for(i=0; i < n; i++ ) {
@@ -308,11 +309,16 @@ list_keyblock( KBNODE keyblock, int secret )
 		putchar(':');
 		putchar('\n');
 	    }
-	    else
-		printf("sub  %4u%c/%08lX %s\n", nbits_from_pk( pk2 ),
+	    else {
+		printf("sub  %4u%c/%08lX %s", nbits_from_pk( pk2 ),
 					   pubkey_letter( pk2->pubkey_algo ),
 					   (ulong)keyid2[1],
 					   datestr_from_pk( pk2 ) );
+		if( pk2->expiredate ) {
+		    printf(_(" [expires: %s]"), expirestr_from_pk( pk2 ) );
+		}
+		putchar('\n');
+	    }
 	    if( opt.fingerprint > 1 )
 		fingerprint( pk2, NULL );
 	    if( opt.with_key_data )
@@ -351,7 +357,7 @@ list_keyblock( KBNODE keyblock, int secret )
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    int sigrc;
-           char *sigstr;
+	   char *sigstr;
 
 	    if( !any ) { /* no user id, (maybe a revocation follows)*/
 		if( sig->sig_class == 0x20 )
@@ -369,11 +375,11 @@ list_keyblock( KBNODE keyblock, int secret )
 
 	    if( sig->sig_class == 0x20 || sig->sig_class == 0x28
 				       || sig->sig_class == 0x30 )
-               sigstr = "rev";
+	       sigstr = "rev";
 	    else if( (sig->sig_class&~3) == 0x10 )
-               sigstr = "sig";
+	       sigstr = "sig";
 	    else if( sig->sig_class == 0x18 )
-               sigstr = "sig";
+	       sigstr = "sig";
 	    else {
 		if( opt.with_colons )
 		    printf("sig::::::::::%02x:\n",sig->sig_class );
@@ -396,7 +402,7 @@ list_keyblock( KBNODE keyblock, int secret )
 		rc = 0;
 		sigrc = ' ';
 	    }
-           fputs( sigstr, stdout );
+	   fputs( sigstr, stdout );
 	    if( opt.with_colons ) {
 		putchar(':');
 		if( sigrc != ' ' )

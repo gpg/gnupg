@@ -154,6 +154,7 @@ static int uid_cache_entries;	/* number of entries in uid cache */
 static char* prepare_word_match( const byte *name );
 static int lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_kb );
 static int lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_kb );
+static u32 subkeys_expiretime( KBNODE node, u32 *mainkid );
 
 
 #if 0
@@ -1150,7 +1151,7 @@ merge_one_pk_and_selfsig( KBNODE keyblock, KBNODE knode,
 	k = find_kbnode( keyblock, PKT_PUBLIC_KEY );
 	if( !k )
 	   BUG(); /* keyblock without primary key!!! */
-	keyid_from_pk( knode->pkt->pkt.public_key, kid );
+	keyid_from_pk( k->pkt->pkt.public_key, kid );
     }
     else
 	keyid_from_pk( pk, kid );
@@ -1208,6 +1209,10 @@ merge_keys_and_selfsig( KBNODE keyblock )
 		pk = NULL; /* not needed for old keys */
 	    else if( k->pkt->pkttype == PKT_PUBLIC_KEY )
 		keyid_from_pk( pk, kid );
+	    else if( !pk->expiredate ) { /* and subkey */
+		/* insert the expiration date here */
+		pk->expiredate = subkeys_expiretime( k, kid );
+	    }
 	    sigdate = 0;
 	}
 	else if( k->pkt->pkttype == PKT_SECRET_KEY
@@ -1222,8 +1227,11 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	else if( (pk || sk ) && k->pkt->pkttype == PKT_SIGNATURE
 		 && (sig=k->pkt->pkt.signature)->sig_class >= 0x10
 		 && sig->sig_class <= 0x30 && sig->version > 3
+		 && !(sig->sig_class == 0x18 || sig->sig_class == 0x28)
 		 && sig->keyid[0] == kid[0] && sig->keyid[1] == kid[1] ) {
 	    /* okay this is a self-signature which can be used.
+	     * This is not used for subkey binding signature, becuase this
+	     * is done above.
 	     * FIXME: We should only use this if the signature is valid
 	     *	      but this is time consuming - we must provide another
 	     *	      way to handle this
@@ -1521,6 +1529,56 @@ find_by_fpr_sk( KBNODE keyblock, PKT_secret_key *sk,
 }
 
 
+/****************
+ * Return the expiretime of a subkey.
+ */
+static u32
+subkeys_expiretime( KBNODE node, u32 *mainkid )
+{
+    KBNODE k;
+    PKT_signature *sig;
+    u32 expires = 0, sigdate = 0;
+
+    assert( node->pkt->pkttype == PKT_PUBLIC_SUBKEY );
+    for(k=node->next; k; k = k->next ) {
+	if( k->pkt->pkttype == PKT_SIGNATURE
+	    && (sig=k->pkt->pkt.signature)->sig_class == 0x18
+	    && sig->keyid[0] == mainkid[0]
+	    && sig->keyid[1] == mainkid[1]
+	    && sig->version > 3
+	    && sig->timestamp > sigdate ) {
+	    /* okay this is a key-binding which can be used.
+	     * We use the latest self-signature.
+	     * FIXME: We should only use this if the binding signature is valid
+	     *	      but this is time consuming - we must provide another
+	     *	      way to handle this
+	     */
+	    const byte *p;
+	    u32 ed;
+
+	    p = parse_sig_subpkt( sig->hashed_data, SIGSUBPKT_KEY_EXPIRE, NULL );
+	    ed = p? node->pkt->pkt.public_key->timestamp + buffer_to_u32(p):0;
+	    sigdate = sig->timestamp;
+	    expires = ed;
+	}
+	else if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+	    break; /* stop at the next subkey */
+    }
+
+    return expires;
+}
+
+
+/****************
+ * Check whether the subkey has expired.  Node must point to the subkey
+ */
+static int
+has_expired( KBNODE node, u32 *mainkid, u32 cur_time )
+{
+    u32 expires = subkeys_expiretime( node, mainkid );
+    return expires && expires <= cur_time;
+}
+
 static void
 finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 					       int use_namehash, int primary )
@@ -1539,6 +1597,10 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 		       pk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
 	    /* if the usage is not correct, try to use a subkey */
 	    KBNODE save_k = k;
+	    u32 mainkid[2];
+	    u32 cur_time = make_timestamp();
+
+	    keyid_from_pk( keyblock->pkt->pkt.public_key, mainkid );
 
 	    k = NULL;
 	    /* kludge for pgp 5: which doesn't accept type 20:
@@ -1550,7 +1612,8 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 			    == PUBKEY_ALGO_ELGAMAL_E
 			&& !check_pubkey_algo2(
 				k->pkt->pkt.public_key->pubkey_algo,
-						 pk->pubkey_usage ) )
+						 pk->pubkey_usage )
+			&& !has_expired(k, mainkid, cur_time) )
 			break;
 		}
 	    }
@@ -1560,7 +1623,10 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
 		    if( k->pkt->pkttype == PKT_PUBLIC_SUBKEY
 			&& !check_pubkey_algo2(
 				k->pkt->pkt.public_key->pubkey_algo,
-						 pk->pubkey_usage ) )
+						 pk->pubkey_usage )
+			&& ( pk->pubkey_usage != PUBKEY_USAGE_ENC
+			     || !has_expired( k, mainkid, cur_time ) )
+		      )
 			break;
 		}
 	    }

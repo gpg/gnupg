@@ -274,11 +274,14 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
     sk = m_alloc_clear( sizeof *sk );
     pk = m_alloc_clear( sizeof *pk );
-    sk->timestamp = pk->timestamp = make_timestamp();
+    sk->timestamp = pk->timestamp =   948668400;
+#warning FIXME: 		    make_timestamp();
     sk->version = pk->version = 4;
     if( expireval ) {
 	sk->expiredate = pk->expiredate = sk->timestamp + expireval;
     }
+    sk->expiredate = pk->expiredate = 949705200;
+#warning remove the above line
     sk->pubkey_algo = pk->pubkey_algo = algo;
 		       pk->pkey[0] = mpi_copy( skey[0] );
 		       pk->pkey[1] = mpi_copy( skey[1] );
