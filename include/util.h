@@ -266,6 +266,9 @@ int vasprintf ( char **result, const char *format, va_list args);
 #define hexdigitp(a) (digitp (a)                     \
                       || (*(a) >= 'A' && *(a) <= 'F')  \
                       || (*(a) >= 'a' && *(a) <= 'f'))
+/* Note this isn't identical to a C locale isspace() without \f and
+   \v, but works for the purposes used here. */
+#define ascii_isspace(a) ((a)==' ' || (a)=='\n' || (a)=='\r' || (a)=='\t')
 
 /******* RISC OS stuff ***********/
 #ifdef __riscos__

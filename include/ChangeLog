@@ -1,3 +1,12 @@
+2003-06-26  David Shaw  <dshaw@jabberwocky.com>
+
+	* types.h: Prefer using uint64_t when creating a 64-bit unsigned
+	type.  This avoids a warning on compilers that support but
+	complain about unsigned long long.
+
+	* util.h (ascii_isspace): New variation on isspace() that is
+	immune from locale changes.
+
 2003-06-07  Werner Koch  <wk@gnupg.org>
 
 	* util.h (hexdigitp,spacep,digitp): New.
