@@ -1279,9 +1279,14 @@ find_by_name( KBNODE keyblock, PKT_public_key *pk, const char *name,
 		u32 aki[2];
 		keyid_from_pk( kk->pkt->pkt.public_key, aki );
 		cache_user_id( k->pkt->pkt.user_id, aki );
-		rmd160_hash_buffer( namehash,
-				    k->pkt->pkt.user_id->name,
-				    k->pkt->pkt.user_id->len );
+		if( k->pkt->pkt.user_id->photo )
+		    rmd160_hash_buffer( namehash,
+					k->pkt->pkt.user_id->photo,
+					k->pkt->pkt.user_id->photolen );
+		else
+		    rmd160_hash_buffer( namehash,
+					k->pkt->pkt.user_id->name,
+					k->pkt->pkt.user_id->len );
 		*use_namehash = 1;
 		return kk;
 	    }
@@ -1886,6 +1891,18 @@ get_user_id_string( u32 *keyid )
     sprintf(p, "%08lX [?]", (ulong)keyid[1] );
     return p;
 }
+
+
+char*
+get_user_id_string_native( u32 *keyid )
+{
+    char *p = get_user_id_string( keyid );
+    char *p2 = utf8_to_native( p, strlen(p) );
+
+    m_free(p);
+    return p2;
+}
+
 
 char*
 get_long_user_id_string( u32 *keyid )

@@ -133,8 +133,8 @@ int enarmor_file( const char *fname );
 int gen_revoke( const char *uname );
 
 /*-- keylist.c --*/
-void public_key_list( int nnames, char **names );
-void secret_key_list( int nnames, char **names );
+void public_key_list( STRLIST list );
+void secret_key_list( STRLIST list );
 
 /*-- verify.c --*/
 int verify_signatures( int nfiles, char **files );

@@ -220,6 +220,8 @@ free_comment( PKT_comment *rem )
 void
 free_user_id( PKT_user_id *uid )
 {
+    if( uid->photo )
+	m_free( uid->photo );
     m_free(uid);
 }
 

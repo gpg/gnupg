@@ -1,3 +1,9 @@
+Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* es_ES.po: Fixed 3 \n mismatches.
+
+	* de.po: Updated.
+
 Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* es_ES.po: Updated.

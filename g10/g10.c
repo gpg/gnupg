@@ -479,9 +479,9 @@ make_username( const char *string )
 {
     char *p;
     if( utf8_strings )
-	p = native_to_utf8( string );
-    else
 	p = m_strdup(string);
+    else
+	p = native_to_utf8( string );
     return p;
 }
 
@@ -1180,15 +1180,28 @@ main( int argc, char **argv )
       case aListSigs:
 	opt.list_sigs = 1;
       case aListKeys:
-	public_key_list( argc, argv );
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	    add_to_strlist2( &sl, *argv, utf8_strings );
+	public_key_list( sl );
+	free_strlist(sl);
 	break;
       case aListSecretKeys:
-	secret_key_list( argc, argv );
+	sl = NULL;
+	for( ; argc; argc--, argv++ )
+	    add_to_strlist2( &sl, *argv, utf8_strings );
+	secret_key_list( sl );
+	free_strlist(sl);
 	break;
 
       case aKMode: /* list keyring -- NOTE: This will be removed soon */
-	if( argc < 2 )	/* -kv [userid] */
-	    public_key_list( (argc && **argv)? 1:0, argv );
+	if( argc < 2 ) { /* -kv [userid] */
+	    sl = NULL;
+	    if (argc && **argv)
+		add_to_strlist2( &sl, *argv, utf8_strings );
+	    public_key_list( sl );
+	    free_strlist(sl);
+	}
 	else if( argc == 2 ) { /* -kv userid keyring */
 	    if( access( argv[1], R_OK ) ) {
 		log_error(_("can't open %s: %s\n"),
@@ -1198,7 +1211,11 @@ main( int argc, char **argv )
 		/* add keyring (default keyrings are not registered in this
 		 * special case */
 		add_keyblock_resource( argv[1], 0, 0 );
-		public_key_list( **argv?1:0, argv );
+		sl = NULL;
+		if (**argv)
+		    add_to_strlist2( &sl, *argv, utf8_strings );
+		public_key_list( sl );
+		free_strlist(sl);
 	    }
 	}
 	else

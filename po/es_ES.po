@@ -2282,7 +2282,7 @@ msgstr "Comando no válido (pruebe \"help\")\n"
 
 #: g10/keyedit.c:1065
 msgid "This key has been disabled"
-msgstr "Esta clave está deshabilitada\n"
+msgstr "Esta clave está deshabilitada"
 
 #: g10/keyedit.c:1336
 msgid "Delete this good signature? (y/N/q)"
@@ -2404,7 +2404,7 @@ msgstr "datos cifrados de la clave pública: DEK bueno\n"
 #: g10/mainproc.c:275
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %08lX, created %s\n"
-msgstr "cifrado con clave %2$s de %1$u bits, ID %3$08lX, creada el %4$s"
+msgstr "cifrado con clave %2$s de %1$u bits, ID %3$08lX, creada el %4$s\n"
 
 #: g10/mainproc.c:285
 #, c-format
@@ -3326,7 +3326,7 @@ msgstr ""
 "C  para cambiar el comentario.\n"
 "E  para cambiar la dirección.\n"
 "O  para continuar con la generación de clave.\n"
-"S  para interrumpir la generación de clave.\n"
+"S  para interrumpir la generación de clave."
 
 #: g10/helptext.c:141
 msgid "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."

@@ -43,34 +43,24 @@ static void fingerprint( PKT_public_key *pk, PKT_secret_key *sk );
 
 /****************
  * List the keys
- * If NNAMES is 0; all available keys are listed
+ * If list is NULL, all available keys are listed
  */
 void
-public_key_list( int nnames, char **names )
+public_key_list( STRLIST list )
 {
-    if( !nnames )
+    if( !list )
 	list_all(0);
-    else { /* List by user id */
-	STRLIST list = NULL;
-	for( ; nnames ; nnames--, names++ )
-	    add_to_strlist( &list, *names );
+    else
 	list_one( list, 0 );
-	free_strlist( list );
-    }
 }
 
 void
-secret_key_list( int nnames, char **names )
+secret_key_list( STRLIST list )
 {
-    if( !nnames )
+    if( !list )
 	list_all(1);
-    else { /* List by user id */
-	STRLIST list = NULL;
-	for( ; nnames ; nnames--, names++ )
-	    add_to_strlist( &list, *names );
+    else  /* List by user id */
 	list_one( list, 1 );
-	free_strlist( list );
-    }
 }
 
 
@@ -243,9 +233,14 @@ list_keyblock( KBNODE keyblock, int secret )
 		    byte namehash[20];
 
 		    if( pk && !ulti_hack ) {
-			rmd160_hash_buffer( namehash,
-					node->pkt->pkt.user_id->name,
-					node->pkt->pkt.user_id->len  );
+			if( node->pkt->pkt.user_id->photo )
+			    rmd160_hash_buffer( namehash,
+					    node->pkt->pkt.user_id->name,
+					    node->pkt->pkt.user_id->len  );
+			else
+			    rmd160_hash_buffer( namehash,
+					    node->pkt->pkt.user_id->name,
+					    node->pkt->pkt.user_id->len  );
 			trustletter = query_trust_info( pk, namehash );
 		    }
 		    else

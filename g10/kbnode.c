@@ -165,7 +165,7 @@ find_prev_kbnode( KBNODE root, KBNODE node, int pkttype )
     KBNODE n1;
 
     for(n1=NULL ; root && root != node; root = root->next )
-	if( !pkttype || root->pkt->pkttype == pkttype )
+	if( !pkttype || root->pkt->pkttype == pkttype  )
 	    n1 = root;
     return n1;
 }

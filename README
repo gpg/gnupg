@@ -121,7 +121,7 @@
     c) If you don't have any of the above programs, you have to verify
        the MD5 checksum:
 
-	$ md5sum gnupg-x.y.z.tar.gz.sig
+	$ md5sum gnupg-x.y.z.tar.gz
 
        This should yield an output similar_to this:
 
@@ -485,6 +485,8 @@
 				    very low traffic.
 	gnupg-users@gnupg.org	    For general user discussion and
 				    help.
+	gnupg-i18n@gnupg.org	    Discussion about internationalization
+				    issues.
 	gnupg-devel@gnupg.org	    GnuPG developers main forum.
 
     You subscribe to one of the list by sending mail with a subject
@@ -508,11 +510,11 @@
     the GNU service directory or search other resources.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v0.9.11 (GNU/Linux)
+Version: GnuPG v1.0.0e (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iQB1AwUBN9QAwB0Z9MEMmFelAQG0XwMAqyH3UR0Jk+dm2ZkVoTqckGqmMMt5IdBN
-MlG4g3dau5De8XXHvbQ45cUpU4CC0MOlEuKDp+CKOc+xbzczdH35qYt/5XKmVWS8
-JwTvuKKCZ/95JRMk0ZMRueQduH7tSijZ
-=MefQ
+iQB1AwUBOCv6bB0Z9MEMmFelAQGktwL/SyzPDeU2I38lFj3Xx7IhL9vUTEaEDuAH
+FFjs0i4qpRlvYVfTtEQjkUMCUe6PCMXNXY+var1FOECpJwS93t4uf3VV83ESOMCu
+VR5JjhowfU2l957aFOFyzBpNuMPBuwBR
+=+Tbg
 -----END PGP SIGNATURE-----

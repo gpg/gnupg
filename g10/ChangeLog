@@ -1,3 +1,28 @@
+Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* g10.c (make_username): Swapped the logic.
+	* keylist.c (public_key_list): Now takes a STRLIST as arg and moved
+	the creation ot this list to the caller, so that he can copy with
+	UTF-conversion of user IDs.  Changed all callers.
+	(secret_key_list): Likewise.
+
+	* getkey.c (get_user_id_string_native): New and ...
+	* encode.c (write_pubkey_enc_from_list): ... use it here.
+
+	* pubring.asc: Updated.
+
+	* packet.h (PKT_PHOTO_ID): New.
+	* parse-packet.c (parse_photo_id): New.
+	* build-packet.c (do_user_id: Handle photo IDs.
+	(build_packet): Change CTB for photo IDs
+	* free-packet.c (free_user_id): Release memory used for photo IDs
+	* sig-check.c (hash_uid_node): Handle photo IDs too.
+	* trustdb.c (print_uid_from_keyblock): Hash photo ID.
+	(make_uid_records): Ditto.
+	* getkey.c (find_by_name): Ditto.
+	* keyedit.c (show_prefs): Ditto.
+	* keylist.c (list_keyblock): Ditto.
+
 Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* keygen.c (ask_expire_interval): Print a warning for systems

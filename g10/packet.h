@@ -46,6 +46,7 @@ typedef enum {
 	PKT_USER_ID	  =13, /* user id packet */
 	PKT_PUBLIC_SUBKEY =14, /* public subkey (OpenPGP) */
 	PKT_OLD_COMMENT   =16, /* comment packet from an OpenPGP draft */
+	PKT_PHOTO_ID	  =17, /* PGP's photo ID */
 	PKT_COMMENT	  =61, /* new comment packet (private) */
 	PKT_ENCRYPTED_MDC =62, /* test: encrypted data with MDC */
 } pkttype_t;
@@ -155,6 +156,8 @@ typedef struct {
 
 typedef struct {
     int  len;		  /* length of the name */
+    char *photo;	  /* if this is not NULL, the packet is a photo ID */
+    int photolen;	  /* and the length of the photo */
     char name[1];
 } PKT_user_id;
 

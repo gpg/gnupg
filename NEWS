@@ -13,6 +13,15 @@
       which have been encrypted this way; this should be done immediately
       as this workaround will be remove in 1.1
 
+    * Can now handle (but not display) PGP's photo IDs. I don't know the
+      format of that packet but after stripping a few bytes from the start
+      it looks like a JPEG (at least my test data).  Handling of this
+      package is required because otherwise it would mix up the
+      self signatures and you can't import those keys.
+
+    * Passing non-ascii user IDs on the commandline should now work in all
+      cases.
+
 
 Noteworthy changes in version 1.0.0 (1999-09-07)
 -----------------------------------

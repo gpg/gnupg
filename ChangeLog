@@ -1,3 +1,7 @@
+Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* README: Fixed a type and add a note about the gnupg-i18n ML.
+
 Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* acinclude.m4, configure.in (GNUPG_CHECK_GNUMAKE): New.

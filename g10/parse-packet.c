@@ -61,6 +61,8 @@ static int  parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 				      byte *hdr, int hdrlen, PACKET *packet );
 static int  parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
+static int  parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen,
+							   PACKET *packet );
 static int  parse_comment( IOBUF inp, int pkttype, unsigned long pktlen,
 							   PACKET *packet );
 static void parse_trust( IOBUF inp, int pkttype, unsigned long pktlen,
@@ -416,6 +418,10 @@ parse( IOBUF inp, PACKET *pkt, int reqtype, ulong *retpos,
 	break;
       case PKT_USER_ID:
 	rc = parse_user_id(inp, pkttype, pktlen, pkt );
+	break;
+      case PKT_PHOTO_ID:
+	pkt->pkttype = pkttype = PKT_USER_ID;  /* must fix it */
+	rc = parse_photo_id(inp, pkttype, pktlen, pkt);
 	break;
       case PKT_OLD_COMMENT:
       case PKT_COMMENT:
@@ -1475,6 +1481,8 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
 
     packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + pktlen);
     packet->pkt.user_id->len = pktlen;
+    packet->pkt.user_id->photo = NULL;
+    packet->pkt.user_id->photolen = 0;
     p = packet->pkt.user_id->name;
     for( ; pktlen; pktlen--, p++ )
 	*p = iobuf_get_noeof(inp);
@@ -1495,6 +1503,31 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     return 0;
 }
 
+
+/****************
+ * PGP generates a packet of type 17. We assume this is a photo ID and
+ * simply store it here as a comment packet.
+ */
+static int
+parse_photo_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
+{
+    byte *p;
+
+    packet->pkt.user_id = m_alloc(sizeof *packet->pkt.user_id  + 30);
+    sprintf( packet->pkt.user_id->name, "[image of size %lu]", pktlen );
+    packet->pkt.user_id->len = strlen(packet->pkt.user_id->name);
+
+    packet->pkt.user_id->photo = m_alloc(sizeof *packet->pkt.user_id + pktlen);
+    packet->pkt.user_id->photolen = pktlen;
+    p = packet->pkt.user_id->photo;
+    for( ; pktlen; pktlen--, p++ )
+	*p = iobuf_get_noeof(inp);
+
+    if( list_mode ) {
+	printf(":photo_id packet: %s\n", packet->pkt.user_id->name );
+    }
+    return 0;
+}
 
 
 static int

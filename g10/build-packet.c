@@ -67,25 +67,31 @@ int
 build_packet( IOBUF out, PACKET *pkt )
 {
     int new_ctb=0, rc=0, ctb;
+    int pkttype;
 
     if( DBG_PACKET )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
     assert( pkt->pkt.generic );
 
-    switch( pkt->pkttype ) {
+    switch( (pkttype = pkt->pkttype) ) {
       case PKT_OLD_COMMENT: pkt->pkttype = PKT_COMMENT; break;
       case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
       case PKT_ENCRYPTED:
       case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;
       case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
+      case PKT_USER_ID:
+	    if( pkt->pkt.user_id->photo )
+		pkttype = PKT_PHOTO_ID;
+	    break;
       default: break;
     }
 
-    if( new_ctb || pkt->pkttype > 15 ) /* new format */
-	ctb = 0xc0 | (pkt->pkttype & 0x3f);
+    if( new_ctb || pkttype > 15 ) /* new format */
+	ctb = 0xc0 | (pkttype & 0x3f);
     else
-	ctb = 0x80 | ((pkt->pkttype & 15)<<2);
-    switch( pkt->pkttype ) {
+	ctb = 0x80 | ((pkttype & 15)<<2);
+    switch( pkttype ) {
+      case PKT_PHOTO_ID:
       case PKT_USER_ID:
 	rc = do_user_id( out, ctb, pkt->pkt.user_id );
 	break;
@@ -149,6 +155,7 @@ calc_packet_length( PACKET *pkt )
 	n = calc_plaintext( pkt->pkt.plaintext );
 	new_ctb = pkt->pkt.plaintext->new_ctb;
 	break;
+      case PKT_PHOTO_ID:
       case PKT_USER_ID:
       case PKT_COMMENT:
       case PKT_PUBLIC_KEY:
@@ -196,9 +203,16 @@ do_comment( IOBUF out, int ctb, PKT_comment *rem )
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
-    write_header(out, ctb, uid->len);
-    if( iobuf_write( out, uid->name, uid->len ) )
-	return G10ERR_WRITE_FILE;
+    if( uid->photo ) {
+	write_header(out, ctb, uid->photolen);
+	if( iobuf_write( out, uid->photo, uid->photolen ) )
+	    return G10ERR_WRITE_FILE;
+    }
+    else {
+	write_header(out, ctb, uid->len);
+	if( iobuf_write( out, uid->name, uid->len ) )
+	    return G10ERR_WRITE_FILE;
+    }
     return 0;
 }
 

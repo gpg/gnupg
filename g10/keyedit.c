@@ -1005,7 +1005,10 @@ show_prefs( KBNODE keyblock, PKT_user_id *uid )
 	return;
     }
 
-    rmd160_hash_buffer( namehash, uid->name, uid->len );
+    if( uid->photo )
+	rmd160_hash_buffer( namehash, uid->photo, uid->photolen );
+    else
+	rmd160_hash_buffer( namehash, uid->name, uid->len );
 
     p = get_pref_data( pk->local_id, namehash, &n );
     if( !p )
