@@ -35,6 +35,8 @@ struct cmdtbl_s {
 struct assuan_context_s {
   AssuanError err_no;
   const char *err_str;
+  
+  void *user_pointer;  /* for assuan_[gs]et_pointer () */
 
   struct {
     int fd;

@@ -354,5 +354,45 @@ assuan_process (ASSUAN_CONTEXT ctx)
 }
 
 
+void
+assuan_write_status (ASSUAN_CONTEXT ctx, const char *keyword, const char *text)
+{
+  char buffer[256];
+  char *helpbuf;
+  size_t n;
+
+  if ( !ctx || !keyword)
+    return;
+  if (!text)
+    text = "";
+
+  n = 2 + strlen (keyword) + 1 + strlen (text) + 1;
+  if (n < sizeof (buffer))
+    {
+      strcpy (buffer, "S ");
+      strcat (buffer, keyword);
+      if (*text)
+        {
+          strcat (buffer, " ");
+          strcat (buffer, text);
+        }
+      _assuan_write_line (ctx, buffer);
+    }
+  else if ( (helpbuf = xtrymalloc (n)) )
+    {
+      strcpy (helpbuf, "S ");
+      strcat (helpbuf, keyword);
+      if (*text)
+        {
+          strcat (helpbuf, " ");
+          strcat (helpbuf, text);
+        }
+      _assuan_write_line (ctx, helpbuf);
+      xfree (helpbuf);
+    }
+}
+
+
+
 
 

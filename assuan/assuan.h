@@ -80,6 +80,8 @@ int assuan_register_command (ASSUAN_CONTEXT ctx,
                              int cmd_id, const char *cmd_string,
                              int (*handler)(ASSUAN_CONTEXT, char *));
 int assuan_process (ASSUAN_CONTEXT ctx);
+void assuan_write_status (ASSUAN_CONTEXT ctx,
+                          const char *keyword, const char *text);
 
 
 /*-- assuan-listen.c --*/
@@ -98,6 +100,9 @@ void assuan_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
                                void *(*new_realloc_func)(void *p, size_t n),
                                void (*new_free_func)(void*) );
 int assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text);
+void assuan_set_pointer (ASSUAN_CONTEXT ctx, void *pointer);
+void *assuan_get_pointer (ASSUAN_CONTEXT ctx);
+
 
 /*-- assuan-errors.c (built) --*/
 const char *assuan_strerror (AssuanError err);

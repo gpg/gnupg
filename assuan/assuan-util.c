@@ -83,3 +83,16 @@ assuan_set_error (ASSUAN_CONTEXT ctx, int err, const char *text)
   return err;
 }
 
+void
+assuan_set_pointer (ASSUAN_CONTEXT ctx, void *pointer)
+{
+  if (ctx)
+    ctx->user_pointer = pointer;
+}
+
+void *
+assuan_get_pointer (ASSUAN_CONTEXT ctx)
+{
+  return ctx? ctx->user_pointer : NULL;
+}
+
