@@ -1,3 +1,15 @@
+2002-06-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.skel: Sample photo viewers for Win32.
+
+	* misc.c (pct_expando): Use the seckey for %k/%K if the pubkey is
+	not available.
+
+	* photoid.h, photoid.c (show_photos): Include the seckey in case a
+	user tries to view a photo on a secret key, and change all callers
+	in keyedit.c (menu_showphoto), keylist.c (list_keyblock_print),
+	and photoid.c (generate_photo_id).
+
 2002-06-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* photoid.c (show_photos): Work properly when not called with a

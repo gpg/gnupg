@@ -401,7 +401,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
 	    if(opt.show_photos && node->pkt->pkt.user_id->attribs!=NULL)
 	      show_photos(node->pkt->pkt.user_id->attribs,
-			  node->pkt->pkt.user_id->numattribs,pk);
+			  node->pkt->pkt.user_id->numattribs,pk,sk);
 	}
 	else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
 	    u32 keyid2[2];

@@ -464,6 +464,9 @@ pct_expando(const char *string,struct expando_args *args)
   if(args->sk)
     keyid_from_sk(args->sk,sk_keyid);
 
+  if(!args->pk && args->sk)
+    keyid_from_sk(args->sk,pk_keyid);
+
   while(*ch!='\0')
     {
       char *str=NULL;

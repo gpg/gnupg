@@ -171,6 +171,12 @@ lock-once
 #
 # Use your MIME handler to view photos:
 # photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
+#
+# Use the Win32 registry to pick a viewer for you:
+#    On Win95/98/Me (also the default on Win32):
+# photo-viewer "start /w"
+#    On NT/2k/XP:
+# photo-viewer "cmd /c start /w"
 
 
 # Passphrase agent

@@ -120,7 +120,7 @@ PKT_user_id *generate_photo_id(PKT_public_key *pk)
       parse_attribute_subpkts(uid);
       make_attribute_uidname(uid);
 
-      show_photos(uid->attribs,uid->numattribs,pk);
+      show_photos(uid->attribs,uid->numattribs,pk,NULL);
       switch(cpr_get_answer_yes_no_quit("photoid.jpeg.okay",
 					_("Is this photo correct (y/N/q)? ")))
 	{
@@ -215,7 +215,7 @@ char *image_type_to_string(byte type,int style)
 }
 
 void show_photos(const struct user_attribute *attrs,
-		 int count,PKT_public_key *pk)
+		 int count,PKT_public_key *pk,PKT_secret_key *sk)
 {
   int i;
   struct expando_args args;
@@ -224,9 +224,12 @@ void show_photos(const struct user_attribute *attrs,
 
   memset(&args,0,sizeof(args));
   args.pk=pk;
+  args.sk=sk;
 
   if(pk)
     keyid_from_pk(pk,kid);
+  else if(sk)
+    keyid_from_sk(sk,kid);
 
   for(i=0;i<count;i++)
     if(attrs[i].type==ATTRIB_IMAGE &&

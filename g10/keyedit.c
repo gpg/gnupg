@@ -3116,7 +3116,7 @@ menu_showphoto( KBNODE keyblock )
 				   "key 0x%08lX (uid %d)\n"),
 				 image_type_to_string(type,1),
 				 (ulong)size,(ulong)keyid[1],count);
-		      show_photos(&uid->attribs[i],1,pk);
+		      show_photos(&uid->attribs[i],1,pk,NULL);
 		    }
 		}
 	    }
