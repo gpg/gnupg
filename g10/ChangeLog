@@ -1,3 +1,15 @@
+2002-05-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* import.c (import_one): When merging with a key we already have,
+	don't let a key conflict (same keyid but different key) stop the
+	import: just skip the bad key and continue.
+
+	* exec.c (make_tempdir): Under Win32, don't try environment
+	variables for temp directories - GetTempDir tries environment
+	variables internally, and it's better not to second-guess it in
+	case MS adds some sort of temp dir handling to Windows at some
+	point.
+
 2002-05-05  Timo Schulz  <ts@winpt.org>
 
         * mainproc.c (proc_symkey_enc): Don't ask for a passphrase

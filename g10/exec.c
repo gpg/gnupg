@@ -67,8 +67,25 @@ static int make_tempdir(struct exec_info *info)
     ext=info->binary?"bin":"txt";
 
   /* Make up the temp dir and files in case we need them */
+
   if(tmp==NULL)
     {
+#if defined (__MINGW32__) || defined (__CYGWIN32__)
+      tmp=m_alloc(256);
+      if(GetTempPath(256,tmp)==0)
+	strcpy(tmp,"c:\\windows\temp");
+      else
+	{
+	  int len=strlen(tmp);
+
+	  /* GetTempPath may return with \ on the end */
+	  while(len>0 && tmp[len-1]=='\\')
+	    {
+	      tmp[len-1]='\0';
+	      len--;
+	    }
+	}
+#else /* More unixish systems */
       tmp=getenv("TMPDIR");
       if(tmp==NULL)
 	{
@@ -78,26 +95,12 @@ static int make_tempdir(struct exec_info *info)
 #ifdef __riscos__
 	      tmp="<Wimp$ScrapDir>.GnuPG";
 	      mkdir(tmp,0700); /* Error checks occur later on */
-#elif defined (__MINGW32__) || defined (__CYGWIN32__)
-	      tmp=m_alloc(256);
-	      if(GetTempPath(256,tmp)==0)
-		strcpy(tmp,"c:\\temp");
-	      else
-		{
-		  int len=strlen(tmp);
-
-		  /* GetTempPath may return with \ on the end */
-		  while(len>0 && tmp[len-1]=='\\')
-		    {
-		      tmp[len-1]='\0';
-		      len--;
-		    }
-		}
 #else
 	      tmp="/tmp";
 #endif
 	    }
 	}
+#endif
     }
 
   info->tempdir=m_alloc(strlen(tmp)+strlen(DIRSEP_S)+10+1);

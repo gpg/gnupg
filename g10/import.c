@@ -517,13 +517,11 @@ import_one( const char *fname, KBNODE keyblock, int fast,
         KEYDB_HANDLE hd;
 	int n_uids, n_sigs, n_subk;
 
-
 	/* Compare the original against the new key; just to be sure nothing
 	 * weird is going on */
 	if( cmp_public_keys( pk_orig, pk ) ) {
 	    log_error( _("key %08lX: doesn't match our copy\n"),
 							  (ulong)keyid[1]);
-	    rc = G10ERR_GENERAL;
 	    goto leave;
 	}
 
