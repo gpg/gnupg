@@ -1303,8 +1303,6 @@ check_sig_and_print( CTX c, KBNODE node )
             }
         }
     }
-    
-
 
     tstr = asctimestamp(sig->timestamp);
     astr = pubkey_algo_to_string( sig->pubkey_algo );
@@ -1421,9 +1419,14 @@ check_sig_and_print( CTX c, KBNODE node )
 		     !un->pkt->pkt.user_id->attrib_data )
 		    continue;
 
-		if(opt.show_photos && un->pkt->pkt.user_id->attrib_data)
-		  show_photos(un->pkt->pkt.user_id->attribs,
-			      un->pkt->pkt.user_id->numattribs,pk,NULL);
+		if(un->pkt->pkt.user_id->attrib_data)
+		  {
+		    dump_attribs(un->pkt->pkt.user_id,pk,NULL);
+
+		    if(opt.show_photos)
+		      show_photos(un->pkt->pkt.user_id->attribs,
+				  un->pkt->pkt.user_id->numattribs,pk,NULL);
+		  }
 
 		log_info(    _("                aka \""));
                 print_utf8_string( log_stream(), un->pkt->pkt.user_id->name,
@@ -1685,7 +1688,3 @@ proc_tree( CTX c, KBNODE node )
         dump_kbnode (node);
     }
 }
-
-
-
-
