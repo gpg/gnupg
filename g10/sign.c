@@ -544,19 +544,24 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
 
     /* try to calculate the length of the data */
     if (fname && *fname && !(*fname=='-' && !fname[1])) {
-        if( !(filesize = iobuf_get_filelength(inp)) )
+        off_t tmpsize;
+       
+        if( !(tmpsize = iobuf_get_filelength(inp)) )
             log_info (_("WARNING: `%s' is an empty file\n"), fname);
 
-        /* we can't yet encode the length of very large files,
-         * so we switch to partial length encoding in this case */
-        if (filesize >= IOBUF_FILELENGTH_LIMIT)
-            filesize = 0;
+        /* We can't encode the length of very large files because
+           OpenPGP uses only 32 bit for file sizes.  So if the size of
+           a file is larger than 2^32 minus some bytes for packet
+           headers, we switch to partial length encoding. */
+        if ( tmpsize < (IOBUF_FILELENGTH_LIMIT - 65536) )
+          filesize = tmpsize;
+        else
+          filesize = 0;
 
-        /* because the text_filter modifies the length of the
+        /* Because the text_filter modifies the length of the
          * data, it is not possible to know the used length
          * without a double read of the file - to avoid that
-         * we simple use partial length packets.
-         */
+         * we simple use partial length packets. */
         if ( ptmode == 't' )
             filesize = 0;
     }

@@ -1,3 +1,8 @@
+2004-05-07  Werner Koch  <wk@gnupg.org>
+
+	* sign.c (write_plaintext_packet): Fixed the detection of too
+	large files in the same way as in encode.c.
+
 2004-05-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* keylist.c (show_notation): Use bits to select which sort of
