@@ -1,7 +1,7 @@
 2002-08-30  Werner Koch  <wk@gnupg.org>
 
-	* random.c: Automagically detect the entrop gatherer when
-	configure so.
+	* random.c: Automagically detect the entropy gatherer when
+	this feature is configured.
 	* rndegd.c (rndegd_connect_socket): New.  Factored out from ..
 	(rndegd_gather_random): here and call it.
 	(do_read): Update the counter variables correctly.  This was not a

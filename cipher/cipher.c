@@ -32,7 +32,7 @@
 /* We have support for a DUMMY encryption cipher which comes handy to
    debug MDCs and similar things.  Because this is a bit dangerous it
    is not enabled. */
-#define ALLOW_DUMMY 1 
+/*#define ALLOW_DUMMY 1 */
 
 #define MAX_BLOCKSIZE 16
 #define TABLE_SIZE 14
@@ -175,7 +175,7 @@ setup_cipher_table(void)
 					 &cipher_table[i].encrypt,
 					 &cipher_table[i].decrypt     );
     if (cipher_table[i].name)
-      i++;  /* Note that IDEA is usually no available. */
+      i++;  /* Note that IDEA is usually not available. */
 
 #ifdef ALLOW_DUMMY
     cipher_table[i].algo = CIPHER_ALGO_DUMMY;
