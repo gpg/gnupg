@@ -646,6 +646,13 @@ in &ParmFiles; (or stdin if not given); existing
 values will be overwritten.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--rebuild-keydb-caches</term>
+<listitem><para>
+When updateing form version 1.0.6 to 1.0.7 this command should be used
+to create signature caches in the keyring.  It might be handy in
+other situations too.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--print-md <parameter>algo</parameter> &OptParmFiles;</term>
