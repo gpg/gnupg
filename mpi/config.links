@@ -81,6 +81,13 @@ case "${target}" in
 	path="pa7100 hppa1.1 hppa"
 	mpi_extra_modules="udiv-qrnnd"
 	;;
+    sparc64-*-linux-gnu)
+	# An extra rule because we have an report for this one only.
+	# Should be compared against the next GMP version
+	echo '/* configured for sparc64-*-linux-gnu */' >>./mpi/asm-syntax.h
+	path="sparc32v8 sparc32"
+	mpi_extra_modules="udiv"
+	;;
     sparc9*-*-* | sparc64*-*-* | ultrasparc*-*-*)
 	echo '/* configured for sparc9 or higher */' >>./mpi/asm-syntax.h
 	path="sparc32v8 sparc32"

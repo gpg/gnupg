@@ -1,3 +1,8 @@
+Fri Mar 17 17:50:25 CET 2000  Werner Koch  <wk@openit.de>
+
+	* config.links (sparc64-unknown-linux-gnu): use udic module.
+	From Adam Mitchell.
+
 2000-03-14 12:03:56  Werner Koch  (wk@habibti.openit.de)
 
 	* Makefile.am: Do not use .s and .S files but a temp names, so that

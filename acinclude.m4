@@ -293,7 +293,8 @@ define(GNUPG_CHECK_IPC,
           AC_TRY_COMPILE([#include <sys/types.h>
              #include <sys/ipc.h>
              #include <sys/shm.h>],[
-             int foo( int shm_id ) {  shmctl(shm_id, SHM_LOCK, 0); }
+             int shm_id;
+             shmctl(shm_id, SHM_LOCK, 0);
              ],
              gnupg_cv_ipc_have_shm_lock="yes",
              gnupg_cv_ipc_have_shm_lock="no"
@@ -318,8 +319,14 @@ dnl GNUPG_CHECK_MLOCK
 dnl
 define(GNUPG_CHECK_MLOCK,
   [ AC_CHECK_FUNCS(mlock)
-    AC_CHECK_LIB(rt, mlock)
     if test "$ac_cv_func_mlock" = "yes"; then
+        AC_TRY_LINK_FUNC(mlock,tmp=yes,tmp=no)
+        if test $tmp = no; then
+            # We could not link a test program, so check whether
+            # we can do it by linking against librt
+            # this adds librt to the path. This adds librt to LIBS.
+            AC_CHECK_LIB(rt, mlock)
+        fi
         AC_MSG_CHECKING(whether mlock is broken)
           AC_CACHE_VAL(gnupg_cv_have_broken_mlock,
              AC_TRY_RUN([
