@@ -1,3 +1,9 @@
+2004-12-02  Werner Koch  <wk@g10code.com>
+
+	* certchain.c (gpgsm_basic_cert_check): Dump certs with bad
+	signature for debugging.
+	(gpgsm_validate_chain): Ditto.
+
 2004-11-29  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.c (set_debug): Changed to use a globals DEBUG_LEVEL and

@@ -292,7 +292,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
               keydb_search_reset (kh);
           
           /* In case of an error try the ephemeral DB.  We can't do
-             that in find-netx mode because we can't keep the search
+             that in find-next mode because we can't keep the search
              state then. */
           if (rc == -1 && !find_next)
             { 
@@ -311,7 +311,7 @@ find_up (KEYDB_HANDLE kh, ksba_cert_t cert, const char *issuer, int find_next)
          signature because it is not the correct one. */
       if (rc == -1)
         {
-          log_info ("issuer certificate (#");
+          log_info ("%sissuer certificate (#", find_next?"next ":"");
           gpgsm_dump_serial (authidno);
           log_printf ("/");
           gpgsm_dump_string (s);
@@ -565,7 +565,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
     }
 
   if (DBG_X509 && !listmode)
-    gpgsm_dump_cert ("subject", cert);
+    gpgsm_dump_cert ("target", cert);
 
   subject_cert = cert;
   maxdepth = 50;
@@ -659,6 +659,10 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             {
               do_list (1, lm, fp,
                        _("selfsigned certificate has a BAD signature"));
+              if (DBG_X509)
+                {
+                  gpgsm_dump_cert ("self-signing cert", subject_cert);
+                }
               rc = gpg_error (depth? GPG_ERR_BAD_CERT_CHAIN
                                    : GPG_ERR_BAD_CERT);
               goto leave;
@@ -775,10 +779,15 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       if (rc)
         {
           do_list (0, lm, fp, _("certificate has a BAD signature"));
+          if (DBG_X509)
+            {
+              gpgsm_dump_cert ("signing issuer", issuer_cert);
+              gpgsm_dump_cert ("signed subject", subject_cert);
+            }
           if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE)
             {
               /* We now try to find other issuer certificates which
-                 might have been used.  This is rquired because some
+                 might have been used.  This is required because some
                  CAs are reusing the issuer and subject DN for new
                  root certificates. */
               rc = find_up (kh, subject_cert, issuer, 1);
@@ -940,6 +949,10 @@ gpgsm_basic_cert_check (ksba_cert_t cert)
         {
           log_error ("selfsigned certificate has a BAD signature: %s\n",
                      gpg_strerror (rc));
+          if (DBG_X509)
+            {
+              gpgsm_dump_cert ("self-signing cert", cert);
+            }
           rc = gpg_error (GPG_ERR_BAD_CERT);
           goto leave;
         }

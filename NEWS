@@ -1,5 +1,9 @@
-Noteworthy changes in version 1.9.13
+Noteworthy changes in version 1.9.13 (2004-12-03)
 -------------------------------------------------
+
+ * [gpgsm] New option --prefer-system-dirmngr.
+
+ * Minor cleanups and debbuging aids.
 
 
 Noteworthy changes in version 1.9.12 (2004-10-22)

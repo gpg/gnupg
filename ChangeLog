@@ -1,9 +1,12 @@
+2004-12-03  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.13.
+
 2004-11-26  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Replace strsep.  Replaced use of "target" by
 	"host".
 	
-
 2004-10-22  Werner Koch  <wk@g10code.com>
 
 	Released 1.9.12.
