@@ -90,6 +90,7 @@ struct {
     int fast_list_mode;
     int ignore_time_conflict;
     int command_fd;
+    int auto_key_retrieve;
 } opt;
 
 

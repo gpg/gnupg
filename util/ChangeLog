@@ -1,3 +1,7 @@
+Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * ttyio.c: Simulate termios with termios.  By Dave Dykstra.
+
 Thu Jun  8 20:22:00 CEST 2000  Werner Koch  <wk@openit.de>
 
   * secmem.c (lock_pool,secmem_init): Additional check for dropped privs.

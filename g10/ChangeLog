@@ -1,3 +1,9 @@
+Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * g10.c: New options --no-auto-key-retrieve
+  * options.h (auto_key_retrieve): New.
+  * mainproc.c (check_sig_and_print): Implemented that.
+
 Wed Jun  7 19:19:09 CEST 2000  Werner Koch  <wk@openit.de>
 
   * sig-check.c (do_check): Use EMULATE_MDENCODE also on v4 paclets.

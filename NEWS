@@ -50,6 +50,9 @@ Noteworthy changes in the current test release
       than 64 bits is to be used.  --openpgp currently disables MDC packets
       entirely.
 
+    * New option --no-auto-key-retrieve to disable retrieving of
+      a missing public key from a keyerver, when a keyerver has been set.
+
 
 Noteworthy changes in version 1.0.1 (1999-12-16)
 -----------------------------------

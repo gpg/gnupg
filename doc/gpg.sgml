@@ -750,6 +750,16 @@ balancing using round-robin DNS you may notice
 that you get different key servers.
 </para></listitem></varlistentry>
 
+
+<varlistentry>
+<term>--no-auto-key-retrieve</term>
+<listitem><para>
+This option disables the automatic retrieving of keys from a keyserver
+while verifying signatures. This option allows to keep a keyserver in
+the options file or the --send-keys and --recv-keys commands.
+</para></listitem></varlistentry>
+
+
 <varlistentry>
 <term>--honor-http-proxy</term>
 <listitem><para>

@@ -26,6 +26,16 @@
 #include <unistd.h>
 #ifdef HAVE_TCGETATTR
   #include <termios.h>
+#else
+  #ifdef HAVE_TERMIO_H
+    /* simulate termios with termio */
+    #include <termio.h>
+    #define termios termio
+    #define tcsetattr ioctl
+    #define TCSAFLUSH TCSETAF
+    #define tcgetattr(A,B) ioctl(A,TCGETA,B)
+    #define HAVE_TCGETATTR
+  #endif
 #endif
 #ifdef __MINGW32__ /* use the odd Win32 functions */
   #include <windows.h>

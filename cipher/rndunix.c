@@ -102,7 +102,13 @@
 #include "util.h"
 
 #ifndef EAGAIN
-  #define EAGAIN  EWOULDBLOCK
+#define EAGAIN	EWOULDBLOCK
+#endif
+#ifndef STDIN_FILENO
+#define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
 #endif
 
 #define GATHER_BUFSIZE		49152	/* Usually about 25K are filled */
@@ -308,6 +314,34 @@ typedef struct {
     char data[500];	/* gathered data */
 } GATHER_MSG;
 
+
+#ifndef HAVE_WAITPID
+pid_t
+waitpid(pid_t pid, int *statptr, int options)
+{
+     #ifdef HAVE_WAIT4
+	return wait4(pid, statptr, options, NULL);
+     #else
+	/* If wait4 is also not available, try wait3 for SVR3 variants */
+	/* Less ideal because can't actually request a specific pid */
+	/* For that reason, first check to see if pid is for an */
+	/*   existing process. */
+	int tmp_pid, dummystat;;
+	if (kill(pid, 0) == -1) {
+		errno = ECHILD;
+		return -1;
+	}
+	if (statptr == NULL)
+		statptr = &dummystat;
+	while (((tmp_pid = wait3(statptr, options, 0)) != pid) &&
+		    (tmp_pid != -1) && (tmp_pid != 0) && (pid != -1))
+	    ;
+	return tmp_pid;
+     #endif
+}
+#endif
+
+
 /* Under SunOS popen() doesn't record the pid of the child process.  When
  * pclose() is called, instead of calling waitpid() for the correct child, it
  * calls wait() repeatedly until the right child is reaped.  The problem is
@@ -378,7 +412,9 @@ my_popen(struct RI *entry)
      * close on exec, so new children won't see it */
     close(pipedes[STDOUT_FILENO]);
 
+#ifdef FD_CLOEXEC
     fcntl(pipedes[STDIN_FILENO], F_SETFD, FD_CLOEXEC);
+#endif
 
     stream = fdopen(pipedes[STDIN_FILENO], "r");
 
@@ -471,8 +507,6 @@ slow_poll(FILE *dbgfp, int dbgall, size_t *nbytes )
 		maxFD = dataSources[i].pipeFD;
 	  #ifdef O_NONBLOCK /* Ohhh what a hack (used for Atari) */
 	    fcntl(dataSources[i].pipeFD, F_SETFL, O_NONBLOCK);
-	  #else
-	    #warning O_NONBLOCK is missing
 	  #endif
 	    FD_SET(dataSources[i].pipeFD, &fds);
 	    dataSources[i].length = 0;
@@ -618,6 +652,7 @@ start_gatherer( int pipefd )
     }
     /* close all files but the ones we need */
     {	int nmax, n1, n2, i;
+      #ifdef _SC_OPEN_MAX
 	if( (nmax=sysconf( _SC_OPEN_MAX )) < 0 ) {
 	  #ifdef _POSIX_OPEN_MAX
 	    nmax = _POSIX_OPEN_MAX;
@@ -625,6 +660,9 @@ start_gatherer( int pipefd )
 	    nmax = 20; /* assume a reasonable value */
 	  #endif
 	}
+      #else
+	nmax = 20; /* assume a reasonable value */
+      #endif
 	n1 = fileno( stderr );
 	n2 = dbgfp? fileno( dbgfp ) : -1;
 	for(i=0; i < nmax; i++ ) {

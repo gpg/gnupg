@@ -186,6 +186,7 @@ enum cmd_and_opt_values { aNull = 0,
     oListOnly,
     oIgnoreTimeConflict,
     oNoRandomSeedFile,
+    oNoAutoKeyRetrieve,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
 aTest };
@@ -367,6 +368,7 @@ static ARGPARSE_OPTS opts[] = {
     { oListOnly, "list-only", 0, "@"},
     { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
     { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
+    { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
     { oEmuMDEncodeBug,	"emulate-md-encode-bug", 0, "@"},
 {0} };
@@ -613,6 +615,7 @@ main( int argc, char **argv )
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
     opt.pgp2_workarounds = 1;
+    opt.auto_key_retrieve = 1;
   #ifdef __MINGW32__
     opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
   #else
@@ -913,6 +916,7 @@ main( int argc, char **argv )
 	  case oListOnly: opt.list_only=1; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
+	  case oNoAutoKeyRetrieve: opt.auto_key_retrieve = 0; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}

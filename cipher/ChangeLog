@@ -1,3 +1,9 @@
+Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * rndunix.c (waitpid): New. For UTS 2.1.  All by Dave Dykstra.
+  (my_popen): Do the FD_CLOEXEC only if it is available
+  (start_gatherer): Cope with missing _SC_OPEN_MAX
+
 Sun May 28 13:55:17 CEST 2000  Werner Koch  <wk@openit.de>
 
   * random.c (read_seed_file): Binary open for DOSish system

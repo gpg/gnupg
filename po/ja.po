@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.0h\n"
-"POT-Creation-Date: 2000-06-07 13:04+0200\n"
+"POT-Creation-Date: 2000-06-08 23:11+0200\n"
 "PO-Revision-Date: 2000-02-16 20:10+09:00\n"
 "Last-Translator: IIDA Yosiaki <iida@secom.ne.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -19,11 +19,11 @@ msgstr ""
 msgid "Warning: using insecure memory!\n"
 msgstr "警告: 安全でないメモリーを使用しています!\n"
 
-#: util/secmem.c:287
+#: util/secmem.c:289
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "初期化された安全なメモリーが無い場合には実行できません\n"
 
-#: util/secmem.c:288
+#: util/secmem.c:290
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(この目的には不適切なプログラムを用いたのでしょう)\n"
 
@@ -338,7 +338,7 @@ msgstr ""
 "十分な長さの乱数が得られません。エントロピーを増加させるように\n"
 "OS の設定を変更してください。(%d bytes 以上の周期が必要です)\n"
 
-#: g10/g10.c:196
+#: g10/g10.c:197
 msgid ""
 "@Commands:\n"
 " "
@@ -346,139 +346,139 @@ msgstr ""
 "@コマンド:\n"
 " "
 
-#: g10/g10.c:198
+#: g10/g10.c:199
 msgid "|[file]|make a signature"
 msgstr "|[file]|署名を作成"
 
-#: g10/g10.c:199
+#: g10/g10.c:200
 msgid "|[file]|make a clear text signature"
 msgstr "|[file]|クリア署名を作成"
 
-#: g10/g10.c:200
+#: g10/g10.c:201
 msgid "make a detached signature"
 msgstr "分離署名を作成"
 
-#: g10/g10.c:201
+#: g10/g10.c:202
 msgid "encrypt data"
 msgstr "データを暗号化"
 
-#: g10/g10.c:202
+#: g10/g10.c:203
 msgid "encryption only with symmetric cipher"
 msgstr "暗号化には対称暗号法のみを使用"
 
-#: g10/g10.c:203
+#: g10/g10.c:204
 msgid "store only"
 msgstr "保存のみ"
 
-#: g10/g10.c:204
+#: g10/g10.c:205
 msgid "decrypt data (default)"
 msgstr "データを復号 (デフォルト)"
 
-#: g10/g10.c:205
+#: g10/g10.c:206
 msgid "verify a signature"
 msgstr "署名を検証"
 
-#: g10/g10.c:207
+#: g10/g10.c:208
 msgid "list keys"
 msgstr "鍵の一覧"
 
-#: g10/g10.c:209
+#: g10/g10.c:210
 msgid "list keys and signatures"
 msgstr "鍵と署名の一覧"
 
-#: g10/g10.c:210
+#: g10/g10.c:211
 msgid "check key signatures"
 msgstr "鍵の署名を検証"
 
-#: g10/g10.c:211
+#: g10/g10.c:212
 msgid "list keys and fingerprints"
 msgstr "鍵と指紋の一覧"
 
-#: g10/g10.c:212
+#: g10/g10.c:213
 msgid "list secret keys"
 msgstr "秘密鍵の一覧"
 
-#: g10/g10.c:213
+#: g10/g10.c:214
 msgid "generate a new key pair"
 msgstr "新しい鍵ペアを作成"
 
-#: g10/g10.c:214
+#: g10/g10.c:215
 msgid "remove key from the public keyring"
 msgstr "公開鍵リングから鍵を削除"
 
-#: g10/g10.c:216
+#: g10/g10.c:217
 msgid "remove key from the secret keyring"
 msgstr "秘密鍵リングから鍵を削除"
 
-#: g10/g10.c:217
+#: g10/g10.c:218
 msgid "sign a key"
 msgstr "鍵に署名"
 
-#: g10/g10.c:218
+#: g10/g10.c:219
 msgid "sign a key locally"
 msgstr "ローカルにて鍵に署名"
 
-#: g10/g10.c:219
+#: g10/g10.c:220
 msgid "sign or edit a key"
 msgstr "鍵への署名または編集"
 
-#: g10/g10.c:220
+#: g10/g10.c:221
 msgid "generate a revocation certificate"
 msgstr "破棄証明書を作成"
 
-#: g10/g10.c:221
+#: g10/g10.c:222
 msgid "export keys"
 msgstr "鍵を書き出す"
 
-#: g10/g10.c:222
+#: g10/g10.c:223
 msgid "export keys to a key server"
 msgstr "鍵サーバに鍵を登録"
 
-#: g10/g10.c:223
+#: g10/g10.c:224
 msgid "import keys from a key server"
 msgstr "鍵サーバーから鍵を読み込む"
 
-#: g10/g10.c:227
+#: g10/g10.c:228
 msgid "import/merge keys"
 msgstr "鍵の読み込み/マージ"
 
-#: g10/g10.c:229
+#: g10/g10.c:230
 msgid "list only the sequence of packets"
 msgstr "パケット列のみの一覧"
 
-#: g10/g10.c:231
+#: g10/g10.c:232
 msgid "export the ownertrust values"
 msgstr "所有者を信用した値を書き出す"
 
-#: g10/g10.c:233
+#: g10/g10.c:234
 msgid "import ownertrust values"
 msgstr "所有者を信用した値を読み込む"
 
-#: g10/g10.c:235
+#: g10/g10.c:236
 msgid "update the trust database"
 msgstr "信用データベースを更新"
 
-#: g10/g10.c:237
+#: g10/g10.c:238
 msgid "|[NAMES]|check the trust database"
 msgstr "|[NAMES]|信用データベースをチェック"
 
-#: g10/g10.c:238
+#: g10/g10.c:239
 msgid "fix a corrupted trust database"
 msgstr "壊れた信用データベースを修復"
 
-#: g10/g10.c:239
+#: g10/g10.c:240
 msgid "De-Armor a file or stdin"
 msgstr "ファイルまたは標準入力の装甲除去"
 
-#: g10/g10.c:241
+#: g10/g10.c:242
 msgid "En-Armor a file or stdin"
 msgstr "ファイルまたは標準入力の装甲化"
 
-#: g10/g10.c:243
+#: g10/g10.c:244
 msgid "|algo [files]|print message digests"
 msgstr "|algo [files]|メッセージ要約を出力"
 
-#: g10/g10.c:247
+#: g10/g10.c:248
 msgid ""
 "@\n"
 "Options:\n"
@@ -488,154 +488,154 @@ msgstr ""
 "オプション:\n"
 " "
 
-#: g10/g10.c:249
+#: g10/g10.c:250
 msgid "create ascii armored output"
 msgstr "アスキー形式の装甲を生成"
 
-#: g10/g10.c:251
+#: g10/g10.c:252
 msgid "|NAME|encrypt for NAME"
 msgstr "|NAME|NAME 用に暗号化"
 
-#: g10/g10.c:254
+#: g10/g10.c:255
 msgid "|NAME|use NAME as default recipient"
 msgstr "|NAME|デフォルトの受信者として NAME を用いる"
 
-#: g10/g10.c:256
+#: g10/g10.c:257
 msgid "use the default key as default recipient"
 msgstr "デフォルトの受信者としてデフォルトの鍵を用いる"
 
-#: g10/g10.c:260
+#: g10/g10.c:261
 msgid "use this user-id to sign or decrypt"
 msgstr "署名や復号に この user-id を用いる"
 
-#: g10/g10.c:261
+#: g10/g10.c:262
 msgid "|N|set compress level N (0 disables)"
 msgstr "|N|圧縮レベルを N に設定する (0 は非圧縮)"
 
-#: g10/g10.c:263
+#: g10/g10.c:264
 msgid "use canonical text mode"
 msgstr "標準テキストモードを用いる"
 
-#: g10/g10.c:264
+#: g10/g10.c:265
 msgid "use as output file"
 msgstr "出力ファイルとして用いる"
 
-#: g10/g10.c:265
+#: g10/g10.c:266
 msgid "verbose"
 msgstr "冗長"
 
-#: g10/g10.c:266
+#: g10/g10.c:267
 msgid "be somewhat more quiet"
 msgstr "やや静か"
 
-#: g10/g10.c:267
+#: g10/g10.c:268
 msgid "don't use the terminal at all"
 msgstr "端末を使用しない"
 
-#: g10/g10.c:268
+#: g10/g10.c:269
 msgid "force v3 signatures"
 msgstr "強制的に v3 署名する"
 
-#: g10/g10.c:269
+#: g10/g10.c:270
 msgid "always use a MDC for encryption"
 msgstr "暗号化には常に MDC を使用"
 
-#: g10/g10.c:270
+#: g10/g10.c:271
 msgid "do not make any changes"
 msgstr "全ての変更を用いない"
 
 #. { oInteractive, "interactive", 0, N_("prompt before overwriting") },
-#: g10/g10.c:272
+#: g10/g10.c:273
 msgid "batch mode: never ask"
 msgstr "バッチモード: 問い合わせを行わない"
 
-#: g10/g10.c:273
+#: g10/g10.c:274
 msgid "assume yes on most questions"
 msgstr "全ての質問に yes と見なす"
 
-#: g10/g10.c:274
+#: g10/g10.c:275
 msgid "assume no on most questions"
 msgstr "全ての質問に no と見なす"
 
-#: g10/g10.c:275
+#: g10/g10.c:276
 msgid "add this keyring to the list of keyrings"
 msgstr "鍵リングの一覧に この鍵を加える"
 
-#: g10/g10.c:276
+#: g10/g10.c:277
 msgid "add this secret keyring to the list"
 msgstr "一覧に この秘密鍵リングを加える"
 
-#: g10/g10.c:277
+#: g10/g10.c:278
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|デフォルトの秘密鍵として NAME を用いる"
 
-#: g10/g10.c:278
+#: g10/g10.c:279
 msgid "|HOST|use this keyserver to lookup keys"
 msgstr "|HOST|鍵の検索に この鍵サーバを用いる"
 
-#: g10/g10.c:279
+#: g10/g10.c:280
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NAME|端末の文字コードを NAME に設定する"
 
-#: g10/g10.c:280
+#: g10/g10.c:281
 msgid "read options from file"
 msgstr "ファイルからオプションを読み込む"
 
-#: g10/g10.c:284
+#: g10/g10.c:285
 msgid "|FD|write status info to this FD"
 msgstr "|FD|この FD に状態を書き出す"
 
-#: g10/g10.c:289
+#: g10/g10.c:290
 msgid "|FILE|load extension module FILE"
 msgstr "|FILE|拡張モジュール FILE を読みこむ"
 
-#: g10/g10.c:290
+#: g10/g10.c:291
 msgid "emulate the mode described in RFC1991"
 msgstr "RFC1991 に記述されたモードを用いる"
 
-#: g10/g10.c:291
+#: g10/g10.c:292
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
 msgstr "全てのパケットと暗号と署名のオプションを OpenPGP の振舞に設定"
 
-#: g10/g10.c:292
+#: g10/g10.c:293
 msgid "|N|use passphrase mode N"
 msgstr "|N|パスフレーズモード N を用いる"
 
-#: g10/g10.c:294
+#: g10/g10.c:295
 msgid "|NAME|use message digest algorithm NAME for passphrases"
 msgstr "|NAME|パスフレーズにメッセージ要約アルゴリズム NAME を用いる"
 
-#: g10/g10.c:296
+#: g10/g10.c:297
 msgid "|NAME|use cipher algorithm NAME for passphrases"
 msgstr "|NAME|パスフレーズに暗号アルゴリズム NAME を用いる"
 
-#: g10/g10.c:297
+#: g10/g10.c:298
 msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAME|暗号アルゴリズム NAME を用いる"
 
-#: g10/g10.c:298
+#: g10/g10.c:299
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAME|メッセージ要約アルゴリズム NAME を用いる"
 
-#: g10/g10.c:299
+#: g10/g10.c:300
 msgid "|N|use compress algorithm N"
 msgstr "|NAME|圧縮アルゴリズム NAME を用いる"
 
-#: g10/g10.c:300
+#: g10/g10.c:301
 msgid "throw keyid field of encrypted packets"
 msgstr "暗号パケットの鍵 ID フィールドを送出する"
 
-#: g10/g10.c:301
+#: g10/g10.c:302
 msgid "|NAME=VALUE|use this notation data"
 msgstr "|NAME=VALUE|この注釈データを用いる"
 
-#: g10/g10.c:304
+#: g10/g10.c:305
 msgid ""
 "@\n"
 "(See the man page for a complete listing of all commands and options)\n"
 msgstr ""
 
-#: g10/g10.c:307
+#: g10/g10.c:308
 msgid ""
 "@\n"
 "Examples:\n"
@@ -655,15 +655,15 @@ msgstr ""
 " --list-keys [names]        鍵を表示\n"
 " --fingerprint [names]      指紋を表示\n"
 
-#: g10/g10.c:401
+#: g10/g10.c:403
 msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 msgstr "バグを見つけたら <gnupg-bugs@gnu.org> までレポートを送って下さい。\n"
 
-#: g10/g10.c:405
+#: g10/g10.c:407
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "使い方: gpg [オプション] [ファイル] (ヘルプは -h)"
 
-#: g10/g10.c:408
+#: g10/g10.c:410
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "sign, check, encrypt or decrypt\n"
@@ -673,7 +673,7 @@ msgstr ""
 "署名、検証、暗号化、または 復号\n"
 "デフォルトの動作は入力データに依存\n"
 
-#: g10/g10.c:415
+#: g10/g10.c:417
 msgid ""
 "\n"
 "Supported algorithms:\n"
@@ -681,182 +681,182 @@ msgstr ""
 "\n"
 "サポートしているアルゴリズム:\n"
 
-#: g10/g10.c:494
+#: g10/g10.c:496
 msgid "usage: gpg [options] "
 msgstr "使い方: gpg [options] "
 
-#: g10/g10.c:547
+#: g10/g10.c:549
 msgid "conflicting commands\n"
 msgstr "コマンドの衝突\n"
 
-#: g10/g10.c:689
+#: g10/g10.c:692
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "注意: デフォルトオプションファイル `%s' がありません\n"
 
-#: g10/g10.c:693
+#: g10/g10.c:696
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "オプションファイル `%s': %s\n"
 
-#: g10/g10.c:700
+#: g10/g10.c:703
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "`%s' からオプションを読み込みます\n"
 
-#: g10/g10.c:890
+#: g10/g10.c:893
 #, c-format
 msgid "%s is not a valid character set\n"
 msgstr "%s は正しい文字コードではありません\n"
 
-#: g10/g10.c:945 g10/g10.c:954
+#: g10/g10.c:949 g10/g10.c:958
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "注意: %s は通常は用いません!\n"
 
-#: g10/g10.c:947
+#: g10/g10.c:951
 #, c-format
 msgid "%s not allowed with %s!\n"
 msgstr "%s は %s と共に用いることはできません!\n"
 
-#: g10/g10.c:950
+#: g10/g10.c:954
 #, c-format
 msgid "%s makes no sense with %s!\n"
 msgstr "%s は %s と共に用いても意味がありません!\n"
 
-#: g10/g10.c:969 g10/g10.c:981
+#: g10/g10.c:973 g10/g10.c:985
 msgid "selected cipher algorithm is invalid\n"
 msgstr "選択された暗号アルゴリズムは無効です\n"
 
-#: g10/g10.c:975 g10/g10.c:987
+#: g10/g10.c:979 g10/g10.c:991
 msgid "selected digest algorithm is invalid\n"
 msgstr "選択された要約アルゴリズムは無効です\n"
 
-#: g10/g10.c:991
+#: g10/g10.c:995
 msgid "the given policy URL is invalid\n"
 msgstr "与えられたポリシー URL は無効です\n"
 
-#: g10/g10.c:994
+#: g10/g10.c:998
 #, c-format
 msgid "compress algorithm must be in range %d..%d\n"
 msgstr "圧縮アルゴリズムは %d..%d の範囲でなければなりません\n"
 
-#: g10/g10.c:996
+#: g10/g10.c:1000
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed は 0 より大きな値が必要です\n"
 
-#: g10/g10.c:998
+#: g10/g10.c:1002
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed は 1 より大きな値が必要です\n"
 
-#: g10/g10.c:1000
+#: g10/g10.c:1004
 msgid "max-cert-depth must be in range 1 to 255\n"
 msgstr "max-cert-depth は 1 から 255 の範囲でなければなりません\n"
 
-#: g10/g10.c:1003
+#: g10/g10.c:1007
 msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgstr "注意: 単純な S2K モード (0) の使用には強く反対します\n"
 
-#: g10/g10.c:1007
+#: g10/g10.c:1011
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "無効な S2K モード。0, 1 または 3 でなければなりません\n"
 
-#: g10/g10.c:1092
+#: g10/g10.c:1096
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "信用データベースの初期化に失敗しました: %s\n"
 
-#: g10/g10.c:1098
+#: g10/g10.c:1102
 msgid "--store [filename]"
 msgstr "--store [ファイル名]"
 
-#: g10/g10.c:1105
+#: g10/g10.c:1109
 msgid "--symmetric [filename]"
 msgstr "--symmetric [ファイル名]"
 
-#: g10/g10.c:1113
+#: g10/g10.c:1117
 msgid "--encrypt [filename]"
 msgstr "--encrypt [ファイル名]"
 
-#: g10/g10.c:1126
+#: g10/g10.c:1130
 msgid "--sign [filename]"
 msgstr "--sign [ファイル名]"
 
-#: g10/g10.c:1139
+#: g10/g10.c:1143
 msgid "--sign --encrypt [filename]"
 msgstr "--sign --encrypt [ファイル名]"
 
-#: g10/g10.c:1153
+#: g10/g10.c:1157
 msgid "--clearsign [filename]"
 msgstr "--clearsign [ファイル名]"
 
-#: g10/g10.c:1170
+#: g10/g10.c:1174
 msgid "--decrypt [filename]"
 msgstr "--decrypt [ファイル名]"
 
-#: g10/g10.c:1178
+#: g10/g10.c:1182
 msgid "--sign-key user-id"
 msgstr "--sign-key user-id"
 
-#: g10/g10.c:1186
+#: g10/g10.c:1190
 msgid "--lsign-key user-id"
 msgstr "--lsign-key user-id"
 
-#: g10/g10.c:1194
+#: g10/g10.c:1198
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key user-id [コマンド]"
 
-#: g10/g10.c:1210
+#: g10/g10.c:1214
 msgid "--delete-secret-key user-id"
 msgstr "--delete-secret-key user-id"
 
-#: g10/g10.c:1213
+#: g10/g10.c:1217
 msgid "--delete-key user-id"
 msgstr "--delete-key user-id"
 
-#: g10/encode.c:260 g10/g10.c:1250 g10/sign.c:373
+#: g10/encode.c:260 g10/g10.c:1254 g10/sign.c:373
 #, c-format
 msgid "can't open %s: %s\n"
 msgstr "%s が開けません: %s\n"
 
-#: g10/g10.c:1265
+#: g10/g10.c:1269
 msgid "-k[v][v][v][c] [user-id] [keyring]"
 msgstr "-k[v][v][v][c] [user-id] [鍵リング]"
 
-#: g10/g10.c:1331
+#: g10/g10.c:1335
 #, c-format
 msgid "dearmoring failed: %s\n"
 msgstr "装甲除去に失敗: %s\n"
 
-#: g10/g10.c:1339
+#: g10/g10.c:1343
 #, c-format
 msgid "enarmoring failed: %s\n"
 msgstr "装甲化に失敗: %s\n"
 
-#: g10/g10.c:1407
+#: g10/g10.c:1411
 #, c-format
 msgid "invalid hash algorithm `%s'\n"
 msgstr "ハッシュアルゴリズム `%s' は無効です\n"
 
-#: g10/g10.c:1488
+#: g10/g10.c:1492
 msgid "[filename]"
 msgstr "[ファイル名]"
 
-#: g10/g10.c:1492
+#: g10/g10.c:1496
 msgid "Go ahead and type your message ...\n"
 msgstr "開始します。メッセージをタイプして下さい ...\n"
 
-#: g10/decrypt.c:59 g10/g10.c:1495 g10/verify.c:68 g10/verify.c:113
+#: g10/decrypt.c:59 g10/g10.c:1499 g10/verify.c:68 g10/verify.c:113
 #, c-format
 msgid "can't open `%s'\n"
 msgstr "`%s' が開けません\n"
 
-#: g10/g10.c:1665
+#: g10/g10.c:1669
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr "注釈名の先頭は文字かアンダースコア(_)でなければなりません\n"
 
-#: g10/g10.c:1671
+#: g10/g10.c:1675
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
@@ -864,11 +864,11 @@ msgstr ""
 "注釈名には文字、数字、ドット、アンダースコア(_)のみを用い、'=' "
 "を伴わなければなりません\n"
 
-#: g10/g10.c:1677
+#: g10/g10.c:1681
 msgid "dots in a notation name must be surrounded by other characters\n"
 msgstr "注釈名のドットは他の文字で囲まれなければなりません\n"
 
-#: g10/g10.c:1685
+#: g10/g10.c:1689
 msgid "a notation value must not use any control characters\n"
 msgstr "注釈名の値に制御文字を用いてはいけません\n"
 
