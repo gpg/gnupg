@@ -1,3 +1,7 @@
+2005-01-18  David Shaw  <dshaw@grover.jabberwocky.com>
+
+	* gpgkeys_curl.c: Fix typo.
+
 2005-01-18  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_curl.c: s/MAX_PATH/URLMAX_PATH/g to avoid a clash with

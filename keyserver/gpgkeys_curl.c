@@ -40,7 +40,7 @@ static char auth[MAX_AUTH+1];
 static char host[MAX_HOST+1];
 static char port[MAX_PORT+1];
 static char path[URLMAX_PATH+1];
-static char proxy[MAX_PROXY+1;
+static char proxy[MAX_PROXY+1];
 static FILE *input, *output, *console;
 static CURL *curl;
 static char request[MAX_URL];
