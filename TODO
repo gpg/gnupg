@@ -6,10 +6,6 @@
     also be thrown when the defaultkey has expired.  Reported by
     Eric.VanBuggenhaut@AdValvas.be.
 
-  * Update the manual pages and NEWS (David's new features)
-
-  * update GPH
-
   * pause scrolling help in --edit-key and elsewhere.
 
   * getkey does not return revoked/expired keys - therefore it is not
