@@ -132,8 +132,8 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
            [
            _libcurl_save_cppflags=$CPPFLAGS
            CPPFLAGS="$CPPFLAGS $LIBCURL_CPPFLAGS"
-           _libcurl_save_ldflags=$LDFLAGS
-           LDFLAGS="$LDFLAGS $LIBCURL"
+           _libcurl_save_libs=$LIBS
+           LIBS="$LIBS $LIBCURL"
 
            AC_LINK_IFELSE(AC_LANG_PROGRAM([#include <curl/curl.h>],[
 /* Try and use a few common options to force a failure if we are
@@ -149,9 +149,9 @@ x=CURLOPT_VERBOSE;
 ]),libcurl_cv_lib_curl_usable=yes,libcurl_cv_lib_curl_usable=no)
 
            CPPFLAGS=$_libcurl_save_cppflags
-           LDFLAGS=$_libcurl_save_ldflags
+           LIBS=$_libcurl_save_libs
            unset _libcurl_save_cppflags
-           unset _libcurl_save_ldflags
+           unset _libcurl_save_libs
            ])
 
         if test $libcurl_cv_lib_curl_usable = yes ; then
