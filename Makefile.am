@@ -25,12 +25,16 @@ endif
 
 SUBDIRS = intl zlib jnlib util mpi cipher ${gcrypt} g10 po tools \
           ${agent} doc ${checks}
-EXTRA_DIST = README-alpha VERSION  PROJECTS BUGS
+EXTRA_DIST = README-alpha PROJECTS BUGS
 # gettext never gets it right, so we take here care of deleting the
 # symlink.  my_clean_gcrypt is just a kludge until we can include
 # libgcrypt.
 DISTCLEANFILES = gnupg-defs.h intl/libintl.h ${my_clean_gcrypt}
 
+
+# Add all the files listed in "distfiles" files to the distribution,
+# apply version number s to some files and create a VERSION file which
+# we need for the Prereq: patch file trick.
 dist-hook:
 	@set -e; \
 	 for file in `cd $(top_srcdir); find . -type f -name distfiles`; do \
@@ -43,7 +47,8 @@ dist-hook:
 	@set -e; \
 	sed -e 's/@pkg_version@/$(VERSION)/g' \
 	    $(top_srcdir)/scripts/gnupg.spec.in \
-	    > $(distdir)/scripts/gnupg.spec
+	    > $(distdir)/scripts/gnupg.spec ; \
+	echo "$(VERSION)" > $(distdir)/VERSION
 
 
 if MAINTAINER_MODE

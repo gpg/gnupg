@@ -1,3 +1,9 @@
+2000-10-10  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (dist-hook): Create the version file.
+	* configure.in: Set the libtool version here, removed the need
+	for the version file.
+
 Mon Sep 18 16:35:45 CEST 2000  Werner Koch  <wk@openit.de>
 
         * acinclude.m4 (GNUPG_CHECK_MLOCK):  Removed that silly mkdir().

@@ -12,7 +12,24 @@ AC_INIT(g10/gpg.c)
 AC_CONFIG_AUX_DIR(scripts)
 AM_CONFIG_HEADER(config.h)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnupg,`cat $srcdir/VERSION`)
+#############################################
+# Version numbers (Rember to change them just before a release)
+# 1. No interfaces changed, only implementations (good): Increment REVISION.
+# 2. Interfaces added, none removed (good): Increment CURRENT, increment
+#    AGE, set REVISION to 0.
+# 3. Interfaces removed (BAD, breaks upward compatibility): Increment
+#    CURRENT, set AGE and REVISION to 0.
+AM_INIT_AUTOMAKE(gnupg,1.1.1a)
+LIBGCRYPT_LT_CURRENT=1
+LIBGCRYPT_LT_AGE=0
+LIBGCRYPT_LT_REVISION=0
+##############################################
+
+AC_SUBST(LIBGCRYPT_LT_CURRENT)
+AC_SUBST(LIBGCRYPT_LT_AGE)
+AC_SUBST(LIBGCRYPT_LT_REVISION)
+
+
 
 ALL_LINGUAS="da de eo es_ES fr id it ja nl pl pt_BR pt_PT ru sv"
 static_modules="sha1 md5 rmd160"
