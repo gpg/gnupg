@@ -1,10 +1,6 @@
 /* rsa.c  -  RSA function
  *	Copyright (C) 1997, 1998, 1999 by Werner Koch (dd9jn)
  *	Copyright (C) 2000 Free Software Foundation, Inc.
- ***********************************************************************
- * ATTENTION: This code should not be used in the United States
- * before the U.S. Patent #4,405,829 expires on September 20, 2000!
- ***********************************************************************
  *
  * This file is part of GnuPG.
  *
@@ -23,6 +19,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+/* This code uses an algorithm protected by U.S. Patent #4,405,829
+   which expires on September 20, 2000.  The patent holder placed that
+   patent into the public domain on Sep 6th, 2000.
+*/
+ 
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
