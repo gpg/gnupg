@@ -30,8 +30,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #endif
-#if defined (_WIN32) || defined (__CYGWIN32__)
-# include <windows.h>
+#if defined (_WIN32)
+#include <windows.h>
 #endif
 #include <errno.h>
 #ifdef HAVE_LOCALE_H

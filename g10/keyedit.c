@@ -1292,31 +1292,31 @@ keyedit_menu( const char *username, STRLIST locusr,
       { "list"    , cmdLIST      , 0, N_("list key and user IDs") },
       { "l"       , cmdLIST      , 0, NULL   },
       { "uid"     , cmdSELUID    , 0, N_("select user ID N") },
-      { "key"     , cmdSELKEY    , 0, N_("select secondary key N") },
+      { "key"     , cmdSELKEY    , 0, N_("select subkey N") },
       { "check"   , cmdCHECK     , 0, N_("list signatures") },
       { "c"       , cmdCHECK     , 0, NULL },
-      { "sign"    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH, N_("sign the key") },
+      { "sign"    , cmdSIGN      , KEYEDIT_NOT_SK|KEYEDIT_TAIL_MATCH, N_("sign selected user IDs") },
       { "s"       , cmdSIGN      , KEYEDIT_NOT_SK, NULL },
       /* "lsign" will never match since "sign" comes first and it is a
 	 tail match.  It is just here so it shows up in the help
 	 menu. */
-      { "lsign"   , cmdNOP       , 0, N_("sign the key locally") },
+      { "lsign"   , cmdNOP       , 0, N_("sign selected user IDs locally") },
       { "debug"   , cmdDEBUG     , 0, NULL },
       { "adduid"  , cmdADDUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a user ID") },
       { "addphoto", cmdADDPHOTO  , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a photo ID") },
       { "deluid"  , cmdDELUID    , KEYEDIT_NOT_SK, N_("delete user ID") },
       /* delphoto is really deluid in disguise */
       { "delphoto", cmdDELUID    , KEYEDIT_NOT_SK, NULL },
-      { "addkey"  , cmdADDKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a secondary key") },
+      { "addkey"  , cmdADDKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a subkey") },
 #ifdef ENABLE_CARD_SUPPORT
       { "addcardkey", cmdADDCARDKEY , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a key to a smartcard") },
       { "keytocard", cmdKEYTOCARD , KEYEDIT_NEED_SK|KEYEDIT_ONLY_SK, N_("move a key to a smartcard")},
 #endif /*ENABLE_CARD_SUPPORT*/
-      { "delkey"  , cmdDELKEY    , KEYEDIT_NOT_SK, N_("delete a secondary key") },
+      { "delkey"  , cmdDELKEY    , KEYEDIT_NOT_SK, N_("delete selected subkeys") },
       { "addrevoker",cmdADDREVOKER,KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("add a revocation key") },
       { "delsig"  , cmdDELSIG    , KEYEDIT_NOT_SK, N_("delete signatures") },
-      { "expire"  , cmdEXPIRE    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the expire date") },
-      { "primary" , cmdPRIMARY   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("flag user ID as primary")},
+      { "expire"  , cmdEXPIRE    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the expiration date") },
+      { "primary" , cmdPRIMARY   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("flag a user ID as primary")},
       { "toggle"  , cmdTOGGLE    , KEYEDIT_NEED_SK, N_("toggle between secret and public key listing") },
       { "t"       , cmdTOGGLE    , KEYEDIT_NEED_SK, NULL },
       { "pref"    , cmdPREF      , KEYEDIT_NOT_SK, N_("list preferences (expert)")},
@@ -1326,14 +1326,16 @@ keyedit_menu( const char *username, STRLIST locusr,
       { "updpref" , cmdSETPREF   , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
       { "keyserver",cmdPREFKS    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("set preferred keyserver URL")},
       { "passwd"  , cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("change the passphrase") },
+      /* Alias */
+      { "password", cmdPASSWD    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
       { "trust"   , cmdTRUST     , KEYEDIT_NOT_SK, N_("change the ownertrust") },
       { "revsig"  , cmdREVSIG    , KEYEDIT_NOT_SK, N_("revoke signatures") },
-      { "revuid"  , cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke a user ID") },
+      { "revuid"  , cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke selected user IDs") },
       /* Alias */
       { "revphoto", cmdREVUID    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, NULL },
-      { "revkey"  , cmdREVKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke a secondary key") },
-      { "disable" , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable a key") },
-      { "enable"  , cmdENABLEKEY , KEYEDIT_NOT_SK, N_("enable a key") },
+      { "revkey"  , cmdREVKEY    , KEYEDIT_NOT_SK|KEYEDIT_NEED_SK, N_("revoke selected subkeys") },
+      { "disable" , cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable key") },
+      { "enable"  , cmdENABLEKEY , KEYEDIT_NOT_SK, N_("enable key") },
       { "showphoto",cmdSHOWPHOTO , 0, N_("show photo ID") },
       { NULL, cmdNONE, 0, NULL }
     };
@@ -3136,11 +3138,11 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
     n1 = count_selected_keys( pub_keyblock );
     if( n1 > 1 ) {
-	tty_printf(_("Please select at most one secondary key.\n"));
+	tty_printf(_("Please select at most one subkey.\n"));
 	return 0;
     }
     else if( n1 )
-	tty_printf(_("Changing expiration time for a secondary key.\n"));
+	tty_printf(_("Changing expiration time for a subkey.\n"));
     else
       {
 	tty_printf(_("Changing expiration time for the primary key.\n"));
@@ -3683,7 +3685,7 @@ menu_select_key( KBNODE keyblock, int idx )
 	    }
 	}
 	if( !node ) {
-	    tty_printf(_("No secondary key with index %d\n"), idx );
+	    tty_printf(_("No subkey with index %d\n"), idx );
 	    return 0;
 	}
     }

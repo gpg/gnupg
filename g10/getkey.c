@@ -2417,7 +2417,7 @@ finish_lookup (GETKEY_CTX ctx)
       {
 	char *tempkeystr=
 	  m_strdup(keystr_from_pk(latest_key->pkt->pkt.public_key));
-        log_info(_("using secondary key %s instead of primary key %s\n"),
+        log_info(_("using subkey %s instead of primary key %s\n"),
                  tempkeystr, keystr_from_pk(keyblock->pkt->pkt.public_key));
 	m_free(tempkeystr);
       }

@@ -97,15 +97,20 @@ standard( text_filter_context_t *tfx, IOBUF a,
 	/* The story behind this is that 2440 says that textmode
 	   hashes should canonicalize line endings to CRLF and remove
 	   spaces and tabs.  2440bis-12 says to just canonicalize to
-	   CRLF.  So, we default to the 2440bis-12 behavior, but
-	   revert to the strict 2440 behavior if the user specifies
-	   --rfc2440. In practical terms this makes no difference to
-	   any signatures in the real world except for a textmode
-	   detached signature.  PGP always used the 2440bis-12 (1991)
-	   behavior (ignoring 2440 itself), so this actually makes us
-	   compatible with PGP textmode detached signatures for the
-	   first time. */
-	if(RFC2440)
+	   CRLF.  1.4.0 was released using the bis-12 behavior, but it
+	   was discovered that many mail clients do not canonicalize
+	   PGP/MIME signature text appropriately (and were relying on
+	   GnuPG to handle trailing spaces).  So, we default to the
+	   2440 behavior, but use the 2440bis-12 behavior if the user
+	   specifies --no-rfc2440-text.  The default will be changed
+	   at some point in the future when the mail clients have been
+	   upgraded.  Aside from PGP/MIME and broken mail clients,
+	   this makes no difference to any signatures in the real
+	   world except for a textmode detached signature.  PGP always
+	   used the 2440bis-12 behavior (ignoring 2440 itself), so
+	   this actually makes us compatible with PGP textmode
+	   detached signatures for the first time. */
+	if(opt.rfc2440_text)
 	  tfx->buffer_len=trim_trailing_chars(tfx->buffer,tfx->buffer_len,
 					      " \t\r\n");
 	else

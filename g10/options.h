@@ -187,11 +187,12 @@ struct
   int no_homedir_creation;
   struct groupitem *grouplist;
   int strict;
-  int mangle_dos_filenames; 
+  int mangle_dos_filenames;
   int enable_progress_filter;
   unsigned int screen_columns;
   unsigned int screen_lines;
   byte *show_subpackets;
+  int rfc2440_text;
 
 #ifdef ENABLE_CARD_SUPPORT
   const char *ctapi_driver; /* Library to access the ctAPI. */

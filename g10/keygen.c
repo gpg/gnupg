@@ -2952,7 +2952,7 @@ do_generate_keypair( struct para_data_s *para,
 		tty_printf(_("Note that this key cannot be used for "
 			     "encryption.  You may want to use\n"
 			     "the command \"--edit-key\" to generate a "
-			     "secondary key for this purpose.\n") );
+			     "subkey for this purpose.\n") );
 	    }
 	}
     }

@@ -1,3 +1,16 @@
+2004-12-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (keyedit_menu): Invisible alias "passwd" as
+	"password".
+
+	* passphrase.c: Don't check for __CYGWIN__, so it is treated as a
+	unix-like system.
+
+	* options.h, g10.c (main), textfilter.c (standard): Use new option
+	--rfc2440-text to determine whether to filter "<space>\t\r\n" or
+	just "\r\n" before canonicalizing text line endings.  Default to
+	"<space>\t\r\n".
+
 2004-12-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* keygen.c (keygen_get_std_prefs): Set reference count when

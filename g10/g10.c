@@ -201,6 +201,8 @@ enum cmd_and_opt_values
     oPGP6,
     oPGP7,
     oPGP8,
+    oRFC2440Text,
+    oNoRFC2440Text,
     oCipherAlgo,
     oDigestAlgo,
     oCertDigestAlgo,
@@ -507,6 +509,8 @@ static ARGPARSE_OPTS opts[] = {
     { oPGP6, "pgp6", 0, "@"},
     { oPGP7, "pgp7", 0, "@"},
     { oPGP8, "pgp8", 0, "@"},
+    { oRFC2440Text, "rfc2440-text", 0, "@"},
+    { oNoRFC2440Text, "no-rfc2440-text", 0, "@"},
     { oS2KMode, "s2k-mode", 1, "@"},
     { oS2KDigest, "s2k-digest-algo", 2, "@"},
     { oS2KCipher, "s2k-cipher-algo", 2, "@"},
@@ -1668,6 +1672,7 @@ main( int argc, char **argv )
     opt.min_cert_level=2;
     set_screen_dimensions();
     opt.keyid_format=KF_SHORT;
+    opt.rfc2440_text=1;
 #if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
@@ -2090,17 +2095,18 @@ main( int argc, char **argv )
 	    opt.force_v4_certs = 0;
 	    opt.escape_from = 1;
 	    break;
-	  case oRFC2440:
 	  case oOpenPGP:
-	    /* TODO: When 2440bis becomes a RFC, these may need
-               changing. */
+	  case oRFC2440:
+	    /* TODO: When 2440bis becomes a RFC, set new values for
+	       oOpenPGP. */
+	    opt.rfc2440_text=1;
 	    opt.compliance = CO_RFC2440;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 0;
 	    opt.force_v3_sigs = 0;
-	    opt.compress_keys = 0;	    /* not mandated  but we do it */
+	    opt.compress_keys = 0;	    /* not mandated, but we do it */
 	    opt.compress_sigs = 0;	    /* ditto. */
 	    opt.not_dash_escaped = 0;
 	    opt.def_cipher_algo = 0;
@@ -2117,6 +2123,8 @@ main( int argc, char **argv )
 	  case oPGP8:  opt.compliance = CO_PGP8;  break;
 	  case oGnuPG: opt.compliance = CO_GNUPG; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
+	  case oRFC2440Text: opt.rfc2440_text=1; break;
+	  case oNoRFC2440Text: opt.rfc2440_text=0; break;
 	  case oRunAsShmCP:
 #ifndef __riscos__
 # ifndef USE_SHM_COPROCESSING
