@@ -1,4 +1,4 @@
-/* maPPPPinproc.c - handle packets
+/* mainproc.c - handle packets
  *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -397,12 +397,14 @@ proc_plaintext( CTX c, PACKET *pkt )
 		clearsig = 1;
 	}
     }
-    if( !any ) { /* no onepass sig packet: enable all standard algos */
+
+    if( !any && !opt.skip_verify ) {
+	/* no onepass sig packet: enable all standard algos */
 	md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
 	md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
     }
-    if( only_md5 ) {
+    if( only_md5 && !opt.skip_verify ) {
 	/* This is a kludge to work around a bug in pgp2.  It does only
 	 * catch those mails which are armored.  To catch the non-armored
 	 * pgp mails we could see whether there is the signature packet
@@ -828,7 +830,8 @@ list_node( CTX c, KBNODE node )
 	    putchar(':');
 	    if( sigrc != ' ' )
 		putchar(sigrc);
-	    printf(":::%08lX%08lX:%s::::", (ulong)sig->keyid[0],
+	    printf("::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
+					     (ulong)sig->keyid[0],
 		       (ulong)sig->keyid[1], datestr_from_sig(sig));
 	}
 	else

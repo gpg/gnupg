@@ -559,6 +559,18 @@ strlwr(char *s)
 }
 #endif
 
+#ifndef HAVE_STRCASECMP
+int
+strcasecmp( const char *a, const char *b )
+{
+    for( ; *a && *b; a++, b++ ) {
+	if( *a != *b && toupper(*a) != toupper(*b) )
+	    break;
+    }
+    return *(const byte*)a - *(const byte*)b;
+}
+#endif
+
 /****************
  * mingw32/cpd has a memicmp()
  */

@@ -389,7 +389,8 @@ list_keyblock( KBNODE keyblock, int secret )
 		putchar(':');
 		if( sigrc != ' ' )
 		    putchar(sigrc);
-		printf(":::%08lX%08lX:%s::::", (ulong)sig->keyid[0],
+		printf("::%d:%08lX%08lX:%s::::", sig->pubkey_algo,
+						 (ulong)sig->keyid[0],
 			   (ulong)sig->keyid[1], datestr_from_sig(sig));
 	    }
 	    else

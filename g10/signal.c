@@ -53,20 +53,26 @@ static RETSIGTYPE
 got_fatal_signal( int sig )
 {
     const char *s;
+    struct sigaction nact;
 
     if( caught_fatal_sig )
 	raise( sig );
     caught_fatal_sig = 1;
 
     secmem_term();
-  #ifdef IS_DEVELOPMENT_VERSION
+    /* better don't transtale these messages */
     write(2, "\n", 1 );
     s = log_get_name(); if( s ) write(2, s, strlen(s) );
     write(2, ": ", 2 );
     s = get_signal_name(sig); write(2, s, strlen(s) );
     write(2, " caught ... exiting\n", 21 );
-  #endif
-    exit(8); /* Hmmm, for some reasons rais2e does not work */
+
+    /* reset action to default action and raise signal again */
+    nact.sa_handler = SIG_DFL;
+    sigemptyset( &nact.sa_mask );
+    nact.sa_flags = 0;
+    sigaction( sig, &nact, NULL);
+    raise( sig );
 }
 
 

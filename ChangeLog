@@ -1,3 +1,7 @@
+Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* BUGS: Replaced content with a link to the online list.
+
 Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* README: Fixed a type and add a note about the gnupg-i18n ML.

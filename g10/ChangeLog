@@ -1,3 +1,21 @@
+Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* mainproc.c (proc_plaintext): Never enable the hash processing
+	when skip_verify is active.
+
+	* armor.c (parse_header_line): Stop parsing on a WS line too.
+	Suggested by Aric Cyr.
+
+	* tdbdump.c (HEXTOBIN): Changed the name of the argument, so that
+	traditional cpp don't mess up the macros. Suggested by Jos Backus.
+
+	* mainproc.c (list_node): Print the PK algo in the --with-colon mode.
+	* keylist.c (list_keyblock): Ditto.
+
+	* signal.c (got_fatal_signal): Found the reason why exit(8) did not
+	work - it is better to set the disposition back to default before
+	raising the signal.  Print the notice on stderr always.
+
 Fri Nov 12 20:33:19 CET 1999  Werner Koch  <wk@gnupg.de>
 
 	* g10.c (make_username): Swapped the logic.

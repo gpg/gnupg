@@ -1,3 +1,9 @@
+Mon Nov 22 11:14:53 CET 1999  Werner Koch  <wk@gnupg.de>
+
+	* strgutil.c (strcasecmp): New.
+
+	* secmem.c (pool_is_mmapped): Made volatile.
+
 Sat Oct  9 20:34:41 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* Makefile.am:	Removed libtool.

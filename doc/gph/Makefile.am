@@ -27,7 +27,7 @@ index.html: $(PARTS)
 	echo '</body></html>' >>index.html
 	-rm -r manual.junk
 	-rm manual/signatures.jpg
-	(cd manual; rm -r stylesheet-images; ls | grep -v distfiles >distfiles)
+##    (cd manual; rm -r stylesheet-images; ls | grep -v distfiles >distfiles)
 
 
 dist-hook: index.html

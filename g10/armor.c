@@ -311,9 +311,15 @@ parse_header_line( armor_filter_context_t *afx, byte *line, unsigned len )
     byte *p;
     int hashes=0;
 
+    /* fixme: why this double check?  I think the original code w/o the
+     * second check for an empty line was done from an early draft of
+     * of OpenPGP - or simply very stupid code */
     if( *line == '\n' || ( len && (*line == '\r' && line[1]=='\n') ) )
 	return 0; /* empty line */
     len = trim_trailing_ws( line, len );
+    if( !len )
+	return 0; /* WS only same as empty line */
+
     p = strchr( line, ':');
     if( !p || !p[1] ) {
 	log_error(_("invalid armor header: "));

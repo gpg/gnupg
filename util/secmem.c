@@ -58,7 +58,7 @@ struct memblock_struct {
 
 static void  *pool;
 static volatile int pool_okay; /* may be checked in an atexit function */
-static int   pool_is_mmapped;
+static volatile int pool_is_mmapped;
 static size_t poolsize; /* allocated length */
 static size_t poollen;	/* used length */
 static MEMBLOCK *unused_blocks;
@@ -380,7 +380,7 @@ m_is_secure( const void *p )
 
 /****************
  * Warning:  This code might be called by an interrupt handler
- *	     and frankly, thre should really be such a handler,
+ *	     and frankly, there should really be such a handler,
  *	     to make sure that the memory is wiped out.
  *	     We hope that the OS wipes out mlocked memory after
  *	     receiving a SIGKILL - it really should do so, otherwise
