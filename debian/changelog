@@ -1,3 +1,29 @@
+gnupg (0.9.8-1) unstable; urgency=low
+
+  * New upstream version.  
+  * debian/rules (binary-arch): don't create a gpgm manpage as the binary
+    no longer exists.  Noticed by Wichert Akkerman
+    <wichert@cs.leidenuniv.nl>. [#38864]
+
+ -- James Troup <james@nocrew.org>  Sun, 27 Jun 1999 01:07:58 +0100
+
+gnupg (0.9.7-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- James Troup <james@nocrew.org>  Tue, 25 May 1999 13:23:24 +0100
+
+gnupg (0.9.6-1) unstable; urgency=low
+
+  * New upstream version.
+  * debian/copyright: update version number, noticed by Lazarus Long
+    <lazarus@frontiernet.net>.
+  * debian/control (Depends): depend on makedev (>= 2.3.1-13) to ensure
+    that /dev/urandom exists; reported by Steffen Markert
+    <smort@rz.tu-ilmenau.de>. [#32076]
+
+ -- James Troup <james@nocrew.org>  Tue, 11 May 1999 21:06:27 +0100
+
 gnupg (0.9.5-1) unstable; urgency=low
 
   * New upstream version.

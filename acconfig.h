@@ -92,6 +92,7 @@
  * with special properties like no file modes */
 #undef HAVE_DOSISH_SYSTEM
 
+#undef USE_CAPABILITIES
 
 
 @BOTTOM@

@@ -238,8 +238,9 @@ the DB is always of type 2 and this is the only record of this type.
      1 byte  ownertrust
      1 byte  dirflag
      1 byte  maximum validity of all the user ids
-     4 byte  time of last validity check.
-    15 byte reserved
+     1 u32   time of last validity check.
+     1 u32   Must check when this time has been reached.
+	     (0 = no check required)
 
 
   Record type 3:  (key record)

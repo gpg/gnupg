@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-# debian/rules file - for GNUPG (0.9.4)
+# debian/rules file - for GNUPG (0.9.8)
 # Based on sample debian/rules file - for GNU Hello (1.3).
 # Copyright 1994,1995 by Ian Jackson.
 # Copyright 1998 James Troup
@@ -34,9 +34,7 @@ binary-arch:	checkroot build # test
 	install -d debian/tmp/DEBIAN/
 	install -m 755 debian/preinst debian/tmp/DEBIAN/preinst
 	$(MAKE) prefix=`pwd`/debian/tmp/usr install
-	rm debian/tmp/usr/man/man1/gpgm.1
 	gzip -9v debian/tmp/usr/man/man1/*
-	ln -s gpg.1.gz debian/tmp/usr/man/man1/gpgm.1.gz
 	strip debian/tmp/usr/bin/*
 	strip --strip-unneeded debian/tmp/usr/lib/gnupg/*
 	install -d debian/tmp/usr/doc/gnupg/

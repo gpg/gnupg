@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.9.7\n"
 "POT-Creation-Date: 1999-06-26 11:22+0200\n"
-"PO-Revision-Date: 1999-05-15 18:09+02:00\n"
+"PO-Revision-Date: 1999-06-28 19:49+02:00\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <it@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -38,9 +38,8 @@ msgid "quit"
 msgstr "quit"
 
 #: util/miscutil.c:176
-#, fuzzy
 msgid "qQ"
-msgstr "q"
+msgstr "qQ"
 
 #: util/errors.c:54
 msgid "general error"
@@ -448,7 +447,7 @@ msgstr "meno prolisso"
 
 #: g10/g10.c:234
 msgid "don't use the terminal at all"
-msgstr ""
+msgstr "non usa per niente il terminale"
 
 #: g10/g10.c:235
 msgid "force v3 signatures"
@@ -533,7 +532,7 @@ msgstr "emula il modo descritto in RFC 1991"
 
 #: g10/g10.c:258
 msgid "set all packet, cipher and digest options to OpenPGP behavior"
-msgstr ""
+msgstr "imposta per OpenPGP le opzioni di pacchetto, cifrario e digest"
 
 #: g10/g10.c:259
 msgid "|N|use passphrase mode N"
@@ -565,7 +564,7 @@ msgstr "elimina il campo keyid dei pacchetti cifrati"
 
 #: g10/g10.c:268
 msgid "|NAME=VALUE|use this notation data"
-msgstr ""
+msgstr "|NOME=VALORE|usa questi dati per una nota"
 
 #: g10/g10.c:270
 msgid ""
@@ -651,7 +650,7 @@ msgstr "l'algoritmo di digest selezionato non è valido\n"
 
 #: g10/g10.c:849
 msgid "the given policy URL is invalid\n"
-msgstr ""
+msgstr "L'URL della policy indicato non è valido\n"
 
 #: g10/g10.c:852
 #, c-format
@@ -764,20 +763,24 @@ msgstr "impossibile aprire `%s'\n"
 msgid ""
 "the first character of a notation name must be a letter or an underscore\n"
 msgstr ""
+"il primo carattere del nome di una nota deve essere una lettera o un\n"
+"underscore\n"
 
 #: g10/g10.c:1463
 msgid ""
 "a notation name must have only letters, digits, dots or underscores and end "
 "with an '='\n"
 msgstr ""
+"il nome di una nota deve essere formato solo da lettere, numeri, punti o\n"
+"underscore e deve finire con `='\n"
 
 #: g10/g10.c:1469
 msgid "dots in a notation name must be surrounded by other characters\n"
-msgstr ""
+msgstr "nel nome di una nota i punti devono avere altri caratteri intorno\n"
 
 #: g10/g10.c:1477
 msgid "a notation value must not use any control characters\n"
-msgstr ""
+msgstr "il valore di una nota non deve usare caratteri di controllo\n"
 
 #: g10/armor.c:296
 #, c-format
@@ -1052,9 +1055,9 @@ msgid "%s: skipped: %s\n"
 msgstr "%s: saltata: %s\n"
 
 #: g10/pkclist.c:588 g10/pkclist.c:687
-#, fuzzy, c-format
+#, c-format
 msgid "%s: skipped: public key already present\n"
-msgstr "%s: il keyblock ha problemi di lettura: %s\n"
+msgstr "%s: saltato: chiave pubblica già presente\n"
 
 #: g10/pkclist.c:611
 msgid ""
@@ -1356,7 +1359,6 @@ msgid "DSA keypair will have 1024 bits.\n"
 msgstr "La coppia DSA avrà 1024 bit.\n"
 
 #: g10/keygen.c:859
-#, fuzzy
 msgid "Key generation canceled.\n"
 msgstr "Generazione della chiave annullata.\n"
 
@@ -1467,7 +1469,7 @@ msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "uso la chiave secondaria %08lX invece della chiave primaria %08lX\n"
 
 #: g10/import.c:116
-#, fuzzy, c-format
+#, c-format
 msgid "can't open `%s': %s\n"
 msgstr "impossibile aprire `%s': %s\n"
 
@@ -1482,9 +1484,9 @@ msgid "%lu keys so far processed\n"
 msgstr "Per ora sono state esaminate %lu chiavi\n"
 
 #: g10/import.c:172
-#, fuzzy, c-format
+#, c-format
 msgid "error reading `%s': %s\n"
-msgstr "errore nella creazione della passhprase: %s\n"
+msgstr "errore leggendo `%s': %s\n"
 
 #: g10/import.c:175
 #, c-format
@@ -1570,14 +1572,14 @@ msgid "writing to `%s'\n"
 msgstr "scrittura in `%s'\n"
 
 #: g10/import.c:379 g10/import.c:435 g10/import.c:544 g10/import.c:645
-#, fuzzy, c-format
+#, c-format
 msgid "can't lock keyring `%s': %s\n"
-msgstr "impossibile bloccare il portachiavi pubblico: %s\n"
+msgstr "impossibile fare il lock del portachiavi `%s': %s\n"
 
 #: g10/import.c:382 g10/import.c:438 g10/import.c:547 g10/import.c:648
-#, fuzzy, c-format
+#, c-format
 msgid "error writing keyring `%s': %s\n"
-msgstr "%s: errore durante la scrittura del record di versione: %s\n"
+msgstr "errore scrivendo il portachiavi `%s': %s\n"
 
 #: g10/import.c:387
 #, c-format
@@ -1724,7 +1726,7 @@ msgstr "chiave %08lX: certificato di revoca non valido: %s - saltato\n"
 #: g10/import.c:915
 #, c-format
 msgid "key %08lX: duplicated user ID detected - merged\n"
-msgstr ""
+msgstr "chiave %08lX: trovato un user ID duplicato - unito\n"
 
 #: g10/import.c:966
 #, c-format
@@ -1988,14 +1990,12 @@ msgid "delete a secondary key"
 msgstr "cancella una chiave secondaria"
 
 #: g10/keyedit.c:579
-#, fuzzy
 msgid "delsig"
-msgstr "lsign"
+msgstr "delsign"
 
 #: g10/keyedit.c:579
-#, fuzzy
 msgid "delete signatures"
-msgstr "elenca le firme"
+msgstr "cancella le firme"
 
 #: g10/keyedit.c:580
 msgid "expire"
@@ -2152,35 +2152,33 @@ msgstr "Comando non valido  (prova \"help\")\n"
 
 #: g10/keyedit.c:1294
 msgid "Delete this good signature? (y/N/q)"
-msgstr ""
+msgstr "Cancellare questa firma corretta? (s/N/q)"
 
 #: g10/keyedit.c:1298
 msgid "Delete this invalid signature? (y/N/q)"
-msgstr ""
+msgstr "Cancellare questa firma non valida? (s/N/q)"
 
 #: g10/keyedit.c:1302
 msgid "Delete this unknown signature? (y/N/q)"
-msgstr ""
+msgstr "Cancellare questa firma sconosciuta? (s/N/q)"
 
 #: g10/keyedit.c:1308
-#, fuzzy
 msgid "Really delete this self-signature? (y/N)"
-msgstr "Creare davvero i certificati di revoca? (s/N)"
+msgstr "Cancellare davvero questa autofirma? (s/N)"
 
 #: g10/keyedit.c:1322
-#, fuzzy, c-format
+#, c-format
 msgid "Deleted %d signature.\n"
-msgstr "%d firme non corrette\n"
+msgstr "Cancellata %d firma.\n"
 
 #: g10/keyedit.c:1323
-#, fuzzy, c-format
+#, c-format
 msgid "Deleted %d signatures.\n"
-msgstr "%d firme non corrette\n"
+msgstr "Cancellate %d firme.\n"
 
 #: g10/keyedit.c:1326
-#, fuzzy
 msgid "Nothing deleted.\n"
-msgstr "ATTENZIONE: non è stato esportato nulla\n"
+msgstr "Non è stato cancellato nulla.\n"
 
 #: g10/keyedit.c:1395
 msgid "Please remove selections from the secret keys.\n"
@@ -2191,14 +2189,12 @@ msgid "Please select at most one secondary key.\n"
 msgstr "Seleziona al massimo una chiave secondaria.\n"
 
 #: g10/keyedit.c:1405
-#, fuzzy
 msgid "Changing expiration time for a secondary key.\n"
-msgstr "Modifico il tempo di scadenza per una chiave secondaria.\n"
+msgstr "Cambio la data di scadenza per una chiave secondaria.\n"
 
 #: g10/keyedit.c:1407
-#, fuzzy
 msgid "Changing expiration time for the primary key.\n"
-msgstr "Modifico il tempo di scadenza per la chiave primaria.\n"
+msgstr "Cambio la data di scadenza per la chiave primaria.\n"
 
 #: g10/keyedit.c:1448
 msgid "You can't change the expiration date of a v3 key\n"
@@ -2285,17 +2281,16 @@ msgid "original file name='%.*s'\n"
 msgstr "nome del file originale='%.*s'\n"
 
 #: g10/mainproc.c:505 g10/mainproc.c:514
-#, fuzzy
 msgid "WARNING: invalid notation data found\n"
-msgstr "Non sono stati trovati dati OpenPGP validi.\n"
+msgstr "ATTENZIONE: trovati dati di una nota non validi\n"
 
 #: g10/mainproc.c:517
 msgid "Notation: "
-msgstr ""
+msgstr "Nota: "
 
 #: g10/mainproc.c:524
 msgid "Policy: "
-msgstr ""
+msgstr "Policy: "
 
 #: g10/mainproc.c:929
 msgid "signature verification suppressed\n"
@@ -2638,9 +2633,8 @@ msgid "%s: failed to append a record: %s\n"
 msgstr "%s: accodatura a un record fallita: %s\n"
 
 #: g10/tdbio.c:1630
-#, fuzzy
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
-msgstr "Il trustdb è danneggiato; eseguire \"gpgm --fix-trust-db\".\n"
+msgstr "Il trustdb è danneggiato; eseguire \"gpg --fix-trust-db\".\n"
 
 #: g10/trustdb.c:163
 #, c-format
@@ -3099,7 +3093,7 @@ msgstr "Sovrascrivo (s/N)? "
 #: g10/openfile.c:97
 #, c-format
 msgid "%s: unknown suffix\n"
-msgstr ""
+msgstr "%s: suffisso sconosciuto\n"
 
 #: g10/openfile.c:122
 msgid "writing to stdout\n"
@@ -3241,23 +3235,20 @@ msgid "keyedit.remove.subkey.okay"
 msgstr "keyedit.remove.subkey.okay"
 
 #: g10/helptext.c:176
-#, fuzzy
 msgid "keyedit.delsig.valid"
-msgstr "keyedit.sign_all.okay"
+msgstr "keyedit.delsig.valid"
 
 #: g10/helptext.c:181
-#, fuzzy
 msgid "keyedit.delsig.unknown"
-msgstr "keyedit.sign_all.okay"
+msgstr "keyedit.delsig.unknown"
 
 #: g10/helptext.c:187
-#, fuzzy
 msgid "keyedit.delsig.invalid"
-msgstr "keyedit.sign_all.okay"
+msgstr "keyedit.delsig.invalid"
 
 #: g10/helptext.c:191
 msgid "keyedit.delsig.selfsig"
-msgstr ""
+msgstr "keyedit.delsig.selfsig<"
 
 #: g10/helptext.c:200
 msgid "passphrase.enter"
@@ -3283,30 +3274,3 @@ msgstr "Non è disponibile un aiuto"
 #, c-format
 msgid "No help available for `%s'"
 msgstr "Non è disponibile un aiuto per `%s'"
-
-#~ msgid "can't open file: %s\n"
-#~ msgstr "impossibile aprire il file: %s\n"
-
-#~ msgid "read error: %s\n"
-#~ msgstr "errore di lettura: %s\n"
-
-#~ msgid "can't write to keyring: %s\n"
-#~ msgstr "impossibile scrivere sul portachiavi pubblico: %s\n"
-
-#~ msgid "writing keyblock\n"
-#~ msgstr "scrittura del keyblock\n"
-
-#~ msgid "can't write keyblock: %s\n"
-#~ msgstr "impossibile aprire il keyblock: %s\n"
-
-#~ msgid "can't lock secret keyring: %s\n"
-#~ msgstr "impossibile bloccare il portachiavi segreto: %s\n"
-
-#~ msgid "can't write keyring: %s\n"
-#~ msgstr "impossibile scrivere il portachiavi: %s\n"
-
-#~ msgid "encrypted message is valid\n"
-#~ msgstr "il messaggio cifrato è valido\n"
-
-#~ msgid "Can't check MDC: %s\n"
-#~ msgstr "Impossibile controllare il MDC: %s\n"

@@ -1,3 +1,8 @@
+Tue Jun 29 21:44:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* util.h (stricmp): Use strcasecmp as replacement.
+
 Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

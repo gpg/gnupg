@@ -6,7 +6,7 @@ Standards-Version: 2.5.0.0
 
 Package: gnupg
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, makedev (>= 2.3.1-13)
 Description: GNU privacy guard - a free PGP replacement.
  GnuPG is the GNU encryption and signing tool.  As you can see from the
  version number, the program may have some bugs and some features may not

@@ -175,8 +175,6 @@ char *native_to_utf8( const char *string );
 char *utf8_to_native( const char *string );
 int  check_utf8_string( const char *string );
 
-#define stricmp(a,b) strcasecmp((a),(b))
-
 #ifndef HAVE_MEMICMP
 int memicmp( const char *a, const char *b, size_t n );
 #endif
@@ -192,7 +190,9 @@ char *strlwr(char *a);
 #ifndef HAVE_MEMMOVE
   #define memmove(d, s, n) bcopy((s), (d), (n))
 #endif
-
+#ifndef HAVE_STRICMP
+  #define stricmp(a,b)	 strcasecmp( (a), (b) )
+#endif
 
 /**** other missing stuff ****/
 #ifndef HAVE_ATEXIT  /* For SunOS */

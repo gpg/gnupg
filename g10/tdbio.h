@@ -66,6 +66,7 @@
 #define SIGF_VALID    2 /* the signature is valid */
 #define SIGF_EXPIRED  4 /* the key of this signature has expired */
 #define SIGF_REVOKED  8 /* this signature has been revoked */
+#define SIGF_IGNORED  64  /* this signature is ignored by the system */
 #define SIGF_NOPUBKEY 128 /* there is no pubkey for this sig */
 
 struct trust_record {
@@ -97,8 +98,9 @@ struct trust_record {
 	    ulong cacherec; /* the cache record */
 	    byte ownertrust;
 	    byte dirflags;
-	    byte validity;  /* calculated trustlevel over all uids */
-	    ulong valcheck; /* timestamp of last validation check */
+	    byte validity;   /* calculated trustlevel over all uids */
+	    ulong valcheck;  /* timestamp of last validation check */
+	    ulong checkat;   /* Check key when this time has been reached*/
 	} dir;
 	struct {	    /* primary public key record */
 	    ulong lid;
@@ -187,6 +189,7 @@ ulong tdbio_new_recnum(void);
 int tdbio_search_dir_bypk( PKT_public_key *pk, TRUSTREC *rec );
 int tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
 					int pubkey_algo, TRUSTREC *rec );
+int tdbio_search_dir(  u32 *keyid, int pubkey_algo, TRUSTREC *rec );
 int tdbio_search_sdir( u32 *keyid, int pubkey_algo, TRUSTREC *rec );
 
 void tdbio_invalid(void);

@@ -1,3 +1,20 @@
+Tue Jun 29 21:44:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* trustdb.h (TRUST_FLAG_DISABLED): New.
+
+	* status.c (USE_CAPABILITIES): Capabilities support (Remi).
+
+	* tdbio.c : Added new fields to the DIR record.
+	(tdbio_write_record): Fixed the update of the hash tables.
+	(tdbio_delete_record): Drop the record from the hash tables.
+	(drop_from_hashtbl): New.
+
+	* status.c (cpr_get): Special online help mode.
+	* helptext.c ("keyedit.cmd"): Removed.
+	* keyedit.c (keyedit_menu): Use only help system.
+	(enable_disable_key): New bit doies not yet work.
+
 Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

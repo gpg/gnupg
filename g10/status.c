@@ -25,6 +25,9 @@
 #include <errno.h>
 #include <unistd.h>
 #ifdef USE_SHM_COPROCESSING
+  #ifdef USE_CAPABILITIES
+    #include <sys/capability.h>
+  #endif
   #ifdef HAVE_SYS_IPC_H
     #include <sys/ipc.h>
   #endif
@@ -165,6 +168,9 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
     log_debug("mapped %uk shared memory at %p, id=%d\n",
 			    (unsigned)shm_size/1024, shm_area, shm_id );
     if( lock_mem ) {
+      #ifdef USE_CAPABILITIES
+	cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
+      #endif
       #ifdef IPC_HAVE_SHM_LOCK
 	if ( shmctl (shm_id, SHM_LOCK, 0) )
 	    log_info("locking shared memory %d failed: %s\n",
@@ -180,6 +186,9 @@ init_shm_coprocessing ( ulong requested_shm_size, int lock_mem )
 	    shm_is_locked = 1;
       #else
 	log_info("Locking shared memory %d failed: No way to do it\n", shm_id );
+      #endif
+      #ifdef USE_CAPABILITIES
+	cap_set_proc( cap_from_text("cap_ipc_lock+p") );
       #endif
     }
 
@@ -279,7 +288,7 @@ cpr_get( const char *keyword, const char *prompt )
   #endif
     for(;;) {
 	p = tty_get( prompt );
-	if( *p == '?' && !p[1] ) {
+	if( *p=='?' && !p[1] && !(keyword && !*keyword)) {
 	    m_free(p);
 	    display_online_help( keyword );
 	}

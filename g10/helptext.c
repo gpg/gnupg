@@ -146,10 +146,6 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 },
 
 
-{ N_("keyedit.cmd"),
- "Please enter \"help\" to see the list of commands."
-},
-
 { N_("keyedit.save.okay"),
  "Answer \"yes\" or \"no\""
 },

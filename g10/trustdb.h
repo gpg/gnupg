@@ -34,6 +34,7 @@
 /* trust values not covered by the mask */
 #define TRUST_FLAG_REVOKED 32 /* r: revoked */
 #define TRUST_FLAG_SUB_REVOKED 64
+#define TRUST_FLAG_DISABLED 128 /* d: key/uid disabled */
 
 
 #define PREFTYPE_SYM	  1

@@ -69,8 +69,8 @@ struct cmp_krec_fpr_struct {
     int fprlen;
 };
 
-/* a type used to pass infomation to cmp_sdir */
-struct cmp_sdir_struct {
+/* a type used to pass infomation to cmp_[s]dir */
+struct cmp_xdir_struct {
     int pubkey_algo;
     u32 keyid[2];
 };
@@ -852,13 +852,100 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	    return rc; /* ready */
 	}
 	else {
-	    log_error( "hashtbl %lu points to an invalid record\n",
-								    item);
+	    log_error( "hashtbl %lu: %lu/%d points to an invalid record %lu\n",
+		       table, hashrec, (msb % ITEMS_PER_HTBL_RECORD), item);
+	    list_trustdb(NULL);
 	    return G10ERR_TRUSTDB;
 	}
     }
 
     return 0;
+}
+
+
+/****************
+ * Drop an entry from a hashtable
+ * table gives the start of the table, key and keylen is the key,
+ */
+static int
+drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
+{
+    TRUSTREC rec;
+    ulong hashrec, item;
+    int msb;
+    int level=0;
+    int rc, i;
+
+    hashrec = table;
+  next_level:
+    msb = key[level];
+    hashrec += msb / ITEMS_PER_HTBL_RECORD;
+    rc = tdbio_read_record( hashrec, &rec, RECTYPE_HTBL );
+    if( rc ) {
+	log_error( db_name, "drop_from_hashtable: read failed: %s\n",
+							g10_errstr(rc) );
+	return rc;
+    }
+
+    item = rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD];
+    if( !item )  /* not found - forget about it  */
+	return 0;
+
+    if( item == recnum ) {  /* tables points direct to the record */
+	rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = 0;
+	rc = tdbio_write_record( &rec );
+	if( rc )
+	    log_error( db_name, "drop_from_hashtable: write htbl failed: %s\n",
+							    g10_errstr(rc) );
+	return rc;
+    }
+
+    rc = tdbio_read_record( item, &rec, 0 );
+    if( rc ) {
+	log_error( "drop_from_hashtable: read item failed: %s\n",
+							g10_errstr(rc) );
+	return rc;
+    }
+
+    if( rec.rectype == RECTYPE_HTBL ) {
+	hashrec = item;
+	level++;
+	if( level >= keylen ) {
+	    log_error( "hashtable has invalid indirections.\n");
+	    return G10ERR_TRUSTDB;
+	}
+	goto next_level;
+    }
+
+    if( rec.rectype == RECTYPE_HLST ) {
+	for(;;) {
+	    for(i=0; i < ITEMS_PER_HLST_RECORD; i++ ) {
+		if( rec.r.hlst.rnum[i] == recnum ) {
+		    rec.r.hlst.rnum[i] = 0; /* drop */
+		    rc = tdbio_write_record( &rec );
+		    if( rc )
+			log_error( db_name, "drop_from_hashtable: write htbl failed: %s\n",
+									g10_errstr(rc) );
+		    return rc;
+		}
+	    }
+	    if( rec.r.hlst.next ) {
+		rc = tdbio_read_record( rec.r.hlst.next,
+						   &rec, RECTYPE_HLST);
+		if( rc ) {
+		    log_error( "scan keyhashtbl read hlst failed: %s\n",
+							 g10_errstr(rc) );
+		    return rc;
+		}
+	    }
+	    else
+		return 0; /* key not in table */
+	}
+    }
+
+    log_error( "hashtbl %lu: %lu/%d points to wrong record %lu\n",
+		    table, hashrec, (msb % ITEMS_PER_HTBL_RECORD), item);
+    return G10ERR_TRUSTDB;
 }
 
 
@@ -973,6 +1060,30 @@ update_sdirhashtbl( TRUSTREC *sr )
     return upd_hashtable( get_sdirhashrec(), key, 8, sr->recnum );
 }
 
+/****************
+ * Drop the records from the key-hashtbl
+ */
+static int
+drop_from_keyhashtbl( TRUSTREC *kr )
+{
+    return drop_from_hashtable( get_keyhashrec(),
+				kr->r.key.fingerprint,
+				kr->r.key.fingerprint_len, kr->recnum );
+}
+
+/****************
+ * Drop record drom the shadow dir hashtbl
+ */
+static int
+drop_from_sdirhashtbl( TRUSTREC *sr )
+{
+    byte key[8];
+
+    u32tobuf( key   , sr->r.sdir.keyid[0] );
+    u32tobuf( key+4 , sr->r.sdir.keyid[1] );
+    return drop_from_hashtable( get_sdirhashrec(), key, 8, sr->recnum );
+}
+
 
 
 
@@ -1009,6 +1120,8 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 	if( rec->r.dir.valcheck )
 	    fprintf( fp, ", v=%02x/%s", rec->r.dir.validity,
 					strtimestamp(rec->r.dir.valcheck) );
+	if( rec->r.dir.checkat )
+	    fprintf( fp, ", a=%s", strtimestamp(rec->r.dir.checkat) );
 	if( rec->r.dir.dirflags & DIRF_CHECKED ) {
 	    if( rec->r.dir.dirflags & DIRF_VALID )
 		fputs(", valid", fp );
@@ -1071,7 +1184,8 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
 		fprintf(fp, " %lu:", rec->r.sig.sig[i].lid );
 		if( rec->r.sig.sig[i].flag & SIGF_CHECKED ) {
 		    fprintf(fp,"%c%c%c",
-		       (rec->r.sig.sig[i].flag & SIGF_VALID)   ? 'V':'-',
+		       (rec->r.sig.sig[i].flag & SIGF_VALID)   ? 'V':
+		       (rec->r.sig.sig[i].flag & SIGF_IGNORED) ? 'I':'-',
 		       (rec->r.sig.sig[i].flag & SIGF_EXPIRED) ? 'E':'-',
 		       (rec->r.sig.sig[i].flag & SIGF_REVOKED) ? 'R':'-');
 		}
@@ -1196,6 +1310,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.dir.dirflags   = *p++;
 	rec->r.dir.validity   = *p++;
 	rec->r.dir.valcheck   = buftoulong(p); p += 4;
+	rec->r.dir.checkat    = buftoulong(p); p += 4;
 	switch( rec->r.dir.validity ) {
 	  case 0:
 	  case TRUST_UNDEFINED:
@@ -1346,6 +1461,7 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.dir.dirflags;
 	*p++ = rec->r.dir.validity;
 	ulongtobuf(p, rec->r.dir.valcheck); p += 4;
+	ulongtobuf(p, rec->r.dir.checkat); p += 4;
 	assert( rec->r.dir.lid == recnum );
 	break;
 
@@ -1419,7 +1535,7 @@ tdbio_write_record( TRUSTREC *rec )
     rc = put_record_into_cache( recnum, buf );
     if( rc )
 	;
-    if( rec->rectype == RECTYPE_KEY )
+    else if( rec->rectype == RECTYPE_KEY )
 	rc = update_keyhashtbl( rec );
     else if( rec->rectype == RECTYPE_SDIR )
 	rc = update_sdirhashtbl( rec );
@@ -1433,6 +1549,19 @@ tdbio_delete_record( ulong recnum )
     TRUSTREC vr, rec;
     int rc;
 
+    /* Must read the record fist, so we can drop it from the hash tables */
+    rc = tdbio_read_record( recnum, &rec, 0 );
+    if( rc )
+	;
+    else if( rec.rectype == RECTYPE_KEY )
+	rc = drop_from_keyhashtbl( &rec );
+    else if( rec.rectype == RECTYPE_SDIR )
+	rc = drop_from_sdirhashtbl( &rec );
+
+    if( rc )
+	return rc;
+
+    /* now we can chnage it to a free record */
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
@@ -1595,7 +1724,7 @@ tdbio_search_dir_byfpr( const byte *fingerprint, size_t fingerlen,
 static int
 cmp_sdir( void *dataptr, const TRUSTREC *rec )
 {
-    const struct cmp_sdir_struct *d = dataptr;
+    const struct cmp_xdir_struct *d = dataptr;
 
     return rec->rectype == RECTYPE_SDIR
 	   && ( !d->pubkey_algo || rec->r.sdir.pubkey_algo == d->pubkey_algo )
@@ -1607,7 +1736,7 @@ cmp_sdir( void *dataptr, const TRUSTREC *rec )
 int
 tdbio_search_sdir( u32 *keyid, int pubkey_algo, TRUSTREC *rec )
 {
-    struct cmp_sdir_struct cmpdata;
+    struct cmp_xdir_struct cmpdata;
     int rc;
     byte key[8];
 

@@ -6,15 +6,9 @@
 
   * Speed up calculation of key validity.
 
-  * See why we always get this "Hmmm, public key not anymore available"
-    Rewrite that stuff.
-
   * print a warning when a revoked/expired _secret_ key is used.
 
   * remove more "Fixmes"
-
-  * Use capabilities if available.  glibc2 does not support it yet?
-    What about 2.2 or should we use the system calls directly?
 
   * when decryptiong multiple key: print a warning only if no usable pubkey
     encrypt package was found.	Extension: display a list of all recipients.
@@ -28,8 +22,6 @@
     for the IN ENCR/SIGN hack.
 
   * convert the given user ID to UTF-8 and add an option to suppress this.
-
-  * A way to disable keys.
 
 
 Nice to have

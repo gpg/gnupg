@@ -191,6 +191,8 @@
      u = The key is ultimately trusted; this
 	 is only used for keys for which
 	 the secret key is also available.
+     r = The key has been revoked
+     d = The key has been disabled
 
   The value in the "pub" record is the best one of all "uid" records.
 

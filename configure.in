@@ -102,16 +102,25 @@ AC_ARG_WITH(included-zlib,
 [g10_force_zlib=yes], [g10_force_zlib=no] )
 AC_MSG_RESULT($g10_force_zlib)
 
-dnl This does not work because automakes install tareget still needs libtool
-dnl dnl
-dnl dnl Check wether we want to compile libgcrypt
-dnl dnl
-dnl AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
-dnl AC_ARG_ENABLE(libgcrypt,
-dnl     [  --enable-libgcrypt      compile the libgcrypt [default=no]],
-dnl [compile_libgcrypt="$enableval"],[compile_libgcrypt=no])
-dnl AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
-dnl AC_MSG_RESULT($compile_libgcrypt)
+dnl
+dnl Check wether we want to compile libgcrypt
+dnl
+AC_MSG_CHECKING([whether compilation of libgcrypt is requested])
+AC_ARG_ENABLE(libgcrypt,
+    [  --enable-libgcrypt      compile the libgcrypt [default=no]],
+[compile_libgcrypt="$enableval"],[compile_libgcrypt=no])
+AM_CONDITIONAL(COMPILE_LIBGCRYPT, test x$compile_libgcrypt = xyes)
+AC_MSG_RESULT($compile_libgcrypt)
+
+
+dnl
+dnl Check whether we want to use Linux capabilities
+dnl
+AC_MSG_CHECKING([whether use of capabilities is requested])
+AC_ARG_WITH(capabilities,
+    [  --with-capabilities     use linux capabilities [default=no]],
+[use_capabilities="$withval"],[use_capabilities=no])
+AC_MSG_RESULT($use_capabilities)
 
 
 dnl Checks for programs.
@@ -135,12 +144,11 @@ AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
 AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
 
 
-
-dnl if test x$compile_libgcrypt = xyes; then
-dnl    dnl Don't default to build shared libs
-dnl    AM_DISABLE_SHARED
-dnl    AM_PROG_LIBTOOL
-dnl fi
+dnl
+dnl Don't default to build shared libs
+dnl
+AM_DISABLE_SHARED
+AM_PROG_LIBTOOL
 
 
 MPI_OPT_FLAGS=""
@@ -165,7 +173,7 @@ case "${target}" in
         try_gettext="no"
         try_gdbm="no"
         ;;
-    i386-emx-os2 | i[3456]86-pc-os2emx )
+    i386-emx-os2 | i[3456]86-pc-os2*emx )
         # OS/2 with the EMX environment
         ac_cv_have_dev_random=no
         AC_DEFINE(HAVE_DRIVE_LETTERS)
@@ -173,6 +181,7 @@ case "${target}" in
         try_gettext="no"
         try_gdbm="no"
         ;;
+
     *-*-hpux*)
         if test -z "$GCC" ; then
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
@@ -204,7 +213,7 @@ case "${target}" in
     i386--mingw32)
         PRINTABLE_OS_NAME="MingW32"
         ;;
-    i386-emx-os2 | i[3456]86-pc-os2emx)
+    i386-emx-os2 | i[3456]86-pc-os2*emx )
         PRINTABLE_OS_NAME="OS/2"
         ;;
     *-linux*)
@@ -356,11 +365,37 @@ fi
 
 dnl Checks for library functions.
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(strerror stpcpy strlwr tcgetattr rand strtoul mmap)
+AC_CHECK_FUNCS(strerror stpcpy strlwr stricmp tcgetattr rand strtoul mmap)
 AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
 
 GNUPG_CHECK_MLOCK
+
+dnl
+dnl Check whether we can use Linux capabilities as requested
+dnl
+if test "$use_capabilities" = "yes" ; then
+use_capabilities=no
+AC_CHECK_HEADERS(sys/capability.h)
+if test "$ac_cv_header_sys_capability_h" = "yes" ; then
+  AC_CHECK_LIB(cap, cap_init, ac_need_libcap=1)
+  if test "$ac_cv_lib_cap_cap_init" = "yes"; then
+     AC_DEFINE(USE_CAPABILITIES)
+     use_capabilities=yes
+  fi
+fi
+if test "$use_capabilities" = "no" ; then
+    AC_MSG_WARN([[
+*** The use of capabilities on this system is not possible.
+*** You need a recent Linux kernel and some patches:
+***   fcaps-2.2.9-990610.patch      (kernel patch for 2.2.9)
+***   fcap-module-990613.tar.gz     (kernel module)
+***   libcap-1.92.tar.gz            (user mode library and utilities)
+*** And you have to configure the kernel with CONFIG_VFS_CAP_PLUGIN
+*** set (filesystems menu). Be warned: This code is *really* ALPHA.]])
+fi
+fi
+
 
 GNUPG_CHECK_IPC
 if test "$ac_cv_header_sys_shm_h" = "yes"; then
@@ -415,7 +450,7 @@ if test "$use_static_rnd" = default; then
           i386--mingw32)
               static_modules="$static_modules rndw32"
               ;;
-          i386-emx-os2|i[3456]86-pc-os2emx)
+          i386-emx-os2|i[3456]86-pc-os2*emx)
               static_modules="$static_modules rndos2"
               ;;
           m68k-atari-mint)
@@ -541,7 +576,7 @@ else
   fi
 fi
 
-if test "use_local_zlib" = yes ; then
+if test "$use_local_zlib" = yes ; then
     AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, true)
     GNUPG_LINK_FILES(zlib/zlib.h, zlib.h )
     GNUPG_LINK_FILES(zlib/zconf.h, zconf.h )

@@ -59,6 +59,7 @@ static int count_selected_uids( KBNODE keyblock );
 static int count_selected_keys( KBNODE keyblock );
 static int menu_revsig( KBNODE keyblock );
 static int menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock );
+static int enable_disable_key( KBNODE keyblock, int disable );
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -550,6 +551,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	   cmdLSIGN, cmdREVSIG, cmdREVKEY, cmdDELSIG,
 	   cmdDEBUG, cmdSAVE, cmdADDUID, cmdDELUID, cmdADDKEY, cmdDELKEY,
 	   cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF, cmdEXPIRE,
+	   cmdENABLEKEY, cmdDISABLEKEY,
 	   cmdNOP };
     static struct { const char *name;
 		    enum cmdids id;
@@ -586,6 +588,8 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	{ N_("trust")   , cmdTRUST , 0, N_("change the ownertrust") },
 	{ N_("revsig")  , cmdREVSIG , 0, N_("revoke signatures") },
 	{ N_("revkey")  , cmdREVKEY , 1, N_("revoke a secondary key") },
+	{ N_("disable") , cmdDISABLEKEY , 0, N_("disable a key") },
+	{ N_("enable")  , cmdENABLEKEY , 0, N_("enable a key") },
 
     { NULL, cmdNONE } };
     enum cmdids cmd;
@@ -662,7 +666,7 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 		    have_commands = 0;
 	    }
 	    if( !have_commands ) {
-		answer = cpr_get("keyedit.cmd", _("Command> "));
+		answer = cpr_get("", _("Command> "));
 		cpr_kill_prompt();
 	    }
 	    trim_spaces(answer);
@@ -842,12 +846,10 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 	    break;
 
 	  case cmdADDKEY:
-	secmem_dump_stats();
 	    if( generate_subkeypair( keyblock, sec_keyblock ) ) {
 		redisplay = 1;
 		sec_modified = modified = 1;
 	    }
-	secmem_dump_stats();
 	    break;
 
 
@@ -929,6 +931,14 @@ keyedit_menu( const char *username, STRLIST locusr, STRLIST commands )
 
 	  case cmdREVSIG:
 	    if( menu_revsig( keyblock ) ) {
+		redisplay = 1;
+		modified = 1;
+	    }
+	    break;
+
+	  case cmdENABLEKEY:
+	  case cmdDISABLEKEY:
+	    if( enable_disable_key( keyblock, cmd == cmdDISABLEKEY ) ) {
 		redisplay = 1;
 		modified = 1;
 	    }
@@ -1858,4 +1868,16 @@ menu_revkey( KBNODE pub_keyblock, KBNODE sec_keyblock )
     return changed;
 }
 
+
+static int
+enable_disable_key( KBNODE keyblock, int disable )
+{
+    int entire;
+    int changed = 0;
+
+
+    entire = !count_selected_keys( keyblock );
+
+    return changed;
+}
 

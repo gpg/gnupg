@@ -1,5 +1,14 @@
-Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Tue Jun 29 21:44:25 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+
+	* configure.in (use_local_zlib): The lost dollar is back.
+
+	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): Add EMX case.
+	* configure.in: Another variant of the MX vendor string
+
+	* configure.in (--with-capabilities): Some test code (Remi).
+
+Sat Jun 26 12:15:59 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* acinclude.m4 (GNUPG_CHECK_RDYNAMIC): Support for HPUX and IRIX.
 	* configure.in (HAVE_DL_SHL_LOAD): New for HPUX (Dave Dykstra).
