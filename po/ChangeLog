@@ -1,3 +1,9 @@
+2004-12-10  Werner Koch  <wk@g10code.com>
+
+	* sv.po: Take the update done for 1.2.6.
+
+	* zh_CN.po, fr.po, cs.po, ja.po: Updated.
+
 2004-10-27  Werner Koch  <wk@g10code.com>
 
 	* LINGUAS: Better don't have comments in this file.
@@ -283,7 +289,7 @@ Wed Jun 14 12:27:09 CEST 2000  Werner Koch  <wk@openit.de>
 
 2000-06-07 18:26:58  Werner Koch  (wk@habibti.openit.de)
 
-  * fr.po: New version from Gaël
+  * fr.po: New version from GaÃ«l
 
 2000-05-02 10:44:42  Werner Koch  (wk@habibti.openit.de)
 
@@ -355,7 +361,7 @@ Mon Oct  4 21:23:04 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 Thu Sep 23 06:26:28 1999  Werner Koch  (wk@gnupg.org)
 
-	* fr.po: Updated by Gaël.
+	* fr.po: Updated by GaÃ«l.
 
 Sat Sep 18 11:49:51 1999  Werner Koch  (wk@gnupg.org)
 
@@ -379,7 +385,7 @@ Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* POTFILES.in (delkey.c): New.
 
-	* fr.po: Gaël was the first to update it again.
+	* fr.po: GaÃ«l was the first to update it again.
 
 Wed Sep  1 15:30:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
@@ -390,7 +396,7 @@ Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 	* it.po: Updated (Marco).
 	* de.po: Updated (Walter).
 	* pt_BR-po: Update (Thiago).
-	* fr.po: Updated (Gaël).
+	* fr.po: Updated (GaÃ«l).
 
 Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
@@ -519,7 +525,7 @@ Mon Sep 21 15:03:44 1998  Werner Koch  (wk@(none))
 
 Mon Sep 21 09:28:54 1998  Werner Koch  (wk@(none))
 
-	* fr.po: New version from Gaël Quéri
+	* fr.po: New version from GaÃ«l QuÃ©ri
 
 Tue Aug 11 12:28:11 1998  Werner Koch  (wk@(none))
 
@@ -547,7 +553,7 @@ Fri Mar 13 09:43:19 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 
 
- Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"POT-Creation-Date: 2004-10-28 10:59+0200\n"
+"POT-Creation-Date: 2004-11-03 17:37+0100\n"
 "PO-Revision-Date: 2004-05-10 19:23+0200\n"
 "Last-Translator: Elros Cyriatan <cyriatan@fastmail.fm>\n"
 "Language-Team: Dutch <vertaling@nl.linux.org>\n"
@@ -38,8 +38,8 @@ msgstr "geen entropie verzamelende module gevonden\n"
 #: cipher/random.c:387 g10/card-util.c:594 g10/dearmor.c:60 g10/dearmor.c:109
 #: g10/encode.c:181 g10/encode.c:488 g10/g10.c:3194 g10/import.c:175
 #: g10/keygen.c:2236 g10/keyring.c:1524 g10/openfile.c:180 g10/openfile.c:333
-#: g10/plaintext.c:468 g10/sign.c:761 g10/sign.c:912 g10/sign.c:1020
-#: g10/sign.c:1164 g10/tdbdump.c:140 g10/tdbdump.c:148 g10/tdbio.c:539
+#: g10/plaintext.c:468 g10/sign.c:761 g10/sign.c:913 g10/sign.c:1021
+#: g10/sign.c:1166 g10/tdbdump.c:140 g10/tdbdump.c:148 g10/tdbio.c:539
 #: g10/tdbio.c:600
 #, c-format
 msgid "can't open `%s': %s\n"
@@ -75,7 +75,7 @@ msgstr "let op: random_seed bestand niet bijgewerkt\n"
 
 #: cipher/random.c:473 g10/exec.c:489 g10/keygen.c:2704 g10/keygen.c:2734
 #: g10/keyring.c:1200 g10/keyring.c:1500 g10/openfile.c:257 g10/openfile.c:348
-#: g10/sign.c:778 g10/sign.c:1035 g10/tdbio.c:535
+#: g10/sign.c:779 g10/sign.c:1037 g10/tdbio.c:535
 #, c-format
 msgid "can't create `%s': %s\n"
 msgstr "kan `%s' niet aanmaken: %s\n"
@@ -694,7 +694,7 @@ msgstr "kan `%s' niet openen\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--uitvoer werkt niet voor deze opdracht\n"
 
-#: g10/delkey.c:74 g10/export.c:162 g10/keyedit.c:2921 g10/keyserver.c:1414
+#: g10/delkey.c:74 g10/export.c:162 g10/keyedit.c:2927 g10/keyserver.c:1414
 #: g10/revoke.c:226
 #, fuzzy, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -744,7 +744,7 @@ msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr ""
 "gebruik de optie \"--delete-secret-keys\" om deze eerst te verwijderen.\n"
 
-#: g10/encode.c:210 g10/sign.c:1184
+#: g10/encode.c:210 g10/sign.c:1186
 #, c-format
 msgid "error creating passphrase: %s\n"
 msgstr "fout bij maken wachtwoord: %s\n"
@@ -793,7 +793,7 @@ msgstr ""
 "het afdwingen van symmetrische codering %s (%d) gaat tegen de voorkeuren van "
 "de ontvanger in\n"
 
-#: g10/encode.c:648 g10/sign.c:876
+#: g10/encode.c:648 g10/sign.c:877
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1298,7 +1298,7 @@ msgstr ""
 msgid "`%s' is not a valid character set\n"
 msgstr "%s is geen geldige tekenset\n"
 
-#: g10/g10.c:2279 g10/keyedit.c:3437
+#: g10/g10.c:2279 g10/keyedit.c:3443
 #, fuzzy
 msgid "could not parse keyserver URL\n"
 msgstr "kon sleutelserver URI niet inlezen\n"
@@ -2209,7 +2209,7 @@ msgstr "sleutel %08lX: nieuwe sleutel - overgeslagen\n"
 msgid "no writable keyring found: %s\n"
 msgstr "geen schrijfbare sleutelbos gevonden: %s\n"
 
-#: g10/import.c:766 g10/openfile.c:261
+#: g10/import.c:766 g10/openfile.c:261 g10/sign.c:784 g10/sign.c:1042
 #, c-format
 msgid "writing to `%s'\n"
 msgstr "bezig met schrijven naar `%s'\n"
@@ -2752,7 +2752,7 @@ msgstr ""
 msgid "Really sign? (y/N) "
 msgstr "Echt ondertekenen? "
 
-#: g10/keyedit.c:1028 g10/keyedit.c:3885 g10/keyedit.c:3976 g10/keyedit.c:4049
+#: g10/keyedit.c:1028 g10/keyedit.c:3891 g10/keyedit.c:3982 g10/keyedit.c:4055
 #: g10/sign.c:369
 #, c-format
 msgid "signing failed: %s\n"
@@ -3262,83 +3262,84 @@ msgstr ""
 msgid "Preferred keyserver: "
 msgstr ""
 
-#: g10/keyedit.c:2243
-#, c-format
-msgid "This key may be revoked by %s key "
+#: g10/keyedit.c:2245
+#, fuzzy, c-format
+msgid "This key may be revoked by %s key %s"
 msgstr "Deze sleutel is mogelijk herroepen door sleutel %s "
 
-#: g10/keyedit.c:2247
-msgid " (sensitive)"
+#: g10/keyedit.c:2251
+#, fuzzy
+msgid "(sensitive)"
 msgstr " (gevoelig)"
 
-#: g10/keyedit.c:2261 g10/keyedit.c:2317 g10/keyedit.c:2438 g10/keyedit.c:2453
+#: g10/keyedit.c:2267 g10/keyedit.c:2323 g10/keyedit.c:2444 g10/keyedit.c:2459
 #: g10/keyserver.c:366
 #, fuzzy, c-format
 msgid "created: %s"
 msgstr "kan %s niet aanmaken: %s\n"
 
-#: g10/keyedit.c:2264 g10/keylist.c:723 g10/keylist.c:823 g10/mainproc.c:929
+#: g10/keyedit.c:2270 g10/keylist.c:723 g10/keylist.c:823 g10/mainproc.c:929
 #, fuzzy, c-format
 msgid "revoked: %s"
 msgstr "[herroepen] "
 
-#: g10/keyedit.c:2266 g10/keylist.c:694 g10/keylist.c:829
+#: g10/keyedit.c:2272 g10/keylist.c:694 g10/keylist.c:829
 #, fuzzy, c-format
 msgid "expired: %s"
 msgstr " [verloopt: %s]"
 
-#: g10/keyedit.c:2268 g10/keyedit.c:2319 g10/keyedit.c:2440 g10/keyedit.c:2455
+#: g10/keyedit.c:2274 g10/keyedit.c:2325 g10/keyedit.c:2446 g10/keyedit.c:2461
 #: g10/keylist.c:700 g10/keylist.c:735 g10/keylist.c:835 g10/keylist.c:856
 #: g10/keyserver.c:372 g10/mainproc.c:935
 #, fuzzy, c-format
 msgid "expires: %s"
 msgstr " [verloopt: %s]"
 
-#: g10/keyedit.c:2270
+#: g10/keyedit.c:2276
 #, fuzzy, c-format
 msgid "usage: %s"
 msgstr " vertrouwen: %c/%c"
 
-#: g10/keyedit.c:2285
+#: g10/keyedit.c:2291
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " vertrouwen: %c/%c"
 
-#: g10/keyedit.c:2289
+#: g10/keyedit.c:2295
 #, c-format
 msgid "validity: %s"
 msgstr ""
 
-#: g10/keyedit.c:2296
+#: g10/keyedit.c:2302
 msgid "This key has been disabled"
 msgstr "Deze sleutel is uit gezet"
 
-#: g10/keyedit.c:2324
+#: g10/keyedit.c:2330
 msgid "card-no: "
 msgstr ""
 
-#: g10/keyedit.c:2359 g10/keyedit.c:2361 g10/keyedit.c:2363
+#: g10/keyedit.c:2365 g10/keyedit.c:2367 g10/keyedit.c:2369
 #, c-format
 msgid "[%8.8s] "
 msgstr ""
 
-#: g10/keyedit.c:2359 g10/keyedit.c:2472 g10/keylist.c:782 g10/keyserver.c:376
+#: g10/keyedit.c:2365 g10/keyedit.c:2478 g10/keylist.c:782 g10/keyserver.c:376
 #: g10/mainproc.c:1575 g10/trustdb.c:1133
 #, fuzzy
 msgid "revoked"
 msgstr "[herroepen] "
 
-#: g10/keyedit.c:2361 g10/keyedit.c:2474 g10/keylist.c:784 g10/keyserver.c:380
+#: g10/keyedit.c:2367 g10/keyedit.c:2480 g10/keylist.c:784 g10/keyserver.c:380
 #: g10/mainproc.c:1577 g10/trustdb.c:500
 #, fuzzy
 msgid "expired"
 msgstr "expire"
 
-#: g10/keyedit.c:2400
+#: g10/keyedit.c:2406
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Er zijn geen voorkeuren op een PGP 2.x stijl gebruikerscode.\n"
 
-#: g10/keyedit.c:2408
+#: g10/keyedit.c:2414
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
 "unless you restart the program.\n"
@@ -3347,13 +3348,13 @@ msgstr ""
 "juist\n"
 "is tenzij u het programma opnieuw start.\n"
 
-#: g10/keyedit.c:2539
+#: g10/keyedit.c:2545
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
 
-#: g10/keyedit.c:2599
+#: g10/keyedit.c:2605
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3363,45 +3364,45 @@ msgstr ""
 "kan\n"
 "         zorgen dat sommige versies van PGP deze sleutel verwerpen.\n"
 
-#: g10/keyedit.c:2604 g10/keyedit.c:2882
+#: g10/keyedit.c:2610 g10/keyedit.c:2888
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Weet u zeker dat u deze toch wilt toevoegen? (j/N) "
 
-#: g10/keyedit.c:2610
+#: g10/keyedit.c:2616
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "U kunt geen foto ID toevoegen aan een PGP2 stijl sleutel.\n"
 
-#: g10/keyedit.c:2750
+#: g10/keyedit.c:2756
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Deze goede ondertekening verwijderen? (j/N/q)"
 
-#: g10/keyedit.c:2760
+#: g10/keyedit.c:2766
 msgid "Delete this invalid signature? (y/N/q)"
 msgstr "Deze ongeldige ondertekening verwijderen? (j/N/q)"
 
-#: g10/keyedit.c:2764
+#: g10/keyedit.c:2770
 msgid "Delete this unknown signature? (y/N/q)"
 msgstr "Deze onbekende ondertekening verwijderen? (j/N/q)"
 
-#: g10/keyedit.c:2770
+#: g10/keyedit.c:2776
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Echt deze zelfondertekening verwijderen? (j/N)"
 
-#: g10/keyedit.c:2784
+#: g10/keyedit.c:2790
 #, c-format
 msgid "Deleted %d signature.\n"
 msgstr "%d ondertekening verwijderd.\n"
 
-#: g10/keyedit.c:2785
+#: g10/keyedit.c:2791
 #, c-format
 msgid "Deleted %d signatures.\n"
 msgstr "%d ondertekeningen verwijderd.\n"
 
-#: g10/keyedit.c:2788
+#: g10/keyedit.c:2794
 msgid "Nothing deleted.\n"
 msgstr "Niets verwijderd.\n"
 
-#: g10/keyedit.c:2877
+#: g10/keyedit.c:2883
 msgid ""
 "WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
 "cause\n"
@@ -3411,166 +3412,166 @@ msgstr ""
 "         toevoegen kan zorgen dat sommige versies van PGP deze sleutel "
 "verwerpen.\n"
 
-#: g10/keyedit.c:2888
+#: g10/keyedit.c:2894
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr ""
 "U kunt geen aangestelde herroeper toevoegen aan een PGP 2.x stijl sleutel.\n"
 
-#: g10/keyedit.c:2908
+#: g10/keyedit.c:2914
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Geef de gebruikerscode van de aangestelde herroeper: "
 
-#: g10/keyedit.c:2931
+#: g10/keyedit.c:2937
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 "kan een PGP 2.x stijl sleutel niet aanwijzen als een aangestelde herroeper\n"
 
-#: g10/keyedit.c:2946
+#: g10/keyedit.c:2952
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "u kunt geen sleutel aanwijzen als zijn eigen aangestelde herroeper\n"
 
-#: g10/keyedit.c:2968
+#: g10/keyedit.c:2974
 #, fuzzy
 msgid "this key has already been designated as a revoker\n"
 msgstr "WAARSCHUWING: Deze sleutel is herroepen door zijn eigenaar!\n"
 
-#: g10/keyedit.c:2987
+#: g10/keyedit.c:2993
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
 msgstr ""
 "WAARSCHUWING: het aanwijzen van een sleutel als een aangestelde herroeper "
 "kan niet ongedaan gemaakt worden!\n"
 
-#: g10/keyedit.c:2993
+#: g10/keyedit.c:2999
 #, fuzzy
 msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr ""
 "Wilt u echt deze sleutel aanwijzen als een aangestelde herroeper? (j/N): "
 
-#: g10/keyedit.c:3054
+#: g10/keyedit.c:3060
 msgid "Please remove selections from the secret keys.\n"
 msgstr "Verwijder alstublieft selecties van de geheime sleutels.\n"
 
-#: g10/keyedit.c:3060
+#: g10/keyedit.c:3066
 msgid "Please select at most one secondary key.\n"
 msgstr "Selecteer alstublieft ten hoogste één secundaire sleutel.\n"
 
-#: g10/keyedit.c:3064
+#: g10/keyedit.c:3070
 msgid "Changing expiration time for a secondary key.\n"
 msgstr "De verlooptijd voor een secundaire sleutel wordt gewijzigd.\n"
 
-#: g10/keyedit.c:3067
+#: g10/keyedit.c:3073
 msgid "Changing expiration time for the primary key.\n"
 msgstr "De verlooptijd voor de primaire sleutel wordt gewijzigd.\n"
 
-#: g10/keyedit.c:3113
+#: g10/keyedit.c:3119
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "U kunt de verlooptijd van een v3-sleutel niet wijzigen\n"
 
-#: g10/keyedit.c:3129
+#: g10/keyedit.c:3135
 msgid "No corresponding signature in secret ring\n"
 msgstr "Geen geassocieerde ondertekening in geheime sleutelbos\n"
 
-#: g10/keyedit.c:3209
+#: g10/keyedit.c:3215
 msgid "Please select exactly one user ID.\n"
 msgstr "Selecteer alstublieft precies één gebruikerscode.\n"
 
-#: g10/keyedit.c:3248 g10/keyedit.c:3358 g10/keyedit.c:3477
+#: g10/keyedit.c:3254 g10/keyedit.c:3364 g10/keyedit.c:3483
 #, fuzzy, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
 msgstr "v3-zelfondertekening op gebruikerscode \"%s\" wordt overgeslagen\n"
 
-#: g10/keyedit.c:3419
+#: g10/keyedit.c:3425
 msgid "Enter your preferred keyserver URL: "
 msgstr ""
 
-#: g10/keyedit.c:3498
+#: g10/keyedit.c:3504
 #, fuzzy
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "Weet u zeker dat u deze wilt gebruiken (j/N)? "
 
-#: g10/keyedit.c:3499
+#: g10/keyedit.c:3505
 #, fuzzy
 msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Weet u zeker dat u deze wilt gebruiken (j/N)? "
 
-#: g10/keyedit.c:3561
+#: g10/keyedit.c:3567
 #, c-format
 msgid "No user ID with index %d\n"
 msgstr "Geen gebruikerscode met index %d\n"
 
-#: g10/keyedit.c:3607
+#: g10/keyedit.c:3613
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Geen secundaire sleutel met index %d\n"
 
-#: g10/keyedit.c:3724
+#: g10/keyedit.c:3730
 #, fuzzy, c-format
 msgid "user ID: \"%s\"\n"
 msgstr "gebruikerscode: \""
 
-#: g10/keyedit.c:3727 g10/keyedit.c:3791 g10/keyedit.c:3834
+#: g10/keyedit.c:3733 g10/keyedit.c:3797 g10/keyedit.c:3840
 #, fuzzy, c-format
 msgid "signed by your key %s on %s%s%s\n"
 msgstr "   ondertekend door %08lX op %s%s%s\n"
 
-#: g10/keyedit.c:3729 g10/keyedit.c:3793 g10/keyedit.c:3836
+#: g10/keyedit.c:3735 g10/keyedit.c:3799 g10/keyedit.c:3842
 msgid " (non-exportable)"
 msgstr " (niet-uitvoerbaar)"
 
-#: g10/keyedit.c:3733
+#: g10/keyedit.c:3739
 #, c-format
 msgid "This signature expired on %s.\n"
 msgstr "Deze ondertekening is verlopen op %s.\n"
 
-#: g10/keyedit.c:3737
+#: g10/keyedit.c:3743
 msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "Weet u zeker dat u deze nog steeds wilt herroepen? (j/N) "
 
-#: g10/keyedit.c:3741
+#: g10/keyedit.c:3747
 msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "Een herroepingscertificaat maken voor deze ondertekening? (j/N) "
 
-#: g10/keyedit.c:3768
+#: g10/keyedit.c:3774
 #, fuzzy, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "U heeft deze gebruikerscodes ondertekend:\n"
 
-#: g10/keyedit.c:3794
+#: g10/keyedit.c:3800
 #, fuzzy
 msgid " (non-revocable)"
 msgstr " (niet-uitvoerbaar)"
 
-#: g10/keyedit.c:3801
+#: g10/keyedit.c:3807
 #, fuzzy, c-format
 msgid "revoked by your key %s on %s\n"
 msgstr "   herroepen door %08lX op %s\n"
 
-#: g10/keyedit.c:3823
+#: g10/keyedit.c:3829
 msgid "You are about to revoke these signatures:\n"
 msgstr "U staat op het punt deze ondertekeningen te herroepen:\n"
 
-#: g10/keyedit.c:3843
+#: g10/keyedit.c:3849
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Echt de herroepingscertificaten maken? (j/N) "
 
-#: g10/keyedit.c:3873
+#: g10/keyedit.c:3879
 msgid "no secret key\n"
 msgstr "geen geheime sleutel\n"
 
-#: g10/keyedit.c:3943
+#: g10/keyedit.c:3949
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "gebruikerscode \"%s\" is al herroepen\n"
 
-#: g10/keyedit.c:3960
+#: g10/keyedit.c:3966
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "WAARSCHUWING: een gebruikerscode ondertekening is van %d seconden in de "
 "toekomst\n"
 
-#: g10/keyedit.c:4129
+#: g10/keyedit.c:4135
 #, fuzzy, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
@@ -4744,12 +4745,12 @@ msgstr "geannuleerd door gebruiker\n"
 msgid "problem with the agent: agent returns 0x%lx\n"
 msgstr "probleem met agent: agent geeft 0x%lx terug\n"
 
-#: g10/passphrase.c:1053 g10/passphrase.c:1211
+#: g10/passphrase.c:1053 g10/passphrase.c:1212
 #, fuzzy
-msgid "can't query password in batch mode\n"
+msgid "can't query passphrase in batch mode\n"
 msgstr "kan niet vragen om wachtwoord in batch-modus\n"
 
-#: g10/passphrase.c:1058 g10/passphrase.c:1216
+#: g10/passphrase.c:1058 g10/passphrase.c:1217
 msgid "Enter passphrase: "
 msgstr "Geef wachtwoord: "
 
@@ -4773,7 +4774,7 @@ msgstr "%u-bit %s sleutel, ID %08lX, gemaakt op %s"
 msgid "         (subkey on main key ID %s)"
 msgstr ""
 
-#: g10/passphrase.c:1220
+#: g10/passphrase.c:1221
 msgid "Repeat passphrase: "
 msgstr "Herhaal wachtwoord: "
 
@@ -4983,7 +4984,8 @@ msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "WAARSCHUWING: Deze sleutel is herroepen door zijn eigenaar!\n"
 
 #: g10/pkclist.c:521
-msgid "         This could mean that the signature is forgery.\n"
+#, fuzzy
+msgid "         This could mean that the signature is forged.\n"
 msgstr "         Dit kan betekenen dat de ondertekening een vervalsing is.\n"
 
 #: g10/pkclist.c:527
@@ -5442,54 +5444,49 @@ msgstr ""
 "u kunt alleen losgekoppeld ondertekenen met PGP 2.x stijl sleutels in in --"
 "pgp2 modus\n"
 
-#: g10/sign.c:783 g10/sign.c:1040
-#, fuzzy, c-format
-msgid "writing to file `%s'\n"
-msgstr "bezig met schrijven naar `%s'\n"
-
-#: g10/sign.c:807
+#: g10/sign.c:808
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr ""
 "afdwingen van digest-algoritme %s (%d) overtreedt voorkeuren ontvanger\n"
 
-#: g10/sign.c:899
+#: g10/sign.c:900
 msgid "signing:"
 msgstr "bezig met ondertekenen:"
 
-#: g10/sign.c:1006
+#: g10/sign.c:1007
 msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 msgstr ""
 "u kunt alleen niet-gecodeerde ondertekeningen maken met PGP 2.x stijl "
 "sleutels in --pgp2 modus\n"
 
-#: g10/sign.c:1178
+#: g10/sign.c:1180
 #, c-format
 msgid "%s encryption will be used\n"
 msgstr "%s codering zal worden gebruikt\n"
 
-#: g10/skclist.c:129 g10/skclist.c:191
+#: g10/skclist.c:126 g10/skclist.c:190
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr ""
 "sleutel is niet gemarkeerd als onveilig - kan deze niet gebruiken met de nep "
 "RNG!\n"
 
-#: g10/skclist.c:158
+#: g10/skclist.c:157
 #, fuzzy, c-format
 msgid "skipped \"%s\": duplicated\n"
 msgstr "`%s' overgeslagen: dubbel\n"
 
-#: g10/skclist.c:166 g10/skclist.c:176 g10/skclist.c:185
+#: g10/skclist.c:165 g10/skclist.c:175 g10/skclist.c:184
 #, fuzzy, c-format
 msgid "skipped \"%s\": %s\n"
 msgstr "`%s' overgeslagen: %s\n"
 
-#: g10/skclist.c:171
+#: g10/skclist.c:170
 msgid "skipped: secret key already present\n"
 msgstr "overgeslagen: geheime sleutel reeds aanwezig\n"
 
-#: g10/skclist.c:186
+#: g10/skclist.c:185
 #, fuzzy
 msgid "this is a PGP generated Elgamal key which is not secure for signatures!"
 msgstr ""
@@ -6120,6 +6117,10 @@ msgstr "bewerking is niet mogelijk zonder geïnitialiseerd veilig geheugen\n"
 #: util/secmem.c:341
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(mogelijk heeft u het verkeerde programma gebruikt voor deze taak)\n"
+
+#, fuzzy
+#~ msgid "writing to file `%s'\n"
+#~ msgstr "bezig met schrijven naar `%s'\n"
 
 #~ msgid "sorry, can't do this in batch mode\n"
 #~ msgstr "sorry, dat kan niet in batch-modus\n"
