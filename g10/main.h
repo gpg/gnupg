@@ -87,8 +87,16 @@ void deprecated_warning(const char *configname,unsigned int configlineno,
 			const char *option,const char *repl1,const char *repl2);
 const char *compress_algo_to_string(int algo);
 int check_compress_algo(int algo);
-void compliance_failure(void);
 const char *compliance_option_string(void);
+void compliance_failure(void);
+
+struct parse_options
+{
+  char *name;
+  unsigned int bit;
+};
+
+int parse_options(char *str,unsigned int *options,struct parse_options *opts);
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );

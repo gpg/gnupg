@@ -41,13 +41,7 @@ static int do_export_stream( IOBUF out, STRLIST users,
 int
 parse_export_options(char *str,unsigned int *options)
 {
-  char *tok;
-  int hit=0;
-  struct
-  {
-    char *name;
-    unsigned int bit;
-  } export_opts[]=
+  struct parse_options export_opts[]=
     {
       {"include-non-rfc",EXPORT_INCLUDE_NON_RFC},
       {"include-local-sigs",EXPORT_INCLUDE_LOCAL_SIGS},
@@ -57,34 +51,7 @@ parse_export_options(char *str,unsigned int *options)
       /* add tags for include revoked and disabled? */
     };
 
-  while((tok=strsep(&str," ,")))
-    {
-      int i,rev=0;
-
-      if(ascii_strncasecmp("no-",tok,3)==0)
-	{
-	  rev=1;
-	  tok+=3;
-	}
-
-      for(i=0;export_opts[i].name;i++)
-	{
-	  if(ascii_strcasecmp(export_opts[i].name,tok)==0)
-	    {
-	      if(rev)
-		*options&=~export_opts[i].bit;
-	      else
-		*options|=export_opts[i].bit;
-	      hit=1;
-	      break;
-	    }
-	}
-
-      if(!hit && !export_opts[i].name)
-	return 0;
-    }
-
-  return hit;
+  return parse_options(str,options,export_opts);
 }
 
 /****************
@@ -343,4 +310,3 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 	log_info(_("WARNING: nothing exported\n"));
     return rc;
 }
-

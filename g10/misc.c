@@ -593,3 +593,40 @@ compliance_failure(void)
   log_info(_("this message may not be usable by %s\n"),compliance_string());
   opt.compliance=CO_GNUPG;
 }
+
+int
+parse_options(char *str,unsigned int *options,struct parse_options *opts)
+{
+  char *tok;
+
+  while((tok=strsep(&str," ,")))
+    {
+      int i,rev=0;
+
+      if(tok[0]=='\0')
+	continue;
+
+      if(ascii_strncasecmp("no-",tok,3)==0)
+	{
+	  rev=1;
+	  tok+=3;
+	}
+
+      for(i=0;opts[i].name;i++)
+	{
+	  if(ascii_strcasecmp(opts[i].name,tok)==0)
+	    {
+	      if(rev)
+		*options&=~opts[i].bit;
+	      else
+		*options|=opts[i].bit;
+	      break;
+	    }
+	}
+
+      if(!opts[i].name)
+	return 0;
+    }
+
+  return 1;
+}
