@@ -1149,7 +1149,7 @@ main( int argc, char **argv )
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
     opt.trust_model=TM_OPENPGP;
-#if defined (__MINGW32__) || defined (__CYGWIN32__)
+#if defined (__MINGW32__)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
 #else

@@ -1,5 +1,18 @@
 2002-11-13  David Shaw  <dshaw@jabberwocky.com>
 
+	* exec.c [__CYGWIN32__]: Keep cygwin separate from Mingw32;
+	we don't need it here as it behaves more like a Posix system.
+	From Werner on stable branch.
+
+	* passphrase.c (agent_get_passphrase): Ditto.  From Werner on
+	stable branch.
+
+	* tdbio.c (MY_O_BINARY): Need binary mode with Cygwin.  From
+	Werner on stable branch.
+
+       	* g10.c, gpgv.c (main) [__CYGWIN32__]: Don't get the homedir from
+	the registry.  From Werner on stable branch.
+	
 	* keyedit.c (show_key_with_all_names_colon): Make --with-colons
 	--edit display match the validity and trust of --with-colons
 	--list-keys.
