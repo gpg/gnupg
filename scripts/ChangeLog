@@ -1,3 +1,11 @@
+2002-12-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* distfiles, gnupg.spec.in: Include convert-from-106.
+
+	* convert-from-106: Script to automate the 1.0.6->later
+	conversion.  It marks all secret keys as ultimately trusted, adds
+	the signature caches, and checks the trustdb.
+
 2002-11-13  David Shaw  <dshaw@jabberwocky.com>
 
 	* mk-w32-dist: Don't use iconv for pl.po.  From Werner on stable

@@ -4,3 +4,4 @@ gnupg.spec.in
 autogen.sh
 mk-gpg-texi
 mk-w32-dist
+convert-from-106
