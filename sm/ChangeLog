@@ -1,3 +1,8 @@
+2001-12-13  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (list_cert_colon): Print alternative names of subject
+	and a few other values.
+
 2001-12-12  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c (main): New options --assume-{armor,base64,binary}. 
@@ -38,5 +43,3 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-	
-

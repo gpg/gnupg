@@ -66,13 +66,24 @@ print_capabilities (KsbaCert cert, FILE *fp)
 }
 
 
+static void
+print_time (time_t t, FILE *fp)
+{
+  if (!t)
+    ;
+  else if ( t == (time_t)(-1) )
+    putc ('?', fp);
+  else
+    fprintf (fp, "%lu", (unsigned long)t);
+}
+
 
 /* List one certificate in colon mode */
 static void
 list_cert_colon (KsbaCert cert, FILE *fp)
 {
-  int trustletter = 0;
-  char *p;
+  int idx, trustletter = 0;
+  unsigned char *p;
 
   fputs ("crt:", fp);
   trustletter = 0;
@@ -90,34 +101,56 @@ list_cert_colon (KsbaCert cert, FILE *fp)
       putc (trustletter, fp);
     }
 
-  fprintf (fp, ":%u:%d::%s:%s:::",
+  fprintf (fp, ":%u:%d::",
            /*keylen_of_cert (cert)*/1024,
-           /* pubkey_algo_of_cert (cert)*/'R',
-           /*colon_datestr_from_cert (cert)*/ "2001-11-11",
-           /*colon_strtime_expire (cert)*/ "2001-11-12" );
-    
+           /* pubkey_algo_of_cert (cert)*/'R');
+
+  /* we assume --fixed-list-mode for gpgsm */
+  print_time ( ksba_cert_get_validity (cert, 0), fp);
   putc (':', fp);
-  /* fixme: should we print the issuer name here? */
+  print_time ( ksba_cert_get_validity (cert, 1), fp);
+  putc (':', fp);
+  putc (':', fp);
+  if ((p = ksba_cert_get_serial (cert)))
+    {
+      int i, len = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+      for (i=0; i < len; i++)
+        fprintf (fp,"%02X", p[4+i]);
+      xfree (p);
+    }
+  putc (':', fp);
+  putc (':', fp);
+  if ((p = ksba_cert_get_issuer (cert,0)))
+    {
+      fputs (p, fp);  /* FIXME: Escape colons and linefeeds */
+      xfree (p);
+    }
   putc (':', fp);
   print_capabilities (cert, fp);
   putc ('\n', fp);
+
   p = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
   fprintf (fp, "fpr:::::::::%s:\n", p);
   xfree (p);
-  p = gpgsm_get_keygrip_hexstring (cert);
-  fprintf (fp, "grp:::::::::%s:\n", p?p:"");
-  xfree (p);
   if (opt.with_key_data)
-    print_key_data (cert, fp);
+    {
+      if ( (p = gpgsm_get_keygrip_hexstring (cert)))
+        {
+          fprintf (fp, "grp:::::::::%s:\n", p);
+          xfree (p);
+        }
+      print_key_data (cert, fp);
+    }
 
-  fprintf (fp, "uid:%c::::::::", trustletter);
-  p = ksba_cert_get_subject (cert);
-  if (p)
-    fputs (p, fp);  /* FIXME: Escape colons and linefeeds */
-  xfree (p);
-  putc (':', fp);
-  putc (':', fp);
-  putc ('\n', fp);
+  for (idx=0; (p = ksba_cert_get_subject (cert,idx)); idx++)
+    {
+      fprintf (fp, "uid:%c::::::::", trustletter);
+      fputs (p, fp);  /* FIXME: Escape colons and linefeeds */
+      xfree (p);
+      putc (':', fp);
+      putc (':', fp);
+      putc ('\n', fp);
+    }
 }
 
 

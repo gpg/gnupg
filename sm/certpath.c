@@ -58,8 +58,8 @@ gpgsm_validate_path (KsbaCert cert)
     {
       xfree (issuer);
       xfree (subject);
-      issuer = ksba_cert_get_issuer (subject_cert);
-      subject = ksba_cert_get_subject (subject_cert);
+      issuer = ksba_cert_get_issuer (subject_cert, 0);
+      subject = ksba_cert_get_subject (subject_cert, 0);
 
       if (!issuer)
         {

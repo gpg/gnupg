@@ -103,13 +103,13 @@ gpgsm_dump_cert (const char *text, KsbaCert cert)
       print_time (t);
       log_printf ("\n");
 
-      dn = ksba_cert_get_issuer (cert);
+      dn = ksba_cert_get_issuer (cert, 0);
       log_debug ("  issuer: ");
       print_dn (dn);
       ksba_free (dn);
       log_printf ("\n");
     
-      dn = ksba_cert_get_subject (cert);
+      dn = ksba_cert_get_subject (cert, 0);
       log_debug ("  subject: ");
       print_dn (dn);
       ksba_free (dn);

@@ -71,7 +71,7 @@ gpgsm_add_to_certlist (const char *name, CERTLIST *listaddr)
   
   keydb_release (kh);
   ksba_cert_release (cert);
-  return rc;
+  return rc == -1? GNUPG_No_Public_Key: rc;
 }
 
 void
