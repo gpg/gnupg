@@ -163,7 +163,7 @@ parse_keyserver_uri(const char *uri,int require_scheme,
 
   /* Get the scheme */
 
-  for(idx=uri,count=0;*idx && *idx!=':';*idx++)
+  for(idx=uri,count=0;*idx && *idx!=':';idx++)
     count++;
 
   if(count==0)
@@ -218,7 +218,7 @@ parse_keyserver_uri(const char *uri,int require_scheme,
       if(!assume_hkp)
 	uri+=2;
 
-      for(idx=uri,count=0;*idx && *idx!=':' && *idx!='/';*idx++)
+      for(idx=uri,count=0;*idx && *idx!=':' && *idx!='/';idx++)
 	count++;
 
       if(count==0)
@@ -238,7 +238,7 @@ parse_keyserver_uri(const char *uri,int require_scheme,
 	     imply there is no limit.  Of course, the real world has
 	     limits. */
 
-	  for(idx=uri+1,count=0;*idx && *idx!='/';*idx++)
+	  for(idx=uri+1,count=0;*idx && *idx!='/';idx++)
 	    {
 	      count++;
 
