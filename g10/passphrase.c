@@ -257,6 +257,7 @@ readn ( int fd, void *buf, size_t buflen, size_t *ret_nread )
     return 0;
 }
 
+#if !defined (__riscos__)
 /*
  * Open a connection to the agent and send the magic string
  * Returns: -1 on error or an filedescriptor for urther processing
@@ -369,6 +370,7 @@ agent_close ( int fd )
     close (fd);
 #endif
 }
+#endif /* !__riscos__ */
 
 
 /*
