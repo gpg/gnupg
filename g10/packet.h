@@ -129,8 +129,9 @@ typedef struct {
 	unsigned unknown_critical:1;
         unsigned exportable:1;
         unsigned revocable:1;
-        unsigned policy_url:1; /* Policy URL is present */
+        unsigned policy_url:1; /* At least one policy URL is present */
         unsigned notation:1; /* At least one notation is present */
+        unsigned pref_ks:1;  /* At least one preferred keyserver is present */
         unsigned expired:1;
     } flags;
     u32     keyid[2];	    /* 64 bit keyid */

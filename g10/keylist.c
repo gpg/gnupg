@@ -845,6 +845,9 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    if(sig->flags.notation && (opt.list_options&LIST_SHOW_NOTATION))
 	      show_notation(sig,3,0);
 
+	    if(sig->flags.pref_ks && (opt.list_options&LIST_SHOW_KEYSERVER))
+	      show_keyserver_url(sig,3,0);
+
 	    /* fixme: check or list other sigs here */
 	}
     }

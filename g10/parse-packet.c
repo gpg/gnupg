@@ -1305,6 +1305,10 @@ parse_signature( IOBUF inp, int pkttype, unsigned long pktlen,
 	if(p)
 	  sig->flags.policy_url=1;
 
+	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,NULL);
+	if(p)
+	  sig->flags.pref_ks=1;
+
 	p=parse_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,NULL);
 	if(p)
 	  sig->flags.notation=1;

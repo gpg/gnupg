@@ -1,3 +1,16 @@
+2003-08-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (check_sig_and_print): Use two different preferred
+	keyserver displays - one if the key is not present (to tell the
+	user where to get the key), the other if it is present (to tell
+	the user where the key can be refreshed).
+
+	* packet.h, parse-packet.c (parse_signature): Set flag if a
+	preferred keyserver is present.
+
+	* keylist.c (list_keyblock_print): Show keyserver url in listings
+	with list-option show-keyserver-url.
+
 2003-08-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Use NETLIBS instead of EGDLIBS.
