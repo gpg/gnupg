@@ -24,7 +24,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "util.h"
 #include "filter.h"
 #include "keydb.h"
 #include "status.h"
@@ -37,6 +36,7 @@
 #include "options.h"
 #include "packet.h"
 #include "keyserver-internal.h"
+#include "util.h"
 
 #define KEYSERVER_PROTO_VERSION 0
 
