@@ -1,3 +1,13 @@
+2004-03-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gpgconf-comp.c: Include <signal.h>.
+	(gc_backend): Add new member runtime_change.
+	(gpg_agent_runtime_change): New function.
+	(gc_component_change_options): New variable runtime.  Initialize
+	it.  If an option is changed that has the GC_OPT_FLAG_RUNTIME bit
+	set, also set the corresponding runtime variable.  Finally, call
+	the runtime_change callback of the backend if needed.
+
 2004-03-16  Werner Koch  <wk@gnupg.org>
 
 	* gpgconf-comp.c (gc_options_gpg_agent): Implemented.

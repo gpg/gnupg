@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <time.h>
 #include <stdarg.h>
+#include <signal.h>
 
 /* For log_logv(), asctimestamp(), gnupg_get_time ().  */
 #define JNLIB_NEED_LOG_LOGV
@@ -48,8 +49,6 @@ has been in use for may years and provides the ability to limit the
 length of the line and thus thwart DoS (not a issue here but at many
 other places).
 
-
-   Backend: File backend must be able to write out changes !!!
    Components: Add more components and their options.
    Robustness: Do more validation.  Call programs to do validation for us.
    Don't use popen, as this will not tell us if the program had a
@@ -93,6 +92,9 @@ gc_error (int status, int errnum, const char *fmt, ...)
 }
 
 
+/* Forward declaration.  */
+void gpg_agent_runtime_change (void);
+
 /* Backend configuration.  Backends are used to decide how the default
    and current value of an option can be determined, and how the
    option can be changed.  To every option in every component belongs
@@ -140,6 +142,9 @@ static struct
      GPGConf.  In this case, PROGRAM is NULL.  */
   char *program;
 
+  /* The runtime change callback.  */
+  void (*runtime_change) (void);
+
   /* The option name for the configuration filename of this backend.
      This must be an absolute pathname.  It can be an option from a
      different backend (but then ordering of the options might
@@ -151,13 +156,15 @@ static struct
   const char *option_name;
 } gc_backend[GC_BACKEND_NR] =
   {
-    { NULL, NULL, NULL },		/* GC_BACKEND_ANY dummy entry.  */
-    { "GnuPG", "gpg", "gpgconf-gpg.conf" },
-    { "GPGSM", "gpgsm", "gpgconf-gpgsm.conf" },
-    { "GPG Agent", "gpg-agent", "gpgconf-gpg-agent.conf" },
-    { "SCDaemon", "scdaemon", "gpgconf-scdaemon.conf" },
-    { "DirMngr", "dirmngr", "gpgconf-dirmngr.conf" },
-    { "DirMngr LDAP Server List", NULL, "ldapserverlist-file", "LDAP Server" },
+    { NULL },		/* GC_BACKEND_ANY dummy entry.  */
+    { "GnuPG", "gpg", NULL, "gpgconf-gpg.conf" },
+    { "GPGSM", "gpgsm", NULL, "gpgconf-gpgsm.conf" },
+    { "GPG Agent", "gpg-agent", gpg_agent_runtime_change,
+      "gpgconf-gpg-agent.conf" },
+    { "SCDaemon", "scdaemon", NULL, "gpgconf-scdaemon.conf" },
+    { "DirMngr", "dirmngr", NULL, "gpgconf-dirmngr.conf" },
+    { "DirMngr LDAP Server List", NULL, NULL, "ldapserverlist-file",
+      "LDAP Server" },
   };
 
 
@@ -749,6 +756,40 @@ static struct
     { "gpgsm", NULL, "GPG for S/MIME", gc_options_gpgsm },
     { "dirmngr", NULL, "CRL Manager", gc_options_dirmngr }
   };
+
+
+/* Engine specific support.  */
+void
+gpg_agent_runtime_change (void)
+{
+  char *agent = getenv ("GPG_AGENT_INFO");
+  char *pid_str;
+  unsigned long pid_long;
+  char *tail;
+  pid_t pid;
+
+  if (!agent)
+    return;
+
+  pid_str = strchr (agent, ':');
+  if (!pid_str)
+    return;
+
+  pid_str++;
+  errno = 0;
+  pid_long = strtoul (pid_str, &tail, 0);
+  if (errno || (*tail != ':' && *tail != '\0'))
+    return;
+
+  pid = (pid_t) pid_long;
+
+  /* Check for overflow.  */
+  if (pid_long != (unsigned long) pid)
+    return;
+
+  /* Ignore any errors here.  */
+  kill (pid, SIGHUP);
+}
 
 
 /* Robust version of dgettext.  */
@@ -2096,6 +2137,7 @@ void
 gc_component_change_options (int component, FILE *in)
 {
   int err = 0;
+  int runtime[GC_BACKEND_NR];
   char *src_pathname[GC_BACKEND_NR];
   char *dest_pathname[GC_BACKEND_NR];
   char *orig_pathname[GC_BACKEND_NR];
@@ -2107,6 +2149,7 @@ gc_component_change_options (int component, FILE *in)
 
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     {
+      runtime[backend] = 0;
       src_pathname[backend] = NULL;
       dest_pathname[backend] = NULL;
       orig_pathname[backend] = NULL;
@@ -2168,6 +2211,9 @@ gc_component_change_options (int component, FILE *in)
 	gc_error (1, 0, "unknown option %s", line);
 
       option_check_validity (option, flags, new_value, &new_value_nr);
+
+      if (option->flags & GC_OPT_FLAG_RUNTIME)
+	runtime[option->backend] = 1;
 
       option->new_flags = flags;
       if (!(flags & GC_OPT_FLAG_DEFAULT))
@@ -2286,6 +2332,15 @@ gc_component_change_options (int component, FILE *in)
 	}
       gc_error (1, saved_errno, "could not commit changes");
     }
+
+  /* If it all worked, notify the daemons of the changes.  */
+  if (opt.runtime)
+    for (backend = 0; backend < GC_BACKEND_NR; backend++)  
+      {
+	if (runtime[backend] && gc_backend[backend].runtime_change)
+	  (*gc_backend[backend].runtime_change) ();
+      }
+
   if (line)
     free (line);
 }
