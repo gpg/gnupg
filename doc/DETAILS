@@ -279,7 +279,7 @@ more arguments in future versions.
           4 := New signatures
           8 := New subkeys 
          16 := Contains private key.
-        The flags may be XORed.
+        The flags may be ORed.
 
     IMPORT_PROBLEM <reason> [<fingerprint>]
         Issued for each import failure.  Reason codes are:
