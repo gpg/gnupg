@@ -791,7 +791,7 @@ Write output to &ParmFile;.
 <varlistentry>
 <term>--max-output &ParmN;</term>
 <listitem><para>
-This option set a limit on the number of bytes that will be generated
+This option sets a limit on the number of bytes that will be generated
 when processing a file.  Since OpenPGP supports various levels of
 compression, it is possible that the plaintext of a given message may
 be significantly larger than the original OpenPGP message.  While
@@ -992,6 +992,13 @@ specific levels and how they are used. --no-ask-cert-level disables
 this option.  This option defaults to yes.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--min-cert-level</term>
+<listitem><para>
+When building the trust database, disregard any signatures with a
+certification level below this.  Defaults to 1, which accepts all
+signatures.
+</para></listitem></varlistentry>
 
 <varlistentry>
 <term>--default-cert-level &ParmN;</term>
@@ -1580,9 +1587,10 @@ display the message.  This option overrides --set-filename.
 
 <varlistentry>
 <term>--use-embedded-filename</term>
+<term>--no-use-embedded-filename</term>
 <listitem><para>
-Try to create a file with a name as embedded in the data.
-This can be a dangerous option as it allows to overwrite files.
+Try to create a file with a name as embedded in the data.  This can be
+a dangerous option as it allows to overwrite files.  Defaults to no.
 </para></listitem></varlistentry>
 
 
@@ -2188,10 +2196,11 @@ Display the session key used for one message. See --override-session-key
 for the counterpart of this option.
 </para>
 <para>
-We think that Key-Escrow is a Bad Thing; however the user should
-have the freedom to decide whether to go to prison or to reveal the content of
-one specific message without compromising all messages ever encrypted for one
-secret key. DON'T USE IT UNLESS YOU ARE REALLY FORCED TO DO SO.
+We think that Key Escrow is a Bad Thing; however the user should have
+the freedom to decide whether to go to prison or to reveal the content
+of one specific message without compromising all messages ever
+encrypted for one secret key. DON'T USE IT UNLESS YOU ARE REALLY
+FORCED TO DO SO.
 </para></listitem></varlistentry>
 
 <varlistentry>

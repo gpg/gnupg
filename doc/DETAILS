@@ -59,9 +59,9 @@ record.
 		    be marked as ultimately trusted.
  3. Field:  length of key in bits.
  4. Field:  Algorithm:	1 = RSA
-		       16 = ElGamal (encrypt only)
+		       16 = Elgamal (encrypt only)
 		       17 = DSA (sometimes called DH, sign only)
-		       20 = ElGamal (sign and encrypt)
+		       20 = Elgamal (sign and encrypt)
 	    (for other id's see include/cipher.h)
  5. Field:  KeyID either of 
  6. Field:  Creation Date (in UTC)
@@ -532,7 +532,7 @@ Key generation
 	     "<"  Size of one factor decreased
 	     ">"  Size of one factor increased
 
-    The prime number for ElGamal is generated this way:
+    The prime number for Elgamal is generated this way:
 
     1) Make a prime number q of 160, 200, 240 bits (depending on the keysize)
     2) Select the length of the other prime factors to be at least the size
