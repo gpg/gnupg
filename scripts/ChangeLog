@@ -1,5 +1,8 @@
 2003-02-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* distfiles, gnupg.spec.in: convert-from-106 is in the tools
+	directory now.
+
 	* convert-from-106: Move to the tools directory.
 
 2002-12-01  David Shaw  <dshaw@jabberwocky.com>
