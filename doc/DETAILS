@@ -47,6 +47,14 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 	    information may follow in some future versions.
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
+11. Field:  Signature class 
+12. Field:  Key capabilities:
+                e = encrypt
+                s = sign
+                c = certify
+            A key may have any combination of them.  The primary key has in
+            addition to these letters, uppercase version of the letter to
+            denote the _usable_ capabilities of the entire key.  
 
 More fields may be added later.
 

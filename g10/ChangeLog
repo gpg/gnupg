@@ -1,3 +1,8 @@
+2001-03-15  Werner Koch  <wk@gnupg.org>
+
+	* keylist.c (print_capabilities): New.
+	(list_keyblock_colon): and use it here.
+
 2001-03-13  Werner Koch  <wk@gnupg.org>
 
 	* main.c, options.h: New option fixed_list_mode.

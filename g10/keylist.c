@@ -154,6 +154,54 @@ print_key_data( PKT_public_key *pk, u32 *keyid )
     }
 }
 
+static void
+print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
+{
+    unsigned int usage = pk? pk->pubkey_usage : sk->pubkey_usage;
+    
+    if ( usage & PUBKEY_USAGE_ENC ) {
+        putchar ('e');
+    }
+    if ( usage & PUBKEY_USAGE_SIG ) {
+        putchar ('s');
+        putchar ('c');
+    }
+    if ( keyblock ) { /* figure our the usable capabilities */
+        KBNODE k;
+        int enc=0, sign=0, cert=0;
+
+        for (k=keyblock; k; k = k->next ) {
+            if ( k->pkt->pkttype == PKT_PUBLIC_KEY 
+                 || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
+                pk = k->pkt->pkt.public_key;
+                if ( pk->is_valid && !pk->is_revoked && !pk->has_expired ) {
+                    if ( pk->pubkey_usage & PUBKEY_USAGE_ENC )
+                        enc = 1;
+                    if ( pk->pubkey_usage & PUBKEY_USAGE_SIG )
+                        sign = cert = 1;
+                }
+            }
+            else if ( k->pkt->pkttype == PKT_SECRET_KEY 
+                      || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+                sk = k->pkt->pkt.secret_key;
+                if ( sk->is_valid && !sk->is_revoked && !sk->has_expired ) {
+                    if ( sk->pubkey_usage & PUBKEY_USAGE_ENC )
+                        enc = 1;
+                    if ( sk->pubkey_usage & PUBKEY_USAGE_SIG )
+                        sign = cert = 1;
+                }
+            }
+        }
+        if (enc)
+            putchar ('E');
+        if (sign)
+            putchar ('S');
+        if (cert)
+            putchar ('C');
+    }
+    putchar(':');
+}
+
 
 static void
 list_keyblock_print ( KBNODE keyblock, int secret )
@@ -393,6 +441,8 @@ list_keyblock_colon( KBNODE keyblock, int secret )
     if (opt.fixed_list_mode) {
         /* do not merge the first uid with the primary key */
         putchar(':');
+        putchar(':');
+        print_capabilities (pk, sk, keyblock);
         putchar('\n');
         if( opt.fingerprint )
             fingerprint( pk, sk );
@@ -400,6 +450,7 @@ list_keyblock_colon( KBNODE keyblock, int secret )
             print_key_data( pk, keyid );
         any = 1;
     }
+
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
 	if( node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode ) {
@@ -434,8 +485,12 @@ list_keyblock_colon( KBNODE keyblock, int secret )
             print_string( stdout,  node->pkt->pkt.user_id->name,
                           node->pkt->pkt.user_id->len, ':' );
             putchar(':');
-	    putchar('\n');
-	    if( !any ) {
+	    if (any)
+                putchar('\n');
+            else {
+                putchar(':');
+                print_capabilities (pk, sk, keyblock);
+                putchar('\n');
 		if( opt.fingerprint )
 		    fingerprint( pk, sk );
 		if( opt.with_key_data )
@@ -448,7 +503,10 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 	    PKT_public_key *pk2 = node->pkt->pkt.public_key;
 
 	    if( !any ) {
-		putchar('\n');
+                putchar(':');
+                putchar(':');
+                print_capabilities (pk, sk, keyblock);
+                putchar('\n');
 		if( opt.fingerprint )
 		    fingerprint( pk, sk ); /* of the main key */
 		any = 1;
@@ -479,6 +537,9 @@ list_keyblock_colon( KBNODE keyblock, int secret )
                 printf("%lu", pk->local_id );
             putchar(':');
             putchar(':');
+            putchar(':');
+            putchar(':');
+            print_capabilities (pk2, NULL, NULL);
             putchar('\n');
 	    if( opt.fingerprint > 1 )
 		fingerprint( pk2, NULL );
@@ -490,6 +551,9 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 	    PKT_secret_key *sk2 = node->pkt->pkt.secret_key;
 
 	    if( !any ) {
+                putchar(':');
+                putchar(':');
+                print_capabilities (pk, sk, keyblock);
 		putchar('\n');
 		if( opt.fingerprint )
 		    fingerprint( pk, sk ); /* of the main key */
@@ -497,17 +561,17 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 	    }
 
 	    keyid_from_sk( sk2, keyid2 );
-            printf("ssb::%u:%d:%08lX%08lX:%s:%s:::\n",
+            printf("ssb::%u:%d:%08lX%08lX:%s:%s:::::",
 			nbits_from_sk( sk2 ),
 			sk2->pubkey_algo,
 			(ulong)keyid2[0],(ulong)keyid2[1],
 			datestr_from_sk( sk2 ),
 			sk2->expiredate? strtimestamp(sk2->expiredate):""
-			/* fixme: add LID */
-						);
+                   /* fixme: add LID */ );
+            print_capabilities (NULL, sk2, NULL);
+            putchar ('\n');
 	    if( opt.fingerprint > 1 )
 		fingerprint( NULL, sk2 );
-
 	}
 	else if( opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
@@ -516,13 +580,16 @@ list_keyblock_colon( KBNODE keyblock, int secret )
 
 	    if( !any ) { /* no user id, (maybe a revocation follows)*/
 		if( sig->sig_class == 0x20 )
-		    puts("[revoked]");
+		    fputs("[revoked]:", stdout);
 		else if( sig->sig_class == 0x18 )
-		    puts("[key binding]");
+		    fputs("[key binding]:", stdout);
 		else if( sig->sig_class == 0x28 )
-		    puts("[subkey revoked]");
-		else
-		    putchar('\n');
+		    fputs("[subkey revoked]:", stdout);
+                else
+                    putchar (':');
+                putchar(':');
+                print_capabilities (pk, sk, keyblock);
+                putchar('\n');
 		if( opt.fingerprint )
 		    fingerprint( pk, sk );
 		any=1;
@@ -577,6 +644,8 @@ list_keyblock_colon( KBNODE keyblock, int secret )
     }
     if( !any ) {/* oops, no user id */
         putchar(':');
+        putchar(':');
+        print_capabilities (pk, sk, keyblock);
 	putchar('\n');
     }
 }
