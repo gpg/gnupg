@@ -1,3 +1,8 @@
+Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* des.c (selftest): Add some testpattern
+
 Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -40,6 +40,11 @@
 #include "tdbio.h"
 
 
+#ifdef MKDIR_TAKES_ONE_ARG
+# undef mkdir
+# define mkdir(a,b) mkdir(a)
+#endif
+
 /****************
  * Yes, this is a very simple implementation. We should really
  * use a page aligned buffer and read complete pages.
@@ -436,11 +441,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( access( fname, F_OK ) ) {
 		if( strlen(fname) >= 7
 		    && !strcmp(fname+strlen(fname)-7, "/.gnupg" ) ) {
-		  #if HAVE_DOSISH_SYSTEM
-		    if( mkdir( fname ) )
-		  #else
 		    if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
-		  #endif
 			log_fatal( _("%s: can't create directory: %s\n"),
 						    fname,  strerror(errno) );
 		    else if( !opt.quiet )

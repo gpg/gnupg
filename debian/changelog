@@ -141,8 +141,8 @@ gnupg (0.4.0-1) unstable; urgency=high
   * debian/control: update extended description.
   * debian/rules (binary-arch): install FAQ and all ChangeLogs.
   * debian/preinst: new; check for upgrade from (<= 0.3.2-1) and warn about
-    incompatabilites in keyring format and offer to move old copy out of
-    gpg out of the way for transistion strategy and inform the user about
+    incompatibilities in keyring format and offer to move old copy out of
+    gpg out of the way for transition strategy and inform the user about
     the old copies of gnupg available on my web page.
   * debian/rules (binary-arch) install preinst.
   * debian/rules (binary-arch): don't depend on the test target as it is

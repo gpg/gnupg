@@ -1,10 +1,19 @@
-Wed Sep  1 15:30:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+
+	* fr.po: Imported and fixed a msgid.
+	* de.po: Ditto.
+	* pt_BR.po: Ditto.
+
+	* POTFILES.in (delkey.c): New.
+
+	* fr.po: Gaël was the first to update it again.
+
+Wed Sep  1 15:30:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* de.po: Updated.
 
 Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* it.po: Updated (Marco).
 	* de.po: Updated (Walter).

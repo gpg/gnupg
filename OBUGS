@@ -25,10 +25,10 @@
     OOPS in close enum_keyblocks - ignored
     [gdbm is experimental and will be replaced by the new keybox code]
     FIX: 1999-07-22 (Fixed the second error, there will be no fix for
-    the first one, becuase GDBM is to be replaced)
+    the first one, because GDBM is to be replaced)
 
 [  *] #7 1999-02-22 <dwpalmer@dwpalm.jf.intel.com> 0.9.3
-    Conventional encrytion incompatibilty:
+    Conventional encryption incompatibility:
      $ gpg -c --cipher-algo cast5 --compress-algo 1 --no-comment secrets.txt
     Creates a file that gpg can decrypt, but PGP 5.5 has problems with it.
     PGP decrypts 6416k out of 6424k, then complains with "PGP Warning",

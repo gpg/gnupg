@@ -253,7 +253,7 @@ with -u.</para></listitem></varlistentry>
     <term>lsign</term>
     <listitem><para>
 Same as --sign but the signature is marked as
-non-exportbale and will therefore never be used
+non-exportable and will therefore never be used
 by others.  This may be used to make keys valid
 only in the local environment.</para></listitem></varlistentry>
     <varlistentry>

@@ -1,5 +1,7 @@
 ## Process this file with automake to create Makefile.in
 
+SUBDIRS = gph
+
 EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP
 
 man_MANS = gpg.1
@@ -15,21 +17,13 @@ else
 endif
 
 
-%.txt : %.sgml
-	sgml2txt -c latin $*
+%.dvi: %.sgml
+	db2dvi $<
 
-%.html : %.sgml
-	sgml2html -c latin $*
+%.ps: %.dvi
+	dvips -o $@ $<
 
-%.dvi : %.sgml
-	-rm $*.sgml.tmp
-	mv $*.sgml $*.sgml.tmp
-	sed -e '/<!entity/  s/"IGNORE">/"INCLUDE">/' $*.sgml.tmp >$*.sgml
-	sgml2latex -b -l deutsch -c latin $* ; mv $*.sgml.tmp $*.sgml
+%/%.html: %.sgml
+	-db2html $<
 
-%.ps : %.sgml
-	-rm $*.sgml.tmp
-	mv $*.sgml $*.sgml.tmp
-	sed -e '/<!entity/  s/"IGNORE">/"INCLUDE">/' $*.sgml.tmp >$*.sgml
-	sgml2latex -b -l deutsch -c latin -o ps $* ; mv $*.sgml.tmp $*.sgml
 

@@ -617,5 +617,26 @@ if test x$ac_cv_sys_symbol_underscore = xyes; then
 fi
 ])
 
+dnl Stolen from gcc
+dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
+dnl of the usual 2.
+AC_DEFUN(GNUPG_FUNC_MKDIR_TAKES_ONE_ARG,
+[AC_CACHE_CHECK([if mkdir takes one argument], gnupg_cv_mkdir_takes_one_arg,
+[AC_TRY_COMPILE([
+#include <sys/types.h>
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef HAVE_DIRECT_H
+# include <direct.h>
+#endif], [mkdir ("foo", 0);],
+	gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
+if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
+  AC_DEFINE(MKDIR_TAKES_ONE_ARG)
+fi
+])
 
 dnl *-*wedit:notab*-*  Please keep this as the last line.

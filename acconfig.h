@@ -94,6 +94,9 @@
 
 #undef USE_CAPABILITIES
 
+/* Some systems have mkdir that takes a single argument. */
+#undef MKDIR_TAKES_ONE_ARG
+
 
 @BOTTOM@
 

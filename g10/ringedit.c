@@ -63,6 +63,12 @@
 #include "i18n.h"
 
 
+#ifdef MKDIR_TAKES_ONE_ARG
+# undef mkdir
+# define mkdir(a,b) mkdir(a)
+#endif
+
+
 struct resource_table_struct {
     int used;
     int secret; /* this is a secret keyring */
@@ -287,11 +293,7 @@ add_keyblock_resource( const char *url, int force, int secret )
 	    if( access(filename, F_OK) ) {
 		if( strlen(filename) >= 7
 		    && !strcmp(filename+strlen(filename)-7, "/.gnupg") ) {
-		  #ifdef HAVE_DOSISH_SYSTEM
-		    if( mkdir(filename) )
-		  #else
 		    if( mkdir(filename, S_IRUSR|S_IWUSR|S_IXUSR) )
-		  #endif
 		    {
 			log_error( _("%s: can't create directory: %s\n"),
 				  filename, strerror(errno));

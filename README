@@ -2,21 +2,17 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			   Version 0.9.11
+			    Version 1.0
 
-    GnuPG is a tool for secure communication and data storage.	It
-    can be used to encrypt data and to create digital signatures.
+    GnuPG is GNU's tool for secure communication and data storage.
+    It can be used to encrypt data and to create digital signatures.
     It includes an advanced key management facility and is compliant
-    to the proposed OpenPGP Internet standard as described in RFC2440.
+    with the proposed OpenPGP Internet standard as described in RFC2440.
 
-    GnuPG is now in Beta test and you should report all bugs to the
-    mailing list (see below).  The 0.9.x versions are released mainly
-    to fix all remaining serious bugs.	As soon as version 1.0 is out,
-    development will continue with a 1.1 series and bug fixes for the
-    1.0 version as needed.
-
-    GnuPG works best on GNU/Linux or *BSD.  Other Unices are
-    also supported but are not as well tested as the Free Unices.
+    GnuPG works best on GNU/Linux or *BSD systems.  Most other Unices
+    are also supported but are not as well tested as the Free Unices.
+    See http://www.gnupg.org/gnupg.html#supsys for a list of systems
+    which are known to work.
 
     See the file COPYING for copyright and warranty information.
 
@@ -32,7 +28,7 @@
     algorithms are: 3DES, Blowfish, CAST5 and Twofish (GnuPG does not
     yet create Twofish encrypted messages because there is no agreement
     in the OpenPGP WG on how to use it together with a MDC algorithm)
-    Digest algorithms available are MD5, RIPEMD160, SHA1, and TIGER/192.
+    Digest algorithms available are MD5, RIPEMD160 and SHA1.
 
 
     Installation
@@ -58,9 +54,9 @@
 
     7) You end up with a "gpg" binary in /usr/local/bin.
        Note: Because some old programs rely on the existence of a
-       binary named "gpgm"; you should install a symbolic link
-       from gpgm to gpg:
-	"cd /usr/local/bin; ln -s gpg gpgm"
+       binary named "gpgm" (which was build by some Beta versions
+       of GnuPG); you may want to install a symbolic link to it:
+       "cd /usr/local/bin; ln -s gpg gpgm"
 
     8) To avoid swapping out of sensitive data, you can install "gpg" as
        suid root.  If you don't do so, you may want to add the option
@@ -127,7 +123,7 @@
 
 	$ md5sum gnupg-x.y.z.tar.gz.sig
 
-       This should yield an output similar to this:
+       This should yield an output similar_to this:
 
 	fd9351b26b3189c1d577f0970f9dcadc  gnupg-x.y.z.tar.gz
 
@@ -135,18 +131,30 @@
        published via the announcement list and probably via Usenet.
 
 
-    Introduction
-    ------------
 
-    A draft version of the manual is included in the subdirectory doc
-    and some HOWTO documents are available online; dor a listing see:
+    Documentation
+    -------------
+
+    A draft version of the manual is included in the subdirectory doc/gph.
+    The supplied version is rendered in HTML and you may access it with any
+    browser (e.g.: lynx doc/gpg/index.html).  The GnuPG webpages have a link
+    to the latest development version and you may want to read those instead.
+
+    A couple of HOWTO documents are available online; for a listing see:
 
 	http://www.gnupg.org/docs.html#howtos
 
+    A man page with a description of all commands and options gets installed
+    along with the program.
+
+
+    Introduction
+    ------------
+
     Here is a brief overview on how to use GnuPG - it is strongly suggested
     that you read the manual and other information about the use of
-    cryptography.  GnuPG is only a tool, secure results require that YOU
-    KNOW WHAT YOU ARE DOING.
+    cryptography.  GnuPG is only a tool, secure usage requires that
+    YOU KNOW WHAT YOU ARE DOING.
 
     If you already have a DSA key from PGP 5 (they call them DH/ElGamal)
     you can simply copy the pgp keyrings over the GnuPG keyrings after
@@ -459,41 +467,15 @@
     detailed information about the errors.
 
 
-    Esoteric commands
-    -----------------
+    How to Get More Information
+    ---------------------------
 
-	gpg --list-packets datafile
-
-    Use this to list the contents of a data file. If the file is encrypted
-    you are asked for the passphrase, so that GnuPG is able to look at the
-    inner structure of a encrypted packet.  This command should list all
-    kinds of rfc2440 messages.
-
-	gpg --list-trustdb
-
-    List the contents of the trust DB in a human readable format
-
-	gpg --list-trustdb  <usernames>
-
-    List the tree of certificates for the given usernames
-
-	gpg --list-trust-path  username
-
-    List the possible trust paths for the given username. The length
-    of such a trust path is limited by the option --max-cert-depth
-    which defaults to 5.
-
-    For more options/commands see the man page or use "gpg --help".
-
-
-    Other Notes
-    -----------
-
-    The primary FTP site is "ftp://ftp.gnupg.org/pub/gcrypt/"
     The primary WWW page is "http://www.gnupg.org"
+    The primary FTP site is "ftp://ftp.gnupg.org/pub/gcrypt/"
 
     See http://www.gnupg.org/mirrors.html for a list of FTP mirrors
-    and use them if possible.
+    and use them if possible.  You may also find GnuPG mirrored on
+    some of the regular GNU mirrors.
 
     We have some mailing lists dedicated to GnuPG:
 
@@ -515,19 +497,22 @@
 
     Please direct bug reports to <gnupg-bugs@gnu.org> or post
     them direct to the mailing list <gnupg-devel@gnupg.org>.
-    Please direct questions about GnuPG to the users mailing list or
-    one of the pgp newsgroups to give me more time to improve
-    GnuPG.  Commercial support for GnuPG is also available; please
-    see the GNU service directory or search other resources.
 
-    Have fun and remember: Echelon is looking at you kid.
+    Please direct questions about GnuPG to the users mailing list or
+    one of the pgp newsgroups; please do not direct questions to one
+    of the authors directly as we are busy working on improvements
+    and bug fixes.  Both mailing lists are watched by the authors
+    and we try to answer questions when time allows us to do so.
+
+    Commercial grade support for GnuPG is available; please see
+    the GNU service directory or search other resources.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v0.9.10 (GNU/Linux)
+Version: GnuPG v0.9.11 (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iQB1AwUBN86L1h0Z9MEMmFelAQFQlQL/S5jDPpDFI3wDG/soA/qMTR79YX1IXDz9
-Izin49GkPHElRCoNbT3r3+T6V+lNtrZpah6JBR30//yo1OGUyoJ88yn3KC0JdtUq
-NgJzX3yYUXD+Ojer+WHEL+O8D8qkZrAX
-=wiUu
+iQB1AwUBN9QAwB0Z9MEMmFelAQG0XwMAqyH3UR0Jk+dm2ZkVoTqckGqmMMt5IdBN
+MlG4g3dau5De8XXHvbQ45cUpU4CC0MOlEuKDp+CKOc+xbzczdH35qYt/5XKmVWS8
+JwTvuKKCZ/95JRMk0ZMRueQduH7tSijZ
+=MefQ
 -----END PGP SIGNATURE-----

@@ -1,0 +1,251 @@
+<reference>
+<docinfo>
+<date>
+$Id$
+</date>
+</docinfo>
+<title>
+Options Reference
+</title>
+
+<partintro>
+<sect1 id="optionsfile">
+<title>
+Setting options
+</title>
+
+<para>
+Options may be specified on the command line or in an options file.
+The default location of the options file is
+<literal>~/.gnupg/options</literal>.
+When specifying options in the options file, omit the leading two
+dashes and instead use simply the option name followed by any
+arguments.
+Lines in the file with a hash (<literal>#</literal>) as the 
+first non-white-space character are ignored.
+</para>
+</sect1>
+</partintro>
+
+<refentry id="keyserver">
+<refnamediv>
+<refname>
+keyserver
+</refname>
+<refpurpose>
+specify the keyserver to use to locate keys
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>keyserver</option> <replaceable class="parameter">server-name</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This option is used in conjunction with either 
+<link linkend="recv-keys"><option>recv-keys</option></link> or 
+<link linkend="send-keys"><option>send-keys</option></link> to specify a
+keyserver to manage public key distribution.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="output">
+<refnamediv>
+<refname>
+output
+</refname>
+<refpurpose>
+specify the file in which to place output
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>output</option> <replaceable class="parameter">file-name</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This is a description.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="recipient">
+<refnamediv>
+<refname>
+recipient
+</refname>
+<refpurpose>
+specify the recipient of a public-key encrypted document
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This is a description.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="armor">
+<refnamediv>
+<refname>
+armor
+</refname>
+<refpurpose>
+ASCII-armor encrypted or signed output
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This is a description.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="no-greeting">
+<refnamediv>
+<refname>
+no-greeting
+</refname>
+<refpurpose>
+suppress the opening copyright notice but do not enter batch mode
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This is a description.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="local-user">
+<refnamediv>
+<refname>
+local-user
+</refname>
+<refpurpose>
+specifies a user id to use for signing
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>localuser</option> <replaceable class="parameter">name</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+Use <replaceable class="parameter">name</replaceable> as the user ID to sign.
+This option is silently ignored for the list commands, so that it can be 
+used in an options file.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="completes-needed">
+<refnamediv>
+<refname>
+completes-needed
+</refname>
+<refpurpose>
+specifies the number of fully-trusted people needed to validate a new key.
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>completes-needed</option> <replaceable class="parameter">n</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+A public key on your keyring is validated using those signatures on
+the key that were made by other valid keys on your keyring.
+The option specifies the number of signatures needed if you fully
+trust the owners of the keys that made the signatures.
+Your trust in a key's owner is set with the command 
+<link linkend="edit-key"><option>edit-key</option></link>.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="marginals-needed">
+<refnamediv>
+<refname>
+marginals-needed
+</refname>
+<refpurpose>
+specifies the number of marginally-trusted people needed to validate
+a new key.
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>marginals-needed</option> <replaceable class="parameter">n</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+A public key on your keyring is validated using those signatures on
+the key that were made by other valid keys on your keyring.
+The option specifies the number of signatures needed if you marginally
+trust the owners of the keys that made the signatures.
+Your trust in a key's owner is set with the command 
+<link linkend="edit-key"><option>edit-key</option></link>.
+</para>
+</refsect1>
+</refentry>
+</reference>
+

@@ -1,0 +1,71 @@
+<!--
+  ToDo
+  - acknowledge Joergen Grahn for his xfig version of Figure 3.1
+  - 'inlineequation' marks places where formatting is ok now but not
+    semantically correct.
+  - need some story for formatting math
+       From Tom Goulet (tomg@iaw.on.ca):
+       > and the <SUP> tag doesn't seem to do much under Lynx, consider just
+       > using a ^ to show powers.
+ -->
+
+<!DOCTYPE BOOK PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!--ArborText, Inc., 1988-1995, v.4001-->
+<!NOTATION drw SYSTEM "DRW">
+<!ENTITY gpg "<application>gpg</application>">
+<!ENTITY gnupg "GnuPG">
+<!ENTITY Gnupg "GnuPG">
+<!ENTITY eg "e.g.">
+<!ENTITY ie "i.e.">
+<!ENTITY chapter1 SYSTEM "c1.sgml">
+<!ENTITY chapter2 SYSTEM "c2.sgml">
+<!ENTITY chapter3 SYSTEM "c3.sgml">
+<!ENTITY chapter4 SYSTEM "c4.sgml">
+<!ENTITY chapter5 SYSTEM "c5.sgml">
+<!ENTITY chapter6 SYSTEM "c6.sgml">
+<!ENTITY chapter7 SYSTEM "c7.sgml">
+]>
+<book>
+<bookinfo>
+<title>The GNU Privacy Handbook</title>
+<date>
+August 25, 1999
+</date>
+<copyright>
+<year>1999</year>
+<holder>Free Software Foundation</holder>
+</copyright>
+<abstract>
+<para>
+Please direct questions, bug reports, or suggesstions concerning
+this manual to the maintainer, Mike Ashley (<email>jashley@acm.org</email>).
+Contributors to this manual also include Matthew Copeland and
+Joergen Grahn.
+</para>
+
+<para>
+This manual may be redistributed under the terms of the
+<ulink url="http://www.gnu.org/copyleft/gpl.html">GNU General Public
+License</ulink>.
+</para>
+<para> <!-- I have added this note (wk 06.09.99) -->
+PLEASE NOTE, THAT THIS IS A DRAFT VERSION OF THE MANUAL AND NOT A COMPLETE
+AND CORRECT MANUAL.  CONSIDER IT AS WORK IN PROGRESS.  The latest draft of
+the manual should be available online;
+<ulink url="http://www.gnupg.org/docs.html">www.gnupg.org</ulink> has a link
+to it.
+</para>
+</abstract>
+</bookinfo>
+
+<toc></toc>
+
+&chapter1
+&chapter2
+&chapter3
+&chapter4
+&chapter5
+&chapter6
+&chapter7
+</book>
+

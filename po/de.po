@@ -3,8 +3,8 @@
 # Walter Koch <koch@hsp.de>, 1998.
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-09-03 08:52+0200\n"
-"PO-Revision-Date: 1999-08-31 21:36+0200\n"
+"POT-Creation-Date: 1999-09-05 19:21+0200\n"
+"PO-Revision-Date: 1999-09-04 22:36+0200\n"
 "Last-Translator: Walter Koch <koch@hsp.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -587,7 +587,7 @@ msgstr "|N|Komprimierverfahren N benutzen"
 
 #: g10/g10.c:282
 msgid "throw keyid field of encrypted packets"
-msgstr "Entferne Absender-ID verschlüsselter Pakete"
+msgstr "Entferne Empfänger-ID verschlüsselter Pakete"
 
 #: g10/g10.c:283
 msgid "|NAME=VALUE|use this notation data"
@@ -1150,18 +1150,18 @@ msgid "No such user ID.\n"
 msgstr "Keine solche User-ID vorhanden.\n"
 
 #: g10/pkclist.c:756
-#, fuzzy
 msgid "skipped: public key already set as default recipient\n"
-msgstr "%s: übersprungen: öffentlicher Schlüssel bereits vorhanden\n"
+msgstr ""
+"übersprungen: öffentlicher Schlüssel bereits als Standardempfänger gesetzt\n"
 
 #: g10/pkclist.c:778
 msgid "Public key is disabled.\n"
 msgstr "Öffentlicher Schlüssel ist abgeschaltet.\n"
 
 #: g10/pkclist.c:785
-#, fuzzy
 msgid "skipped: public key already set with --encrypt-to\n"
-msgstr "%s: übersprungen: öffentlicher Schlüssel bereits vorhanden\n"
+msgstr ""
+"übersprungen: öffentlicher Schlüssel bereits mittels --encrypt-to gesetzt\n"
 
 #: g10/pkclist.c:816
 #, c-format
@@ -1512,8 +1512,8 @@ msgstr ""
 msgid "Really create? "
 msgstr "Wirklich erzeugen? "
 
-#: g10/encode.c:91 g10/openfile.c:156 g10/openfile.c:246 g10/tdbio.c:467
-#: g10/tdbio.c:528
+#: g10/encode.c:91 g10/openfile.c:156 g10/openfile.c:246 g10/tdbio.c:468
+#: g10/tdbio.c:529
 #, c-format
 msgid "%s: can't open: %s\n"
 msgstr "%s: kann nicht geöffnet werden: %s\n"
@@ -1570,12 +1570,10 @@ msgid "RSA key cannot be used in this version\n"
 msgstr "RSA-Schlüssel können in dieser Version nicht verwendet werden\n"
 
 #: g10/getkey.c:1291 g10/getkey.c:1330
-#, fuzzy
 msgid "No key for user ID\n"
 msgstr "Kein Schlüssel für User-ID\n"
 
 #: g10/getkey.c:1369 g10/getkey.c:1409
-#, fuzzy
 msgid "No user ID for key\n"
 msgstr "Keine User-ID für Schlüssel\n"
 
@@ -1661,12 +1659,12 @@ msgid " secret keys unchanged: %lu\n"
 msgstr " unveränderte geh.Schl.: %lu\n"
 
 #: g10/import.c:362 g10/import.c:554
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no user ID\n"
 msgstr "Schlüssel %08lX: Keine User-ID\n"
 
 #: g10/import.c:376
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no valid user IDs\n"
 msgstr "Schlüssel %08lX: Keine gültigen User-IDs\n"
 
@@ -1722,12 +1720,12 @@ msgstr ""
 "Schlüssel %08lX: Lesefehler im lokalen originalen Schlüsselblocks: %s\n"
 
 #: g10/import.c:469
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: 1 new user ID\n"
 msgstr "Schlüssel %08lX: 1 neue User-ID\n"
 
 #: g10/import.c:472
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: %d new user IDs\n"
 msgstr "Schlüssel %08lX: %d neue User-IDs\n"
 
@@ -1790,7 +1788,7 @@ msgid "key %08lX: revocation certificate imported\n"
 msgstr "Schlüssel %08lX: Widerrufzertifikat importiert\n"
 
 #: g10/import.c:711
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: no user ID for signature\n"
 msgstr "Schlüssel %08lX: Keine User-ID für Signatur\n"
 
@@ -1815,12 +1813,12 @@ msgid "key %08lX: invalid subkey binding\n"
 msgstr "Schlüssel %08lX: Ungültige Unterschlüssel-Anbindung\n"
 
 #: g10/import.c:769
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: accepted non self-signed user ID '"
 msgstr "Schlüssel %08lX: Nicht eigenbeglaubigte User-ID übernommen'"
 
 #: g10/import.c:798
-#, fuzzy, c-format
+#, c-format
 msgid "key %08lX: skipped user ID '"
 msgstr "Schlüssel %08lX: User-ID übergangen '"
 
@@ -1863,7 +1861,7 @@ msgstr "Schlüssel %08lX: Widerrufzertifikat hinzugefügt\n"
 msgid "key %08lX: our copy has no self-signature\n"
 msgstr "Schlüssel %08lX: Unsere Kopie hat keine Eigenbeglaubigung\n"
 
-#: g10/keyedit.c:93
+#: g10/delkey.c:64 g10/keyedit.c:93
 #, c-format
 msgid "%s: user not found\n"
 msgstr "%s: Benutzer nicht gefunden\n"
@@ -1904,12 +1902,11 @@ msgid "%d signatures not checked due to errors\n"
 msgstr "%d Beglaubigungen aufgrund von Fehlern nicht geprüft\n"
 
 #: g10/keyedit.c:231
-#, fuzzy
 msgid "1 user ID without valid self-signature detected\n"
 msgstr "Eine User-ID ohne gültige Eigenbeglaubigung entdeckt\n"
 
 #: g10/keyedit.c:233
-#, fuzzy, c-format
+#, c-format
 msgid "%d user IDs without valid self-signatures detected\n"
 msgstr "%d User-IDs ohne gültige Eigenbeglaubigung entdeckt\n"
 
@@ -2024,9 +2021,8 @@ msgid "list"
 msgstr "Liste der Schlüssel"
 
 #: g10/keyedit.c:570
-#, fuzzy
 msgid "list key and user IDs"
-msgstr "Schlüssel und User-ID auflisten"
+msgstr "Schlüssel und User-IDs auflisten"
 
 #: g10/keyedit.c:571
 msgid "l"
@@ -2037,7 +2033,6 @@ msgid "uid"
 msgstr "uid"
 
 #: g10/keyedit.c:572
-#, fuzzy
 msgid "select user ID N"
 msgstr "User-ID N auswählen"
 
@@ -2090,7 +2085,6 @@ msgid "adduid"
 msgstr "adduid"
 
 #: g10/keyedit.c:580
-#, fuzzy
 msgid "add a user ID"
 msgstr "Eine User-ID hinzufügen"
 
@@ -2099,7 +2093,6 @@ msgid "deluid"
 msgstr "deluid"
 
 #: g10/keyedit.c:581
-#, fuzzy
 msgid "delete user ID"
 msgstr "User-ID entfernen"
 
@@ -2203,7 +2196,7 @@ msgstr "enable"
 msgid "enable a key"
 msgstr "Schlüssel anschalten"
 
-#: g10/keyedit.c:614
+#: g10/delkey.c:107 g10/keyedit.c:614
 msgid "can't do that in batchmode\n"
 msgstr "Dies kann im Batchmodus nicht durchgeführt werden.\n"
 
@@ -2222,14 +2215,12 @@ msgid "Need the secret key to do this.\n"
 msgstr "Hierzu wird der geheime Schlüssel benötigt.\n"
 
 #: g10/keyedit.c:758
-#, fuzzy
 msgid "Really sign all user IDs? "
 msgstr "Wirklich alle User-IDs beglaubigen? "
 
 #: g10/keyedit.c:759
-#, fuzzy
 msgid "Hint: Select the user IDs to sign\n"
-msgstr "Tip: Wählen Sie die User-ID, die beglaubigt werden soll\n"
+msgstr "Tip: Wählen Sie die User-IDs, die beglaubigt werden sollen\n"
 
 #: g10/keyedit.c:786 g10/keyedit.c:968
 #, c-format
@@ -2237,22 +2228,18 @@ msgid "update of trustdb failed: %s\n"
 msgstr "Änderung der \"Trust-DB\" fehlgeschlagen: %s\n"
 
 #: g10/keyedit.c:797 g10/keyedit.c:818
-#, fuzzy
 msgid "You must select at least one user ID.\n"
 msgstr "Zumindestens eine User-ID muß ausgewählt werden.\n"
 
 #: g10/keyedit.c:799
-#, fuzzy
 msgid "You can't delete the last user ID!\n"
 msgstr "Die letzte User-ID kann nicht gelöscht werden!\n"
 
 #: g10/keyedit.c:802
-#, fuzzy
 msgid "Really remove all selected user IDs? "
 msgstr "Möchten Sie alle ausgewählten User-IDs wirklich entfernen? "
 
 #: g10/keyedit.c:803
-#, fuzzy
 msgid "Really remove this user ID? "
 msgstr "Diese User-ID wirklich entfernen? "
 
@@ -2361,7 +2348,7 @@ msgid "No corresponding signature in secret ring\n"
 msgstr "Keine entsprechende Signatur im geheimen Schlüsselbund\n"
 
 #: g10/keyedit.c:1566
-#, fuzzy, c-format
+#, c-format
 msgid "No user ID with index %d\n"
 msgstr "Keine User-ID mit Index %d\n"
 
@@ -2386,6 +2373,31 @@ msgstr ""
 #: g10/keyedit.c:1717
 msgid "Create a revocation certificate for this signature? (y/N)"
 msgstr "Ein Widerrufszertifikat für diese Unterschrift erzeugen (j/N)"
+
+#. FIXME: detect duplicates here
+#: g10/keyedit.c:1740
+#, fuzzy
+msgid "You have signed these user IDs:\n"
+msgstr "Die letzte User-ID kann nicht gelöscht werden!\n"
+
+#: g10/keyedit.c:1754 g10/keyedit.c:1789
+#, fuzzy, c-format
+msgid "   signed by %08lX at %s\n"
+msgstr ""
+"\"\n"
+"unterschrieben mit Ihrem Schlüssel %08lX um %s\n"
+
+#: g10/keyedit.c:1759
+#, fuzzy, c-format
+msgid "   revoked by %08lX at %s\n"
+msgstr ""
+"\"\n"
+"unterschrieben mit Ihrem Schlüssel %08lX um %s\n"
+
+#: g10/keyedit.c:1779
+#, fuzzy
+msgid "You are about to revoke these signatures:\n"
+msgstr "Möchten Sie einige der ungültigen Signaturen entfernen? "
 
 #: g10/keyedit.c:1797
 msgid "Really create the revocation certificates? (y/N)"
@@ -2680,137 +2692,137 @@ msgstr "Textzeilen länger als %d Zeichen können nicht benutzt werden\n"
 msgid "input line longer than %d characters\n"
 msgstr "Eingabezeile ist länger als %d Zeichen\n"
 
-#: g10/tdbio.c:116 g10/tdbio.c:1634
+#: g10/tdbio.c:121 g10/tdbio.c:1635
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb Satz %lu: lseek fehlgeschlagen: %s\n"
 
-#: g10/tdbio.c:122 g10/tdbio.c:1641
+#: g10/tdbio.c:127 g10/tdbio.c:1642
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb Satz %lu: write fehlgeschlagen (n=%d): %s\n"
 
-#: g10/tdbio.c:232
+#: g10/tdbio.c:237
 msgid "trustdb transaction too large\n"
 msgstr "trustdb Transaktion zu groß\n"
 
-#: g10/tdbio.c:424
+#: g10/tdbio.c:429
 #, c-format
 msgid "%s: can't access: %s\n"
 msgstr "%s: kann nicht zugegriffen werden: %s\n"
 
-#: g10/ringedit.c:296 g10/tdbio.c:444
+#: g10/ringedit.c:298 g10/tdbio.c:445
 #, c-format
 msgid "%s: can't create directory: %s\n"
 msgstr "%s: Verzeichnis kann nicht erzeugt werden: %s\n"
 
-#: g10/ringedit.c:302 g10/tdbio.c:447
+#: g10/ringedit.c:304 g10/tdbio.c:448
 #, c-format
 msgid "%s: directory created\n"
 msgstr "%s: Verzeichnis erzeugt\n"
 
-#: g10/tdbio.c:451
+#: g10/tdbio.c:452
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Verzeichnis existiert nicht!\n"
 
-#: g10/openfile.c:182 g10/openfile.c:253 g10/ringedit.c:1346 g10/tdbio.c:457
+#: g10/openfile.c:182 g10/openfile.c:253 g10/ringedit.c:1348 g10/tdbio.c:458
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: kann nicht erzeugt werden: %s\n"
 
-#: g10/tdbio.c:472 g10/tdbio.c:521
+#: g10/tdbio.c:473 g10/tdbio.c:522
 #, c-format
 msgid "%s: can't create lock\n"
 msgstr "%s: Sperre kann nicht erzeugt werden\n"
 
-#: g10/tdbio.c:486
+#: g10/tdbio.c:487
 #, c-format
 msgid "%s: failed to create version record: %s"
 msgstr "%s: Fehler beim Erzeugen des Versionsatzes: %s"
 
-#: g10/tdbio.c:490
+#: g10/tdbio.c:491
 #, c-format
 msgid "%s: invalid trustdb created\n"
 msgstr "%s: ungültige trust-db erzeugt\n"
 
-#: g10/tdbio.c:493
+#: g10/tdbio.c:494
 #, c-format
 msgid "%s: trustdb created\n"
 msgstr "%s: trust-db erzeugt\n"
 
-#: g10/tdbio.c:530
+#: g10/tdbio.c:531
 #, c-format
 msgid "%s: invalid trustdb\n"
 msgstr "%s: ungültige 'Trust'-Datenbank\n"
 
-#: g10/tdbio.c:563
+#: g10/tdbio.c:564
 #, c-format
 msgid "%s: failed to create hashtable: %s\n"
 msgstr "%s: hashtable kann nicht erzeugt werden: %s\n"
 
-#: g10/tdbio.c:571
+#: g10/tdbio.c:572
 #, c-format
 msgid "%s: error updating version record: %s\n"
 msgstr "%s: Fehler beim Ändern des Versionsatzes: %s\n"
 
-#: g10/tdbio.c:587 g10/tdbio.c:626 g10/tdbio.c:648 g10/tdbio.c:678
-#: g10/tdbio.c:703 g10/tdbio.c:1567 g10/tdbio.c:1594
+#: g10/tdbio.c:588 g10/tdbio.c:627 g10/tdbio.c:649 g10/tdbio.c:679
+#: g10/tdbio.c:704 g10/tdbio.c:1568 g10/tdbio.c:1595
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: Fehler beim Lesen des Versionsatzes: %s\n"
 
-#: g10/tdbio.c:600 g10/tdbio.c:659
+#: g10/tdbio.c:601 g10/tdbio.c:660
 #, c-format
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: Fehler beim Schreiben des Versionsatzes: %s\n"
 
-#: g10/tdbio.c:1246
+#: g10/tdbio.c:1247
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "trustdb: lseek fehlgeschlagen: %s\n"
 
-#: g10/tdbio.c:1254
+#: g10/tdbio.c:1255
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "trustdb: read failed (n=%d): %s\n"
 
-#: g10/tdbio.c:1275
+#: g10/tdbio.c:1276
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: keine trustdb Datei\n"
 
-#: g10/tdbio.c:1291
+#: g10/tdbio.c:1292
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: version record with recnum %lu\n"
 
-#: g10/tdbio.c:1296
+#: g10/tdbio.c:1297
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: invalid file version %d\n"
 
-#: g10/tdbio.c:1600
+#: g10/tdbio.c:1601
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: Fehler beim Lesen eines freien Satzes: %s\n"
 
-#: g10/tdbio.c:1608
+#: g10/tdbio.c:1609
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: Fehler beim Schreiben eines Verzeichnis-Satzes: %s\n"
 
-#: g10/tdbio.c:1618
+#: g10/tdbio.c:1619
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: konnte einen Satz nicht Nullen: %s\n"
 
-#: g10/tdbio.c:1648
+#: g10/tdbio.c:1649
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: konnte Satz nicht anhängen: %s\n"
 
-#: g10/tdbio.c:1759
+#: g10/tdbio.c:1760
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
 "Die \"Trust\"-Datenbank ist beschädigt; verwenden Sie \"gpg "
@@ -3041,7 +3053,6 @@ msgid "Ooops, no keys\n"
 msgstr "Huch, keine Schlüssel\n"
 
 #: g10/trustdb.c:2061
-#, fuzzy
 msgid "Ooops, no user IDs\n"
 msgstr "Huch, keine User-IDs\n"
 
@@ -3101,31 +3112,31 @@ msgstr "konnte '%s' nicht in die 'Trust'-Datenbank hineintun: %s\n"
 msgid "WARNING: can't yet handle long pref records\n"
 msgstr "WARNUNG: Lange 'Pref'-Records können noch nicht benutzt werden\n"
 
-#: g10/ringedit.c:316
+#: g10/ringedit.c:318
 #, c-format
 msgid "%s: can't create keyring: %s\n"
 msgstr "%s: Schlüsselbund kann nicht erzeugt werden: %s\n"
 
-#: g10/ringedit.c:333 g10/ringedit.c:1351
+#: g10/ringedit.c:335 g10/ringedit.c:1353
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: Schlüsselbund erstellt\n"
 
-#: g10/ringedit.c:1528
+#: g10/ringedit.c:1530
 msgid "WARNING: 2 files with confidential information exists.\n"
 msgstr "Warnung: Zwei Dateien mit vertraulichem Inhalt vorhanden.\n"
 
-#: g10/ringedit.c:1529
+#: g10/ringedit.c:1531
 #, c-format
 msgid "%s is the unchanged one\n"
 msgstr "%s ist der Unveränderte\n"
 
-#: g10/ringedit.c:1530
+#: g10/ringedit.c:1532
 #, c-format
 msgid "%s is the new one\n"
 msgstr "%s ist der Neue\n"
 
-#: g10/ringedit.c:1531
+#: g10/ringedit.c:1533
 msgid "Please fix this possible security flaw\n"
 msgstr "Bitte diesen potentiellen Sicherheitsmangel beseitigen\n"
 
@@ -3209,6 +3220,28 @@ msgstr ""
 "Trotz %d-fachen Versuch konnte die Erzeugung eines unsicheren Schlüssels für "
 "sym.Verschlüsselung nicht vermieden werden!\n"
 
+#: g10/delkey.c:93
+msgid "there is a secret key for this public key!\n"
+msgstr "Es gibt einen privaten Schlüssel zu diesem öffentlichen Schlüssel!\n"
+
+#: g10/delkey.c:95
+msgid "use option \"--delete-secret-key\" to delete it first.\n"
+msgstr ""
+"Benutzen Sie das Kommando \"--delete-secret-key\", um ihn vorab zu "
+"entfernen.\n"
+
+#: g10/delkey.c:111
+msgid "can't do that in batchmode without \"--yes\"\n"
+msgstr "Dies kann im Batchmodus ohne \"--yes\" nicht durchgeführt werden.\n"
+
+#: g10/delkey.c:133
+msgid "Delete this key from the keyring? "
+msgstr "Diesen Schlüssel aus dem Schlüsselbund löschen? "
+
+#: g10/delkey.c:141
+msgid "This is a secret key! - really delete? "
+msgstr "Dies ist ein privater Schlüssel! - Wirklich löschen? "
+
 #: g10/helptext.c:47
 msgid ""
 "It's up to you to assign a value here; this value will never be exported\n"
@@ -3234,7 +3267,6 @@ msgstr ""
 "so antworten Sie mit \"ja\"."
 
 #: g10/helptext.c:61
-#, fuzzy
 msgid ""
 "Enter the user ID of the addressee to whom you want to send the message."
 msgstr "Geben Sie die User-ID dessen ein, dem Sie die Botschaft senden wollen."
@@ -3304,7 +3336,6 @@ msgid "Answer \"yes\" or \"no\""
 msgstr "Geben Sie \"ja\" oder \"nein\" ein"
 
 #: g10/helptext.c:106
-#, fuzzy
 msgid ""
 "Enter the required value as shown in the prompt.\n"
 "It is possible to enter a ISO date (YYYY-MM-DD) but you won't\n"
@@ -3367,7 +3398,6 @@ msgstr ""
 "Geben Sie \"ja\" (oder nur \"j\") ein, um diesen Unterschlüssel zu löschen"
 
 #: g10/helptext.c:178
-#, fuzzy
 msgid ""
 "This is a valid signature on the key; you normally don't want\n"
 "to delete this signature because it may be important to establish a\n"
@@ -3383,8 +3413,8 @@ msgstr ""
 msgid ""
 "This signature can't be checked because you don't have the\n"
 "corresponding key.  You should postpone its deletion until you\n"
-"know which key was used because this signing key might establisha trust "
-"connection through another already certified key."
+"know which key was used because this signing key might establish\n"
+"a trust connection through another already certified key."
 msgstr ""
 "Diese Beglaubigung kann nicht geprüft werden, da Sie den passenden "
 "Schlüssel\n"
@@ -3997,24 +4027,3 @@ msgstr "Keine Hilfe für '%s' vorhanden."
 
 #~ msgid "Checking signatures of this public key certificate:\n"
 #~ msgstr "Die Signaturen dieses Zertifikats werden überprüft:\n"
-
-#~ msgid "Do you want to remove some of the invalid signatures? "
-#~ msgstr "Möchten Sie einige der ungültigen Signaturen entfernen? "
-
-#~ msgid "there is a secret key for this public key!\n"
-#~ msgstr ""
-#~ "Es gibt einen privaten Schlüssel zu diesem öffentlichen Schlüssel!\n"
-
-#~ msgid "use option \"--delete-secret-key\" to delete it first.\n"
-#~ msgstr ""
-#~ "Benutzen Sie das Kommando \"--delete-secret-key\", um ihn vorab zu "
-#~ "entfernen.\n"
-
-#~ msgid "can't do that in batchmode without \"--yes\"\n"
-#~ msgstr "Dies kann im Batchmodus ohne \"--yes\" nicht durchgeführt werden.\n"
-
-#~ msgid "Delete this key from the keyring? "
-#~ msgstr "Diesen Schlüssel aus dem Schlüsselbund löschen? "
-
-#~ msgid "This is a secret key! - really delete? "
-#~ msgstr "Dies ist ein privater Schlüssel! - Wirklich löschen? "

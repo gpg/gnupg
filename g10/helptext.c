@@ -182,7 +182,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 { "keyedit.delsig.unknown", N_(
  "This signature can't be checked because you don't have the\n"
  "corresponding key.  You should postpone its deletion until you\n"
- "know which key was used because this signing key might establish"
+ "know which key was used because this signing key might establish\n"
  "a trust connection through another already certified key."
 )},
 { "keyedit.delsig.invalid", N_(

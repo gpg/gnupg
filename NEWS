@@ -337,7 +337,7 @@ Noteworthy changes in version 0.4.0
     * detached and armored signatures are now using "PGP SIGNATURE",
       except when --rfc1991 is used.
 
-    * All times which are not in the yyy-mm-dd format are now printed
+    * All times which are not in the yyyy-mm-dd format are now printed
       in local time.
 
 

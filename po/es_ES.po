@@ -7,7 +7,7 @@
 # GPG version: 0.9.7
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-09-03 08:52+0200\n"
+"POT-Creation-Date: 1999-09-05 19:21+0200\n"
 "PO-Revision-Date: 1999-06-06 18:33+0200\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
@@ -1519,8 +1519,8 @@ msgstr ""
 msgid "Really create? "
 msgstr "¿Crear de verdad? "
 
-#: g10/encode.c:91 g10/openfile.c:156 g10/openfile.c:246 g10/tdbio.c:467
-#: g10/tdbio.c:528
+#: g10/encode.c:91 g10/openfile.c:156 g10/openfile.c:246 g10/tdbio.c:468
+#: g10/tdbio.c:529
 #, c-format
 msgid "%s: can't open: %s\n"
 msgstr "%s: no puede abrirse: %s\n"
@@ -1867,7 +1867,7 @@ msgstr "clave %08lX: certificado de revocación añadido\n"
 msgid "key %08lX: our copy has no self-signature\n"
 msgstr "clave %08lX: nuestra copia no tiene autofirma\n"
 
-#: g10/keyedit.c:93
+#: g10/delkey.c:64 g10/keyedit.c:93
 #, c-format
 msgid "%s: user not found\n"
 msgstr "%s: usuario no encontrado\n"
@@ -2212,7 +2212,7 @@ msgstr ""
 msgid "enable a key"
 msgstr "Clave incorrecta"
 
-#: g10/keyedit.c:614
+#: g10/delkey.c:107 g10/keyedit.c:614
 msgid "can't do that in batchmode\n"
 msgstr "imposible hacer esto en modo de proceso por lotes\n"
 
@@ -2400,6 +2400,31 @@ msgstr ""
 #: g10/keyedit.c:1717
 msgid "Create a revocation certificate for this signature? (y/N)"
 msgstr "¿Crear un certificado de revocación para esta clave (s/N)?"
+
+#. FIXME: detect duplicates here
+#: g10/keyedit.c:1740
+#, fuzzy
+msgid "You have signed these user IDs:\n"
+msgstr "¡No puede borrar el último identificativo de usuario!\n"
+
+#: g10/keyedit.c:1754 g10/keyedit.c:1789
+#, fuzzy, c-format
+msgid "   signed by %08lX at %s\n"
+msgstr ""
+"\"\n"
+"firmada con su clave %08lX el %s\n"
+
+#: g10/keyedit.c:1759
+#, fuzzy, c-format
+msgid "   revoked by %08lX at %s\n"
+msgstr ""
+"\"\n"
+"firmada con su clave %08lX el %s\n"
+
+#: g10/keyedit.c:1779
+#, fuzzy
+msgid "You are about to revoke these signatures:\n"
+msgstr "¿Revocar realmente las claves seleccionadas? "
 
 #: g10/keyedit.c:1797
 msgid "Really create the revocation certificates? (y/N)"
@@ -2685,138 +2710,138 @@ msgstr "no se pueden manejar líneas de texto de más de %d caracteres\n"
 msgid "input line longer than %d characters\n"
 msgstr "línea de longitud superior a %d caracteres\n"
 
-#: g10/tdbio.c:116 g10/tdbio.c:1634
+#: g10/tdbio.c:121 g10/tdbio.c:1635
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "registro base de datos de confianza %lu: lseek fallido: %s\n"
 
-#: g10/tdbio.c:122 g10/tdbio.c:1641
+#: g10/tdbio.c:127 g10/tdbio.c:1642
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr ""
 "resgisto base de datos de confianza %lu: escritura fallida (n=%d): %s\n"
 
-#: g10/tdbio.c:232
+#: g10/tdbio.c:237
 msgid "trustdb transaction too large\n"
 msgstr "transacción en la base de datos de confianza demasiado grande\n"
 
-#: g10/tdbio.c:424
+#: g10/tdbio.c:429
 #, c-format
 msgid "%s: can't access: %s\n"
 msgstr "%s: no puede abrirse: %s\n"
 
-#: g10/ringedit.c:296 g10/tdbio.c:444
+#: g10/ringedit.c:298 g10/tdbio.c:445
 #, c-format
 msgid "%s: can't create directory: %s\n"
 msgstr "%s: no puede crearse el directorio: %s\n"
 
-#: g10/ringedit.c:302 g10/tdbio.c:447
+#: g10/ringedit.c:304 g10/tdbio.c:448
 #, c-format
 msgid "%s: directory created\n"
 msgstr "%s: directorio creado\n"
 
-#: g10/tdbio.c:451
+#: g10/tdbio.c:452
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ¡el directorio no existe!\n"
 
-#: g10/openfile.c:182 g10/openfile.c:253 g10/ringedit.c:1346 g10/tdbio.c:457
+#: g10/openfile.c:182 g10/openfile.c:253 g10/ringedit.c:1348 g10/tdbio.c:458
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: no puede crearse: %s\n"
 
-#: g10/tdbio.c:472 g10/tdbio.c:521
+#: g10/tdbio.c:473 g10/tdbio.c:522
 #, c-format
 msgid "%s: can't create lock\n"
 msgstr "%s: no puede crearse bloqueo\n"
 
-#: g10/tdbio.c:486
+#: g10/tdbio.c:487
 #, c-format
 msgid "%s: failed to create version record: %s"
 msgstr "%s: fallo en la creación del registro de versión: %s"
 
-#: g10/tdbio.c:490
+#: g10/tdbio.c:491
 #, c-format
 msgid "%s: invalid trustdb created\n"
 msgstr "%s: se ha creado base de datos de confianza no válida\n"
 
-#: g10/tdbio.c:493
+#: g10/tdbio.c:494
 #, c-format
 msgid "%s: trustdb created\n"
 msgstr "%s: se ha creado base de datos de confianza\n"
 
-#: g10/tdbio.c:530
+#: g10/tdbio.c:531
 #, c-format
 msgid "%s: invalid trustdb\n"
 msgstr "%s: base de datos de confianza no válida\n"
 
-#: g10/tdbio.c:563
+#: g10/tdbio.c:564
 #, c-format
 msgid "%s: failed to create hashtable: %s\n"
 msgstr "%s: fallo en la creación de la tabla hash: %s\n"
 
-#: g10/tdbio.c:571
+#: g10/tdbio.c:572
 #, c-format
 msgid "%s: error updating version record: %s\n"
 msgstr "%s: error actualizando el registro de versión: %s\n"
 
-#: g10/tdbio.c:587 g10/tdbio.c:626 g10/tdbio.c:648 g10/tdbio.c:678
-#: g10/tdbio.c:703 g10/tdbio.c:1567 g10/tdbio.c:1594
+#: g10/tdbio.c:588 g10/tdbio.c:627 g10/tdbio.c:649 g10/tdbio.c:679
+#: g10/tdbio.c:704 g10/tdbio.c:1568 g10/tdbio.c:1595
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: error leyendo registro de versión: %s\n"
 
-#: g10/tdbio.c:600 g10/tdbio.c:659
+#: g10/tdbio.c:601 g10/tdbio.c:660
 #, c-format
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: error escribiendo registro de versión: %s\n"
 
-#: g10/tdbio.c:1246
+#: g10/tdbio.c:1247
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "base de datos de confianza: fallo lseek: %s\n"
 
-#: g10/tdbio.c:1254
+#: g10/tdbio.c:1255
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "base de datos de confianza: error lectura (n=%d): %s\n"
 
-#: g10/tdbio.c:1275
+#: g10/tdbio.c:1276
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: no es una base de datos de confianza\n"
 
-#: g10/tdbio.c:1291
+#: g10/tdbio.c:1292
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: registro de versión con número de registro %lu\n"
 
-#: g10/tdbio.c:1296
+#: g10/tdbio.c:1297
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: versión del fichero %d no válida\n"
 
-#: g10/tdbio.c:1600
+#: g10/tdbio.c:1601
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: error leyendo registro libre: %s\n"
 
-#: g10/tdbio.c:1608
+#: g10/tdbio.c:1609
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: error escribiendo registro de directorio: %s\n"
 
-#: g10/tdbio.c:1618
+#: g10/tdbio.c:1619
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: fallo en poner a cero un registro: %s\n"
 
-#: g10/tdbio.c:1648
+#: g10/tdbio.c:1649
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: fallo al añadir un registro: %s\n"
 
-#: g10/tdbio.c:1759
+#: g10/tdbio.c:1760
 #, fuzzy
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
@@ -3107,31 +3132,31 @@ msgstr "fallo al poner '%s' en la tabla de confianza: %s\n"
 msgid "WARNING: can't yet handle long pref records\n"
 msgstr "ATENCÍON: todavía no puedo tratar registros de preferencias largos\n"
 
-#: g10/ringedit.c:316
+#: g10/ringedit.c:318
 #, c-format
 msgid "%s: can't create keyring: %s\n"
 msgstr "%s: no se puede crear el anillo: %s\n"
 
-#: g10/ringedit.c:333 g10/ringedit.c:1351
+#: g10/ringedit.c:335 g10/ringedit.c:1353
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: anillo creado\n"
 
-#: g10/ringedit.c:1528
+#: g10/ringedit.c:1530
 msgid "WARNING: 2 files with confidential information exists.\n"
 msgstr "ATENCIÓN: existen 2 ficheros con información confidencial.\n"
 
-#: g10/ringedit.c:1529
+#: g10/ringedit.c:1531
 #, c-format
 msgid "%s is the unchanged one\n"
 msgstr "%s es el que no se ha modificado\n"
 
-#: g10/ringedit.c:1530
+#: g10/ringedit.c:1532
 #, c-format
 msgid "%s is the new one\n"
 msgstr "%s es el nuevo\n"
 
-#: g10/ringedit.c:1531
+#: g10/ringedit.c:1533
 msgid "Please fix this possible security flaw\n"
 msgstr "Por favor arregle este posible fallo de seguridad\n"
 
@@ -3213,6 +3238,29 @@ msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
 "¡imposible evitar clave débil para cifrado simétrico después de %d "
 "intentos!\n"
+
+#: g10/delkey.c:93
+#, fuzzy
+msgid "there is a secret key for this public key!\n"
+msgstr "elimina la clave del anillo público"
+
+#: g10/delkey.c:95
+msgid "use option \"--delete-secret-key\" to delete it first.\n"
+msgstr ""
+
+#: g10/delkey.c:111
+#, fuzzy
+msgid "can't do that in batchmode without \"--yes\"\n"
+msgstr "imposible hacer esto en modo de proceso por lotes\n"
+
+#: g10/delkey.c:133
+#, fuzzy
+msgid "Delete this key from the keyring? "
+msgstr "elimina la clave del anillo público"
+
+#: g10/delkey.c:141
+msgid "This is a secret key! - really delete? "
+msgstr ""
 
 #: g10/helptext.c:47
 msgid ""
@@ -3331,8 +3379,8 @@ msgstr ""
 msgid ""
 "This signature can't be checked because you don't have the\n"
 "corresponding key.  You should postpone its deletion until you\n"
-"know which key was used because this signing key might establisha trust "
-"connection through another already certified key."
+"know which key was used because this signing key might establish\n"
+"a trust connection through another already certified key."
 msgstr ""
 
 #: g10/helptext.c:189

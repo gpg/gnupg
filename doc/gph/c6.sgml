@@ -1,0 +1,804 @@
+<reference>
+<docinfo>
+<date>
+$Id$
+</date>
+</docinfo>
+<title>
+Command Reference
+</title>
+
+<partintro>
+<sect1>
+<title>
+Key specifiers
+</title>
+
+<para>
+Many commands and options require a <firstterm>key specifier</firstterm>.
+A key specifier is the key ID or any portion of ther user ID of
+a key.
+Consider the following example.
+
+<screen width="80">
+<prompt>alice%</prompt> <userinput>gpg --list-keys chloe</userinput>
+pub  1024D/B87DBA93 1999-06-28 Chloe (Jester) &lt;chloe@cyb.org>
+uid                            Chloe (Plebian) &lt;chloe@tel.net>
+sub  2048g/B7934539 1999-06-28
+</screen>
+
+For this key, <literal>0xB87DBA93</literal>,
+<literal>Chloe</literal>,
+<literal>Plebian</literal>, and
+<literal>oe@tel</literal>
+are all examples of key specifiers that match the above key.
+</para>
+</sect1>
+</partintro>
+
+<refentry id="send-keys">
+<refnamediv>
+<refname>
+send-keys
+</refname>
+<refpurpose>
+send keys to a key server
+</refpurpose>
+
+
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+send-keys <replaceable class="parameter">key</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command sends a public key to a keyserver.  
+The parameter <replaceable class="parameter">key</replaceable> specifies 
+the public key that should be uploaded.
+The command requires the option
+<link linkend="keyserver"><option>keyserver</option></link> to specify
+to which keyserver &gpg; should send the keys.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="recv-keys">
+<refnamediv>
+<refname>
+recv-keys
+</refname>
+<refpurpose>
+retrieve keys from a key server
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>recv-keys</option> <replaceable class="parameter">key-id key-id ...</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command downloads one or more public keys from a keyserver.  
+Each <replaceable class="parameter">key-id</replaceable> is a key ID.
+The command requires the option
+<link linkend="keyserver"><option>keyserver</option></link> to 
+specify from which keyserver &gpg; should download the keys.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="encrypt">
+<refnamediv>
+<refname>
+encrypt
+</refname>
+<refpurpose>
+encrypt a document
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>encrypt</option> <replaceable class="parameter">filename</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command encrypts the document 
+<replaceable class="parameter">filename</replaceable> to
+recipients specified using the 
+option <link linkend="recipient"><option>recipient</option></link>.
+If the parameter <replaceable class="parameter">filename</replaceable>
+is omitted, then the document to encrypt is taken from standard input.
+If the option <option>recipient</option> is omitted,
+&gpg; will prompt for a recipient.
+If the option <link linkend="output"><option>output</option></link> is used,
+&gpg; will output the encrypted information to the specified file.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="decrypt">
+<refnamediv>
+<refname>
+decrypt
+</refname>
+<refpurpose>
+decrypt an encrypted document
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>decrypt</option> <replaceable class="parameter">filename</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command decrypts <replaceable class="parameter">filename</replaceable>
+and puts the result on standard output.
+If the parameter <replaceable class="parameter">filename</replaceable>
+is omitted, then the document to decrypt is taken from standard input.
+Use the option <link linkend="output"><option>output</option></link>
+to output the decrypted message to a file instead.
+</para>
+</refsect1>
+</refentry>
+
+
+<refentry id="clearsign">
+<refnamediv>
+<refname>
+clearsign
+</refname>
+<refpurpose>
+make a cleartext signature
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>clearsign</option> <replaceable class="parameter">filename</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command signs a message that can be verified to ensure that the 
+original message has not been changed.
+Verification of the signed message is done using the command
+<link linkend="verify"><option>verify</option></link>.
+
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="fingerprint">
+<refnamediv>
+<refname>
+fingerprint
+</refname>
+<refpurpose>
+display key fingerprints
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>fingerprint</option> <replaceable class="parameter">name ...</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command prints the fingerprints of the specified public keys.
+The parameter <replaceable class="parameter">name</replaceable> is a
+key specifier.
+If no parameter <replaceable class="parameter">name</replaceable> is
+provided, &gpg; will print the fingerprints of all the keys on 
+your public keyring.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="detach-sig">
+<refnamediv>
+<refname>
+detach-sig
+</refname>
+<refpurpose>
+make a detached signature
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>detach-sig</option> <replaceable class="parameter">filename</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command creates a signature file that can be used 
+to verify that the orginal file 
+<replaceable class="parameter">filename</replaceable> has not
+been changed.  
+Verification of the file using a detached signature is done using the 
+command <link linkend="verify"><option>verify</option></link>.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="gen-key">
+<refnamediv>
+<refname>
+gen-key
+</refname>
+<refpurpose>
+generate a new keypair
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>gen-key</option>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command generates a private/public key pair for use in encrypting, 
+decrypting, and signing of messages.
+You will br prompted for the kind of key you wish to create, the key 
+size, and the key's expiration date.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="symmetric">
+<refnamediv>
+<refname>
+symmetric
+</refname>
+<refpurpose>
+encrypt a document using only a symmetric encryption algorithm
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>symmetric</option> <replaceable class="parameter">filename</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command encrypts a document using a symmetric algorithm with
+a key derived from a passphrase supplied by you during execution.
+The key should be selected to make it difficult to randomly guess the key.
+To decrypt a document encrypted in this manner use the command.
+<link linkend="decrypt"><option>decrypt</option></link>.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="list-keys">
+<refnamediv>
+<refname>
+list-keys
+</refname>
+<refpurpose>
+list information about the specified keys
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>list-keys</option> <replaceable class="parameter">key ...</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command lists the public key specified by the key specifiers on the
+command line.
+If no key specifier is given, &gpg; will print all of the keys on the 
+public keyring.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="import">
+<refnamediv>
+<refname>
+import
+</refname>
+<refpurpose>
+import keys to a local keyring
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>import</option> <replaceable class="parameter">filename</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command imports one or more public keys onto the user's public 
+keyring from the file <replaceable class="parameter">filename</replaceable>.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="verify">
+<refnamediv>
+<refname>
+verify
+</refname>
+<refpurpose>
+verify a signed document
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>verify</option> <replaceable class="parameter">signature document</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command verifies a document against a signature
+to ensure that the document has not been altered since the signature
+was created.
+If <replaceable class="parameter">signature</replaceable> is omitted,
+&gpg; will look in <replaceable class="parameter">document</replaceable>
+for a clearsign signature.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="gen-revoke">
+<refnamediv>
+<refname>
+gen-revoke
+</refname>
+<refpurpose>
+generate a revocation certificate for a public/private keypair
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>gen-revoke</option> <replaceable class="parameter">key</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command generates a revocation certificate for a public/private 
+key pair.  
+The parameter <replaceable class="parameter">key</replaceable> is 
+a key specifier.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="export">
+<refnamediv>
+<refname>
+export
+</refname>
+<refpurpose>
+export keys from a local keyring
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>export</option> <replaceable class="parameter">key key ...</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command exports the public keys components of the keys specified
+by the key specifiers <replaceable class="parameter">key key ...</replaceable>.
+The export command by default sends its output to standard output.  
+This key file can later be imported into another keyring using the command
+<link linkend="import"><option>import</option></link>.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="edit-key">
+<refnamediv>
+<refname>
+edit-key
+</refname>
+<refpurpose>
+presents a menu for operating on keys
+</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<synopsis>
+<option>edit-key</option> <replaceable class="parameter">key</replaceable>
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1>
+<title>
+Description
+</title>
+
+<para>
+This command presents a menu which enables you to perform
+key-related taskes.
+The key specifier <replaceable class="parameter">key</replaceable>
+specifies the key pair to be edited.
+If the specifier matches more than one key pair, &gpg; issues
+an error and exits.
+</para>
+
+<para>
+Key listings displayed during key editing show the key with its
+secondary keys and all user ids.
+Selected keys or user ids are indicated by an asterisk.
+The trust and validity values are displayed with the primary key: 
+the first is the assigned trust and the second is the
+calculated validity.
+Letters are used for the values:
+
+<informaltable>
+<tgroup cols="2" rowsep="1" colsep="1">
+<thead>
+<row>
+<entry>Letter</entry>
+<entry>Meaning</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry>
+-
+</entry>
+<entry>
+No ownertrust assigned / not yet calculated.
+</entry>
+</row>
+<row>
+<entry>
+e
+</entry>
+<entry>
+Trust calculation has failed.
+</entry>
+</row>
+
+<row>
+<entry>
+q
+</entry>
+<entry>
+Not enough information for calculation.
+</entry>
+</row>
+
+<row>
+<entry>
+n
+</entry>
+<entry>
+Never trust this key.
+</entry>
+</row>
+
+<row>
+<entry>
+m
+</entry>
+<entry>
+Marginally trusted.
+</entry>
+</row>
+
+<row>
+<entry>
+f
+</entry>
+<entry>
+Fully trusted.
+</entry>
+</row>
+
+<row>
+<entry>
+u
+</entry>
+<entry>
+Ultimately trusted.
+</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+</para>
+
+<para>
+The following lists each key editing command and a description
+of its behavior.
+</para>
+
+<refsect2 id="sign">
+<title>
+sign
+</title>
+
+<para>
+Makes a signature on the current key.
+If th  key is not yet signed by the default user or the user 
+given with the option
+<link linkend="local-user"><option>local-user</option></link>, 
+the program displays the information of the key again, together with
+its  fingerprint and asks whether it should be signed.
+This question is repeated for all users specified with the option
+<option>local-user</option>.
+</para>
+</refsect2>
+
+<refsect2 id="lsign">
+<title>
+lsign
+</title>
+
+<para>
+Same as <link linkend="sign">sign</link>, but the signature is
+marked as non-exportable and will therefore never be used by others.
+This may be used to make keys valid only in the local environment.
+</para>
+</refsect2>
+
+<refsect2 id="revsig">
+<title>
+revsig
+</title>
+
+<para>
+Revoke a signature.
+Asks for each signature makde by a one of the private keys whether
+a revocation certificate should be generated.
+</para>
+</refsect2>
+
+<refsect2 id="trust">
+<title>
+trust
+</title>
+
+<para>
+Change the owner trust value.
+This updates the trust database immediately and no save is required.
+</para>
+</refsect2>
+
+<refsect2 id="disable">
+<title>
+disable
+</title>
+
+<para>
+Disable the key.
+A disabled key cannot normally be used for encryption.
+</para>
+</refsect2>
+
+<refsect2 id="enable">
+<title>
+enable
+</title>
+
+<para>
+Enable a key that has been previously
+<link linkend="disable">disabled</link>.
+</para>
+</refsect2>
+
+<refsect2 id="adduid">
+<title>
+adduid
+</title>
+
+<para>
+Add a new user id to the current key.
+</para>
+</refsect2>
+
+<refsect2 id="deluid">
+<title>
+deluid
+</title>
+
+<para>
+Delete a user id from the current key.
+</para>
+</refsect2>
+
+<refsect2 id="addkey">
+<title>
+addkey
+</title>
+
+<para>
+Add a new subkey to the current key.
+</para>
+</refsect2>
+
+<refsect2 id="delkey">
+<title>
+delkey
+</title>
+
+<para>
+Delete a subkey from the current key.
+</para>
+</refsect2>
+
+<refsect2 id="revkey">
+<title>
+revkey
+</title>
+
+<para>
+Revoke a subkey of the current key.
+</para>
+</refsect2>
+
+<refsect2 id="expire">
+<title>
+expire
+</title>
+
+<para>
+Change a key expiration time.
+If a subkey is selected, the time of that key will be changed.
+With no selection the expiration time of the current primary key is changed.
+</para>
+</refsect2>
+
+<refsect2 id="key">
+<title>
+key n
+</title>
+
+<para>
+Toggle selection of subkey with index n.
+Use 0 to deselect all.
+</para>
+</refsect2>
+
+<refsect2 id="uid">
+<title>
+uid n
+</title>
+
+<para>
+Toggle selection of user id with index n.
+Use 0 to deselect all.
+</para>
+</refsect2>
+
+<refsect2 id="passwd">
+<title>
+toggle
+</title>
+
+<para>
+Change the passphrase of the private key of the selected key pair.
+</para>
+</refsect2>
+
+<refsect2 id="toggle">
+<title>
+toggle
+</title>
+
+<para>
+Toggle between public and private key listings.
+</para>
+</refsect2>
+
+<refsect2 id="check">
+<title>
+check
+</title>
+
+<para>
+Check all selected user ids.
+</para>
+</refsect2>
+
+<refsect2 id="pref">
+<title>
+pref
+</title>
+
+<para>
+List preferences.
+</para>
+</refsect2>
+
+<refsect2 id="save">
+<title>
+save
+</title>
+
+<para>
+Save all changes to the current key and quit.
+</para>
+</refsect2>
+
+<refsect2 id="quit">
+<title>
+save
+</title>
+
+<para>
+Quit without updating the current key.
+</para>
+</refsect2>
+
+</refsect1>
+</refentry>
+</reference>

@@ -1,3 +1,11 @@
+Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* configure.in: Create makefile in doc/gph
+
+	* acinclude.m4 (GNUPG_FUNC_MKDIR_TAKES_ONE_ARG): New
+	* configure.in: use the above.
+
 Thu Sep  2 16:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

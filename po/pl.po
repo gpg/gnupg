@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.9.7\n"
-"POT-Creation-Date: 1999-09-03 08:52+0200\n"
+"POT-Creation-Date: 1999-09-05 19:21+0200\n"
 "PO-Revision-Date: 1999-05-30 19:08+02:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -1521,8 +1521,8 @@ msgstr ""
 msgid "Really create? "
 msgstr "Na pewno generowaæ? "
 
-#: g10/encode.c:91 g10/openfile.c:156 g10/openfile.c:246 g10/tdbio.c:467
-#: g10/tdbio.c:528
+#: g10/encode.c:91 g10/openfile.c:156 g10/openfile.c:246 g10/tdbio.c:468
+#: g10/tdbio.c:529
 #, c-format
 msgid "%s: can't open: %s\n"
 msgstr "%s: nie mogê otworzyæ: %s\n"
@@ -1873,7 +1873,7 @@ msgstr "klucz %08lX: dodany certyfikat uniewa¿nienia\n"
 msgid "key %08lX: our copy has no self-signature\n"
 msgstr "klucz %08lX: dostêpna kopia nie jest podpisana ni± sam±\n"
 
-#: g10/keyedit.c:93
+#: g10/delkey.c:64 g10/keyedit.c:93
 #, c-format
 msgid "%s: user not found\n"
 msgstr "%s: nie znaleziono u¿ytkownika\n"
@@ -2218,7 +2218,7 @@ msgstr ""
 msgid "enable a key"
 msgstr "klucz niepoprawny"
 
-#: g10/keyedit.c:614
+#: g10/delkey.c:107 g10/keyedit.c:614
 msgid "can't do that in batchmode\n"
 msgstr "nie dzia³a w trybie wsadowym\n"
 
@@ -2408,6 +2408,31 @@ msgstr ""
 #: g10/keyedit.c:1717
 msgid "Create a revocation certificate for this signature? (y/N)"
 msgstr "Stworzyæ certyfikat uniewa¿nienia tego podpisu? (t/N)"
+
+#. FIXME: detect duplicates here
+#: g10/keyedit.c:1740
+#, fuzzy
+msgid "You have signed these user IDs:\n"
+msgstr "Nie mo¿esz usun±æ ostatniego identyfikatora u¿ytkownika!\n"
+
+#: g10/keyedit.c:1754 g10/keyedit.c:1789
+#, fuzzy, c-format
+msgid "   signed by %08lX at %s\n"
+msgstr ""
+"\"\n"
+"podpisano Twoim kluczem %08lX w %s\n"
+
+#: g10/keyedit.c:1759
+#, fuzzy, c-format
+msgid "   revoked by %08lX at %s\n"
+msgstr ""
+"\"\n"
+"podpisano Twoim kluczem %08lX w %s\n"
+
+#: g10/keyedit.c:1779
+#, fuzzy
+msgid "You are about to revoke these signatures:\n"
+msgstr "Czy na pewno chcesz uniewa¿niæ wybrane klucze? "
 
 #: g10/keyedit.c:1797
 msgid "Really create the revocation certificates? (y/N)"
@@ -2703,137 +2728,137 @@ msgstr "nie mogê obs³u¿yæ linii tekstu d³u¿szej ni¿ %d znaków\n"
 msgid "input line longer than %d characters\n"
 msgstr "linia d³u¿sza ni¿ %d znaków\n"
 
-#: g10/tdbio.c:116 g10/tdbio.c:1634
+#: g10/tdbio.c:121 g10/tdbio.c:1635
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "baza zaufania, wpis %lu: lseek() nie powiod³a siê: %s\n"
 
-#: g10/tdbio.c:122 g10/tdbio.c:1641
+#: g10/tdbio.c:127 g10/tdbio.c:1642
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "baza zaufania, wpis %lu: zapis nie powiód³ siê (n=%d): %s\n"
 
-#: g10/tdbio.c:232
+#: g10/tdbio.c:237
 msgid "trustdb transaction too large\n"
 msgstr "zbyt du¿e zlecenie dla bazy zaufania\n"
 
-#: g10/tdbio.c:424
+#: g10/tdbio.c:429
 #, c-format
 msgid "%s: can't access: %s\n"
 msgstr "%s: dostêp niemo¿liwy: %s\n"
 
-#: g10/ringedit.c:296 g10/tdbio.c:444
+#: g10/ringedit.c:298 g10/tdbio.c:445
 #, c-format
 msgid "%s: can't create directory: %s\n"
 msgstr "%s: nie mogê utworzyæ katalogu: %s\n"
 
-#: g10/ringedit.c:302 g10/tdbio.c:447
+#: g10/ringedit.c:304 g10/tdbio.c:448
 #, c-format
 msgid "%s: directory created\n"
 msgstr "%s: katalog utworzony\n"
 
-#: g10/tdbio.c:451
+#: g10/tdbio.c:452
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: katalog nie istnieje!\n"
 
-#: g10/openfile.c:182 g10/openfile.c:253 g10/ringedit.c:1346 g10/tdbio.c:457
+#: g10/openfile.c:182 g10/openfile.c:253 g10/ringedit.c:1348 g10/tdbio.c:458
 #, c-format
 msgid "%s: can't create: %s\n"
 msgstr "%s: nie mogê utworzyæ: %s\n"
 
-#: g10/tdbio.c:472 g10/tdbio.c:521
+#: g10/tdbio.c:473 g10/tdbio.c:522
 #, c-format
 msgid "%s: can't create lock\n"
 msgstr "%s: nie mogê utworzyæ blokady\n"
 
-#: g10/tdbio.c:486
+#: g10/tdbio.c:487
 #, c-format
 msgid "%s: failed to create version record: %s"
 msgstr "%s: stworzenie zapisu o wersji nie powiod³o siê: %s"
 
-#: g10/tdbio.c:490
+#: g10/tdbio.c:491
 #, c-format
 msgid "%s: invalid trustdb created\n"
 msgstr "%s: stworzony niepoprawny plik bazy zaufania\n"
 
-#: g10/tdbio.c:493
+#: g10/tdbio.c:494
 #, c-format
 msgid "%s: trustdb created\n"
 msgstr "%s: baza zaufania utworzona\n"
 
-#: g10/tdbio.c:530
+#: g10/tdbio.c:531
 #, c-format
 msgid "%s: invalid trustdb\n"
 msgstr "%s: niepoprawny plik bazy zaufania\n"
 
-#: g10/tdbio.c:563
+#: g10/tdbio.c:564
 #, c-format
 msgid "%s: failed to create hashtable: %s\n"
 msgstr "%s: tworzenie tablicy skrótów nie powiod³o siê: %s\n"
 
-#: g10/tdbio.c:571
+#: g10/tdbio.c:572
 #, c-format
 msgid "%s: error updating version record: %s\n"
 msgstr "%s: b³±d przy uaktualnianiu numeru wersji: %s\n"
 
-#: g10/tdbio.c:587 g10/tdbio.c:626 g10/tdbio.c:648 g10/tdbio.c:678
-#: g10/tdbio.c:703 g10/tdbio.c:1567 g10/tdbio.c:1594
+#: g10/tdbio.c:588 g10/tdbio.c:627 g10/tdbio.c:649 g10/tdbio.c:679
+#: g10/tdbio.c:704 g10/tdbio.c:1568 g10/tdbio.c:1595
 #, c-format
 msgid "%s: error reading version record: %s\n"
 msgstr "%s: b³±d odczytu numeru wersji: %s\n"
 
-#: g10/tdbio.c:600 g10/tdbio.c:659
+#: g10/tdbio.c:601 g10/tdbio.c:660
 #, c-format
 msgid "%s: error writing version record: %s\n"
 msgstr "%s: b³±d zapisu numeru wersji: %s\n"
 
-#: g10/tdbio.c:1246
+#: g10/tdbio.c:1247
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
 msgstr "baza zaufania: procedura lseek() zawiod³a: %s\n"
 
-#: g10/tdbio.c:1254
+#: g10/tdbio.c:1255
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
 msgstr "baza zaufania: procedura read() (n=%d) zawiod³a: %s\n"
 
-#: g10/tdbio.c:1275
+#: g10/tdbio.c:1276
 #, c-format
 msgid "%s: not a trustdb file\n"
 msgstr "%s: to nie jest plik bazy zaufania\n"
 
-#: g10/tdbio.c:1291
+#: g10/tdbio.c:1292
 #, c-format
 msgid "%s: version record with recnum %lu\n"
 msgstr "%s: wpis wersji z numerem %lu\n"
 
-#: g10/tdbio.c:1296
+#: g10/tdbio.c:1297
 #, c-format
 msgid "%s: invalid file version %d\n"
 msgstr "%s: niew³a¶ciwa wersja pliku %d\n"
 
-#: g10/tdbio.c:1600
+#: g10/tdbio.c:1601
 #, c-format
 msgid "%s: error reading free record: %s\n"
 msgstr "%s: b³±d odczytu pustego wpisu: %s\n"
 
-#: g10/tdbio.c:1608
+#: g10/tdbio.c:1609
 #, c-format
 msgid "%s: error writing dir record: %s\n"
 msgstr "%s: b³±d zapisu wpisu katalogowego: %s\n"
 
-#: g10/tdbio.c:1618
+#: g10/tdbio.c:1619
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
 msgstr "%s: zerowanie rekordu nie powiod³o siê: %s\n"
 
-#: g10/tdbio.c:1648
+#: g10/tdbio.c:1649
 #, c-format
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: dopisanie rekordu nie powiod³o siê: %s\n"
 
-#: g10/tdbio.c:1759
+#: g10/tdbio.c:1760
 #, fuzzy
 msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 msgstr ""
@@ -3123,31 +3148,31 @@ msgstr "umieszczenie '%s' w Bazie Zaufania nie powiod³o siê: %s\n"
 msgid "WARNING: can't yet handle long pref records\n"
 msgstr "OSTRZE¯ENIE: d³ugie wpisy ustawieñ jeszcze nie s± obs³ugiwane.\n"
 
-#: g10/ringedit.c:316
+#: g10/ringedit.c:318
 #, c-format
 msgid "%s: can't create keyring: %s\n"
 msgstr "%s: stworzenie zbioru kluczy jest niemo¿liwe: %s\n"
 
-#: g10/ringedit.c:333 g10/ringedit.c:1351
+#: g10/ringedit.c:335 g10/ringedit.c:1353
 #, c-format
 msgid "%s: keyring created\n"
 msgstr "%s: zbiór kluczy utworzony\n"
 
-#: g10/ringedit.c:1528
+#: g10/ringedit.c:1530
 msgid "WARNING: 2 files with confidential information exists.\n"
 msgstr "OSTRZE¯ENIE: Istniej± dwa pliki z poufnymi informacjami.\n"
 
-#: g10/ringedit.c:1529
+#: g10/ringedit.c:1531
 #, c-format
 msgid "%s is the unchanged one\n"
 msgstr "%s pozosta³ bez zmian\n"
 
-#: g10/ringedit.c:1530
+#: g10/ringedit.c:1532
 #, c-format
 msgid "%s is the new one\n"
 msgstr "%s zosta³ utworzony\n"
 
-#: g10/ringedit.c:1531
+#: g10/ringedit.c:1533
 msgid "Please fix this possible security flaw\n"
 msgstr "Proszê usun±æ to naruszenie zasad bezpieczeñstwa\n"
 
@@ -3231,6 +3256,29 @@ msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
 "brak mo¿liwo¶ci generacji dobrego klucza dla szyfru symetrycznego;\n"
 "operacja by³a powtarzana %d razy!\n"
+
+#: g10/delkey.c:93
+#, fuzzy
+msgid "there is a secret key for this public key!\n"
+msgstr "usuniêcie klucza ze zbioru kluczy publicznych"
+
+#: g10/delkey.c:95
+msgid "use option \"--delete-secret-key\" to delete it first.\n"
+msgstr ""
+
+#: g10/delkey.c:111
+#, fuzzy
+msgid "can't do that in batchmode without \"--yes\"\n"
+msgstr "nie dzia³a w trybie wsadowym\n"
+
+#: g10/delkey.c:133
+#, fuzzy
+msgid "Delete this key from the keyring? "
+msgstr "usuniêcie klucza ze zbioru kluczy publicznych"
+
+#: g10/delkey.c:141
+msgid "This is a secret key! - really delete? "
+msgstr ""
 
 #: g10/helptext.c:47
 msgid ""
@@ -3349,8 +3397,8 @@ msgstr ""
 msgid ""
 "This signature can't be checked because you don't have the\n"
 "corresponding key.  You should postpone its deletion until you\n"
-"know which key was used because this signing key might establisha trust "
-"connection through another already certified key."
+"know which key was used because this signing key might establish\n"
+"a trust connection through another already certified key."
 msgstr ""
 
 #: g10/helptext.c:189

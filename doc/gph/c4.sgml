@@ -1,0 +1,433 @@
+<chapter id="wise" xreflabel="4">
+<docinfo>
+<date>
+$Id$
+</date>
+</docinfo>
+<title>
+Daily use of &Gnupg;
+</title>
+
+<para>
+&Gnupg; is a complex tool with technical, social, and legal issues
+surrounding it.
+Technically, it has been designed to be used in situations having
+drastically different security needs.
+This complicates key management.
+Socially, using &gnupg; is not strictly a personal decision.
+To use &gnupg effectively both parties communicating must use it.
+Finally, as of 1999, laws regarding digital encryption, and in particular
+whether or not using &gnupg; is legal, vary from country to country and 
+is currently being debated by many national governments.
+</para>
+
+<para>
+This chapter addresses these issues.
+It gives practical advice on how to use &gnupg; to meet your security needs.
+It also suggests ways to promote the use of &gnupg; for secure
+communication between yourself and your colleagues when your colleagues
+are not currently using &gnupg;.
+Finally, the legal status of &gnupg; is outlined given the current status
+of encryption laws in the world.
+</para>
+
+<sect1>
+<title>
+Defining your security needs
+</title>
+
+<para>
+&Gnupg; is a tool you use to protect your privacy.
+Your privacy is protected if you can correspond with others without
+eavesdroppers reading those messages.
+</para>
+
+<para>
+How you should use &gnupg; depends on the determination and resourcefulness
+of those who might want to read your encrypted messages.
+An eavesdropper may be an unscrupulous system administrator casually
+scanning your mail, it might be an industrial spy trying to collect
+your company's secrets, or it might be a law enforcement agency trying
+to prosecute you.
+Using &gnupg; to protect against casual eavesdropping is going to be
+different than using &gnupg; to protect against a determined adversary.
+Your goal, ultimately, is to make it more expensive to recover the
+unencrypted data than that data is worth.
+</para>
+
+<para>
+Customizing your use of &gnupg; revolves around three issues:
+<itemizedlist spacing="compact">
+<listitem>
+<para>
+the key size of your public/private keypair,
+</para>
+</listitem>
+
+<listitem>
+<para>
+protecting your private key, and
+</para>
+</listitem>
+
+<listitem>
+<para>
+managing your web of trust.
+</para>
+</listitem>
+</itemizedlist>
+
+A well-chosen key size protects you against brute-force attacks on
+encrypted messages.
+Protecting your private key prevents an attacker from simply using your
+private key to decrypt encrypted messages and sign messages in your name.
+Correctly managing your web of trust prevents attackers from masquarading
+as people with whom you communicate.
+Ultimately, addressing these issues with respect to your own security
+needs is how you balance the extra work required to use &gnupg; with
+the privacy it gives you.
+</para>
+
+<sect2>
+<title>
+Choosing a key size
+</title>
+
+<para>
+Selecting a key size depends on the key.
+In OpenPGP, a public/private keypair usually has multiple keys.
+At the least it has a master signing key, and it probably has one or
+more additional subkeys for encryption.
+Using default key generation parameters with &gnupg;, the master
+key will be a DSA key, and the subkeys will be ElGamal keys.
+</para>
+
+<para>
+DSA allows a key size up to 1024 bits.
+This is not especially good given today's factoring technology, but
+that is what the standard specifies.
+Without question, you should use 1024 bit DSA keys.
+</para>
+
+<para>
+ElGamal keys, on the other hand, may be of any size.
+Since &gnupg; is a hybrid public-key system, the public key is used
+to encrypt a 128-bit session key, and the private key is used to
+decrypt it.
+Key size nevertheless affects encryption and decryption speed
+since the cost of these algorithms is exponential in the size of
+the key.
+Larger keys also take more time to generate and take more space
+to store.
+Ultimately, there are diminishing returns on the extra security
+a large key provides you.
+After all, if the key is large enough to resist a brute-force
+attack, an eavesdropper will merely switch to some other method for
+obtaining your plaintext data.
+Examples of other methods include robbing your home or office
+and mugging you.
+1024 bits is thus the recommended key size.
+If you genuinely need a larger key size then you probably already
+know this and should be consulting an expert in data security.
+</para>
+</sect2>
+
+<sect2>
+<title>
+Protecting your private key
+</title>
+
+<para>
+Protecting your private key is the most important job you have to
+use &gnupg; correctly.
+If someone obtains your private key, then all data encrypted to
+the private key can be decrypted and signatures can be made in your name.
+If you lose your private key, then you will no longer be able to 
+decrypt documents encrypted to you in the future or in the past,
+and you will not be able to make signatures.
+Losing sole possession of your private key is catastrophic.
+</para>
+
+<para>
+Regardless of how you use &gnupg; you should store the public
+key's <link linkend="revocation">revocation certificate</link> 
+and a backup of your private key on write-protected media in a safe place.
+For example, you could burn them on a CD-ROM and store them in your
+safe deposit box at the bank in a sealed envelope.
+Alternatively, you could store them on a floppy and hide it in your
+house.
+Whatever you do, they should be put on media that is safe to store
+for as long as you expect to keep the key, and you should store
+them more carefully than the copy of your private key you use daily.
+</para>
+
+<para>
+To help safeguard your key, &Gnupg; does not store your raw
+private key on disk.
+Instead it encrypts it using a symmetric encryption algorithm.
+That is why you need a passphrase to access the key.
+Thus there are two barriers an attacker must cross to access your private
+key: (1) he must actually acquire the key, and (2) he must get past
+the encryption.
+</para>
+
+<para>
+Safely storing your private key is important, but there is a cost.
+Ideally, you would keep the private key on a removable, write-protected disk
+such as a floppy disk, and you would use it on a single-user machine 
+not connected to a network.
+This may be inconvenient or impossible for you to do.
+For example, you may not own your own machine and must use a computer 
+at work or school, or it may mean you have to physically disconnect
+your computer from your cable modem every time you want to use &gnupg;
+</para>
+
+<para>
+This does not mean you cannot or should not use &gnupg;.
+It means only that you have decided that the data you are protecting is
+important enough to encrypt but not so important as to take extra
+steps to make the first barrier stronger.
+It is your choice.
+</para>
+
+<para>
+A good passphrase is absolutely critical when using &gnupg;.
+Any attacker who gains access to your private key must bypass the 
+encryption on the private key.
+Instead of brute-force guessing the key, an attacker will almost
+certainly instead try to guess the passphrase.
+</para>
+
+<para>
+The motivation for trying passphrases is that most people choose
+a passphrase that is easier to guess than a random 128-bit key.
+If the passphrase is a word, it is much cheaper to try all the
+words in the dictionaries of the world's languages.
+Even if the word is permuted, &eg, k3wldood, it is still easier
+to try dictionary words with a catalog of permutations.
+The same problem applies to quotations.
+In general, passphrases based on natural-language utterances
+are poor passphrases since there is little randomness and lots
+of redundancy in natural language.
+You should avoid natural language passphrases if you can.
+</para>
+
+<para>
+A good passphrase is one that you can remember but is hard for
+someone to guess.
+It should include characters from the whole range of printable characters
+on your keyboard.
+This includes uppercase alphabetics characters, numbers, and special
+characters such as <literal>}</literal> and <literal>|</literal>.
+Be creative and spend a little time considering your passphrase; a
+good choice is important to ensure your privacy.
+</para>
+</sect2>
+
+<!--
+<sect2>
+<title>
+Reacting to a compromised private key
+</title>
+
+<para>
+Despite your precautions you may lose sole access to your private key.
+For example, you may forget the passphrase, or someone who you think 
+can bypass the encryption gets access to it.
+In that case then you need to spread the word that your key is no 
+longer valid.
+To do that you use the key revocation certificate you should have generated
+when you created the key.
+Importing it onto your public keyring will revoke the public key
+of the keypair you no longer wish to use.
+It is then up to you to distribute the revoked public key to all 
+those who may encrypt documents to you.
+</para>
+
+<para>
+A revoked public key only prevents future use of the private key.
+Others will neither be able to encrypt documents to the key nor will
+they be able to check signatures made with the private key.
+Documents signed in the past can still be checked, however, and
+documents encrypted in the past can still be decrypted.
+</para>
+
+<para>
+It is important that you protect the revocation certificate carefully.
+Anybody can add the certificate to your public key and distribute it,
+and there is no way to revoke a revocation certificate.
+Therefore, you should store the revocation certificate in a safe
+place such as with the backup of your private key.
+</para>
+</sect2>
+-->
+
+<sect2>
+<title>
+Managing your web of trust
+</title>
+
+<para>
+As with protecting your private key, managing your web of trust is
+another aspect of using &gnupg; that requires balancing security against
+ease of use.
+If you are using &gnupg; to protect against casual eavesdropping and
+forgeries then you can afford to be relatively trusting of other
+people's signatures.
+On the other hand, if you are concerned that there may be a determined
+attacker interested in invading your privacy, then
+you should be much less trusting of other signatures and spend more time 
+personally verifying signatures.
+</para>
+
+<para>
+Regardless of your own security needs, through, you should 
+<emphasis>always be careful</emphasis> when signing other keys.
+It is selfish to sign a key with just enough confidence in the key's
+validity to satisfy your own security needs.
+Others, with more stringent security needs, may want to depend on 
+your signature.
+If they cannot depend on you then that weakens the web of trust
+and makes it more difficult for all &gnupg; users to communicate.
+Use the same care in signing keys that you would like others to use when
+you depend on their signatures.
+</para>
+
+<para>
+In practice, managing your web of trust reduces to assigning trust to 
+others and tuning the options 
+<link linkend="marginals-needed"><option>--marginals-needed</option></link>
+and 
+<link linkend="completes-needed"><option>--completes-needed</option></link>.
+Any key you personally sign will be considered valid, but except for small
+groups, it will not be practical to personally sign the key of every person
+with whom you communicate.
+You will therefore have to assign trust to others.
+</para>
+
+<para>
+It is probably wise to be accurate when assigning trust and then
+use the options to tune how careful &gnupg; is with key validation.
+As a concrete example, you may fully trust a few close friends that
+you know are careful with key signing and then marginally
+trust all others on your keyring.
+From there, you may set <option>--completes-needed</option> to
+<literal>1</literal> and <option>--marginals-needed</option> to
+<literal>2</literal>.
+If you are more concerned with security you might choose values of
+<literal>1</literal> and <literal>3</literal> or <literal>2</literal>
+and <literal>3</literal> respectively.
+If you are less concerned with privacy attacks and just want some
+reasonable confidence about validity, set the values to <literal>1</literal>
+and <literal>1</literal>.
+In general, higher numbers for these options imply that more people
+would be needed to conspire against you in order to have a key validated
+that does not actually belong to the person whom you think it does.
+</para>
+</sect2>
+</sect1>
+
+<sect1>
+<title>
+Building your web of trust
+</title>
+
+<para>
+Wanting to use &gnupg; yourself is not enough.
+In order to use to communicate securely with others you must have
+a web of trust.
+At first glance, however, building a web of trust is a daunting task.
+The people with whom you communicate need to use 
+&gnupg;<footnote><para>In this section, &gnupg; refers to the 
+&gnupg; implementation of OpenPGP as well as other implementations 
+such as NAI's PGP product.</para></footnote>, and there needs to be enough 
+key signing so that keys can be considered valid.
+These are not technical problems; they are social problems.
+Nevertheless, you must overcome these problems if you want to 
+use &gnupg;.
+</para>
+
+<para>
+When getting started using &gnupg; it is important to realize that you
+need not securely communicate with every one of your correspondents.
+Start with a small circle of people, perhaps just yourself and
+one or two others who also want to exercise their right
+to privacy.
+Generate your keys and sign each other's public keys.
+This is your initial web of trust.
+By doing this you will appreciate the value of a small, robust
+web of trust and will be more cautious as you grow your web
+in the future.
+</para>
+
+<para>
+In addition to those in your initial web of trust, you may want to
+communicate securely with others who are also using &gnupg;.
+Doing so, however, can be awkward for two reasons:
+(1) you do not always know when someone uses or is willing to use
+&gnupg;, and (2) if you do know of someone who uses it, you may still have
+trouble validating their key.
+The first reason occurs because people do not always advertise that
+they use &gnupg;.
+The way to change this behavior is to set the example and advertise 
+that you use &gnupg;.
+There are at least three ways to do this: you can sign messages you mail
+to others or post to message boards, you can put your public key on your
+web page, or, if you put your key on a keyserver, you can put your key
+ID in your email signature.
+If you advertise your key then you make it that much more acceptable
+for others to advertise their keys.
+Furthermore, you make it easier for others to start communicating
+with you securely since you have taken the initiative and made it clear
+that you use &gnupg;.
+</para>
+
+<para>
+Key validation is more difficult.
+If you do not personally know the person whose key you want to sign,
+then it is not possible to sign the key yourself.
+You must rely on the signatures of others and hope to find a chain
+of signatures leading from the key in question back to your own.
+To have any chance of finding a chain, you must take the intitive
+and get your key signed by others outside of your intitial web of trust.
+An effective way to accomplish this is to participate in key
+signing parties.
+If you are going to a conference look ahead of time for a key
+signing party, and if you do not see one being held, offer to 
+<ulink url="http://www.herrons.com/kb2nsx/keysign.html">hold one</ulink>.
+You can also be more passive and carry your fingerprint with you
+for impromptu key exchanges.
+In such a situation the person to whom you gave the fingerprint
+would verify it and sign your public key once he returned home.
+</para>
+
+<para>
+Keep in mind, though, that this is optional.
+You have no obligation to either publically advertise your key or
+sign other people's keys.
+The power of &gnupg; is that it is flexible enough to adapt to your
+security needs whatever they may be.
+The social reality, however, is that you will need to take the initiative
+if you want to grow your web of trust and use &gnupg; for as much of 
+your communication as possible.
+</para>
+</sect1>
+
+<sect1>
+<title>
+Using &Gnupg; legally
+</title>
+
+<para>
+The legal status of encryption software varies from country to country,
+and law regarding encryption software is rapidly evolving.
+<ulink url="http://cwis.kub.nl/~frw/people/koops/bertjaap.htm">Bert-Japp 
+Koops</ulink> has an excellent 
+<ulink url="http://cwis.kub.nl/~frw/people/koops/lawsurvy.htm">Crypto
+Law Survey</ulink> to which you should refer for the legal status of
+encryption software in your country.
+</para>
+
+</sect1>
+</chapter>
+

@@ -406,6 +406,7 @@ AC_CHECK_FUNCS(memmove gettimeofday getrusage gethrtime setrlimit)
 AC_CHECK_FUNCS(memicmp atexit raise getpagesize strftime nl_langinfo)
 
 GNUPG_CHECK_MLOCK
+GNUPG_FUNC_MKDIR_TAKES_ONE_ARG
 
 dnl
 dnl Check whether we can use Linux capabilities as requested
@@ -706,6 +707,7 @@ mpi/Makefile
 cipher/Makefile
 g10/Makefile
 doc/Makefile
+doc/gph/Makefile
 tools/Makefile
 zlib/Makefile
 checks/Makefile

@@ -55,6 +55,20 @@ assembler replacements are in C and in mpi/generic; never delete udiv-qrnnd.S
 in any CPU directory, because there may be no C substitute.
 Don't forget to delete "config.cache" and run "./config.status --recheck".
 
+Some make tools are broken - the best solution is to use GNU's make.  Try
+gmake or grab the sources from a GNU archive and install them.
+
+On some OSF you may get unresolved externals.  This is a libtool problem and
+the workaround is to manually remove all the "-lc -lz" but the last one from
+the linker line and execute them manually.
+
+On some architectures you get warnings like:
+  longlong.h:175: warning: function declaration isn't a prototype
+or
+  http.c:647: warning: cast increases required alignment of target type
+This doesn't matter and we know about it (actually it is due to the some
+warning options which we have enabled for gcc)
+
 
 The Random Device
 =================

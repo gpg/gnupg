@@ -1,0 +1,885 @@
+<chapter id="management" xreflabel="3">
+<docinfo>
+<date>
+$Id$
+</date>
+</docinfo>
+<title>
+Key Management
+</title>
+
+<para>
+Key tampering is a major security weakness with public-key cryptography.
+An eavesdropper may tamper with a user's keyrings or forge a
+user's public key and post it for others to download and use.
+For example, suppose Chloe wants to monitor the messages that Alice
+sends to Blake.
+She could mount what is called a <firstterm>man in the 
+middle</firstterm> attack.
+In this attack, Chloe creates a new public/private keypair.
+She replaces Alice's copy of Blake's public key with the new public key.
+She then intercepts the messages that Alice sends to Blake.
+For each intercept, she decrypts it using the new private key, reencrypts
+it using Blake's true public key, and forwards the reencrypted
+message to Blake.
+All messages sent from Alice to Blake can now be read by Chloe.
+</para>
+
+<para>
+Good key management is crucial in order to ensure not just the integrity
+of your keyrings but the integrity of other users' keyrings as well.
+The core of key management in &gnupg; is the notion of signing keys.
+Key signing has two main purposes: it permits you to detect tampering
+on your keyring, and it allows you to certify that a key truly belongs
+to the person named by a user ID on the key.
+Key signatures are also used in a scheme known as the <firstterm>web of 
+trust</firstterm> to extend certification to keys not directly signed by you 
+but signed by others you trust.
+Responsible users who practice good key management can defeat key
+tampering as a practical attack on secure communication with &gnupg;.
+</para>
+
+<sect1>
+<title>
+Managing your own keypair
+</title>
+
+<para>
+A keypair has a public key and a private key.
+A public key consists of 
+the public portion of the master signing key,
+the public portions of the subordinate signing and encryption subkeys, and 
+a set of user IDs used to associate the public key with a real person.
+Each piece has data about itself.
+For a key, this data includes its ID, when it was created, when it
+will expire, etc.
+For a user ID, this data includes the name of the real person it identifies,
+an optional comment, and an email address.
+The structure of the private key is similar, except that it contains only
+the private portions of the keys, and there is no user ID information.
+</para>
+
+<para>
+The command-line option 
+<link linkend="edit-key"><option>--edit-key</option></link>
+may be used to view a keypair.
+For example,
+
+<screen width="80">
+<prompt>chloe%</prompt> <userinput>gpg --edit-key chloe@cyb.org</userinput>
+Secret key is available.
+
+pub  1024D/26B6AAE1  created: 1999-06-15 expires: never      trust: -/u
+sub  2048g/0CF8CB7A  created: 1999-06-15 expires: never     
+sub  1792G/08224617  created: 1999-06-15 expires: 2002-06-14
+sub   960D/B1F423E7  created: 1999-06-15 expires: 2002-06-14
+(1)  Chloe (Jester) &lt;chloe@cyb.org>
+(2)  Chloe (Plebian) &lt;chloe@tel.net>
+<prompt>Command></prompt>
+</screen>
+
+The public key is displayed along with an indication of whether
+or not the private key is available.
+Information about each component of the public key is then listed.
+The first column indicates the type of the key.
+The keyword <literal>pub</literal> identifies the public master signing key,
+and the keyword <literal>sub</literal> identifies a public subordinate key.
+The second column indicates the key's bit length, type, and ID.
+The type is <literal>D</literal> for a DSA key, <literal>g</literal> for an 
+encryption-only
+ElGamal key, and <literal>G</literal> for an ElGamal key that may be used for
+both encryption and signing.
+The creation date and expiration date are given in columns three and four.
+The user IDs are listed following the keys.
+</para>
+
+<para>
+More information about the key can be obtained with interactive commands.
+The command <link linkend="toggle"><command>toggle</command></link> 
+switches between the public and private
+components of a keypair if indeed both components are available.
+
+<screen width="80">
+<prompt>Command></prompt> <userinput>toggle</userinput>
+               
+sec  1024D/26B6AAE1  created: 1999-06-15 expires: never     
+sbb  2048g/0CF8CB7A  created: 1999-06-15 expires: never     
+sbb  1792G/08224617  created: 1999-06-15 expires: 2002-06-14
+sbb   960D/B1F423E7  created: 1999-06-15 expires: 2002-06-14
+(1)  Chloe (Jester) &lt;chloe@cyb.org>
+(2)  Chloe (Plebian) &lt;chloe@tel.net>
+</screen>
+
+The information provided is similar to the listing for the public-key
+component.
+The keyword <literal>sec</literal> identifies the private master signing key,
+and the keyword <literal>sbb</literal> identifies the private subordinates keys.
+The user IDs from the public key are also listed for convenience.
+</para>
+
+<sect2>
+<title id="integrity">
+Key integrity
+</title>
+
+<para>
+When you distribute your public key, you are distributing the public
+components of your master and subordinate keys as well as the user IDs.
+Distributing this material alone, however, is a security risk since
+it is possible for an attacker to tamper with the key.
+The public key can be modified by adding or substituting keys, or by
+adding or changing user IDs.
+By tampering with a user ID, the attacker could change the user ID's email
+address to have email redirected to himself.
+By changing one of the encryption keys, the attacker would
+also be able to decrypt the messages redirected to him.
+</para>
+
+<para>
+Using digital signatures is a solution to this problem.
+When data is signed by a private key, the corresponding public key
+is bound to the signed data.
+In other words, only the corresponding public key can be used to
+verify the signature and ensure that the data has not been modified.
+A public key can be protected from tampering by using its corresponding
+private master key to sign the public key components and user IDs, thus
+binding the components to the public master key.
+Signing public key components with the corresponding private master
+signing key is called <firstterm>self-signing</firstterm>, and a public key that has
+self-signed user IDs bound to it is called a <firstterm>certificate</firstterm>.
+</para>
+
+<!--
+%\begin{figure}
+%Blank
+%\caption{This should depict how self-signatures bind information to
+%a public key.}\label{fig:selfsignedkey}
+%\end{figure}
+%
+%As an example, Figure~\ref{fig:selfsignedkey} illustrates Chloe's public
+%key, which has been self-signed to bind the user IDs and public subkeys
+%to the public master key.
+%The signatures on the user IDs can be checked with the \texttt{check}
+%command from the key edit menu.
+-->
+
+<para>
+As an example, Chloe has two user IDs and three subkeys.
+The signatures on the user IDs can be checked with the command
+<link linkend="check"><command>check</command></link> from the key edit menu.
+
+<screen width="80">
+<prompt>chloe%</prompt> <userinput>gpg --edit-key chloe</userinput>
+Secret key is available.
+
+pub  1024D/26B6AAE1  created: 1999-06-15 expires: never      trust: -/u
+sub  2048g/0CF8CB7A  created: 1999-06-15 expires: never     
+sub  1792G/08224617  created: 1999-06-15 expires: 2002-06-14
+sub   960D/B1F423E7  created: 1999-06-15 expires: 2002-06-14
+(1)  Chloe (Jester) &lt;chloe@cyb.org>
+(2)  Chloe (Plebian) &lt;chloe@tel.net>
+
+<prompt>Command></prompt> <userinput>check</userinput>
+uid  Chloe (Jester) &lt;chloe@cyb.org>
+sig!       26B6AAE1 1999-06-15   [self-signature]
+uid  Chloe (Plebian) &lt;chloe@tel.net>
+sig!       26B6AAE1 1999-06-15   [self-signature]
+</screen>
+
+As expected, the signing key for each signature is the master signing
+key with key ID <literal>0x26B6AAE1</literal>.
+The self-signatures on the subkeys are present in the public key, but
+they are not shown by the &gnupg; interface.
+</para>
+</sect2>
+
+<sect2>
+<title>
+Adding and deleting key components
+</title>
+
+<para>
+Both new subkeys and new user IDs may be added to your keypair after
+it has been created.
+A user ID is added using the command 
+<link linkend="adduid"><command>adduid</command></link>.
+You are prompted for a real name, email address, and comment just
+as when you create an initial keypair.
+A subkey is added using the command 
+<link linkend="addkey"><command>addkey</command></link>.
+The interface is similar to the interface used when creating an initial
+keypair.
+The subkey may be a DSA signing key, and encrypt-only ElGamal
+key, or a sign-and-encrypt ElGamal key.
+When a subkey or user ID is generated it is self-signed using your 
+master signing key, which is why you must supply your passphrase
+when the key is generated.
+</para>
+
+<para>
+Additional user IDs are useful when you need multiple identities.
+For example, you may have an identity for your job and an identity
+for your work as a political activist.
+Coworkers will know you by your work user ID.
+Coactivists will know you by your activist user ID.
+Since those groups of people may not overlap, though, each group
+may not trust the other user ID.
+Both user IDs are therefore necessary.
+</para>
+
+<para>
+Additional subkeys are also useful.
+The user IDs associated with your public master key are validated by
+the people with whom you
+communicate, and changing the master key therefore requires recertification.
+This may be difficult and time consuming if you communicate with
+many people.
+On the other hand, it is good to periodically change encryption subkeys.
+If a key is broken, all the data encrypted with that key will be
+vulnerable.
+By changing keys, however, only the data encrypted with the one broken
+key will be revealed.
+</para>
+
+<para>
+Subkeys and user IDs may also be deleted.
+To delete a subkey or user ID you must first select it using the
+<link linkend="key"><command>key</command></link> or 
+<link linkend="uid"><command>uid</command></link> commands respectively.
+These commands are toggles.
+For example, the command <command>key <parameter>2</parameter></command> 
+selects the second subkey,
+and invoking <command>key <parameter>2</parameter></command> again 
+deselects it.
+If no extra argument is given, all subkeys or user IDs are deselected.
+Once the user IDs to be deleted are selected, the command
+<link linkend="deluid"><command>deluid</command></link>
+actually deletes the user IDs from your key.
+Similarly, the command <link linkend="delkey"><command>delkey</command></link>
+deletes all selected subkeys from both your public and private keys.
+</para>
+
+<para>
+For local keyring management, deleting key components is a good way
+to trim other people's public keys of unnecessary material.
+Deleting user IDs and subkeys on your own key, however, is not always
+wise since it complicates key distribution.
+By default, when a user imports your updated public key it will be merged
+with the old copy of your public key on his ring if it exists.
+The components from both keys are combined in the merge, and this
+effectively restores any components you deleted.
+To properly update the key, the user must first delete the old version
+of your key and then import the new version.
+This puts an extra burden on the people with whom you communicate.
+Furthermore, if you send your key to a keyserver, the merge will
+happen regardless, and anybody who downloads your key from a keyserver
+will never see your key with components deleted.
+Consequently, for updating your own key it is better to revoke key
+components instead of deleting them.
+</para>
+</sect2>
+
+<sect2>
+<title>
+Revoking key components
+</title>
+
+<para>
+To revoke a subkey it must be selected.
+Once selected it may be revoked with the 
+<link linkend="revkey"><command>revkey</command></link> command.
+The key is revoked by adding a revocation self-signature to the key.
+Unlike the command-line option <option>--gen-revoke</option>, the effect of
+revoking a subkey is immediate.
+</para>
+
+<screen width="80">
+<prompt>Command></prompt> <userinput>revkey</userinput>
+Do you really want to revoke this key? y
+                                        
+You need a passphrase to unlock the secret key for
+user: "Chloe (Jester) &lt;chloe@cyb.org>"
+1024-bit DSA key, ID B87DBA93, created 1999-06-28
+
+                  
+pub  1024D/B87DBA93  created: 1999-06-28 expires: never      trust: -/u
+sub  2048g/B7934539  created: 1999-06-28 expires: never     
+sub  1792G/4E3160AD  created: 1999-06-29 expires: 2000-06-28
+rev! subkey has been revoked: 1999-06-29
+sub   960D/E1F56448  created: 1999-06-29 expires: 2000-06-28
+(1)  Chloe (Jester) &lt;chloe@cyb.org>
+(2)  Chloe (Plebian) &lt;chloe@tel.net>
+</screen>
+
+<para>
+A user ID is revoked differently.
+Normally, a user ID collects signatures that attest that the user ID
+describes the person who actually owns the associated key.
+In theory, a user ID describes a person forever, since that person will
+never change.
+In practice, though, elements of the user ID such as the email address
+and comment may change over time, thus invalidating the user ID.
+</para>
+
+<para>
+The OpenPGP
+<comment>First reference to OpenPGP</comment>
+specification does not support user ID revocation, but
+a user ID can effectively be revoked by revoking the self-signature
+on the user ID.
+For the security reasons described 
+<link linkend="integrity">previously</link>,
+correspondents will not trust a user ID with no valid self-signature.
+</para>
+
+<para>
+A signature is revoked by using the command 
+<link linkend="revsig"><command>revsig</command></link>.
+Since you may have signed any number of user IDs, the user interface
+prompts you to decide for each signature whether or not to revoke it.
+</para>
+
+<screen width="80">
+<prompt>Command></prompt> <userinput>revsig</userinput>
+You have signed these user IDs:
+     Chloe (Jester) &lt;chloe@cyb.org>
+   signed by B87DBA93 at 1999-06-28
+     Chloe (Plebian) &lt;chloe@tel.net>
+   signed by B87DBA93 at 1999-06-28
+user ID: "Chloe (Jester) &lt;chloe@cyb.org>"
+signed with your key B87DBA93 at 1999-06-28
+Create a revocation certificate for this signature? (y/N)n
+user ID: "Chloe (Plebian) &lt;chloe@tel.net>"                
+signed with your key B87DBA93 at 1999-06-28
+Create a revocation certificate for this signature? (y/N)y
+You are about to revoke these signatures:                 
+     Chloe (Plebian) &lt;chloe@tel.net>
+   signed by B87DBA93 at 1999-06-28
+Really create the revocation certificates? (y/N)y
+                                                 
+You need a passphrase to unlock the secret key for
+user: "Chloe (Jester) &lt;chloe@cyb.org>"
+1024-bit DSA key, ID B87DBA93, created 1999-06-28
+
+                  
+pub  1024D/B87DBA93  created: 1999-06-28 expires: never      trust: -/u
+sub  2048g/B7934539  created: 1999-06-28 expires: never     
+sub  1792G/4E3160AD  created: 1999-06-29 expires: 2000-06-28
+rev! subkey has been revoked: 1999-06-29
+sub   960D/E1F56448  created: 1999-06-29 expires: 2000-06-28
+(1)  Chloe (Jester) &lt;chloe@cyb.org>
+(2)  Chloe (Plebian) &lt;chloe@tel.net>
+</screen>
+
+<para>
+A revoked user ID is indicated by the revocation signature on 
+the ID when the signatures on the key's user IDs are listed.
+</para>
+
+<screen width="80">
+<prompt>Command></prompt> <userinput>check</userinput>
+uid  Chloe (Jester) &lt;chloe@cyb.org>
+sig!       B87DBA93 1999-06-28   [self-signature]
+uid  Chloe (Plebian) &lt;chloe@tel.net>
+rev!       B87DBA93 1999-06-29   [revocation]
+sig!       B87DBA93 1999-06-28   [self-signature]
+</screen>
+
+<para>
+Revoking both subkeys and self-signatures on user IDs adds revocation
+self-signatures to the key.
+Since signatures are being added and no material is deleted, a 
+revocation will always be visible to others when your updated public
+key is distributed and merged with older copies of it.
+Revocation therefore guarantees that everybody has a consistent
+copy of your public key.
+</para>
+</sect2>
+
+<sect2>
+<title>
+Updating a key's expiration time
+</title>
+
+<para>
+The expiration time of a key may be updated with the command
+<link linkend="expire"><command>expire</command></link> from the key edit menu.
+If no key is selected the expiration time of the primary key
+is updated.
+Otherwise the expiration time of the selected subordinate key
+is updated.
+</para>
+
+<para>
+A key's expiration time is associated with the key's self-signature.
+The expiration time is updated by deleting the old self-signature
+and adding a new self-signature.
+Since correspondents will not have deleted the old self-signature, they
+will see an additional self-signature on the key when they update
+their copy of your key.
+The latest self-signature takes precedence, however, so all correspondents
+will unambiguously know the expiration times of your keys.
+</para>
+</sect2>
+</sect1>
+
+<sect1>
+<title>
+Validating other keys on your public keyring
+</title>
+
+<para>
+In Chapter <xref linkend="intro"> a procedure was given to validate your
+correspondents' public keys: a correspondent's key is validated by
+personally checking his key's fingerprint and then signing his public
+key with your private key.
+By personally checking the fingerprint you can be sure that the
+key really does belong to him, and since you have signed they key, you
+can be sure to detect any tampering with it in the future.
+Unfortunately, this procedure is awkward when either you must validate
+a large number of keys or communicate with people whom you do not
+know personally.
+</para>
+
+<para>
+&Gnupg; addresses this problem with a mechanism popularly known
+as the <firstterm>web of trust</firstterm>.
+In the web of trust model, responsibility for validating public
+keys is delegated to people you trust.
+For example, suppose
+<itemizedlist spacing="compact">
+<listitem>
+<para>
+Alice has signed Blake's key, and
+</para>
+</listitem>
+<listitem>
+<para>
+Blake has signed Chloe's key and Dharma's key.
+</para>
+</listitem>
+</itemizedlist>
+
+If Alice trusts Blake to properly validate keys that he signs, then
+Alice can infer that Chloe's and Dharma's keys are valid without 
+having to personally check them.
+She simply uses her validated copy of Blake's public key to
+check that Blake's signatures on Chloe's and Dharma's are good.
+In general, assuming that Alice fully trusts everybody to properly
+validate keys they sign, then any key signed by a valid key is also
+considered valid.
+The root is Alice's key, which is axiomatically assumed to be valid.
+</para>
+
+<sect2>
+<title>
+Trust in a key's owner
+</title>
+
+<para>
+In practice trust is subjective.
+For example, Blake's key is valid to Alice since she signed it, but she
+may not trust Blake to properly validate keys that he signs.
+In that case, she would not take Chloe's and Dharma's key as valid
+based on Blake's signatures alone.
+The web of trust model accounts for this by associating with each
+public key on your keyring an indication of how much you trust the
+key's owner.
+There are four trust levels.
+
+<variablelist>
+<varlistentry>
+<term>
+unknown
+</term>
+<listitem>
+<para>
+Nothing is known about the owner's judgement in key signing.
+Keys on your public keyring that you do not own initially have
+this trust level.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+none
+</term>
+<listitem>
+<para>
+The owner is known to improperly sign other keys.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+marginal
+</term>
+<listitem>
+<para>
+The owner understands the implications of key signing and 
+properly validates keys before signing them.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+full
+</term>
+<listitem>
+<para>
+The owner has an excellent understanding of key signing,
+and his signature on a key would be as good as your own.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+A key's trust level is something that you alone assign to the
+key, and it is considered private information.
+It is not packaged with the key when it is exported; it is even
+stored separately from your keyrings in a separate database.
+</para>
+
+<para>
+The &gnupg; key editor may be used to adjust your trust in a key's owner.
+The command is <link linkend="trust"><command>trust</command></link>.
+In this example Alice edits her trust in Blake and then updates
+the trust database to recompute which keys are valid based on her new
+trust in Blake.
+
+<screen width="80">
+<prompt>alice%</prompt> <userinput>gpg --edit-key blake</userinput>
+
+pub  1024D/8B927C8A  created: 1999-07-02 expires: never      trust: q/f
+sub  1024g/C19EA233  created: 1999-07-02 expires: never     
+(1)  Blake (Executioner) &lt;blake@cyb.org>
+
+<prompt>Command></prompt> <userinput>trust</userinput>
+pub  1024D/8B927C8A  created: 1999-07-02 expires: never      trust: q/f
+sub  1024g/C19EA233  created: 1999-07-02 expires: never     
+(1)  Blake (Executioner) &lt;blake@cyb.org>
+
+Please decide how far you trust this user to correctly
+verify other users' keys (by looking at passports,
+checking fingerprints from different sources...)?
+
+ 1 = Don't know
+ 2 = I do NOT trust
+ 3 = I trust marginally
+ 4 = I trust fully
+ s = please show me more information
+ m = back to the main menu
+
+<prompt>Your decision?</prompt> <userinput>3</userinput>
+                
+pub  1024D/8B927C8A  created: 1999-07-02 expires: never      trust: m/f
+sub  1024g/C19EA233  created: 1999-07-02 expires: never     
+(1)  Blake (Executioner) &lt;blake@cyb.org>
+
+<prompt>Command></prompt> <userinput>quit</userinput>
+[...]
+</screen>
+
+Trust in the key's owner and the key's validity are indicated to the
+right when the key is displayed.
+Trust in the owner is displayed first and the key's validity is 
+<!-- HERE, need to fix quotation marks -->
+second<footnote>
+<para>
+&Gnupg; overloads the word "trust" by using it to mean
+trust in an owner and trust in a key.
+This can be confusing.
+Sometimes trust in an owner is referred to as
+<firstterm>owner-trust</firstterm> to
+distinguish it from trust in a key.
+<!-- HERE, need to fix quotation marks -->
+Throughout this manual, however, "trust" is used to 
+mean trust in a key's
+<!-- HERE, need to fix quotation marks -->
+owner, and "validity" is used to mean trust that a key 
+belongs to the human associated with the key ID.
+</para>
+</footnote>.
+The four trust/validity levels are abbreviated: unknown (<literal>q</literal>),
+none (<literal>n</literal>), marginal (<literal>m</literal>), and 
+full (<literal>f</literal>).
+In this case, Blake's key is fully valid since Alice signed it herself.
+She initially has an unknown trust in Blake to properly sign other keys
+but decides to trust him marginally.
+</para>
+</sect2>
+
+<sect2>
+<title>
+Using trust to validate keys
+</title>
+
+<para>
+The web of trust allows a more elaborate algorithm to be used to
+validate a key.
+Formerly, a key was considered valid only if you signed it personally.
+<!-- HERE, math -->
+A more flexible algorithm can now be used: a key <emphasis>K</emphasis> is considered valid
+if it meets two conditions:
+<orderedlist spacing="compact">
+<listitem>
+<para>
+it is signed by enough valid keys, meaning
+<itemizedlist spacing="compact">
+<listitem>
+<para>
+you have signed it personally, 
+</para>
+</listitem>
+<listitem>
+<para>
+it has been signed by one fully trusted key, or
+</para>
+</listitem>
+<listitem>
+<para>
+it has been signed by three marginally trusted keys; and
+</para>
+</listitem>
+</itemizedlist>
+</para>
+</listitem>
+<listitem>
+<para>
+<!-- HERE, math -->
+the path of signed keys leading from <emphasis>K</emphasis> back 
+to your own key is five steps or shorter.
+</para>
+</listitem>
+</orderedlist>
+
+The path length, number of marginally trusted keys required, and number
+of fully trusted keys required may be adjusted.
+The numbers given above are the default values used by &gnupg;.
+</para>
+
+<para>
+<xref linkend="wot-examples"> shows a web of trust rooted at Alice.
+The graph illustrates who has signed who's keys.
+The table shows which keys Alice considers valid based on her
+trust in the other members of the web.
+<comment>Potential bug: <option>--completes-needed</option> on command 
+line seems to be ignored when combined with <option>--update-trustdb</option>.
+Value is taken correctly if put in options file, however.</comment>
+This example assumes that two marginally-trusted keys or one
+fully-trusted key is needed to validate another key.
+The maximum path length is three.
+</para>
+
+<para>
+When computing valid keys in the example, Blake and Dharma's are
+always considered fully valid since they were signed directly
+by Alice.
+The validity of the other keys depends on trust.
+In the first case, Dharma is trusted fully, which implies 
+that Chloe's and Francis's keys will be considered valid.
+In the second example, Blake and Dharma are trusted marginally.
+Since two marginally trusted keys are needed to fully validate a
+key, Chloe's key will be considered fully valid, but Francis's 
+key will be considered only marginally valid.
+In the case where Chloe and Dharma are marginally trusted,
+Chloe's key will be marginally valid since Dharma's key is
+fully valid.
+Francis's key, however, will also be considered marginally
+valid since only a fully valid key can be used to validate
+other keys, and Dharma's key is the only fully valid key
+that has been used to sign Francis's key.
+When marginal trust in Blake is added, Chloe's key becomes
+fully valid and can then be used to fully validate Francis's
+key and marginally validate Elena's key.
+Lastly, when Blake, Chloe, and Elena are fully trusted, this is
+still insufficient to validate Geoff's key since the maximum
+certification path is three, but the path length from Geoff
+back to Alice is four.
+</para>
+
+<para>
+The web of trust model is a flexible approach to the problem of safe
+public key exchange.
+It permits you to tune &gnupg; to reflect how you use it.
+At one extreme you may insist on multiple, short paths from your
+<!-- HERE, math -->
+key to another key <emphasis>K</emphasis> in order to trust it.
+On the other hand, you may be satisfied with longer paths and
+<!-- HERE, math -->
+perhaps as little as one path from your key to the other 
+key <emphasis>K</emphasis>.
+<!-- HERE, math -->
+Requiring multiple, short paths is a strong guarantee 
+that <emphasis>K</emphasis> belongs to whom your think it does.
+The price, of course, is that it is more difficult to validate keys
+since you must personally sign more keys than if you accepted fewer
+and longer paths.
+</para>
+
+<figure id="wot-examples" float=1>
+<title>
+A hypothetical web of trust
+</title>
+<!--
+The graph indicates who has signed who's keys.
+The table, in which names have been abbreviated, shows which keys are 
+valid depending on how Alice trusts other members in the web.
+Alice considers different keys valid depending on how she trusts
+the members of the web.
+-->
+
+<graphic fileref="signatures.jpg"></graphic>
+
+<informaltable frame="all">
+<tgroup cols="4" rowsep="1" colsep="1">
+<colspec colname="one" colnum="1">
+<colspec colname="two" colnum="2">
+<colspec colname="three" colnum="3">
+<colspec colname="four" colnum="4">
+<spanspec spanname="lefthalf" namest="one" nameend="two" align="center">
+<spanspec spanname="righthalf" namest="three" nameend="four" align="center">
+
+<thead>
+<colspec
+<row>
+<entry spanname="lefthalf">trust</entry>
+<entry spanname="righthalf">validity</entry>
+</row>
+<row>
+<entry align="center">marginal</entry>
+<entry align="center">full</entry>
+<entry align="center">marginal</entry>
+<entry align="center">full</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry></entry>
+<entry>Dharma</entry>
+<entry></entry>
+<entry>Blake, Chloe, Dharma, Francis</entry>
+</row>
+
+<row>
+<entry>Blake, Dharma</entry>
+<entry></entry>
+<entry>Francis</entry>
+<entry>Blake, Chloe, Dharma</entry>
+</row>
+
+<row>
+<entry>Chloe, Dharma</entry>
+<entry></entry>
+<entry>Chloe, Francis</entry>
+<entry>Blake, Dharma</entry>
+</row>
+
+<row>
+<entry>Blake, Chloe, Dharma</entry>
+<entry></entry>
+<entry>Elena</entry>
+<entry>Blake, Chloe, Dharma, Francis</entry>
+</row>
+
+<row>
+<entry></entry>
+<entry>Blake, Chloe, Elena</entry>
+<entry></entry>
+<entry>Blake, Chloe, Elena, Francis</entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+</figure>
+</sect2>
+</sect1>
+
+<sect1>
+<title>
+Distributing keys
+</title>
+
+<para>
+Ideally, you distribute your key by personally giving it to your
+correspondents.
+In practice, however, keys are often distributed by email or some
+other electronic communication medium.
+Distribution by email is good practice when you have only a few
+correspondents, and even if you have many correspondents, you can use
+an alternative means such as posting your public key on your World Wide
+Web homepage.
+This is unacceptable, however, if people who need your public key do
+not know where to find it on the Web.
+</para>
+
+<para>
+To solve this problem public key servers are used to collect
+and distribute public keys.
+A public key received by the server is either added to the server's
+database or merged with the existing key if already present.
+When a key request comes to the server, the server consults its
+database and returns the requested public key if found.
+</para>
+
+<para>
+A keyserver is also valuable when many people are frequently signing other
+people's keys.
+Without a keyserver, when Blake sign's Alice's key then Blake would send
+Alice a copy of her public key signed by him so that Alice could
+add the updated key to her ring as well as distribute it to all of her
+correspondents.
+Going through this effort fulfills Alice's and Blake's responsibility 
+to the community at large in building tight webs of trust and thus
+improving the security of PGP.
+It is nevertheless a nuisance if key signing is frequent.
+</para>
+
+<para>
+Using a keyserver makes the process somewhat easier.
+When Blake signs Alice's key he sends the signed key to the key server.
+The key server adds Blake's signature to its copy of Alice's key.
+Individuals interested in updating their copy of Alice's key then consult
+the keyserver on their own initiative to retrieve the updated key.
+Alice need never be involved with distribution and can retrieve signatures
+on her key simply by querying a keyserver.
+<comment><option>--keyserver</option> must come before
+<option>--send-key</option> or <option>--recv-key</option>.  
+This appears to be a bug.</comment>
+</para>
+
+<para>
+One or more keys may be sent to a keyserver using the command-line
+option <link linkend="send-keys"><option>--send-keys</option></link>.
+The option takes one or more key specifiers and sends the specified
+keys to the key server.
+The key server to which to send the keys is specified with the
+command-line option <link linkend="keyserver"><option>--keyserver</option></link>.
+Similarly, the option 
+<link linkend="recv-keys"><option>--recv-keys</option></link> is used 
+to retrieve keys from a keyserver, but the option <option>--recv-keys</option>
+requires a key ID be used to specify the key.
+In the following example Alice sends her public key to the keyserver
+<parameter>certserver.pgp.com</parameter> and then updates her copy 
+of Blake's key from the same keyserver.
+
+<screen width="80">
+<prompt>alice%</prompt> <userinput>gpg --keyserver certserver.pgp.com --recv-key 0xBB7576AC</userinput>
+gpg: requesting key BB7576AC from certserver.pgp.com ...
+gpg: key BB7576AC: 1 new signature
+
+gpg: Total number processed: 1
+gpg:         new signatures: 1
+<prompt>alice%</prompt> <userinput>gpg --keyserver certserver.pgp.com --send-key blake@cyb.org</userinput>
+gpg: success sending to 'certserver.pgp.com' (status=200)
+</screen>
+
+There are several popular keyservers in use around the world.
+The major keyservers synchronize themselves, so it is fine to
+pick a keyserver close to you on the Internet and then use it
+regularly for sending and receiving keys.
+</para>
+</sect1>
+
+</chapter>
+

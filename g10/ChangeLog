@@ -1,3 +1,9 @@
+Mon Sep  6 19:59:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* tdbio.c (tdbio_set_dbname): Use mkdir macro
+	* ringedit.c (add_keyblock_resource): Ditto.
+
 Fri Sep  3 10:04:45 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -1,34 +1,11 @@
-# This is a sample option file
-#
-# Unless you you specify which option file to use with the
-# commandline option "--options filename", gpg uses the
-# file ~/.gnupg/options by default.
-#
-# An option file can contain all long options which are
-# available in GNUPG. If the first non white space character of
-# a line is a '#', this line is ignored.  Empty lines are also
-# ignored.
-#
-# Here is a list of all possible options. Not of all them make
-# sense in an option file; consider this as a complete option
-# reference. Before the options you find a list of commands.
+# Some notes used by the maintainers
 
-
-#-----------------------------------------------
-#------------------- Commands ------------------
-#-----------------------------------------------
-# With some exceptions, these cannot be combined
 
 store
 # simply packs the input data into a rfc1991 packet format
 
 check-trustdb
 
-
-
-#-----------------------------------------------
-#--- options
-#-----------------------------------------------
 
 compress-keys
 # compress exported key, compress level is still set with "-z" and

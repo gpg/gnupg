@@ -1737,7 +1737,7 @@ menu_revsig( KBNODE keyblock )
     int rc, any;
 
     /* FIXME: detect duplicates here  */
-    tty_printf("You have signed these user IDs:\n");
+    tty_printf(_("You have signed these user IDs:\n"));
     for( node = keyblock; node; node = node->next ) {
 	node->flag &= ~(NODFLG_SELSIG | NODFLG_MARK_A);
 	if( node->pkt->pkttype == PKT_USER_ID ) {
@@ -1751,12 +1751,12 @@ menu_revsig( KBNODE keyblock )
 		&& ((sig = node->pkt->pkt.signature),
 		     !seckey_available( sig->keyid )  ) ) {
 	    if( (sig->sig_class&~3) == 0x10 ) {
-		tty_printf("   signed by %08lX at %s\n",
+		tty_printf(_("   signed by %08lX at %s\n"),
 			    sig->keyid[1], datestr_from_sig(sig) );
 		node->flag |= NODFLG_SELSIG;
 	    }
 	    else if( sig->sig_class == 0x30 ) {
-		tty_printf("   revoked by %08lX at %s\n",
+		tty_printf(_("   revoked by %08lX at %s\n"),
 			    sig->keyid[1], datestr_from_sig(sig) );
 	    }
 	}
@@ -1776,7 +1776,7 @@ menu_revsig( KBNODE keyblock )
 	    continue;
 	if( !any ) {
 	    any = 1;
-	    tty_printf("You are about to revoke these signatures:\n");
+	    tty_printf(_("You are about to revoke these signatures:\n"));
 	}
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
@@ -1786,7 +1786,7 @@ menu_revsig( KBNODE keyblock )
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {
 	    sig = node->pkt->pkt.signature;
-	    tty_printf("   signed by %08lX at %s\n",
+	    tty_printf(_("   signed by %08lX at %s\n"),
 			    sig->keyid[1], datestr_from_sig(sig) );
 	}
     }
