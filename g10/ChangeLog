@@ -1,3 +1,18 @@
+2003-10-25  David Shaw  <dshaw@jabberwocky.com>
+
+	* mainproc.c (symkey_decrypt_sesskey): There is no way to tell the
+	difference here between a bad passphrase and a cipher algorithm
+	that we don't have, so use a error message that makes that clear.
+	Use the actual list of ciphers when checking whether a cipher is
+	invalid.  Return error if the decrypted cipher algorithm is
+	invalid.
+	(proc_symkey_enc): In a mixed passphrase/pk message, if a valid
+	dek already exists from decrypting via pk, do not try to process
+	the passphrase.
+	(proc_symkey_enc): Indicate when we're decrypting a session key as
+	opposed to decrypting data.  If a passphrase is invalid, discard
+	the dek so we'll keep trying.
+
 2003-10-16  David Shaw  <dshaw@jabberwocky.com>
 
 	* g10.c (main): Fix --export-all do actually do something
