@@ -489,3 +489,5 @@ Changes in 0.3:
 - use Z_FINISH instead of deflateEnd to finish compression.
 - added Z_HUFFMAN_ONLY
 - added gzerror()
+
+

@@ -1,5 +1,5 @@
-/* hkp.h  -  Horrowitz Keyserver Protocol
- *	Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+/* hkp.h  -  Horowitz Keyserver Protocol
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

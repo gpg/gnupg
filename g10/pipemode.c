@@ -1,5 +1,5 @@
 /* pipemode.c - pipemode handler
- *	Copyright (C) 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1990, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *

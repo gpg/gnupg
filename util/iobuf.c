@@ -45,7 +45,8 @@
 
 #ifdef FILE_FILTER_USES_STDIO
  #define my_fileno(a)  fileno ((a))
- #define my_fopen(a,b) fopen ((a),(b))
+ #define my_fopen_ro(a,b) fopen ((a),(b))
+ #define my_fopen(a,b)    fopen ((a),(b))
  typedef FILE *FILEP_OR_FD;
  #define INVALID_FP    NULL
  #define FILEP_OR_FD_FOR_STDIN  (stdin)
@@ -57,6 +58,7 @@
  } file_filter_ctx_t ;
 #else
  #define my_fileno(a)  (a)
+ #define my_fopen_ro(a,b) fd_cache_open ((a),(b)) 
  #define my_fopen(a,b) direct_open ((a),(b)) 
  #ifdef HAVE_DOSISH_SYSTEM
    typedef HANDLE FILEP_OR_FD;
@@ -76,6 +78,14 @@
      int  print_only_name; /* flags indicating that fname is not a real file*/
      char fname[1]; /* name of the file */
  } file_filter_ctx_t ;
+
+ struct close_cache_s { 
+    struct close_cache_s *next;
+    FILEP_OR_FD fp;
+    char fname[1];
+ };
+ typedef struct close_cache_s *CLOSE_CACHE;
+ static CLOSE_CACHE close_cache;
 #endif
 
 
@@ -101,6 +111,33 @@ static int special_names_enabled;
 static int underflow(IOBUF a);
 
 #ifndef FILE_FILTER_USES_STDIO
+
+/*
+ * Invalidate (i.e. close) a cached iobuf
+ */
+static void
+fd_cache_invalidate (const char *fname)
+{
+    CLOSE_CACHE cc;
+
+    assert (fname);
+    if( DBG_IOBUF )
+        log_debug ("fd_cache_invalidate (%s)\n", fname);
+
+    for (cc=close_cache; cc; cc = cc->next ) {
+        if ( cc->fp != INVALID_FP && !strcmp (cc->fname, fname) ) {
+          #ifdef HAVE_DOSISH_SYSTEM
+            CloseHandle (cc->fp);
+          #else
+	    close(cc->fp);
+	  #endif
+            cc->fp = INVALID_FP;
+        }
+    }
+}
+
+
+
 static FILEP_OR_FD
 direct_open (const char *fname, const char *mode)
 {
@@ -115,11 +152,13 @@ direct_open (const char *fname, const char *mode)
      * something new for MS applications ;-)
      */
     if ( strchr (mode, '+') ) {
+        fd_cache_invalidate (fname);
         da = GENERIC_READ|GENERIC_WRITE;
         cd = OPEN_EXISTING;
         sm = FILE_SHARE_READ | FILE_SHARE_WRITE;
     }
     else if ( strchr (mode, 'w') ) {
+        fd_cache_invalidate (fname);
         da = GENERIC_WRITE;
         cd = CREATE_ALWAYS;
         sm = FILE_SHARE_WRITE;
@@ -137,15 +176,94 @@ direct_open (const char *fname, const char *mode)
     int cflag = S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH;
 
     /* Note, that we do not handle all mode combinations */
-    if ( strchr (mode, '+') )
+    if ( strchr (mode, '+') ) {
+        fd_cache_invalidate (fname);
         oflag = O_RDWR;
-    else if ( strchr (mode, 'w') )
+    }
+    else if ( strchr (mode, 'w') ) {
+        fd_cache_invalidate (fname);
         oflag = O_WRONLY | O_CREAT | O_TRUNC;
-    else
+    }
+    else {
         oflag = O_RDONLY;
+    }
     return open (fname, oflag, cflag );
 #endif
 }
+
+
+/*
+ * Instead of closing an FD we keep it open and cache it for later reuse 
+ * Note that this caching strategy only works if the process does not chdir.
+ */
+static void
+fd_cache_close (const char *fname, FILEP_OR_FD fp)
+{
+    CLOSE_CACHE cc;
+
+    assert (fp);
+    if ( !fname || !*fname ) {
+#ifdef HAVE_DOSISH_SYSTEM
+        CloseHandle (fp);
+#else
+        close(fp);
+#endif
+        if( DBG_IOBUF )
+            log_debug ("fd_cache_close (%s) immediately\n", fname);
+        return;
+    }
+    /* try to reuse a slot */
+    for (cc=close_cache; cc; cc = cc->next ) {
+        if ( cc->fp == INVALID_FP && !strcmp (cc->fname, fname) ) {
+            cc->fp = fp;
+        }
+    }
+    /* add a new one */
+    if( DBG_IOBUF )
+        log_debug ("fd_cache_close (%s) new\n", fname);
+    cc = m_alloc_clear (sizeof *cc + strlen (fname));
+    strcpy (cc->fname, fname);
+    cc->fp = fp;
+    cc->next = close_cache;
+    close_cache = cc;
+}
+
+/*
+ * Do an direct_open on FNAME but first try to reuse one from the fd_cache
+ */
+static FILEP_OR_FD
+fd_cache_open (const char *fname, const char *mode)
+{
+    CLOSE_CACHE cc;
+
+    assert (fname);
+    for (cc=close_cache; cc; cc = cc->next ) {
+        if ( cc->fp != INVALID_FP && !strcmp (cc->fname, fname) ) {
+            FILEP_OR_FD fp = cc->fp;
+            cc->fp = INVALID_FP;
+            if( DBG_IOBUF )
+                log_debug ("fd_cache_open (%s) hit\n", fname);
+          #ifdef HAVE_DOSISH_SYSTEM
+            if (SetFilePointer (fp, 0, NULL, FILE_BEGIN) == 0xffffffff ) {
+                log_error ("rewind file failed on handle %p: ec=%d\n",
+                           fp, (int)GetLastError () );
+                fp = INVALID_FP;
+            }
+          #else
+            if ( lseek (fp, 0, SEEK_SET) == (off_t)-1 ) {
+                log_error("can't rewind fd %d: %s\n", fp, strerror(errno) );
+                fp = INVALID_FP;
+            }
+          #endif
+            return fp;
+        }
+    }
+    if( DBG_IOBUF )
+        log_debug ("fd_cache_open (%s) miss\n", fname);
+    return direct_open (fname, mode);
+}
+
+
 #endif /*FILE_FILTER_USES_STDIO*/
 
 
@@ -334,13 +452,13 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
         if ( f != FILEP_OR_FD_FOR_STDIN && f != FILEP_OR_FD_FOR_STDOUT ) {
 	    if( DBG_IOBUF )
 		log_debug("%s: close handle %p\n", a->fname, f );
-            CloseHandle (f);
+            fd_cache_close (a->fname, f);
         }
       #else
 	if ( (int)f != 0 && (int)f != 1 ) {
 	    if( DBG_IOBUF )
 		log_debug("%s: close fd %d\n", a->fname, f );
-	    close(f);
+            fd_cache_close (a->fname, f);
 	}
 	f = INVALID_FP;
       #endif
@@ -825,7 +943,7 @@ iobuf_open( const char *fname )
     }
     else if ( (fd = check_special_filename ( fname )) != -1 )
         return iobuf_fdopen ( iobuf_translate_file_handle (fd,0), "rb" );
-    else if( (fp = my_fopen(fname, "rb")) == INVALID_FP )
+    else if( (fp = my_fopen_ro(fname, "rb")) == INVALID_FP )
 	return NULL;
     a = iobuf_alloc(1, 8192 );
     fcx = m_alloc( sizeof *fcx + strlen(fname) );

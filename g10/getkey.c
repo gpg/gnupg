@@ -1,5 +1,5 @@
 /* getkey.c -  Get a key from the database
- *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,12 +35,10 @@
 #include "i18n.h"
 
 
-#if 0
 #define MAX_UNK_CACHE_ENTRIES 1000   /* we use a linked list - so I guess
 				      * this is a reasonable limit */
-#define MAX_PK_CACHE_ENTRIES	50
-#endif
-#define MAX_UID_CACHE_ENTRIES	50
+#define MAX_PK_CACHE_ENTRIES   200
+#define MAX_UID_CACHE_ENTRIES  200
 
 /* A map of the all characters valid used for word_match()
  * Valid characters are in in this table converted to uppercase.
@@ -189,7 +187,7 @@ cache_public_key( PKT_public_key *pk )
 	return;
 
     if( is_ELGAMAL(pk->pubkey_algo)
-	|| pk->pubkey_algo == GCRY_PK_DSA
+	|| pk->pubkey_algo == PUBKEY_ALGO_DSA
 	|| is_RSA(pk->pubkey_algo) ) {
 	keyid_from_pk( pk, keyid );
     }

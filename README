@@ -3,6 +3,19 @@
 		   -------------------------------
 			    Version 1.0
 
+    Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+    This file is free software; as a special exception the author gives
+    unlimited permission to copy and/or distribute it, with or without
+    modifications, as long as this notice is preserved.
+
+    This file is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+    Intro
+    -----
+
     GnuPG is GNU's tool for secure communication and data storage.
     It can be used to encrypt data and to create digital signatures.
     It includes an advanced key management facility and is compliant

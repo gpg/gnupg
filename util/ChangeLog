@@ -1,3 +1,13 @@
+2001-03-08  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (default_strusage): Changed year of printed copyright
+	to 2001.
+
+	* iobuf.c (fd_cache_invalidate, fd_cache_close, fd_cache_open): New. 
+	(direct_open): Invalidate the fd_cache for read access.
+	(file_filter): Cache the close here.
+	(iobuf_open): Use new my_fopen_ro macro to try the cache first.
+
 2001-03-07  Werner Koch  <wk@gnupg.org>
 
 	* iobuf.c: Made the old stdio file handling cpp conditional
@@ -604,5 +614,17 @@ Fri Feb 13 17:13:04 1998  Werner Koch  (wk@isil.d.shuttle.de)
 Fri Feb 13 15:14:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* argparse.c (show_help): New '\v' kludge.
+
+
+
+ Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 

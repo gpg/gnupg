@@ -1,3 +1,7 @@
+2001-03-08  Werner Koch  <wk@gnupg.org>
+
+	Added copyright and license notices to some more files.
+
 2001-01-18  Werner Koch  <wk@gnupg.org>
 
 	* configure.in: Removed tool definitions for MingW32
@@ -582,4 +586,16 @@ Fri Feb 13 19:43:41 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* configure.in : Fixed zlib stuff
 	* Makefile.am: Likewise
+
+
+ Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
 
