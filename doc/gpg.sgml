@@ -2416,6 +2416,12 @@ arguments.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--no-groups</term>
+<listitem><para>
+Clear the --group list.
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--preserve-permissions</term>
 <listitem><para>
 Don't change the permissions of a secret keyring back to user

@@ -1,7 +1,13 @@
+2003-10-01  David Shaw  <dshaw@jabberwocky.com>
+
+	* samplekeys.asc: Update 99242560.
+
+	* gpg.sgml: Document --no-groups.
+
 2003-09-30  David Shaw  <dshaw@jabberwocky.com>
 
-	* gpg.sgml: Note web bug behavior of auto-key-retrieve.  Note that
-	big photos mean big keys.  Document --rfc2440.  Document
+	* gpg.sgml: Note web bug like behavior of auto-key-retrieve.  Note
+	that big photos mean big keys.  Document --rfc2440.  Document
 	verify-option show-unusable-uids.
 
 	* gpg.sgml: Clarify --mangle-dos-filenames, document list-option
