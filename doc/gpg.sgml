@@ -498,6 +498,13 @@ GnuPG does not select keys via attribute user IDs so these preferences
 will not be used by GnuPG.
 </para></listitem></varlistentry>
     <varlistentry>
+    <term>keyserver</term>
+    <listitem><para>
+Set a preferred keyserver for the specified user ID(s).  This allows
+other users to know where you prefer they get your key from.  See
+--keyserver-option honor-keyserver-url.
+</para></listitem></varlistentry>
+    <varlistentry>
     <term>toggle</term>
     <listitem><para>
 Toggle between public and secret key listing.</para></listitem></varlistentry>
@@ -657,7 +664,8 @@ Request updates from a keyserver for keys that already exist on the
 local keyring.  This is useful for updating a key with the latest
 signatures, user IDs, etc.  Calling this with no arguments will
 refresh the entire keyring.  Option --keyserver must be used to give
-the name of this keyserver.
+the name of the keyserver for all keys that do not have preferred
+keyservers set (see --keyserver-option honor-keyserver-url).
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1127,6 +1135,16 @@ Identical to `--trust-model always'.  This option is deprecated.
 
 
 <varlistentry>
+<term>--keyid-format <parameter>short|0xshort|long|0xlong</parameter></term>
+<listitem><para>
+Select how to display key IDs.  "short" is the traditional 8-character
+key ID.  "long" is the more accurate (but less convenient)
+16-character key ID.  Add an "0x" to either to include an "0x" at the
+beginning of the key ID, as in 0x99242560.
+</para></listitem></varlistentry>
+
+
+<varlistentry>
 <term>--keyserver &ParmName;</term>
 <listitem><para>
 Use &ParmName; as your keyserver.  This is the server that
@@ -1171,6 +1189,14 @@ differentiate between revoked and unrevoked keys.
 When searching for a key with --search-keys, include keys that are
 marked on the keyserver as disabled.  Note that this option is not
 used with HKP keyservers.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>honor-keyserver-url</term>
+<listitem><para>
+When using --refresh-keys, if the key in question has a preferred
+keyserver set, then use that preferred keyserver to refresh the key
+from.  Defaults to yes.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1329,9 +1355,11 @@ Defaults to no.
 
 <varlistentry>
 <term>show-notations</term>
+<term>show-std-notations</term>
+<term>show-user-notations</term>
 <listitem><para>
-Show signature notations in the --list-sigs or --check-sigs listings.
-Defaults to no.
+Show all, IETF standard, or user-defined signature notations in the
+--list-sigs or --check-sigs listings.  Defaults to no.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1407,9 +1435,11 @@ Show policy URLs in the signature being verified.  Defaults to no.
 
 <varlistentry>
 <term>show-notations</term>
+<term>show-std-notations</term>
+<term>show-user-notations</term>
 <listitem><para>
-Show signature notations in the signature being verified.  Defaults to
-no.
+Show all, IETF standard, or user-defined signature notations in the
+signature being verified.  Defaults to IETF standard.
 </para></listitem></varlistentry>
 
 <varlistentry>

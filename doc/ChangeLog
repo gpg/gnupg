@@ -1,3 +1,9 @@
+2004-05-21  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Document --edit-key "keyserver" command,
+	--keyid-format, --keyserver-option honor-keyserver-url, and --list
+	and --verify option show-std/user-notations.
+
 2004-05-19  David Shaw  <dshaw@jabberwocky.com>
 
 	* gpg.sgml: Clarify that --charset applies to informational
