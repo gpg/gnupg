@@ -2,7 +2,7 @@
       uses SHA-1 for integrity checks.  This format renders the
       Rosa/Klima attack useless.  Other OpenPGP implementations might
       not yet support this, so the option --simple-sk-checksum creates
-      the old vulnearbel format.
+      the old vulnerable format.
 
     * The default cipher algorithm for encryption is now CAST5,
       default default hash algorithm is SHA-1.  This will give us
@@ -13,9 +13,41 @@
       6, and 7.  Note this was only an issue with RFC-1991 style
       symmetric messages.
 
-    * A lot of new features like photo ID support, better keyserver
-      support, non-revcable signatures and more things we need to list
-      here.
+    * Photographic user ID support.  This uses an external program to
+      view the images.
+
+    * Enhanced keyserver support via keyserver "plugins".  GnuPG comes
+      with plugins for the NAI LDAP keyserver as well as the HKP email
+      keyserver.  It retains internal support for the HKP HTTP
+      keyserver.
+
+    * Nonrevocable signatures are now supported.  If a user signs a
+      key nonrevocably, this signature cannot be taken back so be
+      careful!
+
+    * Multiple signature classes are usable when signing a key to
+      specify how carefully the key information (fingerprint, photo
+      ID, etc) was checked.
+
+    * --pgp2 mode automatically sets all necessary options to ensure
+      that the resulting message will be usable by a user of PGP 2.x.
+
+    * --pgp6 mode automatically sets all necessary options to ensure
+      that the resulting message will be usable by a user of PGP 6.x.
+
+    * Signatures may now be given an expiration date.  When signing a
+      key with an expiration date, the user is prompted whether they
+      want their signature to expire at the same time.
+
+    * Revocation keys (designated revokers) are now supported if
+      present.  There is currently no way to designate new keys as
+      designated revokers.
+
+    * Permissions on the .gnupg directory and its files are checked
+      for safety.
+
+    * --expert mode enables certain silly things such as signing a
+      revoked user id, expired key, or revoked key.
 
     * Some fixes to build cleanly under Cygwin32.
 
