@@ -2,7 +2,12 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			   Version 0.9.10
+			   Version 0.9.11
+
+    GnuPG is a tool for secure communication and data storage.	It
+    can be used to encrypt data and to create digital signatures.
+    It includes an advanced key management facility and is compliant
+    to the proposed OpenPGP Internet standard as described in RFC2440.
 
     GnuPG is now in Beta test and you should report all bugs to the
     mailing list (see below).  The 0.9.x versions are released mainly
@@ -15,9 +20,6 @@
 
     See the file COPYING for copyright and warranty information.
 
-    GnuPG is in compliance with RFC2440 (OpenPGP), see doc/OpenPGP for
-    details.
-
     Because GnuPG does not use use any patented algorithm it cannot be
     compatible with PGP2 versions.  PGP 2.x uses only IDEA (which is
     patented worldwide) and RSA (which is patented in the United States
@@ -28,7 +30,7 @@
     signatures it is deprecated (Please note that the GnuPG
     implementation of ElGamal signatures is *not* insecure).  Symmetric
     algorithms are: 3DES, Blowfish, CAST5 and Twofish (GnuPG does not
-    yet create Twofish encrypted messages because there no agreement
+    yet create Twofish encrypted messages because there is no agreement
     in the OpenPGP WG on how to use it together with a MDC algorithm)
     Digest algorithms available are MD5, RIPEMD160, SHA1, and TIGER/192.
 
@@ -133,12 +135,16 @@
        published via the announcement list and probably via Usenet.
 
 
-
     Introduction
     ------------
 
-    This is a brief overview how to use GnuPG - it is strongly suggested
-    that you read the manual^H^H^H more information about the use of
+    A draft version of the manual is included in the subdirectory doc
+    and some HOWTO documents are available online; dor a listing see:
+
+	http://www.gnupg.org/docs.html#howtos
+
+    Here is a brief overview on how to use GnuPG - it is strongly suggested
+    that you read the manual and other information about the use of
     cryptography.  GnuPG is only a tool, secure results require that YOU
     KNOW WHAT YOU ARE DOING.
 
@@ -510,19 +516,18 @@
     Please direct bug reports to <gnupg-bugs@gnu.org> or post
     them direct to the mailing list <gnupg-devel@gnupg.org>.
     Please direct questions about GnuPG to the users mailing list or
-    one of the pgp newsgroups and give me more time to improve
+    one of the pgp newsgroups to give me more time to improve
     GnuPG.  Commercial support for GnuPG is also available; please
     see the GNU service directory or search other resources.
 
     Have fun and remember: Echelon is looking at you kid.
 
-- -----END PGP SIGNATURE-----
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v0.9.9 (GNU/Linux)
+Version: GnuPG v0.9.10 (GNU/Linux)
 Comment: For info see http://www.gnupg.org
 
-iQB1AwUBN6figR0Z9MEMmFelAQHydwL+LuKC3W6kRkm0clwab3v8I7zlX0bagxzA
-RStlHXdO6ln1Mo3s3nBuCfrS6LogiUgNRFhNJQ5+rjrTydz00nzcorbyTalqvMlq
-Gnsu9Pd/pTPzvk6kP79yDdoBxfaQGcgw
-=W8uz
+iQB1AwUBN86L1h0Z9MEMmFelAQFQlQL/S5jDPpDFI3wDG/soA/qMTR79YX1IXDz9
+Izin49GkPHElRCoNbT3r3+T6V+lNtrZpah6JBR30//yo1OGUyoJ88yn3KC0JdtUq
+NgJzX3yYUXD+Ojer+WHEL+O8D8qkZrAX
+=wiUu
 -----END PGP SIGNATURE-----

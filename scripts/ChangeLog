@@ -1,3 +1,9 @@
+Thu Sep  2 16:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* mkdiff: changed format of diff file name and made script more
+	general.
+
 Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

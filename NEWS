@@ -1,11 +1,12 @@
-Noteworthy changes in version 0.9.xx
+Noteworthy changes in version 0.9.11
 ------------------------------------
 
     * UTF-8 strings are now correctly printed (if --charset is set correctly).
-      Output of --with-colons is remains C-style escaped UTF8.
+      Output of --with-colons remains C-style escaped UTF-8.
 
     * Workaround for a problem with PGP 5 detached signature in textmode.
 
+    * Fixed a problem when importing new subkeys (duplicated signatures).
 
 Noteworthy changes in version 0.9.10
 ------------------------------------

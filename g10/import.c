@@ -1052,30 +1052,6 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	}
     }
 
-    /* merge subkey certificates */
-    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
-	if( !(onode->flag & 1)
-	    &&	(   onode->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		 || onode->pkt->pkttype == PKT_SECRET_SUBKEY) ) {
-	    /* find the subkey in the imported keyblock */
-	    for(node=keyblock->next; node; node=node->next ) {
-		if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		    && !cmp_public_keys( onode->pkt->pkt.public_key,
-					  node->pkt->pkt.public_key ) )
-		    break;
-		else if( node->pkt->pkttype == PKT_SECRET_SUBKEY
-		    && !cmp_secret_keys( onode->pkt->pkt.secret_key,
-					  node->pkt->pkt.secret_key ) )
-		    break;
-	    }
-	    if( node ) { /* found: merge */
-		rc = merge_keysigs( onode, node, n_sigs, fname, keyid );
-		if( rc )
-		    return rc;
-	    }
-	}
-    }
-
     /*	add new subkeys */
     for(node=keyblock->next; node; node=node->next ) {
 	onode = NULL;
@@ -1108,6 +1084,31 @@ merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
 	    }
 	}
     }
+
+    /* merge subkey certificates */
+    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
+	if( !(onode->flag & 1)
+	    &&	(   onode->pkt->pkttype == PKT_PUBLIC_SUBKEY
+		 || onode->pkt->pkttype == PKT_SECRET_SUBKEY) ) {
+	    /* find the subkey in the imported keyblock */
+	    for(node=keyblock->next; node; node=node->next ) {
+		if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+		    && !cmp_public_keys( onode->pkt->pkt.public_key,
+					  node->pkt->pkt.public_key ) )
+		    break;
+		else if( node->pkt->pkttype == PKT_SECRET_SUBKEY
+		    && !cmp_secret_keys( onode->pkt->pkt.secret_key,
+					  node->pkt->pkt.secret_key ) )
+		    break;
+	    }
+	    if( node ) { /* found: merge */
+		rc = merge_keysigs( onode, node, n_sigs, fname, keyid );
+		if( rc )
+		    return rc;
+	    }
+	}
+    }
+
 
     return 0;
 }
@@ -1188,6 +1189,9 @@ merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
     for(n=src->next; n && n->pkt->pkttype != PKT_USER_ID; n = n->next ) {
 	if( n->pkt->pkttype != PKT_SIGNATURE )
 	    continue;
+	if( n->pkt->pkt.signature->sig_class == 0x18
+	    || n->pkt->pkt.signature->sig_class == 0x28 )
+	    continue; /* skip signatures which are only valid on subkeys */
 	found = 0;
 	for(n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next){
 	    if( n2->pkt->pkttype == PKT_SIGNATURE

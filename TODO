@@ -8,14 +8,19 @@ Scheduled for 1.1
 
   * Allow a replacement for the progress functions in ./cipher
 
-  * add an option to use an OpenPGP packet as input (and don't build a literal
-    data packet)
-
   * print a warning when a revoked/expired _secret_ key is used.
 
   * --disable-asm should still assemble _udiv_qrnnd when needed
 
   * Skip RO keyrings when importing a key.
+
+  * Use the newest encryption key if only the main key has been given.
+
+  * replace the keyserver stuff either by a call to a specialized
+    utility and SOCKSify this utility.
+
+  * Check the beginning of file to detect already compressed files (gzip,
+    bzip2, xdelta and some picture formats)
 
 
 Nice to have
@@ -24,8 +29,6 @@ Nice to have
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
     or better readline.
   * Print a warning if the directory mode is wrong.
-  * replace the keyserver stuff either by a call to a specialized
-    utility and SOCKSify this utility.
   * Do a real fix for bug #7 or document that it is a PGP 5 error.
   * preferences of hash algorithms are not yet used.
   * Replace the SIGUSR1 stuff by semaphores to avoid loss of a signal.
@@ -43,8 +46,6 @@ Nice to have
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.
   * configure option where to find zlib
-  * Check the beginning of file to detect already compressed files (gzip,
-    bzip2, xdelta and some picture formats)
   * Display more validity information about the user IDs at certain places.
     We need a more general function to extract such kind of info from the
     trustdb.

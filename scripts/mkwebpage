@@ -1,7 +1,5 @@
 #!/bin/sh
 # Make a snapshot of the CVS head revision for the gnupg webpages
-# and put them into the FTP directory (so that the mirrors w/o rsync
-# can access them
 
 
 set -e
@@ -98,9 +96,9 @@ EOF
 
 do_export gnupg-www gnupg-www
 
-cd gnupg-www
-tar czf /home/ftp/pub/gcrypt/old/webpages.tmp *
-mv /home/ftp/pub/gcrypt/old/webpages.tmp /home/ftp/pub/gcrypt/old/webpages.tar.gz
+#cd gnupg-www
+#tar czf /home/ftp/pub/gcrypt/.old/webpages.tmp *
+#mv /home/ftp/pub/gcrypt/old/webpages.tmp /home/ftp/pub/gcrypt/old/webpages.tar.gz
 
 
 exit 0

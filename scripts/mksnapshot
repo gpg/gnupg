@@ -1,7 +1,9 @@
 #!/bin/sh
 # Make a snapshot of the CVS head revision
-#  Fixme: we should either run autoconf here or make a real distribution
 
+exec >>/home/koch/mksnapshot.log 2>&1
+
+echo "Started at `date`."
 set -e
 
 ftp_dir=$1
@@ -29,11 +31,21 @@ EOF
 
 build_dist () {
     set +e
-    nice scripts/autogen.sh && nice ./configure && nice make dist 
-    rm $ftp_dir/gnupg-*snap*-*-*.tar.gz
-    mv gnupg-*.tar.gz $ftp_dir/
+    nice scripts/autogen.sh && nice ./configure && nice make dist
+    if ! awk '
+/^diff gnupg-snapshot\/VERSION/  { getline; getline; getline; getline; next }
+/^Common subdirectories:/   { next }
+/~$/	{ next }
+{ exit 1 }
+'      ; then
+	# Okay, we have some changes and it is not only the version number
+	rm $ftp_dir/gnupg-*snap*-*-*.tar.gz
+	mv gnupg-*.tar.gz $ftp_dir/
+    fi
+    make distclean
     set -e
 }
+
 
 
 do_export () {
@@ -46,8 +58,8 @@ do_export () {
     fix_version $pgm.new
     if [ -n "$ftp_dir" ]; then
       here=$(pwd)
-      cd $pgm.new    
-      build_dist 
+      cd $pgm.new
+      build_dist
       cd $here
     fi
     [ -d $pgm ] && mv $pgm $pgm.old
@@ -62,6 +74,6 @@ do_export () {
 
 do_export gnupg-snapshot gnupg
 
-
+echo "Ended at `date`."
 exit 0
 

@@ -1,16 +1,18 @@
-Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Thu Sep  2 16:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+
+	* VERSION: Set to 0.9.11.
+
+Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* configure.in: Minor changes to the OS/2 and Mingw32 system labels.
 	Add a printable name for Hurd.
 
 Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
-
 	* configure.in: Some support for DJGPP (Mark Elbrecht)
 
 Wed Aug  4 10:34:46 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* VERSION: Set to 0.9.10.
 

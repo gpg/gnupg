@@ -1,11 +1,16 @@
-Wed Sep  1 15:30:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Thu Sep  2 16:40:55 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
+
+	* import.c (merge_blocks): First add new subkeys, then merge subkey
+	certificates.
+	(merge_sigs): Don't merge subkey signatures here.
+
+Wed Sep  1 15:30:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* keygen.c (ask_expire_interval): Fixed bug related to cpr_xx (tnx
 	Francis J. Lacoste).
 
 Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* plaintext.c (do_hash): Hash CR,LF for a single CR.
 	(ask_for_detached_datafile): Changed arguments to be closer to
