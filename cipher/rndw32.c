@@ -53,6 +53,17 @@
 #define PCP_DLL_FUNC		8
 #define PCP_UNKNOWN_SEEDER_TYPE 9
 
+
+/****************
+ * We sometimes get a SEEDER_TOO_SMALL error, in which case we increment
+ * the internal buffer by SEEDER_INC_CHUNK until we reach MAX_SEEDER_SIZE
+ * MAX_SEEDER_SIZE is used as an arbitrary limit to protect against
+ * bugs in Winseed.
+ */
+#define MAX_SEEDER_SIZE  500000
+#define SEEDER_INC_CHUNK  50000
+
+
 typedef void *WIN32_SEEDER;
 
 static WIN32_SEEDER (WINAPI *create_instance)( byte type, unsigned int *reason);
@@ -172,6 +183,25 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     for(;;) {
 	nbytes = entropy_buffer_size;
 	result = get_seed( slow_seeder, entropy_buffer, &nbytes);
+	if( result == PCP_SEEDER_TOO_SMALL ) {
+	    unsigned int n1 = get_internal_seed_size( slow_seeder );
+
+	    if( n1 > MAX_SEEDER_SIZE ) {
+		g10_log_fatal("rndw32: internal seeder problem (size=%u)\n",
+									  n1);
+		return -1; /* actually never reached */
+	    }
+	    n1 += SEEDER_INC_CHUNK;
+	    set_internal_seed_size( slow_seeder, n1 );
+	    if( n1 > entropy_buffer_size ) {
+		entropy_buffer_size =  n1;
+		entropy_buffer = m_realloc( entropy_buffer,
+					    entropy_buffer_size );
+	    }
+	    continue;
+	}
+
+
 	if( result ) {
 	    g10_log_fatal("rndw32: get_seed(slow) failed: rc=%u\n", result);
 	    return -1; /* actually never reached */

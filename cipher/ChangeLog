@@ -1,3 +1,7 @@
+Mon Oct 11 09:24:12 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* rndw32.c (gather_random): Handle PCP_SEEDER_TOO_SMALL.
+
 Sat Oct  9 20:34:41 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* Makefile.am:	Tweaked module build and removed libtool
