@@ -82,7 +82,7 @@ typedef enum {
   ASSUAN_Not_Confirmed = 128,
 
   ASSUAN_Bad_Certificate = 201,
-  ASSUAN_Bad_Certificate_Path = 202,
+  ASSUAN_Bad_Certificate_Chain = 202,
   ASSUAN_Missing_Certificate = 203,
   ASSUAN_Bad_Signature = 204,
   ASSUAN_No_Agent = 205,

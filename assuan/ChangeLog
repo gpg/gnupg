@@ -1,3 +1,7 @@
+2002-08-16  Werner Koch  <wk@gnupg.org>
+
+	* assuan.h: Renamed Bad_Certificate_Path to Bad_Certificate_Chain.
+
 2002-07-30  Werner Koch  <wk@gnupg.org>
 
 	Changed the license from GPL to LGPL.
