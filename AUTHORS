@@ -57,15 +57,15 @@ Yosiaki IIDA <iida@secom.ne.jp> Translations [ja]
 Other legal information
 =======================
 
-Natural Resources Canada disclaims changes by Matthew Skala.
-
 This program uses the zlib compression library written by
 Jean-loup Gailly and Mark Adler.
 
 Most of the stuff in mpi has been taken from the GMP library by
 Torbjorn Granlund <tege@noisy.tmg.se>.
 
-The keybox implementation is based on GDBM 1.7.3 by Philip A. Nelson.
+The Rijndael implementation (cipher/rijndael.c) is based on the 
+public domain reference code provided for the AES selection process.
+The Rijndael algorithm is due to Joan Daemen and Vincent Rijmen. 
 
 The files cipher/rndunix.c and cipher/rndw32.c are based on rndunix.c
 and rndwin32.c from cryptlib.
@@ -76,4 +76,3 @@ for GnuPG.
 
 The RPM specs file scripts/gnupg.spec has been contributed by
 several people.
-
