@@ -39,7 +39,7 @@
 #include "i18n.h"
 #include "status.h"
 
-static int encode_simple( const char *filename, int mode, int compat );
+static int encode_simple( const char *filename, int mode, int use_seskey );
 static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 
 
@@ -51,17 +51,7 @@ static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out );
 int
 encode_symmetric( const char *filename )
 {
-    int compat = 1;
-
-#if 0    
-    /* We don't want to use it because older gnupg version can't
-       handle it and we can presume that a lot of scripts are running
-       with the expert mode set.  Some time in the future we might
-       want to allow for it. */
-    if ( opt.expert )
-        compat = 0; /* PGP knows how to handle this mode. */
-#endif
-    return encode_simple( filename, 1, compat );
+    return encode_simple( filename, 1, 0 );
 }
 
 /****************
@@ -71,7 +61,7 @@ encode_symmetric( const char *filename )
 int
 encode_store( const char *filename )
 {
-    return encode_simple( filename, 0, 1 );
+    return encode_simple( filename, 0, 0 );
 }
 
 static void
@@ -81,7 +71,7 @@ encode_sesskey( DEK *dek, DEK **ret_dek, byte *enckey )
     DEK *c;
     byte buf[33];
 
-    assert ( dek->keylen < 32 );
+    assert ( dek->keylen <= 32 );
     
     c = m_alloc_clear( sizeof *c );
     c->keylen = dek->keylen;
@@ -153,8 +143,12 @@ use_mdc(PK_LIST pk_list,int algo)
   return 0; /* No MDC */
 }
 
+/* We don't want to use use_seskey yet because older gnupg versions
+   can't handle it, and there isn't really any point unless we're
+   making a message that can be decrypted by a public key or
+   passphrase. */
 static int
-encode_simple( const char *filename, int mode, int compat )
+encode_simple( const char *filename, int mode, int use_seskey )
 {
     IOBUF inp, out;
     PACKET pkt;
@@ -193,8 +187,8 @@ encode_simple( const char *filename, int mode, int compat )
     /* Due the the fact that we use don't use an IV to encrypt the
        session key we can't use the new mode with RFC1991 because
        it has no S2K salt. RFC1991 always uses simple S2K. */
-    if ( RFC1991 && !compat )
-        compat = 1;
+    if ( RFC1991 && use_seskey )
+        use_seskey = 0;
     
     cfx.dek = NULL;
     if( mode ) {
@@ -212,14 +206,14 @@ encode_simple( const char *filename, int mode, int compat )
 	    log_error(_("error creating passphrase: %s\n"), g10_errstr(rc) );
 	    return rc;
 	}
-        if (!compat && s2k->mode != 1 && s2k->mode != 3) {
-            compat = 1;
+        if (use_seskey && s2k->mode != 1 && s2k->mode != 3) {
+            use_seskey = 0;
             log_info (_("can't use a symmetric ESK packet "
                         "due to the S2K mode\n"));
         }
 
-        if ( !compat ) {            
-            seskeylen = cipher_get_keylen( default_cipher_algo() ) / 8;
+        if ( use_seskey ) {            
+            seskeylen = cipher_get_keylen( opt.s2k_cipher_algo ) / 8;
             encode_sesskey( cfx.dek, &dek, enckey );
             m_free( cfx.dek ); cfx.dek = dek;
         }
@@ -257,7 +251,7 @@ encode_simple( const char *filename, int mode, int compat )
 	enc->version = 4;
 	enc->cipher_algo = cfx.dek->algo;
 	enc->s2k = *s2k;
-        if ( !compat && seskeylen ) {
+        if ( use_seskey && seskeylen ) {
             enc->seskeylen = seskeylen + 1; /* algo id */
             memcpy( enc->seskey, enckey, seskeylen + 1 );
         }

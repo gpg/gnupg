@@ -52,7 +52,9 @@
 #include "keyserver-internal.h"
 #include "exec.h"
 
-enum cmd_and_opt_values { aNull = 0,
+enum cmd_and_opt_values
+  {
+    aNull = 0,
     oArmor	  = 'a',
     aDetachedSign = 'b',
     aSym	  = 'c',
@@ -315,6 +317,7 @@ enum cmd_and_opt_values { aNull = 0,
     oLCctype,
     oLCmessages,
     oGroup,
+    oNoGroups,
     oStrict,
     oNoStrict,
     oMangleDosFilenames,
@@ -327,7 +330,8 @@ enum cmd_and_opt_values { aNull = 0,
     opcscDriver,
     oDisableCCID,
 
-aTest };
+    aTest
+  };
 
 
 static ARGPARSE_OPTS opts[] = {
@@ -630,6 +634,7 @@ static ARGPARSE_OPTS opts[] = {
     { oLCctype,    "lc-ctype",    2, "@" },
     { oLCmessages, "lc-messages", 2, "@" },
     { oGroup,      "group",       2, "@" },
+    { oNoGroups,   "no-groups",    0, "@" },
     { oStrict,     "strict",      0, "@" },
     { oNoStrict,   "no-strict",   0, "@" },
     { oMangleDosFilenames, "mangle-dos-filenames", 0, "@" },
@@ -1347,8 +1352,10 @@ main( int argc, char **argv )
     }
 
     while( optfile_parse( configfp, configname, &configlineno,
-						&pargs, opts) ) {
-	switch( pargs.r_opt ) {
+						&pargs, opts) )
+      {
+	switch( pargs.r_opt )
+	  {
 	  case aCheckKeys: set_cmd( &cmd, aCheckKeys); break;
 	  case aListPackets: set_cmd( &cmd, aListPackets); break;
 	  case aImport: set_cmd( &cmd, aImport); break;
@@ -1938,6 +1945,15 @@ main( int argc, char **argv )
           case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
           case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
 	  case oGroup: add_group(pargs.r.ret_str); break;
+	  case oNoGroups:
+	    while(opt.grouplist)
+	      {
+		struct groupitem *iter=opt.grouplist;
+		free_strlist(iter->values);
+		opt.grouplist=opt.grouplist->next;
+		m_free(iter);
+	      }
+	    break;
 	  case oStrict: opt.strict=1; log_set_strict(1); break;
 	  case oNoStrict: opt.strict=0; log_set_strict(0); break;
           case oMangleDosFilenames: opt.mangle_dos_filenames = 1; break;
@@ -1946,8 +1962,8 @@ main( int argc, char **argv )
 	  case oMultifile: multifile=1; break;
 
 	  default : pargs.err = configfp? 1:2; break;
-	}
-    }
+	  }
+      }
 
     if( configfp ) {
 	fclose( configfp );
