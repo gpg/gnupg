@@ -1,3 +1,15 @@
+2001-12-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Fixed a few typos.
+
+	* gpg.sgml: Added documentation for --show-photos,
+	--no-show-photos, --photo-viewer, --nrsign-key,
+	--default-check-level, --search-keys, --keyserver-options,
+	--show-notation, --no-show-notation, --show-policy-url,
+	--no-show-policy-url, --for-your-eyes-only,
+	--no-for-your-eyes-only, --pgp2, --no-pgp2,
+	--no-permission-warning, --expert, --no-expert.
+
 2001-10-31  Werner Koch  <wk@gnupg.org>
 
 	* gpg.sgml: Add a remark on how to get the long key ID.  Suggested
