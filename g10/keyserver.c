@@ -624,17 +624,19 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 	{
 	  desc[i]=keyrec->desc;
 
-	  if(numlines+keyrec->lines>maxlines)
+	  if(!opt.with_colons)
 	    {
-	      if(show_prompt(desc,i,validcount?count:0,searchstr))
-		break;
-	      else
-		numlines=0;
+	      if(numlines+keyrec->lines>maxlines)
+		{
+		  if(show_prompt(desc,i,validcount?count:0,searchstr))
+		    break;
+		  else
+		    numlines=0;
+		}
+
+	      print_keyrec(i+1,keyrec);
 	    }
 
-
-	  if(!opt.with_colons)
-	    print_keyrec(i+1,keyrec);
 	  numlines+=keyrec->lines;
 	  iobuf_close(keyrec->uidbuf);
 	  m_free(keyrec);
