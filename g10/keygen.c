@@ -800,7 +800,7 @@ do_create( int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root,
 
 
 /****************
- * Generate a new user id packet, or return NULL if cancelled
+ * Generate a new user id packet, or return NULL if canceled
  */
 PKT_user_id *
 generate_user_id()
@@ -856,7 +856,7 @@ generate_keypair()
     expire = ask_expire_interval();
     uid = ask_user_id(0);
     if( !uid ) {
-	log_error(_("Key generation cancelled.\n"));
+	log_error(_("Key generation canceled.\n"));
 	return;
     }
     dek = ask_passphrase( &s2k );

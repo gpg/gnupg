@@ -1,3 +1,8 @@
+Wed Jun 16 20:16:21 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* configure.in: Add test for docbook-to-man
+
 Tue Jun 15 12:21:08 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

@@ -111,7 +111,7 @@ get_keyblock_byname( KBNODE *keyblock, KBPOS *kbpos, const char *username )
 static int
 print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 			 int *inv_sigs, int *no_key, int *oth_err,
-                        int *is_selfsig, int print_without_key )
+			int *is_selfsig, int print_without_key )
 {
     PKT_signature *sig = node->pkt->pkt.signature;
     int rc, sigrc;
@@ -205,7 +205,7 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 	    int selfsig;
 
 	    if( print_and_check_one_sig( keyblock, node, &inv_sigs,
-                                        &no_key, &oth_err, &selfsig, 0 ) ) {
+					&no_key, &oth_err, &selfsig, 0 ) ) {
 		if( selfsig )
 		    has_selfsig = 1;
 	    }
@@ -1275,33 +1275,33 @@ menu_delsig( KBNODE pub_keyblock )
 	    uid = (node->flag & NODFLG_SELUID)? node->pkt->pkt.user_id : NULL;
 	}
 	else if( uid && node->pkt->pkttype == PKT_SIGNATURE ) {
-           int okay, valid, selfsig, inv_sig, no_key, other_err;
+	   int okay, valid, selfsig, inv_sig, no_key, other_err;
 
 	    tty_printf("uid  ");
 	    tty_print_string( uid->name, uid->len );
 	    tty_printf("\n");
 
-           okay = inv_sig = no_key = other_err = 0;
+	   okay = inv_sig = no_key = other_err = 0;
 	    valid = print_and_check_one_sig( pub_keyblock, node,
-                                            &inv_sig, &no_key, &other_err,
-                                            &selfsig, 1 );
+					    &inv_sig, &no_key, &other_err,
+					    &selfsig, 1 );
 
-           if( valid )
-               okay = cpr_get_answer_yes_no_quit(
-                   "keyedit.delsig.valid",
-                   _("Delete this good signature? (y/N/q)"));
-           else if( inv_sig || other_err )
-               okay = cpr_get_answer_yes_no_quit(
-                   "keyedit.delsig.invalid",
-                   _("Delete this invalid signature? (y/N/q)"));
-           else if( no_key )
-               okay = cpr_get_answer_yes_no_quit(
-                   "keyedit.delsig.unknown",
-                   _("Delete this unknown signature? (y/N/q)"));
-           
+	   if( valid )
+	       okay = cpr_get_answer_yes_no_quit(
+		   "keyedit.delsig.valid",
+		   _("Delete this good signature? (y/N/q)"));
+	   else if( inv_sig || other_err )
+	       okay = cpr_get_answer_yes_no_quit(
+		   "keyedit.delsig.invalid",
+		   _("Delete this invalid signature? (y/N/q)"));
+	   else if( no_key )
+	       okay = cpr_get_answer_yes_no_quit(
+		   "keyedit.delsig.unknown",
+		   _("Delete this unknown signature? (y/N/q)"));
+
 	    if( okay == -1 )
 		break;
-           if( okay && selfsig && !cpr_get_answer_is_yes(
+	   if( okay && selfsig && !cpr_get_answer_is_yes(
 			       "keyedit.delsig.selfsig",
 			      _("Really delete this self-signature? (y/N)") ))
 		okay = 0;
@@ -1400,9 +1400,9 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	return 0;
     }
     else if( n1 )
-	tty_printf(_("Changing exiration time for a secondary key.\n"));
+	tty_printf(_("Changing expiration time for a secondary key.\n"));
     else {
-	tty_printf(_("Changing exiration time for the primary key.\n"));
+	tty_printf(_("Changing expiration time for the primary key.\n"));
 	mainkey=1;
     }
 

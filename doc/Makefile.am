@@ -1,25 +1,23 @@
 ## Process this file with automake to create Makefile.in
 
-EXTRA_DIST = DETAILS gpg.1pod gpg.1 FAQ HACKING OpenPGP
+EXTRA_DIST = DETAILS gpg.sgml gpg.1 FAQ HACKING OpenPGP
 
 man_MANS = gpg.1
 
 
-
-%: %pod
-	 pod2man $< --section=`echo $@ | sed 's/^.*(?)$$/$$&/'`\
-		    --release="`date -r $< '+%d %b %Y'`"\
-		    --center="GNU Tools"  --date=' '\
-		     >$@,$$$$ && mv -f $@,$$$$ $@\
-		    || rm -f $@,$$$$
-
+%.1 : %.sgml
+if HAVE_DOCBOOK_TO_MAN
+	  docbook-to-man $<  >$@
+else
+	  : Warning: missing docbook-to-man, cannot make $@
+endif
 
 
 %.txt : %.sgml
 	 sgml2txt -c latin $*
 
 %.html : %.sgml
-	 sgml2html -l deutsch -c latin $*
+	 sgml2html -c latin $*
 
 %.dvi : %.sgml
 	-rm $*.sgml.tmp

@@ -130,6 +130,9 @@ AC_PROG_CPP
 AC_ISC_POSIX
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+AC_CHECK_PROG(DOCBOOK_TO_MAN, docbook-to-man, yes, no)
+AM_CONDITIONAL(HAVE_DOCBOOK_TO_MAN, test "$ac_cv_prog_DOCBOOK_TO_MAN" = yes)
+
 
 
 if test x$compile_libgcrypt = xyes; then

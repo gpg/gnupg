@@ -50,7 +50,11 @@ and after about half a day in the rsync snapshots.
     "trustdb transaction too large" with about 500 signatures on a key
     FAEBD5FC.
 
+[ **] #20 1999-06-16 <jashley@yorktown.designlab.ukans.edu>  0.9.7
+    Using "addkey" in the edit menu with more than 1 subkey leads to
+    "out of secure memory" in some cases.
 
-Next #20
+
+Next #21
 
 
