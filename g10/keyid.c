@@ -144,6 +144,59 @@ do_fingerprint_md_sk( PKT_secret_key *sk )
     return do_fingerprint_md( &pk );
 }
 
+size_t
+keystrlen(void)
+{
+  switch(opt.keyid_format)
+    {
+    case KF_SHORT:
+      return 8;
+
+    case KF_LONG:
+      return 16;
+
+    case KF_0xSHORT:
+      return 10;
+
+    case KF_0xLONG:
+      return 18;
+
+    default:
+      BUG();
+    }
+}
+
+const char *
+keystr(u32 *keyid)
+{  
+  static char keyid_str[19];
+
+  switch(opt.keyid_format)
+    {
+    case KF_SHORT:
+      sprintf(keyid_str,"%08lX",(ulong)keyid[1]);
+      break;
+
+    case KF_LONG:
+      sprintf(keyid_str,"%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+      break;
+
+    case KF_0xSHORT:
+      sprintf(keyid_str,"0x%08lX",(ulong)keyid[1]);
+      break;
+
+    case KF_0xLONG:
+      sprintf(keyid_str,"0x%08lX%08lX",(ulong)keyid[0],(ulong)keyid[1]);
+      break;
+
+    default:
+      BUG();
+    }
+
+  return keyid_str;
+}
+
+
 /****************
  * Get the keyid from the secret key and put it into keyid
  * if this is not NULL. Return the 32 low bits of the keyid.

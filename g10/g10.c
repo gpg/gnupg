@@ -335,6 +335,7 @@ enum cmd_and_opt_values
     oNoMangleDosFilenames,
     oEnableProgressFilter,
     oMultifile,
+    oKeyidFormat,
 
     oReaderPort,
     octapiDriver,
@@ -665,6 +666,7 @@ static ARGPARSE_OPTS opts[] = {
     { oNoMangleDosFilenames, "no-mangle-dos-filenames", 0, "@" },
     { oEnableProgressFilter, "enable-progress-filter", 0, "@" },
     { oMultifile, "multifile", 0, "@" },
+    { oKeyidFormat, "keyid-format", 2, "@" },
 
     { oReaderPort, "reader-port",    2, "@"},
     { octapiDriver, "ctapi-driver",  2, "@"},
@@ -1447,6 +1449,7 @@ main( int argc, char **argv )
     opt.mangle_dos_filenames=0;
     opt.min_cert_level=2;
     set_screen_dimensions();
+    opt.keyid_format=KF_SHORT;
 #if defined (_WIN32)
     set_homedir ( read_w32_registry_string( NULL,
                                     "Software\\GNU\\GnuPG", "HomeDir" ));
@@ -2115,7 +2118,6 @@ main( int argc, char **argv )
 		  {"show-notations",LIST_SHOW_NOTATIONS,NULL},
 		  {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL},
 		  {"show-validity",LIST_SHOW_VALIDITY,NULL},
-		  {"show-long-keyids",LIST_SHOW_LONG_KEYIDS,NULL},
 		  {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS,NULL},
 		  {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL},
 		  {"show-keyring",LIST_SHOW_KEYRING,NULL},
@@ -2279,6 +2281,18 @@ main( int argc, char **argv )
           case oNoMangleDosFilenames: opt.mangle_dos_filenames = 0; break;
           case oEnableProgressFilter: opt.enable_progress_filter = 1; break;
 	  case oMultifile: multifile=1; break;
+	  case oKeyidFormat:
+	    if(ascii_strcasecmp(pargs.r.ret_str,"short")==0)
+	      opt.keyid_format=KF_SHORT;
+	    else if(ascii_strcasecmp(pargs.r.ret_str,"long")==0)
+	      opt.keyid_format=KF_LONG;
+	    else if(ascii_strcasecmp(pargs.r.ret_str,"0xshort")==0)
+	      opt.keyid_format=KF_0xSHORT;
+	    else if(ascii_strcasecmp(pargs.r.ret_str,"0xlong")==0)
+	      opt.keyid_format=KF_0xLONG;
+	    else
+	      log_error("unknown keyid-format \"%s\"\n",pargs.r.ret_str);
+	    break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	  }

@@ -107,6 +107,10 @@ struct
     {
       CO_GNUPG=0, CO_RFC2440, CO_RFC1991, CO_PGP2, CO_PGP6, CO_PGP7, CO_PGP8
     } compliance;
+  enum
+    {
+      KF_SHORT, KF_LONG, KF_0xSHORT, KF_0xLONG
+    } keyid_format;
   int pgp2_workarounds;
   int shm_coprocess;
   const char *set_filename;
@@ -248,11 +252,10 @@ struct
 #define LIST_SHOW_NOTATIONS              (1<<2)
 #define LIST_SHOW_KEYSERVER_URLS         (1<<3)
 #define LIST_SHOW_VALIDITY               (1<<4)
-#define LIST_SHOW_LONG_KEYIDS            (1<<5)
-#define LIST_SHOW_UNUSABLE_UIDS          (1<<6)
-#define LIST_SHOW_UNUSABLE_SUBKEYS       (1<<7)
-#define LIST_SHOW_KEYRING                (1<<8)
-#define LIST_SHOW_SIG_EXPIRE             (1<<9)
+#define LIST_SHOW_UNUSABLE_UIDS          (1<<5)
+#define LIST_SHOW_UNUSABLE_SUBKEYS       (1<<6)
+#define LIST_SHOW_KEYRING                (1<<7)
+#define LIST_SHOW_SIG_EXPIRE             (1<<8)
 
 #define VERIFY_SHOW_PHOTOS               (1<<0)
 #define VERIFY_SHOW_POLICY_URLS          (1<<1)

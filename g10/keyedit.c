@@ -134,7 +134,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	break;
     }
     if( sigrc != '?' || print_without_key ) {
-        tty_printf("%s%c%c %c%c%c%c%c%c ",
+        tty_printf("%s%c%c %c%c%c%c%c%c %s %s",
 		   is_rev? "rev":"sig",sigrc,
 		   (sig->sig_class-0x10>0 &&
 		    sig->sig_class-0x10<4)?'0'+sig->sig_class-0x10:' ',
@@ -144,12 +144,8 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 		   sig->flags.notation?'N':' ',
                    sig->flags.expired?'X':' ',
 		   (sig->trust_depth>9)?'T':
-		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ');
-	if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
-	  tty_printf("%08lX%08lX",(ulong)sig->keyid[0],(ulong)sig->keyid[1]);
-	else
-	  tty_printf("%08lX",(ulong)sig->keyid[1]);
-	tty_printf(" %s", datestr_from_sig(sig));
+		   (sig->trust_depth>0)?'0'+sig->trust_depth:' ',
+		   keystr(sig->keyid),datestr_from_sig(sig));
 	if(opt.list_options&LIST_SHOW_SIG_EXPIRE)
 	  tty_printf(" %s",expirestr_from_sig(sig));
 	tty_printf("  ");
@@ -161,12 +157,13 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	    tty_printf( is_rev? _("[revocation]")
 			      : _("[self-signature]") );
 	}
-	else {
+	else
+	  {
 	    size_t n;
 	    char *p = get_user_id( sig->keyid, &n );
-	    tty_print_utf8_string2( p, n, opt.screen_columns-37 );
+	    tty_print_utf8_string2( p, n, opt.screen_columns-keystrlen()-26 );
 	    m_free(p);
-	}
+	  }
 	tty_printf("\n");
 
 	if(sig->flags.policy_url && (opt.list_options&LIST_SHOW_POLICY_URLS))
@@ -2052,16 +2049,13 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
             }
 
 	    keyid_from_pk(pk,NULL);
-	    tty_printf("%s%c %4u%c/",
+	    tty_printf("%s%c %4u%c/%s  ",
 		       node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
 		       (node->flag & NODFLG_SELKEY)? '*':' ',
 		       nbits_from_pk( pk ),
-		       pubkey_letter( pk->pubkey_algo ));
+		       pubkey_letter( pk->pubkey_algo ),
+		       keystr(pk->keyid));
 
-	    if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
-	      tty_printf("%08lX",(ulong)pk->keyid[0]);
-
-	    tty_printf("%08lX  ",(ulong)pk->keyid[1]);
 	    tty_printf(_("created: %s"),datestr_from_pk(pk));
 	    tty_printf("  ");
 	    if(pk->is_revoked)
@@ -2076,9 +2070,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	      {
 		if(opt.trust_model!=TM_ALWAYS)
 		  {
-		    tty_printf("                     ");
-		    if(opt.list_options&LIST_SHOW_LONG_KEYIDS)
-		      tty_printf("        ");
+		    tty_printf("%*s",keystrlen()+13,"");
 		    /* Ownertrust is only meaningful for the PGP or
 		       classic trust models */
 		    if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
