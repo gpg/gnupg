@@ -614,7 +614,7 @@ toggle_forcesig (void)
 
 
 static void
-generate_card_keys (void)
+generate_card_keys (const char *serialno)
 {
   struct agent_card_info_s info;
   int rc;
@@ -670,7 +670,15 @@ generate_card_keys (void)
           return;
         }
     }
-  generate_keypair (NULL, info.serialno);
+
+  /* Check the PIN now, so that we won't get asked later for each
+     binding signature. */
+  rc = agent_scd_checkpin (serialno);
+  if (rc)
+    log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
+  else
+    generate_keypair (NULL, info.serialno);
+
   agent_release_card_info (&info);
   if (forced_chv1)
     { /* Switch back to forced state. */
@@ -700,26 +708,25 @@ card_edit (STRLIST commands)
   static struct {
     const char *name;
     enum cmdids id;
-    int requires_pin;
     const char *desc;
   } cmds[] = {
-    { N_("quit")  , cmdQUIT  , 0, N_("quit this menu") },
-    { N_("q")     , cmdQUIT  , 0, NULL   },
-    { N_("help")  , cmdHELP  , 0, N_("show this help") },
-    {    "?"      , cmdHELP  , 0, NULL   },
-    { N_("list")  , cmdLIST  , 0, N_("list all available data") },
-    { N_("l")     , cmdLIST  , 0, NULL   },
-    { N_("debug") , cmdDEBUG , 0, NULL },
-    { N_("name")  , cmdNAME  , 1, N_("change card holder's name") },
-    { N_("url")   , cmdURL   , 1, N_("change URL to retrieve key") },
-    { N_("login") , cmdLOGIN , 1, N_("change the login name") },
-    { N_("lang")  , cmdLANG  , 1, N_("change the language preferences") },
-    { N_("sex")   , cmdSEX   , 1, N_("change card holder's sex") },
+    { N_("quit")  , cmdQUIT  , N_("quit this menu") },
+    { N_("q")     , cmdQUIT  , NULL   },
+    { N_("help")  , cmdHELP  , N_("show this help") },
+    {    "?"      , cmdHELP  , NULL   },
+    { N_("list")  , cmdLIST  , N_("list all available data") },
+    { N_("l")     , cmdLIST  , NULL   },
+    { N_("debug") , cmdDEBUG , NULL },
+    { N_("name")  , cmdNAME  , N_("change card holder's name") },
+    { N_("url")   , cmdURL   , N_("change URL to retrieve key") },
+    { N_("login") , cmdLOGIN , N_("change the login name") },
+    { N_("lang")  , cmdLANG  , N_("change the language preferences") },
+    { N_("sex")   , cmdSEX   , N_("change card holder's sex") },
     { N_("forcesig"),
-                  cmdFORCESIG, 1, N_("toggle the signature force PIN flag") },
+                  cmdFORCESIG, N_("toggle the signature force PIN flag") },
     { N_("generate"),
-                  cmdGENERATE, 1, N_("generate new keys") },
-    { N_("passwd"), cmdPASSWD, 0, N_("menu to change or unblock the PIN") },
+                  cmdGENERATE, N_("generate new keys") },
+    { N_("passwd"), cmdPASSWD, N_("menu to change or unblock the PIN") },
     { NULL, cmdINVCMD } 
   };
  
@@ -745,7 +752,6 @@ card_edit (STRLIST commands)
       const char *arg_string = "";
       char *p;
       int i;
-      int requires_pin;
       
       tty_printf("\n");
       if (redisplay )
@@ -791,7 +797,6 @@ card_edit (STRLIST commands)
       while( *answer == '#' );
 
       arg_number = 0; /* Yes, here is the init which egcc complains about */
-      requires_pin = 0;
       if (!*answer)
         cmd = cmdLIST; /* Default to the list command */
       else if (*answer == CONTROL_D)
@@ -811,19 +816,8 @@ card_edit (STRLIST commands)
             break;
 
         cmd = cmds[i].id;
-        requires_pin = cmds[i].requires_pin;
       }
       
-      if (requires_pin && !did_checkpin)
-        {
-          int rc = agent_scd_checkpin (serialnobuf);
-          if (rc)
-            {
-              log_error ("error checking the PIN: %s\n", gpg_strerror (rc));
-              continue;
-            }
-          did_checkpin = 1;
-        }
 
       switch (cmd)
         {
@@ -862,7 +856,7 @@ card_edit (STRLIST commands)
           break;
 
         case cmdGENERATE:
-          generate_card_keys ();
+          generate_card_keys (serialnobuf);
           break;
 
         case cmdPASSWD:

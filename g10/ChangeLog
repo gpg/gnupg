@@ -1,3 +1,9 @@
+2004-04-28  Werner Koch  <wk@gnupg.org>
+
+	* card-util.c (card_edit): Remove PIN verification.
+	(generate_card_keys): New arg SERIALNO.  Do PIN verification here
+	after resetting forced_chv1.
+
 2004-04-26  Werner Koch  <wk@gnupg.org>
 
 	* card-util.c (change_name): Check that the NAME is not too long.
