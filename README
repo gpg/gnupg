@@ -1,7 +1,7 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-			    Version 1.1
+			    Version 1.2
 
     Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
@@ -12,13 +12,6 @@
     This file is distributed in the hope that it will be useful, but
     WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-
-         ****************************************************
-         **  Please note that is is a DEVELOPMENT VERSION  **
-         **  and as such not suitable for production use   **
-         **  unless you really know what you are doing.    **
-         ****************************************************
 
 
     Intro
@@ -71,7 +64,7 @@
 
     8) To avoid swapping out of sensitive data, you can install "gpg" as
        suid root.  If you don't do so, you may want to add the option
-       "no-secmem-warning" to ~/.gnupg/options
+       "no-secmem-warning" to ~/.gnupg/gpg.conf
 
 
     How to Verify the Source
@@ -601,6 +594,7 @@
     whether it produces good output for your version of Unix. There
     are some debug options to help you (see cipher/rndunix.c).
 
+
     Creating an RPM package
     -----------------------
     The file scripts/gnupg.spec is used to build a RPM package (both
@@ -642,9 +636,6 @@
     of "subscribe" to x-request@gnupg.org, where x is the name of the
     mailing list (gnupg-announce, gnupg-users, etc.).  An archive of
     the mailing lists is available at http://lists.gnupg.org .
-
-    The gnupg.org domain is hosted in Germany to avoid possible legal
-    problems (technical advices may count as a violation of ITAR).
 
     Please direct bug reports to <gnupg-bugs@gnu.org> or post
     them direct to the mailing list <gnupg-devel@gnupg.org>.

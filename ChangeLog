@@ -1,3 +1,8 @@
+2002-09-02  Werner Koch  <wk@gnupg.org>
+
+	* README: Removed the note about a development version so that we
+	later don't forget this.  Minor other changes.
+
 2002-08-29  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (random_modules): Reworked the code to select the
