@@ -294,7 +294,7 @@ keyserver_spawn(int action,STRLIST list,u32 (*kidlist)[2],int count,int *prog)
     ret=exec_write(&spawn,command,NULL,0,0);
 
   if(ret)
-    goto fail;
+    return ret;
 
   fprintf(spawn->tochild,"# This is a gpg keyserver communications file\n");
   fprintf(spawn->tochild,"VERSION %d\n",KEYSERVER_PROTO_VERSION);

@@ -695,6 +695,7 @@ main( int argc, char **argv )
     const char *fname;
     char *username;
     STRLIST unsafe_files=NULL;
+    STRLIST extensions=NULL;
     int may_coredump;
     STRLIST sl, remusr= NULL, locusr=NULL;
     STRLIST nrings=NULL, sec_nrings=NULL;
@@ -829,7 +830,7 @@ main( int argc, char **argv )
   next_pass:
     if( configname ) {
 
-      if(check_permissions(configname,1))
+      if(check_permissions(configname,0,1))
 	{
 	  add_to_strlist(&unsafe_files,configname);
 
@@ -1017,8 +1018,7 @@ main( int argc, char **argv )
 	  case oAlwaysTrust: opt.always_trust = 1; break;
 	  case oLoadExtension:
 #ifndef __riscos__
-	    if(check_permissions(pargs.r.ret_str,1))
-	      add_to_strlist(&unsafe_files,pargs.r.ret_str);
+	    add_to_strlist(&extensions,pargs.r.ret_str);
 	    register_cipher_extension(orig_argc? *orig_argv:NULL,
 				      pargs.r.ret_str);
 #else /* __riscos__ */
@@ -1223,16 +1223,26 @@ main( int argc, char **argv )
     }
   #endif
 
-    check_permissions(opt.homedir,0);
+    check_permissions(opt.homedir,0,0);
 
     if(unsafe_files)
       {
 	STRLIST tmp;
 
 	for(tmp=unsafe_files;tmp;tmp=tmp->next)
-	  check_permissions(tmp->d,0);
+	  check_permissions(tmp->d,0,0);
 
 	free_strlist(unsafe_files);
+      }
+
+    if(extensions)
+      {
+	STRLIST tmp;
+
+	for(tmp=extensions;tmp;tmp=tmp->next)
+	  check_permissions(tmp->d,1,0);
+
+	free_strlist(extensions);
       }
 
     if( may_coredump && !opt.quiet )
@@ -1382,7 +1392,7 @@ main( int argc, char **argv )
     /* set the random seed file */
     if( use_random_seed ) {
 	char *p = make_filename(opt.homedir, "random_seed", NULL );
-	check_permissions(p,0);
+	check_permissions(p,0,0);
 	set_random_seed_file(p);
 	m_free(p);
     }

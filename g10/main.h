@@ -67,7 +67,7 @@ int openpgp_cipher_test_algo( int algo );
 int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
-int check_permissions(const char *path,int checkonly);
+int check_permissions(const char *path,int extension,int checkonly);
 
 /*-- helptext.c --*/
 void display_online_help( const char *keyword );

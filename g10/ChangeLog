@@ -1,5 +1,17 @@
 2001-12-28  David Shaw  <dshaw@jabberwocky.com>
 
+	* g10.c (main): Use a different strlist to check extensions since
+	they need to be handled seperately now.
+
+	* misc.c,main.h (check_permissions): Properly handle permission
+	and ownership checks on files in the lib directory
+	(e.g. /usr/local/lib/gnupg), which are owned by root and are
+	world-readable, and change all callers to specify extension or
+	per-user file.
+
+	* photoid.c (show_photo), keyserver.c (keyserver_spawn): Bug fix -
+	don't call exec_finish if exec_write fails.
+
 	* keyserver.c (keyserver_spawn): Look for OPTIONS from the
 	keyserver helper - specifically, a "OUTOFBAND" option for the
 	email keyserver.

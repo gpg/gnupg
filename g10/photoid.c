@@ -236,10 +236,7 @@ void show_photo(const struct user_attribute *attr,PKT_public_key *pk)
   command[PHOTO_COMMAND_MAXLEN-1]='\0';
 
   if(exec_write(&spawn,NULL,command,1,1)!=0)
-    {
-      exec_finish(spawn);
-      goto fail;
-    }
+    goto fail;
 
   fwrite(attr->data,attr->len,1,spawn->tochild);
 
