@@ -1,9 +1,25 @@
 
-Format of "---with-colons" listings
-===================================
+Format of colon listings
+========================
+First an example:
 
-sec::1024:17:6C7EE1B8621CC013:1998-07-07:0:::Werner Koch <werner.koch@guug.de>:
-ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
+$ gpg --fixed-list-mode --with-colons --list-keys \
+   --with-fingerprint --with-fingerprint wk@gnupg.org
+
+pub:f:1024:17:6C7EE1B8621CC013:899817715:1055898235::m:::scESC:
+fpr:::::::::ECAF7590EB3443B5C7CF3ACB6C7EE1B8621CC013:
+uid:f::::::::Werner Koch <wk@g10code.com>:
+uid:f::::::::Werner Koch <wk@gnupg.org>:
+sub:f:1536:16:06AD222CADF6A6E1:919537416:1036177416:::::e:
+fpr:::::::::CF8BCC4B18DE08FCD8A1615906AD222CADF6A6E1:
+sub:r:1536:20:5CE086B5B5A18FF4:899817788:1025961788:::::esc:
+fpr:::::::::AB059359A3B81F410FCFF97F5CE086B5B5A18FF4:
+
+The double --with-fingerprint prints the fingerprint for the subkeys
+too, --fixed-list-mode is themodern listing way printing dates in
+seconds since Epoch and does not merge the first userID with the pub
+record.
+
 
  1. Field:  Type of record
 	    pub = public key
@@ -17,7 +33,7 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 	    fpr = fingerprint: (fingerprint is in field 10)
 	    pkd = public key data (special field format, see below)
             grp = reserved for gpgsm
-        
+            rev = revocation key
 
  2. Field:  A letter describing the calculated trust. This is a single
 	    letter, but be prepared that additional information may follow
@@ -49,11 +65,14 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
             This is not used with --fixed-list-mode in gpg. 
-            In gpgsm the issuer name does here
+            In gpgsm the issuer name comes here
             An FPR record stores the fingerprint here.
+            The fingerprint of an revocation key is stored here.
 11. Field:  Signature class.  This is a 2 digit hexnumber followed by
             either the letter 'x' for an exportable signature or the
             letter 'l' for a local-only signature.
+            The class byte of an revocation key is also given here,
+            'x' and 'l' ist used the same way.
 12. Field:  Key capabilities:
                 e = encrypt
                 s = sign
@@ -68,7 +87,9 @@ ssb::1536:20:5CE086B5B5A18FF4:1998-07-07:0:::
             available. The advantage of using this value is that it is
             guaranteed to have been been build by the same lookup
             algorithm as gpgsm uses.
-        
+            For "uid" recods this lists the preferences n the sameway the 
+            -edit menu does.
+14. Field   Flag field used in the --edit menu output:
 
 
 All dates are displayed in the format yyyy-mm-dd unless you use the
