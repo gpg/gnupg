@@ -1,5 +1,8 @@
 2002-06-14  David Shaw  <dshaw@jabberwocky.com>
 
+	* free-packet.c (copy_signature): Properly copy a signature that
+	carries a revocation key on it.
+
 	* pkclist.c (expand_id, expand_group, build_pk_list): Groups now
 	work properly when used in the "Enter the user ID" prompt.
 

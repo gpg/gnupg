@@ -215,6 +215,12 @@ copy_signature( PKT_signature *d, PKT_signature *s )
     }
     d->hashed = cp_subpktarea (s->hashed);
     d->unhashed = cp_subpktarea (s->unhashed);
+    if(s->numrevkeys)
+      {
+	d->revkey=NULL;
+	d->numrevkeys=0;
+	parse_revkeys(d);
+      }
     return d;
 }
 
@@ -539,5 +545,3 @@ cmp_user_ids( PKT_user_id *a, PKT_user_id *b )
 
     return res;
 }
-
-
