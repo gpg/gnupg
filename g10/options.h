@@ -182,6 +182,13 @@ struct {
     int strict;
     int mangle_dos_filenames; 
     int enable_progress_filter;
+
+#ifdef ENABLE_CARD_SUPPORT
+    const char *ctapi_driver; /* Library to access the ctAPI. */
+    const char *pcsc_driver;  /* Library to access the PC/SC system. */
+    int disable_ccid;    /* Disable the use of the internal CCID driver. */
+#endif /*ENABLE_CARD_SUPPORT*/
+
 } opt;
 
 
@@ -199,6 +206,7 @@ struct {
 #define DBG_TRUST_VALUE   256	/* debug the trustdb */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
 #define DBG_EXTPROG_VALUE 1024  /* debug external program calls */
+#define DBG_CARD_IO_VALUE 2048
 
 
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
@@ -207,6 +215,7 @@ struct {
 #define DBG_TRUST  (opt.debug & DBG_TRUST_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
+#define DBG_CARD_IO (opt.debug & DBG_CARD_IO_VALUE)
 
 #define GNUPG   (opt.compliance==CO_GNUPG)
 #define RFC1991 (opt.compliance==CO_RFC1991 || opt.compliance==CO_PGP2)

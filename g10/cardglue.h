@@ -60,13 +60,64 @@ struct agent_card_genkey_s {
 };
 
 
+struct app_ctx_s;
+struct ctrl_ctx_s;
 
+typedef struct app_ctx_s *APP;
+typedef struct ctrl_ctx_s *CTRL;
+
+
+#define GPG_ERR_BAD_PIN           G10ERR_BAD_PASS
+#define GPG_ERR_CARD              G10ERR_GENERAL
+#define GPG_ERR_EEXIST            G10ERR_FILE_EXISTS
+#define GPG_ERR_ENOMEM            G10ERR_RESOURCE_LIMIT
+#define GPG_ERR_GENERAL           G10ERR_GENERAL
+#define GPG_ERR_HARDWARE          G10ERR_GENERAL
+#define GPG_ERR_INV_CARD          G10ERR_GENERAL
+#define GPG_ERR_INV_ID            G10ERR_GENERAL
+#define GPG_ERR_INV_NAME          G10ERR_GENERAL
+#define GPG_ERR_INV_VALUE         G10ERR_INV_ARG
+#define GPG_ERR_NOT_SUPPORTED     G10ERR_UNSUPPORTED
+#define GPG_ERR_NO_OBJ            G10ERR_GENERAL
+#define GPG_ERR_PIN_BLOCKED       G10ERR_PASSPHRASE
+#define GPG_ERR_UNSUPPORTED_ALGORITHM G10ERR_PUBKEY_ALGO 
+#define GPG_ERR_USE_CONDITIONS    G10ERR_GENERAL
+#define GPG_ERR_WRONG_CARD        G10ERR_GENERAL
+#define GPG_ERR_WRONG_SECKEY      G10ERR_WRONG_SECKEY
+
+
+typedef int gpg_error_t;
+typedef int gpg_err_code_t;
+
+#define gpg_error(n) (n)
+#define gpg_err_code(n) (n)
+#define gpg_strerror(n) g10_errstr ((n))
+#define gpg_error_from_errno(n) (G10ERR_GENERAL) /*FIXME*/
+
+
+/* We are not using it in a library, so we even let xtrymalloc
+   abort. Because we won't never return from these malloc functions,
+   we also don't need the out_of_core function, we simply define it to
+   return -1 */
+#define xtrymalloc(n)    xmalloc((n))
+#define xtrycalloc(n,m)  xcalloc((n),(m))
+#define xtryrealloc(n,m) xrealloc((n),(m))
+#define out_of_core()    (-1) 
+
+#define gnupg_get_time() make_timestamp ()
 
 
 char *serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
                                 PKT_secret_key *sk);
+void send_status_info (CTRL ctrl, const char *keyword, ...);
+void gcry_md_hash_buffer (int algo, void *digest,
+			  const void *buffer, size_t length);
+void log_printf (const char *fmt, ...);
+void log_printhex (const char *text, const void *buffer, size_t length);
 
 
+#define GCRY_MD_SHA1 DIGEST_ALGO_SHA1
+#define GCRY_MD_RMD160 DIGEST_ALGO_RMD160
 
 
 /* Release the card info structure. */

@@ -1,10 +1,22 @@
+2003-09-28  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (main): New commands --card-edit, --card-status and
+	--change-pin.  New options --ctapi-driver, --pcsc-driver and
+	--disable-ccid
+	* options.h (DBG_CARD_IO): New.
+	* cardglue.c, cardclue.h: Enhanced.
+	* card-util.c: New. Taken from current the gnupg 1.9 branch.
+	* app-common.h, app-openpgp.c, iso7816.c, iso7816.h, apdu.c
+	* apdu.h, ccid-driver.c, ccid-driver.h: New.  Takem from the current
+	gnupg 1.9 branch withy minor changes to include directives.
+	* Makefile.am: Added these files.
+	
 2003-09-27  Werner Koch  <wk@gnupg.org>
 
 	* sign.c (do_sign) [ENABLE_CARD_SUPPORT]: Divert to card.
 	* cardglue.c, cardglue.h: New.
 	* Makefile.am (gpg_LDADD): Added.
 	(card_support_sources): New.
-
 	
 2003-09-25  David Shaw  <dshaw@jabberwocky.com>
 

@@ -64,7 +64,13 @@ common_source =  \
 	      signal.c
 
 card_support_source = \
-              cardglue.c cardclue.h
+	cardglue.c cardclue.h \
+	card-util.c \
+	app-common.h \
+	app-openpgp.c \
+	iso7816.c iso7816.h \
+	apdu.c apdu.h \
+	ccid-driver.c ccid-driver.h
 
 
 gpg_SOURCES  = g10.c		\

@@ -128,6 +128,9 @@ enum cmd_and_opt_values { aNull = 0,
     aPipeMode,
     aRebuildKeydbCaches,
     aRefreshKeys,
+    aCardStatus,
+    aCardEdit,
+    aChangePIN,
 
     oTextmode,
     oNoTextmode,
@@ -318,6 +321,12 @@ enum cmd_and_opt_values { aNull = 0,
     oNoMangleDosFilenames,
     oEnableProgressFilter,
     oMultifile,
+
+    oReaderPort,
+    octapiDriver,
+    opcscDriver,
+    oDisableCCID,
+
 aTest };
 
 
@@ -365,6 +374,11 @@ static ARGPARSE_OPTS opts[] = {
     { aExportSecretSub, "export-secret-subkeys" , 256, "@" },
     { aImport, "import",      256     , N_("import/merge keys")},
     { aFastImport, "fast-import",  256 , "@"},
+#ifdef ENABLE_CARD_SUPPORT
+    { aCardStatus,  "card-status", 256, N_("print the card status")},
+    { aCardEdit,   "card-edit",  256, N_("change data on a card")},
+    { aChangePIN,  "change-pin", 256, N_("change a card's PIN")},
+#endif
     { aListPackets, "list-packets",256, "@"},
     { aExportOwnerTrust, "export-ownertrust", 256, "@"},
     { aImportOwnerTrust, "import-ownertrust", 256, "@"},
@@ -622,6 +636,13 @@ static ARGPARSE_OPTS opts[] = {
     { oNoMangleDosFilenames, "no-mangle-dos-filenames", 0, "@" },
     { oEnableProgressFilter, "enable-progress-filter", 0, "@" },
     { oMultifile, "multifile", 0, "@" },
+
+    { oReaderPort, "reader-port",    2, "@"},
+    { octapiDriver, "ctapi-driver",  2, "@"},
+    { opcscDriver, "pcsc-driver",    2, "@"},
+    { oDisableCCID, "disable-ccidc", 0, "@"},
+
+
 {0} };
 
 
@@ -1391,6 +1412,18 @@ main( int argc, char **argv )
 	  case aImportOwnerTrust: set_cmd( &cmd, aImportOwnerTrust); break;
           case aPipeMode: set_cmd( &cmd, aPipeMode); break;
           case aRebuildKeydbCaches: set_cmd( &cmd, aRebuildKeydbCaches); break;
+
+#ifdef ENABLE_CARD_SUPPORT
+          case aCardStatus: set_cmd (&cmd, aCardStatus); break;
+          case aCardEdit: set_cmd (&cmd, aCardEdit); break;
+          case aChangePIN: set_cmd (&cmd, aChangePIN); break;
+          case oReaderPort:
+            app_set_default_reader_port (pargs.r.ret_str);
+            break;
+          case octapiDriver: opt.ctapi_driver = pargs.r.ret_str; break;
+          case opcscDriver: opt.pcsc_driver = pargs.r.ret_str; break;
+          case oDisableCCID: opt.disable_ccid = 1; break;
+#endif /* ENABLE_CARD_SUPPORT*/
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
@@ -2827,6 +2860,36 @@ main( int argc, char **argv )
             wrong_args ("--rebuild-keydb-caches");
         keydb_rebuild_caches ();
         break;
+
+#ifdef ENABLE_CARD_SUPPORT
+      case aCardStatus:
+        if (argc)
+            wrong_args ("--card-status");
+        card_status (stdout);
+        break;
+
+      case aCardEdit:
+        if (argc) {
+            sl = NULL;
+            for (argc--, argv++ ; argc; argc--, argv++)
+                append_to_strlist (&sl, *argv);
+            card_edit (sl);
+            free_strlist (sl);
+	}
+        else
+            card_edit (NULL);
+        break;
+
+      case aChangePIN:
+        if (!argc)
+            change_pin (0);
+        else if (argc == 1)
+            change_pin ( atoi (*argv));
+        else
+        wrong_args ("--change-pin [no]");
+        break;
+#endif /* ENABLE_CARD_SUPPORT*/
+
 
       case aListPackets:
 	opt.list_packets=2;
