@@ -1443,7 +1443,7 @@ must contain a '@' character.  This is to help prevent pollution of
 the IETF reserved notation namespace.  The --expert flag overrides the
 '@' check.  &ParmValue; may be any printable string; it will be
 encoded in UTF8, so you should check that your --charset is set
-correctly.  If you prefix &ParmName; with an exclamation mark, the
+correctly.  If you prefix &ParmName; with an exclamation mark (!), the
 notation data will be flagged as critical (rfc2440:5.2.3.15).
 --sig-notation sets a notation for data signatures.  --cert-notation
 sets a notation for key signatures (certifications).  --set-notation
@@ -1480,8 +1480,8 @@ as well as when verifying a signature with a notation in it.
 <term>--set-policy-url &ParmString;</term>
 <listitem><para>
 Use &ParmString; as Policy URL for signatures (rfc2440:5.2.3.19).  If
-you prefix it with an exclamation mark, the policy URL packet will be
-flagged as critical.  --sig-policy-url sets a a policy url for data
+you prefix it with an exclamation mark (!), the policy URL packet will
+be flagged as critical.  --sig-policy-url sets a a policy url for data
 signatures.  --cert-policy-url sets a policy url for key signatures
 (certifications).  --set-policy-url sets both.
 </para><para>
@@ -2361,7 +2361,7 @@ in front.
     </variablelist>
 
     <para>
-Note that you can append an exclamation mark to key IDs or
+Note that you can append an exclamation mark (!) to key IDs or
 fingerprints.  This flag tells GnuPG to use exactly the given primary
 or secondary key and not to try to figure out which secondary or
 primary key to use.
