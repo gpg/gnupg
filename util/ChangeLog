@@ -1,3 +1,11 @@
+Wed Sep  6 14:59:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * secmem.c (secmem_realloc): check for failed secmem_malloc.  By
+        Matt Kraai.
+
+        * strgutil.c (utf8_to_native): Fixed null ptr problem.  By
+        Giampaolo Tomassoni.
+
 Thu Jul 27 10:02:38 CEST 2000  Werner Koch  <wk@openit.de>
 
   * iobuf.c: Use setmode() at several places to set stdin and stdout

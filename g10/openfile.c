@@ -316,10 +316,24 @@ copy_options_file( const char *destdir )
 void
 try_make_homedir( const char *fname )
 {
+    const char *defhome = GNUPG_HOMEDIR;
+
+    /* Create the directory only if the supplied directory name
+     * is the same as the default one.  This way we avoid to create
+     * arbitrary directories when a non-default homedirectory is used.
+     * To cope with HOME, we do compare only the suffix if we see that
+     * the default homedir does start with a tilde.
+     */
     if( opt.dry_run )
 	return;
-    if( strlen(fname) >= 7
-	&& !strcmp(fname+strlen(fname)-7, "/.gnupg" ) ) {
+
+    if ( ( *defhome == '~'
+           && ( strlen(fname) >= strlen (defhome+1)
+                && !strcmp(fname+strlen(defhome+1)-strlen(defhome+1),
+                           defhome+1 ) ))
+         || ( *defhome != '~'
+              && !compare_filenames( fname, defhome ) )
+        ) {
 	if( mkdir( fname, S_IRUSR|S_IWUSR|S_IXUSR ) )
 	    log_fatal( _("%s: can't create directory: %s\n"),
 					fname,	strerror(errno) );

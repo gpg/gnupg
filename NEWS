@@ -15,6 +15,8 @@ Noteworthy changes in the current CVS branch STABLE-BRANCH-1-0
 
     * New configuration option --with-egd-socket.
 
+    * The --trusted-key option is back after it left us with 0.9.5
+     
 
 Noteworthy changes in version 1.0.2 (2000-07-12)
 ----------------------------------------------

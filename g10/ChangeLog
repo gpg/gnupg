@@ -1,3 +1,16 @@
+Wed Sep  6 14:59:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * passphrase.c (hash_passphrase): Removed funny assert.  Reported by
+        David Mathog.
+
+        * openfile.c (try_make_homedir): Changes for non-Posix systems.
+        * g10.c (main): Take the default homedir from macro.
+
+        * g10.c: The --trusted-key option is back.
+        * trustdb.c (verify_own_key): Handle this option.
+        (add_ultimate_key): Moved stuff from verify_own_key to this new func.
+        (register_trusted_key): New.
+
 Fri Aug 25 16:05:38 CEST 2000  Werner Koch  <wk@openit.de>
 
         * parse-packet.c (dump_sig_subpkt): Print info about the ARR.

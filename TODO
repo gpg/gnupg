@@ -1,6 +1,8 @@
 
-  * configure option to set EGD entropy socket name
-   
+  * Think more whether the setting to ultimately trusted is a good idea.!!
+
+  * add some minor things vor VMS.
+
   * Don't get the ultimately trusted keys from the secring but store
     it permanently in the trustdb.  This way we don't need a secring at all.
 

@@ -195,6 +195,7 @@ enum cmd_and_opt_values { aNull = 0,
     oNoAutoKeyRetrieve,
     oMergeOnly,
     oTryAllSecrets,
+    oTrustedKey,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
     oEmuMDEncodeBug,
 aTest };
@@ -295,6 +296,7 @@ static ARGPARSE_OPTS opts[] = {
     { oCompletesNeeded, "completes-needed", 1, "@"},
     { oMarginalsNeeded, "marginals-needed", 1, "@"},
     { oMaxCertDepth,	"max-cert-depth", 1, "@" },
+    { oTrustedKey, "trusted-key", 2, N_("|KEYID|ulimately trust this key")},
     { oLoadExtension, "load-extension" ,2, N_("|FILE|load extension module FILE")},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
     { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},
@@ -635,11 +637,7 @@ main( int argc, char **argv )
     opt.homedir = getenv("GNUPGHOME");
   #endif
     if( !opt.homedir || !*opt.homedir ) {
-      #ifdef HAVE_DRIVE_LETTERS
-	opt.homedir = "c:/gnupg";
-      #else
-	opt.homedir = "~/.gnupg";
-      #endif
+	opt.homedir = GNUPG_HOMEDIR;
     }
 
     /* check whether we have a config file on the commandline */
@@ -937,6 +935,7 @@ main( int argc, char **argv )
 		break;
 	  case oMergeOnly: opt.merge_only = 1; break;
 	  case oTryAllSecrets: opt.try_all_secrets = 1; break;
+          case oTrustedKey: register_trusted_key( pargs.r.ret_str ); break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}

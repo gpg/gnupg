@@ -279,8 +279,7 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
 	    else {
 		md_write( md, s2k->salt, 8 );
 		count -= 8;
-		assert( count >= 0 );
-		md_write( md, pw, count );
+                md_write( md, pw, count );
 	    }
 	}
 	else

@@ -347,9 +347,11 @@ secmem_realloc( void *p, size_t newsize )
     if( newsize < size )
 	return p; /* it is easier not to shrink the memory */
     a = secmem_malloc( newsize );
-    memcpy(a, p, size);
-    memset((char*)a+size, 0, newsize-size);
-    secmem_free(p);
+    if ( a ) {
+        memcpy(a, p, size);
+        memset((char*)a+size, 0, newsize-size);
+        secmem_free(p);
+    }
     return a;
 }
 

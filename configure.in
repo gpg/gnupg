@@ -702,10 +702,16 @@ cat >g10defs.tmp <<G10EOF
   #define G10_LOCALEDIR "c:/lib/gnupg/locale"
   #define GNUPG_LIBDIR  "c:/lib/gnupg"
   #define GNUPG_DATADIR "c:/lib/gnupg"
+  #define GNUPG_HOMEDIR "c:/gnupg"
 #else
   #define G10_LOCALEDIR "${prefix}/${DATADIRNAME}/locale"
   #define GNUPG_LIBDIR  "${libdir}/gnupg"
   #define GNUPG_DATADIR "${datadir}/gnupg"
+  #ifdef __VMS
+    #define GNUPG_HOMEDIR "/SYS\$LOGIN/gnupg" 
+  #else
+    #define GNUPG_HOMEDIR "~/.gnupg" 
+  #endif
 #endif
 G10EOF
 if cmp -s g10defs.h g10defs.tmp 2>/dev/null; then

@@ -1,3 +1,7 @@
+Wed Sep  6 14:59:09 CEST 2000  Werner Koch  <wk@openit.de>
+
+        * configure.in (GNUPG_HOMEDIR): New.
+
 Fri Aug 25 16:05:38 CEST 2000  Werner Koch  <wk@openit.de>
 
         * configure.in:  Changes to allow for Solaris random device.

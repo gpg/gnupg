@@ -390,6 +390,17 @@ This is a shortcut version of the subcommand "lsign" from --edit.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--trusted-key <parameter>long key ID</parameter></term>
+<listitem><para>
+Assume that the specified key (which must be given
+as a  full 8 byte key ID) is as trustworthy as one of
+your own secret keys. This option is useful if you
+don't want to keep your secret keys (or one of them)
+online but still be able to check the validity of a given
+recipient's or signator's key. 
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--delete-key &ParmName;</term>
 <listitem><para>
 Remove key from the public keyring

@@ -349,9 +349,9 @@ do_edit_ownertrust( ulong lid, int mode, unsigned *new_trust, int defer_help )
 	      case '4': trust = TRUST_FULLY    ; break;
 	      default: BUG();
 	    }
-	    *new_trust = trust;
-	    changed = 1;
-	    break;
+            *new_trust = trust;
+            changed = 1;
+            break;
 	}
 	else if( *p == ans[0] || *p == ans[1] ) {
 	    tty_printf(_(
