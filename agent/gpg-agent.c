@@ -587,7 +587,10 @@ main (int argc, char **argv )
     }
   
   if (gpgconf_list)
-    { /* List options and default values in the GPG Conf format.  */
+    {
+      char *filename;
+
+      /* List options and default values in the GPG Conf format.  */
 
       /* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
       /* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
@@ -606,9 +609,10 @@ main (int argc, char **argv )
          a default, which is described by the value of the ARGDEF field.  */
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
+      filename = make_filename (opt.homedir, "gpg-agent.conf", NULL );
       printf ("gpgconf-gpg-agent.conf:%lu:\"%s\n",
-              GC_OPT_FLAG_DEFAULT, 
-              config_filename?config_filename:"/dev/null");
+              GC_OPT_FLAG_DEFAULT, filename);
+      xfree (filename);
 
       printf ("verbose:%lu:\n"
               "quiet:%lu:\n"
