@@ -1,4 +1,10 @@
 
+  * HAVE_STRCASECMP testen.  HAVE/RUSAGE nur benutzen wenn RUSAGE?SELF
+  auch definiert ist.
+
+  * It seems that we calculate hashes in g10/mainproc.c:proc_plaintext
+  even when we know that there is no signature (-c or --no-verify) to
+  check.
 
 Scheduled for 1.1
 -----------------

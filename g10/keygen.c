@@ -540,7 +540,7 @@ ask_expire_interval(void)
 	}
 	else if( (mult=check_valid_days(answer)) ) {
 	    valid_days = atoi(answer) * mult;
-	    if( valid_days < 0 || valid_days > 32767 )
+	    if( valid_days < 0 || valid_days > 39447 )
 		valid_days = 0;
 	}
 	else {
@@ -556,7 +556,10 @@ ask_expire_interval(void)
 	    interval = valid_days * 86400L;
 	    /* print the date when the key expires */
 	    tty_printf(_("Key expires at %s\n"),
-			asctimestamp(curtime + interval ) );
+			asctimestamp((ulong)(curtime + interval) ) );
+	    if( (time_t)((ulong)(curtime+interval)) < 0 )
+		tty_printf(_("Your system can't display dates beyond 2036.\n"
+		    "However, it will be correctly handled up to 2106.\n"));
 	}
 
 	if( cpr_enabled() || cpr_get_answer_is_yes("keygen.valid.okay",

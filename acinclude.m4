@@ -27,6 +27,24 @@ AC_DEFUN(GNUPG_CHECK_TYPEDEF,
   ])
 
 
+dnl GNUPG_CHECK_GNUMAKE
+dnl
+AC_DEFUN(GNUPG_CHECK_GNUMAKE,
+  [
+    if ${MAKE-make} --version 2>/dev/null | grep '^GNU ' >/dev/null 2>&1; then
+        :
+    else
+        AC_MSG_WARN([[
+***
+*** It seems that you are not using GNU make.  Some make tools have serious
+*** flaws and you may not be able to build this software at all. Before you
+*** complain, please try GNU make:  GNU make is easy to build and available
+*** at all GNU archives.  It is always available from ftp.gnu.org:/gnu/make.
+***]])
+    fi
+  ])
+
+
 
 dnl GNUPG_LINK_FILES( SRC, DEST )
 dnl same as AC_LINK_FILES, but collect the files to link in
@@ -633,7 +651,7 @@ AC_DEFUN(GNUPG_FUNC_MKDIR_TAKES_ONE_ARG,
 #ifdef HAVE_DIRECT_H
 # include <direct.h>
 #endif], [mkdir ("foo", 0);],
-	gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
+        gnupg_cv_mkdir_takes_one_arg=no, gnupg_cv_mkdir_takes_one_arg=yes)])
 if test $gnupg_cv_mkdir_takes_one_arg = yes ; then
   AC_DEFINE(MKDIR_TAKES_ONE_ARG)
 fi

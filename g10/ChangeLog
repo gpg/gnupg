@@ -1,3 +1,8 @@
+Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* keygen.c (ask_expire_interval): Print a warning for systems
+	with a signed 32 time_t if the exiration time is beyoind 2038.
+
 Fri Oct  8 20:40:50 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* ringedit.c (enum_keyblocks): The last fix way really stupid;

@@ -351,8 +351,10 @@ sign(MPI a, MPI b, MPI input, ELG_secret_key *skey )
     mpi_powm( a, skey->g, k, skey->p );
     mpi_mul(t, skey->x, a );
     mpi_subm(t, input, t, p_1 );
-    while( mpi_is_neg(t) )
+    while( mpi_is_neg(t) ) {
+	BUG();	/* That is nonsense code - left over from a very early test?*/
 	mpi_add(t, t, p_1);
+    }
     mpi_invm(inv, k, p_1 );
     mpi_mulm(b, t, inv, p_1 );
 

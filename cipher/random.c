@@ -408,12 +408,18 @@ fast_random_poll()
     #endif
   #endif
   #ifdef HAVE_GETRUSAGE
+    #ifndef RUSAGE_SELF
+      #ifdef __GCC__
+	#warning There is no RUSAGE_SELF on this system
+      #endif
+    #else
     {	struct rusage buf;
 	if( getrusage( RUSAGE_SELF, &buf ) )
 	    BUG();
 	add_randomness( &buf, sizeof buf, 1 );
 	memset( &buf, 0, sizeof buf );
     }
+    #endif
   #endif
 }
 

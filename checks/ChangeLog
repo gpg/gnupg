@@ -1,10 +1,12 @@
-Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+Tue Oct 26 20:02:23 1999  Werner Koch  (wk@gnupg.org)
 
+	* Makefile.am (GPG_DEARMOR): New and use --no-options.
+
+Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* defs.inc: set LC_ALL empty
 
 Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
-
 
 	* defs.inc (echo_n): New and used instead of /bin/echo "\c"
 

@@ -1,3 +1,11 @@
+Thu Oct 28 16:08:20 CEST 1999  Werner Koch  <wk@gnupg.de>
+
+	* random.c (fast_random_poll): Check whether RUSAGE_SELF is defined;
+	this is not the case for some ESIX and Unixware, although they have
+	getrusage().
+
+	* elgamal.c (sign): Hugh found strange code here. Replaced by BUG().
+
 Mon Oct 11 09:24:12 CEST 1999  Werner Koch  <wk@gnupg.de>
 
 	* rndw32.c (gather_random): Handle PCP_SEEDER_TOO_SMALL.
