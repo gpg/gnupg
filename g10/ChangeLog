@@ -1,3 +1,15 @@
+2003-06-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (sign_uids): Add additional prompt to the signature
+	level question.
+	(menu_expire): When changing expiration dates, don't replace
+	selfsigs on revoked uids since this would effectively unrevoke
+	them.  There is also no point in replacing expired selfsigs.  This
+	is bug #181.
+
+	* g10.c (main): Add --rfc2440 alias for --openpgp since in a few
+	months, they won't be the same thing.
+
 2003-06-18  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyserver.c (parse_keyserver_uri): Accept "http" as an alias for

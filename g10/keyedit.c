@@ -649,7 +649,8 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
 	    while(class==0)
 	      {
-		answer = cpr_get("sign_uid.class",_("Your selection? "));
+		answer = cpr_get("sign_uid.class",_("Your selection? "
+				   "(enter '?' for more information): "));
 
 		if(answer[0]=='\0')
 		  class=0x10+opt.def_cert_check_level; /* Default */
@@ -2627,7 +2628,8 @@ menu_expire( KBNODE pub_keyblock, KBNODE sec_keyblock )
 		 && ( mainkey || sub_pk ) ) {
 	    PKT_signature *sig = node->pkt->pkt.signature;
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
-		&& (	(mainkey && uid && (sig->sig_class&~3) == 0x10)
+		&& ( (mainkey && uid
+		      && uid->created && (sig->sig_class&~3) == 0x10)
 		     || (!mainkey && sig->sig_class == 0x18)  ) ) {
 		/* this is a selfsignature which is to be replaced */
 		PKT_signature *newsig;

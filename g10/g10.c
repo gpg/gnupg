@@ -164,6 +164,7 @@ enum cmd_and_opt_values { aNull = 0,
     oLoadExtension,
     oGnuPG,
     oRFC1991,
+    oRFC2440,
     oOpenPGP,
     oPGP2,
     oPGP6,
@@ -442,6 +443,7 @@ static ARGPARSE_OPTS opts[] = {
     { oGnuPG, "no-pgp7", 0, "@"},
     { oGnuPG, "no-pgp8", 0, "@"},
     { oRFC1991, "rfc1991",   0, N_("emulate the mode described in RFC1991")},
+    { oRFC2440, "rfc2440", 0, "@" },
     { oOpenPGP, "openpgp", 0, N_("set all packet, cipher and digest options to OpenPGP behavior")},
     { oPGP2, "pgp2", 0, N_("set all packet, cipher and digest options to PGP 2.x behavior")},
     { oPGP6, "pgp6", 0, "@"},
@@ -1441,6 +1443,7 @@ main( int argc, char **argv )
 	    opt.disable_mdc = 1;
 	    opt.escape_from = 1;
 	    break;
+	  case oRFC2440:
 	  case oOpenPGP:
 	    /* TODO: When 2440bis becomes a RFC, these may need
                changing. */
