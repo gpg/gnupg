@@ -98,6 +98,7 @@ struct server_control_s {
 
   int create_base64;  /* Create base64 encoded output */
   int create_pem;     /* create PEM output */
+  const char *pem_name; /* PEM name to use */
  
 };
 typedef struct server_control_s *CTRL;
@@ -175,6 +176,9 @@ int gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int in_fd, FILE *out_fp);
 /*-- decrypt.c --*/
 int gpgsm_decrypt (CTRL ctrl, int in_fd, FILE *out_fp);
 
+/*-- certreqgen.c --*/
+int gpgsm_genkey (CTRL ctrl, int in_fd, FILE *out_fp);
+
 /*-- call-agent.c --*/
 int gpgsm_agent_pksign (const char *keygrip,
                         unsigned char *digest,
@@ -184,6 +188,7 @@ int gpgsm_agent_pksign (const char *keygrip,
 int gpgsm_agent_pkdecrypt (const char *keygrip,
                            KsbaConstSexp  ciphertext, 
                            char **r_buf, size_t *r_buflen);
+int gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey);
 
 
 #endif /*GPGSM_H*/

@@ -1,3 +1,21 @@
+2002-01-10  Werner Koch  <wk@gnupg.org>
+
+	* base64.c (gpgsm_create_writer): Allow to set the object name
+
+2002-01-08  Werner Koch  <wk@gnupg.org>
+
+	* keydb.c (spacep): Removed because it is now in util.c
+
+	* server.c (cmd_genkey): New.
+	* certreqgen.c: New.  The parameter handling code has been taken
+	from gnupg/g10/keygen.c version 1.0.6.
+	* call-agent.c (gpgsm_agent_genkey): New.
+
+2002-01-02  Werner Koch  <wk@gnupg.org>
+
+	* server.c (rc_to_assuan_status): Removed and changed all callers
+	to use map_to_assuan_status.
+
 2001-12-20  Werner Koch  <wk@gnupg.org>
 
 	* verify.c (gpgsm_verify): Implemented non-detached signature
@@ -126,7 +144,7 @@
 	* server.c (rc_to_assuan_status): New.  Use it for all commands.
 
 	
- Copyright 2001 Free Software Foundation, Inc.
+ Copyright 2001, 2002 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

@@ -52,6 +52,12 @@ struct cipher_parm_s {
   size_t ciphertextlen;
 };
 
+struct genkey_parm_s {
+  ASSUAN_CONTEXT ctx;
+  const char *sexp;
+  size_t sexplen;
+};
+
 
 struct membuf {
   size_t len;
@@ -250,6 +256,9 @@ gpgsm_agent_pksign (const char *keygrip,
       return map_assuan_err (rc);
     }
   *r_buf = get_membuf (&data, r_buflen);
+
+  /* FIXME: check that the returned S-Exp is valid! */
+
   return *r_buf? 0 : GNUPG_Out_Of_Core;
 }
 
@@ -341,6 +350,65 @@ gpgsm_agent_pkdecrypt (const char *keygrip,
 
 
 
+
+/* Handle a KEYPARMS inquiry.  Note, we only send the data,
+   assuan_transact takes care of flushing and writing the end */
+static AssuanError
+inq_genkey_parms (void *opaque, const char *keyword)
+{
+  struct genkey_parm_s *parm = opaque; 
+  AssuanError rc;
+
+  rc = assuan_send_data (parm->ctx, parm->sexp, parm->sexplen);
+  return rc; 
+}
+
+
+
+/* Call the agent to generate a newkey */
+int
+gpgsm_agent_genkey (KsbaConstSexp keyparms, KsbaSexp *r_pubkey)
+{
+  int rc;
+  struct genkey_parm_s gk_parm;
+  struct membuf data;
+  size_t len;
+  char *buf;
+
+  *r_pubkey = NULL;
+  rc = start_agent ();
+  if (rc)
+    return rc;
+
+  rc = assuan_transact (agent_ctx, "RESET", NULL, NULL, NULL, NULL);
+  if (rc)
+    return map_assuan_err (rc);
+
+  init_membuf (&data, 1024);
+  gk_parm.ctx = agent_ctx;
+  gk_parm.sexp = keyparms;
+  gk_parm.sexplen = gcry_sexp_canon_len (keyparms, 0, NULL, NULL);
+  if (!gk_parm.sexplen)
+    return GNUPG_Invalid_Value;
+  rc = assuan_transact (agent_ctx, "GENKEY",
+                        membuf_data_cb, &data, 
+                        inq_genkey_parms, &gk_parm);
+  if (rc)
+    {
+      xfree (get_membuf (&data, &len));
+      return map_assuan_err (rc);
+    }
+  buf = get_membuf (&data, &len);
+  if (!buf)
+    return GNUPG_Out_Of_Core;
+  if (!gcry_sexp_canon_len (buf, len, NULL, NULL))
+    {
+      xfree (buf);
+      return GNUPG_Invalid_Sexp;
+    }
+  *r_pubkey = buf;
+  return 0;
+}
 
 
 

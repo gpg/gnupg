@@ -35,8 +35,6 @@
 
 #define DIRSEP_C '/'
 
-#define spacep(a) ((a) == ' ' || (a) == '\t')
-
 static int active_handles;
 
 typedef enum {
@@ -911,7 +909,7 @@ classify_user_id (const char *name,
   memset (desc, 0, sizeof *desc);
   *force_exact = 0;
   /* skip leading spaces.  Fixme: what about trailing white space? */
-  for(s = name; *s && spacep(*s); s++ )
+  for(s = name; *s && spacep (s); s++ )
     ;
 
   switch (*s) 
@@ -957,7 +955,7 @@ classify_user_id (const char *name,
 
     case '/': /* subject's DN */
       s++;
-      if (!*s || spacep (*s))
+      if (!*s || spacep (s))
         return 0; /* no DN or prefixed with a space */
       desc->u.name = s;
       mode = KEYDB_SEARCH_MODE_SUBJECT;
@@ -971,7 +969,7 @@ classify_user_id (const char *name,
         if ( *s == '/')
           { /* "#/" indicates an issuer's DN */
             s++;
-            if (!*s || spacep (*s))
+            if (!*s || spacep (s))
               return 0; /* no DN or prefixed with a space */
             desc->u.name = s;
             mode = KEYDB_SEARCH_MODE_ISSUER;
@@ -990,7 +988,7 @@ classify_user_id (const char *name,
             else
               {
                 s = si+1;
-                if (!*s || spacep (*s))
+                if (!*s || spacep (s))
                   return 0; /* no DN or prefixed with a space */
                 desc->u.name = s;
                 mode = KEYDB_SEARCH_MODE_ISSUER_SN;
@@ -1038,7 +1036,7 @@ classify_user_id (const char *name,
         }
       
       /* check if a hexadecimal number is terminated by EOS or blank */
-      if (hexlength && s[hexlength] && !spacep(s[hexlength])) 
+      if (hexlength && s[hexlength] && !spacep (s+hexlength)) 
         {
           if (hexprefix) /* a "0x" prefix without correct */
             return 0;	 /* termination is an error */

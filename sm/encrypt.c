@@ -447,6 +447,7 @@ gpgsm_encrypt (CTRL ctrl, CERTLIST recplist, int data_fd, FILE *out_fp)
     }
   encparm.fp = data_fp;
 
+  ctrl->pem_name = "ENCRYPTED MESSAGE";
   rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
     {

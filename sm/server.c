@@ -1,5 +1,5 @@
 /* server.c - Server mode and main entry point 
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -42,45 +42,6 @@ struct server_local_s {
   CERTLIST recplist;
 };
 
-/* Map GNUPG_xxx error codes to Assuan status codes */
-static int
-rc_to_assuan_status (int rc)
-{
-  switch (rc)
-    {
-    case 0: break;
-    case GNUPG_Bad_Certificate:   rc = ASSUAN_Bad_Certificate; break;
-    case GNUPG_Bad_Certificate_Path: rc = ASSUAN_Bad_Certificate_Path; break;
-    case GNUPG_Missing_Certificate: rc = ASSUAN_Missing_Certificate; break;
-    case GNUPG_No_Data:           rc = ASSUAN_No_Data_Available; break;
-    case GNUPG_Bad_Signature:     rc = ASSUAN_Bad_Signature; break;
-    case GNUPG_Not_Implemented:   rc = ASSUAN_Not_Implemented; break;
-    case GNUPG_No_Agent:          rc = ASSUAN_No_Agent; break;
-    case GNUPG_Agent_Error:       rc = ASSUAN_Agent_Error; break;
-    case GNUPG_No_Public_Key:     rc = ASSUAN_No_Public_Key; break;
-    case GNUPG_No_Secret_Key:     rc = ASSUAN_No_Secret_Key; break;
-    case GNUPG_Invalid_Data:      rc = ASSUAN_Invalid_Data; break;
-    case GNUPG_Invalid_Name:      rc = ASSUAN_Invalid_Name; break;
-
-    case GNUPG_Read_Error: 
-    case GNUPG_Write_Error:
-    case GNUPG_IO_Error: 
-      rc = ASSUAN_Server_IO_Error;
-      break;
-    case GNUPG_Out_Of_Core:    
-    case GNUPG_Resource_Limit: 
-      rc = ASSUAN_Server_Resource_Problem;
-      break;
-    case GNUPG_Bug: 
-    case GNUPG_Internal_Error:   
-      rc = ASSUAN_Server_Bug;
-      break;
-    default: 
-      rc = ASSUAN_Server_Fault;
-      break;
-    }
-  return rc;
-}
 
 static void 
 close_message_fd (CTRL ctrl)
@@ -155,7 +116,7 @@ cmd_recipient (ASSUAN_CONTEXT ctx, char *line)
 
   rc = gpgsm_add_to_certlist (line, &ctrl->server_local->recplist);
 
-  return rc_to_assuan_status (rc);
+  return map_to_assuan_status (rc);
 }
 
 
@@ -204,7 +165,7 @@ cmd_encrypt (ASSUAN_CONTEXT ctx, char *line)
       assuan_close_input_fd (ctx);
       assuan_close_output_fd (ctx);
     }
-  return rc_to_assuan_status (rc);
+  return map_to_assuan_status (rc);
 }
 
 /* DECRYPT
@@ -243,7 +204,7 @@ cmd_decrypt (ASSUAN_CONTEXT ctx, char *line)
       assuan_close_output_fd (ctx);
     }
 
-  return rc_to_assuan_status (rc);
+  return map_to_assuan_status (rc);
 }
 
 
@@ -288,7 +249,7 @@ cmd_verify (ASSUAN_CONTEXT ctx, char *line)
       assuan_close_output_fd (ctx);
     }
 
-  return rc_to_assuan_status (rc);
+  return map_to_assuan_status (rc);
 }
 
 
@@ -329,7 +290,7 @@ cmd_sign (ASSUAN_CONTEXT ctx, char *line)
       assuan_close_output_fd (ctx);
     }
 
-  return rc_to_assuan_status (rc);
+  return map_to_assuan_status (rc);
 }
 
 
@@ -358,7 +319,7 @@ cmd_import (ASSUAN_CONTEXT ctx, char *line)
       assuan_close_input_fd (ctx);
       assuan_close_output_fd (ctx);
     }
-  return rc_to_assuan_status (rc);
+  return map_to_assuan_status (rc);
 }
 
 /* MESSAGE FD=<n>
@@ -400,6 +361,42 @@ cmd_listkeys (ASSUAN_CONTEXT ctx, char *line)
   return 0;
 }
 
+
+/* GENKEY
+
+   Read the parameters in native format from the input fd and write a
+   certificate request to the output.
+ */
+static int 
+cmd_genkey (ASSUAN_CONTEXT ctx, char *line)
+{
+  CTRL ctrl = assuan_get_pointer (ctx);
+  int inp_fd, out_fd;
+  FILE *out_fp;
+  int rc;
+
+  inp_fd = assuan_get_input_fd (ctx);
+  if (inp_fd == -1)
+    return set_error (No_Input, NULL);
+  out_fd = assuan_get_output_fd (ctx);
+  if (out_fd == -1)
+    return set_error (No_Output, NULL);
+
+  out_fp = fdopen ( dup(out_fd), "w");
+  if (!out_fp)
+    return set_error (General_Error, "fdopen() failed");
+  rc = gpgsm_genkey (ctrl, inp_fd, out_fp);
+  fclose (out_fp);
+
+  if (!rc)
+    {
+      /* close and reset the fds */
+      assuan_close_input_fd (ctx);
+      assuan_close_output_fd (ctx);
+    }
+  return map_to_assuan_status (rc);
+}
+
 
 
 
@@ -423,6 +420,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     { "",     ASSUAN_CMD_OUTPUT, NULL }, 
     { "MESSAGE",    0,  cmd_message },
     { "LISTKEYS",   0,  cmd_listkeys },
+    { "GENKEY",     0,  cmd_genkey },
     { NULL }
   };
   int i, j, rc;

@@ -142,6 +142,7 @@ gpgsm_sign (CTRL ctrl, int data_fd, int detached, FILE *out_fp)
       goto leave;
     }
 
+  ctrl->pem_name = "SIGNED MESSAGE";
   rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
   if (rc)
     {

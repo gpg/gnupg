@@ -41,7 +41,8 @@ gpgsm_SOURCES = \
 	sign.c \
 	encrypt.c \
 	decrypt.c \
-	import.c 
+	import.c \
+	certreqgen.c 
 
 
 gpgsm_LDADD = ../jnlib/libjnlib.a ../assuan/libassuan.a ../kbx/libkeybox.a \
