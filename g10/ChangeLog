@@ -1,3 +1,8 @@
+2004-02-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* getkey.c (merge_selfsigs_main): Properly handle expired user IDs
+	when the expired self-sig is not the only self-sig.
+
 2004-01-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* decrypt.c: Fix copyright date.
