@@ -34,14 +34,64 @@
 #include "keydb.h"
 #include "i18n.h"
 
+static int
+unknown_criticals (KsbaCert cert)
+{
+  static const char *known[] = {
+    "2.5.29.19", /* basic Constraints */
+    NULL
+  };
+  int rc = 0, i, idx, crit;
+  const char *oid;
+  KsbaError err;
+
+  for (idx=0; !(err=ksba_cert_get_extension (cert, idx,
+                                             &oid, &crit, NULL, NULL));idx++)
+    {
+      if (!crit)
+        continue;
+      for (i=0; known[i] && strcmp (known[i],oid); i++)
+        ;
+      if (!known[i])
+        {
+          log_error (_("critical certificate extension %s is not supported\n"),
+                     oid);
+          rc = GNUPG_Unsupported_Certificate;
+        }
+    }
+  if (err && err != -1)
+    rc = map_ksba_err (err);
+
+  return rc;
+}
+
+static int
+allowed_ca (KsbaCert cert, int *pathlen)
+{
+  KsbaError err;
+  int flag;
+
+  err = ksba_cert_is_ca (cert, &flag, pathlen);
+  if (err)
+    return map_ksba_err (err);
+  if (!flag)
+    {
+      log_error (_("issuer certificate is not marked as a CA\n"));
+      return GNUPG_Bad_CA_Certificate;
+    }
+  return 0;
+}
+
+
 int
 gpgsm_validate_path (KsbaCert cert)
 {
-  int rc = 0, depth = 0;
+  int rc = 0, depth = 0, maxdepth;
   char *issuer = NULL;
   char *subject = NULL;
   KEYDB_HANDLE kh = keydb_new (0);
   KsbaCert subject_cert = NULL, issuer_cert = NULL;
+  time_t current_time = time (NULL);
 
   if (!kh)
     {
@@ -54,8 +104,7 @@ gpgsm_validate_path (KsbaCert cert)
     gpgsm_dump_cert ("subject", cert);
 
   subject_cert = cert;
-
-  /* FIXME: We need to check that none of the certs didexpire */
+  maxdepth = 50;
 
   for (;;)
     {
@@ -66,12 +115,45 @@ gpgsm_validate_path (KsbaCert cert)
 
       if (!issuer)
         {
-          if (DBG_X509)
-            log_debug ("ERROR: issuer missing\n");
+          log_error ("no issuer found in certificate\n");
           rc = GNUPG_Bad_Certificate;
           goto leave;
         }
 
+      {
+        time_t not_before, not_after;
+
+        not_before = ksba_cert_get_validity (subject_cert, 0);
+        not_after = ksba_cert_get_validity (subject_cert, 1);
+        if (not_before == (time_t)(-1) || not_after == (time_t)(-1))
+          {
+            log_error ("certificate with invalid validity\n");
+            rc = GNUPG_Bad_Certificate;
+            goto leave;
+          }
+
+        if (current_time < not_before)
+          {
+            log_error ("certificate to young; valid from ");
+            gpgsm_dump_time (not_before);
+            log_printf ("\n");
+            rc = GNUPG_Certificate_Too_Young;
+            goto leave;
+          }            
+        if (current_time > not_after)
+          {
+            log_error ("certificate has expired at ");
+            gpgsm_dump_time (not_after);
+            log_printf ("\n");
+            rc = GNUPG_Certificate_Expired;
+            goto leave;
+          }            
+      }
+
+      rc = unknown_criticals (subject_cert);
+      if (rc)
+        goto leave;
+        
       if (!opt.no_crl_check)
         {
           rc = gpgsm_dirmngr_isvalid (subject_cert);
@@ -107,6 +189,10 @@ gpgsm_validate_path (KsbaCert cert)
               rc = depth? GNUPG_Bad_Certificate_Path : GNUPG_Bad_Certificate;
               goto leave;
             }
+          rc = allowed_ca (subject_cert, NULL);
+          if (rc)
+            goto leave;
+
           rc = gpgsm_agent_istrusted (subject_cert);
           if (!rc)
             ;
@@ -118,7 +204,7 @@ gpgsm_validate_path (KsbaCert cert)
               log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
               xfree (fpr);
               /* fixme: print a note while we have not yet the code to
-                 ask whether the cert should be netered into the trust
+                 ask whether the cert should be entered into the trust
                  list */
               gpgsm_dump_cert ("issuer", subject_cert);
               log_info ("after checking the fingerprint, you may want "
@@ -134,7 +220,12 @@ gpgsm_validate_path (KsbaCert cert)
         }
       
       depth++;
-      /* fixme: check against a maximum path length */
+      if (depth > maxdepth)
+        {
+          log_error (_("certificate path too long\n"));
+          rc = GNUPG_Bad_Certificate_Path;
+          goto leave;
+        }
 
       /* find the next cert up the tree */
       keydb_search_reset (kh);
@@ -167,8 +258,22 @@ gpgsm_validate_path (KsbaCert cert)
           rc = GNUPG_Bad_Certificate_Path;
           goto leave;
         }
-      if (opt.verbose)
-        log_info ("certificate is good\n");
+
+      {
+        int pathlen;
+        rc = allowed_ca (issuer_cert, &pathlen);
+        if (rc)
+          goto leave;
+        if (pathlen >= 0 && (depth - 1) > pathlen)
+          {
+            log_error (_("certificate path longer than allowed by CA (%d)\n"),
+                       pathlen);
+            rc = GNUPG_Bad_Certificate_Path;
+            goto leave;
+          }
+      }
+
+      log_info ("certificate is good\n");
       
       keydb_search_reset (kh);
       subject_cert = issuer_cert;

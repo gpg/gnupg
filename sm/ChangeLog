@@ -1,3 +1,10 @@
+2002-01-22  Werner Koch  <wk@gnupg.org>
+
+	* certpath.c (unknown_criticals): New.
+	(allowed_ca): New.
+	(gpgsm_validate_path): Check validity, CA attribute, path length
+	and unknown critical extensions.
+
 2002-01-21  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c: Add option --enable-crl-checks.

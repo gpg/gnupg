@@ -77,6 +77,10 @@ enum {
   GNUPG_Line_Too_Long = 48,
   GNUPG_Not_Trusted = 49,
   GNUPG_Canceled = 50,
+  GNUPG_Bad_CA_Certificate = 51,
+  GNUPG_Certificate_Expired = 52,
+  GNUPG_Certificate_Too_Young = 53,
+  GNUPG_Unsupported_Certificate = 54,
 };
 
 /* Status codes - fixme: should go into another file */
