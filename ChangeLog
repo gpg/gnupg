@@ -1,3 +1,7 @@
+2004-11-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Autodetect wldap32 on Windoze.
+
 2004-11-04  David Shaw  <dshaw@jabberwocky.com>
 
 	* README, configure.ac: Add --enable-backsigs to enable the

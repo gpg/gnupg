@@ -456,7 +456,6 @@ case "${host}" in
         have_dosish_system=yes
         need_dlopen=no
         try_gettext="no"
-	LDAPLIBS="-lwldap32"
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -592,12 +591,19 @@ AC_SUBST(SRVLIBS)
 # LDAPLIBS="-Lfoo -lbar"
 
 if test "$try_ldap" = yes ; then
-  for MY_LDAPLIBS in ${LDAPLIBS+"$LDAPLIBS"} "-lldap" "-lldap -llber" "-lldap -llber -lresolv"; do
+  for MY_LDAPLIBS in ${LDAPLIBS+"$LDAPLIBS"} "-lldap" "-lldap -llber" "-lldap -llber -lresolv" "-lwldap32"; do
     _ldap_save_libs=$LIBS
     LIBS="$MY_LDAPLIBS $NETLIBS $LIBS"
 
     AC_MSG_CHECKING([whether LDAP via \"$MY_LDAPLIBS\" is present and sane])
-    AC_TRY_LINK([#include <ldap.h>],[ldap_open("foobar",1234);],
+    AC_TRY_LINK([
+#ifdef _WIN32
+#include <winsock2.h>
+#include <winldap.h>
+#else
+#include <ldap.h>
+#endif
+],[ldap_open("foobar",1234);],
                 [gnupg_cv_func_ldap_init=yes],[gnupg_cv_func_ldap_init=no])
     AC_MSG_RESULT([$gnupg_cv_func_ldap_init])
 
