@@ -10,4 +10,8 @@
 		  Branch 1.0.x	for real work.	The next
 		  stable release will be 1.2
 
+If you are looking for the CVS from the stable tree, use 
+
+cvs -z3 -d :pserver:anoncvs@cvs.gnupg.org:/cvs/gnupg co -r STABLE-BRANCH-1-0 gnupg
+
 
