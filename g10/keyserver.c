@@ -43,6 +43,8 @@
 #define SEND   1
 #define SEARCH 2
 
+#define GPGKEYS_PREFIX "gpgkeys_"
+
 struct keyrec
 {
   KEYDB_SEARCH_DESC desc;
@@ -860,20 +862,43 @@ keyserver_spawn(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   opt.keyserver_options.options|=KEYSERVER_USE_TEMP_FILES;
 #endif
 
-  /* Push the libexecdir into path.  If DISABLE_KEYSERVER_PATH is set,
-     use the 0 arg to replace the path. */
-#ifdef DISABLE_KEYSERVER_PATH
-  set_exec_path(GNUPG_LIBEXECDIR,0);
-#else
-  set_exec_path(GNUPG_LIBEXECDIR,opt.exec_path_set);
-#endif
-
   /* Build the filename for the helper to execute */
   scheme=keyserver_typemap(keyserver->scheme);
-  command=m_alloc(strlen("gpgkeys_")+strlen(scheme)+1);
-  strcpy(command,"gpgkeys_"); 
+
+#ifdef DISABLE_KEYSERVER_PATH
+  /* Destroy any path we might have.  This is a little tricky,
+     portability-wise.  It's not correct to delete the PATH
+     environment variable, as that may fall back to a system built-in
+     PATH.  Similarly, it is not correct to set PATH to the null
+     string (PATH="") since this actually deletes the PATH environment
+     variable under MinGW.  The safest thing to do here is to force
+     PATH to be GNUPG_LIBEXECDIR.  All this is not that meaningful on
+     Unix-like systems (since we're going to give a full path to
+     gpgkeys_foo), but on W32 it prevents loading any DLLs from
+     directories in %PATH%. */
+  set_exec_path(GNUPG_LIBEXECDIR,0);
+#else
+  if(opt.exec_path_set)
+    {
+      /* If exec-path was set, and DISABLE_KEYSERVER_PATH is
+	 undefined, then don't specify a full path to gpgkeys_foo, so
+	 that the PATH can work. */
+      command=m_alloc(strlen(GPGKEYS_PREFIX)+strlen(scheme)+1);
+      command[0]='\0';
+    }
+  else
+#endif
+    {
+      /* Specify a full path to gpgkeys_foo. */
+      command=m_alloc(strlen(GNUPG_LIBEXECDIR)+strlen(DIRSEP_S)+
+		      strlen(GPGKEYS_PREFIX)+strlen(scheme)+1);
+      strcpy(command,GNUPG_LIBEXECDIR);
+      strcat(command,DIRSEP_S);
+    }
+
+  strcat(command,GPGKEYS_PREFIX); 
   strcat(command,scheme);
-  
+
   if(opt.keyserver_options.options&KEYSERVER_USE_TEMP_FILES)
     {
       if(opt.keyserver_options.options&KEYSERVER_KEEP_TEMP_FILES)
@@ -1334,7 +1359,8 @@ keyserver_work(int action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	  break;
 
 	case KEYSERVER_VERSION_ERROR:
-	  log_error(_("gpgkeys_%s does not support handler version %d\n"),
+	  log_error(_(GPGKEYS_PREFIX "%s does not support"
+		      " handler version %d\n"),
 		    keyserver_typemap(keyserver->scheme),
 		    KEYSERVER_PROTO_VERSION);
 	  break;
