@@ -2,12 +2,12 @@
 
 agent/gpg-agent.c
 agent/protect-tool.c
-agent/simple-pwquery.c
 agent/divert-scd.c
 agent/genkey.c
 agent/query.c
 
 common/sysutils.c
+common/simple-pwquery.c
 
 jnlib/argparse.c
 jnlib/logging.c
