@@ -1,5 +1,11 @@
 2004-12-22  David Shaw  <dshaw@jabberwocky.com>
 
+	* gpgkeys_curl.c (get_key, writer): New function to wrap around
+	fwrite to avoid DLL access problem on win32.
+
+	* gpgkeys_http.c (main, get_key): Properly pass authentication
+	info through to the http library.
+
 	* Makefile.am: Build gpgkeys_http or gpgkeys_curl as needed.
 
 	* gpgkeys_curl.c (main, get_key): Minor tweaks to work with either

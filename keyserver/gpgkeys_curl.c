@@ -62,6 +62,14 @@ curl_err_to_gpg_err(CURLcode error)
     }
 }
 
+/* We wrap fwrite so to avoid DLL problems on Win32 (see curl faq for
+   more). */
+static size_t
+writer(const void *ptr,size_t size,size_t nmemb,void *stream)
+{
+  return fwrite(ptr,size,nmemb,stream);
+}
+
 static int
 get_key(char *getkey)
 {
@@ -77,7 +85,7 @@ get_key(char *getkey)
 	  host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
-  curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,fwrite);
+  curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,writer);
   curl_easy_setopt(curl,CURLOPT_FILE,output);
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 

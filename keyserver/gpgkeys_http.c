@@ -41,7 +41,7 @@ extern int optind;
 
 static int verbose=0;
 static unsigned int http_flags=0;
-static char host[80]={'\0'},proxy[80]={'\0'},port[10]={'\0'},path[1024]={'\0'};
+static char auth[128]={'\0'},host[80]={'\0'},proxy[80]={'\0'},port[10]={'\0'},path[1024]={'\0'};
 static FILE *input=NULL,*output=NULL,*console=NULL;
 
 #define BEGIN "-----BEGIN PGP PUBLIC KEY BLOCK-----"
@@ -72,8 +72,8 @@ get_key(char *getkey)
       return KEYSERVER_NO_MEMORY;
     }
 
-  sprintf(request,"http://%s%s%s%s%s",host,port[0]?":":"",
-	  port[0]?port:"",path[0]?"":"/",path);
+  sprintf(request,"http://%s%s%s%s%s%s%s",auth[0]?auth:"",auth[0]?"@":"",
+	  host,port[0]?":":"",port[0]?port:"",path[0]?"":"/",path);
 
   rc=http_open_document(&hd,request,http_flags,proxy[0]?proxy:NULL);
   if(rc!=0)
@@ -216,6 +216,12 @@ main(int argc,char *argv[])
 	  if(strcasecmp(commandstr,"get")==0)
 	    action=GET;
 
+	  continue;
+	}
+
+      if(sscanf(line,"AUTH %127s\n",auth)==1)
+	{
+	  auth[127]='\0';
 	  continue;
 	}
 
