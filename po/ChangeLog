@@ -1,3 +1,10 @@
+2003-12-03  Werner Koch  <wk@gnupg.org>
+
+	* zh_TW.po, fi.po: Updated from upstream.
+	* be.po: New.
+	* de.po: Updated.
+	* ru.po: Added.  New version by Maxim Britov.
+
 2003-10-10  Werner Koch  <wk@gnupg.org>
 
 	* POTFILES.in (cipher/primegen.c): Added.
