@@ -555,7 +555,7 @@ format_name_writer (void *cookie, const char *buffer, size_t size)
 char *
 gpgsm_format_name (const char *name)
 {
-#if defined (HAVE_FOPENCOOKIE)||  defined (HAVE_FUNOPEN)
+#if defined (HAVE_FOPENCOOKIE) || defined (HAVE_FUNOPEN)
   FILE *fp;
   struct format_name_cookie cookie;
 

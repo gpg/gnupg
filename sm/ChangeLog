@@ -1,3 +1,13 @@
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* gpgsm.c (set_debug): Set the new --debug-level flags.
+	(main): New option --gpgconf-list.  
+	(main): Do not setup -u and -r keys when not required.
+	(main): Setup the used character set.
+
+	* keydb.c (keydb_add_resource): Print a hint to start the
+	gpg-agent.
+
 2004-02-17  Werner Koch  <wk@gnupg.org>
 
 	* gpgsm.c: Fixed value parsing for --with-validation.

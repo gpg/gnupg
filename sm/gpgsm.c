@@ -80,9 +80,11 @@ enum cmd_and_opt_values {
   aCallDirmngr,
   aCallProtectTool,
   aPasswd,
+  aGPGConfList,
 
   oOptions,
   oDebug,
+  oDebugLevel,
   oDebugAll,
   oDebugWait,
   oDebugNoChainValidation,
@@ -239,6 +241,7 @@ static ARGPARSE_OPTS opts[] = {
     { aCallProtectTool, "call-protect-tool", 256,
                                    N_("invoke gpg-protect-tool")},
     { aPasswd, "passwd",      256, N_("change a passphrase")},
+    { aGPGConfList, "gpgconf-list", 256, "@" },
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -316,6 +319,7 @@ static ARGPARSE_OPTS opts[] = {
     { oOptions, "options"   , 2, N_("read options from file")},
 
     { oDebug, "debug"     ,4|16, "@"},
+    { oDebugLevel, "debug-level" ,2, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
     { oDebugWait, "debug-wait" ,1, "@"},
     { oDebugNoChainValidation, "debug-no-chain-validation" ,0, "@"},
@@ -557,14 +561,47 @@ wrong_args (const char *text)
 }
 
 
+/* Setup the debugging.  With a LEVEL of NULL only the active debug
+   flags are propagated to the subsystems.  With LEVEL set, a specific
+   set of debug flags is set; thus overriding all flags already
+   set. */
 static void
-set_debug(void)
+set_debug (const char *level)
 {
+  if (!level)
+    ;
+  else if (!strcmp (level, "none"))
+    opt.debug = 0;
+  else if (!strcmp (level, "basic"))
+    opt.debug = DBG_ASSUAN_VALUE;
+  else if (!strcmp (level, "advanced"))
+    opt.debug = DBG_ASSUAN_VALUE|DBG_X509_VALUE;
+  else if (!strcmp (level, "expert"))
+    opt.debug = (DBG_ASSUAN_VALUE|DBG_X509_VALUE
+                 |DBG_CACHE_VALUE|DBG_CRYPTO_VALUE);
+  else if (!strcmp (level, "guru"))
+    opt.debug = ~0;
+  else
+    {
+      log_error (_("invalid debug-level `%s' given\n"), level);
+      gpgsm_exit(2);
+    }
+
+
+  if (opt.debug && !opt.verbose)
+    {
+      opt.verbose = 1;
+      gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
+    }
+  if (opt.debug && opt.quiet)
+    opt.quiet = 0;
+
   if (opt.debug & DBG_MPI_VALUE)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
   if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
 }
+ 
 
 
 static void
@@ -639,6 +676,7 @@ main ( int argc, char **argv)
   int greeting = 0;
   int nogreeting = 0;
   int debug_wait = 0;
+  const char *debug_level = NULL;
   int use_random_seed = 1;
   int with_fpr = 0;
   char *def_digest_string = NULL;
@@ -646,6 +684,7 @@ main ( int argc, char **argv)
   struct server_control_s ctrl;
   CERTLIST recplist = NULL;
   CERTLIST signerlist = NULL;
+  int do_not_setup_keys = 0;
 
   /* trap_unaligned ();*/
   set_strusage (my_strusage);
@@ -658,7 +697,11 @@ main ( int argc, char **argv)
      when adding any stuff between here and the call to secmem_init()
      somewhere after the option parsing */
   log_set_prefix ("gpgsm", 1);
-  /* check that the libraries are suitable.  Do it here because the
+
+  /* Try to auto set the character set.  */
+  set_native_charset (NULL); 
+
+  /* Check that the libraries are suitable.  Do it here because the
      option parse may need services of the library */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     {
@@ -780,53 +823,70 @@ main ( int argc, char **argv)
     {
       switch (pargs.r_opt)
         {
+	case aGPGConfList: 
+          set_cmd (&cmd, pargs.r_opt);
+          do_not_setup_keys = 1;
+          nogreeting = 1;
+          break;
+
         case aServer: 
           opt.batch = 1;
           set_cmd (&cmd, aServer);
           break;
+
         case aCallDirmngr:
           opt.batch = 1;
           set_cmd (&cmd, aCallDirmngr);
+          do_not_setup_keys = 1;
           break;
 
         case aCallProtectTool:
           opt.batch = 1;
           set_cmd (&cmd, aCallProtectTool);
           no_more_options = 1; /* Stop parsing. */
+          do_not_setup_keys = 1;
           break;
         
-        case aCheckKeys: set_cmd (&cmd, aCheckKeys); break;
-        case aImport: set_cmd (&cmd, aImport); break;
-        case aSendKeys: set_cmd (&cmd, aSendKeys); break;
-        case aRecvKeys: set_cmd (&cmd, aRecvKeys); break;
-        case aExport: set_cmd (&cmd, aExport); break;
-        case aListKeys: set_cmd (&cmd, aListKeys); break;
-        case aListExternalKeys: set_cmd (&cmd, aListExternalKeys); break;
-        case aListSecretKeys: set_cmd (&cmd, aListSecretKeys); break;
-        case aListSigs: set_cmd (&cmd, aListSigs); break;
-
-        case aLearnCard: set_cmd (&cmd, aLearnCard); break;
-          
-        case aPasswd: set_cmd (&cmd, aPasswd); break;
-
         case aDeleteKey:
           set_cmd (&cmd, aDeleteKey);
           /*greeting=1;*/
+          do_not_setup_keys = 1;
           break;
 
         case aDetachedSign:
           detached_sig = 1;
           set_cmd (&cmd, aSign ); 
           break;
-          
-        case aSym: set_cmd (&cmd, aSym); break;
-        case aDecrypt: set_cmd (&cmd, aDecrypt); break;
-        case aEncr: set_cmd (&cmd, aEncr); break;
-        case aSign: set_cmd (&cmd, aSign );  break;
-        case aKeygen: set_cmd (&cmd, aKeygen); greeting=1; break;
-        case aClearsign: set_cmd (&cmd, aClearsign); break;
-        case aVerify: set_cmd (&cmd, aVerify); break;
 
+        case aKeygen:
+          set_cmd (&cmd, aKeygen);
+          greeting=1; 
+          do_not_setup_keys = 1;
+          break;
+
+        case aCheckKeys:
+        case aImport: 
+        case aSendKeys: 
+        case aRecvKeys: 
+        case aExport: 
+        case aListKeys:
+        case aListExternalKeys: 
+        case aListSecretKeys: 
+        case aListSigs: 
+        case aLearnCard: 
+        case aPasswd: 
+          do_not_setup_keys = 1;
+          set_cmd (&cmd, pargs.r_opt);
+          break;
+
+        case aSym:
+        case aDecrypt: 
+        case aEncr: 
+        case aSign: 
+        case aClearsign: 
+        case aVerify: 
+          set_cmd (&cmd, pargs.r_opt);
+          break;
 
           /* output encoding selection */
         case oArmor:
@@ -924,6 +984,7 @@ main ( int argc, char **argv)
 
         case oDebug: opt.debug |= pargs.r.ret_ulong; break;
         case oDebugAll: opt.debug = ~0; break;
+        case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
         case oDebugNoChainValidation: opt.no_chain_validation = 1; break;
 
@@ -1101,7 +1162,7 @@ main ( int argc, char **argv)
 
   gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
 
-  set_debug ();
+  set_debug (debug_level);
 
   /* FIXME: should set filenames of libgcrypt explicitly
    * gpg_opt_homedir = opt.homedir; */
@@ -1141,15 +1202,16 @@ main ( int argc, char **argv)
     keydb_add_resource (sl->d, 0, 0);
   FREE_STRLIST(nrings);
 
-
-  for (sl = locusr; sl; sl = sl->next)
+  if (!do_not_setup_keys)
     {
-      int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 1, &signerlist, 0);
-      if (rc)
+      for (sl = locusr; sl ; sl = sl->next)
         {
-          log_error (_("can't sign using `%s': %s\n"),
-                     sl->d, gpg_strerror (rc));
-          gpgsm_status2 (&ctrl, STATUS_INV_RECP,
+          int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 1, &signerlist, 0);
+          if (rc)
+            {
+              log_error (_("can't sign using `%s': %s\n"),
+                         sl->d, gpg_strerror (rc));
+              gpgsm_status2 (&ctrl, STATUS_INV_RECP,
                          gpg_err_code (rc) == -1?                      "1":
                          gpg_err_code (rc) == GPG_ERR_NO_PUBKEY?       "1":
                          gpg_err_code (rc) == GPG_ERR_AMBIGUOUS_NAME?  "2":
@@ -1162,33 +1224,52 @@ main ( int argc, char **argv)
                          gpg_err_code (rc) == GPG_ERR_NO_SECKEY?       "9":
                          "0",
                          sl->d, NULL);
+            }
+        }
+      
+      /* Build the recipient list.  We first add the regular ones and then
+         the encrypt-to ones because the underlying function will silenty
+         ignore duplicates and we can't allow to keep a duplicate which is
+         flagged as encrypt-to as the actually encrypt function would then
+         complain about no (regular) recipients. */
+      for (sl = remusr; sl; sl = sl->next)
+        if (!(sl->flags & 1))
+          do_add_recipient (&ctrl, sl->d, &recplist, 0);
+      if (!opt.no_encrypt_to)
+        {
+          for (sl = remusr; sl; sl = sl->next)
+            if ((sl->flags & 1))
+              do_add_recipient (&ctrl, sl->d, &recplist, 1);
         }
     }
 
-  /* Build the recipient list.  We first add the regular ones and then
-     the encrypt-to ones because the underlying function will silenty
-     ignore duplicates and we can't allow to keep a duplicate which is
-     flagged as encrypt-to as the actually encrypt function would then
-     complain about no (regular) recipients. */
-  for (sl = remusr; sl; sl = sl->next)
-    if (!(sl->flags & 1))
-      do_add_recipient (&ctrl, sl->d, &recplist, 0);
-  if (!opt.no_encrypt_to)
-    {
-      for (sl = remusr; sl; sl = sl->next)
-        if ((sl->flags & 1))
-          do_add_recipient (&ctrl, sl->d, &recplist, 1);
-    }
- 
   if (log_get_errorcount(0))
     gpgsm_exit(1); /* must stop for invalid recipients */
-  
-
   
   fname = argc? *argv : NULL;
   
   switch (cmd)
     {
+    case aGPGConfList: 
+      { /* List options and default values in the GPG Conf format.  */
+        char *filename;
+
+        /* First the default configuration file.  This is not an
+	 option, but it is vital information for GPG Conf.  */
+        filename = make_filename (opt.homedir, "gpgsm.conf", NULL);
+        printf ("gpgconf-gpgsm.conf:\"%s\n", filename);
+        xfree (filename);
+
+        printf ("verbose:\n"
+                "quiet:\n"
+                "debug-level:none\n"
+                "log-file:\n"
+                "force:\n"
+                "faked-system-time:\n"
+                "no-greeting:\n");
+      }
+      break;
+
     case aServer:
       if (debug_wait)
         {

@@ -188,6 +188,8 @@ keydb_add_resource (const char *url, int force, int secret)
               rc = gpg_error (gpg_err_code_from_errno (errno));
               log_error (_("error creating keybox `%s': %s\n"),
                          filename, strerror(errno));
+              if (errno == ENOENT)
+                log_info (_("you may want to start the gpg-agent first\n"));
               goto leave;
 	    }
 
