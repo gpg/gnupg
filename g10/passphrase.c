@@ -196,11 +196,37 @@ hash_passphrase( DEK *dek, char *pw, STRING2KEY *s2k, int create )
     dek->keylen = 0;
     md = md_open( s2k->hash_algo, 1);
     if( s2k->mode == 1 || s2k->mode == 3 ) {
+	ulong count = 0;
+	int len = strlen(pw);
+	int len2 = len + 8;
+
 	if( create )
 	    randomize_buffer(s2k->salt, 8, 1);
-	md_write( md, s2k->salt, 8 );
+
+	if( s2k->mode == 3 ) {
+	    count = (16ul + (s2k->count & 15)) << ((s2k->count >> 4) + 6);
+	    log_info("s2k iteration count=%lu\n", count );
+	}
+	for(;;) {
+	    md_write( md, s2k->salt, 8 );
+	    md_write( md, pw, len );
+	    if( count < len2 )
+		break;
+	    count -= len2;
+	}
+	if( count ) {
+	    if( count < 8 )
+		md_write( md, s2k->salt, count );
+	    else {
+		md_write( md, s2k->salt, 8 );
+		count -= 8;
+		assert( count <= len );
+		md_write( md, pw, count );
+	    }
+	}
     }
-    md_write( md, pw, strlen(pw) );
+    else
+	md_write( md, pw, strlen(pw) );
     md_final( md );
     dek->keylen = cipher_get_keylen( dek->algo ) / 8;
     assert(dek->keylen > 0 && dek->keylen <= DIM(dek->key) );
