@@ -50,7 +50,7 @@ dnl  Check for random module options
 dnl
 AC_MSG_CHECKING([which random module to use])
 AC_ARG_ENABLE(static-rnd,
-    [  --enable-static-rnd=[egd|unix|linux|none]  ],
+    [  --enable-static-rnd=[egd|unix|linux]  ],
 [use_static_rnd=$enableval], [use_static_rnd=default] )
 
 if test "$use_static_rnd" = no; then

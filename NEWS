@@ -1,6 +1,19 @@
 Noteworthy changes in version 1.1.92
 -------------------------------------------------
 
+    * The use of MDCs have increased.  A MDC will be used if the
+      recipients directly request it, if the recipients have AES,
+      AES192, AES256, or TWOFISH in their cipher preferences, or if
+      the chosen cipher has a blocksize not equal to 64 bits
+      (currently this is also AES, AES192, AES256, and TWOFISH).
+
+    * GnuPG will no longer automatically disable compression when
+      processing an already-compressed file unless a MDC is being
+      used.  This is to give the message a certain amount of
+      resistance to the chosen-ciphertext attack while communicating
+      with other programs (most commonly PGP earlier than version 7.x)
+      that do not support MDCs.
+
     * The option --interactive has now the desired effect when
       importing keys.
 

@@ -1,3 +1,11 @@
+2002-08-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* NEWS: Document new ways to enable MDC, and change in automatic
+	compression disabling.
+
+	* configure.ac: No such thing as the "none" random gather any
+	longer.
+
 2002-08-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add an --enable-tiger.
