@@ -425,6 +425,32 @@ more arguments in future versions.
 		0x04 = this attribute packet is expired
 
 
+Format of the "--attribute-fd" output
+=====================================
+
+When --attribute-fd is set, during key listings (--list-keys,
+--list-secret-keys) GnuPG dumps each attribute packet to the file
+descriptor specified.  --attribute-fd is intended for use with
+--status-fd as part of the required information is carried on the
+ATTRIBUTE status tag (see above).
+
+The contents of the attribute data is specified by 2440bis, but for
+convenience, here is the Photo ID format, as it is currently the only
+attribute defined:
+
+   Byte 0-1:  The length of the image header.  Due to a historical
+              accident (i.e. oops!) back in the NAI PGP days, this is
+              a little-endian number.  Currently 16 (0x10 0x00).
+
+   Byte 2:    The image header version.  Currently 0x01.
+
+   Byte 3:    Encoding format.  0x01 == JPEG.
+
+   Byte 4-15: Reserved, and currently unused.
+
+   All other data after this header is raw image (JPEG) data.
+
+
 Key generation
 ==============
     Key generation shows progress by printing different characters to

@@ -215,8 +215,13 @@ B<-k> [I<username>] [I<keyring>]
 <term>--list-keys &OptParmNames;</term>
 <term>--list-public-keys &OptParmNames;</term>
 <listitem><para>
-List all keys from the public keyrings, or just the
-ones given on the command line.
+List all keys from the public keyrings, or just the ones given on the
+command line.
+</para><para>
+Avoid using the output of this command in scripts or other programs as
+it is likely to change as GnuPG changes.  See --with-colons for a
+machine-parseable key listing command that is appropriate for use in
+scripts and other programs.
 </para></listitem></varlistentry>
 
 
@@ -234,6 +239,16 @@ is not usable (for example, if it was created via
 <term>--list-sigs &OptParmNames;</term>
 <listitem><para>
 Same as --list-keys, but the signatures are listed too.
+</para><para>
+For each signature listed, there are several flags in between the
+"sig" tag and keyid.  These flags give additional information about
+each signature.  From left to right, they are the numbers 1-3 for
+certificate check level (see --default-cert-check-level), "L" for a
+local or non-exportable signature (see --lsign-key), "R" for a
+nonRevocable signature (see --nrsign-key), "P" for a signature that
+contains a policy URL (see --cert-policy-url), "N" for a signature
+that contains a notation (see --cert-notation), and "X" for an eXpired
+signature (see --ask-cert-expire).
 </para></listitem></varlistentry>
 
 
@@ -1178,6 +1193,7 @@ photo ID attached to the key, if any.  See also --photo-viewer.
 <varlistentry>
 <term>--photo-viewer &ParmString;</term>
 <listitem><para>
+
 This is the command line that should be run to view a photo ID.  "%i"
 will be expanded to a filename containing the photo.  "%I" does the
 same, except the file will not be deleted once the viewer exits.
@@ -1188,7 +1204,8 @@ and "%%" for an actual percent sign.  If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 </para><para>
 The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
-stdin"
+stdin".  Note that if your image viewer program is not secure, then
+executing it from GnuPG does not make it secure.
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -1437,12 +1454,14 @@ sets both.
 
 <para>
 There are special codes that may be used in notation names.  "%k" will
-be expanded into the key ID of the key being signed, "%K" for the long
-key ID of the key being signed, "%f" for the key fingerprint of the
-key being signed, "%s" for the key ID of the key making the signature,
-"%S" for the long key ID of the key making the signature, and "%%"
-results in a single "%".  %k, %K, and %f are only meaningful when
-making a key signature (certification).
+be expanded into the key ID of the key being signed, "%K" into the
+long key ID of the key being signed, "%f" into the fingerprint of the
+key being signed, "%s" into the key ID of the key making the
+signature, "%S" into the long key ID of the key making the signature,
+"%g" into the fingerprint of the key making the signature (which might
+be a subkey), "%p" into the fingerprint of the primary key of the key
+making the signature, and "%%" results in a single "%".  %k, %K, and
+%f are only meaningful when making a key signature (certification).
 </para>
 
 </listitem></varlistentry>
@@ -2024,8 +2043,12 @@ verification is not needed.
 <varlistentry>
 <term>--with-colons</term>
 <listitem><para>
-Print key listings delimited by colons.  Note, that the output will be
-encoded in UTF-8 regardless of any --charset setting.
+Print key listings delimited by colons.  Note that the output will be
+encoded in UTF-8 regardless of any --charset setting.  This format is
+useful when GnuPG is called from scripts and other programs as it is
+easily machine parsed.  The details of this format are documented in
+the file doc/DETAILS, which is included in the GnuPG source
+distribution.
 </para></listitem></varlistentry>
 
 
@@ -2217,6 +2240,7 @@ Set the list of personal digest preferences to &ParmString;, this list
 should be a string similar to the one printed by the command "pref" in
 the edit menu.  This allows the user to factor in their own preferred
 algorithms when algorithms are chosen via recipient key preferences.
+The default value is "H2" indicating SHA-1.
 </para></listitem></varlistentry>
 
 <varlistentry>
