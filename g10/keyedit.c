@@ -1280,6 +1280,7 @@ parse_sign_type(const char *str,int *localsig,int *nonrevokesig,int *trustsig)
   return 1;
 }
 
+
 /****************
  * Menu driven key editor.  If seckey_check is true, then a secret key
  * that matches username will be looked for.  If it is false, not all
@@ -1408,11 +1409,13 @@ static struct
     { NULL, cmdNONE, 0, NULL }
   };
 
+
 #ifdef HAVE_LIBREADLINE
 
 /* These two functions are used by readline for command completion. */
 
-static char *command_generator(const char *text,int state)
+static char *
+command_generator(const char *text,int state)
 {
   static int list_index,len;
   const char *name;
@@ -1437,7 +1440,8 @@ static char *command_generator(const char *text,int state)
   return NULL;
 }
 
-static char **keyedit_completion(const char *text, int start, int end)
+static char **
+keyedit_completion(const char *text, int start, int end)
 {
   /* If we are at the start of a line, we try and command-complete.
      If not, just do nothing for now. */
@@ -1449,7 +1453,8 @@ static char **keyedit_completion(const char *text, int start, int end)
 
   return NULL;
 }
-#endif
+#endif /* HAVE_LIBREADLINE */
+
 
 void
 keyedit_menu( const char *username, STRLIST locusr,
@@ -2163,6 +2168,7 @@ keyedit_menu( const char *username, STRLIST locusr,
 }
 
 
+
 /****************
  * show preferences of a public keyblock.
  */

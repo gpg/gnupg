@@ -191,7 +191,7 @@ tty_disable_completion(void)
     init_ttyfp();
   rl_inhibit_completion=1;
 }
-#endif
+#endif /*HAVE_LIBREADLINE*/
 
 int
 tty_batchmode( int onoff )

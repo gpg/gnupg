@@ -27,7 +27,7 @@
 
 #if GNUPG_MAJOR_VERSION != 1
 #include "gpg.h"
-#endif
+#endif /*GNUPG_MAJOR_VERSION != 1*/
 #include "util.h"
 #include "i18n.h"
 #include "ttyio.h"
@@ -39,11 +39,11 @@
 #ifdef HAVE_LIBREADLINE
 #include <stdio.h>
 #include <readline/readline.h>
-#endif
+#endif /*HAVE_LIBREADLINE*/
 #include "cardglue.h"
-#else
+#else /*GNUPG_MAJOR_VERSION!=1*/
 #include "call-agent.h"
-#endif
+#endif /*GNUPG_MAJOR_VERSION!=1*/
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -1275,6 +1275,10 @@ card_store_subkey (KBNODE node, int use)
 #endif
 }
 
+
+
+/* Data used by the command parser.  This needs to be outside of the
+   function scope to allow readline based command completion.  */
 enum cmdids
   {
     cmdNOP = 0,
@@ -1315,11 +1319,13 @@ static struct
     { NULL, cmdINVCMD, 0, NULL } 
   };
 
+
 #if GNUPG_MAJOR_VERSION == 1 && defined (HAVE_LIBREADLINE)
 
 /* These two functions are used by readline for command completion. */
 
-static char *command_generator(const char *text,int state)
+static char *
+command_generator(const char *text,int state)
 {
   static int list_index,len;
   const char *name;
@@ -1344,7 +1350,8 @@ static char *command_generator(const char *text,int state)
   return NULL;
 }
 
-static char **card_edit_completion(const char *text, int start, int end)
+static char **
+card_edit_completion(const char *text, int start, int end)
 {
   /* If we are at the start of a line, we try and command-complete.
      If not, just do nothing for now. */
@@ -1356,7 +1363,7 @@ static char **card_edit_completion(const char *text, int start, int end)
 
   return NULL;
 }
-#endif
+#endif /* GNUPG_MAJOR_VERSION == 1 && HAVE_LIBREADLINE */
 
 /* Menu to edit all user changeable values on an OpenPGP card.  Only
    Key creation is not handled here. */
@@ -1424,12 +1431,12 @@ card_edit (STRLIST commands)
 	    if (!have_commands)
               {
 #if GNUPG_MAJOR_VERSION == 1
-		tty_enable_completion(card_edit_completion);
+		tty_enable_completion (card_edit_completion);
 #endif
 		answer = cpr_get_no_help("cardedit.prompt", _("Command> "));
 		cpr_kill_prompt();
 #if GNUPG_MAJOR_VERSION == 1
-		tty_disable_completion();
+		tty_disable_completion ();
 #endif
 	    }
 	    trim_spaces(answer);
