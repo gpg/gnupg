@@ -1,3 +1,8 @@
+2003-08-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* keyedit.c (print_and_check_one_sig): Use list-option
+	show-long-keyid in --edit-key "check" function.
+
 2003-08-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* passphrase.c (agent_send_all_options): Make use of $GPG_TTY.
