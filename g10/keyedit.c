@@ -301,7 +301,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 
     /* loop over all signators */
     for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	u32 sk_keyid[2],pk_keyid[2];
+        u32 sk_keyid[2],pk_keyid[2];
 	size_t n;
 	char *p;
 	int force_v4=0,class=0,selfsig=0;
@@ -374,6 +374,28 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 					      uidnode->pkt->pkt.user_id->len,
 					      0);
 
+		    /* It's a v3 self-sig.  Make it into a v4 self-sig? */
+		    if(node->pkt->pkt.signature->version<4 && selfsig)
+		      {
+			tty_printf(_("The self-signature on \"%s\"\n"
+				     "is a PGP 2.x-style signature.\n"),user);
+ 
+			/* Note that the regular PGP2 warning below
+			   still applies if there are no v4 sigs on
+			   this key at all. */
+
+			if(opt.expert)
+			  if(cpr_get_answer_is_yes("sign_uid.v4_promote_okay",
+						   _("Do you want to promote "
+						     "it to an OpenPGP self-"
+						     "signature? (y/N) ")))
+			    {
+			      force_v4=1;
+			      node->flag|=NODFLG_DELSIG;
+			      continue;
+			    }
+		      }
+
 		    if(!node->pkt->pkt.signature->flags.exportable && !local)
 		      {
 			/* It's a local sig, and we want to make a
@@ -381,7 +403,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 			tty_printf(_("Your current signature on \"%s\"\n"
 				     "is a local signature.\n"),user);
 
-			if(cpr_get_answer_is_yes("sign_uid.promote_okay",
+			if(cpr_get_answer_is_yes("sign_uid.local_promote_okay",
 						 _("Do you want to promote "
 						   "it to a full exportable "
 						   "signature? (y/N) ")))
@@ -558,27 +580,44 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	m_free(p); p = NULL;
 	tty_printf("\"\n");
 
-	if( local )
-	    tty_printf(
-		  _("\nThe signature will be marked as non-exportable.\n"));
-
-	if( nonrevocable )
-	    tty_printf(
-		  _("\nThe signature will be marked as non-revocable.\n"));
-
-	switch(class)
+	if(selfsig)
 	  {
-	  case 0x11:
-	    tty_printf(_("\nI have not checked this key at all.\n"));
-	    break;
+	    tty_printf(_("\nThis will be a self-signature.\n"));
 
-	  case 0x12:
-	    tty_printf(_("\nI have checked this key casually.\n"));
-	    break;
+	    if( local )
+	      tty_printf(
+			 _("\nWarning: the signature will not be marked "
+			   "as non-exportable.\n"));
 
-	  case 0x13:
-	    tty_printf(_("\nI have checked this key very carefully.\n"));
-	    break;
+	    if( nonrevocable )
+	      tty_printf(
+			 _("\nWarning: the signature will not be marked "
+			   "as non-revocable.\n"));
+	  }
+	else
+	  {
+	    if( local )
+	      tty_printf(
+		     _("\nThe signature will be marked as non-exportable.\n"));
+
+	    if( nonrevocable )
+	      tty_printf(
+		      _("\nThe signature will be marked as non-revocable.\n"));
+
+	    switch(class)
+	      {
+	      case 0x11:
+		tty_printf(_("\nI have not checked this key at all.\n"));
+		break;
+
+	      case 0x12:
+		tty_printf(_("\nI have checked this key casually.\n"));
+		break;
+
+	      case 0x13:
+		tty_printf(_("\nI have checked this key very carefully.\n"));
+		break;
+	      }
 	  }
 
 	tty_printf("\n");
@@ -642,7 +681,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified,
 	    }
 	}
 
-	/* Delete any local sigs that got promoted */
+	/* Delete any sigs that got promoted */
 	for( node=keyblock; node; node = node->next )
 	  if( node->flag & NODFLG_DELSIG)
 	    delete_kbnode(node);

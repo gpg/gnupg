@@ -1049,10 +1049,10 @@ merge_keys_and_selfsig( KBNODE keyblock )
 	    }
 	}
 
-	if(pk->expiredate==0 || pk->expiredate>pk->max_expiredate)
+	if(pk && (pk->expiredate==0 || pk->expiredate>pk->max_expiredate))
 	  pk->expiredate=pk->max_expiredate;
 
-	if(sk->expiredate==0 || sk->expiredate>sk->max_expiredate)
+	if(sk && (sk->expiredate==0 || sk->expiredate>sk->max_expiredate))
 	  sk->expiredate=sk->max_expiredate;
     }
 }

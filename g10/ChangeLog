@@ -1,5 +1,9 @@
 2002-05-07  David Shaw  <dshaw@jabberwocky.com>
 
+	* keyedit.c (sign_uids): If --expert it set, allow re-signing a
+	uid to promote a v3 self-sig to a v4 one.  This essentially
+	deletes the old v3 self-sig and replaces it with a v4 one.
+
 	* packet.h, parse-packet.c (parse_key), getkey.c
 	(merge_keys_and_selfsig, merge_selfsigs_main): a v3 key with a v4
 	self-sig must never let the v4 self-sig express a key expiration
