@@ -1,3 +1,8 @@
+2003-09-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Note web bug behavior of auto-key-retrieve.  Note that
+	big photos mean big keys.  Document --rfc2440.
+
 2003-08-23  Werner Koch  <wk@gnupg.org>
 
 	* DETAILS: Removed paragraph on gdbm usage.  Notes that pipemode
