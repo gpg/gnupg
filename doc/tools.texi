@@ -1,0 +1,74 @@
+@c Copyright (C) 2004 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file GnuPG.texi.
+
+@node Helper Tools
+@chapter Helper Tools
+
+GnuPG comes with a couple of smaller tools:
+
+@menu
+* watchgnupg::            Read logs from a socket.
+* addgnupghome::          Create .gnupg home directories
+@end menu
+
+
+@node watchgnupg
+@section Read logs from a socket
+
+Most of the main utilities are able to write there log files to a
+Unix Domain socket if configured that way.  watchgnupg is a simple
+listener for such a socket.  It ameliorates the output with a time
+stamp and makes sure that long lines are not interspersed with log
+output from other utilities.
+
+@noindent
+watchgnupg is commonly invoked as
+
+@samp{watchgnupg --force ~/.gnupg/S.log}
+
+@noindent
+This starts it on the current terminal for listening on the socket
+@file{~/.gnupg/S.log}.  
+
+@noindent
+watchgnupg understands these options:
+
+@table @gnupgtabopt
+
+@item --force 
+@opindex force
+Delete an already existing socket file.
+
+@item --verbose
+@opindex verbose
+Enable extra informational output.
+
+@item --version
+@opindex version
+print version of the program and exit
+
+@item --help
+@opindex help
+Display a brief help page and exit
+
+@end table
+
+
+
+@node addgnupghome
+@section Create .gnupg home directories
+
+If GnuPG is installed on a system with existing user accounts, it is
+sometimes required to populate the GnuPG home directory with existing
+files.  Especially a @file{trustlist.txt} and a keybox with some
+initial certificates are often desired.  This scripts help to do this
+by copying all files from @file{/etc/skel/.gnupg} to the home
+directories of the accounts given on the command line.  It takes care
+not to overwrite existing GnuPG home directories.
+
+@noindent
+addgnupghome is invoked by root as:
+
+@samp{addgnupghome account1 account2 ... accountn}
+

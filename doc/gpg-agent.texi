@@ -282,7 +282,7 @@ command.
 @opindex ttyname 
 @opindex ttytype 
 @opindex lc-type 
-@opindex lc-messa
+@opindex lc-messages
 These options are used with the server mode to pass localization
 information.
 
