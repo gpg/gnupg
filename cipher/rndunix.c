@@ -716,6 +716,10 @@ read_a_msg( int fd, GATHER_MSG *msg )
 }
 
 
+/****************
+ * Using a level of 0 should never block and better add nothing
+ * to the pool.  So this is just a dummy for this gatherer.
+ */
 static int
 gather_random( void (*add)(const void*, size_t, int), int requester,
 	       size_t length, int level )
@@ -724,6 +728,9 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     static int pipedes[2];
     GATHER_MSG msg;
     size_t n;
+
+    if( !level )
+	return 0;
 
     if( !gatherer_pid ) {
 	/* make sure we are not setuid */

@@ -1,6 +1,12 @@
 Noteworthy changes in the current test release
 ----------------------------------------------
 
+    * There is a ~/.gnupg/random_seed file now which saves the
+      state of the internal RNG and increases system performance
+      somewhat.  This way the full entropy source is only used in
+      cases were it is really required.
+      Use the option --no-random-seed-file to disable this feature.
+
     * New option --ignore-time-conflict.
 
     * Some fixes for the W32 version

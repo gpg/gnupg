@@ -164,6 +164,9 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
     unsigned int result;
     unsigned int nbytes;
 
+    if( !level )
+	return 0;
+
     if( !slow_seeder )
 	load_and_init_winseed();
 

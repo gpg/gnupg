@@ -83,9 +83,13 @@ do_read( int fd, void *buf, size_t nbytes )
 
 
 
-/* Note: we always use the highest level.
+/****************
+ * Note: we always use the highest level.
  * TO boost the performance we may want to add some
  * additional code for level 1
+ *
+ * Using a level of 0 should never block and better add nothing
+ * to the pool.  So this is just a dummy for EGD.
  */
 static int
 gather_random( void (*add)(const void*, size_t, int), int requester,
@@ -99,7 +103,8 @@ gather_random( void (*add)(const void*, size_t, int), int requester,
 
     if( !length )
 	return 0;
-
+    if( !level )
+	return 0;
 
   restart:
     if( do_restart ) {

@@ -1,3 +1,7 @@
+Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* id.po: Updated.
+
 Thu Jan  6 16:56:18 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* Makefile.in.in: Is not longer maintained as a symlink because we

@@ -183,6 +183,7 @@ enum cmd_and_opt_values { aNull = 0,
     oFastListMode,
     oListOnly,
     oIgnoreTimeConflict,
+    oNoRandomSeedFile,
     oEmu3DESS2KBug,  /* will be removed in 1.1 */
 aTest };
 
@@ -356,6 +357,7 @@ static ARGPARSE_OPTS opts[] = {
     { oFastListMode,"fast-list-mode", 0, "@" },
     { oListOnly, "list-only", 0, "@"},
     { oIgnoreTimeConflict, "ignore-time-conflict", 0, "@" },
+    { oNoRandomSeedFile,  "no-random-seed-file", 0, "@" },
     { oEmu3DESS2KBug,  "emulate-3des-s2k-bug", 0, "@"},
 {0} };
 
@@ -563,6 +565,7 @@ main( int argc, char **argv )
     int default_keyring = 1;
     int greeting = 0;
     int nogreeting = 0;
+    int use_random_seed = 1;
     enum cmd_and_opt_values cmd = 0;
     const char *trustdb_name = NULL;
     char *def_cipher_string = NULL;
@@ -893,6 +896,7 @@ main( int argc, char **argv )
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oListOnly: opt.list_only=1; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
+	  case oNoRandomSeedFile: use_random_seed = 0; break;
 
 	  default : pargs.err = configfp? 1:2; break;
 	}
@@ -996,8 +1000,16 @@ main( int argc, char **argv )
     if( log_get_errorcount(0) )
 	g10_exit(2);
 
-    if( !cmd && opt.fingerprint && !with_fpr )
+    /* set the random seed file */
+    if( use_random_seed ) {
+	char *p = make_filename(opt.homedir, "random_seed", NULL );
+	set_random_seed_file(p);
+	m_free(p);
+    }
+
+    if( !cmd && opt.fingerprint && !with_fpr ) {
 	set_cmd( &cmd, aListKeys);
+    }
 
     if( cmd == aKMode || cmd == aKModeC ) { /* kludge to be compatible to pgp */
 	if( cmd == aKModeC ) {
@@ -1494,6 +1506,7 @@ main( int argc, char **argv )
 void
 g10_exit( int rc )
 {
+    update_random_seed_file();
     if( opt.debug & DBG_MEMSTAT_VALUE ) {
 	m_print_stats("on exit");
 	random_dump_stats();

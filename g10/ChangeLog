@@ -1,3 +1,8 @@
+Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* g10.c (g10_exit): Update the random seed_file.
+	(main): Set the random seed file.  New option --no-random-seed-file.
+
 Thu Feb 10 17:39:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* keyedit.c (menu_expire): Fixed segv due to unitialized sub_pk.

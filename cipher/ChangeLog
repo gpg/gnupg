@@ -1,3 +1,20 @@
+Fri Feb 11 17:44:40 CET 2000  Werner Koch  <wk@gnupg.de>
+
+	* random.c (read_seed_file): New.
+	(set_random_seed_file): New.
+	(read_pool): Try to read the seeding file.
+	(update_random_seed_file): New.
+
+	(read_pool): Do an initial extra seeding when level 2 quality random
+	is requested the first time.  This requestes at least POOLSIZE/2 bytes
+	of entropy.  Compined with the seeding file this should make normal
+	random bytes cheaper and increase the quality of the random bytes
+	used for key generation.
+
+	* rndegd.c (gather_random): Shortcut level 0.
+	* rndunix.c (gather_random): Ditto.
+	* rndw32.c (gather_random): Ditto.
+
 Fri Jan 14 18:32:01 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* rmd160.c (rmd160_get_info): Moved casting to the left side due to a

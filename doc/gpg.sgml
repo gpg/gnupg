@@ -1172,6 +1172,15 @@ needed. Use this to override a previous --lock-once
 from a config file.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--no-random-seed-file</term>
+<listitem><para>
+&gnupg; uses a file to store it's internal random pool over invocations.
+This makes random generation faster; however sometimes write operations
+are not desired.  This option can be used to achive that with the cost of
+slower random generation.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--no-verbose</term>
@@ -1473,6 +1482,11 @@ constructed by cutting off the extension (".asc" or ".sig") of
 <varlistentry>
 <term>~/.gnupg/trustdb.gpg.lock</term>
 <listitem><para>and the lock file</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>~/.gnupg/random_seed</term>
+<listitem><para>used to preserve the internal random pool</para></listitem>
 </varlistentry>
 
 <varlistentry>
