@@ -84,7 +84,6 @@ FILE *fopencookie (void *cookie, const char *opentype,
 
 
 
-
 /*-- some macros to replace ctype ones and avoid locale problems --*/
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 #define digitp(p)   (*(p) >= '0' && *(p) <= '9')

@@ -1,3 +1,7 @@
+2002-07-22  Werner Koch  <wk@gnupg.org>
+
+	* fseeko.c, ftello.c: New.
+
 2002-06-28  Werner Koch  <wk@gnupg.org>
 
 	* maperror.c (map_to_assuan_status): Map more errorcodes to Bad
