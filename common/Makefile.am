@@ -33,7 +33,9 @@ libcommon_a_SOURCES = \
 	maperror.c \
 	sysutils.c sysutils.h \
 	cryptmiss.c \
-	gettime.c 
+	gettime.c \
+	signal.c
+
 
 libcommon_a_LIBADD = @LIBOBJS@
 

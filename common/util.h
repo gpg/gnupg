@@ -1,5 +1,5 @@
 /* util.h - Utility functions for Gnupg
- *	Copyright (C) 2001 Free Software Foundation, Inc.
+ *	Copyright (C) 2001, 2002 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -61,6 +61,12 @@ time_t gnupg_get_time (void);
 void   gnupg_set_time (time_t newtime, int freeze);
 int    gnupg_faked_time_p (void);
 
+/*-- signal.c --*/
+void gnupg_init_signals (int mode, void (*fast_cleanup)(void));
+void gnupg_pause_on_sigusr (int which);
+void gnupg_block_all_signals (void);
+void gnupg_unblock_all_signals (void);
+
 
 /*-- replacement functions from funcname.c --*/
 #if !HAVE_VASPRINTF
@@ -75,7 +81,7 @@ typedef struct
   ssize_t (*read)(void*,char*,size_t);
   ssize_t (*write)(void*,const char*,size_t);
   int (*seek)(void*,off_t*,int);
-  int (*close)(coid*);
+  int (*close)(void*);
 } _IO_cookie_io_functions_t;
 typedef _IO_cookie_io_functions_t cookie_io_functions_t;
 FILE *fopencookie (void *cookie, const char *opentype,
