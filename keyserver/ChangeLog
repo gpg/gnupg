@@ -1,3 +1,9 @@
+2002-06-06  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpgkeys_hkp.c (parse_hkp_index): Type tweaks.
+
+	* gpgkeys_hkp.c (main): Add experimental code warning.
+
 2002-06-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am, gpgkeys_hkp.c (new): Experimental HKP keyserver

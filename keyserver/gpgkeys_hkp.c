@@ -397,8 +397,7 @@ unsigned int scan_isodatestr( const char *string )
 int parse_hkp_index(char *line,char **buffer)
 {
   static int open=0,revoked=0;
-  static char *key;
-  static unsigned char *uid;
+  static char *key,*uid;
   static unsigned int bits,createtime;
   int ret=0;
 
@@ -661,6 +660,9 @@ int main(int argc,char *argv[])
   struct keylist *keylist=NULL,*keyptr=NULL;
 
   console=stderr;
+
+  fprintf(console,
+	  "gpgkeys: Warning: this is an *experimental* HKP interface!\n");
 
   while((arg=getopt(argc,argv,"ho:"))!=-1)
     switch(arg)
