@@ -1147,7 +1147,11 @@ main( int argc, char **argv )
     opt.def_compress_algo = -1;
     opt.s2k_mode = 3; /* iterated+salted */
     opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
+#ifdef USE_CAST5
     opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
+#else
+    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+#endif
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
@@ -1533,7 +1537,7 @@ main( int argc, char **argv )
 	    opt.def_compress_algo = -1;
             opt.s2k_mode = 3; /* iterated+salted */
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
-	    opt.s2k_cipher_algo = CIPHER_ALGO_CAST5;
+	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
 	    break;
 	  case oPGP2: opt.pgp2 = 1; break;
 	  case oNoPGP2: opt.pgp2 = 0; break;
@@ -2824,13 +2828,16 @@ print_mds( const char *fname, int algo )
 	md_enable( md, DIGEST_ALGO_MD5 );
 	md_enable( md, DIGEST_ALGO_SHA1 );
 	md_enable( md, DIGEST_ALGO_RMD160 );
-	if( !check_digest_algo(DIGEST_ALGO_TIGER) )
-	    md_enable( md, DIGEST_ALGO_TIGER );
+#ifdef USE_TIGER192
+	md_enable( md, DIGEST_ALGO_TIGER );
+#endif
+#ifdef USE_SHA256
 	md_enable( md, DIGEST_ALGO_SHA256 );
-	if( !check_digest_algo(DIGEST_ALGO_SHA384) )
-	  md_enable( md, DIGEST_ALGO_SHA384 );
-	if( !check_digest_algo(DIGEST_ALGO_SHA512) )
-	  md_enable( md, DIGEST_ALGO_SHA512 );
+#endif
+#ifdef USE_SHA512
+	md_enable( md, DIGEST_ALGO_SHA384 );
+	md_enable( md, DIGEST_ALGO_SHA512 );
+#endif
     }
 
     while( (n=fread( buf, 1, DIM(buf), fp )) )
@@ -2846,13 +2853,16 @@ print_mds( const char *fname, int algo )
                 print_hashline( md, DIGEST_ALGO_MD5, fname );
                 print_hashline( md, DIGEST_ALGO_SHA1, fname );
                 print_hashline( md, DIGEST_ALGO_RMD160, fname );
-                if( !check_digest_algo(DIGEST_ALGO_TIGER) ) 
-                    print_hashline( md, DIGEST_ALGO_TIGER, fname );
+#ifdef USE_TIGER192
+		print_hashline( md, DIGEST_ALGO_TIGER, fname );
+#endif
+#ifdef USE_SHA256
                 print_hashline( md, DIGEST_ALGO_SHA256, fname );
-                if( !check_digest_algo(DIGEST_ALGO_SHA384) ) 
-		  print_hashline( md, DIGEST_ALGO_SHA384, fname );
-                if( !check_digest_algo(DIGEST_ALGO_SHA512) ) 
-		  print_hashline( md, DIGEST_ALGO_SHA512, fname );
+#endif
+#ifdef USE_SHA512
+		print_hashline( md, DIGEST_ALGO_SHA384, fname );
+		print_hashline( md, DIGEST_ALGO_SHA512, fname );
+#endif
             }
         }
         else {
@@ -2862,13 +2872,16 @@ print_mds( const char *fname, int algo )
                 print_hex( md, DIGEST_ALGO_MD5, fname );
                 print_hex( md, DIGEST_ALGO_SHA1, fname );
                 print_hex( md, DIGEST_ALGO_RMD160, fname );
-                if( !check_digest_algo(DIGEST_ALGO_TIGER) )
-		  print_hex( md, DIGEST_ALGO_TIGER, fname );
+#ifdef USE_TIGER192
+		print_hex( md, DIGEST_ALGO_TIGER, fname );
+#endif
+#ifdef USE_SHA256
                 print_hex( md, DIGEST_ALGO_SHA256, fname );
-                if( !check_digest_algo(DIGEST_ALGO_SHA384) )
-		  print_hex( md, DIGEST_ALGO_SHA384, fname );
-                if( !check_digest_algo(DIGEST_ALGO_SHA512) )
-		  print_hex( md, DIGEST_ALGO_SHA512, fname );
+#endif
+#ifdef USE_SHA512
+		print_hex( md, DIGEST_ALGO_SHA384, fname );
+		print_hex( md, DIGEST_ALGO_SHA512, fname );
+#endif
             }
         }
     }
