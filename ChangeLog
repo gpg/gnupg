@@ -1,3 +1,9 @@
+2004-02-19  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Simplify the LDAP checking code since OpenLDAP is
+	far more mature these days and dependencies are cleaner.  Add
+	checks for ldap_set_option and ldap_start_tls_s.
+
 2004-01-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* NEWS: Note --enable-key-cache, the OpenBSD/i386 and HPPA fixes,

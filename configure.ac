@@ -521,10 +521,12 @@ fi
 AC_SUBST(SRVLIBS)
 
 # Try and link a LDAP test program to weed out unusable LDAP
-# libraries.  -lldap [-llber [-lresolv]] is for OpenLDAP.  OpenLDAP in
-# general is terrible with creating weird dependencies.  If all else
-# fails, the user can play guess-the-dependency by using something
-# like ./configure LDAPLIBS="-Lfoo -lbar"
+# libraries.  -lldap [-llber [-lresolv]] is for older OpenLDAPs.
+# OpenLDAP, circa 1999, was terrible with creating weird dependencies.
+# This seems to have all been resolved, so I'm simplifying this code
+# significantly.  If all else fails, the user can play
+# guess-the-dependency by using something like ./configure
+# LDAPLIBS="-Lfoo -lbar"
 
 if test "$try_ldap" = yes ; then
   for MY_LDAPLIBS in ${LDAPLIBS+"$LDAPLIBS"} "-lldap" "-lldap -llber" "-lldap -llber -lresolv"; do
@@ -536,56 +538,17 @@ if test "$try_ldap" = yes ; then
                 [gnupg_cv_func_ldap_init=yes],[gnupg_cv_func_ldap_init=no])
     AC_MSG_RESULT([$gnupg_cv_func_ldap_init])
 
-    if test $gnupg_cv_func_ldap_init = no; then
-      AC_MSG_CHECKING([whether I can make LDAP be sane with lber.h])
-      AC_TRY_LINK([#include <lber.h>
-#include <ldap.h>],[ldap_open("foobar",1234);],
-         [gnupg_cv_func_ldaplber_init=yes],[gnupg_cv_func_ldaplber_init=no])
-      AC_MSG_RESULT([$gnupg_cv_func_ldaplber_init])
-    fi
-
-    if test "$gnupg_cv_func_ldaplber_init" = yes ; then
-       AC_DEFINE(NEED_LBER_H,1,[Define if the LDAP library requires including lber.h before ldap.h])
-    fi
-
-    if test "$gnupg_cv_func_ldap_init" = yes || \
-  	test "$gnupg_cv_func_ldaplber_init" = yes ; then
+    if test "$gnupg_cv_func_ldap_init" = yes ; then
        LDAPLIBS=$MY_LDAPLIBS
        GPGKEYS_LDAP="gpgkeys_ldap$EXEEXT"
 
-       AC_MSG_CHECKING([whether LDAP supports ldap_get_option])
+       AC_CHECK_FUNCS(ldap_get_option ldap_set_option ldap_start_tls_s)
 
-       if test "$gnupg_cv_func_ldap_init" = yes ; then
-	  AC_TRY_LINK([#include <ldap.h>],
-	     [ldap_get_option((void *)0,0,(void *)0);],
-	     [gnupg_cv_func_ldap_get_option=yes],
-	     [gnupg_cv_func_ldap_get_option=no])
-	else
-	  AC_TRY_LINK([#include <lber.h>
-#include <ldap.h>],[ldap_get_option((void *)0,0,(void *)0);],
-	     [gnupg_cv_func_ldap_get_option=yes],
-	     [gnupg_cv_func_ldap_get_option=no])
-       fi
-
-       AC_MSG_RESULT([$gnupg_cv_func_ldap_get_option])
-
-       if test "$gnupg_cv_func_ldap_get_option" = yes ; then
-          AC_DEFINE(HAVE_LDAP_GET_OPTION,1,[Define if the LDAP library has ldap_get_option])
-       else
+       if test "$ac_cv_func_ldap_get_option" != yes ; then
           AC_MSG_CHECKING([whether LDAP supports ld_errno])
-
-	  if test "$gnupg_cv_func_ldap_init" = yes ; then
-	    AC_TRY_COMPILE([#include <ldap.h>],
-	       [LDAP *ldap; ldap->ld_errno;],
-	       [gnupg_cv_func_ldap_ld_errno=yes],
-	       [gnupg_cv_func_ldap_ld_errno=no])
-	   else
-	    AC_TRY_LINK([#include <lber.h>
-#include <ldap.h>],[LDAP *ldap; ldap->ld_errno;],
-	       [gnupg_cv_func_ldap_ld_errno=yes],
-	       [gnupg_cv_func_ldap_ld_errno=no])
-          fi
-
+	  AC_TRY_LINK([#include <ldap.h>],[LDAP *ldap; ldap->ld_errno;],
+	     [gnupg_cv_func_ldap_ld_errno=yes],
+	     [gnupg_cv_func_ldap_ld_errno=no])
           AC_MSG_RESULT([$gnupg_cv_func_ldap_ld_errno])
 
 	  if test "$gnupg_cv_func_ldap_ld_errno" = yes ; then
