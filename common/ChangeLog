@@ -1,3 +1,7 @@
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_to_assuan_status): Map EOF to No_Data_Available.
+
 2002-06-10  Werner Koch  <wk@gnupg.org>
 
 	* errors.h (gnupg_error_token): Add new prototype.
