@@ -85,6 +85,9 @@ struct pin_entry_info_s {
   int max_digits; /* max. number of allowed digits allowed*/
   int max_tries;
   int failed_tries;
+  int (*check_cb)(struct pin_entry_info_s *); /* CB used to check the PIN */
+  void *check_cb_arg;  /* optional argument which might be of use in the CB */
+  const char *cb_errtext; /* used by the cb to displaye a specific error */
   size_t max_length; /* allocated length of the buffer */
   char pin[1];
 };
@@ -114,8 +117,7 @@ GCRY_SEXP agent_key_from_file (const unsigned char *grip,
 int agent_key_available (const unsigned char *grip);
 
 /*-- query.c --*/
-int agent_askpin (const char *desc_text, const char *err_text,
-                  struct pin_entry_info_s *pininfo);
+int agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo);
 int agent_get_passphrase (char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext);

@@ -218,13 +218,12 @@ all_digitsp( const char *s)
    number here and repeat it as long as we have invalid formed
    numbers. */
 int
-agent_askpin (const char *desc_text, const char *start_err_text,
-              struct pin_entry_info_s *pininfo)
+agent_askpin (const char *desc_text, struct pin_entry_info_s *pininfo)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
-  const char *errtext = start_err_text;
+  const char *errtext = NULL;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -261,14 +260,8 @@ agent_askpin (const char *desc_text, const char *start_err_text,
       if (errtext)
         { 
           /* fixme: should we show the try count? It must be translated */
-          if (start_err_text)
-            {
-              snprintf (line, DIM(line)-1, "SETERROR %s", errtext);
-              start_err_text = NULL;
-            }
-          else
-            snprintf (line, DIM(line)-1, "SETERROR %s (try %d of %d)",
-                      errtext, pininfo->failed_tries+1, pininfo->max_tries);
+          snprintf (line, DIM(line)-1, "SETERROR %s (try %d of %d)",
+                    errtext, pininfo->failed_tries+1, pininfo->max_tries);
           line[DIM(line)-1] = 0;
           rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
           if (rc)
@@ -276,25 +269,42 @@ agent_askpin (const char *desc_text, const char *start_err_text,
           errtext = NULL;
         }
       
-      rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm, NULL, NULL, NULL, NULL);
+      rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
+                            NULL, NULL, NULL, NULL);
       if (rc == ASSUAN_Too_Much_Data)
         errtext = pininfo->min_digits? trans ("PIN too long")
                                      : trans ("Passphrase too long");
       else if (rc)
         return unlock_pinentry (map_assuan_err (rc));
-      if (!errtext && !pininfo->min_digits)
-        return unlock_pinentry (0); /* okay, got a passphrase */
-      if (!errtext && !all_digitsp (pininfo->pin))
-        errtext = trans ("Invalid characters in PIN");
-      if (!errtext && pininfo->max_digits
-          && strlen (pininfo->pin) > pininfo->max_digits)
-        errtext = trans ("PIN too long");
-      if (!errtext
-          && strlen (pininfo->pin) < pininfo->min_digits)
-        errtext = trans ("PIN too short");
+
+      if (!errtext && pininfo->min_digits)
+        {
+          /* do some basic checks on the entered PIN. */
+          if (!all_digitsp (pininfo->pin))
+            errtext = trans ("Invalid characters in PIN");
+          else if (pininfo->max_digits
+                   && strlen (pininfo->pin) > pininfo->max_digits)
+            errtext = trans ("PIN too long");
+          else if (strlen (pininfo->pin) < pininfo->min_digits)
+            errtext = trans ("PIN too short");
+        }
+
+      if (!errtext && pininfo->check_cb)
+        {
+          /* More checks by utilizing the optional callback. */
+          pininfo->cb_errtext = NULL;
+          rc = pininfo->check_cb (pininfo);
+          if (rc == -1 && pininfo->cb_errtext)
+            errtext = pininfo->cb_errtext;
+          else if (rc == GNUPG_Bad_Passphrase || rc == GNUPG_Bad_PIN)
+            errtext = (pininfo->min_digits? trans ("Bad PIN")
+                       : trans ("Bad Passphrase"));
+          else if (rc)
+            return unlock_pinentry (map_assuan_err (rc));
+        }
 
       if (!errtext)
-        return unlock_pinentry (0); /* okay, got a PIN */
+        return unlock_pinentry (0); /* okay, got a PIN or passphrase */
     }
 
   return unlock_pinentry (pininfo->min_digits? GNUPG_Bad_PIN

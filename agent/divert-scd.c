@@ -166,7 +166,7 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
 /* Callback used to ask for the PIN which should be set into BUF.  The
    buf has been allocated by the caller and is of size MAXBUF which
    includes the terminating null.  The function should return an UTF-8
-   string with the passphrase, the buffer may optioanlly be padded
+   string with the passphrase, the buffer may optionally be padded
    with arbitrary characters */
 static int 
 getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
@@ -174,35 +174,27 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   struct pin_entry_info_s *pi;
   int rc;
   int tries = 0;
-  const char *errtext;
-  
+
   assert (!opaque);
 
   if (maxbuf < 2)
     return GNUPG_Invalid_Value;
 
-  /* FIXME: keep PI and TRIES in OPAQUE */
+  /* FIXME: keep PI and TRIES in OPAQUE.  Actually this is a whole
+     mess becuase we should call the card's verify function from the
+     pinentry check pin CB. */
   pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
   pi->max_length = maxbuf-1;
   pi->min_digits = 0;  /* we want a real passphrase */
   pi->max_digits = 8;
   pi->max_tries = 3;
 
-  errtext = NULL;
-  do
+  rc = agent_askpin (info, pi);
+  if (!rc)
     {
-      rc = agent_askpin (info, errtext, pi);
-      if (!rc)
-        {
-          strncpy (buf, pi->pin, maxbuf-1);
-          buf[maxbuf-1] = 0;
-          xfree (pi);
-          return 0;
-        }
-      errtext = pi->min_digits? trans ("Bad PIN") : trans ("Bad Passphrase");
+      strncpy (buf, pi->pin, maxbuf-1);
+      buf[maxbuf-1] = 0;
     }
-  while ((rc == GNUPG_Bad_Passphrase || rc == GNUPG_Bad_PIN)
-         && tries++ < 3);
   xfree (pi);
   return rc;
 }

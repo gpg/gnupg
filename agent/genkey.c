@@ -70,6 +70,19 @@ store_key (GCRY_SEXP private, const char *passphrase)
   return rc;
 }
 
+/* Callback function to compare the first entered PIN with the one
+   currently beeing entered. */
+static int
+reenter_compare_cb (struct pin_entry_info_s *pi)
+{
+  const char *pin1 = pi->check_cb_arg;
+
+  if (!strcmp (pin1, pi->pin))
+    return 0; /* okay */
+  pi->cb_errtext = trans ("does not match - try again");
+  return -1;
+}
+
 
 
 /* Generate a new keypair according to the parameters given in
@@ -91,39 +104,30 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
       return seterr (Invalid_Data);
     }
 
-  /* Get the passphrase now, cause key generation may take a while */
+  /* Get the passphrase now, cause key generation may take a while. */
   {
     const char *text1 = trans ("Please enter the passphrase to%0A"
                                "to protect your new key");
     const char *text2 = trans ("Please re-enter this passphrase");
-    const char *nomatch = trans ("does not match - try again");
-    int tries = 0;
 
     pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
-    pi2 = pi + sizeof *pi;
+    pi2 = pi + (sizeof *pi + 100);
     pi->max_length = 100;
     pi->max_tries = 3;
     pi2->max_length = 100;
     pi2->max_tries = 3;
+    pi2->check_cb = reenter_compare_cb;
+    pi2->check_cb_arg = pi->pin;
 
-    rc = agent_askpin (text1, NULL, pi);
+    rc = agent_askpin (text1, pi);
     if (!rc)
-      {
-        do 
-          {
-            rc = agent_askpin (text2, tries? nomatch:NULL, pi2);
-            tries++;
-          }
-        while (!rc && tries < 3 && strcmp (pi->pin, pi2->pin));
-        if (!rc && strcmp (pi->pin, pi2->pin))
-          rc = GNUPG_Canceled;
-      }
+      rc = agent_askpin (text2, pi2);
     if (rc)
       return rc;
     if (!*pi->pin)
       {
         xfree (pi);
-        pi = NULL; /* use does not want a passphrase */
+        pi = NULL; /* User does not want a passphrase. */
       }
   }
 
@@ -158,7 +162,7 @@ agent_genkey (CTRL ctrl, const char *keyparam, size_t keyparamlen,
   
   /* store the secret key */
   log_debug ("storing private key\n");
-  rc = store_key (s_private, pi->pin);
+  rc = store_key (s_private, pi? pi->pin:NULL);
   xfree (pi); pi = NULL;
   gcry_sexp_release (s_private);
   if (rc)

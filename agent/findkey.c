@@ -27,8 +27,16 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <assert.h>
 
 #include "agent.h"
+
+/* Helper to pass data to the check callback of the unprotect function. */
+struct try_unprotect_arg_s {
+  const unsigned char *protected_key;
+  unsigned char *unprotected_key;
+};
+
 
 
 int
@@ -88,16 +96,32 @@ agent_write_private_key (const unsigned char *grip,
 }
 
 
+/* Callback function to try the unprotection from the passpharse query
+   code. */
+static int
+try_unprotect_cb (struct pin_entry_info_s *pi)
+{
+  struct try_unprotect_arg_s *arg = pi->check_cb_arg;
+  size_t dummy;
+
+  assert (!arg->unprotected_key);
+  return agent_unprotect (arg->protected_key, pi->pin,
+                          &arg->unprotected_key, &dummy);
+}
+
+
+/* Unprotect the canconical encoded S-expression key in KEYBUF.  GRIP
+   should be the hex encoded keygrip of that key to be used with the
+   cahing mechanism. */
 static int
 unprotect (unsigned char **keybuf, const unsigned char *grip)
 {
   struct pin_entry_info_s *pi;
+  struct try_unprotect_arg_s arg;
   int rc, i;
   unsigned char *result;
   size_t resultlen;
-  int tries = 0;
   char hexgrip[40+1];
-  const char *errtext;
   
   for (i=0; i < 20; i++)
     sprintf (hexgrip+2*i, "%02X", grip[i]);
@@ -127,27 +151,19 @@ unprotect (unsigned char **keybuf, const unsigned char *grip)
   pi->min_digits = 0;  /* we want a real passphrase */
   pi->max_digits = 8;
   pi->max_tries = 3;
+  pi->check_cb = try_unprotect_cb;
+  arg.protected_key = *keybuf;
+  arg.unprotected_key = NULL;
+  pi->check_cb_arg = &arg;
 
-  errtext = NULL;
-  do
+  rc = agent_askpin (NULL, pi);
+  if (!rc)
     {
-      rc = agent_askpin (NULL, errtext, pi);
-      if (!rc)
-        {
-          rc = agent_unprotect (*keybuf, pi->pin, &result, &resultlen);
-          if (!rc)
-            {
-              agent_put_cache (hexgrip, pi->pin, 0);
-              xfree (*keybuf);
-              *keybuf = result;
-              xfree (pi);
-              return 0;
-            }
-        }
-      errtext = pi->min_digits? trans ("Bad PIN") : trans ("Bad Passphrase");
+      assert (arg.unprotected_key);
+      agent_put_cache (hexgrip, pi->pin, 0);
+      xfree (*keybuf);
+      *keybuf = arg.unprotected_key;
     }
-  while ((rc == GNUPG_Bad_Passphrase || rc == GNUPG_Bad_PIN)
-         && tries++ < 3);
   xfree (pi);
   return rc;
 }
