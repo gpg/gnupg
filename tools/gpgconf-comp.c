@@ -386,6 +386,11 @@ struct gc_option
   /* The current value of this option.  */
   char *value;
 
+  /* The new flags for this option.  The only defined flag is actually
+     GC_OPT_FLAG_DEFAULT, and it means that the option should be
+     deleted.  In this case, NEW_VALUE is NULL.  */
+  unsigned long new_flags;
+
   /* The new value of this option.  */
   char *new_value;
 };
@@ -1213,10 +1218,15 @@ gc_component_retrieve_options (int component)
 
 /* Perform a simple validity check based on the type.  */
 static void
-option_check_validity (gc_option_t *option, const char *new_value)
+option_check_validity (gc_option_t *option, unsigned long flags,
+		       const char *new_value)
 {
-  if (option->new_value)
+  if (option->new_flags || option->new_value)
     gc_error (1, 0, "option %s already changed", option->name);
+
+  if ((flags & GC_OPT_FLAG_DEFAULT) && *new_value)
+    gc_error (1, 0, "value %s provided for deleted option %s",
+	      new_value, option->name);
 
   if (!*new_value)
     return;
@@ -1332,7 +1342,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 
 	      option = find_option (component, start, backend);
 	      *end = saved_end;
-	      if (option && option->new_value)
+	      if (option && (option->new_flags & GC_OPT_FLAG_DEFAULT))
 		disable = 1;
 	    }
 	  if (disable)
@@ -1379,7 +1389,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   option = gc_component[component].options;
   while (option->name)
     {
-      /* FIXME: Add support for lists.  */
+      /* FIXME: Add support for lists and default arg (new_value eq "").  */
       if (!(option->flags & GC_OPT_FLAG_GROUP)
 	  && option->backend == backend
 	  && option->new_value
@@ -1487,7 +1497,7 @@ gc_component_change_options (int component, FILE *in)
     {
       char *linep;
       unsigned long flags = 0;
-      char *new_value = NULL;
+      char *new_value = "";
 
       /* Strip newline and carriage return, if present.  */
       while (length > 0
@@ -1528,8 +1538,7 @@ gc_component_change_options (int component, FILE *in)
 	  if (end)
 	    *(end++) = '\0';
 
-	  if (!(flags & GC_OPT_FLAG_DEFAULT))
-	    new_value = linep;
+	  new_value = linep;
 
 	  linep = end;
 	}
@@ -1538,13 +1547,11 @@ gc_component_change_options (int component, FILE *in)
       if (!option)
 	gc_error (1, 0, "unknown option %s", line);
 
-      /* FIXME: This is not correct, as it ignores the optional arg
-	 case.  */
-      if (flags & GC_OPT_FLAG_DEFAULT)
-	new_value = "";
+      option_check_validity (option, flags, new_value);
 
-      option_check_validity (option, new_value);
-      option->new_value = xstrdup (new_value);
+      option->new_flags = flags;
+      if (!(flags & GC_OPT_FLAG_DEFAULT))
+	option->new_value = xstrdup (new_value);
     }
 
   /* Now that we have collected and locally verified the changes,
@@ -1555,7 +1562,7 @@ gc_component_change_options (int component, FILE *in)
     {
       /* Go on if we have already seen this backend, or if there is
 	 nothing to do.  */
-      if (src_pathname[option->backend] || !option->new_value)
+      if (src_pathname[option->backend] || !(option->new_flags || option->new_value))
 	{
 	  option++;
 	  continue;

@@ -2,6 +2,11 @@
 
 	* gpgconf-comp.c (gc_component_list_options): Correct output for
 	lists of arg type none.
+	(struct gc_option): Add new member new_flags.
+	(option_check_validity): Check OPTION->new_flags beside
+	OPTION->new_value.  Add new argument FLAGS.
+	(gc_component_change_options): Support default flag correctly.
+	(change_options_program): Likewise.
 
 2004-02-24  Marcus Brinkmann  <marcus@g10code.de>
 
