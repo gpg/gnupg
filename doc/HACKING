@@ -46,7 +46,7 @@ of the CVS head revision is also available.  See rsync(1) and try
 
 Special Tools
 =============
-Documention is based on the docbook DTD.  Actually we have only the
+Documentation is based on the docbook DTD.  Actually we have only the
 man page for now.  To build a man page you need the docbook-to-man
 tool and all the other thinks needed for SGML processing.  Debian
 comes with the docbook tools and you only need this docbook-to-man
@@ -203,7 +203,7 @@ How to use the cipher functions
 cipher/cipher.c implements the interface to symmetric encryption functions.
 As usual you have a function to open a cipher (which returns a handle to be used
 with all other functions), some functions to set the key and other stuff and
-a encrypt and decrypt function which does the real work.  YOu probably know
+a encrypt and decrypt function which does the real work.  You probably know
 how to work with files - so it should really be easy to work with these
 functions.  Here is an example:
 
@@ -211,7 +211,7 @@ functions.  Here is an example:
 
     hd = cipher_open( CIPHER_ALGO_TWOFISH, CIPHER_MODE_CFB, 0 );
     if( !hd )
-	oops( use other funtion to check for the real error );
+	oops( use other function to check for the real error );
     rc = cipher_setkey( hd, key256bit, 32 ) )
     if( rc )
 	oops( weak key or something like this );

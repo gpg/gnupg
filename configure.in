@@ -179,12 +179,12 @@ fi
 try_gettext=yes
 try_gdbm=yes
 case "${target}" in
-    i386--mingw32)
+    *-*-mingw32)
         # special stuff for Windoze NT
         cross_compiling=yes
-        CC="i386--mingw32-gcc"
-        CPP="i386--mingw32-gcc -E"
-        RANLIB="i386--mingw32-ranlib"
+        CC="${target}-gcc"
+        CPP="${target}-gcc -E"
+        RANLIB="${target}-ranlib"
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_ONLY_8DOT3)
         AC_DEFINE(HAVE_DRIVE_LETTERS)
@@ -192,7 +192,7 @@ case "${target}" in
         try_gettext="no"
         try_gdbm="no"
         ;;
-    i386-emx-os2 | i[3456]86-pc-os2*emx )
+    i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
         ac_cv_have_dev_random=no
         AC_DEFINE(HAVE_DRIVE_LETTERS)
@@ -201,7 +201,7 @@ case "${target}" in
         try_gdbm="no"
         ;;
 
-    i*86-*-msdosdjgpp*)
+    i?86-*-msdosdjgpp*)
         # DOS with the DJGPP environment
         ac_cv_have_dev_random=no
         AC_DEFINE(HAVE_DRIVE_LETTERS)
@@ -238,18 +238,22 @@ fi
 
 
 case "${target}" in
-    i386--mingw32)
+    *-*-mingw32)
         PRINTABLE_OS_NAME="MingW32"
         ;;
-    i386-emx-os2 | i[3456]86-pc-os2*emx )
+    i?86-emx-os2 | i?86-*-os2*emx )
         PRINTABLE_OS_NAME="OS/2"
+        ;;
+    i?86-*-msdosdjgpp*)
+        PRINTABLE_OS_NAME="MSDOS/DJGPP"
+        try_dynload=no
         ;;
     *-linux*)
         PRINTABLE_OS_NAME="GNU/Linux"
         ;;
-    i*86-*-msdosdjgpp*)
-        PRINTABLE_OS_NAME="MSDOS/DJGPP"
-        try_dynload=no
+dnl let that after linux to avoid gnu-linux problems
+    *-gnu*)
+        PRINTABLE_OS_NAME="GNU/Hurd"
         ;;
     *)
         PRINTABLE_OS_NAME=`uname -s || echo "Unknown"`
@@ -482,16 +486,16 @@ if test "$use_static_rnd" = default; then
       static_modules="$static_modules rndlinux"
   else
       case "${target}" in
-          i386--mingw32)
+          *-*-mingw32)
               static_modules="$static_modules rndw32"
               ;;
-          i386-emx-os2|i[3456]86-pc-os2*emx)
+          i?86-emx-os2|i?86-*-os2*emx)
               static_modules="$static_modules rndos2"
               ;;
           m68k-atari-mint)
               static_modules="$static_modules rndatari"
               ;;
-          i*86-*-msdosdjgpp*)
+          i?86-*-msdosdjgpp*)
               static_modules="$static_modules"
               ;;
           *)
@@ -525,7 +529,7 @@ if test "$print_egd_notice" = "yes"; then
 *** in Perl and available at the GnuPG FTP servers.  For more information
 *** consult the GnuPG webpages:
 ***
-***           http://www.gnupg.org/donwload.html#egd
+***           http://www.gnupg.org/download.html#egd
 ***
 *** You may want to run ./configure with --enable-static-rnd=none to be
 *** able to load the EGD client code dynamically; this way you can choose

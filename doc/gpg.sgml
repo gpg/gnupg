@@ -18,7 +18,7 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 -->
 <!-- This file should be processed by docbook-to-man to
-     create a manual page.  This program has currenlty the bug
+     create a manual page.  This program has currently the bug
      not to remove leading white space. So this source file does
      not look very pretty
 
@@ -469,7 +469,7 @@ values will be overwritten.
 <varlistentry>
 <term>--print-md <parameter>algo</parameter> &OptParmFiles;</term>
 <listitem><para>
-Print message digest og algorithm ALGO for all given files of stdin.
+Print message digest of algorithm ALGO for all given files of stdin.
 If "*" is used for the algorithm, digests for all available algorithms
 are printed.
 </para></listitem></varlistentry>
@@ -480,8 +480,8 @@ are printed.
 		   <optional><parameter>count</parameter></optional></term>
 <listitem><para>
 Emit COUNT random bytes of the given quality level. If count is not given
-or zero, an endless sequenece of random bytes will be emitted.
-PLEASE, don't use this command unless you know waht you are doing, it may
+or zero, an endless sequence of random bytes will be emitted.
+PLEASE, don't use this command unless you know what you are doing, it may
 remove precious entropy from the system!
 </para></listitem></varlistentry>
 
@@ -915,6 +915,13 @@ Use &ParmString; as the name of file which is stored in
 messages.
 </para></listitem></varlistentry>
 
+<varlistentry>
+<term>--use-embedded-filename</term>
+<listitem><para>
+Try to create a file with a name as embedded in the data.
+This can be a dangerous option as it allows to overwrite files.
+</para></listitem></varlistentry>
+
 
 <varlistentry>
 <term>--completes-needed &ParmN;</term>
@@ -1109,7 +1116,7 @@ This option might not be implemented yet.
 <term>--allow-non-selfsigned-uid</term>
 <listitem><para>
 Allow the import of keys with user IDs which are not self-signed.
-This is only allows the import - key validation will fail und you
+This is only allows the import - key validation will fail and you
 have to check the validity of the key my other means.  This hack is
 needed for some German keys generated with pgp 2.6.3in. You should really
 avoid using it, because OpenPGP has better mechanics to do separate signing

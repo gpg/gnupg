@@ -23,7 +23,7 @@ conditional.
       more secure than swapping out to the swap disk?  I don't
       believe so because if an attacker has access to the physical
       box (and he needs this to look at the swap area) he can also
-      leave a trojan horse which is far more easier than to analyze
+      leave a Trojan horse which is far more easier than to analyze
       memory dumps.  Question:	Is it possible that a Unix pages
       an old (left over by some other process) swap page in for
       another process - this should be considered a serious design

@@ -1,3 +1,15 @@
+Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* plaintext.c (do_hash): Hash CR,LF for a single CR.
+	(ask_for_detached_datafile): Changed arguments to be closer to
+	those of hash_datafiles and cleanup the code a bit.
+	* mainproc.c (proc_tree): Workaround for pgp5 textmode detached
+	signatures.  Changed behavior of asking for data file to be the same
+	as with provided data files.
+
+	* keylist.c (list_keyblock): Use UTF8 print functions.
+
 Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

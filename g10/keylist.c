@@ -255,10 +255,15 @@ list_keyblock( KBNODE keyblock, int secret )
 		else
 		    printf("uid%*s", 28, "");
 	    }
-	    print_string( stdout,  node->pkt->pkt.user_id->name,
-			  node->pkt->pkt.user_id->len, opt.with_colons );
-	    if( opt.with_colons )
+	    if( opt.with_colons ) {
+		print_string( stdout,  node->pkt->pkt.user_id->name,
+			      node->pkt->pkt.user_id->len, ':' );
 		putchar(':');
+	    }
+	    else
+		print_utf8_string( stdout,  node->pkt->pkt.user_id->name,
+				   node->pkt->pkt.user_id->len );
+
 	    putchar('\n');
 	    if( !any ) {
 		if( opt.fingerprint )
@@ -402,7 +407,10 @@ list_keyblock( KBNODE keyblock, int secret )
 	    else {
 		size_t n;
 		char *p = get_user_id( sig->keyid, &n );
-		print_string( stdout, p, n, opt.with_colons );
+		if( opt.with_colons )
+		    print_string( stdout, p, n, ':' );
+		else
+		    print_utf8_string( stdout, p, n );
 		m_free(p);
 	    }
 	    if( opt.with_colons )

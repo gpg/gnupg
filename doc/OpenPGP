@@ -39,7 +39,7 @@
 
      * PGP 5.x does not accept V4 signatures for anything other than
        key material.  The GnuPG option --force-v3-sigs mimics this
-       behaviour.
+       behavior.
 
      * PGP 5.x does not recognize the "five-octet" lengths in
        new-format headers or in signature subpacket lengths.

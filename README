@@ -29,7 +29,7 @@
     implementation of ElGamal signatures is *not* insecure).  Symmetric
     algorithms are: 3DES, Blowfish, CAST5 and Twofish (GnuPG does not
     yet create Twofish encrypted messages because there no agreement
-    in the OpenPG WG on how to use it together with a MDC algorithm)
+    in the OpenPGP WG on how to use it together with a MDC algorithm)
     Digest algorithms available are MD5, RIPEMD160, SHA1, and TIGER/192.
 
 
@@ -116,7 +116,7 @@
 
        "pub   768R/0C9857A5 1995-09-30 Werner Koch <werner.koch@guug.de>"
 
-       The finperprint of this key is published in printed form in the
+       The fingerprint of this key is published in printed form in the
 	  "Global Trust Register for 1998", ISBN 0-9532397-0-5.
 
 
@@ -130,7 +130,7 @@
 	fd9351b26b3189c1d577f0970f9dcadc  gnupg-x.y.z.tar.gz
 
        Now check that this checksum is _exactly_ the same as the one
-       published via the anouncement list and probably via Usenet.
+       published via the announcement list and probably via Usenet.
 
 
 
@@ -414,7 +414,7 @@
 
 	"+Heinrich Heine duesseldorf"
 
-      All words must match excatly (not case sensitive) and appear in
+      All words must match exactly (not case sensitive) and appear in
       any order in the user ID.  Words are any sequences of letters,
       digits, the underscore and characters with bit 7 set.
 
@@ -438,7 +438,7 @@
     If you use the option "--batch", GnuPG runs in non-interactive mode and
     never prompts for input data.  This does not even allow entering the
     passphrase.  Until we have a better solution (something like ssh-agent),
-    you can use the option "--passphrase-fd n", which works like PGPs
+    you can use the option "--passphrase-fd n", which works like PGP's
     PGPPASSFD.
 
     Batch mode also causes GnuPG to terminate as soon as a BAD signature is

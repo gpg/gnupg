@@ -376,76 +376,160 @@ native_to_utf8( const char *string )
 
 
 /****************
- * Convert string, which is in UTF8 to native encoding.  Replace
- * illegal encodings by some "\xnn".
+ * Convert string, which is in UTF8 to native encoding.
+ * illegal encodings by some "\xnn" and quote all control characters
  */
 char *
-utf8_to_native( const char *string )
+utf8_to_native( const char *string, size_t length )
 {
-  #if 0
+    int nleft;
+    int i;
+    byte encbuf[7];
+    int encidx;
     const byte *s;
     size_t n;
-    byte *buffer, *p;
+    byte *buffer = NULL, *p = NULL;
+    unsigned long val = 0;
+    size_t slen;
+    int resync = 0;
 
-    /* quick check whether we actually have characters with bit 8 set */
-    for( s=string; *s; s++ )
-	if( *s & 0x80 )
-	    break;
-    if( !*s ) /* that is easy */
-	return m_strdup(string);
+    /* 1. pass (p==NULL): count the extended utf-8 characters */
+    /* 2. pass (p!=NULL): create string */
+    for( ;; ) {
+	for( slen=length, nleft=encidx=0, n=0, s=string; slen; s++, slen-- ) {
+	    if( resync ) {
+		if( !(*s < 128 || (*s >= 0xc0 && *s <= 0xfd)) ) {
+		    /* still invalid */
+		    if( p ) {
+			sprintf(p, "\\x%02x", *s );
+			p += 4;
+		    }
+		    n += 4;
+		    continue;
+		}
+		resync = 0;
+	    }
+	    if( !nleft ) {
+		if( !(*s & 0x80) ) { /* plain ascii */
+		    if( iscntrl( *s ) ) {
+			n++;
+			if( p )
+			    *p++ = '\\';
+			switch( *s ) {
+			  case '\n': n++; if( p ) *p++ = 'n'; break;
+			  case '\r': n++; if( p ) *p++ = 'r'; break;
+			  case '\f': n++; if( p ) *p++ = 'f'; break;
+			  case '\v': n++; if( p ) *p++ = 'v'; break;
+			  case '\b': n++; if( p ) *p++ = 'b'; break;
+			  case	 0 : n++; if( p ) *p++ = '0'; break;
+			  default: n += 3;
+				   sprintf( p, "x%02x", *s );
+				   p += 3;
+				   break;
+			}
+		    }
+		    else {
+			if( p ) *p++ = *s;
+			n++;
+		    }
+		}
+		else if( (*s & 0xe0) == 0xc0 ) { /* 110x xxxx */
+		    val = *s & 0x1f;
+		    nleft = 1;
+		    encbuf[encidx=0] = *s;
+		}
+		else if( (*s & 0xf0) == 0xe0 ) { /* 1110 xxxx */
+		    val = *s & 0x0f;
+		    nleft = 2;
+		    encbuf[encidx=0] = *s;
+		}
+		else if( (*s & 0xf8) == 0xf0 ) { /* 1111 0xxx */
+		    val = *s & 0x07;
+		    nleft = 3;
+		    encbuf[encidx=0] = *s;
+		}
+		else if( (*s & 0xfc) == 0xf8 ) { /* 1111 10xx */
+		    val = *s & 0x03;
+		    nleft = 4;
+		    encbuf[encidx=0] = *s;
+		}
+		else if( (*s & 0xfe) == 0xfc ) { /* 1111 110x */
+		    val = *s & 0x01;
+		    nleft = 5;
+		    encbuf[encidx=0] = *s;
+		}
+		else {	/* invalid encoding: print as \xnn */
+		    if( p ) {
+			sprintf(p, "\\x%02x", *s );
+			p += 4;
+		    }
+		    n += 4;
+		    resync = 1;
+		}
+	    }
+	    else if( *s < 0x80 || *s >= 0xc0 ) { /* invalid */
+		if( p ) {
+		    sprintf(p, "\\x%02x", *s );
+		    p += 4;
+		}
+		n += 4;
+		nleft = 0;
+		resync = 1;
+	    }
+	    else {
+		encbuf[++encidx] = *s;
+		val <<= 6;
+		val |= *s & 0x3f;
+		if( !--nleft ) { /* ready */
+		    if( active_charset ) { /* table lookup */
+			for(i=0; i < 128; i++ ) {
+			    if( active_charset[i] == val )
+				break;
+			}
+			if( i < 128 ) { /* we can print this one */
+			    if( p ) *p++ = i+128;
+			    n++;
+			}
+			else { /* we do not have a translation: print utf8 */
+			    if( p ) {
+				for(i=0; i < encidx; i++ ) {
+				    sprintf(p, "\\x%02x", encbuf[i] );
+				    p += 4;
+				}
+			    }
+			    n += encidx*4;
+			}
+		    }
+		    else { /* native set */
+			if( val >= 0x80 && val < 256 ) {
+			    n++;    /* we can simply print this character */
+			    if( p ) *p++ = val;
+			}
+			else { /* we do not have a translation: print utf8 */
+			    if( p ) {
+				for(i=0; i < encidx; i++ ) {
+				    sprintf(p, "\\x%02x", encbuf[i] );
+				    p += 4;
+				}
+			    }
+			    n += encidx*4;
+			}
+		    }
 
-    /* count the extended utf-8 characters */
-	110x xxxx
-	1110 xxxx
-	1111 0xxx
-    for( n=1, s=string; *s; s++ ) {
-	if( !(*s & 0x80) )
-	    n++;
-	else if( (*s & 0xe0) == 0xc0 )
-	    n += 2;
-	else if( (*s & 0xf0) == 0xe0 )
-	    n += 3;
-	else if( (*s & 0xf8) == 0xf0 )
-	    n += 4;
-	else
-	    n++; /* invalid encoding */
-    }
+		}
 
-    buffer = p = m_alloc( n );
-    for( s=string; *s; ) {
-	if( !(*s & 0x80) )
-	    *p++ = *s++;
-	else if( (*s & 0xe0) == 0xc0 ) {
-	    u32 val;
-	    if( (s[1] & 0xc0) != 0x80 )
-		;
-	    val = (*s << 6) | (s[1] & 0x3f);
+	    }
 	}
-	else if( (*s & 0xf0) == 0xe0 )
-	    n += 3;
-	else if( (*s & 0xf8) == 0xf0 )
-	    n += 4;
-	else
-	    n++; /* invalid encoding */
+	if( !buffer ) { /* allocate the buffer after the first pass */
+	    buffer = p = m_alloc( n + 1 );
+	}
+	else {
+	    *p = 0; /* make a string */
+	    return buffer;
+	}
     }
-   #endif
-     return m_strdup(string);
-
 }
 
-
-/****************
- * check whether string is a valid UTF8 string.
- * Returns 0 = Okay
- *	   1 = Too short
- *	   2 = invalid encoding
- */
-int
-check_utf8_string( const char *string )
-{
-    /*fixme */
-    return 0;
-}
 
 
 /*********************************************

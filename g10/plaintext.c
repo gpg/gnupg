@@ -249,7 +249,8 @@ handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
  * INFILE is the name of the input file.
  */
 int
-ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
+ask_for_detached_datafile( MD_HANDLE md, MD_HANDLE md2,
+			   const char *inname, int textmode )
 {
     char *answer = NULL;
     IOBUF fp;
@@ -285,18 +286,12 @@ ask_for_detached_datafile( md_filter_context_t *mfx, const char *inname )
     if( !fp ) {
 	if( opt.verbose )
 	    log_info(_("reading stdin ...\n"));
-	while( (c = getchar()) != EOF ) {
-	    if( mfx->md )
-		md_putc(mfx->md, c );
-	}
+	fp = iobuf_open( NULL );
+	assert(fp);
     }
-    else {
-	while( (c = iobuf_get(fp)) != -1 ) {
-	    if( mfx->md )
-		md_putc(mfx->md, c );
-	}
-	iobuf_close(fp);
-    }
+    do_hash( md, md2, fp, textmode );
+    iobuf_close(fp);
+
 
   leave:
     m_free(answer);
@@ -315,16 +310,32 @@ do_hash( MD_HANDLE md, MD_HANDLE md2, IOBUF fp, int textmode )
 	iobuf_push_filter( fp, text_filter, &tfx );
     }
     if( md2 ) { /* work around a strange behaviour in pgp2 */
+	/* It seems that at least PGP5 converts a single CR to a CR,LF too */
+	int lc = -1;
 	while( (c = iobuf_get(fp)) != -1 ) {
-	    if( c == '\n' )
-	       md_putc(md2, '\r' );
-	    md_putc(md, c );
-	    md_putc(md2, c );
+	    if( c == '\n' && lc == '\r' )
+		md_putc(md2, c);
+	    else if( c == '\n' ) {
+		md_putc(md2, '\r');
+		md_putc(md2, c);
+	    }
+	    else if( c != '\n' && lc == '\r' ) {
+		md_putc(md2, '\n');
+		md_putc(md2, c);
+	    }
+	    else
+		md_putc(md2, c);
+
+	    if( md )
+		md_putc(md, c );
+	    lc = c;
 	}
     }
     else {
-	while( (c = iobuf_get(fp)) != -1 )
-	    md_putc(md, c );
+	while( (c = iobuf_get(fp)) != -1 ) {
+	    if( md )
+		md_putc(md, c );
+	}
     }
 }
 

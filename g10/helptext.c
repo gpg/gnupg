@@ -103,7 +103,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 
 
 { "keygen.valid", N_(
- "Enter the required value as shown in the pronpt.\n"
+ "Enter the required value as shown in the prompt.\n"
  "It is possible to enter a ISO date (YYYY-MM-DD) but you won't\n"
  "get a good error response - instead the system tries to interpret\n"
  "the given value as an interval."
@@ -176,8 +176,8 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 
 { "keyedit.delsig.valid", N_(
  "This is a valid signature on the key; you normally don't want\n"
- "to delete this signature may be important to establish a trust\n"
- "connection to the key or another key certified by this key."
+ "to delete this signature because it may be important to establish a\n"
+ "trust connection to the key or another key certified by this key."
 )},
 { "keyedit.delsig.unknown", N_(
  "This signature can't be checked because you don't have the\n"

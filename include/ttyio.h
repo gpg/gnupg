@@ -23,6 +23,7 @@
 int tty_batchmode( int onoff );
 void tty_printf( const char *fmt, ... );
 void tty_print_string( byte *p, size_t n );
+void tty_print_utf8_string( byte *p, size_t n );
 char *tty_get( const char *prompt );
 char *tty_get_hidden( const char *prompt );
 void tty_kill_prompt(void);

@@ -52,7 +52,7 @@ More fields may be added later.
 If field 1 has the tag "pkd", a listing looks like this:
 pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     !  !   !-- the value
-    !  !------ for infomation number of bits in the value
+    !  !------ for information number of bits in the value
     !--------- index (eg. DSA goes from 0 to 3: p,q,g,y)
 
 
@@ -97,7 +97,7 @@ more arguments in future versions.
     ENC_TO  <long keyid>  <keytype>  <keylength>
 	The message is encrypted to this keyid.
 	keytype is the numerical value of the public key algorithm,
-	kenlength is the length of the key or 0 if it is not known
+	keylength is the length of the key or 0 if it is not known
 	(which is currently always the case).
 
     NODATA  <what>
@@ -147,7 +147,7 @@ more arguments in future versions.
 	No passphrase was supplied.  An application which encounters this
 	message may want to stop parsing immediately because the next message
 	will probably be a BAD_PASSPHRASE.  However, if the application
-	is a wrapper around the key edit menu functionalty it might not
+	is a wrapper around the key edit menu functionality it might not
 	make sense to stop parsing but simply ignoring the following
 	PAD_PASSPHRASE.
 
@@ -167,7 +167,7 @@ more arguments in future versions.
 	The decryption process succeeded.  This means, that either the
 	correct secret key has been used or the correct passphrase
 	for a conventional encrypted message was given.  The program
-	itself may return an errorcode becuase it may not be possible to
+	itself may return an errorcode because it may not be possible to
 	verify a signature for some reasons.
 
     NO_PUBKEY  <long keyid>
@@ -578,7 +578,7 @@ The standard http URL encoded query parameters are this (always key=value):
   are not searched for and the order of the words doesn't matter (but see
   next option).
 
-- exact=on. This switch tells the hkp server to only report exact mathing
+- exact=on. This switch tells the hkp server to only report exact matching
   keys back. In this case the order and the "delimiters" are important.
 
 - fingerprint=on. Also reports the fingerprints when used with 'index' or
@@ -592,7 +592,7 @@ A better way to to this would be a request like:
 
    /pks/lookup/<gnupg_formatierte_user_id>?op=<operation>
 
-this can be implemented using Hurd's translater mechanism.
-However, I think the whole key server stuff has to be re-thougth;
+this can be implemented using Hurd's translator mechanism.
+However, I think the whole key server stuff has to be re-thought;
 I have some ideas and probably create a white paper.
 

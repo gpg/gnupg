@@ -235,6 +235,29 @@ tty_print_string( byte *p, size_t n )
   #endif
 }
 
+void
+tty_print_utf8_string( byte *p, size_t n )
+{
+    size_t i;
+    char *buf;
+
+    if (no_terminal)
+	return;
+
+    /* we can handle plain ascii simpler, so check for it first */
+    for(i=0; i < n; i++ ) {
+	if( p[i] & 0x80 )
+	    break;
+    }
+    if( i < n ) {
+	buf = utf8_to_native( p, n );
+	tty_printf("%s", buf );
+	m_free( buf );
+    }
+    else
+	tty_print_string( p, n );
+}
+
 
 
 

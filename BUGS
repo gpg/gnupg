@@ -30,8 +30,8 @@ and after about half a day in the rsync snapshots.
     [is this bug still alive? - can someone please check it]
 
 [ **] #6 1999-02-22 <backes@rhrk.uni-kl.de> 0.9.3
-    Buserror on IRIX 6.4: Crash while doing a keygen. I think while creating
-    the prime.	Other buserrors are reported when doing a "gpg README"
+    Bus error on IRIX 6.4: Crash while doing a keygen. I think while creating
+    the prime.	Other bus errors are reported when doing a "gpg README"
     on sparc-solaris2.6.
     --> Solaris fixed.
     --> IRIX bug still there but someone should test this again!

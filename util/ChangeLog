@@ -1,3 +1,14 @@
+Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* strgutil (utf8_to_native): Implemented.
+	(check_utf8_string): Removed.
+
+	* miscutil.c (make_printable_string): Fixed possible buffer overflow.
+	(print_utf8_string): New.
+
+	* ttyio.c (tty_print_utf8_string): New.
+
 Mon Aug 30 20:38:33 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

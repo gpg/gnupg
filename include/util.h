@@ -153,6 +153,7 @@ const char *strtimevalue( u32 stamp );
 const char *strtimestamp( u32 stamp ); /* GMT */
 const char *asctimestamp( u32 stamp ); /* localized */
 void print_string( FILE *fp, const byte *p, size_t n, int delim );
+void  print_utf8_string( FILE *fp, const byte *p, size_t n );
 char *make_printable_string( const byte *p, size_t n, int delim );
 int answer_is_yes( const char *s );
 int answer_is_yes_no_quit( const char *s );
@@ -175,7 +176,7 @@ int string_count_chr( const char *string, int c );
 int set_native_charset( const char *newset );
 const char* get_native_charset(void);
 char *native_to_utf8( const char *string );
-char *utf8_to_native( const char *string );
+char *utf8_to_native( const char *string, size_t length );
 int  check_utf8_string( const char *string );
 
 #ifndef HAVE_MEMICMP

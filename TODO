@@ -1,13 +1,4 @@
 
-  * use-emmbeded-filename ist nicht dokumentiert.
-
-  * --disable-asm should still assemble _udiv_qrnnd when needed
-
-  * Skip RO keyrings when importing a key.
-
-  * help the translaters to catch changes made to helptext.c
-    and tell that, that they have to translate those strings.
-
 Scheduled for 1.1
 -----------------
   * With option -i prompt before adding a key to the keyring and show some
@@ -22,10 +13,14 @@ Scheduled for 1.1
 
   * print a warning when a revoked/expired _secret_ key is used.
 
+  * --disable-asm should still assemble _udiv_qrnnd when needed
+
+  * Skip RO keyrings when importing a key.
+
 
 Nice to have
 ------------
-  * Offcial test vectors for 3DES-EDE3
+  * Official test vectors for 3DES-EDE3
   * use DEL and ^H for erasing the previous character (util/ttyio.c).
     or better readline.
   * Print a warning if the directory mode is wrong.
@@ -48,7 +43,7 @@ Nice to have
     verification status of the message to the output (i.e. write something to
     the --output file and not only to stderr.
   * configure option where to find zlib
-  * Check the beginning of file to detect already compresssed files (gzip,
+  * Check the beginning of file to detect already compressed files (gzip,
     bzip2, xdelta and some picture formats)
   * Display more validity information about the user IDs at certain places.
     We need a more general function to extract such kind of info from the

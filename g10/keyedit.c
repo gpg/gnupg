@@ -157,7 +157,7 @@ print_and_check_one_sig( KBNODE keyblock, KBNODE node,
 	else {
 	    size_t n;
 	    char *p = get_user_id( sig->keyid, &n );
-	    tty_print_string( p, n > 40? 40 : n );
+	    tty_print_utf8_string( p, n > 40? 40 : n );
 	    m_free(p);
 	}
 	tty_printf("\n");
@@ -192,7 +192,7 @@ check_all_keysigs( KBNODE keyblock, int only_selected )
 		selected = (node->flag & NODFLG_SELUID);
 	    if( selected ) {
 		tty_printf("uid  ");
-		tty_print_string( uid->name, uid->len );
+		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
 		if( anyuid && !has_selfsig )
 		    mis_selfsig++;
@@ -330,7 +330,7 @@ sign_uids( KBNODE keyblock, STRLIST locusr, int *ret_modified, int local )
 	     "Are you really sure that you want to sign this key\n"
 	     "with your key: \""));
 	p = get_user_id( sk_keyid, &n );
-	tty_print_string( p, n );
+	tty_print_utf8_string( p, n );
 	m_free(p); p = NULL;
 	tty_printf("\"\n\n");
 
@@ -1112,7 +1112,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked,
 		   tty_printf("(%d)* ", i);
 		else
 		   tty_printf("(%d)  ", i);
-		tty_print_string( uid->name, uid->len );
+		tty_print_utf8_string( uid->name, uid->len );
 		tty_printf("\n");
 		if( with_prefs )
 		    show_prefs( keyblock, uid );
@@ -1138,7 +1138,7 @@ show_key_and_fingerprint( KBNODE keyblock )
 	}
 	else if( node->pkt->pkttype == PKT_USER_ID ) {
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
-	    tty_print_string( uid->name, uid->len );
+	    tty_print_utf8_string( uid->name, uid->len );
 	    break;
 	}
     }
@@ -1322,7 +1322,7 @@ menu_delsig( KBNODE pub_keyblock )
 	   int okay, valid, selfsig, inv_sig, no_key, other_err;
 
 	    tty_printf("uid  ");
-	    tty_print_string( uid->name, uid->len );
+	    tty_print_utf8_string( uid->name, uid->len );
 	    tty_printf("\n");
 
 	   okay = inv_sig = no_key = other_err = 0;
@@ -1708,8 +1708,8 @@ ask_revoke_sig( KBNODE keyblock, KBNODE node )
     }
 
     tty_printf(_("user ID: \""));
-    tty_print_string( unode->pkt->pkt.user_id->name,
-		      unode->pkt->pkt.user_id->len );
+    tty_print_utf8_string( unode->pkt->pkt.user_id->name,
+			   unode->pkt->pkt.user_id->len );
     tty_printf(_("\"\nsigned with your key %08lX at %s\n"),
 		sig->keyid[1], datestr_from_sig(sig) );
 
@@ -1744,7 +1744,7 @@ menu_revsig( KBNODE keyblock )
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 	    /* Hmmm: Should we show only UIDs with a signature? */
 	    tty_printf("     ");
-	    tty_print_string( uid->name, uid->len );
+	    tty_print_utf8_string( uid->name, uid->len );
 	    tty_printf("\n");
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE
@@ -1781,7 +1781,7 @@ menu_revsig( KBNODE keyblock )
 	if( node->pkt->pkttype == PKT_USER_ID ) {
 	    PKT_user_id *uid = node->pkt->pkt.user_id;
 	    tty_printf("     ");
-	    tty_print_string( uid->name, uid->len );
+	    tty_print_utf8_string( uid->name, uid->len );
 	    tty_printf("\n");
 	}
 	else if( node->pkt->pkttype == PKT_SIGNATURE ) {

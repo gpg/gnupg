@@ -194,6 +194,29 @@ print_string( FILE *fp, const byte *p, size_t n, int delim )
 }
 
 /****************
+ * Print an UTF8 string to FP and filter all control characters out.
+ */
+void
+print_utf8_string( FILE *fp, const byte *p, size_t n )
+{
+    size_t i;
+    char *buf;
+
+    /* we can handle plain ascii simpler, so check for it first */
+    for(i=0; i < n; i++ ) {
+	if( p[i] & 0x80 )
+	    break;
+    }
+    if( i < n ) {
+	buf = utf8_to_native( p, n );
+	fputs( buf, fp );
+	m_free( buf );
+    }
+    else
+	print_string( fp, p, n, 0 );
+}
+
+/****************
  * This function returns a string which is suitable for printing
  * Caller must release it with m_free()
  */
@@ -211,7 +234,7 @@ make_printable_string( const byte *p, size_t n, int delim )
 		|| *p=='\v' || *p=='\b' || !*p )
 		buflen += 2;
 	    else
-		buflen += 3;
+		buflen += 4;
 	}
 	else
 	    buflen++;

@@ -1,3 +1,12 @@
+Noteworthy changes in version 0.9.xx
+------------------------------------
+
+    * UTF-8 strings are now correctly printed (if --charset is set correctly).
+      Output of --with-colons is remains C-style escaped UTF8.
+
+    * Workaround for a problem with PGP 5 detached signature in textmode.
+
+
 Noteworthy changes in version 0.9.10
 ------------------------------------
 
@@ -58,7 +67,7 @@ Noteworthy changes in version 0.9.7
 -----------------------------------
 
     * Add some work arounds for a bugs in pgp 2 which led to bad signatures
-      when used with canoncial texts in some cases.
+      when used with canonical texts in some cases.
 
     * Enhanced some status outputs.
 

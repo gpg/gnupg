@@ -1,3 +1,8 @@
+Tue Aug 31 17:20:44 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+
+	* defs.inc: set LC_ALL empty
+
 Wed Aug  4 10:34:18 CEST 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 

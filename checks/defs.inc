@@ -28,6 +28,7 @@ exp_files=""
 # The testscripts expect the original language
 LANG=
 LANGUAGE=
+LC_ALL=
 
 #--------------------------------
 #------ utility functions -------
