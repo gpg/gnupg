@@ -356,11 +356,11 @@ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 	[NETLIBS="-lsocket $NETLIBS"]))
 
 # Try and link a LDAP test program to weed out unusable LDAP
-# libraries.  -lldap -llber [-lresolv] is for OpenLDAP.  -lldapssl41
+# libraries.  -lldap [-llber [-lresolv]] is for OpenLDAP.  -lldapssl41
 # is for Mozilla LDAP.
 
 if test "$try_ldap" = yes ; then
-  for LDAPLIBS in "-lldap -llber" "-lldap -llber -lresolv" "-lldapssl41"; do
+  for LDAPLIBS in "-lldap" "-lldap -llber" "-lldap -llber -lresolv" "-lldapssl41"; do
     _ldap_save_libs=$LIBS
     LIBS="$LDAPLIBS $NETLIBS $LIBS"
 
