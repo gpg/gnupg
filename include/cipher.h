@@ -63,9 +63,10 @@
 #define DIGEST_ALGO_SHA384    9
 #define DIGEST_ALGO_SHA512   10
 
-#define COMPRESS_ALGO_NONE 0
-#define COMPRESS_ALGO_ZIP  1
-#define COMPRESS_ALGO_ZLIB 2
+#define COMPRESS_ALGO_NONE   0
+#define COMPRESS_ALGO_ZIP    1
+#define COMPRESS_ALGO_ZLIB   2
+#define COMPRESS_ALGO_BZIP2  3
 
 #define is_RSA(a)     ((a)==PUBKEY_ALGO_RSA || (a)==PUBKEY_ALGO_RSA_E \
 		       || (a)==PUBKEY_ALGO_RSA_S )

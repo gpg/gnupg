@@ -1,3 +1,7 @@
+2003-10-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.h: Add COMPRESS_ALGO_BZIP2.
+
 2003-09-03  David Shaw  <dshaw@jabberwocky.com>
 
 	* types.h: Revert previous change.  This sort of thing is better
