@@ -196,6 +196,7 @@ struct ccid_driver_s
   int auto_ifsd;
   int max_ifsd;
   int ifsd;
+  int powered_off;
   int has_pinpad;
 };
 
@@ -863,6 +864,102 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
 }
 
 
+static void
+do_close_reader (ccid_driver_t handle)
+{
+  int rc;
+  unsigned char msg[100];
+  size_t msglen;
+  unsigned char seqno;
+  
+  if (!handle->powered_off)
+    {
+      msg[0] = PC_to_RDR_IccPowerOff;
+      msg[5] = 0; /* slot */
+      msg[6] = seqno = handle->seqno++;
+      msg[7] = 0; /* RFU */
+      msg[8] = 0; /* RFU */
+      msg[9] = 0; /* RFU */
+      set_msg_len (msg, 0);
+      msglen = 10;
+      
+      rc = bulk_out (handle, msg, msglen);
+      if (!rc)
+        bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus,seqno);
+      handle->powered_off = 1;
+    }
+  if (handle->idev)
+    {
+      usb_release_interface (handle->idev, 0);
+      usb_close (handle->idev);
+      handle->idev = NULL;
+    }
+}
+
+
+/* Reset a reader on HANDLE.  This is useful in case a reader has been
+   plugged of and inserted at a different port.  By resetting the
+   handle, the same reader will be get used.  Note, that on error the
+   handle won't get released. 
+
+   This does not return an ATR, so ccid_get_atr should be called right
+   after this one.
+*/
+int 
+ccid_shutdown_reader (ccid_driver_t handle)
+{
+  int rc = 0;
+  struct usb_device *dev = NULL;
+  usb_dev_handle *idev = NULL;
+  unsigned char *ifcdesc_extra = NULL;
+  size_t ifcdesc_extra_len;
+
+  if (!handle || !handle->rid)
+    return CCID_DRIVER_ERR_INV_VALUE;
+
+  do_close_reader (handle);
+
+  idev = scan_or_find_devices (-1, handle->rid, NULL, &dev,
+                               &ifcdesc_extra, &ifcdesc_extra_len);
+  if (!idev)
+    {
+      DEBUGOUT_1 ("no CCID reader with ID %s\n", handle->rid);
+      return CCID_DRIVER_ERR_NO_READER;
+    }
+
+
+  handle->idev = idev;
+
+  if (parse_ccid_descriptor (handle, ifcdesc_extra, ifcdesc_extra_len))
+    {
+      DEBUGOUT ("device not supported\n");
+      rc = CCID_DRIVER_ERR_NO_READER;
+      goto leave;
+    }
+  
+  /* fixme: Do we need to claim and set the interface as
+     determined above? */
+  rc = usb_claim_interface (idev, 0);
+  if (rc)
+    {
+      DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
+      rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
+      goto leave;
+    }
+  
+ leave:
+  free (ifcdesc_extra);
+  if (rc)
+    {
+      usb_close (handle->idev);
+      handle->idev = NULL;
+    }
+
+  return rc;
+
+}
+
+
 /* Close the reader HANDLE. */
 int 
 ccid_close_reader (ccid_driver_t handle)
@@ -870,33 +967,12 @@ ccid_close_reader (ccid_driver_t handle)
   if (!handle || !handle->idev)
     return 0;
 
-   {
-     int rc;
-     unsigned char msg[100];
-     size_t msglen;
-     unsigned char seqno;
-   
-     msg[0] = PC_to_RDR_IccPowerOff;
-     msg[5] = 0; /* slot */
-     msg[6] = seqno = handle->seqno++;
-     msg[7] = 0; /* RFU */
-     msg[8] = 0; /* RFU */
-     msg[9] = 0; /* RFU */
-     set_msg_len (msg, 0);
-     msglen = 10;
-   
-     rc = bulk_out (handle, msg, msglen);
-     if (!rc)
-        bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus, seqno);
-   }
-   
-  usb_release_interface (handle->idev, 0);
-  usb_close (handle->idev);
-  handle->idev = NULL;
+  do_close_reader (handle);
   free (handle->rid);
   free (handle);
   return 0;
 }
+
 
 /* Return False if a card is present and powered. */
 int
@@ -1120,6 +1196,8 @@ ccid_get_atr (ccid_driver_t handle,
   rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_DataBlock, seqno);
   if (rc)
     return rc;
+
+  handle->powered_off = 0;
   
   if (atr)
     {
@@ -1680,16 +1758,16 @@ main (int argc, char **argv)
   ccid_poll (ccid);
 
 /*   if (!ccid->has_pinpad) */
-    {
-      fputs ("verifying that CHV1 is 123456....\n", stderr);
-      {
-        static unsigned char apdu[] = {0, 0x20, 0, 0x81,
-                                       6, '1','2','3','4','5','6'};
-        rc = ccid_transceive (ccid, apdu, sizeof apdu,
-                              result, sizeof result, &resultlen);
-        print_result (rc, result, resultlen);
-      }
-    }
+/*     { */
+/*       fputs ("verifying that CHV1 is 123456....\n", stderr); */
+/*       { */
+/*         static unsigned char apdu[] = {0, 0x20, 0, 0x81, */
+/*                                        6, '1','2','3','4','5','6'}; */
+/*         rc = ccid_transceive (ccid, apdu, sizeof apdu, */
+/*                               result, sizeof result, &resultlen); */
+/*         print_result (rc, result, resultlen); */
+/*       } */
+/*     } */
 /*   else */
 /*     { */
 /*       fputs ("verifying CHV1 using the PINPad ....\n", stderr); */

@@ -54,7 +54,6 @@ static APP current_app;
 
 
 
-
 /* Create a serialno/fpr string from the serial number and the secret
    key.  caller must free the returned string.  There is no error
    return. [Taken from 1.9's keyid.c]*/
@@ -247,18 +246,25 @@ agent_release_card_info (struct agent_card_info_s *info)
 static APP
 open_card (void)
 {
-  int slot;
+  int slot = -1;
   int rc;
   APP app;
+  int did_shutdown = 0;
 
   card_close ();
 
+  
  retry:
-  slot = apdu_open_reader (default_reader_port);
-  if (slot == -1)
+  if (did_shutdown)
+    apdu_reset (slot);
+  else
     {
-      log_error ("card reader not available\n");
-      return NULL;
+      slot = apdu_open_reader (default_reader_port);
+      if (slot == -1)
+        {
+          log_error ("card reader not available\n");
+          return NULL;
+        }
     }
 
   app = xcalloc (1, sizeof *app);
@@ -268,11 +274,14 @@ open_card (void)
     {
       write_status_text (STATUS_CARDCTRL, "1");
       
+      did_shutdown = !!apdu_shutdown_reader (slot);
+
       if ( cpr_get_answer_okay_cancel ("cardctrl.insert_card.okay",
            _("Please insert the card and hit return or enter 'c' to cancel: "),
                                        1) )
         {
-          apdu_close_reader (slot);
+          if (!did_shutdown)
+            apdu_close_reader (slot);
           xfree (app);
           goto retry;
         }
@@ -323,7 +332,7 @@ card_close (void)
    function return 0 is the present card is okay, -1 if the user
    selected to insert a new card or an error value.  Note that the
    card context will be closed in all cases except for 0 as return
-   value. */
+   value and if it was possible to merely shutdown the reader. */
 static int
 check_card_serialno (APP app, const char *serialno)
 {
@@ -346,8 +355,12 @@ check_card_serialno (APP app, const char *serialno)
   if (ask)
     {
       char buf[5+32+1];
+      int did_shutdown = 0;
 
-      card_close ();
+      if (current_app && !apdu_shutdown_reader (current_app->slot))
+        did_shutdown = 1;
+      else
+        card_close ();
       tty_printf (_("Please remove the current card and "
                     "insert the one with the serial number:\n"
                     "   %.*s\n"), 32, serialno);
@@ -359,7 +372,14 @@ check_card_serialno (APP app, const char *serialno)
                           _("Hit return when ready "
                             "or enter 'c' to cancel: "),
                                        1) )
-        return -1;
+        {
+          card_close ();
+          return -1;
+        }
+      if (did_shutdown)
+        apdu_reset (current_app->slot);
+      else
+        card_close ();
       return gpg_error (GPG_ERR_INV_ID);
     }
   return 0;

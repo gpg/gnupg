@@ -92,6 +92,7 @@ struct reader_table_s {
 
   /* Function pointers intialized to the various backends.  */
   int (*close_reader)(int);
+  int (*shutdown_reader)(int);
   int (*reset_reader)(int);
   int (*get_status_reader)(int, unsigned int *);
   int (*send_apdu_reader)(int,unsigned char *,size_t,
@@ -244,6 +245,7 @@ new_reader_slot (void)
     }
 #endif /*USE_GNU_PTH*/
   reader_table[reader].close_reader = NULL;
+  reader_table[reader].shutdown_reader = NULL;
   reader_table[reader].reset_reader = NULL;
   reader_table[reader].get_status_reader = NULL;
   reader_table[reader].send_apdu_reader = NULL;
@@ -1202,6 +1204,14 @@ close_ccid_reader (int slot)
   
 
 static int
+shutdown_ccid_reader (int slot)
+{
+  ccid_shutdown_reader (reader_table[slot].ccid.handle);
+  return 0;
+}                       
+  
+
+static int
 reset_ccid_reader (int slot)
 {
   int err;
@@ -1300,6 +1310,7 @@ open_ccid_reader (const char *portstr)
     }
 
   reader_table[slot].close_reader = close_ccid_reader;
+  reader_table[slot].shutdown_reader = shutdown_ccid_reader;
   reader_table[slot].reset_reader = reset_ccid_reader;
   reader_table[slot].get_status_reader = get_status_ccid;
   reader_table[slot].send_apdu_reader = send_apdu_ccid;
@@ -2048,6 +2059,19 @@ apdu_close_reader (int slot)
     return SW_HOST_NO_DRIVER;
   if (reader_table[slot].close_reader)
     return reader_table[slot].close_reader (slot);
+  return SW_HOST_NOT_SUPPORTED;
+}
+
+/* Shutdown a reader; that is basically the same as a close but keeps
+   the handle ready for later use. A apdu_reset_header should be used
+   to get it active again. */
+int
+apdu_shutdown_reader (int slot)
+{
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+  if (reader_table[slot].shutdown_reader)
+    return reader_table[slot].shutdown_reader (slot);
   return SW_HOST_NOT_SUPPORTED;
 }
 

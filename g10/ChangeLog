@@ -1,3 +1,15 @@
+2004-09-20  Werner Koch  <wk@g10code.com>
+
+	* cardglue.c (open_card): Use shutdown code if possible.
+	(check_card_serialno): Ditto.
+
+	* ccid-driver.c (do_close_reader): Factored some code out from ...
+	(ccid_close_reader): ..here.
+	(ccid_shutdown_reader): New.
+
+	* apdu.c (apdu_shutdown_reader): New.
+	(shutdown_ccid_reader): New.
+
 2004-09-17  Werner Koch  <wk@g10code.com>
 
 	* g10.c (list_config): New config option ccid-reader-id.

@@ -78,6 +78,7 @@ typedef struct ccid_driver_s *ccid_driver_t;
 int ccid_set_debug_level (int level);
 char *ccid_get_reader_list (void);
 int ccid_open_reader (ccid_driver_t *handle, const char *readerid);
+int ccid_shutdown_reader (ccid_driver_t handle);
 int ccid_close_reader (ccid_driver_t handle);
 int ccid_get_atr (ccid_driver_t handle,
                   unsigned char *atr, size_t maxatrlen, size_t *atrlen);
