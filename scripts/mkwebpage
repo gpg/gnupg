@@ -78,6 +78,7 @@ EOF
     echo "(List generated from CVS: " $(date +%Y-%m-%d) ")"  >> $pgm.tmp/BUGS
     sed_it $pgm.tmp $pgm.new
     rm -rf $pgm.tmp || true
+    ln -sf gnupg.html $pgm.new/index.html
 
     rm -rf $pgm.old || true
     [ -d $pgm ] && mv $pgm $pgm.old
