@@ -432,7 +432,7 @@ proc_parameters (ctrl_t ctrl,
   assert (get_parameter (para, pKEYTYPE));
 
   /* We can only use RSA for now.  There is a with pkcs-10 on how to
-     use ElGamal becuase it is expected that a PK algorithm can always
+     use ElGamal because it is expected that a PK algorithm can always
      be used for signing. */
   i = get_parameter_algo (para, pKEYTYPE);
   if (i < 1 || i != GCRY_PK_RSA )
