@@ -63,8 +63,6 @@ struct kopts
   {"include-disabled",1,&opt.keyserver_options.include_disabled},
   {"include-subkeys",1,&opt.keyserver_options.include_subkeys},
   {"keep-temp-files",0,&opt.keyserver_options.keep_temp_files},
-  {"honor-http-proxy",1,&opt.keyserver_options.honor_http_proxy},
-  {"broken-http-proxy",1,&opt.keyserver_options.broken_http_proxy},
   {"refresh-add-fake-v3-keyids",0,&opt.keyserver_options.fake_v3_keyids},
   {"auto-key-retrieve",0,&opt.keyserver_options.auto_key_retrieve},
   {"try-dns-srv",1,&opt.keyserver_options.try_dns_srv},
@@ -242,7 +240,7 @@ parse_keyserver_uri(char *uri,const char *configname,unsigned int configlineno)
       deprecated_warning(configname,configlineno,"x-broken-hkp",
 			 "--keyserver-options ","broken-http-proxy");
       opt.keyserver_scheme="hkp";
-      opt.keyserver_options.broken_http_proxy=1;
+      add_to_strlist(&opt.keyserver_options.other,"broken-http-proxy");
     }
   else if(ascii_strcasecmp(opt.keyserver_scheme,"x-hkp")==0
 	  || ascii_strcasecmp(opt.keyserver_scheme,"http")==0)

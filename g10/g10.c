@@ -1983,11 +1983,10 @@ main( int argc, char **argv )
 	  case oNoLiteral: opt.no_literal = 1; break;
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy:
-                opt.keyserver_options.honor_http_proxy = 1;
+	        add_to_strlist(&opt.keyserver_options.other,"http-proxy");
 		deprecated_warning(configname,configlineno,
 				   "--honor-http-proxy",
-				   "--keyserver-options ",
-				   "honor-http-proxy");
+				   "--keyserver-options ","http-proxy");
 		break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: opt.fixed_list_mode = 1; break;
