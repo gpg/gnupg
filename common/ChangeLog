@@ -1,3 +1,8 @@
+2002-05-21  Werner Koch  <wk@gnupg.org>
+
+	* maperror.c (map_gcry_err): Add libgcrypt's new S-expression errors.
+	(map_ksba_err): Add a few mappings.
+
 2002-05-14  Werner Koch  <wk@gnupg.org>
 
 	* gettime.c: New.

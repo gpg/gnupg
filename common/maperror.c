@@ -33,18 +33,28 @@
 #include "../assuan/assuan.h"
 
 /* Note: we might want to wrap this in a macro to get our hands on
-   the line and file where the error occired */
+   the line and file where the error occured */
 int
 map_ksba_err (int err)
 {
   switch (err)
     {
     case -1:
-    case 0:
+    case 0: 
       break;
 
+    case KSBA_Out_Of_Core: err = GNUPG_Out_Of_Core; break;
+    case KSBA_Invalid_Value: err = GNUPG_Invalid_Value; break;
+    case KSBA_Not_Implemented: err = GNUPG_Not_Implemented; break;
+    case KSBA_Conflict: err = GNUPG_Conflict; break;
+    case KSBA_Read_Error: err = GNUPG_Read_Error; break;
+    case KSBA_Write_Error: err = GNUPG_Write_Error; break;
+    case KSBA_No_Data: err = GNUPG_No_Data; break;
+    case KSBA_Bug: err = GNUPG_Bug; break;
     case KSBA_Unsupported_Algorithm: err = GNUPG_Unsupported_Algorithm; break;
     case KSBA_Invalid_Index: err = GNUPG_Invalid_Index; break;
+    case KSBA_Invalid_Sexp: err = GNUPG_Invalid_Sexp; break;
+    case KSBA_Unknown_Sexp: err = GNUPG_Unknown_Sexp; break;
       
     default:
       err = seterr (General_Error);
@@ -92,6 +102,22 @@ map_gcry_err (int err)
 
     case GCRYERR_SELFTEST: 
       err = GNUPG_Bug;
+      break;
+
+    case GCRYERR_SEXP_INV_LEN_SPEC    :
+    case GCRYERR_SEXP_STRING_TOO_LONG :
+    case GCRYERR_SEXP_UNMATCHED_PAREN :
+    case GCRYERR_SEXP_NOT_CANONICAL   :
+    case GCRYERR_SEXP_BAD_CHARACTER   :
+    case GCRYERR_SEXP_BAD_QUOTATION   :
+    case GCRYERR_SEXP_ZERO_PREFIX     :
+    case GCRYERR_SEXP_NESTED_DH       :
+    case GCRYERR_SEXP_UNMATCHED_DH    :
+    case GCRYERR_SEXP_UNEXPECTED_PUNC :
+    case GCRYERR_SEXP_BAD_HEX_CHAR    :
+    case GCRYERR_SEXP_ODD_HEX_NUMBERS :
+    case GCRYERR_SEXP_BAD_OCT_CHAR    :
+      err = GNUPG_Invalid_Sexp;
       break;
 
     case GCRYERR_NO_MEM: err = GNUPG_Out_Of_Core; break;
