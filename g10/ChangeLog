@@ -1,3 +1,7 @@
+2002-05-14  Timo Schulz   <ts@winpt.org>
+
+	* exec.c (make_tempdir) [MINGW32]: Added missing '\'.
+	
 2002-05-14  Stefan Bellon  <sbellon@sbellon.de>
 
 	* exec.c (make_tempdir): Make use of EXTSEP_S instead of hardcoded

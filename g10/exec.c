@@ -73,7 +73,7 @@ static int make_tempdir(struct exec_info *info)
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
       tmp=m_alloc(256);
       if(GetTempPath(256,tmp)==0)
-	strcpy(tmp,"c:\\windows\temp");
+	strcpy(tmp,"c:\\windows\\temp");
       else
 	{
 	  int len=strlen(tmp);
