@@ -20,13 +20,18 @@ Noteworthy changes in version 1.2.2 (unreleased)
       truncated in the W32 version.
 
     * Disabled keys are now skipped when selecting keys for
-      encryption.
+      encryption.  If you are using the --with-colons key listings to
+      detect disabled keys, please see doc/DETAILS for a minor format
+      change in this release.
 
     * Minor trustdb changes to make the trust calculations match
       common usage.
 
     * New translations: Finnish and Traditional Chinese.
 
+    * New command "revuid" in the --edit-key menu to revoke a user ID.
+      This is a simpler interface to the old method (which still
+      works) of revoking the user ID self-signature.
 
 Noteworthy changes in version 1.2.1 (2002-10-25)
 ------------------------------------------------
@@ -1321,7 +1326,7 @@ Noteworthy changes in version 0.2.3
       is generated on a system without a good random number generator.
 
 
-Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
