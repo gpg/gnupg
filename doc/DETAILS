@@ -295,6 +295,7 @@ more arguments in future versions.
 	Deleting a key failed.	Reason codes are:
 	    1 - No such key
 	    2 - Must delete secret key first
+            3 - Ambigious specification
 
     PROGRESS what char cur total
 	Used by the primegen and Public key functions to indicate progress.
