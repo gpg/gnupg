@@ -1,3 +1,8 @@
+2002-04-23  Stefan Bellon  <sbellon@sbellon.de>
+
+	* gpg.sgml: Moved options from section "COMMANDS" to
+	section "OPTIONS".
+
 2002-04-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* samplekeys.asc: Added 0x5B0358A2

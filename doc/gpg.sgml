@@ -209,45 +209,6 @@ List all keys from the secret keyrings, or just the
 ones given on the command line.
 </para></listitem></varlistentry>
 
-<varlistentry>
-<term>--show-photos</term>
-<listitem><para>
-Causes --list-keys, --list-sigs, --list-public-keys, and
---list-secret-keys to also display the photo ID attached to a key, if
-any.
-See also --photo-viewer.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--no-show-photos</term>
-<listitem><para>
-Resets the --show-photos flag.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--photo-viewer &ParmString;</term>
-<listitem><para>
-This is the command line that should be run to view a photo ID.  "%i"
-will be expanded to a filename containing the photo.  "%I" does the
-same, except the file will not be deleted once the viewer exits.
-Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
-for the key fingerprint, "%t" for the type of image (e.g. jpeg), and
-"%%" for an actual percent sign.  If neither %i or %I are present,
-then the photo will be supplied to the viewer on standard input.
-</para><para>
-The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
-stdin"
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--show-keyring</term>
-<listitem><para>
-Causes --list-keys, --list-public-keys, and --list-secret-keys to
-display the name of the keyring a given key resides on. This is only
-useful when you're listing a specific key or set of keys. It has no
-effect when listing all keys.
-</para></listitem></varlistentry>
-
 
 <varlistentry>
 <term>--list-sigs &OptParmNames;</term>
@@ -471,51 +432,6 @@ from --edit.
 <listitem><para>
 Signs a public key with your secret key but marks it as non-revocable.
 This is a shortcut version of the subcommand "nrsign" from --edit.
-</para></listitem></varlistentry>
-
-<varlistentry>
-<term>--default-cert-check-level &ParmN;</term>
-<listitem><para>
-The default to use for the check level when signing a key.
-</para><para>
-0 means you make no particular claim as to how carefully you verified
-the key.
-</para><para>
-1 means you believe the key is owned by the person who claims to own
-it but you could not, or did not verify the key at all.  This is
-useful for a "persona" verification, where you sign the key of a
-pseudonymous user.
-</para><para>
-2 means you did casual verification of the key.  For example, this
-could mean that you verified that the key fingerprint and checked the
-user ID on the key against a photo ID.
-</para><para>
-3 means you did extensive verification of the key.  For example, this
-could mean that you verified the key fingerprint with the owner of the
-key in person, and that you checked, by means of a hard to forge
-document with a photo ID (such as a passport) that the name of the key
-owner matches the name in the user ID on the key, and finally that you
-verified (by exchange of email) that the email address on the key
-belongs to the key owner.
-</para><para>
-Note that the examples given above for levels 2 and 3 are just that:
-examples.  In the end, it is up to you to decide just what "casual"
-and "extensive" mean to you.
-</para><para>
-This option defaults to 0.
-</para></listitem></varlistentry>
-
-
-
-<varlistentry>
-<term>--trusted-key <parameter>long key ID</parameter></term>
-<listitem><para>
-Assume that the specified key (which must be given
-as a  full 8 byte key ID) is as trustworthy as one of
-your own secret keys. This option is useful if you
-don't want to keep your secret keys (or one of them)
-online but still want to be able to check the validity of a given
-recipient's or signator's key. 
 </para></listitem></varlistentry>
 
 <varlistentry>
@@ -909,6 +825,51 @@ Assume "yes" on most questions.
 </para></listitem></varlistentry>
 
 <varlistentry>
+<term>--default-cert-check-level &ParmN;</term>
+<listitem><para>
+The default to use for the check level when signing a key.
+</para><para>
+0 means you make no particular claim as to how carefully you verified
+the key.
+</para><para>
+1 means you believe the key is owned by the person who claims to own
+it but you could not, or did not verify the key at all.  This is
+useful for a "persona" verification, where you sign the key of a
+pseudonymous user.
+</para><para>
+2 means you did casual verification of the key.  For example, this
+could mean that you verified that the key fingerprint and checked the
+user ID on the key against a photo ID.
+</para><para>
+3 means you did extensive verification of the key.  For example, this
+could mean that you verified the key fingerprint with the owner of the
+key in person, and that you checked, by means of a hard to forge
+document with a photo ID (such as a passport) that the name of the key
+owner matches the name in the user ID on the key, and finally that you
+verified (by exchange of email) that the email address on the key
+belongs to the key owner.
+</para><para>
+Note that the examples given above for levels 2 and 3 are just that:
+examples.  In the end, it is up to you to decide just what "casual"
+and "extensive" mean to you.
+</para><para>
+This option defaults to 0.
+</para></listitem></varlistentry>
+
+
+
+<varlistentry>
+<term>--trusted-key <parameter>long key ID</parameter></term>
+<listitem><para>
+Assume that the specified key (which must be given
+as a  full 8 byte key ID) is as trustworthy as one of
+your own secret keys. This option is useful if you
+don't want to keep your secret keys (or one of them)
+online but still want to be able to check the validity of a given
+recipient's or signator's key. 
+</para></listitem></varlistentry>
+
+<varlistentry>
 <term>--always-trust</term>
 <listitem><para>
 Skip key validation and assume that used keys are always fully trusted.
@@ -1006,6 +967,45 @@ keyring.
 </para></listitem></varlistentry>
 
 </variablelist>
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--show-photos</term>
+<listitem><para>
+Causes --list-keys, --list-sigs, --list-public-keys, and
+--list-secret-keys to also display the photo ID attached to a key, if
+any.
+See also --photo-viewer.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--no-show-photos</term>
+<listitem><para>
+Resets the --show-photos flag.
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--photo-viewer &ParmString;</term>
+<listitem><para>
+This is the command line that should be run to view a photo ID.  "%i"
+will be expanded to a filename containing the photo.  "%I" does the
+same, except the file will not be deleted once the viewer exits.
+Other flags are "%k" for the key ID, "%K" for the long key ID, "%f"
+for the key fingerprint, "%t" for the type of image (e.g. jpeg), and
+"%%" for an actual percent sign.  If neither %i or %I are present,
+then the photo will be supplied to the viewer on standard input.
+</para><para>
+The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
+stdin"
+</para></listitem></varlistentry>
+
+<varlistentry>
+<term>--show-keyring</term>
+<listitem><para>
+Causes --list-keys, --list-public-keys, and --list-secret-keys to
+display the name of the keyring a given key resides on. This is only
+useful when you're listing a specific key or set of keys. It has no
+effect when listing all keys.
 </para></listitem></varlistentry>
 
 <varlistentry>
