@@ -1,3 +1,10 @@
+2004-07-20  David Shaw  <dshaw@jabberwocky.com>
+
+	* status.c (do_get_from_fd): Flush stdout if status isn't flushing
+	it for us.  This guarantees that any menus that were displayed
+	before the prompt don't get stuck in a buffer.  Noted by Peter
+	Palfrader.  This is Debian bug #254072.
+
 2004-07-20  Werner Koch  <wk@gnupg.org>
 
 	* plaintext.c (handle_plaintext): Make number buffer larger.  With
