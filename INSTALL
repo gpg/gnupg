@@ -1,0 +1,26 @@
+
+    1) Configure for your machine:
+
+	 ./configure
+
+       or use
+
+	 ./configure --enable-m-debug
+
+       to ebanle the integrated malloc debugging stuff.
+
+
+    2) Run make:
+
+	make
+
+
+    3) Install
+
+	make install
+
+
+    4) You end up with a binary "g10" in /usr/local/bin
+
+
+

@@ -60,8 +60,6 @@ cipher_SOURCES = blowfish.c	\
 		 dsa.c		\
 		 md.c		\
 		 smallprime.c
-
-cipher_LIBADD = rsa.o
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 LIBRARIES = $(noinst_LIBRARIES)
@@ -80,6 +78,7 @@ LIBS = @LIBS@
 
 COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(LDFLAGS) -o $@
+cipher_LIBADD =
 cipher_OBJECTS = blowfish.o elgamal.o gost.o md5.o primegen.o random.o \
 rmd160.o sha1.o dsa.o md.o smallprime.o
 EXTRA_cipher_SOURCES =

@@ -8,14 +8,10 @@
     * keyring editing
     * add trust stuff
     * make ttyio.c work (hide passwords etc..)
-    * add option file handling.
     * use correct ASN values for DEK encoding
     * add checking of armor trailers
     * add real secure memory
     * look for a way to reuse RSA signatures
-    * find a way to remove the armor filter after it
-      has detected, that the data is not armored.
-    * Use the Chinese Remainder Theorem to speed up RSA calculations.
     * remove all "Fixmes"
     * speed up the RIPE-MD-160
     * add signal handling
@@ -32,4 +28,12 @@
     * compress does not work always!
     * complete cipher/cast.c
     * complete cipher/dsa.c
+
+    * define a standard way to specify keyid/userid and other stuff
+      to identify a user.  We could look at the first character and
+      say: If it's a digit, a keyid follows (need to add a zero in
+      case the keyid starts with A..F); if it is a left angle bracket,
+      this is a email address and should be used, all others are substrings
+      of the userid.
+      [can be handles in get_pubkey_by_name()]
 

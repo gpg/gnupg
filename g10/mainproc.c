@@ -56,19 +56,6 @@ typedef struct {
 static void list_node( CTX c, KBNODE node );
 static void proc_tree( CTX c, KBNODE node );
 
-static int
-pubkey_letter( int algo )
-{
-    switch( algo ) {
-      case PUBKEY_ALGO_RSA:	return 'R' ;
-      case PUBKEY_ALGO_RSA_E:	return 'r' ;
-      case PUBKEY_ALGO_RSA_S:	return 's' ;
-      case PUBKEY_ALGO_ELGAMAL: return 'G' ;
-      case PUBKEY_ALGO_DSA:	return 'D' ;
-      default: return '?';
-    }
-}
-
 
 static void
 release_cert( CTX c )
@@ -509,7 +496,6 @@ proc_packets( IOBUF a )
     CTX c = m_alloc_clear( sizeof *c );
     PACKET *pkt = m_alloc( sizeof *pkt );
     int rc, result;
-    char *ustr;
     int lvl0, lvl1;
     u32 keyid[2];
     int newpkt;

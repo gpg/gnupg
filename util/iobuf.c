@@ -371,6 +371,36 @@ iobuf_create( const char *fname )
 }
 
 /****************
+ * append to a iobuf if the file does not exits; create it.
+ * cannont be used for stdout.
+ */
+IOBUF
+iobuf_append( const char *fname )
+{
+    IOBUF a;
+    FILE *fp;
+    file_filter_ctx_t *fcx;
+    size_t len;
+
+    if( !fname )
+	return NULL;
+    else if( !(fp = fopen(fname, "ab")) )
+	return NULL;
+    a = iobuf_alloc(2, 8192 );
+    fcx = m_alloc( sizeof *fcx + strlen(fname) );
+    fcx->fp = fp;
+    strcpy(fcx->fname, fname );
+    a->filter = file_filter;
+    a->filter_ov = fcx;
+    file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
+    file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
+    if( DBG_IOBUF )
+	log_debug("iobuf-%d.%d: append '%s'\n", a->no, a->subno, a->desc );
+
+    return a;
+}
+
+/****************
  * Register an i/o filter.
  */
 int
@@ -709,8 +739,25 @@ iobuf_tell( IOBUF a )
 int
 iobuf_seek( IOBUF a, ulong newpos )
 {
+    file_filter_ctx_t *b = NULL;
 
-    return -1;
+    for( ; a; a = a->chain ) {
+	if( !a->chain && a->filter == file_filter ) {
+	    b = a->filter_ov;
+	    break;
+	}
+    }
+    if( !a )
+	return -1;
+
+    if( fseek( b->fp, newpos, SEEK_SET ) ) {
+	log_error("can't seek to %lu: %s\n", newpos, strerror(errno) );
+	return -1;
+    }
+
+    /* FIXME: flush all buffers (and remove filters?)*/
+
+    return 0;
 }
 
 

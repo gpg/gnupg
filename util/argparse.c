@@ -194,6 +194,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
     char keyword[100];
     char *buffer = NULL;
     size_t buflen = 0;
+    int inverse=0;
 
     if( !fp ) /* same as arg_parse() in this case */
 	return arg_parse( arg, opts );
@@ -216,6 +217,8 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 			break;
 		index = i;
 		arg->r_opt = opts[index].short_opt;
+		if( inverse )
+		    arg->r_opt = -arg->r_opt;
 		if( !opts[index].short_opt )
 		    arg->r_opt = -2;	       /* unknown option */
 		else if( (opts[index].flags & 8) )  /* no optional argument */

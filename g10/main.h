@@ -22,6 +22,7 @@
 #include "types.h"
 #include "iobuf.h"
 #include "cipher.h"
+#include "keydb.h"
 
 #define DEFAULT_CIPHER_ALGO  CIPHER_ALGO_BLOWFISH
 #define DEFAULT_PUBKEY_ALGO  PUBKEY_ALGO_ELGAMAL
@@ -34,6 +35,7 @@ int encode_crypt( const char *filename, STRLIST remusr );
 
 /*-- sign.c --*/
 int sign_file( const char *filename, int detached, STRLIST locusr );
+int sign_key( const char *username, STRLIST locusr );
 
 /*-- keygen.c --*/
 void generate_keypair(void);
@@ -49,5 +51,7 @@ MPI encode_rmd160_value( byte *md, unsigned len, unsigned nbits );
 MPI encode_md5_value( byte *md, unsigned len, unsigned nbits );
 MPI encode_md_value( MD_HANDLE *md, unsigned nbits );
 
+/*-- comment.c --*/
+KBNODE make_comment_node( const char *s );
 
 #endif /*G10_MAIN_H*/

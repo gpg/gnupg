@@ -46,7 +46,7 @@ print_string( FILE *fp, byte *p, size_t n )
 	    else if( !*p )
 		putc('0', fp);
 	    else
-		printf("x%02x", *p );
+		fprintf(fp, "x%02x", *p );
 	}
 	else
 	    putc(*p, fp);

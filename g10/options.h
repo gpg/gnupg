@@ -34,7 +34,7 @@ struct {
     int cache_all;
     int fingerprint; /* list fingerprints */
     int list_sigs;   /* list signatures */
-    int reserved4;
+    int no_armor;
     int reserved5;
     int reserved6;
     int reserved7;

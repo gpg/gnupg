@@ -60,9 +60,10 @@ struct resource_table_struct {
     char *fname;
     IOBUF iobuf;
 };
+typedef struct resource_table_struct RESTBL;
 
 #define MAX_RESOURCES 10
-static struct resource_table_struct resource_table[MAX_RESOURCES];
+static RESTBL resource_table[MAX_RESOURCES];
 
 
 static int keyring_search( PACKET *pkt, KBPOS *kbpos, IOBUF iobuf );
@@ -72,14 +73,14 @@ static int keyring_delete( KBPOS *kbpos );
 
 
 
-static int
+static RESTBL *
 check_pos( KBPOS *kbpos )
 {
     if( kbpos->resno < 0 || kbpos->resno >= MAX_RESOURCES )
-	return G10ERR_GENERAL;
+	return NULL;
     if( !resource_table[kbpos->resno].used )
-	return G10ERR_GENERAL;
-    return 0;
+	return NULL;
+    return resource_table + kbpos->resno;
 }
 
 
@@ -92,7 +93,7 @@ check_pos( KBPOS *kbpos )
  * Register a resource (which currently may ionly be a keyring file).
  */
 int
-add_keyblock_resource( const char *filename )
+add_keyblock_resource( const char *filename, int force )
 {
     IOBUF iobuf;
     int i;
@@ -104,7 +105,7 @@ add_keyblock_resource( const char *filename )
 	return G10ERR_RESOURCE_LIMIT;
 
     iobuf = iobuf_open( filename );
-    if( !iobuf )
+    if( !iobuf && !force )
 	return G10ERR_OPEN_FILE;
     resource_table[i].used = 1;
     resource_table[i].fname = m_strdup(filename);
@@ -170,6 +171,31 @@ search_keyblock( PACKET *pkt, KBPOS *kbpos )
 }
 
 
+/****************
+ * Combined function to search for a username and get the position
+ * of the keyblock.
+ */
+int
+search_keyblock_byname( KBPOS *kbpos, const char *username )
+{
+    PACKET pkt;
+    PKT_public_cert *pkc = m_alloc_clear( sizeof *pkc );
+    int rc;
+
+    rc = get_pubkey_byname( pkc, username );
+    if( rc ) {
+	free_public_cert(pkc);
+	return rc;
+    }
+
+    init_packet( &pkt );
+    pkt.pkttype = PKT_PUBLIC_CERT;
+    pkt.pkt.public_cert = pkc;
+    rc = search_keyblock( &pkt, kbpos );
+    free_public_cert(pkc);
+    return rc;
+}
+
 
 /****************
  * Lock the keyblock; wait until it's available
@@ -182,22 +208,19 @@ lock_keyblock( KBPOS *kbpos )
 {
     int rc;
 
-    if( (rc=check_pos(kbpos)) )
-	return rc;
+    if( !check_pos(kbpos) )
+	return G10ERR_GENERAL;
     return 0;
 }
 
 /****************
  * Release a lock on a keyblock
  */
-int
+void
 unlock_keyblock( KBPOS *kbpos )
 {
-    int rc;
-
-    if( (rc=check_pos(kbpos)) )
-	return rc;
-    return 0;
+    if( !check_pos(kbpos) )
+	log_bug(NULL);
 }
 
 /****************
@@ -206,10 +229,8 @@ unlock_keyblock( KBPOS *kbpos )
 int
 read_keyblock( KBPOS *kbpos, KBNODE *ret_root )
 {
-    int rc;
-
-    if( (rc=check_pos(kbpos)) )
-	return rc;
+    if( !check_pos(kbpos) )
+	return G10ERR_GENERAL;
     return keyring_read( kbpos, ret_root );
 }
 
@@ -222,8 +243,8 @@ insert_keyblock( KBPOS *kbpos, KBNODE root )
 {
     int rc;
 
-    if( (rc=check_pos(kbpos)) )
-	return rc;
+    if( !check_pos(kbpos) )
+	return G10ERR_GENERAL;
 
     rc = keyring_insert( kbpos, root );
 
@@ -241,8 +262,8 @@ delete_keyblock( KBPOS *kbpos )
 {
     int rc;
 
-    if( (rc=check_pos(kbpos)) )
-	return rc;
+    if( !check_pos(kbpos) )
+	return G10ERR_GENERAL;
 
     rc = keyring_delete( kbpos );
 
@@ -358,13 +379,26 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 {
     PACKET *pkt;
     int rc;
+    RESTBL *rentry;
     KBNODE root = NULL;
     KBNODE node, n1, n2;
     IOBUF a;
 
-    if( (rc=check_pos(kbpos)) )
-	return rc;
-    a = resource_table[kbpos->resno].iobuf;
+    if( !(rentry=check_pos(kbpos)) )
+	return G10ERR_GENERAL;
+
+    a = iobuf_open( rentry->fname );
+    if( !a ) {
+	log_error("can't open '%s'\n", rentry->fname );
+	return G10ERR_OPEN_FILE;
+    }
+
+    if( iobuf_seek( a, kbpos->offset ) ) {
+	log_error("can't seek to %lu: %s\n", kbpos->offset, g10_errstr(rc));
+	iobuf_close(a);
+	return G10ERR_KEYRING_OPEN;
+    }
+
 
     pkt = m_alloc( sizeof *pkt );
     init_packet(pkt);
@@ -377,7 +411,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	  case PKT_PUBLIC_CERT:
 	  case PKT_SECRET_CERT:
 	    if( root )
-		break;
+		goto ready;
 	    root = new_kbnode( pkt );
 	    pkt = m_alloc( sizeof *pkt );
 	    init_packet(pkt);
@@ -386,8 +420,8 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	  case PKT_USER_ID:
 	    if( !root ) {
 		log_error("read_keyblock: orphaned user id\n" );
-		rc = G10ERR_INV_KEYRING; /* or wron kbpos */
-		break;
+		rc = G10ERR_INV_KEYRING; /* or wrong kbpos */
+		goto ready;
 	    }
 	    /* append the user id */
 	    node = new_kbnode( pkt );
@@ -434,6 +468,7 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
 	    break;
 	}
     }
+  ready:
     kbpos->last_block = rc == -1; /* flag, that this is the last block */
     if( rc == -1 && root )
 	rc = 0;
@@ -446,14 +481,49 @@ keyring_read( KBPOS *kbpos, KBNODE *ret_root )
     }
     free_packet( pkt );
     m_free( pkt );
+    iobuf_close(a);
     return rc;
 }
 
 
+/****************
+ * Insert the keyblock described by ROOT into the keyring described
+ * by KBPOS.  This actually appends the data to the keyfile.
+ */
 static int
 keyring_insert( KBPOS *kbpos, KBNODE root )
 {
-    return -1;
+    RESTBL *rentry;
+    IOBUF fp;
+    KBNODE kbctx, node;
+    int rc;
+
+    if( !(rentry = check_pos( kbpos )) )
+	return G10ERR_GENERAL;
+
+    /* FIXME: we must close the file if it's already open, due to
+     *	      2 reasons:
+     *	       - cannot open the same file twice on DOSish OSes
+     *	       - must sync with iobufs somehow
+     */
+    /* open the file for append */
+    fp = iobuf_append( rentry->fname );
+    if( !fp ) {
+	log_error("can't append to '%s'\n", rentry->fname );
+	return G10ERR_OPEN_FILE;
+    }
+
+    kbctx=NULL;
+    while( (node = walk_kbtree( root, &kbctx )) ) {
+	if( (rc = build_packet( fp, node->pkt )) ) {
+	    log_error("build_packet(%d) failed: %s\n",
+			node->pkt->pkttype, g10_errstr(rc) );
+	    return G10ERR_WRITE_FILE;
+	}
+    }
+    iobuf_close(fp);
+
+    return 0;
 }
 
 static int

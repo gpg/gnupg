@@ -33,6 +33,18 @@
 #include "keydb.h"
 
 
+int
+pubkey_letter( int algo )
+{
+    switch( algo ) {
+      case PUBKEY_ALGO_RSA:	return 'R' ;
+      case PUBKEY_ALGO_RSA_E:	return 'r' ;
+      case PUBKEY_ALGO_RSA_S:	return 's' ;
+      case PUBKEY_ALGO_ELGAMAL: return 'G' ;
+      case PUBKEY_ALGO_DSA:	return 'D' ;
+      default: return '?';
+    }
+}
 
 
 /****************

@@ -218,7 +218,7 @@ encode_crypt( const char *filename, STRLIST remusr )
 	pkc = m_alloc_clear( sizeof *pkc );
 	pkc->pubkey_algo = DEFAULT_PUBKEY_ALGO;
 
-	if( (rc = get_pubkey_by_name( pkc, remusr->d )) ) {
+	if( (rc = get_pubkey_byname( pkc, remusr->d )) ) {
 	    last_rc = rc;
 	    log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );
 	    continue;

@@ -66,13 +66,14 @@ void add_secret_keyring( const char *name );
 void cache_public_cert( PKT_public_cert *pkc );
 void cache_user_id( PKT_user_id *uid, u32 *keyid );
 int get_pubkey( PKT_public_cert *pkc, u32 *keyid );
-int get_pubkey_by_name( PKT_public_cert *pkc, const char *name );
+int get_pubkey_byname( PKT_public_cert *pkc, const char *name );
 int get_seckey( PKT_secret_cert *skc, u32 *keyid );
-int get_seckey_by_name( PKT_secret_cert *skc, const char *name );
+int get_seckey_byname( PKT_secret_cert *skc, const char *name, int unlock );
 char*get_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
 
 /*-- keyid.c --*/
+int pubkey_letter( int algo );
 u32 keyid_from_skc( PKT_secret_cert *skc, u32 *keyid );
 u32 keyid_from_pkc( PKT_public_cert *pkc, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );
@@ -87,14 +88,18 @@ byte *fingerprint_from_pkc( PKT_public_cert *pkc, size_t *ret_len );
 /*-- kbnode.c --*/
 KBNODE new_kbnode( PACKET *pkt );
 void release_kbnode( KBNODE n );
+void add_kbnode( KBNODE root, KBNODE node );
+void add_kbnode_as_child( KBNODE root, KBNODE node );
 KBNODE find_kbparent( KBNODE root, KBNODE node );
+KBNODE walk_kbtree( KBNODE root, KBNODE *context );
 
 /*-- ringedit.c --*/
-int add_keyblock_resource( const char *filename );
+int add_keyblock_resource( const char *filename, int force );
 int get_keyblock_handle( const char *filename, KBPOS *kbpos );
 int search_keyblock( PACKET *pkt, KBPOS *kbpos );
+int search_keyblock_byname( KBPOS *kbpos, const char *username );
 int lock_keyblock( KBPOS *kbpos );
-int unlock_keyblock( KBPOS *kbpos );
+void unlock_keyblock( KBPOS *kbpos );
 int read_keyblock( KBPOS *kbpos, KBNODE *ret_root );
 int insert_keyblock( KBPOS *kbpos, KBNODE root );
 int delete_keyblock( KBPOS *kbpos );

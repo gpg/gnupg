@@ -60,6 +60,28 @@ tty_printf( const char *fmt, ... )
 }
 
 
+/****************
+ * Print a string, but filter all control characters out.
+ */
+void
+tty_print_string( byte *p, size_t n )
+{
+    for( ; n; n--, p++ )
+	if( iscntrl( *p ) ) {
+	    putc('\\', stderr);
+	    if( *p == '\n' )
+		putc('n', stderr);
+	    else if( !*p )
+		putc('0', stderr);
+	    else
+		fprintf(stderr, "x%02x", *p );
+	}
+	else
+	    putc(*p, stderr);
+}
+
+
+
 char *
 tty_get( const char *prompt )
 {

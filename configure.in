@@ -22,19 +22,18 @@ fi
 CFLAGS="-g"
 
 dnl
-AC_CANONICAL_HOST
+AC_CANONICAL_SYSTEM
 AC_MSG_CHECKING(cached information)
-hostcheck="$host"
+hostcheck="$target"
 AC_CACHE_VAL(ac_cv_mpi_hostcheck, [ ac_cv_mpi_hostcheck="$hostcheck" ])
 if test "$ac_cv_mpi_hostcheck" != "$hostcheck"; then
     AC_MSG_RESULT(changed)
     AC_MSG_WARN(config.cache exists!)
     AC_MSG_ERROR(you must do 'make distclean' first to compile for
-different host or different parameters.)
+different target or different parameters.)
 else
     AC_MSG_RESULT(ok)
 fi
-
 
 
 dnl Checks for programs.
@@ -71,8 +70,12 @@ AC_CHECK_FUNCS(strerror strtol strtoul)
 
 
 dnl setup assembler stuff
-
-
+if test -f ./mpi/config.links ; then
+    . ./mpi/config.links
+    AC_LINK_FILES( ${mpi_ln_src}, ${mpi_ln_dst} )
+else
+    AC_MSG_ERROR([mpi/config.links missing!])
+fi
 
 
 
@@ -91,6 +94,7 @@ fi
 AC_SUBST(add_cipher_SOURCES)
 
 AC_OUTPUT([ Makefile scripts/Makefile util/Makefile mpi/Makefile \
+	    mpi/generic/Makefile mpi/i386/Makefile \
 	    cipher/Makefile \
 	    include/Makefile \
 	    g10/Makefile tools/Makefile ],

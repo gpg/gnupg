@@ -57,6 +57,36 @@ release_kbnode( KBNODE n )
 
 
 /****************
+ * Append NODE to ROOT, ROOT must exist!
+ */
+void
+add_kbnode( KBNODE root, KBNODE node )
+{
+    KBNODE n1;
+
+    for(n1=root; n1->next; n1 = n1->next)
+	;
+    n1->next = node;
+}
+
+/****************
+ * Append NODE to ROOT as child of ROOT
+ */
+void
+add_kbnode_as_child( KBNODE root, KBNODE node )
+{
+    KBNODE n1;
+
+    if( !(n1=root->child) )
+	root->child = node;
+    else {
+	for( ; n1->next; n1 = n1->next)
+	    ;
+	n1->next = node;
+    }
+}
+
+/****************
  * Return the parent node of KBNODE from the tree with ROOT
  */
 KBNODE
@@ -72,8 +102,39 @@ find_kbparent( KBNODE root, KBNODE node )
 	    }
 	}
     }
-    log_bug(NULL);
+    return NULL;
 }
 
 
+/****************
+ * Walk through a tree of kbnodes. This functions returns
+ * the next kbnode for each call; before using the function the first
+ * time, the caller must set CONTEXT to NULL (This has simply the effect
+ * to start with ROOT).
+ */
+KBNODE
+walk_kbtree( KBNODE root, KBNODE *context )
+{
+    KBNODE n;
+
+    if( !*context ) {
+	*context = root;
+	return root;
+    }
+
+    n = *context;
+    if( n->child ) {
+	n = n->child;
+	*context = n;
+    }
+    else if( n->next ) {
+	n = n->next;
+	*context = n;
+    }
+    else if( (n = find_kbparent( root, n )) ) {
+	n = n->next;
+	*context = n;
+    }
+    return n;
+}
 

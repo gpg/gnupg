@@ -125,20 +125,21 @@ main( int argc, char **argv )
     { 510, "debug"     ,4|16, "set debugging flags" },
     { 511, "debug-all" ,0, "enable full debugging"},
     { 512, "cache-all" ,0, "hold everything in memory"},
-    { 513, "gen-prime" , 1, "\rgenerate a prime of length n" },
-    { 514, "test"      , 0, "\rdevelopment usage" },
+    { 513, "gen-prime" , 1, "\r" },
+    { 514, "test"      , 0, "\r" },
     { 515, "change-passphrase", 0, "change the passphrase of your secret keyring"},
     { 515, "fingerprint", 0, "show the fingerprints"},
     { 516, "print-mds" , 0, "print all message digests"},
     { 517, "secret-keyring" ,2, "add this secret keyring to the list" },
     { 518, "config"    , 2, "use this config file" },
+    { 519, "no-armor",   0, "\r"},
 
     {0} };
     ARGPARSE_ARGS pargs;
     IOBUF a;
     int rc;
     enum { aNull, aSym, aStore, aEncr, aPrimegen, aKeygen, aSign, aSignEncr,
-	   aTest, aPrintMDs,
+	   aTest, aPrintMDs, aSignKey,
     } action = aNull;
     int orig_argc;
     char **orig_argv;
@@ -189,7 +190,7 @@ main( int argc, char **argv )
 	configfp = fopen( configname, "r" );
 	if( !configfp ) {
 	    if( default_config ) {
-		if( parse_verbose )
+		if( parse_verbose > 1 )
 		log_info("note: no default option file '%s'\n", configname );
 	    }
 	    else
@@ -197,7 +198,7 @@ main( int argc, char **argv )
 				    configname, strerror(errno) );
 	    m_free(configname); configname = NULL;
 	}
-	if( parse_verbose )
+	if( parse_verbose > 1 )
 	    log_info("reading options from '%s'\n", configname );
 	default_config = 0;
     }
@@ -209,7 +210,7 @@ main( int argc, char **argv )
 		    opt.list_sigs=1;
 		    break;
 	  case 'z': opt.compress = pargs.r.ret_int; break;
-	  case 'a': opt.armor = 1; break;
+	  case 'a': opt.armor = 1; opt.no_armor=0; break;
 	  case 'c': action = aSym; break;
 	  case 'o': opt.outfile = pargs.r.ret_str;
 		    if( opt.outfile[0] == '-' && !opt.outfile[1] )
@@ -235,6 +236,7 @@ main( int argc, char **argv )
 	  case 501: opt.answer_yes = 1; break;
 	  case 502: opt.answer_no = 1; break;
 	  case 503: action = aKeygen; break;
+	  case 506: action = aSignKey; break;
 	  case 507: action = aStore; break;
 	  case 508: opt.check_sigs = 1; opt.list_sigs = 1; break;
 	  case 509: add_keyring(pargs.r.ret_str); nrings++; break;
@@ -254,6 +256,7 @@ main( int argc, char **argv )
 		goto next_pass;
 	    }
 	    break;
+	  case 519: opt.no_armor=1; opt.armor=0; break;
 	  default : errors++; pargs.err = configfp? 1:2; break;
 	}
     }
@@ -270,7 +273,7 @@ main( int argc, char **argv )
     set_debug();
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
-    if( !opt.batch && isatty(fileno(stdin)) ) {
+    if( opt.verbose && isatty(fileno(stdin)) ) {
 	if( *(s=strusage(10))  )
 	    fputs(s, stderr);
 	if( *(s=strusage(30))  )
@@ -278,11 +281,14 @@ main( int argc, char **argv )
     }
 
     if( !sec_nrings ) { /* add default secret rings */
-	add_keyring("../keys/secring.g10");
+	char *p = make_filename("~/.g10", "secring.g10", NULL );
+	add_secret_keyring(p);
+	m_free(p);
     }
-    if( !nrings ) { /* add default rings */
-	add_keyring("../keys/ring.pgp");
-	add_keyring("../keys/pubring.g10");
+    if( !nrings ) { /* add default ring */
+	char *p = make_filename("~/.g10", "pubring.g10", NULL );
+	add_keyring(p);
+	m_free(p);
     }
 
     if( argc ) {
@@ -323,9 +329,20 @@ main( int argc, char **argv )
 	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
 	break;
 
+
       case aSignEncr: /* sign and encrypt the given file */
 	usage(1);  /* FIXME */
 	break;
+
+
+      case aSignKey: /* sign the key given as argument */
+	if( argc != 1 )
+	    usage(1);
+	/* note: fname is the user id! */
+	if( (rc = sign_key(fname, locusr)) )
+	    log_error("sign_key('%s'): %s\n", fname_print, g10_errstr(rc) );
+	break;
+
 
       case aPrimegen:
 	if( argc )
@@ -356,9 +373,11 @@ main( int argc, char **argv )
 	    usage(1);
 	if( !(a = iobuf_open(fname)) )
 	    log_fatal("can't open '%s'\n", fname_print);
-	/* push the armor filter, so it can peek at the input data */
-	memset( &afx, 0, sizeof afx);
-	iobuf_push_filter( a, armor_filter, &afx );
+	if( !opt.no_armor ) {
+	    /* push the armor filter, so it can peek at the input data */
+	    memset( &afx, 0, sizeof afx);
+	    iobuf_push_filter( a, armor_filter, &afx );
+	}
 	proc_packets( a );
 	iobuf_close(a);
 	break;

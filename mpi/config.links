@@ -1,0 +1,51 @@
+# sourced my ../configure to get the list of files to link
+# this should set $mpi_ln_src and mpi_ln_dst.
+# Note: this is called from the above directory.
+
+echo '# created by config.links - do not edit' >./mpi/asm-syntax.h
+
+case "${target}" in
+    i[3456]86*-*-*)
+	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
+	echo '#include "./i386/syntax.h"' >>./mpi/asm-syntax.h
+	path="i386"
+	;;
+    i[56]86*-*-* | pentium-*-* | pentiumpro-*-*)
+	echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
+	echo '#include "./i586/syntax.h"' >>./mpi/asm-syntax.h
+	path="i586"
+	;;
+    *)
+	echo '/* No assembler modules configured */' >>./mpi/asm-syntax.h
+	path=""
+	;;
+esac
+
+
+# fixme: grep these modules from Makefile.in
+mpi_ln_modules="mpih-add1 mpih-mul1 mpih-mul2 mpih-mul3 \
+		 mpih-shift mpih-sub1"
+
+mpi_ln_objects=
+mpi_ln_src=
+mpi_ln_dst=
+
+# try to get file to link from the assembler subdirectory and
+# if this fails get it from the generic subdirectory.
+path="$path generic"
+for fn in $mpi_ln_modules ; do
+    mpi_ln_objects="$mpi_ln_objects $fn.o"
+    for dir in $path ; do
+	rm -f ./mpi/$fn.[Sc]
+	if test -f ./mpi/$dir/$fn.S ; then
+	    mpi_ln_src="$mpi_ln_src mpi/$dir/$fn.S"
+	    mpi_ln_dst="$mpi_ln_dst mpi/$fn.S"
+	    break;
+	elif test -f ./mpi/$dir/$fn.c ; then
+	    mpi_ln_src="$mpi_ln_src mpi/$dir/$fn.c"
+	    mpi_ln_dst="$mpi_ln_dst mpi/$fn.c"
+	    break;
+	fi
+    done
+done
+

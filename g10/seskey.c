@@ -49,7 +49,7 @@ make_session_key( DEK *dek )
 
 /****************
  * Encode the session key. NBITS is the number of bits which should be used
- * for packing teh session key.
+ * for packing the session key.
  * returns: A mpi with the session key (caller must free)
  */
 MPI

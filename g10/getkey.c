@@ -83,9 +83,9 @@ add_keyring( const char *name )
      * combine it with the keyblock stuff from ringedit.c
      * For now we will simple add the filename as keyblock resource
      */
-    rc = add_keyblock_resource( name );
+    rc = add_keyblock_resource( name, 0 );
     if( rc )
-	log_error("keyblock resource '%s': %s\n", name, rc );
+	log_error("keyblock resource '%s': %s\n", name, g10_errstr(rc) );
 }
 
 void
@@ -245,7 +245,7 @@ get_pubkey( PKT_public_cert *pkc, u32 *keyid )
  * a pubkey with that algo.
  */
 int
-get_pubkey_by_name( PKT_public_cert *pkc, const char *name )
+get_pubkey_byname( PKT_public_cert *pkc, const char *name )
 {
     int internal = 0;
     int rc = 0;
@@ -304,7 +304,7 @@ get_seckey( PKT_secret_cert *skc, u32 *keyid )
  * If NAME is NULL use the default certificate
  */
 int
-get_seckey_by_name( PKT_secret_cert *skc, const char *name )
+get_seckey_byname( PKT_secret_cert *skc, const char *name, int unprotect )
 {
     STRLIST sl;
     int rc=0;
@@ -319,8 +319,9 @@ get_seckey_by_name( PKT_secret_cert *skc, const char *name )
     /* get the secret key (this may prompt for a passprase to
      * unlock the secret key
      */
-    if( (rc = check_secret_key( skc )) )
-	goto leave;
+    if( unprotect )
+	if( (rc = check_secret_key( skc )) )
+	    goto leave;
 
   leave:
     return rc;
