@@ -165,6 +165,7 @@ init_ttyfp(void)
 #ifdef HAVE_LIBREADLINE
     rl_catch_signals = 0;
     rl_instream = rl_outstream = ttyfp;
+    rl_inhibit_completion = 1;
 #endif
 #endif
 #ifdef HAVE_TCGETATTR
@@ -172,6 +173,25 @@ init_ttyfp(void)
 #endif
     initialized = 1;
 }
+
+#ifdef HAVE_LIBREADLINE
+void
+tty_enable_completion(rl_completion_func_t *completer)
+{
+  if( !initialized )
+    init_ttyfp();
+  rl_attempted_completion_function=completer;
+  rl_inhibit_completion=0;
+}
+
+void
+tty_disable_completion(void)
+{
+  if( !initialized )
+    init_ttyfp();
+  rl_inhibit_completion=1;
+}
+#endif
 
 int
 tty_batchmode( int onoff )

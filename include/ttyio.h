@@ -1,5 +1,5 @@
 /* ttyio.h
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -20,6 +20,11 @@
 #ifndef G10_TTYIO_H
 #define G10_TTYIO_H
 
+#ifdef HAVE_LIBREADLINE
+#include <stdio.h>
+#include <readline/readline.h>
+#endif
+
 const char *tty_get_ttyname (void);
 int tty_batchmode( int onoff );
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
@@ -39,5 +44,15 @@ void tty_kill_prompt(void);
 int tty_get_answer_is_yes( const char *prompt );
 int tty_no_terminal(int onoff);
 
+#ifdef HAVE_LIBREADLINE
+void tty_enable_completion(rl_completion_func_t *completer);
+void tty_disable_completion(void);
+#else
+/* Use a macro to stub out these functions since a macro has no need
+   to typedef a "rl_completion_func_t" which would be undefined
+   without readline. */
+#define tty_enable_completion(x)
+#define tty_disable_completion()
+#endif
 
 #endif /*G10_TTYIO_H*/

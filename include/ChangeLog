@@ -1,3 +1,8 @@
+2005-03-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* ttyio.h: Prototype tty_enable_completion(), and
+	tty_disable_completion().
+
 2005-02-09  David Shaw  <dshaw@jabberwocky.com>
 
 	* cipher.h: Add a flag for a symmetric DEK.

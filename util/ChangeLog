@@ -1,3 +1,9 @@
+2005-03-18  David Shaw  <dshaw@jabberwocky.com>
+
+	* ttyio.c (tty_enable_completion, tty_disable_completion): Enable
+	and disable readline completion.
+	(init_ttyfp): Completion is disabled by default.
+
 2005-03-14  Werner Koch  <wk@g10code.com>
 
 	* miscutil.c (isotimestamp): New.
