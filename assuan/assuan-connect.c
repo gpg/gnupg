@@ -31,8 +31,7 @@
 
 /* Connect to a server over a pipe, creating the assuan context and
    returning it in CTX.  The server filename is NAME, the argument
-   vector in ARGV.  If NAME is NULL, the first element in ARGV is
-   used.  */
+   vector in ARGV.  */
 AssuanError
 assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[])
 {
@@ -42,11 +41,8 @@ assuan_pipe_connect (ASSUAN_CONTEXT *ctx, const char *name, char *const argv[])
   int wp[2];
   int fd[2];
 
-  if (!argv || !argv[0])
+  if (!name || !argv || !argv[0])
     return ASSUAN_General_Error;
-
-  if (!name)
-    name = argv[0];
 
   if (!fixed_signals)
     { 
