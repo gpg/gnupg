@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 1.9.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"POT-Creation-Date: 2004-09-30 15:22+0200\n"
-"PO-Revision-Date: 2004-09-30 15:23+0200\n"
+"POT-Creation-Date: 2004-10-01 14:24+0200\n"
+"PO-Revision-Date: 2004-10-01 14:27+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: de\n"
 "MIME-Version: 1.0\n"
@@ -41,7 +41,7 @@ msgstr "ausführlich"
 
 #: agent/gpg-agent.c:102 kbx/kbxutil.c:82 scd/scdaemon.c:98 sm/gpgsm.c:316
 msgid "be somewhat more quiet"
-msgstr "etwas weniger Aussageb erzeugen"
+msgstr "Etwas weniger Ausgaben erzeugen"
 
 #: agent/gpg-agent.c:103 scd/scdaemon.c:99
 msgid "sh-style command output"
@@ -121,30 +121,30 @@ msgstr ""
 "Syntax: gpg-agent [Optionen] [Kommando [Argumente]]\n"
 "Verwaltung von geheimen Schlüssel für GnuPG\n"
 
-#: agent/gpg-agent.c:271 scd/scdaemon.c:242 sm/gpgsm.c:608
+#: agent/gpg-agent.c:271 scd/scdaemon.c:242 sm/gpgsm.c:603
 #, c-format
 msgid "invalid debug-level `%s' given\n"
 msgstr "ungültige Debugebene `%s' angegeben\n"
 
-#: agent/gpg-agent.c:446 agent/protect-tool.c:1050 kbx/kbxutil.c:436
-#: scd/scdaemon.c:357 scd/sc-investigate.c:181 sm/gpgsm.c:731
+#: agent/gpg-agent.c:446 agent/protect-tool.c:1050 kbx/kbxutil.c:431
+#: scd/scdaemon.c:357 scd/sc-investigate.c:181 sm/gpgsm.c:726
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 "Die Bibliothek \"libgcrypt\" is zu alt (benötigt wird %s, vorhanden ist %s)\n"
 
-#: agent/gpg-agent.c:519 scd/scdaemon.c:437 sm/gpgsm.c:829
+#: agent/gpg-agent.c:519 scd/scdaemon.c:437 sm/gpgsm.c:824
 #, c-format
 msgid "NOTE: no default option file `%s'\n"
 msgstr "Notiz: Voreingestellte Konfigurationsdatei `%s' fehlt\n"
 
 #: agent/gpg-agent.c:524 agent/gpg-agent.c:998 scd/scdaemon.c:442
-#: sm/gpgsm.c:833
+#: sm/gpgsm.c:828
 #, c-format
 msgid "option file `%s': %s\n"
 msgstr "Konfigurationsdatei `%s': %s\n"
 
-#: agent/gpg-agent.c:532 scd/scdaemon.c:450 sm/gpgsm.c:840
+#: agent/gpg-agent.c:532 scd/scdaemon.c:450 sm/gpgsm.c:835
 #, c-format
 msgid "reading options from `%s'\n"
 msgstr "Optionen werden aus `%s' gelesen\n"
@@ -412,7 +412,7 @@ msgstr "Den OpenSC basierten Kartenzugriff nicht nutzen"
 
 #: scd/scdaemon.c:126
 msgid "allow the use of admin card commands"
-msgstr "Erlaube die Benuztung von \"Admin\" Kommandos"
+msgstr "Erlaube die Benutzung von \"Admin\" Kommandos"
 
 #: scd/scdaemon.c:171
 msgid "Usage: scdaemon [options] (-h for help)"
@@ -569,23 +569,23 @@ msgstr "keine"
 msgid "[none]"
 msgstr "[keine]"
 
-#: sm/certdump.c:490
+#: sm/certdump.c:493
 msgid "[Error - No name]"
 msgstr "[Fehler - Kein Name]"
 
-#: sm/certdump.c:499
+#: sm/certdump.c:507
 msgid "[Error - unknown encoding]"
 msgstr "[Fehler - Unbekannte Kodierung]"
 
-#: sm/certdump.c:503
+#: sm/certdump.c:511
 msgid "[Error - invalid encoding]"
 msgstr "[Fehler - Ungültige Kodierung]"
 
-#: sm/certdump.c:508
+#: sm/certdump.c:516
 msgid "[Error - invalid DN]"
 msgstr "[Fehler - Ungültiger DN]"
 
-#: sm/certdump.c:655
+#: sm/certdump.c:677
 #, c-format
 msgid ""
 "Please enter the passphrase to unlock the secret key for:\n"
@@ -907,7 +907,7 @@ msgstr "Eingabedaten sind im PEM Format"
 
 #: sm/gpgsm.c:269
 msgid "assume input is in base-64 format"
-msgstr "Eingabedaten sin im Basis-64 Format"
+msgstr "Eingabedaten sind im Basis-64 Format"
 
 #: sm/gpgsm.c:271
 msgid "assume input is in binary format"
@@ -1009,6 +1009,10 @@ msgstr "|HOST|Benutze HOST als Schlüsselserver"
 msgid "|NAME|set terminal charset to NAME"
 msgstr "|NAME|Den Zeichensatz für das Terminal auf NAME setzen"
 
+#: sm/gpgsm.c:338
+msgid "|LEVEL|set the debugging level to LEVEL"
+msgstr "|STRING|Die Debugstufe auf STING setzen"
+
 #: sm/gpgsm.c:345
 msgid "|FD|write status info to this FD"
 msgstr "|FD|Statusinformationen auf Dateidescriptor FD schreiben"
@@ -1078,50 +1082,50 @@ msgstr ""
 "\n"
 "Unterstützte Algorithmen:\n"
 
-#: sm/gpgsm.c:579
+#: sm/gpgsm.c:574
 msgid "usage: gpgsm [options] "
 msgstr "Gebrauch: gpgsm [Optionen] "
 
-#: sm/gpgsm.c:645
+#: sm/gpgsm.c:640
 msgid "conflicting commands\n"
 msgstr "Widersprechende Kommandos\n"
 
-#: sm/gpgsm.c:661
+#: sm/gpgsm.c:656
 #, c-format
 msgid "can't encrypt to `%s': %s\n"
 msgstr "Verschlüsseln für `%s' nicht möglich: %s\n"
 
-#: sm/gpgsm.c:736
+#: sm/gpgsm.c:731
 #, c-format
 msgid "libksba is too old (need %s, have %s)\n"
 msgstr "Die Bibliothek Libksba is nicht aktuell (benötige %s, habe %s)\n"
 
-#: sm/gpgsm.c:1183
+#: sm/gpgsm.c:1178
 msgid "WARNING: program may create a core file!\n"
 msgstr "WARNUNG: Programm könnte eine core-dump-Datei schreiben!\n"
 
-#: sm/gpgsm.c:1195
+#: sm/gpgsm.c:1190
 msgid "WARNING: running with faked system time: "
 msgstr "WARNUNG: Ausführung mit gefälschter Systemzeit: "
 
-#: sm/gpgsm.c:1221
+#: sm/gpgsm.c:1216
 msgid "selected cipher algorithm is invalid\n"
 msgstr "Das ausgewählte Verschlüsselungsverfahren ist ungültig\n"
 
-#: sm/gpgsm.c:1229
+#: sm/gpgsm.c:1224
 msgid "selected digest algorithm is invalid\n"
 msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
 
-#: sm/gpgsm.c:1259
+#: sm/gpgsm.c:1254
 #, c-format
 msgid "can't sign using `%s': %s\n"
 msgstr "Signieren mit `%s' nicht möglich: %s\n"
 
-#: sm/gpgsm.c:1423
+#: sm/gpgsm.c:1418
 msgid "this command has not yet been implemented\n"
 msgstr "Diee Kommando wurde noch nicht implementiert\n"
 
-#: sm/gpgsm.c:1646 sm/gpgsm.c:1679
+#: sm/gpgsm.c:1641 sm/gpgsm.c:1674
 #, c-format
 msgid "can't open `%s': %s\n"
 msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
@@ -1330,54 +1334,58 @@ msgstr ""
 "Syntax: gpgconf {Optionen]\n"
 "Verwalte Konfigurationsoptionen für Programme des GnuPG Systems\n"
 
-#: tools/gpgconf.c:180
+#: tools/gpgconf.c:175
 msgid "usage: gpgconf [options] "
 msgstr "Gebrauch: gpgconf [Optionen] "
 
-#: tools/gpgconf.c:181
+#: tools/gpgconf.c:176
 msgid "Need one component argument"
 msgstr "Benötige ein Komponenten Argument"
 
-#: tools/gpgconf.c:190
+#: tools/gpgconf.c:185
 msgid "Component not found"
 msgstr "Komponente nicht gefunden"
 
-#: tools/gpgconf-comp.c:432 tools/gpgconf-comp.c:493 tools/gpgconf-comp.c:558
-#: tools/gpgconf-comp.c:611 tools/gpgconf-comp.c:674
+#: tools/gpgconf-comp.c:435 tools/gpgconf-comp.c:496 tools/gpgconf-comp.c:561
+#: tools/gpgconf-comp.c:614 tools/gpgconf-comp.c:677
 msgid "Options controlling the diagnostic output"
 msgstr "Optionen zur Einstellung Diagnoseausgaben"
 
-#: tools/gpgconf-comp.c:445 tools/gpgconf-comp.c:506 tools/gpgconf-comp.c:571
-#: tools/gpgconf-comp.c:624 tools/gpgconf-comp.c:697
+#: tools/gpgconf-comp.c:448 tools/gpgconf-comp.c:509 tools/gpgconf-comp.c:574
+#: tools/gpgconf-comp.c:627 tools/gpgconf-comp.c:700
 msgid "Options controlling the configuration"
 msgstr "Optionen zur Einstellung der Konfiguration"
 
-#: tools/gpgconf-comp.c:452 tools/gpgconf-comp.c:529 tools/gpgconf-comp.c:578
-#: tools/gpgconf-comp.c:631 tools/gpgconf-comp.c:704
+#: tools/gpgconf-comp.c:455 tools/gpgconf-comp.c:532 tools/gpgconf-comp.c:581
+#: tools/gpgconf-comp.c:634 tools/gpgconf-comp.c:707
 msgid "Options useful for debugging"
-msgstr "NÃ¼tzliche Optionen zum Debuggen"
+msgstr "Nützliche Optionen zum Debuggen"
 
-#: tools/gpgconf-comp.c:465 tools/gpgconf-comp.c:539 tools/gpgconf-comp.c:644
+#: tools/gpgconf-comp.c:460
+msgid "|FILE|write server mode logs to FILE"
+msgstr "|DATEI|Schreibe im Servermodus Logs auf DATEI"
+
+#: tools/gpgconf-comp.c:468 tools/gpgconf-comp.c:542 tools/gpgconf-comp.c:647
 msgid "Options controlling the security"
 msgstr "Optionen zur Einstellung der Sicherheit"
 
-#: tools/gpgconf-comp.c:591
+#: tools/gpgconf-comp.c:594
 msgid "Configuration for Keyservers"
-msgstr "Konfiguration der SchlÃ¼sselserver"
+msgstr "Konfiguration der Schlüsselserver"
 
-#: tools/gpgconf-comp.c:687
+#: tools/gpgconf-comp.c:690
 msgid "Options controlling the format of the output"
 msgstr "Optionen zum Einstellen der Ausgabeformate"
 
-#: tools/gpgconf-comp.c:723
+#: tools/gpgconf-comp.c:726
 msgid "Options controlling the interactivity and enforcement"
-msgstr "Optionen zur Einstellung der InteraktivitÃ¤t und Geltendmachung"
+msgstr "Optionen zur Einstellung der Interaktivität und Geltendmachung"
 
-#: tools/gpgconf-comp.c:733
+#: tools/gpgconf-comp.c:736
 msgid "Configuration of LDAP servers to use"
 msgstr "Konfiguration der zu nutzenden LDAP-Server"
 
-#: tools/gpgconf-comp.c:758
+#: tools/gpgconf-comp.c:761
 msgid "Configuration for OCSP"
 msgstr "Konfiguration zu OCSP"
 

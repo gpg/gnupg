@@ -335,7 +335,7 @@ static ARGPARSE_OPTS opts[] = {
     { oOptions, "options"   , 2, N_("read options from file")},
 
     { oDebug, "debug"     ,4|16, "@"},
-    { oDebugLevel, "debug-level" ,2, "@"},
+    { oDebugLevel, "debug-level" ,2, N_("|LEVEL|set the debugging level to LEVEL")},
     { oDebugAll, "debug-all" ,0, "@"},
     { oDebugWait, "debug-wait" ,1, "@"},
     { oDebugAllowCoreDump, "debug-allow-core-dump", 0, "@" },

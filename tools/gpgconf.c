@@ -172,8 +172,9 @@ main (int argc, char **argv)
     case aChangeOptions:
       if (!fname)
 	{
-	  fputs (N_("usage: gpgconf [options] "), stderr);
-	  fputs (N_("Need one component argument"), stderr);
+	  fputs (_("usage: gpgconf [options] "), stderr);
+	  putc ('\n',stderr);
+	  fputs (_("Need one component argument"), stderr);
 	  putc ('\n',stderr);
 	  exit (2);
 	}
@@ -182,7 +183,7 @@ main (int argc, char **argv)
 	  int idx = gc_component_find (fname);
 	  if (idx < 0)
 	    {
-	      fputs (N_("Component not found"), stderr);
+	      fputs (_("Component not found"), stderr);
 	      putc ('\n', stderr);
 	      exit (1);
 	    }

@@ -364,7 +364,10 @@ struct gc_option
      and options.
      
      Note that we try to keep the description of groups within the
-     gnupg domain.  */
+     gnupg domain. 
+     
+     IMPORTANT: If you add a new domain please make sure to add a code
+     set switching call to the function my_dgettext further below.  */
   const char *desc_domain;
 
   /* A gettext description for this group or option.  If it starts
@@ -454,7 +457,7 @@ static gc_option_t gc_options_gpg_agent[] =
      "gnupg", "|LEVEL|set the debugging level to LEVEL",
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG_AGENT },
    { "log-file", GC_OPT_FLAG_RUNTIME, GC_LEVEL_ADVANCED,
-     "gnupg", "|FILE|write logs to FILE",
+     "gnupg", N_("|FILE|write server mode logs to FILE"),
      GC_ARG_TYPE_PATHNAME, GC_BACKEND_GPG_AGENT },
    { "faked-system-time", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      NULL, NULL,
@@ -760,7 +763,7 @@ static gc_option_t gc_options_dirmngr[] =
      "dirmngr", "allow sending OCSP requests",
      GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
    { "ocsp-responder", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
-     "dirmngr", "|URL|use OCSP responder URL",
+     "dirmngr", "|URL|use OCSP responder at URL",
      GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
    { "ocsp-signer", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "dirmngr", "|FPR|OCSP response signed by FPR",
@@ -874,8 +877,12 @@ my_dgettext (const char *domain, const char *msgid)
       
       if (!switched_codeset)
         {
-          bind_textdomain_codeset (PACKAGE_GT, "utf-8");
           switched_codeset = 1;
+          bind_textdomain_codeset (PACKAGE_GT, "utf-8");
+
+          bindtextdomain ("dirmngr", LOCALEDIR);
+          bind_textdomain_codeset ("dirmngr", "utf-8");
+   
         }
 
       /* Note: This is a hack to actually use the gnupg2 domain as

@@ -1,3 +1,10 @@
+2004-10-01  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (my_dgettext): Also switch codeset and directory
+	for the other used domains (i.e. dirmngr).
+
+	* gpgconf.c (main): Fixed translation markers.
+
 2004-09-30  Werner Koch  <wk@g10code.com>
 
 	* gpgconf.c (i18n_init): Always use LC_ALL.
