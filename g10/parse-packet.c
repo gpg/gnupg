@@ -1377,7 +1377,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 {
     int i, version, algorithm;
     unsigned n;
-    unsigned long timestamp, expiredate;
+    unsigned long timestamp, expiredate, max_expiredate;
     int npkey, nskey;
     int is_v4=0;
     int rc=0;
@@ -1416,8 +1416,10 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     }
 
     timestamp = read_32(inp); pktlen -= 4;
-    if( is_v4 )
+    if( is_v4 ) {
 	expiredate = 0; /* have to get it from the selfsignature */
+	max_expiredate = 0;
+    }
     else {
 	unsigned short ndays;
 	ndays = read_16(inp); pktlen -= 2;
@@ -1425,6 +1427,8 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	    expiredate = timestamp + ndays * 86400L;
 	else
 	    expiredate = 0;
+
+	max_expiredate=expiredate;
     }
     algorithm = iobuf_get_noeof(inp); pktlen--;
     if( list_mode )
@@ -1441,6 +1445,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	sk->timestamp = timestamp;
 	sk->expiredate = expiredate;
+	sk->max_expiredate = max_expiredate;
 	sk->hdrbytes = hdrlen;
 	sk->version = version;
 	sk->is_primary = pkttype == PKT_SECRET_KEY;
@@ -1453,6 +1458,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 
 	pk->timestamp = timestamp;
 	pk->expiredate = expiredate;
+	pk->max_expiredate = max_expiredate;
 	pk->hdrbytes	= hdrlen;
 	pk->version	= version;
 	pk->pubkey_algo = algorithm;

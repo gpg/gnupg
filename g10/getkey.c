@@ -1048,6 +1048,12 @@ merge_keys_and_selfsig( KBNODE keyblock )
 		}
 	    }
 	}
+
+	if(pk->expiredate==0 || pk->expiredate>pk->max_expiredate)
+	  pk->expiredate=pk->max_expiredate;
+
+	if(sk->expiredate==0 || sk->expiredate>sk->max_expiredate)
+	  sk->expiredate=sk->max_expiredate;
     }
 }
 
@@ -1176,10 +1182,10 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
     pk->main_keyid[1] = kid[1];
 
     if ( pk->version < 4 ) {
-        /* before v4 the key packet itself contains the expiration date
-         * and there was no way to change it.  So we also use only the
-         * one from the key packet */
-        key_expire = pk->expiredate;
+        /* before v4 the key packet itself contains the expiration
+         * date and there was no way to change it, so we start with
+         * the one from the key packet */
+        key_expire = pk->max_expiredate;
         key_expire_seen = 1;
     }
 
@@ -1263,12 +1269,10 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
                 key_usage |= PUBKEY_USAGE_ENC;
         }
 
-        if ( pk->version > 3 ) {
-            p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-            if ( p ) {
-                key_expire = keytimestamp + buffer_to_u32(p);
-                key_expire_seen = 1;
-            }
+	p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
+	if ( p ) {
+	  key_expire = keytimestamp + buffer_to_u32(p);
+	  key_expire_seen = 1;
         }
 
         /* mark that key as valid: one direct key signature should 
@@ -1416,10 +1420,14 @@ merge_selfsigs_main( KBNODE keyblock, int *r_revoked )
             }
       	}
     }
-   
+
+    /* Currently only v3 keys have a maximum expiration date, but I'll
+       bet v5 keys get this feature again. */
+    if(key_expire==0 || key_expire>pk->max_expiredate)
+      key_expire=pk->max_expiredate;
+
     pk->has_expired = key_expire >= curtime? 0 : key_expire;
-    if ( pk->version >= 4 ) 
-        pk->expiredate = key_expire;
+    pk->expiredate = key_expire;
     /* Fixme: we should see how to get rid of the expiretime fields  but
      * this needs changes at other places too. */
 
@@ -1560,7 +1568,6 @@ merge_selfsigs_subkey( KBNODE keyblock, KBNODE subnode )
     subpk->pubkey_usage = key_usage;
     
     p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-
     if ( p ) 
         key_expire = keytimestamp + buffer_to_u32(p);
     else
