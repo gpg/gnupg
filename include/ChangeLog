@@ -1,3 +1,8 @@
+2002-11-13  David Shaw  <dshaw@jabberwocky.com>
+
+	* util.h [__CYGWIN32__]: Don't need the registry prototypes.  From
+	Werner on stable branch.
+
 2002-11-06  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Add wipememory2() macro (same as wipememory, but can
