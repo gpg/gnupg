@@ -1,6 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 INCLUDES = -I$(top_srcdir)/include
+EXTRA_DIST = @CIPHER_EXTRA_DIST@
 
 noinst_LIBRARIES = cipher
 
@@ -21,9 +22,9 @@ cipher_SOURCES = blowfish.c	\
 		 sha1.c 	\
 		 dsa.h		\
 		 dsa.c		\
-		 rsa.c		\
-		 rsa.h		\
 		 md.c		\
 		 smallprime.c
+
+cipher_LIBADD = @CIPHER_EXTRA_OBJS@
 
 

@@ -72,7 +72,7 @@ mpi_LIBADD =  mpih-mul1.o    \
 	      mpih-mul3.o    \
 	      mpih-add1.o    \
 	      mpih-sub1.o    \
-	      mpih-shift.o
+	      mpih-shift.o  @MPI_EXTRA_ASM_OBJS@
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs
 CONFIG_HEADER = ../config.h
 LIBRARIES = $(noinst_LIBRARIES)
@@ -273,14 +273,6 @@ mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 CFLAGS += -O2
-
-#mpi_DEPENDENCIES = mpih-mul1.S    \
-#		    mpih-mul2.S    \
-#		    mpih-mul3.S    \
-#		    mpih-add1.S    \
-#		    mpih-sub1.S    \
-#		    mpih-shift.S
-#
 .SUFFIXES:
 .SUFFIXES: .c .o $(SUFFIXES)
 

@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 SUBDIRS =  util mpi cipher tools g10
-EXTRA_DIST =
+EXTRA_DIST = VERSION
 
 
 

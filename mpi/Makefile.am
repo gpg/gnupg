@@ -36,16 +36,6 @@ mpi_LIBADD =  mpih-mul1.o    \
 	      mpih-mul3.o    \
 	      mpih-add1.o    \
 	      mpih-sub1.o    \
-	      mpih-shift.o
-
-#mpi_DEPENDENCIES = mpih-mul1.S    \
-#		    mpih-mul2.S    \
-#		    mpih-mul3.S    \
-#		    mpih-add1.S    \
-#		    mpih-sub1.S    \
-#		    mpih-shift.S
-#
-
-##DISTCLEANFILES = @MPI_DISTCLEANFILES@
+	      mpih-shift.o  @MPI_EXTRA_ASM_OBJS@
 
 

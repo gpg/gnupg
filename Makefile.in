@@ -39,7 +39,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 transform = @program_transform_name@
 
 SUBDIRS =  util mpi cipher tools g10
-EXTRA_DIST =
+EXTRA_DIST = VERSION
 ACCONFIG = acconfig.h
 CONFIG_HEADER_IN = config.h.in
 mkinstalldirs = $(top_srcdir)/scripts/mkinstalldirs

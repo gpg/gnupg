@@ -8,7 +8,7 @@ AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_HEADER(config.h)
 
 
-VERSION=0.1.0
+VERSION=`cat ./VERSION`
 PACKAGE=g10
 AC_SUBST(VERSION)
 AC_SUBST(PACKAGE)
@@ -23,6 +23,10 @@ if test "$enableval" = y || test "$enableval" = yes; then
 fi
 
 dnl some additional macros
+
+dnl WK_MSG_PRINT(STRING)
+define(WK_MSG_PRINT,
+[echo $ac_n "$1"" $ac_c" 1>&AC_FD_MSG ])
 
 dnl WK_CHECK_TYPEDEF(TYPE, HAVE_NAME)
 AC_DEFUN(WK_CHECK_TYPEDEF,
@@ -163,7 +167,7 @@ fi
 
 
 dnl setup assembler stuff
-AC_MSG_CHECKING(configure mpi)
+AC_MSG_CHECKING(for mpi assembler functions)
 mpi_config_done="no"
 AC_CACHE_VAL(ac_cv_mpi_config_done,
 	     [ ac_cv_mpi_config_done="$mpi_config_done" ])
@@ -173,6 +177,7 @@ else
 ac_cv_mpi_config_done=""
 if test -f ./mpi/config.links ; then
     . ./mpi/config.links
+    ac_cv_mpi_extra_asm_modules="$mpi_extra_modules"
     AC_LINK_FILES( ${mpi_ln_src}, ${mpi_ln_dst} )
     ac_cv_mpi_config_done="yes"
     AC_MSG_RESULT(done)
@@ -181,18 +186,31 @@ else
     AC_MSG_ERROR([mpi/config.links missing!])
 fi
 fi
+MPI_EXTRA_ASM_OBJS=""
+if test "$ac_cv_mpi_extra_asm_modules" != ""; then
+WK_MSG_PRINT([mpi extra asm functions:])
+for i in $ac_cv_mpi_extra_asm_modules; do
+    WK_MSG_PRINT([$i])
+    MPI_EXTRA_ASM_OBJS="$MPI_EXTRA_ASM_OBJS $i.o"
+done
+AC_MSG_RESULT()
+fi
+AC_SUBST(MPI_EXTRA_ASM_OBJS)
 
 
-dnl checking whether we have the RSA source
-dnl Add stuff to insert this into the makefile
-dnl AC_SUBST(add_cipher_SOURCES)
-AC_CACHE_CHECK(for rsa source, ac_cv_have_rsa_cipher,
+dnl checking whether we have other cipher source files
+CIPHER_EXTRA_OBJS=""
+CIPHER_EXTRA_DIST=""
+AC_CACHE_CHECK(for extra cipher modules, ac_cv_have_rsa_cipher,
 [if test -f cipher/rsa.c && test -f cipher/rsa.h; then
   ac_cv_have_rsa_cipher=yes; else ac_cv_have_rsa_cipher=no; fi])
 if test $ac_cv_have_rsa_cipher = yes; then
     AC_DEFINE(HAVE_RSA_CIPHER)
+    CIPHER_EXTRA_OBJS="rsa.o"
+    CIPHER_EXTRA_DIST="rsa.c rsa.h"
 fi
-
+AC_SUBST(CIPHER_EXTRA_OBJS)
+AC_SUBST(CIPHER_EXTRA_DIST)
 
 AC_OUTPUT([ Makefile	\
 	    util/Makefile    \

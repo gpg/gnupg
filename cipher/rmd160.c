@@ -1,5 +1,5 @@
-/* rmd160.c  -  RIPE-MD160
- *      Copyright (c) 1997 by Werner Koch (dd9jn)
+/* rmd160.c  -	RIPE-MD160
+ *	Copyright (c) 1997 by Werner Koch (dd9jn)
  *
  * This file is part of G10.
  *
@@ -48,20 +48,20 @@
  *
  *   nonlinear functions at bit level: exor, mux, -, mux, -
  *
- *   f(j, x, y, z) = x XOR y XOR z                (0 <= j <= 15)
+ *   f(j, x, y, z) = x XOR y XOR z		  (0 <= j <= 15)
  *   f(j, x, y, z) = (x AND y) OR (NOT(x) AND z)  (16 <= j <= 31)
- *   f(j, x, y, z) = (x OR NOT(y)) XOR z          (32 <= j <= 47)
+ *   f(j, x, y, z) = (x OR NOT(y)) XOR z	  (32 <= j <= 47)
  *   f(j, x, y, z) = (x AND z) OR (y AND NOT(z))  (48 <= j <= 63)
- *   f(j, x, y, z) = x XOR (y OR NOT(z))          (64 <= j <= 79)
+ *   f(j, x, y, z) = x XOR (y OR NOT(z))	  (64 <= j <= 79)
  *
  *
  *   added constants (hexadecimal)
  *
- *   K(j) = 0x00000000      (0 <= j <= 15)
- *   K(j) = 0x5A827999     (16 <= j <= 31)      int(2**30 x sqrt(2))
- *   K(j) = 0x6ED9EBA1     (32 <= j <= 47)      int(2**30 x sqrt(3))
- *   K(j) = 0x8F1BBCDC     (48 <= j <= 63)      int(2**30 x sqrt(5))
- *   K(j) = 0xA953FD4E     (64 <= j <= 79)      int(2**30 x sqrt(7))
+ *   K(j) = 0x00000000	    (0 <= j <= 15)
+ *   K(j) = 0x5A827999	   (16 <= j <= 31)	int(2**30 x sqrt(2))
+ *   K(j) = 0x6ED9EBA1	   (32 <= j <= 47)	int(2**30 x sqrt(3))
+ *   K(j) = 0x8F1BBCDC	   (48 <= j <= 63)	int(2**30 x sqrt(5))
+ *   K(j) = 0xA953FD4E	   (64 <= j <= 79)	int(2**30 x sqrt(7))
  *   K'(j) = 0x50A28BE6     (0 <= j <= 15)      int(2**30 x cbrt(2))
  *   K'(j) = 0x5C4DD124    (16 <= j <= 31)      int(2**30 x cbrt(3))
  *   K'(j) = 0x6D703EF3    (32 <= j <= 47)      int(2**30 x cbrt(5))
@@ -71,7 +71,7 @@
  *
  *   selection of message word
  *
- *   r(j)      = j                    (0 <= j <= 15)
+ *   r(j)      = j		      (0 <= j <= 15)
  *   r(16..31) = 7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8
  *   r(32..47) = 3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13, 11, 5, 12
  *   r(48..63) = 1, 9, 11, 10, 0, 8, 12, 4, 13, 3, 7, 15, 14, 5, 6, 2
@@ -100,7 +100,7 @@
  *   initial value (hexadecimal)
  *
  *   h0 = 0x67452301; h1 = 0xEFCDAB89; h2 = 0x98BADCFE; h3 = 0x10325476;
- *                                                      h4 = 0xC3D2E1F0;
+ *							h4 = 0xC3D2E1F0;
  *
  *
  * RIPEMD-160: pseudo-code
@@ -112,17 +112,17 @@
  *
  *
  *   for i := 0 to t-1 {
- *       A := h0; B := h1; C := h2; D = h3; E = h4;
- *       A' := h0; B' := h1; C' := h2; D' = h3; E' = h4;
- *       for j := 0 to 79 {
- *           T := rol_s(j)(A [+] f(j, B, C, D) [+] X[i][r(j)] [+] K(j)) [+] E;
- *           A := E; E := D; D := rol_10(C); C := B; B := T;
- *           T := rol_s'(j)(A' [+] f(79-j, B', C', D') [+] X[i][r'(j)]
-                                                       [+] K'(j)) [+] E';
- *           A' := E'; E' := D'; D' := rol_10(C'); C' := B'; B' := T;
- *       }
- *       T := h1 [+] C [+] D'; h1 := h2 [+] D [+] E'; h2 := h3 [+] E [+] A';
- *       h3 := h4 [+] A [+] B'; h4 := h0 [+] B [+] C'; h0 := T;
+ *	 A := h0; B := h1; C := h2; D = h3; E = h4;
+ *	 A' := h0; B' := h1; C' := h2; D' = h3; E' = h4;
+ *	 for j := 0 to 79 {
+ *	     T := rol_s(j)(A [+] f(j, B, C, D) [+] X[i][r(j)] [+] K(j)) [+] E;
+ *	     A := E; E := D; D := rol_10(C); C := B; B := T;
+ *	     T := rol_s'(j)(A' [+] f(79-j, B', C', D') [+] X[i][r'(j)]
+						       [+] K'(j)) [+] E';
+ *	     A' := E'; E' := D'; D' := rol_10(C'); C' := B'; B' := T;
+ *	 }
+ *	 T := h1 [+] C [+] D'; h1 := h2 [+] D [+] E'; h2 := h3 [+] E [+] A';
+ *	 h3 := h4 [+] A [+] B'; h4 := h0 [+] B [+] C'; h0 := T;
  *   }
  */
 
@@ -159,29 +159,29 @@ static void
 transform( RMDHANDLE hd, byte *data )
 {
     static int r[80] = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-        7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8,
-        3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13, 11, 5, 12,
-        1, 9, 11, 10, 0, 8, 12, 4, 13, 3, 7, 15, 14, 5, 6, 2,
-        4, 0, 5, 9, 7, 12, 2, 10, 14, 1, 3, 8, 11, 6, 15, 13 };
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+	7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8,
+	3, 10, 14, 4, 9, 15, 8, 1, 2, 7, 0, 6, 13, 11, 5, 12,
+	1, 9, 11, 10, 0, 8, 12, 4, 13, 3, 7, 15, 14, 5, 6, 2,
+	4, 0, 5, 9, 7, 12, 2, 10, 14, 1, 3, 8, 11, 6, 15, 13 };
     static int rr[80] = {
-        5, 14, 7, 0, 9, 2, 11, 4, 13, 6, 15, 8, 1, 10, 3, 12,
-        6, 11, 3, 7, 0, 13, 5, 10, 14, 15, 8, 12, 4, 9, 1, 2,
-        15, 5, 1, 3, 7, 14, 6, 9, 11, 8, 12, 2, 10, 0, 4, 13,
-        8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14,
-        12, 15, 10, 4, 1, 5, 8, 7, 6, 2, 13, 14, 0, 3, 9, 11 };
+	5, 14, 7, 0, 9, 2, 11, 4, 13, 6, 15, 8, 1, 10, 3, 12,
+	6, 11, 3, 7, 0, 13, 5, 10, 14, 15, 8, 12, 4, 9, 1, 2,
+	15, 5, 1, 3, 7, 14, 6, 9, 11, 8, 12, 2, 10, 0, 4, 13,
+	8, 6, 4, 1, 3, 11, 15, 0, 5, 12, 2, 13, 9, 7, 10, 14,
+	12, 15, 10, 4, 1, 5, 8, 7, 6, 2, 13, 14, 0, 3, 9, 11 };
     static int s[80] = {
-        11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8,
-        7, 6, 8, 13, 11, 9, 7, 15, 7, 12, 15, 9, 11, 7, 13, 12,
-        11, 13, 6, 7, 14, 9, 13, 15, 14, 8, 13, 6, 5, 12, 7, 5,
-        11, 12, 14, 15, 14, 15, 9, 8, 9, 14, 5, 6, 8, 6, 5, 12,
-        9, 15, 5, 11, 6, 8, 13, 12, 5, 12, 13, 14, 11, 8, 5, 6  };
+	11, 14, 15, 12, 5, 8, 7, 9, 11, 13, 14, 15, 6, 7, 9, 8,
+	7, 6, 8, 13, 11, 9, 7, 15, 7, 12, 15, 9, 11, 7, 13, 12,
+	11, 13, 6, 7, 14, 9, 13, 15, 14, 8, 13, 6, 5, 12, 7, 5,
+	11, 12, 14, 15, 14, 15, 9, 8, 9, 14, 5, 6, 8, 6, 5, 12,
+	9, 15, 5, 11, 6, 8, 13, 12, 5, 12, 13, 14, 11, 8, 5, 6	};
     static int ss[80] = {
-        8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14, 12, 6,
-        9, 13, 15, 7, 12, 8, 9, 11, 7, 7, 12, 7, 6, 15, 13, 11,
-        9, 7, 15, 11, 8, 6, 6, 14, 12, 13, 5, 14, 13, 13, 7, 5,
-        15, 5, 8, 11, 14, 14, 6, 14, 6, 9, 12, 9, 12, 5, 15, 8,
-        8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11  };
+	8, 9, 9, 11, 13, 15, 15, 5, 7, 7, 8, 11, 14, 14, 12, 6,
+	9, 13, 15, 7, 12, 8, 9, 11, 7, 7, 12, 7, 6, 15, 13, 11,
+	9, 7, 15, 11, 8, 6, 6, 14, 12, 13, 5, 14, 13, 13, 7, 5,
+	15, 5, 8, 11, 14, 14, 6, 14, 6, 9, 12, 9, 12, 5, 15, 8,
+	8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11	};
     u32 a,b,c,d,e,aa,bb,cc,dd,ee,t;
     int rbits, j;
   #ifdef BIG_ENDIAN_HOST
@@ -190,14 +190,14 @@ transform( RMDHANDLE hd, byte *data )
     u32 *x;
   #endif
 
-#define K(a)   ( (a) < 16 ? 0x00000000 :              \
-                 (a) < 32 ? 0x5A827999 :              \
-                 (a) < 48 ? 0x6ED9EBA1 :              \
-                 (a) < 64 ? 0x8F1BBCDC : 0xA953FD4E )
-#define KK(a)  ( (a) < 16 ? 0x50A28BE6 :              \
-                 (a) < 32 ? 0x5C4DD124 :              \
-                 (a) < 48 ? 0x6D703EF3 :              \
-                 (a) < 64 ? 0x7A6D76E9 : 0x00000000 )
+#define K(a)   ( (a) < 16 ? 0x00000000 :	      \
+		 (a) < 32 ? 0x5A827999 :	      \
+		 (a) < 48 ? 0x6ED9EBA1 :	      \
+		 (a) < 64 ? 0x8F1BBCDC : 0xA953FD4E )
+#define KK(a)  ( (a) < 16 ? 0x50A28BE6 :	      \
+		 (a) < 32 ? 0x5C4DD124 :	      \
+		 (a) < 48 ? 0x6D703EF3 :	      \
+		 (a) < 64 ? 0x7A6D76E9 : 0x00000000 )
 
 #define F0(x,y,z)   ( (x) ^ (y) ^ (z) )
 #define F1(x,y,z)   ( ((x) & (y)) | (~(x) & (z)) )
@@ -205,10 +205,10 @@ transform( RMDHANDLE hd, byte *data )
 #define F3(x,y,z)   ( ((x) & (z)) | ((y) & ~(z)) )
 #define F4(x,y,z)   ( (x) ^ ((y) | ~(z)) )
 #define F(a,x,y,z)  ( (a) < 16 ? F0((x),(y),(z)) : \
-                      (a) < 32 ? F1((x),(y),(z)) : \
-                      (a) < 48 ? F2((x),(y),(z)) : \
-                      (a) < 64 ? F3((x),(y),(z)) : \
-                                 F4((x),(y),(z)) )
+		      (a) < 32 ? F1((x),(y),(z)) : \
+		      (a) < 48 ? F2((x),(y),(z)) : \
+		      (a) < 64 ? F3((x),(y),(z)) : \
+				 F4((x),(y),(z)) )
 
 #define rol(n,x) ( ((x) << (n)) | ((x) >> (32-(n))) )
 
@@ -217,14 +217,14 @@ transform( RMDHANDLE hd, byte *data )
     { int i;
       byte *p2, *p1;
       for(i=0, p1=data, p2=(byte*)x; i < 16; i++, p2 += 4 ) {
-        p2[3] = *p1++;
-        p2[2] = *p1++;
-        p2[1] = *p1++;
-        p2[0] = *p1++;
+	p2[3] = *p1++;
+	p2[2] = *p1++;
+	p2[1] = *p1++;
+	p2[0] = *p1++;
       }
     }
   #else
-    x = data;
+    x = (u32*)data;
   #endif
 
     a = aa = hd->h0;
@@ -234,20 +234,20 @@ transform( RMDHANDLE hd, byte *data )
     e = ee = hd->h4;
 
     for(j=0; j < 80; j++ ) {
-        t = a + F( j, b, c, d ) + x[ r[j] ] + K(j);
-        rbits = s[j];
-        a = rol(rbits, t) + e;
-        c = rol(10,c);
-        t = a; a = e; e = d; d = c; c = b; b = t;
+	t = a + F( j, b, c, d ) + x[ r[j] ] + K(j);
+	rbits = s[j];
+	a = rol(rbits, t) + e;
+	c = rol(10,c);
+	t = a; a = e; e = d; d = c; c = b; b = t;
 
-        t = aa + F(79-j, bb, cc, dd ) + x[ rr[j] ] + KK(j);
-        rbits = ss[j];
-        aa = rol(rbits, t) + ee;
-        cc = rol(10,cc);
-        t = aa; aa = ee; ee = dd; dd = cc; cc = bb; bb = t;
+	t = aa + F(79-j, bb, cc, dd ) + x[ rr[j] ] + KK(j);
+	rbits = ss[j];
+	aa = rol(rbits, t) + ee;
+	cc = rol(10,cc);
+	t = aa; aa = ee; ee = dd; dd = cc; cc = bb; bb = t;
     }
 
-    t      = hd->h1 + c + dd;
+    t	   = hd->h1 + c + dd;
     hd->h1 = hd->h2 + d + ee;
     hd->h2 = hd->h3 + e + aa;
     hd->h3 = hd->h4 + a + bb;
@@ -264,7 +264,7 @@ rmd160_open( int secure )
     RMDHANDLE hd;
 
     hd = secure? m_alloc_secure( sizeof *hd )
-               : m_alloc( sizeof *hd );
+	       : m_alloc( sizeof *hd );
     initialize(hd);
     return hd;
 }
@@ -277,7 +277,7 @@ rmd160_copy( RMDHANDLE a )
 
     assert(a);
     b = m_is_secure(a)? m_alloc_secure( sizeof *b )
-                      : m_alloc( sizeof *b );
+		      : m_alloc( sizeof *b );
     memcpy( b, a, sizeof *a );
     return b;
 }
@@ -298,7 +298,7 @@ void
 rmd160_close(RMDHANDLE hd)
 {
     if( hd )
-        m_free(hd);
+	m_free(hd);
 }
 
 
@@ -310,29 +310,29 @@ void
 rmd160_write( RMDHANDLE hd, byte *inbuf, size_t inlen)
 {
     if( hd->bufcount == 64 ) { /* flush the buffer */
-        transform( hd, hd->buffer );
-        hd->bufcount = 0;
-        hd->nblocks++;
+	transform( hd, hd->buffer );
+	hd->bufcount = 0;
+	hd->nblocks++;
     }
     if( !inbuf )
-        return;
+	return;
     if( hd->bufcount ) {
-        for( ; inlen && hd->bufcount < 64; inlen-- )
-            hd->buffer[hd->bufcount++] = *inbuf++;
-        rmd160_write( hd, NULL, 0 );
-        if( !inlen )
-            return;
+	for( ; inlen && hd->bufcount < 64; inlen-- )
+	    hd->buffer[hd->bufcount++] = *inbuf++;
+	rmd160_write( hd, NULL, 0 );
+	if( !inlen )
+	    return;
     }
 
     while( inlen >= 64 ) {
-        transform( hd, inbuf );
-        hd->bufcount = 0;
-        hd->nblocks++;
-        inlen -= 64;
-        inbuf += 64;
+	transform( hd, inbuf );
+	hd->bufcount = 0;
+	hd->nblocks++;
+	inlen -= 64;
+	inbuf += 64;
     }
     for( ; inlen && hd->bufcount < 64; inlen-- )
-        hd->buffer[hd->bufcount++] = *inbuf++;
+	hd->buffer[hd->bufcount++] = *inbuf++;
 }
 
 
@@ -354,27 +354,27 @@ rmd160_final(RMDHANDLE hd)
     msb = 0;
     t = hd->nblocks;
     if( (lsb = t << 6) < t ) /* multiply by 64 to make a byte count */
-        msb++;
+	msb++;
     msb += t >> 26;
     t = lsb;
     if( (lsb = t + hd->bufcount) < t ) /* add the bufcount */
-        msb++;
+	msb++;
     t = lsb;
     if( (lsb = t << 3) < t ) /* multiply by 8 to make a bit count */
-        msb++;
+	msb++;
     msb += t >> 29;
 
     if( hd->bufcount < 56 ) { /* enough room */
-        hd->buffer[hd->bufcount++] = 0x80; /* pad */
-        while( hd->bufcount < 56 )
-            hd->buffer[hd->bufcount++] = 0;  /* pad */
+	hd->buffer[hd->bufcount++] = 0x80; /* pad */
+	while( hd->bufcount < 56 )
+	    hd->buffer[hd->bufcount++] = 0;  /* pad */
     }
     else { /* need one extra block */
-        hd->buffer[hd->bufcount++] = 0x80; /* pad character */
-        while( hd->bufcount < 64 )
-            hd->buffer[hd->bufcount++] = 0;
-        rmd160_write(hd, NULL, 0);  /* flush */;
-        memset(hd->buffer, 0, 56 ); /* fill next block with zeroes */
+	hd->buffer[hd->bufcount++] = 0x80; /* pad character */
+	while( hd->bufcount < 64 )
+	    hd->buffer[hd->bufcount++] = 0;
+	rmd160_write(hd, NULL, 0);  /* flush */;
+	memset(hd->buffer, 0, 56 ); /* fill next block with zeroes */
     }
     /* append the 64 bit count */
     hd->buffer[56] = lsb      ;
@@ -389,8 +389,8 @@ rmd160_final(RMDHANDLE hd)
 
     p = hd->buffer;
   #ifdef BIG_ENDIAN_HOST
-    #define X(a) do { *p++ = hd->h##a      ; *p++ = hd->h##a >> 8;      \
-                      *p++ = hd->h##a >> 16; *p++ = hd->h##a >> 24; } while(0)
+    #define X(a) do { *p++ = hd->h##a	   ; *p++ = hd->h##a >> 8;	\
+		      *p++ = hd->h##a >> 16; *p++ = hd->h##a >> 24; } while(0)
   #else /* little endian */
     #define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
   #endif
@@ -401,7 +401,7 @@ rmd160_final(RMDHANDLE hd)
     X(4);
   #undef X
 
-    initialize( hd );   /* prepare for next cycle */
+    initialize( hd );	/* prepare for next cycle */
     return hd->buffer; /* now contains the digest */
 }
 

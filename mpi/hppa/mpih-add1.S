@@ -44,8 +44,8 @@
  */
 
 	.code
-	.export 	__mpihelp_add_n
-__mpihelp_add_n
+	.export 	mpihelp_add_n
+mpihelp_add_n
 	.proc
 	.callinfo	frame=0,no_calls
 	.entry
