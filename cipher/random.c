@@ -205,7 +205,7 @@ burn_stack (int bytes)
 {
     char buf[128];
     
-    memset (buf, 0, sizeof buf);
+    wipememory(buf,sizeof buf);
     bytes -= sizeof buf;
     if (bytes > 0)
         burn_stack (bytes);
@@ -564,7 +564,7 @@ read_pool( byte *buffer, size_t length, int level )
 	if( pool_balance < 0 )
 	    pool_balance = 0;
 	/* and clear the keypool */
-	memset( keypool, 0, POOLSIZE );
+	wipememory(keypool, POOLSIZE);
     }
 }
 
@@ -673,7 +673,7 @@ fast_random_poll()
         getrusage( RUSAGE_SELF, &buf );
         
 	add_randomness( &buf, sizeof buf, 1 );
-	memset( &buf, 0, sizeof buf );
+	wipememory( &buf, sizeof buf );
     }
     #endif
   #endif

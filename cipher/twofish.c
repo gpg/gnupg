@@ -550,7 +550,7 @@ burn_stack (int bytes)
 {
     char buf[64];
     
-    memset (buf, 0, sizeof buf);
+    wipememory(buf,sizeof buf);
     bytes -= sizeof buf;
     if (bytes > 0)
         burn_stack (bytes);

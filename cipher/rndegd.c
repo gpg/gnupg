@@ -221,7 +221,7 @@ rndegd_gather_random( void (*add)(const void*, size_t, int), int requester,
 	(*add)( buffer, n, requester );
 	length -= n;
     }
-    memset(buffer, 0, sizeof(buffer) );
+    wipememory(buffer, sizeof(buffer) );
 
     return 0; /* success */
 }
