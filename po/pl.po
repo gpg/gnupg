@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-0.4.0\n"
-"POT-Creation-Date: 1999-01-09 15:45+0100\n"
+"POT-Creation-Date: 1999-01-09 18:31+0100\n"
 "PO-Revision-Date: 1998-12-24 03:12+01:00\n"
 "Last-Translator: Janusz A. Urbanowicz <alex@bofh.net.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -239,14 +239,14 @@ msgstr ""
 msgid "you found a bug ... (%s:%d)\n"
 msgstr ""
 
-#: cipher/random.c:408
+#: cipher/random.c:405
 #, fuzzy
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr ""
 "ostrze¿enie: u¿ywany generator liczb losowych\n"
 "nie jest kryptograficznie bezpieczny!!\n"
 
-#: cipher/random.c:409
+#: cipher/random.c:406
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
@@ -762,72 +762,72 @@ msgstr ""
 msgid "can't open `%s'\n"
 msgstr "nie mogê otworzyæ '%s\"\n"
 
-#: g10/armor.c:320
+#: g10/armor.c:321
 #, fuzzy, c-format
 msgid "armor: %s\n"
 msgstr "b³±d odczytu: %s\n"
 
-#: g10/armor.c:343
+#: g10/armor.c:344
 msgid "invalid armor header: "
 msgstr ""
 
-#: g10/armor.c:350
+#: g10/armor.c:351
 msgid "armor header: "
 msgstr ""
 
-#: g10/armor.c:361
+#: g10/armor.c:362
 #, fuzzy
 msgid "invalid clearsig header\n"
 msgstr "Niew³a¶ciwy znak w imieniu lub nazwisku\n"
 
-#: g10/armor.c:415
+#: g10/armor.c:414
 #, fuzzy
 msgid "nested clear text signatures\n"
 msgstr "|[plik]|z³o¿enie podpisu na czytelnym dokumencie"
 
-#: g10/armor.c:531
+#: g10/armor.c:530
 msgid "invalid dash escaped line: "
 msgstr ""
 
-#: g10/armor.c:539
+#: g10/armor.c:538
 msgid "unexpected armor:"
 msgstr ""
 
-#: g10/armor.c:625
+#: g10/armor.c:624
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Niew³a¶ciwy znak w imieniu lub nazwisku\n"
 
-#: g10/armor.c:655
+#: g10/armor.c:654
 msgid "premature eof (no CRC)\n"
 msgstr ""
 
-#: g10/armor.c:672
+#: g10/armor.c:671
 msgid "premature eof (in CRC)\n"
 msgstr ""
 
-#: g10/armor.c:676
+#: g10/armor.c:675
 msgid "malformed CRC\n"
 msgstr ""
 
-#: g10/armor.c:680
+#: g10/armor.c:679
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr ""
 
-#: g10/armor.c:697
+#: g10/armor.c:696
 msgid "premature eof (in Trailer)\n"
 msgstr ""
 
-#: g10/armor.c:701
+#: g10/armor.c:700
 msgid "error in trailer line\n"
 msgstr ""
 
-#: g10/armor.c:962
+#: g10/armor.c:961
 msgid "no valid OpenPGP data found.\n"
 msgstr ""
 
-#: g10/armor.c:964
+#: g10/armor.c:963
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr ""
@@ -1395,11 +1395,11 @@ msgstr "OSTRZE¯ENIE: u¿ywany jest klucz nie obdarzony zaufaniem!\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:295
+#: g10/getkey.c:294
 msgid "too many entries in unk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:1039
+#: g10/getkey.c:1038
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""

@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1999-01-09 15:45+0100\n"
+"POT-Creation-Date: 1999-01-09 18:31+0100\n"
 "PO-Revision-Date: 1998-12-13 22:34+0100\n"
 "Last-Translator: Walter Koch <walterk@mail.dip.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -217,12 +217,12 @@ msgstr "Ohhh jeeee ... dies ist eine Wanze (Programmfehler) (%s:%d:%s)\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "Sie haben eine Wanze (Programmfehler) gefunden ... (%s:%d)\n"
 
-#: cipher/random.c:408
+#: cipher/random.c:405
 msgid "WARNING: using insecure random number generator!!\n"
 msgstr ""
 "WARNUNG: Der Zufallszahlengenerator erzeugt keine echten Zufallszahlen!\n"
 
-#: cipher/random.c:409
+#: cipher/random.c:406
 msgid ""
 "The random number generator is only a kludge to let\n"
 "it run - it is in no way a strong RNG!\n"
@@ -720,73 +720,73 @@ msgstr "Auf geht's - Botschaft eintippen ...\n"
 msgid "can't open `%s'\n"
 msgstr "`%s' kann nicht geöffnet werden\n"
 
-#: g10/armor.c:320
+#: g10/armor.c:321
 #, c-format
 msgid "armor: %s\n"
 msgstr "ASCII-Hülle: %s\n"
 
-#: g10/armor.c:343
+#: g10/armor.c:344
 msgid "invalid armor header: "
 msgstr "Ungültige ASCII-Hülle"
 
-#: g10/armor.c:350
+#: g10/armor.c:351
 msgid "armor header: "
 msgstr "ASCII-Hülle: "
 
-#: g10/armor.c:361
+#: g10/armor.c:362
 msgid "invalid clearsig header\n"
 msgstr "Ungültige Klartextsignatur-Einleitung\n"
 
-#: g10/armor.c:415
+#: g10/armor.c:414
 #, fuzzy
 msgid "nested clear text signatures\n"
 msgstr "|[file]|Eine Klartextunterschrift erzeugen"
 
-#: g10/armor.c:531
+#: g10/armor.c:530
 msgid "invalid dash escaped line: "
 msgstr "Ungültige mit Bindestrich \"escapte\" Zeile: "
 
-#: g10/armor.c:539
+#: g10/armor.c:538
 #, fuzzy
 msgid "unexpected armor:"
 msgstr "Unerwartete Daten"
 
-#: g10/armor.c:625
+#: g10/armor.c:624
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Ungültiges \"radix64\" Zeichen %02x ignoriert\n"
 
-#: g10/armor.c:655
+#: g10/armor.c:654
 msgid "premature eof (no CRC)\n"
 msgstr "vorzeitiges Dateiende (keine Prüfsumme)\n"
 
-#: g10/armor.c:672
+#: g10/armor.c:671
 msgid "premature eof (in CRC)\n"
 msgstr "vorzeitiges Dateiende (innerhalb der Prüfsumme)\n"
 
-#: g10/armor.c:676
+#: g10/armor.c:675
 msgid "malformed CRC\n"
 msgstr "Falsch aufgebaute Prüfsumme\n"
 
-#: g10/armor.c:680
+#: g10/armor.c:679
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "Prüfsummenfehler; %06lx - %06lx\n"
 
-#: g10/armor.c:697
+#: g10/armor.c:696
 msgid "premature eof (in Trailer)\n"
 msgstr "vorzeitiges Dateiende (im Nachsatz)\n"
 
-#: g10/armor.c:701
+#: g10/armor.c:700
 msgid "error in trailer line\n"
 msgstr "Fehler in der Nachsatzzeile\n"
 
-#: g10/armor.c:962
+#: g10/armor.c:961
 #, fuzzy
 msgid "no valid OpenPGP data found.\n"
 msgstr "Keine gültigen RFC1991- oder OpenPGP-Daten gefunden.\n"
 
-#: g10/armor.c:964
+#: g10/armor.c:963
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
 msgstr ""
@@ -1363,11 +1363,11 @@ msgstr "WARNUNG: Nichts exportiert\n"
 msgid "too many entries in pk cache - disabled\n"
 msgstr "zu viele Einträge im pk-Lager - abgeschaltet\n"
 
-#: g10/getkey.c:295
+#: g10/getkey.c:294
 msgid "too many entries in unk cache - disabled\n"
 msgstr "zu viele Einträge im unk-Lager - abgeschaltet\n"
 
-#: g10/getkey.c:1039
+#: g10/getkey.c:1038
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
