@@ -1,3 +1,7 @@
+Mon Jul 24 10:30:17 CEST 2000  Werner Koch  <wk@openit.de>
+
+  * keyedit.c (menu_expire): expire date for primary key can be set again.
+
 Wed Jul 19 11:26:43 CEST 2000  Werner Koch  <wk@>
 
   * keylist.c (is_uid_valid): New.
@@ -58,7 +62,7 @@ Fri Jun  9 10:09:52 CEST 2000  Werner Koch  <wk@openit.de>
 
 Wed Jun  7 19:19:09 CEST 2000  Werner Koch  <wk@openit.de>
 
-  * sig-check.c (do_check): Use EMULATE_MDENCODE also on v4 paclets.
+  * sig-check.c (do_check): Use EMULATE_MDENCODE also on v4 packets.
 
 Wed Jun  7 17:25:38 CEST 2000  Werner Koch  <wk@openit.de>
 

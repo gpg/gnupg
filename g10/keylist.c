@@ -118,6 +118,13 @@ is_uid_valid ( KBNODE keyblock, KBNODE uidnode, u32 *mainkid )
     KBNODE node;
     PKT_signature *selfsig = NULL; /* the latest valid self signature */
 
+    /* The key signature verify function can's handle secret keys yet and
+     * becuase we are not sure whether the duplication of user IDs and
+     * self-signatures should be kept on secret keys we are not going to fix
+     * it there. */
+    if ( keyblock->pkt->pkttype == PKT_SECRET_KEY )
+	return NULL;
+
     assert ( uidnode->pkt->pkttype == PKT_USER_ID
 	     || uidnode->pkt->pkttype == PKT_PHOTO_ID );
 
