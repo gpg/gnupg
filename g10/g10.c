@@ -300,6 +300,8 @@ enum cmd_and_opt_values { aNull = 0,
     oLCctype,
     oLCmessages,
     oGroup,
+    oStrict,
+    oNoStrict,
 aTest };
 
 
@@ -589,6 +591,8 @@ static ARGPARSE_OPTS opts[] = {
     { oLCctype,    "lc-ctype",    2, "@" },
     { oLCmessages, "lc-messages", 2, "@" },
     { oGroup,      "group",       2, "@" },
+    { oStrict,     "strict",      0, "@" },
+    { oNoStrict,   "no-strict",   0, "@" },
 {0} };
 
 
@@ -1673,6 +1677,8 @@ main( int argc, char **argv )
           case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
           case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
 	  case oGroup: add_group(pargs.r.ret_str); break;
+	  case oStrict: /* noop */ break;
+	  case oNoStrict: /* noop */ break;
 	  default : pargs.err = configfp? 1:2; break;
 	}
     }
@@ -2699,6 +2705,7 @@ add_notation_data( const char *string, int which )
     STRLIST sl,*notation_data;
     int critical=0;
     int highbit=0;
+    int saw_at=0;
 
     if(which)
       notation_data=&opt.cert_notation_data;
@@ -2710,13 +2717,29 @@ add_notation_data( const char *string, int which )
 	string++;
     }
 
-    for( s=string ; *s != '='; s++ ) {
-	if( !*s || (*s & 0x80) || (!isgraph(*s) && !isspace(*s)) ) {
+    /* If and when the IETF assigns some official name tags, we'll
+       have to add them here. */
+
+    for( s=string ; *s != '='; s++ )
+      {
+	if( *s=='@')
+	  saw_at=0;
+
+	if( !*s || (*s & 0x80) || (!isgraph(*s) && !isspace(*s)) )
+	  {
 	    log_error(_("a notation name must have only printable characters "
 			"or spaces, and end with an '='\n") );
 	    return;
-	}
-    }
+	  }
+      }
+
+    if(!saw_at && !opt.expert)
+      {
+	log_error(
+	        _("a user notation name must contain the '@' character\n"));
+	return;
+      }
+
     /* we only support printable text - therefore we enforce the use
      * of only printable characters (an empty value is valid) */
     for( s++; *s ; s++ ) {

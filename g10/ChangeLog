@@ -1,3 +1,17 @@
+2002-11-23  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10.c (add_notation_data): Disallow notation names that do not
+	contain a '@', unless --expert is set.  This is to help prevent
+	people from polluting the (as yet unused) IETF namespace.
+
+	* main.h: Comments about default algorithms.
+
+	* photoid.c (image_type_to_string): Comments about 3-letter
+	file extensions.
+
+	* g10.c (main): Add --strict and --no-strict as no-ops to smooth
+	transition when the devel GnuPG becomes the stable one.
+
 2002-11-13  Stefan Bellon  <sbellon@sbellon.de>
 
 	* getkey.c (get_pubkey_byfprint_fast): Fixed type incompatibility,

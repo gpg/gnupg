@@ -189,8 +189,9 @@ int parse_image_header(const struct user_attribute *attr,byte *type,u32 *len)
 
 /* style==0 for extension, 1 for name, 2 for MIME type.  Remember that
    the "name" style string could be used in a user ID name field, so
-   make sure it is not too big (see
-   parse-packet.c:parse_attribute). */
+   make sure it is not too big (see parse-packet.c:parse_attribute).
+   Extensions should be 3 characters long for the best cross-platform
+   compatibility. */
 char *image_type_to_string(byte type,int style)
 {
   char *string;
@@ -288,7 +289,7 @@ void show_photos(const struct user_attribute *attrs,
 	/* Make the filename.  Notice we are not using the image
            encoding type for more than cosmetics.  Most external image
            viewers can handle a multitude of types, and even if one
-           cannot understand a partcular type, we have no way to know
+           cannot understand a particular type, we have no way to know
            which.  The spec permits this, by the way. -dms */
 
 #ifdef USE_ONLY_8DOT3
