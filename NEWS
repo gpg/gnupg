@@ -1,5 +1,5 @@
-Noteworthy changes in version 1.3
--------------------------------------------------
+Noteworthy changes in version 1.3.0 (2002-10-18)
+------------------------------------------------
 
     * The last piece of internal keyserver support has been removed,
       and now all keyserver access is done via the keyserver plugins.

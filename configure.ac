@@ -22,14 +22,15 @@ dnlAC_REVISION($Revision$)dnl
 
 AC_PREREQ(2.52)
 
-# Remember to change the version number immediately *after* a release.
+# Remember to change the version number immediately *after* a release
+# and remove the "-cvs" or "rc" suffix immediately *before* a release.
+AC_INIT(gnupg, 1.3.0, bug-gnupg@gnu.org)
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
-AC_INIT(gnupg, 1.3, bug-gnupg@gnu.org)
 development_version=yes
 
-ALL_LINGUAS="ca cs da de eo el es et fr gl id it ja nl pl pt_BR pt sv tr"
+ALL_LINGUAS="de"
 
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION

@@ -1,3 +1,12 @@
+2002-10-18  Werner Koch  <wk@gnupg.org>
+
+	Released 1.3.0.
+	
+	* configure.ac: Changed version number comments.
+	(ALL_LINGUAS): Removed all except for de.  During development it
+	might not be a good idea to keep all of them - they get outdated
+	too soon and diff files will be far too large.
+
 2002-10-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* README: Multiple A record rotation works with MINGW32 now, and

@@ -63,7 +63,9 @@
 
   * add test cases for invalid data (scrambled armor or other random data)
 
-  * add checking of armor trailers.  Try to detect garbled header lines.
+  * add checking of armor trailers.  Try to detect garbled header
+    lines.  Often one dash is missing due to sloppy cut+paste; so add
+    a warning note like the one for QP.
 
   * the pubkey encrypt functions should do some sanity checks.
 
