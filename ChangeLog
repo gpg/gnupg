@@ -1,3 +1,9 @@
+Fri Nov 20 19:34:57 1998  Werner Koch  (wk@isil.d.shuttle.de)
+
+	* VERSION: Released 0.4.4
+
+	* configure.in (try_asm_modules): For option --disable-asm
+
 Tue Nov 10 19:32:40 1998  Werner Koch  (wk@isil.d.shuttle.de)
 
 	* configure.in (MPI_SFLAGS): New.

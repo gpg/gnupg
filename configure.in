@@ -20,17 +20,27 @@ AC_SUBST(PACKAGE)
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 
+AC_MSG_CHECKING([whether use of /dev/random is requested])
 AC_ARG_ENABLE(dev-random,
 [  --disable-dev-random    disable the use of dev random],
     try_dev_random=$enableval, try_dev_random=yes)
+AC_MSG_RESULT($try_dev_random)
 
+AC_MSG_CHECKING([whether use of extensions is requested])
 AC_ARG_ENABLE(dynload,
-[  --disable-dynload	   disable dynamic loading],
+[  --disable-dynload       disable use of extensions],
     try_dynload=$enableval, try_dynload=yes)
+AC_MSG_RESULT($try_dynload)
+
+AC_MSG_CHECKING([whether assembler modules are requested])
+AC_ARG_ENABLE(asm,
+[  --disable-asm           do not use assembler modules],
+     try_asm_modules=$enableval, try_asm_modules=yes)
+AC_MSG_RESULT($try_asm_modules)
 
 AC_MSG_CHECKING([whether memory debugging is requested])
 AC_ARG_ENABLE(m-debug,
-[  --enable-m-debug	   enable debugging of memory allocation],
+[  --enable-m-debug        enable debugging of memory allocation],
 use_m_debug=$enableval, use_m_debug=no)
 AC_MSG_RESULT($use_m_debug)
 if test "$use_m_debug" = yes; then
@@ -80,50 +90,50 @@ AM_CYGWIN32
 
 case "${target}" in
     i386--mingw32)
-	# special stuff for Windoze NT
-	cross_compiling=yes
-	CC="i386--mingw32-gcc"
-	CPP="i386--mingw32-gcc -E"
-	RANLIB="i386--mingw32-ranlib"
-	ac_cv_have_dev_random=no
-	AC_DEFINE(USE_RAND_W32)
-	;;
+        # special stuff for Windoze NT
+        cross_compiling=yes
+        CC="i386--mingw32-gcc"
+        CPP="i386--mingw32-gcc -E"
+        RANLIB="i386--mingw32-ranlib"
+        ac_cv_have_dev_random=no
+        AC_DEFINE(USE_RAND_W32)
+        ;;
     *-*-hpux*)
-	if test -z "$GCC" ; then
-	    CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
-	fi
-	AC_DEFINE(USE_RAND_UNIX)
-	;;
+        if test -z "$GCC" ; then
+            CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
+        fi
+        AC_DEFINE(USE_RAND_UNIX)
+        ;;
     *)
-	AC_DEFINE(USE_RAND_UNIX)
+        AC_DEFINE(USE_RAND_UNIX)
        ;;
 esac
 
 case "${target}" in
     i386--mingw32)
-	PRINTABLE_OS_NAME="MingW32"
-	;;
+        PRINTABLE_OS_NAME="MingW32"
+        ;;
     *-linux*)
-	PRINTABLE_OS_NAME="GNU/Linux"
-	;;
+        PRINTABLE_OS_NAME="GNU/Linux"
+        ;;
     *)
-	PRINTABLE_OS_NAME=`uname -s || echo "Unknown"`
-	;;
+        PRINTABLE_OS_NAME=`uname -s || echo "Unknown"`
+        ;;
 esac
 AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME")
 
 dnl  Fixme: Are these the best flags for OpenBSD????
 case "${target}" in
     *-openbsd*)
-	NAME_OF_DEV_RANDOM="/dev/srandom"
-	NAME_OF_DEV_URANDOM="/dev/urandom"
-	DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
-	;;
+        NAME_OF_DEV_RANDOM="/dev/srandom"
+        NAME_OF_DEV_URANDOM="/dev/urandom"
+        DYNLINK_MOD_CFLAGS="-shared -rdynamic -fpic -Wl,-Bshareable -Wl,-x"
+        ;;
     *)
-	NAME_OF_DEV_RANDOM="/dev/random"
-	NAME_OF_DEV_URANDOM="/dev/urandom"
-	DYNLINK_MOD_CFLAGS="-shared  -fPIC -lc"
-	;;
+        NAME_OF_DEV_RANDOM="/dev/random"
+        NAME_OF_DEV_URANDOM="/dev/urandom"
+        DYNLINK_MOD_CFLAGS="-shared  -fPIC -lc"
+        ;;
 esac
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM")
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_URANDOM, "$NAME_OF_DEV_URANDOM")

@@ -5,7 +5,7 @@
 # I also got inspiration from it.po by Marco d'Itri <md@linux.it>
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1998-11-20 15:17+0100\n"
+"POT-Creation-Date: 1998-11-20 19:52+0100\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Date: 1998-11-13 10:49:25+0100\n"
 "From: Urko Lusa <ulusa@lacueva.ddns.org>\n"
@@ -742,45 +742,45 @@ msgstr "cabecera de armadura no válida: "
 msgid "armor: %s\n"
 msgstr "armadura: %s\n"
 
-#: g10/armor.c:530
+#: g10/armor.c:532
 msgid "invalid dash escaped line: "
 msgstr "Línea con guiones no válida: "
 
-#: g10/armor.c:599
+#: g10/armor.c:601
 msgid "invalid clear text header: "
 msgstr "cabecera de texto claro no válida: "
 
-#: g10/armor.c:841
+#: g10/armor.c:843
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "caracteres no válidos radix64 %02x ignorados\n"
 
-#: g10/armor.c:874
+#: g10/armor.c:876
 msgid "premature eof (no CRC)\n"
 msgstr "Fin de fichero prematuro\n"
 
-#: g10/armor.c:893
+#: g10/armor.c:895
 msgid "premature eof (in CRC)\n"
 msgstr "Fin de suma de comprobación prematuro\n"
 
-#: g10/armor.c:897
+#: g10/armor.c:899
 msgid "malformed CRC\n"
 msgstr "Suma de comprobación mal creada\n"
 
-#: g10/armor.c:901
+#: g10/armor.c:903
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "Error en suma de comprobación: %06lx - %06lx\n"
 
-#: g10/armor.c:920
+#: g10/armor.c:922
 msgid "premature eof (in Trailer)\n"
 msgstr ""
 
-#: g10/armor.c:924
+#: g10/armor.c:926
 msgid "error in trailer line\n"
 msgstr ""
 
-#: g10/armor.c:1178
+#: g10/armor.c:1180
 msgid "no valid RFC1991 or OpenPGP data found.\n"
 msgstr "RFC1991 no válida o datos OpenPGP no encontrados\n"
 
@@ -1372,15 +1372,15 @@ msgstr "%s cifrado para: %s\n"
 msgid "WARNING: nothing exported\n"
 msgstr "ATENCIÓN: ¡Usando una clave no fiable!\n"
 
-#: g10/getkey.c:163
+#: g10/getkey.c:164
 msgid "too many entries in pk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:261
+#: g10/getkey.c:263
 msgid "too many entries in unk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:967
+#: g10/getkey.c:969
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "usando clave secundaria %08lX en vez de clave primaria %08lX\n"
@@ -2058,15 +2058,19 @@ msgid "Changing exiration time for the primary key.\n"
 msgstr "Cambiando caducidad de clave primaria.\n"
 
 #: g10/keyedit.c:1250
+msgid "You can't change the expiration date of a v3 key\n"
+msgstr ""
+
+#: g10/keyedit.c:1266
 msgid "No corresponding signature in secret ring\n"
 msgstr "No hay firma correspondiente en anillo secreto\n"
 
-#: g10/keyedit.c:1310
+#: g10/keyedit.c:1326
 #, c-format
 msgid "No user id with index %d\n"
 msgstr "No hay ningún identificativo de usuario con el índice %d\n"
 
-#: g10/keyedit.c:1355
+#: g10/keyedit.c:1371
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "No hay ninguna clave secundaria con el índice %d\n"
@@ -2101,33 +2105,33 @@ msgstr "nota: el remitente solicitó \"sólo-para-tus-ojos\"\n"
 msgid "original file name='%.*s'\n"
 msgstr ""
 
-#: g10/mainproc.c:837
+#: g10/mainproc.c:833
 msgid "signature verification suppressed\n"
 msgstr ""
 
-#: g10/mainproc.c:843
+#: g10/mainproc.c:839
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Firma creada %.*s usando identificativo de clave %08lX\n"
 
-#: g10/mainproc.c:851
+#: g10/mainproc.c:847
 msgid "BAD signature from \""
 msgstr "Firma INCORRECTA de \""
 
-#: g10/mainproc.c:852
+#: g10/mainproc.c:848
 msgid "Good signature from \""
 msgstr "Firma correcta de \""
 
-#: g10/mainproc.c:865
+#: g10/mainproc.c:861
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Imposible comprobar la firma: %s\n"
 
-#: g10/mainproc.c:938
+#: g10/mainproc.c:934
 msgid "old style (PGP 2.x) signature\n"
 msgstr ""
 
-#: g10/mainproc.c:943
+#: g10/mainproc.c:939
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr ""
 

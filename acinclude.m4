@@ -22,7 +22,7 @@ AC_DEFUN(WK_CHECK_TYPEDEF,
     ], wk_cv_typedef_$1=yes, wk_cv_typedef_$1=no )])
     AC_MSG_RESULT($wk_cv_typedef_$1)
     if test "$wk_cv_typedef_$1" = yes; then
-	AC_DEFINE($2)
+        AC_DEFINE($2)
     fi
   ])
 
@@ -37,11 +37,11 @@ dnl correct when using a caching scheme
 dnl
 define(WK_LINK_FILES,
   [ if test "x$wk_link_files_src" = "x"; then
-	wk_link_files_src="$1"
-	wk_link_files_dst="$2"
+        wk_link_files_src="$1"
+        wk_link_files_dst="$2"
     else
-	wk_link_files_src="$wk_link_files_src $1"
-	wk_link_files_dst="$wk_link_files_dst $2"
+        wk_link_files_src="$wk_link_files_src $1"
+        wk_link_files_dst="$wk_link_files_dst $2"
     fi
   ])
 define(WK_DO_LINK_FILES,
@@ -54,38 +54,38 @@ dnl define either LITTLE_ENDIAN_HOST or BIG_ENDIAN_HOST
 dnl
 define(WK_CHECK_ENDIAN,
   [ if test "$cross_compiling" = yes; then
-	AC_MSG_WARN(cross compiling; assuming little endianess)
+        AC_MSG_WARN(cross compiling; assuming little endianess)
     fi
     AC_MSG_CHECKING(endianess)
     AC_CACHE_VAL(wk_cv_c_endian,
       [ wk_cv_c_endian=unknown
-	# See if sys/param.h defines the BYTE_ORDER macro.
-	AC_TRY_COMPILE([#include <sys/types.h>
-	#include <sys/param.h>], [
-	#if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
-	 bogus endian macros
-	#endif], [# It does; now see whether it defined to BIG_ENDIAN or not.
-	AC_TRY_COMPILE([#include <sys/types.h>
-	#include <sys/param.h>], [
-	#if BYTE_ORDER != BIG_ENDIAN
-	 not big endian
-	#endif], wk_cv_c_endian=big, wk_cv_c_endian=little)])
-	if test "$wk_cv_c_endian" = unknown; then
-	    AC_TRY_RUN([main () {
-	      /* Are we little or big endian?  From Harbison&Steele.  */
-	      union
-	      {
-		long l;
-		char c[sizeof (long)];
-	      } u;
-	      u.l = 1;
-	      exit (u.c[sizeof (long) - 1] == 1);
-	      }],
-	      wk_cv_c_endian=little,
-	      wk_cv_c_endian=big,
-	      wk_cv_c_endian=little
-	    )
-	fi
+        # See if sys/param.h defines the BYTE_ORDER macro.
+        AC_TRY_COMPILE([#include <sys/types.h>
+        #include <sys/param.h>], [
+        #if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
+         bogus endian macros
+        #endif], [# It does; now see whether it defined to BIG_ENDIAN or not.
+        AC_TRY_COMPILE([#include <sys/types.h>
+        #include <sys/param.h>], [
+        #if BYTE_ORDER != BIG_ENDIAN
+         not big endian
+        #endif], wk_cv_c_endian=big, wk_cv_c_endian=little)])
+        if test "$wk_cv_c_endian" = unknown; then
+            AC_TRY_RUN([main () {
+              /* Are we little or big endian?  From Harbison&Steele.  */
+              union
+              {
+                long l;
+                char c[sizeof (long)];
+              } u;
+              u.l = 1;
+              exit (u.c[sizeof (long) - 1] == 1);
+              }],
+              wk_cv_c_endian=little,
+              wk_cv_c_endian=big,
+              wk_cv_c_endian=little
+            )
+        fi
       ])
     AC_MSG_RESULT([$wk_cv_c_endian])
     if test "$wk_cv_c_endian" = little; then
@@ -102,12 +102,12 @@ define(WK_CHECK_CACHE,
     wk_hostcheck="$target"
     AC_CACHE_VAL(wk_cv_hostcheck, [ wk_cv_hostcheck="$wk_hostcheck" ])
     if test "$wk_cv_hostcheck" != "$wk_hostcheck"; then
-	AC_MSG_RESULT(changed)
-	AC_MSG_WARN(config.cache exists!)
-	AC_MSG_ERROR(you must do 'make distclean' first to compile for
-		 different target or different parameters.)
+        AC_MSG_RESULT(changed)
+        AC_MSG_WARN(config.cache exists!)
+        AC_MSG_ERROR(you must do 'make distclean' first to compile for
+                 different target or different parameters.)
     else
-	AC_MSG_RESULT(ok)
+        AC_MSG_RESULT(ok)
     fi
   ])
 
@@ -125,41 +125,41 @@ define(WK_CHECK_IPC,
     if test "$ac_cv_header_sys_shm_h" = "yes"; then
       AC_MSG_CHECKING(whether shmctl IPC_RMID allowes subsequent attaches)
       AC_TRY_RUN([
-	    #include <sys/types.h>
-	    #include <sys/ipc.h>
-	    #include <sys/shm.h>
-	    int main()
-	    {
-	      int id;
-	      char *shmaddr;
-	    id = shmget (IPC_PRIVATE, 4, IPC_CREAT | 0777);
-	    if (id == -1)
-	      exit (2);
-	      shmaddr = shmat (id, 0, 0);
-	      shmctl (id, IPC_RMID, 0);
-	      if ((char*) shmat (id, 0, 0) == (char*) -1)
-	      {
-		shmdt (shmaddr);
-		exit (1);
-	      }
-	      shmdt (shmaddr);
-	      shmdt (shmaddr);
-	      exit (0);
-	    }
-	],
-	AC_DEFINE(IPC_RMID_DEFERRED_RELEASE)
-	AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no),
-	AC_MSG_RESULT(assuming no))
+            #include <sys/types.h>
+            #include <sys/ipc.h>
+            #include <sys/shm.h>
+            int main()
+            {
+              int id;
+              char *shmaddr;
+            id = shmget (IPC_PRIVATE, 4, IPC_CREAT | 0777);
+            if (id == -1)
+              exit (2);
+              shmaddr = shmat (id, 0, 0);
+              shmctl (id, IPC_RMID, 0);
+              if ((char*) shmat (id, 0, 0) == (char*) -1)
+              {
+                shmdt (shmaddr);
+                exit (1);
+              }
+              shmdt (shmaddr);
+              shmdt (shmaddr);
+              exit (0);
+            }
+        ],
+        AC_DEFINE(IPC_RMID_DEFERRED_RELEASE)
+        AC_MSG_RESULT(yes),
+        AC_MSG_RESULT(no),
+        AC_MSG_RESULT(assuming no))
       AC_MSG_CHECKING(whether SHM_LOCK is available)
       AC_TRY_COMPILE([#include <sys/types.h>
-	    #include <sys/ipc.h>
-	    #include <sys/shm.h>],[
-	    int foo( int shm_id ) {  shmctl(shm_id, SHM_LOCK, 0); }
-	    ],
-	AC_DEFINE(IPC_HAVE_SHM_LOCK)
-	AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no))
+            #include <sys/ipc.h>
+            #include <sys/shm.h>],[
+            int foo( int shm_id ) {  shmctl(shm_id, SHM_LOCK, 0); }
+            ],
+        AC_DEFINE(IPC_HAVE_SHM_LOCK)
+        AC_MSG_RESULT(yes),
+        AC_MSG_RESULT(no))
     fi
   ])
 
@@ -173,38 +173,38 @@ dnl
 define(WK_CHECK_MLOCK,
   [ AC_CHECK_FUNCS(mlock)
     if test "$ac_cv_func_mlock" = "yes"; then
-	AC_MSG_CHECKING(whether mlock is broken)
-	  AC_TRY_RUN([
-		#include <stdlib.h>
-		#include <unistd.h>
-		#include <errno.h>
-		#include <sys/mman.h>
-		#include <sys/types.h>
-		#include <fcntl.h>
+        AC_MSG_CHECKING(whether mlock is broken)
+          AC_TRY_RUN([
+                #include <stdlib.h>
+                #include <unistd.h>
+                #include <errno.h>
+                #include <sys/mman.h>
+                #include <sys/types.h>
+                #include <fcntl.h>
 
-		int main()
-		{
-		    char *pool;
-		    int err;
-		    long int pgsize = getpagesize();
+                int main()
+                {
+                    char *pool;
+                    int err;
+                    long int pgsize = getpagesize();
 
-		    pool = malloc( 4096 + pgsize );
-		    if( !pool )
-			return 2;
-		    pool += (pgsize - ((long int)pool % pgsize));
+                    pool = malloc( 4096 + pgsize );
+                    if( !pool )
+                        return 2;
+                    pool += (pgsize - ((long int)pool % pgsize));
 
-		    err = mlock( pool, 4096 );
-		    if( !err || errno == EPERM )
-			return 0; /* okay */
+                    err = mlock( pool, 4096 );
+                    if( !err || errno == EPERM )
+                        return 0; /* okay */
 
-		    return 1;  /* hmmm */
-		}
+                    return 1;  /* hmmm */
+                }
 
-	    ],
-	    AC_MSG_RESULT(no),
-	    AC_DEFINE(HAVE_BROKEN_MLOCK)
-	    AC_MSG_RESULT(yes),
-	    AC_MSG_RESULT(assuming no))
+            ],
+            AC_MSG_RESULT(no),
+            AC_DEFINE(HAVE_BROKEN_MLOCK)
+            AC_MSG_RESULT(yes),
+            AC_MSG_RESULT(assuming no))
     fi
   ])
 
@@ -229,7 +229,7 @@ AC_DEFUN(AM_WITH_NLS,
   [AC_MSG_CHECKING([whether NLS is requested])
     dnl Default is enabled NLS
     AC_ARG_ENABLE(nls,
-      [  --disable-nls		 do not use Native Language Support],
+      [  --disable-nls           do not use Native Language Support],
       USE_NLS=$enableval, USE_NLS=yes)
     AC_MSG_RESULT($USE_NLS)
     AC_SUBST(USE_NLS)
@@ -241,131 +241,131 @@ AC_DEFUN(AM_WITH_NLS,
       AC_DEFINE(ENABLE_NLS)
       AC_MSG_CHECKING([whether included gettext is requested])
       AC_ARG_WITH(included-gettext,
-	[  --with-included-gettext use the GNU gettext library included here],
-	nls_cv_force_use_gnu_gettext=$withval,
-	nls_cv_force_use_gnu_gettext=no)
+        [  --with-included-gettext use the GNU gettext library included here],
+        nls_cv_force_use_gnu_gettext=$withval,
+        nls_cv_force_use_gnu_gettext=no)
       AC_MSG_RESULT($nls_cv_force_use_gnu_gettext)
 
       nls_cv_use_gnu_gettext="$nls_cv_force_use_gnu_gettext"
       if test "$nls_cv_force_use_gnu_gettext" != "yes"; then
-	dnl User does not insist on using GNU NLS library.  Figure out what
-	dnl to use.  If gettext or catgets are available (in this order) we
-	dnl use this.  Else we have to fall back to GNU NLS library.
-	dnl catgets is only used if permitted by option --with-catgets.
-	nls_cv_header_intl=
-	nls_cv_header_libgt=
-	CATOBJEXT=NONE
+        dnl User does not insist on using GNU NLS library.  Figure out what
+        dnl to use.  If gettext or catgets are available (in this order) we
+        dnl use this.  Else we have to fall back to GNU NLS library.
+        dnl catgets is only used if permitted by option --with-catgets.
+        nls_cv_header_intl=
+        nls_cv_header_libgt=
+        CATOBJEXT=NONE
 
-	AC_CHECK_HEADER(libintl.h,
-	  [AC_CACHE_CHECK([for gettext in libc], gt_cv_func_gettext_libc,
-	    [AC_TRY_LINK([#include <libintl.h>], [return (int) gettext ("")],
-	       gt_cv_func_gettext_libc=yes, gt_cv_func_gettext_libc=no)])
+        AC_CHECK_HEADER(libintl.h,
+          [AC_CACHE_CHECK([for gettext in libc], gt_cv_func_gettext_libc,
+            [AC_TRY_LINK([#include <libintl.h>], [return (int) gettext ("")],
+               gt_cv_func_gettext_libc=yes, gt_cv_func_gettext_libc=no)])
 
-	   if test "$gt_cv_func_gettext_libc" != "yes"; then
-	     AC_CHECK_LIB(intl, bindtextdomain,
-	       [AC_CHECK_LIB(intl, gettext,
-		 gt_cv_func_gettext_libintl=yes,
-		 gt_cv_func_gettext_libintl=no)])
-	   fi
+           if test "$gt_cv_func_gettext_libc" != "yes"; then
+             AC_CHECK_LIB(intl, bindtextdomain,
+               [AC_CHECK_LIB(intl, gettext,
+                 gt_cv_func_gettext_libintl=yes,
+                 gt_cv_func_gettext_libintl=no)])
+           fi
 
-	   if test "$gt_cv_func_gettext_libintl" = "yes" ; then
-	     LIBS="-lintl $LIBS"
-	   fi
+           if test "$gt_cv_func_gettext_libintl" = "yes" ; then
+             LIBS="-lintl $LIBS"
+           fi
 
-	   if test "$gt_cv_func_gettext_libc" = "yes" \
-	      || test "$gt_cv_func_gettext_libintl" = "yes"; then
-	      AC_DEFINE(HAVE_GETTEXT)
-	      AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
-		[test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], no)dnl
-	      if test "$MSGFMT" != "no"; then
-		AC_CHECK_FUNCS(dcgettext)
-		AC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
-		AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
-		  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
-		AC_TRY_LINK(, [extern int _nl_msg_cat_cntr;
-			       return _nl_msg_cat_cntr],
-		  [CATOBJEXT=.gmo
-		   DATADIRNAME=share],
-		  [CATOBJEXT=.mo
-		   DATADIRNAME=lib])
-		INSTOBJEXT=.mo
-	      fi
-	    fi
-	])
+           if test "$gt_cv_func_gettext_libc" = "yes" \
+              || test "$gt_cv_func_gettext_libintl" = "yes"; then
+              AC_DEFINE(HAVE_GETTEXT)
+              AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
+                [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], no)dnl
+              if test "$MSGFMT" != "no"; then
+                AC_CHECK_FUNCS(dcgettext)
+                AC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
+                AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
+                  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
+                AC_TRY_LINK(, [extern int _nl_msg_cat_cntr;
+                               return _nl_msg_cat_cntr],
+                  [CATOBJEXT=.gmo
+                   DATADIRNAME=share],
+                  [CATOBJEXT=.mo
+                   DATADIRNAME=lib])
+                INSTOBJEXT=.mo
+              fi
+            fi
+        ])
 
-	if test "$CATOBJEXT" = "NONE"; then
-	  AC_MSG_CHECKING([whether catgets can be used])
-	  AC_ARG_WITH(catgets,
-	    [  --with-catgets	       use catgets functions if available],
-	    nls_cv_use_catgets=$withval, nls_cv_use_catgets=no)
-	  AC_MSG_RESULT($nls_cv_use_catgets)
+        if test "$CATOBJEXT" = "NONE"; then
+          AC_MSG_CHECKING([whether catgets can be used])
+          AC_ARG_WITH(catgets,
+            [  --with-catgets          use catgets functions if available],
+            nls_cv_use_catgets=$withval, nls_cv_use_catgets=no)
+          AC_MSG_RESULT($nls_cv_use_catgets)
 
-	  if test "$nls_cv_use_catgets" = "yes"; then
-	    dnl No gettext in C library.  Try catgets next.
-	    AC_CHECK_LIB(i, main)
-	    AC_CHECK_FUNC(catgets,
-	      [AC_DEFINE(HAVE_CATGETS)
-	       INTLOBJS="\$(CATOBJS)"
-	       AC_PATH_PROG(GENCAT, gencat, no)dnl
-	       if test "$GENCAT" != "no"; then
-		 AC_PATH_PROG(GMSGFMT, gmsgfmt, no)
-		 if test "$GMSGFMT" = "no"; then
-		   AM_PATH_PROG_WITH_TEST(GMSGFMT, msgfmt,
-		    [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], no)
-		 fi
-		 AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
-		   [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
-		 USE_INCLUDED_LIBINTL=yes
-		 CATOBJEXT=.cat
-		 INSTOBJEXT=.cat
-		 DATADIRNAME=lib
-		 INTLDEPS='$(top_builddir)/intl/libintl.a'
-		 INTLLIBS=$INTLDEPS
-		 LIBS=`echo $LIBS | sed -e 's/-lintl//'`
-		 nls_cv_header_intl=intl/libintl.h
-		 nls_cv_header_libgt=intl/libgettext.h
-	       fi])
-	  fi
-	fi
+          if test "$nls_cv_use_catgets" = "yes"; then
+            dnl No gettext in C library.  Try catgets next.
+            AC_CHECK_LIB(i, main)
+            AC_CHECK_FUNC(catgets,
+              [AC_DEFINE(HAVE_CATGETS)
+               INTLOBJS="\$(CATOBJS)"
+               AC_PATH_PROG(GENCAT, gencat, no)dnl
+               if test "$GENCAT" != "no"; then
+                 AC_PATH_PROG(GMSGFMT, gmsgfmt, no)
+                 if test "$GMSGFMT" = "no"; then
+                   AM_PATH_PROG_WITH_TEST(GMSGFMT, msgfmt,
+                    [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], no)
+                 fi
+                 AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
+                   [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
+                 USE_INCLUDED_LIBINTL=yes
+                 CATOBJEXT=.cat
+                 INSTOBJEXT=.cat
+                 DATADIRNAME=lib
+                 INTLDEPS='$(top_builddir)/intl/libintl.a'
+                 INTLLIBS=$INTLDEPS
+                 LIBS=`echo $LIBS | sed -e 's/-lintl//'`
+                 nls_cv_header_intl=intl/libintl.h
+                 nls_cv_header_libgt=intl/libgettext.h
+               fi])
+          fi
+        fi
 
-	if test "$CATOBJEXT" = "NONE"; then
-	  dnl Neither gettext nor catgets in included in the C library.
-	  dnl Fall back on GNU gettext library.
-	  nls_cv_use_gnu_gettext=yes
-	fi
+        if test "$CATOBJEXT" = "NONE"; then
+          dnl Neither gettext nor catgets in included in the C library.
+          dnl Fall back on GNU gettext library.
+          nls_cv_use_gnu_gettext=yes
+        fi
       fi
 
       if test "$nls_cv_use_gnu_gettext" = "yes"; then
-	dnl Mark actions used to generate GNU NLS library.
-	INTLOBJS="\$(GETTOBJS)"
-	AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
-	  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], msgfmt)
-	AC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
-	AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
-	  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
-	AC_SUBST(MSGFMT)
-	USE_INCLUDED_LIBINTL=yes
-	CATOBJEXT=.gmo
-	INSTOBJEXT=.mo
-	DATADIRNAME=share
-	INTLDEPS='$(top_builddir)/intl/libintl.a'
-	INTLLIBS=$INTLDEPS
-	LIBS=`echo $LIBS | sed -e 's/-lintl//'`
-	nls_cv_header_intl=intl/libintl.h
-	nls_cv_header_libgt=intl/libgettext.h
+        dnl Mark actions used to generate GNU NLS library.
+        INTLOBJS="\$(GETTOBJS)"
+        AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
+          [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], msgfmt)
+        AC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
+        AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
+          [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
+        AC_SUBST(MSGFMT)
+        USE_INCLUDED_LIBINTL=yes
+        CATOBJEXT=.gmo
+        INSTOBJEXT=.mo
+        DATADIRNAME=share
+        INTLDEPS='$(top_builddir)/intl/libintl.a'
+        INTLLIBS=$INTLDEPS
+        LIBS=`echo $LIBS | sed -e 's/-lintl//'`
+        nls_cv_header_intl=intl/libintl.h
+        nls_cv_header_libgt=intl/libgettext.h
       fi
 
       dnl Test whether we really found GNU xgettext.
       if test "$XGETTEXT" != ":"; then
-	dnl If it is no GNU xgettext we define it as : so that the
-	dnl Makefiles still can work.
-	if $XGETTEXT --omit-header /dev/null 2> /dev/null; then
-	  : ;
-	else
-	  AC_MSG_RESULT(
-	    [found xgettext program is not GNU xgettext; ignore it])
-	  XGETTEXT=":"
-	fi
+        dnl If it is no GNU xgettext we define it as : so that the
+        dnl Makefiles still can work.
+        if $XGETTEXT --omit-header /dev/null 2> /dev/null; then
+          : ;
+        else
+          AC_MSG_RESULT(
+            [found xgettext program is not GNU xgettext; ignore it])
+          XGETTEXT=":"
+        fi
       fi
 
       # We need to process the po/ directory.
@@ -378,7 +378,7 @@ AC_DEFUN(AM_WITH_NLS,
     AC_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl)
     AC_OUTPUT_COMMANDS(
      [case "$CONFIG_FILES" in *po/Makefile.in*)
-	sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile
+        sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile
       esac])
 
 
@@ -447,9 +447,9 @@ strdup __argz_count __argz_stringify __argz_next])
        AC_MSG_CHECKING(for catalogs to be installed)
        NEW_LINGUAS=
        for lang in ${LINGUAS=$ALL_LINGUAS}; do
-	 case "$ALL_LINGUAS" in
-	  *$lang*) NEW_LINGUAS="$NEW_LINGUAS $lang" ;;
-	 esac
+         case "$ALL_LINGUAS" in
+          *$lang*) NEW_LINGUAS="$NEW_LINGUAS $lang" ;;
+         esac
        done
        LINGUAS=$NEW_LINGUAS
        AC_MSG_RESULT($LINGUAS)
@@ -474,7 +474,7 @@ strdup __argz_count __argz_stringify __argz_next])
 
    dnl Determine which catalog format we have (if any is needed)
    dnl For now we know about two different formats:
-   dnl	 Linux libc-5 and the normal X/Open format
+   dnl   Linux libc-5 and the normal X/Open format
    test -d intl || mkdir intl
    if test "$CATOBJEXT" = ".cat"; then
      AC_CHECK_HEADER(linux/version.h, msgformat=linux, msgformat=xopen)
@@ -488,7 +488,7 @@ strdup __argz_count __argz_stringify __argz_next])
      $srcdir/intl/po2tbl.sed.in > intl/po2tbl.sed
 
    dnl In the intl/Makefile.in we have a special dependency which makes
-   dnl only sense for gettext.	We comment this out for non-gettext
+   dnl only sense for gettext.  We comment this out for non-gettext
    dnl packages.
    if test "$PACKAGE" = "gettext"; then
      GT_NO="#NO#"
@@ -530,6 +530,6 @@ strdup __argz_count __argz_stringify __argz_next])
    fi
    rm -f po/POTFILES
    sed -e "/^#/d" -e "/^\$/d" -e "s,.*, $posrcprefix& \\\\," -e "\$s/\(.*\) \\\\/\1/" \
-	< $srcdir/po/POTFILES.in > po/POTFILES
+        < $srcdir/po/POTFILES.in > po/POTFILES
   ])
 

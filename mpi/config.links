@@ -10,6 +10,7 @@ test -d ./mpi || mkdir ./mpi
 
 echo '/* created by config.links - do not edit */' >./mpi/asm-syntax.h
 
+if test "$try_asm_modules" = "yes" ; then
 case "${target}" in
     i[34]86*-*-freebsd*-elf | i[34]86*-*-freebsd3*)
        echo '#define ELF_SYNTAX' >>./mpi/asm-syntax.h
@@ -151,6 +152,10 @@ case "${target}" in
 	path=""
 	;;
 esac
+else
+    echo '/* Assembler modules disabled on request */' >>./mpi/asm-syntax.h
+    path=""
+fi
 
 
 case "${target}" in

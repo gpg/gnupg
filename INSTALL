@@ -28,6 +28,8 @@ Configure options for GNUPG
 --disable-dynload   If you have problems with dynamic loading, this option
 		    disables all dynamic loading stuff.
 
+--disable-asm	    Do not use assembler modules.
+
 
 
 Problems
@@ -42,7 +44,7 @@ If you have other compile problems, try the configure options
 or --disable-dynload.
 
 I can't check all assembler files, so if you have problems assembling them
-(or the program crashes), simply delete the files in the mpi/<cpu> directory.
+(or the program crashes) use --disable-asm with ./configure.
 The configure scripts may consider several subdirectories to get all
 available assembler files; be sure to delete the correct ones. The
 assembler replacements are in C and in mpi/generic; never delete udiv-qrnnd.S

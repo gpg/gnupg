@@ -1,5 +1,5 @@
-This is NOT a released version!
--------------------------------
+Noteworthy changes in version 0.4.4
+-----------------------------------
 
     * Fixed the way the key expiration time is stored. If you have
       an expiration time on your key you should fix it with --edit-key

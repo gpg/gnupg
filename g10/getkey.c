@@ -160,7 +160,8 @@ cache_public_key( PKT_public_key *pk )
     if( pk_cache_entries >= MAX_PK_CACHE_ENTRIES ) {
 	/* fixme: use another algorithm to free some cache slots */
 	pk_cache_disabled=1;
-	log_info(_("too many entries in pk cache - disabled\n"));
+	if( opt.verbose )
+	    log_info(_("too many entries in pk cache - disabled\n"));
 	return;
     }
     pk_cache_entries++;
@@ -258,7 +259,8 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 	;
     else if( ++unk_cache_entries > MAX_UNK_CACHE_ENTRIES ) {
 	unk_cache_disabled = 1;
-	log_info(_("too many entries in unk cache - disabled\n"));
+	if( opt.verbose )
+	    log_info(_("too many entries in unk cache - disabled\n"));
     }
     else {
 	keyid_list_t kl;

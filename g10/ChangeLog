@@ -4,6 +4,8 @@ Fri Nov 20 16:54:52 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	* sign.c (write_dashed_escaped): Ditto.
 	* armor.c (find_header): Support for NotDashEscaped header.
 
+	* getkey.c: print "disabled cache.." only if verbose is used.
+
 Thu Nov 19 07:17:31 1998  Werner Koch  <werner.koch@guug.de>
 
 	* parse-packet.c (dump_sig_subpkt): Fixed expire listing

@@ -9,7 +9,7 @@
 # QingLong <qinglong@Bolizm> (couldn't send an email to let you know)
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1998-11-20 15:17+0100\n"
+"POT-Creation-Date: 1998-11-20 19:52+0100\n"
 "Content-Type: text/plain; charset=\n"
 "Date: 1998-01-26 22:08:36+0100\n"
 "From: Gregory Steuck <steuck@iname.com>\n"
@@ -760,45 +760,45 @@ msgstr ""
 msgid "armor: %s\n"
 msgstr "Кодировка: %s\n"
 
-#: g10/armor.c:530
+#: g10/armor.c:532
 msgid "invalid dash escaped line: "
 msgstr "недопустимая строка начинающаяся с минусов: "
 
-#: g10/armor.c:599
+#: g10/armor.c:601
 msgid "invalid clear text header: "
 msgstr "недопустимый текстовый заголовок: "
 
-#: g10/armor.c:841
+#: g10/armor.c:843
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "недопустимый для кодировки radix64 символ %02x пропущен\n"
 
-#: g10/armor.c:874
+#: g10/armor.c:876
 msgid "premature eof (no CRC)\n"
 msgstr "неожиданный конец файла (нет CRC)\n"
 
-#: g10/armor.c:893
+#: g10/armor.c:895
 msgid "premature eof (in CRC)\n"
 msgstr "неожиданный конец файла (в CRC)\n"
 
-#: g10/armor.c:897
+#: g10/armor.c:899
 msgid "malformed CRC\n"
 msgstr "неправильная форма CRC\n"
 
-#: g10/armor.c:901
+#: g10/armor.c:903
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "ошибка CRC; %06lx - %06lx\n"
 
-#: g10/armor.c:920
+#: g10/armor.c:922
 msgid "premature eof (in Trailer)\n"
 msgstr "неожиданный конец файла (в хвосте)\n"
 
-#: g10/armor.c:924
+#: g10/armor.c:926
 msgid "error in trailer line\n"
 msgstr "ошибка в завершающей строке\n"
 
-#: g10/armor.c:1178
+#: g10/armor.c:1180
 msgid "no valid RFC1991 or OpenPGP data found.\n"
 msgstr "не найдено допустимых RFC1991 или OpenPGP данных.\n"
 
@@ -1393,15 +1393,15 @@ msgstr "%s зашифровано для: %s\n"
 msgid "WARNING: nothing exported\n"
 msgstr "ВНИМАНИЕ: Используется ключ к которому нет доверия!\n"
 
-#: g10/getkey.c:163
+#: g10/getkey.c:164
 msgid "too many entries in pk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:261
+#: g10/getkey.c:263
 msgid "too many entries in unk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:967
+#: g10/getkey.c:969
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr "используется дополнительный ключ %09lX вместо основного %08lX%\n"
@@ -2101,15 +2101,19 @@ msgid "Changing exiration time for the primary key.\n"
 msgstr ""
 
 #: g10/keyedit.c:1250
+msgid "You can't change the expiration date of a v3 key\n"
+msgstr ""
+
+#: g10/keyedit.c:1266
 msgid "No corresponding signature in secret ring\n"
 msgstr ""
 
-#: g10/keyedit.c:1310
+#: g10/keyedit.c:1326
 #, c-format
 msgid "No user id with index %d\n"
 msgstr "Нет идентификатора пользователя с индексом %d\n"
 
-#: g10/keyedit.c:1355
+#: g10/keyedit.c:1371
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Нет дополнительного ключа с индексом %d\n"
@@ -2144,33 +2148,33 @@ msgstr "замечание: отправитель запросил \"только-для-Ваших-глаз\"\n"
 msgid "original file name='%.*s'\n"
 msgstr ""
 
-#: g10/mainproc.c:837
+#: g10/mainproc.c:833
 msgid "signature verification suppressed\n"
 msgstr ""
 
-#: g10/mainproc.c:843
+#: g10/mainproc.c:839
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Подпись сделана %.*s, используя %s ключ %08lX\n"
 
-#: g10/mainproc.c:851
+#: g10/mainproc.c:847
 msgid "BAD signature from \""
 msgstr "ПЛОХАЯ подпись от \""
 
-#: g10/mainproc.c:852
+#: g10/mainproc.c:848
 msgid "Good signature from \""
 msgstr "Хорошая подпись от \""
 
-#: g10/mainproc.c:865
+#: g10/mainproc.c:861
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Невозможно проверить подпись: %s\n"
 
-#: g10/mainproc.c:938
+#: g10/mainproc.c:934
 msgid "old style (PGP 2.x) signature\n"
 msgstr ""
 
-#: g10/mainproc.c:943
+#: g10/mainproc.c:939
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr ""
 

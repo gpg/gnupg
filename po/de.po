@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"POT-Creation-Date: 1998-11-20 15:17+0100\n"
+"POT-Creation-Date: 1998-11-20 19:52+0100\n"
 "PO-Revision-Date: 1998-11-18 20:10+0200\n"
 "Last-Translator: Walter Koch <walterk@mail.dip.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -757,45 +757,45 @@ msgstr "Ungültige ASCII-Hülle"
 msgid "armor: %s\n"
 msgstr "ASCII-Hülle: %s\n"
 
-#: g10/armor.c:530
+#: g10/armor.c:532
 msgid "invalid dash escaped line: "
 msgstr "Ungültige mit Bindestrich \"escapte\" Zeile: "
 
-#: g10/armor.c:599
+#: g10/armor.c:601
 msgid "invalid clear text header: "
 msgstr "ungültige Klartexteinleitung"
 
-#: g10/armor.c:841
+#: g10/armor.c:843
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Ungültiges \"radix64\" Zeichen %02x ignoriert\n"
 
-#: g10/armor.c:874
+#: g10/armor.c:876
 msgid "premature eof (no CRC)\n"
 msgstr "vorzeitiges Dateiende (keine Prüfsumme)\n"
 
-#: g10/armor.c:893
+#: g10/armor.c:895
 msgid "premature eof (in CRC)\n"
 msgstr "vorzeitiges Dateiende (innerhalb der Prüfsumme)\n"
 
-#: g10/armor.c:897
+#: g10/armor.c:899
 msgid "malformed CRC\n"
 msgstr "Falsch aufgebaute Prüfsumme\n"
 
-#: g10/armor.c:901
+#: g10/armor.c:903
 #, c-format
 msgid "CRC error; %06lx - %06lx\n"
 msgstr "Prüfsummenfehler; %06lx - %06lx\n"
 
-#: g10/armor.c:920
+#: g10/armor.c:922
 msgid "premature eof (in Trailer)\n"
 msgstr "vorzeitiges Dateiende (im Nachsatz)\n"
 
-#: g10/armor.c:924
+#: g10/armor.c:926
 msgid "error in trailer line\n"
 msgstr "Fehler in der Nachsatzzeile\n"
 
-#: g10/armor.c:1178
+#: g10/armor.c:1180
 msgid "no valid RFC1991 or OpenPGP data found.\n"
 msgstr "Keine gültigen RFC1991- oder OpenPGP-Daten gefunden.\n"
 
@@ -1396,15 +1396,15 @@ msgstr "%s verschlüsselt für: %s\n"
 msgid "WARNING: nothing exported\n"
 msgstr "WARNUNG: Ein Schlüssel ohne gesichertes Vertrauen wird benutzt!\n"
 
-#: g10/getkey.c:163
+#: g10/getkey.c:164
 msgid "too many entries in pk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:261
+#: g10/getkey.c:263
 msgid "too many entries in unk cache - disabled\n"
 msgstr ""
 
-#: g10/getkey.c:967
+#: g10/getkey.c:969
 #, c-format
 msgid "using secondary key %08lX instead of primary key %08lX\n"
 msgstr ""
@@ -2108,15 +2108,19 @@ msgid "Changing exiration time for the primary key.\n"
 msgstr "Ändern des Verfallsdatums des Hauptschlüssels.\n"
 
 #: g10/keyedit.c:1250
+msgid "You can't change the expiration date of a v3 key\n"
+msgstr ""
+
+#: g10/keyedit.c:1266
 msgid "No corresponding signature in secret ring\n"
 msgstr "Keine entsprechende Signatur im geheimen Schlüsselbund\n"
 
-#: g10/keyedit.c:1310
+#: g10/keyedit.c:1326
 #, c-format
 msgid "No user id with index %d\n"
 msgstr "Keine User-ID mit Index %d\n"
 
-#: g10/keyedit.c:1355
+#: g10/keyedit.c:1371
 #, c-format
 msgid "No secondary key with index %d\n"
 msgstr "Kein Zweitschlüssel mit Index %d\n"
@@ -2152,33 +2156,33 @@ msgstr ""
 msgid "original file name='%.*s'\n"
 msgstr ""
 
-#: g10/mainproc.c:837
+#: g10/mainproc.c:833
 msgid "signature verification suppressed\n"
 msgstr ""
 
-#: g10/mainproc.c:843
+#: g10/mainproc.c:839
 #, c-format
 msgid "Signature made %.*s using %s key ID %08lX\n"
 msgstr "Signatur am %.*s mit %s Schlüssel %08lX erzeugt\n"
 
-#: g10/mainproc.c:851
+#: g10/mainproc.c:847
 msgid "BAD signature from \""
 msgstr "FALSCHE Signatur von \""
 
-#: g10/mainproc.c:852
+#: g10/mainproc.c:848
 msgid "Good signature from \""
 msgstr "Gültige Signatur von \""
 
-#: g10/mainproc.c:865
+#: g10/mainproc.c:861
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Signatur kann nicht geprüft werden: %s\n"
 
-#: g10/mainproc.c:938
+#: g10/mainproc.c:934
 msgid "old style (PGP 2.x) signature\n"
 msgstr ""
 
-#: g10/mainproc.c:943
+#: g10/mainproc.c:939
 msgid "invalid root packet detected in proc_tree()\n"
 msgstr ""
 
