@@ -383,6 +383,46 @@ if test "$try_ldap" = yes ; then
     if test "$gnupg_cv_func_ldap_init" = yes || \
   	test "$gnupg_cv_func_ldaplber_init" = yes ; then
        GPGKEYS_LDAP="gpgkeys_ldap"
+
+       AC_MSG_CHECKING([whether LDAP supports ldap_get_option])
+
+       if test "$gnupg_cv_func_ldap_init" = yes ; then
+	  AC_TRY_LINK([#include <ldap.h>],
+	     [ldap_get_option((void *)0,0,(void *)0);],
+	     [gnupg_cv_func_ldap_get_option=yes],
+	     [gnupg_cv_func_ldap_get_option=no])
+	else
+	  AC_TRY_LINK([#include <lber.h>
+#include <ldap.h>],[ldap_get_option((void *)0,0,(void *)0);],
+	     [gnupg_cv_func_ldap_get_option=yes],
+	     [gnupg_cv_func_ldap_get_option=no])
+       fi
+
+       AC_MSG_RESULT([$gnupg_cv_func_ldap_get_option])
+
+       if test "$gnupg_cv_func_ldap_get_option" = yes ; then
+          AC_DEFINE(HAVE_LDAP_GET_OPTION,1,[Define if the LDAP library has ldap_get_option])
+       else
+          AC_MSG_CHECKING([whether LDAP supports ld_errno])
+
+	  if test "$gnupg_cv_func_ldap_init" = yes ; then
+	    AC_TRY_COMPILE([#include <ldap.h>],
+	       [LDAP *ldap; ldap->ld_errno;],
+	       [gnupg_cv_func_ldap_ld_errno=yes],
+	       [gnupg_cv_func_ldap_ld_errno=no])
+	   else
+	    AC_TRY_LINK([#include <lber.h>
+#include <ldap.h>],[LDAP *ldap; ldap->ld_errno;],
+	       [gnupg_cv_func_ldap_ld_errno=yes],
+	       [gnupg_cv_func_ldap_ld_errno=no])
+          fi
+
+          AC_MSG_RESULT([$gnupg_cv_func_ldap_ld_errno])
+
+	  if test "$gnupg_cv_func_ldap_ld_errno" = yes ; then
+	     AC_DEFINE(HAVE_LDAP_LD_ERRNO,1,[Define if the LDAP library supports ld_errno])
+          fi
+       fi
     fi
 
     LIBS=$_ldap_save_libs
