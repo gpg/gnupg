@@ -21,7 +21,7 @@
 #ifndef GNUPG_DYNLOAD_H
 #define GNUPG_DYNLOAD_H
 #ifdef ENABLE_CARD_SUPPORT
-#ifndef __MINGW32__
+#ifndef _WIN32
 #include <dlfcn.h>
 #else
 #include <windows.h>
@@ -36,7 +36,7 @@ dlopen (const char * name, int flag)
 }
 
 static __inline__ void *
-dlsym (void *hd, const char *sym)
+dlsym (void * hd, const char * sym)
 {
   if (hd && sym)
     {
@@ -53,7 +53,7 @@ static __inline__ const char *
 dlerror (void)
 {
   static char buf[32];
-  sprintf (buf, "ec=%lu", GetLastError ());
+  sprintf (buf, "ec=%lu\n", GetLastError ());
   return buf;
 }
 
@@ -63,7 +63,7 @@ dlclose (void * hd)
 {
   if (hd)
     {
-      CloseHandle (hd);
+      FreeLibrary (hd);
       return 0;
     }
   return -1;

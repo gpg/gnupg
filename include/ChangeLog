@@ -1,3 +1,7 @@
+2003-10-04  Timo Schulz  <twoaday@freakmail.de>
+
+	* dynload [WIN32] (dlclose): Do not use CloseHandle but FreeLibrary.
+	
 2003-09-29  Werner Koch  <wk@gnupg.org>
 
 	* cipher.h (PUBKEY_USAGE_AUTH): New.
