@@ -25,7 +25,7 @@ noinst_LIBRARIES = libutil.a
 EXTRA_libutil_a_SOURCES = regcomp.c regex.c regexec.c regex_internal.c regex_internal.h
 
 #libutil_a_LDFLAGS =
-libutil_a_SOURCES = g10u.c logger.c fileutil.c miscutil.c strgutil.c  \
+libutil_a_SOURCES = logger.c fileutil.c miscutil.c strgutil.c  \
 		     ttyio.c  argparse.c memory.c secmem.c errors.c iobuf.c \
 		     dotlock.c http.c srv.h srv.c simple-gettext.c w32reg.c
 

@@ -1,3 +1,12 @@
+2003-12-29  David Shaw  <dshaw@jabberwocky.com>
+
+	* g10u.c: Dead code.  Remove.
+
+	* Makefile.am: Don't compile g10u.c.
+
+	* iobuf.c (block_filter): Properly handle a partial body stream
+	that ends with a 5-byte length.
+
 2003-12-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* http.c (send_request, http_open_document, http_open): Pass the
