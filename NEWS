@@ -1,10 +1,10 @@
-Noteworthy changes in version 1.2.6
+Noteworthy changes in version 1.2.6 (2004-08-25)
 ------------------------------------------------
 
     * Updated the included gettext.  This also fixes the installation
       problem from 1.2.5
 
-    * Fixed a race condition leading to deleted keys.
+    * Fixed a race condition possibly leading to deleted keys.
 
 
 Noteworthy changes in version 1.2.5 (2004-07-26)
