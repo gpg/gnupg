@@ -1,3 +1,8 @@
+2004-12-13  Werner Koch  <wk@g10code.com>
+
+	* w32-pth.c, w32-pth.h: Added real code written by Timo	Schulz.
+	Not finished, though.
+
 2004-12-07  Werner Koch  <wk@g10code.com>
 
 	* w32-pth.c, w32-pth.h: New.
