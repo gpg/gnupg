@@ -33,6 +33,11 @@
 #include "status.h"
 #include "i18n.h"
 
+#ifdef USE_ONLY_8DOT3
+  #define SKELEXT ".skl"
+#else
+  #define SKELEXT ".skel"
+#endif
 
 /****************
  * Check whether FNAME exists and ask if it's okay to overwrite an
@@ -91,6 +96,9 @@ open_outfile( const char *iname, int mode, IOBUF *a )
 	if( opt.outfile )
 	    name = opt.outfile;
 	else {
+	  #ifdef USE_ONLY_8DOT3
+	    #error please implement this
+	  #endif
 	    buf = m_alloc(strlen(iname)+4+1);
 	    strcpy(stpcpy(buf,iname), mode==1 ? ".asc" :
 				      mode==2 ? ".sig" : ".gpg");
@@ -122,6 +130,9 @@ open_sigfile( const char *iname )
     IOBUF a = NULL;
     size_t len;
 
+  #ifdef USE_ONLY_8DOT3
+    #error please implement this
+  #endif
     if( iname && !(*iname == '-' && !iname[1]) ) {
 	len = strlen(iname);
 	if( len > 4 && ( !strcmp(iname + len - 4, ".sig")
@@ -152,7 +163,7 @@ copy_options_file( const char *destdir )
     int c;
 
     fname = m_alloc( strlen(datadir) + strlen(destdir) + 15 );
-    strcpy(stpcpy(fname, datadir), "/options.skel" );
+    strcpy(stpcpy(fname, datadir), "/options" SKELEXT );
     src = fopen( fname, "r" );
     if( !src ) {
 	log_error(_("%s: can't open: %s\n"), fname, strerror(errno) );

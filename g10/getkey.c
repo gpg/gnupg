@@ -1,5 +1,5 @@
 /* getkey.c -  Get a key from the database
- *	Copyright (C) 1998 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -17,8 +17,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-
-#define DEFINES_GETKEY_CTX 1
 
 #include <config.h>
 #include <stdio.h>
@@ -40,32 +38,79 @@
 #define MAX_PK_CACHE_ENTRIES	50
 #define MAX_UID_CACHE_ENTRIES	50
 
+/* Aa map of the all characters valid used for word_match()
+ * Valid characters are in in this table converted to uppercase.
+ * becuase the upper 128 bytes have special meanin, we assume
+ * that they are all valid.
+ * Note: We must use numerical values here in case that this program
+ * will be converted to those little blue HAL9000s with their strange
+ * EBCDIC character set (user ids are UTF-8). */
+static const byte word_match_chars[256] = {
+  /* 00 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  /* 08 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  /* 10 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  /* 18 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  /* 20 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  /* 28 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  /* 30 */  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+  /* 38 */  0x38, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  /* 40 */  0x00, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+  /* 48 */  0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+  /* 50 */  0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+  /* 58 */  0x58, 0x59, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00,
+  /* 60 */  0x00, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+  /* 68 */  0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+  /* 70 */  0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+  /* 78 */  0x58, 0x59, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00,
+  /* 80 */  0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
+  /* 88 */  0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f,
+  /* 90 */  0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
+  /* 98 */  0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f,
+  /* a0 */  0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+  /* a8 */  0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf,
+  /* b0 */  0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7,
+  /* b8 */  0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xbf,
+  /* c0 */  0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7,
+  /* c8 */  0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf,
+  /* d0 */  0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7,
+  /* d8 */  0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf,
+  /* e0 */  0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7,
+  /* e8 */  0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef,
+  /* f0 */  0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
+  /* f8 */  0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff
+};
 
-struct getkey_ctx_s {
+typedef struct {
     int mode;
-    int internal;
     u32 keyid[2];
+    byte fprint[20];
     char *namebuf;
     const char *name;
+} getkey_item_t;
+
+struct getkey_ctx_s {
+    /* make an array or a linked list from dome fields */
     int primary;
     KBNODE keyblock;
     KBPOS kbpos;
     int last_rc;
     ulong count;
+    int nitems;
+    getkey_item_t items[1];
 };
 
 
 
 
 
-
+#if 0
 static struct {
     int any;
     int okay_count;
     int nokey_count;
     int error_count;
 } lkup_stats[21];
-
+#endif
 
 
 
@@ -104,17 +149,12 @@ static int uid_cache_entries;	/* number of entries in uid cache */
 
 
 
-static int lookup( GETKEY_CTX *ctx, PKT_public_key *pk,
-		   int mode,  u32 *keyid, const char *name,
-		   KBNODE *ret_keyblock, int primary  );
-static void lookup_close( GETKEY_CTX ctx );
-static int  lookup_read( GETKEY_CTX ctx,
-			 PKT_public_key *pk, KBNODE *ret_keyblock );
-static int lookup_sk( PKT_secret_key *sk,
-		   int mode,  u32 *keyid, const char *name, int primary );
+static char* prepare_word_match( const byte *name );
+static int lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_kb );
+static int lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_kb );
 
 
-
+#if 0
 static void
 print_stats()
 {
@@ -129,7 +169,7 @@ print_stats()
 		    lkup_stats[i].error_count );
     }
 }
-
+#endif
 
 
 static void
@@ -280,7 +320,14 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 
 
     /* do a lookup */
-    rc = lookup( NULL, pk, 11, keyid, NULL, NULL, 0 );
+    {	struct getkey_ctx_s ctx;
+	memset( &ctx, 0, sizeof ctx );
+	ctx.nitems = 1;
+	ctx.items[0].mode = 11;
+	ctx.items[0].keyid[0] = keyid[0];
+	ctx.items[0].keyid[1] = keyid[1];
+	rc = lookup_pk( &ctx, pk, NULL );
+    }
     if( !rc )
 	goto leave;
 
@@ -312,6 +359,77 @@ get_pubkey( PKT_public_key *pk, u32 *keyid )
 	free_public_key(pk);
     return rc;
 }
+
+
+/****************
+ * Get a secret key and store it into sk
+ */
+int
+get_seckey( PKT_secret_key *sk, u32 *keyid )
+{
+    int rc;
+    struct getkey_ctx_s ctx;
+
+    memset( &ctx, 0, sizeof ctx );
+    ctx.nitems = 1;
+    ctx.items[0].mode = 11;
+    ctx.items[0].keyid[0] = keyid[0];
+    ctx.items[0].keyid[1] = keyid[1];
+    rc = lookup_sk( &ctx, sk, NULL );
+    if( !rc ) {
+	/* check the secret key (this may prompt for a passprase to
+	 * unlock the secret key
+	 */
+	rc = check_secret_key( sk, 0 );
+    }
+
+    return rc;
+}
+
+
+/****************
+ * Get the primary secret key and store it into sk
+ * Note: This function does not unprotect the key!
+ */
+int
+get_primary_seckey( PKT_secret_key *sk, u32 *keyid )
+{
+    struct getkey_ctx_s ctx;
+
+    memset( &ctx, 0, sizeof ctx );
+    ctx.primary = 1;
+    ctx.nitems = 1;
+    ctx.items[0].mode = 11;
+    ctx.items[0].keyid[0] = keyid[0];
+    ctx.items[0].keyid[1] = keyid[1];
+    return lookup_sk( &ctx, sk, NULL );
+}
+
+
+
+/****************
+ * Check whether the secret key is available
+ * Returns: 0 := key is available
+ *	    G10ERR_NO_SECKEY := not availabe
+ */
+int
+seckey_available( u32 *keyid )
+{
+    int rc;
+    struct getkey_ctx_s ctx;
+    PKT_secret_key *sk;
+
+    sk = m_alloc_clear( sizeof *sk );
+    memset( &ctx, 0, sizeof ctx );
+    ctx.nitems = 1;
+    ctx.items[0].mode = 11;
+    ctx.items[0].keyid[0] = keyid[0];
+    ctx.items[0].keyid[1] = keyid[1];
+    rc = lookup_sk( &ctx, sk, NULL );
+    free_secret_key( sk );
+    return rc;
+}
+
 
 
 static int
@@ -350,6 +468,7 @@ hextobyte( const byte *s )
  *  3 = match an email address
  *  4 = match a substring of an email address
  *  5 = match an email address, but compare from end
+ *  6 = word match mode
  * 10 = it is a short KEYID (don't care about keyid[0])
  * 11 = it is a long  KEYID
  * 16 = it is a 16 byte fingerprint
@@ -372,6 +491,11 @@ hextobyte( const byte *s )
  * - If the userid start with an '=' an exact compare is done.
  * - If the userid starts with a '*' a case insensitive substring search is
  *   done (This is the default).
+ * - If the userid starts with a '+' we will compare individual words
+ *   and a match requires that all the words are in the userid.
+ *   Words are delimited by white space or "()<>[]{}.@-+_,;/&!"
+ *   (note that you can't search for these characters). Compare
+ *   is not case sensitive.
  */
 
 int
@@ -460,6 +584,10 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
 	mode = 5;
 	s++;
     }
+    else if( *s == '+' ) { /* word match mode */
+	mode = 6;
+	s++;
+    }
     else if( *s == '#' ) { /* use local id */
 	return 0;
     }
@@ -481,51 +609,62 @@ classify_user_id( const char *name, u32 *keyid, byte *fprint,
 /****************
  * Try to get the pubkey by the userid. This function looks for the
  * first pubkey certificate which has the given name in a user_id.
- * if pk has the pubkey algo set, the function will only return
+ * if pk/sk has the pubkey algo set, the function will only return
  * a pubkey with that algo.
+ * The caller must provide provide storage for either the pk or the sk.
+ * If ret_kb is not NULL the funtion will return the keyblock there.
  */
 
 static int
-key_byname( int secret, GETKEY_CTX *retctx,
-	    PKT_public_key *pk, PKT_secret_key *sk,
-	    const char *name, KBNODE *ret_kb )
+key_byname( GETKEY_CTX *retctx, STRLIST namelist,
+	    PKT_public_key *pk, PKT_secret_key *sk, KBNODE *ret_kb )
 {
-    int internal = 0;
     int rc = 0;
-    const char *s;
-    u32 keyid[2] = {0}; /* init to avoid compiler warning */
-    byte fprint[20];
-    int mode;
+    int n;
+    STRLIST r;
+    GETKEY_CTX ctx;
 
-    mode = classify_user_id( name, keyid, fprint, &s, NULL );
-    if( !mode ) {
-	rc = G10ERR_INV_USER_ID;
-	goto leave;
-    }
+    assert( !pk ^ !sk );
 
-    if( secret ) {
-	if( !sk ) {
-	    sk = m_alloc_clear( sizeof *sk );
-	    internal++;
+    /* build the search context */
+    /* Performance hint: Use a static buffer if there is only one name */
+    /*			 and we don't have mode 6 */
+    for(n=0, r=namelist; r; r = r->next )
+	n++;
+    ctx = m_alloc_clear( sizeof *ctx + (n-1)*sizeof ctx->items );
+    ctx->nitems = n;
+
+    for(n=0, r=namelist; r; r = r->next, n++ ) {
+	ctx->items[n].mode = classify_user_id( r->d,
+					      ctx->items[n].keyid,
+					      ctx->items[n].fprint,
+					      &ctx->items[n].name,
+					      NULL );
+	if( !ctx->items[n].mode ) {
+	    m_free( ctx );
+	    return G10ERR_INV_USER_ID;
 	}
-	rc = mode < 16? lookup_sk( sk, mode, keyid, s, 1 )
-		      : lookup_sk( sk, mode, keyid, fprint, 1 );
+	if( ctx->items[n].mode == 6 ) {
+	    ctx->items[n].namebuf = prepare_word_match(ctx->items[n].name);
+	    ctx->items[n].name = ctx->items[n].namebuf;
+	}
     }
+
+    /* and call the lookup function */
+    ctx->primary = 1; /* we want to look for the primary key only */
+    if( sk )
+	rc = lookup_sk( ctx, sk, NULL );
+    else
+	rc = lookup_pk( ctx, pk, NULL );
+
+    if( retctx ) /* caller wants the context */
+	*retctx = ctx;
     else {
-	if( !pk ) {
-	    pk = m_alloc_clear( sizeof *pk );
-	    internal++;
-	}
-	rc = mode < 16? lookup( retctx, pk, mode, keyid, s, ret_kb, 1 )
-		      : lookup( retctx, pk, mode, keyid, fprint, ret_kb, 1 );
+	for(n=0; n < ctx->nitems; n++ )
+	    m_free( ctx->items[n].namebuf );
+	m_free( ctx );
     }
 
-
-  leave:
-    if( internal && secret )
-	m_free( sk );
-    else if( internal )
-	m_free( pk );
     return rc;
 }
 
@@ -534,15 +673,38 @@ get_pubkey_byname( GETKEY_CTX *retctx, PKT_public_key *pk,
 		   const char *name, KBNODE *ret_keyblock )
 {
     int rc;
+    STRLIST namelist = NULL;
+
+    add_to_strlist( &namelist, name );
 
     if( !pk ) {
-	/* fixme: key_byname should not need a pk in this case */
+	/* Performance Hint: key_byname should not need a pk here */
 	pk = m_alloc_clear( sizeof *pk );
-	rc = key_byname( 0, retctx, pk, NULL, name, ret_keyblock );
+	rc = key_byname( retctx, namelist, pk, NULL, ret_keyblock );
 	free_public_key( pk );
     }
     else
-	rc = key_byname( 0, retctx, pk, NULL, name, ret_keyblock );
+	rc = key_byname( retctx, namelist, pk, NULL, ret_keyblock );
+
+    free_strlist( namelist );
+    return rc;
+}
+
+int
+get_pubkey_bynames( GETKEY_CTX *retctx, PKT_public_key *pk,
+		    STRLIST names, KBNODE *ret_keyblock )
+{
+    int rc;
+
+    if( !pk ) {
+	/* Performance Hint: key_byname should not need a pk here */
+	pk = m_alloc_clear( sizeof *pk );
+	rc = key_byname( retctx, names, pk, NULL, ret_keyblock );
+	free_public_key( pk );
+    }
+    else
+	rc = key_byname( retctx, names, pk, NULL, ret_keyblock );
+
     return rc;
 }
 
@@ -552,13 +714,13 @@ get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
     int rc;
 
     if( !pk ) {
-	/* fixme: lookup_read should not need a pk in this case */
+	/* Performance Hint: lookup_read should not need a pk in this case */
 	pk = m_alloc_clear( sizeof *pk );
-	rc = lookup_read( ctx, pk, ret_keyblock );
+	rc = lookup_pk( ctx, pk, ret_keyblock );
 	free_public_key( pk );
     }
     else
-	rc = lookup_read( ctx, pk, ret_keyblock );
+	rc = lookup_pk( ctx, pk, ret_keyblock );
     return rc;
 }
 
@@ -566,7 +728,11 @@ void
 get_pubkey_end( GETKEY_CTX ctx )
 {
     if( ctx ) {
-	lookup_close( ctx );
+	int n;
+
+	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
+	for(n=0; n < ctx->nitems; n++ )
+	    m_free( ctx->items[n].namebuf );
 	m_free( ctx );
     }
 }
@@ -579,8 +745,14 @@ get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint, size_t fprint_len)
 {
     int rc;
 
-    if( fprint_len == 20 || fprint_len == 16 )
-	rc = lookup( NULL, pk, fprint_len, NULL, fprint, NULL, 0 );
+    if( fprint_len == 20 || fprint_len == 16 ) {
+	struct getkey_ctx_s ctx;
+	memset( &ctx, 0, sizeof ctx );
+	ctx.nitems = 1;
+	ctx.items[0].mode = fprint_len;
+	memcpy( ctx.items[0].fprint, fprint, fprint_len );
+	rc = lookup_pk( &ctx, pk, NULL );
+    }
     else
 	rc = G10ERR_GENERAL; /* Oops */
     return rc;
@@ -597,8 +769,14 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
     int rc;
     PKT_public_key *pk = m_alloc_clear( sizeof *pk );
 
-    if( fprint_len == 20 || fprint_len == 16 )
-	rc = lookup( NULL, pk, fprint_len, NULL, fprint, ret_keyblock, 0 );
+    if( fprint_len == 20 || fprint_len == 16 ) {
+	struct getkey_ctx_s ctx;
+	memset( &ctx, 0, sizeof ctx );
+	ctx.nitems = 1;
+	ctx.items[0].mode = fprint_len;
+	memcpy( ctx.items[0].fprint, fprint, fprint_len );
+	rc = lookup_pk( &ctx, pk, ret_keyblock );
+    }
     else
 	rc = G10ERR_GENERAL; /* Oops */
 
@@ -606,51 +784,7 @@ get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
     return rc;
 }
 
-/****************
- * Get a secret key and store it into sk
- */
-int
-get_seckey( PKT_secret_key *sk, u32 *keyid )
-{
-    int rc;
 
-    rc = lookup_sk( sk, 11, keyid, NULL, 0 );
-    if( !rc ) {
-	/* check the secret key (this may prompt for a passprase to
-	 * unlock the secret key
-	 */
-	rc = check_secret_key( sk, 0 );
-    }
-
-    return rc;
-}
-
-/****************
- * Get the primary secret key and store it into sk
- * Note: This function does not unprotect the key!
- */
-int
-get_primary_seckey( PKT_secret_key *sk, u32 *keyid )
-{
-    return lookup_sk( sk, 11, keyid, NULL, 1 );
-}
-
-/****************
- * Check whether the secret key is available
- * Returns: 0 := key is available
- *	    G10ERR_NO_SECKEY := not availabe
- */
-int
-seckey_available( u32 *keyid )
-{
-    PKT_secret_key *sk;
-    int rc;
-
-    sk = m_alloc_clear( sizeof *sk );
-    rc = lookup_sk( sk, 11, keyid, NULL, 0 );
-    free_secret_key( sk );
-    return rc;
-}
 
 
 
@@ -661,19 +795,170 @@ seckey_available( u32 *keyid )
 int
 get_seckey_byname( PKT_secret_key *sk, const char *name, int unprotect )
 {
+    STRLIST namelist = NULL;
     int rc;
 
-    if( !name && opt.def_secret_key && *opt.def_secret_key )
-	rc = key_byname( 1, NULL, NULL, sk, opt.def_secret_key, NULL );
-    else if( !name ) /* use the first one as default key */
-	rc = lookup_sk( sk, 15, NULL, NULL, 1 );
-    else
-	rc = key_byname( 1, NULL, NULL, sk, name, NULL );
+    if( !name && opt.def_secret_key && *opt.def_secret_key ) {
+	add_to_strlist( &namelist, opt.def_secret_key );
+	rc = key_byname( NULL, namelist, NULL, sk, NULL );
+    }
+    else if( !name ) { /* use the first one as default key */
+	struct getkey_ctx_s ctx;
+
+	memset( &ctx, 0, sizeof ctx );
+	ctx.primary = 1;
+	ctx.nitems = 1;
+	ctx.items[0].mode = 15;
+	rc = lookup_sk( &ctx, sk, NULL );
+    }
+    else {
+	add_to_strlist( &namelist, name );
+	rc = key_byname( NULL, namelist, NULL, sk, NULL );
+    }
+
+    free_strlist( namelist );
+
     if( !rc && unprotect )
 	rc = check_secret_key( sk, 0 );
 
     return rc;
 }
+
+int
+get_seckey_bynames( GETKEY_CTX *retctx, PKT_secret_key *sk,
+		    STRLIST names, KBNODE *ret_keyblock )
+{
+    int rc;
+
+    if( !sk ) {
+	/* Performance Hint: key_byname should not need a sk here */
+	sk = m_alloc_secure_clear( sizeof *sk );
+	rc = key_byname( retctx, names, NULL, sk, ret_keyblock );
+	free_secret_key( sk );
+    }
+    else
+	rc = key_byname( retctx, names, NULL, sk, ret_keyblock );
+
+    return rc;
+}
+
+
+int
+get_seckey_next( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
+{
+    int rc;
+
+    if( !sk ) {
+	/* Performance Hint: lookup_read should not need a pk in this case */
+	sk = m_alloc_secure_clear( sizeof *sk );
+	rc = lookup_sk( ctx, sk, ret_keyblock );
+	free_secret_key( sk );
+    }
+    else
+	rc = lookup_sk( ctx, sk, ret_keyblock );
+    return rc;
+}
+
+void
+get_seckey_end( GETKEY_CTX ctx )
+{
+    if( ctx ) {
+	int n;
+
+	enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
+	for(n=0; n < ctx->nitems; n++ )
+	    m_free( ctx->items[n].namebuf );
+	m_free( ctx );
+    }
+}
+
+
+
+/****************
+ * Do a word match (original user id starts with a '+').
+ * The pattern is already tokenized to a more suitable format:
+ * There are only the real words in it delimited by one space
+ * and all converted to uppercase.
+ *
+ * Returns: 0 if all words match.
+ *
+ * Note: This algorithm is a straightforward one and not very
+ *	 fast.	It works for UTF-8 strings.  The uidlen should
+ *	 be removed but due to the fact that old versions of
+ *	 pgp don't use UTF-8 we still use the length; this should
+ *	 be fixed in parse-packet (and replace \0 by some special
+ *	 UTF-8 encoding)
+ */
+static int
+word_match( const byte *uid, size_t uidlen, const byte *pattern )
+{
+    size_t wlen, n;
+    const byte *p;
+    const byte *s;
+
+    for( s=pattern; *s; ) {
+	do {
+	    /* skip leading delimiters */
+	    while( uidlen && !word_match_chars[*uid] )
+		uid++, uidlen--;
+	    /* get length of the word */
+	    n = uidlen; p = uid;
+	    while( n && word_match_chars[*p] )
+		p++, n--;
+	    wlen = p - uid;
+	    /* and compare against the current word from pattern */
+	    for(n=0, p=uid; n < wlen && s[n] != ' ' && s[n] ; n++, p++ ) {
+		if( word_match_chars[*p] != s[n] )
+		    break;
+	    }
+	    if( n == wlen && (s[n] == ' ' || !s[n]) )
+		break; /* found */
+	    uid += wlen;
+	    uidlen -= wlen;
+	} while( uidlen );
+	if( !uidlen )
+	    return -1; /* not found */
+
+	/* advance to next word in pattern */
+	for(; *s != ' ' && *s ; s++ )
+	    ;
+	if( *s )
+	    s++ ;
+    }
+    return 0; /* found */
+}
+
+/****************
+ * prepare word word_match; that is parse the name and
+ * build the pattern.
+ * caller has to free the returned pattern
+ */
+static char*
+prepare_word_match( const byte *name )
+{
+    byte *pattern, *p;
+    int c;
+
+    /* the original length is always enough for the pattern */
+    p = pattern = m_alloc(strlen(name)+1);
+    do {
+	/* skip leading delimiters */
+	while( *name && !word_match_chars[*name] )
+	    name++;
+	/* copy as long as we don't have a delimiter and convert
+	 * to uppercase.
+	 * fixme: how can we handle utf8 uppercasing */
+	for( ; *name &&  (c=word_match_chars[*name]); name++ )
+	    *p++ = c;
+	*p++ = ' '; /* append pattern delimiter */
+    } while( *name );
+    p[-1] = 0; /* replace last pattern delimiter by EOS */
+
+    return pattern;
+}
+
+
+
 
 
 static int
@@ -717,6 +1002,8 @@ compare_name( const char *uid, size_t uidlen, const char *name, int mode )
 	    }
 	}
     }
+    else if( mode == 6 )
+	return word_match( uid, uidlen, name );
     else
 	BUG();
 
@@ -897,6 +1184,45 @@ find_by_name( KBNODE keyblock, PKT_public_key *pk, const char *name,
     return NULL;
 }
 
+static KBNODE
+find_by_name_sk( KBNODE keyblock, PKT_secret_key *sk, const char *name,
+		 int mode )
+{
+    KBNODE k, kk;
+
+    for(k=keyblock; k; k = k->next ) {
+	if( k->pkt->pkttype == PKT_USER_ID
+	    && !compare_name( k->pkt->pkt.user_id->name,
+			      k->pkt->pkt.user_id->len, name, mode)) {
+	    /* we found a matching name, look for the key */
+	    for(kk=keyblock; kk; kk = kk->next ) {
+		if( (	 kk->pkt->pkttype == PKT_SECRET_KEY
+		      || kk->pkt->pkttype == PKT_SECRET_SUBKEY )
+		    && ( !sk->pubkey_algo
+			 || sk->pubkey_algo
+			    == kk->pkt->pkt.secret_key->pubkey_algo)
+		    && ( !sk->pubkey_usage
+			 || !check_pubkey_algo2(
+			       kk->pkt->pkt.secret_key->pubkey_algo,
+						   sk->pubkey_usage ))
+		  )
+		    break;
+	    }
+	    if( kk ) {
+		u32 aki[2];
+		keyid_from_sk( kk->pkt->pkt.secret_key, aki );
+		cache_user_id( k->pkt->pkt.user_id, aki );
+		return kk;
+	    }
+	    else if( is_RSA(sk->pubkey_algo) )
+		log_error("RSA key cannot be used in this version\n");
+	    else
+		log_error("No key for userid\n");
+	}
+    }
+    return NULL;
+}
+
 
 static KBNODE
 find_by_keyid( KBNODE keyblock, PKT_public_key *pk, u32 *keyid, int mode )
@@ -938,6 +1264,46 @@ find_by_keyid( KBNODE keyblock, PKT_public_key *pk, u32 *keyid, int mode )
     return NULL;
 }
 
+static KBNODE
+find_by_keyid_sk( KBNODE keyblock, PKT_secret_key *sk, u32 *keyid, int mode )
+{
+    KBNODE k;
+
+    if( DBG_CACHE )
+	log_debug("lookup_sk keyid=%08lx%08lx req_algo=%d mode=%d\n",
+		   (ulong)keyid[0], (ulong)keyid[1], sk->pubkey_algo, mode );
+
+    for(k=keyblock; k; k = k->next ) {
+	if(    k->pkt->pkttype == PKT_SECRET_KEY
+	    || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+	    u32 aki[2];
+	    keyid_from_sk( k->pkt->pkt.secret_key, aki );
+	    if( DBG_CACHE )
+		log_debug("         aki=%08lx%08lx algo=%d\n",
+				(ulong)aki[0], (ulong)aki[1],
+				 k->pkt->pkt.secret_key->pubkey_algo	);
+
+	    if( aki[1] == keyid[1]
+		&& ( mode == 10 || aki[0] == keyid[0] )
+		&& ( !sk->pubkey_algo
+		     || sk->pubkey_algo
+			== k->pkt->pkt.secret_key->pubkey_algo) ){
+		KBNODE kk;
+		/* cache the userid */
+		for(kk=keyblock; kk; kk = kk->next )
+		    if( kk->pkt->pkttype == PKT_USER_ID )
+			break;
+		if( kk )
+		    cache_user_id( kk->pkt->pkt.user_id, aki );
+		else
+		    log_error("No userid for key\n");
+		return k; /* found */
+	    }
+	}
+    }
+    return NULL;
+}
+
 
 static KBNODE
 find_first( KBNODE keyblock, PKT_public_key *pk )
@@ -950,6 +1316,23 @@ find_first( KBNODE keyblock, PKT_public_key *pk )
 	{
 	    if( !pk->pubkey_algo
 		|| pk->pubkey_algo == k->pkt->pkt.public_key->pubkey_algo )
+		return k;
+	}
+    }
+    return NULL;
+}
+
+static KBNODE
+find_first_sk( KBNODE keyblock, PKT_secret_key *sk )
+{
+    KBNODE k;
+
+    for(k=keyblock; k; k = k->next ) {
+	if(    k->pkt->pkttype == PKT_SECRET_KEY
+	    || k->pkt->pkttype == PKT_SECRET_SUBKEY )
+	{
+	    if( !sk->pubkey_algo
+		|| sk->pubkey_algo == k->pkt->pkt.secret_key->pubkey_algo )
 		return k;
 	}
     }
@@ -982,6 +1365,38 @@ find_by_fpr( KBNODE keyblock, PKT_public_key *pk, const char *name, int mode )
 		&& !memcmp( afp, name, an)
 		&& ( !pk->pubkey_algo
 		     || pk->pubkey_algo == k->pkt->pkt.public_key->pubkey_algo) )
+		return k;
+	}
+    }
+    return NULL;
+}
+
+static KBNODE
+find_by_fpr_sk( KBNODE keyblock, PKT_secret_key *sk,
+				 const char *name, int mode )
+{
+    KBNODE k;
+
+    for(k=keyblock; k; k = k->next ) {
+	if(    k->pkt->pkttype == PKT_SECRET_KEY
+	    || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+	    byte afp[MAX_FINGERPRINT_LEN];
+	    size_t an;
+
+	    fingerprint_from_sk(k->pkt->pkt.secret_key, afp, &an );
+
+	    if( DBG_CACHE ) {
+		u32 aki[2];
+		keyid_from_sk( k->pkt->pkt.secret_key, aki );
+		log_debug("         aki=%08lx%08lx algo=%d mode=%d an=%u\n",
+				(ulong)aki[0], (ulong)aki[1],
+			k->pkt->pkt.secret_key->pubkey_algo, mode, an );
+	    }
+
+	    if( an == mode
+		&& !memcmp( afp, name, an)
+		&& ( !sk->pubkey_algo
+		     || sk->pubkey_algo == k->pkt->pkt.secret_key->pubkey_algo) )
 		return k;
 	}
     }
@@ -1048,73 +1463,63 @@ finish_lookup( KBNODE keyblock, PKT_public_key *pk, KBNODE k, byte *namehash,
     }
 }
 
-/****************
- * Lookup a key by scanning all keyresources
- *   mode 1 = lookup by NAME (exact)
- *	  2 = lookup by NAME (substring)
- *	  3 = lookup by NAME (email address)
- *	  4 = email address (substring)
- *	  5 = email address (compare from end)
- *	 10 = lookup by short KEYID (don't care about keyid[0])
- *	 11 = lookup by long  KEYID
- *	 15 = Get the first key.
- *	 16 = lookup by 16 byte fingerprint which is stored in NAME
- *	 20 = lookup by 20 byte fingerprint which is stored in NAME
- * Caller must provide an empty PK, if the pubkey_algo is filled in, only
- * a key of this algo will be returned.
- * If ret_keyblock is not NULL, the complete keyblock is returned also
- * and the caller must release it.
- */
-static int
-lookup( GETKEY_CTX *retctx, PKT_public_key *pk, int mode, u32 *keyid,
-	const char *name, KBNODE *ret_keyblock, int primary )
-{
-    struct getkey_ctx_s help_ctx;
-    GETKEY_CTX ctx;
-    int rc;
-
-    if( !retctx )
-	ctx = &help_ctx;
-    else {
-	ctx = m_alloc( sizeof *ctx );
-	*retctx = ctx;
-    }
-
-    memset( ctx, 0, sizeof *ctx );
-    ctx->mode = mode;
-    if( keyid ) {
-	ctx->keyid[0] = keyid[0];
-	ctx->keyid[1] = keyid[1];
-    }
-    if( retctx ) {
-	ctx->namebuf = name? m_strdup(name) : NULL;
-	ctx->name = ctx->namebuf;
-    }
-    else
-	ctx->name = name;
-    ctx->primary = primary;
-    rc = lookup_read( ctx, pk, ret_keyblock );
-    if( !retctx )
-	lookup_close( ctx );
-    return rc;
-}
-
 static void
-lookup_close( GETKEY_CTX ctx )
+finish_lookup_sk( KBNODE keyblock, PKT_secret_key *sk, KBNODE k, int primary )
 {
-    enum_keyblocks( 2, &ctx->kbpos, NULL ); /* close */
-    m_free( ctx->namebuf );
+    assert(    k->pkt->pkttype == PKT_SECRET_KEY
+	    || k->pkt->pkttype == PKT_SECRET_SUBKEY );
+    assert( keyblock->pkt->pkttype == PKT_SECRET_KEY );
+    if( primary && !sk->pubkey_usage ) {
+	copy_secret_key( sk, keyblock->pkt->pkt.secret_key );
+    }
+    else {
+	if( primary && sk->pubkey_usage
+	    && check_pubkey_algo2( k->pkt->pkt.secret_key->pubkey_algo,
+		       sk->pubkey_usage ) == G10ERR_WR_PUBKEY_ALGO ) {
+	    /* if the usage is not correct, try to use a subkey */
+	    KBNODE save_k = k;
+
+	    k = NULL;
+	    /* kludge for pgp 5: which doesn't accept type 20:
+	     * try to use a type 16 subkey instead */
+	    if( sk->pubkey_usage == PUBKEY_USAGE_ENC ) {
+		for( k = save_k; k; k = k->next ) {
+		    if( k->pkt->pkttype == PKT_SECRET_SUBKEY
+			&& k->pkt->pkt.secret_key->pubkey_algo
+			    == PUBKEY_ALGO_ELGAMAL_E
+			&& !check_pubkey_algo2(
+				k->pkt->pkt.secret_key->pubkey_algo,
+						 sk->pubkey_usage ) )
+			break;
+		}
+	    }
+
+	    if( !k ) {
+		for(k = save_k ; k; k = k->next ) {
+		    if( k->pkt->pkttype == PKT_SECRET_SUBKEY
+			&& !check_pubkey_algo2(
+				k->pkt->pkt.secret_key->pubkey_algo,
+						 sk->pubkey_usage ) )
+			break;
+		}
+	    }
+	    if( !k )
+		k = save_k;
+	    else
+		log_info(_("using secondary key %08lX "
+			   "instead of primary key %08lX\n"),
+		      (ulong)keyid_from_sk( k->pkt->pkt.secret_key, NULL),
+		      (ulong)keyid_from_sk( save_k->pkt->pkt.secret_key, NULL)
+			);
+	}
+
+	copy_secret_key( sk, k->pkt->pkt.secret_key );
+    }
 }
 
-static int
-lookup_read( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
-{
-    int rc;
-    KBNODE k;
-    int oldmode = set_packet_list_mode(0);
-    byte namehash[20];
-    int use_namehash=0;
 
+/****** old code from lookup_read ******/
+#if 0 /* can't use it anymore - invent a more general approach */
     /* try the quick functions */
     if( !ctx->count ) {
 	k = NULL;
@@ -1157,39 +1562,60 @@ lookup_read( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
      *	      works, but the key was not found, we will not find it
      *	      in the other resources */
     if( rc == G10ERR_UNSUPPORTED ) {
-	if( !ctx->count )
-	    rc = enum_keyblocks( 0, &ctx->kbpos, &ctx->keyblock );
-	else
-	    rc = 0;
-	if( !rc ) {
-	    while( !(rc = enum_keyblocks( 1, &ctx->kbpos, &ctx->keyblock )) ) {
-		/* fixme: we don´t enum the complete keyblock, but
-		 * use the first match and that continue with the next keyblock
-		 */
-		if( ctx->mode < 10 )
-		    k = find_by_name( ctx->keyblock, pk, ctx->name, ctx->mode,
-						    namehash, &use_namehash);
-		else if( ctx->mode == 10 ||ctx-> mode == 11 )
-		    k = find_by_keyid( ctx->keyblock, pk, ctx->keyid,
-								ctx->mode );
-		else if( ctx->mode == 15 )
+    }
+#endif
+
+
+static int
+lookup_pk( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
+{
+    int rc;
+    KBNODE k;
+    int oldmode = set_packet_list_mode(0);
+    byte namehash[20];
+    int use_namehash=0;
+
+    if( !ctx->count ) /* first time */
+	rc = enum_keyblocks( 0, &ctx->kbpos, &ctx->keyblock );
+    else
+	rc = 0;
+    if( !rc ) {
+	while( !(rc = enum_keyblocks( 1, &ctx->kbpos, &ctx->keyblock )) ) {
+	    int n;
+	    getkey_item_t *item;
+	    /* fixme: we don't enum the complete keyblock, but
+	     * use the first match and then continue with the next keyblock
+	     */
+	    /* loop over all the user ids we want to look for */
+	    item = ctx->items;
+	    for(n=0; n < ctx->nitems; n++, item++ ) {
+		if( item->mode < 10 )
+		    k = find_by_name( ctx->keyblock, pk,
+				      item->name, item->mode,
+				      namehash, &use_namehash );
+		else if( item->mode == 10 || item->mode == 11 )
+		    k = find_by_keyid( ctx->keyblock, pk,
+				       item->keyid, item->mode );
+		else if( item->mode == 15 )
 		    k = find_first( ctx->keyblock, pk );
-		else if( ctx->mode == 16 || ctx->mode == 20 )
-		    k = find_by_fpr( ctx->keyblock, pk, ctx->name, ctx->mode );
+		else if( item->mode == 16 || item->mode == 20 )
+		    k = find_by_fpr( ctx->keyblock, pk,
+				     item->name, item->mode );
 		else
 		    BUG();
 		if( k ) {
 		    finish_lookup( ctx->keyblock, pk, k, namehash,
 						 use_namehash, ctx->primary );
-		    break; /* found */
+		    goto found;
 		}
-		release_kbnode( ctx->keyblock );
-		ctx->keyblock = NULL;
 	    }
+	    release_kbnode( ctx->keyblock );
+	    ctx->keyblock = NULL;
 	}
-	if( rc && rc != -1 )
-	    log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
+      found: ;
     }
+    if( rc && rc != -1 )
+	log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
 
     if( !rc ) {
 	if( ret_keyblock ) {
@@ -1203,6 +1629,7 @@ lookup_read( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
     release_kbnode( ctx->keyblock );
     ctx->keyblock = NULL;
     set_packet_list_mode(oldmode);
+  #if 0
     if( opt.debug & DBG_MEMSTAT_VALUE ) {
 	static int initialized;
 
@@ -1220,6 +1647,7 @@ lookup_read( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
 	else
 	    lkup_stats[ctx->mode].error_count++;
     }
+   #endif
 
     ctx->last_rc = rc;
     ctx->count++;
@@ -1227,144 +1655,214 @@ lookup_read( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock )
 }
 
 
-/****************
- * Ditto for secret keys
- */
+
 static int
-lookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name,
-	   int primary )
+lookup_sk( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock )
 {
     int rc;
-    KBNODE keyblock = NULL;
-    KBPOS kbpos;
+    KBNODE k;
     int oldmode = set_packet_list_mode(0);
 
-    rc = enum_keyblocks( 5 /* open secret */, &kbpos, &keyblock );
-    if( rc ) {
-	if( rc == -1 )
-	    rc = G10ERR_NO_SECKEY;
-	else if( rc )
-	    log_error("enum_keyblocks(open secret) failed: %s\n", g10_errstr(rc) );
-	goto leave;
-    }
-
-    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
-	KBNODE k, kk;
-	if( mode < 10 ) { /* name lookup */
-	    for(k=keyblock; k; k = k->next ) {
-		if( k->pkt->pkttype == PKT_USER_ID
-		    && !compare_name( k->pkt->pkt.user_id->name,
-				      k->pkt->pkt.user_id->len, name, mode)) {
-		    /* we found a matching name, look for the key */
-		    for(kk=keyblock; kk; kk = kk->next ) {
-			if( (	 kk->pkt->pkttype == PKT_SECRET_KEY
-			      || kk->pkt->pkttype == PKT_SECRET_SUBKEY )
-			    && ( !sk->pubkey_algo
-				 || sk->pubkey_algo
-				    == kk->pkt->pkt.secret_key->pubkey_algo)
-			    && ( !sk->pubkey_usage
-				 || !check_pubkey_algo2(
-				       kk->pkt->pkt.secret_key->pubkey_algo,
-							   sk->pubkey_usage ))
-			  )
-			    break;
-		    }
-		    if( kk ) {
-			u32 aki[2];
-			keyid_from_sk( kk->pkt->pkt.secret_key, aki );
-			cache_user_id( k->pkt->pkt.user_id, aki );
-			k = kk;
-			break;
-		    }
-		    else
-			log_error("No key for userid (in sk)\n");
+    if( !ctx->count ) /* first time */
+	rc = enum_keyblocks( 5, &ctx->kbpos, &ctx->keyblock );
+    else
+	rc = 0;
+    if( !rc ) {
+	while( !(rc = enum_keyblocks( 1, &ctx->kbpos, &ctx->keyblock )) ) {
+	    int n;
+	    getkey_item_t *item;
+	    /* fixme: we don't enum the complete keyblock, but
+	     * use the first match and then continue with the next keyblock
+	     */
+	    /* loop over all the user ids we want to look for */
+	    item = ctx->items;
+	    for(n=0; n < ctx->nitems; n++, item++ ) {
+		if( item->mode < 10 )
+		    k = find_by_name_sk( ctx->keyblock, sk,
+					 item->name, item->mode );
+		else if( item->mode == 10 || item->mode == 11 )
+		    k = find_by_keyid_sk( ctx->keyblock, sk,
+					  item->keyid, item->mode );
+		else if( item->mode == 15 )
+		    k = find_first_sk( ctx->keyblock, sk );
+		else if( item->mode == 16 || item->mode == 20 )
+		    k = find_by_fpr_sk( ctx->keyblock, sk,
+					item->name, item->mode );
+		else
+		    BUG();
+		if( k ) {
+		    finish_lookup_sk( ctx->keyblock, sk, k, ctx->primary );
+		    goto found;
 		}
 	    }
+	    release_kbnode( ctx->keyblock );
+	    ctx->keyblock = NULL;
 	}
-	else { /* keyid or fingerprint lookup */
-	    if( DBG_CACHE && (mode== 10 || mode==11) ) {
-		log_debug("lookup_sk keyid=%08lx%08lx req_algo=%d mode=%d\n",
-				(ulong)keyid[0], (ulong)keyid[1],
-				 sk->pubkey_algo, mode );
-	    }
-	    for(k=keyblock; k; k = k->next ) {
-		if(    k->pkt->pkttype == PKT_SECRET_KEY
-		    || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-		    if( mode == 10 || mode == 11 ) {
-			u32 aki[2];
-			keyid_from_sk( k->pkt->pkt.secret_key, aki );
-			if( DBG_CACHE ) {
-			    log_debug("             aki=%08lx%08lx algo=%d\n",
-					    (ulong)aki[0], (ulong)aki[1],
-				    k->pkt->pkt.secret_key->pubkey_algo    );
-			}
-			if( aki[1] == keyid[1]
-			    && ( mode == 10 || aki[0] == keyid[0] )
-			    && ( !sk->pubkey_algo
-				 || sk->pubkey_algo
-				    == k->pkt->pkt.secret_key->pubkey_algo) ){
-			    /* cache the userid */
-			    for(kk=keyblock; kk; kk = kk->next )
-				if( kk->pkt->pkttype == PKT_USER_ID )
-				    break;
-			    if( kk )
-				cache_user_id( kk->pkt->pkt.user_id, aki );
-			    else
-				log_error("No userid for key\n");
-			    break; /* found */
-			}
-		    }
-		    else if( mode == 15 ) { /* get the first key */
-			if( !sk->pubkey_algo
-			    || sk->pubkey_algo
-				  == k->pkt->pkt.secret_key->pubkey_algo )
-			    break;
-		    }
-		    else if( mode == 16 || mode == 20 ) {
-			size_t an;
-			byte afp[MAX_FINGERPRINT_LEN];
-
-			fingerprint_from_sk(k->pkt->pkt.secret_key, afp, &an );
-			if( an == mode && !memcmp( afp, name, an)
-			    && ( !sk->pubkey_algo
-				 || sk->pubkey_algo
-				    == k->pkt->pkt.secret_key->pubkey_algo) ) {
-			    break;
-			}
-		    }
-		    else
-			BUG();
-		} /* end compare secret keys */
-	    }
-	}
-	if( k ) { /* found */
-	    assert(    k->pkt->pkttype == PKT_SECRET_KEY
-		    || k->pkt->pkttype == PKT_SECRET_SUBKEY );
-	    assert( keyblock->pkt->pkttype == PKT_SECRET_KEY );
-	    if( primary && !sk->pubkey_usage )
-		copy_secret_key( sk, keyblock->pkt->pkt.secret_key );
-	    else
-		copy_secret_key( sk, k->pkt->pkt.secret_key );
-	    break; /* enumeration */
-	}
-	release_kbnode( keyblock );
-	keyblock = NULL;
+      found: ;
     }
-    if( rc == -1 )
-	rc = G10ERR_NO_SECKEY;
-    else if( rc )
-	log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
+    if( rc && rc != -1 )
+	log_error("enum_keyblocks failed: %s\n", g10_errstr(rc));
 
-  leave:
-    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
-    release_kbnode( keyblock );
+    if( !rc ) {
+	if( ret_keyblock ) {
+	    *ret_keyblock = ctx->keyblock;
+	    ctx->keyblock = NULL;
+	}
+    }
+    else if( rc == -1 )
+	rc = G10ERR_NO_PUBKEY;
+
+    release_kbnode( ctx->keyblock );
+    ctx->keyblock = NULL;
     set_packet_list_mode(oldmode);
+
+    ctx->last_rc = rc;
+    ctx->count++;
     return rc;
 }
 
 
+#if 0
+OLD/************
+OLD * Ditto for secret keys WORK!!!!!!
+OLD */
+OLDstatic int
+OLDlookup_sk( PKT_secret_key *sk, int mode,  u32 *keyid, const char *name,
+OLD	      int primary )
+OLD{
+OLD    int rc;
+OLD    KBNODE keyblock = NULL;
+OLD    KBPOS kbpos;
+OLD    int oldmode = set_packet_list_mode(0);
+OLD
+OLD    rc = enum_keyblocks( 5 /* open secret */, &kbpos, &keyblock );
+OLD    if( rc ) {
+OLD	   if( rc == -1 )
+OLD	       rc = G10ERR_NO_SECKEY;
+OLD	   else if( rc )
+OLD	       log_error("enum_keyblocks(open secret) failed: %s\n", g10_errstr(rc) );
+OLD	   goto leave;
+OLD    }
+OLD
+OLD    while( !(rc = enum_keyblocks( 1, &kbpos, &keyblock )) ) {
+OLD	   KBNODE k, kk;
+OLD	   if( mode < 10 ) { /* name lookup */
+OLD	       for(k=keyblock; k; k = k->next ) {
+OLD		   if( k->pkt->pkttype == PKT_USER_ID
+OLD		       && !compare_name( k->pkt->pkt.user_id->name,
+OLD					 k->pkt->pkt.user_id->len, name, mode)) {
+OLD		       /* we found a matching name, look for the key */
+OLD		       for(kk=keyblock; kk; kk = kk->next ) {
+OLD			   if( (    kk->pkt->pkttype == PKT_SECRET_KEY
+OLD				 || kk->pkt->pkttype == PKT_SECRET_SUBKEY )
+OLD			       && ( !sk->pubkey_algo
+OLD				    || sk->pubkey_algo
+OLD				       == kk->pkt->pkt.secret_key->pubkey_algo)
+OLD			       && ( !sk->pubkey_usage
+OLD				    || !check_pubkey_algo2(
+OLD					  kk->pkt->pkt.secret_key->pubkey_algo,
+OLD							      sk->pubkey_usage ))
+OLD			     )
+OLD			       break;
+OLD		       }
+OLD		       if( kk ) {
+OLD			   u32 aki[2];
+OLD			   keyid_from_sk( kk->pkt->pkt.secret_key, aki );
+OLD			   cache_user_id( k->pkt->pkt.user_id, aki );
+OLD			   k = kk;
+OLD			   break;
+OLD		       }
+OLD		       else
+OLD			   log_error("No key for userid (in sk)\n");
+OLD		   }
+OLD	       }
+OLD	   }
+OLD	   else { /* keyid or fingerprint lookup */
+OLD	       if( DBG_CACHE && (mode== 10 || mode==11) ) {
+OLD		   log_debug("lookup_sk keyid=%08lx%08lx req_algo=%d mode=%d\n",
+OLD				   (ulong)keyid[0], (ulong)keyid[1],
+OLD				    sk->pubkey_algo, mode );
+OLD	       }
+OLD	       for(k=keyblock; k; k = k->next ) {
+OLD		   if(	  k->pkt->pkttype == PKT_SECRET_KEY
+OLD		       || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+OLD		       if( mode == 10 || mode == 11 ) {
+OLD			   u32 aki[2];
+OLD			   keyid_from_sk( k->pkt->pkt.secret_key, aki );
+OLD			   if( DBG_CACHE ) {
+OLD			       log_debug("             aki=%08lx%08lx algo=%d\n",
+OLD					       (ulong)aki[0], (ulong)aki[1],
+OLD				       k->pkt->pkt.secret_key->pubkey_algo    );
+OLD			   }
+OLD			   if( aki[1] == keyid[1]
+OLD			       && ( mode == 10 || aki[0] == keyid[0] )
+OLD			       && ( !sk->pubkey_algo
+OLD				    || sk->pubkey_algo
+OLD				       == k->pkt->pkt.secret_key->pubkey_algo) ){
+OLD			       /* cache the userid */
+OLD			       for(kk=keyblock; kk; kk = kk->next )
+OLD				   if( kk->pkt->pkttype == PKT_USER_ID )
+OLD				       break;
+OLD			       if( kk )
+OLD				   cache_user_id( kk->pkt->pkt.user_id, aki );
+OLD			       else
+OLD				   log_error("No userid for key\n");
+OLD			       break; /* found */
+OLD			   }
+OLD		       }
+OLD		       else if( mode == 15 ) { /* get the first key */
+OLD			   if( !sk->pubkey_algo
+OLD			       || sk->pubkey_algo
+OLD				     == k->pkt->pkt.secret_key->pubkey_algo )
+OLD			       break;
+OLD		       }
+OLD		       else if( mode == 16 || mode == 20 ) {
+OLD			   size_t an;
+OLD			   byte afp[MAX_FINGERPRINT_LEN];
+OLD
+OLD			   fingerprint_from_sk(k->pkt->pkt.secret_key, afp, &an );
+OLD			   if( an == mode && !memcmp( afp, name, an)
+OLD			       && ( !sk->pubkey_algo
+OLD				    || sk->pubkey_algo
+OLD				       == k->pkt->pkt.secret_key->pubkey_algo) ) {
+OLD			       break;
+OLD			   }
+OLD		       }
+OLD		       else
+OLD			   BUG();
+OLD		   } /* end compare secret keys */
+OLD	       }
+OLD	   }
+OLD	   if( k ) { /* found */
+OLD	       assert(	  k->pkt->pkttype == PKT_SECRET_KEY
+OLD		       || k->pkt->pkttype == PKT_SECRET_SUBKEY );
+OLD	       assert( keyblock->pkt->pkttype == PKT_SECRET_KEY );
+OLD	       if( primary && !sk->pubkey_usage )
+OLD		   copy_secret_key( sk, keyblock->pkt->pkt.secret_key );
+OLD	       else
+OLD		   copy_secret_key( sk, k->pkt->pkt.secret_key );
+OLD	       break; /* enumeration */
+OLD	   }
+OLD	   release_kbnode( keyblock );
+OLD	   keyblock = NULL;
+OLD    }
+OLD    if( rc == -1 )
+OLD	   rc = G10ERR_NO_SECKEY;
+OLD    else if( rc )
+OLD	   log_error("enum_keyblocks(read) failed: %s\n", g10_errstr(rc));
+OLD
+OLD  leave:
+OLD    enum_keyblocks( 2, &kbpos, &keyblock ); /* close */
+OLD    release_kbnode( keyblock );
+OLD    set_packet_list_mode(oldmode);
+OLD    return rc;
+OLD}
+#endif
+
 
 /****************
+ * fixme: replace by the generic function
+ *
  * Enumerate all primary secret keys.  Caller must use these procedure:
  *  1) create a void pointer and initialize it to NULL
  *  2) pass this void pointer by reference to this function

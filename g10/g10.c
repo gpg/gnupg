@@ -60,7 +60,7 @@ enum cmd_and_opt_values { aNull = 0,
     oDryRun	  = 'n',
     oOutput	  = 'o',
     oQuiet	  = 'q',
-    oRemote	  = 'r',
+    oRecipient	  = 'r',
     aSign	  = 's',
     oTextmodeShort= 't',
     oUser	  = 'u',
@@ -215,9 +215,10 @@ static ARGPARSE_OPTS opts[] = {
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
     { oArmor, "armor",     0, N_("create ascii armored output")},
+    { oRecipient, "recipient", 2, N_("|NAME|encrypt for NAME")},
+    { oRecipient, "remote-user", 2, "@"},  /* old option name */
   #ifdef IS_G10
     { oUser, "local-user",2, N_("use this user-id to sign or decrypt")},
-    { oRemote, "remote-user", 2, N_("use this user-id for encryption")},
     { oCompress, NULL,	      1, N_("|N|set compress level N (0 disables)") },
     { oTextmodeShort, NULL,   0, "@"},
     { oTextmode, "textmode",  0, N_("use canonical text mode")},
@@ -552,7 +553,7 @@ main( int argc, char **argv )
     opt.max_cert_depth = 5;
     opt.homedir = getenv("GNUPGHOME");
     if( !opt.homedir || !*opt.homedir ) {
-      #ifdef __MINGW32__
+      #ifdef HAVE_DRIVE_LETTERS
 	opt.homedir = "c:/gnupg";
       #else
 	opt.homedir = "~/.gnupg";
@@ -758,7 +759,7 @@ main( int argc, char **argv )
 	  case oS2KCipher: s2k_cipher_string = m_strdup(pargs.r.ret_str); break;
 
 	#ifdef IS_G10
-	  case oRemote: /* store the remote users */
+	  case oRecipient: /* store the recipient */
 	    sl = m_alloc( sizeof *sl + strlen(pargs.r.ret_str));
 	    strcpy(sl->d, pargs.r.ret_str);
 	    sl->next = remusr;

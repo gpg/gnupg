@@ -100,6 +100,8 @@ case "${target}" in
         RANLIB="i386--mingw32-ranlib"
         ac_cv_have_dev_random=no
         AC_DEFINE(USE_RNDW32)
+        AC_DEFINE(USE_ONLY_8DOT3)
+        AC_DEFINE(HAVE_DRIVE_LETTERS)
         ;;
     *-*-hpux*)
         if test -z "$GCC" ; then

@@ -88,6 +88,11 @@
 #undef IPC_HAVE_SHM_LOCK
 #undef IPC_RMID_DEFERRED_RELEASE
 
+/* set this to limit filenames to the 8.3 format */
+#undef USE_ONLY_8DOT3
+/* defined if we must run on a stupid file system */
+#undef HAVE_DRIVE_LETTERS
+
 @BOTTOM@
 
 #include "g10defs.h"

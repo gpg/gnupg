@@ -31,10 +31,8 @@
 
 #define MAX_FINGERPRINT_LEN 20
 
+struct getkey_ctx_s;
 typedef struct getkey_ctx_s *GETKEY_CTX;
-#ifndef DEFINES_GETKEY_CTX
-struct getkey_ctx_s { char hidden[1]; };
-#endif
 
 /****************
  * A Keyblock is all packets which form an entire certificate;
@@ -135,6 +133,8 @@ void getkey_disable_caches(void);
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
 int get_pubkey_byname( GETKEY_CTX *rx, PKT_public_key *pk,
 		       const char *name, KBNODE *ret_keyblock );
+int get_pubkey_bynames( GETKEY_CTX *rx, PKT_public_key *pk,
+			STRLIST names, KBNODE *ret_keyblock );
 int get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock );
 void get_pubkey_end( GETKEY_CTX ctx );
 int get_seckey( PKT_secret_key *sk, u32 *keyid );
@@ -145,6 +145,10 @@ int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 						 size_t fprint_len );
 int seckey_available( u32 *keyid );
 int get_seckey_byname( PKT_secret_key *sk, const char *name, int unlock );
+int get_seckey_bynames( GETKEY_CTX *rx, PKT_secret_key *sk,
+			STRLIST names, KBNODE *ret_keyblock );
+int get_seckey_next( GETKEY_CTX ctx, PKT_secret_key *sk, KBNODE *ret_keyblock );
+void get_seckey_end( GETKEY_CTX ctx );
 int enum_secret_keys( void **context, PKT_secret_key *sk, int with_subkeys );
 void merge_keys_and_selfsig( KBNODE keyblock );
 char*get_user_id_string( u32 *keyid );

@@ -47,3 +47,8 @@
 
     * Keep a list of duplicate, faked or unwanted keyids.
 
+    * use regular C strings for the user ids; this can be done because
+      OpenPGP requires them to be UTF-8 and we can replace a Null by
+      an UTF-8 character (which one?)
+
+

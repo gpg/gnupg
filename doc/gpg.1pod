@@ -253,7 +253,7 @@ B<--trusted-key>  I<keyid>
     time GnuPG starts up:  Use for I<keyid> the one of
     your key.
 
-B<-r>  I<name>, B<--remote-user>  I<name>
+B<-r>  I<name>, B<--recipient>	I<name>
     Use I<name> as the user-id for encryption.
     This option is silently ignored for the list commands,
     so that it can be used in an options file.

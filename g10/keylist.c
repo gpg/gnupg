@@ -36,7 +36,7 @@
 #include "i18n.h"
 
 static void list_all(int);
-static void list_one(const char *name, int secret);
+static void list_one( STRLIST names, int secret);
 static void list_keyblock( KBNODE keyblock, int secret );
 static void fingerprint( PKT_public_key *pk, PKT_secret_key *sk );
 
@@ -51,8 +51,11 @@ public_key_list( int nnames, char **names )
     if( !nnames )
 	list_all(0);
     else { /* List by user id */
+	STRLIST list = NULL;
 	for( ; nnames ; nnames--, names++ )
-	    list_one( *names, 0 );
+	    add_to_strlist( &list, *names );
+	list_one( list, 0 );
+	free_strlist( list );
     }
 }
 
@@ -62,8 +65,11 @@ secret_key_list( int nnames, char **names )
     if( !nnames )
 	list_all(1);
     else { /* List by user id */
+	STRLIST list = NULL;
 	for( ; nnames ; nnames--, names++ )
-	    list_one( *names, 1 );
+	    add_to_strlist( &list, *names );
+	list_one( list, 0 );
+	free_strlist( list );
     }
 }
 
@@ -111,36 +117,30 @@ list_all( int secret )
 
 
 static void
-list_one( const char *name, int secret )
+list_one( STRLIST names, int secret )
 {
     int rc = 0;
     KBNODE keyblock = NULL;
+    GETKEY_CTX ctx;
 
     if( secret ) {
-	KBPOS kbpos;
-
-	rc = secret? find_secret_keyblock_byname( &kbpos, name )
-		   : find_keyblock_byname( &kbpos, name );
+	rc = get_seckey_bynames( &ctx, NULL, names, &keyblock );
 	if( rc ) {
-	    log_error("%s: user not found\n", name );
+	    log_error("error reading key: %s\n",  g10_errstr(rc) );
+	    get_seckey_end( ctx );
 	    return;
 	}
-
-	rc = read_keyblock( &kbpos, &keyblock );
-	if( rc ) {
-	    log_error("%s: keyblock read problem: %s\n", name, g10_errstr(rc) );
-	    return;
-	}
-	merge_keys_and_selfsig( keyblock );
-	list_keyblock( keyblock, secret );
-	release_kbnode( keyblock );
+	do {
+	    merge_keys_and_selfsig( keyblock );
+	    list_keyblock( keyblock, 0 );
+	    release_kbnode( keyblock );
+	} while( !get_seckey_next( ctx, NULL, &keyblock ) );
+	get_seckey_end( ctx );
     }
     else {
-	GETKEY_CTX ctx;
-
-	rc = get_pubkey_byname( &ctx, NULL, name, &keyblock );
+	rc = get_pubkey_bynames( &ctx, NULL, names, &keyblock );
 	if( rc ) {
-	    log_error("%s: %s\n", name, g10_errstr(rc) );
+	    log_error("error reading key: %s\n", g10_errstr(rc) );
 	    get_pubkey_end( ctx );
 	    return;
 	}
@@ -380,6 +380,8 @@ list_keyblock( KBNODE keyblock, int secret )
 	    putchar(':');
 	putchar('\n');
     }
+    else if( !opt.with_colons )
+	putchar('\n');  /* separator line */
 }
 
 

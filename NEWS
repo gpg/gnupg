@@ -1,3 +1,8 @@
+
+    * changed the internal design of getkey which now allows a
+      efficient lookup of multiple keys and add a word match mode.
+
+
 Noteworthy changes in version 0.9.2
 -----------------------------------
 

@@ -1,3 +1,18 @@
+Sun Jan 24 18:16:26 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* getkey.c: Changed the internal design to allow simultaneous
+	lookup of multible user ids
+	(get_pubkey_bynames): New.
+	(get_seckey_bynames): New.
+	(get_seckey_next): New.
+	(get_seckey_end): New.
+	* keylist.c (list_one): Use the new functions.
+
+	* keylist.c (list_keyblock): add a newline for normal listings.
+
+	* g10.c (--recipient): New option name to replace --remote-user
+
+
 Wed Jan 20 18:59:49 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* textfilter.c: Mostly rewritten
