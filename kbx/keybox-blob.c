@@ -824,8 +824,12 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, KsbaCert cert,
       size_t n;
       n = gcry_sexp_canon_len (p, 0, NULL, NULL);
       if (!n)
-        return KEYBOX_General_Error;
+        {
+          xfree (p);
+          return KEYBOX_General_Error;
+        }
       blob->serialbuf = p;
+      p++;
       for (; n && *p != ':'; n--, p++)
         ;
       p++;
