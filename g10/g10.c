@@ -779,6 +779,17 @@ set_debug(void)
 }
 
 
+/* We need the home directory also in some other directories, so make
+   sure that both variables are always in sync. */
+static void
+set_homedir (char *dir)
+{
+  if (!dir)
+    dir = "";
+  g10_opt_homedir = opt.homedir = dir;
+}
+
+
 static void
 set_cmd( enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd )
 {
@@ -1122,13 +1133,13 @@ main( int argc, char **argv )
     opt.keyserver_options.include_subkeys=1;
     opt.keyserver_options.include_revoked=1;
 #if defined (__MINGW32__) || defined (__CYGWIN32__)
-    opt.homedir = read_w32_registry_string( NULL, "Software\\GNU\\GnuPG", "HomeDir" );
+    set_homedir ( read_w32_registry_string( NULL,
+                                    "Software\\GNU\\GnuPG", "HomeDir" ));
 #else
-    opt.homedir = getenv("GNUPGHOME");
+    set_homedir ( getenv("GNUPGHOME") );
 #endif
-    if( !opt.homedir || !*opt.homedir ) {
-	opt.homedir = GNUPG_HOMEDIR;
-    }
+    if( !*opt.homedir )
+	set_homedir ( GNUPG_HOMEDIR );
 
     /* check whether we have a config file on the commandline */
     orig_argc = argc;
@@ -1148,7 +1159,7 @@ main( int argc, char **argv )
 	else if( pargs.r_opt == oNoOptions )
 	    default_config = 0; /* --no-options */
 	else if( pargs.r_opt == oHomedir )
-	    opt.homedir = pargs.r.ret_str;
+	    set_homedir ( pargs.r.ret_str );
 	else if( pargs.r_opt == oNoPermissionWarn )
 	    opt.no_perm_warn=1;
       #ifdef USE_SHM_COPROCESSING
@@ -1173,7 +1184,7 @@ main( int argc, char **argv )
         for (d=buf,s=opt.homedir; *s; s++)
             *d++ = *s == '\\'? '/': *s;
         *d = 0;
-        opt.homedir = buf;
+        set_homedir (buf);
     }
 #endif
 #ifdef USE_SHM_COPROCESSING
@@ -1744,7 +1755,6 @@ main( int argc, char **argv )
     secmem_set_flags( secmem_get_flags() & ~2 ); /* resume warnings */
 
     set_debug();
-    g10_opt_homedir = opt.homedir;
 
     /* Do these after the switch(), so they can override settings. */
     if(opt.pgp2 && (opt.pgp6 || opt.pgp7))

@@ -1,3 +1,16 @@
+2002-09-28  David Shaw  <dshaw@jabberwocky.com>
+
+	* export.c (do_export_stream): Comment.
+
+	* sig-check.c (check_key_signature2): Properly handle a
+	non-designated revocation import.
+
+2002-09-26  Werner Koch  <wk@gnupg.org>
+
+	* g10.c (set_homedir): New. Changed all direct assignments to use
+	this.
+	* gpgv.c (set_homedir): Ditto.
+
 2002-09-25  David Shaw  <dshaw@jabberwocky.com>
 
 	* Makefile.am: Link gpg with EGDLIBS (i.e. NETLIBS) as EGD uses

@@ -265,10 +265,10 @@ do_export_stream( IOBUF out, STRLIST users, int secret,
 		  !node->pkt->pkt.signature->flags.exportable )
 		continue; /* not exportable */
 
-	      /* do not export packets with a "sensitive" revocation
-                 key.  This will need revisiting when we start
-                 supporting creating revocation keys and not just
-                 reading them. */
+	      /* Do not export packets with a "sensitive" revocation
+                 key unless the user wants us to.  Note that we do
+                 export these when issuing the actual revocation (see
+                 revoke.c). */
 	      if( !(options&EXPORT_INCLUDE_SENSITIVE_REVKEYS) &&
 		  node->pkt->pkt.signature->revkey ) {
 		int i;

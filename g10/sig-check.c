@@ -521,8 +521,11 @@ check_key_signature2( KBNODE root, KBNODE node, int *is_selfsig,
 	return rc;
 
     if( sig->sig_class == 0x20 ) { /* key revocation */
-        /* designated revoker? */
-        if(pk->keyid[0]!=sig->keyid[0] || pk->keyid[1]!=sig->keyid[1])
+        u32 keyid[2];	
+	keyid_from_pk( pk, keyid );
+
+	/* is it a designated revoker? */
+        if(keyid[0]!=sig->keyid[0] || keyid[1]!=sig->keyid[1])
 	  rc=check_revocation_keys(pk,sig);
 	else
 	  {
