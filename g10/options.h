@@ -259,7 +259,7 @@ struct {
 #define LIST_SHOW_USER_NOTATIONS         (1<<3)
 #define LIST_SHOW_NOTATIONS (LIST_SHOW_STD_NOTATIONS|LIST_SHOW_USER_NOTATIONS)
 #define LIST_SHOW_KEYSERVER_URLS         (1<<4)
-#define LIST_SHOW_VALIDITY               (1<<5)
+#define LIST_SHOW_UID_VALIDITY           (1<<5)
 #define LIST_SHOW_UNUSABLE_UIDS          (1<<6)
 #define LIST_SHOW_UNUSABLE_SUBKEYS       (1<<7)
 #define LIST_SHOW_KEYRING                (1<<8)

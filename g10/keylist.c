@@ -602,10 +602,6 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
     int any=0;
     struct sig_stats *stats=opaque;
     int skip_sigs=0;
-    int newformat=((opt.list_options&LIST_SHOW_VALIDITY) && !secret)
-      || (opt.list_options & (LIST_SHOW_UNUSABLE_UIDS
-			      | LIST_SHOW_UNUSABLE_SUBKEYS))
-      || (keystrlen()>10);
 
     /* get the keyid from the keyblock */
     node = find_kbnode( keyblock, secret? PKT_SECRET_KEY : PKT_PUBLIC_KEY );
@@ -620,51 +616,51 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	pk = NULL;
 	sk = node->pkt->pkt.secret_key;
 
-        printf("sec%c  %4u%c/%s %s%s",(sk->protect.s2k.mode==1001)?'#':
+        printf("sec%c  %4u%c/%s %s",(sk->protect.s2k.mode==1001)?'#':
 	       (sk->protect.s2k.mode==1002)?'>':' ',
 	       nbits_from_sk( sk ),pubkey_letter( sk->pubkey_algo ),
-	       keystr_from_sk(sk),datestr_from_sk( sk ),newformat?"":" " );
+	       keystr_from_sk(sk),datestr_from_sk( sk ));
 
-	if(newformat && sk->expiredate )
+	if(sk->has_expired)
+	  printf(_(" [expired: %s]"), expirestr_from_sk( sk ) );
+	else if(sk->expiredate )
 	  printf(_(" [expires: %s]"), expirestr_from_sk( sk ) );
+
+	printf("\n");
       }
     else
       {
-#if 0
-	int validity;
-#endif
 	pk = node->pkt->pkt.public_key;
 	sk = NULL;
 
-#if 0
-	validity=get_validity(pk,NULL);
-#endif
-
 	check_trustdb_stale();
 
-	printf("pub   %4u%c/%s %s%s",
+	printf("pub   %4u%c/%s %s",
 	       nbits_from_pk(pk),pubkey_letter(pk->pubkey_algo),
-	       keystr_from_pk(pk),datestr_from_pk( pk ),newformat?"":" " );
+	       keystr_from_pk(pk),datestr_from_pk( pk ));
 
 	/* We didn't include this before in the key listing, but there
 	   is room in the new format, so why not? */
-	if(newformat)
-	  {
-	    if(pk->is_revoked)
-	      printf(_(" [revoked: %s]"), revokestr_from_pk( pk ) );
-	    else if(pk->has_expired)
-	      printf(_(" [expired: %s]"), expirestr_from_pk( pk ) );
-	    else if(pk->expiredate)
-	      printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
-	  }
+
+	if(pk->is_revoked)
+	  printf(_(" [revoked: %s]"), revokestr_from_pk( pk ) );
+	else if(pk->has_expired)
+	  printf(_(" [expired: %s]"), expirestr_from_pk( pk ) );
+	else if(pk->expiredate)
+	  printf(_(" [expires: %s]"), expirestr_from_pk( pk ) );
 
 #if 0
 	/* I need to think about this some more.  It's easy enough to
 	   include, but it looks sort of confusing in the
 	   listing... */
 	if(opt.list_options&LIST_SHOW_VALIDITY)
-	  printf(" [%s]",trust_value_to_string(validity));
+	  {
+	    int validity=get_validity(pk,NULL);
+	    printf(" [%s]",trust_value_to_string(validity));
+	  }
 #endif
+
+	printf("\n");
       }
 
     for( kbctx=NULL; (node=walk_kbnode( keyblock, &kbctx, 0)) ; ) {
@@ -683,11 +679,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 	    if(attrib_fp && uid->attrib_data!=NULL)
 	      dump_attribs(uid,pk,sk);
 
-	    if(!any && newformat)
-	      printf("\n");
-
 	    if((uid->is_revoked || uid->is_expired)
-	       || ((opt.list_options&LIST_SHOW_VALIDITY) && pk))
+	       || ((opt.list_options&LIST_SHOW_UID_VALIDITY) && pk))
 	      {
 		const char *validity;
 		int indent;
@@ -706,10 +699,8 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 
 		printf("uid%*s[%s] ",indent,"",validity);
 	      }
-	    else if(newformat)
+	    else
 	      printf("uid%*s",keystrlen()+10,"");
-	    else if(any)
-	      printf("uid%*s",keystrlen()+21,"");
 
             print_utf8_string( stdout, uid->name, uid->len );
 	    putchar('\n');

@@ -1,3 +1,16 @@
+2004-07-16  David Shaw  <dshaw@jabberwocky.com>
+
+	* keylist.c (list_keyblock_print): Always use the new listing
+	format where uids are always on a line for themselves.  Mark
+	expired secret keys as expired.
+
+	* options.h, g10.c (main): Rename list show-validity to
+	show-uid-validity as it only shows for uids.
+
+	* armor.c (armor_filter): Do not use padding to get us to 8 bytes
+	of header.  Rather, use 2+4 as two different chunks.  This avoids
+	a fake filename of "is".
+
 2004-07-15  David Shaw  <dshaw@jabberwocky.com>
 
 	* keyedit.c (sign_uids): Properly handle remaking a self-sig on

@@ -899,7 +899,7 @@ armor_filter( void *opaque, int control,
 			afx->pgp2mode = 1;
 		}
 		n=0;
-                /* first a gpg control packet */
+                /* First a gpg control packet... */
                 buf[n++] = 0xff; /* new format, type 63, 1 length byte */
                 n++;   /* see below */
                 memcpy(buf+n, sesmark, sesmarklen ); n+= sesmarklen;
@@ -919,17 +919,16 @@ armor_filter( void *opaque, int control,
                     buf[n++] = DIGEST_ALGO_SHA512;
                 buf[1] = n - 2;
 
-		/* followed by an invented plaintext packet.
+		/* ...followed by an invented plaintext packet.
 		   Amusingly enough, this packet is not compliant with
 		   2440 as the initial partial length is less than 512
 		   bytes.  Of course, we'll accept it anyway ;) */
 
 		buf[n++] = 0xCB; /* new packet format, type 11 */
-		buf[n++] = 0xE3; /* 2^3 */
+		buf[n++] = 0xE1; /* 2^1 == 2 bytes */
 		buf[n++] = 't';  /* canonical text mode */
-		buf[n++] = 2;	 /* namelength */
-		buf[n++] = 'i';  /* padding to get us to 2^3 bytes */
-		buf[n++] = 's';  /* this comment intentionally left blank */
+		buf[n++] = 0;	 /* namelength */
+		buf[n++] = 0xE2; /* 2^2 == 4 more bytes */
 		memset(buf+n, 0, 4); /* timestamp */
 		n += 4;
 	    }

@@ -2158,7 +2158,7 @@ main( int argc, char **argv )
 		  {"show-standard-notations",LIST_SHOW_STD_NOTATIONS,NULL},
 		  {"show-user-notations",LIST_SHOW_USER_NOTATIONS,NULL},
 		  {"show-keyserver-urls",LIST_SHOW_KEYSERVER_URLS,NULL},
-		  {"show-validity",LIST_SHOW_VALIDITY,NULL},
+		  {"show-uid-validity",LIST_SHOW_UID_VALIDITY,NULL},
 		  {"show-unusable-uids",LIST_SHOW_UNUSABLE_UIDS,NULL},
 		  {"show-unusable-subkeys",LIST_SHOW_UNUSABLE_SUBKEYS,NULL},
 		  {"show-keyring",LIST_SHOW_KEYRING,NULL},

@@ -2176,7 +2176,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		  tty_printf("[%8.8s] ",_("revoked"));
 		else if(uid->is_expired)
 		  tty_printf("[%8.8s] ",_("expired"));
-		else if(opt.list_options&LIST_SHOW_VALIDITY && primary)
+		else if(opt.list_options&LIST_SHOW_UID_VALIDITY && primary)
 		  tty_printf("[%8.8s] ",
 			     trust_value_to_string(get_validity(primary,uid)));
 		else if(indent)
