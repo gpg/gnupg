@@ -1,9 +1,13 @@
-2005-01-22  David Shaw  <dshaw@grover.jabberwocky.com>
+2005-01-24  David Shaw  <dshaw@jabberwocky.com>
+
+	* libcurl.m4: All versions of curl-config support --feature.
+
+2005-01-22  David Shaw  <dshaw@jabberwocky.com>
 
 	* libcurl.m4: Note that FTPS existed, but wasn't fully
 	standards-compliant until version 7.11.0.
 
-2005-01-17  David Shaw  <dshaw@grover.jabberwocky.com>
+2005-01-17  David Shaw  <dshaw@jabberwocky.com>
 
 	* libcurl.m4: Use LIBCURL_CPPFLAGS and not LIBCURL_INCLUDES to
 	match automake syntax.

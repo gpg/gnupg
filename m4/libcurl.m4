@@ -25,6 +25,9 @@
 # Note that xxx and yyy keep the same capitalization as in the
 # curl-config list (e.g. it's "HTTP" and not "http").
 #
+# Users may override the detected values by doing something like:
+# LIBCURL="-lcurl" LIBCURL_CPPFLAGS="-I/usr/myinclude" ./configure
+#
 # For the sake of sanity, this macro assumes that any libcurl that is
 # found is after version 7.7.2, the first version that included the
 # curl-config script.  Note that it is very important for people
@@ -110,10 +113,8 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
               esac
            fi
 
-           # Is it modern enough to have --feature?
-	   if test $_libcurl_version -ge 0 ; then
-	      _libcurl_features=`$_libcurl_config --feature`
-	   fi
+	   # All curl-config scripts support --feature
+	   _libcurl_features=`$_libcurl_config --feature`
 
            # Is it modern enough to have --protocols? (7.12.4)
 	   if test $_libcurl_version -ge 461828 ; then
