@@ -548,10 +548,10 @@ $ cat >foo <<EOF
      %commit
      %echo done
 EOF
-$ gpg --batch --gen-key -a foo
+$ gpg --batch --gen-key foo
  [...]
-$ gpg --no-default-keyring --secret-keyring foo.sec \
-				  --keyring foo.pub --list-secret-keys
+$ gpg --no-default-keyring --secret-keyring ./foo.sec \
+				  --keyring ./foo.pub --list-secret-keys
 /home/wk/work/gnupg-stable/scratch/foo.sec
 ------------------------------------------
 sec  1024D/915A878D 2000-03-09 Joe Tester (with stupid passphrase) <joe@foo.bar>
