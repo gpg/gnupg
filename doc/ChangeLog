@@ -1,3 +1,7 @@
+2002-08-22  David Shaw  <dshaw@jabberwocky.com>
+
+	* gpg.sgml: Clarify meaning of keyserver option include-revoked.
+
 2002-08-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* DETAILS: Clarify that trust letters 'q' and '-' can be treated
