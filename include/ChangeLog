@@ -1,3 +1,7 @@
+2003-12-03  David Shaw  <dshaw@jabberwocky.com>
+
+	* cipher.h: Make cipher list match 2440bis-09.
+
 2003-11-20  David Shaw  <dshaw@jabberwocky.com>
 
 	* util.h: Add prototype for match_multistr().
