@@ -1855,7 +1855,7 @@ main(int argc,char *argv[])
 #else
       fprintf(console,"gpgkeys: unable to make SSL connection: %s\n",
 	      "not built with LDAPS support");
-      fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+      fail_all(keylist,KEYSERVER_INTERNAL_ERROR);
       goto fail;
 #endif
     }
@@ -1922,7 +1922,7 @@ main(int argc,char *argv[])
 		    "not built with TLS support");
 	  if(use_tls==3)
 	    {
-	      fail_all(keylist,action,KEYSERVER_INTERNAL_ERROR);
+	      fail_all(keylist,KEYSERVER_INTERNAL_ERROR);
 	      goto fail;
 	    }
 #endif
@@ -1941,7 +1941,7 @@ main(int argc,char *argv[])
     {
       fprintf(console,"gpgkeys: internal LDAP bind error: %s\n",
 	      ldap_err2string(err));
-      fail_all(keylist,action,ldap_err_to_gpg_err(err));
+      fail_all(keylist,ldap_err_to_gpg_err(err));
       goto fail;
     }
   else
