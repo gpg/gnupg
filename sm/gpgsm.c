@@ -1065,6 +1065,7 @@ main ( int argc, char **argv)
 
         case oDefaultKey:
           /* fixme:opt.def_secret_key = pargs.r.ret_str;*/
+          log_info ("WARNING: --default-key has not yet been implemented\n");
           break;
         case oDefRecipient:
           if (*pargs.r.ret_str)
