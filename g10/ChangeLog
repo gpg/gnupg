@@ -1,3 +1,7 @@
+Tue Sep 15 17:52:55 1998  Werner Koch  (wk@(none))
+
+	* mainproc.c (check_sig_and_print): Replaced ascime by asctimestamp.
+
 Mon Sep 14 11:40:52 1998  Werner Koch  (wk@(none))
 
 	* seskey.c (make_session_key): Now detects weak keys.

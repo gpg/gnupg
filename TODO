@@ -1,4 +1,9 @@
 
+    * localize asctime()
+
+    * if --libdir is used, the extensions are put in a wrong place.
+      How does GNOME handle this or make a new option for this directory.
+
     * Should we use the ElGamal subkey if the DSA keyid is given?
       What about an option --loose-keyid-match?
 

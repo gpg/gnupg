@@ -39,6 +39,9 @@ add_days_to_timestamp( u32 stamp, u16 days )
     return stamp + days*86400L;
 }
 
+/****************
+ * Note: this function returns GMT
+ */
 const char *
 strtimestamp( u32 stamp )
 {
@@ -49,6 +52,26 @@ strtimestamp( u32 stamp )
     tp = gmtime( &atime );
     sprintf(buffer,"%04d-%02d-%02d",
 		    1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+    return buffer;
+}
+
+/****************
+ * Note: this function returns local time
+ */
+const char *
+asctimestamp( u32 stamp )
+{
+    static char buffer[30];
+    struct tm *tp;
+    time_t atime = stamp;
+
+    tp = localtime( &atime );
+  #ifdef HAVE_STRFTIME
+    mem2str( buffer, asctime(tp), DIM(buffer) );
+  #else
+    strftime( buffer, DIM(buffer)-1, "%c", tp );
+    buffer[DIM(buffer)-1] = 0;
+  #endif
     return buffer;
 }
 

@@ -829,7 +829,6 @@ static int
 check_sig_and_print( CTX c, KBNODE node )
 {
     PKT_signature *sig = node->pkt->pkt.signature;
-    time_t stamp = sig->timestamp;
     const char *astr, *tstr;
     int rc;
 
@@ -838,7 +837,7 @@ check_sig_and_print( CTX c, KBNODE node )
 	return 0;
     }
 
-    tstr = asctime(localtime (&stamp));
+    tstr = asctimestamp(sig->timestamp);
     astr = pubkey_algo_to_string( sig->pubkey_algo );
     log_info(_("Signature made %.*s using %s key ID %08lX\n"),
 	    (int)strlen(tstr)-1, tstr, astr? astr: "?", (ulong)sig->keyid[1] );
