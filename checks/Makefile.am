@@ -45,13 +45,13 @@ CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
 	     *.test.log options gpg_dearmor \
 	     pubring.gpg secring.gpg pubring.pkr secring.skr
-DISTCLEANFILES = pubring.gpg~
+DISTCLEANFILES = pubring.gpg~ random_seed
 
 
 all-local: prepared.stamp
 
 distclean-local:
-	./mkdemodirs --clean
+	$(srcdir)/mkdemodirs --clean
 
 prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 		./pubring.pkr ./secring.skr ./options ./gpg_dearmor \
