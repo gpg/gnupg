@@ -1,3 +1,7 @@
+2002-01-05  Werner Koch  <wk@gnupg.org>
+
+	* argparse.c (default_strusage): Set default copyright date to 2002.
+
 2002-01-02  Stefan Bellon  <sbellon@sbellon.de>
 
 	* iobuf.c [__riscos__]: Updated include file name.
