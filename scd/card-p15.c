@@ -136,7 +136,7 @@ p15_enum_keypairs (CARD card, int idx,
       log_info ("certificate for private key %d not found: %s\n",
                 idx, sc_strerror (rc));
       /* note, that we return the ID anyway */
-      rc = gpg_error (GPG_ERR_MISSING_CERTIFICATE);
+      rc = gpg_error (GPG_ERR_MISSING_CERT);
       goto return_keyid;
     }
   certinfo = tmpobj->data;
@@ -339,7 +339,7 @@ p15_prepare_key (CARD card, const char *keyidstr,
   if (rc < 0)
     {
       log_error ("private key not found: %s\n", sc_strerror(rc));
-      return gpg_error (GPG_ERR_NO_SECRET_KEY);
+      return gpg_error (GPG_ERR_NO_SECKEY);
     }
 
   rc = sc_pkcs15_find_pin_by_auth_id (card->p15card,
@@ -357,7 +357,7 @@ p15_prepare_key (CARD card, const char *keyidstr,
   rc = pincb (pincb_arg, pinobj->label, &pinvalue);
   if (rc)
     {
-      log_info ("PIN callback returned error: %s\n", gnupg_strerror (rc));
+      log_info ("PIN callback returned error: %s\n", gpg_strerror (rc));
       return rc;
     }
 

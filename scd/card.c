@@ -88,7 +88,7 @@ card_help_get_keygrip (KsbaCert cert, unsigned char *array)
 
 
 /* Create a new context for the card and figures out some basic
-   information of the card.  Detects whgether a PKCS_15 application is
+   information of the card.  Detects whether a PKCS_15 application is
    stored.
 
    Common errors: GPG_ERR_CARD_NOT_PRESENT */
@@ -98,6 +98,9 @@ card_open (CARD *rcard)
 #ifdef HAVE_OPENSC
   CARD card;
   int rc;
+
+  if (opt.disable_opensc)
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   card = xtrycalloc (1, sizeof *card);
   if (!card)
