@@ -518,18 +518,21 @@ else
 fi
 
 if test "$try_dynload" = yes ; then
-  AC_CHECK_FUNC(dlopen,,AC_CHECK_LIB(dl,dlopen,found_dlopen=yes))
+  _dl_save_libs=$LIBS
+  LIBS=""
+  AC_SEARCH_LIBS(dlopen,dl,found_dlopen=yes)
   if test x"$found_dlopen" = "xyes" ; then
     AC_DEFINE(USE_DYNAMIC_LINKING,1,[define to enable the use of extensions])
     AC_DEFINE(HAVE_DL_DLOPEN,1,
               [Defined when the dlopen function family is available])
-    AC_SUBST(DLLIBS,"-ldl")
+    DLLIBS=$LIBS
+  else
+    AC_MSG_WARN([dlopen not found.  Disabling extensions.])
   fi
-else
-  AC_MSG_CHECKING(for dynamic loading)
-  AC_MSG_RESULT(has been disabled)
+  LIBS=$_dl_save_libs
 fi
 
+AC_SUBST(DLLIBS)
 
 dnl Checks for header files.
 AC_HEADER_STDC

@@ -1,3 +1,8 @@
+2003-10-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac (DLLIBS): Work properly on platforms where dlopen
+	and friends are in libc instead of libdl.
+
 2003-10-21  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (PRINTABLE_OS_NAME): Remove special case for The
