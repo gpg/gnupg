@@ -4,7 +4,7 @@
 
 #info Checking detached signatures
 for i in $plain_files $data_files ; do
-    echo "$usrpass1" | run_gpg --passphrase-fd 0 -sb -o x --yes $i
-    run_gpg -o /dev/null --yes x  <$i || error "$i: bad signature"
+    echo "$usrpass1" | ./run-gpg --passphrase-fd 0 -sb -o x --yes $i
+    ./run-gpg -o /dev/null --yes x  <$i || error "$i: bad signature"
 done
 

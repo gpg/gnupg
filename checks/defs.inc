@@ -9,10 +9,21 @@ usrname1="one"
 usrpass1="def"
 usrname2="two"
 usrpass2=""
-plain_files="plain-1 plain-2 plain-3"
-data_files="data-500 data-9000 data-32000 data-80000"
+
+
+dsa_usrname1="pgp5"
+# we use the sub key because we do not yet have the logic to
+# to derive the first encryption key from a keyblock (I guess)
+dsa_usrname2="0xCB879DE9"
+
+dsa_keyrings="--keyring ./pubring.pkr --secret-keyring ./secring.skr"
+
+
+#plain_files="plain-1 plain-2 plain-3"
+plain_files="plain-1"
+#data_files="data-500 data-9000 data-32000 data-80000"
+data_files="data-500"
 exp_files=""
-#cleanup_files="x y z"
 
 
 #--------------------------------
@@ -46,23 +57,6 @@ chdir () {
 #add_cleanup () {
 #    cleanup_files="$cleanup_files $*"
 #}
-
-run_gpg () {
-    if ! eval ../g10/gpg --homedir . $* 2>err ; then
-	cat err >&2
-	echo "(../g10/gpg --homedir . $*) failed" >&2
-	exit 1
-    fi
-    grep -v 'gpg: Good signature from' err || true
-}
-
-run_gpgm () {
-    if ! eval ../g10/gpgm --homedir . $* ; then
-	echo "(../g10/gpgm --homedir . $*) failed" >&2
-	exit 1
-    fi
-}
-
 
 
 set -e

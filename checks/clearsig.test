@@ -12,8 +12,8 @@
 # I know that this does not work for random data files (due to large lines
 # or what ever) - I hope we can live with it.
 for i in $plain_files; do
-    echo "$usrpass1" | run_gpg --passphrase-fd 0 -sat -o x --yes $i
-    run_gpg -o y --yes x
+    echo "$usrpass1" | ./run-gpg --passphrase-fd 0 -sat -o x --yes $i
+    ./run-gpg -o y --yes x
     ../tools/clean-sat < $i > z
     head -c $[ $(cat y | wc -c) - 1 ] y | diff - z || error "$i: mismatch"
 done

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if ! ../g10/gpgm --homedir . $* 2>err.tmp.$$ ; then
+    echo "(../g10/gpgm --homedir . $*) failed" >&2
+    cat err.tmp.$$ >&2
+    rm err.tmp.$$
+    exit 1
+fi
+rm err.tmp.$$
+

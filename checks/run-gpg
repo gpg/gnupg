@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if ! ../g10/gpg --homedir . $* 2>err.tmp.$$ ; then
+    echo "(../g10/gpg --homedir . $*) failed" >&2
+    cat err.tmp.$$ >&2
+    rm err.tmp.$$
+    exit 1
+fi
+grep -v 'gpg: Good signature from' err.tmp.$$ || true
+rm err.tmp.$$
+

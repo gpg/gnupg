@@ -1,28 +1,31 @@
 ## Process this file with automake to create Makefile.in
 
-TESTS = version.test decrypt.test clearsig.test armsigs.test \
-	sigs.test armencrypt.test armencryptp.test \
-	encrypt.test encryptp.test signencrypt.test \
-	armsignencrypt.test armdetach.test detach.test \
+TESTS = version.test \
+	decrypt.test decrypt-dsa.test \
+	sigs.test sigs-dsa.test \
+	encrypt.test encrypt-dsa.test  \
+	clearsig.test encryptp.test detach.test \
+	armsigs.test armencrypt.test armencryptp.test \
+	signencrypt.test signencrypt-dsa.test \
+	armsignencrypt.test armdetach.test \
 	armdetachm.test detachm.test genkey1024.test
 
 
 TEST_FILES = pubring.asc secring.asc gnupg.asc plain-1 plain-2 plain-3o.asc \
-	     plain-1.asc plain-2.asc plain-3.asc \
+	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
 	     pubring.pkr.asc secring.skr.asc
 
 DATA_FILES = data-500 data-9000 data-32000 data-80000
 
-EXTRA_DIST = defs.inc $(TESTS) $(TEST_FILES)
+EXTRA_DIST = defs.inc run-gpg run-gpgm $(TESTS) $(TEST_FILES)
 CLEANFILES = prepared.stamp x y z out err  $(DATA_FILES)
 
 check: prepared.stamp
 
 prepared.stamp: pubring.gpg secring.gpg gnupg.sig plain-3 \
 		pubring.pkr secring.skr $(DATA_FILES)
-	@set -x; \
-	echo "def" | ../g10/gpg -v --no-operation; \
-	echo timestamp >./prepared.stamp
+	@echo "def" | ../g10/gpg -v --no-operation; \
+	 echo timestamp >./prepared.stamp
 
 pubring.gpg: pubring.asc
 	../g10/gpgm --yes --dearmor -o pubring.gpg pubring.asc
