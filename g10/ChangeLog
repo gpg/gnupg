@@ -1,3 +1,11 @@
+2003-05-21  Werner Koch  <wk@gnupg.org>
+
+	* progress.c (handle_progress)
+	* sign.c (write_plaintext_packet)
+	* encode.c (encode_simple,encode_crypt): Make sure that a filename
+	of "-" is considered to be stdin so that iobuf_get_filelength
+	won't get called.  This fixes bug 156 reported by Gregery Barton.
+
 2003-05-02  David Shaw  <dshaw@jabberwocky.com>
 
 	* packet.h, build-packet.c (build_sig_subpkt), export.c

@@ -1,5 +1,6 @@
 /* sign.c - sign data
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002,
+ *               2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -483,7 +484,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     }
 
     /* try to calculate the length of the data */
-    if (fname) {
+    if (fname && *fname && !(*fname=='-' && !fname[1])) {
         if( !(filesize = iobuf_get_filelength(inp)) )
             log_info (_("WARNING: `%s' is an empty file\n"), fname);
 

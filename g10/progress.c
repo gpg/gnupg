@@ -93,7 +93,7 @@ handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
   if (!is_status_enabled ())
     return;
 
-  if (name)
+  if (name && *name && !(*name == '-' && !name[1]))
     filesize = iobuf_get_filelength (inp);
   else if (opt.set_filesize)
     filesize = opt.set_filesize;
