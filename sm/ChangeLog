@@ -1,3 +1,9 @@
+2004-03-02  Werner Koch  <wk@gnupg.org>
+
+	* export.c (create_duptable, destroy_duptable)
+	(insert_duptable): New.
+	(gpgsm_export): Avoid duplicates.
+
 2004-02-26  Werner Koch  <wk@gnupg.org>
 
 	* certchain.c (compare_certs): New.

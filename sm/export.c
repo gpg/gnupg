@@ -44,6 +44,25 @@
 #endif
 
 
+/* A table tem to store a fingerprint used in a duplicates table.  We
+   don't need to hash here because a fingerprint is alrady a perfect
+   hash value.  This we use the most significant bits to index the
+   table and then use a linked list for the overflow.  Possible
+   enhancement for very large number of certictates: Add a second
+   level table and then resort to a linked list. */
+struct duptable_s
+{
+  struct duptable_s *next;
+
+  /* Note that we only need to store 19 bytes because the first byte
+     is implictly given by the table index (we require at least 8
+     bits). */
+  unsigned char fpr[19];
+};
+typedef struct duptable_s *duptable_t;
+#define DUPTABLE_BITS 12
+#define DUPTABLE_SIZE (1 << DUPTABLE_BITS)
+
 
 static void print_short_info (ksba_cert_t cert, FILE *fp);
 static gpg_error_t export_p12 (const unsigned char *certimg, size_t certimglen,
@@ -51,12 +70,74 @@ static gpg_error_t export_p12 (const unsigned char *certimg, size_t certimglen,
                                FILE **retfp);
 
 
+/* Create a table used to indetify duplicated certificates. */
+static duptable_t *
+create_duptable (void)
+{
+  return xtrycalloc (DUPTABLE_SIZE, sizeof (duptable_t));
+}
+
+static void
+destroy_duptable (duptable_t *table)
+{
+  int idx;
+  duptable_t t, t2;
+
+  if (table)
+    {
+      for (idx=0; idx < DUPTABLE_SIZE; idx++) 
+        for (t = table[idx]; t; t = t2)
+          {
+            t2 = t->next;
+            xfree (t);
+          }
+      xfree (table);
+    }
+}
+
+/* Insert the 20 byte fingerprint FPR into TABLE.  Sets EXITS to true
+   if the fingerprint already exists in the table. */
+static gpg_error_t
+insert_duptable (duptable_t *table, unsigned char *fpr, int *exists)
+{
+  size_t idx;
+  duptable_t t;
+  
+  *exists = 0;
+  idx = fpr[0];
+#if DUPTABLE_BITS > 16
+#error cannot handle a table larger than 16 bits
+#elif DUPTABLE_BITS > 8
+  idx <<= (DUPTABLE_BITS - 8);  
+  idx |= (fpr[1] & ~(~0 << 4)); 
+#endif  
+
+  for (t = table[idx]; t; t = t->next)
+    if (!memcmp (t->fpr, fpr+1, 19))
+      break;
+  if (t)
+    {
+      *exists = 1;
+      return 0;
+    }
+  /* Insert that fingerprint. */
+  t = xtrymalloc (sizeof *t);
+  if (!t)
+    return gpg_error_from_errno (errno);
+  memcpy (t->fpr, fpr+1, 19);
+  t->next = table[idx];
+  table[idx] = t;
+  return 0;
+}
+
+
+
 
 /* Export all certificates or just those given in NAMES. */
 void
 gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
 {
-  KEYDB_HANDLE hd;
+  KEYDB_HANDLE hd = NULL;
   KEYDB_SEARCH_DESC *desc = NULL;
   int ndesc;
   Base64Context b64writer = NULL;
@@ -66,6 +147,15 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
   int rc=0;
   int count = 0;
   int i;
+  duptable_t *dtable;
+
+  
+  dtable = create_duptable ();
+  if (!dtable)
+    {
+      log_error ("creating duplicates table failed: %s\n", strerror (errno));
+      goto leave;
+    }
 
   hd = keydb_new (0);
   if (!hd)
@@ -127,8 +217,8 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
       
   while (!(rc = keydb_search (hd, desc, ndesc)))
     {
-      const unsigned char *image;
-      size_t imagelen;
+      unsigned char fpr[20];
+      int exists;
 
       if (!names) 
         desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
@@ -140,53 +230,69 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
           goto leave;
         }
 
-      image = ksba_cert_get_image (cert, &imagelen);
-      if (!image)
-        {
-          log_error ("ksba_cert_get_image failed\n");
-          goto leave;
-        }
-
-      if (ctrl->create_pem)
-        {
-          if (count)
-            putc ('\n', fp);
-          print_short_info (cert, fp);
-          putc ('\n', fp);
-        }
-      count++;
-
-      if (!b64writer)
-        {
-          ctrl->pem_name = "CERTIFICATE";
-          rc = gpgsm_create_writer (&b64writer, ctrl, fp, &writer);
-          if (rc)
-            {
-              log_error ("can't create writer: %s\n", gpg_strerror (rc));
-              goto leave;
-            }
-        }
-
-      rc = ksba_writer_write (writer, image, imagelen);
+      gpgsm_get_fingerprint (cert, 0, fpr, NULL);
+      rc = insert_duptable (dtable, fpr, &exists);
       if (rc)
         {
-          log_error ("write error: %s\n", gpg_strerror (rc));
+          log_error ("inserting into duplicates table fauiled: %s\n",
+                     gpg_strerror (rc));
           goto leave;
         }
 
-      if (ctrl->create_pem)
+      if (!exists)
         {
-          /* We want one certificate per PEM block */
-          rc = gpgsm_finish_writer (b64writer);
-          if (rc) 
+          const unsigned char *image;
+          size_t imagelen;
+
+          image = ksba_cert_get_image (cert, &imagelen);
+          if (!image)
             {
-              log_error ("write failed: %s\n", gpg_strerror (rc));
+              log_error ("ksba_cert_get_image failed\n");
               goto leave;
             }
-          gpgsm_destroy_writer (b64writer);
-          b64writer = NULL;
+
+
+          if (ctrl->create_pem)
+            {
+              if (count)
+                putc ('\n', fp);
+              print_short_info (cert, fp);
+              putc ('\n', fp);
+            }
+          count++;
+
+          if (!b64writer)
+            {
+              ctrl->pem_name = "CERTIFICATE";
+              rc = gpgsm_create_writer (&b64writer, ctrl, fp, &writer);
+              if (rc)
+                {
+                  log_error ("can't create writer: %s\n", gpg_strerror (rc));
+                  goto leave;
+                }
+            }
+
+          rc = ksba_writer_write (writer, image, imagelen);
+          if (rc)
+            {
+              log_error ("write error: %s\n", gpg_strerror (rc));
+              goto leave;
+            }
+
+          if (ctrl->create_pem)
+            {
+              /* We want one certificate per PEM block */
+              rc = gpgsm_finish_writer (b64writer);
+              if (rc) 
+                {
+                  log_error ("write failed: %s\n", gpg_strerror (rc));
+                  goto leave;
+                }
+              gpgsm_destroy_writer (b64writer);
+              b64writer = NULL;
+            }
         }
-      
+
       ksba_cert_release (cert); 
       cert = NULL;
     }
@@ -207,6 +313,7 @@ gpgsm_export (CTRL ctrl, STRLIST names, FILE *fp)
   ksba_cert_release (cert);
   xfree (desc);
   keydb_release (hd);
+  destroy_duptable (dtable);
 }
 
 
@@ -227,6 +334,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, FILE *fp)
   char buffer[1024];
   int  nread;
   FILE *datafp = NULL;
+
 
   hd = keydb_new (0);
   if (!hd)
