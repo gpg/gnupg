@@ -1,3 +1,8 @@
+2002-11-12  Werner Koch  <wk@gnupg.org>
+
+	* config.sub, config.guess: Updated from ftp.gnu.org/gnu/config
+	to version 2002-11-08.
+
 2002-10-31  David Shaw  <dshaw@jabberwocky.com>
 
 	* gnupg.spec.in: Update source ftp path.
