@@ -1,5 +1,5 @@
 /* gpgsplit.c - An OpenPGP packet splitting tool
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -34,6 +34,9 @@
 # include <fcntl.h> /* for setmode() */
 #endif
 #include <zlib.h>
+#ifdef HAVE_BZIP2
+#include <bzlib.h>
+#endif /* HAVE_BZIP2 */
 #ifdef __riscos__
 # include "zlib-riscos.h"
 # include <unixlib/local.h>
@@ -366,6 +369,159 @@ public_key_length (const unsigned char *buf, size_t buflen)
   return s - buf;
 }
 
+static int
+handle_zlib(int algo,FILE *fpin,FILE *fpout)
+{
+  z_stream zs;
+  byte *inbuf, *outbuf;
+  unsigned int inbufsize, outbufsize;
+  int c,zinit_done, zrc, nread, count;
+  size_t n;
+              
+  memset (&zs, 0, sizeof zs);
+  inbufsize = 2048;
+  inbuf = m_alloc (inbufsize);
+  outbufsize = 8192;
+  outbuf = m_alloc (outbufsize);
+  zs.avail_in = 0;
+  zinit_done = 0;
+              
+  do
+    {
+      if (zs.avail_in < inbufsize)
+	{
+	  n = zs.avail_in;
+	  if (!n)
+	    zs.next_in = (Bytef *) inbuf;
+	  count = inbufsize - n;
+	  for (nread=0;
+	       nread < count && (c=getc (fpin)) != EOF;
+	       nread++) 
+	    inbuf[n+nread] = c;
+                      
+	  n += nread;
+	  if (nread < count && algo == 1) 
+	    {
+	      inbuf[n] = 0xFF; /* chew dummy byte */
+	      n++;
+	    }
+	  zs.avail_in = n;
+	}
+      zs.next_out = (Bytef *) outbuf;
+      zs.avail_out = outbufsize;
+                    
+      if (!zinit_done) 
+	{
+	  zrc = (algo == 1? inflateInit2 ( &zs, -13)
+		 : inflateInit ( &zs ));
+	  if (zrc != Z_OK) 
+	    {
+	      log_fatal ("zlib problem: %s\n", zs.msg? zs.msg :
+			 zrc == Z_MEM_ERROR ? "out of core" :
+			 zrc == Z_VERSION_ERROR ?
+			 "invalid lib version" :
+			 "unknown error" );
+	    }
+	  zinit_done = 1;
+	}
+      else
+	{
+#ifdef Z_SYNC_FLUSH
+	  zrc = inflate (&zs, Z_SYNC_FLUSH);
+#else
+	  zrc = inflate (&zs, Z_PARTIAL_FLUSH);
+#endif
+	  if (zrc == Z_STREAM_END)
+	    ; /* eof */
+	  else if (zrc != Z_OK && zrc != Z_BUF_ERROR)
+	    {
+	      if (zs.msg)
+		log_fatal ("zlib inflate problem: %s\n", zs.msg );
+	      else
+		log_fatal ("zlib inflate problem: rc=%d\n", zrc );
+	    }
+	  for (n=0; n < outbufsize - zs.avail_out; n++) 
+	    {
+	      if (putc (outbuf[n], fpout) == EOF )
+		return 1;
+	    }
+	}
+    } 
+  while (zrc != Z_STREAM_END && zrc != Z_BUF_ERROR);
+  inflateEnd (&zs);
+
+  return 0;
+}
+
+#ifdef HAVE_BZIP2
+static int
+handle_bzip2(int algo,FILE *fpin,FILE *fpout)
+{
+  bz_stream bzs;
+  byte *inbuf, *outbuf;
+  unsigned int inbufsize, outbufsize;
+  int c,zinit_done, zrc, nread, count;
+  size_t n;
+              
+  memset (&bzs, 0, sizeof bzs);
+  inbufsize = 2048;
+  inbuf = m_alloc (inbufsize);
+  outbufsize = 8192;
+  outbuf = m_alloc (outbufsize);
+  bzs.avail_in = 0;
+  zinit_done = 0;
+              
+  do
+    {
+      if (bzs.avail_in < inbufsize)
+	{
+	  n = bzs.avail_in;
+	  if (!n)
+	    bzs.next_in = (Bytef *) inbuf;
+	  count = inbufsize - n;
+	  for (nread=0;
+	       nread < count && (c=getc (fpin)) != EOF;
+	       nread++) 
+	    inbuf[n+nread] = c;
+                      
+	  n += nread;
+	  if (nread < count && algo == 1) 
+	    {
+	      inbuf[n] = 0xFF; /* chew dummy byte */
+	      n++;
+	    }
+	  bzs.avail_in = n;
+	}
+      bzs.next_out = (Bytef *) outbuf;
+      bzs.avail_out = outbufsize;
+                    
+      if (!zinit_done) 
+	{
+	  zrc = BZ2_bzDecompressInit(&bzs,0,0);
+	  if (zrc != BZ_OK) 
+	    log_fatal ("bz2lib problem: %d\n",zrc);
+	  zinit_done = 1;
+	}
+      else
+	{
+	  zrc = BZ2_bzDecompress(&bzs);
+	  if (zrc == BZ_STREAM_END)
+	    ; /* eof */
+	  else if (zrc != BZ_OK && zrc != BZ_PARAM_ERROR)
+	    log_fatal ("bz2lib inflate problem: %d\n", zrc );
+	  for (n=0; n < outbufsize - bzs.avail_out; n++) 
+	    {
+	      if (putc (outbuf[n], fpout) == EOF )
+		return 1;
+	    }
+	}
+    } 
+  while (zrc != BZ_STREAM_END && zrc != BZ_PARAM_ERROR);
+  BZ2_bzDecompressEnd(&bzs);
+
+  return 0;
+}
+#endif /* HAVE_BZIP2 */
 
 /* hdr must point to a buffer large enough to hold all header bytes */
 static int
@@ -539,87 +695,26 @@ write_part ( const char *fname, FILE *fpin, unsigned long pktlen,
           hdrlen = 0;
           if (opt_uncompress) 
             {
-              z_stream zs;
-              byte *inbuf, *outbuf;
-              unsigned int inbufsize, outbufsize;
-              int algo, zinit_done, zrc, nread, count;
-              size_t n;
-              
               if ((c = getc (fpin)) == EOF)
                 goto read_error;
-              algo = c;
-                
-              memset (&zs, 0, sizeof zs);
-              inbufsize = 2048;
-              inbuf = m_alloc (inbufsize);
-              outbufsize = 8192;
-              outbuf = m_alloc (outbufsize);
-              zs.avail_in = 0;
-              zinit_done = 0;
-              
-              do
-                {
-                  if (zs.avail_in < inbufsize) 
-                    {
-                      n = zs.avail_in;
-                      if (!n)
-                        zs.next_in = (Bytef *) inbuf;
-                      count = inbufsize - n;
-                      for (nread=0;
-                           nread < count && (c=getc (fpin)) != EOF;
-                           nread++) 
-                        inbuf[n+nread] = c;
-                      
-                      n += nread;
-                      if (nread < count && algo == 1) 
-                        {
-                          inbuf[n] = 0xFF; /* chew dummy byte */
-                          n++;
-                        }
-                      zs.avail_in = n;
-                    }
-                  zs.next_out = (Bytef *) outbuf;
-                  zs.avail_out = outbufsize;
-                    
-                  if (!zinit_done) 
-                    {
-                      zrc = (algo == 1? inflateInit2 ( &zs, -13)
-                             : inflateInit ( &zs ));
-                      if (zrc != Z_OK) 
-                        {
-                          log_fatal ("zlib problem: %s\n", zs.msg? zs.msg :
-                                     zrc == Z_MEM_ERROR ? "out of core" :
-                                     zrc == Z_VERSION_ERROR ?
-                                     "invalid lib version" :
-                                     "unknown error" );
-                        }
-                      zinit_done = 1;
-                    }
-                  else
-                    {
-#ifdef Z_SYNC_FLUSH
-                      zrc = inflate (&zs, Z_SYNC_FLUSH);
-#else
-                      zrc = inflate (&zs, Z_PARTIAL_FLUSH);
-#endif
-                      if (zrc == Z_STREAM_END)
-                        ; /* eof */
-                      else if (zrc != Z_OK && zrc != Z_BUF_ERROR)
-                        {
-                          if (zs.msg)
-                            log_fatal ("zlib inflate problem: %s\n", zs.msg );
-                          else
-                            log_fatal ("zlib inflate problem: rc=%d\n", zrc );
-                        }
-                      for (n=0; n < outbufsize - zs.avail_out; n++) 
-                        {
-                          if (putc (outbuf[n], fpout) == EOF )
-                            goto write_error;
-                        }
-                    }
-                } 
-              while (zrc != Z_STREAM_END && zrc != Z_BUF_ERROR);
-              inflateEnd (&zs);
+
+	      if(c==1 || c==2)
+		{
+		  if(handle_zlib(c,fpin,fpout))
+		    goto write_error;
+		}
+#ifdef HAVE_BZIP2
+	      else if(c==3)
+		{
+		  if(handle_bzip2(c,fpin,fpout))
+		    goto write_error;
+		}
+#endif /* HAVE_BZIP2 */
+	      else
+		{
+		  log_error("invalid compression algorithm (%d)\n",c);
+		  goto read_error;
+		}
             }
           else
             {
@@ -631,7 +726,7 @@ write_part ( const char *fname, FILE *fpin, unsigned long pktlen,
             }
           if (!feof (fpin))
             goto read_error;
-        }
+	}
     }
 
   for (p=hdr; hdrlen; p++, hdrlen--) 
