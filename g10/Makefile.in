@@ -52,6 +52,8 @@ g10_SOURCES = g10.c		\
 	      free-packet.c	\
 	      getkey.c		\
 	      keydb.h		\
+	      pkclist.c 	\
+	      skclist.c 	\
 	      ringedit.c	\
 	      kbnode.c		\
 	      keygen.c		\
@@ -61,6 +63,8 @@ g10_SOURCES = g10.c		\
 	      mdfilter.c	\
 	      textfilter.c	\
 	      cipher.c		\
+	      elg.c		\
+	      rsa.c		\
 	      options.h 	\
 	      openfile.c	\
 	      keyid.c		\
@@ -94,10 +98,10 @@ LIBS = @LIBS@
 COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(LDFLAGS) -o $@
 g10_OBJECTS = g10.o build-packet.o compress.o encode.o encr-data.o \
-free-packet.o getkey.o ringedit.o kbnode.o keygen.o mainproc.o armor.o \
-mdfilter.o textfilter.o cipher.o openfile.o keyid.o parse-packet.o \
-passphrase.o plaintext.o pubkey-enc.o seckey-cert.o seskey.o sign.o \
-comment.o sig-check.o
+free-packet.o getkey.o pkclist.o skclist.o ringedit.o kbnode.o keygen.o \
+mainproc.o armor.o mdfilter.o textfilter.o cipher.o elg.o rsa.o \
+openfile.o keyid.o parse-packet.o passphrase.o plaintext.o pubkey-enc.o \
+seckey-cert.o seskey.o sign.o comment.o sig-check.o
 EXTRA_g10_SOURCES =
 g10_LDADD = $(LDADD)
 DIST_COMMON = Makefile.am Makefile.in
@@ -114,17 +118,19 @@ DEP_DISTFILES = $(DIST_COMMON) $(SOURCES) $(BUILT_SOURCES) $(HEADERS) \
 TAR = tar
 DEP_FILES = $(srcdir)/.deps/armor.P $(srcdir)/.deps/build-packet.P \
 $(srcdir)/.deps/cipher.P $(srcdir)/.deps/comment.P \
-$(srcdir)/.deps/compress.P $(srcdir)/.deps/encode.P \
-$(srcdir)/.deps/encr-data.P $(srcdir)/.deps/free-packet.P \
-$(srcdir)/.deps/g10.P $(srcdir)/.deps/getkey.P $(srcdir)/.deps/kbnode.P \
+$(srcdir)/.deps/compress.P $(srcdir)/.deps/elg.P \
+$(srcdir)/.deps/encode.P $(srcdir)/.deps/encr-data.P \
+$(srcdir)/.deps/free-packet.P $(srcdir)/.deps/g10.P \
+$(srcdir)/.deps/getkey.P $(srcdir)/.deps/kbnode.P \
 $(srcdir)/.deps/keygen.P $(srcdir)/.deps/keyid.P \
 $(srcdir)/.deps/mainproc.P $(srcdir)/.deps/mdfilter.P \
 $(srcdir)/.deps/openfile.P $(srcdir)/.deps/parse-packet.P \
-$(srcdir)/.deps/passphrase.P $(srcdir)/.deps/plaintext.P \
-$(srcdir)/.deps/pubkey-enc.P $(srcdir)/.deps/ringedit.P \
+$(srcdir)/.deps/passphrase.P $(srcdir)/.deps/pkclist.P \
+$(srcdir)/.deps/plaintext.P $(srcdir)/.deps/pubkey-enc.P \
+$(srcdir)/.deps/ringedit.P $(srcdir)/.deps/rsa.P \
 $(srcdir)/.deps/seckey-cert.P $(srcdir)/.deps/seskey.P \
 $(srcdir)/.deps/sig-check.P $(srcdir)/.deps/sign.P \
-$(srcdir)/.deps/textfilter.P
+$(srcdir)/.deps/skclist.P $(srcdir)/.deps/textfilter.P
 SOURCES = $(g10_SOURCES)
 OBJECTS = $(g10_OBJECTS)
 

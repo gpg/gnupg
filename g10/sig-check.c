@@ -106,14 +106,14 @@ signature_check( PKT_signature *sig, MD_HANDLE *digest )
 	}
 
 	if( sig->d.rsa.digest_algo == DIGEST_ALGO_RMD160 ) {
-	    static byte asn[18] = /* stored reverse FIXME: need other values*/
-		  { 0x10, 0x04, 0x00, 0x05, 0x05, 0x02, 0x0d, 0xf7, 0x86,
-		    0x48, 0x86, 0x2a, 0x08, 0x06, 0x0c, 0x30, 0x20, 0x30 };
+	    static byte asn[15] = /* stored reverse */
+		  { 0x14, 0x04, 0x00, 0x05, 0x01, 0x02, 0x03, 0x24, 0x2b,
+		    0x05, 0x06, 0x09, 0x30, 0x21, 0x30 };
 
-	    for(i=20,j=0; (c=mpi_getbyte(result, i)) != -1 && j < 18; i++, j++ )
+	    for(i=20,j=0; (c=mpi_getbyte(result, i)) != -1 && j < 15; i++, j++ )
 		if( asn[j] != c )
 		    break;
-	    if( j != 18 || mpi_getbyte(result, i) ) { /* ASN is wrong */
+	    if( j != 15 || mpi_getbyte(result, i) ) { /* ASN is wrong */
 		rc = G10ERR_BAD_PUBKEY;
 		goto leave;
 	    }

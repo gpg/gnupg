@@ -106,20 +106,24 @@ generate_elg_prime( unsigned pbits, unsigned qbits, MPI g )
 	    /* allocate new primes */
 	    for(i=0; i < m; i++ ) {
 		mpi_free(pool[i]);
-		pool[i] = gen_prime( fbits, 0, 2 );
+		pool[i] = NULL;
 	    }
 	    /* init m_out_of_n() */
 	    perms = m_alloc_clear( m );
 	    for(i=0; i < n; i++ ) {
 		perms[i] = 1;
+		pool[i] = gen_prime( fbits, 0, 2 );
 		factors[i] = pool[i];
 	    }
 	}
 	else {
 	    m_out_of_n( perms, n, m );
 	    for(i=j=0; i < m && j < n ; i++ )
-		if( perms[i] )
+		if( perms[i] ) {
+		    if( !pool[i] )
+			pool[i] = gen_prime( fbits, 0, 2 );
 		    factors[j++] = pool[i];
+		}
 	    if( i == n ) {
 		m_free(perms); perms = NULL;
 		fputc('!', stderr);

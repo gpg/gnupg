@@ -6,8 +6,6 @@
       function of iobuf.
     * check that all output is filtered when displayed.
     * add trust stuff
-    * make ttyio.c work (hide passwords etc..)
-    * use correct ASN values for DEK encoding
     * add checking of armor trailers
     * add real secure memory
     * look for a way to reuse RSA signatures

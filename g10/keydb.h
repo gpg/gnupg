@@ -55,7 +55,30 @@ struct keyblock_pos_struct {
 };
 typedef struct keyblock_pos_struct KBPOS;
 
+/* structure to hold a couple of public key certificates */
+typedef struct pkc_list *PKC_LIST;
+struct pkc_list {
+    PKC_LIST next;
+    PKT_public_cert *pkc;
+    int mark;
+};
 
+/* structure to hold a couple of secret key certificates */
+typedef struct skc_list *SKC_LIST;
+struct skc_list {
+    SKC_LIST next;
+    PKT_secret_cert *skc;
+    int mark;
+};
+
+
+/*-- pkclist.c --*/
+void release_pkc_list( PKC_LIST pkc_list );
+int  build_pkc_list( STRLIST remusr, PKC_LIST *ret_pkc_list );
+
+/*-- skclist.c --*/
+void release_skc_list( SKC_LIST skc_list );
+int  build_skc_list( STRLIST locusr, SKC_LIST *ret_skc_list, int unlock );
 
 /*-- passphrase.h --*/
 DEK *get_passphrase_hash( u32 *keyid, char *text );

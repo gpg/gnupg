@@ -1,4 +1,4 @@
-/* g10.c - The G10 re-install utility
+/* g10.c - The G10 utility
  *	Copyright (c) 1997 by Werner Koch (dd9jn)
  *
  * This file is part of G10.
@@ -327,13 +327,15 @@ main( int argc, char **argv )
       case aSign: /* sign the given file */
 	if( argc > 1 )
 	    usage(1);
-	if( (rc = sign_file(fname, detached_sig, locusr)) )
+	if( (rc = sign_file(fname, detached_sig, locusr, 0, NULL)) )
 	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
 	break;
 
       case aSignEncr: /* sign and encrypt the given file */
-	log_fatal("signing and encryption is not yet implemented\n");
-	usage(1);  /* FIXME */
+	if( argc > 1 )
+	    usage(1);
+	if( (rc = sign_file(fname, detached_sig, locusr, 1, remusr)) )
+	    log_error("sign_file('%s'): %s\n", fname_print, g10_errstr(rc) );
 	break;
 
 

@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <termios.h>
 #include <errno.h>
 #include <ctype.h>
 #include "util.h"
@@ -32,17 +33,35 @@
 static int last_prompt_len;
 
 static FILE *
-open_tty(void)
+open_tty(struct termios *termsave )
 {
+    struct termios term;
+
     FILE *tty = fopen("/dev/tty", "r");
     if( !tty )
 	log_fatal("cannot open /dev/tty: %s\n", strerror(errno) );
+
+    if( termsave ) { /* hide input */
+	if( tcgetattr(fileno(tty), termsave) )
+	    log_fatal("tcgetattr() failed: %s\n", strerror(errno) );
+	term = *termsave;
+	term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+	if( tcsetattr( fileno(tty), TCSAFLUSH, &term ) )
+	    log_fatal("tcsetattr() failed: %s\n", strerror(errno) );
+    }
+
+
     return tty;
 }
 
 static void
-close_tty( FILE *tty )
+close_tty( FILE *tty, struct termios *termsave )
 {
+    if( termsave ) {
+	if( tcsetattr(fileno(tty), TCSAFLUSH, termsave) )
+	    log_error("tcsetattr() failed: %s\n", strerror(errno) );
+	putc('\n', stderr);
+    }
     fclose(tty);
 }
 
@@ -82,18 +101,21 @@ tty_print_string( byte *p, size_t n )
 
 
 
-char *
-tty_get( const char *prompt )
+
+
+static char *
+do_get( const char *prompt, int hidden )
 {
     char *buf;
     int c, n, i;
     FILE *fp;
+    struct termios termsave;
 
     last_prompt_len = 0;
     tty_printf( prompt );
     buf = m_alloc(n=50);
     i = 0;
-    fp = open_tty();
+    fp = open_tty(hidden? &termsave: NULL);
     while( (c=getc(fp)) != EOF && c != '\n' ) {
 	last_prompt_len++;
 	if( c == '\t' )
@@ -106,15 +128,22 @@ tty_get( const char *prompt )
 	}
 	buf[i++] = c;
     }
-    close_tty(fp);
+    close_tty(fp, hidden? &termsave: NULL);
     buf[i] = 0;
     return buf;
+}
+
+
+char *
+tty_get( const char *prompt )
+{
+    return do_get( prompt, 0 );
 }
 
 char *
 tty_get_hidden( const char *prompt )
 {
-    return tty_get( prompt ); /* fixme */
+    return do_get( prompt, 1 );
 }
 
 

@@ -37,8 +37,9 @@ typedef struct {
     u32 crc;
     byte helpbuf[100];
     int  helpidx, helplen;
-    int last_c;
-    int fake;
+    byte tempbuf[100];
+    int  tempidx, templen;
+    void *fake;
     int inp_checked;   /* set if inp has been checked */
     int inp_bypass;    /* set if the input is not armored */
     int inp_eof;

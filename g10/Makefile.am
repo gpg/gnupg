@@ -14,6 +14,8 @@ g10_SOURCES = g10.c		\
 	      free-packet.c	\
 	      getkey.c		\
 	      keydb.h		\
+	      pkclist.c 	\
+	      skclist.c 	\
 	      ringedit.c	\
 	      kbnode.c		\
 	      keygen.c		\
@@ -23,6 +25,8 @@ g10_SOURCES = g10.c		\
 	      mdfilter.c	\
 	      textfilter.c	\
 	      cipher.c		\
+	      elg.c		\
+	      rsa.c		\
 	      options.h 	\
 	      openfile.c	\
 	      keyid.c		\

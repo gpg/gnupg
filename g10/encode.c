@@ -36,9 +36,8 @@
 #include "filter.h"
 
 
-
-
 static int encode_simple( const char *filename, int mode );
+
 
 
 /****************
@@ -157,43 +156,36 @@ encode_simple( const char *filename, int mode )
 int
 encode_crypt( const char *filename, STRLIST remusr )
 {
-    IOBUF inp, out;
+    IOBUF inp = NULL, out = NULL;
     PACKET pkt;
     PKT_plaintext *pt;
-    PKT_public_cert *pkc = NULL;
-    PKT_pubkey_enc  *enc = NULL;
-    int last_rc, rc = 0;
+    int rc = 0;
     u32 filesize;
     cipher_filter_context_t cfx;
     armor_filter_context_t afx;
     compress_filter_context_t zfx;
-    int any_names = 0;
-    STRLIST local_remusr = NULL;
-    char *ustr;
+    PKC_LIST pkc_list, pkc_rover;
 
     memset( &cfx, 0, sizeof cfx);
     memset( &afx, 0, sizeof afx);
     memset( &zfx, 0, sizeof zfx);
 
-    if( !remusr ) {
-	remusr = NULL; /* fixme: ask */
-	local_remusr = remusr;
-    }
+    if( (rc=build_pkc_list( remusr, &pkc_list)) )
+	return rc;
 
     /* prepare iobufs */
     if( !(inp = iobuf_open(filename)) ) {
 	log_error("can't open %s: %s\n", filename? filename: "[stdin]",
 					strerror(errno) );
-	free_strlist(local_remusr);
-	return G10ERR_OPEN_FILE;
+	rc = G10ERR_OPEN_FILE;
+	goto leave;
     }
     else if( opt.verbose )
-	log_error("reding from '%s'\n", filename? filename: "[stdin]");
+	log_error("reading from '%s'\n", filename? filename: "[stdin]");
 
     if( !(out = open_outfile( filename, opt.armor? 1:0 )) ) {
-	iobuf_close(inp);
-	free_strlist(local_remusr);
-	return G10ERR_CREATE_FILE;  /* or user said: do not overwrite */
+	rc = G10ERR_CREATE_FILE;  /* or user said: do not overwrite */
+	goto leave;
     }
 
     if( opt.armor )
@@ -211,98 +203,30 @@ encode_crypt( const char *filename, STRLIST remusr )
     if( DBG_CIPHER )
 	log_hexdump("DEK is: ", cfx.dek->key, cfx.dek->keylen );
 
-    /* loop over all user ids and build public key packets for each */
-    for(last_rc=0 ; remusr; remusr = remusr->next ) {
-	if( pkc )
-	    free_public_cert( pkc );
-	pkc = m_alloc_clear( sizeof *pkc );
-	pkc->pubkey_algo = DEFAULT_PUBKEY_ALGO;
+    /* loop over all public key certificates */
+    for( pkc_rover=pkc_list; pkc_rover; pkc_rover = pkc_rover->next ) {
+	PKT_public_cert *pkc;
+	PKT_pubkey_enc	*enc;
 
-	if( (rc = get_pubkey_byname( pkc, remusr->d )) ) {
-	    last_rc = rc;
-	    log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );
-	    continue;
-	}
-	/* build the pubkey packet */
+	pkc = pkc_rover->pkc;
 	enc = m_alloc_clear( sizeof *enc );
 	enc->pubkey_algo = pkc->pubkey_algo;
-	if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL ) {
-	    ELG_public_key pkey;
-	    MPI frame;
-
-	    enc->d.elg.a = mpi_alloc( mpi_get_nlimbs(pkc->d.elg.p) );
-	    enc->d.elg.b = mpi_alloc( mpi_get_nlimbs(pkc->d.elg.p) );
-	    keyid_from_pkc( pkc, enc->keyid );
-	    frame = encode_session_key( cfx.dek, mpi_get_nbits(pkc->d.elg.p) );
-	    pkey.p = pkc->d.elg.p;
-	    pkey.g = pkc->d.elg.g;
-	    pkey.y = pkc->d.elg.y;
-	    if( DBG_CIPHER )
-		log_mpidump("Plain DEK frame: ", frame);
-	    elg_encrypt( enc->d.elg.a, enc->d.elg.b, frame, &pkey);
-	    mpi_free( frame );
-	    if( DBG_CIPHER ) {
-		log_mpidump("Encry DEK a: ", enc->d.elg.a );
-		log_mpidump("      DEK b: ", enc->d.elg.b );
-	    }
-	    if( opt.verbose ) {
-		ustr = get_user_id_string( enc->keyid );
-		log_info("ElGamal encrypteded for: %s\n", ustr );
-		m_free(ustr);
-	    }
-	}
-      #ifdef HAVE_RSA_CIPHER
-	else if( enc->pubkey_algo == PUBKEY_ALGO_RSA ) {
-	    RSA_public_key pkey;
-
-	    keyid_from_pkc( pkc, enc->keyid );
-	    enc->d.rsa.rsa_integer = encode_session_key( cfx.dek,
-					mpi_get_nbits(pkc->d.rsa.rsa_n) );
-	    pkey.n = pkc->d.rsa.rsa_n;
-	    pkey.e = pkc->d.rsa.rsa_e;
-	    if( DBG_CIPHER )
-		log_mpidump("Plain DEK frame: ", enc->d.rsa.rsa_integer);
-	    rsa_public( enc->d.rsa.rsa_integer, enc->d.rsa.rsa_integer, &pkey);
-	    if( DBG_CIPHER )
-		log_mpidump("Encry DEK frame: ", enc->d.rsa.rsa_integer);
-	    if( opt.verbose ) {
-		ustr = get_user_id_string( enc->keyid );
-		log_info("RSA encrypteded for: %s\n", ustr );
-		m_free(ustr);
-	    }
-	}
-      #endif/*HAVE_RSA_CIPHER*/
-	else {
-	    last_rc = rc = G10ERR_PUBKEY_ALGO;
-	    log_error("skipped '%s': %s\n", remusr->d, g10_errstr(rc) );
-	    free_pubkey_enc(enc);
-	    continue;
-	}
+	if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL )
+	    g10_elg_encrypt( pkc, enc, cfx.dek );
+	else if( enc->pubkey_algo == PUBKEY_ALGO_RSA )
+	    g10_rsa_encrypt( pkc, enc, cfx.dek );
+	else
+	    log_bug(NULL);
 	/* and write it */
 	init_packet(&pkt);
 	pkt.pkttype = PKT_PUBKEY_ENC;
 	pkt.pkt.pubkey_enc = enc;
-	if( (rc = build_packet( out, &pkt )) ) {
-	    last_rc = rc;
-	    log_error("build pubkey_enc packet failed: %s\n", g10_errstr(rc) );
-	    free_pubkey_enc(enc);
-	    continue;
-	}
-	/* okay: a pubkey packet has been written */
+	rc = build_packet( out, &pkt );
 	free_pubkey_enc(enc);
-	any_names = 1;
-    }
-    if( pkc ) {
-	free_public_cert( pkc );
-	pkc = NULL;
-    }
-    if( !any_names ) {
-	log_error("no valid keys - aborting further processing\n");
-	iobuf_close(inp);
-	iobuf_cancel(out);
-	m_free(cfx.dek); /* free and burn the session key */
-	free_strlist(local_remusr);
-	return last_rc;
+	if( rc ) {
+	    log_error("build pubkey_enc packet failed: %s\n", g10_errstr(rc) );
+	    goto leave;
+	}
     }
 
     /* setup the inner packet */
@@ -335,14 +259,43 @@ encode_crypt( const char *filename, STRLIST remusr )
 	log_error("build_packet failed: %s\n", g10_errstr(rc) );
 
     /* finish the stuff */
+  leave:
     iobuf_close(inp);
-    iobuf_close(out); /* fixme: check returncode */
+    if( rc )
+	iobuf_cancel(out);
+    else
+	iobuf_close(out); /* fixme: check returncode */
     pt->buf = NULL;
     free_packet(&pkt);
     m_free(cfx.dek);
-    free_strlist(local_remusr);
+    release_pkc_list( pkc_list );
     return rc;
 }
 
 
+/****************
+ * Filter to do a complete public key encryption.
+ */
+ #if 0
+int
+encrypt_filter( void *opaque, int control,
+	       IOBUF a, byte *buf, size_t *ret_len)
+{
+    size_t size = *ret_len;
+    encrypt_filter_context_t *efx = opaque;
+    int rc=0;
+
+    if( control == IOBUFCTRL_UNDERFLOW ) { /* decrypt */
+	log_bug(NULL); /* not used */
+    }
+    else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
+    }
+    else if( control == IOBUFCTRL_FREE ) {
+    }
+    else if( control == IOBUFCTRL_DESC ) {
+	*(char**)buf = "encrypt_filter";
+    }
+    return rc;
+}
+  #endif
 
