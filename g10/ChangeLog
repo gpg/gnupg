@@ -1,3 +1,11 @@
+2003-01-02  Werner Koch  <wk@gnupg.org>
+
+	* keydb.c (keydb_add_resource): Don't assume that try_make_homedir
+	terminates but check again for the existence of the directory and
+	continue then.
+	* openfile.c (copy_options_file): Print a warning if the skeleton
+	file has active options.
+
 2002-12-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* getkey.c (merge_selfsigs_main), main.h, sig-check.c
@@ -7527,7 +7535,7 @@ Thu Feb 12 22:24:42 1998  Werner Koch  (wk@frodo)
 	* pubkey-enc.c (get_session_key): rewritten
 
 
- Copyright 1998,1999,2000,2001,2002 Free Software Foundation, Inc.
+ Copyright 1998,1999,2000,2001,2002,2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

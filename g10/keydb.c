@@ -1,5 +1,5 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -100,13 +100,13 @@ keydb_add_resource (const char *url, int flags, int secret)
 	    rt = KEYDB_RESOURCE_TYPE_KEYRING;
 	    resname += 11;
 	}
-      #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
+#if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
 	else if (strchr (resname, ':')) {
 	    log_error ("invalid key resource URL `%s'\n", url );
 	    rc = G10ERR_GENERAL;
 	    goto leave;
 	}
-      #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
+#endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
     }
 
     if (*resname != DIRSEP_C ) { /* do tilde expansion etc */
@@ -163,14 +163,21 @@ keydb_add_resource (const char *url, int flags, int secret)
 	    last_slash_in_filename = strrchr (filename, DIRSEP_C);
 	    *last_slash_in_filename = 0;
 	    if (access(filename, F_OK))
-              { /* on the first time we try to create the default
-		   homedir and in this case the process will be
-		   terminated, so that on the next invocation it can
-		   read the options file in on startup */
-		try_make_homedir (filename);
-		rc = G10ERR_OPEN_FILE;
-        	*last_slash_in_filename = DIRSEP_C;
-		goto leave;
+              { /* On the first time we try to create the default
+		   homedir and check again. */
+                static int tried;
+                
+                if (!tried)
+                  {
+                    tried = 1;
+                    try_make_homedir (filename);
+                  }
+         	if (access (filename, F_OK))
+                  {
+                    rc = G10ERR_OPEN_FILE;
+                    *last_slash_in_filename = DIRSEP_C;
+                    goto leave;
+                  }
               }
 	    *last_slash_in_filename = DIRSEP_C;
 
