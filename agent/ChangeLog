@@ -1,3 +1,7 @@
+2002-04-05  Werner Koch  <wk@gnupg.org>
+
+	* protect-tool.c (show_file): New.  Used as default action.
+
 2002-03-28  Werner Koch  <wk@gnupg.org>
 
 	* divert-scd.c (encode_md_for_card): Don't do the pkcs-1 padding,

@@ -366,6 +366,29 @@ show_shadow_info (const char *fname)
 }
 
 
+static void
+show_file (const char *fname)
+{
+  unsigned char *key;
+  size_t keylen;
+  char *p;
+  
+  key = read_key (fname);
+  if (!key)
+    return;
+  keylen = gcry_sexp_canon_len (key, 0, NULL,NULL);
+  assert (keylen);
+
+  p = make_advanced (key, keylen);
+  xfree (key);
+  if (p)
+    {
+      fwrite (p, strlen (p), 1, stdout);
+      xfree (p);
+    }
+}
+
+
 
 
 int
@@ -424,7 +447,7 @@ main (int argc, char **argv )
   else if (cmd == oShowShadowInfo)
     show_shadow_info (*argv);
   else
-    log_info ("no action requested\n");
+    show_file (*argv);
 
   return 0;
 }
