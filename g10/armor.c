@@ -575,7 +575,7 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 	      byte *buf, size_t size )
 {
     byte val;
-    int c, c2;
+    int c=0, c2; /*init c because gcc is not clever enough for the continue*/
     int checkcrc=0;
     int rc = 0;
     size_t n = 0;

@@ -1,3 +1,7 @@
+Wed Jan 20 21:40:21 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* http.c (http_wait_response): Moved the shutdown behind the dup
+
 Wed Jan 20 18:59:49 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* http.c (send_request): Removed double LF

@@ -22,6 +22,7 @@
 #include <string.h> /* for memcmp() */
 
 #include "types.h"  /* for byte and u32 typedefs */
+#include "util.h"
 #include "errors.h"
 
 

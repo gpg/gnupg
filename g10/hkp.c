@@ -126,6 +126,7 @@ hkp_export( STRLIST users )
     iobuf_write( hd.fp_write, iobuf_get_temp_buffer(temp),
 			      iobuf_get_temp_length(temp) );
     iobuf_put( hd.fp_write, '\n' );
+    iobuf_flush_temp( temp );
     iobuf_close(temp);
 
     rc = http_wait_response( &hd, &status );

@@ -5,7 +5,7 @@
 
 CFLAGS = -O -Wall
 
-EXTRA_DIST = README algorithm.doc ChangeLog  example.c
+EXTRA_DIST = README algorithm.doc ChangeLog
 
 # I found no other easy way to use this only if zlib is neede
 # doing this with SUBDIR = @xxx@  in the top Makefile.am does not
@@ -15,15 +15,16 @@ noinst_LIBRARIES = libzlib.a
 endif
 
 
-libzlib_a_SOURCES = adler32.c compress.c crc32.c gzio.c \
+libzlib_a_SOURCES = adler32.c compress.c crc32.c \
 		    uncompr.c deflate.c trees.c zutil.c \
 		    inflate.c infblock.c inftrees.c \
 		    infcodes.c infutil.c inffast.c \
-		    zlib.h zconf.h deflate.h infblock.h  \
-		    infcodes.h inffast.h inftrees.h infutil.h zutil.h
+		    deflate.h infblock.h infcodes.h inffast.h \
+		    inffixed.h inftrees.h infutil.h trees.h \
+		    zconf.h zlib.h zutil.h
 
 
-CLEANFILES = example foo.gz
+CLEANFILES = foo.gz
 
 
 

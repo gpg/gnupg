@@ -4,13 +4,13 @@ have some bugs and some features may not work at all.
 
 This package was put together by me, James Troup
 <james@nocrew.org>, from the sources, which I obtained from
-ftp://ftp.guug.de/pub/gcrypt/gnupg-0.9.1.tar.gz.  The changes were
+ftp://ftp.gnupg.org/pub/gcrypt/gnupg-0.9.2.tar.gz.  The changes were
 minimal, namely:
 
 - adding support for the Debian package maintenance scheme, by adding
-  various debian/* files.  
+  various debian/* files.
 
-Program Copyright (C) 1997, 1998 Werner Koch (dd9jn).
+Program Copyright (C) 1998, 1999 Free Software Foundation, Inc.
 Modifications for Debian Copyright (C) 1998 James Troup.
 
 GNUPG is free software; you can redistribute it and/or modify

@@ -49,8 +49,8 @@ if test "$use_m_debug" = yes; then
 else
     AC_MSG_CHECKING([whether memory guard is requested])
     AC_ARG_ENABLE(m-guard,
-    [  --disable-m-guard       disable memory guard facility],
-    use_m_guard=$enableval, use_m_guard=yes)
+    [  --enable-m-guard        enable memory guard facility],
+    use_m_guard=$enableval, use_m_guard=no)
     AC_MSG_RESULT($use_m_guard)
 fi
 if test "$use_m_guard" = yes ; then

@@ -646,7 +646,7 @@ clearsign_file( const char *fname, STRLIST locusr, const char *outfile )
 	PKT_secret_key *sk = sk_rover->sk;
 	md_enable(textmd, hash_for(sk->pubkey_algo));
     }
-    md_start_debug( textmd, "sign" );
+    /*md_start_debug( textmd, "sign" );*/
     tfx.clearsign = 1;
     tfx.not_dash_escaped = opt.not_dash_escaped;
     tfx.escape_from = opt.escape_from;

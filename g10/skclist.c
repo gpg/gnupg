@@ -56,7 +56,7 @@ static int
 is_insecure( PKT_secret_key *sk )
 {
 
-    BUG();
+    return 0;  /* FIXME!! */
 }
 
 

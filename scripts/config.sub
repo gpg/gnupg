@@ -968,7 +968,7 @@ case $os in
 	-xenix)
 		os=-xenix
 		;;
-	-MiNT | -mint)
+	-mint)
 		os=-mint
 		;;
 	-none)

@@ -1,3 +1,7 @@
+Wed Jan 20 21:40:21 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
+
+	* configure.in: --enable-m-guard is now default
+
 Wed Jan 13 12:49:36 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
 	* INSTALL: Applied new information how to build rpms by Fabio Coatti

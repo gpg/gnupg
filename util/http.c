@@ -118,14 +118,14 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
 
     http_start_data( hd ); /* make sure that we are in the data */
     iobuf_flush( hd->fp_write );
-    shutdown( hd->socket, 1 );
-    hd->in_data = 0;
 
     hd->socket = dup( hd->socket );
     if( hd->socket == -1 )
 	return G10ERR_GENERAL;
     iobuf_close( hd->fp_write );
     hd->fp_write = NULL;
+    shutdown( hd->socket, 1 );
+    hd->in_data = 0;
 
     hd->fp_read = iobuf_fdopen( hd->socket , "r" );
     if( !hd->fp_read )
@@ -674,6 +674,7 @@ write_server( int socket, const char *data, size_t length )
 		select(0, NULL, NULL, NULL, &tv);
 		continue;
 	    }
+	    log_info("write failed: %s\n", strerror(errno));
 	    return G10ERR_NETWORK;
 	}
 	nleft -=nwritten;

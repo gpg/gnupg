@@ -1,3 +1,11 @@
+gnupg (0.9.2-1) unstable; urgency=low
+
+  * New version.
+  * debian/rules (build): Removed CFLAGS as the default is now sufficient.
+  * debian/rules (clean): remove special handling cleanup in intl.
+
+ -- Werner Koch <wk@isil.d.suttle.de>  Wed, 20 Jan 1999 21:23:11 +0100
+
 gnupg (0.9.1-1) unstable; urgency=low
 
   * New upstream version.
@@ -41,7 +49,7 @@ gnupg (0.4.2-1) unstable; urgency=low
   * New upstream version.
   * debian/preinst: improve message about the NEWS file which isn't
     actually installed when it's referred to, thanks to Martin Mitchell
-    <martin@debian.org>.  
+    <martin@debian.org>.
   * debian/rules (binary-arch): don't install the now non-existent `rfcs',
     but do install `OpenPGP'.
 
