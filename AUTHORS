@@ -25,6 +25,8 @@ Gaël Quéri  <gael@lautre.net>  Translations [fr]
 
 Gregory Steuck <steuck@iname.com> Translations [ru]
 
+Nagy Ferenc László <nfl@nfllab.com> *** [hu]
+
 Ivo Timmermans <itimmermans@bigfoot.com> Translations [nl]
 
 Jacobo Tarri'o Barreiro <jtarrio@iname.com> Translations [gl]
@@ -36,6 +38,8 @@ Jedi Lin <Jedi@idej.org> Translations [zh-tw]
 Jouni Hiltunen <jouni.hiltunen@kolumbus.fi> Translations [fi]
 
 Magda Procha'zkova'  <magda@math.muni.cz> Translations [cs]
+
+Michael Anckaert <xantor@linux.be> *** [nl]
 
 Michael Roth  <mroth@nessie.de>  Assignment
     (wrote cipher/des.c., changes and bug fixes all over the place)
@@ -111,7 +115,8 @@ for GnuPG.
 The RPM specs file scripts/gnupg.spec has been contributed by
 several people.
 
- Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002,
+           2003 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

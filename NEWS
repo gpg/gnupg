@@ -27,7 +27,7 @@ Noteworthy changes in version 1.2.2 (unreleased)
     * Minor trustdb changes to make the trust calculations match
       common usage.
 
-    * New translations: Finnish and Traditional Chinese.
+    * New translations: Finnish, Hungarian, Slovak, Traditional Chinese.
 
     * New command "revuid" in the --edit-key menu to revoke a user ID.
       This is a simpler interface to the old method (which still

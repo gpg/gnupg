@@ -31,7 +31,7 @@ AC_INIT(gnupg, 1.2.2rc2, bug-gnupg@gnu.org)
 # sufficient.
 development_version=no
 
-ALL_LINGUAS="ca cs da de eo el es et fi fr gl id it ja nl pl pt_BR pt sk sv tr zh_TW"
+ALL_LINGUAS="ca cs da de eo el es et fi fr gl hu id it ja nl pl pt_BR pt sk sv tr zh_TW"
 
 PACKAGE=$PACKAGE_NAME
 VERSION=$PACKAGE_VERSION
