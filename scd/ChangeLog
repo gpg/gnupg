@@ -1,3 +1,9 @@
+2003-09-05  Werner Koch  <wk@gnupg.org>
+
+	* ccid-driver.c: More work, data can now actually be retrieved.
+	* ccid-driver.c, ccid-driver.h: Alternativley allow use under BSD
+	conditions.
+
 2003-09-02  Werner Koch  <wk@gnupg.org>
 
 	* scdaemon.c, scdaemon.h: New option --pcsc-ccid.
