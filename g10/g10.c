@@ -157,6 +157,7 @@ enum cmd_and_opt_values { aNull = 0,
     oAttributeFile, /* only used with risc os */
     oSKComments,
     oNoSKComments,
+    oNoComments,
     oEmitVersion,
     oNoEmitVersion,
     oCompletesNeeded,
@@ -432,7 +433,7 @@ static ARGPARSE_OPTS opts[] = {
 #ifdef __riscos__
     { oAttributeFile, "attribute-file" ,2, "@" },
 #endif /* __riscos__ */
-    { oNoSKComments, "no-comment", 0,   "@"},
+    { oNoComments, "no-comment", 0,   "@"},
     { oNoSKComments, "no-sk-comments", 0,   "@"},
     { oSKComments, "sk-comments", 0,   "@"},
     { oCompletesNeeded, "completes-needed", 1, "@"},
@@ -1394,6 +1395,10 @@ main( int argc, char **argv )
 			   opt.verbose = 0; opt.list_sigs=0; break;
 	  case oQuickRandom: quick_random_gen(1); break;
 	  case oSKComments: opt.sk_comments=1; break;
+	  case oNoComments:
+	    deprecated_warning(configname,configlineno,
+			       "--no-comment","--no-sk-comments","");
+	    /* fall through */
 	  case oNoSKComments: opt.sk_comments=0; break;
 	  case oEmitVersion: opt.no_version=0; break;
 	  case oNoEmitVersion: opt.no_version=1; break;
