@@ -1,3 +1,11 @@
+2000-03-09 12:53:09  Werner Koch  (wk@habibti.openit.de)
+
+	* keygen.c (ask_expire_interval): Movede parsig to ...
+	(parse_expire_string): ... this new function. And some new control
+	commands.
+	(proc_parameter_file): Add expire date parsing.
+	(do_generate_keypair): Allow the use of specified output files.
+
 2000-03-08 10:38:38  Werner Koch  (wk@habibti.openit.de)
 
 	* keygen.c (ask_algo): Removed is_v4 return value and the commented

@@ -1,3 +1,7 @@
+2000-03-09 14:04:22  Werner Koch  (wk@habibti.openit.de)
+
+	* argparse.c (default_strusage): Changed year of default copyright.
+
 Tue Mar  7 18:45:31 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* secmem.c (lock_pool): No more warning for QNX. By Sam Roberts.

@@ -235,8 +235,13 @@ useful for debugging.
 <varlistentry>
 <term>--gen-key</term>
 <listitem><para>
-Generate a new key pair. This command can only be
-used interactive.
+Generate a new key pair. This command is normally only used
+interactive.
+</para>
+<para>
+There is an experimental feature which allows to create keys
+in batch mode. See the file <filename>doc/DETAILS</filename>
+in the source distribution on how to use this.
 </para></listitem></varlistentry>
 
 

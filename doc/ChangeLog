@@ -1,3 +1,7 @@
+2000-03-09 15:01:51  Werner Koch  (wk@habibti.openit.de)
+
+	* DETAILS: Ad a short blurb about unattended key generation.
+
 Wed Feb  9 15:33:44 CET 2000  Werner Koch  <wk@gnupg.de>
 
 	* gpg.sgml: Describe --ignore-time-conflict.

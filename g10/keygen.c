@@ -1,5 +1,5 @@
 /* keygen.c - generate a key pair
- *	Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -59,12 +59,33 @@ struct para_data_s {
     union {
        DEK *dek;
        STRING2KEY *s2k;
+       u32 expire;
        char value[1];
     } u;
 };
 
+struct output_control_s {
+    int lnr;
+    int dryrun;
+    int use_files;
+    struct {
+	char  *fname;
+	char  *newfname;
+	IOBUF stream;
+	armor_filter_context_t afx;
+    } pub;
+    struct {
+	char  *fname;
+	char  *newfname;
+	IOBUF stream;
+	armor_filter_context_t afx;
+    } sec;
+};
 
-static void do_generate_keypair( struct para_data_s *para );
+
+static void do_generate_keypair( struct para_data_s *para,
+				 struct output_control_s *outctrl );
+static int  write_keyblock( IOBUF out, KBNODE node );
 
 
 static void
@@ -537,6 +558,41 @@ ask_keysize( int algo )
 }
 
 
+/****************
+ * Parse an expire string and return it's value in days.
+ * Returns -1 on error.
+ */
+static int
+parse_expire_string( const char *string )
+{
+    int mult;
+    u32 abs_date=0;
+    u32 curtime = make_timestamp();
+    int valid_days;
+
+    if( !*string )
+	valid_days = 0;
+    else if( (abs_date = scan_isodatestr(string)) && abs_date > curtime ) {
+	/* This calculation is not perfectly okay because we
+	 * are later going to simply multiply by 86400 and don't
+	 * correct for leapseconds.  A solution would be to change
+	 * the whole implemenation to work with dates and not intervals
+	 * which are required for v3 keys.
+	 */
+	valid_days = abs_date/86400-curtime/86400+1;
+    }
+    else if( (mult=check_valid_days(string)) ) {
+	valid_days = atoi(string) * mult;
+	if( valid_days < 0 || valid_days > 39447 )
+	    valid_days = 0;
+    }
+    else {
+	valid_days = -1;
+    }
+    return valid_days;
+}
+
+
 static u32
 ask_expire_interval(void)
 {
@@ -556,32 +612,14 @@ ask_expire_interval(void)
 
     answer = NULL;
     for(;;) {
-	int mult;
-	u32 abs_date=0;
-	u32 curtime=0;;
+	u32 curtime=make_timestamp();
 
 	m_free(answer);
 	answer = cpr_get("keygen.valid",_("Key is valid for? (0) "));
 	cpr_kill_prompt();
 	trim_spaces(answer);
-	curtime = make_timestamp();
-	if( !*answer )
-	    valid_days = 0;
-	else if( (abs_date = scan_isodatestr(answer)) && abs_date > curtime ) {
-	    /* This calculation is not perfectly okay because we
-	     * are later going to simply multiply by 86400 and don't
-	     * correct for leapseconds.  A solution would be to change
-	     * the whole implemenation to work with dates and not intervals
-	     * which are required for v3 keys.
-	     */
-	    valid_days = abs_date/86400-curtime/86400+1;
-	}
-	else if( (mult=check_valid_days(answer)) ) {
-	    valid_days = atoi(answer) * mult;
-	    if( valid_days < 0 || valid_days > 39447 )
-		valid_days = 0;
-	}
-	else {
+	valid_days = parse_expire_string( answer );
+	if( valid_days < 0 ) {
 	    tty_printf(_("invalid value\n"));
 	    continue;
 	}
@@ -924,6 +962,9 @@ get_parameter_u32( struct para_data_s *para, enum para_name key )
 
     if( !r )
 	return 0;
+    if( r->key == pKEYEXPIRE || r->key == pSUBKEYEXPIRE )
+	return r->u.expire;
+
     return (unsigned int)strtoul( r->u.value, NULL, 10 );
 }
 
@@ -949,7 +990,8 @@ get_parameter_s2k( struct para_data_s *para, enum para_name key )
 
 
 static int
-proc_parameter_file( struct para_data_s *para, const char *fname )
+proc_parameter_file( struct para_data_s *para, const char *fname,
+				       struct output_control_s *outctrl )
 {
     struct para_data_s *r;
     const char *s1, *s2, *s3;
@@ -994,6 +1036,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname )
 	}
     }
 
+    /* make DEK and S2K from the Passphrase */
     r = get_parameter( para, pPASSPHRASE );
     if( r && *r->u.value ) {
 	/* we have a plain text passphrase - create a DEK from it.
@@ -1022,7 +1065,31 @@ proc_parameter_file( struct para_data_s *para, const char *fname )
 	r->next = para;
 	para = r;
     }
-    do_generate_keypair( para );
+
+    /* make KEYEXPIRE from Expire-Date */
+    r = get_parameter( para, pEXPIREDATE );
+    if( r && *r->u.value ) {
+	i = parse_expire_string( r->u.value );
+	if( i < 0 ) {
+	    log_error("%s:%d: invalid expire date\n", fname, r->lnr );
+	    return -1;
+	}
+	r->u.expire = i * 86400L;
+	r->key = pKEYEXPIRE;  /* change hat entry */
+	/* also set it for the subkey */
+	r = m_alloc_clear( sizeof *r + 20 );
+	r->key = pSUBKEYEXPIRE;
+	r->u.expire = i * 86400L;
+	r->next = para;
+	para = r;
+    }
+
+    if( !!outctrl->pub.newfname ^ !!outctrl->sec.newfname ) {
+	log_error("%s:%d: only one ring name is set\n", fname, outctrl->lnr );
+	return -1;
+    }
+
+    do_generate_keypair( para, outctrl );
     return 0;
 }
 
@@ -1055,6 +1122,9 @@ read_parameter_file( const char *fname )
     const char *err = NULL;
     struct para_data_s *para, *r;
     int i;
+    struct output_control_s outctrl;
+
+    memset( &outctrl, 0, sizeof( outctrl ) );
 
     if( !fname || !*fname || !strcmp(fname,"-") ) {
 	fp = stdin;
@@ -1085,8 +1155,46 @@ read_parameter_file( const char *fname )
 	    continue;
 	keyword = p;
 	if( *keyword == '%' ) {
-	    /* for now these are all comments but in future they may be used
-	     * to control certain aspects */
+	    for( ; !isspace(*p); p++ )
+		;
+	    if( *p )
+		*p++ = 0;
+	    for( ; isspace(*p); p++ )
+		;
+	    value = p;
+	    trim_trailing_ws( value, strlen(value) );
+	    if( !stricmp( keyword, "%echo" ) )
+		log_info("%s\n", value );
+	    else if( !stricmp( keyword, "%dry-run" ) )
+		outctrl.dryrun = 1;
+	    else if( !stricmp( keyword, "%commit" ) ) {
+		outctrl.lnr = lnr;
+		proc_parameter_file( para, fname, &outctrl );
+		release_parameter_list( para );
+		para = NULL;
+	    }
+	    else if( !stricmp( keyword, "%pubring" ) ) {
+		if( outctrl.pub.fname && !strcmp( outctrl.pub.fname, value ) )
+		    ; /* still the same file - ignore it */
+		else {
+		    m_free( outctrl.pub.newfname );
+		    outctrl.pub.newfname = m_strdup( value );
+		    outctrl.use_files = 1;
+		}
+	    }
+	    else if( !stricmp( keyword, "%secring" ) ) {
+		if( outctrl.sec.fname && !strcmp( outctrl.sec.fname, value ) )
+		    ; /* still the same file - ignore it */
+		else {
+		   m_free( outctrl.sec.newfname );
+		   outctrl.sec.newfname = m_strdup( value );
+		   outctrl.use_files = 1;
+		}
+	    }
+	    else
+		log_info("skipping control `%s' (%s)\n", keyword, value );
+
+
 	    continue;
 	}
 
@@ -1095,7 +1203,8 @@ read_parameter_file( const char *fname )
 	    err = "missing colon";
 	    break;
 	}
-	*p++ = 0;
+	if( *p )
+	    *p++ = 0;
 	for( ; isspace(*p); p++ )
 	    ;
 	if( !*p ) {
@@ -1119,7 +1228,8 @@ read_parameter_file( const char *fname )
 	}
 
 	if( keywords[i].key == pKEYTYPE && para ) {
-	    proc_parameter_file( para, fname );
+	    outctrl.lnr = lnr;
+	    proc_parameter_file( para, fname, &outctrl );
 	    release_parameter_list( para );
 	    para = NULL;
 	}
@@ -1146,8 +1256,19 @@ read_parameter_file( const char *fname )
 	log_error("%s:%d: read error: %s\n", fname, lnr, strerror(errno) );
     }
     else if( para ) {
-	proc_parameter_file( para, fname );
+	outctrl.lnr = lnr;
+	proc_parameter_file( para, fname, &outctrl );
     }
+
+    if( outctrl.use_files ) { /* close open streams */
+	iobuf_close( outctrl.pub.stream );
+	iobuf_close( outctrl.sec.stream );
+	m_free( outctrl.pub.fname );
+	m_free( outctrl.pub.newfname );
+	m_free( outctrl.sec.fname );
+	m_free( outctrl.sec.newfname );
+    }
+
     release_parameter_list( para );
     if( strcmp( fname, "-" ) )
 	fclose(fp);
@@ -1170,6 +1291,9 @@ generate_keypair( const char *fname )
     u32 expire;
     struct para_data_s *para = NULL;
     struct para_data_s *r;
+    struct output_control_s outctrl;
+
+    memset( &outctrl, 0, sizeof( outctrl ) );
 
     if( opt.batch ) {
 	read_parameter_file( fname );
@@ -1216,16 +1340,14 @@ generate_keypair( const char *fname )
     expire = ask_expire_interval();
     r = m_alloc_clear( sizeof *r + 20 );
     r->key = pKEYEXPIRE;
-    sprintf( r->u.value, "%lu", (ulong)expire );
+    r->u.expire = expire;
     r->next = para;
     para = r;
-    if( both ) {
-	r = m_alloc_clear( sizeof *r + 20 );
-	r->key = pSUBKEYEXPIRE;
-	sprintf( r->u.value, "%lu", (ulong)expire );
-	r->next = para;
-	para = r;
-    }
+    r = m_alloc_clear( sizeof *r + 20 );
+    r->key = pSUBKEYEXPIRE;
+    r->u.expire = expire;
+    r->next = para;
+    para = r;
 
     uid = ask_user_id(0);
     if( !uid ) {
@@ -1253,13 +1375,14 @@ generate_keypair( const char *fname )
 	para = r;
     }
 
-    proc_parameter_file( para, "[internal]" );
+    proc_parameter_file( para, "[internal]", &outctrl );
     release_parameter_list( para );
 }
 
 
 static void
-do_generate_keypair( struct para_data_s *para )
+do_generate_keypair( struct para_data_s *para,
+		     struct output_control_s *outctrl )
 {
     char *pub_fname = NULL;
     char *sec_fname = NULL;
@@ -1269,12 +1392,68 @@ do_generate_keypair( struct para_data_s *para )
     const char *s;
     int rc;
 
-    /* check whether we are allowed to write to the keyrings */
-    pub_fname = make_filename(opt.homedir, "pubring.gpg", NULL );
-    sec_fname = make_filename(opt.homedir, "secring.gpg", NULL );
+    if( outctrl->dryrun ) {
+	log_info("dry-run mode - key generation skipped\n");
+	return;
+    }
+
+
+    if( outctrl->use_files ) {
+	if( outctrl->pub.newfname ) {
+	    iobuf_close(outctrl->pub.stream);
+	    outctrl->pub.stream = NULL;
+	    m_free( outctrl->pub.fname );
+	    outctrl->pub.fname =  outctrl->pub.newfname;
+	    outctrl->pub.newfname = NULL;
+
+	    outctrl->pub.stream = iobuf_create( outctrl->pub.fname );
+	    if( !outctrl->pub.stream ) {
+		log_error("can't create `%s': %s\n", outctrl->pub.newfname,
+						     strerror(errno) );
+		return;
+	    }
+	    if( opt.armor ) {
+		outctrl->pub.afx.what = 1;
+		iobuf_push_filter( outctrl->pub.stream, armor_filter,
+						    &outctrl->pub.afx );
+	    }
+	}
+	if( outctrl->sec.newfname ) {
+	    iobuf_close(outctrl->sec.stream);
+	    outctrl->sec.stream = NULL;
+	    m_free( outctrl->sec.fname );
+	    outctrl->sec.fname =  outctrl->sec.newfname;
+	    outctrl->sec.newfname = NULL;
+
+	    outctrl->sec.stream = iobuf_create( outctrl->sec.fname );
+	    if( !outctrl->sec.stream ) {
+		log_error("can't create `%s': %s\n", outctrl->sec.newfname,
+						     strerror(errno) );
+		return;
+	    }
+	    if( opt.armor ) {
+		outctrl->sec.afx.what = 5;
+		iobuf_push_filter( outctrl->sec.stream, armor_filter,
+						    &outctrl->sec.afx );
+	    }
+	}
+	pub_fname = outctrl->pub.fname; /* only for info output */
+	sec_fname = outctrl->sec.fname; /* only for info output */
+	assert( outctrl->pub.stream );
+	assert( outctrl->sec.stream );
+    }
+    else {
+	/* check whether we are allowed to write to the keyrings */
+	/* It is probably wrong to use the default names here
+	 * but becuase I never gpt any complaints, we better leave
+	 * it as it is. */
+	pub_fname = make_filename(opt.homedir, "pubring.gpg", NULL );
+	sec_fname = make_filename(opt.homedir, "secring.gpg", NULL );
+    }
+
     if( opt.verbose ) {
-	log_info(_("writing public certificate to `%s'\n"), pub_fname );
-	log_info(_("writing secret certificate to `%s'\n"), sec_fname );
+	log_info(_("writing public key to `%s'\n"), pub_fname );
+	log_info(_("writing secret key to `%s'\n"), sec_fname );
     }
 
     /* we create the packets as a tree of kbnodes. Because the structure
@@ -1317,7 +1496,18 @@ do_generate_keypair( struct para_data_s *para )
     }
 
 
-    if( !rc ) {
+    if( !rc && outctrl->use_files ) { /* direct write to specified files */
+	rc = write_keyblock( outctrl->pub.stream, pub_root );
+	if( rc )
+	    log_error("can't write public key: %s\n", g10_errstr(rc) );
+	if( !rc ) {
+	    rc = write_keyblock( outctrl->sec.stream, sec_root );
+	    if( rc )
+		log_error("can't write secret key: %s\n", g10_errstr(rc) );
+	}
+
+    }
+    else if( !rc ) { /* write to the standard keyrings */
 	KBPOS pub_kbpos;
 	KBPOS sec_kbpos;
 	int rc1 = -1;
@@ -1377,10 +1567,9 @@ do_generate_keypair( struct para_data_s *para )
 	    unlock_keyblock( &sec_kbpos );
     }
 
-
     if( rc ) {
 	if( opt.batch )
-	    log_error(_("Key generation failed: %s\n"), g10_errstr(rc) );
+	    log_error("key generation failed: %s\n", g10_errstr(rc) );
 	else
 	    tty_printf(_("Key generation failed: %s\n"), g10_errstr(rc) );
     }
@@ -1388,8 +1577,10 @@ do_generate_keypair( struct para_data_s *para )
     release_kbnode( sec_root );
     if( sk ) /* the unprotected  secret key */
 	free_secret_key(sk);
-    m_free(pub_fname);
-    m_free(sec_fname);
+    if( !outctrl->use_files ) {
+	m_free(pub_fname);
+	m_free(sec_fname);
+    }
 }
 
 
@@ -1489,5 +1680,22 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 	free_secret_key(sk);
     set_next_passphrase( NULL );
     return okay;
+}
+
+/****************
+ * Write a keyblock to an output stream
+ */
+static int
+write_keyblock( IOBUF out, KBNODE node )
+{
+    for( ; node ; node = node->next ) {
+	int rc = build_packet( out, node->pkt );
+	if( rc ) {
+	    log_error("build_packet(%d) failed: %s\n",
+			node->pkt->pkttype, g10_errstr(rc) );
+	    return G10ERR_WRITE_FILE;
+	}
+    }
+    return 0;
 }
 

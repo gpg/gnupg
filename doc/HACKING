@@ -10,12 +10,12 @@ CVS Access
 ==========
 Anonymous read-only CVS access is available:
 
-  cvs -z6 -d :pserver:anonymous@ftp.guug.de:/home/koch/cvs login
+  cvs -z6 -d :pserver:anonymous@cvs.guug.de:/home/koch/cvs login
 
 use the password "anonymous".  To check out the the complete
 archive use:
 
-  cvs -z6 -d :pserver:anonymous@ftp.guug.de:/home/koch/cvs checkout gnupg
+  cvs -z6 -d :pserver:anonymous@cvs.guug.de:/home/koch/cvs checkout gnupg
 
 This service is provided to help you in hunting bugs and not to deliver
 stable snapshots; it may happen that it even does not compile, so please

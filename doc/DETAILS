@@ -231,6 +231,107 @@ Key generation
     Crypto '97 proceedings p. 260.
 
 
+Unattended key generation
+=========================
+There is an experimental feature which allows for unattended
+generation of keys controlled by a parameter file.
+This feature is not very well tested and does only make sense for some
+very special applications.  Please don't complain if we decide to chnage
+the behaviour of this command.
+
+To use this feature, you use --gen-key together with --batch and feed the
+parameters either form stdin or from a file given on the commandline.
+The format of this file is as follows:
+  o Text only, line length is limited to about 1000 chars.
+  o You must use UTF-8 encoding to specifiy non-ascii characters.
+  o Empty lines are ignored
+  o Leading and trailing spaces are ignored
+  o A hash sign as the first non white space character indicates a comment line
+  o Control statements are indicated by a leading percent sign, the
+    arguments are separated by white space from the keyword.
+  o Parameters are specified by a keyword, followed by a colon.  Arguments
+    are speparated by white space.
+  o The first parameter must be "Key-Type", control statements
+    may be placed anywhere.
+  o Key generation takes place when either the end of the parameter file
+    is reached, the next "Key-Type" parameter is encountered or at the
+    controlstatement "%commit"
+  o Control staements:
+    %echo <text>
+	Print <text>
+    %dry-run
+	Suppress actual key generation (useful for syntax checking)
+    %commit
+	Perform the key generation.  An implicit commit is done
+	at the next "Key-Type" parameter.
+    %pubring <filename>
+    %secring <filename>
+	Do not write the key to the default or commandline given
+	keyring but to <filename>.  This must be given before the first
+	commit to take place, duplicate specification of the same filename
+	is ignored, the last filename before a commit is used.
+	The filename is used until a new filename is used (at commit points)
+	and all keys are written to that file.	If a new filename is given,
+	this file is created (and overwrites an existing one).
+	Both control statements must be given.
+   o The order of the parameters does not matter except for "Key-Type"
+     which must be the first parameter.  The paramtyers are only for the
+     generated keyblock and paramters from previous key generations are not
+     used. Some syntactically checks may be performed.
+     The currently defined parameters are:
+     Key-Type: <algo-number>|<algo-string>
+	Starts a new parameter block by giving the type of the
+	primary key. The algorithm must be capable of signing.
+	This is a required parameter.
+     Key-Length: <length-in-bits>
+	Length of the key in bits.  Default is 1024
+     Subkey-Type: <algo-number>|<algo-string>
+	This generates a secondary key.  Currently only one subkey
+	can be handled.
+     Subkey-Length: <length-in-bits>
+	Length of the subkey in bits.  Default is 1024.
+     Passphrase: <string>
+	If you want to specify a passphrase for the secret key,
+	enter it here.	Default is not to use any passphrase.
+     Name-Real: <string>
+     Name-Comment: <string>
+     Name-Email: <string>
+	The 3 parts of a key. Remember to use UTF-8 here.
+	If you don't give any of them, no user ID is created.
+     Expire-Date: <iso-date>|(<number>[d|w|m|y])
+	Set the expiration date for the key (and the subkey).  It
+	may either be entered in ISO date format (2000-08-15) or as
+	number of days, weeks, month or years. Without a letter days
+	are assumed.
+
+Here is an example:
+$ cat >foo <<EOF
+     %echo Generating a standard key
+     Key-Type: DSA
+     Key-Length: 1024
+     Subkey-Type: ELG-E
+     Subkey-Length: 1024
+     Name-Real: Joe Tester
+     Name-Comment: with stupid passphrase
+     Name-Email: joe@foo.bar
+     Expire-Date: 0
+     Passphrase: abc
+     %pubring foo.pub
+     %secring foo.sec
+     # Do a commit here, so that we can later print "done" :-)
+     %commit
+     %echo done
+EOF
+$ gpg --batch --gen-key -a foo
+ [...]
+$ gpg --no-default-keyring --secret-keyring foo.sec \
+				  --keyring foo.pub --list-secret-keys
+/home/wk/work/gnupg-stable/scratch/foo.sec
+------------------------------------------
+sec  1024D/915A878D 2000-03-09 Joe Tester (with stupid passphrase) <joe@foo.bar>
+ssb  1024g/8F70E2C0 2000-03-09
+
+
 
 Layout of the TrustDB
 =====================

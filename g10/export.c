@@ -201,7 +201,7 @@ do_export_stream( IOBUF out, STRLIST users, int secret, int onlyrfc, int *any )
 
 	    if( secret == 2 && node->pkt->pkttype == PKT_SECRET_KEY ) {
 		/* we don't want to export the secret parts of the
-		 * primary key, this is doen by using GNU protection mode 1001
+		 * primary key, this is done by using GNU protection mode 1001
 		 */
 		int save_mode = node->pkt->pkt.secret_key->protect.s2k.mode;
 		node->pkt->pkt.secret_key->protect.s2k.mode = 1001;

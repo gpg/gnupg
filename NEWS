@@ -1,6 +1,8 @@
 Noteworthy changes in the current test release
 ----------------------------------------------
 
+    * Add an experimental feature to do unattended key generation.
+
     * The user is now asked for the reason of revocation as required
       by the new OpenPGP draft.
 
