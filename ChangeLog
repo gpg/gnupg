@@ -1,6 +1,8 @@
 2003-12-17  Werner Koch  <wk@gnupg.org>
 
-	* configure.ac (CFLAGS): Add --Wformat-noliteral in gcc mode.
+	* configure.ac: Requires now libassuan 0.6.2.
+	(CFLAGS): Add --Wformat-noliteral in gcc mode.
+	
 
 2003-12-16  Werner Koch  <wk@gnupg.org>
 
