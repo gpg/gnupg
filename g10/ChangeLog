@@ -1,5 +1,13 @@
 2004-02-12  David Shaw  <dshaw@jabberwocky.com>
 
+	* import.c (check_prefs): New function to check preferences on a
+	public key to ensure that it does not advertise any that we cannot
+	fulfill.  Use the keyedit command list function to optionally
+	rewrite the prefs.
+	(import_one, import_secret_one): Use it here when importing a
+	public key that we have the secret half of, or when importing a
+	secret key that we have the public half of.
+
 	* main.h, keyedit.c (keyedit_menu): Remove sign_mode and enhance
 	the more general command list functionality to replace it.
 

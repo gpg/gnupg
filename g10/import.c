@@ -531,6 +531,114 @@ print_import_check (PKT_public_key * pk, PKT_user_id * id)
     m_free (buf);
 }
 
+static void
+check_prefs(KBNODE keyblock)
+{
+  KBNODE node;
+  u32 keyid[2];
+  int problem=0;
+  
+  merge_keys_and_selfsig(keyblock);
+  keyid_from_pk(keyblock->pkt->pkt.public_key,keyid);
+
+  for(node=keyblock;node;node=node->next)
+    {
+      if(node->pkt->pkttype==PKT_USER_ID
+	 && node->pkt->pkt.user_id->created
+	 && node->pkt->pkt.user_id->prefs)
+	{
+	  PKT_user_id *uid=node->pkt->pkt.user_id;
+	  prefitem_t *prefs=uid->prefs;
+	  char *user=utf8_to_native(uid->name,strlen(uid->name),0);
+
+	  for(;prefs->type;prefs++)
+	    {
+	      char num[10]; /* prefs->value is a byte, so we're over
+			       safe here */
+
+	      sprintf(num,"%u",prefs->value);
+
+	      if(prefs->type==PREFTYPE_SYM)
+		{
+		  if(check_cipher_algo(prefs->value))
+		    {
+		      const char *algo=cipher_algo_to_string(prefs->value);
+		      if(!problem)
+			log_info(_("WARNING: key %08lX contains preferences"
+				   " for unavailable algorithms:\n"),
+				 (ulong)keyid[1]);
+		      log_info(_("         \"%s\": preference for cipher"
+				 " algorithm %s\n"),user,algo?algo:num);
+		      problem=1;
+		    }
+		}
+	      else if(prefs->type==PREFTYPE_HASH)
+		{
+		  if(check_digest_algo(prefs->value))
+		    {
+		      const char *algo=digest_algo_to_string(prefs->value);
+		      if(!problem)
+			log_info(_("WARNING: key %08lX contains preferences"
+				   " for unavailable algorithms:\n"),
+				 (ulong)keyid[1]);
+		      log_info(_("         \"%s\": preference for digest"
+				 " algorithm %s\n"),user,algo?algo:num);
+		      problem=1;
+		    }
+		}
+	      else if(prefs->type==PREFTYPE_ZIP)
+		{
+		  if(check_compress_algo(prefs->value))
+		    {
+		      const char *algo=compress_algo_to_string(prefs->value);
+		      if(!problem)
+			log_info(_("WARNING: key %08lX contains preferences"
+				   " for unavailable algorithms:\n"),
+				 (ulong)keyid[1]);
+		      log_info(_("         \"%s\": preference for compression"
+				 " algorithm %s\n"),user,algo?algo:num);
+		      problem=1;
+		    }
+		}
+	    }
+
+	  m_free(user);
+	}
+    }
+
+  if(problem)
+    {
+      log_info(_("It strongly suggested that you update"
+		 " your preferences and re-distribute\n"));
+      log_info(_("this key to avoid potential algorithm"
+		 " mismatch problems.\n"));
+
+      if(!opt.batch)
+	{
+	  STRLIST sl=NULL,locusr=NULL;
+	  size_t fprlen=0;
+	  byte fpr[MAX_FINGERPRINT_LEN],*p;
+	  char username[(MAX_FINGERPRINT_LEN*2)+1];
+	  int i;
+
+	  p=fingerprint_from_pk(keyblock->pkt->pkt.public_key,fpr,&fprlen);
+	  for(i=0;i<fprlen;i++,p++)
+	    sprintf(username+2*i,"%02X",*p);
+	  add_to_strlist(&locusr,username);
+
+	  append_to_strlist(&sl,"updpref");
+	  append_to_strlist(&sl,"save");
+
+	  keyedit_menu( username, locusr, sl, 1, 1 );
+	  free_strlist(sl);
+	  free_strlist(locusr);
+	}
+      else if(!opt.quiet)
+	log_info(_("you can update your preferences with:"
+		   " gpg --edit-key %08lX updpref save\n"),(ulong)keyid[1]);
+    }
+}
+
 /****************
  * Try to import one keyblock.	Return an error only in serious cases, but
  * never for an invalid keyblock.  It uses log_error to increase the
@@ -769,26 +877,43 @@ import_one( const char *fname, KBNODE keyblock,
                  print_import_ok (pk, NULL,
                                   ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
 	}
-	else {
-             if (is_status_enabled ()) 
-                  print_import_ok (pk, NULL, 0);
-	
-	    if( !opt.quiet ) {
-	        char *p=get_user_id_printable(keyid);
+	else
+	  {
+	    if (is_status_enabled ()) 
+	      print_import_ok (pk, NULL, 0);
+
+	    if( !opt.quiet )
+	      {
+		char *p=get_user_id_printable(keyid);
 		log_info( _("key %08lX: \"%s\" not changed\n"),
 			  (ulong)keyid[1],p);
 		m_free(p);
-	    }
+	      }
+
 	    stats->unchanged++;
-	}
+	  }
+
         keydb_release (hd); hd = NULL;
     }
 
   leave:
+
+    /* Now that the key is definitely incorporated into the keydb, we
+       need to check if a designated revocation is present or if the
+       prefs are not rational so we can warn the user. */
+
     if(mod_key)
-      revocation_present(keyblock_orig);
+      {
+	revocation_present(keyblock_orig);
+	if(seckey_available(keyid)==0)
+	  check_prefs(keyblock_orig);
+      }
     else if(new_key)
-      revocation_present(keyblock);
+      {
+	revocation_present(keyblock);
+	if(seckey_available(keyid)==0)
+	  check_prefs(keyblock);
+      }
 
     release_kbnode( keyblock_orig );
     free_public_key( pk_orig );
@@ -941,6 +1066,15 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	    release_kbnode(pub_keyblock);
 	  }
 
+	/* Now that the key is definitely incorporated into the keydb,
+	   if we have the public part of this key, we need to check if
+	   the prefs are rational. */
+	node=get_pubkeyblock(keyid);
+	if(node)
+	  {
+	    check_prefs(node);
+	    release_kbnode(node);
+	  }
       }
     else if( !rc ) { /* we can't merge secret keys */
 	log_error( _("key %08lX: already in secret keyring\n"),
