@@ -29,8 +29,7 @@
 #include "types.h"  /* for byte and u32 typedefs */
 #include "util.h"
 #include "errors.h"
-#include "dynload.h"
-
+#include "algorithms.h"
 
 /* Prototype for the self-test function. */
 static const char *selftest(void);

@@ -41,7 +41,7 @@
 #include <string.h>
 #include "types.h"
 #include "errors.h"
-#include "cast5.h"
+#include "algorithms.h"
 
 
 #define CIPHER_ALGO_CAST5	 3

@@ -101,7 +101,7 @@
 
 #include "types.h"  /* for byte and u32 typedefs */
 #ifndef IS_MODULE
-#include "dynload.h"
+#include "algorithms.h"
 #endif
 #include "util.h"
 

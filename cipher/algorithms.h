@@ -62,5 +62,57 @@ tiger_get_info (int algo, size_t *contextsize,
                 );
 
 
+const char *
+des_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   int	(**setkeyf)( void *c, byte *key, unsigned keylen ),
+		   void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
+		 );
+
+const char *
+cast5_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   int	(**setkeyf)( void *c, byte *key, unsigned keylen ),
+		   void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
+		 );
+
+
+const char *
+blowfish_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   int	(**setkeyf)( void *c, byte *key, unsigned keylen ),
+		   void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
+		 );
+
+const char *
+twofish_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   int	(**setkeyf)( void *c, byte *key, unsigned keylen ),
+		   void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
+		 );
+
+/* this is just a kludge for the time we have not yet changed the cipher
+ * stuff to the scheme we use for random and digests */
+const char *
+rijndael_get_info( int algo, size_t *keylen,
+		   size_t *blocksize, size_t *contextsize,
+		   int	(**setkeyf)( void *c, byte *key, unsigned keylen ),
+		   void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+		   void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
+		 );
+
+const char *
+idea_get_info( int algo, size_t *keylen,
+               size_t *blocksize, size_t *contextsize,
+               int	(**setkeyf)( void *c, byte *key, unsigned keylen ),
+               void (**encryptf)( void *c, byte *outbuf, byte *inbuf ),
+               void (**decryptf)( void *c, byte *outbuf, byte *inbuf )
+               );
+
+
 
 #endif /*GNUPG_ALGORITHMS_H*/

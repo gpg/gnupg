@@ -28,12 +28,9 @@ libcipher_a_SOURCES = cipher.c	\
 		 dynload.c	\
 		 bithelp.h	\
 		 des.c		\
-		 des.h		\
 		 twofish.c	\
 		 blowfish.c	\
-		 blowfish.h	\
 		 cast5.c	\
-		 cast5.h	\
 		 rijndael.c     \
 		 elgamal.c	\
 		 elgamal.h	\

@@ -27,9 +27,7 @@
 #include "util.h"
 #include "errors.h"
 #include "cipher.h"
-#include "des.h"
-#include "blowfish.h"
-#include "cast5.h"
+#include "algorithms.h"
 
 
 #define MAX_BLOCKSIZE 16

@@ -116,7 +116,7 @@
 #include <string.h>	       /* memcpy, memcmp */
 #include "types.h"             /* for byte and u32 typedefs */
 #include "errors.h"
-#include "des.h"
+#include "algorithms.h"
 
 #if defined(__GNUC__) && defined(__GNU_LIBRARY__)
 #define working_memcmp memcmp

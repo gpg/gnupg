@@ -41,7 +41,7 @@
 #include "types.h"  /* for byte and u32 typedefs */
 #include "util.h"
 #include "errors.h"
-#include "dynload.h"
+#include "algorithms.h"
 
 #define MAXKC			(256/32)
 #define MAXROUNDS		14
