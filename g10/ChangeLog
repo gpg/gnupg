@@ -2,6 +2,7 @@
 
 	* getkey.c (premerge_public_with_secret): Fixed 0x12345678! syntax
 	for use with secret keys.
+	(lookup): Advance the searchmode after a search FIRST.
 
 	* seckey-cert.c (do_check): Always calculate the old checksum for
 	use after unprotection.

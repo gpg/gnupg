@@ -2003,6 +2003,12 @@ lookup( GETKEY_CTX ctx, KBNODE *ret_keyblock, int secmode )
     
     rc = 0;
     while (!(rc = keydb_search (ctx->kr_handle, ctx->items, ctx->nitems))) {
+        /* If we are searching for the first key we have to make sure
+           that the next interation does not no an implicit reset.
+           This can be triggered by an empty key ring. */
+        if (ctx->nitems && ctx->items->mode == KEYDB_SEARCH_MODE_FIRST)
+            ctx->items->mode = KEYDB_SEARCH_MODE_NEXT;
+
         rc = keydb_get_keyblock (ctx->kr_handle, &ctx->keyblock);
         if (rc) {
             log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
