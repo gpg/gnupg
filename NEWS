@@ -1,6 +1,10 @@
 Noteworthy changes in version 1.2.2 (unreleased)
 ------------------------------------------------
 
+    * A "convert-from-106" script has been added.  This is a simple
+      script that automates the conversion from a 1.0.6 or earlier
+      version of GnuPG to a 1.0.7 or later version.
+
     * Notation names that do not contain a '@' are no longer allowed
       unless --expert is set.  This is to help prevent pollution of
       the (as yet unused) IETF notation namespace.
