@@ -1386,6 +1386,51 @@ parse_onepass_sig( IOBUF inp, int pkttype, unsigned long pktlen,
 }
 
 
+static MPI
+read_protected_v3_mpi (IOBUF inp, unsigned long *length)
+{
+  int c;
+  unsigned int nbits, nbytes;
+  unsigned char *buf, *p;
+  MPI val;
+
+  if (*length < 2)
+    {
+      log_error ("mpi too small\n");
+      return NULL;
+    }
+
+  if ((c=iobuf_get (inp)) == -1)
+    return NULL;
+  --*length;
+  nbits = c << 8;
+  if ((c=iobuf_get(inp)) == -1)
+    return NULL;
+  --*length;
+  nbits |= c;
+
+  if (nbits > 16384)
+    {
+      log_error ("mpi too large (%u bits)\n", nbits);
+      return NULL;
+    }
+  nbytes = (nbits+7) / 8;
+  buf = p = m_alloc (2 + nbytes);
+  *p++ = nbits >> 8;
+  *p++ = nbits;
+  for (; nbytes && length; nbytes--, --*length)
+    *p++ = iobuf_get (inp);
+  if (nbytes)
+    {
+      log_error ("packet shorter tham mpi\n");
+      m_free (buf);
+      return NULL;
+    }
+
+  /* convert buffer into an opaque MPI */
+  val = mpi_set_opaque (NULL, buf, p-buf); 
+  return val;
+}
 
 
 static int
@@ -1666,18 +1711,22 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 	else { /* v3 method: the mpi length is not encrypted */
 	    for(i=npkey; i < nskey; i++ ) {
-		n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
-		if( sk->is_protected && sk->skey[i] )
-		    mpi_set_protect_flag(sk->skey[i]);
-		if( list_mode ) {
-		    printf(  "\tskey[%d]: ", i);
-		    if( sk->is_protected )
-			printf(  "[encrypted]\n");
-		    else {
-			mpi_print(stdout, sk->skey[i], mpi_print_mode  );
-			putchar('\n');
-		    }
-		}
+                if ( sk->is_protected ) {
+                    sk->skey[i] = read_protected_v3_mpi (inp, &pktlen);
+                    if( list_mode ) 
+                        printf(  "\tskey[%d]: [encrypted]\n", i);
+                }
+                else {
+                    n = pktlen;
+                    sk->skey[i] = mpi_read(inp, &n, 0 );
+                    pktlen -=n;
+                    if( list_mode ) {
+                        printf(  "\tskey[%d]: ", i);
+                        mpi_print(stdout, sk->skey[i], mpi_print_mode  );
+                        putchar('\n');
+                    }
+                }
+
                 if (!sk->skey[i])
                     rc = G10ERR_INVALID_PACKET;
 	    }

@@ -180,7 +180,6 @@ struct {
 } opt;
 
 
-#define EMUBUG_GPGCHKSUM  1
 #define EMUBUG_MDENCODE   4
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */

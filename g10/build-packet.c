@@ -390,7 +390,7 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	    iobuf_put(a, sk->protect.algo );
 	    if( sk->protect.s2k.mode >= 1000 ) {
                 /* These modes are not possible in OpenPGP, we use them
-                   to implement our extesnsions, 101 can ve views as a
+                   to implement our extensions, 101 can be seen as a
                    private/experimental extension (this is not
                    specified in rfc2440 but the same scheme is used
                    for all other algorithm identifiers) */
@@ -426,8 +426,20 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 	p = mpi_get_opaque( sk->skey[npkey], &i );
 	iobuf_write(a, p, i );
     }
+    else if( sk->is_protected ) {
+        /* The secret key is protected te old v4 way. */
+	for(   ; i < nskey; i++ ) {
+            byte *p;
+            int ndata;
+
+            assert (mpi_is_opaque (sk->skey[i]));
+            p = mpi_get_opaque (sk->skey[i], &ndata);
+            iobuf_write (a, p, ndata);
+        }
+	write_16(a, sk->csum );
+    }
     else {
-        /* v3 way - same code for protected and non- protected key */
+        /* non-protected key */
 	for(   ; i < nskey; i++ )
 	    mpi_write(a, sk->skey[i] );
 	write_16(a, sk->csum );

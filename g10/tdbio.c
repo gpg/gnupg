@@ -43,6 +43,13 @@
 #define ftruncate chsize
 #endif
 
+#ifdef HAVE_DOSISH_SYSTEM
+#define MY_O_BINARY  O_BINARY
+#else
+#define MY_O_BINARY  0
+#endif
+
+
 /****************
  * Yes, this is a very simple implementation. We should really
  * use a page aligned buffer and read complete pages.
@@ -484,11 +491,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( !fp )
 		log_fatal( _("%s: can't create: %s\n"), fname, strerror(errno) );
 	    fclose(fp);
-	  #ifdef HAVE_DOSISH_SYSTEM
-	    db_fd = open( db_name, O_RDWR | O_BINARY );
-	  #else
-	    db_fd = open( db_name, O_RDWR );
-	  #endif
+	    db_fd = open( db_name, O_RDWR | MY_O_BINARY );
 	    if( db_fd == -1 )
 		log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
 
@@ -544,11 +547,12 @@ open_db()
   if (make_dotlock( lockhandle, -1 ) )
     log_fatal( _("%s: can't make lock\n"), db_name );
 #endif /* __riscos__ */
-#ifdef HAVE_DOSISH_SYSTEM
-  db_fd = open (db_name, O_RDWR | O_BINARY );
-#else
-  db_fd = open (db_name, O_RDWR );
-#endif
+  db_fd = open (db_name, O_RDWR | MY_O_BINARY );
+  if (db_fd == -1 && errno == EACCES) {
+      db_fd = open (db_name, O_RDONLY | MY_O_BINARY );
+      if (db_fd != -1)
+          log_info (_("NOTE: trustdb not writable\n"));
+  }
   if ( db_fd == -1 )
     log_fatal( _("%s: can't open: %s\n"), db_name, strerror(errno) );
 

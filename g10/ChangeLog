@@ -1,9 +1,29 @@
 2002-09-10  David Shaw  <dshaw@jabberwocky.com>
 
 	* exec.c (expand_args): Remove loop left over from earlier
-	implementation.  (exec_write): Missed one tick.
+	implementation.
+	(exec_write): Missed one tick.
 
 2002-09-10  Werner Koch  <wk@gnupg.org>
+
+	* g10.c, options.h: Removed option --emulate-checksum-bug.
+	* misc.c (checksum_u16_nobug): Removed.
+	(checksum_u16): Removed the bug emulation.
+	(checksum_mpi): Ditto.
+	(checksum_mpi_counted_nbits): Removed and replaced all calls
+	with checksum_mpi.
+
+	* parse-packet.c (read_protected_v3_mpi): New.
+	(parse_key): Use it here to store it as an opaque MPI.
+	* seckey-cert.c (do_check): Changed the v3 unprotection to the new
+	why to store these keys.
+	(protect_secret_key): Likewise.
+	* build-packet.c (do_secret_key): And changed the writing.
+
+	* tdbio.c (tdbio_set_dbname, open_db): Use new macro MY_O_BINARY
+	to avoid silly ifdefs.
+	(open_db): Fallback to RDONLY so that gpg may be used from a
+	RO-medium.
 
 	* encode.c (encode_simple): Make sure we don't use an ESK packet
 	when we don't have a salt in the S2K.

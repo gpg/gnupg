@@ -690,7 +690,7 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     sk->is_protected = 0;
     sk->protect.algo = 0;
 
-    sk->csum = checksum_mpi_counted_nbits( sk->skey[3] );
+    sk->csum = checksum_mpi( sk->skey[3] );
     if( ret_sk ) /* not a subkey: return an unprotected version of the sk */
 	*ret_sk = copy_secret_key( NULL, sk );
 
@@ -776,7 +776,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     sk->is_protected = 0;
     sk->protect.algo = 0;
 
-    sk->csum = checksum_mpi_counted_nbits( sk->skey[4] );
+    sk->csum = checksum_mpi ( sk->skey[4] );
     if( ret_sk ) /* not a subkey: return an unprotected version of the sk */
 	*ret_sk = copy_secret_key( NULL, sk );
 
@@ -866,10 +866,10 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     sk->is_protected = 0;
     sk->protect.algo = 0;
 
-    sk->csum  = checksum_mpi_counted_nbits( sk->skey[2] );
-    sk->csum += checksum_mpi_counted_nbits( sk->skey[3] );
-    sk->csum += checksum_mpi_counted_nbits( sk->skey[4] );
-    sk->csum += checksum_mpi_counted_nbits( sk->skey[5] );
+    sk->csum  = checksum_mpi (sk->skey[2] );
+    sk->csum += checksum_mpi (sk->skey[3] );
+    sk->csum += checksum_mpi (sk->skey[4] );
+    sk->csum += checksum_mpi (sk->skey[5] );
     if( ret_sk ) /* not a subkey: return an unprotected version of the sk */
 	*ret_sk = copy_secret_key( NULL, sk );
 

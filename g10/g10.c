@@ -1432,7 +1432,6 @@ main( int argc, char **argv )
 	  case oNoPGP6: opt.pgp6 = 0; break;
 	  case oPGP7: opt.pgp7 = 1; break;
 	  case oNoPGP7: opt.pgp7 = 0; break;
-	  case oEmuChecksumBug: opt.emulate_bugs |= EMUBUG_GPGCHKSUM; break;
 	  case oEmuMDEncodeBug: opt.emulate_bugs |= EMUBUG_MDENCODE; break;
 	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRunAsShmCP:

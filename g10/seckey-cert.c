@@ -149,43 +149,26 @@ do_check( PKT_secret_key *sk, const char *tryagain_text )
 	else {
 	    for(i=pubkey_get_npkey(sk->pubkey_algo);
 		    i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-		buffer = mpi_get_secure_buffer( sk->skey[i], &nbytes, NULL );
-		cipher_sync( cipher_hd );
-		assert( mpi_is_protected(sk->skey[i]) );
-		cipher_decrypt( cipher_hd, buffer, buffer, nbytes );
-		mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
-		mpi_clear_protect_flag( sk->skey[i] );
-		csum += checksum_mpi( sk->skey[i] );
-		m_free( buffer );
-	    }
-            if( csum != sk->csum ) {
-              /* Due to a fix of a bug in mpi_get_secure_buffer we
-                 might encounter seceret keys which are not correctly
-                 encrypted.  We fix this by a second try, this time
-                 with a reversed bug fix (the memmove below). */
                 byte *p;
-              
-                copy_secret_key( sk, save_sk );
-                cipher_setiv( cipher_hd, sk->protect.iv, sk->protect.ivlen );
-                csum = 0;
-                for(i=pubkey_get_npkey (sk->pubkey_algo);
-		    i < pubkey_get_nskey (sk->pubkey_algo); i++ ) {
-                    buffer = mpi_get_secure_buffer (sk->skey[i], &nbytes,NULL);
-                    for (p=buffer; !*p && nbytes; p++, --nbytes )
-                      ;
-                    if (p != buffer)
-                      memmove (buffer, p, nbytes);
-                    cipher_sync (cipher_hd);
-                    assert (mpi_is_protected(sk->skey[i]));
-                    cipher_decrypt (cipher_hd, buffer, buffer, nbytes);
-                    mpi_set_buffer (sk->skey[i], buffer, nbytes, 0);
-                    mpi_clear_protect_flag (sk->skey[i]);
-                    csum += checksum_mpi (sk->skey[i]);
-                    m_free (buffer);
-                }
-            }
-	    if( opt.emulate_bugs & EMUBUG_GPGCHKSUM ) {
-	       csum = sk->csum;
+                int ndata;
+                unsigned int dummy;
+
+                assert (mpi_is_opaque (sk->skey[i]));
+                p = mpi_get_opaque (sk->skey[i], &ndata);
+                assert (ndata >= 2);
+                assert (ndata == ((p[0] << 8 | p[1]) + 7)/8 + 2);
+                buffer = m_alloc_secure (ndata);
+		cipher_sync (cipher_hd);
+                buffer[0] = p[0];
+                buffer[1] = p[1];
+                cipher_decrypt (cipher_hd, buffer+2, p+2, ndata-2);
+                csum += checksum (buffer, ndata);
+                mpi_free (sk->skey[i]);
+                dummy = ndata;
+                sk->skey[i] = mpi_read_from_buffer (buffer, &dummy, 1);
+                assert (sk->skey[i]);
+		m_free (buffer);
+/*  		csum += checksum_mpi (sk->skey[i]); */
 	    }
 	}
 	cipher_close( cipher_hd );
@@ -366,19 +349,26 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		sk->skey[i] = mpi_set_opaque(NULL, data, ndata );
 	    }
 	    else {
-		/* NOTE: we always recalculate the checksum because there
-		 * are some test releases which calculated it wrong */
 		csum = 0;
 		for(i=pubkey_get_npkey(sk->pubkey_algo);
 			i < pubkey_get_nskey(sk->pubkey_algo); i++ ) {
-		    csum += checksum_mpi_counted_nbits( sk->skey[i] );
+                    byte *data;
+		    unsigned int nbits;
+
+		    csum += checksum_mpi (sk->skey[i]);
 		    buffer = mpi_get_buffer( sk->skey[i], &nbytes, NULL );
-		    cipher_sync( cipher_hd );
-		    assert( !mpi_is_protected(sk->skey[i]) );
-		    cipher_encrypt( cipher_hd, buffer, buffer, nbytes );
-		    mpi_set_buffer( sk->skey[i], buffer, nbytes, 0 );
-		    mpi_set_protect_flag( sk->skey[i] );
+		    cipher_sync (cipher_hd);
+		    assert ( !mpi_is_opaque (sk->skey[i]) );
+                    data = m_alloc (nbytes+2);
+                    nbits  = mpi_get_nbits (sk->skey[i]);
+                    assert (nbytes == (nbits + 7)/8);
+                    data[0] = nbits >> 8;
+                    data[1] = nbits;
+		    cipher_encrypt (cipher_hd, data+2, buffer, nbytes);
 		    m_free( buffer );
+                    
+                    mpi_free (sk->skey[i]);
+                    sk->skey[i] = mpi_set_opaque (NULL, data, nbytes+2);
 		}
 		sk->csum = csum;
 	    }
