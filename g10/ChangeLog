@@ -1,3 +1,10 @@
+2003-12-30  David Shaw  <dshaw@jabberwocky.com>
+
+	* options.h, g10.c (main), import.c (parse_import_options,
+	import_one, import_secret_one), keyserver.c (keyserver_refresh):
+	Change --merge-only to --import-option merge-only.  Deprecate
+	--merge-only.
+
 2003-12-29  David Shaw  <dshaw@jabberwocky.com>
 
 	* misc.c (pull_in_libs): Dead code.  Removed.

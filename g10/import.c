@@ -93,6 +93,7 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"repair-pks-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG},
       {"fast-import",IMPORT_FAST_IMPORT},
       {"convert-sk-to-pk",IMPORT_SK2PK},
+      {"merge-only",IMPORT_MERGE_ONLY},
       {NULL,0}
     };
 
@@ -625,12 +626,13 @@ import_one( const char *fname, KBNODE keyblock,
 	log_error( _("key %08lX: public key not found: %s\n"),
 				(ulong)keyid[1], g10_errstr(rc));
     }
-    else if ( rc && opt.merge_only ) {
+    else if ( rc && (opt.import_options&IMPORT_MERGE_ONLY) )
+      {
 	if( opt.verbose )
-	    log_info( _("key %08lX: new key - skipped\n"), (ulong)keyid[1] );
+	  log_info( _("key %08lX: new key - skipped\n"), (ulong)keyid[1] );
 	rc = 0;
 	stats->skipped_new_keys++;
-    }
+      }
     else if( rc ) { /* insert this key */
         KEYDB_HANDLE hd = keydb_new (0);
 
@@ -903,27 +905,29 @@ import_secret_one( const char *fname, KBNODE keyblock,
 
     /* do we have this key already in one of our secrings ? */
     rc = seckey_available( keyid );
-    if( rc == G10ERR_NO_SECKEY && !opt.merge_only ) { /* simply insert this key */
+    if( rc == G10ERR_NO_SECKEY && !(opt.import_options&IMPORT_MERGE_ONLY) )
+      {
+	/* simply insert this key */
         KEYDB_HANDLE hd = keydb_new (1);
 
 	/* get default resource */
         rc = keydb_locate_writable (hd, NULL);
 	if (rc) {
-	    log_error (_("no default secret keyring: %s\n"), g10_errstr (rc));
-            keydb_release (hd);
-	    return G10ERR_GENERAL;
+	  log_error (_("no default secret keyring: %s\n"), g10_errstr (rc));
+	  keydb_release (hd);
+	  return G10ERR_GENERAL;
 	}
 	rc = keydb_insert_keyblock (hd, keyblock );
         if (rc)
-	    log_error (_("error writing keyring `%s': %s\n"),
-                       keydb_get_resource_name (hd), g10_errstr(rc) );
+	  log_error (_("error writing keyring `%s': %s\n"),
+		     keydb_get_resource_name (hd), g10_errstr(rc) );
         keydb_release (hd);
 	/* we are ready */
 	if( !opt.quiet )
-	    log_info( _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
+	  log_info( _("key %08lX: secret key imported\n"), (ulong)keyid[1]);
 	stats->secret_imported++;
         if (is_status_enabled ()) 
-             print_import_ok (NULL, sk, 1|16);
+	  print_import_ok (NULL, sk, 1|16);
 
 	if(options&IMPORT_SK2PK)
 	  {
@@ -934,7 +938,7 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	    release_kbnode(pub_keyblock);
 	  }
 
-    }
+      }
     else if( !rc ) { /* we can't merge secret keys */
 	log_error( _("key %08lX: already in secret keyring\n"),
 							(ulong)keyid[1]);

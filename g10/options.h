@@ -172,7 +172,6 @@ struct {
     int show_session_key;
     int use_agent;
     const char *gpg_agent_info;
-    int merge_only;
     int try_all_secrets;
     int no_expensive_trust_checks;
     int no_sig_cache;
@@ -207,7 +206,6 @@ struct {
 #define DBG_EXTPROG_VALUE 1024  /* debug external program calls */
 #define DBG_CARD_IO_VALUE 2048
 
-
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
 #define DBG_FILTER (opt.debug & DBG_FILTER_VALUE)
 #define DBG_CACHE  (opt.debug & DBG_CACHE_VALUE)
@@ -215,6 +213,7 @@ struct {
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 #define DBG_CARD_IO (opt.debug & DBG_CARD_IO_VALUE)
+
 
 #define GNUPG   (opt.compliance==CO_GNUPG)
 #define RFC1991 (opt.compliance==CO_RFC1991 || opt.compliance==CO_PGP2)
@@ -230,6 +229,7 @@ struct {
 #define IMPORT_REPAIR_PKS_SUBKEY_BUG     (1<<1)
 #define IMPORT_FAST_IMPORT               (1<<2)
 #define IMPORT_SK2PK                     (1<<3)
+#define IMPORT_MERGE_ONLY                (1<<4)
 
 #define EXPORT_INCLUDE_NON_RFC           (1<<0)
 #define EXPORT_INCLUDE_LOCAL_SIGS        (1<<1)

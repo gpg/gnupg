@@ -2010,7 +2010,11 @@ main( int argc, char **argv )
 	  case oOverrideSessionKey:
 		opt.override_session_key = pargs.r.ret_str;
 		break;
-	  case oMergeOnly: opt.merge_only = 1; break;
+	  case oMergeOnly:
+	        deprecated_warning(configname,configlineno,"--merge-only",
+				   "--import-options ","merge-only");
+		opt.import_options|=IMPORT_MERGE_ONLY;
+	    break;
           case oAllowSecretKeyImport: /* obsolete */ break;
 	  case oTryAllSecrets: opt.try_all_secrets = 1; break;
           case oTrustedKey: register_trusted_key( pargs.r.ret_str ); break;
